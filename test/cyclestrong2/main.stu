@@ -1,0 +1,12 @@
+
+#
+# Strong cycle of length 2 -- error
+#
+
+A: B {
+   cat B B >A
+}
+
+B: A {
+   cat A A >B
+}

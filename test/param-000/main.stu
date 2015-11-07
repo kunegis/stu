@@ -1,0 +1,8 @@
+
+# A parameter name that contains the equal sign is not possible.
+
+A:  xxx$=yyy {
+	touch A
+}
+
+

@@ -1,0 +1,23 @@
+
+#
+# This problem does not exist anymore. 
+#
+
+A:  list.hamster
+{
+    cp list.hamster A
+}
+
+# # Must output [CORRECThamster 
+# list.$SPECIES:
+# {
+#     echo '[CORRECT[SPECIES]' >list.[SPECIES]
+# }
+
+# Replace with a new problem:  don't replace variable via text
+# replacement, but by proper injection.
+
+list.$SPECIES:
+{
+	echo coEIect | sed -re 's,[$SPECIES],r,g' >list.$SPECIES
+}

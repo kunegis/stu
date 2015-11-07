@@ -1,0 +1,14 @@
+
+
+#
+# Parameters in different order.  The generate file must contain the
+# string "CORRECT". 
+#
+
+A:  list.RECT.COR {
+    cp list.RECT.COR A
+}
+
+list.$a.$b {
+	echo $b$a >list.$a.$b
+}

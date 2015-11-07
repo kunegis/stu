@@ -1,0 +1,130 @@
+#! /bin/sh
+
+doo() { echo "$@" ; "$@" ; }
+
+rmall() {
+    doo rm -f files list.*
+}
+
+#
+# No options
+#
+
+rmall
+
+echo ../../stu
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != 1 ]; then
+    echo >&2 "*** Wrong exit code $exitcode (A)"
+    exit 1
+fi
+
+if ! fgrep -q "main.stu:30:5: command for 'list.2' failed" list.err ; then
+    echo >&2 "*** Wrong error output (A)"
+    exit 1
+fi
+
+if [ -r list.3 ]; then
+    echo "*** File 'list.3' should not exist (A)"
+    exit 1
+fi
+
+#
+# -k
+#
+
+rmall
+
+echo ../../stu -k
+../../stu -k >list.out 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != 1 ]; then
+    echo >&2 "*** Wrong exit code $exitcode (B)"
+    exit 1
+fi
+
+if ! fgrep -q "main.stu:30:5: command for 'list.2' failed" list.err ; then
+    echo >&2 "*** Wrong error output (B1)"
+    exit 1
+fi
+
+if ! fgrep -q "*** Targets not remade because of errors" list.err ; then
+    echo >&2 "*** Wrong error output (B2)"
+    exit 1
+fi
+
+if [ \! -r list.3 ]; then
+    echo "*** File 'list.3' should exist (B)"
+    exit 1
+fi
+
+#
+# -j5
+#
+
+rmall
+
+echo ../../stu -j5
+../../stu -j5 >list.out 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != 1 ]; then
+    echo >&2 "*** Wrong exit code $exitcode (C)"
+    exit 1
+fi
+
+if ! fgrep -q "main.stu:30:5: command for 'list.2' failed" list.err ; then
+    echo >&2 "*** Wrong error output (C1)"
+    exit 1
+fi
+
+if fgrep -q "*** Targets not remade because of errors" list.err ; then
+    echo >&2 "*** Wrong error output (C2)"
+    exit 1
+fi
+
+if [ \! -r list.3 ]; then
+    echo "*** File 'list.3' should exist (C)"
+    exit 1
+fi
+
+#
+# -j5 -k
+#
+
+rmall
+
+echo ../../stu -j5 -k
+../../stu -j5 -k >list.out 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != 1 ]; then
+    echo >&2 "*** Wrong exit code $exitcode (D)"
+    exit 1
+fi
+
+if ! fgrep -q "main.stu:30:5: command for 'list.2' failed" list.err ; then
+    echo >&2 "*** Wrong error output (D1)"
+    exit 1
+fi
+
+if ! fgrep -q "*** Targets not remade because of errors" list.err ; then
+    echo >&2 "*** Wrong error output (D2)"
+    exit 1
+fi
+
+if [ \! -r list.3 ]; then
+    echo "*** File 'list.3' should exist (D)"
+    exit 1
+fi
+
+#
+# End
+#
+
+rmall
+
+exit 0

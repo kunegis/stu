@@ -1,0 +1,16 @@
+
+A: B C {
+   cat B C >A
+}
+
+B: D {
+   cat D D >B
+}
+
+C: D {
+   cat D D D >C
+}
+
+D:  B {
+    cat B B >D
+}

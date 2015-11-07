@@ -1,0 +1,8 @@
+
+# What should be the error message here?  Show all traces. 
+
+A:  [B];
+
+B:  {
+	echo >B
+}

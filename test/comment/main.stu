@@ -1,0 +1,20 @@
+
+# Full-line comment
+
+       # Comment with space before
+
+#
+# Multi-line comment
+#
+
+A: B { cp B A  }
+
+# B: {echo Wrong >B }
+
+B: C { cat C >B }
+
+C # :
+: # asdfsjdfh
+{ 
+  echo Hello >C
+}

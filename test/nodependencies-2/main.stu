@@ -1,0 +1,9 @@
+
+# Make sure all traces are shown. 
+
+A: B {
+	cp B A
+}
+
+# File 'B' should be present, but is not. 
+B;

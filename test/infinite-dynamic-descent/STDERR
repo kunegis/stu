@@ -1,0 +1,1 @@
+list.0:1:2: target must not depend on itself: 'list.${I}' instantiated as 'list.0' depends on 'list.${I}' instantiated as 'list.1'

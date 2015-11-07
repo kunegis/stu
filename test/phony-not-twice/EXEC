@@ -1,0 +1,10 @@
+#! /bin/sh
+
+rm -f L
+
+echo ../../stu
+../../stu || exit 1
+
+rm -f L
+
+exit 0

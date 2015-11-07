@@ -1,0 +1,20 @@
+
+#
+# Prefer one-parameter rule to two-parameter rule.  Note:  the
+# one-parameter rule is put after the two-parameter rule to make the
+# test stronger. 
+#
+
+A:  list.abc.xyz.data {
+	cp list.abc.xyz.data A
+}
+
+# This is a two-parameter rule
+list.$P.$Q.data: {
+	echo WRONG >list.$P.$Q.data
+}
+
+# This is a one-parameter rule and takes precedence 
+list.abc.$Q.data: {
+	echo CORRECT >list.abc.$Q.data
+}

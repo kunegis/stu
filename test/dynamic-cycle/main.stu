@@ -1,0 +1,9 @@
+
+#
+# Can dynamic dependencies include each other recursively?  
+#
+
+A:  [B] { echo CORRECT >A }
+B:  { echo [C] >B }
+C:  { echo [B] >C }
+

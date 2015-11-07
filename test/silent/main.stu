@@ -1,0 +1,16 @@
+
+#
+#  Silent mode:  Stu succeeds and outputs nothing. 
+#
+
+A: B {
+	cp B A
+}
+
+B: C {
+	cp C B
+}
+
+C: {
+	echo CORRECT >C
+}

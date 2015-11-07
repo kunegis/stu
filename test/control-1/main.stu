@@ -1,0 +1,8 @@
+
+# '\001' is no a valid filename character.  If it was, the follwing
+# would succeed.  
+
+A: BC { touch A }
+BC    { touch 'BC' }
+
+

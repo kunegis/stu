@@ -1,0 +1,18 @@
+
+#
+# out.z is preexisting.  Invoke with list.widths.z
+#
+
+
+list.widths.$NETWORK:  
+	out.$NETWORK list.info.$NETWORK 
+{
+    cat out.$NETWORK list.info.$NETWORK >list.widths.$NETWORK
+}
+
+list.info.$NETWORK:  
+	out.$NETWORK 
+{
+    cp out.$NETWORK list.info.$NETWORK
+}
+

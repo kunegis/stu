@@ -1,0 +1,37 @@
+
+#
+# To be run with -j2, and then interrupted.
+#
+# Test the following:  
+# * process X starts
+# * process Y starts
+# * process X stops
+# * process Z starts
+# * everything is stopped.
+#
+# I.e., the process A which gave its PID as a PGID is now gone, but the
+# PGID is still used by the second process. 
+#
+
+A: X Y Z {
+   cat X Y Z >A
+}
+
+X: {
+   echo begin >X
+   sleep 1
+   echo end >>X
+}
+
+Y: {
+   echo begin >Y
+   sleep 2837415
+   echo end >>Y
+}
+
+Z: {
+   echo begin >Z
+   sleep 2837415s
+   echo end >>Z
+}
+

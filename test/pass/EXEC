@@ -1,0 +1,138 @@
+#! /bin/sh
+
+doo() { echo "$@" ; "$@" ; }
+
+[ "$verbose" ] && exec 6>&2 || exec 6>/dev/null
+
+sed -re '/^\s*$/d;/^\s*#/d' LIST.stu |
+while read -r line ; do
+	rm -f list.file.stu ? list.*
+	echo "$line" >list.file.stu
+	printf 'list.file.stu: '
+	cat list.file.stu
+	
+	#
+	# Build 
+	#
+	echo ../../stu -f list.file.stu
+	../../stu -f list.file.stu >list.out 2>list.err
+	exitcode="$?"
+	echo >&6 "exitcode=«$exitcode»"
+	# Check exit code
+	[ "$exitcode" != 0 ] && {
+		echo >&2 "*** (1) Error in build"
+		echo >&2 "STDOUT:"
+		cat list.out
+		echo >&2 _____________
+		echo >&2 "STDERR:"
+		cat list.err
+		echo >&2 _____________
+		exit 1
+	}
+	# Check that C was not built
+	[ -e C ] && {
+		echo >&2 "*** (2) 'C' must not exist"
+		exit 1
+	}
+
+	#
+	# Touch B - A will not be rebuilt 
+	#
+	doo sleep 2
+	doo touch B 
+	echo ../../stu -f list.file.stu
+	../../stu -f list.file.stu >list.out 2>list.err
+	exitcode="$?"
+	echo >&6 "exitcode=«$exitcode»"
+	# Check exit code
+	[ "$exitcode" != 0 ] && {
+		echo >&2 "*** (3) Error in rebuild"
+		echo >&2 "STDOUT:"
+		cat list.out
+		echo >&2 _____________
+		echo >&2 "STDERR:"
+		cat list.err
+		echo >&2 _____________
+		exit 1
+	}
+	# Check that nothing is done
+	grep -qF 'Nothing to be done' list.out || {
+		echo >&2 "*** (4) Missing 'Nothing to be done'"
+		exit 1
+	}
+
+	#
+	# Touch C - A will be rebuilt
+	#
+	doo sleep 2
+	echo 'echo X >C'
+	echo X >C
+	echo ../../stu -f list.file.stu
+	../../stu -f list.file.stu >list.out 2>list.err
+	exitcode="$?"
+	echo >&6 "exitcode=«$exitcode»"
+	# Check exit code
+	[ "$exitcode" != 0 ] && {
+		echo >&2 "*** (5) Error in rebuild"
+		echo >&2 "STDOUT:"
+		cat list.out
+		echo >&2 _____________
+		echo >&2 "STDERR:"
+		cat list.err
+		echo >&2 _____________
+		exit 1
+	}
+	# Check that something is done
+	grep -qF 'Nothing to be done' list.out && {
+		echo >&2 "*** (6) Erroneous 'Nothing to be done'"
+		exit 1
+	}
+	# Check that D and E exist
+	[ -r D -a -r E ] || {
+		echo >&2 "*** (7) Missing files 'D' or 'E'"
+		exit 1
+	}
+	
+	#
+	# Touch D - A will be rebuilt
+	#
+	doo sleep 2
+	echo 'echo X >D'
+	echo X >D
+	echo ../../stu -f list.file.stu
+	../../stu -f list.file.stu >list.out 2>list.err
+	exitcode="$?"
+	echo >&6 "exitcode=«$exitcode»"
+	# Check exit code
+	[ "$exitcode" != 0 ] && {
+		echo >&2 "*** (8) Error in rebuild"
+		echo >&2 "STDOUT:"
+		cat list.out
+		echo >&2 _____________
+		echo >&2 "STDERR:"
+		cat list.err
+		echo >&2 _____________
+		exit 1
+	}
+	# Check that something is done
+	grep -qF 'Nothing to be done' list.out && {
+		echo >&2 "*** (9) Erroneous 'Nothing to be done'"
+		exit 1
+	}
+	##### does not apply to all tests -- this is now tested in individual tests 
+	# # Check that 'A' is rebuilt
+	# grep -qF 'touch A' list.out || {
+	# 	echo >&2 "*** (10) 'A' must be rebuilt"
+	# 	exit 1
+	# }
+
+	true
+done
+
+exitcode="$?"
+echo >&6 "exitcode=«$exitcode»"
+
+[ "$exitcode" = 0 ] &&
+    rm -f list.*
+
+exit "$exitcode"

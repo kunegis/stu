@@ -1,0 +1,21 @@
+
+# Combined existence-only variable used as input
+
+A: B C 
+{
+	cmp B C && touch A
+}
+
+>B: $[!<V] 
+{
+	echo $V
+	cat 
+}
+
+>V { echo CORRECT }
+
+>C {
+	echo CORRECT
+	echo CORRECT
+}
+

@@ -1,0 +1,8 @@
+
+# Mixed quotes are not allowed
+
+'A": "B' {
+     cp B A
+}
+
+B { echo Bee >B }

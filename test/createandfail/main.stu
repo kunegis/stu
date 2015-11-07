@@ -1,0 +1,17 @@
+
+#
+# When a command fails, the target file is removed if it was created.
+# This is the same behavior as Make. 
+#
+# In the following example, the command always creates the file "A" and
+# then fails, and Stu should thus remove the file "A". 
+#
+
+
+A: {
+   # Always create "A"
+   echo aslhajksdh >A
+   
+   # Then fail
+   3489r9384vbr89347vbr893r9
+}

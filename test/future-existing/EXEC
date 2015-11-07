@@ -1,0 +1,33 @@
+#! /bin/sh
+
+rm -f A B
+
+now="$(LC_ALL=C date)"
+year="$(echo $now | sed -re 's,^.* ([0-9]+)$,\1,')"
+year_future="$(expr 2 + $year)"
+date="$year_future-01-01"
+
+touch B -d "$date"
+
+../../stu 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != 0 ]; then
+    echo >&2 "*** Stu failed"
+    exit 1
+fi
+
+if ! fgrep -q "Warning: 'B' has modification time in the future" list.err ; then
+    echo >&2 "*** Missing error message"
+    exit 1
+fi
+
+# Check that the warning is given just once
+if [ "$(fgrep -c "Warning: 'B' has modification time in the future" list.err)" != 1 ];then
+    echo >&2 "*** Warning must not be output multiple times"
+    exit 1
+fi
+
+rm -f A B
+
+exit 0

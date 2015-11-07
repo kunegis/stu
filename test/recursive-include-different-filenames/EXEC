@@ -1,0 +1,20 @@
+#! /bin/sh
+
+rm -rf xxx
+
+mkdir xxx
+
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != 2 ] ; then
+   echo >&2 "*** Wrong exit code"
+   exit 1
+fi
+
+if ! fgrep "xxx/../main.stu:5:10: recursive inclusion of 'xxx/../main.stu'" list.err ; then
+   echo >&2 "*** Missing error message"
+   exit 1   
+fi
+
+rm -rf xxx list.*

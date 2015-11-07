@@ -1,0 +1,5 @@
+
+# 'A' must contain 'CORRECT'. 
+
+A: <B { tr a-z A-Z >A }
+B: { echo correct >B }

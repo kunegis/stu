@@ -1,0 +1,11 @@
+
+# Quoting around parameter names using ${...} syntax. 
+
+A:  list.ahelloc {
+	cp list.ahelloc A
+}
+
+list.a${x}c:
+{
+	echo CORRECT >"list.a${x}c"
+}

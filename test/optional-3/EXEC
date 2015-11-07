@@ -1,0 +1,19 @@
+#! /bin/sh
+
+set -e
+
+rm -f ?
+touch B
+
+set +e
+
+../../stu
+exitcode="$?"
+echo "exitcode=$exitcode"
+set -e
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** Invalid exit code"
+	exit 1
+}
+
+exit 0

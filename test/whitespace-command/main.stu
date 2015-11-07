@@ -1,0 +1,14 @@
+
+#
+# whitespace at the beginning of lines is stripped in output 
+#
+
+A: {
+	
+	 echo Aaa
+	
+	 	echo Blablabla >A
+	
+	 echo Bbb
+	
+}

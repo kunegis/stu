@@ -1,0 +1,10 @@
+
+#
+# A phony target with command down a chain of phonies.
+#
+
+@A:  @B;
+
+@B:  @C;
+
+@C { : CORRECT }

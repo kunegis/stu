@@ -1,0 +1,14 @@
+
+# Full traces are reported
+
+A:  [B] {
+	cp C A
+}
+
+B: {
+	echo C >B
+}
+
+C: nonexistingfile {
+	cp nonexistingfile C
+}

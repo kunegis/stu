@@ -1,0 +1,14 @@
+
+#
+# A cycle through dependencies.  This is a strong cycle, and Stu must
+# output an error message containing traces of all steps -- both within
+# this source file as within the generated dependency files. 
+#
+
+A: [B] { cp C A }
+B:     { echo C >B }
+C: D   { cp D C }
+D: [E] { cp F D }
+E:     { echo F >E }
+F: G   { cp G F }
+G: [B] { cp C G }

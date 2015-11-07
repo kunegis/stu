@@ -1,0 +1,7 @@
+
+>A: (list.1 list.2)
+{
+	cat list.1 list.2
+}
+
+>list.$N { echo $N }

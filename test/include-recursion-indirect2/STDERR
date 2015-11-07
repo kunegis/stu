@@ -1,0 +1,3 @@
+third.stu:2:10: recursive inclusion of 'main.stu'
+second.stu:2:10: 'third.stu' is included from here
+main.stu:2:10: 'second.stu' is included from here

@@ -1,0 +1,10 @@
+
+# Optional dependency that does exist and does have a rule.
+# The rule for B is not invoked. 
+
+A: ?B { cp B A }
+
+B: {
+	rm -f B
+	exit 1
+}

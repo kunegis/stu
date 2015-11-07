@@ -1,0 +1,20 @@
+
+#
+# Check that error messages start with an uppercase letter.  To be
+# executed with -k. 
+#
+
+A:  B C
+{
+	cat B C >A
+}
+
+B:
+{
+	exit 1
+}
+
+C:
+{
+	exit 1
+}

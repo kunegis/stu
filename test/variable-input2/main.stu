@@ -1,0 +1,20 @@
+
+#
+# Allow variable dependency files to be used for input redirection.
+# This is kind of redundant, but may be useful in some cases.  'A' must
+# contain twice the string 'CORRECT'. 
+#
+
+A: B C {
+	cmp B C && touch A
+}
+
+>B:  $[<V] { echo $V ; cat }
+
+>C { 
+	echo CORRECT
+	echo CORRECT
+}
+
+>V:  { echo CORRECT }
+

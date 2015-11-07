@@ -1,0 +1,18 @@
+
+#
+# Two single-parameter rules match.  Produces an error because Stu
+# cannot decide which takes precedence. 
+#
+
+A:  abcdefghijk {
+	cp abcdefghijk A
+}
+
+abcdef${X}jk: {
+	echo 1 >abcdef${X}jk
+}
+
+ab${X}hijk: {
+	echo 2 >ab${X}hijk
+}
+

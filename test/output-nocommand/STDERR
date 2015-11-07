@@ -1,0 +1,2 @@
+main.stu:7:1: output redirection using '>' must not be used
+main.stu:7:3: in rule without a command

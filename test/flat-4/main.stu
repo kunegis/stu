@@ -1,0 +1,14 @@
+
+# Must contain "CORRECT"
+A:  [B] {
+	echo "C=$C"
+	[ "$C" = CORRECT ] || {
+		echo >&2 'wrong value'
+		exit 1
+	}
+	echo "$C" >A
+}
+
+B: { echo '$[C]' >B }
+
+C: { echo CORRECT >C }

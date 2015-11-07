@@ -1,0 +1,20 @@
+
+#
+# A phony target that has both a command, dependencies, and is used as a
+# dependency. 
+# 
+# On repeated invocation, this should output "ALL HEADERS BUILT", but
+# not re-make A. 
+#
+
+A:  @headers 
+{
+	cat X Y Z >A
+}
+
+@headers: X Y Z 
+{ : ALL HEADERS BUILT }
+
+X { echo CORRECT >X }
+Y { echo yyy >Y }
+Z { echo zzz >Z }

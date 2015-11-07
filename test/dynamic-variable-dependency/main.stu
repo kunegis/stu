@@ -1,0 +1,12 @@
+
+A: $[B] {
+    [ $B = CORRECT ] || {
+	echo >&2 "$0:  *** variable \$B is not set correctly"
+	exit 1
+    }
+    echo $B >A
+}
+
+B: {
+    echo CORRECT >B
+}

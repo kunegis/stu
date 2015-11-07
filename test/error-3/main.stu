@@ -1,0 +1,13 @@
+
+# A build error and a logical error at the same time (execute with -k).
+# Gives a return value of 3. 
+
+A: B C { cat B C >A }
+
+# Build error
+B { exit 1 }
+
+# Logical error
+C: [D] { touch C }
+
+>D { echo ::: }

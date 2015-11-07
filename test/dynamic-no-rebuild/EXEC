@@ -1,0 +1,35 @@
+#! /bin/sh
+
+doo() { echo "$@" ; "$@" ; }
+
+doo rm -f ?
+
+#
+# Build for the first time
+#
+
+echo ../../stu
+../../stu || exit 1
+
+if ! test -h W ; then
+    echo >&2 "*** 'W' is not a symbolic link"
+    exit 1
+fi
+
+#
+# Remove 'D'
+#
+
+echo rm D
+rm D || exit 1
+
+#
+# Build for a second time
+#
+
+doo sleep 2
+
+echo ../../stu
+../../stu || exit 1
+
+exit 0

@@ -1,0 +1,23 @@
+
+# Can a dynamic dependency contain a dynamic variable, e.g.:
+
+A:  [B]
+{
+	# The variable $C must contain "CORRECT" here
+	echo "C=$C"
+	if [ "$C" != CORRECT ] ; then
+		echo >&2 'wrong value of $C'
+		exit 1
+	fi
+	echo "$C" >A
+}
+
+B:
+{
+    echo '$[C]' >B
+}
+
+C:
+{
+    echo CORRECT >C
+}

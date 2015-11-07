@@ -1,0 +1,9 @@
+
+#
+# An empty command fails because it does not create the target.   
+#
+
+A:  
+{ 
+
+}

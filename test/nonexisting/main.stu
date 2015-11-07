@@ -1,0 +1,7 @@
+
+
+A: q9e3c8n920c8en920c8en2 {
+   echo This must never be executed
+   touch A
+}
+

@@ -1,0 +1,18 @@
+
+#
+# Prefer unparametrized match to parametrized match.  Note:  the
+# unparametrized rule is placed after the the parametrized rule to make
+# the test stronger. 
+#
+
+A:  oX {
+    cp oX A
+}
+
+o$NAME: {
+	     echo WRONG >o$NAME
+}
+
+oX {
+	 echo CORRECT >oX
+}

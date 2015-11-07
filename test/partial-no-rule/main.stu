@@ -1,0 +1,13 @@
+
+#
+# Should output the trace of where XXX was used as a dependency
+#	
+
+A: B {
+   cp B A
+}
+
+B: XXX {
+   cat XXX XXX >B
+}
+

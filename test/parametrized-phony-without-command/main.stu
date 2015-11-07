@@ -1,0 +1,16 @@
+
+
+# Parametrized phony target without a command. 
+
+A:  @do-B
+{
+    cp list.B A
+}
+
+@do-$N:  list.$N;
+
+list.B:
+{
+    echo CORRECT >list.B
+}
+

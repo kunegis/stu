@@ -1,0 +1,133 @@
+#
+# This example is designed to have exponential runtime if no caching is
+# implemented.     
+#
+
+A:  [list.dep.A]
+{
+    echo aaa >A
+}
+list.dep.A: $[N]
+{
+    for J in $(seq 1 $N) ; do 
+		echo list.B.$J
+    done >list.dep.A
+}
+
+list.B.$J:  [list.dep.B]
+{
+    touch list.B.$J
+}
+list.dep.B: $[N]
+{
+    for J in $(seq 1 $N) ; do 
+		echo list.C.$J
+    done >list.dep.B
+}
+
+list.C.$J:  [list.dep.C]
+{
+    touch list.C.$J
+}
+list.dep.C: $[N]
+{
+    for J in $(seq 1 $N) ; do 
+		echo list.D.$J
+    done >list.dep.C
+}
+
+list.D.$J:  [list.dep.D]
+{
+    touch list.D.$J
+}
+list.dep.D: $[N]
+{
+    for J in $(seq 1 $N) ; do 
+		echo list.E.$J
+    done >list.dep.D
+}
+
+list.E.$J:  [list.dep.E]
+{
+    touch list.E.$J
+}
+list.dep.E: $[N]
+{
+    for J in $(seq 1 $N) ; do 
+		echo list.F.$J
+    done >list.dep.E
+}
+
+list.F.$J:  [list.dep.F]
+{
+    touch list.F.$J
+}
+list.dep.F: $[N]
+{
+    for J in $(seq 1 $N) ; do 
+		echo list.G.$J
+    done >list.dep.F
+}
+
+list.G.$J:  [list.dep.G]
+{
+    touch list.G.$J
+}
+list.dep.G: $[N]
+{
+    for J in $(seq 1 $N) ; do 
+		echo list.H.$J
+    done >list.dep.G
+}
+
+list.H.$J:  [list.dep.H]
+{
+    touch list.H.$J
+}
+list.dep.H: $[N]
+{
+    for J in $(seq 1 $N) ; do 
+		echo list.I.$J
+    done >list.dep.H
+}
+
+list.I.$J:  [list.dep.I]
+{
+    touch list.I.$J
+}
+list.dep.I: $[N]
+{
+    for J in $(seq 1 $N) ; do 
+		echo list.J.$J
+    done >list.dep.I
+}
+
+list.J.$J:  [list.dep.J]
+{
+    touch list.J.$J
+}
+list.dep.J: $[N]
+{
+    for J in $(seq 1 $N) ; do 
+		echo list.K.$J
+    done >list.dep.J
+}
+
+list.K.$J:  [list.dep.K]
+{
+    touch list.K.$J
+}
+list.dep.K: $[N]
+{
+    for J in $(seq 1 $N) ; do 
+		echo list.L.$J
+    done >list.dep.K
+}
+
+list.L.$J:
+{
+    echo lll >list.L.$J
+}
+
+N { echo 10 >N }
+

@@ -1,0 +1,26 @@
+#! /bin/sh
+
+set -e
+
+dorm() { rm -f a b a.c b.c CFLAGS LDFLAGS list.* ; }
+
+dorm 
+
+echo "== run A"
+../../stu 
+
+[ -r a -a -r b ] 
+
+rm CFLAGS 
+
+echo "== run B"
+../../stu >list.out
+echo ___
+cat list.out
+echo ___
+
+echo "== grep"
+! grep -qF Compiling list.out 
+grep -qF CFLAGS list.out
+
+dorm

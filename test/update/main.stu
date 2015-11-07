@@ -1,0 +1,9 @@
+
+#
+# Test that when the file B is updated, the file A is rebuilt.  
+# The file B is built in EXEC.
+#
+
+A: B {
+   cat B B >A
+}

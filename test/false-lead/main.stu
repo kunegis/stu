@@ -1,0 +1,13 @@
+
+#
+# A "false lead" parse.  A non-recursive matching algorithm is likely to
+# parse this wrong. 
+#
+
+A:    list.1A22 {
+	cp list.1A22 A
+}
+
+list.1${X}2: {
+	echo CORRECT >list.1${X}2
+}

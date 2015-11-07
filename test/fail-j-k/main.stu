@@ -1,0 +1,33 @@
+
+
+#
+# When one process fails, the currently running process down a long
+# chain of dependencies is interrupted. 
+#
+# Without options:  fail at B
+# With -k:  hang in E
+# With -j2:  interrupt E
+# With -j2 -k:  continue to run E and hang
+#
+
+A:  B C {
+    cat B C >A
+}
+
+B {
+    sleep 1
+    exit 1
+}
+
+C: D {
+    cp D C
+}
+
+D: E {
+    cp E D
+}
+
+E {
+    sleep 74634275
+    exit 0
+}

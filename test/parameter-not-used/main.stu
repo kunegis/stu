@@ -1,0 +1,12 @@
+
+#
+# Error:  the parameter $bbb is not used in the target. 
+#
+
+A: XXX.7 {
+   cp XXX.7 A
+}
+
+XXX.$aaa:  $bbb {
+}
+

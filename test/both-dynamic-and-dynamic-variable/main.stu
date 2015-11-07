@@ -1,0 +1,24 @@
+
+#
+# A dependency is both a dynamic dependency and a
+# dynamic variable dependency. 
+#
+# This is the pattern used when building a tarball. 
+#
+
+# The "tarball" (in this test, only a concatenation of the files)  
+A:  [B] $[B]
+{
+	# We use cat as a poor man's tar, for testing purposes 
+    cat $B >A
+}
+
+# The list of files to out into the tarball
+B: {
+    echo X Y Z >B
+}
+
+# The individual files to put into the tarball 
+X: { echo xxx >X }
+Y: { echo yyy >Y }
+Z: { echo zzz >Z }

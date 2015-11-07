@@ -1,0 +1,46 @@
+#! /bin/sh
+#
+# Test verbose mode
+#
+
+rm -rf A B C
+
+../../stu -v C 2>list.err
+
+if ! fgrep -q 'rebuilding because file does not exist' list.err
+then
+    echo >&2 "*** error A"
+	cat list.err
+    exit 1
+fi
+
+../../stu -v C 2>list.err
+
+if ! fgrep -q 'need_build = 0' list.err
+then
+    echo >&2 "*** error B"
+	cat list.err
+    exit 1
+fi
+
+rm -rf A B C
+
+../../stu -v B 2>list.err
+
+if ! fgrep -q "Propagating need_build flag from 'C' to 'B'" list.err
+then
+    echo >&2 "*** error C"
+	cat list.err
+    exit 1
+fi
+
+../../stu -v A 2>list.err
+
+if ! fgrep -q "Building 'A'" list.err
+then
+    echo >&2 "*** error D"
+	cat list.err
+    exit 1
+fi
+
+exit 0

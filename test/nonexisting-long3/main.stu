@@ -1,0 +1,14 @@
+
+
+A: B {
+   cp B A
+}
+
+B: C {
+   cp C B
+}
+
+C: 93c20938encv9208ecn920e {
+   echo Cee >C
+}
+

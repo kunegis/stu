@@ -1,0 +1,2 @@
+main.stu:4:11: duplicate input redirection <C
+main.stu:4:6: shadows previous input redirection <B

@@ -1,0 +1,4 @@
+
+# Empty parentheses are OK. 
+
+A:  ()  { touch A }  

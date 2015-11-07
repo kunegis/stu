@@ -1,0 +1,2 @@
+main.stu:5:6: parameter $NAME is not used
+main.stu:5:1: in target 'A'

@@ -1,0 +1,7 @@
+
+# When including a directory, check for the 'main.stu' file in it. 
+
+%include dir
+
+# The directory dir/ is present when running this test.  I.e., it is in
+# SVN. 

@@ -1,0 +1,24 @@
+D:  C {
+    echo Copying C to D...
+    cp C D
+    echo "   done"
+}
+
+C:  B {
+    echo Copying B to C...
+    cp B C
+    echo "   done"
+}
+
+B:  A {
+    echo Copying A to B...
+    cp A B
+    echo "   done"
+}
+
+A:  {
+    echo Creating A...
+    echo Blablabla >A
+    echo "   done"
+}
+

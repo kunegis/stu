@@ -1,0 +1,14 @@
+
+
+A:  [B] [B] {
+    [ -r B ] || exit 1
+    cat `cat B` >A
+}
+
+B {
+   sleep 1
+   echo C D >B
+}
+
+C: { echo Cee >C }
+D: { echo Dee >D }

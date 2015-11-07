@@ -1,0 +1,22 @@
+
+# This is the same test as "midbuild", but with intermediary phony
+# targets, to test that timestamps are correctly carried over these. 
+
+A: @BB
+{
+	cp B A
+}
+
+@BB: B;
+
+B:  @CC
+{
+	cp C B
+}
+
+@CC: C;
+
+C:  
+{
+	echo ccc >C
+}

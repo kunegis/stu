@@ -1,0 +1,16 @@
+#! /bin/sh
+
+../../stu -f '' 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != 2 ]; then
+    echo >&2 "*** Wrong exit code"
+    exit 1
+fi
+
+if ! fgrep -q "./stu: *** Option -f must take non-empty argument" list.err ; then
+    echo >&2 "*** Missing error message"
+    exit 1
+fi
+
+exit 0

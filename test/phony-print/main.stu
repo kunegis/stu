@@ -1,0 +1,7 @@
+
+#
+# A phony that only prints out something. 
+#
+
+@hello { : HELLO }
+

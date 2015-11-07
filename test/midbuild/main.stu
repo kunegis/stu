@@ -1,0 +1,22 @@
+
+#
+# How to reproduce bug:
+# * stu A:  everything is built
+# * rm B; stu B:  B is re-built
+# * stu A:  A is not rebuilt, but should
+#
+
+A: B
+{
+	cp B A
+}
+
+B:  C
+{
+	cp C B
+}
+
+C:  
+{
+	echo ccc >C
+}

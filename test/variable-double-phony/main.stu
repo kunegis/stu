@@ -1,0 +1,10 @@
+
+#
+# Variables are passed through two levels of phonies without commands.
+#
+
+A: @a { echo $V >A }
+@a: @b;
+@b: $[V];
+V { echo CORRECT >V }
+

@@ -1,0 +1,15 @@
+
+#
+# Strong cycle on rule level, not on filename level.  Must be detected. 
+#
+
+A:  list.a {
+    cp list.a A
+}
+
+list.$PROGRAM:  list.$PROGRAM.c 
+{
+    echo CORRECT >"list.$PROGRAM"
+}
+
+

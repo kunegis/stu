@@ -1,0 +1,22 @@
+
+# Execute without the -k option.  This checks that the later,
+# non-optional dependency "C: D" is honored. 
+# Test both -j and not.
+
+A: B C { 
+	cat B C >A
+}
+
+B: ?D { 
+	# 'D' must not exist
+	[ -e D ] && exit 1
+	touch B 
+}
+
+C: D { 
+	# 'D' must exist 
+	[ -r D ] || exit 1
+	cp D C
+}
+
+D { sleep 1 ; echo CORRECT >D }

@@ -1,0 +1,30 @@
+
+#
+# Parametrized dynamic dependency
+#
+
+A:  A.1.data 
+{
+	cp A.1.data A
+}
+
+A.$NUMBER.data: [A.$NUMBER.dep]
+{
+	cat B.$NUMBER.data C.$NUMBER.data >A.$NUMBER.data
+}
+
+A.$NUMBER.dep:
+{
+	echo B.$NUMBER.data C.$NUMBER.data >A.$NUMBER.dep
+}
+
+B.$NUMBER.data:
+{
+	echo CORRECT B $NUMBER >B.$NUMBER.data
+}
+
+C.$NUMBER.data:
+{
+	echo CORRECT C $NUMBER >C.$NUMBER.data
+}
+

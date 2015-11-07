@@ -1,0 +1,6 @@
+
+# 'A' must contain 'CORRECT'
+
+>A:  <B C { sed -re 's,abc,CORR,' | tr -d '\n' ; cat C }
+>B { echo abc }
+>C { echo ECT }

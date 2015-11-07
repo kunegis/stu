@@ -1,0 +1,59 @@
+#! /bin/sh
+
+doo() { echo "$@" ; "$@" ; }
+
+#
+# Without -k
+#
+
+doo rm -f ? ?? 
+
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != "2" ]; then
+    echo >&2 "*** wrong exit code (run A)"
+    exit 1
+fi
+
+if ! fgrep -q "B1:1:4: expected dependency" list.err ; then
+    echo >&2 "*** not containing 'invalid token' in error output"
+    exit 1
+fi
+
+if fgrep -q "*** Targets not remade because of errors" list.err ; then
+    echo >&2 "*** containing '*** Targets not remade because of errors' in error output"
+    exit 1
+fi
+
+#
+# With -k
+#
+
+doo rm -f ? ?? 
+
+../../stu -k >list.out 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != "2" ]; then
+    echo >&2 "*** wrong exit code (run A)"
+    exit 1
+fi
+
+if ! fgrep -q "B1:1:4: expected dependency" list.err ; then
+    echo >&2 "*** not containing 'invalid token' in error output"
+    exit 1
+fi
+
+if ! fgrep -q "*** Targets not remade because of errors" list.err ; then
+    echo >&2 "*** not containing '*** Targets not remade because of errors' in error output"
+    exit 1
+fi
+
+#
+# End
+#
+
+rm -f ? ?? 
+
+exit 0

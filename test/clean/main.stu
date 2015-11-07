@@ -1,0 +1,11 @@
+
+# Clean 
+
+A:  {
+    echo aaa >A
+}
+
+@clean {
+       rm -f A
+}
+

@@ -1,0 +1,21 @@
+
+
+#
+# Longer strong cycle at rule level
+#
+
+
+A:  list.1.a 
+{
+	cp list.1.a A
+}
+
+list.1.$NAME:  list.2.$NAME 
+{
+	cp list.2.$NAME list.1.$NAME
+}
+
+list.2.$NAME:  list.1.$NAME.c
+{
+	cp list.1.$NAME.c list.2.$NAME
+}

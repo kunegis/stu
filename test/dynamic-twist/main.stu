@@ -1,0 +1,19 @@
+
+#
+# A file is both dependency and dynamic dependency of a single target.
+# In this test, the non-dynamic dependency comes first. 
+#
+# Call with -j2 for best effect. 
+#
+
+A: B [B] {
+   cat B `cat B` >A
+}
+
+B {
+  sleep 1
+  echo X Y >B
+}
+
+X{echo Xx >X}
+Y{echo Yy >Y}

@@ -1,0 +1,14 @@
+
+# Transient phony dependency
+
+A:  @XY
+{
+	cat X Y >A	
+}
+
+@XY:  X Y;
+
+X { echo xxx >X }
+Y { echo CORRECT >Y }
+
+

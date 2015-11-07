@@ -1,0 +1,5 @@
+
+
+# Empty phony target is invalid.
+
+@"" {}

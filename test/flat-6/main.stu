@@ -1,0 +1,17 @@
+
+# Don't propagate parameter variables. 
+
+A: [list.B] {
+	# $X must not be defined here
+	echo "X=$X"
+	[ -z "$X" ] || exit 1
+	cp B A
+}
+
+list.$X: {
+	echo $X >list.$X
+}
+
+B: {
+	echo CORRECT >B
+}

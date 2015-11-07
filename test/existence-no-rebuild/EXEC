@@ -1,0 +1,47 @@
+#! /bin/sh
+
+rm -f ?
+
+#
+# stu A:  B and A are built.
+#
+
+echo FIRST RUN
+
+../../stu A 
+exitcode="$?"
+
+if [ "$exitcode" != 0 ] ; then
+    echo >&2 "*** wrong exit code (1)"
+    exit 1
+fi
+
+if [ ! -r A -o ! -r B ] ; then
+    echo >&2 "*** did not build A and B"
+    exit 1
+fi
+
+#
+# rm B
+#
+
+rm B || exit 1
+
+#
+# stu A:  B is rebuilt, but not A
+#
+
+echo SECOND RUN
+
+../../stu A
+exitcode="$?"
+
+if [ "$exitcode" != 0 ] ; then
+    echo >&2 "*** wrong exit code (2)"
+    exit 1
+fi
+
+rm -f ?
+
+exit 0
+

@@ -1,0 +1,13 @@
+
+#
+# It's not possible to depend on oneself.  In cyclic dependencies, also
+# show the correct location. 
+#
+
+A:  B {
+	cp B A
+}
+
+B: B {
+	cp B B
+}

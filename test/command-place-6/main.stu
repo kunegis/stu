@@ -1,0 +1,6 @@
+
+A: {
+
+	echo AAA
+	echo BBB
+}

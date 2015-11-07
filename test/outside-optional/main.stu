@@ -1,0 +1,13 @@
+
+# TODO:  have Dependency objects that distinguish between ?[X] and [?X].  
+
+A: ?[B] { 
+	cp B A
+}
+
+>B { echo C }
+
+C {
+	# Not executed
+	exit 1
+}

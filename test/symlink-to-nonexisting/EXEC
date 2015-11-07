@@ -1,0 +1,41 @@
+#! /bin/sh
+
+echo rm -f A B
+rm -f A B || { 
+    echo >&2 "rm failed"
+    exit 1
+}
+
+echo ln -s nonexisting B
+ln -s nonexisting B || {
+    echo >&2 "ln failed"
+    exit 1
+}
+
+echo ../../stu
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != 1 ] ; then
+    echo >&2 "Wrong exit code"
+    exit 1
+fi
+
+if [ -s list.out ] ; then
+    echo >&2 "output must be empty"
+    exit 1
+fi
+
+if ! grep -Fq "main.stu:2:5: no rule to build 'B', needed by 'A'" list.err ; then
+    echo >&2 "missing error message"
+    exit 1
+fi
+
+if [ -e A ] ; then
+    echo >&2 "'A' must not be created"
+    exit 1
+fi
+
+rm -f A B
+
+exit 0

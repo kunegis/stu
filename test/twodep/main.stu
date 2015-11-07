@@ -1,0 +1,11 @@
+# Test the error message "File without command 'B' does not exist,
+# although all its dependencies are up to date". 
+
+
+A:  B;
+
+B: ccc ddd;
+
+ccc;  # Exists
+ddd;  # Exists
+

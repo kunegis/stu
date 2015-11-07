@@ -1,0 +1,8 @@
+
+# Error:  can't use a phony target as input. 
+
+A:  <@B   { touch A }
+@B {}
+
+
+

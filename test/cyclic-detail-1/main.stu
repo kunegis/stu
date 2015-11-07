@@ -1,0 +1,9 @@
+
+# Cyclic dependency where the intra-dependency path has length three.
+
+A: [B] { touch A }
+B:     { echo '[C]' >B }
+C:     { echo '[D]' >C }
+D:  A  { touch D }
+
+

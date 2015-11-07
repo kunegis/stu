@@ -1,0 +1,6 @@
+
+# A target that matches all filenames. 
+
+$NAME: {
+	echo "$NAME" >"$NAME"
+}

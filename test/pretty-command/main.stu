@@ -1,0 +1,9 @@
+
+# Make sure the output is pretty.
+# The '{' is followed by space characters.  Each indented line begins with a tab
+
+A {    
+	rm -f A
+	echo Hello >A
+	echo World >>A
+}

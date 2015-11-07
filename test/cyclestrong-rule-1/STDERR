@@ -1,0 +1,1 @@
+main.stu:10:17: target must not depend on itself: 'list.${PROGRAM}' instantiated as 'list.a' depends on 'list.${PROGRAM}' instantiated as 'list.a.c'

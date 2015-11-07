@@ -1,0 +1,30 @@
+seq 1 20 | sed -re 's,^,list.,' >list.dep
+N=1: echo "$N" >"list.$N"
+N=2: echo "$N" >"list.$N"
+N=3: echo "$N" >"list.$N"
+N=4: echo "$N" >"list.$N"
+N=5: echo "$N" >"list.$N"
+N=6: echo "$N" >"list.$N"
+N=7: echo "$N" >"list.$N"
+N=8: echo "$N" >"list.$N"
+N=9: echo "$N" >"list.$N"
+N=10: echo "$N" >"list.$N"
+N=11: echo "$N" >"list.$N"
+N=12: echo "$N" >"list.$N"
+N=13: echo "$N" >"list.$N"
+N=14: echo "$N" >"list.$N"
+N=15: echo "$N" >"list.$N"
+N=16: echo "$N" >"list.$N"
+N=17: echo "$N" >"list.$N"
+N=18: echo "$N" >"list.$N"
+N=19: echo "$N" >"list.$N"
+N=20: echo "$N" >"list.$N"
+echo Beeee > B 
+M=456 N=123: echo "$N + $M" >"list.$N.$M"
+y=y:
+{
+	echo Xxxx
+	echo Yyyy
+	echo Zzzz
+} >"list.x${y}z"
+cat B $(cat list.dep) >A

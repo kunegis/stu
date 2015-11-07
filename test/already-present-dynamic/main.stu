@@ -1,0 +1,11 @@
+
+A:  [deps] {
+    cat X Y >A
+}
+
+deps: {
+      echo X Y >deps
+}
+
+X {echo Xylophon >X }
+Y {echo Yak      >Y }

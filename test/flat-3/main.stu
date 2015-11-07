@@ -1,0 +1,5 @@
+
+# Cycle must be detected
+
+A: B { touch A }
+B: [A] { touch B }

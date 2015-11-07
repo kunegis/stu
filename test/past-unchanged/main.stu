@@ -1,0 +1,19 @@
+
+# When the test is run, the file 'B' exists and has an old timestamp.
+# Stu must detect that the after running the command for 'B', the file
+# 'B' was not updated because its timestamp is too old. 
+
+A: B
+{
+	cp B A
+}
+
+B: C
+{
+	# Do nothing 
+}
+
+C:
+{
+	echo ccc >C
+}

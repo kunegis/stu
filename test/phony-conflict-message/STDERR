@@ -1,0 +1,3 @@
+../../stu: *** Multiple minimal rules for target @abcde
+main.stu:6:1: rule with target @a${X}cde
+main.stu:7:1: rule with target @abc${Y}e

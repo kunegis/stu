@@ -1,0 +1,12 @@
+
+
+
+A:  [B] {
+    echo aaa >A
+}
+
+B: {
+	rm -f B
+	touch B
+}
+

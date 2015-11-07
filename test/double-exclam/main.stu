@@ -1,0 +1,5 @@
+
+# Double exclamation mark is syntactically allowed. 
+
+A:  !!B { touch A}
+B {touch B}

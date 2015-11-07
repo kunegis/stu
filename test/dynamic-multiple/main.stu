@@ -1,0 +1,22 @@
+
+
+A: [B] X {
+   [ -r B ] &&
+   cat X `cat B` >A         
+}
+
+B: {
+   echo C D >B
+}
+
+C: {
+   echo Cee >C
+}
+
+D: {
+   echo Dee >D
+}
+
+X: {
+   echo 'List of things:' >X
+}

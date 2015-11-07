@@ -1,0 +1,2 @@
+main.stu:9:4: cyclic dependency: 'B' depends on 'C'
+main.stu:13:4: 'C' depends on 'B'

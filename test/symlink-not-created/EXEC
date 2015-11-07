@@ -1,0 +1,29 @@
+#! /bin/sh
+#
+# Bug:  when a symlink is created, Stu complains with "timestamp of
+# target 'symlink' after execution of command is older than stu
+# startup".
+# 
+
+# A is the symlink that links to X.  X is a preexisting file with a
+# timestamp in the past. 
+
+# Compute a date definitely in the past 
+now="$(LC_ALL=C date)"
+year="$(echo $now | sed -re 's,^.* ([0-9]+)$,\1,')"
+year_past="$(expr $year - 2)"
+date="$year_past-01-01"
+
+rm -f A X
+
+touch X -d "$date"
+
+../../stu 
+exitcode="$?"
+
+if [ "$exitcode" != 0 ] ; then
+    echo >&2 "*** Failed, but should not"
+    exit 1
+fi
+
+exit 0

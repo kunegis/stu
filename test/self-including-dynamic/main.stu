@@ -1,0 +1,14 @@
+
+#
+# Can a dynamic dependency include itself (in a non-dynamic way)?  Yes,
+# it's the same as just having A depending on B. 
+#
+
+A: [B] {
+	touch A
+}
+
+B: {
+	echo B >B
+}
+

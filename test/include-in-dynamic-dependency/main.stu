@@ -1,0 +1,23 @@
+
+#
+# Test that an '%include' in a dynamic dependency file is flagged as an
+# error.  
+#
+# Note:  the test is written in a way that Stu *could* succeed if
+# %include in dynamic dependencies were allowed. 
+#
+
+A: [B]
+{
+	echo aaa >A
+}
+
+B: C
+{
+   echo '%include C' >B
+}
+
+C: 
+{
+	echo >C
+}

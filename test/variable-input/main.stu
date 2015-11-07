@@ -1,0 +1,3 @@
+
+>A:  $[<V] { echo $V }
+>V:  { echo CORRECT }

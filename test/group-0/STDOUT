@@ -1,0 +1,3 @@
+>list.1 N=1: echo $N 
+>list.2 N=2: echo $N 
+>A: cat list.1 list.2

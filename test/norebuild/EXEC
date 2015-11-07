@@ -1,0 +1,32 @@
+#! /bin/sh
+
+doo() { echo "$@" ; $@ ; }
+
+doo rm -f ?
+
+echo ../../stu
+../../stu
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo "*** (a)"
+	exit 1
+}
+
+doo rm -f B C
+
+echo ../../stu
+../../stu >list.out
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo "*** (b)"
+	exit 1
+}
+
+fgrep -q 'cat D E' list.out && {
+	echo "*** (c)"
+	exit 1
+}
+
+exit 0

@@ -1,0 +1,34 @@
+#! /bin/sh
+
+now="$(LC_ALL=C date)"
+year="$(echo $now | sed -re 's,^.* ([0-9]+)$,\1,')"
+year_past="$(expr $year - 2)"
+date="$year_past-01-01"
+
+rm -f A B C
+
+touch B -d "$date"
+
+echo ls -l B
+ls -l B
+
+../../stu 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != 1 ]; then
+    echo >&2 "*** Wrong exit code"
+    exit 1
+fi
+
+if [ "$(fgrep -c "main.stu:11:1: timestamp of file 'B' after execution of its command is older than ../../stu startup" list.err)" != 1 ]; then
+    echo >&2 "*** Missing error message"
+	echo >&2 'actual stderr:'
+	echo >&2 __________________
+	cat >&2 list.err
+	echo >&2 __________________
+    exit 1
+fi
+
+rm -f A B C
+
+exit 0

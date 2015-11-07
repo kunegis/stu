@@ -1,0 +1,7 @@
+
+A:  ?B B {
+	[ -e B ] || exit 1
+	cp B A
+}
+
+>B { echo CORRECT }

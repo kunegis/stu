@@ -1,0 +1,7 @@
+
+# Phony-only cycle of length two
+
+@A:  @B;
+
+@B:  @A;
+

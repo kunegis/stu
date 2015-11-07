@@ -1,0 +1,15 @@
+
+# 'C' must not be built. 
+
+A: ?[E] {
+	touch A
+}		
+
+>E { 
+	echo C 
+} 
+
+C { 
+	exit 1
+}
+

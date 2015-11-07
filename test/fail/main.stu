@@ -1,0 +1,20 @@
+
+#
+# Make sure that when the first dependency fails, the second one is not
+# called.  If it was called, it would hang. 
+#
+
+A: B C {
+   cat B C >A
+}
+
+B: {
+   # This command fails 
+   exit 1
+}
+
+C: {
+   # This command hangs
+   sleep 64000
+}
+

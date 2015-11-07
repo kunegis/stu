@@ -1,0 +1,11 @@
+
+# Existence declaration, i.e., a file rule without command and without
+# dependencies.  
+
+A: b
+{
+	cp b A
+}
+
+# The file does not exist:  error.
+b;  

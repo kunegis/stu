@@ -1,0 +1,4 @@
+
+# Two Stu files that include each error.  Must be flagged as an error. 
+
+%include second.stu

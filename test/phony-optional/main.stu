@@ -1,0 +1,6 @@
+
+# Syntactically allowed 
+
+A: ? @x { touch A }
+@x: B;
+B: { touch B }

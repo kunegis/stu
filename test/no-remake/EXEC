@@ -1,0 +1,29 @@
+#! /bin/sh
+
+doo() { echo "$@" ; "$@" ; }
+
+doo rm -rf ?
+
+echo ../../stu A
+../../stu A || {
+    echo >&2 "$0:  *** error building 'A'"
+    exit 1
+}
+
+doo rm -rf C
+
+echo ../../stu A
+../../stu A || {
+    echo >&2 "$0:  *** error re-building 'A'"
+    exit 1
+}
+
+doo rm -rf C
+
+echo ../../stu A
+if ../../stu A | grep 'Hello >B' ; then
+    echo >&2 "$0:  *** unnecessarily re-building 'B'"
+    exit 1
+fi
+
+exit 0

@@ -1,0 +1,11 @@
+
+#
+# Check that the error message for the error below includes a trace that
+# points to the first occurence of B in the dependency list of A, and
+# not to A. 
+#
+
+A: B
+{
+    cp B A
+}

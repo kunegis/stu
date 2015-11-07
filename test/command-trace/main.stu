@@ -1,0 +1,4 @@
+
+A          : list.BBB   { touch A          }
+list.$NAME : C          { touch list.$NAME }
+C                       { exit  1          }

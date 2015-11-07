@@ -1,0 +1,8 @@
+
+# In traces, don't show [[X]]->[X] edges.
+
+A:  [[B]] { touch A }
+B:  W     { touch B }
+
+# 'W' does not exist and has no rules. 
+

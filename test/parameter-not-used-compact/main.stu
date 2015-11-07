@@ -1,0 +1,5 @@
+
+# error:  the parameter $ccc does not occur in the target. 
+
+xxx:  $ccc {
+}

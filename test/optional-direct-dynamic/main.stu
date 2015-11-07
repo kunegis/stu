@@ -1,0 +1,10 @@
+
+A:  [?[B]] {
+	[ ! -e B ] && exit 1
+	touch A
+}
+
+
+>B { echo C }
+
+C { exit 1 }

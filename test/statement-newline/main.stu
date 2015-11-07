@@ -1,0 +1,12 @@
+
+# Line numbers are reported correctly after a newline after %
+
+# Keep the version always compatible with the current Stu
+# version. (Needs manual changing when incrementing the major version.)
+
+%
+version
+1.0.0
+
+
+A:::

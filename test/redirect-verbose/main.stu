@@ -1,0 +1,6 @@
+
+# Check that output and input redirect is output correctly.  
+
+>A:  <B { tr CORET TEROC }
+
+>B { echo TERROTC }

@@ -1,0 +1,28 @@
+
+# Same as the test "dynamic-no-rebuild", but instead of removing D, we
+# update it.  In both cases A must not be rebuilt. 
+
+A:  [B]
+{
+    set -e
+    ln -s notexistingfile W # This fails if executed twice
+    cp C A
+}
+
+B: D
+{
+    ./D
+}
+
+C:
+{
+    echo ccc >C
+}
+
+D:
+{
+    set -e
+    echo '#! /bin/sh' >D 
+    echo 'echo C >B' >>D 
+    chmod u+x D
+}

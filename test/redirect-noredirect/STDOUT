@@ -1,0 +1,3 @@
+echo CORRECT >A
+echo ERROR
+ERROR

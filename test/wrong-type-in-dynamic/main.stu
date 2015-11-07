@@ -1,0 +1,18 @@
+
+#
+# This should fail because C contains @list.B and not list.B
+#
+
+A:  [C]
+{
+	cp B A
+}
+
+C:  {
+    echo @list.B >C
+}
+
+list.$NAME:
+{
+	echo ${NAME}${NAME}${NAME} >B
+}

@@ -1,0 +1,21 @@
+
+# Make sure 'C' is not read twice from within read_dynamics(). 
+#
+# The execution tree should be:
+#
+#          A
+#          |
+#        [[B]]
+#         / \
+#        B  [C]
+#           /|\
+#          C D E
+#
+# note:  There is not [B] execution object. 
+#
+
+>A: [[B]] { cat D E }
+>B:       { echo C }
+>C:       { echo D E }
+>D:       { echo ddd }
+>E:       { echo eee }

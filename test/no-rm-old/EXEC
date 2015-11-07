@@ -1,0 +1,21 @@
+#! /bin/sh
+
+doo() { echo "$@" ; $@ ; }
+
+rm -f ?
+
+doo touch A 
+doo sleep 2
+
+echo ../../stu &
+../../stu &
+pid="$!"
+
+kill "$pid"
+
+[ -e A ] || {
+	echo >&2 "*** error (a) 'A' must be present"
+	exit 1
+}
+
+exit 0

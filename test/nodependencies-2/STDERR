@@ -1,0 +1,2 @@
+main.stu:9:1: file without command and without dependencies 'B' does not exist
+main.stu:4:4: 'B' is needed by 'A'

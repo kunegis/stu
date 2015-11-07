@@ -1,0 +1,24 @@
+
+#
+# A weak cycle 
+#
+# Note:  this example becomes nontrivial for Stu when executed in
+# parallel mode. 
+#
+
+A:  B C {
+    cat B C >A
+}
+
+B: D {
+   tr x b <D >B
+}
+
+C: D {
+   tr x c <D >C
+}
+
+D: {
+   sleep 1
+   echo axexixoxu >D
+}

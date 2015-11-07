@@ -1,0 +1,15 @@
+
+#
+# Weird but allowed file name
+#
+
+A:  +-.~_
+{
+	cp +-.~_ A
+}
+
++-.~_:
+{
+	echo CORRECT >+-.~_
+}
+

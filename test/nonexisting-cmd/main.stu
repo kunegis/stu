@@ -1,0 +1,13 @@
+
+#
+# Passing a non-existing filename on the command produces an error. 
+#
+
+A: {
+   touch A
+}
+
+B: {
+   touch B
+}
+

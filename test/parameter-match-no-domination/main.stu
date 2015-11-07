@@ -1,0 +1,18 @@
+
+# Must not work:  two rules of which none dominates. 
+
+A:  list.abc
+{
+	cp list.abc A
+}
+
+list.a${NAME}:
+{
+	echo ERROR >list.a${NAME}
+}
+
+list.${NAME}c:
+{
+	echo ERROR >list.${NAME}c
+}
+

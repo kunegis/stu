@@ -1,0 +1,5 @@
+
+A:  {
+	echo Building A
+	echo Blabla >A
+}

@@ -1,0 +1,38 @@
+
+#
+# Terminating a stu -k -j99 process makes Stu remove all target files of
+# currently processes, if they exist. 
+#
+# The sleep duration is a number easy to grep in the test. 
+#
+
+
+A: B C D E F G H I J K L M N O P Q R S T U V W X Y Z {
+   cat B C D E F G H I J K L M N O P Q R S T U V W X Y Z >A
+}
+
+B { echo >B ; sleep 31415926535 ; echo Bla >>B }
+C { echo >C ; sleep 31415926535 ; echo Bla >>C }
+D { echo >D ; sleep 31415926535 ; echo Bla >>D }
+E { echo >E ; sleep 31415926535 ; echo Bla >>E }
+F { echo >F ; sleep 31415926535 ; echo Bla >>F }
+G { echo >G ; sleep 31415926535 ; echo Bla >>G }
+H { echo >H ; sleep 31415926535 ; echo Bla >>H }
+I { echo >I ; sleep 31415926535 ; echo Bla >>I }
+J { echo >J ; sleep 31415926535 ; echo Bla >>J }
+K { echo >K ; sleep 31415926535 ; echo Bla >>K }
+L { echo >L ; sleep 31415926535 ; echo Bla >>L }
+M { echo >M ; sleep 31415926535 ; echo Bla >>M }
+N { echo >N ; sleep 31415926535 ; echo Bla >>N }
+O { echo >O ; sleep 31415926535 ; echo Bla >>O }
+P { echo >P ; sleep 31415926535 ; echo Bla >>P }
+Q { echo >Q ; sleep 31415926535 ; echo Bla >>Q }
+R { echo >R ; sleep 31415926535 ; echo Bla >>R }
+S { echo >S ; sleep 31415926535 ; echo Bla >>S }
+T { echo >T ; sleep 31415926535 ; echo Bla >>T }
+U { echo >U ; sleep 31415926535 ; echo Bla >>U }
+V { echo >V ; sleep 31415926535 ; echo Bla >>V }
+W { echo >W ; sleep 31415926535 ; echo Bla >>W }
+X { echo >X ; sleep 31415926535 ; echo Bla >>X }
+Y { echo >Y ; sleep 31415926535 ; echo Bla >>Y }
+Z { echo >Z ; sleep 31415926535 ; echo Bla >>Z }

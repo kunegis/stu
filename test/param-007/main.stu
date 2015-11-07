@@ -1,0 +1,10 @@
+# Whitespace is not allowed in parameters names.  The code contains a
+# tab character between 'x' and 'y'. 
+
+A:  list.13 {
+	touch A
+}
+
+list.${x	y} {
+	touch "list.${x	y}"
+}

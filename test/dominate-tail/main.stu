@@ -1,0 +1,20 @@
+
+#
+# There was a bug in which it was recognized that the first matching
+# rule dominates the second. 
+#
+
+A:  list.hamster.birthday
+{
+    cp list.hamster.birthday A
+}
+
+list.$SPECIES.birthday:
+{
+    touch list.$SPECIES.birthday
+}
+
+list.$SPECIES.$TYPE:  list.$SPECIES.$TYPE
+{
+    exit 1
+}

@@ -1,0 +1,18 @@
+
+#
+# What happens when a decimal integer is used as a parameter name?  Does
+# it clash with the shell's positional parameters?  
+#
+# Answer:  Parameter names must not begin with a digit. 
+#
+
+A:  list.12.34 {
+	cp list.12.34 A
+}
+
+list.$1.$2 {
+	{
+		echo "$1"
+		echo "$2"
+	} >"list.$1.$2"
+}

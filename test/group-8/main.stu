@@ -1,0 +1,7 @@
+
+A: !<B { 
+    [ "$FAIL" ] && exit 1
+    cat >A 
+}
+
+>B: { echo CORRECT }

@@ -1,0 +1,12 @@
+
+# Test:
+#   * build
+#   * rm B C
+#   * build
+#      -> A must not be rebuilt
+
+>A: [[B]] { cat D E  }
+>B:       { echo C   }
+>C:       { echo D E }
+>D:       { echo ddd }
+>E:       { echo eee }

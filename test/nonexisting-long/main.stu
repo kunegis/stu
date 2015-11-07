@@ -1,0 +1,10 @@
+
+
+A: B {
+   cp B A
+}
+
+B: alkdjaljqiowmnqxwx {
+   touch B
+}
+

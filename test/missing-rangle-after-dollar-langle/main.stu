@@ -1,0 +1,4 @@
+
+# missing closing ']' after opening '$['
+
+A:  $[B

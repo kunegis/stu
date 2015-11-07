@@ -1,0 +1,9 @@
+
+
+A:  B C D {
+    cat B C D >A
+}
+
+B: {  echo Bee >B }
+C: {  echo Cee >C }
+D: {  echo Dee >D }

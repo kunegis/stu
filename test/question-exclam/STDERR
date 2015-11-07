@@ -1,0 +1,3 @@
+main.stu:3:7: declaration of existence only dependency with '!'
+main.stu:3:4: clashes with declaration of optional dependency with '?'
+main.stu:3:9: in declaration of dependency 'B'

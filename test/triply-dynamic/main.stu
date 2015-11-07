@@ -1,0 +1,8 @@
+
+# Triply dynamic dependency.
+
+A:  [[[B]]] { cp E A   }
+>B          { echo C   }
+>C          { echo D   }
+>D          { echo E   }
+>E          { echo eee }

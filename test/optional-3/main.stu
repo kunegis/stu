@@ -1,0 +1,10 @@
+
+# Optional dependency that does exist and does not have a rule.
+# 'B' must exist when this test is invoked. 
+# B is not modified.
+
+A: ?B { 
+	[ -r B ] || exit 1
+	cp B A
+}
+

@@ -1,0 +1,39 @@
+
+#
+# When a command is interrupted or fails before it has started to create
+# its file, do not remove the previously existing target file. 
+#
+
+data.$NAME:  list.$NAME
+{
+    cp list.$NAME data.$NAME
+}
+
+list.A:  X
+{
+    exit 1
+}
+
+list.B:  X
+{
+    echo foo >list.B
+    exit 1
+}
+
+list.C:  X
+{
+    sleep 2222
+    exit 1
+}
+
+list.D:  X
+{
+    echo foo >list.D
+    sleep 2222
+    exit 1
+}
+
+X: 
+{
+    echo xxx >X
+}

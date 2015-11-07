@@ -1,0 +1,7 @@
+
+# File that has no command but is older than its
+# dependencies:  this must not happen, and a warning is output by Stu
+# in that case. 
+
+A:  B;
+

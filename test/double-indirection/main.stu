@@ -1,0 +1,14 @@
+
+# Double indirection
+
+A: [[B]] 
+{
+	cat E F >A
+}
+
+>B { echo C D }
+>C { echo E }
+>D { echo F }
+>E { printf CORR }
+>F { echo ECT }
+

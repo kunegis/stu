@@ -1,0 +1,12 @@
+
+# * stu:  C is not built
+# * echo X >C
+# * stu:  X is built; C is not rebuilt; A is rebuilt
+
+A: [?C] { touch A }	
+
+E { touch E } 
+
+X { touch X }
+
+C { exit 1 }

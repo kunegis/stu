@@ -1,0 +1,5 @@
+
+# Check recursive %include in the case that different filenames refer to
+# the same files, e.g. using "../", etc. 
+
+%include xxx/../main.stu

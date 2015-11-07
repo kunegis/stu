@@ -1,0 +1,12 @@
+
+#
+# Two parameters cannot be contiguous.
+#
+
+A:  list.ab {
+    cp list.ab A
+}
+
+list.$X$Y: {
+	echo ERROR >"list.$X$Y"
+}

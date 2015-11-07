@@ -1,0 +1,16 @@
+
+#
+# The stronger, second dependency must be honoured. 
+#
+
+A:   B [B] {
+	cp C A
+}
+
+B: {
+	echo C >B
+}
+
+C {
+	echo CORRECT >C
+}

@@ -1,0 +1,8 @@
+
+# File that has no command but dependencies does not exist although its
+# dependencies are up-to-date:  this is a logical error; output an
+# error. 
+
+A:  b;
+
+# 'b' exists

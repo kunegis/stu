@@ -1,0 +1,18 @@
+
+# A two-parameter rule may dominate a one-parameter rule. 
+
+A: list.1.2
+{
+	cp list.1.2 A
+}
+
+list.$NAME
+{
+	# ERROR
+	exit 1
+}
+
+list.$a.$b
+{
+	echo CORRECT >"list.$a.$b"
+}

@@ -1,0 +1,16 @@
+
+# Don't carry over variables from file target
+
+A: list.B {
+	# $X must not be set
+	[ -z "$X" ] || {
+		echo 'wrong value'
+		exit 1
+	}
+
+	cp list.B A
+}
+
+list.$X {
+	echo $X >list.$X
+}

@@ -1,0 +1,7 @@
+
+# Make sure the temporary file 'A' is correctly removed. 
+
+>A {
+	echo Hello
+	exit 1
+}

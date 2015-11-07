@@ -1,0 +1,34 @@
+#! /bin/sh
+
+rm -f ?
+
+#
+# Build for the first time
+#
+
+echo FIRST RUN
+
+../../stu || exit 1
+
+if ! test -h W ; then
+    echo >&2 "*** 'W' is not a symbolic link"
+    exit 1
+fi
+
+#
+# Update 'D'
+#
+
+sleep 2
+
+touch D
+
+#
+# Build for a second time
+#
+
+echo SECOND RUN
+
+../../stu || exit 1
+
+exit 0

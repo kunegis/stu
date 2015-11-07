@@ -1,0 +1,6 @@
+
+@all:  A B C;
+
+A: { echo CORRECT >A }
+B: { echo bbb >B }
+C: { echo ccc >C }

@@ -1,0 +1,7 @@
+
+# Correctly show both places of the conflicting input files.
+
+A: (<B) (<C) { touch A }
+
+B { touch B }
+C { touch C }

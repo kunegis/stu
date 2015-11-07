@@ -1,0 +1,12 @@
+
+#
+# The 'instantiated as' error message:  for phonies, there is a '@'
+# missing in the quoted instantiated name. 
+#
+
+A:  @list.X
+{
+	cp B A
+}
+
+@list.$NAME:  @list.$NAME;

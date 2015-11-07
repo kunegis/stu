@@ -1,0 +1,15 @@
+#
+# Cycle of length two.
+#
+
+A:  B {
+	cp B A
+}
+
+B: C {
+	cp C B
+}
+
+C: B {
+	cp B C
+}

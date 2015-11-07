@@ -1,0 +1,9 @@
+
+#
+# There is an error produced when a command does not build its target. 
+#
+
+A: {
+   # This rule does not build the file "A"
+   echo la la la la la
+}

@@ -1,0 +1,4 @@
+
+# Empty brackets do nothing. 
+
+A:  []  { touch A }  

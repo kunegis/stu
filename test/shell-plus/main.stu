@@ -1,0 +1,12 @@
+
+# Is '-x' correctly passed as a command, or will '-x' be interpreted as
+# an option by the shell? 
+
+# Solution:  include '--' after '-c'.  Is that POSIX-compliant?  Do it
+# only when the command starts with '-' or '+'. 
+
+# '+x' must be interpreted by the shell as a command which is not in the
+# path, which will make the shell exit with code 127.  If the '+x' is
+# interpreted as another option, the shell will fail due to a missing
+# argument to '-c', giving another exit code that 127. 
+A {+x}

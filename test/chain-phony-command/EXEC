@@ -1,0 +1,17 @@
+#! /bin/sh
+
+echo ../../stu
+../../stu >list.out 2>list.err 
+exitcode="$?"
+
+if [ "$exitcode" != 0 ]; then
+    echo >&2 "$0:  *** stu error"
+    exit 1
+fi
+
+if ! fgrep CORRECT list.out ; then
+    echo >&2 "$0:  *** output does not contain 'CORRECT'"
+    exit 1
+fi
+
+exit 0

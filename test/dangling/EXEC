@@ -1,0 +1,31 @@
+#! /bin/sh
+
+doo() { echo "$@" ; "$@" ; }
+
+doo rm -f ?
+
+doo ln -s W B
+
+echo ../../stu 
+../../stu >list.out 2>list.err
+exitcode="$?"
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** invalid exit code"
+	exit 1
+}
+
+echo >&2 STDOUT:
+cat >&2 list.out
+echo >&2 _______
+echo >&2 STDERR:
+cat >&2 list.err
+echo >&2 _______
+
+grep -qF 'Executing B' list.out || {
+	echo >&2 "*** invalid output"
+	exit 1
+}
+
+doo rm -f ?
+
+exit 0

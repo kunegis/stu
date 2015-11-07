@@ -1,0 +1,12 @@
+
+# Check that updating a *.h file makes the main target be rebuilt.
+
+A: @files
+{
+	cat BBB >A
+}
+
+@files:  BBB;
+
+# 'file' must already exist
+

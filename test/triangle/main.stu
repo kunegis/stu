@@ -1,0 +1,17 @@
+
+#
+# The file 'file' exists before invocation. 
+#
+
+A:  
+	B file
+{
+    cat file B >A
+}
+
+B:  
+	file 
+{
+    cp file B
+}
+

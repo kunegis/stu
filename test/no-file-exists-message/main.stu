@@ -1,0 +1,11 @@
+
+# Test that we don't get a superflous 'file exists but has no rule for
+# it' message. 
+
+A: file 
+{
+	cp file A
+}
+
+# The file 'file' must exist
+

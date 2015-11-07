@@ -1,0 +1,44 @@
+#! /bin/sh
+#
+# We must have an own EXEC file here because the default text mechanism
+# executes the test a second time, and checks that "Noting to be done"
+# is output.  This is not the case however, since because the file 'B'
+# has a modification time in the future, 'A' always has to be rebuilt
+# (except if we wait until B's timestamp has passed.)
+#
+
+rm -f ?
+
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != 0 ] ; then
+    echo >&2 "*** Exit code not zero"
+    exit 1
+fi
+
+if ! fgrep "Warning: 'B' has modification time in the future" list.err ; then
+    echo >&2 "*** Missing warning about future timestamp of 'B'"
+    exit 1
+fi
+
+# Execute again:  The warning must still be output.
+
+sleep 2
+
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != 0 ] ; then
+    echo >&2 "*** Exit code not zero"
+    exit 1
+fi
+
+if ! fgrep "Warning: 'B' has modification time in the future" list.err ; then
+    echo >&2 "*** Missing warning about future timestamp of 'B'"
+    exit 1
+fi
+
+rm -f ?
+
+exit 0

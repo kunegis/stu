@@ -1,0 +1,13 @@
+
+# Test that the replacement code for variables (which were removed in
+# Version 1) works. 
+
+@all:  A; 
+
+V: { echo d e f CORRECT x y z >V }
+
+A: 
+	$[V]
+{
+    echo $V >A
+}

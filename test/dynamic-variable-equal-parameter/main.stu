@@ -1,0 +1,19 @@
+
+#
+# Equal sign in dynamic variable is not allowed. 
+#
+
+A:  'list.X='
+{
+    echo aaa >A
+}
+
+list.$NAME:  $[data.$NAME]
+{
+    echo lll >"list.$NAME"
+}
+
+data.$NAME:
+{
+    echo foo >"data.$NAME"
+}

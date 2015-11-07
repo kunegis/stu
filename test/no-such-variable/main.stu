@@ -1,0 +1,11 @@
+
+#
+# No rule for the given variable
+# 
+
+A:  $KSJDHKAJSDH 
+{
+	touch A
+}
+
+

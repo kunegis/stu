@@ -1,0 +1,16 @@
+
+#
+# When a dependency file does not exist and -k is used, the build must
+# continue.  
+#
+# When called with -k, the following must build the file 'B'. 
+#
+
+A: nonexistingfile B {
+   cat nonexistingfile B >A
+}
+
+B {
+  echo CORRECT >B
+}
+

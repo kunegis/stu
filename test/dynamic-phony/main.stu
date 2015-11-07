@@ -1,0 +1,9 @@
+
+# Dynamic dependency cannot be a phony.  This must produce a syntax
+# error. 
+
+A:  [@B] {
+	touch A
+}
+
+@B { exit 0 }

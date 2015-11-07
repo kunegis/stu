@@ -1,0 +1,11 @@
+
+# Stu should return an error because A was not built. 
+
+
+A: B;
+
+B:
+{
+    touch B
+    # but don't generate A
+}

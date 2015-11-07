@@ -1,0 +1,20 @@
+
+#
+# Parametrized dynamics. 
+#
+
+A:  x.77.c.data {
+	cp x.77.c.data A
+}
+
+x.$Q.c.data:  [x.$Q.dep.data] {
+	cat list.a.$Q list.b.$Q >x.$Q.c.data
+}
+
+x.$Q.dep.data {
+	echo list.a.$Q list.b.$Q >x.$Q.dep.data
+}
+
+list.$X.$Q: {
+	echo $X-CORRECT-$Q >list.$X.$Q
+}

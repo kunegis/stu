@@ -1,0 +1,17 @@
+
+#
+# Dynamic dependencies allow spaces between the angle brackets and the
+# filename. 
+#
+
+A: [ B ] {
+   cp C A
+}
+
+B {
+  echo C >B
+}
+
+C {
+  echo Cee >C
+}

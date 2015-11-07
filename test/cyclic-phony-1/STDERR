@@ -1,0 +1,1 @@
+main.stu:4:8: target must not depend on itself: @all depends on @all

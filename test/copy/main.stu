@@ -1,0 +1,6 @@
+
+# The first rule should just copy 'B' to 'A'.
+
+>A : <B { cat }
+
+>B { echo CORRECT }

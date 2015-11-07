@@ -1,0 +1,6 @@
+
+# Loop must be detected.  Maybe have a special message type for
+# length-zero loops. 
+
+A: [B] { touch A }
+>B:    { echo '[B]' }

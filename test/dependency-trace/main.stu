@@ -1,0 +1,20 @@
+
+#
+# When a dependency cannot be built, include the full trace
+# of that dependency, e.g., where the dependency comes from exactly
+# (including from which dynamic dependency, and through which parameter
+# instantiation).  Make sure that in all traces, the dependencies are
+# shown, not the full rule.  
+#
+
+A: B {
+    cp B A
+}
+
+B: C {
+    cp C B
+}
+
+C:  nonexisting {
+	cp nonexisting C
+}

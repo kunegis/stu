@@ -1,0 +1,4 @@
+
+A: [B] { touch A }
+B: [C] { touch B }
+C: [A] { touch C }

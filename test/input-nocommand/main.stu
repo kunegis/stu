@@ -1,0 +1,8 @@
+
+# The erroneous rule for 'B' must result in an error message.
+
+A: { touch A }
+
+# Input redirection is not allowed when a rule has no command. 
+B:  <C;
+

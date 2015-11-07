@@ -1,0 +1,11 @@
+
+
+# Invalid parameter in dependency
+
+A:  list.1.2.3.data {
+      cp list.1.2.3.data >A
+}
+
+list.$X.$Y.$Z.data:     data.$Q {
+	echo >list.$X.$Y.$Z.data
+}

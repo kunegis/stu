@@ -1,0 +1,10 @@
+
+#
+# Message 'target was not built by command':  the trace should point to
+# the command, not the target.  The place should be the first
+# non-whitespace character of the command. 
+#
+
+A: {
+	echo HELLO
+}

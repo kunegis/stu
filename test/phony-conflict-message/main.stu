@@ -1,0 +1,7 @@
+
+# Check that '@abcde' is quoted correctly in the error message. 
+
+A:  @abcde { touch A }
+
+@a${X}cde { }
+@abc${Y}e { }

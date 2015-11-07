@@ -1,0 +1,13 @@
+
+# In this example, we assume the B is always a symlink to W.  Even
+# though the file A is newer than the symlink B, the command for B is
+# executed because W does not exist. 
+
+A:  B {
+	cp B A
+}
+
+B {
+	echo 'Executing B'
+	echo CORRECT >B
+}

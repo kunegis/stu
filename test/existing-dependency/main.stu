@@ -1,0 +1,14 @@
+
+#
+# Test that "...but the file exists" is not output for the existing file
+# "file".  
+#
+
+A:  B {
+    cp B A
+}
+
+B : file  {
+       cat   file  >B
+}
+

@@ -1,0 +1,13 @@
+
+# * 'A' exists, but no 'B'
+# * stu
+#     * 'B' is built
+#     * while 'A' is built, stu is interrupted
+#         * 'A' is not removed by Stu, even though the command failed.
+#           (Because 'A' is still the old file.)
+
+A: B {
+	sleep 99
+}
+
+>B {}

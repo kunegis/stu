@@ -1,0 +1,1 @@
+main.stu:12:15: target must not depend on itself: @list.${NAME} instantiated as @list.X depends on @list.${NAME} instantiated as @list.X

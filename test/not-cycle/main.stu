@@ -1,0 +1,15 @@
+
+#
+# This is not a cycle, but would be found to be a cycle of file and
+# phony objects are confused. 
+#
+
+A:  @A {
+    cat B >A
+}
+
+@A:  B;
+
+B: {
+   echo bbb >B
+}

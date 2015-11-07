@@ -1,0 +1,15 @@
+
+# A dynamic dependency cannot contain parametrized dependencies.
+# This should produce an error. 
+
+A: [B] {
+	echo ERROR >A
+}
+
+B: {
+	echo 'C.$NAME' >B
+}
+
+C.$NAME: {
+	echo ERROR >"C.$NAME"
+}

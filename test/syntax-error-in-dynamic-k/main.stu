@@ -1,0 +1,24 @@
+
+# Test this also with -k. 
+
+# Syntax error in generated dynamics
+
+A: [B1] [B2] {
+	cat C1 C2 >A
+}
+
+B1 {
+   echo C1 : >B1
+}
+
+B2 {
+   echo C2   >B2
+}
+
+C1 {
+   echo ERROR >C1
+}
+
+C2 {
+   echo CORRECT >C2
+}

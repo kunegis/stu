@@ -1,0 +1,14 @@
+
+>A: [B C]
+{
+	cat B1 B2 C1 C2
+}
+
+>B { echo B1 B2 }
+>C { echo C1 C2 }
+
+>B1 { printf CO }
+>B2 { printf RR }
+>C1 { printf EC }
+>C2 { echo T }
+

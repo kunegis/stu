@@ -1,0 +1,11 @@
+
+# A same parameter cannot appear multiple time in a target.  (It can
+# appear multiple times in a dependency though). This example must fail. 
+
+A:  aaa1bbb1ccc {
+	cp aaa1bbb1ccc A
+}
+
+aaa${A}bbb${A}ccc: {
+	touch aaa${A}bbb${A}ccc
+}

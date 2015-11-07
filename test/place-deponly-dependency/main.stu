@@ -1,0 +1,10 @@
+
+# Make sure the error message point to 'B' and not to the '!' before it.  
+
+A: !B {
+	touch A
+}
+
+B: {
+	exit 1
+}

@@ -1,0 +1,10 @@
+
+#
+# When a phony target given as a dependency does not exist, the trace in
+# the error message should point to the "@" sign and not to the
+# beginning of the phony target name. 
+#
+
+A: @B {
+	touch A
+}

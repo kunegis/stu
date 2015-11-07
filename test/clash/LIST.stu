@@ -1,0 +1,18 @@
+
+# Each line is a logical error:  clash between '?' and '!'. 
+
+A:  !? B { touch A }      B { touch B }
+A:  ?! B { touch A }      B { touch B }
+A:  !(? B) { touch A }    B { touch B }
+A:  ?(! B) { touch A }    B { touch B }
+A:  !((? B)) { touch A }  B { touch B }
+A:  ?((! B)) { touch A }  B { touch B }
+A:  !?((B)) { touch A }   B { touch B }
+A:  ?!((B)) { touch A }   B { touch B }
+
+A:  !?[B] { touch A }     >B { echo C }   
+A:  ?![B] { touch A }     >B { echo C }
+
+A:  ![B] { touch A }   >B { echo '?C' } 
+A:  ?[B] { touch A }   >B { echo '!C' } 
+

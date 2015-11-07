@@ -1,0 +1,99 @@
+#! /bin/sh
+
+doo() { echo "$@" ; "$@" ; }
+
+#
+# No options
+#
+
+echo >&2 RUN '(1)'
+
+doo rm -f ?
+
+echo >&2 ../../stu
+../../stu 
+exitcode=$?
+
+if [ $exitcode != 1 ]; then
+    echo >&2 "$: *** Variant without options failed (1)"
+    exit 1
+fi
+
+#
+# With -k 
+#
+
+echo >&2 RUN '(2)'
+
+doo rm -f ?
+ 
+echo >&2 ../../stu -k 
+../../stu -k &
+PID=$!
+
+doo sleep 2
+
+if [ $(ps -fe | grep 74634275 | grep -v grep | wc -l) = 0 ]; then
+    echo >&2 "$0: *** Stu is not running (2)"
+    exit 1
+fi
+
+echo kill -TERM $PID
+kill -TERM $PID  || {
+    echo >&2 "$0: *** Kill (3)"
+    exit 1
+}
+
+doo sleep 1
+
+if [ $(ps -fe | grep 74634275 | grep -v grep | wc -l) != 0 ]; then
+    echo >&2 "$0: *** Stu is still running (4)"
+    exit 1
+fi
+
+#
+# With -j2
+#
+
+echo >&2 RUN '(3)'
+
+doo rm -f ?
+
+echo >&2 ../../stu -j2
+../../stu -j2
+exitcode=$?
+
+if [ $exitcode != 1 ]; then
+    echo >&2 "$: *** Variant without options failed (5)"
+    exit 1
+fi
+
+#
+# With -j2 -k 
+#
+
+echo >&2 RUN '(4)'
+
+doo rm -f ?
+ 
+echo >&2 ../../stu -j2 -k 
+../../stu -j2 -k &
+PID=$!
+
+doo sleep 2
+
+if [ $(ps -fe | grep 74634275 | grep -v grep | wc -l) = 0 ]; then
+    echo >&2 "$0: *** Stu is not running (-j2) (6)"
+    exit 1
+fi
+
+doo kill -TERM $PID
+
+sleep 1
+
+if [ $(ps -fe | grep 74634275 | grep -v grep | wc -l) != 0 ]; then
+    echo >&2 "$0: *** Stu is still running (-j2) (7)"
+    exit 1
+fi
+
+exit 0

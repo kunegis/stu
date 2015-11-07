@@ -1,0 +1,4 @@
+
+# An error in an included file is correctly reported. 
+
+%include j.stu

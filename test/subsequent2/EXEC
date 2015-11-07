@@ -1,0 +1,56 @@
+#! /bin/sh
+
+doo() { echo "$@" ; $@ ; }
+
+doo rm -f ?
+
+echo ../../stu
+../../stu
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** error (a) exit code must be zero"
+	exit 1
+}
+
+[ -e B ] || {
+	echo >&2 "*** error (b) 'B' must exist"
+	exit 1
+}
+
+fgrep -q bbb A || {
+	echo >&2 "*** error (c) 'A' must contain 'bbb'"
+	exit 1
+}
+
+doo sleep 2
+
+echo 'echo ddd >B'
+echo ddd >B
+
+doo sleep 2
+
+echo ../../stu
+../../stu >list.out
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** error (d) exit code must be zero"
+	exit 1
+}
+
+fgrep -q 'cp B A' list.out || {
+	echo >&2 "*** error (e) command for 'A' must be executed"
+	echo "output:"
+	echo ________
+	cat list.out
+	echo ________
+	exit 1
+}
+
+fgrep -q ddd A || {
+	echo >&2 "*** error (f) 'A' must contain 'ddd'"
+	exit 1
+}
+
+exit 0

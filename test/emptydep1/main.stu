@@ -1,0 +1,12 @@
+
+# Dependency file of size >0
+
+
+A:  [B] {
+    echo aaa >A
+}
+
+B: {
+   echo >B
+}
+

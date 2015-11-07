@@ -1,0 +1,5 @@
+
+# This is a syntax error
+
+A: $[<!B] { touch A }
+B {touch B}

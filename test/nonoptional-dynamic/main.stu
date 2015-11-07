@@ -1,0 +1,12 @@
+
+# the '?' is not applied to 'B'; i.e., 'B' is actually created, but 'C'
+# is not. 
+
+A: ?[B] { 
+	[ -e B ] || exit 1
+	touch A 
+}
+
+>B:     { echo C  }
+
+C:      { exit 1  }

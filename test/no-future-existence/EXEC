@@ -1,0 +1,28 @@
+#! /bin/sh
+
+rm -f A B
+
+# Create B
+echo $RANDOM >B
+now="$(LC_ALL=C date)"
+year="$(echo $now | sed -re 's,^.* ([0-9]+)$,\1,')"
+year_future="$(expr 2 + $year)"
+date="$year_future-01-01"
+touch B -d "$date"
+
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != "0" ]; then
+    echo >&2 "*** wrong exit code"
+    exit 1
+fi
+
+if cat list.out list.err | grep -i future ; then
+    echo >&2 "*** invalid error message"
+    exit 1
+fi
+
+rm -f A B
+
+exit 0

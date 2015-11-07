@@ -1,0 +1,8 @@
+
+# Try with both -j2 and not. 
+
+A: ?B B {
+	cp B A
+}
+
+B{ sleep 1 ; echo >B CORRECT ; }

@@ -1,0 +1,5 @@
+
+# Not allowed
+
+A:  [(@B)] { touch A }
+@B { exit 0 }

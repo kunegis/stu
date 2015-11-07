@@ -1,0 +1,69 @@
+#! /bin/sh
+
+rm -f ?
+
+#
+# Step 1:  build A:  everything is built
+#
+
+../../stu 
+exitcode="$?"
+
+if [ "$exitcode" != 0 ] ; then
+    echo >&2 "*** wrong exit code"
+    exit 1
+fi
+
+if [ ! -r A -o ! -r B -o ! -r C ] ; then
+    echo >&2 "*** A/B/C were not built"
+    exit 1
+fi
+
+#
+# Step 2:  rm B; stu B:  B is re-built
+#
+
+rm -f B
+
+sleep 2
+
+../../stu B
+exitcode="$?"
+
+if [ "$exitcode" != 0 ] ; then
+    echo >&2 "*** wrong exit code"
+    exit 1
+fi
+
+if [ ! -r B ] ; then
+    echo >&2 "*** B was not rebuilt"
+    exit 1
+fi
+
+#
+# Step 3:  stu A:  A is rebuilt.
+#
+
+sleep 2
+
+../../stu A >list.out
+exitcode="$?"
+
+if [ "$exitcode" != 0 ] ; then
+    echo >&2 "*** wrong exit code"
+    exit 1
+fi
+
+if [ A -ot B ] ; then
+    echo >&2 "*** A is older than B"
+    exit 1
+fi
+
+if fgrep -qi 'Nothing to be done' list.out ; then
+    echo >&2 "*** must not output 'Nothing to be done'"
+    exit 1
+fi
+
+
+
+exit 0

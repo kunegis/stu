@@ -1,0 +1,16 @@
+
+# Parameter
+
+A:  A.abc.xyz {
+    cp A.abc.xyz A
+}
+
+A.$DATASET.$METHOD:  $DATASET.data 
+{
+	echo blablabla $METHOD with dataset $DATASET >A.$DATASET.$METHOD
+}
+
+abc.data: {
+	echo BIG DATA >abc.data
+}
+

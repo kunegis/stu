@@ -1,0 +1,19 @@
+
+#
+# * stu A
+# * rm C
+# * stu A
+# ** B is not rebuilt
+#
+
+A: B [C] {
+   cp B A
+}
+
+C: {
+   echo B >C
+}
+
+B: {
+   echo Hello >B
+}

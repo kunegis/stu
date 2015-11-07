@@ -1,0 +1,36 @@
+
+#
+# Test -jN -k when targets fail.
+#
+
+# In the following all targets list.$N will work, except list.2,
+# which will fail.  
+
+# Without arguments:	fail and stop at N = 2
+# With -k:				fail at N = 2, continue, output fail message at the end
+# With -j:				fail at N = 2 and stop, but further ones have been built
+# With -k -j:			fail at N = 2 and continue; output error message at the end 
+
+@all:  [files];
+
+N:  { echo 3 > N}
+
+files:  $[N]
+{
+    seq 1 $N | sed -re 's,^,list.,' >files
+}
+
+list.$N: 
+{
+    echo $N-CORRECT-$N >list.$N
+}
+
+list.2:
+{
+    sleep 1
+    exit 1
+}
+
+@clean {
+    rm -f files list.*
+}

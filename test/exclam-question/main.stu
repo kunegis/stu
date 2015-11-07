@@ -1,0 +1,5 @@
+
+# Cannot mix '?' and '!'.  This must give a logical error. 
+
+A: ! (? B) { touch A }
+B { touch B }

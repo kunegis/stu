@@ -1,0 +1,7 @@
+main.stu:8:5: no rule to build 'X', needed by 'G'
+F:1:1: 'G' is needed by [F]
+main.stu:6:5: [F] is needed by 'E'
+D:1:1: 'E' is needed by [D]
+main.stu:4:5: [D] is needed by 'C'
+main.stu:3:5: 'C' is needed by 'B'
+main.stu:2:5: 'B' is needed by 'A'

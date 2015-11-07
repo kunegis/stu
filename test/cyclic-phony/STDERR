@@ -1,0 +1,2 @@
+main.stu:4:8: cyclic dependency: @all depends on 'A'
+main.stu:6:5: 'A' depends on @all

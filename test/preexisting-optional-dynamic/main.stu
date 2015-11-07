@@ -1,0 +1,8 @@
+
+# Execute with 'C' already existing 
+
+A: [?preexisting] {
+	touch A
+}	
+
+preexisting { touch preexisting } 

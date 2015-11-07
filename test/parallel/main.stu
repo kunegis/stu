@@ -1,0 +1,45 @@
+
+
+A: B C D E F G H I J K {
+   cat B C D E F G H I J K >A
+}
+
+B: {
+   echo abebibobu >B
+}
+
+C: {
+   echo acecicocu >C
+}
+
+D: {
+   echo adedidodu >D
+}
+
+E: {
+   echo aeeeieoeu >E
+}
+
+F: {
+   echo afefifofu >F
+}
+
+G: {
+   echo agegigogu >G
+}
+
+H: {
+   echo ahehihohu >H
+}
+
+I: {
+   echo aieiiioiu >I
+}
+
+J: {
+   echo ajejijoju >J
+}
+
+K: {
+   echo akekikoku >K
+}

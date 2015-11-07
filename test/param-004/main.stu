@@ -1,0 +1,18 @@
+
+#
+# Test the new parameter syntax.
+#
+
+%version 1.0
+
+A: list.7 {
+	if [ "$(cat list.7)" != "7" ] ; then
+		echo >&2 "*** invalid content"
+		exit 1
+	fi
+	cp list.7 A
+}
+
+list.$N {
+	echo "$N" >"list.$N"
+}

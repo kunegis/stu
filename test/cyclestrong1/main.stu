@@ -1,0 +1,8 @@
+
+#
+# A strong cycle of length one, i.e., a target depending on itself. 
+#
+
+A:  A {
+    cp A A
+}

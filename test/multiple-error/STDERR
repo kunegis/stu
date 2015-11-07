@@ -1,0 +1,6 @@
+D: Permission denied
+main.stu:18:2: error executing command for 'B'
+main.stu:13:5: 'B' is needed by 'A'
+main.stu:27:2: command for 'C' failed with exit code 1
+main.stu:13:7: 'C' is needed by 'A'
+../../stu: *** Targets not remade because of errors

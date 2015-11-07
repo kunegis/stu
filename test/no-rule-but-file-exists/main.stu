@@ -1,0 +1,12 @@
+
+#
+# When a target is built for which no rule exists, but the file is
+# present, Stu succeeds, but outputs a special message.  
+#
+
+# This file doesn't have a target for code.h 
+
+A {
+  echo aaa >A
+}
+

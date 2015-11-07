@@ -1,0 +1,20 @@
+
+A:  [B]
+{
+	cp D A
+}
+
+B:
+{
+	echo [C] >B
+}
+
+C: 
+{
+	echo D >C
+}
+
+D:
+{
+	echo CORRECT >D
+}

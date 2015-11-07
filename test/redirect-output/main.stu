@@ -1,0 +1,6 @@
+
+# Output of the command is redirected into the target file using the '>'
+# operator.  
+
+>A { echo CORRECT }
+

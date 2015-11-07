@@ -1,0 +1,13 @@
+
+# 
+# There are multiple ways of parsing this. 
+#
+
+A:  list.B.aaaaaaaaaaaaaaaaaaaaaax {
+	cp list.B.aaaaaaaaaaaaaaaaaaaaaax A
+}
+
+list.B.a${X}a${Y}a${Z}ax: {
+	echo $X-$Y-$Z >list.B.a${X}a${Y}a${Z}ax
+}
+

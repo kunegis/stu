@@ -1,0 +1,13 @@
+
+
+#
+# Two rules for a single target.
+#
+
+A:  {
+    echo ONE >A
+}
+
+'A': {
+   echo TWO >A
+}

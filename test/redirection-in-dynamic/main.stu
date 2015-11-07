@@ -1,0 +1,6 @@
+# Can doubly dynamic dependencies contain input redirections?  No, this
+# must fail. 
+
+A: [[B]] { tr a-z A-Z }
+>B { echo '<C' }
+>C { echo correct }

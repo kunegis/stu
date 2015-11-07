@@ -1,0 +1,10 @@
+#! /bin/sh
+
+set -e
+rm -f ?
+../../stu A 
+[ -e A ] 
+fgrep -q CORRECT A
+touch B
+FAIL=1 ../../stu A | fgrep -q "Nothing to be done"
+

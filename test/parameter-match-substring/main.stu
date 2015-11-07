@@ -1,0 +1,17 @@
+
+# Must work
+
+A:  list.simple_b
+{
+	cp list.simple_b A
+}
+
+list.${NAME}
+{
+	echo ERROR >list.${NAME}
+}
+
+list.simple_${NAME}
+{
+	echo CORRECT >list.simple_${NAME}
+}

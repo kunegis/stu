@@ -1,0 +1,11 @@
+
+# Syntax error in generated dynamics
+
+A: [B] {
+   cat C >A
+}
+
+B: {
+   echo : >B
+}
+

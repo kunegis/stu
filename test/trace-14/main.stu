@@ -1,0 +1,8 @@
+
+A:  B  { touch A }
+B:  C  { touch B }
+C: [D] { touch C }
+D:     { echo E >D }
+E: [F] { touch E }
+F:     { echo G >F }
+G:  X  { touch G }

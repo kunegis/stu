@@ -1,0 +1,10 @@
+
+# '=' is not allowed in parameters names.
+
+A:  list.13 {
+	touch A
+}
+
+list.${x=y} {
+	touch "list.${x=y}"
+}

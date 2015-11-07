@@ -1,0 +1,6 @@
+
+# Invalid version number syntax
+
+%version 1.1.1.1
+
+A {touch A}

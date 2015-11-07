@@ -1,0 +1,13 @@
+
+#
+# Check that files and phonies really use two distinct namespaces. 
+#
+
+A:  @B
+{
+    cp B A
+}
+
+B {
+    echo bbb >B
+}

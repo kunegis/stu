@@ -1,0 +1,4 @@
+
+# Test:  stu '@ do' must fail. 
+
+@do:  { echo DOO }

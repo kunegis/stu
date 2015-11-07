@@ -1,0 +1,35 @@
+
+#
+# To be started with -k, and with -k -j2.
+#
+# Must continue so that C and E are built. 
+#
+
+A: B C D E F {
+   cat B C D E F >A
+}
+
+B: {
+   sleep 1
+   cat skjafhsoewiuowi >B
+}
+
+C: {
+   sleep 2
+   echo Cee >C
+}
+
+D: {
+	sleep 1
+	cat skjfdksjhfsjkhfdsjkfh >D
+}
+
+E: {
+   sleep 2
+   echo Eeee >E
+}
+
+F: {
+   cat sldfslkjfdkllsjdf >F
+}
+

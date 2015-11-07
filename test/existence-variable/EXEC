@@ -1,0 +1,20 @@
+#! /bin/sh
+
+set -e 
+
+doo() { echo >&2 "$@" ; "$@" ; }
+
+doo rm -f ? list.*
+
+doo ../../stu 
+
+grep -qF CORRECT A
+
+doo sleep 2
+doo touch B
+
+doo ../../stu >list.out
+
+grep -qF 'Nothing to be done' list.out
+
+doo rm -f ? list.*

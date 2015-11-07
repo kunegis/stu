@@ -1,0 +1,7 @@
+
+# A redirect dynamic dependency is useful e.g. for building tarballs. 
+
+>A: [<B] { xargs cat }
+>B: { echo C D }
+>C { printf COR }
+>D { echo RECT }

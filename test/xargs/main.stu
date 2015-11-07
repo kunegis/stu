@@ -1,0 +1,24 @@
+#
+# Input redirection from within a dynamic dependency.
+#
+
+# To build 'A', we use the list of files in standard input, as well as
+# use it as a dynamic dependency 
+>A:  [<list.files] {
+	# We use 'LC_ALL=C' in order to get the standard C locale, so we can
+	# test for the string 'regular file' which should be contained in
+	# the output. 
+	LC_ALL=C xargs stat
+}
+
+# List of files 
+>list.files { echo B C D E F G H }
+
+>B {echo bbb}
+>C {echo ccc}
+>D {echo ddd}
+>E {echo eee}
+>F {echo fff}
+>G {echo ggg}
+>H {echo hhh}
+

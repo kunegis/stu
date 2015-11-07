@@ -1,0 +1,7 @@
+
+A: ((B)) 
+{
+	cp B A
+}
+
+>B { echo CORRECT }

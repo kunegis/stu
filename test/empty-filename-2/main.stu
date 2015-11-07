@@ -1,0 +1,8 @@
+
+# An empty filename
+
+A: ""''
+{
+	touch A
+}
+

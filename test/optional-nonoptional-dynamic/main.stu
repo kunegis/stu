@@ -1,0 +1,13 @@
+
+# 'B' must be built.
+
+# Solution:  the [B]->B link must be re-added to the dependencies of
+# [B].  
+
+A:  [?B] [B] 
+{ 
+	[ -e B ] || exit 1
+	touch A 
+}
+
+B { touch B }

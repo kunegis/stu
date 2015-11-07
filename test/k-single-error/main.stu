@@ -1,0 +1,18 @@
+
+# Execute with -k.  Both error messages must show a different location
+# for D.  
+
+A:  B C 
+{
+	cat B C >A
+}
+
+B: D {
+	cp D B
+}
+
+C: D {
+	cp D C
+}
+
+# No rule for D

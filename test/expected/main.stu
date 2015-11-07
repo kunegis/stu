@@ -1,0 +1,3 @@
+# Error at 'B':  expected command, ':' or ';'. 
+
+A B { touch A }

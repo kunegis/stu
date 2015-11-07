@@ -1,0 +1,19 @@
+
+#
+# Test the $CFLAGS idiom, i.e. using a existence-only dependency to make
+# sure programs are *not* recompiled just because the flags change.
+# Also, test that variable dependencies are transitive through phonies
+# without commands. 
+#
+
+@all: a b;
+
+a: a.c @flags { echo Compiling ; echo $CFLAGS $LDFLAGS >a }
+b: b.c @flags { echo Compiling ; echo $CFLAGS $LDFLAGS >b }
+
+@flags:  $[!CFLAGS] $[!LDFLAGS];
+
+CFLAGS: { echo -g -Wall >CFLAGS }
+LDFLAGS: { echo -L >LDFLAGS }
+
+$NAME.c: { echo ballsdlakjds >$NAME.c }

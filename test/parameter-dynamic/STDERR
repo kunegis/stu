@@ -1,0 +1,3 @@
+B:1:3: dynamic dependency [B] must not contain parametrized dependencies
+main.stu:9:1: 'B' is declared here
+main.stu:5:5: [B] is needed by 'A'

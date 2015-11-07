@@ -1,0 +1,2 @@
+main.stu:5:5: no rule to build 'W', needed by 'B'
+main.stu:4:7: [[B]] is needed by 'A'

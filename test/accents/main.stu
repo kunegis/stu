@@ -1,0 +1,19 @@
+
+# Accents can be part of filenames.  In particular, ^ and ` are filename
+# characters, although in most languages, they are not considered
+# letters.
+
+# Note:  Using ` as a letter breaks the syntax highlight for those users
+# that use Bourne Shell syntax highlighting for Stu files. 
+
+A:  ^ {
+	cp '^' A
+}
+
+^: ` {
+	cp '`' '^'
+}
+
+` {
+    echo CORRECT >'`'
+}

@@ -1,0 +1,16 @@
+
+#
+# A dynamic dependency that is not a target, but a preexisting file. 
+#
+
+A: [file]
+{
+    cp C A
+}
+
+# 'file' contains "C"
+
+C: 
+{
+    echo ccc >C
+}

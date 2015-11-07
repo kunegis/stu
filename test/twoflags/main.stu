@@ -1,0 +1,6 @@
+
+# In the error message, correctly point out the places of '?' and '!'. 
+
+A:  ! ( (B) ?(C)) { touch A }
+B {touch B}
+C {touch C}

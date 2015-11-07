@@ -1,0 +1,16 @@
+
+#
+# A dependency consisting *only* of parameters.  This works. 
+#
+
+A:  A.abc.data {
+	cp A.abc.data A
+}
+
+A.${NAME}.data:  ${NAME}${NAME}.data {
+	cp ${NAME}${NAME}.data A.${NAME}.data
+}
+
+abcabc.data {
+	echo CORRECT >abcabc.data
+}

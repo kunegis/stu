@@ -1,0 +1,18 @@
+
+# Must work:  the dominating rule is defined before the dominated rule. 
+
+A:  list.simple_b
+{
+	cp list.simple_b A
+}
+
+list.simple_${NAME}
+{
+	echo CORRECT >list.simple_${NAME}
+}
+
+list.${NAME}
+{
+	echo ERROR >list.${NAME}
+}
+

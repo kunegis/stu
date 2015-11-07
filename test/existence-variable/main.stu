@@ -1,0 +1,9 @@
+
+# The file B counts as an existence-only dependency 
+
+>A:	$[!B]     
+{
+	echo $B
+}
+
+>B { echo CORRECT }

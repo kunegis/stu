@@ -1,0 +1,109 @@
+#! /bin/sh
+
+doo() { echo >&2 "$@" ; "$@" ; }
+
+rmm() { rm -f ? list.* data.* ; }
+
+#
+# (A) On error:  File is not removed because it was not changed 
+#
+
+doo rmm
+doo touch list.A
+doo sleep 2
+
+echo ../../stu data.A 
+../../stu data.A 2>list.err 
+exitcode="$?"
+
+if [ "$exitcode" != "1" ]; then
+    echo >&2 "*** Wrong exit code (A)"
+	echo >&2 "exitcode=$exitcode"
+    exit 1
+fi
+
+[ -r list.err ] || exit 1
+
+if fgrep -i "Removing file" list.err ; then
+    echo >&2 "*** wrong error message (A)"
+    exit 1
+fi
+
+#
+# (B) On error:  File is removed because it was changed
+#
+
+doo rmm
+doo touch list.B
+doo sleep 2
+
+echo ../../stu data.B
+../../stu 2>list.err data.B
+exitcode="$?"
+
+if [ "$exitcode" != "1" ]; then
+    echo >&2 "*** Wrong exit code (B)"
+	echo >&2 "exitcode=$exitcode"
+    exit 1
+fi
+
+if ! fgrep "*** Removing file 'list.B' because command failed" list.err ; then
+    echo >&2 "*** missing error message (B)"
+    exit 1
+fi
+
+#
+# (C) On abort:  File is not removed because it was not changed
+#
+
+doo rmm
+doo touch list.C
+doo sleep 2
+
+echo ../../stu data.C
+../../stu 2>list.err data.C &
+pid="$!"
+
+sleep 1
+
+kill -TERM $pid
+
+wait $pid
+exitcode="$?"
+
+[ -r list.err ] || exit 1
+
+if fgrep -i "Removing file" list.err ; then
+    echo >&2 "*** wrong error message (C)"
+    exit 1
+fi
+
+#
+# (D) On abort:  File is removed because it was changed
+#
+
+doo rmm
+doo touch list.D
+doo sleep 2
+
+echo ../../stu data.D
+../../stu 2>list.err data.D &
+pid="$!"
+
+sleep 1
+
+kill -TERM $pid
+
+wait $pid
+exitcode="$?"
+
+if ! fgrep "*** Removing file 'list.D' because command failed" list.err ; then
+    echo >&2 "*** missing error message (D)"
+    exit 1
+fi
+
+#
+# End
+#
+
+exit 0

@@ -1,0 +1,22 @@
+
+#
+# When an existance-only dependency has to be rebuilt, it does *not*
+# mean the dependent file has to be rebuilt.
+#
+
+#
+# * stu A:  B and A are  built
+# * rm B
+# * stu A:  B is rebuilt, but not A
+#
+
+A: !B
+{
+    ls -l B >A
+    ln -s nonexistingfile W # This will fail when run a second time
+}
+
+B:
+{
+    echo bbb >B
+}

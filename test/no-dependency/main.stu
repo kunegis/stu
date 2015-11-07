@@ -1,0 +1,10 @@
+
+#
+# The colon can be omitted when there are no dependencies. 
+#
+
+A: B {
+   cat B B >A
+}
+
+B { echo blablabla >B }

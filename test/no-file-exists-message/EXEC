@@ -1,0 +1,19 @@
+#! /bin/sh
+
+echo rm -f A
+rm -f A
+
+echo ../../stu
+../../stu >list.out 2>list.err || {
+    echo >&2 "$0:  *** Stu failed"
+    exit 1
+}
+
+[ -r list.out ] || exit 1
+[ -r list.err ] || exit 1
+
+fgrep 'file exists' list.out && exit 1
+fgrep 'file exists' list.err && exit 1
+
+
+exit 0

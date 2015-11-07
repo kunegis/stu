@@ -1,0 +1,24 @@
+#! /bin/sh
+
+rm -f ? list.*
+
+../../stu >list.out
+exitcode="$?"
+[ "$exitcode" = 0 ] || {
+	echo >&2 '*** error (A)'
+	exit 1
+}
+
+[ ! -e A -o -s A ] && {
+	echo >&2 '*** error:  file not empty'
+	exit 1
+}
+
+cmp list.out stdout || {
+	echo >&2 '*** error:  stdout'
+	exit 1
+}
+
+rm -f ? list.*
+
+exit 0

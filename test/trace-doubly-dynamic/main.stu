@@ -1,0 +1,9 @@
+
+# Error message in multiple dynamic dependency
+
+# -> No rule to build 'X', with correct error message
+
+A: [[B]] { touch A }
+>B { echo C }
+>C { echo D }
+D: X { touch D }

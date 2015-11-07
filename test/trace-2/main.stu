@@ -1,0 +1,5 @@
+
+A:  [B] { touch A }
+B:      { echo [C] >B }
+C:  X   { touch C }
+

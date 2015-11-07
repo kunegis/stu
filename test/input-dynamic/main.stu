@@ -1,0 +1,9 @@
+
+# Error.
+#
+# We *could* define this to mean that all files given within B as
+# catenated as input, but that would be much too complicated.  Also it
+# would require starting extra processes. 
+
+A:  <[B] { touch A }
+B { touch B }

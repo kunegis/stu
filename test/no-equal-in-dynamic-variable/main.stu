@@ -1,0 +1,14 @@
+
+#
+# Names of dynamic variable dependencies cannot contain the equal sign. 
+#
+
+A:  $['B=B']
+{
+	echo >A
+}
+
+'B=B'
+{
+	echo ERROR >'B=B'
+}

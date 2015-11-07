@@ -1,0 +1,12 @@
+#
+# Make [...] be syntactically like parentheses, which allow multiple filenames
+#
+
+A:  [ B C ] { cat $(cat B C) >A }
+
+>B { echo D E }
+>C { echo F G }
+>D { printf C }
+>E { printf O }
+>F { printf R }
+>G { echo RECT }

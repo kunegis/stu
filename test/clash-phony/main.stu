@@ -1,0 +1,9 @@
+
+# Error:  '?' and '!' don't mix.  Here, '?' is transitive through the
+# phony @x.  
+
+A:  ?@x { touch A }
+
+@x:  !B;
+
+B { touch B }

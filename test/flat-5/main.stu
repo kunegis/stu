@@ -1,0 +1,35 @@
+
+
+
+# Variables get carried over phonies without command.
+
+A:  @b @c {
+
+	# Here, $bbb must be defined but not $ccc
+
+	if [ -z "$B" ] ; then
+		echo >&2 '$B must not be empty'
+		exit 1
+	fi
+	
+	if [ ! -z "$C" ] ; then
+		echo >&2 '$C must be empty'
+		exit 1
+	fi
+
+	echo CORRECT >A
+}
+
+@b:  $[B];
+
+@c:  $[C] {
+	echo 'Hello, @c'
+}
+
+B: {
+	echo 1 >B
+}
+
+C: {
+	echo 1 >C
+}

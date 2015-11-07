@@ -1,0 +1,8 @@
+
+# Optional dependency that does not exist and does not have a rule.  
+# B is not built. 
+
+A: ?B {
+	[ -e B ] && exit 1
+	touch A
+}

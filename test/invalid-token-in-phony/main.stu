@@ -1,0 +1,4 @@
+
+# invalid token after '@' in phony declaration. 
+
+@:

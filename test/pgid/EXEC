@@ -1,0 +1,32 @@
+#! /bin/sh
+
+doo() { echo "$@" ; "$@" ; }
+
+doo rm -f X Y Z
+
+echo >&2 ../../stu -j2 '&'
+../../stu -j2 &
+PID=$!
+
+doo sleep 2
+
+if [ $(ps -fe | grep 2837415 | grep -v grep | wc -l) = 0 ]; then
+    echo >&2 "$0:  *** stu is not running"
+    exit 1
+fi
+
+echo kill -TERM $PID
+kill -TERM $PID  || {
+    echo >&2 "$0:  *** kill"
+    exit 1
+}
+
+doo sleep 1
+
+if [ $(ps -fe | grep 2837415 | grep -v grep | wc -l) != 0 ]; then
+    echo >&2 "$0:  *** sleep is still running"
+    ps -fe | grep 2837415
+    exit 1
+fi
+
+doo rm -f ?

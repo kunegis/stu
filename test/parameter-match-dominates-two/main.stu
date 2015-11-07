@@ -1,0 +1,25 @@
+
+# One rule dominates two others:  must work. 
+
+A: list.123456789
+{
+	cp list.123456789 A
+}
+
+# Dominating rule
+list.1234${NAME}6789:
+{
+	echo CORRECT >list.1234${NAME}6789
+}
+
+# Two dominated rules
+
+list.12${NAME}6789:
+{
+	echo ERROR >list.12${NAME}6789
+}
+
+list.1234${NAME}89:
+{
+	echo ERROR >list.1234${NAME}89
+}

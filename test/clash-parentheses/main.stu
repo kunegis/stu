@@ -1,0 +1,5 @@
+
+# ? and ! cannot be used together. 
+
+A:  ?(!(B)) { touch A }
+B { touch B }

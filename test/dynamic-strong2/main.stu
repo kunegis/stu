@@ -1,0 +1,13 @@
+
+
+A: [B] {
+   cp $(cat B) A
+}
+
+B {
+  echo C >B
+}
+
+C: A {
+   cp A C
+}

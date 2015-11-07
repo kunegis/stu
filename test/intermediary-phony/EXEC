@@ -1,0 +1,36 @@
+#! /bin/sh
+
+#
+# Run A
+# 
+
+rm -f ?
+
+../../stu >list.out || exit 1
+
+if ! fgrep CORRECT A ; then
+    echo >&2 "$0:  *** invalid output (run A)"
+    exit 1
+fi
+
+if ! fgrep 'ALL HEADERS BUILT' list.out ; then
+    echo >&2 "$0:  *** did not output 'ALL HEADERS BUILT' (run A)"
+    exit 1
+fi
+
+#
+# Run B
+#
+
+../../stu >list.out || exit 1
+
+if ! fgrep 'ALL HEADERS BUILT' list.out ; then
+    echo >&2 "$0:  *** did not output 'ALL HEADERS BUILT' (run B)"
+    exit 1
+fi
+
+if fgrep 'Nothing to be done' list.out ; then
+    echo >&2 "$0:  *** did output 'Nothing to be done' (run B)"
+    exit 1
+fi
+

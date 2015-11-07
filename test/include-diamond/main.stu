@@ -1,0 +1,5 @@
+
+# A file may be included twice without error:  Each file is parsed just once. 
+
+%include second.stu
+%include second.stu

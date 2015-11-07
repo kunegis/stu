@@ -1,0 +1,41 @@
+
+
+A:  B C D {
+    cat B C D >A
+}
+
+B: B2 {
+   cat B2 >B
+}
+
+C: C2 {
+   cat C2 >C
+}
+
+D: D2 {
+   cat D2 >D
+}
+
+B2: B3 {
+   cat B3 >B2
+}
+
+C2: C3 {
+   cat C3 >C2
+}
+
+D2: D3 {
+   cat D3 >D2
+}
+
+B3: {
+   echo B3 >B3
+}
+
+C3: {
+   echo C3 >C3
+}
+
+D3: {
+   echo D3 >D3
+}

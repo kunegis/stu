@@ -1,0 +1,8 @@
+
+# The first 'B' is built; the second then does not matter.
+
+A:  !B ?B {
+	cp B A
+}
+
+>B { echo CORRECT }

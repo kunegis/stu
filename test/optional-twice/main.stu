@@ -1,0 +1,26 @@
+
+# An optional dependency is encountered twice -- once it exists
+# and once not.  To be executed without -k. 
+
+A: B C D 
+{
+	touch A
+}
+
+B: ?X {
+	[ -e X ] && exit 1
+	touch B
+}
+
+C: X 
+{
+	cp X C
+}
+
+>X { echo xxx }
+
+D: ?X
+{
+	[ -r X ] || exit 1
+	cp X D
+}

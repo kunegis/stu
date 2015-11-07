@@ -1,0 +1,13 @@
+
+#
+# Empty dynamic dependency
+#
+
+A: [B] {
+   echo Ahaha >A
+}
+
+B {
+  echo >B
+}
+

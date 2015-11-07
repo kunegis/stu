@@ -1,0 +1,306 @@
+
+#
+# Complex shell commands are parsed correctly.  
+#
+
+A:  
+	B C D E F G H I J K L M N O P Q R S T U V W X Y Z 
+	AA AB AC AD AE AF AG AH AI AJ AK AL AM AN AO AP AQ AR AS AT AU AV AW    AY AZ
+	BA BB BC BD BE
+{
+    cat >A \
+	B C D E F G H I J K L M N O P Q R S T U V W X Y Z \
+	AA AB AC AD AE AF AG AH AI AJ AK AL AM AN AO AP AQ AR AS AT AU AV AW    AY AZ \
+	BA BB BC BD BE 
+}
+
+B {
+    # No special syntax
+    echo ABC >B
+}
+
+C {
+    # Braces
+    { echo ABC >C ; }
+}
+
+D {
+    # Closing brace within single quotes has no special meaning
+    echo 'ABC}DEF' >D 
+}
+
+E {
+    # Closing brace within double quotes has no special meaning 
+    echo "ABC}DEF" >E
+}
+
+F {
+    # Braces within braces
+    { { echo A; echo B; echo C; } ; } >F
+}
+
+G {
+    # Opening brace within single quotes has no special meaning
+    echo 'ABC{DEF' >G
+}
+
+H {
+    # Opening brace within double quotes has no special meaning
+    echo "ABC{DEF" >H
+}
+
+I {
+    # Braces within backticks 
+    echo `{ echo ABC ; }` >I
+}
+
+J {
+    # Braces within subshell
+    ( { echo ABC ; } ; ) >J
+}
+
+K {
+    # Braces within dollar-paren substitution
+    echo $( { echo ABC ; } ) >K
+}
+
+L {
+    # Single quotes
+    echo 'ABC' >L
+}
+
+M {
+    # Single quotes whithin braces
+    { echo 'ABC' ; } >M
+}
+
+N {
+    # Single quotes have no special meaning within double quotes
+    echo "ABC'DEF" >N
+}
+
+O {
+    # Single quotes within backticks
+    echo ` echo 'ABC' ` >O
+}
+
+P {
+    # Single quotes within subshell
+    ( echo 'ABC' ; ) >P
+}
+
+Q {
+    # Single quotes within dollar-paren substitution
+    echo $(echo 'ABC') >Q
+}
+
+R {
+    # Double quote
+    echo "ABC" >R
+}
+
+S {
+    # Double quote within braces
+    { echo "ABC" ; } >S
+}
+
+T {
+    # Double quotes have no special meaning within single quotes
+    echo 'ABC"DEF' >T
+}
+
+U {
+    # Double quotes within backticks
+    echo `echo "ABC"` >U
+}
+
+V {
+    # Double quotes within a subshell
+    ( echo "ABC" ; ) >V
+}
+
+W {
+    # Double quotes within a dollar-paren substitution
+    echo $(echo "ABC") >W
+}
+
+X {
+    # Backticks
+    echo `echo ABC` >X
+}
+
+Y {
+    # Backticks within braces
+    { echo `echo ABC` ; } >Y
+}
+
+Z {
+    # Backticks have no special meaning within single quotes
+    echo 'ABC`DEF' >Z
+}
+
+AA {
+    # Backticks within double quotes
+    echo "`echo ABC`" >AA
+}
+
+AB {
+    # Double quotes within backticks within double quotes
+    echo "`echo "ABC'DEF"`" >AB
+}
+
+AC {
+    # Backticks within double quotes within backticks
+    echo `echo "\`echo 'ABC"DEF'\`"` >AC
+}
+
+AD {
+    # Backticks within subshells
+    ( echo `echo ABC` ; ) >AD
+}
+
+AE {
+    # Backticks within a dollar-paren substitution
+    echo $(echo `echo ABC`) >AE
+}
+
+AF {
+    # Subshell
+    ( echo ABC ; ) >AF
+}
+
+AG {
+    # Subshell within braces
+    { ( echo ABC ; ) ; } >AG
+}
+
+AH {
+    # Open parens have no special meaning within single quotes
+    echo 'ABC(DEF' >AH
+}
+
+AI {
+    # Open parens have no special meaning within double quotes
+    echo "ABC(DEF" >AI
+}
+
+AJ {
+    # Subshell within backticks
+    ( echo `echo ABC` ; ) >AJ
+}
+
+AK {
+    # Subshell within subshell
+    ( ( echo ABC ; ) ; ) >AK
+}
+
+AL {
+    # Subshell within dollar-paren substitution
+    echo $( ( echo ABC ; ) ) >AL
+}
+
+AM {
+    # Dollar-paren substition
+    echo $(echo ABC) >AM
+}
+
+AN {
+    # Dollar-paren substitution within double quotes
+    echo "$(echo "ABC(DEF")" >AN
+}
+
+AO {
+    # Dollar-parent substituion within backticks
+    echo `echo $(echo ABC)` >AO
+}
+
+AP {
+    # Dollar-paren substitution within subshell
+    ( echo $(echo ABC) ; ) >AP
+}
+
+AQ {
+    # Dollar-paren substitution within dollar-paren substitution 
+    echo $(echo $(echo ABC)) >AQ
+}
+
+AR {
+    # Close-paren has no special meaning within single quotes
+    echo 'ABC)DEF' >AR
+}
+
+AS {
+    # Close-paren has no special meaning within double quotes
+    echo "ABC)DEF" >AS
+}
+
+AT {
+    # Backslash-escaped characters
+    echo \{\{\}\'\"\`\(\(\) >AT
+}
+
+AU {
+    # real single quote after double backslash
+    echo \\'ABC((){{}'DEF >AU
+}
+
+AV {
+    # Backslashes within single quotes are not escape characters
+    echo ABC'\'DEF >AV
+}
+
+AW {
+    # Backslashes within double quotes
+    echo "\{\{\}\(\(\"\`\\" >AW
+}
+
+# AX {
+#     # Backslashes within backticks
+#     echo `echo \{\{\}\'\"\`\(\(\)` >AX
+# }
+
+AY {
+    # Backslashes in a subshell
+    ( echo \{\{\}\'\"\`\(\(\) ; ) >AY
+}
+
+AZ {
+    # Backslashes in a dollar-paren substitution
+    echo $( echo \{\{\}\'\"\`\(\(\) ) >AZ
+}
+
+BA {
+    # Commend within braces
+    {
+	# {{}(() `'"
+	echo ABC
+    } >BA
+}
+
+BB {
+    # Hashes within single quotes have no special meaning
+    echo 'ABC#DEF' >BB
+}
+
+BC {
+    # Hashed within double quotes have no special meaning
+    echo "ABC#DEF" >BC
+}
+
+# Not tested:  Comment character within backticks
+
+BD {
+    # Comment character within subshell
+    (
+	# {{ } (( ) ` ' "
+	echo ABC
+    ) >BD
+}
+
+BE {
+    # Comment character within dollar-paren substitution
+    echo $(
+	# {{ } (( ) ` ' "
+	echo ABC
+    ) >BE
+}

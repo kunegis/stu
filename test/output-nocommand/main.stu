@@ -1,0 +1,7 @@
+
+# The erroneous declaration of 'B' must result in an error message.
+
+A { touch A }
+
+# Output redirection is not allowed when a rule has no command. 
+>B;

@@ -1,0 +1,17 @@
+
+#
+# Test to make sure the dynamic dependency is correctly generated and
+# parsed.  If C is not recognized as a dependency, then the "cp" command
+# for generating A will fail 
+#
+
+A: [B] {
+   cp C A
+}
+
+B { echo C >B}
+
+C {
+  echo Cee >C
+}
+

@@ -1,0 +1,10 @@
+#! /bin/sh
+
+../../stu
+exitcode="$?"
+
+if [ "$exitcode" != "0" ] ; then
+    echo >&2 "*** Error"
+    exit 1
+fi
+

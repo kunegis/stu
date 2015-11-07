@@ -1,0 +1,12 @@
+
+# A file inclusion within a dynamic dependency. 
+
+A: [B] { cp D A }
+
+>B: C { cat <<EOF
+%include C
+EOF
+}
+
+>C: { echo D }
+>D  { echo Hello }

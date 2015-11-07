@@ -1,0 +1,12 @@
+
+#
+# File which has no command and no dependencies does not exist:  an error. 
+#
+
+A:  B
+{
+	touch A
+}
+
+# File does not exist -- an error. 
+B;

@@ -1,0 +1,9 @@
+
+
+A: [B] {
+   cp $(cat B) A
+}
+
+B:  A {
+    cat A >B
+}

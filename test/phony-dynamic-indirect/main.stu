@@ -1,0 +1,8 @@
+
+# Error, because phonies cannot appear in dynamic dependencies. 
+
+A: [[B]] { touch A }
+
+>B { echo @x }
+
+@x { echo ERROR }

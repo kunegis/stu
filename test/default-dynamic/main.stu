@@ -1,0 +1,10 @@
+
+#
+# Cannot use the first rule by default as it is dynamic
+#
+
+
+xxx.$X: {
+	echo "$X" >"xxx.$X"
+}
+

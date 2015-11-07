@@ -1,0 +1,17 @@
+
+#
+# Dependency through multiple layers of phonies.
+#
+
+A:  @B 
+{
+	cat D >A
+}
+
+@B:  @C;
+
+@C:  D;
+
+D {
+	echo CORRECT >D
+}

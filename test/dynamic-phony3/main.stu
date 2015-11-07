@@ -1,0 +1,6 @@
+
+# Error:  phony cannot be a dynamic dependency
+
+A: [@x] {
+	touch A
+}

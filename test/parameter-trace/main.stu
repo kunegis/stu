@@ -1,0 +1,22 @@
+
+#
+# Each parameter in a name should have its own trace.  Test on an error
+# that refers to a specific parameter. 
+#
+
+#
+# The follow should have a trace on the "$XYZ" parameter. 
+#
+
+A:  B.123 {
+    cp B.123 A
+}
+
+B.$ID:  C.$XYZ 
+{
+    cp C.$ID B.$ID
+}
+
+C.$ID {
+    touch C.$ID
+}

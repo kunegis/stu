@@ -1,0 +1,20 @@
+
+#
+# Dynamics may contain phonies.
+#
+
+A:  [B]
+{
+	cp D A
+}
+
+B: 
+{
+	echo @C >B
+}
+
+@C: D;
+
+D {
+  echo CORRECT >D
+}

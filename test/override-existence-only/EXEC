@@ -1,0 +1,46 @@
+#! /bin/sh
+
+doo() { echo "$@" ; "$@" ; }
+
+doo rm -f ? list.*
+
+#
+# Run stu
+#
+echo ../../stu -v
+../../stu -v
+exitcode="$?"
+if [ "$exitcode" != 0 ]; then
+	echo >&2 "*** wrong exit code (1)"
+	exit 1
+fi
+if [ ! -r B ]; then
+	echo >&2 "*** 'B' was not created"
+	exit 1
+fi
+
+#
+# Change 'B' 
+#
+doo sleep 2
+doo touch B
+
+#
+# Run 'B' -- 'B' is rebuilt 
+#
+echo ../../stu -v
+../../stu -v | tee list.out
+exitcode="$?"
+if [ "$exitcode" != 0 ]; then
+	echo >&2 "*** wrong exit code (2)"
+	exit 1
+fi
+
+if grep -qF 'Nothing to be done' list.out ; then
+	echo >&2 "*** 'Nothing to be done' not found in output"
+	exit 1
+fi
+
+doo rm -f ? list.*
+
+exit 0

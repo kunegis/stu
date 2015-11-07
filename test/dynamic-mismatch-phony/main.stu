@@ -1,0 +1,13 @@
+
+#
+# Should result in an error.
+#
+
+A:  @list.B
+{
+	cp list.B A
+}
+
+list.$NAME {
+  echo xxx >B
+}

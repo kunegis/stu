@@ -1,0 +1,12 @@
+
+# What should be the error message here?
+
+A: [B];
+
+B: {
+	echo C >B
+}
+
+C: {
+	echo C >C
+}

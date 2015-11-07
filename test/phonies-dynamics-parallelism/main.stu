@@ -1,0 +1,18 @@
+
+#
+# A typical combination of phonies, dynamics and parallelism
+#
+
+@all:  [All];
+
+All: 
+{
+    for i in $(seq 1 100) ; do
+		echo "list.$i"
+    done >All
+}
+
+list.$N {
+    sleep 1
+    echo ${N}${N}${N} >"list.$N"
+}

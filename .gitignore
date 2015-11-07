@@ -1,0 +1,6 @@
+check_*
+*.log
+stu
+stu.debug
+stu.ndebug
+stu.1

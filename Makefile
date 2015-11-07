@@ -8,7 +8,7 @@
 # changed by hand to use another compiler. 
 # 
 
-all: stu.debug stu.ndebug stu.1 check
+all: stu.debug stu.ndebug stu.1 stu.text check
 
 CXXFLAGS_DEBUG= -ggdb
 CXXFLAGS_NDEBUG= -O3 -DNDEBUG -s
@@ -51,8 +51,12 @@ check_test.ndebug: stu.ndebug mktest test test/* test/*/*
 stu.1:  stu.1.in VERSION mkman
 	./mkman
 
+stu.text:  stu.1
+	<stu.1 groff -mandoc -Tutf8 -Dutf8 >stu.text
+
 version.hh:  VERSION mkversion
 	./mkversion >version.hh
 
 clean:  
 	rm -f stu stu.debug stu.ndebug stu.1 version.hh
+

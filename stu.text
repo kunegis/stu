@@ -2,31 +2,31 @@ STU(1)                   University of Koblenz-Landau                   STU(1)
 
 
 
-NNAAMMEE
+NAME
        stu - Build tool
 
-SSYYNNOOPPSSIISS
-       ssttuu [ -f _F_I_L_E_N_A_M_E ] [ _T_A_R_G_E_T _._._.  ] [ _O_P_T_I_O_N_S _._._.  ]
+SYNOPSIS
+       stu [ -f FILENAME ] [ TARGET ...  ] [ OPTIONS ...  ]
 
-DDEESSCCRRIIPPTTIIOONN
+DESCRIPTION
        Stu  is  a build tool.  Like Make, it is used to call other programs in
        order to build files.  Stu has two features  that  set  it  apart  from
        Make:  (1)  dynamic  dependencies:  The dependencies of a target can be
-       themselves computed by a command.  When `[FILENAME]' (a  filename  cur‐
+       themselves computed by a command.  When '[FILENAME]' (a  filename  cur‐
        rounded  by angle brackets) is used as a dependency, Stu will build the
        file FILENAME and read dependencies from it.  (2) Parameters:  Names of
        files  (and  phony targets) can contain parameters written using dollar
-       syntax.  For example, a rule with a target filename  `list.$NAME'  will
-       be used to build any file matching the pattern `list.*', and the param‐
+       syntax.  For example, a rule with a target filename  'list.$NAME'  will
+       be used to build any file matching the pattern 'list.*', and the param‐
        eter $NAME can be used in names of dependencies and in the  build  com‐
        mand.  Targets may contain any number of parameters.
 
        Names  of  files  to  build  are passed on the command line.  Rules for
-       building files are read from the file `main.stu', or from a file passed
+       building files are read from the file 'main.stu', or from a file passed
        by the -f option.
 
-       In general, Stu is very much like Make:  Instead of a `Makefile', there
-       should be a file named `main.stu', which is read automatically by  Stu.
+       In general, Stu is very much like Make:  Instead of a 'Makefile', there
+       should be a file named 'main.stu', which is read automatically by  Stu.
        Also  like  Make,  Stu  will build the first target it finds, except if
        given an explicit target to built.  Stu is designed to follow the  con‐
        ventions  of  Make, of the Bourne shell and of Unix / POSIX in general.
@@ -34,10 +34,10 @@ DDEESSCCRRIIPPTTIIOONN
        as they do in Make.
 
 
-OOPPTTIIOONNSS
+OPTIONS
        -f FILENAME
-              Read  the  given file instead of the default `main.stu'.  If the
-              name of a directory is passed, the file `main.stu' in the  given
+              Read  the  given file instead of the default 'main.stu'.  If the
+              name of a directory is passed, the file 'main.stu' in the  given
               directory is read.
 
        -h     Output a short help and exit.
@@ -60,7 +60,7 @@ OOPPTTIIOONNSS
        -V     Output the version number of Stu and exit.
 
 
-EEXXAAMMPPLLEESS
+EXAMPLES
        A simple rule looks as follows:
 
            results.txt:  data.txt compute {
@@ -82,11 +82,11 @@ EEXXAAMMPPLLEESS
                    -o plot.$DATASET.$METHOD.$MEASURE.eps
            }
 
-       Here is an example of a dynamic dependency.  The target `compute' (a  C
+       Here is an example of a dynamic dependency.  The target 'compute' (a  C
        program)  must  be rebuild whenever its source code files are modified.
        Since the set of source code files is  large  and  may  be  changed  by
-       changing  the  source  code  itself, we use the file `compute.c.dep' to
-       contain the list of dependencies.  The file `compute.c.dep'  will  then
+       changing  the  source  code  itself, we use the file 'compute.c.dep' to
+       contain the list of dependencies.  The file 'compute.c.dep'  will  then
        be  built  by  Stu like any file, and its content parsed for the actual
        dependencies:
 
@@ -123,7 +123,7 @@ EEXXAAMMPPLLEESS
        Multiple parametrized rules may match a target.  In that case Stu  uses
        the  one that is the least parametrized, as defined by the subset rela‐
        tion on the set of characters that are in  parameters.   When  building
-       `X.txt' in this example, only the second rule is called:
+       'X.txt' in this example, only the second rule is called:
 
            $NAME.txt: {  echo "$NAME" is the best >"$NAME.txt" }
            X.txt:  { echo X sucks >X.txt }
@@ -138,9 +138,9 @@ EEXXAAMMPPLLEESS
            }
 
        Existence-only  dependencies:   In the following example, the directory
-       `data' is a existence-only dependency, i.e. `data' is only  built  when
+       'data' is a existence-only dependency, i.e. 'data' is only  built  when
        it  does not exist, but it is never re-built.  An existence-only depen‐
-       dency is indicated by the `!' prefix.  This is useful for  directories,
+       dency is indicated by the '!' prefix.  This is useful for  directories,
        whose timestamps change when files are created/removed in them.
 
            data/file:  !data {
@@ -148,7 +148,7 @@ EEXXAAMMPPLLEESS
            }
            data: { mkdir data }
 
-       Optional dependencies can be declared with the `!' prefix.  An optional
+       Optional dependencies can be declared with the '!' prefix.  An optional
        dependency will never be built if it does not  already  exist.   If  it
        already  exists,  then  its  own rule is used (and its date checked) to
        decide whether it should be rebuilt.
@@ -161,7 +161,7 @@ EEXXAAMMPPLLEESS
            }
 
        Variable dependency:  the content of variables can come from files.  In
-       the following example, the C flags are stored in the file `CFLAGS', and
+       the following example, the C flags are stored in the file 'CFLAGS', and
        used in the compilation command using the $[CFLAGS] dependency.
 
            compute:  compute.c $[CFLAGS]
@@ -170,8 +170,8 @@ EEXXAAMMPPLLEESS
            }
            CFLAGS: { echo -Wall -Werror >CFLAGS }
 
-       Phony targets are marked with `@'.  They are used for targets  such  as
-       `@clean'  that  do  an action without building a file, and for lists of
+       Phony targets are marked with '@'.  They are used for targets  such  as
+       '@clean'  that  do  an action without building a file, and for lists of
        files that depend on other targets, but don't have a command associated
        with  them.   They are also used instead of variables that would other‐
        wise contain a list of filenames.
@@ -197,19 +197,19 @@ EEXXAAMMPPLLEESS
                cc y.c -o y
            }
 
-       File inclusion is done using the `%include' statement.  This can be put
+       File inclusion is done using the '%include' statement.  This can be put
        at any place in the input file, and will just temporarily continue tok‐
        enization  in  another  file.  The filename does not have to be quoted,
        except if it contains special characters, just like any other  filename
        in Stu.  If a directory is given after include (with or without an end‐
-       ing slash), the file `main.stu' within that directory is read.
+       ing slash), the file 'main.stu' within that directory is read.
 
            %include a.stu
            %include "b.stu"
            %include 'c.stu'
            %include data/
 
-       To declare which version of Stu a script is written for, use the `%ver‐
+       To declare which version of Stu a script is written for, use the '%ver‐
        sion' statement:
 
        %version 2.3 %version 2.3.4
@@ -219,11 +219,11 @@ EEXXAAMMPPLLEESS
        whose minor version (and patch level) have at least the given values.
 
 
-SSYYNNTTAAXX
+SYNTAX
        Like  a  makefile,  a Stu file consists of rules.  In Stu, the order of
        rules is not important, except for the fact that the first rule is used
        by  default  if no rule is given explicitly.  Comments are written with
-       `#' like in Make or in the Bourne shell.
+       '#' like in Make or in the Bourne shell.
 
        The basic syntax is similar to that of  make,  but  does  not  rely  on
        mandatory  whitespace.   Instead  of tabs, the commands are enclosed in
@@ -231,7 +231,7 @@ SSYYNNTTAAXX
 
        Stu syntax supports three types of objects:  files, phonies  and  vari‐
        ables.  File are any file in the file system, and are always referenced
-       by their filename.  Phonies have names beginning with  the  `@'  symbol
+       by their filename.  Phonies have names beginning with  the  '@'  symbol
        and do not correspond to files, but can have dependencies and commands.
 
        A rule for a file in Stu has the following syntax:
@@ -246,7 +246,7 @@ SSYYNNTTAAXX
        line and use it on the next.  It also means that the shell's rule  will
        be  used  to determine whether the whole command block succeeded:  Only
        the exit code of the last issued command is used.  This means that  you
-       should chain commands with `&&', or write them in a way that subsequent
+       should chain commands with '&&', or write them in a way that subsequent
        commands cannot succeed when previous one failed.
 
        When the command of a file is replaced by a semicolon, this means  that
@@ -275,10 +275,10 @@ SSYYNNTTAAXX
        build progress information, or perform actions that do not fit well the
        build system paradigm, such as removing or deploying built files.
 
-       The  operator  `>'  can be used in front of the target name to indicate
+       The  operator  '>'  can be used in front of the target name to indicate
        that the output of the command should be  redirected  into  the  target
-       file.   As  an  example,  the following code creates the file `HEADERS'
-       containing the output of the given `echo' command:
+       file.   As  an  example,  the following code creates the file 'HEADERS'
+       containing the output of the given 'echo' command:
 
            >HEADERS { echo *.h }
 
@@ -327,13 +327,13 @@ SSYYNNTTAAXX
 
            ( ... )
 
-       Groups  of  dependencies can be enclosed on parentheses.  The flags `!'
-       and `?' can be applied to a group of dependencies given in parentheses:
+       Groups  of  dependencies can be enclosed on parentheses.  The flags '!'
+       and '?' can be applied to a group of dependencies given in parentheses:
 
            ! ( ... )
            ? ( ... )
 
-       The flags `!' and `?' can be applied to dynamic dependencies:
+       The flags '!' and '?' can be applied to dynamic dependencies:
 
            ! [ ... ]
            ? [ ... ]
@@ -342,9 +342,9 @@ SSYYNNTTAAXX
        optional of existence-only.
 
 
-PPAARRAAMMEETTEERRSS
+PARAMETERS
        Any  file or phony target may include parameters.  Parameters are noted
-       using the `$' character and are given a name.  Stu will match the  pat‐
+       using the '$' character and are given a name.  Stu will match the  pat‐
        tern  to any file or phony it needs to build.  Parameters can appear in
        dependencies and in commands any number of times (included not  appear‐
        ing in them).  In a target name, a parameter can only appear once.
@@ -364,21 +364,21 @@ PPAARRAAMMEETTEERRSS
        other matching rules.
 
        In  the following example, the first rule dominates the other rules for
-       the file named `a.b.c':
+       the file named 'a.b.c':
 
            a.$X.c: ... { ... }
            a.$X:   ... { ... }
            $X.c:   ... { ... }
 
        In the following example, no rule dominates the others for the filename
-       `a.b.c', so Stu will report an error:
+       'a.b.c', so Stu will report an error:
 
            $X.b.c: ... { ... }
            a.$X.c: ... { ... }
            a.b.$X: ... { ... }
 
 
-TTOOKKEENNIIZZAATTIIOONN
+TOKENIZATION
        Unquoted filenames in Stu may contain the following ASCII characters:
 
            [a-z] [A-Z] [0-9] _ ^ ` + - . ~ /
@@ -407,8 +407,8 @@ TTOOKKEENNIIZZAATTIIOONN
            >     Output redirection
            <     Input redirection
 
-       Comments introduced by `#' go until the  end  of  the  line.   Commands
-       starting  with `{' go until the matching `}', taking into account shell
+       Comments introduced by '#' go until the  end  of  the  line.   Commands
+       starting  with '{' go until the matching '}', taking into account shell
        syntax, i.e., the command itself may contain more  braces.   All  other
        characters  are  individual tokens and may or may not be separated from
        other tokens by whitespace.
@@ -417,8 +417,8 @@ TTOOKKEENNIIZZAATTIIOONN
 
            %include FILENAME
 
-       Note that `%' is a regular token and therefore it need not be the first
-       character  on a line, and there may be space between `%' and `include'.
+       Note that '%' is a regular token and therefore it need not be the first
+       character  on a line, and there may be space between '%' and 'include'.
        Also, the filename need not be quoted if it consists  only  of  allowed
        characters as described previously.
 
@@ -427,7 +427,7 @@ TTOOKKEENNIIZZAATTIIOONN
            * = \ | & ,
 
 
-SSEEMMAANNTTIICCSS
+SEMANTICS
        Cycles in the dependency graph are not allowed. As an example, the fol‐
        lowing results in an error:
 
@@ -437,15 +437,15 @@ SSEEMMAANNTTIICCSS
        Cycles are considered at the rule level, i.e., cycles such as the  fol‐
        lowing  are  also flagged as an error, even though there is no cycle on
        the filename level.  In the following example, it is  not  possible  to
-       build  the  file  `a.gz.gz' from the file `a', even though it would not
-       result in a cycle, but since both files `a.gz' and  `a.gz.gz'  use  the
+       build  the  file  'a.gz.gz' from the file 'a', even though it would not
+       result in a cycle, but since both files 'a.gz' and  'a.gz.gz'  use  the
        same parametrized rule, this is not allowed:
 
            $NAME.gz:  $NAME { gzip $NAME }
 
        Cycles  are  also  possible  in  dynamic  dependencies,  where they are
        allowed and ignored.  For instance, the following  examples  will  cor‐
-       rectly build the file `A', after having built `B' and `C':
+       rectly build the file 'A', after having built 'B' and 'C':
 
            A:  [B] { echo CORRECT >A }
            B:  { echo [C] >B }
@@ -456,7 +456,7 @@ SSEEMMAANNTTIICCSS
        non-existing file will be treated as a non-existing file.
 
 
-EEXXIITT SSTTAATTUUSS
+EXIT STATUS
        0      Everything was built successfully or was up to date already.
 
        1      Build  error.  Example:  a child process produced an error, or a
@@ -472,10 +472,10 @@ EEXXIITT SSTTAATTUUSS
               mission to access file, input file does not exist.
 
 
-MMOORREE EEXXAAMMPPLLEESS
+MORE EXAMPLES
        This section contains more advanced examples of Stu usage.
 
-       The  following  declaration  tells  Stu  that  the file `config.h' must
+       The  following  declaration  tells  Stu  that  the file 'config.h' must
        exist, and will allow Stu to give more meaningful error messages if the
        file is not found.
 
@@ -483,7 +483,7 @@ MMOORREE EEXXAAMMPPLLEESS
 
        Input  and output redirection can be used to write commands that invoke
        a filter such as sed, awk or tr.  The following example will build  the
-       `A' containing the string `HELLO':
+       'A' containing the string 'HELLO':
 
            >A: <B { tr a-z A-Z }
            >B { echo hello }
@@ -499,11 +499,11 @@ MMOORREE EEXXAAMMPPLLEESS
            B: [y] { echo $V >B }
 
 
-AAUUTTHHOORR
+AUTHOR
        Jérôme Kunegis <kunegis@uni-koblenz.de>
 
-SSEEEE AALLSSOO
-       mmaakkee(1)
+SEE ALSO
+       make(1)
 
 
 

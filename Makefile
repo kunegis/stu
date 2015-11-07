@@ -52,7 +52,7 @@ stu.1:  stu.1.in VERSION mkman
 	./mkman
 
 stu.text:  stu.1
-	<stu.1 groff -mandoc -Tutf8 -Dutf8 >stu.text
+	MANWIDTH=80 man -l stu.1 >stu.text
 
 version.hh:  VERSION mkversion
 	./mkversion >version.hh

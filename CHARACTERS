@@ -1,0 +1,55 @@
+
+This file catalogues the usage of individual characters in Stu files.
+Since Stu is used to specify filenames, many characters that are used as
+operators in programming languages are allowed in filenames, such as
+'+', '-', etc.  Other characters are used as operators.  All operators
+in Stu consist of a single character.  
+
+== Allowed in unquoted names == 
+
+[a-z] [A-Z] [0-9] 
+_ ^ ` + - . ~ / 
+[all non-ASCII characters]
+
+== Recognized as whitespace == 
+
+everything for which isspace() returns true in the C locale, i.e., only
+ASCII spaces and tabs, etc. (" \f\n\r\t\v")
+
+== Not allowed outside quotes == 
+
+ASCII control characters (except those that are space)  
+
+== Characters introducing longer tokens == 
+
+# 	Comment (until the end of the line) 
+%	Statements (followed by the statement name, and optionally followed
+	by arguments depending on the statement); comparable to preprocessor
+	directives 
+" '	Quotes; introducing quoted names 
+{}	Command; contain shell script code
+$	Parameter / variable dependencies 
+
+== Operators == 
+
+These characters are tokens in themselves. 
+
+:	Rule definition
+;	End of rule
+@ 	Phony target
+()	List operator
+[]  Dynamic dependency 
+!	Existence-only dependency
+?   Optional dependency 
+>	Output redirection
+<	Input redirection 
+
+== As-yet unused operators ==
+
+=   Variable dependency name assignment / file copy / here-document 
+*   String multiplication 
+, 	modifiers (e.g., ',0' for \0-separated input files). 
+\	interpreter:   \octave { }
+\	Set difference:   dat/plot.([dat/NETWORKS] \ enron).eps
+|	Index-wise concatenation:  (a b) | (x y) results in (ax by)
+&   Set intersection:  (a b c) & (b c d) is equivalent to (b c)

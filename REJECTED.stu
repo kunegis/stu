@@ -1,0 +1,129 @@
+#
+# These are feature ideas that were rejected at some point.  We may of
+# course revive ideas from here in the future.  Note:  the examples may
+# still use Stu-0 syntax. 
+#
+
+#
+# Allow regular expressions in parameters, e.g. for single-character
+# parameters.  This will also make it possible to allow contiguous
+# parameters, and giving a list of possible values for a parametrized
+# rule. 
+#
+
+# Allow contiguous parameters
+list.[X:.][Y:.] {
+	compute -x [X] -y [Y] >list.[X][Y]
+}
+
+# Exclude certain characters from parameter names 
+web.[NETWORK:[^.]+]
+
+# Specify a list of values
+[NAME:ref|ukob|tuberlin].bib:  bibs-A/[NAME].bib
+{ cp bibs-A/[NAME].bib [NAME].bib }
+[NAME].bib:  bibs-B/[NAME].bib
+{ cp bibs-B/[NAME].bib [NAME].bib }
+
+# Using variables is not good
+[NAME:$NAMES].bib: ...;
+
+# Exclude slashes
+[NAME:[^/]+].bib: ...;
+
+#
+# When an error is output, the column number must take into account
+# unicode characters.  In this example, the opening { must be reported
+# to be at character 13.  This was implemented, but was decided to be
+# too slow.  
+#
+
+éäçöôüœß柏林: {
+
+#
+# Rules are cumulative:  you can add additional dependencies, like in
+# Make.  
+#
+
+data-[NAME].txt:  build {
+	./build [NAME] >data-[NAME].txt
+}
+
+data-[NAME].txt:  some-other-dependency; 
+
+# We cannot have this feature, because this will then not work:
+[NAME].bib:  { ... }
+a.bib:  extra dependencies ... ;
+# The intention is to add dependencies to only certain files, but the
+# result would be to let the second rule override the first. 
+
+#
+# Recursion at the rule level is not allowed at the moment, but could
+# be.  The problem is how to recognize infinite recursion. 
+#
+
+# Example 1:  Recursion at the rule level is needed to implement correct
+# C source dependency. 
+
+# Example 2:  building A.gz.gz does not work. 
+[NAME].gz:  [NAME] {
+	gzip -c [NAME] >[NAME].gz
+}
+A:  {
+    echo 'Hello, World!' >A
+}
+
+#
+# Idea:  parameters should not be able to match slashes.  
+#
+# We haven't found a good reason yet to not allow this. 
+#
+
+#
+# Variables.  They existed in Version 0 but were removed to free up the
+# dollar sign for parameters. 
+#
+
+$V: a b c d;
+A:  $V { echo $V >A }
+
+#
+# Mark this target to always be an existence-only dependency 
+#
+
+!data: { mkdir data }
+
+# Alternatively, we may introduce the rule that for directories, the
+# modification date is not used.  (Not a good idea because the date may
+# be useful for directories in some cases.)
+
+#
+# Hashing instead of timestamps is a feature that's implemented by quite
+# a few Make replacements.  This could also be combined with
+# preprocessors which ignore whitespace, etc.  Can also be used for the
+# commands embedded in Stu files, but then again we don't want to
+# rebuild everything just because a command changed. 
+#
+
+#
+# Support nanosecond-precision timestamps by using struct
+# stat::st_mtim.* instead of struct stat::st_mtime.  Code is written in
+# timestamp.hh and can be enabled via USE_MTIM, but is disabled because
+# common filesystems seems to give wrong timestamps. 
+#
+
+#
+# Pass name of target and dependencies as $0 and $1, $2, etc. (?).  All
+# of these can be passed to the shell after the -c option, but the
+# problem is that $0 is used in error messages of the shell as the
+# filename, which would give weird error messages.  It would thus be
+# better to pass the place of the command in $0, if the -c option would
+# support something similar to the #line proprocessor directive. 
+#
+
+#
+# Invoke /bin/sh with the -x option instead of outputting the whole
+# command at once.  (Will not work when the command contains loops since
+# it would effectively unroll the loops.)
+#
+

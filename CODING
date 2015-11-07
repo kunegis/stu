@@ -1,0 +1,54 @@
+
+Here are the relevant coding conventions we use. 
+
+== Standards == 
+
+* Use the C++11 version of C++; avoid extensions such as GNU extensions  
+* Use "NULL" as the null pointer constant.  (To be changed to nullptr)
+* Compilation is done in a single step by compiling the file 'stu.cc'.
+  All other source files are actually *.hh files which are included.
+  Therefore, we don't have to care about separation of declarations and
+  definitions.  (This may lead to very long compilation times in the
+  future though.)
+* Names of targets in the Makefile follow the GNU Coding Standards  
+* Follow the behavior of Make as much as reasonable (e.g. the -k and -j
+  options behave just as in Make)
+* It is safe to assume a POSIX environment; there is no need to cater
+  for "special" operating systems that lack core POSIX features 
+* Use SemVer.org for version number semantics 
+
+== Style == 
+
+* Note:  all the following rules are broken when necessary :)
+* K&R brace style
+* Single tabs for indentation (set your editor to show them at the width
+  you prefer)  
+* Use C-style comments for normal comments
+* Use C++-style comments for quickly commenting out code and for writing
+  TODO items; this allows us to search all source files for the string
+  "//" to find areas that are currently worked on.  Released code should
+  not contain "//". 
+* In comments, names of variables are in all uppercase. 
+* Use 72-character lines in general, but allow more where reasonable
+  (note:  tabs may be interpreted as different widths making this an
+  approximate rule)   
+* No space before the assignment operator 
+
+== Dynamic variables ==
+
+(1) Variables derived from the following classes are always created
+dynamically, using operator new()/delete() and shared_ptr:
+
+* all parametrized names and targets 
+* Rule
+* Token
+* Dependency
+
+I.e., we always assume an object of one of these types may be of a
+subtype.  
+
+(2) Objects of type Execution are allocated using new() and never
+released; this is necessary for caching. 
+
+(3) Other types can be used as pass-by-value, or pass-by-reference if
+necessary. 

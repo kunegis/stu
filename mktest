@@ -1,0 +1,353 @@
+#! /bin/sh
+#
+# Perform all unit tests.  Each unit test is in one subdirectory of the
+# directory test/.  By default, each test directory contains a file
+# "main.stu" that performs one unit test.  Additional files may be
+# present to configure how the test is performed.  
+# 
+# INVOCATION
+#
+#	$0 [TEST...] 
+#
+# Without any arguments, perform all tests.  With one or more arguments,
+# perform the given tests.  The name of the tests are the names of the
+# subdirectories of test/. 
+#
+# PARAMETERS
+#
+#     $emptyok	Set to non-empty to *not* output an error for empty test
+#				directories; useful after doing "svn rm" on one, since
+#				that leaves a directory containing only ".svn".  Ignores
+#				dotfiles. 
+#	  $NDEBUG	Set to nonempty to test the nondebug version; by default
+#				the debug version is tested 
+#
+# OUTPUT
+# 
+#	error.log	List of tests that failed
+#
+# TEST SPECIFICATION 
+#
+# Each subdirectory of test/ contains one unit test, which follows the
+# following rules: 
+#
+# * Each test contains a file 'main.stu' that is to be tested
+# * It must build the file 'A' by default (i.e., that should be the
+#   first target)
+# * All built files must have names that correspond to the pattern given
+#   below in delete_tmps(), such that they are removed automatically
+#   after the test.  Most generated files' names just consist of a
+#   single uppercase letter (but they don't have to).
+# * There may be other files present used by the test; these are part of
+#   the Stu release, i.e., they are in SVN. 
+#
+# SPECIFICATION FILES
+#
+# Each of these files can be placed in the individual test directory to
+# enable additional checks.  All of these files are optional. 
+#
+# TARGET       The name of the target that is built in the test, instead
+#              of the default 'A'.  This does not change the invocation:
+#              Stu is invoked without arguments by default.  It only
+#              changes the check that the file was built, and its
+#              content.   
+# CMD          Additional command arguments passed to Stu 
+# PARALLEL     Give the arguments of the -j option for which the test is
+#              to be executed 
+# EXITCODE     The prescribed exit code 
+# NOSECOND     If file is present, do not check that second invocation
+#              results in "Nothing to be done"  
+# CONTENT      Specifies text that must be present in the built file 
+# STDOUT       The exact output of the command
+# STDERR       The exact content of the error output
+# INSTDOUT     Prescribe a string that must appear on stdout 
+# INSTDERR     Prescribe strings that must appear in the error message.
+#              Each line of INSTDERR contains a line that must be in the
+#              error output (in any order).  
+# NOTINSTDERR  A text that must not be present in the error output
+# EXEC         Can be an alternative test script; it can do anything and
+#              should return a sensible exit code (i.e., 0 on success,
+#              nonzero otherwise)  
+#
+# NOTES
+#
+# * Some tests that use EXEC need to sleep, in order to make sure that
+#   timestamps e.g. of a created file is older than Stu invocation.
+#   Usually, these scripts use "sleep 2", i.e., sleep for two seconds to
+#   make sure that there is a difference in timestamps of at least one
+#   second on systems where file modification times have a precision of
+#   only one second. 
+#
+
+# Note:  we can't use "set -e" here (which is a good general practice in
+# shell scripts), because otherwise we can't use $? to check the exit
+# code of Stu.  
+
+# Set to "1" on error 
+errors=0
+
+rm -f stu
+if [ "$NDEBUG" ] ; then
+	ln -s stu.ndebug stu
+else
+	ln -s stu.debug stu
+fi
+
+# Delete temporary files created by tests.  Tests only create temporary
+# files of these patterns.  Executed within each test directory. 
+delete_tmps() {
+    rm -f ? ?? A.* *.data list.* dep.* +-.~_
+}
+
+exec 6>error.log
+
+cd test
+
+if [ "$1" ] ; then
+    tests="$@"
+else
+	# Note:  At some point there might be too many tests, but we don't
+	# want to use ls -1 | { ... } because that would make it impossible
+	# to do "error=1", as setting the variable $error in a subshell
+	# would have no effect. 
+    tests="$(echo *)"
+fi
+
+for file in $tests
+do
+	error=0
+
+    if [ ! -d "$file" ]; then
+		echo >&2 "$0: *** '$file' is not a directory"
+		error=1
+		echo "$file" >&6
+		errors=1
+		continue
+    fi
+
+	# There are no files in the test directory (ignoring dotfiles) 
+	if [ "$(ls -1 "$file" | wc -l)" = 0 ] ; then
+		if [ "$emptyok" != 1 ] ; then
+			echo >&2 "$0: *** Test directory $file/ does not contain any files"
+			error=1
+			echo "$file" >&6
+			errors=1
+		fi
+		continue;
+	fi
+
+    echo __________________________________
+	echo cd "$file"
+	cd "$file"
+
+    delete_tmps
+
+    # Check that all all-uppercase files are of one of the allowed files 
+    allowed="EXITCODE|PARALLEL|INSTDOUT|INSTDERR|NOTINSTDERR|STDERR|CMD|TARGET|CONTENT|EXEC|STDOUT|NOSECOND"
+    for otherfile in $(ls -1 | sed -re '/^[A-Z]+$/!d;/^('"$allowed"')$/d')
+    do
+		echo >&2 "$0: *** Invalid file '$otherfile' in test directory"
+		error=1
+    done
+
+    CMD=
+    if [ -r CMD ]; then
+    	CMD="$(sed -re '/^\s*$/d' <CMD)"
+    fi
+
+	# The following will save:  list.def.out and list.def.err 
+
+    if [ -r EXEC ]; then
+
+		if [ -r EXITCODE -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
+			-o -r STDERR -o -r NOTINSTDERR -o -r CMD \
+			-o -r TARGET -o -r CONTENT -o -r STDOUT -o -r NOSECOND ]; then
+			echo >&2 "$: *** EXEC does not allow any other file"
+			error=1
+		fi
+
+		echo >&2 ./EXEC
+		./EXEC
+		if [ "$?" != 0 ]; then
+			echo >&2 "$0: *** EXEC failed"
+			error=1
+		fi
+
+	else
+
+		# Execute command
+		echo ../../stu $CMD
+		../../stu >list.def.out 2>list.def.err $CMD
+		exitcode_actual=$?
+		
+		# Exit code
+		exitcode_correct=0
+		if [ -r EXITCODE ]; then
+			exitcode_correct="$(sed -re '/^\s*$/d' <EXITCODE)"
+			if [ "$exitcode_correct" = 0 ]; then
+				echo >&2 "$0: *** Content of EXITCODE should not be zero"
+				error=1
+			fi
+		fi
+		if [ "$exitcode_actual" != "$exitcode_correct" ]; then
+			echo >&2 "$0: *** Test '$file' should have returned $exitcode_correct, but returned $exitcode_actual"
+			error=1
+		else
+			echo "EXITCODE...$exitcode_correct correct"
+		fi
+
+		# Target was built or not generate in case of error
+	    if [ "$exitcode_correct" = 0 ]; then
+			target=A
+			if [ -r TARGET ]; then
+				target="$(sed -re '/^\s*$/d' <TARGET)"
+			fi
+			if [ ! -r "$target" ]; then  # The main target must have been built
+				echo >&2 "$0: *** Target '$target' was not built"
+				error=1
+			else
+				# Check that CONTENT is found in the built file
+				if [ -r CONTENT ]; then
+					if fgrep -q -- "$(cat CONTENT)" "$target" ; then
+						echo "CONTENT...correct"
+					else
+						echo >&2 "$0: *** '$(cat CONTENT)' was not found in generated file"
+						error=1
+					fi
+				fi
+			fi
+		else
+			# Make sure the file "A" was not generated
+			if [ -r A ]; then
+				echo >&2 "$0: *** File 'A' was generated although the script failed"
+				error=1
+			fi
+		fi
+
+		# Check that standard output is correct
+		if [ -r STDOUT ] ; then
+			diff list.def.out STDOUT
+			exitcode="$?"
+			if [ "$exitcode" != 0 ] ; then
+				echo >&2 "$0: *** output does not match 'STDOUT'"
+				echo >&2 '_____ actual output:'
+				cat list.def.out
+				echo >&2 _____
+				wc -l list.def.out STDOUT
+				ls -l list.def.out STDOUT
+				cmp list.def.out STDOUT
+				error=1
+			else
+				echo "STDOUT...correct"
+			fi
+		fi
+
+		# Check that INSTDOUT is found in the output
+		if [ -r INSTDOUT ]; then
+			if  fgrep <list.def.out -q -- "$(cat INSTDOUT)" ; then
+				echo "INSTDOUT...correct"
+			else
+				echo >&2 "$0: *** '$(cat INSTDOUT)' was not found in output"
+				error=1
+			fi
+		fi
+
+		# Check that at least one line of error message is generated 
+		if [ "$exitcode_correct" != 0 ]; then
+			if [ \! \( "$(cat list.def.err | wc -l)" -gt 0 \) ]; then
+				echo >&2 "$0: *** Nothing written to stderr although exit code is >0"
+				error=1
+			fi
+		fi
+
+		# Check that INSTDERR is found in the error output
+		if [ -r INSTDERR ]; then
+			for lineno in $(seq 1 $(wc -l <INSTDERR)) ; do
+			   	line="$(<INSTDERR sed -re "$lineno"'!d')"
+				if fgrep <list.def.err -q -- "$line" ; then
+					echo "INSTDERR...correct"
+				else
+					echo >&2 "$0: *** '$line' was not found in error output"
+					error=1
+				fi
+			done
+		fi
+
+		# Check that STDERR matches the error output exactly 
+		if [ -r STDERR ]; then
+			diff list.def.err STDERR
+			exitcode="$?"
+			if [ "$exitcode" != 0 ]; then
+				echo >&2 "$0: *** error output does not match 'STDERR'"
+				echo >&2 '_____ actual error output:'
+				cat list.def.err
+				echo >&2 _____
+				wc -l list.def.err STDERR
+				ls -l list.def.err STDERR
+				cmp list.def.err STDERR
+				error=1
+			else
+				echo "STDERR...correct"
+			fi
+		fi
+
+		# Check that NOTINSTDERR is not found in the error output
+		if [ -r NOTINSTDERR ]; then
+			if fgrep <list.def.err -q -- "$(cat NOTINSTDERR)" ; then
+				echo >&2 "$0: *** '$(cat NOTINSTDERR)' was found in error output, but should not be there"
+				error=1
+			else
+				echo "NOTINSTDERR...correct"
+			fi
+		fi
+
+		# Second invocation does nothing 
+		if [ "$exitcode_correct" = 0 -a ! -e NOSECOND ]; then
+			../../stu $CMD | 
+			fgrep -q 'Nothing to be done' 
+			if [ $? != 0 ]; then
+				echo >&2 "$0: *** Second invocation did no result in 'Nothing to be done'"
+				error=1
+			else
+				echo "Second invocation...correct"
+			fi
+		fi
+
+		# Run in parallel 
+		if [ -r PARALLEL ]; then
+			ks="$(sed -re '/^\s*$/d' <PARALLEL)"
+			for k in $ks; do
+				delete_tmps
+				echo ../../stu $CMD -j $k
+				../../stu >list.def.out 2>list.def.err $CMD -j $k
+				if [ $? != 0 ]
+				then
+					echo >&2 "$0: *** Parallel stu failed for '$file' with k = $k"
+					error=1
+				else
+					echo "PARALLEL...correct"
+				fi
+			done
+		fi	
+	fi	
+
+    delete_tmps
+    cd ..
+
+	if [ "$error" != 0 ] ; then
+		echo "$file" >&6
+		errors=1
+	fi
+done
+
+echo __________________________________
+
+if [ "$errors" != 0 ]
+then
+	echo >&2 "$0: *** The following tests failed:"
+	cat ../error.log
+    exit 1
+else
+	echo "TESTS SUCCESSFUL"
+	exit 0
+fi

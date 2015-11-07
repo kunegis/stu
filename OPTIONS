@@ -1,0 +1,40 @@
+
+An overview of *possible* assignment of options letters, including those
+used by Make.  
+
+-a 		
+-b
+-B    M   Re-make all
+-c
+-d
+-e	      Expression
+-f  S M   File
+-g
+-h  S M   Help
+-i    M   Ignore all errors in commands
+-I    M   Include path
+-j  S M   Parallel
+-k  S M   Keep going
+-l        
+-L	  M   special handling of symlinks
+-m        Mode (e.g., random order, etc.)
+-n	  M	  Dry run (just print commands)
+-o    M   Mark file as old
+-p    M   Print database (rule set)
+-q    M   Question mode / Query mode		
+-r        
+-s  S M   Silent
+-S    M   No keep going
+-t    M   Touch instead of building
+-u
+-v  S M   Verbose
+-V  S     Version
+-w
+-W    M   What-if mode (if FILE just had been modified)
+-x
+-y
+-z
+
+
+S:  implemented in Stu
+M:  compatible with Make

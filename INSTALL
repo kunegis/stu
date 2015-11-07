@@ -1,0 +1,27 @@
+
+There is no installation command or Make target.  To install Stu, do
+the following:  
+
+* Compile stu using 'make'.  This will build the executables
+  'stu.ndebug' and 'stu.debug', the man page 'stu.1', and also run all
+  unit tests.     
+
+* Copy the executable 'stu.ndebug' (or 'stu.debug' for the debug
+  version) to a bin/ directory under the name 'stu'.  You can of course
+  also just execute it right from where it is.  The executable has no
+  runtime dependencies, so it does not matter where it is residing
+  while it is being executed, and also its filename does not matter.  
+
+* Copy the man page 'stu.1' to a man page directory,
+  e.g. /usr/share/man/man1/ or ~/man/man1/.  (In that second example,
+  you will have to put $HOME/man into your $MANPATH additionally.)
+
+REQUIREMENTS
+
+* The Makefile assumes g++, and you need a version of it that
+  has the -std=c++11 option.  If you don't, you have to edit the
+  Makefile. 
+* The unit tests assume that the filesystem supports UTF-8 filenames.
+  Stu will work without such a filesystem, but you can't run the unit
+  tests unless you remove the one offending test. 
+

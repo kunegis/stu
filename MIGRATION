@@ -1,0 +1,91 @@
+
+From each major version to the next, changes in Stu are
+backward-incompatible.  This file lists required changes in Stu files
+needed to migrate to a new major version. 
+
+== Version 0 -> Version 1 ==
+
+(1) Existence-only dependencies are noted by '!' instead of '*'.  The
+goal of this change is to allow '*' to be used to target list
+multiplication later on, and to make the syntax of existence-only
+dependencies be analogous to the notation for optional dependencies
+which will be noted with '?'. 
+
+Migration:  Change all '*'s to '!'s.
+
+Example:  Change
+
+A: *B {...}
+
+to
+
+A: !B {...}
+
+(2) Variables no longer exist.  The reason of this change is that
+variables were almost never used, and their functionality could be
+easily created by using files.  Since the variable syntax was different
+and unflexible, actual Stu scripts ended up using files anyway, so it
+was decided to free the '$' symbol for parameters, which is the reason
+for the chain shift of symbols following this one. 
+
+Migration:  Instead, declare files that contain the required content,
+and include them using $[...] syntax.    
+
+Example:  Change
+
+$CFLAGS : -g -Wall ;
+a:  a.c $CFLAGS { gcc ... $CFLAGS ... }
+
+to
+
+CFLAGS { echo -g -Wall >CFLAGS }
+a:  a.c $[CFLAGS] { gcc ... $CFLAGS ... }
+
+(3) Parameters are given in dollar syntax instead of bracket syntax, and
+parameter values are now passed as variables to the command shell
+instead of using text substitution.  This is the logical thing to do as
+now the variables are given to the shell as parameters instead of text
+substitution, which avoids quoting problems.  Also, the dollar syntax is
+nearer to that of the shell itself, making Stu easier to learn and Stu
+files are now easier to edit using shell syntax highlighting.  Also, in
+most cases the syntax is shorter now, both because one can replace
+'[NAME]' by '$NAME', and because unnecessary cases of 'NAME=[NAME]' in
+the command can be omitted. 
+
+Migration:  Change [FILENAME] to $FILENAME everywhere.  Note that with
+dollar syntax, only alphanumeric characters and '_' are allowed; others
+will have to be renamed.  Note that in shell syntax, the safe thing to
+do is to enclose the passed parameters in double quotes, while the
+safest thing to do in Version 0 was to use single quotes (but that
+didn't work when the parameter values contained single quotes.)  In many
+cases, expressions such as NAME='[NAME]' can simply be omitted.
+Analogously, dynamic variables are now denoted by $[VARIABLE] instead
+of $<VARIABLE>. 
+
+Example:  Change
+
+[NAME].data: $<FLAGS> generate {
+	NAME='[NAME]' ./generate
+}
+[NAME].eps:  [NAME].data mkplot {
+	./mkplot --name '[NAME]'
+}
+
+to
+
+$NAME.data: $[FLAGS] generate {
+	./generate
+}
+$NAME.eps:  $NAME.data mkplot {
+	./mkplot --name "$NAME"
+}
+
+(4) Dynamic dependencies are now denoted with brackets instead of
+braces.  The brackets syntax is similar to Cook's syntax for file
+inclusion, and the pair '[]' is actually a pair of brackets in Unicode,
+as opposed to '<>' which are the greater-than and less-than operators.
+Also, the operators '<' and '>' are now free and will be used for file
+redirection in the future.  
+
+Migration:  Change <FILENAME> to [FILENAME].
+

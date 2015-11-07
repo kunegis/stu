@@ -1,0 +1,68 @@
+
+Stu versions are of the form X.Y.Z, where X is the major version, Y is
+the minor version and Z the patch level.  For each new patch level, no
+new features are added.  When the minor version is incremented, features
+are added, which are documented in this file.  When the major version is
+increased, backward-incompatible changes are made, which are documented
+in the file MIGRATION. 
+
+2015-10-22  Version 1.6:
+
+* Both the -f option and the %include directive now allow directories as
+  parameters, and will read the file 'main.stu' within them.
+
+2015-10-19  Version 1.5:
+
+* The syntax now allows parenthesis (only for grouping, no other
+  semantics).  The can contain any number of other dependencies.
+  Example:
+
+      (A [B] [(C)]) 
+
+  is equivalent to
+
+      A [B] [C]
+
+* Brackets can contain multiple expressions, e.g. [A B C].  This is
+  equivalent to [A] [B] [C].
+* The attributes '?' and '!' can be used as prefix operators at any
+  level inside and outside brackets, with differing semantics.  For
+  instance, the three following line have different meaning:
+    [?A]   # The dependency 'A' is optional
+    ?[A]   # The dependencies read from 'A' are optional
+	?[?A]  # Combination of the two
+* Much code related to dynamic dependencies was rewritten, in particular
+  related to options '?' and '!' as well as multiply dynamic
+  dependencies.  As a result, many bugs related to these features were
+  fixed. 
+
+2015-06-10  Version 1.4
+
+* Parentheses are supported and may contain multiple filenames.
+  Brackets may contain multiple filenames.  Existence-only dependencies
+  are transitive through phonies and parentheses. 
+
+2015-06-05  Version 1.3
+
+* Optional dependencies are supported, and use the prefix '?'.  Their
+  semantics is:  If the dependency does not exist, it is never created.
+  If it already exists, it is processed normally (i.e., regenerated when
+  it has to.)
+
+2015-09-29  Version 1.2
+
+* Input redirection is possible using the '<' operator, which must be
+  put in front of a file dependency which is then used as standard input
+  for the command.  This cannot be used for phony dependencies, for
+  variable dependencies or for dynamic dependencies (neither before them
+  or within them).  When combined with '!', the redirection operator
+  comes second, i.e., '!<A'.  This can be combined with the output
+  operator '>' to write commands that consist only of a single call to a
+  filter such as sed, tr or awk. 
+
+2015-05-29  Version 1.1:
+
+* Output commands directly into the target file using the '>'
+  operator, to be used in front of the target filename.  Only for file
+  rules, not for phonies.
+

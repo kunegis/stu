@@ -23,7 +23,7 @@ everything from acquiring data from the web, to performing experiments,
 to generating plots and compiling the resulting Latex papers.  It is
 also used for compiling C/C++ code, and for generating tarballs.  
 
-Stu was written in 2014/2015 by Jerome Kunegis at the University of
+Stu was written in 2014/2015 by Jérôme Kunegis at the University of
 Koblenz-Landau.
 
 Stu is free software: you can redistribute it and/or modify it under the

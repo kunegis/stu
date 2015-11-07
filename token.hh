@@ -95,6 +95,7 @@ public:
 	/* The individual lines of the command. 
 	 * Empty lines and leading spaces are not included.  These lines
 	 * are only used for output, not for execution. */ 
+	// Don't fill this in the constructor -- build it on demand. 
 	vector <string> lines;
 
 	Command(string command_, 

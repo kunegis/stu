@@ -2,7 +2,7 @@
 There is no installation command or Make target.  To install Stu, do
 the following:  
 
-* Compile stu using 'make'.  This will build the executables
+* Compile Stu using 'make'.  This will build the executables
   'stu.ndebug' and 'stu.debug', the man page 'stu.1', and also run all
   unit tests.     
 

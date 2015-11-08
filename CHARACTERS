@@ -48,8 +48,8 @@ These characters are tokens in themselves.
 
 =   Variable dependency name assignment / file copy / here-document 
 *   String multiplication 
-, 	modifiers (e.g., ',0' for \0-separated input files). 
-\	interpreter:   \octave { }
-\	Set difference:   dat/plot.([dat/NETWORKS] \ enron).eps
-|	Index-wise concatenation:  (a b) | (x y) results in (ax by)
+,   modifiers (e.g., ',0' for \0-separated input files). 
+\   interpreter:   \octave { }
+\   Set difference:   dat/plot.([dat/NETWORKS] \ enron).eps
+|   Index-wise concatenation:  (a b) | (x y) results in (ax by)
 &   Set intersection:  (a b c) & (b c d) is equivalent to (b c)

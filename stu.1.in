@@ -1,6 +1,6 @@
 .TH STU 1 "$DATE" "stu-$VERSION" "University of Koblenz-Landau"
 .SH NAME
-stu \- Build tool
+stu \- Build automation
 .SH SYNOPSIS
 .B stu 
 [ -f
@@ -11,7 +11,7 @@ stu \- Build tool
 .I OPTIONS ...
 ]
 .SH DESCRIPTION
-Stu is a build tool.  Like Make, it is used to call other programs in
+Stu is a tool for build automation.  Like Make, it is used to call other programs in
 order to build files.  Stu has two features that set it apart from Make:
 (1) dynamic dependencies:  The dependencies of a target can be
 themselves computed by a command.  When '[FILENAME]' (a filename currounded by angle brackets) is used as a

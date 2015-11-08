@@ -2,12 +2,12 @@
 An overview of *possible* assignment of options letters, including those
 used by Make.  
 
--a 		
+-a
 -b
 -B    M   Re-make all
 -c
 -d
--e	      Expression
+-e        Expression
 -f  S M   File
 -g
 -h  S M   Help
@@ -16,12 +16,12 @@ used by Make.
 -j  S M   Parallel
 -k  S M   Keep going
 -l        
--L	  M   special handling of symlinks
+-L    M   special handling of symlinks
 -m        Mode (e.g., random order, etc.)
--n	  M	  Dry run (just print commands)
+-n    M   Dry run (just print commands)
 -o    M   Mark file as old
 -p    M   Print database (rule set)
--q    M   Question mode / Query mode		
+-q    M   Question mode / Query mode
 -r        
 -s  S M   Silent
 -S    M   No keep going

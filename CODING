@@ -3,7 +3,7 @@ Here are the relevant coding conventions we use.
 
 == Standards == 
 
-* Use the C++11 version of C++; avoid extensions such as GNU extensions  
+* Use the C++11 version of C++; avoid extensions such as GNU extensions   
 * Use "nullptr" as the null pointer constant.  
 * Compilation is done in a single step by compiling the file 'stu.cc'.
   All other source files are actually *.hh files which are included.

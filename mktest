@@ -16,9 +16,9 @@
 # PARAMETERS
 #
 #     $emptyok	Set to non-empty to *not* output an error for empty test
-#				directories; useful after doing "svn rm" on one, since
-#				that leaves a directory containing only ".svn".  Ignores
-#				dotfiles. 
+#				directories; useful after doing "rm" in a version
+#				control system on one, since that leaves a directory
+#				containing only (e.g.) ".svn".  Ignores dotfiles. 
 #	  $NDEBUG	Set to nonempty to test the nondebug version; by default
 #				the debug version is tested 
 #
@@ -39,7 +39,7 @@
 #   after the test.  Most generated files' names just consist of a
 #   single uppercase letter (but they don't have to).
 # * There may be other files present used by the test; these are part of
-#   the Stu release, i.e., they are in SVN. 
+#   the Stu release, i.e., they are under version control. 
 #
 # SPECIFICATION FILES
 #

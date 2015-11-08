@@ -1,7 +1,7 @@
 #ifndef EXECUTION_HH
 #define EXECUTION_HH
 
-/* Code for executing the building process of Stu itself.  This is by
+/* Code for executing the building process itself.  This is by
  * far the longest source code file in Stu.  Each file or phony target
  * is represented at runtime by one Execution object.  All Execution objects
  * are allocated with new Execution(...), and are never deleted, as the

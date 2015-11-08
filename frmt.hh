@@ -83,7 +83,7 @@ string fmt(const char *s, T value, Args... args)
 		}
 		assert(*q == '%'); 
 		string ret(s, q - s); 
-		s = q + 1;
+		s= q + 1;
 		if (*s == '%') {
 				ret += '%';
 				++s;

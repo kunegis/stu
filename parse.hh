@@ -166,7 +166,7 @@ void parse(vector <shared_ptr <Token> > &tokens,
 				do {
 					if (*p == '\n') {
 						++line;  
-						p_line = p + 1; 
+						p_line= p + 1; 
 					}
 					++p; 
 				} while (p < p_end && is_space(*p));
@@ -179,7 +179,7 @@ void parse(vector <shared_ptr <Token> > &tokens,
 				while (p < p_end && is_space(*p)) {
 					if (*p == '\n') {
 						++line;  
-						p_line = p + 1; 
+						p_line= p + 1; 
 					}
 					++p; 
 				}
@@ -270,7 +270,7 @@ void parse(vector <shared_ptr <Token> > &tokens,
 					while (p < p_end && is_space(*p)) {
 						if (*p == '\n') {
 							++line;  
-							p_line = p + 1; 
+							p_line= p + 1; 
 						}
 						++p; 
 					}

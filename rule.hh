@@ -310,7 +310,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 
 void Rule_Set::add(vector <shared_ptr <Rule> > &rules_) 
 {
-	for (auto i = rules_.begin();  i != rules_.end();  ++i) {
+	for (auto i= rules_.begin();  i != rules_.end();  ++i) {
 
 		shared_ptr <Rule> rule= *i;
 

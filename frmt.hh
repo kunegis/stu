@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-/* Two formatting functions. 
+/* Two formatting functions.
  */
 
 /* This is a convenient function for performing printf-like formatting

@@ -2,7 +2,7 @@
 #define GLOBAL_HH
 
 /* 
- * Global variables 
+ * Global variables used by Stu
  */ 
 
 /* The -k option (continue when encountering errors) */ 

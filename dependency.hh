@@ -457,4 +457,3 @@ void print_dependencies(const vector <shared_ptr <Dependency> > &dependencies)
 #endif /* ! NDEBUG */
 
 #endif /* ! DEPENDENCY_HH */
-

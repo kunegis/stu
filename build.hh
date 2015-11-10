@@ -60,8 +60,8 @@ private:
 public:
 
 	Build(vector <shared_ptr <Token> > &tokens_,
-		  vector <shared_ptr <Token> > ::iterator &iter_,
-		  Place place_end_)
+	      vector <shared_ptr <Token> > ::iterator &iter_,
+	      Place place_end_)
 		:  tokens(tokens_),
 		   iter(iter_),
 		   place_end(place_end_)
@@ -89,24 +89,24 @@ public:
 	shared_ptr <Rule> build_rule(); 
 
 	void build_dependency_list(vector <shared_ptr <Dependency> > &ret, 
-							   Place_Param_Name &place_param_name_input,
-							   Place &place_input);
+				   Place_Param_Name &place_param_name_input,
+				   Place &place_input);
 
 	bool build_dependency(vector <shared_ptr <Dependency> > &ret, 
-						  Place_Param_Name &place_param_name_input,
-						  Place &place_input);
+			      Place_Param_Name &place_param_name_input,
+			      Place &place_input);
 
 	shared_ptr <Dependency> build_variable_dependency
 	(Place_Param_Name &place_param_name_input,
 	 Place &place_input);
 
 	bool build_expression(vector <shared_ptr <Dependency> > &ret, 
-						  Place_Param_Name &place_param_name_input,
-						  Place &place_input);
+			      Place_Param_Name &place_param_name_input,
+			      Place &place_input);
 
 	bool build_single_expression(vector <shared_ptr <Dependency> > &ret, 
-								 Place_Param_Name &place_param_name_input,
-								 Place &place_input);
+				     Place_Param_Name &place_param_name_input,
+				     Place &place_input);
 
 	shared_ptr <Dependency> build_redirect_dependency
 	(Place_Param_Name &place_param_name_input,
@@ -146,8 +146,8 @@ void Build::build_file(vector <shared_ptr <Rule> > &ret)
 shared_ptr <Rule> Build::build_rule()
 {
 	if (! (dynamic_pointer_cast <Param_Name> (*iter) || 
-		   is_operator('@') ||
-		   is_operator('>'))) {
+	       is_operator('@') ||
+	       is_operator('>'))) {
 		return shared_ptr <Rule> (); 
 	}
 
@@ -296,14 +296,14 @@ shared_ptr <Rule> Build::build_rule()
 	}
 
 	shared_ptr <Rule> ret(new Rule(place_param_target, dependencies, 
-								   command, redirect_output, filename_input));
+				       command, redirect_output, filename_input));
 
 	return ret; 
 }
 
 void Build::build_dependency_list(vector <shared_ptr <Dependency> > &ret,
-								  Place_Param_Name &place_param_name_input,
-								  Place &place_input)
+				  Place_Param_Name &place_param_name_input,
+				  Place &place_input)
 {
 	/* As a general rule, the places of the generated dependencies are
 	 * on the filenames of the dependencies or the '@' of phony
@@ -322,8 +322,8 @@ void Build::build_dependency_list(vector <shared_ptr <Dependency> > &ret,
 }
 
 bool Build::build_dependency(vector <shared_ptr <Dependency> > &ret, 
-							 Place_Param_Name &place_param_name_input,
-							 Place &place_input)
+			     Place_Param_Name &place_param_name_input,
+			     Place &place_input)
 {
 	assert(ret.size() == 0); 
 
@@ -443,8 +443,8 @@ shared_ptr <Dependency> Build::build_variable_dependency
 }
 
 bool Build::build_expression(vector <shared_ptr <Dependency> > &ret, 
-							 Place_Param_Name &place_param_name_input,
-							 Place &place_input)
+			     Place_Param_Name &place_param_name_input,
+			     Place &place_input)
 {
 	assert(ret.size() == 0); 
 
@@ -457,8 +457,8 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 }
 
 bool Build::build_single_expression(vector <shared_ptr <Dependency> > &ret, 
-									Place_Param_Name &place_param_name_input,
-									Place &place_input)
+				    Place_Param_Name &place_param_name_input,
+				    Place &place_input)
 {
 	assert(ret.size() == 0); 
 

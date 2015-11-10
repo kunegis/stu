@@ -51,53 +51,53 @@ string frmt(const char *format, ...)
 /* Without args */ 
 string fmt(const char *s)
 {
-		string ret; 
-		while (*s) {
-				const char *q= strchr(s, '%');
-				if (!q) {
-						ret += s;
-						break;
-				}
-				assert(*q == '%'); 
-				ret += string(s, q - s); 
-				s= q + 1;
-				if (*s != '%') {
-						/* Missing argument */ 
-						assert(false);
-						break;
-				}
-				ret += '%'; 
-				++s;
+	string ret; 
+	while (*s) {
+		const char *q= strchr(s, '%');
+		if (!q) {
+			ret += s;
+			break;
 		}
-		return ret; 
+		assert(*q == '%'); 
+		ret += string(s, q - s); 
+		s= q + 1;
+		if (*s != '%') {
+			/* Missing argument */ 
+			assert(false);
+			break;
+		}
+		ret += '%'; 
+		++s;
+	}
+	return ret; 
 }
 
 template<typename T, typename... Args>
 string fmt(const char *s, T value, Args... args)
 {
-		const char *q= strchr(s, '%');
-		if (!q) { 
-				/* Too many arguments */ 
-				assert(false);
-				return string(q);
-		}
-		assert(*q == '%'); 
-		string ret(s, q - s); 
-		s= q + 1;
-		if (*s == '%') {
-				ret += '%';
-				++s;
-				return ret + fmt(s, value, args...); 
-		}
-		if (*s != 's') {
-				/* Invalid format specifier */ 
-				assert(false);
-				return ret; 
-		}
-		assert(*s == 's');
+	const char *q= strchr(s, '%');
+	if (!q) { 
+		/* Too many arguments */ 
+		assert(false);
+		return string(q);
+	}
+	assert(*q == '%'); 
+	string ret(s, q - s); 
+	s= q + 1;
+	if (*s == '%') {
+		ret += '%';
 		++s;
+		return ret + fmt(s, value, args...); 
+	}
+	if (*s != 's') {
+		/* Invalid format specifier */ 
+		assert(false);
+		return ret; 
+	}
+	assert(*s == 's');
+	++s;
 
-		return ret + value + fmt(s, args...); 
+	return ret + value + fmt(s, args...); 
 }
 
 #endif /* ! FRMT_HH */

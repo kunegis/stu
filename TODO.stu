@@ -1,13 +1,4 @@
 
-#
-# Check that the directory file descriptors are closed after calling
-# openat(). 
-#
-
-#
-# Revert to 8-char tabs.
-#
-
 # 
 # Think again about using /bin/sh -x. 
 #
@@ -179,6 +170,11 @@ tmp: {...}
 # 
 # An option to consider all targets up to date.  I.e., execute only the
 # minimum to get the given files built. 
+#
+
+#
+# An option for automatic logging:  write all output (stdout/stderr) of
+# commands to a file (a different file per target). 
 #
 
 #==== Big features that complete what we already have ====

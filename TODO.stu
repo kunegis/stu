@@ -1,4 +1,13 @@
 
+#
+# Check that the directory file descriptors are closed after calling
+# openat(). 
+#
+
+#
+# Revert to 8-char tabs.
+#
+
 # 
 # Think again about using /bin/sh -x. 
 #

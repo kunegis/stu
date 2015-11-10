@@ -16,15 +16,15 @@
 # PARAMETERS
 #
 #     $emptyok	Set to non-empty to *not* output an error for empty test
-#				directories; useful after doing "rm" in a version
-#				control system on one, since that leaves a directory
-#				containing only (e.g.) ".svn".  Ignores dotfiles. 
-#	  $NDEBUG	Set to nonempty to test the nondebug version; by default
-#				the debug version is tested 
+#               directories; useful after doing "rm" in a version
+#		control system on one, since that leaves a directory
+#		containing only (e.g.) ".svn".  Ignores dotfiles. 
+#     $NDEBUG	Set to nonempty to test the nondebug version; by default
+#		the debug version is tested 
 #
 # OUTPUT
 # 
-#	error.log	List of tests that failed
+#     error.log	List of tests that failed
 #
 # TEST SPECIFICATION 
 #
@@ -96,7 +96,7 @@ fi
 # Delete temporary files created by tests.  Tests only create temporary
 # files of these patterns.  Executed within each test directory. 
 delete_tmps() {
-    rm -f ? ?? A.* *.data list.* dep.* +-.~_
+	rm -f ? ?? A.* *.data list.* dep.* +-.~_
 }
 
 exec 6>error.log
@@ -104,26 +104,26 @@ exec 6>error.log
 cd test
 
 if [ "$1" ] ; then
-    tests="$@"
+	tests="$@"
 else
 	# Note:  At some point there might be too many tests, but we don't
 	# want to use ls -1 | { ... } because that would make it impossible
 	# to do "error=1", as setting the variable $error in a subshell
 	# would have no effect. 
-    tests="$(echo *)"
+	tests="$(echo *)"
 fi
 
 for file in $tests
 do
 	error=0
 
-    if [ ! -d "$file" ]; then
+	if [ ! -d "$file" ]; then
 		echo >&2 "$0: *** '$file' is not a directory"
 		error=1
 		echo "$file" >&6
 		errors=1
 		continue
-    fi
+	fi
 
 	# There are no files in the test directory (ignoring dotfiles) 
 	if [ "$(ls -1 "$file" | wc -l)" = 0 ] ; then
@@ -136,28 +136,28 @@ do
 		continue;
 	fi
 
-    echo __________________________________
+	echo __________________________________
 	echo cd "$file"
 	cd "$file"
 
-    delete_tmps
+	delete_tmps
 
-    # Check that all all-uppercase files are of one of the allowed files 
-    allowed="EXITCODE|PARALLEL|INSTDOUT|INSTDERR|NOTINSTDERR|STDERR|CMD|TARGET|CONTENT|EXEC|STDOUT|NOSECOND"
-    for otherfile in $(ls -1 | sed -re '/^[A-Z]+$/!d;/^('"$allowed"')$/d')
-    do
+	# Check that all all-uppercase files are of one of the allowed files 
+	allowed="EXITCODE|PARALLEL|INSTDOUT|INSTDERR|NOTINSTDERR|STDERR|CMD|TARGET|CONTENT|EXEC|STDOUT|NOSECOND"
+	for otherfile in $(ls -1 | sed -re '/^[A-Z]+$/!d;/^('"$allowed"')$/d')
+	do
 		echo >&2 "$0: *** Invalid file '$otherfile' in test directory"
 		error=1
-    done
+	done
 
-    CMD=
-    if [ -r CMD ]; then
-    	CMD="$(sed -re '/^\s*$/d' <CMD)"
-    fi
+	CMD=
+	if [ -r CMD ]; then
+    		CMD="$(sed -re '/^\s*$/d' <CMD)"
+	fi
 
 	# The following will save:  list.def.out and list.def.err 
 
-    if [ -r EXEC ]; then
+	if [ -r EXEC ]; then
 
 		if [ -r EXITCODE -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
 			-o -r STDERR -o -r NOTINSTDERR -o -r CMD \
@@ -197,7 +197,7 @@ do
 		fi
 
 		# Target was built or not generate in case of error
-	    if [ "$exitcode_correct" = 0 ]; then
+		if [ "$exitcode_correct" = 0 ]; then
 			target=A
 			if [ -r TARGET ]; then
 				target="$(sed -re '/^\s*$/d' <TARGET)"
@@ -331,8 +331,8 @@ do
 		fi	
 	fi	
 
-    delete_tmps
-    cd ..
+	delete_tmps
+	cd ..
 
 	if [ "$error" != 0 ] ; then
 		echo "$file" >&6
@@ -346,7 +346,7 @@ if [ "$errors" != 0 ]
 then
 	echo >&2 "$0: *** The following tests failed:"
 	cat ../error.log
-    exit 1
+	exit 1
 else
 	echo "TESTS SUCCESSFUL"
 	exit 0

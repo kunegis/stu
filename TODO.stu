@@ -1,9 +1,17 @@
 
-# 
-# Think again about using /bin/sh -x. 
-#
-
 #==== Small features that complete what we already have ====
+
+#
+# -w:  Intermediate mode between -s and not -s:  Output the name of the files
+# that are built, but not more.  The lack of this feature is a common
+# complaint about Make. 
+#
+#  filenameA...done
+#  filenameB...
+#
+#    * what if there is output between the filename and 'done'.  How to
+#      recognize that output was written?
+#
 
 #
 # Assign a name to a dynamic variable.  Useful when the name of the file
@@ -43,15 +51,6 @@ A = {}
 # In general, the problem with hard-coded content is that changes in its
 # definition are not recognized.  If that is needed, then the files
 # themselves can easily be created by hand. 
-
-#
-# Intermediate mode between -s and not -s:  Output the name of the files
-# that are built, but not more.  The lack of this feature is a common
-# complaint about Make. 
-#
-#  filenameA...done
-#  filenameB...
-#
 
 #
 # Have an option which makes Stu output statistics when it is finished:
@@ -131,9 +130,9 @@ konect.bib=  ../../projects/konect/;
 
 #
 # Support these options from Make:
-#   -B 				remake all targets regardless of dates
-#   -o FILENAME	    never rebuild that file ("old")
-#   -q 				Question mode 
+#   -B 		    Remake all targets regardless of dates
+#   -o FILENAME	    Never rebuild that file ("old")
+#   -q 		    Question mode 
 #
 
 #
@@ -175,6 +174,17 @@ tmp: {...}
 #
 # An option for automatic logging:  write all output (stdout/stderr) of
 # commands to a file (a different file per target). 
+#
+
+# 
+# Think again about using /bin/sh -x. 
+#   + each command is output as it is executed
+#   - when a loop is executed, many lines are output
+#   ~ commands are prefixed with '+ '
+#   + environment variables are replaced with their values in the output
+#   - we still would have to prefix the output with the value of
+#     variables, since in many cases commands don't contain environment
+#     variables (but only pass them the called programs)
 #
 
 #==== Big features that complete what we already have ====

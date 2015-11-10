@@ -25,7 +25,7 @@ private:
 public:
 	Process() 
 		:  pid(-2)
-		{ }
+	{ }
 
 	/* Call after having returned this process from wait_do(). 
 	 * Return TRUE of the child was successful. 
@@ -62,9 +62,9 @@ public:
 	 * PID (>= 0).  MAPPING contains the environment variables to set. 
 	 */
 	pid_t start(string command, 
-				const map <string, string> &mapping,
-				string filename_output,
-				string filename_input); 
+		    const map <string, string> &mapping,
+		    string filename_output,
+		    string filename_input); 
 
 	/* Wait for the next process to terminate; provide the STATUS as
 	 * used in wait(2).  Return the PID of the waited-for process (>=0). */  
@@ -73,9 +73,9 @@ public:
 };
 
 pid_t Process::start(string command,
-					 const map <string, string> &mapping,
-					 string filename_output,
-					 string filename_input)
+		     const map <string, string> &mapping,
+		     string filename_output,
+		     string filename_input)
 {
 	assert(pid == -2); 
 

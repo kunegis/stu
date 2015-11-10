@@ -2,8 +2,8 @@
 An overview of *possible* assignment of options letters, including those
 used by Make.  
 
--a
--b
+-a	  Make all targets in the file
+-b	  Enable backups
 -B    M   Re-make all
 -c
 -d
@@ -15,8 +15,8 @@ used by Make.
 -I    M   Include path
 -j  S M   Parallel
 -k  S M   Keep going
--l        
--L    M   special handling of symlinks
+-l        Log (redirect all output of commands to logfiles) 
+-L    M   Special handling of symlinks
 -m        Mode (e.g., random order, etc.)
 -n    M   Dry run (just print commands)
 -o    M   Mark file as old
@@ -31,7 +31,7 @@ used by Make.
 -V  S     Version
 -w
 -W    M   What-if mode (if FILE just had been modified)
--x
+-x        Enable /bin/sh -x instead of normal output 
 -y
 -z
 

@@ -131,7 +131,7 @@ public:
 	
 	/* Take the dependency place from the target place */ 
 	Direct_Dependency(Flags flags_,
-					  const Place_Param_Target &place_param_target_)
+			  const Place_Param_Target &place_param_target_)
 		:  Base_Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place) 
@@ -141,8 +141,8 @@ public:
 
 	/* Use an explicit dependency place */ 
 	Direct_Dependency(Flags flags_,
-					  const Place_Param_Target &place_param_target_,
-					  const Place &place_)
+			  const Place_Param_Target &place_param_target_,
+			  const Place &place_)
 		:  Base_Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_)

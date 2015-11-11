@@ -60,12 +60,12 @@ void parse_version(string version, const Place &place_version);
  * Throws integers as errors. 
  */
 void parse(vector <shared_ptr <Token> > &tokens, 
-		   Place &place_end,
-		   string filename, 
-		   bool allow_include,
-		   vector <Trace> &traces,
-		   vector <string> &filenames,
-		   int fd= -1)
+	   Place &place_end,
+	   string filename, 
+	   bool allow_include,
+	   vector <Trace> &traces,
+	   vector <string> &filenames,
+	   int fd= -1)
 {
 	const char *in= nullptr;
 	struct stat buf;
@@ -348,10 +348,10 @@ void parse(vector <shared_ptr <Token> > &tokens,
 
 
 shared_ptr <Command> parse_command(const string filename, 
-								   unsigned &line, 
-								   const char *&p_line,
-								   const char *&p, 
-								   const char *p_end)
+				   unsigned &line, 
+				   const char *&p_line,
+				   const char *&p, 
+				   const char *p_end)
 {
 	assert(p < p_end && *p == '{');
 
@@ -534,10 +534,10 @@ shared_ptr <Command> parse_command(const string filename,
 }
 
 shared_ptr <Place_Param_Name> parse_name(string filename,
-										 unsigned &line,
-										 const char *&p_line,
-										 const char *&p,
-										 const char *p_end)
+					 unsigned &line,
+					 const char *&p_line,
+					 const char *&p,
+					 const char *p_end)
 {
 	Place place_begin(filename, line, p - p_line);
 

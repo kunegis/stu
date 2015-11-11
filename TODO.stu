@@ -408,44 +408,46 @@ A:  (B C) | (D E) { ... }
 # as one. 
 #
 
-A:	B * C;    # Binary multiplication operator
-A:	B * (C D); # Parentheses
-A:	B[C];      # Justaposition
-A:	[B]C;      # OK
-A:	B(C D);    # OK
-A:	B(C D)E;   # OK
-A:	B[C]D;     # OK
-A:	[B] * [C]; # OK
-A:	(A B) * (C D); # OK
-A:	[B][C];        # OK
-A:	(A B)(C D);    # OK
-A:  (!B) * (C);    # OK
-A:  (?B) * (C);    # OK
-A:  (B) * (!C);    # error
-A:  (B) * (?C);    # error
-A:  (?B) * (!C);   # error
-A:  (<B) * (C);    # OK
-A:  (B) * (<C);    # error
-A:  !B(C D);       # OK
-A:  ?B(C D);       # OK
-A:  <B(C);         # OK
-A:  <B(C D);       # error
-A:  @B(C);         # OK
-A:  @B(C D);     # OK
-A:  B * @C;      # error 
-A:  $[B] * C;    # error
-A:  B * $[C];    # error
-A:  <B * C;      # OK (or maybe:  ambiguous)
-A:  B * <C;      # error
-A:  <B[C];		 # OK iff C contains exactly one dependency (or an error)
-@A: @B[C];       # OK
-A:  B@C;		 # error
-A.$X.$Y:  $X * $Y      # OK (can be contiguous)
-A.$X.$Y:  $X.a * b.$X  # OK (despite duplicate parameter) 
-A.$X.$Y:  $X. * $Y     # OK
-A.$X.$Y:  $X * .$Y     # OK
+A:	B * C;    	# Binary multiplication operator
+A:	B * (C D); 	# Parentheses
+A:	B[C];      	# Justaposition
+A:	[B]C;      	# OK
+A:	B(C D);    	# OK
+A:	B(C D)E;   	# OK
+A:	B[C]D;     	# OK
+A:	[B] * [C]; 	# OK
+A:	(A B) * (C D); 	# OK
+A:	[B][C];         # OK
+A:	(A B)(C D);     # OK
+A:  (!B) * (C);    	# OK
+A:  (?B) * (C);    	# OK
+A:  (B) * (!C);    	# error
+A:  (B) * (?C);    	# error
+A:  (?B) * (!C);   	# error
+A:  (<B) * (C);    	# OK
+A:  (B) * (<C);    	# error
+A:  !B(C D);       	# OK
+A:  ?B(C D);       	# OK
+A:  <B(C);         	# OK
+A:  <B(C D);       	# error
+A:  @B(C);         	# OK
+A:  @B(C D);     	# OK
+A:  B * @C;      	# error 
+A:  $[B] * C;    	# error
+A:  B * $[C];    	# error
+A:  <B * C;      	# OK (or maybe:  ambiguous)
+A:  B * <C;      	# error
+A:  <B[C];		# OK iff C contains exactly one dependency (or an error)
+@A: @B[C];       	# OK
+A:  B@C;		# error
+A.$X.$Y:  $X * $Y       # OK (can be contiguous)
+A.$X.$Y:  $X.a * b.$X   # OK (despite duplicate parameter) 
+A.$X.$Y:  $X. * $Y      # OK
+A.$X.$Y:  $X * .$Y      # OK
 
 # More examples
+
+@headers:  (config parse build).h
 
 @plot.all:   @plot.[NETWORKS];
 

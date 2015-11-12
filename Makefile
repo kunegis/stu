@@ -13,10 +13,13 @@ all: stu.debug stu.ndebug stu.1 stu.text check
 CXXFLAGS_DEBUG= -ggdb
 CXXFLAGS_NDEBUG= -O3 -DNDEBUG -s
 
+# Some of the specialized warning flags may not be present in other
+# compilers and compiler versions than those used by the authors.  Just
+# remove the flags if you use such a compiler. 
 CXXFLAGS_OTHER=             \
     -std=c++11              \
     -Wall -Wextra -Wunused -pedantic \
-    -Wshadow -Wundef -Wc++11-compat -Wwrite-strings -Wzero-as-null-pointer-constant       \
+    -Wundef -Wc++11-compat -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
     -Werror                 \
     -fno-gnu-keywords       \
     -D_FILE_OFFSET_BITS=64 

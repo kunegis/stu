@@ -1,4 +1,12 @@
 
+#
+# As $0 to /bin/sh, pass e.g. "main.stu:72". 
+#
+
+#
+# Don't echo dynamic variables (only parameters) 
+#
+
 #==== Small features that complete what we already have ====
 
 #
@@ -302,7 +310,7 @@ A: [B],i;
 
 %line ...
 
-#==== New features that change extend the syntax drastically ====
+#==== New features that change extend the Stu drastically ====
 
 #
 # How to declare additional command interpreters.  Note:  we may use
@@ -380,6 +388,77 @@ A:  (B C) | (D E) { ... }
 #
 
 @plots:  dat/plot.([dat/NETWORKS] \ enron).eps;
+
+#
+# Phonies can have content.  This will be executed at every Stu
+# invocation. 
+#
+
+# Their definition:
+@NAME = { linux }
+@NAME2 = @NAME;
+>@NAME { ./printname }
+
+# Their use:
+file:  <@NAME { sed -re '...' >file }
+result.eps:  $[@NAME] { ./compute --name "$NAME" }
+
+#
+# Allow regular expressions in parameters, e.g. for single-character
+# parameters.  This will also make it possible to allow contiguous
+# parameters, and giving a list of possible values for a parametrized
+# rule. 
+#
+
+# Allow contiguous parameters
+list.${X:.}${Y:.} {
+	compute -x $X -y $Y >list.${X}${Y}
+}
+
+# Exclude certain characters from parameter names 
+web.${NETWORK:[^.]+}
+
+# Specify a list of values
+${NAME:ref|ukob|tuberlin}.bib:  bibs-A/${NAME}.bib
+{ cp bibs-A/$NAME.bib $NAME.bib }
+$NAME.bib:  bibs-B/$NAME.bib
+{ cp bibs-B/$NAME.bib $NAME.bib }
+
+# Exclude slashes
+${NAME:[^/]+}.bib: ...;
+
+#
+# When an error is output, the column number must take into account
+# unicode characters.  In this example, the opening { must be reported
+# to be at character 13.  This was implemented, but was decided to be
+# too slow.  
+#
+
+éäçöôüœß柏林: {
+
+#
+# Recursion at the rule level is not allowed at the moment, but could
+# be.  The problem is how to recognize infinite recursion. 
+#
+
+# Example 1:  Recursion at the rule level is needed to implement correct
+# C source dependency. 
+
+# Example 2:  building A.gz.gz does not work. 
+$NAME.gz:  $NAME {
+	gzip -c $NAME >$NAME.gz
+}
+A:  {
+    echo 'Hello, World!' >A
+}
+
+#
+# Hashing instead of timestamps is a feature that's implemented by quite
+# a few Make replacements.  This could also be combined with
+# preprocessors which ignore whitespace, etc.  Can also be used for the
+# commands embedded in Stu files, but then again we don't want to
+# rebuild everything just because a command changed. 
+#
 
 #==== Backward-incompatible features ====
 

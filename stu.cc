@@ -19,7 +19,8 @@
 #    define _GLIBCXX_DEBUG
 #endif 
 
-/* Used for all of Stu */
+/* Used for all of Stu.
+ */
 using namespace std; 
 
 #include "token.hh"
@@ -29,6 +30,7 @@ using namespace std;
 #include "build.hh"
 #include "execution.hh"
 #include "version.hh"
+
 
 /* We use getopt(), which means that Stu does only support short
  * options, and not long options.  At some point, we might switch to
@@ -256,4 +258,3 @@ int main(int argc, char **argv, char **envp)
 
 	exit(0); 
 }
-

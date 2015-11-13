@@ -1,9 +1,5 @@
 
 #
-# As $0 to /bin/sh, pass e.g. "main.stu:72". 
-#
-
-#
 # Don't echo dynamic variables (only parameters) 
 #
 

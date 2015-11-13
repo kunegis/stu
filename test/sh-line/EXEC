@@ -1,0 +1,23 @@
+#! /bin/sh
+
+rm -f list.err
+
+echo ../../stu
+../../stu 2>list.err
+exitcode=$?
+
+if [ $exitcode != 1 ] ; then
+	echo '*** (A)'
+	exit 1
+fi
+
+grep -Eq '^main.stu:7:.*wefvunwoiefuvuviwwve' list.err || {
+	echo '*** (B)'
+	echo 'list.err:'
+	echo ____________
+	cat list.err
+	echo ____________
+	exit 1
+}
+
+exit 0

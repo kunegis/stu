@@ -38,6 +38,7 @@
 #include <assert.h>
 
 #include "global.hh"
+#include "frmt.hh"
 
 #define ERROR_BUILD     1
 #define ERROR_LOGICAL   2
@@ -150,6 +151,11 @@ public:
 	/* Print the beginning of the line, with the place and the
 	 * whitespace, but not any message. */ 
 	void print_beginning() const;
+
+	/* Represented as a compact string */
+	string as_string() const;
+
+	string as_string_nocolumn() const;
 };
 
 /* A place along with a message.  This class is only used when traces
@@ -207,20 +213,45 @@ void Place::operator<<(string text) const
 
 void Place::print_beginning() const
 {
+	string s= as_string(); 
+	fprintf(stderr, "%s: ", s.c_str()); 
+}
+
+string Place::as_string() const
+{
 	switch (type) {
 	default:  assert(0); 
+
 	case P_EMPTY:
-		fprintf(stderr, "<empty>: "); 
-		break;
+		return "<empty>"; 
+
 	case P_FILE:
-		fprintf(stderr, "%s:%u:%u: ", 
-				filename.c_str(), line, 1 + column);  
-		break;
+		return frmt("%s:%u:%u", 
+			    filename.c_str(), line, 1 + column);  
+
 	case P_ARGV:
-		fprintf(stderr, 
-				"Command line argument: '%s': ",
-				filename.c_str()); 
-		break;
+		return frmt("Command line argument: '%s'",
+			    filename.c_str()); 
+
+	}
+}
+
+string Place::as_string_nocolumn() const
+{
+	switch (type) {
+	default:  assert(0); 
+
+	case P_EMPTY:
+		return "<empty>"; 
+
+	case P_FILE:
+		return frmt("%s:%u", 
+			    filename.c_str(), line);  
+
+	case P_ARGV:
+		return frmt("Command line argument: '%s'",
+			    filename.c_str()); 
+
 	}
 }
 

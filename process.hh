@@ -64,7 +64,8 @@ public:
 	pid_t start(string command, 
 		    const map <string, string> &mapping,
 		    string filename_output,
-		    string filename_input); 
+		    string filename_input,
+		    const Place &place_command); 
 
 	/* Wait for the next process to terminate; provide the STATUS as
 	 * used in wait(2).  Return the PID of the waited-for process (>=0). */  
@@ -75,7 +76,8 @@ public:
 pid_t Process::start(string command,
 		     const map <string, string> &mapping,
 		     string filename_output,
-		     string filename_input)
+		     string filename_input,
+		     const Place &place_command)
 {
 	assert(pid == -2); 
 
@@ -180,11 +182,19 @@ pid_t Process::start(string command,
 		assert(i <= v_old + v_new);
 		envp[i]= nullptr;
 
+		/* As $0 of the process, we pass the filename of the
+		 * command followed by a colon, the line number, a colon
+		 * and the column number.
+		 * This makes the shell if it reports an error make the
+		 * most useful output. 
+		 */
+		string argv0= place_command.as_string_nocolumn(); 
+
 		/* We use the -e option ('error'), which makes the shell abort
 		 * on a command that fails.  This is also what POSIX prescribes
 		 * for Make.  It is particularly important for Stu, as Stu
 		 * invokes the whole (possibly multiline) command in one step. */
-		const char *argv[]= {shell, "-e", "-c", arg, nullptr, nullptr}; 
+		const char *argv[]= {argv0.c_str(), "-e", "-c", arg, nullptr, nullptr}; 
 		if (arg[0] == '-' || arg[0] == '+') {
 			/* Command starts with '-':  insert the parameter '--'
 			 * before it so the shell does not interpret it as an

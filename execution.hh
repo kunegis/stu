@@ -700,7 +700,8 @@ int Execution::execute(Execution *parent,
 		 mapping,
 		 rule->redirect_output 
 		 ? rule->place_param_target.place_param_name.unparametrized() : "",
-		 rule->filename_input.unparametrized()); 
+		 rule->filename_input.unparametrized(),
+		 rule->command->place); 
 	if (pid < 0) {
 		print_traces(fmt("error executing command for %s", target.text())); 
 		if (! option_continue) 

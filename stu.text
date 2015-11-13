@@ -498,7 +498,8 @@ MORE EXAMPLES
        A and B:
 
            V: { echo Hello >V }
-           @x: $[V];      y: { echo '$[V]' >y }
+           @x: $[V];
+           y: { echo '$[V]' >y }
            A: @x { echo $V >A }
            B: [y] { echo $V >B }
 

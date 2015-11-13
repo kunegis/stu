@@ -73,7 +73,9 @@ The colon may be omitted when there are no dependencies:
 Here is an example of a rule containing three parameters.  Stu will use
 pattern matching to match the target pattern to a given filename: 
 
-    plot.$DATASET.$METHOD.$MEASURE.eps:  data-$DATASET.txt analyse-$METHOD {
+    plot.$DATASET.$METHOD.$MEASURE.eps:  
+        data-$DATASET.txt analyse-$METHOD 
+    {
         ./analyse-$METHOD \\
             -m $MEASURE \\
             -f data-$DATASET.txt \\
@@ -153,7 +155,7 @@ already exists, then its own rule is used (and its date checked) to
 decide whether it should be rebuilt.  
 
     target:  ?input {
-		if [ -r input ] ; then
+        if [ -r input ] ; then
             cp input target
         else
             echo Hello >target
@@ -211,8 +213,8 @@ an ending slash), the file 'main.stu' within that directory is read.
 To declare which version of Stu a script is written for, use
 the '%version' statement:
 
-%version 2.3
-%version 2.3.4
+    %version 2.3
+    %version 2.3.4
 
 Both variants will allow the script to be executed only with a version
 of Stu of the correct major version number (2 in this example), and

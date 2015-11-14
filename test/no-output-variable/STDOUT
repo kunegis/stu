@@ -1,0 +1,3 @@
+>B: echo CORRECT 
+>list.A NAME=A: echo "$B"
+cp list.A A 

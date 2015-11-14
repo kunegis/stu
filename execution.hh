@@ -53,9 +53,9 @@ public:
 	Link() { }
 
 	Link(Stack avoid_,
-		 Flags flags_,
-		 Place place_,
-		 shared_ptr <Dependency> dependency_)
+	     Flags flags_,
+	     Place place_,
+	     shared_ptr <Dependency> dependency_)
 		:  avoid(avoid_),
 		   flags(flags_),
 		   place(place_),
@@ -65,8 +65,8 @@ public:
 	}
 
 	Link(shared_ptr <Dependency> dependency_,
-		 Flags flags_,
-		 const Place &place_)
+	     Flags flags_,
+	     const Place &place_)
 		:  avoid(dependency_),
 		   flags(flags_),
 		   place(place_),
@@ -81,8 +81,8 @@ public:
 	Link(shared_ptr <Dependency> dependency_)
 		:  avoid(dependency_),
 		   flags(dynamic_pointer_cast <Dynamic_Dependency> (dependency_)
-				 ? (dependency_->get_flags() & ~((1 << F_COUNT) - 1))
-				 : dependency_->get_flags()),
+			 ? (dependency_->get_flags() & ~((1 << F_COUNT) - 1))
+			 : dependency_->get_flags()),
 		   place(dependency_->get_place()),
 		   dependency(dependency_)
 	{ 
@@ -154,7 +154,11 @@ public:
 	 * variable assignments alphabetically; otherwise the order does not
 	 * matter. 
 	 */
-	map <string, string> mapping; 
+	map <string, string> mapping_parameter; 
+
+	/* Variable assignments to be printed when the command is executed. 
+	 */
+	map <string, string> mapping_variable; 
 
 	/* Error status of this target.  The value is propagated (using '|')
 	 * to the parent.  Values correspond to constants defined in
@@ -193,8 +197,8 @@ public:
 	/* File, phony and dynamic targets.  
 	 */ 
 	Execution(Target target_,
-			  const Link &,
-			  Execution *parent);
+		  const Link &,
+		  Execution *parent);
 
 	/* Empty execution.  DEPENDENCIES don't have to be unique.
 	 */
@@ -238,8 +242,8 @@ public:
 	 * DEPENDENCY is the dependency linking the two executions.  
 	 */
  	int execute(Execution *parent, 
-				int k, 
-				const Link &link);
+		    int k, 
+		    const Link &link);
 
 	/* Called after the process was waited for.  The PID is only passed
 	 * for checking that it is correct. 
@@ -258,13 +262,19 @@ public:
 	/* Note:  the top-level flags of LINK.DEPENDENCY may be modified. 
 	 */
 	void deploy_dependency(int &k, 
-						   const Link &link,
-						   const Link &link_child);
+			       const Link &link,
+			       const Link &link_child);
 
 	/* Initialize the Execution object.  Used for dynamic dependencies.
 	 * Called from get_execution() before the object is connected to a
 	 * new parent. */ 
 	void initialize(Stack avoid);
+
+	/* Print a command and its associated variable assignments.  This
+	 * function always prints; callers have to honour the -s option. 
+	 * FILENAME_OUTPUT and FILENAME_INPUT are "" when not used. 
+	 */ 
+	void print_command(); 
 
 	/* The currently running executions by process IDs */ 
 	static unordered_map <pid_t, Execution *> executions_by_pid;
@@ -297,11 +307,11 @@ public:
 	 * however not deleted as it is kept for caching. 
 	 */
 	static void unlink_execution(Execution *const parent, 
-								 Execution *const child,
-								 shared_ptr <Dependency> dependency_parent,
-								 Stack avoid_parent,
-								 Stack avoid_child,
-								 Flags flags_child); 
+				     Execution *const child,
+				     shared_ptr <Dependency> dependency_parent,
+				     Stack avoid_parent,
+				     Stack avoid_child,
+				     Flags flags_child); 
 
 	/* Get an existing execution or create a new one.
 	 * Return NULL when a strong cycle was found; return the execution
@@ -309,15 +319,15 @@ public:
 	 * declared.    
 	 */ 
 	static Execution *get_execution(const Target &target, 
-									const Link &link,
-									Execution *parent); 
+					const Link &link,
+					Execution *parent); 
 
 	/* Main execution loop.  Execute K processes in parallel. 
 	 * Return the same error code as in Execution::error. 
 	 */
 	static int execute_main(const vector <Target> &targets, 
-							const vector <Place> &places,
-							int k);
+				const vector <Place> &places,
+				int k);
 
 	/* Wait for next process to finish and finish it.  Do not start anything
 	 * new.  
@@ -335,29 +345,21 @@ public:
 	 * $NAME.gz:  $NAME.gz.gz { ... }
 	 */ 
 	static bool find_cycle(const Execution *const parent, 
-						   const Execution *const child); 
+			       const Execution *const child); 
 
 	/* The helper function for find_cycle().  TRACES contains the list
 	 * of traces connected CHILD to EXECUTION. 
 	 */
 	static bool find_cycle(const Execution *const parent, 
-						   const Execution *const child,
-						   vector <Trace> &traces);
+			       const Execution *const child,
+			       vector <Trace> &traces);
 
 	static string cycle_string(const Execution *execution);
 
 	/* Return NULL when no trace should be given */ 
 	static shared_ptr <Trace> cycle_trace(const Execution *child,
-										   const Execution *parent);
+					      const Execution *parent);
 
-	/* Print a command and its associated variable assignments.  This
-	 * function always prints; callers have to honour the -s option. 
-	 * FILENAME_OUTPUT and FILENAME_INPUT are "" when not used. 
-	 */ 
-	static void print_command(shared_ptr <Command> command,
-							  const map <string, string> &mapping,
-							  string filename_output,
-							  string filename_input); 
 };
 
 unordered_map <pid_t, Execution *> Execution::executions_by_pid;
@@ -383,8 +385,8 @@ void Execution::execute_wait()
 }
 
 int Execution::execute(Execution *parent, 
-					   int k, 
-					   const Link &link)
+		       int k, 
+		       const Link &link)
 {
 	assert(k >= 0); 
 	assert(link.avoid.get_k() == dynamic_depth(target.type)); 
@@ -686,15 +688,15 @@ int Execution::execute(Execution *parent,
 	if (! option_silent) {
 		if (rule->redirect_output)
 			assert(rule->place_param_target.type == T_FILE); 
-		print_command(rule->command, 
-					  mapping,
-					  rule->redirect_output 
-					  ? rule->place_param_target.place_param_name.unparametrized() : "",
-					  rule->filename_input.unparametrized()); 
+		print_command();
 	}
 
 	/* Start the process */ 
 	assert(k >= 1); 
+
+	map <string, string> mapping;
+	mapping.insert(mapping_parameter.begin(), mapping_parameter.end());
+	mapping.insert(mapping_variable.begin(), mapping_variable.end());
 	const pid_t pid= process.start
 		(rule->command->command, 
 		 mapping,
@@ -811,8 +813,8 @@ void Execution::waited(int pid, int status)
 }
 
 int Execution::execute_main(const vector <Target> &targets, 
-							const vector <Place> &places, 
-							int k)
+			    const vector <Place> &places, 
+			    int k)
 {
 	assert(k >= 0);
 	assert(targets.size() == places.size()); 
@@ -891,11 +893,11 @@ int Execution::execute_main(const vector <Target> &targets,
 }
 
 void Execution::unlink_execution(Execution *const parent, 
-								 Execution *const child,
-								 shared_ptr <Dependency> dependency_parent,
-								 Stack avoid_parent,
-								 Stack avoid_child,
-								 Flags flags_child)
+				 Execution *const child,
+				 shared_ptr <Dependency> dependency_parent,
+				 Stack avoid_parent,
+				 Stack avoid_child,
+				 Flags flags_child)
 {
 	(void) avoid_child;
 
@@ -985,7 +987,7 @@ void Execution::unlink_execution(Execution *const parent,
 		content.erase(0, content.find_first_not_of(" \n\t\f\r\v")); 
 		content.erase(content.find_last_not_of(" \n\t\f\r\v") + 1);  
 
-		parent->mapping[filename]= content;
+		parent->mapping_variable[filename]= content;
 
 		if (0) {
 		error_fd:
@@ -1010,8 +1012,7 @@ void Execution::unlink_execution(Execution *const parent,
 	if (child->target.type >= T_DYNAMIC ||
 		(child->target.type == T_PHONY &&
 		 child->rule->command == NULL)) {
-		parent->mapping.insert(child->mapping.begin(),
-							   child->mapping.end()); 
+		parent->mapping_variable.insert(child->mapping_variable.begin(), child->mapping_variable.end()); 
 	}
 
 	/* 
@@ -1052,8 +1053,8 @@ void Execution::unlink_execution(Execution *const parent,
 }
 
 Execution::Execution(Target target_,
-					 const Link &link,
-					 Execution *parent)
+		     const Link &link,
+		     Execution *parent)
 	:  target(target_),
 	   error(0),
 	   need_build(false),
@@ -1069,7 +1070,7 @@ Execution::Execution(Target target_,
 	if (target.type == T_FILE || target.type == T_PHONY) {
 		map <string, string> mapping1; 
 		rule= rule_set.get(target, param_rule, mapping1); 
-		mapping= mapping1;
+		mapping_parameter= mapping1;
 	} else if (target.type >= T_DYNAMIC) {
 		/* We must set the rule here, so cycles in the dependency graph
 		 * can be detected.  Note however that the rule of dynamic
@@ -1286,7 +1287,7 @@ string Execution::cycle_string(const Execution *execution)
 }
 
 shared_ptr <Trace> Execution::cycle_trace(const Execution *child,
-										  const Execution *parent)
+					  const Execution *parent)
 {
 	if (parent->target.type == T_EMPTY)
 		return shared_ptr <Trace> ();
@@ -1306,7 +1307,7 @@ shared_ptr <Trace> Execution::cycle_trace(const Execution *child,
 }
 
 bool Execution::find_cycle(const Execution *const parent, 
-						   const Execution *const child)
+			   const Execution *const child)
 {
 	/* Happens when the parent is the root execution */ 
 	if (parent->param_rule == NULL)
@@ -1325,8 +1326,8 @@ bool Execution::find_cycle(const Execution *const parent,
 }
 
 bool Execution::find_cycle(const Execution *const parent, 
-						   const Execution *const child,
-						   vector <Trace> &traces)
+			   const Execution *const child,
+			   vector <Trace> &traces)
 {
 	assert(parent);
 	assert(child); 
@@ -1418,8 +1419,8 @@ void Execution::add_dependency(const Link &dependency)
 }
 
 Execution *Execution::get_execution(const Target &target, 
-									const Link &link,
-									Execution *parent)
+				    const Link &link,
+				    Execution *parent)
 {
 	/* Set to the returned Execution object when one is found or created
 	 */   
@@ -1463,7 +1464,7 @@ Execution *Execution::get_execution(const Target &target,
 }
 
 void Execution::read_dynamics(Stack avoid,
-							  shared_ptr <Dependency> dependency_parent)
+			      shared_ptr <Dependency> dependency_parent)
 {
 	assert(target.type >= T_DYNAMIC);
 	assert(avoid.get_k() == dynamic_depth(target.type)); 
@@ -1678,15 +1679,16 @@ void Execution::print_traces(string text) const
 	}
 }
 
-void Execution::print_command(shared_ptr <Command> command,
-							  const map <string, string> &mapping,
-							  string filename_output,
-							  string filename_input)
+void Execution::print_command()
 {
 	/* For single-line commands, show the variables on the same line.
 	 * For multi-line commands, show them on a separate line. */ 
-	bool single_line= command->lines.size() == 1;
+	bool single_line= rule->command->lines.size() == 1;
 	bool begin= true; 
+
+	string filename_output= rule->redirect_output 
+		? rule->place_param_target.place_param_name.unparametrized() : "";
+	string filename_input= rule->filename_input.unparametrized(); 
 
 	/* Redirections */
 	if (filename_output != "") {
@@ -1702,9 +1704,9 @@ void Execution::print_command(shared_ptr <Command> command,
 		printf("<%s", filename_input.c_str()); 
 	}
 
-	/* Variable assignments */ 
-	for (auto i= mapping.begin();
-		 i != mapping.end();  ++i) {
+	/* Print the parameter values.  (Variable assignments are not printed) 
+	 */ 
+	for (auto i= mapping_parameter.begin(); i != mapping_parameter.end();  ++i) {
 		string name= i->first;
 		string value= i->second;
 		if (! begin)
@@ -1722,14 +1724,14 @@ void Execution::print_command(shared_ptr <Command> command,
 	}
 
 	/* The command itself */ 
-	for (auto i= command->lines.begin();  i != command->lines.end();  ++i) {
+	for (auto i= rule->command->lines.begin();  i != rule->command->lines.end();  ++i) {
 		printf("%s\n", i->c_str()); 
 	}
 }
 
 void Execution::deploy_dependency(int &k,
-								  const Link &link,
-								  const Link &link_child)
+				  const Link &link,
+				  const Link &link_child)
 {
 	Flags flags_child= link_child.flags; 
 

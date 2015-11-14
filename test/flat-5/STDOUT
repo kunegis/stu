@@ -1,8 +1,7 @@
 echo 1 >B
 echo 1 >C
-C=1: echo 'Hello, @c'
+echo 'Hello, @c'
 Hello, @c
-B=1:
 # Here, $bbb must be defined but not $ccc
 if [ -z "$B" ] ; then
 	echo >&2 '$B must not be empty'

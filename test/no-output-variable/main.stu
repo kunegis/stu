@@ -1,0 +1,10 @@
+
+# Check that the output lines are correct. 
+
+A:  list.A { cp list.A A }
+
+>list.$NAME: $[B] {
+	echo "$B"
+}
+
+>B { echo CORRECT }

@@ -1,0 +1,16 @@
+
+# The commands for A and @x must not be passed the value of $NAME. 
+
+A: @x {
+	[ -z "$NAME" ] || exit 1
+	cp B A
+}
+
+@x:  B {
+	[ -z "$NAME" ] || exit 1
+	echo XXX
+}
+
+$NAME: {
+	echo aaa >"$NAME"
+}

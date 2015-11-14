@@ -38,9 +38,9 @@ These characters are tokens in themselves.
 ;	End of rule
 @ 	Phony target
 ()	List operator
-[]  Dynamic dependency 
+[]  	Dynamic dependency 
 !	Existence-only dependency
-?   Optional dependency 
+?   	Optional dependency 
 >	Output redirection
 <	Input redirection 
 

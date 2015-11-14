@@ -11,6 +11,8 @@
 #
 #    * what if there is output between the filename and 'done'.  How to
 #      recognize that output was written?
+#    ** Maybe:  use the mtime of STDOUT (does it work on pipes and
+#	regular files?)
 #
 
 #
@@ -173,7 +175,7 @@ tmp: {...}
 
 #
 # An option for automatic logging:  write all output (stdout/stderr) of
-# commands to a file (a different file per target). 
+# commands to a file (a different file per target).  Use the -l option. 
 #
 
 # 

@@ -3,5 +3,8 @@ check_*
 stu
 stu.debug
 stu.ndebug
+stu.prof
 stu.1
 version.hh
+gmon.out
+analysis.prof

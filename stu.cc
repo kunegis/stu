@@ -72,6 +72,20 @@ int main(int argc, char **argv, char **envp)
 			filename= string(optarg); 
 			break;
 
+		case 'h':
+			fputs("Usage:   stu [TARGETS...] [OPTIONS...]\n"
+				  "By default, build the first target in the file 'main.stu'.\n"
+				  "Options:\n"
+				  "   -f FILENAME   The input file to use instead of 'main.stu'\n"
+				  "   -h            Output help\n"
+				  "   -j K          Run K processes in parallel\n"
+				  "   -k            Keep on running after errors\n"
+				  "   -s            Silent mode; do not output commands\n"
+				  "   -v            Enable verbose mode\n"	     
+				  "   -V            Output version\n"
+				  , stdout);
+			exit(0);
+
 		case 'j':
 			k= 0;
 			for (const char *p= optarg; *p; ++p) {
@@ -94,29 +108,15 @@ int main(int argc, char **argv, char **envp)
 			break;
 
 		case 's':
-			option_silent= true; 
+			verbosity= VERBOSITY_SILENT;
 			break;
 
 		case 'v':
-			option_verbose= true; 
+			verbosity= VERBOSITY_VERBOSE;
 			break;
 
 		case 'V':
 			puts("stu " STU_VERSION);
-			exit(0);
-
-		case 'h':
-			fputs("Usage:   stu [TARGETS...] [OPTIONS...]\n"
-				  "By default, build the first target in the file 'main.stu'.\n"
-				  "Options:\n"
-				  "   -f FILENAME   The input file to use instead of 'main.stu'\n"
-				  "   -h            Output help\n"
-				  "   -j K          Run K processes in parallel\n"
-				  "   -k            Keep on running after errors\n"
-				  "   -s            Silent mode; do not output commands\n"
-				  "   -v            Enable verbose mode\n"	     
-				  "   -V            Output version\n"
-				  , stdout);
 			exit(0);
 
 		default:  
@@ -129,7 +129,7 @@ int main(int argc, char **argv, char **envp)
 	/* If -s is not given, set STDOUT to line buffered, so that the
 	 * output of command lines always happens before the output of
 	 * commands themselves */ 
-	if (! option_silent) {
+	if (verbosity > VERBOSITY_SILENT) {
 		/* Note:  only possible if we have not written anything yet */ 
 		setvbuf(stdout, nullptr, _IOLBF, 0); 
 

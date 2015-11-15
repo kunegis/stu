@@ -10,8 +10,9 @@
 
 all: stu.debug stu.ndebug stu.1 stu.text check
 
-CXXFLAGS_DEBUG= -ggdb
+CXXFLAGS_DEBUG=  -ggdb
 CXXFLAGS_NDEBUG= -O3 -DNDEBUG -s
+CXXFLAGS_PROF=   -pg -O3 -DNDEBUG 
 
 # Some of the specialized warning flags may not be present in other
 # compilers and compiler versions than those used by the authors.  Just
@@ -25,8 +26,9 @@ CXXFLAGS_OTHER=             \
     -D_FILE_OFFSET_BITS=64 
 # -lrt would be needed for clock_gettime().  (only enabled with USE_MTIM.)
 
-CXXFLAGS_ALL_DEBUG= $(CXXFLAGS_DEBUG)  $(CXXFLAGS_OTHER)
+CXXFLAGS_ALL_DEBUG=  $(CXXFLAGS_DEBUG)  $(CXXFLAGS_OTHER)
 CXXFLAGS_ALL_NDEBUG= $(CXXFLAGS_NDEBUG) $(CXXFLAGS_OTHER)
+CXXFLAGS_ALL_PROF=   $(CXXFLAGS_PROF)   $(CXXFLAGS_OTHER)
 
 CXX=g++
 
@@ -38,7 +40,10 @@ stu.ndebug:  $(wildcard *.cc *.hh) version.hh
 	$(CXX) $(CXXFLAGS_ALL_NDEBUG) stu.cc -o stu.ndebug
 
 stu.debug:  $(wildcard *.cc *.hh) version.hh
-	$(CXX) $(CXXFLAGS_ALL_DEBUG) stu.cc -o stu.debug
+	$(CXX) $(CXXFLAGS_ALL_DEBUG)  stu.cc -o stu.debug
+
+stu.prof: $(wildcard *.cc *.hh) version.hh
+	$(CXX) $(CXXFLAGS_ALL_PROF)   stu.cc -o stu.prof
 
 check_options:  testoptions stu.cc stu.1.in
 	./testoptions && touch $@
@@ -59,6 +64,9 @@ stu.text:  stu.1
 
 version.hh:  VERSION mkversion
 	./mkversion >version.hh
+
+analysis.prof:  gmon.out 	
+	gprof stu.prof gmon.out >analysis.prof
 
 clean:  
 	rm -f stu stu.debug stu.ndebug stu.1 version.hh

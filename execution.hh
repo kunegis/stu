@@ -270,8 +270,8 @@ public:
 	 * new parent. */ 
 	void initialize(Stack avoid);
 
-	/* Print a command and its associated variable assignments.  This
-	 * function always prints; callers have to honour the -s option. 
+	/* Print a command and its associated variable assignments,
+	 * according to the selected verbosity level.  
 	 * FILENAME_OUTPUT and FILENAME_INPUT are "" when not used. 
 	 */ 
 	void print_command(); 
@@ -522,7 +522,7 @@ int Execution::execute(Execution *parent,
 	assert(children.empty()); 
 	assert(error == 0);
 
-	if (option_verbose) {
+	if (verbosity >= VERBOSITY_VERBOSE) {
 		string text= target.text();
 		fprintf(stderr, "Building %s\n", 
 				text.c_str()); 
@@ -563,7 +563,7 @@ int Execution::execute(Execution *parent,
 				 * because of more up to date dependencies */ 
 
 				if (timestamp.defined() && timestamp_old.older_than(timestamp)) {
-					if (option_verbose) {
+					if (verbosity >= VERBOSITY_VERBOSE) {
 						fprintf(stderr, "\trebuilding because dependencies are newer\n"); 
 						string text_timestamp= timestamp.format();
 						string text_timestamp_old= timestamp_old.format(); 
@@ -593,7 +593,7 @@ int Execution::execute(Execution *parent,
 					/* File does not exist */
 
 					if (! (link.flags & F_OPTIONAL)) {
-						if (option_verbose) {
+						if (verbosity >= VERBOSITY_VERBOSE) {
 							fprintf(stderr, "\trebuilding because file does not exist\n"); 
 						}
 						need_build= true; 
@@ -602,7 +602,7 @@ int Execution::execute(Execution *parent,
 						 * it will then not exist when the parent is
 						 * called. 
 						 */ 
-						if (option_verbose) {
+						if (verbosity >= VERBOSITY_VERBOSE) {
 							fprintf(stderr, 
 									"\tis an optional dependency that is not present\n"); 
 						}
@@ -651,7 +651,7 @@ int Execution::execute(Execution *parent,
 
 	/* A target without a command */ 
 	if (no_command) {
-		if (option_verbose) {
+		if (verbosity >= VERBOSITY_VERBOSE) {
 			fprintf(stderr, "\ttarget without command\n");
 		}
 		done.add_neg(link.avoid); 
@@ -662,7 +662,7 @@ int Execution::execute(Execution *parent,
 		if (! phonies.count(target.name)) {
 			/* Phony was not yet executed */ 
 			need_build= true; 
-			if (option_verbose) {
+			if (verbosity >= VERBOSITY_VERBOSE) {
 				fprintf(stderr, "\trunning because this phony was not yet executed\n");
 			}
 		}
@@ -682,14 +682,12 @@ int Execution::execute(Execution *parent,
 	}
 
 	/* Output the command */ 
-	if (option_verbose) {
+	if (verbosity >= VERBOSITY_VERBOSE) {
 		fprintf(stderr, "\tstarting\n"); 
 	}
-	if (! option_silent) {
-		if (rule->redirect_output)
-			assert(rule->place_param_target.type == T_FILE); 
-		print_command();
-	}
+	if (rule->redirect_output)
+		assert(rule->place_param_target.type == T_FILE); 
+	print_command();
 
 	/* Start the process */ 
 	assert(k >= 1); 
@@ -1028,7 +1026,7 @@ void Execution::unlink_execution(Execution *const parent,
 	if (child->need_build 
 		&& ! (flags_child & F_EXISTENCE)
 		&& ! (flags_child & F_DYNAMIC)) {
-		if (option_verbose) {
+		if (verbosity >= VERBOSITY_VERBOSE) {
 			const string text_child= child->rule->place_param_target.text();
 			const string text_parent= parent->rule == NULL 
 				? "<target without rule>"
@@ -1397,9 +1395,9 @@ bool Execution::remove_if_existing(bool output)
 
 			if (output) {
 				fprintf(stderr, 
-						"%s: *** Removing file '%s' because command failed\n",
-						dollar_zero,
-						filename); 
+					"%s: *** Removing file '%s' because command failed\n",
+					dollar_zero,
+					filename); 
 			}
 			
 			removed= true;
@@ -1681,6 +1679,9 @@ void Execution::print_traces(string text) const
 
 void Execution::print_command()
 {
+	if (verbosity < VERBOSITY_LONG)
+		return; 
+
 	/* For single-line commands, show the variables on the same line.
 	 * For multi-line commands, show them on a separate line. */ 
 	bool single_line= rule->command->lines.size() == 1;

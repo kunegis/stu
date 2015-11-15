@@ -8,11 +8,19 @@
 /* The -k option (continue when encountering errors) */ 
 static bool option_continue= false;
 
-/* The -s option (silent mode) */
-static bool option_silent= false; 
+///* The -s option (silent mode) */
+//static bool option_silent= false; 
 
-/* The -v option (verbose mode) */ 
-static bool option_verbose= false; 
+///* The -v option (verbose mode) */ 
+//static bool option_verbose= false; 
+
+enum {
+	VERBOSITY_SILENT  = -1,
+	VERBOSITY_LONG    =  0,
+	VERBOSITY_VERBOSE = +1,
+};
+
+static int verbosity= VERBOSITY_LONG; 
 
 const char **envp_global;
 

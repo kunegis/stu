@@ -5,8 +5,11 @@
 
 ret=0
 
-<stu.cc sed -re '/" *-[a-zA-Z]/!d;s,^.*-(.).*$,\1,' >testoptions.a
+#
+# Check that both lists of options are the same
+#
 
+<stu.cc sed -re '/" *-[a-zA-Z]/!d;s,^.*-(.).*$,\1,' >testoptions.a
 <stu.1.in sed -re '/\.IP\s(|")+-./!d;s,^\s*\.IP\s+(|")-(.).*$,\2,' >testoptions.b
 
 if ! cmp testoptions.a testoptions.b ; then

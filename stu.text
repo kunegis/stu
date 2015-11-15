@@ -60,6 +60,10 @@ OPTIONS
 
        -V     Output the version number of Stu and exit.
 
+       -w     Short  mode; instead of outputting the commands, output the name
+              of the targets.  This is most useful  when  the  commands  them‐
+              selves do not make any output.
+
 
 EXAMPLES
        A simple rule looks as follows:
@@ -512,4 +516,4 @@ SEE ALSO
 
 
 
-stu-1.6.11                       November 2015                          STU(1)
+stu-1.6.12                       November 2015                          STU(1)

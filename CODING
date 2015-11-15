@@ -31,7 +31,7 @@ Here are the relevant coding conventions we use.
 * In comments, names of variables are in all uppercase. 
 * Use 72-character lines in general, but allow more where reasonable
   (note:  tabs may be interpreted as different widths making this an
-  approximate rule)   
+  approximate rule; authors use 8-char tabs)   
 * No space before the assignment operator 
 
 == Dynamic variables ==

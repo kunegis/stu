@@ -1,4 +1,3 @@
-
 #==== Small features that complete what we already have ====
 
 #
@@ -456,6 +455,11 @@ A:  {
 # to be skipped in some smart way, perhaps using inotify or a similar
 # interface.  This would allow a "Stu demon" that runs continuously and
 # rebuilds targets as soon as they need to. 
+#
+
+#
+# Provide a set of include-stufiles for common tasks, such as C
+# programs, tex projects, etc. 
 #
 
 #==== Backward-incompatible features ====

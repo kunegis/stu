@@ -58,6 +58,10 @@ Verbose mode; runtime information is printed on standard output
 for each target when it is run.
 .IP -V 
 Output the version number of Stu and exit.
+.IP -w
+Short mode; instead of outputting the commands, output the name of the
+targets.  This is most useful when the commands themselves do not make
+any output. 
 
 .SH EXAMPLES
 A simple rule looks as follows:

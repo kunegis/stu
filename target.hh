@@ -99,6 +99,23 @@ public:
 		}
 	}
 
+	string text_bare() const {
+		if (type >= T_DYNAMIC) {
+			return string(type - T_FILE, '[') + name + string(type - T_FILE, ']'); 
+		}
+
+		switch (type) {
+
+		case T_FILE:     
+			return fmt("%s", name);
+
+		case T_PHONY:    
+			return fmt("@%s", name);  
+
+		default:  assert(0);  return ""; 
+		}
+	}
+
 	bool operator== (const Target &target) const {
 		return this->type == target.type &&
 			this->name == target.name;

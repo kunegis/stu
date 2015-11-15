@@ -36,7 +36,7 @@ using namespace std;
  * options, and not long options.  At some point, we might switch to
  * getopt_long() though. 
  */
-#define STU_OPTIONS "f:j:kvVhs"
+#define STU_OPTIONS "f:j:kvVhsw"
 
 int main(int argc, char **argv, char **envp)
 {
@@ -60,6 +60,12 @@ int main(int argc, char **argv, char **envp)
 	for (int c; (c= getopt(argc, argv, STU_OPTIONS)) != -1;) {
 		switch (c) {
 
+		case 'k': option_continue= true;       break;
+		case 's': verbosity= VERBOSITY_SILENT; break;
+		case 'v': verbosity= VERBOSITY_VERBOSE;break;
+		case 'V': puts("stu " STU_VERSION);    exit(0);
+		case 'w': verbosity= VERBOSITY_SHORT;  break;
+
 		case 'f':
 			if (filename != "") {
 				print_error("Option -f must be used at most once"); 
@@ -73,17 +79,19 @@ int main(int argc, char **argv, char **envp)
 			break;
 
 		case 'h':
+			/* Note: the following string constants do not contain tabs */ 
 			fputs("Usage:   stu [TARGETS...] [OPTIONS...]\n"
-				  "By default, build the first target in the file 'main.stu'.\n"
-				  "Options:\n"
-				  "   -f FILENAME   The input file to use instead of 'main.stu'\n"
-				  "   -h            Output help\n"
-				  "   -j K          Run K processes in parallel\n"
-				  "   -k            Keep on running after errors\n"
-				  "   -s            Silent mode; do not output commands\n"
-				  "   -v            Enable verbose mode\n"	     
-				  "   -V            Output version\n"
-				  , stdout);
+			      "By default, build the first target in the file 'main.stu'.\n"
+			      "Options:\n"
+			      "   -f FILENAME   The input file to use instead of 'main.stu'\n"
+			      "   -h            Output help\n"
+			      "   -j K          Run K processes in parallel\n"
+			      "   -k            Keep on running after errors\n"
+			      "   -s            Silent mode; do not output commands\n"
+			      "   -v            Enable verbose mode\n"	     
+			      "   -V            Output version\n"
+			      "   -w            Short output; don't show the commands, only the target filenames"
+			      , stdout);
 			exit(0);
 
 		case 'j':
@@ -102,22 +110,6 @@ int main(int argc, char **argv, char **envp)
 				exit(ERROR_LOGICAL); 
 			}
 			break;
-
-		case 'k':
-			option_continue= true; 
-			break;
-
-		case 's':
-			verbosity= VERBOSITY_SILENT;
-			break;
-
-		case 'v':
-			verbosity= VERBOSITY_VERBOSE;
-			break;
-
-		case 'V':
-			puts("stu " STU_VERSION);
-			exit(0);
 
 		default:  
 			/* Invalid option -- an error message was

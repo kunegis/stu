@@ -1,0 +1,17 @@
+
+# Test with -w
+
+A: B { 
+	echo Building A
+	cp B A 
+}
+
+B: C { 
+	echo Building B
+	cp C B 
+}
+
+>C { 
+	echo >&2 Building C
+	echo ccc 
+}

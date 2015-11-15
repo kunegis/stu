@@ -8,16 +8,13 @@
 /* The -k option (continue when encountering errors) */ 
 static bool option_continue= false;
 
-///* The -s option (silent mode) */
-//static bool option_silent= false; 
-
-///* The -v option (verbose mode) */ 
-//static bool option_verbose= false; 
-
+/* Determines how commands are output
+ */
 enum {
-	VERBOSITY_SILENT  = -1,
-	VERBOSITY_LONG    =  0,
-	VERBOSITY_VERBOSE = +1,
+	VERBOSITY_SILENT  = -2, /* No output */
+	VERBOSITY_SHORT   = -1, /* Only target name */
+	VERBOSITY_LONG    =  0, /* Output the command */
+	VERBOSITY_VERBOSE = +1, /* More information */ 
 };
 
 static int verbosity= VERBOSITY_LONG; 

@@ -1,0 +1,14 @@
+#! /bin/sh
+#
+# The output of "stu -h" does not contains tabs.
+#
+
+../../stu -h >list.out 2>list.err
+
+[ -e list.err ] || { echo >&2 '*** error A' ; exit 1 ; }
+[ -s list.err ] && { echo >&2 '*** error B' ; exit 1 ; }
+[ -e list.out ] || { echo >&2 '*** error C' ; exit 1 ; }
+[ -s list.out ] || { echo >&2 '*** error D' ; exit 1 ; }
+
+grep -Fqv "$(printf '\t')" list.out  || { echo >&2 '*** error E' ; exit 1 ; }
+

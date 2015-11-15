@@ -858,9 +858,13 @@ int Execution::execute_main(const vector <Target> &targets,
 
 		if (! option_continue)
 			assert(success); 
+
+		if (worked && verbosity == VERBOSITY_SHORT) {
+			puts("Done");
+		}
 	
 		if (success && ! worked) {
-			printf("Nothing to be done\n"); 
+			puts("Nothing to be done"); 
 		}
 
 		if (! success && option_continue) {
@@ -1679,7 +1683,13 @@ void Execution::print_traces(string text) const
 
 void Execution::print_command()
 {
-	if (verbosity < VERBOSITY_LONG)
+	if (verbosity == VERBOSITY_SHORT) {
+		string text= target.text_bare();
+		puts(text.c_str()); 
+		return;
+	} 
+
+	if (verbosity < VERBOSITY_SHORT)
 		return; 
 
 	/* For single-line commands, show the variables on the same line.

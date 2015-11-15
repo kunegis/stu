@@ -29,7 +29,7 @@ used by Make.
 -u
 -v  S M   Verbose
 -V  S     Version
--w  
+-w  S	  Short mode
 -W    M   What-if mode (if FILE just had been modified)
 -x        Enable /bin/sh -x instead of normal output 
 -y

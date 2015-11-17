@@ -1,6 +1,5 @@
 #
 # Show the full trace in the error messages
-#  * "File FILENAME was not built by command"
 #  * "timestamp of file FILENAME after execution of its command is older
 # than stu startup"
 #  * Warning: file target FILENAME which has no command is older than

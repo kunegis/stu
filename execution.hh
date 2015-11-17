@@ -761,12 +761,12 @@ void Execution::waited(int pid, int status)
 						error |= ERROR_BUILD;
 						rule->place <<
 							fmt("timestamp of file '%s' "
-								"after execution of its command is older than %s startup", 
-								target.name, dollar_zero);  
+							    "after execution of its command is older than %s startup", 
+							    target.name, dollar_zero);  
 						print_info(fmt("Timestamp of %s is %s",
-									   target.text(), timestamp_file.format()));
+							       target.text(), timestamp_file.format()));
 						print_info(fmt("Startup timestamp is %s",
-									   Timestamp::startup.format())); 
+							       Timestamp::startup.format())); 
 						if (! option_continue)
 							throw error; 
 					}
@@ -775,7 +775,8 @@ void Execution::waited(int pid, int status)
 				error |= ERROR_BUILD; 
 				rule->command->place <<
 					fmt("file '%s' was not built by command", 
-						target.name); 
+					    target.name); 
+				print_traces();
 				exists= -1;
 				if (! option_continue)
 					throw error; 

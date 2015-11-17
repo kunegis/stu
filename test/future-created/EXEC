@@ -17,8 +17,13 @@ if [ "$exitcode" != 0 ] ; then
     exit 1
 fi
 
-if ! fgrep "Warning: 'B' has modification time in the future" list.err ; then
+if ! cmp list.err stderr ; then
+#if ! fgrep "Warning: 'B' has modification time in the future" list.err ; then
     echo >&2 "*** Missing warning about future timestamp of 'B'"
+    echo >&2 list.err:
+    echo >&2 __________
+    cat >&2 list.err
+    echo >&2 __________
     exit 1
 fi
 
@@ -34,7 +39,8 @@ if [ "$exitcode" != 0 ] ; then
     exit 1
 fi
 
-if ! fgrep "Warning: 'B' has modification time in the future" list.err ; then
+if ! cmp list.err stderr ; then
+#if ! fgrep "Warning: 'B' has modification time in the future" list.err ; then
     echo >&2 "*** Missing warning about future timestamp of 'B'"
     exit 1
 fi

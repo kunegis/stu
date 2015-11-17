@@ -575,8 +575,8 @@ int Execution::execute(Execution *parent,
 					}
 					if (no_command) {
 						print_warning(fmt("File target '%s' which has no command "
-										  "is older than its dependency",
-										  target.name));
+								  "is older than its dependency",
+								  target.name));
 					} else {
 						need_build= true;
 					}
@@ -633,8 +633,8 @@ int Execution::execute(Execution *parent,
 			if (rule->dependencies.size()) {
 				print_traces
 					(fmt("file without command '%s' does not exist, "
-						 "although all its dependencies are up to date", 
-						 target.name)); 
+					     "although all its dependencies are up to date", 
+					     target.name)); 
 			} else {
 				print_traces
 					(fmt("file without command and without dependencies "
@@ -1615,8 +1615,8 @@ void Execution::warn_future_file(struct stat *buf)
 {
 	assert(target.type == T_FILE); 
 	if (timestamp_last.older_than(Timestamp(buf))) {
-		print_warning(fmt("Warning: '%s' has modification time in the future\n",
-						  target.name.c_str()));
+		print_warning(fmt("'%s' has modification time in the future",
+				  target.name.c_str()));
 	}
 }
 
@@ -1651,7 +1651,7 @@ void Execution::print_traces(string text) const
 		if (i->first->target.type == T_EMPTY) {
 			if (first && text != "") {
 				print_error(fmt("No rule to build %s", 
-								execution->target.text())); 
+						execution->target.text())); 
 			}
 			break; 
 		}

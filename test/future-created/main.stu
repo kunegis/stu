@@ -4,14 +4,15 @@
 
 A: B
 {
-    cp B A
+	cp B A
 }
 
 B:
 {
-    now="$(LC_ALL=C date)"
-    year="$(echo $now | sed -re 's,^.* ([0-9]+)$,\1,')"
-    year_future="$(expr 2 + $year)"
-    date="$year_future-01-01"
-    touch B -d "$date"
+	# Create a file with a modification time in the future 
+	now="$(LC_ALL=C date)"
+	year="$(echo $now | sed -re 's,^.* ([0-9]+)$,\1,')"
+	year_future="$(expr 2 + $year)"
+	date="$year_future-01-01"
+	touch B -d "$date"
 }

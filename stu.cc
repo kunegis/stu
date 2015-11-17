@@ -90,7 +90,7 @@ int main(int argc, char **argv, char **envp)
 			      "   -s            Silent mode; do not output commands\n"
 			      "   -v            Enable verbose mode\n"	     
 			      "   -V            Output version\n"
-			      "   -w            Short output; don't show the commands, only the target filenames"
+			      "   -w            Short output; don't show the commands, only the target filenames\n"
 			      , stdout);
 			exit(0);
 

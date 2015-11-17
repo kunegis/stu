@@ -1,0 +1,16 @@
+#! /bin/sh
+#
+# The output of 'stu -h' ends in a newline.
+#
+
+../../stu -h >list.out
+
+# The last byte of the file.  Gets 
+c="$(tail -c 1 list.out)"
+
+[ "$c" != '' ] && {
+	echo >&2 '*** stu -h does not end in newline'
+	exit 1
+}
+
+exit 0

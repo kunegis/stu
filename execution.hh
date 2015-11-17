@@ -767,6 +767,7 @@ void Execution::waited(int pid, int status)
 							       target.text(), timestamp_file.format()));
 						print_info(fmt("Startup timestamp is %s",
 							       Timestamp::startup.format())); 
+						print_traces();
 						if (! option_continue)
 							throw error; 
 					}

@@ -48,10 +48,10 @@ public:
 	Param_Name filename_input; 
 
 	Rule(shared_ptr <Place_Param_Target> place_param_target_,
-		 const vector <shared_ptr <Dependency> > &dependencies_,
-		 shared_ptr <Command> command_,
-		 bool redirect_output_,
-		 const Param_Name &filename_input_);
+	     const vector <shared_ptr <Dependency> > &dependencies_,
+	     shared_ptr <Command> command_,
+	     bool redirect_output_,
+	     const Param_Name &filename_input_);
 
 #ifndef NDEBUG
 	void print() const;
@@ -62,7 +62,7 @@ public:
 	 * returned itself. 
 	 */ 
 	static shared_ptr <Rule> instantiate(shared_ptr <Rule> param_rule,
-										 const map <string, string> &mapping);
+					     const map <string, string> &mapping);
 };
 
 /* A set of parametrized rules
@@ -92,15 +92,15 @@ public:
 	 * MAPPING_OUT. 
 	 */ 
 	shared_ptr <Rule> get(Target target, 
-						  shared_ptr <Rule> &rule_original,
-						  map <string, string> &mapping_out);
+			      shared_ptr <Rule> &rule_original,
+			      map <string, string> &mapping_out);
 };
 
 Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
-		   const vector <shared_ptr <Dependency> > &dependencies_,
-		   shared_ptr <Command> command_,
-		   bool redirect_output_,
-		   const Param_Name &filename_input_)
+	   const vector <shared_ptr <Dependency> > &dependencies_,
+	   shared_ptr <Command> command_,
+	   bool redirect_output_,
+	   const Param_Name &filename_input_)
 	:  place_param_target(*place_param_target_), 
 	   dependencies(dependencies_),
 	   command(command_),
@@ -153,7 +153,7 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 
 shared_ptr <Rule> 
 Rule::instantiate(shared_ptr <Rule> rule,
-				  const map <string, string> &mapping) 
+		  const map <string, string> &mapping) 
 {
 	if (rule->place_param_target.place_param_name.get_n() == 0) {
 		return rule;
@@ -168,10 +168,10 @@ Rule::instantiate(shared_ptr <Rule> rule,
 
 	shared_ptr <Rule> ret
 		(new Rule(rule->place_param_target.instantiate(mapping),
-				  dependencies,
-				  rule->command,
-				  rule->redirect_output,
-				  rule->filename_input.instantiate(mapping)));
+			  dependencies,
+			  rule->command,
+			  rule->redirect_output,
+			  rule->filename_input.instantiate(mapping)));
 
 	return ret; 
 }
@@ -189,8 +189,8 @@ void Rule::print() const
 #endif /* ! NDEBUG */
 
 shared_ptr <Rule> Rule_Set::get(Target target, 
-								shared_ptr <Rule> &rule_original,
-								map <string, string> &mapping_out)
+				shared_ptr <Rule> &rule_original,
+				map <string, string> &mapping_out)
 {
 	assert(target.type == T_FILE || target.type == T_PHONY); 
 	assert(mapping_out.size() == 0); 

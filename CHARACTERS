@@ -53,3 +53,4 @@ These characters are tokens in themselves.
 \   Set difference:   dat/plot.([dat/NETWORKS] \ enron).eps
 |   Index-wise concatenation:  (a b) | (x y) results in (ax by)
 &   Set intersection:  (a b c) & (b c d) is equivalent to (b c)
+&   CFLAGS mode

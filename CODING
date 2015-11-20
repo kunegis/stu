@@ -1,4 +1,3 @@
-
 Here are the relevant coding conventions we use. 
 
 == Standards == 
@@ -12,14 +11,17 @@ Here are the relevant coding conventions we use.
   future though.)
 * Names of targets in the Makefile follow the GNU Coding Standards  
 * Follow the behavior of Make as much as reasonable (e.g. the -k and -j
-  options behave just as in Make)
+  options behave just as in Make), but not where Make loses
 * It is safe to assume a POSIX environment; there is no need to cater
-  for "special" operating systems that lack core POSIX features 
-* Use SemVer.org for version number semantics 
+  for "special" operating systems that lack core POSIX features.  E.g.,
+  we always assume the directory separator is '/'.  
+* Use SemVer.org for version number semantics.  We consider only changes
+  on the Stu file specification, not in things like the output of Stu of
+  the supported options. 
 
 == Style == 
 
-* Note:  all the following rules are broken when necessary :)
+* All the following rules are broken when necessary :)
 * K&R brace style
 * Single tabs for indentation (set your editor to show them at the width
   you prefer)  

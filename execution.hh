@@ -695,6 +695,8 @@ int Execution::execute(Execution *parent,
 	map <string, string> mapping;
 	mapping.insert(mapping_parameter.begin(), mapping_parameter.end());
 	mapping.insert(mapping_variable.begin(), mapping_variable.end());
+	mapping_parameter.clear();
+	mapping_variable.clear(); 
 	const pid_t pid= process.start
 		(rule->command->command, 
 		 mapping,
@@ -714,8 +716,8 @@ int Execution::execute(Execution *parent,
 	assert(executions_by_pid.at(pid)->process.started()); 
 	assert(pid == executions_by_pid.at(pid)->process.get_pid()); 
 	--k;
-
 	assert(k >= 0);
+
 	return k;
 }
 
@@ -1016,7 +1018,8 @@ void Execution::unlink_execution(Execution *const parent,
 	if (child->target.type >= T_DYNAMIC ||
 		(child->target.type == T_PHONY &&
 		 child->rule->command == NULL)) {
-		parent->mapping_variable.insert(child->mapping_variable.begin(), child->mapping_variable.end()); 
+		parent->mapping_variable.insert
+			(child->mapping_variable.begin(), child->mapping_variable.end()); 
 	}
 
 	/* 
@@ -1052,8 +1055,6 @@ void Execution::unlink_execution(Execution *const parent,
 
 	assert(child->parents.count(parent) == 1);
 	child->parents.erase(parent);
-
-	// TODO:  empty all vector fields to save memory
 }
 
 Execution::Execution(Target target_,
@@ -1696,7 +1697,7 @@ void Execution::print_command()
 
 	/* For single-line commands, show the variables on the same line.
 	 * For multi-line commands, show them on a separate line. */ 
-	bool single_line= rule->command->lines.size() == 1;
+	bool single_line= rule->command->get_lines().size() == 1;
 	bool begin= true; 
 
 	string filename_output= rule->redirect_output 
@@ -1737,7 +1738,8 @@ void Execution::print_command()
 	}
 
 	/* The command itself */ 
-	for (auto i= rule->command->lines.begin();  i != rule->command->lines.end();  ++i) {
+	for (auto i= rule->command->get_lines().begin();  
+	     i != rule->command->get_lines().end();  ++i) {
 		printf("%s\n", i->c_str()); 
 	}
 }

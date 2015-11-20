@@ -1,6 +1,24 @@
 #==== Small features that complete what we already have ====
 
 #
+# Trivial dependencies
+#
+
+# even if 'CFLAGS' would have to change, 'main' is not rebuilt only
+# because 'CFLAGS' has to change.  But if 'main' is rebuilt for another
+# reason, then 'CFLAGS' is also rebuilt if it has to. 
+main:  main.c $[&CFLAGS] 
+{
+	gcc ... $CFLAGS ...
+}
+>CFLAGS { echo ... }
+
+plot.eps:  plot.m data.dat &OCTAVEPATH
+{
+	octave --pathfile OCTAVEPATH plot.m 
+}
+
+#
 # Assign a name to a dynamic variable.  Useful when the name of the file
 # contains characters that are not allowed in shell variable names. 
 #
@@ -98,8 +116,9 @@ A = {}
 
 a.bib = ../bib/references.bib;
 
-# Allow the same-name shortcut (ending in slash):
+# Allow the same-name shortcut (ending in slash or not [with fopenat]):
 konect.bib=  ../../projects/konect/;
+konect.bib=  ../../projects/konect;
 
 #
 # Advanced file inclusion 
@@ -130,7 +149,7 @@ konect.bib=  ../../projects/konect/;
 
 #
 # What happens with relative and absolute pathnames?  When two names
-# refer to the same file? 
+# refer to the same file?  Do we need to 'normalize' names?
 #
 
 # This will fail because ../../bib/[NAME].bib will match [NAME].bib.
@@ -173,18 +192,6 @@ tmp: {...}
 #     variables, since in many cases commands don't contain environment
 #     variables (but only pass them the called programs)
 #
-
-#
-# A 'CFLAGS' flag, useful for flags.
-#
-
-# even if 'CFLAGS' would have to change, 'main' is not rebuilt only
-# because 'CFLAGS' has to change.  
-main:  main.c $[&CFLAGS] 
-{
-	gcc ... $CFLAGS ...
-}
-
 
 #==== Big features that complete what we already have ====
 

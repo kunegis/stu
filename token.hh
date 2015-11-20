@@ -85,6 +85,12 @@ public:
 class Command
 	:  public Token
 {
+private:
+	/* The individual lines of the command. 
+	 * Empty lines and leading spaces are not included.  These lines
+	 * are only used for output, not for execution. */ 
+	unique_ptr <vector <string> > lines;
+
 public:
 
 	Place place; 
@@ -92,38 +98,43 @@ public:
 	/* The command as written in the input; contains newlines  */ 
 	const string command;
 
-	/* The individual lines of the command. 
-	 * Empty lines and leading spaces are not included.  These lines
-	 * are only used for output, not for execution. */ 
-	// Don't fill this in the constructor -- build it on demand. 
-	vector <string> lines;
-
 	Command(string command_, 
-			const Place &place_);
-	Command(string command_, 
-			const Place &place_,
-			vector <string> lines_) 
-		:  place(place_),
-		   command(command_),
-		   lines(lines_)
-		{ }
+		const Place &place_);
+	// Command(string command_, 
+	// 	const Place &place_,
+	// 	vector <string> lines_) 
+	// 	:  place(place_),
+	// 	   command(command_),
+	// 	   lines(lines_)
+	// 	{ }
 
 	const Place &get_place() const {
 		return place; 
 	}
+
+	const vector <string> &get_lines();
 };
 
 Token::~Token() { }
 
 Command::Command(string command_, 
-				 const Place &place_)
+		 const Place &place_)
 	:  place(place_),
 	   command(command_)
 {
 	/* The following code parses the command string into lines ready for
 	 * output.  Most of the code is for making the output pretty. */   
+}	
+
+const vector <string> &
+Command::get_lines()
+{
+	if (lines != nullptr) {
+		return *lines; 
+	}
 	
-	
+	lines= unique_ptr <vector <string> > (new vector <string> ()); 
+
 	const char *p= command.c_str();
 	const char *p_end= p + command.size(); 
 
@@ -142,7 +153,7 @@ Command::Command(string command_,
 			}
 
 			if (keep)
-				lines.push_back(line); 
+				lines->push_back(line); 
 		}
 		if (p < p_end) {
 			assert(*p == '\n');
@@ -151,25 +162,27 @@ Command::Command(string command_,
 	}
 
 	/* Remove initial whitespace common to all lines */ 
-	while (lines.size()) {
-		char begin= lines[0][0];
+	while (lines->size()) {
+		char begin= (*lines)[0][0];
 		if ((begin & 0x80) || ! is_space(begin))  break;
 		bool equal= true;
-		for (auto i= lines.begin();  i != lines.end();  ++i) {
+		for (auto i= lines->begin();  i != lines->end();  ++i) {
 			assert(i->size()); 
 			if ((*i)[0] != begin)  equal= false;
 		}
 		if (! equal)  break;
-		for (unsigned i= 0; i < lines.size(); ) {
-			string &line= lines[i]; 
+		for (unsigned i= 0; i < lines->size(); ) {
+			string &line= (*lines)[i]; 
 			assert(line.size()); 
 			line.erase(0, 1); 
 			if (line.empty())
-				lines.erase(lines.begin() + i); 
+				lines->erase(lines->begin() + i); 
 			else
 				++i;
 		}
 	}
+
+	return *lines; 
 }
 
 #endif /* ! TOKEN_HH */

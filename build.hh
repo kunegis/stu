@@ -19,7 +19,7 @@
  * !...	  (prefix) Existence-only; argument cannot contain '$[]'
  * ?...	  ??? (prefix) Optional dependency; argument cannot contain '$[]'
  * ---------------
- * ... * ... ??? (binary) Multiplication; cannot contain '$[]'
+ * ... * ... ??? (binary, not implemented) Multiplication; cannot contain '$[]' 
  * ---------------
  * [...]   (circumfix) Dynamic dependency; cannot contain '$[]' or '@'
  * (...)   ??? (circumfix) Capture; cannot contain '$[]'
@@ -37,10 +37,10 @@
  * dependency:          expression | variable_dependency
  * variable_dependency: '$[' ['!' | '?'] ['<'] NAME ']'
  * expression:          single_expression 
- *                        [ ['*' | CONCAT ] single_expression ]*
+ *                      [ ['*' | CONCAT ] single_expression ]*
  * single_expression:   '[' expression* ']' | '(' expression* ')' 
- *                        | redirect_dependency 
- *                        | '!' single_expression | '?' single_expression 
+ *                      | redirect_dependency 
+ *                      | '!' single_expression | '?' single_expression 
  * redirect_dependency: ['<'] bare_dependency
  * bare_dependency:     ['@'] NAME
  */
@@ -403,9 +403,11 @@ shared_ptr <Dependency> Build::build_variable_dependency
 
 	if (has_input && ! place_param_name_input.empty()) {
 		place_param_name->place << 
-			fmt("duplicate input redirection <%s", place_param_name->unparametrized());
+			fmt("duplicate input redirection <%s", 
+			    place_param_name->unparametrized());
 		place_param_name_input.place << 
-			fmt("shadows previous input redirection <%s", place_param_name_input.unparametrized()); 
+			fmt("shadows previous input redirection <%s", 
+			    place_param_name_input.unparametrized()); 
 		throw ERROR_LOGICAL;
 	}
 
@@ -662,8 +664,8 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 		(new Direct_Dependency
 		 (flags,
 		  Place_Param_Target(has_phony ? T_PHONY : T_FILE,
-							 *name_token,
-							 has_phony ? place_at : name_token->place))); 
+				     *name_token,
+				     has_phony ? place_at : name_token->place))); 
 
 	return ret; 
 }

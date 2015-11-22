@@ -349,8 +349,7 @@ public:
 
 	/* Append the given PARAMETER and an empty text */ 
 	void append_parameter(string parameter,
-						  const Place &place_parameter
-						  ) {
+			      const Place &place_parameter) {
 		Param_Name::append_parameter(parameter); 
 		places.push_back(place_parameter);
 	}
@@ -382,14 +381,14 @@ public:
 	{ }
 
 	Place_Param_Target(Type type_,
-					   const Place_Param_Name &place_param_name_)
+			   const Place_Param_Name &place_param_name_)
 		:  type(type_),
 		   place_param_name(place_param_name_)
 	{ }
 
 	Place_Param_Target(Type type_,
-					   const Place_Param_Name &place_param_name_,
-					   const Place &place_)
+			   const Place_Param_Name &place_param_name_,
+			   const Place &place_)
 		:  type(type_),
 		   place_param_name(place_param_name_),
 		   place(place_)
@@ -428,8 +427,8 @@ string Param_Name::instantiate(const map <string, string> &mapping) const
 }
 
 bool Param_Name::match(const string name, 
-					   map <string, string> &mapping,
-					   vector <int> &anchoring)
+		       map <string, string> &mapping,
+		       vector <int> &anchoring)
 {
 	map <string, string> ret;
 
@@ -537,7 +536,7 @@ bool Param_Name::valid() const
 }
 
 bool Param_Name::anchoring_dominates(vector <int> &anchoring_a,
-									 vector <int> &anchoring_b)
+				     vector <int> &anchoring_b)
 {
  	/* (A) dominates (B) when every character in a parameter in (A)
 	 * is also in a parameter in (B) and at least one character is

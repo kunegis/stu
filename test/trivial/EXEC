@@ -1,0 +1,50 @@
+#! /bin/sh
+#
+# Trivial dependencies.
+#
+# * stu
+#	* B, D, C and A are built
+# * touch D
+# * stu
+#	* nothing is done
+# * touch B
+# * stu
+#	* C and A are rebuilt
+# * touch B
+#	* A is rebuilt
+# 
+
+set -e
+
+doo() { echo "$@" ; "$@" ; }
+
+doo rm -f ?
+
+doo ../../stu 2>list.err
+[ -r A -a -r B -a -r C -a -r D ] || {
+	echo >&2 '*** (1)'
+	exit 1
+}
+
+doo sleep 2
+doo touch D
+echo ../../stu
+../../stu >list.out 2>list.err
+if ! cmp list.out stdout.2 ; then echo >&2 '*** (2out)' ; exit 1 ; fi
+[ -s list.err ] && { echo >&2 '*** (2err)' ; exit 1 ; }
+
+doo sleep 2
+doo touch B
+echo ../../stu
+../../stu >list.out 2>list.err
+if ! cmp list.out stdout.3 ; then echo >&2 '*** (3out)' ; exit 1 ; fi
+[ -s list.err ] && { echo >&2 '*** (2err)' ; exit 1 ; }
+
+doo sleep 2
+doo touch B
+echo ../../stu
+../../stu >list.out 2>list.err
+if ! cmp list.out stdout.4 ; then echo >&2 '*** (4out)' ; exit 1 ; fi
+[ -s list.err ] && { echo >&2 '*** (2err)' ; exit 1 ; }
+
+exit 0

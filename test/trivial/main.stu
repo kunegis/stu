@@ -1,0 +1,17 @@
+# The compiled file
+>A:  B &C
+{
+	cat C B 
+}
+
+# The source code 
+>B {
+	echo bbb
+}
+
+# The flags
+C: D {
+	cp D C
+}
+
+>D { echo ddd }

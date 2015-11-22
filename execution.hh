@@ -140,6 +140,12 @@ public:
 	 */ 
 	queue <Link> buffer;
 
+	/* The buffer for trivial dependencies.  They are only started
+	 * if, after (potentially) starting all non-trivial
+	 * dependencies, the target must be rebuilt anyway. 
+	 */
+	queue <Link> buffer_trivial;
+
 	/* Info about the target before it is built.  Only valid once the
 	 * process was started.  Used for checking whether a file was
 	 * rebuild to decide whether to remove it after a command failed or
@@ -171,6 +177,11 @@ public:
 	 * executions (except when the F_EXISTENCE flag is set). 
 	 */ 
 	bool need_build;
+
+	/* Whether we performed the check in execute().  (Only for FILE
+	 * targets). 
+	 */ 
+	bool checked;
 
 	/* What parts of this target have been done. Each bit represents
 	 * one task done.  The depth K is equal to the dynamicity
@@ -475,17 +486,19 @@ int Execution::execute(Execution *parent,
 		assert(option_continue); 
 
 	/* 
-	 * Create a new child execution for a dependency
+	 * Deploy non-trivial dependencies
 	 */ 
 	while (buffer.size()) {
 		Link link_child= buffer.front(); 
 		buffer.pop(); 
-		deploy_dependency(k, link, link_child);
-		if (k == 0)
-			return k;
+		if (link_child.flags & F_TRIVIAL) {
+			buffer_trivial.push(link_child); 
+		} else {
+			deploy_dependency(k, link, link_child);
+			if (k == 0)
+				return k;
+		}
 	} 
-
-	/* When we arrive here, all dependencies have been started */ 
 	assert(buffer.empty()); 
 
 	/* Some dependencies are still running */ 
@@ -498,6 +511,7 @@ int Execution::execute(Execution *parent,
 		done.add_neg(link.avoid);
 		return k;
 	}
+
 
 	/* Rule does not have a command.  This includes the case of dynamic
 	 * executions, even though for dynamic executions the RULE variable
@@ -540,9 +554,11 @@ int Execution::execute(Execution *parent,
 
 	const bool no_command= rule != NULL && rule->command == NULL;
 
-	if (target.type == T_FILE) {
+	if (! checked && target.type == T_FILE) {
 
-		/* We save the return value of lstat() and handle errors later */ 
+		checked= true; 
+
+		/* We save the return value of stat() and handle errors later */ 
 		ret_stat= stat(target.name.c_str(), &buf);
 
 		/* Warn when file has timestamp in the future */ 
@@ -556,7 +572,7 @@ int Execution::execute(Execution *parent,
 		} else {
 			exists= -1;
 		}
-
+ 
 		if (! need_build) { 
 			if (ret_stat == 0) {
 				/* File exists. Check whether it has to be rebuilt
@@ -672,6 +688,22 @@ int Execution::execute(Execution *parent,
 		done.add_neg(link.avoid);
 		return k;
 	}
+
+	/*
+	 * The command must be run now. 
+	 */
+
+	/*
+	 * Deploy trivial dependencies
+	 */
+	while (buffer_trivial.size()) {
+		Link link_child= buffer_trivial.front(); 
+		buffer_trivial.pop(); 
+		deploy_dependency(k, link, link_child);
+		if (k == 0)
+			return k;
+	} 
+	assert(buffer_trivial.empty()); 
 
 	worked= true; 
 	
@@ -1063,6 +1095,7 @@ Execution::Execution(Target target_,
 	:  target(target_),
 	   error(0),
 	   need_build(false),
+	   checked(false),
 	   done(dynamic_depth(target_.type), 0),
 	   timestamp(Timestamp::UNDEFINED),
 	   exists(0)
@@ -1152,6 +1185,7 @@ Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
 	:  target(T_EMPTY),
 	   error(0),
 	   need_build(false),
+	   checked(false),
 	   exists(0)
 {
 	executions_by_target[target]= this;
@@ -1841,9 +1875,9 @@ void Execution::deploy_dependency(int &k,
 			
 	if (child->finished(avoid_child)) {
 		unlink_execution(this, child, 
-						 link.dependency,
-						 link.avoid, 
-						 avoid_child, flags_child);
+				 link.dependency,
+				 link.avoid, 
+				 avoid_child, flags_child);
 	}
 }
 

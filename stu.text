@@ -167,6 +167,14 @@ EXAMPLES
                fi
            }
 
+       Trivial dependencies are denoted with the '&' prefix.   They  denote  a
+       dependency  that  should never cause a target to be rebuilt, but if the
+       target is rebuilt for another reason, then they are treated like normal
+       dependencies.   Trivial  dependencies are typically used for configura‐
+       tion, i.e., for the setting up configuration of application.
+
+           target:  &input;
+
        Variable dependency:  the content of variables can come from files.  In
        the following example, the C flags are stored in the file 'CFLAGS', and
        used in the compilation command using the $[CFLAGS] dependency.
@@ -403,17 +411,18 @@ TOKENIZATION
            #     Comment (until the end of the line)
            %     Preprocessor character
            " '   Quote
-           $     Parameter
-           @     Phony target
            :     Separator for rule definition
            ;     For rules without body, end of variable declaration
+           $     Parameter
+           @     Phony target
            !     Existence-only dependency
            ?     Optional dependency
+           &     Trivial dependency
+           >     Output redirection
+           <     Input redirection
            { }   Command
            ( )   List
            [ ]   Dynamic dependency
-           >     Output redirection
-           <     Input redirection
 
        Comments introduced by '#' go until the  end  of  the  line.   Commands
        starting  with '{' go until the matching '}', taking into account shell

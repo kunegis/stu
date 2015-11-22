@@ -36,21 +36,21 @@ These characters are tokens in themselves.
 
 :	Rule definition
 ;	End of rule
-@ 	Phony target
+@	Phony target
 ()	List operator
-[]  	Dynamic dependency 
-!	Existence-only dependency
-?   	Optional dependency 
+[]	Dynamic dependency 
 >	Output redirection
 <	Input redirection 
+!	Existence-only dependency
+?	Optional dependency 
+&	Trivial dependency
 
 == As-yet unused operators ==
 
-=   Variable dependency name assignment / file copy / here-document 
-*   String multiplication 
-,   modifiers (e.g., ',0' for \0-separated input files). 
-\   interpreter:   \octave { }
-\   Set difference:   dat/plot.([dat/NETWORKS] \ enron).eps
-|   Index-wise concatenation:  (a b) | (x y) results in (ax by)
-&   CFLAGS mode
-&   Set intersection:  (a b c) & (b c d) is equivalent to (b c)
+=	Variable dependency name assignment / file copy / here-document 
+*	String multiplication 
+,	modifiers (e.g., ',0' for \0-separated input files). 
+\	interpreter:   \octave { }
+\	Set difference:   dat/plot.([dat/NETWORKS] \ enron).eps
+|	Index-wise concatenation:  (a b) | (x y) results in (ax by)
+&	Set intersection:  (a b c) & (b c d) is equivalent to (b c)

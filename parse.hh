@@ -40,6 +40,8 @@ shared_ptr <Place_Param_Name> parse_name(string filename,
  */
 bool is_name_char(char);
 
+bool is_operator_char(char);
+
 void parse_version(string version, const Place &place_version); 
 
 /*
@@ -131,10 +133,7 @@ void parse(vector <shared_ptr <Token> > &tokens,
 		while (p < p_end) {
 
 			/* Operators except '$' */ 
-			if (*p == ':' || *p == '<' || *p == '>' || *p == '=' ||
-				*p == '@' || *p == ';' || *p == '(' ||
-				*p == ')' || *p == '?' || *p == '[' || *p == ']' ||
-				*p == '!') {
+			if (is_operator_char(*p)) {
 				Place place(filename, line, p - p_line);
 				tokens.push_back(shared_ptr <Token> (new Operator(*p, place)));
 				++p;
@@ -666,6 +665,17 @@ bool is_name_char(char c)
 		 && c != ',')
 		|| ((unsigned char)c) >= 0x80
 		;
+}
+
+bool is_operator_char(char c) 
+{
+	// TODO replace by lookup table (?)
+	return 
+		c == ':' || c == '<' || c == '>' || c == '=' ||
+		c == '@' || c == ';' || c == '(' ||
+		c == ')' || c == '?' || c == '[' || c == ']' ||
+		c == '!' || c == '&' || c == ',' || c == '\\' ||
+		c == '|';
 }
 
 void parse_version(string version_req, const Place &place_version) 

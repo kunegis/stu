@@ -31,7 +31,10 @@ enum
 	F_DYNAMIC          = (1 << 2),  
 
 	/* ($[...]) Content of file is used as variable */ 
-	F_VARIABLE         = (1 << 3)
+	F_VARIABLE         = (1 << 3),
+
+	/* (&) Trivial dependency */
+	F_TRIVIAL          = (1 << 4)
 };
 
 /* Number of flags that are used, i.e., are transitive.  They correspond
@@ -61,9 +64,12 @@ public:
 	virtual const Place &get_place() const= 0;
 
 	virtual const Place &get_place_existence() const= 0;
-	virtual const Place &get_place_optional() const= 0; 
+	virtual const Place &get_place_optional () const= 0; 
+	virtual const Place &get_place_trivial  () const= 0;
+
 	virtual void set_place_existence(const Place &place)= 0;
-	virtual void set_place_optional(const Place &place)= 0;
+	virtual void set_place_optional (const Place &place)= 0;
+	virtual void set_place_trivial  (const Place &place)= 0;
 
 #ifndef NDEBUG
 	virtual void print() const= 0; 
@@ -79,6 +85,7 @@ public:
 
 	Place place_existence;
 	Place place_optional; 
+	Place place_trivial;
 
 	Base_Dependency(Flags flags_) 
 		:  flags(flags_)
@@ -106,12 +113,20 @@ public:
 		return place_optional; 
 	}
 
+	const Place &get_place_trivial() const {
+		return place_trivial; 
+	}
+
 	void set_place_existence(const Place &place_) {
 		place_existence= place_;
 	}
 
 	void set_place_optional(const Place &place_) {
 		place_optional= place_; 
+	}
+
+	void set_place_trivial(const Place &place_) {
+		place_trivial= place_; 
 	}
 };
 

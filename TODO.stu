@@ -19,6 +19,14 @@ plot.eps:  plot.m data.dat &OCTAVEPATH
 }
 
 #
+# Have an option to ignore trivial dependencies. 
+#
+
+#
+# Have an option to ignore optional dependencies. 
+#
+
+#
 # Assign a name to a dynamic variable.  Useful when the name of the file
 # contains characters that are not allowed in shell variable names. 
 #

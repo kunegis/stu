@@ -35,14 +35,14 @@
  * target:              ['>'] bare_dependency
  * dependency_list:     | dependency dependency_list
  * dependency:          expression | variable_dependency
- * variable_dependency: '$[' ['!' | '?'] ['<'] NAME ']'
+ * variable_dependency: '$[' [flag] ['<'] NAME ']'
  * expression:          single_expression 
  *                      [ ['*' | CONCAT ] single_expression ]*
  * single_expression:   '[' expression* ']' | '(' expression* ')' 
- *                      | redirect_dependency 
- *                      | '!' single_expression | '?' single_expression 
+ *                      | redirect_dependency | flag single_expression 
  * redirect_dependency: ['<'] bare_dependency
  * bare_dependency:     ['@'] NAME
+ * flag:		'!' | '?' | '&'
  */
 
 #include <memory>
@@ -573,6 +573,28 @@ bool Build::build_single_expression(vector <shared_ptr <Dependency> > &ret,
 
 			(*j)->add_flags(F_OPTIONAL); 
 			(*j)->set_place_optional(place_question); 
+		}
+		return true;
+	}
+
+	/* '&' single_expression */ 
+	if (iter != tokens.end() && is_operator('&')) {
+		Place place_ampersand= (*iter)->get_place(); 
+		++iter;
+		if (! build_single_expression(ret, place_param_name_input, place_input)) {
+			if (iter == tokens.end()) {
+				place_end << "expected a dependency";
+				place_ampersand << "after '&'"; 
+				throw ERROR_LOGICAL;
+			} else {
+				(*iter)->get_place() << "expected a dependency";
+				place_ampersand << "after '&'"; 
+				throw ERROR_LOGICAL;
+			}
+		}
+		for (auto j= ret.begin();  j != ret.end();  ++j) {
+			(*j)->add_flags(F_TRIVIAL); 
+			(*j)->set_place_trivial(place_ampersand); 
 		}
 		return true;
 	}

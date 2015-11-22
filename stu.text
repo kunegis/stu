@@ -65,7 +65,7 @@ OPTIONS
               selves do not make any output.
 
 
-EXAMPLES
+OVERVIEW
        A simple rule looks as follows:
 
            results.txt:  data.txt compute {
@@ -212,30 +212,8 @@ EXAMPLES
                cc y.c -o y
            }
 
-       File inclusion is done using the '%include' statement.  This can be put
-       at any place in the input file, and will just temporarily continue tok‐
-       enization  in  another  file.  The filename does not have to be quoted,
-       except if it contains special characters, just like any other  filename
-       in Stu.  If a directory is given after include (with or without an end‐
-       ing slash), the file 'main.stu' within that directory is read.
 
-           %include a.stu
-           %include "b.stu"
-           %include 'c.stu'
-           %include data/
-
-       To declare which version of Stu a script is written for, use the '%ver‐
-       sion' statement:
-
-           %version 2.3
-           %version 2.3.4
-
-       Both  variants will allow the script to be executed only with a version
-       of Stu of the correct major version number (2  in  this  example),  and
-       whose minor version (and patch level) have at least the given values.
-
-
-SYNTAX
+FEATURES
        Like  a  makefile,  a Stu file consists of rules.  In Stu, the order of
        rules is not important, except for the fact that the first rule is used
        by  default  if no rule is given explicitly.  Comments are written with
@@ -394,15 +372,42 @@ PARAMETERS
            a.b.$X: ... { ... }
 
 
+STATEMENTS
+       Statements  in Stu are introduced by '%' and serve a similar purpose to
+       the C preprocessor.
+
+       File inclusion is done using the '%include' statement.  This can be put
+       at any place in the input file, and will just temporarily continue tok‐
+       enization in another file.  The filename does not have  to  be  quoted,
+       except  if it contains special characters, just like any other filename
+       in Stu.  If a directory is given after include (with or without an end‐
+       ing slash), the file 'main.stu' within that directory is read.
+
+           %include a.stu
+           %include "b.stu"
+           %include 'c.stu'
+           %include data/
+
+       To declare which version of Stu a script is written for, use the '%ver‐
+       sion' statement:
+
+           %version 2.3
+           %version 2.3.4
+
+       Both variants will allow the script to be executed only with a  version
+       of  Stu  of  the  correct major version number (2 in this example), and
+       whose minor version (and patch level) have at least the given values.
+
+
 TOKENIZATION
        Unquoted filenames in Stu may contain the following ASCII characters:
 
            [a-z] [A-Z] [0-9] _ ^ ` + - . ~ /
 
-       and  all  non-ASCII  characters.  Filenames containing other characters
-       must be quoted by either single or double quotes.   Inside  single  and
-       double  quotes,  backslashes,  single  quotes and double quotes must be
-       escaped by a backslash.  Quoted or unquoted names which are  not  sepa‐
+       and all non-ASCII characters.  Filenames  containing  other  characters
+       must  be  quoted  by either single or double quotes.  Inside single and
+       double quotes, backslashes, single quotes and  double  quotes  must  be
+       escaped  by  a backslash.  Quoted or unquoted names which are not sepa‐
        rated by whitespace are interpreted as a single name.
 
        The following characters have special meaning in Stu and cannot be used
@@ -424,10 +429,10 @@ TOKENIZATION
            ( )   List
            [ ]   Dynamic dependency
 
-       Comments introduced by '#' go until the  end  of  the  line.   Commands
-       starting  with '{' go until the matching '}', taking into account shell
-       syntax, i.e., the command itself may contain more  braces.   All  other
-       characters  are  individual tokens and may or may not be separated from
+       Comments  introduced  by  '#'  go  until the end of the line.  Commands
+       starting with '{' go until the matching '}', taking into account  shell
+       syntax,  i.e.,  the  command itself may contain more braces.  All other
+       characters are individual tokens and may or may not be  separated  from
        other tokens by whitespace.
 
        A Stu file may include another Stu file using the following syntax:
@@ -435,13 +440,37 @@ TOKENIZATION
            %include FILENAME
 
        Note that '%' is a regular token and therefore it need not be the first
-       character  on a line, and there may be space between '%' and 'include'.
-       Also, the filename need not be quoted if it consists  only  of  allowed
+       character on a line, and there may be space between '%' and  'include'.
+       Also,  the  filename  need not be quoted if it consists only of allowed
        characters as described previously.
 
        The following characters are reserved for future extension:
 
            * = \ | & ,
+
+
+SYNTAX
+       The syntax of a Stu file is given in the following in  YACC-like  nota‐
+       tion.   This  is  the  syntax after processing of statements, which are
+       introduced with '%'.
+
+           rule_list:           | rule rule_list
+           rule:                target [':' toplevel_dependencies] (COMMAND  |
+       ';')
+           target:              ['>'] bare_dependency
+           dependency_list:     | dependency dependency_list
+           dependency:          expression | variable_dependency
+           variable_dependency: '$[' [flag*] ['<'] NAME ']'
+           expression:          single_expression
+                                [ ['*' | CONCAT ] single_expression ]*
+           single_expression:   '[' expression* ']' | '(' expression* ')'
+                                | redirect_dependency | flag single_expression
+           redirect_dependency: ['<'] bare_dependency
+           bare_dependency:     ['@'] NAME
+           flag:                '!' | '?' | '&'
+
+       The  main Stu file must contain a 'rule_list', while a file included by
+       brackets must contain a 'dependency_list'.
 
 
 SEMANTICS
@@ -451,63 +480,73 @@ SEMANTICS
            A:  B { ... }
            B:  A { ... }
 
-       Cycles are considered at the rule level, i.e., cycles such as the  fol‐
-       lowing  are  also flagged as an error, even though there is no cycle on
-       the filename level.  In the following example, it is  not  possible  to
-       build  the  file  'a.gz.gz' from the file 'a', even though it would not
-       result in a cycle, but since both files 'a.gz' and  'a.gz.gz'  use  the
+       Cycles  are considered at the rule level, i.e., cycles such as the fol‐
+       lowing are also flagged as an error, even though there is no  cycle  on
+       the  filename  level.   In the following example, it is not possible to
+       build the file 'a.gz.gz' from the file 'a', even though  it  would  not
+       result  in  a  cycle, but since both files 'a.gz' and 'a.gz.gz' use the
        same parametrized rule, this is not allowed:
 
            $NAME.gz:  $NAME { gzip $NAME }
 
-       Cycles  are  also  possible  in  dynamic  dependencies,  where they are
-       allowed and ignored.  For instance, the following  examples  will  cor‐
+       Cycles are also  possible  in  dynamic  dependencies,  where  they  are
+       allowed  and  ignored.   For instance, the following examples will cor‐
        rectly build the file 'A', after having built 'B' and 'C':
 
            A:  [B] { echo CORRECT >A }
            B:  { echo [C] >B }
            C:  { echo [B] >C }
 
-       Symlinks  are  treated  transparently by Stu.  In other words, Stu will
-       always consider the timestamp of the linked-to file.  A  symlink  to  a
+       Symlinks are treated transparently by Stu.  In other  words,  Stu  will
+       always  consider  the  timestamp of the linked-to file.  A symlink to a
        non-existing file will be treated as a non-existing file.
 
 
 EXIT STATUS
        0      Everything was built successfully or was up to date already.
 
-       1      Build  error.  Example:  a child process produced an error, or a
+       1      Build error.  Example:  a child process produced an error, or  a
               dependency was not found and no rule was given for it.
 
-       2      Logical error.  Examples:  syntax error in input  file,  invalid
+       2      Logical  error.   Examples:  syntax error in input file, invalid
               invocation, cycle in the dependency graph.
 
-       3      Both  build  and  logical  errors  were encountered (mostly when
+       3      Both build and logical  errors  were  encountered  (mostly  when
               using the -k option).
 
-       4      System error that made Stu abort execution.  Examples:  no  per‐
+       4      System  error  that made Stu abort execution.  Examples: no per‐
               mission to access file, input file does not exist.
 
 
-MORE EXAMPLES
+COMPATIBILITY
+       The Stu language is unique to this implementation,  and  the  man  page
+       serves as the reference for its syntax.
+
+       Stu follows Semantic Versioning (semver.org).  The major version number
+       is increased when backward-incompatible changes are  made.   The  minor
+       version number is increased when features are added. The patch level is
+       increased for other changes.
+
+
+EXAMPLES
        This section contains more advanced examples of Stu usage.
 
-       The  following  declaration  tells  Stu  that  the file 'config.h' must
+       The following declaration tells  Stu  that  the  file  'config.h'  must
        exist, and will allow Stu to give more meaningful error messages if the
        file is not found.
 
            config.h;
 
-       Input  and output redirection can be used to write commands that invoke
-       a filter such as sed, awk or tr.  The following example will build  the
+       Input and output redirection can be used to write commands that  invoke
+       a  filter such as sed, awk or tr.  The following example will build the
        'A' containing the string 'HELLO':
 
            >A: <B { tr a-z A-Z }
            >B { echo hello }
 
-       Variable  dependencies may be included indirectly through phony targets
-       without commands and dynamic dependencies.  In the  following  example,
-       the  variable $V will be passed through to the commands for the targets
+       Variable dependencies may be included indirectly through phony  targets
+       without  commands  and dynamic dependencies.  In the following example,
+       the variable $V will be passed through to the commands for the  targets
        A and B:
 
            V: { echo Hello >V }

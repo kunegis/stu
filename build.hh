@@ -7,42 +7,23 @@
  */
 
 /*
- * Operator precedence.  Higher in the list means higher precedence. 
+ * Operator precedence.  Higher in the list means higher precedence.  At
+ * the moment, only prefix and circumfix operators exist, and thus the
+ * precedence is trivial. 
  *
- * string juxtaposition [not implemented yet]
+ * @...	     (prefix) Phony dependency; argument can only contain name
  * ---------------
- * @...	  (prefix) Phony dependency; argument can only contain name
+ * <...	     (prefix) Input redirection; argument cannot contain '()',
+ *           '[]', '$[]' or '@' 
  * ---------------
- * <...	  (prefix) Input redirection; argument cannot contain '()',
- *        '[]', '$[]' or '@' 
+ * !...	     (prefix) Existence-only; argument cannot contain '$[]'
+ * ?...	     (prefix) Optional dependency; argument cannot contain '$[]'
+ * &...      (prefix) Trivial dependency
  * ---------------
- * !...	  (prefix) Existence-only; argument cannot contain '$[]'
- * ?...	  ??? (prefix) Optional dependency; argument cannot contain '$[]'
- * ---------------
- * ... * ... ??? (binary, not implemented) Multiplication; cannot contain '$[]' 
- * ---------------
- * [...]   (circumfix) Dynamic dependency; cannot contain '$[]' or '@'
- * (...)   ??? (circumfix) Capture; cannot contain '$[]'
- * $[...]  (circumfix) Variable inclusion; argument cannot contain
- *         '?', '[]', '()', '*' or '@' 
- */
-
-/* 
- * Syntax (in YACC-like notation):
- * 
- * file:                | rule file
- * rule:                target [':' toplevel_dependencies] (COMMAND | ';')
- * target:              ['>'] bare_dependency
- * dependency_list:     | dependency dependency_list
- * dependency:          expression | variable_dependency
- * variable_dependency: '$[' [flag] ['<'] NAME ']'
- * expression:          single_expression 
- *                      [ ['*' | CONCAT ] single_expression ]*
- * single_expression:   '[' expression* ']' | '(' expression* ')' 
- *                      | redirect_dependency | flag single_expression 
- * redirect_dependency: ['<'] bare_dependency
- * bare_dependency:     ['@'] NAME
- * flag:		'!' | '?' | '&'
+ * [...]     (circumfix) Dynamic dependency; cannot contain '$[]' or '@'
+ * (...)     (circumfix) Capture; cannot contain '$[]'
+ * $[...]    (circumfix) Variable inclusion; argument cannot contain
+ *           '?', '[]', '()', '*' or '@' 
  */
 
 #include <memory>
@@ -83,7 +64,7 @@ public:
 	 */ 
 
 	/* The returned rules may not be unique -- this is checked later */
-	void build_file(vector <shared_ptr <Rule> > &ret);
+	void build_rule_list(vector <shared_ptr <Rule> > &ret);
 
 	/* Return NULL when nothing was parsed */ 
 	shared_ptr <Rule> build_rule(); 
@@ -121,7 +102,7 @@ public:
 	}
 };
 
-void Build::build_file(vector <shared_ptr <Rule> > &ret)
+void Build::build_rule_list(vector <shared_ptr <Rule> > &ret)
 {
 	assert(ret.size() == 0); 
 	
@@ -370,11 +351,23 @@ shared_ptr <Dependency> Build::build_variable_dependency
 
 	Flags flags= F_VARIABLE;
 
-	/* Optional '!' */ 
-	Place place_exclam;
-	if (is_operator('!')) {
-		place_exclam= (*iter)->get_place();
-		flags |= F_EXISTENCE; 
+	/* Flags */ 
+	Place place_flag_last;
+	char flag_last= 'E';
+	while (is_operator('!') || is_operator('&') || is_operator('?')) {
+
+		flag_last= dynamic_pointer_cast <Operator> (*iter)->op; 
+		if (is_operator('!')) {
+			place_flag_last= (*iter)->get_place();
+			flags |= F_EXISTENCE; 
+		} else if (is_operator('?')) {
+			(*iter)->get_place() << "optional dependency using '?' is not allowed";
+			place_dollar << "within dynamic variable declaration";
+			throw ERROR_LOGICAL; 
+		} else if (is_operator('&')) {
+			place_flag_last= (*iter)->get_place();
+			flags |= F_TRIVIAL; 
+		}
 		++iter;
 	}
 
@@ -390,8 +383,8 @@ shared_ptr <Dependency> Build::build_variable_dependency
 		(*iter)->get_place() << "expected a filename";
 		if (has_input)
 			place_input << "after '<'";
-		else if (flags & F_EXISTENCE) 
-			place_exclam << "after '!'";
+		else if (place_flag_last.type != Place::P_EMPTY) 
+			place_flag_last << frmt("after '%c'", flag_last);
 		else
 			place_dollar << "after '$['";
 

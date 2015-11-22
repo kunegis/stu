@@ -1,0 +1,5 @@
+# Execute this first
+touch B
+# Then this
+touch C
+>A: cat B C

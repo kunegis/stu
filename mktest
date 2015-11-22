@@ -11,7 +11,7 @@
 #
 # Without any arguments, perform all tests.  With one or more arguments,
 # perform the given tests.  The name of the tests are the names of the
-# subdirectories of test/. 
+# subdirectories of test/, and may or may not include the 'test/' part. 
 #
 # PARAMETERS
 #
@@ -116,6 +116,9 @@ fi
 for file in $tests
 do
 	error=0
+
+	# Remove optional 'test/' prefix
+	file="$(echo "$file" | sed -re 's,^test/,,')"
 
 	if [ ! -d "$file" ]; then
 		echo >&2 "$0: *** '$file' is not a directory"

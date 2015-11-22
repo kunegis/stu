@@ -1,0 +1,13 @@
+# Does that make sense?
+
+A:  @b { 
+	touch A 
+}
+
+@b:  &C {
+	echo BBB
+}
+
+C { 
+	touch C 
+}

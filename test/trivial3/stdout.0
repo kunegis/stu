@@ -1,0 +1,4 @@
+>B: echo bbb
+>A:
+[ -e C ] && cat C
+cat B

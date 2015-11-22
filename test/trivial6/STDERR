@@ -1,0 +1,1 @@
+main.stu:2:1: file without command 'A' does not exist, although all its dependencies are up to date

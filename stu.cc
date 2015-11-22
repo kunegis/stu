@@ -192,7 +192,7 @@ int main(int argc, char **argv, char **envp)
 			auto iter= tokens.begin(); 
 			Build build(tokens, iter, place_end);
 			vector <shared_ptr <Rule> > rules;
-			build.build_file(rules); 
+			build.build_rule_list(rules); 
 			Execution::rule_set.add(rules);
 
 			/* If no targets are given on the command line,

@@ -1,0 +1,17 @@
+# An optional trivial dependency.
+
+>A: B ?&C
+{
+	[ -e C ] && cat C
+	cat B
+}
+
+>B {
+	echo bbb
+}
+
+C: D {
+	cp D C
+}
+
+>D { echo ddd }

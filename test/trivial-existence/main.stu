@@ -1,0 +1,8 @@
+
+# is possible
+
+>A: $[&!B] {
+	echo "$B"
+}
+
+>B {echo CORRECT}

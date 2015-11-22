@@ -63,7 +63,7 @@ Short mode; instead of outputting the commands, output the name of the
 targets.  This is most useful when the commands themselves do not make
 any output. 
 
-.SH EXAMPLES
+.SH OVERVIEW
 A simple rule looks as follows:
 
     results.txt:  data.txt compute {
@@ -210,29 +210,7 @@ Here a phony target is used as a list of files.  Multiple targets can depend on 
         cc y.c -o y
     }
 
-File inclusion is done using the '%include' statement. 
-This can be put at any place in the input file, and will just temporarily continue
-tokenization in another file.  The filename does not have to be
-quoted, except if it contains special characters, just like any other
-filename in Stu.  If a directory is given after include (with or without
-an ending slash), the file 'main.stu' within that directory is read. 
-
-    %include a.stu
-    %include "b.stu"
-    %include 'c.stu'
-    %include data/
-
-To declare which version of Stu a script is written for, use
-the '%version' statement:
-
-    %version 2.3
-    %version 2.3.4
-
-Both variants will allow the script to be executed only with a version
-of Stu of the correct major version number (2 in this example), and
-whose minor version (and patch level) have at least the given values. 
-
-.SH SYNTAX
+.SH "FEATURES"
 Like a makefile, a Stu file consists of rules.  In Stu, the order of
 rules is not important, except for the fact that the first rule is
 used by default if no rule is given explicitly.  Comments are written
@@ -357,7 +335,7 @@ The flags '!' and '?' can be applied to dynamic dependencies:
 in which case all resulting dynamic dependencies will be flagged as
 optional of existence-only. 
 
-.SH PARAMETERS
+.SH "PARAMETERS"
 
 Any file or phony target may include parameters.  Parameters are
 noted using the '$' character and are given a name.  Stu will match the
@@ -393,7 +371,34 @@ filename 'a.b.c', so Stu will report an error:
     a.$X.c: ... { ... }
     a.b.$X: ... { ... }
 
-.SH TOKENIZATION
+.SH "STATEMENTS"
+
+Statements in Stu are introduced by '%' and serve a similar purpose to
+the C preprocessor. 
+
+File inclusion is done using the '%include' statement. 
+This can be put at any place in the input file, and will just temporarily continue
+tokenization in another file.  The filename does not have to be
+quoted, except if it contains special characters, just like any other
+filename in Stu.  If a directory is given after include (with or without
+an ending slash), the file 'main.stu' within that directory is read. 
+
+    %include a.stu
+    %include "b.stu"
+    %include 'c.stu'
+    %include data/
+
+To declare which version of Stu a script is written for, use
+the '%version' statement:
+
+    %version 2.3
+    %version 2.3.4
+
+Both variants will allow the script to be executed only with a version
+of Stu of the correct major version number (2 in this example), and
+whose minor version (and patch level) have at least the given values. 
+
+.SH "TOKENIZATION"
 
 Unquoted filenames in Stu may contain the following ASCII characters:
 
@@ -443,6 +448,29 @@ The following characters are reserved for future extension:
 
     * = \\ | & , 
 
+.SH "SYNTAX"
+
+The syntax of a Stu file is given in the following in YACC-like
+notation.  This is the syntax after processing of statements, which are
+introduced with '%'. 
+
+    rule_list:           | rule rule_list
+    rule:                target [':' toplevel_dependencies] (COMMAND | ';')
+    target:              ['>'] bare_dependency
+    dependency_list:     | dependency dependency_list
+    dependency:          expression | variable_dependency
+    variable_dependency: '$[' [flag*] ['<'] NAME ']'
+    expression:          single_expression 
+                         [ ['*' | CONCAT ] single_expression ]*
+    single_expression:   '[' expression* ']' | '(' expression* ')' 
+                         | redirect_dependency | flag single_expression 
+    redirect_dependency: ['<'] bare_dependency
+    bare_dependency:     ['@'] NAME
+    flag:                '!' | '?' | '&'
+
+The main Stu file must contain a 'rule_list', while a file included by
+brackets must contain a 'dependency_list'. 
+
 .SH "SEMANTICS"
 
 Cycles in the dependency graph are not allowed. As an example, the
@@ -488,7 +516,17 @@ option).
 System error that made Stu abort execution.  Examples: no permission to
 access file, input file does not exist. 
 
-.SH "MORE EXAMPLES"
+.SH "COMPATIBILITY"
+
+The Stu language is unique to this implementation, and the man page
+serves as the reference for its syntax.  
+
+Stu follows Semantic Versioning (semver.org).  The major version number
+is increased when backward-incompatible changes are made.  The minor
+version number is increased when features are added. The patch level is
+increased for other changes. 
+
+.SH "EXAMPLES"
 
 This section contains more advanced examples of Stu usage.
 

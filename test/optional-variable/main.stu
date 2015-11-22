@@ -1,0 +1,8 @@
+
+# error: '?' is not allowed in dynamic variable dependency. 
+
+A:  $[?B] {
+	touch A
+}
+
+B { touch B }

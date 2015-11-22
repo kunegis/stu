@@ -1,0 +1,8 @@
+
+# correct 
+
+>A: $[!!B] {
+	echo "$B"
+}
+
+>B { echo CORRECT }

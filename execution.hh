@@ -252,6 +252,7 @@ public:
 	 * of all FLAGs up the dependency chain.  
 	 * DEPENDENCY is the dependency linking the two executions.  
 	 */
+	// TODO Make K be a global variable. 
  	int execute(Execution *parent, 
 		    int k, 
 		    const Link &link);
@@ -665,15 +666,6 @@ int Execution::execute(Execution *parent,
 		}		
 	}
 
-	/* A target without a command */ 
-	if (no_command) {
-		if (verbosity >= VERBOSITY_VERBOSE) {
-			fprintf(stderr, "\ttarget without command\n");
-		}
-		done.add_neg(link.avoid); 
-		return k;
-	}
-
 	if (! need_build && target.type == T_PHONY) {
 		if (! phonies.count(target.name)) {
 			/* Phony was not yet executed */ 
@@ -692,6 +684,29 @@ int Execution::execute(Execution *parent,
 	/*
 	 * The command must be run now. 
 	 */
+
+	/* A target without a command */ 
+	if (no_command) {
+		if (verbosity >= VERBOSITY_VERBOSE) {
+			fprintf(stderr, "\ttarget without command\n");
+		}
+		
+		if (buffer_trivial.size() != 0) {
+			const Link &link_child= buffer_trivial.front();
+			assert(link_child.dependency->get_flags() & F_TRIVIAL); 
+			link_child.dependency->get_place_trivial() <<
+				fmt("target without command %s cannot have trivial dependencies",
+				    target.text()); 
+			error |= ERROR_LOGICAL;
+			done.add_neg(link.avoid); 
+			if (! option_continue) 
+				throw error;  
+			return k;
+		}
+
+		done.add_neg(link.avoid); 
+		return k;
+	}
 
 	/*
 	 * Deploy trivial dependencies

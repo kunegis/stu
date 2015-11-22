@@ -1,0 +1,16 @@
+# Double '&' within dynamic variable 
+
+>A: B $[&&C] {
+	echo "$C"
+	cat B
+}
+
+>B {
+	echo bbb
+}
+
+C: D {
+	cp D C
+}
+
+>D { echo ddd }

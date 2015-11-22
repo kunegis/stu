@@ -489,6 +489,11 @@ A:  {
 # programs, tex projects, etc. 
 #
 
+#
+# Make trivial dependencies transitive across phonies, like it already
+# is for existence-only and optional dependencies. 
+#
+
 #==== Backward-incompatible features ====
 
 #

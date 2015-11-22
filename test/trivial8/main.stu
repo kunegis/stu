@@ -1,0 +1,16 @@
+
+# Order of trivial dependencies.
+
+>A:  &B &C {
+	cat B C
+}
+
+B {
+	# Execute this first
+	touch B
+}
+
+C {
+	# Then this
+	touch C
+}

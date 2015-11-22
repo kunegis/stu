@@ -6,6 +6,14 @@ are added, which are documented in this file.  When the major version is
 increased, backward-incompatible changes are made, which are documented
 in the file MIGRATION. 
 
+2015-11-22  Version 1.7:
+
+* A new flag '&', marks trivial dependencies.  '&' is used as a prefix,
+  like '!' and '?'.  Trivial dependencies will never cause a target to
+  be rebuilt, but if the target is rebuilt anyway, then they act like
+  normal dependencies. They are intended for configuration files
+  containing e.g. flags and paths. 
+
 2015-10-22  Version 1.6:
 
 * Both the -f option and the %include directive now allow directories as

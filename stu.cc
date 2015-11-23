@@ -36,7 +36,7 @@ using namespace std;
  * options, and not long options.  At some point, we might switch to
  * getopt_long() though. 
  */
-#define STU_OPTIONS "f:j:kvVhsw"
+#define STU_OPTIONS "af:j:kvVhsw"
 
 int main(int argc, char **argv, char **envp)
 {
@@ -60,6 +60,7 @@ int main(int argc, char **argv, char **envp)
 	for (int c; (c= getopt(argc, argv, STU_OPTIONS)) != -1;) {
 		switch (c) {
 
+		case 'a': option_nontrivial= true;     break;
 		case 'k': option_continue= true;       break;
 		case 's': verbosity= VERBOSITY_SILENT; break;
 		case 'v': verbosity= VERBOSITY_VERBOSE;break;
@@ -83,6 +84,7 @@ int main(int argc, char **argv, char **envp)
 			fputs("Usage:   stu [TARGETS...] [OPTIONS...]\n"
 			      "By default, build the first target in the file 'main.stu'.\n"
 			      "Options:\n"
+			      "   -a            Treat all trivial dependencies as non-trivial\n"
 			      "   -f FILENAME   The input file to use instead of 'main.stu'\n"
 			      "   -h            Output help\n"
 			      "   -j K          Run K processes in parallel\n"

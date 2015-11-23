@@ -366,7 +366,8 @@ shared_ptr <Dependency> Build::build_variable_dependency
 			throw ERROR_LOGICAL; 
 		} else if (is_operator('&')) {
 			place_flag_last= (*iter)->get_place();
-			flags |= F_TRIVIAL; 
+			if (! option_nontrivial)
+				flags |= F_TRIVIAL; 
 		}
 		++iter;
 	}
@@ -586,7 +587,8 @@ bool Build::build_single_expression(vector <shared_ptr <Dependency> > &ret,
 			}
 		}
 		for (auto j= ret.begin();  j != ret.end();  ++j) {
-			(*j)->add_flags(F_TRIVIAL); 
+			if (! option_nontrivial)
+				(*j)->add_flags(F_TRIVIAL); 
 			(*j)->set_place_trivial(place_ampersand); 
 		}
 		return true;

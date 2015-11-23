@@ -2,39 +2,41 @@
 An overview of *possible* assignment of options letters, including those
 used by Make.  
 
--a	  Make all targets in the file
--b	  Enable backups
--B    M   Re-make all
+-a  S     Consider trivial dependencies to be non-trivial
+-b	  (Enable backups)
+-B      G Re-make all
 -c
 -d
--e        Expression
--f  S M   File
+-e    M G Environment overrides Make macros
+-f  S M G File
 -g
--h  S M   Help
--i    M   Ignore all errors in commands
--I    M   Include path
--j  S M   Parallel
--k  S M   Keep going
--l        Log (redirect all output of commands to logfiles) 
--L    M   Special handling of symlinks
--m        Mode (e.g., random order, etc.)
--n    M   Dry run (just print commands)
--o    M   Mark file as old
--p    M   Print database (rule set)
--q    M   Question mode / Query mode
--r        
--s  S M   Silent
--S    M   No keep going
--t    M   Touch instead of building
+-h  S   G Help
+-i    M G Ignore all errors in commands
+-I      G Include path
+-j  S   G Parallel
+-k  S M G Keep going
+-l        (Log; redirect all output of commands to logfiles)
+-L      G Special handling of symlinks
+-m        (Mode; e.g., random order, etc.)
+-n    M G Dry run (just print commands)
+-o      G Mark file as old
+-p    M G Print database (rule set)
+-q    M G Question mode / Query mode
+-r    M G No builtin rules
+-R      G No builtin variables
+-s  S M G Silent
+-S    M G No keep going
+-t    M G Touch instead of building
 -u
--v  S M   Verbose
+-v  S   G Verbose
 -V  S     Version
 -w  S	  Short mode
--W    M   What-if mode (if FILE just had been modified)
--x        Enable /bin/sh -x instead of normal output 
+-W      G What-if mode (if FILE just had been modified)
+-x        (Enable /bin/sh -x instead of normal output)
 -y
 -z        
 
 
-S:  implemented in Stu
-M:  compatible with Make
+S:  Implemented in Stu
+M:  Compatible with standard Make
+G:  Compatible with GNU Make

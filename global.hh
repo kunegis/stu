@@ -5,6 +5,9 @@
  * Global variables used by Stu
  */ 
 
+/* The -a option (consider all trivial dependencies to be non-trivial) */ 
+static bool option_nontrivial= false;
+
 /* The -k option (continue when encountering errors) */ 
 static bool option_continue= false;
 

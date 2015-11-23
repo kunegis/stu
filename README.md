@@ -37,6 +37,11 @@ The name "Stu" follows the precedents of Make replacements Cook and Bake
 in referring to kitchen-related verbs, and also honours the author of
 the original Unix Make, Stuart Feldman. 
 
+The see an example of Stu used in a large data mining project, see the
+file 'main.stu' in the KONECT-Analysis project:
+
+https://github.com/kunegis/konect-analysis
+
 Stu is written in C++11 for POSIX platforms.  You should have no problem
 compiling it on vanilla Linux and other POSIX-compliant platforms.  See
 the file INSTALL for installation instructions.  The Makefile contains

@@ -37,6 +37,8 @@ the options -f, -j and -k have the same meaning in Stu as they do in
 Make. 
 
 .SH OPTIONS
+.IP -a
+Consider all trivial dependencies (declared with '&') to be non-trivial.
 .IP "-f FILENAME"
 Read the given file instead of the default 'main.stu'.  If the name of a
 directory is passed, the file 'main.stu' in the given directory is

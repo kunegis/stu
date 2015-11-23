@@ -1,0 +1,3 @@
+>A:  &B $[&C] {echo "$C";cat B}
+>B {echo bbb}
+>C {echo ccc}

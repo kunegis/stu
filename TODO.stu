@@ -1,29 +1,11 @@
 #==== Small features that complete what we already have ====
 
 #
-# Trivial dependencies
-#
-
-# even if 'CFLAGS' would have to change, 'main' is not rebuilt only
-# because 'CFLAGS' has to change.  But if 'main' is rebuilt for another
-# reason, then 'CFLAGS' is also rebuilt if it has to. 
-main:  main.c $[&CFLAGS] 
-{
-	gcc ... $CFLAGS ...
-}
->CFLAGS { echo ... }
-
-plot.eps:  plot.m data.dat &OCTAVEPATH
-{
-	octave --pathfile OCTAVEPATH plot.m 
-}
-
-#
-# Have an option to ignore trivial dependencies. 
-#
-
-#
 # Have an option to ignore optional dependencies. 
+#
+
+#
+# Support -f - to read in STDIN?
 #
 
 #

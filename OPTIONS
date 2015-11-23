@@ -5,11 +5,11 @@ used by Make.
 -a  S     Consider trivial dependencies to be non-trivial
 -b	  (Enable backups)
 -B      G Re-make all
--c
--d
+-c        (Command)
+-d      G Print debugging information 
 -e    M G Environment overrides Make macros
 -f  S M G File
--g
+-g  S     Consider optional dependencies to be non-optional 
 -h  S   G Help
 -i    M G Ignore all errors in commands
 -I      G Include path
@@ -38,5 +38,5 @@ used by Make.
 
 
 S:  Implemented in Stu
-M:  Compatible with standard Make
+M:  Compatible with POSIX Make
 G:  Compatible with GNU Make

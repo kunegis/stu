@@ -1,0 +1,4 @@
+# We use the -g option, so 'B' is not treated as an optional dependency.  
+
+A: ?B {cp B A}
+>B {echo bbb}

@@ -38,11 +38,13 @@ Make.
 
 .SH OPTIONS
 .IP -a
-Consider all trivial dependencies (declared with '&') to be non-trivial.
+Treat all trivial dependencies (declared with '&') as non-trivial.
 .IP "-f FILENAME"
 Read the given file instead of the default 'main.stu'.  If the name of a
 directory is passed, the file 'main.stu' in the given directory is
 read. 
+.IP -g
+Treat all optional dependencies (declared with '?') as non-optional.
 .IP -h
 Output a short help and exit.
 .IP "-j K"
@@ -452,12 +454,13 @@ The following characters are reserved for future extension:
 
 .SH "SYNTAX"
 
-The syntax of a Stu file is given in the following in YACC-like
+The syntax of a Stu file is given in the following in Yacc-like
 notation.  This is the syntax after processing of statements, which are
 introduced with '%'. 
 
     rule_list:           | rule rule_list
-    rule:                target [':' toplevel_dependencies] (COMMAND | ';')
+    rule:                target [':' toplevel_dependencies] 
+                         (COMMAND | ';')
     target:              ['>'] bare_dependency
     dependency_list:     | dependency dependency_list
     dependency:          expression | variable_dependency

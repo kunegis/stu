@@ -361,9 +361,12 @@ shared_ptr <Dependency> Build::build_variable_dependency
 			place_flag_last= (*iter)->get_place();
 			flags |= F_EXISTENCE; 
 		} else if (is_operator('?')) {
-			(*iter)->get_place() << "optional dependency using '?' is not allowed";
-			place_dollar << "within dynamic variable declaration";
-			throw ERROR_LOGICAL; 
+			if (! option_nonoptional) {
+				(*iter)->get_place() << 
+					"optional dependency using '?' is not allowed";
+				place_dollar << "within dynamic variable declaration";
+				throw ERROR_LOGICAL; 
+			}
 		} else if (is_operator('&')) {
 			place_flag_last= (*iter)->get_place();
 			if (! option_nontrivial)
@@ -547,26 +550,27 @@ bool Build::build_single_expression(vector <shared_ptr <Dependency> > &ret,
 				throw ERROR_LOGICAL;
 			}
 		}
-		for (auto j= ret.begin();  j != ret.end();  ++j) {
+		if (! option_nonoptional) {
+			for (auto j= ret.begin();  j != ret.end();  ++j) {
+				/* D_INPUT and D_OPTIONAL cannot be used at the same
+				 * time. Note: Input redirection is not allowed in
+				 * dynamic dependencies, and therefore it is sufficient
+				 * to check this here.     */   
+				if (place_param_name_input.place.type != Place::P_EMPTY) {
+					place_input <<
+						"input redirection using '<' must not be used";
+					place_question <<
+						"in conjunction with optional dependencies using '?'"; 
+					throw ERROR_LOGICAL;
+				}
 
-			/* D_INPUT and D_OPTIONAL cannot be used at the same
-			 * time.  Note:  Input redirection is not allowed in dynamic
-			 * dependencies, and therefore it is sufficient to check
-			 * this here.  */  
-			if (place_param_name_input.place.type != Place::P_EMPTY) {
-				place_input <<
-					"input redirection using '<' must not be used";
-				place_question <<
-					"in conjunction with optional dependencies using '?'"; 
-				throw ERROR_LOGICAL;
+				/* That '?' and '!' cannot be used together is checked
+				 * within Execution and not here, because these can also
+				 * come from dynamic dependencies. */
+
+				(*j)->add_flags(F_OPTIONAL); 
+				(*j)->set_place_optional(place_question); 
 			}
-
-			/* That '?' and '!' cannot be used together is checked
-			 * within Execution and not here, because these can also
-			 * come from dynamic dependencies. */
-
-			(*j)->add_flags(F_OPTIONAL); 
-			(*j)->set_place_optional(place_question); 
 		}
 		return true;
 	}

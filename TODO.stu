@@ -1,10 +1,6 @@
 #==== Small features that complete what we already have ====
 
 #
-# Have an option to ignore optional dependencies. 
-#
-
-#
 # Support -f - to read in STDIN?
 #
 

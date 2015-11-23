@@ -562,6 +562,20 @@ EXAMPLES
            B: [y] { echo $V >B }
 
 
+LIMITATIONS AND PITFALLS
+       The -f option only supports regular files.  Standard input is not  sup‐
+       ported, as the current implementation uses mmap(2).
+
+       Changing  a  command  within  a Stu file will not make the target to be
+       rebuilt.  This can be seen as both a feature or a bug.
+
+       Rule-level recursion is not allowed.  This exclude a recursive  parsing
+       of C-like dependencies.
+
+       Files  read  dynamic dependencies are parsed using the full Stu syntax,
+       meaning that certain characters must be quoted in them.
+
+
 AUTHOR
        Jérôme Kunegis <kunegis@uni-koblenz.de>
 
@@ -570,4 +584,4 @@ SEE ALSO
 
 
 
-stu-1.7.3                        November 2015                          STU(1)
+stu-1.7.4                        November 2015                          STU(1)

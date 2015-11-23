@@ -559,6 +559,20 @@ commands for the targets A and B:
     A: @x { echo $V >A }
     B: [y] { echo $V >B }
 
+.SH "LIMITATIONS AND PITFALLS"
+
+The -f option only supports regular files.  Standard input is not
+supported, as the current implementation uses mmap(2). 
+
+Changing a command within a Stu file will not make the target to be
+rebuilt.  This can be seen as both a feature or a bug. 
+
+Rule-level recursion is not allowed.  This exclude a recursive
+parsing of C-like dependencies. 
+
+Files read dynamic dependencies are parsed using the full Stu syntax,
+meaning that certain characters must be quoted in them. 
+
 .SH AUTHOR
 Jérôme Kunegis <kunegis@uni-koblenz.de>
 .SH "SEE ALSO"

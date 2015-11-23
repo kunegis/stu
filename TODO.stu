@@ -1,10 +1,6 @@
 #==== Small features that complete what we already have ====
 
 #
-# Support -f - to read in STDIN?
-#
-
-#
 # Assign a name to a dynamic variable.  Useful when the name of the file
 # contains characters that are not allowed in shell variable names. 
 #
@@ -132,25 +128,6 @@ konect.bib=  ../../projects/konect;
 # what it does in various cases.)  Maybe merge with -s option. (I.e.,
 # have a verbosity level, set to 0 by -s and to 2 by -v)
 #
-
-#
-# What happens with relative and absolute pathnames?  When two names
-# refer to the same file?  Do we need to 'normalize' names?
-#
-
-# This will fail because ../../bib/[NAME].bib will match [NAME].bib.
-# Instead, be able to write ./[NAME].bib
-A:   a.bib b.bib c.bib;
-$NAME.bib:  ../../bib/$NAME.bib { cp ... }
-a.bib;
-
-# Rules:
-#     [NAME].bib:    a .bib file anywhere
-#     ./[NAME].bib:  a .bib file in the current directory
-
-# Remove trailing slash from directory names.
-A:  ?tmp/ {...}
-tmp: {...}
 
 #
 # A 'what-if' option that does not run anything but shows what would be
@@ -293,6 +270,10 @@ A: [B],i;
 #
 
 %line ...
+
+#
+# Support -f - to read in STDIN?
+#
 
 #==== New features that change extend the Stu drastically ====
 
@@ -473,6 +454,25 @@ A:  {
 #
 
 #==== Backward-incompatible features ====
+
+#
+# What happens with relative and absolute pathnames?  When two names
+# refer to the same file?  Do we need to 'normalize' names?
+#
+
+# This will fail because ../../bib/[NAME].bib will match [NAME].bib.
+# Instead, be able to write ./[NAME].bib
+A:   a.bib b.bib c.bib;
+$NAME.bib:  ../../bib/$NAME.bib { cp ... }
+a.bib;
+
+# Rules:
+#     [NAME].bib:    a .bib file anywhere
+#     ./[NAME].bib:  a .bib file in the current directory
+
+# Remove trailing slash from directory names.
+A:  ?tmp/ {...}
+tmp: {...}
 
 #
 # By default, the target @main is built, regardless of position in file.

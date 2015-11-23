@@ -20,7 +20,7 @@ enum {
 	VERBOSITY_SILENT  = -2, /* No output */
 	VERBOSITY_SHORT   = -1, /* Only target name */
 	VERBOSITY_LONG    =  0, /* Output the command */
-	VERBOSITY_VERBOSE = +1, /* More information */ 
+	VERBOSITY_VERBOSE = +1  /* More information */ 
 };
 
 static int verbosity= VERBOSITY_LONG; 

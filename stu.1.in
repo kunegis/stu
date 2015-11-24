@@ -33,7 +33,7 @@ Stu. Also like Make, Stu will build the first target it finds, except if
 given an explicit target to built.   
 Stu is designed to follow the conventions of Make,
 of the Bourne shell and of Unix / POSIX in general.  As an example,
-the options -f, -j and -k have the same meaning in Stu as they do in
+the options -f and -k have the same meaning in Stu as they do in
 Make. 
 
 .SH OPTIONS
@@ -50,7 +50,8 @@ Output a short help and exit.
 .IP "-j K"
 Run K commands in parallel.  K must be a positive integer.  The default
 value is one, meaning that Stu does not start commands in parallel. 
-This option works like the corresponding option in Make. 
+This option works like the corresponding option in GNU Make. The
+parameter K is mandatory. 
 .IP -k
 Keep going; do not stop running when an error occurs.  Instead, try to build as much
 as possible.  This option is equivalent to that of Make. 
@@ -559,19 +560,32 @@ commands for the targets A and B:
     A: @x { echo $V >A }
     B: [y] { echo $V >B }
 
-.SH "LIMITATIONS AND PITFALLS"
+.SH "LIMITATIONS, PITFALLS AND FUTURE DIRECTIONS"
 
 The -f option only supports regular files.  Standard input is not
-supported, as the current implementation uses mmap(2). 
+supported, as the current implementation uses mmap(2).  Also, '-' as an
+input filename will not make Stu read standard input. 
+
+The argument to the -j option is mandatory, as opposed to the behavior
+of GNU Make. 
+
+Files read as dynamic dependencies are parsed using the full Stu syntax,
+meaning that certain characters must be quoted in them.  Future versions
+of Stu may support newline-seperated file lists, as well as
+NUL-separated file lists. 
+
+Rule-level recursion is not allowed.  This exclude a recursive
+parsing of C-like dependencies.  Rule-level recursion would be easy to
+enable, but would open up problems related to infinite loops, which
+would require Stu to have a maximal recursion depth.  
 
 Changing a command within a Stu file will not make the target to be
 rebuilt.  This can be seen as both a feature or a bug. 
-
-Rule-level recursion is not allowed.  This exclude a recursive
-parsing of C-like dependencies. 
-
-Files read dynamic dependencies are parsed using the full Stu syntax,
-meaning that certain characters must be quoted in them. 
+Also, all changes in a file will lead to rebuilds of other files, even if the
+changes are trivial, e.g., when only whitespace was changed in C source
+code.  Furthermore, touching a file without changing the contents will also
+lead to a rebuild, although it is not needed.  Both limitations could be
+removed by using fingerprints instead of modification times. 
 
 .SH AUTHOR
 Jérôme Kunegis <kunegis@uni-koblenz.de>

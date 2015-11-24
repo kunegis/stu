@@ -1,3 +1,8 @@
+#
+# Support multiple %version statements, either in the same file, or in
+# different files. 
+#
+
 #==== Small features that complete what we already have ====
 
 #
@@ -35,10 +40,6 @@ LIST2 = {
 # Empty file
 A = {}
 
-# In general, the problem with hard-coded content is that changes in its
-# definition are not recognized.  If that is needed, then the files
-# themselves can easily be created by hand. 
-
 #
 # Have an option which makes Stu output statistics when it is finished:
 # * runtime information
@@ -56,40 +57,35 @@ A = {}
 # command line:
 #
 #     stu ?FILENAME   # Rebuild FILENAME only if it already exists
-#	  stu !FILENAME   # Build FILENAME only if it does not exist yet
+#     stu !FILENAME   # Build FILENAME only if it does not exist yet
 #
-# We may introduce an -e (or -c) option to give full Stu expressions:
+# We may introduce a (-c) option to give full Stu expressions:
 #
-#     stu -e '?[FILENAME]'
+#     stu -c '?[FILENAME]'
 #
 # We may also introduce a new option for passing a target without extra
 # allowed syntax, e.g.
 #
-#     stu -t '?F'
+#     stu -T '?F'
 #
 # would build a file named '?F'. 
-#
-
-#
-# Make the argument to the -j option optional. 
 #
 
 #
 # Recognize and prevent recursive Stu.
 # Via an environment variable?  Have an option to allow it anyway. 
 #
+# Option to ignore the check: -y.
+#
 
 #
 # Mode option
-#	-m	    Random order
-#	-M SEED     Semi-random order, seeded by given seed
-#       -M	    Semi-random order, seeded by target name
 #
 #       -m dfs      (default) Depth-first search
 #       -m bfs      Breadth-first search
-#       -m [random] Random
-#	-m target   Semirandom by target name
-#	-m SEED	    Semirandom by seed (must be a number)
+#       -m random   Random
+#	-m target   Semirandom by target name (and thus deterministic)
+#	-M STRING   Semirandom by given seed string (and thus deterministic)
 #
 
 #
@@ -103,57 +99,7 @@ konect.bib=  ../../projects/konect/;
 konect.bib=  ../../projects/konect;
 
 #
-# Advanced file inclusion 
-#
-
-# Include rules for C++ compilation; may search within predefined paths
-# ($STUPATH) 
-%include c++.stu
- 
-# Import all rules from subdirectory; will prepend the directory name to
-# all targets.  Can take a directory name to denote the file main.stu
-# within it. 
-%import src/main.stu
-%import src/
-
-#
-# Support these options from Make:
-#   -B 		    Remake all targets regardless of dates
-#   -o FILENAME	    Never rebuild that file ("old")
-#   -q 		    Question mode 
-#
-
-#
-# Make -v be better.  Make it output dependencies and traces. (check
-# what it does in various cases.)  Maybe merge with -s option. (I.e.,
-# have a verbosity level, set to 0 by -s and to 2 by -v)
-#
-
-#
-# A 'what-if' option that does not run anything but shows what would be
-# done.  (Not possible to do for dynamic dependencies.) (Called -n in
-# Make)
-#
-
-# 
-# An option to consider all targets up to date.  I.e., execute only the
-# minimum to get the given files built. 
-#
-
-#
-# An option for automatic logging:  write all output (stdout/stderr) of
-# commands to a file (a different file per target).  Use the -l option. 
-#
-
-# 
-# Think again about using /bin/sh -x. 
-#   + each command is output as it is executed
-#   - when a loop is executed, many lines are output
-#   ~ commands are prefixed with '+ '
-#   + environment variables are replaced with their values in the output
-#   - we still would have to prefix the output with the value of
-#     variables, since in many cases commands don't contain environment
-#     variables (but only pass them the called programs)
+# Make -v be better.  Make it output dependencies and traces. 
 #
 
 #==== Big features that complete what we already have ====
@@ -273,6 +219,59 @@ A: [B],i;
 
 #
 # Support -f - to read in STDIN?
+#
+
+#
+# Make the argument to the -j option optional.  (not possible with
+# standard getopt()). 
+#
+
+#
+# Advanced file inclusion 
+#
+
+# Include rules for C++ compilation; may search within predefined paths
+# ($STUPATH) 
+%include c++.stu
+ 
+# Import all rules from subdirectory; will prepend the directory name to
+# all targets.  Can take a directory name to denote the file main.stu
+# within it. 
+%import src/main.stu
+%import src/
+
+#
+# Support these options from Make:
+#   -B 		    Remake all targets regardless of dates
+#   -o FILENAME	    Never rebuild that file ("old")
+#   -q 		    Question mode 
+#
+
+#
+# A 'what-if' option that does not run anything but shows what would be
+# done.  (Not possible to do for dynamic dependencies.) (Called -n in
+# Make)
+#
+
+# 
+# An option to consider all targets up to date.  I.e., execute only the
+# minimum to get the given files built. 
+#
+
+#
+# An option for automatic logging:  write all output (stdout/stderr) of
+# commands to a file (a different file per target).  Use the -l option. 
+#
+
+# 
+# Think again about using /bin/sh -x. 
+#   + each command is output as it is executed
+#   - when a loop is executed, many lines are output
+#   ~ commands are prefixed with '+ '
+#   + environment variables are replaced with their values in the output
+#   - we still would have to prefix the output with the value of
+#     variables, since in many cases commands don't contain environment
+#     variables (but only pass them the called programs)
 #
 
 #==== New features that change extend the Stu drastically ====

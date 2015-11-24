@@ -3,9 +3,9 @@ An overview of *possible* assignment of options letters, including those
 used by Make.  
 
 -a  S     Consider trivial dependencies to be non-trivial
--b	  (Enable backups)
+-b  .     Enable backups
 -B      G Re-make all
--c        (Command)
+-c  .     Command
 -d      G Print debugging information 
 -e    M G Environment overrides Make macros
 -f  S M G File
@@ -17,7 +17,8 @@ used by Make.
 -k  S M G Keep going
 -l        (Log; redirect all output of commands to logfiles)
 -L      G Special handling of symlinks
--m        (Mode; e.g., random order, etc.)
+-m  .     (Mode; e.g., random order, etc.)
+-M  .     Seed mode
 -n    M G Dry run (just print commands)
 -o      G Mark file as old
 -p    M G Print database (rule set)
@@ -27,16 +28,18 @@ used by Make.
 -s  S M G Silent
 -S    M G No keep going
 -t    M G Touch instead of building
+-T  .     Explicit target without syntax 
 -u
 -v  S   G Verbose
 -V  S     Version
 -w  S	  Short mode
 -W      G What-if mode (if FILE just had been modified)
--x        (Enable /bin/sh -x instead of normal output)
--y
--z        
+-x  .     Enable /bin/sh -x instead of normal output
+-y  .     Ignore recursive Stu 
+-z  .     Output statistics
 
 
 S:  Implemented in Stu
+.:  Proposed for Stu 
 M:  Compatible with POSIX Make
 G:  Compatible with GNU Make

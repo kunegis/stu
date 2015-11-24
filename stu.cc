@@ -92,23 +92,11 @@ int main(int argc, char **argv, char **envp)
 			filename= string(optarg); 
 			break;
 
-
 		case 'j':
 			errno= 0;
 			char *endptr;
 			Execution::jobs= strtol(optarg, &endptr, 0);
-			// Execution::jobs= 0;
-			// for (const char *p= optarg; *p; ++p) {
-			// 	if (*p < '0' || *p > '9') {
-			// 		print_error(fmt("Argument to -j must be an unsigned integer: %s", 
-			// 						optarg));
-			// 		exit(ERROR_LOGICAL); 
-			// 	}
-			// 	Execution::jobs *= 10;
-			// 	Execution::jobs += (*p - '0');
-			// }
 			if (errno != 0 || *endptr != '\0') {
-//			if (k == 0) {
 				print_error("Invalid argument to -j");
 				exit(ERROR_LOGICAL); 
 			}

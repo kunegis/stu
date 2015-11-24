@@ -1,8 +1,3 @@
-#
-# Use strace(1) to check that lstat() is not called more often than
-# necessary.  
-#
-
 #==== Small features that complete what we already have ====
 
 #

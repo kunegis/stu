@@ -252,7 +252,6 @@ public:
 	 * DEPENDENCY is the dependency linking the two executions.  
 	 */
  	void execute(Execution *parent, 
-//		    int k, 
 		     const Link &link);
 
 	/* Called after the job was waited for.  The PID is only passed
@@ -340,7 +339,6 @@ public:
 	 */
 	static int main(const vector <Target> &targets, 
 			const vector <Place> &places);
-//				int k);
 
 	/* Wait for next job to finish and finish it.  Do not start anything
 	 * new.  
@@ -400,7 +398,6 @@ void Execution::wait()
 }
 
 void Execution::execute(Execution *parent, 
-//		       int k, 
 			const Link &link)
 {
 	assert(jobs >= 0); 
@@ -864,7 +861,6 @@ void Execution::waited(int pid, int status)
 
 int Execution::main(const vector <Target> &targets, 
 		    const vector <Place> &places)
-//		    int k)
 {
 	assert(jobs >= 0);
 	assert(targets.size() == places.size()); 
@@ -892,8 +888,6 @@ int Execution::main(const vector <Target> &targets,
 			Link link(Stack(), (Flags)0, Place(), shared_ptr <Dependency> ());
 
 			execution_root->execute(nullptr, link); 
-//			     k - Execution::executions_by_pid.size(), 
-//			link);
 
 			if (executions_by_pid.size()) {
 				wait();

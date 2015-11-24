@@ -26,8 +26,6 @@
 bool is_space(char c) 
 {
 	return c != '\0' && nullptr != strchr(" \n\t\v\r\f", c);
-	//	// TODO replace by strchr()
-	//	return c == ' ' || c == '\n' || c == '\t' || c == '\v' || c == '\r' || c == '\f';
 }
 
 class Token

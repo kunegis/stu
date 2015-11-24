@@ -103,7 +103,10 @@ void parse(vector <shared_ptr <Token> > &tokens,
 			int fd2= openat(fd, FILENAME_INPUT_DEFAULT, O_RDONLY);
 			if (fd2 < 0) 
 				goto error_close;
-			close(fd);
+			if (0 > close(fd)) {
+				close(fd2);
+				goto error;
+			}
 			fd= fd2;
 			if (fstat(fd, &buf) < 0) 
 				goto error_close;
@@ -113,7 +116,7 @@ void parse(vector <shared_ptr <Token> > &tokens,
 		 * on it, i.e., return an error and refuse to create a memory
 		 * map of length zero. */  
 		if (buf.st_size == 0) {
-			return;
+			goto return_close; 
 		}
 
 		const char *p, *p_end, *p_line; 
@@ -124,6 +127,9 @@ void parse(vector <shared_ptr <Token> > &tokens,
 		if (in == MAP_FAILED) {
 			goto error_close;
 		}
+
+		if (0 > close(fd)) 
+			goto error;
 
 		p= in; /* current parse pointer */ 
 		p_end= p + buf.st_size;  /* end of buffer (*not* '\0'-indicated) */ 
@@ -244,7 +250,7 @@ void parse(vector <shared_ptr <Token> > &tokens,
 									Trace trace(*j);
 									if (j == traces.rbegin()) {
 										trace.message= fmt("recursive inclusion of '%s'", 
-														   filename_include);
+												   filename_include);
 									}
 									traces_backward.push_back(trace); 
 								}
@@ -315,11 +321,13 @@ void parse(vector <shared_ptr <Token> > &tokens,
 		place_end= Place(filename, line, p - p_line); 
 
 		if (0 > munmap((void *)in, buf.st_size))
-			goto error_close;
-
-		if (0 > close(fd))
 			goto error;
 
+		return;
+
+	return_close:
+		if (0 > close(fd)) 
+			goto error; 
 		return;
 
 	error_close:
@@ -340,7 +348,6 @@ void parse(vector <shared_ptr <Token> > &tokens,
 	} catch (int error) {
 		if (in != NULL)
 			munmap((void *)in, buf.st_size);
-		close(fd);
 		throw;
 	}
 }
@@ -656,33 +663,11 @@ bool is_name_char(char c)
 		(c >= 0x20 && c < 0x7F /* ASCII printable character */ 
 		 && nullptr == strchr(" \n\t\f\v\r[]\"\':={}#<>@$;()%*\\!?|&", c))
 		|| ((unsigned char)c) >= 0x80;
-
-	// // TODO replace by strchr()
-	// return
-	// 	(c >= 0x20 && c <0x7F /* ASCII printable character */ 
-	// 	 && c != ' ' && c != '\n' && c != '\t' && c != '\f' && c != '\v' && c != '\r'
-	// 	 && c != '[' && c != ']' && c != '"' && c != '\'' 
-	// 	 && c != ':' && c != '=' && c != '{' && c != '}' 
-	// 	 && c != '#' && c != '<' && c != '>' && c != '@' 
-	// 	 && c != '$' && c != ';' && c != '(' && c != ')' 
-	// 	 && c != '%' && c != '*' && c != '\\'
-	// 	 && c != '!' && c != '?' && c != '|' && c != '&'
-	// 	 && c != ',')
-	// 	|| ((unsigned char)c) >= 0x80
-	// 	;
 }
 
 bool is_operator_char(char c) 
 {
 	return c != '\0' && nullptr != strchr(":<>=@;()?[]!&,\\|", c);
-
-	// // TODO replace by strchr()
-	// return 
-	// 	c == ':' || c == '<' || c == '>' || c == '=' ||
-	// 	c == '@' || c == ';' || c == '(' ||
-	// 	c == ')' || c == '?' || c == '[' || c == ']' ||
-	// 	c == '!' || c == '&' || c == ',' || c == '\\' ||
-	// 	c == '|';
 }
 
 void parse_version(string version_req, const Place &place_version) 

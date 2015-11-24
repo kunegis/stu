@@ -311,8 +311,10 @@ public:
 	/* Whether any job was started */ 
 	static bool worked;
 
-	/* Number of free slots for jobs */ 
-	static int jobs;
+	/* Number of free slots for jobs.  This is a long because
+	 * strtol() gives a long. 
+	 */ 
+	static long jobs;
 
 	/* Propagate information from the subexecution to the execution, and
 	 * then delete the child execution.  The child execution is
@@ -379,7 +381,7 @@ unordered_map <string, Timestamp> Execution::phonies;
 Timestamp Execution::timestamp_last;
 Rule_Set Execution::rule_set; 
 bool Execution::worked= false;
-int Execution::jobs= 1;
+long Execution::jobs= 1;
 
 void Execution::wait() 
 {

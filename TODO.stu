@@ -1,8 +1,4 @@
 #
-# Use strchr() where appropriate. 
-#
-
-#
 # Use strace(1) to check that lstat() is not called more often than
 # necessary.  
 #

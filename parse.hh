@@ -652,30 +652,37 @@ shared_ptr <Place_Param_Name> parse_name(string filename,
 
 bool is_name_char(char c) 
 {
-	// TODO replace by strchr()
 	return
-		(c >= 0x20 && c <0x7F /* ASCII printable character */ 
-		 && c != ' ' && c != '\n' && c != '\t' && c != '\f' && c != '\v' && c != '\r'
-		 && c != '[' && c != ']' && c != '"' && c != '\'' 
-		 && c != ':' && c != '=' && c != '{' && c != '}' 
-		 && c != '#' && c != '<' && c != '>' && c != '@' 
-		 && c != '$' && c != ';' && c != '(' && c != ')' 
-		 && c != '%' && c != '*' && c != '\\'
-		 && c != '!' && c != '?' && c != '|' && c != '&'
-		 && c != ',')
-		|| ((unsigned char)c) >= 0x80
-		;
+		(c >= 0x20 && c < 0x7F /* ASCII printable character */ 
+		 && nullptr == strchr(" \n\t\f\v\r[]\"\':={}#<>@$;()%*\\!?|&", c))
+		|| ((unsigned char)c) >= 0x80;
+
+	// // TODO replace by strchr()
+	// return
+	// 	(c >= 0x20 && c <0x7F /* ASCII printable character */ 
+	// 	 && c != ' ' && c != '\n' && c != '\t' && c != '\f' && c != '\v' && c != '\r'
+	// 	 && c != '[' && c != ']' && c != '"' && c != '\'' 
+	// 	 && c != ':' && c != '=' && c != '{' && c != '}' 
+	// 	 && c != '#' && c != '<' && c != '>' && c != '@' 
+	// 	 && c != '$' && c != ';' && c != '(' && c != ')' 
+	// 	 && c != '%' && c != '*' && c != '\\'
+	// 	 && c != '!' && c != '?' && c != '|' && c != '&'
+	// 	 && c != ',')
+	// 	|| ((unsigned char)c) >= 0x80
+	// 	;
 }
 
 bool is_operator_char(char c) 
 {
-	// TODO replace by strchr()
-	return 
-		c == ':' || c == '<' || c == '>' || c == '=' ||
-		c == '@' || c == ';' || c == '(' ||
-		c == ')' || c == '?' || c == '[' || c == ']' ||
-		c == '!' || c == '&' || c == ',' || c == '\\' ||
-		c == '|';
+	return c != '\0' && nullptr != strchr(":<>=@;()?[]!&,\\|", c);
+
+	// // TODO replace by strchr()
+	// return 
+	// 	c == ':' || c == '<' || c == '>' || c == '=' ||
+	// 	c == '@' || c == ';' || c == '(' ||
+	// 	c == ')' || c == '?' || c == '[' || c == ']' ||
+	// 	c == '!' || c == '&' || c == ',' || c == '\\' ||
+	// 	c == '|';
 }
 
 void parse_version(string version_req, const Place &place_version) 

@@ -1,5 +1,5 @@
-#ifndef PROCESS_HH
-#define PROCESS_HH
+#ifndef JOB_HH
+#define JOB_HH
 
 /* Handling of child processes. 
  */
@@ -10,9 +10,9 @@
 
 /* Called to terminate all running processes, and remove their target
  * files if present */
-void process_terminate_all(); 
+void job_terminate_all(); 
 
-class Process
+class Job
 {
 private:
 	/* -2:    process was not yet started.
@@ -23,9 +23,7 @@ private:
 	pid_t pid;
 
 public:
-	Process() 
-		:  pid(-2)
-	{ }
+	Job():  pid(-2) { }
 
 	/* Call after having returned this process from wait_do(). 
 	 * Return TRUE of the child was successful. 
@@ -69,15 +67,15 @@ public:
 
 	/* Wait for the next process to terminate; provide the STATUS as
 	 * used in wait(2).  Return the PID of the waited-for process (>=0). */  
-	static pid_t wait_do(int *status);
+	static pid_t wait(int *status);
 
 };
 
-pid_t Process::start(string command,
-		     const map <string, string> &mapping,
-		     string filename_output,
-		     string filename_input,
-		     const Place &place_command)
+pid_t Job::start(string command,
+		 const map <string, string> &mapping,
+		 string filename_output,
+		 string filename_input,
+		 const Place &place_command)
 {
 	assert(pid == -2); 
 
@@ -237,9 +235,9 @@ pid_t Process::start(string command,
 	return pid; 
 }
 
-pid_t Process::wait_do(int *status)
+pid_t Job::wait(int *status)
 {
-	pid_t pid= wait(status); 
+	pid_t pid= ::wait(status); 
 
 	if (pid < 0) {
 		/* Should not happen as there is always something
@@ -266,7 +264,7 @@ void process_signal(int sig)
 	sigaction(sig, &act, nullptr);
 
 	/* Terminate all processes */ 
-	process_terminate_all();
+	job_terminate_all();
 
 	/* Raise signal again */ 
 	raise(sig); 
@@ -290,4 +288,4 @@ void process_init()
 	sigaction(SIGHUP,  &act, nullptr); 
 }
 
-#endif /* ! PROCESS_HH */
+#endif /* ! JOB_HH */

@@ -1,16 +1,10 @@
-
 /*
  * The main entry point of Stu.  See the manpage for a description of
  * options, exit codes, etc.  
  */
 
-
-// TODO Use strace(1) to check that lstat() is not called more often than
-// necessary.  
-
-// TODO Use C++ move semantics where necessary for more efficiency. 
-
-// TODO Use unique_ptr instead of shared_ptr where appropriate.  
+// TODO Use C++ move semantics where appropriate
+// TODO Use unique_ptr instead of shared_ptr where appropriate 
 
 /* Enable bounds checking when using GNU libc.  Must be defined before
  * including any of the standard headers.  (Only in non-debug mode)
@@ -31,12 +25,30 @@ using namespace std;
 #include "execution.hh"
 #include "version.hh"
 
-
 /* We use getopt(), which means that Stu does only support short
  * options, and not long options.  At some point, we might switch to
  * getopt_long() though. 
  */
 #define STU_OPTIONS "af:gj:kvVhsw"
+
+/* Note: the following strings do not contain tabs */ 
+#define STU_HELP \
+	"Usage:   stu [TARGETS...] [OPTIONS...]\n" \
+	"By default, build the first target in the file 'main.stu'.\n" \
+	"Options:\n" \
+	"   -a            Treat all trivial dependencies as non-trivial\n" \
+	"   -f FILENAME   The input file to use instead of 'main.stu'\n" \
+	"   -g            Treat all optional dependencies as non-optional\n" \
+	"   -h            Output help\n" \
+	"   -j K          Run K jobs in parallel\n"	  \
+	"   -k            Keep on running after errors\n" \
+	"   -s            Silent mode; do not output commands\n" \
+	"   -v            Enable verbose mode\n" \
+	"   -V            Output version\n" \
+	"   -w            Short output; don't show the commands, only the target filenames\n"
+
+/* Initialize buffer; called once from main() */ 
+void init_buf(); 
 
 int main(int argc, char **argv, char **envp)
 {
@@ -55,13 +67,13 @@ int main(int argc, char **argv, char **envp)
 	string filename; 
 
 	/* Number of processes executed in parallel (option -j) */ 
-	unsigned k= 1;
 
 	for (int c; (c= getopt(argc, argv, STU_OPTIONS)) != -1;) {
 		switch (c) {
 
 		case 'a': option_nontrivial= true;     break;
 		case 'g': option_nonoptional= true;    break;
+		case 'h': fputs(STU_HELP, stdout);     exit(0);
 		case 'k': option_continue= true;       break;
 		case 's': verbosity= VERBOSITY_SILENT; break;
 		case 'v': verbosity= VERBOSITY_VERBOSE;break;
@@ -80,37 +92,28 @@ int main(int argc, char **argv, char **envp)
 			filename= string(optarg); 
 			break;
 
-		case 'h':
-			/* Note: the following string constants do not contain tabs */ 
-			fputs("Usage:   stu [TARGETS...] [OPTIONS...]\n"
-			      "By default, build the first target in the file 'main.stu'.\n"
-			      "Options:\n"
-			      "   -a            Treat all trivial dependencies as non-trivial\n"
-			      "   -f FILENAME   The input file to use instead of 'main.stu'\n"
-			      "   -g            Treat all optional dependencies as non-optional\n"
-			      "   -h            Output help\n"
-			      "   -j K          Run K processes in parallel\n"
-			      "   -k            Keep on running after errors\n"
-			      "   -s            Silent mode; do not output commands\n"
-			      "   -v            Enable verbose mode\n"	     
-			      "   -V            Output version\n"
-			      "   -w            Short output; don't show the commands, only the target filenames\n"
-			      , stdout);
-			exit(0);
 
 		case 'j':
-			k= 0;
-			for (const char *p= optarg; *p; ++p) {
-				if (*p < '0' || *p > '9') {
-					print_error(fmt("Argument to -j must be an unsigned integer: %s", 
-									optarg));
-					exit(ERROR_LOGICAL); 
-				}
-				k *= 10;
-				k += (*p - '0');
+			errno= 0;
+			char *endptr;
+			Execution::jobs= strtol(optarg, &endptr, 0);
+			// Execution::jobs= 0;
+			// for (const char *p= optarg; *p; ++p) {
+			// 	if (*p < '0' || *p > '9') {
+			// 		print_error(fmt("Argument to -j must be an unsigned integer: %s", 
+			// 						optarg));
+			// 		exit(ERROR_LOGICAL); 
+			// 	}
+			// 	Execution::jobs *= 10;
+			// 	Execution::jobs += (*p - '0');
+			// }
+			if (errno != 0 || *endptr != '\0') {
+//			if (k == 0) {
+				print_error("Invalid argument to -j");
+				exit(ERROR_LOGICAL); 
 			}
-			if (k == 0) {
-				print_error("Argument to -j must be larger than zero");
+			if (Execution::jobs < 1) {
+				print_error("Argument to -j must be positive");
 				exit(ERROR_LOGICAL); 
 			}
 			break;
@@ -122,23 +125,7 @@ int main(int argc, char **argv, char **envp)
 		}
 	}
 
-	/* If -s is not given, set STDOUT to line buffered, so that the
-	 * output of command lines always happens before the output of
-	 * commands themselves */ 
-	if (verbosity > VERBOSITY_SILENT) {
-		/* Note:  only possible if we have not written anything yet */ 
-		setvbuf(stdout, nullptr, _IOLBF, 0); 
-
-		/* Set STDOUT to append mode; this is also done by GNU Make */ 
-		int flags= fcntl(fileno(stdout), F_GETFL, 0);
-		if (flags >= 0)
-			fcntl(fileno(stdout), F_SETFL, flags | O_APPEND);
-	}
-
-	/* Set STDERR to append mode; this is also done by GNU Make */ 
-	int flags= fcntl(fileno(stderr), F_GETFL, 0);
-	if (flags >= 0)
-		fcntl(fileno(stderr), F_SETFL, flags | O_APPEND);
+	init_buf();
 
 	/* Assemble targets from the command line */ 
 	vector <Target> targets;
@@ -238,7 +225,7 @@ int main(int argc, char **argv, char **envp)
 		}
 
 		/* Execute */
-		int error= Execution::execute_main(targets, places, k);
+		int error= Execution::main(targets, places);
 		if (error != 0) {
 			/* We don't have to output any error here, because the
 			 * error(s) was/were already printed when it
@@ -253,4 +240,26 @@ int main(int argc, char **argv, char **envp)
 	}
 
 	exit(0); 
+}
+
+void init_buf()
+{
+
+	/* If -s is not given, set STDOUT to line buffered, so that the
+	 * output of command lines always happens before the output of
+	 * commands themselves */ 
+	if (verbosity > VERBOSITY_SILENT) {
+		/* Note:  only possible if we have not written anything yet */ 
+		setvbuf(stdout, nullptr, _IOLBF, 0); 
+
+		/* Set STDOUT to append mode; this is also done by GNU Make */ 
+		int flags= fcntl(fileno(stdout), F_GETFL, 0);
+		if (flags >= 0)
+			fcntl(fileno(stdout), F_SETFL, flags | O_APPEND);
+	}
+
+	/* Set STDERR to append mode; this is also done by GNU Make */ 
+	int flags= fcntl(fileno(stderr), F_GETFL, 0);
+	if (flags >= 0)
+		fcntl(fileno(stderr), F_SETFL, flags | O_APPEND);
 }

@@ -1,9 +1,47 @@
 #
-# Support multiple %version statements, either in the same file, or in
-# different files. 
+# Use strchr() where appropriate. 
+#
+
+#
+# Use strace(1) to check that lstat() is not called more often than
+# necessary.  
 #
 
 #==== Small features that complete what we already have ====
+
+#
+# Have an option to read a list of targets from a file.  Or allow
+# something like
+#    
+#     stu [FILENAME]
+#
+# on the command line.  We may also support more Stu syntax on the
+# command line:
+#
+#     stu ?FILENAME   # Rebuild FILENAME only if it already exists
+#     stu !FILENAME   # Build FILENAME only if it does not exist yet
+#
+# We may introduce a (-c) option to give full Stu expressions:
+#
+#     stu -c '?[FILENAME]'
+#
+# We may also introduce a new option for passing a target without extra
+# allowed syntax, e.g.
+#
+#     stu -T '?F'
+#
+# would build a file named '?F'. 
+#
+
+#
+# Order option
+#
+#       -m dfs      (default) Depth-first search
+#       -m bfs      Breadth-first search
+#       -m random   Random
+#	-m target   Semirandom by target name (and thus deterministic)
+#	-M STRING   Semirandom by given seed string (and thus deterministic)
+#
 
 #
 # Assign a name to a dynamic variable.  Useful when the name of the file
@@ -48,44 +86,10 @@ A = {}
 #
 
 #
-# Have an option to read a list of targets from a file.  Or allow
-# something like
-#    
-#     stu [FILENAME]
-#
-# on the command line.  We may also support more Stu syntax on the
-# command line:
-#
-#     stu ?FILENAME   # Rebuild FILENAME only if it already exists
-#     stu !FILENAME   # Build FILENAME only if it does not exist yet
-#
-# We may introduce a (-c) option to give full Stu expressions:
-#
-#     stu -c '?[FILENAME]'
-#
-# We may also introduce a new option for passing a target without extra
-# allowed syntax, e.g.
-#
-#     stu -T '?F'
-#
-# would build a file named '?F'. 
-#
-
-#
 # Recognize and prevent recursive Stu.
 # Via an environment variable?  Have an option to allow it anyway. 
 #
 # Option to ignore the check: -y.
-#
-
-#
-# Mode option
-#
-#       -m dfs      (default) Depth-first search
-#       -m bfs      Breadth-first search
-#       -m random   Random
-#	-m target   Semirandom by target name (and thus deterministic)
-#	-M STRING   Semirandom by given seed string (and thus deterministic)
 #
 
 #

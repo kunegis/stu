@@ -652,7 +652,7 @@ shared_ptr <Place_Param_Name> parse_name(string filename,
 
 bool is_name_char(char c) 
 {
-	// TODO replace by lookup table (?)
+	// TODO replace by strchr()
 	return
 		(c >= 0x20 && c <0x7F /* ASCII printable character */ 
 		 && c != ' ' && c != '\n' && c != '\t' && c != '\f' && c != '\v' && c != '\r'
@@ -669,7 +669,7 @@ bool is_name_char(char c)
 
 bool is_operator_char(char c) 
 {
-	// TODO replace by lookup table (?)
+	// TODO replace by strchr()
 	return 
 		c == ':' || c == '<' || c == '>' || c == '=' ||
 		c == '@' || c == ';' || c == '(' ||

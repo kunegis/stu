@@ -17,7 +17,7 @@
 #include <map> 
 #include <unordered_set>
 
-#include "process.hh"
+#include "job.hh"
 #include "timestamp.hh"
 
 /* Information about one parent--child link. 
@@ -127,8 +127,8 @@ public:
 	/* The parent executions */ 
 	unordered_map <Execution *, Link> parents; 
 
-	/* The process used to build this file */ 
-	Process process;
+	/* The job used to build this file */ 
+	Job job;
 	
 	/* Dependencies that have not yet begun to be built.
 	 * Initialized with all dependencies, and emptied over time when
@@ -147,7 +147,7 @@ public:
 	queue <Link> buffer_trivial;
 
 	/* Info about the target before it is built.  Only valid once the
-	 * process was started.  Used for checking whether a file was
+	 * job was started.  Used for checking whether a file was
 	 * rebuild to decide whether to remove it after a command failed or
 	 * was interrupted.  The field .tv_sec is LONG_MAX when the file did
 	 * not exist, or the target is not a file
@@ -244,20 +244,18 @@ public:
 	 */
 	void add_dependency(const Link &dependency);
 
-	/* Start the next K processes.  Return the new value of K, i.e. the
-	 * number of processes left to start.  This will also terminate
-	 * processes when they don't need to be run anymore, and thus it can
-	 * be called with K = 0 just to terminate processes that need to be
+	/* Start the next jobs. This will also terminate
+	 * jobs when they don't need to be run anymore, and thus it can
+	 * be called when K = 0 just to terminate jobs that need to be
 	 * terminated.  The passed FLAG is the ORed combination
 	 * of all FLAGs up the dependency chain.  
 	 * DEPENDENCY is the dependency linking the two executions.  
 	 */
-	// TODO Make K be a global variable. 
- 	int execute(Execution *parent, 
-		    int k, 
-		    const Link &link);
+ 	void execute(Execution *parent, 
+//		    int k, 
+		     const Link &link);
 
-	/* Called after the process was waited for.  The PID is only passed
+	/* Called after the job was waited for.  The PID is only passed
 	 * for checking that it is correct. 
 	 */
 	void waited(int pid, int status); 
@@ -273,8 +271,7 @@ public:
 
 	/* Note:  the top-level flags of LINK.DEPENDENCY may be modified. 
 	 */
-	void deploy_dependency(int &k, 
-			       const Link &link,
+	void deploy_dependency(const Link &link,
 			       const Link &link_child);
 
 	/* Initialize the Execution object.  Used for dynamic dependencies.
@@ -306,13 +303,16 @@ public:
 	 */ 
 	static Timestamp timestamp_last; 
 
-	/* Set once before calling execute_main().  Unchanging during the whole call
-	 * to execute_main(). 
+	/* Set once before calling Execution::main().  Unchanging during the whole call
+	 * to Execution::main(). 
 	 */ 
 	static Rule_Set rule_set; 
 
-	/* Whether any process was started */ 
+	/* Whether any job was started */ 
 	static bool worked;
+
+	/* Number of free slots for jobs */ 
+	static int jobs;
 
 	/* Propagate information from the subexecution to the execution, and
 	 * then delete the child execution.  The child execution is
@@ -334,17 +334,16 @@ public:
 					const Link &link,
 					Execution *parent); 
 
-	/* Main execution loop.  Execute K processes in parallel. 
-	 * Return the same error code as in Execution::error. 
+	/* Main execution loop.  
 	 */
-	static int execute_main(const vector <Target> &targets, 
-				const vector <Place> &places,
-				int k);
+	static int main(const vector <Target> &targets, 
+			const vector <Place> &places);
+//				int k);
 
-	/* Wait for next process to finish and finish it.  Do not start anything
+	/* Wait for next job to finish and finish it.  Do not start anything
 	 * new.  
 	 */ 
-	static void execute_wait();
+	static void wait();
 
 	/* Find a cycle between CHILD and one of its parent executions.  This
 	 * is the main entry point of the two find_cycle() functions. 
@@ -379,28 +378,30 @@ unordered_map <Target, Execution *> Execution::executions_by_target;
 unordered_map <string, Timestamp> Execution::phonies;
 Timestamp Execution::timestamp_last;
 Rule_Set Execution::rule_set; 
-
 bool Execution::worked= false;
+int Execution::jobs= 1;
 
-void Execution::execute_wait() 
+void Execution::wait() 
 {
 	assert(Execution::executions_by_pid.size()); 
 
 	int status;
-	pid_t pid= Process::wait_do(&status); 
+	pid_t pid= Job::wait(&status); 
 
 	timestamp_last= Timestamp::now(); 
 
 	Execution *const execution= executions_by_pid.at(pid); 
 
 	execution->waited(pid, status); 
+
+	++jobs; 
 }
 
-int Execution::execute(Execution *parent, 
-		       int k, 
-		       const Link &link)
+void Execution::execute(Execution *parent, 
+//		       int k, 
+			const Link &link)
 {
-	assert(k >= 0); 
+	assert(jobs >= 0); 
 	assert(link.avoid.get_k() == dynamic_depth(target.type)); 
 	assert(done.get_k() == dynamic_depth(target.type));
 	if (dynamic_depth(target.type) == 0) {
@@ -409,7 +410,7 @@ int Execution::execute(Execution *parent,
 	done.check();
 
 	if (finished(link.avoid))
-		return k;
+		return;
 
 	/* 
 	 * Continue the already-active child executions 
@@ -438,10 +439,10 @@ int Execution::execute(Execution *parent,
 		Link link_child(avoid_child, flags_child, child->parents.at(this).place,
 						child->parents.at(this).dependency);
 
-		k= child->execute(this, k, link_child);
-		assert(k >= 0);
-		if (k == 0)  
-			return k; 
+		child->execute(this, link_child);
+		assert(jobs >= 0);
+		if (jobs == 0)  
+			return;
 
 		if (child->finished(avoid_child)) {
 			unlink_execution(this, child, 
@@ -468,13 +469,13 @@ int Execution::execute(Execution *parent,
 					error |= ERROR_BUILD;
 					done.add_neg(link.avoid); 
 					exists= -1;
-					return k;
+					return;
 				} else {
 					exit(ERROR_SYSTEM); 
 				}
 			}
 			done.add_highest_neg(link.avoid.get_highest()); 
-			return k;
+			return;
 		} else {
 			assert(ret_stat == 0);
 			exists= +1;
@@ -495,22 +496,22 @@ int Execution::execute(Execution *parent,
 		if (link_child.flags & F_TRIVIAL) {
 			buffer_trivial.push(link_child); 
 		} else {
-			deploy_dependency(k, link, link_child);
-			if (k == 0)
-				return k;
+			deploy_dependency(link, link_child);
+			if (jobs == 0)
+				return;
 		}
 	} 
 	assert(buffer.empty()); 
 
 	/* Some dependencies are still running */ 
 	if (children.size())
-		return k;
+		return;
 
 	/* There was an error in a child */ 
 	if (error != 0) {
 		assert(option_continue == true); 
 		done.add_neg(link.avoid);
-		return k;
+		return;
 	}
 
 
@@ -522,16 +523,16 @@ int Execution::execute(Execution *parent,
 		|| target.type >= T_DYNAMIC) {
 
 		done.add_neg(link.avoid);
-		return k;
+		return;
 	}
 
-	/* Process has already been started */ 
-	if (process.started_or_waited()) {
-		return k;
+	/* Job has already been started */ 
+	if (job.started_or_waited()) {
+		return;
 	}
 
 	/* Build the file itself */ 
-	assert(k > 0); 
+	assert(jobs > 0); 
 	assert(target.type == T_FILE || target.type == T_PHONY); 
 	assert(buffer.empty()); 
 	assert(children.empty()); 
@@ -624,7 +625,7 @@ int Execution::execute(Execution *parent,
 									"\tis an optional dependency that is not present\n"); 
 						}
 						done.add_one_neg(F_OPTIONAL); 
-						return k;
+						return;
 					}
 				} else {
 					/* stat() returned an actual error,
@@ -634,7 +635,7 @@ int Execution::execute(Execution *parent,
 						exit(ERROR_SYSTEM); 
 					error |= ERROR_BUILD;
 					done.add_one_neg(link.avoid); 
-					return k;
+					return;
 				}
 			}
 		}
@@ -662,7 +663,7 @@ int Execution::execute(Execution *parent,
 			done.add_one_neg(link.avoid); 
 			if (! option_continue) 
 				throw error;  
-			return k;
+			return;
 		}		
 	}
 
@@ -678,7 +679,7 @@ int Execution::execute(Execution *parent,
 
 	if (! need_build) {
 		done.add_neg(link.avoid);
-		return k;
+		return;
 	}
 
 	/*
@@ -701,11 +702,11 @@ int Execution::execute(Execution *parent,
 			done.add_neg(link.avoid); 
 			if (! option_continue) 
 				throw error;  
-			return k;
+			return;
 		}
 
 		done.add_neg(link.avoid); 
-		return k;
+		return;
 	}
 
 	/*
@@ -714,9 +715,9 @@ int Execution::execute(Execution *parent,
 	while (buffer_trivial.size()) {
 		Link link_child= buffer_trivial.front(); 
 		buffer_trivial.pop(); 
-		deploy_dependency(k, link, link_child);
-		if (k == 0)
-			return k;
+		deploy_dependency(link, link_child);
+		if (jobs == 0)
+			return;
 	} 
 	assert(buffer_trivial.empty()); 
 
@@ -736,15 +737,15 @@ int Execution::execute(Execution *parent,
 		assert(rule->place_param_target.type == T_FILE); 
 	print_command();
 
-	/* Start the process */ 
-	assert(k >= 1); 
+	/* Start the job */ 
+	assert(jobs >= 1); 
 
 	map <string, string> mapping;
 	mapping.insert(mapping_parameter.begin(), mapping_parameter.end());
 	mapping.insert(mapping_variable.begin(), mapping_variable.end());
 	mapping_parameter.clear();
 	mapping_variable.clear(); 
-	const pid_t pid= process.start
+	const pid_t pid= job.start
 		(rule->command->command, 
 		 mapping,
 		 rule->redirect_output 
@@ -757,21 +758,19 @@ int Execution::execute(Execution *parent,
 			exit(ERROR_SYSTEM); 
 		error |= ERROR_BUILD;
 		done.add_neg(link.avoid); 
-		return k;
+		return;
 	}
 	executions_by_pid[pid]= this;
-	assert(executions_by_pid.at(pid)->process.started()); 
-	assert(pid == executions_by_pid.at(pid)->process.get_pid()); 
-	--k;
-	assert(k >= 0);
-
-	return k;
+	assert(executions_by_pid.at(pid)->job.started()); 
+	assert(pid == executions_by_pid.at(pid)->job.get_pid()); 
+	--jobs;
+	assert(jobs >= 0);
 }
 
 void Execution::waited(int pid, int status) 
 {
-	assert(process.started()); 
-	assert(process.get_pid() == pid); 
+	assert(job.started()); 
+	assert(job.get_pid() == pid); 
 	assert(buffer.empty()); 
 	assert(children.size() == 0); 
 
@@ -780,7 +779,7 @@ void Execution::waited(int pid, int status)
 
 	executions_by_pid.erase(pid); 
 
-	if (process.waited(status, pid)) {
+	if (job.waited(status, pid)) {
 		/* Command was successful */ 
 
 		/* For file targets, check that the file was built */ 
@@ -861,11 +860,11 @@ void Execution::waited(int pid, int status)
 	}
 }
 
-int Execution::execute_main(const vector <Target> &targets, 
-			    const vector <Place> &places, 
-			    int k)
+int Execution::main(const vector <Target> &targets, 
+		    const vector <Place> &places)
+//		    int k)
 {
-	assert(k >= 0);
+	assert(jobs >= 0);
 	assert(targets.size() == places.size()); 
 
 	timestamp_last= Timestamp::now(); 
@@ -874,16 +873,12 @@ int Execution::execute_main(const vector <Target> &targets,
 	
 	for (unsigned i= 0;  i != targets.size();  ++i) {
 		dependencies.push_back
-			(
-			 shared_ptr <Dependency>
-			 (
-			  new Direct_Dependency
+			(shared_ptr <Dependency>
+			 (new Direct_Dependency
 			  (0, Place_Param_Target
 			   (targets.at(i).type, 
-				Place_Param_Name(targets.at(i).name, places.at(i))
-				))
-			  )
-		   ); 
+			    Place_Param_Name(targets.at(i).name, places.at(i))
+			    )))); 
 	}
 
 	Execution *execution_root= new Execution(dependencies); 
@@ -894,12 +889,12 @@ int Execution::execute_main(const vector <Target> &targets,
 
 			Link link(Stack(), (Flags)0, Place(), shared_ptr <Dependency> ());
 
-			execution_root->execute
-			    (nullptr, 
-			     k - Execution::executions_by_pid.size(), link);
+			execution_root->execute(nullptr, link); 
+//			     k - Execution::executions_by_pid.size(), 
+//			link);
 
 			if (executions_by_pid.size()) {
-				execute_wait();
+				wait();
 			}
 		}
 
@@ -935,10 +930,10 @@ int Execution::execute_main(const vector <Target> &targets,
 
 		error= e; 
 		
-		/* Terminate all processes */ 
+		/* Terminate all jobs */ 
 		if (executions_by_pid.size()) {
-			print_error("Terminating all running processes"); 
-			process_terminate_all();
+			print_error("Terminating all running jobs"); 
+			job_terminate_all();
 		}
 	}
 
@@ -1250,7 +1245,8 @@ void Execution::append_dependencies(const vector <Link> &dependencies_)
 	}
 }
 
-void process_terminate_all() 
+/* The declaration of this function is in job.hh */ 
+void job_terminate_all() 
 {
 	for (auto i= Execution::executions_by_pid.begin();
 	     i != Execution::executions_by_pid.end();
@@ -1793,8 +1789,7 @@ void Execution::print_command()
 	}
 }
 
-void Execution::deploy_dependency(int &k,
-				  const Link &link,
+void Execution::deploy_dependency(const Link &link,
 				  const Link &link_child)
 {
 	Flags flags_child= link_child.flags; 
@@ -1883,9 +1878,9 @@ void Execution::deploy_dependency(int &k,
 
 	Link link_child_new(avoid_child, flags_child, link_child.place, link_child.dependency); 
 
-	k= child->execute(this, k, link_child_new);
-	assert(k >= 0);
-	if (k == 0)  
+	child->execute(this, link_child_new);
+	assert(jobs >= 0);
+	if (jobs == 0)  
 		return;
 			
 	if (child->finished(avoid_child)) {

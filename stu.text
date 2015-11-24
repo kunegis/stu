@@ -49,9 +49,9 @@ OPTIONS
 
        -h     Output a short help and exit.
 
-       -j K   Run K commands in parallel.  K must be a positive integer.   The
-              default  value  is one, meaning that Stu does not start commands
-              in parallel.  This option works like the corresponding option in
+       -j K   Run K jobs in parallel.  K must  be  a  positive  integer.   The
+              default  value  is  one, meaning that Stu does not start jobs in
+              parallel.  This option works like the  corresponding  option  in
               GNU Make. The parameter K is mandatory.
 
        -k     Keep  going; do not stop running when an error occurs.  Instead,
@@ -380,7 +380,9 @@ PARAMETERS
 
 STATEMENTS
        Statements  in Stu are introduced by '%' and serve a similar purpose to
-       the C preprocessor.
+       the C preprocessor.  The token '%' must be followed  by  the  statement
+       name.  There  may  be any amount of whitespace (including none) between
+       '%' and the name of the statement.
 
        File inclusion is done using the '%include' statement.  This can be put
        at any place in the input file, and will just temporarily continue tok‐
@@ -402,7 +404,9 @@ STATEMENTS
 
        Both variants will allow the script to be executed only with a  version
        of  Stu  of  the  correct major version number (2 in this example), and
-       whose minor version (and patch level) have at least the given values.
+       whose minor version (and patch level) have at least the  given  values.
+       There  may  be multiple '%version' statements; each one is then checked
+       separately.
 
 
 TOKENIZATION
@@ -567,25 +571,26 @@ LIMITATIONS, PITFALLS AND FUTURE DIRECTIONS
        ported,  as  the  current implementation uses mmap(2).  Also, '-' as an
        input filename will not make Stu read standard input.
 
-       The argument to the -j option is mandatory, as opposed to the  behavior
-       of GNU Make.
+       The argument to the -j option (number of jobs to run  in  parallel)  is
+       mandatory,  as  opposed  to the behavior of GNU Make, where no argument
+       means to run as many jobs in parallel as possible.
 
-       Files  read  as dynamic dependencies are parsed using the full Stu syn‐
-       tax, meaning that certain characters must be quoted  in  them.   Future
-       versions  of  Stu  may support newline-seperated file lists, as well as
+       Files read as dynamic dependencies are parsed using the full  Stu  syn‐
+       tax,  meaning  that  certain characters must be quoted in them.  Future
+       versions of Stu may support newline-seperated file lists,  as  well  as
        NUL-separated file lists.
 
-       Rule-level recursion is not allowed.  This exclude a recursive  parsing
-       of  C-like dependencies.  Rule-level recursion would be easy to enable,
-       but would open up problems  related  to  infinite  loops,  which  would
+       Rule-level  recursion is not allowed.  This exclude a recursive parsing
+       of C-like dependencies.  Rule-level recursion would be easy to  enable,
+       but  would  open  up  problems  related  to infinite loops, which would
        require Stu to have a maximal recursion depth.
 
-       Changing  a  command  within  a Stu file will not make the target to be
-       rebuilt.  This can be seen as both a  feature  or  a  bug.   Also,  all
-       changes  in  a  file  will lead to rebuilds of other files, even if the
+       Changing a command within a Stu file will not make  the  target  to  be
+       rebuilt.   This  can  be  seen  as  both a feature or a bug.  Also, all
+       changes in a file will lead to rebuilds of other  files,  even  if  the
        changes are trivial, e.g., when only whitespace was changed in C source
-       code.   Furthermore, touching a file without changing the contents will
-       also lead to a rebuild, although it is not  needed.   Both  limitations
+       code.  Furthermore, touching a file without changing the contents  will
+       also  lead  to  a rebuild, although it is not needed.  Both limitations
        could be removed by using fingerprints instead of modification times.
 
 
@@ -597,4 +602,4 @@ SEE ALSO
 
 
 
-stu-1.7.5                        November 2015                          STU(1)
+stu-1.7.7                        November 2015                          STU(1)

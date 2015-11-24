@@ -25,7 +25,7 @@
  */
 bool is_space(char c) 
 {
-	// TODO replace by lookup table (?)
+	// TODO replace by strchr()
 	return c == ' ' || c == '\n' || c == '\t' || c == '\v' || c == '\r' || c == '\f';
 }
 
@@ -100,13 +100,6 @@ public:
 
 	Command(string command_, 
 		const Place &place_);
-	// Command(string command_, 
-	// 	const Place &place_,
-	// 	vector <string> lines_) 
-	// 	:  place(place_),
-	// 	   command(command_),
-	// 	   lines(lines_)
-	// 	{ }
 
 	const Place &get_place() const {
 		return place; 

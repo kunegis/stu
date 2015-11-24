@@ -48,8 +48,8 @@ Treat all optional dependencies (declared with '?') as non-optional.
 .IP -h
 Output a short help and exit.
 .IP "-j K"
-Run K commands in parallel.  K must be a positive integer.  The default
-value is one, meaning that Stu does not start commands in parallel. 
+Run K jobs in parallel.  K must be a positive integer.  The default
+value is one, meaning that Stu does not start jobs in parallel. 
 This option works like the corresponding option in GNU Make. The
 parameter K is mandatory. 
 .IP -k
@@ -379,7 +379,9 @@ filename 'a.b.c', so Stu will report an error:
 .SH "STATEMENTS"
 
 Statements in Stu are introduced by '%' and serve a similar purpose to
-the C preprocessor. 
+the C preprocessor.  The token '%' must be followed by the statement
+name. There may be any amount of whitespace (including none) between '%'
+and the name of the statement. 
 
 File inclusion is done using the '%include' statement. 
 This can be put at any place in the input file, and will just temporarily continue
@@ -401,7 +403,9 @@ the '%version' statement:
 
 Both variants will allow the script to be executed only with a version
 of Stu of the correct major version number (2 in this example), and
-whose minor version (and patch level) have at least the given values. 
+whose minor version (and patch level) have at least the given values.
+There may be multiple '%version' statements; each one is then checked
+separately. 
 
 .SH "TOKENIZATION"
 
@@ -566,8 +570,9 @@ The -f option only supports regular files.  Standard input is not
 supported, as the current implementation uses mmap(2).  Also, '-' as an
 input filename will not make Stu read standard input. 
 
-The argument to the -j option is mandatory, as opposed to the behavior
-of GNU Make. 
+The argument to the -j option (number of jobs to run in parallel) is
+mandatory, as opposed to the behavior of GNU Make, where no argument
+means to run as many jobs in parallel as possible. 
 
 Files read as dynamic dependencies are parsed using the full Stu syntax,
 meaning that certain characters must be quoted in them.  Future versions

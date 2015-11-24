@@ -7,7 +7,7 @@
 /* Not enabled because common filesystems seem to give wrong results,
  * e.g., creating two files in a row may give the second file an older
  * timestamp. */
-// #define USE_MTIM 1
+/* #define USE_MTIM 1 */
 
 #ifdef USE_MTIM
 

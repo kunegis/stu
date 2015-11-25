@@ -47,7 +47,7 @@ using namespace std;
 	"   -V            Output version\n" \
 	"   -w            Short output; don't show the commands, only the target filenames\n"
 
-/* Initialize buffer; called once from main() */ 
+/* Initialize buffers; called once from main() */ 
 void init_buf(); 
 
 int main(int argc, char **argv, char **envp)
@@ -232,7 +232,6 @@ int main(int argc, char **argv, char **envp)
 
 void init_buf()
 {
-
 	/* If -s is not given, set STDOUT to line buffered, so that the
 	 * output of command lines always happens before the output of
 	 * commands themselves */ 

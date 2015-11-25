@@ -4,7 +4,7 @@
 #
 # We follow the GNU Coding Standards for the naming of Make targets. 
 #
-# The invocation of the compile is written to use G++; it has to be
+# The invocation of the compiler is written to use G++; it has to be
 # changed by hand to use another compiler. 
 # 
 

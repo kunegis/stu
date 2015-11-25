@@ -447,6 +447,17 @@ A:  {
 # is for existence-only and optional dependencies. 
 #
 
+#
+# The current setup of Stu (and also Make) means that when nothing is to
+# be done, Stu still has to walk the complete dependency tree and stat()
+# every file.  For large projects, this may be come very slow.  Instead,
+# have a Stu daemon which uses inotify or similar to notice changes.
+# There are many practical issues with that, so that would be a huge
+# change.  Would almost likely mean the server itself would do the
+# building, and the client would only communicate with the server.  This
+# also means the server would need to be multi-threaded. 
+#
+
 #==== Backward-incompatible features ====
 
 #

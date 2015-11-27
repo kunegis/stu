@@ -13,89 +13,13 @@
  * node.   
  */
 
-#include <queue>
+//#include <queue>
 #include <map> 
 #include <unordered_set>
 
 #include "job.hh"
 #include "timestamp.hh"
-
-/* Information about one parent--child link. 
- */ 
-class Link
-{
-private:
-	void check() const {
-		avoid.check();
-		if (avoid.get_k() == 0) {
-			assert(avoid.get_lowest() == (flags & ((1 << F_COUNT) - 1)));
-		}
-	}
-
-public:
-
-	/* The length is one plus the dynamicity (number of dynamic
-	 * indirections).  Small indices indicate the links lower in the
-	 * hierarchy. 
-	 * This variable only needs to hold the EXISTENCE and OPTIONAL
-	 * bits (i.e., transitive bits). 
-	 */
-	Stack avoid;
-
-	/* Flags that are valid for this dependency */ 
-	Flags flags;
-
-	/* The place of the declaration of the dependency */ 
-	Place place; 
-
-	shared_ptr <Dependency> dependency;
-
-	Link() { }
-
-	Link(Stack avoid_,
-	     Flags flags_,
-	     Place place_,
-	     shared_ptr <Dependency> dependency_)
-		:  avoid(avoid_),
-		   flags(flags_),
-		   place(place_),
-		   dependency(dependency_)
-	{ 
-		check(); 
-	}
-
-	Link(shared_ptr <Dependency> dependency_,
-	     Flags flags_,
-	     const Place &place_)
-		:  avoid(dependency_),
-		   flags(flags_),
-		   place(place_),
-		   dependency(dependency_)
-	{ 
-		check();
-	}
-
-	/* The flags of the Dependency_Info only contain the top-level flags
-	 * of the dependency if this is a direct dependency. 
-	 */ 
-	Link(shared_ptr <Dependency> dependency_)
-		:  avoid(dependency_),
-		   flags(dynamic_pointer_cast <Dynamic_Dependency> (dependency_)
-			 ? (dependency_->get_flags() & ~((1 << F_COUNT) - 1))
-			 : dependency_->get_flags()),
-		   place(dependency_->get_place()),
-		   dependency(dependency_)
-	{ 
-		check(); 
-	}
-
-	void add(Stack avoid_, Flags flags_) {
-		assert(avoid.get_k() == avoid_.get_k());
-		avoid.add(avoid_);
-		flags |= flags_;
-		check(); 
-	}
-};
+#include "buffer.hh"
 
 class Execution
 {
@@ -138,13 +62,19 @@ public:
 	 * dependencies refer to the declaration of the dependencies,
 	 * not to the rules of the dependencies. 
 	 */ 
-	queue <Link> buffer;
+	Buffer buf_default;
+//	queue <Link> buf_default;
 
 	/* The buffer for trivial dependencies.  They are only started
 	 * if, after (potentially) starting all non-trivial
 	 * dependencies, the target must be rebuilt anyway. 
 	 */
-	queue <Link> buffer_trivial;
+	Buffer buf_trivial; 
+//	queue <Link> buf_trivial;
+
+//	/* Play the same role as the buf_* members, but used with the
+//	 * random job orders */ 
+//	vector <Link> vec_default, vec_trivial;
 
 	/* Info about the target before it is built.  Only valid once the
 	 * job was started.  Used for checking whether a file was
@@ -208,7 +138,7 @@ public:
 	/* File, phony and dynamic targets.  
 	 */ 
 	Execution(Target target_,
-		  const Link &,
+		  Link &&link,
 		  Execution *parent);
 
 	/* Empty execution.  DEPENDENCIES don't have to be unique.
@@ -223,9 +153,9 @@ public:
 	/* Whether the execution is completely finished */ 
 	bool finished() const;
 
-	/* Append DEPENDENCIES to the dependency queue, adding TARGET and
-	 * PLACE to the stack of each */ 
-	void append_dependencies(const vector <Link> &dependencies);
+// 	/* Append DEPENDENCIES to the dependency queue, adding TARGET and
+//  	 * PLACE to the stack of each */ 
+// 	void append_dependencies(const vector <Link> &dependencies);
 
 	/* Read dynamic dependencies from a file.  Can only be called for
 	 * dynamic targets.  Called for the parent of a dynamic--file link. 
@@ -238,11 +168,11 @@ public:
 	 */
 	bool remove_if_existing(bool output); 
 
-	/* Add the dependency to the dependency queue and return TRUE, or
-	 * return FALSE when it was already there which the same or weaker
-	 * dependency type.   
-	 */
-	void add_dependency(const Link &dependency);
+//	/* Add the dependency to the dependency queue and return TRUE, or
+//	 * return FALSE when it was already there which the same or weaker
+//	 * dependency type.   
+//	 */
+//	void add_dependency(Link &&link);
 
 	/* Start the next jobs. This will also terminate
 	 * jobs when they don't need to be run anymore, and thus it can
@@ -251,8 +181,7 @@ public:
 	 * of all FLAGs up the dependency chain.  
 	 * DEPENDENCY is the dependency linking the two executions.  
 	 */
- 	void execute(Execution *parent, 
-		     const Link &link);
+ 	void execute(Execution *parent, Link &&link);
 
 	/* Called after the job was waited for.  The PID is only passed
 	 * for checking that it is correct. 
@@ -332,7 +261,7 @@ public:
 	 * declared.    
 	 */ 
 	static Execution *get_execution(const Target &target, 
-					const Link &link,
+					Link &&link,
 					Execution *parent); 
 
 	/* Main execution loop.  
@@ -397,8 +326,7 @@ void Execution::wait()
 	++jobs; 
 }
 
-void Execution::execute(Execution *parent, 
-			const Link &link)
+void Execution::execute(Execution *parent, Link &&link)
 {
 	assert(jobs >= 0); 
 	assert(link.avoid.get_k() == dynamic_depth(target.type)); 
@@ -438,7 +366,7 @@ void Execution::execute(Execution *parent,
 		Link link_child(avoid_child, flags_child, child->parents.at(this).place,
 						child->parents.at(this).dependency);
 
-		child->execute(this, link_child);
+		child->execute(this, move(link_child));
 		assert(jobs >= 0);
 		if (jobs == 0)  
 			return;
@@ -489,18 +417,18 @@ void Execution::execute(Execution *parent,
 	/* 
 	 * Deploy non-trivial dependencies
 	 */ 
-	while (buffer.size()) {
-		Link link_child= buffer.front(); 
-		buffer.pop(); 
+	while (! buf_default.empty()) {
+		Link link_child= buf_default.next(); 
 		if (link_child.flags & F_TRIVIAL) {
-			buffer_trivial.push(link_child); 
+			buf_trivial.push(move(link_child)); 
+//			buffer_trivial.push(link_child); 
 		} else {
 			deploy_dependency(link, link_child);
 			if (jobs == 0)
 				return;
 		}
 	} 
-	assert(buffer.empty()); 
+	assert(buf_default.empty()); 
 
 	/* Some dependencies are still running */ 
 	if (children.size())
@@ -533,7 +461,7 @@ void Execution::execute(Execution *parent,
 	/* Build the file itself */ 
 	assert(jobs > 0); 
 	assert(target.type == T_FILE || target.type == T_PHONY); 
-	assert(buffer.empty()); 
+	assert(buf_default.empty()); 
 	assert(children.empty()); 
 	assert(error == 0);
 
@@ -691,8 +619,8 @@ void Execution::execute(Execution *parent,
 			fprintf(stderr, "\ttarget without command\n");
 		}
 		
-		if (buffer_trivial.size() != 0) {
-			const Link &link_child= buffer_trivial.front();
+		if (! buf_trivial.empty()) {
+			Link link_child= move(buf_trivial.next());
 			assert(link_child.dependency->get_flags() & F_TRIVIAL); 
 			link_child.dependency->get_place_trivial() <<
 				fmt("target without command %s cannot have trivial dependencies",
@@ -711,14 +639,14 @@ void Execution::execute(Execution *parent,
 	/*
 	 * Deploy trivial dependencies
 	 */
-	while (buffer_trivial.size()) {
-		Link link_child= buffer_trivial.front(); 
-		buffer_trivial.pop(); 
+	while (! buf_trivial.empty()) {
+		Link link_child= buf_trivial.next(); 
+//		buffer_trivial.pop(); 
 		deploy_dependency(link, link_child);
 		if (jobs == 0)
 			return;
 	} 
-	assert(buffer_trivial.empty()); 
+	assert(buf_trivial.empty()); 
 
 	worked= true; 
 	
@@ -770,7 +698,8 @@ void Execution::waited(int pid, int status)
 {
 	assert(job.started()); 
 	assert(job.get_pid() == pid); 
-	assert(buffer.empty()); 
+	assert(buf_default.empty()); 
+	assert(buf_trivial.empty()); 
 	assert(children.size() == 0); 
 
 	assert(done.get_k() == 0);
@@ -887,7 +816,7 @@ int Execution::main(const vector <Target> &targets,
 
 			Link link(Stack(), (Flags)0, Place(), shared_ptr <Dependency> ());
 
-			execution_root->execute(nullptr, link); 
+			execution_root->execute(nullptr, move(link)); 
 
 			if (executions_by_pid.size()) {
 				wait();
@@ -1096,7 +1025,7 @@ void Execution::unlink_execution(Execution *const parent,
 }
 
 Execution::Execution(Target target_,
-		     const Link &link,
+		     Link &&link,
 		     Execution *parent)
 	:  target(target_),
 	   error(0),
@@ -1134,7 +1063,8 @@ Execution::Execution(Target target_,
 		for (auto i= rule->dependencies.begin();
 		     i != rule->dependencies.end();  ++i) {
 			assert((*i)->get_place().type != Place::P_EMPTY); 
-			add_dependency(Link(*i));
+			buf_default.push(Link(*i)); 
+//			add_dependency(Link(*i));
 		}
 	} else {
 		/* There is no rule */ 
@@ -1197,7 +1127,7 @@ Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
 	executions_by_target[target]= this;
 
 	for (auto i= dependencies_.begin(); i != dependencies_.end(); ++i) {
-		add_dependency(Link(*i)); 
+		buf_default.push(Link(*i)); 
 	}
 }
 
@@ -1232,13 +1162,6 @@ bool Execution::finished() const
 	}
 
 	return (to_do_aggregate & ((1 << F_COUNT) - 1)) == 0; 
-}
-
-void Execution::append_dependencies(const vector <Link> &dependencies_)
-{
-	for (auto i= dependencies_.begin();  i != dependencies_.end();  ++i) {
-		add_dependency(*i); 
-	}
 }
 
 /* The declaration of this function is in job.hh */ 
@@ -1459,13 +1382,13 @@ bool Execution::remove_if_existing(bool output)
 	return removed; 
 }
 
-void Execution::add_dependency(const Link &dependency) 
-{
-	buffer.push(dependency); 
-}
+// void Execution::add_dependency(Link &&link) 
+// {
+// 	buf_trivial.push(move(link)); 
+// }
 
 Execution *Execution::get_execution(const Target &target, 
-				    const Link &link,
+				    Link &&link,
 				    Execution *parent)
 {
 	/* Set to the returned Execution object when one is found or created
@@ -1492,7 +1415,7 @@ Execution *Execution::get_execution(const Target &target,
 	} else { 
 		/* Create a new Execution object */ 
 
-		execution= new Execution(target, link, parent);  
+		execution= new Execution(target, move(link), parent);  
 
 		assert(execution->parents.size() == 1); 
 	}
@@ -1623,7 +1546,7 @@ void Execution::read_dynamics(Stack avoid,
 
 			assert(avoid_this.get_k() == 0); 
 
-			add_dependency(Link(dependency));
+			buf_default.push(Link(dependency));
 
 			/* Check that there are no input dependencies */ 
 			if (! input.empty()) {
@@ -1874,7 +1797,7 @@ void Execution::deploy_dependency(const Link &link,
 
 	Link link_child_new(avoid_child, flags_child, link_child.place, link_child.dependency); 
 
-	child->execute(this, link_child_new);
+	child->execute(this, move(link_child_new));
 	assert(jobs >= 0);
 	if (jobs == 0)  
 		return;
@@ -1900,7 +1823,7 @@ void Execution::initialize(Stack avoid)
 			(flags_child,
 			 Place_Param_Target(T_FILE, Place_Param_Name(target.name)));
 
-		add_dependency(Link(dependency_child, flags_child, Place()));
+		buf_default.push(Link(dependency_child, flags_child, Place()));
 		/* The place of the [[A]]->A links is empty, meaning it will
 		 * not be output in traces. */ 
 	} 

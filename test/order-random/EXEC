@@ -1,0 +1,56 @@
+#! /bin/sh
+
+rm -f ?
+
+echo ../../stu 
+../../stu >stdout-correct
+
+rm -f ?
+
+echo ../../stu -m random
+../../stu -m random >list.out
+exitcode="$?"
+
+if [ "$exitcode" != 0 ] ; then
+	echo '*** (A)'
+	exit 1
+fi
+
+cmp list.out stdout-correct && {
+	echo '*** (B)'
+	exit 1
+}
+
+cmp out output-correct || {
+	echo '*** (C)'
+	exit 1
+}
+
+# Check that two invocations do not give the same order
+
+rm -f ?
+
+echo ../../stu -m random
+../../stu -m random >list.out2
+exitcode="$?"
+
+if [ "$exitcode" != 0 ] ; then
+	echo '*** (A2)'
+	exit 1
+fi
+
+# The two runs must *not* have identical order 
+cmp list.out list.out2 && {
+	echo '*** (B2)'
+	exit 1
+}
+
+cmp out output-correct || {
+	echo '*** (C2)'
+	exit 1
+}
+
+
+rm -f out list.* stdout-correct
+
+exit 0

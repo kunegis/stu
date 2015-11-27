@@ -25,16 +25,6 @@
 #
 
 #
-# Order option
-#
-#       -m dfs      (default) Depth-first search
-#       -m bfs      Breadth-first search
-#       -m random   Random
-#	-m target   Semirandom by target name (and thus deterministic)
-#	-M STRING   Semirandom by given seed string (and thus deterministic)
-#
-
-#
 # Assign a name to a dynamic variable.  Useful when the name of the file
 # contains characters that are not allowed in shell variable names. 
 #
@@ -267,6 +257,11 @@ A: [B],i;
 #   - we still would have to prefix the output with the value of
 #     variables, since in many cases commands don't contain environment
 #     variables (but only pass them the called programs)
+#
+
+#
+# -m bfs (breadth-first order) and -m target (pseudotarget by target
+# name) 
 #
 
 #==== New features that change extend the Stu drastically ====

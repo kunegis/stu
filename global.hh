@@ -25,6 +25,16 @@ enum {
 
 static int verbosity= VERBOSITY_LONG; 
 
+enum Mode {
+	MODE_DFS   = 0,
+	MODE_RANDOM= 1,
+	
+	/* -M mode is coded as MODE_RANDOM */ 
+};
+
+static int order= MODE_DFS; 
+static bool order_vec; 
+
 const char **envp_global;
 
 /* Does the same as program_invocation_name (which is a GNU extension,

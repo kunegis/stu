@@ -8,54 +8,54 @@ echo CORRECT >BBB
 
 echo ../../stu
 ../../stu || {
-    echo >&2 "$0:  *** stu failed (run A)"
-    exit 1
+	echo >&2 "$0:  *** stu failed (run A)"
+	exit 1
 }
 
-fgrep CORRECT BBB || {
-    echo >&2 "$0:  *** 'CORRECT' not found in 'BBB'"
-    exit 1
+grep -qF CORRECT BBB || {
+	echo >&2 "$0:  *** 'CORRECT' not found in 'BBB'"
+	exit 1
 }
 
 echo ../../stu
 ../../stu >list.content || {
-    echo "$0:  *** stu failed (run B)"
-    exit 1
+	echo "$0:  *** stu failed (run B)"
+	exit 1
 }
 
-fgrep 'Nothing to be done' list.content || {
-    echo >&2 "$0:  *** 'Nothing to be done' not found in output'"
-    exit 1
+grep -qF 'Nothing to be done' list.content || {
+	echo >&2 "$0:  *** 'Nothing to be done' not found in output'"
+	exit 1
 }
 
 # Necessary because otherwise BBB may have exactly the same date as A,
 # and Stu would think there is nothing to be done. 
-sleep 1
+sleep 2
 
 touch BBB
 
 echo ../../stu
 ../../stu >list.content || {
-    echo >&2 "$0:  *** stu failed (run C)"
-    exit 1
+	echo >&2 "$0:  *** stu failed (run C)"
+	exit 1
 }
 
-fgrep 'cat BBB' list.content || {
-    echo >&2 "$0:  *** 'cat BBB' not found in output"
-    exit 1
+grep -qF 'cat BBB' list.content || {
+	echo >&2 "$0:  *** 'cat BBB' not found in output"
+	exit 1
 }
 
 echo ../../stu
 ../../stu >list.content || {
-    echo >&2 "$0:  *** stu failed (run D)"
-    exit 1
+	echo >&2 "$0:  *** stu failed (run D)"
+	exit 1
 }
 
-fgrep 'Nothing to be done' list.content || {
-    echo >&2 "$0:  *** 'Nothing to be done' not found in output'"
-    exit 1
+grep -qF 'Nothing to be done' list.content || {
+	echo >&2 "$0:  *** 'Nothing to be done' not found in output'"
+	exit 1
 }
 
-rm BBB
+rm -f BBB
 
 exit 0

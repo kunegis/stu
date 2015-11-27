@@ -3,7 +3,6 @@
  * options, exit codes, etc.  
  */
 
-// TODO Use C++ move semantics where appropriate
 // TODO Use unique_ptr instead of shared_ptr where appropriate 
 
 /* Enable bounds checking when using GNU libc.  Must be defined before
@@ -25,11 +24,13 @@ using namespace std;
 #include "execution.hh"
 #include "version.hh"
 
+#include <sys/time.h>
+
 /* We use getopt(), which means that Stu does only support short
  * options, and not long options.  At some point, we might switch to
  * getopt_long() though. 
  */
-#define STU_OPTIONS "af:gj:kvVhsw"
+#define STU_OPTIONS "af:ghj:km:M:svVw"
 
 /* Note: the following strings do not contain tabs */ 
 #define STU_HELP \
@@ -42,6 +43,12 @@ using namespace std;
 	"   -h            Output help\n" \
 	"   -j K          Run K jobs in parallel\n"	  \
 	"   -k            Keep on running after errors\n" \
+	"   -m ORDER      Order to run the targets:\n" \
+	"      dfs        (default) Depth-first order, like in Make\n" \
+	"      bfs        Breadth-first order\n" \
+	"      random     Random order\n" \
+	"      target     Pseudorandom order, seeded by individual target names\n" \
+	"   -M STRING     Pseudorandom run order, seeded by given string\n" \
 	"   -s            Silent mode; do not output commands\n" \
 	"   -v            Enable verbose mode\n" \
 	"   -V            Output version\n" \
@@ -106,12 +113,39 @@ int main(int argc, char **argv, char **envp)
 			}
 			break;
 
+		case 'm':
+			if      (!strcmp(optarg, "random"))  {
+				order= MODE_RANDOM;
+				/* Use gettimeofday() instead of time()
+				 * to get millisecond instead of second
+				 * precision */ 
+				struct timeval tv;
+				if (gettimeofday(&tv, nullptr) != 0) {
+					perror("gettimeofday");
+					exit(ERROR_SYSTEM); 
+				}
+				srand(tv.tv_sec + tv.tv_usec);
+			}
+			else if (!strcmp(optarg, "dfs"))     /* Default */ ;
+			else {
+				print_error(frmt("Invalid order '%s' for option -m", optarg));
+				exit(ERROR_LOGICAL); 
+			}
+			break;
+
+		case 'M':
+			order= MODE_RANDOM;
+			srand(hash <string> ()(string(optarg))); 
+			break;
+
 		default:  
 			/* Invalid option -- an error message was
 			 * already printed by getopt() */   
 			exit(ERROR_LOGICAL); 
 		}
 	}
+
+	order_vec= order == MODE_RANDOM; 
 
 	init_buf();
 

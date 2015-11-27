@@ -6,9 +6,9 @@ stu \- Build automation
 [ -f
 .I FILENAME
 ] [
-.I TARGETS ...
-] [
 .I OPTIONS ...
+] [
+.I TARGETS ...
 ]
 .SH DESCRIPTION
 Stu is a tool for build automation.  Like Make, it is used to call other programs in
@@ -56,7 +56,10 @@ parameter K is mandatory.
 Keep going; do not stop running when an error occurs.  Instead, try to build as much
 as possible.  This option is equivalent to that of Make. 
 .IP "-m ORDER"
-Specify in which order to run jobs. 
+Specify in which order to run jobs.  When ORDER is 'dfs' (the default),
+Stu traverses the dependency graph in a depth-first fashion, in a way
+similar to Make. When ORDER is 'random', the order in which jobs are run
+is randomized. 
 .IP "-M STRING"
 Run jobs in pseudorandom order seeded by the given string. 
 .IP -s
@@ -513,18 +516,6 @@ the file 'A', after having built 'B' and 'C':
 Symlinks are treated transparently by Stu.  In other words, Stu will
 always consider the timestamp of the linked-to file.  A symlink to a
 non-existing file will be treated as a non-existing file. 
-
-.SH "JOB ORDER"
-
-The order in which jobs are executed can be controlled by the -m and -M
-options. 
-
-'-m dfs' is the default. Stu traverses the dependency tree in a 
-depth-first fashion, in a way similar to Make.   
-
-'-m random' randomizes the order in which jobs are run.
-
-'-M STRING' will use a pseudorandom order initialized by the given string. 
 
 .SH "EXIT STATUS"
 .IP 0

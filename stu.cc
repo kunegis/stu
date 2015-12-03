@@ -3,8 +3,6 @@
  * options, exit codes, etc.  
  */
 
-// TODO Use unique_ptr instead of shared_ptr where appropriate 
-
 /* Enable bounds checking when using GNU libc.  Must be defined before
  * including any of the standard headers.  (Only in non-debug mode)
  */ 

@@ -14,6 +14,11 @@ size_t random_number(size_t n)
 	assert(n < RAND_MAX); 
 	assert(RAND_MAX <= SIZE_MAX); 
 
+	/* rand() % n does not work, as it will give higher probability
+	 * to lower numbers (given that RAND_MAX + 1 is not divisible by
+	 * n). 
+	 */
+
 	size_t r;
 	do
 		r= rand();
@@ -55,9 +60,6 @@ public:
 	void push(Link &&link) {
 		if (order_vec) {
 			v.emplace_back(link); 
-//			size_t s= v.size();
-//			v.resize(s + 1);
-//			v.at(s)= link; 
 		} else {
 			q.push(move(link)); 
 		}

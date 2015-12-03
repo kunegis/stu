@@ -346,7 +346,7 @@ void parse(vector <shared_ptr <Token> > &tokens,
 		exit(ERROR_SYSTEM); 
 
 	} catch (int error) {
-		if (in != NULL)
+		if (in != nullptr)
 			munmap((void *)in, buf.st_size);
 		throw;
 	}

@@ -86,7 +86,7 @@ public:
 
 	/* Match TARGET to a rule, and return the instantiated
 	 * (unparametrized) corresponding rule.  
-	 * Return NULL when no match was found. 
+	 * Return nullptr when no match was found. 
 	 * The used original rule is written into ORIGINAL_RULE when a
 	 * match is found.  The matched parameters are stored in
 	 * MAPPING_OUT. 

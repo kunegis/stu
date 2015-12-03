@@ -93,8 +93,8 @@ pid_t Job::start(string command,
 	const char *const shell= "/bin/sh";
 	
 	const char *arg= command.c_str(); 
-	/* c_str() never returns NULL, as by the standard */ 
-	assert(arg != NULL);
+	/* c_str() never returns nullptr, as by the standard */ 
+	assert(arg != nullptr);
 
 	int fd_input= -1;
 	if (filename_input != "") {
@@ -153,7 +153,7 @@ pid_t Job::start(string command,
 		const char** envp= (const char **)
 			alloca(sizeof(char **) * (v_old + v_new + 1));
 		if (!envp) {
-			/* alloca() should never return NULL */ 
+			/* alloca() should never return nullptr */ 
 			assert(false);
 			perror("alloca");
 			exit(ERROR_SYSTEM); 

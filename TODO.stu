@@ -1,3 +1,15 @@
+#
+# Make -m random be more random. 
+#  * also randomize the choice of the active queue
+#  * re-start from the root at each iteration
+#  * also open new dependencies randomly before finishing the currently
+#    open children 
+#
+
+#
+# Support $STU_SHELL to use another shell than "/bin/sh". 
+#
+
 #==== Small features that complete what we already have ====
 
 #
@@ -473,15 +485,6 @@ a.bib;
 # Remove trailing slash from directory names.
 A:  ?tmp/ {...}
 tmp: {...}
-
-#
-# By default, the target @main is built, regardless of position in file.
-# If @main does not exist, the first target is made (must be
-# unparametrized)  We can also make it an error to build the first
-# target automatically and always require @main. 
-#
-
-@main:  A B C;
 
 #
 # Make 'single quotes' and "double quotes" behave like in the shell,

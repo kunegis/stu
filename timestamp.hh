@@ -65,7 +65,7 @@ public:
 		if (r < 0) {
 			/* Print an error message and fall back to time() */ 
 			perror("clock_gettime(CLOCK_REALTIME, ...)");
-			ret.t.tv_sec= time(NULL);
+			ret.t.tv_sec= time(nullptr);
 			ret.t.tv_nsec= 0; 
 		}
 		return ret; 

@@ -13,7 +13,6 @@
  * node.   
  */
 
-//#include <queue>
 #include <map> 
 #include <unordered_set>
 
@@ -28,7 +27,7 @@ public:
 	/* Target to build */ 
 	const Target target;
 
-	/* The instantiated file rule for this execution.  NULL when there
+	/* The instantiated file rule for this execution.  Nullptr when there
 	 * is no rule for this file (this happens for instance when a
 	 * source code file is given as a dependency, or when this is a
 	 * complex dependency).  Individual dynamic dependencies do have
@@ -38,8 +37,8 @@ public:
 
 	/* The file/phony rule from which this execution was derived.  This is
 	 * only used to detect strong cycles.  To manage the dependencies, the
-	 * instantiated general rule is used.  NULL if and only if RULE is
-	 * NULL. 
+	 * instantiated general rule is used.  Nullptr if and only if RULE is
+	 * Nullptr. 
 	 */ 
 	shared_ptr <Rule> param_rule;
 
@@ -63,18 +62,12 @@ public:
 	 * not to the rules of the dependencies. 
 	 */ 
 	Buffer buf_default;
-//	queue <Link> buf_default;
 
 	/* The buffer for trivial dependencies.  They are only started
 	 * if, after (potentially) starting all non-trivial
 	 * dependencies, the target must be rebuilt anyway. 
 	 */
 	Buffer buf_trivial; 
-//	queue <Link> buf_trivial;
-
-//	/* Play the same role as the buf_* members, but used with the
-//	 * random job orders */ 
-//	vector <Link> vec_default, vec_trivial;
 
 	/* Info about the target before it is built.  Only valid once the
 	 * job was started.  Used for checking whether a file was
@@ -153,10 +146,6 @@ public:
 	/* Whether the execution is completely finished */ 
 	bool finished() const;
 
-// 	/* Append DEPENDENCIES to the dependency queue, adding TARGET and
-//  	 * PLACE to the stack of each */ 
-// 	void append_dependencies(const vector <Link> &dependencies);
-
 	/* Read dynamic dependencies from a file.  Can only be called for
 	 * dynamic targets.  Called for the parent of a dynamic--file link. 
 	 */ 
@@ -167,12 +156,6 @@ public:
 	 * removed.  
 	 */
 	bool remove_if_existing(bool output); 
-
-//	/* Add the dependency to the dependency queue and return TRUE, or
-//	 * return FALSE when it was already there which the same or weaker
-//	 * dependency type.   
-//	 */
-//	void add_dependency(Link &&link);
 
 	/* Start the next jobs. This will also terminate
 	 * jobs when they don't need to be run anymore, and thus it can
@@ -256,7 +239,7 @@ public:
 				     Flags flags_child); 
 
 	/* Get an existing execution or create a new one.
-	 * Return NULL when a strong cycle was found; return the execution
+	 * Return Nullptr when a strong cycle was found; return the execution
 	 * otherwise.  PLACE is the place of where the dependency was
 	 * declared.    
 	 */ 
@@ -296,7 +279,7 @@ public:
 
 	static string cycle_string(const Execution *execution);
 
-	/* Return NULL when no trace should be given */ 
+	/* Return Nullptr when no trace should be given */ 
 	static shared_ptr <Trace> cycle_trace(const Execution *child,
 					      const Execution *parent);
 
@@ -354,7 +337,7 @@ void Execution::execute(Execution *parent, Link &&link)
 
 		Execution *child= *i;
 		
-		assert(child != NULL);
+		assert(child != nullptr);
 
 		Stack avoid_child= child->parents.at(this).avoid;
 		Flags flags_child= child->parents.at(this).flags;
@@ -364,7 +347,7 @@ void Execution::execute(Execution *parent, Link &&link)
 		}
 		
 		Link link_child(avoid_child, flags_child, child->parents.at(this).place,
-						child->parents.at(this).dependency);
+				child->parents.at(this).dependency);
 
 		child->execute(this, move(link_child));
 		assert(jobs >= 0);
@@ -373,9 +356,9 @@ void Execution::execute(Execution *parent, Link &&link)
 
 		if (child->finished(avoid_child)) {
 			unlink_execution(this, child, 
-							 link.dependency,
-							 link.avoid, 
-							 avoid_child, flags_child); 
+					 link.dependency,
+					 link.avoid, 
+					 avoid_child, flags_child); 
 		}
 	}
 
@@ -421,7 +404,6 @@ void Execution::execute(Execution *parent, Link &&link)
 		Link link_child= buf_default.next(); 
 		if (link_child.flags & F_TRIVIAL) {
 			buf_trivial.push(move(link_child)); 
-//			buffer_trivial.push(link_child); 
 		} else {
 			deploy_dependency(link, link_child);
 			if (jobs == 0)
@@ -445,7 +427,7 @@ void Execution::execute(Execution *parent, Link &&link)
 	/* Rule does not have a command.  This includes the case of dynamic
 	 * executions, even though for dynamic executions the RULE variable
 	 * is set (to detect cycles). */ 
-	if ((target.type == T_PHONY && ! (rule != NULL && rule->command != NULL))
+	if ((target.type == T_PHONY && ! (rule != nullptr && rule->command != nullptr))
 		|| target.type == T_EMPTY
 		|| target.type >= T_DYNAMIC) {
 
@@ -481,7 +463,7 @@ void Execution::execute(Execution *parent, Link &&link)
 	int ret_stat; 
 	timestamp_old= Timestamp::UNDEFINED;
 
-	const bool no_command= rule != NULL && rule->command == NULL;
+	const bool no_command= rule != nullptr && rule->command == nullptr;
 
 	if (! checked && target.type == T_FILE) {
 
@@ -494,7 +476,7 @@ void Execution::execute(Execution *parent, Link &&link)
 		if (ret_stat == 0) { 
 			/* File exists */ 
 			timestamp_old= Timestamp(&buf);
-			if (parent == NULL || ! (link.flags & F_EXISTENCE)) {
+			if (parent == nullptr || ! (link.flags & F_EXISTENCE)) {
 				warn_future_file(&buf);
 			}
 			exists= +1; 
@@ -530,7 +512,7 @@ void Execution::execute(Execution *parent, Link &&link)
 					timestamp= timestamp_old;
 				}
 			} else {
-				/* Note:  Rule may be NULL here for optional
+				/* Note:  Rule may be Nullptr here for optional
 				 * dependencies that do not exist and do not have a
 				 * rule */
 
@@ -641,7 +623,6 @@ void Execution::execute(Execution *parent, Link &&link)
 	 */
 	while (! buf_trivial.empty()) {
 		Link link_child= buf_trivial.next(); 
-//		buffer_trivial.pop(); 
 		deploy_dependency(link, link_child);
 		if (jobs == 0)
 			return;
@@ -983,8 +964,9 @@ void Execution::unlink_execution(Execution *const parent,
 	 * targets
 	 */
 	if (child->target.type >= T_DYNAMIC ||
-		(child->target.type == T_PHONY &&
-		 child->rule->command == NULL)) {
+	    (child->target.type == T_PHONY &&
+	     child->rule != nullptr &&
+	     child->rule->command == nullptr)) {
 		parent->mapping_variable.insert
 			(child->mapping_variable.begin(), child->mapping_variable.end()); 
 	}
@@ -1004,7 +986,7 @@ void Execution::unlink_execution(Execution *const parent,
 		&& ! (flags_child & F_DYNAMIC)) {
 		if (verbosity >= VERBOSITY_VERBOSE) {
 			const string text_child= child->rule->place_param_target.text();
-			const string text_parent= parent->rule == NULL 
+			const string text_parent= parent->rule == nullptr 
 				? "<target without rule>"
 				: parent->rule->place_param_target.text();
 			fprintf(stderr, "Propagating need_build flag from %s to %s\n", 
@@ -1036,7 +1018,7 @@ Execution::Execution(Target target_,
 	   exists(0)
 {
 	assert(target.type == T_PHONY || target.type >= T_FILE); 
-	assert(parent != NULL); 
+	assert(parent != nullptr); 
 	assert(parents.empty()); 
 
 	/* Fill in the rules and their parameters */ 
@@ -1052,19 +1034,18 @@ Execution::Execution(Target target_,
 		map <string, string> mapping_rule; 
 		rule= rule_set.get(target_file, param_rule, mapping_rule); 
 	}
-	assert((param_rule == NULL) == (rule == NULL)); 
+	assert((param_rule == nullptr) == (rule == nullptr)); 
 
 	parents[parent]= link; 
 	executions_by_target[target]= this;
 
 	
-	if (target.type < T_DYNAMIC && rule != NULL) {
+	if (target.type < T_DYNAMIC && rule != nullptr) {
 		/* There is a rule for this execution */ 
 		for (auto i= rule->dependencies.begin();
 		     i != rule->dependencies.end();  ++i) {
 			assert((*i)->get_place().type != Place::P_EMPTY); 
 			buf_default.push(Link(*i)); 
-//			add_dependency(Link(*i));
 		}
 	} else {
 		/* There is no rule */ 
@@ -1105,7 +1086,7 @@ Execution::Execution(Target target_,
 		}
 		
 		if (rule_not_found) {
-			assert(rule == NULL); 
+			assert(rule == nullptr); 
 			print_traces(fmt("no rule to build %s", target.text()));
 			error |= ERROR_BUILD;
 			if (! option_continue) 
@@ -1279,16 +1260,16 @@ bool Execution::find_cycle(const Execution *const parent,
 			   const Execution *const child)
 {
 	/* Happens when the parent is the root execution */ 
-	if (parent->param_rule == NULL)
+	if (parent->param_rule == nullptr)
 		return false;
 		
 	/* Happens with files that should be there and have no rule */ 
-	if (child->param_rule == NULL)
+	if (child->param_rule == nullptr)
 		return false; 
 
 	vector <Trace> traces;
 	shared_ptr <Trace> trace= cycle_trace(child, parent); 
-	if (trace != NULL)
+	if (trace != nullptr)
 		traces.push_back(*trace); 
 
 	return find_cycle(parent, child, traces);
@@ -1324,16 +1305,16 @@ bool Execution::find_cycle(const Execution *const parent,
 		 i != parent->parents.end();  ++i) {
 
 		const Execution *parent_parent= i->first; 
-		assert(parent_parent != NULL); 
+		assert(parent_parent != nullptr); 
 			
-		if (parent_parent->param_rule == NULL)
+		if (parent_parent->param_rule == nullptr)
 			continue; 
 		
 		shared_ptr <Trace> trace_new= cycle_trace(parent, parent_parent);
-		if (trace_new != NULL)
+		if (trace_new != nullptr)
 			traces.push_back(*trace_new); 
 		bool found= find_cycle(parent_parent, child, traces);
-		if (trace_new != NULL)
+		if (trace_new != nullptr)
 			traces.pop_back(); 
 
 		if (found)
@@ -1382,18 +1363,13 @@ bool Execution::remove_if_existing(bool output)
 	return removed; 
 }
 
-// void Execution::add_dependency(Link &&link) 
-// {
-// 	buf_trivial.push(move(link)); 
-// }
-
 Execution *Execution::get_execution(const Target &target, 
 				    Link &&link,
 				    Execution *parent)
 {
 	/* Set to the returned Execution object when one is found or created
 	 */   
-	Execution *execution= NULL; 
+	Execution *execution= nullptr; 
 
 	auto it= executions_by_target.find(target);
 
@@ -1424,7 +1400,7 @@ Execution *Execution::get_execution(const Target &target,
 		parent->error |= ERROR_LOGICAL;
 		if (! option_continue) 
 			throw parent->error;
-		return NULL;
+		return nullptr;
 	}
 
 	execution->initialize(link.avoid); 
@@ -1604,7 +1580,7 @@ void Execution::print_traces(string text) const
 	/* If there is a rule for this target, show the message with the
 	 * rule's trace, otherwise show the message with the first
 	 * dependency trace */ 
-	if (execution->param_rule != NULL && text != "") {
+	if (execution->param_rule != nullptr && text != "") {
 		execution->param_rule->place << text;
 		first= false;
 	}
@@ -1790,7 +1766,7 @@ void Execution::deploy_dependency(const Link &link,
 			  direct_dependency->place,
 			  link_child.dependency),
 		 this);  
-	if (child == NULL)
+	if (child == nullptr)
 		return;
 
 	children.insert(child);

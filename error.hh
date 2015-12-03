@@ -71,9 +71,6 @@
  * and also not end in a newline character. 
  */ 
 
-// TODO replace these with variadic macros that call fprintf directly to
-// save the call to fmt() in the callers.  (Dubious optimization) 
-
 /* Print an error without place */
 void print_error(string text)
 {

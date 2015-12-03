@@ -46,5 +46,13 @@ a.bib:  extra dependencies ... ;
 # support something similar to the #line proprocessor directive. 
 #
 
+#
+# By default, the target @main is built, regardless of position in file.
+# If @main does not exist, the first target is made (must be
+# unparametrized)  We can also make it an error to build the first
+# target automatically and always require @main.  This would break the
+# pattern where a file can be executed as-is, or included by another
+# one. 
+#
 
-
+@main:  A B C;

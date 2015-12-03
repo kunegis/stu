@@ -66,7 +66,7 @@ public:
 	/* The returned rules may not be unique -- this is checked later */
 	void build_rule_list(vector <shared_ptr <Rule> > &ret);
 
-	/* Return NULL when nothing was parsed */ 
+	/* Return nullptr when nothing was parsed */ 
 	shared_ptr <Rule> build_rule(); 
 
 	void build_dependency_list(vector <shared_ptr <Dependency> > &ret, 
@@ -114,7 +114,7 @@ void Build::build_rule_list(vector <shared_ptr <Rule> > &ret)
 
 		shared_ptr <Rule> rule= build_rule(); 
 
-		if (rule == NULL) {
+		if (rule == nullptr) {
 			assert(iter == iter_begin); 
 			(*iter)->get_place() << "expected a rule"; 
 			throw ERROR_LOGICAL;
@@ -227,7 +227,7 @@ shared_ptr <Rule> Build::build_rule()
 		throw ERROR_LOGICAL;
 	}
 
-	/* Remains NULL when there is no command */ 
+	/* Remains nullptr when there is no command */ 
 	shared_ptr <Command> command;
 	/* Place of ';' */ 
 	Place place_nocommand; 
@@ -256,7 +256,7 @@ shared_ptr <Rule> Build::build_rule()
 		/* Already checked before */ 
 		assert(place_param_target->type == T_FILE); 
 
-		if (command == NULL) {
+		if (command == nullptr) {
 			place_output << 
 				"output redirection using '>' must not be used";
 			place_nocommand <<
@@ -267,7 +267,7 @@ shared_ptr <Rule> Build::build_rule()
 
 	/* When input redirection is present, the rule must have a command */ 
 	if (! filename_input.empty()) {
-		if (command == NULL) {
+		if (command == nullptr) {
 			place_input <<
 				"input redirection using '<' must not be used";
 			place_nocommand <<
@@ -311,7 +311,7 @@ bool Build::build_dependency(vector <shared_ptr <Dependency> > &ret,
 	/* Variable dependency */ 
 	shared_ptr <Dependency> dependency= 
 		build_variable_dependency(place_param_name_input, place_input);
-	if (dependency != NULL) {
+	if (dependency != nullptr) {
 		ret.push_back(dependency); 
 		return true; 
 	}
@@ -600,7 +600,7 @@ bool Build::build_single_expression(vector <shared_ptr <Dependency> > &ret,
 		
 	shared_ptr <Dependency> r= 
 		build_redirect_dependency(place_param_name_input, place_input); 
-	if (r != NULL) {
+	if (r != nullptr) {
 		ret.push_back(r);
 		return true; 
 	}
@@ -648,7 +648,7 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 		}
 	}
 
-	if (NULL == dynamic_pointer_cast <Name_Token> (*iter)) {
+	if (nullptr == dynamic_pointer_cast <Name_Token> (*iter)) {
 		if (has_input) {
 			(*iter)->get_place() << "expected a filename";
 			place_input << "after '<'"; 

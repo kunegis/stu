@@ -486,7 +486,7 @@ bool Param_Name::match(const string name,
 
 			const char *q= strstr(p+1, texts[i+1].c_str());
 
-			if (q == NULL) 
+			if (q == nullptr) 
 				return false;
 
 			assert(q > p);

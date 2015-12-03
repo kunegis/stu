@@ -1,0 +1,10 @@
+#! /bin/sh
+
+../../stu -k @lakndlkwande
+exitcode="$?"
+
+if [ "$exitcode" != "1" ] ; then
+	exit 1
+fi
+
+exit 0

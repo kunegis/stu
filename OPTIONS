@@ -5,7 +5,8 @@ used by Make.
 -a  S     Consider trivial dependencies to be non-trivial
 -b  .     Enable backups
 -B      G Re-make all
--c  .     Command
+-c  .     Specify syntax 
+-C  .     Explicit target without syntax 
 -d      G Print debugging information 
 -e    M G Environment overrides Make macros
 -f  S M G File
@@ -28,7 +29,6 @@ used by Make.
 -s  S M G Silent
 -S    M G No keep going
 -t    M G Touch instead of building
--T  .     Explicit target without syntax 
 -u
 -v  S   G Verbose
 -V  S     Version

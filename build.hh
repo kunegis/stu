@@ -668,10 +668,10 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 	if (has_input && ! place_param_name_input.empty()) {
 		name_token->place << 
 			fmt("duplicate input redirection <%s", 
-				name_token->unparametrized());
+			    name_token->unparametrized());
 		place_param_name_input.place << 
 			fmt("shadows previous input redirection <%s", 
-				place_param_name_input.unparametrized()); 
+			    place_param_name_input.unparametrized()); 
 		throw ERROR_LOGICAL;
 	}
 

@@ -1,6 +1,5 @@
 #
 # Make -m random be more random. 
-#  * also randomize the choice of the active queue
 #  * re-start from the root at each iteration
 #  * also open new dependencies randomly before finishing the currently
 #    open children 

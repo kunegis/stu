@@ -33,6 +33,8 @@ enum Mode {
 };
 
 static int order= MODE_DFS; 
+
+/* Whether to use vectors for randomization */ 
 static bool order_vec; 
 
 const char **envp_global;

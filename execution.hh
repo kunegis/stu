@@ -330,12 +330,23 @@ void Execution::execute(Execution *parent, Link &&link)
 	 * we must first copy it over locally, and then iterate
 	 * through it */ 
 
-	unordered_set <Execution *> executions_children_copy= children;
+	vector <Execution *> executions_children_vector
+		(children.begin(), children.end()); 
 
-	for (auto i= executions_children_copy.begin();
-	     i != executions_children_copy.end(); ++i) {
+	while (! executions_children_vector.empty()) {
 
-		Execution *child= *i;
+		if (order_vec) {
+			/* Exchange a random position with last position */ 
+			size_t p_last= executions_children_vector.size() - 1;
+			size_t p_random= random_number(executions_children_vector.size());
+			if (p_last != p_random) {
+				swap(executions_children_vector.at(p_last),
+				     executions_children_vector.at(p_random)); 
+			}
+		}
+
+		Execution *child= executions_children_vector.at(executions_children_vector.size() - 1);
+		executions_children_vector.resize(executions_children_vector.size() - 1); 
 		
 		assert(child != nullptr);
 

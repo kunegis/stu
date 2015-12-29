@@ -5,10 +5,6 @@
 #    open children 
 #
 
-#
-# Support $STU_SHELL to use another shell than "/bin/sh". 
-#
-
 #==== Small features that complete what we already have ====
 
 #
@@ -96,6 +92,10 @@ konect.bib=  ../../projects/konect;
 
 #
 # Make -v be better.  Make it output dependencies and traces. 
+#
+
+#
+# Support $STU_SHELL for alternatives to /bin/sh. 
 #
 
 #==== Big features that complete what we already have ====

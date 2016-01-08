@@ -18,8 +18,8 @@ used by Make.
 -k  S M G Keep going
 -l        (Log; redirect all output of commands to logfiles)
 -L      G Special handling of symlinks
--m  .     (Mode; e.g., random order, etc.)
--M  .     Seed mode
+-m  S     Mode; e.g., random order, etc.
+-M  S     Seed mode
 -n    M G Dry run (just print commands)
 -o      G Mark file as old
 -p    M G Print database (rule set)

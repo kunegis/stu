@@ -298,7 +298,8 @@ date.
 
     @NAME   A phony dependency
 
-A phony target.
+A phony target.  They represent a distinct namespace from files, and
+thus their command do not create files. 
 
     !NAME   An existence-only dependency
 
@@ -312,6 +313,15 @@ removed in the directory.
 Optional dependencies are never built if they don't exist.  If they
 exist, they are treated like normal dependencies and their date is taken
 into account for determining whether the target has to be rebuilt. 
+
+    &NAME   A trivial dependency
+
+A trivial dependency will never cause the target to be rebuilt.
+However, if the target is rebuilt for another reason, then the trivial
+dependency will be rebuilt itself.  This is mostly useful for
+configuration files that are generated automatically, including the case
+of files containing the flags used to invoke compilers and other
+programs. 
 
     [NAME]  A dynamic dependency
 
@@ -571,6 +581,16 @@ commands for the targets A and B:
     A: @x { echo $V >A }
     B: [y] { echo $V >B }
 
+Trivial dependencies are often combined with variable dependencies to
+implement flags, for instance to a compiler, as in the following
+example. This will make sure that a change in the file 'VERSION' will not
+lead to a recompilation of the program, but if 'program.c' is modified
+and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt. 
+
+    VERSION; # Contains the version number; updated by hand
+    CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=$VERSION }
+    program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
+    
 .SH "LIMITATIONS, PITFALLS AND FUTURE DIRECTIONS"
 
 The -f option only supports regular files.  Standard input is not
@@ -586,7 +606,7 @@ meaning that certain characters must be quoted in them.  Future versions
 of Stu may support newline-seperated file lists, as well as
 NUL-separated file lists. 
 
-Rule-level recursion is not allowed.  This exclude a recursive
+Rule-level recursion is not allowed.  This excludes a recursive
 parsing of C-like dependencies.  Rule-level recursion would be easy to
 enable, but would open up problems related to infinite loops, which
 would require Stu to have a maximal recursion depth.  

@@ -1,10 +1,3 @@
-#
-# Make -m random be more random. 
-#  * re-start from the root at each iteration
-#  * also open new dependencies randomly before finishing the currently
-#    open children 
-#
-
 #==== Small features that complete what we already have ====
 
 #
@@ -109,7 +102,8 @@ A:  [@x];
 @x: B C D;
 
 # Needs each phony to store the list of files it depended on, and is
-# thus non-trivial to implement. 
+# thus non-trivial to implement.  Or, alternatively, needs to implement
+# a 'phony-hierarchy' like we have for files at the moment. 
 
 #
 # Assignment features

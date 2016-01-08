@@ -163,8 +163,17 @@ public:
 	 * terminated.  The passed FLAG is the ORed combination
 	 * of all FLAGs up the dependency chain.  
 	 * DEPENDENCY is the dependency linking the two executions.  
+	 * Return value:  whether additional processes must be started
+	 * (only TRUE in random mode).  When TRUE, not all possible
+	 * subjobs where started. 
 	 */
- 	void execute(Execution *parent, Link &&link);
+ 	bool execute(Execution *parent, Link &&link);
+
+	/* Execute already-active children.  Parameters 
+	 * are equivalent to those of execute(). Return value:
+	 * -1: continue; 0: return false; 1: return true.
+	 */ 
+	int execute_children(const Link &link);
 
 	/* Called after the job was waited for.  The PID is only passed
 	 * for checking that it is correct. 
@@ -180,9 +189,11 @@ public:
 	/* Warn when the file has a modification time in the future */ 
 	void warn_future_file(struct stat *buf);
 
-	/* Note:  the top-level flags of LINK.DEPENDENCY may be modified. 
+	/* Note:  the top-level flags of LINK.DEPENDENCY may be
+	 * modified. 
+	 * Return value:  same semantics as for execute(). 
 	 */
-	void deploy_dependency(const Link &link,
+	bool deploy_dependency(const Link &link,
 			       const Link &link_child);
 
 	/* Initialize the Execution object.  Used for dynamic dependencies.
@@ -223,7 +234,7 @@ public:
 	static bool worked;
 
 	/* Number of free slots for jobs.  This is a long because
-	 * strtol() gives a long. 
+	 * strtol() gives a long. (Parsed from the -j option)
 	 */ 
 	static long jobs;
 
@@ -239,7 +250,7 @@ public:
 				     Flags flags_child); 
 
 	/* Get an existing execution or create a new one.
-	 * Return Nullptr when a strong cycle was found; return the execution
+	 * Return NULLPTR when a strong cycle was found; return the execution
 	 * otherwise.  PLACE is the place of where the dependency was
 	 * declared.    
 	 */ 
@@ -309,7 +320,7 @@ void Execution::wait()
 	++jobs; 
 }
 
-void Execution::execute(Execution *parent, Link &&link)
+bool Execution::execute(Execution *parent, Link &&link)
 {
 	assert(jobs >= 0); 
 	assert(link.avoid.get_k() == dynamic_depth(target.type)); 
@@ -320,61 +331,75 @@ void Execution::execute(Execution *parent, Link &&link)
 	done.check();
 
 	if (finished(link.avoid))
-		return;
+		return false;
+
+	/* In DFS mode, first continue the already-open children, then
+	 * open new children.  In random mode, start new children first
+	 * and continue already-open children second */ 
 
 	/* 
 	 * Continue the already-active child executions 
 	 */  
 
-	/* Since unlink_execution() may change execution->children,
-	 * we must first copy it over locally, and then iterate
-	 * through it */ 
-
-	vector <Execution *> executions_children_vector
-		(children.begin(), children.end()); 
-
-	while (! executions_children_vector.empty()) {
-
-		if (order_vec) {
-			/* Exchange a random position with last position */ 
-			size_t p_last= executions_children_vector.size() - 1;
-			size_t p_random= random_number(executions_children_vector.size());
-			if (p_last != p_random) {
-				swap(executions_children_vector.at(p_last),
-				     executions_children_vector.at(p_random)); 
-			}
-		}
-
-		Execution *child= executions_children_vector.at(executions_children_vector.size() - 1);
-		executions_children_vector.resize(executions_children_vector.size() - 1); 
-		
-		assert(child != nullptr);
-
-		Stack avoid_child= child->parents.at(this).avoid;
-		Flags flags_child= child->parents.at(this).flags;
-
-		if (target.type == T_PHONY) { 
-			flags_child |= link.flags; 
-		}
-		
-		Link link_child(avoid_child, flags_child, child->parents.at(this).place,
-				child->parents.at(this).dependency);
-
-		child->execute(this, move(link_child));
-		assert(jobs >= 0);
-		if (jobs == 0)  
-			return;
-
-		if (child->finished(avoid_child)) {
-			unlink_execution(this, child, 
-					 link.dependency,
-					 link.avoid, 
-					 avoid_child, flags_child); 
-		}
+	if (order != MODE_RANDOM) {
+		int ret= execute_children(link);
+		if (ret >= 0)
+			return ret;
 	}
 
-	if (error) 
-		assert(option_continue); 
+	// /* Since unlink_execution() may change execution->children,
+	//  * we must first copy it over locally, and then iterate
+	//  * through it */ 
+
+	// vector <Execution *> executions_children_vector
+	// 	(children.begin(), children.end()); 
+
+	// while (! executions_children_vector.empty()) {
+
+	// 	if (order_vec) {
+	// 		/* Exchange a random position with last position */ 
+	// 		size_t p_last= executions_children_vector.size() - 1;
+	// 		size_t p_random= random_number(executions_children_vector.size());
+	// 		if (p_last != p_random) {
+	// 			swap(executions_children_vector.at(p_last),
+	// 			     executions_children_vector.at(p_random)); 
+	// 		}
+	// 	}
+
+	// 	Execution *child= executions_children_vector.at
+	// 		(executions_children_vector.size() - 1);
+	// 	executions_children_vector.resize(executions_children_vector.size() - 1); 
+		
+	// 	assert(child != nullptr);
+
+	// 	Stack avoid_child= child->parents.at(this).avoid;
+	// 	Flags flags_child= child->parents.at(this).flags;
+
+	// 	if (target.type == T_PHONY) { 
+	// 		flags_child |= link.flags; 
+	// 	}
+		
+	// 	Link link_child(avoid_child, flags_child, child->parents.at(this).place,
+	// 			child->parents.at(this).dependency);
+
+	// 	if (child->execute(this, move(link_child)))
+	// 		return true;
+	// 	assert(jobs >= 0);
+	// 	if (jobs == 0)  
+	// 		return false;
+
+	// 	if (child->finished(avoid_child)) {
+	// 		unlink_execution(this, child, 
+	// 				 link.dependency,
+	// 				 link.avoid, 
+	// 				 avoid_child, flags_child); 
+	// 	}
+	// }
+
+	// if (error) 
+	// 	assert(option_continue); 
+
+	//----------
 
 	/* Should children even be started?  Check whether this is an
 	 * optional dependency and if it is, return when the file does not
@@ -390,13 +415,14 @@ void Execution::execute(Execution *parent, Link &&link)
 					error |= ERROR_BUILD;
 					done.add_neg(link.avoid); 
 					exists= -1;
-					return;
+					return false;
 				} else {
+					// TODO why SYSTEM and not BUILD?
 					exit(ERROR_SYSTEM); 
 				}
 			}
 			done.add_highest_neg(link.avoid.get_highest()); 
-			return;
+			return false;
 		} else {
 			assert(ret_stat == 0);
 			exists= +1;
@@ -416,22 +442,29 @@ void Execution::execute(Execution *parent, Link &&link)
 		if (link_child.flags & F_TRIVIAL) {
 			buf_trivial.push(move(link_child)); 
 		} else {
-			deploy_dependency(link, link_child);
+			if (deploy_dependency(link, link_child))
+				return true;
 			if (jobs == 0)
-				return;
+				return false;
 		}
 	} 
 	assert(buf_default.empty()); 
 
+	if (order == MODE_RANDOM) {
+		int ret= execute_children(link);
+		if (ret >= 0)
+			return ret;
+	}
+
 	/* Some dependencies are still running */ 
 	if (children.size())
-		return;
+		return false;
 
 	/* There was an error in a child */ 
 	if (error != 0) {
 		assert(option_continue == true); 
 		done.add_neg(link.avoid);
-		return;
+		return false;
 	}
 
 
@@ -443,12 +476,12 @@ void Execution::execute(Execution *parent, Link &&link)
 		|| target.type >= T_DYNAMIC) {
 
 		done.add_neg(link.avoid);
-		return;
+		return false;
 	}
 
 	/* Job has already been started */ 
 	if (job.started_or_waited()) {
-		return;
+		return false;
 	}
 
 	/* Build the file itself */ 
@@ -532,7 +565,8 @@ void Execution::execute(Execution *parent, Link &&link)
 
 					if (! (link.flags & F_OPTIONAL)) {
 						if (verbosity >= VERBOSITY_VERBOSE) {
-							fprintf(stderr, "\trebuilding because file does not exist\n"); 
+							fprintf(stderr, 
+								"\trebuilding because file does not exist\n"); 
 						}
 						need_build= true; 
 					} else {
@@ -542,10 +576,10 @@ void Execution::execute(Execution *parent, Link &&link)
 						 */ 
 						if (verbosity >= VERBOSITY_VERBOSE) {
 							fprintf(stderr, 
-									"\tis an optional dependency that is not present\n"); 
+								"\tis an optional dependency that is not present\n"); 
 						}
 						done.add_one_neg(F_OPTIONAL); 
-						return;
+						return false;
 					}
 				} else {
 					/* stat() returned an actual error,
@@ -553,9 +587,10 @@ void Execution::execute(Execution *parent, Link &&link)
 					perror(target.name.c_str());
 					if (! option_continue)
 						exit(ERROR_SYSTEM); 
+					// TODO why SYSTEM and not BUILD?
 					error |= ERROR_BUILD;
 					done.add_one_neg(link.avoid); 
-					return;
+					return false;
 				}
 			}
 		}
@@ -583,7 +618,7 @@ void Execution::execute(Execution *parent, Link &&link)
 			done.add_one_neg(link.avoid); 
 			if (! option_continue) 
 				throw error;  
-			return;
+			return false;
 		}		
 	}
 
@@ -598,21 +633,25 @@ void Execution::execute(Execution *parent, Link &&link)
 	}
 
 	if (! need_build) {
+		/* The file does not have to be built */ 
 		done.add_neg(link.avoid);
-		return;
+		return false;
 	}
 
 	/*
 	 * The command must be run now. 
 	 */
 
-	/* A target without a command */ 
 	if (no_command) {
+		/* A target without a command */ 
+
 		if (verbosity >= VERBOSITY_VERBOSE) {
 			fprintf(stderr, "\ttarget without command\n");
 		}
 		
 		if (! buf_trivial.empty()) {
+			/* The target has no command and also has
+			 * trivial dependencies. */ 
 			Link link_child= move(buf_trivial.next());
 			assert(link_child.dependency->get_flags() & F_TRIVIAL); 
 			link_child.dependency->get_place_trivial() <<
@@ -622,11 +661,11 @@ void Execution::execute(Execution *parent, Link &&link)
 			done.add_neg(link.avoid); 
 			if (! option_continue) 
 				throw error;  
-			return;
+			return false;
 		}
 
 		done.add_neg(link.avoid); 
-		return;
+		return false;
 	}
 
 	/*
@@ -634,9 +673,10 @@ void Execution::execute(Execution *parent, Link &&link)
 	 */
 	while (! buf_trivial.empty()) {
 		Link link_child= buf_trivial.next(); 
-		deploy_dependency(link, link_child);
+		if (deploy_dependency(link, link_child))
+			return true;
 		if (jobs == 0)
-			return;
+			return false;
 	} 
 	assert(buf_trivial.empty()); 
 
@@ -671,19 +711,89 @@ void Execution::execute(Execution *parent, Link &&link)
 		 ? rule->place_param_target.place_param_name.unparametrized() : "",
 		 rule->filename_input.unparametrized(),
 		 rule->command->place); 
+
 	if (pid < 0) {
+		/* Starting the job failed */ 
 		print_traces(fmt("error executing command for %s", target.text())); 
 		if (! option_continue) 
 			exit(ERROR_SYSTEM); 
+		// TODO why SYSTEM and not BUILD?
 		error |= ERROR_BUILD;
 		done.add_neg(link.avoid); 
-		return;
+		return false;
 	}
+
 	executions_by_pid[pid]= this;
 	assert(executions_by_pid.at(pid)->job.started()); 
 	assert(pid == executions_by_pid.at(pid)->job.get_pid()); 
 	--jobs;
 	assert(jobs >= 0);
+
+	if (order == MODE_RANDOM) {
+		return jobs > 0; 
+	} else if (order == MODE_DFS) {
+		return false;
+	} else {
+		assert(false);
+		return false;
+	}
+}
+
+int Execution::execute_children(const Link &link)
+{
+	/* Since unlink_execution() may change execution->children,
+	 * we must first copy it over locally, and then iterate
+	 * through it */ 
+
+	vector <Execution *> executions_children_vector
+		(children.begin(), children.end()); 
+
+	while (! executions_children_vector.empty()) {
+
+		if (order_vec) {
+			/* Exchange a random position with last position */ 
+			size_t p_last= executions_children_vector.size() - 1;
+			size_t p_random= random_number(executions_children_vector.size());
+			if (p_last != p_random) {
+				swap(executions_children_vector.at(p_last),
+				     executions_children_vector.at(p_random)); 
+			}
+		}
+
+		Execution *child= executions_children_vector.at
+			(executions_children_vector.size() - 1);
+		executions_children_vector.resize(executions_children_vector.size() - 1); 
+		
+		assert(child != nullptr);
+
+		Stack avoid_child= child->parents.at(this).avoid;
+		Flags flags_child= child->parents.at(this).flags;
+
+		if (target.type == T_PHONY) { 
+			flags_child |= link.flags; 
+		}
+		
+		Link link_child(avoid_child, flags_child, child->parents.at(this).place,
+				child->parents.at(this).dependency);
+
+		if (child->execute(this, move(link_child)))
+			return 1;
+		assert(jobs >= 0);
+		if (jobs == 0)  
+			return 0;
+
+		if (child->finished(avoid_child)) {
+			unlink_execution(this, child, 
+					 link.dependency,
+					 link.avoid, 
+					 avoid_child, flags_child); 
+		}
+	}
+
+	if (error) 
+		assert(option_continue); 
+
+	return -1;
 }
 
 void Execution::waited(int pid, int status) 
@@ -808,7 +918,7 @@ int Execution::main(const vector <Target> &targets,
 
 			Link link(Stack(), (Flags)0, Place(), shared_ptr <Dependency> ());
 
-			execution_root->execute(nullptr, move(link)); 
+			while (execution_root->execute(nullptr, move(link)));
 
 			if (executions_by_pid.size()) {
 				wait();
@@ -1074,6 +1184,7 @@ Execution::Execution(Target target_,
 					if (errno != ENOENT) {
 						perror(target.name.c_str()); 
 						if (! option_continue)
+							// TODO why SYSTEM and not BUILD?
 							exit(ERROR_SYSTEM); 
 					}
 					/* File does not exist and there is no rule for it */ 
@@ -1695,7 +1806,7 @@ void Execution::print_command()
 	}
 }
 
-void Execution::deploy_dependency(const Link &link,
+bool Execution::deploy_dependency(const Link &link,
 				  const Link &link_child)
 {
 	Flags flags_child= link_child.flags; 
@@ -1720,6 +1831,8 @@ void Execution::deploy_dependency(const Link &link,
 
 		/* Phonies in dynamic dependencies are not allowed */ 
 		if (target_child.type == T_PHONY) {
+			/* The dynamic dependency contains a phony,
+			 * i.e., something like [@target] */ 
 			error |= ERROR_LOGICAL;
 			direct_dependency->place <<
 				fmt("phony target %s cannot appear as dynamic dependency for target %s", 
@@ -1729,7 +1842,7 @@ void Execution::deploy_dependency(const Link &link,
 
 			if (! option_continue)
 				throw error;
-			return;
+			return false;
 		}
 		target_child.type += dynamic_depth; 
 	}
@@ -1741,16 +1854,20 @@ void Execution::deploy_dependency(const Link &link,
 		flags_child |= link.flags; 
 		avoid_child.add_lowest(link.flags);
 		if (link.flags & F_EXISTENCE) {
-			link_child.dependency->set_place_existence(link.dependency->get_place_existence()); 
+			link_child.dependency->set_place_existence
+				(link.dependency->get_place_existence()); 
 		}
 		if (link.flags & F_OPTIONAL) {
-			link_child.dependency->set_place_optional(link.dependency->get_place_optional()); 
+			link_child.dependency->set_place_optional
+				(link.dependency->get_place_optional()); 
 		}
 	}
 	
 	/* '?' and '!' do not mix */ 
 	if ((flags_child & F_EXISTENCE) && 
 		(flags_child & F_OPTIONAL)) {
+
+		/* '?' and '!' encountered for the same target */ 
 
 		error |= ERROR_LOGICAL;
 		const Place &place_existence= 
@@ -1767,7 +1884,7 @@ void Execution::deploy_dependency(const Link &link,
 		print_traces();
 		if (! option_continue)
 			throw error;
-		return;
+		return false;
 	}
 
 	Execution *child= Execution::get_execution
@@ -1777,17 +1894,20 @@ void Execution::deploy_dependency(const Link &link,
 			  direct_dependency->place,
 			  link_child.dependency),
 		 this);  
-	if (child == nullptr)
-		return;
+	if (child == nullptr) {
+		/* Strong cycle was found */ 
+		return false;
+	}
 
 	children.insert(child);
 
 	Link link_child_new(avoid_child, flags_child, link_child.place, link_child.dependency); 
-
-	child->execute(this, move(link_child_new));
+	
+	if (child->execute(this, move(link_child_new)))
+		return true;
 	assert(jobs >= 0);
 	if (jobs == 0)  
-		return;
+		return false;
 			
 	if (child->finished(avoid_child)) {
 		unlink_execution(this, child, 
@@ -1795,6 +1915,8 @@ void Execution::deploy_dependency(const Link &link,
 				 link.avoid, 
 				 avoid_child, flags_child);
 	}
+
+	return false;
 }
 
 void Execution::initialize(Stack avoid) 

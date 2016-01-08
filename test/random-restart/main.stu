@@ -1,0 +1,14 @@
+# Using -m random and -j, subtargets are started and the others are
+# started. All sleeps must be intertwined. 
+
+A: @a @b @c @d @e @f @g @h @i @j @k @l @m @n @o @p @q @r @s @t @u @v @w @x @y @z
+{ 
+	touch A 
+}
+
+@$X: list.$X.1 list.$X.2;
+
+list.$X.$N { 
+	sleep 1
+	touch list.$X.$N 
+}

@@ -1,0 +1,40 @@
+#! /bin/sh
+
+../../stu -m random -j 100 >list.out 2>list.err
+exitcode="$?"
+
+[ $exitcode = 0 ] || {
+	echo >&2 '*** exit code'
+	cat list.err
+	cat list.out
+	exit 1
+}
+
+cat list.out
+
+<list.out sed -re '
+	s,^.*X=(.).*$,\1,
+	t;d
+' >list.exec
+
+# Now, make sure 'list.exec' does not contain the same letter twice in a
+# row. 
+last=0
+count=0 # Number of contiguous letters
+for line in $(cat list.exec) ; do
+	echo >&2 "LINE='$line'"
+	if [ "$last" = "$line" ] ; then
+		echo >&2 "Duplicate letter '$line'"
+		count="$(expr "$count" + 1)"
+	fi
+	last="$line"
+done
+
+echo "COUNT='$count'"
+
+if [ 26 -le "$count" ] ; then
+	echo >&2 '*** Non-random order'
+	exit 1
+fi
+
+exit 0

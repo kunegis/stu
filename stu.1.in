@@ -472,7 +472,7 @@ characters as described previously.
 
 The following characters are reserved for future extension:
 
-    * = \\ | & , 
+    * = \\ | , 
 
 .SH "SYNTAX"
 

@@ -45,18 +45,17 @@
 #define ERROR_SYSTEM    4
 
 /* Build errors (code 1) are the most common errors encountered by Stu:
- * commands that fail.  Stu will continue execution after a build error
- * when the -k option is used.  Build errors indicate errors in the
- * programs called by Stu. 
+ * commands that fail, files that cannot be accessed, etc.  Stu will
+ * continue execution after a build error when the -k option is used.
+ * Build errors indicate errors in the programs called by Stu. 
  *
  * Logical errors (code 2) are mostly syntax errors in the source code,
  * but also things like cycles in the dependency graph.  Logical errors
  * indicate errors within the Stu files.  Logical errors may or may not
  * make Stu abort execution.
  * 
- * System errors (code 4) are errors indicating system-level problems,
- * and always lead Stu to abort.  For instance, they happen when Stu
- * cannot access a source file. 
+ * System errors (code 4) are errors that lead Stu to abort immediately,
+ * even when the -k option is used.  
  * 
  * Build and logical errors can be combined to give error code 3.
  * System errors are never combined with other errors as they make Stu

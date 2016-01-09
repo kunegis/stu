@@ -1,4 +1,3 @@
-
 # Use an input file that was created in non-readable mode.
 
 >A: <B { cat }

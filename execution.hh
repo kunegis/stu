@@ -347,60 +347,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 			return ret;
 	}
 
-	// /* Since unlink_execution() may change execution->children,
-	//  * we must first copy it over locally, and then iterate
-	//  * through it */ 
-
-	// vector <Execution *> executions_children_vector
-	// 	(children.begin(), children.end()); 
-
-	// while (! executions_children_vector.empty()) {
-
-	// 	if (order_vec) {
-	// 		/* Exchange a random position with last position */ 
-	// 		size_t p_last= executions_children_vector.size() - 1;
-	// 		size_t p_random= random_number(executions_children_vector.size());
-	// 		if (p_last != p_random) {
-	// 			swap(executions_children_vector.at(p_last),
-	// 			     executions_children_vector.at(p_random)); 
-	// 		}
-	// 	}
-
-	// 	Execution *child= executions_children_vector.at
-	// 		(executions_children_vector.size() - 1);
-	// 	executions_children_vector.resize(executions_children_vector.size() - 1); 
-		
-	// 	assert(child != nullptr);
-
-	// 	Stack avoid_child= child->parents.at(this).avoid;
-	// 	Flags flags_child= child->parents.at(this).flags;
-
-	// 	if (target.type == T_PHONY) { 
-	// 		flags_child |= link.flags; 
-	// 	}
-		
-	// 	Link link_child(avoid_child, flags_child, child->parents.at(this).place,
-	// 			child->parents.at(this).dependency);
-
-	// 	if (child->execute(this, move(link_child)))
-	// 		return true;
-	// 	assert(jobs >= 0);
-	// 	if (jobs == 0)  
-	// 		return false;
-
-	// 	if (child->finished(avoid_child)) {
-	// 		unlink_execution(this, child, 
-	// 				 link.dependency,
-	// 				 link.avoid, 
-	// 				 avoid_child, flags_child); 
-	// 	}
-	// }
-
-	// if (error) 
-	// 	assert(option_continue); 
-
-	//----------
-
 	/* Should children even be started?  Check whether this is an
 	 * optional dependency and if it is, return when the file does not
 	 * exist.  
@@ -411,15 +357,12 @@ bool Execution::execute(Execution *parent, Link &&link)
 		if (ret_stat < 0) {
 			if (errno != ENOENT) {
 				perror(target.name.c_str());
-				if (option_continue) {
-					error |= ERROR_BUILD;
-					done.add_neg(link.avoid); 
-					exists= -1;
-					return false;
-				} else {
-					// TODO why SYSTEM and not BUILD?
-					exit(ERROR_SYSTEM); 
-				}
+				if (! option_continue) 
+					exit(ERROR_BUILD); 
+				error |= ERROR_BUILD;
+				done.add_neg(link.avoid); 
+				exists= -1;
+				return false;
 			}
 			done.add_highest_neg(link.avoid.get_highest()); 
 			return false;
@@ -586,8 +529,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 					 * e.g. permission denied:  fail */
 					perror(target.name.c_str());
 					if (! option_continue)
-						exit(ERROR_SYSTEM); 
-					// TODO why SYSTEM and not BUILD?
+						exit(ERROR_BUILD); 
 					error |= ERROR_BUILD;
 					done.add_one_neg(link.avoid); 
 					return false;
@@ -716,8 +658,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		/* Starting the job failed */ 
 		print_traces(fmt("error executing command for %s", target.text())); 
 		if (! option_continue) 
-			exit(ERROR_SYSTEM); 
-		// TODO why SYSTEM and not BUILD?
+			exit(ERROR_BUILD); 
 		error |= ERROR_BUILD;
 		done.add_neg(link.avoid); 
 		return false;
@@ -1184,8 +1125,7 @@ Execution::Execution(Target target_,
 					if (errno != ENOENT) {
 						perror(target.name.c_str()); 
 						if (! option_continue)
-							// TODO why SYSTEM and not BUILD?
-							exit(ERROR_SYSTEM); 
+							exit(ERROR_BUILD); 
 					}
 					/* File does not exist and there is no rule for it */ 
 					error |= ERROR_BUILD;

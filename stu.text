@@ -542,8 +542,8 @@ EXIT STATUS
        3      Both  build  and  logical  errors  were encountered (mostly when
               using the -k option).
 
-       4      System error that made Stu abort execution.  Examples:  no  per‐
-              mission to access file, input file does not exist.
+       4      System error that made Stu abort execution immediately,  regard‐
+              less of whether the -k option was used.
 
 
 COMPATIBILITY
@@ -590,7 +590,7 @@ EXAMPLES
        and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt.
 
            VERSION; # Contains the version number; updated by hand
-           CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=1.7.20 }
+           CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=1.7.21 }
            program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
 
 
@@ -630,4 +630,4 @@ SEE ALSO
 
 
 
-stu-1.7.20                       January 2016                           STU(1)
+stu-1.7.21                       January 2016                           STU(1)

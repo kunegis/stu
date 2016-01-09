@@ -540,8 +540,8 @@ invocation, cycle in the dependency graph.
 Both build and logical errors were encountered (mostly when using the -k
 option). 
 .IP 4
-System error that made Stu abort execution.  Examples: no permission to
-access file, input file does not exist. 
+System error that made Stu abort execution immediately, regardless of
+whether the -k option was used.  
 
 .SH "COMPATIBILITY"
 

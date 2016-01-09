@@ -7,10 +7,11 @@ the following:
   unit tests.     
 
 * Copy the executable 'stu.ndebug' (or 'stu.debug' for the debug
-  version) to a bin/ directory under the name 'stu'.  You can of course
-  also just execute it right from where it is.  The executable has no
-  runtime dependencies, so it does not matter where it is residing
-  while it is being executed, and also its filename does not matter.  
+  version) to a bin/ directory under the name 'stu', e.g. /usr/bin/ or
+  ~/bin/.  You can of course also just execute it right from where it
+  is.  The executable has no runtime dependencies, so it does not matter
+  where it is residing while it is being executed, and also its filename
+  does not matter.   
 
 * Copy the man page 'stu.1' to a man page directory,
   e.g. /usr/share/man/man1/ or ~/man/man1/.  (In that second example,

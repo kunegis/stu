@@ -47,7 +47,6 @@
 /* Build errors (code 1) are the most common errors encountered by Stu:
  * commands that fail, files that cannot be accessed, etc.  Stu will
  * continue execution after a build error when the -k option is used.
- * Build errors indicate errors in the programs called by Stu. 
  *
  * Logical errors (code 2) are mostly syntax errors in the source code,
  * but also things like cycles in the dependency graph.  Logical errors

@@ -286,11 +286,11 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 	/* More than one rule matches:  error */ 
 	if (rules_best.size() > 1) {
 		print_error(fmt("Multiple minimal rules for target %s", 
-						target.text())); 
+				target.text())); 
 		for (auto i= rules_best.begin();  i != rules_best.end();  ++i) {
 			(*i)->place <<
 				fmt("rule with target %s", 
-					(*i)->place_param_target.text()); 
+				    (*i)->place_param_target.text()); 
 		}
 		throw ERROR_LOGICAL; 
 	}
@@ -332,4 +332,3 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 }
 
 #endif /* ! RULE_HH */
-

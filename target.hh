@@ -264,7 +264,7 @@ public:
 	 * The anchorings do not need to have the same number of parameters. 
 	 */
 	static bool anchoring_dominates(vector <int> &anchoring_a,
-									vector <int> &anchoring_b);
+					vector <int> &anchoring_b);
 };
 
 /* A parametrized name for which it is saved what type it represents.  

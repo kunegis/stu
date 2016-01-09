@@ -452,8 +452,8 @@ shared_ptr <Dependency> Direct_Dependency::instantiate
 		
 		place <<
 			fmt("dynamic variable $[%s] cannot be instantiated"
-				" with parameter value that contains '='", 
-				name);
+			    " with parameter value that contains '='", 
+			    name);
 		throw ERROR_LOGICAL; 
 	}
 

@@ -266,8 +266,8 @@ void parse(vector <shared_ptr <Token> > &tokens,
 						 * used for the top-level file */  
 						Place place_end_sub; 
 						parse(tokens, place_end_sub, 
-							  filename_include, true, 
-							  traces, filenames, -1);
+						      filename_include, true, 
+						      traces, filenames, -1);
 					}
 					traces.pop_back(); 
 					filenames.pop_back(); 
@@ -383,7 +383,7 @@ shared_ptr <Command> parse_command(const string filename,
 	 */
 	unsigned line_command= line; /* The line of the place of the command */
 	unsigned column_command= p - p_line; /* The column of the place of
-										  *	the command */
+					      *	the command */
 	const unsigned line_first= line; /* Where the command started */ 
 	bool begin= true; /* We have not yet seen non-whitespace */ 
 
@@ -675,11 +675,11 @@ void parse_version(string version_req, const Place &place_version)
 	unsigned major_req, minor_req, patch_req;
 	int chars= -1;
 	int n= sscanf(version_req.c_str(), "%u.%u.%u%n",
-				  &major_req, &minor_req, &patch_req, &chars);
+		      &major_req, &minor_req, &patch_req, &chars);
 	if (n != 3) {
 		chars= -1; 
 		n= sscanf(version_req.c_str(), "%u.%u%n",
-				  &major_req, &minor_req, &chars);
+			  &major_req, &minor_req, &chars);
 		if (n != 2) 
 			goto error; 
 	}
@@ -704,16 +704,16 @@ void parse_version(string version_req, const Place &place_version)
 	{
 		place_version <<
 			fmt("requested version %s is incompatible with this Stu's version %s",
-				version_req, STU_VERSION);
+			    version_req, STU_VERSION);
 		throw ERROR_LOGICAL;
 	}
 
  error:	
 	place_version <<
 		fmt("invalid version number '%s'; "
-			"required version number must be of the form "
-			"MAJOR.MINOR or MAJOR.MINOR.PATCH", 
-			version_req);
+		    "required version number must be of the form "
+		    "MAJOR.MINOR or MAJOR.MINOR.PATCH", 
+		    version_req);
 	throw ERROR_LOGICAL;
 }
 

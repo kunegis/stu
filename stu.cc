@@ -112,7 +112,7 @@ int main(int argc, char **argv, char **envp)
 			break;
 
 		case 'm':
-			if      (!strcmp(optarg, "random"))  {
+			if (!strcmp(optarg, "random"))  {
 				order= MODE_RANDOM;
 				/* Use gettimeofday() instead of time()
 				 * to get millisecond instead of second
@@ -177,7 +177,7 @@ int main(int argc, char **argv, char **envp)
 				 * fail if no target is given */  
 				if (targets.empty()) {
 					print_error("No target given and no default file "
-								"'" FILENAME_INPUT_DEFAULT "' present");
+						    "'" FILENAME_INPUT_DEFAULT "' present");
 					exit(ERROR_LOGICAL); 
 				}
 			} else { 
@@ -230,8 +230,8 @@ int main(int argc, char **argv, char **envp)
 
 				if (target.type == T_EMPTY) {
 					print_error(fmt("Input file '%s' does not contain rules "
-									"and no target given", 
-									filename)); 
+							"and no target given", 
+							filename)); 
 					exit(ERROR_LOGICAL);
 				}
 

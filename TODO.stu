@@ -8,6 +8,13 @@
 #
 
 #
+# Allow variable dependencies within parentheses.  (Not allowed at the
+# moment) 
+#
+>A:  ($[B]) { echo $B }
+>B { echo CORRECT }
+
+#
 # Make -v be better.  Make it output dependencies and traces. 
 #
 

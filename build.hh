@@ -6,6 +6,9 @@
  * This is a recursive descent parser. 
  */
 
+/* A YACC-like syntax description is given in the manpage. 
+ */ 
+
 /*
  * Operator precedence.  Higher in the list means higher precedence.  At
  * the moment, only prefix and circumfix operators exist, and thus the

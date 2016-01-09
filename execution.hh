@@ -415,8 +415,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 	 * executions, even though for dynamic executions the RULE variable
 	 * is set (to detect cycles). */ 
 	if ((target.type == T_PHONY && ! (rule != nullptr && rule->command != nullptr))
-		|| target.type == T_EMPTY
-		|| target.type >= T_DYNAMIC) {
+	    || target.type == T_EMPTY
+	    || target.type >= T_DYNAMIC) {
 
 		done.add_neg(link.avoid);
 		return false;
@@ -482,10 +482,10 @@ bool Execution::execute(Execution *parent, Link &&link)
 						string text_timestamp= timestamp.format();
 						string text_timestamp_old= timestamp_old.format(); 
 						fprintf(stderr, "\ttimestamp of dependency = %s\n",
-								text_timestamp.c_str()); 
+							text_timestamp.c_str()); 
 						fprintf(stderr, "\ttimestamp of '%s' = %s\n",
-								target.name.c_str(), 
-								text_timestamp_old.c_str()); 
+							target.name.c_str(), 
+							text_timestamp_old.c_str()); 
 					}
 					if (no_command) {
 						print_warning(fmt("File target '%s' which has no command "
@@ -1444,7 +1444,7 @@ Execution *Execution::get_execution(const Target &target,
 			/* The parent and child are already connected -- add the
 			 * necessary flags */ 
 			execution->parents.at(parent).add(link.avoid, 
-											  link.flags);
+							  link.flags);
 		} else {
 			/* The parent and child are not yet connected -- add the
 			 * connection */ 
@@ -1507,12 +1507,12 @@ void Execution::read_dynamics(Stack avoid,
 				dynamic_pointer_cast <Direct_Dependency> (dep)
 					->place_param_target.place_param_name.places.at(0) <<
 					fmt("dynamic dependency %s "
-						"must not contain parametrized dependencies",
-						target.text());
+					    "must not contain parametrized dependencies",
+					    target.text());
 				Target target_file= target;
 				target_file.type= T_FILE;
 				print_traces(fmt("%s is declared here", 
-								 target_file.text())); 
+						 target_file.text())); 
 				error |= ERROR_LOGICAL; 
 				if (option_continue) {
 					continue; 
@@ -1535,9 +1535,9 @@ void Execution::read_dynamics(Stack avoid,
 					if (target.type > T_DYNAMIC) {
 						direct_dependency->place_param_target.place <<
 							fmt("phony target %s cannot appear "
-								"as dynamic dependency of %s", 
-								direct_dependency->place_param_target.text(),
-								target.text());
+							    "as dynamic dependency of %s", 
+							    direct_dependency->place_param_target.text(),
+							    target.text());
 						Target target_file= target;
 						target_file.type= T_FILE;
 						print_traces(fmt("%s is declared here", target_file.text())); 
@@ -1591,7 +1591,7 @@ void Execution::read_dynamics(Stack avoid,
 			if (! input.empty()) {
 				(*j)->get_place() <<
 					fmt("dynamic dependency %s must not contain input redirection", 
-						target.text());
+					    target.text());
 				Target target_file= target;
 				target_file.type= T_FILE;
 				print_traces(fmt("%s is declared here", target_file.text())); 
@@ -1679,7 +1679,7 @@ void Execution::print_traces(string text) const
 			first= false;
 		} else {
 			msg= fmt("%s is needed by %s",
-					  text_child, text_parent);
+				 text_child, text_parent);
 		}
 		place << msg;
 		
@@ -1777,8 +1777,8 @@ bool Execution::deploy_dependency(const Link &link,
 			error |= ERROR_LOGICAL;
 			direct_dependency->place <<
 				fmt("phony target %s cannot appear as dynamic dependency for target %s", 
-					direct_dependency->place_param_target.text(),
-					target.text());
+				    direct_dependency->place_param_target.text(),
+				    target.text());
 			print_traces(); 
 
 			if (! option_continue)
@@ -1821,7 +1821,7 @@ bool Execution::deploy_dependency(const Link &link,
 			"clashes with declaration of optional dependency with '?'";
 		direct_dependency->place <<
 			fmt("in declaration of dependency %s", 
-				target_child.text());
+			    target_child.text());
 		print_traces();
 		if (! option_continue)
 			throw error;
@@ -1831,9 +1831,9 @@ bool Execution::deploy_dependency(const Link &link,
 	Execution *child= Execution::get_execution
 		(target_child, 
 		 Link(avoid_child,
-			  flags_child,
-			  direct_dependency->place,
-			  link_child.dependency),
+		      flags_child,
+		      direct_dependency->place,
+		      link_child.dependency),
 		 this);  
 	if (child == nullptr) {
 		/* Strong cycle was found */ 

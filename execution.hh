@@ -942,8 +942,9 @@ void Execution::unlink_execution(Execution *const parent,
 
 		/* Don't read the dependencies when the target was optional and
 		 * was not built */
-		// TODO we may need to use stat() here in case child->exists is
-		// zero. 
+		/* child->exists was set to +1 earlier when the optional
+		 * dependency was found to exist
+		 */
 		else if (flags_child & F_OPTIONAL) {
 			if (child->exists != +1) {
 				do_read= false;

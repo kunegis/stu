@@ -1,6 +1,17 @@
 #==== Small features that complete what we already have ====
 
 #
+# Recognize and prevent recursive Stu.
+# Via an environment variable?  Have an option to allow it anyway. 
+#
+# Option to ignore the check: -y.
+#
+
+#
+# Make -v be better.  Make it output dependencies and traces. 
+#
+
+#
 # Have an option to read a list of targets from a file.  Or allow
 # something like
 #    
@@ -67,13 +78,6 @@ A = {}
 #
 
 #
-# Recognize and prevent recursive Stu.
-# Via an environment variable?  Have an option to allow it anyway. 
-#
-# Option to ignore the check: -y.
-#
-
-#
 # Copy rule
 #
 
@@ -84,11 +88,10 @@ konect.bib=  ../../projects/konect/;
 konect.bib=  ../../projects/konect;
 
 #
-# Make -v be better.  Make it output dependencies and traces. 
-#
-
-#
 # Support $STU_SHELL for alternatives to /bin/sh. 
+#
+# Problem:  how to invole it?  At the moment, we use the '-e' and '-c'
+# options, as well as the '--' mechanism. 
 #
 
 #==== Big features that complete what we already have ====

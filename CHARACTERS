@@ -32,7 +32,7 @@ $	Parameter / variable dependencies
 
 == Operators == 
 
-These characters are tokens in themselves. 
+These characters are single-character tokens. 
 
 :	Rule definition
 ;	End of rule

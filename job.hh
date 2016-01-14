@@ -150,9 +150,6 @@ pid_t Job::start(string command,
 			++v_old;
 		}
 
-		/* Set $STU_STATUS */
-		//		mapping["STU_STATUS"]= "1"; 
-
 		/* Maximal size of added variables.  The "+1" is for $STU_STATUS */ 
 		size_t v_new= mapping.size() + 1; 
 

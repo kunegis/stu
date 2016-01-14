@@ -1,0 +1,15 @@
+# All invoked child processes have $STU_STATUS set to '1'. 
+
+A: @x {
+	[ "X$STU_STATUS" = X1 ] || {
+		exit 1
+	}
+	touch A
+}
+
+@x {
+	[ "X$STU_STATUS" = X1 ] || {
+		exit 1
+	}
+	exit 0
+}

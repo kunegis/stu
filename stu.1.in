@@ -543,6 +543,14 @@ option).
 System error that made Stu abort execution immediately, regardless of
 whether the -k option was used.  
 
+.SH "ENVIRONMENT"
+
+.IP STU_STATUS
+Stu sets this variable to '1' in all child processes. In order to avoid
+recursive invocation of Stu, Stu will fail on startup when the variable
+is set. To circumvent this, unset the variable.  Recursive Stu is as
+harmful as recursive Make. 
+
 .SH "COMPATIBILITY"
 
 The Stu language is unique to this implementation, and the man page

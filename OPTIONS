@@ -35,7 +35,7 @@ used by Make.
 -w  S	  Short mode
 -W      G What-if mode (if FILE just had been modified)
 -x  .     Enable /bin/sh -x instead of normal output
--y  .     Ignore recursive Stu 
+-y       
 -z  .     Output statistics
 
 

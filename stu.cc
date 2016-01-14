@@ -147,6 +147,13 @@ int main(int argc, char **argv, char **envp)
 
 	init_buf();
 
+	/* Refuse to run when $STU_STATUS is set */ 
+	const char *const stu_status= getenv("STU_STATUS");
+	if (stu_status != nullptr) {
+		print_error("Refusing to run recursive Stu; unset $STU_STATUS to circumvent");
+		exit(ERROR_LOGICAL); 
+	}
+
 	/* Assemble targets from the command line */ 
 	vector <Target> targets;
 	vector <Place> places;

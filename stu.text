@@ -546,12 +546,20 @@ EXIT STATUS
               less of whether the -k option was used.
 
 
+ENVIRONMENT
+       STU_STATUS
+              Stu  sets  this variable to '1' in all child processes. In order
+              to avoid recursive invocation of Stu, Stu will fail  on  startup
+              when  the  variable  is set. To circumvent this, unset the vari‐
+              able.  Recursive Stu is as harmful as recursive Make.
+
+
 COMPATIBILITY
-       The  Stu  language  is  unique to this implementation, and the man page
+       The Stu language is unique to this implementation,  and  the  man  page
        serves as the reference for its syntax.
 
        Stu follows Semantic Versioning (semver.org).  The major version number
-       is  increased  when  backward-incompatible changes are made.  The minor
+       is increased when backward-incompatible changes are  made.   The  minor
        version number is increased when features are added. The patch level is
        increased for other changes.
 
@@ -559,22 +567,22 @@ COMPATIBILITY
 EXAMPLES
        This section contains more advanced examples of Stu usage.
 
-       The  following  declaration  tells  Stu  that  the file 'config.h' must
+       The following declaration tells  Stu  that  the  file  'config.h'  must
        exist, and will allow Stu to give more meaningful error messages if the
        file is not found.
 
            config.h;
 
-       Input  and output redirection can be used to write commands that invoke
-       a filter such as sed, awk or tr.  The following example will build  the
+       Input and output redirection can be used to write commands that  invoke
+       a  filter such as sed, awk or tr.  The following example will build the
        'A' containing the string 'HELLO':
 
            >A: <B { tr a-z A-Z }
            >B { echo hello }
 
-       Variable  dependencies may be included indirectly through phony targets
-       without commands and dynamic dependencies.  In the  following  example,
-       the  variable $V will be passed through to the commands for the targets
+       Variable dependencies may be included indirectly through phony  targets
+       without  commands  and dynamic dependencies.  In the following example,
+       the variable $V will be passed through to the commands for the  targets
        A and B:
 
            V: { echo Hello >V }
@@ -583,42 +591,42 @@ EXAMPLES
            A: @x { echo $V >A }
            B: [y] { echo $V >B }
 
-       Trivial dependencies are often combined with variable  dependencies  to
-       implement  flags, for instance to a compiler, as in the following exam‐
-       ple. This will make sure that a change in the file 'VERSION'  will  not
-       lead  to a recompilation of the program, but if 'program.c' is modified
+       Trivial  dependencies  are often combined with variable dependencies to
+       implement flags, for instance to a compiler, as in the following  exam‐
+       ple.  This  will make sure that a change in the file 'VERSION' will not
+       lead to a recompilation of the program, but if 'program.c' is  modified
        and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt.
 
            VERSION; # Contains the version number; updated by hand
-           CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=1.7.23 }
+           CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=1.7.26 }
            program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
 
 
 LIMITATIONS, PITFALLS AND FUTURE DIRECTIONS
-       The -f option only supports regular files.  Standard input is not  sup‐
-       ported,  as  the  current implementation uses mmap(2).  Also, '-' as an
+       The  -f option only supports regular files.  Standard input is not sup‐
+       ported, as the current implementation uses mmap(2).  Also,  '-'  as  an
        input filename will not make Stu read standard input.
 
-       The argument to the -j option (number of jobs to run  in  parallel)  is
-       mandatory,  as  opposed  to the behavior of GNU Make, where no argument
+       The  argument  to  the -j option (number of jobs to run in parallel) is
+       mandatory, as opposed to the behavior of GNU Make,  where  no  argument
        means to run as many jobs in parallel as possible.
 
-       Files read as dynamic dependencies are parsed using the full  Stu  syn‐
-       tax,  meaning  that  certain characters must be quoted in them.  Future
-       versions of Stu may support newline-seperated file lists,  as  well  as
+       Files  read  as dynamic dependencies are parsed using the full Stu syn‐
+       tax, meaning that certain characters must be quoted  in  them.   Future
+       versions  of  Stu  may support newline-seperated file lists, as well as
        NUL-separated file lists.
 
        Rule-level recursion is not allowed.  This excludes a recursive parsing
-       of C-like dependencies.  Rule-level recursion would be easy to  enable,
-       but  would  open  up  problems  related  to infinite loops, which would
+       of  C-like dependencies.  Rule-level recursion would be easy to enable,
+       but would open up problems  related  to  infinite  loops,  which  would
        require Stu to have a maximal recursion depth.
 
-       Changing a command within a Stu file will not make  the  target  to  be
-       rebuilt.   This  can  be  seen  as  both a feature or a bug.  Also, all
-       changes in a file will lead to rebuilds of other  files,  even  if  the
+       Changing  a  command  within  a Stu file will not make the target to be
+       rebuilt.  This can be seen as both a  feature  or  a  bug.   Also,  all
+       changes  in  a  file  will lead to rebuilds of other files, even if the
        changes are trivial, e.g., when only whitespace was changed in C source
-       code.  Furthermore, touching a file without changing the contents  will
-       also  lead  to  a rebuild, although it is not needed.  Both limitations
+       code.   Furthermore, touching a file without changing the contents will
+       also lead to a rebuild, although it is not  needed.   Both  limitations
        could be removed by using fingerprints instead of modification times.
 
 
@@ -630,4 +638,4 @@ SEE ALSO
 
 
 
-stu-1.7.23                       January 2016                           STU(1)
+stu-1.7.26                       January 2016                           STU(1)

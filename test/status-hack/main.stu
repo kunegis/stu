@@ -1,0 +1,9 @@
+# Circumvent recursive Stu
+
+A: {
+	unset -v STU_STATUS
+	../../stu B
+	cp B A
+}
+
+>B { echo CORRECT }

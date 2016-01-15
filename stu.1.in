@@ -165,7 +165,7 @@ created/removed in them.
     }
     data: { mkdir data }
 
-Optional dependencies can be declared with the '!' prefix.  An optional
+Optional dependencies can be declared with the '?' prefix.  An optional
 dependency will never be built if it does not already exist.  If it
 already exists, then its own rule is used (and its date checked) to
 decide whether it should be rebuilt.  

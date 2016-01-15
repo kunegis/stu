@@ -169,7 +169,7 @@ OVERVIEW
            }
            data: { mkdir data }
 
-       Optional dependencies can be declared with the '!' prefix.  An optional
+       Optional dependencies can be declared with the '?' prefix.  An optional
        dependency  will  never  be  built if it does not already exist.  If it
        already exists, then its own rule is used (and  its  date  checked)  to
        decide whether it should be rebuilt.
@@ -598,7 +598,7 @@ EXAMPLES
        and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt.
 
            VERSION; # Contains the version number; updated by hand
-           CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=1.7.26 }
+           CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=1.7.27 }
            program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
 
 
@@ -638,4 +638,4 @@ SEE ALSO
 
 
 
-stu-1.7.26                       January 2016                           STU(1)
+stu-1.7.27                       January 2016                           STU(1)

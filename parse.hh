@@ -42,7 +42,10 @@ bool is_name_char(char);
 
 bool is_operator_char(char);
 
-void parse_version(string version, const Place &place_version); 
+/* Parse a version statement.  VERSION is the version number given after
+ * "%version", and PLACE its place. 
+ */
+void parse_version(string version_req, const Place &place_version); 
 
 /*
  * Parse the tokens in a file.
@@ -672,6 +675,10 @@ bool is_operator_char(char c)
 
 void parse_version(string version_req, const Place &place_version) 
 {
+	/* Note:  there may be any number of version statements in Stu
+	 * (in particular from multiple source files), so we don't keep
+	 * track whether one has already been provided. */ 
+
 	unsigned major_req, minor_req, patch_req;
 	int chars= -1;
 	int n= sscanf(version_req.c_str(), "%u.%u.%u%n",
@@ -694,7 +701,7 @@ void parse_version(string version_req, const Place &place_version)
 			goto wrong_version;
 	} else {
 		if (STU_VERSION_MAJOR != major_req || STU_VERSION_MINOR < minor_req || 
-			(STU_VERSION_MINOR == minor_req && STU_VERSION_PATCH < patch_req))
+		    (STU_VERSION_MINOR == minor_req && STU_VERSION_PATCH < patch_req))
 			goto wrong_version; 
 	}
 

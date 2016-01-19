@@ -1,4 +1,8 @@
 #! /bin/sh
+#
+# It is possible to have multiple version statements, in particular in
+# different source files. 
+#
 
 STUFILE1=tmp1.stu
 STUFILE2=tmp2.stu

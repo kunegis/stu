@@ -424,7 +424,9 @@ STATEMENTS
        of  Stu  of  the  correct major version number (2 in this example), and
        whose minor version (and patch level) have at least the  given  values.
        There  may  be multiple '%version' statements; each one is then checked
-       separately.
+       separately.  There may be multiple version statements,  in  which  case
+       each  is  checked separately.  In particular, it is possible to place a
+       version statement in each source file.
 
 
 TOKENIZATION
@@ -598,7 +600,7 @@ EXAMPLES
        and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt.
 
            VERSION; # Contains the version number; updated by hand
-           CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=1.7.27 }
+           CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=1.7.28 }
            program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
 
 
@@ -638,4 +640,4 @@ SEE ALSO
 
 
 
-stu-1.7.27                       January 2016                           STU(1)
+stu-1.7.28                       January 2016                           STU(1)

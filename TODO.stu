@@ -47,6 +47,22 @@ prog:  prog.c
 }
 
 #
+# Have an option which makes Stu output statistics when it is finished:
+# * runtime information
+# * number of processes run (succeeded + failed) 
+# * etc. 
+#
+
+#
+# Support $STU_SHELL for alternatives to /bin/sh. 
+#
+# Problem:  how to invole it?  At the moment, we use the '-e' and '-c'
+# options, as well as the '--' mechanism. 
+#
+
+#==== Big features that complete what we already have ====
+
+#
 # Hard-coded content
 #
 
@@ -71,13 +87,6 @@ LIST2 = {
 A = {}
 
 #
-# Have an option which makes Stu output statistics when it is finished:
-# * runtime information
-# * number of processes run (succeeded + failed) 
-# * etc. 
-#
-
-#
 # Copy rule
 #
 
@@ -86,15 +95,6 @@ a.bib = ../bib/references.bib;
 # Allow the same-name shortcut (ending in slash or not [with fopenat]):
 konect.bib=  ../../projects/konect/;
 konect.bib=  ../../projects/konect;
-
-#
-# Support $STU_SHELL for alternatives to /bin/sh. 
-#
-# Problem:  how to invole it?  At the moment, we use the '-e' and '-c'
-# options, as well as the '--' mechanism. 
-#
-
-#==== Big features that complete what we already have ====
 
 #
 # Phonies in dynamics
@@ -431,13 +431,6 @@ A:  {
 # only very little benefit since Stu already starts many processes.
 # Would only make sense in scenarios with thousands of processes, which
 # would only make sense on machines with thousands of cores. 
-#
-
-#
-# On each call to Stu, the whole dependency tree is walked.  Allow this
-# to be skipped in some smart way, perhaps using inotify or a similar
-# interface.  This would allow a "Stu demon" that runs continuously and
-# rebuilds targets as soon as they need to. 
 #
 
 #

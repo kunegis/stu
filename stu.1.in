@@ -486,11 +486,10 @@ introduced with '%'.
     rule:                target [':' toplevel_dependencies] 
                          (COMMAND | ';')
     target:              ['>'] bare_dependency
-    dependency_list:     | dependency dependency_list
+    dependency_list:     dependency*
     dependency:          expression | variable_dependency
     variable_dependency: '$[' [flag*] ['<'] NAME ']'
-    expression:          single_expression 
-                         [ ['*' | CONCAT ] single_expression ]*
+    expression:          single_expression*
     single_expression:   '[' expression* ']' | '(' expression* ')' 
                          | redirect_dependency | flag single_expression 
     redirect_dependency: ['<'] bare_dependency

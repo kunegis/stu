@@ -488,11 +488,10 @@ SYNTAX
            rule:                target [':' toplevel_dependencies]
                                 (COMMAND | ';')
            target:              ['>'] bare_dependency
-           dependency_list:     | dependency dependency_list
+           dependency_list:     dependency*
            dependency:          expression | variable_dependency
            variable_dependency: '$[' [flag*] ['<'] NAME ']'
-           expression:          single_expression
-                                [ ['*' | CONCAT ] single_expression ]*
+           expression:          single_expression*
            single_expression:   '[' expression* ']' | '(' expression* ')'
                                 | redirect_dependency | flag single_expression
            redirect_dependency: ['<'] bare_dependency
@@ -600,7 +599,7 @@ EXAMPLES
        and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt.
 
            VERSION; # Contains the version number; updated by hand
-           CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=1.7.29 }
+           CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=1.7.30 }
            program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
 
 
@@ -640,4 +639,4 @@ SEE ALSO
 
 
 
-stu-1.7.29                       January 2016                           STU(1)
+stu-1.7.30                       January 2016                           STU(1)

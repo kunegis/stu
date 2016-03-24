@@ -1,0 +1,5 @@
+# In error message (variable cannot contain '='), the name of the
+# variable is quoted within the $[] brackets.   
+
+A:  $['X=Y'] { touch A }
+'X=Y' { touch 'X=Y' }

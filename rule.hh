@@ -141,7 +141,7 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 					dependency->place_param_target.place_param_name.get_places()[jj] <<
 						fmt("parameter $%s is not used", parameter); 
 					place_param_target.place <<
-						fmt("in target %s", place_param_target.text());
+						fmt("in target %s", place_param_target.format());
 					throw ERROR_LOGICAL; 
 				}
 			}
@@ -179,7 +179,7 @@ Rule::instantiate(shared_ptr <Rule> rule,
 #ifndef NDEBUG
 void Rule::print() const 
 {
-	string text_target= place_param_target.text(); 
+	string text_target= place_param_target.format(); 
 	fprintf(stderr, "Rule(%s) {\n", text_target.c_str());
 	for (auto i= dependencies.begin();  i != dependencies.end();  ++i) {
 		(*i)->print(); 
@@ -286,11 +286,11 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 	/* More than one rule matches:  error */ 
 	if (rules_best.size() > 1) {
 		print_error(fmt("Multiple minimal rules for target %s", 
-				target.text())); 
+				target.format())); 
 		for (auto i= rules_best.begin();  i != rules_best.end();  ++i) {
 			(*i)->place <<
 				fmt("rule with target %s", 
-				    (*i)->place_param_target.text()); 
+				    (*i)->place_param_target.format()); 
 		}
 		throw ERROR_LOGICAL; 
 	}
@@ -318,7 +318,7 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 			Target target= rule->place_param_target.unparametrized(); 
 			if (rules_unparametrized.count(target)) {
 				rule->place <<
-					fmt("duplicate rule for %s", target.text());
+					fmt("duplicate rule for %s", target.format());
 				rules_unparametrized.at(target)->place <<
 					"previous definition";
 				throw ERROR_LOGICAL; 

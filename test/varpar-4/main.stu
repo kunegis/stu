@@ -1,0 +1,5 @@
+# Junk at end of dynamic dependency.  Must fail. 
+
+A: [B] { touch A }
+
+>B { echo 'X Y Z ;' }

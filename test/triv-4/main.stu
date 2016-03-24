@@ -1,0 +1,5 @@
+# No error. '&' does nothing. 
+
+A: & [B] { touch A }
+>B { echo '@x' }
+@x;

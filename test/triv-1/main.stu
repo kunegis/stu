@@ -1,0 +1,7 @@
+# '&' is transitive and applies to 'B'.  Run with preexisting and newer
+# 'B'.  'A' is *not* rebuilt.  
+
+>A: &@x { cat B }
+@x:   B;
+>B      { echo CORRECT }
+

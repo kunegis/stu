@@ -1,4 +1,4 @@
-.TH STU 1 "$DATE" "stu-$VERSION" "University of Koblenz-Landau"
+.TH STU 1 "$DATE" "stu-$STU_VERSION" "University of Koblenz-Landau"
 .SH NAME
 stu \- Build automation
 .SH SYNOPSIS
@@ -11,10 +11,12 @@ stu \- Build automation
 .I TARGETS ...
 ]
 .SH DESCRIPTION
-Stu is a tool for build automation.  Like Make, it is used to call other programs in
+Stu is a tool for build automation.  Like Make, it is used to call other
+programs in 
 order to build files.  Stu has two features that set it apart from Make:
 (1) dynamic dependencies:  The dependencies of a target can be
-themselves computed by a command.  When '[FILENAME]' (a filename currounded by angle brackets) is used as a
+themselves computed by a command.  When '[FILENAME]' (a filename
+currounded by angle brackets) is used as a 
 dependency, Stu will build the file FILENAME and read dependencies from
 it.  (2) Parameters:  Names of files (and phony targets) can contain
 parameters written using dollar syntax.  For example, a rule with a target
@@ -39,6 +41,10 @@ Make.
 .SH OPTIONS
 .IP -a
 Treat all trivial dependencies (declared with '&') as non-trivial.
+.IP -d
+Debug mode (only in debug versions of Stu); show internal information
+about the Stu algorithm on standard error output.  All printed debug
+output lines begin with the string 'DEBUG  '. 
 .IP "-f FILENAME"
 Read the given file instead of the default 'main.stu'.  If the name of a
 directory is passed, the file 'main.stu' in the given directory is
@@ -66,7 +72,7 @@ Run jobs in pseudorandom order seeded by the given string.
 Silent mode; do not output the commands that are executed.  This option
 is compatible to the same option in Make. 
 .IP -v
-Verbose mode; runtime information is printed on standard output
+Verbose mode; runtime information is printed on standard error output
 for each target when it is run.
 .IP -V 
 Output the version number of Stu and exit.
@@ -183,6 +189,7 @@ dependency that should never cause a target to be rebuilt, but if the
 target is rebuilt for another reason, then they are treated like normal
 dependencies.  Trivial dependencies are typically used for
 configuration, i.e., for the setting up configuration of application.
+Trivial dependencies are not allowed if the rule has no command. 
 
     target:  &input;
 
@@ -232,8 +239,8 @@ The basic syntax is similar to that of make, but does not rely on
 mandatory whitespace.  Instead of tabs, the commands are enclosed in
 curly braces.  
 
-Stu syntax supports three types of objects:  files, phonies and
-variables.  File are any file in the file system, and are always
+Stu syntax supports two types of objects:  files and phonies.  Files are
+any file in the file system, and are always  
 referenced by their filename.  Phonies have names beginning with the '@'
 symbol and do not correspond to files, but can have dependencies and
 commands.  
@@ -242,17 +249,15 @@ A rule for a file in Stu has the following syntax:
 
     [>] TARGET [ : DEPENDENCY ... ] { COMMAND }
 
-The target is a filename.  DEPENDENCY ... are optional depencies.
+The target is a filename.  DEPENDENCY ... are depencies.
 COMMAND is a command which is passed to the shell for building. 
 Stu will always execute
 the whole command block using a single call to the shell.  This is
 different than Make, which calls each line individually.  This means
 that you can for instance define a variable on one line and use it on
-the next.  It also means that the shell's rule will be used to
-determine whether the whole command block succeeded:  Only the exit
-code of the last issued command is used.  This means that you should
-chain commands with '&&', or write them in a way that subsequent
-commands cannot succeed when previous one failed. 
+the next.  
+Stu uses the -e option when calling the shell; this means that any
+failing command will make the whole target fail.  
 
 When the command of a file is replaced by a semicolon, this means that the file is
 always built together with its dependencies:
@@ -342,8 +347,10 @@ command.
 
     ( ... )
 
-Groups of dependencies can be enclosed on parentheses.  The
-flags '!' and '?' can be applied to a group of dependencies given in
+Groups of dependencies can be enclosed on parentheses.  
+Parentheses may not contain variable dependencies (i.e., something like
+$[NAME]). 
+The flags '!' and '?' can be applied to a group of dependencies given in
 parentheses:
 
     ! ( ... )
@@ -357,22 +364,34 @@ The flags '!' and '?' can be applied to dynamic dependencies:
 in which case all resulting dynamic dependencies will be flagged as
 optional of existence-only. 
 
+Both parentheses and brackets may be nested:
+
+    ((A)) # Equivalent to A
+    [[A]] # Read out dependencies from all files given in the file 'A'. 
+
 .SH "PARAMETERS"
 
 Any file or phony target may include parameters.  Parameters are
 noted using the '$' character and are given a name.  Stu will match the
 pattern to any file or phony it needs to build.  Parameters can appear in
 dependencies and in commands any number of times (included not appearing in them).  
-In a target name, a parameter can only appear once.  
+In a target name, a parameter can only appear once.  The following
+example contains the parameter $NAME:
+
+    list.$NAME:    data.$NAME $NAME.in 
+    { 
+	./compute-list -n "$NAME"
+    }
 
 Parameters within a single target name must be separated by at least one
 character, as otherwise Stu 
 would not be able to determine how to split up a chain of characters
 into two parameters.  Names of parameters cannot be empty.  
 
-A file or phony name may match more than one parametrized rule.  If that
-is the case, then there must be one matching rule that dominates all
-other matching rules.  A rule A is defined to dominate another rule B if for
+A file or phony name may match more than one rule.  If that
+is the case, then Stu will use the rule that dominates all other
+matching rules. 
+A rule A is defined to dominate another rule B if for
 every character in the target filename there is inside a parameter in 
 rule A, it is also inside a parameter in rule B, and at least one
 character is in a parameter is rule B but not in rule B.  It is an error
@@ -422,9 +441,11 @@ Both variants will allow the script to be executed only with a version
 of Stu of the correct major version number (2 in this example), and
 whose minor version (and patch level) have at least the given values.
 There may be multiple '%version' statements; each one is then checked
-separately.  There may be multiple version statements, in which case
-each is checked separately.  In particular, it is possible to place a
-version statement in each source file. 
+separately.  
+In particular, it is possible to place a version statement in each
+source file. 
+This treatment of version numbers follows semantic versionning
+(semver.org). 
 
 .SH "TOKENIZATION"
 
@@ -442,7 +463,7 @@ The following characters have special meaning in Stu and cannot be used in
 unquoted filenames:
 
     #     Comment (until the end of the line)
-    %     Preprocessor character
+    %     Statement (followed by statement name and arguments)
     " '   Quote 
     :     Separator for rule definition
     ;     For rules without body, end of variable declaration 
@@ -463,41 +484,31 @@ syntax, i.e., the command itself may contain more braces.  All other
 characters are individual tokens and may or may not be separated from
 other tokens by whitespace. 
 
-A Stu file may include another Stu file using the following syntax:
-
-    %include FILENAME
-
-Note that '%' is a regular token and therefore it need not be the first
-character on a line, and there may be space between '%' and 'include'.
-Also, the filename need not be quoted if it consists only of allowed
-characters as described previously. 
-
 The following characters are reserved for future extension:
 
     * = \\ | , 
 
 .SH "SYNTAX"
 
-The syntax of a Stu file is given in the following in Yacc-like
+The syntax of a Stu file is given in the following Yacc-like
 notation.  This is the syntax after processing of statements, which are
 introduced with '%'. 
 
-    rule_list:           | rule rule_list
-    rule:                target [':' toplevel_dependencies] 
+    rule_list:           rule*
+    rule:                ('@' NAME | ['>'] NAME) [':' expression_list] 
                          (COMMAND | ';')
-    target:              ['>'] bare_dependency
-    dependency_list:     dependency*
-    dependency:          expression | variable_dependency
-    variable_dependency: '$[' [flag*] ['<'] NAME ']'
-    expression:          single_expression*
-    single_expression:   '[' expression* ']' | '(' expression* ')' 
-                         | redirect_dependency | flag single_expression 
+    expression_list:     expression*
+    expression:          '[' expression_list ']' 
+                         | '(' expression_list ')' 
+                         | flag expression | redirect_dependency 
+                         | variable_dependency
+    variable_dependency: '$' '[' [flag*] ['<'] NAME ']'
     redirect_dependency: ['<'] bare_dependency
     bare_dependency:     ['@'] NAME
     flag:                '!' | '?' | '&'
 
 The main Stu file must contain a 'rule_list', while a file included by
-brackets must contain a 'dependency_list'. 
+brackets must contain an 'expression_list'. 
 
 .SH "SEMANTICS"
 
@@ -516,7 +527,7 @@ same parametrized rule, this is not allowed:
 
     $NAME.gz:  $NAME { gzip $NAME }
 
-Cycles are also possible in dynamic dependencies, where they are allowed
+Cycles are possible in dynamic dependencies, where they are allowed
 and ignored.  For instance, the following examples will correctly build
 the file 'A', after having built 'B' and 'C':
 
@@ -538,8 +549,8 @@ dependency was not found and no rule was given for it.
 Logical error.  Examples:  syntax error in input file, invalid
 invocation, cycle in the dependency graph.  
 .IP 3
-Both build and logical errors were encountered (mostly when using the -k
-option). 
+Both build and logical errors were encountered (when using the -k
+option).  
 .IP 4
 System error that made Stu abort execution immediately, regardless of
 whether the -k option was used.  
@@ -580,7 +591,7 @@ the 'A' containing the string 'HELLO':
     >B { echo hello }
 
 Variable dependencies may be included indirectly through phony targets
-without commands and dynamic dependencies.  In the
+without commands, and through dynamic dependencies.  In the
 following example, the variable $V will be passed through to the
 commands for the targets A and B:
 
@@ -597,7 +608,7 @@ lead to a recompilation of the program, but if 'program.c' is modified
 and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt. 
 
     VERSION; # Contains the version number; updated by hand
-    CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=$VERSION }
+    >CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=$VERSION }
     program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
     
 .SH "LIMITATIONS, PITFALLS AND FUTURE DIRECTIONS"

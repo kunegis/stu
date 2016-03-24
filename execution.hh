@@ -20,6 +20,10 @@
 #include "timestamp.hh"
 #include "buffer.hh"
 
+//#ifndef NDEBUG
+//static int debug_indent= 0;
+//#endif
+
 class Execution
 {
 public:
@@ -134,7 +138,7 @@ public:
 		  Link &&link,
 		  Execution *parent);
 
-	/* Empty execution.  DEPENDENCIES don't have to be unique.
+	/* Root execution.  DEPENDENCIES don't have to be unique.
 	 */
 	Execution(const vector <shared_ptr <Dependency> > &dependencies_); 
 
@@ -163,8 +167,8 @@ public:
 	 * terminated.  The passed FLAG is the ORed combination
 	 * of all FLAGs up the dependency chain.  
 	 * DEPENDENCY is the dependency linking the two executions.  
-	 * Return value:  whether additional processes must be started
-	 * (only TRUE in random mode).  When TRUE, not all possible
+	 * Return value:  whether additional processes must be started.
+	 * Can only by TRUE in random mode.  When TRUE, not all possible
 	 * subjobs where started. 
 	 */
  	bool execute(Execution *parent, Link &&link);
@@ -193,15 +197,15 @@ public:
 	 * modified. 
 	 * Return value:  same semantics as for execute(). 
 	 */
-	bool deploy_dependency(const Link &link,
-			       const Link &link_child);
+	bool deploy(const Link &link,
+		    const Link &link_child);
 
 	/* Initialize the Execution object.  Used for dynamic dependencies.
 	 * Called from get_execution() before the object is connected to a
 	 * new parent. */ 
 	void initialize(Stack avoid);
 
-	/* Print a command and its associated variable assignments,
+	/* Print the command and its associated variable assignments,
 	 * according to the selected verbosity level.  
 	 * FILENAME_OUTPUT and FILENAME_INPUT are "" when not used. 
 	 */ 
@@ -242,12 +246,12 @@ public:
 	 * then delete the child execution.  The child execution is
 	 * however not deleted as it is kept for caching. 
 	 */
-	static void unlink_execution(Execution *const parent, 
-				     Execution *const child,
-				     shared_ptr <Dependency> dependency_parent,
-				     Stack avoid_parent,
-				     Stack avoid_child,
-				     Flags flags_child); 
+	static void unlink(Execution *const parent, 
+			   Execution *const child,
+			   shared_ptr <Dependency> dependency_parent,
+			   Stack avoid_parent,
+			   Stack avoid_child,
+			   Flags flags_child); 
 
 	/* Get an existing execution or create a new one.
 	 * Return NULLPTR when a strong cycle was found; return the execution
@@ -306,10 +310,18 @@ long Execution::jobs= 1;
 
 void Execution::wait() 
 {
+	if (option_debug) {
+		fprintf(stderr, "DEBUG  wait\n"); 
+	}
+
 	assert(Execution::executions_by_pid.size()); 
 
 	int status;
 	pid_t pid= Job::wait(&status); 
+	
+	if (option_debug) {
+		fprintf(stderr, "DEBUG  wait pid = %d\n", (int) pid); 
+	}
 
 	timestamp_last= Timestamp::now(); 
 
@@ -330,7 +342,20 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 	done.check();
 
-	if (finished(link.avoid))
+	if (option_debug) {
+//		debug_pad += ' '; 
+		string text_target= this->target.format();
+		string text_flags= format_flags(link.flags);
+		string text_avoid= link.avoid.format(); 
+
+		fprintf(stderr, "DEBUG  %s execute %s %s\n", 
+//			debug_pad.c_str(),
+			text_target.c_str(),
+			text_flags.c_str(),
+			text_avoid.c_str()); 
+	}
+
+ 	if (finished(link.avoid))
 		return false;
 
 	/* In DFS mode, first continue the already-open children, then
@@ -378,18 +403,16 @@ bool Execution::execute(Execution *parent, Link &&link)
 		assert(option_continue); 
 
 	/* 
-	 * Deploy non-trivial dependencies
+	 * Deploy non-trivial dependencies.  
 	 */ 
 	while (! buf_default.empty()) {
 		Link link_child= buf_default.next(); 
-		if (link_child.flags & F_TRIVIAL) {
-			buf_trivial.push(move(link_child)); 
-		} else {
-			if (deploy_dependency(link, link_child))
-				return true;
-			if (jobs == 0)
-				return false;
-		}
+		Link link_trivial= link_child;
+//		buf_trivial.push(move(link_trivial)); 
+		if (deploy(link, link_child))
+			return true;
+		if (jobs == 0)
+			return false;
 	} 
 	assert(buf_default.empty()); 
 
@@ -410,12 +433,11 @@ bool Execution::execute(Execution *parent, Link &&link)
 		return false;
 	}
 
-
 	/* Rule does not have a command.  This includes the case of dynamic
 	 * executions, even though for dynamic executions the RULE variable
 	 * is set (to detect cycles). */ 
 	if ((target.type == T_PHONY && ! (rule != nullptr && rule->command != nullptr))
-	    || target.type == T_EMPTY
+	    || target.type == T_ROOT
 	    || target.type >= T_DYNAMIC) {
 
 		done.add_neg(link.avoid);
@@ -435,7 +457,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	assert(error == 0);
 
 	if (verbosity >= VERBOSITY_VERBOSE) {
-		string text= target.text();
+		string text= target.format();
 		fprintf(stderr, "Building %s\n", 
 				text.c_str()); 
 		fprintf(stderr, "\tneed_build = %u\n", need_build);
@@ -499,7 +521,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 					timestamp= timestamp_old;
 				}
 			} else {
-				/* Note:  Rule may be Nullptr here for optional
+				/* Note:  Rule may be NULLPTR here for optional
 				 * dependencies that do not exist and do not have a
 				 * rule */
 
@@ -569,7 +591,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 			/* Phony was not yet executed */ 
 			need_build= true; 
 			if (verbosity >= VERBOSITY_VERBOSE) {
-				fprintf(stderr, "\trunning because this phony was not yet executed\n");
+				fprintf(stderr, 
+					"\trunning because this phony was not yet executed\n");
 			}
 		}
 	}
@@ -597,8 +620,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 			Link link_child= move(buf_trivial.next());
 			assert(link_child.dependency->get_flags() & F_TRIVIAL); 
 			link_child.dependency->get_place_trivial() <<
-				fmt("target without command %s cannot have trivial dependencies",
-				    target.text()); 
+				fmt("target without command %s must not have trivial dependencies",
+				    target.format()); 
 			error |= ERROR_LOGICAL;
 			done.add_neg(link.avoid); 
 			if (! option_continue) 
@@ -615,7 +638,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	 */
 	while (! buf_trivial.empty()) {
 		Link link_child= buf_trivial.next(); 
-		if (deploy_dependency(link, link_child))
+		if (deploy(link, link_child))
 			return true;
 		if (jobs == 0)
 			return false;
@@ -646,6 +669,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	mapping.insert(mapping_variable.begin(), mapping_variable.end());
 	mapping_parameter.clear();
 	mapping_variable.clear(); 
+
 	const pid_t pid= job.start
 		(rule->command->command, 
 		 mapping,
@@ -654,9 +678,16 @@ bool Execution::execute(Execution *parent, Link &&link)
 		 rule->filename_input.unparametrized(),
 		 rule->command->place); 
 
+	if (option_debug) {
+		string text_target= this->target.format();
+		fprintf(stderr, "DEBUG  %s execute pid = %d\n", 
+			text_target.c_str(),
+			(int)pid); 
+	}
+
 	if (pid < 0) {
 		/* Starting the job failed */ 
-		print_traces(fmt("error executing command for %s", target.text())); 
+		print_traces(fmt("error executing command for %s", target.format())); 
 		if (! option_continue) 
 			exit(ERROR_BUILD); 
 		error |= ERROR_BUILD;
@@ -682,7 +713,13 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 int Execution::execute_children(const Link &link)
 {
-	/* Since unlink_execution() may change execution->children,
+//	if (option_debug) {
+//		string text_target= this->target.format();
+//		fprintf(stderr, "DEBUG  %s execute_children\n",
+//			text_target.c_str());
+//	}
+
+	/* Since unlink() may change execution->children,
 	 * we must first copy it over locally, and then iterate
 	 * through it */ 
 
@@ -724,10 +761,10 @@ int Execution::execute_children(const Link &link)
 			return 0;
 
 		if (child->finished(avoid_child)) {
-			unlink_execution(this, child, 
-					 link.dependency,
-					 link.avoid, 
-					 avoid_child, flags_child); 
+			unlink(this, child, 
+			       link.dependency,
+			       link.avoid, 
+			       avoid_child, flags_child); 
 		}
 	}
 
@@ -783,7 +820,7 @@ void Execution::waited(int pid, int status)
 							    "after execution of its command is older than %s startup", 
 							    target.name, dollar_zero);  
 						print_info(fmt("Timestamp of %s is %s",
-							       target.text(), timestamp_file.format()));
+							       target.format(), timestamp_file.format()));
 						print_info(fmt("Startup timestamp is %s",
 							       Timestamp::startup.format())); 
 						print_traces();
@@ -821,7 +858,7 @@ void Execution::waited(int pid, int status)
 		}
 
 		param_rule->command->place <<
-			fmt("command for %s %s", target.text(), reason); 
+			fmt("command for %s %s", target.format(), reason); 
 		print_traces(); 
 
 		remove_if_existing(true); 
@@ -836,6 +873,10 @@ int Execution::main(const vector <Target> &targets,
 {
 	assert(jobs >= 0);
 	assert(targets.size() == places.size()); 
+
+//	if (option_debug) {
+//		fprintf(stderr, "DEBUG  main\n");
+//	}
 
 	timestamp_last= Timestamp::now(); 
 
@@ -859,7 +900,14 @@ int Execution::main(const vector <Target> &targets,
 
 			Link link(Stack(), (Flags)0, Place(), shared_ptr <Dependency> ());
 
-			while (execution_root->execute(nullptr, move(link)));
+			bool r;
+
+			do {
+				if (option_debug) {
+					fprintf(stderr, "DEBUG  main.next\n");
+				}
+				r= execution_root->execute(nullptr, move(link));
+			} while (r);
 
 			if (executions_by_pid.size()) {
 				wait();
@@ -908,14 +956,22 @@ int Execution::main(const vector <Target> &targets,
 	return error;
 }
 
-void Execution::unlink_execution(Execution *const parent, 
-				 Execution *const child,
-				 shared_ptr <Dependency> dependency_parent,
-				 Stack avoid_parent,
-				 Stack avoid_child,
-				 Flags flags_child)
+void Execution::unlink(Execution *const parent, 
+		       Execution *const child,
+		       shared_ptr <Dependency> dependency_parent,
+		       Stack avoid_parent,
+		       Stack avoid_child,
+		       Flags flags_child)
 {
 	(void) avoid_child;
+
+	if (option_debug) {
+		string text_parent= parent->target.format();
+		string text_child= child->target.format();
+		fprintf(stderr, "DEBUG  %s unlink %s\n",
+			text_parent.c_str(),
+			text_child.c_str()); 
+	}
 
 	assert(parent != child); 
 	assert(child->finished(avoid_child)); 
@@ -928,7 +984,7 @@ void Execution::unlink_execution(Execution *const parent,
 	 */
 
 	/* Propagate dynamic dependencies */ 
-	if (flags_child & F_DYNAMIC) {
+	if (flags_child & F_READ) {
 		assert(child->target.type == T_FILE); 
 		assert(T_FILE < parent->target.type);
 		assert(parent->target.name == child->target.name); 
@@ -958,8 +1014,7 @@ void Execution::unlink_execution(Execution *const parent,
 
 	/* Propagate timestamp.  Note:  When the parent execution has
 	 * filename == "", this is unneccesary */ 
-	if (! (flags_child & F_EXISTENCE) && 
-		! (flags_child & F_DYNAMIC)) {
+	if (! (flags_child & F_EXISTENCE) && ! (flags_child & F_READ)) {
 		if (child->timestamp.defined()) {
 			if (! parent->timestamp.defined()) {
 				parent->timestamp= child->timestamp;
@@ -973,6 +1028,9 @@ void Execution::unlink_execution(Execution *const parent,
 
 	/* Propagate variable dependencies */
 	if (flags_child & F_VARIABLE) {
+
+		/* Read the content of the file into a string as the
+		 * variable value */  
 
 		assert(child->target.type == T_FILE);
 		string filename= child->target.name;
@@ -1013,8 +1071,8 @@ void Execution::unlink_execution(Execution *const parent,
 			parent->error |= ERROR_BUILD;
 			child->param_rule->place_param_target.place <<
 				fmt("Generated file '%s' for variable dependency was made "
-					"but cannot be found now", 
-					filename);
+				    "but cannot be found now", 
+				    filename);
 			parent->param_rule->place_param_target.place <<
 				"in variable dependency used here";
 			if (! option_continue)
@@ -1045,15 +1103,15 @@ void Execution::unlink_execution(Execution *const parent,
 	parent->error |= child->error; 
 
 	if (child->need_build 
-		&& ! (flags_child & F_EXISTENCE)
-		&& ! (flags_child & F_DYNAMIC)) {
+	    && ! (flags_child & F_EXISTENCE)
+	    && ! (flags_child & F_READ)) {
 		if (verbosity >= VERBOSITY_VERBOSE) {
-			const string text_child= child->rule->place_param_target.text();
+			const string text_child= child->rule->place_param_target.format();
 			const string text_parent= parent->rule == nullptr 
 				? "<target without rule>"
-				: parent->rule->place_param_target.text();
+				: parent->rule->place_param_target.format();
 			fprintf(stderr, "Propagating need_build flag from %s to %s\n", 
-					text_child.c_str(), text_parent.c_str());
+				text_child.c_str(), text_parent.c_str());
 		}
 		parent->need_build= true; 
 	}
@@ -1134,7 +1192,7 @@ Execution::Execution(Target target_,
 				} else {
 					/* File exists:  Do nothing, and there are no
 					 * dependencies to build */  
-					if (parent->target.type == T_EMPTY) {
+					if (parent->target.type == T_ROOT) {
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */ 
 						printf("No rule for building '%s', but the file exists\n", 
@@ -1150,7 +1208,7 @@ Execution::Execution(Target target_,
 		
 		if (rule_not_found) {
 			assert(rule == nullptr); 
-			print_traces(fmt("no rule to build %s", target.text()));
+			print_traces(fmt("no rule to build %s", target.format()));
 			error |= ERROR_BUILD;
 			if (! option_continue) 
 				throw error;  
@@ -1162,7 +1220,7 @@ Execution::Execution(Target target_,
 }
 
 Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
-	:  target(T_EMPTY),
+	:  target(T_ROOT),
 	   error(0),
 	   need_build(false),
 	   checked(false),
@@ -1289,20 +1347,18 @@ string Execution::cycle_string(const Execution *execution)
 	if (place_param_target.place_param_name.get_n() == 0) {
 		string text= place_param_target.place_param_name.unparametrized(); 
 		assert(text == target.name); 
-		return target.text();
+		return target.format();
 	} else {
-		string t= place_param_target.place_param_name.canonical_text();
+		string t= place_param_target.place_param_name.format_bare();
 		Target o(target.type, t);
-		return fmt("%s instantiated as %s", 
-				   o.text(),
-				   target.text()); 
+		return fmt("%s instantiated as %s", o.format(), target.format()); 
 	}
 }
 
 shared_ptr <Trace> Execution::cycle_trace(const Execution *child,
 					  const Execution *parent)
 {
-	if (parent->target.type == T_EMPTY)
+	if (parent->target.type == T_ROOT)
 		return shared_ptr <Trace> ();
 
 	if (parent->target.type == T_DYNAMIC &&
@@ -1417,7 +1473,7 @@ bool Execution::remove_if_existing(bool output)
 			
 			removed= true;
 
-			if (0 > unlink(filename)) {
+			if (0 > ::unlink(filename)) {
 				perror(filename); 
 			}
 		}
@@ -1491,10 +1547,10 @@ void Execution::read_dynamics(Stack avoid,
 		Build build(tokens, i, place_end); 
 		Place_Param_Name input; /* remains empty */ 
 		Place place_input; /* remains empty */ 
-		build.build_dependency_list(dependencies, input, place_input); 
+		build.build_expression_list(dependencies, input, place_input); 
 
 		for (auto j= dependencies.begin();
-			 j != dependencies.end();  ++j) {
+		     j != dependencies.end();  ++j) {
 
 			/* Check that it is unparametrized */ 
 			if (! (*j)->is_unparametrized()) {
@@ -1508,11 +1564,11 @@ void Execution::read_dynamics(Stack avoid,
 					->place_param_target.place_param_name.places.at(0) <<
 					fmt("dynamic dependency %s "
 					    "must not contain parametrized dependencies",
-					    target.text());
+					    target.format());
 				Target target_file= target;
 				target_file.type= T_FILE;
 				print_traces(fmt("%s is declared here", 
-						 target_file.text())); 
+						 target_file.format())); 
 				error |= ERROR_LOGICAL; 
 				if (option_continue) {
 					continue; 
@@ -1521,8 +1577,27 @@ void Execution::read_dynamics(Stack avoid,
 				}
 			}
 
-			/* Add the found dependencies, with one less dynamic level
-			 * than the current target.  */
+			/* Check that there is no multiply-variable dependency */ 
+			if ((*j)->has_flags(F_VARIABLE) && target.type > T_DYNAMIC) {
+				
+				/* Only direct dependencies can have the F_VARIABLE flag set */ 
+				assert(dynamic_pointer_cast <Direct_Dependency> (*j));
+
+				shared_ptr <Direct_Dependency> dep= 
+					dynamic_pointer_cast <Direct_Dependency> (*j);
+
+				(*j)->get_place() <<
+					fmt("variable dependency $[%s] must not appear",
+					    dep->place_param_target.format_mid());
+				print_traces(fmt("within multiply-dynamic dependency %s", 
+						 target.format())); 
+				error |= ERROR_LOGICAL;
+				if (option_continue) {
+					continue; 
+				} else {
+					throw error; 
+				}
+			}
 
 			/* If the target is multiply dynamic, we cannot add phony
 			 * targets to it */ 
@@ -1531,25 +1606,29 @@ void Execution::read_dynamics(Stack avoid,
 				shared_ptr <Direct_Dependency> direct_dependency= 
 					dynamic_pointer_cast <Direct_Dependency> (*j); 
 				
-				if (direct_dependency->place_param_target.type == T_PHONY) {
-					if (target.type > T_DYNAMIC) {
-						direct_dependency->place_param_target.place <<
-							fmt("phony target %s cannot appear "
-							    "as dynamic dependency of %s", 
-							    direct_dependency->place_param_target.text(),
-							    target.text());
-						Target target_file= target;
-						target_file.type= T_FILE;
-						print_traces(fmt("%s is declared here", target_file.text())); 
-						error |= ERROR_LOGICAL;
-						if (option_continue) {
-							continue; 
-						} else {
-							throw error; 
-						}
+				if (direct_dependency->place_param_target.type == T_PHONY
+				    && target.type > T_DYNAMIC) {
+					direct_dependency->place_param_target.place <<
+						fmt("phony target %s must not appear "
+						    "as dynamic dependency of %s", 
+						    direct_dependency
+						    ->place_param_target.format(),
+						    target.format());
+					Target target_file= target;
+					target_file.type= T_FILE;
+					print_traces(fmt("%s is declared here", 
+							 target_file.format())); 
+					error |= ERROR_LOGICAL;
+					if (option_continue) {
+						continue; 
+					} else {
+						throw error; 
 					}
 				}
 			}
+
+			/* Add the found dependencies, with one less dynamic level
+			 * than the current target.  */
 
 			shared_ptr <Dependency> dependency(*j);
 
@@ -1573,6 +1652,9 @@ void Execution::read_dynamics(Stack avoid,
 			if (dependency->get_place_optional().type == Place::P_EMPTY)
 				dependency->set_place_optional
 					(vec.at(target.type - T_DYNAMIC)->get_place_optional()); 
+			if (dependency->get_place_trivial().type == Place::P_EMPTY)
+				dependency->set_place_trivial
+					(vec.at(target.type - T_DYNAMIC)->get_place_trivial()); 
 			for (Type k= target.type;  k > T_DYNAMIC;  --k) {
 				avoid_this.pop(); 
 				Flags flags_level= avoid_this.get_lowest(); 
@@ -1581,6 +1663,8 @@ void Execution::read_dynamics(Stack avoid,
 					(vec.at(k - T_DYNAMIC - 1)->get_place_existence()); 
 				dependency->set_place_optional
 					(vec.at(k - T_DYNAMIC - 1)->get_place_optional()); 
+				dependency->set_place_trivial
+					(vec.at(k - T_DYNAMIC - 1)->get_place_trivial()); 
 			}
 
 			assert(avoid_this.get_k() == 0); 
@@ -1591,10 +1675,10 @@ void Execution::read_dynamics(Stack avoid,
 			if (! input.empty()) {
 				(*j)->get_place() <<
 					fmt("dynamic dependency %s must not contain input redirection", 
-					    target.text());
+					    target.format());
 				Target target_file= target;
 				target_file.type= T_FILE;
-				print_traces(fmt("%s is declared here", target_file.text())); 
+				print_traces(fmt("%s is declared here", target_file.format())); 
 				error |= ERROR_LOGICAL; 
 				if (option_continue) {
 					continue; 
@@ -1636,7 +1720,7 @@ void Execution::print_traces(string text) const
 
 	const Execution *execution= this; 
 
-	assert(execution->target.type != T_EMPTY);
+	assert(execution->target.type != T_ROOT);
 
 	bool first= true; 
 
@@ -1648,25 +1732,25 @@ void Execution::print_traces(string text) const
 		first= false;
 	}
 
-	string text_parent= execution->target.text(); 
+	string text_parent= execution->target.format(); 
 
 	for (;;) {
 
 		auto i= execution->parents.begin(); 
 
-		if (i->first->target.type == T_EMPTY) {
+		if (i->first->target.type == T_ROOT) {
 			if (first && text != "") {
 				print_error(fmt("No rule to build %s", 
-						execution->target.text())); 
+						execution->target.format())); 
 			}
 			break; 
 		}
 
 		string text_child= text_parent; 
-		text_parent= i->first->target.text(); 
+		text_parent= i->first->target.format(); 
 
 		/* Don't show [[A]]->A edges */
-		if (i->second.flags & F_DYNAMIC) {
+		if (i->second.flags & F_READ) {
 			execution= i->first; 
 			continue;
 		}
@@ -1690,7 +1774,7 @@ void Execution::print_traces(string text) const
 void Execution::print_command()
 {
 	if (verbosity == VERBOSITY_SHORT) {
-		string text= target.text_bare();
+		string text= target.format_bare();
 		puts(text.c_str()); 
 		return;
 	} 
@@ -1747,9 +1831,20 @@ void Execution::print_command()
 	}
 }
 
-bool Execution::deploy_dependency(const Link &link,
-				  const Link &link_child)
+bool Execution::deploy(const Link &link,
+		       const Link &link_child)
 {
+	if (option_debug) {
+		string text_target= this->target.format();
+//		string text_link= link.format(); 
+		string text_link_child= link_child.format(); 
+		fprintf(stderr, "DEBUG  %s deploy %s\n",
+			text_target.c_str(),
+//			text_link.c_str(),
+			text_link_child.c_str());
+	}
+
+	/* Additional flags for the child are added here */ 
 	Flags flags_child= link_child.flags; 
 
 	int dynamic_depth= 0;
@@ -1767,7 +1862,6 @@ bool Execution::deploy_dependency(const Link &link,
 	assert(target_child.type == T_FILE || target_child.type == T_PHONY);
 
 	if (dynamic_depth != 0) {
-
 		assert(dynamic_depth > 0);
 
 		/* Phonies in dynamic dependencies are not allowed */ 
@@ -1776,9 +1870,10 @@ bool Execution::deploy_dependency(const Link &link,
 			 * i.e., something like [@target] */ 
 			error |= ERROR_LOGICAL;
 			direct_dependency->place <<
-				fmt("phony target %s cannot appear as dynamic dependency for target %s", 
-				    direct_dependency->place_param_target.text(),
-				    target.text());
+				fmt("phony target %s must not appear "
+				    "as dynamic dependency for target %s", 
+				    direct_dependency->place_param_target.format(),
+				    target.format());
 			print_traces(); 
 
 			if (! option_continue)
@@ -1802,13 +1897,16 @@ bool Execution::deploy_dependency(const Link &link,
 			link_child.dependency->set_place_optional
 				(link.dependency->get_place_optional()); 
 		}
+		if (link.flags & F_TRIVIAL) {
+			link_child.dependency->set_place_trivial
+				(link.dependency->get_place_trivial()); 
+		}
 	}
 	
-	/* '?' and '!' do not mix */ 
-	if ((flags_child & F_EXISTENCE) && 
-		(flags_child & F_OPTIONAL)) {
+	/* '!' and '?' do not mix */ 
+	if ((flags_child & F_EXISTENCE) && (flags_child & F_OPTIONAL)) {
 
-		/* '?' and '!' encountered for the same target */ 
+		/* '!' and '?' encountered for the same target */ 
 
 		error |= ERROR_LOGICAL;
 		const Place &place_existence= 
@@ -1821,12 +1919,52 @@ bool Execution::deploy_dependency(const Link &link,
 			"clashes with declaration of optional dependency with '?'";
 		direct_dependency->place <<
 			fmt("in declaration of dependency %s", 
-			    target_child.text());
+			    target_child.format());
 		print_traces();
-		if (! option_continue)
-			throw error;
+		if (! option_continue)  throw error;
 		return false;
 	}
+
+	/* Either of '!'/'?'/'&' does not mix with '$[' */
+	if ((flags_child & F_VARIABLE) &&
+	    (flags_child & (F_EXISTENCE | F_OPTIONAL | F_TRIVIAL))) {
+
+		error |= ERROR_LOGICAL;
+		const Place &place_variable= direct_dependency->place;
+		if (flags_child & F_EXISTENCE) {
+			const Place &place_flag= link_child.dependency->get_place_existence(); 
+			place_variable << fmt("variable dependency $[%s] must not be declared "
+					      "as existence-only dependency",
+					      target_child.format_mid());
+			place_flag << "using '!'";
+		} else if (flags_child & F_OPTIONAL) {
+			const Place &place_flag= link_child.dependency->get_place_optional(); 
+			place_variable << fmt("variable dependency $[%s] must not be declared "
+					      "as optional dependency",
+					      target_child.format_mid());
+			place_flag << "using '?'";
+		} else {
+			assert(flags_child & F_TRIVIAL); 
+			const Place &place_flag= link_child.dependency->get_place_trivial(); 
+			place_variable << fmt("variable dependency $[%s] must not be declared "
+					      "as trivial dependency",
+					      target_child.format_mid());
+			place_flag << "using '&'";
+		}
+		print_traces();
+		if (! option_continue)  throw error; 
+		return false;
+	}
+
+//	if (option_debug) {
+//		string text_target= target.format(); 
+//		string text_flags= format_flags(flags_child);
+//		string text_avoid= avoid_child.format(); 
+//		fprintf(stderr, "DEBUG  %s deploy link: %s %s\n",
+//			text_target.c_str(),
+//			text_flags.c_str(),
+//			text_avoid.c_str()); 
+//	}
 
 	Execution *child= Execution::get_execution
 		(target_child, 
@@ -1851,10 +1989,10 @@ bool Execution::deploy_dependency(const Link &link,
 		return false;
 			
 	if (child->finished(avoid_child)) {
-		unlink_execution(this, child, 
-				 link.dependency,
-				 link.avoid, 
-				 avoid_child, flags_child);
+		unlink(this, child, 
+		       link.dependency,
+		       link.avoid, 
+		       avoid_child, flags_child);
 	}
 
 	return false;
@@ -1867,7 +2005,7 @@ void Execution::initialize(Stack avoid)
 		/* This is a special dynamic target.  Add, as an initial
 		 * dependency, the corresponding file.  
 		 */
-		Flags flags_child= avoid.get_lowest() | F_DYNAMIC;
+		Flags flags_child= avoid.get_lowest() | F_READ;
 
 		shared_ptr <Dependency> dependency_child= make_shared <Direct_Dependency>
 			(flags_child,

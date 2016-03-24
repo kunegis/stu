@@ -6,6 +6,11 @@ are added, which are documented in this file.  When the major version is
 increased, backward-incompatible changes are made, which are documented
 in the file MIGRATION. 
 
+2016-01-24  Version 1.8:
+
+* Variable dependencies can now be enclosed in parentheses, as in
+  '($[A])'.  This was not allowed before. 
+
 2015-11-22  Version 1.7:
 
 * A new flag '&', marks trivial dependencies.  '&' is used as a prefix,

@@ -24,22 +24,36 @@ enum
 	/* (?) Don't create the dependency if it doesn't exist */
 	F_OPTIONAL         = (1 << 1),
 
+	/* (&) Trivial dependency */
+	F_TRIVIAL          = (1 << 2),
+
 	/* Intransitive bits */ 
 
-	/* ([...]) Copy content of file over as new dependencies.  Used
+	/* Read content of file and add it as new dependencies.  Used
 	 * only for [...[X]...]->X links. */
-	F_DYNAMIC          = (1 << 2),  
+	F_READ             = (1 << 3),  
 
 	/* ($[...]) Content of file is used as variable */ 
-	F_VARIABLE         = (1 << 3),
+	F_VARIABLE         = (1 << 4),
 
-	/* (&) Trivial dependency */
-	F_TRIVIAL          = (1 << 4)
 };
 
 /* Number of flags that are used, i.e., are transitive.  They correspond
  * to the first N flags declared in Flag */ 
-const int F_COUNT= 2;
+const int F_COUNT= 3;
+
+/* Textual representation of a flags value. 
+ */
+string format_flags(Flags flags) 
+{
+	string ret= "";
+	if (flags & F_EXISTENCE)  ret += '!';
+	if (flags & F_OPTIONAL)   ret += '?';
+	if (flags & F_TRIVIAL)    ret += '&';
+	if (flags & F_READ)       ret += '#';
+	if (flags & F_VARIABLE)   ret += 'V';
+	return ret;
+}
 
 /* A dependency, which can be simple or compound.  All dependencies
  * carry information about their place(s) of declaration. 
@@ -70,6 +84,8 @@ public:
 	virtual void set_place_existence(const Place &place)= 0;
 	virtual void set_place_optional (const Place &place)= 0;
 	virtual void set_place_trivial  (const Place &place)= 0;
+
+	virtual string format() const= 0; 
 
 #ifndef NDEBUG
 	virtual void print() const= 0; 
@@ -138,7 +154,7 @@ class Direct_Dependency
 {
 public:
 
-	/* Cannot be an empty target */ 
+	/* Cannot be a root target */ 
 	Place_Param_Target place_param_target; 
 	
 	/* The place where the dependency is declared */ 
@@ -162,7 +178,7 @@ public:
 		   place_param_target(place_param_target_),
 		   place(place_)
 	{ 
-		assert((flags_ & F_DYNAMIC) == 0); 
+		assert((flags_ & F_READ) == 0); 
 		check(); 
 	}
 
@@ -177,16 +193,24 @@ public:
 	}
 
 	void check() const {
-		assert(place_param_target.type != T_EMPTY); 
+		assert(place_param_target.type != T_ROOT); 
 		/* Must not be dynamic, since dynamic dependencies are
 		 * represented using Dynamic_Dependency */ 
 		assert(place_param_target.type < T_DYNAMIC);
 	}
 
+	string format() const {
+		string text_param_target= place_param_target.format(); 
+		string text_flags= format_flags(flags);
+		return fmt("%s%s",
+			   text_flags,
+			   text_param_target);
+	}
+
 #ifndef NDEBUG
 	void print() const {
 		place.print_beginning(); 
-		string text= place_param_target.text();
+		string text= place_param_target.format();
 		fprintf(stderr, "%d %s\n", flags, text.c_str()); 
 	}
 #endif
@@ -202,11 +226,11 @@ public:
 	shared_ptr <Dependency> dependency;
 
 	Dynamic_Dependency(Flags flags_,
-					   shared_ptr <Dependency> dependency_)
+			   shared_ptr <Dependency> dependency_)
 		:  Base_Dependency(flags_), 
 		   dependency(dependency_)
 	{
-		assert((flags & F_DYNAMIC) == 0); 
+		assert((flags & F_READ) == 0); 
 	}
 
 	shared_ptr <Dependency> 
@@ -227,6 +251,14 @@ public:
 		return dependency->get_place(); 
 	}
 
+	string format() const {
+		string text_dependency= dependency->format(); 
+		string text_flags= format_flags(flags);
+		return fmt("%s[%s]",
+			   text_flags,
+			   text_dependency); 
+	}
+
 #ifndef NDEBUG
 	void print() const {
 		fprintf(stderr, "dynamic %d of:  ", flags);
@@ -243,17 +275,21 @@ public:
  * almost all used platforms.  
  */
 /* As a general rule, indexes named I go over the F_COUNT different
- * flags, and indexes named J go over the (K+1) levels of depth. 
+ * flags (0..F_COUNT-1), and indexes named J go over the (K+1) levels of
+ * depth (0..K).  
+ */
+/* Example:  a dynamic dependency  ?[!X]  would be represented by the stack of bits
+ *   J=1:    bit ?
+ *   J=0:    bit !
  */
 class Stack
 {
 private:
-
 	unsigned k;
 	unsigned bits[F_COUNT];
 
 public:
-
+	/* Check the internal consistency of this object */ 
 	void check() const {
 		assert(k + 1 < CHAR_BIT * sizeof(int)); 
 		for (int i= 0;  i < F_COUNT;  ++i) {
@@ -264,7 +300,7 @@ public:
 
 	/* Depth is zero, the single flag is zero */ 
 	Stack()
-		: k(0)
+		:  k(0)
 	{
 		memset(bits, 0, sizeof(bits));
 		check();
@@ -272,7 +308,7 @@ public:
 
 	/* Depth is zero, the flag type is given */ 
 	explicit Stack(Flags flags)
-		: k(0)
+		:  k(0)
 	{
 		for (int i= 0;  i < F_COUNT;  ++i) {
 			bits[i]= ((flags & (1 << i)) != 0);
@@ -282,7 +318,7 @@ public:
 
 	/* Initalize to all-zero with the given depth */ 
 	Stack(unsigned k_, int zero) 
-		: k(k_)
+		:  k(k_)
 	{
 		(void) zero; 
 		if (k >= CHAR_BIT * sizeof(int) - 1) {
@@ -430,20 +466,29 @@ public:
 			bits[i] >>= 1;
 		}
 	}
+
+	string format() const {
+		string ret= "";
+		for (int j= k;  j >= 0;  --j) {
+			Flags flags_j= get(j);
+			if (j)  ret += ',';
+			ret += format_flags(flags_j);
+		}
+		return fmt("{%s}", ret); 
+	}
 };
 
 Dependency::~Dependency() { }
 
-shared_ptr <Dependency> Direct_Dependency::instantiate
-(const map <string, string> &mapping) const
+shared_ptr <Dependency> Direct_Dependency
+::instantiate(const map <string, string> &mapping) const
 {
 	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
 
-	shared_ptr <Dependency> ret
-		(new Direct_Dependency
-		 (flags, *ret_target, place));
+	shared_ptr <Dependency> ret(new Direct_Dependency(flags, *ret_target, place));
 
-	string name= ret_target->place_param_name.unparametrized();
+	assert(ret_target->place_param_name.get_n() == 0); 
+	string name= ret_target->place_param_name.format_mid(); 
 
 	if ((flags & F_VARIABLE) &&
 		name.find('=') != string::npos) {

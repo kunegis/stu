@@ -1,0 +1,2 @@
+main.stu:3:6: variable dependency $[X] must not be declared as trivial dependency
+main.stu:3:4: using '&'

@@ -1,1 +1,1 @@
-main.stu:4:7: phony target @B cannot appear as dynamic dependency for target 'A'
+main.stu:4:7: phony target @B must not appear as dynamic dependency for target 'A'

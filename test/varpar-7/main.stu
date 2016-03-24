@@ -1,0 +1,5 @@
+# Error
+
+A: [[B]] { touch A }
+>B { echo '[$[X]]' }
+X { touch X }

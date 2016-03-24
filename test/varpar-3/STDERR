@@ -1,0 +1,2 @@
+main.stu:3:7: variable dependency $[B] must not appear
+main.stu:3:4: within dynamic dependency started by '['

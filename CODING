@@ -3,7 +3,7 @@ Here are the relevant coding conventions we use.
 == Standards == 
 
 * Use the C++11 version of C++; avoid extensions such as GNU extensions   
-* Use "nullptr" as the null pointer constant.  
+* Use 'nullptr' as the null pointer constant, instead of 'NULL'
 * Compilation is done in a single step by compiling the file 'stu.cc'.
   All other source files are actually *.hh files which are included.
   Therefore, we don't have to care about separation of declarations and
@@ -54,3 +54,9 @@ released; this is necessary for caching.
 
 (3) Other types can be used as pass-by-value, or pass-by-reference if
 necessary. 
+
+== Common variable names ==
+
+* 'text':  a string used for display
+* 'format_*':  a function that formats an object for display
+* 'filename'

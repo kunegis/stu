@@ -1,4 +1,3 @@
-
 This file catalogues the usage of individual characters in Stu files.
 Since Stu is used to specify filenames, many characters that are used as
 operators in programming languages are allowed in filenames, such as
@@ -38,7 +37,7 @@ These characters are single-character tokens.
 ;	End of rule
 @	Phony target
 ( )	List 
-[ ]	Dynamic dependency 
+[ ]	Dynamic list
 >	Output redirection
 <	Input redirection 
 !	Existence-only dependency
@@ -48,9 +47,7 @@ These characters are single-character tokens.
 == As-yet unused operators ==
 
 =	Variable dependency name assignment / file copy / here-document 
-*	String multiplication 
+*	String concatenation 
 ,	modifiers (e.g., ',0' for \0-separated input files). 
-\	interpreter:   \octave { }
-\	Set difference:   dat/plot.([dat/NETWORKS] \ enron).eps
-|	Index-wise concatenation:  (a b) | (x y) results in (ax by)
-&	Set intersection:  (a b c) & (b c d) is equivalent to (b c)
+\	interpreter for non-shell rules:  \octave { }
+|	(no proposed use)

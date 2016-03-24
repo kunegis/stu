@@ -10,6 +10,10 @@
 
 all: stu.debug stu.ndebug stu.1 stu.text check
 
+.PHONY:  all clean check 
+
+CXX=g++
+
 CXXFLAGS_DEBUG=  -ggdb
 CXXFLAGS_NDEBUG= -O3 -DNDEBUG -s
 CXXFLAGS_PROF=   -pg -O3 -DNDEBUG 
@@ -29,10 +33,6 @@ CXXFLAGS_OTHER=             \
 CXXFLAGS_ALL_DEBUG=  $(CXXFLAGS_DEBUG)  $(CXXFLAGS_OTHER)
 CXXFLAGS_ALL_NDEBUG= $(CXXFLAGS_NDEBUG) $(CXXFLAGS_OTHER)
 CXXFLAGS_ALL_PROF=   $(CXXFLAGS_PROF)   $(CXXFLAGS_OTHER)
-
-CXX=g++
-
-.PHONY:  all clean check 
 
 check:  check_options check_test.debug check_test.ndebug
 
@@ -70,4 +70,3 @@ analysis.prof:  gmon.out
 
 clean:  
 	rm -f stu stu.debug stu.ndebug stu.1 version.hh
-

@@ -1,0 +1,11 @@
+A: B C { 
+	[ -e F ] || exit 1
+	touch A 
+}
+
+B:  ?[[D]] { touch B }
+C:  [![D]] { touch C }
+
+>D { echo E }
+>E { echo F }
+>F { echo   }

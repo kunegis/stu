@@ -4,7 +4,8 @@
  */
 
 /* Enable bounds checking when using GNU libc.  Must be defined before
- * including any of the standard headers.  (Only in non-debug mode)
+ * including any of the standard headers.  (Only in non-debug mode).  A
+ * no-op for non-GNU compilers. 
  */ 
 #ifndef NDEBUG
 #    define _GLIBCXX_DEBUG
@@ -25,17 +26,25 @@ using namespace std;
 #include <sys/time.h>
 
 /* We use getopt(), which means that Stu does only support short
- * options, and not long options.  At some point, we might switch to
- * getopt_long() though. 
+ * options, and not long options.  We avoid getopt_long() as it is a GNU
+ * extension, and the short options are sufficient for now. 
  */
-#define STU_OPTIONS "af:ghj:km:M:svVw"
+#define STU_OPTIONS "adf:ghj:km:M:svVw"
 
-/* Note: the following strings do not contain tabs */ 
+#ifdef NDEBUG
+#    define STU_HELP_VERBOSE ""
+#else 
+#    define STU_HELP_VERBOSE "   -d            Enable debug info on standard error output (only in debug version of Stu)\n"
+#endif
+
+/* Note: the following strings do not contain tabs, but only space
+ * characters */ 
 #define STU_HELP \
 	"Usage:   stu [TARGETS...] [OPTIONS...]\n" \
 	"By default, build the first target in the file 'main.stu'.\n" \
 	"Options:\n" \
 	"   -a            Treat all trivial dependencies as non-trivial\n" \
+	STU_HELP_VERBOSE \
 	"   -f FILENAME   The input file to use instead of 'main.stu'\n" \
 	"   -g            Treat all optional dependencies as non-optional\n" \
 	"   -h            Output help\n" \
@@ -43,12 +52,10 @@ using namespace std;
 	"   -k            Keep on running after errors\n" \
 	"   -m ORDER      Order to run the targets:\n" \
 	"      dfs        (default) Depth-first order, like in Make\n" \
-	"      bfs        Breadth-first order\n" \
 	"      random     Random order\n" \
-	"      target     Pseudorandom order, seeded by individual target names\n" \
 	"   -M STRING     Pseudorandom run order, seeded by given string\n" \
 	"   -s            Silent mode; do not output commands\n" \
-	"   -v            Enable verbose mode\n" \
+	"   -v            Verbose mode; print additional info on standard error output\n" \
 	"   -V            Output version\n" \
 	"   -w            Short output; don't show the commands, only the target filenames\n"
 
@@ -57,9 +64,11 @@ void init_buf();
 
 int main(int argc, char **argv, char **envp)
 {
+	/*
+	 * Initialization codes 
+	 */
 	dollar_zero= argv[0]; 
 	envp_global= (const char **)envp; 
-
 	process_init(); 
 
 	/* Either FILE_FD is initialized to a file that should be read
@@ -77,6 +86,9 @@ int main(int argc, char **argv, char **envp)
 		switch (c) {
 
 		case 'a': option_nontrivial= true;     break;
+#ifndef NDEBUG
+		case 'd': option_debug= true;          break;
+#endif 
 		case 'g': option_nonoptional= true;    break;
 		case 'h': fputs(STU_HELP, stdout);     exit(0);
 		case 'k': option_continue= true;       break;
@@ -216,7 +228,7 @@ int main(int argc, char **argv, char **envp)
 			/* If no targets are given on the command line,
 			 * use the first non-variable target */ 
 			if (targets.empty()) {
-				Target target(T_EMPTY); 
+				Target target(T_ROOT); 
 				Place place; 
 
 				for (auto i= rules.begin();  i != rules.end();  ++i) {
@@ -235,7 +247,7 @@ int main(int argc, char **argv, char **envp)
 					}
 				}
 
-				if (target.type == T_EMPTY) {
+				if (target.type == T_ROOT) {
 					print_error(fmt("Input file '%s' does not contain rules "
 							"and no target given", 
 							filename)); 

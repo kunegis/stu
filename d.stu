@@ -1,0 +1,23 @@
+# 'A' has 'X' as a trivial dependency, declared through the dynamic
+# dependency 'B'.  Make sure that 'X' is built.  Even though 'X' is
+# trivial, it must be built.  
+
+# The problem is that the dependency &X gets added to [B] and not to
+# 'A', and therefore [B] does not now that 'A' has to be "executed
+# anyway".  
+
+# How to implement it:
+#   * Call every child Execution twice, once normally, then forcefully
+#     (even building the trivial dependencies) 
+
+>A: C  &[B] { cat C X }  
+>B {echo X     }  
+>C {echo LINE 1}
+>X {echo LINE 2}
+
+
+#                   &
+#     A ----- [B] ----- X
+#
+#
+#     A ----- [B] ----- X

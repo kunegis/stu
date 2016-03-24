@@ -1,4 +1,3 @@
-
 # Allow semicolon instead of command for files.  The meaning is the the
 # target is always built together with the dependencies. 
 

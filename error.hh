@@ -8,12 +8,18 @@
  */ 
 
 /* Format of error output:  There are two types of error output lines:
- * error messages and traces.  Error message are of the form "$0: ***
- * $MESSAGE" and traces are of the form "$FILENAME:$LINE:$COLUMN:
- * $MESSAGE".  Traces are used when it is possible to refer to a
- * specific location in the input files (or command line, etc.).  
- * Errors are avoided when possible: all errors should be traced back to
- * a place in the source if possible.    
+ * error messages and traces.  Error messages are of the form 
+ *
+ *         $0: *** $MESSAGE
+ * 
+ * and traces are of the form 
+ *
+ *         $FILENAME:$LINE:$COLUMN:$MESSAGE
+ *
+ * Traces are used when it is possible to refer to a specific location
+ * in the input files (or command line, etc.).  Errors are avoided when
+ * possible: all errors should be traced back to a place in the source
+ * if possible.
  */
 
 /* Wording of messages:  Error messages begin with uppercase letters;

@@ -1,0 +1,4 @@
+# Error
+
+A: &($[X]) { touch A }  
+X { touch X }

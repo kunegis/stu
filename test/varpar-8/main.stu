@@ -1,0 +1,8 @@
+# Works. 
+
+>A: [B] { echo $X }
+>B:     { echo '[C]' }
+>C:     { echo '$[X]' }
+>X:     { echo CORRECT }
+
+

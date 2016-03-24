@@ -1,11 +1,10 @@
 #==== Small features that complete what we already have ====
 
 #
-# Allow variable dependencies within parentheses.  (Not allowed at the
-# moment) 
+# Support $STU_SHELL for alternatives to /bin/sh.  Only supposed to ne
+# for replacing with another shell that also supports the -e and -c
+# options.  (For when /bin/sh is not the POSIX shell.)
 #
->A:  ($[B]) { echo $B }
->B { echo CORRECT }
 
 #
 # Make -v be better.  Make it output dependencies and traces. 
@@ -54,10 +53,19 @@ prog:  prog.c
 #
 
 #
-# Support $STU_SHELL for alternatives to /bin/sh. 
+# Option to pass rules. 
 #
-# Problem:  how to invole it?  At the moment, we use the '-e' and '-c'
-# options, as well as the '--' mechanism. 
+
+#
+# An option to make backups of otherwise deleted files. 
+#
+
+#
+# An option to remove the target before each execution. 
+#
+
+#
+# An option to never delete target files when a command fails. 
 #
 
 #==== Big features that complete what we already have ====
@@ -69,14 +77,14 @@ prog:  prog.c
 # Will the file begin and end with spaces?
 CFLAGS = { -g -Werror }
 
-# Will the file begin with a newline? 
+# Will the file begin with a newline?   No.
 LIST = {
 aaa
 bbb
 ccc
 }
 
-# Will indentation be preserved? 
+# Will indentation be preserved?   No.
 LIST2 = {
    aaa
    bbb
@@ -271,6 +279,21 @@ A: [B],i;
 # -m bfs (breadth-first order) and -m target (pseudotarget by target
 # name) 
 #
+
+#
+# Optional rules
+#
+
+# If $NAME.svg is present, use it to build $NAME.pdf.  If $NAME.svg is
+# not present, allow $NAME.pdf to be present without any dependencies.
+# The big question is how can the rule distinguish when the rule is
+# activated.  When all dependencies exist?  When all dependencies
+# *could* be built? 
+? $NAME.pdf:  $NAME.svg
+{
+	inkscape ...
+}
+
 
 #==== New features that change extend the Stu drastically ====
 

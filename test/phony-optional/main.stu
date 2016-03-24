@@ -1,4 +1,3 @@
-
 # Syntactically allowed 
 
 A: ? @x { touch A }

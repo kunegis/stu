@@ -1,0 +1,4 @@
+# No error.  '&' does nothing here. 
+
+A: & (@x) { touch A }
+@x;

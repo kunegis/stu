@@ -8,27 +8,37 @@ class Link
 private:
 	void check() const {
 		avoid.check();
-		if (avoid.get_k() == 0) {
-			assert(avoid.get_lowest() == (flags & ((1 << F_COUNT) - 1)));
-		}
+		
+		/* Check that the highest level in AVOID equals the
+		 * TRANSITIVE flags in FLAGS */ 
+		assert(avoid.get_highest() == (flags & ((1 << F_COUNT) - 1)));
+
+		/* Check that the flags correspond to the flags in DEPENDENCY */
+		assert(dependency == nullptr ||
+		       (dependency->get_flags() & ~flags) == 0);
 	}
 
 public:
-
-	/* The length is one plus the dynamicity (number of dynamic
+	/* Negation of flags valid for each level. 
+	 * The length is one plus the dynamicity (number of dynamic
 	 * indirections).  Small indices indicate the links lower in the
 	 * hierarchy. 
-	 * This variable only needs to hold the EXISTENCE and OPTIONAL
-	 * bits (i.e., transitive bits). 
+	 * This variable only holds the EXISTENCE/OPTIONAL/TRIVIAL
+	 * bits (i.e., transitive bits as defined by F_COUNT). 
 	 */
 	Stack avoid;
 
-	/* Flags that are valid for this dependency */ 
+	/* Flags that are valid for this dependency, including the
+	 * non-transitive ones.  The transitive-bit part of this
+	 * variable always equals the lowest level bits in AVOID. 
+	 */  
 	Flags flags;
 
 	/* The place of the declaration of the dependency */ 
 	Place place; 
 
+	/* May be NULL.  May contain LESS flags than stored in AVOID and FLAGS. 
+	 */
 	shared_ptr <Dependency> dependency;
 
 	Link() { }
@@ -56,8 +66,8 @@ public:
 		check();
 	}
 
-	/* The flags of the Dependency_Info only contain the top-level flags
-	 * of the dependency if this is a direct dependency. 
+	/* The flags in this object only contain the top-level flags
+	 * of the dependency if this is a dynamic dependency. 
 	 */ 
 	Link(shared_ptr <Dependency> dependency_)
 		:  avoid(dependency_),
@@ -75,6 +85,19 @@ public:
 		avoid.add(avoid_);
 		flags |= flags_;
 		check(); 
+	}
+
+	string format() const {
+		string text_dependency= 
+			dependency == nullptr 
+			? "NULL"
+			: dependency->format(); 
+		string text_avoid= avoid.format();
+		string text_flags= format_flags(flags);
+		return fmt("Link(%s, %s, %s)",
+			   text_dependency,
+			   text_flags, 
+			   text_avoid); 
 	}
 };
 

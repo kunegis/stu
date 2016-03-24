@@ -1,0 +1,23 @@
+#! /bin/sh
+
+doo() { echo "$@" ; "$@" ; }
+
+doo rm -f ?
+doo touch A
+doo sleep 2
+doo touch B
+
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 '*** Exit code'
+	exit 1
+}
+
+grep -Fq 'Nothing to be done' list.out || {
+	echo >&2 "*** Missing 'Nothing to be done'"
+	exit 1
+}
+
+exit 0

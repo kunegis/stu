@@ -6,7 +6,7 @@
  * This is a recursive descent parser. 
  */
 
-/* A YACC-like syntax description is given in the manpage. 
+/* A Yacc-like syntax description is given in the manpage. 
  */ 
 
 /*
@@ -24,10 +24,15 @@
  * &...      (prefix) Trivial dependency
  * ---------------
  * [...]     (circumfix) Dynamic dependency; cannot contain '$[]' or '@'
- * (...)     (circumfix) Capture; cannot contain '$[]'
+ * (...)     (circumfix) Capture
  * $[...]    (circumfix) Variable inclusion; argument cannot contain
  *           '?', '[]', '()', '*' or '@' 
  */
+
+/* As a general rule, this code does not check that imcompatible
+ * constructs (like '!' and '?' or '!' and '$[') are used together.
+ * Instead, this is checked within Execution and not here, because these
+ * can also come from dynamic dependencies. */
 
 #include <memory>
 
@@ -53,10 +58,10 @@ public:
 	
 	/*
 	 * Methods for building the syntax tree:  Each has a name
-	 * corresponding to the symbol given
-	 * above.  The argument RET is where the result is written.  If the
-	 * return value is BOOL, it denotes whether something was read.  On
-	 * syntax errors, Logical_Error's are thrown. 
+	 * corresponding to the symbol given by the Yacc syntax in the
+	 * manpage.  The argument RET is where the result is written.
+	 * If the return value is BOOL, it denotes whether something was
+	 * read.  On syntax errors, LOGICAL_ERROR is thrown. 
 	 */
 
 	/* In some of the following functions, write the input filename into
@@ -72,29 +77,19 @@ public:
 	/* Return nullptr when nothing was parsed */ 
 	shared_ptr <Rule> build_rule(); 
 
-	void build_dependency_list(vector <shared_ptr <Dependency> > &ret, 
+	bool build_expression_list(vector <shared_ptr <Dependency> > &ret, 
 				   Place_Param_Name &place_param_name_input,
 				   Place &place_input);
-
-	bool build_dependency(vector <shared_ptr <Dependency> > &ret, 
-			      Place_Param_Name &place_param_name_input,
-			      Place &place_input);
-
-	shared_ptr <Dependency> build_variable_dependency
-	(Place_Param_Name &place_param_name_input,
-	 Place &place_input);
 
 	bool build_expression(vector <shared_ptr <Dependency> > &ret, 
 			      Place_Param_Name &place_param_name_input,
 			      Place &place_input);
 
-	bool build_single_expression(vector <shared_ptr <Dependency> > &ret, 
-				     Place_Param_Name &place_param_name_input,
-				     Place &place_input);
+	shared_ptr <Dependency> build_variable_dependency(Place_Param_Name &place_param_name_input,
+							  Place &place_input);
 
-	shared_ptr <Dependency> build_redirect_dependency
-	(Place_Param_Name &place_param_name_input,
-	 Place &place_input); 
+	shared_ptr <Dependency> build_redirect_dependency(Place_Param_Name &place_param_name_input,
+							  Place &place_input); 
 
 	/* Whether the next token is the given operator */ 
 	bool is_operator(char op) const {
@@ -205,7 +200,7 @@ shared_ptr <Rule> Build::build_rule()
 
 	if (iter == tokens.end()) {
 		place_end << "expected a dependency or a command";
-		place_target << fmt("after target %s", place_param_target->text()); 
+		place_target << fmt("after target %s", place_param_target->format()); 
 		throw ERROR_LOGICAL;
 	}
 
@@ -220,13 +215,13 @@ shared_ptr <Rule> Build::build_rule()
 	if (is_operator(':')) {
 		had_colon= true; 
 		++iter; 
-		build_dependency_list(dependencies, filename_input, place_input); 
+		build_expression_list(dependencies, filename_input, place_input); 
 	} 
 
 	/* Command */ 
 	if (iter == tokens.end()) {
 		place_end << "excpected command or ';'";
-		place_target << fmt("for target %s", place_param_target->text());
+		place_target << fmt("for target %s", place_param_target->format());
 		throw ERROR_LOGICAL;
 	}
 
@@ -246,7 +241,7 @@ shared_ptr <Rule> Build::build_rule()
 				 ? "expected a dependency, a command or ';'"
 				 : "expected ':', a command or ';'");
 			place_target <<
-				fmt("for target %s", place_param_target->text());
+				fmt("for target %s", place_param_target->format());
 			throw ERROR_LOGICAL;
 		}
 		place_nocommand= (*iter)->get_place(); 
@@ -285,33 +280,175 @@ shared_ptr <Rule> Build::build_rule()
 	return ret; 
 }
 
-void Build::build_dependency_list(vector <shared_ptr <Dependency> > &ret,
+bool Build::build_expression_list(vector <shared_ptr <Dependency> > &ret, 
 				  Place_Param_Name &place_param_name_input,
 				  Place &place_input)
 {
-	/* As a general rule, the places of the generated dependencies are
-	 * on the filenames of the dependencies or the '@' of phony
-	 * dependencies, and not on prefixes such as '!', '<', etc. 
-	 */
+	assert(ret.size() == 0);
 
 	while (iter != tokens.end()) {
-		vector <shared_ptr <Dependency> > dependencies_new; 
-		bool r= build_dependency(dependencies_new, place_param_name_input, place_input);
+		vector <shared_ptr <Dependency> > ret_new; 
+		bool r= build_expression(ret_new, place_param_name_input, place_input);
 		if (!r) {
-			assert(dependencies_new.size() == 0); 
-			return; 
+			assert(ret_new.size() == 0); 
+			return ! ret.empty(); 
 		}
-		ret.insert(ret.end(), dependencies_new.begin(), dependencies_new.end()); 
+		ret.insert(ret.end(), ret_new.begin(), ret_new.end()); 
 	}
+
+	return ! ret.empty(); 
 }
 
-bool Build::build_dependency(vector <shared_ptr <Dependency> > &ret, 
+bool Build::build_expression(vector <shared_ptr <Dependency> > &ret, 
 			     Place_Param_Name &place_param_name_input,
 			     Place &place_input)
 {
 	assert(ret.size() == 0); 
 
-	/* Variable dependency */ 
+	/* '(' expression* ')' */ 
+	if (is_operator('(')) {
+		Place place_paren= (*iter)->get_place();
+		++iter;
+		vector <shared_ptr <Dependency> > r;
+		while ( build_expression_list(r, place_param_name_input, place_input)) {
+			ret.insert(ret.end(), r.begin(), r.end()); 
+			r.clear(); 
+		}
+		if (iter == tokens.end()) {
+			place_end << "expected ')'";
+			place_paren << "for group started by '('"; 
+			throw ERROR_LOGICAL;
+		}
+		if (! is_operator(')')) {
+			(*iter)->get_place() << "expected ')'";
+			place_paren << "for group started by '('"; 
+			throw ERROR_LOGICAL;
+		}
+		++ iter; 
+		return true; 
+	} 
+
+	/* '[' expression* ']' */
+	if (is_operator('[')) {
+		Place place_paren= (*iter)->get_place();
+		++iter;	
+		vector <shared_ptr <Dependency> > r2;
+		vector <shared_ptr <Dependency> > r;
+		while (build_expression_list(r, place_param_name_input, place_input)) {
+			r2.insert(r2.end(), r.begin(), r.end()); 
+			r.clear(); 
+		}
+		if (iter == tokens.end()) {
+			place_end << "expected ']'";
+			place_paren << "for group started by '['"; 
+			throw ERROR_LOGICAL;
+		}
+		if (! is_operator(']')) {
+			(*iter)->get_place() << "expected ']'";
+			place_paren << "for group started by '['"; 
+			throw ERROR_LOGICAL;
+		}
+		++ iter; 
+		for (auto j= r2.begin();  j != r2.end();  ++j) {
+			
+			/* Variable dependency cannot appear within
+			 * dynamic dependency */ 
+			if ((*j)->has_flags(F_VARIABLE)) {
+				string text= dynamic_pointer_cast <Direct_Dependency> (*j)
+					->place_param_target.format_mid();
+				(*j)->get_place() <<
+					fmt("variable dependency $[%s] must not appear", text);
+				place_paren <<
+					"within dynamic dependency started by '['";
+				throw ERROR_LOGICAL; 
+			}
+
+			shared_ptr <Dependency> dependency_new= 
+				make_shared <Dynamic_Dependency> (0, *j);
+			ret.push_back(dependency_new);
+		}
+		return true; 
+	} 
+
+	/* '!' single_expression */ 
+ 	if (is_operator('!')) {
+ 		Place place_exclam= (*iter)->get_place();
+ 		++iter; 
+		if (! build_expression(ret, place_param_name_input, place_input)) {
+			if (iter == tokens.end()) 
+				place_end << "expected a dependency";
+			else
+				(*iter)->get_place() << "expected a dependency";
+			place_exclam << "after '!'"; 
+			throw ERROR_LOGICAL;
+		}
+		for (auto j= ret.begin();  j != ret.end();  ++j) {
+			(*j)->add_flags(F_EXISTENCE);
+			(*j)->set_place_existence(place_exclam); 
+		}
+		return true;
+	}
+
+	/* '?' single_expression */ 
+ 	if (is_operator('?')) {
+ 		Place place_question= (*iter)->get_place();
+ 		++iter; 
+		if (! build_expression(ret, place_param_name_input, place_input)) {
+			if (iter == tokens.end()) {
+				place_end << "expected a dependency";
+				place_question << "after '?'"; 
+				throw ERROR_LOGICAL;
+			} else {
+				(*iter)->get_place() << "expected a dependency";
+				place_question << "after '?'"; 
+				throw ERROR_LOGICAL;
+			}
+		}
+		if (! option_nonoptional) {
+			for (auto j= ret.begin();  j != ret.end();  ++j) {
+				/* D_INPUT and D_OPTIONAL cannot be used at the same
+				 * time. Note: Input redirection is not allowed in
+				 * dynamic dependencies, and therefore it is sufficient
+				 * to check this here.     */   
+				if (place_param_name_input.place.type != Place::P_EMPTY) {
+					place_input <<
+						"input redirection using '<' must not be used";
+					place_question <<
+						"in conjunction with optional dependencies using '?'"; 
+					throw ERROR_LOGICAL;
+				}
+
+				(*j)->add_flags(F_OPTIONAL); 
+				(*j)->set_place_optional(place_question); 
+			}
+		}
+		return true;
+	}
+
+	/* '&' single_expression */ 
+	if (is_operator('&')) {
+		Place place_ampersand= (*iter)->get_place(); 
+		++iter;
+		if (! build_expression(ret, place_param_name_input, place_input)) {
+			if (iter == tokens.end()) {
+				place_end << "expected a dependency";
+				place_ampersand << "after '&'"; 
+				throw ERROR_LOGICAL;
+			} else {
+				(*iter)->get_place() << "expected a dependency";
+				place_ampersand << "after '&'"; 
+				throw ERROR_LOGICAL;
+			}
+		}
+		for (auto j= ret.begin();  j != ret.end();  ++j) {
+			if (! option_nontrivial)
+				(*j)->add_flags(F_TRIVIAL); 
+			(*j)->set_place_trivial(place_ampersand); 
+		}
+		return true;
+	}
+		
+	/* '$' ; variable dependency */ 
 	shared_ptr <Dependency> dependency= 
 		build_variable_dependency(place_param_name_input, place_input);
 	if (dependency != nullptr) {
@@ -319,17 +456,19 @@ bool Build::build_dependency(vector <shared_ptr <Dependency> > &ret,
 		return true; 
 	}
 
-	/* Expression */ 
-	bool r= build_expression(ret, place_param_name_input, place_input); 
-	if (!r)
-		return false;
+	shared_ptr <Dependency> r= 
+		build_redirect_dependency(place_param_name_input, place_input); 
+	if (r != nullptr) {
+		ret.push_back(r);
+		return true; 
+	}
 
-	return true;
+	return false;
 }
 
-shared_ptr <Dependency> Build::build_variable_dependency
-(Place_Param_Name &place_param_name_input, 
- Place &place_input)
+shared_ptr <Dependency> Build
+::build_variable_dependency(Place_Param_Name &place_param_name_input, 
+			    Place &place_input)
 {
 	bool has_input= false;
 
@@ -437,178 +576,15 @@ shared_ptr <Dependency> Build::build_variable_dependency
 	if (has_input) {
 		place_param_name_input= *place_param_name;
 	}
-	
+
+	/* The place of the variable dependency as a whole is set on the
+	 * dollar sign.  It would be conceivable to also set it
+	 * on the name contained in it. 
+	 */
 	return shared_ptr <Dependency> 
 		(new Direct_Dependency
 		 (flags,
 		  Place_Param_Target(T_FILE, *place_param_name, place_dollar)));
-}
-
-bool Build::build_expression(vector <shared_ptr <Dependency> > &ret, 
-			     Place_Param_Name &place_param_name_input,
-			     Place &place_input)
-{
-	assert(ret.size() == 0); 
-
-	bool r= build_single_expression(ret, place_param_name_input, place_input);
-
-	if (! r)
-		return false; 
-
-	return true;
-}
-
-bool Build::build_single_expression(vector <shared_ptr <Dependency> > &ret, 
-				    Place_Param_Name &place_param_name_input,
-				    Place &place_input)
-{
-	assert(ret.size() == 0); 
-
-	/* '(' expression* ')' */ 
-	if (iter != tokens.end() && is_operator('(')) {
-		Place place_paren= (*iter)->get_place();
-		++iter;
-		vector <shared_ptr <Dependency> > r;
-		while (build_expression(r, place_param_name_input, place_input)) {
-			ret.insert(ret.end(), r.begin(), r.end()); 
-			r.clear(); 
-		}
-		if (iter == tokens.end()) {
-			place_end << "expected ')'";
-			place_paren << "for group started by '('"; 
-			throw ERROR_LOGICAL;
-		}
-		if (! is_operator(')')) {
-			(*iter)->get_place() << "expected ')'";
-			place_paren << "for group started by '('"; 
-			throw ERROR_LOGICAL;
-		}
-		++ iter; 
-		return true; 
-	} 
-
-	/* '[' expression* ']' */
-	if (iter != tokens.end() && is_operator('[')) {
-		Place place_paren= (*iter)->get_place();
-		++iter;	
-		vector <shared_ptr <Dependency> > r2;
-		vector <shared_ptr <Dependency> > r;
-		while (build_expression(r, place_param_name_input, place_input)) {
-			r2.insert(r2.end(), r.begin(), r.end()); 
-			r.clear(); 
-		}
-		if (iter == tokens.end()) {
-			place_end << "expected ']'";
-			place_paren << "for group started by '['"; 
-			throw ERROR_LOGICAL;
-		}
-		if (! is_operator(']')) {
-			(*iter)->get_place() << "expected ']'";
-			place_paren << "for group started by '['"; 
-			throw ERROR_LOGICAL;
-		}
-		++ iter; 
-		for (auto j= r2.begin();  j != r2.end();  ++j) {
-			shared_ptr <Dependency> dependency_new= 
-				make_shared <Dynamic_Dependency> (0, *j);
-			ret.push_back(dependency_new);
-		}
-		return true; 
-	} 
-
-	/* '!' single_expression */ 
- 	if (iter != tokens.end() && is_operator('!')) {
- 		Place place_exclam= (*iter)->get_place();
- 		++iter; 
-		if (! build_single_expression(ret, place_param_name_input, place_input)) {
-			if (iter == tokens.end()) {
-				place_end << "expected a dependency";
-				place_exclam << "after '!'";
-				throw ERROR_LOGICAL;
-			} else {
-				(*iter)->get_place() << "expected a dependency";
-				place_exclam << "after '!'"; 
-				throw ERROR_LOGICAL;
-			}
-		}
-		for (auto j= ret.begin();  j != ret.end();  ++j) {
-			(*j)->add_flags(F_EXISTENCE);
-			(*j)->set_place_existence(place_exclam); 
-		}
-		return true;
-	}
-
-	/* '?' single_expression */ 
- 	if (iter != tokens.end() && is_operator('?')) {
- 		Place place_question= (*iter)->get_place();
- 		++iter; 
-		if (! build_single_expression(ret, place_param_name_input, place_input)) {
-			if (iter == tokens.end()) {
-				place_end << "expected a dependency";
-				place_question << "after '?'"; 
-				throw ERROR_LOGICAL;
-			} else {
-				(*iter)->get_place() << "expected a dependency";
-				place_question << "after '?'"; 
-				throw ERROR_LOGICAL;
-			}
-		}
-		if (! option_nonoptional) {
-			for (auto j= ret.begin();  j != ret.end();  ++j) {
-				/* D_INPUT and D_OPTIONAL cannot be used at the same
-				 * time. Note: Input redirection is not allowed in
-				 * dynamic dependencies, and therefore it is sufficient
-				 * to check this here.     */   
-				if (place_param_name_input.place.type != Place::P_EMPTY) {
-					place_input <<
-						"input redirection using '<' must not be used";
-					place_question <<
-						"in conjunction with optional dependencies using '?'"; 
-					throw ERROR_LOGICAL;
-				}
-
-				/* That '?' and '!' cannot be used together is checked
-				 * within Execution and not here, because these can also
-				 * come from dynamic dependencies. */
-
-				(*j)->add_flags(F_OPTIONAL); 
-				(*j)->set_place_optional(place_question); 
-			}
-		}
-		return true;
-	}
-
-	/* '&' single_expression */ 
-	if (iter != tokens.end() && is_operator('&')) {
-		Place place_ampersand= (*iter)->get_place(); 
-		++iter;
-		if (! build_single_expression(ret, place_param_name_input, place_input)) {
-			if (iter == tokens.end()) {
-				place_end << "expected a dependency";
-				place_ampersand << "after '&'"; 
-				throw ERROR_LOGICAL;
-			} else {
-				(*iter)->get_place() << "expected a dependency";
-				place_ampersand << "after '&'"; 
-				throw ERROR_LOGICAL;
-			}
-		}
-		for (auto j= ret.begin();  j != ret.end();  ++j) {
-			if (! option_nontrivial)
-				(*j)->add_flags(F_TRIVIAL); 
-			(*j)->set_place_trivial(place_ampersand); 
-		}
-		return true;
-	}
-		
-	shared_ptr <Dependency> r= 
-		build_redirect_dependency(place_param_name_input, place_input); 
-	if (r != nullptr) {
-		ret.push_back(r);
-		return true; 
-	}
-
-	return false;
 }
 
 shared_ptr <Dependency> Build::build_redirect_dependency

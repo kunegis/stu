@@ -1,2 +1,2 @@
-main.stu:4:6: expected a dependency
-main.stu:4:5: after '!'
+main.stu:4:6: variable dependency $[B] must not be declared as existence-only dependency
+main.stu:4:5: using '!'

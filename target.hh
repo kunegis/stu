@@ -8,8 +8,24 @@
 
 /* Functions named text() returned a optionally quoted and printable
  * representation of the target.  These are inserted directly into error
- * messages (without adding quotes). 
+ * messages (without adding quotes).  text_mid() is used when brackets
+ * of any form are added around.  text_bare() returns the always unquoted
+ * string.  
  */
+
+string format_name_mid(string name)
+{
+	// TODO escape these properly in the output
+	if (name.find_first_of("\"\' \t\n\v\f\r") != string::npos)
+		return fmt("'%s'", name);
+	else
+		return name;
+}
+
+string format_name(string name) 
+{
+	return fmt("'%s'", name); 
+}
 
 /* Declared as int so arithmetic can be performed on it */ 
 typedef int Type; 
@@ -18,7 +34,7 @@ enum {
 	/* Top-level target, which contains the individual targets given
 	 * on the command line as dependencies.  Does not appear as
 	 * dependencies in Stu files. */ 
-	T_EMPTY,
+	T_ROOT,
 
 	/* A phony target */ 
 	T_PHONY,
@@ -42,7 +58,7 @@ enum {
 /* The dynamic depth of the target type.  The number of dynamic
  * indirections for dynamic targets, zero for all other targets. */ 
 unsigned dynamic_depth(Type type) {
-	assert(type >= T_EMPTY); 
+	assert(type >= T_ROOT); 
 	if (type < T_DYNAMIC)  
 		return 0;
 	else
@@ -73,46 +89,48 @@ public:
 		{ }
 
 	/* Used in output of Stu, i.e., mainly in error messages.  */ 
-	string text() const {
+	string format() const {
 
-		/* As a general rule, only use quotes if necessary.  Dynamics
-		 * are already quoted by brackets so never need quotes.  Phonies
-		 * only need quotes when they contain characters that may be
-		 * mixed up.  Filenames are always quoted. */ 
+		assert(type >= T_ROOT);
 
-		if (type >= T_DYNAMIC) {
-			return string(type - T_FILE, '[') + name + string(type - T_FILE, ']'); 
-		}
-
-		switch (type) {
-
-		case T_FILE:     
-			return fmt("\'%s\'", name);
-
-		case T_PHONY:    
-			if (name.find_first_of("\"\' \t\n\v\f\r") != string::npos)
-				return fmt("@'%s'", name);
-			else
-				return fmt("@%s", name);  
-
-		default:  assert(0);  return ""; 
+		if (type == T_ROOT) {
+			return "ROOT"; 
+		} else if (type == T_PHONY) {
+			return fmt("@%s", format_name_mid(name));  
+		} else {
+			return type >= T_DYNAMIC
+				? (string(type - T_FILE, '[') 
+				   + format_name_mid(name) 
+				   + string(type - T_FILE, ']'))
+				: format_name(name); 
 		}
 	}
 
-	string text_bare() const {
-		if (type >= T_DYNAMIC) {
-			return string(type - T_FILE, '[') + name + string(type - T_FILE, ']'); 
-		}
+	string format_bare() const {
+		assert(type >= T_PHONY);
 
-		switch (type) {
-
-		case T_FILE:     
-			return fmt("%s", name);
-
-		case T_PHONY:    
+		if (type == T_PHONY) {
 			return fmt("@%s", name);  
+		} else {
+			return type >= T_DYNAMIC
+				? (string(type - T_FILE, '[') 
+				   + name
+				   + string(type - T_FILE, ']'))
+				: name; 
+		}
+	}
 
-		default:  assert(0);  return ""; 
+	string format_mid() const {
+		assert(type >= T_PHONY);
+
+		if (type == T_PHONY) {
+			return fmt("@%s", format_name_mid(name));  
+		} else {
+			return type >= T_DYNAMIC
+				? (string(type - T_FILE, '[') 
+				   + format_name_mid(name) 
+				   + string(type - T_FILE, ']'))
+				: format_name_mid(name); 
 		}
 	}
 
@@ -235,11 +253,11 @@ public:
 	 * character. 
 	 */
 	bool match(string name, 
-			   map <string, string> &mapping,
-			   vector <int> &anchoring);
+		   map <string, string> &mapping,
+		   vector <int> &anchoring);
 	
 	/* The canonical string representation; unquoted */ 
-	string canonical_text() const {
+	string format_bare() const {
 		assert(texts.size() == 1 + parameters.size()); 
 		string ret= texts[0];
 		for (unsigned i= 0;  i < get_n();  ++i) {
@@ -251,6 +269,17 @@ public:
 		return ret; 
 	}
 
+	string format_mid() const {
+		assert(texts.size() == 1 + parameters.size()); 
+		string ret= format_name_mid(texts[0]);
+		for (unsigned i= 0;  i < get_n();  ++i) {
+			ret += "${";
+			ret += parameters[i];
+			ret += '}';
+			ret += format_name_mid(texts[1+i]);
+		}
+		return ret; 
+	}
 
 	/* Return whether there are duplicate parameter names.
 	 * If TRUE, write the first found into PARAMETER. 
@@ -276,12 +305,12 @@ public:
 	Type type;
 	Param_Name param_name; 
  
-	/* The empty target */
+	/* The root target */
 	Param_Target(Type type_)
 		:  type(type_),
 		   param_name("")
 		{
-			assert(type_ == T_EMPTY);
+			assert(type_ == T_ROOT);
 			/* Note:  PARAM_NAME is invalid */ 
 		}
 
@@ -301,8 +330,8 @@ public:
 		return Target(type, param_name.instantiate(mapping)); 
 	}
 
-	string text() const {
-		return Target(type, param_name.canonical_text()).text(); 
+	string format() const {
+		return Target(type, param_name.format_bare()).format(); 
 	}
 
 	/* The corresponding unparametrized target.  This target must
@@ -375,8 +404,9 @@ public:
 	 * variable additionally contains places for each parameter. */ 
 	Place place;
 
+
 	Place_Param_Target()
-		:  type(T_EMPTY),
+		:  type(T_ROOT),
 		   place_param_name()
 	{ }
 
@@ -394,8 +424,12 @@ public:
 		   place(place_)
 	{ }
 
-	string text() const {
-		return Target(type, place_param_name.canonical_text()).text(); 
+	string format() const {
+		return Target(type, place_param_name.format_bare()).format(); 
+	}
+
+	string format_mid() const {
+		return Target(type, place_param_name.format_bare()).format_mid(); 
 	}
 
 	shared_ptr <Place_Param_Target> 

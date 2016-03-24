@@ -1,0 +1,3 @@
+>A: [B] { echo $C }
+>B {echo '($[C])'}
+>C {echo CORRECT}

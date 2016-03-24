@@ -2,7 +2,7 @@
 #define GLOBAL_HH
 
 /* 
- * Global variables used by Stu
+ * Global variables of the process. 
  */ 
 
 /* The -a option (consider all trivial dependencies to be non-trivial) */ 
@@ -21,9 +21,17 @@ enum {
 	VERBOSITY_SHORT   = -1, /* Only target name */
 	VERBOSITY_LONG    =  0, /* Output the command */
 	VERBOSITY_VERBOSE = +1  /* More information */ 
+//	VERBOSITY_DEBUG   = +2  /* Double verbose, only in debug mode */
 };
 
 static int verbosity= VERBOSITY_LONG; 
+
+#ifndef NDEBUG
+/* The -d option (debug mode) */ 
+static bool option_debug= false;
+#else
+#    define option_debug false
+#endif 
 
 enum Mode {
 	MODE_DFS   = 0,
@@ -32,11 +40,15 @@ enum Mode {
 	/* -M mode is coded as MODE_RANDOM */ 
 };
 
+// TODO rename this variable to "mode".  Same for similarly-named
+// variables.  
 static int order= MODE_DFS; 
 
 /* Whether to use vectors for randomization */ 
 static bool order_vec; 
 
+/* The envp variable.  Set in main(). 
+ */
 const char **envp_global;
 
 /* Does the same as program_invocation_name (which is a GNU extension,

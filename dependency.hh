@@ -316,7 +316,7 @@ public:
 		check(); 
 	}
 
-	/* Initalize to all-zero with the given depth */ 
+	/* Initalize to all-zero with the given depth K_ */ 
 	Stack(unsigned k_, int zero) 
 		:  k(k_)
 	{
@@ -329,21 +329,7 @@ public:
 		check();
 	}
 
-	Stack(shared_ptr <Dependency> dependency) {
-		k= 0;
-		memset(bits, 0, sizeof(bits));
-		while (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
-			shared_ptr <Dynamic_Dependency> dynamic_dependency
-				= dynamic_pointer_cast <Dynamic_Dependency> (dependency);
-			add_lowest(dynamic_dependency->flags);
-			push(); 
-			dependency= dynamic_dependency->dependency; 
-		}
-		assert(dynamic_pointer_cast <Direct_Dependency> (dependency));
-		shared_ptr <Direct_Dependency> direct_dependency=
-			dynamic_pointer_cast <Direct_Dependency> (dependency);
-		add_lowest(direct_dependency->flags); 
-	}
+	Stack(shared_ptr <Dependency> dependency);
 
 	unsigned get_k() const {
 		return k;
@@ -369,6 +355,7 @@ public:
 		return ret;
 	}
 
+	// What does this do?
 	Flags get_one() const {
 		assert(k == 0);
 		check();
@@ -471,8 +458,8 @@ public:
 		string ret= "";
 		for (int j= k;  j >= 0;  --j) {
 			Flags flags_j= get(j);
-			if (j)  ret += ',';
 			ret += format_flags(flags_j);
+			if (j)  ret += ',';
 		}
 		return fmt("{%s}", ret); 
 	}
@@ -515,5 +502,51 @@ void print_dependencies(const vector <shared_ptr <Dependency> > &dependencies)
 }
 
 #endif /* ! NDEBUG */
+
+Stack::Stack(shared_ptr <Dependency> dependency) 
+{
+//	if (option_debug) {
+//	        string text_dependency= dependency->format(); 
+//		fprintf(stderr, "DEBUG  stack dependency = %s\n",
+//			text_dependency.c_str()); 
+//	}
+
+	k= 0;
+	memset(bits, 0, sizeof(bits));
+
+	while (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
+		shared_ptr <Dynamic_Dependency> dynamic_dependency
+			= dynamic_pointer_cast <Dynamic_Dependency> (dependency);
+		add_lowest(dynamic_dependency->flags);
+
+//		if (option_debug) {
+//			string text_stack= this->format(); 
+//			fprintf(stderr, "DEBUG  stack int0 %s\n",
+//				text_stack.c_str()); 
+//		}
+
+		push(); 
+		dependency= dynamic_dependency->dependency; 
+
+//		if (option_debug) {
+//			string text_stack= this->format(); 
+//			string text_dependency= dependency->format(); 
+//			fprintf(stderr, "DEBUG  stack int %s %s\n",
+//				text_stack.c_str(),
+//				text_dependency.c_str()); 
+//		}
+	}
+
+	assert(dynamic_pointer_cast <Direct_Dependency> (dependency));
+	shared_ptr <Direct_Dependency> direct_dependency=
+		dynamic_pointer_cast <Direct_Dependency> (dependency);
+	add_lowest(direct_dependency->flags); 
+
+//	if (option_debug) {
+//		string text_stack= this->format(); 
+//		fprintf(stderr, "DEBUG  stack stack = %s\n",
+//			text_stack.c_str()); 
+//	}
+}
 
 #endif /* ! DEPENDENCY_HH */

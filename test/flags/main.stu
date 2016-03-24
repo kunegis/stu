@@ -5,6 +5,9 @@
 # Also, test that variable dependencies are transitive through phonies
 # without commands. 
 #
+# Note:  this is an old version of the CFLAGS idiom.  In newer version
+# of Stu, this is better achieved using trivial dependencies. 
+#
 
 @all: a b;
 

@@ -1,6 +1,0 @@
-A:  [E]  { cp F A }
-
->E { echo F }
-
->F { echo fff }
-

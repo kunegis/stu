@@ -20,9 +20,31 @@
 #include "timestamp.hh"
 #include "buffer.hh"
 
-//#ifndef NDEBUG
-//static int debug_indent= 0;
-//#endif
+#ifndef NDEBUG
+
+static string debug_padding= "";
+
+class Debug_Pad 
+{
+public:
+	Debug_Pad() 
+	{
+		debug_padding += "   ";
+	}
+
+	~Debug_Pad() 
+	{
+		debug_padding.resize(debug_padding.size() - 3);
+	}
+};
+
+#define debug_padding_str  debug_padding.c_str()
+
+#else
+
+#define debug_padding_str  ""
+
+#endif
 
 class Execution
 {
@@ -31,7 +53,7 @@ public:
 	/* Target to build */ 
 	const Target target;
 
-	/* The instantiated file rule for this execution.  Nullptr when there
+	/* The instantiated file rule for this execution.  NULLPTR when there
 	 * is no rule for this file (this happens for instance when a
 	 * source code file is given as a dependency, or when this is a
 	 * complex dependency).  Individual dynamic dependencies do have
@@ -39,10 +61,10 @@ public:
 	 */ 
 	shared_ptr <Rule> rule;
 
-	/* The file/phony rule from which this execution was derived.  This is
+	/* The rule from which this execution was derived.  This is
 	 * only used to detect strong cycles.  To manage the dependencies, the
-	 * instantiated general rule is used.  Nullptr if and only if RULE is
-	 * Nullptr. 
+	 * instantiated general rule is used.  NULLPTR if and only if RULE is
+	 * NULLPTR. 
 	 */ 
 	shared_ptr <Rule> param_rule;
 
@@ -311,7 +333,8 @@ long Execution::jobs= 1;
 void Execution::wait() 
 {
 	if (option_debug) {
-		fprintf(stderr, "DEBUG  wait\n"); 
+		fprintf(stderr, "DEBUG %s wait\n",
+			debug_padding_str); 
 	}
 
 	assert(Execution::executions_by_pid.size()); 
@@ -320,7 +343,9 @@ void Execution::wait()
 	pid_t pid= Job::wait(&status); 
 	
 	if (option_debug) {
-		fprintf(stderr, "DEBUG  wait pid = %d\n", (int) pid); 
+		fprintf(stderr, "DEBUG %s wait pid = %d\n", 
+			debug_padding_str,
+			(int) pid);
 	}
 
 	timestamp_last= Timestamp::now(); 
@@ -334,6 +359,10 @@ void Execution::wait()
 
 bool Execution::execute(Execution *parent, Link &&link)
 {
+#ifndef NDEBUG
+	Debug_Pad debug_pad;
+#endif 
+
 	assert(jobs >= 0); 
 	assert(link.avoid.get_k() == dynamic_depth(target.type)); 
 	assert(done.get_k() == dynamic_depth(target.type));
@@ -343,13 +372,12 @@ bool Execution::execute(Execution *parent, Link &&link)
 	done.check();
 
 	if (option_debug) {
-//		debug_pad += ' '; 
 		string text_target= this->target.format();
 		string text_flags= format_flags(link.flags);
 		string text_avoid= link.avoid.format(); 
 
-		fprintf(stderr, "DEBUG  %s execute %s %s\n", 
-//			debug_pad.c_str(),
+		fprintf(stderr, "DEBUG %s %s execute %s %s\n", 
+			debug_padding_str,
 			text_target.c_str(),
 			text_flags.c_str(),
 			text_avoid.c_str()); 
@@ -680,7 +708,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	if (option_debug) {
 		string text_target= this->target.format();
-		fprintf(stderr, "DEBUG  %s execute pid = %d\n", 
+		fprintf(stderr, "DEBUG %s %s execute pid = %d\n", 
+			debug_padding_str,
 			text_target.c_str(),
 			(int)pid); 
 	}
@@ -713,12 +742,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 int Execution::execute_children(const Link &link)
 {
-//	if (option_debug) {
-//		string text_target= this->target.format();
-//		fprintf(stderr, "DEBUG  %s execute_children\n",
-//			text_target.c_str());
-//	}
-
 	/* Since unlink() may change execution->children,
 	 * we must first copy it over locally, and then iterate
 	 * through it */ 
@@ -874,10 +897,6 @@ int Execution::main(const vector <Target> &targets,
 	assert(jobs >= 0);
 	assert(targets.size() == places.size()); 
 
-//	if (option_debug) {
-//		fprintf(stderr, "DEBUG  main\n");
-//	}
-
 	timestamp_last= Timestamp::now(); 
 
 	vector <shared_ptr <Dependency> > dependencies;
@@ -904,7 +923,8 @@ int Execution::main(const vector <Target> &targets,
 
 			do {
 				if (option_debug) {
-					fprintf(stderr, "DEBUG  main.next\n");
+					fprintf(stderr, "DEBUG %s main.next\n", 
+						debug_padding_str);
 				}
 				r= execution_root->execute(nullptr, move(link));
 			} while (r);
@@ -968,7 +988,8 @@ void Execution::unlink(Execution *const parent,
 	if (option_debug) {
 		string text_parent= parent->target.format();
 		string text_child= child->target.format();
-		fprintf(stderr, "DEBUG  %s unlink %s\n",
+		fprintf(stderr, "DEBUG %s %s unlink %s\n",
+			debug_padding_str,
 			text_parent.c_str(),
 			text_child.c_str()); 
 	}
@@ -1157,16 +1178,33 @@ Execution::Execution(Target target_,
 	}
 	assert((param_rule == nullptr) == (rule == nullptr)); 
 
+	if (option_debug) {
+		string text_target= target.format();
+		string text_rule= rule->format(); 
+		fprintf(stderr, "DEBUG  %s   %s %s\n",
+			debug_padding_str,
+			text_target.c_str(),
+			text_rule.c_str()); 
+	}
+
 	parents[parent]= link; 
 	executions_by_target[target]= this;
 
-	
 	if (target.type < T_DYNAMIC && rule != nullptr) {
 		/* There is a rule for this execution */ 
 		for (auto i= rule->dependencies.begin();
 		     i != rule->dependencies.end();  ++i) {
 			assert((*i)->get_place().type != Place::P_EMPTY); 
-			buf_default.push(Link(*i)); 
+			Link link_new(*i); 
+			if (option_debug) {
+				string text_target= target.format();
+				string text_link_new= link_new.format(); 
+				fprintf(stderr, "DEBUG %s    %s push %s\n",
+					debug_padding_str,
+					text_target.c_str(),
+					text_link_new.c_str()); 
+			}
+			buf_default.push(move(link_new)); 
 		}
 	} else {
 		/* There is no rule */ 
@@ -1836,11 +1874,10 @@ bool Execution::deploy(const Link &link,
 {
 	if (option_debug) {
 		string text_target= this->target.format();
-//		string text_link= link.format(); 
 		string text_link_child= link_child.format(); 
-		fprintf(stderr, "DEBUG  %s deploy %s\n",
+		fprintf(stderr, "DEBUG %s %s deploy %s\n",
+			debug_padding_str,
 			text_target.c_str(),
-//			text_link.c_str(),
 			text_link_child.c_str());
 	}
 
@@ -1955,16 +1992,6 @@ bool Execution::deploy(const Link &link,
 		if (! option_continue)  throw error; 
 		return false;
 	}
-
-//	if (option_debug) {
-//		string text_target= target.format(); 
-//		string text_flags= format_flags(flags_child);
-//		string text_avoid= avoid_child.format(); 
-//		fprintf(stderr, "DEBUG  %s deploy link: %s %s\n",
-//			text_target.c_str(),
-//			text_flags.c_str(),
-//			text_avoid.c_str()); 
-//	}
 
 	Execution *child= Execution::get_execution
 		(target_child, 

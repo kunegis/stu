@@ -1,3 +1,5 @@
 # Error 
 
-A:  ?[B] { touch A }   >B { echo '!C' } 
+A:  ?[B] { touch A }   
+
+>B { echo '!C' } 

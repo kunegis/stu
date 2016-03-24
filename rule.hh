@@ -21,11 +21,10 @@ public:
 	 */ 
 	Place_Param_Target place_param_target; 
 
-	/* The dependencies in order of declaration. 
-	 * Dependencies are included multiple times if they appear
-	 * multiple times in the source.
-	 * All parameters occuring in the dependencies also occur
-	 * in the target. */ 
+	/* The dependencies in order of declaration.  Dependencies are
+	 * included multiple times if they appear multiple times in the
+	 * source.  All parameters occuring in the dependencies also
+	 * occur in the target. */ 
 	vector <shared_ptr <Dependency> > dependencies;
 
 	/* The place of the rule as a whole.  Taken from the place of the
@@ -36,7 +35,7 @@ public:
 	 * token. */ 
 	shared_ptr <Command> command;
 
-	/* Whether output is to be redirected.  Only if target is a file.
+	/* Whether output is to be redirected.  Only TRUE if target is a file.
 	 * The output redirection is always to the target file, so no need
 	 * to save it here. 
 	 */ 
@@ -53,9 +52,11 @@ public:
 	     bool redirect_output_,
 	     const Param_Name &filename_input_);
 
-#ifndef NDEBUG
-	void print() const;
-#endif /* ! NDEBUG */
+//#ifndef NDEBUG
+//	void print() const;
+//#endif /* ! NDEBUG */
+
+	string format() const; 
 
 	/* Return the same rule, but without parameters.  
 	 * We pass THIS as PARAM_RULE explicitly in order for it to be
@@ -176,17 +177,21 @@ Rule::instantiate(shared_ptr <Rule> rule,
 	return ret; 
 }
 
-#ifndef NDEBUG
-void Rule::print() const 
+string Rule::format() const
 {
+	string ret;
+
 	string text_target= place_param_target.format(); 
-	fprintf(stderr, "Rule(%s) {\n", text_target.c_str());
+	ret += fmt("Rule(%s:  ", text_target); 
 	for (auto i= dependencies.begin();  i != dependencies.end();  ++i) {
-		(*i)->print(); 
+		if (i != dependencies.begin())
+			ret += ", ";
+		ret += (*i)->format(); 
 	}
-	fprintf(stderr, "}\n");
+	ret += ")";
+
+	return ret; 
 }
-#endif /* ! NDEBUG */
 
 shared_ptr <Rule> Rule_Set::get(Target target, 
 				shared_ptr <Rule> &rule_original,

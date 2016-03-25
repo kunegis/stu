@@ -1,0 +1,115 @@
+#! /bin/sh
+#
+# Test the full feature set of trivial dependencies:
+#
+#            A    B    I    D    J
+#	(1) old   -    -    -    -    -> build A B I D J
+#	(2) old  old  old  old  old   -> build - - - - -
+#	(3) old  new  new  old  old   -> build - - - - -
+#	(4) old  old  new  old  old   -> build - - - - -
+#	(5) old  new  old  old  old   -> build - - - - -
+#       (6) old  old  old  new  new   -> build A - - - - 
+#       (7) old  old  old  old  new   -> build A - - D - 
+#       (8) old  old  old  new  old   -> build A - - - - 
+#	(9) old  new  new  new  new   -> build A - - - -
+#      (10) old  old  new  new  new   -> build A B - - -
+#      (11) old  new  old  new  new   -> build A - - - -
+#      (12) old  new  new  old  new   -> build A - - D -
+#      (13) old  old  new  old  new   -> build A B - D -
+#      (14) old  new  old  old  new   -> build A - - D -
+#      (15) old  new  new  new  old   -> build A - - - -
+#      (16) old  old  new  new  old   -> build A B - - -
+#      (17) old  new  old  new  old   -> build A - - - -
+#
+# 'old' and 'new' are to be understood as 'than A'. 
+#	
+# Using three types ways of declaring a trivial dependency:
+#
+#	(a) Direct
+#	(b) Via a dynamic dependency
+#	(c) Via a phony
+#
+# Files:
+#
+#	'A'     Overall target
+#	'B'     Trivial dependency of 'A'
+#	'D'     Non-trivial dependency of 'A'
+#	'X','Y' Auxiliary files (optional)  
+#
+
+doo() { echo "$@" ; "$@" ; }
+
+for type in a b c ; do
+
+	echo type=$type
+
+	doo cp $type.stu main.stu
+	echo >&2 '<main.stu >main2.stu sed -re '"'"'s,&, ,g'"'"
+	<main.stu >main2.stu sed -re 's,&, ,g'
+
+	for cas in \
+		A--ABIDJ ABIDJ-- ADJ-BI- ABDJ-I- AIDJ-B- ABI-DJ-A \
+		ABID-J-AD ABIJ-D-A A-BIDJ-A AB-IDJ-AB AI-BDJ-A \
+		AD-BIJ-AD ABD-IJ-ABD AID-BJ-AD AJ-BID-A ABJ-ID-AB \
+		AIJ-BD-A
+	do
+		
+		echo cas=$cas
+
+		list_old="$(echo "$cas" | sed -re 's,^([^-]*)-([^-]*)-([^-]*)$,\1,;s,(.),\1 ,g')"
+		list_new="$(echo "$cas" | sed -re 's,^([^-]*)-([^-]*)-([^-]*)$,\2,;s,(.),\1 ,g')"
+		list_res="$(echo "$cas" | sed -re 's,^([^-]*)-([^-]*)-([^-]*)$,\3,;s,(.),\1 ,g')"
+
+		echo list_old=$list_old
+		echo list_new=$list_new
+		echo list_res=$list_res
+
+		doo rm -f A B D I J X Y
+		for file in $list_old ; do
+			echo >&2 "echo xxx >$file"
+			echo xxx >$file
+		done
+		doo sleep 2
+		for file in $list_new ; do
+			echo >&2 "echo xxx >$file"
+			echo xxx >$file
+		done
+
+		doo ls -l 
+
+		echo ../../stu -f main.stu 
+		../../stu -f main.stu >list.out 2>list.err
+		exitcode="$?"
+
+		[ "$exitcode" = 0 ] || {
+			echo >&2 "*** ($type $cas) invalid exit code $exitcode"
+			exit 1
+		}
+		[ -r A ] || {
+			echo >&2 "*** ($type $cas) file 'A' must be built"
+			exit 1
+		}
+		[ -s list.err ] && {
+			echo >&2 "*** ($type $cas) invalid error output"
+			exit 1
+		}
+		for file in A B C ; do
+			grep -qF BUILDING_$file list.out
+			exitcode_grep="$?"
+			expr "$list_res" : '.*'$file'.*' >list.expr.out 2>list.expr.err
+			exitcode_expr="$?"
+			if [ "$exitcode_grep" \!= "$exitcode_expr" ] ; then
+				echo >&2 "*** ($type $cas) building '$file'"
+				echo >&2 "exitcode_grep=$exitcode_grep"
+				echo >&2 "exitcode_expr=$exitcode_expr"
+				exit 1
+			fi
+			[ -s list.expr.err ] && {
+				echo >&2 "*** ($type $cas) building '$file':  error in expr"
+				exit 1
+			}
+		done
+	done
+done
+
+doo rm -f A B D I J X Y main.stu main2.stu

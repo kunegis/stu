@@ -1,9 +1,0 @@
-
-# write a script that tests the whole cycle. 
-
-A:  &B {
-	cp B A
-}
-
->B { echo correct }
-

@@ -282,4 +282,19 @@ void explain_flags_inside_variable()
 	      stderr); 
 }
 
+void explain_file_without_command_with_dependencies()
+{
+	fputs("*** Explanation: If a file rule has no command, this means that the file\n"
+	      "is always up-to-date whenever its dependencies are up to date.  In general,\n"
+	      "this means that the file is generated in conjunction with its dependencies.\n",
+	      stderr); 
+}
+
+void explain_file_without_command_without_dependencies()
+{
+	fputs("*** Explanation: A filename followed by a semicolon declares a file that is\n"
+	      "always present.\n",
+	      stderr); 
+}
+
 #endif /* ! ERROR_HH */ 

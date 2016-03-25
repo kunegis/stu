@@ -89,7 +89,7 @@ public:
 	 */ 
 	Buffer buf_default;
 
-	/* The buffer for trivial dependencies.  They are only started
+	/* The buffer for dependencies in the second pass.  They are only started
 	 * if, after (potentially) starting all non-trivial
 	 * dependencies, the target must be rebuilt anyway. 
 	 */
@@ -635,11 +635,13 @@ bool Execution::execute(Execution *parent, Link &&link)
 					(fmt("file without command '%s' does not exist, "
 					     "although all its dependencies are up to date", 
 					     target.name)); 
+				explain_file_without_command_with_dependencies(); 
 			} else {
 				print_traces
 					(fmt("file without command and without dependencies "
 						 "'%s' does not exist",
 						 target.name)); 
+				explain_file_without_command_without_dependencies(); 
 			}
 			error |= ERROR_BUILD;
 			done.add_one_neg(link.avoid); 
@@ -670,32 +672,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 	 * The command must be run now. 
 	 */
 
-	if (no_command) {
-		/* A target without a command */ 
-
-		if (verbosity >= VERBOSITY_VERBOSE) {
-			fprintf(stderr, "\ttarget without command\n");
-		}
-		
-		if (! buf_trivial.empty()) {
-			/* The target has no command and also has
-			 * trivial dependencies -- that is an error */ 
-			Link link_child= move(buf_trivial.next());
-			assert(link_child.dependency->get_flags() & F_TRIVIAL); 
-			link_child.dependency->get_place_trivial() <<
-				fmt("target without command %s must not have trivial dependencies",
-				    target.format()); 
-			error |= ERROR_LOGICAL;
-			done.add_neg(link.avoid); 
-			if (! option_continue) 
-				throw error;  
-			return false;
-		}
-
-		done.add_neg(link.avoid); 
-		return false;
-	}
-
 	/*
 	 * Re-deploy all dependencies (second pass)
 	 */
@@ -707,6 +683,32 @@ bool Execution::execute(Execution *parent, Link &&link)
 			return false;
 	} 
 	assert(buf_trivial.empty()); 
+
+	if (no_command) {
+		/* A target without a command */ 
+
+		if (verbosity >= VERBOSITY_VERBOSE) {
+			fprintf(stderr, "\ttarget without command\n");
+		}
+		
+//		if (! buf_trivial.empty()) {
+//			/* The target has no command and also has
+//			 * trivial dependencies -- that is an error */ 
+//			Link link_child= move(buf_trivial.next());
+//			assert(link_child.dependency->get_flags() & F_TRIVIAL); 
+//			link_child.dependency->get_place_trivial() <<
+//				fmt("target without command %s must not have trivial dependencies",
+//				    target.format()); 
+//			error |= ERROR_LOGICAL;
+//			done.add_neg(link.avoid); 
+//			if (! option_continue) 
+//				throw error;  
+//			return false;
+//		}
+
+		done.add_neg(link.avoid); 
+		return false;
+	}
 
 	worked= true; 
 	

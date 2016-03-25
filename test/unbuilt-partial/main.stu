@@ -1,0 +1,10 @@
+# This is an error.  Because 'B' is a trivial dependency of 'A', 'A' is
+# never built. 
+
+A: &B;
+
+# Create both 'A' and 'B', but is never called. 
+B { 
+	echo aaa >A
+	echo bbb >B
+}

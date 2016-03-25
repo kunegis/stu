@@ -1,6 +1,6 @@
 
 # Make sure 'X' is pointed to by the error message 
 
-A: X;
+A: X { touch A }
 
 X;

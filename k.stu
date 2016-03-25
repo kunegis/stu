@@ -1,0 +1,7 @@
+# Nice error message
+
+A: B { cp B A }
+
+# Not present
+B;
+

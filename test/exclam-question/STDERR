@@ -1,3 +1,6 @@
-main.stu:4:4: declaration of existence only dependency with '!'
+main.stu:4:4: declaration of existence-only dependency with '!'
 main.stu:4:7: clashes with declaration of optional dependency with '?'
 main.stu:4:9: in declaration of dependency 'B'
+*** Explanation: A dependency cannot be declared as existence-only
+(with '!') and optional (with '?') at the same time, as that would mean
+that its command is never executed.

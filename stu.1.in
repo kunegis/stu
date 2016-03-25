@@ -203,6 +203,9 @@ and used in the compilation command using the $[CFLAGS] dependency.
     }
     CFLAGS: { echo -Wall -Werror >CFLAGS }
 
+Variable dependencies may be declared as existence-only as in '$[!X]'
+and as trivial as in '$[&X]', but not as optional using '?'. 
+
 Phony targets are marked with '@'.  They are used for targets such
 as '@clean' that do an action without building a file, and for lists of
 files that depend on other targets, but don't have a command associated

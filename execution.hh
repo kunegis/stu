@@ -1883,6 +1883,7 @@ bool Execution::deploy(const Link &link,
 
 	/* Additional flags for the child are added here */ 
 	Flags flags_child= link_child.flags; 
+	Flags flags_child_additional= 0; 
 
 	int dynamic_depth= 0;
 	shared_ptr <Dependency> dep= link_child.dependency;
@@ -1924,7 +1925,7 @@ bool Execution::deploy(const Link &link,
 
 	/* Flags get carried over phonies */ 
 	if (target.type == T_PHONY) { 
-		flags_child |= link.flags; 
+		flags_child_additional |= link.flags; 
 		avoid_child.add_lowest(link.flags);
 		if (link.flags & F_EXISTENCE) {
 			link_child.dependency->set_place_existence
@@ -1940,8 +1941,9 @@ bool Execution::deploy(const Link &link,
 		}
 	}
 	
-	/* '!' and '?' do not mix */ 
-	if ((flags_child & F_EXISTENCE) && (flags_child & F_OPTIONAL)) {
+	/* '!' and '?' do not mix, but only for newly-added flags */ 
+	if ((flags_child_additional & F_EXISTENCE) && 
+	    (flags_child_additional & F_OPTIONAL)) {
 
 		/* '!' and '?' encountered for the same target */ 
 
@@ -1964,34 +1966,36 @@ bool Execution::deploy(const Link &link,
 
 	/* Either of '!'/'?'/'&' does not mix with '$[' */
 	if ((flags_child & F_VARIABLE) &&
-	    (flags_child & (F_EXISTENCE | F_OPTIONAL | F_TRIVIAL))) {
+	    (flags_child_additional & (F_EXISTENCE | F_OPTIONAL | F_TRIVIAL))) {
 
 		error |= ERROR_LOGICAL;
 		const Place &place_variable= direct_dependency->place;
-		if (flags_child & F_EXISTENCE) {
+		if (flags_child_additional & F_EXISTENCE) {
 			const Place &place_flag= link_child.dependency->get_place_existence(); 
 			place_variable << fmt("variable dependency $[%s] must not be declared "
 					      "as existence-only dependency",
 					      target_child.format_mid());
 			place_flag << "using '!'";
-		} else if (flags_child & F_OPTIONAL) {
+		} else if (flags_child_additional & F_OPTIONAL) {
 			const Place &place_flag= link_child.dependency->get_place_optional(); 
 			place_variable << fmt("variable dependency $[%s] must not be declared "
 					      "as optional dependency",
 					      target_child.format_mid());
 			place_flag << "using '?'";
 		} else {
-			assert(flags_child & F_TRIVIAL); 
+			assert(flags_child_additional & F_TRIVIAL); 
 			const Place &place_flag= link_child.dependency->get_place_trivial(); 
 			place_variable << fmt("variable dependency $[%s] must not be declared "
 					      "as trivial dependency",
 					      target_child.format_mid());
 			place_flag << "using '&'";
-		}
+		} 
 		print_traces();
 		if (! option_continue)  throw error; 
 		return false;
 	}
+
+	flags_child |= flags_child_additional; 
 
 	Execution *child= Execution::get_execution
 		(target_child, 

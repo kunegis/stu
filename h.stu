@@ -1,0 +1,4 @@
+# Make sure the 'no rule to build B' error is placed on the 'B'
+# character, not on the '$'. 
+
+A:  $[B] { touch A }

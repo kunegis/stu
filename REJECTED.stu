@@ -1,6 +1,9 @@
 #
 # These are feature ideas that were rejected at some point.  We may of
-# course revive ideas from here in the future.  
+# course revive ideas from here in the future.  When in doubt, we prefer
+# to *not* support a feature, as adding a feature in the future can
+# always be done without breaking compatibility, whereas removing one is
+# always backward-incompatible. 
 #
 
 #
@@ -50,9 +53,18 @@ a.bib:  extra dependencies ... ;
 # By default, the target @main is built, regardless of position in file.
 # If @main does not exist, the first target is made (must be
 # unparametrized)  We can also make it an error to build the first
-# target automatically and always require @main.  This would break the
+# target automatically and always require @main.  
+#
+# Reason for rejecting:  This would break the
 # pattern where a file can be executed as-is, or included by another
 # one. 
 #
 
 @main:  A B C;
+
+#
+# Allow flags outside of variable dependencies.  They are only allowed
+# inside at the moment.  
+#
+
+A:  !$[B] { ... }

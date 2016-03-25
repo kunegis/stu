@@ -1,0 +1,4 @@
+# Invalid 
+
+A:  !$[B]    { touch A }
+

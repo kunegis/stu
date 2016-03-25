@@ -504,8 +504,8 @@ introduced with '%'.
     rule:                ('@' NAME | ['>'] NAME) [':' expression_list] 
                          (COMMAND | ';')
     expression_list:     expression*
-    expression:          '[' expression_list ']' 
-                         | '(' expression_list ')' 
+    expression:          '(' expression_list ')' 
+                         | '[' expression_list ']' 
                          | flag expression | redirect_dependency 
                          | variable_dependency
     variable_dependency: '$' '[' [flag*] ['<'] NAME ']'

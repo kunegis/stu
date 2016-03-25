@@ -383,6 +383,17 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			throw ERROR_LOGICAL;
 		}
 		for (auto j= ret.begin();  j != ret.end();  ++j) {
+			if ((*j)->has_flags(F_VARIABLE)) {
+				shared_ptr <Direct_Dependency> dependency= 
+					dynamic_pointer_cast <Direct_Dependency> (*j); 
+				dependency->place_param_target.place << 
+					fmt("variable dependency $[%s] must not be declared "
+					    "as existence-only dependency",
+					    dependency->place_param_target.format_mid());
+				place_exclam << "using '!'";
+				explain_flags_inside_variable(); 
+				throw ERROR_LOGICAL; 
+			}
 			(*j)->add_flags(F_EXISTENCE);
 			(*j)->set_place_existence(place_exclam); 
 		}
@@ -417,7 +428,18 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 						"in conjunction with optional dependencies using '?'"; 
 					throw ERROR_LOGICAL;
 				}
-
+				if ((*j)->has_flags(F_VARIABLE)) {
+					shared_ptr <Direct_Dependency> dependency= 
+						dynamic_pointer_cast <Direct_Dependency> (*j); 
+					dependency->place_param_target.place << 
+						fmt("variable dependency $[%s] must not be declared "
+						    "as optional dependency",
+						    dependency->place_param_target.format_mid());
+					place_question << "using '?'";
+					explain_flags_inside_variable(); 
+					throw ERROR_LOGICAL; 
+				}
+				
 				(*j)->add_flags(F_OPTIONAL); 
 				(*j)->set_place_optional(place_question); 
 			}
@@ -441,6 +463,17 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			}
 		}
 		for (auto j= ret.begin();  j != ret.end();  ++j) {
+			if ((*j)->has_flags(F_VARIABLE)) {
+				shared_ptr <Direct_Dependency> dependency= 
+					dynamic_pointer_cast <Direct_Dependency> (*j); 
+				dependency->place_param_target.place << 
+					fmt("variable dependency $[%s] must not be declared "
+					    "as trivial dependency",
+					    dependency->place_param_target.format_mid());
+				place_ampersand << "using '&'";
+				explain_flags_inside_variable(); 
+				throw ERROR_LOGICAL; 
+				}
 			if (! option_nontrivial)
 				(*j)->add_flags(F_TRIVIAL); 
 			(*j)->set_place_trivial(place_ampersand); 

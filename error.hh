@@ -274,4 +274,12 @@ void explain_clash()
 	      stderr); 
 }
 
+void explain_flags_inside_variable()
+{
+	fputs("*** Explanation: The flags '!', '?' and '&' can be applied to variable\n"
+	      "dependencies by placing them inside the brackets as in '$[!X]'.\n"
+	      "Placing them outside the brackets as in '!$[X]' is an error.\n",
+	      stderr); 
+}
+
 #endif /* ! ERROR_HH */ 

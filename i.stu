@@ -1,0 +1,16 @@
+# 'A' will contain 'old\nnew'
+#
+# Run as follows:
+#     * 'D' exists with content 'old', all other files don't
+#     * run Stu
+#
+
+>A:  B C { cat B C }
+
+B:  &D   { cp D B }
+
+C:   D   { cp D C }
+
+D:   E   { cp E D }
+
+>E       { echo new }

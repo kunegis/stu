@@ -39,6 +39,13 @@
 
 doo() { echo "$@" ; "$@" ; }
 
+# Touch a file with a year earlier timestamp, to avoid sleep in tests. 
+touch_old() {
+	year="$(date +%Y)"
+	year_old="$(expr $year - 2)"
+	touch -d $year_old-01-01 "$1"
+}
+
 for type in a b c ; do
 
 	echo type=$type
@@ -68,14 +75,14 @@ for type in a b c ; do
 		for file in $list_old ; do
 			echo >&2 "echo xxx >$file"
 			echo xxx >$file
+			doo touch_old $file
 		done
-		doo sleep 2
 		for file in $list_new ; do
 			echo >&2 "echo xxx >$file"
 			echo xxx >$file
 		done
 
-		doo ls -l 
+#		doo ls -l 
 
 		echo ../../stu -f main.stu 
 		../../stu -f main.stu >list.out 2>list.err

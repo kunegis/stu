@@ -2,6 +2,17 @@
 
 doo() { echo "$@" ; "$@" ; }
 
+# Make all one-character file very old
+olden() {
+	for file in ? ; do
+#		echo FILE=⟨$file⟩
+		year="$(date +%Y)"
+		year_old="$(expr $year - 2)"
+		touch -d $year_old-01-01 "$file"
+#		ls -l "$file"
+	done
+}
+
 [ "$verbose" ] && exec 6>&2 || exec 6>/dev/null
 
 sed -re '/^\s*$/d;/^\s*#/d' LIST.stu |
@@ -38,7 +49,8 @@ while read -r line ; do
 	#
 	# Touch B - A will not be rebuilt 
 	#
-	doo sleep 2
+	doo olden
+#	doo sleep 2
 	doo touch B 
 	echo ../../stu -f list.file.stu
 	../../stu -f list.file.stu >list.out 2>list.err
@@ -64,7 +76,8 @@ while read -r line ; do
 	#
 	# Touch C - A will be rebuilt
 	#
-	doo sleep 2
+	doo olden
+#	doo sleep 2
 	echo 'echo X >C'
 	echo X >C
 	echo ../../stu -f list.file.stu
@@ -96,7 +109,8 @@ while read -r line ; do
 	#
 	# Touch D - A will be rebuilt
 	#
-	doo sleep 2
+	doo olden
+#	doo sleep 2
 	echo 'echo X >D'
 	echo X >D
 	echo ../../stu -f list.file.stu

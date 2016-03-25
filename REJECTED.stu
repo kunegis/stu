@@ -68,3 +68,13 @@ a.bib:  extra dependencies ... ;
 #
 
 A:  !$[B] { ... }
+
+#
+# Allow to combine '?' and '!'.  Reason for rejection:  This is not
+# needed as it would mean the command for 'B' would never be executed,
+# and 'B's existence or timestamp would also never be verified, making
+# '?!B' a no-op, and likely a bug.  It may of course be useful as a
+# corner case, so we may allow it in the future. 
+#
+
+A:  ?!B { ... }

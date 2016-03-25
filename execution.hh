@@ -147,7 +147,7 @@ public:
 	 */
 	Timestamp timestamp; 
 
-	/* Whether the file is know to exist.  
+	/* Whether the file is known to exist.  
 	 * -1 = no 
 	 * 0  = unknown or not a T_FILE
 	 * +1 = yes
@@ -186,9 +186,8 @@ public:
 	/* Start the next jobs. This will also terminate
 	 * jobs when they don't need to be run anymore, and thus it can
 	 * be called when K = 0 just to terminate jobs that need to be
-	 * terminated.  The passed FLAG is the ORed combination
+	 * terminated.  The passed LINK.FLAG is the ORed combination
 	 * of all FLAGs up the dependency chain.  
-	 * DEPENDENCY is the dependency linking the two executions.  
 	 * Return value:  whether additional processes must be started.
 	 * Can only by TRUE in random mode.  When TRUE, not all possible
 	 * subjobs where started. 
@@ -383,8 +382,31 @@ bool Execution::execute(Execution *parent, Link &&link)
 			text_avoid.c_str()); 
 	}
 
- 	if (finished(link.avoid))
+	/* Override the trivial flag */ 
+	if (link.flags & F_OVERRIDETRIVIAL) {
+//		if (option_debug) { // XXX rm
+//			fprintf(stderr, "DEBUG  remove F_TRIVIAL\n"); 
+//		}
+		link.flags &= ~F_TRIVIAL; 
+		link.avoid.rem_highest(F_TRIVIAL); 
+	}
+//	if (option_debug) { // XXX rm 
+//		string text_flags= format_flags(link.flags); 
+//		string text_avoid= link.avoid.format(); 
+//		fprintf(stderr, "DEBUG  aaa link.flags = %s, link.avoid = %s\n", 
+//			text_flags.c_str(),
+//			text_avoid.c_str()); 
+//	}
+
+ 	if (finished(link.avoid)) {
+		if (option_debug) {
+			string text_target= target.format(); 
+			fprintf(stderr, "DEBUG %s %s finished\n",
+				debug_padding_str,
+				text_target.c_str());
+		}
 		return false;
+	}
 
 	/* In DFS mode, first continue the already-open children, then
 	 * open new children.  In random mode, start new children first
@@ -425,18 +447,31 @@ bool Execution::execute(Execution *parent, Link &&link)
 		}
 	}
 
+	/* Is this a trivial dependency and we are not in trivial
+	 * override mode?  Then skip the dependency. */
+	if (link.flags & F_TRIVIAL) {
+//	if ((link.flags & (F_TRIVIAL | F_NOTRIVIAL)) == (F_TRIVIAL | F_NOTRIVIAL)) {
+//		if (option_debug) { // XXX rm 
+//			fprintf(stderr, "DEBUG  short cut\n"); 
+//		}
+		done.add_neg(link.avoid);
+		return false;
+	}
+
 	assert(done.get_k() == dynamic_depth(target.type));
 
 	if (error) 
 		assert(option_continue); 
 
 	/* 
-	 * Deploy non-trivial dependencies.  
+	 * Deploy dependencies (first pass), with the F_NOTRIVIAL flag
 	 */ 
 	while (! buf_default.empty()) {
 		Link link_child= buf_default.next(); 
-		Link link_trivial= link_child;
-//		buf_trivial.push(move(link_trivial)); 
+		Link link_child_overridetrivial= link_child;
+		link_child_overridetrivial.avoid.add_highest(F_OVERRIDETRIVIAL); 
+		link_child_overridetrivial.flags |= F_OVERRIDETRIVIAL; 
+		buf_trivial.push(move(link_child_overridetrivial)); 
 		if (deploy(link, link_child))
 			return true;
 		if (jobs == 0)
@@ -644,7 +679,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		
 		if (! buf_trivial.empty()) {
 			/* The target has no command and also has
-			 * trivial dependencies. */ 
+			 * trivial dependencies -- that is an error */ 
 			Link link_child= move(buf_trivial.next());
 			assert(link_child.dependency->get_flags() & F_TRIVIAL); 
 			link_child.dependency->get_place_trivial() <<
@@ -662,7 +697,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 
 	/*
-	 * Deploy trivial dependencies
+	 * Re-deploy all dependencies (second pass)
 	 */
 	while (! buf_trivial.empty()) {
 		Link link_child= buf_trivial.next(); 
@@ -810,6 +845,11 @@ void Execution::waited(int pid, int status)
 
 	executions_by_pid.erase(pid); 
 
+	/* The file may have been built, so forget that it was known to
+	 * not exist */
+	if (exists < 0)  
+		exists= 0;
+	
 	if (job.waited(status, pid)) {
 		/* Command was successful */ 
 
@@ -988,10 +1028,12 @@ void Execution::unlink(Execution *const parent,
 	if (option_debug) {
 		string text_parent= parent->target.format();
 		string text_child= child->target.format();
-		fprintf(stderr, "DEBUG %s %s unlink %s\n",
+		string text_done_child= child->done.format();
+		fprintf(stderr, "DEBUG %s %s unlink %s %s\n",
 			debug_padding_str,
 			text_parent.c_str(),
-			text_child.c_str()); 
+			text_child.c_str(),
+			text_done_child.c_str());
 	}
 
 	assert(parent != child); 

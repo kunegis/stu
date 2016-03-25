@@ -37,22 +37,32 @@ enum
 	/* ($[...]) Content of file is used as variable */ 
 	F_VARIABLE         = (1 << 4),
 
+	/* Used only in Link.flags in the seoncd pass.  Not used for
+	 * dependencies.  Means to override all trivial flags. */ 
+	F_OVERRIDETRIVIAL        = (1 << 5),
 };
 
 /* Number of flags that are used, i.e., are transitive.  They correspond
  * to the first N flags declared in Flag */ 
 const int F_COUNT= 3;
 
+/* Total count */
+const int F_ALL=  6;
+
+const char *const flags_chars= "!?&`$*"; 
+
 /* Textual representation of a flags value. 
  */
 string format_flags(Flags flags) 
 {
 	string ret= "";
-	if (flags & F_EXISTENCE)  ret += '!';
-	if (flags & F_OPTIONAL)   ret += '?';
-	if (flags & F_TRIVIAL)    ret += '&';
-	if (flags & F_READ)       ret += '#';
-	if (flags & F_VARIABLE)   ret += 'V';
+	for (int i= 0;  i < F_ALL;  ++i)
+		if (flags & (1 << i))  ret += flags_chars[i]; 
+//	if (flags & F_EXISTENCE)  ret += '!';
+//	if (flags & F_OPTIONAL)   ret += '?';
+//	if (flags & F_TRIVIAL)    ret += '&';
+//	if (flags & F_READ)       ret += '#';
+//	if (flags & F_VARIABLE)   ret += 'V';
 	return ret;
 }
 
@@ -356,7 +366,8 @@ public:
 		return ret;
 	}
 
-	// What does this do?
+	/* Get the flags when K = 0. 
+	 */
 	Flags get_one() const {
 		assert(k == 0);
 		check();
@@ -404,6 +415,13 @@ public:
 		check();
 		for (int i= 0;  i < F_COUNT;  ++i) {
 			bits[i] |= ((flags & (1 << i)) != 0) << k;
+		}
+	}
+
+	void rem_highest(Flags flags) {
+		check(); 
+		for (int i= 0;  i < F_COUNT;  ++i) {
+			bits[i] &= ~(((flags & (1 << i)) != 0) << k);
 		}
 	}
 

@@ -1,0 +1,10 @@
+
+A:  &[B] {
+	cp C A
+}
+
+>B { echo C }
+
+>C { echo correct }
+
+

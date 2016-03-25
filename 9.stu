@@ -1,0 +1,12 @@
+
+# write a script that tests the whole cycle. 
+
+A:  &[C] {
+	cp B A
+}
+
+>C { echo B }
+
+>B { echo correct }
+
+

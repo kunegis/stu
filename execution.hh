@@ -1941,9 +1941,11 @@ bool Execution::deploy(const Link &link,
 		}
 	}
 	
-	/* '!' and '?' do not mix, but only for newly-added flags */ 
-	if ((flags_child_additional & F_EXISTENCE) && 
-	    (flags_child_additional & F_OPTIONAL)) {
+	Flags flags_child_new= flags_child | flags_child_additional; 
+
+	/* '!' and '?' do not mix, even for old flags */ 
+	if ((flags_child_new & F_EXISTENCE) && 
+	    (flags_child_new & F_OPTIONAL)) {
 
 		/* '!' and '?' encountered for the same target */ 
 
@@ -1953,13 +1955,14 @@ bool Execution::deploy(const Link &link,
 		const Place &place_optional= 
 			link_child.dependency->get_place_optional();
 		place_existence <<
-			"declaration of existence only dependency with '!'";
+			"declaration of existence-only dependency with '!'";
 		place_optional <<
 			"clashes with declaration of optional dependency with '?'";
 		direct_dependency->place <<
 			fmt("in declaration of dependency %s", 
 			    target_child.format());
 		print_traces();
+		explain_clash(); 
 		if (! option_continue)  throw error;
 		return false;
 	}
@@ -1995,7 +1998,7 @@ bool Execution::deploy(const Link &link,
 		return false;
 	}
 
-	flags_child |= flags_child_additional; 
+	flags_child= flags_child_new; 
 
 	Execution *child= Execution::get_execution
 		(target_child, 

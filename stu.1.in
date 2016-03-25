@@ -232,7 +232,7 @@ Here a phony target is used as a list of files.  Multiple targets can depend on 
         cc y.c -o y
     }
 
-.SH "FEATURES"
+.SH FEATURES
 Like a makefile, a Stu file consists of rules.  In Stu, the order of
 rules is not important, except for the fact that the first rule is
 used by default if no rule is given explicitly.  Comments are written
@@ -321,6 +321,9 @@ removed in the directory.
 Optional dependencies are never built if they don't exist.  If they
 exist, they are treated like normal dependencies and their date is taken
 into account for determining whether the target has to be rebuilt. 
+
+A dependency cannot be declared as existence-only and optional at the
+same time, as that would imply that its command is never executed. 
 
     &NAME   A trivial dependency
 

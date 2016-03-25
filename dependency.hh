@@ -3,16 +3,17 @@
 
 #include <limits.h>
 
-/* Each edge in the dependency graph is annotated with one object of
- * this type.  This contains bits related to what should be done with
- * the dependency, whether time is considered, etc.  The flags are
- * defined in such a way that the most simple dependency is represented
- * by zero, and all flag enable an optional feature. 
+/* The flags.  Each edge in the dependency graph is annotated with one
+ * object of this type.  This contains bits related to what should be
+ * done with the dependency, whether time is considered, etc.  The flags
+ * are defined in such a way that the most simple dependency is
+ * represented by zero, and all flag enable an optional feature.  
+ *
+ * The transitive bits effectively are set for tasks not to do.
+ * Therefore, inverting them gives the bits for the tasks to do.   
+ *
+ * Declared as int so arithmetic can be performed on it.
  */
-/* The transitive bits effectively are set for tasks not to do.
- * Therefore, inverting them gives the bits for the tasks to do.  
- */
-/* Declared as int so arithmetic can be performed on it */ 
 typedef unsigned Flags; 
 enum 
 {

@@ -262,4 +262,16 @@ string Place::as_string_nocolumn() const
 	}
 }
 
+/* Explanation functions:  they output an explanation of a feature of
+ * Stu on standard output.  This is used after certain non-trivial error
+ * messages. */
+
+void explain_clash() 
+{
+	fputs("*** Explanation: A dependency cannot be declared as existence-only\n"
+	      "(with '!') and optional (with '?') at the same time, as that would mean\n"
+	      "that its command is never executed.\n",
+	      stderr); 
+}
+
 #endif /* ! ERROR_HH */ 

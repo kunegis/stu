@@ -1,5 +1,4 @@
-
-# Not allowed.  A rule with no command cannot have a trivial dependency. 
+# Works
 
 A: B { cp B A }
 
@@ -10,4 +9,6 @@ D {
 	touch B
 }
 
-C { exit 1 }
+C { 
+	touch C
+}

@@ -1,7 +1,7 @@
+# Error
 
 A:  @b;
 
-# Error. 
 @b:  &C;
 
 C { touch C ; touch A ; }

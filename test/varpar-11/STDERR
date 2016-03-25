@@ -1,2 +1,5 @@
 main.stu:3:6: variable dependency $[X] must not be declared as trivial dependency
 main.stu:3:4: using '&'
+*** Explanation: The flags '!', '?' and '&' can be applied to variable
+dependencies by placing them inside the brackets as in '$[!X]'.
+Placing them outside the brackets as in '!$[X]' is an error.

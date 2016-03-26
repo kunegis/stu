@@ -4,7 +4,9 @@
 # To be executed with -j1. 
 #
 
-A:  $[B] C  { touch A }
+A: D { cp D A }
+
+D:  $[B] C  { touch D }
 
 >B { echo bbb }
 

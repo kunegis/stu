@@ -1109,8 +1109,11 @@ void Execution::unlink(Execution *const parent,
 			child->param_rule->place_param_target.place <<
 				fmt("generated file '%s' for variable dependency was built but cannot be found now", 
 				    filename);
-			parent->param_rule->place_param_target.place <<
-				"in variable dependency used here";
+			child->print_traces();
+//			const Link &link_child= child->parents.at(parent);
+//			link_child.dependency->get_place()
+//			parent->param_rule->place_param_target.place 
+//				<< "in variable dependency used here";
 			if (! option_continue)
 				throw parent->error; 
 		}
@@ -1805,8 +1808,8 @@ void Execution::print_traces(string text) const
 		if (first && text != "") {
 				msg= fmt("%s, needed by %s", text, text_parent); 
 			first= false;
-		} else {
-			msg= fmt("%s is needed by %s",
+		} else {	
+		msg= fmt("%s is needed by %s",
 				 text_child, text_parent);
 		}
 		place << msg;

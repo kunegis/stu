@@ -40,7 +40,7 @@ in the file MIGRATION.
 
 2015-10-19  Version 1.5:
 
-* The syntax now allows parenthesis (only for grouping, no other
+* The syntax now allows parentheses (only for grouping, no other
   semantics).  The can contain any number of other dependencies.
   Example:
 
@@ -57,7 +57,7 @@ in the file MIGRATION.
   instance, the three following line have different meaning:
     [?A]   # The dependency 'A' is optional
     ?[A]   # The dependencies read from 'A' are optional
-	?[?A]  # Combination of the two
+    ?[?A]  # Combination of the two
 * Much code related to dynamic dependencies was rewritten, in particular
   related to options '?' and '!' as well as multiply dynamic
   dependencies.  As a result, many bugs related to these features were

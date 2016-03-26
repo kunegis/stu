@@ -11,13 +11,12 @@ private:
 		
 		/* Check that the highest level in AVOID equals the
 		 * TRANSITIVE flags in FLAGS */ 
-		if (0) // XXX reinstate
 		assert(avoid.get_highest() == (flags & ((1 << F_COUNT) - 1)));
 
 		/* Check that the flags correspond to the flags in DEPENDENCY */
 		if (0) // XXX reinstate
-		assert(dependency == nullptr ||
-		       (dependency->get_flags() & ~flags) == 0);
+			assert(dependency == nullptr ||
+			       (dependency->get_flags() & ~flags) == 0);
 	}
 
 public:
@@ -73,9 +72,7 @@ public:
 	 */ 
 	Link(shared_ptr <Dependency> dependency_)
 		:  avoid(dependency_),
-		   flags(dynamic_pointer_cast <Dynamic_Dependency> (dependency_)
-			 ? (dependency_->get_flags() & ~((1 << F_COUNT) - 1))
-			 : dependency_->get_flags()),
+		   flags(dependency_->get_flags()),
 		   place(dependency_->get_place()),
 		   dependency(dependency_)
 	{ 

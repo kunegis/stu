@@ -1932,7 +1932,7 @@ bool Execution::deploy(const Link &link,
 	/* Flags get carried over phonies */ 
 	if (target.type == T_PHONY) { 
 		flags_child_additional |= link.flags; 
-		avoid_child.add_lowest(link.flags);
+		avoid_child.add_highest(link.flags);
 		if (link.flags & F_EXISTENCE) {
 			link_child.dependency->set_place_existence
 				(link.dependency->get_place_existence()); 

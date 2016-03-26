@@ -1,5 +1,9 @@
+# 'C' is not built, because it is optional. 
 
 A: ?@x { touch A }
+
 @x:  [B];
+
 >B { echo C }
+
 C  { exit 1 }

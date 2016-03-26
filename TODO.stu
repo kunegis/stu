@@ -1,10 +1,6 @@
 #==== Small features that complete what we already have ====
 
 #
-# Make -v be better.  Make it output dependencies and traces. 
-#
-
-#
 # Have an option to read a list of targets from a file.  Or allow
 # something like
 #    
@@ -60,6 +56,10 @@ prog:  prog.c
 
 #
 # An option to never delete target files when a command fails. 
+#
+
+#
+# Make -v be better, or replace it by -d. 
 #
 
 #==== Big features that complete what we already have ====
@@ -345,7 +345,7 @@ A:  B | C { ... }
 A:  (B C) | (D E) { ... }
 
 #
-# Set intersection with '&'
+# Set intersection with '&'.  Clashes with trivial dependencies. 
 #
 
 @x:  (A B C) & (B C D);
@@ -453,11 +453,6 @@ A:  {
 #
 # Provide a set of include-stufiles for common tasks, such as C
 # programs, tex projects, etc. 
-#
-
-#
-# Make trivial dependencies transitive across phonies, like it already
-# is for existence-only and optional dependencies. 
 #
 
 #

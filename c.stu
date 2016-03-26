@@ -1,4 +1,4 @@
-# Not allowed
+# Now allowed
 
 A: &[B] { touch A }
 

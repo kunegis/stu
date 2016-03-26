@@ -8,8 +8,16 @@ in the file MIGRATION.
 
 2016-01-24  Version 1.8:
 
+* The algorithm for trivial dependencies (marked with '&') has been
+  rewritten, fixing bugs in the previous version, in particular in
+  relation to trivial dependencies included indirectly via phonies and
+  dynamic dependencies. 
 * Variable dependencies can now be enclosed in parentheses, as in
   '($[A])'.  This was not allowed before. 
+* Flags of variable dependencies can now also be specified outside the
+  brackets.  For instance, '!$[X]' is now fully equivalent to '$[!X]'.
+  Previously, '!$[X]' was an error.  This is true for all three flags,
+  '!', '?', and '&'. 
 
 2015-11-22  Version 1.7:
 

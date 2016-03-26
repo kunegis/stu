@@ -1092,7 +1092,7 @@ void Execution::unlink(Execution *const parent,
 	}
 
 	/* Propagate variable dependencies */
-	if (flags_child & F_VARIABLE) {
+	if ((flags_child & F_VARIABLE) && child->exists == +1) {
 
 		/* Read the content of the file into a string as the
 		 * variable value */  
@@ -1121,8 +1121,9 @@ void Execution::unlink(Execution *const parent,
 		if (0 > close(fd))  
 			goto error;
 
-		/* Remove space at beginning and end.  The characters are
-		 * exactly those used by isspace() in the C locale. 
+		/* Remove space at beginning and end of the content.
+		 * The characters are exactly those used by isspace() in
+		 * the C locale.  
 		 */ 
 		content.erase(0, content.find_first_not_of(" \n\t\f\r\v")); 
 		content.erase(content.find_last_not_of(" \n\t\f\r\v") + 1);  
@@ -1135,8 +1136,7 @@ void Execution::unlink(Execution *const parent,
 		error:
 			parent->error |= ERROR_BUILD;
 			child->param_rule->place_param_target.place <<
-				fmt("generated file '%s' for variable dependency was built "
-				    "but cannot be found now", 
+				fmt("generated file '%s' for variable dependency was built but cannot be found now", 
 				    filename);
 			parent->param_rule->place_param_target.place <<
 				"in variable dependency used here";

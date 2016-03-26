@@ -1,4 +1,4 @@
-# Error; variable dependency and '&' clash.
+# Not an error 
 
 A: C  &[B] { touch A }  
 

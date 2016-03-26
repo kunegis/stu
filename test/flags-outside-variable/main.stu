@@ -1,4 +1,7 @@
-# Invalid 
+# Valid, and does the same as '$[!B]'. 
 
-A:  !$[B]    { touch A }
+A:  !$[B]    { 
+	echo "$B" >A
+}
 
+>B { echo correct }

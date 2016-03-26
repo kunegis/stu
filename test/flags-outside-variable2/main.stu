@@ -1,3 +1,8 @@
-# Invalid 
+# Valid, and does the same as '$[?B]'. 
 
-A:  ?$[B]    { touch A }
+A:  ?$[B]    { 
+	[ -z "$B" ] || exit 1
+	echo aaa >A
+}
+
+>B { echo error }

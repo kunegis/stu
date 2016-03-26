@@ -1,4 +1,6 @@
-# Error; variable dependency and '!' clash.
+# Allow this after all.
+
+# Make '!$[X]' be a synonym of '$[!X]'. 
 
 A: ![B] { touch A }  
 >B { echo '$[X]' }  

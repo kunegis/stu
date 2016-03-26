@@ -1,0 +1,13 @@
+# Error message:  variable file was built, but cannot be found now
+#
+# To be executed with -j1. 
+#
+
+A:  $[B] C  { touch A }
+
+>B { echo bbb }
+
+C {
+	rm B
+	echo ccc >C
+}

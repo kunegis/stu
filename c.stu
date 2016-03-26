@@ -1,0 +1,7 @@
+# Not allowed
+
+A: &[B] { touch A }
+
+>B { echo '$[C]' }
+
+C { touch C }

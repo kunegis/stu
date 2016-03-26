@@ -355,7 +355,7 @@ command.
 
 Groups of dependencies can be enclosed on parentheses.  
 Parentheses may not contain variable dependencies (i.e., something like
-$[NAME]). 
+'$[NAME]'). 
 The flags '!' and '?' can be applied to a group of dependencies given in
 parentheses:
 
@@ -506,7 +506,8 @@ introduced with '%'.
     expression_list:     expression*
     expression:          '(' expression_list ')' 
                          | '[' expression_list ']' 
-                         | flag expression | redirect_dependency 
+                         | flag expression 
+                         | redirect_dependency 
                          | variable_dependency
     variable_dependency: '$' '[' [flag*] ['<'] NAME ']'
     redirect_dependency: ['<'] bare_dependency

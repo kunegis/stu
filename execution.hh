@@ -992,7 +992,7 @@ int Execution::main(const vector <Target> &targets,
 		}
 
 		if (! success && option_continue) {
-			fprintf(stderr, "%s: *** Targets not remade because of errors\n", 
+			fprintf(stderr, "%s: *** Targets not rebuilt because of errors\n", 
 					dollar_zero); 
 		}
 
@@ -1135,7 +1135,7 @@ void Execution::unlink(Execution *const parent,
 		error:
 			parent->error |= ERROR_BUILD;
 			child->param_rule->place_param_target.place <<
-				fmt("Generated file '%s' for variable dependency was made "
+				fmt("generated file '%s' for variable dependency was built "
 				    "but cannot be found now", 
 				    filename);
 			parent->param_rule->place_param_target.place <<
@@ -1631,6 +1631,8 @@ void Execution::read_dynamics(Stack avoid,
 		Place place_input; /* remains empty */ 
 		build.build_expression_list(dependencies, input, place_input); 
 
+//		Flags flags_this= avoid.get_highest(); 
+
 		for (auto j= dependencies.begin();
 		     j != dependencies.end();  ++j) {
 
@@ -1652,14 +1654,12 @@ void Execution::read_dynamics(Stack avoid,
 				print_traces(fmt("%s is declared here", 
 						 target_file.format())); 
 				error |= ERROR_LOGICAL; 
-				if (option_continue) {
-					continue; 
-				} else {
+				if (! option_continue) 
 					throw error; 
-				}
+				continue; 
 			}
 
-			/* Check that there is no multiply-variable dependency */ 
+			/* Check that there is no multiply-dynamic variable dependency */ 
 			if ((*j)->has_flags(F_VARIABLE) && target.type > T_DYNAMIC) {
 				
 				/* Only direct dependencies can have the F_VARIABLE flag set */ 
@@ -1674,11 +1674,9 @@ void Execution::read_dynamics(Stack avoid,
 				print_traces(fmt("within multiply-dynamic dependency %s", 
 						 target.format())); 
 				error |= ERROR_LOGICAL;
-				if (option_continue) {
-					continue; 
-				} else {
+				if (!option_continue) 
 					throw error; 
-				}
+				continue; 
 			}
 
 			/* If the target is multiply dynamic, we cannot add phony
@@ -1701,11 +1699,9 @@ void Execution::read_dynamics(Stack avoid,
 					print_traces(fmt("%s is declared here", 
 							 target_file.format())); 
 					error |= ERROR_LOGICAL;
-					if (option_continue) {
-						continue; 
-					} else {
+					if (! option_continue) 
 						throw error; 
-					}
+					continue; 
 				}
 			}
 
@@ -1762,11 +1758,9 @@ void Execution::read_dynamics(Stack avoid,
 				target_file.type= T_FILE;
 				print_traces(fmt("%s is declared here", target_file.format())); 
 				error |= ERROR_LOGICAL; 
-				if (option_continue) {
-					continue; 
-				} else {
+				if (! option_continue) 
 					throw error; 
-				}
+				continue; 
 			}
 		}
 				
@@ -1777,9 +1771,8 @@ void Execution::read_dynamics(Stack avoid,
 	} catch (int e) {
 		assert(e >= 1 && e <= 3); 
 		error |= e;
-		if (! option_continue) {
+		if (! option_continue) 
 			throw;
-		}
 	}
 }
 
@@ -2007,7 +2000,8 @@ bool Execution::deploy(const Link &link,
 			    target_child.format());
 		print_traces();
 		explain_clash(); 
-		if (! option_continue)  throw error;
+		if (! option_continue)  
+			throw error;
 		return false;
 	}
 
@@ -2038,7 +2032,8 @@ bool Execution::deploy(const Link &link,
 			place_flag << "using '&'";
 		} 
 		print_traces();
-		if (! option_continue)  throw error; 
+		if (! option_continue)  
+			throw error; 
 		return false;
 	}
 

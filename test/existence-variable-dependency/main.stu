@@ -1,5 +1,7 @@
+# Valid 
 
-# Invalid 
+>A:  !$[B]    { 
+	echo $B
+}
 
-A:  !$[B]    { touch A }
-
+>B { echo correct }

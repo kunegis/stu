@@ -86,9 +86,6 @@ int main(int argc, char **argv, char **envp)
 		switch (c) {
 
 		case 'a': option_nontrivial= true;     break;
-#ifndef NDEBUG
-		case 'd': option_debug= true;          break;
-#endif 
 		case 'g': option_nonoptional= true;    break;
 		case 'h': fputs(STU_HELP, stdout);     exit(0);
 		case 'k': option_continue= true;       break;
@@ -96,6 +93,15 @@ int main(int argc, char **argv, char **envp)
 		case 'v': verbosity= VERBOSITY_VERBOSE;break;
 		case 'V': puts("stu " STU_VERSION);    exit(0);
 		case 'w': verbosity= VERBOSITY_SHORT;  break;
+
+		case 'd': 
+#ifndef NDEBUG
+			option_debug= true;          
+#else
+			print_error("Option -d is only available in debug mode; this is a non-debug version of Stu");
+			exit(ERROR_LOGICAL); 
+#endif 
+			break;
 
 		case 'f':
 			if (filename != "") {

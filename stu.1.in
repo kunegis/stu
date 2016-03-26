@@ -65,9 +65,9 @@ as possible.  This option is equivalent to that of Make.
 Specify the order in which jobs are run.  When ORDER is 'dfs' (the default),
 Stu traverses the dependency graph in a depth-first fashion, in a way
 similar to Make. When ORDER is 'random', the order in which jobs are run
-is randomized within each target. 
+is randomized within each target.  
 .IP "-M STRING"
-Run jobs in pseudorandom order seeded by the given string. 
+Run jobs in pseudorandom order, seeded by the given string. 
 .IP -s
 Silent mode; do not output the commands that are executed.  This option
 is compatible to the same option in Make. 

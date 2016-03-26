@@ -70,7 +70,7 @@ OPTIONS
               get.
 
        -M STRING
-              Run jobs in pseudorandom order seeded by the given string.
+              Run jobs in pseudorandom order, seeded by the given string.
 
        -s     Silent mode; do not output the commands that are executed.  This
               option is compatible to the same option in Make.

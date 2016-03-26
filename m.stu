@@ -1,4 +1,5 @@
-# Error message:  variable file was built, but cannot be found now
+# Error message:  variable file was built, but cannot be found now.
+# Make sure the place is on the 'B', not the '$'. 
 #
 # To be executed with -j1. 
 #

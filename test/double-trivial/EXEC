@@ -1,0 +1,20 @@
+#! /bin/sh
+
+rm -f ?
+
+touch C
+
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 '*** exit code'
+	exit 1
+}
+
+cmp list.out stdout || {
+	echo >&2 '*** stdout'
+	exit 1
+}
+
+exit 0

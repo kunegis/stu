@@ -301,3 +301,4 @@ void init_buf()
 	if (flags >= 0)
 		fcntl(fileno(stderr), F_SETFL, flags | O_APPEND);
 }
+

@@ -1,3 +1,7 @@
-# Invalid 
+# Valid, and equivalent to '$[&B]'. 
 
-A: &$[B]    { touch A }
+A: &$[B]    { 
+	echo "$B" >A
+}
+
+>B { echo correct }

@@ -14,9 +14,8 @@ private:
 		assert(avoid.get_highest() == (flags & ((1 << F_COUNT) - 1)));
 
 		/* Check that the flags correspond to the flags in DEPENDENCY */
-		if (0) // XXX reinstate
-			assert(dependency == nullptr ||
-			       (dependency->get_flags() & ~flags) == 0);
+		assert(dependency == nullptr ||
+		       (dependency->get_flags() & ~flags) == 0);
 	}
 
 public:

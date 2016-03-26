@@ -1,0 +1,25 @@
+#! /bin/sh
+
+rm -f ?
+
+echo CORRECT1 >B
+
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 '*** error'
+	exit 1
+}
+
+echo A:
+echo _____
+cat A
+echo _____
+
+cmp A content || {
+	echo >&2 '*** different content'
+	exit 1
+}
+
+exit 0

@@ -2,6 +2,8 @@
 
 # Make '!$[X]' be a synonym of '$[!X]'. 
 
-A: ![B] { touch A }  
+A: ![B] { echo "$X" >A }  
+
 >B { echo '$[X]' }  
-X { touch X }
+
+>X { echo correct }

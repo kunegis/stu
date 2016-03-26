@@ -558,6 +558,13 @@ EXIT STATUS
 
 
 ENVIRONMENT
+       STU_SHELL
+              If set, Stu calls the  Bourne  shell  from  the  given  location
+              instead  of  '/bin/sh'.  The given shell must support the -e and
+              -c options, as well as -- to denote the end of options.  This is
+              mainly  useful  on systems where '/bin/sh' is not a POSIX Bourne
+              shell.
+
        STU_STATUS
               Stu sets this variable to '1' in all child processes.  In  order
               to  avoid  recursive invocation of Stu, Stu will fail on startup
@@ -649,4 +656,4 @@ SEE ALSO
 
 
 
-stu-1.9.3                         March 2016                            STU(1)
+stu-1.9.4                         March 2016                            STU(1)

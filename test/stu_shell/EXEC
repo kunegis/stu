@@ -1,0 +1,22 @@
+#! /bin/sh
+
+rm -f ?
+
+STU_SHELL=./shell ../../stu >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 '*** exit code'
+	exit 1
+}
+
+cmp list.out stdout || {
+	echo >&2 '*** stdout'
+	echo list.out:
+	echo _____
+	cat list.out
+	echo _____
+	exit 1
+}
+
+exit 0 

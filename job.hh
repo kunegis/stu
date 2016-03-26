@@ -87,10 +87,15 @@ pid_t Job::start(string command,
 	 * Other note:  Make allows to declare the Make variable $SHELL
 	 * within the Makefile or in Make's parameters to a value that
 	 * *will* be used by Make instead of /bin/sh.  This is not possible
-	 * with Stu at the moment (mainly because Stu does not have its own
-	 * set of variables -- it uses only environment variables). 
+	 * with Stu, because Stu does not have its own
+	 * set of variables.  Instead, there is the $STU_SHELL variable. 
 	 */
-	const char *const shell= "/bin/sh";
+	static const char *shell= nullptr;
+	if (shell == nullptr) {
+		shell= getenv("STU_SHELL");
+		if (shell == nullptr || shell[0] == '\0') 
+			shell= "/bin/sh"; 
+	}
 	
 	const char *arg= command.c_str(); 
 	/* c_str() never returns nullptr, as by the standard */ 

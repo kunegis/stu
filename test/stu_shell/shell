@@ -1,0 +1,8 @@
+#! /bin/sh
+# 
+# This is the replacement shell.  
+#
+
+echo MYSHELL
+
+exec /bin/sh "$@"

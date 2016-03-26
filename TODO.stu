@@ -1,12 +1,6 @@
 #==== Small features that complete what we already have ====
 
 #
-# Support $STU_SHELL for alternatives to /bin/sh.  Only supposed to ne
-# for replacing with another shell that also supports the -e and -c
-# options.  (For when /bin/sh is not the POSIX shell.)
-#
-
-#
 # Make -v be better.  Make it output dependencies and traces. 
 #
 

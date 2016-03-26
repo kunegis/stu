@@ -6,18 +6,24 @@ are added, which are documented in this file.  When the major version is
 increased, backward-incompatible changes are made, which are documented
 in the file MIGRATION. 
 
-2016-01-24  Version 1.8:
+2016-03-26  Version 1.9:
 
 * The algorithm for trivial dependencies (marked with '&') has been
   rewritten, fixing bugs in the previous version, in particular in
   relation to trivial dependencies included indirectly via phonies and
   dynamic dependencies. 
-* Variable dependencies can now be enclosed in parentheses, as in
-  '($[A])'.  This was not allowed before. 
 * Flags of variable dependencies can now also be specified outside the
   brackets.  For instance, '!$[X]' is now fully equivalent to '$[!X]'.
   Previously, '!$[X]' was an error.  This is true for all three flags,
   '!', '?', and '&'. 
+* There is a new option -d ("debug") that shows internal information
+  about the algorithm used by Stu.  The option is only available in
+  debug versions of Stu. 
+
+2016-01-24  Version 1.8:
+
+* Variable dependencies can now be enclosed in parentheses, as in
+  '($[A])'.  This was not allowed before. 
 
 2015-11-22  Version 1.7:
 

@@ -62,7 +62,7 @@ parameter K is mandatory.
 Keep going; do not stop running when an error occurs.  Instead, try to build as much
 as possible.  This option is equivalent to that of Make. 
 .IP "-m ORDER"
-Specify in which order to run jobs.  When ORDER is 'dfs' (the default),
+Specify the order in which jobs are run.  When ORDER is 'dfs' (the default),
 Stu traverses the dependency graph in a depth-first fashion, in a way
 similar to Make. When ORDER is 'random', the order in which jobs are run
 is randomized within each target. 

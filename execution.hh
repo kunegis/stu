@@ -384,19 +384,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	/* Override the trivial flag */ 
 	if (link.flags & F_OVERRIDETRIVIAL) {
-//		if (option_debug) { // XXX rm
-//			fprintf(stderr, "DEBUG  remove F_TRIVIAL\n"); 
-//		}
 		link.flags &= ~F_TRIVIAL; 
 		link.avoid.rem_highest(F_TRIVIAL); 
 	}
-//	if (option_debug) { // XXX rm 
-//		string text_flags= format_flags(link.flags); 
-//		string text_avoid= link.avoid.format(); 
-//		fprintf(stderr, "DEBUG  aaa link.flags = %s, link.avoid = %s\n", 
-//			text_flags.c_str(),
-//			text_avoid.c_str()); 
-//	}
 
  	if (finished(link.avoid)) {
 		if (option_debug) {
@@ -416,7 +406,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	 * Continue the already-active child executions 
 	 */  
 
-	if (order != MODE_RANDOM) {
+	if (order != ORDER_RANDOM) {
 		int ret= execute_children(link);
 		if (ret >= 0)
 			return ret;
@@ -450,10 +440,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 	/* Is this a trivial dependency and we are not in trivial
 	 * override mode?  Then skip the dependency. */
 	if (link.flags & F_TRIVIAL) {
-//	if ((link.flags & (F_TRIVIAL | F_NOTRIVIAL)) == (F_TRIVIAL | F_NOTRIVIAL)) {
-//		if (option_debug) { // XXX rm 
-//			fprintf(stderr, "DEBUG  short cut\n"); 
-//		}
 		done.add_neg(link.avoid);
 		return false;
 	}
@@ -479,7 +465,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	} 
 	assert(buf_default.empty()); 
 
-	if (order == MODE_RANDOM) {
+	if (order == ORDER_RANDOM) {
 		int ret= execute_children(link);
 		if (ret >= 0)
 			return ret;
@@ -691,21 +677,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 			fprintf(stderr, "\ttarget without command\n");
 		}
 		
-//		if (! buf_trivial.empty()) {
-//			/* The target has no command and also has
-//			 * trivial dependencies -- that is an error */ 
-//			Link link_child= move(buf_trivial.next());
-//			assert(link_child.dependency->get_flags() & F_TRIVIAL); 
-//			link_child.dependency->get_place_trivial() <<
-//				fmt("target without command %s must not have trivial dependencies",
-//				    target.format()); 
-//			error |= ERROR_LOGICAL;
-//			done.add_neg(link.avoid); 
-//			if (! option_continue) 
-//				throw error;  
-//			return false;
-//		}
-
 		done.add_neg(link.avoid); 
 		return false;
 	}
@@ -767,9 +738,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 	--jobs;
 	assert(jobs >= 0);
 
-	if (order == MODE_RANDOM) {
+	if (order == ORDER_RANDOM) {
 		return jobs > 0; 
-	} else if (order == MODE_DFS) {
+	} else if (order == ORDER_DFS) {
 		return false;
 	} else {
 		assert(false);
@@ -1630,8 +1601,6 @@ void Execution::read_dynamics(Stack avoid,
 		Place_Param_Name input; /* remains empty */ 
 		Place place_input; /* remains empty */ 
 		build.build_expression_list(dependencies, input, place_input); 
-
-//		Flags flags_this= avoid.get_highest(); 
 
 		for (auto j= dependencies.begin();
 		     j != dependencies.end();  ++j) {

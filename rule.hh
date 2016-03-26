@@ -52,10 +52,6 @@ public:
 	     bool redirect_output_,
 	     const Param_Name &filename_input_);
 
-//#ifndef NDEBUG
-//	void print() const;
-//#endif /* ! NDEBUG */
-
 	string format() const; 
 
 	/* Return the same rule, but without parameters.  

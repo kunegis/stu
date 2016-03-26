@@ -125,7 +125,7 @@ int main(int argc, char **argv, char **envp)
 
 		case 'm':
 			if (!strcmp(optarg, "random"))  {
-				order= MODE_RANDOM;
+				order= ORDER_RANDOM;
 				/* Use gettimeofday() instead of time()
 				 * to get millisecond instead of second
 				 * precision */ 
@@ -144,7 +144,7 @@ int main(int argc, char **argv, char **envp)
 			break;
 
 		case 'M':
-			order= MODE_RANDOM;
+			order= ORDER_RANDOM;
 			srand(hash <string> ()(string(optarg))); 
 			break;
 
@@ -155,7 +155,7 @@ int main(int argc, char **argv, char **envp)
 		}
 	}
 
-	order_vec= order == MODE_RANDOM; 
+	order_vec= (order == ORDER_RANDOM); 
 
 	init_buf();
 

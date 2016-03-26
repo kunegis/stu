@@ -21,7 +21,6 @@ enum {
 	VERBOSITY_SHORT   = -1, /* Only target name */
 	VERBOSITY_LONG    =  0, /* Output the command */
 	VERBOSITY_VERBOSE = +1  /* More information */ 
-//	VERBOSITY_DEBUG   = +2  /* Double verbose, only in debug mode */
 };
 
 static int verbosity= VERBOSITY_LONG; 
@@ -33,16 +32,14 @@ static bool option_debug= false;
 #    define option_debug false
 #endif 
 
-enum Mode {
-	MODE_DFS   = 0,
-	MODE_RANDOM= 1,
+enum Order {
+	ORDER_DFS   = 0,
+	ORDER_RANDOM= 1,
 	
-	/* -M mode is coded as MODE_RANDOM */ 
+	/* -M mode is coded as ORDER_RANDOM */ 
 };
 
-// TODO rename this variable to "mode".  Same for similarly-named
-// variables.  
-static int order= MODE_DFS; 
+static int order= ORDER_DFS; 
 
 /* Whether to use vectors for randomization */ 
 static bool order_vec; 

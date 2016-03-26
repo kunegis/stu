@@ -1,3 +1,7 @@
-# Error
+A:  & ! $[X] { 
+	echo "$X" >A
+}  
 
-A:  & ! $[X] { touch A }  X { touch X }
+X { 
+	echo correct >X
+}

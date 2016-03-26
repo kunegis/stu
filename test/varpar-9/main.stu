@@ -1,4 +1,6 @@
-# Error
 
-A: ! $[X] { touch A }
-X { touch X }
+A: ! $[X] { 
+	echo "$X" >A
+}
+
+>X { echo correct }

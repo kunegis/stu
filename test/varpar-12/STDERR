@@ -1,3 +1,0 @@
-B:1:1: variable dependency $[X] must not be declared as existence-only dependency
-main.stu:3:4: using '!'
-main.stu:3:6: [B] is needed by 'A'

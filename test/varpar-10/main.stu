@@ -1,5 +1,10 @@
-# Error
+# Not an error 
 
-A: ? $[X] { touch A }
-X { touch X }
+A: ? $[X] { 
+	[ -e X ] && exit 1
+	touch A
+}
 
+X { 
+	echo xxx >X
+}

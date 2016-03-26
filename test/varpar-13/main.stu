@@ -1,5 +1,14 @@
-# Error; variable dependency and '?' clash.
+# Ultimately equivalent to '$[?X]', i.e., 'X' will not be built. 
 
-A: ?[B] { touch A }  
->B { echo '$[X]' }  
-X { touch X }
+A: ?[B] { 
+	touch A
+}  
+
+>B { 
+	echo '$[X]' 
+}  
+
+X { 
+	# Not called 
+	exit 1
+}

@@ -1,5 +1,11 @@
-# Error; variable dependency and '!' clash.
+# Not an error; variable dependency and '!' do not clash.
 
-A: ![B] { touch A }  
+A: ![B] { 
+	echo "$X" >A
+}
+
 >B { echo '$[X]' }  
-X { touch X }
+
+X { 
+	echo correct >X
+}

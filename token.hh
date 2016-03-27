@@ -114,8 +114,6 @@ Command::Command(string command_,
 	:  place(place_),
 	   command(command_)
 {
-	/* The following code parses the command string into lines ready for
-	 * output.  Most of the code is for making the output pretty. */   
 }	
 
 const vector <string> &
@@ -126,6 +124,9 @@ Command::get_lines()
 	}
 	
 	lines= unique_ptr <vector <string> > (new vector <string> ()); 
+
+	/* The following code parses the command string into lines ready for
+	 * output.  Most of the code is for making the output pretty. */   
 
 	const char *p= command.c_str();
 	const char *p_end= p + command.size(); 

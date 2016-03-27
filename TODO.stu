@@ -1,27 +1,19 @@
 #==== Small features that complete what we already have ====
 
 #
-# Have an option to read a list of targets from a file.  Or allow
-# something like
-#    
-#     stu [FILENAME]
+# Introduce a new option for passing a target without extra allowed
+# syntax, e.g.: 
 #
-# on the command line.  We may also support more Stu syntax on the
-# command line:
+#     stu -C '?F'
 #
-#     stu ?FILENAME   # Rebuild FILENAME only if it already exists
-#     stu !FILENAME   # Build FILENAME only if it does not exist yet
+# would build a file named '?F'. 
 #
-# We may introduce a (-c) option to give full Stu expressions:
+# A -c option, using full expressions:
 #
 #     stu -c '?[FILENAME]'
 #
-# We may also introduce a new option for passing a target without extra
-# allowed syntax, e.g.
-#
-#     stu -T '?F'
-#
-# would build a file named '?F'. 
+# May targets passed on the command line be equivalent to the -c
+# options.  (Useful when they may start with '-', or when not in order.) 
 #
 
 #

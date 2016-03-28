@@ -39,6 +39,9 @@ OPTIONS
        -a     Treat all trivial dependencies (declared with '&') as  non-triv‐
               ial.
 
+       -C FILENAME
+              Pass a target filename without Stu syntax parsing.
+
        -d     Debug mode (only in debug versions of Stu); show internal infor‐
               mation about the Stu algorithm on standard  error  output.   All
               printed debug output lines begin with the string 'DEBUG  '.
@@ -656,4 +659,4 @@ SEE ALSO
 
 
 
-stu-1.9.6                         March 2016                            STU(1)
+stu-1.9.7                         March 2016                            STU(1)

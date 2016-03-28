@@ -29,7 +29,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-#define STU_OPTIONS "adf:ghj:km:M:svVw"
+#define STU_OPTIONS "aC:df:ghj:km:M:svVw"
 
 #ifdef NDEBUG
 #    define STU_HELP_VERBOSE ""
@@ -44,6 +44,7 @@ using namespace std;
 	"By default, build the first target in the file 'main.stu'.\n" \
 	"Options:\n" \
 	"   -a            Treat all trivial dependencies as non-trivial\n" \
+	"   -C            Pass a target filename without Stu syntax parsing\n" \
 	STU_HELP_VERBOSE \
 	"   -f FILENAME   The input file to use instead of 'main.stu'\n" \
 	"   -g            Treat all optional dependencies as non-optional\n" \
@@ -80,7 +81,18 @@ int main(int argc, char **argv, char **envp)
 	int file_fd= -1;
 	string filename; 
 
-	/* Number of processes executed in parallel (option -j) */ 
+	init_buf();
+
+	/* Refuse to run when $STU_STATUS is set */ 
+	const char *const stu_status= getenv("STU_STATUS");
+	if (stu_status != nullptr) {
+		print_error("Refusing to run recursive Stu; unset $STU_STATUS to circumvent");
+		exit(ERROR_LOGICAL); 
+	}
+
+	/* Assemble targets here */ 
+	vector <Target> targets;
+	vector <Place> places;
 
 	for (int c; (c= getopt(argc, argv, STU_OPTIONS)) != -1;) {
 		switch (c) {
@@ -93,6 +105,20 @@ int main(int argc, char **argv, char **envp)
 		case 'v': verbosity= VERBOSITY_VERBOSE;break;
 		case 'V': puts("stu " STU_VERSION);    exit(0);
 		case 'w': verbosity= VERBOSITY_SHORT;  break;
+
+		case 'C': 
+			{
+				if (*optarg == '\0') {
+					print_error("Option -C must take non-empty argument"); 
+					exit(ERROR_LOGICAL);
+				}
+				const char *const name= optarg;
+				Type type= T_FILE;
+				Place place(name);
+				targets.push_back(Target(type, name)); 
+				places.push_back(place); 
+				break;
+			}
 
 		case 'd': 
 #ifndef NDEBUG
@@ -163,18 +189,7 @@ int main(int argc, char **argv, char **envp)
 
 	order_vec= (order == ORDER_RANDOM); 
 
-	init_buf();
-
-	/* Refuse to run when $STU_STATUS is set */ 
-	const char *const stu_status= getenv("STU_STATUS");
-	if (stu_status != nullptr) {
-		print_error("Refusing to run recursive Stu; unset $STU_STATUS to circumvent");
-		exit(ERROR_LOGICAL); 
-	}
-
 	/* Assemble targets from the command line */ 
-	vector <Target> targets;
-	vector <Place> places;
 	for (int i= optind;  i < argc;  ++i) {
 		/* Note:  I is not the index that the argument had
 		 * originally, because getopt() reorders its arguments.

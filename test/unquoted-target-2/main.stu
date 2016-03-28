@@ -1,0 +1,9 @@
+A: {
+	# This is not executed
+	exit 1
+}
+
+# This target is built using the -C options
+'@:[({':  { 
+	echo correct >'@:[({'
+}

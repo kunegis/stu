@@ -17,7 +17,7 @@ List of options
 -b  .      Enable backups
 -B      G  Re-make all
 -c  .      Specify syntax 
--C  .      Explicit target without syntax 
+-C  S      Explicit target without syntax 
 -d  S   G  Print debugging information 
 -e    M G  Environment overrides Make macros
 -f  S M G  File

@@ -1,0 +1,34 @@
+#! /bin/sh
+
+rm -f ./@* ?
+
+../../stu -C '@:[({' >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 '*** exit code'
+	rm -f ./@* ?
+	exit 1
+}
+
+[ -r '@:[({' ] || {
+	echo >&2 '*** created file'
+	rm -f ./@* ?
+	exit 1
+}
+
+grep -Fq correct <'@:[({' || {
+	echo >&2 '*** content'
+	rm -f ./@* ?
+	exit 1
+}
+
+[ -r list.err -a \! -s list.err ] || {
+	echo >&2 '*** stderr'
+	rm -f ./@* ?
+	exit 1
+}
+
+rm -f ./@* ?
+
+exit 0

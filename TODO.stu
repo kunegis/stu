@@ -1,18 +1,11 @@
 #==== Small features that complete what we already have ====
 
 #
-# Introduce a new option for passing a target without extra allowed
-# syntax, e.g.: 
-#
-#     stu -C '?F'
-#
-# would build a file named '?F'. 
-#
 # A -c option, using full expressions:
 #
 #     stu -c '?[FILENAME]'
 #
-# May targets passed on the command line be equivalent to the -c
+# Make targets passed on the command line be equivalent to the -c
 # options.  (Useful when they may start with '-', or when not in order.) 
 #
 

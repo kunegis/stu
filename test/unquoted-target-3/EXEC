@@ -1,0 +1,21 @@
+#! /bin/sh
+#
+# Empty argument to -C
+#
+
+rm -f ?
+
+../../stu -C '' >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 2 ] || {
+	echo >&2 '*** exit code'
+	exit 1
+}
+
+cmp list.err stderr || {
+	echo >&2 '*** stderr'
+	exit 1
+}
+
+exit 0

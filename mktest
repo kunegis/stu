@@ -265,12 +265,17 @@ do
 
 		# Check that INSTDERR is found in the error output
 		if [ -r INSTDERR ]; then
-			for lineno in $(seq 1 $(wc -l <INSTDERR)) ; do
+			for lineno in $(seq 1 $(awk '{x++}END{ print x}' <INSTDERR)) ; do
 			   	line="$(<INSTDERR sed -re "$lineno"'!d')"
-				if fgrep <list.def.err -q -- "$line" ; then
+#				echo >&2 "line=⟨$line⟩"
+				if grep <list.def.err -qF -- "$line" ; then
 					echo "INSTDERR...correct"
 				else
 					echo >&2 "$0: *** '$line' was not found in error output"
+					echo >&2 "stderr:"
+					echo >&2 ______
+					cat >&2 list.def.err
+					echo >&2 ______
 					error=1
 				fi
 			done

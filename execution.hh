@@ -285,8 +285,11 @@ public:
 
 	/* Main execution loop.  
 	 */
-	static int main(const vector <Target> &targets, 
-			const vector <Place> &places);
+	static int main(
+			const vector <shared_ptr <Dependency> > &dependencies
+//			const vector <Target> &targets, 
+//			const vector <Place> &places
+			);
 
 	/* Wait for next job to finish and finish it.  Do not start anything
 	 * new.  
@@ -904,27 +907,29 @@ void Execution::waited(int pid, int status)
 	}
 }
 
-int Execution::main(const vector <Target> &targets, 
-		    const vector <Place> &places)
+int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
+//const vector <Target> &targets, 
+//		    const vector <Place> &places)
 {
 	assert(jobs >= 0);
-	assert(targets.size() == places.size()); 
+//	assert(targets.size() == places.size()); 
 
 	timestamp_last= Timestamp::now(); 
 
-	vector <shared_ptr <Dependency> > dependencies;
+//	vector <shared_ptr <Dependency> > dependencies;
 	
-	for (unsigned i= 0;  i != targets.size();  ++i) {
-		dependencies.push_back
-			(shared_ptr <Dependency>
-			 (new Direct_Dependency
-			  (0, Place_Param_Target
-			   (targets.at(i).type, 
-			    Place_Param_Name(targets.at(i).name, places.at(i))
-			    )))); 
-	}
+//	for (unsigned i= 0;  i != targets.size();  ++i) {
+//		dependencies.push_back
+//			(shared_ptr <Dependency>
+//			 (new Direct_Dependency
+//			  (0, Place_Param_Target
+//			   (targets.at(i).type, 
+//			    Place_Param_Name(targets.at(i).name, places.at(i))
+//			    )))); 
+//	}
 
 	Execution *execution_root= new Execution(dependencies); 
+
 	int error= 0; 
 
 	try {

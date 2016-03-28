@@ -404,11 +404,20 @@ public:
 	 * variable additionally contains places for each parameter. */ 
 	Place place;
 
-
+	/* Create a root target */ 
 	Place_Param_Target()
 		:  type(T_ROOT),
 		   place_param_name()
 	{ }
+
+	/* Create a root target explicitly */ 
+	Place_Param_Target(Type type_)
+		:  type(T_ROOT),
+		   place_param_name()
+	{ 
+		(void) type_;
+		assert(type_ == T_ROOT); 
+	}
 
 	Place_Param_Target(Type type_,
 			   const Place_Param_Name &place_param_name_)

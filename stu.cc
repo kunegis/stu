@@ -91,8 +91,9 @@ int main(int argc, char **argv, char **envp)
 	}
 
 	/* Assemble targets here */ 
-	vector <Target> targets;
-	vector <Place> places;
+	vector <shared_ptr <Dependency> > dependencies; 
+//	vector <Target> targets;
+//	vector <Place> places;
 
 	for (int c; (c= getopt(argc, argv, STU_OPTIONS)) != -1;) {
 		switch (c) {
@@ -115,8 +116,12 @@ int main(int argc, char **argv, char **envp)
 				const char *const name= optarg;
 				Type type= T_FILE;
 				Place place(name);
-				targets.push_back(Target(type, name)); 
-				places.push_back(place); 
+				dependencies.push_back
+					(shared_ptr <Dependency>
+					 (new Direct_Dependency
+					  (0, Place_Param_Target(type, Place_Param_Name(name, place)))));
+//				targets.push_back(Target(type, name)); 
+//				places.push_back(place); 
 				break;
 			}
 
@@ -202,8 +207,12 @@ int main(int argc, char **argv, char **envp)
 			++name;
 		}
 		Place place(name);
-		targets.push_back(Target(type, name)); 
-		places.push_back(place); 
+		dependencies.push_back
+			(shared_ptr <Dependency>
+			 (new Direct_Dependency
+			  (0, Place_Param_Target(type, Place_Param_Name(name, place)))));
+//		targets.push_back(Target(type, name)); 
+//		places.push_back(place); 
 	}
 
 	/* Use the default Stu file, if it exists */ 
@@ -215,9 +224,10 @@ int main(int argc, char **argv, char **envp)
 			if (errno == ENOENT) { 
 				/* The default file does not exist --
 				 * fail if no target is given */  
-				if (targets.empty()) {
+				if (dependencies.empty()) {
 					print_error("No target given and no default file "
 						    "'" FILENAME_INPUT_DEFAULT "' present");
+					explain_no_target(); 
 					exit(ERROR_LOGICAL); 
 				}
 			} else { 
@@ -248,13 +258,15 @@ int main(int argc, char **argv, char **envp)
 
 			/* If no targets are given on the command line,
 			 * use the first non-variable target */ 
-			if (targets.empty()) {
-				Target target(T_ROOT); 
-				Place place; 
+			if (dependencies.empty()) {
+				Place_Param_Target place_param_target(T_ROOT); 
+//				Target target(T_ROOT); 
+//				Place place; 
 
 				for (auto i= rules.begin();  i != rules.end();  ++i) {
 					if (dynamic_pointer_cast <Rule> (*i)) {
-						Place_Param_Target place_param_target= 
+//						Place_Param_Target 
+							place_param_target= 
 							dynamic_pointer_cast <Rule> (*i)->place_param_target;
 						if (place_param_target.place_param_name.get_n() != 0) {
 							place_param_target.place <<
@@ -262,30 +274,36 @@ int main(int argc, char **argv, char **envp)
 								"if it is used by default";
 							throw ERROR_LOGICAL;
 						}
-						target= place_param_target.unparametrized(); 
-						place= place_param_target.place; 
+//						place_param_target= place_param_target_i; 
+//						target= place_param_target.unparametrized(); 
+//						place= place_param_target.place; 
+
 						break;
 					}
 				}
 
-				if (target.type == T_ROOT) {
-					print_error(fmt("Input file '%s' does not contain rules "
-							"and no target given", 
-							filename)); 
+				if (place_param_target.type == T_ROOT) {
+					print_error
+						(fmt("Input file '%s' does not contain rules and no target given", 
+						     filename)); 
 					exit(ERROR_LOGICAL);
 				}
 
-				targets.push_back(target); 
-				places.push_back(place);
+				dependencies.push_back
+					(shared_ptr <Dependency>
+					 (new Direct_Dependency(0, place_param_target))); 
+
+//				targets.push_back(target); 
+//				places.push_back(place);
 			}
 		} else {
 			/* We checked earlier that when no input file is
 			 * specified, there are targets given. */ 
-			assert(targets.size()); 
+			assert(dependencies.size()); 
 		}
 
 		/* Execute */
-		int error= Execution::main(targets, places);
+		int error= Execution::main(dependencies);
 		if (error != 0) {
 			/* We don't have to output any error here, because the
 			 * error(s) was/were already printed when it

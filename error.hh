@@ -289,4 +289,12 @@ void explain_file_without_command_without_dependencies()
 	      stderr); 
 }
 
+void explain_no_target()
+{
+	fputs("*** Explanation: There must be either a target given as an argument to Stu\n"
+	      "invocation, a -C option, an -f option with a default target, or a file\n"
+	      "'main,stu' with a default target",
+	      stderr); 
+}
+
 #endif /* ! ERROR_HH */ 

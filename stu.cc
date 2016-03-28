@@ -44,7 +44,7 @@ using namespace std;
 	"By default, build the first target in the file 'main.stu'.\n" \
 	"Options:\n" \
 	"   -a            Treat all trivial dependencies as non-trivial\n" \
-	"   -C            Pass a target filename without Stu syntax parsing\n" \
+	"   -C FILENAME   Pass a target filename without Stu syntax parsing\n" \
 	STU_HELP_VERBOSE \
 	"   -f FILENAME   The input file to use instead of 'main.stu'\n" \
 	"   -g            Treat all optional dependencies as non-optional\n" \

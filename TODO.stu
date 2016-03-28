@@ -5,7 +5,7 @@
 #
 #     stu -c '?[FILENAME]'
 #
-# Make targets passed on the command line be equivalent to the -c
+# Also, make targets passed on the command line be equivalent to the -c
 # options.  (Useful when they may start with '-', or when not in order.) 
 #
 
@@ -28,7 +28,7 @@ prog:  prog.c
 #
 
 #
-# Option to pass rules. 
+# Option to pass rules (-F)
 #
 
 #

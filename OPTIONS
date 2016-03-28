@@ -21,6 +21,7 @@ List of options
 -d  S   G  Print debugging information 
 -e    M G  Environment overrides Make macros
 -f  S M G  File
+-F  .      Pass rule on the command line
 -g  S      Consider optional dependencies to be non-optional 
 -h  S   G  Help
 -i    M G  Ignore all errors in commands

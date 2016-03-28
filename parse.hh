@@ -20,57 +20,70 @@
  */
 #define FILENAME_INPUT_DEFAULT "main.stu"
 
-shared_ptr <Command> parse_command(const string filename, 
-				   unsigned &line, 
-				   const char *&p_line,
-				   const char *&p, 
-				   const char *p_end);
+class Parse
+{
+public:
 
-shared_ptr <Place_Param_Name> parse_name(string filename,
-					 unsigned &line,
-					 const char *&p_line,
-					 const char *&p,
-					 const char *p_end);
+	/*
+	 * Parse the tokens in a file.
+	 *
+	 * The given file descriptor FD may optionally be that file already
+	 * opened.  If the file was not yet opened, FD must be smaller than 0. 
+	 *
+	 * Append the read tokens to TOKENS. 
+	 * 
+	 * TRACES can include traces that lead to this inclusion.  TRACES must
+	 * not be modified when returning.  
+	 *
+	 * FILENAMES is the list of filenames parsed up to here. I.e., it has
+	 * length zero for the main read file.  FILENAME should *not* be
+	 * included in FILENAMES. 
+	 *
+	 * Throws integers as errors. 
+	 */
+	static void parse(vector <shared_ptr <Token> > &tokens, 
+			  Place &place_end,
+			  string filename, 
+			  bool allow_include,
+			  vector <Trace> &traces,
+			  vector <string> &filenames,
+			  int fd= -1);
 
-/* Whether the given character can be used as part of a bare filename in
- * Stu.  Note that all non-ASCII characters are allowed, and thus we
- * don't have to distinguish UTF-8 from 8-bit encodings:  all characters
- * with the most significant bit set will make this return TRUE. 
- * See the file CHARACTERS for more information. 
- */
-bool is_name_char(char);
+	static shared_ptr <Command> parse_command(const string filename, 
+						  unsigned &line, 
+						  const char *&p_line,
+						  const char *&p, 
+						  const char *p_end);
 
-bool is_operator_char(char);
+	static shared_ptr <Place_Param_Name> parse_name(string filename,
+							unsigned &line,
+							const char *&p_line,
+							const char *&p,
+							const char *p_end);
 
-/* Parse a version statement.  VERSION is the version number given after
- * "%version", and PLACE its place. 
- */
-void parse_version(string version_req, const Place &place_version); 
+	/* Parse a version statement.  VERSION is the version number given after
+	 * "%version", and PLACE its place. 
+	 */
+	static void parse_version(string version_req, const Place &place_version); 
 
-/*
- * Parse the tokens in a file.
- *
- * The given file descriptor FD may optionally be that file already
- * opened.  If the file was not yet opened, FD must be smaller than 0. 
- *
- * Append the read tokens to TOKENS. 
- * 
- * TRACES can include traces that lead to this inclusion.  TRACES must
- * not be modified when returning.  
- *
- * FILENAMES is the list of filenames parsed up to here. I.e., it has
- * length zero for the main read file.  FILENAME should *not* be
- * included in FILENAMES. 
- *
- * Throws integers as errors. 
- */
-void parse(vector <shared_ptr <Token> > &tokens, 
-	   Place &place_end,
-	   string filename, 
-	   bool allow_include,
-	   vector <Trace> &traces,
-	   vector <string> &filenames,
-	   int fd= -1)
+	/* Whether the given character can be used as part of a bare filename in
+	 * Stu.  Note that all non-ASCII characters are allowed, and thus we
+	 * don't have to distinguish UTF-8 from 8-bit encodings:  all characters
+	 * with the most significant bit set will make this return TRUE. 
+	 * See the file CHARACTERS for more information. 
+	 */
+	static bool is_name_char(char);
+
+	static bool is_operator_char(char);
+};
+
+void Parse::parse(vector <shared_ptr <Token> > &tokens, 
+		  Place &place_end,
+		  string filename, 
+		  bool allow_include,
+		  vector <Trace> &traces,
+		  vector <string> &filenames,
+		  int fd)
 {
 	const char *in= nullptr;
 	struct stat buf;
@@ -356,11 +369,11 @@ void parse(vector <shared_ptr <Token> > &tokens,
 }
 
 
-shared_ptr <Command> parse_command(const string filename, 
-				   unsigned &line, 
-				   const char *&p_line,
-				   const char *&p, 
-				   const char *p_end)
+shared_ptr <Command> Parse::parse_command(const string filename, 
+					  unsigned &line, 
+					  const char *&p_line,
+					  const char *&p, 
+					  const char *p_end)
 {
 	assert(p < p_end && *p == '{');
 
@@ -542,11 +555,11 @@ shared_ptr <Command> parse_command(const string filename,
 	throw ERROR_LOGICAL;
 }
 
-shared_ptr <Place_Param_Name> parse_name(string filename,
-					 unsigned &line,
-					 const char *&p_line,
-					 const char *&p,
-					 const char *p_end)
+shared_ptr <Place_Param_Name> Parse::parse_name(string filename,
+						unsigned &line,
+						const char *&p_line,
+						const char *&p,
+						const char *p_end)
 {
 	Place place_begin(filename, line, p - p_line);
 
@@ -660,7 +673,7 @@ shared_ptr <Place_Param_Name> parse_name(string filename,
 	return ret;
 }
 
-bool is_name_char(char c) 
+bool Parse::is_name_char(char c) 
 {
 	return
 		(c >= 0x20 && c < 0x7F /* ASCII printable character */ 
@@ -668,12 +681,12 @@ bool is_name_char(char c)
 		|| ((unsigned char)c) >= 0x80;
 }
 
-bool is_operator_char(char c) 
+bool Parse::is_operator_char(char c) 
 {
 	return c != '\0' && nullptr != strchr(":<>=@;()?[]!&,\\|", c);
 }
 
-void parse_version(string version_req, const Place &place_version) 
+void Parse::parse_version(string version_req, const Place &place_version) 
 {
 	/* Note:  there may be any number of version statements in Stu
 	 * (in particular from multiple source files), so we don't keep

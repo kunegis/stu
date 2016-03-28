@@ -1601,7 +1601,7 @@ void Execution::read_dynamics(Stack avoid,
 		const string filename= target.name; 
 		Place place_end; 
 
-		parse(tokens, place_end, filename, false, traces, filenames);
+		Parse::parse(tokens, place_end, filename, false, traces, filenames);
 		auto i= tokens.begin(); 
 		vector <shared_ptr <Dependency> > dependencies;
 

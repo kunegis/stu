@@ -247,7 +247,7 @@ int main(int argc, char **argv, char **envp)
 			vector <Trace> traces;
 			vector <string> filenames; 
 			Place place_end;
-			parse(tokens, place_end, filename, true, traces, filenames, file_fd); 
+			Parse::parse(tokens, place_end, filename, true, traces, filenames, file_fd); 
 
 			/* Build rules */
 			auto iter= tokens.begin(); 

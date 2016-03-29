@@ -1,4 +1,4 @@
 main.stu:6:1: file without command and without dependencies 'X' does not exist
 main.stu:4:4: 'X' is needed by 'A'
-*** Explanation: A filename followed by a semicolon declares a file that is
+Explanation: A filename followed by a semicolon declares a file that is
 always present.

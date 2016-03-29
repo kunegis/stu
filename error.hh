@@ -264,7 +264,7 @@ string Place::as_string_nocolumn() const
 
 void explain_clash() 
 {
-	fputs("*** Explanation: A dependency cannot be declared as existence-only\n"
+	fputs("Explanation: A dependency cannot be declared as existence-only\n"
 	      "(with '!') and optional (with '?') at the same time, as that would mean\n"
 	      "that its command is never executed.\n",
 	      stderr); 
@@ -272,7 +272,7 @@ void explain_clash()
 
 void explain_file_without_command_with_dependencies()
 {
-	fputs("*** Explanation: If a file rule has no command, this means that the file\n"
+	fputs("Explanation: If a file rule has no command, this means that the file\n"
 	      "is always up-to-date whenever its dependencies are up to date.  In general,\n"
 	      "this means that the file is generated in conjunction with its dependencies.\n",
 	      stderr); 
@@ -280,16 +280,16 @@ void explain_file_without_command_with_dependencies()
 
 void explain_file_without_command_without_dependencies()
 {
-	fputs("*** Explanation: A filename followed by a semicolon declares a file that is\n"
+	fputs("Explanation: A filename followed by a semicolon declares a file that is\n"
 	      "always present.\n",
 	      stderr); 
 }
 
 void explain_no_target()
 {
-	fputs("*** Explanation: There must be either a target given as an argument to Stu\n"
+	fputs("Explanation: There must be either a target given as an argument to Stu\n"
 	      "invocation, a -c or -C option, an -f option with a default target, or a file\n"
-	      "'main,stu' with a default target\n",
+	      "'main.stu' with a default target\n",
 	      stderr); 
 }
 

@@ -4,6 +4,8 @@
 # Make -v be better, or replace it by -d. 
 #
 
+#==== Middle-sized features that complete what we already have ====
+
 #
 # Assign a name to a dynamic variable.  Useful when the name of the file
 # contains characters that are not allowed in shell variable names. 
@@ -14,8 +16,6 @@ prog:  prog.c
 { 
 	gcc $CFLAGS -c prog.c -o prog
 }
-
-#==== Big features that complete what we already have ====
 
 #
 # Have an option which makes Stu output statistics when it is finished:
@@ -75,6 +75,48 @@ konect.bib=  ../../projects/konect/;
 konect.bib=  ../../projects/konect;
 
 #
+# Have a way for dynamic dependencies to contain \0-separated filenames,
+# to avoid quoting. 
+#
+
+A: [B],0 { xargs -0 B ... }
+
+>B:  {
+	find ... -print0
+}
+
+# Alternatively, detect such files automatically. (e.g., any file
+# containing the zero character is such a file, or using specific endings.)
+
+#
+# For the -f option, allow streams that don't support mmap(1). 
+#
+
+#
+# Support -f - to read in STDIN?
+#
+
+#
+# Support these options from Make:
+#   -B 		    Remake all targets regardless of dates
+#   -o FILENAME	    Never rebuild that file ("old")
+#   -q 		    Question mode 
+#
+
+#
+# A 'what-if' option that does not run anything but shows what would be
+# done.  (Not possible to do for dynamic dependencies.) (Called -n in
+# Make)
+#
+
+# 
+# An option to consider all targets up to date.  I.e., execute only the
+# minimum to get the given files built. 
+#
+
+#==== Big features that complete what we already have ====
+
+#
 # Phonies in dynamics
 #
 
@@ -132,20 +174,6 @@ A B C;
 #
 
 #
-# Have a way for dynamic dependencies to contain \0-separated filenames,
-# to avoid quoting. 
-#
-
-A: [B],0 { xargs -0 B ... }
-
->B:  {
-	find ... -print0
-}
-
-# Alternatively, detect such files automatically. (e.g., any file
-# containing the zero character is such a file, or using specific endings.)
-
-#
 # When including files using dynamic dependencies, we could make a
 # difference between inclusion and import, as is done for %include and
 # %import. 
@@ -189,10 +217,6 @@ A: [B],i;
 %line ...
 
 #
-# Support -f - to read in STDIN?
-#
-
-#
 # Make the argument to the -j option optional.  (not possible with
 # standard getopt()). 
 #
@@ -210,24 +234,6 @@ A: [B],i;
 # within it. 
 %import src/main.stu
 %import src/
-
-#
-# Support these options from Make:
-#   -B 		    Remake all targets regardless of dates
-#   -o FILENAME	    Never rebuild that file ("old")
-#   -q 		    Question mode 
-#
-
-#
-# A 'what-if' option that does not run anything but shows what would be
-# done.  (Not possible to do for dynamic dependencies.) (Called -n in
-# Make)
-#
-
-# 
-# An option to consider all targets up to date.  I.e., execute only the
-# minimum to get the given files built. 
-#
 
 #
 # An option for automatic logging:  write all output (stdout/stderr) of

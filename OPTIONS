@@ -18,7 +18,7 @@ List of options
 -B      G  Re-make all
 -c  S      Specify syntax (same as non-option arguments)
 -C  S      Explicit target without syntax 
--d  S   G  Print debugging information 
+-d      G  Print debugging information 
 -e    M G  Environment overrides Make macros
 -f  S M G  File
 -F  .      Pass rule on the command line

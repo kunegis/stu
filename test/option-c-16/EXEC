@@ -14,12 +14,12 @@ exitcode="$?"
 
 [ "$exitcode" = 0 ]           || { echo >&2 '*** (1) exit code' ; exit 1 ; }
 grep -Fq  BUILDING_X list.out || { echo >&2 '(1) building X' ; exit 1 ; }
-grep -Fvq BUILDING_D list.out || { echo >&2 '(1) building D' ; exit 1 ; }
-grep -Fvq BUILDING_E list.out || { echo >&2 '(1) building E' ; exit 1 ; }
-grep -Fvq BUILDING_F list.out || { echo >&2 '(1) building F' ; exit 1 ; }
-grep -Fvq BUILDING_P list.out || { echo >&2 '(1) building P' ; exit 1 ; }
-grep -Fvq BUILDING_Q list.out || { echo >&2 '(1) building Q' ; exit 1 ; }
-grep -Fvq BUILDING_R list.out || { echo >&2 '(1) building R' ; exit 1 ; }
+grep -Fq  BUILDING_D list.out && { echo >&2 '(1) building D' ; exit 1 ; }
+grep -Fq  BUILDING_E list.out && { echo >&2 '(1) building E' ; exit 1 ; }
+grep -Fq  BUILDING_F list.out && { echo >&2 '(1) building F' ; exit 1 ; }
+grep -Fq  BUILDING_P list.out && { echo >&2 '(1) building P' ; exit 1 ; }
+grep -Fq  BUILDING_Q list.out && { echo >&2 '(1) building Q' ; exit 1 ; }
+grep -Fq  BUILDING_R list.out && { echo >&2 '(1) building R' ; exit 1 ; }
 
 rm -f ?
 touch_old D
@@ -35,8 +35,8 @@ grep -Fq  BUILDING_X list.out || { echo >&2 '(2) building X' ; exit 1 ; }
 grep -Fq  BUILDING_D list.out || { echo >&2 '(2) building D' ; exit 1 ; }
 grep -Fq  BUILDING_E list.out || { echo >&2 '(2) building E' ; exit 1 ; }
 grep -Fq  BUILDING_F list.out || { echo >&2 '(2) building F' ; exit 1 ; }
-grep -Fvq BUILDING_P list.out || { echo >&2 '(2) building P' ; exit 1 ; }
-grep -Fvq BUILDING_Q list.out || { echo >&2 '(2) building Q' ; exit 1 ; }
-grep -Fvq BUILDING_R list.out || { echo >&2 '(2) building R' ; exit 1 ; }
+grep -Fq  BUILDING_P list.out && { echo >&2 '(2) building P' ; exit 1 ; }
+grep -Fq  BUILDING_Q list.out && { echo >&2 '(2) building Q' ; exit 1 ; }
+grep -Fq  BUILDING_R list.out && { echo >&2 '(2) building R' ; exit 1 ; }
 
 exit 0

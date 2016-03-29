@@ -1,10 +1,6 @@
 #==== Small features that complete what we already have ====
 
 #
-# TODO "escape these properly in the output"
-#
-
-#
 # Make -v be better, or replace it by -d. 
 #
 
@@ -18,6 +14,8 @@ prog:  prog.c
 { 
 	gcc $CFLAGS -c prog.c -o prog
 }
+
+#==== Big features that complete what we already have ====
 
 #
 # Have an option which makes Stu output statistics when it is finished:
@@ -41,8 +39,6 @@ prog:  prog.c
 #
 # An option to never delete target files when a command fails. 
 #
-
-#==== Big features that complete what we already have ====
 
 #
 # Hard-coded content

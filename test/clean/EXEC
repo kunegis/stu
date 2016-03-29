@@ -14,9 +14,9 @@ echo ../../stu
 echo ../../stu 
 ../../stu >list.output || exit 1
 
-if fgrep -v 'Nothing to be done' list.output ; then
-    exit 1
-fi
+grep -Fq 'Nothing to be done' list.output || {
+	exit 1
+}
 
 echo ../../stu @clean
 ../../stu @clean || exit 1
@@ -33,9 +33,9 @@ echo ../../stu A
 echo ../../stu A
 ../../stu A >list.output || exit 1
 
-if fgrep -v 'Nothing to be done' list.output ; then
-    exit 1
-fi
+grep -Fq 'Nothing to be done' list.output || {
+	exit 1
+}
 
 echo ../../stu @clean
 ../../stu @clean || exit 1

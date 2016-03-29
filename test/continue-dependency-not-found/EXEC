@@ -8,13 +8,13 @@ echo ../../stu
 ../../stu -k >list.out 2>list.err
 exitcode="$?"
 if [ "$exitcode" != 1 ] ; then
-    echo >&2 "$0:  *** stu did not fail (run A)"
-    exit 1
+	echo >&2 "$0:  *** stu did not fail (run A)"
+	exit 1
 fi
 
-fgrep -v 'not exist' list.err || {
-    echo "$0:  *** error output not correct (run A)"
-    exit 1
+grep -qF 'not exist' list.err && {
+	echo "$0:  *** error output not correct (run A)"
+	exit 1
 }
 
 doo rm -f ?
@@ -23,23 +23,23 @@ echo ../../stu -k
 ../../stu -k >list.out 2>list.err
 exitcode="$?"
 if [ "$exitcode" != 1 ] ; then
-    echo >&2 "$0:  *** stu did not have exit code 1 (run B)"
-    exit 1
+	echo >&2 "$0:  *** stu did not have exit code 1 (run B)"
+	exit 1
 fi
 
-fgrep CORRECT B || {
-    echo >&2 "$0:  *** file 'B' not correctly built (run B)"
-    exit 1
+grep -Fq CORRECT B || {
+	echo >&2 "$0:  *** file 'B' not correctly built (run B)"
+	exit 1
 }
 
-fgrep -v "no rule to build 'nonexistingfile'" list.err || {
-    echo "$0:  *** error output does not contain \"no rule to build 'nonexistingfile'\" (run B)"
-    exit 1
+grep -Fq "no rule to build 'nonexistingfile'" list.err || {
+	echo "$0:  *** error output does not contain \"no rule to build 'nonexistingfile'\" (run B)"
+	exit 1
 }
 
-fgrep -v '*** targets not remade because of errors' list.err || {
-    echo "$0:  *** error output does not contain 'targets not remade because of errors' (run B)"
-    exit 1
+grep -Fq '*** Targets not rebuilt because of errors' list.err || {
+	echo "$0:  *** error output does not contain 'targets not remade because of errors' (run B)"
+	exit 1
 }
 
 exit 0

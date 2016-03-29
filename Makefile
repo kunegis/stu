@@ -34,7 +34,7 @@ CXXFLAGS_ALL_DEBUG=  $(CXXFLAGS_DEBUG)  $(CXXFLAGS_OTHER)
 CXXFLAGS_ALL_NDEBUG= $(CXXFLAGS_NDEBUG) $(CXXFLAGS_OTHER)
 CXXFLAGS_ALL_PROF=   $(CXXFLAGS_PROF)   $(CXXFLAGS_OTHER)
 
-check:  check_options check_test.debug check_test.ndebug
+check:  check_options check_test.debug check_test.ndebug check_doubleslash
 
 stu.ndebug:  $(wildcard *.cc *.hh) version.hh
 	$(CXX) $(CXXFLAGS_ALL_NDEBUG) stu.cc -o stu.ndebug
@@ -53,6 +53,9 @@ check_test.debug: stu.debug mktest test test/* test/*/*
 
 check_test.ndebug: stu.ndebug mktest test test/* test/*/* 
 	NDEBUG=1 ./mktest && touch $@
+
+check_doubleslash:  $(wildcard *.cc *.hh) testdoubleslash
+	./testdoubleslash
 
 # Note:  the ending ".1" indicates that the manpage is in Section 1
 # (commands).  It has nothing to do with the version number of Stu. 

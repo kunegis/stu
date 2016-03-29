@@ -13,18 +13,46 @@
  * string.  
  */
 
-string format_name_mid(string name)
-{
-	// TODO escape these properly in the output
-	if (name.find_first_of("\"\' \t\n\v\f\r") != string::npos)
-		return fmt("'%s'", name);
-	else
-		return name;
-}
+#define STU_STRING_ESCAPE_CHARACTERS "\"\' \t\n\v\f\r\a\b\\\?"
+#define STU_STRING_ESCAPE_CHARACTERS_STRICT "\"\'\t\n\v\f\r\a\b\\\?"
 
 string format_name(string name) 
 {
-	return fmt("'%s'", name); 
+	string ret(2 + 2 * name.size(), '\0');
+	char *const q_begin= (char *) ret.c_str(), *q= q_begin; 
+	*q++= '\'';
+	for (const char *p= name.c_str();  *p;  ++p) {
+		if (strchr(STU_STRING_ESCAPE_CHARACTERS_STRICT, *p)) {
+			*q++= '\\';
+			switch (*p) {
+			default:  assert(0);
+			case '\a':  *q++= 'a';  break;
+			case '\b':  *q++= 'b';  break;
+			case '\f':  *q++= 'f';  break;
+			case '\n':  *q++= 'n';  break;
+			case '\r':  *q++= 'r';  break;
+			case '\t':  *q++= 't';  break;
+			case '\v':  *q++= 'v';  break;
+			case '\\':  *q++= '\\'; break;
+			case '\'':  *q++= '\''; break;
+			case '\"':  *q++= '\"'; break;
+			case '\?':  *q++= '?';  break;
+			}
+		} else {
+			*q++= *p;
+		}
+	}
+	*q++= '\'';
+	ret.resize(q - q_begin); 
+	return ret; 
+}
+
+string format_name_mid(string name)
+{
+	if (name.find_first_of(STU_STRING_ESCAPE_CHARACTERS) != string::npos) 
+		return format_name(name); 
+	else
+		return name;
 }
 
 /* Declared as int so arithmetic can be performed on it */ 

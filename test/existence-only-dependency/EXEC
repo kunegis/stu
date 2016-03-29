@@ -7,25 +7,25 @@ doo rm -rf data
 echo >&2 ../../stu 
 ../../stu 
 if [ "$?" != 0 ]; then
-    echo "$0:  *** first stu failed"
-    exit 1
+	echo "$0:  *** first stu failed"
+	exit 1
 fi
 
 echo >&2 touch data/X
 touch data/X || {
-    exit 1
+	exit 1
 }
 
 echo >&2 ../../stu
 ../../stu >list.output
 if [ "$?" != 0 ]; then
-    exit 1
+	exit 1
 fi
 
-if fgrep -v 'Nothing to be done' list.output ; then
-    echo >&2 "$0:  *** stu did not output 'Nothing to be done'"
-    exit 1
-fi
+grep -Fq 'Nothing to be done' list.output || {
+	echo >&2 "$0:  *** stu did not output 'Nothing to be done'"
+	exit 1
+}
 
 rm -rf data list.output
 

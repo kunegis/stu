@@ -40,7 +40,7 @@ using namespace std;
 /* Note: the following strings do not contain tabs, but only space
  * characters */ 
 #define STU_HELP							\
-	"Usage:   stu [TARGETS...] [OPTIONS...]\n"			\
+	"Usage:   stu [-f FILENAME] [OPTIONS...] [TARGETS...]\n"			\
 	"By default, build the first target in the file 'main.stu'.\n"	\
 	"Options:\n"							\
 	"   -a            Treat all trivial dependencies as non-trivial\n" \

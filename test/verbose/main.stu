@@ -1,16 +1,4 @@
-
-A:  B
-{
-	cat B B >A
-}
-
-B: C
-{
-	cat C C C >B
-}
-
-C:
-{
-	echo Hello >C
-}
-
+A: B { cp B A }
+>B: C D { cat C D }
+C { echo ccc >C }
+D { touch D }

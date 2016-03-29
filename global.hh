@@ -19,18 +19,13 @@ static bool option_continue= false;
 enum {
 	VERBOSITY_SILENT  = -2, /* No output */
 	VERBOSITY_SHORT   = -1, /* Only target name */
-	VERBOSITY_LONG    =  0, /* Output the command */
-	VERBOSITY_VERBOSE = +1  /* More information */ 
+	VERBOSITY_LONG    =  0  /* Output the command */
 };
 
 static int verbosity= VERBOSITY_LONG; 
 
-#ifndef NDEBUG
 /* The -d option (debug mode) */ 
-static bool option_debug= false;
-#else
-#    define option_debug false
-#endif 
+static bool option_verbose= false;
 
 enum Order {
 	ORDER_DFS   = 0,

@@ -1,46 +1,20 @@
 #! /bin/sh
-#
-# Test verbose mode
-#
 
-rm -rf A B C
+rm -f ?
 
-../../stu -v C 2>list.err
+../../stu -vs >list.out 2>list.err
+exitcode="$?"
 
-if ! fgrep -q 'rebuilding because file does not exist' list.err
-then
-    echo >&2 "*** error A"
-	cat list.err
-    exit 1
-fi
+[ "$exitcode" = 0 ] || { 
+	echo >&2 '*** Exit code' ; exit 1 ; 
+}
 
-../../stu -v C 2>list.err
+[ -r list.out -a \! -s list.out ] || { echo >&2 '*** Stdout not empty' ; exit 1 ; }
+[ -r list.err -a -s list.err ] || { echo >&2 '*** Stderr empty' ; exit 1 ; }
 
-if ! fgrep -q 'need_build = 0' list.err
-then
-    echo >&2 "*** error B"
-	cat list.err
-    exit 1
-fi
-
-rm -rf A B C
-
-../../stu -v B 2>list.err
-
-if ! fgrep -q "Propagating need_build flag from 'C' to 'B'" list.err
-then
-    echo >&2 "*** error C"
-	cat list.err
-    exit 1
-fi
-
-../../stu -v A 2>list.err
-
-if ! fgrep -q "Building 'A'" list.err
-then
-    echo >&2 "*** error D"
-	cat list.err
-    exit 1
-fi
+lines="$(<list.err wc -l)"
+[ "$lines" -gt 10 ] || { echo >&2 '*** Not enough error output' ; exit 1 ; }
+grep -Eqv '^VERBOSE  ' list.err && { echo >&2 '*** Invalid error output' ; exit 1 ; }
 
 exit 0
+

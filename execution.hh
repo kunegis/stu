@@ -20,8 +20,6 @@
 #include "timestamp.hh"
 #include "buffer.hh"
 
-#ifndef NDEBUG
-
 static string debug_padding= "";
 
 class Debug_Pad 
@@ -39,12 +37,6 @@ public:
 };
 
 #define debug_padding_str  debug_padding.c_str()
-
-#else
-
-#define debug_padding_str  ""
-
-#endif
 
 class Execution
 {
@@ -330,8 +322,8 @@ long Execution::jobs= 1;
 
 void Execution::wait() 
 {
-	if (option_debug) {
-		fprintf(stderr, "DEBUG %s wait\n",
+	if (option_verbose) {
+		fprintf(stderr, "VERBOSE %s wait\n",
 			debug_padding_str); 
 	}
 
@@ -340,8 +332,8 @@ void Execution::wait()
 	int status;
 	pid_t pid= Job::wait(&status); 
 	
-	if (option_debug) {
-		fprintf(stderr, "DEBUG %s wait pid = %d\n", 
+	if (option_verbose) {
+		fprintf(stderr, "VERBOSE %s wait pid = %d\n", 
 			debug_padding_str,
 			(int) pid);
 	}
@@ -357,9 +349,7 @@ void Execution::wait()
 
 bool Execution::execute(Execution *parent, Link &&link)
 {
-#ifndef NDEBUG
 	Debug_Pad debug_pad;
-#endif 
 
 	assert(jobs >= 0); 
 	assert(link.avoid.get_k() == dynamic_depth(target.type)); 
@@ -369,12 +359,12 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 	done.check();
 
-	if (option_debug) {
+	if (option_verbose) {
 		string text_target= this->target.format();
 		string text_flags= format_flags(link.flags);
 		string text_avoid= link.avoid.format(); 
 
-		fprintf(stderr, "DEBUG %s %s execute %s %s\n", 
+		fprintf(stderr, "VERBOSE %s %s execute %s %s\n", 
 			debug_padding_str,
 			text_target.c_str(),
 			text_flags.c_str(),
@@ -388,9 +378,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 
  	if (finished(link.avoid)) {
-		if (option_debug) {
+		if (option_verbose) {
 			string text_target= target.format(); 
-			fprintf(stderr, "DEBUG %s %s finished\n",
+			fprintf(stderr, "VERBOSE %s %s finished\n",
 				debug_padding_str,
 				text_target.c_str());
 		}
@@ -504,13 +494,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 	assert(children.empty()); 
 	assert(error == 0);
 
-	if (verbosity >= VERBOSITY_VERBOSE) {
-		string text= target.format();
-		fprintf(stderr, "Building %s\n", 
-				text.c_str()); 
-		fprintf(stderr, "\tneed_build = %u\n", need_build);
-	}
-
 	/*
 	 * Check whether execution has to be built
 	 */
@@ -547,16 +530,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 				 * because of more up to date dependencies */ 
 
 				if (timestamp.defined() && timestamp_old.older_than(timestamp)) {
-					if (verbosity >= VERBOSITY_VERBOSE) {
-						fprintf(stderr, "\trebuilding because dependencies are newer\n"); 
-						string text_timestamp= timestamp.format();
-						string text_timestamp_old= timestamp_old.format(); 
-						fprintf(stderr, "\ttimestamp of dependency = %s\n",
-							text_timestamp.c_str()); 
-						fprintf(stderr, "\ttimestamp of '%s' = %s\n",
-							target.name.c_str(), 
-							text_timestamp_old.c_str()); 
-					}
 					if (no_command) {
 						print_warning(fmt("File target '%s' which has no command "
 								  "is older than its dependency",
@@ -577,20 +550,12 @@ bool Execution::execute(Execution *parent, Link &&link)
 					/* File does not exist */
 
 					if (! (link.flags & F_OPTIONAL)) {
-						if (verbosity >= VERBOSITY_VERBOSE) {
-							fprintf(stderr, 
-								"\trebuilding because file does not exist\n"); 
-						}
 						need_build= true; 
 					} else {
 						/* Optional dependency:  don't create the file;
 						 * it will then not exist when the parent is
 						 * called. 
 						 */ 
-						if (verbosity >= VERBOSITY_VERBOSE) {
-							fprintf(stderr, 
-								"\tis an optional dependency that is not present\n"); 
-						}
 						done.add_one_neg(F_OPTIONAL); 
 						return false;
 					}
@@ -640,10 +605,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 		if (! phonies.count(target.name)) {
 			/* Phony was not yet executed */ 
 			need_build= true; 
-			if (verbosity >= VERBOSITY_VERBOSE) {
-				fprintf(stderr, 
-					"\trunning because this phony was not yet executed\n");
-			}
 		}
 	}
 
@@ -671,11 +632,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	if (no_command) {
 		/* A target without a command */ 
-
-		if (verbosity >= VERBOSITY_VERBOSE) {
-			fprintf(stderr, "\ttarget without command\n");
-		}
-		
 		done.add_neg(link.avoid); 
 		return false;
 	}
@@ -689,9 +645,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 
 	/* Output the command */ 
-	if (verbosity >= VERBOSITY_VERBOSE) {
-		fprintf(stderr, "\tstarting\n"); 
-	}
 	if (rule->redirect_output)
 		assert(rule->place_param_target.type == T_FILE); 
 	print_command();
@@ -713,9 +666,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 		 rule->filename_input.unparametrized(),
 		 rule->command->place); 
 
-	if (option_debug) {
+	if (option_verbose) {
 		string text_target= this->target.format();
-		fprintf(stderr, "DEBUG %s %s execute pid = %d\n", 
+		fprintf(stderr, "VERBOSE %s %s execute pid = %d\n", 
 			debug_padding_str,
 			text_target.c_str(),
 			(int)pid); 
@@ -921,8 +874,8 @@ int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 			bool r;
 
 			do {
-				if (option_debug) {
-					fprintf(stderr, "DEBUG %s main.next\n", 
+				if (option_verbose) {
+					fprintf(stderr, "VERBOSE %s main.next\n", 
 						debug_padding_str);
 				}
 				r= execution_root->execute(nullptr, move(link));
@@ -984,11 +937,11 @@ void Execution::unlink(Execution *const parent,
 {
 	(void) avoid_child;
 
-	if (option_debug) {
+	if (option_verbose) {
 		string text_parent= parent->target.format();
 		string text_child= child->target.format();
 		string text_done_child= child->done.format();
-		fprintf(stderr, "DEBUG %s %s unlink %s %s\n",
+		fprintf(stderr, "VERBOSE %s %s unlink %s %s\n",
 			debug_padding_str,
 			text_parent.c_str(),
 			text_child.c_str(),
@@ -1127,14 +1080,6 @@ void Execution::unlink(Execution *const parent,
 	if (child->need_build 
 	    && ! (flags_child & F_EXISTENCE)
 	    && ! (flags_child & F_READ)) {
-		if (verbosity >= VERBOSITY_VERBOSE) {
-			const string text_child= child->rule->place_param_target.format();
-			const string text_parent= parent->rule == nullptr 
-				? "<target without rule>"
-				: parent->rule->place_param_target.format();
-			fprintf(stderr, "Propagating need_build flag from %s to %s\n", 
-				text_child.c_str(), text_parent.c_str());
-		}
 		parent->need_build= true; 
 	}
 
@@ -1179,10 +1124,10 @@ Execution::Execution(Target target_,
 	}
 	assert((param_rule == nullptr) == (rule == nullptr)); 
 
-	if (option_debug) {
+	if (option_verbose) {
 		string text_target= target.format();
 		string text_rule= rule->format(); 
-		fprintf(stderr, "DEBUG  %s   %s %s\n",
+		fprintf(stderr, "VERBOSE  %s   %s %s\n",
 			debug_padding_str,
 			text_target.c_str(),
 			text_rule.c_str()); 
@@ -1197,10 +1142,10 @@ Execution::Execution(Target target_,
 		     i != rule->dependencies.end();  ++i) {
 			assert((*i)->get_place().type != Place::P_EMPTY); 
 			Link link_new(*i); 
-			if (option_debug) {
+			if (option_verbose) {
 				string text_target= target.format();
 				string text_link_new= link_new.format(); 
-				fprintf(stderr, "DEBUG %s    %s push %s\n",
+				fprintf(stderr, "VERBOSE %s    %s push %s\n",
 					debug_padding_str,
 					text_target.c_str(),
 					text_link_new.c_str()); 
@@ -1862,10 +1807,10 @@ void Execution::print_command()
 bool Execution::deploy(const Link &link,
 		       const Link &link_child)
 {
-	if (option_debug) {
+	if (option_verbose) {
 		string text_target= this->target.format();
 		string text_link_child= link_child.format(); 
-		fprintf(stderr, "DEBUG %s %s deploy %s\n",
+		fprintf(stderr, "VERBOSE %s %s deploy %s\n",
 			debug_padding_str,
 			text_target.c_str(),
 			text_link_child.c_str());

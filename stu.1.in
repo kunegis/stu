@@ -45,10 +45,6 @@ Treat all trivial dependencies (declared with '&') as non-trivial.
 Pass a target using full Stu syntax. 
 .IP "-C FILENAME"
 Pass a target filename, without Stu syntax. 
-.IP -d
-Debug mode (only in debug versions of Stu); show internal information
-about the Stu algorithm on standard error output.  All printed debug
-output lines begin with the string 'DEBUG  '. 
 .IP "-f FILENAME"
 Read the given file instead of the default 'main.stu'.  If the name of a
 directory is passed, the file 'main.stu' in the given directory is
@@ -76,8 +72,9 @@ Run jobs in pseudorandom order, seeded by the given string.
 Silent mode; do not output the commands that are executed.  This option
 is compatible to the same option in Make. 
 .IP -v
-Verbose mode; runtime information is printed on standard error output
-for each target when it is run.
+Verbose mode; show internal information
+about the Stu algorithm on standard error output.  All printed 
+output lines begin with the string VERBOSE  '. 
 .IP -V 
 Output the version number of Stu and exit.
 .IP -w

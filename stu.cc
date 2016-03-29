@@ -29,13 +29,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-#define STU_OPTIONS "ac:C:df:ghj:km:M:svVw"
-
-#ifdef NDEBUG
-#    define STU_HELP_VERBOSE ""
-#else 
-#    define STU_HELP_VERBOSE "   -d            Enable debug info on standard error output (only in debug version of Stu)\n"
-#endif
+#define STU_OPTIONS "ac:C:f:ghj:km:M:svVw"
 
 /* Note: the following strings do not contain tabs, but only space
  * characters */ 
@@ -46,7 +40,6 @@ using namespace std;
 	"   -a            Treat all trivial dependencies as non-trivial\n" \
 	"   -c EXPRESSION Pass a target in full Stu syntax\n"		\
 	"   -C FILENAME   Pass a target filename without Stu syntax parsing\n" \
-	STU_HELP_VERBOSE						\
 	"   -f FILENAME   The input file to use instead of 'main.stu'\n" \
 	"   -g            Treat all optional dependencies as non-optional\n" \
 	"   -h            Output help\n"				\
@@ -57,7 +50,7 @@ using namespace std;
 	"      random     Random order\n"				\
 	"   -M STRING     Pseudorandom run order, seeded by given string\n" \
 	"   -s            Silent mode; do not output commands\n"	\
-	"   -v            Verbose mode; print additional info on standard error output\n" \
+	"   -v            Verbose mode; show execution information on standard error output\n" \
 	"   -V            Output version\n"				\
 	"   -w            Short output; don't show the commands, only the target filenames\n"
 
@@ -111,7 +104,7 @@ int main(int argc, char **argv, char **envp)
 			case 'h': fputs(STU_HELP, stdout);     exit(0);
 			case 'k': option_continue= true;       break;
 			case 's': verbosity= VERBOSITY_SILENT; break;
-			case 'v': verbosity= VERBOSITY_VERBOSE;break;
+			case 'v': option_verbose= true;        break;
 			case 'V': puts("stu " STU_VERSION);    exit(0);
 			case 'w': verbosity= VERBOSITY_SHORT;  break;
 
@@ -139,15 +132,6 @@ int main(int argc, char **argv, char **envp)
 						   (type, Place_Param_Name(name, place)))));
 					break;
 				}
-
-			case 'd': 
-#ifndef NDEBUG
-				option_debug= true;          
-#else
-				print_error("Option -d is only available in debug mode; this is a non-debug version of Stu");
-				exit(ERROR_SYSTEM); 
-#endif 
-				break;
 
 			case 'f':
 				if (filename != "") {

@@ -16,7 +16,7 @@ List of options
 -a  S      Consider trivial dependencies to be non-trivial
 -b  .      Enable backups
 -B      G  Re-make all
--c  .      Specify syntax 
+-c  S      Specify syntax (same as non-option arguments)
 -C  S      Explicit target without syntax 
 -d  S   G  Print debugging information 
 -e    M G  Environment overrides Make macros

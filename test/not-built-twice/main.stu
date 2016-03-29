@@ -1,0 +1,20 @@
+#
+# This *would* build 'B' twice, if Stu did not cache the fact that 'B'
+# is already built. 
+#
+
+A:  B C D { cat B C D >A }
+
+B:  ?X { 
+	if [ -r X ] ; then
+		echo yes >B 
+	else 
+		echo no >B
+	fi
+}
+
+C: X { echo ccc >C }
+
+D: B { cp B D }
+
+>X { echo xxx }

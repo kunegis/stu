@@ -109,8 +109,8 @@ public:
 
 	enum Type {
 		P_EMPTY,  /* Empty */
-		P_FILE,   /* Fields as documented below */
-		P_ARGV    /* FILENAME is argument; rest is unused */ 
+		P_FILE,   /* FILENAME is filename */
+		P_ARGV    /* FILENAME is argument */ 
 	};
 
 	Place::Type type; 
@@ -132,21 +132,17 @@ public:
 		:  type(P_EMPTY) 
 	{ }
 
-	/* File place */ 
-	Place(string filename_, unsigned line_, unsigned column_)
-		:  type(P_FILE),
+	Place(Type type_,
+	      string filename_, 
+	      unsigned line_, 
+	      unsigned column_)
+		:  type(type_),
 		   filename(filename_),
 		   line(line_),
 		   column(column_)
 	{ 
 		assert(line >= 1);
 	}
-
-	/* Argv place */
-	Place(string string_)
-		:  type(P_ARGV),
-		   filename(string_)
-	{ }
 
 	/* Print the trace to STDERR as part of an error message.  The 
 	 * trace is printed as a single line, which can be parsed by
@@ -292,7 +288,7 @@ void explain_file_without_command_without_dependencies()
 void explain_no_target()
 {
 	fputs("*** Explanation: There must be either a target given as an argument to Stu\n"
-	      "invocation, a -C option, an -f option with a default target, or a file\n"
+	      "invocation, a -c or -C option, an -f option with a default target, or a file\n"
 	      "'main,stu' with a default target\n",
 	      stderr); 
 }

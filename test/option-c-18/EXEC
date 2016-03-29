@@ -1,0 +1,19 @@
+#! /bin/sh
+
+rm -f ?
+
+../../stu -c '' >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || { echo >&2 '*** (1) exit code' ; exit 1 ; }
+cmp list.out stdout || { echo >&2 '*** (1) stdout'    ; exit 1 ; }
+
+rm -f ?
+
+../../stu -c '#' >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || { echo >&2 '*** (3) exit code' ; exit 1 ; }
+cmp list.out stdout || { echo >&2 '*** (3) stdout'    ; exit 1 ; }
+
+exit 0

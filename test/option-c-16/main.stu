@@ -1,0 +1,12 @@
+
+Z { exit 1 }
+
+X    { echo BUILDING_X ; echo >X D E F ; }
+
+D: P { echo BUILDING_D ; cp P D ; }
+E: Q { echo BUILDING_E ; cp Q E ; }
+F: R { echo BUILDING_F ; cp R F ; }
+
+P    { echo BUILDING_P ; echo >P ppp ; }
+Q    { echo BUILDING_Q ; echo >Q qqq ; }
+R    { echo BUILDING_R ; echo >R rrr ; }

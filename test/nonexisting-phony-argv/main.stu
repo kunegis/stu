@@ -1,4 +1,4 @@
 
-# Test:  stu '@ do' must fail. 
+# Test:  stu '@" do"' must fail. 
 
 @do:  { echo DOO }

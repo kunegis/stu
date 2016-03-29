@@ -1,0 +1,5 @@
+Z { exit 1 }
+
+>X { echo A }
+
+>A { echo correct }

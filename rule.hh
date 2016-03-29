@@ -8,7 +8,7 @@
 
 #include "dependency.hh"
 
-/* A rule.  Rules are always parametrized. 
+/* A rule.  The class Rule allows parameters; there is no "unparametrized rule" class.  
  */ 
 class Rule
 {

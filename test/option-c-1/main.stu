@@ -1,0 +1,5 @@
+
+# Dummy first target that must not be invoked 
+X { exit 1 }
+
+A: { echo correct >A }

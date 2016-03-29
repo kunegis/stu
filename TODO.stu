@@ -1,12 +1,11 @@
 #==== Small features that complete what we already have ====
 
 #
-# A -c option, using full expressions:
+# TODO "escape these properly in the output"
 #
-#     stu -c '?[FILENAME]'
+
 #
-# Also, make targets passed on the command line be equivalent to the -c
-# options.  (Useful when they may start with '-', or when not in order.) 
+# Make -v be better, or replace it by -d. 
 #
 
 #
@@ -41,10 +40,6 @@ prog:  prog.c
 
 #
 # An option to never delete target files when a command fails. 
-#
-
-#
-# Make -v be better, or replace it by -d. 
 #
 
 #==== Big features that complete what we already have ====

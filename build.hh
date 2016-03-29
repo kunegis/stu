@@ -114,8 +114,7 @@ void Build::build_rule_list(vector <shared_ptr <Rule> > &ret)
 
 		if (rule == nullptr) {
 			assert(iter == iter_begin); 
-			(*iter)->get_place() << "expected a rule"; 
-			throw ERROR_LOGICAL;
+			break;
 		}
 
 		ret.push_back(rule); 

@@ -1,1 +1,1 @@
-main.stu:7:1: the first rule must not be parametrized if it is used by default
+main.stu:7:1: the first rule in input file 'main.stu' must not be parametrized if no target is given

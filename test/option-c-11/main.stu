@@ -1,0 +1,16 @@
+
+X { 
+	exit 1 
+}
+
+C {
+	echo correct >C
+}
+
+B {
+	cp C B
+}
+
+A {
+	cp B A
+}

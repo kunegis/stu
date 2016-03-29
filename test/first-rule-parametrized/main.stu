@@ -1,0 +1,7 @@
+# Error because the first rule is parametrized 
+
+list.$NAME.abc: {
+	touch list.$NAME.abc
+}
+
+A: { touch A }

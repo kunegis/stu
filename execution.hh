@@ -285,11 +285,7 @@ public:
 
 	/* Main execution loop.  
 	 */
-	static int main(
-			const vector <shared_ptr <Dependency> > &dependencies
-//			const vector <Target> &targets, 
-//			const vector <Place> &places
-			);
+	static int main(const vector <shared_ptr <Dependency> > &dependencies);
 
 	/* Wait for next job to finish and finish it.  Do not start anything
 	 * new.  
@@ -908,25 +904,10 @@ void Execution::waited(int pid, int status)
 }
 
 int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
-//const vector <Target> &targets, 
-//		    const vector <Place> &places)
 {
 	assert(jobs >= 0);
-//	assert(targets.size() == places.size()); 
 
 	timestamp_last= Timestamp::now(); 
-
-//	vector <shared_ptr <Dependency> > dependencies;
-	
-//	for (unsigned i= 0;  i != targets.size();  ++i) {
-//		dependencies.push_back
-//			(shared_ptr <Dependency>
-//			 (new Direct_Dependency
-//			  (0, Place_Param_Target
-//			   (targets.at(i).type, 
-//			    Place_Param_Name(targets.at(i).name, places.at(i))
-//			    )))); 
-//	}
 
 	Execution *execution_root= new Execution(dependencies); 
 
@@ -1115,10 +1096,7 @@ void Execution::unlink(Execution *const parent,
 				fmt("generated file '%s' for variable dependency was built but cannot be found now", 
 				    filename);
 			child->print_traces();
-//			const Link &link_child= child->parents.at(parent);
-//			link_child.dependency->get_place()
-//			parent->param_rule->place_param_target.place 
-//				<< "in variable dependency used here";
+
 			if (! option_continue)
 				throw parent->error; 
 		}
@@ -1596,12 +1574,10 @@ void Execution::read_dynamics(Stack avoid,
 
 	try {
 		vector <shared_ptr <Token> > tokens;
-		vector <Trace> traces;
-		vector <string> filenames;
 		const string filename= target.name; 
 		Place place_end; 
 
-		Parse::parse(tokens, place_end, filename, false, traces, filenames);
+		Parse::parse_tokens_file(tokens, false, place_end, filename);
 		auto i= tokens.begin(); 
 		vector <shared_ptr <Dependency> > dependencies;
 
@@ -1742,7 +1718,7 @@ void Execution::read_dynamics(Stack avoid,
 		}
 				
 		if (i != tokens.end()) {
-			(*i)->get_place() << "expected dependency";
+			(*i)->get_place() << "expected a dependency";
 			throw ERROR_LOGICAL;
 		}
 	} catch (int e) {

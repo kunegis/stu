@@ -1,0 +1,3 @@
+X { exit 1 }
+>B { echo A }
+>A { echo aaa }

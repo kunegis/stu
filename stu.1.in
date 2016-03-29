@@ -41,8 +41,10 @@ Make.
 .SH OPTIONS
 .IP -a
 Treat all trivial dependencies (declared with '&') as non-trivial.
+.IP "-c EXPRESSION"
+Pass a target using full Stu syntax. 
 .IP "-C FILENAME"
-Pass a target filename without Stu syntax parsing. 
+Pass a target filename, without Stu syntax. 
 .IP -d
 Debug mode (only in debug versions of Stu); show internal information
 about the Stu algorithm on standard error output.  All printed debug
@@ -624,6 +626,13 @@ and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt.
     VERSION; # Contains the version number; updated by hand
     >CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=$VERSION }
     program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
+
+The -c option allows to pass any dependency in Stu syntax, and therefore
+can be used in some advanced use cases:
+
+    stu -c '?X' # Re-build file 'X' only if it already exists
+    stu -c '[X]' # Build all files given in file 'X'
+    stu -c '%version 1.7' # Make sure Stu is compatible with the given version
     
 .SH "LIMITATIONS, PITFALLS AND FUTURE DIRECTIONS"
 

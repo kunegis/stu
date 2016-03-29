@@ -51,7 +51,10 @@
 #              Stu is invoked without arguments by default.  It only
 #              changes the check that the file was built, and its
 #              content.   
-# CMD          Additional command arguments passed to Stu 
+# CMD          Additional command arguments passed to Stu.  Content may
+#  	       use shell quoting and escaping.  For instance, may
+#  	       contain -c ' A ' to pass an argument beginning and ending
+#              in space to Stu. 
 # PARALLEL     Give the arguments of the -j option for which the test is
 #              to be executed 
 # EXITCODE     The prescribed exit code 
@@ -177,10 +180,9 @@ do
 		fi
 
 	else
-
 		# Execute command
-		echo ../../stu $CMD
-		../../stu >list.def.out 2>list.def.err $CMD
+		echo ../../stu "$CMD"
+		eval ../../stu $CMD \>list.def.out 2\>list.def.err
 		exitcode_actual=$?
 		
 		# Exit code
@@ -267,7 +269,6 @@ do
 		if [ -r INSTDERR ]; then
 			for lineno in $(seq 1 $(awk '{x++}END{ print x}' <INSTDERR)) ; do
 			   	line="$(<INSTDERR sed -re "$lineno"'!d')"
-#				echo >&2 "line=⟨$line⟩"
 				if grep <list.def.err -qF -- "$line" ; then
 					echo "INSTDERR...correct"
 				else
@@ -311,9 +312,11 @@ do
 
 		# Second invocation does nothing 
 		if [ "$exitcode_correct" = 0 -a ! -e NOSECOND ]; then
-			../../stu $CMD | 
-			fgrep -q 'Nothing to be done' 
-			if [ $? != 0 ]; then
+#			echo CMD=⟨"$CMD"⟩
+			echo ../../stu "$CMD"
+			eval ../../stu $CMD \>list.def.out 2\>list.def.err 
+			grep -qF 'Nothing to be done' list.def.out 
+			if [ $? \!= 0 ] ; then
 				echo >&2 "$0: *** Second invocation did no result in 'Nothing to be done'"
 				error=1
 			else
@@ -326,8 +329,8 @@ do
 			ks="$(sed -re '/^\s*$/d' <PARALLEL)"
 			for k in $ks; do
 				delete_tmps
-				echo ../../stu $CMD -j $k
-				../../stu >list.def.out 2>list.def.err $CMD -j $k
+				echo ../../stu "$CMD" -j "$k"
+				eval ../../stu $CMD -j $k \>list.def.out 2\>list.def.err
 				if [ $? != 0 ]
 				then
 					echo >&2 "$0: *** Parallel stu failed for '$file' with k = $k"

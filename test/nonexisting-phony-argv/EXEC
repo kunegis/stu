@@ -1,19 +1,19 @@
 #! /bin/sh
 
-../../stu 2>list.err '@ do'
+../../stu >list.out 2>list.err '@" do"'
 exitcode="$?"
 
-if [ "$exitcode" != 1 ]; then
-    echo >&2 "$0:  *** invalid exit code '$exitcode'"
-    exit 1
-fi
+[ "$exitcode" = 1 ] || {
+	echo >&2 '*** exit code'
+	exit 1
+}
 
-fgrep -q "No rule to build @' do'" list.err || {
-    echo >&2 "$0:  *** invalid error output"
+grep -qF "No rule to build @' do'" list.err || {
+	echo >&2 '*** stderr'
 	echo >&2 ___________________
 	cat >&2 list.err
 	echo >&2 ___________________
-    exit 1
+	exit 1
 }
 
 exit 0

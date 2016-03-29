@@ -1,0 +1,3 @@
+X { exit 1 }
+
+A { exit 1 }

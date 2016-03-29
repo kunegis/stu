@@ -1,0 +1,3 @@
+list.B { exit 1 }
+A:  { echo aaa >A }
+'list.B ':  A { touch 'list.B ' }

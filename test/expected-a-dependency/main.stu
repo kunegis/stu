@@ -1,0 +1,12 @@
+# Junk at end of [B]
+
+A: [B] { touch A }
+
+>B {
+	echo X Y Z
+	echo :
+}
+
+X: { touch X }
+Y: { touch Y }
+Z: { touch Z }

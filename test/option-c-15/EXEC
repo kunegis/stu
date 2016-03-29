@@ -1,0 +1,36 @@
+#! /bin/sh
+
+rm -f stderr
+
+../../stu -c '%version 0.9' >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 2 ] || {
+	echo >&2 '*** exit code'
+	rm -f stderr
+	exit 1
+}
+
+VERSION="$(cat ../../VERSION)"
+<stderr-in >stderr sed -re 's,\$VERSION,'"$VERSION"',g'
+
+cmp list.err stderr || {
+	echo >&2 '*** stderr'
+
+	echo >&2 "'stderr'":
+	echo >&2 _____
+	cat >&2 stderr
+	echo >&2 _____
+
+	echo >&2 "'list.err'":
+	echo >&2 _____
+	cat >&2 list.err
+	echo >&2 _____
+
+	rm -f stderr
+	exit 1
+}
+
+rm -f stderr
+
+exit 0

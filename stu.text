@@ -39,8 +39,11 @@ OPTIONS
        -a     Treat all trivial dependencies (declared with '&') as  non-triv‐
               ial.
 
+       -c EXPRESSION
+              Pass a target using full Stu syntax.
+
        -C FILENAME
-              Pass a target filename without Stu syntax parsing.
+              Pass a target filename, without Stu syntax.
 
        -d     Debug mode (only in debug versions of Stu); show internal infor‐
               mation about the Stu algorithm on standard  error  output.   All
@@ -622,6 +625,14 @@ EXAMPLES
            >CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=$VERSION }
            program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
 
+       The -c option allows to pass any dependency in Stu syntax,  and  there‐
+       fore can be used in some advanced use cases:
+
+           stu -c '?X' # Re-build file 'X' only if it already exists
+           stu -c '[X]' # Build all files given in file 'X'
+           stu  -c '%version 1.7' # Make sure Stu is compatible with the given
+       version
+
 
 LIMITATIONS, PITFALLS AND FUTURE DIRECTIONS
        The -f option only supports regular files.  Standard input is not  sup‐
@@ -659,4 +670,4 @@ SEE ALSO
 
 
 
-stu-1.9.11                        March 2016                            STU(1)
+stu-1.9.12                        March 2016                            STU(1)

@@ -8,13 +8,17 @@ rm -f ?
 ../../stu -C '' >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 2 ] || {
+[ "$exitcode" = 4 ] || {
 	echo >&2 '*** exit code'
 	exit 1
 }
 
 cmp list.err stderr || {
 	echo >&2 '*** stderr'
+	echo >&2 list.err:
+	echo >&2 ______
+	cat >&2 list.err
+	echo >&2 ______
 	exit 1
 }
 

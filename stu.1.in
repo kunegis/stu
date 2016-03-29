@@ -557,14 +557,15 @@ Everything was built successfully or was up to date already.
 Build error.  Example:  a child process produced an error, or a
 dependency was not found and no rule was given for it.
 .IP 2
-Logical error.  Examples:  syntax error in input file, invalid
-invocation, cycle in the dependency graph.  
+Logical error.  Examples:  syntax error in input file, syntax error in
+dynamic dependency, cycle in the dependency graph.   
 .IP 3
 Both build and logical errors were encountered (when using the -k
 option).  
 .IP 4
-System error that made Stu abort execution immediately, regardless of
-whether the -k option was used.  
+An error occurred that made Stu abort execution immediately, regardless of
+whether the -k option was used.  Examples:  permission denied to access
+the source file, cannot start child process, invalid invocation. 
 
 .SH "ENVIRONMENT"
 

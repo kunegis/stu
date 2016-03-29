@@ -95,7 +95,7 @@ int main(int argc, char **argv, char **envp)
 		const char *const stu_status= getenv("STU_STATUS");
 		if (stu_status != nullptr) {
 			print_error("Refusing to run recursive Stu; unset $STU_STATUS to circumvent");
-			throw ERROR_LOGICAL; 
+			exit(ERROR_SYSTEM); 
 		}
 
 		/* Assemble targets here */ 
@@ -127,7 +127,7 @@ int main(int argc, char **argv, char **envp)
 					had_c_option= true; 
 					if (*optarg == '\0') {
 						print_error("Option -C must take non-empty argument"); 
-						throw ERROR_LOGICAL;
+						exit(ERROR_SYSTEM);
 					}
 					const char *const name= optarg;
 					Type type= T_FILE;
@@ -145,18 +145,18 @@ int main(int argc, char **argv, char **envp)
 				option_debug= true;          
 #else
 				print_error("Option -d is only available in debug mode; this is a non-debug version of Stu");
-				throw ERROR_LOGICAL; 
+				exit(ERROR_SYSTEM); 
 #endif 
 				break;
 
 			case 'f':
 				if (filename != "") {
 					print_error("Option -f must be used at most once"); 
-					throw ERROR_LOGICAL;
+					exit(ERROR_SYSTEM);
 				}
 				if (*optarg == '\0') {
 					print_error("Option -f must take non-empty argument");
-					throw ERROR_LOGICAL;
+					exit(ERROR_SYSTEM);
 				}
 				filename= string(optarg); 
 				break;
@@ -167,11 +167,11 @@ int main(int argc, char **argv, char **envp)
 				Execution::jobs= strtol(optarg, &endptr, 0);
 				if (errno != 0 || *endptr != '\0') {
 					print_error("Invalid argument to -j");
-					throw ERROR_LOGICAL; 
+					exit(ERROR_SYSTEM); 
 				}
 				if (Execution::jobs < 1) {
 					print_error("Argument to -j must be positive");
-					throw ERROR_LOGICAL; 
+					exit(ERROR_SYSTEM); 
 				}
 				break;
 
@@ -191,7 +191,7 @@ int main(int argc, char **argv, char **envp)
 				else if (!strcmp(optarg, "dfs"))     /* Default */ ;
 				else {
 					print_error(frmt("Invalid order '%s' for option -m", optarg));
-					throw ERROR_LOGICAL; 
+					exit(ERROR_SYSTEM); 
 				}
 				break;
 
@@ -203,7 +203,12 @@ int main(int argc, char **argv, char **envp)
 			default:  
 				/* Invalid option -- an error message was
 				 * already printed by getopt() */   
-				throw ERROR_LOGICAL; 
+
+				fprintf(stderr, 
+					"To get a list of all options, use '%s -h'\n", 
+					dollar_zero); 
+
+				exit(ERROR_SYSTEM); 
 			}
 		}
 

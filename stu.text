@@ -553,14 +553,16 @@ EXIT STATUS
        1      Build error.  Example:  a child process produced an error, or  a
               dependency was not found and no rule was given for it.
 
-       2      Logical  error.   Examples:  syntax error in input file, invalid
-              invocation, cycle in the dependency graph.
+       2      Logical  error.   Examples:   syntax error in input file, syntax
+              error in dynamic dependency, cycle in the dependency graph.
 
        3      Both build and logical errors were encountered (when  using  the
               -k option).
 
-       4      System  error that made Stu abort execution immediately, regard‐
-              less of whether the -k option was used.
+       4      An  error  occurred  that  made Stu abort execution immediately,
+              regardless of whether the -k option was used.   Examples:   per‐
+              mission  denied  to  access  the source file, cannot start child
+              process, invalid invocation.
 
 
 ENVIRONMENT
@@ -670,4 +672,4 @@ SEE ALSO
 
 
 
-stu-1.9.15                        March 2016                            STU(1)
+stu-1.9.16                        March 2016                            STU(1)

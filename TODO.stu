@@ -35,6 +35,11 @@ prog:  prog.c
 #
 
 #
+# When SIGUSR1 (or similar) is sent to Stu, output list of current jobs
+# (ps(1) style). 
+#
+
+#
 # Hard-coded content
 #
 

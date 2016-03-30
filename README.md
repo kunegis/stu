@@ -1,11 +1,11 @@
-# Stu -- Build Automation
+# Stu - Build Automation
 
 This is Stu, a build tool similar to Make, but with two features that
 set it apart: 
 
-* Parametrized rules:  Like Make's '%' character, but there can be
+* Parametrized rules:  Like GNU Make's '%' character, but there can be
   multiple parameters, and they have names.  The syntax is '$NAME',
-  where NAME can be any name. 
+  where NAME can be any string. 
 * Dynamic dependencies:  The dependencies of a target can be generated
   dynamically.  When a dependency is enclosed in square brackets, it means
   that that file is built and dependencies are read from within that

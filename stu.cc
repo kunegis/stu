@@ -103,10 +103,10 @@ int main(int argc, char **argv, char **envp)
 			case 'g': option_nonoptional= true;    break;
 			case 'h': fputs(STU_HELP, stdout);     exit(0);
 			case 'k': option_continue= true;       break;
-			case 's': verbosity= VERBOSITY_SILENT; break;
+			case 's': output_mode= OUTPUT_SILENT;  break;
 			case 'v': option_verbose= true;        break;
 			case 'V': puts("stu " STU_VERSION);    exit(0);
-			case 'w': verbosity= VERBOSITY_SHORT;  break;
+			case 'w': output_mode= OUTPUT_SHORT;   break;
 
 			case 'c': 
 				{
@@ -300,7 +300,7 @@ void init_buf()
 	/* If -s is not given, set STDOUT to line buffered, so that the
 	 * output of command lines always happens before the output of
 	 * commands themselves */ 
-	if (verbosity > VERBOSITY_SILENT) {
+	if (output_mode > OUTPUT_SILENT) {
 		/* Note:  only possible if we have not written anything yet */ 
 		setvbuf(stdout, nullptr, _IOLBF, 0); 
 

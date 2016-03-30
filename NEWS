@@ -16,9 +16,6 @@ in the file MIGRATION.
   brackets.  For instance, '!$[X]' is now fully equivalent to '$[!X]'.
   Previously, '!$[X]' was an error.  This is true for all three flags,
   '!', '?', and '&'. 
-* There is a new option -d ("debug") that shows internal information
-  about the algorithm used by Stu.  The option is only available in
-  debug versions of Stu. 
 
 2016-01-24  Version 1.8:
 

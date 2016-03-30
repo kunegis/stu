@@ -893,7 +893,7 @@ int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		if (! option_continue)
 			assert(success); 
 
-		if (worked && verbosity == VERBOSITY_SHORT) {
+		if (worked && output_mode == OUTPUT_SHORT) {
 			puts("Done");
 		}
 	
@@ -1746,13 +1746,13 @@ void Execution::print_traces(string text) const
 
 void Execution::print_command()
 {
-	if (verbosity == VERBOSITY_SHORT) {
+	if (output_mode == OUTPUT_SHORT) {
 		string text= target.format_bare();
 		puts(text.c_str()); 
 		return;
 	} 
 
-	if (verbosity < VERBOSITY_SHORT)
+	if (output_mode < OUTPUT_SHORT)
 		return; 
 
 	/* For single-line commands, show the variables on the same line.

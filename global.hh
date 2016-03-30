@@ -14,26 +14,24 @@ static bool option_nonoptional= false;
 /* The -k option (continue when encountering errors) */ 
 static bool option_continue= false;
 
+/* The -v option (verbose mode) */ 
+static bool option_verbose= false;
+
 /* Determines how commands are output
  */
 enum {
-	VERBOSITY_SILENT  = -2, /* No output */
-	VERBOSITY_SHORT   = -1, /* Only target name */
-	VERBOSITY_LONG    =  0  /* Output the command */
+	OUTPUT_SILENT  = -2, /* No output */
+	OUTPUT_SHORT   = -1, /* Only target name */
+	OUTPUT_LONG    =  0  /* Output the command */
 };
+static int output_mode= OUTPUT_LONG; 
 
-static int verbosity= VERBOSITY_LONG; 
-
-/* The -d option (debug mode) */ 
-static bool option_verbose= false;
-
-enum Order {
+enum {
 	ORDER_DFS   = 0,
 	ORDER_RANDOM= 1,
 	
 	/* -M mode is coded as ORDER_RANDOM */ 
 };
-
 static int order= ORDER_DFS; 
 
 /* Whether to use vectors for randomization */ 

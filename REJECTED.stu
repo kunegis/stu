@@ -3,7 +3,18 @@
 # course revive ideas from here in the future.  When in doubt, we prefer
 # to *not* support a feature, as adding a feature in the future can
 # always be done without breaking compatibility, whereas removing one is
-# always backward-incompatible. 
+# always backward-incompatible.  Many of these features are useful. 
+#
+
+#
+# When reporting an error, always report how the .stu file was included
+# by another .stu file.  Use "light" traces in green, like GCC does.
+# (Maybe only do this in a special mode.) 
+#
+
+#
+# Make the argument to the -j option optional.  (Reason for rejection:
+# not possible with standard getopt()). 
 #
 
 #
@@ -78,3 +89,111 @@ A:  !$[B] { ... }
 #
 
 A:  ?!B { ... }
+
+#
+# Set intersection with '&'.  Clashes with trivial dependencies and can
+# be implemented indepently of Stu. 
+#
+
+@x:  (A B C) & (B C D);
+# is the same as
+@x:  B C;
+
+#
+# Index-wise concatenation with '|'
+#
+
+@x:  (A B) | (X Y);
+# is the same as
+@x:  AX BY;
+
+# This is not really useful, though
+
+#
+# Set difference with '\'
+#
+
+@plots:  dat/plot.([dat/NETWORKS] \ enron).eps;
+
+#
+# Allow regular expressions in parameters, e.g. for single-character
+# parameters.  This will also make it possible to allow contiguous
+# parameters, and giving a list of possible values for a parametrized
+# rule. 
+#
+
+# Allow contiguous parameters
+list.${X:.}${Y:.} {
+	compute -x $X -y $Y >list.${X}${Y}
+}
+
+# Exclude certain characters from parameter names 
+web.${NETWORK:[^.]+}
+
+# Specify a list of values
+${NAME:ref|ukob|tuberlin}.bib:  bibs-A/${NAME}.bib
+{ cp bibs-A/$NAME.bib $NAME.bib }
+$NAME.bib:  bibs-B/$NAME.bib
+{ cp bibs-B/$NAME.bib $NAME.bib }
+
+# Exclude slashes
+${NAME:[^/]+}.bib: ...;
+
+#
+# When an error is output, the column number must take into account
+# unicode characters.  In this example, the opening { must be reported
+# to be at character 13.  This was implemented, but was decided to be
+# too slow.  Also, first find a standard that prescribes how such output
+# is to be made.  It actually makes more sense to report bytes, not
+# characters. 
+#
+
+éäçöôüœß柏林: {
+
+#
+# Recursion at the rule level is not allowed at the moment, but could
+# be.  The problem is how to recognize infinite recursion. 
+#
+
+# Example 1:  Recursion at the rule level is needed to implement correct
+# C source dependency. 
+
+# Example 2:  building A.gz.gz does not work. 
+$NAME.gz:  $NAME {
+	gzip -c $NAME >$NAME.gz
+}
+A:  {
+    echo 'Hello, World!' >A
+}
+
+#
+# Fingerprinting instead of timestamps is a feature that's implemented by quite
+# a few Make replacements.  This could also be combined with
+# preprocessors which ignore whitespace, etc.  Can also be used for the
+# commands embedded in Stu files, but then again we don't want to
+# rebuild everything just because a command changed. 
+#
+
+#
+# Let Stu itself be multithreaded.  Very complex to implement, and has
+# only very little benefit since Stu already starts many processes.
+# Would only make sense in scenarios with thousands of processes, which
+# would only make sense on machines with thousands of cores. 
+#
+
+#
+# Provide a set of include-stufiles for common tasks, such as C
+# programs, tex projects, etc. 
+#
+
+#
+# The current setup of Stu (and also Make) means that when nothing is to
+# be done, Stu still has to walk the complete dependency tree and stat()
+# every file.  For large projects, this may be come very slow.  Instead,
+# have a Stu daemon which uses inotify or similar to notice changes.
+# There are many practical issues with that, so that would be a huge
+# change.  Would almost likely mean the server itself would do the
+# building, and the client would only communicate with the server.  This
+# also means the server would need to be multi-threaded. 
+#
+

@@ -11,6 +11,10 @@ set it apart:
   that that file is built and dependencies are read from within that
   file. 
 
+See this blog article for a motivation:
+
+https://networkscience.wordpress.com/2016/04/01/stu-build-automation-for-data-mining-projects/
+
 See the manpage for more information, in the stu.text, or go directly to:
 
 https://raw.githubusercontent.com/kunegis/stu/master/stu.text
@@ -41,6 +45,18 @@ Other advantages over Make are:
   dependencies with the prefix '!', optional dependencies with '?', and
   trivial dependencies with '&').  These can only be emulated partially
   with Make by using unwieldy constructs.
+
+Other design considerations of Stu include:
+
+* Do not focus on compilation, but be a generic build tool. There are
+  not builtin rules for compilation. 
+* Embrace POSIX as an underlying standard. Use the Bourne shell as the
+  underlying command interpreter. Don't try to create a purportedly
+  portable layer on top of it, as POSIX already is a portability layer. 
+* Files are sacred: Never make the user delete files in order to rebuild
+  things.  Do one thing well: We don't include features such as file
+  compression that can be achieved by other tools from within the shell
+  commands. 
 
 ## Use Stu
 

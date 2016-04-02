@@ -28,7 +28,7 @@ The design considerations of Stu are:
   differing by individual parameters.  This is the main motivation of
   Stu, and where virtually all other Make replacements fail. 
 * As a use case, focus on data mining instead of software compilation. 
-  There are not built-in rules for compilation or other specific
+  There are no built-in rules for compilation or other specific
   applications.  Allow use case-specific rules to be written in the
   language itself.  However, Stu is use case-agnostic. 
 * Files are the central datatype.  Everything is a file.  Think of Stu

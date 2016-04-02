@@ -32,8 +32,9 @@ The design considerations of Stu are:
   applications.  Allow use case-specific rules to be written in the
   language itself.  However, Stu is use case-agnostic. 
 * Files are the central datatype.  Everything is a file.  Think of Stu
-  as "a programming language in which all variables are files."  Stu has
-  no variables like Make; instead, files are used. 
+  as "a declarative programming language in which all variables are
+  files."  For instance, Stu has no variables like Make; instead, files
+  are used.  
 * Files are sacred: Never make the user delete files in order to rebuild
   things.  
 * Do one thing well: We don't include features such as file compression

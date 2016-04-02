@@ -82,10 +82,13 @@ Advantages over Make are:
 
 ## Use Stu
 
+To use Stu, replace your 'Makefile' with a 'main.stu' file, and instead
+of calling 'make', call 'stu'. 
+
 The see an example of Stu used in a large data mining project, see the
 file 'main.stu' in the KONECT-Analysis project:
 
-https://github.com/kunegis/konect-analysis
+https://github.com/kunegis/konect-analysis/blob/master/main.stu
 
 Stu is written in C++11 for POSIX platforms.  You should have no problem
 compiling it on vanilla Linux and other POSIX-compliant platforms.  See

@@ -1,16 +1,21 @@
-
-# The commands for A and @x must not be passed the value of $NAME. 
+# The commands for A and @x must not be passed the value of $NAME_STU_87326487324. 
 
 A: @x {
-	[ -z "$NAME" ] || exit 1
+	[ -z "$NAME_STU_87326487324" ] || {
+		echo NAME_STU_87326487324="<$NAME_STU_87326487324>"
+		exit 1
+	}
 	cp B A
 }
 
 @x:  B {
-	[ -z "$NAME" ] || exit 1
+	[ -z "$NAME_STU_87326487324" ] || {
+		echo NAME_STU_87326487324="<$NAME_STU_87326487324>"
+		exit 1
+	}
 	echo XXX
 }
 
-$NAME: {
-	echo aaa >"$NAME"
+$NAME_STU_87326487324: {
+	echo aaa >"$NAME_STU_87326487324"
 }

@@ -348,14 +348,14 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			throw ERROR_LOGICAL;
 		}
 		++ iter; 
-		for (auto j= r2.begin();  j != r2.end();  ++j) {
+		for (auto &j:  r2) {
 			
 			/* Variable dependency cannot appear within
 			 * dynamic dependency */ 
-			if ((*j)->has_flags(F_VARIABLE)) {
-				string text= dynamic_pointer_cast <Direct_Dependency> (*j)
+			if (j->has_flags(F_VARIABLE)) {
+				string text= dynamic_pointer_cast <Direct_Dependency> (j)
 					->place_param_target.format_mid();
-				(*j)->get_place() <<
+				j->get_place() <<
 					fmt("variable dependency $[%s] must not appear", text);
 				place_paren <<
 					"within dynamic dependency started by '['";
@@ -363,7 +363,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			}
 
 			shared_ptr <Dependency> dependency_new= 
-				make_shared <Dynamic_Dependency> (0, *j);
+				make_shared <Dynamic_Dependency> (0, j);
 			ret.push_back(dependency_new);
 		}
 		return true; 
@@ -381,9 +381,9 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			place_exclam << "after '!'"; 
 			throw ERROR_LOGICAL;
 		}
-		for (auto j= ret.begin();  j != ret.end();  ++j) {
-			(*j)->add_flags(F_EXISTENCE);
-			(*j)->set_place_existence(place_exclam); 
+		for (auto &j:  ret) {
+			j->add_flags(F_EXISTENCE);
+			j->set_place_existence(place_exclam); 
 		}
 		return true;
 	}
@@ -392,6 +392,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
  	if (is_operator('?')) {
  		Place place_question= (*iter)->get_place();
  		++iter; 
+
 		if (! build_expression(ret, place_param_name_input, place_input)) {
 			if (iter == tokens.end()) {
 				place_end << "expected a dependency";
@@ -404,21 +405,21 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			}
 		}
 		if (! option_nonoptional) {
-			for (auto j= ret.begin();  j != ret.end();  ++j) {
-				/* D_INPUT and D_OPTIONAL cannot be used at the same
-				 * time. Note: Input redirection is not allowed in
-				 * dynamic dependencies, and therefore it is sufficient
-				 * to check this here.     */   
-				if (place_param_name_input.place.type != Place::P_EMPTY) {
-					place_input <<
-						"input redirection using '<' must not be used";
-					place_question <<
-						"in conjunction with optional dependencies using '?'"; 
-					throw ERROR_LOGICAL;
-				}
+			/* D_INPUT and D_OPTIONAL cannot be used at the same
+			 * time. Note: Input redirection is not allowed in
+			 * dynamic dependencies, and therefore it is sufficient
+			 * to check this here.     */   
+			if (place_param_name_input.place.type != Place::Type::EMPTY) {
+				place_input <<
+					"input redirection using '<' must not be used";
+				place_question <<
+					"in conjunction with optional dependencies using '?'"; 
+				throw ERROR_LOGICAL;
+			}
 				
-				(*j)->add_flags(F_OPTIONAL); 
-				(*j)->set_place_optional(place_question); 
+			for (auto &j:  ret) {
+				j->add_flags(F_OPTIONAL); 
+				j->set_place_optional(place_question); 
 			}
 		}
 		return true;
@@ -439,10 +440,10 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 				throw ERROR_LOGICAL;
 			}
 		}
-		for (auto j= ret.begin();  j != ret.end();  ++j) {
+		for (auto &j:  ret) {
 			if (! option_nontrivial)
-				(*j)->add_flags(F_TRIVIAL); 
-			(*j)->set_place_trivial(place_ampersand); 
+				j->add_flags(F_TRIVIAL); 
+			j->set_place_trivial(place_ampersand); 
 		}
 		return true;
 	}
@@ -528,7 +529,7 @@ shared_ptr <Dependency> Build
 		(*iter)->get_place() << "expected a filename";
 		if (has_input)
 			place_input << "after '<'";
-		else if (place_flag_last.type != Place::P_EMPTY) 
+		else if (place_flag_last.type != Place::Type::EMPTY) 
 			place_flag_last << frmt("after '%c'", flag_last);
 		else
 			place_dollar << "after '$['";
@@ -550,9 +551,8 @@ shared_ptr <Dependency> Build
 	}
 
 	/* Check that the name does not contain '=' */ 
-	for (auto j= place_param_name->get_texts().begin();
-		 j != place_param_name->get_texts().end();  ++j) {
-		if (j->find('=') != string::npos) {
+	for (auto &j:  place_param_name->get_texts()) {
+		if (j.find('=') != string::npos) {
 			place_param_name->place <<
 				"name of variable dependency must not contain '='"; 
 			throw ERROR_LOGICAL;

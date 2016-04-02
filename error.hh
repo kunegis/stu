@@ -107,10 +107,10 @@ class Place
 {
 public:
 
-	enum Type {
-		P_EMPTY,  /* Empty */
-		P_FILE,   /* FILENAME is filename */
-		P_ARGV    /* FILENAME is argument */ 
+	enum class Type {
+		EMPTY,        /* Empty */
+		INPUT_FILE,   /* FILENAME is filename */
+		ARGV          /* FILENAME is argument */ 
 	};
 
 	Place::Type type; 
@@ -129,7 +129,7 @@ public:
 
 	/* An empty place */ 
 	Place() 
-		:  type(P_EMPTY) 
+		:  type(Type::EMPTY) 
 	{ }
 
 	Place(Type type_,
@@ -202,15 +202,15 @@ void Place::operator<<(string text) const
 
 	switch (type) {
 	default:  assert(0); 
-	case P_FILE:
+	case Type::INPUT_FILE:
 		fprintf(stderr, "%s:%u:%u: %s\n", 
-				filename.c_str(), line, 1 + column, text.c_str());  
+			filename.c_str(), line, 1 + column, text.c_str());  
 		break;
-	case P_ARGV:
+	case Type::ARGV:
 		fprintf(stderr, 
-				"Command line argument: '%s': %s\n",
-				filename.c_str(),
-				text.c_str()); 
+			"Command line argument: '%s': %s\n",
+			filename.c_str(),
+			text.c_str()); 
 	}
 }
 
@@ -225,14 +225,14 @@ string Place::as_string() const
 	switch (type) {
 	default:  assert(0); 
 
-	case P_EMPTY:
+	case Type::EMPTY:
 		return "<empty>"; 
 
-	case P_FILE:
+	case Type::INPUT_FILE:
 		return frmt("%s:%u:%u", 
 			    filename.c_str(), line, 1 + column);  
 
-	case P_ARGV:
+	case Type::ARGV:
 		return frmt("Command line argument: '%s'",
 			    filename.c_str()); 
 
@@ -244,17 +244,16 @@ string Place::as_string_nocolumn() const
 	switch (type) {
 	default:  assert(0); 
 
-	case P_EMPTY:
+	case Type::EMPTY:
 		return "<empty>"; 
 
-	case P_FILE:
+	case Type::INPUT_FILE:
 		return frmt("%s:%u", 
 			    filename.c_str(), line);  
 
-	case P_ARGV:
+	case Type::ARGV:
 		return frmt("Command line argument: '%s'",
 			    filename.c_str()); 
-
 	}
 }
 

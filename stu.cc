@@ -103,10 +103,10 @@ int main(int argc, char **argv, char **envp)
 			case 'g': option_nonoptional= true;    break;
 			case 'h': fputs(STU_HELP, stdout);     exit(0);
 			case 'k': option_continue= true;       break;
-			case 's': output_mode= OUTPUT_SILENT;  break;
+			case 's': output_mode= Output::SILENT; break;
 			case 'v': option_verbose= true;        break;
 			case 'V': puts("stu " STU_VERSION);    exit(0);
-			case 'w': output_mode= OUTPUT_SHORT;   break;
+			case 'w': output_mode= Output::SHORT;  break;
 
 			case 'c': 
 				{
@@ -124,7 +124,7 @@ int main(int argc, char **argv, char **envp)
 					}
 					const char *const name= optarg;
 					Type type= T_FILE;
-					Place place(Place::P_ARGV, name, 1, 0);
+					Place place(Place::Type::ARGV, name, 1, 0);
 					dependencies.push_back
 						(shared_ptr <Dependency>
 						 (new Direct_Dependency
@@ -161,7 +161,7 @@ int main(int argc, char **argv, char **envp)
 
 			case 'm':
 				if (!strcmp(optarg, "random"))  {
-					order= ORDER_RANDOM;
+					order= Order::RANDOM;
 					/* Use gettimeofday() instead of time()
 					 * to get millisecond instead of second
 					 * precision */ 
@@ -180,7 +180,7 @@ int main(int argc, char **argv, char **envp)
 				break;
 
 			case 'M':
-				order= ORDER_RANDOM;
+				order= Order::RANDOM;
 				srand(hash <string> ()(string(optarg))); 
 				break;
 
@@ -196,7 +196,7 @@ int main(int argc, char **argv, char **envp)
 			}
 		}
 
-		order_vec= (order == ORDER_RANDOM); 
+		order_vec= (order == Order::RANDOM); 
 
 		/* Targets passed as-is on the command line, outside of options */ 
 		for (int i= optind;  i < argc;  ++i) {
@@ -300,7 +300,7 @@ void init_buf()
 	/* If -s is not given, set STDOUT to line buffered, so that the
 	 * output of command lines always happens before the output of
 	 * commands themselves */ 
-	if (output_mode > OUTPUT_SILENT) {
+	if (output_mode > Output::SILENT) {
 		/* Note:  only possible if we have not written anything yet */ 
 		setvbuf(stdout, nullptr, _IOLBF, 0); 
 
@@ -335,9 +335,8 @@ void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
 		(*iter)->get_place() << "expected a dependency"; 
 		throw ERROR_LOGICAL;
 	}
-	
-	for (auto j= dependencies_option.begin();
-	     j != dependencies_option.end();  ++j) {
-		dependencies.push_back(*j); 
+
+	for (auto &j:  dependencies_option) {
+		dependencies.push_back(j); 
 	}
 }

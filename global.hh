@@ -19,20 +19,20 @@ static bool option_verbose= false;
 
 /* Determines how commands are output
  */
-enum {
-	OUTPUT_SILENT  = -2, /* No output */
-	OUTPUT_SHORT   = -1, /* Only target name */
-	OUTPUT_LONG    =  0  /* Output the command */
+enum class Output {
+	SILENT  = -2, /* No output */
+	SHORT   = -1, /* Only target name */
+	LONG    =  0  /* Output the command */
 };
-static int output_mode= OUTPUT_LONG; 
+static Output output_mode= Output::LONG; 
 
-enum {
-	ORDER_DFS   = 0,
-	ORDER_RANDOM= 1,
+enum class Order {
+	DFS   = 0,
+	RANDOM= 1,
 	
-	/* -M mode is coded as ORDER_RANDOM */ 
+	/* -M mode is coded as Order::RANDOM */ 
 };
-static int order= ORDER_DFS; 
+static Order order= Order::DFS; 
 
 /* Whether to use vectors for randomization */ 
 static bool order_vec; 

@@ -591,12 +591,12 @@ bool Param_Name::has_duplicate_parameters(string &parameter) const
 {
 	unordered_set <string> seen;
 
-	for (auto i= parameters.begin();  i != parameters.end();  ++i) {
-		if (seen.count(*i)) {
-			parameter= *i; 
+	for (auto &i:  parameters) {
+		if (seen.count(i)) {
+			parameter= i; 
 			return true;
 		}
-		seen.insert(*i); 
+		seen.insert(i); 
 	}
 	
 	return false;

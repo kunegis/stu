@@ -395,7 +395,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	 * Continue the already-active child executions 
 	 */  
 
-	if (order != ORDER_RANDOM) {
+	if (order != Order::RANDOM) {
 		int ret= execute_children(link);
 		if (ret >= 0)
 			return ret;
@@ -454,7 +454,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	} 
 	assert(buf_default.empty()); 
 
-	if (order == ORDER_RANDOM) {
+	if (order == Order::RANDOM) {
 		int ret= execute_children(link);
 		if (ret >= 0)
 			return ret;
@@ -690,9 +690,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 	--jobs;
 	assert(jobs >= 0);
 
-	if (order == ORDER_RANDOM) {
+	if (order == Order::RANDOM) {
 		return jobs > 0; 
-	} else if (order == ORDER_DFS) {
+	} else if (order == Order::DFS) {
 		return false;
 	} else {
 		assert(false);
@@ -893,7 +893,7 @@ int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		if (! option_continue)
 			assert(success); 
 
-		if (worked && output_mode == OUTPUT_SHORT) {
+		if (worked && output_mode == Output::SHORT) {
 			puts("Done");
 		}
 	
@@ -1138,10 +1138,9 @@ Execution::Execution(Target target_,
 
 	if (target.type < T_DYNAMIC && rule != nullptr) {
 		/* There is a rule for this execution */ 
-		for (auto i= rule->dependencies.begin();
-		     i != rule->dependencies.end();  ++i) {
-			assert((*i)->get_place().type != Place::P_EMPTY); 
-			Link link_new(*i); 
+		for (auto &i:  rule->dependencies) {
+			assert(i->get_place().type != Place::Type::EMPTY); 
+			Link link_new(i); 
 			if (option_verbose) {
 				string text_target= target.format();
 				string text_link_new= link_new.format(); 
@@ -1212,8 +1211,8 @@ Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
 {
 	executions_by_target[target]= this;
 
-	for (auto i= dependencies_.begin(); i != dependencies_.end(); ++i) {
-		buf_default.push(Link(*i)); 
+	for (auto &i:  dependencies_) {
+		buf_default.push(Link(i)); 
 	}
 }
 
@@ -1254,8 +1253,7 @@ bool Execution::finished() const
 void job_terminate_all() 
 {
 	for (auto i= Execution::executions_by_pid.begin();
-	     i != Execution::executions_by_pid.end();
-	     ++i) {
+	     i != Execution::executions_by_pid.end();  ++i) {
 
 		const pid_t pid= i->first;
 		assert(pid > 0); 
@@ -1287,8 +1285,7 @@ void job_terminate_all()
 	bool terminated= false;
 
 	for (auto i= Execution::executions_by_pid.begin();
-	     i != Execution::executions_by_pid.end();
-	     ++i) {
+	     i != Execution::executions_by_pid.end();  ++i) {
 
 		if (i->second->remove_if_existing(single))
 			terminated= true; 
@@ -1530,13 +1527,12 @@ void Execution::read_dynamics(Stack avoid,
 		Place_Param_Name input; /* remains empty */ 
 		Place place_input; /* remains empty */ 
 		build.build_expression_list(dependencies, input, place_input); 
-
-		for (auto j= dependencies.begin();
-		     j != dependencies.end();  ++j) {
+		
+		for (auto &j:  dependencies) {
 
 			/* Check that it is unparametrized */ 
-			if (! (*j)->is_unparametrized()) {
-				shared_ptr <Dependency> dep= *j;
+			if (! j->is_unparametrized()) {
+				shared_ptr <Dependency> dep= j;
 				while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
 					shared_ptr <Dynamic_Dependency> dep2= 
 						dynamic_pointer_cast <Dynamic_Dependency> (dep);
@@ -1558,15 +1554,15 @@ void Execution::read_dynamics(Stack avoid,
 			}
 
 			/* Check that there is no multiply-dynamic variable dependency */ 
-			if ((*j)->has_flags(F_VARIABLE) && target.type > T_DYNAMIC) {
+			if (j->has_flags(F_VARIABLE) && target.type > T_DYNAMIC) {
 				
 				/* Only direct dependencies can have the F_VARIABLE flag set */ 
-				assert(dynamic_pointer_cast <Direct_Dependency> (*j));
+				assert(dynamic_pointer_cast <Direct_Dependency> (j));
 
 				shared_ptr <Direct_Dependency> dep= 
-					dynamic_pointer_cast <Direct_Dependency> (*j);
+					dynamic_pointer_cast <Direct_Dependency> (j);
 
-				(*j)->get_place() <<
+				j->get_place() <<
 					fmt("variable dependency $[%s] must not appear",
 					    dep->place_param_target.format_mid());
 				print_traces(fmt("within multiply-dynamic dependency %s", 
@@ -1579,10 +1575,10 @@ void Execution::read_dynamics(Stack avoid,
 
 			/* If the target is multiply dynamic, we cannot add phony
 			 * targets to it */ 
-			if (dynamic_pointer_cast <Direct_Dependency> (*j)) {
+			if (dynamic_pointer_cast <Direct_Dependency> (j)) {
 				
 				shared_ptr <Direct_Dependency> direct_dependency= 
-					dynamic_pointer_cast <Direct_Dependency> (*j); 
+					dynamic_pointer_cast <Direct_Dependency> (j); 
 				
 				if (direct_dependency->place_param_target.type == T_PHONY
 				    && target.type > T_DYNAMIC) {
@@ -1606,7 +1602,7 @@ void Execution::read_dynamics(Stack avoid,
 			/* Add the found dependencies, with one less dynamic level
 			 * than the current target.  */
 
-			shared_ptr <Dependency> dependency(*j);
+			shared_ptr <Dependency> dependency(j);
 
 			vector <shared_ptr <Dynamic_Dependency> > vec;
 			shared_ptr <Dependency> p= dependency_parent;
@@ -1622,13 +1618,13 @@ void Execution::read_dynamics(Stack avoid,
 			assert(vec.size() == avoid_this.get_k());
 			avoid_this.pop(); 
 			dependency->add_flags(avoid_this.get_lowest()); 
-			if (dependency->get_place_existence().type == Place::P_EMPTY)
+			if (dependency->get_place_existence().type == Place::Type::EMPTY)
 				dependency->set_place_existence
 					(vec.at(target.type - T_DYNAMIC)->get_place_existence()); 
-			if (dependency->get_place_optional().type == Place::P_EMPTY)
+			if (dependency->get_place_optional().type == Place::Type::EMPTY)
 				dependency->set_place_optional
 					(vec.at(target.type - T_DYNAMIC)->get_place_optional()); 
-			if (dependency->get_place_trivial().type == Place::P_EMPTY)
+			if (dependency->get_place_trivial().type == Place::Type::EMPTY)
 				dependency->set_place_trivial
 					(vec.at(target.type - T_DYNAMIC)->get_place_trivial()); 
 			for (Type k= target.type;  k > T_DYNAMIC;  --k) {
@@ -1649,7 +1645,7 @@ void Execution::read_dynamics(Stack avoid,
 
 			/* Check that there are no input dependencies */ 
 			if (! input.empty()) {
-				(*j)->get_place() <<
+				j->get_place() <<
 					fmt("dynamic dependency %s must not contain input redirection", 
 					    target.format());
 				Target target_file= target;
@@ -1746,13 +1742,13 @@ void Execution::print_traces(string text) const
 
 void Execution::print_command()
 {
-	if (output_mode == OUTPUT_SHORT) {
+	if (output_mode == Output::SHORT) {
 		string text= target.format_bare();
 		puts(text.c_str()); 
 		return;
 	} 
 
-	if (output_mode < OUTPUT_SHORT)
+	if (output_mode < Output::SHORT)
 		return; 
 
 	/* For single-line commands, show the variables on the same line.
@@ -1798,9 +1794,8 @@ void Execution::print_command()
 	}
 
 	/* The command itself */ 
-	for (auto i= rule->command->get_lines().begin();  
-	     i != rule->command->get_lines().end();  ++i) {
-		printf("%s\n", i->c_str()); 
+	for (auto &i:  rule->command->get_lines()) {
+		puts(i.c_str()); 
 	}
 }
 

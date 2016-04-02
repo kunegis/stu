@@ -87,7 +87,10 @@ class Command
 private:
 	/* The individual lines of the command. 
 	 * Empty lines and leading spaces are not included.  These lines
-	 * are only used for output, not for execution. */ 
+	 * are only used for output, not for execution. 
+	 * May be NULLPTR.  Generated on demand. 
+	 */ 
+	
 	unique_ptr <vector <string> > lines;
 
 public:
@@ -159,9 +162,9 @@ Command::get_lines()
 		char begin= (*lines)[0][0];
 		if ((begin & 0x80) || ! is_space(begin))  break;
 		bool equal= true;
-		for (auto i= lines->begin();  i != lines->end();  ++i) {
-			assert(i->size()); 
-			if ((*i)[0] != begin)  equal= false;
+		for (auto &i:  *lines) {
+			assert(i.size()); 
+			if (i[0] != begin)  equal= false;
 		}
 		if (! equal)  break;
 		for (unsigned i= 0; i < lines->size(); ) {

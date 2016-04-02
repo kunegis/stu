@@ -112,15 +112,14 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	 * parameters from the target */ 
 
 	unordered_set <string> parameters;
-	for (auto i= place_param_target.place_param_name.get_parameters().begin();
-	     i != place_param_target.place_param_name.get_parameters().end();  ++i) {
-		parameters.insert(*i); 
+	for (auto &i:  place_param_target.place_param_name.get_parameters()) {
+		parameters.insert(i); 
 	}
 
 	/* Check that only valid parameters are used */ 
-	for (auto i= dependencies.begin();  i != dependencies.end();  ++i) {
+	for (auto &i:  dependencies) {
 
-		shared_ptr <Dependency> dep= *i;
+		shared_ptr <Dependency> dep= i;
 		while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
 			dep= dynamic_pointer_cast <Dynamic_Dependency> (dep)->dependency;
 		}
@@ -158,9 +157,8 @@ Rule::instantiate(shared_ptr <Rule> rule,
 
 	vector <shared_ptr <Dependency> > dependencies;
 
-	for (auto i= rule->dependencies.begin();
-		 i != rule->dependencies.end(); ++i) {
-		dependencies.push_back((*i)->instantiate(mapping));
+	for (auto &i:  rule->dependencies) {
+		dependencies.push_back(i->instantiate(mapping));
 	}
 
 	shared_ptr <Rule> ret
@@ -225,25 +223,24 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 	vector <map <string, string> > mappings_best; 
 	vector <vector <int> > anchorings_best; 
 
-	for (auto i= rules_parametrized.begin();
-	     i != rules_parametrized.end();  ++i) {
+	for (auto &i:  rules_parametrized) {
 
-		assert((*i)->place_param_target.place_param_name.get_n() > 0);
+		assert(i->place_param_target.place_param_name.get_n() > 0);
 		
 		map <string, string> mapping;
 		vector <int> anchoring;
 
 		/* The parametrized rule is of another type */ 
-		if (target.type != (*i)->place_param_target.type)
+		if (target.type != i->place_param_target.type)
 			continue;
 
 		/* The parametrized rule does not match */ 
-		if (! (*i)->place_param_target.place_param_name
+		if (! i->place_param_target.place_param_name
 			.match(target.name, mapping, anchoring))
 			continue; 
 
 		assert(anchoring.size() == 
-			   (2 * (*i)->place_param_target.place_param_name.get_n())); 
+			   (2 * i->place_param_target.place_param_name.get_n())); 
 
 		size_t k= rules_best.size(); 
 		
@@ -270,7 +267,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 		rules_best.resize(k+1); 
 		mappings_best.resize(k+1);
 		anchorings_best.resize(k+1); 
-		rules_best[k]= *i;
+		rules_best[k]= i;
 		swap(mapping, mappings_best[k]);
 		swap(anchoring, anchorings_best[k]); 
 	dont_add:;
@@ -288,10 +285,10 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 	if (rules_best.size() > 1) {
 		print_error(fmt("Multiple minimal rules for target %s", 
 				target.format())); 
-		for (auto i= rules_best.begin();  i != rules_best.end();  ++i) {
-			(*i)->place <<
+		for (auto &i:  rules_best) {
+			i->place <<
 				fmt("rule with target %s", 
-				    (*i)->place_param_target.format()); 
+				    i->place_param_target.format()); 
 		}
 		throw ERROR_LOGICAL; 
 	}
@@ -311,9 +308,9 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 
 void Rule_Set::add(vector <shared_ptr <Rule> > &rules_) 
 {
-	for (auto i= rules_.begin();  i != rules_.end();  ++i) {
+	for (auto &i:  rules_) {
 
-		shared_ptr <Rule> rule= *i;
+		shared_ptr <Rule> rule= i;
 
 		if (rule->place_param_target.place_param_name.get_n() == 0) {
 			Target target= rule->place_param_target.unparametrized(); 

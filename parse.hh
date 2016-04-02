@@ -203,7 +203,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 
 		{
 			Parse parse(traces, filenames, includes,
-				    Place::P_FILE, filename, 
+				    Place::Type::INPUT_FILE, filename, 
 				    in, buf.st_size); 
 
 			parse.parse_tokens(tokens, allow_include);
@@ -248,7 +248,7 @@ shared_ptr <Command> Parse::parse_command()
 {
 	assert(p < p_end && *p == '{');
 
-	const Place place_open(Place::P_FILE, filename, line, p - p_line);
+	const Place place_open(Place::Type::INPUT_FILE, filename, line, p - p_line);
 
 	++p;
 
@@ -308,7 +308,8 @@ shared_ptr <Command> Parse::parse_command()
 				if (stack.empty()) {
 					const string command= string(p_beg, p - p_beg);
 					++p;
-					const Place place_command(Place::P_FILE, filename, line_command, column_command); 
+					const Place place_command(Place::Type::INPUT_FILE,
+								  filename, line_command, column_command); 
 					return shared_ptr <Command> (new Command(command, place_command)); 
 				} else {
 					++p; 
@@ -428,7 +429,7 @@ shared_ptr <Command> Parse::parse_command()
 
 shared_ptr <Place_Param_Name> Parse::parse_name()
 {
-	Place place_begin(Place::P_FILE, filename, line, p - p_line);
+	Place place_begin(Place::Type::INPUT_FILE, filename, line, p - p_line);
 
 	shared_ptr <Place_Param_Name> ret{new Place_Param_Name("", place_begin)};
 
@@ -436,7 +437,7 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 		
 		if (*p == '\'' || *p == '"') {
 			char begin= *p; 
-			Place place_begin_quote(Place::P_FILE, filename, line, p - p_line); 
+			Place place_begin_quote(Place::Type::INPUT_FILE, filename, line, p - p_line); 
 			++p;
 			while (p < p_end) {
 				if (*p == '\'' || *p == '"') {
@@ -484,14 +485,14 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 		} 
 
 		else if (*p == '$') {
-			Place place_dollar(Place::P_FILE, filename, line, p - p_line); 
+			Place place_dollar(Place::Type::INPUT_FILE, filename, line, p - p_line); 
 			++p;
 			bool braces= false; 
 			if (p < p_end && *p == '{') {
 				++p;
 				braces= true; 
 			}
-			Place place_parameter_name(Place::P_FILE, filename, line, p - p_line); 
+			Place place_parameter_name(Place::Type::INPUT_FILE, filename, line, p - p_line); 
 			const char *const p_parameter_name= p;
 			while (p < p_end && (isalnum(*p) || *p == '_')) {
 				++p;
@@ -613,8 +614,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 		/* Variable dependency */ 
 		else if (*p == '$' && p + 1 < p_end && p[1] == '[') {
-			Place place_dollar(Place::P_FILE, filename, line, p - p_line);
-			Place place_langle(Place::P_FILE, filename, line, p + 1 - p_line);
+			Place place_dollar(Place::Type::INPUT_FILE, filename, line, p - p_line);
+			Place place_langle(Place::Type::INPUT_FILE, filename, line, p + 1 - p_line);
 			tokens.push_back(shared_ptr <Token> (new Operator('$', place_dollar)));
 			tokens.push_back(shared_ptr <Token> (new Operator('[', place_langle))); 
 			p += 2;
@@ -645,7 +646,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 		/* Inclusion */ 
 		else if (*p == '%') {
-			Place place_percent(Place::P_FILE, filename, line, p - p_line); 
+			Place place_percent(Place::Type::INPUT_FILE, filename, line, p - p_line); 
 			++p;
 			while (p < p_end && is_space(*p)) {
 				if (*p == '\n') {
@@ -658,7 +659,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 			const char *const p_name= p;
 
-			Place place_name(Place::P_FILE, filename, line, p_name - p_line); 
+			Place place_name(Place::Type::INPUT_FILE, filename, line, p_name - p_line); 
 
 			while (p < p_end && isalnum(*p)) {
 				++p;
@@ -708,8 +709,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				
 					/* It is an error if a file includes
 					 * itself directly or indirectly */ 
-					for (auto i= filenames.begin();  i != filenames.end();  ++i) {
-						if (filename_include == *i) {
+					for (auto &i:  filenames) {
+						if (filename_include == i) {
 							vector <Trace> traces_backward;
 							for (auto j= traces.rbegin();  j != traces.rend(); ++j) {
 								Trace trace(*j);
@@ -719,9 +720,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 								}
 								traces_backward.push_back(trace); 
 							}
-							for (auto j= traces_backward.begin();
-							     j != traces_backward.end();  ++j) {
-								j->print(); 
+							for (auto &j:  traces_backward) {
+								j.print(); 
 							}
 							throw ERROR_LOGICAL;
 						}					
@@ -751,7 +751,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					++p;
 				}
 				const string version_required(p_version, p - p_version); 
-				Place place_version(Place::P_FILE, filename, line, p_version - p_line); 
+				Place place_version(Place::Type::INPUT_FILE, filename, line, p_version - p_line); 
 
 				parse_version(version_required, place_version); 
 				
@@ -795,7 +795,7 @@ void Parse::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 	unordered_set <string> includes;
 
 	Parse parse(traces, filenames, includes, 
-		    Place::P_ARGV, string_,
+		    Place::Type::ARGV, string_,
 		    string_.c_str(), string_.size());
 
 	parse.parse_tokens(tokens, allow_include); 

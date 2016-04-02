@@ -510,8 +510,8 @@ shared_ptr <Dependency> Direct_Dependency
 
 void print_dependencies(const vector <shared_ptr <Dependency> > &dependencies)
 {
-	for (auto i= dependencies.begin();  i != dependencies.end();  ++i) {
-		(*i)->print(); 
+	for (auto &i:  dependencies) {
+		i->print(); 
 	}
 }
 

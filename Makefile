@@ -4,7 +4,7 @@
 #
 # We follow the GNU Coding Standards for the naming of Make targets. 
 #
-# The invocation of the compiler is written to use G++; it has to be
+# The arguments to the compiler are meant for GCC; they have to be
 # changed by hand to use another compiler. 
 # 
 
@@ -12,7 +12,7 @@ all: stu.debug stu.ndebug stu.1 stu.text check
 
 .PHONY:  all clean check 
 
-CXX=g++
+CXX=c++
 
 CXXFLAGS_DEBUG=  -ggdb
 CXXFLAGS_NDEBUG= -O3 -DNDEBUG -s

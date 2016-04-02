@@ -1,7 +1,7 @@
 # Stu - Build Automation
 
-This is Stu, a build tool similar to Make, but with two features that
-set it apart: 
+This is Stu, a build tool in the spirit of Make, but with two features
+that set it apart: 
 
 * Parametrized rules:  Like GNU Make's '%' character, but there can be
   multiple parameters, and they have names.  The syntax is '$NAME',
@@ -15,13 +15,47 @@ See this blog article for a motivation:
 
 https://networkscience.wordpress.com/2016/04/01/stu-build-automation-for-data-mining-projects/
 
-See the manpage for more information, in the stu.text, or go directly to:
+For documentation, compile and read the manpage, or go directly to: 
 
 https://raw.githubusercontent.com/kunegis/stu/master/stu.text
 
+## Design Considerations
+
+The design considerations of Stu are:
+
+* Being able to execute long, dynamic lists of identical commands should
+  be easy.  Many projects need to run many identical tasks only
+  differing by individual parameters.  This is the main motivation of
+  Stu, and where virtually all other Make replacements fail. 
+* As a use case, focus on data mining instead of software compilation. 
+  There are not built-in rules for compilation or other specific
+  applications.  Allow use case-specific rules to be written in the
+  language itself.  However, Stu is use case-agnostic. 
+* Files are the central datatype.  Everything is a file.  Think of Stu
+  as "a programming language in which all variables are files."  Stu has
+  no variables like Make; instead, files are used. 
+* Files are sacred: Never make the user delete files in order to rebuild
+  things.  
+* Do one thing well: We don't include features such as file compression
+  that can be achieved by other tools from within the shell commands.  
+* Embrace POSIX as an underlying standard. Use the Bourne shell as the
+  underlying command interpreter. Don't try to create a purportedly
+  portable layer on top of it, as POSIX _already is_ a portability
+  layer.  Also, don't try to create a new portable language for
+  executing commands, as /bin/sh _already is_ one. 
+* Keep it simple:  Don't use fancy libraries or hip programming
+  languages.  Stu is written in plain C++11 with only standard
+  libraries. 
+* Have extensive unit test coverage.  All published versions pass 100%
+  of unit tests.  Stu has 500+ unit tests.  All features and error paths
+  are unit tested. 
+* Stability of the interface:  We follow Semantic Versioning
+  (semver.org) in order to provide stable syntax and semantics.  Stu
+  files written now will still work in the future. 
+
 ## Comparison to Make
 
-Other advantages over Make are:
+Advantages over Make are:
 
 * Error messages are much better (Make has the dreaded "missing
   separator"); Stu gives full traces like a C compiler.
@@ -45,18 +79,6 @@ Other advantages over Make are:
   dependencies with the prefix '!', optional dependencies with '?', and
   trivial dependencies with '&').  These can only be emulated partially
   with Make by using unwieldy constructs.
-
-Other design considerations of Stu include:
-
-* Do not focus on compilation, but be a generic build tool. There are
-  not builtin rules for compilation. 
-* Embrace POSIX as an underlying standard. Use the Bourne shell as the
-  underlying command interpreter. Don't try to create a purportedly
-  portable layer on top of it, as POSIX already is a portability layer. 
-* Files are sacred: Never make the user delete files in order to rebuild
-  things.  Do one thing well: We don't include features such as file
-  compression that can be achieved by other tools from within the shell
-  commands. 
 
 ## Use Stu
 

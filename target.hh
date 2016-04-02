@@ -3,7 +3,14 @@
 
 #include "frmt.hh"
 
-/* The type of targets in Stu.  Each target is of exactly one type.
+/* Data types for representing filenames, targets, etc. Glossary:
+ *     * A _name_ is a filename of the name of a phony target.  They are
+ *       just strings, so no special data type for it
+ *     * A _target_ is either file or a phony, or a dynamic file.  It is
+ *       represented by a name (string) and a type (integer). 
+ *     * A _parametrized_ target or name additionally can have
+ *       parameters
+ *     * Dedicated classes exist to represent these with _places_. 
  */
 
 /* Functions named text() returned a optionally quoted and printable
@@ -55,6 +62,8 @@ string format_name_mid(string name)
 		return name;
 }
 
+/* The type of targets in Stu.  Each target is of exactly one type.
+ */
 /* Declared as int so arithmetic can be performed on it */ 
 typedef int Type; 
 enum {

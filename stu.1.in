@@ -510,13 +510,14 @@ introduced with '%'.
                          | flag expression 
                          | redirect_dependency 
                          | variable_dependency
-    variable_dependency: '$' '[' [flag*] ['<'] NAME ']'
     redirect_dependency: ['<'] bare_dependency
     bare_dependency:     ['@'] NAME
+    variable_dependency: '$' '[' [flag*] ['<'] NAME ']'
     flag:                '!' | '?' | '&'
 
-The main Stu file must contain a 'rule_list', while a file included by
-brackets must contain an 'expression_list'. 
+The main Stu file must contain a 'rule_list', a file included by
+brackets must contain an 'expression_list', and the argument of the -c
+option must also contain an 'expression_list'. 
 
 .SH "SEMANTICS"
 

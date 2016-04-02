@@ -517,7 +517,7 @@ introduced with '%'.
 
 The main Stu file must contain a 'rule_list', a file included by
 brackets must contain an 'expression_list', and the argument of the -c
-option must also contain an 'expression_list'. 
+option must also contain an 'expression_list'.  
 
 .SH "SEMANTICS"
 

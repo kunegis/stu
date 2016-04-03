@@ -1,0 +1,44 @@
+#! /bin/sh
+
+doo() { echo "$@" ; "$@" ; }
+
+kill_sleeps() 
+{
+    for pid in $(ps -fe | grep 31415926535 | grep -v grep | sed -re 's,^\S+\s+([0-9]+)\s.*$,\1,') ; do
+	echo >&2 "$0:  *** Killing PID '$pid'"
+	doo kill "$pid"
+    done
+}
+
+doo rm -f ?
+
+doo kill_sleeps
+
+echo '../../stu -z >list.out 2>list.err &'
+../../stu -z >list.out 2>list.err &
+pid="$!"
+
+# Make sure the target 'X' is finished 
+doo sleep 1
+
+doo kill -TERM $pid
+
+# Give Stu time to kill all processes
+doo sleep 1
+
+# Make sure no process is still running
+if [ "$(ps -fe | grep 31415926535 | grep -v grep | wc -l)" != 0 ]; then
+    echo >&2 "$0:  *** There is still a process running:" 
+    ps -fe | grep 31415926535 | grep -v grep >&2
+    exit 1
+fi
+
+# Check content
+grep -qF 'STATISTICS  number of jobs started = 2 (1 succeeded, 0 failed, 1 interrupted)' list.out || {
+	echo >&2 '*** Number of jobs started'
+	exit 1
+}
+
+doo kill_sleeps
+
+exit 0

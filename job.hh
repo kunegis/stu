@@ -13,6 +13,8 @@
  * files if present */
 void job_terminate_all(); 
 
+void process_signal(int sig);
+
 class Job
 {
 private:
@@ -22,6 +24,8 @@ private:
 	 * -1:    process has been waited for. 
 	 */
 	pid_t pid;
+
+	friend void process_signal(int); 
 
 	/* The number of jobs run.  
 	 * exec:  executed
@@ -36,25 +40,10 @@ private:
 		/* Run after main() */ 
 		~Statistics() 
 		{
-			if (!option_statistics)  return; 
-			
-			struct rusage usage;
-
-			int r= getrusage(RUSAGE_CHILDREN, &usage);
-			if (r < 0) {
-				perror("getrusage");
-				exit(ERROR_SYSTEM); 
-			}
-			assert(count_jobs_exec == count_jobs_success + count_jobs_fail); 
-			printf("STATISTICS  number of jobs run = %u (%u succeeded, %u failed)\n", 
-			       count_jobs_exec, count_jobs_success, count_jobs_fail); 
-			printf("STATISTICS  children user   runtime = %ju.%06u s\n", 
-			       (intmax_t) usage.ru_utime.tv_sec,
-			       (unsigned) usage.ru_utime.tv_usec); 
-			printf("STATISTICS  children system runtime = %ju.%06u s\n", 
-			       (intmax_t) usage.ru_stime.tv_sec,
-			       (unsigned) usage.ru_stime.tv_usec); 
+			print(); 
 		}
+
+		static void print(bool allow_unterminated_jobs= false); 
 	} statistics;
 
 public:
@@ -310,6 +299,41 @@ pid_t Job::wait(int *status)
 	return pid;
 }
 
+void Job::Statistics::print(bool allow_unterminated_jobs) 
+{
+	if (!option_statistics)  return; 
+
+	/* Avoid double writing in case the destructor gets still called */ 
+	option_statistics= false;
+			
+	struct rusage usage;
+
+	int r= getrusage(RUSAGE_CHILDREN, &usage);
+	if (r < 0) {
+		perror("getrusage");
+		exit(ERROR_SYSTEM); 
+	}
+
+	if (! allow_unterminated_jobs)
+		assert(count_jobs_exec == count_jobs_success + count_jobs_fail); 
+	assert(count_jobs_exec >= count_jobs_success + count_jobs_fail); 
+
+	if (! allow_unterminated_jobs) 
+		printf("STATISTICS  number of jobs started = %u (%u succeeded, %u failed)\n", 
+		       count_jobs_exec, count_jobs_success, count_jobs_fail); 
+	else 
+		printf("STATISTICS  number of jobs started = %u (%u succeeded, %u failed, %u interrupted)\n", 
+		       count_jobs_exec, count_jobs_success, count_jobs_fail, 
+		       count_jobs_exec - count_jobs_success - count_jobs_fail); 
+
+	printf("STATISTICS  children user   runtime = %ju.%06u s\n", 
+	       (intmax_t) usage.ru_utime.tv_sec,
+	       (unsigned) usage.ru_utime.tv_usec); 
+	printf("STATISTICS  children system runtime = %ju.%06u s\n", 
+	       (intmax_t) usage.ru_stime.tv_sec,
+	       (unsigned) usage.ru_stime.tv_usec); 
+}
+
 /* The signal handler -- terminate all processes and quit. 
  */
 void process_signal(int sig)
@@ -323,6 +347,9 @@ void process_signal(int sig)
 
 	/* Terminate all processes */ 
 	job_terminate_all();
+
+	/* Print statistics */
+	Job::Statistics::print(true);
 
 	/* Raise signal again */ 
 	raise(sig); 

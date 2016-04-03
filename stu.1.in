@@ -86,7 +86,8 @@ Output runtime statistics about child processes on standard output when
 finished.  Does not include the runtime of the Stu process itself.
 Includes the runtime of all child and grandchild processes, and so on.
 Does not include the runtime of children or grandchildren that have not
-been waited for. 
+been waited for (which only happens when Stu is interrupted by a
+singal.) 
 
 .SH OVERVIEW
 A simple rule looks as follows:

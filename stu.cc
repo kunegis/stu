@@ -29,7 +29,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-#define STU_OPTIONS "ac:C:f:ghj:km:M:svVw"
+#define STU_OPTIONS "ac:C:f:ghj:km:M:svVwz"
 
 /* Note: the following strings do not contain tabs, but only space
  * characters */ 
@@ -52,7 +52,8 @@ using namespace std;
 	"   -s            Silent mode; do not output commands\n"	\
 	"   -v            Verbose mode; show execution information on standard error output\n" \
 	"   -V            Output version\n"				\
-	"   -w            Short output; don't show the commands, only the target filenames\n"
+	"   -w            Short output; don't show the commands, only the target filenames\n" \
+	"   -z            Output runtime statistics on standard output\n"
 
 /* Initialize buffers; called once from main() */ 
 void init_buf(); 
@@ -107,6 +108,7 @@ int main(int argc, char **argv, char **envp)
 			case 'v': option_verbose= true;        break;
 			case 'V': puts("stu " STU_VERSION);    exit(0);
 			case 'w': output_mode= Output::SHORT;  break;
+			case 'z': option_statistics= true;     break;
 
 			case 'c': 
 				{

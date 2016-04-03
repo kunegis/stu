@@ -1,0 +1,15 @@
+
+A: {
+	# Do something that makes the shell consume CPU.  
+	# Add up some numbers. 
+
+	max=99999
+	result=0
+	seq 1 $max |
+	while read -r n ; do
+		result="$(($result + $n))"
+		if [ "$n" = "$max" ] ; then
+			echo "$result" >A
+		fi
+	done
+}

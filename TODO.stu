@@ -12,13 +12,6 @@ prog:  prog.c
 }
 
 #
-# Have an option which makes Stu output statistics when it is finished:
-# * runtime information
-# * number of processes run (succeeded + failed) 
-# * etc. 
-#
-
-#
 # Option to pass rules in full Stu syntax (-F)
 #
 

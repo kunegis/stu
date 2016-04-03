@@ -1,0 +1,10 @@
+# Test that the number of jobs run is output correctly.  In this case
+# two successful and one failure.  
+
+A: X Y Z { 
+	cat X Y Z >A
+}
+
+$x { echo "$x$x$x" >"$x" }
+
+Z { exit 1 }

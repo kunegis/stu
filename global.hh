@@ -17,6 +17,9 @@ static bool option_continue= false;
 /* The -v option (verbose mode) */ 
 static bool option_verbose= false;
 
+/* The -z option (output statistics) */
+static bool option_statistics= false;
+
 /* Determines how commands are output
  */
 enum class Output {

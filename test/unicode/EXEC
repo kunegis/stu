@@ -1,0 +1,31 @@
+#! /bin/sh
+#
+# Test that Unicode file names are supported.  All files here contain
+# UTF-8, which Stu should handle transparently. 
+
+rm -f *.data list.* 
+
+touch list.世界 || {
+	echo >&2 '*** Failed to create a file with a UTF-8 filename'
+	exit 1
+}
+
+echo CORRECT >list.世界
+
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 '*** Exit code'
+	exit 1
+}
+
+grep -qF CORRECT A || {
+	echo >&2 "*** Content of 'A'"
+	exit 1
+}
+
+[ -r list.err -a \! -s list.err ] || {
+	echo >&2 "*** stderr should be empty"
+	exit 1
+}

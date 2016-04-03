@@ -7,6 +7,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/resource.h>
 
 /* Called to terminate all running processes, and remove their target
  * files if present */
@@ -22,6 +23,40 @@ private:
 	 */
 	pid_t pid;
 
+	/* The number of jobs run.  
+	 * exec:  executed
+	 * success:  returned successfully
+	 * fail:     returned as failing
+	 */
+	static unsigned count_jobs_exec, count_jobs_success, count_jobs_fail;
+
+	static class Statistics
+	{
+	public:
+		/* Run after main() */ 
+		~Statistics() 
+		{
+			if (!option_statistics)  return; 
+			
+			struct rusage usage;
+
+			int r= getrusage(RUSAGE_CHILDREN, &usage);
+			if (r < 0) {
+				perror("getrusage");
+				exit(ERROR_SYSTEM); 
+			}
+			assert(count_jobs_exec == count_jobs_success + count_jobs_fail); 
+			printf("STATISTICS  number of jobs run = %u (%u succeeded, %u failed)\n", 
+			       count_jobs_exec, count_jobs_success, count_jobs_fail); 
+			printf("STATISTICS  children user   runtime = %ju.%06u s\n", 
+			       (intmax_t) usage.ru_utime.tv_sec,
+			       (unsigned) usage.ru_utime.tv_usec); 
+			printf("STATISTICS  children system runtime = %ju.%06u s\n", 
+			       (intmax_t) usage.ru_stime.tv_sec,
+			       (unsigned) usage.ru_stime.tv_usec); 
+		}
+	} statistics;
+
 public:
 	Job():  pid(-2) { }
 
@@ -35,7 +70,12 @@ public:
 		(void) pid_check;
 		assert(pid_check == pid); 
 		pid= -1;
-		return WIFEXITED(status) && WEXITSTATUS(status) == 0; 
+		bool success= WIFEXITED(status) && WEXITSTATUS(status) == 0;
+		if (success)
+			++ count_jobs_success;
+		else
+			++ count_jobs_fail; 
+		return success; 
 	}
 
 	bool started() const {
@@ -70,6 +110,12 @@ public:
 	static pid_t wait(int *status);
 
 };
+
+unsigned Job::count_jobs_exec=    0;
+unsigned Job::count_jobs_success= 0;
+unsigned Job::count_jobs_fail=    0;
+
+Job::Statistics Job::statistics;
 
 pid_t Job::start(string command,
 		 const map <string, string> &mapping,
@@ -239,6 +285,9 @@ pid_t Job::start(string command,
 		perror("execve");
 		exit(ERROR_SYSTEM); 
 	} 
+
+	/* Parent execution */
+	++ count_jobs_exec;
 
 	assert(pid >= 0); 
 	return pid; 

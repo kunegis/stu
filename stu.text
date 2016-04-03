@@ -87,6 +87,12 @@ OPTIONS
               of  the  targets.   This  is most useful when the commands them‐
               selves do not make any output.
 
+       -z     Output runtime statistics about child processes on standard out‐
+              put  when  finished.   Does  not  include the runtime of the Stu
+              process itself.  Includes the runtime of all  child  and  grand‐
+              child  processes,  and  so  on.  Does not include the runtime of
+              children or grandchildren that have not been waited for.
+
 
 OVERVIEW
        A simple rule looks as follows:
@@ -670,4 +676,4 @@ SEE ALSO
 
 
 
-stu-1.9.24                        April 2016                            STU(1)
+stu-1.9.25                        April 2016                            STU(1)

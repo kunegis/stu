@@ -1,0 +1,29 @@
+#! /bin/sh
+
+rm -f ?
+
+../../stu -z >list.out 2>list.err
+exitcode="$?"
+
+cat list.out
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 '*** Exit code'
+	exit 1
+}
+
+grep -qE '^STATISTICS  children user   runtime = [0-9.]+[1-9][0-9.]* s$' list.out || {
+	echo >&2 '*** User runtime'
+	exit 1
+}
+
+grep -qE '^STATISTICS  children system runtime = [0-9.]+[1-9][0-9.]* s$' list.out || {
+	echo >&2 '*** system runtime'
+	exit 1
+}
+
+# This is the sum of numbers from 1 to 99999
+grep -qE '^4999950000$' A || {
+	echo >&2 "*** Content of 'A'"
+	exit 1
+}

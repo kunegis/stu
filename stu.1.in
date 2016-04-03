@@ -81,6 +81,12 @@ Output the version number of Stu and exit.
 Short mode; instead of outputting the commands, output the name of the
 targets.  This is most useful when the commands themselves do not make
 any output. 
+.IP -z 
+Output runtime statistics about child processes on standard output when
+finished.  Does not include the runtime of the Stu process itself.
+Includes the runtime of all child and grandchild processes, and so on.
+Does not include the runtime of children or grandchildren that have not
+been waited for. 
 
 .SH OVERVIEW
 A simple rule looks as follows:

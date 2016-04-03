@@ -249,7 +249,7 @@ do
 
 		# Check that INSTDOUT is found in the output
 		if [ -r INSTDOUT ]; then
-			if  fgrep <list.def.out -q -- "$(cat INSTDOUT)" ; then
+			if  grep <list.def.out -qF -- "$(cat INSTDOUT)" ; then
 				echo "INSTDOUT...correct"
 			else
 				echo >&2 "$0: *** '$(cat INSTDOUT)' was not found in output"

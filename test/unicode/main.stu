@@ -7,7 +7,7 @@ A:  jérôme.data {
     cp jérôme.data A
 }
 
-jérôme.data : 世界  {
-       cat   世界  >jérôme.data
+jérôme.data : list.世界  {
+       cat   list.世界  >jérôme.data
 }
 

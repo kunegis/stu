@@ -1,0 +1,13 @@
+# Test that the number of jobs run is output correctly.  In this case
+# two successful and one failure.  
+
+A: X Y Z W Q { 
+	cat X Y Z W Q >A
+}
+
+X { touch X }
+Y { exit 1  }
+Z { ecit 1  }
+W { touch W }
+Q { exit 1  }
+

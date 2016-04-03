@@ -349,6 +349,9 @@ void process_signal(int sig)
 	job_terminate_all();
 
 	/* Print statistics */
+	/* Note:  this is not quite correct as getrusage() is not
+	 * async-signal safe.  However, we are exiting anyway, so ignore
+	 * the problem */ 
 	Job::Statistics::print(true);
 
 	/* Raise signal again */ 
@@ -363,6 +366,8 @@ void process_init()
 	act.sa_flags= 0; 
 
 	/* These are all signals that by default would terminate the process */ 
+	/* Note:  Bash does something very similar. 
+	 */
 	sigaction(SIGTERM, &act, nullptr); 
 	sigaction(SIGINT,  &act, nullptr); 
 	sigaction(SIGQUIT, &act, nullptr); 

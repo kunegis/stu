@@ -1,4 +1,44 @@
-#==== Middle-sized features that complete what we already have ====
+#==== Small features that complete what we already have ====
+
+#
+# When SIGUSR1 (or similar) is sent to Stu, output list of current jobs
+# (ps(1) style).  (Maybe even to a logfile that can be configured.).
+# Maybe use a second signal to output runtime statistics.  How to
+# synchronise this? 
+# * use sigprocmask() to block both SIGUSR1 and SIGCHLD.  
+# * use sigwait() to wait for these signals. 
+#
+# * maybe also, stop using getrusage() in the terminating signal
+#   handler. 
+#
+
+#
+# For the -f option, allow streams that don't support mmap(1).  Just
+# read() them completely into memory when mmap() fails. 
+#
+
+#
+# An option to never delete target files when a command fails. (This
+# will lead to spurious files though, if a build is interrupted.)
+#
+
+#
+# Support '-f -' to read in STDIN, as do many other tools. 
+#
+
+#
+# Support these options from Make:
+#   -B 		    Remake all targets regardless of dates
+#   -o FILENAME	    Never rebuild that file ("old")
+#   -q 		    Question mode 
+#   -W		    What-if mode 
+#   -n              Dry run 
+#
+
+# 
+# An option to consider all targets up to date.  I.e., execute only the
+# minimum to get the given files built. 
+#
 
 #
 # Assign a name to a dynamic variable.  Useful when the name of the file
@@ -11,26 +51,15 @@ prog:  prog.c
 	gcc $CFLAGS -c prog.c -o prog
 }
 
+#==== Big features that complete what we already have ====
+
 #
 # Option to pass rules in full Stu syntax (-F)
 #
 
 #
-# An option to make backups of otherwise deleted files. 
-#
-
-#
-# An option to remove the target before each execution. 
-#
-
-#
-# An option to never delete target files when a command fails. 
-#
-
-#
-# When SIGUSR1 (or similar) is sent to Stu, output list of current jobs
-# (ps(1) style).  (Maybe even to a logfile that can be configured.).
-# Maybe use a second signal to output runtime statistics. 
+# An option to make backups of otherwise deleted files.  (We would need
+# to decide on a backup filename scheme.)
 #
 
 #
@@ -80,30 +109,6 @@ A: [B],0 { xargs -0 B ... }
 
 # Alternatively, detect such files automatically. (e.g., any file
 # containing the zero character is such a file, or using specific endings.)
-
-#
-# For the -f option, allow streams that don't support mmap(1). 
-#
-
-#
-# Support '-f -' to read in STDIN, as do many other tools. 
-#
-
-#
-# Support these options from Make:
-#   -B 		    Remake all targets regardless of dates
-#   -o FILENAME	    Never rebuild that file ("old")
-#   -q 		    Question mode 
-#   -W		    What-if mode 
-#   -n              Dry run 
-#
-
-# 
-# An option to consider all targets up to date.  I.e., execute only the
-# minimum to get the given files built. 
-#
-
-#==== Big features that complete what we already have ====
 
 #
 # Phonies in dynamics
@@ -235,8 +240,14 @@ A: [B],i;
 #
 
 #
-# Optional rules
+# New flag to ALWAYS build a target. 
 #
+
+#
+# Flag rules
+#
+
+# Allow flags on the target filenames.  Example with '?':
 
 # If $NAME.svg is present, use it to build $NAME.pdf.  If $NAME.svg is
 # not present, allow $NAME.pdf to be present without any dependencies.
@@ -247,7 +258,6 @@ A: [B],i;
 {
 	inkscape ...
 }
-
 
 #==== New features that change extend the Stu drastically ====
 

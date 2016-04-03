@@ -11,3 +11,7 @@ jérôme.data : list.世界  {
        cat   list.世界  >jérôme.data
 }
 
+世界 : {
+    touch 世界
+}
+

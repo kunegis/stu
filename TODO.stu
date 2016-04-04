@@ -56,6 +56,10 @@ prog:  prog.c
 	gcc $CFLAGS -c prog.c -o prog
 }
 
+#
+# Use the full autoconf/automake/etc. toolchain for better portability. 
+#
+
 #==== Big features that complete what we already have ====
 
 #

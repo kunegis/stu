@@ -18,6 +18,11 @@
 #
 
 #
+# 'sed -re' is actually not POSIX:  switch to using basic regular
+# expressions. 
+#
+
+#
 # An option to never delete target files when a command fails. (This
 # will lead to spurious files though, if a build is interrupted.)
 #

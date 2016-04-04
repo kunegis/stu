@@ -72,9 +72,9 @@ Run jobs in pseudorandom order, seeded by the given string.
 Silent mode; do not output the commands that are executed.  This option
 is compatible to the same option in Make. 
 .IP -v
-Verbose mode; show internal information
-about the Stu algorithm on standard error output.  All printed 
-output lines begin with the string VERBOSE  '. 
+Verbose mode; show internal information about the Stu algorithm on
+standard error output.  All printed output lines begin with the
+string 'VERBOSE  '.   
 .IP -V 
 Output the version number of Stu and exit.
 .IP -w

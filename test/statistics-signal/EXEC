@@ -33,8 +33,14 @@ if [ "$(ps -fe | grep 31415926535 | grep -v grep | wc -l)" != 0 ]; then
     exit 1
 fi
 
-# Check content
-grep -qF 'STATISTICS  number of jobs started = 2 (1 succeeded, 0 failed, 1 interrupted)' list.out || {
+# Check that statistics are not output
+
+grep -qF 'STATISTICS' list.out && {
+	echo >&2 '*** Number of jobs started'
+	exit 1
+}
+
+grep -qF 'STATISTICS' list.err && {
 	echo >&2 '*** Number of jobs started'
 	exit 1
 }

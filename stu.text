@@ -79,7 +79,7 @@ OPTIONS
 
        -v     Verbose mode; show internal information about the Stu  algorithm
               on  standard  error output.  All printed output lines begin with
-              the string VERBOSE  '.
+              the string 'VERBOSE  '.
 
        -V     Output the version number of Stu and exit.
 

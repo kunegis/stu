@@ -13,7 +13,7 @@
  * files if present */
 void job_terminate_all(); 
 
-void process_signal(int sig);
+void job_signal(int sig);
 
 class Job
 {
@@ -25,7 +25,7 @@ private:
 	 */
 	pid_t pid;
 
-	friend void process_signal(int); 
+	friend void job_signal(int); 
 
 	/* The number of jobs run.  
 	 * exec:  executed
@@ -33,6 +33,10 @@ private:
 	 * fail:     returned as failing
 	 */
 	static unsigned count_jobs_exec, count_jobs_success, count_jobs_fail;
+
+	/* Initialized to all signals that are blocked and then waited
+	 * for */ 
+	static sigset_t set;
 
 	static class Statistics
 	{
@@ -45,6 +49,12 @@ private:
 
 		static void print(bool allow_unterminated_jobs= false); 
 	} statistics;
+
+	static class Signal
+	{
+	public:
+		Signal(); 
+	} signal;
 
 public:
 	Job():  pid(-2) { }
@@ -105,6 +115,9 @@ unsigned Job::count_jobs_success= 0;
 unsigned Job::count_jobs_fail=    0;
 
 Job::Statistics Job::statistics;
+Job::Signal     Job::signal;
+
+sigset_t Job::set;
 
 pid_t Job::start(string command,
 		 const map <string, string> &mapping,
@@ -284,19 +297,55 @@ pid_t Job::start(string command,
 
 pid_t Job::wait(int *status)
 {
-	pid_t pid= ::wait(status); 
+ begin: 	
 
+	/* First, try wait() without blocking */ 
+	pid_t pid= waitpid(-1, status, WNOHANG);
 	if (pid < 0) {
 		/* Should not happen as there is always something
 		 * running when this function is called.  However, this may be
 		 * common enough that we may want Stu to act correctly. */ 
 		assert(false); 
-		perror("wait"); 
-		print_error("wait() returned <0 although there were still outstanding processes"); 
-		exit(ERROR_SYSTEM); 
+		perror("waitpid"); 
+		abort(); 
+	}
+	
+	if (pid > 0)
+		return pid; 
+
+	/* Any SIGCHILD sent after the last call to sigwaitinfo() will
+	 * be ready for receiving, even those received between the last
+	 * call to waitpid() and the following call to sigwaitinfo().
+	 * This excludes a deadlock which would be possible if we would
+	 * only use sigwaitinfo(). */
+
+	siginfo_t siginfo; 
+	int r;
+ retry:
+	r= sigwaitinfo(&set, &siginfo);
+
+	if (r < 0) {
+		if (errno == EINTR)
+			goto retry;
+		else {
+			assert(false);
+			perror("sigwaitinfo");
+			abort(); 
+		}
 	}
 
-	return pid;
+	if (siginfo.si_signo == SIGCHLD) {
+
+		/* We could get the PID and STATUS from siginfo, but
+		 * then the process would stay a zombie.  Therefore, we
+		 * have to call waitpid() anyway. */ 
+		goto begin; 
+	} else {
+		/* We didn't wait for that signal */ 
+		assert(false);
+		fprintf(stderr, "*** Invalid signal %d\n", siginfo.si_signo);
+		abort(); 
+	}
 }
 
 void Job::Statistics::print(bool allow_unterminated_jobs) 
@@ -336,7 +385,7 @@ void Job::Statistics::print(bool allow_unterminated_jobs)
 
 /* The signal handler -- terminate all processes and quit. 
  */
-void process_signal(int sig)
+void job_signal(int sig)
 {
 	/* Reset the signal to its default action */ 
 	struct sigaction act;
@@ -348,20 +397,18 @@ void process_signal(int sig)
 	/* Terminate all processes */ 
 	job_terminate_all();
 
-	/* Print statistics */
-	/* Note:  this is not quite correct as getrusage() is not
-	 * async-signal safe.  However, we are exiting anyway, so ignore
-	 * the problem */ 
-	Job::Statistics::print(true);
+	/* We cannot call Job::Statsitics::print() here because
+	 * getrusage() is not async signal safe, and because the count_*
+	 * variables are not atomic.  */
 
 	/* Raise signal again */ 
 	raise(sig); 
 }
 
-void process_init()
+Job::Signal::Signal()
 {
 	struct sigaction act;
-	act.sa_handler= process_signal;
+	act.sa_handler= job_signal;
 	sigemptyset(&act.sa_mask); 
 	act.sa_flags= 0; 
 
@@ -376,6 +423,11 @@ void process_init()
 	sigaction(SIGPIPE, &act, nullptr); 
 	sigaction(SIGILL,  &act, nullptr); 
 	sigaction(SIGHUP,  &act, nullptr); 
+	
+	/* Set SIGCHLD to blocked, so we can use sigwait to get it */ 
+	sigemptyset(&set);
+	sigaddset(&set, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &set, nullptr); 
 }
 
 #endif /* ! JOB_HH */

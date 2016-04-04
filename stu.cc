@@ -33,27 +33,28 @@ using namespace std;
 
 /* Note: the following strings do not contain tabs, but only space
  * characters */ 
-#define STU_HELP							\
-	"Usage:   stu [-f FILENAME] [OPTIONS...] [TARGETS...]\n"			\
-	"By default, build the first target in the file 'main.stu'.\n"	\
-	"Options:\n"							\
-	"   -a            Treat all trivial dependencies as non-trivial\n" \
-	"   -c EXPRESSION Pass a target in full Stu syntax\n"		\
-	"   -C FILENAME   Pass a target filename without Stu syntax parsing\n" \
-	"   -f FILENAME   The input file to use instead of 'main.stu'\n" \
-	"   -g            Treat all optional dependencies as non-optional\n" \
-	"   -h            Output help\n"				\
-	"   -j K          Run K jobs in parallel\n"			\
-	"   -k            Keep on running after errors\n"		\
-	"   -m ORDER      Order to run the targets:\n"			\
-	"      dfs        (default) Depth-first order, like in Make\n"	\
-	"      random     Random order\n"				\
-	"   -M STRING     Pseudorandom run order, seeded by given string\n" \
-	"   -s            Silent mode; do not output commands\n"	\
-	"   -v            Verbose mode; show execution information on standard error output\n" \
-	"   -V            Output version\n"				\
-	"   -w            Short output; don't show the commands, only the target filenames\n" \
-	"   -z            Output runtime statistics on standard output\n"
+#define STU_HELP							             \
+	"Usage:   stu [-f FILENAME] [OPTIONS...] [TARGETS...]\n"	             \
+	"By default, build the first target in the file 'main.stu'.\n"	             \
+	"TARGETS can be specified in full Stu syntax.\n"                             \
+	"Options:\n"							             \
+	"   -a            Treat all trivial dependencies as non-trivial\n"           \
+	"   -c EXPRESSION Pass a target in full Stu syntax\n"		             \
+	"   -C FILENAME   Pass a target filename without Stu syntax parsing\n"       \
+	"   -f FILENAME   The input file to use instead of 'main.stu'\n"             \
+	"   -g            Treat all optional dependencies as non-optional\n"         \
+	"   -h            Output help\n"				             \
+	"   -j K          Run K jobs in parallel\n"			             \
+	"   -k            Keep on running after errors\n"		             \
+	"   -m ORDER      Order to run the targets:\n"			             \
+	"      dfs        (default) Depth-first order, like in Make\n"	             \
+	"      random     Random order\n"				             \
+	"   -M STRING     Pseudorandom run order, seeded by given string\n"          \
+	"   -s            Silent mode; do not output commands\n"	             \
+	"   -v            Verbose mode; show execution information on stderr\n"      \
+	"   -V            Output version\n"				             \
+	"   -w            Short output; show target filenames instead of commands\n" \
+	"   -z            Output runtime statistics on stdout\n"
 
 /* Initialize buffers; called once from main() */ 
 void init_buf(); 
@@ -71,7 +72,6 @@ int main(int argc, char **argv, char **envp)
 	 */
 	dollar_zero= argv[0]; 
 	envp_global= (const char **)envp; 
-	process_init(); 
 
 	/* Either FILE_FD is initialized to a file that should be read
 	 * (the default file), or FILENAME is set by the -f option.  We

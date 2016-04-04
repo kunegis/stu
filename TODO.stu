@@ -2,16 +2,10 @@
 
 #
 # When SIGUSR1 (or similar) is sent to Stu, output list of current jobs
-# (ps(1) style).  (Maybe even to a logfile that can be configured.).
-# Maybe use a second signal to output runtime statistics.  How to
-# synchronise this? 
-# * use sigprocmask() to block both SIGUSR1 and SIGCHLD.  
-# * use sigwait() to wait for these signals. 
-#
-# * maybe also, stop using getrusage() in the terminating signal
-#   handler. 
+# (ps(1) style).  
 #
 
+#
 #
 # Make the default target of the Makefile not execute all tests, so
 # users can get Stu compiled faster.  I'm not sure this should be done. 
@@ -25,6 +19,12 @@
 #
 # 'sed -re' is actually not POSIX:  switch to using basic regular
 # expressions. 
+#
+
+#
+# There is actually a race condition in the abortion signal handler,
+# because we're reading from a C++ container to get the PIDs or
+# processes to kill. 
 #
 
 #

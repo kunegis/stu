@@ -1,0 +1,15 @@
+# Try to elicit the case that many child processes are started, all
+# having the same runtime 
+
+>A: [D] { cat $(cat D) }
+
+>N { echo 100 }
+
+>D: $[N] {
+	seq 1 "$N" | sed -e 's,^,list.,'
+}
+
+list.$K {
+	sleep 2
+	echo "file nr $K" >list."$K"
+}

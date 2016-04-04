@@ -331,7 +331,7 @@ void Execution::wait()
 
 	int status;
 	pid_t pid= Job::wait(&status); 
-	
+
 	if (option_verbose) {
 		fprintf(stderr, "VERBOSE %s wait pid = %d\n", 
 			debug_padding_str,
@@ -1126,7 +1126,7 @@ Execution::Execution(Target target_,
 
 	if (option_verbose) {
 		string text_target= target.format();
-		string text_rule= rule->format(); 
+		string text_rule= rule == nullptr ? "(no rule)" : rule->format(); 
 		fprintf(stderr, "VERBOSE  %s   %s %s\n",
 			debug_padding_str,
 			text_target.c_str(),
@@ -1252,6 +1252,9 @@ bool Execution::finished() const
 /* The declaration of this function is in job.hh */ 
 void job_terminate_all() 
 {
+	/* Strictly speaking, there is a bug here because the C++
+	 * containers are not async signal safe */ 
+
 	for (auto i= Execution::executions_by_pid.begin();
 	     i != Execution::executions_by_pid.end();  ++i) {
 
@@ -1293,7 +1296,7 @@ void job_terminate_all()
 
 	if (! single && terminated)
 		fprintf(stderr, "%s: *** Removing partially built files\n",
-				dollar_zero); 
+			dollar_zero); 
 
 	/* Check that all children are terminated */ 
 	for (;;) {

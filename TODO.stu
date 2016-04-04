@@ -13,6 +13,11 @@
 #
 
 #
+# Make the default target of the Makefile not execute all tests, so
+# users can get Stu compiled faster.  I'm not sure this should be done. 
+#
+
+#
 # For the -f option, allow streams that don't support mmap(1).  Just
 # read() them completely into memory when mmap() fails. 
 #

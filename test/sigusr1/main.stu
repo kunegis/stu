@@ -1,0 +1,22 @@
+# Sending SIGUSR1 to Stu will print statistics and a list of running
+# jobs.  
+#
+# In this test, send a SIGUSR1 signal one second after starting Stu with
+# the -j 5 option. 
+
+A:  D E   @x  list.K list.L list.M list.N list.O
+{
+	touch A
+}
+
+D { echo ddd >D }
+E { echo eee >E }
+
+$X: {
+	sleep 2
+	touch "$X"
+}
+
+@x {
+	sleep 2
+}

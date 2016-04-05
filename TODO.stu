@@ -1,11 +1,10 @@
 #==== Small features that complete what we already have ====
 
 #
-# When SIGUSR1 (or similar) is sent to Stu, output list of current jobs
-# (ps(1) style).  
+# Test the case where SIGCHLD or SIGUSR1 is received while Stu works, as
+# opposed to sleeps. 
 #
 
-#
 #
 # Make the default target of the Makefile not execute all tests, so
 # users can get Stu compiled faster.  I'm not sure this should be done. 
@@ -24,7 +23,8 @@
 #
 # There is actually a race condition in the abortion signal handler,
 # because we're reading from a C++ container to get the PIDs or
-# processes to kill. 
+# processes to kill.  If only pid_t was an atomic type...  Maybe, only
+# compile if it is (use C++ atomic types to check this). 
 #
 
 #

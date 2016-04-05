@@ -222,7 +222,12 @@ public:
 	 * according to the selected verbosity level.  
 	 * FILENAME_OUTPUT and FILENAME_INPUT are "" when not used. 
 	 */ 
-	void print_command(); 
+	void print_command() const; 
+
+	/* Print a line to stdout as a running job, as output of SIGUSR1.
+	 * Is currently running. 
+	 */ 
+	void print_as_job() const;
 
 	/* The currently running executions by process IDs */ 
 	static unordered_map <pid_t, Execution *> executions_by_pid;
@@ -1316,6 +1321,14 @@ void job_terminate_all()
 	}
 }
 
+/* The definition of this function is in job.hh */ 
+void job_print_jobs()
+{
+	for (auto &i:  Execution::executions_by_pid) {
+		i.second->print_as_job(); 
+	}
+}
+
 string Execution::cycle_string(const Execution *execution)
 {
 	assert(execution->param_rule); 
@@ -1743,7 +1756,7 @@ void Execution::print_traces(string text) const
 	}
 }
 
-void Execution::print_command()
+void Execution::print_command() const
 {
 	if (output_mode == Output::SHORT) {
 		string text= target.format_bare();
@@ -1984,6 +1997,15 @@ void Execution::initialize(Stack avoid)
 		/* The place of the [[A]]->A links is empty, meaning it will
 		 * not be output in traces. */ 
 	} 
+}
+
+void Execution::print_as_job() const
+{
+	pid_t pid= job.get_pid();
+
+	string text_target= target.format(); 
+
+	printf("%7u %s\n", (unsigned) pid, text_target.c_str());
 }
 
 #endif /* ! EXECUTION_HH */

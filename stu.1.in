@@ -585,6 +585,17 @@ recursive invocation of Stu, Stu will fail on startup when the variable
 is set. To circumvent this, unset the variable.  Recursive Stu is as
 harmful as recursive Make. 
 
+.SH "SIGNALS"
+
+.IP SIGUSR1
+When received, Stu will output a list of currently running jobs on
+standard output, and
+statistics about runtime, in a similar way to the -z option.  The
+reported runtimes include only jobs that have already terminated, and
+exclude currently running jobs. 
+Multiple SIGUSR1 signals sent in succession may result in output only
+printed once. 
+
 .SH "COMPATIBILITY"
 
 The Stu language is unique to this implementation, and the man page

@@ -13,6 +13,8 @@
  * files if present */
 void job_terminate_all(); 
 
+void job_print_jobs(); 
+
 void job_signal(int sig);
 
 class Job
@@ -44,9 +46,11 @@ private:
 		/* Run after main() */ 
 		~Statistics() 
 		{
+			if (! option_statistics)  return; 
 			print(); 
 		}
 
+		/* Print the statistics, regardless of OPTION_STATISTICS */ 
 		static void print(bool allow_unterminated_jobs= false); 
 	} statistics;
 
@@ -334,24 +338,29 @@ pid_t Job::wait(int *status)
 		}
 	}
 
-	if (siginfo.si_signo == SIGCHLD) {
+	switch (siginfo.si_signo) {
 
+	case SIGCHLD:
 		/* We could get the PID and STATUS from siginfo, but
 		 * then the process would stay a zombie.  Therefore, we
 		 * have to call waitpid() anyway. */ 
 		goto begin; 
-	} else {
+
+	case SIGUSR1:
+		Statistics::print(true); 
+		job_print_jobs(); 
+		goto retry; 
+
+	default:
 		/* We didn't wait for that signal */ 
 		assert(false);
-		fprintf(stderr, "*** Invalid signal %d\n", siginfo.si_signo);
-		abort(); 
+		fprintf(stderr, "*** sigwaitinfo: Received %d\n", siginfo.si_signo);
+		goto begin; 
 	}
 }
 
-void Job::Statistics::print(bool allow_unterminated_jobs) 
+void Job::Statistics::print(bool allow_unterminated_jobs)
 {
-	if (!option_statistics)  return; 
-
 	/* Avoid double writing in case the destructor gets still called */ 
 	option_statistics= false;
 			
@@ -371,7 +380,7 @@ void Job::Statistics::print(bool allow_unterminated_jobs)
 		printf("STATISTICS  number of jobs started = %u (%u succeeded, %u failed)\n", 
 		       count_jobs_exec, count_jobs_success, count_jobs_fail); 
 	else 
-		printf("STATISTICS  number of jobs started = %u (%u succeeded, %u failed, %u interrupted)\n", 
+		printf("STATISTICS  number of jobs started = %u (%u succeeded, %u failed, %u running)\n", 
 		       count_jobs_exec, count_jobs_success, count_jobs_fail, 
 		       count_jobs_exec - count_jobs_success - count_jobs_fail); 
 
@@ -381,6 +390,7 @@ void Job::Statistics::print(bool allow_unterminated_jobs)
 	printf("STATISTICS  children system runtime = %ju.%06u s\n", 
 	       (intmax_t) usage.ru_stime.tv_sec,
 	       (unsigned) usage.ru_stime.tv_usec); 
+	printf("STATISTICS  Note: children runtimes exclude running jobs\n"); 
 }
 
 /* The signal handler -- terminate all processes and quit. 
@@ -424,9 +434,10 @@ Job::Signal::Signal()
 	sigaction(SIGILL,  &act, nullptr); 
 	sigaction(SIGHUP,  &act, nullptr); 
 	
-	/* Set SIGCHLD to blocked, so we can use sigwait to get it */ 
+	/* Block signals so we can use sigwait() to receive them */ 
 	sigemptyset(&set);
-	sigaddset(&set, SIGCHLD);
+	sigaddset(&set, SIGCHLD); /* Notify when children finish */
+	sigaddset(&set, SIGUSR1); /* Print out statistics */ 
 	sigprocmask(SIG_BLOCK, &set, nullptr); 
 }
 

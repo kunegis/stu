@@ -6,11 +6,6 @@
 #
 
 #
-# 'sed -re' is actually not POSIX:  switch to using basic regular
-# expressions. 
-#
-
-#
 # There is actually a race condition in the abortion signal handler,
 # because we're reading from a C++ container to get the PIDs or
 # processes to kill.  If only pid_t was an atomic type...  Maybe, only
@@ -53,6 +48,11 @@ prog:  prog.c
 
 #
 # Use the full autoconf/automake/etc. toolchain for better portability. 
+#
+
+#
+# convert 'sed -r' in tests to POSIX-compatible BREs, or find a way to
+# portably use EREs with Sed. 
 #
 
 #==== Big features that complete what we already have ====

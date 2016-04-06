@@ -8,11 +8,14 @@
 # changed by hand to use another compiler. 
 # 
 
-all: stu.ndebug stu.1 stu.text 
+all: stu.1 stu.ndebug 
 
-all-check: all check
+all-test: stu.text test_options test_test.debug test_test.ndebug test_doubleslash
 
-.PHONY:  all clean check 
+.PHONY:  all all-test clean 
+
+clean:  
+	rm -f stu stu.debug stu.ndebug stu.prof stu.1 version.hh stu.text test_*
 
 CXX=c++
 
@@ -38,8 +41,6 @@ CXXFLAGS_ALL_DEBUG=  $(CXXFLAGS_DEBUG)  $(CXXFLAGS_OTHER)
 CXXFLAGS_ALL_NDEBUG= $(CXXFLAGS_NDEBUG) $(CXXFLAGS_OTHER)
 CXXFLAGS_ALL_PROF=   $(CXXFLAGS_PROF)   $(CXXFLAGS_OTHER)
 
-check:  check_options check_test.debug check_test.ndebug check_doubleslash
-
 stu.ndebug:  $(wildcard *.cc *.hh) version.hh
 	$(CXX) $(CXXFLAGS_ALL_NDEBUG) stu.cc -o stu.ndebug
 
@@ -49,16 +50,16 @@ stu.debug:  $(wildcard *.cc *.hh) version.hh
 stu.prof: $(wildcard *.cc *.hh) version.hh
 	$(CXX) $(CXXFLAGS_ALL_PROF)   stu.cc -o stu.prof
 
-check_options:  testoptions stu.cc stu.1.in
+test_options:  testoptions stu.cc stu.1.in
 	./testoptions && touch $@
 
-check_test.debug: stu.debug mktest test test/* test/*/* 
+test_test.debug: stu.debug mktest test test/* test/*/* 
 	./mktest && touch $@
 
-check_test.ndebug: stu.ndebug mktest test test/* test/*/* 
+test_test.ndebug: stu.ndebug mktest test test/* test/*/* 
 	NDEBUG=1 ./mktest && touch $@
 
-check_doubleslash:  $(wildcard *.cc *.hh) testdoubleslash
+test_doubleslash:  $(wildcard *.cc *.hh) testdoubleslash
 	./testdoubleslash
 
 # Note:  the ending ".1" indicates that the manpage is in Section 1
@@ -75,5 +76,3 @@ version.hh:  VERSION mkversion
 analysis.prof:  gmon.out 	
 	gprof stu.prof gmon.out >analysis.prof
 
-clean:  
-	rm -f stu stu.debug stu.ndebug stu.prof stu.1 version.hh stu.text check_*

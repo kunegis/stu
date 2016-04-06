@@ -1,17 +1,15 @@
 
-There is no installation command or Make target.  To install Stu, do
-the following:  
+There is no installation command or Make target for installation.  To
+install Stu, do the following:  
 
-* Compile Stu using 'make'.  This will build the executables
-  'stu.ndebug' and 'stu.debug', the man page 'stu.1', and also run all
-  unit tests.     
+* Compile Stu using 'make'.  This will build the executable
+  'stu.ndebug' and the man page 'stu.1'. 
 
-* Copy the executable 'stu.ndebug' (or 'stu.debug' for the debug
-  version) to a bin/ directory under the name 'stu', e.g. /usr/bin/ or
-  ~/bin/.  You can of course also just execute it right from where it
-  is.  The executable has no runtime dependencies, so it does not matter
-  where it is residing while it is being executed, and also its filename
-  does not matter.   
+* Copy the executable 'stu.ndebug' to a bin/ directory under the name
+  'stu', e.g. /usr/bin/ or ~/bin/.  You can of course also just execute
+  it right from where it is.  The executable has no runtime
+  dependencies, so it does not matter where it is residing while it is
+  being executed, and also its filename does not matter.   
 
 * Copy the man page 'stu.1' to a man page directory,
   e.g. /usr/share/man/man1/ or ~/man/man1/.  (In that second example,
@@ -19,10 +17,16 @@ the following:
 
 REQUIREMENTS
 
-* The Makefile assumes g++, and you need a version of it that
-  has the -std=c++11 option.  If you don't, you have to edit the
-  Makefile. 
+* The Makefile uses 'c++' as the C++ compiler, with the option
+  '-std=c++11'.  To use something else, edit the Makefile. 
+
+ADDITIONALLY
+
+* If you want to run the unit tests, do 'make all-test'.  If takes about
+  10 minutes. 
 * The unit tests assume that the filesystem supports UTF-8 filenames.
   Stu will work without such a filesystem, but you can't run the unit
-  tests unless you remove the one offending test. 
-
+  tests unless you remove the one offending test (test/unicode/).  
+* The unit tests need a GNU version of sed(1); they use the -r option.  
+* If you run the tests and they fail, please report that to Jérôme
+  Kunegis <kunegis@gmail.com>.  

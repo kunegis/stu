@@ -1,4 +1,4 @@
-check_*
+test_*
 *.log
 stu
 stu.debug

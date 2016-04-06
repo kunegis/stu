@@ -52,7 +52,7 @@ prog:  prog.c
 
 #
 # convert 'sed -r' in tests to POSIX-compatible BREs, or find a way to
-# portably use EREs with Sed. 
+# portably use EREs with Sed.  Or, use awk(1), which supports EREs. 
 #
 
 #==== Big features that complete what we already have ====

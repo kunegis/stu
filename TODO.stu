@@ -1,9 +1,7 @@
 #==== Small features that complete what we already have ====
 
 #
-# Make the default target of the Makefile not execute all tests, so
-# users can get Stu compiled faster.  I'm not sure this should be done.
-# Also, make the default compiler flags not include all the special GCC
+# Make the default compiler flags not include all the special GCC
 # warnings. 
 #
 

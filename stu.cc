@@ -342,3 +342,4 @@ void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
 		dependencies.push_back(j); 
 	}
 }
+

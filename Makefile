@@ -8,14 +8,22 @@
 # changed by hand to use another compiler. 
 # 
 
-all: stu.debug stu.ndebug stu.1 stu.text check
+all: stu.ndebug stu.1 stu.text 
+
+all-check: all check
 
 .PHONY:  all clean check 
 
 CXX=c++
 
-CXXFLAGS_DEBUG=  -ggdb
+CXXFLAGS_DEBUG=  -ggdb \
+    -Wall -Wextra -Wunused -pedantic \
+    -Wundef -Wc++11-compat -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
+    -Werror                 \
+    -fno-gnu-keywords       \
+
 CXXFLAGS_NDEBUG= -O3 -DNDEBUG -s
+
 CXXFLAGS_PROF=   -pg -O3 -DNDEBUG 
 
 # Some of the specialized warning flags may not be present in other
@@ -23,10 +31,6 @@ CXXFLAGS_PROF=   -pg -O3 -DNDEBUG
 # remove the flags if you use such a compiler. 
 CXXFLAGS_OTHER=             \
     -std=c++11              \
-    -Wall -Wextra -Wunused -pedantic \
-    -Wundef -Wc++11-compat -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
-    -Werror                 \
-    -fno-gnu-keywords       \
     -D_FILE_OFFSET_BITS=64 
 # -lrt would be needed for clock_gettime().  (only enabled with USE_MTIM.)
 
@@ -72,4 +76,4 @@ analysis.prof:  gmon.out
 	gprof stu.prof gmon.out >analysis.prof
 
 clean:  
-	rm -f stu stu.debug stu.ndebug stu.1 version.hh
+	rm -f stu stu.debug stu.ndebug stu.prof stu.1 version.hh stu.text check_*

@@ -1,0 +1,39 @@
+#! /bin/sh
+
+rm -f ? list.*
+
+echo '../../stu -j1000 &'
+../../stu -j1000 >list.out 2>list.err &
+pid="$!"
+
+# Write until a first line has been written
+while [ \! -s list.out ] ; do : ; done 
+
+echo "kill -s USR1 $pid"
+kill -s USR1 "$pid" || {
+	echo >&2 '*** Kill'
+	exit 1
+}
+
+sleep 1
+
+if [ $(ps -fe | grep 74634275 | grep -v grep | wc -l) = 0 ]; then
+	echo >&2 "$0: *** Stu is still running"
+	exit 1
+fi
+
+grep -qE '^STATISTICS  ' list.out || {
+	echo >&2 '*** STATISTICS'
+	exit 1
+}
+
+kill -INT "$pid"
+
+sleep 1
+
+if [ $(ps -fe | grep 74634275 | grep -v grep | wc -l) \!= 0 ]; then
+	echo >&2 "$0: *** Stu is still running"
+	exit 1
+fi
+
+exit 0

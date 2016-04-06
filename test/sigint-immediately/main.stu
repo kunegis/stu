@@ -1,0 +1,14 @@
+# Interrupt Stu immediately after startup with a SIGINT. 
+
+A:  [list.dep] 
+{ touch A }
+
+>list.dep: {
+	seq 1 999 | sed -e 's,^,list.,'
+}
+
+list.$n
+{
+	sleep 74634275
+	touch "list.$n"
+}

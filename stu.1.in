@@ -20,8 +20,8 @@ currounded by angle brackets) is used as a
 dependency, Stu will build the file FILENAME and read dependencies from
 it.  (2) Parameters:  Names of files (and phony targets) can contain
 parameters written using dollar syntax.  For example, a rule with a target
-filename 'list.$NAME' will be used to build any file matching the
-pattern 'list.*', and the parameter $NAME can be used in names of
+filename 'list.$name' will be used to build any file matching the
+pattern 'list.*', and the parameter $name can be used in names of
 dependencies and in the build command.  Targets may contain any number
 of parameters. 
 
@@ -103,13 +103,13 @@ The colon may be omitted when there are no dependencies:
 Here is an example of a rule containing three parameters.  Stu will use
 pattern matching to match the target pattern to a given filename: 
 
-    plot.$DATASET.$METHOD.$MEASURE.eps:  
-        data-$DATASET.txt analyse-$METHOD 
+    plot.$dataset.$method.$measure.eps:  
+        data-$dataset.txt analyse-$method 
     {
-        ./analyse-$METHOD \\
-            -m $MEASURE \\
-            -f data-$DATASET.txt \\
-            -o plot.$DATASET.$METHOD.$MEASURE.eps
+        ./analyse-$method \\
+            -m $measure \\
+            -f data-$dataset.txt \\
+            -o plot.$dataset.$method.$measure.eps
     }
 
 Here is an example of a dynamic dependency.  The target 'compute' (a C
@@ -123,8 +123,8 @@ dependencies:
     compute:  [compute.c.dep] {
         gcc -c compute.c -o compute 
     }
-    $NAME.c.dep:  $NAME.c compute-dep {
-        ./compute-dep-c "$NAME.c" >"$NAME.c.dep"
+    $name.c.dep:  $name.c compute-dep {
+        ./compute-dep-c "$name.c" >"$name.c.dep"
     }
 
 Parameters can also use the syntax ${...}.
@@ -155,7 +155,7 @@ the one that is the least parametrized, as defined by the subset
 relation on the set of characters that are in parameters. 
 When building 'X.txt' in this example, only the second rule is called:
 
-    $NAME.txt: {  echo "$NAME" is the best >"$NAME.txt" }
+    $name.txt: {  echo "$name" is the best >"$name.txt" }
     X.txt:  { echo X sucks >X.txt }
 
 All commands are echoed by Stu.  Thus, you can output debugging
@@ -226,7 +226,7 @@ Here is a phony target that cleans up the directory:
 
 Here a phony target is used as a shortcut to a longer name: 
 
-    @build.$NAME:   dat/build.$NAME.txt; 
+    @build.$name:   dat/build.$name.txt; 
 
 Here a phony target is used as a list of files.  Multiple targets can depend on it, to effectively depend on the individual files:
 
@@ -390,11 +390,11 @@ noted using the '$' character and are given a name.  Stu will match the
 pattern to any file or phony it needs to build.  Parameters can appear in
 dependencies and in commands any number of times (included not appearing in them).  
 In a target name, a parameter can only appear once.  The following
-example contains the parameter $NAME:
+example contains the parameter $name:
 
-    list.$NAME:    data.$NAME $NAME.in 
+    list.$name:    data.$name $name.in 
     { 
-	./compute-list -n "$NAME"
+	./compute-list -n "$name"
     }
 
 Parameters within a single target name must be separated by at least one
@@ -415,16 +415,16 @@ rules.
 In the following example, the first rule dominates the other rules for
 the file named 'a.b.c':  
 
-    a.$X.c: ... { ... }
-    a.$X:   ... { ... }
-    $X.c:   ... { ... }
+    a.$x.c: ... { ... }
+    a.$x:   ... { ... }
+    $x.c:   ... { ... }
 
 In the following example, no rule dominates the others for the
 filename 'a.b.c', so Stu will report an error:  
 
-    $X.b.c: ... { ... }
-    a.$X.c: ... { ... }
-    a.b.$X: ... { ... }
+    $x.b.c: ... { ... }
+    a.$x.c: ... { ... }
+    a.b.$x: ... { ... }
 
 .SH "STATEMENTS"
 
@@ -541,7 +541,7 @@ build the file 'a.gz.gz' from the file 'a', even though it would not
 result in a cycle, but since both files 'a.gz' and 'a.gz.gz' use the
 same parametrized rule, this is not allowed:
 
-    $NAME.gz:  $NAME { gzip $NAME }
+    $name.gz:  $name { gzip $name }
 
 Cycles are possible in dynamic dependencies, where they are allowed
 and ignored.  For instance, the following examples will correctly build

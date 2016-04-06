@@ -1,13 +1,10 @@
 #==== Small features that complete what we already have ====
 
 #
-# Test the case where SIGCHLD or SIGUSR1 is received while Stu works, as
-# opposed to sleeps. 
-#
-
-#
 # Make the default target of the Makefile not execute all tests, so
-# users can get Stu compiled faster.  I'm not sure this should be done. 
+# users can get Stu compiled faster.  I'm not sure this should be done.
+# Also, make the default compiler flags not include all the special GCC
+# warnings. 
 #
 
 #

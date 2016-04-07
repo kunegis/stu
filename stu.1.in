@@ -48,7 +48,7 @@ Pass a target filename, without Stu syntax.
 .IP "-f FILENAME"
 Read the given file instead of the default 'main.stu'.  If the name of a
 directory is passed, the file 'main.stu' in the given directory is
-read. 
+read.  If '-' is passed, read standard input.
 .IP -g
 Treat all optional dependencies (declared with '?') as non-optional.
 .IP -h
@@ -652,10 +652,6 @@ can be used in some advanced use cases:
     stu -c '%version 1.7' # Make sure Stu is compatible with the given version
     
 .SH "LIMITATIONS, PITFALLS AND FUTURE DIRECTIONS"
-
-The -f option only supports regular files.  Standard input is not
-supported, as the current implementation uses mmap(2).  Also, '-' as an
-input filename will not make Stu read standard input. 
 
 The argument to the -j option (number of jobs to run in parallel) is
 mandatory, as opposed to the behavior of GNU Make, where no argument

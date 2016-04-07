@@ -146,7 +146,14 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			      int fd)
 {
 	const char *in= nullptr;
+	size_t in_size;
 	struct stat buf;
+	FILE *file= nullptr; 
+
+	/* false:  mmap()
+	 * true:   malloc()
+	 */
+	bool use_malloc;
 
 	try {
 		if (allow_include) {
@@ -156,6 +163,13 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		} else {
 			assert(filenames.size() == 0);
 			assert(traces.size() == 0);
+		}
+
+		/* Map '-' to stdin */ 
+		assert(! (filename == "-" && fd >= 0));
+		if (filename == "-") {
+			fd= 0; 
+			file= stdin;
 		}
 
 		if (fd < 0) {
@@ -188,14 +202,62 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		/* Handle a file of zero length separately because mmap() may fail
 		 * on it, i.e., return an error and refuse to create a memory
 		 * map of length zero. */  
-		if (buf.st_size == 0) {
+		if (S_ISREG(buf.st_mode) && buf.st_size == 0) {
 			goto return_close; 
 		}
 
-		in= (char *)mmap(nullptr, buf.st_size, 
+		if (! S_ISREG(buf.st_mode)) {
+			goto try_read;
+		}
+
+		use_malloc= false;
+
+		in_size= buf.st_size;
+		in= (char *)mmap(nullptr, in_size, 
 				 PROT_READ, MAP_SHARED, fd, 0); 
 		if (in == MAP_FAILED) {
-			goto error_close;
+
+		try_read:
+			use_malloc= true;
+
+			if (file == nullptr) {
+				file= fdopen(fd, "r");
+				if (file == nullptr) 
+					goto error_close;
+			}
+			const size_t BUFLEN= 0x1000;
+			char *mem= nullptr;
+			size_t len= 0;
+			for (;;) {
+				char *mem_new= (char *)realloc(mem, len + BUFLEN);
+				if (mem_new == nullptr) {
+					free(mem);
+					goto error_close;
+				}
+				mem= mem_new;
+				size_t r= fread(mem + len, 1, BUFLEN, file);
+				assert(r <= BUFLEN); 
+				if (r == 0) {
+					if (ferror(file)) {
+						if (filename != "-") {
+							int errno_save= errno;
+							fclose(file);
+							errno= errno_save;
+						}
+						goto error_close;
+					} else {
+						break;
+					}
+				}
+				len += r;
+			}
+			if (filename != "-") {
+				if (fclose(file) != 0) {
+					goto error_close;
+				}
+			}
+			in= mem; 
+			in_size= len;
 		}
 
 		if (0 > close(fd)) 
@@ -204,14 +266,18 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		{
 			Parse parse(traces, filenames, includes,
 				    Place::Type::INPUT_FILE, filename, 
-				    in, buf.st_size); 
+				    in, in_size); 
 
 			parse.parse_tokens(tokens, allow_include);
 
 			place_end= parse.current_place(); 
 
-			if (0 > munmap((void *)in, buf.st_size))
-				goto error;
+			if (use_malloc) {
+				free((void *) in); 
+			} else { /* mmap() */
+				if (0 > munmap((void *)in, in_size))
+					goto error;
+			}
 
 			return;
 		}
@@ -237,8 +303,15 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		exit(ERROR_SYSTEM); 
 
 	} catch (int error) {
-		if (in != nullptr)
-			munmap((void *)in, buf.st_size);
+
+		if (in != nullptr) {
+			if (use_malloc) {
+				free((void *) in); 
+			} else { /* mmap() */
+				munmap((void *)in, in_size);
+			}
+		}
+
 		throw;
 	}
 }

@@ -1,11 +1,6 @@
 #==== Small features that complete what we already have ====
 
 #
-# For the -f option, allow streams that don't support mmap(1).  Just
-# read() them completely into memory when mmap() fails. 
-#
-
-#
 # There is actually a race condition in the abortion signal handler,
 # because we're reading from a C++ container to get the PIDs or
 # processes to kill.  If only pid_t was an atomic type...  Maybe, only

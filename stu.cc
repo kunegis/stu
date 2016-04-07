@@ -54,7 +54,9 @@ using namespace std;
 	"   -v            Verbose mode; show execution information on stderr\n"      \
 	"   -V            Output version\n"				             \
 	"   -w            Short output; show target filenames instead of commands\n" \
-	"   -z            Output runtime statistics on stdout\n"
+	"   -z            Output runtime statistics on stdout\n"                     \
+	"Report bugs to: kunegis@gmail.com\n"                                        \
+	"Stu home page: <https:/""/github.com/kunegis/stu>\n"
 
 /* Initialize buffers; called once from main() */ 
 void init_buf(); 
@@ -106,7 +108,6 @@ int main(int argc, char **argv, char **envp)
 			case 'k': option_continue= true;       break;
 			case 's': output_mode= Output::SILENT; break;
 			case 'v': option_verbose= true;        break;
-			case 'V': puts("stu " STU_VERSION);    exit(0);
 			case 'w': output_mode= Output::SHORT;  break;
 			case 'z': option_statistics= true;     break;
 
@@ -185,6 +186,18 @@ int main(int argc, char **argv, char **envp)
 				order= Order::RANDOM;
 				srand(hash <string> ()(string(optarg))); 
 				break;
+
+			case 'V': 
+				puts("stu " STU_VERSION);    
+				puts("Copyright (C) 2016 Jerome Kunegis");
+				puts("License GPLv3+: GNU GPL version 3 or later <http:/""/gnu.org/licenses/gpl.html>");
+				puts("This is free software: you are free to change and redistribute it.");
+				puts("There is NO WARRANTY, to the extent permitted by law.");
+				if (ferror(stdout)) {
+					perror("puts"); 
+					exit(ERROR_SYSTEM);
+				}
+				exit(0);
 
 			default:  
 				/* Invalid option -- an error message was

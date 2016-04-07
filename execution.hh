@@ -1312,7 +1312,6 @@ void job_terminate_all()
 			 * child to wait for */ 
 			if (errno != ECHILD) {
 				perror("waitpid"); 
-				exit(ERROR_SYSTEM);
 			}
 			
 			return; 

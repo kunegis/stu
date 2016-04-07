@@ -1,10 +1,11 @@
 #==== Small features that complete what we already have ====
 
 #
-# There is actually a race condition in the abortion signal handler,
-# because we're reading from a C++ container to get the PIDs or
-# processes to kill.  If only pid_t was an atomic type...  Maybe, only
-# compile if it is (use C++ atomic types to check this). 
+# In the terminate signal handler:  make it async signal safe by:
+# * Using the "two arrays of pid_t+filename+timestamp" trick for
+#   cleanup 
+# * For the moment where jobs are started, block the signals. 
+# * Using only async signal-safe functions in the handler 
 #
 
 #

@@ -397,12 +397,17 @@ void Job::Statistics::print(bool allow_unterminated_jobs)
  */
 void job_signal(int sig)
 {
+	/* We can use only async signal-safe functions here */
+
 	/* Reset the signal to its default action */ 
 	struct sigaction act;
 	act.sa_handler= SIG_DFL;
-	sigemptyset(&act.sa_mask); 
+	if (0 != sigemptyset(&act.sa_mask))  {
+		write(2, "*** error: sigemptyset\n", 23); 
+	}
 	act.sa_flags= 0;
-	sigaction(sig, &act, nullptr);
+	int r= sigaction(sig, &act, nullptr);
+	assert(r == 0); 
 
 	/* Terminate all processes */ 
 	job_terminate_all();
@@ -412,33 +417,50 @@ void job_signal(int sig)
 	 * variables are not atomic.  */
 
 	/* Raise signal again */ 
-	raise(sig); 
+	if (0 != raise(sig)) {
+		write(2, "*** error: raise\n", 17); 
+	}
+	abort();
 }
 
 Job::Signal::Signal()
 {
 	struct sigaction act;
 	act.sa_handler= job_signal;
-	sigemptyset(&act.sa_mask); 
+	if (0 != sigemptyset(&act.sa_mask))  {
+		perror("sigemptyset");
+		exit(ERROR_SYSTEM); 
+	}
 	act.sa_flags= 0; 
 
 	/* These are all signals that by default would terminate the process */ 
 	/* Note:  Bash does something very similar. 
 	 */
-	sigaction(SIGTERM, &act, nullptr); 
-	sigaction(SIGINT,  &act, nullptr); 
-	sigaction(SIGQUIT, &act, nullptr); 
-	sigaction(SIGABRT, &act, nullptr); 
-	sigaction(SIGSEGV, &act, nullptr); 
-	sigaction(SIGPIPE, &act, nullptr); 
-	sigaction(SIGILL,  &act, nullptr); 
-	sigaction(SIGHUP,  &act, nullptr); 
+	int signals[]= { SIGTERM, SIGINT, SIGQUIT, SIGABRT, SIGSEGV, SIGPIPE, SIGILL, SIGHUP };
+	for (unsigned i= 0;  i < sizeof(signals) / sizeof(int);  ++i) {
+		if (0 != sigaction(signals[i], &act, nullptr)) {
+			perror("sigaction");
+			exit(ERROR_SYSTEM); 
+		}
+	}
 	
 	/* Block signals so we can use sigwait() to receive them */ 
-	sigemptyset(&set);
-	sigaddset(&set, SIGCHLD); /* Notify when children finish */
-	sigaddset(&set, SIGUSR1); /* Print out statistics */ 
-	sigprocmask(SIG_BLOCK, &set, nullptr); 
+	if (0 != sigemptyset(&set)) {
+		perror("sigemptyset");
+		exit(ERROR_SYSTEM); 
+	}
+	if (0 != sigaddset(&set, SIGCHLD)) {
+		perror("sigaddset");
+		exit(ERROR_SYSTEM);
+	}
+	if (0 != sigaddset(&set, SIGUSR1)) {
+		perror("sigaddset");
+		exit(ERROR_SYSTEM); 
+	}
+	if (0 != sigprocmask(SIG_BLOCK, &set, nullptr)) {
+		perror("sigprocmask");
+		exit(ERROR_SYSTEM); 
+	}
 }
 
 #endif /* ! JOB_HH */

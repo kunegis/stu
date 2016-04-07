@@ -13,10 +13,6 @@
 #
 
 #
-# Support '-f -' to read in STDIN, as do many other tools. 
-#
-
-#
 # Support these options from Make:
 #   -B 		    Remake all targets regardless of dates
 #   -o FILENAME	    Never rebuild that file ("old")

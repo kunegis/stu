@@ -1,0 +1,24 @@
+#! /bin/sh
+
+rm -f A
+
+../../stu -K >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 1 ] || {
+	echo >&2 '*** Exit code must be 1, but is not'
+	echo >&2 "exitcode='$exitcode'"
+	exit 1
+}
+
+[ -s A ] || {
+	echo >&2 "*** The file 'A' must exist and have size larger than zero"
+	exit 1
+}
+
+lines="$(cat A | wc -l)"
+
+[ "$lines" = 2 ] || {
+	echo >&2 "*** File 'A' must contain exactly two lines"
+	exit 2
+}

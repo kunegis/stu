@@ -64,6 +64,14 @@ OPTIONS
               try to build as much as possible.  This option is equivalent  to
               that of Make.
 
+       -K     Don't  delete partially built files when a command fails or when
+              Stu is interrupted.  By default, Stu will delete the target of a
+              command after the command fails or is interrupted, when the file
+              is newer than it was before starting the  command.  This  option
+              disables  that  behaviour.  Note that with this option, a subse‐
+              quent invocation of Stu may lead to  the  partially  built  file
+              being considered up to date.
+
        -m ORDER
               Specify  the  order  in which jobs are run.  When ORDER is 'dfs'
               (the default), Stu traverses the dependency graph  in  a  depth-
@@ -683,4 +691,4 @@ SEE ALSO
 
 
 
-stu-1.9.32                        April 2016                            STU(1)
+stu-1.9.33                        April 2016                            STU(1)

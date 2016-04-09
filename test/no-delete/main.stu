@@ -1,0 +1,9 @@
+# With the -K option, Stu does not delete partially built file 'A'. 
+
+A: {
+	echo aaa >A
+	echo bbb >>A
+	exit 3
+	echo ccc >>A
+	exit 0
+}

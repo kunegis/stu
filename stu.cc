@@ -29,7 +29,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-#define STU_OPTIONS "ac:C:f:ghj:km:M:svVwz"
+#define STU_OPTIONS "ac:C:f:ghj:kKm:M:svVwz"
 
 /* Note: the following strings do not contain tabs, but only space
  * characters */ 
@@ -46,6 +46,7 @@ using namespace std;
 	"   -h            Output help\n"				             \
 	"   -j K          Run K jobs in parallel\n"			             \
 	"   -k            Keep on running after errors\n"		             \
+	"   -K            Don't delete target files on error or interruption\n"      \
 	"   -m ORDER      Order to run the targets:\n"			             \
 	"      dfs        (default) Depth-first order, like in Make\n"	             \
 	"      random     Random order\n"				             \
@@ -106,6 +107,7 @@ int main(int argc, char **argv, char **envp)
 			case 'g': option_nonoptional= true;    break;
 			case 'h': fputs(STU_HELP, stdout);     exit(0);
 			case 'k': option_continue= true;       break;
+			case 'K': option_no_delete= true;      break;
 			case 's': output_mode= Output::SILENT; break;
 			case 'v': option_verbose= true;        break;
 			case 'w': output_mode= Output::SHORT;  break;

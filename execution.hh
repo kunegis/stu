@@ -169,7 +169,7 @@ public:
 	 */ 
 	void read_dynamics(Stack avoid, shared_ptr <Dependency> dependency_parent);
 
-	/* Remove the targe file if it exists.  If OUTPUT is true, output a
+	/* Remove the target if it is a file and exists.  If OUTPUT is true, output a
 	 * corresponding error message.  Return whether the file was
 	 * removed.  If OUTPUT is false, only do async signal-safe things. 
 	 */
@@ -1457,6 +1457,9 @@ bool Execution::find_cycle(const Execution *const parent,
 
 bool Execution::remove_if_existing(bool output) 
 {
+	if (option_no_delete)
+		return false;
+
 	if (target.type != T_FILE)  
 		return false;
 

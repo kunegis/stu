@@ -61,6 +61,13 @@ parameter K is mandatory.
 .IP -k
 Keep going; do not stop running when an error occurs.  Instead, try to build as much
 as possible.  This option is equivalent to that of Make. 
+.IP "-K"
+Don't delete partially built files when a command fails or when Stu is
+interrupted.  By default, Stu will delete the target of a command after
+the command fails or is interrupted, when the file is newer than it was
+before starting the command. This option disables that behaviour.  Note
+that with this option, a subsequent invocation of Stu may lead to the
+partially built file being considered up to date. 
 .IP "-m ORDER"
 Specify the order in which jobs are run.  When ORDER is 'dfs' (the default),
 Stu traverses the dependency graph in a depth-first fashion, in a way

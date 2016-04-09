@@ -20,6 +20,9 @@ static bool option_verbose= false;
 /* The -z option (output statistics) */
 static bool option_statistics= false;
 
+/* The -K option (don't delete partially built files) */
+static bool option_no_delete= false;
+
 /* Determines how commands are output
  */
 enum class Output {

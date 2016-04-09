@@ -1,11 +1,6 @@
 #==== Small features that complete what we already have ====
 
 #
-# An option (-K) to never delete target files when a command fails. (This
-# will lead to spurious files though, if a build is interrupted.)
-#
-
-#
 # Option -o FILENAME:    Never rebuild that file ("old")
 #
 

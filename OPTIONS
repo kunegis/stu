@@ -29,7 +29,7 @@ List of options
 -I      G  Include path
 -j  S   G  Parallel
 -k  S M G  Keep going
--K  .      Keep partially built files
+-K  S      Keep partially built files
 -l         (Log; redirect all output of commands to logfiles)
 -l      G  Number of jobs depends on load average
 -L      G  Special handling of symlinks

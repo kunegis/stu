@@ -1,0 +1,11 @@
+#
+# The exit code of Stu is always 1 when a command fails, regardless of
+# the actual exit code of the command.  
+#
+# The command for 'A' returns exit code 3, but Stu returns exit code 1. 
+#
+
+A 
+{
+	exit 3
+}

@@ -6,12 +6,26 @@
 #
 
 #
-# Support these options from Make:
-#   -B 		    Remake all targets regardless of dates
-#   -o FILENAME	    Never rebuild that file ("old")
-#   -q 		    Question mode 
-#   -W		    What-if mode 
-#   -n              Dry run 
+# Option -o FILENAME:    Never rebuild that file ("old")
+#
+
+#
+# Option -W FILENAME:   What-if mode.  Pretend that file FILENAME has
+# just been modified. 
+#
+
+#
+# Option -q: Question/query mode:  don't run or print anything, just return
+# an exit code specifying whether everything is up-to-date. 
+#
+
+#
+# Option -B:  Remake all targets regardless of dates
+#
+
+#
+# Option: -n: Dry run:  Don't run anything, but show the commands that
+# would be run.  Problematic because of dynamic dependencies. 
 #
 
 # 

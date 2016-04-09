@@ -15,7 +15,7 @@ List of options
 
 -a  S      Consider trivial dependencies to be non-trivial
 -b  .      Enable backups
--B      G  Re-make all
+-B  .   G  Re-make all
 -c  S      Specify syntax (same as non-option arguments)
 -C  S      Explicit target without syntax 
 -d      G  Print debugging information 
@@ -32,10 +32,10 @@ List of options
 -L      G  Special handling of symlinks
 -m  S      Mode; e.g., random order, etc.
 -M  S      Seed mode
--n    M G  Dry run (just print commands)
--o      G  Mark file as old
+-n  . M G  Dry run (just print commands)
+-o  .   G  Mark file as old
 -p    M G  Print database (rule set)
--q    M G  Question mode / Query mode
+-q  . M G  Question mode / Query mode
 -r    M G  No builtin rules
 -R      G  No builtin variables
 -s  S M G  Silent
@@ -45,7 +45,7 @@ List of options
 -v  S   G  Verbose
 -V  S      Version
 -w  S	   Short mode
--W      G  What-if mode (if FILE just had been modified)
+-W  .   G  What-if mode (if FILE just had been modified)
 -x  .      Enable /bin/sh -x instead of normal output
 -y       
 -z  .      Output statistics

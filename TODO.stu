@@ -1,7 +1,7 @@
 #==== Small features that complete what we already have ====
 
 #
-# An option to never delete target files when a command fails. (This
+# An option (-K) to never delete target files when a command fails. (This
 # will lead to spurious files though, if a build is interrupted.)
 #
 
@@ -28,8 +28,12 @@
 # would be run.  Problematic because of dynamic dependencies. 
 #
 
+#
+# Option -N:  dry run, but build dynamic dependencies 
+#
+
 # 
-# An option to consider all targets up to date.  I.e., execute only the
+# An option (-u) to consider all targets up to date.  I.e., execute only the
 # minimum to get the given files built. 
 #
 
@@ -51,6 +55,18 @@ prog:  prog.c
 #
 # convert 'sed -r' in tests to POSIX-compatible BREs, or find a way to
 # portably use EREs with Sed.  Or, use awk(1), which supports EREs. 
+#
+
+#
+# Option -i:  ignore all errors, like POSIX Make
+#
+
+#
+# Option -p:  print rule set, like POSIX Make
+#
+
+#
+# Option -t:  touch instead of building, like POSIX Make
 #
 
 #==== Big features that complete what we already have ====

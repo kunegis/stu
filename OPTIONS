@@ -9,30 +9,34 @@ S   Implemented in Stu
 .   Proposed for Stu 
 M   Compatible with POSIX Make
 G   Compatible with GNU Make
+x   Incompatible
 
 List of options
 ===============
 
 -a  S      Consider trivial dependencies to be non-trivial
--b  .      Enable backups
+-b  .   x  Enable backups
 -B  .   G  Re-make all
 -c  S      Specify syntax (same as non-option arguments)
--C  S      Explicit target without syntax 
+-C  S   x  Explicit target without syntax 
 -d      G  Print debugging information 
 -e    M G  Environment overrides Make macros
 -f  S M G  File
 -F  .      Pass rule on the command line
 -g  S      Consider optional dependencies to be non-optional 
 -h  S   G  Help
--i    M G  Ignore all errors in commands
+-i  . M G  Ignore all errors in commands
 -I      G  Include path
 -j  S   G  Parallel
 -k  S M G  Keep going
+-K  .      Keep partially built files
 -l         (Log; redirect all output of commands to logfiles)
+-l      G  Number of jobs depends on load average
 -L      G  Special handling of symlinks
--m  S      Mode; e.g., random order, etc.
+-m  S   x  Mode; e.g., random order, etc.
 -M  S      Seed mode
 -n  . M G  Dry run (just print commands)
+-N  .      Dry run, but build dynamic dependencies 
 -o  .   G  Mark file as old
 -p    M G  Print database (rule set)
 -q  . M G  Question mode / Query mode
@@ -40,11 +44,12 @@ List of options
 -R      G  No builtin variables
 -s  S M G  Silent
 -S    M G  No keep going
--t    M G  Touch instead of building
--u
--v  S   G  Verbose
+-t  . M G  Touch instead of building
+-u  .      Consider all files up-to-date 
+-v  S   x  Verbose
+-v      G  Version
 -V  S      Version
--w  S	   Short mode
+-w  S	x  Short mode
 -W  .   G  What-if mode (if FILE just had been modified)
 -x  .      Enable /bin/sh -x instead of normal output
 -y       

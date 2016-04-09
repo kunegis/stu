@@ -3,7 +3,7 @@
 doo() { echo "$@" ; "$@" ; }
 
 #
-# No options
+# (1) No options
 #
 
 echo >&2 RUN '(1)'
@@ -12,15 +12,15 @@ doo rm -f ?
 
 echo >&2 ../../stu
 ../../stu 
-exitcode=$?
+exitcode="$?"
 
-if [ $exitcode != 1 ]; then
-    echo >&2 "$: *** Variant without options failed (1)"
-    exit 1
-fi
+[ "$exitcode" = 1 ] || {
+	echo >&2 "$: *** Variant without options failed (1)"
+	exit 1
+}
 
 #
-# With -k 
+# (2) With -k 
 #
 
 echo >&2 RUN '(2)'
@@ -29,30 +29,37 @@ doo rm -f ?
  
 echo >&2 ../../stu -k 
 ../../stu -k &
-PID=$!
+pid="$!"
 
 doo sleep 2
 
 if [ $(ps -fe | grep 74634275 | grep -v grep | wc -l) = 0 ]; then
-    echo >&2 "$0: *** Stu is not running (2)"
-    exit 1
+	echo >&2 "$0: *** Stu is not running (2a)"
+	exit 1
 fi
 
-echo kill -TERM $PID
-kill -TERM $PID  || {
-    echo >&2 "$0: *** Kill (3)"
-    exit 1
+echo "kill -TERM $pid"
+kill -TERM "$pid"  || {
+	echo >&2 "$0: *** Kill (2)"
+	exit 1
 }
 
 doo sleep 1
 
 if [ $(ps -fe | grep 74634275 | grep -v grep | wc -l) != 0 ]; then
-    echo >&2 "$0: *** Stu is still running (4)"
-    exit 1
+	echo >&2 "$0: *** Stu is still running (2b)"
+	ps -fe | grep 74634275 | grep -v grep
+	echo _______________
+	exit 1
 fi
 
+wait "$pid"
+exitcode="$?"
+
+echo "exitcode='$exitcode'"
+
 #
-# With -j2
+# (3) With -j2
 #
 
 echo >&2 RUN '(3)'
@@ -61,15 +68,15 @@ doo rm -f ?
 
 echo >&2 ../../stu -j2
 ../../stu -j2
-exitcode=$?
+exitcode="$?"
 
-if [ $exitcode != 1 ]; then
-    echo >&2 "$: *** Variant without options failed (5)"
-    exit 1
+if [ "$exitcode" != 1 ]; then
+	echo >&2 "$: *** Variant without options failed (3)"
+	exit 1
 fi
 
 #
-# With -j2 -k 
+# (4) With -j2 -k 
 #
 
 echo >&2 RUN '(4)'
@@ -78,22 +85,30 @@ doo rm -f ?
  
 echo >&2 ../../stu -j2 -k 
 ../../stu -j2 -k &
-PID=$!
+pid="$!"
 
 doo sleep 2
 
 if [ $(ps -fe | grep 74634275 | grep -v grep | wc -l) = 0 ]; then
-    echo >&2 "$0: *** Stu is not running (-j2) (6)"
-    exit 1
+	echo >&2 "*** Stu is not running (4a)"
+	exit 1
 fi
 
-doo kill -TERM $PID
+echo "kill -TERM $pid"
+kill -TERM "$pid" || {
+	echo >&2 '*** Kill (4)'
+	exit 1
+}
 
 sleep 1
 
 if [ $(ps -fe | grep 74634275 | grep -v grep | wc -l) != 0 ]; then
-    echo >&2 "$0: *** Stu is still running (-j2) (7)"
-    exit 1
+	echo >&2 "$0: *** Stu is still running (4b)"
+	exit 1
 fi
+
+#
+# End
+#
 
 exit 0

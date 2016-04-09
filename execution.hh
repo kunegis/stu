@@ -140,9 +140,9 @@ public:
 	Timestamp timestamp; 
 
 	/* Whether the file is known to exist.  
-	 * -1 = no 
-	 * 0  = unknown or not a T_FILE
-	 * +1 = yes
+	 * -1 = known not to exist
+	 * 0  = unknown whether the file exists, or not a FILE
+	 * +1 = known to exist
 	 */
 	int exists;
 	
@@ -171,7 +171,7 @@ public:
 
 	/* Remove the targe file if it exists.  If OUTPUT is true, output a
 	 * corresponding error message.  Return whether the file was
-	 * removed.  
+	 * removed.  If OUTPUT is false, only do async signal-safe things. 
 	 */
 	bool remove_if_existing(bool output); 
 
@@ -663,33 +663,43 @@ bool Execution::execute(Execution *parent, Link &&link)
 	mapping_parameter.clear();
 	mapping_variable.clear(); 
 
-	const pid_t pid= job.start
-		(rule->command->command, 
-		 mapping,
-		 rule->redirect_output 
-		 ? rule->place_param_target.place_param_name.unparametrized() : "",
-		 rule->filename_input.unparametrized(),
-		 rule->command->place); 
+	pid_t pid; 
+	{
+		/* Block signals from the time the process is started,
+		 * to after we have entered it in the map */
+		Job::Signal_Blocker sb;
 
-	if (option_verbose) {
-		string text_target= this->target.format();
-		fprintf(stderr, "VERBOSE %s %s execute pid = %d\n", 
-			debug_padding_str,
-			text_target.c_str(),
-			(int)pid); 
+		pid= job.start
+			(rule->command->command, 
+			 mapping,
+			 rule->redirect_output 
+			 ? rule->place_param_target.place_param_name.unparametrized() : "",
+			 rule->filename_input.unparametrized(),
+			 rule->command->place); 
+		assert(pid != 0);
+		assert(pid != 1); 
+
+		if (option_verbose) {
+			string text_target= this->target.format();
+			fprintf(stderr, "VERBOSE %s %s execute pid = %d\n", 
+				debug_padding_str,
+				text_target.c_str(),
+				(int)pid); 
+		}
+
+		if (pid < 0) {
+			/* Starting the job failed */ 
+			print_traces(fmt("error executing command for %s", target.format())); 
+			if (! option_continue) 
+				exit(ERROR_BUILD); 
+			error |= ERROR_BUILD;
+			done.add_neg(link.avoid); 
+			return false;
+		}
+
+		executions_by_pid[pid]= this;
 	}
 
-	if (pid < 0) {
-		/* Starting the job failed */ 
-		print_traces(fmt("error executing command for %s", target.format())); 
-		if (! option_continue) 
-			exit(ERROR_BUILD); 
-		error |= ERROR_BUILD;
-		done.add_neg(link.avoid); 
-		return false;
-	}
-
-	executions_by_pid[pid]= this;
 	assert(executions_by_pid.at(pid)->job.started()); 
 	assert(pid == executions_by_pid.at(pid)->job.get_pid()); 
 	--jobs;
@@ -773,7 +783,10 @@ void Execution::waited(int pid, int status)
 	assert(done.get_k() == 0);
 	done.add_one_neg(0); 
 
-	executions_by_pid.erase(pid); 
+	{
+		Job::Signal_Blocker sb;
+		executions_by_pid.erase(pid); 
+	}
 
 	/* The file may have been built, so forget that it was known to
 	 * not exist */
@@ -1117,8 +1130,7 @@ Execution::Execution(Target target_,
 	/* Fill in the rules and their parameters */ 
 	if (target.type == T_FILE || target.type == T_PHONY) {
 		map <string, string> mapping1; 
-		rule= rule_set.get(target, param_rule, mapping1); 
-		mapping_parameter= mapping1;
+		rule= rule_set.get(target, param_rule, mapping_parameter); 
 	} else if (target.type >= T_DYNAMIC) {
 		/* We must set the rule here, so cycles in the dependency graph
 		 * can be detected.  Note however that the rule of dynamic
@@ -1264,7 +1276,8 @@ void job_terminate_all()
 	     i != Execution::executions_by_pid.end();  ++i) {
 
 		const pid_t pid= i->first;
-		assert(pid > 0); 
+		
+		assert(pid > 1); 
 
 		/* Passing (-pid) to kill() kills the whole process
 		 * group with PGID (pid).  Since we set each child
@@ -1281,38 +1294,41 @@ void job_terminate_all()
 				 * terminated but we haven't wait()ed
 				 * for it yet. */ 
 			} else {
-				perror("kill"); 
+				write_safe(2, "*** Error: Kill\n"); 
 				/* Note:  Don't call exit() yet; we want all
 				 * children to be killed. */ 
 			}
 		}
 	}
 
-	bool single= Execution::executions_by_pid.size() == 1;
-
 	bool terminated= false;
 
 	for (auto i= Execution::executions_by_pid.begin();
 	     i != Execution::executions_by_pid.end();  ++i) {
 
-		if (i->second->remove_if_existing(single))
+		if (i->second->remove_if_existing(false))
 			terminated= true; 
 	}
 
-	if (! single && terminated)
-		fprintf(stderr, "%s: *** Removing partially built files\n",
-			dollar_zero); 
+	if (terminated) {
+		write_safe(2, "*** Removing partially built files\n");
+	}
+
+	write_safe(2, "job_terminate_all mid\n");
 
 	/* Check that all children are terminated */ 
 	for (;;) {
 		int status;
 		int ret= wait(&status); 
+
 		if (ret < 0) {
 			/* wait() sets errno to ECHILD when there was no
 			 * child to wait for */ 
 			if (errno != ECHILD) {
-				perror("waitpid"); 
+				write_safe(2, "*** Error: waitpid\n"); 
 			}
+
+			write_safe(2, "job_terminate_all return because wait = -1\n"); 
 			
 			return; 
 		}
@@ -1470,7 +1486,11 @@ bool Execution::remove_if_existing(bool output)
 			removed= true;
 
 			if (0 > ::unlink(filename)) {
-				perror(filename); 
+				if (output) {
+					perror(filename); 
+				} else {
+					write_safe(2, "*** Error: unlink\n");
+				}
 			}
 		}
 	}

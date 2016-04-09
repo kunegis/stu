@@ -1,14 +1,6 @@
 #==== Small features that complete what we already have ====
 
 #
-# In the terminate signal handler:  make it async signal safe by:
-# * Using the "two arrays of pid_t+filename+timestamp" trick for
-#   cleanup 
-# * For the moment where jobs are started, block the signals. 
-# * Using only async signal-safe functions in the handler 
-#
-
-#
 # An option to never delete target files when a command fails. (This
 # will lead to spurious files though, if a build is interrupted.)
 #
@@ -119,6 +111,20 @@ A:  [@x];
 # a 'phony-hierarchy' like we have for files at the moment. 
 
 #
+# Advanced file inclusion 
+#
+
+# Include rules for C++ compilation; may search within predefined paths
+# ($STUPATH) 
+%include c++.stu
+ 
+# Import all rules from subdirectory; will prepend the directory name to
+# all targets.  Can take a directory name to denote the file main.stu
+# within it. 
+%import src/main.stu
+%import src/
+
+#
 # Assignment features
 #
 
@@ -199,20 +205,6 @@ A: [B],i;
 #
 
 %line ...
-
-#
-# Advanced file inclusion 
-#
-
-# Include rules for C++ compilation; may search within predefined paths
-# ($STUPATH) 
-%include c++.stu
- 
-# Import all rules from subdirectory; will prepend the directory name to
-# all targets.  Can take a directory name to denote the file main.stu
-# within it. 
-%import src/main.stu
-%import src/
 
 #
 # An option for automatic logging:  write all output (stdout/stderr) of

@@ -2,6 +2,8 @@
 #define JOB_HH
 
 /* Handling of child processes. 
+ * 
+ * This file also handles all signal-related things. 
  */
 
 #include <signal.h>
@@ -15,7 +17,12 @@ void job_terminate_all();
 
 void job_print_jobs(); 
 
-void job_signal(int sig);
+/* Write in an async signal-safe manner. 
+ * 	FD must be 1 or 2.
+ * 	MESSAGE must be a string literal. 
+ * Ignore errors, as this is called into from the interrupting signal handler. 
+ */
+#define write_safe(FD, MESSAGE) do {int r_write_safe= write(FD, MESSAGE, sizeof(MESSAGE) - 1); (void)r_write_safe;}while(0)
 
 class Job
 {
@@ -27,7 +34,7 @@ private:
 	 */
 	pid_t pid;
 
-	friend void job_signal(int); 
+	static void handler_interrupt(int sig);
 
 	/* The number of jobs run.  
 	 * exec:  executed
@@ -38,7 +45,12 @@ private:
 
 	/* Initialized to all signals that are blocked and then waited
 	 * for */ 
-	static sigset_t set;
+	static sigset_t set_block;
+
+	/* All signals that interrupt Stu. */ 
+	static sigset_t set_interrupt;
+
+	static sig_atomic_t in_child; 
 
 	static class Statistics
 	{
@@ -61,6 +73,7 @@ private:
 	} signal;
 
 public:
+
 	Job():  pid(-2) { }
 
 	/* Call after having returned this process from wait_do(). 
@@ -112,16 +125,56 @@ public:
 	 * used in wait(2).  Return the PID of the waited-for process (>=0). */  
 	static pid_t wait(int *status);
 
+	/* Block interrupt signals for the lifetime of an object of this type. 
+	 * Note that the mask of blocked signals is inherited over
+	 * exec(), so we must unblock signals also when starting child
+	 * processes. 
+	 */
+	class Signal_Blocker
+	{
+	private:
+		
+#ifndef NDEBUG
+		static bool blocked; 
+#endif	
+
+	public:
+		Signal_Blocker() {
+#ifndef NDEBUG
+			blocked= true;
+#endif
+			if (0 != sigprocmask(SIG_BLOCK, &set_interrupt, nullptr)) {
+				perror("sigprocmask");
+				exit(ERROR_SYSTEM); 
+			}
+		}
+		~Signal_Blocker() {
+#ifndef NDEBUG
+			blocked= false;
+#endif 
+			if (0 != sigprocmask(SIG_UNBLOCK, &set_interrupt, nullptr)) {
+				perror("sigprocmask");
+				exit(ERROR_SYSTEM); 
+			}
+		}
+	};
 };
 
 unsigned Job::count_jobs_exec=    0;
 unsigned Job::count_jobs_success= 0;
 unsigned Job::count_jobs_fail=    0;
 
+sigset_t Job::set_block;
+sigset_t Job::set_interrupt;
+
 Job::Statistics Job::statistics;
 Job::Signal     Job::signal;
 
-sigset_t Job::set;
+sig_atomic_t Job::in_child= 0; 
+
+#ifndef NDEBUG
+bool Job::Signal_Blocker::blocked= false; 
+#endif
 
 pid_t Job::start(string command,
 		 const map <string, string> &mapping,
@@ -189,6 +242,15 @@ pid_t Job::start(string command,
 
 	/* Child execution */ 
 	if (pid == 0) {
+
+		in_child= 1; 
+
+		/* Unblock interruption signals 
+		 */ 
+		if (0 != sigprocmask(SIG_UNBLOCK, &set_interrupt, nullptr)) {
+			perror("sigprocmask");
+			exit(ERROR_SYSTEM); 
+		}
 
 		/* Instead of throwing exceptions, use perror and exit
 		 * directly */ 
@@ -326,7 +388,7 @@ pid_t Job::wait(int *status)
 	siginfo_t siginfo; 
 	int r;
  retry:
-	r= sigwaitinfo(&set, &siginfo);
+	r= sigwaitinfo(&set_block, &siginfo);
 
 	if (r < 0) {
 		if (errno == EINTR)
@@ -395,7 +457,7 @@ void Job::Statistics::print(bool allow_unterminated_jobs)
 
 /* The signal handler -- terminate all processes and quit. 
  */
-void job_signal(int sig)
+void Job::handler_interrupt(int sig)
 {
 	/* We can use only async signal-safe functions here */
 
@@ -403,61 +465,81 @@ void job_signal(int sig)
 	struct sigaction act;
 	act.sa_handler= SIG_DFL;
 	if (0 != sigemptyset(&act.sa_mask))  {
-		write(2, "*** error: sigemptyset\n", 23); 
+		write_safe(2, "*** error: sigemptyset\n"); 
 	}
-	act.sa_flags= 0;
+	act.sa_flags= SA_NODEFER;
 	int r= sigaction(sig, &act, nullptr);
 	assert(r == 0); 
 
-	/* Terminate all processes */ 
-	job_terminate_all();
+	/* If in the child process (the short time between fork() and
+	 * exec()), just quit */ 
+	if (Job::in_child == 0) {
+		/* Terminate all processes */ 
+		job_terminate_all();
+	} else {
+		assert(Job::in_child == 1);
+	}
 
 	/* We cannot call Job::Statsitics::print() here because
 	 * getrusage() is not async signal safe, and because the count_*
 	 * variables are not atomic.  */
 
 	/* Raise signal again */ 
-	if (0 != raise(sig)) {
-		write(2, "*** error: raise\n", 17); 
+	int rr= raise(sig);
+	fprintf(stderr, "handler_interrupt raise -> %d\n", rr); 
+	if (rr != 0) {
+		write_safe(2, "*** error: raise\n"); 
 	}
-	abort();
+	write_safe(2, "handler_interrupt end\n"); 
+	
+	/* don't abort here -- the reraising of this signal may only be
+	 * delivered after this handler is done. */ 
 }
 
 Job::Signal::Signal()
 {
-	struct sigaction act;
-	act.sa_handler= job_signal;
-	if (0 != sigemptyset(&act.sa_mask))  {
+	struct sigaction act_interrupt;
+	act_interrupt.sa_handler= handler_interrupt;
+	if (0 != sigemptyset(&act_interrupt.sa_mask))  {
 		perror("sigemptyset");
 		exit(ERROR_SYSTEM); 
 	}
-	act.sa_flags= 0; 
+	act_interrupt.sa_flags= 0; 
+
+	if (0 != sigemptyset(&set_interrupt))  {
+		perror("sigemptyset");
+		exit(ERROR_SYSTEM); 
+	}
 
 	/* These are all signals that by default would terminate the process */ 
 	/* Note:  Bash does something very similar. 
 	 */
 	int signals[]= { SIGTERM, SIGINT, SIGQUIT, SIGABRT, SIGSEGV, SIGPIPE, SIGILL, SIGHUP };
 	for (unsigned i= 0;  i < sizeof(signals) / sizeof(int);  ++i) {
-		if (0 != sigaction(signals[i], &act, nullptr)) {
+		if (0 != sigaction(signals[i], &act_interrupt, nullptr)) {
 			perror("sigaction");
+			exit(ERROR_SYSTEM); 
+		}
+		if (0 != sigaddset(&set_interrupt, signals[i])) {
+			perror("sigaddset");
 			exit(ERROR_SYSTEM); 
 		}
 	}
 	
 	/* Block signals so we can use sigwait() to receive them */ 
-	if (0 != sigemptyset(&set)) {
+	if (0 != sigemptyset(&set_block)) {
 		perror("sigemptyset");
 		exit(ERROR_SYSTEM); 
 	}
-	if (0 != sigaddset(&set, SIGCHLD)) {
+	if (0 != sigaddset(&set_block, SIGCHLD)) {
 		perror("sigaddset");
 		exit(ERROR_SYSTEM);
 	}
-	if (0 != sigaddset(&set, SIGUSR1)) {
+	if (0 != sigaddset(&set_block, SIGUSR1)) {
 		perror("sigaddset");
 		exit(ERROR_SYSTEM); 
 	}
-	if (0 != sigprocmask(SIG_BLOCK, &set, nullptr)) {
+	if (0 != sigprocmask(SIG_BLOCK, &set_block, nullptr)) {
 		perror("sigprocmask");
 		exit(ERROR_SYSTEM); 
 	}

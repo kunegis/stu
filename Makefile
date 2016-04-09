@@ -10,7 +10,7 @@
 
 all: stu.1 stu.ndebug 
 
-all-test: stu.text test_options test_test.debug test_test.ndebug test_doubleslash
+all-test: stu.text test_options stu.debug stu.ndebug test_test.debug test_test.ndebug test_doubleslash
 
 .PHONY:  all all-test clean 
 

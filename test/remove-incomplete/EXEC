@@ -17,16 +17,19 @@ echo ../../stu data.A
 exitcode="$?"
 
 if [ "$exitcode" != "1" ]; then
-    echo >&2 "*** Wrong exit code (A)"
+	echo >&2 "*** Wrong exit code (A)"
 	echo >&2 "exitcode=$exitcode"
-    exit 1
+	exit 1
 fi
 
-[ -r list.err ] || exit 1
+[ -r list.err ] || {
+	echo >&2 '*** stderr'
+	exit 1
+}
 
-if fgrep -i "Removing file" list.err ; then
-    echo >&2 "*** wrong error message (A)"
-    exit 1
+if grep -qFi "removing file" list.err ; then 
+	echo >&2 "*** wrong error message (A)"
+	exit 1
 fi
 
 #
@@ -41,16 +44,16 @@ echo ../../stu data.B
 ../../stu 2>list.err data.B
 exitcode="$?"
 
-if [ "$exitcode" != "1" ]; then
-    echo >&2 "*** Wrong exit code (B)"
+[ "$exitcode" = "1" ] || {
+	echo >&2 "*** Wrong exit code (B)"
 	echo >&2 "exitcode=$exitcode"
-    exit 1
-fi
+	exit 1
+}
 
-if ! fgrep "*** Removing file 'list.B' because command failed" list.err ; then
-    echo >&2 "*** missing error message (B)"
-    exit 1
-fi
+grep -qF "*** Removing file 'list.B' because command failed" list.err || {
+	echo >&2 "*** Missing error message (B)"
+	exit 1
+}
 
 #
 # (C) On abort:  File is not removed because it was not changed
@@ -64,19 +67,23 @@ echo ../../stu data.C
 ../../stu 2>list.err data.C &
 pid="$!"
 
-sleep 1
+doo sleep 1
 
+echo "kill -TERM $pid"
 kill -TERM $pid
 
-wait $pid
+wait "$pid"
 exitcode="$?"
 
-[ -r list.err ] || exit 1
+[ -r list.err ] || {
+	echo >&2 '*** stderr'
+	exit 1
+}
 
-if fgrep -i "Removing file" list.err ; then
-    echo >&2 "*** wrong error message (C)"
-    exit 1
-fi
+grep -qFi "removing file" list.err && {
+	echo >&2 "*** Wrong error message (C)"
+	exit 1
+}
 
 #
 # (D) On abort:  File is removed because it was changed
@@ -90,17 +97,18 @@ echo ../../stu data.D
 ../../stu 2>list.err data.D &
 pid="$!"
 
-sleep 1
+doo sleep 1
 
-kill -TERM $pid
+echo "kill -TERM $pid"
+kill -TERM "$pid"
 
-wait $pid
+wait "$pid"
 exitcode="$?"
 
-if ! fgrep "*** Removing file 'list.D' because command failed" list.err ; then
-    echo >&2 "*** missing error message (D)"
-    exit 1
-fi
+grep -qF "*** Removing partially built files" list.err || {
+	echo >&2 "*** Missing error message (D)"
+	exit 1
+}
 
 #
 # End

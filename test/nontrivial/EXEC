@@ -17,7 +17,10 @@ doo rm -f ?
 echo ../../stu -a
 ../../stu -a >list.out 2>list.err
 if ! cmp list.out stdout.1 ; then echo >&2 '*** (1out)' ; exit 1 ; fi
-[ -s list.err ] && { echo >&2 '*** (1err)' ; exit 1 ; }
+[ -r list.err -a \! -s list.err ] || { 
+	echo >&2 '*** (1err) stderr must be empty' 
+	exit 1 
+}
 
 doo sleep 2
 doo touch B C

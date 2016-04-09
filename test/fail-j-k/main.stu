@@ -1,5 +1,3 @@
-
-
 #
 # When one process fails, the currently running process down a long
 # chain of dependencies is interrupted. 
@@ -11,23 +9,27 @@
 #
 
 A:  B C {
-    cat B C >A
+	cat B C >A
 }
 
+# Fails after one second
 B {
-    sleep 1
-    exit 1
+	sleep 1
+	exit 1
 }
 
 C: D {
-    cp D C
+	cp D C
 }
 
 D: E {
-    cp E D
+	cp E D
 }
 
+# Runs indefinitely (effectively) 
 E {
-    sleep 74634275
-    exit 0
+	sleep 74634275
+	# The ID serves as an identifier to uniquely recognize the
+	# process in the process list
+	exit 0
 }

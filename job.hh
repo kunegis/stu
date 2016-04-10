@@ -240,20 +240,19 @@ pid_t Job::start(string command,
 		 * is no need to kill it in the future */ 
 	}
 
-	/* Child execution */ 
 	if (pid == 0) {
+		/* We are the child process */ 
+
+		/* Instead of throwing exceptions, use perror() and
+		 * _Exit() */ 
 
 		in_child= 1; 
 
-		/* Unblock interruption signals 
-		 */ 
+		/* Unblock interruption signals */ 
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_interrupt, nullptr)) {
 			perror("sigprocmask");
-			exit(ERROR_SYSTEM); 
+			_Exit(ERROR_SYSTEM); 
 		}
-
-		/* Instead of throwing exceptions, use perror and exit
-		 * directly */ 
 
 		/* Set variables */ 
 		size_t v_old= 0;
@@ -270,7 +269,7 @@ pid_t Job::start(string command,
 		}
 
 		/* Maximal size of added variables.  The "+1" is for $STU_STATUS */ 
-		size_t v_new= mapping.size() + 1; 
+		const size_t v_new= mapping.size() + 1; 
 
 		const char** envp= (const char **)
 			alloca(sizeof(char **) * (v_old + v_new + 1));
@@ -278,7 +277,7 @@ pid_t Job::start(string command,
 			/* alloca() should never return nullptr */ 
 			assert(false);
 			perror("alloca");
-			exit(ERROR_SYSTEM); 
+			_Exit(ERROR_SYSTEM); 
 		}
 		memcpy(envp, envp_global, v_old * sizeof(char **)); 
 		size_t i= v_old;
@@ -289,7 +288,7 @@ pid_t Job::start(string command,
 			char *combined;
 			if (0 > asprintf(&combined, "%s=%s", key.c_str(), value.c_str())) {
 				perror("asprintf");
-				exit(ERROR_SYSTEM); 
+				_Exit(ERROR_SYSTEM); 
 			}
 			if (old.count(key)) {
 				size_t v_index= old.at(key);
@@ -309,7 +308,7 @@ pid_t Job::start(string command,
 		 * This makes the shell if it reports an error make the
 		 * most useful output. 
 		 */
-		string argv0= place_command.as_string_nocolumn(); 
+		const string argv0= place_command.as_string_nocolumn(); 
 
 		/* We use the -e option ('error'), which makes the shell abort
 		 * on a command that fails.  This is also what POSIX prescribes
@@ -329,12 +328,12 @@ pid_t Job::start(string command,
 			int fd_output= creat(filename_output.c_str(), S_IRUSR | S_IWUSR); 
 			if (fd_output < 0) {
 				perror(filename_output.c_str());
-				exit(ERROR_SYSTEM); 
+				_Exit(ERROR_SYSTEM); 
 			}
 			int r= dup2(fd_output, 1); /* 1 = file descriptor of STDOUT */ 
 			if (r < 0) {
 				perror(filename_output.c_str());
-				exit(ERROR_SYSTEM); 
+				_Exit(ERROR_SYSTEM); 
 			}
 		}
 
@@ -343,21 +342,22 @@ pid_t Job::start(string command,
 			int r= dup2(fd_input, 0); /* 0 = file descriptor of STDIN */  
 			if (r < 0) {
 				perror(filename_input.c_str());
-				exit(ERROR_SYSTEM); 
+				_Exit(ERROR_SYSTEM); 
 			}
 		}
 
-		execve(shell, (char *const *) argv, (char *const *) envp); 
+		int r= execve(shell, (char *const *) argv, (char *const *) envp); 
 		/* If execve() returns, there is an error, and its return value is -1. */
 
+		assert(r == -1); 
 		perror("execve");
-		exit(ERROR_SYSTEM); 
+		_Exit(ERROR_SYSTEM); 
 	} 
 
 	/* Parent execution */
 	++ count_jobs_exec;
 
-	assert(pid >= 0); 
+	assert(pid >= 1); 
 	return pid; 
 }
 
@@ -486,13 +486,11 @@ void Job::handler_interrupt(int sig)
 
 	/* Raise signal again */ 
 	int rr= raise(sig);
-	fprintf(stderr, "handler_interrupt raise -> %d\n", rr); 
 	if (rr != 0) {
 		write_safe(2, "*** error: raise\n"); 
 	}
-	write_safe(2, "handler_interrupt end\n"); 
 	
-	/* don't abort here -- the reraising of this signal may only be
+	/* Don't abort here -- the reraising of this signal may only be
 	 * delivered after this handler is done. */ 
 }
 

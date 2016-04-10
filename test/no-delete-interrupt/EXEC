@@ -1,0 +1,31 @@
+#! /bin/sh
+
+rm -f A
+
+../../stu -K & >list.out 2>list.err
+pid="$!"
+
+sleep 1
+
+kill -TERM "$pid"
+wait "$pid"
+exitcode="$?"
+
+# 143 = 128 + 15.  15 is the POSIX-mandate value of SIGTERM. 
+[ "$exitcode" = 143 ] || {
+	echo >&2 '*** Exit code must be larger than 128, but is not'
+	echo >&2 "exitcode='$exitcode'"
+	exit 1
+}
+
+[ -s A ] || {
+	echo >&2 "*** The file 'A' must exist and have size larger than zero"
+	exit 1
+}
+
+lines="$(cat A | wc -l)"
+
+[ "$lines" = 2 ] || {
+	echo >&2 "*** File 'A' must contain exactly two lines"
+	exit 2
+}

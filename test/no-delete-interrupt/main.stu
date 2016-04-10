@@ -1,0 +1,10 @@
+# With the -K option, Stu does not delete partially built file 'A' on
+# interruption 
+
+A: {
+	echo aaa >A
+	echo bbb >>A
+	sleep 2
+	echo ccc >>A
+	exit 0
+}

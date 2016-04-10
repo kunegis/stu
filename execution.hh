@@ -1314,8 +1314,6 @@ void job_terminate_all()
 		write_safe(2, "*** Removing partially built files\n");
 	}
 
-	write_safe(2, "job_terminate_all mid\n");
-
 	/* Check that all children are terminated */ 
 	for (;;) {
 		int status;
@@ -1328,8 +1326,6 @@ void job_terminate_all()
 				write_safe(2, "*** Error: waitpid\n"); 
 			}
 
-			write_safe(2, "job_terminate_all return because wait = -1\n"); 
-			
 			return; 
 		}
 		assert(ret > 0); 

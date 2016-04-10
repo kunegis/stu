@@ -10,11 +10,6 @@
 #
 
 #
-# Option: -n: Dry run:  Don't run anything, but show the commands that
-# would be run.  Problematic because of dynamic dependencies. 
-#
-
-#
 # Assign a name to a dynamic variable.  Useful when the name of the file
 # contains characters that are not allowed in shell variable names. 
 #

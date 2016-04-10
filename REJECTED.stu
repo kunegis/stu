@@ -209,3 +209,7 @@ A:  {
 # Option -o FILENAME:    Never rebuild that file ("old")
 #
 
+#
+# Option: -n: Dry run:  Don't run anything, but show the commands that
+# would be run.  Problematic because of dynamic dependencies. 
+#

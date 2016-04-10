@@ -201,3 +201,11 @@ A:  {
 # An option to remove the target before each execution.  Not needed. 
 #
 
+#
+# Option -t:  touch instead of building, like POSIX Make
+#
+
+#
+# Option -o FILENAME:    Never rebuild that file ("old")
+#
+

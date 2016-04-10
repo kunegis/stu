@@ -7,6 +7,8 @@ Legend
 
 S   Implemented in Stu
 .   Proposed for Stu 
+-   Not proposed for Stu, but the option is purposefully kept unused in
+    case we want to use it for Stu 
 M   Compatible with POSIX Make
 G   Compatible with GNU Make
 x   Incompatible
@@ -15,25 +17,24 @@ List of options
 ===============
 
 -a  S      Consider trivial dependencies to be non-trivial
--b  .   x  Enable backups
+-b  .   x  Enable backups (GNU Make: compatibility)
 -B  .   G  Re-make all
 -c  S      Specify syntax (same as non-option arguments)
--C  S   x  Explicit target without syntax 
+-C  S   x  Explicit target without syntax (GNU Make:  change directory)
 -d      G  Print debugging information 
 -e    M G  Environment overrides Make macros
 -f  S M G  File
 -F  .      Pass rule on the command line
 -g  S      Consider optional dependencies to be non-optional 
--h  S   G  Help
+-h  S   G  Show help and exit 
 -i  . M G  Ignore all errors in commands
 -I      G  Include path
 -j  S   G  Parallel
 -k  S M G  Keep going
 -K  S      Keep partially built files
--l         (Log; redirect all output of commands to logfiles)
 -l      G  Number of jobs depends on load average
 -L      G  Special handling of symlinks
--m  S   x  Mode; e.g., random order, etc.
+-m  S   x  Mode; e.g., random order, etc. (GNU Make: compatibility)
 -M  S      Seed mode
 -n  . M G  Dry run (just print commands)
 -N  .      Dry run, but build dynamic dependencies 
@@ -43,13 +44,12 @@ List of options
 -r    M G  No builtin rules
 -R      G  No builtin variables
 -s  S M G  Silent
--S    M G  No keep going
--t  . M G  Touch instead of building
+-S  - M G  No keep going
+-t  - M G  Touch instead of building
 -u  .      Consider all files up-to-date 
--v  S   x  Verbose
--v      G  Version
--V  S      Version
--w  S	x  Short mode
+-v  S   x  Verbose (GNU Make:  show version)
+-V  S      Show version and exit
+-w  S	x  Short mode (GNU Make:  print directory) 
 -W  .   G  What-if mode (if FILE just had been modified)
 -x  .      Enable /bin/sh -x instead of normal output
 -y       

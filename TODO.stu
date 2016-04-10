@@ -1,17 +1,13 @@
 #==== Small features that complete what we already have ====
 
 #
-# Option -o FILENAME:    Never rebuild that file ("old")
+# Option -q: Question/query mode:  don't run or print anything, just return
+# an exit code specifying whether everything is up-to-date. 
 #
 
 #
 # Option -W FILENAME:   What-if mode.  Pretend that file FILENAME has
 # just been modified. 
-#
-
-#
-# Option -q: Question/query mode:  don't run or print anything, just return
-# an exit code specifying whether everything is up-to-date. 
 #
 
 #
@@ -21,15 +17,6 @@
 #
 # Option: -n: Dry run:  Don't run anything, but show the commands that
 # would be run.  Problematic because of dynamic dependencies. 
-#
-
-#
-# Option -N:  dry run, but build dynamic dependencies 
-#
-
-# 
-# An option (-u) to consider all targets up to date.  I.e., execute only the
-# minimum to get the given files built. 
 #
 
 #
@@ -58,10 +45,6 @@ prog:  prog.c
 
 #
 # Option -p:  print rule set, like POSIX Make
-#
-
-#
-# Option -t:  touch instead of building, like POSIX Make
 #
 
 #==== Big features that complete what we already have ====
@@ -163,6 +146,15 @@ A = @x;
 # Combine with dynamic target
 A = [X];
 <X { echo B C D }
+
+#
+# Option -N:  dry run, but build dynamic dependencies 
+#
+
+# 
+# An option (-u) to consider all targets up to date.  I.e., execute only the
+# minimum to get the given files built. 
+#
 
 #
 # Multiple targets declare a command that is able to build multiple

@@ -75,6 +75,10 @@ similar to Make. When ORDER is 'random', the order in which jobs are run
 is randomized within each target.  
 .IP "-M STRING"
 Run jobs in pseudorandom order, seeded by the given string. 
+.IP "-q"
+Question mode; do not execute any commands.  Instead, determine whether
+the given targets are up to date.  The exit code is 0 when all given
+targets (or the default target) are up to date, and 5 otherwise. 
 .IP -s
 Silent mode; do not output the commands that are executed.  This option
 is compatible to the same option in Make. 
@@ -578,6 +582,8 @@ option).
 An error occurred that made Stu abort execution immediately, regardless of
 whether the -k option was used.  Examples:  permission denied to access
 the source file, cannot start child process, invalid invocation. 
+.IP 5
+The targets are not up to date (when using the -q option). 
 
 .SH "ENVIRONMENT"
 

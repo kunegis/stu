@@ -2,7 +2,8 @@
 #define GLOBAL_HH
 
 /* 
- * Global variables of the process. 
+ * Global variables of the process.  All boolean option variables are
+ * FALSE by default. 
  */ 
 
 /* The -a option (consider all trivial dependencies to be non-trivial) */ 
@@ -22,6 +23,9 @@ static bool option_statistics= false;
 
 /* The -K option (don't delete partially built files) */
 static bool option_no_delete= false;
+
+/* The -q option (question mode) */
+static bool option_question= false; 
 
 /* Determines how commands are output
  */

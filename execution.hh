@@ -620,7 +620,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 
 	/*
-	 * The command must be run now. 
+	 * The command must be run now, or there is no command. 
 	 */
 
 	/*
@@ -639,6 +639,13 @@ bool Execution::execute(Execution *parent, Link &&link)
 		/* A target without a command */ 
 		done.add_neg(link.avoid); 
 		return false;
+	}
+
+	/* There is a command, and it must be run */
+
+	if (option_question) {
+		puts("Targets are not up to date");
+		exit(ERROR_NOT_UP_TO_DATE);
 	}
 
 	worked= true; 

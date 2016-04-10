@@ -40,7 +40,7 @@ List of options
 -N  .      Dry run, but build dynamic dependencies 
 -o  .   G  Mark file as old
 -p    M G  Print database (rule set)
--q  . M G  Question mode / Query mode
+-q  S M G  Question mode / Query mode
 -r    M G  No builtin rules
 -R      G  No builtin variables
 -s  S M G  Silent

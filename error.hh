@@ -46,9 +46,10 @@
 #include "global.hh"
 #include "frmt.hh"
 
-#define ERROR_BUILD     1
-#define ERROR_LOGICAL   2
-#define ERROR_SYSTEM    4
+#define ERROR_BUILD          1
+#define ERROR_LOGICAL        2
+#define ERROR_SYSTEM         4
+#define ERROR_NOT_UP_TO_DATE 5
 
 /* Build errors (code 1) are the most common errors encountered by Stu:
  * commands that fail, files that cannot be accessed, etc.  Stu will
@@ -61,6 +62,9 @@
  * 
  * System errors (code 4) are errors that lead Stu to abort immediately,
  * even when the -k option is used.  
+ *
+ * The "not up to date" code (5) is only used as an exit code with in
+ * question mode (option -q). 
  * 
  * Build and logical errors can be combined to give error code 3.
  * System errors are never combined with other errors as they make Stu

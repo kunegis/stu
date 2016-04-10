@@ -1,0 +1,134 @@
+#! /bin/sh
+
+# Touch a file with a year earlier timestamp, to avoid sleep in tests. 
+touch_old() {
+	year="$(date +%Y)"
+	year_old="$(expr $year - 2)"
+	touch -d $year_old-01-01 "$1"
+}
+
+#
+# (1) 'A' and 'B' are both up to date; nothing to be done
+#
+
+touch A
+touch_old B
+
+../../stu -q >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** (1) Exit code"
+	exit 1
+}
+
+grep -qF 'Nothing to be done' list.out || {
+	echo >&2 "*** (1) stdout"
+	exit 1
+}
+
+[ -r list.err -a \! -s list.err ] || {
+	echo >&2 "*** (1) stderr"
+	exit 1
+}
+
+#
+# (2) Neither 'A' nor 'B' exist
+#
+
+rm -f A B
+
+../../stu -q >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 5 ] || {
+	echo >&2 "*** (2) Exit code"
+	exit 1
+}
+
+grep -qF 'Targets are not up to date' list.out || {
+	echo >&2 "*** (2) stdout"
+	exit 1
+}
+
+[ -r list.err -a \! -s list.err ] || {
+	echo >&2 "*** (2) stderr"
+	exit 1
+}
+
+#
+# (3) 'A' exists, but 'B' is newer
+#
+
+touch_old A
+touch B
+
+../../stu -q >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** (3) Exit code"
+	exit 1
+}
+
+grep -qF 'Nothing to be done' list.out || {
+	echo >&2 "*** (3) stdout"
+	exit 1
+}
+
+[ -r list.err -a \! -s list.err ] || {
+	echo >&2 "*** (3) stderr"
+	exit 1
+}
+
+#
+# (4) Only 'A' exists
+#
+
+touch A
+rm -f B
+
+../../stu -q >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 5 ] || {
+	echo >&2 "*** (4) Exit code"
+	exit 1
+}
+
+grep -qF 'Targets are not up to date' list.out || {
+	echo >&2 "*** (4) stdout"
+	exit 1
+}
+
+[ -r list.err -a \! -s list.err ] || {
+	echo >&2 "*** (4) stderr"
+	exit 1
+}
+
+#
+# (5) Only 'B' exists
+#
+
+rm -f A
+touch B
+
+../../stu -q >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 5 ] || {
+	echo >&2 "*** (5) Exit code"
+	exit 1
+}
+
+grep -qF 'Targets are not up to date' list.out || {
+	echo >&2 "*** (5) stdout"
+	exit 1
+}
+
+[ -r list.err -a \! -s list.err ] || {
+	echo >&2 "*** (5) stderr"
+	exit 1
+}
+
+exit 0

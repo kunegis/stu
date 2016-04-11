@@ -303,12 +303,12 @@ int main(int argc, char **argv, char **envp)
 			/* We don't have to output any error here, because the
 			 * error(s) was/were already printed when it
 			 * occurred */  
-			assert(error >= 1 && error <= 4); 
+			assert(error >= 1 && error <= 3); 
 			throw error;
 		}
-	} catch (int e) {
-		assert(e >= 1 && e <= 3); 
-		exit(e); 
+	} catch (int error) {
+		assert(error >= 1 && error <= 3); 
+		exit(error); 
 	}
 
 	exit(0); 

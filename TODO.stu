@@ -254,6 +254,26 @@ A: [B],i;
 	inkscape ...
 }
 
+#
+# Variables of the flags that apply to all children, not just immediate
+# ones.  
+#
+
+$ stu '!!A'
+
+# will completely ignore timestamps in all files.  
+
+# This will also make
+# cover cases that are implemented as options at the moment, e.g. -g:
+
+$ stu '\?A'
+
+# is equivalent to
+
+$ stu -g A
+
+# In this example, '\' is the negation operator. 
+
 #==== New features that change extend the Stu drastically ====
 
 #
@@ -409,3 +429,18 @@ A.$X.$Y:  $X * .$Y      # OK
 @plot.all:   @plot.[NETWORKS];
 
 @plot:    plot/[NETWORKS].eps;
+
+#
+# Don't allow filenames that start with '+' or '-', but allow these in
+# the middle of filenames.  This will allow the two symbols to be used
+# as additional flag characters.  Could even be used for option-like
+# flags. 
+#
+
+A:  
+	-r B
+	+x C
+	--trivial D
+	--optional ( E F ) 
+	--existence-only [ --optional G ]
+{ ... }

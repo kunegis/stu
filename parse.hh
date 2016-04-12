@@ -572,7 +572,11 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 			}
 			if (braces) {
 				if (p == p_end || *p != '}') {
-					current_place() << "invalid character in parameter"; 
+					string text_char= format_char(*p);
+					current_place() 
+						<< fmt("invalid character %s in parameter",
+						       text_char); 
+					explain_parameter_character(); 
 					throw ERROR_LOGICAL;
 				} 
 			}
@@ -840,11 +844,9 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			 || ((unsigned char)*p) < 0x20 /* ASCII control characters */ 
 			 || *p == 0x7F /* DEL */ 
 			 ) {
-			string text_char= 
-				*p == '\0' ? "\\0" :
-				*p == '}'  ? "}"   :
-				frmt("\\%03o", (unsigned char) *p);
-			current_place() << fmt("invalid character '%s'", text_char);
+			current_place() 
+				<< fmt("invalid character %s", 
+				       format_char(*p));
 			throw ERROR_LOGICAL;
 		}
 

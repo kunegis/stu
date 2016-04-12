@@ -13,12 +13,30 @@
  *     * Dedicated classes exist to represent these with _places_. 
  */
 
-/* Functions named text() returned a optionally quoted and printable
+/* Functions named format() returned a optionally quoted and printable
  * representation of the target.  These are inserted directly into error
- * messages (without adding quotes).  text_mid() is used when brackets
- * of any form are added around.  text_bare() returns the always unquoted
+ * messages (without adding quotes).  format_mid() is used when brackets
+ * of any form are added around.  format_bare() returns the always unquoted
  * string.  
  */
+
+/* Format a character for output */ 
+string format_char(char c)
+{
+	assert(0x5C == '\\'); 
+
+	string text_char;
+	if (c >= 0x20 && c <= 0x7E && c != 0x5C) 
+		text_char= c;
+	else if (c == 0x5C)
+		text_char= "\\\\";
+	else if (c == 0x00)
+		text_char= "\\0";
+	else
+		text_char= frmt("\\%03o", (unsigned char) c);
+
+	return fmt("'%s'", text_char); 
+}
 
 #define STU_STRING_ESCAPE_CHARACTERS "\"\' \t\n\v\f\r\a\b\\\?"
 #define STU_STRING_ESCAPE_CHARACTERS_STRICT "\"\'\t\n\v\f\r\a\b\\\?"

@@ -296,4 +296,11 @@ void explain_no_target()
 	      stderr); 
 }
 
+void explain_parameter_character()
+{
+	fputs("Explanation: Parameter names can only include alphanumeric characters\n"
+	      "and underscores.\n",
+	      stderr); 
+}
+
 #endif /* ! ERROR_HH */ 

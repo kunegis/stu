@@ -26,8 +26,8 @@ REQUIREMENTS
 
 UNIT TESTS
 
-If you want to run the unit tests, do 'make all-test'.  If takes about
-10 minutes. 
+If you want to run the unit tests, do 'make -f Makefile.test'.  If takes
+about 10 minutes. 
 
 * The unit tests assume that the filesystem supports UTF-8 filenames.
   Stu will work without such a filesystem, but you can't run the unit

@@ -1,15 +1,6 @@
 #==== Small features that complete what we already have ====
 
 #
-# Option -W FILENAME:   What-if mode.  Pretend that file FILENAME has
-# just been modified. 
-#
-
-#
-# Option -B:  Remake all targets regardless of dates
-#
-
-#
 # Assign a name to a dynamic variable.  Useful when the name of the file
 # contains characters that are not allowed in shell variable names. 
 #
@@ -23,10 +14,6 @@ prog:  prog.c
 #
 # convert 'sed -r' in tests to POSIX-compatible BREs, or find a way to
 # portably use EREs with Sed.  Or, use awk(1), which supports EREs. 
-#
-
-#
-# Option -i:  ignore all errors, like POSIX Make
 #
 
 #
@@ -77,6 +64,11 @@ a.bib = ../bib/references.bib;
 # Allow the same-name shortcut (ending in slash or not [with fopenat]):
 konect.bib=  ../../projects/konect/;
 konect.bib=  ../../projects/konect;
+
+#
+# Option -W FILENAME:   What-if mode.  Pretend that file FILENAME has
+# just been modified. 
+#
 
 #
 # Have a way for dynamic dependencies to contain \0-separated filenames,
@@ -132,6 +124,10 @@ A = @x;
 # Combine with dynamic target
 A = [X];
 <X { echo B C D }
+
+#
+# Option -B:  Remake all targets regardless of dates
+#
 
 #
 # Option -N:  dry run, but build dynamic dependencies 

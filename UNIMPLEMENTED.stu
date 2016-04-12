@@ -16,6 +16,10 @@
 #
 
 #
+# Option -i:  ignore all errors, like POSIX Make
+#
+
+#
 # When reporting an error, always report how the .stu file was included
 # by another .stu file.  Use "light" traces in green, like GCC does.
 # (Maybe only do this in a special mode.) 

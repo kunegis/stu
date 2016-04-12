@@ -51,8 +51,8 @@ for type in a b c ; do
 	echo type=$type
 
 	doo cp $type.stu main.stu
-	echo >&2 '<main.stu >main2.stu sed -re '"'"'s,&, ,g'"'"
-	<main.stu >main2.stu sed -re 's,&, ,g'
+	echo >&2 '<main.stu >main2.stu sed -e '"'"'s,&, ,g'"'"
+	<main.stu >main2.stu sed -e 's,&, ,g'
 
 	for cas in \
 		A--ABIDJ ABIDJ-- ADJ-BI- ABDJ-I- AIDJ-B- ABI-DJ-A \

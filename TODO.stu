@@ -13,12 +13,10 @@
 ./test/option-c-15/EXEC
 ./test/input-unreadable/main.stu
 ./test/trivial-cycle/EXEC
-./test/future-existing/EXEC
 ./test/int-remove-files/EXEC
 ./test/variable-output/main.stu
 ./test/variable-output/STDOUT
 ./test/statistics-signal/EXEC
-./test/future-created/main.stu
 ./test/false-lead/main.stu
 ./test/clash/EXEC
 ./test/version-double/EXEC

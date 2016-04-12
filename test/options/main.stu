@@ -1,4 +1,3 @@
-
 #
 # Test -jN -k when targets fail.
 #
@@ -17,7 +16,7 @@ N:  { echo 3 > N}
 
 files:  $[N]
 {
-    seq 1 $N | sed -re 's,^,list.,' >files
+    seq 1 $N | sed -e 's,^,list.,' >files
 }
 
 list.$N: 

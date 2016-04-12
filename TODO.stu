@@ -1,20 +1,40 @@
 #==== Small features that complete what we already have ====
 
 #
-# Assign a name to a dynamic variable.  Useful when the name of the file
-# contains characters that are not allowed in shell variable names. 
+# Convert 'sed -r' in tests to POSIX-compatible BREs, or find a way to
+# portably use EREs with Sed.  Or, use awk(1), which supports EREs.
+# List of files:
 #
 
-prog:  prog.c
-	$[CFLAGS = config/CFLAGS]
-{ 
-	gcc $CFLAGS -c prog.c -o prog
-}
-
-#
-# convert 'sed -r' in tests to POSIX-compatible BREs, or find a way to
-# portably use EREs with Sed.  Or, use awk(1), which supports EREs. 
-#
+./mktest
+./test/random-restart/EXEC
+./test/input-override2/main.stu
+./test/input-override2/STDOUT
+./test/option-c-15/EXEC
+./test/input-unreadable/main.stu
+./test/trivial-cycle/EXEC
+./test/future-existing/EXEC
+./test/int-remove-files/EXEC
+./test/variable-output/main.stu
+./test/variable-output/STDOUT
+./test/statistics-signal/EXEC
+./test/future-created/main.stu
+./test/false-lead/main.stu
+./test/clash/EXEC
+./test/version-double/EXEC
+./test/symlink-not-created/EXEC
+./test/input-outputand/main.stu
+./test/input-outputand/STDOUT
+./test/dynamic-no-rebuild-update/main.stu
+./test/no-command-older/EXEC
+./test/past-unchanged/EXEC
+./test/no-future-existence/EXEC
+./test/input-override1/main.stu
+./test/input-override1/STDOUT
+./test/input-outputand2/main.stu
+./test/input-outputand2/STDOUT
+./test/version/EXEC
+./test/non-parameter-bracket/main.stu
 
 #
 # Option -p:  print rule set, like POSIX Make
@@ -64,6 +84,17 @@ a.bib = ../bib/references.bib;
 # Allow the same-name shortcut (ending in slash or not [with fopenat]):
 konect.bib=  ../../projects/konect/;
 konect.bib=  ../../projects/konect;
+
+#
+# Assign a name to a dynamic variable.  Useful when the name of the file
+# contains characters that are not allowed in shell variable names. 
+#
+
+prog:  prog.c
+	$[CFLAGS = config/CFLAGS]
+{ 
+	gcc $CFLAGS -c prog.c -o prog
+}
 
 #
 # Option -W FILENAME:   What-if mode.  Pretend that file FILENAME has
@@ -175,7 +206,7 @@ A: [B],i;
 # Chain of commands are useful for dynamic dependencies
 #
 
-@bidd:  [>dep.bidd]:  <NETWORKS { sed -re 's,^,bidd.,' }
+@bidd:  [>dep.bidd]:  <NETWORKS { sed -e 's,^,bidd.,' }
 
 #
 # Input redirection for a dynamic dependency or list is catenation
@@ -186,14 +217,14 @@ A: [B],i;
 # Not very useful since it can be emulated very simply using cat:
 >all.gz:  [<files] { xargs cat | gz }
 
->A: <(B C) { sed -re '...' }
+>A: <(B C) { sed -e '...' }
 
 # With phonies
->A: <@x { sed -re '...' }
+>A: <@x { sed -e '...' }
 @x:  D E F;
 
 # With dynamic dependencies
->A:  <[deps] { sed -re '...' }
+>A:  <[deps] { sed -e '...' }
 >deps { ... }
 
 #
@@ -332,7 +363,7 @@ A:  (B C) | (D E) { ... }
 >@NAME { ./printname }
 
 # Their use:
-file:  <@NAME { sed -re '...' >file }
+file:  <@NAME { sed -e '...' >file }
 result.eps:  $[@NAME] { ./compute --name "$NAME" }
 
 # This might be used like variables in Make, but the result will be that

@@ -11,6 +11,10 @@
 
 #ifdef USE_MTIM
 
+/*
+ * This needs to be linked with -ltr. 
+ */
+
 class Timestamp
 {
 private:

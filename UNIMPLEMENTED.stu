@@ -1,9 +1,18 @@
 #
-# These are feature ideas that were rejected at some point.  We may of
-# course revive ideas from here in the future.  When in doubt, we prefer
+# These are features that were decided not to be implemented at some
+# point.  Many of these ideas are actually good, and we may revive them
+# in the future.  When in doubt, we prefer 
 # to *not* support a feature, as adding a feature in the future can
 # always be done without breaking compatibility, whereas removing one is
-# always backward-incompatible.  Many of these features are useful. 
+# always backward-incompatible.  
+#
+
+#
+# Use the full autoconf/automake/etc. toolchain for better portability. 
+#
+# Things to check for:
+#    * USE_MTIM:  struct timespec
+#    * -D_FILE_OFFSET_BITS=64 
 #
 
 #

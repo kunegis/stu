@@ -21,10 +21,6 @@ prog:  prog.c
 }
 
 #
-# Use the full autoconf/automake/etc. toolchain for better portability. 
-#
-
-#
 # convert 'sed -r' in tests to POSIX-compatible BREs, or find a way to
 # portably use EREs with Sed.  Or, use awk(1), which supports EREs. 
 #

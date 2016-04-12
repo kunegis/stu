@@ -3,10 +3,11 @@ There is no installation command or Make target for installation.  To
 install Stu, do the following:  
 
 * Compile Stu using 'make'.  This will build the executable
-  'stu.ndebug' and the man page 'stu.1'. 
+  'stu.ndebug'. 
 
-* (optional) Execute all unit tests using 'make all-test'.  If an error
-  is reported, report it to the developers.  It takes about ten minutes. 
+* (optional) Execute all unit tests using 'make -f Makefile.test'.  If
+  an error is reported, report it to the developers.  It takes about ten
+  minutes.  
 
 * Copy the executable 'stu.ndebug' to a bin/ directory under the name
   'stu', e.g. /usr/bin/ or ~/bin/.  You can of course also just execute

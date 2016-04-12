@@ -1,0 +1,62 @@
+#
+# Makefile that also enables the test.  
+# 
+
+all-test: stu.text test_options stu.debug stu.ndebug test_test.debug test_test.ndebug test_doubleslash
+
+dist:  stu.1 version.hh stu.text
+
+include Makefile
+
+.PHONY:  all-test clean-test
+
+clean-test:  clean
+	rm -f stu.1 version.hh stu.prof stu stu.debug stu.text test_* error.log
+
+# Some of the specialized warning flags may not be present in other
+# compilers and compiler versions than those used by the authors.  Just
+# remove the flags if you use such a compiler. 
+
+CXXFLAGS_DEBUG=  -ggdb \
+    -Wall -Wextra -Wunused -pedantic \
+    -Wundef -Wc++11-compat -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
+    -Werror                 \
+    -fno-gnu-keywords       \
+
+CXXFLAGS_PROF=   -pg -O3 -DNDEBUG 
+
+CXXFLAGS_ALL_DEBUG=  $(CXXFLAGS_DEBUG)  $(CXXFLAGS_OTHER)
+CXXFLAGS_ALL_PROF=   $(CXXFLAGS_PROF)   $(CXXFLAGS_OTHER)
+
+stu.debug:  *.cc *.hh version.hh
+	$(CXX) $(CXXFLAGS_ALL_DEBUG)  stu.cc -o stu.debug
+
+stu.prof: *.cc *.hh version.hh
+	$(CXX) $(CXXFLAGS_ALL_PROF)   stu.cc -o stu.prof
+
+test_options:  testoptions stu.cc stu.1.in
+	./testoptions && touch $@
+
+test_test.debug: stu.debug mktest test test/* test/*/* 
+	./mktest && touch $@
+
+test_test.ndebug: stu.ndebug mktest test test/* test/*/* 
+	NDEBUG=1 ./mktest && touch $@
+
+test_doubleslash:  *.cc *.hh testdoubleslash . test test/* test/*/* 
+	./testdoubleslash
+
+stu.text:  stu.1
+	MANWIDTH=80 man ./stu.1 >stu.text
+
+# Note:  the ending ".1" indicates that the manpage is in Section 1
+# (commands).  It has nothing to do with the version number of Stu. 
+stu.1:  stu.1.in VERSION mkman
+	./mkman
+
+version.hh:  VERSION mkversion
+	./mkversion >version.hh
+
+analysis.prof:  gmon.out 	
+	gprof stu.prof gmon.out >analysis.prof
+

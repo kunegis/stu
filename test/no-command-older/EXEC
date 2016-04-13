@@ -1,7 +1,7 @@
 #! /bin/sh
 
 now="$(LC_ALL=C date)"
-year="$(echo $now | sed -re 's,^.* ([0-9]+)$,\1,')"
+year="$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')"
 year_a="$(expr $year - 3)"
 year_b="$(expr $year - 2)"
 date_a="$year_a-01-01"
@@ -16,13 +16,13 @@ touch B -d "$date_b"
 exitcode="$?"
 
 if [ "$exitcode" != 0 ] ; then
-    echo >&2 "*** Wrong exit code:  $exitcode"
-    exit 1
+	echo >&2 "*** Wrong exit code:  $exitcode"
+	exit 1
 fi
 
 if ! fgrep -q "Warning: File target 'A' which has no command is older than its dependency" list.err ; then
-    echo >&2 "*** Warning is missing"
-    exit 1
+	echo >&2 "*** Warning is missing"
+	exit 1
 fi
 
 rm -rf A B

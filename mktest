@@ -159,7 +159,7 @@ do
 
 	CMD=
 	if [ -r CMD ]; then
-    		CMD="$(sed -re '/^\s*$/d' <CMD)"
+    		CMD="$(sed -e '/^[[:space:]]*$/d' <CMD)"
 	fi
 
 	# The following will save:  list.def.out and list.def.err 
@@ -189,7 +189,7 @@ do
 		# Exit code
 		exitcode_correct=0
 		if [ -r EXITCODE ]; then
-			exitcode_correct="$(sed -re '/^\s*$/d' <EXITCODE)"
+			exitcode_correct="$(sed -e '/^[[:space:]]*$/d' <EXITCODE)"
 			if [ "$exitcode_correct" = 0 ]; then
 				echo >&2 "$0: *** Content of EXITCODE should not be zero"
 				error=1
@@ -206,7 +206,7 @@ do
 		if [ "$exitcode_correct" = 0 ]; then
 			target=A
 			if [ -r TARGET ]; then
-				target="$(sed -re '/^\s*$/d' <TARGET)"
+				target="$(sed -re '/^[[:space:]]*$/d' <TARGET)"
 			fi
 			if [ ! -r "$target" ]; then  # The main target must have been built
 				echo >&2 "$0: *** Target '$target' was not built"
@@ -269,7 +269,7 @@ do
 		# Check that INSTDERR is found in the error output
 		if [ -r INSTDERR ]; then
 			for lineno in $(seq 1 $(awk '{x++}END{ print x}' <INSTDERR)) ; do
-			   	line="$(<INSTDERR sed -re "$lineno"'!d')"
+			   	line="$(<INSTDERR sed -e "$lineno"'!d')"
 				if grep <list.def.err -qF -- "$line" ; then
 					echo "INSTDERR...correct"
 				else
@@ -326,7 +326,7 @@ do
 
 		# Run in parallel 
 		if [ -r PARALLEL ]; then
-			ks="$(sed -re '/^\s*$/d' <PARALLEL)"
+			ks="$(sed -e '/^[[:space:]]*$/d' <PARALLEL)"
 			for k in $ks; do
 				delete_tmps
 				echo ../../stu "$CMD" -j "$k"

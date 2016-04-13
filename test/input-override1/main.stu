@@ -2,6 +2,6 @@
 # declares 'B' to be an input dependency, although 'B' is also declared
 # as a non-input dependency 'B' before. 
 
->A:  B <B C { sed -re 's,abc,CORR,' | tr -d '\n' ; cat C }
+>A:  B <B C { sed -e 's,abc,CORR,' | tr -d '\n' ; cat C }
 >B { echo abc }
 >C { echo ECT }

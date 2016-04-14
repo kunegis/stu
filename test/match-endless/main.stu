@@ -1,0 +1,12 @@
+#
+# Try to break the matching algorithm.  This does not work because the
+# matching algorithm does not use backtracking or recursion. 
+#
+
+A:    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxy { touch A }
+
+x${a}x${b}x${c}x${d}x${e}x${f}x${g}x${h}x${i}x${j} 
+{
+	touch "x${a}x${b}x${c}x${d}x${e}x${f}x${g}x${h}x${i}x${j}"
+}
+

@@ -528,6 +528,12 @@ bool Param_Name::match(const string name,
 		       map <string, string> &mapping,
 		       vector <int> &anchoring)
 {
+	/* The algorithm uses one pass without backtracking or
+	 * recursion.  Therefore, there are no "deadly" patterns that
+	 * can make it hang, as it is the case for trivial
+	 * implementation of regular expression matching. 
+	 */
+
 	map <string, string> ret;
 
 	const unsigned n= get_n(); 
@@ -559,7 +565,6 @@ bool Param_Name::match(const string name,
 	for (unsigned i= 0;  i < n;  ++i) {
 
 		if (i == n - 1) {
-
 			/* For the last segment, the texts[n-1] must
 			 * match the end of the input string */ 
 
@@ -577,7 +582,6 @@ bool Param_Name::match(const string name,
 			assert(ret.at(parameters.at(i)).size() > 0); 
 
 		} else {
-
 			/* Intermediate texts must not be empty, i.e.,
 			 * two parameters cannot be unseparated */ 
 			assert(texts[i+1].size() != 0); 

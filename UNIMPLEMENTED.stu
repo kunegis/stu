@@ -7,6 +7,8 @@
 # always backward-incompatible.  
 #
 
+#==== Normal features ====
+
 #
 # Use the full autoconf/automake/etc. toolchain for better portability. 
 #
@@ -231,3 +233,76 @@ A:  {
 # Option: -n: Dry run:  Don't run anything, but show the commands that
 # would be run.  Problematic because of dynamic dependencies. 
 #
+
+#==== New features that change extend the Stu drastically ====
+
+#
+# How to declare additional command interpreters.  Note:  we may use
+# another character than the backslash. 
+#
+
+A.mat:  B.mat C.mat 
+\octave{
+	% This command will be executed by the Octave wrapper, and
+	% read/write the three matrices automatically. 
+	A = B * C;
+}
+
+octave:  octave-command {
+	# This will be executed whenever A.mat is built, and the three
+	# variables used below will be filled by Stu with the dependencies,
+	# the target and the command, which are worked on by the script
+	# ./matlab to invoke Matlab accordingly. 
+	./octave-command "$STU_DEPENDENCIES" "$STU_TARGET" "$STU_COMMAND"
+}
+
+# A shell script that converts command to correct Octave scripts.  E.g.,
+# it will load B.mat and C.mat as the variables B and C, and will save
+# the generated variable A into A.mat. 
+octave-command;
+
+# Interpreters can be chained
+\matlab-or-octave:  \octave;
+
+# This may get problematic with finding the end of a command when
+# programming languages use unusual quoting mechanisms and ways of
+# pairing parenthesis-like characters. 
+
+#
+# Allow to handle symlinks as files in themselves, i.e., check for their
+# own existence and their own timestamp.  This should not be the default
+# as the current behaviour is more often useful, but should be available
+# as a possibility. 
+#
+
+#
+# Nested rules.  Good for dependencies that are used only once. 
+#
+
+A: (B: C { cp C B}) (D: E {cp E D}) { cat B D >A }
+# This is quite hard to read, honestly. 
+
+#
+# Alternative dependencies
+#
+
+A:  B | C { ... }
+A:  (B C) | (D E) { ... }
+
+#
+# Phonies can have content.  This will be executed at every Stu
+# invocation. 
+#
+
+# Their definition:
+@NAME = { linux }
+@NAME2 = @NAME;
+>@NAME { ./printname }
+
+# Their use:
+file:  <@NAME { sed -e '...' >file }
+result.eps:  $[@NAME] { ./compute --name "$NAME" }
+
+# This might be used like variables in Make, but the result will be that
+# targets depending on them will always be rebuilt.  It would thus only
+# make sense together with fingerprinting. 

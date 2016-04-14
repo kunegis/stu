@@ -1,10 +1,19 @@
-#==== Small features that complete what we already have ====
+#==== Small features that complete what we already have (for version 1) ====
+
+# 
+# Have an option that enables /bin/sh -x :
+#   + each command is output as it is executed
+#   - when a loop is executed, many lines are output
+#   ~ commands are prefixed with '+ '
+#   + environment variables are replaced with their values in the output
+#   - we still would have to prefix the output with the value of
+#     variables, since in many cases commands don't contain environment
+#     variables (but only pass them the called programs)
+#
 
 #
 # Option -p:  print rule set, like POSIX Make
 #
-
-#==== Mid-sized features that complete what we already have ====
 
 #
 # Allow multiple input files with the -f option. 
@@ -104,23 +113,6 @@ A:  [@x];
 %import src/main.stu
 %import src/
 
-#==== Big features that complete what we already have ====
-
-#
-# Assignment features
-#
-
-# Multiple names result in catenation
-A = B C D;
-
-# Combine with phony target
-A = @x;
-@x:  B C D;
-
-# Combine with dynamic target
-A = [X];
-<X { echo B C D }
-
 #
 # Option -B:  Remake all targets regardless of dates
 #
@@ -168,6 +160,132 @@ A: [B];
 A: [B],i; 
 
 #
+# New flag to ALWAYS build a target.  (We may already have this)
+#
+
+#==== Backward-incompatible features (in the switch to version 2) ====
+
+#
+# Make 'single quotes' and "double quotes" behave like in the shell,
+# i.e., with respect to what needs to be quoted inside them. 
+#
+
+'abc"def';
+"network $NAME";
+"aaa'bbb";
+
+#
+# Don't allow filenames that start with '+' or '-', but allow these in
+# the middle of filenames.  
+
+#
+# Keep track of spacing between tokens, and disallow no space in
+# situations that will later be used for string concatenation. 
+#
+
+#
+# What happens with relative and absolute pathnames?  When two names
+# refer to the same file?  Do we need to 'normalize' names?
+#
+
+# This will fail because ../../bib/[NAME].bib will match [NAME].bib.
+# Instead, be able to write ./[NAME].bib
+A:   a.bib b.bib c.bib;
+$NAME.bib:  ../../bib/$NAME.bib { cp ... }
+a.bib;
+
+# Rules:
+#     [NAME].bib:    a .bib file anywhere
+#     ./[NAME].bib:  a .bib file in the current directory
+
+# Remove trailing slash from directory names.
+A:  ?tmp/ {...}
+tmp: {...}
+
+#==== Features of Stu 2 ====
+
+#
+# String multiplication.  String multiplication is to work both with the
+# binary operator '*' as well with juxtaposition.  Juxtaposition is
+# backward incompatible, as in Version 1 strings like "A[B]" where
+# interpreted as two dependencies, and with it they will be interpreted
+# as one. 
+#
+
+A:  B * C;    	        # Binary multiplication operator
+A:  B * (C D); 	        # Parentheses
+A:  B[C];      	        # Justaposition
+A:  [B]C;      	        # OK
+A:  B(C D);    	        # OK
+A:  B(C D)E;   	        # OK
+A:  B[C]D;     	        # OK
+A:  [B] * [C]; 	        # OK
+A:  (A B) * (C D); 	# OK
+A:  [B][C];             # OK
+A:  (A B)(C D);         # OK
+A:  (!B) * (C);    	# OK
+A:  (?B) * (C);    	# OK
+A:  (B) * (!C);    	# error
+A:  (B) * (?C);    	# error
+A:  (?B) * (!C);   	# error
+A:  (<B) * (C);    	# OK
+A:  (B) * (<C);    	# error
+A:  !B(C D);       	# OK
+A:  ?B(C D);       	# OK
+A:  <B(C);         	# OK
+A:  <B(C D);       	# error
+A:  @B(C);         	# OK
+A:  @B(C D);     	# OK
+A:  B * @C;      	# error 
+A:  $[B] * C;    	# error
+A:  B * $[C];    	# error
+A:  <B * C;      	# OK (or maybe:  ambiguous)
+A:  B * <C;      	# error
+A:  <B[C];		# OK iff C contains exactly one dependency (or an error)
+@A: @B[C];       	# OK
+A:  B@C;		# error
+A.$X.$Y:  $X * $Y       # OK (can be contiguous)
+A.$X.$Y:  $X.a * b.$X   # OK (despite duplicate parameter) 
+A.$X.$Y:  $X. * $Y      # OK
+A.$X.$Y:  $X * .$Y      # OK
+
+# More examples
+
+@headers:  (config parse build).h
+
+@plot.all:   @plot.[NETWORKS];
+
+@plot:    plot/[NETWORKS].eps;
+
+#
+# Use '-' and '+' as additional flag characters.  Could even be used for
+# option-like flags. 
+#
+
+A:  
+	-r B
+	+x C
+	--trivial D
+	--optional ( E F ) 
+	--existence-only [ --optional G ]
+{ ... }
+
+#
+# Assignment features
+#
+
+# Multiple names result in catenation
+A = B C D;
+
+# Combine with phony target
+A = @x;
+@x:  B C D;
+
+# Combine with dynamic target
+A = [X];
+<X { echo B C D }
+
+#
 # Chain of commands are useful for dynamic dependencies
 #
 
@@ -206,24 +324,9 @@ A: [B],i;
 # commands to a file (a different file per target).  Use the -l option. 
 #
 
-# 
-# Have an option that enables /bin/sh -x :
-#   + each command is output as it is executed
-#   - when a loop is executed, many lines are output
-#   ~ commands are prefixed with '+ '
-#   + environment variables are replaced with their values in the output
-#   - we still would have to prefix the output with the value of
-#     variables, since in many cases commands don't contain environment
-#     variables (but only pass them the called programs)
-#
-
 #
 # -m bfs (breadth-first order) and -m target (pseudotarget by target
 # name) 
-#
-
-#
-# New flag to ALWAYS build a target. 
 #
 
 #
@@ -261,174 +364,3 @@ $ stu '\?A'
 $ stu -g A
 
 # In this example, '\' is the negation operator. 
-
-#==== New features that change extend the Stu drastically ====
-
-#
-# How to declare additional command interpreters.  Note:  we may use
-# another character than the backslash. 
-#
-
-A.mat:  B.mat C.mat 
-\octave{
-	% This command will be executed by the Octave wrapper, and
-	% read/write the three matrices automatically. 
-	A = B * C;
-}
-
-octave:  octave-command {
-	# This will be executed whenever A.mat is built, and the three
-	# variables used below will be filled by Stu with the dependencies,
-	# the target and the command, which are worked on by the script
-	# ./matlab to invoke Matlab accordingly. 
-	./octave-command "$STU_DEPENDENCIES" "$STU_TARGET" "$STU_COMMAND"
-}
-
-# A shell script that converts command to correct Octave scripts.  E.g.,
-# it will load B.mat and C.mat as the variables B and C, and will save
-# the generated variable A into A.mat. 
-octave-command;
-
-# Interpreters can be chained
-\matlab-or-octave:  \octave;
-
-# This may get problematic with finding the end of a command when
-# programming languages use unusual quoting mechanisms and ways of
-# pairing parenthesis-like characters. 
-
-#
-# Allow to handle symlinks as files in themselves, i.e., check for their
-# own existence and their own timestamp.  This should not be the default
-# as the current behaviour is more often useful, but should be available
-# as a possibility. 
-#
-
-#
-# Nested rules.  Good for dependencies that are used only once. 
-#
-
-A: (B: C { cp C B}) (D: E {cp E D}) { cat B D >A }
-# This is quite hard to read, honestly. 
-
-#
-# Alternative dependencies
-#
-
-A:  B | C { ... }
-A:  (B C) | (D E) { ... }
-
-#
-# Phonies can have content.  This will be executed at every Stu
-# invocation. 
-#
-
-# Their definition:
-@NAME = { linux }
-@NAME2 = @NAME;
->@NAME { ./printname }
-
-# Their use:
-file:  <@NAME { sed -e '...' >file }
-result.eps:  $[@NAME] { ./compute --name "$NAME" }
-
-# This might be used like variables in Make, but the result will be that
-# targets depending on them will always be rebuilt.  It would thus only
-# make sense together with fingerprinting. 
-
-#==== Backward-incompatible features ====
-
-#
-# What happens with relative and absolute pathnames?  When two names
-# refer to the same file?  Do we need to 'normalize' names?
-#
-
-# This will fail because ../../bib/[NAME].bib will match [NAME].bib.
-# Instead, be able to write ./[NAME].bib
-A:   a.bib b.bib c.bib;
-$NAME.bib:  ../../bib/$NAME.bib { cp ... }
-a.bib;
-
-# Rules:
-#     [NAME].bib:    a .bib file anywhere
-#     ./[NAME].bib:  a .bib file in the current directory
-
-# Remove trailing slash from directory names.
-A:  ?tmp/ {...}
-tmp: {...}
-
-#
-# Make 'single quotes' and "double quotes" behave like in the shell,
-# i.e., with respect to what needs to be quoted inside them. 
-#
-
-'abc"def';
-"network $NAME";
-"aaa'bbb";
-
-#
-# String multiplication.  String multiplication is to work both with the
-# binary operator '*' as well with juxtaposition.  Juxtaposition is
-# backward incompatible, as in Version 1 strings like "A[B]" where
-# interpreted as two dependencies, and with it they will be interpreted
-# as one. 
-#
-
-A:	B * C;    	# Binary multiplication operator
-A:	B * (C D); 	# Parentheses
-A:	B[C];      	# Justaposition
-A:	[B]C;      	# OK
-A:	B(C D);    	# OK
-A:	B(C D)E;   	# OK
-A:	B[C]D;     	# OK
-A:	[B] * [C]; 	# OK
-A:	(A B) * (C D); 	# OK
-A:	[B][C];         # OK
-A:	(A B)(C D);     # OK
-A:  (!B) * (C);    	# OK
-A:  (?B) * (C);    	# OK
-A:  (B) * (!C);    	# error
-A:  (B) * (?C);    	# error
-A:  (?B) * (!C);   	# error
-A:  (<B) * (C);    	# OK
-A:  (B) * (<C);    	# error
-A:  !B(C D);       	# OK
-A:  ?B(C D);       	# OK
-A:  <B(C);         	# OK
-A:  <B(C D);       	# error
-A:  @B(C);         	# OK
-A:  @B(C D);     	# OK
-A:  B * @C;      	# error 
-A:  $[B] * C;    	# error
-A:  B * $[C];    	# error
-A:  <B * C;      	# OK (or maybe:  ambiguous)
-A:  B * <C;      	# error
-A:  <B[C];		# OK iff C contains exactly one dependency (or an error)
-@A: @B[C];       	# OK
-A:  B@C;		# error
-A.$X.$Y:  $X * $Y       # OK (can be contiguous)
-A.$X.$Y:  $X.a * b.$X   # OK (despite duplicate parameter) 
-A.$X.$Y:  $X. * $Y      # OK
-A.$X.$Y:  $X * .$Y      # OK
-
-# More examples
-
-@headers:  (config parse build).h
-
-@plot.all:   @plot.[NETWORKS];
-
-@plot:    plot/[NETWORKS].eps;
-
-#
-# Don't allow filenames that start with '+' or '-', but allow these in
-# the middle of filenames.  This will allow the two symbols to be used
-# as additional flag characters.  Could even be used for option-like
-# flags. 
-#
-
-A:  
-	-r B
-	+x C
-	--trivial D
-	--optional ( E F ) 
-	--existence-only [ --optional G ]
-{ ... }

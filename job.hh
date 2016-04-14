@@ -310,11 +310,16 @@ pid_t Job::start(string command,
 		 */
 		const string argv0= place_command.as_string_nocolumn(); 
 
+		/* The one-character options to the shell */
+		const char *shell_options= option_individual ? "-ex" : "-e"; 
+
 		/* We use the -e option ('error'), which makes the shell abort
 		 * on a command that fails.  This is also what POSIX prescribes
 		 * for Make.  It is particularly important for Stu, as Stu
 		 * invokes the whole (possibly multiline) command in one step. */
-		const char *argv[]= {argv0.c_str(), "-e", "-c", arg, nullptr, nullptr}; 
+		const char *argv[]= {argv0.c_str(), 
+				     shell_options, "-c", arg, nullptr, nullptr}; 
+
 		if (arg[0] == '-' || arg[0] == '+') {
 			/* Command starts with '-':  insert the parameter '--'
 			 * before it so the shell does not interpret it as an

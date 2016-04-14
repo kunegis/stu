@@ -416,7 +416,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		if (ret_stat < 0) {
 			if (errno != ENOENT) {
 				perror(target.name.c_str());
-				if (! option_continue) 
+				if (! option_keep_going) 
 					exit(ERROR_BUILD); 
 				error |= ERROR_BUILD;
 				done.add_neg(link.avoid); 
@@ -441,7 +441,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	assert(done.get_k() == dynamic_depth(target.type));
 
 	if (error) 
-		assert(option_continue); 
+		assert(option_keep_going); 
 
 	/* 
 	 * Deploy dependencies (first pass), with the F_NOTRIVIAL flag
@@ -471,7 +471,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	/* There was an error in a child */ 
 	if (error != 0) {
-		assert(option_continue == true); 
+		assert(option_keep_going == true); 
 		done.add_neg(link.avoid);
 		return false;
 	}
@@ -568,7 +568,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 					/* stat() returned an actual error,
 					 * e.g. permission denied:  fail */
 					perror(target.name.c_str());
-					if (! option_continue)
+					if (! option_keep_going)
 						exit(ERROR_BUILD); 
 					error |= ERROR_BUILD;
 					done.add_one_neg(link.avoid); 
@@ -600,7 +600,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 			}
 			error |= ERROR_BUILD;
 			done.add_one_neg(link.avoid); 
-			if (! option_continue) 
+			if (! option_keep_going) 
 				throw error;  
 			return false;
 		}		
@@ -697,7 +697,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		if (pid < 0) {
 			/* Starting the job failed */ 
 			print_traces(fmt("error executing command for %s", target.format())); 
-			if (! option_continue) 
+			if (! option_keep_going) 
 				exit(ERROR_BUILD); 
 			error |= ERROR_BUILD;
 			done.add_neg(link.avoid); 
@@ -774,7 +774,7 @@ int Execution::execute_children(const Link &link)
 	}
 
 	if (error) 
-		assert(option_continue); 
+		assert(option_keep_going); 
 
 	return -1;
 }
@@ -823,7 +823,7 @@ void Execution::waited(int pid, int status)
 					if (0 > lstat(target.name.c_str(), &buf)) {
 						perror(target.name.c_str()); 
 						error |= ERROR_BUILD;
-						if (! option_continue)
+						if (! option_keep_going)
 							throw error; 
 					}
 					if (! S_ISLNK(buf.st_mode)) {
@@ -837,7 +837,7 @@ void Execution::waited(int pid, int status)
 						print_info(fmt("Startup timestamp is %s",
 							       Timestamp::startup.format())); 
 						print_traces();
-						if (! option_continue)
+						if (! option_keep_going)
 							throw error; 
 					}
 				}
@@ -848,7 +848,7 @@ void Execution::waited(int pid, int status)
 					    target.name); 
 				print_traces();
 				exists= -1;
-				if (! option_continue)
+				if (! option_keep_going)
 					throw error; 
 			}
 		}
@@ -876,7 +876,7 @@ void Execution::waited(int pid, int status)
 
 		remove_if_existing(true); 
 
-		if (! option_continue)
+		if (! option_keep_going)
 			throw error; 
 	}
 }
@@ -915,7 +915,7 @@ int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 
 		bool success= (execution_root->error == 0);
 
-		if (! option_continue)
+		if (! option_keep_going)
 			assert(success); 
 
 		if (worked && output_mode == Output::SHORT) {
@@ -926,7 +926,7 @@ int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 			puts("Nothing to be done"); 
 		}
 
-		if (! success && option_continue) {
+		if (! success && option_keep_going) {
 			fprintf(stderr, "%s: *** Targets not rebuilt because of errors\n", 
 					dollar_zero); 
 		}
@@ -938,7 +938,7 @@ int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 	 * not set */ 
 	catch (int e) {
 
-		assert(! option_continue); 
+		assert(! option_keep_going); 
 		assert(e >= 1 && e <= 3); 
 
 		error= e; 
@@ -976,7 +976,7 @@ void Execution::unlink(Execution *const parent,
 	assert(parent != child); 
 	assert(child->finished(avoid_child)); 
 
-	if (! option_continue)  
+	if (! option_keep_going)  
 		assert(child->error == 0); 
 
 	/*
@@ -1075,7 +1075,7 @@ void Execution::unlink(Execution *const parent,
 				    filename);
 			child->print_traces();
 
-			if (! option_continue)
+			if (! option_keep_going)
 				throw parent->error; 
 		}
 	}
@@ -1190,7 +1190,7 @@ Execution::Execution(Target target_,
 				if (0 > ret_stat) {
 					if (errno != ENOENT) {
 						perror(target.name.c_str()); 
-						if (! option_continue)
+						if (! option_keep_going)
 							exit(ERROR_BUILD); 
 					}
 					/* File does not exist and there is no rule for it */ 
@@ -1217,7 +1217,7 @@ Execution::Execution(Target target_,
 			assert(rule == nullptr); 
 			print_traces(fmt("no rule to build %s", target.format()));
 			error |= ERROR_BUILD;
-			if (! option_continue) 
+			if (! option_keep_going) 
 				throw error;  
 			/* Even when a rule was not found, the Execution object remains
 			 * in memory */  
@@ -1539,7 +1539,7 @@ Execution *Execution::get_execution(const Target &target,
 
 	if (find_cycle(parent, execution)) {
 		parent->error |= ERROR_LOGICAL;
-		if (! option_continue) 
+		if (! option_keep_going) 
 			throw parent->error;
 		return nullptr;
 	}
@@ -1589,7 +1589,7 @@ void Execution::read_dynamics(Stack avoid,
 				print_traces(fmt("%s is declared here", 
 						 target_file.format())); 
 				error |= ERROR_LOGICAL; 
-				if (! option_continue) 
+				if (! option_keep_going) 
 					throw error; 
 				continue; 
 			}
@@ -1609,7 +1609,7 @@ void Execution::read_dynamics(Stack avoid,
 				print_traces(fmt("within multiply-dynamic dependency %s", 
 						 target.format())); 
 				error |= ERROR_LOGICAL;
-				if (!option_continue) 
+				if (!option_keep_going) 
 					throw error; 
 				continue; 
 			}
@@ -1634,7 +1634,7 @@ void Execution::read_dynamics(Stack avoid,
 					print_traces(fmt("%s is declared here", 
 							 target_file.format())); 
 					error |= ERROR_LOGICAL;
-					if (! option_continue) 
+					if (! option_keep_going) 
 						throw error; 
 					continue; 
 				}
@@ -1693,7 +1693,7 @@ void Execution::read_dynamics(Stack avoid,
 				target_file.type= T_FILE;
 				print_traces(fmt("%s is declared here", target_file.format())); 
 				error |= ERROR_LOGICAL; 
-				if (! option_continue) 
+				if (! option_keep_going) 
 					throw error; 
 				continue; 
 			}
@@ -1706,7 +1706,7 @@ void Execution::read_dynamics(Stack avoid,
 	} catch (int e) {
 		assert(e >= 1 && e <= 3); 
 		error |= e;
-		if (! option_continue) 
+		if (! option_keep_going) 
 			throw;
 	}
 }
@@ -1790,6 +1790,9 @@ void Execution::print_command() const
 	} 
 
 	if (output_mode < Output::SHORT)
+		return; 
+
+	if (option_individual)
 		return; 
 
 	/* For single-line commands, show the variables on the same line.
@@ -1885,7 +1888,7 @@ bool Execution::deploy(const Link &link,
 				    target.format());
 			print_traces(); 
 
-			if (! option_continue)
+			if (! option_keep_going)
 				throw error;
 			return false;
 		}
@@ -1934,7 +1937,7 @@ bool Execution::deploy(const Link &link,
 			    target_child.format());
 		print_traces();
 		explain_clash(); 
-		if (! option_continue)  
+		if (! option_keep_going)  
 			throw error;
 		return false;
 	}
@@ -1966,7 +1969,7 @@ bool Execution::deploy(const Link &link,
 			place_flag << "using '&'";
 		} 
 		print_traces();
-		if (! option_continue)  
+		if (! option_keep_going)  
 			throw error; 
 		return false;
 	}

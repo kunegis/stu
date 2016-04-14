@@ -29,15 +29,14 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-#define STU_OPTIONS "ac:C:f:ghj:kKm:M:qsvVwz"
+#define STU_OPTIONS "ac:C:f:ghj:kKm:M:qsvVwxz"
 
-/* Note: the following strings do not contain tabs, but only space
- * characters */ 
-#define STU_HELP							             \
-	"Usage:   stu [-f FILENAME] [OPTIONS...] [TARGETS...]\n"	             \
-	"By default, build the first target in the file 'main.stu'.\n"	             \
-	"TARGETS can be specified in full Stu syntax.\n"                             \
-	"Options:\n"							             \
+/* The following strings do not contain tabs, but only space characters */  
+#define STU_HELP							   \
+	"Usage:   stu [-f FILENAME] [OPTIONS...] [TARGETS...]\n"	   \
+	"By default, build the first target in the file 'main.stu'.\n"	   \
+	"TARGETS can be specified in full Stu syntax.\n"                   \
+	"Options:\n"							   \
 	"   -a            Treat all trivial dependencies as non-trivial\n"           \
 	"   -c EXPRESSION Pass a target in full Stu syntax\n"		             \
 	"   -C FILENAME   Pass a target filename without Stu syntax parsing\n"       \
@@ -56,8 +55,9 @@ using namespace std;
 	"   -v            Verbose mode; show execution information on stderr\n"      \
 	"   -V            Output version\n"				             \
 	"   -w            Short output; show target filenames instead of commands\n" \
+	"   -x            Ouput each command statement individually\n"               \
 	"   -z            Output runtime statistics on stdout\n"                     \
-	"Report bugs to: kunegis@gmail.com\n"                                        \
+	"Report bugs to: kunegis@gmail.com\n"                             \
 	"Stu home page: <https:/""/github.com/kunegis/stu>\n"
 
 /* Initialize buffers; called once from main() */ 
@@ -107,12 +107,13 @@ int main(int argc, char **argv, char **envp)
 			case 'a': option_nontrivial= true;     break;
 			case 'g': option_nonoptional= true;    break;
 			case 'h': fputs(STU_HELP, stdout);     exit(0);
-			case 'k': option_continue= true;       break;
+			case 'k': option_keep_going= true;     break;
 			case 'K': option_no_delete= true;      break;
 			case 'q': option_question= true;       break;
 			case 's': output_mode= Output::SILENT; break;
 			case 'v': option_verbose= true;        break;
 			case 'w': output_mode= Output::SHORT;  break;
+			case 'x': option_individual= true;     break;
 			case 'z': option_statistics= true;     break;
 
 			case 'c': 

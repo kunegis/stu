@@ -51,6 +51,6 @@ List of options
 -V  S      Show version and exit
 -w  S	x  Short mode (GNU Make:  print directory) 
 -W  .   G  What-if mode (if FILE just had been modified)
--x  .      Enable /bin/sh -x instead of normal output
+-x  S      Enable /bin/sh -x instead of normal output
 -y       
 -z  .      Output statistics

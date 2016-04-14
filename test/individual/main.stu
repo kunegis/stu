@@ -1,0 +1,7 @@
+# Option -x
+
+>A: {
+	echo aaa
+	sleep 2
+	echo bbb
+}

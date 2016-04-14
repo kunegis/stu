@@ -1,0 +1,37 @@
+#! /bin/sh
+
+rm -f ?
+
+../../stu -x >list.out 2>list.err &
+pid="$!"
+
+sleep 1
+
+grep -qF 'sleep 2' list.err || {
+	echo >&2 "*** stderr (1)"
+	echo list.err:
+	echo _____
+	cat list.err
+	echo _____
+	exit 1
+}
+
+grep -qF 'echo bbb' list.err && {
+	echo >&2 "*** stderr (1b)"
+	exit 1
+}
+
+wait "$pid"
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** Exit code"
+	exit 1
+}
+
+grep -qF 'echo bbb' list.err || {
+	echo >&2 "*** stderr (2)"
+	exit 1
+}
+
+exit 0

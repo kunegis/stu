@@ -12,8 +12,8 @@ static bool option_nontrivial= false;
 /* The -g option (consider all optional dependencies to be non-optional) */
 static bool option_nonoptional= false;
 
-/* The -k option (continue when encountering errors) */ 
-static bool option_continue= false;
+/* The -k option (keep going) */ 
+static bool option_keep_going= false;
 
 /* The -v option (verbose mode) */ 
 static bool option_verbose= false;
@@ -26,6 +26,10 @@ static bool option_no_delete= false;
 
 /* The -q option (question mode) */
 static bool option_question= false; 
+
+/* The -x option (use sh -x) */ 
+static bool option_individual= false;
+
 
 /* Determines how commands are output
  */

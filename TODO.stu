@@ -1,16 +1,5 @@
 #==== Small features that complete what we already have (for version 1) ====
 
-# 
-# Have an option that enables /bin/sh -x :
-#   + each command is output as it is executed
-#   - when a loop is executed, many lines are output
-#   ~ commands are prefixed with '+ '
-#   + environment variables are replaced with their values in the output
-#   - we still would have to prefix the output with the value of
-#     variables, since in many cases commands don't contain environment
-#     variables (but only pass them the called programs)
-#
-
 #
 # Option -p:  print rule set, like POSIX Make
 #

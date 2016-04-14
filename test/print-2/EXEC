@@ -1,0 +1,21 @@
+#! /bin/sh
+
+../../stu -p -f abc.stu >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 '*** Exit code'
+	exit 1
+}
+
+[ -r list.err -a \! -s list.err ] || {
+	echo >&2 '*** stderr'
+	exit 1
+}
+
+grep -qF 'list.${name}' list.out || {
+	echo >&2 '*** stdout'
+	exit 1
+}
+
+exit 0

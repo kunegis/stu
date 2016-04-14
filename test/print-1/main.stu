@@ -1,0 +1,6 @@
+
+A: B { cp B A }
+
+>B { echo bbb }
+
+list.$name { echo "ccc$name$name" >list."$name" }

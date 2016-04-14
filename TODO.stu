@@ -1,10 +1,6 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
-# Option -p:  print rule set, like POSIX Make
-#
-
-#
 # Allow multiple input files with the -f option. 
 #
 

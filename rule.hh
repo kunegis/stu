@@ -52,6 +52,7 @@ public:
 	     bool redirect_output_,
 	     const Param_Name &filename_input_);
 
+	/* Format the rule, as in the -p option */ 
 	string format() const; 
 
 	/* Return the same rule, but without parameters.  
@@ -91,6 +92,9 @@ public:
 	shared_ptr <Rule> get(Target target, 
 			      shared_ptr <Rule> &rule_original,
 			      map <string, string> &mapping_out);
+
+	/* Print the rule set to standard output, as used in the -p option */  
+	void print() const;
 };
 
 Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
@@ -326,6 +330,19 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 
 			rules_parametrized.push_back(rule); 
 		}
+	}
+}
+
+void Rule_Set::print() const
+{
+	for (auto i:  rules_unparametrized)  {
+		string text= i.second->format(); 
+		puts(text.c_str()); 
+	}
+
+	for (auto i:  rules_parametrized)  {
+		string text= i->format(); 
+		puts(text.c_str()); 
 	}
 }
 

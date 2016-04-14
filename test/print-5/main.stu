@@ -1,0 +1,8 @@
+# First rule is parametrized
+
+list.$name { echo "ccc$name$name" >list."$name" }
+
+A: B { cp B A }
+
+>B { echo bbb }
+

@@ -15,20 +15,23 @@ static bool option_nonoptional= false;
 /* The -k option (keep going) */ 
 static bool option_keep_going= false;
 
-/* The -v option (verbose mode) */ 
-static bool option_verbose= false;
-
-/* The -z option (output statistics) */
-static bool option_statistics= false;
-
 /* The -K option (don't delete partially built files) */
 static bool option_no_delete= false;
+
+/* The -p option (print rules) */
+static bool option_print= false;
 
 /* The -q option (question mode) */
 static bool option_question= false; 
 
+/* The -v option (verbose mode) */ 
+static bool option_verbose= false;
+
 /* The -x option (use sh -x) */ 
 static bool option_individual= false;
+
+/* The -z option (output statistics) */
+static bool option_statistics= false;
 
 
 /* Determines how commands are output

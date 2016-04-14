@@ -29,7 +29,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-#define STU_OPTIONS "ac:C:f:ghj:kKm:M:qsvVwxz"
+#define STU_OPTIONS "ac:C:f:ghj:kKm:M:pqsvVwxz"
 
 /* The following strings do not contain tabs, but only space characters */  
 #define STU_HELP							   \
@@ -42,7 +42,7 @@ using namespace std;
 	"   -C FILENAME   Pass a target filename without Stu syntax parsing\n"       \
 	"   -f FILENAME   The input file to use instead of 'main.stu'\n"             \
 	"   -g            Treat all optional dependencies as non-optional\n"         \
-	"   -h            Output help\n"				             \
+	"   -h            Output help and exit\n"		                     \
 	"   -j K          Run K jobs in parallel\n"			             \
 	"   -k            Keep on running after errors\n"		             \
 	"   -K            Don't delete target files on error or interruption\n"      \
@@ -50,10 +50,11 @@ using namespace std;
 	"      dfs        (default) Depth-first order, like in Make\n"	             \
 	"      random     Random order\n"				             \
 	"   -M STRING     Pseudorandom run order, seeded by given string\n"          \
+	"   -p            Print the rules and exit\n"                                \
 	"   -q            Question mode; check whether targets are up to date\n"     \
 	"   -s            Silent mode; do not output commands\n"	             \
 	"   -v            Verbose mode; show execution information on stderr\n"      \
-	"   -V            Output version\n"				             \
+	"   -V            Output version and exit\n"				     \
 	"   -w            Short output; show target filenames instead of commands\n" \
 	"   -x            Ouput each command statement individually\n"               \
 	"   -z            Output runtime statistics on stdout\n"                     \
@@ -109,6 +110,7 @@ int main(int argc, char **argv, char **envp)
 			case 'h': fputs(STU_HELP, stdout);     exit(0);
 			case 'k': option_keep_going= true;     break;
 			case 'K': option_no_delete= true;      break;
+			case 'p': option_print= true;          break; 
 			case 'q': option_question= true;       break;
 			case 's': output_mode= Output::SILENT; break;
 			case 'v': option_verbose= true;        break;
@@ -236,7 +238,7 @@ int main(int argc, char **argv, char **envp)
 				if (errno == ENOENT) { 
 					/* The default file does not exist --
 					 * fail if no target is given */  
-					if (dependencies.empty() && ! had_c_option) {
+					if (dependencies.empty() && ! had_c_option && ! option_print) {
 						print_error("No target given and no default file "
 							    "'" FILENAME_INPUT_DEFAULT "' present");
 						explain_no_target(); 
@@ -271,7 +273,7 @@ int main(int argc, char **argv, char **envp)
 
 			/* If no targets are given on the command line,
 			 * use the first non-variable target */ 
-			if (dependencies.empty() && ! had_c_option) {
+			if (dependencies.empty() && ! had_c_option && ! option_print) {
 				Place_Param_Target place_param_target; 
 
 				auto i= rules.begin();
@@ -296,6 +298,11 @@ int main(int argc, char **argv, char **envp)
 		} else {
 			/* We checked earlier that when no input file is
 			 * specified, there are targets given. */ 
+		}
+
+		if (option_print) {
+			Execution::rule_set.print(); 
+			exit(0); 
 		}
 
 		/* Execute */

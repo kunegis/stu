@@ -1,46 +1,17 @@
 #==== Small features that complete what we already have ====
 
 #
-# Convert 'sed -r' in tests to POSIX-compatible BREs, or find a way to
-# portably use EREs with Sed.  
-#
-
-./test/random-restart/EXEC
-./test/input-override2/main.stu
-./test/input-override2/STDOUT
-./test/option-c-15/EXEC
-./test/input-unreadable/main.stu
-./test/trivial-cycle/EXEC
-./test/int-remove-files/EXEC
-./test/variable-output/main.stu
-./test/variable-output/STDOUT
-./test/statistics-signal/EXEC
-./test/false-lead/main.stu
-./test/clash/EXEC
-./test/version-double/EXEC
-./test/symlink-not-created/EXEC
-./test/input-outputand/main.stu
-./test/input-outputand/STDOUT
-./test/dynamic-no-rebuild-update/main.stu
-./test/input-override1/STDOUT
-./test/input-outputand2/main.stu
-./test/input-outputand2/STDOUT
-./test/version/EXEC
-./test/non-parameter-bracket/main.stu
-
-#
 # Option -p:  print rule set, like POSIX Make
 #
 
-#==== Big features that complete what we already have ====
+#==== Mid-sized features that complete what we already have ====
+
+#
+# Allow multiple input files with the -f option. 
+#
 
 #
 # Option to pass rules in full Stu syntax (-F)
-#
-
-#
-# An option to make backups of otherwise deleted files.  (We would need
-# to decide on a backup filename scheme.)
 #
 
 #
@@ -132,6 +103,8 @@ A:  [@x];
 # within it. 
 %import src/main.stu
 %import src/
+
+#==== Big features that complete what we already have ====
 
 #
 # Assignment features

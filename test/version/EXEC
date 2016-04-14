@@ -47,9 +47,9 @@ if echo "$VERSION" | grep -qEv '[0-9]+\.[0-9]+\.[0-9]+' ; then
 	echo >&2 "*** $0: Invalid version number '$VERSION'"
 	exit 1
 fi
-VERSION_MAJOR="$(echo "$VERSION" | sed -re 's,^([0-9]+)\.[0-9]+\.[0-9]+$,\1,')"
-VERSION_MINOR="$(echo "$VERSION" | sed -re 's,^[0-9]+\.([0-9]+)\.[0-9]+$,\1,')"
-VERSION_PATCH="$(echo "$VERSION" | sed -re 's,^[0-9]+\.[0-9]+\.([0-9]+)$,\1,')"
+VERSION_MAJOR="$(echo "$VERSION" | sed -e 's/^\([0-9]\{1,\}\)\.[0-9]\{1,\}\.[0-9]\{1,\}$/\1/')"
+VERSION_MINOR="$(echo "$VERSION" | sed -e 's/^[0-9]\{1,\}\.\([0-9]\{1,\}\)\.[0-9]\{1,\}$/\1/')"
+VERSION_PATCH="$(echo "$VERSION" | sed -e 's/^[0-9]\{1,\}\.[0-9]\{1,\}\.\([0-9]\{1,\}\)$/\1/')"
 
 VERSION_MAJOR_INC=$(($VERSION_MAJOR + 1))
 VERSION_MAJOR_DEC=$(($VERSION_MAJOR - 1))

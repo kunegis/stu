@@ -9,7 +9,7 @@ A: [list.dep] B list.123.456 list.xyz {
 }
 
 list.dep: {
-	seq 1 20 | sed -re 's,^,list.,' >list.dep
+	seq 1 20 | sed -e 's,^,list.,' >list.dep
 }
 
 list.$N {

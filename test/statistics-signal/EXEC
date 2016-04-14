@@ -4,10 +4,19 @@ doo() { echo "$@" ; "$@" ; }
 
 kill_sleeps() 
 {
-    for pid in $(ps -fe | grep 31415926535 | grep -v grep | sed -re 's,^\S+\s+([0-9]+)\s.*$,\1,') ; do
-	echo >&2 "$0:  *** Killing PID '$pid'"
-	doo kill "$pid"
-    done
+	for pid in $(ps -fe | grep 31415926535 | grep -v grep | sed -e 's/^[^[:space:]]\{1,\}[[:space:]]\{1,\}\([0-9]\{1,\}\)[[:space:]].*$/\1/') ; do
+		echo >&2 "$0:  *** Killing PID '$pid'"
+		kill "$pid"
+	done
+
+	count="$(ps -fe | grep 31415926535 | grep -v grep | wc -l)"
+	[ "$count" = 0 ] || {
+		echo >&2 '*** Could not kill all processes'
+		echo >&2 "count='$count'"
+		echo >&2 'Still running:'
+		ps -fe | grep 31415926535 | grep -v grep
+		exit 1
+	}
 }
 
 doo rm -f ?
@@ -28,9 +37,9 @@ doo sleep 1
 
 # Make sure no process is still running
 if [ "$(ps -fe | grep 31415926535 | grep -v grep | wc -l)" != 0 ]; then
-    echo >&2 "$0:  *** There is still a process running:" 
-    ps -fe | grep 31415926535 | grep -v grep >&2
-    exit 1
+	echo >&2 "$0:  *** There is still a process running:" 
+	ps -fe | grep 31415926535 | grep -v grep >&2
+	exit 1
 fi
 
 # Check that statistics are not output

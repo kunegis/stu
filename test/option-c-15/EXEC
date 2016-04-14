@@ -12,7 +12,7 @@ exitcode="$?"
 }
 
 VERSION="$(cat ../../VERSION)"
-<stderr-in >stderr sed -re 's,\$VERSION,'"$VERSION"',g'
+<stderr-in >stderr sed -e 's,\$VERSION,'"$VERSION"',g'
 
 cmp list.err stderr || {
 	echo >&2 '*** stderr'

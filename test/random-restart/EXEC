@@ -10,17 +10,19 @@ exitcode="$?"
 	exit 1
 }
 
-cat list.out
-
-<list.out sed -re '
-	s,^.*X=(.).*$,\1,
+<list.out sed -e '
+	s,^.*X=\(.\).*$,\1,
 	t;d
 ' >list.exec
 
 # Now, make sure 'list.exec' does not contain the same letter twice in a
 # row. 
+
 last=0
-count=0 # Number of contiguous letters
+
+# Number of contiguous letters
+count=0 
+
 for line in $(cat list.exec) ; do
 	echo >&2 "LINE='$line'"
 	if [ "$last" = "$line" ] ; then

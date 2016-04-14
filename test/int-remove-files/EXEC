@@ -4,10 +4,19 @@ doo() { echo "$@" ; "$@" ; }
 
 kill_sleeps() 
 {
-    for pid in $(ps -fe | grep 31415926535 | grep -v grep | sed -re 's,^\S+\s+([0-9]+)\s.*$,\1,') ; do
-	echo >&2 "$0:  *** Killing PID '$pid'"
-	kill "$pid"
-    done
+	for pid in $(ps -fe | grep 31415926535 | grep -v grep | sed -e 's/^[^[:space:]]\{1,\}[[:space:]]\{1,\}\([0-9]\{1,\}\)[[:space:]].*$/\1/') ; do
+		echo >&2 "$0:  *** Killing PID '$pid'"
+		kill "$pid"
+	done
+
+	count="$(ps -fe | grep 31415926535 | grep -v grep | wc -l)"
+	[ "$count" = 0 ] || {
+		echo >&2 '*** Could not kill all processes'
+		echo >&2 "count='$count'"
+		echo >&2 'Still running:'
+		ps -fe | grep 31415926535 | grep -v grep
+		exit 1
+	}
 }
 
 doo rm -f ?
@@ -16,16 +25,15 @@ kill_sleeps
 
 # Make sure no process is running
 if [ "$(ps -fe | grep 31415926535 | grep -v grep | wc -l)" != 0 ]; then
-    echo >&2 "$0:  *** There is already a process running:" 
-    ps -fe | grep 31415926535 | grep -v grep >&2
-    exit 1
+	echo >&2 "$0:  *** There is already a process running:" 
+	ps -fe | grep 31415926535 | grep -v grep >&2
+	exit 1
 fi
 
 # Start Stu 
 echo ../../stu -k -j99
 ../../stu -k -j99 &
 PID=$!
-# echo "PID=»$PID«"
 
 # Sleep so that there is time for Stu to start all processes  
 doo sleep 1
@@ -38,18 +46,18 @@ doo sleep 1
 
 # Make sure no process is still running
 if [ "$(ps -fe | grep 31415926535 | grep -v grep | wc -l)" != 0 ]; then
-    echo >&2 "$0:  *** There is still a process running:" 
-    ps -fe | grep 31415926535 | grep -v grep >&2
-    exit 1
+	echo >&2 "$0:  *** There is still a process running:" 
+	ps -fe | grep 31415926535 | grep -v grep >&2
+	exit 1
 fi
 
 # Make sure all files were deleted
 for file in A B C D E F G H I J K L M N O P Q R S T U V W X Y Z ; 
 do
-    if [ -r $file ]; then
-	echo >&2 "$0:  *** File '$file' should not have been created"
-	exit 1
-    fi
+	if [ -r $file ]; then
+		echo >&2 "$0:  *** File '$file' should not have been created"
+		exit 1
+	fi
 done
 
 doo rm -f ?

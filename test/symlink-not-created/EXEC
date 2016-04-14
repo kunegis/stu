@@ -10,7 +10,7 @@
 
 # Compute a date definitely in the past 
 now="$(LC_ALL=C date)"
-year="$(echo $now | sed -re 's,^.* ([0-9]+)$,\1,')"
+year="$(echo $now | sed -e 's/^.* \([0-9]\{1,\}\)$/\1/')"
 year_past="$(expr $year - 2)"
 date="$year_past-01-01"
 

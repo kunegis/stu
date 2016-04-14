@@ -56,13 +56,20 @@ EOF
 
 # This code is identical to what ./mkversion does
 VERSION="$(echo $(cat ../../VERSION))"
+echo "VERSION='$VERSION'" 
+
 if echo "$VERSION" | grep -qEv '[0-9]+\.[0-9]+\.[0-9]+' ; then
 	echo >&2 "*** $0: Invalid version number '$VERSION'"
 	exit 1
 fi
-MAJOR="$(echo "$VERSION" | sed -re 's,^([0-9]+)\.[0-9]+\.[0-9]+$,\1,')"
-MINOR="$(echo "$VERSION" | sed -re 's,^[0-9]+\.([0-9]+)\.[0-9]+$,\1,')"
-PATCH="$(echo "$VERSION" | sed -re 's,^[0-9]+\.[0-9]+\.([0-9]+)$,\1,')"
+
+MAJOR="$(echo "$VERSION" | sed -e 's/^\([0-9]\{1,\}\)\.[0-9]\{1,\}\.[0-9]\{1,\}$/\1/')"
+MINOR="$(echo "$VERSION" | sed -e 's/^[0-9]\{1,\}\.\([0-9]\{1,\}\)\.[0-9]\{1,\}$/\1/')"
+PATCH="$(echo "$VERSION" | sed -e 's/^[0-9]\{1,\}\.[0-9]\{1,\}\.\([0-9]\{1,\}\)$/\1/')"
+
+echo "MAJOR='$MAJOR'" 
+echo "MINOR='$MINOR'" 
+echo "PATCH='$PATCH'" 
 
 MAJOR_INC=$(($MAJOR + 1))
 MAJOR_DEC=$(($MAJOR - 1))

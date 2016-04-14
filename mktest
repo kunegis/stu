@@ -206,7 +206,7 @@ do
 		if [ "$exitcode_correct" = 0 ]; then
 			target=A
 			if [ -r TARGET ]; then
-				target="$(sed -re '/^[[:space:]]*$/d' <TARGET)"
+				target="$(sed -e '/^[[:space:]]*$/d' <TARGET)"
 			fi
 			if [ ! -r "$target" ]; then  # The main target must have been built
 				echo >&2 "$0: *** Target '$target' was not built"

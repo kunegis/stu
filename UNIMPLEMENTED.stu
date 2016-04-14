@@ -16,6 +16,11 @@
 #
 
 #
+# An option to make backups of otherwise deleted files.  (We would need
+# to decide on a backup filename scheme.)
+#
+
+#
 # Option -i:  ignore all errors, like POSIX Make
 #
 

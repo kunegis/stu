@@ -1,4 +1,4 @@
-seq 1 20 | sed -re 's,^,list.,' >list.dep
+seq 1 20 | sed -e 's,^,list.,' >list.dep
 N=1: echo "$N" >"list.$N"
 N=2: echo "$N" >"list.$N"
 N=3: echo "$N" >"list.$N"

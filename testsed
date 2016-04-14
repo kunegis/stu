@@ -1,0 +1,18 @@
+#! /bin/sh
+#
+# Check that we don't use 'sed -r'. 
+#
+
+find_sed() {
+	find . -type f -a \! -path './.git*' -a \! -name '*~' | xargs grep -lE -- 'sed\s+-re'
+}
+
+count="$(find_sed | wc -l)"
+
+[ "$count" = 0 ] || {
+	echo >&2 "*** 'sed -r' must not be used:"
+	find_sed
+	exit 1
+}
+
+exit 0

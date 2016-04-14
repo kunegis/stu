@@ -3,7 +3,7 @@
 doo() { echo "$@" ; $@ ; }
 
 <LIST.stu cat | 
-sed -re '/^\s*$/d;/^\s*#/d' |
+sed -e '/^[[:space:]]*$/d;/^[[:space:]]*#/d' |
 while read -r line ; do
 
 	echo "LINE: $line"
@@ -25,7 +25,7 @@ while read -r line ; do
 		exit 1
 	}
 
-	fgrep -q "'?'" list.err || {
+	grep -qF "'?'" list.err || {
 		echo >&2 "*** error (b) String \"'?'\" not found in error output"
 		echo "Content of error output:"
 		echo ________

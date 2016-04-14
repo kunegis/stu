@@ -2,7 +2,11 @@
 # Makefile that also enables the test.  
 # 
 
-all-test: stu.text test_options stu.debug stu.ndebug test_test.debug test_test.ndebug test_doubleslash
+all-test: \
+    stu.text test_options test_sed \
+    stu.debug stu.ndebug \
+    test_test.debug test_test.ndebug \
+    test_doubleslash 
 
 dist:  stu.1 version.hh stu.text
 
@@ -36,6 +40,9 @@ stu.prof: *.cc *.hh version.hh
 
 test_options:  testoptions stu.cc stu.1.in
 	./testoptions && touch $@
+
+test_sed: testsed . test test/* test/*/* 
+	./testsed && touch $@
 
 test_test.debug: stu.debug mktest test test/* test/*/* 
 	./mktest && touch $@

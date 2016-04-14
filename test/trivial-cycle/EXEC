@@ -63,9 +63,9 @@ for type in a b c ; do
 		
 		echo cas=$cas
 
-		list_old="$(echo "$cas" | sed -re 's,^([^-]*)-([^-]*)-([^-]*)$,\1,;s,(.),\1 ,g')"
-		list_new="$(echo "$cas" | sed -re 's,^([^-]*)-([^-]*)-([^-]*)$,\2,;s,(.),\1 ,g')"
-		list_res="$(echo "$cas" | sed -re 's,^([^-]*)-([^-]*)-([^-]*)$,\3,;s,(.),\1 ,g')"
+		list_old="$(echo "$cas" | sed -e 's,^\([^-]*\)-\([^-]*\)-\([^-]*\)$,\1,;s,\(.\),\1 ,g')"
+		list_new="$(echo "$cas" | sed -e 's,^\([^-]*\)-\([^-]*\)-\([^-]*\)$,\2,;s,\(.\),\1 ,g')"
+		list_res="$(echo "$cas" | sed -e 's,^\([^-]*\)-\([^-]*\)-\([^-]*\)$,\3,;s,\(.\),\1 ,g')"
 
 		echo list_old=$list_old
 		echo list_new=$list_new
@@ -81,8 +81,6 @@ for type in a b c ; do
 			echo >&2 "echo xxx >$file"
 			echo xxx >$file
 		done
-
-#		doo ls -l 
 
 		echo ../../stu -f main.stu 
 		../../stu -f main.stu >list.out 2>list.err

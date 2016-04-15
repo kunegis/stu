@@ -29,8 +29,8 @@ UNIT TESTS
 If you want to run the unit tests, do 'make -f Makefile.test'.  If takes
 about 10 minutes. 
 
-* The unit tests assume that the filesystem supports UTF-8 filenames.
-  Stu will work without such a filesystem, but you can't run the unit
+* The unit tests assume that the file system supports UTF-8 filenames.
+  Stu will work without such a file system, but you can't run the unit
   tests unless you remove the one offending test (test/unicode/).  
 * The unit tests need a GNU version of sed(1); they use the -r option.  
 * If you run the tests and they fail, please report that to Jérôme

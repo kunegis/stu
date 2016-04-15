@@ -41,7 +41,7 @@ rm -f A B
 ../../stu -q >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 5 ] || {
+[ "$exitcode" = 1 ] || {
 	echo >&2 "*** (2) Exit code"
 	exit 1
 }
@@ -91,7 +91,7 @@ rm -f B
 ../../stu -q >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 5 ] || {
+[ "$exitcode" = 1 ] || {
 	echo >&2 "*** (4) Exit code"
 	exit 1
 }
@@ -116,7 +116,7 @@ touch B
 ../../stu -q >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 5 ] || {
+[ "$exitcode" = 1 ] || {
 	echo >&2 "*** (5) Exit code"
 	exit 1
 }

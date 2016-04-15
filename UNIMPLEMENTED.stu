@@ -68,7 +68,7 @@ a.bib:  extra dependencies ... ;
 # Support nanosecond-precision timestamps by using struct
 # stat::st_mtim.* instead of struct stat::st_mtime.  Code is written in
 # timestamp.hh and can be enabled via USE_MTIM, but is disabled because
-# common filesystems seems to give wrong timestamps. 
+# common file systems seems to give wrong timestamps. 
 #
 
 #

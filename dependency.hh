@@ -329,7 +329,7 @@ public:
 		(void) zero; 
 		if (k >= CHAR_BIT * sizeof(int) - 1) {
 			print_error("dynamic dependency recursion limit exceeded");
-			throw ERROR_SYSTEM; 
+			throw ERROR_FATAL; 
 		}
 		memset(bits, 0, sizeof(bits));
 		check();
@@ -451,7 +451,7 @@ public:
 		assert(k < CHAR_BIT * sizeof(int)); 
 		if (k == CHAR_BIT * sizeof(int) - 2) {
 			print_error("dynamic dependency recursion limit exceeded");
-			throw ERROR_SYSTEM; 
+			throw ERROR_FATAL; 
 		}
 		++k;
 		for (int i= 0;  i < F_COUNT;  ++i) {

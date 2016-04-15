@@ -4,7 +4,7 @@
 /* Wrapper around time_t or struct timespec.  
  */
 
-/* Not enabled because common filesystems seem to give wrong results,
+/* Not enabled because common file systems seem to give wrong results,
  * e.g., creating two files in a row may give the second file an older
  * timestamp. */
 /* #define USE_MTIM 1 */

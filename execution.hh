@@ -229,6 +229,13 @@ public:
 	 */ 
 	void print_as_job() const;
 
+	void raise(int error_) {
+		assert(error_ >= 1 && error_ <= 3); 
+		error |= error_;
+		if (! option_keep_going)
+			throw error;
+	}
+
 	/* The currently running executions by process IDs */ 
 	static unordered_map <pid_t, Execution *> executions_by_pid;
 
@@ -237,13 +244,14 @@ public:
 	 */
 	static unordered_map <Target, Execution *> executions_by_target;
 
-	/* The timestamps for phonies.  This container serves as the
-	 * "file system" for phonies, holding their timestamps. 
+	/* The timestamps for phonies.  This container plays the role of
+	 * the file system for phonies, holding their timestamps, and
+	 * remembering whether they have been executed. 
 	 */
 	static unordered_map <string, Timestamp> phonies;
 
 	/* The timepoint of the last time wait() returned.  No file in the
-	 * filesystem should be newer than this. 
+	 * file system should be newer than this. 
 	 */ 
 	static Timestamp timestamp_last; 
 
@@ -416,9 +424,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		if (ret_stat < 0) {
 			if (errno != ENOENT) {
 				perror(target.name.c_str());
-				if (! option_keep_going) 
-					exit(ERROR_BUILD); 
-				error |= ERROR_BUILD;
+				raise(ERROR_BUILD);
 				done.add_neg(link.avoid); 
 				exists= -1;
 				return false;
@@ -568,9 +574,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 					/* stat() returned an actual error,
 					 * e.g. permission denied:  fail */
 					perror(target.name.c_str());
-					if (! option_keep_going)
-						exit(ERROR_BUILD); 
-					error |= ERROR_BUILD;
+					raise(ERROR_BUILD);
 					done.add_one_neg(link.avoid); 
 					return false;
 				}
@@ -598,10 +602,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 						 target.name)); 
 				explain_file_without_command_without_dependencies(); 
 			}
-			error |= ERROR_BUILD;
 			done.add_one_neg(link.avoid); 
-			if (! option_keep_going) 
-				throw error;  
+			raise(ERROR_BUILD);
 			return false;
 		}		
 	}
@@ -645,7 +647,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	if (option_question) {
 		puts("Targets are not up to date");
-		exit(ERROR_NOT_UP_TO_DATE);
+		exit(ERROR_BUILD);
 	}
 
 	worked= true; 
@@ -697,9 +699,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		if (pid < 0) {
 			/* Starting the job failed */ 
 			print_traces(fmt("error executing command for %s", target.format())); 
-			if (! option_keep_going) 
-				exit(ERROR_BUILD); 
-			error |= ERROR_BUILD;
+			raise(ERROR_BUILD);
 			done.add_neg(link.avoid); 
 			return false;
 		}
@@ -822,12 +822,9 @@ void Execution::waited(int pid, int status)
 					 * which case we ignore that error */ 
 					if (0 > lstat(target.name.c_str(), &buf)) {
 						perror(target.name.c_str()); 
-						error |= ERROR_BUILD;
-						if (! option_keep_going)
-							throw error; 
+						raise(ERROR_BUILD);
 					}
 					if (! S_ISLNK(buf.st_mode)) {
-						error |= ERROR_BUILD;
 						rule->place <<
 							fmt("timestamp of file '%s' "
 							    "after execution of its command is older than %s startup", 
@@ -837,26 +834,21 @@ void Execution::waited(int pid, int status)
 						print_info(fmt("Startup timestamp is %s",
 							       Timestamp::startup.format())); 
 						print_traces();
-						if (! option_keep_going)
-							throw error; 
+						raise(ERROR_BUILD);
 					}
 				}
 			} else {
-				error |= ERROR_BUILD; 
+				exists= -1;
 				rule->command->place <<
 					fmt("file '%s' was not built by command", 
 					    target.name); 
 				print_traces();
-				exists= -1;
-				if (! option_keep_going)
-					throw error; 
+				raise(ERROR_BUILD);
 			}
 		}
 
 	} else {
 		/* Command failed */ 
-
-		error |= ERROR_BUILD; 
 
 		string reason;
 		if (WIFEXITED(status)) {
@@ -876,8 +868,7 @@ void Execution::waited(int pid, int status)
 
 		remove_if_existing(true); 
 
-		if (! option_keep_going)
-			throw error; 
+		raise(ERROR_BUILD);
 	}
 }
 
@@ -1069,14 +1060,12 @@ void Execution::unlink(Execution *const parent,
 		error_fd:
 			close(fd); 
 		error:
-			parent->error |= ERROR_BUILD;
 			child->param_rule->place_param_target.place <<
 				fmt("generated file '%s' for variable dependency was built but cannot be found now", 
 				    filename);
 			child->print_traces();
 
-			if (! option_keep_going)
-				throw parent->error; 
+			parent->raise(ERROR_BUILD); 
 		}
 	}
 
@@ -1190,8 +1179,7 @@ Execution::Execution(Target target_,
 				if (0 > ret_stat) {
 					if (errno != ENOENT) {
 						perror(target.name.c_str()); 
-						if (! option_keep_going)
-							exit(ERROR_BUILD); 
+						raise(ERROR_BUILD); 
 					}
 					/* File does not exist and there is no rule for it */ 
 					error |= ERROR_BUILD;
@@ -1203,7 +1191,7 @@ Execution::Execution(Target target_,
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */ 
 						printf("No rule for building '%s', but the file exists\n", 
-							   target.name.c_str()); 
+						       target.name.c_str()); 
 					} 
 				}
 			}
@@ -1216,9 +1204,7 @@ Execution::Execution(Target target_,
 		if (rule_not_found) {
 			assert(rule == nullptr); 
 			print_traces(fmt("no rule to build %s", target.format()));
-			error |= ERROR_BUILD;
-			if (! option_keep_going) 
-				throw error;  
+			raise(ERROR_BUILD);
 			/* Even when a rule was not found, the Execution object remains
 			 * in memory */  
 		}
@@ -1538,9 +1524,7 @@ Execution *Execution::get_execution(const Target &target,
 	}
 
 	if (find_cycle(parent, execution)) {
-		parent->error |= ERROR_LOGICAL;
-		if (! option_keep_going) 
-			throw parent->error;
+		parent->raise(ERROR_LOGICAL);
 		return nullptr;
 	}
 
@@ -1588,9 +1572,7 @@ void Execution::read_dynamics(Stack avoid,
 				target_file.type= T_FILE;
 				print_traces(fmt("%s is declared here", 
 						 target_file.format())); 
-				error |= ERROR_LOGICAL; 
-				if (! option_keep_going) 
-					throw error; 
+				raise(ERROR_LOGICAL);
 				continue; 
 			}
 
@@ -1608,9 +1590,7 @@ void Execution::read_dynamics(Stack avoid,
 					    dep->place_param_target.format_mid());
 				print_traces(fmt("within multiply-dynamic dependency %s", 
 						 target.format())); 
-				error |= ERROR_LOGICAL;
-				if (!option_keep_going) 
-					throw error; 
+				raise(ERROR_LOGICAL);
 				continue; 
 			}
 
@@ -1633,9 +1613,7 @@ void Execution::read_dynamics(Stack avoid,
 					target_file.type= T_FILE;
 					print_traces(fmt("%s is declared here", 
 							 target_file.format())); 
-					error |= ERROR_LOGICAL;
-					if (! option_keep_going) 
-						throw error; 
+					raise(ERROR_LOGICAL);
 					continue; 
 				}
 			}
@@ -1692,18 +1670,19 @@ void Execution::read_dynamics(Stack avoid,
 				Target target_file= target;
 				target_file.type= T_FILE;
 				print_traces(fmt("%s is declared here", target_file.format())); 
-				error |= ERROR_LOGICAL; 
-				if (! option_keep_going) 
-					throw error; 
+				raise(ERROR_LOGICAL);
 				continue; 
 			}
 		}
 				
 		if (i != tokens.end()) {
 			(*i)->get_place() << "expected a dependency";
-			throw ERROR_LOGICAL;
+			raise(ERROR_LOGICAL); 
 		}
 	} catch (int e) {
+		/* We catch not only the errors raise in this function,
+		 * but also the errors raised in the parser.  
+		 */
 		assert(e >= 1 && e <= 3); 
 		error |= e;
 		if (! option_keep_going) 
@@ -1880,7 +1859,6 @@ bool Execution::deploy(const Link &link,
 		if (target_child.type == T_PHONY) {
 			/* The dynamic dependency contains a phony,
 			 * i.e., something like [@target] */ 
-			error |= ERROR_LOGICAL;
 			direct_dependency->place <<
 				fmt("phony target %s must not appear "
 				    "as dynamic dependency for target %s", 
@@ -1888,8 +1866,7 @@ bool Execution::deploy(const Link &link,
 				    target.format());
 			print_traces(); 
 
-			if (! option_keep_going)
-				throw error;
+			raise(ERROR_LOGICAL);
 			return false;
 		}
 		target_child.type += dynamic_depth; 
@@ -1923,7 +1900,6 @@ bool Execution::deploy(const Link &link,
 
 		/* '!' and '?' encountered for the same target */ 
 
-		error |= ERROR_LOGICAL;
 		const Place &place_existence= 
 			link_child.dependency->get_place_existence();
 		const Place &place_optional= 
@@ -1937,8 +1913,7 @@ bool Execution::deploy(const Link &link,
 			    target_child.format());
 		print_traces();
 		explain_clash(); 
-		if (! option_keep_going)  
-			throw error;
+		raise(ERROR_LOGICAL);
 		return false;
 	}
 
@@ -1946,7 +1921,6 @@ bool Execution::deploy(const Link &link,
 	if ((flags_child & F_VARIABLE) &&
 	    (flags_child_additional & (F_EXISTENCE | F_OPTIONAL | F_TRIVIAL))) {
 
-		error |= ERROR_LOGICAL;
 		const Place &place_variable= direct_dependency->place;
 		if (flags_child_additional & F_EXISTENCE) {
 			const Place &place_flag= link_child.dependency->get_place_existence(); 
@@ -1969,8 +1943,7 @@ bool Execution::deploy(const Link &link,
 			place_flag << "using '&'";
 		} 
 		print_traces();
-		if (! option_keep_going)  
-			throw error; 
+		raise(ERROR_LOGICAL);
 		return false;
 	}
 

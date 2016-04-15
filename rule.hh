@@ -201,7 +201,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 	/* Check for an unparametrized rule.  Since we keep them in a
 	 * map by filename, there can only be a single matching rule to
 	 * begin with.  (I.e., if multiple unparametrized rules for the same
-	 * filename exist, then that error is catched earlier when the
+	 * filename exist, then that error is caught earlier when the
 	 * File_Rule_Set is built.)
 	 */ 
 	if (rules_unparametrized.count(target)) {

@@ -70,6 +70,15 @@ void init_buf();
 void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
 			     const char *string_);
 
+/* Read in an input file and add the rules to the given rule set.  If
+ * not yet non-null, set RULE_FIRST to the first rule.  FILE_FD can be
+ * -1 or the FD or the filename, if already opened. 
+ */
+void read_file(string filename,
+	       int file_fd,
+	       Rule_Set &rule_set, 
+	       shared_ptr <Rule> &rule_first);
+
 int main(int argc, char **argv, char **envp)
 {
 	/*
@@ -78,14 +87,9 @@ int main(int argc, char **argv, char **envp)
 	dollar_zero= argv[0]; 
 	envp_global= (const char **)envp; 
 
-	/* Either FILE_FD is initialized to a file that should be read
-	 * (the default file), or FILENAME is set by the -f option.  We
-	 * already open() the file here to save a stat() call. 
-	 * If FILE_FD is set, then FILENAME is set to the name of the
-	 * corresponding filename. 
+	/* Other files to read.  Entries are unique.
 	 */ 
-	int file_fd= -1;
-	string filename; 
+	vector <string> filenames;
 
 	init_buf();
 
@@ -94,7 +98,7 @@ int main(int argc, char **argv, char **envp)
 		const char *const stu_status= getenv("STU_STATUS");
 		if (stu_status != nullptr) {
 			print_error("Refusing to run recursive Stu; unset $STU_STATUS to circumvent");
-			exit(ERROR_SYSTEM); 
+			exit(ERROR_FATAL); 
 		}
 
 		/* Assemble targets here */ 
@@ -130,7 +134,7 @@ int main(int argc, char **argv, char **envp)
 					had_c_option= true; 
 					if (*optarg == '\0') {
 						print_error("Option -C must take non-empty argument"); 
-						exit(ERROR_SYSTEM);
+						exit(ERROR_FATAL);
 					}
 					const char *const name= optarg;
 					Type type= T_FILE;
@@ -144,15 +148,16 @@ int main(int argc, char **argv, char **envp)
 				}
 
 			case 'f':
-				if (filename != "") {
-					print_error("Option -f must be used at most once"); 
-					exit(ERROR_SYSTEM);
-				}
 				if (*optarg == '\0') {
 					print_error("Option -f must take non-empty argument");
-					exit(ERROR_SYSTEM);
+					exit(ERROR_FATAL);
 				}
-				filename= string(optarg); 
+
+				for (string &filename:  filenames) {
+					if (filename == optarg)  break;
+				}
+				filenames.push_back(optarg); 
+
 				break;
 
 			case 'j':
@@ -161,11 +166,11 @@ int main(int argc, char **argv, char **envp)
 				Execution::jobs= strtol(optarg, &endptr, 0);
 				if (errno != 0 || *endptr != '\0') {
 					print_error("Invalid argument to -j");
-					exit(ERROR_SYSTEM); 
+					exit(ERROR_FATAL); 
 				}
 				if (Execution::jobs < 1) {
 					print_error("Argument to -j must be positive");
-					exit(ERROR_SYSTEM); 
+					exit(ERROR_FATAL); 
 				}
 				break;
 
@@ -178,14 +183,14 @@ int main(int argc, char **argv, char **envp)
 					struct timeval tv;
 					if (gettimeofday(&tv, nullptr) != 0) {
 						perror("gettimeofday");
-						exit(ERROR_SYSTEM); 
+						exit(ERROR_FATAL); 
 					}
 					srand(tv.tv_sec + tv.tv_usec);
 				}
 				else if (!strcmp(optarg, "dfs"))     /* Default */ ;
 				else {
 					print_error(frmt("Invalid order '%s' for option -m", optarg));
-					exit(ERROR_SYSTEM); 
+					exit(ERROR_FATAL); 
 				}
 				break;
 
@@ -202,7 +207,7 @@ int main(int argc, char **argv, char **envp)
 				puts("There is NO WARRANTY, to the extent permitted by law.");
 				if (ferror(stdout)) {
 					perror("puts"); 
-					exit(ERROR_SYSTEM);
+					exit(ERROR_FATAL);
 				}
 				exit(0);
 
@@ -214,7 +219,7 @@ int main(int argc, char **argv, char **envp)
 					"To get a list of all options, use '%s -h'\n", 
 					dollar_zero); 
 
-				exit(ERROR_SYSTEM); 
+				exit(ERROR_FATAL); 
 			}
 		}
 
@@ -229,11 +234,19 @@ int main(int argc, char **argv, char **envp)
 			add_dependencies_string(dependencies, argv[i]);
 		}
 
-		/* Use the default Stu file, if it exists */ 
-		if (filename == "") {
-			file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY); 
+		/* Set to the first rule when there is one */ 
+		shared_ptr <Rule> rule_first;
+
+		for (string &filename:  filenames) {
+			read_file(filename, -1, Execution::rule_set, rule_first); 
+		}
+
+		/* Use the default Stu file if no file is given */ 
+		if (filenames.size() == 0) {
+			filenames.push_back(FILENAME_INPUT_DEFAULT); 
+			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY); 
 			if (file_fd >= 0) {
-				filename= FILENAME_INPUT_DEFAULT;
+				read_file(FILENAME_INPUT_DEFAULT, file_fd, Execution::rule_set, rule_first); 
 			} else {
 				if (errno == ENOENT) { 
 					/* The default file does not exist --
@@ -245,64 +258,42 @@ int main(int argc, char **argv, char **envp)
 						throw ERROR_LOGICAL; 
 					}
 				} else { 
-					/* Other errors by open() are system errors */ 
+					/* Other errors by open() are fatal */ 
 					perror(FILENAME_INPUT_DEFAULT);
-					exit(ERROR_SYSTEM);
+					exit(ERROR_FATAL);
 				}
 			}
 		}
 
-		/* Read input file */ 
-		if (filename != "") {
-
-			/* Tokenize */ 
-			vector <shared_ptr <Token> > tokens;
-			Place place_end;
-			Parse::parse_tokens_file(tokens, true, place_end, filename, file_fd); 
-
-			/* Build rules */
-			auto iter= tokens.begin(); 
-			Build build(tokens, iter, place_end);
-			vector <shared_ptr <Rule> > rules;
-			build.build_rule_list(rules); 
-			if (iter != tokens.end()) {
-				(*iter)->get_place() << "expected a rule"; 
-				throw ERROR_LOGICAL;
-			}
-			Execution::rule_set.add(rules);
-
-			/* If no targets are given on the command line,
-			 * use the first non-variable target */ 
-			if (dependencies.empty() && ! had_c_option && ! option_print) {
-				Place_Param_Target place_param_target; 
-
-				auto i= rules.begin();
-
-				if (i == rules.end()) {
-					print_error
-						(fmt("Input file '%s' does not contain rules and no target given", 
-						     filename)); 
-					throw ERROR_LOGICAL;
-				}
-
-				if ((*i)->place_param_target.place_param_name.get_n() != 0) {
-					(*i)->place <<
-						fmt("the first rule in input file '%s' must not be parametrized if no target is given",
-						    filename);
-					throw ERROR_LOGICAL;
-				}
-
-				dependencies.push_back
-					(make_shared <Direct_Dependency> (0, (*i)->place_param_target));  
-			}
-		} else {
-			/* We checked earlier that when no input file is
-			 * specified, there are targets given. */ 
-		}
+		assert(filenames.size() >= 1); 
 
 		if (option_print) {
 			Execution::rule_set.print(); 
 			exit(0); 
+		}
+
+		/* If no targets are given on the command line,
+		 * use the first non-variable target */ 
+		if (dependencies.empty() 
+		    && ! had_c_option) {
+
+			if (rule_first == nullptr) {
+				print_error
+					(filenames.size() == 1
+					 ? fmt("Input file '%s' does not contain any rules and no target given", 
+					       filenames.at(0))
+					 : "Input files do not contain any rules and no target given");
+				throw ERROR_FATAL;
+			}
+
+			if (rule_first->place_param_target.place_param_name.get_n() != 0) {
+				rule_first->place <<
+					"the first rule given must not be parametrized if no target is given";
+				throw ERROR_FATAL;
+			}
+
+			dependencies.push_back
+				(make_shared <Direct_Dependency> (0, rule_first->place_param_target));  
 		}
 
 		/* Execute */
@@ -311,11 +302,11 @@ int main(int argc, char **argv, char **envp)
 			/* We don't have to output any error here, because the
 			 * error(s) was/were already printed when it
 			 * occurred */  
-			assert(error >= 1 && error <= 3); 
+			assert(error >= 1 && error <= 4); 
 			throw error;
 		}
 	} catch (int error) {
-		assert(error >= 1 && error <= 3); 
+		assert(error >= 1 && error <= 4); 
 		exit(error); 
 	}
 
@@ -368,3 +359,36 @@ void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
 	}
 }
 
+void read_file(string filename,
+	       int file_fd,
+	       Rule_Set &rule_set, 
+	       shared_ptr <Rule> &rule_first)
+{
+	assert(file_fd == -1 || file_fd > 1); 
+
+	/* Tokenize */ 
+	vector <shared_ptr <Token> > tokens;
+	Place place_end;
+	Parse::parse_tokens_file(tokens, true, place_end, filename, file_fd); 
+
+	/* Build rules */
+	auto iter= tokens.begin(); 
+	Build build(tokens, iter, place_end);
+	vector <shared_ptr <Rule> > rules;
+	build.build_rule_list(rules); 
+	if (iter != tokens.end()) {
+		(*iter)->get_place() << "expected a rule"; 
+		throw ERROR_LOGICAL;
+	}
+
+	/* Add to set */
+	rule_set.add(rules);
+
+	/* Set the first one */
+	if (rule_first == nullptr) {
+		auto i= rules.begin();
+		if (i != rules.end()) {
+			rule_first= *i; 
+		}
+	}
+}

@@ -300,7 +300,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			}
 		} else
 			perror(filename.c_str()); 
-		exit(ERROR_SYSTEM); 
+		throw ERROR_LOGICAL; 
 
 	} catch (int error) {
 

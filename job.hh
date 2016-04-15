@@ -145,7 +145,7 @@ public:
 #endif
 			if (0 != sigprocmask(SIG_BLOCK, &set_interrupt, nullptr)) {
 				perror("sigprocmask");
-				exit(ERROR_SYSTEM); 
+				throw ERROR_FATAL;
 			}
 		}
 		~Signal_Blocker() {
@@ -154,7 +154,7 @@ public:
 #endif 
 			if (0 != sigprocmask(SIG_UNBLOCK, &set_interrupt, nullptr)) {
 				perror("sigprocmask");
-				exit(ERROR_SYSTEM); 
+				throw ERROR_FATAL; 
 			}
 		}
 	};
@@ -251,7 +251,7 @@ pid_t Job::start(string command,
 		/* Unblock interruption signals */ 
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_interrupt, nullptr)) {
 			perror("sigprocmask");
-			_Exit(ERROR_SYSTEM); 
+			_Exit(ERROR_FATAL); 
 		}
 
 		/* Set variables */ 
@@ -277,7 +277,7 @@ pid_t Job::start(string command,
 			/* alloca() should never return nullptr */ 
 			assert(false);
 			perror("alloca");
-			_Exit(ERROR_SYSTEM); 
+			_Exit(ERROR_FATAL); 
 		}
 		memcpy(envp, envp_global, v_old * sizeof(char **)); 
 		size_t i= v_old;
@@ -288,7 +288,7 @@ pid_t Job::start(string command,
 			char *combined;
 			if (0 > asprintf(&combined, "%s=%s", key.c_str(), value.c_str())) {
 				perror("asprintf");
-				_Exit(ERROR_SYSTEM); 
+				_Exit(ERROR_FATAL); 
 			}
 			if (old.count(key)) {
 				size_t v_index= old.at(key);
@@ -333,12 +333,12 @@ pid_t Job::start(string command,
 			int fd_output= creat(filename_output.c_str(), S_IRUSR | S_IWUSR); 
 			if (fd_output < 0) {
 				perror(filename_output.c_str());
-				_Exit(ERROR_SYSTEM); 
+				_Exit(ERROR_FATAL); 
 			}
 			int r= dup2(fd_output, 1); /* 1 = file descriptor of STDOUT */ 
 			if (r < 0) {
 				perror(filename_output.c_str());
-				_Exit(ERROR_SYSTEM); 
+				_Exit(ERROR_FATAL); 
 			}
 		}
 
@@ -347,7 +347,7 @@ pid_t Job::start(string command,
 			int r= dup2(fd_input, 0); /* 0 = file descriptor of STDIN */  
 			if (r < 0) {
 				perror(filename_input.c_str());
-				_Exit(ERROR_SYSTEM); 
+				_Exit(ERROR_FATAL); 
 			}
 		}
 
@@ -356,7 +356,7 @@ pid_t Job::start(string command,
 
 		assert(r == -1); 
 		perror("execve");
-		_Exit(ERROR_SYSTEM); 
+		_Exit(ERROR_FATAL); 
 	} 
 
 	/* Parent execution */
@@ -436,7 +436,7 @@ void Job::Statistics::print(bool allow_unterminated_jobs)
 	int r= getrusage(RUSAGE_CHILDREN, &usage);
 	if (r < 0) {
 		perror("getrusage");
-		exit(ERROR_SYSTEM); 
+		throw ERROR_FATAL; 
 	}
 
 	if (! allow_unterminated_jobs)
@@ -505,13 +505,13 @@ Job::Signal::Signal()
 	act_interrupt.sa_handler= handler_interrupt;
 	if (0 != sigemptyset(&act_interrupt.sa_mask))  {
 		perror("sigemptyset");
-		exit(ERROR_SYSTEM); 
+		exit(ERROR_FATAL); 
 	}
 	act_interrupt.sa_flags= 0; 
 
 	if (0 != sigemptyset(&set_interrupt))  {
 		perror("sigemptyset");
-		exit(ERROR_SYSTEM); 
+		exit(ERROR_FATAL); 
 	}
 
 	/* These are all signals that by default would terminate the process */ 
@@ -521,30 +521,30 @@ Job::Signal::Signal()
 	for (unsigned i= 0;  i < sizeof(signals) / sizeof(int);  ++i) {
 		if (0 != sigaction(signals[i], &act_interrupt, nullptr)) {
 			perror("sigaction");
-			exit(ERROR_SYSTEM); 
+			exit(ERROR_FATAL); 
 		}
 		if (0 != sigaddset(&set_interrupt, signals[i])) {
 			perror("sigaddset");
-			exit(ERROR_SYSTEM); 
+			exit(ERROR_FATAL); 
 		}
 	}
 	
 	/* Block signals so we can use sigwait() to receive them */ 
 	if (0 != sigemptyset(&set_block)) {
 		perror("sigemptyset");
-		exit(ERROR_SYSTEM); 
+		exit(ERROR_FATAL); 
 	}
 	if (0 != sigaddset(&set_block, SIGCHLD)) {
 		perror("sigaddset");
-		exit(ERROR_SYSTEM);
+		exit(ERROR_FATAL);
 	}
 	if (0 != sigaddset(&set_block, SIGUSR1)) {
 		perror("sigaddset");
-		exit(ERROR_SYSTEM); 
+		exit(ERROR_FATAL); 
 	}
 	if (0 != sigprocmask(SIG_BLOCK, &set_block, nullptr)) {
 		perror("sigprocmask");
-		exit(ERROR_SYSTEM); 
+		exit(ERROR_FATAL); 
 	}
 }
 

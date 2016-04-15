@@ -1,10 +1,6 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
-# Allow multiple input files with the -f option. 
-#
-
-#
 # Option to pass rules in full Stu syntax (-F)
 #
 
@@ -90,11 +86,12 @@ A:  [@x];
 
 # Include rules for C++ compilation; may search within predefined paths
 # ($STUPATH) 
-%include c++.stu
+% include c++.stu
+% include static/
  
 # Import all rules from subdirectory; will prepend the directory name to
-# all targets.  Can take a directory name to denote the file main.stu
-# within it. 
+# all targets.  Rules from there will be executed from within the
+# directory as current directory. 
 %import src/main.stu
 %import src/
 

@@ -48,26 +48,28 @@
 
 #define ERROR_BUILD          1
 #define ERROR_LOGICAL        2
-#define ERROR_SYSTEM         4
-#define ERROR_NOT_UP_TO_DATE 5
+#define ERROR_FATAL          4
 
-/* Build errors (code 1) are the most common errors encountered by Stu:
- * commands that fail, files that cannot be accessed, etc.  Stu will
- * continue execution after a build error when the -k option is used.
+/* Errors 1 and 2 are recoverable.  If the -k option is given, Stu notes
+ * these errors and continues.  If the -k option is not given, they
+ * cause Stu to abort.  When the -k option is used, the final exit code
+ * may combine errors 1 and 2, giving exit code 3.  Error 4 is
+ * unrecoverable, and leads to Stu aborting immediately. 
  *
- * Logical errors (code 2) are mostly syntax errors in the source code,
- * but also things like cycles in the dependency graph.  Logical errors
- * indicate errors within the Stu files.  Logical errors may or may not
- * make Stu abort execution.
+ * Build errors (code 1) are errors encountered during the normal
+ * operation of Stu.  They indicate failures of the executed commands or
+ * errors with files.  Exit code 1 is also used for the -q option, when
+ * the targets are not up to date.  
+ *
+ * Logical errors (code 2) are errors with the usage of Stu.  These are
+ * for instance syntax errors in the source code and cycles in the
+ * dependency graph.  
  * 
- * System errors (code 4) are errors that lead Stu to abort immediately,
+ * Fatal errors (code 4) are errors that lead Stu to abort immediately,
  * even when the -k option is used.  
  *
- * The "not up to date" code (5) is only used as an exit code with in
- * question mode (option -q). 
- * 
  * Build and logical errors can be combined to give error code 3.
- * System errors are never combined with other errors as they make Stu
+ * Fatal errors are never combined with other errors as they make Stu
  * abort immediately. 
  */
 

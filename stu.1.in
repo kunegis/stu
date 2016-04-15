@@ -48,7 +48,8 @@ Pass a target filename, without Stu syntax.
 .IP "-f FILENAME"
 Read the given file instead of the default 'main.stu'.  If the name of a
 directory is passed, the file 'main.stu' in the given directory is
-read.  If '-' is passed, read standard input.
+read.  If '-' is passed, read standard input.  The '-f' option can be
+used multiple times.  
 .IP -g
 Treat all optional dependencies (declared with '?') as non-optional.
 .IP -h
@@ -82,7 +83,7 @@ format is not specified.
 .IP "-q"
 Question mode; do not execute any commands.  Instead, determine whether
 the given targets are up to date.  The exit code is 0 when all given
-targets (or the default target) are up to date, and 5 otherwise. 
+targets (or the default target) are up to date, and 1 otherwise. 
 .IP -s
 Silent mode; do not output the commands that are executed.  This option
 is compatible to the same option in Make. 
@@ -579,20 +580,20 @@ non-existing file will be treated as a non-existing file.
 .IP 0
 Everything was built successfully or was up to date already.
 .IP 1
-Build error.  Example:  a child process produced an error, or a
-dependency was not found and no rule was given for it.
+Build error.   These indicate errors in the commands invoked and files
+read by Stu.  Example:  a child process produced an error, or a
+dependency was not found and no rule was given for it.  When using the
+-q option, the exit code is 1 when the given targets are not up to
+date. 
 .IP 2
-Logical error.  Examples:  syntax error in input file, syntax error in
-dynamic dependency, cycle in the dependency graph.   
+Logical error.  These indicate errors in the usage of Stu.  Examples are
+syntax errors in Stu sources and cycles in the dependency graph. 
 .IP 3
 Both build and logical errors were encountered (when using the -k
 option).  
 .IP 4
 An error occurred that made Stu abort execution immediately, regardless of
-whether the -k option was used.  Examples:  permission denied to access
-the source file, cannot start child process, invalid invocation. 
-.IP 5
-The targets are not up to date (when using the -q option). 
+whether the -k option was used.  
 
 .SH "ENVIRONMENT"
 

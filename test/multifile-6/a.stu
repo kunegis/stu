@@ -1,0 +1,3 @@
+# First rule of first input file is parametrised -- error 
+
+list.$name { touch "list.$name" }

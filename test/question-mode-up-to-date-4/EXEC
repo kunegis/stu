@@ -35,7 +35,7 @@ rm -f P Q R
 ../../stu -q >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 5 ] || {
+[ "$exitcode" = 1 ] || {
 	echo >&2 "*** (2) Exit code"
 	exit 1
 }
@@ -60,7 +60,7 @@ touch P
 ../../stu -q >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 5 ] || {
+[ "$exitcode" = 1 ] || {
 	echo >&2 "*** (3) Exit code"
 	exit 1
 }
@@ -85,7 +85,7 @@ touch Q
 ../../stu -q >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 5 ] || {
+[ "$exitcode" = 1 ] || {
 	echo >&2 "*** (4) Exit code"
 	exit 1
 }
@@ -110,7 +110,7 @@ touch R
 ../../stu -q >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 5 ] || {
+[ "$exitcode" = 1 ] || {
 	echo >&2 "*** (5) Exit code"
 	exit 1
 }
@@ -136,7 +136,7 @@ touch Q
 ../../stu -q >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 5 ] || {
+[ "$exitcode" = 1 ] || {
 	echo >&2 "*** (6) Exit code"
 	exit 1
 }
@@ -162,7 +162,7 @@ touch R
 ../../stu -q >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 5 ] || {
+[ "$exitcode" = 1 ] || {
 	echo >&2 "*** (7) Exit code"
 	exit 1
 }
@@ -188,7 +188,7 @@ touch R
 ../../stu -q >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 5 ] || {
+[ "$exitcode" = 1 ] || {
 	echo >&2 "*** (8) Exit code"
 	exit 1
 }

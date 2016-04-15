@@ -33,7 +33,7 @@ rm -f A
 ../../stu -q >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 5 ] || {
+[ "$exitcode" = 1 ] || {
 	echo >&2 "*** (2) Exit code"
 	exit 1
 }

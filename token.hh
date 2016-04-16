@@ -72,12 +72,11 @@ class Command
 	:  public Token
 {
 private:
-	/* The individual lines of the command. 
-	 * Empty lines and leading spaces are not included.  These lines
-	 * are only used for output, not for execution. 
-	 * May be NULLPTR.  Generated on demand. 
+	/* The individual lines of the command.  Empty lines and leading
+	 * spaces are not included.  These lines are only used for
+	 * output, not for execution.  May be null.  Generated on
+	 * demand.  
 	 */ 
-	
 	unique_ptr <vector <string> > lines;
 
 public:

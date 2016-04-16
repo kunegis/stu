@@ -10,6 +10,11 @@
 #==== Normal features ====
 
 #
+# Option -W FILENAME:   What-if mode.  Pretend that file FILENAME has
+# just been modified. 
+#
+
+#
 # Use the full autoconf/automake/etc. toolchain for better portability. 
 #
 # Things to check for:

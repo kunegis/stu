@@ -46,25 +46,6 @@ prog:  prog.c
 }
 
 #
-# Option -W FILENAME:   What-if mode.  Pretend that file FILENAME has
-# just been modified. 
-#
-
-#
-# Have a way for dynamic dependencies to contain \0-separated filenames,
-# to avoid quoting. 
-#
-
-A: [B],0 { xargs -0 B ... }
-
->B:  {
-	find ... -print0
-}
-
-# Alternatively, detect such files automatically. (e.g., any file
-# containing the zero character is such a file, or using specific endings.)
-
-#
 # Phonies in dynamics
 #
 
@@ -127,6 +108,20 @@ A B C;
 
 # This will allow a lone semicolon as a no-op:
 ;
+
+#
+# Have a way for dynamic dependencies to contain \0-separated filenames,
+# to avoid quoting. 
+#
+
+A: [B],0 { xargs -0 B ... }
+
+>B:  {
+	find ... -print0
+}
+
+# Alternatively, detect such files automatically. (e.g., any file
+# containing the zero character is such a file, or using specific endings.)
 
 #
 # When including files using dynamic dependencies, make a

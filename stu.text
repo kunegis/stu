@@ -520,6 +520,7 @@ TOKENIZATION
            &     Trivial dependency
            >     Output redirection
            <     Input redirection
+           =     Assignment of content
            { }   Command
            ( )   List
            [ ]   Dynamic dependency
@@ -532,7 +533,7 @@ TOKENIZATION
 
        The following characters are reserved for future extension:
 
-           * = \ | ,
+           * \ | ,
 
 
 SYNTAX
@@ -727,4 +728,4 @@ SEE ALSO
 
 
 
-stu-1.9.45                        April 2016                            STU(1)
+stu-1.10.0                        April 2016                            STU(1)

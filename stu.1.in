@@ -521,6 +521,7 @@ unquoted filenames:
     &     Trivial dependency
     >     Output redirection
     <     Input redirection
+    =     Assignment of content
     { }   Command
     ( )   List
     [ ]   Dynamic dependency
@@ -533,7 +534,7 @@ other tokens by whitespace.
 
 The following characters are reserved for future extension:
 
-    * = \\ | , 
+    * \\ | , 
 
 .SH "SYNTAX"
 

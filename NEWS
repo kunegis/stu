@@ -6,6 +6,15 @@ are added, which are documented in this file.  When the major version is
 increased, backward-incompatible changes are made, which are documented
 in the file MIGRATION. 
 
+2016-04-17  Version 1.10:
+
+* Content can be assigned to files using the following syntax:
+
+A = { CONTENT ... }
+
+This works only with file targets without dependencies, and without
+output redirection.  
+
 2016-03-26  Version 1.9:
 
 * The algorithm for trivial dependencies (marked with '&') has been

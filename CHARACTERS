@@ -25,9 +25,9 @@ ASCII control characters (except those that are space)
 %	Statements (followed by the statement name, and optionally followed
 	by arguments depending on the statement); comparable to preprocessor
 	directives 
-" '	Quotes; introducing quoted names 
-{}	Command; contain shell script code
-$	Parameter / variable dependencies 
+" '	Quotes 
+{}	Command, content
+$	Parameter, variable dependencies 
 
 == Operators == 
 
@@ -43,10 +43,10 @@ These characters are single-character tokens.
 !	Existence-only dependency
 ?	Optional dependency 
 &	Trivial dependency
+=	Assignment (future: copy, named variable)
 
 == As-yet unused operators ==
 
-=	Variable dependency name assignment / file copy / here-document 
 *	String concatenation 
 ,	modifiers (e.g., ',0' for \0-separated input files). 
 \	interpreter for non-shell rules:  \octave { }

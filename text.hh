@@ -1,10 +1,22 @@
-#ifndef FRMT_HH
-#define FRMT_HH
+#ifndef TEXT_HH
+#define TEXT_HH
+
+/* Text functions. 
+ */
 
 #include <stdarg.h>
-#include <stdlib.h>
+#include <string.h>
 
-/* Two formatting functions.
+#include <string>
+
+/* Functions named format() returned a optionally quoted and printable
+ * representation of the target.  These are inserted directly into
+ * output of Stu (without adding quotes).  format_mid() is used when brackets
+ * of any form are added around.  format_bare() returns the always unquoted
+ * string.  
+ *
+ * Format functions are defined in the source files where their datatype
+ * is defined. 
  */
 
 /* This is a convenient function for performing printf-like formatting
@@ -100,4 +112,49 @@ string fmt(const char *s, T value, Args... args)
 	return ret + value + fmt(s, args...); 
 }
 
-#endif /* ! FRMT_HH */
+/* Format a character for output */ 
+string format_char(char c)
+{
+	assert(0x5C == '\\'); 
+
+	string text_char;
+	if (c >= 0x20 && c <= 0x7E && c != 0x5C) 
+		text_char= c;
+	else if (c == 0x5C)
+		text_char= "\\\\";
+	else if (c == 0x00)
+		text_char= "\\0";
+	else
+		text_char= frmt("\\%03o", (unsigned char) c);
+
+	return fmt("'%s'", text_char); 
+}
+
+/*
+ * Padding for verbose output.  During the lifetime of an object,
+ * padding is increased by one. 
+ */
+class Verbose
+{
+private:
+	static string padding_current;
+
+public:
+	Verbose() 
+	{
+		padding_current += "   ";
+	}
+
+	~Verbose() 
+	{
+		padding_current.resize(padding_current.size() - 3);
+	}
+
+	static const char *padding() {
+		return padding_current.c_str(); 
+	}
+};
+
+string Verbose::padding_current= "";
+
+#endif /* ! TEXT_HH */

@@ -2,7 +2,7 @@
 
 rm -f stderr
 
-../../stu -c '%version 0.9' >list.out 2>list.err
+../../stu -C '%version 0.9' >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 2 ] || {

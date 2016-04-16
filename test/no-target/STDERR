@@ -1,4 +1,1 @@
 ../../stu: *** No target given and no default file 'main.stu' present
-Explanation: There must be either a target given as an argument to Stu
-invocation, a -c or -C option, an -f option with a default target, or a file
-'main.stu' with a default target.

@@ -1,2 +1,2 @@
-../../stu: option requires an argument -- 'C'
+../../stu: option requires an argument -- 'c'
 To get a list of all options, use '../../stu -h'

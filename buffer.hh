@@ -3,9 +3,9 @@
 
 /* A queue or vector of links */
 
-#include "link.hh"
-
 #include <queue>
+
+#include "link.hh"
 
 /* A random number in [0...n-1]. 
  */

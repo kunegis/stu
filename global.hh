@@ -9,6 +9,9 @@
 /* The -a option (consider all trivial dependencies to be non-trivial) */ 
 static bool option_nontrivial= false;
 
+/* The -E option (explain error messages) */
+static bool option_explain= false;
+
 /* The -g option (consider all optional dependencies to be non-optional) */
 static bool option_nonoptional= false;
 

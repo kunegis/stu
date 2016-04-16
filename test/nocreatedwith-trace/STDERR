@@ -2,6 +2,3 @@ main.stu:5:1: file without command 'D' does not exist, although all its dependen
 main.stu:4:4: 'D' is needed by 'C'
 main.stu:3:4: 'C' is needed by 'B'
 main.stu:2:4: 'B' is needed by 'A'
-Explanation: If a file rule has no command, this means that the file
-is always up-to-date whenever its dependencies are up to date.  In general,
-this means that the file is generated in conjunction with its dependencies.

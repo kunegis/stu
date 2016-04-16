@@ -1,15 +1,15 @@
 #ifndef JOB_HH
 #define JOB_HH
 
-/* Handling of child processes. 
- * 
- * This file also handles all signal-related things. 
+/* Handling of child processes, inlcuding signal-related issues.  
  */
 
+#include <fcntl.h>
 #include <signal.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <sys/resource.h>
+#include <sys/wait.h>
+
+#include <unordered_map>
 
 /* Called to terminate all running processes, and remove their target
  * files if present */

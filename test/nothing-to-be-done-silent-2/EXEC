@@ -1,0 +1,29 @@
+#! /bin/sh
+
+rm -f ?
+
+touch A
+
+../../stu -s >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** Exit code"
+	exit 1
+}
+
+[ -r list.out -a \! -s list.out ] || {
+	echo >&2 "*** stdout"
+	echo list.out:
+	echo _______
+	cat list.out
+	echo _______
+	exit 1
+}
+
+[ -r list.err -a \! -s list.err ] || {
+	echo >&2 "*** stderr"
+	exit 1
+}
+
+exit 0

@@ -4,19 +4,6 @@
 /* Data structures for representing tokens. 
  */
 
-#include <string>
-#include <vector>
-#include <map>
-#include <memory>
-#include <unordered_set>
-
-#include <assert.h>
-#include <string.h>
-#include <ctype.h>
-
-#include "error.hh"
-#include "target.hh"
-
 /* Is the character a space in the C locale? 
  * Note:  we don't use isspace() because isspace() uses the current
  * locale and may (in principle) consider locale-specific characters,

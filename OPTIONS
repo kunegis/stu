@@ -19,10 +19,11 @@ List of options
 -a  S      Consider trivial dependencies to be non-trivial
 -b  .   x  Enable backups (GNU Make: compatibility)
 -B  .   G  Re-make all
--c  S      Specify syntax (same as non-option arguments)
--C  S   x  Explicit target without syntax (GNU Make:  change directory)
+-c  S      Explicit target without syntax (GNU Make:  change directory)
+-C  S   x  Specify syntax (same as non-option arguments)
 -d      G  Print debugging information 
 -e    M G  Environment overrides Make macros
+-E  S      Explain errors
 -f  S M G  File
 -F  .      Pass rule on the command line
 -g  S      Consider optional dependencies to be non-optional 

@@ -53,7 +53,7 @@
 #              content.   
 # CMD          Additional command arguments passed to Stu.  Content may
 #  	       use shell quoting and escaping.  For instance, may
-#  	       contain -c ' A ' to pass an argument beginning and ending
+#  	       contain -C ' A ' to pass an argument beginning and ending
 #              in space to Stu. 
 # PARALLEL     Give the arguments of the -j option for which the test is
 #              to be executed 

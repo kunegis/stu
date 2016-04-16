@@ -1,6 +1,6 @@
 /*
- * The main entry point of Stu.  See the manpage for a description of
- * options, exit codes, etc.  
+ * The top-level source code file, which includes the main() function.
+ * See the manpage for a description of options, exit codes, etc.  
  */
 
 /* Enable bounds checking when using GNU libc.  Must be defined before
@@ -15,57 +15,60 @@
  */
 using namespace std; 
 
-#include "token.hh"
-#include "rule.hh"
-#include "error.hh"
-#include "parse.hh"
-#include "build.hh"
-#include "execution.hh"
-#include "version.hh"
-
+#include <unistd.h>
 #include <sys/time.h>
+
+#include <memory>
+#include <vector>
+
+#include "dependency.hh"
+#include "execution.hh"
+#include "rule.hh"
+#include "timestamp.hh"
 
 /* We use getopt(), which means that Stu does only support short
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-#define STU_OPTIONS "ac:C:f:ghj:kKm:M:pqsvVwxz"
+#define STU_OPTIONS "ac:C:Ef:F:ghj:kKm:M:pqsvVwxz"
 
 /* The following strings do not contain tabs, but only space characters */  
-#define STU_HELP							   \
-	"Usage:   stu [-f FILENAME] [OPTIONS...] [TARGETS...]\n"	   \
-	"By default, build the first target in the file 'main.stu'.\n"	   \
-	"TARGETS can be specified in full Stu syntax.\n"                   \
-	"Options:\n"							   \
-	"   -a            Treat all trivial dependencies as non-trivial\n"           \
-	"   -c EXPRESSION Pass a target in full Stu syntax\n"		             \
-	"   -C FILENAME   Pass a target filename without Stu syntax parsing\n"       \
-	"   -f FILENAME   The input file to use instead of 'main.stu'\n"             \
-	"   -g            Treat all optional dependencies as non-optional\n"         \
-	"   -h            Output help and exit\n"		                     \
-	"   -j K          Run K jobs in parallel\n"			             \
-	"   -k            Keep on running after errors\n"		             \
-	"   -K            Don't delete target files on error or interruption\n"      \
-	"   -m ORDER      Order to run the targets:\n"			             \
-	"      dfs        (default) Depth-first order, like in Make\n"	             \
-	"      random     Random order\n"				             \
-	"   -M STRING     Pseudorandom run order, seeded by given string\n"          \
-	"   -p            Print the rules and exit\n"                                \
-	"   -q            Question mode; check whether targets are up to date\n"     \
-	"   -s            Silent mode; do not output commands\n"	             \
-	"   -v            Verbose mode; show execution information on stderr\n"      \
-	"   -V            Output version and exit\n"				     \
-	"   -w            Short output; show target filenames instead of commands\n" \
-	"   -x            Ouput each command statement individually\n"               \
-	"   -z            Output runtime statistics on stdout\n"                     \
-	"Report bugs to: kunegis@gmail.com\n"                             \
+#define STU_HELP						       \
+	"Usage:   stu [-f FILENAME] [OPTIONS...] [TARGETS...]\n"       \
+	"By default, build the first target in the file 'main.stu'.\n" \
+	"TARGETS can be specified in full Stu syntax.\n"               \
+	"Options:\n"						       \
+	"   -a             Treat all trivial dependencies as non-trivial\n"          \
+	"   -c FILENAME    Pass a target filename without Stu syntax parsing\n"      \
+	"   -C EXPRESSIONS Pass a target in full Stu syntax\n"		             \
+	"   -E             Explain error messages\n"                                 \
+	"   -f FILENAME    The input file to use instead of 'main.stu'\n"            \
+	"   -F RULES       Pass rules in Stu syntax\n"                               \
+	"   -g             Treat all optional dependencies as non-optional\n"        \
+	"   -h             Output help and exit\n"		                     \
+	"   -j K           Run K jobs in parallel\n"			             \
+	"   -k             Keep on running after errors\n"		             \
+	"   -K             Don't delete target files on error or interruption\n"     \
+	"   -m ORDER       Order to run the targets:\n"			             \
+	"      dfs         (default) Depth-first order, like in Make\n"	             \
+	"      random      Random order\n"				             \
+	"   -M STRING      Pseudorandom run order, seeded by given string\n"         \
+	"   -p             Print the rules and exit\n"                               \
+	"   -q             Question mode; check whether targets are up to date\n"    \
+	"   -s             Silent mode; do not output commands\n"	             \
+	"   -v             Verbose mode; show execution information on stderr\n"     \
+	"   -V             Output version and exit\n"				     \
+	"   -w             Short output; show target filenames instead of commands\n"\
+	"   -x             Ouput each command statement individually\n"              \
+	"   -z             Output runtime statistics on stdout\n"                    \
+	"Report bugs to: kunegis@gmail.com\n" \
 	"Stu home page: <https:/""/github.com/kunegis/stu>\n"
 
 /* Initialize buffers; called once from main() */ 
 void init_buf(); 
 
 /* Parse a string of dependencies and add them to the vector. Used for
- * both the -c option and optionless arguments. 
+ * both the -C option and optionless arguments. 
  */
 void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
 			     const char *string_);
@@ -79,37 +82,46 @@ void read_file(string filename,
 	       Rule_Set &rule_set, 
 	       shared_ptr <Rule> &rule_first);
 
+void read_string(const char *s,
+		 Rule_Set &rule_set, 
+		 shared_ptr <Rule> &rule_first);
+
 int main(int argc, char **argv, char **envp)
 {
-	/*
-	 * Initialization codes 
-	 */
+	/* Initialization codes */
 	dollar_zero= argv[0]; 
 	envp_global= (const char **)envp; 
 
-	/* Other files to read.  Entries are unique.
-	 */ 
-	vector <string> filenames;
+	/* Refuse to run when $STU_STATUS is set */ 
+	const char *const stu_status= getenv("STU_STATUS");
+	if (stu_status != nullptr) {
+		print_error("Refusing to run recursive Stu; unset $STU_STATUS to circumvent");
+		exit(ERROR_FATAL); 
+	}
 
 	init_buf();
 
 	try {
-		/* Refuse to run when $STU_STATUS is set */ 
-		const char *const stu_status= getenv("STU_STATUS");
-		if (stu_status != nullptr) {
-			print_error("Refusing to run recursive Stu; unset $STU_STATUS to circumvent");
-			exit(ERROR_FATAL); 
-		}
+		/* Filenames passed using the -f option.  Entries are
+		 * unique and sorted as they were given, except
+		 * duplicates. */   
+		vector <string> filenames;
 
 		/* Assemble targets here */ 
 		vector <shared_ptr <Dependency> > dependencies; 
 
-		bool had_c_option= false;
+		/* Set to the first rule when there is one */ 
+		shared_ptr <Rule> rule_first;
+
+		bool had_option_c= false; /* Both lower and upper case */
+		bool had_option_f= false; /* Both lower and upper case */
+		bool had_option_F= false; /* Only -F */
 
 		for (int c; (c= getopt(argc, argv, STU_OPTIONS)) != -1;) {
 			switch (c) {
 
 			case 'a': option_nontrivial= true;     break;
+			case 'E': option_explain= true;        break;
 			case 'g': option_nonoptional= true;    break;
 			case 'h': fputs(STU_HELP, stdout);     exit(0);
 			case 'k': option_keep_going= true;     break;
@@ -124,16 +136,9 @@ int main(int argc, char **argv, char **envp)
 
 			case 'c': 
 				{
-					had_c_option= true; 
-					add_dependencies_string(dependencies, optarg);
-					break;
-				}
-
-			case 'C': 
-				{
-					had_c_option= true; 
+					had_option_c= true; 
 					if (*optarg == '\0') {
-						print_error("Option -C must take non-empty argument"); 
+						print_error("Option -c must take non-empty argument"); 
 						exit(ERROR_FATAL);
 					}
 					const char *const name= optarg;
@@ -147,6 +152,13 @@ int main(int argc, char **argv, char **envp)
 					break;
 				}
 
+			case 'C': 
+				{
+					had_option_c= true; 
+					add_dependencies_string(dependencies, optarg);
+					break;
+				}
+
 			case 'f':
 				if (*optarg == '\0') {
 					print_error("Option -f must take non-empty argument");
@@ -156,8 +168,15 @@ int main(int argc, char **argv, char **envp)
 				for (string &filename:  filenames) {
 					if (filename == optarg)  break;
 				}
+				had_option_f= true;
 				filenames.push_back(optarg); 
+				read_file(optarg, -1, Execution::rule_set, rule_first);
+				break;
 
+			case 'F':
+				had_option_f= true;
+				had_option_F= true; 
+				read_string(optarg, Execution::rule_set, rule_first);
 				break;
 
 			case 'j':
@@ -234,15 +253,8 @@ int main(int argc, char **argv, char **envp)
 			add_dependencies_string(dependencies, argv[i]);
 		}
 
-		/* Set to the first rule when there is one */ 
-		shared_ptr <Rule> rule_first;
-
-		for (string &filename:  filenames) {
-			read_file(filename, -1, Execution::rule_set, rule_first); 
-		}
-
-		/* Use the default Stu file if no file is given */ 
-		if (filenames.size() == 0) {
+		/* Use the default Stu file if -f/-F are not used */ 
+		if (! had_option_f) {
 			filenames.push_back(FILENAME_INPUT_DEFAULT); 
 			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY); 
 			if (file_fd >= 0) {
@@ -251,7 +263,7 @@ int main(int argc, char **argv, char **envp)
 				if (errno == ENOENT) { 
 					/* The default file does not exist --
 					 * fail if no target is given */  
-					if (dependencies.empty() && ! had_c_option && ! option_print) {
+					if (dependencies.empty() && ! had_option_c && ! option_print) {
 						print_error("No target given and no default file "
 							    "'" FILENAME_INPUT_DEFAULT "' present");
 						explain_no_target(); 
@@ -265,8 +277,6 @@ int main(int argc, char **argv, char **envp)
 			}
 		}
 
-		assert(filenames.size() >= 1); 
-
 		if (option_print) {
 			Execution::rule_set.print(); 
 			exit(0); 
@@ -274,15 +284,14 @@ int main(int argc, char **argv, char **envp)
 
 		/* If no targets are given on the command line,
 		 * use the first non-variable target */ 
-		if (dependencies.empty() 
-		    && ! had_c_option) {
+		if (dependencies.empty() && ! had_option_c) {
 
 			if (rule_first == nullptr) {
 				print_error
-					(filenames.size() == 1
+					((filenames.size() == 1 && ! had_option_F)
 					 ? fmt("Input file '%s' does not contain any rules and no target given", 
 					       filenames.at(0))
-					 : "Input files do not contain any rules and no target given");
+					 : "No rules and no targets given");
 				throw ERROR_FATAL;
 			}
 
@@ -370,6 +379,37 @@ void read_file(string filename,
 	vector <shared_ptr <Token> > tokens;
 	Place place_end;
 	Parse::parse_tokens_file(tokens, true, place_end, filename, file_fd); 
+
+	/* Build rules */
+	auto iter= tokens.begin(); 
+	Build build(tokens, iter, place_end);
+	vector <shared_ptr <Rule> > rules;
+	build.build_rule_list(rules); 
+	if (iter != tokens.end()) {
+		(*iter)->get_place() << "expected a rule"; 
+		throw ERROR_LOGICAL;
+	}
+
+	/* Add to set */
+	rule_set.add(rules);
+
+	/* Set the first one */
+	if (rule_first == nullptr) {
+		auto i= rules.begin();
+		if (i != rules.end()) {
+			rule_first= *i; 
+		}
+	}
+}
+
+void read_string(const char *s,
+		 Rule_Set &rule_set, 
+		 shared_ptr <Rule> &rule_first)
+{
+	/* Tokenize */ 
+	vector <shared_ptr <Token> > tokens;
+	Place place_end;
+	Parse::parse_tokens_string(tokens, true, place_end, s);
 
 	/* Build rules */
 	auto iter= tokens.begin(); 

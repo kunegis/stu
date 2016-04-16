@@ -41,15 +41,19 @@ Make.
 .SH OPTIONS
 .IP -a
 Treat all trivial dependencies (declared with '&') as non-trivial.
-.IP "-c EXPRESSION"
-Pass a target using full Stu syntax. 
-.IP "-C FILENAME"
+.IP "-c FILENAME"
 Pass a target filename, without Stu syntax. 
+.IP "-C EXPRESSION"
+Pass a target using full Stu syntax. 
+.IP "-E"
+Explain error messages. 
 .IP "-f FILENAME"
 Read the given file instead of the default 'main.stu'.  If the name of a
 directory is passed, the file 'main.stu' in the given directory is
 read.  If '-' is passed, read standard input.  The '-f' option can be
 used multiple times.  
+.IP "-F RULES"
+Pass rules in full Stu syntax. 
 .IP -g
 Treat all optional dependencies (declared with '?') as non-optional.
 .IP -h
@@ -543,9 +547,10 @@ introduced with '%'.
     variable_dependency: '$' '[' [flag*] ['<'] NAME ']'
     flag:                '!' | '?' | '&'
 
-The main Stu file must contain a 'rule_list', a file included by
-brackets must contain an 'expression_list', and the argument of the -c
-option must also contain an 'expression_list'.  
+Stu files read via the -f option or as the default Stu file, as well as
+the argument to the -F option must contain a 'rule_list'. 
+A file included by brackets as well as the argument to the -C option
+must contain an 'expression_list'. 
 
 .SH "SEMANTICS"
 
@@ -667,12 +672,17 @@ and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt.
     >CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=$VERSION }
     program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
 
-The -c option allows to pass any dependency in Stu syntax, and therefore
+The -C option allows to pass any dependency in Stu syntax, and therefore
 can be used in some advanced use cases:
 
-    stu -c '?X' # Re-build file 'X' only if it already exists
-    stu -c '[X]' # Build all files given in file 'X'
-    stu -c '%version 1.7' # Make sure Stu is compatible with the given version
+    stu -C '?X' # Re-build file 'X' only if it already exists
+    stu -C '[X]' # Build all files given in file 'X'
+    stu -C '%version 1.7' # Make sure Stu is compatible with the given version
+
+The -F option allows to define rules on the command line:
+
+    stu -F 'B:A {cp A B}' # Same as GNU's 'cp -u A B'
+    stu -F 'A;' # Check that the file 'A' exists
     
 .SH "LIMITATIONS, PITFALLS AND FUTURE DIRECTIONS"
 

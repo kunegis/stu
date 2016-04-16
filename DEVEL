@@ -1,0 +1,25 @@
+Some hints for developing Stu:
+
+* Increment the patch version number for any changes
+* Increment the minor version number when backward-compatible new syntax
+  is introduced   
+* Increment the major version number when backward-incompatible new
+  syntax is introduced 
+* The unit tests must pass
+* Following CODING
+* Write unit tests for all features, including failure modes 
+* When writing shell scripts, make sure to follow POSIX.  This includes: 
+** 'sed' has *only* basic regular expressions.  In particular, no '|'. 
+
+UNIT TESTS
+
+To run the unit tests, do 'make -f Makefile.test'.  It takes about 10
+minutes.  
+
+The unit tests have additional requirements: 
+
+* The unit tests assume that the file system supports UTF-8 filenames.
+  Stu will work without such a file system, but you can't run the unit
+  tests unless you remove the one offending test (test/unicode/).  
+* If you run the tests and they fail, please report that to Jérôme
+  Kunegis <kunegis@gmail.com>.  

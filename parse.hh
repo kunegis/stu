@@ -5,15 +5,9 @@
  * of tokens.  
  */
 
-#include <memory>
-#include <algorithm>
-
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <sys/mman.h>
 
+#include "token.hh"
 #include "version.hh"
 
 /* The default filename read.  Must be "main.stu". 
@@ -321,7 +315,7 @@ shared_ptr <Command> Parse::parse_command()
 {
 	assert(p < p_end && *p == '{');
 
-	const Place place_open(Place::Type::INPUT_FILE, filename, line, p - p_line);
+	const Place place_open(place_type, filename, line, p - p_line);
 
 	++p;
 
@@ -381,7 +375,7 @@ shared_ptr <Command> Parse::parse_command()
 				if (stack.empty()) {
 					const string command= string(p_beg, p - p_beg);
 					++p;
-					const Place place_command(Place::Type::INPUT_FILE,
+					const Place place_command(place_type,
 								  filename, line_command, column_command); 
 					return shared_ptr <Command> (new Command(command, place_command)); 
 				} else {
@@ -502,7 +496,7 @@ shared_ptr <Command> Parse::parse_command()
 
 shared_ptr <Place_Param_Name> Parse::parse_name()
 {
-	Place place_begin(Place::Type::INPUT_FILE, filename, line, p - p_line);
+	Place place_begin(place_type, filename, line, p - p_line);
 
 	shared_ptr <Place_Param_Name> ret{new Place_Param_Name("", place_begin)};
 
@@ -510,7 +504,7 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 		
 		if (*p == '\'' || *p == '"') {
 			char begin= *p; 
-			Place place_begin_quote(Place::Type::INPUT_FILE, filename, line, p - p_line); 
+			Place place_begin_quote(place_type, filename, line, p - p_line); 
 			++p;
 			while (p < p_end) {
 				if (*p == '\'' || *p == '"') {
@@ -558,14 +552,14 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 		} 
 
 		else if (*p == '$') {
-			Place place_dollar(Place::Type::INPUT_FILE, filename, line, p - p_line); 
+			Place place_dollar(place_type, filename, line, p - p_line); 
 			++p;
 			bool braces= false; 
 			if (p < p_end && *p == '{') {
 				++p;
 				braces= true; 
 			}
-			Place place_parameter_name(Place::Type::INPUT_FILE, filename, line, p - p_line); 
+			Place place_parameter_name(place_type, filename, line, p - p_line); 
 			const char *const p_parameter_name= p;
 			while (p < p_end && (isalnum(*p) || *p == '_')) {
 				++p;
@@ -691,8 +685,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 		/* Variable dependency */ 
 		else if (*p == '$' && p + 1 < p_end && p[1] == '[') {
-			Place place_dollar(Place::Type::INPUT_FILE, filename, line, p - p_line);
-			Place place_langle(Place::Type::INPUT_FILE, filename, line, p + 1 - p_line);
+			Place place_dollar(place_type, filename, line, p - p_line);
+			Place place_langle(place_type, filename, line, p + 1 - p_line);
 			tokens.push_back(shared_ptr <Token> (new Operator('$', place_dollar)));
 			tokens.push_back(shared_ptr <Token> (new Operator('[', place_langle))); 
 			p += 2;
@@ -723,7 +717,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 		/* Inclusion */ 
 		else if (*p == '%') {
-			Place place_percent(Place::Type::INPUT_FILE, filename, line, p - p_line); 
+			Place place_percent(place_type, filename, line, p - p_line); 
 			++p;
 			while (p < p_end && is_space(*p)) {
 				if (*p == '\n') {
@@ -736,7 +730,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 			const char *const p_name= p;
 
-			Place place_name(Place::Type::INPUT_FILE, filename, line, p_name - p_line); 
+			Place place_name(place_type, filename, line, p_name - p_line); 
 
 			while (p < p_end && isalnum(*p)) {
 				++p;
@@ -753,7 +747,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 				if (! allow_include) {
 					place_percent 
-						<< "'%include' is not allowed in dynamic dependencies or in the -c option"; 
+						<< "'%include' is not allowed in dynamic dependencies or in the -C option"; 
 					throw ERROR_LOGICAL;
 				}
 
@@ -828,7 +822,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					++p;
 				}
 				const string version_required(p_version, p - p_version); 
-				Place place_version(Place::Type::INPUT_FILE, filename, line, p_version - p_line); 
+				Place place_version(place_type, filename, line, p_version - p_line); 
 
 				parse_version(version_required, place_version); 
 				

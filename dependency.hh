@@ -1,7 +1,17 @@
 #ifndef DEPENDENCY_HH
 #define DEPENDENCY_HH
 
+/* Data types for representing dependencies. 
+ */
+
 #include <limits.h>
+
+#include <map>
+#include <memory>
+#include <string>
+
+#include "error.hh"
+#include "target.hh"
 
 /* The flags.  Each edge in the dependency graph is annotated with one
  * object of this type.  This contains bits related to what should be

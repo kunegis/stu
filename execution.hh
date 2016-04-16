@@ -1,42 +1,27 @@
 #ifndef EXECUTION_HH
 #define EXECUTION_HH
 
-/* Code for executing the building process itself.  This is by
- * far the longest source code file in Stu.  Each file or phony target
- * is represented at runtime by one Execution object.  All Execution objects
- * are allocated with new Execution(...), and are never deleted, as the
- * information contained in them needs to be cached.  All Execution objects
- * are also stored in the map called "executions_by_target" by their
- * target.  All currently active Execution objects form a rooted acyclic
- * graph.  Note that it is not a tree in the general case; executions
- * may have multiple parents.  But all nodes are reachable from the root
- * node.   
+/* Code for executing the building process itself.  This is by far the
+ * longest source code file in Stu.  Each file or phony target is
+ * represented at runtime by one Execution object.  All Execution
+ * objects are allocated with new Execution(...), and are never deleted,
+ * as the information contained in them needs to be cached.  All
+ * Execution objects are also stored in the map called
+ * "executions_by_target" by their target.  All currently active
+ * Execution objects form a rooted acyclic graph.  Note that it is not a
+ * tree in the general case; executions may have multiple parents.  But
+ * all nodes are reachable from the root node.   
  */
 
-#include <map> 
-#include <unordered_set>
+#include <sys/stat.h>
 
-#include "job.hh"
-#include "timestamp.hh"
 #include "buffer.hh"
-
-static string debug_padding= "";
-
-class Debug_Pad 
-{
-public:
-	Debug_Pad() 
-	{
-		debug_padding += "   ";
-	}
-
-	~Debug_Pad() 
-	{
-		debug_padding.resize(debug_padding.size() - 3);
-	}
-};
-
-#define debug_padding_str  debug_padding.c_str()
+#include "build.hh"
+#include "job.hh"
+#include "link.hh"
+#include "parse.hh"
+#include "rule.hh"
+#include "timestamp.hh"
 
 class Execution
 {
@@ -337,7 +322,7 @@ void Execution::wait()
 {
 	if (option_verbose) {
 		fprintf(stderr, "VERBOSE %s wait\n",
-			debug_padding_str); 
+			Verbose::padding()); 
 	}
 
 	assert(Execution::executions_by_pid.size()); 
@@ -347,7 +332,7 @@ void Execution::wait()
 
 	if (option_verbose) {
 		fprintf(stderr, "VERBOSE %s wait pid = %d\n", 
-			debug_padding_str,
+			Verbose::padding(),
 			(int) pid);
 	}
 
@@ -362,7 +347,7 @@ void Execution::wait()
 
 bool Execution::execute(Execution *parent, Link &&link)
 {
-	Debug_Pad debug_pad;
+	Verbose verbose;
 
 	assert(jobs >= 0); 
 	assert(link.avoid.get_k() == dynamic_depth(target.type)); 
@@ -378,7 +363,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		string text_avoid= link.avoid.format(); 
 
 		fprintf(stderr, "VERBOSE %s %s execute %s %s\n", 
-			debug_padding_str,
+			Verbose::padding(),
 			text_target.c_str(),
 			text_flags.c_str(),
 			text_avoid.c_str()); 
@@ -394,7 +379,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		if (option_verbose) {
 			string text_target= target.format(); 
 			fprintf(stderr, "VERBOSE %s %s finished\n",
-				debug_padding_str,
+				Verbose::padding(),
 				text_target.c_str());
 		}
 		return false;
@@ -691,7 +676,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		if (option_verbose) {
 			string text_target= this->target.format();
 			fprintf(stderr, "VERBOSE %s %s execute pid = %d\n", 
-				debug_padding_str,
+				Verbose::padding(),
 				text_target.c_str(),
 				(int)pid); 
 		}
@@ -892,7 +877,7 @@ int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 			do {
 				if (option_verbose) {
 					fprintf(stderr, "VERBOSE %s main.next\n", 
-						debug_padding_str);
+						Verbose::padding());
 				}
 				r= execution_root->execute(nullptr, move(link));
 			} while (r);
@@ -913,7 +898,7 @@ int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 			puts("Done");
 		}
 	
-		if (success && ! worked) {
+		if (success && ! worked && output_mode > Output::SILENT) {
 			puts("Nothing to be done"); 
 		}
 
@@ -958,7 +943,7 @@ void Execution::unlink(Execution *const parent,
 		string text_child= child->target.format();
 		string text_done_child= child->done.format();
 		fprintf(stderr, "VERBOSE %s %s unlink %s %s\n",
-			debug_padding_str,
+			Verbose::padding(),
 			text_parent.c_str(),
 			text_child.c_str(),
 			text_done_child.c_str());
@@ -1141,7 +1126,7 @@ Execution::Execution(Target target_,
 		string text_target= target.format();
 		string text_rule= rule == nullptr ? "(no rule)" : rule->format(); 
 		fprintf(stderr, "VERBOSE  %s   %s %s\n",
-			debug_padding_str,
+			Verbose::padding(),
 			text_target.c_str(),
 			text_rule.c_str()); 
 	}
@@ -1158,7 +1143,7 @@ Execution::Execution(Target target_,
 				string text_target= target.format();
 				string text_link_new= link_new.format(); 
 				fprintf(stderr, "VERBOSE %s    %s push %s\n",
-					debug_padding_str,
+					Verbose::padding(),
 					text_target.c_str(),
 					text_link_new.c_str()); 
 			}
@@ -1187,7 +1172,7 @@ Execution::Execution(Target target_,
 				} else {
 					/* File exists:  Do nothing, and there are no
 					 * dependencies to build */  
-					if (parent->target.type == T_ROOT) {
+					if (parent->target.type == T_ROOT && output_mode > Output::SILENT) {
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */ 
 						printf("No rule for building '%s', but the file exists\n", 
@@ -1829,7 +1814,7 @@ bool Execution::deploy(const Link &link,
 		string text_target= this->target.format();
 		string text_link_child= link_child.format(); 
 		fprintf(stderr, "VERBOSE %s %s deploy %s\n",
-			debug_padding_str,
+			Verbose::padding(),
 			text_target.c_str(),
 			text_link_child.c_str());
 	}

@@ -1,0 +1,56 @@
+#! /bin/sh
+
+#
+# (1) File does not exist
+#
+
+rm -f A
+
+../../stu -F 'A;' >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 1 ] || {
+	echo >&2 "*** (1) Exit code"
+	exit 1
+}
+
+grep -qF 'not exist' list.err || {
+	echo >&2 "*** (1) stderr A"
+	exit 1
+}
+
+grep -qF 'Command line argument' list.err || {
+	echo >&2 "*** (1) stderr B"
+	exit 1
+}
+
+[ -r list.out -a \! -s list.out ] || {
+	echo >&2 "*** (1) stdout"
+	exit 1
+}
+
+#
+# (2) File exists
+#
+
+touch A
+
+../../stu -F 'A;' >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** (2) Exit code"
+	exit 1
+}
+
+grep -qF 'Nothing to be done' list.out || {
+	echo >&2 "*** (2) stdout"
+	exit 1
+}
+
+[ -r list.err -a \! -s list.err ] || {
+	echo >&2 "*** (2) stderr"
+	exit 1
+}
+
+exit 0

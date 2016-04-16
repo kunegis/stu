@@ -6,7 +6,7 @@
 
 #include <unordered_map>
 
-#include "dependency.hh"
+#include "token.hh"
 
 /* A rule.  The class Rule allows parameters; there is no "unparametrized rule" class.  
  */ 

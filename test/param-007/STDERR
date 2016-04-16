@@ -1,3 +1,1 @@
 main.stu:8:9: invalid character '\011' in parameter
-Explanation: Parameter names can only include alphanumeric characters
-and underscores.

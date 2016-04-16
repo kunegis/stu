@@ -4,10 +4,12 @@
 /* Code for generating rules from a vector of tokens, i.e, for
  * performing the parsing of Stu syntax itself beyond tokenization.
  * This is a recursive descent parser. 
- */
-
-/* A Yacc-like syntax description is given in the manpage. 
+ * 
+ * A Yacc-like description of Stu syntax is given in the manpage. 
  */ 
+
+#include "rule.hh"
+#include "token.hh"
 
 /*
  * Operator precedence.  Higher in the list means higher precedence.  At
@@ -33,10 +35,6 @@
  * constructs (like '!' and '?' or '!' and '$[') are used together.
  * Instead, this is checked within Execution and not here, because these
  * can also come from dynamic dependencies. */
-
-#include <memory>
-
-#include "frmt.hh"
 
 /* An object of this type represents a location within a token list */ 
 class Build
@@ -198,7 +196,7 @@ shared_ptr <Rule> Build::build_rule()
 		(new Place_Param_Target(type, *target_name, place_target));
 
 	if (iter == tokens.end()) {
-		place_end << "expected a dependency or a command";
+		place_end << "expected a dependency, a command or ';'";
 		place_target << fmt("after target %s", place_param_target->format()); 
 		throw ERROR_LOGICAL;
 	}

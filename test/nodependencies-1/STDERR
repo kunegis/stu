@@ -1,4 +1,1 @@
 main.stu:4:1: file without command 'A' does not exist, although all its dependencies are up to date
-Explanation: If a file rule has no command, this means that the file
-is always up-to-date whenever its dependencies are up to date.  In general,
-this means that the file is generated in conjunction with its dependencies.

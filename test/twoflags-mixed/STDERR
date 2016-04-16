@@ -2,6 +2,3 @@ main.stu:1:5: declaration of existence-only dependency with '!'
 B:1:1: clashes with declaration of optional dependency with '?'
 B:1:2: in declaration of dependency 'C'
 main.stu:1:7: [B] is needed by 'A'
-Explanation: A dependency cannot be declared as existence-only
-(with '!') and optional (with '?') at the same time, as that would mean
-that its command is never executed.

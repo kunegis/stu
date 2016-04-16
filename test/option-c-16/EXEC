@@ -9,7 +9,7 @@ touch_old() {
 
 rm -f ?
 
-../../stu -c '?[X]' >list.out 2>list.err
+../../stu -C '?[X]' >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ]           || { echo >&2 '*** (1) exit code' ; exit 1 ; }
@@ -27,7 +27,7 @@ touch_old E
 touch_old F
 touch     P Q R
 
-../../stu -c '?[X]' >list.out 2>list.err
+../../stu -C '?[X]' >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ]           || { echo >&2 '*** (2) exit code' ; exit 1 ; }

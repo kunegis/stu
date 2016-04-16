@@ -221,6 +221,9 @@ public:
 			throw error;
 	}
 
+	void write_content(const char *filename, 
+			   Command &command); 
+
 	/* The currently running executions by process IDs */ 
 	static unordered_map <pid_t, Execution *> executions_by_pid;
 
@@ -245,7 +248,9 @@ public:
 	 */ 
 	static Rule_Set rule_set; 
 
-	/* Whether any job was started */ 
+	/* Whether something was done (either jobs were started or
+	 * files where created).  This is tracked for the purpose or the
+	 * "Nothing to be done" message. */ 
 	static bool worked;
 
 	/* Number of free slots for jobs.  This is a long because
@@ -628,7 +633,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 		return false;
 	}
 
-	/* There is a command, and it must be run */
+	/* The file must be created, either by a command or by hardcoded
+	 * content */ 
 
 	if (option_question) {
 		puts("Targets are not up to date");
@@ -637,6 +643,25 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	worked= true; 
 	
+	print_command();
+
+	if (rule->is_hardcode) {
+		assert(target.type == T_FILE);
+		
+		done.add_one_neg(0); 
+
+		if (option_verbose) {
+			string text_target= this->target.format();
+			fprintf(stderr, "VERBOSE %s %s create content\n",
+				Verbose::padding(),
+				text_target.c_str());
+		}
+
+		/* Create file with content */
+		write_content(target.name.c_str(), *(rule->command)); 
+		return false;
+	}
+
 	if (target.type == T_PHONY) {
 		Timestamp timestamp_now= Timestamp::now(); 
 		assert(timestamp_now.defined()); 
@@ -646,7 +671,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 	/* Output the command */ 
 	if (rule->redirect_output)
 		assert(rule->place_param_target.type == T_FILE); 
-	print_command();
 
 	/* Start the job */ 
 	assert(jobs >= 1); 
@@ -894,10 +918,6 @@ int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		if (! option_keep_going)
 			assert(success); 
 
-		if (worked && output_mode == Output::SHORT) {
-			puts("Done");
-		}
-	
 		if (success && ! worked && output_mode > Output::SILENT) {
 			puts("Nothing to be done"); 
 		}
@@ -1354,11 +1374,11 @@ shared_ptr <Trace> Execution::cycle_trace(const Execution *child,
 
 	const Link &link= child->parents.at((Execution *)parent); 
 
-	return shared_ptr <Trace> 
-		(new Trace(link.place,
-				   fmt("%s depends on %s", 
-					   cycle_string(parent),
-					   cycle_string(child)))); 
+	return make_shared <Trace> 
+		(link.place,
+		 fmt("%s depends on %s", 
+		     cycle_string(parent),
+		     cycle_string(child))); 
 }
 
 bool Execution::find_cycle(const Execution *const parent, 
@@ -1747,14 +1767,20 @@ void Execution::print_traces(string text) const
 
 void Execution::print_command() const
 {
+	if (output_mode < Output::SHORT)
+		return; 
+
 	if (output_mode == Output::SHORT) {
 		string text= target.format_bare();
 		puts(text.c_str()); 
 		return;
 	} 
 
-	if (output_mode < Output::SHORT)
-		return; 
+	if (rule->is_hardcode) {
+		string text= target.format(); 
+		printf("Creating %s\n", text.c_str());
+		return;
+	} 
 
 	if (option_individual)
 		return; 
@@ -1992,6 +2018,36 @@ void Execution::print_as_job() const
 	string text_target= target.format(); 
 
 	printf("%7u %s\n", (unsigned) pid, text_target.c_str());
+}
+
+void Execution::write_content(const char *filename, 
+			      Command &command)
+{
+	FILE *file= fopen(filename, "w"); 
+
+	if (file == nullptr) {
+		perror(filename);
+		command.get_place() << frmt("error creating %s", filename); 
+		raise(ERROR_BUILD); 
+	}
+
+	for (const string &line:  command.get_lines()) {
+		if (fwrite(line.c_str(), 1, line.size(), file) != line.size()) {
+			assert(ferror(file));
+			perror(filename);
+			raise(ERROR_BUILD); 
+		}
+		if (EOF == putc('\n', file)) {
+			perror(filename);
+			raise(ERROR_BUILD); 
+		}
+	}
+
+	if (0 != fclose(file)) {
+		perror(filename);
+		command.get_place() << frmt("error creating %s", filename); 
+		raise(ERROR_BUILD); 
+	}
 }
 
 #endif /* ! EXECUTION_HH */

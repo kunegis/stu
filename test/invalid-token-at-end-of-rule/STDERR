@@ -1,2 +1,2 @@
-main.stu:2:6: expected a dependency, a command or ';'
+main.stu:2:6: expected a dependency, a command, or ';'
 main.stu:2:1: for target 'A'

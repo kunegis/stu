@@ -1,30 +1,6 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
-# Hard-coded content
-#
-
-# Will the file begin and end with spaces?
-CFLAGS = { -g -Werror }
-
-# Will the file begin with a newline?   No.
-LIST = {
-aaa
-bbb
-ccc
-}
-
-# Will indentation be preserved?   No.
-LIST2 = {
-   aaa
-   bbb
-   ccc
-}
-
-# Empty file
-A = {}
-
-#
 # Copy rule
 #
 

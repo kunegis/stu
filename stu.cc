@@ -145,10 +145,9 @@ int main(int argc, char **argv, char **envp)
 					Type type= T_FILE;
 					Place place(Place::Type::ARGV, name, 1, 0);
 					dependencies.push_back
-						(shared_ptr <Dependency>
-						 (new Direct_Dependency
-						  (0, Place_Param_Target
-						   (type, Place_Param_Name(name, place)))));
+						(make_shared <Direct_Dependency>
+						 (0, Place_Param_Target
+						  (type, Place_Param_Name(name, place))));
 					break;
 				}
 

@@ -1,2 +1,2 @@
-main.stu:3:3: expected ':', a command or ';'
+main.stu:3:3: expected a command, ':', ';', or '='
 main.stu:3:1: for target 'A'

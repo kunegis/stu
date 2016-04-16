@@ -1,0 +1,7 @@
+# Will the file begin with a newline?   No.
+
+A = {
+aaa
+bbb
+ccc
+}

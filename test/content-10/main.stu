@@ -1,0 +1,5 @@
+# Will the file begin and end with spaces?  No.
+
+A :  B  { cp B A }
+
+B = { -g -Werror }

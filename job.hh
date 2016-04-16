@@ -244,14 +244,16 @@ pid_t Job::start(string command,
 		/* We are the child process */ 
 
 		/* Instead of throwing exceptions, use perror() and
-		 * _Exit() */ 
+		 * _Exit().  We return with ERROR_BUILD because only the
+		 * child process is aborted, not Stu. 
+		 */ 
 
 		in_child= 1; 
 
 		/* Unblock interruption signals */ 
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_interrupt, nullptr)) {
 			perror("sigprocmask");
-			_Exit(ERROR_FATAL); 
+			_Exit(ERROR_BUILD); 
 		}
 
 		/* Set variables */ 
@@ -277,7 +279,7 @@ pid_t Job::start(string command,
 			/* alloca() should never return nullptr */ 
 			assert(false);
 			perror("alloca");
-			_Exit(ERROR_FATAL); 
+			_Exit(ERROR_BUILD); 
 		}
 		memcpy(envp, envp_global, v_old * sizeof(char **)); 
 		size_t i= v_old;
@@ -288,7 +290,7 @@ pid_t Job::start(string command,
 			char *combined;
 			if (0 > asprintf(&combined, "%s=%s", key.c_str(), value.c_str())) {
 				perror("asprintf");
-				_Exit(ERROR_FATAL); 
+				_Exit(ERROR_BUILD); 
 			}
 			if (old.count(key)) {
 				size_t v_index= old.at(key);
@@ -333,12 +335,12 @@ pid_t Job::start(string command,
 			int fd_output= creat(filename_output.c_str(), S_IRUSR | S_IWUSR); 
 			if (fd_output < 0) {
 				perror(filename_output.c_str());
-				_Exit(ERROR_FATAL); 
+				_Exit(ERROR_BUILD); 
 			}
 			int r= dup2(fd_output, 1); /* 1 = file descriptor of STDOUT */ 
 			if (r < 0) {
 				perror(filename_output.c_str());
-				_Exit(ERROR_FATAL); 
+				_Exit(ERROR_BUILD); 
 			}
 		}
 
@@ -347,7 +349,7 @@ pid_t Job::start(string command,
 			int r= dup2(fd_input, 0); /* 0 = file descriptor of STDIN */  
 			if (r < 0) {
 				perror(filename_input.c_str());
-				_Exit(ERROR_FATAL); 
+				_Exit(ERROR_BUILD); 
 			}
 		}
 
@@ -356,7 +358,7 @@ pid_t Job::start(string command,
 
 		assert(r == -1); 
 		perror("execve");
-		_Exit(ERROR_FATAL); 
+		_Exit(ERROR_BUILD); 
 	} 
 
 	/* Parent execution */

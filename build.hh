@@ -139,7 +139,7 @@ shared_ptr <Rule> Build::build_rule()
 			throw ERROR_LOGICAL;
 		}
 		else if (! (dynamic_pointer_cast <Param_Name> (*iter) || 
-					is_operator('@'))) {
+			    is_operator('@'))) {
 			(*iter)->get_place() << "expected a filename";
 			place_output << "after '>'"; 
 			throw ERROR_LOGICAL;
@@ -192,11 +192,14 @@ shared_ptr <Rule> Build::build_rule()
 		throw ERROR_LOGICAL;
 	}
 
-	shared_ptr <Place_Param_Target> place_param_target
-		(new Place_Param_Target(type, *target_name, place_target));
+	shared_ptr <Place_Param_Target> place_param_target= make_shared <Place_Param_Target>
+		(type, *target_name, place_target);
 
 	if (iter == tokens.end()) {
-		place_end << "expected a dependency, a command or ';'";
+		place_end << 
+			(type == T_FILE
+			 ? "expected a command, ':', ';', or '='"
+			 : "expected a command, ':', or ';'");
 		place_target << fmt("after target %s", place_param_target->format()); 
 		throw ERROR_LOGICAL;
 	}
@@ -217,36 +220,69 @@ shared_ptr <Rule> Build::build_rule()
 
 	/* Command */ 
 	if (iter == tokens.end()) {
-		place_end << "excpected command or ';'";
+		if (had_colon)
+			place_end << "expected a dependency, a command, or ';'";
+		else
+			place_end << "expected a command, ';', ':', or '='";
 		place_target << fmt("for target %s", place_param_target->format());
 		throw ERROR_LOGICAL;
 	}
 
-	/* Remains nullptr when there is no command */ 
+	/* Remains null when there is no command */ 
 	shared_ptr <Command> command;
+
+	/* When command is not null, whether the command is a command or
+	 * hardcoded content */
+	bool is_hardcode;
+
 	/* Place of ';' */ 
 	Place place_nocommand; 
 
+	/* Place of '=' */
+	Place place_hardcode;
+
 	if (dynamic_pointer_cast <Command> (*iter)) {
 		command= dynamic_pointer_cast <Command> (*iter);
+		is_hardcode= false;
 		++iter; 
-	} else {
-		/* If there is no command there must be ';' */ 
-		if (! is_operator(';')) {
-			(*iter)->get_place() <<
-				(had_colon
-				 ? "expected a dependency, a command or ';'"
-				 : "expected ':', a command or ';'");
-			place_target <<
-				fmt("for target %s", place_param_target->format());
+	} else if (! had_colon && is_operator('=')) {
+		place_hardcode= (*iter)->get_place(); 
+		++iter;
+
+		if (type == T_PHONY) {
+			place_hardcode << "there must not be assigned content";
+			place_target << fmt("for phony target %s", place_param_target->format()); 
+			throw ERROR_LOGICAL; 
+		}
+
+		if (iter == tokens.end()) {
+			place_end << "expected file content";
+			place_hardcode << "after '='"; 
 			throw ERROR_LOGICAL;
 		}
+		if (! dynamic_pointer_cast <Command> (*iter)) {
+			(*iter)->get_place() << "expected file content";
+			place_hardcode << "after '='"; 
+			throw ERROR_LOGICAL;
+		}
+		command= dynamic_pointer_cast <Command> (*iter);
+		is_hardcode= true; 
+		++iter; 
+		
+	} else if (is_operator(';')) {
 		place_nocommand= (*iter)->get_place(); 
 		++iter;
+	} else {
+		(*iter)->get_place() <<
+			(had_colon
+			 ? "expected a dependency, a command, or ';'"
+			 : "expected a command, ':', ';', or '='");
+		place_target <<
+			fmt("for target %s", place_param_target->format());
+		throw ERROR_LOGICAL;
 	}
 
-	/* When output redirection is present, the rule must have a command,
-	 * and refer to a file (not a phony). */ 
+	/* Cases where output redirection is not possible */ 
 	if (redirect_output) {
 		/* Already checked before */ 
 		assert(place_param_target->type == T_FILE); 
@@ -258,9 +294,17 @@ shared_ptr <Rule> Build::build_rule()
 				"in rule without a command";
 			throw ERROR_LOGICAL;
 		}
+
+		if (command != nullptr && is_hardcode) {
+			place_output <<
+				"output redirection using '>' must not be used";
+			place_hardcode <<
+				"in rule with assigned content"; 
+			throw ERROR_LOGICAL;
+		}
 	}
 
-	/* When input redirection is present, the rule must have a command */ 
+	/* Cases where input redirection is not possible */ 
 	if (! filename_input.empty()) {
 		if (command == nullptr) {
 			place_input <<
@@ -268,13 +312,14 @@ shared_ptr <Rule> Build::build_rule()
 			place_nocommand <<
 				"in rule without a command";
 			throw ERROR_LOGICAL;
+		} else {
+			assert(! is_hardcode); 
 		}
 	}
 
-	shared_ptr <Rule> ret(new Rule(place_param_target, dependencies, 
-				       command, redirect_output, filename_input));
-
-	return ret; 
+	return make_shared <Rule> 
+		(place_param_target, dependencies, 
+		 command, is_hardcode, redirect_output, filename_input);
 }
 
 bool Build::build_expression_list(vector <shared_ptr <Dependency> > &ret, 
@@ -578,10 +623,8 @@ shared_ptr <Dependency> Build
 	 * dollar sign.  It would be conceivable to also set it
 	 * on the name contained in it. 
 	 */
-	return shared_ptr <Dependency> 
-		(new Direct_Dependency
-		 (flags,
-		  Place_Param_Target(T_FILE, *place_param_name, place_dollar)));
+	return make_shared <Direct_Dependency> 
+		(flags, Place_Param_Target(T_FILE, *place_param_name, place_dollar));
 }
 
 shared_ptr <Dependency> Build::build_redirect_dependency
@@ -657,14 +700,11 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 		place_param_name_input= *name_token;
 	}
 
-	shared_ptr <Dependency> ret
-		(new Direct_Dependency
-		 (flags,
-		  Place_Param_Target(has_phony ? T_PHONY : T_FILE,
-				     *name_token,
-				     has_phony ? place_at : name_token->place))); 
-
-	return ret; 
+	return make_shared <Direct_Dependency>
+		(flags,
+		 Place_Param_Target(has_phony ? T_PHONY : T_FILE,
+				    *name_token,
+				    has_phony ? place_at : name_token->place)); 
 }
 
 #endif /* ! BUILD_HH */

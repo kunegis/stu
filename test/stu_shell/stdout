@@ -1,6 +1,6 @@
-echo ccc >C 
+echo ccc >C
 MYSHELL
-cp C B 
+cp C B
 MYSHELL
-cp B A 
+cp B A
 MYSHELL

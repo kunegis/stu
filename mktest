@@ -61,6 +61,7 @@
 # NOSECOND     If file is present, do not check that second invocation
 #              results in "Nothing to be done"  
 # CONTENT      Specifies text that must be present in the built file 
+# CONTENTEXACT Specifies the exact built file
 # STDOUT       The exact output of the command
 # STDERR       The exact content of the error output
 # INSTDOUT     Prescribe a string that must appear on stdout 
@@ -149,7 +150,7 @@ do
 	delete_tmps
 
 	# Check that all all-uppercase files are of one of the allowed files 
-	allowed=",EXITCODE,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,CMD,TARGET,CONTENT,EXEC,STDOUT,NOSECOND,"
+	allowed=",EXITCODE,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,CMD,TARGET,CONTENT,CONTENTEXACT,EXEC,STDOUT,NOSECOND,"
 	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
 	do
 		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi
@@ -168,7 +169,7 @@ do
 
 		if [ -r EXITCODE -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
 			-o -r STDERR -o -r NOTINSTDERR -o -r CMD \
-			-o -r TARGET -o -r CONTENT -o -r STDOUT -o -r NOSECOND ]; then
+			-o -r TARGET -o -r CONTENT -o -r CONTENTEXACT -o -r STDOUT -o -r NOSECOND ]; then
 			echo >&2 "$: *** EXEC does not allow any other file"
 			error=1
 		fi
@@ -218,6 +219,17 @@ do
 						echo "CONTENT...correct"
 					else
 						echo >&2 "$0: *** '$(cat CONTENT)' was not found in generated file"
+						error=1
+					fi
+				fi
+				
+				# Check exact content of the target file
+				if [ -r CONTENTEXACT ] ; then
+					if cmp "$target" CONTENTEXACT ; then
+						echo "CONTENTEXACT...correct"
+					else	
+						echo >&2 "$0: *** CONTENTEXACT error"
+						diff "$target" CONTENTEXACT
 						error=1
 					fi
 				fi

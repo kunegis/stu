@@ -252,10 +252,8 @@ public:
 	shared_ptr <Dependency> 
 	instantiate(const map <string, string> &mapping) const
 	{
-		return shared_ptr <Dependency> 
-			(new Dynamic_Dependency
-			 (flags, 
-			  dependency->instantiate(mapping)));
+		return make_shared <Dynamic_Dependency> 
+			(flags, dependency->instantiate(mapping));
 	}
 
 	bool is_unparametrized() const
@@ -496,7 +494,7 @@ shared_ptr <Dependency> Direct_Dependency
 {
 	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
 
-	shared_ptr <Dependency> ret(new Direct_Dependency(flags, *ret_target, place));
+	shared_ptr <Dependency> ret= make_shared <Direct_Dependency> (flags, *ret_target, place);
 
 	assert(ret_target->place_param_name.get_n() == 0); 
 	string name= ret_target->place_param_name.format_mid(); 

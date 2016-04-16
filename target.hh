@@ -419,7 +419,7 @@ public:
 	shared_ptr <Place_Param_Name> instantiate(const map <string, string> &mapping) const {
 		/* In the returned object, the PLACES vector is empty */ 
 		string name= Param_Name::instantiate(mapping);
-		return shared_ptr <Place_Param_Name> (new Place_Param_Name(name));
+		return make_shared <Place_Param_Name> (name);
 	}
 };
 

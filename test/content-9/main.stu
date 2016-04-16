@@ -1,0 +1,5 @@
+# Hardcoded content with parametrized rule
+
+A:  list.xyz { cp list.xyz A }
+
+list.$name = {correct}

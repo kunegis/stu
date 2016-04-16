@@ -1,0 +1,2 @@
+main.stu:2:1: expected a command, ':', ';', or '='
+main.stu:1:1: after target 'A'

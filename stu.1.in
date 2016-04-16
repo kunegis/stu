@@ -329,6 +329,14 @@ containing the output of the given 'echo' command:
 
     >HEADERS { echo *.h }
 
+For a file target, content can be specified directly using the '='
+operator:
+
+    TARGET = { CONTENT ... }
+
+The content is stripped of empty lines and common whitespace at the
+beginning of lines, and written into the file. 
+
 A dependency can be one of the following:
 
     NAME    A file dependency

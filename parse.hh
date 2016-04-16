@@ -377,7 +377,7 @@ shared_ptr <Command> Parse::parse_command()
 					++p;
 					const Place place_command(place_type,
 								  filename, line_command, column_command); 
-					return shared_ptr <Command> (new Command(command, place_command)); 
+					return make_shared <Command> (command, place_command); 
 				} else {
 					++p; 
 				}
@@ -498,7 +498,7 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 {
 	Place place_begin(place_type, filename, line, p - p_line);
 
-	shared_ptr <Place_Param_Name> ret{new Place_Param_Name("", place_begin)};
+	shared_ptr <Place_Param_Name> ret= make_shared <Place_Param_Name> ("", place_begin);
 
 	while (p < p_end) {
 		
@@ -679,7 +679,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		/* Operators except '$' */ 
 		if (is_operator_char(*p)) {
 			Place place(place_type, filename, line, p - p_line);
-			tokens.push_back(shared_ptr <Token> (new Operator(*p, place)));
+			tokens.push_back(make_shared <Operator> (*p, place));
 			++p;
 		}
 
@@ -687,8 +687,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		else if (*p == '$' && p + 1 < p_end && p[1] == '[') {
 			Place place_dollar(place_type, filename, line, p - p_line);
 			Place place_langle(place_type, filename, line, p + 1 - p_line);
-			tokens.push_back(shared_ptr <Token> (new Operator('$', place_dollar)));
-			tokens.push_back(shared_ptr <Token> (new Operator('[', place_langle))); 
+			tokens.push_back(make_shared <Operator> ('$', place_dollar));
+			tokens.push_back(make_shared <Operator> ('[', place_langle)); 
 			p += 2;
 		}
 

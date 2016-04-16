@@ -13,4 +13,4 @@
 >N X=N: echo "$X$X$X"
 >O X=O: echo "$X$X$X"
 >P X=P: echo "$X$X$X"
->A: cat  B C D E F G H I J K L M N O P 
+>A: cat  B C D E F G H I J K L M N O P

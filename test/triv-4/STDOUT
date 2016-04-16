@@ -1,2 +1,2 @@
->B: echo '@x' 
-touch A 
+>B: echo '@x'
+touch A

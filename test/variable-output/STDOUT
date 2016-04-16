@@ -19,7 +19,7 @@ N=17: echo "$N" >"list.$N"
 N=18: echo "$N" >"list.$N"
 N=19: echo "$N" >"list.$N"
 N=20: echo "$N" >"list.$N"
-echo Beeee > B 
+echo Beeee > B
 M=456 N=123: echo "$N + $M" >"list.$N.$M"
 y=y:
 {

@@ -9,6 +9,17 @@
 
 #include <string>
 
+/* Is the character a space in the C locale? 
+ * Note:  we don't use isspace() because isspace() uses the current
+ * locale and may (in principle) consider locale-specific characters,
+ * whereas the syntax of Stu specifies that only these six characters
+ * count as whitespace. 
+ */
+bool is_space(char c) 
+{
+	return c != '\0' && nullptr != strchr(" \n\t\v\r\f", c);
+}
+
 /* Functions named format() returned a optionally quoted and printable
  * representation of the target.  These are inserted directly into
  * output of Stu (without adding quotes).  format_mid() is used when brackets

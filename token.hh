@@ -4,16 +4,7 @@
 /* Data structures for representing tokens. 
  */
 
-/* Is the character a space in the C locale? 
- * Note:  we don't use isspace() because isspace() uses the current
- * locale and may (in principle) consider locale-specific characters,
- * whereas the syntax of Stu specifies that only these six characters
- * count as whitespace. 
- */
-bool is_space(char c) 
-{
-	return c != '\0' && nullptr != strchr(" \n\t\v\r\f", c);
-}
+#include <memory>
 
 class Token
 {
@@ -66,7 +57,8 @@ public:
 	}
 };
 
-/* A command delimited by braces. 
+/* A command delimited by braces, or the content of a file, also
+ * delimited by braces. 
  */
 class Command
 	:  public Token
@@ -74,8 +66,8 @@ class Command
 private:
 	/* The individual lines of the command.  Empty lines and leading
 	 * spaces are not included.  These lines are only used for
-	 * output, not for execution.  May be null.  Generated on
-	 * demand.  
+	 * output and writing content, not for execution.  May be null.
+	 * Generated on demand.  
 	 */ 
 	unique_ptr <vector <string> > lines;
 
@@ -83,7 +75,7 @@ public:
 
 	Place place; 
 
-	/* The command as written in the input; contains newlines  */ 
+	/* The command as written in the input; contains newlines */ 
 	const string command;
 
 	Command(string command_, 
@@ -162,6 +154,13 @@ Command::get_lines()
 			else
 				++i;
 		}
+	}
+
+	/* Remove whitespace at end of lines */
+	for (string &line:  *lines) {
+		int l= line.size();
+		while (l != 0 && is_space(line.at(l - 1)))  --l;
+		line.resize(l);
 	}
 
 	return *lines; 

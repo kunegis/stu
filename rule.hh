@@ -35,6 +35,9 @@ public:
 	 * token. */ 
 	shared_ptr <Command> command;
 
+	/* Whether the command is a command or hardcoded content */ 
+	bool is_hardcode;
+
 	/* Whether output is to be redirected.  Only TRUE if target is a file.
 	 * The output redirection is always to the target file, so no need
 	 * to save it here. 
@@ -49,6 +52,7 @@ public:
 	Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	     const vector <shared_ptr <Dependency> > &dependencies_,
 	     shared_ptr <Command> command_,
+	     bool is_hardcode_,
 	     bool redirect_output_,
 	     const Param_Name &filename_input_);
 
@@ -100,11 +104,13 @@ public:
 Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	   const vector <shared_ptr <Dependency> > &dependencies_,
 	   shared_ptr <Command> command_,
+	   bool is_hardcode_,
 	   bool redirect_output_,
 	   const Param_Name &filename_input_)
 	:  place_param_target(*place_param_target_), 
 	   dependencies(dependencies_),
 	   command(command_),
+	   is_hardcode(is_hardcode_),
 	   redirect_output(redirect_output_),
 	   filename_input(filename_input_)
 { 
@@ -165,14 +171,13 @@ Rule::instantiate(shared_ptr <Rule> rule,
 		dependencies.push_back(i->instantiate(mapping));
 	}
 
-	shared_ptr <Rule> ret
-		(new Rule(rule->place_param_target.instantiate(mapping),
-			  dependencies,
-			  rule->command,
-			  rule->redirect_output,
-			  rule->filename_input.instantiate(mapping)));
-
-	return ret; 
+	return make_shared <Rule> 
+		(rule->place_param_target.instantiate(mapping),
+		 dependencies,
+		 rule->command,
+		 rule->is_hardcode,
+		 rule->redirect_output,
+		 rule->filename_input.instantiate(mapping));
 }
 
 string Rule::format() const

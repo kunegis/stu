@@ -335,6 +335,14 @@ FEATURES
 
            >HEADERS { echo *.h }
 
+       For a file target, content can be  specified  directly  using  the  '='
+       operator:
+
+           TARGET = { CONTENT ... }
+
+       The  content  is  stripped  of empty lines and common whitespace at the
+       beginning of lines, and written into the file.
+
        A dependency can be one of the following:
 
            NAME    A file dependency
@@ -719,4 +727,4 @@ SEE ALSO
 
 
 
-stu-1.9.44                        April 2016                            STU(1)
+stu-1.9.45                        April 2016                            STU(1)

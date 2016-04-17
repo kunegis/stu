@@ -76,10 +76,11 @@ A B C;
 
 #
 # Have a way for dynamic dependencies to contain \0-separated filenames,
-# to avoid quoting. 
+# to avoid quoting.  Not clear that this is the best syntax for it. 
 #
 
-A: [B],0 { xargs -0 B ... }
+A: [<B],0 { xargs -0 ... }
+A: \[<B]  { xargs -0 ... }
 
 >B:  {
 	find ... -print0
@@ -94,8 +95,8 @@ A: [B],0 { xargs -0 B ... }
 # %import. 
 #
 
-A: [B];
-A: [B],i; 
+A: [data/B],i; 
+A: [data//B];
 
 #
 # New flag to ALWAYS build a target.  (We may already have this)

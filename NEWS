@@ -6,6 +6,15 @@ are added, which are documented in this file.  When the major version is
 increased, backward-incompatible changes are made, which are documented
 in the file MIGRATION. 
 
+2016-04-17  Version 1.11:
+
+* Variable dependency can use explicit names:
+
+A : $[X = B] { ... use $X here ... }
+
+This will use the content of the file 'B' and make it available as the
+content of the variable $X within the command for target 'A'. 
+
 2016-04-17  Version 1.10:
 
 * Content can be assigned to files using the following syntax:

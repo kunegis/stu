@@ -1,0 +1,5 @@
+# Unnecessary but OK. 
+
+A:  $[B];
+
+B { touch B ; echo correct >A ; }

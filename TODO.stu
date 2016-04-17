@@ -1,6 +1,10 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
+# move CONTENT to INCONTENT and CONTENTEXACT to CONTENT
+#
+
+#
 # Copy rule
 #
 
@@ -9,17 +13,6 @@ a.bib = ../bib/references.bib;
 # Allow the same-name shortcut (ending in slash or not [with fopenat]):
 konect.bib=  ../../projects/konect/;
 konect.bib=  ../../projects/konect;
-
-#
-# Assign a name to a dynamic variable.  Useful when the name of the file
-# contains characters that are not allowed in shell variable names. 
-#
-
-prog:  prog.c
-	$[CFLAGS = config/CFLAGS]
-{ 
-	gcc $CFLAGS -c prog.c -o prog
-}
 
 #
 # Phonies in dynamics

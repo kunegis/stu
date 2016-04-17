@@ -1,0 +1,11 @@
+# A variable name cannot be parametrized.   
+
+A:  list.xyz { touch A }
+
+# Error because 'B.$name' cannot be used as a variable name. 
+list.$name :  $[B.$name = C]
+{
+	touch "list.$name"
+}
+
+C { touch C }

@@ -1,0 +1,13 @@
+# Named variable with slash in the filename. 
+
+A : $[xyz = list.1/data]
+{
+	echo "$xyz" >A
+}
+
+list.1/data :  !list.1
+{
+	echo correct >list.1/data
+}
+
+list.1 :  { mkdir -p list.1 }

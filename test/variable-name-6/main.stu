@@ -1,0 +1,5 @@
+# Unnecessary but OK
+
+@x : $[A];
+
+A { echo correct >A }

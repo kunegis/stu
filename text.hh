@@ -20,7 +20,7 @@ bool is_space(char c)
 	return c != '\0' && nullptr != strchr(" \n\t\v\r\f", c);
 }
 
-/* Functions named format() returned a optionally quoted and printable
+/* Functions named format() returned an optionally quoted and printable
  * representation of the target.  These are inserted directly into
  * output of Stu (without adding quotes).  format_mid() is used when brackets
  * of any form are added around.  format_bare() returns the always unquoted

@@ -175,13 +175,29 @@ public:
 	
 	/* The place where the dependency is declared */ 
 	Place place;
+
+	/* When non-empty, the name of the variable.  Only when
+	 * F_VARIABLE is set.  */ 
+	string variable_name;
 	
 	/* Take the dependency place from the target place */ 
 	Direct_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_)
 		:  Base_Dependency(flags_),
 		   place_param_target(place_param_target_),
-		   place(place_param_target_.place) 
+		   place(place_param_target_.place)
+	{ 
+		check(); 
+	}
+
+	/* Take the dependency place from the target place, with variable_name */ 
+	Direct_Dependency(Flags flags_,
+			  const Place_Param_Target &place_param_target_,
+			  const string &variable_name_)
+		:  Base_Dependency(flags_),
+		   place_param_target(place_param_target_),
+		   place(place_param_target_.place),
+		   variable_name(variable_name_)
 	{ 
 		check(); 
 	}
@@ -213,6 +229,10 @@ public:
 		/* Must not be dynamic, since dynamic dependencies are
 		 * represented using Dynamic_Dependency */ 
 		assert(place_param_target.type < T_DYNAMIC);
+		if (variable_name != "") {
+			assert(place_param_target.type == T_FILE);
+			assert(flags & F_VARIABLE); 
+		}
 	}
 
 	string format() const {
@@ -247,6 +267,7 @@ public:
 		   dependency(dependency_)
 	{
 		assert((flags & F_READ) == 0); 
+		assert((flags & F_VARIABLE) == 0); 
 	}
 
 	shared_ptr <Dependency> 

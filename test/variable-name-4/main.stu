@@ -1,0 +1,13 @@
+#
+# Named variable.
+#
+# 'list.xxx=yyy' cannot be used as a variable name because it contains
+# an equal sign.  Instead, use the variable name 'xyz'.
+#
+
+>A : $[xyz = 'list.xxx=yyy']
+{
+	echo "$xyz"
+}
+
+>'list.xxx=yyy' { echo correct }

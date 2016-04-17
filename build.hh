@@ -602,12 +602,44 @@ shared_ptr <Dependency> Build
 		}
 	}
 
-	/* Closing ']' */ 
+
 	if (iter == tokens.end()) {
 		place_end << "expected ']'";
 		place_dollar << "after opening '$['";
 		throw ERROR_LOGICAL;
 	}
+
+	string variable_name= "";
+	
+	/* Explicit variable name */ 
+	if (is_operator('=')) {
+		Place place_equal= (*iter)->get_place();
+		++iter;
+		if (iter == tokens.end()) {
+			place_end << "expected filename";
+			place_equal << "after '=' in variable dependency";
+			throw ERROR_LOGICAL;
+		}
+		if (! dynamic_pointer_cast <Param_Name> (*iter)) {
+			(*iter)->get_place() << "expected filename";
+			place_equal << "after '=' in variable dependency";
+			throw ERROR_LOGICAL;
+		}
+
+		if (place_param_name->get_n() != 0) {
+			place_param_name->place << 
+				fmt("variable name %s must be unparametrized", 
+				    place_param_name->format());
+			throw ERROR_LOGICAL; 
+		}
+
+		variable_name= place_param_name->unparametrized();
+
+		place_param_name= dynamic_pointer_cast <Place_Param_Name> (*iter);
+		++iter; 
+	}
+
+	/* Closing ']' */ 
 	if (! is_operator(']')) {
 		(*iter)->get_place() << "expected ']'";
 		place_dollar << "after opening '$['";
@@ -624,7 +656,9 @@ shared_ptr <Dependency> Build
 	 * on the name contained in it. 
 	 */
 	return make_shared <Direct_Dependency> 
-		(flags, Place_Param_Target(T_FILE, *place_param_name, place_dollar));
+		(flags, 
+		 Place_Param_Target(T_FILE, *place_param_name, place_dollar), 
+		 variable_name);
 }
 
 shared_ptr <Dependency> Build::build_redirect_dependency

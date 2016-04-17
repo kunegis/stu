@@ -24,4 +24,3 @@ REQUIREMENTS
 * The Makefile uses 'c++' as the C++ compiler, with the option
   '-std=c++11'.  To use something else, edit the Makefile. 
 * Stu assumes ASCII. 
-

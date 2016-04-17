@@ -266,6 +266,7 @@ public:
 			   Execution *const child,
 			   shared_ptr <Dependency> dependency_parent,
 			   Stack avoid_parent,
+			   shared_ptr <Dependency> dependency_child,
 			   Stack avoid_child,
 			   Flags flags_child); 
 
@@ -532,9 +533,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 				if (timestamp.defined() && timestamp_old.older_than(timestamp)) {
 					if (no_command) {
-						print_warning(fmt("File target '%s' which has no command "
-								  "is older than its dependency",
-								  target.name));
+						print_warning
+							(fmt("File target '%s' which has no command is older than its dependency",
+							     target.name));
 					} else {
 						need_build= true;
 					}
@@ -764,9 +765,11 @@ int Execution::execute_children(const Link &link)
 		if (target.type == T_PHONY) { 
 			flags_child |= link.flags; 
 		}
+
+		shared_ptr <Dependency> dependency_child= child->parents.at(this).dependency;
 		
 		Link link_child(avoid_child, flags_child, child->parents.at(this).place,
-				child->parents.at(this).dependency);
+				dependency_child);
 
 		if (child->execute(this, move(link_child)))
 			return 1;
@@ -778,7 +781,7 @@ int Execution::execute_children(const Link &link)
 			unlink(this, child, 
 			       link.dependency,
 			       link.avoid, 
-			       avoid_child, flags_child); 
+			       dependency_child, avoid_child, flags_child); 
 		}
 	}
 
@@ -953,6 +956,7 @@ void Execution::unlink(Execution *const parent,
 		       Execution *const child,
 		       shared_ptr <Dependency> dependency_parent,
 		       Stack avoid_parent,
+		       shared_ptr <Dependency> dependency_child,
 		       Stack avoid_child,
 		       Flags flags_child)
 {
@@ -1033,8 +1037,10 @@ void Execution::unlink(Execution *const parent,
 		int fd;
 		string content;
 		size_t filesize;
-
 		struct stat buf;
+		string dependency_variable_name;
+		string variable_name; 
+
 		fd= open(filename.c_str(), O_RDONLY);
 		if (fd < 0) {
 			goto error;
@@ -1059,7 +1065,17 @@ void Execution::unlink(Execution *const parent,
 		content.erase(0, content.find_first_not_of(" \n\t\f\r\v")); 
 		content.erase(content.find_last_not_of(" \n\t\f\r\v") + 1);  
 
-		parent->mapping_variable[filename]= content;
+		/* The variable name */ 
+		dependency_variable_name= "";
+		if (dynamic_pointer_cast <Direct_Dependency> (dependency_child)) {
+			dependency_variable_name=
+				dynamic_pointer_cast <Direct_Dependency> (dependency_child)->variable_name; 
+		}
+		variable_name= 
+			dependency_variable_name == ""
+			? filename : dependency_variable_name;
+
+		parent->mapping_variable[variable_name]= content;
 
 		if (0) {
 		error_fd:
@@ -1986,6 +2002,7 @@ bool Execution::deploy(const Link &link,
 		unlink(this, child, 
 		       link.dependency,
 		       link.avoid, 
+		       link_child.dependency,
 		       avoid_child, flags_child);
 	}
 

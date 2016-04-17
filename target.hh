@@ -314,6 +314,10 @@ public:
 		return ret; 
 	}
 
+	string format() const {
+		return fmt("'%s'", format_bare()); 
+	}
+
 	/* Return whether there are duplicate parameter names.
 	 * If TRUE, write the first found into PARAMETER. 
 	 */

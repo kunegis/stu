@@ -252,7 +252,7 @@ contain a list of filenames.
 
 Here is a phony target that cleans up the directory:
 
-    @clean:  { rm -rf *.o *~ }
+    @clean:  { rm -Rf *.o *~ }
 
 Here a phony target is used as a shortcut to a longer name: 
 

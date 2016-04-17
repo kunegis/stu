@@ -260,7 +260,7 @@ OVERVIEW
 
        Here is a phony target that cleans up the directory:
 
-           @clean:  { rm -rf *.o *~ }
+           @clean:  { rm -Rf *.o *~ }
 
        Here a phony target is used as a shortcut to a longer name:
 
@@ -734,4 +734,4 @@ SEE ALSO
 
 
 
-stu-1.11.2                        April 2016                            STU(1)
+stu-1.11.3                        April 2016                            STU(1)

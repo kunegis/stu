@@ -2,7 +2,7 @@
 
 doo() { echo "$@" ; "$@" ; }
 
-doo rm -rf ?
+doo rm -f ?
 
 echo ../../stu A
 ../../stu A || {
@@ -10,7 +10,7 @@ echo ../../stu A
     exit 1
 }
 
-doo rm -rf C
+doo rm -f C
 
 echo ../../stu A
 ../../stu A || {
@@ -18,7 +18,7 @@ echo ../../stu A
     exit 1
 }
 
-doo rm -rf C
+doo rm -f C
 
 echo ../../stu A
 if ../../stu A | grep 'Hello >B' ; then

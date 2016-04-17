@@ -1,6 +1,6 @@
 #! /bin/sh
 
-rm -rf xxx
+rm -Rf xxx
 
 mkdir xxx
 
@@ -17,4 +17,4 @@ if ! fgrep "xxx/../main.stu:5:10: recursive inclusion of 'xxx/../main.stu'" list
    exit 1   
 fi
 
-rm -rf xxx list.*
+rm -Rf xxx list.*

@@ -100,7 +100,7 @@ fi
 # Delete temporary files created by tests.  Tests only create temporary
 # files of these patterns.  Executed within each test directory. 
 delete_tmps() {
-	rm -rf ? ?? A.* *.data list.* dep.* +-.~_
+	rm -Rf ? ?? A.* *.data list.* dep.* +-.~_
 }
 
 exec 6>error.log

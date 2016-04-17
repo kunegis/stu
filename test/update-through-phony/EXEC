@@ -2,7 +2,7 @@
 
 doo() { echo "$@" ; "$@" ; }
 
-doo rm -rf BBB A
+doo rm -Rf BBB A
 
 echo CORRECT >BBB
 

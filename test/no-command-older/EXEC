@@ -25,6 +25,6 @@ if ! fgrep -q "Warning: File target 'A' which has no command is older than its d
 	exit 1
 fi
 
-rm -rf A B
+rm -f A B
 
 exit 0

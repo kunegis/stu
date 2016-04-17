@@ -2,7 +2,7 @@
 
 doo() { echo "$@" ; "$@" ; }
 
-doo rm -rf data
+doo rm -Rf data 
 
 echo >&2 ../../stu 
 ../../stu 
@@ -27,6 +27,6 @@ grep -Fq 'Nothing to be done' list.output || {
 	exit 1
 }
 
-rm -rf data list.output
+rm -Rf data 
 
 exit 0

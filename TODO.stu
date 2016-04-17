@@ -1,18 +1,8 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
-# move CONTENT to INCONTENT and CONTENTEXACT to CONTENT
+# move CONTENTEXACT to CONTENT
 #
-
-#
-# Copy rule
-#
-
-a.bib = ../bib/references.bib;
-
-# Allow the same-name shortcut (ending in slash or not [with fopenat]):
-konect.bib=  ../../projects/konect/;
-konect.bib=  ../../projects/konect;
 
 #
 # Phonies in dynamics
@@ -25,6 +15,16 @@ A:  [@x];
 # Needs each phony to store the list of files it depended on, and is
 # thus non-trivial to implement.  Or, alternatively, needs to implement
 # a 'phony-hierarchy' like we have for files at the moment. 
+
+#
+# Copy rule
+#
+
+a.bib = ../bib/references.bib;
+
+# Allow the same-name shortcut (ending in slash or not [with fopenat]):
+konect.bib=  ../../projects/konect/;
+konect.bib=  ../../projects/konect;
 
 #
 # Advanced file inclusion 

@@ -89,8 +89,9 @@ Question mode; do not execute any commands.  Instead, determine whether
 the given targets are up to date.  The exit code is 0 when all given
 targets (or the default target) are up to date, and 1 otherwise. 
 .IP -s
-Silent mode; do not output the commands that are executed.  This option
-is compatible to the same option in Make. 
+Silent mode; suppress output of commands, information messages and some
+build error messages.  
+This option is comparable to the same option in Make. 
 .IP -v
 Verbose mode; show internal information about the Stu algorithm on
 standard error output.  All printed output lines begin with the

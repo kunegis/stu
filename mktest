@@ -271,7 +271,7 @@ do
 		fi
 
 		# Check that at least one line of error message is generated 
-		if [ "$exitcode_correct" != 0 ]; then
+		if [ "$exitcode_correct" != 0 -a \! -r STDERR ]; then
 			if [ \! \( "$(cat list.def.err | wc -l)" -gt 0 \) ]; then
 				echo >&2 "$0: *** Nothing written to stderr although exit code is >0"
 				error=1

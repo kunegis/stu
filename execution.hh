@@ -581,16 +581,18 @@ bool Execution::execute(Execution *parent, Link &&link)
 			assert(errno == ENOENT); 
 
 			if (rule->dependencies.size()) {
-				print_traces
-					(fmt("file without command '%s' does not exist, "
-					     "although all its dependencies are up to date", 
-					     target.name)); 
+				if (output_mode > Output::SILENT)
+					print_traces
+						(fmt("file without command '%s' does not exist, "
+						     "although all its dependencies are up to date", 
+						     target.name)); 
 				explain_file_without_command_with_dependencies(); 
 			} else {
-				print_traces
-					(fmt("file without command and without dependencies "
-						 "'%s' does not exist",
-						 target.name)); 
+				if (output_mode > Output::SILENT)
+					print_traces
+						(fmt("file without command and without dependencies "
+						     "'%s' does not exist",
+						     target.name)); 
 				explain_file_without_command_without_dependencies(); 
 			}
 			done.add_one_neg(link.avoid); 
@@ -638,7 +640,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 	 * content */ 
 
 	if (option_question) {
-		puts("Targets are not up to date");
+		if (output_mode > Output::SILENT) 
+			puts("Targets are not up to date");
 		exit(ERROR_BUILD);
 	}
 
@@ -708,7 +711,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 		if (pid < 0) {
 			/* Starting the job failed */ 
-			print_traces(fmt("error executing command for %s", target.format())); 
+			if (output_mode > Output::SILENT)
+				print_traces(fmt("error executing command for %s", target.format())); 
 			raise(ERROR_BUILD);
 			done.add_neg(link.avoid); 
 			return false;
@@ -861,22 +865,24 @@ void Execution::waited(int pid, int status)
 
 	} else {
 		/* Command failed */ 
+		
+		if (output_mode > Output::SILENT) {
+			string reason;
+			if (WIFEXITED(status)) {
+				reason= frmt("failed with exit code %d", WEXITSTATUS(status));
+			} else if (WIFSIGNALED(status)) {
+				int sig= WTERMSIG(status);
+				reason= frmt("received signal %s", strsignal(sig));
+			} else {
+				/* This should not happen but the standard does not exclude
+				 * it */ 
+				reason= frmt("failed with status code %d", status); 
+			}
 
-		string reason;
-		if (WIFEXITED(status)) {
-			reason= frmt("failed with exit code %d", WEXITSTATUS(status));
-		} else if (WIFSIGNALED(status)) {
-			int sig= WTERMSIG(status);
-			reason= frmt("received signal %s", strsignal(sig));
-		} else {
-			/* This should not happen but the standard does not exclude
-			 * it */ 
-			reason= frmt("failed with status code %d", status); 
+			param_rule->command->place <<
+				fmt("command for %s %s", target.format(), reason); 
+			print_traces(); 
 		}
-
-		param_rule->command->place <<
-			fmt("command for %s %s", target.format(), reason); 
-		print_traces(); 
 
 		remove_if_existing(true); 
 
@@ -1224,7 +1230,8 @@ Execution::Execution(Target target_,
 		
 		if (rule_not_found) {
 			assert(rule == nullptr); 
-			print_traces(fmt("no rule to build %s", target.format()));
+			if (output_mode > Output::SILENT)
+				print_traces(fmt("no rule to build %s", target.format()));
 			raise(ERROR_BUILD);
 			/* Even when a rule was not found, the Execution object remains
 			 * in memory */  
@@ -1750,8 +1757,9 @@ void Execution::print_traces(string text) const
 
 		if (i->first->target.type == T_ROOT) {
 			if (first && text != "") {
-				print_error(fmt("No rule to build %s", 
-						execution->target.format())); 
+				if (output_mode > Output::SILENT)
+					print_error(fmt("No rule to build %s", 
+							execution->target.format())); 
 			}
 			break; 
 		}
@@ -2044,7 +2052,8 @@ void Execution::write_content(const char *filename,
 
 	if (file == nullptr) {
 		perror(filename);
-		command.get_place() << frmt("error creating %s", filename); 
+		if (output_mode > Output::SILENT)
+			command.get_place() << frmt("error creating %s", filename); 
 		raise(ERROR_BUILD); 
 	}
 
@@ -2062,7 +2071,8 @@ void Execution::write_content(const char *filename,
 
 	if (0 != fclose(file)) {
 		perror(filename);
-		command.get_place() << frmt("error creating %s", filename); 
+		if (output_mode > Output::SILENT)
+			command.get_place() << frmt("error creating %s", filename); 
 		raise(ERROR_BUILD); 
 	}
 }

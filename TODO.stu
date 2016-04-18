@@ -23,21 +23,6 @@ konect.bib=  ../../projects/konect/;
 konect.bib=  ../../projects/konect;
 
 #
-# Advanced file inclusion 
-#
-
-# Include rules for C++ compilation; may search within predefined paths
-# ($STUPATH) 
-% include c++.stu
-% include static/
- 
-# Import all rules from subdirectory; will prepend the directory name to
-# all targets.  Rules from there will be executed from within the
-# directory as current directory. 
-%import src/main.stu
-%import src/
-
-#
 # Option -B:  Remake all targets regardless of dates
 #
 
@@ -75,30 +60,6 @@ A B C;
 ;
 
 #
-# Have a way for dynamic dependencies to contain \0-separated filenames,
-# to avoid quoting.  Not clear that this is the best syntax for it. 
-#
-
-A: [<B],0 { xargs -0 ... }
-A: \[<B]  { xargs -0 ... }
-
->B:  {
-	find ... -print0
-}
-
-# Alternatively, detect such files automatically. (e.g., any file
-# containing the zero character is such a file, or using specific endings.)
-
-#
-# When including files using dynamic dependencies, make a
-# difference between inclusion and import, as is done for %include and
-# %import. 
-#
-
-A: [data/B],i; 
-A: [data//B];
-
-#
 # New flag to ALWAYS build a target.  (We may already have this)
 #
 
@@ -115,7 +76,7 @@ A: [data//B];
 
 #
 # Don't allow filenames that start with '+' or '-', but allow these in
-# the middle of filenames.  
+# the middle or at the end of filenames.  
 
 #
 # Keep track of spacing between tokens, and disallow no space in
@@ -125,6 +86,13 @@ A: [data//B];
 #
 # What happens with relative and absolute pathnames?  When two names
 # refer to the same file?  Do we need to 'normalize' names?
+#
+# * fold ..
+# * fold .,except for a single .
+# * Remove ending / 
+# * don't touch symlinks/hardlinks/etc.
+#
+# Question:  should '/' match in parameters?
 #
 
 # This will fail because ../../bib/[NAME].bib will match [NAME].bib.
@@ -142,6 +110,20 @@ A:  ?tmp/ {...}
 tmp: {...}
 
 #==== Features of Stu 2 ====
+
+#
+# Have a way for dynamic dependencies to contain \0-separated filenames,
+# to avoid quoting.  Not clear that this is the best syntax for it.
+#
+
+A: [-0 <B] { xargs -0 ... }
+A: [<\B]   { xargs -0 ... }
+A: \[<B]   { xargs -0 ... }
+A: [<B],0  { xargs -0 ... }
+>B:        { find ... -print0 }
+
+# Alternatively, detect such files automatically. (e.g., any file
+# containing the zero character is such a file, or using specific endings.)
 
 #
 # String multiplication.  String multiplication is to work both with the
@@ -197,18 +179,55 @@ A.$X.$Y:  $X * .$Y      # OK
 @plot:    plot/[NETWORKS].eps;
 
 #
-# Use '-' and '+' as additional flag characters.  Could even be used for
-# option-like flags. 
+# Advanced file inclusion 
+#
+
+# Import all rules from subdirectory; will prepend the directory name to
+# all targets.  Rules from there will be executed from within the
+# directory as current directory.  If using 'import', the meaning of
+
+# Using an option
+% include -d src/main.stu
+
+# 'include' and 'import' would actually be inverted. 
+% import src/main.stu
+% import src/
+
+# or:
+% include src//main.stu
+% include src//
+# Not a good idea since most tools treat // the same as /
+
+#
+# When including files using dynamic dependencies, make a
+# difference between inclusion and import, as is done for %include and
+# %import. 
+#
+
+A: [-d data/B];
+A: [data/B],d; 
+A: [data//B]; # ?
+
+#
+# Use '-' options for the three flags !, ?, and &. 
 #
 
 A:  
-	-r B
-	+x C
-	--trivial D
-	--optional ( E F ) 
-	--existence-only [ --optional G ]
+	-e X # existence-only
+	-o X # optional
+        -t X # trivial
 { ... }
 
+# Have options to switch all of these in subsequent targets, or to
+# switch it off. 
+
+#
+# Search within predefined paths for %include ($STU_PATH or $STUPATH;
+# the -I option)
+#
+
+% include c++.stu
+ 
 #
 # Assignment features
 #

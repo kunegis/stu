@@ -29,7 +29,7 @@ List of options
 -g  S      Consider optional dependencies to be non-optional 
 -h  S   G  Show help and exit 
 -i  . M G  Ignore all errors in commands
--I      G  Include path
+-I  .   G  Include path
 -j  S   G  Parallel
 -k  S M G  Keep going
 -K  S      Keep partially built files

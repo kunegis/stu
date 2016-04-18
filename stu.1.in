@@ -699,7 +699,7 @@ The -F option allows to define rules on the command line:
     stu -F 'B:A {cp A B}' # Same as GNU's 'cp -u A B'
     stu -F 'A;' # Check that the file 'A' exists
     
-.SH "LIMITATIONS, PITFALLS AND FUTURE DIRECTIONS"
+.SH "BUGS"
 
 The argument to the -j option (number of jobs to run in parallel) is
 mandatory, as opposed to the behavior of GNU Make, where no argument

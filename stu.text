@@ -702,7 +702,7 @@ EXAMPLES
            stu -F 'A;' # Check that the file 'A' exists
 
 
-LIMITATIONS, PITFALLS AND FUTURE DIRECTIONS
+BUGS
        The  argument  to  the -j option (number of jobs to run in parallel) is
        mandatory, as opposed to the behavior of GNU Make,  where  no  argument
        means to run as many jobs in parallel as possible.
@@ -734,4 +734,4 @@ SEE ALSO
 
 
 
-stu-1.11.3                        April 2016                            STU(1)
+stu-1.11.4                        April 2016                            STU(1)

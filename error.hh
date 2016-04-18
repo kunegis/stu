@@ -163,6 +163,8 @@ public:
 	string as_string() const;
 
 	string as_string_nocolumn() const;
+
+	const char *get_filename_str() const;
 };
 
 /* A place along with a message.  This class is only used when traces
@@ -208,7 +210,7 @@ void Place::operator<<(string text) const
 	default:  assert(0); 
 	case Type::INPUT_FILE:
 		fprintf(stderr, "%s:%u:%u: %s\n", 
-			filename.c_str(), line, 1 + column, text.c_str());  
+			get_filename_str(), line, 1 + column, text.c_str());  
 		break;
 	case Type::ARGV:
 		fprintf(stderr, 
@@ -234,7 +236,8 @@ string Place::as_string() const
 
 	case Type::INPUT_FILE:
 		return frmt("%s:%u:%u", 
-			    filename.c_str(), line, 1 + column);  
+			    get_filename_str(),
+			    line, 1 + column);  
 
 	case Type::ARGV:
 		return frmt("Command line argument: '%s'",
@@ -253,12 +256,20 @@ string Place::as_string_nocolumn() const
 
 	case Type::INPUT_FILE:
 		return frmt("%s:%u", 
-			    filename.c_str(), line);  
+			    get_filename_str(),
+			    line);  
 
 	case Type::ARGV:
 		return frmt("Command line argument: '%s'",
 			    filename.c_str()); 
 	}
+}
+
+const char *Place::get_filename_str() const
+{
+	return filename == "-"
+		? "<stdin>"
+		: filename.c_str();
 }
 
 /* Explanation functions:  they output an explanation of a feature of

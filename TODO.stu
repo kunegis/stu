@@ -1,6 +1,18 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
+# Copy rule
+#
+
+a.bib = ../bib/references.bib;
+
+# Allow the same-name shortcut (ending in slash or not [with fopenat]):
+konect.bib=  ../../projects/konect/;
+konect.bib=  ../../projects/konect;
+
+# Use cp -- A B 
+
+#
 # Phonies in dynamics
 #
 
@@ -11,16 +23,6 @@ A:  [@x];
 # Needs each phony to store the list of files it depended on, and is
 # thus non-trivial to implement.  Or, alternatively, needs to implement
 # a 'phony-hierarchy' like we have for files at the moment. 
-
-#
-# Copy rule
-#
-
-a.bib = ../bib/references.bib;
-
-# Allow the same-name shortcut (ending in slash or not [with fopenat]):
-konect.bib=  ../../projects/konect/;
-konect.bib=  ../../projects/konect;
 
 #
 # Option -B:  Remake all targets regardless of dates
@@ -82,32 +84,6 @@ A B C;
 # Keep track of spacing between tokens, and disallow no space in
 # situations that will later be used for string concatenation. 
 #
-
-#
-# What happens with relative and absolute pathnames?  When two names
-# refer to the same file?  Do we need to 'normalize' names?
-#
-# * fold ..
-# * fold .,except for a single .
-# * Remove ending / 
-# * don't touch symlinks/hardlinks/etc.
-#
-# Question:  should '/' match in parameters?
-#
-
-# This will fail because ../../bib/[NAME].bib will match [NAME].bib.
-# Instead, be able to write ./[NAME].bib
-A:   a.bib b.bib c.bib;
-$NAME.bib:  ../../bib/$NAME.bib { cp ... }
-a.bib;
-
-# Rules:
-#     [NAME].bib:    a .bib file anywhere
-#     ./[NAME].bib:  a .bib file in the current directory
-
-# Remove trailing slash from directory names.
-A:  ?tmp/ {...}
-tmp: {...}
 
 #==== Features of Stu 2 ====
 
@@ -177,6 +153,33 @@ A.$X.$Y:  $X * .$Y      # OK
 @plot.all:   @plot.[NETWORKS];
 
 @plot:    plot/[NETWORKS].eps;
+
+#
+# What happens with relative and absolute pathnames?  When two names
+# refer to the same file?  Do we need to 'normalize' names?
+#
+# * fold ..
+# * fold .,except for a single .
+# * Remove ending / 
+# * Fold multiple / to a single one, except exactly two at the beginning
+# * don't touch symlinks/hardlinks/etc.
+#
+# Question:  should '/' match in parameters?
+#
+
+# This will fail because ../../bib/[NAME].bib will match [NAME].bib.
+# Instead, be able to write ./[NAME].bib
+A:   a.bib b.bib c.bib;
+$NAME.bib:  ../../bib/$NAME.bib { cp ... }
+a.bib;
+
+# Rules:
+#     [NAME].bib:    a .bib file anywhere
+#     ./[NAME].bib:  a .bib file in the current directory
+
+# Remove trailing slash from directory names.
+A:  ?tmp/ {...}
+tmp: {...}
 
 #
 # Advanced file inclusion 

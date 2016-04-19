@@ -1,6 +1,12 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
+# What if '% include -' is done multiple times?
+#
+
+% include -
+
+#
 # Copy rule
 #
 

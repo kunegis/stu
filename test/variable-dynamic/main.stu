@@ -1,0 +1,18 @@
+#
+# Named variables work in parametrized rules. 
+#
+
+A: list.pqr {
+	cp list.pqr A
+}
+
+list.$name:   $[yyyn = X] 
+{
+	cat X
+	echo "yyyn='$yyyn'"
+	[ "x$yyyn" = x123 ] || exit 1
+	echo correct >list.$name
+}
+
+>X { echo 123 }
+

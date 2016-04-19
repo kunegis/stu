@@ -80,37 +80,20 @@ public:
 	 */ 
 	Timestamp timestamp_old; 
 
-	/* Variable assignments for when the command is run.  Filled over
-	 * time with the various types of variables that are possible.
-	 * Note:  we use an ordered map in order to be able to output all
-	 * variable assignments alphabetically; otherwise the order does not
-	 * matter. 
-	 */
+	/* Variable assignments from parameters for when the command is run. */
 	map <string, string> mapping_parameter; 
 
-	/* Variable assignments to be printed when the command is executed. 
-	 */
+	/* Variable assignments from actual variables */
 	map <string, string> mapping_variable; 
 
-	/* Error status of this target.  The value is propagated (using '|')
+	/* Error value of this target.  The value is propagated (using '|')
 	 * to the parent.  Values correspond to constants defined in
 	 * error.hh; zero denotes the absence of an error. 
 	 */ 
 	int error;
 
-	/* Whether this target needs to be built.  When a
-	 * target is finished, this value is propagated to the parent
-	 * executions (except when the F_EXISTENCE flag is set). 
-	 */ 
-	bool need_build;
-
-	/* Whether we performed the check in execute().  (Only for FILE
-	 * targets). 
-	 */ 
-	bool checked;
-
 	/* What parts of this target have been done. Each bit represents
-	 * one task done.  The depth K is equal to the dynamicity
+	 * one aspect that was done.  The depth K is equal to the dynamicity
 	 * for dynamic targets, and to zero for non-dynamic targets. 
 	 */
 	Stack done;
@@ -124,12 +107,23 @@ public:
 	 */
 	Timestamp timestamp; 
 
+	/* Whether this target needs to be built.  When a
+	 * target is finished, this value is propagated to the parent
+	 * executions (except when the F_EXISTENCE flag is set). 
+	 */ 
+	bool need_build;
+
+	/* Whether we performed the check in execute().  (Only for FILE
+	 * targets). 
+	 */ 
+	bool checked;
+
 	/* Whether the file is known to exist.  
 	 * -1 = known not to exist
-	 * 0  = unknown whether the file exists, or not a FILE
+	 *  0 = unknown whether the file exists, or not a FILE
 	 * +1 = known to exist
 	 */
-	int exists;
+	signed char exists;
 	
 	/* File, phony and dynamic targets.  
 	 */ 
@@ -698,8 +692,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 			 ? rule->place_param_target.place_param_name.unparametrized() : "",
 			 rule->filename_input.unparametrized(),
 			 rule->command->place); 
-		assert(pid != 0);
-		assert(pid != 1); 
+		assert(pid != 0 && pid != 1); 
 
 		if (option_verbose) {
 			string text_target= this->target.format();
@@ -1008,7 +1001,7 @@ void Execution::unlink(Execution *const parent,
 		 * dependency was found to exist
 		 */
 		else if (flags_child & F_OPTIONAL) {
-			if (child->exists != +1) {
+			if (child->exists <= 0) {
 				do_read= false;
 			}
 		}
@@ -1019,7 +1012,8 @@ void Execution::unlink(Execution *const parent,
 	}
 
 	/* Propagate timestamp.  Note:  When the parent execution has
-	 * filename == "", this is unneccesary */ 
+	 * filename == "", this is unneccesary, but it's easier to not
+	 * check, since that happens only once. */ 
 	if (! (flags_child & F_EXISTENCE) && ! (flags_child & F_READ)) {
 		if (child->timestamp.defined()) {
 			if (! parent->timestamp.defined()) {
@@ -1033,7 +1027,7 @@ void Execution::unlink(Execution *const parent,
 	}
 
 	/* Propagate variable dependencies */
-	if ((flags_child & F_VARIABLE) && child->exists == +1) {
+	if ((flags_child & F_VARIABLE) && child->exists > 0) {
 
 		/* Read the content of the file into a string as the
 		 * variable value */  
@@ -1075,7 +1069,8 @@ void Execution::unlink(Execution *const parent,
 		dependency_variable_name= "";
 		if (dynamic_pointer_cast <Direct_Dependency> (dependency_child)) {
 			dependency_variable_name=
-				dynamic_pointer_cast <Direct_Dependency> (dependency_child)->variable_name; 
+				dynamic_pointer_cast <Direct_Dependency>
+				(dependency_child)->variable_name; 
 		}
 		variable_name= 
 			dependency_variable_name == ""
@@ -1083,17 +1078,18 @@ void Execution::unlink(Execution *const parent,
 
 		parent->mapping_variable[variable_name]= content;
 
-		if (0) {
-		error_fd:
-			close(fd); 
-		error:
-			child->param_rule->place_param_target.place <<
-				fmt("generated file '%s' for variable dependency was built but cannot be found now", 
-				    filename);
-			child->print_traces();
+		goto ok;
 
-			parent->raise(ERROR_BUILD); 
-		}
+	error_fd:
+		close(fd); 
+	error:
+		child->param_rule->place_param_target.place <<
+			fmt("generated file '%s' for variable dependency was built but cannot be found now", 
+			    filename);
+		child->print_traces();
+
+		parent->raise(ERROR_BUILD); 
+	ok:;
 	}
 
 	/*
@@ -1140,10 +1136,10 @@ Execution::Execution(Target target_,
 		     Execution *parent)
 	:  target(target_),
 	   error(0),
-	   need_build(false),
-	   checked(false),
 	   done(dynamic_depth(target_.type), 0),
 	   timestamp(Timestamp::UNDEFINED),
+	   need_build(false),
+	   checked(false),
 	   exists(0)
 {
 	assert(target.type == T_PHONY || target.type >= T_FILE); 
@@ -2075,6 +2071,8 @@ void Execution::write_content(const char *filename,
 			command.get_place() << frmt("error creating %s", filename); 
 		raise(ERROR_BUILD); 
 	}
+
+	exists= +1;
 }
 
 #endif /* ! EXECUTION_HH */

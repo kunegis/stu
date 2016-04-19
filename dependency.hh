@@ -214,6 +214,20 @@ public:
 		check(); 
 	}
 
+	/* Use an explicit dependency place */ 
+	Direct_Dependency(Flags flags_,
+			  const Place_Param_Target &place_param_target_,
+			  const Place &place_,
+			  const string &variable_name_)
+		:  Base_Dependency(flags_),
+		   place_param_target(place_param_target_),
+		   place(place_),
+		   variable_name(variable_name_)
+	{ 
+		assert((flags_ & F_READ) == 0); 
+		check(); 
+	}
+
 	const Place &get_place() const {
 		return place; 
 	}
@@ -515,7 +529,8 @@ shared_ptr <Dependency> Direct_Dependency
 {
 	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
 
-	shared_ptr <Dependency> ret= make_shared <Direct_Dependency> (flags, *ret_target, place);
+	shared_ptr <Dependency> ret= make_shared <Direct_Dependency> 
+		(flags, *ret_target, place, variable_name);
 
 	assert(ret_target->place_param_name.get_n() == 0); 
 	string name= ret_target->place_param_name.format_mid(); 

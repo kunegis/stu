@@ -1,0 +1,14 @@
+#
+# Test a variable dependency from assigned content. 
+#
+
+A:  $[V]
+{
+	[ "$V" = 123 ] || {
+		exit 1
+	}
+
+	echo correct >A
+}
+
+V = { 123 }

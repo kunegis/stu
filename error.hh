@@ -119,7 +119,7 @@ public:
 
 	Place::Type type; 
 
-	/* File in which the error occurred */ 
+	/* File in which the error occurred.  Empty string for standard input. */ 
 	string filename;
 
 	/* Line number, one-based */ 
@@ -267,7 +267,7 @@ string Place::as_string_nocolumn() const
 
 const char *Place::get_filename_str() const
 {
-	return filename == "-"
+	return filename == ""
 		? "<stdin>"
 		: filename.c_str();
 }

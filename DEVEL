@@ -23,6 +23,7 @@ The unit tests have additional requirements:
 * The unit tests assume that the file system supports UTF-8 filenames.
   Stu will work without such a file system, but you can't run the unit
   tests unless you remove the one offending test (test/unicode/).  
+* The unit tests use 'test -a', which is marked as obsolete in POSIX. 
 
 If you run the tests and they fail, please report that to Jérôme
 Kunegis <kunegis@gmail.com>.  

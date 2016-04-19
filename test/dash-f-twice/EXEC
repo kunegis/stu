@@ -1,0 +1,21 @@
+#! /bin/sh
+# 
+# What happens when standard input is read twice from the command line.  
+#
+# Usually, this will fail on fstat(0) for reading the second file, after
+# stdin was closed.  
+#
+
+rm -f A
+
+cat <<EOF | ../../stu -f - -f - 
+A { touch A }
+EOF
+exitcode="$?"
+
+[ "$exitcode" = 2 ] || {
+	echo >&2 "*** Exit code"
+	exit 1
+}
+
+exit 0

@@ -58,20 +58,25 @@ public:
 	{ }
 
 	/*
-	 * Parse the tokens in a file.
+	 * Parse the tokens from FILENAME.  
 	 *
-	 * The given file descriptor FD may optionally be that file already
-	 * opened.  If the file was not yet opened, FD must be smaller than 0. 
+	 * The given file descriptor FD may optionally be that file
+	 * already opened.  If the file was not yet opened, FD is -1.
+	 * If FILENAME is empty, use standard input, but FD must be -1. 
 	 *
 	 * Append the read tokens to TOKENS. 
 	 * 
 	 * TRACES can include traces that lead to this inclusion.  TRACES must
-	 * not be modified when returning.  
+	 * not be modified when returning, but is declared as non-const
+	 * because it is used as a stack.  
 	 *
 	 * FILENAMES is the list of filenames parsed up to here. I.e., it has
 	 * length zero for the main read file.  FILENAME should *not* be
 	 * included in FILENAMES. 
 	 *
+	 * If ALLOW_INCLUDE, allow '%include' statements, otherwise
+	 * not (used for dynamic dependencies and the -C option). 
+	 * 
 	 * Throws integers as errors. 
 	 */
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
@@ -83,6 +88,7 @@ public:
 				      unordered_set <string> &includes,
 				      int fd= -1);
 
+	/* Wrapper for the top-level parsing */ 
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
 				      bool allow_include,
 				      Place &place_end,
@@ -159,9 +165,9 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			assert(traces.size() == 0);
 		}
 
-		/* Map '-' to stdin */ 
-		assert(! (filename == "-" && fd >= 0));
-		if (filename == "-") {
+		/* Map empty string to stdin */ 
+		assert(! (filename == "" && fd >= 0));
+		if (filename == "") {
 			fd= 0; 
 			file= stdin;
 		}
@@ -233,7 +239,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				assert(r <= BUFLEN); 
 				if (r == 0) {
 					if (ferror(file)) {
-						if (filename != "-") {
+						if (filename != "") {
 							int errno_save= errno;
 							fclose(file);
 							errno= errno_save;
@@ -245,7 +251,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				}
 				len += r;
 			}
-			if (filename != "-") {
+			if (filename != "") {
 				if (fclose(file) != 0) {
 					goto error_close;
 				}
@@ -284,16 +290,18 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 	error_close:
 		close(fd);
 	error:
+		const char *filename_diagnostic= filename != ""
+			? filename.c_str() : "<stdin>";
 		if (traces.size() > 0) {
 			for (auto j= traces.begin();  j != traces.end();  ++j) {
 				if (j == traces.begin()) {
 					j->print_beginning();
-					perror(filename.c_str()); 
+					perror(filename_diagnostic); 
 				} else
 					j->print(); 
 			}
 		} else
-			perror(filename.c_str()); 
+			perror(filename_diagnostic); 
 		throw ERROR_LOGICAL; 
 
 	} catch (int error) {

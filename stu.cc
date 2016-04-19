@@ -73,9 +73,11 @@ void init_buf();
 void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
 			     const char *string_);
 
-/* Read in an input file and add the rules to the given rule set.  If
- * not yet non-null, set RULE_FIRST to the first rule.  FILE_FD can be
- * -1 or the FD or the filename, if already opened. 
+/* Read in an input file and add the rules to the given rule set.  Used
+ * for the -f option and the default input file.  If not yet non-null,
+ * set RULE_FIRST to the first rule.  FILE_FD can be -1 or the FD or the
+ * filename, if already opened.  If FILENAME is "-", use standard
+ * input.  
  */
 void read_file(string filename,
 	       int file_fd,
@@ -373,6 +375,8 @@ void read_file(string filename,
 	       shared_ptr <Rule> &rule_first)
 {
 	assert(file_fd == -1 || file_fd > 1); 
+	assert(filename != "");
+	if (filename == "-")  filename= ""; 
 
 	/* Tokenize */ 
 	vector <shared_ptr <Token> > tokens;

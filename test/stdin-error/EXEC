@@ -1,0 +1,18 @@
+#! /bin/sh
+
+../../stu -f - <<EOF >list.out 2>list.err
+:::: # Syntax error
+EOF
+exitcode="$?"
+
+[ "$exitcode" = 2 ] || {
+	echo >&2 "*** Exit code"
+	exit 1
+}
+
+grep -qF '<stdin>' list.err || {
+	echo >&2 "*** Missing '<stdin>'"
+	exit 1
+}
+
+exit 0

@@ -1,4 +1,7 @@
 #! /bin/sh
+#
+# Test that '-f -' makes Stu read standard input as an input file. 
+#
 
 ../../stu -f - >list.out 2>list.err <<EOF 
 A: B { cp B A }

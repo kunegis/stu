@@ -310,7 +310,7 @@ pid_t Job::start(string command,
 		 * This makes the shell if it reports an error make the
 		 * most useful output. 
 		 */
-		const string argv0= place_command.as_string_nocolumn(); 
+		const string argv0= place_command.as_argv0(); 
 
 		/* The one-character options to the shell */
 		const char *shell_options= option_individual ? "-ex" : "-e"; 

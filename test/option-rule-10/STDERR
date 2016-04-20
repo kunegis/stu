@@ -1,1 +1,1 @@
-Command line argument: '$name;': the first rule given must not be parametrized if no target is given
+Command line argument '$name;': the first rule given must not be parametrized if no target is given

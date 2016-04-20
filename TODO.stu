@@ -69,6 +69,16 @@ A B C;
 # New flag to ALWAYS build a target.  (We may already have this)
 #
 
+#
+# New syntax for optionless arguments, which
+# allows characters such as []@?!& and maybe also () to have their Stu
+# meaning, but whitespace to be allowed as part of filenames. Other
+# characters would all be allowed as part of filenames. Parsing would be
+# simple because each argument would be exactly one dependency. This
+# will reduce confusion for users and the -c and -C option will retain
+# their meanings. 
+#
+
 #==== Backward-incompatible features (in the switch to version 2) ====
 
 #

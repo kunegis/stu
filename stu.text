@@ -6,7 +6,7 @@ NAME
        stu - Build automation
 
 SYNOPSIS
-       stu [ -f FILENAME ] [ OPTIONS ...  ] [ TARGETS ...  ]
+       stu [ -f FILENAME ] [ OPTIONS ...  ] [ EXPRESSION ...  ]
 
 DESCRIPTION
        Stu  is  a  tool  for  build automation.  Like Make, it is used to call
@@ -22,36 +22,44 @@ DESCRIPTION
        and  in  the  build command.  Targets may contain any number of parame‐
        ters.
 
-       Names of files to build are passed on  the  command  line.   Rules  for
-       building files are read from the file 'main.stu', or from a file passed
-       by the -f option.
-
        In general, Stu is very much like Make:  Instead of a 'Makefile', there
        should  be a file named 'main.stu', which is read automatically by Stu.
        Also like Make, Stu will build the first target  it  finds,  except  if
        given  an explicit target to built.  Stu is designed to follow the con‐
-       ventions of Make, of the Bourne shell and of Unix / POSIX  in  general.
-       As  an  example,  the options -f and -k have the same meaning in Stu as
-       they do in Make.
+       ventions of Make, of the shell, and of Unix and POSIX in  general.   As
+       an  example, the options -f and -k have the same meaning in Stu as they
+       do in Make.
+
+       Rules for building files are read from the file 'main.stu', from a file
+       passed  by  the  -f  option, or using the -F option.  Names of files to
+       build passed on the command line follow  Stu  syntax,  i.e.,  they  are
+       equivalent to using the -C option.
 
 
 OPTIONS
-       -a     Treat all trivial dependencies (declared with '&') as  non-triv‐
+       -a     Treat  all trivial dependencies (declared with '&') as non-triv‐
               ial.
 
        -c FILENAME
-              Pass a target filename, without Stu syntax.
+              Pass a target filename, without Stu syntax.   This  option  only
+              allows file targets to be specified, not phonies.
 
        -C EXPRESSION
-              Pass a target using full Stu syntax.
+              Pass  a  target  using full Stu syntax.  The given expression is
+              parsed as if it was given as one or more dependencies in  a  Stu
+              file.   As a result, flags '!', '?' and '&', brackets and paren‐
+              theses can be used, and spaces  separate  filenames.   Arguments
+              passed  without  an option to Stu are handled in the same way as
+              arguments to the -C option.
 
-       -E     Explain error messages.
+       -E     Explain error messages.  Only some error messages have  explana‐
+              tions.
 
        -f FILENAME
               Read  the  given file instead of the default 'main.stu'.  If the
               name of a directory is passed, the file 'main.stu' in the  given
               directory  is read.  If '-' is passed, read standard input.  The
-              '-f' option can be used multiple times.
+              -f option can be used multiple times.
 
        -F RULES
               Pass rules in full Stu syntax.
@@ -89,8 +97,8 @@ OPTIONS
               Run jobs in pseudorandom order, seeded by the given string.
 
        -p     Print the set of rules to standard output and exit.   Note  that
-              Make  also  has  a  '-p' option to print the rules, but does not
-              exit.  The output format is not specified.
+              Make also has a -p option to print the rules, but does not exit.
+              The output format is not specified.
 
        -q     Question mode; do not execute any commands.  Instead,  determine
               whether  the  given  targets are up to date.  The exit code is 0
@@ -111,10 +119,10 @@ OPTIONS
               of the targets.  This is most useful  when  the  commands  them‐
               selves do not make any output.
 
-       -x     Call  the  shell  using  the  '-x' option, i.e., each individual
-              shell statement is output to standard error output individually,
+       -x     Call  the shell using the -x option, i.e., each individual shell
+              statement is  output  to  standard  error  output  individually,
               instead of outputting a full command at once on standard output.
-              In the output, each command is prefixed by the value of "$PS4".
+              In the output, each command is prefixed by the value of '$PS4'.
 
        -z     Output runtime statistics about child processes on standard out‐
               put  when  finished.   Does  not  include the runtime of the Stu

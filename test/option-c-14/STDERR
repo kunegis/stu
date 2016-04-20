@@ -1,1 +1,1 @@
-Command line argument: '%include "xxx.stu"': '%include' is not allowed in dynamic dependencies or in the -C option
+Command line argument '%include "xxx.stu"': '%include' is not allowed in dynamic dependencies or in the -C option

@@ -162,7 +162,7 @@ public:
 	/* Represented as a compact string */
 	string as_string() const;
 
-	string as_string_nocolumn() const;
+	string as_argv0() const;
 
 	const char *get_filename_str() const;
 };
@@ -214,7 +214,7 @@ void Place::operator<<(string text) const
 		break;
 	case Type::ARGV:
 		fprintf(stderr, 
-			"Command line argument: '%s': %s\n",
+			"Command line argument '%s': %s\n",
 			filename.c_str(),
 			text.c_str()); 
 	}
@@ -240,13 +240,13 @@ string Place::as_string() const
 			    line, 1 + column);  
 
 	case Type::ARGV:
-		return frmt("Command line argument: '%s'",
+		return frmt("Command line argument '%s'",
 			    filename.c_str()); 
 
 	}
 }
 
-string Place::as_string_nocolumn() const
+string Place::as_argv0() const
 {
 	switch (type) {
 	default:  assert(0); 
@@ -254,13 +254,16 @@ string Place::as_string_nocolumn() const
 	case Type::EMPTY:
 		return "<empty>"; 
 
-	case Type::INPUT_FILE:
-		return frmt("%s:%u", 
-			    get_filename_str(),
+	case Type::INPUT_FILE: {
+		const char *s= get_filename_str();
+		return frmt("%s%s:%u", 
+			    s[0] == '-' ? "file " : "",
+			    s,
 			    line);  
+	}
 
 	case Type::ARGV:
-		return frmt("Command line argument: '%s'",
+		return frmt("Command line argument '%s'",
 			    filename.c_str()); 
 	}
 }

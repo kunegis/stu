@@ -1,6 +1,10 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
+# Avoid the function gensub in awk, as it is a GNU extension. 
+#
+
+#
 # Copy rule
 #
 

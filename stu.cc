@@ -5,7 +5,7 @@
 
 /* Enable bounds checking when using GNU libc.  Must be defined before
  * including any of the standard headers.  (Only in non-debug mode).  A
- * no-op for non-GNU compilers. 
+ * no-op for non-GNU libc++ libraries. 
  */ 
 #ifndef NDEBUG
 #    define _GLIBCXX_DEBUG
@@ -167,11 +167,12 @@ int main(int argc, char **argv, char **envp)
 				}
 
 				for (string &filename:  filenames) {
-					if (filename == optarg)  break;
+					if (filename == optarg)  goto end;
 				}
 				had_option_f= true;
 				filenames.push_back(optarg); 
 				read_file(optarg, -1, Execution::rule_set, rule_first);
+			end:
 				break;
 
 			case 'F':
@@ -234,11 +235,9 @@ int main(int argc, char **argv, char **envp)
 			default:  
 				/* Invalid option -- an error message was
 				 * already printed by getopt() */   
-
 				fprintf(stderr, 
 					"To get a list of all options, use '%s -h'\n", 
 					dollar_zero); 
-
 				exit(ERROR_FATAL); 
 			}
 		}
@@ -247,7 +246,7 @@ int main(int argc, char **argv, char **envp)
 
 		/* Targets passed as-is on the command line, outside of options */ 
 		for (int i= optind;  i < argc;  ++i) {
-			/* I is not the index that the argument had
+			/* With GNU getopt(), I is not the index that the argument had
 			 * originally, because getopt() reorders its arguments.
 			 * This is why we can't put I into the trace. 
 			 */ 
@@ -293,13 +292,13 @@ int main(int argc, char **argv, char **envp)
 					 ? fmt("Input file '%s' does not contain any rules and no target given", 
 					       filenames.at(0))
 					 : "No rules and no targets given");
-				throw ERROR_FATAL;
+				exit(ERROR_FATAL);
 			}
 
 			if (rule_first->place_param_target.place_param_name.get_n() != 0) {
 				rule_first->place <<
 					"the first rule given must not be parametrized if no target is given";
-				throw ERROR_FATAL;
+				exit(ERROR_FATAL);
 			}
 
 			dependencies.push_back
@@ -307,16 +306,10 @@ int main(int argc, char **argv, char **envp)
 		}
 
 		/* Execute */
-		int error= Execution::main(dependencies);
-		if (error != 0) {
-			/* We don't have to output any error here, because the
-			 * error(s) was/were already printed when it
-			 * occurred */  
-			assert(error >= 1 && error <= 4); 
-			throw error;
-		}
+		Execution::main(dependencies);
+
 	} catch (int error) {
-		assert(error >= 1 && error <= 4); 
+		assert(error >= 1 && error <= 3); 
 		exit(error); 
 	}
 

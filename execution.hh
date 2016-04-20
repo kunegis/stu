@@ -273,9 +273,9 @@ public:
 					Link &&link,
 					Execution *parent); 
 
-	/* Main execution loop.  
+	/* Main execution loop.  This throws ERROR_BUILD and ERROR_LOGICAL. 
 	 */
-	static int main(const vector <shared_ptr <Dependency> > &dependencies);
+	static void main(const vector <shared_ptr <Dependency> > &dependencies);
 
 	/* Wait for next job to finish and finish it.  Do not start anything
 	 * new.  
@@ -883,7 +883,7 @@ void Execution::waited(int pid, int status)
 	}
 }
 
-int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
+void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 {
 	assert(jobs >= 0);
 
@@ -930,6 +930,7 @@ int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		}
 
 		error= execution_root->error; 
+		assert(error >= 0 && error <= 3); 
 	} 
 
 	/* A build error is only thrown when options_continue is
@@ -937,18 +938,22 @@ int Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 	catch (int e) {
 
 		assert(! option_keep_going); 
-		assert(e >= 1 && e <= 3); 
+		assert(e >= 1 && e <= 4); 
 
-		error= e; 
-		
 		/* Terminate all jobs */ 
 		if (executions_by_pid.size()) {
 			print_error("Terminating all running jobs"); 
 			job_terminate_all();
 		}
+
+		if (e == ERROR_FATAL)
+			exit(ERROR_FATAL); 
+
+		error= e; 
 	}
 
-	return error;
+	if (error)
+		throw error; 
 }
 
 void Execution::unlink(Execution *const parent, 

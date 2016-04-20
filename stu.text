@@ -292,7 +292,7 @@ FEATURES
        Like  a  makefile,  a Stu file consists of rules.  In Stu, the order of
        rules is not important, except for the fact that the first rule is used
        by  default  if no rule is given explicitly.  Comments are written with
-       '#' like in Make or in the Bourne shell.
+       '#' like in Make or in the shell.
 
        The basic syntax is similar to that of  make,  but  does  not  rely  on
        mandatory  whitespace.   Instead  of tabs, the commands are enclosed in
@@ -571,8 +571,8 @@ SYNTAX
 
        Stu files read via the -f option or as the default Stu file, as well as
        the argument to the -F option  must  contain  a  'rule_list'.   A  file
-       included by brackets as well as the argument to the -C option must con‐
-       tain an 'expression_list'.
+       included by brackets, targets specified on the command line, as well as
+       the argument to the -C option must contain an 'expression_list'.
 
 
 SEMANTICS
@@ -589,7 +589,7 @@ SEMANTICS
        result  in  a  cycle, but since both files 'a.gz' and 'a.gz.gz' use the
        same parametrized rule, this is not allowed:
 
-           $name.gz:  $name { gzip $name }
+           $name.gz:  $name { gzip -k $name }
 
        Cycles are possible in dynamic dependencies, where they are allowed and
        ignored.  For instance, the following examples will correctly build the
@@ -626,35 +626,34 @@ EXIT STATUS
 
 ENVIRONMENT
        STU_SHELL
-              If set, Stu calls the  Bourne  shell  from  the  given  location
-              instead  of  '/bin/sh'.  The given shell must support the -e and
-              -c options, as well as -- to denote the end of options.  This is
-              mainly  useful  on systems where '/bin/sh' is not a POSIX Bourne
-              shell.
+              If set, Stu calls the shell from the given location  instead  of
+              '/bin/sh'.   The given shell must support the -e and -c options,
+              as well as -- to denote the end of options.  This is mainly use‐
+              ful on systems where '/bin/sh' is not a POSIX shell.
 
        STU_STATUS
-              Stu sets this variable to '1' in all child processes.  In  order
-              to  avoid  recursive invocation of Stu, Stu will fail on startup
-              when the variable is set. To circumvent this,  unset  the  vari‐
+              Stu  sets  this variable to '1' in all child processes. In order
+              to avoid recursive invocation of Stu, Stu will fail  on  startup
+              when  the  variable  is set. To circumvent this, unset the vari‐
               able.  Recursive Stu is as harmful as recursive Make.
 
 
 SIGNALS
        SIGUSR1
-              When  received, Stu will output a list of currently running jobs
-              on standard output, and statistics about runtime, in  a  similar
-              way  to  the -z option.  The reported runtimes include only jobs
-              that have already  terminated,  and  exclude  currently  running
+              When received, Stu will output a list of currently running  jobs
+              on  standard  output, and statistics about runtime, in a similar
+              way to the -z option.  The reported runtimes include  only  jobs
+              that  have  already  terminated,  and  exclude currently running
               jobs.  Multiple SIGUSR1 signals sent in succession may result in
               output only printed once.
 
 
 COMPATIBILITY
-       The Stu language is unique to this implementation,  and  the  man  page
+       The  Stu  language  is  unique to this implementation, and the man page
        serves as the reference for its syntax.
 
        Stu follows Semantic Versioning (semver.org).  The major version number
-       is increased when backward-incompatible changes are  made.   The  minor
+       is  increased  when  backward-incompatible changes are made.  The minor
        version number is increased when features are added. The patch level is
        increased for other changes.
 
@@ -662,21 +661,21 @@ COMPATIBILITY
 EXAMPLES
        This section contains more advanced examples of Stu usage.
 
-       The following declaration tells  Stu  that  the  file  'config.h'  must
+       The  following  declaration  tells  Stu  that  the file 'config.h' must
        exist, and will allow Stu to give more meaningful error messages if the
        file is not found.
 
            config.h;
 
-       Input and output redirection can be used to write commands that  invoke
-       a  filter such as sed, awk or tr.  The following example will build the
+       Input  and output redirection can be used to write commands that invoke
+       a filter such as sed, awk or tr.  The following example will build  the
        'A' containing the string 'HELLO':
 
            >A: <B { tr a-z A-Z }
            >B { echo hello }
 
-       Variable dependencies may be included indirectly through phony  targets
-       without  commands,  and through dynamic dependencies.  In the following
+       Variable  dependencies may be included indirectly through phony targets
+       without commands, and through dynamic dependencies.  In  the  following
        example, the variable $V will be passed through to the commands for the
        targets A and B:
 
@@ -686,22 +685,22 @@ EXAMPLES
            A: @x { echo $V >A }
            B: [y] { echo $V >B }
 
-       Trivial  dependencies  are often combined with variable dependencies to
-       implement flags, for instance to a compiler, as in the following  exam‐
-       ple.  This  will make sure that a change in the file 'VERSION' will not
-       lead to a recompilation of the program, but if 'program.c' is  modified
+       Trivial dependencies are often combined with variable  dependencies  to
+       implement  flags, for instance to a compiler, as in the following exam‐
+       ple. This will make sure that a change in the file 'VERSION'  will  not
+       lead  to a recompilation of the program, but if 'program.c' is modified
        and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt.
 
            VERSION; # Contains the version number; updated by hand
            >CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=$VERSION }
            program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
 
-       The  -C  option allows to pass any dependency in Stu syntax, and there‐
+       The -C option allows to pass any dependency in Stu syntax,  and  there‐
        fore can be used in some advanced use cases:
 
            stu -C '?X' # Re-build file 'X' only if it already exists
            stu -C '[X]' # Build all files given in file 'X'
-           stu -C '%version 1.7' # Make sure Stu is compatible with the  given
+           stu  -C '%version 1.7' # Make sure Stu is compatible with the given
        version
 
        The -F option allows to define rules on the command line:
@@ -711,30 +710,30 @@ EXAMPLES
 
 
 BUGS
-       The  argument  to  the -j option (number of jobs to run in parallel) is
-       mandatory, as opposed to the behavior of GNU Make,  where  no  argument
+       The argument to the -j option (number of jobs to run  in  parallel)  is
+       mandatory,  as  opposed  to the behavior of GNU Make, where no argument
        means to run as many jobs in parallel as possible.
 
        Invoking 'stu "a b"' builds the files 'a' and 'b', in contrast to 'make
-       "a b"', which builds the file named 'a b'.  To build a file whose  name
+       "a  b"', which builds the file named 'a b'.  To build a file whose name
        contains a space, use 'stu -c "a b"'.
 
-       Files  read  as dynamic dependencies are parsed using the full Stu syn‐
-       tax, meaning that certain characters must be quoted  in  them.   Future
-       versions  of  Stu  may support newline-seperated file lists, as well as
+       Files read as dynamic dependencies are parsed using the full  Stu  syn‐
+       tax,  meaning  that  certain characters must be quoted in them.  Future
+       versions of Stu may support newline-seperated file lists,  as  well  as
        NUL-separated file lists.
 
        Rule-level recursion is not allowed.  This excludes a recursive parsing
-       of  C-like dependencies.  Rule-level recursion would be easy to enable,
-       but would open up problems  related  to  infinite  loops,  which  would
+       of C-like dependencies.  Rule-level recursion would be easy to  enable,
+       but  would  open  up  problems  related  to infinite loops, which would
        require Stu to have a maximal recursion depth.
 
-       Changing  a  command  within  a Stu file will not make the target to be
-       rebuilt.  This can be seen as both a  feature  or  a  bug.   Also,  all
-       changes  in  a  file  will lead to rebuilds of other files, even if the
+       Changing a command within a Stu file will not make  the  target  to  be
+       rebuilt.   This  can  be  seen  as  both a feature or a bug.  Also, all
+       changes in a file will lead to rebuilds of other  files,  even  if  the
        changes are trivial, e.g., when only whitespace was changed in C source
-       code.   Furthermore, touching a file without changing the contents will
-       also lead to a rebuild, although it is not  needed.   Both  limitations
+       code.  Furthermore, touching a file without changing the contents  will
+       also  lead  to  a rebuild, although it is not needed.  Both limitations
        could be removed by using fingerprints instead of modification times.
 
 

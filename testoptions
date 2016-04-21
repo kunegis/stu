@@ -9,9 +9,11 @@ ret=0
 # Check that both lists of options are the same
 #
 
-<stu.cc awk '/^\s*" *-[a-zA-Z]/ {print gensub(/^.*" *-(.).*$/, "\\1", "")}' >testoptions.a
+<stu.cc sed -e '/^\s*" *-[a-zA-Z]/!d;s,^[^-]*-\(.\).*$,\1,' >testoptions.a
+#<stu.cc awk '/^\s*" *-[a-zA-Z]/ {print gensub(/^.*" *-(.).*$/, "\\1", "")}' >testoptions.a
 
-<stu.1.in awk '/\.IP\s(|")+-./ {print gensub(/^\s*\.IP\s+(|")-(.).*$/, "\\2", "")}' >testoptions.b
+<stu.1.in sed -e '/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-./!d;s/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-\(.\).*$/\1/' >testoptions.b
+#<stu.1.in awk '/\.IP\s(|")+-./ {print gensub(/^\s*\.IP\s+(|")-(.).*$/, "\\2", "")}' >testoptions.b
 
 if ! cmp testoptions.a testoptions.b ; then
 	echo >&2 "$0: *** The options given and 'stu.cc' are different from those given in 'stu.1.in'"

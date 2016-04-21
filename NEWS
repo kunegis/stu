@@ -1,4 +1,3 @@
-
 Stu versions are of the form X.Y.Z, where X is the major version, Y is
 the minor version and Z the patch level.  For each new patch level, no
 new features are added.  When the minor version is incremented, features

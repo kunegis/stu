@@ -39,11 +39,11 @@ The design considerations of Stu are:
   things.  
 * Do one thing well: We don't include features such as file compression
   that can be achieved by other tools from within the shell commands.  
-* Embrace POSIX as an underlying standard. Use the Bourne shell as the
+* Embrace POSIX as an underlying standard. Use the shell as the
   underlying command interpreter. Don't try to create a purportedly
   portable layer on top of it, as POSIX _already is_ a portability
   layer.  Also, don't try to create a new portable language for
-  executing commands, as /bin/sh _already is_ one. 
+  executing commands, as /bin/sh _already is_ one.  
 * Keep it simple:  Don't use fancy libraries or hip programming
   languages.  Stu is written in plain C++11 with only standard
   libraries. 

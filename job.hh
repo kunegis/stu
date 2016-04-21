@@ -187,7 +187,7 @@ pid_t Job::start(string command,
 	/* Like Make, we don't use the variable $SHELL, but use
 	 * "/bin/sh" as a shell instead.  Note that the variable $SHELL
 	 * is intended to denote the user's chosen interactive shell,
-	 * and may not be a bourne-compatible shell.  Note also that
+	 * and may not be a POSIX-compatible shell.  Note also that
 	 * POSIX prescribes that Make use "/bin/sh" by default. 
 	 * Other note:  Make allows to declare the Make variable $SHELL
 	 * within the Makefile or in Make's parameters to a value that

@@ -57,13 +57,12 @@ public:
 		   p_end(p_ + length)
 	{ }
 
-	/*
-	 * Parse the tokens from FILENAME.  
+	/* Parse the tokens from FILENAME.  
 	 *
 	 * The given file descriptor FD may optionally be that file
 	 * already opened.  If the file was not yet opened, FD is -1.
 	 * If FILENAME is empty, use standard input, but FD must be -1. 
-	 *
+	 * 
 	 * Append the read tokens to TOKENS. 
 	 * 
 	 * TRACES can include traces that lead to this inclusion.  TRACES must

@@ -35,6 +35,13 @@ public:
 	 * token. */ 
 	shared_ptr <Command> command;
 
+	/* When ! is_copy:  The name of the file from which
+	 * input should be read; must be one of the file dependencies.
+	 * Empty for no input redirection.   
+	 * When is_copy: the file from which to copy; never empty
+	 */ 
+	Param_Name filename; 
+
 	/* Whether the command is a command or hardcoded content */ 
 	bool is_hardcode;
 
@@ -44,10 +51,17 @@ public:
 	 */ 
 	bool redirect_output; 
 
-	/* The name of the file from which input should be read; must be one
-	 * of the file dependencies.  Empty for no input redirection. 
-	 */ 
-	Param_Name filename_input; 
+	bool is_copy;
+
+	/* Direct constructor that specifies everything */
+	Rule(Place_Param_Target &&place_param_target_,
+	     vector <shared_ptr <Dependency> > &&dependencies_,
+	     const Place &place_,
+	     const shared_ptr <Command> &command_,
+	     Param_Name &&filename_,
+	     bool is_hardcode_,
+	     bool redirect_output_,
+	     bool is_copy_); 
 
 	Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	     const vector <shared_ptr <Dependency> > &dependencies_,
@@ -55,6 +69,13 @@ public:
 	     bool is_hardcode_,
 	     bool redirect_output_,
 	     const Param_Name &filename_input_);
+
+	/* A copy rule.  When the places are EMPTY, the corresponding
+	 * flag is not used. 
+	 */
+	Rule(shared_ptr <Place_Param_Target> place_param_target_,
+	     shared_ptr <Place_Param_Name> place_param_source_,
+	     const Place &place_existence);
 
 	/* Format the rule, as in the -p option */ 
 	string format() const; 
@@ -101,18 +122,37 @@ public:
 	void print() const;
 };
 
+Rule::Rule(Place_Param_Target &&place_param_target_,
+	   vector <shared_ptr <Dependency> > &&dependencies_,
+	   const Place &place_,
+	   const shared_ptr <Command> &command_,
+	   Param_Name &&filename_,
+	   bool is_hardcode_,
+	   bool redirect_output_,
+	   bool is_copy_)
+	:  place_param_target(place_param_target_),
+	   dependencies(dependencies_),
+	   place(place_),
+	   command(command_),
+	   filename(filename_),
+	   is_hardcode(is_hardcode_),
+	   redirect_output(redirect_output_),
+	   is_copy(is_copy_)
+{  }
+
 Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	   const vector <shared_ptr <Dependency> > &dependencies_,
 	   shared_ptr <Command> command_,
 	   bool is_hardcode_,
 	   bool redirect_output_,
-	   const Param_Name &filename_input_)
+	   const Param_Name &filename_)
 	:  place_param_target(*place_param_target_), 
 	   dependencies(dependencies_),
 	   command(command_),
+	   filename(filename_),
 	   is_hardcode(is_hardcode_),
 	   redirect_output(redirect_output_),
-	   filename_input(filename_input_)
+	   is_copy(false)
 { 
 	/* The place of the rule as a whole is the same as the place of the
 	 * target. */
@@ -122,8 +162,8 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	 * parameters from the target */ 
 
 	unordered_set <string> parameters;
-	for (auto &i:  place_param_target.place_param_name.get_parameters()) {
-		parameters.insert(i); 
+	for (auto &parameter:  place_param_target.place_param_name.get_parameters()) {
+		parameters.insert(parameter); 
 	}
 
 	/* Check that only valid parameters are used */ 
@@ -140,11 +180,13 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 				dynamic_pointer_cast <Direct_Dependency> (dep); 
 
 			for (unsigned jj= 0;  
-				 jj < dependency->place_param_target.place_param_name.get_n();  ++jj) {
+			     jj < dependency->place_param_target.place_param_name.get_n();
+			     ++jj) {
 				string parameter= dependency->place_param_target
-					.place_param_name.get_parameters()[jj]; 
+					.place_param_name.get_parameters().at(jj); 
 				if (parameters.count(parameter) == 0) {
-					dependency->place_param_target.place_param_name.get_places()[jj] <<
+					dependency->place_param_target
+						.place_param_name.get_places().at(jj) <<
 						fmt("parameter $%s is not used", parameter); 
 					place_param_target.place <<
 						fmt("in target %s", place_param_target.format());
@@ -157,6 +199,34 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	}
 }
 
+Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
+	   shared_ptr <Place_Param_Name> place_param_source_,
+	   const Place &place_existence)
+	:  place_param_target(*place_param_target_),
+	   is_copy(true)
+{
+	/* The place of the rule as a whole is the same as the place of the
+	 * target. */
+	place= place_param_target.place; 
+
+	auto dependency= 
+		make_shared <Direct_Dependency> 
+		(0, Place_Param_Target(T_FILE, *place_param_source_));
+
+	if (! place_existence.empty()) {
+		dependency->flags |= F_EXISTENCE;
+		dependency->place_existence= place_existence;
+	}
+
+	/* Only the copy filename, with the F_COPY flag */
+	dependencies.push_back(dependency);
+
+	filename= *place_param_source_;
+
+	is_hardcode= false;
+	redirect_output= false;
+}
+
 shared_ptr <Rule> 
 Rule::instantiate(shared_ptr <Rule> rule,
 		  const map <string, string> &mapping) 
@@ -167,17 +237,22 @@ Rule::instantiate(shared_ptr <Rule> rule,
 
 	vector <shared_ptr <Dependency> > dependencies;
 
-	for (auto &i:  rule->dependencies) {
-		dependencies.push_back(i->instantiate(mapping));
+	for (auto &dependency:  rule->dependencies) {
+		dependencies.push_back(dependency->instantiate(mapping));
 	}
 
+	shared_ptr <Place_Param_Target> place_param_target= 
+		rule->place_param_target.instantiate(mapping);
+
 	return make_shared <Rule> 
-		(rule->place_param_target.instantiate(mapping),
-		 dependencies,
+		(move(*place_param_target),
+		 move(dependencies),
+		 rule->place,
 		 rule->command,
+		 move(rule->filename.instantiate(mapping)),
 		 rule->is_hardcode,
 		 rule->redirect_output,
-		 rule->filename_input.instantiate(mapping));
+		 rule->is_copy); 
 }
 
 string Rule::format() const

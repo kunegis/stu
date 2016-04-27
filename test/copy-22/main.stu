@@ -1,0 +1,3 @@
+list.$name = ! $name.data; # OK
+
+$name.data { touch $name.data }

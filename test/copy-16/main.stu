@@ -1,0 +1,3 @@
+@A = B; # Error
+
+B { touch B }

@@ -44,6 +44,13 @@ private:
 	vector <shared_ptr <Token> > ::iterator &iter;
 	const Place place_end; 
 
+	/* If TO ends in '/', append to it the part of FROM that
+	 * comes after the last slash, or the full target if it contains
+	 * no slashes.  Parameters are not considered for containing
+	 * slashes */
+	static void append_copy(      Param_Name &to,
+				const Param_Name &from);
+
 public:
 
 	Build(vector <shared_ptr <Token> > &tokens_,
@@ -57,22 +64,23 @@ public:
 	/*
 	 * Methods for building the syntax tree:  Each has a name
 	 * corresponding to the symbol given by the Yacc syntax in the
-	 * manpage.  The argument RET is where the result is written.
+	 * manpage.  The argument RET (if it is used) is where the
+	 * result is written. 
 	 * If the return value is BOOL, it denotes whether something was
-	 * read.  On syntax errors, LOGICAL_ERROR is thrown. 
+	 * read or not.  On syntax errors, ERROR_LOGICAL is thrown. 
 	 */
 
 	/* In some of the following functions, write the input filename into
-	 * PLACE_NAME_INPUT.  If 
-	 * PLACE_NAME_INPUT is alrady non-empty, throw an error if a second
-	 * input filename is specified. 
-	 * PLACE_INPUT is the place of the '<' input redirection operator. 
+	 * PLACE_NAME_INPUT.  If PLACE_NAME_INPUT is alrady non-empty,
+	 * throw an error if a second input filename is specified.
+	 * PLACE_INPUT is the place of the '<' input redirection
+	 * operator.  
 	 */ 
 
 	/* The returned rules may not be unique -- this is checked later */
 	void build_rule_list(vector <shared_ptr <Rule> > &ret);
 
-	/* Return nullptr when nothing was parsed */ 
+	/* Return null when nothing was parsed */ 
 	shared_ptr <Rule> build_rule(); 
 
 	bool build_expression_list(vector <shared_ptr <Dependency> > &ret, 
@@ -93,8 +101,16 @@ public:
 	bool is_operator(char op) const {
 		return 
 			iter != tokens.end() &&
-			dynamic_pointer_cast <Operator> (*iter) &&
-			dynamic_pointer_cast <Operator> (*iter)->op == op;
+			is <Operator> () &&
+			is <Operator> ()->op == op;
+	}
+
+	/* If the next token is of type T, return it, otherwise return
+	 * null. 
+	 */ 
+	template <typename T>
+	shared_ptr <T> is() const {
+		return dynamic_pointer_cast <T> (*iter); 
 	}
 };
 
@@ -105,7 +121,7 @@ void Build::build_rule_list(vector <shared_ptr <Rule> > &ret)
 	while (iter != tokens.end()) {
 
 #ifndef NDEBUG
-		auto iter_begin= iter; 
+		const auto iter_begin= iter; 
 #endif /* ! NDEBUG */ 
 
 		shared_ptr <Rule> rule= build_rule(); 
@@ -121,30 +137,30 @@ void Build::build_rule_list(vector <shared_ptr <Rule> > &ret)
 
 shared_ptr <Rule> Build::build_rule()
 {
-	if (! (dynamic_pointer_cast <Param_Name> (*iter) || 
+	if (! (is <Name_Token> () || 
 	       is_operator('@') ||
 	       is_operator('>'))) {
-		return shared_ptr <Rule> (); 
+		return nullptr; 
 	}
 
-	bool redirect_output= false;
+	/* T_EMPTY when output is not redirected */
 	Place place_output; 
 
 	if (is_operator('>')) {
 		place_output= (*iter)->get_place();
+		assert(! place_output.empty()); 
 		++iter;
 		if (iter == tokens.end()) {
 			place_end << "expected a filename";
 			place_output << "after '>'"; 
 			throw ERROR_LOGICAL;
 		}
-		else if (! (dynamic_pointer_cast <Param_Name> (*iter) || 
+		else if (! (is <Name_Token> () || 
 			    is_operator('@'))) {
 			(*iter)->get_place() << "expected a filename";
 			place_output << "after '>'"; 
 			throw ERROR_LOGICAL;
 		}
-		redirect_output= true; 
 	}
 
 	Place place_target= (*iter)->get_place();
@@ -153,7 +169,7 @@ shared_ptr <Rule> Build::build_rule()
  	if (is_operator('@')) {
 		Place place_at= (*iter)->get_place();
 
-		if (redirect_output) {
+		if (! place_output.empty()) {
 			place_at << "phony target is invalid";
 			place_output << "after '>'"; 
 			throw ERROR_LOGICAL;
@@ -165,7 +181,7 @@ shared_ptr <Rule> Build::build_rule()
 			place_at << "after '@'";
 			throw ERROR_LOGICAL;
 		}
-		if (! dynamic_pointer_cast <Param_Name> (*iter)) {
+		if (! is <Name_Token> ()) {
 			(*iter)->get_place() << "expected the name of phony target";
 			place_at << "after '@'";
 			throw ERROR_LOGICAL;
@@ -175,7 +191,7 @@ shared_ptr <Rule> Build::build_rule()
 	}
 
 	/* Target */ 
-	shared_ptr <Name_Token> target_name= dynamic_pointer_cast <Name_Token> (*iter);
+	shared_ptr <Name_Token> target_name= is <Name_Token> ();
 	++iter;
 
 	if (! target_name->valid()) {
@@ -239,35 +255,117 @@ shared_ptr <Rule> Build::build_rule()
 	Place place_nocommand; 
 
 	/* Place of '=' */
-	Place place_hardcode;
+	Place place_equal;
 
-	if (dynamic_pointer_cast <Command> (*iter)) {
-		command= dynamic_pointer_cast <Command> (*iter);
-		is_hardcode= false;
+	/* Name of the copy-from file */ 
+	shared_ptr <Name_Token> name_copy;
+
+	if (command= is <Command> ()) {
 		++iter; 
+		is_hardcode= false;
 	} else if (! had_colon && is_operator('=')) {
-		place_hardcode= (*iter)->get_place(); 
+		place_equal= (*iter)->get_place(); 
 		++iter;
 
-		if (type == T_PHONY) {
-			place_hardcode << "there must not be assigned content";
-			place_target << fmt("for phony target %s", place_param_target->format()); 
-			throw ERROR_LOGICAL; 
+		if (iter == tokens.end()) {
+			place_end << "expected filename or '{'";
+			place_equal << "after '='"; 
+			throw ERROR_LOGICAL;
 		}
 
-		if (iter == tokens.end()) {
-			place_end << "expected file content";
-			place_hardcode << "after '='"; 
-			throw ERROR_LOGICAL;
+		if (command= is <Command> ()) {
+			++iter; 
+			if (type == T_PHONY) {
+				place_equal << "there must not be assigned content";
+				place_target << fmt("for phony target %s", 
+						    place_param_target->format()); 
+				throw ERROR_LOGICAL; 
+			}
+			/* No redirected output is checked later */ 
+			is_hardcode= true; 
+		} else {
+			Place place_flag_exclam;
+
+			while (is_operator('!')) {
+				place_flag_exclam= (*iter)->get_place();
+				++iter;
+			}
+
+			if (name_copy= is <Name_Token> ()) {
+				++iter;
+
+				/* Check that the source file contains
+				 * only parameters that also appear in
+				 * the target */
+				unordered_set <string> parameters;
+				for (auto &parameter:  place_param_target->place_param_name.get_parameters()) {
+					parameters.insert(parameter); 
+				}
+				for (unsigned jj= 0;  jj < name_copy->get_n();  ++jj) {
+					string parameter= 
+						name_copy->get_parameters().at(jj); 
+					if (parameters.count(parameter) == 0) {
+						name_copy->places.at(jj) <<
+							fmt("parameter $%s is not used", parameter);
+						place_param_target->place << 
+							fmt("in target %s", place_param_target->format());
+						throw ERROR_LOGICAL;
+					}
+				}
+
+				if (iter == tokens.end()) {
+					place_end << "expected ';'";
+					name_copy->get_place() << 
+						fmt("after copy dependency %s",
+						    name_copy->format()); 
+					throw ERROR_LOGICAL; 
+				}
+				if (! is_operator(';')) {
+					(*iter)->get_place() <<
+						"expected ';'";
+					name_copy->place << 
+						fmt("after copy dependency %s",
+						    name_copy->format()); 
+					throw ERROR_LOGICAL; 
+				}
+				++iter;
+
+				if (! place_output.empty()) {
+					place_output << "output redirected with '>' must not be used";
+					place_equal << "in a copy rule"; 
+					throw ERROR_LOGICAL;
+				}
+
+				if (type != T_FILE) {
+					assert(type == T_PHONY); 
+					place_equal << "copy rule cannot be used";
+					place_target << "with phony target"; 
+					throw ERROR_LOGICAL;
+				}
+
+				/* Append target name when source ends
+				 * in slash */
+				append_copy(*name_copy, place_param_target->place_param_name); 
+
+				return make_shared <Rule> (place_param_target, name_copy,
+							   place_flag_exclam);
+
+			} else if (is_operator('?')) {
+				(*iter)->get_place() 
+					<< "optional dependency with '?' must not be used";
+				place_equal << "in a copy rule"; 
+				throw ERROR_LOGICAL;
+			} else if (is_operator('&')) {
+				(*iter)->get_place() 
+					<< "trivial dependency with '&' must not be used";
+				place_equal << "in a copy rule"; 
+				throw ERROR_LOGICAL;
+			} else {
+				(*iter)->get_place() << "expected filename or '{'";
+				place_equal << "after '='"; 
+				throw ERROR_LOGICAL;
+			}
 		}
-		if (! dynamic_pointer_cast <Command> (*iter)) {
-			(*iter)->get_place() << "expected file content";
-			place_hardcode << "after '='"; 
-			throw ERROR_LOGICAL;
-		}
-		command= dynamic_pointer_cast <Command> (*iter);
-		is_hardcode= true; 
-		++iter; 
 		
 	} else if (is_operator(';')) {
 		place_nocommand= (*iter)->get_place(); 
@@ -283,7 +381,7 @@ shared_ptr <Rule> Build::build_rule()
 	}
 
 	/* Cases where output redirection is not possible */ 
-	if (redirect_output) {
+	if (! place_output.empty()) {
 		/* Already checked before */ 
 		assert(place_param_target->type == T_FILE); 
 
@@ -298,7 +396,7 @@ shared_ptr <Rule> Build::build_rule()
 		if (command != nullptr && is_hardcode) {
 			place_output <<
 				"output redirection using '>' must not be used";
-			place_hardcode <<
+			place_equal <<
 				"in rule with assigned content"; 
 			throw ERROR_LOGICAL;
 		}
@@ -319,7 +417,9 @@ shared_ptr <Rule> Build::build_rule()
 
 	return make_shared <Rule> 
 		(place_param_target, dependencies, 
-		 command, is_hardcode, redirect_output, filename_input);
+		 command, is_hardcode, 
+		 ! place_output.empty(),
+		 filename_input);
 }
 
 bool Build::build_expression_list(vector <shared_ptr <Dependency> > &ret, 
@@ -452,7 +552,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			 * time. Note: Input redirection is not allowed in
 			 * dynamic dependencies, and therefore it is sufficient
 			 * to check this here.     */   
-			if (place_param_name_input.place.type != Place::Type::EMPTY) {
+			if (! place_param_name_input.place.empty()) { 
 				place_input <<
 					"input redirection using '<' must not be used";
 				place_question <<
@@ -518,7 +618,7 @@ shared_ptr <Dependency> Build
 	shared_ptr <Dependency> ret;
 
 	if (! is_operator('$')) 
-		return shared_ptr <Dependency> ();
+		return nullptr;
 
 	Place place_dollar= (*iter)->get_place();
 	++iter;
@@ -530,7 +630,7 @@ shared_ptr <Dependency> Build
 	}
 	
 	if (! is_operator('[')) 
-		return shared_ptr <Dependency> ();
+		return nullptr;
 
 	++iter;
 
@@ -541,7 +641,7 @@ shared_ptr <Dependency> Build
 	char flag_last= 'E';
 	while (is_operator('!') || is_operator('&') || is_operator('?')) {
 
-		flag_last= dynamic_pointer_cast <Operator> (*iter)->op; 
+		flag_last= is <Operator> ()->op; 
 		if (is_operator('!')) {
 			place_flag_last= (*iter)->get_place();
 			flags |= F_EXISTENCE; 
@@ -568,11 +668,11 @@ shared_ptr <Dependency> Build
 	}
 	
 	/* Name of variable dependency */ 
-	if (! dynamic_pointer_cast <Param_Name> (*iter)) {
+	if (! is <Name_Token> ()) {
 		(*iter)->get_place() << "expected a filename";
 		if (has_input)
 			place_input << "after '<'";
-		else if (place_flag_last.type != Place::Type::EMPTY) 
+		else if (! place_flag_last.empty()) 
 			place_flag_last << frmt("after '%c'", flag_last);
 		else
 			place_dollar << "after '$['";
@@ -580,7 +680,7 @@ shared_ptr <Dependency> Build
 		throw ERROR_LOGICAL;
 	}
 	shared_ptr <Place_Param_Name> place_param_name= 
-		dynamic_pointer_cast <Place_Param_Name> (*iter);
+		is <Name_Token> ();
 	++iter;
 
 	if (has_input && ! place_param_name_input.empty()) {
@@ -620,7 +720,7 @@ shared_ptr <Dependency> Build
 			place_equal << "after '=' in variable dependency";
 			throw ERROR_LOGICAL;
 		}
-		if (! dynamic_pointer_cast <Param_Name> (*iter)) {
+		if (! is <Name_Token> ()) {
 			(*iter)->get_place() << "expected filename";
 			place_equal << "after '=' in variable dependency";
 			throw ERROR_LOGICAL;
@@ -635,7 +735,7 @@ shared_ptr <Dependency> Build
 
 		variable_name= place_param_name->unparametrized();
 
-		place_param_name= dynamic_pointer_cast <Place_Param_Name> (*iter);
+		place_param_name= is <Name_Token> ();
 		++iter; 
 	}
 
@@ -697,11 +797,11 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 			place_at << "after '@'"; 
 			throw ERROR_LOGICAL; 
 		} else {
-			return shared_ptr <Dependency> (); 
+			return nullptr;
 		}
 	}
 
-	if (nullptr == dynamic_pointer_cast <Name_Token> (*iter)) {
+	if (nullptr == is <Name_Token> ()) {
 		if (has_input) {
 			(*iter)->get_place() << "expected a filename";
 			place_input << "after '<'"; 
@@ -711,11 +811,11 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 			place_at << "after '@'"; 
 			throw ERROR_LOGICAL;
 		} else {
-			return shared_ptr <Dependency> (); 
+			return nullptr;
 		}
 	}
 
-	shared_ptr <Name_Token> name_token= dynamic_pointer_cast <Name_Token> (*iter);
+	shared_ptr <Name_Token> name_token= is <Name_Token> ();
 	++iter; 
 
 	if (has_input && ! place_param_name_input.empty()) {
@@ -739,6 +839,38 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 		 Place_Param_Target(has_phony ? T_PHONY : T_FILE,
 				    *name_token,
 				    has_phony ? place_at : name_token->place)); 
+}
+
+void Build::append_copy(      Param_Name &to,
+			const Param_Name &from) 
+{
+	/* Only append if TO ends in a slash */
+	if (! (to.last_text().size() != 0 &&
+	       to.last_text().back() == '/')) {
+		return;
+	}
+
+	for (int i= from.get_n();  i >= 0;  --i) {
+		for (int j= from.get_texts().at(i).size() - 1;
+		     j >= 0;  --j) {
+			if (from.get_texts().at(i).at(j) == '/') {
+
+				/* Don't append the found slash, as TO
+				 * already ends in a slash */ 
+				to.append_text(from.get_texts().at(i).substr(j + 1));
+
+				for (unsigned k= i;  k < from.get_n();  ++k) {
+					to.append_parameter(from.get_parameters().at(k));
+					to.append_text(from.get_texts().at(k + 1));
+				}
+				return;
+			}
+		}
+	} 
+
+	/* FROM does not contain slashes;
+	 * prepend the whole FROM to TO */
+	to.append(from);
 }
 
 #endif /* ! BUILD_HH */

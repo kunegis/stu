@@ -192,9 +192,8 @@ namespace std {
 
 }
 
-/* A parametrized name.  Each name has N >= 0  
- * parameters.  When N > 0, the name is parametrized, otherwise it is
- * unparametrized.  
+/* A parametrized name.  Each name has N >= 0 parameters.  When N > 0,
+ * the name is parametrized, otherwise it is unparametrized.   
  * 
  * A name consists of (N+1) static text elements (in the variable TEXTS)
  * and N parameters, which are interleaved.  For instance when N = 2,
@@ -206,20 +205,18 @@ namespace std {
  * valid when all internal texts (between two parameters) are non-empty,
  * and, if N = 0, the single text is not empty. 
  *
- * A parametrized name is empty if N = 0 and the single text is empty
- * (which makes it invalid).
+ * A parametrized name is empty if N = 0 and the single text is empty. 
  */
 class Param_Name
 {
 private:
 
 	/* Length = N + 1.
-	 * Only the first and last elements can be empty.  
+	 * Only the first and last elements may be empty.  
 	 */ 
 	vector <string> texts; 
 
 	/* Length = N.  
-	 * Must all be distinct. 
 	 */ 
 	vector <string> parameters;
 
@@ -230,18 +227,21 @@ public:
 		:  texts({name_})
 	{ }
 
-	/* Empty */ 
+	/* Empty name */ 
 	Param_Name()
 		:  texts({""})
 	{ }
 
-	/* A name is empty when N=0, and when texts[0] is the empty
-	 * string.  Such names cannot result from parsing an input file,
-	 * but they are allowed in this class, and used internally. 
-	 */ 
 	bool empty() const {
 		assert(texts.size() == 1 + parameters.size()); 
 		return parameters.empty() && texts[0] == "";
+	}
+
+	/* Number of parameters; zero when the name is unparametrized. */ 
+	unsigned get_n() const {
+		assert(texts.size() == 1 + parameters.size()); 
+
+		return parameters.size(); 
 	}
 
 	const vector <string> &get_texts() const {
@@ -252,14 +252,39 @@ public:
 		return parameters; 
 	}
 
-	/* Append the given PARAMETER and an empty text */ 
+	/* Append the given PARAMETER and an empty text.  This does not
+	 * check that the result is valid. 
+	 */ 
 	void append_parameter(string parameter) {
 		parameters.push_back(parameter); 
 		texts.push_back("");
 	}
 
+	/* Append the given text to the last text element */
+	void append_text(string text) {
+		texts.at(texts.size() - 1) += text;
+	}
+
+	/* Append another parametrized name.  This function checks that
+	 * the result is valid. */ 
+	void append(const Param_Name &param_name) {
+		assert(this->texts.back() != "" ||
+		       param_name.texts.back() != "");
+
+		append_text(param_name.texts.front());
+
+		for (unsigned i= 0;  i < param_name.get_n();  ++i) {
+			append_parameter(param_name.get_parameters().at(i));
+			append_text(param_name.get_texts().at(1 + i));
+		}
+	}
+
 	string &last_text() {
 		return texts[texts.size() - 1];
+	}
+
+	const string &last_text() const {
+		return texts.at(texts.size() - 1);
 	}
 
 	/* The name may be empty, resulting in an empty string */ 
@@ -272,18 +297,8 @@ public:
 		return texts.at(0); 
 	}
 
-	/* Number of parameters; zero when the name is unparametrized. */ 
-	unsigned get_n() const {
-		assert(texts.size() == 1 + parameters.size()); 
-
-		return parameters.size(); 
-	}
-
 	/* Check whether NAME matches this name.  If it does, return
-	 * TRUE and write the mapping into MAPPING. 
-	 *
-	 * Rules for matching:  each parameter must match at last one
-	 * character. 
+	 * TRUE and set MAPPING and ANCHORING accordingly. 
 	 */
 	bool match(string name, 
 		   map <string, string> &mapping,
@@ -459,7 +474,8 @@ public:
 	Place_Param_Target(Type type_,
 			   const Place_Param_Name &place_param_name_)
 		:  type(type_),
-		   place_param_name(place_param_name_)
+		   place_param_name(place_param_name_),
+		   place(place_param_name_.place)
 	{ }
 
 	Place_Param_Target(Type type_,
@@ -510,6 +526,10 @@ bool Param_Name::match(const string name,
 		       map <string, string> &mapping,
 		       vector <int> &anchoring)
 {
+	/* Rules:
+	 *  - Each parameter must match at least one character. 
+	 */
+
 	/* The algorithm uses one pass without backtracking or
 	 * recursion.  Therefore, there are no "deadly" patterns that
 	 * can make it hang, as it is the case for trivial

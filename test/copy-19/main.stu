@@ -1,0 +1,5 @@
+# Error:  undefined parameter
+
+A = B.$name; 
+
+B.$name { touch B.$name }

@@ -1,18 +1,6 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
-# Copy rule
-#
-
-a.bib = ../bib/references.bib;
-
-# Allow the same-name shortcut (ending in slash or not [with fopenat]):
-konect.bib=  ../../projects/konect/;
-konect.bib=  ../../projects/konect;
-
-# Use cp -- A B 
-
-#
 # Phonies in dynamics
 #
 
@@ -255,6 +243,12 @@ A = @x;
 # Combine with dynamic target
 A = [X];
 <X { echo B C D }
+
+#
+# Optimization:  when parsing rules, only save the "body" part of the
+# rule (everything except the target) as an unparsed string.  Parse it
+# properly only when needed. 
+#
 
 #
 # Chain of commands are useful for dynamic dependencies

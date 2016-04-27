@@ -1,0 +1,5 @@
+# Error:  cycle
+
+A = B;
+B = C;
+C = A;

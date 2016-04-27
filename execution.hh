@@ -30,7 +30,7 @@ public:
 	/* Target to build */ 
 	const Target target;
 
-	/* The instantiated file rule for this execution.  NULLPTR when there
+	/* The instantiated file rule for this execution.  Null when there
 	 * is no rule for this file (this happens for instance when a
 	 * source code file is given as a dependency, or when this is a
 	 * complex dependency).  Individual dynamic dependencies do have
@@ -499,7 +499,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 	int ret_stat; 
 	timestamp_old= Timestamp::UNDEFINED;
 
-	const bool no_command= rule != nullptr && rule->command == nullptr;
+	/* A target for which no execution has to be done */ 
+	const bool no_execution= 
+		rule != nullptr && rule->command == nullptr && ! rule->is_copy;
 
 	if (! checked && target.type == T_FILE) {
 
@@ -526,7 +528,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 				 * because of more up to date dependencies */ 
 
 				if (timestamp.defined() && timestamp_old.older_than(timestamp)) {
-					if (no_command) {
+					if (no_execution) {
 						print_warning
 							(fmt("File target '%s' which has no command is older than its dependency",
 							     target.name));
@@ -557,7 +559,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 					}
 				} else {
 					/* stat() returned an actual error,
-					 * e.g. permission denied:  fail */
+					 * e.g. permission denied:  build error */
 					perror(target.name.c_str());
 					raise(ERROR_BUILD);
 					done.add_one_neg(link.avoid); 
@@ -568,7 +570,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 		/* File does not exist, all its dependencies are up to
 		 * date, and the file has no commands: that's an error. */  
-		if (0 != ret_stat && no_command) {
+		if (0 != ret_stat && no_execution) { 
 
 			/* Case has already been checked, and an
 			 * exception thrown */ 
@@ -577,15 +579,13 @@ bool Execution::execute(Execution *parent, Link &&link)
 			if (rule->dependencies.size()) {
 				if (output_mode > Output::SILENT)
 					print_traces
-						(fmt("file without command '%s' does not exist, "
-						     "although all its dependencies are up to date", 
+						(fmt("file without command '%s' does not exist, although all its dependencies are up to date", 
 						     target.name)); 
 				explain_file_without_command_with_dependencies(); 
 			} else {
 				if (output_mode > Output::SILENT)
 					print_traces
-						(fmt("file without command and without dependencies "
-						     "'%s' does not exist",
+						(fmt("file without command and without dependencies '%s' does not exist",
 						     target.name)); 
 				explain_file_without_command_without_dependencies(); 
 			}
@@ -624,14 +624,13 @@ bool Execution::execute(Execution *parent, Link &&link)
 	} 
 	assert(buf_trivial.empty()); 
 
-	if (no_command) {
+	if (no_execution) {
 		/* A target without a command */ 
 		done.add_neg(link.avoid); 
 		return false;
 	}
 
-	/* The file must be created, either by a command or by hardcoded
-	 * content */ 
+	/* The file must be created now */
 
 	if (option_question) {
 		if (output_mode > Output::SILENT) 
@@ -660,17 +659,18 @@ bool Execution::execute(Execution *parent, Link &&link)
 		return false;
 	}
 
+	/* Start the job */ 
+
 	if (target.type == T_PHONY) {
 		Timestamp timestamp_now= Timestamp::now(); 
 		assert(timestamp_now.defined()); 
+		assert(phonies.count(target.name) == 0); 
 		phonies[target.name]= timestamp_now; 
 	}
 
-	/* Output the command */ 
 	if (rule->redirect_output)
 		assert(rule->place_param_target.type == T_FILE); 
 
-	/* Start the job */ 
 	assert(jobs >= 1); 
 
 	map <string, string> mapping;
@@ -685,13 +685,24 @@ bool Execution::execute(Execution *parent, Link &&link)
 		 * to after we have entered it in the map */
 		Job::Signal_Blocker sb;
 
-		pid= job.start
-			(rule->command->command, 
-			 mapping,
-			 rule->redirect_output 
-			 ? rule->place_param_target.place_param_name.unparametrized() : "",
-			 rule->filename_input.unparametrized(),
-			 rule->command->place); 
+		if (rule->is_copy) {
+
+			assert(rule->place_param_target.type == T_FILE); 
+			
+			pid= job.start_copy
+				(rule->place_param_target.place_param_name.unparametrized(),
+				 rule->filename.unparametrized());
+		} else {
+			pid= job.start
+				(rule->command->command, 
+				 mapping,
+				 rule->redirect_output ? 
+				 rule->place_param_target.place_param_name.unparametrized() : "",
+				 rule->filename.unparametrized(),
+				 rule->command->place); 
+		}
+
+
 		assert(pid != 0 && pid != 1); 
 
 		if (option_verbose) {
@@ -872,8 +883,16 @@ void Execution::waited(int pid, int status)
 				reason= frmt("failed with status code %d", status); 
 			}
 
-			param_rule->command->place <<
-				fmt("command for %s %s", target.format(), reason); 
+			
+			if (! param_rule->is_copy) {
+				param_rule->command->place <<
+					fmt("command for %s %s", target.format(), reason); 
+			} else {
+				/* Copy rule */
+				param_rule->place <<
+					fmt("cp to %s %s", target.format(), reason); 
+			}
+
 			print_traces(); 
 		}
 
@@ -1075,7 +1094,7 @@ void Execution::unlink(Execution *const parent,
 		if (dynamic_pointer_cast <Direct_Dependency> (dependency_child)) {
 			dependency_variable_name=
 				dynamic_pointer_cast <Direct_Dependency>
-				(dependency_child)->variable_name; 
+				(dependency_child)->name; 
 		}
 		variable_name= 
 			dependency_variable_name == ""
@@ -1179,9 +1198,9 @@ Execution::Execution(Target target_,
 
 	if (target.type < T_DYNAMIC && rule != nullptr) {
 		/* There is a rule for this execution */ 
-		for (auto &i:  rule->dependencies) {
-			assert(i->get_place().type != Place::Type::EMPTY); 
-			Link link_new(i); 
+		for (auto &dependency:  rule->dependencies) {
+			assert(! dependency->get_place().empty());
+			Link link_new(dependency); 
 			if (option_verbose) {
 				string text_target= target.format();
 				string text_link_new= link_new.format(); 
@@ -1666,13 +1685,13 @@ void Execution::read_dynamics(Stack avoid,
 			assert(vec.size() == avoid_this.get_k());
 			avoid_this.pop(); 
 			dependency->add_flags(avoid_this.get_lowest()); 
-			if (dependency->get_place_existence().type == Place::Type::EMPTY)
+			if (dependency->get_place_existence().empty())
 				dependency->set_place_existence
 					(vec.at(target.type - T_DYNAMIC)->get_place_existence()); 
-			if (dependency->get_place_optional().type == Place::Type::EMPTY)
+			if (dependency->get_place_optional().empty())
 				dependency->set_place_optional
 					(vec.at(target.type - T_DYNAMIC)->get_place_optional()); 
-			if (dependency->get_place_trivial().type == Place::Type::EMPTY)
+			if (dependency->get_place_trivial().empty())
 				dependency->set_place_trivial
 					(vec.at(target.type - T_DYNAMIC)->get_place_trivial()); 
 			for (Type k= target.type;  k > T_DYNAMIC;  --k) {
@@ -1807,6 +1826,16 @@ void Execution::print_command() const
 		return;
 	} 
 
+	if (rule->is_copy) {
+		/* We hide the fact to the user that we are using '--' */ 
+		string cp_target= rule->place_param_target.place_param_name.format();
+		string cp_source= rule->filename.format();
+		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str()); 
+		return; 
+	}
+
+	/* We are printing a regular command */
+
 	if (option_individual)
 		return; 
 
@@ -1817,7 +1846,7 @@ void Execution::print_command() const
 
 	string filename_output= rule->redirect_output 
 		? rule->place_param_target.place_param_name.unparametrized() : "";
-	string filename_input= rule->filename_input.unparametrized(); 
+	string filename_input= rule->filename.unparametrized(); 
 
 	/* Redirections */
 	if (filename_output != "") {

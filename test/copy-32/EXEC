@@ -1,0 +1,30 @@
+#! /bin/sh
+
+rm -f -- A -r -s || exit 1
+
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** Exit code"
+	exit 1
+}
+
+[ -r list.err ] && ! [ -s list.err ] || {
+	echo >&2 "*** Error output"
+	exit 1
+}
+
+grep -qxF "cp '-s' '-r'" list.out || {
+	echo >&2 "*** Output"
+	exit 1
+}
+
+[ -r A ] && grep -qxF correct A || {
+	echo >&2 "*** Content of 'A'"
+	exit 1
+}
+
+rm -f -- A -r -s || exit 1
+
+exit 0

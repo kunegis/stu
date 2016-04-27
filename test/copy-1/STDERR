@@ -1,0 +1,2 @@
+main.stu:3:1: expected ';'
+main.stu:2:5: after copy dependency 'B'

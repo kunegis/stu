@@ -1,0 +1,5 @@
+# Error: Try to copy a directory
+
+A = list.dir;
+
+list.dir { mkdir -p list.dir }

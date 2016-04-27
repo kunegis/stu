@@ -356,6 +356,16 @@ FEATURES
        The content is stripped of empty lines and  common  whitespace  at  the
        beginning of lines, and written into the file.
 
+       Using  the  equal  sign with a file name creates a copy rule, i.e., the
+       given file is copied with the 'cp' command:
+
+           TARGET = SOURCE;
+
+       By default, Stu will use '/bin/cp' to perform the copy.   This  can  be
+       changed  by  setting  the  variable $STU_CP.  If source ends in a slash
+       (outside of any parameter value), then Stu will look for  a  file  with
+       the same basename as TARGET in the directory SOURCE.
+
        A dependency can be one of the following:
 
            NAME    A file dependency
@@ -558,6 +568,7 @@ SYNTAX
            rule:                ('@' NAME | ['>'] NAME) [':' expression_list]
                                 ('{' COMMAND '}' | ';')
                                 | NAME '=' '{' CONTENT '}'
+                                | NAME '=' '!'* NAME ';'
            expression_list:     expression*
            expression:          '(' expression_list ')'
                                 | '[' expression_list ']'
@@ -566,7 +577,7 @@ SYNTAX
                                 | variable_dependency
            redirect_dependency: ['<'] bare_dependency
            bare_dependency:     ['@'] NAME
-           variable_dependency: '$' '[' [flag*] ['<'] NAME ']'
+           variable_dependency: '$' '[' flag* ['<'] NAME ']'
            flag:                '!' | '?' | '&'
 
        Stu files read via the -f option or as the default Stu file, as well as
@@ -630,6 +641,10 @@ ENVIRONMENT
               '/bin/sh'.   The given shell must support the -e and -c options,
               as well as -- to denote the end of options.  This is mainly use‐
               ful on systems where '/bin/sh' is not a POSIX shell.
+
+       STU_CP If  set,  Stu  calls  the  'cp'  program from the given location
+              instead of '/bin/cp'.  The given version of  'cp'  must  support
+              the syntax 'cp -- "$fileA" "$fileB"'.
 
        STU_STATUS
               Stu  sets  this variable to '1' in all child processes. In order
@@ -745,4 +760,4 @@ SEE ALSO
 
 
 
-stu-1.11.12                       April 2016                            STU(1)
+stu-1.12.0                        April 2016                            STU(1)

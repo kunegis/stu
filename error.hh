@@ -38,13 +38,14 @@
  * phrasing confusing, as it would imply that the token is mandatory.)
  * Include articles after "expected" to avoid interpreting "expected" as
  * an adjective.  Don't mention the invalid token, i.e., don't use
- * phrases such as "invalid token". 
+ * phrases such as "invalid token '&'". 
  * 
- * Use "must not" instead of "cannot" in error messages, e.g., "filename
+ * Use "must not" rather than "cannot" in error messages, e.g., "filename
  * must not be empty".  But remember that in general it is better to
  * state what what expected in the syntax than to say that what was
  * encountered cannot be used.  For instance, say "expected a filename"
- * instead of "filename must not be empty". 
+ * instead of "filename must not be empty".  This cannot always be done,
+ * so "must not" is sometimes used. 
  */
 
 #define ERROR_BUILD          1
@@ -125,7 +126,7 @@ public:
 	/* Line number, one-based */ 
 	unsigned line; 
 
-	/* Line number, zero-based.
+	/* Column number, zero-based.
 	 * In output, column numbers are one-based, but they are saved
 	 * here as zero-based numbers as these are easier to generate.
 	 */ 
@@ -165,6 +166,10 @@ public:
 	string as_argv0() const;
 
 	const char *get_filename_str() const;
+
+	bool empty() const { 
+		return type == Type::EMPTY;
+	}
 };
 
 /* A place along with a message.  This class is only used when traces
@@ -204,7 +209,8 @@ public:
 
 void Place::operator<<(string text) const
 {
-	assert(text != "" && ! isupper(text[0])); 
+	assert(text != "");
+	assert(! isupper(text[0])); 
 
 	switch (type) {
 	default:  assert(0); 

@@ -1,0 +1,1 @@
+main.stu:3:5: target must not depend on itself: 'A' depends on 'A'

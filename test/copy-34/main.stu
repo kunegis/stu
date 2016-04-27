@@ -1,0 +1,5 @@
+# Error; cp fails
+
+A = B;
+
+B { mkdir B }

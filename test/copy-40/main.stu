@@ -1,0 +1,8 @@
+# In the copy rule, the parameter $name will be included twice in the
+# source filename. 
+
+A:  !D  D/E.data { cp D/E.data A }
+D/$name.data = $name/;
+>E/E.data: !E { echo correct }
+E { mkdir -p E }
+D { mkdir -p D }

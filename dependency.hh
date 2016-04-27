@@ -22,12 +22,14 @@
  * The transitive bits effectively are set for tasks not to do.
  * Therefore, inverting them gives the bits for the tasks to do.   
  *
- * Declared as int so arithmetic can be performed on it.
+ * Declared as integer so arithmetic can be performed on it.
  */
 typedef unsigned Flags; 
 enum 
 {
-	/* Transitive bits */ 
+	/* 
+	 * Transitive flags
+	 */ 
 
 	/* (!) When the dependency is newer than the target, don't rebuild */ 
 	F_EXISTENCE        = (1 << 0),  
@@ -38,7 +40,9 @@ enum
 	/* (&) Trivial dependency */
 	F_TRIVIAL          = (1 << 2),
 
-	/* Intransitive bits */ 
+	/* 
+	 * Intransitive flags
+	 */ 
 
 	/* Read content of file and add it as new dependencies.  Used
 	 * only for [...[X]...]->X links. */
@@ -49,7 +53,7 @@ enum
 
 	/* Used only in Link.flags in the seoncd pass.  Not used for
 	 * dependencies.  Means to override all trivial flags. */ 
-	F_OVERRIDETRIVIAL        = (1 << 5),
+	F_OVERRIDETRIVIAL  = (1 << 5),
 };
 
 /* Number of flags that are used, i.e., are transitive.  They correspond
@@ -57,9 +61,11 @@ enum
 const int F_COUNT= 3;
 
 /* Total count */
-const int F_ALL=  6;
+const int F_ALL=  7;
 
-const char *const flags_chars= "!?&`$*"; 
+/* Characters representing the individual flags -- used on verbose mode
+ * output */ 
+const char *const flags_chars= "!?&`$*="; 
 
 /* Textual representation of a flags value. 
  */
@@ -176,9 +182,10 @@ public:
 	/* The place where the dependency is declared */ 
 	Place place;
 
-	/* When non-empty, the name of the variable.  Only when
-	 * F_VARIABLE is set.  */ 
-	string variable_name;
+	/* With F_VARIABLE:  the name of the variable.
+	 * Otherwise:  empty. 
+	 */
+	string name;
 	
 	/* Take the dependency place from the target place */ 
 	Direct_Dependency(Flags flags_,
@@ -193,11 +200,11 @@ public:
 	/* Take the dependency place from the target place, with variable_name */ 
 	Direct_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_,
-			  const string &variable_name_)
+			  const string &name_)
 		:  Base_Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place),
-		   variable_name(variable_name_)
+		   name(name_)
 	{ 
 		check(); 
 	}
@@ -218,11 +225,11 @@ public:
 	Direct_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_,
 			  const Place &place_,
-			  const string &variable_name_)
+			  const string &name_)
 		:  Base_Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_),
-		   variable_name(variable_name_)
+		   name(name_)
 	{ 
 		assert((flags_ & F_READ) == 0); 
 		check(); 
@@ -243,7 +250,7 @@ public:
 		/* Must not be dynamic, since dynamic dependencies are
 		 * represented using Dynamic_Dependency */ 
 		assert(place_param_target.type < T_DYNAMIC);
-		if (variable_name != "") {
+		if (name != "") {
 			assert(place_param_target.type == T_FILE);
 			assert(flags & F_VARIABLE); 
 		}
@@ -530,20 +537,18 @@ shared_ptr <Dependency> Direct_Dependency
 	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
 
 	shared_ptr <Dependency> ret= make_shared <Direct_Dependency> 
-		(flags, *ret_target, place, variable_name);
+		(flags, *ret_target, place, name);
 
 	assert(ret_target->place_param_name.get_n() == 0); 
-	string name= ret_target->place_param_name.format_mid(); 
+	string this_name= ret_target->place_param_name.unparametrized(); 
 
 	if ((flags & F_VARIABLE) &&
-		name.find('=') != string::npos) {
+		this_name.find('=') != string::npos) {
 
 		assert(ret_target->type == T_FILE); 
 		
-		place <<
-			fmt("dynamic variable $[%s] cannot be instantiated"
-			    " with parameter value that contains '='", 
-			    name);
+		place << fmt("dynamic variable $[%s] cannot be instantiated with parameter value that contains '='", 
+			     this_name);
 		throw ERROR_LOGICAL; 
 	}
 

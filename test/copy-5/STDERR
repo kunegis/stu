@@ -1,0 +1,2 @@
+main.stu:3:6: optional dependency with '?' must not be used
+main.stu:3:3: in a copy rule

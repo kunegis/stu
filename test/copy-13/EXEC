@@ -1,0 +1,33 @@
+#! /bin/sh
+
+# Touch a file with a year earlier timestamp, to avoid sleep in tests. 
+touch_old() {
+	year="$(date +%Y)"
+	year_old="$(expr $year - 2)"
+	touch -d $year_old-01-01 "$1"
+}
+
+rm -f ?
+
+touch_old A
+touch B
+
+../../stu >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** Exit code"
+	exit 1
+}
+
+grep -qxF 'Nothing to be done' list.out || {
+	echo >&2 "*** Output"
+	exit 1
+}
+
+[ -r list.err ] && ! [ -s list.err ] || {
+	echo >&2 "*** Error output"
+	exit 1
+}
+
+exit 0

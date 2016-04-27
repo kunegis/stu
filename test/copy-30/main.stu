@@ -1,0 +1,4 @@
+# No rule to build 'X':  error
+
+A = X;
+

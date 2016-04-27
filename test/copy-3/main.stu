@@ -1,0 +1,5 @@
+# Error:  '>' is not allowed there
+
+>A = B;
+
+B { touch B }

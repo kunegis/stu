@@ -5,6 +5,23 @@ are added, which are documented in this file.  When the major version is
 increased, backward-incompatible changes are made, which are documented
 in the file MIGRATION. 
 
+2016-04-26  Version 1.12:
+
+* Copy rules:
+
+A = B;
+
+This will copy the file 'B' to 'A'.  This can be used with '!' and '&',
+but not with '?':
+
+A = !B;
+A = &B;
+A = directory/;
+
+If the source ends in a slash, then it is interpreted as a directory and
+it is searched for a file with the same name as the basename of the
+target. 
+
 2016-04-17  Version 1.11:
 
 * Variable dependency can use explicit names:

@@ -1,0 +1,8 @@
+#! /bin/sh
+#
+# Wrapper around 'cp'
+# 
+
+echo MYCP
+
+exec /bin/cp "$@"

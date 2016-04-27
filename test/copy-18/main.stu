@@ -1,0 +1,5 @@
+A:  list.x { cp list.x A }
+
+list.$name = $name.data; 
+
+x.data = {correct}

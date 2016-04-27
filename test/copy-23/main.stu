@@ -1,0 +1,4 @@
+A = D/; 
+D/A:  !D { echo correct >D/A }
+D { mkdir -p D }
+

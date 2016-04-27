@@ -1,0 +1,1 @@
+A.$x = B.$x.$y; # Error

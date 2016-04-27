@@ -22,7 +22,11 @@ void job_print_jobs();
  * 	MESSAGE must be a string literal. 
  * Ignore errors, as this is called into from the interrupting signal handler. 
  */
-#define write_safe(FD, MESSAGE) do {int r_write_safe= write(FD, MESSAGE, sizeof(MESSAGE) - 1); (void)r_write_safe;}while(0)
+#define write_safe(FD, MESSAGE) \
+	do { \
+		int r_write_safe= write(FD, MESSAGE, sizeof(MESSAGE) - 1); \
+		(void)r_write_safe; \
+	} while(0)
 
 class Job
 {
@@ -120,6 +124,10 @@ public:
 		    string filename_output,
 		    string filename_input,
 		    const Place &place_command); 
+
+	/* Start a copy job */ 
+	pid_t start_copy(string target,
+			 string source);
 
 	/* Wait for the next process to terminate; provide the STATUS as
 	 * used in wait(2).  Return the PID of the waited-for process (>=0). */  
@@ -367,6 +375,64 @@ pid_t Job::start(string command,
 	assert(pid >= 1); 
 	return pid; 
 }
+
+pid_t Job::start_copy(string target,
+		      string source)
+{
+	assert(target != "");
+	assert(source != ""); 
+
+	/* This function works like start() */ 
+
+	assert(pid == -2); 
+
+	pid= fork();
+
+	if (pid < 0) {
+		perror("fork"); 
+		assert(pid == -1); 
+		return -1; 
+	}
+
+	int pid_child= pid;
+	if (pid_child == 0)
+		pid_child= getpid();
+	if (0 > setpgid(pid_child, pid_child)) {
+		/* no-op */ 
+	}
+
+	if (pid == 0) {
+		/* We are the child process */ 
+
+		/* We don't set $STU_STATUS for copy jobs */ 
+
+		const char *cp_command= nullptr;
+		if (cp_command == nullptr) {
+			cp_command= getenv("STU_CP");
+			if (cp_command == nullptr || cp_command[0] == '\0') 
+				cp_command= "/bin/cp"; 
+		}
+
+		const char *argv[]= {cp_command,
+				     "--",
+				     source.c_str(),
+				     target.c_str(),
+				     nullptr};
+
+		int r= execv(cp_command, (char *const *) argv); 
+
+		assert(r == -1); 
+		perror("execve");
+		_Exit(ERROR_BUILD); 
+	}
+
+	/* Parent execution */
+	++ count_jobs_exec;
+
+	assert(pid >= 1); 
+	return pid; 
+}
+
 
 pid_t Job::wait(int *status)
 {

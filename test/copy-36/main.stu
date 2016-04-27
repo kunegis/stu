@@ -1,0 +1,9 @@
+# Make sure Stu does not use stat() to check whether 'x.data/' is a
+# directory, because 'x.data/' does not exist at that moment.  Instead,
+# Stu must detect that 'x.data/' ends in a slash. 
+
+A = x.data/;
+
+x.data/A:  !x.data { echo correct >x.data/A }
+
+x.data { mkdir -p x.data }

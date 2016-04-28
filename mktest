@@ -71,7 +71,8 @@
 # NOTINSTDERR  A text that must not be present in the error output
 # EXEC         Can be an alternative test script; it can do anything and
 #              should return a sensible exit code (i.e., 0 on success,
-#              nonzero otherwise)  
+#              nonzero otherwise).  It should also behave like ./mktest,
+#              e.g., output '***' only on error, etc.
 #
 # NOTES
 #

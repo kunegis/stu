@@ -2,7 +2,7 @@
 
 
 A: {
-	../../stu B
+	../../stu.test B
 	touch A
 }
 

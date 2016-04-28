@@ -15,7 +15,7 @@ doo() { echo "$@" ; "$@" ; }
 
 doo rm -f ?
 
-../../stu -a >list.out 2>list.err
+../../stu.test -a >list.out 2>list.err
 
 if ! cmp list.out stdout.1 ; then echo >&2 '*** (1out)' ; exit 1 ; fi
 [ -r list.err -a \! -s list.err ] || { 
@@ -26,7 +26,7 @@ if ! cmp list.out stdout.1 ; then echo >&2 '*** (1out)' ; exit 1 ; fi
 doo sleep 2
 doo touch B C
 
-../../stu -a >list.out 2>list.err
+../../stu.test -a >list.out 2>list.err
 
 if ! cmp list.out stdout.2 ; then echo >&2 '*** (2out)' ; exit 1 ; fi
 [ -s list.err ] && { echo >&2 '*** (2err)' ; exit 1 ; }

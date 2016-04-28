@@ -2,7 +2,7 @@
 
 rm -f -- A -r -s || exit 1
 
-../../stu >list.out 2>list.err
+../../stu.test >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {

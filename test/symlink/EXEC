@@ -9,8 +9,8 @@ doo ln -s W B
 echo aaa >W
 
 # * stu is called: 'A' is built
-echo ../../stu
-../../stu >list.out 2>list.err
+echo ../../stu.test
+../../stu.test >list.out 2>list.err
 exitcode="$?"
 echo STDOUT:
 cat list.out
@@ -37,8 +37,8 @@ echo 'echo bbb >W'
 echo bbb >W
 
 # * stu is called: 'A' should be rebuilt 
-echo ../../stu
-../../stu >list.out 2>list.err
+echo ../../stu.test
+../../stu.test >list.out 2>list.err
 exitcode="$?"
 echo STDOUT:
 cat list.out

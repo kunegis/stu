@@ -10,7 +10,7 @@ year_future="$(expr 2 + $year)"
 date="$year_future-01-01"
 touch B -d "$date"
 
-../../stu >list.out 2>list.err
+../../stu.test >list.out 2>list.err
 exitcode="$?"
 
 if [ "$exitcode" != "0" ]; then

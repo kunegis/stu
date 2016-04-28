@@ -7,14 +7,14 @@ dorm() { rm -f a b a.c b.c CFLAGS LDFLAGS list.* ; }
 dorm 
 
 echo "== run A"
-../../stu 
+../../stu.test 
 
 [ -r a -a -r b ] 
 
 rm CFLAGS 
 
 echo "== run B"
-../../stu >list.out
+../../stu.test >list.out
 echo ___
 cat list.out
 echo ___

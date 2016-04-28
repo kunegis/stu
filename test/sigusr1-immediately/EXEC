@@ -2,8 +2,8 @@
 
 rm -f ? list.*
 
-echo '../../stu -j1000 &'
-../../stu -j1000 >list.out 2>list.err &
+echo '../../stu.test -j1000 &'
+../../stu.test -j1000 >list.out 2>list.err &
 pid="$!"
 
 # Write until a first line has been written

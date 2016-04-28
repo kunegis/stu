@@ -5,7 +5,7 @@
 
 rm -f ?
 
-../../stu -c '' >list.out 2>list.err
+../../stu.test -c '' >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 4 ] || {

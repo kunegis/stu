@@ -7,7 +7,7 @@ touch B
 
 set +e
 
-../../stu
+../../stu.test
 exitcode="$?"
 echo "exitcode=$exitcode"
 set -e

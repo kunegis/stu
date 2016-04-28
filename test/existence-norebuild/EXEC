@@ -8,8 +8,8 @@ doo touch A
 
 doo sleep 2
 
-echo ../../stu 
-../../stu
+echo ../../stu.test 
+../../stu.test
 exitcode="$?"
 [ "$exitcode" = 0 ] || {
 	echo >&2 "*** (a) exit code"

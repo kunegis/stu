@@ -8,8 +8,8 @@ doo rm -f ?
 # Build for the first time
 #
 
-echo ../../stu
-../../stu || exit 1
+echo ../../stu.test
+../../stu.test || exit 1
 
 if ! test -h W ; then
     echo >&2 "*** 'W' is not a symbolic link"
@@ -29,7 +29,7 @@ rm D || exit 1
 
 doo sleep 2
 
-echo ../../stu
-../../stu || exit 1
+echo ../../stu.test
+../../stu.test || exit 1
 
 exit 0

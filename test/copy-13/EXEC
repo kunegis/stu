@@ -12,7 +12,7 @@ rm -f ?
 touch_old A
 touch B
 
-../../stu >list.out 2>list.err
+../../stu.test >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {

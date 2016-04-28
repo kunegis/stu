@@ -2,7 +2,7 @@
 
 export STU_STATUS=1
 
-../../stu 2>list.err >list.out
+../../stu.test 2>list.err >list.out
 exitcode="$?"
 
 [ "$exitcode" = 4 ] || {
@@ -10,7 +10,7 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF '../../stu: *** Refusing to run recursive Stu; unset $STU_STATUS to circumvent' list.err || {
+grep -qF '../../stu.test: *** Refusing to run recursive Stu; unset $STU_STATUS to circumvent' list.err || {
 	echo >&2 '*** Error message'
 	exit 1
 }

@@ -7,7 +7,7 @@ doo touch A
 doo sleep 2
 doo touch B
 
-../../stu >list.out 2>list.err
+../../stu.test >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {

@@ -6,7 +6,7 @@
 
 touch A
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {
@@ -30,7 +30,7 @@ grep -qF 'Nothing to be done' list.out || {
 
 rm -f A 
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {

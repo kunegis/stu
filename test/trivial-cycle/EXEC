@@ -82,8 +82,8 @@ for type in a b c ; do
 			echo xxx >$file
 		done
 
-		echo ../../stu -f main.stu 
-		../../stu -f main.stu >list.out 2>list.err
+		echo ../../stu.test -f main.stu 
+		../../stu.test -f main.stu >list.out 2>list.err
 		exitcode="$?"
 
 		[ "$exitcode" = 0 ] || {

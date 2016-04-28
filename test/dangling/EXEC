@@ -6,8 +6,8 @@ doo rm -f ?
 
 doo ln -s W B
 
-echo ../../stu 
-../../stu >list.out 2>list.err
+echo ../../stu.test 
+../../stu.test >list.out 2>list.err
 exitcode="$?"
 [ "$exitcode" = 0 ] || {
 	echo >&2 "*** invalid exit code"

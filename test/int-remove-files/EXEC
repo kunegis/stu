@@ -5,7 +5,7 @@ doo() { echo "$@" ; "$@" ; }
 kill_sleeps() 
 {
 	for pid in $(ps -fe | grep 31415926535 | grep -v grep | sed -e 's/^[^[:space:]]\{1,\}[[:space:]]\{1,\}\([0-9]\{1,\}\)[[:space:]].*$/\1/') ; do
-		echo >&2 "$0:  *** Killing PID '$pid'"
+		echo "$0:  Killing PID '$pid'"
 		kill "$pid"
 	done
 
@@ -31,8 +31,7 @@ if [ "$(ps -fe | grep 31415926535 | grep -v grep | wc -l)" != 0 ]; then
 fi
 
 # Start Stu 
-echo ../../stu -k -j99
-../../stu -k -j99 &
+../../stu.test -k -j99 >list.out 2>list.err &
 PID=$!
 
 # Sleep so that there is time for Stu to start all processes  

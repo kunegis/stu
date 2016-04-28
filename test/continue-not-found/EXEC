@@ -12,7 +12,7 @@
 # There is no stufile in this directory.
 #
 
-../../stu -k ksagiwwiuecwibve >list.out 2>list.err
+../../stu.test -k ksagiwwiuecwibve >list.out 2>list.err
 exitcode="$?"
 
 if [ "$exitcode" != 1 ] ; then

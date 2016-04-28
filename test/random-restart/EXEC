@@ -1,6 +1,6 @@
 #! /bin/sh
 
-../../stu -m random -j 100 >list.out 2>list.err
+../../stu.test -m random -j 100 >list.out 2>list.err
 exitcode="$?"
 
 [ $exitcode = 0 ] || {

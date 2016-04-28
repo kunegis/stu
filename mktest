@@ -81,6 +81,7 @@
 #   make sure that there is a difference in timestamps of at least one
 #   second on systems where file modification times have a precision of
 #   only one second. 
+# * Tests output '***' only in case of error. 
 #
 
 # Note:  we can't use "set -e" here (which is a good general practice in
@@ -90,11 +91,11 @@
 # Set to "1" on error 
 errors=0
 
-rm -f stu
+rm -f stu.test
 if [ "$NDEBUG" ] ; then
-	ln -s stu.ndebug stu
+	ln -s stu stu.test
 else
-	ln -s stu.debug stu
+	ln -s stu.debug stu.test
 fi
 
 # Delete temporary files created by tests.  Tests only create temporary
@@ -183,8 +184,8 @@ do
 
 	else
 		# Execute command
-		echo ../../stu "$CMD"
-		eval ../../stu $CMD \>list.def.out 2\>list.def.err
+		echo ../../stu.test "$CMD"
+		eval ../../stu.test $CMD \>list.def.out 2\>list.def.err
 		exitcode_actual=$?
 		
 		# Exit code
@@ -325,8 +326,8 @@ do
 
 		# Second invocation does nothing 
 		if [ "$exitcode_correct" = 0 -a ! -e NOSECOND ]; then
-			echo ../../stu "$CMD"
-			eval ../../stu $CMD \>list.def.out 2\>list.def.err 
+			echo ../../stu.test "$CMD"
+			eval ../../stu.test $CMD \>list.def.out 2\>list.def.err 
 			grep -qF 'Nothing to be done' list.def.out 
 			if [ $? \!= 0 ] ; then
 				echo >&2 "$0: *** Second invocation did no result in 'Nothing to be done'"
@@ -341,8 +342,8 @@ do
 			ks="$(sed -e '/^[[:space:]]*$/d' <PARALLEL)"
 			for k in $ks; do
 				delete_tmps
-				echo ../../stu "$CMD" -j "$k"
-				eval ../../stu $CMD -j $k \>list.def.out 2\>list.def.err
+				echo ../../stu.test "$CMD" -j "$k"
+				eval ../../stu.test $CMD -j $k \>list.def.out 2\>list.def.err
 				if [ $? != 0 ]
 				then
 					echo >&2 "$0: *** Parallel stu failed for '$file' with k = $k"

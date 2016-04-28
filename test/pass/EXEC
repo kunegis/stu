@@ -24,8 +24,8 @@ while read -r line ; do
 	# Build 
 	#
 
-	echo ../../stu -f list.file.stu
-	../../stu -f list.file.stu >list.out 2>list.err
+	echo ../../stu.test -f list.file.stu
+	../../stu.test -f list.file.stu >list.out 2>list.err
 	exitcode="$?"
 	echo >&6 "exitcode=«$exitcode»"
 
@@ -51,8 +51,8 @@ while read -r line ; do
 	#
 	doo olden
 	doo touch B 
-	echo ../../stu -f list.file.stu
-	../../stu -f list.file.stu >list.out 2>list.err
+	echo ../../stu.test -f list.file.stu
+	../../stu.test -f list.file.stu >list.out 2>list.err
 	exitcode="$?"
 	echo >&6 "exitcode=«$exitcode»"
 
@@ -81,8 +81,8 @@ while read -r line ; do
 	doo olden
 	echo 'echo X >C'
 	echo X >C
-	echo ../../stu -f list.file.stu
-	../../stu -f list.file.stu >list.out 2>list.err
+	echo ../../stu.test -f list.file.stu
+	../../stu.test -f list.file.stu >list.out 2>list.err
 	exitcode="$?"
 	echo >&6 "exitcode=«$exitcode»"
 
@@ -117,8 +117,8 @@ while read -r line ; do
 	doo olden
 	echo 'echo X >D'
 	echo X >D
-	echo ../../stu -f list.file.stu
-	../../stu -f list.file.stu >list.out 2>list.err
+	echo ../../stu.test -f list.file.stu
+	../../stu.test -f list.file.stu >list.out 2>list.err
 	exitcode="$?"
 	echo >&6 "exitcode=«$exitcode»"
 

@@ -6,14 +6,14 @@ doo() { echo >&2 "$@" ; "$@" ; }
 
 doo rm -f ? list.*
 
-doo ../../stu 
+doo ../../stu.test 
 
 grep -qF CORRECT A
 
 doo sleep 2
 doo touch B
 
-doo ../../stu >list.out
+doo ../../stu.test >list.out
 
 grep -qF 'Nothing to be done' list.out
 

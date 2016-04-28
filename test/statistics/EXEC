@@ -2,7 +2,7 @@
 
 rm -f ?
 
-../../stu -z >list.out 2>list.err
+../../stu.test -z >list.out 2>list.err
 exitcode="$?"
 
 cat list.out

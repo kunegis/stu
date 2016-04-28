@@ -1411,8 +1411,8 @@ shared_ptr <Trace> Execution::cycle_trace(const Execution *child,
 		return shared_ptr <Trace> ();
 
 	if (parent->target.type == T_DYNAMIC &&
-		child->target.type == T_FILE &&
-		parent->target.name == child->target.name)
+	    child->target.type == T_FILE &&
+	    parent->target.name == child->target.name)
 		return shared_ptr <Trace> (); 
 
 	const Link &link= child->parents.at((Execution *)parent); 

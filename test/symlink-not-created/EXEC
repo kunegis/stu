@@ -18,7 +18,7 @@ rm -f A X
 
 touch X -d "$date"
 
-../../stu 
+../../stu.test 
 exitcode="$?"
 
 if [ "$exitcode" != 0 ] ; then

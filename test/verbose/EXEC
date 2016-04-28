@@ -2,7 +2,7 @@
 
 rm -f ?
 
-../../stu -vs >list.out 2>list.err
+../../stu.test -vs >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || { 

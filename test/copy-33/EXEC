@@ -2,7 +2,7 @@
 
 rm -f ? || exit 1
 
-STU_CP=./mycp ../../stu >list.out 2>list.err
+STU_CP=./mycp ../../stu.test >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {

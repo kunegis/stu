@@ -10,8 +10,8 @@ echo Hello >B || {
     exit 1
 }
 
-echo >&2 ../../stu 
-../../stu || {
+echo >&2 ../../stu.test 
+../../stu.test || {
     echo >&2 "$0:  *** Initial build failed"
     exit 1
 }
@@ -23,8 +23,8 @@ doo echo "Hello CORRECT World" >B
 
 ls -l A B
 
-echo >&2 ../../stu 
-../../stu || {
+echo >&2 ../../stu.test 
+../../stu.test || {
     echo >&2 "$0:  *** Second build failed"
     exit 1
 }

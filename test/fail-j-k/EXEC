@@ -10,8 +10,7 @@ echo >&2 RUN '(1)'
 
 doo rm -f ?
 
-echo >&2 ../../stu
-../../stu 
+../../stu.test >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {
@@ -27,8 +26,7 @@ echo >&2 RUN '(2)'
 
 doo rm -f ?
  
-echo >&2 ../../stu -k 
-../../stu -k &
+../../stu.test -k >list.out 2>list.err &
 pid="$!"
 
 doo sleep 2
@@ -66,8 +64,7 @@ echo >&2 RUN '(3)'
 
 doo rm -f ?
 
-echo >&2 ../../stu -j2
-../../stu -j2
+../../stu.test -j2 >list.out 2>list.err
 exitcode="$?"
 
 if [ "$exitcode" != 1 ]; then
@@ -83,8 +80,7 @@ echo >&2 RUN '(4)'
 
 doo rm -f ?
  
-echo >&2 ../../stu -j2 -k 
-../../stu -j2 -k &
+../../stu.test -j2 -k >list.out 2>list.err &
 pid="$!"
 
 doo sleep 2

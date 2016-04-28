@@ -3,7 +3,7 @@
 # The output of 'stu -h' ends in a newline.
 #
 
-../../stu -h >list.out
+../../stu.test -h >list.out
 
 # The last byte of the file.  Gets 
 c="$(tail -c 1 list.out)"

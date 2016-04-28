@@ -8,7 +8,7 @@ rm -f ?
 
 echo FIRST RUN
 
-../../stu A 
+../../stu.test A 
 exitcode="$?"
 
 if [ "$exitcode" != 0 ] ; then
@@ -33,7 +33,7 @@ rm B || exit 1
 
 echo SECOND RUN
 
-../../stu A
+../../stu.test A
 exitcode="$?"
 
 if [ "$exitcode" != 0 ] ; then

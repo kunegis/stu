@@ -13,7 +13,7 @@ test_one()
 
 	echo "A: list.x { touch A } list.\${xxx${char}yyy\} { touch \"list.\${xxx${char}yyy\}\" }" >main.stu
 
-	../../stu >list.out 2>list.err
+	../../stu.test >list.out 2>list.err
 	exitcode="$?"
 
 	[ "$exitcode" = 2 ] || {

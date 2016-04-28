@@ -6,7 +6,7 @@
 
 rm -f A
 
-../../stu -F 'A;' >list.out 2>list.err
+../../stu.test -F 'A;' >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {
@@ -35,7 +35,7 @@ grep -qF 'Command line argument' list.err || {
 
 touch A
 
-../../stu -F 'A;' >list.out 2>list.err
+../../stu.test -F 'A;' >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {

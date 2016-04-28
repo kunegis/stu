@@ -4,8 +4,8 @@ doo() { echo "$@" ; $@ ; }
 
 doo rm -f ?
 
-echo ../../stu
-../../stu
+echo ../../stu.test
+../../stu.test
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {
@@ -30,8 +30,8 @@ echo ddd >B
 
 doo sleep 2
 
-echo ../../stu
-../../stu >list.out
+echo ../../stu.test
+../../stu.test >list.out
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {

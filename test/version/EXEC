@@ -20,7 +20,7 @@ do_test() {
 A { echo CORRECT >A }
 EOF
 
-	../../stu -f $STUFILE 2>list.err
+	../../stu.test -f $STUFILE 2>list.err
 	exitcode_actual="$?"
 	echo >&2 "	exitcode=$exitcode_actual"
 	if [ "$exitcode_actual" != "$exitcode_correct" ] ; then

@@ -6,39 +6,39 @@ doo rm -f A
 
 # By calling stu
 
-echo ../../stu
-../../stu || exit 1
+echo ../../stu.test
+../../stu.test || exit 1
 
 [ -r A ] || exit 1
 
-echo ../../stu 
-../../stu >list.output || exit 1
+echo ../../stu.test 
+../../stu.test >list.output || exit 1
 
 grep -Fq 'Nothing to be done' list.output || {
 	exit 1
 }
 
-echo ../../stu @clean
-../../stu @clean || exit 1
+echo ../../stu.test @clean
+../../stu.test @clean || exit 1
 
 [ \! -r A ] || exit 1
 
 # By calling stu A
 
-echo ../../stu A
-../../stu A || exit 1
+echo ../../stu.test A
+../../stu.test A || exit 1
 
 [ -r A ] || exit 1
 
-echo ../../stu A
-../../stu A >list.output || exit 1
+echo ../../stu.test A
+../../stu.test A >list.output || exit 1
 
 grep -Fq 'Nothing to be done' list.output || {
 	exit 1
 }
 
-echo ../../stu @clean
-../../stu @clean || exit 1
+echo ../../stu.test @clean
+../../stu.test @clean || exit 1
 
 [ \! -r A ] || exit 1
 

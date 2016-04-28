@@ -2,8 +2,9 @@
 
 rm -f ?
 
-../../stu 
+../../stu.test >list.out 2>list.err
 exitcode="$?"
+
 [ "$exitcode" = 1 ] || {
 	echo >&2 '*** Invalid exit code'
 	exit 1

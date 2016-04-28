@@ -63,7 +63,6 @@ string format_name_mid(string name)
 /* Declared as int so arithmetic can be performed on it */ 
 typedef int Type; 
 enum {
-
 	/* Top-level target, which contains the individual targets given
 	 * on the command line as dependencies.  Does not appear as
 	 * dependencies in Stu files. */ 

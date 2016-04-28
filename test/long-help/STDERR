@@ -1,2 +1,2 @@
-../../stu: invalid option -- '-'
-To get a list of all options, use '../../stu -h'
+../../stu.test: invalid option -- '-'
+To get a list of all options, use '../../stu.test -h'

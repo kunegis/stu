@@ -8,7 +8,7 @@ touch P
 touch Q 
 touch R
 
-../../stu -q P Q R >list.out 2>list.err
+../../stu.test -q P Q R >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {
@@ -32,7 +32,7 @@ grep -qF 'Nothing to be done' list.out || {
 
 rm -f P Q R
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {
@@ -57,7 +57,7 @@ grep -qF 'Targets are not up to date' list.out || {
 rm -f Q R
 touch P
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {
@@ -82,7 +82,7 @@ grep -qF 'Targets are not up to date' list.out || {
 rm -f P R
 touch Q
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {
@@ -107,7 +107,7 @@ grep -qF 'Targets are not up to date' list.out || {
 rm -f P Q
 touch R
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {
@@ -133,7 +133,7 @@ rm -f R
 touch P
 touch Q
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {
@@ -159,7 +159,7 @@ rm -f Q
 touch P
 touch R
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {
@@ -185,7 +185,7 @@ rm -f P
 touch Q
 touch R
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {

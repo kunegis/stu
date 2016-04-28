@@ -2,8 +2,8 @@
 
 rm -f list.err
 
-echo ../../stu
-../../stu 2>list.err
+echo ../../stu.test
+../../stu.test 2>list.err
 exitcode=$?
 
 if [ $exitcode != 1 ] ; then

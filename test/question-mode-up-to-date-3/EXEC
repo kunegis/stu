@@ -14,7 +14,7 @@ touch_old() {
 touch A
 touch_old B
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {
@@ -38,7 +38,7 @@ grep -qF 'Nothing to be done' list.out || {
 
 rm -f A B
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {
@@ -63,7 +63,7 @@ grep -qF 'Targets are not up to date' list.out || {
 touch_old A
 touch B
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {
@@ -88,7 +88,7 @@ grep -qF 'Nothing to be done' list.out || {
 touch A
 rm -f B
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {
@@ -113,7 +113,7 @@ grep -qF 'Targets are not up to date' list.out || {
 rm -f A
 touch B
 
-../../stu -q >list.out 2>list.err
+../../stu.test -q >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 1 ] || {

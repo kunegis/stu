@@ -2,13 +2,13 @@
 
 doo() { echo "$@" ; "$@" ; }
 
-doo rm -f ? list.*
+rm -f ? list.*
 
 #
 # Run stu
 #
-echo ../../stu -v
-../../stu -v
+echo ../../stu.test -v
+../../stu.test -v
 exitcode="$?"
 if [ "$exitcode" != 0 ]; then
 	echo >&2 "*** wrong exit code (1)"
@@ -28,8 +28,8 @@ doo touch B
 #
 # Run 'B' -- 'B' is rebuilt 
 #
-echo ../../stu -v
-../../stu -v | tee list.out
+echo ../../stu.test -v
+../../stu.test -v | tee list.out
 exitcode="$?"
 if [ "$exitcode" != 0 ]; then
 	echo >&2 "*** wrong exit code (2)"
@@ -41,6 +41,6 @@ if grep -qF 'Nothing to be done' list.out ; then
 	exit 1
 fi
 
-doo rm -f ? list.*
+rm -f ? list.*
 
 exit 0

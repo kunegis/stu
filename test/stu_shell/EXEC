@@ -2,7 +2,7 @@
 
 rm -f ?
 
-STU_SHELL=./shell ../../stu >list.out 2>list.err
+STU_SHELL=./shell ../../stu.test >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {

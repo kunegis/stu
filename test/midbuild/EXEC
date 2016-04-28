@@ -6,7 +6,7 @@ rm -f ?
 # Step 1:  build A:  everything is built
 #
 
-../../stu 
+../../stu.test 
 exitcode="$?"
 
 if [ "$exitcode" != 0 ] ; then
@@ -27,7 +27,7 @@ rm -f B
 
 sleep 2
 
-../../stu B
+../../stu.test B
 exitcode="$?"
 
 if [ "$exitcode" != 0 ] ; then
@@ -46,7 +46,7 @@ fi
 
 sleep 2
 
-../../stu A >list.out
+../../stu.test A >list.out
 exitcode="$?"
 
 if [ "$exitcode" != 0 ] ; then

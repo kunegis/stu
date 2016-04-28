@@ -4,8 +4,7 @@ doo() { echo "$@" ; "$@" ; }
 
 doo rm -f X Y Z
 
-echo >&2 ../../stu -j2 '&'
-../../stu -j2 &
+../../stu.test -j2 >list.out 2>list.err &
 PID=$!
 
 doo sleep 2

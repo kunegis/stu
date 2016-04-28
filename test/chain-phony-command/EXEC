@@ -1,7 +1,7 @@
 #! /bin/sh
 
-echo ../../stu
-../../stu >list.out 2>list.err 
+echo ../../stu.test
+../../stu.test >list.out 2>list.err 
 exitcode="$?"
 
 if [ "$exitcode" != 0 ]; then

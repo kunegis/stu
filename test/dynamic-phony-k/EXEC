@@ -2,8 +2,8 @@
 
 rm -f ?
 
-echo ../../stu -k 
-../../stu -k 2>list.err
+echo ../../stu.test -k 
+../../stu.test -k 2>list.err
 exitcode="$?"
 if [ "$exitcode" != 2 ] ; then
 	echo >& '*** error (A)'

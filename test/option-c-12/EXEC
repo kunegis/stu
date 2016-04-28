@@ -9,7 +9,7 @@ touch_old() {
 
 rm -f ?
 
-../../stu -C '?X' >list.out 2>list.err
+../../stu.test -C '?X' >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {
@@ -37,7 +37,7 @@ rm -f ?
 touch_old X
 touch     W
 
-../../stu -C '?X' >list.out 2>list.err
+../../stu.test -C '?X' >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {

@@ -2,13 +2,13 @@
 
 rm -f ?
 
-echo ../../stu 
-../../stu >stdout-correct
+echo ../../stu.test 
+../../stu.test >stdout-correct
 
 rm -f ?
 
-echo ../../stu -m random
-../../stu -m random >list.out
+echo ../../stu.test -m random
+../../stu.test -m random >list.out
 exitcode="$?"
 
 if [ "$exitcode" != 0 ] ; then
@@ -30,8 +30,8 @@ cmp out output-correct || {
 
 rm -f ?
 
-echo ../../stu -m random
-../../stu -m random >list.out2
+echo ../../stu.test -m random
+../../stu.test -m random >list.out2
 exitcode="$?"
 
 if [ "$exitcode" != 0 ] ; then

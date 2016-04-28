@@ -8,7 +8,7 @@ rm -f ?
 
 echo FIRST RUN
 
-../../stu || exit 1
+../../stu.test || exit 1
 
 if ! test -h W ; then
     echo >&2 "*** 'W' is not a symbolic link"
@@ -29,6 +29,6 @@ touch D
 
 echo SECOND RUN
 
-../../stu || exit 1
+../../stu.test || exit 1
 
 exit 0

@@ -4,7 +4,7 @@ rm -f ?
 
 touch A
 
-../../stu -s >list.out 2>list.err
+../../stu.test -s >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {

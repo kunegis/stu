@@ -1,16 +1,16 @@
 #! /bin/sh
 
-../../stu -f '' 2>list.err
+../../stu.test -f '' 2>list.err
 exitcode="$?"
 
-if [ "$exitcode" != 4 ]; then
-	echo >&2 "*** Wrong exit code"
+[ "$exitcode" = 4 ] || {
+	echo >&2 "*** Exit code"
 	exit 1
-fi
+}
 
-if ! grep -Fq "./stu: *** Option -f must take non-empty argument" list.err ; then
-	echo >&2 "*** Missing error message"
+grep -qF "../../stu.test: *** Option -f must take non-empty argument" list.err || {
+	echo >&2 "*** Error output"
 	exit 1
-fi
+}
 
 exit 0

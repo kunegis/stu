@@ -12,7 +12,7 @@ rm -f ?
 touch_old list.x
 touch x.data
 
-../../stu -c list.x >list.out 2>list.err
+../../stu.test -c list.x >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {

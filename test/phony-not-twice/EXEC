@@ -2,8 +2,8 @@
 
 rm -f L
 
-echo ../../stu
-../../stu || exit 1
+echo ../../stu.test
+../../stu.test || exit 1
 
 rm -f L
 

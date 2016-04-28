@@ -4,7 +4,7 @@
 
 all-test: \
     stu.text test_options test_sed \
-    stu.debug stu.ndebug \
+    stu.debug stu \
     test_test.debug test_test.ndebug \
     test_doubleslash 
 
@@ -47,7 +47,7 @@ test_sed: testsed . test test/* test/*/*
 test_test.debug: stu.debug mktest test test/* test/*/* 
 	./mktest && touch $@
 
-test_test.ndebug: stu.ndebug mktest test test/* test/*/* 
+test_test.ndebug: stu mktest test test/* test/*/* 
 	NDEBUG=1 ./mktest && touch $@
 
 test_doubleslash:  *.cc *.hh testdoubleslash . test test/* test/*/* 
@@ -66,4 +66,3 @@ version.hh:  VERSION mkversion
 
 analysis.prof:  gmon.out 	
 	gprof stu.prof gmon.out >analysis.prof
-

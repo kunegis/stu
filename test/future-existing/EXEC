@@ -9,7 +9,7 @@ date="$year_future-01-01"
 
 touch B -d "$date"
 
-../../stu 2>list.err
+../../stu.test 2>list.err
 exitcode="$?"
 
 if [ "$exitcode" != 0 ]; then

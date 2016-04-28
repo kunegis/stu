@@ -4,22 +4,21 @@ doo() { echo "$@" ; "$@" ; }
 
 for CMD in "" "-j2" "-j 3" ; do 
 
-    doo rm -f ?
+	doo rm -f ?
 
-    echo >&2 ../../stu $CMD -k
-    ../../stu $CMD -k
-    exitcode="$?"
-    # echo "exitcode='$exitcode'"
+	../../stu.test $CMD -k >list.out 2>list.err
+	exitcode="$?"
 
-    if [ "$exitcode" != 1 ]; then
-	echo >&2 "$0:  *** Exit code was $exitcode instead of 1"
-	exit 1
-    fi
+	[ "$exitcode" = 1 ] || {
+		echo >&2 "$0:  *** Exit code was $exitcode instead of 1"
+		exit 1
+	}
 
-    if [ ! -r C -o ! -r E ]; then
-	echo >&2 "$0:  *** 'C' and 'E' were not created"
-	exit 1
-    fi
+	if [ ! -r C -o ! -r E ]; then
+		echo >&2 "$0:  *** 'C' and 'E' were not created"
+		exit 1
+	fi
 done
 
 rm -f ?
+

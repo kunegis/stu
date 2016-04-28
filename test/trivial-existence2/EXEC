@@ -15,15 +15,15 @@ doo() { echo "$@" ; "$@" ; }
 
 doo rm -f ?
 
-echo ../../stu
-../../stu >list.out 2>list.err
+echo ../../stu.test
+../../stu.test >list.out 2>list.err
 if ! cmp list.out stdout.1 ; then echo >&2 '*** (1out)' ; exit 1 ; fi
 [ -s list.err ] && { echo >&2 '*** (1err)' ; exit 1 ; }
 
 doo sleep 2
 doo touch B
-echo ../../stu
-../../stu >list.out 2>list.err
+echo ../../stu.test
+../../stu.test >list.out 2>list.err
 if ! cmp list.out stdout.2 ; then echo >&2 '*** (2out)' ; exit 1 ; fi
 [ -s list.err ] && { echo >&2 '*** (2err)' ; exit 1 ; }
 

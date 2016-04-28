@@ -2,7 +2,7 @@ test_*
 *.log
 stu
 stu.debug
-stu.ndebug
 stu.prof
+stu.test
 gmon.out
 analysis.prof

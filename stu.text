@@ -453,7 +453,8 @@ PARAMETERS
        following example contains the parameter $name:
 
            list.$name:    data.$name $name.in
-           {      ./compute-list -n "$name"
+           {
+               ./compute-list -n "$name"
            }
 
        Parameters within a single target name must be separated  by  at  least
@@ -543,7 +544,7 @@ TOKENIZATION
            &     Trivial dependency
            >     Output redirection
            <     Input redirection
-           =     Assignment of content
+           =     Assignment rule, copy rule, named variable
            { }   Command
            ( )   List
            [ ]   Dynamic dependency
@@ -760,4 +761,4 @@ SEE ALSO
 
 
 
-stu-1.12.0                        April 2016                            STU(1)
+stu-1.12.1                        April 2016                            STU(1)

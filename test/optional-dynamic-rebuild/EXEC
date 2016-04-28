@@ -2,7 +2,7 @@
 
 rm -f ?
 
-../../stu
+../../stu.test
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {
@@ -24,7 +24,7 @@ echo X >C
 echo sleep 2
 sleep 2
 
-../../stu
+../../stu.test
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {

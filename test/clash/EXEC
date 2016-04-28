@@ -16,8 +16,8 @@ while read -r line ; do
 
 	doo rm -f ? list.err
 
-	echo ../../stu -f tmp.stu
-	../../stu -f tmp.stu 2>list.err
+	echo ../../stu.test -f tmp.stu
+	../../stu.test -f tmp.stu 2>list.err
 	exitcode="$?"
 	[ "$exitcode" = 2 ] || {
 		echo >&2 "*** error (a) Exit code should be 2 (logical error), but is not"

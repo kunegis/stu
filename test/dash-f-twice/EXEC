@@ -7,7 +7,7 @@
 
 rm -f A
 
-cat <<EOF | ../../stu -f - -f - 
+cat <<EOF | ../../stu.test -f - -f - 
 A = { correct }
 EOF
 exitcode="$?"

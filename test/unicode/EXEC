@@ -12,7 +12,7 @@ touch list.世界 || {
 
 echo CORRECT >list.世界
 
-../../stu >list.out 2>list.err
+../../stu.test >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {

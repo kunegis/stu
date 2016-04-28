@@ -8,7 +8,7 @@ doo() { echo "$@" ; "$@" ; }
 
 doo rm -f ? ?? 
 
-../../stu >list.out 2>list.err
+../../stu.test >list.out 2>list.err
 exitcode="$?"
 
 if [ "$exitcode" != "2" ]; then
@@ -32,7 +32,7 @@ fi
 
 doo rm -f ? ?? 
 
-../../stu -k >list.out 2>list.err
+../../stu.test -k >list.out 2>list.err
 exitcode="$?"
 
 if [ "$exitcode" != "2" ]; then

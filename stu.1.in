@@ -207,7 +207,7 @@ useful for directories, whose timestamps change when files are
 created/removed in them.  
 
     data/file:  !data {
-        echo Hello >data/file	    
+        echo Hello >data/file
     }
     data: { mkdir data }
 
@@ -447,8 +447,8 @@ In a target name, a parameter can only appear once.  The following
 example contains the parameter $name:
 
     list.$name:    data.$name $name.in 
-    { 
-	./compute-list -n "$name"
+    {
+        ./compute-list -n "$name"
     }
 
 Parameters within a single target name must be separated by at least one
@@ -542,7 +542,7 @@ unquoted filenames:
     &     Trivial dependency
     >     Output redirection
     <     Input redirection
-    =     Assignment of content
+    =     Assignment rule, copy rule, named variable
     { }   Command
     ( )   List
     [ ]   Dynamic dependency

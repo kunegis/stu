@@ -2,7 +2,7 @@
 
 rm -f ?
 
-../../stu -C '' >list.out 2>list.err
+../../stu.test -C '' >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || { echo >&2 '*** (1) exit code' ; exit 1 ; }
@@ -10,7 +10,7 @@ cmp list.out stdout || { echo >&2 '*** (1) stdout'    ; exit 1 ; }
 
 rm -f ?
 
-../../stu -C '#' >list.out 2>list.err
+../../stu.test -C '#' >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || { echo >&2 '*** (3) exit code' ; exit 1 ; }

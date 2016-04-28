@@ -7,8 +7,8 @@ rm -f ?
 doo touch A 
 doo sleep 2
 
-echo ../../stu &
-../../stu &
+echo ../../stu.test &
+../../stu.test &
 pid="$!"
 
 kill "$pid"

@@ -8,12 +8,12 @@
 # changed by hand to use another compiler. 
 # 
 
-all: stu.1 stu.ndebug 
+all: stu.1 stu
 
 .PHONY:  all clean 
 
 clean:  
-	rm -f stu.ndebug 
+	rm -f stu
 
 CXX=c++
 
@@ -25,5 +25,5 @@ CXXFLAGS_OTHER=             \
 
 CXXFLAGS_ALL_NDEBUG= $(CXXFLAGS_NDEBUG) $(CXXFLAGS_OTHER)
 
-stu.ndebug:  *.cc *.hh version.hh
-	$(CXX) $(CXXFLAGS_ALL_NDEBUG) stu.cc -o stu.ndebug
+stu:  *.cc *.hh version.hh
+	$(CXX) $(CXXFLAGS_ALL_NDEBUG) stu.cc -o stu

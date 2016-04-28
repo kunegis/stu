@@ -2,7 +2,7 @@
 
 rm -f ? list.*
 
-../../stu >list.out
+../../stu.test >list.out
 exitcode="$?"
 [ "$exitcode" = 0 ] || {
 	echo >&2 '*** error (A)'

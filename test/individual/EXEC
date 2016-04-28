@@ -2,7 +2,7 @@
 
 rm -f ?
 
-../../stu -x >list.out 2>list.err &
+../../stu.test -x >list.out 2>list.err &
 pid="$!"
 
 sleep 1

@@ -23,8 +23,8 @@ doo rm -f ?
 
 doo kill_sleeps
 
-echo '../../stu -z >list.out 2>list.err &'
-../../stu -z >list.out 2>list.err &
+echo '../../stu.test -z >list.out 2>list.err &'
+../../stu.test -z >list.out 2>list.err &
 pid="$!"
 
 # Make sure the target 'X' is finished 

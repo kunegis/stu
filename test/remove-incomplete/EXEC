@@ -12,8 +12,8 @@ doo rmm
 doo touch list.A
 doo sleep 2
 
-echo ../../stu data.A 
-../../stu data.A 2>list.err 
+echo ../../stu.test data.A 
+../../stu.test data.A 2>list.err 
 exitcode="$?"
 
 if [ "$exitcode" != "1" ]; then
@@ -40,8 +40,8 @@ doo rmm
 doo touch list.B
 doo sleep 2
 
-echo ../../stu data.B
-../../stu 2>list.err data.B
+echo ../../stu.test data.B
+../../stu.test 2>list.err data.B
 exitcode="$?"
 
 [ "$exitcode" = "1" ] || {
@@ -63,8 +63,8 @@ doo rmm
 doo touch list.C
 doo sleep 2
 
-echo ../../stu data.C
-../../stu 2>list.err data.C &
+echo ../../stu.test data.C
+../../stu.test 2>list.err data.C &
 pid="$!"
 
 doo sleep 1
@@ -93,8 +93,8 @@ doo rmm
 doo touch list.D
 doo sleep 2
 
-echo ../../stu data.D
-../../stu 2>list.err data.D &
+echo ../../stu.test data.D
+../../stu.test 2>list.err data.D &
 pid="$!"
 
 doo sleep 1

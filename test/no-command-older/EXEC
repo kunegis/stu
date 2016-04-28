@@ -12,7 +12,7 @@ rm -f A B
 touch A -d "$date_a"
 touch B -d "$date_b"
 
-../../stu 2>list.err
+../../stu.test 2>list.err
 exitcode="$?"
 
 if [ "$exitcode" != 0 ] ; then

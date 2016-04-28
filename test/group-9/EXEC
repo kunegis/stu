@@ -2,9 +2,9 @@
 
 set -e
 rm -f ?
-../../stu A 
+../../stu.test A 
 [ -e A ] 
 fgrep -q CORRECT A
 touch B
-FAIL=1 ../../stu A | fgrep -q "Nothing to be done"
+FAIL=1 ../../stu.test A | fgrep -q "Nothing to be done"
 

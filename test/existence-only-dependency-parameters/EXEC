@@ -4,8 +4,8 @@ doo() { echo "$@" ; "$@" ; }
 
 doo rm -Rf data-X-dir
 
-echo >&2 ../../stu 
-../../stu 
+echo >&2 ../../stu.test 
+../../stu.test 
 if [ "$?" != 0 ]; then
 	echo "$0:  *** first stu failed"
 	exit 1
@@ -16,8 +16,8 @@ touch data-X-dir/unrelatedfile || {
 	exit 1
 }
 
-echo >&2 ../../stu
-../../stu >list.output
+echo >&2 ../../stu.test
+../../stu.test >list.output
 if [ "$?" != 0 ]; then
 	exit 1
 fi

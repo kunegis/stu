@@ -6,8 +6,8 @@ doo rm -Rf BBB A
 
 echo CORRECT >BBB
 
-echo ../../stu
-../../stu || {
+echo ../../stu.test
+../../stu.test || {
 	echo >&2 "$0:  *** stu failed (run A)"
 	exit 1
 }
@@ -17,8 +17,8 @@ grep -qF CORRECT BBB || {
 	exit 1
 }
 
-echo ../../stu
-../../stu >list.content || {
+echo ../../stu.test
+../../stu.test >list.content || {
 	echo "$0:  *** stu failed (run B)"
 	exit 1
 }
@@ -34,8 +34,8 @@ sleep 2
 
 touch BBB
 
-echo ../../stu
-../../stu >list.content || {
+echo ../../stu.test
+../../stu.test >list.content || {
 	echo >&2 "$0:  *** stu failed (run C)"
 	exit 1
 }
@@ -45,8 +45,8 @@ grep -qF 'cat BBB' list.content || {
 	exit 1
 }
 
-echo ../../stu
-../../stu >list.content || {
+echo ../../stu.test
+../../stu.test >list.content || {
 	echo >&2 "$0:  *** stu failed (run D)"
 	exit 1
 }

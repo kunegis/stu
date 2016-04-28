@@ -12,7 +12,7 @@ touch B -d "$date"
 echo ls -l B
 ls -l B
 
-../../stu 2>list.err
+../../stu.test 2>list.err
 exitcode="$?"
 
 if [ "$exitcode" != 1 ]; then
@@ -20,7 +20,7 @@ if [ "$exitcode" != 1 ]; then
 	exit 1
 fi
 
-if [ "$(fgrep -c "main.stu:11:1: timestamp of file 'B' after execution of its command is older than ../../stu startup" list.err)" != 1 ]; then
+if [ "$(fgrep -c "main.stu:11:1: timestamp of file 'B' after execution of its command is older than ../../stu.test startup" list.err)" != 1 ]; then
 	echo >&2 "*** Missing error message"
 	echo >&2 'actual stderr:'
 	echo >&2 __________________

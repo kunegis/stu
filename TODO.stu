@@ -50,10 +50,6 @@ A B C;
 ;
 
 #
-# New flag to ALWAYS build a target.  (We may already have this)
-#
-
-#
 # New syntax for optionless arguments, which
 # allows characters such as []@?!& and maybe also () to have their Stu
 # meaning, but whitespace to be allowed as part of filenames. Other
@@ -81,6 +77,23 @@ A B C;
 #
 # Keep track of spacing between tokens, and disallow no space in
 # situations that will later be used for string concatenation. 
+#
+
+#
+# Use '-' options for the three flags !, ?, and &. 
+#
+
+A:  
+	-e X # existence-only
+	-o X # optional
+        -t X # trivial
+{ ... }
+
+# Have options to switch all of these in subsequent targets, or to
+# switch it off. 
+
+#
+# Deprecate !, ?, and &, and define as reserved for future extension. 
 #
 
 #==== Features of Stu 2 ====
@@ -200,6 +213,10 @@ tmp: {...}
 # Not a good idea since most tools treat // the same as /
 
 #
+# New flag to ALWAYS build a target.  (We may already have this)
+#
+
+#
 # When including files using dynamic dependencies, make a
 # difference between inclusion and import, as is done for %include and
 # %import. 
@@ -210,19 +227,6 @@ A: [data/B],d;
 A: [data//B]; # ?
 
 #
-# Use '-' options for the three flags !, ?, and &. 
-#
-
-A:  
-	-e X # existence-only
-	-o X # optional
-        -t X # trivial
-{ ... }
-
-# Have options to switch all of these in subsequent targets, or to
-# switch it off. 
-
-#
 # Search within predefined paths for %include ($STU_PATH or $STUPATH;
 # the -I option)
 #
@@ -230,7 +234,7 @@ A:
 % include c++.stu
  
 #
-# Assignment features
+# Multiple assignment 
 #
 
 # Multiple names result in catenation
@@ -329,3 +333,13 @@ $ stu '\?A'
 $ stu -g A
 
 # In this example, '\' is the negation operator. 
+
+#
+# Disable flags with '+' options
+#
+
+A: -o @x;
+@x: +o B;
+
+# Equivalent to
+A: B;

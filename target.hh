@@ -79,22 +79,22 @@ private:
 		return this->value < type.value; 
 	}
 
-	enum {
+	enum: int {
 		/* Top-level target, which contains the individual targets given
 		 * on the command line as dependencies.  Does not appear as
 		 * dependencies in Stu files. */ 
-		T_ROOT,
+		T_ROOT          = 0,
 
 		/* A phony target */ 
-		T_PHONY,
+		T_PHONY         = 1,
 	
 		/* A file in the file system; this entry has to come before
 		 * T_DYNAMIC because it counts also as a dynamic dependency of
 		 * depth zero. */
-		T_FILE,
+		T_FILE          = 2,
 
 		/* A dynamic target -- only used for the Target object of executions */   
-		T_DYNAMIC
+		T_DYNAMIC_FILE  = 4
 
 		/* Larger values denote multiply dynamic targets.  They are only
 		 * used as the target of Execution objects.  Therefore, T_DYNAMIC is
@@ -112,10 +112,10 @@ private:
 
 public:
 
-	static const Type ROOT, PHONY, FILE, DYNAMIC;
+	static const Type ROOT, PHONY, FILE, DYNAMIC_FILE;
 
 	bool is_dynamic() const {
-		return value >= T_DYNAMIC;
+		return value > T_FILE;
 	}
 
 	void check() const {
@@ -141,23 +141,28 @@ public:
 	int operator - (const Type &type) const {
 		assert(this->value >= T_FILE);
 		assert(type.value >= T_FILE);
-		return this->value - type.value; 
+
+		/* We can only subtract compatible types */ 
+		assert(((this->value ^ type.value) & 1) == 0);
+
+		return (this->value - type.value) / 2; 
 	}
 
 	Type operator - (int diff) const {
 		assert(value >= T_FILE);
-		return Type(value - diff);
+		assert(value - 2 * diff >= T_FILE); 
+		return Type(value - 2 * diff);
 	}
 
 	Type operator -- () {
-		assert(value >= T_DYNAMIC);
-		-- value;
+		assert(value > T_FILE);
+		value -= 2;
 		return *this;
 	}
 
 	Type &operator += (int diff) {
 		assert(value >= T_FILE);
-		value += diff;
+		value += 2 * diff;
 		assert(value >= T_FILE); 
 		return *this;
 	}
@@ -166,7 +171,7 @@ public:
 const Type Type::ROOT(Type::T_ROOT);
 const Type Type::PHONY(Type::T_PHONY);
 const Type Type::FILE(Type::T_FILE);
-const Type Type::DYNAMIC(Type::T_DYNAMIC);
+const Type Type::DYNAMIC_FILE(Type::T_DYNAMIC_FILE);
 
 /* 
  * The basic object in Stu:  a file, a variable or a phony.  This

@@ -1435,7 +1435,7 @@ shared_ptr <Trace> Execution::cycle_trace(const Execution *child,
 	if (parent->target.type == Type::ROOT)
 		return shared_ptr <Trace> ();
 
-	if (parent->target.type == Type::DYNAMIC &&
+	if (parent->target.type == Type::DYNAMIC_FILE &&
 	    child->target.type == Type::FILE &&
 	    parent->target.name == child->target.name)
 		return shared_ptr <Trace> (); 
@@ -1655,7 +1655,7 @@ void Execution::read_dynamics(Stack avoid,
 
 			/* Check that there is no multiply-dynamic variable dependency */ 
 			if (j->has_flags(F_VARIABLE) && 
-			    target.type.is_dynamic() && target.type != Type::DYNAMIC) {
+			    target.type.is_dynamic() && target.type != Type::DYNAMIC_FILE) {
 				
 				/* Only direct dependencies can have the F_VARIABLE flag set */ 
 				assert(dynamic_pointer_cast <Direct_Dependency> (j));
@@ -1680,7 +1680,8 @@ void Execution::read_dynamics(Stack avoid,
 					dynamic_pointer_cast <Direct_Dependency> (j); 
 				
 				if (direct_dependency->place_param_target.type == Type::PHONY
-				    && target.type.is_dynamic() && target.type != Type::DYNAMIC) {
+				    && target.type.is_dynamic() 
+				    && target.type != Type::DYNAMIC_FILE) {
 					direct_dependency->place_param_target.place <<
 						fmt("phony target %s must not appear "
 						    "as dynamic dependency of %s", 
@@ -1717,24 +1718,27 @@ void Execution::read_dynamics(Stack avoid,
 			dependency->add_flags(avoid_this.get_lowest()); 
 			if (dependency->get_place_existence().empty())
 				dependency->set_place_existence
-					(vec.at(target.type - Type::DYNAMIC)->get_place_existence()); 
+					(vec.at(target.type - Type::DYNAMIC_FILE)
+					 ->get_place_existence()); 
 			if (dependency->get_place_optional().empty())
 				dependency->set_place_optional
-					(vec.at(target.type - Type::DYNAMIC)->get_place_optional()); 
+					(vec.at(target.type - Type::DYNAMIC_FILE)
+					 ->get_place_optional()); 
 			if (dependency->get_place_trivial().empty())
 				dependency->set_place_trivial
-					(vec.at(target.type - Type::DYNAMIC)->get_place_trivial()); 
+					(vec.at(target.type - Type::DYNAMIC_FILE)
+					 ->get_place_trivial()); 
 
 			for (Type k= target.type - 1;  k.is_dynamic();  --k) {
 				avoid_this.pop(); 
 				Flags flags_level= avoid_this.get_lowest(); 
 				dependency= make_shared <Dynamic_Dependency> (flags_level, dependency); 
 				dependency->set_place_existence
-					(vec.at(k - Type::DYNAMIC)->get_place_existence()); 
+					(vec.at(k - Type::DYNAMIC_FILE)->get_place_existence()); 
 				dependency->set_place_optional
-					(vec.at(k - Type::DYNAMIC)->get_place_optional()); 
+					(vec.at(k - Type::DYNAMIC_FILE)->get_place_optional()); 
 				dependency->set_place_trivial
-					(vec.at(k - Type::DYNAMIC)->get_place_trivial()); 
+					(vec.at(k - Type::DYNAMIC_FILE)->get_place_trivial()); 
 			}
 
 			assert(avoid_this.get_k() == 0); 

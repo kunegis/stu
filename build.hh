@@ -165,7 +165,8 @@ shared_ptr <Rule> Build::build_rule()
 
 	Place place_target= (*iter)->get_place();
 
-	Type type= T_FILE;
+	Type type= Type::FILE;
+
  	if (is_operator('@')) {
 		Place place_at= (*iter)->get_place();
 
@@ -187,7 +188,7 @@ shared_ptr <Rule> Build::build_rule()
 			throw ERROR_LOGICAL;
 		}
 
-		type= T_PHONY;
+		type= Type::PHONY;
 	}
 
 	/* Target */ 
@@ -213,7 +214,7 @@ shared_ptr <Rule> Build::build_rule()
 
 	if (iter == tokens.end()) {
 		place_end << 
-			(type == T_FILE
+			(type == Type::FILE
 			 ? "expected a command, ':', ';', or '='"
 			 : "expected a command, ':', or ';'");
 		place_target << fmt("after target %s", place_param_target->format()); 
@@ -275,7 +276,7 @@ shared_ptr <Rule> Build::build_rule()
 
 		if (command= is <Command> ()) {
 			++iter; 
-			if (type == T_PHONY) {
+			if (type == Type::PHONY) {
 				place_equal << "there must not be assigned content";
 				place_target << fmt("for phony target %s", 
 						    place_param_target->format()); 
@@ -336,8 +337,8 @@ shared_ptr <Rule> Build::build_rule()
 					throw ERROR_LOGICAL;
 				}
 
-				if (type != T_FILE) {
-					assert(type == T_PHONY); 
+				if (type != Type::FILE) {
+					assert(type == Type::PHONY); 
 					place_equal << "copy rule cannot be used";
 					place_target << "with phony target"; 
 					throw ERROR_LOGICAL;
@@ -383,7 +384,7 @@ shared_ptr <Rule> Build::build_rule()
 	/* Cases where output redirection is not possible */ 
 	if (! place_output.empty()) {
 		/* Already checked before */ 
-		assert(place_param_target->type == T_FILE); 
+		assert(place_param_target->type == Type::FILE); 
 
 		if (command == nullptr) {
 			place_output << 
@@ -757,7 +758,7 @@ shared_ptr <Dependency> Build
 	 */
 	return make_shared <Direct_Dependency> 
 		(flags, 
-		 Place_Param_Target(T_FILE, *place_param_name, place_dollar), 
+		 Place_Param_Target(Type::FILE, *place_param_name, place_dollar), 
 		 variable_name);
 }
 
@@ -836,7 +837,7 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 
 	return make_shared <Direct_Dependency>
 		(flags,
-		 Place_Param_Target(has_phony ? T_PHONY : T_FILE,
+		 Place_Param_Target(has_phony ? Type::PHONY : Type::FILE,
 				    *name_token,
 				    has_phony ? place_at : name_token->place)); 
 }

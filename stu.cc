@@ -144,7 +144,7 @@ int main(int argc, char **argv, char **envp)
 						exit(ERROR_FATAL);
 					}
 					const char *const name= optarg;
-					Type type= T_FILE;
+					Type type= Type::FILE;
 					Place place(Place::Type::ARGV, name, 1, 0);
 					dependencies.push_back
 						(make_shared <Direct_Dependency>

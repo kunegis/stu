@@ -350,9 +350,18 @@ bool Execution::execute(Execution *parent, Link &&link)
 	Verbose verbose;
 
 	assert(jobs >= 0); 
-	assert(link.avoid.get_k() == dynamic_depth(target.type)); 
-	assert(done.get_k() == dynamic_depth(target.type));
-	if (dynamic_depth(target.type) == 0) {
+
+	if (target.type == Type::ROOT || target.type == Type::PHONY) {
+		assert(link.avoid.get_k() == 0);
+		assert(done.get_k() == 0);
+	} else {
+		assert(link.avoid.get_k() == (unsigned)(target.type - Type::FILE)); 
+		assert(done.get_k() == (unsigned)(target.type - Type::FILE)); 
+	}
+
+	if (target.type == Type::ROOT ||
+	    target.type == Type::PHONY ||
+	    target.type == Type::FILE) {
 		assert(link.avoid.get_lowest() == (link.flags & ((1 << F_COUNT) - 1))); 
 	}
 	done.check();
@@ -403,7 +412,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	 * optional dependency and if it is, return when the file does not
 	 * exist.  
 	 */
-	if ((link.flags & F_OPTIONAL) && target.type == T_FILE) {
+	if ((link.flags & F_OPTIONAL) && target.type == Type::FILE) {
 		struct stat buf;
 		int ret_stat= stat(target.name.c_str(), &buf);
 		if (ret_stat < 0) {
@@ -429,7 +438,10 @@ bool Execution::execute(Execution *parent, Link &&link)
 		return false;
 	}
 
-	assert(done.get_k() == dynamic_depth(target.type));
+	if (target.type == Type::ROOT || target.type == Type::PHONY)
+		assert(done.get_k() == 0);
+	else 
+		assert(done.get_k() == (unsigned)(target.type - Type::FILE)); 
 
 	if (error) 
 		assert(option_keep_going); 
@@ -470,9 +482,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 	/* Rule does not have a command.  This includes the case of dynamic
 	 * executions, even though for dynamic executions the RULE variable
 	 * is set (to detect cycles). */ 
-	if ((target.type == T_PHONY && ! (rule != nullptr && rule->command != nullptr))
-	    || target.type == T_ROOT
-	    || target.type >= T_DYNAMIC) {
+	if ((target.type == Type::PHONY && ! (rule != nullptr && rule->command != nullptr))
+	    || target.type == Type::ROOT
+	    || target.type.is_dynamic()) {
 
 		done.add_neg(link.avoid);
 		return false;
@@ -485,7 +497,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	/* Build the file itself */ 
 	assert(jobs > 0); 
-	assert(target.type == T_FILE || target.type == T_PHONY); 
+	assert(target.type == Type::FILE || target.type == Type::PHONY); 
 	assert(buf_default.empty()); 
 	assert(children.empty()); 
 	assert(error == 0);
@@ -503,7 +515,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	const bool no_execution= 
 		rule != nullptr && rule->command == nullptr && ! rule->is_copy;
 
-	if (! checked && target.type == T_FILE) {
+	if (! checked && target.type == Type::FILE) {
 
 		checked= true; 
 
@@ -595,7 +607,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		}		
 	}
 
-	if (! need_build && target.type == T_PHONY) {
+	if (! need_build && target.type == Type::PHONY) {
 		if (! phonies.count(target.name)) {
 			/* Phony was not yet executed */ 
 			need_build= true; 
@@ -643,7 +655,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	print_command();
 
 	if (rule->is_hardcode) {
-		assert(target.type == T_FILE);
+		assert(target.type == Type::FILE);
 		
 		done.add_one_neg(0); 
 
@@ -661,7 +673,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	/* Start the job */ 
 
-	if (target.type == T_PHONY) {
+	if (target.type == Type::PHONY) {
 		Timestamp timestamp_now= Timestamp::now(); 
 		assert(timestamp_now.defined()); 
 		assert(phonies.count(target.name) == 0); 
@@ -669,7 +681,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 
 	if (rule->redirect_output)
-		assert(rule->place_param_target.type == T_FILE); 
+		assert(rule->place_param_target.type == Type::FILE); 
 
 	assert(jobs >= 1); 
 
@@ -687,7 +699,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 		if (rule->is_copy) {
 
-			assert(rule->place_param_target.type == T_FILE); 
+			assert(rule->place_param_target.type == Type::FILE); 
 			
 			pid= job.start_copy
 				(rule->place_param_target.place_param_name.unparametrized(),
@@ -770,7 +782,7 @@ int Execution::execute_children(const Link &link)
 		Stack avoid_child= child->parents.at(this).avoid;
 		Flags flags_child= child->parents.at(this).flags;
 
-		if (target.type == T_PHONY) { 
+		if (target.type == Type::PHONY) { 
 			flags_child |= link.flags; 
 		}
 
@@ -824,7 +836,7 @@ void Execution::waited(int pid, int status)
 		/* Command was successful */ 
 
 		/* For file targets, check that the file was built */ 
-		if (target.type == T_FILE) {
+		if (target.type == Type::FILE) {
 
 			struct stat buf;
 
@@ -1008,8 +1020,8 @@ void Execution::unlink(Execution *const parent,
 
 	/* Propagate dynamic dependencies */ 
 	if (flags_child & F_READ) {
-		assert(child->target.type == T_FILE); 
-		assert(T_FILE < parent->target.type);
+		assert(child->target.type == Type::FILE); 
+		assert(parent->target.type.is_dynamic());
 		assert(parent->target.name == child->target.name); 
 		assert(child->done.get_k() == 0); 
 		
@@ -1056,7 +1068,7 @@ void Execution::unlink(Execution *const parent,
 		/* Read the content of the file into a string as the
 		 * variable value */  
 
-		assert(child->target.type == T_FILE);
+		assert(child->target.type == Type::FILE);
 		string filename= child->target.name;
 		int fd;
 		string content;
@@ -1120,8 +1132,9 @@ void Execution::unlink(Execution *const parent,
 	 * Propagate variables over phonies without commands and dynamic
 	 * targets
 	 */
-	if (child->target.type >= T_DYNAMIC ||
-	    (child->target.type == T_PHONY &&
+	if (
+	    child->target.type.is_dynamic() ||
+	    (child->target.type == Type::PHONY &&
 	     child->rule != nullptr &&
 	     child->rule->command == nullptr)) {
 		parent->mapping_variable.insert
@@ -1160,25 +1173,30 @@ Execution::Execution(Target target_,
 		     Execution *parent)
 	:  target(target_),
 	   error(0),
-	   done(dynamic_depth(target_.type), 0),
+	   done(target_.type == Type::ROOT  ? 0 :
+		target_.type == Type::PHONY ? 0 :
+		target_.type - Type::FILE
+		, 0),
 	   timestamp(Timestamp::UNDEFINED),
 	   need_build(false),
 	   checked(false),
 	   exists(0)
 {
-	assert(target.type == T_PHONY || target.type >= T_FILE); 
+	assert(target.type == Type::PHONY 
+	       || target.type == Type::FILE
+	       || target.type.is_dynamic());
 	assert(parent != nullptr); 
 	assert(parents.empty()); 
 
 	/* Fill in the rules and their parameters */ 
-	if (target.type == T_FILE || target.type == T_PHONY) {
+	if (target.type == Type::FILE || target.type == Type::PHONY) {
 		map <string, string> mapping1; 
 		rule= rule_set.get(target, param_rule, mapping_parameter); 
-	} else if (target.type >= T_DYNAMIC) {
+	} else if (target.type.is_dynamic()) {
 		/* We must set the rule here, so cycles in the dependency graph
 		 * can be detected.  Note however that the rule of dynamic
 		 * dependency executions is otherwise not used */ 
-		Target target_file(T_FILE, target.name);
+		Target target_file(Type::FILE, target.name);
 		map <string, string> mapping_rule; 
 		rule= rule_set.get(target_file, param_rule, mapping_rule); 
 	}
@@ -1196,7 +1214,7 @@ Execution::Execution(Target target_,
 	parents[parent]= link; 
 	executions_by_target[target]= this;
 
-	if (target.type < T_DYNAMIC && rule != nullptr) {
+	if (! target.type.is_dynamic() && rule != nullptr) {
 		/* There is a rule for this execution */ 
 		for (auto &dependency:  rule->dependencies) {
 			assert(! dependency->get_place().empty());
@@ -1217,7 +1235,7 @@ Execution::Execution(Target target_,
 		/* Whether to produce the "rule not found" error */ 
 		bool rule_not_found= false;
 
-		if (target.type == T_FILE) {
+		if (target.type == Type::FILE) {
 			if (! (link.flags & F_OPTIONAL)) {
 				/* Check that the file is present,
 				 * or make it an error */ 
@@ -1234,7 +1252,7 @@ Execution::Execution(Target target_,
 				} else {
 					/* File exists:  Do nothing, and there are no
 					 * dependencies to build */  
-					if (parent->target.type == T_ROOT && output_mode > Output::SILENT) {
+					if (parent->target.type == Type::ROOT && output_mode > Output::SILENT) {
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */ 
 						printf("No rule for building '%s', but the file exists\n", 
@@ -1242,10 +1260,10 @@ Execution::Execution(Target target_,
 					} 
 				}
 			}
-		} else if (target.type == T_PHONY) {
+		} else if (target.type == Type::PHONY) {
 			rule_not_found= true;
 		} else {
-			assert(target.type >= T_DYNAMIC); 
+			assert(target.type.is_dynamic()); 
 		}
 		
 		if (rule_not_found) {
@@ -1261,7 +1279,7 @@ Execution::Execution(Target target_,
 }
 
 Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
-	:  target(T_ROOT),
+	:  target(Type::ROOT),
 	   error(0),
 	   need_build(false),
 	   checked(false),
@@ -1283,7 +1301,11 @@ Execution::~Execution()
 bool Execution::finished(Stack avoid) const
 {
 	assert(avoid.get_k() == done.get_k());
-	assert(done.get_k() == dynamic_depth(target.type));
+
+	if (target.type == Type::ROOT || target.type == Type::PHONY) 
+		assert(done.get_k() == 0);
+	else 
+		assert(done.get_k() == (unsigned)(target.type - Type::FILE));
 
 	Flags to_do_aggregate= 0;
 	
@@ -1296,7 +1318,10 @@ bool Execution::finished(Stack avoid) const
 
 bool Execution::finished() const 
 {
-	assert(done.get_k() == dynamic_depth(target.type));
+	if (target.type == Type::ROOT || target.type == Type::PHONY) 
+		assert(done.get_k() == 0);
+	else 
+		assert(done.get_k() == (unsigned)(target.type - Type::FILE));
 
 	Flags to_do_aggregate= 0;
 	
@@ -1386,8 +1411,8 @@ string Execution::cycle_string(const Execution *execution)
 	assert(execution->param_rule); 
 
 	Target target= execution->target; 
-	if (target.type >= T_DYNAMIC)
-		target.type= T_FILE; 
+	if (target.type.is_dynamic())
+		target.type= Type::FILE; 
 
 	const Place_Param_Target &place_param_target= execution->param_rule->place_param_target;
 
@@ -1407,11 +1432,11 @@ string Execution::cycle_string(const Execution *execution)
 shared_ptr <Trace> Execution::cycle_trace(const Execution *child,
 					  const Execution *parent)
 {
-	if (parent->target.type == T_ROOT)
+	if (parent->target.type == Type::ROOT)
 		return shared_ptr <Trace> ();
 
-	if (parent->target.type == T_DYNAMIC &&
-	    child->target.type == T_FILE &&
+	if (parent->target.type == Type::DYNAMIC &&
+	    child->target.type == Type::FILE &&
 	    parent->target.name == child->target.name)
 		return shared_ptr <Trace> (); 
 
@@ -1497,7 +1522,7 @@ bool Execution::remove_if_existing(bool output)
 	if (option_no_delete)
 		return false;
 
-	if (target.type != T_FILE)  
+	if (target.type != Type::FILE)  
 		return false;
 
 	bool removed= false;
@@ -1584,8 +1609,12 @@ Execution *Execution::get_execution(const Target &target,
 void Execution::read_dynamics(Stack avoid,
 			      shared_ptr <Dependency> dependency_parent)
 {
-	assert(target.type >= T_DYNAMIC);
-	assert(avoid.get_k() == dynamic_depth(target.type)); 
+	assert(target.type.is_dynamic());
+
+	if (target.type == Type::ROOT || target.type == Type::PHONY)
+		assert(avoid.get_k() == 0);
+	else 
+		assert(avoid.get_k() == (unsigned)(target.type - Type::FILE)); 
 
 	try {
 		vector <shared_ptr <Token> > tokens;
@@ -1617,7 +1646,7 @@ void Execution::read_dynamics(Stack avoid,
 					    "must not contain parametrized dependencies",
 					    target.format());
 				Target target_file= target;
-				target_file.type= T_FILE;
+				target_file.type= Type::FILE;
 				print_traces(fmt("%s is declared here", 
 						 target_file.format())); 
 				raise(ERROR_LOGICAL);
@@ -1625,7 +1654,8 @@ void Execution::read_dynamics(Stack avoid,
 			}
 
 			/* Check that there is no multiply-dynamic variable dependency */ 
-			if (j->has_flags(F_VARIABLE) && target.type > T_DYNAMIC) {
+			if (j->has_flags(F_VARIABLE) && 
+			    target.type.is_dynamic() && target.type != Type::DYNAMIC) {
 				
 				/* Only direct dependencies can have the F_VARIABLE flag set */ 
 				assert(dynamic_pointer_cast <Direct_Dependency> (j));
@@ -1649,8 +1679,8 @@ void Execution::read_dynamics(Stack avoid,
 				shared_ptr <Direct_Dependency> direct_dependency= 
 					dynamic_pointer_cast <Direct_Dependency> (j); 
 				
-				if (direct_dependency->place_param_target.type == T_PHONY
-				    && target.type > T_DYNAMIC) {
+				if (direct_dependency->place_param_target.type == Type::PHONY
+				    && target.type.is_dynamic() && target.type != Type::DYNAMIC) {
 					direct_dependency->place_param_target.place <<
 						fmt("phony target %s must not appear "
 						    "as dynamic dependency of %s", 
@@ -1658,7 +1688,7 @@ void Execution::read_dynamics(Stack avoid,
 						    ->place_param_target.format(),
 						    target.format());
 					Target target_file= target;
-					target_file.type= T_FILE;
+					target_file.type= Type::FILE;
 					print_traces(fmt("%s is declared here", 
 							 target_file.format())); 
 					raise(ERROR_LOGICAL);
@@ -1687,23 +1717,24 @@ void Execution::read_dynamics(Stack avoid,
 			dependency->add_flags(avoid_this.get_lowest()); 
 			if (dependency->get_place_existence().empty())
 				dependency->set_place_existence
-					(vec.at(target.type - T_DYNAMIC)->get_place_existence()); 
+					(vec.at(target.type - Type::DYNAMIC)->get_place_existence()); 
 			if (dependency->get_place_optional().empty())
 				dependency->set_place_optional
-					(vec.at(target.type - T_DYNAMIC)->get_place_optional()); 
+					(vec.at(target.type - Type::DYNAMIC)->get_place_optional()); 
 			if (dependency->get_place_trivial().empty())
 				dependency->set_place_trivial
-					(vec.at(target.type - T_DYNAMIC)->get_place_trivial()); 
-			for (Type k= target.type;  k > T_DYNAMIC;  --k) {
+					(vec.at(target.type - Type::DYNAMIC)->get_place_trivial()); 
+
+			for (Type k= target.type - 1;  k.is_dynamic();  --k) {
 				avoid_this.pop(); 
 				Flags flags_level= avoid_this.get_lowest(); 
 				dependency= make_shared <Dynamic_Dependency> (flags_level, dependency); 
 				dependency->set_place_existence
-					(vec.at(k - T_DYNAMIC - 1)->get_place_existence()); 
+					(vec.at(k - Type::DYNAMIC)->get_place_existence()); 
 				dependency->set_place_optional
-					(vec.at(k - T_DYNAMIC - 1)->get_place_optional()); 
+					(vec.at(k - Type::DYNAMIC)->get_place_optional()); 
 				dependency->set_place_trivial
-					(vec.at(k - T_DYNAMIC - 1)->get_place_trivial()); 
+					(vec.at(k - Type::DYNAMIC)->get_place_trivial()); 
 			}
 
 			assert(avoid_this.get_k() == 0); 
@@ -1716,7 +1747,7 @@ void Execution::read_dynamics(Stack avoid,
 					fmt("dynamic dependency %s must not contain input redirection", 
 					    target.format());
 				Target target_file= target;
-				target_file.type= T_FILE;
+				target_file.type= Type::FILE;
 				print_traces(fmt("%s is declared here", target_file.format())); 
 				raise(ERROR_LOGICAL);
 				continue; 
@@ -1740,7 +1771,7 @@ void Execution::read_dynamics(Stack avoid,
 
 void Execution::warn_future_file(struct stat *buf)
 {
-	assert(target.type == T_FILE); 
+	assert(target.type == Type::FILE); 
 	if (timestamp_last.older_than(Timestamp(buf))) {
 		print_warning(fmt("'%s' has modification time in the future",
 				  target.name.c_str()));
@@ -1757,7 +1788,7 @@ void Execution::print_traces(string text) const
 
 	const Execution *execution= this; 
 
-	assert(execution->target.type != T_ROOT);
+	assert(execution->target.type != Type::ROOT);
 
 	bool first= true; 
 
@@ -1775,7 +1806,7 @@ void Execution::print_traces(string text) const
 
 		auto i= execution->parents.begin(); 
 
-		if (i->first->target.type == T_ROOT) {
+		if (i->first->target.type == Type::ROOT) {
 			if (first && text != "") {
 				if (output_mode > Output::SILENT)
 					print_error(fmt("No rule to build %s", 
@@ -1915,13 +1946,13 @@ bool Execution::deploy(const Link &link,
 	assert(! direct_dependency->place_param_target.place_param_name.empty()); 
 
 	Target target_child= direct_dependency->place_param_target.unparametrized();
-	assert(target_child.type == T_FILE || target_child.type == T_PHONY);
+	assert(target_child.type == Type::FILE || target_child.type == Type::PHONY);
 
 	if (dynamic_depth != 0) {
 		assert(dynamic_depth > 0);
 
 		/* Phonies in dynamic dependencies are not allowed */ 
-		if (target_child.type == T_PHONY) {
+		if (target_child.type == Type::PHONY) {
 			/* The dynamic dependency contains a phony,
 			 * i.e., something like [@target] */ 
 			direct_dependency->place <<
@@ -1940,7 +1971,7 @@ bool Execution::deploy(const Link &link,
 	Stack avoid_child= link_child.avoid;
 
 	/* Flags get carried over phonies */ 
-	if (target.type == T_PHONY) { 
+	if (target.type == Type::PHONY) { 
 		flags_child_additional |= link.flags; 
 		avoid_child.add_highest(link.flags);
 		if (link.flags & F_EXISTENCE) {
@@ -2049,7 +2080,7 @@ bool Execution::deploy(const Link &link,
 
 void Execution::initialize(Stack avoid) 
 {
-	if (target.type >= T_DYNAMIC) {
+	if (target.type.is_dynamic()) {
 
 		/* This is a special dynamic target.  Add, as an initial
 		 * dependency, the corresponding file.  
@@ -2058,7 +2089,7 @@ void Execution::initialize(Stack avoid)
 
 		shared_ptr <Dependency> dependency_child= make_shared <Direct_Dependency>
 			(flags_child,
-			 Place_Param_Target(T_FILE, Place_Param_Name(target.name)));
+			 Place_Param_Target(Type::FILE, Place_Param_Name(target.name)));
 
 		buf_default.push(Link(dependency_child, flags_child, Place()));
 		/* The place of the [[A]]->A links is empty, meaning it will

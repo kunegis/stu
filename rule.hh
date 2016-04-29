@@ -211,7 +211,7 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 
 	auto dependency= 
 		make_shared <Direct_Dependency> 
-		(0, Place_Param_Target(T_FILE, *place_param_source_));
+		(0, Place_Param_Target(Type::FILE, *place_param_source_));
 
 	if (! place_existence.empty()) {
 		dependency->flags |= F_EXISTENCE;
@@ -275,7 +275,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 				shared_ptr <Rule> &rule_original,
 				map <string, string> &mapping_out)
 {
-	assert(target.type == T_FILE || target.type == T_PHONY); 
+	assert(target.type == Type::FILE || target.type == Type::PHONY); 
 	assert(mapping_out.size() == 0); 
 
 	/* Check for an unparametrized rule.  Since we keep them in a

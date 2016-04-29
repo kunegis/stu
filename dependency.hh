@@ -246,12 +246,12 @@ public:
 	}
 
 	void check() const {
-		assert(place_param_target.type != T_ROOT); 
+		assert(place_param_target.type != Type::ROOT); 
 		/* Must not be dynamic, since dynamic dependencies are
 		 * represented using Dynamic_Dependency */ 
-		assert(place_param_target.type < T_DYNAMIC);
+		assert(! place_param_target.type.is_dynamic());
 		if (name != "") {
-			assert(place_param_target.type == T_FILE);
+			assert(place_param_target.type == Type::FILE);
 			assert(flags & F_VARIABLE); 
 		}
 	}
@@ -545,7 +545,7 @@ shared_ptr <Dependency> Direct_Dependency
 	if ((flags & F_VARIABLE) &&
 		this_name.find('=') != string::npos) {
 
-		assert(ret_target->type == T_FILE); 
+		assert(ret_target->type == Type::FILE); 
 		
 		place << fmt("dynamic variable $[%s] cannot be instantiated with parameter value that contains '='", 
 			     this_name);

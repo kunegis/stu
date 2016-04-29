@@ -8,10 +8,6 @@
 A:  [@x];
 @x: B C D;
 
-# Needs each phony to store the list of files it depended on, and is
-# thus non-trivial to implement.  Or, alternatively, needs to implement
-# a 'phony-hierarchy' like we have for files at the moment. 
-
 #
 # Option -B:  Remake all targets regardless of dates
 #

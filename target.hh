@@ -58,44 +58,115 @@ string format_name_mid(string name)
 		return name;
 }
 
-/* The type of targets in Stu.  Each target is of exactly one type.
- */
-/* Declared as int so arithmetic can be performed on it */ 
-typedef int Type; 
-enum {
-	/* Top-level target, which contains the individual targets given
-	 * on the command line as dependencies.  Does not appear as
-	 * dependencies in Stu files. */ 
-	T_ROOT,
+class Target;
 
-	/* A phony target */ 
-	T_PHONY,
+class Type
+{
+private:  
+
+	int value;
+
+	friend class Target; 
+	friend class std::hash <Target> ;
+
+	/* Only used for hashing */
+	int get_value() const {
+		return value; 
+	}
+
+	/* Only used by containers */
+	bool operator < (const Type &type) const {
+		return this->value < type.value; 
+	}
+
+	enum {
+		/* Top-level target, which contains the individual targets given
+		 * on the command line as dependencies.  Does not appear as
+		 * dependencies in Stu files. */ 
+		T_ROOT,
+
+		/* A phony target */ 
+		T_PHONY,
 	
-	/* A file in the file system; this entry has to come before
-	 * T_DYNAMIC because it counts also as a dynamic dependency of
-	 * depth zero. */
-	T_FILE,
+		/* A file in the file system; this entry has to come before
+		 * T_DYNAMIC because it counts also as a dynamic dependency of
+		 * depth zero. */
+		T_FILE,
 
-	/* A dynamic target -- only used for the Target object of executions */   
-	T_DYNAMIC
+		/* A dynamic target -- only used for the Target object of executions */   
+		T_DYNAMIC
 
-	/* Larger values denote multiply dynamic targets.  They are only
-	 * used as the target of Execution objects.  Therefore, T_DYNAMIC is
-	 * always last in this enum. */
+		/* Larger values denote multiply dynamic targets.  They are only
+		 * used as the target of Execution objects.  Therefore, T_DYNAMIC is
+		 * always last in this enum. */
 	
-	/* Note:  all dynamic targets are files, and therefore T_FILE can be
-	 * thought of as a dynamic target of depth zero. */
+		/* Note:  all dynamic targets are files, and therefore T_FILE can be
+		 * thought of as a dynamic target of depth zero. */
+	};
+
+	Type(int value_)
+		:  value(value_)
+	{
+		check();
+	}
+
+public:
+
+	static const Type ROOT, PHONY, FILE, DYNAMIC;
+
+	bool is_dynamic() const {
+		return value >= T_DYNAMIC;
+	}
+
+	void check() const {
+		assert(value >= T_ROOT); 
+	}
+
+	bool operator == (const Type &type) const {
+		return this->value == type.value;
+	}
+
+	bool operator == (int value_) const {
+		return this->value == value_; 
+	}
+
+	bool operator != (const Type &type) const {
+		return this->value != type.value;
+	}
+
+	bool operator != (int value_) const {
+		return this->value != value_; 
+	}
+
+	int operator - (const Type &type) const {
+		assert(this->value >= T_FILE);
+		assert(type.value >= T_FILE);
+		return this->value - type.value; 
+	}
+
+	Type operator - (int diff) const {
+		assert(value >= T_FILE);
+		return Type(value - diff);
+	}
+
+	Type operator -- () {
+		assert(value >= T_DYNAMIC);
+		-- value;
+		return *this;
+	}
+
+	Type &operator += (int diff) {
+		assert(value >= T_FILE);
+		value += diff;
+		assert(value >= T_FILE); 
+		return *this;
+	}
 };
 
-/* The dynamic depth of the target type.  The number of dynamic
- * indirections for dynamic targets, zero for all other targets. */ 
-unsigned dynamic_depth(Type type) {
-	assert(type >= T_ROOT); 
-	if (type < T_DYNAMIC)  
-		return 0;
-	else
-		return type - T_FILE; 
-}
+const Type Type::ROOT(Type::T_ROOT);
+const Type Type::PHONY(Type::T_PHONY);
+const Type Type::FILE(Type::T_FILE);
+const Type Type::DYNAMIC(Type::T_DYNAMIC);
 
 /* 
  * The basic object in Stu:  a file, a variable or a phony.  This
@@ -123,45 +194,45 @@ public:
 	/* Used in output of Stu, i.e., mainly in error messages.  */ 
 	string format() const {
 
-		assert(type >= T_ROOT);
-
-		if (type == T_ROOT) {
+		if (type == Type::ROOT) {
 			return "ROOT"; 
-		} else if (type == T_PHONY) {
+		} else if (type == Type::PHONY) {
 			return fmt("@%s", format_name_mid(name));  
 		} else {
-			return type >= T_DYNAMIC
-				? (string(type - T_FILE, '[') 
+			return type.is_dynamic() 
+				? (string(type - Type::FILE, '[') 
 				   + format_name_mid(name) 
-				   + string(type - T_FILE, ']'))
+				   + string(type - Type::FILE, ']'))
 				: format_name(name); 
 		}
 	}
 
 	string format_bare() const {
-		assert(type >= T_PHONY);
+		assert(type != Type::ROOT); 
 
-		if (type == T_PHONY) {
+		if (type == Type::PHONY) {
 			return fmt("@%s", name);  
 		} else {
-			return type >= T_DYNAMIC
-				? (string(type - T_FILE, '[') 
+			return 
+				type.is_dynamic()
+				? (string(type - Type::FILE, '[') 
 				   + name
-				   + string(type - T_FILE, ']'))
+				   + string(type - Type::FILE, ']'))
 				: name; 
 		}
 	}
 
 	string format_mid() const {
-		assert(type >= T_PHONY);
+		assert(type != Type::ROOT);
 
-		if (type == T_PHONY) {
+		if (type == Type::PHONY) {
 			return fmt("@%s", format_name_mid(name));  
 		} else {
-			return type >= T_DYNAMIC
-				? (string(type - T_FILE, '[') 
+			return 
+				type.is_dynamic()
+				? (string(type - Type::FILE, '[') 
 				   + format_name_mid(name) 
-				   + string(type - T_FILE, ']'))
+				   + string(type - Type::FILE, ']'))
 				: format_name_mid(name); 
 		}
 	}
@@ -184,8 +255,8 @@ namespace std {
 	{
 		size_t operator()(const Target &target) const {
 			return
-				(hash<string>()(target.name))
-				^ (hash<int>()(target.type) << 1);
+				hash <string> ()(target.name)
+				^ target.type.get_value();
 		}
 	};
 
@@ -361,7 +432,7 @@ public:
 		:  type(type_),
 		   param_name("")
 		{
-			assert(type_ == T_ROOT);
+			assert(type_ == Type::ROOT);
 			/* Note:  PARAM_NAME is invalid */ 
 		}
 
@@ -457,17 +528,17 @@ public:
 
 	/* Create a root target */ 
 	Place_Param_Target()
-		:  type(T_ROOT),
+		:  type(Type::ROOT),
 		   place_param_name()
 	{ }
 
 	/* Create a root target explicitly */ 
 	Place_Param_Target(Type type_)
-		:  type(T_ROOT),
+		:  type(Type::ROOT),
 		   place_param_name()
 	{ 
 		(void) type_;
-		assert(type_ == T_ROOT); 
+		assert(type_ == Type::ROOT); 
 	}
 
 	Place_Param_Target(Type type_,

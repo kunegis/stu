@@ -1,19 +1,6 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
-# Option -B:  Remake all targets regardless of dates
-#
-
-#
-# Option -N:  dry run, but build dynamic dependencies 
-#
-
-# 
-# An option (-u) to consider all targets up to date.  I.e., execute only the
-# minimum to get the given files built. 
-#
-
-#
 # Multiple targets declare a command that is able to build multiple
 # files at once.
 #
@@ -114,7 +101,7 @@ A: [<B],0  { xargs -0 ... }
 
 A:  B * C;    	        # Binary multiplication operator
 A:  B * (C D); 	        # Parentheses
-A:  B[C];      	        # Justaposition
+A:  B[C];      	        # Juxtaposition
 A:  [B]C;      	        # OK
 A:  B(C D);    	        # OK
 A:  B(C D)E;   	        # OK
@@ -219,6 +206,10 @@ A: [data/B],d;
 A: [data//B]; # ?
 
 #
+# Option -N:  dry run, but build dynamic dependencies 
+#
+
+#
 # Search within predefined paths for %include ($STU_PATH or $STUPATH;
 # the -I option)
 #
@@ -241,35 +232,14 @@ A = [X];
 <X { echo B C D }
 
 #
+# Option -B:  Remake all targets regardless of dates
+#
+
+#
 # Optimization:  when parsing rules, only save the "body" part of the
 # rule (everything except the target) as an unparsed string.  Parse it
 # properly only when needed. 
 #
-
-#
-# Chain of commands are useful for dynamic dependencies
-#
-
-@bidd:  [>dep.bidd]:  <NETWORKS { sed -e 's,^,bidd.,' }
-
-#
-# Input redirection for a dynamic dependency or list is catenation
-#
-
->all.gz:  <[files] { gz }
-
-# Not very useful since it can be emulated very simply using cat:
->all.gz:  [<files] { xargs cat | gz }
-
->A: <(B C) { sed -e '...' }
-
-# With phonies
->A: <@x { sed -e '...' }
-@x:  D E F;
-
-# With dynamic dependencies
->A:  <[deps] { sed -e '...' }
->deps { ... }
 
 #
 # Line number syntax:  A preprocessor-like construct that gives a new
@@ -344,4 +314,9 @@ A: B;
 #
 
 A.tar: [ +e FILES ] { tar cfvv A.tar $(cat FILES) }
+
+# 
+# An option (-u) to consider all targets up to date.  I.e., execute only the
+# minimum to get the given files built. 
+#
 

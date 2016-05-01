@@ -239,6 +239,31 @@ A:  {
 # would be run.  Problematic because of dynamic dependencies. 
 #
 
+#
+# Chain of commands are useful for dynamic dependencies
+#
+
+@bidd:  [>dep.bidd]:  <NETWORKS { sed -e 's,^,bidd.,' }
+
+#
+# Input redirection for a dynamic dependency or list is catenation
+#
+
+>all.gz:  <[files] { gz }
+
+# Not very useful since it can be emulated very simply using cat:
+>all.gz:  [<files] { xargs cat | gz }
+
+>A: <(B C) { sed -e '...' }
+
+# With phonies
+>A: <@x { sed -e '...' }
+@x:  D E F;
+
+# With dynamic dependencies
+>A:  <[deps] { sed -e '...' }
+>deps { ... }
+
 #==== New features that change extend the Stu drastically ====
 
 #

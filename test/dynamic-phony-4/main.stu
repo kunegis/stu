@@ -1,0 +1,10 @@
+#
+# Dynamic phony.
+#
+# Make sure that 'A' is not rebuilt a second time. 
+#
+
+A:  [@x] { cp B A }
+@x: C;
+C = {B}
+B = {correct}

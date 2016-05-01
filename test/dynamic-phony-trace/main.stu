@@ -1,6 +1,0 @@
-# Check that the trace is correct.
-
-B:A{touch B}
-
-A: [@x] { touch A }
-@x { echo Hello }

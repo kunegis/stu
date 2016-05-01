@@ -5,6 +5,17 @@ are added, which are documented in this file.  When the major version is
 increased, backward-incompatible changes are made, which are documented
 in the file MIGRATION. 
 
+2016-05-01  Version 1.13:
+
+* Dynamic phonies are now allowed.  The following is an example:
+
+A :  [@x] { cp C A }
+@x : B;
+B = {C}
+C = {correct}
+
+This will create a file 'A' containing the text 'correct'. 
+
 2016-04-26  Version 1.12:
 
 * Copy rules:

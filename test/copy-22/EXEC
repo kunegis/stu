@@ -1,16 +1,9 @@
 #! /bin/sh
 
-# Touch a file with a year earlier timestamp, to avoid sleep in tests. 
-touch_old() {
-	year="$(date +%Y)"
-	year_old="$(expr $year - 2)"
-	touch -d $year_old-01-01 "$1"
-}
+rm -f ? || exit 1
 
-rm -f ?
-
-touch_old list.x
-touch x.data
+../../sh/touch_old list.x 1 || exit 1
+touch x.data || exit 1
 
 ../../stu.test -c list.x >list.out 2>list.err
 exitcode="$?"

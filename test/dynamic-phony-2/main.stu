@@ -1,0 +1,9 @@
+# Run with -k.
+
+A: [@x] B {
+	cp B A
+}
+
+@x;
+
+B = {correct}

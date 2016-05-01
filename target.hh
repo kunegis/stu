@@ -64,6 +64,7 @@ class Type
 {
 private:  
 
+	/* >= T_ROOT */
 	int value;
 
 	friend class Target; 
@@ -83,18 +84,22 @@ private:
 		/* Top-level target, which contains the individual targets given
 		 * on the command line as dependencies.  Does not appear as
 		 * dependencies in Stu files. */ 
-		T_ROOT          = 0,
+		T_ROOT          = -1,
 
 		/* A phony target */ 
-		T_PHONY         = 1,
+		T_PHONY         = 0,
 	
 		/* A file in the file system; this entry has to come before
 		 * T_DYNAMIC because it counts also as a dynamic dependency of
 		 * depth zero. */
-		T_FILE          = 2,
+		T_FILE          = 1,
+
+		/* A dynamic phony -- only used for the Target object of
+		 * executions */
+		T_DYNAMIC_PHONY = 2,
 
 		/* A dynamic target -- only used for the Target object of executions */   
-		T_DYNAMIC_FILE  = 4
+		T_DYNAMIC_FILE  = 3
 
 		/* Larger values denote multiply dynamic targets.  They are only
 		 * used as the target of Execution objects.  Therefore, T_DYNAMIC is
@@ -107,19 +112,35 @@ private:
 	Type(int value_)
 		:  value(value_)
 	{
-		check();
+		assert(value >= T_ROOT); 
 	}
 
 public:
 
-	static const Type ROOT, PHONY, FILE, DYNAMIC_FILE;
+	static const Type ROOT, PHONY, FILE, DYNAMIC_PHONY, DYNAMIC_FILE;
 
 	bool is_dynamic() const {
-		return value > T_FILE;
+		return value >= T_DYNAMIC_PHONY;
 	}
 
-	void check() const {
+	unsigned dynamic_depth() const {
+		assert(value > T_ROOT);
+		return (value - T_PHONY) >> 1;
+	}
+
+	bool is_any_phony() const {
+		assert(value >= T_ROOT);
+		return value >= T_ROOT && ! (value & 1);
+	}
+
+	bool is_any_file() const {
 		assert(value >= T_ROOT); 
+		return value >= T_ROOT && (value & 1);
+	}
+
+	Type get_base() const {
+		assert(value > T_ROOT);
+		return Type(value & 1); 
 	}
 
 	bool operator == (const Type &type) const {
@@ -139,8 +160,8 @@ public:
 	}
 
 	int operator - (const Type &type) const {
-		assert(this->value >= T_FILE);
-		assert(type.value >= T_FILE);
+		assert(this->value >= T_PHONY);
+		assert(type .value >= T_PHONY);
 
 		/* We can only subtract compatible types */ 
 		assert(((this->value ^ type.value) & 1) == 0);
@@ -149,21 +170,21 @@ public:
 	}
 
 	Type operator - (int diff) const {
-		assert(value >= T_FILE);
-		assert(value - 2 * diff >= T_FILE); 
+		assert(value > T_ROOT);
+		assert(value - 2 * diff > T_ROOT); 
 		return Type(value - 2 * diff);
 	}
 
 	Type operator -- () {
-		assert(value > T_FILE);
+		assert(value >= T_DYNAMIC_PHONY);
 		value -= 2;
 		return *this;
 	}
 
 	Type &operator += (int diff) {
-		assert(value >= T_FILE);
+		assert(value > T_ROOT);
 		value += 2 * diff;
-		assert(value >= T_FILE); 
+		assert(value > T_ROOT); 
 		return *this;
 	}
 };
@@ -171,6 +192,7 @@ public:
 const Type Type::ROOT(Type::T_ROOT);
 const Type Type::PHONY(Type::T_PHONY);
 const Type Type::FILE(Type::T_FILE);
+const Type Type::DYNAMIC_PHONY(Type::T_DYNAMIC_PHONY);
 const Type Type::DYNAMIC_FILE(Type::T_DYNAMIC_FILE);
 
 /* 
@@ -201,14 +223,18 @@ public:
 
 		if (type == Type::ROOT) {
 			return "ROOT"; 
-		} else if (type == Type::PHONY) {
-			return fmt("@%s", format_name_mid(name));  
+		} else if (type.is_any_phony()) {
+			return "@" + (string(type.dynamic_depth(), '[') 
+				      + format_name_mid(name) 
+				      + string(type.dynamic_depth(), ']'));
+		} else if (type == Type::FILE) {
+			return format_name(name); 
 		} else {
-			return type.is_dynamic() 
-				? (string(type - Type::FILE, '[') 
-				   + format_name_mid(name) 
-				   + string(type - Type::FILE, ']'))
-				: format_name(name); 
+			assert(type.is_any_file()); 
+			assert(type.is_dynamic()); 
+			return string(type.dynamic_depth(), '[') 
+				+ format_name_mid(name) 
+				+ string(type.dynamic_depth(), ']');
 		}
 	}
 

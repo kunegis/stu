@@ -27,10 +27,10 @@ while read -r line ; do
 	echo ../../stu.test -f list.file.stu
 	../../stu.test -f list.file.stu >list.out 2>list.err
 	exitcode="$?"
-	echo >&6 "exitcode=«$exitcode»"
+	echo >&6 "exitcode='$exitcode'"
 
 	# Check exit code
-	[ "$exitcode" != 0 ] && {
+	[ "$exitcode" = 0 ] || {
 		echo >&2 "*** (1) Error in build"
 		echo >&2 "STDOUT:"
 		cat list.out
@@ -40,6 +40,7 @@ while read -r line ; do
 		echo >&2 _____________
 		exit 1
 	}
+
 	# Check that C was not built
 	[ -e C ] && {
 		echo >&2 "*** (2) 'C' must not exist"
@@ -54,7 +55,7 @@ while read -r line ; do
 	echo ../../stu.test -f list.file.stu
 	../../stu.test -f list.file.stu >list.out 2>list.err
 	exitcode="$?"
-	echo >&6 "exitcode=«$exitcode»"
+	echo >&6 "exitcode='$exitcode'"
 
 	# Check exit code
 	[ "$exitcode" != 0 ] && {
@@ -69,7 +70,7 @@ while read -r line ; do
 	}
 
 	# Check that nothing is done
-	grep -qF 'Nothing to be done' list.out || {
+	grep -qxF 'Nothing to be done' list.out || {
 		echo >&2 "*** (4) Missing 'Nothing to be done'"
 		exit 1
 	}

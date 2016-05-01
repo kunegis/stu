@@ -1,5 +1,0 @@
-
-A:  [[B]] { touch A }
->B { echo '@x' ; }
-
-@x { echo THIS COMMAND MUST NOT BE EXECUTED ; exit 1 ; }

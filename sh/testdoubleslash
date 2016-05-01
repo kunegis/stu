@@ -1,0 +1,22 @@
+#! /bin/sh
+#
+# Test that no source contains '//' (for C++ code) or '#''#' (for shell
+# scripts or Stu files).  
+#
+
+ret=0
+
+grep -lF '//' *.cc *.hh && {
+	echo >&2 "*** found '//'"
+	ret=1
+}
+
+find . -type f -a \( -name '*.stu' -o -perm -u+x \) -a \! -name '*~' \
+	-a \! -path './.git*' -a \! -path './stu.*' -a \! -path './stu' | 
+xargs grep -lF '#''#' && {
+	echo >&2 "*** found '#""#'"
+	ret=1
+}
+
+
+exit "$ret"

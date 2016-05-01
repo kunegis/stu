@@ -1,13 +1,6 @@
 #! /bin/sh
 
-# Touch a file with a year earlier timestamp, to avoid sleep in tests. 
-touch_old() {
-	year="$(date +%Y)"
-	year_old="$(expr $year - 2)"
-	touch -d $year_old-01-01 "$1"
-}
-
-rm -f ?
+rm -f ? || exit 1
 
 ../../stu.test -C '?[X]' >list.out 2>list.err
 exitcode="$?"
@@ -21,11 +14,11 @@ grep -Fq  BUILDING_P list.out && { echo >&2 '(1) building P' ; exit 1 ; }
 grep -Fq  BUILDING_Q list.out && { echo >&2 '(1) building Q' ; exit 1 ; }
 grep -Fq  BUILDING_R list.out && { echo >&2 '(1) building R' ; exit 1 ; }
 
-rm -f ?
-touch_old D
-touch_old E
-touch_old F
-touch     P Q R
+rm -f ? || exit 1
+../../sh/touch_old D 1 || exit 1
+../../sh/touch_old E 1 || exit 1
+../../sh/touch_old F 1 || exit 1
+touch     P Q R || exit 1
 
 ../../stu.test -C '?[X]' >list.out 2>list.err
 exitcode="$?"

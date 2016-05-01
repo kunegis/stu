@@ -1,2 +1,0 @@
-main.stu:5:5: phony target @x must not appear as dynamic dependency for target 'A'
-main.stu:3:3: 'A' is needed by 'B'

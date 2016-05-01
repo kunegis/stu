@@ -1,0 +1,11 @@
+#
+# Multiple phonies in dynamics. 
+#
+
+>A:  [@x] { cat $(cat $(cat x)) }
+@x: [x];
+B = {E F}
+C = {G H}
+D = {I J}
+x = {B C D}
+$x = {oneline}

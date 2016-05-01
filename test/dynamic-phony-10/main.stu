@@ -1,0 +1,7 @@
+# When 'B' is modified, 'A' is not rebuilt. 
+
+A: ![@x] { cp B A }
+@x: C;
+C = {B}
+B = {correct}
+

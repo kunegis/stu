@@ -1,0 +1,5 @@
+A: [?@x] { touch A }
+
+@x: X;
+
+# There is no rule for 'X'

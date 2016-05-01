@@ -1,2 +1,0 @@
-main.stu:5:5: phony target @x must not appear as dynamic dependency for target 'A'
-../../stu.test: *** Targets not rebuilt because of errors

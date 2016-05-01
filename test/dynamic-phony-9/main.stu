@@ -1,0 +1,6 @@
+A: [[B]] { cp D A }
+B={@x}
+@x:C;
+C={D}
+D={correct}
+

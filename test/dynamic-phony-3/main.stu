@@ -1,0 +1,4 @@
+B:A{touch B}
+
+A: [@x] { touch A }
+@x { echo Hello }

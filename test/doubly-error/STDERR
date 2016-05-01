@@ -1,3 +1,0 @@
-B:1:1: phony target @C must not appear as dynamic dependency of [[B]]
-main.stu:11:2: 'B' is declared here
-main.stu:9:6: [[B]] is needed by 'A'

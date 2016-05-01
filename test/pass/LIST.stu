@@ -3,7 +3,8 @@
 # ignored. 
 #
 # Rule:  B is an existence-only dependency; C is an optional dependency;
-# D/E are normal dependencies. 
+# D/E are normal dependencies.  Lines that include 'B', 'C', 'D' or 'E'
+# as dynamic dependencies must also provide a rule for 'X'. 
 #
 
 A: !B ?C D E {touch A} B{touch B} C{touch C} D{touch D} E{touch E}
@@ -21,4 +22,8 @@ A: [!B] [?C] D E {touch A}	>B { echo D }	>C { echo E } D{touch D} E{touch E} X{t
 A: [!B ?C] D E {touch A}	>B { echo D }	>C { echo E } D{touch D} E{touch E} X{touch X}
 A: ![D] ?[E] {touch A}	>D { echo B }	>E { echo C } B{touch B} C{touch C}  X{touch X}
 
-
+A: @b @c D E {touch A} @b: !B; @c: ?C; B{touch B} C{touch C} D{touch D} E{touch E}
+A: !@b ?@c D E {touch A} @b: B; @c: C; B{touch B} C{touch C} D{touch D} E{touch E}
+A: !@b ?@c D E {touch A} @b: !B; @c: ?C; B{touch B} C{touch C} D{touch D} E{touch E}
+A: @x D E {touch A} @x: !B ?C; B{touch B} C{touch C} D{touch D} E{touch E}
+A: ![@d] ?[@e] {touch A} @d:D; @e:E; D={B} E={C} B={} C={} X={}

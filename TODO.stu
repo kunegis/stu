@@ -1,14 +1,6 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
-# Phonies in dynamics
-#
-
-# A will depend on the content of B, C and D. 
-A:  [@x];
-@x: B C D;
-
-#
 # Option -B:  Remake all targets regardless of dates
 #
 
@@ -63,12 +55,13 @@ A B C;
 #
 
 'abc"def';
-"network $NAME";
+"network $NAME"; 
 "aaa'bbb";
 
 #
 # Don't allow filenames that start with '+' or '-', but allow these in
 # the middle or at the end of filenames.  
+#
 
 #
 # Keep track of spacing between tokens, and disallow no space in
@@ -76,7 +69,7 @@ A B C;
 #
 
 #
-# Use '-' options for the three flags !, ?, and &. 
+# Use '-' options for the three flags !, ?, and &.   
 #
 
 A:  
@@ -87,6 +80,9 @@ A:
 
 # Have options to switch all of these in subsequent targets, or to
 # switch it off. 
+
+# Maybe, invert the meaning of '-' and '+' to have '+' mean "switch
+# on". 
 
 #
 # Deprecate !, ?, and &, and define as reserved for future extension. 
@@ -339,3 +335,13 @@ A: -o @x;
 
 # Equivalent to
 A: B;
+
+#
+# Dynamic dependencies are "existence-only" by default.  Make it
+# possible to switch this off using '+e'.  This is useful when the
+# dynamic dependency file itself is used by the target, e.g. when
+# creating a tarball. 
+#
+
+A.tar: [ +e FILES ] { tar cfvv A.tar $(cat FILES) }
+

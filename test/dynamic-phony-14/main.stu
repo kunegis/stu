@@ -1,0 +1,5 @@
+A :  [@x] { cp C A }
+@x: B;
+B= {@y}
+@y: C;
+C = {correct}

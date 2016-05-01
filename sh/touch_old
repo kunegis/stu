@@ -1,0 +1,28 @@
+#! /bin/sh
+#
+# Touch a file, giving it an old timestamp.  The second parameter
+# decides how old.  
+#
+# INVOCATION
+# 	
+#	$0 FILENAME AGE
+#
+# 	AGE is a small positive integer (>0), proportional to the age of
+#       the file. 
+#
+
+filename="$1"
+age="$2"
+
+[ "$filename" ] || { echo >&2 "*** Expected filename" ; exit 2 ; }
+[ "$age"      ] || { echo >&2 "*** Expected age"      ; exit 2 ; }
+
+# Number of years to go back.  
+y="$((2 * $age))"
+
+year="$(date +%Y)"
+year_old="$(expr $year - $y)"
+touch -d $year_old-01-01 "$filename" || exit 1
+
+exit 0
+

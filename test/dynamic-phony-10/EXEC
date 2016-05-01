@@ -1,0 +1,24 @@
+#! /bin/sh
+
+rm -f ?
+
+../../stu.test >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || { echo >&2 "*** Exit code" ; exit 1 ; }
+[ -r list.err ] && [ ! -s list.err ] || { echo >&2 "*** Standard error" ; exit 1 ; }
+[ -r A ] || { echo >&2 "*** A" ; exit 1 ; }
+grep -qxF correct A || { echo >&2 "*** Content" ; exit 1 ; }
+
+../../sh/touch_old A 1 || exit 1
+../../sh/touch_old C 2 || exit 1
+touch B || exit 1
+
+../../stu.test >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || { echo >&2 "*** Exit code" ; exit 1 ; }
+[ -r list.err ] && [ ! -s list.err ] || { echo >&2 "*** Standard error" ; exit 1 ; }
+grep -qxF 'Nothing to be done' list.out || { echo >&2 "*** Standard output" ; exit 1 ; }
+
+exit 0

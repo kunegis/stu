@@ -57,7 +57,18 @@ doo sleep 2
 doo touch B
 echo ../../stu.test
 ../../stu.test >list.out 2>list.err
-if ! cmp list.out stdout.4 ; then echo >&2 '*** (4out)' ; exit 1 ; fi
+if ! cmp list.out stdout.4 ; then
+	echo >&2 '*** (4out)'
+	echo list.out:
+	echo ________
+	cat list.out
+	echo ________
+	echo stdout.4
+	echo ________
+	cat stdout.4
+	echo ________
+	exit 1
+fi
 [ -s list.err ] && { echo >&2 '*** (4err)' ; exit 1 ; }
 
 doo sleep 2

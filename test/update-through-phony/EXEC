@@ -28,11 +28,8 @@ grep -qF 'Nothing to be done' list.content || {
 	exit 1
 }
 
-# Necessary because otherwise BBB may have exactly the same date as A,
-# and Stu would think there is nothing to be done. 
-sleep 2
-
-touch BBB
+../../sh/touch_old A 1 || exit 1
+touch BBB || exit 1
 
 echo ../../stu.test
 ../../stu.test >list.content || {

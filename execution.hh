@@ -416,11 +416,11 @@ bool Execution::execute(Execution *parent, Link &&link)
 		struct stat buf;
 		int ret_stat= stat(target.name.c_str(), &buf);
 		if (ret_stat < 0) {
+			exists= -1;
 			if (errno != ENOENT) {
 				perror(target.name.c_str());
 				raise(ERROR_BUILD);
 				done.add_neg(link.avoid); 
-				exists= -1;
 				return false;
 			}
 			done.add_highest_neg(link.avoid.get_highest()); 

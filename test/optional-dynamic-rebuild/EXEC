@@ -1,6 +1,6 @@
 #! /bin/sh
 
-rm -f ?
+rm -f ? || exit 1
 
 ../../stu.test
 exitcode="$?"
@@ -15,14 +15,9 @@ exitcode="$?"
 	exit 1
 }
 
-echo sleep 2
-sleep 2
-
-echo 'echo X >C'
-echo X >C
-
-echo sleep 2
-sleep 2
+../../sh/touch_old A 2 || exit 1
+echo X >C || exit 1
+../../sh/touch_old C 1 || exit 1
 
 ../../stu.test
 exitcode="$?"

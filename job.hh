@@ -258,8 +258,12 @@ pid_t Job::start(string command,
 
 		in_child= 1; 
 
-		/* Unblock interruption signals */ 
+		/* Unblock all blocked signals */ 
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_interrupt, nullptr)) {
+			perror("sigprocmask");
+			_Exit(ERROR_BUILD); 
+		}
+		if (0 != sigprocmask(SIG_UNBLOCK, &set_block, nullptr)) {
 			perror("sigprocmask");
 			_Exit(ERROR_BUILD); 
 		}

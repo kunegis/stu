@@ -135,6 +135,10 @@ public:
 	 */
 	Execution(const vector <shared_ptr <Dependency> > &dependencies_); 
 
+	/* There is no implementation of this, as it is not used.  This
+	 * serves as a compile-time check that Execution objects are not
+	 * destroyed. 
+	 */ 
 	~Execution(); 
 
 	/* Whether the execution is finished working for the PARENT */ 
@@ -217,6 +221,14 @@ public:
 
 	void write_content(const char *filename, 
 			   Command &command); 
+
+	/* Read the content of the file into a string as the
+	 * variable value.  THIS is the variable target.  Return TRUE on
+	 * success. 
+	 */  
+	bool read_variable(string &variable_name,
+			   string &content,
+			   shared_ptr <Dependency> dependency); 
 
 	/* The currently running executions by process IDs */ 
 	static unordered_map <pid_t, Execution *> executions_by_pid;
@@ -1066,75 +1078,17 @@ void Execution::unlink(Execution *const parent,
 	/* Propagate variable dependencies */
 	if ((flags_child & F_VARIABLE) && child->exists > 0) {
 
-		/* Read the content of the file into a string as the
-		 * variable value */  
-
-		assert(child->target.type == Type::FILE);
-		string filename= child->target.name;
-		int fd;
+		string variable_name;
 		string content;
-		size_t filesize;
-		struct stat buf;
-		string dependency_variable_name;
-		string variable_name; 
-
-		fd= open(filename.c_str(), O_RDONLY);
-		if (fd < 0) {
-			goto error;
-		}
-		if (0 > fstat(fd, &buf)) {
-			goto error_fd;
-		}
-
-		filesize= buf.st_size;
-		content.resize(filesize);
-		if ((ssize_t)filesize != read(fd, (void *) content.c_str(), filesize)) {
-			goto error_fd;
-		}
-
-		if (0 > close(fd))  
-			goto error;
-
-		/* Remove space at beginning and end of the content.
-		 * The characters are exactly those used by isspace() in
-		 * the C locale.  
-		 */ 
-		content.erase(0, content.find_first_not_of(" \n\t\f\r\v")); 
-		content.erase(content.find_last_not_of(" \n\t\f\r\v") + 1);  
-
-		/* The variable name */ 
-		dependency_variable_name= "";
-		if (dynamic_pointer_cast <Direct_Dependency> (dependency_child)) {
-			dependency_variable_name=
-				dynamic_pointer_cast <Direct_Dependency>
-				(dependency_child)->name; 
-		}
-		variable_name= 
-			dependency_variable_name == ""
-			? filename : dependency_variable_name;
-
-		parent->mapping_variable[variable_name]= content;
-
-		goto ok;
-
-	error_fd:
-		close(fd); 
-	error:
-		child->param_rule->place_param_target.place <<
-			fmt("generated file '%s' for variable dependency was built but cannot be found now", 
-			    filename);
-		child->print_traces();
-
-		parent->raise(ERROR_BUILD); 
-	ok:;
+		if (child->read_variable(variable_name, content, dependency_child))
+			parent->mapping_variable[variable_name]= content;
 	}
 
 	/*
 	 * Propagate variables over phonies without commands and dynamic
 	 * targets
 	 */
-	if (
-	    child->target.type.is_dynamic() ||
+	if (child->target.type.is_dynamic() ||
 	    (child->target.type == Type::PHONY &&
 	     child->rule != nullptr &&
 	     child->rule->command == nullptr)) {
@@ -1301,12 +1255,6 @@ Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
 	for (auto &i:  dependencies_) {
 		buf_default.push(Link(i)); 
 	}
-}
-
-Execution::~Execution()
-{
-	/* Executions are never deleted (this is a caching mechanism) */ 
-	assert(false); 
 }
 
 bool Execution::finished(Stack avoid) const
@@ -2119,6 +2067,69 @@ void Execution::write_content(const char *filename,
 	}
 
 	exists= +1;
+}
+
+bool Execution::read_variable(string &variable_name,
+			      string &content,
+			      shared_ptr <Dependency> dependency)
+{
+	assert(target.type == Type::FILE);
+
+	size_t filesize;
+	struct stat buf;
+	string dependency_variable_name;
+	
+	int fd= open(target.name.c_str(), O_RDONLY);
+	if (fd < 0) {
+		if (errno != ENOENT)
+			perror(target.name.c_str()); 
+		goto error;
+	}
+	if (0 > fstat(fd, &buf)) {
+		perror(target.name.c_str()); 
+		goto error_fd;
+	}
+
+	filesize= buf.st_size;
+	content.resize(filesize);
+	if ((ssize_t)filesize != read(fd, (void *) content.c_str(), filesize)) {
+		perror(target.name.c_str()); 
+		goto error_fd;
+	}
+
+	if (0 > close(fd)) { 
+		perror(target.name.c_str()); 
+		goto error;
+	}
+
+	/* Remove space at beginning and end of the content.
+	 * The characters are exactly those used by isspace() in
+	 * the C locale.  
+	 */ 
+	content.erase(0, content.find_first_not_of(" \n\t\f\r\v")); 
+	content.erase(content.find_last_not_of(" \n\t\f\r\v") + 1);  
+
+	/* The variable name */ 
+	dependency_variable_name=
+		dynamic_pointer_cast <Direct_Dependency> (dependency)->name; 
+
+	variable_name= 
+		dependency_variable_name == "" ?
+		target.name : dependency_variable_name;
+
+	return true;
+
+	error_fd:
+		close(fd); 
+	error:
+		param_rule->place_param_target.place <<
+			fmt("generated file '%s' for variable dependency was built but cannot be found now", 
+			    target.name);
+		print_traces();
+
+		raise(ERROR_BUILD); 
+		
+		return false;
 }
 
 #endif /* ! EXECUTION_HH */

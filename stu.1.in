@@ -746,6 +746,9 @@ parsing of C-like dependencies.  Rule-level recursion would be easy to
 enable, but would open up problems related to infinite loops, which
 would require Stu to have a maximal recursion depth.  
 
+When the command fails and its target is a directory, Stu cannot remove
+the directory as it does for regular files.  
+
 Changing a command within a Stu file will not make the target to be
 rebuilt.  This can be seen as both a feature or a bug. 
 Also, all changes in a file will lead to rebuilds of other files, even if the

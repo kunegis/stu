@@ -1,6 +1,10 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
+# When accessing directories, maybe use not mtime, but something else?
+#
+
+#
 # Multiple targets declare a command that is able to build multiple
 # files at once.
 #

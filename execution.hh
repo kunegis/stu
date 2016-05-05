@@ -99,7 +99,7 @@ public:
 	Stack done;
 
 	/* Latest timestamp of a (direct or indirect) file dependency that
-	 * was not rebuilt.  (Files that were not rebuilt are not
+	 * was not rebuilt.  (Files that were rebuilt are not
 	 * considered, since they make the target be rebuilt anyway.)
 	 * The function execute() also changes this to consider the file
 	 * itself.  This final timestamp is then carried over to the parent

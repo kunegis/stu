@@ -750,12 +750,15 @@ BUGS
        but  would  open  up  problems  related  to infinite loops, which would
        require Stu to have a maximal recursion depth.
 
-       Changing a command within a Stu file will not make  the  target  to  be
-       rebuilt.   This  can  be  seen  as  both a feature or a bug.  Also, all
-       changes in a file will lead to rebuilds of other  files,  even  if  the
+       When the command fails and its target is a directory, Stu cannot remove
+       the directory as it does for regular files.
+
+       Changing  a  command  within  a Stu file will not make the target to be
+       rebuilt.  This can be seen as both a  feature  or  a  bug.   Also,  all
+       changes  in  a  file  will lead to rebuilds of other files, even if the
        changes are trivial, e.g., when only whitespace was changed in C source
-       code.  Furthermore, touching a file without changing the contents  will
-       also  lead  to  a rebuild, although it is not needed.  Both limitations
+       code.   Furthermore, touching a file without changing the contents will
+       also lead to a rebuild, although it is not  needed.   Both  limitations
        could be removed by using fingerprints instead of modification times.
 
 
@@ -767,4 +770,4 @@ SEE ALSO
 
 
 
-stu-1.13.3                         May 2016                             STU(1)
+stu-1.13.4                         May 2016                             STU(1)

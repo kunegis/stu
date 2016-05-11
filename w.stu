@@ -1,0 +1,7 @@
+# Correct error message stating that both 'A' and 'B' have been
+# removed. 
+
+A B {
+	touch A B
+	exit 1
+}

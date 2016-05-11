@@ -1,0 +1,6 @@
+>A: B C { cat B C }
+
+C >B {
+	printf cor
+	echo rect >C
+}

@@ -1,0 +1,9 @@
+# Second file ('B') was created with modification time in the future:
+# output warning.
+
+A B {
+	touch A || exit 1
+	year="$(date +%Y)"
+	year_future="$(expr $year + 2)"
+	touch -d $year_future-01-01 B || exit 1
+}

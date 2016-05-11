@@ -3,7 +3,7 @@
 
 /* Code for executing the building process itself.  This is by far the
  * longest source code file in Stu.  Each file or phony target is
- * represented at runtime by one Execution object.  All Execution
+ * represented at run time by one Execution object.  All Execution
  * objects are allocated with new Execution(...), and are never deleted,
  * as the information contained in them needs to be cached.  All
  * Execution objects are also stored in the map called
@@ -27,8 +27,13 @@ class Execution
 {
 public:
 
-	/* Target to build */ 
-	const Target target;
+	/* Targets to build.  Empty only for the root target.
+	 * Otherwise, all entries have the same dynamic depth.  If the
+	 * dynamic depth is larger than one, then there is exactly one
+	 * target. 
+	 */ 
+	const vector <Target> targets; 
+//	const Target target;
 
 	/* The instantiated file rule for this execution.  Null when there
 	 * is no rule for this file (this happens for instance when a
@@ -50,8 +55,12 @@ public:
 	 */
 	unordered_set <Execution *> children;
 
-	/* The parent executions */ 
-	unordered_map <Execution *, Link> parents; 
+	/* The parent executions.
+	 * This is a map because typically, the number of elements is
+	 * always very small, i.e., mostly one, and map is better suited
+	 * in this case. 
+	 */ 
+	map <Execution *, Link> parents; 
 
 	/* The job used to build this file */ 
 	Job job;
@@ -75,7 +84,7 @@ public:
 	/* Info about the target before it is built.  Only valid once the
 	 * job was started.  Used for checking whether a file was
 	 * rebuild to decide whether to remove it after a command failed or
-	 * was interrupted.  The field .tv_sec is LONG_MAX when the file did
+	 * was interrupted.  This is UNDEFINED when the file did
 	 * not exist, or the target is not a file
 	 */ 
 	Timestamp timestamp_old; 
@@ -113,15 +122,15 @@ public:
 	 */ 
 	bool need_build;
 
-	/* Whether we performed the check in execute().  (Only for FILE
-	 * targets). 
+	/* Whether we performed the check in execute().  
 	 */ 
 	bool checked;
 
-	/* Whether the file is known to exist.  
-	 * -1 = known not to exist
-	 *  0 = unknown whether the file exists, or not a FILE
-	 * +1 = known to exist
+	/* Whether the file targets are known to exist.  When there are
+	 * no file targets, the value may be both 0 or +1. 
+	 * -1 = at least one target file is known not to exist
+	 *  0 = unknown
+	 * +1 = all files known to exist 
 	 */
 	signed char exists;
 	
@@ -150,9 +159,9 @@ public:
 	/* Read dynamic dependencies from a file.  Can only be called for
 	 * dynamic targets.  Called for the parent of a dynamic--file link. 
 	 */ 
-	void read_dynamics(Stack avoid, shared_ptr <Dependency> dependency_parent);
+	void read_dynamics(Stack avoid, shared_ptr <Dependency> dependency_this);
 
-	/* Remove the target if it is a file and exists.  If OUTPUT is true, output a
+	/* Remove all file targets if they exist.  If OUTPUT is true, output a
 	 * corresponding error message.  Return whether the file was
 	 * removed.  If OUTPUT is false, only do async signal-safe things. 
 	 */
@@ -181,16 +190,18 @@ public:
 	void waited(int pid, int status); 
 
 	/* Print full trace for the execution.  First the message is
-	 * printed, then all traces for it starting at this execution. 
+	 * printed, then all traces for it starting at this execution,
+	 * up to the root execution. 
 	 * TEXT may be "" to not print any additional message. 
 	 */ 
 	void print_traces(string text= "") const;
 
 	/* Warn when the file has a modification time in the future */ 
-	void warn_future_file(struct stat *buf);
+	void warn_future_file(struct stat *buf, const char *filename);
 
 	/* Note:  the top-level flags of LINK.DEPENDENCY may be
-	 * modified. 
+	 * modified. // TODO: how is that possible when LINK is a
+	 * reference to a constant Link?
 	 * Return value:  same semantics as for execute(). 
 	 */
 	bool deploy(const Link &link,
@@ -212,6 +223,7 @@ public:
 	 */ 
 	void print_as_job() const;
 
+	// TODO inline
 	void raise(int error_) {
 		assert(error_ >= 1 && error_ <= 3); 
 		error |= error_;
@@ -230,13 +242,50 @@ public:
 			   string &content,
 			   shared_ptr <Dependency> dependency); 
 
-	/* The currently running executions by process IDs */ 
-	static unordered_map <pid_t, Execution *> executions_by_pid;
+	// TODO inline
+	bool is_dynamic() const {
+		return targets.size() && targets.front().type.is_dynamic(); 
+	}
 
-	/* All Execution objects.  Execution objects are never deleted.  This serves
-	 * as a caching mechanism.   
+//	Target get_target_from_link(const Link &link) const; 
+//	Target get_target_from_dependency(shared_ptr <Dependency> dependency) const; 
+
+//	/* A string describing the given target of this execution for
+//	 * error messages.  Either just the target name when
+//	 * unparametrized, or a string of the form "XXX parametrized as
+//	 * YYY". 
+//	 */
+////	static
+//	string cycle_string(
+//			    Target target
+////			    const Link &link
+////			    const Execution *execution
+//			    ) const;
+
+	/* The dynamic depth, or -1 for the root execution. */ 
+	int get_dynamic_depth() const {
+		return targets.empty()
+			? -1
+			: targets.front().type.dynamic_depth(); 
+	}
+
+	string verbose_target() const {
+		return targets.empty() 
+			? "ROOT"
+			: targets.front().format(); 
+	}
+
+	/* The Execution objects by their target(s).  Execution objects
+	 * are never deleted.  This serves as a caching mechanism.   The
+	 * root Execution has no targets and therefore is not included.
+	 * Non-dynamic execution objects are shared by the multiple
+	 * targets of a multi-target rule.  Dynamic multi-target rule
+	 * result in multiple non-shared execution objects. 
 	 */
 	static unordered_map <Target, Execution *> executions_by_target;
+
+	/* The currently running executions by process IDs */ 
+	static unordered_map <pid_t, Execution *> executions_by_pid;
 
 	/* The timestamps for phonies.  This container plays the role of
 	 * the file system for phonies, holding their timestamps, and
@@ -294,32 +343,54 @@ public:
 	 */ 
 	static void wait();
 
-	/* Find a cycle between CHILD and one of its parent executions.  This
-	 * is the main entry point of the two find_cycle() functions. 
-	 * A cycle is defined not in terms of
-	 * filenames, but in terms of general rules, i.e., it is an error if
-	 * the file "a.gz" depends on the file "a.gz.gz", when both of them
-	 * came from the general rule for "$NAME.gz".  This is to make sure
-	 * we don't get into infite recursion such as with:
-	 *
-	 * $NAME.gz:  $NAME.gz.gz { ... }
-	 */ 
-	static bool find_cycle(const Execution *const parent, 
-			       const Execution *const child); 
-
-	/* The helper function for find_cycle().  TRACES contains the list
-	 * of traces connected CHILD to EXECUTION. 
+	/* Find a cycle.  Assuming that the edge parent->child, find a
+	 * directed cycle that would be created.  Start at PARENT and
+	 * perform a depth-first search upwards in the hierarchy to find
+	 * CHILD.  
 	 */
-	static bool find_cycle(const Execution *const parent, 
-			       const Execution *const child,
-			       vector <Trace> &traces);
+	static bool find_cycle2(const Execution *const parent,
+				const Execution *const child);
 
-	static string cycle_string(const Execution *execution);
+	static bool find_cycle2(vector <const Execution *> &path,
+				const Execution *const child); 
 
-	/* Return Nullptr when no trace should be given */ 
-	static shared_ptr <Trace> cycle_trace(const Execution *child,
-					      const Execution *parent);
+	/* Print the error message of a cycle on rule level.
+	 * Given the path [a, b, c, d, ..., x], the found cycle is
+	 * [x <- a <- b <- c <- d <- ... <- x], where A <- B denotes
+	 * that A is a dependency of B.  For each edge in this cycle,
+	 * output one line. 
+	 */ 
+	static void cycle_print(const vector <const Execution *> &path);
 
+//	/* Find a cycle between CHILD and one of its parent executions.  This
+//	 * is the main entry point of the two find_cycle() functions. 
+//	 * A cycle is defined not in terms of
+//	 * filenames, but in terms of general rules, i.e., it is an error if
+//	 * the file "a.gz" depends on the file "a.gz.gz", when both of them
+//	 * came from the general rule for "$NAME.gz".  This is to make sure
+//	 * we don't get into infite recursion such as with:
+//	 *
+//	 * $NAME.gz:  $NAME.gz.gz { ... }
+//	 */ 
+//	static bool find_cycle(const Execution *const parent, 
+//			       const Execution *const child); 
+
+//	/* The helper function for find_cycle().  TRACES contains the list
+//	 * of traces connected CHILD to EXECUTION. 
+//	 */
+//	static bool find_cycle(const Execution *const parent, 
+//			       const Execution *const child,
+//			       vector <Trace> &traces);
+
+//	/* Return null when no trace should be given */ 
+//	// TODO invert order of arguments 
+//	static shared_ptr <Trace> cycle_trace(Target target_child,
+//					      const Execution *child,
+//					      Target target_parent,
+//					      const Execution *parent);
+
+	static bool same_rule(const Execution *execution_a,
+			      const Execution *execution_b);
 };
 
 unordered_map <pid_t, Execution *> Execution::executions_by_pid;
@@ -363,23 +434,29 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	assert(jobs >= 0); 
 
-	if (target.type == Type::ROOT) {
-		assert(link.avoid.get_k() == 0);
-		assert(done.get_k() == 0);
-	} else {
-		assert(link.avoid.get_k() == target.type.dynamic_depth()); 
-		assert(done.get_k() == target.type.dynamic_depth()); 
+	for (const Target &target:  targets) {
+		assert(target.type.dynamic_depth() == done.get_k());
 	}
+	assert(done.get_k() == link.avoid.get_k()); 
+//	if (target.type == Type::ROOT) {
+//		assert(link.avoid.get_k() == 0);
+//		assert(done.get_k() == 0);
+//	} else {
+//		assert(link.avoid.get_k() == target.type.dynamic_depth()); 
+//		assert(done.get_k() == target.type.dynamic_depth()); 
+//	}
 
-	if (target.type == Type::ROOT ||
-	    target.type == Type::PHONY ||
-	    target.type == Type::FILE) {
+	if (targets.size() && targets.front().type == 0) {
+//	if (target.type == Type::ROOT ||
+//	    target.type == Type::PHONY ||
+//	    target.type == Type::FILE) {
 		assert(link.avoid.get_lowest() == (link.flags & ((1 << F_COUNT) - 1))); 
 	}
 	done.check();
 
 	if (option_verbose) {
-		string text_target= this->target.format();
+		string text_target= verbose_target(); 
+//			this->targets.front().format();
 		string text_flags= format_flags(link.flags);
 		string text_avoid= link.avoid.format(); 
 
@@ -398,7 +475,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 
  	if (finished(link.avoid)) {
 		if (option_verbose) {
-			string text_target= target.format(); 
+			string text_target= verbose_target(); 
 			fprintf(stderr, "VERBOSE %s %s finished\n",
 				Verbose::padding(),
 				text_target.c_str());
@@ -424,13 +501,26 @@ bool Execution::execute(Execution *parent, Link &&link)
 	 * optional dependency and if it is, return when the file does not
 	 * exist.  
 	 */
-	if ((link.flags & F_OPTIONAL) && target.type == Type::FILE) {
+	if ((link.flags & F_OPTIONAL) 
+	    && link.dependency != nullptr
+	    && dynamic_pointer_cast <Direct_Dependency> (link.dependency)
+	    && dynamic_pointer_cast <Direct_Dependency> (link.dependency)
+	    ->place_param_target.type == Type::FILE) {
+//	    && target.type == Type::FILE) {
+
+		const char *name= dynamic_pointer_cast <Direct_Dependency> (link.dependency)
+			->place_param_target.place_param_name.unparametrized().c_str();
+
 		struct stat buf;
-		int ret_stat= stat(target.name.c_str(), &buf);
+		int ret_stat= stat(
+				   name,
+//				   target.name.c_str(), 
+				   &buf);
 		if (ret_stat < 0) {
 			exists= -1;
 			if (errno != ENOENT) {
-				perror(target.name.c_str());
+				perror(name); 
+//				perror(target.name.c_str());
 				raise(ERROR_BUILD);
 				done.add_neg(link.avoid); 
 				return false;
@@ -450,10 +540,13 @@ bool Execution::execute(Execution *parent, Link &&link)
 		return false;
 	}
 
-	if (target.type == Type::ROOT)
+	if (targets.empty())
+//	if (target.type == Type::ROOT)
 		assert(done.get_k() == 0);
 	else 
-		assert(done.get_k() == target.type.dynamic_depth()); 
+		assert(done.get_k() == 
+		       targets.front().type.dynamic_depth());
+//		       target.type.dynamic_depth()); 
 
 	if (error) 
 		assert(option_keep_going); 
@@ -494,9 +587,14 @@ bool Execution::execute(Execution *parent, Link &&link)
 	/* Rule does not have a command.  This includes the case of dynamic
 	 * executions, even though for dynamic executions the RULE variable
 	 * is set (to detect cycles). */ 
-	if ((target.type == Type::PHONY && ! (rule != nullptr && rule->command != nullptr))
-	    || target.type == Type::ROOT
-	    || target.type.is_dynamic()) {
+	/* We cannot return here in the non-dynamic case, because we
+	 * must still check that the target files exist, even if they
+	 * don't have commands. */ 
+	if (targets.empty() || get_dynamic_depth() != 0) {
+//	if (! (rule != nullptr && rule->command != nullptr)) {
+//	if ((target.type == Type::PHONY && ! (rule != nullptr && rule->command != nullptr))
+//	    || target.type == Type::ROOT
+//	    || target.type.is_dynamic()) {
 
 		done.add_neg(link.avoid);
 		return false;
@@ -508,8 +606,12 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 
 	/* Build the file itself */ 
+
 	assert(jobs > 0); 
-	assert(target.type == Type::FILE || target.type == Type::PHONY); 
+	assert(! targets.empty());
+	assert(targets.front().type.dynamic_depth() == 0); 
+	assert(targets.back().type.dynamic_depth() == 0); 
+//	assert(target.type == Type::FILE || target.type == Type::PHONY); 
 	assert(buf_default.empty()); 
 	assert(children.empty()); 
 	assert(error == 0);
@@ -519,110 +621,123 @@ bool Execution::execute(Execution *parent, Link &&link)
 	 */
 
 	/* Check existence of file */
-	struct stat buf;
-	int ret_stat; 
+//	struct stat buf;
+//	int ret_stat; 
 	timestamp_old= Timestamp::UNDEFINED;
 
 	/* A target for which no execution has to be done */ 
 	const bool no_execution= 
 		rule != nullptr && rule->command == nullptr && ! rule->is_copy;
 
-	if (! checked && target.type == Type::FILE) {
-
+	if (! checked) {
+//	    && target.type == Type::FILE
 		checked= true; 
+		/* Set to -1 when a file is found not to exist */ 
+		exists= +1; 
 
-		/* We save the return value of stat() and handle errors later */ 
-		ret_stat= stat(target.name.c_str(), &buf);
+		for (const Target &target:  targets) {
 
-		/* Warn when file has timestamp in the future */ 
-		if (ret_stat == 0) { 
-			/* File exists */ 
-			timestamp_old= Timestamp(&buf);
-			if (parent == nullptr || ! (link.flags & F_EXISTENCE)) {
-				warn_future_file(&buf);
-			}
-			exists= +1; 
-		} else {
-			exists= -1;
-		}
- 
-		if (! need_build) { 
-			if (ret_stat == 0) {
-				/* File exists. Check whether it has to be rebuilt
-				 * because of more up to date dependencies */ 
+			if (target.type != Type::FILE) 
+				continue;
 
-				if (timestamp.defined() && timestamp_old.older_than(timestamp)) {
-					if (no_execution) {
-						print_warning
-							(fmt("File target '%s' which has no command is older than its dependency",
-							     target.name));
-					} else {
-						need_build= true;
-					}
+			/* We save the return value of stat() and handle errors later */ 
+			struct stat buf;
+			int ret_stat= stat(target.name.c_str(), &buf);
 
+			/* Warn when file has timestamp in the future */ 
+			if (ret_stat == 0) { 
+				/* File exists */ 
+				timestamp_old= Timestamp(&buf); // TODO use min or max
+ 				if (parent == nullptr || ! (link.flags & F_EXISTENCE)) 
+					warn_future_file(&buf, target.name.c_str());
+				/* no-op */ 
+//				exists= +1; 
+			} else 
+				exists= -1;
+
+			if (! need_build) { 
+				if (ret_stat == 0) {
+					/* File exists. Check whether it has to be rebuilt
+					 * because of more up to date dependencies */ 
+
+					if (timestamp.defined() && timestamp_old.older_than(timestamp)) {
+						if (no_execution) {
+							print_warning
+								(fmt("File target '%s' which has no command is older than its dependency",
+								     target.name));
+						} else 
+							need_build= true;
+					} else 
+						timestamp= timestamp_old;
 				} else {
-					timestamp= timestamp_old;
-				}
-			} else {
-				/* Note:  Rule may be NULLPTR here for optional
-				 * dependencies that do not exist and do not have a
-				 * rule */
+					/* stat() returned an error */ 
 
-				if (errno == ENOENT) {
-					/* File does not exist */
+					/* Note:  Rule may be NULLPTR here for optional
+					 * dependencies that do not exist and do not have a
+					 * rule */
 
-					if (! (link.flags & F_OPTIONAL)) {
-						need_build= true; 
+					if (errno == ENOENT) {
+						/* File does not exist */
+
+						if (! (link.flags & F_OPTIONAL)) {
+							/* Non-optional dependency */  
+							need_build= true; 
+						} else {
+							/* Optional dependency:  don't create the file;
+							 * it will then not exist when the parent is
+							 * called. 
+							 */ 
+							done.add_one_neg(F_OPTIONAL); 
+							return false;
+						}
 					} else {
-						/* Optional dependency:  don't create the file;
-						 * it will then not exist when the parent is
-						 * called. 
-						 */ 
-						done.add_one_neg(F_OPTIONAL); 
+						/* stat() returned an actual error,
+						 * e.g. permission denied:  build error */
+						perror(target.name.c_str());
+						raise(ERROR_BUILD);
+						done.add_one_neg(link.avoid); 
 						return false;
 					}
-				} else {
-					/* stat() returned an actual error,
-					 * e.g. permission denied:  build error */
-					perror(target.name.c_str());
-					raise(ERROR_BUILD);
-					done.add_one_neg(link.avoid); 
-					return false;
 				}
 			}
+
+			/* File does not exist, all its dependencies are up to
+			 * date, and the file has no commands: that's an error */  
+			if (ret_stat != 0 && no_execution) { 
+
+				assert(errno == ENOENT); 
+
+				if (rule->dependencies.size()) {
+					if (output_mode > Output::SILENT)
+						print_traces
+							(fmt("file without command '%s' does not exist, although all its dependencies are up to date", 
+							     target.name)); 
+					explain_file_without_command_with_dependencies(); 
+				} else {
+					if (output_mode > Output::SILENT)
+						print_traces
+							(fmt("file without command and without dependencies '%s' does not exist",
+							     target.name)); 
+					explain_file_without_command_without_dependencies(); 
+				}
+				done.add_one_neg(link.avoid); 
+				raise(ERROR_BUILD);
+				return false;
+			}		
 		}
-
-		/* File does not exist, all its dependencies are up to
-		 * date, and the file has no commands: that's an error. */  
-		if (0 != ret_stat && no_execution) { 
-
-			/* Case has already been checked, and an
-			 * exception thrown */ 
-			assert(errno == ENOENT); 
-
-			if (rule->dependencies.size()) {
-				if (output_mode > Output::SILENT)
-					print_traces
-						(fmt("file without command '%s' does not exist, although all its dependencies are up to date", 
-						     target.name)); 
-				explain_file_without_command_with_dependencies(); 
-			} else {
-				if (output_mode > Output::SILENT)
-					print_traces
-						(fmt("file without command and without dependencies '%s' does not exist",
-						     target.name)); 
-				explain_file_without_command_without_dependencies(); 
-			}
-			done.add_one_neg(link.avoid); 
-			raise(ERROR_BUILD);
-			return false;
-		}		
 	}
 
-	if (! need_build && target.type == Type::PHONY) {
-		if (! phonies.count(target.name)) {
-			/* Phony was not yet executed */ 
-			need_build= true; 
+	if (! need_build) {
+		for (const Target &target:  targets) {
+	    //&& target.type == Type::PHONY) {
+			// TODO replace by '== 0'
+			if (target.type != Type::PHONY) 
+				continue; 
+			if (! phonies.count(target.name)) {
+				/* Phony was not yet executed */ 
+				need_build= true; 
+				break;
+			}
 		}
 	}
 
@@ -667,25 +782,30 @@ bool Execution::execute(Execution *parent, Link &&link)
 	print_command();
 
 	if (rule->is_hardcode) {
-		assert(target.type == Type::FILE);
+		assert(targets.size() == 1);
+		assert(targets.front().type == Type::FILE); 
+//		assert(target.type == Type::FILE);
 		
 		done.add_one_neg(0); 
 
 		if (option_verbose) {
-			string text_target= this->target.format();
+			string text_target= verbose_target();
 			fprintf(stderr, "VERBOSE %s %s create content\n",
 				Verbose::padding(),
 				text_target.c_str());
 		}
 
 		/* Create file with content */
-		write_content(target.name.c_str(), *(rule->command)); 
+		write_content(targets.front().name.c_str(), *(rule->command)); 
 		return false;
 	}
 
 	/* Start the job */ 
 
-	if (target.type == Type::PHONY) {
+	for (const Target &target:  targets) {
+//	if (target.type == Type::PHONY) {
+		if (target.type != Type::PHONY)  
+			continue; 
 		Timestamp timestamp_now= Timestamp::now(); 
 		assert(timestamp_now.defined()); 
 		assert(phonies.count(target.name) == 0); 
@@ -730,7 +850,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		assert(pid != 0 && pid != 1); 
 
 		if (option_verbose) {
-			string text_target= this->target.format();
+			string text_target= verbose_target();
 			fprintf(stderr, "VERBOSE %s %s execute pid = %d\n", 
 				Verbose::padding(),
 				text_target.c_str(),
@@ -740,7 +860,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 		if (pid < 0) {
 			/* Starting the job failed */ 
 			if (output_mode > Output::SILENT)
-				print_traces(fmt("error executing command for %s", target.format())); 
+				print_traces(fmt("error executing command for %s", 
+						 targets.front().format())); 
 			raise(ERROR_BUILD);
 			done.add_neg(link.avoid); 
 			return false;
@@ -794,7 +915,11 @@ int Execution::execute_children(const Link &link)
 		Stack avoid_child= child->parents.at(this).avoid;
 		Flags flags_child= child->parents.at(this).flags;
 
-		if (target.type == Type::PHONY) { 
+		if (link.dependency != nullptr 
+		    && dynamic_pointer_cast <Direct_Dependency> (link.dependency)
+		    && dynamic_pointer_cast <Direct_Dependency> (link.dependency)
+		    ->place_param_target.type == Type::PHONY) {
+//		if (target.type == Type::PHONY) { 
 			flags_child |= link.flags; 
 		}
 
@@ -847,16 +972,22 @@ void Execution::waited(int pid, int status)
 	if (job.waited(status, pid)) {
 		/* Command was successful */ 
 
+		exists= +1; 
+
 		/* For file targets, check that the file was built */ 
-		if (target.type == Type::FILE) {
+		for (const Target &target:  targets) {
+//		if (target.type == Type::FILE) {
+
+			if (target.type != Type::FILE)
+				continue;
 
 			struct stat buf;
 
 			if (0 == stat(target.name.c_str(), &buf)) {
-				exists= +1;
+//				exists= +1;
 				/* Check that file was not created with modification
 				 * time in the future */  
-				warn_future_file(&buf); 
+				warn_future_file(&buf, target.name.c_str()); 
 				/* Check that file is not older that Stu
 				 * startup */ 
 				Timestamp timestamp_file(&buf);
@@ -910,11 +1041,12 @@ void Execution::waited(int pid, int status)
 			
 			if (! param_rule->is_copy) {
 				param_rule->command->place <<
-					fmt("command for %s %s", target.format(), reason); 
+					fmt("command for %s %s", targets.front().format(), 
+					    reason); 
 			} else {
 				/* Copy rule */
 				param_rule->place <<
-					fmt("cp to %s %s", target.format(), reason); 
+					fmt("cp to %s %s", targets.front().format(), reason); 
 			}
 
 			print_traces(); 
@@ -1010,8 +1142,8 @@ void Execution::unlink(Execution *const parent,
 	(void) avoid_child;
 
 	if (option_verbose) {
-		string text_parent= parent->target.format();
-		string text_child= child->target.format();
+		string text_parent= parent->verbose_target();
+		string text_child= child->verbose_target();
 		string text_done_child= child->done.format();
 		fprintf(stderr, "VERBOSE %s %s unlink %s %s\n",
 			Verbose::padding(),
@@ -1032,9 +1164,22 @@ void Execution::unlink(Execution *const parent,
 
 	/* Propagate dynamic dependencies */ 
 	if (flags_child & F_READ) {
-		assert(child->target.type == Type::FILE); 
-		assert(parent->target.type.is_dynamic());
-		assert(parent->target.name == child->target.name); 
+		
+		/* Always in a [A] -> A link */
+
+		assert(dynamic_pointer_cast <Direct_Dependency> (dependency_child)
+		       && dynamic_pointer_cast <Direct_Dependency> (dependency_child)
+		       ->place_param_target.type == Type::FILE);
+//		assert(child->target.type == Type::FILE); 
+		assert(dependency_parent->get_single_target().type == Type::DYNAMIC_FILE); 
+//		assert(dynamic_pointer_cast <Direct_Dependency> (dependency_parent)
+//		       && dynamic_pointer_cast <Direct_Dependency> (dependency_parent)
+//		       ->place_param_target.type == Type::DYNAMIC_FILE);
+//		assert(parent->target.type.is_dynamic());
+		assert(parent->targets.size() == 1
+		       && child->targets.size() == 1
+		       && parent->targets.front().name == child->targets.front().name);
+//		assert(parent->target.name == child->target.name); 
 		assert(child->done.get_k() == 0); 
 		
 		bool do_read= true;
@@ -1088,10 +1233,14 @@ void Execution::unlink(Execution *const parent,
 	 * Propagate variables over phonies without commands and dynamic
 	 * targets
 	 */
-	if (child->target.type.is_dynamic() ||
-	    (child->target.type == Type::PHONY &&
-	     child->rule != nullptr &&
-	     child->rule->command == nullptr)) {
+	if (child->is_dynamic() 
+	    ||
+	    (
+	     dynamic_pointer_cast <Direct_Dependency> (dependency_child)
+	     && dynamic_pointer_cast <Direct_Dependency> (dependency_child)->place_param_target.type == Type::PHONY
+//	     child->target.type == Type::PHONY &&
+	     && child->rule != nullptr 
+	     && child->rule->command == nullptr)) {
 		parent->mapping_variable.insert
 			(child->mapping_variable.begin(), child->mapping_variable.end()); 
 	}
@@ -1126,9 +1275,10 @@ void Execution::unlink(Execution *const parent,
 Execution::Execution(Target target_,
 		     Link &&link,
 		     Execution *parent)
-	:  target(target_),
+	:  targets({target_}),
 	   error(0),
-	   done(target_.type == Type::ROOT  ? 0 :
+	   done(
+//		target_.type == Type::ROOT  ? 0 :
 		target_.type.dynamic_depth()
 		, 0),
 	   timestamp(Timestamp::UNDEFINED),
@@ -1136,26 +1286,26 @@ Execution::Execution(Target target_,
 	   checked(false),
 	   exists(0)
 {
-	assert(target.type != Type::ROOT); 
+//	assert(target_.type != Type::ROOT); 
 	assert(parent != nullptr); 
 	assert(parents.empty()); 
 
 	/* Fill in the rules and their parameters */ 
-	if (target.type == Type::FILE || target.type == Type::PHONY) {
-		rule= rule_set.get(target, param_rule, mapping_parameter); 
+	if (target_.type == Type::FILE || target_.type == Type::PHONY) {
+		rule= rule_set.get(target_, param_rule, mapping_parameter); 
 	} else {
-		assert(target.type.is_dynamic()); 
+		assert(target_.type.is_dynamic()); 
 
 		/* We must set the rule here, so cycles in the dependency graph
 		 * can be detected.  Note however that the rule of dynamic
 		 * file dependency executions is otherwise not used */ 
-		Target target_file(target.type.get_base(), target.name);
-		rule= rule_set.get(target_file, param_rule, mapping_parameter); 
+		Target target_base(target_.type.get_base(), target_.name);
+		rule= rule_set.get(target_base, param_rule, mapping_parameter); 
 	}
 	assert((param_rule == nullptr) == (rule == nullptr)); 
 
 	if (option_verbose) {
-		string text_target= target.format();
+		string text_target= verbose_target();
 		string text_rule= rule == nullptr ? "(no rule)" : rule->format(); 
 		fprintf(stderr, "VERBOSE  %s   %s %s\n",
 			Verbose::padding(),
@@ -1164,19 +1314,22 @@ Execution::Execution(Target target_,
 	}
 
 	parents[parent]= link; 
-	executions_by_target[target]= this;
+	executions_by_target[target_]= this;
 
-	if (! (target.type.is_dynamic() && target.type.is_any_file()) && rule != nullptr) {
+	if (! (
+	       target_.type.is_dynamic() && target_.type.is_any_file()
+	       ) 
+	    && rule != nullptr) {
 
 		/* There is a rule for this execution */ 
 		for (auto &dependency:  rule->dependencies) {
 			assert(! dependency->get_place().empty());
 
 			shared_ptr <Dependency> dep= dependency;
-			if (target.type.is_any_phony()) {
+			if (target_.type.is_any_phony()) {
 				dep->add_flags(link.avoid.get_lowest());
 			
-				for (unsigned i= 0;  i < target.type.dynamic_depth();  ++i) {
+				for (unsigned i= 0;  i < target_.type.dynamic_depth();  ++i) {
 					Flags flags= link.avoid.get(i + 1);
 					dep= make_shared <Dynamic_Dependency> (flags, dep);
 				}
@@ -1185,7 +1338,7 @@ Execution::Execution(Target target_,
 			Link link_new(dep); 
 
 			if (option_verbose) {
-				string text_target= target.format();
+				string text_target= verbose_target();
 				string text_link_new= link_new.format(); 
 				fprintf(stderr, "VERBOSE %s    %s push %s\n",
 					Verbose::padding(),
@@ -1200,15 +1353,15 @@ Execution::Execution(Target target_,
 		/* Whether to produce the "rule not found" error */ 
 		bool rule_not_found= false;
 
-		if (target.type == Type::FILE) {
+		if (target_.type == Type::FILE) {
 			if (! (link.flags & F_OPTIONAL)) {
 				/* Check that the file is present,
 				 * or make it an error */ 
 				struct stat buf;
-				int ret_stat= stat(target.name.c_str(), &buf);
+				int ret_stat= stat(target_.name.c_str(), &buf);
 				if (0 > ret_stat) {
 					if (errno != ENOENT) {
-						perror(target.name.c_str()); 
+						perror(target_.name.c_str()); 
 						raise(ERROR_BUILD); 
 					}
 					/* File does not exist and there is no rule for it */ 
@@ -1217,24 +1370,26 @@ Execution::Execution(Target target_,
 				} else {
 					/* File exists:  Do nothing, and there are no
 					 * dependencies to build */  
-					if (parent->target.type == Type::ROOT && output_mode > Output::SILENT) {
+					if (parent->targets.empty()
+					    //parent->target.type == Type::ROOT 
+					    && output_mode > Output::SILENT) {
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */ 
 						printf("No rule for building '%s', but the file exists\n", 
-						       target.name.c_str()); 
+						       target_.name.c_str()); 
 					} 
 				}
 			}
-		} else if (target.type == Type::PHONY) {
+		} else if (target_.type == Type::PHONY) {
 			rule_not_found= true;
 		} else {
-			assert(target.type.is_dynamic()); 
+			assert(target_.type.is_dynamic()); 
 		}
 		
 		if (rule_not_found) {
 			assert(rule == nullptr); 
 			if (output_mode > Output::SILENT)
-				print_traces(fmt("no rule to build %s", target.format()));
+				print_traces(fmt("no rule to build %s", target_.format()));
 			raise(ERROR_BUILD);
 			/* Even when a rule was not found, the Execution object remains
 			 * in memory */  
@@ -1244,13 +1399,13 @@ Execution::Execution(Target target_,
 }
 
 Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
-	:  target(Type::ROOT),
+	:  //target(Type::ROOT),
 	   error(0),
 	   need_build(false),
 	   checked(false),
 	   exists(0)
 {
-	executions_by_target[target]= this;
+//	executions_by_target[target]= this;
 
 	for (auto &i:  dependencies_) {
 		buf_default.push(Link(i)); 
@@ -1261,10 +1416,13 @@ bool Execution::finished(Stack avoid) const
 {
 	assert(avoid.get_k() == done.get_k());
 
-	if (target.type == Type::ROOT) 
+	if (targets.empty())
+//	if (target.type == Type::ROOT) 
 		assert(done.get_k() == 0);
-	else 
-		assert(done.get_k() == target.type.dynamic_depth());
+	else {
+		assert(done.get_k() == targets.front().type.dynamic_depth());
+		assert(done.get_k() == targets.back().type.dynamic_depth());
+	}
 
 	Flags to_do_aggregate= 0;
 	
@@ -1277,10 +1435,11 @@ bool Execution::finished(Stack avoid) const
 
 bool Execution::finished() const 
 {
-	if (target.type == Type::ROOT) 
+	if (targets.empty())
+//	if (target.type == Type::ROOT) 
 		assert(done.get_k() == 0);
 	else 
-		assert(done.get_k() == target.type.dynamic_depth());
+		assert(done.get_k() == targets.front().type.dynamic_depth());
 
 	Flags to_do_aggregate= 0;
 	
@@ -1365,54 +1524,77 @@ void job_print_jobs()
 	}
 }
 
-string Execution::cycle_string(const Execution *execution)
+// string Execution::cycle_string(
+// 			       Target target
+// //			       const Link &link
+// //			       const Execution *execution
+// 			       ) const 
+// {
+// 	assert(
+// //	       execution->
+// 	       param_rule); 
+
+// //	Target target= get_target_from_link(link); 
+
+// //	Target target= 
+// //		execution->
+// //		target; 
+
+// 	if (target.type.is_dynamic())
+// 		target.type= target.type.get_base(); 
+
+// 	const Place_Param_Target &place_param_target= 
+// //		execution->
+// 		param_rule->place_param_target;
+
+// 	assert(place_param_target.type == target.type); 
+
+// 	if (place_param_target.place_param_name.get_n() == 0) {
+// 		string text= place_param_target.place_param_name.unparametrized(); 
+// 		assert(text == target.name); 
+// 		return target.format();
+// 	} else {
+// 		string t= place_param_target.place_param_name.format_bare();
+// 		Target o(target.type, t);
+// 		return fmt("%s instantiated as %s", o.format(), target.format()); 
+// 	}
+// }
+
+// shared_ptr <Trace> Execution::cycle_trace(Target target_child,
+// 					  const Execution *child,
+// 					  Target target_parent,
+// 					  const Execution *parent
+// 					  )
+// {
+// 	if (parent->targets.empty())
+// //	if (parent->target.type == Type::ROOT)
+// 		return nullptr;
+
+// 	const Link &link_child= child->parents.at((Execution *)parent); 
+
+// //	Target target_child= ...;
+// //	Target target_parent= ...;
+
+// 	if (((target_parent.type == Type::DYNAMIC_FILE &&
+// 	      target_child.type == Type::FILE) ||
+// 	     (target_parent.type == Type::DYNAMIC_PHONY &&
+// 	      target_child.type == Type::PHONY))
+// 	    && target_parent.name == target_child.name)
+// 		return nullptr; 
+
+// 	return make_shared <Trace> 
+// 		(link_child.place,
+// 		 fmt("%s depends on %s", 
+// 		     parent->cycle_string(target_parent),
+// 		     child->cycle_string(target_child))); 
+// }
+
+// TODO remove '2' in the name 
+bool Execution::find_cycle2(const Execution *const parent, 
+			    const Execution *const child)
 {
-	assert(execution->param_rule); 
+	assert(parent != child); 
 
-	Target target= execution->target; 
-	if (target.type.is_dynamic())
-		target.type= target.type.get_base(); 
-
-	const Place_Param_Target &place_param_target= execution->param_rule->place_param_target;
-
-	assert(place_param_target.type == target.type); 
-
-	if (place_param_target.place_param_name.get_n() == 0) {
-		string text= place_param_target.place_param_name.unparametrized(); 
-		assert(text == target.name); 
-		return target.format();
-	} else {
-		string t= place_param_target.place_param_name.format_bare();
-		Target o(target.type, t);
-		return fmt("%s instantiated as %s", o.format(), target.format()); 
-	}
-}
-
-shared_ptr <Trace> Execution::cycle_trace(const Execution *child,
-					  const Execution *parent)
-{
-	if (parent->target.type == Type::ROOT)
-		return nullptr;
-
-	if (((parent->target.type == Type::DYNAMIC_FILE &&
-	      child->target.type == Type::FILE) ||
-	     (parent->target.type == Type::DYNAMIC_PHONY &&
-	      child->target.type == Type::PHONY))
-	    && parent->target.name == child->target.name)
-		return nullptr; 
-
-	const Link &link= child->parents.at((Execution *)parent); 
-
-	return make_shared <Trace> 
-		(link.place,
-		 fmt("%s depends on %s", 
-		     cycle_string(parent),
-		     cycle_string(child))); 
-}
-
-bool Execution::find_cycle(const Execution *const parent, 
-			   const Execution *const child)
-{
 	/* Happens when the parent is the root execution */ 
 	if (parent->param_rule == nullptr)
 		return false;
@@ -1421,86 +1603,150 @@ bool Execution::find_cycle(const Execution *const parent,
 	if (child->param_rule == nullptr)
 		return false; 
 
-	vector <Trace> traces;
-	shared_ptr <Trace> trace= cycle_trace(child, parent); 
-	if (trace != nullptr)
-		traces.push_back(*trace); 
+	assert(! same_rule(parent, child)); 
 
-	return find_cycle(parent, child, traces);
+	// TODO save only a vector of (Execution *) in a stack, instead
+	// of full traces, and generate the traces only when an error is
+	// found.  This will solve the TARGET problem, and also make the
+	// algorithm faster. 
+
+	vector <const Execution *> path;
+	path.push_back(parent); 
+
+	return find_cycle2(path, child); 
 }
 
-bool Execution::find_cycle(const Execution *const parent, 
-			   const Execution *const child,
-			   vector <Trace> &traces)
+bool Execution::find_cycle2(vector <const Execution *> &path,
+			    const Execution *const child)
 {
-	assert(parent);
-	assert(child); 
-
-	if (parent->target.type == child->target.type &&
-		parent->param_rule == child->param_rule) {
-
-		assert(traces.size() >= 1); 
-
-		traces.rbegin()->message= fmt
-			("%s: %s",
-			 traces.size() == 1 
-			 ? "target must not depend on itself"
-			 : "cyclic dependency",
-			 traces.rbegin()->message); 
-
-		for (auto i= traces.rbegin();  i != traces.rend();  ++i) {
-			i->print();
-		}
-
-		return true;
-	} 
-
-	for (auto i= parent->parents.begin();
-		 i != parent->parents.end();  ++i) {
-
-		const Execution *parent_parent= i->first; 
-		assert(parent_parent != nullptr); 
-			
-		if (parent_parent->param_rule == nullptr)
-			continue; 
-		
-		shared_ptr <Trace> trace_new= cycle_trace(parent, parent_parent);
-		if (trace_new != nullptr)
-			traces.push_back(*trace_new); 
-		bool found= find_cycle(parent_parent, child, traces);
-		if (trace_new != nullptr)
-			traces.pop_back(); 
-
-		if (found)
-			return true;
+	if (same_rule(path.back(), child)) {
+		cycle_print(path); 
+		return true; 
 	}
 
+	for (auto &i:  path.back()->parents) {
+		const Execution *next= i.first; 
+		assert(next != nullptr);
+		if (next->param_rule == nullptr)
+			continue;
+
+		path.push_back(next); 
+
+		bool found= find_cycle2(path, child);
+		if (found)
+			return true;
+
+		path.pop_back(); 
+	}
+	
 	return false; 
 }
+
+// bool Execution::find_cycle(const Execution *const parent, 
+// 			   const Execution *const child)
+// {
+// 	/* Happens when the parent is the root execution */ 
+// 	if (parent->param_rule == nullptr)
+// 		return false;
+		
+// 	/* Happens with files that should be there and have no rule */ 
+// 	if (child->param_rule == nullptr)
+// 		return false; 
+
+// 	// TODO save only a vector of (Execution *) in a stack, instead
+// 	// of full traces, and generate the traces only when an error is
+// 	// found.  This will solve the TARGET problem, and also make the
+// 	// algorithm faster. 
+
+// 	vector <Trace> traces;
+// 	shared_ptr <Trace> trace= cycle_trace(
+// 					      child, 
+// 					      parent); 
+// 	if (trace != nullptr)
+// 		traces.push_back(*trace); 
+
+// 	return find_cycle(parent, child, traces);
+// }
+
+// bool Execution::find_cycle(const Execution *const parent, 
+// 			   const Execution *const child,
+// 			   vector <Trace> &traces)
+// {
+// 	assert(parent);
+// 	assert(child); 
+
+// 	if (parent->target.type == child->target.type &&
+// 		parent->param_rule == child->param_rule) {
+
+// 		assert(traces.size() >= 1); 
+
+// 		traces.rbegin()->message= fmt
+// 			("%s: %s",
+// 			 traces.size() == 1 
+// 			 ? "target must not depend on itself"
+// 			 : "cyclic dependency",
+// 			 traces.rbegin()->message); 
+
+// 		for (auto i= traces.rbegin();  i != traces.rend();  ++i) {
+// 			i->print();
+// 		}
+
+// 		return true;
+// 	} 
+
+// 	for (auto i= parent->parents.begin();
+// 		 i != parent->parents.end();  ++i) {
+
+// 		const Execution *parent_parent= i->first; 
+// 		assert(parent_parent != nullptr); 
+			
+// 		if (parent_parent->param_rule == nullptr)
+// 			continue; 
+		
+// 		shared_ptr <Trace> trace_new= cycle_trace(
+// 							  parent, 
+// 							  parent_parent);
+// 		if (trace_new != nullptr)
+// 			traces.push_back(*trace_new); 
+// 		bool found= find_cycle(parent_parent, child, traces);
+// 		if (trace_new != nullptr)
+// 			traces.pop_back(); 
+
+// 		if (found)
+// 			return true;
+// 	}
+
+// 	return false; 
+// }
 
 bool Execution::remove_if_existing(bool output) 
 {
 	if (option_no_delete)
 		return false;
 
-	if (target.type != Type::FILE)  
-		return false;
-
+	/* Whether anything was removed */ 
 	bool removed= false;
 
-	const char *filename= target.name.c_str();
+	for (const Target &target:  targets) {
 
-	/* Remove the file if it exists.  If it is a symlink, only the
-	 * symlink itself is removed, not the file it links to */ 
+		if (target.type != Type::FILE)  
+			continue;
 
-	struct stat buf;
-	if (0 == stat(filename, &buf)) { 
+		const char *filename= target.name.c_str();
+
+		/* Remove the file if it exists.  If it is a symlink, only the
+		 * symlink itself is removed, not the file it links to */ 
+
+		struct stat buf;
+		if (0 > stat(filename, &buf))
+			continue;
 
 		/* If the file existed before building, remove it only if it now
 		 * has a newer timestamp. 
 		 */
 
-		if (! timestamp_old.defined() || timestamp_old.older_than(Timestamp(&buf))) {
+		if (! timestamp_old.defined() ||
+		    timestamp_old.older_than(Timestamp(&buf))) {
 
 			if (output) {
 				fprintf(stderr, 
@@ -1557,7 +1803,7 @@ Execution *Execution::get_execution(const Target &target,
 		assert(execution->parents.size() == 1); 
 	}
 
-	if (find_cycle(parent, execution)) {
+	if (find_cycle2(parent, execution)) {
 		parent->raise(ERROR_LOGICAL);
 		return nullptr;
 	}
@@ -1568,14 +1814,17 @@ Execution *Execution::get_execution(const Target &target,
 }
 
 void Execution::read_dynamics(Stack avoid,
-			      shared_ptr <Dependency> dependency_parent)
+			      shared_ptr <Dependency> dependency_this)
 {
+	Target target= dependency_this->get_single_target().unparametrized(); 
+//	Target target= get_target_from_dependency(dependency_this); 
+
 	assert(target.type.is_dynamic());
 
-	if (target.type == Type::ROOT)
-		assert(avoid.get_k() == 0);
-	else 
-		assert(avoid.get_k() == target.type.dynamic_depth()); 
+//	if (target.type == Type::ROOT)
+//		assert(false);
+//	else 
+	assert(avoid.get_k() == target.type.dynamic_depth()); 
 
 	try {
 		vector <shared_ptr <Token> > tokens;
@@ -1638,7 +1887,7 @@ void Execution::read_dynamics(Stack avoid,
 			shared_ptr <Dependency> dependency(j);
 
 			vector <shared_ptr <Dynamic_Dependency> > vec;
-			shared_ptr <Dependency> p= dependency_parent;
+			shared_ptr <Dependency> p= dependency_this;
 
 			while (dynamic_pointer_cast <Dynamic_Dependency> (p)) {
 				shared_ptr <Dynamic_Dependency> dynamic_dependency= 
@@ -1702,19 +1951,21 @@ void Execution::read_dynamics(Stack avoid,
 		/* We catch not only the errors raise in this function,
 		 * but also the errors raised in the parser.  
 		 */
-		assert(e >= 1 && e <= 3); 
-		error |= e;
-		if (! option_keep_going) 
-			throw;
+		raise(e); 
+//		assert(e >= 1 && e <= 3); 
+//		error |= e;
+//		if (! option_keep_going) 
+//			throw;
 	}
 }
 
-void Execution::warn_future_file(struct stat *buf)
+void Execution::warn_future_file(struct stat *buf, const char *filename)
 {
-	assert(target.type == Type::FILE); 
+//	assert(targets.front().type == Type::FILE); 
+
 	if (timestamp_last.older_than(Timestamp(buf))) {
 		print_warning(fmt("'%s' has modification time in the future",
-				  target.name.c_str()));
+				  filename));
 	}
 }
 
@@ -1723,12 +1974,14 @@ void Execution::print_traces(string text) const
 	/* The following traverses the execution graph backwards until it
 	 * finds the root. We always take the first found parent, which
 	 * is an arbitrary choice, but it doesn't matter here *which*
-	 * dependency path we point out as an error.  
+	 * dependency path we point out as an error, so the first one
+	 * it is.  
 	 */
 
 	const Execution *execution= this; 
 
-	assert(execution->target.type != Type::ROOT);
+	assert(! execution->targets.empty()); 
+//	assert(execution->target.type != Type::ROOT);
 
 	bool first= true; 
 
@@ -1740,23 +1993,26 @@ void Execution::print_traces(string text) const
 		first= false;
 	}
 
-	string text_parent= execution->target.format(); 
+	string text_parent= parents.begin()->second.dependency
+		->get_single_target().format();
 
 	for (;;) {
 
 		auto i= execution->parents.begin(); 
 
-		if (i->first->target.type == Type::ROOT) {
+		if (i->first->targets.empty()) {
 			if (first && text != "") {
 				if (output_mode > Output::SILENT)
 					print_error(fmt("No rule to build %s", 
-							execution->target.format())); 
+							text_parent)); 
 			}
 			break; 
 		}
 
 		string text_child= text_parent; 
-		text_parent= i->first->target.format(); 
+
+		text_parent= i->first->parents.begin()->second.dependency
+			->get_single_target().format();
 
 		/* Don't show [[A]]->A edges */
 		if (i->second.flags & F_READ) {
@@ -1768,10 +2024,10 @@ void Execution::print_traces(string text) const
 
 		string msg;
 		if (first && text != "") {
-				msg= fmt("%s, needed by %s", text, text_parent); 
+			msg= fmt("%s, needed by %s", text, text_parent); 
 			first= false;
 		} else {	
-		msg= fmt("%s is needed by %s",
+			msg= fmt("%s is needed by %s",
 				 text_child, text_parent);
 		}
 		place << msg;
@@ -1786,13 +2042,22 @@ void Execution::print_command() const
 		return; 
 
 	if (output_mode == Output::SHORT) {
-		string text= target.format_bare();
-		puts(text.c_str()); 
+		bool first= true; 
+		for (const Target &target:  targets) {
+			if (first) { 
+				first= false;  
+			} else
+				putc(' ', stdout); 
+			string text= target.format_bare();
+			fputs(text.c_str(), stdout); 
+		}
+		putc('\n', stdout); 
 		return;
 	} 
 
 	if (rule->is_hardcode) {
-		string text= target.format(); 
+		assert(targets.size() == 1); 
+		string text= targets.front().format(); 
 		printf("Creating %s\n", text.c_str());
 		return;
 	} 
@@ -1862,7 +2127,7 @@ bool Execution::deploy(const Link &link,
 		       const Link &link_child)
 {
 	if (option_verbose) {
-		string text_target= this->target.format();
+		string text_target= verbose_target();
 		string text_link_child= link_child.format(); 
 		fprintf(stderr, "VERBOSE %s %s deploy %s\n",
 			Verbose::padding(),
@@ -1896,21 +2161,25 @@ bool Execution::deploy(const Link &link,
 
 	Stack avoid_child= link_child.avoid;
 
-	/* Flags get carried over phonies */ 
-	if (target.type == Type::PHONY) { 
-		flags_child_additional |= link.flags; 
-		avoid_child.add_highest(link.flags);
-		if (link.flags & F_EXISTENCE) {
-			link_child.dependency->set_place_existence
-				(link.dependency->get_place_existence()); 
-		}
-		if (link.flags & F_OPTIONAL) {
-			link_child.dependency->set_place_optional
-				(link.dependency->get_place_optional()); 
-		}
-		if (link.flags & F_TRIVIAL) {
-			link_child.dependency->set_place_trivial
-				(link.dependency->get_place_trivial()); 
+	/* Carry flags over phonies */ 
+	if (! targets.empty()) {
+		Target target= link.dependency->get_single_target().unparametrized();
+
+		if (target.type == Type::PHONY) { 
+			flags_child_additional |= link.flags; 
+			avoid_child.add_highest(link.flags);
+			if (link.flags & F_EXISTENCE) {
+				link_child.dependency->set_place_existence
+					(link.dependency->get_place_existence()); 
+			}
+			if (link.flags & F_OPTIONAL) {
+				link_child.dependency->set_place_optional
+					(link.dependency->get_place_optional()); 
+			}
+			if (link.flags & F_TRIVIAL) {
+				link_child.dependency->set_place_trivial
+					(link.dependency->get_place_trivial()); 
+			}
 		}
 	}
 	
@@ -2006,7 +2275,13 @@ bool Execution::deploy(const Link &link,
 
 void Execution::initialize(Stack avoid) 
 {
-	if (target.type.is_dynamic()) {
+	if (! targets.empty() &&
+	    targets.front().type.is_dynamic()) {
+
+//	if (target.type.is_dynamic()) {
+
+		assert(targets.size() == 1); 
+		Target target= targets.front(); 
 
 		/* This is a special dynamic target.  Add, as an initial
 		 * dependency, the corresponding file or phony.  
@@ -2030,7 +2305,7 @@ void Execution::print_as_job() const
 {
 	pid_t pid= job.get_pid();
 
-	string text_target= target.format(); 
+	string text_target= targets.front().format(); 
 
 	printf("%7u %s\n", (unsigned) pid, text_target.c_str());
 }
@@ -2073,6 +2348,8 @@ bool Execution::read_variable(string &variable_name,
 			      string &content,
 			      shared_ptr <Dependency> dependency)
 {
+	Target target= dependency->get_single_target().unparametrized(); 
+
 	assert(target.type == Type::FILE);
 
 	size_t filesize;
@@ -2131,5 +2408,52 @@ bool Execution::read_variable(string &variable_name,
 		
 		return false;
 }
+
+//Target Execution::get_target_from_link(const Link &link) const
+//{
+//	...;
+//}
+
+void Execution::cycle_print(const vector <const Execution *> &path)
+{
+	/* Indexes are parallel to PATH */ 
+	vector <string> names;
+	names.resize(path.size());
+	
+	for (unsigned i= 0;  i < path.size();  ++i) {
+		names.at(i)= 
+			path.at(i)->parents.at((Execution *)path.at((i+1) % path.size()))
+			.dependency->get_single_target().format();
+	}
+
+	for (unsigned i= 0;  i < path.size();  ++i) {
+
+		/* Don't show a message for [...[A]...] -> X links */ 
+		if (path.at(i)->parents.at((Execution *)path.at((i+1) % path.size()))
+		    .dependency->get_flags() & F_READ)
+			continue;
+
+		path.at(i)->parents.at((Execution *)path.at((i+1) % path.size()))
+			.place
+			<< fmt("%s depends on %s",
+			       names.at((i + path.size() - 1) % path.size()),
+			       names.at(i));
+	}
+}
+
+bool Execution::same_rule(const Execution *execution_a,
+			   const Execution *execution_b)
+{
+	return 
+		execution_a->param_rule != nullptr &&
+		execution_b->param_rule != nullptr &&
+		execution_a->get_dynamic_depth() == execution_b->get_dynamic_depth() &&
+		execution_a->param_rule == execution_b->param_rule;
+}
+
+//Target Execution::get_target_from_dependency(shared_ptr <Dependency> dependency) const
+//{
+//	...; 
+//}
 
 #endif /* ! EXECUTION_HH */

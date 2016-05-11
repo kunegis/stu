@@ -1,0 +1,14 @@
+# Combinations of multiple rules
+
+A B { touch A B }
+@x A { touch A }
+A @x { touch A }
+@x @y { echo XY }
+A B C D E F G H I J { touch A B C D E F G H I J }
+@a @b @c @d @e @f @g @h @i @j @k @l @m @n { echo Hello }
+A B: { touch A B }
+@x A: { touch A }
+A @x: { touch A }
+@x @y: { echo XY }
+A B C D E F G H I J: { touch A B C D E F G H I J }
+@a @b @c @d @e @f @g @h @i @j @k @l @m @n: { echo Hello }

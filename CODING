@@ -2,13 +2,16 @@ Here are the relevant coding conventions we use.
 
 == Standards == 
 
-* Use the C++11 version of C++; avoid extensions such as GNU extensions   
+* Following the POSIX standard
+* Follow the GNU Coding Standard, except for coding style, but don't use
+  GNU extensions
+* Use the C++11 version of C++; avoid GCC extensions
 * Use 'nullptr' as the null pointer constant, instead of 'NULL'
 * Compilation is done in a single step by compiling the file 'stu.cc'.
   All other source files are actually *.hh files which are included.
   Therefore, we don't have to care about separation of declarations and
-  definitions.  (This may lead to very long compilation times in the
-  future though.)
+  definitions.  If one day we think the compilation has become too slow,
+  we'll start using .o files. 
 * Names of targets in the Makefile follow the GNU Coding Standards  
 * Follow the behavior of Make as much as reasonable (e.g. the -k and -j
   options behave just as in Make), but not where Make loses
@@ -21,17 +24,21 @@ Here are the relevant coding conventions we use.
 
 == Style == 
 
+This is my preferred style.  --Jerome Kunegis
+
 * All the following rules are broken when necessary :)
 * K&R brace style
 * Single tabs for indentation (set your editor to show them at the width
   you prefer)  
-* Use C-style comments for normal comments
-* Use C++-style comments for quickly commenting out code and for writing
-  TODO items; this allows us to search all source files for the string
-  "//" to find areas that are currently worked on.  Released code should
-  not contain "//". 
+* Use C-style comments (/* ... */) for normal comments
+* Use C++-style comments (// ...) for quickly commenting out code and
+  for writing TODO items; this allows us to search all source files for
+  the string '//' to find areas that are currently worked on.  Code
+  pushed to git does not contain '//'.  When used, we put '//' at the
+  beginning of the line, not preceded by whitespace. 
 * In comments, names of variables are in all uppercase. 
-* Use 72-character lines in general, but allow more where reasonable
+* Use 72-character lines in general, but allow more where reasonable,
+  e.g., to avoid breaking message string literals
   (note:  tabs may be interpreted as different widths making this an
   approximate rule; authors use 8-char tabs)   
 * No space before the assignment operator 
@@ -39,7 +46,7 @@ Here are the relevant coding conventions we use.
 == Dynamic variables ==
 
 (1) Variables derived from the following classes are always created
-dynamically, using operator new()/delete() and shared_ptr:
+dynamically, using shared_ptr/unique_ptr:
 
 * all parametrized names and targets 
 * Rule
@@ -50,7 +57,8 @@ I.e., we always assume an object of one of these types may be of a
 subtype.  
 
 (2) Objects of type Execution are allocated using new() and never
-released; this is necessary for caching. 
+released; this is necessary for caching.  They are always accessed
+through ordinary pointers. 
 
 (3) Other types can be used as pass-by-value, or pass-by-reference if
 necessary. 
@@ -59,4 +67,5 @@ necessary.
 
 * 'text':  a string used for display
 * 'format_*':  a function that formats an object for display
-* 'filename'
+* 'filename':  a filename
+* 'error':  an error code or exit code (they are the same in Stu)

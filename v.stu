@@ -1,0 +1,7 @@
+# Check that the error traces are correct. (cycle in graph)
+
+A: B C { touch A }
+B C: D { touch B C }
+D: E   { touch D }
+E: C   { touch E }
+

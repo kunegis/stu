@@ -18,7 +18,9 @@
 class Timestamp
 {
 private:
-	/* When undefined, .sec is equal to (time_t) -1. */ 
+
+	/* When undefined, .tv_sec is equal to (time_t) -1, and .tv_nsec
+	 * is uninitialized. */ 
 	struct timespec t;
 
 	Timestamp(time_t t_) 
@@ -47,11 +49,11 @@ public:
 			(this->t.tv_sec == that.t.tv_sec && this->t.tv_nsec < that.t.tv_nsec); 
 	}
 
-	bool older_than_approximatively(const Timestamp &that) const {
-		assert(this->defined());
-		assert(that.defined());
-		return this->t.tv_sec < that.t.tv_sec; 
-	}
+//	bool older_than_approximatively(const Timestamp &that) const {
+//		assert(this->defined());
+//		assert(that.defined());
+//		return this->t.tv_sec < that.t.tv_sec; 
+//	}
 
 	string format() const {
 		assert(defined()); 

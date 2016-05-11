@@ -1,0 +1,4 @@
+# Dynamic multiple file
+
+A: [B] { ... }
+C B:  { ... }

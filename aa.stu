@@ -1,0 +1,6 @@
+# 'A' contains "ddd\neee\n". 
+
+>A: [B C] { cat D E }
+B C: { echo D >B ; echo E >C ; }
+D = {ddd}
+E = {eee}

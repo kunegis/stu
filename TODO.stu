@@ -1,32 +1,16 @@
 #==== Small features that complete what we already have (for version 1) ====
 
 #
-# When accessing directories, maybe use not mtime, but something else?
+# Make most of the content of Execution private. 
 #
 
 #
-# Multiple targets declare a command that is able to build multiple
-# files at once.
+# In most cases, use vector::operator[] instead of vector::at 
 #
 
-# Basic case:  two files are created 
-$NAME.eps $NAME.runtime:  calculate {
-	./calculate $NAME -o $NAME.eps --runtime=$NAME.runtime
-}
-
-# Can also be used to define phony shortcuts 
-@bidd.$NETWORK plot/bidd.a.$NETWORK.eps: { ... }
-
-# * They must all contain the same set of parameters. 
-# * Only one can have an output redirection. 
-# * If the desired target exists but not other targets, does that make
-#   the rule be executed?  
-
-# This will also allow to define multiple files as present:
-A B C;
-
-# This will allow a lone semicolon as a no-op:
-;
+#
+# Rename "phony targets" to "transient targets". 
+#
 
 #
 # New syntax for optionless arguments, which
@@ -324,3 +308,11 @@ A.tar: [ +e FILES ] { tar cfvv A.tar $(cat FILES) }
 # minimum to get the given files built. 
 #
 
+#
+# When accessing directories, maybe use not mtime, but something else?
+#
+# * when stat() succeeds and the file is a directory, use creation time
+#   instead of modification time
+# * this will make it impossible to build directories that are more than
+#   just { mkdir -p }
+#

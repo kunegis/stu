@@ -1,0 +1,7 @@
+# A cycle with different targets on a multi-target rule.
+
+@all: A; 
+
+A B : C { touch A B }
+C   : D { touch C   }
+D   : B { touch D   }

@@ -34,33 +34,33 @@ using namespace std;
 
 /* The following strings do not contain tabs, but only space characters */  
 #define STU_HELP						       \
-	"Usage:   stu [-f FILENAME] [OPTIONS...] [TARGETS...]\n"       \
+	"Usage: stu [-f FILENAME] [OPTION]... [TARGET]...\n"           \
 	"By default, build the first target in the file 'main.stu'.\n" \
 	"TARGETS can be specified in full Stu syntax.\n"               \
 	"Options:\n"						       \
-	"   -a             Treat all trivial dependencies as non-trivial\n"          \
-	"   -c FILENAME    Pass a target filename without Stu syntax parsing\n"      \
-	"   -C EXPRESSIONS Pass a target in full Stu syntax\n"		             \
-	"   -E             Explain error messages\n"                                 \
-	"   -f FILENAME    The input file to use instead of 'main.stu'\n"            \
-	"   -F RULES       Pass rules in Stu syntax\n"                               \
-	"   -g             Treat all optional dependencies as non-optional\n"        \
-	"   -h             Output help and exit\n"		                     \
-	"   -j K           Run K jobs in parallel\n"			             \
-	"   -k             Keep on running after errors\n"		             \
-	"   -K             Don't delete target files on error or interruption\n"     \
-	"   -m ORDER       Order to run the targets:\n"			             \
-	"      dfs         (default) Depth-first order, like in Make\n"	             \
-	"      random      Random order\n"				             \
-	"   -M STRING      Pseudorandom run order, seeded by given string\n"         \
-	"   -p             Print the rules and exit\n"                               \
-	"   -q             Question mode; check whether targets are up to date\n"    \
-	"   -s             Silent mode; do not output commands\n"	             \
-	"   -v             Verbose mode; show execution information on stderr\n"     \
-	"   -V             Output version and exit\n"				     \
-	"   -w             Short output; show target filenames instead of commands\n"\
-	"   -x             Ouput each command statement individually\n"              \
-	"   -z             Output runtime statistics on stdout\n"                    \
+	"  -a               Treat all trivial dependencies as non-trivial\n"          \
+	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"      \
+	"  -C EXPRESSIONS   Pass a target in full Stu syntax\n"		              \
+	"  -E               Explain error messages\n"                                 \
+	"  -f FILENAME      The input file to use instead of 'main.stu'\n"            \
+	"  -F RULES         Pass rules in Stu syntax\n"                               \
+	"  -g               Treat all optional dependencies as non-optional\n"        \
+	"  -h               Output help and exit\n"		                      \
+	"  -j K             Run K jobs in parallel\n"			              \
+	"  -k               Keep on running after errors\n"		              \
+	"  -K               Don't delete target files on error or interruption\n"     \
+	"  -m ORDER         Order to run the targets:\n"			      \
+	"     dfs           (default) Depth-first order, like in Make\n"	      \
+	"     random        Random order\n"				              \
+	"  -M STRING        Pseudorandom run order, seeded by given string\n"         \
+	"  -p               Print the rules and exit\n"                               \
+	"  -q               Question mode; check whether targets are up to date\n"    \
+	"  -s               Silent mode; do not output commands\n"	              \
+	"  -v               Verbose mode; show execution information on stderr\n"     \
+	"  -V               Output version and exit\n"				      \
+	"  -w               Short output; show target filenames instead of commands\n"\
+	"  -x               Ouput each command statement individually\n"              \
+	"  -z               Output run-time statistics on stdout\n"                   \
 	"Report bugs to: kunegis@gmail.com\n" \
 	"Stu home page: <https:/""/github.com/kunegis/stu>\n"
 

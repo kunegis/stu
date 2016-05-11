@@ -1,0 +1,6 @@
+# Error:  all files must be built
+
+A B { touch A }
+A B { touch B }
+A B { }
+A B C D E F G H I J { touch B C D E F G H I J }

@@ -75,7 +75,7 @@ private:
 	public:
 		Signal(); 
 	} signal;
-
+	
 public:
 
 	Job():  pid(-2) { }
@@ -83,6 +83,7 @@ public:
 	/* Call after having returned this process from wait_do(). 
 	 * Return TRUE of the child was successful. 
 	 */
+	// TODO online
 	bool waited(int status, pid_t pid_check) 
 	{
 		assert(pid_check >= 0);
@@ -523,13 +524,13 @@ void Job::Statistics::print(bool allow_unterminated_jobs)
 		       count_jobs_exec, count_jobs_success, count_jobs_fail, 
 		       count_jobs_exec - count_jobs_success - count_jobs_fail); 
 
-	printf("STATISTICS  children user   runtime = %ju.%06u s\n", 
+	printf("STATISTICS  children user   execution time = %ju.%06u s\n", 
 	       (intmax_t) usage.ru_utime.tv_sec,
 	       (unsigned) usage.ru_utime.tv_usec); 
-	printf("STATISTICS  children system runtime = %ju.%06u s\n", 
+	printf("STATISTICS  children system execution time = %ju.%06u s\n", 
 	       (intmax_t) usage.ru_stime.tv_sec,
 	       (unsigned) usage.ru_stime.tv_usec); 
-	printf("STATISTICS  Note: children runtimes exclude running jobs\n"); 
+	printf("STATISTICS  Note: children execution times exclude running jobs\n"); 
 }
 
 /* The signal handler -- terminate all processes and quit. 
@@ -589,7 +590,9 @@ Job::Signal::Signal()
 	/* These are all signals that by default would terminate the process */ 
 	/* Note:  Bash does something very similar. 
 	 */
-	int signals[]= { SIGTERM, SIGINT, SIGQUIT, SIGABRT, SIGSEGV, SIGPIPE, SIGILL, SIGHUP };
+	int signals[]= { 
+		SIGTERM, SIGINT, SIGQUIT, SIGABRT, SIGSEGV, SIGPIPE, SIGILL, SIGHUP,
+	};
 	for (unsigned i= 0;  i < sizeof(signals) / sizeof(int);  ++i) {
 		if (0 != sigaction(signals[i], &act_interrupt, nullptr)) {
 			perror("sigaction");

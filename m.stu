@@ -1,0 +1,12 @@
+# Execute with and without -k. 
+
+>A: B [C] { cat B D E }
+
+B C { 
+	printf co >B
+	echo D E >C
+}
+
+>D { printf rr }
+
+>E { echo ect }

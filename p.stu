@@ -1,0 +1,12 @@
+# A multiple rule without command:  All files must be present. 
+
+# Each line is a different test.
+
+A B;
+A B C;
+A B C D;
+A @x;
+@x A;
+A B @x;
+A @x B;
+@x A B;

@@ -37,8 +37,10 @@ public:
 	/* The place of the declaration of the dependency */ 
 	Place place; 
 
-	/* May be NULL.  May contain LESS flags than stored in AVOID and FLAGS. 
+	/* May be NULL:  for the root target. 
+	 * May contain LESS flags than stored in AVOID and FLAGS. 
 	 */
+	// TODO: when is it NULL?
 	shared_ptr <Dependency> dependency;
 
 	Link() { }

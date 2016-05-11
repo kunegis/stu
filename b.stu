@@ -1,0 +1,10 @@
+# 'B' must not be built. 
+
+A: ?B { 
+	[ -e B ] && exit 1
+	touch A
+}
+
+B C:  {
+	exit 1
+}

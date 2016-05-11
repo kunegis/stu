@@ -81,10 +81,10 @@ private:
 	}
 
 	enum: int {
-		/* Top-level target, which contains the individual targets given
-		 * on the command line as dependencies.  Does not appear as
-		 * dependencies in Stu files. */ 
-		T_ROOT          = -1,
+//		/* Top-level target, which contains the individual targets given
+//		 * on the command line as dependencies.  Does not appear as
+//		 * dependencies in Stu files. */ 
+//		T_ROOT          = -1,
 
 		/* A phony target */ 
 		T_PHONY         = 0,
@@ -112,34 +112,48 @@ private:
 	Type(int value_)
 		:  value(value_)
 	{
-		assert(value >= T_ROOT); 
+		assert(value >= 0);
+//		assert(value >= T_ROOT); 
 	}
 
 public:
 
-	static const Type ROOT, PHONY, FILE, DYNAMIC_PHONY, DYNAMIC_FILE;
+	static const Type 
+//		ROOT, 
+		PHONY, FILE, DYNAMIC_PHONY, DYNAMIC_FILE;
 
 	bool is_dynamic() const {
 		return value >= T_DYNAMIC_PHONY;
 	}
 
+	// TODO rename to 'get_dynamic_depth()'
 	unsigned dynamic_depth() const {
-		assert(value > T_ROOT);
+		assert(value >= 0);
+//		assert(value > T_ROOT);
 		return (value - T_PHONY) >> 1;
 	}
 
 	bool is_any_phony() const {
-		assert(value >= T_ROOT);
-		return value >= T_ROOT && ! (value & 1);
+		assert(value >= 0); 
+//		assert(value >= T_ROOT);
+		return 
+			value >= 0
+			//value >= T_ROOT
+			&& ! (value & 1);
 	}
 
 	bool is_any_file() const {
-		assert(value >= T_ROOT); 
-		return value >= T_ROOT && (value & 1);
+		assert(value >= 0); 
+//		assert(value >= T_ROOT); 
+		return 
+			value >= 0
+		//value >= T_ROOT 
+			&& (value & 1);
 	}
 
 	Type get_base() const {
-		assert(value > T_ROOT);
+		assert(value >= 0); 
+//		assert(value > T_ROOT);
 		return Type(value & 1); 
 	}
 
@@ -170,9 +184,17 @@ public:
 	}
 
 	Type operator - (int diff) const {
-		assert(value > T_ROOT);
-		assert(value - 2 * diff > T_ROOT); 
+		assert(value >= 0); 
+//		assert(value > T_ROOT);
+		assert(value - 2 * diff >= 0); 
+//		assert(value - 2 * diff > T_ROOT); 
 		return Type(value - 2 * diff);
+	}
+
+	Type operator ++ () {
+		assert(value >= 0);
+		value += 2;
+		return *this; 
 	}
 
 	Type operator -- () {
@@ -182,14 +204,16 @@ public:
 	}
 
 	Type &operator += (int diff) {
-		assert(value > T_ROOT);
+		assert(value >= 0);
+//		assert(value > T_ROOT);
 		value += 2 * diff;
-		assert(value > T_ROOT); 
+		assert(value >= 0);
+//		assert(value > T_ROOT); 
 		return *this;
 	}
 };
 
-const Type Type::ROOT(Type::T_ROOT);
+//const Type Type::ROOT(Type::T_ROOT);
 const Type Type::PHONY(Type::T_PHONY);
 const Type Type::FILE(Type::T_FILE);
 const Type Type::DYNAMIC_PHONY(Type::T_DYNAMIC_PHONY);
@@ -221,9 +245,10 @@ public:
 	/* Used in output of Stu, i.e., mainly in error messages.  */ 
 	string format() const {
 
-		if (type == Type::ROOT) {
-			return "ROOT"; 
-		} else if (type.is_any_phony()) {
+//		if (type == Type::ROOT) {
+//			return "ROOT"; 
+//		} else
+		if (type.is_any_phony()) {
 			return "@" + (string(type.dynamic_depth(), '[') 
 				      + format_name_mid(name) 
 				      + string(type.dynamic_depth(), ']'));
@@ -239,33 +264,45 @@ public:
 	}
 
 	string format_bare() const {
-		assert(type != Type::ROOT); 
+//		assert(type != Type::ROOT); 
 
-		if (type == Type::PHONY) {
-			return fmt("@%s", name);  
-		} else {
-			return 
-				type.is_dynamic()
-				? (string(type - Type::FILE, '[') 
-				   + name
-				   + string(type - Type::FILE, ']'))
-				: name; 
-		}
+		return 
+			string(type - Type::FILE, '[') 
+			+ (type.is_any_phony() ? "@" : "")
+			+ name
+			+ string(type - Type::FILE, ']');
+
+//		if (type.is_any_phony()) {
+//		if (type == Type::PHONY) {
+//			return 
+				
+				//fmt("@%s", name);  
+//		} else {
+//			return 
+//				type.is_dynamic()
+//				? (string(type - Type::FILE, '[') 
+//				   + name
+//				   + string(type - Type::FILE, ']'))
+//				: name; 
+//		}
 	}
 
 	string format_mid() const {
-		assert(type != Type::ROOT);
+//		assert(type != Type::ROOT);
 
-		if (type == Type::PHONY) {
-			return fmt("@%s", format_name_mid(name));  
-		} else {
+//		if (type == Type::PHONY) {
+//			return fmt("@%s", format_name_mid(name));  
+//		} else {
 			return 
-				type.is_dynamic()
-				? (string(type - Type::FILE, '[') 
-				   + format_name_mid(name) 
-				   + string(type - Type::FILE, ']'))
-				: format_name_mid(name); 
-		}
+//				type.is_dynamic()
+//				? 
+				(string(type - Type::FILE, '[') 
+				 + (type.is_any_phony() ? "@" : "")
+				 + format_name_mid(name) 
+				 + string(type - Type::FILE, ']'))
+//				: format_name_mid(name)
+				; 
+//		}
 	}
 
 	bool operator== (const Target &target) const {
@@ -393,7 +430,7 @@ public:
 
 	/* Return the unparametrized name.  The name must be unparametrized. 
 	 */
-	string unparametrized() const {
+	const string &unparametrized() const {
 		assert(get_n() == 0);
 		return texts.at(0); 
 	}
@@ -458,19 +495,27 @@ public:
 	Type type;
 	Param_Name param_name; 
  
-	/* The root target */
-	Param_Target(Type type_)
-		:  type(type_),
-		   param_name("")
-		{
-			assert(type_ == Type::ROOT);
-			/* Note:  PARAM_NAME is invalid */ 
-		}
+//	/* The root target */
+//	Param_Target(Type type_)
+//		:  type(type_),
+//		   param_name("")
+//		{
+//			assert(type_ == Type::ROOT);
+//			/* Note:  PARAM_NAME is invalid */ 
+//		}
 
+	// TODO deprecate this in favor of the version of thos function
+	// in which the second argument is a reference. 
 	Param_Target(Type type_,
-				 shared_ptr <Param_Name> param_name_)
+		     shared_ptr <Param_Name> param_name_)
 		:  type(type_),
 		   param_name(*param_name_)
+	{ }
+
+	Param_Target(Type type_,
+		     const Param_Name &param_name_)
+		:  type(type_),
+		   param_name(param_name_)
 	{ }
 
 	/* Unparametrized target */
@@ -557,20 +602,20 @@ public:
 	 * variable additionally contains places for each parameter. */ 
 	Place place;
 
-	/* Create a root target */ 
-	Place_Param_Target()
-		:  type(Type::ROOT),
-		   place_param_name()
-	{ }
+//	/* Create a root target */ 
+//	Place_Param_Target()
+//		:  type(Type::ROOT),
+//		   place_param_name()
+//	{ }
 
-	/* Create a root target explicitly */ 
-	Place_Param_Target(Type type_)
-		:  type(Type::ROOT),
-		   place_param_name()
-	{ 
-		(void) type_;
-		assert(type_ == Type::ROOT); 
-	}
+//	/* Create a root target explicitly */ 
+//	Place_Param_Target(Type type_)
+//		:  type(Type::ROOT),
+//		   place_param_name()
+//	{ 
+//		(void) type_;
+//		assert(type_ == Type::ROOT); 
+//	}
 
 	Place_Param_Target(Type type_,
 			   const Place_Param_Name &place_param_name_)
@@ -603,6 +648,10 @@ public:
 
 	Target unparametrized() const {
 		return Target(type, place_param_name.unparametrized()); 
+	}
+
+	Param_Target get_param_target() const {
+		return Param_Target(type, place_param_name); 
 	}
 };
 

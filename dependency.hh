@@ -109,6 +109,10 @@ public:
 
 	virtual string format() const= 0; 
 
+	/* Collapse the dependency into a single target, ignoring all
+	 * flags */   
+	virtual Param_Target get_single_target() const= 0;
+
 #ifndef NDEBUG
 	virtual void print() const= 0; 
 #endif
@@ -246,7 +250,7 @@ public:
 	}
 
 	void check() const {
-		assert(place_param_target.type != Type::ROOT); 
+//		assert(place_param_target.type != Type::ROOT); 
 		/* Must not be dynamic, since dynamic dependencies are
 		 * represented using Dynamic_Dependency */ 
 		assert(! place_param_target.type.is_dynamic());
@@ -264,6 +268,10 @@ public:
 			   text_param_target);
 	}
 
+	Param_Target get_single_target() const {
+		return place_param_target.get_param_target();
+	}
+
 #ifndef NDEBUG
 	void print() const {
 		place.print_beginning(); 
@@ -279,7 +287,8 @@ class Dynamic_Dependency
 	:  public Base_Dependency
 {
 public:
-	
+
+	/* Non-null */ 
 	shared_ptr <Dependency> dependency;
 
 	Dynamic_Dependency(Flags flags_,
@@ -289,6 +298,7 @@ public:
 	{
 		assert((flags & F_READ) == 0); 
 		assert((flags & F_VARIABLE) == 0); 
+		assert(dependency_ != nullptr); 
 	}
 
 	shared_ptr <Dependency> 
@@ -313,6 +323,12 @@ public:
 		return fmt("%s[%s]",
 			   text_flags,
 			   text_dependency); 
+	}
+
+	Param_Target get_single_target() const {
+		Param_Target ret= dependency->get_single_target();
+		++ ret.type;
+		return ret; 
 	}
 
 #ifndef NDEBUG

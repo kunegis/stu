@@ -3,8 +3,8 @@
 # 
 
 all-test: \
-    stu.text test_options test_sed \
     stu.debug stu \
+    stu.text test_options test_sed \
     test_test.debug test_test.ndebug \
     test_doubleslash 
 

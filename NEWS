@@ -5,6 +5,10 @@ are added, which are documented in this file.  When the major version is
 increased, backward-incompatible changes are made, which are documented
 in the file MIGRATION. 
 
+2016-XX-XX  Version 1.14:
+
+* Rules with multiple targets are possible
+
 2016-05-01  Version 1.13:
 
 * Dynamic phonies are now allowed.  The following is an example:

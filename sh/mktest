@@ -369,7 +369,7 @@ echo __________________________________
 
 if [ "$errors" != 0 ]
 then
-	echo >&2 "$0: *** The following tests failed:"
+	echo >&2 "$0: *** The following $(<../error.log wc -l) tests failed:"
 	cat ../error.log
 	exit 1
 else

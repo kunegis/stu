@@ -2409,11 +2409,6 @@ bool Execution::read_variable(string &variable_name,
 		return false;
 }
 
-//Target Execution::get_target_from_link(const Link &link) const
-//{
-//	...;
-//}
-
 void Execution::cycle_print(const vector <const Execution *> &path)
 {
 	/* Indexes are parallel to PATH */ 
@@ -2426,18 +2421,19 @@ void Execution::cycle_print(const vector <const Execution *> &path)
 			.dependency->get_single_target().format();
 	}
 
-	for (unsigned i= 0;  i < path.size();  ++i) {
+	for (signed i= path.size() - 1;  i >= 0;  --i) {
 
 		/* Don't show a message for [...[A]...] -> X links */ 
 		if (path.at(i)->parents.at((Execution *)path.at((i+1) % path.size()))
 		    .dependency->get_flags() & F_READ)
 			continue;
 
-		path.at(i)->parents.at((Execution *)path.at((i+1) % path.size()))
+		path.at((i + path.size() - 1) % path.size())->parents.at((Execution *)path[i])
 			.place
-			<< fmt("%s depends on %s",
-			       names.at((i + path.size() - 1) % path.size()),
-			       names.at(i));
+			<< fmt("%s%s depends on %s",
+			       i == (int)(path.size() - 1) ? "cyclic dependency: " : "",
+			       names[i],
+			       names.at((i + path.size() - 1) % path.size()));
 	}
 }
 
@@ -2450,10 +2446,5 @@ bool Execution::same_rule(const Execution *execution_a,
 		execution_a->get_dynamic_depth() == execution_b->get_dynamic_depth() &&
 		execution_a->param_rule == execution_b->param_rule;
 }
-
-//Target Execution::get_target_from_dependency(shared_ptr <Dependency> dependency) const
-//{
-//	...; 
-//}
 
 #endif /* ! EXECUTION_HH */

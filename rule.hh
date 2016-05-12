@@ -183,10 +183,10 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 			     jj < dependency->place_param_target.place_param_name.get_n();
 			     ++jj) {
 				string parameter= dependency->place_param_target
-					.place_param_name.get_parameters().at(jj); 
+					.place_param_name.get_parameters()[jj]; 
 				if (parameters.count(parameter) == 0) {
 					dependency->place_param_target
-						.place_param_name.get_places().at(jj) <<
+						.place_param_name.get_places()[jj] <<
 						fmt("parameter $%s is not used", parameter); 
 					place_param_target.place <<
 						fmt("in target %s", place_param_target.format());
@@ -379,8 +379,8 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 
 	/* Instantiate */ 
 	assert(rules_best.size() == 1); 
-	shared_ptr <Rule> rule_best= rules_best.at(0);
-	mapping_out= mappings_best.at(0); 
+	shared_ptr <Rule> rule_best= rules_best[0];
+	mapping_out= mappings_best[0]; 
 
 	rule_original= rule_best; 
 

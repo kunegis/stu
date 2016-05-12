@@ -83,21 +83,7 @@ public:
 	/* Call after having returned this process from wait_do(). 
 	 * Return TRUE of the child was successful. 
 	 */
-	// TODO online
-	bool waited(int status, pid_t pid_check) 
-	{
-		assert(pid_check >= 0);
-		assert(pid >= 0); 
-		(void) pid_check;
-		assert(pid_check == pid); 
-		pid= -1;
-		bool success= WIFEXITED(status) && WEXITSTATUS(status) == 0;
-		if (success)
-			++ count_jobs_success;
-		else
-			++ count_jobs_fail; 
-		return success; 
-	}
+	bool waited(int status, pid_t pid_check);
 
 	bool started() const {
 		return pid >= 0;
@@ -497,6 +483,21 @@ pid_t Job::wait(int *status)
 		fprintf(stderr, "*** sigwaitinfo: Received %d\n", siginfo.si_signo);
 		goto begin; 
 	}
+}
+
+bool Job::waited(int status, pid_t pid_check) 
+{
+	assert(pid_check >= 0);
+	assert(pid >= 0); 
+	(void) pid_check;
+	assert(pid_check == pid); 
+	pid= -1;
+	bool success= WIFEXITED(status) && WEXITSTATUS(status) == 0;
+	if (success)
+		++ count_jobs_success;
+	else
+		++ count_jobs_fail; 
+	return success; 
 }
 
 void Job::Statistics::print(bool allow_unterminated_jobs)

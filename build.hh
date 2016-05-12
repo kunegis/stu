@@ -304,9 +304,9 @@ shared_ptr <Rule> Build::build_rule()
 				}
 				for (unsigned jj= 0;  jj < name_copy->get_n();  ++jj) {
 					string parameter= 
-						name_copy->get_parameters().at(jj); 
+						name_copy->get_parameters()[jj]; 
 					if (parameters.count(parameter) == 0) {
-						name_copy->places.at(jj) <<
+						name_copy->places[jj] <<
 							fmt("parameter $%s is not used", parameter);
 						place_param_target->place << 
 							fmt("in target %s", place_param_target->format());
@@ -852,17 +852,17 @@ void Build::append_copy(      Param_Name &to,
 	}
 
 	for (int i= from.get_n();  i >= 0;  --i) {
-		for (int j= from.get_texts().at(i).size() - 1;
+		for (int j= from.get_texts()[i].size() - 1;
 		     j >= 0;  --j) {
-			if (from.get_texts().at(i).at(j) == '/') {
+			if (from.get_texts()[i][j] == '/') {
 
 				/* Don't append the found slash, as TO
 				 * already ends in a slash */ 
-				to.append_text(from.get_texts().at(i).substr(j + 1));
+				to.append_text(from.get_texts()[i].substr(j + 1));
 
 				for (unsigned k= i;  k < from.get_n();  ++k) {
-					to.append_parameter(from.get_parameters().at(k));
-					to.append_text(from.get_texts().at(k + 1));
+					to.append_parameter(from.get_parameters()[k]);
+					to.append_text(from.get_texts()[k + 1]);
 				}
 				return;
 			}

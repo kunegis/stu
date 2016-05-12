@@ -156,7 +156,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 
 	try {
 		if (allow_include) {
-			assert(filenames.size() == 0 || filenames.at(filenames.size() - 1) != filename); 
+			assert(filenames.size() == 0 || filenames[filenames.size() - 1] != filename); 
 			assert(includes.count(filename) == 0); 
 			includes.insert(filename); 
 		} else {
@@ -183,7 +183,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 
 		/* If the file is a directory, open the file "main.stu" within it */ 
 		if (S_ISDIR(buf.st_mode)) {
-			if (filename.at(filename.size() - 1) != '/')
+			if (filename[filename.size() - 1] != '/')
 				filename += '/';
 			filename += FILENAME_INPUT_DEFAULT;
 			int fd2= openat(fd, FILENAME_INPUT_DEFAULT, O_RDONLY);

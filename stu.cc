@@ -290,7 +290,7 @@ int main(int argc, char **argv, char **envp)
 				print_error
 					((filenames.size() == 1 && ! had_option_F)
 					 ? fmt("Input file '%s' does not contain any rules and no target given", 
-					       filenames.at(0))
+					       filenames[0])
 					 : "No rules and no targets given");
 				exit(ERROR_FATAL);
 			}
@@ -428,3 +428,8 @@ void read_string(const char *s,
 		}
 	}
 }
+
+// TODO Rename "phony targets" to "transient targets". 
+
+// TODO Should we use -O2 instead of -O3 ?  How smaller does the
+// executable get?    

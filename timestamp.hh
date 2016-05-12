@@ -49,12 +49,6 @@ public:
 			(this->t.tv_sec == that.t.tv_sec && this->t.tv_nsec < that.t.tv_nsec); 
 	}
 
-//	bool older_than_approximatively(const Timestamp &that) const {
-//		assert(this->defined());
-//		assert(that.defined());
-//		return this->t.tv_sec < that.t.tv_sec; 
-//	}
-
 	string format() const {
 		assert(defined()); 
 		return frmt("%ld.%ld", (long)t.tv_sec, (long)t.tv_nsec); 

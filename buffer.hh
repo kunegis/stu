@@ -46,8 +46,8 @@ public:
 			size_t s= v.size();
 			size_t k= random_number(s);
 			if (k + 1 < s) 
-				swap(v.at(k), v.at(s - 1)); 
-			Link ret= move(v.at(s - 1));
+				swap(v[k], v[s - 1]); 
+			Link ret= move(v[s - 1]);
 			v.resize(s - 1); 
 			return move(ret); 
 		} else {

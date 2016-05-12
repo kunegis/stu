@@ -250,7 +250,6 @@ public:
 	}
 
 	void check() const {
-//		assert(place_param_target.type != Type::ROOT); 
 		/* Must not be dynamic, since dynamic dependencies are
 		 * represented using Dynamic_Dependency */ 
 		assert(! place_param_target.type.is_dynamic());

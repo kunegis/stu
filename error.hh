@@ -84,24 +84,24 @@
 void print_error(string text)
 {
 	assert(text != "");
-	assert(isupper(text.at(0)) || text.at(0) == '\''); 
-	assert(text.at(text.size() - 1) != '\n'); 
+	assert(isupper(text[0]) || text[0] == '\''); 
+	assert(text[text.size() - 1] != '\n'); 
 	fprintf(stderr, "%s: *** %s\n", dollar_zero, text.c_str()); 
 }
 
 void print_info(string text)
 {
 	assert(text != "");
-	assert(isupper(text.at(0)) || text.at(0) == '\''); 
-	assert(text.at(text.size() - 1) != '\n'); 
+	assert(isupper(text[0]) || text[0] == '\''); 
+	assert(text[text.size() - 1] != '\n'); 
 	fprintf(stderr, "%s: %s\n", dollar_zero, text.c_str()); 
 }
 
 void print_warning(string text)
 {
 	assert(text != "");
-	assert(isupper(text.at(0)) || text.at(0) == '\''); 
-	assert(text.at(text.size() - 1) != '\n'); 
+	assert(isupper(text[0]) || text[0] == '\''); 
+	assert(text[text.size() - 1] != '\n'); 
 	fprintf(stderr, "%s: Warning: %s\n", dollar_zero, text.c_str()); 
 }
 

@@ -81,11 +81,6 @@ private:
 	}
 
 	enum: int {
-//		/* Top-level target, which contains the individual targets given
-//		 * on the command line as dependencies.  Does not appear as
-//		 * dependencies in Stu files. */ 
-//		T_ROOT          = -1,
-
 		/* A phony target */ 
 		T_PHONY         = 0,
 	
@@ -113,14 +108,11 @@ private:
 		:  value(value_)
 	{
 		assert(value >= 0);
-//		assert(value >= T_ROOT); 
 	}
 
 public:
 
-	static const Type 
-//		ROOT, 
-		PHONY, FILE, DYNAMIC_PHONY, DYNAMIC_FILE;
+	static const Type PHONY, FILE, DYNAMIC_PHONY, DYNAMIC_FILE;
 
 	bool is_dynamic() const {
 		return value >= T_DYNAMIC_PHONY;
@@ -129,31 +121,26 @@ public:
 	// TODO rename to 'get_dynamic_depth()'
 	unsigned dynamic_depth() const {
 		assert(value >= 0);
-//		assert(value > T_ROOT);
 		return (value - T_PHONY) >> 1;
 	}
 
 	bool is_any_phony() const {
 		assert(value >= 0); 
-//		assert(value >= T_ROOT);
-		return 
-			value >= 0
-			//value >= T_ROOT
-			&& ! (value & 1);
+		return //value >= 0
+			//&& 
+			! (value & 1);
 	}
 
 	bool is_any_file() const {
 		assert(value >= 0); 
-//		assert(value >= T_ROOT); 
 		return 
-			value >= 0
-		//value >= T_ROOT 
-			&& (value & 1);
+//			value >= 0
+//			&& 
+			(value & 1);
 	}
 
 	Type get_base() const {
 		assert(value >= 0); 
-//		assert(value > T_ROOT);
 		return Type(value & 1); 
 	}
 
@@ -185,9 +172,7 @@ public:
 
 	Type operator - (int diff) const {
 		assert(value >= 0); 
-//		assert(value > T_ROOT);
 		assert(value - 2 * diff >= 0); 
-//		assert(value - 2 * diff > T_ROOT); 
 		return Type(value - 2 * diff);
 	}
 
@@ -205,15 +190,12 @@ public:
 
 	Type &operator += (int diff) {
 		assert(value >= 0);
-//		assert(value > T_ROOT);
 		value += 2 * diff;
 		assert(value >= 0);
-//		assert(value > T_ROOT); 
 		return *this;
 	}
 };
 
-//const Type Type::ROOT(Type::T_ROOT);
 const Type Type::PHONY(Type::T_PHONY);
 const Type Type::FILE(Type::T_FILE);
 const Type Type::DYNAMIC_PHONY(Type::T_DYNAMIC_PHONY);
@@ -245,9 +227,6 @@ public:
 	/* Used in output of Stu, i.e., mainly in error messages.  */ 
 	string format() const {
 
-//		if (type == Type::ROOT) {
-//			return "ROOT"; 
-//		} else
 		if (type.is_any_phony()) {
 			return "@" + (string(type.dynamic_depth(), '[') 
 				      + format_name_mid(name) 
@@ -264,45 +243,21 @@ public:
 	}
 
 	string format_bare() const {
-//		assert(type != Type::ROOT); 
 
 		return 
 			string(type - Type::FILE, '[') 
 			+ (type.is_any_phony() ? "@" : "")
 			+ name
 			+ string(type - Type::FILE, ']');
-
-//		if (type.is_any_phony()) {
-//		if (type == Type::PHONY) {
-//			return 
-				
-				//fmt("@%s", name);  
-//		} else {
-//			return 
-//				type.is_dynamic()
-//				? (string(type - Type::FILE, '[') 
-//				   + name
-//				   + string(type - Type::FILE, ']'))
-//				: name; 
-//		}
 	}
 
 	string format_mid() const {
-//		assert(type != Type::ROOT);
 
-//		if (type == Type::PHONY) {
-//			return fmt("@%s", format_name_mid(name));  
-//		} else {
-			return 
-//				type.is_dynamic()
-//				? 
-				(string(type - Type::FILE, '[') 
-				 + (type.is_any_phony() ? "@" : "")
-				 + format_name_mid(name) 
-				 + string(type - Type::FILE, ']'))
-//				: format_name_mid(name)
-				; 
-//		}
+		return 
+			string(type - Type::FILE, '[') 
+			+ (type.is_any_phony() ? "@" : "")
+			+ format_name_mid(name) 
+			+ string(type - Type::FILE, ']'); 
 	}
 
 	bool operator== (const Target &target) const {
@@ -400,7 +355,7 @@ public:
 
 	/* Append the given text to the last text element */
 	void append_text(string text) {
-		texts.at(texts.size() - 1) += text;
+		texts[texts.size() - 1] += text;
 	}
 
 	/* Append another parametrized name.  This function checks that
@@ -412,8 +367,8 @@ public:
 		append_text(param_name.texts.front());
 
 		for (unsigned i= 0;  i < param_name.get_n();  ++i) {
-			append_parameter(param_name.get_parameters().at(i));
-			append_text(param_name.get_texts().at(1 + i));
+			append_parameter(param_name.get_parameters()[i]);
+			append_text(param_name.get_texts()[1 + i]);
 		}
 	}
 
@@ -422,7 +377,7 @@ public:
 	}
 
 	const string &last_text() const {
-		return texts.at(texts.size() - 1);
+		return texts[texts.size() - 1];
 	}
 
 	/* The name may be empty, resulting in an empty string */ 
@@ -432,7 +387,7 @@ public:
 	 */
 	const string &unparametrized() const {
 		assert(get_n() == 0);
-		return texts.at(0); 
+		return texts[0]; 
 	}
 
 	/* Check whether NAME matches this name.  If it does, return
@@ -509,16 +464,7 @@ public:
 	Type type;
 	Param_Name param_name; 
  
-//	/* The root target */
-//	Param_Target(Type type_)
-//		:  type(type_),
-//		   param_name("")
-//		{
-//			assert(type_ == Type::ROOT);
-//			/* Note:  PARAM_NAME is invalid */ 
-//		}
-
-	// TODO deprecate this in favor of the version of thos function
+	// TODO deprecate this in favor of the version of this function
 	// in which the second argument is a reference. 
 	Param_Target(Type type_,
 		     shared_ptr <Param_Name> param_name_)
@@ -625,21 +571,6 @@ public:
 	 * variable additionally contains places for each parameter. */ 
 	Place place;
 
-//	/* Create a root target */ 
-//	Place_Param_Target()
-//		:  type(Type::ROOT),
-//		   place_param_name()
-//	{ }
-
-//	/* Create a root target explicitly */ 
-//	Place_Param_Target(Type type_)
-//		:  type(Type::ROOT),
-//		   place_param_name()
-//	{ 
-//		(void) type_;
-//		assert(type_ == Type::ROOT); 
-//	}
-
 	Place_Param_Target(Type type_,
 			   const Place_Param_Name &place_param_name_)
 		:  type(type_),
@@ -684,12 +615,12 @@ string Param_Name::instantiate(const map <string, string> &mapping) const
 
 	const int n= get_n(); 
 
-	string ret= texts.at(0);
+	string ret= texts[0];
 
 	for (int i= 0;  i < n;  ++i) {
-		assert(parameters.at(i).size() > 0); 
-		ret += mapping.at(parameters.at(i));
-		ret += texts.at(i + 1);
+		assert(parameters[i].size() > 0); 
+		ret += mapping.at(parameters[i]);
+		ret += texts[i + 1];
 	}
 
 	return ret; 
@@ -751,10 +682,10 @@ bool Param_Name::match(const string name,
 			if (memcmp(p_end - size_last, texts[n].c_str(), size_last))
 				return false;
 
-			ret[parameters.at(i)]= string(p, p_end - p - size_last); 
+			ret[parameters[i]]= string(p, p_end - p - size_last); 
 			anchoring[2*i + 1]= p_end - size_last - p_begin;
 
-			assert(ret.at(parameters.at(i)).size() > 0); 
+			assert(ret.at(parameters[i]).size() > 0); 
 
 		} else {
 			/* Intermediate texts must not be empty, i.e.,
@@ -805,7 +736,7 @@ bool Param_Name::valid() const
 		return false;
 
 	for (unsigned i= 1;  i + 1 < get_n() + 1;  ++i) {
-		if (texts.at(i) == "")
+		if (texts[i] == "")
 			return false;
 	}
 

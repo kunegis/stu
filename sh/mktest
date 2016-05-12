@@ -330,11 +330,15 @@ do
 			echo ../../stu.test "$CMD"
 			eval ../../stu.test $CMD \>list.def.out 2\>list.def.err 
 			grep -qF 'Nothing to be done' list.def.out 
-			if [ $? \!= 0 ] ; then
-				echo >&2 "$0: *** Second invocation did no result in 'Nothing to be done'"
-				error=1
-			else
+			if [ "$?" = 0 ] ; then
 				echo "Second invocation...correct"
+			else
+				echo >&2 "$0: *** Second invocation did no result in 'Nothing to be done'"
+				echo >&2 STDOUT:
+				echo >&2 _____
+				cat >&2 list.def.out
+				echo >&2 _____
+				error=1
 			fi
 		fi
 

@@ -276,7 +276,7 @@ public:
 	}
 
 	/* The Execution objects by their target(s).  Execution objects
-	 * are never deleted.  This serves as a caching mechanism.   The
+	 * are never deleted.  This serves as a caching mechanism.  The
 	 * root Execution has no targets and therefore is not included.
 	 * Non-dynamic execution objects are shared by the multiple
 	 * targets of a multi-target rule.  Dynamic multi-target rule
@@ -298,20 +298,20 @@ public:
 	 */ 
 	static Timestamp timestamp_last; 
 
-	/* Set once before calling Execution::main().  Unchanging during the whole call
-	 * to Execution::main(). 
+	/* Set once before calling Execution::main().  Unchanging during
+	 * the whole call to Execution::main(). 
 	 */ 
 	static Rule_Set rule_set; 
 
-	/* Whether something was done (either jobs were started or
-	 * files where created).  This is tracked for the purpose or the
-	 * "Nothing to be done" message. */ 
-	static bool worked;
-
 	/* Number of free slots for jobs.  This is a long because
-	 * strtol() gives a long. (Parsed from the -j option)
+	 * strtol() gives a long.  Parsed from the -j option. 
 	 */ 
 	static long jobs;
+
+	/* Whether something was done (either jobs were started or
+	 * files where created).  This is tracked for the purpose of the
+	 * "Nothing to be done" message. */ 
+	static bool worked;
 
 	/* Propagate information from the subexecution to the execution, and
 	 * then delete the child execution.  The child execution is
@@ -404,8 +404,8 @@ unordered_map <Target, Execution *> Execution::executions_by_target;
 unordered_map <string, Timestamp> Execution::phonies;
 Timestamp Execution::timestamp_last;
 Rule_Set Execution::rule_set; 
-bool Execution::worked= false;
 long Execution::jobs= 1;
+bool Execution::worked= false;
 
 void Execution::wait() 
 {
@@ -735,13 +735,13 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	if (! need_build) {
 		for (const Target &target:  targets) {
-	    //&& target.type == Type::PHONY) {
-			// TODO replace by '== 0'
 			if (target.type != Type::PHONY) 
 				continue; 
+			// TODO replace by '== 0'
 			if (! phonies.count(target.name)) {
 				/* Phony was not yet executed */ 
-				need_build= true; 
+				if (! no_execution) 
+					need_build= true; 
 				break;
 			}
 		}
@@ -1968,7 +1968,7 @@ void Execution::warn_future_file(struct stat *buf, const char *filename)
 {
 //	assert(targets.front().type == Type::FILE); 
 
-	if (timestamp_last.older_than(Timestamp(buf))) {
+  	if (timestamp_last.older_than(Timestamp(buf))) {
 		print_warning(fmt("'%s' has modification time in the future",
 				  filename));
 	}
@@ -2442,6 +2442,12 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 		    .dependency->get_flags() & F_READ)
 			continue;
 
+		/* Same, but when [...[A]...] is at the bottom */
+		if (i == 0 &&
+		    link.dependency->get_flags() & F_READ
+		    ) 
+			continue;
+
 		(
 		 i == 0 
 		 ? link
@@ -2451,6 +2457,8 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 			<< fmt("%s%s depends on %s",
 			       i == (int)(path.size() - 1) 
 			       ? (path.size() == 1 
+				  || (path.size() == 2 &&
+				      link.dependency->get_flags() & F_READ)
 				  ? "target must not depend on itself: " 
 				  : "cyclic dependency: ") 
 			       : "",

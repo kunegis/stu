@@ -7,9 +7,9 @@
 #include <unordered_set>
 
 /* Glossary:
- *     * A _name_ is a filename of the name of a phony target.  They are
+ *     * A _name_ is a filename of the name of a transient target.  They are
  *       just strings, so no special data type for it
- *     * A _target_ is either file or a phony, or a dynamic file.  It is
+ *     * A _target_ is either file or a transient, or a dynamic file.  It is
  *       represented by a name (string) and a type (integer). 
  *     * A _parametrized_ target or name additionally can have
  *       parameters
@@ -81,17 +81,17 @@ private:
 	}
 
 	enum: int {
-		/* A phony target */ 
-		T_PHONY         = 0,
+		/* A transient target */ 
+		T_TRANSIENT     = 0,
 	
 		/* A file in the file system; this entry has to come before
 		 * T_DYNAMIC because it counts also as a dynamic dependency of
 		 * depth zero. */
 		T_FILE          = 1,
 
-		/* A dynamic phony -- only used for the Target object of
+		/* A dynamic transient target -- only used for the Target object of
 		 * executions */
-		T_DYNAMIC_PHONY = 2,
+		T_DYNAMIC_TRANSIENT = 2,
 
 		/* A dynamic target -- only used for the Target object of executions */   
 		T_DYNAMIC_FILE  = 3
@@ -112,31 +112,25 @@ private:
 
 public:
 
-	static const Type PHONY, FILE, DYNAMIC_PHONY, DYNAMIC_FILE;
+	static const Type TRANSIENT, FILE, DYNAMIC_TRANSIENT, DYNAMIC_FILE;
 
 	bool is_dynamic() const {
-		return value >= T_DYNAMIC_PHONY;
+		return value >= T_DYNAMIC_TRANSIENT;
 	}
 
-	// TODO rename to 'get_dynamic_depth()'
-	unsigned dynamic_depth() const {
+	unsigned get_dynamic_depth() const {
 		assert(value >= 0);
-		return (value - T_PHONY) >> 1;
+		return (value - T_TRANSIENT) >> 1;
 	}
 
-	bool is_any_phony() const {
+	bool is_any_transient() const {
 		assert(value >= 0); 
-		return //value >= 0
-			//&& 
-			! (value & 1);
+		return ! (value & 1);
 	}
 
 	bool is_any_file() const {
 		assert(value >= 0); 
-		return 
-//			value >= 0
-//			&& 
-			(value & 1);
+		return value & 1;
 	}
 
 	Type get_base() const {
@@ -161,8 +155,8 @@ public:
 	}
 
 	int operator - (const Type &type) const {
-		assert(this->value >= T_PHONY);
-		assert(type .value >= T_PHONY);
+		assert(this->value >= T_TRANSIENT);
+		assert(type .value >= T_TRANSIENT);
 
 		/* We can only subtract compatible types */ 
 		assert(((this->value ^ type.value) & 1) == 0);
@@ -183,7 +177,7 @@ public:
 	}
 
 	Type operator -- () {
-		assert(value >= T_DYNAMIC_PHONY);
+		assert(value >= T_DYNAMIC_TRANSIENT);
 		value -= 2;
 		return *this;
 	}
@@ -196,13 +190,13 @@ public:
 	}
 };
 
-const Type Type::PHONY(Type::T_PHONY);
+const Type Type::TRANSIENT(Type::T_TRANSIENT);
 const Type Type::FILE(Type::T_FILE);
-const Type Type::DYNAMIC_PHONY(Type::T_DYNAMIC_PHONY);
+const Type Type::DYNAMIC_TRANSIENT(Type::T_DYNAMIC_TRANSIENT);
 const Type Type::DYNAMIC_FILE(Type::T_DYNAMIC_FILE);
 
 /* 
- * The basic object in Stu:  a file, a variable or a phony.  This
+ * The basic object in Stu:  a file, a variable or a transient target.  This
  * consists of a name together with a type.  This class is not
  * parametrized, and does not contain a place object.  It is used as
  * keys in maps. 
@@ -227,18 +221,18 @@ public:
 	/* Used in output of Stu, i.e., mainly in error messages.  */ 
 	string format() const {
 
-		if (type.is_any_phony()) {
-			return "@" + (string(type.dynamic_depth(), '[') 
+		if (type.is_any_transient()) {
+			return "@" + (string(type.get_dynamic_depth(), '[') 
 				      + format_name_mid(name) 
-				      + string(type.dynamic_depth(), ']'));
+				      + string(type.get_dynamic_depth(), ']'));
 		} else if (type == Type::FILE) {
 			return format_name(name); 
 		} else {
 			assert(type.is_any_file()); 
 			assert(type.is_dynamic()); 
-			return string(type.dynamic_depth(), '[') 
+			return string(type.get_dynamic_depth(), '[') 
 				+ format_name_mid(name) 
-				+ string(type.dynamic_depth(), ']');
+				+ string(type.get_dynamic_depth(), ']');
 		}
 	}
 
@@ -246,7 +240,7 @@ public:
 
 		return 
 			string(type - Type::FILE, '[') 
-			+ (type.is_any_phony() ? "@" : "")
+			+ (type.is_any_transient() ? "@" : "")
 			+ name
 			+ string(type - Type::FILE, ']');
 	}
@@ -255,7 +249,7 @@ public:
 
 		return 
 			string(type - Type::FILE, '[') 
-			+ (type.is_any_phony() ? "@" : "")
+			+ (type.is_any_transient() ? "@" : "")
 			+ format_name_mid(name) 
 			+ string(type - Type::FILE, ']'); 
 	}
@@ -464,14 +458,6 @@ public:
 	Type type;
 	Param_Name param_name; 
  
-	// TODO deprecate this in favor of the version of this function
-	// in which the second argument is a reference. 
-	Param_Target(Type type_,
-		     shared_ptr <Param_Name> param_name_)
-		:  type(type_),
-		   param_name(*param_name_)
-	{ }
-
 	Param_Target(Type type_,
 		     const Param_Name &param_name_)
 		:  type(type_),

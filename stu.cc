@@ -428,8 +428,3 @@ void read_string(const char *s,
 		}
 	}
 }
-
-// TODO Rename "phony targets" to "transient targets". 
-
-// TODO Should we use -O2 instead of -O3 ?  How smaller does the
-// executable get?    

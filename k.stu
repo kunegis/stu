@@ -1,4 +1,4 @@
-# Dynamic multiple phony
+# Dynamic multiple transient
 
 A: [@x] { cp D A }
 B @x: C { echo Building B ; touch B ; }

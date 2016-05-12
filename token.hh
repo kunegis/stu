@@ -122,7 +122,7 @@ Command::get_lines()
 
 			bool keep= false;
 			for (size_t i= 0;  i < line.size();  ++i) {
-				if (! is_space(line.at(i)))
+				if (! is_space(line[i]))
 					keep= true;
 			}
 
@@ -159,7 +159,7 @@ Command::get_lines()
 	/* Remove whitespace at end of lines */
 	for (string &line:  *lines) {
 		int l= line.size();
-		while (l != 0 && is_space(line.at(l - 1)))  --l;
+		while (l != 0 && is_space(line[l - 1]))  --l;
 		line.resize(l);
 	}
 

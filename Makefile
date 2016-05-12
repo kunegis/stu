@@ -17,7 +17,7 @@ clean:
 
 CXX=c++
 
-CXXFLAGS_NDEBUG= -O3 -DNDEBUG -s
+CXXFLAGS_NDEBUG= -O2 -DNDEBUG -s
 
 CXXFLAGS_OTHER=             \
     -std=c++11              \

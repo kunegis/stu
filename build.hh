@@ -16,7 +16,7 @@
  * the moment, only prefix and circumfix operators exist, and thus the
  * precedence is trivial. 
  *
- * @...	     (prefix) Phony dependency; argument can only contain name
+ * @...	     (prefix) Transient dependency; argument can only contain name
  * ---------------
  * <...	     (prefix) Input redirection; argument cannot contain '()',
  *           '[]', '$[]' or '@' 
@@ -171,24 +171,24 @@ shared_ptr <Rule> Build::build_rule()
 		Place place_at= (*iter)->get_place();
 
 		if (! place_output.empty()) {
-			place_at << "phony target is invalid";
+			place_at << "transient target is invalid";
 			place_output << "after '>'"; 
 			throw ERROR_LOGICAL;
 		}
 
 		++iter;
 		if (iter == tokens.end()) {
-			place_end << "expected the name of phony target";
+			place_end << "expected the name of transient target";
 			place_at << "after '@'";
 			throw ERROR_LOGICAL;
 		}
 		if (! is <Name_Token> ()) {
-			(*iter)->get_place() << "expected the name of phony target";
+			(*iter)->get_place() << "expected the name of transient target";
 			place_at << "after '@'";
 			throw ERROR_LOGICAL;
 		}
 
-		type= Type::PHONY;
+		type= Type::TRANSIENT;
 	}
 
 	/* Target */ 
@@ -276,9 +276,9 @@ shared_ptr <Rule> Build::build_rule()
 
 		if (command= is <Command> ()) {
 			++iter; 
-			if (type == Type::PHONY) {
+			if (type == Type::TRANSIENT) {
 				place_equal << "there must not be assigned content";
-				place_target << fmt("for phony target %s", 
+				place_target << fmt("for transient target %s", 
 						    place_param_target->format()); 
 				throw ERROR_LOGICAL; 
 			}
@@ -338,9 +338,9 @@ shared_ptr <Rule> Build::build_rule()
 				}
 
 				if (type != Type::FILE) {
-					assert(type == Type::PHONY); 
+					assert(type == Type::TRANSIENT); 
 					place_equal << "copy rule cannot be used";
-					place_target << "with phony target"; 
+					place_target << "with transient target"; 
 					throw ERROR_LOGICAL;
 				}
 
@@ -775,7 +775,7 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 		has_input= true; 
 	}
 
-	bool has_phony= false;
+	bool has_transient= false;
 	Place place_at; 
 	if (is_operator('@')) {
 		place_at= (*iter)->get_place();
@@ -785,7 +785,7 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 			throw ERROR_LOGICAL;
 		}
 		++ iter;
-		has_phony= true; 
+		has_transient= true; 
 	}
 
 	if (iter == tokens.end()) {
@@ -793,8 +793,8 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 			place_end << "expected a filename";
 			place_input << "after '<'"; 
 			throw ERROR_LOGICAL;
-		} else if (has_phony) {
-			place_end << "expected the name of a phony target";
+		} else if (has_transient) {
+			place_end << "expected the name of a transient target";
 			place_at << "after '@'"; 
 			throw ERROR_LOGICAL; 
 		} else {
@@ -807,8 +807,8 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 			(*iter)->get_place() << "expected a filename";
 			place_input << "after '<'"; 
 			throw ERROR_LOGICAL;
-		} else if (has_phony) {
-			(*iter)->get_place() << "expected the name of a phony target";
+		} else if (has_transient) {
+			(*iter)->get_place() << "expected the name of a transient target";
 			place_at << "after '@'"; 
 			throw ERROR_LOGICAL;
 		} else {
@@ -837,9 +837,9 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 
 	return make_shared <Direct_Dependency>
 		(flags,
-		 Place_Param_Target(has_phony ? Type::PHONY : Type::FILE,
+		 Place_Param_Target(has_transient ? Type::TRANSIENT : Type::FILE,
 				    *name_token,
-				    has_phony ? place_at : name_token->place)); 
+				    has_transient ? place_at : name_token->place)); 
 }
 
 void Build::append_copy(      Param_Name &to,

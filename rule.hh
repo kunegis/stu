@@ -275,7 +275,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 				shared_ptr <Rule> &rule_original,
 				map <string, string> &mapping_out)
 {
-	assert(target.type == Type::FILE || target.type == Type::PHONY); 
+	assert(target.type == Type::FILE || target.type == Type::TRANSIENT); 
 	assert(mapping_out.size() == 0); 
 
 	/* Check for an unparametrized rule.  Since we keep them in a

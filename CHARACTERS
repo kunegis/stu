@@ -38,7 +38,7 @@ These characters are single-character tokens.
 
 :	Rule definition
 ;	End of rule
-@	Phony target
+@	Transient target
 ( )	List 
 [ ]	Dynamic list
 >	Output redirection

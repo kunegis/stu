@@ -1,4 +1,4 @@
-# A multiple phony without dependencies and without rules.  No error; do
+# A multiple transient target without dependencies and without rules.  No error; do
 # nothing. 
 
 # Each line is one test

@@ -1,2 +1,2 @@
-main.stu:6:2: phony target is invalid
+main.stu:6:2: transient target is invalid
 main.stu:6:1: after '>'

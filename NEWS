@@ -25,6 +25,7 @@ with the difference that using the new form, Stu will rebuild 'B' and
   with other error messages
 * In the error message for cyclic dependencies, Stu now also shows the
   trace from the cycle to the top-level target
+* "Phony targets" were renamed to "transient targets" 
 
 2016-05-01  Version 1.13:
 

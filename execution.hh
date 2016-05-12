@@ -2,7 +2,7 @@
 #define EXECUTION_HH
 
 /* Code for executing the building process itself.  This is by far the
- * longest source code file in Stu.  Each file or phony target is
+ * longest source code file in Stu.  Each file or transient target is
  * represented at run time by one Execution object.  All Execution
  * objects are allocated with new Execution(...), and are never deleted,
  * as the information contained in them needs to be cached.  All
@@ -23,10 +23,28 @@
 #include "rule.hh"
 #include "timestamp.hh"
 
-// TODO make most of the content private
 class Execution
 {
-public:
+public:  
+
+	/* Number of free slots for jobs.  This is a long because
+	 * strtol() gives a long.  Parsed from the -j option. 
+	 */ 
+	static long jobs;
+
+	/* Set once before calling Execution::main().  Unchanging during
+	 * the whole call to Execution::main(). 
+	 */ 
+	static Rule_Set rule_set; 
+
+	/* Main execution loop.  This throws ERROR_BUILD and ERROR_LOGICAL. 
+	 */
+	static void main(const vector <shared_ptr <Dependency> > &dependencies);
+
+private:
+
+	friend void job_terminate_all(); 
+	friend void job_print_jobs(); 
 
 	/* Targets to build.  Empty only for the root target.
 	 * Otherwise, all entries have the same dynamic depth.  If the
@@ -134,7 +152,7 @@ public:
 	 */
 	signed char exists;
 	
-	/* File, phony and dynamic targets.  
+	/* File, transient and dynamic targets.  
 	 */ 
 	Execution(Target target_,
 		  Link &&link,
@@ -222,13 +240,10 @@ public:
 	 */ 
 	void print_as_job() const;
 
-	// TODO inline
-	void raise(int error_) {
-		assert(error_ >= 1 && error_ <= 3); 
-		error |= error_;
-		if (! option_keep_going)
-			throw error;
-	}
+	/* All errors by Execution call this function.  Set the error
+	 * code, and throw an error except with the keep-going option. 
+	 */
+	void raise(int error_);
 
 	void write_content(const char *filename, 
 			   Command &command); 
@@ -241,16 +256,13 @@ public:
 			   string &content,
 			   shared_ptr <Dependency> dependency); 
 
-	// TODO inline
-	bool is_dynamic() const {
-		return targets.size() && targets.front().type.is_dynamic(); 
-	}
+	bool is_dynamic() const;
 
 	/* The dynamic depth, or -1 for the root execution. */ 
 	int get_dynamic_depth() const {
 		return targets.empty()
 			? -1
-			: targets.front().type.dynamic_depth(); 
+			: targets.front().type.get_dynamic_depth(); 
 	}
 
 	string verbose_target() const {
@@ -282,16 +294,6 @@ public:
 	 */ 
 	static Timestamp timestamp_last; 
 
-	/* Set once before calling Execution::main().  Unchanging during
-	 * the whole call to Execution::main(). 
-	 */ 
-	static Rule_Set rule_set; 
-
-	/* Number of free slots for jobs.  This is a long because
-	 * strtol() gives a long.  Parsed from the -j option. 
-	 */ 
-	static long jobs;
-
 	/* Whether something was done (either jobs were started or
 	 * files where created).  This is tracked for the purpose of the
 	 * "Nothing to be done" message. */ 
@@ -319,10 +321,6 @@ public:
 					Link &&link,
 					Execution *parent); 
 
-	/* Main execution loop.  This throws ERROR_BUILD and ERROR_LOGICAL. 
-	 */
-	static void main(const vector <shared_ptr <Dependency> > &dependencies);
-
 	/* Wait for next job to finish and finish it.  Do not start anything
 	 * new.  
 	 */ 
@@ -334,11 +332,11 @@ public:
 	 * CHILD.  LINK is the LINK that would be added between child
 	 * and parent, and would create a cycle. 
 	 */
-	static bool find_cycle2(const Execution *const parent,
-				const Execution *const child,
-				const Link &link);
+	static bool find_cycle(const Execution *const parent,
+			       const Execution *const child,
+			       const Link &link);
 
-	static bool find_cycle2(vector <const Execution *> &path,
+	static bool find_cycle(vector <const Execution *> &path,
 				const Execution *const child,
 				const Link &link); 
 
@@ -403,7 +401,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	assert(jobs >= 0); 
 
 	for (const Target &target:  targets) {
-		assert(target.type.dynamic_depth() == done.get_k());
+		assert(target.type.get_dynamic_depth() == done.get_k());
 	}
 	assert(done.get_k() == link.avoid.get_k()); 
 
@@ -495,7 +493,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	if (targets.empty())
 		assert(done.get_k() == 0);
 	else 
-		assert(done.get_k() == targets.front().type.dynamic_depth());
+		assert(done.get_k() == targets.front().type.get_dynamic_depth());
 
 	if (error) 
 		assert(option_keep_going); 
@@ -553,8 +551,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	assert(jobs > 0); 
 	assert(! targets.empty());
-	assert(targets.front().type.dynamic_depth() == 0); 
-	assert(targets.back().type.dynamic_depth() == 0); 
+	assert(targets.front().type.get_dynamic_depth() == 0); 
+	assert(targets.back().type.get_dynamic_depth() == 0); 
 	assert(buf_default.empty()); 
 	assert(children.empty()); 
 	assert(error == 0);
@@ -668,11 +666,10 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	if (! need_build) {
 		for (const Target &target:  targets) {
-			if (target.type != Type::PHONY) 
+			if (target.type != Type::TRANSIENT) 
 				continue; 
-			// TODO replace by '== 0'
-			if (! phonies.count(target.name)) {
-				/* Phony was not yet executed */ 
+			if (phonies.count(target.name) == 0) {
+				/* Transient was not yet executed */ 
 				if (! no_execution) 
 					need_build= true; 
 				break;
@@ -741,7 +738,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	/* Start the job */ 
 
 	for (const Target &target:  targets) {
-		if (target.type != Type::PHONY)  
+		if (target.type != Type::TRANSIENT)  
 			continue; 
 		Timestamp timestamp_now= Timestamp::now(); 
 		assert(timestamp_now.defined()); 
@@ -855,7 +852,7 @@ int Execution::execute_children(const Link &link)
 		if (link.dependency != nullptr 
 		    && dynamic_pointer_cast <Direct_Dependency> (link.dependency)
 		    && dynamic_pointer_cast <Direct_Dependency> (link.dependency)
-		    ->place_param_target.type == Type::PHONY) {
+		    ->place_param_target.type == Type::TRANSIENT) {
 			flags_child |= link.flags; 
 		}
 
@@ -1166,7 +1163,7 @@ void Execution::unlink(Execution *const parent,
 	 */
 	if (child->is_dynamic() ||
 	    (dynamic_pointer_cast <Direct_Dependency> (dependency_child)
-	     && dynamic_pointer_cast <Direct_Dependency> (dependency_child)->place_param_target.type == Type::PHONY
+	     && dynamic_pointer_cast <Direct_Dependency> (dependency_child)->place_param_target.type == Type::TRANSIENT
 	     && child->rule != nullptr 
 	     && child->rule->command == nullptr)) {
 		parent->mapping_variable.insert
@@ -1205,7 +1202,7 @@ Execution::Execution(Target target_,
 		     Execution *parent)
 	:  targets({target_}),
 	   error(0),
-	   done(target_.type.dynamic_depth(), 0),
+	   done(target_.type.get_dynamic_depth(), 0),
 	   timestamp(Timestamp::UNDEFINED),
 	   need_build(false),
 	   checked(false),
@@ -1215,7 +1212,7 @@ Execution::Execution(Target target_,
 	assert(parents.empty()); 
 
 	/* Fill in the rules and their parameters */ 
-	if (target_.type == Type::FILE || target_.type == Type::PHONY) {
+	if (target_.type == Type::FILE || target_.type == Type::TRANSIENT) {
 		rule= rule_set.get(target_, param_rule, mapping_parameter); 
 	} else {
 		assert(target_.type.is_dynamic()); 
@@ -1250,10 +1247,10 @@ Execution::Execution(Target target_,
 			assert(! dependency->get_place().empty());
 
 			shared_ptr <Dependency> dep= dependency;
-			if (target_.type.is_any_phony()) {
+			if (target_.type.is_any_transient()) {
 				dep->add_flags(link.avoid.get_lowest());
 			
-				for (unsigned i= 0;  i < target_.type.dynamic_depth();  ++i) {
+				for (unsigned i= 0;  i < target_.type.get_dynamic_depth();  ++i) {
 					Flags flags= link.avoid.get(i + 1);
 					dep= make_shared <Dynamic_Dependency> (flags, dep);
 				}
@@ -1303,7 +1300,7 @@ Execution::Execution(Target target_,
 					} 
 				}
 			}
-		} else if (target_.type == Type::PHONY) {
+		} else if (target_.type == Type::TRANSIENT) {
 			rule_not_found= true;
 		} else {
 			assert(target_.type.is_dynamic()); 
@@ -1339,8 +1336,8 @@ bool Execution::finished(Stack avoid) const
 	if (targets.empty())
 		assert(done.get_k() == 0);
 	else {
-		assert(done.get_k() == targets.front().type.dynamic_depth());
-		assert(done.get_k() == targets.back().type.dynamic_depth());
+		assert(done.get_k() == targets.front().type.get_dynamic_depth());
+		assert(done.get_k() == targets.back().type.get_dynamic_depth());
 	}
 
 	Flags to_do_aggregate= 0;
@@ -1357,7 +1354,7 @@ bool Execution::finished() const
 	if (targets.empty())
 		assert(done.get_k() == 0);
 	else 
-		assert(done.get_k() == targets.front().type.dynamic_depth());
+		assert(done.get_k() == targets.front().type.get_dynamic_depth());
 
 	Flags to_do_aggregate= 0;
 	
@@ -1442,10 +1439,9 @@ void job_print_jobs()
 	}
 }
 
-// TODO remove '2' in the name 
-bool Execution::find_cycle2(const Execution *const parent, 
-			    const Execution *const child,
-			    const Link &link)
+bool Execution::find_cycle(const Execution *const parent, 
+			   const Execution *const child,
+			   const Link &link)
 {
 	/* Happens when the parent is the root execution */ 
 	if (parent->param_rule == nullptr)
@@ -1458,12 +1454,12 @@ bool Execution::find_cycle2(const Execution *const parent,
 	vector <const Execution *> path;
 	path.push_back(parent); 
 
-	return find_cycle2(path, child, link); 
+	return find_cycle(path, child, link); 
 }
 
-bool Execution::find_cycle2(vector <const Execution *> &path,
-			    const Execution *const child,
-			    const Link &link)
+bool Execution::find_cycle(vector <const Execution *> &path,
+			   const Execution *const child,
+			   const Link &link)
 {
 	if (same_rule(path.back(), child)) {
 		cycle_print(path, link); 
@@ -1478,7 +1474,7 @@ bool Execution::find_cycle2(vector <const Execution *> &path,
 
 		path.push_back(next); 
 
-		bool found= find_cycle2(path, child, link);
+		bool found= find_cycle(path, child, link);
 		if (found)
 			return true;
 
@@ -1572,7 +1568,7 @@ Execution *Execution::get_execution(const Target &target,
 		assert(execution->parents.size() == 1); 
 	}
 
-	if (find_cycle2(parent, execution, link)) {
+	if (find_cycle(parent, execution, link)) {
 		parent->raise(ERROR_LOGICAL);
 		return nullptr;
 	}
@@ -1589,7 +1585,7 @@ void Execution::read_dynamics(Stack avoid,
 
 	assert(target.type.is_dynamic());
 
-	assert(avoid.get_k() == target.type.dynamic_depth()); 
+	assert(avoid.get_k() == target.type.get_dynamic_depth()); 
 
 	try {
 		vector <shared_ptr <Token> > tokens;
@@ -1668,15 +1664,15 @@ void Execution::read_dynamics(Stack avoid,
 			dependency->add_flags(avoid_this.get_lowest()); 
 			if (dependency->get_place_existence().empty())
 				dependency->set_place_existence
-					(vec[target.type.dynamic_depth() - 1]
+					(vec[target.type.get_dynamic_depth() - 1]
 					 ->get_place_existence()); 
 			if (dependency->get_place_optional().empty())
 				dependency->set_place_optional
-					(vec[target.type.dynamic_depth() - 1]
+					(vec[target.type.get_dynamic_depth() - 1]
 					 ->get_place_optional()); 
 			if (dependency->get_place_trivial().empty())
 				dependency->set_place_trivial
-					(vec[target.type.dynamic_depth() - 1]
+					(vec[target.type.get_dynamic_depth() - 1]
 					 ->get_place_trivial()); 
 
 			for (Type k= target.type - 1;  k.is_dynamic();  --k) {
@@ -1684,11 +1680,11 @@ void Execution::read_dynamics(Stack avoid,
 				Flags flags_level= avoid_this.get_lowest(); 
 				dependency= make_shared <Dynamic_Dependency> (flags_level, dependency); 
 				dependency->set_place_existence
-					(vec[k.dynamic_depth() - 1]->get_place_existence()); 
+					(vec[k.get_dynamic_depth() - 1]->get_place_existence()); 
 				dependency->set_place_optional
-					(vec[k.dynamic_depth() - 1]->get_place_optional()); 
+					(vec[k.get_dynamic_depth() - 1]->get_place_optional()); 
 				dependency->set_place_trivial
-					(vec[k.dynamic_depth() - 1]->get_place_trivial()); 
+					(vec[k.get_dynamic_depth() - 1]->get_place_trivial()); 
 			}
 
 			assert(avoid_this.get_k() == 0); 
@@ -1909,7 +1905,7 @@ bool Execution::deploy(const Link &link,
 	assert(! direct_dependency->place_param_target.place_param_name.empty()); 
 
 	Target target_child= direct_dependency->place_param_target.unparametrized();
-	assert(target_child.type == Type::FILE || target_child.type == Type::PHONY);
+	assert(target_child.type == Type::FILE || target_child.type == Type::TRANSIENT);
 
 	if (dynamic_depth != 0) {
 		assert(dynamic_depth > 0);
@@ -1923,7 +1919,7 @@ bool Execution::deploy(const Link &link,
 	if (! targets.empty()) {
 		Target target= link.dependency->get_single_target().unparametrized();
 
-		if (target.type == Type::PHONY) { 
+		if (target.type == Type::TRANSIENT) { 
 			flags_child_additional |= link.flags; 
 			avoid_child.add_highest(link.flags);
 			if (link.flags & F_EXISTENCE) {
@@ -2040,7 +2036,7 @@ void Execution::initialize(Stack avoid)
 		Target target= targets.front(); 
 
 		/* This is a special dynamic target.  Add, as an initial
-		 * dependency, the corresponding file or phony.  
+		 * dependency, the corresponding file or transient.  
 		 */
 		Flags flags_child= avoid.get_lowest();
 		
@@ -2244,6 +2240,17 @@ bool Execution::same_rule(const Execution *execution_a,
 		execution_b->param_rule != nullptr &&
 		execution_a->get_dynamic_depth() == execution_b->get_dynamic_depth() &&
 		execution_a->param_rule == execution_b->param_rule;
+}
+
+void Execution::raise(int error_) {
+	assert(error_ >= 1 && error_ <= 3); 
+	error |= error_;
+	if (! option_keep_going)
+		throw error;
+}
+
+bool Execution::is_dynamic() const {
+	return targets.size() && targets.front().type.is_dynamic(); 
 }
 
 #endif /* ! EXECUTION_HH */

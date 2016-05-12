@@ -99,8 +99,9 @@ private:
 	 */
 	Buffer buf_trivial; 
 
-	/* Info about the target before it is built.  Only valid once the
-	 * job was started.  Used for checking whether a file was
+	/* Newest timestamp of file targets, before the command is
+	 * executed.  Only valid once the job was started.  Used for
+	 * checking whether a file was 
 	 * rebuild to decide whether to remove it after a command failed or
 	 * was interrupted.  This is UNDEFINED when the file did
 	 * not exist, or the target is not a file
@@ -585,7 +586,10 @@ bool Execution::execute(Execution *parent, Link &&link)
 			/* Warn when file has timestamp in the future */ 
 			if (ret_stat == 0) { 
 				/* File exists */ 
-				timestamp_old= Timestamp(&buf); // TODO use min or max
+				Timestamp timestamp_this= Timestamp(&buf); 
+				if (! timestamp_old.defined() ||
+				    timestamp_old < timestamp_this)
+					timestamp_old= timestamp_this;
  				if (parent == nullptr || ! (link.flags & F_EXISTENCE)) 
 					warn_future_file(&buf, target.name.c_str());
 				/* EXISTS is not changed */ 
@@ -597,7 +601,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 					/* File exists. Check whether it has to be rebuilt
 					 * because of more up to date dependencies */ 
 
-					if (timestamp.defined() && timestamp_old.older_than(timestamp)) {
+					assert(timestamp_old.defined()); 
+					if (timestamp.defined() && 
+					    timestamp_old < timestamp) {
 						if (no_execution) {
 							print_warning
 								(fmt("File target '%s' which has no command is older than its dependency",
@@ -606,6 +612,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 							need_build= true;
 					} else 
 						timestamp= timestamp_old;
+					
 				} else {
 					/* stat() returned an error */ 
 
@@ -662,6 +669,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 				return false;
 			}		
 		}
+
 	}
 
 	if (! need_build) {
@@ -922,7 +930,7 @@ void Execution::waited(int pid, int status)
 				/* Check that file is not older that Stu
 				 * startup */ 
 				Timestamp timestamp_file(&buf);
-				if (timestamp_file.older_than(Timestamp::startup)) {
+				if (timestamp_file < Timestamp::startup) {
 
 					/* Check whether the file is actually a symlink, in
 					 * which case we ignore that error */ 
@@ -1141,7 +1149,7 @@ void Execution::unlink(Execution *const parent,
 			if (! parent->timestamp.defined()) {
 				parent->timestamp= child->timestamp;
 			} else {
-				if (parent->timestamp.older_than(child->timestamp)) {
+				if (parent->timestamp < child->timestamp) {
 					parent->timestamp= child->timestamp; 
 				}
 			}
@@ -1511,7 +1519,7 @@ bool Execution::remove_if_existing(bool output)
 		 */
 
 		if (! timestamp_old.defined() ||
-		    timestamp_old.older_than(Timestamp(&buf))) {
+		    timestamp_old < Timestamp(&buf)) {
 
 			if (output) {
 				fprintf(stderr, 
@@ -1718,7 +1726,7 @@ void Execution::read_dynamics(Stack avoid,
 
 void Execution::warn_future_file(struct stat *buf, const char *filename)
 {
-  	if (timestamp_last.older_than(Timestamp(buf))) {
+  	if (timestamp_last < Timestamp(buf)) {
 		print_warning(fmt("'%s' has modification time in the future",
 				  filename));
 	}

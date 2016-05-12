@@ -42,7 +42,7 @@ public:
 		return t.tv_sec != (time_t) -1; 
 	}
 
-	bool older_than(const Timestamp &that) const {
+	bool operator < (const Timestamp &that) const {
 		assert(this->defined());
 		assert(that.defined());
 		return this->t.tv_sec < that.t.tv_sec ||
@@ -112,7 +112,7 @@ public:
 		return t != (time_t) -1; 
 	}
 
-	bool older_than(const Timestamp &that) const {
+	bool operator < (const Timestamp &that) const {
 		assert(this->defined());
 		assert(that.defined());
 		return this->t < that.t; 

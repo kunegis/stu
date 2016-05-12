@@ -2476,12 +2476,21 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 	if (link.dependency->get_single_target() !=
 	    path.back()->parents.begin()->second
 	    .dependency->get_single_target()) {
+
+		
+		Param_Target t1= path.back()->parents.begin()->second
+			.dependency->get_single_target();
+		Param_Target t2= link.dependency->get_single_target();
+		t1.type= t1.type.get_base();
+		t2.type= t2.type.get_base(); 
+
 		path.back()
 //		path.back()->parents.begin()->first
 			->rule->place
 			<< fmt("both %s and %s match the same rule",
-			       names.back(),
-			       link.dependency->get_single_target().format()
+			       t1.format(), t2.format()
+//			       names.back(),
+//			       link.dependency->get_single_target().format()
 			       );
 	}
 

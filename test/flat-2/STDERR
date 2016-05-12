@@ -1,1 +1,2 @@
-B:1:2: target must not depend on itself: 'B' depends on 'B'
+B:1:2: target must not depend on itself: [B] depends on [B]
+main.stu:2:5: [B] is needed by 'A'

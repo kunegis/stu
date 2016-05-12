@@ -223,6 +223,7 @@ void Place::operator<<(string text) const
 			"Command line argument '%s': %s\n",
 			filename.c_str(),
 			text.c_str()); 
+		break;
 	}
 }
 

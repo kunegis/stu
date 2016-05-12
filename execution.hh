@@ -328,7 +328,8 @@ public:
 	/* Get an existing execution or create a new one.
 	 * Return NULLPTR when a strong cycle was found; return the execution
 	 * otherwise.  PLACE is the place of where the dependency was
-	 * declared.    
+	 * declared.  LINK is the link from the existing parent to the
+	 * new execution. 
 	 */ 
 	static Execution *get_execution(const Target &target, 
 					Link &&link,
@@ -346,21 +347,26 @@ public:
 	/* Find a cycle.  Assuming that the edge parent->child, find a
 	 * directed cycle that would be created.  Start at PARENT and
 	 * perform a depth-first search upwards in the hierarchy to find
-	 * CHILD.  
+	 * CHILD.  LINK is the LINK that would be added between child
+	 * and parent, and would create a cycle. 
 	 */
 	static bool find_cycle2(const Execution *const parent,
-				const Execution *const child);
+				const Execution *const child,
+				const Link &link);
 
 	static bool find_cycle2(vector <const Execution *> &path,
-				const Execution *const child); 
+				const Execution *const child,
+				const Link &link); 
 
 	/* Print the error message of a cycle on rule level.
 	 * Given the path [a, b, c, d, ..., x], the found cycle is
 	 * [x <- a <- b <- c <- d <- ... <- x], where A <- B denotes
 	 * that A is a dependency of B.  For each edge in this cycle,
-	 * output one line. 
+	 * output one line.  LINK is the link (x <- a), which is not yet
+	 * created in the execution objects. 
 	 */ 
-	static void cycle_print(const vector <const Execution *> &path);
+	static void cycle_print(const vector <const Execution *> &path,
+				const Link &link);
 
 //	/* Find a cycle between CHILD and one of its parent executions.  This
 //	 * is the main entry point of the two find_cycle() functions. 
@@ -1591,7 +1597,8 @@ void job_print_jobs()
 
 // TODO remove '2' in the name 
 bool Execution::find_cycle2(const Execution *const parent, 
-			    const Execution *const child)
+			    const Execution *const child,
+			    const Link &link)
 {
 //	assert(parent != child); 
 
@@ -1613,14 +1620,15 @@ bool Execution::find_cycle2(const Execution *const parent,
 	vector <const Execution *> path;
 	path.push_back(parent); 
 
-	return find_cycle2(path, child); 
+	return find_cycle2(path, child, link); 
 }
 
 bool Execution::find_cycle2(vector <const Execution *> &path,
-			    const Execution *const child)
+			    const Execution *const child,
+			    const Link &link)
 {
 	if (same_rule(path.back(), child)) {
-		cycle_print(path); 
+		cycle_print(path, link); 
 		return true; 
 	}
 
@@ -1632,7 +1640,7 @@ bool Execution::find_cycle2(vector <const Execution *> &path,
 
 		path.push_back(next); 
 
-		bool found= find_cycle2(path, child);
+		bool found= find_cycle2(path, child, link);
 		if (found)
 			return true;
 
@@ -1803,7 +1811,7 @@ Execution *Execution::get_execution(const Target &target,
 		assert(execution->parents.size() == 1); 
 	}
 
-	if (find_cycle2(parent, execution)) {
+	if (find_cycle2(parent, execution, link)) {
 		parent->raise(ERROR_LOGICAL);
 		return nullptr;
 	}
@@ -2409,7 +2417,8 @@ bool Execution::read_variable(string &variable_name,
 		return false;
 }
 
-void Execution::cycle_print(const vector <const Execution *> &path)
+void Execution::cycle_print(const vector <const Execution *> &path,
+			    const Link &link)
 {
 	assert(path.size() > 0); 
 
@@ -2417,20 +2426,27 @@ void Execution::cycle_print(const vector <const Execution *> &path)
 	vector <string> names;
 	names.resize(path.size());
 	
-	for (unsigned i= 0;  i < path.size();  ++i) {
+	for (unsigned i= 0;  i + 1 < path.size();  ++i) {
 		names.at(i)= 
-			path.at(i)->parents.at((Execution *)path.at((i+1) % path.size()))
+			path.at(i)->parents.at((Execution *)path.at(i+1))
 			.dependency->get_single_target().format();
 	}
+
+	names.back()= link.dependency->get_single_target().format(); 
 
 	for (signed i= path.size() - 1;  i >= 0;  --i) {
 
 		/* Don't show a message for [...[A]...] -> X links */ 
-		if (path.at(i)->parents.at((Execution *)path.at((i+1) % path.size()))
+		if (i != 0 &&
+		    path.at(i - 1)->parents.at((Execution *)path.at(i))
 		    .dependency->get_flags() & F_READ)
 			continue;
 
-		path.at((i + path.size() - 1) % path.size())->parents.at((Execution *)path[i])
+		(
+		 i == 0 
+		 ? link
+		 : path[i - 1]->parents.at((Execution *)path[i])
+		 )
 			.place
 			<< fmt("%s%s depends on %s",
 			       i == (int)(path.size() - 1) 
@@ -2439,7 +2455,7 @@ void Execution::cycle_print(const vector <const Execution *> &path)
 				  : "cyclic dependency: ") 
 			       : "",
 			       names[i],
-			       names.at((i + path.size() - 1) % path.size()));
+			       names[(i + path.size() - 1) % path.size()]);
 	}
 
 	path.back()->print_traces();

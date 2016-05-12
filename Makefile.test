@@ -17,11 +17,11 @@ include Makefile
 clean-test:  clean
 	rm -f stu.1 version.hh stu.prof stu stu.debug stu.text test_* error.log
 
-# Some of the specialized warning flags may not be present in other
+# Some of the specialized flags may not be present in other
 # compilers and compiler versions than those used by the authors.  Just
 # remove the flags if you use such a compiler. 
 
-CXXFLAGS_DEBUG=  -ggdb \
+CXXFLAGS_DEBUG=  -ggdb -Og \
     -Wall -Wextra -Wunused -pedantic \
     -Wundef -Wc++11-compat -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
     -Werror                 \

@@ -7,7 +7,24 @@ in the file MIGRATION.
 
 2016-XX-XX  Version 1.14:
 
-* Rules with multiple targets are possible
+* Rules with multiple targets are possible, as in
+
+A B C: X Y { # Build A B C }
+
+This would previous have been written as
+
+A: X Y { # Build A B C }
+B: A;
+C: A;
+
+with the difference that using the new form, Stu will rebuild 'B' and
+'C' when any of these has been removed. 
+
+* In the error message for cyclic dependencies, Stu doesn't show anymore
+  how each target was instantiated if it was dynamic, in consistence
+  with other error messages
+* In the error message for cyclic dependencies, Stu now also shows the
+  trace from the cycle to the top-level target
 
 2016-05-01  Version 1.13:
 

@@ -1593,7 +1593,7 @@ void job_print_jobs()
 bool Execution::find_cycle2(const Execution *const parent, 
 			    const Execution *const child)
 {
-	assert(parent != child); 
+//	assert(parent != child); 
 
 	/* Happens when the parent is the root execution */ 
 	if (parent->param_rule == nullptr)
@@ -1603,7 +1603,7 @@ bool Execution::find_cycle2(const Execution *const parent,
 	if (child->param_rule == nullptr)
 		return false; 
 
-	assert(! same_rule(parent, child)); 
+//	assert(! same_rule(parent, child)); 
 
 	// TODO save only a vector of (Execution *) in a stack, instead
 	// of full traces, and generate the traces only when an error is
@@ -2411,6 +2411,8 @@ bool Execution::read_variable(string &variable_name,
 
 void Execution::cycle_print(const vector <const Execution *> &path)
 {
+	assert(path.size() > 0); 
+
 	/* Indexes are parallel to PATH */ 
 	vector <string> names;
 	names.resize(path.size());
@@ -2431,14 +2433,20 @@ void Execution::cycle_print(const vector <const Execution *> &path)
 		path.at((i + path.size() - 1) % path.size())->parents.at((Execution *)path[i])
 			.place
 			<< fmt("%s%s depends on %s",
-			       i == (int)(path.size() - 1) ? "cyclic dependency: " : "",
+			       i == (int)(path.size() - 1) 
+			       ? (path.size() == 1 
+				  ? "target must not depend on itself: " 
+				  : "cyclic dependency: ") 
+			       : "",
 			       names[i],
 			       names.at((i + path.size() - 1) % path.size()));
 	}
+
+	path.back()->print_traces();
 }
 
 bool Execution::same_rule(const Execution *execution_a,
-			   const Execution *execution_b)
+			  const Execution *execution_b)
 {
 	return 
 		execution_a->param_rule != nullptr &&

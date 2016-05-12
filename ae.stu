@@ -1,0 +1,5 @@
+# Error?  Yes, 'X.Y' matches both targets. 
+
+A: X.Y { cp X.Y A }
+
+X.$name $name.Y { touch X.$name $name.Y }

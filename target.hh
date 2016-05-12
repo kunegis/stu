@@ -479,6 +479,20 @@ public:
 	/* Whether this is a valid name */
 	bool valid() const;
 
+	bool operator == (const Param_Name &that) const {
+		if (this->get_n() != that.get_n())
+			return false;
+		for (unsigned i= 0;  i < get_n();  ++i) {
+			if (this->parameters[i] != that.parameters[i])
+				return false;
+			if (this->texts[i] != that.texts[i])
+				return false;
+		}
+		if (this->texts[get_n()] != that.texts[get_n()])
+			return false;
+		return true;
+	}
+
 	/* Whether anchoring A dominates anchoring B. 
 	 * The anchorings do not need to have the same number of parameters. 
 	 */
@@ -536,6 +550,15 @@ public:
 	 * have zero parameters. */ 
 	Target unparametrized() const {
 		return Target(type, param_name.unparametrized());
+	}
+
+	bool operator == (const Param_Target &that) const {
+		return this->type == that.type &&
+			this->param_name == that.param_name; 
+	}
+
+	bool operator != (const Param_Target &that) const {
+		return ! (*this == that);
 	}
 };
 

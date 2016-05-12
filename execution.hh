@@ -1171,21 +1171,18 @@ void Execution::unlink(Execution *const parent,
 	/* Propagate dynamic dependencies */ 
 	if (flags_child & F_READ) {
 		
-		/* Always in a [A] -> A link */
+		/* Always in a [...[A]...] -> A link */
 
 		assert(dynamic_pointer_cast <Direct_Dependency> (dependency_child)
 		       && dynamic_pointer_cast <Direct_Dependency> (dependency_child)
 		       ->place_param_target.type == Type::FILE);
-//		assert(child->target.type == Type::FILE); 
-		assert(dependency_parent->get_single_target().type == Type::DYNAMIC_FILE); 
-//		assert(dynamic_pointer_cast <Direct_Dependency> (dependency_parent)
-//		       && dynamic_pointer_cast <Direct_Dependency> (dependency_parent)
-//		       ->place_param_target.type == Type::DYNAMIC_FILE);
-//		assert(parent->target.type.is_dynamic());
+
+		assert(dependency_parent->get_single_target().type.is_dynamic());
+		assert(dependency_parent->get_single_target().type.is_any_file());
+
 		assert(parent->targets.size() == 1
 		       && child->targets.size() == 1
 		       && parent->targets.front().name == child->targets.front().name);
-//		assert(parent->target.name == child->target.name); 
 		assert(child->done.get_k() == 0); 
 		
 		bool do_read= true;
@@ -2432,7 +2429,10 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 			.dependency->get_single_target().format();
 	}
 
-	names.back()= link.dependency->get_single_target().format(); 
+	names.back()= path.back()->parents.begin()->second
+		.dependency->get_single_target().format();
+		
+//	names.back()= link.dependency->get_single_target().format(); 
 
 	for (signed i= path.size() - 1;  i >= 0;  --i) {
 
@@ -2455,10 +2455,31 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 				  : "cyclic dependency: ") 
 			       : "",
 			       names[i],
-			       names[(i + path.size() - 1) % path.size()]);
+			       i == 0
+			       ? link.dependency->get_single_target().format()
+			       : names[i - 1]
+//			       names[(i + path.size() - 1) % path.size()]
+			       );
+	}
+
+	/* If the two targets are different (but have the same rule
+	 * because they match the same pattern), then output a notice to
+	 * that effect */ 
+	if (link.dependency->get_single_target() !=
+	    path.back()->parents.begin()->second
+	    .dependency->get_single_target()) {
+		path.back()
+//		path.back()->parents.begin()->first
+			->rule->place
+			<< fmt("both %s and %s match the same rule",
+			       names.back(),
+			       link.dependency->get_single_target().format()
+			       );
 	}
 
 	path.back()->print_traces();
+
+	explain_cycle(); 
 }
 
 bool Execution::same_rule(const Execution *execution_a,

@@ -329,4 +329,11 @@ void explain_parameter_character()
 	      stderr); 
 }
 
+void explain_cycle()
+{
+	if (! option_explain)  return;
+	fputs("Cycles are verified on the rule level, not on the target level.\n",
+	      stderr);
+}
+
 #endif /* ! ERROR_HH */ 

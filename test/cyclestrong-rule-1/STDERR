@@ -1,1 +1,3 @@
-main.stu:10:17: target must not depend on itself: 'list.${PROGRAM}' instantiated as 'list.a' depends on 'list.${PROGRAM}' instantiated as 'list.a.c'
+main.stu:9:17: target must not depend on itself: 'list.a' depends on 'list.a.c'
+main.stu:9:1: both 'list.a' and 'list.a.c' match the same rule
+main.stu:5:5: 'list.a' is needed by 'A'

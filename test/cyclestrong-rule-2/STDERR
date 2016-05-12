@@ -1,2 +1,4 @@
-main.stu:13:16: cyclic dependency: 'list.1.${NAME}' instantiated as 'list.1.a' depends on 'list.2.${NAME}' instantiated as 'list.2.a'
-main.stu:18:16: 'list.2.${NAME}' instantiated as 'list.2.a' depends on 'list.1.${NAME}' instantiated as 'list.1.a.c'
+main.stu:13:16: cyclic dependency: 'list.1.a' depends on 'list.2.a'
+main.stu:18:16: 'list.2.a' depends on 'list.1.a.c'
+main.stu:13:1: both 'list.1.a' and 'list.1.a.c' match the same rule
+main.stu:8:5: 'list.1.a' is needed by 'A'

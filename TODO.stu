@@ -13,6 +13,11 @@
 #
 
 #
+# Should we use -O2 instead of -O3 ?  How smaller does the executable
+# get?  
+#
+
+#
 # New syntax for optionless arguments, which
 # allows characters such as []@?!& and maybe also () to have their Stu
 # meaning, but whitespace to be allowed as part of filenames. Other

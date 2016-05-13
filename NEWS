@@ -11,7 +11,7 @@ in the file MIGRATION.
 
 A B C: X Y { # Build A B C }
 
-This would previous have been written as
+This would previously have been written as
 
 A: X Y { # Build A B C }
 B: A;
@@ -26,6 +26,7 @@ with the difference that using the new form, Stu will rebuild 'B' and
 * In the error message for cyclic dependencies, Stu now also shows the
   trace from the cycle to the top-level target
 * "Phony targets" were renamed to "transient targets" 
+* The default compilation mode is now -O2 instead of -O3
 
 2016-05-01  Version 1.13:
 

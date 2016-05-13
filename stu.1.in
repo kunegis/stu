@@ -571,7 +571,7 @@ notation.  This is the syntax after processing of statements, which are
 introduced with '%'. 
 
     rule_list:           rule*
-    rule:                ('@' NAME | ['>'] NAME) [':' expression_list] 
+    rule:                ('@' NAME | ['>'] NAME)+ [':' expression_list] 
                          ('{' COMMAND '}' | ';') 
                          | NAME '=' '{' CONTENT '}'
                          | NAME '=' '!'* NAME ';'

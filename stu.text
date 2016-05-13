@@ -573,7 +573,7 @@ SYNTAX
        with '%'.
 
            rule_list:           rule*
-           rule:                ('@' NAME | ['>'] NAME) [':' expression_list]
+           rule:                ('@' NAME | ['>'] NAME)+ [':' expression_list]
                                 ('{' COMMAND '}' | ';')
                                 | NAME '=' '{' CONTENT '}'
                                 | NAME '=' '!'* NAME ';'

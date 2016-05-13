@@ -1,0 +1,4 @@
+# Error
+
+A B = C;
+C { touch C }

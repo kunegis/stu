@@ -1,0 +1,5 @@
+# Error.  Correctly show the trace of both 'A' targets
+
+A: { touch A }
+
+B A { touch A B }

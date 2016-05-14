@@ -1,4 +1,16 @@
 #! /bin/sh
+#
+# Generate the manpage from the template.
+# 
+# INPUT FILES
+#	
+#	stu.1.in	The Stu manpage template
+#	VERSION
+#
+# OUTPUT FILES
+#
+#	stu.1		The Stu manpage
+#
 
 VERSION="$(cat VERSION)" 
 DATE="$(date '+%B %Y')" 

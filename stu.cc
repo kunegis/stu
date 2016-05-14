@@ -295,14 +295,14 @@ int main(int argc, char **argv, char **envp)
 				exit(ERROR_FATAL);
 			}
 
-			if (rule_first->place_param_target.place_param_name.get_n() != 0) {
+			if (rule_first->is_parametrized()) {
 				rule_first->place <<
 					"the first rule given must not be parametrized if no target is given";
 				exit(ERROR_FATAL);
 			}
 
 			dependencies.push_back
-				(make_shared <Direct_Dependency> (0, rule_first->place_param_target));  
+				(make_shared <Direct_Dependency> (0, *(rule_first->place_param_targets[0])));  
 		}
 
 		/* Execute */

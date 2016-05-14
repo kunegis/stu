@@ -1,0 +1,5 @@
+# Error: no dominating pattern 
+
+A: a.b.c { touch A }
+
+a.$x.$y $x.b.$y { touch "a.$x.$y" "$x.b.$y" }

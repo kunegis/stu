@@ -246,8 +246,8 @@ private:
 	 */
 	void raise(int error_);
 
-	void write_content(const char *filename, 
-			   Command &command); 
+	/* Create the file FILENAME with content from COMMAND */
+	void write_content(const char *filename, const Command &command); 
 
 	/* Read the content of the file into a string as the
 	 * variable value.  THIS is the variable target.  Return TRUE on
@@ -738,7 +738,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 				text_target.c_str());
 		}
 
-		/* Create file with content */
 		write_content(targets.front().name.c_str(), *(rule->command)); 
 		return false;
 	}
@@ -754,8 +753,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 		phonies[target.name]= timestamp_now; 
 	}
 
-	if (rule->redirect_output)
-		assert(rule->place_param_target.type == Type::FILE); 
+	if (rule->redirect_index >= 0)
+		assert(rule->place_param_targets[rule->redirect_index]->type == Type::FILE); 
 
 	assert(jobs >= 1); 
 
@@ -773,17 +772,19 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 		if (rule->is_copy) {
 
-			assert(rule->place_param_target.type == Type::FILE); 
+			assert(rule->place_param_targets.size() == 1); 
+			assert(rule->place_param_targets.front()->type == Type::FILE); 
 			
 			pid= job.start_copy
-				(rule->place_param_target.place_param_name.unparametrized(),
+				(rule->place_param_targets[0]->place_param_name.unparametrized(),
 				 rule->filename.unparametrized());
 		} else {
 			pid= job.start
 				(rule->command->command, 
 				 mapping,
-				 rule->redirect_output ? 
-				 rule->place_param_target.place_param_name.unparametrized() : "",
+				 rule->redirect_index < 0 ? "" :
+				 rule->place_param_targets[rule->redirect_index]
+				 ->place_param_name.unparametrized(),
 				 rule->filename.unparametrized(),
 				 rule->command->place); 
 		}
@@ -1825,8 +1826,9 @@ void Execution::print_command() const
 	} 
 
 	if (rule->is_copy) {
-		/* We hide the fact to the user that we are using '--' */ 
-		string cp_target= rule->place_param_target.place_param_name.format();
+		/* To the user, we hide the fact that we are using '--' */ 
+		assert(rule->place_param_targets.size() == 1); 
+		string cp_target= rule->place_param_targets[0]->place_param_name.format();
 		string cp_source= rule->filename.format();
 		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str()); 
 		return; 
@@ -1842,8 +1844,9 @@ void Execution::print_command() const
 	bool single_line= rule->command->get_lines().size() == 1;
 	bool begin= true; 
 
-	string filename_output= rule->redirect_output 
-		? rule->place_param_target.place_param_name.unparametrized() : "";
+	string filename_output= rule->redirect_index < 0 ? "" :
+		rule->place_param_targets[rule->redirect_index]
+		->place_param_name.unparametrized();
 	string filename_input= rule->filename.unparametrized(); 
 
 	/* Redirections */
@@ -2071,7 +2074,7 @@ void Execution::print_as_job() const
 }
 
 void Execution::write_content(const char *filename, 
-			      Command &command)
+			      const Command &command)
 {
 	FILE *file= fopen(filename, "w"); 
 
@@ -2159,9 +2162,19 @@ bool Execution::read_variable(string &variable_name,
 	error_fd:
 		close(fd); 
 	error:
-		param_rule->place_param_target.place <<
-			fmt("generated file '%s' for variable dependency was built but cannot be found now", 
-			    target.name);
+		assert(dynamic_pointer_cast <Direct_Dependency> (dependency)); 
+		Target target_variable= 
+			dynamic_pointer_cast <Direct_Dependency> (dependency)->place_param_target
+			.unparametrized(); 
+
+		for (auto const &place_param_target: rule->place_param_targets) {
+			if (place_param_target->unparametrized() == target_variable) {
+				place_param_target->place <<
+					fmt("generated file %s was built but cannot be found now", 
+					    place_param_target->format());
+				break;
+			}
+		}
 		print_traces();
 
 		raise(ERROR_BUILD); 

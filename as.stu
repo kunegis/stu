@@ -1,0 +1,16 @@
+# Error:  the target 'V' existed when it was checked, but does not exist
+# anymore when $V is loaded. 
+
+A: B $[V] C { 
+	touch A
+}
+
+B {
+	touch V
+	touch B
+}
+
+C {
+	rm V 
+	touch C
+}

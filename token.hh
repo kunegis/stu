@@ -67,9 +67,9 @@ private:
 	/* The individual lines of the command.  Empty lines and leading
 	 * spaces are not included.  These lines are only used for
 	 * output and writing content, not for execution.  May be null.
-	 * Generated on demand.  
+	 * Generated on demand, and therefore declared as mutable.  
 	 */ 
-	unique_ptr <vector <string> > lines;
+	mutable unique_ptr <vector <string> > lines;
 
 public:
 
@@ -85,7 +85,7 @@ public:
 		return place; 
 	}
 
-	const vector <string> &get_lines();
+	const vector <string> &get_lines() const;
 };
 
 Token::~Token() { }
@@ -98,7 +98,7 @@ Command::Command(string command_,
 }	
 
 const vector <string> &
-Command::get_lines()
+Command::get_lines() const
 {
 	if (lines != nullptr) {
 		return *lines; 

@@ -1,3 +1,5 @@
 # Error:  copy to multiple files.
 
 A B = C;
+
+C { touch C }

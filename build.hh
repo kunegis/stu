@@ -323,6 +323,7 @@ shared_ptr <Rule> Build::build_rule()
 		}
 
 		if (command= is <Command> ()) {
+			/* Hardcoded content */ 
 			++iter; 
 			assert(place_param_targets.size() != 0); 
 			if (place_param_targets.size() != 1) {
@@ -348,6 +349,7 @@ shared_ptr <Rule> Build::build_rule()
 			}
 
 			if (name_copy= is <Name_Token> ()) {
+				/* Copy rule */ 
 				++iter;
 
 				/* Check that the source file contains
@@ -392,12 +394,22 @@ shared_ptr <Rule> Build::build_rule()
 					throw ERROR_LOGICAL;
 				}
 
+				/* Check that there is just a single
+				 * target */
+				if (place_param_targets.size() != 1) {
+					place_equal << "there must not be a copy rule";
+					place_param_targets[0]->place << "with multiple targets";
+					throw ERROR_LOGICAL; 
+				}
+
 				if (place_param_targets[0]->type != Type::FILE) {
 					assert(place_param_targets[0]->type == Type::TRANSIENT); 
 					place_equal << "copy rule cannot be used";
 					place_param_targets[0]->place << "with transient target"; 
 					throw ERROR_LOGICAL;
 				}
+
+				assert(place_param_targets.size() == 1); 
 
 				/* Append target name when source ends
 				 * in slash */

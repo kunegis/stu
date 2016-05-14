@@ -1,4 +1,0 @@
-$NAME.eps $NAME.runtime:  calculate {
-	./calculate $NAME -o $NAME.eps --runtime=$NAME.runtime
-}
-

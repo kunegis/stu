@@ -104,7 +104,7 @@ private:
 	 * checking whether a file was 
 	 * rebuild to decide whether to remove it after a command failed or
 	 * was interrupted.  This is UNDEFINED when the file did
-	 * not exist, or the target is not a file
+	 * not exist, or no target is a file. 
 	 */ 
 	Timestamp timestamp_old; 
 
@@ -287,11 +287,17 @@ private:
 	/* The currently running executions by process IDs */ 
 	static unordered_map <pid_t, Execution *> executions_by_pid;
 
-	/* The timestamps for phonies.  This container plays the role of
-	 * the file system for phonies, holding their timestamps, and
-	 * remembering whether they have been executed. 
+	/* The timestamps for transient targets.  This container plays the role of
+	 * the file system for transient targets, holding their timestamps, and
+	 * remembering whether they have been executed.  Note that if a
+	 * rule has both file targets and transient targets, and all
+	 * file targets are up to date and the transient targets have
+	 * all their dependencies up to date, then the command is not
+	 * executed, even though it was never execute in the current
+	 * invocation of Stu. In that case, the transient targets are
+	 * never insert in this map. 
 	 */
-	static unordered_map <string, Timestamp> phonies;
+	static unordered_map <string, Timestamp> transients;
 
 	/* The timepoint of the last time wait() returned.  No file in the
 	 * file system should be newer than this. 
@@ -360,7 +366,7 @@ private:
 
 unordered_map <pid_t, Execution *> Execution::executions_by_pid;
 unordered_map <Target, Execution *> Execution::executions_by_target;
-unordered_map <string, Timestamp> Execution::phonies;
+unordered_map <string, Timestamp> Execution::transients;
 Timestamp Execution::timestamp_last;
 Rule_Set Execution::rule_set; 
 long Execution::jobs= 1;
@@ -574,6 +580,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	if (! checked) {
 		checked= true; 
+
 		/* Set to -1 when a file is found not to exist */ 
 		exists= +1; 
 
@@ -613,13 +620,12 @@ bool Execution::execute(Execution *parent, Link &&link)
 								     target.name));
 						} else 
 							need_build= true;
-					} else 
-						timestamp= timestamp_old;
+					} 
 					
 				} else {
 					/* stat() returned an error */ 
 
-					/* Note:  Rule may be NULLPTR here for optional
+					/* Note:  Rule may be null here for optional
 					 * dependencies that do not exist and do not have a
 					 * rule */
 
@@ -672,17 +678,28 @@ bool Execution::execute(Execution *parent, Link &&link)
 				return false;
 			}		
 		}
-
+		
+		if (timestamp_old.defined() && 
+		    (! timestamp.defined() || timestamp < timestamp_old)) {
+			timestamp= timestamp_old;
+		}
 	}
 
 	if (! need_build) {
+		bool has_file= false;
+		for (const Target &target:  targets) {
+			if (target.type == Type::FILE) {
+				has_file= true; 
+			}
+		}
 		for (const Target &target:  targets) {
 			if (target.type != Type::TRANSIENT) 
 				continue; 
-			if (phonies.count(target.name) == 0) {
+			if (transients.count(target.name) == 0) {
 				/* Transient was not yet executed */ 
-				if (! no_execution) 
+				if (! no_execution && ! has_file) {
 					need_build= true; 
+				}
 				break;
 			}
 		}
@@ -752,8 +769,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 			continue; 
 		Timestamp timestamp_now= Timestamp::now(); 
 		assert(timestamp_now.defined()); 
-		assert(phonies.count(target.name) == 0); 
-		phonies[target.name]= timestamp_now; 
+		assert(transients.count(target.name) == 0); 
+		transients[target.name]= timestamp_now; 
 	}
 
 	if (rule->redirect_index >= 0)
@@ -1171,7 +1188,7 @@ void Execution::unlink(Execution *const parent,
 	}
 
 	/*
-	 * Propagate variables over phonies without commands and dynamic
+	 * Propagate variables over transient targets without commands and dynamic
 	 * targets
 	 */
 	if (child->is_dynamic() ||
@@ -1949,7 +1966,7 @@ bool Execution::deploy(const Link &link,
 
 	Stack avoid_child= link_child.avoid;
 
-	/* Carry flags over phonies */ 
+	/* Carry flags over transient targets */ 
 	if (! targets.empty()) {
 		Target target= link.dependency->get_single_target().unparametrized();
 

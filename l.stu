@@ -1,4 +1,4 @@
-# Flags do not propagate over phonies with command
+# Flags do not propagate over transient targets with command
 
 A: ?@x { cp B A }
 @x:  B { echo bbb }

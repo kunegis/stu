@@ -44,7 +44,7 @@ i.e., they are equivalent to using the -C option.
 Treat all trivial dependencies (declared with '&') as non-trivial.
 .IP "-c FILENAME"
 Pass a target filename, without Stu syntax.  This option only allows
-file targets to be specified, not phonies. 
+file targets to be specified, not transient targets. 
 .IP "-C EXPRESSION"
 Pass a target using full Stu syntax.  The given expression is parsed as
 if it was given as one or more dependencies in a Stu file.  As a result,
@@ -287,9 +287,9 @@ The basic syntax is similar to that of make, but does not rely on
 mandatory whitespace.  Instead of tabs, the commands are enclosed in
 curly braces.  
 
-Stu syntax supports two types of objects:  files and phonies.  Files are
+Stu syntax supports two types of objects:  file targets and transient targets.  Files are
 any file in the file system, and are always  
-referenced by their filename.  Phonies have names beginning with the '@'
+referenced by their filename.  Transient targets have names beginning with the '@'
 symbol and do not correspond to files, but can have dependencies and
 commands.  
 
@@ -329,7 +329,7 @@ For a transient, the same syntax is used as for a file:
 If a transient target includes a command, Stu will have no way of
 remembering that the command was executed, and the command will be
 executed again on the next invocation of Stu, even if the previous
-invocation was successful.  Therefore, commands for phonies will
+invocation was successful.  Therefore, commands for transient targets will
 typically output build progress information, or perform actions that do
 not fit well the build system paradigm, such as removing or deploying
 built files. 
@@ -406,7 +406,7 @@ to be rebuild does not imply that the target has to be rebuilt.
     [@NAME]  A dynamic transient target 
 
 Brackets can also be used around a transient dependency name.  In that case, all
-dependencies of the given phonies will be considered dynamic
+dependencies of the given transient targets will be considered dynamic
 dependencies. 
 
     $[NAME] A variable dependency

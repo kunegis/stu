@@ -1,3 +1,0 @@
-
-A:  ?@x { cp B A }
-@x B { echo correct >B }

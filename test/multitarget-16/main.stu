@@ -1,0 +1,6 @@
+
+A:  ?@x { 
+	[ -e B ] && exit 1
+	touch A
+}
+@x B { echo correct >B }

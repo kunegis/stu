@@ -1,0 +1,2 @@
+main.stu:5:7: command for 'C' failed with exit code 1
+main.stu:3:4: 'C' is needed by 'A'

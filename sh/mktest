@@ -192,7 +192,7 @@ do
 		# Exit code
 		exitcode_correct=0
 		if [ -r EXITCODE ]; then
-			exitcode_correct="$(sed -e '/^[[:space:]]*$/d' <EXITCODE)"
+			exitcode_correct="$(sed -e '/^[[:space:]]*$/d;s/[[:space:]]\{1,\}//g' <EXITCODE)"
 			if [ "$exitcode_correct" = 0 ]; then
 				echo >&2 "$0: *** Content of EXITCODE should not be zero"
 				error=1

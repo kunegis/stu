@@ -251,7 +251,7 @@ shared_ptr <Rule> Build::build_rule()
 		}
 		if (parameters_i != parameters_0) {
 			place_param_targets[i]->place <<
-				fmt("parameters of target %s", 
+				fmt("parameters of target %s differ", 
 				    place_param_targets[i]->format());
 			place_param_targets[0]->place <<
 				fmt("from parameters of target %s in rule with multiple targets",

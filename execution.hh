@@ -1001,8 +1001,9 @@ void Execution::waited(int pid, int status)
 
 			
 			if (! param_rule->is_copy) {
+				Target target= parents.begin()->second.dependency->get_single_target().unparametrized(); 
 				param_rule->command->place <<
-					fmt("command for %s %s", targets.front().format(), 
+					fmt("command for %s %s", target.format(), 
 					    reason); 
 			} else {
 				/* Copy rule */

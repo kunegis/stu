@@ -64,8 +64,8 @@ public:
 	     int redirect_index_,
 	     bool is_copy_); 
 
-	/* Regular rule:  not a copy rule */
-	Rule(shared_ptr <Place_Param_Target> place_param_target_,
+	/* Regular rule (all cases excpt copy rules) */
+	Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	     const vector <shared_ptr <Dependency> > &dependencies_,
 	     shared_ptr <const Command> command_,
 	     bool is_hardcode_,
@@ -73,8 +73,7 @@ public:
 	     const Param_Name &filename_input_);
 
 	/* A copy rule.  When the places are EMPTY, the corresponding
-	 * flag is not used. 
-	 */
+	 * flag is not used. */
 	Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	     shared_ptr <Place_Param_Name> place_param_source_,
 	     const Place &place_existence);
@@ -156,24 +155,26 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	   is_copy(is_copy_)
 {  }
 
-Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
+Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	   const vector <shared_ptr <Dependency> > &dependencies_,
 	   shared_ptr <const Command> command_,
 	   bool is_hardcode_,
 	   bool is_redirect_,
 	   const Param_Name &filename_)
-	:  place_param_targets{place_param_target_}, 
+	:  place_param_targets(place_param_targets_), 
 	   dependencies(dependencies_),
-  	   place(place_param_target_->place),
+  	   place(place_param_targets_[0]->place),
 	   command(command_),
 	   filename(filename_),
 	   is_hardcode(is_hardcode_),
 	   redirect_index(is_redirect_ ? 0 : -1),
 	   is_copy(false)
 { 
+	assert(place_param_targets_.size() != 0); 
+
 	/* Check that all dependencies only include
 	 * parameters from the target */ 
-	unordered_set <string> parameters;
+	set <string> parameters;
 	for (auto &parameter:  get_parameters()) {
 		parameters.insert(parameter); 
 	}

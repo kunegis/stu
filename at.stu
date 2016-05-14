@@ -1,0 +1,3 @@
+# Error:  cannot have to output redirections
+
+>A >B { echo Hello ; touch A B }

@@ -1,2 +1,1 @@
-main.stu:3:3: expected a command, ':', ';', or '='
-main.stu:3:1: for target 'A'
+main.stu:3:7: file 'A' was not built by command

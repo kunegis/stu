@@ -420,10 +420,10 @@ public:
 		return fmt("'%s'", format_bare()); 
 	}
 
-	/* Return whether there are duplicate parameter names.
-	 * If TRUE, write the first found into PARAMETER. 
+	/* Check whether there are duplicate parameters.  Return the
+	 * name of the found duplicate parameter, or "" none is found. 
 	 */
-	bool has_duplicate_parameters(string &parameter) const;
+	string get_duplicate_parameter() const;
 
 	/* Whether this is a valid name */
 	bool valid() const;
@@ -701,19 +701,18 @@ bool Param_Name::match(const string name,
 	return true;
 }
 
-bool Param_Name::has_duplicate_parameters(string &parameter) const
+string Param_Name::get_duplicate_parameter() const
 {
 	unordered_set <string> seen;
 
-	for (auto &i:  parameters) {
-		if (seen.count(i)) {
-			parameter= i; 
-			return true;
+	for (auto &parameter:  parameters) {
+		if (seen.count(parameter)) {
+			return parameter; 
 		}
-		seen.insert(i); 
+		seen.insert(parameter); 
 	}
 	
-	return false;
+	return "";
 }
 
 bool Param_Name::valid() const 

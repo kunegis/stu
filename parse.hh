@@ -227,7 +227,8 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			const size_t BUFLEN= 0x1000;
 			char *mem= nullptr;
 			size_t len= 0;
-			for (;;) {
+
+			while (true) {
 				char *mem_new= (char *)realloc(mem, len + BUFLEN);
 				if (mem_new == nullptr) {
 					free(mem);

@@ -1,0 +1,3 @@
+# Error:  assigned content with two targets
+
+A B = {content}

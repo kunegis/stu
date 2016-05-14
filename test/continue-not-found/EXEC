@@ -1,5 +1,4 @@
 #! /bin/sh
-
 #
 # Bug:  invoke the following, it leads to a failed assertion:
 #
@@ -16,13 +15,13 @@
 exitcode="$?"
 
 if [ "$exitcode" != 1 ] ; then
-   echo >&2 "*** wrong exit code"
-   exit 1
+	echo >&2 "*** wrong exit code"
+	exit 1
 fi
 
 if ! fgrep -q "No rule to build 'ksagiwwiuecwibve'" list.err ; then
-   echo >&2 "*** missing error message"
-   exit 1
+	echo >&2 "*** missing error message"
+	exit 1
 fi
 
 exit 0

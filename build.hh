@@ -8,6 +8,8 @@
  * A Yacc-like description of Stu syntax is given in the manpage. 
  */ 
 
+#include <set>
+
 #include "rule.hh"
 #include "token.hh"
 
@@ -137,87 +139,132 @@ void Build::build_rule_list(vector <shared_ptr <Rule> > &ret)
 
 shared_ptr <Rule> Build::build_rule()
 {
-	if (! (is <Name_Token> () || 
-	       is_operator('@') ||
-	       is_operator('>'))) {
-		return nullptr; 
-	}
+	/* Used to check that when this function fails (i.e., returns
+	 * null), is has not read any tokens. */ 
+	const auto iter_begin= iter;
 
 	/* T_EMPTY when output is not redirected */
 	Place place_output; 
 
-	if (is_operator('>')) {
-		place_output= (*iter)->get_place();
-		assert(! place_output.empty()); 
+	/* Index of the target that has the output, or -1 */ 
+	int index_output= -1; 
+
+	vector <shared_ptr <Place_Param_Target> > place_param_targets; 
+
+	while (iter != tokens.end()) {
+		
+		if (is_operator('>')) {
+			if (place_param_targets.size() != 0) {
+				(*iter)->get_place() <<
+					"second output redirection with '>' is invalid";
+				place_output <<
+					"after previous output redirection"; 
+				throw ERROR_LOGICAL;
+			}
+			place_output= (*iter)->get_place();
+			assert(! place_output.empty()); 
+			index_output= place_param_targets.size(); 
+			++iter;
+			if (iter == tokens.end()) {
+				place_end << "expected a filename";
+				place_output << "after '>'"; 
+				throw ERROR_LOGICAL;
+			}
+			else if (! (is <Name_Token> () || 
+				    is_operator('@'))) {
+				(*iter)->get_place() << "expected a filename";
+				place_output << "after '>'"; 
+				throw ERROR_LOGICAL;
+			}
+		}
+
+		Place place_target= (*iter)->get_place();
+
+		Type type= Type::FILE;
+
+		if (is_operator('@')) {
+			Place place_at= (*iter)->get_place();
+
+			if (! place_output.empty()) {
+				place_at << "transient target is invalid";
+				place_output << "after '>'"; 
+				throw ERROR_LOGICAL;
+			}
+
+			++iter;
+			if (iter == tokens.end()) {
+				place_end << "expected the name of transient target";
+				place_at << "after '@'";
+				throw ERROR_LOGICAL;
+			}
+			if (! is <Name_Token> ()) {
+				(*iter)->get_place() << "expected the name of transient target";
+				place_at << "after '@'";
+				throw ERROR_LOGICAL;
+			}
+
+			type= Type::TRANSIENT;
+		}
+		
+		if (! is <Name_Token> ()) 
+			break;
+
+		/* Target */ 
+		shared_ptr <Name_Token> target_name= is <Name_Token> ();
 		++iter;
-		if (iter == tokens.end()) {
-			place_end << "expected a filename";
-			place_output << "after '>'"; 
+
+		if (! target_name->valid()) {
+			place_target <<
+				"two parameters must be separated by at least one character";
 			throw ERROR_LOGICAL;
 		}
-		else if (! (is <Name_Token> () || 
-			    is_operator('@'))) {
-			(*iter)->get_place() << "expected a filename";
-			place_output << "after '>'"; 
+
+		string parameter_duplicate;
+		if ((parameter_duplicate= target_name->get_duplicate_parameter()) != "") {
+			place_target <<
+				fmt("target contains duplicate parameter $%s", 
+				    parameter_duplicate); 
+			throw ERROR_LOGICAL;
+		}
+
+		shared_ptr <Place_Param_Target> place_param_target= make_shared <Place_Param_Target>
+			(type, *target_name, place_target);
+
+		place_param_targets.push_back(place_param_target); 
+	}
+
+	if (place_param_targets.size() == 0) {
+		assert(iter == iter_begin); 
+		return nullptr; 
+	}
+
+	/* Check that all targets have the same set of parameters */ 
+	set <string> parameters_0;
+	for (const string &parameter:  place_param_targets[0]->place_param_name.get_parameters()) {
+		parameters_0.insert(parameter); 
+	}
+	assert(place_param_targets.size() >= 1); 
+	for (unsigned i= 1;  i < place_param_targets.size();  ++i) {
+		set <string> parameters_i;
+		for (const string &parameter:  place_param_targets[i]->place_param_name.get_parameters()) {
+			parameters_i.insert(parameter); 
+		}
+		if (parameters_i != parameters_0) {
+			place_param_targets[i]->place <<
+				fmt("parameters of target %s", 
+				    place_param_targets[i]->format());
+			place_param_targets[0]->place <<
+				fmt("from parameters of target %s in rule with multiple targets",
+				    place_param_targets[0]->format()); 
 			throw ERROR_LOGICAL;
 		}
 	}
-
-	Place place_target= (*iter)->get_place();
-
-	Type type= Type::FILE;
-
- 	if (is_operator('@')) {
-		Place place_at= (*iter)->get_place();
-
-		if (! place_output.empty()) {
-			place_at << "transient target is invalid";
-			place_output << "after '>'"; 
-			throw ERROR_LOGICAL;
-		}
-
-		++iter;
-		if (iter == tokens.end()) {
-			place_end << "expected the name of transient target";
-			place_at << "after '@'";
-			throw ERROR_LOGICAL;
-		}
-		if (! is <Name_Token> ()) {
-			(*iter)->get_place() << "expected the name of transient target";
-			place_at << "after '@'";
-			throw ERROR_LOGICAL;
-		}
-
-		type= Type::TRANSIENT;
-	}
-
-	/* Target */ 
-	shared_ptr <Name_Token> target_name= is <Name_Token> ();
-	++iter;
-
-	if (! target_name->valid()) {
-		place_target <<
-			"two parameters must be separated by at least one character";
-		throw ERROR_LOGICAL;
-	}
-
-	string parameter_duplicate;
-	if (target_name->has_duplicate_parameters(parameter_duplicate)) {
-		place_target <<
-			fmt("target contains duplicate parameter $%s", 
-				parameter_duplicate); 
-		throw ERROR_LOGICAL;
-	}
-
-	shared_ptr <Place_Param_Target> place_param_target= make_shared <Place_Param_Target>
-		(type, *target_name, place_target);
 
 	if (iter == tokens.end()) {
 		place_end << 
-			(type == Type::FILE
-			 ? "expected a command, ':', ';', or '='"
-			 : "expected a command, ':', or ';'");
-		place_target << fmt("after target %s", place_param_target->format()); 
+			"expected a command, ':', ';', or '='";
+		place_param_targets.back()->place
+			<< fmt("after target %s", place_param_targets.back()->format()); 
 		throw ERROR_LOGICAL;
 	}
 
@@ -241,7 +288,8 @@ shared_ptr <Rule> Build::build_rule()
 			place_end << "expected a dependency, a command, or ';'";
 		else
 			place_end << "expected a command, ';', ':', or '='";
-		place_target << fmt("for target %s", place_param_target->format());
+		place_param_targets[0]->place
+			<< fmt("for target %s", place_param_targets[0]->format());
 		throw ERROR_LOGICAL;
 	}
 
@@ -276,10 +324,17 @@ shared_ptr <Rule> Build::build_rule()
 
 		if (command= is <Command> ()) {
 			++iter; 
-			if (type == Type::TRANSIENT) {
+			assert(place_param_targets.size() != 0); 
+			if (place_param_targets.size() != 1) {
+				place_equal << "there must not be assiged content";
+				place_param_targets[0]->place << "for rule with multiple targets"; 
+				throw ERROR_LOGICAL; 
+			}
+			if (place_param_targets[0]->type == Type::TRANSIENT) {
 				place_equal << "there must not be assigned content";
-				place_target << fmt("for transient target %s", 
-						    place_param_target->format()); 
+				place_param_targets[0]->place <<
+					fmt("for transient target %s", 
+					    place_param_targets[0]->format()); 
 				throw ERROR_LOGICAL; 
 			}
 			/* No redirected output is checked later */ 
@@ -298,8 +353,8 @@ shared_ptr <Rule> Build::build_rule()
 				/* Check that the source file contains
 				 * only parameters that also appear in
 				 * the target */
-				unordered_set <string> parameters;
-				for (auto &parameter:  place_param_target->place_param_name.get_parameters()) {
+				set <string> parameters;
+				for (auto &parameter:  place_param_targets[0]->place_param_name.get_parameters()) {
 					parameters.insert(parameter); 
 				}
 				for (unsigned jj= 0;  jj < name_copy->get_n();  ++jj) {
@@ -308,8 +363,8 @@ shared_ptr <Rule> Build::build_rule()
 					if (parameters.count(parameter) == 0) {
 						name_copy->places[jj] <<
 							fmt("parameter $%s is not used", parameter);
-						place_param_target->place << 
-							fmt("in target %s", place_param_target->format());
+						place_param_targets[0]->place << 
+							fmt("in target %s", place_param_targets[0]->format());
 						throw ERROR_LOGICAL;
 					}
 				}
@@ -337,18 +392,18 @@ shared_ptr <Rule> Build::build_rule()
 					throw ERROR_LOGICAL;
 				}
 
-				if (type != Type::FILE) {
-					assert(type == Type::TRANSIENT); 
+				if (place_param_targets[0]->type != Type::FILE) {
+					assert(place_param_targets[0]->type == Type::TRANSIENT); 
 					place_equal << "copy rule cannot be used";
-					place_target << "with transient target"; 
+					place_param_targets[0]->place << "with transient target"; 
 					throw ERROR_LOGICAL;
 				}
 
 				/* Append target name when source ends
 				 * in slash */
-				append_copy(*name_copy, place_param_target->place_param_name); 
+				append_copy(*name_copy, place_param_targets[0]->place_param_name); 
 
-				return make_shared <Rule> (place_param_target, name_copy,
+				return make_shared <Rule> (place_param_targets[0], name_copy,
 							   place_flag_exclam);
 
 			} else if (is_operator('?')) {
@@ -376,15 +431,16 @@ shared_ptr <Rule> Build::build_rule()
 			(had_colon
 			 ? "expected a dependency, a command, or ';'"
 			 : "expected a command, ':', ';', or '='");
-		place_target <<
-			fmt("for target %s", place_param_target->format());
+		place_param_targets[0]->place <<
+			fmt("for target %s", 
+			    place_param_targets[0]->format());
 		throw ERROR_LOGICAL;
 	}
 
 	/* Cases where output redirection is not possible */ 
 	if (! place_output.empty()) {
 		/* Already checked before */ 
-		assert(place_param_target->type == Type::FILE); 
+		assert(place_param_targets[index_output]->type == Type::FILE); 
 
 		if (command == nullptr) {
 			place_output << 
@@ -417,7 +473,8 @@ shared_ptr <Rule> Build::build_rule()
 	}
 
 	return make_shared <Rule> 
-		(place_param_target, dependencies, 
+		(move(place_param_targets), 
+		 dependencies, 
 		 command, is_hardcode, 
 		 ! place_output.empty(),
 		 filename_input);

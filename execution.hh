@@ -51,7 +51,7 @@ private:
 	 * dynamic depth is larger than one, then there is exactly one
 	 * target. 
 	 */ 
-	const vector <Target> targets; 
+	vector <Target> targets; 
 
 	/* The instantiated file rule for this execution.  Null when there
 	 * is no rule for this file (this happens for instance when a
@@ -145,15 +145,18 @@ private:
 	 */ 
 	bool checked;
 
-	/* Whether the file targets are known to exist.  When there are
-	 * no file targets, the value may be both 0 or +1. 
-	 * -1 = at least one target file is known not to exist
-	 *  0 = unknown
-	 * +1 = all files known to exist 
+	/* Whether the file targets are known to exist.  
+	 *     -1 = at least one file target is known not to exist (only
+	 *     	    possible when there is at least one file target)
+	 *      0 = status unknown
+	 *     +1 = all file targets are known to exist 
+	 * When there are no file targets, the value may be both 0 or
+	 * +1.  
 	 */
 	signed char exists;
 	
-	/* File, transient and dynamic targets.  
+	/* File, transient and dynamic targets.  (Everything except the
+	 * root target)
 	 */ 
 	Execution(Target target_,
 		  Link &&link,
@@ -906,7 +909,7 @@ void Execution::waited(int pid, int status)
 		executions_by_pid.erase(pid); 
 	}
 
-	/* The file may have been built, so forget that it was known to
+	/* The file(s) may have been built, so forget that it was known to
 	 * not exist */
 	if (exists < 0)  
 		exists= 0;
@@ -914,6 +917,7 @@ void Execution::waited(int pid, int status)
 	if (job.waited(status, pid)) {
 		/* Command was successful */ 
 
+		/* Set to -1 if at least one target file is missing */
 		exists= +1; 
 
 		/* For file targets, check that the file was built */ 
@@ -925,7 +929,7 @@ void Execution::waited(int pid, int status)
 			struct stat buf;
 
 			if (0 == stat(target.name.c_str(), &buf)) {
-				/* Check that file was not created with modification
+				/* Check that the file was not created with modification
 				 * time in the future */  
 				warn_future_file(&buf, target.name.c_str()); 
 				/* Check that file is not older that Stu
@@ -1209,8 +1213,7 @@ void Execution::unlink(Execution *const parent,
 Execution::Execution(Target target_,
 		     Link &&link,
 		     Execution *parent)
-	:  targets({target_}),
-	   error(0),
+	:  error(0),
 	   done(target_.type.get_dynamic_depth(), 0),
 	   timestamp(Timestamp::UNDEFINED),
 	   need_build(false),
@@ -1223,16 +1226,36 @@ Execution::Execution(Target target_,
 	/* Fill in the rules and their parameters */ 
 	if (target_.type == Type::FILE || target_.type == Type::TRANSIENT) {
 		rule= rule_set.get(target_, param_rule, mapping_parameter); 
+		if (rule == nullptr) {
+			targets.push_back(target_); 
+		} else {
+			for (auto &place_param_target:  rule->place_param_targets) {
+				targets.push_back(place_param_target->unparametrized()); 
+			}
+		}
 	} else {
 		assert(target_.type.is_dynamic()); 
-
 		/* We must set the rule here, so cycles in the dependency graph
 		 * can be detected.  Note however that the rule of dynamic
 		 * file dependency executions is otherwise not used */ 
 		Target target_base(target_.type.get_base(), target_.name);
 		rule= rule_set.get(target_base, param_rule, mapping_parameter); 
+		
+		if (rule == nullptr) {
+			targets.push_back(target_); 
+		} else {
+			/* Add all targets of the rule, with the appropriate
+			 * dynamic depth */ 
+			int dynamic_depth= target_.type.get_dynamic_depth();
+			for (auto &place_param_target:  rule->place_param_targets) {
+				Target target= place_param_target->unparametrized();
+				target.type += dynamic_depth;
+				targets.push_back(target); 
+			}
+		}
 	}
 	assert((param_rule == nullptr) == (rule == nullptr)); 
+
 
 	if (option_verbose) {
 		string text_target= verbose_target();
@@ -1423,7 +1446,7 @@ void job_terminate_all()
 	}
 
 	/* Check that all children are terminated */ 
-	for (;;) {
+	while (true) {
 		int status;
 		int ret= wait(&status); 
 
@@ -1759,7 +1782,7 @@ void Execution::print_traces(string text) const
 	string text_parent= parents.begin()->second.dependency
 		->get_single_target().format();
 
-	for (;;) {
+	while (true) {
 
 		auto i= execution->parents.begin(); 
 

@@ -125,4 +125,4 @@ for more details.
 
 For support, write to Jérôme Kunegis <kunegis@gmail.com>, or go to 
 
-https://github.com/kunegis/
+https://github.com/kunegis/stu

@@ -1,0 +1,23 @@
+#! /bin/sh
+
+rm -f ? || exit 1
+
+../../stu.test >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 1 ] || {
+	echo >&2 "*** Exitcode"
+	exit 1
+}
+
+grep -qxF INITIALIZE list.out || {
+	echo >&2 "*** stdout"
+	exit 1
+}
+
+[ -r C ] || {
+	echo >&2 "*** File 'C' must not be removed"
+	exit 1
+}
+
+exit 0

@@ -1,0 +1,2 @@
+main.stu:17:3: generated file 'V' was built but cannot be found now
+main.stu:4:6: 'V' is needed by 'A'

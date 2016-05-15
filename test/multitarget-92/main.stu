@@ -10,4 +10,5 @@ B C {
 
 @init {
 	touch -d "$(expr $(date +%Y) - 2)-01-01" C 
+	echo INITIALIZE
 }

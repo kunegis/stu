@@ -1,5 +1,6 @@
-# Flags do not propagate over transient targets with command
+# Flags don't propagate over transient targets when they have a
+# command. 
 
 A: ?@x { cp B A }
-@x:  B { echo bbb }
+@x:  B { cat B }
 B = {correct}

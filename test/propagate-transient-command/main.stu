@@ -1,0 +1,10 @@
+# Flags also propagate over transient targets when they have a
+# command. 
+
+A: ?@x { 
+	[ -e B ] && exit 1
+	touch A
+}
+
+@x:  B { echo Doing @x }
+B = {correct}

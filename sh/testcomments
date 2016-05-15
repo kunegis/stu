@@ -18,5 +18,4 @@ xargs grep -lF '#''#' && {
 	ret=1
 }
 
-
 exit "$ret"

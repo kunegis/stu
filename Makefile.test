@@ -6,7 +6,7 @@ all-test: \
     stu.debug stu \
     stu.text test_options test_sed \
     test_test.debug test_test.ndebug \
-    test_doubleslash 
+    test_comments
 
 dist:  stu.1 version.hh stu.text
 
@@ -50,8 +50,8 @@ test_test.debug: stu.debug sh/mktest test test/* test/*/*
 test_test.ndebug: stu sh/mktest test test/* test/*/* 
 	NDEBUG=1 sh/mktest && touch $@
 
-test_doubleslash:  *.cc *.hh sh/testdoubleslash . test test/* test/*/* 
-	sh/testdoubleslash
+test_comments:  *.cc *.hh sh/testcomments . test test/* test/*/* 
+	sh/testcomments
 
 stu.text:  stu.1
 	MANWIDTH=80 man ./stu.1 >stu.text

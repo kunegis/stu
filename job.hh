@@ -30,52 +30,6 @@ void job_print_jobs();
 
 class Job
 {
-private:
-	/* -2:    process was not yet started.
-	 * >= 0:  process was started but not yet waited for (just called
-	 *        "started" for short. 
-	 * -1:    process has been waited for. 
-	 */
-	pid_t pid;
-
-	static void handler_interrupt(int sig);
-
-	/* The number of jobs run.  
-	 * exec:  executed
-	 * success:  returned successfully
-	 * fail:     returned as failing
-	 */
-	static unsigned count_jobs_exec, count_jobs_success, count_jobs_fail;
-
-	/* Initialized to all signals that are blocked and then waited
-	 * for */ 
-	static sigset_t set_block;
-
-	/* All signals that interrupt Stu. */ 
-	static sigset_t set_interrupt;
-
-	static sig_atomic_t in_child; 
-
-	static class Statistics
-	{
-	public:
-		/* Run after main() */ 
-		~Statistics() 
-		{
-			if (! option_statistics)  return; 
-			print(); 
-		}
-
-		/* Print the statistics, regardless of OPTION_STATISTICS */ 
-		static void print(bool allow_unterminated_jobs= false); 
-	} statistics;
-
-	static class Signal
-	{
-	public:
-		Signal(); 
-	} signal;
-	
 public:
 
 	Job():  pid(-2) { }
@@ -153,6 +107,52 @@ public:
 			}
 		}
 	};
+
+private:
+	/* -2:    process was not yet started.
+	 * >= 0:  process was started but not yet waited for (just called
+	 *        "started" for short. 
+	 * -1:    process has been waited for. 
+	 */
+	pid_t pid;
+
+	static void handler_interrupt(int sig);
+
+	/* The number of jobs run.  
+	 * exec:  executed
+	 * success:  returned successfully
+	 * fail:     returned as failing
+	 */
+	static unsigned count_jobs_exec, count_jobs_success, count_jobs_fail;
+
+	/* Initialized to all signals that are blocked and then waited
+	 * for */ 
+	static sigset_t set_block;
+
+	/* All signals that interrupt Stu. */ 
+	static sigset_t set_interrupt;
+
+	static sig_atomic_t in_child; 
+
+	static class Statistics
+	{
+	public:
+		/* Run after main() */ 
+		~Statistics() 
+		{
+			if (! option_statistics)  return; 
+			print(); 
+		}
+
+		/* Print the statistics, regardless of OPTION_STATISTICS */ 
+		static void print(bool allow_unterminated_jobs= false); 
+	} statistics;
+
+	static class Signal
+	{
+	public:
+		Signal(); 
+	} signal;
 };
 
 unsigned Job::count_jobs_exec=    0;
@@ -205,7 +205,7 @@ pid_t Job::start(string command,
 	if (filename_input != "") {
 		fd_input= open(filename_input.c_str(), O_RDONLY); 
 		if (fd_input < 0) {
-			perror(filename_input.c_str());
+ 			perror(filename_input.c_str());
 			pid= -1; 
 			return -1; 
 		}

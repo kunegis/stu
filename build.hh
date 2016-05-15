@@ -147,14 +147,14 @@ shared_ptr <Rule> Build::build_rule()
 	Place place_output; 
 
 	/* Index of the target that has the output, or -1 */ 
-	int index_output= -1; 
+	int redirect_index= -1; 
 
 	vector <shared_ptr <Place_Param_Target> > place_param_targets; 
 
 	while (iter != tokens.end()) {
 		
 		if (is_operator('>')) {
-			if (place_param_targets.size() != 0) {
+			if (! place_output.empty()) {
 				(*iter)->get_place() <<
 					"second output redirection with '>' is invalid";
 				place_output <<
@@ -163,7 +163,7 @@ shared_ptr <Rule> Build::build_rule()
 			}
 			place_output= (*iter)->get_place();
 			assert(! place_output.empty()); 
-			index_output= place_param_targets.size(); 
+			redirect_index= place_param_targets.size(); 
 			++iter;
 			if (iter == tokens.end()) {
 				place_end << "expected a filename";
@@ -452,7 +452,7 @@ shared_ptr <Rule> Build::build_rule()
 	/* Cases where output redirection is not possible */ 
 	if (! place_output.empty()) {
 		/* Already checked before */ 
-		assert(place_param_targets[index_output]->type == Type::FILE); 
+		assert(place_param_targets[redirect_index]->type == Type::FILE); 
 
 		if (command == nullptr) {
 			place_output << 
@@ -488,7 +488,7 @@ shared_ptr <Rule> Build::build_rule()
 		(move(place_param_targets), 
 		 dependencies, 
 		 command, is_hardcode, 
-		 ! place_output.empty(),
+		 redirect_index,
 		 filename_input);
 }
 

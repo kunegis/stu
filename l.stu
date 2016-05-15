@@ -1,6 +1,0 @@
-# Flags don't propagate over transient targets when they have a
-# command. 
-
-A: ?@x { cp B A }
-@x:  B { cat B }
-B = {correct}

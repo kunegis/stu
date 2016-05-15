@@ -69,7 +69,7 @@ public:
 	     const vector <shared_ptr <Dependency> > &dependencies_,
 	     shared_ptr <const Command> command_,
 	     bool is_hardcode_,
-	     bool is_redirect_,
+	     int redirect_index_,
 	     const Param_Name &filename_input_);
 
 	/* A copy rule.  When the places are EMPTY, the corresponding
@@ -159,7 +159,7 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	   const vector <shared_ptr <Dependency> > &dependencies_,
 	   shared_ptr <const Command> command_,
 	   bool is_hardcode_,
-	   bool is_redirect_,
+	   int redirect_index_,
 	   const Param_Name &filename_)
 	:  place_param_targets(place_param_targets_), 
 	   dependencies(dependencies_),
@@ -167,10 +167,14 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	   command(command_),
 	   filename(filename_),
 	   is_hardcode(is_hardcode_),
-	   redirect_index(is_redirect_ ? 0 : -1),
+	   redirect_index(redirect_index_),
 	   is_copy(false)
 { 
-	assert(place_param_targets_.size() != 0); 
+	assert(place_param_targets.size() != 0); 
+	assert(redirect_index>= -1);
+	assert(redirect_index < (int)place_param_targets.size());
+	if (redirect_index >= 0)
+		assert(place_param_targets[redirect_index]->type == Type::FILE); 
 
 	/* Check that all dependencies only include
 	 * parameters from the target */ 

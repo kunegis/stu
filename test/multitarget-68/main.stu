@@ -1,4 +1,4 @@
-# A cycle with different targets on a multi-target rule.
+# Error:  A cycle with different targets on a multi-target rule.
 
 @all: A; 
 

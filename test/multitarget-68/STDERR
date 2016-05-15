@@ -1,0 +1,5 @@
+main.stu:5:7: cyclic dependency: 'A' depends on 'C'
+main.stu:6:7: 'C' depends on 'D'
+main.stu:7:7: 'D' depends on 'B'
+main.stu:5:1: both 'A' and 'B' match the same rule
+main.stu:3:7: 'A' is needed by @all

@@ -99,14 +99,16 @@ private:
 	 */
 	Buffer buf_trivial; 
 
-	/* Newest timestamp of file targets, before the command is
-	 * executed.  Only valid once the job was started.  Used for
-	 * checking whether a file was 
+	/* Timestamp of each file targets, before the command is
+	 * executed.  Only valid once the job was started.  The indexes
+	 * correspond to those in TARGETS.  Non-file indexes are
+	 * uninitialized. 
+	 * Used for checking whether a file was 
 	 * rebuild to decide whether to remove it after a command failed or
 	 * was interrupted.  This is UNDEFINED when the file did
 	 * not exist, or no target is a file. 
 	 */ 
-	Timestamp timestamp_old; 
+	vector <Timestamp> timestamps_old; 
 
 	/* Variable assignments from parameters for when the command is run. */
 	map <string, string> mapping_parameter; 
@@ -572,7 +574,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	 */
 
 	/* Check existence of file */
-	timestamp_old= Timestamp::UNDEFINED;
+	timestamps_old.assign(targets.size(), Timestamp::UNDEFINED); 
 
 	/* A target for which no execution has to be done */ 
 	const bool no_execution= 
@@ -584,7 +586,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 		/* Set to -1 when a file is found not to exist */ 
 		exists= +1; 
 
-		for (const Target &target:  targets) {
+		for (unsigned i= 0;  i < targets.size();  ++i) {
+			const Target &target= targets[i]; 
 
 			if (target.type != Type::FILE) 
 				continue;
@@ -596,62 +599,57 @@ bool Execution::execute(Execution *parent, Link &&link)
 			/* Warn when file has timestamp in the future */ 
 			if (ret_stat == 0) { 
 				/* File exists */ 
-				Timestamp timestamp_this= Timestamp(&buf); 
-				if (! timestamp_old.defined() ||
-				    timestamp_old < timestamp_this)
-					timestamp_old= timestamp_this;
+				Timestamp timestamp_file= Timestamp(&buf); 
+				timestamps_old[i]= timestamp_file;
  				if (parent == nullptr || ! (link.flags & F_EXISTENCE)) 
 					warn_future_file(&buf, target.name.c_str());
 				/* EXISTS is not changed */ 
 			} else 
 				exists= -1;
 
-			if (! need_build) { 
-				if (ret_stat == 0) {
-					/* File exists. Check whether it has to be rebuilt
-					 * because of more up to date dependencies */ 
+			if (! need_build && ret_stat == 0 &&
+			    timestamp.defined() && timestamps_old[i] < timestamp &&
+			    ! no_execution) {
+				need_build= true;
+			}
 
-					assert(timestamp_old.defined()); 
-					if (timestamp.defined() && 
-					    timestamp_old < timestamp) {
-						if (no_execution) {
-							print_warning
-								(fmt("File target '%s' which has no command is older than its dependency",
-								     target.name));
-						} else 
-							need_build= true;
-					} 
-					
-				} else {
-					/* stat() returned an error */ 
+			if (ret_stat == 0) {
+				/* File exists. Check whether it has to be rebuilt
+				 * because of more up to date dependencies */ 
 
-					/* Note:  Rule may be null here for optional
-					 * dependencies that do not exist and do not have a
-					 * rule */
-
-					if (errno == ENOENT) {
-						/* File does not exist */
-
-						if (! (link.flags & F_OPTIONAL)) {
-							/* Non-optional dependency */  
-							need_build= true; 
-						} else {
-							/* Optional dependency:  don't create the file;
-							 * it will then not exist when the parent is
-							 * called. 
-							 */ 
-							done.add_one_neg(F_OPTIONAL); 
-							return false;
-						}
-					} else {
-						/* stat() returned an actual error,
-						 * e.g. permission denied:  build error */
-						perror(target.name.c_str());
-						raise(ERROR_BUILD);
-						done.add_one_neg(link.avoid); 
-						return false;
+				assert(timestamps_old[i].defined()); 
+				if (timestamp.defined() && 
+				    timestamps_old[i] < timestamp) {
+					if (no_execution) {
+						print_warning
+							(fmt("File target '%s' which has no command is older than its dependency",
+							     target.name));
 					}
+				} 
+			}
+			
+			if (! need_build && ret_stat != 0 && errno == ENOENT) {
+				/* File does not exist */
+
+				if (! (link.flags & F_OPTIONAL)) {
+					/* Non-optional dependency */  
+					need_build= true; 
+				} else {
+					/* Optional dependency:  don't create the file;
+					 * it will then not exist when the parent is
+					 * called. */ 
+					done.add_one_neg(F_OPTIONAL); 
+					return false;
 				}
+			}
+
+			if (ret_stat != 0 && errno != ENOENT) {
+				/* stat() returned an actual error,
+				 * e.g. permission denied:  build error */
+				perror(target.name.c_str());
+				raise(ERROR_BUILD);
+				done.add_one_neg(link.avoid); 
+				return false;
 			}
 
 			/* File does not exist, all its dependencies are up to
@@ -679,9 +677,15 @@ bool Execution::execute(Execution *parent, Link &&link)
 			}		
 		}
 		
-		if (timestamp_old.defined() && 
-		    (! timestamp.defined() || timestamp < timestamp_old)) {
-			timestamp= timestamp_old;
+		/* We cannot update TIMESTAMP within the loop above
+		 * because we need to compare each TIMESTAMP_OLD with
+		 * the previous value of TIMESTAMP. 
+		 */
+		for (Timestamp timestamp_old_i:  timestamps_old) {
+			if (timestamp_old_i.defined() &&
+			    (! timestamp.defined() || timestamp < timestamp_old_i)) {
+				timestamp= timestamp_old_i; 
+			}
 		}
 	}
 
@@ -952,8 +956,14 @@ void Execution::waited(int pid, int status)
 				/* Check that file is not older that Stu
 				 * startup */ 
 				Timestamp timestamp_file(&buf);
-				if (timestamp_file < Timestamp::startup) {
 
+				if (! timestamp.defined() ||
+				    timestamp < timestamp_file)
+					timestamp= timestamp_file; 
+
+				/* Check whether the just created file
+				 * is older than Stu startup */ 
+				if (timestamp_file < Timestamp::startup) {
 					/* Check whether the file is actually a symlink, in
 					 * which case we ignore that error */ 
 					if (0 > lstat(target.name.c_str(), &buf)) {
@@ -1540,7 +1550,8 @@ bool Execution::remove_if_existing(bool output)
 	/* Whether anything was removed */ 
 	bool removed= false;
 
-	for (const Target &target:  targets) {
+	for (unsigned i= 0;  i < targets.size();  ++i) {
+		const Target &target= targets[i]; 
 
 		if (target.type != Type::FILE)  
 			continue;
@@ -1558,8 +1569,8 @@ bool Execution::remove_if_existing(bool output)
 		 * has a newer timestamp. 
 		 */
 
-		if (! timestamp_old.defined() ||
-		    timestamp_old < Timestamp(&buf)) {
+		if (! timestamps_old[i].defined() ||
+		    timestamps_old[i] < Timestamp(&buf)) {
 
 			if (output) {
 				fprintf(stderr, 

@@ -1,4 +1,0 @@
-# Is [@x] equivalent to [B] or to [C] ?
-
-A: [@x] { ... }
-@x B: C { ... }

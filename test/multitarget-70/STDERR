@@ -1,0 +1,3 @@
+../../stu.test: *** Multiple minimal rules for target 'X.Y'
+main.stu:5:1: rule with target 'X.${name}'
+main.stu:5:9: rule with target '${name}.Y'

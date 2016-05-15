@@ -1,0 +1,12 @@
+# Dynamic multiple file
+
+A: [B] { 
+	cp D A
+}
+
+C B:  { 
+	touch C
+	echo D >B
+}
+
+D = {correct}

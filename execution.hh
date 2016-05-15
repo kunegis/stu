@@ -1136,9 +1136,16 @@ void Execution::unlink(Execution *const parent,
 		assert(dependency_parent->get_single_target().type.is_dynamic());
 		assert(dependency_parent->get_single_target().type.is_any_file());
 
-		assert(parent->targets.size() == 1
-		       && child->targets.size() == 1
-		       && parent->targets.front().name == child->targets.front().name);
+		assert(parent->targets.size() == 1);
+#ifndef NDEBUG
+		bool found= false;
+		for (const Target &target:  child->targets) {
+			if (target.name == parent->targets.front().name)
+				found= true;
+		}
+		assert(found); 
+#endif 
+
 		assert(child->done.get_k() == 0); 
 		
 		bool do_read= true;
@@ -1258,19 +1265,10 @@ Execution::Execution(Target target_,
 		 * file dependency executions is otherwise not used */ 
 		Target target_base(target_.type.get_base(), target_.name);
 		rule= rule_set.get(target_base, param_rule, mapping_parameter); 
-		
-		if (rule == nullptr) {
-			targets.push_back(target_); 
-		} else {
-			/* Add all targets of the rule, with the appropriate
-			 * dynamic depth */ 
-			int dynamic_depth= target_.type.get_dynamic_depth();
-			for (auto &place_param_target:  rule->place_param_targets) {
-				Target target= place_param_target->unparametrized();
-				target.type += dynamic_depth;
-				targets.push_back(target); 
-			}
-		}
+
+		/* For dynamic executions, the TARGETS variables
+		 * contains only a single target */ 
+		targets.push_back(target_); 
 	}
 	assert((param_rule == nullptr) == (rule == nullptr)); 
 

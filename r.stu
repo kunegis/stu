@@ -1,9 +1,0 @@
-# Error:  multiple file in multiple rule
-
-# Each line is one test
-
-A A: { touch A }
-
-B A A { touch A B }
-A B A { touch A B }
-A A B { touch A B }

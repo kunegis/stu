@@ -444,7 +444,7 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 			for (auto place_param_target:  rule->place_param_targets) {
 				Target target= place_param_target->unparametrized(); 
 				if (rules_unparametrized.count(target)) {
-					rule->place <<
+					place_param_target->place <<
 						fmt("duplicate rule for %s", target.format());
 					auto rule_2= rules_unparametrized.at(target); 
 					for (auto place_param_target_2: rule_2->place_param_targets) {

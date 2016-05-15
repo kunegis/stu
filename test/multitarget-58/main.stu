@@ -1,0 +1,6 @@
+# Error. Check that the trace mentions 'B' and not 'X', and has the correct
+# place.  
+
+A: B { cp B A }
+X B: C { cp C B }
+C { exit 1 }

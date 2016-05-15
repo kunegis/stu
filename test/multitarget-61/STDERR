@@ -1,0 +1,5 @@
+main.stu:4:6: cyclic dependency: 'B' depends on 'D'
+main.stu:5:4: 'D' depends on 'E'
+main.stu:6:4: 'E' depends on 'C'
+main.stu:4:1: both 'B' and 'C' match the same rule
+main.stu:3:4: 'B' is needed by 'A'

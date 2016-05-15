@@ -1,0 +1,9 @@
+>A: X P Q { cat X P Q }
+
+X {
+	printf cor >X
+	printf re  >P
+	echo   ct  >Q
+}
+
+P @x Q;

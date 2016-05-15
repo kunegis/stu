@@ -1,0 +1,2 @@
+main.stu:3:5: duplicate rule for 'B'
+main.stu:3:3: previous definition

@@ -120,7 +120,7 @@ public:
 
 	unsigned get_dynamic_depth() const {
 		assert(value >= 0);
-		return (value - T_TRANSIENT) >> 1;
+		return value >> 1;
 	}
 
 	bool is_any_transient() const {
@@ -239,19 +239,19 @@ public:
 	string format_bare() const {
 
 		return 
-			string(type - Type::FILE, '[') 
+			string(type.get_dynamic_depth(), '[') 
 			+ (type.is_any_transient() ? "@" : "")
 			+ name
-			+ string(type - Type::FILE, ']');
+			+ string(type.get_dynamic_depth(), ']');
 	}
 
 	string format_mid() const {
 
 		return 
-			string(type - Type::FILE, '[') 
+			string(type.get_dynamic_depth(), '[') 
 			+ (type.is_any_transient() ? "@" : "")
 			+ format_name_mid(name) 
-			+ string(type - Type::FILE, ']'); 
+			+ string(type.get_dynamic_depth(), ']'); 
 	}
 
 	bool operator== (const Target &target) const {

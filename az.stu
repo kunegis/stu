@@ -1,0 +1,8 @@
+# Check that the error message points to the correct 'B' in both rules
+# that have it. 
+
+A: B { touch A }
+
+@x B { touch B }
+
+@y B { touch B }

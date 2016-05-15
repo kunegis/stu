@@ -1,0 +1,2 @@
+A: @x { touch A }
+@x @y;

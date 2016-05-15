@@ -1,7 +1,0 @@
-# 'B' has timestamp in the future.  Check that the error message is
-# correct. 
-
-A B {
-	touch A
-	# TODO:  create 'B' such that it has a timestamp in the future. 
-}

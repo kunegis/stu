@@ -1,9 +1,0 @@
-# A multiple transient target without dependencies and without rules.  No error; do
-# nothing. 
-
-# Each line is one test
-
-@x @y;
-@x @y @z;
-@x @y @z @a;
-

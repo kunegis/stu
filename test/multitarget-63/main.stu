@@ -1,0 +1,11 @@
+# 'B' has timestamp in the future.  Check that the error message is
+# correct. 
+
+A B {
+	touch A
+
+	# Create 'B' such that it has a timestamp in the future. 
+	year="$(date +%Y)"
+	year_future="$(expr $year + 2)"
+	touch -d $year_future-01-01 B
+}

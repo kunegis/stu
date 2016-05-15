@@ -1,0 +1,10 @@
+# Fails because 'nonexisting' does not exist.  (Even though we don't
+# need it.)  
+
+A: @init B { touch A }
+
+B nonexisting;
+
+@init {
+	touch B
+}

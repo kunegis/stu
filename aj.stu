@@ -1,6 +1,0 @@
-# 'A' and 'B' already exist, and 'A' is newer than 'B'.  Is the command
-# for B/C executed? 
-
-A: B { cp B A }
-
-B C { touch B C }

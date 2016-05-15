@@ -1,0 +1,17 @@
+# 'P' and 'Q' already exist, and 'P' is newer than 'Q'.  The command
+# for Q/R is executed because 'R' does not exist.
+
+A: @init P { cp P A }
+
+P: Q { cp Q P }
+
+Q R { 
+	echo correct >Q
+	echo rrr     >R
+}
+
+@init {
+	rm -f ?
+	touch -d "$(expr "$(date +%Y)" - 2)"-01-01 Q
+	touch P
+}

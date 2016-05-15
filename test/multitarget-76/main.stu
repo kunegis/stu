@@ -1,0 +1,10 @@
+# These files must be present
+
+A: @init P { cp P A }
+
+P Q R;
+
+@init {
+	touch Q R
+	echo correct >P
+}

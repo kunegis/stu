@@ -1,0 +1,2 @@
+main.stu:3:32: parameter $y is not used
+main.stu:3:1: in any target of the rule

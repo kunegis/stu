@@ -666,9 +666,10 @@ bool Execution::execute(Execution *parent, Link &&link)
 					explain_file_without_command_with_dependencies(); 
 				} else {
 					if (output_mode > Output::SILENT)
-						print_traces
-							(fmt("file without command and without dependencies '%s' does not exist",
-							     target.name)); 
+						rule->place_param_targets[i]->place
+							<< fmt("file without command and without dependencies '%s' does not exist",
+							       target.name); 
+						print_traces();
 					explain_file_without_command_without_dependencies(); 
 				}
 				done.add_one_neg(link.avoid); 
@@ -2217,12 +2218,18 @@ bool Execution::read_variable(string &variable_name,
 			dynamic_pointer_cast <Direct_Dependency> (dependency)->place_param_target
 			.unparametrized(); 
 
-		for (auto const &place_param_target: rule->place_param_targets) {
-			if (place_param_target->unparametrized() == target_variable) {
-				place_param_target->place <<
-					fmt("generated file %s was built but cannot be found now", 
-					    place_param_target->format());
-				break;
+		if (rule == nullptr) {
+			dependency->get_place() <<
+				fmt("file %s was up to date but cannot be found now", 
+				    target_variable.format());
+		} else {
+			for (auto const &place_param_target: rule->place_param_targets) {
+				if (place_param_target->unparametrized() == target_variable) {
+					place_param_target->place <<
+						fmt("generated file %s was built but cannot be found now", 
+						    place_param_target->format());
+					break;
+				}
 			}
 		}
 		print_traces();

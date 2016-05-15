@@ -20,7 +20,7 @@ void job_print_jobs();
 /* Write in an async signal-safe manner. 
  * 	FD must be 1 or 2.
  * 	MESSAGE must be a string literal. 
- * Ignore errors, as this is called into from the interrupting signal handler. 
+ * Ignore errors, as this is called from the interrupting signal handler. 
  */
 #define write_safe(FD, MESSAGE) \
 	do { \
@@ -35,7 +35,7 @@ public:
 	Job():  pid(-2) { }
 
 	/* Call after having returned this process from wait_do(). 
-	 * Return TRUE of the child was successful. 
+	 * Return TRUE if the child was successful. 
 	 */
 	bool waited(int status, pid_t pid_check);
 
@@ -119,7 +119,7 @@ private:
 	static void handler_interrupt(int sig);
 
 	/* The number of jobs run.  
-	 * exec:  executed
+	 * exec:     executed
 	 * success:  returned successfully
 	 * fail:     returned as failing
 	 */
@@ -129,7 +129,7 @@ private:
 	 * for */ 
 	static sigset_t set_block;
 
-	/* All signals that interrupt Stu. */ 
+	/* All signals that interrupt Stu */ 
 	static sigset_t set_interrupt;
 
 	static sig_atomic_t in_child; 
@@ -200,16 +200,6 @@ pid_t Job::start(string command,
 	const char *arg= command.c_str(); 
 	/* c_str() never returns nullptr, as by the standard */ 
 	assert(arg != nullptr);
-
-	int fd_input= -1;
-	if (filename_input != "") {
-		fd_input= open(filename_input.c_str(), O_RDONLY); 
-		if (fd_input < 0) {
- 			perror(filename_input.c_str());
-			pid= -1; 
-			return -1; 
-		}
-	}
 
 	pid= fork();
 
@@ -341,26 +331,37 @@ pid_t Job::start(string command,
 				perror(filename_output.c_str());
 				_Exit(ERROR_BUILD); 
 			}
+			assert(r == 1);
+			close(fd_output); 
 		}
 
 		/* Input redirection */
 		if (filename_input != "") {
+			int fd_input= open(filename_input.c_str(), O_RDONLY); 
+			if (fd_input < 0) {
+				perror(filename_input.c_str());
+				_Exit(ERROR_BUILD); 
+			}
+			assert(fd_input >= 3); 
 			int r= dup2(fd_input, 0); /* 0 = file descriptor of STDIN */  
 			if (r < 0) {
 				perror(filename_input.c_str());
 				_Exit(ERROR_BUILD); 
 			}
+			assert(r == 0); 
+			close(fd_input); 
 		}
 
 		int r= execve(shell, (char *const *) argv, (char *const *) envp); 
-		/* If execve() returns, there is an error, and its return value is -1. */
 
+		/* If execve() returns, there is an error, and its return value is -1 */
 		assert(r == -1); 
 		perror("execve");
 		_Exit(ERROR_BUILD); 
 	} 
 
 	/* Parent execution */
+
 	++ count_jobs_exec;
 
 	assert(pid >= 1); 

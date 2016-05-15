@@ -1,7 +1,3 @@
-
-# Try to find an example that produces BOTH a system error and another
-# error, giving an exit code >4. 
-
 # Alternatively, make errors from which Stu can continue be always build
 # errors.  
 
@@ -18,7 +14,6 @@ A:  B C
 >B: <D { cat }
 
 D: { 
-	set -e
 	echo ERROR >D
 	chmod a-r D
 }

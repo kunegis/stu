@@ -2,9 +2,6 @@
 # Make tests faster by using touch_old. 
 #
 
-test/nontrivial/EXEC
-test/trivial2/EXEC
-test/random-restart/main.stu
 test/phonies-dynamics-parallelism/main.stu
 test/trivial-existence2/EXEC
 test/dynamic-concurrent/main.stu

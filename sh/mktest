@@ -94,6 +94,8 @@
 # Set to "1" on error 
 errors=0
 
+time_begin="$(date +%s)"
+
 rm -f stu.test
 if [ "$NDEBUG" ] ; then
 	ln -s stu stu.test
@@ -380,6 +382,10 @@ do
 done
 
 echo __________________________________
+
+time_end="$(date +%s)"
+time_diff="$(expr $time_end - $time_begin)"
+printf 'Runtime: %u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)"
 
 if [ "$errors" != 0 ]
 then

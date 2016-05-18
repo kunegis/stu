@@ -1,0 +1,5 @@
+Y { exit 1 }
+
+@x : A ;
+
+A { touch A }

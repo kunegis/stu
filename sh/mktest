@@ -52,8 +52,8 @@
 #              changes the check that the file was built, and its
 #              content.   
 # CMD          Additional command arguments passed to Stu.  Content may
-#  	       use shell quoting and escaping.  For instance, may
-#  	       contain -C ' A ' to pass an argument beginning and ending
+#  	       use shell quoting and escaping.  For instance, the file
+#	       may contain -C ' A ' to pass an argument beginning and ending
 #              in space to Stu. 
 # PARALLEL     Give the arguments of the -j option for which the test is
 #              to be executed 
@@ -202,6 +202,14 @@ do
 		fi
 		if [ "$exitcode_actual" != "$exitcode_correct" ]; then
 			echo >&2 "$0: *** Test '$file' should have returned $exitcode_correct, but returned $exitcode_actual"
+			echo >&2 list.def.out:
+			echo >&2 ______________
+			cat >&2 list.def.out
+			echo >&2 ______________
+			echo >&2 list.def.err:
+			echo >&2 ______________
+			cat >&2 list.def.err
+			echo >&2 ______________
 			error=1
 		else
 			echo "EXITCODE...$exitcode_correct correct"

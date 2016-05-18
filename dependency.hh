@@ -355,10 +355,6 @@ public:
  */
 class Stack
 {
-private:
-	unsigned k;
-	unsigned bits[F_COUNT];
-
 public:
 	/* Check the internal consistency of this object */ 
 	void check() const {
@@ -542,6 +538,10 @@ public:
 		}
 		return fmt("{%s}", ret); 
 	}
+
+private:
+	unsigned k;
+	unsigned bits[F_COUNT];
 };
 
 Dependency::~Dependency() { }

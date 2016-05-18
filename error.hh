@@ -120,15 +120,17 @@ public:
 
 	Place::Type type; 
 
-	/* File in which the error occurred.  Empty string for standard input. */ 
+	/* File in which the error occurred.  Empty string for standard
+	 * input.  The command line argument for ARGV. */ 
 	string filename;
 
-	/* Line number, one-based */ 
+	/* Line number, one-based.  Ignored for ARGV. */ 
 	unsigned line; 
 
 	/* Column number, zero-based.
 	 * In output, column numbers are one-based, but they are saved
 	 * here as zero-based numbers as these are easier to generate.
+	 * Ignored for ARGV. 
 	 */ 
 	unsigned column; 
 
@@ -147,6 +149,15 @@ public:
 		   column(column_)
 	{ 
 		assert(line >= 1);
+	}
+
+	/* For command line arguments */ 
+	Place(Type type_,
+	      string argument)
+		:  type(type_),
+		   filename(argument)
+	{
+		assert(type_ == Type::ARGV); 
 	}
 
 	/* Print the trace to STDERR as part of an error message.  The 

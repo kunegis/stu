@@ -1,13 +1,5 @@
-#==== Small features that complete what we already have (for version 1) ====
-
 #
-# New syntax for optionless arguments, which
-# allows characters such as []@?!& and maybe also () to have their Stu
-# meaning, but whitespace to be allowed as part of filenames. Other
-# characters would all be allowed as part of filenames. Parsing would be
-# simple because each argument would be exactly one dependency. This
-# will reduce confusion for users and the -c and -C option will retain
-# their meanings. 
+# Make test/trivial4 and other tests faster by using touch_old. 
 #
 
 #==== Backward-incompatible features (in the switch to version 2) ====

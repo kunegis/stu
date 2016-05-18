@@ -1,0 +1,7 @@
+A {
+	exit 1
+}
+
+B {
+	touch B
+}

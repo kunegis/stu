@@ -5,6 +5,13 @@ are added, which are documented in this file.  When the major version is
 increased, backward-incompatible changes are made, which are documented
 in the file MIGRATION. 
 
+2016-05-18  Version 1.15:
+
+* Arguments to Stu outside of options are now parsed in a simplified
+  syntax in which only the characters '!?&@[]' retain their special
+  meaning.  To pass dependencies in full Stu syntax, the option -C can
+  be used, as in previous versions. 
+
 2016-05-15  Version 1.14:
 
 * Rules with multiple targets are possible, as in

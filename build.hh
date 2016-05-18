@@ -41,18 +41,6 @@
 /* An object of this type represents a location within a token list */ 
 class Build
 {
-private:
-	vector <shared_ptr <Token> > &tokens;
-	vector <shared_ptr <Token> > ::iterator &iter;
-	const Place place_end; 
-
-	/* If TO ends in '/', append to it the part of FROM that
-	 * comes after the last slash, or the full target if it contains
-	 * no slashes.  Parameters are not considered for containing
-	 * slashes */
-	static void append_copy(      Param_Name &to,
-				const Param_Name &from);
-
 public:
 
 	Build(vector <shared_ptr <Token> > &tokens_,
@@ -82,12 +70,14 @@ public:
 	/* The returned rules may not be unique -- this is checked later */
 	void build_rule_list(vector <shared_ptr <Rule> > &ret);
 
-	/* Return null when nothing was parsed */ 
-	shared_ptr <Rule> build_rule(); 
-
 	bool build_expression_list(vector <shared_ptr <Dependency> > &ret, 
 				   Place_Param_Name &place_param_name_input,
 				   Place &place_input);
+
+private:
+
+	/* Return null when nothing was parsed */ 
+	shared_ptr <Rule> build_rule(); 
 
 	bool build_expression(vector <shared_ptr <Dependency> > &ret, 
 			      Place_Param_Name &place_param_name_input,
@@ -114,6 +104,17 @@ public:
 	shared_ptr <T> is() const {
 		return dynamic_pointer_cast <T> (*iter); 
 	}
+
+	vector <shared_ptr <Token> > &tokens;
+	vector <shared_ptr <Token> > ::iterator &iter;
+	const Place place_end; 
+
+	/* If TO ends in '/', append to it the part of FROM that
+	 * comes after the last slash, or the full target if it contains
+	 * no slashes.  Parameters are not considered for containing
+	 * slashes */
+	static void append_copy(      Param_Name &to,
+				const Param_Name &from);
 };
 
 void Build::build_rule_list(vector <shared_ptr <Rule> > &ret)

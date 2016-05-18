@@ -513,14 +513,14 @@ public:
 		   place()
 	{ }
 
-	/* A name with zero parameters, and hence no places.  No place as a
-	 * whole. */ 
+	/* Unparametrized, with empty place */ 
 	Place_Param_Name(string name)
 		:  Param_Name(name)
 	{ 
 		/* PLACES remains empty */ 
 	}
-
+	
+	/* Unparametrized, with explicit place */
 	Place_Param_Name(string name, const Place &_place) 
 		:  Param_Name(name), place(_place)
 	{ }

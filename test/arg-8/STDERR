@@ -1,0 +1,3 @@
+Command line argument '?!A': declaration of existence-only dependency with '!'
+Command line argument '?!A': clashes with declaration of optional dependency with '?'
+Command line argument '?!A': in declaration of dependency 'A'

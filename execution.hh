@@ -1795,7 +1795,11 @@ void Execution::print_traces(string text) const
 
 	const Execution *execution= this; 
 
-	assert(! execution->targets.empty()); 
+	/* If the error happens directly for the root execution, it was
+	 * an error on the command line; don't output anything beyond
+	 * the error message. */
+	if (execution->targets.empty())
+		return;
 
 	bool first= true; 
 

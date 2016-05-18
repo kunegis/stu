@@ -36,7 +36,7 @@ using namespace std;
 #define STU_HELP						       \
 	"Usage: stu [-f FILENAME] [OPTION]... [TARGET]...\n"           \
 	"By default, build the first target in the file 'main.stu'.\n" \
-	"TARGETS can be specified in full Stu syntax.\n"               \
+	"TARGETS may include the special characters '!?@[]'.\n"               \
 	"Options:\n"						       \
 	"  -a               Treat all trivial dependencies as non-trivial\n"          \
 	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"      \
@@ -72,6 +72,12 @@ void init_buf();
  */
 void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
 			     const char *string_);
+
+/* Add a single dependency from the given STRING, in syntax used for
+ * optionless arguments  
+ */
+void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
+			       const char *string_);
 
 /* Read in an input file and add the rules to the given rule set.  Used
  * for the -f option and the default input file.  If not yet non-null,
@@ -248,9 +254,8 @@ int main(int argc, char **argv, char **envp)
 		for (int i= optind;  i < argc;  ++i) {
 			/* With GNU getopt(), I is not the index that the argument had
 			 * originally, because getopt() reorders its arguments.
-			 * This is why we can't put I into the trace. 
-			 */ 
-			add_dependencies_string(dependencies, argv[i]);
+			 * This is why we can't put I into the trace. */ 
+			add_dependencies_argument(dependencies, argv[i]); 
 		}
 
 		/* Use the default Stu file if -f/-F are not used */ 
@@ -360,6 +365,13 @@ void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
 	for (auto &j:  dependencies_option) {
 		dependencies.push_back(j); 
 	}
+}
+
+void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
+			       const char *string_)
+{
+	shared_ptr <Dependency> dep= Parse::parse_target_dependency(string_);
+	dependencies.push_back(dep); 
 }
 
 void read_file(string filename,

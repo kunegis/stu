@@ -32,8 +32,10 @@ DESCRIPTION
 
        Rules for building files are read from the file 'main.stu', from a file
        passed  by  the  -f  option, or using the -F option.  Names of files to
-       build passed on the command line follow  Stu  syntax,  i.e.,  they  are
-       equivalent to using the -C option.
+       build passed on the command line follow a  simplified  Stu  syntax,  in
+       which the only special characters are the flags '!', '?', the transient
+       target marker '@', and brackets '[]'.  All other characters are  inter‐
+       preted as part of filenames.
 
 
 OPTIONS
@@ -48,9 +50,7 @@ OPTIONS
               Pass  a  target  using full Stu syntax.  The given expression is
               parsed as if it was given as one or more dependencies in  a  Stu
               file.   As a result, flags '!', '?' and '&', brackets and paren‐
-              theses can be used, and spaces  separate  filenames.   Arguments
-              passed  without  an option to Stu are handled in the same way as
-              arguments to the -C option.
+              theses can be used, and spaces separate filenames.
 
        -E     Explain error messages.  Only some error messages have  explana‐
               tions.
@@ -779,4 +779,4 @@ SEE ALSO
 
 
 
-stu-1.14.2                         May 2016                             STU(1)
+stu-1.15.0                         May 2016                             STU(1)

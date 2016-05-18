@@ -1,6 +1,63 @@
 #
-# Make test/trivial4 and other tests faster by using touch_old. 
+# Make tests faster by using touch_old. 
 #
+
+test/nontrivial/EXEC
+test/trivial2/EXEC
+test/random-restart/main.stu
+test/phonies-dynamics-parallelism/main.stu
+test/trivial-existence2/EXEC
+test/dynamic-concurrent/main.stu
+test/optional-6a/main.stu
+test/sigint-immediately/main.stu
+test/sigint-immediately/EXEC
+test/no-delete-interrupt/main.stu
+test/no-delete-interrupt/EXEC
+test/optional-5a/main.stu
+test/options/main.stu
+test/existence-norebuild/EXEC
+test/update-dynamic/EXEC
+test/optional-5b/main.stu
+test/sigusr1/main.stu
+test/sigusr1/EXEC
+test/dynamic-twist/main.stu
+test/weakcycle/main.stu
+test/trivial-existence/EXEC
+test/fail-j-k/main.stu
+test/fail-j-k/EXEC
+test/trivial3/EXEC
+test/optional-6b/main.stu
+test/job-equal-runtime/main.stu
+test/subsequent2/EXEC
+test/existence-variable/EXEC
+test/trivial9/EXEC
+test/int-remove-files/main.stu
+test/int-remove-files/EXEC
+test/override-existence-only/EXEC
+test/trivial/EXEC
+test/both-dependencies/main.stu
+test/statistics-signal/main.stu
+test/statistics-signal/EXEC
+test/dynamic-no-rebuild/EXEC
+test/future-created/EXEC
+test/remove-incomplete/main.stu
+test/remove-incomplete/EXEC
+test/individual/main.stu
+test/individual/EXEC
+test/update/EXEC
+test/cross-dependency/main.stu
+test/pgid/main.stu
+test/pgid/EXEC
+test/dynamic-no-rebuild-update/EXEC
+test/symlink/EXEC
+test/no-rm-old/main.stu
+test/no-rm-old/EXEC
+test/sigusr1-immediately/main.stu
+test/sigusr1-immediately/EXEC
+test/continue/main.stu
+test/fail/main.stu
+test/trivial4/EXEC
+test/triv-1/EXEC
 
 #==== Backward-incompatible features (in the switch to version 2) ====
 

@@ -1,11 +1,11 @@
 #! /bin/sh
 
-rm -f ?
+rm -f ? || exit 1
 
 ../../stu.test -x >list.out 2>list.err &
 pid="$!"
 
-sleep 1
+sleep 1 || exit 1
 
 grep -qF 'sleep 2' list.err || {
 	echo >&2 "*** stderr (1)"

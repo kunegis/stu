@@ -1,64 +1,37 @@
 #! /bin/sh
 
-doo() { echo "$@" ; "$@" ; }
+set -e
 
-doo rm -f ? list.*
+rm -f ? list.*
 
 # * 'B' is a symlink to an existing file
-doo ln -s W B
+ln -s W B
 echo aaa >W
 
 # * stu is called: 'A' is built
-echo ../../stu.test
+
 ../../stu.test >list.out 2>list.err
-exitcode="$?"
-echo STDOUT:
-cat list.out
-echo ____
-echo STDERR:
-cat list.err
-echo ____
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** invalid exit code (1)"
-	exit 1
-}
-[ -r A ] || {
-	echo >&2 "*** 'A' does not exist (1)"
-	exit 1
-}
-grep -qF aaa A || {
-	echo >&2 "*** invalid content in 'A' (1)"
-	exit 1
-}
+
+[ -r A ] || { echo >&2 "*** 'A' must exist (1)" ; exit 1 ; }
+grep -qF aaa A || { echo >&2 "*** invalid content in 'A' (1)" ; exit 1 ; }
 
 # * the file pointed to by 'B' is updated
-doo sleep 2
-echo 'echo bbb >W'
+../../sh/touch_old A
+../../sh/touch_old B
 echo bbb >W
 
 # * stu is called: 'A' should be rebuilt 
-echo ../../stu.test
 ../../stu.test >list.out 2>list.err
+
+grep -qF bbb A || { echo >&2 "*** invalid content in 'A' (2)" ; exit 1 ; }
+set +e
+grep -qF 'Nothing to be done' list.out 
 exitcode="$?"
-echo STDOUT:
-cat list.out
-echo ____
-echo STDERR:
-cat list.err
-echo ____
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** invalid exit code (2)"
-	exit 1
-}
-grep -qF bbb A || {
-	echo >&2 "*** invalid content in 'A' (2)"
-	cat >&2 A
-	echo >&2 ________
-	exit 1
-}
-grep -qF 'Nothing to be done' list.out && {
-	echo >&2 "*** stu should do something (2)"
+[ "$exitcode" = 1 ] || {
+	echo >&2 "*** Stu must do something (2)"
 	exit 1
 }
 
-doo rm -f ? list.*
+rm -f ? list.* || exit 1
+
+exit 0

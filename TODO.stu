@@ -2,17 +2,6 @@
 # Make tests faster by using touch_old. 
 #
 
-test/future-created/EXEC
-test/remove-incomplete/main.stu
-test/remove-incomplete/EXEC
-test/individual/main.stu
-test/individual/EXEC
-test/update/EXEC
-test/cross-dependency/main.stu
-test/pgid/main.stu
-test/pgid/EXEC
-test/dynamic-no-rebuild-update/EXEC
-test/symlink/EXEC
 test/no-rm-old/main.stu
 test/no-rm-old/EXEC
 test/sigusr1-immediately/main.stu

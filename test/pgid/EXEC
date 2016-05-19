@@ -1,26 +1,22 @@
 #! /bin/sh
 
-doo() { echo "$@" ; "$@" ; }
+set -e
 
-doo rm -f X Y Z
+rm -f X Y Z
 
 ../../stu.test -j2 >list.out 2>list.err &
-PID=$!
+pid=$!
 
-doo sleep 2
+sleep 2
 
 if [ $(ps -fe | grep 2837415 | grep -v grep | wc -l) = 0 ]; then
 	echo >&2 "$0:  *** stu is not running"
 	exit 1
 fi
 
-echo kill -TERM $PID
-kill -TERM $PID  || {
-    echo >&2 "$0:  *** kill"
-    exit 1
-}
+kill -TERM $pid 
 
-doo sleep 1
+sleep 1
 
 if [ $(ps -fe | grep 2837415 | grep -v grep | wc -l) != 0 ]; then
 	echo >&2 "$0:  *** sleep is still running"
@@ -28,4 +24,6 @@ if [ $(ps -fe | grep 2837415 | grep -v grep | wc -l) != 0 ]; then
 	exit 1
 fi
 
-doo rm -f ?
+rm -f ?
+
+exit 0

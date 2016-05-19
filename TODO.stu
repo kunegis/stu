@@ -2,10 +2,6 @@
 # Make tests faster by using touch_old. 
 #
 
-test/trivial9/EXEC
-test/int-remove-files/main.stu
-test/int-remove-files/EXEC
-test/override-existence-only/EXEC
 test/trivial/EXEC
 test/both-dependencies/main.stu
 test/statistics-signal/main.stu

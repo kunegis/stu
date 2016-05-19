@@ -1,46 +1,40 @@
 #! /bin/sh
 
-doo() { echo "$@" ; "$@" ; }
+set -e
 
 rm -f ? list.*
 
 #
 # Run stu
 #
-echo ../../stu.test -v
+
 ../../stu.test -v
-exitcode="$?"
-if [ "$exitcode" != 0 ]; then
-	echo >&2 "*** wrong exit code (1)"
+
+[ -r B ] || {
+	echo >&2 "*** 'B' must be created"
 	exit 1
-fi
-if [ ! -r B ]; then
-	echo >&2 "*** 'B' was not created"
-	exit 1
-fi
+}
 
 #
 # Change 'B' 
 #
-doo sleep 2
-doo touch B
+
+../../sh/touch_old A 2
+touch B
 
 #
 # Run 'B' -- 'B' is rebuilt 
 #
-echo ../../stu.test -v
-../../stu.test -v | tee list.out
-exitcode="$?"
-if [ "$exitcode" != 0 ]; then
-	echo >&2 "*** wrong exit code (2)"
-	exit 1
-fi
 
-if grep -qF 'Nothing to be done' list.out ; then
-	echo >&2 "*** 'Nothing to be done' not found in output"
-	exit 1
-fi
+../../stu.test -v >list.out
 
-rm -f ? list.*
+set +e
+grep -qF 'Nothing to be done' list.out 
+[ "$?" = 1 ] || {
+	echo >&2 "*** 'Nothing to be done' must not be found in output"
+	exit 1
+}
+
+rm -f ? list.* || exit 1
 
 exit 0

@@ -1,4 +1,3 @@
-
 #
 # Make sure that just because a dynamic dependency is updated, the
 # target itself does not need to be updated. 
@@ -14,7 +13,6 @@
 
 A:  [B]
 {
-    set -e
     ln -s notexistingfile W # This fails if executed twice
     cp C A
 }
@@ -31,7 +29,6 @@ C:
 
 D:
 {
-    set -e
     echo '#! /bin/sh' >D 
     echo 'echo C >B' >>D 
     chmod u+x D

@@ -2,11 +2,6 @@
 # Make tests faster by using touch_old. 
 #
 
-test/trivial/EXEC
-test/both-dependencies/main.stu
-test/statistics-signal/main.stu
-test/statistics-signal/EXEC
-test/dynamic-no-rebuild/EXEC
 test/future-created/EXEC
 test/remove-incomplete/main.stu
 test/remove-incomplete/EXEC

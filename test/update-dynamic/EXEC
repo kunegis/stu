@@ -1,39 +1,34 @@
 #! /bin/sh
 
-doo() { echo "$@" ; "$@" ; }
+rm -Rf ? || exit 1
 
-doo rm -Rf ?
+echo Hello >B || exit 1
 
-echo 'echo Hello >B'
-echo Hello >B || {
-    echo >&2 "$0:  *** Initialization failed"
-    exit 1
+../../stu.test
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 "$0:  *** Exitcode (1)"
+	exit 1
 }
 
-echo >&2 ../../stu.test 
-../../stu.test || {
-    echo >&2 "$0:  *** Initial build failed"
-    exit 1
+../../sh/touch_old A 2 || exit 1
+../../sh/touch_old dep.A 2 || exit 1
+echo "Hello CORRECT World" >B
+
+../../stu.test
+exitcode="$?"
+
+[ "$exitcode" = 0 ] || {
+	echo >&2 "$0:  *** Exitcode (2)"
+	exit 1
 }
 
-# Note:  not sleeping may make the new file B have the exact same
-# timestamp as the old A.  
-sleep 1
-doo echo "Hello CORRECT World" >B
-
-ls -l A B
-
-echo >&2 ../../stu.test 
-../../stu.test || {
-    echo >&2 "$0:  *** Second build failed"
-    exit 1
+grep -qF CORRECT A || {
+	echo >&2 "$0:  *** 'A' was not updated"
+	exit 1
 }
 
-if ! fgrep -l CORRECT A ; then
-    echo >&2 "$0:  *** 'A' was not updated"
-    exit 1
-fi
-
-doo rm -Rf ?
+rm -Rf ? || exit 1
 
 exit 0

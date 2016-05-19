@@ -11,20 +11,33 @@
 
 set -e
 
-doo() { echo "$@" ; "$@" ; }
+rm -f ? 
 
-doo rm -f ?
-
-echo ../../stu.test
 ../../stu.test >list.out 2>list.err
-if ! cmp list.out stdout.1 ; then echo >&2 '*** (1out)' ; exit 1 ; fi
-[ -s list.err ] && { echo >&2 '*** (1err)' ; exit 1 ; }
 
-doo sleep 2
-doo touch B
-echo ../../stu.test
+cmp list.out stdout.1 || {
+	echo >&2 '*** (1out)' 
+	exit 1 
+}
+
+[ -r list.err ] && [ ! -s list.err ] || { 
+	echo >&2 '*** (1err)' 
+	exit 1 
+}
+
+../../sh/touch_old A 2
+touch B
+
 ../../stu.test >list.out 2>list.err
-if ! cmp list.out stdout.2 ; then echo >&2 '*** (2out)' ; exit 1 ; fi
-[ -s list.err ] && { echo >&2 '*** (2err)' ; exit 1 ; }
+
+cmp list.out stdout.2 || {
+	echo >&2 '*** (2out)' 
+	exit 1 
+}
+
+[ -r list.err ] && [ ! -s list.err ] || { 
+	echo >&2 '*** (2err)' 
+	exit 1 
+}
 
 exit 0

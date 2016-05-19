@@ -2,13 +2,13 @@
 
 for K in 20 30 50 90 99 100 101 1234 ; do
 
-    rm -f list.* All 
+	rm -f list.* All || exit 1
     
-    echo ../../stu.test -j $K
-    ../../stu.test -j $K || exit 1 
+	echo ../../stu.test -j $K
+	../../stu.test -j $K || exit 1 
 
 done
 
-rm list.* All 
+rm list.* All || exit 1
 
 exit 0

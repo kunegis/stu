@@ -6,17 +6,18 @@ Some hints for developing Stu:
   is introduced   
 * Increment the major version number when backward-incompatible new
   syntax is introduced 
-* The unit tests must pass
-* Following CODING
+* The unit tests must pass (sh/mktests)
+* Follow CODING
 * Write unit tests for all features, including failure modes 
 * When writing shell scripts, make sure to follow POSIX.  This includes: 
-** 'sed' has *only* basic regular expressions.  In particular, no '|'. 
+** 'sed' has *only* basic regular expressions.  In particular, no '|'.
+   The -E and -r options are not POSIX. 
 ** Shell scripts don't have a filename suffix.  Use '#! /bin/sh'. 
 
 UNIT TESTS
 
-To run the unit tests, do 'make -f Makefile.test'.  It takes about 10
-minutes.  
+To run the unit tests, do 'make -f Makefile.test'.  It takes about five
+minutes.   
 
 The unit tests have additional requirements: 
 

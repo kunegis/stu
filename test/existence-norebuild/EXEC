@@ -1,18 +1,14 @@
 #! /bin/sh
 
-doo() { echo "$@" ; $@ ; }
+rm -f ? || exit 1
 
-doo rm -f ?
+../../sh/touch_old A 2
 
-doo touch A
-
-doo sleep 2
-
-echo ../../stu.test 
 ../../stu.test
 exitcode="$?"
+
 [ "$exitcode" = 0 ] || {
-	echo >&2 "*** (a) exit code"
+	echo >&2 "*** (a) Exitcode"
 	exit 1
 }
 

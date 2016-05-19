@@ -2,13 +2,6 @@
 # Make tests faster by using touch_old. 
 #
 
-test/fail-j-k/main.stu
-test/fail-j-k/EXEC
-test/trivial3/EXEC
-test/optional-6b/main.stu
-test/job-equal-runtime/main.stu
-test/subsequent2/EXEC
-test/existence-variable/EXEC
 test/trivial9/EXEC
 test/int-remove-files/main.stu
 test/int-remove-files/EXEC

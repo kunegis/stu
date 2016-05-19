@@ -2,19 +2,18 @@
 
 set -e 
 
-doo() { echo >&2 "$@" ; "$@" ; }
+rm -f ? list.*
 
-doo rm -f ? list.*
+../../stu.test 
 
-doo ../../stu.test 
+grep -qF CORRECT A || { echo >&2 "*** (1) A" ; exit 1 ; }
 
-grep -qF CORRECT A
+../../sh/touch_old A 2
+touch B
 
-doo sleep 2
-doo touch B
+../../stu.test >list.out
 
-doo ../../stu.test >list.out
+grep -qF 'Nothing to be done' list.out || { echo >&2 "*** (2) Stdout" ; exit 1 ; }
 
-grep -qF 'Nothing to be done' list.out
+rm -f ? list.*
 
-doo rm -f ? list.*

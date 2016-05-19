@@ -1,46 +1,21 @@
 #! /bin/sh
 
-doo() { echo "$@" ; $@ ; }
+set -e
 
-doo rm -f ?
+rm -f ?
 
-echo ../../stu.test
-../../stu.test
-exitcode="$?"
+../../stu.test >list.out 2>list.err
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** error (a) exit code must be zero"
-	exit 1
-}
+[ -e B ] || { echo >&2 "*** (1) 'B' must exist" ; exit 1 ; }
+grep -qF bbb A || { echo >&2 "*** (1) 'A' must contain 'bbb'" ; exit 1 ; }
 
-[ -e B ] || {
-	echo >&2 "*** error (b) 'B' must exist"
-	exit 1
-}
-
-fgrep -q bbb A || {
-	echo >&2 "*** error (c) 'A' must contain 'bbb'"
-	exit 1
-}
-
-doo sleep 2
-
-echo 'echo ddd >B'
+../../sh/touch_old A 2
 echo ddd >B
 
-doo sleep 2
+../../stu.test >list.out 2>list.err
 
-echo ../../stu.test
-../../stu.test >list.out
-exitcode="$?"
-
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** error (d) exit code must be zero"
-	exit 1
-}
-
-fgrep -q 'cp B A' list.out || {
-	echo >&2 "*** error (e) command for 'A' must be executed"
+grep -qF 'cp B A' list.out || {
+	echo >&2 "*** (2) command for 'A' must be executed"
 	echo "output:"
 	echo ________
 	cat list.out
@@ -48,8 +23,8 @@ fgrep -q 'cp B A' list.out || {
 	exit 1
 }
 
-fgrep -q ddd A || {
-	echo >&2 "*** error (f) 'A' must contain 'ddd'"
+grep -qF ddd A || {
+	echo >&2 "*** (2) 'A' must contain 'ddd'"
 	exit 1
 }
 

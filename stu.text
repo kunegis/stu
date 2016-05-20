@@ -6,7 +6,7 @@ NAME
        stu - Build automation
 
 SYNOPSIS
-       stu [ -f FILENAME ] [ OPTIONS ...  ] [ EXPRESSION ...  ]
+       stu [ -f FILENAME ] [ OPTION ]... [ TARGET ]...
 
 DESCRIPTION
        Stu  is  a  tool  for  build automation.  Like Make, it is used to call
@@ -745,10 +745,6 @@ BUGS
        mandatory,  as  opposed  to the behavior of GNU Make, where no argument
        means to run as many jobs in parallel as possible.
 
-       Invoking 'stu "a b"' builds the files 'a' and 'b', in contrast to 'make
-       "a  b"', which builds the file named 'a b'.  To build a file whose name
-       contains a space, use 'stu -c "a b"'.
-
        Files read as dynamic dependencies are parsed using the full  Stu  syn‐
        tax,  meaning  that  certain characters must be quoted in them.  Future
        versions of Stu may support newline-seperated file lists,  as  well  as
@@ -779,4 +775,4 @@ SEE ALSO
 
 
 
-stu-1.15.9                         May 2016                             STU(1)
+stu-1.15.10                        May 2016                             STU(1)

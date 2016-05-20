@@ -26,3 +26,8 @@ REQUIREMENTS
 * POSIX.
 * Stu calls /bin/sh and /bin/cp at runtime.
 
+COMPILATION OPTIONS
+
+* NDEBUG:  Enabled for non-debug mode. 
+* USE_MTIM (default: unset):  Use struct timespec instead of time_t for
+  timekeeping.  This is not tested and is likely to not work.  

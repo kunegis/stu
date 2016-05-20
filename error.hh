@@ -349,4 +349,12 @@ void explain_cycle()
 	      stderr);
 }
 
+void explain_startup_time()
+{
+	if (! option_explain)  return;
+	fputs("Explanation: If a created file has a timestamp older than the startup of Stu,\n"
+	      "a clock skew is likely.\n",
+	      stderr); 
+}
+
 #endif /* ! ERROR_HH */ 

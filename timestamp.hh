@@ -11,6 +11,8 @@
 
 #ifdef USE_MTIM
 
+/* This variant is not used */ 
+
 /*
  * This needs to be linked with -ltr. 
  */
@@ -51,7 +53,7 @@ public:
 
 	string format() const {
 		assert(defined()); 
-		return frmt("%ld.%ld", (long)t.tv_sec, (long)t.tv_nsec); 
+		return frmt("%ld.%ld", (long) t.tv_sec, (long) t.tv_nsec); 
 	}
 
 	static const Timestamp UNDEFINED;
@@ -61,10 +63,15 @@ public:
 	static Timestamp now() {
 		Timestamp ret;
 		/* Note:  clock_gettime() needs to be linked with -lrt */ 
-		int r= clock_gettime(CLOCK_REALTIME, &(ret.t)); 
+		int r= clock_gettime(CLOCK_REALTIME, & ret.t); 
 		if (r < 0) {
-			/* Print an error message and fall back to time() */ 
+			/* If this happens, it is a bug in Stu */
+			assert(false);
 			perror("clock_gettime(CLOCK_REALTIME, ...)");
+
+			/* Do the next best thing:  use time(2).
+			 * This may lead to clock skew, as the
+			 * nanoseconds are not set correctly */
 			ret.t.tv_sec= time(nullptr);
 			ret.t.tv_nsec= 0; 
 		}

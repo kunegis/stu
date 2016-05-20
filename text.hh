@@ -9,18 +9,17 @@
 
 #include <string>
 
-/* Is the character a space in the C locale? 
- * Note:  we don't use isspace() because isspace() uses the current
- * locale and may (in principle) consider locale-specific characters,
- * whereas the syntax of Stu specifies that only these six characters
- * count as whitespace. 
- */
+/* Is the character a space in the C locale?  Note:  we don't use
+ * isspace() because isspace() uses the current locale and may consider
+ * locale-specific characters which we don't want to cover in this
+ * function, whereas the syntax of Stu specifies that only these six
+ * characters count as whitespace.  */
 bool is_space(char c) 
 {
 	return c != '\0' && nullptr != strchr(" \n\t\v\r\f", c);
 }
 
-/* Functions named format() returned an optionally quoted and printable
+/* Functions named format() return an optionally quoted and printable
  * representation of the target.  These are inserted directly into
  * output of Stu (without adding quotes).  format_mid() is used when brackets
  * of any form are added around.  format_bare() returns the always unquoted
@@ -31,9 +30,9 @@ bool is_space(char c)
  */
 
 /* This is a convenient function for performing printf-like formatting
- * in C++.  The function (named frmt()) takes the same arguments as
- * printf() and returns a C++ string.  Note:  does *not* support passing
- * string() objects. 
+ * in C++.  The function takes the same arguments as printf() and
+ * returns a C++ string.  Note:  does *not* support passing string()
+ * objects.  
  */
 string frmt(const char *format, ...) 
 	__attribute__ ((format(printf, 1, 2)));
@@ -55,7 +54,8 @@ string frmt(const char *format, ...)
 	n= vsnprintf((char *) ret.c_str(), n+1, format, ap); 
 	va_end(ap); 
 
-	if (n < 0) { /* encoding error */ 
+	if (n < 0) { 
+		/* Encoding error in the format string */ 
 		assert(false); 
 		perror("snprintf");
 		abort(); 
@@ -141,10 +141,8 @@ string format_char(char c)
 	return fmt("'%s'", text_char); 
 }
 
-/*
- * Padding for verbose output.  During the lifetime of an object,
- * padding is increased by one. 
- */
+/* Padding for verbose output (option -v).  During the lifetime of an
+ * object, padding is increased by one.  */
 class Verbose
 {
 private:

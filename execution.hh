@@ -980,6 +980,7 @@ void Execution::waited(int pid, int status)
 						print_info(fmt("Startup timestamp is %s",
 							       Timestamp::startup.format())); 
 						print_traces();
+						explain_startup_time();
 						raise(ERROR_BUILD);
 					}
 				}

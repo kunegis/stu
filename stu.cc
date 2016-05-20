@@ -283,8 +283,7 @@ int main(int argc, char **argv, char **envp)
 					/* The default file does not exist --
 					 * fail if no target is given */  
 					if (dependencies.empty() && ! had_option_c && ! option_print) {
-						print_error("No target given and no default file "
-							    "'" FILENAME_INPUT_DEFAULT "' present");
+						print_error("Expected target or default file '" FILENAME_INPUT_DEFAULT "'");
 						explain_no_target(); 
 						throw ERROR_LOGICAL; 
 					}

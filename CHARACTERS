@@ -51,10 +51,11 @@ These characters are single-character tokens.
 == As-yet unused operators ==
 
 *	String concatenation 
+\	Escape
 \	interpreter for non-shell rules:  \octave { }
 -	(version 2, only as first character) Option
 +	(version 2, only as first character) Option
 ,	(no proposed use)
 |	(no proposed use)
-?!&     (version 2) (maybe) May become free again when they are replaced
- 	by options 
+?!&     (version 2) Will become free again when they are replaced
+ 	by flags

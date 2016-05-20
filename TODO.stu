@@ -10,6 +10,10 @@
 "aaa'bbb"; # check with /bin/sh
 
 #
+# Use backslash for quoting?
+#
+
+#
 # Don't allow filenames that start with '+' or '-', but allow these in
 # the middle or at the end of filenames.  
 #

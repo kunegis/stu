@@ -775,6 +775,11 @@ BUGS
        also  lead  to  a rebuild, although it is not needed.  Both limitations
        could be removed by using fingerprints instead of modification times.
 
+       All timestamps have only one-second resolution.
+
+       Filenames in Stu are literal.  Stu does not recognize it when two  dif‐
+       ferent names refer to the same file.
+
 
 AUTHOR
        Jérôme Kunegis <kunegis@uni-koblenz.de>
@@ -784,4 +789,4 @@ SEE ALSO
 
 
 
-stu-1.15.16                        May 2016                             STU(1)
+stu-1.15.17                        May 2016                             STU(1)

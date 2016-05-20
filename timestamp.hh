@@ -44,8 +44,10 @@ public:
 	Timestamp() { }
 
 	Timestamp(struct stat *buf) 
-		:  t(buf->st_mtim) 
-	{  }
+	{  
+		t.tv_sec= buf->st_mtim.tv_sec;
+		t.tv_nsec= buf->st_mtim.tv_nsec;
+	}
 	
 	bool defined() const {
 		return t.tv_sec != (time_t) -1; 
@@ -61,7 +63,7 @@ public:
 
 	string format() const {
 		assert(defined()); 
-		return frmt("%ld.%ld", (long) t.tv_sec, (long) t.tv_nsec); 
+		return frmt("%ld.%9ld", (long) t.tv_sec, (long) t.tv_nsec); 
 	}
 
 	static const Timestamp UNDEFINED;

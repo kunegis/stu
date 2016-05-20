@@ -11,7 +11,14 @@
 
 #ifdef USE_MTIM
 
-/* This variant is not used */ 
+/* This variant is not used.  It does not work, as:
+ *  (1) Two files created in a row have timestamps in the wrong order 
+ *  (2) Files create during Stu runtime have a timestamp before the Stu
+ *      startu timestamps. 
+ * Both errors are on the order of a few milliseconds.  Tested on a
+ * system on which the clock resolution as reported by clock_getres() is
+ * one nanosecond. 
+ */ 
 
 /*
  * This needs to be linked with -ltr. 
@@ -47,6 +54,7 @@ public:
 	bool operator < (const Timestamp &that) const {
 		assert(this->defined());
 		assert(that.defined());
+
 		return this->t.tv_sec < that.t.tv_sec ||
 			(this->t.tv_sec == that.t.tv_sec && this->t.tv_nsec < that.t.tv_nsec); 
 	}
@@ -64,7 +72,7 @@ public:
 		Timestamp ret;
 		/* Note:  clock_gettime() needs to be linked with -lrt */ 
 		int r= clock_gettime(CLOCK_REALTIME, & ret.t); 
-		if (r < 0) {
+		if (r != 0) {
 			/* If this happens, it is a bug in Stu */
 			assert(false);
 			perror("clock_gettime(CLOCK_REALTIME, ...)");

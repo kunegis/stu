@@ -1,8 +1,7 @@
 #ifndef TOKEN_HH
 #define TOKEN_HH
 
-/* Data structures for representing tokens. 
- */
+/* Data structures for representing tokens. */
 
 #include <memory>
 
@@ -11,13 +10,13 @@ class Token
 public:
 
 	virtual ~Token(); 
-	
+
+	/* The place of the token */
 	virtual const Place &get_place() const= 0; 
 };
 
-/* An operator, e.g. ':', '[', etc.  Operators are all single characters
- * in Stu. 
- */
+/* An operator, e.g. ':', '[', etc.  Operators are all single
+ * characters.  */  
 class Operator
 	:  public Token
 {
@@ -25,9 +24,8 @@ public:
 
 	Place place; 
 
-	/* The operator as a character, e.g. ':', '[', etc.  Note that all
-	 * operators are single characters. 
-	 */ 
+	/* The operator as a character, e.g. ':', '[', etc.  All
+	 * operators are single characters.  */  
 	char op; 
 
 	Operator(char op_, Place place_)
@@ -42,8 +40,7 @@ public:
 
 /* This contains two types of places:  the places for the individual
  * parameters in Place_Param_Name, and the place of the complete token
- * from Token. 
- */
+ * from Token.  */
 class Name_Token
 	:  public Token, public Place_Param_Name
 {

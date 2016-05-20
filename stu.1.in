@@ -36,10 +36,13 @@ Make.
 
 Rules for building files are read from the file 'main.stu', 
 from a file passed by the -f option, or using the -F option. 
-Names of files to build passed on the command line follow a simplified Stu syntax,
+
+Names of targets to build passed on the command line follow a simplified Stu syntax,
 in which the only special characters are the flags '!', '?', the
 transient target marker '@', and brackets '[]'.  All other characters
-are interpreted as part of filenames. 
+are interpreted as part of filenames.  When the -J option is used,
+arguments passed on the command line are interpreted as filenames
+without Stu syntax. 
 
 .SH OPTIONS
 .IP -a

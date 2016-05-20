@@ -33,10 +33,10 @@
  *           '?', '[]', '()', '*' or '@' 
  */
 
-/* As a general rule, this code does not check that imcompatible
- * constructs (like '!' and '?' or '!' and '$[') are used together.
- * Instead, this is checked within Execution and not here, because these
- * can also come from dynamic dependencies. */
+/* This code does not check that imcompatible constructs (like '!' and
+ * '?' or '!' and '$[') are used together.  Instead, this is checked
+ * within Execution and not here, because these can also come from
+ * dynamic dependencies.  */  
 
 /* An object of this type represents a location within a token list */ 
 class Build
@@ -73,6 +73,10 @@ public:
 	bool build_expression_list(vector <shared_ptr <Dependency> > &ret, 
 				   Place_Param_Name &place_param_name_input,
 				   Place &place_input);
+
+	/* Parse a dependency as given on the command line outside of
+	 * options */
+	static shared_ptr <Dependency> build_target_dependency(string text); 
 
 private:
 
@@ -942,6 +946,78 @@ void Build::append_copy(      Param_Name &to,
 	/* FROM does not contain slashes;
 	 * prepend the whole FROM to TO */
 	to.append(from);
+}
+
+shared_ptr <Dependency> Build::build_target_dependency(string text)
+{
+	Place place(Place::Type::ARGV, text);
+
+	if (text.empty()) {
+		place << "name must not be empty";
+		throw ERROR_LOGICAL;
+	}
+
+	const char *begin= text.c_str();
+	const char *p= text.c_str() + text.size();
+	int closing= 0;
+	while (p != begin && p[-1] == ']') {
+		++closing;
+		--p;
+	}
+	const char *end_name= p;
+
+	const char *q= begin;
+	while (q != end_name && 
+	       (*q == '[' || *q == '!' || *q == '?')) {
+		++q;
+	}
+
+	assert(q <= end_name); 
+
+	Type type= Type::FILE;
+	const char *begin_name= q;
+	if (begin_name != end_name && *q == '@') {
+		type= Type::TRANSIENT;
+		++ begin_name;
+	}
+
+	if (begin_name == end_name) {
+		place << "name must not be empty";
+		throw ERROR_LOGICAL; 
+	}
+
+	shared_ptr <Dependency> ret= make_shared <Direct_Dependency> 
+		(0, Place_Param_Target
+		 (type, 
+		  Place_Param_Name
+		  (string(begin_name, end_name - begin_name), 
+		   place)));
+
+	while (q != begin) {
+		if (q[-1] == '!') {
+			ret->add_flags(F_EXISTENCE); 
+			ret->set_place_existence(place);
+		} else if (q[-1] == '?') {
+			ret->add_flags(F_OPTIONAL); 
+			ret->set_place_optional(place); 
+		} else if (q[-1] == '[') {
+			ret= make_shared <Dynamic_Dependency> (0, ret);
+			-- closing;
+		} else {
+			assert(false); 
+			/* Ignore character */ 
+		}
+		--q;
+	}
+
+	assert(q == begin);
+	
+	if (closing != 0) {
+		place << "unbalanced brackets '[]'";
+		throw ERROR_LOGICAL;
+	}
+
+	return ret; 
 }
 
 #endif /* ! BUILD_HH */

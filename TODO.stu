@@ -5,9 +5,9 @@
 # i.e., with respect to what needs to be quoted inside them. 
 #
 
-'abc"def';
-"network $NAME"; 
-"aaa'bbb";
+'abc"def'; # check with /bin/sh
+"network $name"; 
+"aaa'bbb"; # check with /bin/sh
 
 #
 # Don't allow filenames that start with '+' or '-', but allow these in

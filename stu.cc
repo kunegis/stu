@@ -30,7 +30,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-#define STU_OPTIONS "ac:C:Ef:F:ghj:kKm:M:pqsvVwxz"
+#define STU_OPTIONS "ac:C:Ef:F:ghj:JkKm:M:pqsvVwxz"
 
 /* The following strings do not contain tabs, but only space characters */  
 #define STU_HELP						       \
@@ -47,6 +47,7 @@ using namespace std;
 	"  -g               Treat all optional dependencies as non-optional\n"        \
 	"  -h               Output help and exit\n"		                      \
 	"  -j K             Run K jobs in parallel\n"			              \
+	"  -J               Disable Stu syntax in arguments\n"                        \
 	"  -k               Keep on running after errors\n"		              \
 	"  -K               Don't delete target files on error or interruption\n"     \
 	"  -m ORDER         Order to run the targets:\n"			      \
@@ -132,6 +133,7 @@ int main(int argc, char **argv, char **envp)
 			case 'E': option_explain= true;        break;
 			case 'g': option_nonoptional= true;    break;
 			case 'h': fputs(STU_HELP, stdout);     exit(0);
+			case 'J': option_literal= true;        break;
 			case 'k': option_keep_going= true;     break;
 			case 'K': option_no_delete= true;      break;
 			case 'p': option_print= true;          break; 
@@ -255,7 +257,19 @@ int main(int argc, char **argv, char **envp)
 			/* With GNU getopt(), I is not the index that the argument had
 			 * originally, because getopt() reorders its arguments.
 			 * This is why we can't put I into the trace. */ 
-			add_dependencies_argument(dependencies, argv[i]); 
+
+			if (! option_literal) {
+				add_dependencies_argument(dependencies, argv[i]); 
+			} else {
+				dependencies.push_back
+					(make_shared <Direct_Dependency>
+					 (0, Place_Param_Target
+					  (Type::FILE, 
+					   Place_Param_Name
+					   (argv[i],
+					    Place(Place::Type::ARGV, 
+						  argv[i])))));
+			}
 		}
 
 		/* Use the default Stu file if -f/-F are not used */ 
@@ -370,7 +384,7 @@ void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
 void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
 			       const char *string_)
 {
-	shared_ptr <Dependency> dep= Parse::parse_target_dependency(string_);
+	shared_ptr <Dependency> dep= Build::build_target_dependency(string_);
 	dependencies.push_back(dep); 
 }
 

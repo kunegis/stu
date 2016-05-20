@@ -10,26 +10,26 @@
 #include "token.hh"
 #include "version.hh"
 
-/* The default filename read.  Must be "main.stu". 
- */
+/* The default filename read  */
 #define FILENAME_INPUT_DEFAULT "main.stu"
 
 class Parse
 {
 public:
 
-	/* Parse the tokens from FILENAME.  
+	/* Parse the tokens from the file FILENAME.  
 	 *
 	 * The given file descriptor FD may optionally be that file
 	 * already opened.  If the file was not yet opened, FD is -1.
 	 * If FILENAME is empty, use standard input, but FD must be -1. 
 	 * 
-	 * Append the read tokens to TOKENS. 
+	 * Append the read tokens to TOKENS, and set PLACE_END to the
+	 * end of the parsed file.  
 	 * 
 	 * If ALLOW_INCLUDE, allow '%include' statements, otherwise
 	 * not (used for dynamic dependencies and the -C option). 
 	 * 
-	 * Throws integers as errors. 
+	 * Throws integers error codes on errors. 
 	 */
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
 				      bool allow_include,
@@ -45,17 +45,17 @@ public:
 				  fd);
 	}
 
+	/* Parse tokens from the given TEXT.  Other arguments are
+	 * identical to parse_tokens_file(). 
+	 */
 	static void parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
 					bool allow_include,
 					Place &place_end,
-					string text_); 
-
-	/* Parse a dependency as given on the command line outside of
-	 * options */
-	static shared_ptr <Dependency> parse_target_dependency(string text); 
+					string text); 
 
 private:
 
+	/* Stacks of included files */ 
 	vector <Trace> &traces;
 	vector <string> &filenames;
 	unordered_set <string> &includes;
@@ -150,8 +150,8 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 	struct stat buf;
 	FILE *file= nullptr; 
 
-	/* false:  mmap()
-	 * true:   malloc()
+	/* false:  use mmap()
+	 * true:   use malloc()
 	 */
 	bool use_malloc;
 
@@ -337,7 +337,7 @@ shared_ptr <Command> Parse::parse_command()
 	 *   first non-whitespace character 
 	 * - If the command is completely empty (i.e., {}), then the place
 	 *   is the closing bracket.
-	 * - If the command contains only whitespace, is one one line and is
+	 * - If the command contains only whitespace, is on one line and is
 	 *   not empty, the place is on the first whitespace character.
 	 * - If the command contains only whitespace and a single newline,
 	 *   then the place is the end of the first line.
@@ -350,7 +350,8 @@ shared_ptr <Command> Parse::parse_command()
 	const unsigned line_first= line; /* Where the command started */ 
 	bool begin= true; /* We have not yet seen non-whitespace */ 
 
-	/* May contain:  {'"`( */ 
+	/* Stack of opened parenthesis-like symbols to parse shell
+	 * syntax.  May contain:  {'"`( */ 
 	string stack= "{"; 
 
 	while (p < p_end) {
@@ -845,8 +846,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		/* Invalid token:  everything else is considered invalid */ 
 		else if (*p == '}' 
 			 || ((unsigned char)*p) < 0x20 /* ASCII control characters */ 
-			 || *p == 0x7F /* DEL */ 
-			 ) {
+			 || *p == 0x7F /* DEL */ ) {
 			current_place() 
 				<< fmt("invalid character %s", 
 				       format_char(*p));
@@ -879,78 +879,6 @@ void Parse::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 	parse.parse_tokens(tokens, allow_include); 
 
 	place_end= parse.current_place(); 
-}
-
-shared_ptr <Dependency> Parse::parse_target_dependency(string text)
-{
-	Place place(Place::Type::ARGV, text);
-
-	if (text.empty()) {
-		place << "name must not be empty";
-		throw ERROR_LOGICAL;
-	}
-
-	const char *begin= text.c_str();
-	const char *p= text.c_str() + text.size();
-	int closing= 0;
-	while (p != begin && p[-1] == ']') {
-		++closing;
-		--p;
-	}
-	const char *end_name= p;
-
-	const char *q= begin;
-	while (q != end_name && 
-	       (*q == '[' || *q == '!' || *q == '?')) {
-		++q;
-	}
-
-	assert(q <= end_name); 
-
-	Type type= Type::FILE;
-	const char *begin_name= q;
-	if (begin_name != end_name && *q == '@') {
-		type= Type::TRANSIENT;
-		++ begin_name;
-	}
-
-	if (begin_name == end_name) {
-		place << "name must not be empty";
-		throw ERROR_LOGICAL; 
-	}
-
-	shared_ptr <Dependency> ret= make_shared <Direct_Dependency> 
-		(0, Place_Param_Target
-		 (type, 
-		  Place_Param_Name
-		  (string(begin_name, end_name - begin_name), 
-		   place)));
-
-	while (q != begin) {
-		if (q[-1] == '!') {
-			ret->add_flags(F_EXISTENCE); 
-			ret->set_place_existence(place);
-		} else if (q[-1] == '?') {
-			ret->add_flags(F_OPTIONAL); 
-			ret->set_place_optional(place); 
-		} else if (q[-1] == '[') {
-			ret= make_shared <Dynamic_Dependency> (0, ret);
-			-- closing;
-		} else {
-			assert(false); 
-			/* Ignore character */ 
-		}
-		--q;
-	}
-
-	assert(q == begin);
-	
-	if (closing != 0) {
-		place << "unbalanced brackets '[]'";
-		throw ERROR_LOGICAL;
-	}
-
-	return ret; 
 }
 
 #endif /* ! PARSE_HH */

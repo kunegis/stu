@@ -1,0 +1,3 @@
+@X { exit 1 }
+
+'-'$name : { touch -- "-$name" }

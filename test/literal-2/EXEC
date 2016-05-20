@@ -1,0 +1,21 @@
+#! /bin/sh
+
+set -e
+
+rm -f ? \$*
+
+../../stu.test -J -a '@[?!A]' >list.out 2>list.err
+
+[ -r '@[?!A]' ] || {
+	echo >&2 "*** File must be created"
+	exit 1
+}
+
+[ -r A ] || {
+	echo >&2 "*** File 'A' must be create"
+	exit 1
+}
+
+rm -f ? \$*
+
+exit 0

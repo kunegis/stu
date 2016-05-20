@@ -344,8 +344,8 @@ void explain_parameter_character()
 void explain_cycle()
 {
 	if (! option_explain)  return;
-	fputs("A cycle in the dependency graph is an error.  Cycles are verified on\n"
-	      "the rule level, not on the target level.\n",
+	fputs("Explanation: A cycle in the dependency graph is an error.  Cycles are \n"
+	      "verified on the rule level, not on the target level.\n", 
 	      stderr);
 }
 

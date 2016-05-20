@@ -15,6 +15,9 @@ static bool option_explain= false;
 /* The -g option (consider all optional dependencies to be non-optional) */
 static bool option_nonoptional= false;
 
+/* The -J option (literal interpretation of argumens) */
+static bool option_literal= false; 
+
 /* The -k option (keep going) */ 
 static bool option_keep_going= false;
 

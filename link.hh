@@ -5,19 +5,6 @@
  */ 
 class Link
 {
-private:
-	void check() const {
-		avoid.check();
-		
-		/* Check that the highest level in AVOID equals the
-		 * TRANSITIVE flags in FLAGS */ 
-		assert(avoid.get_highest() == (flags & ((1 << F_COUNT) - 1)));
-
-		/* Check that the flags correspond to the flags in DEPENDENCY */
-		assert(dependency == nullptr ||
-		       (dependency->get_flags() & ~flags) == 0);
-	}
-
 public:
 	/* Negation of flags valid for each level. 
 	 * The length is one plus the dynamicity (number of dynamic
@@ -86,18 +73,42 @@ public:
 		check(); 
 	}
 
-	string format() const {
-		string text_dependency= 
-			dependency == nullptr 
-			? "NULL"
-			: dependency->format(); 
-		string text_avoid= avoid.format();
-		string text_flags= format_flags(flags);
-		return fmt("Link(%s, %s, %s)",
-			   text_dependency,
-			   text_flags, 
-			   text_avoid); 
-	}
+	string format() const;
+
+private:
+
+#ifndef NDEBUG
+	void check() const;
+#else   
+	void check() const {  }
+#endif
 };
+
+string Link::format() const {
+	string text_dependency= 
+		dependency == nullptr 
+		? "NULL"
+		: dependency->format(); 
+	string text_avoid= avoid.format();
+	string text_flags= format_flags(flags);
+	return fmt("Link(%s, %s, %s)",
+		   text_dependency,
+		   text_flags, 
+		   text_avoid); 
+}
+
+#ifndef NDEBUG
+void Link::check() const {
+	avoid.check();
+		
+	/* Check that the highest level in AVOID equals the
+	 * TRANSITIVE flags in FLAGS */ 
+	assert(avoid.get_highest() == (flags & ((1 << F_COUNT) - 1)));
+
+	/* Check that the flags correspond to the flags in DEPENDENCY */
+	assert(dependency == nullptr ||
+	       (dependency->get_flags() & ~flags) == 0);
+}
+#endif /* ! NDEBUG */
 
 #endif /* ! LINK_HH */

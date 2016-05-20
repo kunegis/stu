@@ -1,0 +1,7 @@
+@X { exit 1 }
+
+'[?!@A]': P { cp P '[?!@A]' }
+']A@!?[': Q { cp Q ']A@!?[' }
+
+P { touch P }
+Q { touch Q }

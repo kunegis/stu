@@ -74,6 +74,12 @@ OPTIONS
               parallel.   This  option  works like the corresponding option in
               GNU Make. The parameter K is mandatory.
 
+       -J     Parse all arguments to Stu as filenames, disabling all Stu  syn‐
+              tax  that  is  otherwise  used.   Intended when Stu is used with
+              tools such as 'xargs'.  The -J option itself does  not  take  an
+              argument;  it  only changes the way arguments outside of options
+              are interpreted.
+
        -k     Keep going; do not stop running when an error occurs.   Instead,
               try  to build as much as possible.  This option is equivalent to
               that of Make.
@@ -775,4 +781,4 @@ SEE ALSO
 
 
 
-stu-1.15.10                        May 2016                             STU(1)
+stu-1.15.11                        May 2016                             STU(1)

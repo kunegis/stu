@@ -1,0 +1,7 @@
+@X { exit 1 }
+
+'@[?!A]':  A {
+	cp A '@[?!A]'
+}
+
+A = {correct}

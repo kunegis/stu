@@ -1,0 +1,24 @@
+#! /bin/sh
+
+set -e 
+
+rm -f -- -a -b -c
+
+../../stu.test -J -a -- -a -b -c >list.out 2>list.err
+
+[ -r list.err ] && [ ! -s list.err ] || {
+	echo >&2 "*** Stderr"
+	exit 1
+}
+
+for name in a b c ; do
+
+	[ -r "-$name" ] || { 
+		echo >&2 "*** File '-$name'"
+		exit 1
+	}
+done
+
+rm -f -- -a -b -c
+
+exit 0

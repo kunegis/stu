@@ -1,0 +1,7 @@
+@X { exit 1 }
+
+'@[?!A].data':  A {
+	cp A '@[?!A].data'
+}
+
+A = {correct}

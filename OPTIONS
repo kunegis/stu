@@ -31,6 +31,7 @@ List of options
 -i  . M G  Ignore all errors in commands
 -I  .   G  Include path
 -j  S   G  Parallel
+-L  S      Don't parse Stu syntax in arguments
 -k  S M G  Keep going
 -K  S      Keep partially built files
 -l      G  Number of jobs depends on load average

@@ -63,7 +63,7 @@ public:
 
 	string format() const {
 		assert(defined()); 
-		return frmt("%ld.%9ld", (long) t.tv_sec, (long) t.tv_nsec); 
+		return frmt("%lld.%9ld", (long long) t.tv_sec, (long) t.tv_nsec); 
 	}
 
 	static const Timestamp UNDEFINED;

@@ -132,10 +132,11 @@ A:  ?!B { ... }
 # is the same as
 @x:  AX BY;
 
-# This is not really useful, though
+# This corresponds to the paste(1) command.  It is rarely useful,
+# though.    
 
 #
-# Set difference with '\'
+# Set difference, e.g. with '\'. 
 #
 
 @plots:  dat/plot.([dat/NETWORKS] \ enron).eps;
@@ -263,6 +264,21 @@ A:  {
 # With dynamic dependencies
 >A:  <[deps] { sed -e '...' }
 >deps { ... }
+
+#
+# Multiple assignment 
+#
+
+# Multiple names result in catenation
+A = B C D;
+
+# Combine with transient target
+A = @x;
+@x:  B C D;
+
+# Combine with dynamic target
+A = [X];
+<X { echo B C D }
 
 #==== New features that change extend the Stu drastically ====
 

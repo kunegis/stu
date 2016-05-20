@@ -43,21 +43,21 @@ A:
 # Deprecate !, ?, and &, and define as reserved for future extension. 
 #
 
-#==== Features of Stu 2 ====
+#==== Features of Stu 2:  Mandatory ====
+
+#
+# Flag -n for newline-separate filename lists
+#
+
+A: [ -n B ] { while read -r file ; do ... "$file" ... ; done }
+>B { find ... }
 
 #
 # Have a way for dynamic dependencies to contain \0-separated filenames,
 # to avoid quoting.  Not clear that this is the best syntax for it.
 #
 
-A: [-0 <B] { xargs -0 ... }
-A: [<\B]   { xargs -0 ... }
-A: \[<B]   { xargs -0 ... }
-A: [<B],0  { xargs -0 ... }
->B:        { find ... -print0 }
-
-# Alternatively, detect such files automatically. (e.g., any file
-# containing the zero character is such a file, or using specific endings.)
+A: [ -0 <B ] { xargs -0 ... }
 
 #
 # String multiplication.  String multiplication is to work both with the
@@ -112,15 +112,17 @@ A.$X.$Y:  $X * .$Y      # OK
 
 @plot:    plot/[NETWORKS].eps;
 
+#==== Features of Stu 2:  Other features ====
+
 #
 # What happens with relative and absolute pathnames?  When two names
 # refer to the same file?  Do we need to 'normalize' names?
 #
 # * fold ..
-# * fold .,except for a single .
+# * fold ., except for a single .
 # * Remove ending / 
 # * Fold multiple / to a single one, except exactly two at the beginning
-# * don't touch symlinks/hardlinks/etc.
+# * don't touch symlinks/hardlinks/etc. (they need syscalls to detect anyway) 
 #
 # Question:  should '/' match in parameters?
 #
@@ -154,11 +156,6 @@ tmp: {...}
 % import src/main.stu
 % import src/
 
-# or:
-% include src//main.stu
-% include src//
-# Not a good idea since most tools treat // the same as /
-
 #
 # New flag to ALWAYS build a target.  (We may already have this)
 #
@@ -184,21 +181,6 @@ A: [data//B]; # ?
 
 % include c++.stu
  
-#
-# Multiple assignment 
-#
-
-# Multiple names result in catenation
-A = B C D;
-
-# Combine with transient target
-A = @x;
-@x:  B C D;
-
-# Combine with dynamic target
-A = [X];
-<X { echo B C D }
-
 #
 # Option -B:  Remake all targets regardless of dates
 #

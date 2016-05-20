@@ -50,9 +50,10 @@ These characters are single-character tokens.
 
 == As-yet unused operators ==
 
+We don't include here uses that are described in UNIMPLEMENTED.stu.  
+
 *	String concatenation 
 \	Escape
-\	interpreter for non-shell rules:  \octave { }
 -	(version 2, only as first character) Option
 +	(version 2, only as first character) Option
 ,	(no proposed use)

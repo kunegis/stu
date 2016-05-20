@@ -973,8 +973,7 @@ void Execution::waited(int pid, int status)
 					}
 					if (! S_ISLNK(buf.st_mode)) {
 						rule->place <<
-							fmt("timestamp of file '%s' "
-							    "after execution of its command is older than %s startup", 
+							fmt("timestamp of file '%s' after execution of its command is older than %s startup", 
 							    target.name, dollar_zero);  
 						print_info(fmt("Timestamp of %s is %s",
 							       target.format(), timestamp_file.format()));
@@ -2035,21 +2034,18 @@ bool Execution::deploy(const Link &link,
 		const Place &place_variable= direct_dependency->place;
 		if (flags_child_additional & F_EXISTENCE) {
 			const Place &place_flag= link_child.dependency->get_place_existence(); 
-			place_variable << fmt("variable dependency $[%s] must not be declared "
-					      "as existence-only dependency",
+			place_variable << fmt("variable dependency $[%s] must not be declared as existence-only dependency",
 					      target_child.format_mid());
 			place_flag << "using '!'";
 		} else if (flags_child_additional & F_OPTIONAL) {
 			const Place &place_flag= link_child.dependency->get_place_optional(); 
-			place_variable << fmt("variable dependency $[%s] must not be declared "
-					      "as optional dependency",
+			place_variable << fmt("variable dependency $[%s] must not be declared as optional dependency",
 					      target_child.format_mid());
 			place_flag << "using '?'";
 		} else {
 			assert(flags_child_additional & F_TRIVIAL); 
 			const Place &place_flag= link_child.dependency->get_place_trivial(); 
-			place_variable << fmt("variable dependency $[%s] must not be declared "
-					      "as trivial dependency",
+			place_variable << fmt("variable dependency $[%s] must not be declared as trivial dependency",
 					      target_child.format_mid());
 			place_flag << "using '&'";
 		} 

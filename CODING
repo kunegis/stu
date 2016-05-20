@@ -3,10 +3,9 @@ Here are the relevant coding conventions we use.
 == Standards == 
 
 * Following the POSIX standard
-* Follow the GNU Coding Standard, except for coding style, but don't use
-  GNU extensions
+* Follow the GNU Coding Standards, except for coding style, but don't
+  use GNU extensions  
 * Use the C++11 version of C++; avoid GCC extensions
-* Use 'nullptr' as the null pointer constant, instead of 'NULL'
 * Compilation is done in a single step by compiling the file 'stu.cc'.
   All other source files are actually *.hh files which are included.
   Therefore, we don't have to care about separation of declarations and
@@ -31,24 +30,35 @@ This is my preferred style.  --Jerome Kunegis
 * Single tabs for indentation (set your editor to show them at the width
   you prefer)  
 * Use C-style comments (/* ... */) for normal comments
-* Use C++-style comments (// ...) for quickly commenting out code and
-  for writing TODO items; this allows us to search all source files for
-  the string '//' to find areas that are currently worked on.  Code
-  pushed to git does not contain '//'.  When used, we put '//' at the
-  beginning of the line, not preceded by whitespace. 
+* Use C++-style comments on column zero (// ...) for quickly commenting
+  out code and for writing TODO items; this allows us to search all
+  source files for the string '//' to find areas that are currently
+  worked on.  Code pushed to git does not contain '//'.  When used, we
+  put '//' at the beginning of the line, not preceded by whitespace.  
 * In comments, names of variables are in all uppercase. 
 * Use 72-character lines in general, but allow more where reasonable,
   e.g., to avoid breaking message string literals
   (note:  tabs may be interpreted as different widths making this an
   approximate rule; authors use 8-char tabs)   
+* Use 'nullptr' as the null pointer constant, instead of 'NULL', as per
+  C++11 
 * No space before the assignment operator 
+* We enable many G++ warnings in debug mode 
+* For vectors and strings, use operator[] for access, keeping in mind
+  that this function has undefined behaviour when the argument is out of
+  range.  In debug mode with glibc++, these functions include range
+  checking, and therefore bugs relating to their usage may be caught in
+  unit testing in that way. 
+* For maps, we mostly use .at() for access, which terminates
+  when the value is not contained, to avoid inserting values
+  accidentally with operator[]. 
 
 == Dynamic variables ==
 
-(1) Variables derived from the following classes are always created
-dynamically, using shared_ptr/unique_ptr:
+(1) Variables derived from the following classes are managed dynamically
+using shared_ptr/unique_ptr: 
 
-* all parametrized names and targets 
+* all parametrized names and targets (in target.hh)
 * Rule
 * Token
 * Dependency
@@ -66,6 +76,6 @@ necessary.
 == Common variable names ==
 
 * 'text':  a string used for display
-* 'format_*':  a function that formats an object for display
+* 'format[_*]':  a function that formats an object for display
 * 'filename':  a filename
 * 'error':  an error code or exit code (they are the same in Stu)

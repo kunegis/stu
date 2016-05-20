@@ -1,14 +1,14 @@
-
 There is no installation command or Make target for installation.  To
 install Stu, do the following:  
 
 * Compile Stu using 'make'.  This will build the executable 'stu'. 
 
 * (optional) Execute all unit tests using 'make -f Makefile.test'.  If
-  an error is reported, report it to the developers.  It takes about ten
-  minutes.  
+  an error is reported, please report it to the developers.  It takes
+  about five minutes (running the tests, not reorting to the
+  developers).   
 
-* Copy the executable 'stu' to a bin/ directory, e.g. to /usr/bin/ or
+* Copy the executable 'stu' to a bin/ directory, e.g. to /usr/bin/ or to 
   ~/bin/.  You can of course also just execute it right from where it
   is.  The executable has no runtime dependencies, so it does not matter
   where it is residing while it is being executed, and also its filename
@@ -20,6 +20,9 @@ install Stu, do the following:
 
 REQUIREMENTS
 
-* The Makefile uses 'c++' as the C++ compiler, with the option
-  '-std=c++11'.  To use something else, edit the Makefile. 
+* A C++11 compiler.  The Makefile uses 'c++' as the C++ compiler, with
+  the option '-std=c++11'.  To use something else, edit the Makefile.   
 * Stu assumes ASCII. 
+* POSIX.
+* Stu calls /bin/sh and /bin/cp at runtime.
+

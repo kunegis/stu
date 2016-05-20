@@ -4,14 +4,9 @@
 /* Code for managing errors in Stu.  Errors codes in Stu are represented
  * by integers between 0 and 4, as defined in the ERROR_* constants
  * below.  Zero represents no error.  These codes are used for both
- * Stu's exit code and as value that are thrown and caught.   Variables
- * containing error codes are integer and named "error". 
+ * Stu's exit code and as values that are thrown and caught.   Variables
+ * containing error codes are integers and are named "error". 
  */ 
-
-#include <assert.h>
-
-#include "global.hh"
-#include "text.hh"
 
 /* Format of error output:  There are two types of error output lines:
  * error messages and traces.  Error messages are of the form 
@@ -20,18 +15,19 @@
  * 
  * and traces are of the form 
  *
- *         $FILENAME:$LINE:$COLUMN:$MESSAGE
+ *         $FILENAME:$LINE:$COLUMN: $MESSAGE
  *
  * Traces are used when it is possible to refer to a specific location
- * in the input files (or command line, etc.).  Errors are avoided when
- * possible: all errors should be traced back to a place in the source
- * if possible.
+ * in the input files (or command line, etc.).  Error messages are
+ * avoided: all errors should be traced back to a place in the source if
+ * possible. 
  */
 
 /* Wording of messages:  Error messages begin with uppercase letters;
- * trace messages with lowercase letters.  Filenames and operator names
- * are quoted in messages using single quotes.  Messages for both types of
- * error output lines are not terminated by periods.  
+ * trace messages with lowercase letters, as per the GNU Coding
+ * Standard.  Filenames and operator names are quoted in messages using
+ * single quotes.  Messages for both types of error output lines are not
+ * terminated by periods.   
  *
  * Use "expected TOKEN" instead of "missing TOKEN".  (Because some
  * tokens in the given list may be optional, making the "missing"
@@ -47,6 +43,11 @@
  * instead of "filename must not be empty".  This cannot always be done,
  * so "must not" is sometimes used. 
  */
+
+#include <assert.h>
+
+#include "global.hh"
+#include "text.hh"
 
 #define ERROR_BUILD          1
 #define ERROR_LOGICAL        2
@@ -106,7 +107,8 @@ void print_warning(string text)
 }
 
 /* Denotes a position in Stu code.  This is either in a file or in
- * arguments to Stu.  A Place object can also be empty. 
+ * arguments to Stu.  A Place object can also be empty, which is used as
+ * the "uninitialized" value. 
  */ 
 class Place
 {
@@ -114,23 +116,25 @@ public:
 
 	enum class Type {
 		EMPTY,        /* Empty */
-		INPUT_FILE,   /* FILENAME is filename */
-		ARGV          /* FILENAME is argument */ 
+		INPUT_FILE,   /* Location in a file */
+		ARGV          /* Command line argument */ 
 	};
 
 	Place::Type type; 
 
-	/* File in which the error occurred.  Empty string for standard
-	 * input.  The command line argument for ARGV. */ 
+	/* INPUT_FILE:  File in which the error occurred.  Empty string
+	 * for standard input.  
+	 * ARGV:  The command line argument. */ 
 	string filename;
 
-	/* Line number, one-based.  Ignored for ARGV. */ 
+	/* INPUT_FILE:  Line number, one-based.  
+	 * ARGV: Unused. */ 
 	unsigned line; 
 
-	/* Column number, zero-based.
-	 * In output, column numbers are one-based, but they are saved
-	 * here as zero-based numbers as these are easier to generate.
-	 * Ignored for ARGV. 
+	/* INPUT_FILE:  Column number, zero-based.  In output, column
+	 * numbers are one-based, but they are saved here as zero-based
+	 * numbers as these are easier to generate. 
+	 * ARGV: Unused.
 	 */ 
 	unsigned column; 
 
@@ -151,7 +155,7 @@ public:
 		assert(line >= 1);
 	}
 
-	/* For command line arguments */ 
+	/* In command line arguments */ 
 	Place(Type type_,
 	      string argument)
 		:  type(type_),
@@ -202,11 +206,8 @@ public:
 		:  place(place_), message(message_) 
 	{ }
 
-	/* Print the trace to STDERR as part of an error message.  The
-	 * trace is printed as a single line, which can be parsed by
-	 * tools, e.g. the compile mode of Emacs.  Line and column
-	 * numbers are output as 1-based values. 
-	 */
+	/* Print the trace to STDERR as part of an error message; see
+	 * Place::operator<< for format information.  */
 	void print() const 
 	{
 		place << message; 
@@ -224,7 +225,7 @@ void Place::operator<<(string text) const
 	assert(! isupper(text[0])); 
 
 	switch (type) {
-	default:  assert(0); 
+	default:  assert(false); 
 	case Type::INPUT_FILE:
 		fprintf(stderr, "%s:%u:%u: %s\n", 
 			get_filename_str(), line, 1 + column, text.c_str());  
@@ -247,7 +248,7 @@ void Place::print_beginning() const
 string Place::as_string() const
 {
 	switch (type) {
-	default:  assert(0); 
+	default:  assert(false); 
 
 	case Type::EMPTY:
 		return "<empty>"; 
@@ -267,7 +268,7 @@ string Place::as_string() const
 string Place::as_argv0() const
 {
 	switch (type) {
-	default:  assert(0); 
+	default:  assert(false); 
 
 	case Type::EMPTY:
 		return "<empty>"; 
@@ -295,7 +296,7 @@ const char *Place::get_filename_str() const
 
 /* Explanation functions:  they output an explanation of a feature of
  * Stu on standard output.  This is used after certain non-trivial error
- * messages. */
+ * messages, and is enabled by the -E option. */
 
 void explain_clash() 
 {

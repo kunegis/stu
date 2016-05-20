@@ -2,12 +2,12 @@
 #define EXECUTION_HH
 
 /* Code for executing the building process itself.  This is by far the
- * longest source code file in Stu.  Each file or transient target is
+ * longest source code file in Stu.  Each target is
  * represented at run time by one Execution object.  All Execution
  * objects are allocated with new Execution(...), and are never deleted,
  * as the information contained in them needs to be cached.  All
  * Execution objects are also stored in the map called
- * "executions_by_target" by their target.  All currently active
+ * "executions_by_target" by their target(s).  All currently active
  * Execution objects form a rooted acyclic graph.  Note that it is not a
  * tree in the general case; executions may have multiple parents.  But
  * all nodes are reachable from the root node.   

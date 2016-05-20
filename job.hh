@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 /* Called to terminate all running processes, and remove their target
- * files if present */
+ * files if present.  Implemented in execution.hh, and called from here. */
 void job_terminate_all(); 
 
 void job_print_jobs(); 
@@ -56,7 +56,7 @@ public:
 	/* Start the process.  Don't output the command -- this 
 	 * is done by callers of this functions.   FILENAME_OUTPUT and
 	 * FILENAME_INPUT are the files into which to redirect output and
-	 * input; no redirection is performed when either is empty. 
+	 * input; either can be empty to denote no redirection. 
 	 * On error, output a message and return -1, otherwise return the
 	 * PID (>= 0).  MAPPING contains the environment variables to set. 
 	 */
@@ -66,7 +66,8 @@ public:
 		    string filename_input,
 		    const Place &place_command); 
 
-	/* Start a copy job */ 
+	/* Start a copy job.  The return value has the same semantics as
+	 * in start().  */  
 	pid_t start_copy(string target,
 			 string source);
 
@@ -90,6 +91,7 @@ public:
 	public:
 		Signal_Blocker() {
 #ifndef NDEBUG
+			assert(!blocked); 
 			blocked= true;
 #endif
 			if (0 != sigprocmask(SIG_BLOCK, &set_interrupt, nullptr)) {
@@ -99,6 +101,7 @@ public:
 		}
 		~Signal_Blocker() {
 #ifndef NDEBUG
+			assert(blocked); 
 			blocked= false;
 #endif 
 			if (0 != sigprocmask(SIG_UNBLOCK, &set_interrupt, nullptr)) {
@@ -111,7 +114,8 @@ public:
 private:
 	/* -2:    process was not yet started.
 	 * >= 0:  process was started but not yet waited for (just called
-	 *        "started" for short. 
+	 *        "started" for short.  It may already be finished,
+	 * 	  i.e., a zombie.
 	 * -1:    process has been waited for. 
 	 */
 	pid_t pid;
@@ -265,7 +269,7 @@ pid_t Job::start(string command,
 		const char** envp= (const char **)
 			alloca(sizeof(char **) * (v_old + v_new + 1));
 		if (!envp) {
-			/* alloca() should never return nullptr */ 
+			/* alloca() never returns null */ 
 			assert(false);
 			perror("alloca");
 			_Exit(ERROR_BUILD); 
@@ -601,7 +605,7 @@ Job::Signal::Signal()
 			exit(ERROR_FATAL); 
 		}
 		if (0 != sigaddset(&set_interrupt, signals[i])) {
-			perror("sigaddset");
+ 			perror("sigaddset");
 			exit(ERROR_FATAL); 
 		}
 	}

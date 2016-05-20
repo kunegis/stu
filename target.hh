@@ -28,7 +28,7 @@ string format_name(string name)
 		if (strchr(STU_STRING_ESCAPE_CHARACTERS_STRICT, *p)) {
 			*q++= '\\';
 			switch (*p) {
-			default:  assert(0);
+			default:  assert(false);
 			case '\a':  *q++= 'a';  break;
 			case '\b':  *q++= 'b';  break;
 			case '\f':  *q++= 'f';  break;

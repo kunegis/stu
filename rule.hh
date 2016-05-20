@@ -216,7 +216,7 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 				}
 			}
 		} else {
-			assert(0); 
+			assert(false); 
 		}
 	}
 }

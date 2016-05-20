@@ -1,13 +1,11 @@
 #! /bin/sh
 
-doo() { echo "$@" ; $@ ; }
+set -e
 
 rm -f ?
 
-doo touch A 
-doo sleep 2
+touch A 
 
-echo ../../stu.test &
 ../../stu.test &
 pid="$!"
 

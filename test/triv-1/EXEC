@@ -1,21 +1,15 @@
 #! /bin/sh
 
-doo() { echo "$@" ; "$@" ; }
+set -e
 
-doo rm -f ?
-doo touch A
-doo sleep 2
-doo touch B
+rm -f ?
+
+../../sh/touch_old A
+touch B
 
 ../../stu.test >list.out 2>list.err
-exitcode="$?"
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 '*** Exit code'
-	exit 1
-}
-
-grep -Fq 'Nothing to be done' list.out || {
+grep -qF 'Nothing to be done' list.out || {
 	echo >&2 "*** Missing 'Nothing to be done'"
 	exit 1
 }

@@ -11,13 +11,16 @@
 
 #ifdef USE_MTIM
 
-/* This variant is not used.  It does not work, as:
+/* This variant is not used.  Using CLOCK_REALTIME it does not work, as:
  *  (1) Two files created in a row have timestamps in the wrong order 
  *  (2) Files create during Stu runtime have a timestamp before the Stu
  *      startu timestamps. 
  * Both errors are on the order of a few milliseconds.  Tested on a
  * system on which the clock resolution as reported by clock_getres() is
  * one nanosecond. 
+ * 
+ * Using CLOCK_REALTIME_COARSE is better, but some tests still fail, and
+ * it is a Linux extension. 
  */ 
 
 /*
@@ -73,11 +76,11 @@ public:
 	static Timestamp now() {
 		Timestamp ret;
 		/* Note:  clock_gettime() needs to be linked with -lrt */ 
-		int r= clock_gettime(CLOCK_REALTIME, & ret.t); 
+		int r= clock_gettime(CLOCK_REALTIME_COARSE, & ret.t); 
 		if (r != 0) {
 			/* If this happens, it is a bug in Stu */
 			assert(false);
-			perror("clock_gettime(CLOCK_REALTIME, ...)");
+			perror("clock_gettime(CLOCK_REALTIME_COARSE, ...)");
 
 			/* Do the next best thing:  use time(2).
 			 * This may lead to clock skew, as the

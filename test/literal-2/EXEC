@@ -2,7 +2,7 @@
 
 set -e
 
-rm -f ? \$*
+rm -f ? @*
 
 ../../stu.test -J -a '@[?!A]' >list.out 2>list.err
 
@@ -16,6 +16,6 @@ rm -f ? \$*
 	exit 1
 }
 
-rm -f ? \$*
+rm -f ? @*
 
 exit 0

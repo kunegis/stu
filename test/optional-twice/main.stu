@@ -1,6 +1,8 @@
-
 # An optional dependency is encountered twice -- once it exists
 # and once not.  To be executed without -k. 
+#
+# Not executed a second time, because 'B' would be rebuild, because 'X'
+# is newer than it (but only barely). 
 
 A: B C D 
 {

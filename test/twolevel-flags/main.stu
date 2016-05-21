@@ -1,3 +1,6 @@
+# A second invocation make rebuild 'B' as suddenly 'F' is present, and
+# has newer timestamp than 'B'. 
+
 A: B C { 
 	[ -e F ] || exit 1
 	touch A 

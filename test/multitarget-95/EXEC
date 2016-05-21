@@ -1,0 +1,21 @@
+#! /bin/sh
+
+set -e 
+
+rm -f ?
+
+../../stu.test -j2 >list.out 2>list.err
+
+n="$(grep -F printf list.out | wc -l)"
+
+[ "$n" = 1 ] || {
+	echo >&2 "*** Count"
+	exit 1
+}
+
+[ -r list.err ] && [ ! -s list.err ] || {
+	echo >&2 "*** Stderr"
+	exit 1
+}
+
+exit 0

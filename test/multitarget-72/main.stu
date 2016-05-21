@@ -5,7 +5,10 @@ A: @init C { touch A }
 
 B C: D;
 
-D { touch B D }
+D { 
+	# Must first create 'D', then 'B'
+	touch D B 
+}
 
 @init {
 	rm -f ?

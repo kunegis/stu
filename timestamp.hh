@@ -4,11 +4,6 @@
 /* Wrapper around time_t or struct timespec.  
  */
 
-/* Not enabled because common file systems seem to give wrong results,
- * e.g., creating two files in a row may give the second file an older
- * timestamp. */
-/* #define USE_MTIM 1 */
-
 #ifdef USE_MTIM
 
 /* This variant is not used.  Using CLOCK_REALTIME it does not work, as:
@@ -18,13 +13,14 @@
  * Both errors are on the order of a few milliseconds.  Tested on a
  * system on which the clock resolution as reported by clock_getres() is
  * one nanosecond. 
- * 
- * Using CLOCK_REALTIME_COARSE is better, but some tests still fail, and
- * it is a Linux extension. 
+ */
+
+/* Using CLOCK_REALTIME_COARSE (Linux only) is better, but some tests
+ * still fail, and it is a Linux extension.  
  */ 
 
-/*
- * This needs to be linked with -ltr. 
+/* Note also that this implementation has such high precision, that bugs
+ * in Stu scripts may emerge which normally would have been hidden.  For instance
  */
 
 class Timestamp

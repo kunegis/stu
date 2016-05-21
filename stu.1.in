@@ -777,6 +777,10 @@ All timestamps have only one-second resolution.
 Filenames in Stu are literal.  Stu does not recognize it when two
 different names refer to the same file. 
 
+Using optional dependencies may make a second invocation of Stu not
+output "Nothing to be done", as the optional dependency may have been
+created by subsequent targets. 
+
 .SH AUTHOR
 Jérôme Kunegis <kunegis@uni-koblenz.de>
 .SH "SEE ALSO"

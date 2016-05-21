@@ -30,4 +30,7 @@ COMPILATION OPTIONS
 
 * NDEBUG:  Enabled for non-debug mode. 
 * USE_MTIM (default: unset):  Use struct timespec instead of time_t for
-  timekeeping.  This is not tested and is likely to not work.  
+  timekeeping.  struct timespec supports nanosecond timestamps in
+  principle. In practice, most systems are likely to support only a
+  precision on the order of a millisecond.  Works only on Linux, as it
+  uses CLOCK_REALIME_COARSE.  See the comments in timestamp.hh. 

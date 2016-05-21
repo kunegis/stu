@@ -1,0 +1,12 @@
+#
+# Make sure the rule for B and C is executed only once. 
+# 
+
+A: B [C] { cat B D >A }
+
+B C {
+	printf cor >B
+	echo D >C
+}
+
+D = {rect}

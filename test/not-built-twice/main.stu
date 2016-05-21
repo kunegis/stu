@@ -3,6 +3,11 @@
 # is already built. 
 #
 
+#
+# The second invocation will *not* result in "Nothing to be done" if the
+# timestamps have high enough precision. 
+#
+
 A:  B C D { cat B C D >A }
 
 B:  ?X { 

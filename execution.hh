@@ -7,7 +7,7 @@
  * objects are allocated with new Execution(...), and are never deleted,
  * as the information contained in them needs to be cached.  All
  * Execution objects are also stored in the map called
- * "executions_by_target" by their target(s).  All currently active
+ * "executions_by_target" by all their target.  All currently active
  * Execution objects form a rooted acyclic graph.  Note that it is not a
  * tree in the general case; executions may have multiple parents.  But
  * all nodes are reachable from the root node.   
@@ -277,7 +277,7 @@ private:
 			: targets.front().format(); 
 	}
 
-	/* The Execution objects by their target(s).  Execution objects
+	/* The Execution objects by their all of their target.  Execution objects
 	 * are never deleted.  This serves as a caching mechanism.  The
 	 * root Execution has no targets and therefore is not included.
 	 * Non-dynamic execution objects are shared by the multiple
@@ -1294,7 +1294,10 @@ Execution::Execution(Target target_,
 	}
 
 	parents[parent]= link; 
-	executions_by_target[target_]= this;
+
+	for (const Target &target:  targets) {
+		executions_by_target[target]= this; 
+	}
 
 	if (! (
 	       target_.type.is_dynamic() && target_.type.is_any_file()
@@ -1599,8 +1602,7 @@ Execution *Execution::get_execution(const Target &target,
 				    Link &&link,
 				    Execution *parent)
 {
-	/* Set to the returned Execution object when one is found or created
-	 */   
+	/* Set to the returned Execution object when one is found or created */    
 	Execution *execution= nullptr; 
 
 	auto it= executions_by_target.find(target);
@@ -1615,7 +1617,7 @@ Execution *Execution::get_execution(const Target &target,
 			execution->parents.at(parent).add(link.avoid, 
 							  link.flags);
 		} else {
-			/* The parent and child are not yet connected -- add the
+			/* The parent and child are not connected -- add the
 			 * connection */ 
 			execution->parents[parent]= link;
 		}

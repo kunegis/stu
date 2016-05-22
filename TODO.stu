@@ -1,3 +1,12 @@
+#
+# Make use of autoconf to detect CLOCK_REALTIME_COARSE and enable
+# precise timestamps  
+#
+
+#
+# Get rid of the "groff" messages. 
+#
+
 #==== Backward-incompatible features (in the switch to version 2) ====
 
 #

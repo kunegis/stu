@@ -12,7 +12,8 @@ grep -lF '//' *.cc *.hh && {
 }
 
 find . -type f -a \( -name '*.stu' -o -perm -u+x \) -a \! -name '*~' \
-	-a \! -path './.git*' -a \! -path './stu.*' -a \! -path './stu' -a \! -path './config*' | 
+	-a \! -path './.git*' -a \! -path './stu.*' -a \! -path './stu' \
+	-a \! -path './config*' -a \! -path './build-aux/*' | 
 xargs grep -lF '#''#' && {
 	echo >&2 "*** found '#""#'"
 	ret=1

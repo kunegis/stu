@@ -3,16 +3,20 @@
 # 
 
 all-devel: \
-    stu.debug stu \
-    stu.text test_options test_sed \
+    stu.debug \
+    stu.1 stu.text version.hh \
+    stu \
+    test_options test_sed \
     test_test.debug \
     test_comments \
     test_test.ndebug \
-    auto-all
+    all-auto
 
+.PHONY:  all-test all-auto clean
 
-dist:  stu.1 version.hh stu.text
-
+#
+# Flags
+#
 
 CXX=c++
 
@@ -22,21 +26,13 @@ CXXFLAGS_OTHER=             \
     -std=c++11              \
     -D_FILE_OFFSET_BITS=64  
 
-.PHONY:  all-test clean 
+CXXFLAGS_ALL_NDEBUG= $(CXXFLAGS_NDEBUG) $(CXXFLAGS_OTHER)
 
 #
 # Possible flags to add to CXXFLAGS_OTHER:
 #
 #     -DUSE_MTIM=1		Enable nonsecond-precision timestamps
 #
-
-CXXFLAGS_ALL_NDEBUG= $(CXXFLAGS_NDEBUG) $(CXXFLAGS_OTHER)
-
-stu:  *.cc *.hh version.hh
-	$(CXX) $(CXXFLAGS_ALL_NDEBUG) stu.cc -o stu
-
-clean:
-	rm -Rf $$(cat .gitignore)
 
 # Some of the specialized flags may not be present in other
 # compilers and compiler versions than those used by the authors.  Just
@@ -59,13 +55,26 @@ stu.debug:  *.cc *.hh version.hh
 stu.prof: *.cc *.hh version.hh
 	$(CXX) $(CXXFLAGS_ALL_PROF)   stu.cc -o stu.prof
 
+stu:  *.cc *.hh version.hh
+	$(CXX) $(CXXFLAGS_ALL_NDEBUG) stu.cc -o stu
+
+version.hh:  VERSION sh/mkversion
+	sh/mkversion >version.hh
+
+analysis.prof:  gmon.out 	
+	gprof stu.prof gmon.out >analysis.prof
+
+#
+# Test
+#
+
 test_options:  sh/testoptions stu.cc stu.1.in
 	sh/testoptions && touch $@
 
 test_sed: sh/testsed . test test/* test/*/* 
 	sh/testsed && touch $@
 
-test_test.debug: stu.debug sh/mktest test test/* test/*/* 
+test_test.debug: stu.debug sh/mktest test 
 	sh/mktest && touch $@
 
 test_test.ndebug: stu sh/mktest test test/* test/*/* 
@@ -73,6 +82,10 @@ test_test.ndebug: stu sh/mktest test test/* test/*/*
 
 test_comments:  *.cc *.hh sh/testcomments . test test/* test/*/* 
 	sh/testcomments
+
+#
+# Manpage
+#
 
 stu.text:  stu.1
 	MANWIDTH=80 man ./stu.1 >stu.text
@@ -82,17 +95,18 @@ stu.text:  stu.1
 stu.1:  stu.1.in VERSION sh/mkman
 	sh/mkman
 
-version.hh:  VERSION sh/mkversion
-	sh/mkversion >version.hh
+#
+# Clean
+#
 
-analysis.prof:  gmon.out 	
-	gprof stu.prof gmon.out >analysis.prof
+clean:
+	rm -Rf $$(cat .gitignore)
 
 #
 # Autoconf
 #
 
-auto-all:  configure.ac
+all-auto:  configure.ac
 	rm -Rf build-aux
 	mkdir build-aux
 	aclocal

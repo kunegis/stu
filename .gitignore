@@ -12,3 +12,6 @@ aclocal.m4
 autom4te.cache
 config.status
 configure.ac.old
+missing
+depcomp
+install-sh

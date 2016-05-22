@@ -93,6 +93,8 @@ analysis.prof:  gmon.out
 #
 
 auto-all:  configure.ac
+	rm -Rf build-aux
+	mkdir build-aux
 	aclocal
 	automake --add-missing
 	autoconf

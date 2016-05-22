@@ -22,7 +22,7 @@ CXXFLAGS_OTHER=             \
     -std=c++11              \
     -D_FILE_OFFSET_BITS=64  
 
-.PHONY:  all-test clean-test 
+.PHONY:  all-test clean 
 
 #
 # Possible flags to add to CXXFLAGS_OTHER:
@@ -35,8 +35,8 @@ CXXFLAGS_ALL_NDEBUG= $(CXXFLAGS_NDEBUG) $(CXXFLAGS_OTHER)
 stu:  *.cc *.hh version.hh
 	$(CXX) $(CXXFLAGS_ALL_NDEBUG) stu.cc -o stu
 
-clean-test:  clean
-	rm -f stu.1 version.hh stu.prof stu stu.debug stu.text test_* error.log
+clean:
+	rm -Rf $$(cat .gitignore)
 
 # Some of the specialized flags may not be present in other
 # compilers and compiler versions than those used by the authors.  Just

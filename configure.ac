@@ -4,7 +4,7 @@
 AC_PREREQ([2.69])
 AC_INIT(stu, 1.15.23, kunegis@gmail.com)
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([1.9 foreign])
 
 # Checks for programs.
 AC_PROG_CXX

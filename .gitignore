@@ -11,6 +11,5 @@ stu.o
 aclocal.m4
 autom4te.cache
 config.status
-depcomp
 missing
 configure.ac.old

@@ -453,4 +453,3 @@ void read_string(const char *s,
 		}
 	}
 }
-

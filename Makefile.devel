@@ -2,17 +2,38 @@
 # Makefile that also enables the test.  
 # 
 
-all-test: \
+all-devel: \
     stu.debug stu \
     stu.text test_options test_sed \
-    test_test.debug test_test.ndebug \
-    test_comments
+    test_test.debug \
+    test_comments \
+    test_test.ndebug \
+    auto-all
+
 
 dist:  stu.1 version.hh stu.text
 
-include Makefile
 
-.PHONY:  all-test clean-test
+CXX=c++
+
+CXXFLAGS_NDEBUG= -O2 -DNDEBUG -s
+
+CXXFLAGS_OTHER=             \
+    -std=c++11              \
+    -D_FILE_OFFSET_BITS=64  
+
+.PHONY:  all-test clean-test 
+
+#
+# Possible flags to add to CXXFLAGS_OTHER:
+#
+#     -DUSE_MTIM=1		Enable nonsecond-precision timestamps
+#
+
+CXXFLAGS_ALL_NDEBUG= $(CXXFLAGS_NDEBUG) $(CXXFLAGS_OTHER)
+
+stu:  *.cc *.hh version.hh
+	$(CXX) $(CXXFLAGS_ALL_NDEBUG) stu.cc -o stu
 
 clean-test:  clean
 	rm -f stu.1 version.hh stu.prof stu stu.debug stu.text test_* error.log
@@ -66,3 +87,15 @@ version.hh:  VERSION sh/mkversion
 
 analysis.prof:  gmon.out 	
 	gprof stu.prof gmon.out >analysis.prof
+
+#
+# Autoconf
+#
+
+auto-all:  configure.ac
+	aclocal
+	automake --add-missing
+	autoconf
+
+configure.ac:  VERSION configure.ac.in
+	sed <configure.ac.in >configure.ac -e 's,@@VERSION@@,'"$$(cat VERSION)"',g'

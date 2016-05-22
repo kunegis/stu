@@ -1,36 +1,26 @@
-There is no installation command or Make target for installation.  To
-install Stu, do the following:  
+To install Stu, do this:
 
-* Compile Stu using 'make'.  This will build the executable 'stu'. 
-
-* (optional) Execute all unit tests using 'make -f Makefile.test'.  If
-  an error is reported, please report it to the developers.  It takes
-  about five minutes (running the tests, not reorting to the
-  developers).   
-
-* Copy the executable 'stu' to a bin/ directory, e.g. to /usr/bin/ or to 
-  ~/bin/.  You can of course also just execute it right from where it
-  is.  The executable has no runtime dependencies, so it does not matter
-  where it is residing while it is being executed, and also its filename
-  does not matter.    
-
-* Copy the man page 'stu.1' to a man page directory,
-  e.g. /usr/share/man/man1/ or ~/man/man1/.  (In that second example,
-  you will have to put $HOME/man into your $MANPATH additionally.)  
+* run ./configure
+* run make
+* run make install
 
 REQUIREMENTS
 
-* A C++11 compiler.  The Makefile uses 'c++' as the C++ compiler, with
-  the option '-std=c++11'.  To use something else, edit the Makefile.   
-* Stu assumes ASCII. 
-* POSIX.
+* Stu assumes ASCII
+* POSIX
 * Stu calls /bin/sh and /bin/cp at runtime.
 
 COMPILATION OPTIONS
 
-* NDEBUG:  Enabled for non-debug mode. 
 * USE_MTIM (default: unset):  Use struct timespec instead of time_t for
   timekeeping.  struct timespec supports nanosecond timestamps in
   principle. In practice, most systems are likely to support only a
   precision on the order of a millisecond.  Works only on Linux, as it
   uses CLOCK_REALIME_COARSE.  See the comments in timestamp.hh. 
+
+UNIT TESTS
+
+* (optional) Execute all unit tests using 'make -f Makefile.devel'.  If
+  an error is reported, please report it to the developers.  It takes
+  about five minutes (running the tests, not reorting to the
+  developers).   

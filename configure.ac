@@ -1,11 +1,13 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
+AM_MAINTAINER_MODE([disable])
 AC_PREREQ([2.69])
 AC_INIT(stu, 1.15.24, kunegis@gmail.com)
 
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.9 foreign])
+
 
 # Checks for programs.
 AC_PROG_CXX

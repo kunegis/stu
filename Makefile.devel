@@ -98,6 +98,7 @@ auto-all:  configure.ac
 	aclocal
 	automake --add-missing
 	autoconf
+	sh/replacelinks build-aux/*
 
 configure.ac:  VERSION configure.ac.in
 	sed <configure.ac.in >configure.ac -e 's,@@VERSION@@,'"$$(cat VERSION)"',g'

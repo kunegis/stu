@@ -3,6 +3,12 @@
  * See the manpage for a description of options, exit codes, etc.  
  */
 
+/* We don't read big files, but we need to stat() them.  Even if we
+ * don't rad out their size, stat() will fail if the file is too big
+ * without this option. 
+ */
+#define _FILE_OFFSET_BITS 64
+
 /* Enable bounds checking when using GNU libc.  Must be defined before
  * including any of the standard headers.  (Only in non-debug mode).  A
  * no-op for non-GNU libc++ libraries. 
@@ -453,3 +459,4 @@ void read_string(const char *s,
 		}
 	}
 }
+

@@ -7,6 +7,15 @@
 # Get rid of the "groff" messages. 
 #
 
+#
+# In the child process before exec(), use _Exit(127) instead of
+# _Exit(ERROR_BUILD) on error.   (as done by posix_spawn()). 
+#
+
+#
+# Make sure that setting $CXX and $CXXFLAGS externally works. 
+#
+
 #==== Backward-incompatible features (in the switch to version 2) ====
 
 #
@@ -287,3 +296,15 @@ A.tar: [ +e FILES ] { tar cfvv A.tar $(cat FILES) }
 # * this will make it impossible to build directories that are more than
 #   just { mkdir -p }
 #
+
+#
+# Removeable files:  when a file carries the removeable flag, it does
+# not need to be present.  
+#
+
+A: -R B;  B: C;  A: D;
+
+# * When A is old, B does not exist, and C is new:  rebuild B and A.
+# * When A is new, B does not exist, and C is old:  don't rebuild A.
+# * When A is new, B does not exist, C is old, and D is very new:  rebuild
+#   B and A. 

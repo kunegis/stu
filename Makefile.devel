@@ -20,13 +20,7 @@ all-devel: \
 
 CXX=c++
 
-CXXFLAGS_NDEBUG= -O2 -DNDEBUG -s
-
-CXXFLAGS_OTHER=             \
-    -std=c++11              \
-    -D_FILE_OFFSET_BITS=64  
-
-CXXFLAGS_ALL_NDEBUG= $(CXXFLAGS_NDEBUG) $(CXXFLAGS_OTHER)
+CXXFLAGS_OTHER=-std=c++11
 
 #
 # Possible flags to add to CXXFLAGS_OTHER:
@@ -38,6 +32,8 @@ CXXFLAGS_ALL_NDEBUG= $(CXXFLAGS_NDEBUG) $(CXXFLAGS_OTHER)
 # compilers and compiler versions than those used by the authors.  Just
 # remove the flags if you use such a compiler. 
 
+CXXFLAGS_NDEBUG= -O2 -DNDEBUG -s
+
 CXXFLAGS_DEBUG=  -ggdb -Og \
     -Wall -Wextra -Wunused -pedantic \
     -Wundef -Wc++11-compat -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
@@ -46,6 +42,7 @@ CXXFLAGS_DEBUG=  -ggdb -Og \
 
 CXXFLAGS_PROF=   -pg -O3 -DNDEBUG 
 
+CXXFLAGS_ALL_NDEBUG= $(CXXFLAGS_NDEBUG) $(CXXFLAGS_OTHER)
 CXXFLAGS_ALL_DEBUG=  $(CXXFLAGS_DEBUG)  $(CXXFLAGS_OTHER)
 CXXFLAGS_ALL_PROF=   $(CXXFLAGS_PROF)   $(CXXFLAGS_OTHER)
 

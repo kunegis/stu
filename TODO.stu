@@ -1,6 +1,6 @@
 #
-# Make use of autoconf to detect CLOCK_REALTIME_COARSE and enable
-# precise timestamps  
+# In the child process before exec(), use _Exit(127) instead of
+# _Exit(ERROR_BUILD) on error.   (as done by posix_spawn()). 
 #
 
 #
@@ -8,8 +8,14 @@
 #
 
 #
-# In the child process before exec(), use _Exit(127) instead of
-# _Exit(ERROR_BUILD) on error.   (as done by posix_spawn()). 
+# Get rid of errors on FreeBSD
+#  * -s
+#  * missing library functions 
+#
+
+#
+# Make use of autoconf to detect CLOCK_REALTIME_COARSE and enable
+# precise timestamps  
 #
 
 #

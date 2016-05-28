@@ -22,6 +22,10 @@
 # Make sure that setting $CXX and $CXXFLAGS externally works. 
 #
 
+#
+# Color error messages
+#
+
 #==== Backward-incompatible features (in the switch to version 2) ====
 
 #

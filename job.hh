@@ -233,8 +233,7 @@ pid_t Job::start(string command,
 		/* We are the child process */ 
 
 		/* Instead of throwing exceptions, use perror() and
-		 * _Exit().  We return with ERROR_BUILD because only the
-		 * child process is aborted, not Stu. 
+		 * _Exit().  We return 127, as done e.g. by posix_spawn().  
 		 */ 
 
 		in_child= 1; 
@@ -242,11 +241,11 @@ pid_t Job::start(string command,
 		/* Unblock all blocked signals */ 
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_interrupt, nullptr)) {
 			perror("sigprocmask");
-			_Exit(ERROR_BUILD); 
+			_Exit(127); 
 		}
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_block, nullptr)) {
 			perror("sigprocmask");
-			_Exit(ERROR_BUILD); 
+			_Exit(127); 
 		}
 
 		/* Set variables */ 
@@ -272,7 +271,7 @@ pid_t Job::start(string command,
 			/* alloca() never returns null */ 
 			assert(false);
 			perror("alloca");
-			_Exit(ERROR_BUILD); 
+			_Exit(127); 
 		}
 		memcpy(envp, envp_global, v_old * sizeof(char **)); 
 		size_t i= v_old;
@@ -283,7 +282,7 @@ pid_t Job::start(string command,
 			char *combined;
 			if (0 > asprintf(&combined, "%s=%s", key.c_str(), value.c_str())) {
 				perror("asprintf");
-				_Exit(ERROR_BUILD); 
+				_Exit(127); 
 			}
 			if (old.count(key)) {
 				size_t v_index= old.at(key);
@@ -328,12 +327,12 @@ pid_t Job::start(string command,
 			int fd_output= creat(filename_output.c_str(), S_IRUSR | S_IWUSR); 
 			if (fd_output < 0) {
 				perror(filename_output.c_str());
-				_Exit(ERROR_BUILD); 
+				_Exit(127); 
 			}
 			int r= dup2(fd_output, 1); /* 1 = file descriptor of STDOUT */ 
 			if (r < 0) {
 				perror(filename_output.c_str());
-				_Exit(ERROR_BUILD); 
+				_Exit(127); 
 			}
 			assert(r == 1);
 			close(fd_output); 
@@ -344,13 +343,13 @@ pid_t Job::start(string command,
 			int fd_input= open(filename_input.c_str(), O_RDONLY); 
 			if (fd_input < 0) {
 				perror(filename_input.c_str());
-				_Exit(ERROR_BUILD); 
+				_Exit(127); 
 			}
 			assert(fd_input >= 3); 
 			int r= dup2(fd_input, 0); /* 0 = file descriptor of STDIN */  
 			if (r < 0) {
 				perror(filename_input.c_str());
-				_Exit(ERROR_BUILD); 
+				_Exit(127); 
 			}
 			assert(r == 0); 
 			close(fd_input); 
@@ -361,7 +360,7 @@ pid_t Job::start(string command,
 		/* If execve() returns, there is an error, and its return value is -1 */
 		assert(r == -1); 
 		perror("execve");
-		_Exit(ERROR_BUILD); 
+		_Exit(127); 
 	} 
 
 	/* Parent execution */
@@ -419,7 +418,7 @@ pid_t Job::start_copy(string target,
 
 		assert(r == -1); 
 		perror("execve");
-		_Exit(ERROR_BUILD); 
+		_Exit(127); 
 	}
 
 	/* Parent execution */

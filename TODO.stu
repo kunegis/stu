@@ -1,8 +1,4 @@
 #
-# Get rid of the "groff" messages. 
-#
-
-#
 # Get rid of errors on FreeBSD
 #  * -s
 #  * missing library functions 
@@ -19,6 +15,10 @@
 
 #
 # Color error messages
+#
+
+#
+# Rename tests with "phony" in them to "transient". 
 #
 
 #==== Backward-incompatible features (in the switch to version 2) ====

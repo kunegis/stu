@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT(stu, 1.15.27, kunegis@gmail.com)
+AC_INIT(stu, 1.15.28, kunegis@gmail.com)
 
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.9 foreign])

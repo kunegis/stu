@@ -17,7 +17,7 @@ doo rm -f ?
 
 ../../stu.test -a >list.out 2>list.err
 
-cmp list.out stdout.1 || {
+cmp list.out stdout-1 || {
 	echo >&2 '*** (1out)' 
 	exit 1 
 }
@@ -32,7 +32,7 @@ doo touch B C
 
 ../../stu.test -a >list.out 2>list.err
 
-cmp list.out stdout.2 || {
+cmp list.out stdout-2 || {
 	echo >&2 '*** (2out)' 
 	exit 1 
 }

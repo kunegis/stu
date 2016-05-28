@@ -54,7 +54,7 @@ exitcode="$?"
 	exit 1
 }
 
-cmp list.out stdout.2 || {
+cmp list.out stdout-2 || {
 	echo >&2 '*** (2out)' 
 	exit 1 
 }
@@ -78,7 +78,7 @@ exitcode="$?"
 	exit 1
 }
 
-cmp list.out stdout.3 || {
+cmp list.out stdout-3 || {
 	echo >&2 '*** (3out)' 
 	exit 1 
 }
@@ -104,7 +104,7 @@ exitcode="$?"
 	exit 1
 }
 
-cmp list.out stdout.4 || {
+cmp list.out stdout-4 || {
 	echo >&2 '*** (4out)' 
 	exit 1 
 }
@@ -131,7 +131,7 @@ exitcode="$?"
 	exit 1
 }
 
-cmp list.out stdout.5 || {
+cmp list.out stdout-5 || {
 	echo >&2 '*** (5out)' 
 	exit 1 
 }

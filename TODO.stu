@@ -1,9 +1,4 @@
 #
-# In the child process before exec(), use _Exit(127) instead of
-# _Exit(ERROR_BUILD) on error.   (as done by posix_spawn()). 
-#
-
-#
 # Get rid of the "groff" messages. 
 #
 

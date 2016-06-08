@@ -15,10 +15,15 @@ ls -l B
 ../../stu.test 2>list.err
 exitcode="$?"
 
-if [ "$exitcode" != 1 ]; then
-	echo >&2 "*** Wrong exit code"
+[ "$exitcode" = 1 ] || {
+	echo >&2 "*** Exit code"
+	echo >&2 "exitcode=$exitcode"
+	echo >&2 'actual stderr:'
+	echo >&2 __________________
+	cat >&2 list.err
+	echo >&2 __________________
 	exit 1
-fi
+}
 
 if [ "$(fgrep -c "main.stu:11:1: timestamp of file 'B' after execution of its command is older than ../../stu.test startup" list.err)" != 1 ]; then
 	echo >&2 "*** Missing error message"

@@ -2,7 +2,6 @@
 # Nice errors
 #
 
-# * Get rid of print_*() and always show a place (maybe)
 # * Place-less errors: write $0 in bold
 
 # command-outside-of-rule

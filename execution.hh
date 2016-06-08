@@ -972,14 +972,14 @@ void Execution::waited(int pid, int status)
 						raise(ERROR_BUILD);
 					}
 					if (! S_ISLNK(buf.st_mode)) {
-						rule->place <<
-							fmt("timestamp of file %s after execution of its command is older than %s startup", 
-							    target.format_err(), 
-							    dollar_zero);  
-						print_info(fmt("Timestamp of %s is %s",
-							       target.format_err(), timestamp_file.format()));
-						print_info(fmt("Startup timestamp is %s",
-							       Timestamp::startup.format())); 
+						rule->place 
+							<< fmt("timestamp of file %s after execution of its command is older than %s startup", 
+							       target.format_err(), 
+							       dollar_zero)
+							<< fmt("timestamp of %s is %s",
+							       target.format_err(), timestamp_file.format())
+							<< fmt("startup timestamp is %s", 
+							       Timestamp::startup.format()); 
 						print_traces();
 						explain_startup_time();
 						raise(ERROR_BUILD);

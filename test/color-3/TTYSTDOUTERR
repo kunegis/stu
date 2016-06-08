@@ -1,4 +1,4 @@
 touch A
 exit 1
 [1;31mmain.stu[0m:[31m4[0m:[31m2[0m: command for [1mA[0m failed with exit code 1
-../../stu.test: Removing file [1mA[0m because command failed
+[35m../../stu.test[0m: Removing file [1mA[0m because command failed

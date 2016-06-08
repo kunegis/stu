@@ -79,7 +79,8 @@
 
 /* The following functions print messages that do not include a place.
  * The text should begin with an uppercase letter, not end in a period
- * and also not end in a newline character. 
+ * and also not end in a newline character.  All are printed to standard
+ * error output. 
  */ 
 
 /* Print an error without place */
@@ -116,7 +117,9 @@ void print_info(string text)
 	assert(text != "");
 	assert(isupper(text[0]) || text[0] == '\''); 
 	assert(text[text.size() - 1] != '\n'); 
-	fprintf(stderr, "%s: %s\n", dollar_zero, text.c_str()); 
+	fprintf(stderr, "%s%s%s: %s\n", 
+		Color::beg_warning, dollar_zero, Color::end_warning,
+		text.c_str()); 
 }
 
 /* Denotes a position in Stu code.  This is either in a file or in
@@ -180,9 +183,9 @@ public:
 	/* Print the trace to STDERR as part of an error message.  The 
 	 * trace is printed as a single line, which can be parsed by
 	 * tools, e.g. the compile mode of Emacs.  Line and column
-	 * numbers are output as 1-based values. 
+	 * numbers are output as 1-based values.  Return THIS. 
 	 */
-	void operator<<(string message) const; 
+	const Place &operator<<(string message) const; 
 
 	/* Print the beginning of the line, with the place and the
 	 * whitespace, but not any message. */ 
@@ -231,13 +234,15 @@ public:
 	}
 };
 
-void Place::operator<<(string text) const
+const Place &Place::operator<<(string text) const
 {
 	assert(text != "");
 	assert(! isupper(text[0])); 
 
 	print_beginning();
 	fprintf(stderr, "%s\n", text.c_str()); 
+
+	return *this; 
 }
 
 void Place::print_beginning() const

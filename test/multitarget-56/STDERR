@@ -1,2 +1,2 @@
 main.stu:3:5: duplicate rule for 'B'
-main.stu:3:1: previous definition
+main.stu:3:1: shadows previous rule for 'B'

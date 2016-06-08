@@ -342,7 +342,7 @@ shared_ptr <Rule> Build::build_rule()
 			++iter; 
 			assert(place_param_targets.size() != 0); 
 			if (place_param_targets.size() != 1) {
-				place_equal << "there must not be assiged content";
+				place_equal << "there must not be assigned content";
 				place_param_targets[0]->place << "for rule with multiple targets"; 
 				throw ERROR_LOGICAL; 
 			}

@@ -1,0 +1,2 @@
+main.stu:11:1: duplicate rule for 'A'
+main.stu:7:1: shadows previous rule for 'A'

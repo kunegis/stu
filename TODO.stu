@@ -1,8 +1,9 @@
 #
-# Go over sh/color and find tests that should output more of what when
-# wrong.  E.g., Don't just write "invalid name", but "invalid name
-# XXX", etc.
+# Nice errors
 #
+
+# * Get rid of print_*() and always show a place (maybe)
+# * Place-less errors: write $0 in bold
 
 # command-outside-of-rule
 # content-2
@@ -23,6 +24,78 @@
 # copy-7
 # copy-8
 # default-dynamic
+# dynamic-target
+# dynamic-variable-equal-parameter:  mention the given value
+# empty-filename-1:  name >>of dependency<< of target A must not be empty
+# empty-parameter
+# empty-parameter2
+# error-b:  for which target?
+# expected-a-dependency:  for which target?
+# first-rule-parametrized:  mention the target
+# in-target:  parameter $XXX must not appear in dependency YYY // because it does not appear in target ZZZ
+# include-dynamic: use "must not appear"
+# include-end:  expected statement name after %
+# include-error
+# include-in-dynamic-dependency:  split the two cases
+# include-nofile:  more context
+# include-nofile2
+# include-nofilename: use "expected filename"
+# include-parametrized:  mention the filename and parameter
+# include-recursion-indirect2:  show the two filenames per line 
+# input-multiple:  mention target name
+# input-nocommand: mention target
+# invalid-equal
+# isdir: what was the file/dir used for?
+# jobs:  mention argument
+# jobs2: mention argument
+# jobs3: mention argument
+# jobs4: mention argument
+# killed: also mention signal number:  ... received signal 9 (Killed)
+# lone-colon, lone-equal, lone-langle, lone-rbracket: mention what was found
+# lone-rbracket2: say what was expected
+# missing-rangle:  rephrase as "after opening ["
+# multifile-3:  for what was the file used?
+# multifile-{6,8}:  mention target
+# multiple-parametrized-rules-with-same-number-of-parameters:  have a good explanation text
+# multitarget-3: show what was found
+# multitarget-33:  show targets
+# multitarget-36:  show targets
+# multitarget-4:  mention what was found instead
+# multitarget-77:  show targets
+# multitarget-83:  show targets
+# multitarget-85:  mention both targets
+# multitarget-86:  mention the transient target
+# multitarget-{87,88,89}:  mention targets
+# no-equal-in-dynamic-variable: mention the given variable name
+# no-filename-after-dollar-langle:  mention what was found
+# nocommandaftertarget: mention what was found
+# nosuchfile, openat2, openat3:  mention for what the file as read 
+# option-c-14:  separate the two cases
+# option-f-nosuchfile: for what was the file needed?
+# option-rule-12: mention what was found
+# output-nocommand:  mention target
+# param-{000,001,002}: mention what actually follows
+# param-006: mention the name
+# param-008: mention the name
+# redirect-lone-output: what was found?
+# redirect-missing-filename: what was found?
+# redirect-output-transient:  mention the transient target
+# redirect-transient: mention what was found
+# space-parameter:  mention what was found
+# statement-missing: mention what was found
+# statement-newline:  mention what was found
+# statement-short:  phrase as "expected XXX, found YYY"
+# syntax-error-in-dynamic: mention what was found
+# transient-input: mention what was found
+# unexpected-end-rule:  mention what was found
+# unexpected-rbracket:  mention what was found
+# unfinished-double-quote, unfinished-single-quote:  mention what type of opening quote is used
+# unmatched-lbrace, unmatched-twoparens: mention that commands start with '"'
+# variable-name-1, variable-name-2: mention the variable name
+# varpar-4: what was found?
+# varpar-5:  mention the full name
+# version-{invalid,long,partial}:  expected ...; found ...
+# wrong-quote:  show both quotes
 #  EVERYTHING after that
 
 #
@@ -63,6 +136,8 @@
 #
 # Don't allow filenames that start with '+' or '-', but allow these in
 # the middle or at the end of filenames.  
+#
+# Maybe also those beginning with '~'. 
 #
 
 #

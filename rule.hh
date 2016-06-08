@@ -453,7 +453,7 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 						assert(place_param_target_2->place_param_name.get_n() == 0);
 						if (place_param_target_2->unparametrized() == target) {
 							place_param_target_2->place << 
-								"previous definition";  
+								fmt("shadows previous rule for %s", target.format_err());  
 							break;
 						}
 					}

@@ -48,6 +48,7 @@
 
 #include "global.hh"
 #include "text.hh"
+#include "color.hh"
 
 #define ERROR_BUILD          1
 #define ERROR_LOGICAL        2
@@ -87,7 +88,27 @@ void print_error(string text)
 	assert(text != "");
 	assert(isupper(text[0]) || text[0] == '\''); 
 	assert(text[text.size() - 1] != '\n'); 
-	fprintf(stderr, "%s: *** %s\n", dollar_zero, text.c_str()); 
+	fprintf(stderr, "%s%s%s: *** %s\n", 
+		Color::beg_error, dollar_zero, Color::end_error,
+		text.c_str()); 
+}
+
+/* Like perror(), but use color */ 
+void print_error_system(const char *text)
+{
+	fprintf(stderr, "%s%s%s: %s\n",
+		Color::beg_error, text, Color::end_error,
+		strerror(errno));
+}
+
+void print_warning(string text)
+{
+	assert(text != "");
+	assert(isupper(text[0]) || text[0] == '\''); 
+	assert(text[text.size() - 1] != '\n'); 
+	fprintf(stderr, "%s%s%s: Warning: %s\n", 
+		Color::beg_warning, dollar_zero, Color::end_warning,
+		text.c_str()); 
 }
 
 void print_info(string text)
@@ -96,14 +117,6 @@ void print_info(string text)
 	assert(isupper(text[0]) || text[0] == '\''); 
 	assert(text[text.size() - 1] != '\n'); 
 	fprintf(stderr, "%s: %s\n", dollar_zero, text.c_str()); 
-}
-
-void print_warning(string text)
-{
-	assert(text != "");
-	assert(isupper(text[0]) || text[0] == '\''); 
-	assert(text[text.size() - 1] != '\n'); 
-	fprintf(stderr, "%s: Warning: %s\n", dollar_zero, text.c_str()); 
 }
 
 /* Denotes a position in Stu code.  This is either in a file or in
@@ -169,15 +182,14 @@ public:
 	 * tools, e.g. the compile mode of Emacs.  Line and column
 	 * numbers are output as 1-based values. 
 	 */
-	void operator<< (string message) const; 
+	void operator<<(string message) const; 
 
 	/* Print the beginning of the line, with the place and the
 	 * whitespace, but not any message. */ 
 	void print_beginning() const;
 
-	/* Represented as a compact string */
-	string as_string() const;
-
+	/* The string used for the argv[0] parameter of child processes.
+	 * Does not include color codes.  */
 	string as_argv0() const;
 
 	const char *get_filename_str() const;
@@ -224,44 +236,39 @@ void Place::operator<<(string text) const
 	assert(text != "");
 	assert(! isupper(text[0])); 
 
-	switch (type) {
-	default:  assert(false); 
-	case Type::INPUT_FILE:
-		fprintf(stderr, "%s:%u:%u: %s\n", 
-			get_filename_str(), line, 1 + column, text.c_str());  
-		break;
-	case Type::ARGV:
-		fprintf(stderr, 
-			"Command line argument '%s': %s\n",
-			filename.c_str(),
-			text.c_str()); 
-		break;
-	}
+	print_beginning();
+	fprintf(stderr, "%s\n", text.c_str()); 
 }
 
 void Place::print_beginning() const
-{
-	string s= as_string(); 
-	fprintf(stderr, "%s: ", s.c_str()); 
-}
-
-string Place::as_string() const
 {
 	switch (type) {
 	default:  assert(false); 
 
 	case Type::EMPTY:
-		return "<empty>"; 
+		fputs("<empty>: ", stderr); 
+		break;
 
 	case Type::INPUT_FILE:
-		return frmt("%s:%u:%u", 
-			    get_filename_str(),
-			    line, 1 + column);  
+		fprintf(stderr,
+			"%s%s%s:%s%u%s:%s%u%s: ", 
+			Color::beg_error_name, get_filename_str(), Color::end_error_name,
+			Color::beg_error, line, Color::end_error,
+			Color::beg_error, 1 + column, Color::end_error);  
+		break;
 
 	case Type::ARGV:
-		return frmt("Command line argument '%s'",
-			    filename.c_str()); 
-
+		const char *quote= 
+			Color::has_quotes 
+			? (filename.empty() ? "'" : "")
+			: "'";
+		fprintf(stderr,
+			"%sCommand line argument%s %s%s%s%s%s: ",
+			Color::beg_error, Color::end_error,
+			quote, 
+			Color::beg_error_name, filename.c_str(), Color::end_error_name,
+			quote);
+		break;
 	}
 }
 
@@ -274,6 +281,10 @@ string Place::as_argv0() const
 		return "<empty>"; 
 
 	case Type::INPUT_FILE: {
+		/* The given argv[0] should not begin with a dash,
+		 * because some shells enable special behaviour
+		 * (restricted/login mode and similar) when argv[0]
+		 * begins with a dash. */ 
 		const char *s= get_filename_str();
 		return frmt("%s%s:%u", 
 			    s[0] == '-' ? "file " : "",

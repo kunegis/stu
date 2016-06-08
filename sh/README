@@ -1,0 +1,3 @@
+This directory contains scripts to assist in the development of Stu.
+They are *not* needed to simply compile Stu.  Most scripts are called
+from Makefile.devel. 

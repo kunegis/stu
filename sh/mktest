@@ -35,7 +35,7 @@
 # * It must build the file 'A' by default (i.e., that should be the
 #   first target)
 # * All built files must have names that correspond to the pattern given
-#   below in delete_tmps(), such that they are removed automatically
+#   in sh/delete_tmps, such that they are removed automatically
 #   after the test.  Most generated files' names just consist of a
 #   single uppercase letter (but they don't have to).
 # * There may be other files present used by the test; these are part of
@@ -60,6 +60,9 @@
 # EXITCODE     The prescribed exit code; default is zero
 # NOSECOND     If file is present, do not check that second invocation
 #              results in "Nothing to be done"  
+# NOTTY	       Don't do the extra TTY test (e.g., when the -q option is
+#	       used and the exit code is expected to be one)
+# NOCOLOR      Don't test for color in stderr (e.g., with the -y option)
 # CONTENT      Prescribe the exact content of the built file
 # INCONTENT    Prescribe strings that must appear in the built file 
 # STDOUT       The exact output of the command
@@ -67,6 +70,7 @@
 # INSTDOUT     Prescribe strings that must appear on stdout 
 # INSTDERR     Prescribe strings that must appear in the error message
 # NOTINSTDERR  A text that must not be present in the error output
+# TTYSTDOUTERR The output and error output (interleaved) when in TTY mode
 # EXEC         Can be an alternative test script; it can do anything and
 #              should return a sensible exit code (i.e., 0 on success,
 #              nonzero otherwise).  It should also behave like ./mktest,
@@ -102,12 +106,6 @@ if [ "$NDEBUG" ] ; then
 else
 	ln -s stu.debug stu.test
 fi
-
-# Delete temporary files created by tests.  Tests only create temporary
-# files of these patterns.  Executed within each test directory. 
-delete_tmps() {
-	rm -Rf ? ?? A.* *.data list.* dep.* +-.~_
-}
 
 exec 6>error.log
 
@@ -153,10 +151,10 @@ do
 	echo cd "$file"
 	cd "$file"
 
-	delete_tmps
+	../../sh/delete_tmps || exit 1
 
 	# Check that all all-uppercase files are of one of the allowed files 
-	allowed=",EXITCODE,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,CMD,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,"
+	allowed=",EXITCODE,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,CMD,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,"
 	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
 	do
 		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi
@@ -175,7 +173,8 @@ do
 
 		if [ -r EXITCODE -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
 			-o -r STDERR -o -r NOTINSTDERR -o -r CMD \
-			-o -r TARGET -o -r INCONTENT -o -r CONTENT -o -r STDOUT -o -r NOSECOND ]; then
+			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
+			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR -o -r NOCOLOR ]; then
 			echo >&2 "$: *** EXEC does not allow any other file"
 			error=1
 		fi
@@ -191,7 +190,7 @@ do
 		# Execute command
 		echo ../../stu.test "$CMD"
 		eval ../../stu.test $CMD \>list.def.out 2\>list.def.err
-		exitcode_actual=$?
+		exitcode_actual="$?"
 		
 		# Exit code
 		exitcode_correct=0
@@ -337,6 +336,64 @@ do
 			fi
 		fi
 
+		# TTYSTDOUTERR
+		if { [ -r TTYSTDOUTERR ] || [ -r EXITCODE ]; } && ! [ -r NOTTY ]; then
+			../../sh/delete_tmps || exit 1
+			echo ../../stu.test "$CMD" '[TTY]'
+			eval unbuffer ../../stu.test $CMD \>list.def.out 
+			exitcode_actual="$?"
+
+			# Exit code
+			if [ "$exitcode_actual" != "$exitcode_correct" ]; then
+				echo >&2 "$0: *** Test '$file' should have returned $exitcode_correct, but returned $exitcode_actual [TTY]"
+				error=1
+			else
+				echo "EXITCODE:TTY...$exitcode_correct correct"
+			fi
+
+			# correct output
+			if [ -r TTYSTDOUTERR ]; then
+				diff list.def.out TTYSTDOUTERR
+				exitcode="$?"
+				if [ "$exitcode" != 0 ]; then
+					echo >&2 "$0: *** TTY error output does not match 'TTYSTDOUTERR'"
+					echo >&2 '_____ actual output:'
+					cat list.def.out
+					echo >&2 _____
+					wc -l list.def.out TTYSTDOUTERR
+					ls -l list.def.out TTYSTDOUTERR
+					cmp list.def.out TTYSTDOUTERR
+					error=1
+				else
+					echo "TTYSTDOUTERR...correct"
+				fi
+			fi
+
+			# There is color
+			if [ -r EXITCODE ] && ! [ -r NOCOLOR ] ; then
+				if ! grep -qE '' list.def.out ; then
+					echo >&2 "$0: *** Expected ESC in TTY output because EXITCODE exists"
+					echo >&2 output:
+					echo >&2 _________
+					cat >&2 list.def.out
+					echo >&2 _________
+					error=1
+				else
+					echo "TTY:COLOR...correct"
+				fi
+				
+			fi
+
+			# No unbalanced colors
+			if grep -qE '[^0]+m[^]*$' list.def.out ||
+				grep -qE '[^0]+m[^]*[^0]+m' list.def.out ; then
+				echo >&2 "$0: *** Expected closing color code"
+				error=1
+			else
+				echo "TTY:BALANCED...correct"
+			fi
+		fi
+
 		# Second invocation does nothing 
 		if [ "$exitcode_correct" = 0 -a ! -e NOSECOND ]; then
 			echo ../../stu.test "$CMD"
@@ -358,7 +415,7 @@ do
 		if [ -r PARALLEL ]; then
 			ks="$(sed -e '/^[[:space:]]*$/d' <PARALLEL)"
 			for k in $ks; do
-				delete_tmps
+				../../sh/delete_tmps || exit 1
 				echo ../../stu.test "$CMD" -j "$k"
 				eval ../../stu.test $CMD -j $k \>list.def.out 2\>list.def.err
 				if [ $? != 0 ]
@@ -372,7 +429,7 @@ do
 		fi	
 	fi	
 
-	delete_tmps
+	../../sh/delete_tmps || exit 1
 	cd ..
 
 	if [ "$error" != 0 ] ; then

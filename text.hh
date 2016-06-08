@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "color.hh"
+
 /* Is the character a space in the C locale?  Note:  we don't use
  * isspace() because isspace() uses the current locale and may consider
  * locale-specific characters which we don't want to cover in this
@@ -19,11 +21,17 @@ bool is_space(char c)
 	return c != '\0' && nullptr != strchr(" \n\t\v\r\f", c);
 }
 
-/* Functions named format() return an optionally quoted and printable
- * representation of the target.  These are inserted directly into
- * output of Stu (without adding quotes).  format_mid() is used when brackets
- * of any form are added around.  format_bare() returns the always unquoted
- * string.  
+/* Format functions: 
+ *
+ * - format_err() returns the same as format_out(), with color
+ *   codes.  Used only on standard error output. 
+ * - format_out() returns an optionally quoted and printable representation
+ *   of the target, without color codes. 
+ * - format_mid() is used when brackets of any form are added around by
+ *   the caller.  Uses quotes only when weird characters are contained. 
+ * - format_semi() is used when an operator is present on only one side
+ *   of a string. 
+ * - format_raw() does not escape anything
  *
  * Format functions are defined in the source files where their datatype
  * is defined. 
@@ -66,9 +74,9 @@ string frmt(const char *format, ...)
 	return ret; 
 }
 
-/* fmt() allows *only* string or char-pointer objects.  Technically,
- * this allows any argument that can be concatenated to a string with
- * the '+' operator.  Allows only the unqualified %s format.  
+/* fmt() allows *only* the unqualified '%s' format specifier with string
+ * and const char * arguments, and '%%'.  Precisely, this allows any
+ * argument that can be concatenated to a string with the '+' operator.  
  */
 
 /* Without args */ 
@@ -100,7 +108,7 @@ string fmt(const char *s, T value, Args... args)
 {
 	const char *q= strchr(s, '%');
 	if (!q) { 
-		/* Too many arguments */ 
+		/* Too many arguments; not enough '%s' */ 
 		assert(false);
 		return string(q);
 	}
@@ -123,8 +131,8 @@ string fmt(const char *s, T value, Args... args)
 	return ret + value + fmt(s, args...); 
 }
 
-/* Format a character for output */ 
-string format_char(char c)
+/* Format a character for output. */ 
+string char_format_mid(char c)
 {
 	assert(0x5C == '\\'); 
 
@@ -138,7 +146,12 @@ string format_char(char c)
 	else
 		text_char= frmt("\\%03o", (unsigned char) c);
 
-	return fmt("'%s'", text_char); 
+	return text_char; 
+}
+
+string char_format_err(char c) 
+{
+	return fmt("%s%s%s", Color::beg_name_quoted, char_format_mid(c), Color::end_name_quoted); 
 }
 
 /* Padding for verbose output (option -v).  During the lifetime of an

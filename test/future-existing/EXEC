@@ -17,16 +17,16 @@ if [ "$exitcode" != 0 ]; then
 	exit 1
 fi
 
-if ! fgrep -q "Warning: 'B' has modification time in the future" list.err ; then
+grep -qF "Warning: File 'B' has modification time in the future" list.err || {
 	echo >&2 "*** Missing error message"
 	exit 1
-fi
+}
 
 # Check that the warning is given just once
-if [ "$(fgrep -c "Warning: 'B' has modification time in the future" list.err)" != 1 ];then
+[ "$(fgrep -c "Warning: File 'B' has modification time in the future" list.err)" = 1 ] || {
 	echo >&2 "*** Warning must not be output multiple times"
 	exit 1
-fi
+}
 
 rm -f A B
 

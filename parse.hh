@@ -5,6 +5,10 @@
  * of tokens.  
  */
 
+/* On errors, these functions print a message and throw integers error
+ * codes.   
+ */
+
 #include <sys/mman.h>
 
 #include "token.hh"
@@ -28,8 +32,6 @@ public:
 	 * 
 	 * If ALLOW_INCLUDE, allow '%include' statements, otherwise
 	 * not (used for dynamic dependencies and the -C option). 
-	 * 
-	 * Throws integers error codes on errors. 
 	 */
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
 				      bool allow_include,
@@ -297,12 +299,12 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			for (auto j= traces.begin();  j != traces.end();  ++j) {
 				if (j == traces.begin()) {
 					j->print_beginning();
-					perror(filename_diagnostic); 
+					print_error_system(filename_diagnostic); 
 				} else
 					j->print(); 
 			}
 		} else
-			perror(filename_diagnostic); 
+			print_error_system(filename_diagnostic); 
 		throw ERROR_LOGICAL; 
 
 	} catch (int error) {
@@ -543,7 +545,8 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 
 					default:
 						current_place()
-							<< frmt("invalid escape sequence '\\%c'", *p);
+							<< frmt("invalid escape sequence %s\\%c%s", 
+								Color::beg_name_quoted, *p, Color::end_name_quoted);
 						throw ERROR_LOGICAL;
 					}
 					ret->last_text() += c; 
@@ -553,7 +556,8 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 					place_begin_quote << "beginning of quote"; 
 					throw ERROR_LOGICAL;
 				} else if (*p == '\0') {
-					current_place() << "names must not contain '\\0'"; 
+					current_place() << frmt("names must not contain %s\\0%s",
+								Color::beg_name_quoted, Color::end_name_quoted); 
 					throw ERROR_LOGICAL;
 				} else {
 					ret->last_text() += *p++; 
@@ -576,16 +580,16 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 			}
 			if (braces) {
 				if (p == p_end || *p != '}') {
-					string text_char= format_char(*p);
 					current_place() 
 						<< fmt("invalid character %s in parameter",
-						       text_char); 
+						       char_format_err(*p)); 
 					explain_parameter_character(); 
 					throw ERROR_LOGICAL;
 				} 
 			}
 			if (p == p_parameter_name) {
-				place_parameter_name << "'$' must be followed by parameter name";
+				place_parameter_name << fmt("%s must be followed by parameter name",
+							     char_format_err('$')); 
 				throw ERROR_LOGICAL;
 			}
 			if (isdigit(p_parameter_name[0])) {
@@ -667,17 +671,21 @@ void Parse::parse_version(string version_req, const Place &place_version)
  wrong_version:
 	{
 		place_version <<
-			fmt("requested version %s is incompatible with this Stu's version %s",
-			    version_req, STU_VERSION);
+			fmt("requested version %s%s%s is incompatible with this Stu's version %s%s%s",
+			    Color::beg_name_quoted, version_req, Color::end_name_quoted,
+			    Color::beg_name_bare, STU_VERSION, Color::end_name_bare);
 		throw ERROR_LOGICAL;
 	}
 
  error:	
 	place_version <<
-		fmt("invalid version number '%s'; "
+		fmt("invalid version number %s%s%s; "
 		    "required version number must be of the form "
-		    "MAJOR.MINOR or MAJOR.MINOR.PATCH", 
-		    version_req);
+		    "%sMAJOR.MINOR%s or %sMAJOR.MINOR.PATCH%s", 
+		    Color::beg_name_quoted, version_req, Color::end_name_quoted,
+		    Color::beg_name_bare, Color::end_name_bare,
+		    Color::beg_name_bare, Color::end_name_bare
+		);
 	throw ERROR_LOGICAL;
 }
 
@@ -747,7 +755,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			}
 
 			if (p == p_name) {
-				place_name << "'%' must be followed by statement name"; 
+				place_name << fmt("%s must be followed by statement name",
+						   char_format_err('%')); 
 				throw ERROR_LOGICAL; 
 			}
 
@@ -757,12 +766,15 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 				if (! allow_include) {
 					place_percent 
-						<< "'%include' is not allowed in dynamic dependencies or in the -C option"; 
+						<< frmt("%s%%include%s is not allowed in dynamic dependencies or in the %s-C%s option",
+							Color::beg_name_quoted, Color::end_name_quoted,
+							Color::beg_name_quoted, Color::end_name_quoted); 
 					throw ERROR_LOGICAL;
 				}
 
 				if (! (p < p_end && is_space(*p))) {
-					place_percent << "'%include' must be followed by filename";
+					place_percent << frmt("%s%%include%s must be followed by filename",
+							      Color::beg_name_quoted, Color::end_name_quoted); 
 					throw ERROR_LOGICAL;
 				}
 
@@ -780,7 +792,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 				Trace trace_stack
 					(place_param_name->place,
-					 fmt("'%s' is included from here", filename_include));
+					 fmt("%s%s%s is included from here", 
+					     Color::beg_name_quoted, filename_include, Color::end_name_quoted));
 
 				traces.push_back(trace_stack);
 				filenames.push_back(filename); 
@@ -796,8 +809,9 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 							for (auto j= traces.rbegin();  j != traces.rend(); ++j) {
 								Trace trace(*j);
 								if (j == traces.rbegin()) {
-									trace.message= fmt("recursive inclusion of '%s'", 
-											   filename_include);
+									trace.message= 
+										fmt("recursive inclusion of %s%s%s", 
+										    Color::beg_name_quoted, filename_include, Color::end_name_quoted);
 								}
 								traces_backward.push_back(trace); 
 							}
@@ -837,8 +851,9 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				parse_version(version_required, place_version); 
 				
 			} else {
-				/* Unknown statement */ 
-				place_percent << fmt("invalid statement '%%%s'", name);
+				/* Invalid statement */ 
+				place_percent << fmt("invalid statement %s%%%s%s", 
+						     Color::beg_name_quoted, name, Color::end_name_quoted);
 				throw ERROR_LOGICAL;
 			}
 		}
@@ -849,7 +864,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			 || *p == 0x7F /* DEL */ ) {
 			current_place() 
 				<< fmt("invalid character %s", 
-				       format_char(*p));
+				       char_format_err(*p));
 			throw ERROR_LOGICAL;
 		}
 

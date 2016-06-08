@@ -1,0 +1,12 @@
+# Execute with 'B' existing, having a timestamp in the future
+
+# 
+
+@all:  @init A;
+
+@init {
+	touch -d "$(expr 2 + "$(date +%Y)")-01-01" B
+}
+
+A B { touch B }
+

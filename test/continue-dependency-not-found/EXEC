@@ -37,8 +37,8 @@ grep -qF "no rule to build 'nonexistingfile'" list.err || {
 	exit 1
 }
 
-grep -qF '*** Targets not rebuilt because of errors' list.err || {
-	echo "$0:  *** error output does not contain 'targets not remade because of errors' (run B)"
+grep -qF 'Targets not rebuilt because of errors' list.err || {
+	echo "$0:  *** error output does not contain 'Targets not rebuilt because of errors' (run B)"
 	exit 1
 }
 

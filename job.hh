@@ -208,7 +208,7 @@ pid_t Job::start(string command,
 	pid= fork();
 
 	if (pid < 0) {
-		perror("fork"); 
+		print_error_system("fork"); 
 		assert(pid == -1); 
 		return -1; 
 	}
@@ -384,7 +384,7 @@ pid_t Job::start_copy(string target,
 	pid= fork();
 
 	if (pid < 0) {
-		perror("fork"); 
+		print_error_system("fork"); 
 		assert(pid == -1); 
 		return -1; 
 	}
@@ -513,7 +513,7 @@ void Job::Statistics::print(bool allow_unterminated_jobs)
 
 	int r= getrusage(RUSAGE_CHILDREN, &usage);
 	if (r < 0) {
-		perror("getrusage");
+		print_error_system("getrusage");
 		throw ERROR_FATAL; 
 	}
 

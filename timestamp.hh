@@ -76,7 +76,7 @@ public:
 		if (r != 0) {
 			/* If this happens, it is a bug in Stu */
 			assert(false);
-			perror("clock_gettime(CLOCK_REALTIME_COARSE, ...)");
+			print_error_system("clock_gettime(CLOCK_REALTIME_COARSE, ...)");
 
 			/* Do the next best thing:  use time(2).
 			 * This may lead to clock skew, as the

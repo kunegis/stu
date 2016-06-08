@@ -1,0 +1,29 @@
+#! /bin/sh
+
+#
+# No multiple color codes on single line
+#
+cat *.hh *.cc |
+grep -qE 'Color::beg.*Color::beg' && {
+	echo >&2 "*** Multiple color codes on single line"
+	grep -Eln 'Color::beg.*Color::beg' *.hh *.cc
+	exit 1
+}
+
+#
+# No unmatched color code
+#
+
+echo *.hh *.cc | 
+sed -e 's,color\.hh, ,g' |
+xargs grep -E 'Color::beg' |
+grep -qvE 'Color::beg([a-z_]+)[^a-z_].*Color::end\1' && {
+	echo >&2 "*** Unmatched color code"
+	echo *.hh *.cc | 
+	sed -e 's,color\.hh, ,g' |
+	xargs grep -E 'Color::beg' |
+	grep -vE 'Color::beg([a-z_]+)[^a-z_].*Color::end\1'
+	exit 1
+}
+
+exit 0

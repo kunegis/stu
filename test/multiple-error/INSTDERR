@@ -1,4 +1,4 @@
 D: Permission denied
 main.stu:14:10: command for 'B' failed with exit code 1
 main.stu:22:2: command for 'C' failed with exit code 1
-../../stu.test: *** Targets not rebuilt because of errors
+../../stu.test: Targets not rebuilt because of errors

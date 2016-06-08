@@ -204,11 +204,12 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 				if (parameters.count(parameter) == 0) {
 					dependency->place_param_target
 						.place_param_name.get_places()[jj] <<
-						fmt("parameter $%s is not used", parameter); 
+						fmt("parameter %s$%s%s is not used", 
+						    Color::beg_name_bare, parameter, Color::end_name_bare); 
 					if (place_param_targets.size() == 1) {
 						place_param_targets[0]->place <<
 							fmt("in target %s",
-							    place_param_targets[0]->format());
+							    place_param_targets[0]->format_err());
 					} else {
 						place << "in any target of the rule";
 					}
@@ -287,7 +288,7 @@ string Rule::format() const
 			first= false;
 		else
 			ret += ' '; 
-		ret += place_param_target->format(); 
+		ret += place_param_target->format_out(); 
 	}
 
 	if (dependencies.size() != 0)
@@ -295,7 +296,7 @@ string Rule::format() const
 	for (auto i= dependencies.begin();  i != dependencies.end();  ++i) {
 		if (i != dependencies.begin())
 			ret += ", ";
-		ret += (*i)->format(); 
+		ret += (*i)->format_out(); 
 	}
 
 	ret += ")";
@@ -412,11 +413,11 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 	/* More than one rule matches:  error */ 
 	if (rules_best.size() > 1) {
 		print_error(fmt("Multiple minimal rules for target %s", 
-				target.format())); 
+				target.format_err())); 
 		for (auto &place_param_target:  place_param_targets_best) {
 			place_param_target->place <<
 				fmt("rule with target %s", 
-				    place_param_target->format()); 
+				    place_param_target->format_err()); 
 		}
 		throw ERROR_LOGICAL; 
 	}
@@ -445,7 +446,8 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 				Target target= place_param_target->unparametrized(); 
 				if (rules_unparametrized.count(target)) {
 					place_param_target->place <<
-						fmt("duplicate rule for %s", target.format());
+						fmt("duplicate rule for %s", 
+						    target.format_err());
 					auto rule_2= rules_unparametrized.at(target); 
 					for (auto place_param_target_2: rule_2->place_param_targets) {
 						assert(place_param_target_2->place_param_name.get_n() == 0);

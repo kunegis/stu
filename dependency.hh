@@ -69,7 +69,7 @@ const char *const flags_chars= "!?&`$*=";
 
 /* Textual representation of a flags value. 
  */
-string format_flags(Flags flags) 
+string flags_format(Flags flags) 
 {
 	string ret= "";
 	for (int i= 0;  i < F_ALL;  ++i)
@@ -107,7 +107,8 @@ public:
 	virtual void set_place_optional (const Place &place)= 0;
 	virtual void set_place_trivial  (const Place &place)= 0;
 
-	virtual string format() const= 0; 
+	virtual string format_out() const= 0; 
+	virtual string format_mid() const= 0; 
 
 	/* Collapse the dependency into a single target, ignoring all
 	 * flags */   
@@ -259,12 +260,16 @@ public:
 		}
 	}
 
-	string format() const {
-		string text_param_target= place_param_target.format(); 
-		string text_flags= format_flags(flags);
+	string format_out() const {
 		return fmt("%s%s",
-			   text_flags,
-			   text_param_target);
+			   flags_format(flags),
+			   place_param_target.format_out()); 
+	}
+
+	string format_mid() const {
+		return fmt("%s%s",
+			   flags_format(flags),
+			   place_param_target.format_mid()); 
 	}
 
 	Param_Target get_single_target() const {
@@ -274,7 +279,7 @@ public:
 #ifndef NDEBUG
 	void print() const {
 		place.print_beginning(); 
-		string text= place_param_target.format();
+		string text= place_param_target.format_out();
 		fprintf(stderr, "%d %s\n", flags, text.c_str()); 
 	}
 #endif
@@ -316,12 +321,16 @@ public:
 		return dependency->get_place(); 
 	}
 
-	string format() const {
-		string text_dependency= dependency->format(); 
-		string text_flags= format_flags(flags);
+	string format_out() const {
+		string text_flags= flags_format(flags);
+		string text_dependency= dependency->format_mid(); 
 		return fmt("%s[%s]",
 			   text_flags,
 			   text_dependency); 
+	}
+
+	string format_mid() const {
+		return format_out(); 
 	}
 
 	Param_Target get_single_target() const {
@@ -533,7 +542,7 @@ public:
 		string ret= "";
 		for (int j= k;  j >= 0;  --j) {
 			Flags flags_j= get(j);
-			ret += format_flags(flags_j);
+			ret += flags_format(flags_j);
 			if (j)  ret += ',';
 		}
 		return fmt("{%s}", ret); 
@@ -562,8 +571,9 @@ shared_ptr <Dependency> Direct_Dependency
 
 		assert(ret_target->type == Type::FILE); 
 		
-		place << fmt("dynamic variable $[%s] cannot be instantiated with parameter value that contains '='", 
-			     this_name);
+		place << fmt("dynamic variable %s$[%s]%s cannot be instantiated with parameter value that contains %s", 
+			     Color::beg_name_bare, this_name, Color::end_name_bare,
+			     char_format_err('='));
 		throw ERROR_LOGICAL; 
 	}
 

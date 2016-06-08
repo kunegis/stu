@@ -31,12 +31,13 @@ using namespace std;
 #include "execution.hh"
 #include "rule.hh"
 #include "timestamp.hh"
+#include "color.hh"
 
 /* We use getopt(), which means that Stu does only support short
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-#define STU_OPTIONS "ac:C:Ef:F:ghj:JkKm:M:pqsvVwxz"
+#define STU_OPTIONS "ac:C:Ef:F:ghj:JkKm:M:pqsvVwxyz"
 
 /* The following strings do not contain tabs, but only space characters */  
 #define STU_HELP						       \
@@ -67,6 +68,7 @@ using namespace std;
 	"  -V               Output version and exit\n"				      \
 	"  -w               Short output; show target filenames instead of commands\n"\
 	"  -x               Ouput each command statement individually\n"              \
+	"  -y               Disable color in output\n"                                \
 	"  -z               Output run-time statistics on stdout\n"                   \
 	"Report bugs to: kunegis@gmail.com\n" \
 	"Stu home page: <https:/""/github.com/kunegis/stu>\n"
@@ -147,6 +149,7 @@ int main(int argc, char **argv, char **envp)
 			case 's': output_mode= Output::SILENT; break;
 			case 'v': option_verbose= true;        break;
 			case 'w': output_mode= Output::SHORT;  break;
+			case 'y': Color::set(false);           break;
 			case 'x': option_individual= true;     break;
 			case 'z': option_statistics= true;     break;
 
@@ -154,7 +157,8 @@ int main(int argc, char **argv, char **envp)
 				{
 					had_option_c= true; 
 					if (*optarg == '\0') {
-						print_error("Option -c must take non-empty argument"); 
+						print_error(frmt("Option %s-c%s must take non-empty argument",
+								 Color::beg_name_quoted, Color::end_name_quoted)); 
 						exit(ERROR_FATAL);
 					}
 					const char *const name= optarg;
@@ -176,7 +180,8 @@ int main(int argc, char **argv, char **envp)
 
 			case 'f':
 				if (*optarg == '\0') {
-					print_error("Option -f must take non-empty argument");
+					print_error(frmt("Option %s-f%s must take non-empty argument",
+							 Color::beg_name_quoted, Color::end_name_quoted)); 
 					exit(ERROR_FATAL);
 				}
 
@@ -200,11 +205,14 @@ int main(int argc, char **argv, char **envp)
 				char *endptr;
 				Execution::jobs= strtol(optarg, &endptr, 0);
 				if (errno != 0 || *endptr != '\0') {
-					print_error("Invalid argument to -j");
+					print_error(frmt("Invalid argument to %s-j%s",
+							 Color::beg_name_quoted, Color::end_name_quoted)); 
 					exit(ERROR_FATAL); 
 				}
 				if (Execution::jobs < 1) {
-					print_error("Argument to -j must be positive");
+					print_error(frmt("Argument to %s-j%s must be positive",
+							 Color::beg_name_quoted, Color::end_name_quoted)); 
+						    
 					exit(ERROR_FATAL); 
 				}
 				break;
@@ -217,14 +225,16 @@ int main(int argc, char **argv, char **envp)
 					 * precision */ 
 					struct timeval tv;
 					if (gettimeofday(&tv, nullptr) != 0) {
-						perror("gettimeofday");
+						print_error_system("gettimeofday");
 						exit(ERROR_FATAL); 
 					}
 					srand(tv.tv_sec + tv.tv_usec);
 				}
 				else if (!strcmp(optarg, "dfs"))     /* Default */ ;
 				else {
-					print_error(frmt("Invalid order '%s' for option -m", optarg));
+					print_error(frmt("Invalid order %s%s%s for option %s-m%s", 
+							 Color::beg_name_quoted, optarg, Color::end_name_quoted,
+							 Color::beg_name_quoted, Color::end_name_quoted));
 					exit(ERROR_FATAL); 
 				}
 				break;
@@ -241,7 +251,7 @@ int main(int argc, char **argv, char **envp)
 				puts("This is free software: you are free to change and redistribute it.");
 				puts("There is NO WARRANTY, to the extent permitted by law.");
 				if (ferror(stdout)) {
-					perror("puts"); 
+					print_error_system("puts"); 
 					exit(ERROR_FATAL);
 				}
 				exit(0);
@@ -250,8 +260,8 @@ int main(int argc, char **argv, char **envp)
 				/* Invalid option -- an error message was
 				 * already printed by getopt() */   
 				fprintf(stderr, 
-					"To get a list of all options, use '%s -h'\n", 
-					dollar_zero); 
+					"To get a list of all options, use %s%s -h%s\n", 
+					Color::beg_name_quoted, dollar_zero, Color::end_name_quoted); 
 				exit(ERROR_FATAL); 
 			}
 		}
@@ -289,13 +299,15 @@ int main(int argc, char **argv, char **envp)
 					/* The default file does not exist --
 					 * fail if no target is given */  
 					if (dependencies.empty() && ! had_option_c && ! option_print) {
-						print_error("Expected target or default file '" FILENAME_INPUT_DEFAULT "'");
+						print_error(fmt("Expected target or default file %s" FILENAME_INPUT_DEFAULT "%s",
+								Color::beg_name_quoted, Color::end_name_quoted)); 
+
 						explain_no_target(); 
 						throw ERROR_LOGICAL; 
 					}
 				} else { 
 					/* Other errors by open() are fatal */ 
-					perror(FILENAME_INPUT_DEFAULT);
+					print_error_system(FILENAME_INPUT_DEFAULT);
 					exit(ERROR_FATAL);
 				}
 			}
@@ -313,8 +325,8 @@ int main(int argc, char **argv, char **envp)
 			if (rule_first == nullptr) {
 				print_error
 					((filenames.size() == 1 && ! had_option_F)
-					 ? fmt("Input file '%s' does not contain any rules and no target given", 
-					       filenames[0])
+					 ? fmt("Input file %s%s%s does not contain any rules and no target given", 
+					       Color::beg_name_quoted, filenames[0], Color::end_name_quoted)
 					 : "No rules and no targets given");
 				exit(ERROR_FATAL);
 			}
@@ -459,4 +471,3 @@ void read_string(const char *s,
 		}
 	}
 }
-

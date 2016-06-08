@@ -88,9 +88,9 @@ string Link::format() const {
 	string text_dependency= 
 		dependency == nullptr 
 		? "NULL"
-		: dependency->format(); 
+		: dependency->format_out(); 
 	string text_avoid= avoid.format();
-	string text_flags= format_flags(flags);
+	string text_flags= flags_format(flags);
 	return fmt("Link(%s, %s, %s)",
 		   text_dependency,
 		   text_flags, 

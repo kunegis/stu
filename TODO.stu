@@ -1,4 +1,36 @@
 #
+# Go over sh/color and find tests that should output more of what when
+# wrong.  E.g., Don't just write "invalid name", but "invalid name
+# XXX", etc.
+#
+
+# command-outside-of-rule
+# content-2
+# content-20
+# content-3
+# content-5
+# contiguous-parameters
+# copy-14
+# copy-15
+# color-2:  show the invalid argument
+# copy-16:  mention '=' and the rule name
+# copy-17:  mention target name
+# copy-3
+# copy-4
+# copy-41
+# copy-5
+# copy-6
+# copy-7
+# copy-8
+# default-dynamic
+#  EVERYTHING after that
+
+#
+# Get rid of configure.ac.in.  Infer the version number
+# programmatically.  See GNU programs for examples. 
+#
+
+#
 # Get rid of errors on FreeBSD
 #  * -s
 #  * missing library functions 
@@ -11,14 +43,6 @@
 
 #
 # Make sure that setting $CXX and $CXXFLAGS externally works. 
-#
-
-#
-# Color error messages
-#
-
-#
-# Rename tests with "phony" in them to "transient". 
 #
 
 #==== Backward-incompatible features (in the switch to version 2) ====

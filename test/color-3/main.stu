@@ -1,0 +1,6 @@
+# 'removing file ... because command failed':  check that it is not coloured. 
+
+A {
+	touch A
+	exit 1
+}

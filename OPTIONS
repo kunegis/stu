@@ -54,5 +54,5 @@ List of options
 -w  S	x  Short mode (GNU Make:  print directory) 
 -W  .   G  What-if mode (if FILE just had been modified)
 -x  S      Enable /bin/sh -x instead of normal output
--y       
+-y  S      Disable color output
 -z  .      Output statistics

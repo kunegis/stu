@@ -1,0 +1,71 @@
+#! /bin/sh
+#
+# Run all programs that fail, and show their output.  Used to visually
+# inspect color ouput, to see whether it looks nice.  This is in
+# addition to unit tests that check whether output is correct.
+#
+# PARAMETERS
+#	(optional) Names of tests, like for sh/mktest
+#
+# STDOUT
+#	The output and error output of the tests, including color
+# 	codes.  Can for instance be piped into less -R to see all. 
+#
+
+rm -f stu.test
+if [ "$NDEBUG" ] ; then
+	ln -s stu stu.test
+else
+	ln -s stu.debug stu.test
+fi
+
+cd test
+
+if [ "$1" ] ; then
+	tests="$@"
+else
+	tests="$(echo *)"
+fi
+
+for file in $tests
+do
+	# Remove optional 'test/' prefix
+	file="$(echo "$file" | sed -e 's,^test/,,')"
+
+	if [ ! -d "$file" ]; then
+		echo >&2 "$0: *** '$file' is not a directory"
+		error=1
+		echo "$file" >&6
+		errors=1
+		continue
+	fi
+
+	cd "$file"
+
+	if [ -r EXITCODE ] && ! [ -r NOTTY ]; then
+
+		../../sh/delete_tmps || exit 1
+
+		CMD=
+		if [ -r CMD ]; then
+    			CMD="$(sed -e '/^[[:space:]]*$/d' <CMD)"
+		fi
+
+		echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+		echo "~~~~~~~~~~~ $file"
+		echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+		echo 
+
+		# 'unbuffer' makes sure that Stu sees stderr as a TTY,
+		# and outputs both stdout and stderr of Stu to stdout. 
+		eval unbuffer ../../stu.test $CMD 
+
+		echo 
+	fi
+
+	cd ..
+done
+
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+exit 0

@@ -16,14 +16,12 @@
  *     * Dedicated classes exist to represent these with _places_. 
  */
 
-#define STU_STRING_ESCAPE_CHARACTERS "\"\' \t\n\v\f\r\a\b\\\?"
 #define STU_STRING_ESCAPE_CHARACTERS_STRICT "\"\'\t\n\v\f\r\a\b\\\?"
 
-string format_name(string name) 
+string name_format_bare(string name) 
 {
-	string ret(2 + 2 * name.size(), '\0');
+	string ret(2 * name.size(), '\0');
 	char *const q_begin= (char *) ret.c_str(), *q= q_begin; 
-	*q++= '\'';
 	for (const char *p= name.c_str();  *p;  ++p) {
 		if (strchr(STU_STRING_ESCAPE_CHARACTERS_STRICT, *p)) {
 			*q++= '\\';
@@ -45,17 +43,34 @@ string format_name(string name)
 			*q++= *p;
 		}
 	}
-	*q++= '\'';
 	ret.resize(q - q_begin); 
 	return ret; 
 }
 
-string format_name_mid(string name)
+string name_format_mid(string name)
 {
-	if (name.find_first_of(STU_STRING_ESCAPE_CHARACTERS) != string::npos) 
-		return format_name(name); 
+	if (name.find_first_of(STU_STRING_ESCAPE_CHARACTERS_STRICT) != string::npos)
+		return name_format_bare(name); 
 	else
-		return name;
+		return name; 
+}
+
+string name_format_semi(string name)
+{
+	if (name.find_first_of(" \t\n\v\f\r") != string::npos) {
+		return fmt("'%s'", name_format_bare(name)); 
+	} else {
+		if (name.find_first_of(STU_STRING_ESCAPE_CHARACTERS_STRICT) != string::npos)
+			return name_format_bare(name); 
+		else
+			return name; 
+	}
+}
+
+string name_format_err(string name)
+{
+	return fmt("%s%s%s", 
+		   Color::beg_name_quoted, name_format_bare(name), Color::end_name_quoted); 
 }
 
 class Target;
@@ -218,40 +233,36 @@ public:
 		   name(name_)
 		{ }
 
-	/* Used in output of Stu, i.e., mainly in error messages.  */ 
-	string format() const {
+	string format_out() const {
 
-		if (type.is_any_transient()) {
+		if (type == Type::TRANSIENT) {
+			return "@" + name_format_semi(name); 
+		} else if (type.is_any_transient()) {
 			return "@" + (string(type.get_dynamic_depth(), '[') 
-				      + format_name_mid(name) 
+				      + name_format_mid(name) 
 				      + string(type.get_dynamic_depth(), ']'));
 		} else if (type == Type::FILE) {
-			return format_name(name); 
+			return fmt("'%s'", name_format_bare(name)); 
 		} else {
 			assert(type.is_any_file()); 
 			assert(type.is_dynamic()); 
 			return string(type.get_dynamic_depth(), '[') 
-				+ format_name_mid(name) 
+				+ name_format_mid(name) 
 				+ string(type.get_dynamic_depth(), ']');
 		}
 	}
 
-	string format_bare() const {
-
+	string format_mid() const {
 		return 
 			string(type.get_dynamic_depth(), '[') 
 			+ (type.is_any_transient() ? "@" : "")
-			+ name
-			+ string(type.get_dynamic_depth(), ']');
+			+ name_format_mid(name) 
+			+ string(type.get_dynamic_depth(), ']'); 
 	}
 
-	string format_mid() const {
-
-		return 
-			string(type.get_dynamic_depth(), '[') 
-			+ (type.is_any_transient() ? "@" : "")
-			+ format_name_mid(name) 
-			+ string(type.get_dynamic_depth(), ']'); 
+	string format_err() const {
+		return fmt("%s%s%s", 
+			   Color::beg_name_bare, Color::has_quotes ? format_mid() : format_out(), Color::end_name_bare);
 	}
 
 	bool operator== (const Target &target) const {
@@ -391,8 +402,8 @@ public:
 		   map <string, string> &mapping,
 		   vector <int> &anchoring);
 	
-	/* The canonical string representation; unquoted */ 
-	string format_bare() const {
+	/* No escape characters */
+	string format_raw() const {
 		assert(texts.size() == 1 + parameters.size()); 
 		string ret= texts[0];
 		for (unsigned i= 0;  i < get_n();  ++i) {
@@ -406,18 +417,22 @@ public:
 
 	string format_mid() const {
 		assert(texts.size() == 1 + parameters.size()); 
-		string ret= format_name_mid(texts[0]);
+		string ret= name_format_mid(texts[0]);
 		for (unsigned i= 0;  i < get_n();  ++i) {
 			ret += "${";
 			ret += parameters[i];
 			ret += '}';
-			ret += format_name_mid(texts[1+i]);
+			ret += name_format_mid(texts[1+i]);
 		}
 		return ret; 
 	}
 
-	string format() const {
-		return fmt("'%s'", format_bare()); 
+	string format_out() const {
+		return fmt("'%s'", format_mid()); 
+	}
+
+	string format_err() const {
+		return fmt("%s%s%s", Color::beg_name_bare, Color::has_quotes ? format_mid() : format_out(), Color::end_name_bare); 
 	}
 
 	/* Check whether there are duplicate parameters.  Return the
@@ -474,8 +489,16 @@ public:
 		return Target(type, param_name.instantiate(mapping)); 
 	}
 
-	string format() const {
-		return Target(type, param_name.format_bare()).format(); 
+	string format_out() const {
+		return Target(type, param_name.format_raw()).format_out(); 
+	}
+
+	string format_err() const {
+		return fmt("%s%s%s", Color::beg_name_bare, Color::has_quotes ? format_mid() : format_out(), Color::end_name_bare); 
+	}
+
+	string format_mid() const {
+		return Target(type, param_name.format_raw()).format_mid(); 
 	}
 
 	/* The corresponding unparametrized target.  This target must
@@ -572,12 +595,16 @@ public:
 		   place(place_)
 	{ }
 
-	string format() const {
-		return Target(type, place_param_name.format_bare()).format(); 
+	string format_out() const {
+		return Target(type, place_param_name.format_raw()).format_out(); 
 	}
 
 	string format_mid() const {
-		return Target(type, place_param_name.format_bare()).format_mid(); 
+		return Target(type, place_param_name.format_raw()).format_mid(); 
+	}
+	
+	string format_err() const {
+		return fmt("%s%s%s", Color::beg_name_bare, Color::has_quotes ? format_mid() : format_out(), Color::end_name_bare); 
 	}
 
 	shared_ptr <Place_Param_Target> 

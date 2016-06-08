@@ -61,6 +61,8 @@ do
 		eval unbuffer ../../stu.test $CMD 
 
 		echo 
+
+		../../sh/delete_tmps || exit 1
 	fi
 
 	cd ..

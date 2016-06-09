@@ -2,8 +2,6 @@
 # Nice errors
 #
 
-# * Place-less errors: write $0 in bold
-
 # command-outside-of-rule
 # content-2
 # content-20
@@ -95,7 +93,7 @@
 # varpar-5:  mention the full name
 # version-{invalid,long,partial}:  expected ...; found ...
 # wrong-quote:  show both quotes
-#  EVERYTHING after that
+# empty0:  as a place, use the (first) empty file
 
 #
 # Get rid of configure.ac.in.  Infer the version number

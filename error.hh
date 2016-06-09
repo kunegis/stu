@@ -90,7 +90,7 @@ void print_error(string text)
 	assert(isupper(text[0]) || text[0] == '\''); 
 	assert(text[text.size() - 1] != '\n'); 
 	fprintf(stderr, "%s%s%s: *** %s\n", 
-		Color::beg_error, dollar_zero, Color::end_error,
+		Color::beg_error_name, dollar_zero, Color::end_error_name,
 		text.c_str()); 
 }
 
@@ -98,7 +98,7 @@ void print_error(string text)
 void print_error_system(const char *text)
 {
 	fprintf(stderr, "%s%s%s: %s\n",
-		Color::beg_error, text, Color::end_error,
+		Color::beg_error_name, text, Color::end_error_name,
 		strerror(errno));
 }
 

@@ -1668,7 +1668,7 @@ void Execution::read_dynamics(Stack avoid,
 
 		try {
 			Build::get_expression_list(dependencies, tokens, 
-						   place_end, input, place_input); 
+						   place_end, input, place_input);
 		} catch (int e) {
 			raise(e); 
 		}

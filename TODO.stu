@@ -2,37 +2,26 @@
 # Nice errors
 #
 
-# copy-7
-# copy-8
-# default-dynamic
-# dynamic-target
-# dynamic-variable-equal-parameter:  mention the given value
-# empty-filename-1:  name >>of dependency<< of target A must not be empty
-# empty-parameter
-# empty-parameter2
-# error-b:  for which target?
-# expected-a-dependency:  for which target?
-# first-rule-parametrized:  mention the target
 # in-target:  parameter $XXX must not appear in dependency YYY // because it does not appear in target ZZZ
 # include-dynamic: use "must not appear"
 # include-end:  expected statement name after %
 # include-in-dynamic-dependency:  split the two cases
 # include-nofile:  more context
-# include-nofile2
+# include-nofile-2
 # include-nofilename: use "expected filename"
 # include-parametrized:  mention the filename and parameter
-# include-recursion-indirect2:  show the two filenames per line 
+# include-recursion-indirect-2:  show the two filenames per line 
 # input-multiple:  mention target name
 # input-nocommand: mention target
 # invalid-equal
 # isdir: what was the file/dir used for?
 # jobs:  mention argument
-# jobs2: mention argument
-# jobs3: mention argument
-# jobs4: mention argument
+# jobs-2: mention argument
+# jobs-3: mention argument
+# jobs-4: mention argument
 # killed: also mention signal number:  ... received signal 9 (Killed)
 # lone-colon, lone-equal, lone-rbracket: mention what was found
-# lone-rbracket2: say what was expected
+# lone-rbracket-2: say what was expected
 # missing-rangle:  rephrase as "after opening ["
 # multifile-3:  for what was the file used?
 # multifile-{6,8}:  mention target
@@ -47,7 +36,7 @@
 # no-equal-in-dynamic-variable: mention the given variable name
 # no-filename-after-dollar-langle:  mention what was found
 # nocommandaftertarget: mention what was found
-# nosuchfile, openat2, openat3:  mention for what the file as read 
+# nosuchfile, openat-2, openat-3:  mention for what the file as read 
 # option-c-14:  separate the two cases
 # option-f-nosuchfile: for what was the file needed?
 # option-rule-12: mention what was found
@@ -72,6 +61,10 @@
 # version-{invalid,long,partial}:  expected ...; found ...
 # wrong-quote:  show both quotes
 # empty0:  as a place, use the (first) empty file
+
+#
+# Color in -h, -V
+#
 
 #
 # Get rid of configure.ac.in.  Infer the version number

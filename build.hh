@@ -64,12 +64,15 @@ public:
 				  vector <shared_ptr <Token> > &tokens,
 				  const Place &place_end);
 
-	/* DEPENDENCIES is filled.  DEPENDENCIES is empty when called. */
+	/* DEPENDENCIES is filled.  DEPENDENCIES is empty when called.
+	 * TARGET is used for error messages.  Empty when in a dynamic
+	 * dependency. 
+	 */
 	static void get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
 					vector <shared_ptr <Token> > &tokens,
 					const Place &place_end,
 					Place_Param_Name &input,
-					Place place_input); 
+					Place place_input);
 
 	/* Parse a dependency as given on the command line outside of
 	 * options */
@@ -1071,7 +1074,6 @@ void Build::get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
 			<< fmt("expected a dependency, not %s",
 			       (*iter)->format_start_err());
 		throw ERROR_LOGICAL;
-
 	}
 }
 

@@ -1,1 +1,1 @@
-main.stu:3:1: the first rule given must not be parametrized if no target is given
+main.stu:3:1: the first target 'list.${NAME}.abc' must not be parametrized if no target is given

@@ -334,7 +334,8 @@ int main(int argc, char **argv, char **envp)
 
 			if (rule_first->is_parametrized()) {
 				rule_first->place <<
-					"the first rule given must not be parametrized if no target is given";
+					fmt("the first target %s must not be parametrized if no target is given",
+					    rule_first->place_param_targets[0]->format_err());
 				exit(ERROR_FATAL);
 			}
 
@@ -387,7 +388,7 @@ void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
 	Place place_input; /* remains empty */ 
 
 	Build::get_expression_list(dependencies_option, tokens, 
-				   place_end, input, place_input); 
+				   place_end, input, place_input);
 
 	for (auto &j:  dependencies_option) {
 		dependencies.push_back(j); 

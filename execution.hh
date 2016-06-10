@@ -1661,14 +1661,18 @@ void Execution::read_dynamics(Stack avoid,
 		Place place_end; 
 
 		Parse::parse_tokens_file(tokens, false, place_end, filename);
-		auto i= tokens.begin(); 
-		vector <shared_ptr <Dependency> > dependencies;
 
-		Build build(tokens, i, place_end); 
+		vector <shared_ptr <Dependency> > dependencies;
 		Place_Param_Name input; /* remains empty */ 
 		Place place_input; /* remains empty */ 
-		build.build_expression_list(dependencies, input, place_input); 
-		
+
+		try {
+			Build::get_expression_list(dependencies, tokens, 
+						   place_end, input, place_input); 
+		} catch (int e) {
+			raise(e); 
+		}
+
 		for (auto &j:  dependencies) {
 
 			/* Check that it is unparametrized */ 
@@ -1772,10 +1776,6 @@ void Execution::read_dynamics(Stack avoid,
 			}
 		}
 				
-		if (i != tokens.end()) {
-			(*i)->get_place() << "expected a dependency";
-			raise(ERROR_LOGICAL); 
-		}
 	} catch (int e) {
 		/* We catch not only the errors raise in this function,
 		 * but also the errors raised in the parser.  

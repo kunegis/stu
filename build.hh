@@ -43,14 +43,6 @@ class Build
 {
 public:
 
-	Build(vector <shared_ptr <Token> > &tokens_,
-	      vector <shared_ptr <Token> > ::iterator &iter_,
-	      Place place_end_)
-		:  tokens(tokens_),
-		   iter(iter_),
-		   place_end(place_end_)
-	{ }
-	
 	/*
 	 * Methods for building the syntax tree:  Each has a name
 	 * corresponding to the symbol given by the Yacc syntax in the
@@ -67,18 +59,39 @@ public:
 	 * operator.  
 	 */ 
 
-	/* The returned rules may not be unique -- this is checked later */
-	void build_rule_list(vector <shared_ptr <Rule> > &ret);
 
-	bool build_expression_list(vector <shared_ptr <Dependency> > &ret, 
-				   Place_Param_Name &place_param_name_input,
-				   Place &place_input);
+	static void get_rule_list(vector <shared_ptr <Rule> > &rules,
+				  vector <shared_ptr <Token> > &tokens,
+				  const Place &place_end);
+
+	/* DEPENDENCIES is filled.  DEPENDENCIES is empty when called. */
+	static void get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
+					vector <shared_ptr <Token> > &tokens,
+					const Place &place_end,
+					Place_Param_Name &input,
+					Place place_input); 
 
 	/* Parse a dependency as given on the command line outside of
 	 * options */
-	static shared_ptr <Dependency> build_target_dependency(string text); 
+	static shared_ptr <Dependency> get_target_dependency(string text); 
 
 private:
+
+	Build(vector <shared_ptr <Token> > &tokens_,
+	      vector <shared_ptr <Token> > ::iterator &iter_,
+	      const Place &place_end_)
+		:  tokens(tokens_),
+		   iter(iter_),
+		   place_end(place_end_)
+	{ }
+	
+	/* The returned rules may not be unique -- this is checked later */
+	void build_rule_list(vector <shared_ptr <Rule> > &ret);
+
+	/* RET is filled.  RET is empty when called. */
+	bool build_expression_list(vector <shared_ptr <Dependency> > &ret, 
+				   Place_Param_Name &place_param_name_input,
+				   Place &place_input);
 
 	/* Return null when nothing was parsed */ 
 	shared_ptr <Rule> build_rule(); 
@@ -998,7 +1011,39 @@ void Build::append_copy(      Param_Name &to,
 	to.append(from);
 }
 
-shared_ptr <Dependency> Build::build_target_dependency(string text)
+void Build::get_rule_list(vector <shared_ptr <Rule> > &rules,
+			  vector <shared_ptr <Token> > &tokens,
+			  const Place &place_end)
+{
+	auto iter= tokens.begin(); 
+
+	Build build(tokens, iter, place_end);
+
+	build.build_rule_list(rules); 
+
+	if (iter != tokens.end()) {
+		(*iter)->get_place() << "expected a rule"; 
+		throw ERROR_LOGICAL;
+	}
+}
+
+void Build::get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
+				vector <shared_ptr <Token> > &tokens,
+				const Place &place_end,
+				Place_Param_Name &input,
+				Place place_input)
+{
+	auto i= tokens.begin(); 
+	Build build(tokens, i, place_end); 
+	build.build_expression_list(dependencies, input, place_input); 
+	if (i != tokens.end()) {
+		(*i)->get_place() << "expected a dependency";
+		throw ERROR_LOGICAL;
+
+	}
+}
+
+shared_ptr <Dependency> Build::get_target_dependency(string text)
 {
 	Place place(Place::Type::ARGV, text);
 

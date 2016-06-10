@@ -8,7 +8,7 @@ rm -f ? list.*
 # Run stu
 #
 
-../../stu.test -v
+../../stu.test -v >list.out 2>list.err
 
 [ -r B ] || {
 	echo >&2 "*** 'B' must be created"
@@ -26,7 +26,7 @@ touch B
 # Run 'B' -- 'B' is rebuilt 
 #
 
-../../stu.test -v >list.out
+../../stu.test -v >list.out 2>list.err
 
 set +e
 grep -qF 'Nothing to be done' list.out 

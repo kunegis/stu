@@ -381,17 +381,12 @@ void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
 				
 	Parse::parse_tokens_string(tokens, false, place_end, string_);
 
-	auto iter= tokens.begin(); 
 	vector <shared_ptr <Dependency> > dependencies_option;
-	Build build(tokens, iter, place_end); 
 	Place_Param_Name input; /* remains empty */ 
 	Place place_input; /* remains empty */ 
-	build.build_expression_list
-		(dependencies_option, input, place_input); 
-	if (iter != tokens.end()) {
-		(*iter)->get_place() << "expected a dependency"; 
-		throw ERROR_LOGICAL;
-	}
+
+	Build::get_expression_list(dependencies_option, tokens, 
+				   place_end, input, place_input); 
 
 	for (auto &j:  dependencies_option) {
 		dependencies.push_back(j); 
@@ -401,7 +396,7 @@ void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
 void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
 			       const char *string_)
 {
-	shared_ptr <Dependency> dep= Build::build_target_dependency(string_);
+	shared_ptr <Dependency> dep= Build::get_target_dependency(string_);
 	dependencies.push_back(dep); 
 }
 
@@ -420,14 +415,8 @@ void read_file(string filename,
 	Parse::parse_tokens_file(tokens, true, place_end, filename, file_fd); 
 
 	/* Build rules */
-	auto iter= tokens.begin(); 
-	Build build(tokens, iter, place_end);
 	vector <shared_ptr <Rule> > rules;
-	build.build_rule_list(rules); 
-	if (iter != tokens.end()) {
-		(*iter)->get_place() << "expected a rule"; 
-		throw ERROR_LOGICAL;
-	}
+	Build::get_rule_list(rules, tokens, place_end); 
 
 	/* Add to set */
 	rule_set.add(rules);
@@ -451,14 +440,8 @@ void read_string(const char *s,
 	Parse::parse_tokens_string(tokens, true, place_end, s);
 
 	/* Build rules */
-	auto iter= tokens.begin(); 
-	Build build(tokens, iter, place_end);
 	vector <shared_ptr <Rule> > rules;
-	build.build_rule_list(rules); 
-	if (iter != tokens.end()) {
-		(*iter)->get_place() << "expected a rule"; 
-		throw ERROR_LOGICAL;
-	}
+	Build::get_rule_list(rules, tokens, place_end);
 
 	/* Add to set */
 	rule_set.add(rules);

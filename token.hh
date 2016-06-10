@@ -1,7 +1,9 @@
 #ifndef TOKEN_HH
 #define TOKEN_HH
 
-/* Data structures for representing tokens. */
+/* Data structures for representing tokens.  There are three types of
+ * tokens:  operators, names, and commands.   
+ */
 
 #include <memory>
 

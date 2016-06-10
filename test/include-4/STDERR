@@ -1,0 +1,2 @@
+main.stu:1:10: expected filename, not ';'
+main.stu:1:1: after '%include'

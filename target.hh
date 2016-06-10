@@ -234,7 +234,6 @@ public:
 		{ }
 
 	string format_out() const {
-
 		if (type == Type::TRANSIENT) {
 			return "@" + name_format_semi(name); 
 		} else if (type.is_any_transient()) {
@@ -258,6 +257,24 @@ public:
 			+ (type.is_any_transient() ? "@" : "")
 			+ name_format_mid(name) 
 			+ string(type.get_dynamic_depth(), ']'); 
+	}
+
+	string format_semi() const {
+		if (type == Type::TRANSIENT) {
+			return "@" + name_format_semi(name); 
+		} else if (type.is_any_transient()) {
+			return "@" + (string(type.get_dynamic_depth(), '[') 
+				      + name_format_mid(name) 
+				      + string(type.get_dynamic_depth(), ']'));
+		} else if (type == Type::FILE) {
+			return name_format_semi(name); 
+		} else {
+			assert(type.is_any_file()); 
+			assert(type.is_dynamic()); 
+			return string(type.get_dynamic_depth(), '[') 
+				+ name_format_mid(name) 
+				+ string(type.get_dynamic_depth(), ']');
+		}
 	}
 
 	string format_err() const {
@@ -602,6 +619,10 @@ public:
 
 	string format_mid() const {
 		return Target(type, place_param_name.format_raw()).format_mid(); 
+	}
+
+	string format_semi() const {
+		return Target(type, place_param_name.format_raw()).format_semi(); 
 	}
 	
 	string format_err() const {

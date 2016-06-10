@@ -1,0 +1,2 @@
+main.stu:9:30: parameter $Q must not appear in dependency 'data.${Q}'
+main.stu:9:1: because it does not appear in target 'list.${X}.${Y}.${Z}.data'

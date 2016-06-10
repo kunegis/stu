@@ -1,0 +1,2 @@
+main.stu:5:5: parameter $KSJDHKAJSDH must not appear in dependency '${KSJDHKAJSDH}'
+main.stu:5:1: because it does not appear in target 'A'

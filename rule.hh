@@ -204,14 +204,16 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 				if (parameters.count(parameter) == 0) {
 					dependency->place_param_target
 						.place_param_name.get_places()[jj] <<
-						fmt("parameter %s$%s%s is not used", 
-						    Color::beg_name_bare, parameter, Color::end_name_bare); 
+						fmt("parameter %s$%s%s must not appear in dependency %s", 
+						    Color::beg_name_bare, parameter, Color::end_name_bare,
+						    dependency->place_param_target.format_err());
 					if (place_param_targets.size() == 1) {
 						place_param_targets[0]->place <<
-							fmt("in target %s",
+							fmt("because it does not appear in target %s",
 							    place_param_targets[0]->format_err());
 					} else {
-						place << "in any target of the rule";
+						place << fmt("because it does not appear in any of the targets %s... of the rule",
+							     place_param_targets[0]->format_err()); 
 					}
 					throw ERROR_LOGICAL; 
 				}

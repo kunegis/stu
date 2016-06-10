@@ -1,1 +1,2 @@
-main.stu:4:1: '%include' must be followed by filename
+main.stu:4:9: expected filename
+main.stu:4:1: after '%include'

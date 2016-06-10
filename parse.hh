@@ -99,8 +99,12 @@ private:
 			  bool allow_include); 
 
 	shared_ptr <Command> parse_command();
-
+	
+	/* Returns null when no name could be parsed.  Prints and throws
+	 * on other errors, including on empty names.  */ 
 	shared_ptr <Place_Param_Name> parse_name();
+
+	void skip_space(); 
 
 	Place current_place() const {
 		return Place(place_type, filename, line, p - p_line); 
@@ -510,6 +514,7 @@ shared_ptr <Command> Parse::parse_command()
 
 shared_ptr <Place_Param_Name> Parse::parse_name()
 {
+	const char *const p_begin= p; 
 	Place place_begin(place_type, filename, line, p - p_line);
 
 	shared_ptr <Place_Param_Name> ret= make_shared <Place_Param_Name> ("", place_begin);
@@ -609,13 +614,15 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 			ret->last_text() += *p++;
 		}
 		else {
-			/* As soon as the parametrized name cannot be parsed
+			/* As soon as the name cannot be parsed
 			 * further, stop parsing */  
 			break;
 		}	
 	}
 
 	if (ret->empty()) {
+		if (p == p_begin)
+			return nullptr; 
 		place_begin << "name must not be empty";
 		throw ERROR_LOGICAL;
 	}
@@ -739,14 +746,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		else if (*p == '%') {
 			Place place_percent(place_type, filename, line, p - p_line); 
 			++p;
-			while (p < p_end && is_space(*p)) {
-				if (*p == '\n') {
-					++line;  
-					p_line= p + 1; 
-				}
-				++p; 
-			}
-			assert(p <= p_end); 
+			skip_space(); 
 
 			const char *const p_name= p;
 
@@ -757,36 +757,49 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			}
 
 			if (p == p_name) {
-				place_name << fmt("%s must be followed by statement name",
-						   char_format_err('%')); 
+				if (p < p_end)
+					place_name
+						<< fmt("expected statement name, not %s",
+						       char_format_err(*p));
+				else
+					place_name
+						<< "expected statement name";
+				place_percent << fmt("after %s", char_format_err('%')); 
 				throw ERROR_LOGICAL; 
 			}
 
 			const string name(p_name, p - p_name); 
 
+			skip_space(); 
+
 			if (name == "include") {
 
 				if (! allow_include) {
 					place_percent 
-						<< frmt("%s%%include%s is not allowed in dynamic dependencies or in the %s-C%s option",
+						<< frmt("%s%%include%s must not appear in dynamic dependencies or in the %s-C%s option",
 							Color::beg_name_quoted, Color::end_name_quoted,
-							Color::beg_name_quoted, Color::end_name_quoted); 
+							Color::beg_name_bare, Color::end_name_bare); 
 					throw ERROR_LOGICAL;
 				}
-
-				if (! (p < p_end && is_space(*p))) {
-					place_percent << frmt("%s%%include%s must be followed by filename",
-							      Color::beg_name_quoted, Color::end_name_quoted); 
-					throw ERROR_LOGICAL;
-				}
-
-				++p;
 
 				shared_ptr <Place_Param_Name> place_param_name= parse_name(); 
 
+				if (place_param_name == nullptr) {
+					Place(place_type, filename, line, p - p_line) <<
+						(p == p_end
+						 ? "expected filename"
+						 : fmt("expected filename, not %s", char_format_err(*p)));
+					place_percent << frmt("after %s%%include%s",
+							      Color::beg_name_quoted, Color::end_name_quoted); 
+					throw ERROR_LOGICAL;
+				}
+				
 				if (place_param_name->get_n() != 0) {
 					place_param_name->place <<
-						"name must not be parametrized in file inclusion";
+						fmt("name %s must not be parametrized",
+						    place_param_name->format_err());
+					place_percent << frmt("after %s%%include%s",
+							      Color::beg_name_quoted, Color::end_name_quoted); 
 					throw ERROR_LOGICAL;
 				}
 			
@@ -873,6 +886,11 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		/* Name */ 		
 		else {
 			shared_ptr <Place_Param_Name> place_param_name= parse_name();
+
+			if (place_param_name == nullptr) {
+				
+			}
+
 			assert(! place_param_name->empty());
 			tokens.push_back(make_shared <Name_Token> (*place_param_name)); 
 		}
@@ -896,6 +914,19 @@ void Parse::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 	parse.parse_tokens(tokens, allow_include); 
 
 	place_end= parse.current_place(); 
+}
+
+
+void Parse::skip_space()
+{
+	while (p < p_end && is_space(*p)) {
+		if (*p == '\n') {
+			++line;  
+			p_line= p + 1; 
+		}
+		++p; 
+	}
+	assert(p <= p_end); 
 }
 
 #endif /* ! PARSE_HH */

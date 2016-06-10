@@ -1,1 +1,2 @@
-main.stu:4:2: '%' must be followed by statement name
+main.stu:4:2: expected statement name
+main.stu:4:1: after '%'

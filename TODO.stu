@@ -2,9 +2,6 @@
 # Nice errors
 #
 
-# in-target:  parameter $XXX must not appear in dependency YYY // because it does not appear in target ZZZ
-# include-dynamic: use "must not appear"
-# include-end:  expected statement name after %
 # include-in-dynamic-dependency:  split the two cases
 # include-nofile:  more context
 # include-nofile-2

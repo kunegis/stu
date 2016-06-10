@@ -177,10 +177,11 @@ shared_ptr <Rule> Build::build_rule()
 		if (is_operator('>')) {
 			if (! place_output.empty()) {
 				(*iter)->get_place() <<
-					fmt("second output redirection with %s is invalid",
+					fmt("duplicate output redirection using %s",
 					    char_format_err('>'));
 				place_output <<
-					"after previous output redirection"; 
+					fmt("shadows previous output redirection %s>%s%s",
+					    Color::beg_name_bare, place_param_targets[redirect_index]->format_semi(), Color::end_name_bare); 
 				throw ERROR_LOGICAL;
 			}
 			place_output= (*iter)->get_place();
@@ -363,7 +364,7 @@ shared_ptr <Rule> Build::build_rule()
 			++iter; 
 			assert(place_param_targets.size() != 0); 
 			if (place_param_targets.size() != 1) {
-				place_equal << fmt("there must not be assigned content with %s", char_format_err('=')); 
+				place_equal << fmt("there must not be assigned content using %s", char_format_err('=')); 
 				place_param_targets[0]->place << 
 					fmt("in rule for %s... with multiple targets",
 					    place_param_targets[0]->format_err()); 
@@ -371,7 +372,7 @@ shared_ptr <Rule> Build::build_rule()
 				throw ERROR_LOGICAL; 
 			}
 			if (place_param_targets[0]->type == Type::TRANSIENT) {
-				place_equal << fmt("there must not be assigned content with %s", char_format_err('=')); 
+				place_equal << fmt("there must not be assigned content using %s", char_format_err('=')); 
 				place_param_targets[0]->place <<
 					fmt("for transient target %s", 
 					    place_param_targets[0]->format_err()); 
@@ -403,10 +404,11 @@ shared_ptr <Rule> Build::build_rule()
 						name_copy->get_parameters()[jj]; 
 					if (parameters.count(parameter) == 0) {
 						name_copy->places[jj] <<
-							fmt("parameter %s$%s%s is not used", 
-							    Color::beg_name_bare, parameter, Color::end_name_bare);
+							fmt("parameter %s$%s%s must not appear in copied file %s", 
+							    Color::beg_name_bare, name_format_bare(parameter), Color::end_name_bare,
+							    name_copy->format_err());
 						place_param_targets[0]->place << 
-							fmt("in target %s", place_param_targets[0]->format_err());
+							fmt("because it does not appear in target %s", place_param_targets[0]->format_err());
 						throw ERROR_LOGICAL;
 					}
 				}
@@ -430,10 +432,10 @@ shared_ptr <Rule> Build::build_rule()
 
 				if (! place_output.empty()) {
 					place_output << 
-						fmt("output redirection with %s must not be used",
+						fmt("output redirection using %s must not be used",
 						     char_format_err('>'));
 					place_equal << 
-						fmt("in copy rule with %s for target %s", 
+						fmt("in copy rule using %s for target %s", 
 						    char_format_err('='),
 						    place_param_targets[0]->format_err()); 
 					throw ERROR_LOGICAL;
@@ -442,7 +444,7 @@ shared_ptr <Rule> Build::build_rule()
 				/* Check that there is just a single
 				 * target */
 				if (place_param_targets.size() != 1) {
-					place_equal << fmt("there must not be a copy rule with %s", char_format_err('=')); 
+					place_equal << fmt("there must not be a copy rule using %s", char_format_err('=')); 
 					place_param_targets[0]->place << 
 						fmt("for multiple targets %s...",
 						    place_param_targets[0]->format_err()); 
@@ -451,7 +453,7 @@ shared_ptr <Rule> Build::build_rule()
 
 				if (place_param_targets[0]->type != Type::FILE) {
 					assert(place_param_targets[0]->type == Type::TRANSIENT); 
-					place_equal << fmt("copy rule with %s cannot be used", char_format_err('='));
+					place_equal << fmt("copy rule using %s cannot be used", char_format_err('='));
 					place_param_targets[0]->place 
 						<< fmt("with transient target %s", place_param_targets[0]->format_err()); 
 					throw ERROR_LOGICAL;
@@ -468,19 +470,19 @@ shared_ptr <Rule> Build::build_rule()
 
 			} else if (is_operator('?')) {
 				(*iter)->get_place() 
-					<< fmt("optional dependency with %s must not be used",
+					<< fmt("optional dependency using %s must not be used",
 						char_format_err('?'));
 				place_equal << 
-					fmt("in copy rule with %s for target %s", 
+					fmt("in copy rule using %s for target %s", 
 					    char_format_err('='),
 					    place_param_targets[0]->format_err()); 
 				throw ERROR_LOGICAL;
 			} else if (is_operator('&')) {
 				(*iter)->get_place() 
-					<< fmt("trivial dependency with %s must not be used",
+					<< fmt("trivial dependency using %s must not be used",
 						char_format_err('&')); 
 				place_equal << 
-					fmt("in copy rule with %s for target %s", 
+					fmt("in copy rule using %s for target %s", 
 					    char_format_err('='),
 					    place_param_targets[0]->format_err()); 
 				throw ERROR_LOGICAL;
@@ -531,7 +533,7 @@ shared_ptr <Rule> Build::build_rule()
 				fmt("output redirection using %s must not be used",
 				     char_format_err('>'));
 			place_equal <<
-				fmt("in rule for %s having assigned content with %s",
+				fmt("in rule for %s with assigned content using %s",
 				    place_param_targets[0]->format_err(),
 				    char_format_err('=')); 
 			throw ERROR_LOGICAL;
@@ -697,7 +699,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 		}
 		if (! option_nonoptional) {
 			/* D_INPUT and D_OPTIONAL cannot be used at the same
-			 * time. Note: Input redirection is not allowed in
+			 * time. Note: Input redirection must not appear in
 			 * dynamic dependencies, and therefore it is sufficient
 			 * to check this here.     */   
 			if (! place_param_name_input.place.empty()) { 
@@ -801,7 +803,7 @@ shared_ptr <Dependency> Build
 		} else if (is_operator('?')) {
 			if (! option_nonoptional) {
 				(*iter)->get_place() << 
-					fmt("optional dependency using %s is not allowed",
+					fmt("optional dependency using %s must not appear",
 					     char_format_err('?')); 
 				place_dollar << "within dynamic variable declaration";
 				throw ERROR_LOGICAL; 

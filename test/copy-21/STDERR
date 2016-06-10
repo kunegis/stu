@@ -1,2 +1,2 @@
-main.stu:1:13: parameter $y is not used
-main.stu:1:1: in target 'A.${x}'
+main.stu:1:13: parameter $y must not appear in copied file 'B.${x}.${y}'
+main.stu:1:1: because it does not appear in target 'A.${x}'

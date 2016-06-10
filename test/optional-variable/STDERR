@@ -1,2 +1,2 @@
-main.stu:4:7: optional dependency using '?' is not allowed
+main.stu:4:7: optional dependency using '?' must not appear
 main.stu:4:5: within dynamic variable declaration

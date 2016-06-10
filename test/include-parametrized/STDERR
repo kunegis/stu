@@ -1,0 +1,2 @@
+main.stu:4:10: name 'aaa${NAME}bbb' must not be parametrized
+main.stu:4:1: after '%include'

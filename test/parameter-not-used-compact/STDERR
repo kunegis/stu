@@ -1,0 +1,2 @@
+main.stu:4:7: parameter $ccc must not appear in dependency '${ccc}'
+main.stu:4:1: because it does not appear in target 'xxx'

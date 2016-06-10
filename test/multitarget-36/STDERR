@@ -1,2 +1,2 @@
-main.stu:3:5: there must not be a copy rule with '='
+main.stu:3:5: there must not be a copy rule using '='
 main.stu:3:1: for multiple targets 'A'...

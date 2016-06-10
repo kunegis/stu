@@ -1,2 +1,2 @@
 main.stu:1:1: output redirection using '>' must not be used
-main.stu:1:4: in rule for 'A' having assigned content with '='
+main.stu:1:4: in rule for 'A' with assigned content using '='

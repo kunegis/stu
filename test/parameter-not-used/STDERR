@@ -1,0 +1,2 @@
+main.stu:10:12: parameter $bbb must not appear in dependency '${bbb}'
+main.stu:10:1: because it does not appear in target 'XXX.${aaa}'

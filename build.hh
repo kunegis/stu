@@ -1022,7 +1022,9 @@ void Build::get_rule_list(vector <shared_ptr <Rule> > &rules,
 	build.build_rule_list(rules); 
 
 	if (iter != tokens.end()) {
-		(*iter)->get_place() << "expected a rule"; 
+		(*iter)->get_place_start() 
+			<< fmt("expected a rule, not %s", 
+			       (*iter)->format_start_err()); 
 		throw ERROR_LOGICAL;
 	}
 }
@@ -1033,11 +1035,13 @@ void Build::get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
 				Place_Param_Name &input,
 				Place place_input)
 {
-	auto i= tokens.begin(); 
-	Build build(tokens, i, place_end); 
+	auto iter= tokens.begin(); 
+	Build build(tokens, iter, place_end); 
 	build.build_expression_list(dependencies, input, place_input); 
-	if (i != tokens.end()) {
-		(*i)->get_place() << "expected a dependency";
+	if (iter != tokens.end()) {
+		(*iter)->get_place_start() 
+			<< fmt("expected a dependency, not %s",
+			       (*iter)->format_start_err());
 		throw ERROR_LOGICAL;
 
 	}

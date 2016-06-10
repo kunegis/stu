@@ -387,9 +387,11 @@ shared_ptr <Command> Parse::parse_command()
 				if (stack.empty()) {
 					const string command= string(p_beg, p - p_beg);
 					++p;
-					const Place place_command(place_type,
-								  filename, line_command, column_command); 
-					return make_shared <Command> (command, place_command); 
+					const Place place_command
+						(place_type,
+						 filename, line_command, column_command); 
+					return make_shared <Command> 
+						(command, place_command, place_open); 
 				} else {
 					++p; 
 				}

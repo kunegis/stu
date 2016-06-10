@@ -1,4 +1,4 @@
 main.stu:8:5: command for 'B' failed with exit code 1
 main.stu:5:4: 'B' is needed by 'A'
-D:1:1: expected a dependency
+D:1:1: expected a dependency, not ':'
 ../../stu.test: Targets not rebuilt because of errors

@@ -13,8 +13,14 @@ public:
 
 	virtual ~Token(); 
 
-	/* The place of the token */
+	/* The place of the token.  May be in the middle of the token.
+	 * This is the case for commands. */
 	virtual const Place &get_place() const= 0; 
+
+	/* The starting place.  Always the first character. */ 
+	virtual const Place &get_place_start() const= 0;
+
+	virtual string format_start_err() const= 0;
 };
 
 /* An operator, e.g. ':', '[', etc.  Operators are all single
@@ -38,6 +44,14 @@ public:
 	const Place &get_place() const {
 		return place; 
 	}
+
+	const Place &get_place_start() const {
+		return place; 
+	}
+
+	string format_start_err() const {
+		return char_format_err(op); 
+	}
 };
 
 /* This contains two types of places:  the places for the individual
@@ -53,6 +67,14 @@ public:
 
 	const Place &get_place() const {
 		return Place_Param_Name::place; 
+	}
+
+	const Place &get_place_start() const {
+		return Place_Param_Name::place; 
+	}
+
+	string format_start_err() const {
+		return Place_Param_Name::format_err(); 
 	}
 };
 
@@ -72,16 +94,29 @@ private:
 
 public:
 
+	/* In general, the first non-whitespace character of the command */ 
 	Place place; 
+
+	/* The opening brace */ 
+	Place place_start;
 
 	/* The command as written in the input; contains newlines */ 
 	const string command;
 
 	Command(string command_, 
-		const Place &place_);
+		const Place &place_,
+		const Place &place_start_); 
 
 	const Place &get_place() const {
 		return place; 
+	}
+
+	const Place &get_place_start() const {
+		return place_start; 
+	}
+
+	string format_start_err() const {
+		return char_format_err('{'); 
 	}
 
 	const vector <string> &get_lines() const;
@@ -90,8 +125,10 @@ public:
 Token::~Token() { }
 
 Command::Command(string command_, 
-		 const Place &place_)
+		 const Place &place_,
+		 const Place &place_start_)
 	:  place(place_),
+	   place_start(place_start_),
 	   command(command_)
 {
 }	

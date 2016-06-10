@@ -233,9 +233,14 @@ shared_ptr <Rule> Build::build_rule()
 		shared_ptr <Name_Token> target_name= is <Name_Token> ();
 		++iter;
 
-		if (! target_name->valid()) {
+		string param_1, param_2;
+		if (! target_name->valid(param_1, param_2)) {
 			place_target <<
-				"two parameters must be separated by at least one character";
+				fmt("the two parameters %s and %s in the name %s must be separated by at least one character",
+				    name_format_err('$' + param_1),
+				    name_format_err('$' + param_2),
+				    target_name->format_err()); 
+				    
 			throw ERROR_LOGICAL;
 		}
 
@@ -343,7 +348,7 @@ shared_ptr <Rule> Build::build_rule()
 		++iter;
 
 		if (iter == tokens.end()) {
-			place_end << fmt("expected filename or %s",
+			place_end << fmt("expected a filename or %s",
 					 char_format_err('{')); 
 			place_equal << fmt("after %s", 
 					    char_format_err('=')); 
@@ -355,12 +360,15 @@ shared_ptr <Rule> Build::build_rule()
 			++iter; 
 			assert(place_param_targets.size() != 0); 
 			if (place_param_targets.size() != 1) {
-				place_equal << "there must not be assigned content";
-				place_param_targets[0]->place << "for rule with multiple targets"; 
+				place_equal << fmt("there must not be assigned content with %s", char_format_err('=')); 
+				place_param_targets[0]->place << 
+					fmt("in rule for %s... with multiple targets",
+					    place_param_targets[0]->format_err()); 
+					    
 				throw ERROR_LOGICAL; 
 			}
 			if (place_param_targets[0]->type == Type::TRANSIENT) {
-				place_equal << "there must not be assigned content";
+				place_equal << fmt("there must not be assigned content with %s", char_format_err('=')); 
 				place_param_targets[0]->place <<
 					fmt("for transient target %s", 
 					    place_param_targets[0]->format_err()); 
@@ -419,24 +427,30 @@ shared_ptr <Rule> Build::build_rule()
 
 				if (! place_output.empty()) {
 					place_output << 
-						fmt("output redirected with %s must not be used",
+						fmt("output redirection with %s must not be used",
 						     char_format_err('>'));
-					place_equal << "in a copy rule"; 
+					place_equal << 
+						fmt("in copy rule with %s for target %s", 
+						    char_format_err('='),
+						    place_param_targets[0]->format_err()); 
 					throw ERROR_LOGICAL;
 				}
 
 				/* Check that there is just a single
 				 * target */
 				if (place_param_targets.size() != 1) {
-					place_equal << "there must not be a copy rule";
-					place_param_targets[0]->place << "with multiple targets";
+					place_equal << fmt("there must not be a copy rule with %s", char_format_err('=')); 
+					place_param_targets[0]->place << 
+						fmt("for multiple targets %s...",
+						    place_param_targets[0]->format_err()); 
 					throw ERROR_LOGICAL; 
 				}
 
 				if (place_param_targets[0]->type != Type::FILE) {
 					assert(place_param_targets[0]->type == Type::TRANSIENT); 
-					place_equal << "copy rule cannot be used";
-					place_param_targets[0]->place << "with transient target"; 
+					place_equal << fmt("copy rule with %s cannot be used", char_format_err('='));
+					place_param_targets[0]->place 
+						<< fmt("with transient target %s", place_param_targets[0]->format_err()); 
 					throw ERROR_LOGICAL;
 				}
 
@@ -453,17 +467,25 @@ shared_ptr <Rule> Build::build_rule()
 				(*iter)->get_place() 
 					<< fmt("optional dependency with %s must not be used",
 						char_format_err('?'));
-				place_equal << "in a copy rule"; 
+				place_equal << 
+					fmt("in copy rule with %s for target %s", 
+					    char_format_err('='),
+					    place_param_targets[0]->format_err()); 
 				throw ERROR_LOGICAL;
 			} else if (is_operator('&')) {
 				(*iter)->get_place() 
 					<< fmt("trivial dependency with %s must not be used",
 						char_format_err('&')); 
-				place_equal << "in a copy rule"; 
+				place_equal << 
+					fmt("in copy rule with %s for target %s", 
+					    char_format_err('='),
+					    place_param_targets[0]->format_err()); 
 				throw ERROR_LOGICAL;
 			} else {
 				(*iter)->get_place() << 
-					fmt("expected filename or %s", char_format_err('{')); 
+					fmt("expected a filename or %s, not %s", 
+					    char_format_err('{'),
+					    (*iter)->format_start_err()); 
 				place_equal << fmt("after %s", char_format_err('='));
 				throw ERROR_LOGICAL;
 			}
@@ -496,7 +518,8 @@ shared_ptr <Rule> Build::build_rule()
 				fmt("output redirection using %s must not be used",
 				     char_format_err('>'));
 			place_nocommand <<
-				"in rule without a command";
+				fmt("in rule for %s without a command",
+				    place_param_targets[0]->format_err());
 			throw ERROR_LOGICAL;
 		}
 
@@ -505,7 +528,9 @@ shared_ptr <Rule> Build::build_rule()
 				fmt("output redirection using %s must not be used",
 				     char_format_err('>'));
 			place_equal <<
-				"in rule with assigned content"; 
+				fmt("in rule for %s having assigned content with %s",
+				    place_param_targets[0]->format_err(),
+				    char_format_err('=')); 
 			throw ERROR_LOGICAL;
 		}
 	}
@@ -517,7 +542,8 @@ shared_ptr <Rule> Build::build_rule()
 				fmt("input redirection using %s must not be used",
 				     char_format_err('<'));
 			place_nocommand <<
-				"in rule without a command";
+				fmt("in rule for %s without a command",
+				    place_param_targets[0]->format_err()); 
 			throw ERROR_LOGICAL;
 		} else {
 			assert(! is_hardcode); 
@@ -846,13 +872,15 @@ shared_ptr <Dependency> Build
 		Place place_equal= (*iter)->get_place();
 		++iter;
 		if (iter == tokens.end()) {
-			place_end << "expected filename";
+			place_end << "expected a filename";
 			place_equal << fmt("after %s in variable dependency",
 					    char_format_err('=')); 
 			throw ERROR_LOGICAL;
 		}
 		if (! is <Name_Token> ()) {
-			(*iter)->get_place() << "expected filename";
+			(*iter)->get_place() << 
+				fmt("expected a filename, not %s",
+				    (*iter)->format_start_err());
 			place_equal << fmt("after %s in variable dependency",
 					    char_format_err('=')); 
 			throw ERROR_LOGICAL;

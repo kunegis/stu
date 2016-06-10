@@ -1,0 +1,1 @@
+main.stu:10:1: the two parameters '$X' and '$Y' in the name 'list.${X}${Y}' must be separated by at least one character

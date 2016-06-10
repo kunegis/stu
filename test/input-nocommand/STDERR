@@ -1,2 +1,2 @@
 main.stu:7:5: input redirection using '<' must not be used
-main.stu:7:7: in rule without a command
+main.stu:7:7: in rule for 'B' without a command

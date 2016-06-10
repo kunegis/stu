@@ -440,8 +440,9 @@ public:
 	 */
 	string get_duplicate_parameter() const;
 
-	/* Whether this is a valid name */
-	bool valid() const;
+	/* Whether this is a valid name.  If it is not, fill the given
+	 * parameters with the two unseparated parameters. */ 
+	bool valid(string &param_1, string &param_2) const;
 
 	bool operator == (const Param_Name &that) const {
 		if (this->get_n() != that.get_n())
@@ -742,14 +743,17 @@ string Param_Name::get_duplicate_parameter() const
 	return "";
 }
 
-bool Param_Name::valid() const 
+bool Param_Name::valid(string &param_1, string &param_2) const 
 {
 	if (empty())  
 		return false;
 
 	for (unsigned i= 1;  i + 1 < get_n() + 1;  ++i) {
-		if (texts[i] == "")
+		if (texts[i] == "") {
+			param_1= parameters[i-1];
+			param_2= parameters[i];
 			return false;
+		}
 	}
 
 	return true;

@@ -1,2 +1,2 @@
-main.stu:1:4: there must not be assigned content
+main.stu:1:4: there must not be assigned content with '='
 main.stu:1:1: for transient target @x

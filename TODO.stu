@@ -2,21 +2,6 @@
 # Nice errors
 #
 
-# content-2
-# content-20
-# content-3
-# content-5
-# contiguous-parameters
-# copy-14
-# copy-15
-# color-2:  show the invalid argument
-# copy-16:  mention '=' and the rule name
-# copy-17:  mention target name
-# copy-3
-# copy-4
-# copy-41
-# copy-5
-# copy-6
 # copy-7
 # copy-8
 # default-dynamic
@@ -58,7 +43,7 @@
 # multitarget-83:  show targets
 # multitarget-85:  mention both targets
 # multitarget-86:  mention the transient target
-# multitarget-{87,88,89}:  mention targets
+# multitarget-{88,89}:  mention targets
 # no-equal-in-dynamic-variable: mention the given variable name
 # no-filename-after-dollar-langle:  mention what was found
 # nocommandaftertarget: mention what was found

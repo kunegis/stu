@@ -205,8 +205,9 @@ int main(int argc, char **argv, char **envp)
 				char *endptr;
 				Execution::jobs= strtol(optarg, &endptr, 0);
 				if (errno != 0 || *endptr != '\0') {
-					print_error(frmt("Invalid argument to %s-j%s",
-							 Color::beg_name_quoted, Color::end_name_quoted)); 
+					print_error(fmt("Invalid argument %s to %s-j%s",
+							name_format_err(optarg),
+							Color::beg_name_quoted, Color::end_name_quoted)); 
 					exit(ERROR_FATAL); 
 				}
 				if (Execution::jobs < 1) {

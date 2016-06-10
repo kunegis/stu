@@ -29,12 +29,22 @@
  * single quotes.  Messages for both types of error output lines are not
  * terminated by periods.   
  *
+ * The general forms of error messages is:
+ *
+ *    Location 2: expected XXX, not YYY
+ *    Location 1: in ZZZ	
+ *
+ *    Location 2: XXX must not be used
+ *    Location 1: in YYY 
+ *
  * Use "expected TOKEN" instead of "missing TOKEN".  (Because some
  * tokens in the given list may be optional, making the "missing"
  * phrasing confusing, as it would imply that the token is mandatory.)
  * Include articles after "expected" to avoid interpreting "expected" as
- * an adjective.  Don't mention the invalid token, i.e., don't use
- * phrases such as "invalid token '&'". 
+ * an adjective.  
+ *
+ * "not YYY" mentions the invalid token.  If end-of-file is encountered,
+ * the "not ..." part is not used. 
  * 
  * Use "must not" rather than "cannot" in error messages, e.g., "filename
  * must not be empty".  But remember that in general it is better to

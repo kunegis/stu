@@ -2,8 +2,6 @@
 # Nice errors
 #
 
-# lone-rbracket-2: say what was expected
-# missing-rangle:  rephrase as "after opening ["
 # multifile-3:  for what was the file used?
 # multifile-{6,8}:  mention target
 # multiple-parametrized-rules-with-same-number-of-parameters:  have a good explanation text

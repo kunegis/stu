@@ -605,13 +605,13 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 		}
 		if (iter == tokens.end()) {
 			place_end << fmt("expected %s", char_format_err(')'));
-			place_paren << fmt("for group started by %s", 
+			place_paren << fmt("after opening %s", 
 					    char_format_err('(')); 
 			throw ERROR_LOGICAL;
 		}
 		if (! is_operator(')')) {
 			(*iter)->get_place() << fmt("expected %s", char_format_err(')'));
-			place_paren << fmt("for group started by %s",
+			place_paren << fmt("after opening %s",
 					    char_format_err('(')); 
 			throw ERROR_LOGICAL;
 		}
@@ -631,13 +631,13 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 		}
 		if (iter == tokens.end()) {
 			place_end << fmt("expected %s", char_format_err(']'));
-			place_bracket << fmt("for group started by %s", 
+			place_bracket << fmt("after opening %s", 
 					      char_format_err('[')); 
 			throw ERROR_LOGICAL;
 		}
 		if (! is_operator(']')) {
 			(*iter)->get_place() << fmt("expected %s", char_format_err(']'));
-			place_bracket << fmt("for group started by %s",
+			place_bracket << fmt("after opening %s",
 					      char_format_err('[')); 
 			throw ERROR_LOGICAL;
 		}

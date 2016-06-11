@@ -900,11 +900,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		/* Name */ 		
 		else {
 			shared_ptr <Place_Param_Name> place_param_name= parse_name();
-
-			if (place_param_name == nullptr) {
-				
-			}
-
+			assert(place_param_name != nullptr);
 			assert(! place_param_name->empty());
 			tokens.push_back(make_shared <Name_Token> (*place_param_name)); 
 		}

@@ -94,20 +94,24 @@ private:
 	/* RET is filled.  RET is empty when called. */
 	bool build_expression_list(vector <shared_ptr <Dependency> > &ret, 
 				   Place_Param_Name &place_param_name_input,
-				   Place &place_input);
+				   Place &place_input,
+				   const vector <shared_ptr <Place_Param_Target> > &targets);
 
 	/* Return null when nothing was parsed */ 
 	shared_ptr <Rule> build_rule(); 
 
 	bool build_expression(vector <shared_ptr <Dependency> > &ret, 
 			      Place_Param_Name &place_param_name_input,
-			      Place &place_input);
+			      Place &place_input,
+			      const vector <shared_ptr <Place_Param_Target> > &targets);
 
 	shared_ptr <Dependency> build_variable_dependency(Place_Param_Name &place_param_name_input,
-							  Place &place_input);
+							  Place &place_input,
+							  const vector <shared_ptr <Place_Param_Target> > &targets);
 
 	shared_ptr <Dependency> build_redirect_dependency(Place_Param_Name &place_param_name_input,
-							  Place &place_input);
+							  Place &place_input,
+							  const vector <shared_ptr <Place_Param_Target> > &targets);
 
 	/* Whether the next token is the given operator */ 
 	bool is_operator(char op) const {
@@ -310,7 +314,7 @@ shared_ptr <Rule> Build::build_rule()
 	if (is_operator(':')) {
 		had_colon= true; 
 		++iter; 
-		build_expression_list(dependencies, filename_input, place_input); 
+		build_expression_list(dependencies, filename_input, place_input, place_param_targets); 
 	} 
 
 	/* Command */ 
@@ -565,13 +569,14 @@ shared_ptr <Rule> Build::build_rule()
 
 bool Build::build_expression_list(vector <shared_ptr <Dependency> > &ret, 
 				  Place_Param_Name &place_param_name_input,
-				  Place &place_input)
+				  Place &place_input,
+				  const vector <shared_ptr <Place_Param_Target> > &targets)
 {
 	assert(ret.size() == 0);
 
 	while (iter != tokens.end()) {
 		vector <shared_ptr <Dependency> > ret_new; 
-		bool r= build_expression(ret_new, place_param_name_input, place_input);
+		bool r= build_expression(ret_new, place_param_name_input, place_input, targets);
 		if (!r) {
 			assert(ret_new.size() == 0); 
 			return ! ret.empty(); 
@@ -584,7 +589,8 @@ bool Build::build_expression_list(vector <shared_ptr <Dependency> > &ret,
 
 bool Build::build_expression(vector <shared_ptr <Dependency> > &ret, 
 			     Place_Param_Name &place_param_name_input,
-			     Place &place_input)
+			     Place &place_input,
+			     const vector <shared_ptr <Place_Param_Target> > &targets)
 {
 	assert(ret.size() == 0); 
 
@@ -593,7 +599,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 		Place place_paren= (*iter)->get_place();
 		++iter;
 		vector <shared_ptr <Dependency> > r;
-		while ( build_expression_list(r, place_param_name_input, place_input)) {
+		while ( build_expression_list(r, place_param_name_input, place_input, targets)) {
 			ret.insert(ret.end(), r.begin(), r.end()); 
 			r.clear(); 
 		}
@@ -619,7 +625,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 		++iter;	
 		vector <shared_ptr <Dependency> > r2;
 		vector <shared_ptr <Dependency> > r;
-		while (build_expression_list(r, place_param_name_input, place_input)) {
+		while (build_expression_list(r, place_param_name_input, place_input, targets)) {
 			r2.insert(r2.end(), r.begin(), r.end()); 
 			r.clear(); 
 		}
@@ -663,7 +669,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
  	if (is_operator('!')) {
  		Place place_exclam= (*iter)->get_place();
  		++iter; 
-		if (! build_expression(ret, place_param_name_input, place_input)) {
+		if (! build_expression(ret, place_param_name_input, place_input, targets)) {
 			if (iter == tokens.end()) 
 				place_end << "expected a dependency";
 			else
@@ -684,7 +690,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
  		Place place_question= (*iter)->get_place();
  		++iter; 
 
-		if (! build_expression(ret, place_param_name_input, place_input)) {
+		if (! build_expression(ret, place_param_name_input, place_input, targets)) {
 			if (iter == tokens.end()) {
 				place_end << "expected a dependency";
 				place_question << fmt("after %s",
@@ -724,7 +730,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 	if (is_operator('&')) {
 		Place place_ampersand= (*iter)->get_place(); 
 		++iter;
-		if (! build_expression(ret, place_param_name_input, place_input)) {
+		if (! build_expression(ret, place_param_name_input, place_input, targets)) {
 			if (iter == tokens.end()) {
 				place_end << "expected a dependency";
 				place_ampersand << fmt("after %s",
@@ -747,14 +753,14 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 		
 	/* '$' ; variable dependency */ 
 	shared_ptr <Dependency> dependency= 
-		build_variable_dependency(place_param_name_input, place_input);
+		build_variable_dependency(place_param_name_input, place_input, targets);
 	if (dependency != nullptr) {
 		ret.push_back(dependency); 
 		return true; 
 	}
 
 	shared_ptr <Dependency> r= 
-		build_redirect_dependency(place_param_name_input, place_input); 
+		build_redirect_dependency(place_param_name_input, place_input, targets); 
 	if (r != nullptr) {
 		ret.push_back(r);
 		return true; 
@@ -765,8 +771,11 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 
 shared_ptr <Dependency> Build
 ::build_variable_dependency(Place_Param_Name &place_param_name_input, 
-			    Place &place_input)
+			    Place &place_input,
+			    const vector <shared_ptr <Place_Param_Target> > &targets)
 {
+	(void) targets;
+	
 	bool has_input= false;
 
 	shared_ptr <Dependency> ret;
@@ -849,6 +858,13 @@ shared_ptr <Dependency> Build
 		place_param_name_input.place << 
 			fmt("shadows previous input redirection %s<%s%s", 
 			    Color::beg_name_bare, place_param_name_input.format_mid(), Color::end_name_bare); 
+		if (targets.size() == 1) {
+			targets.front()->place <<
+				fmt("for target %s", targets.front()->format_err()); 
+		} else if (targets.size() > 1) {
+			targets.front()->place <<
+				fmt("for targets %s...", targets.front()->format_err()); 
+		}
 		throw ERROR_LOGICAL;
 	}
 
@@ -929,8 +945,11 @@ shared_ptr <Dependency> Build
 
 shared_ptr <Dependency> Build::build_redirect_dependency
 (Place_Param_Name &place_param_name_input,
- Place &place_input)
+ Place &place_input,
+ const vector <shared_ptr <Place_Param_Target> > &targets)
 {
+	(void) targets;
+
 	bool has_input= false;
 
 	if (is_operator('<')) {
@@ -996,6 +1015,13 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 		place_param_name_input.place << 
 			fmt("shadows previous input redirection %s<%s%s", 
 			    Color::beg_name_bare, place_param_name_input.format_mid(), Color::end_name_bare); 
+		if (targets.size() == 1) {
+			targets.front()->place <<
+				fmt("for target %s", targets.front()->format_err()); 
+		} else if (targets.size() > 1) {
+			targets.front()->place <<
+				fmt("for targets %s...", targets.front()->format_err()); 
+		}
 		throw ERROR_LOGICAL;
 	}
 
@@ -1070,7 +1096,8 @@ void Build::get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
 {
 	auto iter= tokens.begin(); 
 	Build build(tokens, iter, place_end); 
-	build.build_expression_list(dependencies, input, place_input); 
+	vector <shared_ptr <Place_Param_Target>> targets;
+	build.build_expression_list(dependencies, input, place_input, targets); 
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start() 
 			<< fmt("expected a dependency, not %s",

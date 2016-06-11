@@ -19,8 +19,9 @@
 #               directories; useful after doing "rm" in a version
 #		control system on one, since that leaves a directory
 #		containing only (e.g.) ".svn".  Ignores dotfiles. 
-#     $NDEBUG	Set to nonempty to test the nondebug version; by default
+#     $NDEBUG	Set to non-empty to test the nondebug version; by default
 #		the debug version is tested 
+#     $verbose  Set to non-empty for verbose output 
 #
 # OUTPUT FILES
 # 
@@ -191,6 +192,17 @@ do
 		echo ../../stu.test "$CMD"
 		eval ../../stu.test $CMD \>list.def.out 2\>list.def.err
 		exitcode_actual="$?"
+
+		if [ "$verbose" ] ; then
+			echo stdout:
+			echo _______
+			cat list.def.out
+			echo _______
+			echo stderr:
+			echo _______
+			cat list.def.err
+			echo _______
+		fi
 		
 		# Exit code
 		exitcode_correct=0

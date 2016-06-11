@@ -158,8 +158,8 @@ int main(int argc, char **argv, char **envp)
 				{
 					had_option_c= true; 
 					if (*optarg == '\0') {
-						print_error(frmt("Option %s-c%s must take non-empty argument",
-								 Color::beg_name_quoted, Color::end_name_quoted)); 
+						print_error(frmt("Option %s-c%s must have non-empty argument",
+								 Color::beg_name_bare, Color::end_name_bare)); 
 						exit(ERROR_FATAL);
 					}
 					const char *const name= optarg;
@@ -181,8 +181,8 @@ int main(int argc, char **argv, char **envp)
 
 			case 'f':
 				if (*optarg == '\0') {
-					print_error(frmt("Option %s-f%s must take non-empty argument",
-							 Color::beg_name_quoted, Color::end_name_quoted)); 
+					print_error(frmt("Option %s-f%s must have non-empty argument",
+							 Color::beg_name_bare, Color::end_name_bare)); 
 					exit(ERROR_FATAL);
 				}
 
@@ -206,14 +206,15 @@ int main(int argc, char **argv, char **envp)
 				char *endptr;
 				Execution::jobs= strtol(optarg, &endptr, 0);
 				if (errno != 0 || *endptr != '\0') {
-					print_error(fmt("Invalid argument %s to %s-j%s",
+					print_error(fmt("Invalid argument %s to option %s-j%s",
 							name_format_err(optarg),
-							Color::beg_name_quoted, Color::end_name_quoted)); 
+							Color::beg_name_bare, Color::end_name_bare)); 
 					exit(ERROR_FATAL); 
 				}
 				if (Execution::jobs < 1) {
-					print_error(frmt("Argument to %s-j%s must be positive",
-							 Color::beg_name_quoted, Color::end_name_quoted)); 
+					print_error(fmt("Argument %s to option %s-j%s must be positive",
+							name_format_err(optarg),
+							Color::beg_name_bare, Color::end_name_bare)); 
 						    
 					exit(ERROR_FATAL); 
 				}
@@ -234,8 +235,10 @@ int main(int argc, char **argv, char **envp)
 				}
 				else if (!strcmp(optarg, "dfs"))     /* Default */ ;
 				else {
-					print_error(frmt("Invalid order %s%s%s for option %s-m%s", 
+					print_error(frmt("Invalid argument %s%s%s for option %s-m%s; valid values are %srandom%s and %sdfs%s", 
 							 Color::beg_name_quoted, optarg, Color::end_name_quoted,
+							 Color::beg_name_bare, Color::end_name_bare,
+							 Color::beg_name_quoted, Color::end_name_quoted,
 							 Color::beg_name_quoted, Color::end_name_quoted));
 					exit(ERROR_FATAL); 
 				}

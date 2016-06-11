@@ -1,1 +1,1 @@
-../../stu.test: *** Invalid order 'ksjhfckwuhef' for option '-m'
+../../stu.test: *** Invalid argument 'ksjhfckwuhef' for option -m; valid values are 'random' and 'dfs'

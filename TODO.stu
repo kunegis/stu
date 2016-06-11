@@ -2,16 +2,6 @@
 # Nice errors
 #
 
-# input-multiple:  mention target name
-# input-nocommand: mention target
-# invalid-equal
-# isdir: what was the file/dir used for?
-# jobs:  mention argument
-# jobs-2: mention argument
-# jobs-3: mention argument
-# jobs-4: mention argument
-# killed: also mention signal number:  ... received signal 9 (Killed)
-# lone-colon, lone-equal, lone-rbracket: mention what was found
 # lone-rbracket-2: say what was expected
 # missing-rangle:  rephrase as "after opening ["
 # multifile-3:  for what was the file used?

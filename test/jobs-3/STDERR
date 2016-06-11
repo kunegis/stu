@@ -1,1 +1,1 @@
-../../stu.test: *** Argument to '-j' must be positive
+../../stu.test: *** Argument '0' to option -j must be positive

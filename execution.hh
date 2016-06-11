@@ -1004,7 +1004,9 @@ void Execution::waited(int pid, int status)
 				reason= frmt("failed with exit code %d", WEXITSTATUS(status));
 			} else if (WIFSIGNALED(status)) {
 				int sig= WTERMSIG(status);
-				reason= frmt("received signal %s", strsignal(sig));
+				reason= frmt("received signal %d (%s)", 
+					     sig,
+					     strsignal(sig));
 			} else {
 				/* This should not happen but the standard does not exclude
 				 * it */ 

@@ -2,12 +2,6 @@
 # Nice errors
 #
 
-# include-in-dynamic-dependency:  split the two cases
-# include-nofile:  more context
-# include-nofile-2
-# include-nofilename: use "expected filename"
-# include-parametrized:  mention the filename and parameter
-# include-recursion-indirect-2:  show the two filenames per line 
 # input-multiple:  mention target name
 # input-nocommand: mention target
 # invalid-equal

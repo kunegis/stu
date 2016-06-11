@@ -1660,7 +1660,9 @@ void Execution::read_dynamics(Stack avoid,
 		const string filename= target.name; 
 		Place place_end; 
 
-		Parse::parse_tokens_file(tokens, false, place_end, filename);
+		Parse::parse_tokens_file(tokens, 
+					 Parse::DYNAMIC,
+					 place_end, filename);
 
 		vector <shared_ptr <Dependency> > dependencies;
 		Place_Param_Name input; /* remains empty */ 

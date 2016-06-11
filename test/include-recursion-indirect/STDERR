@@ -1,2 +1,2 @@
-second.stu:2:10: recursive inclusion of 'main.stu'
+second.stu:2:10: recursive inclusion of 'main.stu' using %include
 main.stu:4:10: 'second.stu' is included from here

@@ -1,0 +1,1 @@
+Command line argument 'A { touch A } %include empty.stu': %include must not appear in the argument to the -F option

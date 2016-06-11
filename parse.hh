@@ -20,6 +20,8 @@
 class Parse
 {
 public:
+	
+	enum Context { SOURCE, DYNAMIC, OPTION_C, OPTION_F };
 
 	/* Parse the tokens from the file FILENAME.  
 	 *
@@ -29,12 +31,9 @@ public:
 	 * 
 	 * Append the read tokens to TOKENS, and set PLACE_END to the
 	 * end of the parsed file.  
-	 * 
-	 * If ALLOW_INCLUDE, allow '%include' statements, otherwise
-	 * not (used for dynamic dependencies and the -C option). 
 	 */
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
-				      bool allow_include,
+				      Context context,
 				      Place &place_end,
 				      string filename, 
 				      int fd= -1)
@@ -42,7 +41,9 @@ public:
 		vector <Trace> traces;
 		vector <string> filenames; 
 		unordered_set <string> includes;
-		parse_tokens_file(tokens, allow_include, place_end, filename, 
+		parse_tokens_file(tokens, 
+				  context,
+				  place_end, filename, 
 				  traces, filenames, includes,
 				  fd);
 	}
@@ -51,7 +52,7 @@ public:
 	 * identical to parse_tokens_file(). 
 	 */
 	static void parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
-					bool allow_include,
+					Context context,
 					Place &place_end,
 					string text); 
 
@@ -96,7 +97,7 @@ private:
 	{ }
 
 	void parse_tokens(vector <shared_ptr <Token> > &tokens, 
-			  bool allow_include); 
+			  Context context); 
 
 	shared_ptr <Command> parse_command();
 	
@@ -120,7 +121,7 @@ private:
 	 * included in FILENAMES. 
 	 */
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
-				      bool allow_include,
+				      Context context,
 				      Place &place_end,
 				      string filename, 
 				      vector <Trace> &traces,
@@ -143,7 +144,7 @@ private:
 };
 
 void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
-			      bool allow_include,
+			      Context context,
 			      Place &place_end,
 			      string filename, 
 			      vector <Trace> &traces,
@@ -162,7 +163,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 	bool use_malloc;
 
 	try {
-		if (allow_include) {
+		if (context == SOURCE) {
 			assert(filenames.size() == 0 || filenames[filenames.size() - 1] != filename); 
 			assert(includes.count(filename) == 0); 
 			includes.insert(filename); 
@@ -275,7 +276,8 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				    Place::Type::INPUT_FILE, filename, 
 				    in, in_size); 
 
-			parse.parse_tokens(tokens, allow_include);
+			parse.parse_tokens(tokens, 
+					   context);
 
 			place_end= parse.current_place(); 
 
@@ -303,6 +305,8 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			for (auto j= traces.begin();  j != traces.end();  ++j) {
 				if (j == traces.begin()) {
 					j->print_beginning();
+					fprintf(stderr, "%s%%include%s ", 
+						Color::beg_name_bare, Color::end_name_bare); 
 					print_error_system(filename_diagnostic); 
 				} else
 					j->print(); 
@@ -680,8 +684,9 @@ void Parse::parse_version(string version_req, const Place &place_version)
  wrong_version:
 	{
 		place_version <<
-			fmt("requested version %s%s%s is incompatible with this Stu's version %s%s%s",
+			fmt("requested version %s%s%s using %s%%version%s is incompatible with this Stu's version %s%s%s",
 			    Color::beg_name_quoted, version_req, Color::end_name_quoted,
+			    Color::beg_name_bare, Color::end_name_bare,
 			    Color::beg_name_bare, STU_VERSION, Color::end_name_bare);
 		throw ERROR_LOGICAL;
 	}
@@ -689,9 +694,10 @@ void Parse::parse_version(string version_req, const Place &place_version)
  error:	
 	place_version <<
 		fmt("invalid version number %s%s%s; "
-		    "required version number must be of the form "
+		    "required version number using %s%%version%s must be of the form "
 		    "%sMAJOR.MINOR%s or %sMAJOR.MINOR.PATCH%s", 
 		    Color::beg_name_quoted, version_req, Color::end_name_quoted,
+		    Color::beg_name_bare, Color::end_name_bare,
 		    Color::beg_name_bare, Color::end_name_bare,
 		    Color::beg_name_bare, Color::end_name_bare
 		);
@@ -699,7 +705,7 @@ void Parse::parse_version(string version_req, const Place &place_version)
 }
 
 void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens, 
-			 bool allow_include)
+			 Context context)
 {
 	while (p < p_end) {
 
@@ -774,11 +780,17 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 			if (name == "include") {
 
-				if (! allow_include) {
+				if (context == DYNAMIC) {
 					place_percent 
-						<< frmt("%s%%include%s must not appear in dynamic dependencies or in the %s-C%s option",
-							Color::beg_name_quoted, Color::end_name_quoted,
-							Color::beg_name_bare, Color::end_name_bare); 
+						<< frmt("%s%%include%s must not appear in dynamic dependencies",
+							Color::beg_name_bare, Color::end_name_bare);
+					throw ERROR_LOGICAL;
+				}
+				if (context == OPTION_C || context == OPTION_F) {
+					place_percent 
+						<< frmt("%s%%include%s must not appear in the argument to the %s-%c%s option",
+							Color::beg_name_bare, Color::end_name_bare,
+							Color::beg_name_bare, context == OPTION_C ? 'C' : 'F', Color::end_name_bare); 
 					throw ERROR_LOGICAL;
 				}
 
@@ -790,7 +802,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 						 ? "expected filename"
 						 : fmt("expected filename, not %s", char_format_err(*p)));
 					place_percent << frmt("after %s%%include%s",
-							      Color::beg_name_quoted, Color::end_name_quoted); 
+							      Color::beg_name_bare, Color::end_name_bare); 
 					throw ERROR_LOGICAL;
 				}
 				
@@ -799,7 +811,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 						fmt("name %s must not be parametrized",
 						    place_param_name->format_err());
 					place_percent << frmt("after %s%%include%s",
-							      Color::beg_name_quoted, Color::end_name_quoted); 
+							      Color::beg_name_bare, Color::end_name_bare); 
 					throw ERROR_LOGICAL;
 				}
 			
@@ -825,8 +837,9 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 								Trace trace(*j);
 								if (j == traces.rbegin()) {
 									trace.message= 
-										fmt("recursive inclusion of %s%s%s", 
-										    Color::beg_name_quoted, filename_include, Color::end_name_quoted);
+										fmt("recursive inclusion of %s%s%s using %s%%include%s", 
+										    Color::beg_name_quoted, filename_include, Color::end_name_quoted,
+										    Color::beg_name_bare, Color::end_name_bare);
 								}
 								traces_backward.push_back(trace); 
 							}
@@ -840,7 +853,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					/* Ignore the end place; it is only
 					 * used for the top-level file */  
 					Place place_end_sub; 
-					parse_tokens_file(tokens, true,
+					parse_tokens_file(tokens, 
+							  Parse::SOURCE,
 							  place_end_sub, 
 							  filename_include, 
 							  traces, filenames, includes, 
@@ -868,7 +882,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			} else {
 				/* Invalid statement */ 
 				place_percent << fmt("invalid statement %s%%%s%s", 
-						     Color::beg_name_quoted, name, Color::end_name_quoted);
+						     Color::beg_name_bare, name, Color::end_name_bare);
 				throw ERROR_LOGICAL;
 			}
 		}
@@ -899,7 +913,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 }
 
 void Parse::parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
-				bool allow_include,
+				Context context,
 				Place &place_end,
 				string string_)
 {
@@ -911,7 +925,8 @@ void Parse::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 		    Place::Type::ARGV, string_,
 		    string_.c_str(), string_.size());
 
-	parse.parse_tokens(tokens, allow_include); 
+	parse.parse_tokens(tokens, 
+			   context);
 
 	place_end= parse.current_place(); 
 }

@@ -107,7 +107,7 @@ private:
 							  Place &place_input);
 
 	shared_ptr <Dependency> build_redirect_dependency(Place_Param_Name &place_param_name_input,
-							  Place &place_input); 
+							  Place &place_input);
 
 	/* Whether the next token is the given operator */ 
 	bool is_operator(char op) const {

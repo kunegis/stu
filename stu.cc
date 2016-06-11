@@ -77,9 +77,9 @@ using namespace std;
 void init_buf(); 
 
 /* Parse a string of dependencies and add them to the vector. Used for
- * both the -C option and optionless arguments. 
+ * the -C option.
  */
-void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
+void add_dependencies_option_c(vector <shared_ptr <Dependency> > &dependencies,
 			     const char *string_);
 
 /* Add a single dependency from the given STRING, in syntax used for
@@ -99,9 +99,10 @@ void read_file(string filename,
 	       Rule_Set &rule_set, 
 	       shared_ptr <Rule> &rule_first);
 
-void read_string(const char *s,
-		 Rule_Set &rule_set, 
-		 shared_ptr <Rule> &rule_first);
+/* Read rules from the argument to the -F option */ 
+void read_option_F(const char *s,
+		   Rule_Set &rule_set, 
+		   shared_ptr <Rule> &rule_first);
 
 int main(int argc, char **argv, char **envp)
 {
@@ -174,7 +175,7 @@ int main(int argc, char **argv, char **envp)
 			case 'C': 
 				{
 					had_option_c= true; 
-					add_dependencies_string(dependencies, optarg);
+					add_dependencies_option_c(dependencies, optarg);
 					break;
 				}
 
@@ -197,7 +198,7 @@ int main(int argc, char **argv, char **envp)
 			case 'F':
 				had_option_f= true;
 				had_option_F= true; 
-				read_string(optarg, Execution::rule_set, rule_first);
+				read_option_F(optarg, Execution::rule_set, rule_first);
 				break;
 
 			case 'j':
@@ -375,13 +376,15 @@ void init_buf()
 		fcntl(fileno(stderr), F_SETFL, flags | O_APPEND);
 }
 
-void add_dependencies_string(vector <shared_ptr <Dependency> > &dependencies,
-			     const char *string_)
+void add_dependencies_option_c(vector <shared_ptr <Dependency> > &dependencies,
+			       const char *string_)
 {
 	vector <shared_ptr <Token> > tokens;
 	Place place_end;
 				
-	Parse::parse_tokens_string(tokens, false, place_end, string_);
+	Parse::parse_tokens_string(tokens, 
+				   Parse::OPTION_C,
+				   place_end, string_);
 
 	vector <shared_ptr <Dependency> > dependencies_option;
 	Place_Param_Name input; /* remains empty */ 
@@ -414,7 +417,9 @@ void read_file(string filename,
 	/* Tokenize */ 
 	vector <shared_ptr <Token> > tokens;
 	Place place_end;
-	Parse::parse_tokens_file(tokens, true, place_end, filename, file_fd); 
+	Parse::parse_tokens_file(tokens, 
+				 Parse::SOURCE,
+				 place_end, filename, file_fd); 
 
 	/* Build rules */
 	vector <shared_ptr <Rule> > rules;
@@ -432,14 +437,16 @@ void read_file(string filename,
 	}
 }
 
-void read_string(const char *s,
-		 Rule_Set &rule_set, 
-		 shared_ptr <Rule> &rule_first)
+void read_option_F(const char *s,
+		   Rule_Set &rule_set, 
+		   shared_ptr <Rule> &rule_first)
 {
 	/* Tokenize */ 
 	vector <shared_ptr <Token> > tokens;
 	Place place_end;
-	Parse::parse_tokens_string(tokens, true, place_end, s);
+	Parse::parse_tokens_string(tokens, 
+				   Parse::OPTION_F,
+				   place_end, s);
 
 	/* Build rules */
 	vector <shared_ptr <Rule> > rules;

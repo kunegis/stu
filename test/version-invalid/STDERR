@@ -1,1 +1,1 @@
-main.stu:4:10: invalid version number 'wlekcnweckwecm'; required version number must be of the form MAJOR.MINOR or MAJOR.MINOR.PATCH
+main.stu:4:10: invalid version number 'wlekcnweckwecm'; required version number using %version must be of the form MAJOR.MINOR or MAJOR.MINOR.PATCH

@@ -1108,10 +1108,11 @@ void Build::get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
 
 shared_ptr <Dependency> Build::get_target_dependency(string text)
 {
-	Place place(Place::Type::ARGV, text);
+	Place place(Place::Type::ARGV);
 
 	if (text.empty()) {
-		place << "name must not be empty";
+		place << fmt("%s: name must not be empty",
+			     name_format_err(text));
 		throw ERROR_LOGICAL;
 	}
 
@@ -1140,7 +1141,8 @@ shared_ptr <Dependency> Build::get_target_dependency(string text)
 	}
 
 	if (begin_name == end_name) {
-		place << "name must not be empty";
+		place << fmt("%s: name must not be empty",
+			     name_format_err(text));
 		throw ERROR_LOGICAL; 
 	}
 
@@ -1163,7 +1165,7 @@ shared_ptr <Dependency> Build::get_target_dependency(string text)
 			-- closing;
 		} else {
 			assert(false); 
-			/* Ignore character */ 
+			/* Ignore the character */ 
 		}
 		--q;
 	}
@@ -1171,8 +1173,9 @@ shared_ptr <Dependency> Build::get_target_dependency(string text)
 	assert(q == begin);
 	
 	if (closing != 0) {
-		place << frmt("unbalanced brackets %s[]%s", 
-			      Color::beg_name_quoted, Color::end_name_quoted);
+		place << fmt("%s: unbalanced brackets %s[]%s", 
+			     name_format_err(text),
+			     Color::beg_name_quoted, Color::end_name_quoted);
 		throw ERROR_LOGICAL;
 	}
 

@@ -2,7 +2,8 @@
 # 
 # What happens when standard input is read twice from the command line.  
 #
-# stdin will be read just once, because we filter multiple input files. 
+# This is not an error.  Standard input will be read just once, because
+# we filter multiple input files.   
 #
 
 rm -f A

@@ -1,2 +1,2 @@
-Command line argument 'A:[B': expected ']'
-Command line argument 'A:[B': after opening '['
+Command line argument: expected ']'
+Command line argument: after opening '['

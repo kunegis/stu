@@ -1,1 +1,1 @@
-Command line argument '$name;': the first target '${name}' must not be parametrized if no target is given
+Command line argument: the first target '${name}' must not be parametrized if no target is given

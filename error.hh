@@ -100,15 +100,16 @@ void print_error(string text)
 	assert(isupper(text[0]) || text[0] == '\''); 
 	assert(text[text.size() - 1] != '\n'); 
 	fprintf(stderr, "%s%s%s: *** %s\n", 
-		Color::beg_error_name, dollar_zero, Color::end_error_name,
+		Color::beg_error_name_bare, dollar_zero, Color::end_error_name_bare,
 		text.c_str()); 
 }
 
-/* Like perror(), but use color */ 
-void print_error_system(const char *text)
+/* Like perror(), but use color.  TEXT should not contain color codes */ 
+void print_error_system(string text)
 {
+	assert(text.size() > 0 && text[0] != '') ;
 	fprintf(stderr, "%s%s%s: %s\n",
-		Color::beg_error_name, text, Color::end_error_name,
+		Color::beg_error_name_quoted, text.c_str(), Color::end_error_name_quoted,
 		strerror(errno));
 }
 
@@ -132,6 +133,15 @@ void print_info(string text)
 		text.c_str()); 
 }
 
+/* System error message.  Includes the given message, and the
+ * ERRNO-based text.  Cf. perror().  Color is not added.   */
+string system_format_err(string message)
+{
+	return fmt("%s: %s",
+		   message,
+		   strerror(errno)); 
+}
+
 /* Denotes a position in Stu code.  This is either in a file or in
  * arguments to Stu.  A Place object can also be empty, which is used as
  * the "uninitialized" value. 
@@ -143,32 +153,18 @@ public:
 	enum class Type {
 		EMPTY,        /* Empty */
 		INPUT_FILE,   /* Location in a file */
-		ARGV          /* Command line argument */ 
+		ARGV,         /* Command line argument */ 
+		OPTION_C,     /* Option -C */	
+		OPTION_f,     /* Option -f */
+		OPTION_F,     /* Option -F */
 	};
 
-	Place::Type type; 
-
-	/* INPUT_FILE:  File in which the error occurred.  Empty string
-	 * for standard input.  
-	 * ARGV:  The command line argument. */ 
-	string filename;
-
-	/* INPUT_FILE:  Line number, one-based.  
-	 * ARGV: Unused. */ 
-	unsigned line; 
-
-	/* INPUT_FILE:  Column number, zero-based.  In output, column
-	 * numbers are one-based, but they are saved here as zero-based
-	 * numbers as these are easier to generate. 
-	 * ARGV: Unused.
-	 */ 
-	unsigned column; 
-
-	/* An empty place */ 
+	/* Empty. */ 
 	Place() 
 		:  type(Type::EMPTY) 
 	{ }
 
+	/* General constructor */ 
 	Place(Type type_,
 	      string filename_, 
 	      unsigned line_, 
@@ -181,14 +177,15 @@ public:
 		assert(line >= 1);
 	}
 
-	/* In command line arguments */ 
-	Place(Type type_,
-	      string argument)
-		:  type(type_),
-		   filename(argument)
+	/* In command line arguments and options */ 
+	Place(Type type_)
+		:  type(type_)
 	{
-		assert(type_ == Type::ARGV); 
+		assert(type_ == Type::ARGV || type_ == Type::OPTION_C || type_ == Type::OPTION_f || type_ == Type::OPTION_F); 
 	}
+
+	Type get_type() const { return type; }
+	const char *get_filename_str() const;
 
 	/* Print the trace to STDERR as part of an error message.  The 
 	 * trace is printed as a single line, which can be parsed by
@@ -197,19 +194,39 @@ public:
 	 */
 	const Place &operator<<(string message) const; 
 
-	/* Print the beginning of the line, with the place and the
-	 * whitespace, but not any message. */ 
-	void print_beginning() const;
-
 	/* The string used for the argv[0] parameter of child processes.
 	 * Does not include color codes.  */
 	string as_argv0() const;
 
-	const char *get_filename_str() const;
-
 	bool empty() const { 
 		return type == Type::EMPTY;
 	}
+
+private: 
+
+	Place::Type type; 
+
+	/* INPUT_FILE:  File in which the error occurred.  Empty string
+	 * for standard input.  
+	 * Others:  Unused. 
+	 */ 
+	string filename;
+
+	/* INPUT_FILE:  Line number, one-based.  
+	 * Others:  unused. 
+	 */ 
+	unsigned line; 
+
+	/* INPUT_FILE:  Column number, zero-based.  In output, column
+	 * numbers are one-based, but they are saved here as zero-based
+	 * numbers as these are easier to generate. 
+	 * Others: Unused.
+	 */ 
+	unsigned column; 
+
+	/* Print the beginning of the line, with the place and the
+	 * whitespace, but not any message. */ 
+	void print_beginning() const;
 };
 
 /* A place along with a message.  This class is only used when traces
@@ -237,11 +254,6 @@ public:
 	{
 		place << message; 
 	}
-
-	void print_beginning() const
-	{
-		place.print_beginning();
-	}
 };
 
 const Place &Place::operator<<(string text) const
@@ -267,22 +279,28 @@ void Place::print_beginning() const
 	case Type::INPUT_FILE:
 		fprintf(stderr,
 			"%s%s%s:%s%u%s:%s%u%s: ", 
-			Color::beg_error_name, get_filename_str(), Color::end_error_name,
+			Color::beg_error_name_bare, get_filename_str(), Color::end_error_name_bare,
 			Color::beg_error, line, Color::end_error,
 			Color::beg_error, 1 + column, Color::end_error);  
 		break;
 
 	case Type::ARGV:
-		const char *quote= 
-			Color::has_quotes 
-			? (filename.empty() ? "'" : "")
-			: "'";
+	case Type::OPTION_C:
+	case Type::OPTION_f:
+	case Type::OPTION_F:
+
+		const char *text;
+		switch (type) {
+		default:  assert(false);
+		case Type::ARGV:     text= "Command line argument";  break; 
+		case Type::OPTION_C: text= "Option -C";  break;
+		case Type::OPTION_f: text= "Option -f";  break;
+		case Type::OPTION_F: text= "Option -F";  break;
+		}
+
 		fprintf(stderr,
-			"%sCommand line argument%s %s%s%s%s%s: ",
-			Color::beg_error, Color::end_error,
-			quote, 
-			Color::beg_error_name, filename.c_str(), Color::end_error_name,
-			quote);
+			"%s%s%s: ",
+			Color::beg_error, text, Color::end_error);
 		break;
 	}
 }
@@ -308,8 +326,7 @@ string Place::as_argv0() const
 	}
 
 	case Type::ARGV:
-		return frmt("Command line argument '%s'",
-			    filename.c_str()); 
+		return "Command line argument"; 
 	}
 }
 

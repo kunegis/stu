@@ -35,7 +35,8 @@ public:
 	static const char *beg_warning,        *end_warning;
 	static const char *beg_name_bare,      *end_name_bare;
 	static const char *beg_name_quoted,    *end_name_quoted;
-	static const char *beg_error_name,     *end_error_name;
+	static const char *beg_error_name_bare,     *end_error_name_bare;
+	static const char *beg_error_name_quoted,     *end_error_name_quoted;
 
 	static void set(bool is_tty);
 
@@ -65,8 +66,10 @@ const char *Color::beg_name_bare;
 const char *Color::end_name_bare;
 const char *Color::beg_name_quoted;
 const char *Color::end_name_quoted;
-const char *Color::beg_error_name;
-const char *Color::end_error_name;
+const char *Color::beg_error_name_bare;
+const char *Color::end_error_name_bare;
+const char *Color::beg_error_name_quoted;
+const char *Color::end_error_name_quoted;
 
 void Color::set(bool is_tty)
 {
@@ -80,8 +83,8 @@ void Color::set(bool is_tty)
 		end_name_bare=    "[0m";
 		beg_name_quoted=  "[1m"; 
 		end_name_quoted=  "[0m";
-		beg_error_name=   "[1;31m"; 
-		end_error_name=   "[0m";
+		beg_error_name_bare=   "[1;31m"; 
+		end_error_name_bare=   "[0m";
 	} else {
 		has_quotes= false;
 		beg_error=        "";
@@ -92,8 +95,10 @@ void Color::set(bool is_tty)
 		end_name_bare=    "";
 		beg_name_quoted=  "'"; 
 		end_name_quoted=  "'";
-		beg_error_name=   ""; 
-		end_error_name=   "";
+		beg_error_name_bare=   ""; 
+		end_error_name_bare=   "";
+		beg_error_name_quoted=   "'"; 
+		end_error_name_quoted=   "'";
 	}
 }
 

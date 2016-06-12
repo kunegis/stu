@@ -79,7 +79,7 @@ void init_buf();
 /* Parse a string of dependencies and add them to the vector. Used for
  * the -C option.
  */
-void add_dependencies_option_c(vector <shared_ptr <Dependency> > &dependencies,
+void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 			     const char *string_);
 
 /* Add a single dependency from the given STRING, in syntax used for
@@ -92,7 +92,7 @@ void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
  * for the -f option and the default input file.  If not yet non-null,
  * set RULE_FIRST to the first rule.  FILE_FD can be -1 or the FD or the
  * filename, if already opened.  If FILENAME is "-", use standard
- * input.  
+ * input.   If FILENAME is "", use the default file ('main.stu'). 
  */
 void read_file(string filename,
 	       int file_fd,
@@ -175,7 +175,7 @@ int main(int argc, char **argv, char **envp)
 			case 'C': 
 				{
 					had_option_c= true; 
-					add_dependencies_option_c(dependencies, optarg);
+					add_dependencies_option_C(dependencies, optarg);
 					break;
 				}
 
@@ -275,10 +275,10 @@ int main(int argc, char **argv, char **envp)
 
 		/* Targets passed as-is on the command line, outside of options */ 
 		for (int i= optind;  i < argc;  ++i) {
+
 			/* With GNU getopt(), I is not the index that the argument had
 			 * originally, because getopt() reorders its arguments.
 			 * This is why we can't put I into the trace. */ 
-
 			if (! option_literal) {
 				add_dependencies_argument(dependencies, argv[i]); 
 			} else {
@@ -288,8 +288,7 @@ int main(int argc, char **argv, char **envp)
 					  (Type::FILE, 
 					   Place_Param_Name
 					   (argv[i],
-					    Place(Place::Type::ARGV, 
-						  argv[i])))));
+					    Place(Place::Type::ARGV)))));
 			}
 		}
 
@@ -298,7 +297,7 @@ int main(int argc, char **argv, char **envp)
 			filenames.push_back(FILENAME_INPUT_DEFAULT); 
 			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY); 
 			if (file_fd >= 0) {
-				read_file(FILENAME_INPUT_DEFAULT, file_fd, Execution::rule_set, rule_first); 
+				read_file("", file_fd, Execution::rule_set, rule_first); 
 			} else {
 				if (errno == ENOENT) { 
 					/* The default file does not exist --
@@ -379,7 +378,7 @@ void init_buf()
 		fcntl(fileno(stderr), F_SETFL, flags | O_APPEND);
 }
 
-void add_dependencies_option_c(vector <shared_ptr <Dependency> > &dependencies,
+void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 			       const char *string_)
 {
 	vector <shared_ptr <Token> > tokens;
@@ -387,7 +386,8 @@ void add_dependencies_option_c(vector <shared_ptr <Dependency> > &dependencies,
 				
 	Parse::parse_tokens_string(tokens, 
 				   Parse::OPTION_C,
-				   place_end, string_);
+				   place_end, string_,
+				   Place(Place::Type::OPTION_C));
 
 	vector <shared_ptr <Dependency> > dependencies_option;
 	Place_Param_Name input; /* remains empty */ 
@@ -414,15 +414,25 @@ void read_file(string filename,
 	       shared_ptr <Rule> &rule_first)
 {
 	assert(file_fd == -1 || file_fd > 1); 
-	assert(filename != "");
-	if (filename == "-")  filename= ""; 
+
+	Place place_diagnostic= filename == "" 
+		? Place()
+		: Place(Place::Type::OPTION_f);
+
+	if (filename == "")
+		filename= FILENAME_INPUT_DEFAULT;
+
+	string filename_passed= filename;
+	if (filename_passed == "-")  filename_passed= ""; 
 
 	/* Tokenize */ 
 	vector <shared_ptr <Token> > tokens;
 	Place place_end;
 	Parse::parse_tokens_file(tokens, 
 				 Parse::SOURCE,
-				 place_end, filename, file_fd); 
+				 place_end, filename_passed, 
+				 place_diagnostic, 
+				 file_fd); 
 
 	/* Build rules */
 	vector <shared_ptr <Rule> > rules;
@@ -449,7 +459,8 @@ void read_option_F(const char *s,
 	Place place_end;
 	Parse::parse_tokens_string(tokens, 
 				   Parse::OPTION_F,
-				   place_end, s);
+				   place_end, s,
+				   Place(Place::Type::OPTION_F));
 
 	/* Build rules */
 	vector <shared_ptr <Rule> > rules;

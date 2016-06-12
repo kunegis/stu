@@ -27,15 +27,19 @@ public:
 	 *
 	 * The given file descriptor FD may optionally be that file
 	 * already opened.  If the file was not yet opened, FD is -1.
-	 * If FILENAME is empty, use standard input, but FD must be -1. 
+	 * If FILENAME is "", use standard input, but FD must be -1. 
 	 * 
 	 * Append the read tokens to TOKENS, and set PLACE_END to the
 	 * end of the parsed file.  
+	 *
+	 * PLACE_DIAGNOSTIC is the place where this file is included
+	 * from, e.g. the -f option. 
 	 */
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
 				      Context context,
 				      Place &place_end,
 				      string filename, 
+				      const Place &place_diagnostic,
 				      int fd= -1)
 	{
 		vector <Trace> traces;
@@ -45,6 +49,7 @@ public:
 				  context,
 				  place_end, filename, 
 				  traces, filenames, includes,
+				  place_diagnostic,
 				  fd);
 	}
 
@@ -54,7 +59,8 @@ public:
 	static void parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
 					Context context,
 					Place &place_end,
-					string text); 
+					string text,
+					const Place &place_diagnostic);
 
 private:
 
@@ -97,7 +103,8 @@ private:
 	{ }
 
 	void parse_tokens(vector <shared_ptr <Token> > &tokens, 
-			  Context context); 
+			  Context context,
+			  const Place &place_diagnostic);
 
 	shared_ptr <Command> parse_command();
 	
@@ -127,6 +134,7 @@ private:
 				      vector <Trace> &traces,
 				      vector <string> &filenames,
 				      unordered_set <string> &includes,
+				      const Place &place_diagnostic,
 				      int fd= -1);
 
 	/* Whether the given character can be used as part of a bare filename in
@@ -150,6 +158,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			      vector <Trace> &traces,
 			      vector <string> &filenames,
 			      unordered_set <string> &includes,
+			      const Place &place_diagnostic,
 			      int fd)
 {
 	const char *in= nullptr;
@@ -276,8 +285,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				    Place::Type::INPUT_FILE, filename, 
 				    in, in_size); 
 
-			parse.parse_tokens(tokens, 
-					   context);
+			parse.parse_tokens(tokens, context, place_diagnostic); 
 
 			place_end= parse.current_place(); 
 
@@ -304,15 +312,22 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		if (traces.size() > 0) {
 			for (auto j= traces.begin();  j != traces.end();  ++j) {
 				if (j == traces.begin()) {
-					j->print_beginning();
-					fprintf(stderr, "%s%%include%s ", 
-						Color::beg_name_bare, Color::end_name_bare); 
-					print_error_system(filename_diagnostic); 
+					j->place <<
+						system_format_err
+						(fmt("%s%%include%s %s", 
+						     Color::beg_name_bare, Color::end_name_bare,
+						     name_format_err(filename_diagnostic)));
 				} else
 					j->print(); 
 			}
-		} else
-			print_error_system(filename_diagnostic); 
+		} else {
+			if (place_diagnostic
+			    .get_type()
+			    != Place::Type::EMPTY)
+				place_diagnostic << system_format_err(filename_diagnostic); 
+			else
+				print_error(system_format_err(filename_diagnostic)); 
+		}
 		throw ERROR_LOGICAL; 
 
 	} catch (int error) {
@@ -552,7 +567,6 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 					case '\\': c= '\\';  break;
 					case '\'': c= '\'';  break;
 					case '\"': c= '\"';  break;
-					case '?':  c= '\?';  break;
 
 					default:
 						current_place()
@@ -705,7 +719,8 @@ void Parse::parse_version(string version_req, const Place &place_version)
 }
 
 void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens, 
-			 Context context)
+			 Context context,
+			 const Place &place_diagnostic)
 {
 	while (p < p_end) {
 
@@ -858,6 +873,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 							  place_end_sub, 
 							  filename_include, 
 							  traces, filenames, includes, 
+							  place_diagnostic,
 							  -1);
 				}
 				traces.pop_back(); 
@@ -911,7 +927,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 void Parse::parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
 				Context context,
 				Place &place_end,
-				string string_)
+				string string_,
+				const Place &place_diagnostic)
 {
 	vector <Trace> traces;
 	vector <string> filenames;
@@ -922,7 +939,8 @@ void Parse::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 		    string_.c_str(), string_.size());
 
 	parse.parse_tokens(tokens, 
-			   context);
+			   context,
+			   place_diagnostic);
 
 	place_end= parse.current_place(); 
 }

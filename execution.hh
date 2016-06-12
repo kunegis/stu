@@ -482,7 +482,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 		if (ret_stat < 0) {
 			exists= -1;
 			if (errno != ENOENT) {
-				print_error_system(name); 
+				dynamic_pointer_cast <Direct_Dependency> (link.dependency)
+					->place_param_target.place <<
+					system_format_err(name_format_err(name)); 
 				raise(ERROR_BUILD);
 				done.add_neg(link.avoid); 
 				return false;
@@ -646,7 +648,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 			if (ret_stat != 0 && errno != ENOENT) {
 				/* stat() returned an actual error,
 				 * e.g. permission denied:  build error */
-				print_error_system(target.name.c_str());
+				rule->place
+					<< system_format_err(target.format_err()); 
 				raise(ERROR_BUILD);
 				done.add_one_neg(link.avoid); 
 				return false;
@@ -968,7 +971,8 @@ void Execution::waited(int pid, int status)
 					/* Check whether the file is actually a symlink, in
 					 * which case we ignore that error */ 
 					if (0 > lstat(target.name.c_str(), &buf)) {
-						print_error_system(target.name.c_str()); 
+						rule->place <<
+							system_format_err(target.format_err()); 
 						raise(ERROR_BUILD);
 					}
 					if (! S_ISLNK(buf.st_mode)) {
@@ -1347,7 +1351,8 @@ Execution::Execution(Target target_,
 				int ret_stat= stat(target_.name.c_str(), &buf);
 				if (0 > ret_stat) {
 					if (errno != ENOENT) {
-						print_error_system(target_.name.c_str()); 
+						rule->place <<
+							system_format_err(target_.format_err()); 
 						raise(ERROR_BUILD); 
 					}
 					/* File does not exist and there is no rule for it */ 
@@ -1595,7 +1600,8 @@ bool Execution::remove_if_existing(bool output)
 
 			if (0 > ::unlink(filename)) {
 				if (output) {
-					print_error_system(filename); 
+					rule->place
+						<< system_format_err(target.format_err()); 
 				} else {
 					write_safe(2, "*** Error: unlink\n");
 				}
@@ -1664,7 +1670,7 @@ void Execution::read_dynamics(Stack avoid,
 
 		Parse::parse_tokens_file(tokens, 
 					 Parse::DYNAMIC,
-					 place_end, filename);
+					 place_end, filename, dependency_this->get_place()); 
 
 		vector <shared_ptr <Dependency> > dependencies;
 		Place_Param_Name input; /* remains empty */ 
@@ -2148,28 +2154,28 @@ void Execution::write_content(const char *filename,
 	FILE *file= fopen(filename, "w"); 
 
 	if (file == nullptr) {
-		print_error_system(filename);
-		if (output_mode > Output::SILENT)
-			command.get_place() << 
-				fmt("error creating %s", 
-				    name_format_err(filename)); 
+		rule->place <<
+			system_format_err(name_format_err(filename)); 
 		raise(ERROR_BUILD); 
 	}
 
 	for (const string &line:  command.get_lines()) {
 		if (fwrite(line.c_str(), 1, line.size(), file) != line.size()) {
 			assert(ferror(file));
-			print_error_system(filename);
+			rule->place <<
+				system_format_err(name_format_err(filename)); 
 			raise(ERROR_BUILD); 
 		}
 		if (EOF == putc('\n', file)) {
-			print_error_system(filename);
+			rule->place <<
+				system_format_err(name_format_err(filename)); 
 			raise(ERROR_BUILD); 
 		}
 	}
 
 	if (0 != fclose(file)) {
-		print_error_system(filename);
+		rule->place <<
+			system_format_err(name_format_err(filename)); 
 		if (output_mode > Output::SILENT)
 			command.get_place() << 
 				fmt("error creating %s", 
@@ -2194,24 +2200,26 @@ bool Execution::read_variable(string &variable_name,
 	
 	int fd= open(target.name.c_str(), O_RDONLY);
 	if (fd < 0) {
-		if (errno != ENOENT)
-			print_error_system(target.name.c_str()); 
+		if (errno != ENOENT) {
+			dependency->get_place() <<
+				target.format_err();
+		}
 		goto error;
 	}
 	if (0 > fstat(fd, &buf)) {
-		print_error_system(target.name.c_str()); 
+		dependency->get_place() << target.format_err(); 
 		goto error_fd;
 	}
 
 	filesize= buf.st_size;
 	content.resize(filesize);
 	if ((ssize_t)filesize != read(fd, (void *) content.c_str(), filesize)) {
-		print_error_system(target.name.c_str()); 
+		dependency->get_place() << target.format_err(); 
 		goto error_fd;
 	}
 
 	if (0 > close(fd)) { 
-		print_error_system(target.name.c_str()); 
+		dependency->get_place() << target.format_err(); 
 		goto error;
 	}
 

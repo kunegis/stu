@@ -16,7 +16,7 @@
  *     * Dedicated classes exist to represent these with _places_. 
  */
 
-#define STU_STRING_ESCAPE_CHARACTERS_STRICT "\"\'\t\n\v\f\r\a\b\\\?"
+#define STU_STRING_ESCAPE_CHARACTERS_STRICT "\"\'\t\n\v\f\r\a\b\\"
 
 string name_format_bare(string name) 
 {
@@ -37,7 +37,6 @@ string name_format_bare(string name)
 			case '\\':  *q++= '\\'; break;
 			case '\'':  *q++= '\''; break;
 			case '\"':  *q++= '\"'; break;
-			case '\?':  *q++= '?';  break;
 			}
 		} else {
 			*q++= *p;
@@ -69,8 +68,12 @@ string name_format_semi(string name)
 
 string name_format_err(string name)
 {
-	return fmt("%s%s%s", 
-		   Color::beg_name_quoted, name_format_bare(name), Color::end_name_quoted); 
+	if (name == "")
+		return fmt("%s''%s", 
+			   Color::beg_name_bare, Color::end_name_bare); 
+	else
+		return fmt("%s%s%s", 
+			   Color::beg_name_quoted, name_format_bare(name), Color::end_name_quoted); 
 }
 
 class Target;

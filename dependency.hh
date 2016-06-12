@@ -278,9 +278,9 @@ public:
 
 #ifndef NDEBUG
 	void print() const {
-		place.print_beginning(); 
 		string text= place_param_target.format_out();
-		fprintf(stderr, "%d %s\n", flags, text.c_str()); 
+		place <<
+			frmt("%d %s", flags, text.c_str()); 
 	}
 #endif
 };

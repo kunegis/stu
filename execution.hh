@@ -1266,12 +1266,24 @@ Execution::Execution(Target target_,
 	assert(parent != nullptr); 
 	assert(parents.empty()); 
 
-	/* Fill in the rules and their parameters */ 
+	parents[parent]= link; 
+	targets.push_back(target_); 
+
+	/* 
+	 * Fill in the rules and their parameters 
+	 */ 
 	if (target_.type == Type::FILE || target_.type == Type::TRANSIENT) {
-		rule= rule_set.get(target_, param_rule, mapping_parameter); 
+		try {
+			rule= rule_set.get(target_, param_rule, mapping_parameter, link.dependency->get_place()); 
+		} catch (int e) {
+			print_traces(); 
+			raise(e); 
+			return; 
+		}
 		if (rule == nullptr) {
-			targets.push_back(target_); 
+			/* TARGETS contains in TARGET_ */
 		} else {
+			targets.clear(); 
 			for (auto &place_param_target:  rule->place_param_targets) {
 				targets.push_back(place_param_target->unparametrized()); 
 			}
@@ -1282,14 +1294,23 @@ Execution::Execution(Target target_,
 		 * can be detected.  Note however that the rule of dynamic
 		 * file dependency executions is otherwise not used */ 
 		Target target_base(target_.type.get_base(), target_.name);
-		rule= rule_set.get(target_base, param_rule, mapping_parameter); 
+		try {
+			rule= rule_set.get(target_base, param_rule, mapping_parameter, link.dependency->get_place()); 
+		} catch (int e) {
+			print_traces(); 
+			raise(e); 
+			return; 
+		}
 
 		/* For dynamic executions, the TARGETS variables
-		 * contains only a single target */ 
-		targets.push_back(target_); 
+		 * contains only a single target, which is already contained in TARGETS. */ 
 	}
 	assert((param_rule == nullptr) == (rule == nullptr)); 
 
+	/* Fill TARGETS with *all* targets from the rule */
+	for (const Target &target:  targets) {
+		executions_by_target[target]= this; 
+	}
 
 	if (option_verbose) {
 		string text_target= verbose_target();
@@ -1300,15 +1321,7 @@ Execution::Execution(Target target_,
 			text_rule.c_str()); 
 	}
 
-	parents[parent]= link; 
-
-	for (const Target &target:  targets) {
-		executions_by_target[target]= this; 
-	}
-
-	if (! (
-	       target_.type.is_dynamic() && target_.type.is_any_file()
-	       ) 
+	if (! (target_.type.is_dynamic() && target_.type.is_any_file()) 
 	    && rule != nullptr) {
 
 		/* There is a rule for this execution */ 
@@ -1808,8 +1821,7 @@ void Execution::print_traces(string text) const
 	 * finds the root. We always take the first found parent, which
 	 * is an arbitrary choice, but it doesn't matter here *which*
 	 * dependency path we point out as an error, so the first one
-	 * it is.  
-	 */
+	 * it is.  */
 
 	const Execution *execution= this; 
 

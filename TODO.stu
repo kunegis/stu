@@ -2,13 +2,7 @@
 # Nice errors
 #
 
-# multifile-{6,8}:  mention target
-# multiple-parametrized-rules-with-same-number-of-parameters:  have a good explanation text
-# multitarget-33:  show targets
-# multitarget-36:  show targets
-# multitarget-77:  show targets
-# multitarget-83:  show targets
-# multitarget-85:  mention both targets
+# multitarget-85:  mention 'B'
 # multitarget-86:  mention the transient target
 # multitarget-{88,89}:  mention targets
 # no-equal-in-dynamic-variable: mention the given variable name

@@ -903,20 +903,15 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			}
 		}
 
-		/* Invalid token:  everything else is considered invalid */ 
-		else if (*p == '}' 
-			 || ((unsigned char)*p) < 0x20 /* ASCII control characters */ 
-			 || *p == 0x7F /* DEL */ ) {
-			current_place() 
-				<< fmt("invalid character %s", 
-				       char_format_err(*p));
-			throw ERROR_LOGICAL;
-		}
-
-		/* Name */ 		
+		/* Name or invalid token */ 		
 		else {
 			shared_ptr <Place_Param_Name> place_param_name= parse_name();
-			assert(place_param_name != nullptr);
+			if (place_param_name == nullptr) {
+				current_place() 
+					<< fmt("invalid character %s", 
+					       char_format_err(*p));
+				throw ERROR_LOGICAL;
+			}
 			assert(! place_param_name->empty());
 			tokens.push_back(make_shared <Name_Token> (*place_param_name)); 
 		}

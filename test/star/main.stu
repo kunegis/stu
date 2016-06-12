@@ -1,0 +1,3 @@
+A { touch A }
+
+*$name { touch "$name" }

@@ -1,0 +1,10 @@
+A: X { touch A }
+
+X: list.B C {
+	touch A
+}
+
+C { touch C }
+
+list.$name { touch list."$name" }
+$name.B    { touch "$name".B    }

@@ -128,10 +128,15 @@ public:
 	 * The used original rule is written into ORIGINAL_RULE when a
 	 * match is found.  The matched parameters are stored in
 	 * MAPPING_OUT. 
+	 *
+	 * Throws errors. 
+	 *
+	 * PLACE is the place of the dependency; used in error messages. 
 	 */ 
 	shared_ptr <Rule> get(Target target, 
 			      shared_ptr <Rule> &rule_original,
-			      map <string, string> &mapping_out);
+			      map <string, string> &mapping_out,
+			      const Place &place);
 
 	/* Print the rule set to standard output, as used in the -p option */  
 	void print() const;
@@ -308,7 +313,8 @@ string Rule::format() const
 
 shared_ptr <Rule> Rule_Set::get(Target target, 
 				shared_ptr <Rule> &rule_original,
-				map <string, string> &mapping_out)
+				map <string, string> &mapping_out,
+				const Place &place)
 {
 	assert(target.type == Type::FILE || target.type == Type::TRANSIENT); 
 	assert(mapping_out.size() == 0); 
@@ -414,8 +420,8 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 
 	/* More than one rule matches:  error */ 
 	if (rules_best.size() > 1) {
-		print_error(fmt("Multiple minimal rules for target %s", 
-				target.format_err())); 
+		place << fmt("multiple minimal rules for target %s", 
+			     target.format_err());
 		for (auto &place_param_target:  place_param_targets_best) {
 			place_param_target->place <<
 				fmt("rule with target %s", 

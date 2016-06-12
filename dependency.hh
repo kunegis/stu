@@ -571,7 +571,7 @@ shared_ptr <Dependency> Direct_Dependency
 
 		assert(ret_target->type == Type::FILE); 
 		
-		place << fmt("dynamic variable %s$[%s]%s cannot be instantiated with parameter value that contains %s", 
+		place << fmt("dynamic variable %s$[%s]%s must not be instantiated with parameter value that contains %s", 
 			     Color::beg_name_bare, this_name, Color::end_name_bare,
 			     char_format_err('='));
 		throw ERROR_LOGICAL; 

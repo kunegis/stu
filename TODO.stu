@@ -2,13 +2,7 @@
 # Nice errors
 #
 
-# multitarget-85:  mention 'B'
-# multitarget-86:  mention the transient target
-# multitarget-{88,89}:  mention targets
-# no-equal-in-dynamic-variable: mention the given variable name
-# no-filename-after-dollar-langle:  mention what was found
-# nocommandaftertarget: mention what was found
-# nosuchfile, openat-2, openat-3:  mention for what the file as read 
+# nosuchfile, openat-2, openat-3:  mention for what the file was read 
 # option-c-14:  separate the two cases
 # option-f-nosuchfile: for what was the file needed?
 # option-rule-12: mention what was found
@@ -50,12 +44,12 @@
 #
 
 #
-# Make use of autoconf to detect CLOCK_REALTIME_COARSE and enable
-# precise timestamps  
+# Make sure that setting $CXX and $CXXFLAGS externally works. 
 #
 
 #
-# Make sure that setting $CXX and $CXXFLAGS externally works. 
+# Make use of autoconf to detect CLOCK_REALTIME_COARSE and enable
+# precise timestamps  
 #
 
 #==== Backward-incompatible features (in the switch to version 2) ====

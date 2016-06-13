@@ -400,4 +400,15 @@ void explain_startup_time()
 	      stderr); 
 }
 
+void explain_variable_equal()
+{
+	if (! option_explain)  return;
+	fputs("Explanation: The name of an environment variable cannot contain the\n"
+	      "equal sign '=', because the operating system uses '=' as a delimiter\n"
+	      "when passing environment variables to child processes.\n"
+	      "The syntax $[VARIABLENAME = FILENAME] can be used to use a different\n"
+	      "name for the variable.\n",
+	      stderr); 
+}
+
 #endif /* ! ERROR_HH */ 

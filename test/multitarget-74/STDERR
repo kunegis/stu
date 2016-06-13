@@ -1,2 +1,2 @@
-main.stu:3:4: duplicate output redirection using '>'
+main.stu:3:4: duplicate output redirection >B
 main.stu:3:1: shadows previous output redirection >A

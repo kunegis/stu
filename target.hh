@@ -455,6 +455,10 @@ public:
 		return fmt("%s%s%s", Color::beg_name_bare, Color::has_quotes ? format_mid() : format_out(), Color::end_name_bare); 
 	}
 
+	string format_semi() const {
+		return format_mid();
+	}
+
 	/* Check whether there are duplicate parameters.  Return the
 	 * name of the found duplicate parameter, or "" none is found. 
 	 */

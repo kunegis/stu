@@ -177,49 +177,26 @@ shared_ptr <Rule> Build::build_rule()
 	vector <shared_ptr <Place_Param_Target> > place_param_targets; 
 
 	while (iter != tokens.end()) {
+
+		/* Remains EMPTY when '>' is not present */ 
+		Place place_output_new; 
 		
 		if (is_operator('>')) {
-			if (! place_output.empty()) {
-				(*iter)->get_place() <<
-					fmt("duplicate output redirection using %s",
-					    char_format_err('>'));
-				place_output <<
-					fmt("shadows previous output redirection %s>%s%s",
-					    Color::beg_name_bare, place_param_targets[redirect_index]->format_semi(), Color::end_name_bare); 
-				throw ERROR_LOGICAL;
-			}
-			place_output= (*iter)->get_place();
-			assert(! place_output.empty()); 
-			redirect_index= place_param_targets.size(); 
-			++iter;
-			if (iter == tokens.end()) {
-				place_end << "expected a filename";
-				place_output << fmt("after %s", 
-						    char_format_err('>'));
-				throw ERROR_LOGICAL;
-			}
-			else if (! (is <Name_Token> () || 
-				    is_operator('@'))) {
-				(*iter)->get_place() << "expected a filename";
-				place_output << fmt("after %s", char_format_err('>'));
-				throw ERROR_LOGICAL;
-			}
+			place_output_new= (*iter)->get_place();
+			++iter; 
 		}
 
-		Place place_target= (*iter)->get_place();
-
+		/* Set to TRANSIENT when '@' is found */ 
 		Type type= Type::FILE;
+
+		Place place_target;
+		if (iter != tokens.end()) 
+			place_target= (*iter)->get_place();
 
 		if (is_operator('@')) {
 			Place place_at= (*iter)->get_place();
-
-			if (! place_output.empty()) {
-				place_at << "transient target is invalid";
-				place_output << fmt("after %s", char_format_err('>'));
-				throw ERROR_LOGICAL;
-			}
-
 			++iter;
+
 			if (iter == tokens.end()) {
 				place_end << "expected the name of transient target";
 				place_at << fmt("after %s", char_format_err('@'));
@@ -231,15 +208,59 @@ shared_ptr <Rule> Build::build_rule()
 				throw ERROR_LOGICAL;
 			}
 
+			if (! place_output_new.empty()) {
+				place_at << 
+					fmt("transient target %s@%s%s is invalid",
+					    Color::beg_name_bare, is <Name_Token> ()->format_semi(), Color::end_name_bare);
+				place_output_new << fmt("after output redirection using %s", 
+							char_format_err('>'));
+				throw ERROR_LOGICAL;
+			}
+
 			type= Type::TRANSIENT;
 		}
 		
-		if (! is <Name_Token> ()) 
+		if (iter == tokens.end() ||
+		    ! is <Name_Token> ()) {
+			if (! place_output_new.empty()) {
+				if (iter == tokens.end()) {
+					place_end << "expected a filename";
+					place_output_new << 
+						fmt("after output redirection using %s", 
+						    char_format_err('>'));
+					throw ERROR_LOGICAL;
+				}
+				else {
+					(*iter)->get_place() << 
+						fmt("expected a filename, not %s",
+						    (*iter)->format_start_err());
+					place_output_new << 
+						fmt("after output redirection using %s", 
+						    char_format_err('>'));
+					throw ERROR_LOGICAL;
+				}
+			}
 			break;
+		}
 
 		/* Target */ 
 		shared_ptr <Name_Token> target_name= is <Name_Token> ();
 		++iter;
+
+		if (! place_output_new.empty()) {
+			if (! place_output.empty()) {
+				place_output_new <<
+					fmt("duplicate output redirection %s>%s%s",
+					    Color::beg_name_bare, target_name->format_semi(), Color::end_name_bare); 
+				place_output <<
+					fmt("shadows previous output redirection %s>%s%s",
+					    Color::beg_name_bare, place_param_targets[redirect_index]->format_semi(), Color::end_name_bare); 
+				throw ERROR_LOGICAL;
+			}
+			place_output= place_output_new; 
+			assert(! place_output.empty()); 
+			redirect_index= place_param_targets.size(); 
+		}
 
 		string param_1, param_2;
 		if (! target_name->valid(param_1, param_2)) {
@@ -834,7 +855,9 @@ shared_ptr <Dependency> Build
 	
 	/* Name of variable dependency */ 
 	if (! is <Name_Token> ()) {
-		(*iter)->get_place() << "expected a filename";
+		(*iter)->get_place() <<
+			fmt("expected a filename, not %s",
+			    (*iter)->format_start_err()); 
 		if (has_input)
 			place_input << fmt("after %s", 
 					    char_format_err('<')); 
@@ -872,8 +895,10 @@ shared_ptr <Dependency> Build
 	for (auto &j:  place_param_name->get_texts()) {
 		if (j.find('=') != string::npos) {
 			place_param_name->place <<
-				fmt("name of variable dependency must not contain %s",
+				fmt("name of variable dependency %s must not contain %s",
+				    place_param_name->format_err(),
 				     char_format_err('=')); 
+			explain_variable_equal(); 
 			throw ERROR_LOGICAL;
 		}
 	}

@@ -1,1 +1,1 @@
-main.stu:4:7: name of variable dependency must not contain '='
+main.stu:4:7: name of variable dependency 'X=Y' must not contain '='

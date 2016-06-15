@@ -265,7 +265,7 @@ public:
 	string format(Style style, bool &quotes) const {
 		string f= flags_format(flags & ~F_VARIABLE); 
 		if (f != "")
-			style |= S_LEFT_MARKER;
+			style |= S_MARKERS;
 		string t= place_param_target.format(style, quotes);
 		return fmt("%s%s%s%s%s%s",
 			   f,
@@ -280,7 +280,8 @@ public:
 		string f= flags_format(flags & ~F_VARIABLE);
 		bool quotes= Color::quotes; 
 		string t= place_param_target.format
-			(f.empty() ? 0 : S_LEFT_MARKER, 
+			(f.empty() ? 0 : 
+			 S_MARKERS, 
 			 quotes);
 		return fmt("%s%s%s%s%s%s%s%s",
 			   Color::word, 

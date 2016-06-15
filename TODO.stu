@@ -1,8 +1,4 @@
 #
-# Merge the two MARKERS. 
-#
-
-#
 # test/empty-1:  show the actual file, not 'test/empty-1'. 
 #
 
@@ -17,7 +13,7 @@
 
 #
 # Get rid of errors on FreeBSD
-#  * -s
+#  * -s and other flags
 #  * missing library functions 
 #
 

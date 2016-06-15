@@ -6,13 +6,11 @@
 typedef unsigned Style;
 enum 
 {
-	/* Set individually */
-	S_LEFT_MARKER=   1 << 0,
-	S_RIGHT_MARKER=  1 << 1,
-	S_MARKERS=       S_LEFT_MARKER | S_RIGHT_MARKER,
+	/* There will be some markers around or to the left of the text */
+	S_MARKERS=       1 << 0,
 
 	/* Don't need quote around empty content */ 
-	S_NOEMPTY=       1 << 2,
+	S_NOEMPTY=       1 << 1,
 };
 
 string char_format(char c, Style style, bool &quotes)
@@ -125,7 +123,7 @@ string prefix_format_word(string name, string prefix)
 {
 	assert(prefix != ""); 
 	bool quotes= false;
-	string s= name_format(name, S_LEFT_MARKER, quotes); 
+	string s= name_format(name, S_MARKERS, quotes); 
 	return fmt("%s%s%s%s%s%s",
 		   Color::word,
 		   prefix,

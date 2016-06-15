@@ -181,9 +181,7 @@ public:
 		quotes= false;
 
 		Style style2= 0;
-		if (type.is_any_transient())
-			style2 |= S_LEFT_MARKER;
-		if (type.is_dynamic())
+		if (type != Type::FILE)
 			style2 |= S_MARKERS;
 		else 
 			style2 |= style; 
@@ -206,9 +204,7 @@ public:
 	string format_word() const {
 
 		Style style= 0;
-		if (type.is_any_transient())
-			style |= S_LEFT_MARKER;
-		if (type.is_dynamic())
+		if (type != Type::FILE)
 			style |= S_MARKERS;
 
 		bool quotes2= 
@@ -232,9 +228,7 @@ public:
 	string format_out() const {
 
 		Style style= 0;
-		if (type.is_any_transient())
-			style |= S_LEFT_MARKER;
-		if (type.is_dynamic())
+		if (type != Type::FILE)
 			style |= S_MARKERS;
 
 		bool quotes2= 
@@ -408,27 +402,20 @@ public:
 	string format(Style style, bool &quotes) const {
 		assert(texts.size() == 1 + parameters.size()); 
 
-		Style style_inner= style & ~S_MARKERS;
-		Style style_outer_left= style & S_LEFT_MARKER;
-		Style style_outer_right= style & S_RIGHT_MARKER;
-
 		string ret= name_format(texts[0], 
-					style_inner | style_outer_left | 
-					S_RIGHT_MARKER | S_NOEMPTY, 
+					style | S_MARKERS | S_NOEMPTY,
 					quotes);
 
 		for (unsigned i= 0;  i < get_n();  ++i) {
 			ret += "${";
 			ret += name_format(parameters[i],
-					   style_inner | S_MARKERS | S_NOEMPTY,
+					   style | S_MARKERS | S_NOEMPTY,
 					   quotes);
 			ret += '}';
 			ret += name_format
-				(texts[1+i],
-				 (i + 1 == get_n() 
-				  ? style_inner | style_outer_right | S_LEFT_MARKER
-				  : style_inner | S_MARKERS)
-				 | S_NOEMPTY,
+				(
+				 texts[1+i],
+				 style | S_MARKERS | S_NOEMPTY,
 				 quotes); 
 		}
 
@@ -513,9 +500,7 @@ public:
 	string format_word() const {
 
 		Style style= 0;
-		if (type.is_any_transient())
-			style |= S_LEFT_MARKER;
-		if (type.is_dynamic())
+		if (type != Type::FILE)
 			style |= S_MARKERS;
 
 		bool quotes2= 

@@ -12,6 +12,7 @@
 
 #include "error.hh"
 #include "target.hh"
+#include "format.hh"
 
 /* The flags.  Each edge in the dependency graph is annotated with one
  * object of this type.  This contains bits related to what should be
@@ -51,7 +52,7 @@ enum
 	/* ($[...]) Content of file is used as variable */ 
 	F_VARIABLE         = (1 << 4),
 
-	/* Used only in Link.flags in the seoncd pass.  Not used for
+	/* Used only in Link.flags in the second pass.  Not used for
 	 * dependencies.  Means to override all trivial flags. */ 
 	F_OVERRIDETRIVIAL  = (1 << 5),
 };
@@ -107,8 +108,9 @@ public:
 	virtual void set_place_optional (const Place &place)= 0;
 	virtual void set_place_trivial  (const Place &place)= 0;
 
+	virtual string format(Style, bool &quotes) const= 0; 
+	virtual string format_word() const= 0; 
 	virtual string format_out() const= 0; 
-	virtual string format_mid() const= 0; 
 
 	/* Collapse the dependency into a single target, ignoring all
 	 * flags */   
@@ -260,16 +262,43 @@ public:
 		}
 	}
 
-	string format_out() const {
-		return fmt("%s%s",
-			   flags_format(flags),
-			   place_param_target.format_out()); 
+	string format(Style style, bool &quotes) const {
+		string f= flags_format(flags & ~F_VARIABLE); 
+		if (f != "")
+			style |= S_LEFT_MARKER;
+		string t= place_param_target.format(style, quotes);
+		return fmt("%s%s%s%s%s%s",
+			   f,
+			   flags & F_VARIABLE ? "$[" : "",
+			   quotes ? "'" : "",
+			   t,
+			   quotes ? "'" : "",
+			   flags & F_VARIABLE ? "]" : "");
 	}
 
-	string format_mid() const {
-		return fmt("%s%s",
-			   flags_format(flags),
-			   place_param_target.format_mid()); 
+	string format_word() const {
+		string f= flags_format(flags & ~F_VARIABLE);
+		bool quotes= Color::quotes; 
+		string t= place_param_target.format
+			(f.empty() ? 0 : S_LEFT_MARKER, 
+			 quotes);
+		return fmt("%s%s%s%s%s%s%s%s",
+			   Color::word, 
+			   f,
+			   flags & F_VARIABLE ? "$[" : "",
+			   quotes ? "'" : "",
+			   t,
+			   quotes ? "'" : "",
+			   flags & F_VARIABLE ? "]" : "",
+			   Color::end); 
+	}
+
+	string format_out() const {
+		return fmt("%s%s%s%s",
+			   flags_format(flags & ~F_VARIABLE),
+			   flags & F_VARIABLE ? "$[" : "",
+			   place_param_target.format_out(),
+			   flags & F_VARIABLE ? "]" : "");
 	}
 
 	Param_Target get_single_target() const {
@@ -278,7 +307,7 @@ public:
 
 #ifndef NDEBUG
 	void print() const {
-		string text= place_param_target.format_out();
+		string text= place_param_target.format_word();
 		place <<
 			frmt("%d %s", flags, text.c_str()); 
 	}
@@ -321,16 +350,33 @@ public:
 		return dependency->get_place(); 
 	}
 
+	string format(Style, bool &quotes) const {
+		quotes= false;
+		bool quotes2= false;
+		string s= dependency->format(S_MARKERS, quotes2);
+		return fmt("%s[%s%s%s]",
+			   quotes2 ? "'" : "",
+			   s,
+			   quotes2 ? "'" : "");
+	}
+
+	string format_word() const {
+		bool quotes= false;
+		string s= dependency->format(S_MARKERS, quotes);
+		return fmt("%s%s[%s%s%s]%s",
+			   Color::word, 
+			   quotes ? "'" : "",
+			   s,
+			   quotes ? "'" : "",
+			   Color::end); 
+	}
+
 	string format_out() const {
 		string text_flags= flags_format(flags);
-		string text_dependency= dependency->format_mid(); 
+		string text_dependency= dependency->format_out(); 
 		return fmt("%s[%s]",
 			   text_flags,
 			   text_dependency); 
-	}
-
-	string format_mid() const {
-		return format_out(); 
 	}
 
 	Param_Target get_single_target() const {
@@ -570,10 +616,11 @@ shared_ptr <Dependency> Direct_Dependency
 		this_name.find('=') != string::npos) {
 
 		assert(ret_target->type == Type::FILE); 
-		
-		place << fmt("dynamic variable %s$[%s]%s must not be instantiated with parameter value that contains %s", 
-			     Color::beg_name_bare, this_name, Color::end_name_bare,
-			     char_format_err('='));
+
+		place << 
+			fmt("dynamic variable %s must not be instantiated with parameter value that contains %s", 
+			    dynamic_variable_format_word(this_name),
+			    char_format_word('='));
 		throw ERROR_LOGICAL; 
 	}
 

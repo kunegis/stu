@@ -484,7 +484,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 			if (errno != ENOENT) {
 				dynamic_pointer_cast <Direct_Dependency> (link.dependency)
 					->place_param_target.place <<
-					system_format_err(name_format_err(name)); 
+					system_format(name_format_word(name)); 
 				raise(ERROR_BUILD);
 				done.add_neg(link.avoid); 
 				return false;
@@ -625,7 +625,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 					if (no_execution) {
 						print_warning
 							(fmt("File target %s which has no command is older than its dependency",
-							     target.format_err()));
+							     target.format_word()));
 					}
 				} 
 			}
@@ -649,7 +649,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 				/* stat() returned an actual error,
 				 * e.g. permission denied:  build error */
 				rule->place
-					<< system_format_err(target.format_err()); 
+					<< system_format(target.format_word()); 
 				raise(ERROR_BUILD);
 				done.add_one_neg(link.avoid); 
 				return false;
@@ -665,13 +665,13 @@ bool Execution::execute(Execution *parent, Link &&link)
 					if (output_mode > Output::SILENT)
 						print_traces
 							(fmt("file without command %s does not exist, although all its dependencies are up to date", 
-							     target.format_err())); 
+							     target.format_word())); 
 					explain_file_without_command_with_dependencies(); 
 				} else {
 					if (output_mode > Output::SILENT)
 						rule->place_param_targets[i]->place
 							<< fmt("file without command and without dependencies %s does not exist",
-							       target.format_err()); 
+							       target.format_word()); 
 						print_traces();
 					explain_file_without_command_without_dependencies(); 
 				}
@@ -832,7 +832,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 			/* Starting the job failed */ 
 			if (output_mode > Output::SILENT)
 				print_traces(fmt("error executing command for %s", 
-						 targets.front().format_err())); 
+						 targets.front().format_word())); 
 			raise(ERROR_BUILD);
 			done.add_neg(link.avoid); 
 			return false;
@@ -972,16 +972,16 @@ void Execution::waited(int pid, int status)
 					 * which case we ignore that error */ 
 					if (0 > lstat(target.name.c_str(), &buf)) {
 						rule->place <<
-							system_format_err(target.format_err()); 
+							system_format(target.format_word()); 
 						raise(ERROR_BUILD);
 					}
 					if (! S_ISLNK(buf.st_mode)) {
 						rule->place 
 							<< fmt("timestamp of file %s after execution of its command is older than %s startup", 
-							       target.format_err(), 
+							       target.format_word(), 
 							       dollar_zero)
 							<< fmt("timestamp of %s is %s",
-							       target.format_err(), timestamp_file.format())
+							       target.format_word(), timestamp_file.format())
 							<< fmt("startup timestamp is %s", 
 							       Timestamp::startup.format()); 
 						print_traces();
@@ -993,7 +993,7 @@ void Execution::waited(int pid, int status)
 				exists= -1;
 				rule->command->place <<
 					fmt("file %s was not built by command", 
-					    target.format_err()); 
+					    target.format_word()); 
 				print_traces();
 				raise(ERROR_BUILD);
 			}
@@ -1005,7 +1005,10 @@ void Execution::waited(int pid, int status)
 		if (output_mode > Output::SILENT) {
 			string reason;
 			if (WIFEXITED(status)) {
-				reason= frmt("failed with exit code %d", WEXITSTATUS(status));
+				reason= frmt("failed with exit code %s%d%s", 
+					     Color::word,
+					     WEXITSTATUS(status),
+					     Color::end);
 			} else if (WIFSIGNALED(status)) {
 				int sig= WTERMSIG(status);
 				reason= frmt("received signal %d (%s)", 
@@ -1022,12 +1025,12 @@ void Execution::waited(int pid, int status)
 				Target target= parents.begin()->second.dependency->get_single_target().unparametrized(); 
 				param_rule->command->place <<
 					fmt("command for %s %s", 
-					    target.format_err(), 
+					    target.format_word(), 
 					    reason); 
 			} else {
 				/* Copy rule */
 				param_rule->place <<
-					fmt("cp to %s %s", targets.front().format_err(), reason); 
+					fmt("cp to %s %s", targets.front().format_word(), reason); 
 			}
 
 			print_traces(); 
@@ -1314,7 +1317,7 @@ Execution::Execution(Target target_,
 
 	if (option_verbose) {
 		string text_target= verbose_target();
-		string text_rule= rule == nullptr ? "(no rule)" : rule->format(); 
+		string text_rule= rule == nullptr ? "(no rule)" : rule->format_out(); 
 		fprintf(stderr, "VERBOSE  %s   %s %s\n",
 			Verbose::padding(),
 			text_target.c_str(),
@@ -1342,7 +1345,7 @@ Execution::Execution(Target target_,
 
 			if (option_verbose) {
 				string text_target= verbose_target();
-				string text_link_new= link_new.format(); 
+				string text_link_new= link_new.format_out(); 
 				fprintf(stderr, "VERBOSE %s    %s push %s\n",
 					Verbose::padding(),
 					text_target.c_str(),
@@ -1365,7 +1368,7 @@ Execution::Execution(Target target_,
 				if (0 > ret_stat) {
 					if (errno != ENOENT) {
 						rule->place <<
-							system_format_err(target_.format_err()); 
+							system_format(target_.format_word()); 
 						raise(ERROR_BUILD); 
 					}
 					/* File does not exist and there is no rule for it */ 
@@ -1398,7 +1401,7 @@ Execution::Execution(Target target_,
 			assert(rule == nullptr); 
 			if (output_mode > Output::SILENT) {
 				print_traces(fmt("no rule to build %s", 
-						 target_.format_err()));
+						 target_.format_word()));
 			}
 			raise(ERROR_BUILD);
 			/* Even when a rule was not found, the Execution object remains
@@ -1605,8 +1608,8 @@ bool Execution::remove_if_existing(bool output)
 		    timestamps_old[i] < Timestamp(&buf)) {
 
 			if (output) {
-				print_info(frmt("Removing file %s%s%s because command failed",
-						Color::beg_name_quoted, filename, Color::end_name_quoted)); 
+				print_info(fmt("Removing file %s because command failed",
+					       name_format_word(filename))); 
 			}
 			
 			removed= true;
@@ -1614,7 +1617,7 @@ bool Execution::remove_if_existing(bool output)
 			if (0 > ::unlink(filename)) {
 				if (output) {
 					rule->place
-						<< system_format_err(target.format_err()); 
+						<< system_format(target.format_word()); 
 				} else {
 					write_safe(2, "*** Error: unlink\n");
 				}
@@ -1709,11 +1712,11 @@ void Execution::read_dynamics(Stack avoid,
 				dynamic_pointer_cast <Direct_Dependency> (dep)
 					->place_param_target.place_param_name.places[0] <<
 					fmt("dynamic dependency %s must not contain parametrized dependencies",
-					    target.format_err());
+					    target.format_word());
 				Target target_base= target;
 				target_base.type= target.type.get_base();
 				print_traces(fmt("%s is declared here", 
-						 target_base.format_err())); 
+						 target_base.format_word())); 
 				raise(ERROR_LOGICAL);
 				continue; 
 			}
@@ -1728,11 +1731,19 @@ void Execution::read_dynamics(Stack avoid,
 				shared_ptr <Direct_Dependency> dep= 
 					dynamic_pointer_cast <Direct_Dependency> (j);
 
+				bool quotes= false;
+				string s= dep->place_param_target.format(0, quotes);
+
 				j->get_place() <<
-					fmt("variable dependency %s$[%s]%s must not appear",
-					    Color::beg_name_bare, dep->place_param_target.format_mid(), Color::end_name_bare);
+					fmt("variable dependency %s$[%s%s%s]%s must not appear",
+					    Color::word,
+					    quotes ? "'" : "",
+					    s,
+					    quotes ? "'" : "",
+					    Color::end
+					    );
 				print_traces(fmt("within multiply-dynamic dependency %s", 
-						 target.format_err())); 
+						 target.format_word())); 
 				raise(ERROR_LOGICAL);
 				continue; 
 			}
@@ -1790,10 +1801,10 @@ void Execution::read_dynamics(Stack avoid,
 			if (! input.empty()) {
 				j->get_place() <<
 					fmt("dynamic dependency %s must not contain input redirection", 
-					    target.format_err());
+					    target.format_word());
 				Target target_file= target;
 				target_file.type= Type::FILE;
-				print_traces(fmt("%s is declared here", target_file.format_err())); 
+				print_traces(fmt("%s is declared here", target_file.format_word())); 
 				raise(ERROR_LOGICAL);
 				continue; 
 			}
@@ -1810,8 +1821,8 @@ void Execution::read_dynamics(Stack avoid,
 void Execution::warn_future_file(struct stat *buf, const char *filename)
 {
   	if (timestamp_last < Timestamp(buf)) {
-		print_warning(fmt("File %s%s%s has modification time in the future",
-				  Color::beg_name_quoted, filename, Color::end_name_quoted));
+		print_warning(fmt("File %s has modification time in the future",
+				  name_format_word(filename))); 
 	}
 }
 
@@ -1842,7 +1853,7 @@ void Execution::print_traces(string text) const
 	}
 
 	string text_parent= parents.begin()->second.dependency
-		->get_single_target().format_err();
+		->get_single_target().format_word();
 
 	while (true) {
 
@@ -1860,7 +1871,7 @@ void Execution::print_traces(string text) const
 		string text_child= text_parent; 
 
 		text_parent= i->first->parents.begin()->second.dependency
-			->get_single_target().format_err();
+			->get_single_target().format_word();
 
 		/* Don't show [[A]]->A edges */
 		if (i->second.flags & F_READ) {
@@ -1896,8 +1907,12 @@ void Execution::print_command() const
 				first= false;  
 			} else
 				putc(' ', stdout); 
-			string text= target.format_mid();
-			fputs(text.c_str(), stdout); 
+			bool quotes= false;
+			string text= target.format(S_MARKERS, quotes);
+			printf("%s%s%s", 
+			       quotes ? "'" : "",
+			       text.c_str(),
+			       quotes ? "'" : ""); 
 		}
 		putc('\n', stdout); 
 		return;
@@ -1978,7 +1993,7 @@ bool Execution::deploy(const Link &link,
 {
 	if (option_verbose) {
 		string text_target= verbose_target();
-		string text_link_child= link_child.format(); 
+		string text_link_child= link_child.format_out(); 
 		fprintf(stderr, "VERBOSE %s %s deploy %s\n",
 			Verbose::padding(),
 			text_target.c_str(),
@@ -2047,13 +2062,13 @@ bool Execution::deploy(const Link &link,
 			link_child.dependency->get_place_optional();
 		place_existence <<
 			fmt("declaration of existence-only dependency with %s",
-			     char_format_err('!')); 
+			     char_format_word('!')); 
 		place_optional <<
 			fmt("clashes with declaration of optional dependency with %s",
-			     char_format_err('?')); 
+			     char_format_word('?')); 
 		direct_dependency->place <<
 			fmt("in declaration of dependency %s", 
-			    target_child.format_err());
+			    target_child.format_word());
 		print_traces();
 		explain_clash(); 
 		raise(ERROR_LOGICAL);
@@ -2064,26 +2079,30 @@ bool Execution::deploy(const Link &link,
 	if ((flags_child & F_VARIABLE) &&
 	    (flags_child_additional & (F_EXISTENCE | F_OPTIONAL | F_TRIVIAL))) {
 
+		assert(target_child.type == Type::FILE); 
 		const Place &place_variable= direct_dependency->place;
 		if (flags_child_additional & F_EXISTENCE) {
 			const Place &place_flag= link_child.dependency->get_place_existence(); 
-			place_variable << fmt("variable dependency %s$[%s]%s must not be declared as existence-only dependency",
-					      Color::beg_name_bare, target_child.format_mid(), Color::end_name_bare);
+			place_variable << 
+				fmt("variable dependency %s must not be declared as existence-only dependency",
+				    dynamic_variable_format_word(target_child.name)); 
 			place_flag << fmt("using %s",
-					   char_format_err('!')); 
+					   char_format_word('!')); 
 		} else if (flags_child_additional & F_OPTIONAL) {
 			const Place &place_flag= link_child.dependency->get_place_optional(); 
-			place_variable << fmt("variable dependency %s$[%s]%s must not be declared as optional dependency",
-					      Color::beg_name_bare, target_child.format_mid(), Color::end_name_bare);
+			place_variable << 
+				fmt("variable dependency %s must not be declared as optional dependency",
+				    dynamic_variable_format_word(target_child.name)); 
 			place_flag << fmt("using %s",
-					   char_format_err('?')); 
+					   char_format_word('?')); 
 		} else {
 			assert(flags_child_additional & F_TRIVIAL); 
 			const Place &place_flag= link_child.dependency->get_place_trivial(); 
-			place_variable << fmt("variable dependency %s$[%s]%s must not be declared as trivial dependency",
-					      Color::beg_name_bare, target_child.format_mid(), Color::end_name_bare);
+			place_variable << 
+				fmt("variable dependency %s must not be declared as trivial dependency",
+				    dynamic_variable_format_word(target_child.name)); 
 			place_flag << fmt("using %s",
-					   char_format_err('&')); 
+					   char_format_word('&')); 
 		} 
 		print_traces();
 		raise(ERROR_LOGICAL);
@@ -2167,7 +2186,7 @@ void Execution::write_content(const char *filename,
 
 	if (file == nullptr) {
 		rule->place <<
-			system_format_err(name_format_err(filename)); 
+			system_format(name_format_word(filename)); 
 		raise(ERROR_BUILD); 
 	}
 
@@ -2175,23 +2194,23 @@ void Execution::write_content(const char *filename,
 		if (fwrite(line.c_str(), 1, line.size(), file) != line.size()) {
 			assert(ferror(file));
 			rule->place <<
-				system_format_err(name_format_err(filename)); 
+				system_format(name_format_word(filename)); 
 			raise(ERROR_BUILD); 
 		}
 		if (EOF == putc('\n', file)) {
 			rule->place <<
-				system_format_err(name_format_err(filename)); 
+				system_format(name_format_word(filename)); 
 			raise(ERROR_BUILD); 
 		}
 	}
 
 	if (0 != fclose(file)) {
 		rule->place <<
-			system_format_err(name_format_err(filename)); 
+			system_format(name_format_word(filename)); 
 		if (output_mode > Output::SILENT)
 			command.get_place() << 
 				fmt("error creating %s", 
-				     name_format_err(filename)); 
+				     name_format_word(filename)); 
 		raise(ERROR_BUILD); 
 	}
 
@@ -2214,24 +2233,24 @@ bool Execution::read_variable(string &variable_name,
 	if (fd < 0) {
 		if (errno != ENOENT) {
 			dependency->get_place() <<
-				target.format_err();
+				target.format_word();
 		}
 		goto error;
 	}
 	if (0 > fstat(fd, &buf)) {
-		dependency->get_place() << target.format_err(); 
+		dependency->get_place() << target.format_word(); 
 		goto error_fd;
 	}
 
 	filesize= buf.st_size;
 	content.resize(filesize);
 	if ((ssize_t)filesize != read(fd, (void *) content.c_str(), filesize)) {
-		dependency->get_place() << target.format_err(); 
+		dependency->get_place() << target.format_word(); 
 		goto error_fd;
 	}
 
 	if (0 > close(fd)) { 
-		dependency->get_place() << target.format_err(); 
+		dependency->get_place() << target.format_word(); 
 		goto error;
 	}
 
@@ -2263,13 +2282,13 @@ bool Execution::read_variable(string &variable_name,
 		if (rule == nullptr) {
 			dependency->get_place() <<
 				fmt("file %s was up to date but cannot be found now", 
-				    target_variable.format_err());
+				    target_variable.format_word());
 		} else {
 			for (auto const &place_param_target: rule->place_param_targets) {
 				if (place_param_target->unparametrized() == target_variable) {
 					place_param_target->place <<
 						fmt("generated file %s was built but cannot be found now", 
-						    place_param_target->format_err());
+						    place_param_target->format_word());
 					break;
 				}
 			}
@@ -2293,11 +2312,11 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 	for (unsigned i= 0;  i + 1 < path.size();  ++i) {
 		names[i]= 
 			path[i]->parents.at((Execution *)path[i+1])
-			.dependency->get_single_target().format_err();
+			.dependency->get_single_target().format_word();
 	}
 
 	names.back()= path.back()->parents.begin()->second
-		.dependency->get_single_target().format_err();
+		.dependency->get_single_target().format_word();
 		
 	for (signed i= path.size() - 1;  i >= 0;  --i) {
 
@@ -2323,7 +2342,7 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 			       : "",
 			       names[i],
 			       i == 0
-			       ? link.dependency->get_single_target().format_err()
+			       ? link.dependency->get_single_target().format_word()
 			       : names[i - 1]);
 	}
 
@@ -2344,7 +2363,7 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 		path.back()
 			->rule->place
 			<< fmt("both %s and %s match the same rule",
-			       t1.format_err(), t2.format_err());
+			       t1.format_word(), t2.format_word());
 	}
 
 	path.back()->print_traces();

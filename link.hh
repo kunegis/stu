@@ -73,7 +73,7 @@ public:
 		check(); 
 	}
 
-	string format() const;
+	string format_out() const;
 
 private:
 
@@ -84,7 +84,7 @@ private:
 #endif
 };
 
-string Link::format() const {
+string Link::format_out() const {
 	string text_dependency= 
 		dependency == nullptr 
 		? "NULL"

@@ -159,7 +159,7 @@ int main(int argc, char **argv, char **envp)
 					had_option_c= true; 
 					if (*optarg == '\0') {
 						print_error(frmt("Option %s-c%s must have non-empty argument",
-								 Color::beg_name_bare, Color::end_name_bare)); 
+								 Color::word, Color::end)); 
 						exit(ERROR_FATAL);
 					}
 					const char *const name= optarg;
@@ -182,7 +182,7 @@ int main(int argc, char **argv, char **envp)
 			case 'f':
 				if (*optarg == '\0') {
 					print_error(frmt("Option %s-f%s must have non-empty argument",
-							 Color::beg_name_bare, Color::end_name_bare)); 
+							 Color::word, Color::end)); 
 					exit(ERROR_FATAL);
 				}
 
@@ -207,14 +207,14 @@ int main(int argc, char **argv, char **envp)
 				Execution::jobs= strtol(optarg, &endptr, 0);
 				if (errno != 0 || *endptr != '\0') {
 					print_error(fmt("Invalid argument %s to option %s-j%s",
-							name_format_err(optarg),
-							Color::beg_name_bare, Color::end_name_bare)); 
+							name_format_word(optarg),
+							Color::word, Color::end)); 
 					exit(ERROR_FATAL); 
 				}
 				if (Execution::jobs < 1) {
 					print_error(fmt("Argument %s to option %s-j%s must be positive",
-							name_format_err(optarg),
-							Color::beg_name_bare, Color::end_name_bare)); 
+							name_format_word(optarg),
+							Color::word, Color::end)); 
 						    
 					exit(ERROR_FATAL); 
 				}
@@ -235,11 +235,11 @@ int main(int argc, char **argv, char **envp)
 				}
 				else if (!strcmp(optarg, "dfs"))     /* Default */ ;
 				else {
-					print_error(frmt("Invalid argument %s%s%s for option %s-m%s; valid values are %srandom%s and %sdfs%s", 
-							 Color::beg_name_quoted, optarg, Color::end_name_quoted,
-							 Color::beg_name_bare, Color::end_name_bare,
-							 Color::beg_name_quoted, Color::end_name_quoted,
-							 Color::beg_name_quoted, Color::end_name_quoted));
+					print_error(fmt("Invalid argument %s for option %s-m%s; valid values are %s and %s", 
+							name_format_word(optarg),
+							Color::word, Color::end,
+							name_format_word("random"),
+							name_format_word("dfs"))); 
 					exit(ERROR_FATAL); 
 				}
 				break;
@@ -264,9 +264,10 @@ int main(int argc, char **argv, char **envp)
 			default:  
 				/* Invalid option -- an error message was
 				 * already printed by getopt() */   
+				string text= name_format_word(frmt("%s -h", dollar_zero));
 				fprintf(stderr, 
-					"To get a list of all options, use %s%s -h%s\n", 
-					Color::beg_name_quoted, dollar_zero, Color::end_name_quoted); 
+					"To get a list of all options, use %s\n", 
+					text.c_str()); 
 				exit(ERROR_FATAL); 
 			}
 		}
@@ -303,8 +304,8 @@ int main(int argc, char **argv, char **envp)
 					/* The default file does not exist --
 					 * fail if no target is given */  
 					if (dependencies.empty() && ! had_option_c && ! option_print) {
-						print_error(fmt("Expected target or default file %s" FILENAME_INPUT_DEFAULT "%s",
-								Color::beg_name_quoted, Color::end_name_quoted)); 
+						print_error(fmt("Expected target or default file %s",
+								name_format_word(FILENAME_INPUT_DEFAULT))); 
 
 						explain_no_target(); 
 						throw ERROR_LOGICAL; 
@@ -329,8 +330,8 @@ int main(int argc, char **argv, char **envp)
 			if (rule_first == nullptr) {
 				print_error
 					((filenames.size() == 1 && ! had_option_F)
-					 ? fmt("Input file %s%s%s does not contain any rules and no target given", 
-					       Color::beg_name_quoted, filenames[0], Color::end_name_quoted)
+					 ? fmt("Input file %s does not contain any rules and no target given", 
+					       name_format_word(filenames[0]))
 					 : "No rules and no targets given");
 				exit(ERROR_FATAL);
 			}
@@ -338,7 +339,7 @@ int main(int argc, char **argv, char **envp)
 			if (rule_first->is_parametrized()) {
 				rule_first->place <<
 					fmt("the first target %s must not be parametrized if no target is given",
-					    rule_first->place_param_targets[0]->format_err());
+					    rule_first->place_param_targets[0]->format_word());
 				exit(ERROR_FATAL);
 			}
 

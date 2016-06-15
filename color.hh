@@ -28,15 +28,15 @@ class Color
 {
 public:
 
-	/* Whether the texts are already color quoted */
-	static bool has_quotes;
+	/* Whether single quotes have to be used.  Only true when color
+	 * is not used.  */   
+	static bool quotes; 
 
-	static const char *beg_error,          *end_error;
-	static const char *beg_warning,        *end_warning;
-	static const char *beg_name_bare,      *end_name_bare;
-	static const char *beg_name_quoted,    *end_name_quoted;
-	static const char *beg_error_name_bare,     *end_error_name_bare;
-	static const char *beg_error_name_quoted,     *end_error_name_quoted;
+	static const char *error;
+	static const char *warning;
+	static const char *word;
+	static const char *error_word;
+	static const char *end;
 
 	static void set(bool is_tty);
 
@@ -56,49 +56,30 @@ private:
 
 Color Color::color;
 
-bool Color::has_quotes;
+bool Color::quotes;
 
-const char *Color::beg_error;
-const char *Color::end_error;
-const char *Color::beg_warning;
-const char *Color::end_warning;
-const char *Color::beg_name_bare;
-const char *Color::end_name_bare;
-const char *Color::beg_name_quoted;
-const char *Color::end_name_quoted;
-const char *Color::beg_error_name_bare;
-const char *Color::end_error_name_bare;
-const char *Color::beg_error_name_quoted;
-const char *Color::end_error_name_quoted;
+const char *Color::error;
+const char *Color::warning;
+const char *Color::word;
+const char *Color::error_word;
+const char *Color::end;
 
 void Color::set(bool is_tty)
 {
 	if (is_tty) {
-		has_quotes= true;
-		beg_error=        "[31m";
-		end_error=        "[0m";
-		beg_warning=      "[35m";
-		end_warning=      "[0m";
-		beg_name_bare=    "[1m";
-		end_name_bare=    "[0m";
-		beg_name_quoted=  "[1m"; 
-		end_name_quoted=  "[0m";
-		beg_error_name_bare=   "[1;31m"; 
-		end_error_name_bare=   "[0m";
+		quotes= false;
+		error=             "[31m";
+		warning=           "[35m";
+		word=              "[1m";
+		error_word=        "[1;31m"; 
+		end=               "[0m";
 	} else {
-		has_quotes= false;
-		beg_error=        "";
-		end_error=        "";
-		beg_warning=      "";
-		end_warning=      "";
-		beg_name_bare=    ""; 
-		end_name_bare=    "";
-		beg_name_quoted=  "'"; 
-		end_name_quoted=  "'";
-		beg_error_name_bare=   ""; 
-		end_error_name_bare=   "";
-		beg_error_name_quoted=   "'"; 
-		end_error_name_quoted=   "'";
+		quotes= true;
+		error=        "";
+		warning=      "";
+		word=         ""; 
+		error_word=   ""; 
+		end=          "";
 	}
 }
 

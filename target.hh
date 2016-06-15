@@ -16,66 +16,6 @@
  *     * Dedicated classes exist to represent these with _places_. 
  */
 
-#define STU_STRING_ESCAPE_CHARACTERS_STRICT "\"\'\t\n\v\f\r\a\b\\"
-
-string name_format_bare(string name) 
-{
-	string ret(2 * name.size(), '\0');
-	char *const q_begin= (char *) ret.c_str(), *q= q_begin; 
-	for (const char *p= name.c_str();  *p;  ++p) {
-		if (strchr(STU_STRING_ESCAPE_CHARACTERS_STRICT, *p)) {
-			*q++= '\\';
-			switch (*p) {
-			default:  assert(false);
-			case '\a':  *q++= 'a';  break;
-			case '\b':  *q++= 'b';  break;
-			case '\f':  *q++= 'f';  break;
-			case '\n':  *q++= 'n';  break;
-			case '\r':  *q++= 'r';  break;
-			case '\t':  *q++= 't';  break;
-			case '\v':  *q++= 'v';  break;
-			case '\\':  *q++= '\\'; break;
-			case '\'':  *q++= '\''; break;
-			case '\"':  *q++= '\"'; break;
-			}
-		} else {
-			*q++= *p;
-		}
-	}
-	ret.resize(q - q_begin); 
-	return ret; 
-}
-
-string name_format_mid(string name)
-{
-	if (name.find_first_of(STU_STRING_ESCAPE_CHARACTERS_STRICT) != string::npos)
-		return name_format_bare(name); 
-	else
-		return name; 
-}
-
-string name_format_semi(string name)
-{
-	if (name.find_first_of(" \t\n\v\f\r") != string::npos) {
-		return fmt("'%s'", name_format_bare(name)); 
-	} else {
-		if (name.find_first_of(STU_STRING_ESCAPE_CHARACTERS_STRICT) != string::npos)
-			return name_format_bare(name); 
-		else
-			return name; 
-	}
-}
-
-string name_format_err(string name)
-{
-	if (name == "")
-		return fmt("%s''%s", 
-			   Color::beg_name_bare, Color::end_name_bare); 
-	else
-		return fmt("%s%s%s", 
-			   Color::beg_name_quoted, name_format_bare(name), Color::end_name_quoted); 
-}
-
 class Target;
 
 class Type
@@ -236,53 +176,83 @@ public:
 		   name(name_)
 		{ }
 
+	string format(Style style, bool &quotes) const {
+
+		quotes= false;
+
+		Style style2= 0;
+		if (type.is_any_transient())
+			style2 |= S_LEFT_MARKER;
+		if (type.is_dynamic())
+			style2 |= S_MARKERS;
+		else 
+			style2 |= style; 
+
+		bool quotes2= false;
+
+		string text= name_format(name, style2, quotes2); 
+
+		quotes= false;
+		
+		return fmt("%s%s%s%s%s%s", 
+			   string(type.get_dynamic_depth(), '['),
+			   type.is_any_transient() ? "@" : "",
+			   quotes2 ? "'" : "",
+			   text,
+			   quotes2 ? "'" : "",
+			   string(type.get_dynamic_depth(), ']'));
+	}
+
+	string format_word() const {
+
+		Style style= 0;
+		if (type.is_any_transient())
+			style |= S_LEFT_MARKER;
+		if (type.is_dynamic())
+			style |= S_MARKERS;
+
+		bool quotes2= 
+			(type == Type::FILE
+			 ? Color::quotes
+			 : 0);
+
+		string text= name_format(name, style, quotes2); 
+		
+		return fmt("%s%s%s%s%s%s%s%s", 
+			   Color::word, 
+			   string(type.get_dynamic_depth(), '['),
+			   type.is_any_transient() ? "@" : "",
+			   quotes2 ? "'" : "",
+			   text,
+			   quotes2 ? "'" : "",
+			   string(type.get_dynamic_depth(), ']'),
+			   Color::end);
+	}
+
 	string format_out() const {
-		if (type == Type::TRANSIENT) {
-			return "@" + name_format_semi(name); 
-		} else if (type.is_any_transient()) {
-			return "@" + (string(type.get_dynamic_depth(), '[') 
-				      + name_format_mid(name) 
-				      + string(type.get_dynamic_depth(), ']'));
-		} else if (type == Type::FILE) {
-			return fmt("'%s'", name_format_bare(name)); 
-		} else {
-			assert(type.is_any_file()); 
-			assert(type.is_dynamic()); 
-			return string(type.get_dynamic_depth(), '[') 
-				+ name_format_mid(name) 
-				+ string(type.get_dynamic_depth(), ']');
-		}
-	}
 
-	string format_mid() const {
-		return 
-			string(type.get_dynamic_depth(), '[') 
-			+ (type.is_any_transient() ? "@" : "")
-			+ name_format_mid(name) 
-			+ string(type.get_dynamic_depth(), ']'); 
-	}
+		Style style= 0;
+		if (type.is_any_transient())
+			style |= S_LEFT_MARKER;
+		if (type.is_dynamic())
+			style |= S_MARKERS;
 
-	string format_semi() const {
-		if (type == Type::TRANSIENT) {
-			return "@" + name_format_semi(name); 
-		} else if (type.is_any_transient()) {
-			return "@" + (string(type.get_dynamic_depth(), '[') 
-				      + name_format_mid(name) 
-				      + string(type.get_dynamic_depth(), ']'));
-		} else if (type == Type::FILE) {
-			return name_format_semi(name); 
-		} else {
-			assert(type.is_any_file()); 
-			assert(type.is_dynamic()); 
-			return string(type.get_dynamic_depth(), '[') 
-				+ name_format_mid(name) 
-				+ string(type.get_dynamic_depth(), ']');
-		}
-	}
+		bool quotes2= 
+			(type == Type::FILE
+			 ? Color::quotes
+			 : 0);
+		
+		string text= name_format(name, style, quotes2); 
 
-	string format_err() const {
-		return fmt("%s%s%s", 
-			   Color::beg_name_bare, Color::has_quotes ? format_mid() : format_out(), Color::end_name_bare);
+		return fmt("%s%s%s%s%s%s%s%s", 
+			   Color::word, 
+			   string(type.get_dynamic_depth(), '['),
+			   type.is_any_transient() ? "@" : "",
+			   quotes2 ? "'" : "",
+			   text,
+			   quotes2 ? "'" : "",
+			   string(type.get_dynamic_depth(), ']'),
+			   Color::end);
 	}
 
 	bool operator== (const Target &target) const {
@@ -423,7 +393,7 @@ public:
 		   vector <int> &anchoring);
 	
 	/* No escape characters */
-	string format_raw() const {
+	string raw() const {
 		assert(texts.size() == 1 + parameters.size()); 
 		string ret= texts[0];
 		for (unsigned i= 0;  i < get_n();  ++i) {
@@ -435,28 +405,54 @@ public:
 		return ret; 
 	}
 
-	string format_mid() const {
+	string format(Style style, bool &quotes) const {
 		assert(texts.size() == 1 + parameters.size()); 
-		string ret= name_format_mid(texts[0]);
+
+		Style style_inner= style & ~S_MARKERS;
+		Style style_outer_left= style & S_LEFT_MARKER;
+		Style style_outer_right= style & S_RIGHT_MARKER;
+
+		string ret= name_format(texts[0], 
+					style_inner | style_outer_left | 
+					S_RIGHT_MARKER | S_NOEMPTY, 
+					quotes);
+
 		for (unsigned i= 0;  i < get_n();  ++i) {
 			ret += "${";
-			ret += parameters[i];
+			ret += name_format(parameters[i],
+					   style_inner | S_MARKERS | S_NOEMPTY,
+					   quotes);
 			ret += '}';
-			ret += name_format_mid(texts[1+i]);
+			ret += name_format
+				(texts[1+i],
+				 (i + 1 == get_n() 
+				  ? style_inner | style_outer_right | S_LEFT_MARKER
+				  : style_inner | S_MARKERS)
+				 | S_NOEMPTY,
+				 quotes); 
 		}
+
 		return ret; 
 	}
 
+	string format_word() const {
+		bool quotes= Color::quotes;
+		string s= format(0, quotes); 
+		return fmt("%s%s%s%s%s",
+			   Color::word,
+			   quotes ? "'" : "",
+			   s,
+			   quotes ? "'" : "",
+			   Color::end); 
+	}
+
 	string format_out() const {
-		return fmt("'%s'", format_mid()); 
-	}
-
-	string format_err() const {
-		return fmt("%s%s%s", Color::beg_name_bare, Color::has_quotes ? format_mid() : format_out(), Color::end_name_bare); 
-	}
-
-	string format_semi() const {
-		return format_mid();
+		bool quotes= true;
+		string s= format(0, quotes); 
+		return fmt("%s%s%s",
+			   quotes ? "'" : "",
+			   s,
+			   quotes ? "'" : "");
 	}
 
 	/* Check whether there are duplicate parameters.  Return the
@@ -514,16 +510,30 @@ public:
 		return Target(type, param_name.instantiate(mapping)); 
 	}
 
-	string format_out() const {
-		return Target(type, param_name.format_raw()).format_out(); 
-	}
+	string format_word() const {
 
-	string format_err() const {
-		return fmt("%s%s%s", Color::beg_name_bare, Color::has_quotes ? format_mid() : format_out(), Color::end_name_bare); 
-	}
+		Style style= 0;
+		if (type.is_any_transient())
+			style |= S_LEFT_MARKER;
+		if (type.is_dynamic())
+			style |= S_MARKERS;
 
-	string format_mid() const {
-		return Target(type, param_name.format_raw()).format_mid(); 
+		bool quotes2= 
+			(type == Type::FILE
+			 ? Color::quotes
+			 : 0);
+
+		string text= param_name.format(style, quotes2); 
+		
+		return fmt("%s%s%s%s%s%s%s%s", 
+			   Color::word, 
+			   string(type.get_dynamic_depth(), '['),
+			   type.is_any_transient() ? "@" : "",
+			   quotes2 ? "'" : "",
+			   text,
+			   quotes2 ? "'" : "",
+			   string(type.get_dynamic_depth(), ']'),
+			   Color::end);
 	}
 
 	/* The corresponding unparametrized target.  This target must
@@ -620,20 +630,19 @@ public:
 		   place(place_)
 	{ }
 
-	string format_out() const {
-		return Target(type, place_param_name.format_raw()).format_out(); 
-	}
-
-	string format_mid() const {
-		return Target(type, place_param_name.format_raw()).format_mid(); 
-	}
-
-	string format_semi() const {
-		return Target(type, place_param_name.format_raw()).format_semi(); 
+	string format(Style style, bool &need_quotes) const {
+		Target target(type, place_param_name.raw());
+		return target.format(style, need_quotes); 
 	}
 	
-	string format_err() const {
-		return fmt("%s%s%s", Color::beg_name_bare, Color::has_quotes ? format_mid() : format_out(), Color::end_name_bare); 
+	string format_word() const {
+		Target target(type, place_param_name.raw());
+		return target.format_word(); 
+	}
+
+	string format_out() const {
+		Target target(type, place_param_name.raw());
+		return target.format_out(); 
 	}
 
 	shared_ptr <Place_Param_Target> 

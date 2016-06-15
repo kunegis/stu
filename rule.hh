@@ -83,7 +83,7 @@ public:
 	}
 
 	/* Format the rule, as in the -p option */ 
-	string format() const; 
+	string format_out() const; 
 
 	const vector <string> &get_parameters() const
 	{
@@ -209,16 +209,16 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 				if (parameters.count(parameter) == 0) {
 					dependency->place_param_target
 						.place_param_name.get_places()[jj] <<
-						fmt("parameter %s$%s%s must not appear in dependency %s", 
-						    Color::beg_name_bare, parameter, Color::end_name_bare,
-						    dependency->place_param_target.format_err());
+						fmt("parameter %s must not appear in dependency %s", 
+						    prefix_format_word(parameter, "$"),
+						    dependency->place_param_target.format_word());
 					if (place_param_targets.size() == 1) {
 						place_param_targets[0]->place <<
 							fmt("because it does not appear in target %s",
-							    place_param_targets[0]->format_err());
+							    place_param_targets[0]->format_word());
 					} else {
 						place << fmt("because it does not appear in any of the targets %s... of the rule",
-							     place_param_targets[0]->format_err()); 
+							     place_param_targets[0]->format_word()); 
 					}
 					throw ERROR_LOGICAL; 
 				}
@@ -283,7 +283,7 @@ Rule::instantiate(shared_ptr <Rule> rule,
 		 rule->is_copy); 
 }
 
-string Rule::format() const
+string Rule::format_out() const
 {
 	string ret;
 
@@ -421,11 +421,11 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 	/* More than one rule matches:  error */ 
 	if (rules_best.size() > 1) {
 		place << fmt("multiple minimal rules for target %s", 
-			     target.format_err());
+			     target.format_word());
 		for (auto &place_param_target:  place_param_targets_best) {
 			place_param_target->place <<
 				fmt("rule with target %s", 
-				    place_param_target->format_err()); 
+				    place_param_target->format_word()); 
 		}
 		throw ERROR_LOGICAL; 
 	}
@@ -455,13 +455,13 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 				if (rules_unparametrized.count(target)) {
 					place_param_target->place <<
 						fmt("duplicate rule for %s", 
-						    target.format_err());
+						    target.format_word());
 					auto rule_2= rules_unparametrized.at(target); 
 					for (auto place_param_target_2: rule_2->place_param_targets) {
 						assert(place_param_target_2->place_param_name.get_n() == 0);
 						if (place_param_target_2->unparametrized() == target) {
 							place_param_target_2->place << 
-								fmt("shadows previous rule for %s", target.format_err());  
+								fmt("shadows previous rule for %s", target.format_word());  
 							break;
 						}
 					}
@@ -479,12 +479,12 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 void Rule_Set::print() const
 {
 	for (auto i:  rules_unparametrized)  {
-		string text= i.second->format(); 
+		string text= i.second->format_out(); 
 		puts(text.c_str()); 
 	}
 
 	for (auto i:  rules_parametrized)  {
-		string text= i->format(); 
+		string text= i->format_out(); 
 		puts(text.c_str()); 
 	}
 }

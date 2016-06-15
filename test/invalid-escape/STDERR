@@ -1,0 +1,2 @@
+main.stu:4:10: invalid escape sequence \x
+main.stu:4:1: in quote started by '\''

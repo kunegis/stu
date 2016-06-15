@@ -1,0 +1,6 @@
+
+# invalid escape sequence in single quote string (non-printable)
+
+'sjdhjsdh\ lskdjksjd': B {
+}
+

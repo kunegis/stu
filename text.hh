@@ -21,17 +21,14 @@ bool is_space(char c)
 	return c != '\0' && nullptr != strchr(" \n\t\v\r\f", c);
 }
 
-/* Format functions: 
+/* Format-like functions: 
  *
- * - format_err() returns the same as format_out(), with color
- *   codes.  Used only on standard error output. 
- * - format_out() returns an optionally quoted and printable representation
- *   of the target, without color codes. 
- * - format_mid() is used when brackets of any form are added around by
- *   the caller.  Uses quotes only when weird characters are contained. 
- * - format_semi() is used when an operator is present on only one side
- *   of a string. 
- * - format_raw() does not escape anything
+ * - format(...) formats the content according to the exact
+ *   specification, but never surrounds it by quotes or color
+ * - format_word() returns a string suitable for inclusion in a message
+ *   on STDERR, including quotes and color, as appropriate. 
+ * - format_out() returns the same as format_word(), but for STDERR. 
+ * - raw() does not escape anything. 
  *
  * Format functions are defined in the source files where their datatype
  * is defined. 
@@ -129,29 +126,6 @@ string fmt(const char *s, T value, Args... args)
 	++s;
 
 	return ret + value + fmt(s, args...); 
-}
-
-/* Format a character for output. */ 
-string char_format_mid(char c)
-{
-	assert(0x5C == '\\'); 
-
-	string text_char;
-	if (c >= 0x20 && c <= 0x7E && c != 0x5C) 
-		text_char= c;
-	else if (c == 0x5C)
-		text_char= "\\\\";
-	else if (c == 0x00)
-		text_char= "\\0";
-	else
-		text_char= frmt("\\%03o", (unsigned char) c);
-
-	return text_char; 
-}
-
-string char_format_err(char c) 
-{
-	return fmt("%s%s%s", Color::beg_name_quoted, char_format_mid(c), Color::end_name_quoted); 
 }
 
 /* Padding for verbose output (option -v).  During the lifetime of an

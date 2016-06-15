@@ -1,0 +1,7 @@
+
+# Mixing of parameters and old-style variable dependencies.
+# Error:  In names, '$' must be follow by parameter name characters.  
+
+A:   xxx$<V>yyy { ... }
+
+V: { ... }

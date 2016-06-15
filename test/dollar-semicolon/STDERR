@@ -1,1 +1,2 @@
-main.stu:3:5: '$' must be followed by parameter name
+main.stu:3:5: expected parameter name, not ';'
+main.stu:3:4: after '$'

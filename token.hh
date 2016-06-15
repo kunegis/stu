@@ -20,7 +20,7 @@ public:
 	/* The starting place.  Always the first character. */ 
 	virtual const Place &get_place_start() const= 0;
 
-	virtual string format_start_err() const= 0;
+	virtual string format_start_word() const= 0;
 };
 
 /* An operator, e.g. ':', '[', etc.  Operators are all single
@@ -49,8 +49,8 @@ public:
 		return place; 
 	}
 
-	string format_start_err() const {
-		return char_format_err(op); 
+	string format_start_word() const {
+		return char_format_word(op); 
 	}
 };
 
@@ -73,8 +73,8 @@ public:
 		return Place_Param_Name::place; 
 	}
 
-	string format_start_err() const {
-		return Place_Param_Name::format_err(); 
+	string format_start_word() const {
+		return Place_Param_Name::format_word(); 
 	}
 };
 
@@ -115,8 +115,8 @@ public:
 		return place_start; 
 	}
 
-	string format_start_err() const {
-		return char_format_err('{'); 
+	string format_start_word() const {
+		return char_format_word('{'); 
 	}
 
 	const vector <string> &get_lines() const;

@@ -1,2 +1,2 @@
 main.stu:1:9: expected a filename, not ':'
-main.stu:1:8: after '=' in variable dependency
+main.stu:1:8: after '=' in variable dependency 'B'

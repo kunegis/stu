@@ -1,2 +1,2 @@
-main.stu:14:1: expected the name of transient target
+main.stu:14:1: expected the name of transient target, not '@'
 main.stu:2:1: after '@'

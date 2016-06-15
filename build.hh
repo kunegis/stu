@@ -122,8 +122,7 @@ private:
 	}
 
 	/* If the next token is of type T, return it, otherwise return
-	 * null. 
-	 */ 
+	 * null.  Must not be at the end of the token list.  */ 
 	template <typename T>
 	shared_ptr <T> is() const {
 		return dynamic_pointer_cast <T> (*iter); 
@@ -199,21 +198,24 @@ shared_ptr <Rule> Build::build_rule()
 
 			if (iter == tokens.end()) {
 				place_end << "expected the name of transient target";
-				place_at << fmt("after %s", char_format_err('@'));
+				place_at << fmt("after %s", char_format_word('@'));
 				throw ERROR_LOGICAL;
 			}
 			if (! is <Name_Token> ()) {
-				(*iter)->get_place() << "expected the name of transient target";
-				place_at << fmt("after %s", char_format_err('@'));
+				(*iter)->get_place() 
+					<< fmt("expected the name of transient target, not %s",
+					       (*iter)->format_start_word()); 
+				place_at << fmt("after %s", char_format_word('@'));
 				throw ERROR_LOGICAL;
 			}
 
 			if (! place_output_new.empty()) {
+				Target target(Type::TRANSIENT, is <Name_Token> ()->raw()); 
 				place_at << 
-					fmt("transient target %s@%s%s is invalid",
-					    Color::beg_name_bare, is <Name_Token> ()->format_semi(), Color::end_name_bare);
+					fmt("transient target %s is invalid",
+					    target.format_word()); 
 				place_output_new << fmt("after output redirection using %s", 
-							char_format_err('>'));
+							char_format_word('>'));
 				throw ERROR_LOGICAL;
 			}
 
@@ -226,17 +228,16 @@ shared_ptr <Rule> Build::build_rule()
 				if (iter == tokens.end()) {
 					place_end << "expected a filename";
 					place_output_new << 
-						fmt("after output redirection using %s", 
-						    char_format_err('>'));
+						fmt("after output redirection using %s", char_format_word('>'));
 					throw ERROR_LOGICAL;
 				}
 				else {
 					(*iter)->get_place() << 
 						fmt("expected a filename, not %s",
-						    (*iter)->format_start_err());
+						    (*iter)->format_start_word());
 					place_output_new << 
 						fmt("after output redirection using %s", 
-						    char_format_err('>'));
+						    char_format_word('>'));
 					throw ERROR_LOGICAL;
 				}
 			}
@@ -250,11 +251,13 @@ shared_ptr <Rule> Build::build_rule()
 		if (! place_output_new.empty()) {
 			if (! place_output.empty()) {
 				place_output_new <<
-					fmt("duplicate output redirection %s>%s%s",
-					    Color::beg_name_bare, target_name->format_semi(), Color::end_name_bare); 
+					fmt("duplicate output redirection %s",
+					    prefix_format_word(target_name->raw(), ">")); 
+				assert(place_param_targets[redirect_index]->place_param_name.get_n() == 0);
+				assert(place_param_targets[redirect_index]->type == Type::FILE); 
 				place_output <<
-					fmt("shadows previous output redirection %s>%s%s",
-					    Color::beg_name_bare, place_param_targets[redirect_index]->format_semi(), Color::end_name_bare); 
+					fmt("shadows previous output redirection %s",
+					    prefix_format_word(place_param_targets[redirect_index]->unparametrized().name, ">")); 
 				throw ERROR_LOGICAL;
 			}
 			place_output= place_output_new; 
@@ -266,9 +269,9 @@ shared_ptr <Rule> Build::build_rule()
 		if (! target_name->valid(param_1, param_2)) {
 			place_target <<
 				fmt("the two parameters %s and %s in the name %s must be separated by at least one character",
-				    name_format_err('$' + param_1),
-				    name_format_err('$' + param_2),
-				    target_name->format_err()); 
+				    name_format_word('$' + param_1),
+				    name_format_word('$' + param_2),
+				    target_name->format_word()); 
 				    
 			throw ERROR_LOGICAL;
 		}
@@ -276,8 +279,8 @@ shared_ptr <Rule> Build::build_rule()
 		string parameter_duplicate;
 		if ((parameter_duplicate= target_name->get_duplicate_parameter()) != "") {
 			place_target <<
-				fmt("target contains duplicate parameter %s$%s%s", 
-				    Color::beg_name_bare, parameter_duplicate, Color::end_name_bare); 
+				fmt("target contains duplicate parameter %s", 
+				    prefix_format_word(parameter_duplicate, "$")); 
 			throw ERROR_LOGICAL;
 		}
 
@@ -306,10 +309,10 @@ shared_ptr <Rule> Build::build_rule()
 		if (parameters_i != parameters_0) {
 			place_param_targets[i]->place <<
 				fmt("parameters of target %s differ", 
-				    place_param_targets[i]->format_err());
+				    place_param_targets[i]->format_word());
 			place_param_targets[0]->place <<
 				fmt("from parameters of target %s in rule with multiple targets",
-				    place_param_targets[0]->format_err()); 
+				    place_param_targets[0]->format_word()); 
 			throw ERROR_LOGICAL;
 		}
 	}
@@ -317,10 +320,10 @@ shared_ptr <Rule> Build::build_rule()
 	if (iter == tokens.end()) {
 		place_end << 
 			fmt("expected a command, %s, %s, or %s",
-			    char_format_err(':'), char_format_err(';'), char_format_err('=')); 
+			    char_format_word(':'), char_format_word(';'), char_format_word('=')); 
 		place_param_targets.back()->place
 			<< fmt("after target %s", 
-			       place_param_targets.back()->format_err()); 
+			       place_param_targets.back()->format_word()); 
 		throw ERROR_LOGICAL;
 	}
 
@@ -342,14 +345,14 @@ shared_ptr <Rule> Build::build_rule()
 	if (iter == tokens.end()) {
 		if (had_colon)
 			place_end << fmt("expected a dependency, a command, or %s",
-					 char_format_err(';'));
+					 char_format_word(';'));
 		else
 			place_end << fmt("expected a command, %s, %s, or %s",
-					 char_format_err(';'), 
-					 char_format_err(':'),
-					 char_format_err('='));
+					 char_format_word(';'), 
+					 char_format_word(':'),
+					 char_format_word('='));
 		place_param_targets[0]->place
-			<< fmt("for target %s", place_param_targets[0]->format_err());
+			<< fmt("for target %s", place_param_targets[0]->format_word());
 		throw ERROR_LOGICAL;
 	}
 
@@ -378,9 +381,9 @@ shared_ptr <Rule> Build::build_rule()
 
 		if (iter == tokens.end()) {
 			place_end << fmt("expected a filename or %s",
-					 char_format_err('{')); 
+					 char_format_word('{')); 
 			place_equal << fmt("after %s", 
-					    char_format_err('=')); 
+					    char_format_word('=')); 
 			throw ERROR_LOGICAL;
 		}
 
@@ -389,18 +392,18 @@ shared_ptr <Rule> Build::build_rule()
 			++iter; 
 			assert(place_param_targets.size() != 0); 
 			if (place_param_targets.size() != 1) {
-				place_equal << fmt("there must not be assigned content using %s", char_format_err('=')); 
+				place_equal << fmt("there must not be assigned content using %s", char_format_word('=')); 
 				place_param_targets[0]->place << 
 					fmt("in rule for %s... with multiple targets",
-					    place_param_targets[0]->format_err()); 
+					    place_param_targets[0]->format_word()); 
 					    
 				throw ERROR_LOGICAL; 
 			}
 			if (place_param_targets[0]->type == Type::TRANSIENT) {
-				place_equal << fmt("there must not be assigned content using %s", char_format_err('=')); 
+				place_equal << fmt("there must not be assigned content using %s", char_format_word('=')); 
 				place_param_targets[0]->place <<
 					fmt("for transient target %s", 
-					    place_param_targets[0]->format_err()); 
+					    place_param_targets[0]->format_word()); 
 				throw ERROR_LOGICAL; 
 			}
 			/* No redirected output is checked later */ 
@@ -429,28 +432,28 @@ shared_ptr <Rule> Build::build_rule()
 						name_copy->get_parameters()[jj]; 
 					if (parameters.count(parameter) == 0) {
 						name_copy->places[jj] <<
-							fmt("parameter %s$%s%s must not appear in copied file %s", 
-							    Color::beg_name_bare, name_format_bare(parameter), Color::end_name_bare,
-							    name_copy->format_err());
+							fmt("parameter %s must not appear in copied file %s", 
+							    prefix_format_word(parameter, "$"), 
+							    name_copy->format_word());
 						place_param_targets[0]->place << 
-							fmt("because it does not appear in target %s", place_param_targets[0]->format_err());
+							fmt("because it does not appear in target %s", place_param_targets[0]->format_word());
 						throw ERROR_LOGICAL;
 					}
 				}
 
 				if (iter == tokens.end()) {
-					place_end << fmt("expected %s", char_format_err(';'));
+					place_end << fmt("expected %s", char_format_word(';'));
 					name_copy->get_place() << 
 						fmt("after copy dependency %s",
-						    name_copy->format_err()); 
+						    name_copy->format_word()); 
 					throw ERROR_LOGICAL; 
 				}
 				if (! is_operator(';')) {
 					(*iter)->get_place() <<
-						fmt("expected %s", char_format_err(';'));
+						fmt("expected %s", char_format_word(';'));
 					name_copy->place << 
 						fmt("after copy dependency %s",
-						    name_copy->format_err()); 
+						    name_copy->format_word()); 
 					throw ERROR_LOGICAL; 
 				}
 				++iter;
@@ -458,29 +461,29 @@ shared_ptr <Rule> Build::build_rule()
 				if (! place_output.empty()) {
 					place_output << 
 						fmt("output redirection using %s must not be used",
-						     char_format_err('>'));
+						     char_format_word('>'));
 					place_equal << 
 						fmt("in copy rule using %s for target %s", 
-						    char_format_err('='),
-						    place_param_targets[0]->format_err()); 
+						    char_format_word('='),
+						    place_param_targets[0]->format_word()); 
 					throw ERROR_LOGICAL;
 				}
 
 				/* Check that there is just a single
 				 * target */
 				if (place_param_targets.size() != 1) {
-					place_equal << fmt("there must not be a copy rule using %s", char_format_err('=')); 
+					place_equal << fmt("there must not be a copy rule using %s", char_format_word('=')); 
 					place_param_targets[0]->place << 
 						fmt("for multiple targets %s...",
-						    place_param_targets[0]->format_err()); 
+						    place_param_targets[0]->format_word()); 
 					throw ERROR_LOGICAL; 
 				}
 
 				if (place_param_targets[0]->type != Type::FILE) {
 					assert(place_param_targets[0]->type == Type::TRANSIENT); 
-					place_equal << fmt("copy rule using %s cannot be used", char_format_err('='));
+					place_equal << fmt("copy rule using %s cannot be used", char_format_word('='));
 					place_param_targets[0]->place 
-						<< fmt("with transient target %s", place_param_targets[0]->format_err()); 
+						<< fmt("with transient target %s", place_param_targets[0]->format_word()); 
 					throw ERROR_LOGICAL;
 				}
 
@@ -496,27 +499,27 @@ shared_ptr <Rule> Build::build_rule()
 			} else if (is_operator('?')) {
 				(*iter)->get_place() 
 					<< fmt("optional dependency using %s must not be used",
-						char_format_err('?'));
+						char_format_word('?'));
 				place_equal << 
 					fmt("in copy rule using %s for target %s", 
-					    char_format_err('='),
-					    place_param_targets[0]->format_err()); 
+					    char_format_word('='),
+					    place_param_targets[0]->format_word()); 
 				throw ERROR_LOGICAL;
 			} else if (is_operator('&')) {
 				(*iter)->get_place() 
 					<< fmt("trivial dependency using %s must not be used",
-						char_format_err('&')); 
+						char_format_word('&')); 
 				place_equal << 
 					fmt("in copy rule using %s for target %s", 
-					    char_format_err('='),
-					    place_param_targets[0]->format_err()); 
+					    char_format_word('='),
+					    place_param_targets[0]->format_word()); 
 				throw ERROR_LOGICAL;
 			} else {
 				(*iter)->get_place() << 
 					fmt("expected a filename or %s, not %s", 
-					    char_format_err('{'),
-					    (*iter)->format_start_err()); 
-				place_equal << fmt("after %s", char_format_err('='));
+					    char_format_word('{'),
+					    (*iter)->format_start_word()); 
+				place_equal << fmt("after %s", char_format_word('='));
 				throw ERROR_LOGICAL;
 			}
 		}
@@ -527,14 +530,17 @@ shared_ptr <Rule> Build::build_rule()
 	} else {
 		(*iter)->get_place() <<
 			(had_colon
-			 ? fmt("expected a dependency, a command, or %s", char_format_err(';'))
-			 : fmt("expected a command, %s, %s, or %s",
-			       char_format_err(':'),
-			       char_format_err(';'),
-			       char_format_err('=')));
+			 ? fmt("expected a dependency, a command, or %s, not %s", 
+			       char_format_word(';'),
+			       (*iter)->format_start_word())
+			 : fmt("expected a command, %s, %s, or %s, not %s",
+			       char_format_word(':'),
+			       char_format_word(';'),
+			       char_format_word('='),
+			       (*iter)->format_start_word()));
 		place_param_targets[0]->place <<
 			fmt("for target %s", 
-			    place_param_targets[0]->format_err());
+			    place_param_targets[0]->format_word());
 		throw ERROR_LOGICAL;
 	}
 
@@ -546,21 +552,21 @@ shared_ptr <Rule> Build::build_rule()
 		if (command == nullptr) {
 			place_output << 
 				fmt("output redirection using %s must not be used",
-				     char_format_err('>'));
+				     char_format_word('>'));
 			place_nocommand <<
 				fmt("in rule for %s without a command",
-				    place_param_targets[0]->format_err());
+				    place_param_targets[0]->format_word());
 			throw ERROR_LOGICAL;
 		}
 
 		if (command != nullptr && is_hardcode) {
 			place_output <<
 				fmt("output redirection using %s must not be used",
-				     char_format_err('>'));
+				     char_format_word('>'));
 			place_equal <<
 				fmt("in rule for %s with assigned content using %s",
-				    place_param_targets[0]->format_err(),
-				    char_format_err('=')); 
+				    place_param_targets[0]->format_word(),
+				    char_format_word('=')); 
 			throw ERROR_LOGICAL;
 		}
 	}
@@ -570,10 +576,10 @@ shared_ptr <Rule> Build::build_rule()
 		if (command == nullptr) {
 			place_input <<
 				fmt("input redirection using %s must not be used",
-				     char_format_err('<'));
+				     char_format_word('<'));
 			place_nocommand <<
 				fmt("in rule for %s without a command",
-				    place_param_targets[0]->format_err()); 
+				    place_param_targets[0]->format_word()); 
 			throw ERROR_LOGICAL;
 		} else {
 			assert(! is_hardcode); 
@@ -625,15 +631,15 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			r.clear(); 
 		}
 		if (iter == tokens.end()) {
-			place_end << fmt("expected %s", char_format_err(')'));
+			place_end << fmt("expected %s", char_format_word(')'));
 			place_paren << fmt("after opening %s", 
-					    char_format_err('(')); 
+					    char_format_word('(')); 
 			throw ERROR_LOGICAL;
 		}
 		if (! is_operator(')')) {
-			(*iter)->get_place() << fmt("expected %s", char_format_err(')'));
+			(*iter)->get_place() << fmt("expected %s", char_format_word(')'));
 			place_paren << fmt("after opening %s",
-					    char_format_err('(')); 
+					    char_format_word('(')); 
 			throw ERROR_LOGICAL;
 		}
 		++ iter; 
@@ -651,15 +657,15 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			r.clear(); 
 		}
 		if (iter == tokens.end()) {
-			place_end << fmt("expected %s", char_format_err(']'));
+			place_end << fmt("expected %s", char_format_word(']'));
 			place_bracket << fmt("after opening %s", 
-					      char_format_err('[')); 
+					      char_format_word('[')); 
 			throw ERROR_LOGICAL;
 		}
 		if (! is_operator(']')) {
-			(*iter)->get_place() << fmt("expected %s", char_format_err(']'));
+			(*iter)->get_place() << fmt("expected %s", char_format_word(']'));
 			place_bracket << fmt("after opening %s",
-					      char_format_err('[')); 
+					      char_format_word('[')); 
 			throw ERROR_LOGICAL;
 		}
 		++ iter; 
@@ -668,14 +674,12 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			/* Variable dependency cannot appear within
 			 * dynamic dependency */ 
 			if (j->has_flags(F_VARIABLE)) {
-				string text= dynamic_pointer_cast <Direct_Dependency> (j)
-					->place_param_target.format_mid();
 				j->get_place() <<
-					fmt("variable dependency %s$[%s]%s must not appear", 
-					    Color::beg_name_bare, text, Color::end_name_bare);
+					fmt("variable dependency %s must not appear", 
+					    j->format_word()); 
 				place_bracket <<
 					fmt("within dynamic dependency started by %s",
-					     char_format_err('[')); 
+					     char_format_word('[')); 
 				throw ERROR_LOGICAL; 
 			}
 
@@ -696,7 +700,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			else
 				(*iter)->get_place() << "expected a dependency";
 			place_exclam << fmt("after %s",
-					     char_format_err('!')); 
+					     char_format_word('!')); 
 			throw ERROR_LOGICAL;
 		}
 		for (auto &j:  ret) {
@@ -715,12 +719,12 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			if (iter == tokens.end()) {
 				place_end << "expected a dependency";
 				place_question << fmt("after %s",
-						       char_format_err('?')); 
+						       char_format_word('?')); 
 				throw ERROR_LOGICAL;
 			} else {
 				(*iter)->get_place() << "expected a dependency";
 				place_question << fmt("after %s",
-						       char_format_err('?')); 
+						       char_format_word('?')); 
 				throw ERROR_LOGICAL;
 			}
 		}
@@ -732,10 +736,10 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			if (! place_param_name_input.place.empty()) { 
 				place_input <<
 					fmt("input redirection using %s must not be used",
-					     char_format_err('<')); 
+					     char_format_word('<')); 
 				place_question <<
 					fmt("in conjunction with optional dependencies using %s",
-					     char_format_err('?')); 
+					     char_format_word('?')); 
 				throw ERROR_LOGICAL;
 			}
 				
@@ -755,12 +759,12 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			if (iter == tokens.end()) {
 				place_end << "expected a dependency";
 				place_ampersand << fmt("after %s",
-						       char_format_err('&')); 
+						       char_format_word('&')); 
 				throw ERROR_LOGICAL;
 			} else {
 				(*iter)->get_place() << "expected a dependency";
 				place_ampersand << fmt("after %s",
-							char_format_err('&'));
+							char_format_word('&'));
 				throw ERROR_LOGICAL;
 			}
 		}
@@ -808,9 +812,9 @@ shared_ptr <Dependency> Build
 	++iter;
 
 	if (iter == tokens.end()) {
-		place_end << fmt("expected %s", char_format_err('['));
+		place_end << fmt("expected %s", char_format_word('['));
 		place_dollar << fmt("after %s", 
-				     char_format_err('$')); 
+				     char_format_word('$')); 
 		throw ERROR_LOGICAL;
 	}
 	
@@ -834,7 +838,7 @@ shared_ptr <Dependency> Build
 			if (! option_nonoptional) {
 				(*iter)->get_place() << 
 					fmt("optional dependency using %s must not appear",
-					     char_format_err('?')); 
+					     char_format_word('?')); 
 				place_dollar << "within dynamic variable declaration";
 				throw ERROR_LOGICAL; 
 			}
@@ -857,16 +861,16 @@ shared_ptr <Dependency> Build
 	if (! is <Name_Token> ()) {
 		(*iter)->get_place() <<
 			fmt("expected a filename, not %s",
-			    (*iter)->format_start_err()); 
+			    (*iter)->format_start_word()); 
 		if (has_input)
 			place_input << fmt("after %s", 
-					    char_format_err('<')); 
+					    char_format_word('<')); 
 		else if (! place_flag_last.empty()) 
 			place_flag_last << fmt("after %s", 
-					       char_format_err(flag_last)); 
+					       char_format_word(flag_last)); 
 		else
 			place_dollar << frmt("after %s$[%s",
-					     Color::beg_name_quoted, Color::end_name_quoted);
+					     Color::word, Color::end);
 
 		throw ERROR_LOGICAL;
 	}
@@ -876,17 +880,17 @@ shared_ptr <Dependency> Build
 
 	if (has_input && ! place_param_name_input.empty()) {
 		place_param_name->place << 
-			fmt("duplicate input redirection %s<%s%s", 
-			    Color::beg_name_bare, place_param_name->format_mid(), Color::end_name_bare);
+			fmt("duplicate input redirection %s", 
+			    prefix_format_word(place_param_name->raw(), "<")); 
 		place_param_name_input.place << 
 			fmt("shadows previous input redirection %s<%s%s", 
-			    Color::beg_name_bare, place_param_name_input.format_mid(), Color::end_name_bare); 
+			    prefix_format_word(place_param_name_input.raw(), "<")); 
 		if (targets.size() == 1) {
 			targets.front()->place <<
-				fmt("for target %s", targets.front()->format_err()); 
+				fmt("for target %s", targets.front()->format_word()); 
 		} else if (targets.size() > 1) {
 			targets.front()->place <<
-				fmt("for targets %s...", targets.front()->format_err()); 
+				fmt("for targets %s...", targets.front()->format_word()); 
 		}
 		throw ERROR_LOGICAL;
 	}
@@ -896,8 +900,8 @@ shared_ptr <Dependency> Build
 		if (j.find('=') != string::npos) {
 			place_param_name->place <<
 				fmt("name of variable dependency %s must not contain %s",
-				    place_param_name->format_err(),
-				     char_format_err('=')); 
+				    place_param_name->format_word(),
+				     char_format_word('=')); 
 			explain_variable_equal(); 
 			throw ERROR_LOGICAL;
 		}
@@ -905,9 +909,9 @@ shared_ptr <Dependency> Build
 
 
 	if (iter == tokens.end()) {
-		place_end << fmt("expected %s", char_format_err(']'));
-		place_dollar << frmt("after opening %s$[%s",
-				     Color::beg_name_quoted, Color::end_name_quoted);
+		place_end << fmt("expected %s", char_format_word(']'));
+		place_dollar << fmt("after opening %s",
+				    name_format_word("$[")); 
 		throw ERROR_LOGICAL;
 	}
 
@@ -919,23 +923,26 @@ shared_ptr <Dependency> Build
 		++iter;
 		if (iter == tokens.end()) {
 			place_end << "expected a filename";
-			place_equal << fmt("after %s in variable dependency",
-					    char_format_err('=')); 
+			place_equal << 
+				fmt("after %s in variable dependency %s",
+				    char_format_word('='),
+				    place_param_name->format_word()); 
 			throw ERROR_LOGICAL;
 		}
 		if (! is <Name_Token> ()) {
 			(*iter)->get_place() << 
 				fmt("expected a filename, not %s",
-				    (*iter)->format_start_err());
-			place_equal << fmt("after %s in variable dependency",
-					    char_format_err('=')); 
+				    (*iter)->format_start_word());
+			place_equal << fmt("after %s in variable dependency %s",
+					   char_format_word('='),
+					   place_param_name->format_word()); 
 			throw ERROR_LOGICAL;
 		}
 
 		if (place_param_name->get_n() != 0) {
 			place_param_name->place << 
 				fmt("variable name %s must be unparametrized", 
-				    place_param_name->format_err());
+				    place_param_name->format_word());
 			throw ERROR_LOGICAL; 
 		}
 
@@ -947,9 +954,9 @@ shared_ptr <Dependency> Build
 
 	/* Closing ']' */ 
 	if (! is_operator(']')) {
-		(*iter)->get_place() << fmt("expected %s", char_format_err(']'));
-		place_dollar << frmt("after opening %s$[%s",
-				     Color::beg_name_quoted, Color::end_name_quoted); 
+		(*iter)->get_place() << fmt("expected %s", char_format_word(']'));
+		place_dollar << fmt("after opening %s",
+				    name_format_word("$[")); 
 		throw ERROR_LOGICAL;
 	}
 	++iter;
@@ -989,9 +996,10 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 	if (is_operator('@')) {
 		place_at= (*iter)->get_place();
 		if (has_input) {
-			place_at << "expected a filename";
-			place_input << fmt("after %s",
-					    char_format_err('<')); 
+			place_at << fmt("expected a filename, not %s",
+					char_format_word('@')); 
+			place_input << fmt("after input redirection using %s",
+					    char_format_word('<')); 
 			throw ERROR_LOGICAL;
 		}
 		++ iter;
@@ -1001,29 +1009,31 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 	if (iter == tokens.end()) {
 		if (has_input) {
 			place_end << "expected a filename";
-			place_input << fmt("after %s",
-					    char_format_err('<')); 
+			place_input << fmt("after input redirection using %s",
+					    char_format_word('<')); 
 			throw ERROR_LOGICAL;
 		} else if (has_transient) {
 			place_end << "expected the name of a transient target";
 			place_at << fmt("after %s",
-					 char_format_err('@')); 
+					 char_format_word('@')); 
 			throw ERROR_LOGICAL; 
 		} else {
 			return nullptr;
 		}
 	}
 
-	if (nullptr == is <Name_Token> ()) {
+	if (! is <Name_Token> ()) {
 		if (has_input) {
 			(*iter)->get_place() << "expected a filename";
-			place_input << fmt("after %s",
-					    char_format_err('<')); 
+			place_input << fmt("after input redirection using %s",
+					    char_format_word('<')); 
 			throw ERROR_LOGICAL;
 		} else if (has_transient) {
-			(*iter)->get_place() << "expected the name of a transient target";
+			(*iter)->get_place() 
+				<< fmt("expected the name of a transient target, not %s",
+				       (*iter)->format_start_word()); 
 			place_at << fmt("after %s",
-					 char_format_err('@')); 
+					 char_format_word('@')); 
 			throw ERROR_LOGICAL;
 		} else {
 			return nullptr;
@@ -1035,17 +1045,17 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 
 	if (has_input && ! place_param_name_input.empty()) {
 		name_token->place << 
-			fmt("duplicate input redirection %s<%s%s", 
-			    Color::beg_name_bare, name_token->format_mid(), Color::end_name_bare);
+			fmt("duplicate input redirection %s", 
+			    prefix_format_word(name_token->raw(), "<")); 
 		place_param_name_input.place << 
-			fmt("shadows previous input redirection %s<%s%s", 
-			    Color::beg_name_bare, place_param_name_input.format_mid(), Color::end_name_bare); 
+			fmt("shadows previous input redirection %s", 
+			    prefix_format_word(place_param_name_input.raw(), "<")); 
 		if (targets.size() == 1) {
 			targets.front()->place <<
-				fmt("for target %s", targets.front()->format_err()); 
+				fmt("for target %s", targets.front()->format_word()); 
 		} else if (targets.size() > 1) {
 			targets.front()->place <<
-				fmt("for targets %s...", targets.front()->format_err()); 
+				fmt("for targets %s...", targets.front()->format_word()); 
 		}
 		throw ERROR_LOGICAL;
 	}
@@ -1108,7 +1118,7 @@ void Build::get_rule_list(vector <shared_ptr <Rule> > &rules,
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start() 
 			<< fmt("expected a rule, not %s", 
-			       (*iter)->format_start_err()); 
+			       (*iter)->format_start_word()); 
 		throw ERROR_LOGICAL;
 	}
 }
@@ -1126,7 +1136,7 @@ void Build::get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start() 
 			<< fmt("expected a dependency, not %s",
-			       (*iter)->format_start_err());
+			       (*iter)->format_start_word());
 		throw ERROR_LOGICAL;
 	}
 }
@@ -1137,7 +1147,7 @@ shared_ptr <Dependency> Build::get_target_dependency(string text)
 
 	if (text.empty()) {
 		place << fmt("%s: name must not be empty",
-			     name_format_err(text));
+			     name_format_word(text));
 		throw ERROR_LOGICAL;
 	}
 
@@ -1167,7 +1177,7 @@ shared_ptr <Dependency> Build::get_target_dependency(string text)
 
 	if (begin_name == end_name) {
 		place << fmt("%s: name must not be empty",
-			     name_format_err(text));
+			     name_format_word(text));
 		throw ERROR_LOGICAL; 
 	}
 
@@ -1199,8 +1209,8 @@ shared_ptr <Dependency> Build::get_target_dependency(string text)
 	
 	if (closing != 0) {
 		place << fmt("%s: unbalanced brackets %s[]%s", 
-			     name_format_err(text),
-			     Color::beg_name_quoted, Color::end_name_quoted);
+			     name_format_word(text),
+			     Color::word, Color::end);
 		throw ERROR_LOGICAL;
 	}
 

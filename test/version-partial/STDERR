@@ -1,1 +1,2 @@
-main.stu:3:10: invalid version number '1.1.'; required version number using %version must be of the form MAJOR.MINOR or MAJOR.MINOR.PATCH
+main.stu:3:10: expected version number of the form MAJOR.MINOR or MAJOR.MINOR.PATCH, not '1.1.'
+main.stu:3:1: after %version

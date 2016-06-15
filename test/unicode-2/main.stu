@@ -1,0 +1,6 @@
+# No rule for Unicode-named target.  Make sure the error message is
+# correct. 
+
+A:  Jérôme {
+	touch A
+}

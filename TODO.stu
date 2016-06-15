@@ -1,32 +1,10 @@
 #
-# Nice errors
+# Merge the two MARKERS. 
 #
 
-# nosuchfile, openat-2, openat-3:  mention for what the file was read 
-# option-c-14:  separate the two cases
-# option-f-nosuchfile: for what was the file needed?
-# option-rule-12: mention what was found
-# output-nocommand:  mention target
-# param-{000,001,002}: mention what actually follows
-# param-006: mention the name
-# param-008: mention the name
-# redirect-lone-output: what was found?
-# redirect-missing-filename: what was found?
-# redirect-output-transient:  mention the transient target
-# redirect-transient: mention what was found
-# space-parameter:  mention what was found
-# statement-missing: mention what was found
-# statement-newline:  mention what was found
-# statement-short:  phrase as "expected XXX, found YYY"
-# transient-input: mention what was found
-# unexpected-end-rule:  mention what was found
-# unfinished-double-quote, unfinished-single-quote:  mention what type of opening quote is used
-# unmatched-lbrace, unmatched-twoparens: mention that commands start with '"'
-# variable-name-1, variable-name-2: mention the variable name
-# varpar-5:  mention the full name
-# version-{invalid,long,partial}:  expected ...; found ...
-# wrong-quote:  show both quotes
-# empty0:  as a place, use the (first) empty file
+#
+# test/empty-1:  show the actual file, not 'test/empty-1'. 
+#
 
 #
 # Color in -h, -V
@@ -50,6 +28,11 @@
 #
 # Make use of autoconf to detect CLOCK_REALTIME_COARSE and enable
 # precise timestamps  
+#
+
+#
+# Have a 'log' option that logs stuff to a file:
+#  - errors
 #
 
 #==== Backward-incompatible features (in the switch to version 2) ====

@@ -31,13 +31,8 @@ test_one()
 	cat list.err
 	echo _________
 
-	grep -qE 'main.stu:.*invalid character '\''.*'\'' in parameter$' list.err || {
-		echo >&2 "*** Error output (1)"
-		exit 1
-	}
-
-	grep -qF \'"$output"\' list.err || {
-		echo >&2 "*** Error output (2)"
+	grep -qF 'character '\'"$output"\'' must not appear' list.err || {
+		echo >&2 "*** Error output"
 		exit 1
 	}
 }

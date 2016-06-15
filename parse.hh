@@ -148,7 +148,9 @@ private:
 
 	/* Parse a version statement.  VERSION_REQ is the version number given after
 	 * "%version", and PLACE its place. */
-	static void parse_version(string version_req, const Place &place_version); 
+	static void parse_version(string version_req, 
+				  const Place &place_version,
+				  const Place &place_percent); 
 };
 
 void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
@@ -313,10 +315,10 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			for (auto j= traces.begin();  j != traces.end();  ++j) {
 				if (j == traces.begin()) {
 					j->place <<
-						system_format_err
+						system_format
 						(fmt("%s%%include%s %s", 
-						     Color::beg_name_bare, Color::end_name_bare,
-						     name_format_err(filename_diagnostic)));
+						     Color::word, Color::end,
+						     name_format_word(filename_diagnostic)));
 				} else
 					j->print(); 
 			}
@@ -324,9 +326,9 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			if (place_diagnostic
 			    .get_type()
 			    != Place::Type::EMPTY)
-				place_diagnostic << system_format_err(filename_diagnostic); 
+				place_diagnostic << system_format(name_format_word(filename_diagnostic)); 
 			else
-				print_error(system_format_err(filename_diagnostic)); 
+				print_error(system_format(name_format_word(filename_diagnostic))); 
 		}
 		throw ERROR_LOGICAL; 
 
@@ -526,8 +528,10 @@ shared_ptr <Command> Parse::parse_command()
 	}
 
 	/* Reached the end of the file without closing the command */ 
-	current_place() << "unfinished command";
-	place_open << "beginning of command";
+	current_place() << fmt("expected end of command using %s",
+			       char_format_word('}'));
+	place_open << fmt("after opening %s",
+			  char_format_word('{'));
 	throw ERROR_LOGICAL;
 }
 
@@ -541,19 +545,28 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 	while (p < p_end) {
 		
 		if (*p == '\'' || *p == '"') {
-			char begin= *p; 
+
+			/* The quote character used in this quote */ 
+			char quote_character= *p; 
+
 			Place place_begin_quote(place_type, filename, line, p - p_line); 
 			++p;
 			while (p < p_end) {
 				if (*p == '\'' || *p == '"') {
-					if (*p != begin) {
-						current_place() << "wrong closing quote";
-						place_begin_quote << "opening quote";
+					if (*p != quote_character) {
+						current_place() << 
+							fmt("expected %s, not %s",
+							    char_format_word(quote_character),
+							    char_format_word(*p));
+						place_begin_quote << 
+							fmt("after opening %s",
+							    char_format_word(quote_character));
 						throw ERROR_LOGICAL;
 					}
 					++p;
 					break;
 				} else if (*p == '\\') {
+					Place place_backslash= current_place(); 
 					++p;
 					char c;
 					switch (*p) {
@@ -569,20 +582,34 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 					case '\"': c= '\"';  break;
 
 					default:
-						current_place()
-							<< frmt("invalid escape sequence %s\\%c%s", 
-								Color::beg_name_quoted, *p, Color::end_name_quoted);
+						if (*p >= 33 && *p <= 126)
+							place_backslash
+								<< frmt("invalid escape sequence %s\\%c%s",  
+									Color::word, *p, Color::end);
+						else 
+							place_backslash
+								<< frmt("invalid escape sequence %s\\\\%03o%s",  
+									Color::word, (unsigned char) *p, Color::end);
+						place_begin_quote <<
+							fmt("in quote started by %s", 
+							    char_format_word(quote_character));
 						throw ERROR_LOGICAL;
 					}
 					ret->last_text() += c; 
 					++p;
 				} else if (*p == '\n') {
-					current_place() << "unfinished quoted string";
-					place_begin_quote << "beginning of quote"; 
+					current_place() << fmt("expected a final %s",
+							       char_format_word(quote_character));
+					place_begin_quote << fmt("for quote started by %s",
+								 char_format_word(quote_character)); 
 					throw ERROR_LOGICAL;
 				} else if (*p == '\0') {
-					current_place() << frmt("names must not contain %s\\0%s",
-								Color::beg_name_quoted, Color::end_name_quoted); 
+					current_place() << 
+						fmt("invalid character %s",
+						    char_format_word('\0'));
+					place_begin_quote <<
+						fmt("in quote started by %s",
+						    char_format_word(quote_character)); 
 					throw ERROR_LOGICAL;
 				} else {
 					ret->last_text() += *p++; 
@@ -605,23 +632,34 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 			}
 			if (braces) {
 				if (p == p_end || *p != '}') {
-					current_place() 
-						<< fmt("invalid character %s in parameter",
-						       char_format_err(*p)); 
+					current_place() <<
+						fmt("character %s must not appear",
+						    char_format_word(*p)); 
+					place_dollar <<
+						fmt("in parameter started by %s",
+						    char_format_word('$')); 
 					explain_parameter_character(); 
 					throw ERROR_LOGICAL;
 				} 
 			}
 			if (p == p_parameter_name) {
-				place_parameter_name << fmt("%s must be followed by parameter name",
-							     char_format_err('$')); 
-				throw ERROR_LOGICAL;
-			}
-			if (isdigit(p_parameter_name[0])) {
-				place_parameter_name << "parameter name must not start with a digit"; 
+				if (p < p_end) 
+					place_parameter_name <<
+						fmt("expected parameter name, not %s",
+						    char_format_word(*p));
+				else
+					place_parameter_name <<
+						"expected parameter name";
+				place_dollar << fmt("after %s", char_format_word('$')); 
 				throw ERROR_LOGICAL;
 			}
 			const string parameter(p_parameter_name, p - p_parameter_name);
+			if (isdigit(parameter[0])) {
+				place_parameter_name << 
+					fmt("parameter name %s must not start with a digit",
+					    prefix_format_word(parameter, "$")); 
+				throw ERROR_LOGICAL;
+			}
 			if (braces)
 				++p; 
 			ret->append_parameter(parameter, place_dollar);
@@ -661,7 +699,9 @@ bool Parse::is_operator_char(char c)
 	return c != '\0' && nullptr != strchr(":<>=@;()?[]!&,\\|", c);
 }
 
-void Parse::parse_version(string version_req, const Place &place_version) 
+void Parse::parse_version(string version_req, 
+			  const Place &place_version,
+			  const Place &place_percent) 
 {
 	/* Note:  there may be any number of version statements in Stu
 	 * (in particular from multiple source files), so we don't keep
@@ -698,23 +738,25 @@ void Parse::parse_version(string version_req, const Place &place_version)
  wrong_version:
 	{
 		place_version <<
-			fmt("requested version %s%s%s using %s%%version%s is incompatible with this Stu's version %s%s%s",
-			    Color::beg_name_quoted, version_req, Color::end_name_quoted,
-			    Color::beg_name_bare, Color::end_name_bare,
-			    Color::beg_name_bare, STU_VERSION, Color::end_name_bare);
+			fmt("requested version %s using %s%%version%s is incompatible with this Stu's version %s%s%s",
+			    name_format_word(version_req),
+			    Color::word, Color::end,
+			    Color::word, STU_VERSION, Color::end);
 		throw ERROR_LOGICAL;
 	}
 
  error:	
 	place_version <<
-		fmt("invalid version number %s%s%s; "
-		    "required version number using %s%%version%s must be of the form "
-		    "%sMAJOR.MINOR%s or %sMAJOR.MINOR.PATCH%s", 
-		    Color::beg_name_quoted, version_req, Color::end_name_quoted,
-		    Color::beg_name_bare, Color::end_name_bare,
-		    Color::beg_name_bare, Color::end_name_bare,
-		    Color::beg_name_bare, Color::end_name_bare
-		);
+		fmt("expected version number of the form "
+		    "%sMAJOR.MINOR%s or %sMAJOR.MINOR.PATCH%s, "
+		    "not %s",
+		    Color::word, Color::end,
+		    Color::word, Color::end,
+		    name_format_word(version_req)); 
+	place_percent <<
+		fmt("after %s%%version%s",
+		    Color::word, Color::end); 
+		    
 	throw ERROR_LOGICAL;
 }
 
@@ -781,11 +823,11 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				if (p < p_end)
 					place_name
 						<< fmt("expected statement name, not %s",
-						       char_format_err(*p));
+						       char_format_word(*p));
 				else
 					place_name
 						<< "expected statement name";
-				place_percent << fmt("after %s", char_format_err('%')); 
+				place_percent << fmt("after %s", char_format_word('%')); 
 				throw ERROR_LOGICAL; 
 			}
 
@@ -798,14 +840,14 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				if (context == DYNAMIC) {
 					place_percent 
 						<< frmt("%s%%include%s must not appear in dynamic dependencies",
-							Color::beg_name_bare, Color::end_name_bare);
+							Color::word, Color::end);
 					throw ERROR_LOGICAL;
 				}
 				if (context == OPTION_C || context == OPTION_F) {
 					place_percent 
 						<< frmt("%s%%include%s must not appear in the argument to the %s-%c%s option",
-							Color::beg_name_bare, Color::end_name_bare,
-							Color::beg_name_bare, context == OPTION_C ? 'C' : 'F', Color::end_name_bare); 
+							Color::word, Color::end,
+							Color::word, context == OPTION_C ? 'C' : 'F', Color::end); 
 					throw ERROR_LOGICAL;
 				}
 
@@ -815,18 +857,18 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					Place(place_type, filename, line, p - p_line) <<
 						(p == p_end
 						 ? "expected filename"
-						 : fmt("expected filename, not %s", char_format_err(*p)));
+						 : fmt("expected filename, not %s", char_format_word(*p)));
 					place_percent << frmt("after %s%%include%s",
-							      Color::beg_name_bare, Color::end_name_bare); 
+							      Color::word, Color::end); 
 					throw ERROR_LOGICAL;
 				}
 				
 				if (place_param_name->get_n() != 0) {
 					place_param_name->place <<
 						fmt("name %s must not be parametrized",
-						    place_param_name->format_err());
+						    place_param_name->format_word());
 					place_percent << frmt("after %s%%include%s",
-							      Color::beg_name_bare, Color::end_name_bare); 
+							      Color::word, Color::end); 
 					throw ERROR_LOGICAL;
 				}
 			
@@ -834,8 +876,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 				Trace trace_stack
 					(place_param_name->place,
-					 fmt("%s%s%s is included from here", 
-					     Color::beg_name_quoted, filename_include, Color::end_name_quoted));
+					 fmt("%s is included from here", 
+					     name_format_word(filename_include))); 
 
 				traces.push_back(trace_stack);
 				filenames.push_back(filename); 
@@ -852,12 +894,12 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 								Trace trace(*j);
 								if (j == traces.rbegin()) {
 									trace.message= 
-										fmt("recursive inclusion of %s%s%s using %s%%include%s", 
-										    Color::beg_name_quoted, filename_include, Color::end_name_quoted,
-										    Color::beg_name_bare, Color::end_name_bare);
+										fmt("recursive inclusion of %s using %s%%include%s", 
+										    name_format_word(filename_include),
+										    Color::word, Color::end);
 								}
 								traces_backward.push_back(trace); 
-							}
+						}
 							for (auto &j:  traces_backward) {
 								j.print(); 
 							}
@@ -893,12 +935,13 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				const string version_required(p_version, p - p_version); 
 				Place place_version(place_type, filename, line, p_version - p_line); 
 
-				parse_version(version_required, place_version); 
+				parse_version(version_required, place_version, place_percent); 
 				
 			} else {
 				/* Invalid statement */ 
-				place_percent << fmt("invalid statement %s%%%s%s", 
-						     Color::beg_name_bare, name, Color::end_name_bare);
+				place_percent << 
+					fmt("invalid statement %s", 
+					    prefix_format_word(name, "%")); 
 				throw ERROR_LOGICAL;
 			}
 		}
@@ -909,7 +952,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			if (place_param_name == nullptr) {
 				current_place() 
 					<< fmt("invalid character %s", 
-					       char_format_err(*p));
+					       char_format_word(*p));
 				throw ERROR_LOGICAL;
 			}
 			assert(! place_param_name->empty());

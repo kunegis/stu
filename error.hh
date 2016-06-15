@@ -59,6 +59,7 @@
 #include "global.hh"
 #include "text.hh"
 #include "color.hh"
+#include "format.hh"
 
 #define ERROR_BUILD          1
 #define ERROR_LOGICAL        2
@@ -100,7 +101,7 @@ void print_error(string text)
 	assert(isupper(text[0]) || text[0] == '\''); 
 	assert(text[text.size() - 1] != '\n'); 
 	fprintf(stderr, "%s%s%s: *** %s\n", 
-		Color::beg_error_name_bare, dollar_zero, Color::end_error_name_bare,
+		Color::error_word, dollar_zero, Color::end,
 		text.c_str()); 
 }
 
@@ -108,8 +109,9 @@ void print_error(string text)
 void print_error_system(string text)
 {
 	assert(text.size() > 0 && text[0] != '') ;
-	fprintf(stderr, "%s%s%s: %s\n",
-		Color::beg_error_name_quoted, text.c_str(), Color::end_error_name_quoted,
+	string t= name_format_word(text); 
+	fprintf(stderr, "%s: %s\n",
+		t.c_str(),
 		strerror(errno));
 }
 
@@ -119,7 +121,7 @@ void print_warning(string text)
 	assert(isupper(text[0]) || text[0] == '\''); 
 	assert(text[text.size() - 1] != '\n'); 
 	fprintf(stderr, "%s%s%s: Warning: %s\n", 
-		Color::beg_warning, dollar_zero, Color::end_warning,
+		Color::warning, dollar_zero, Color::end,
 		text.c_str()); 
 }
 
@@ -129,13 +131,13 @@ void print_info(string text)
 	assert(isupper(text[0]) || text[0] == '\''); 
 	assert(text[text.size() - 1] != '\n'); 
 	fprintf(stderr, "%s%s%s: %s\n", 
-		Color::beg_warning, dollar_zero, Color::end_warning,
+		Color::warning, dollar_zero, Color::end,
 		text.c_str()); 
 }
 
 /* System error message.  Includes the given message, and the
  * ERRNO-based text.  Cf. perror().  Color is not added.   */
-string system_format_err(string message)
+string system_format(string message)
 {
 	return fmt("%s: %s",
 		   message,
@@ -223,10 +225,6 @@ private:
 	 * Others: Unused.
 	 */ 
 	unsigned column; 
-
-	/* Print the beginning of the line, with the place and the
-	 * whitespace, but not any message. */ 
-	void print_beginning() const;
 };
 
 /* A place along with a message.  This class is only used when traces
@@ -261,47 +259,43 @@ const Place &Place::operator<<(string text) const
 	assert(text != "");
 	assert(! isupper(text[0])); 
 
-	print_beginning();
-	fprintf(stderr, "%s\n", text.c_str()); 
-
-	return *this; 
-}
-
-void Place::print_beginning() const
-{
 	switch (type) {
 	default:  assert(false); 
 
 	case Type::EMPTY:
-		fputs("<empty>: ", stderr); 
-		break;
+		fprintf(stderr, 
+			"<empty>: %s\n",
+			text.c_str()); 
+		return *this; 
 
 	case Type::INPUT_FILE:
 		fprintf(stderr,
-			"%s%s%s:%s%u%s:%s%u%s: ", 
-			Color::beg_error_name_bare, get_filename_str(), Color::end_error_name_bare,
-			Color::beg_error, line, Color::end_error,
-			Color::beg_error, 1 + column, Color::end_error);  
-		break;
+			"%s%s%s:%s%u%s:%s%u%s: %s\n", 
+			Color::error_word, get_filename_str(), Color::end,
+			Color::error, line, Color::end,
+			Color::error, 1 + column, Color::end,
+			text.c_str());  
+		return *this; 
 
 	case Type::ARGV:
 	case Type::OPTION_C:
 	case Type::OPTION_f:
 	case Type::OPTION_F:
 
-		const char *text;
+		const char *t;
 		switch (type) {
 		default:  assert(false);
-		case Type::ARGV:     text= "Command line argument";  break; 
-		case Type::OPTION_C: text= "Option -C";  break;
-		case Type::OPTION_f: text= "Option -f";  break;
-		case Type::OPTION_F: text= "Option -F";  break;
+		case Type::ARGV:     t= "Command line argument";  break; 
+		case Type::OPTION_C: t= "Option -C";  break;
+		case Type::OPTION_f: t= "Option -f";  break;
+		case Type::OPTION_F: t= "Option -F";  break;
 		}
 
 		fprintf(stderr,
-			"%s%s%s: ",
-			Color::beg_error, text, Color::end_error);
-		break;
+			"%s%s%s: %s\n",
+			Color::error, t, Color::end,
+			text.c_str());
+		return *this;
 	}
 }
 

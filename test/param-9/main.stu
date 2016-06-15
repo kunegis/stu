@@ -1,0 +1,6 @@
+# '$' is the last character in the file.
+#
+# Warning:  some editors insert a newline at the end of the file
+# automatically.  This file ends in the '$' character.
+
+A:  bbb$

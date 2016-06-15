@@ -1,5 +1,7 @@
 #! /bin/sh
 
+UNUSED
+
 #
 # No multiple color codes on single line
 #

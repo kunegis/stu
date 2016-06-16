@@ -1,9 +1,4 @@
 #
-# Get rid of configure.ac.in.  Infer the version number
-# programmatically.  See GNU programs for examples. 
-#
-
-#
 # Get rid of errors on FreeBSD
 #  * -s and other flags
 #  * missing library functions 

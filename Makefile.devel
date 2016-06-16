@@ -103,7 +103,7 @@ clean:
 # Autoconf
 #
 
-all-auto:  configure.ac
+all-auto:  configure.ac VERSION
 	rm -Rf build-aux
 	mkdir build-aux
 	aclocal
@@ -111,5 +111,5 @@ all-auto:  configure.ac
 	autoconf
 	sh/replacelinks build-aux/*
 
-configure.ac:  VERSION configure.ac.in
-	sed <configure.ac.in >configure.ac -e 's,@@VERSION@@,'"$$(cat VERSION)"',g'
+##configure.ac:  VERSION configure.ac.in
+##	sed <configure.ac.in >configure.ac -e 's,@@VERSION@@,'"$$(cat VERSION)"',g'

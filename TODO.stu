@@ -1,11 +1,5 @@
 #
-# Get rid of errors on FreeBSD
-#  * -s and other flags
-#  * missing library functions 
-#
-
-#
-# Make sure that setting $CXX and $CXXFLAGS externally works. 
+# Compile & install on FreeBSD
 #
 
 #
@@ -28,6 +22,7 @@
 'abc"def'; # check with /bin/sh
 "network $name"; 
 "aaa'bbb"; # check with /bin/sh
+'\';       # A single backslash
 
 #
 # Use backslash for quoting?

@@ -1,8 +1,7 @@
 This file catalogues the usage of individual characters in Stu files.
 Since Stu is used to specify filenames, many characters that are used as
 operators in programming languages are allowed in filenames, such as
-'/', '~', etc.  Other characters are used as operators.  All operators
-in Stu consist of a single character.  
+'/', '~', etc.  Other characters are used as part of the Stu syntax. 
 
 == Allowed in unquoted names == 
 
@@ -15,7 +14,7 @@ a filename.)
 
 == Recognized as whitespace == 
 
-everything for which isspace() returns true in the C locale, i.e., only
+Everything for which isspace() returns true in the C locale, i.e., only
 ASCII spaces and tabs, etc. (" \f\n\r\t\v")
 
 == Not allowed outside quotes == 

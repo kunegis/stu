@@ -7,9 +7,9 @@ all-devel: \
     stu.1 stu.text version.hh \
     stu \
     test_options test_sed \
-    test_test.debug \
+    test_unit.debug \
     test_comments \
-    test_test.ndebug \
+    test_unit.ndebug \
     all-auto
 
 .PHONY:  all-test all-auto clean
@@ -71,14 +71,18 @@ test_options:  sh/testoptions stu.cc stu.1.in
 test_sed: sh/testsed . test test/* test/*/* 
 	sh/testsed && touch $@
 
-test_test.debug: stu.debug sh/mktest test 
-	sh/mktest && touch $@
-
-test_test.ndebug: stu sh/mktest test test/* test/*/* 
-	NDEBUG=1 sh/mktest && touch $@
-
 test_comments:  *.cc *.hh sh/testcomments . test test/* test/*/* 
 	sh/testcomments && touch $@
+
+#
+# Unit tests
+# 
+
+test_unit.debug: stu.debug sh/mktest test 
+	sh/mktest && touch $@
+
+test_unit.ndebug: stu sh/mktest test test/* test/*/* 
+	NDEBUG=1 sh/mktest && touch $@
 
 #
 # Manpage

@@ -372,7 +372,7 @@ shared_ptr <Rule> Build::build_rule()
 	/* Name of the copy-from file */ 
 	shared_ptr <Name_Token> name_copy;
 
-	if (command= is <Command> ()) {
+	if ((command= is <Command> ())) {
 		++iter; 
 		is_hardcode= false;
 	} else if (! had_colon && is_operator('=')) {
@@ -387,7 +387,7 @@ shared_ptr <Rule> Build::build_rule()
 			throw ERROR_LOGICAL;
 		}
 
-		if (command= is <Command> ()) {
+		if ((command= is <Command> ())) {
 			/* Hardcoded content */ 
 			++iter; 
 			assert(place_param_targets.size() != 0); 
@@ -416,7 +416,7 @@ shared_ptr <Rule> Build::build_rule()
 				++iter;
 			}
 
-			if (name_copy= is <Name_Token> ()) {
+			if ((name_copy= is <Name_Token> ())) {
 				/* Copy rule */ 
 				++iter;
 

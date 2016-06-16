@@ -17,15 +17,14 @@
 #    define _GLIBCXX_DEBUG
 #endif 
 
-/* Used for all of Stu.
- */
-using namespace std; 
-
 #include <unistd.h>
 #include <sys/time.h>
 
 #include <memory>
 #include <vector>
+
+/* Used for all of Stu */
+using namespace std; 
 
 #include "dependency.hh"
 #include "execution.hh"

@@ -26,7 +26,7 @@ private:
 	int value;
 
 	friend class Target; 
-	friend class std::hash <Target> ;
+	friend struct std::hash <Target> ;
 
 	/* Only used for hashing */
 	int get_value() const {

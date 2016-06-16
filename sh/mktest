@@ -21,6 +21,7 @@
 #		containing only (e.g.) ".svn".  Ignores dotfiles. 
 #     $NDEBUG	Set to non-empty to test the nondebug version; by default
 #		the debug version is tested 
+#     $VARIANT  Other variant of the compiled file 
 #     $verbose  Set to non-empty for verbose output 
 #
 # OUTPUT FILES
@@ -102,10 +103,14 @@ errors=0
 time_begin="$(date +%s)"
 
 rm -f stu.test
-if [ "$NDEBUG" ] ; then
-	ln -s stu stu.test
-else
-	ln -s stu.debug stu.test
+if [ "$VARIANT" ] ; then
+	ln -s stu."$VARIANT" stu.test
+else 
+	if [ "$NDEBUG" ] ; then
+		ln -s stu stu.test
+	else
+		ln -s stu.debug stu.test
+	fi
 fi
 
 exec 6>error.log

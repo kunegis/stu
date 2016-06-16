@@ -4,8 +4,8 @@
 #
 
 #
-# Have a 'log' option that logs stuff to a file:
-#  - errors
+# Run unit tests on FreeBSD
+#   - Make 'unbuffer' work 
 #
 
 #==== Backward-incompatible features (in the switch to version 2) ====

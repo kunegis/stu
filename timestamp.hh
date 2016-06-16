@@ -1,10 +1,20 @@
 #ifndef TIMESTAMP_HH
 #define TIMESTAMP_HH
 
-/* Wrapper around time_t or struct timespec.  
+/* Wrapper around time_t or struct timespec.  There are two variants:
+ *   - default:  1-second precision.
+ *   - mtim:     nanosecond precision (in principle).  Works only on Linux; see below. 
  */
 
-#ifdef USE_MTIM
+#ifndef USE_MTIM
+#   ifdef HAVE_CLOCK_REALTIME_COARSE
+#      define USE_MTIM 1
+#   else
+#      define USE_MTIM 0
+#   endif
+#endif
+
+#if USE_MTIM
 
 /* This variant is not used.  Using CLOCK_REALTIME it does not work, as:
  *  (1) Two files created in a row have timestamps in the wrong order 

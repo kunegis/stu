@@ -1,9 +1,4 @@
 #
-# Make use of autoconf to detect CLOCK_REALTIME_COARSE and enable
-# precise timestamps  
-#
-
-#
 # Run unit tests on FreeBSD
 #   - Make 'unbuffer' work 
 #

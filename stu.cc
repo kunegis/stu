@@ -306,7 +306,7 @@ int main(int argc, char **argv, char **envp)
 					/* The default file does not exist --
 					 * fail if no target is given */  
 					if (dependencies.empty() && ! had_option_c && ! option_print) {
-						print_error(fmt("Expected target or default file %s",
+						print_error(fmt("Expected a target or the default file %s",
 								name_format_word(FILENAME_INPUT_DEFAULT))); 
 
 						explain_no_target(); 

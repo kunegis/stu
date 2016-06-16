@@ -1,8 +1,4 @@
 #
-# Color in -h, -V
-#
-
-#
 # Get rid of configure.ac.in.  Infer the version number
 # programmatically.  See GNU programs for examples. 
 #

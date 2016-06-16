@@ -1,1 +1,1 @@
-../../stu.test: *** Expected target or default file 'main.stu'
+../../stu.test: *** Expected a target or the default file 'main.stu'

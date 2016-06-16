@@ -6,7 +6,7 @@ all-devel: \
     stu.debug \
     stu.1 stu.text version.hh \
     stu \
-    test_options test_sed test_color \
+    test_options test_sed \
     test_test.debug \
     test_comments \
     test_test.ndebug \
@@ -79,9 +79,6 @@ test_test.ndebug: stu sh/mktest test test/* test/*/*
 
 test_comments:  *.cc *.hh sh/testcomments . test test/* test/*/* 
 	sh/testcomments && touch $@
-
-test_color:  *.cc *.hh sh/testcolor
-	sh/testcolor && touch $@
 
 #
 # Manpage

@@ -1,0 +1,4 @@
+../../stu.test B
+touch A
+[1;31m../../stu.test[0m: *** Refusing to run recursive Stu; unset [1m$STU_STATUS[0m to circumvent
+[1;31mmain.stu[0m:[31m5[0m:[31m2[0m: command for [1mA[0m failed with exit code [1m4[0m

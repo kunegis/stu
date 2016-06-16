@@ -1,1 +1,1 @@
-../../stu.test: *** No rules and no targets given
+emptyfile.stu:2:1: expected a rule, because no target is given

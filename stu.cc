@@ -97,7 +97,8 @@ void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
 void read_file(string filename,
 	       int file_fd,
 	       Rule_Set &rule_set, 
-	       shared_ptr <Rule> &rule_first);
+	       shared_ptr <Rule> &rule_first,
+	       Place &place_first); 
 
 /* Read rules from the argument to the -F option */ 
 void read_option_F(const char *s,
@@ -113,7 +114,8 @@ int main(int argc, char **argv, char **envp)
 	/* Refuse to run when $STU_STATUS is set */ 
 	const char *const stu_status= getenv("STU_STATUS");
 	if (stu_status != nullptr) {
-		print_error("Refusing to run recursive Stu; unset $STU_STATUS to circumvent");
+		print_error(frmt("Refusing to run recursive Stu; unset %s$STU_STATUS%s to circumvent",
+				 Color::word, Color::end));
 		exit(ERROR_FATAL); 
 	}
 
@@ -130,10 +132,11 @@ int main(int argc, char **argv, char **envp)
 
 		/* Set to the first rule when there is one */ 
 		shared_ptr <Rule> rule_first;
+		/* Place of first file when no rule is contained */ 
+		Place place_first;
 
 		bool had_option_c= false; /* Both lower and upper case */
 		bool had_option_f= false; /* Both lower and upper case */
-		bool had_option_F= false; /* Only -F */
 
 		for (int c; (c= getopt(argc, argv, STU_OPTIONS)) != -1;) {
 			switch (c) {
@@ -191,13 +194,12 @@ int main(int argc, char **argv, char **envp)
 				}
 				had_option_f= true;
 				filenames.push_back(optarg); 
-				read_file(optarg, -1, Execution::rule_set, rule_first);
+				read_file(optarg, -1, Execution::rule_set, rule_first, place_first);
 			end:
 				break;
 
 			case 'F':
 				had_option_f= true;
-				had_option_F= true; 
 				read_option_F(optarg, Execution::rule_set, rule_first);
 				break;
 
@@ -298,7 +300,7 @@ int main(int argc, char **argv, char **envp)
 			filenames.push_back(FILENAME_INPUT_DEFAULT); 
 			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY); 
 			if (file_fd >= 0) {
-				read_file("", file_fd, Execution::rule_set, rule_first); 
+				read_file("", file_fd, Execution::rule_set, rule_first, place_first); 
 			} else {
 				if (errno == ENOENT) { 
 					/* The default file does not exist --
@@ -328,11 +330,12 @@ int main(int argc, char **argv, char **envp)
 		if (dependencies.empty() && ! had_option_c) {
 
 			if (rule_first == nullptr) {
-				print_error
-					((filenames.size() == 1 && ! had_option_F)
-					 ? fmt("Input file %s does not contain any rules and no target given", 
-					       name_format_word(filenames[0]))
-					 : "No rules and no targets given");
+				if (! place_first.empty()) {
+					place_first
+						<< "expected a rule, because no target is given";
+				} else {
+					print_error("No rules and no targets given");
+				}
 				exit(ERROR_FATAL);
 			}
 
@@ -412,7 +415,8 @@ void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
 void read_file(string filename,
 	       int file_fd,
 	       Rule_Set &rule_set, 
-	       shared_ptr <Rule> &rule_first)
+	       shared_ptr <Rule> &rule_first,
+	       Place &place_first)
 {
 	assert(file_fd == -1 || file_fd > 1); 
 
@@ -448,6 +452,10 @@ void read_file(string filename,
 		if (i != rules.end()) {
 			rule_first= *i; 
 		}
+	}
+
+	if (rules.empty() && place_first.empty()) {
+		place_first= place_end;
 	}
 }
 

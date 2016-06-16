@@ -161,7 +161,7 @@ public:
 		OPTION_F,     /* Option -F */
 	};
 
-	/* Empty. */ 
+	/* Empty */ 
 	Place() 
 		:  type(Type::EMPTY) 
 	{ }

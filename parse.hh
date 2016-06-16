@@ -221,6 +221,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		 * on it, i.e., return an error and refuse to create a memory
 		 * map of length zero. */  
 		if (S_ISREG(buf.st_mode) && buf.st_size == 0) {
+			place_end= Place(Place::Type::INPUT_FILE, filename, 1, 0); 
 			goto return_close; 
 		}
 

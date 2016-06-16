@@ -1,8 +1,4 @@
 #
-# Compile & install on FreeBSD
-#
-
-#
 # Make use of autoconf to detect CLOCK_REALTIME_COARSE and enable
 # precise timestamps  
 #

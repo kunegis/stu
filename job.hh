@@ -122,6 +122,8 @@ private:
 
 	static void handler_interrupt(int sig);
 
+  static void handler_dummy(int sig, siginfo_t *, void *);
+
 	/* The number of jobs run.  
 	 * exec:     executed
 	 * success:  returned successfully
@@ -447,7 +449,7 @@ pid_t Job::wait(int *status)
 	if (pid > 0)
 		return pid; 
 
-	/* Any SIGCHILD sent after the last call to sigwaitinfo() will
+	/* Any SIGCHLD sent after the last call to sigwaitinfo() will
 	 * be ready for receiving, even those received between the last
 	 * call to waitpid() and the following call to sigwaitinfo().
 	 * This excludes a deadlock which would be possible if we would
@@ -577,6 +579,11 @@ void Job::handler_interrupt(int sig)
 	 * delivered after this handler is done. */ 
 }
 
+void Job::handler_dummy(int, siginfo_t *, void *)
+{
+  /* Do nothing */
+}
+
 Job::Signal::Signal()
 {
 	struct sigaction act_interrupt;
@@ -593,8 +600,7 @@ Job::Signal::Signal()
 	}
 
 	/* These are all signals that by default would terminate the process */ 
-	/* Note:  Bash does something very similar. 
-	 */
+	/* Note:  Bash does something very similar */
 	int signals[]= { 
 		SIGTERM, SIGINT, SIGQUIT, SIGABRT, SIGSEGV, SIGPIPE, SIGILL, SIGHUP,
 	};
@@ -609,6 +615,26 @@ Job::Signal::Signal()
 		}
 	}
 	
+	/* Handling of SIGCHLD and SIGUSR1.  These are the signals
+	 * that we wait for in the main loop.  They are blocked. 
+	 * At the same time, the blocked signal must have a signal 
+	 * handler (which can do nothing), as otherwise POSIX allows the
+	 * signal to be discarded.  Note that Linux does discard it,
+	 * while FreeBSD does.  */
+	/* We have to use sigaction() rather than signal() as only
+	 * sigaction() guarantees that the signal can be queued, 
+	 * as per POSIX.  */
+
+	struct sigaction sa;
+	sa.sa_sigaction= Job::handler_dummy;
+	if (sigemptyset(& sa.sa_mask)) {
+	  perror("sigemptyset");
+	  exit(ERROR_FATAL);
+	}
+	sa.sa_flags= SA_SIGINFO;
+	sigaction(SIGCHLD, &sa, nullptr);
+	sigaction(SIGUSR1, &sa, nullptr);
+	   
 	/* Block signals so we can use sigwait() to receive them */ 
 	if (0 != sigemptyset(&set_block)) {
 		perror("sigemptyset");
@@ -626,6 +652,7 @@ Job::Signal::Signal()
 		perror("sigprocmask");
 		exit(ERROR_FATAL); 
 	}
+
 }
 
 #endif /* ! JOB_HH */

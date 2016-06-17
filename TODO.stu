@@ -1,4 +1,11 @@
 #
+# Errors
+#
+
+# duplicate-parameter:  show the full parameter
+# 'duplicate':  change to 'target X cannot have second rule' / 'shadowing previous rule', etc.
+
+#
 # Run unit tests on FreeBSD
 #   - Make 'unbuffer' work 
 #
@@ -46,6 +53,8 @@ A:
 
 # Maybe, invert the meaning of '-' and '+' to have '+' mean "switch
 # on". 
+
+# Have corresponding command-line options. 
 
 #
 # Deprecate !, ?, and &, and define as reserved for future extension. 

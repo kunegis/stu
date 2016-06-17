@@ -357,7 +357,7 @@ do
 		if { [ -r TTYSTDOUTERR ] || [ -r EXITCODE ]; } && ! [ -r NOTTY ]; then
 			../../sh/delete_tmps || exit 1
 			echo ../../stu.test "$CMD" '[TTY]'
-			eval unbuffer ../../stu.test $CMD \>list.def.out 
+			eval ../../sh/tty ../../stu.test $CMD \>list.def.out 
 			exitcode_actual="$?"
 
 			# Exit code

@@ -1,0 +1,12 @@
+#! /usr/bin/tclsh
+#
+# Simulate a TTY
+#
+
+package require Expect
+
+set stty_init "-opost"
+set timeout -1
+eval [list spawn -noecho] $argv
+expect
+exit [lindex [wait] 3]

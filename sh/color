@@ -56,9 +56,9 @@ do
 		echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 		echo 
 
-		# 'unbuffer' makes sure that Stu sees stderr as a TTY,
+		# 'sh/tty' makes sure that Stu sees stderr as a TTY,
 		# and outputs both stdout and stderr of Stu to stdout. 
-		eval unbuffer ../../stu.test $CMD 
+		eval ../../sh/tty ../../stu.test $CMD 
 
 		echo 
 

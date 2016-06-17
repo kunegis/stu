@@ -256,6 +256,7 @@ int main(int argc, char **argv, char **envp)
 				puts("License GPLv3+: GNU GPL version 3 or later <http:/""/gnu.org/licenses/gpl.html>");
 				puts("This is free software: you are free to change and redistribute it.");
 				puts("There is NO WARRANTY, to the extent permitted by law.");
+				printf("USE_MTIM = %u\n", USE_MTIM); 
 				if (ferror(stdout)) {
 					print_error_system("puts"); 
 					exit(ERROR_FATAL);

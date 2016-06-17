@@ -9,18 +9,20 @@ REQUIREMENTS
 * Stu assumes ASCII
 * POSIX
 * Stu calls /bin/sh and /bin/cp at runtime.
+* ANSI color code-compatible terminal
 
 COMPILATION OPTIONS
 
-* USE_MTIM (default: unset):  Use struct timespec instead of time_t for
-  timekeeping.  struct timespec supports nanosecond timestamps in
-  principle. In practice, most systems are likely to support only a
-  precision on the order of a millisecond.  Works only on Linux, as it
-  uses CLOCK_REALIME_COARSE.  See the comments in timestamp.hh. 
+* USE_MTIM (default: enabled if CLOCK_REALTIME_COARSE is present):  Use
+  struct timespec instead of time_t for timekeeping.  struct timespec
+  supports nanosecond timestamps in principle. In practice, most systems
+  are likely to support only a precision on the order of a millisecond.
+  Works only on Linux, as it uses CLOCK_REALTIME_COARSE.  See the
+  comments in timestamp.hh.  
 
 UNIT TESTS
 
 * (optional) Execute all unit tests using 'make -f Makefile.devel'.  If
   an error is reported, please report it to the developers.  It takes
-  about five minutes (running the tests, not reorting to the
+  about five minutes (running the tests, not reporting to the
   developers).   

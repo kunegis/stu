@@ -1,8 +1,3 @@
-#
-# Run unit tests on FreeBSD
-#   - Make 'unbuffer' work 
-#
-
 #==== Backward-incompatible features (in the switch to version 2) ====
 
 #

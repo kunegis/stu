@@ -6,10 +6,10 @@ rm -f ?
 
 ../../stu.test -j2 >list.out 2>list.err
 
-n="$(grep -F printf list.out | wc -l)"
+n="$(echo $(grep -F printf list.out | wc -l))"
 
 [ "$n" = 1 ] || {
-	echo >&2 "*** Count"
+	echo >&2 "*** Count must be one"
 	exit 1
 }
 

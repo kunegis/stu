@@ -12,11 +12,11 @@
 now="$(LC_ALL=C date)"
 year="$(echo $now | sed -e 's/^.* \([0-9]\{1,\}\)$/\1/')"
 year_past="$(expr $year - 2)"
-date="$year_past-01-01"
+date="$year_past-01-01T07:00:00"
 
 rm -f A X
 
-touch X -d "$date"
+touch -d "$date" X
 
 ../../stu.test 
 exitcode="$?"

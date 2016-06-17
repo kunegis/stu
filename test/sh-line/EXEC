@@ -1,17 +1,20 @@
 #! /bin/sh
 
-rm -f list.err
+rm -f list.err || exit 1
 
 echo ../../stu.test
 ../../stu.test 2>list.err
-exitcode=$?
+exitcode="$?"
 
-if [ $exitcode != 1 ] ; then
+if [ "$exitcode" != 1 ] ; then
 	echo '*** (A)'
 	exit 1
 fi
 
-grep -Eq '^main.stu:7:.*wefvunwoiefuvuviwwve' list.err || {
+# Some shell with output $0, and some won't.  We can't do more here
+# than check for the filename.
+
+grep -Eq 'wefvunwoiefuvuviwwve' list.err || {
 	echo '*** (B)'
 	echo 'list.err:'
 	echo ____________

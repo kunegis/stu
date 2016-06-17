@@ -14,5 +14,5 @@ D {
 	rm -f ?
 
 	# Create an old file 'C'
-	touch -d "$(expr "$(date +%Y)" - 2)"-01-01 C 
+	touch -d "$(expr "$(date +%Y)" - 2)"-01-01T07:00:00 C 
 }

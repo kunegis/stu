@@ -13,6 +13,6 @@ B:
 	now="$(LC_ALL=C date)"
 	year="$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')"
 	year_future="$(expr 2 + $year)"
-	date="$year_future-01-01"
-	touch B -d "$date"
+	date="$year_future-01-01T07:00:00"
+	touch -d "$date" B
 }

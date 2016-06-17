@@ -314,14 +314,31 @@ pid_t Job::start(string command,
 		 * for Make.  It is particularly important for Stu, as Stu
 		 * invokes the whole (possibly multiline) command in one step. */
 		const char *argv[]= {argv0.c_str(), 
-				     shell_options, "-c", arg, nullptr, nullptr}; 
+				     shell_options, "-c", arg, nullptr}; 
+
+		/* Special handling of the case when the command
+		 * starts with '-' or '+'.  In that case, we prepend
+		 * the command with a space.  We cannot use '--'
+		 * because Linux and FreeBSD handle '--' differently:
+		 *
+		 *      /bin/sh -c -- '+x' 
+		 *      on Linux: Execute the command '+x'
+		 *      on FreeBSD: Execute the command '--' and set
+		 *                  the +x option
+		 *
+		 *      /bin/sh -c +x
+		 *      on Linux: Set the +x option, and missing
+		 *                argument to -c
+		 *      on FreeBSD: Execute the command '+x'
+		 *
+		 * I think Linux is right, but I'm not sure, so we
+		 * don't use that. 
+		 */
 
 		if (arg[0] == '-' || arg[0] == '+') {
-			/* Command starts with '-':  insert the parameter '--'
-			 * before it so the shell does not interpret it as an
-			 * option. */ 
-			argv[3]= "--";
-			argv[4]= arg;
+		  command= ' ' + command;
+		  arg= command.c_str();
+		  argv[3]= arg;
 		}
 
 		/* Output redirection */

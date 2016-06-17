@@ -1,7 +1,10 @@
-#! /usr/bin/tclsh
+#! /bin/sh
 #
 # Simulate a TTY
 #
+
+# The next line is execute by sh, not by tcl \
+exec tclsh8.6 "$0" ${1+"$@"}
 
 package require Expect
 

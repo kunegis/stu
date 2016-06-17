@@ -7,10 +7,7 @@ find_sed() {
 	find . -type f -a \! -path './.git*' -a \! -name '*~' | xargs grep -lE -- 'sed\s+-re'
 }
 
-# The extra 'echo' is to get rid of whitespace.
 count="$(echo $(find_sed | wc -l))"
-
-## echo "count=$count"
 
 [ "$count" = 0 ] || {
 	echo >&2 "*** 'sed -r' must not be used:"

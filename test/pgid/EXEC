@@ -5,12 +5,12 @@ set -e
 rm -f X Y Z
 
 ../../stu.test -j2 >list.out 2>list.err &
-pid=$!
+pid="$!"
 
 sleep 2
 
-if [ $(ps -fe | grep 2837415 | grep -v grep | wc -l) = 0 ]; then
-	echo >&2 "$0:  *** stu is not running"
+if [ "$(echo $(ps -fA | grep 2837415 | grep -v grep | wc -l))" = 0 ]; then
+	echo >&2 "$0:  *** Stu is not running"
 	exit 1
 fi
 
@@ -18,9 +18,9 @@ kill -TERM $pid
 
 sleep 1
 
-if [ $(ps -fe | grep 2837415 | grep -v grep | wc -l) != 0 ]; then
-	echo >&2 "$0:  *** sleep is still running"
-	ps -fe | grep 2837415
+if [ "$(echo $(ps -fA | grep 2837415 | grep -v grep | wc -l))" != 0 ]; then
+	echo >&2 "$0:  *** Sleep is still running"
+	ps -fA | grep 2837415
 	exit 1
 fi
 

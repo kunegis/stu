@@ -4,13 +4,13 @@ now="$(LC_ALL=C date)"
 year="$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')"
 year_a="$(expr $year - 3)"
 year_b="$(expr $year - 2)"
-date_a="$year_a-01-01"
-date_b="$year_b-01-01"
+date_a="$year_a-01-01T07:00:00"
+date_b="$year_b-01-01T07:00:00"
 
 rm -f A B
 
-touch A -d "$date_a"
-touch B -d "$date_b"
+touch -d "$date_a" A
+touch -d "$date_b" B
 
 ../../stu.test 2>list.err
 exitcode="$?"

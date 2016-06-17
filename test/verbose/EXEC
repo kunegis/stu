@@ -12,7 +12,7 @@ exitcode="$?"
 [ -r list.out -a \! -s list.out ] || { echo >&2 '*** Stdout not empty' ; exit 1 ; }
 [ -r list.err -a -s list.err ] || { echo >&2 '*** Stderr empty' ; exit 1 ; }
 
-lines="$(<list.err wc -l)"
+lines="$(echo $(<list.err wc -l))"
 [ "$lines" -gt 10 ] || { echo >&2 '*** Not enough error output' ; exit 1 ; }
 grep -Eqv '^VERBOSE  ' list.err && { echo >&2 '*** Invalid error output' ; exit 1 ; }
 

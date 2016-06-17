@@ -23,7 +23,7 @@ exitcode="$?"
 	exit 1
 }
 
-lines="$(cat A | wc -l)"
+lines="$(echo $(cat A | wc -l))"
 
 [ "$lines" = 2 ] || {
 	echo >&2 "*** File 'A' must contain exactly two lines"

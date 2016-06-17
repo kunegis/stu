@@ -1,4 +1,4 @@
-touch -d "$(expr 2 + "$(date +%Y)")-01-01" B
+touch -d "$(expr 2 + "$(date +%Y)")-01-01T07:00:00" B
 [35m../../stu.test[0m: Warning: File [1mB[0m has modification time in the future
 touch B
 [1;31mmain.stu[0m:[31m11[0m:[31m7[0m: file [1mA[0m was not built by command

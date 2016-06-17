@@ -9,6 +9,6 @@ B C {
 }
 
 @init {
-	touch -d "$(expr $(date +%Y) - 2)-01-01" C 
+	touch -d "$(expr $(date +%Y) - 2)-01-01T07:00:00" C 
 	echo INITIALIZE
 }

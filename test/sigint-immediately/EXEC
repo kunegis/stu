@@ -17,7 +17,7 @@ kill -s TERM "$pid" || {
 
 sleep 1
 
-if [ $(ps -fe | grep 74634275 | grep -v grep | wc -l) \!= 0 ]; then
+if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" \!= 0 ]; then
 	echo >&2 "$0: *** Stu is still running"
 	exit 1
 fi

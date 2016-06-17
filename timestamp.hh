@@ -7,7 +7,7 @@
  */
 
 #ifndef USE_MTIM
-#   ifdef HAVE_CLOCK_REALTIME_COARSE
+#   if HAVE_CLOCK_REALTIME_COARSE
 #      define USE_MTIM 1
 #   else
 #      define USE_MTIM 0

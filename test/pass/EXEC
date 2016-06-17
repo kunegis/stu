@@ -7,7 +7,7 @@ olden() {
 	for file in ? ; do
 		year="$(date +%Y)"
 		year_old="$(expr $year - 2)"
-		touch -d $year_old-01-01 "$file"
+		touch -d "$year_old"-01-01T07:00:00 "$file"
 	done
 }
 

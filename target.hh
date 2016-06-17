@@ -615,6 +615,12 @@ public:
 		   place(place_)
 	{ }
 
+	/* Compares only the content, not the place */ 
+	bool operator == (const Place_Param_Target &that) const {
+		return this->type == that.type &&
+			this->place_param_name == that.place_param_name; 
+	}
+
 	string format(Style style, bool &need_quotes) const {
 		Target target(type, place_param_name.raw());
 		return target.format(style, need_quotes); 
@@ -624,7 +630,7 @@ public:
 		Target target(type, place_param_name.raw());
 		return target.format_word(); 
 	}
-
+	
 	string format_out() const {
 		Target target(type, place_param_name.raw());
 		return target.format_out(); 

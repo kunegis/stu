@@ -1,11 +1,4 @@
 #
-# Errors
-#
-
-# duplicate-parameter:  show the full parameter
-# 'duplicate':  change to 'target X cannot have second rule' / 'shadowing previous rule', etc.
-
-#
 # Run unit tests on FreeBSD
 #   - Make 'unbuffer' work 
 #

@@ -445,23 +445,38 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 
 void Rule_Set::add(vector <shared_ptr <Rule> > &rules_) 
 {
-	for (auto &i:  rules_) {
+	for (auto &rule:  rules_) {
 
-		shared_ptr <Rule> rule= i;
+		/* Check that the rule doesn't have a duplicate target */ 
+		for (unsigned i= 0;  i < rule->place_param_targets.size();  ++i) {
+			for (unsigned j= 0;  j < i;  ++j) {
+				if (*rule->place_param_targets[i] ==
+				    *rule->place_param_targets[j]) {
+					rule->place_param_targets[i]->place << 
+						fmt("there must not be a target %s",
+						    rule->place_param_targets[i]->format_word()); 
+					rule->place_param_targets[j]->place << 
+						fmt("shadowing target %s of the same rule",
+						    rule->place_param_targets[j]->format_word()); 
+					throw ERROR_LOGICAL; 
+				}
+			}
+		}
 
 		if (! rule->is_parametrized()) {
 			for (auto place_param_target:  rule->place_param_targets) {
 				Target target= place_param_target->unparametrized(); 
 				if (rules_unparametrized.count(target)) {
 					place_param_target->place <<
-						fmt("duplicate rule for %s", 
+						fmt("there must not be a second rule for target %s", 
 						    target.format_word());
 					auto rule_2= rules_unparametrized.at(target); 
 					for (auto place_param_target_2: rule_2->place_param_targets) {
 						assert(place_param_target_2->place_param_name.get_n() == 0);
 						if (place_param_target_2->unparametrized() == target) {
 							place_param_target_2->place << 
-								fmt("shadows previous rule for %s", target.format_word());  
+								fmt("shadowing previous rule %s", 
+								    target.format_word());  
 							break;
 						}
 					}
@@ -470,7 +485,6 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 				rules_unparametrized[target]= rule;
 			}
 		} else {
-
 			rules_parametrized.push_back(rule); 
 		}
 	}

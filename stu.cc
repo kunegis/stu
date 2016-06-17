@@ -486,4 +486,3 @@ void read_option_F(const char *s,
 		}
 	}
 }
-

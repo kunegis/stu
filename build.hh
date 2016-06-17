@@ -251,12 +251,12 @@ shared_ptr <Rule> Build::build_rule()
 		if (! place_output_new.empty()) {
 			if (! place_output.empty()) {
 				place_output_new <<
-					fmt("duplicate output redirection %s",
+					fmt("there must not be a second output redirection %s",
 					    prefix_format_word(target_name->raw(), ">")); 
 				assert(place_param_targets[redirect_index]->place_param_name.get_n() == 0);
 				assert(place_param_targets[redirect_index]->type == Type::FILE); 
 				place_output <<
-					fmt("shadows previous output redirection %s",
+					fmt("shadowing previous output redirection %s",
 					    prefix_format_word(place_param_targets[redirect_index]->unparametrized().name, ">")); 
 				throw ERROR_LOGICAL;
 			}
@@ -279,7 +279,8 @@ shared_ptr <Rule> Build::build_rule()
 		string parameter_duplicate;
 		if ((parameter_duplicate= target_name->get_duplicate_parameter()) != "") {
 			place_target <<
-				fmt("target contains duplicate parameter %s", 
+				fmt("target %s must not contain duplicate parameter %s", 
+				    target_name->format_word(),
 				    prefix_format_word(parameter_duplicate, "$")); 
 			throw ERROR_LOGICAL;
 		}
@@ -880,10 +881,10 @@ shared_ptr <Dependency> Build
 
 	if (has_input && ! place_param_name_input.empty()) {
 		place_param_name->place << 
-			fmt("duplicate input redirection %s", 
+			fmt("there must not be a second input redirection %s", 
 			    prefix_format_word(place_param_name->raw(), "<")); 
 		place_param_name_input.place << 
-			fmt("shadows previous input redirection %s<%s%s", 
+			fmt("shadowing previous input redirection %s<%s%s", 
 			    prefix_format_word(place_param_name_input.raw(), "<")); 
 		if (targets.size() == 1) {
 			targets.front()->place <<
@@ -1045,10 +1046,10 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 
 	if (has_input && ! place_param_name_input.empty()) {
 		name_token->place << 
-			fmt("duplicate input redirection %s", 
+			fmt("there must not be a second input redirection %s", 
 			    prefix_format_word(name_token->raw(), "<")); 
 		place_param_name_input.place << 
-			fmt("shadows previous input redirection %s", 
+			fmt("shadowing previous input redirection %s", 
 			    prefix_format_word(place_param_name_input.raw(), "<")); 
 		if (targets.size() == 1) {
 			targets.front()->place <<

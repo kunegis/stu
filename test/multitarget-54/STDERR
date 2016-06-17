@@ -1,2 +1,2 @@
-main.stu:1:3: duplicate rule for 'A'
-main.stu:1:1: shadows previous rule for 'A'
+main.stu:1:3: there must not be a target 'A'
+main.stu:1:1: shadowing target 'A' of the same rule

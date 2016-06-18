@@ -18,7 +18,7 @@
 # Don't allow filenames that start with '+' or '-', but allow these in
 # the middle or at the end of filenames.  
 #
-# Maybe also those beginning with '~'. 
+# Also those beginning with '~'. 
 #
 
 #

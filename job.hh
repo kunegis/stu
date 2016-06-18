@@ -121,8 +121,7 @@ private:
 	pid_t pid;
 
 	static void handler_interrupt(int sig);
-
-  static void handler_dummy(int sig, siginfo_t *, void *);
+	static void handler_dummy(int sig, siginfo_t *, void *);
 
 	/* The number of jobs run.  
 	 * exec:     executed
@@ -307,12 +306,12 @@ pid_t Job::start(string command,
 		const string argv0= place_command.as_argv0(); 
 
 		/* The one-character options to the shell */
-		const char *shell_options= option_individual ? "-ex" : "-e"; 
-
 		/* We use the -e option ('error'), which makes the shell abort
 		 * on a command that fails.  This is also what POSIX prescribes
 		 * for Make.  It is particularly important for Stu, as Stu
 		 * invokes the whole (possibly multiline) command in one step. */
+		const char *shell_options= option_individual ? "-ex" : "-e"; 
+
 		const char *argv[]= {argv0.c_str(), 
 				     shell_options, "-c", arg, nullptr}; 
 
@@ -331,14 +330,13 @@ pid_t Job::start(string command,
 		 *                argument to -c
 		 *      on FreeBSD: Execute the command '+x'
 		 *
-		 * I think Linux is right, but I'm not sure, so we
-		 * don't use that. 
+		 * See:  http://stackoverflow.com/questions/37886661/handling-of-in-arguments-of-bin-sh-posix-vs-implementations-by-bash-dash 
 		 */
 
 		if (arg[0] == '-' || arg[0] == '+') {
-		  command= ' ' + command;
-		  arg= command.c_str();
-		  argv[3]= arg;
+			command= ' ' + command;
+			arg= command.c_str();
+			argv[3]= arg;
 		}
 
 		/* Output redirection */
@@ -598,7 +596,7 @@ void Job::handler_interrupt(int sig)
 
 void Job::handler_dummy(int, siginfo_t *, void *)
 {
-  /* Do nothing */
+	/* Do nothing */
 }
 
 Job::Signal::Signal()
@@ -669,7 +667,6 @@ Job::Signal::Signal()
 		perror("sigprocmask");
 		exit(ERROR_FATAL); 
 	}
-
 }
 
 #endif /* ! JOB_HH */

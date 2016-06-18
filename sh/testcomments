@@ -6,7 +6,7 @@
 
 ret=0
 
-grep -lF '//' *.cc *.hh && {
+grep -lE '(^|[^:])//' *.cc *.hh && {
 	echo >&2 "*** found '//'"
 	ret=1
 }

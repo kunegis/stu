@@ -1,8 +1,7 @@
 #ifndef PARSE_HH
 #define PARSE_HH
 
-/* Coding for tokenization, i.e., parsing Stu source code into an array
- * of tokens.  
+/* Tokenization.  I.e., parsing Stu source code into an array of tokens.    
  */
 
 /* On errors, these functions print a message and throw integers error
@@ -184,8 +183,8 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		}
 
 		/* Map empty string to stdin */ 
-		assert(! (filename == "" && fd >= 0));
 		if (filename == "") {
+			assert(fd == -1); 
 			fd= 0; 
 			file= stdin;
 		}
@@ -208,7 +207,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			int fd2= openat(fd, FILENAME_INPUT_DEFAULT, O_RDONLY);
 			if (fd2 < 0) 
 				goto error_close;
-			if (0 > close(fd)) {
+			if (close(fd) < 0) {
 				close(fd2);
 				goto error;
 			}

@@ -1,794 +1,802 @@
-STU(1)			  University of	Koblenz-Landau			  STU(1)
+STU(1)                   University of Koblenz-Landau                   STU(1)
 
 
 
-NNAAMMEE
+NAME
        stu - Build automation
 
-SSYYNNOOPPSSIISS
-       ssttuu [ -f	_F_I_L_E_N_A_M_E ] [ _O_P_T_I_O_N ]... [ _T_A_R_G_E_T ]...
+SYNOPSIS
+       stu [ -f FILENAME ] [ OPTION ]... [ TARGET ]...
 
-DDEESSCCRRIIPPTTIIOONN
-       Stu  is a tool for build	automation.  Like Make,	it is used to call other
-       programs	in order to build files.  Stu has two features that set	it apart
-       from Make: (1) dynamic dependencies:  The dependencies of a target can be
-       themselves computed by a	command.  When	'[FILENAME]'  (a  filename  cur-
-       rounded	by  angle  brackets) is	used as	a dependency, Stu will build the
-       file FILENAME and read dependencies from	it.  (2) Parameters:   Names  of
-       files (and transient targets) can contain parameters written using dollar
-       syntax.	For example, a rule with a target filename 'list.$name'	will  be
-       used  to	 build any file	matching the pattern 'list.*', and the parameter
-       $name can be used in names of dependencies  and	in  the	 build	command.
-       Targets may contain any number of parameters.
+DESCRIPTION
+       Stu  is  a  tool  for  build automation.  Like Make, it is used to call
+       other programs in order to build files.  Stu has two features that  set
+       it  apart  from  Make: (1) dynamic dependencies:  The dependencies of a
+       target can be themselves computed by a command.  When  '[FILENAME]'  (a
+       filename  currounded  by  angle  brackets) is used as a dependency, Stu
+       will build the file FILENAME and read dependencies from it.  (2) Param‐
+       eters:   Names  of files (and transient targets) can contain parameters
+       written using dollar syntax.  For example, a rule with a  target  file‐
+       name  'list.$name'  will be used to build any file matching the pattern
+       'list.*', and the parameter $name can be used in names of  dependencies
+       and  in  the  build command.  Targets may contain any number of parame‐
+       ters.
 
-       In  general,  Stu is very much like Make:  Instead of a 'Makefile', there
-       should be a file	named 'main.stu', which	is read	 automatically	by  Stu.
-       Also like Make, Stu will	build the first	target it finds, except	if given
-       an explicit target to built.  Stu is designed to	follow	the  conventions
-       of  Make, of the	shell, and of Unix and POSIX in	general.  As an	example,
-       the options -f and -k have the same meaning in Stu as they do in	Make.
+       In general, Stu is very much like Make:  Instead of a 'Makefile', there
+       should  be a file named 'main.stu', which is read automatically by Stu.
+       Also like Make, Stu will build the first target  it  finds,  except  if
+       given  an explicit target to built.  Stu is designed to follow the con‐
+       ventions of Make, of the shell, and of Unix and POSIX in  general.   As
+       an  example, the options -f and -k have the same meaning in Stu as they
+       do in Make.
 
-       Rules for building files	are read from the file 'main.stu', from	 a  file
-       passed by the -f	option,	or using the -F	option.
+       Rules for building files are read from the file 'main.stu', from a file
+       passed by the -f option, or using the -F option.
 
-       Names  of targets to build passed on the	command	line follow a simplified
-       Stu syntax, in which the	only special characters	are the	flags '!',  '?',
-       the transient target marker '@',	and brackets '[]'.  All	other characters
-       are interpreted as part of filenames.  When the -J option is used,  argu-
-       ments passed on the command line	are interpreted	as filenames without Stu
-       syntax.
+       Names  of  targets to build passed on the command line follow a simpli‐
+       fied Stu syntax, in which the only special  characters  are  the  flags
+       '!',  '?',  the  transient  target  marker '@', and brackets '[]'.  All
+       other characters are interpreted as part of  filenames.   When  the  -J
+       option is used, arguments passed on the command line are interpreted as
+       filenames without Stu syntax.
 
 
-OOPPTTIIOONNSS
-       -a     Treat all	trivial	dependencies (declared with '&') as non-trivial.
+OPTIONS
+       -a     Treat all trivial dependencies (declared with '&') as  non-triv‐
+              ial.
 
        -c FILENAME
-	      Pass  a  target  filename,  without  Stu syntax.	This option only
-	      allows file targets to be	specified, not transient targets.
+              Pass  a  target  filename, without Stu syntax.  This option only
+              allows file targets to be specified, not transient targets.
 
        -C EXPRESSION
-	      Pass a target using full Stu  syntax.   The  given  expression  is
-	      parsed  as  if  it  was given as one or more dependencies	in a Stu
-	      file.  As	a result, flags	'!', '?' and '&', brackets and parenthe-
-	      ses can be used, and spaces separate filenames.
+              Pass a target using full Stu syntax.  The  given  expression  is
+              parsed  as  if it was given as one or more dependencies in a Stu
+              file.  As a result, flags '!', '?' and '&', brackets and  paren‐
+              theses can be used, and spaces separate filenames.
 
-       -E     Explain  error  messages.	  Only some error messages have	explana-
-	      tions.
+       -E     Explain  error messages.  Only some error messages have explana‐
+              tions.
 
        -f FILENAME
-	      Read the given file instead of the  default  'main.stu'.	 If  the
-	      name  of	a  directory is	passed,	the file 'main.stu' in the given
-	      directory	is read.  If '-' is passed, read standard input.  The -f
-	      option can be used multiple times.
+              Read the given file instead of the default 'main.stu'.   If  the
+              name  of a directory is passed, the file 'main.stu' in the given
+              directory is read.  If '-' is passed, read standard input.   The
+              -f option can be used multiple times.
 
        -F RULES
-	      Pass rules in full Stu syntax.
+              Pass rules in full Stu syntax.
 
-       -g     Treat  all  optional  dependencies  (declared  with  '?')	 as non-
-	      optional.
+       -g     Treat  all  optional  dependencies  (declared  with '?') as non-
+              optional.
 
        -h     Output a short help and exit.
 
-       -j K   Run K jobs in parallel.	K  must	 be  a	positive  integer.   The
-	      default value is one, meaning that Stu does not start jobs in par-
-	      allel.  This option works	like the  corresponding	 option	 in  GNU
-	      Make. The	parameter K is mandatory.
+       -j K   Run K jobs in parallel.  K must  be  a  positive  integer.   The
+              default  value  is  one, meaning that Stu does not start jobs in
+              parallel.  This option works like the  corresponding  option  in
+              GNU Make. The parameter K is mandatory.
 
-       -J     Parse  all arguments to Stu as filenames,	disabling all Stu syntax
-	      that is otherwise	used.  Intended	when Stu is used with tools such
-	      as  'xargs'.   The  -J option itself does	not take an argument; it
-	      only changes the way arguments outside of	options	are interpreted.
+       -J     Parse  all arguments to Stu as filenames, disabling all Stu syn‐
+              tax that is otherwise used.  Intended  when  Stu  is  used  with
+              tools  such  as  'xargs'.  The -J option itself does not take an
+              argument; it only changes the way arguments outside  of  options
+              are interpreted.
 
-       -k     Keep  going.   Do	not stop running when an error occurs.	Instead,
-	      try to build as much as possible.	 This option  is  equivalent  to
-	      that of Make.
+       -k     Keep going.  Do not stop running when an error occurs.  Instead,
+              try to build as much as possible.  This option is equivalent  to
+              that of Make.
 
-       -K     Don't  delete  partially	built files when a command fails or when
-	      Stu is interrupted.  By default, Stu will	delete the target  of  a
-	      command  after  the command fails	or is interrupted, when	the file
-	      is newer than it was before starting the command.	This option dis-
-	      ables  that  behaviour.	Note that with this option, a subsequent
-	      invocation of Stu	may lead to the	partially built	file being  con-
-	      sidered up to date.
+       -K     Don't  delete partially built files when a command fails or when
+              Stu is interrupted.  By default, Stu will delete the target of a
+              command after the command fails or is interrupted, when the file
+              is newer than it was before starting the  command.  This  option
+              disables  that  behaviour.  Note that with this option, a subse‐
+              quent invocation of Stu may lead to  the  partially  built  file
+              being considered up to date.
 
        -m ORDER
-	      Specify the order	in which jobs are run.	When ORDER is 'dfs' (the
-	      default),	Stu traverses the  dependency  graph  in  a  depth-first
-	      fashion,	in  a  way  similar to Make. When ORDER	is 'random', the
-	      order in which jobs are run is randomized	within each target.
+              Specify  the  order  in which jobs are run.  When ORDER is 'dfs'
+              (the default), Stu traverses the dependency graph  in  a  depth-
+              first fashion, in a way similar to Make. When ORDER is 'random',
+              the order in which jobs are run is randomized within  each  tar‐
+              get.
 
        -M STRING
-	      Run jobs in pseudorandom order, seeded by	the given string.
+              Run jobs in pseudorandom order, seeded by the given string.
 
-       -p     Print the	set of rules to	standard output	 and  exit.   Note  that
-	      Make  also  has a	-p option to print the rules, but does not exit.
-	      The output format	is not specified.
+       -p     Print  the  set of rules to standard output and exit.  Note that
+              Make also has a -p option to print the rules, but does not exit.
+              The output format is not specified.
 
-       -q     Question mode.  Do not execute any commands.   Instead,  determine
-	      whether the given	targets	are up to date.	 The exit code is 0 when
-	      all given	targets	(or the	default	target)	are up to  date,  and  1
-	      otherwise.
+       -q     Question mode.  Do not execute any commands.  Instead, determine
+              whether the given targets are up to date.  The exit  code  is  0
+              when  all  given targets (or the default target) are up to date,
+              and 1 otherwise.
 
-       -s     Silent  mode.   Suppress	output of commands, information	messages
-	      and some build error messages.  This option is comparable	 to  the
-	      same option in Make.
+       -s     Silent mode.  Suppress output of commands, information  messages
+              and some build error messages.  This option is comparable to the
+              same option in Make.
 
-       -v     Verbose  mode.   Show internal information about the Stu algorithm
-	      on standard error	output.	 All printed output lines begin	with the
-	      string 'VERBOSE  '.
+       -v     Verbose mode.  Show internal information about the Stu algorithm
+              on  standard  error output.  All printed output lines begin with
+              the string 'VERBOSE  '.
 
-       -V     Output the version number	of Stu and exit.
+       -V     Output the version number of Stu and exit.
 
-       -w     Short  mode.   Instead of	outputting the commands, output	the name
-	      of the targets.  This is most useful when	the commands  themselves
-	      do not produce any output.
+       -w     Short mode.  Instead of outputting the commands, output the name
+              of  the  targets.   This  is most useful when the commands them‐
+              selves do not produce any output.
 
-       -x     Call  the	 shell	using the -x option, i.e., each	individual shell
-	      statement	is output to standard error output individually, instead
-	      of  outputting  a	full command at	once on	standard output.  In the
-	      output, each command is prefixed by the value of '$PS4'.
+       -x     Call the shell using the -x option, i.e., each individual  shell
+              statement  is  output  to  standard  error  output individually,
+              instead of outputting a full command at once on standard output.
+              In the output, each command is prefixed by the value of '$PS4'.
 
-       -y     Disable color in output.	By default, Stu	checks whether	standard
-	      error  output is a TTY and if it is, uses	ANSI escape sequences to
-	      color code messages.  Standard output is never affected.
+       -y     Disable  color  in output.  By default, Stu checks whether stan‐
+              dard error output is a TTY  and  if  it  is,  uses  ANSI  escape
+              sequences  to  color  code  messages.   Standard output is never
+              affected.
 
-       -z     Output runtime statistics	about child processes on standard output
-	      when  finished.	Does  not include the runtime of the Stu process
-	      itself.  Includes	the runtime of all  child  and	grandchild  pro-
-	      cesses,  and  so	on.  Does not include the runtime of children or
-	      grandchildren that have not been waited for  (which  only	 happens
-	      when Stu is interrupted by a signal.)
+       -z     Output runtime statistics about child processes on standard out‐
+              put  when  finished.   Does  not  include the runtime of the Stu
+              process itself.  Includes the runtime of all  child  and  grand‐
+              child  processes,  and  so  on.  Does not include the runtime of
+              children or grandchildren that have not been waited  for  (which
+              only happens when Stu is interrupted by a signal.)
 
 
-OOVVEERRVVIIEEWW
-       A simple	rule looks as follows:
+OVERVIEW
+       A simple rule looks as follows:
 
-	   results.txt:	 data.txt compute {
-	       ./compute <data.txt >results.txt
-	   }
+           results.txt:  data.txt compute {
+               ./compute <data.txt >results.txt
+           }
 
-       The colon may be	omitted	when there are no dependencies:
+       The colon may be omitted when there are no dependencies:
 
-	   A { echo la la la >A	}
+           A { echo la la la >A }
 
-       Here  is	 an example of a rule containing three parameters.  Stu	will use
-       pattern matching	to match the target pattern to a given filename:
+       Here is an example of a rule containing three parameters.  Stu will use
+       pattern matching to match the target pattern to a given filename:
 
-	   plot.$dataset.$method.$measure.eps:
-	       data-$dataset.txt analyse-$method
-	   {
-	       ./analyse-$method \
-		   -m $measure \
-		   -f data-$dataset.txt	\
-		   -o plot.$dataset.$method.$measure.eps
-	   }
+           plot.$dataset.$method.$measure.eps:
+               data-$dataset.txt analyse-$method
+           {
+               ./analyse-$method \
+                   -m $measure \
+                   -f data-$dataset.txt \
+                   -o plot.$dataset.$method.$measure.eps
+           }
 
-       Here is an example of a dynamic dependency.  The	target	'compute'  (a  C
-       program)	 must  be  rebuild  whenever its source	code files are modified.
-       Since the set of	source code files is large and may be changed by  chang-
-       ing  the	 source	 code itself, we use the file 'compute.c.dep' to contain
-       the list	of dependencies.  The file 'compute.c.dep' will	then be	built by
-       Stu like	any file, and its content parsed for the actual	dependencies:
+       Here is an example of a dynamic dependency.  The target 'compute' (a  C
+       program)  must  be rebuild whenever its source code files are modified.
+       Since the set of source code files is  large  and  may  be  changed  by
+       changing  the  source  code  itself, we use the file 'compute.c.dep' to
+       contain the list of dependencies.  The file 'compute.c.dep'  will  then
+       be  built  by  Stu like any file, and its content parsed for the actual
+       dependencies:
 
-	   compute:  [compute.c.dep] {
-	       gcc -c compute.c	-o compute
-	   }
-	   $name.c.dep:	 $name.c compute-dep {
-	       ./compute-dep-c "$name.c" >"$name.c.dep"
-	   }
+           compute:  [compute.c.dep] {
+               gcc -c compute.c -o compute
+           }
+           $name.c.dep:  $name.c compute-dep {
+               ./compute-dep-c "$name.c" >"$name.c.dep"
+           }
 
        Parameters can also use the syntax ${...}.
 
-       Syntax can be on	multiple lines;	whitespace is not significant.	No back-
-       slashes are needed at line ends:
+       Syntax can be on multiple lines; whitespace  is  not  significant.   No
+       backslashes are needed at line ends:
 
-	   output.txt:
-	       a.data b.data c.data d.data e.data f.data g.data	h.data i.data
-	       j.data k.data l.data m.data
-	   {
-	       do-stuff	 >output.txt;
-	   }
+           output.txt:
+               a.data b.data c.data d.data e.data f.data g.data h.data i.data
+               j.data k.data l.data m.data
+           {
+               do-stuff  >output.txt;
+           }
 
-       A rule may be entirely given on a single	line:
+       A rule may be entirely given on a single line:
 
-	   system-info:	{ uname	-a >system-info	}
+           system-info: { uname -a >system-info }
 
-       The following rule uses single quotes to	declare	filenames  that	 include
+       The following rule uses single quotes to declare filenames that include
        parentheses and quotes:
 
-	   '((':  'aaa\'\"bbb' {
-	       ./bla -f
-	   }
+           '((':  'aaa\'\"bbb' {
+               ./bla -f
+           }
 
-       Multiple	 parametrized  rules  may match	a target.  In that case	Stu uses
-       the one that is the least parametrized, as defined by the subset	relation
-       on  the	set of characters that are in parameters.  When	building 'X.txt'
-       in this example,	only the second	rule is	called:
+       Multiple parametrized rules may match a target.  In that case Stu  uses
+       the  one that is the least parametrized, as defined by the subset rela‐
+       tion on the set of characters that are in  parameters.   When  building
+       'X.txt' in this example, only the second rule is called:
 
-	   $name.txt: {	 echo "$name" is the best >"$name.txt" }
-	   X.txt:  { echo X sucks >X.txt }
+           $name.txt: {  echo "$name" is the best >"$name.txt" }
+           X.txt:  { echo X sucks >X.txt }
 
-       All commands are	echoed by Stu.	Thus, you can output debugging	informa-
-       tion (or	any type of information) using shell comments.	There is no need
-       for the @echo construct of Make.
+       All  commands are echoed by Stu.  Thus, you can output debugging infor‐
+       mation (or any type of information) using shell comments.  There is  no
+       need for the @echo construct of Make.
 
-	   A:  {
-	       # This may take a while...
-	       compute-stuff >A
-	   }
+           A:  {
+               # This may take a while...
+               compute-stuff >A
+           }
 
-       Existence-only dependencies:  In	the  following	example,  the  directory
-       'data'  is a existence-only dependency, i.e. 'data' is only built when it
-       does not	exist, but it is never re-built.  An  existence-only  dependency
-       is  indicated  by  the '!' prefix.  This	is useful for directories, whose
-       timestamps change when files are	created/removed	in them.
+       Existence-only  dependencies:   In the following example, the directory
+       'data' is a existence-only dependency, i.e. 'data' is only  built  when
+       it  does not exist, but it is never re-built.  An existence-only depen‐
+       dency is indicated by the '!' prefix.  This is useful for  directories,
+       whose timestamps change when files are created/removed in them.
 
-	   data/file:  !data {
-	       echo Hello >data/file
-	   }
-	   data: { mkdir data }
+           data/file:  !data {
+               echo Hello >data/file
+           }
+           data: { mkdir data }
 
-       Optional	dependencies can be declared with the '?' prefix.   An	optional
-       dependency  will	 never	be  built  if  it does not already exist.  If it
-       already exists, then its	own rule is  used  (and	 its  date  checked)  to
-       decide whether it should	be rebuilt.
+       Optional dependencies can be declared with the '?' prefix.  An optional
+       dependency will never be built if it does not  already  exist.   If  it
+       already  exists,  then  its  own rule is used (and its date checked) to
+       decide whether it should be rebuilt.
 
-	   target:  ?input {
-	       if [ -r input ] ; then
-		   cp input target
-	       else
-		   echo	Hello >target
-	       fi
-	   }
+           target:  ?input {
+               if [ -r input ] ; then
+                   cp input target
+               else
+                   echo Hello >target
+               fi
+           }
 
-       Trivial	dependencies  are  denoted  with  the '&' prefix.  They	denote a
-       dependency that should never cause a target to be  rebuilt,  but	 if  the
-       target  is  rebuilt for another reason, then they are treated like normal
-       dependencies.  Trivial dependencies are typically used for configuration,
-       i.e., for the setting up	configuration of application.  Trivial dependen-
-       cies are	not allowed if the rule	has no command.
+       Trivial dependencies are denoted with the '&' prefix.   They  denote  a
+       dependency  that  should never cause a target to be rebuilt, but if the
+       target is rebuilt for another reason, then they are treated like normal
+       dependencies.   Trivial  dependencies are typically used for configura‐
+       tion, i.e., for the setting up configuration of  application.   Trivial
+       dependencies are not allowed if the rule has no command.
 
-	   target:  &input;
+           target:  &input;
 
-       Variable	dependency:  the content of variables can come from  files.   In
-       the  following  example,	the C flags are	stored in the file 'CFLAGS', and
+       Variable dependency:  the content of variables can come from files.  In
+       the following example, the C flags are stored in the file 'CFLAGS', and
        used in the compilation command using the $[CFLAGS] dependency.
 
-	   compute:  compute.c $[CFLAGS]
-	   {
-	       gcc $CFLAGS compute -o compute.c
-	   }
-	   CFLAGS: { echo -Wall	-Werror	>CFLAGS	}
+           compute:  compute.c $[CFLAGS]
+           {
+               gcc $CFLAGS compute -o compute.c
+           }
+           CFLAGS: { echo -Wall -Werror >CFLAGS }
 
-       Variable	dependencies may be declared as	existence-only as in '$[!X]' and
-       as trivial as in	'$[&X]', but not as optional using '?'.	 By default, the
-       name of the variable set	is the same as the filename.   Another	variable
-       name can	be used	in the following way:
+       Variable  dependencies  may be declared as existence-only as in '$[!X]'
+       and as trivial as in '$[&X]',  but  not  as  optional  using  '?'.   By
+       default,  the  name  of  the  variable set is the same as the filename.
+       Another variable name can be used in the following way:
 
-	   $[NAME = FILENAME]
+           $[NAME = FILENAME]
 
-       Transient targets are marked with '@'.  They are	used for targets such as
-       '@clean'	that do	an action without building a  file,  and  for  lists  of
-       files  that  depend on other targets, but don't have a command associated
-       with them.  They	are also used instead of variables that	would  otherwise
-       contain a list of filenames.
+       Transient targets are marked with '@'.  They are used for targets  such
+       as '@clean' that do an action without building a file, and for lists of
+       files that depend on other targets, but don't have a command associated
+       with  them.   They are also used instead of variables that would other‐
+       wise contain a list of filenames.
 
        Here is a transient target that cleans up the directory:
 
-	   @clean:  { rm -Rf *.o *~ }
+           @clean:  { rm -Rf *.o *~ }
 
-       Here a transient	target is used as a shortcut to	a longer name:
+       Here a transient target is used as a shortcut to a longer name:
 
-	   @build.$name:   dat/build.$name.txt;
+           @build.$name:   dat/build.$name.txt;
 
-       Here a transient	target is used as a list of files.  Multiple targets can
-       depend on it, to	effectively depend on the individual files:
+       Here a transient target is used as a list of files.   Multiple  targets
+       can depend on it, to effectively depend on the individual files:
 
-	   @headers:  a.h b.h c.h;
+           @headers:  a.h b.h c.h;
 
-	   x:  x.c @headers {
-	       cc x.c -o x
-	   }
+           x:  x.c @headers {
+               cc x.c -o x
+           }
 
-	   y:  y.c @headers {
-	       cc y.c -o y
-	   }
+           y:  y.c @headers {
+               cc y.c -o y
+           }
 
 
-FFEEAATTUURREESS
-       Like a makefile,	a Stu file consists of rules.	In  Stu,  the  order  of
-       rules  is  not important, except	for the	fact that the first rule is used
-       by default if no	rule is	given explicitly.  Comments are	written	with '#'
-       like in Make or in the shell.
+FEATURES
+       Like  a  makefile,  a Stu file consists of rules.  In Stu, the order of
+       rules is not important, except for the fact that the first rule is used
+       by  default  if no rule is given explicitly.  Comments are written with
+       '#' like in Make or in the shell.
 
-       The  basic syntax is similar to that of make, but does not rely on manda-
-       tory whitespace.	 Instead of tabs, the commands	are  enclosed  in  curly
-       braces.
+       The basic syntax is similar to that of  make,  but  does  not  rely  on
+       mandatory  whitespace.   Instead  of tabs, the commands are enclosed in
+       curly braces.
 
-       Stu  syntax  supports  two  types of objects:  file targets and transient
-       targets.	 Files are any file in the file	system,	and  are  always  refer-
-       enced by	their filename.	 Transient targets have	names beginning	with the
-       '@' symbol and do not correspond	to files, but can have dependencies  and
-       commands.
+       Stu syntax supports two types of objects:  file targets  and  transient
+       targets.   Files are any file in the file system, and are always refer‐
+       enced by their filename.  Transient targets have names  beginning  with
+       the  '@'  symbol and do not correspond to files, but can have dependen‐
+       cies and commands.
 
-       A rule for a file in Stu	has the	following syntax:
+       A rule for a file in Stu has the following syntax:
 
-	   [>] TARGET [	: DEPENDENCY ... ] { COMMAND }
+           [>] TARGET [ : DEPENDENCY ... ] { COMMAND }
 
-       The  target  is	a filename.  DEPENDENCY	... are	depencies.  COMMAND is a
-       command which is	passed to the shell for	building.  Stu will always  exe-
-       cute  the  whole	command	block using a single call to the shell.	 This is
-       different than Make, which calls	each line individually.	 This means that
-       you  can	 for  instance	define	a variable on one line and use it on the
-       next.  Stu uses the -e option when calling the shell; this means	that any
-       failing command will make the whole target fail.
+       The target is a filename.  DEPENDENCY ... are depencies.  COMMAND is  a
+       command  which  is  passed  to the shell for building.  Stu will always
+       execute the whole command block using a single call to the shell.  This
+       is different than Make, which calls each line individually.  This means
+       that you can for instance define a variable on one line and use  it  on
+       the  next.   Stu  uses the -e option when calling the shell; this means
+       that any failing command will make the whole target fail.
 
-       When  the  command  of a	file is	replaced by a semicolon, this means that
-       the file	is always built	together with its dependencies:
+       When the command of a file is replaced by a semicolon, this means  that
+       the file is always built together with its dependencies:
 
-	   TARGET [ : DEPENDENCY ... ] ;
+           TARGET [ : DEPENDENCY ... ] ;
 
-       In this example,	the file TARGET	is assumed to be up to date whenever all
-       dependencies  are  up to	date.  This can	be used	when two files are built
-       by a single command.  As	a special case,	writing	the name of a file  fol-
-       lowed  by  semicolon  tells  Stu	 that the file must always exist, and is
-       always up to date;  Stu will then report	an error if the	 file  does  not
-       exist:
+       In  this  example, the file TARGET is assumed to be up to date whenever
+       all dependencies are up to date.  This can be used when two  files  are
+       built  by  a  single command.  As a special case, writing the name of a
+       file followed by semicolon tells Stu that the file must  always  exist,
+       and  is  always  up to date;  Stu will then report an error if the file
+       does not exist:
 
-	   TARGET ;
+           TARGET ;
 
-       For a transient,	the same syntax	is used	as for a file:
+       For a transient, the same syntax is used as for a file:
 
-	   @TARGET [ : DEPENDENCY ... ]	{ COMMAND }
-	   @TARGET [ : DEPENDENCY ... ]	;
+           @TARGET [ : DEPENDENCY ... ] { COMMAND }
+           @TARGET [ : DEPENDENCY ... ] ;
 
-       If  a transient target includes a command, Stu will have	no way of remem-
-       bering that the command was executed, and the command  will  be	executed
-       again  on the next invocation of	Stu, even if the previous invocation was
-       successful.  Therefore, commands	for  transient	targets	 will  typically
-       output  build  progress	information,  or perform actions that do not fit
-       well the	build system paradigm,	such  as  removing  or	deploying  built
-       files.
+       If a transient target includes a command,  Stu  will  have  no  way  of
+       remembering that the command was executed, and the command will be exe‐
+       cuted again on the next invocation of Stu, even if the previous invoca‐
+       tion  was  successful.   Therefore, commands for transient targets will
+       typically output build progress information, or perform actions that do
+       not  fit  well the build system paradigm, such as removing or deploying
+       built files.
 
-       Rules can have multiple targets,	in which case the command must build all
-       the targets that	are files.  If one of the targets is a transient target,
-       this effectively	creates	an alias for the file targets.
+       Rules can have multiple targets, in which case the command  must  build
+       all  the  targets that are files.  If one of the targets is a transient
+       target, this effectively creates an alias for the file targets.
 
-	   TARGET... [ : DEPENDENCY ...	] { COMMAND }
-	   TARGET... [ : DEPENDENCY ...	] ;
+           TARGET... [ : DEPENDENCY ... ] { COMMAND }
+           TARGET... [ : DEPENDENCY ... ] ;
 
-       The operator '>'	can be used in front of	the target name	to indicate that
-       the output of the command should	be redirected into the target file.   As
-       an  example, the	following code creates the file	'HEADERS' containing the
-       output of the given 'echo' command:
+       The operator '>' can be used in front of the target  name  to  indicate
+       that  the  output  of  the command should be redirected into the target
+       file.  As an example, the following code  creates  the  file  'HEADERS'
+       containing the output of the given 'echo' command:
 
-	   >HEADERS { echo *.h }
+           >HEADERS { echo *.h }
 
-       For a file target, content can be specified directly using the '=' opera-
-       tor:
+       For  a  file  target,  content  can be specified directly using the '='
+       operator:
 
-	   TARGET = { CONTENT ... }
+           TARGET = { CONTENT ... }
 
-       The  content  is	 stripped  of  empty  lines and	common whitespace at the
-       beginning of lines, and written into the	file.
+       The content is stripped of empty lines and  common  whitespace  at  the
+       beginning of lines, and written into the file.
 
-       Using the equal sign with a file	name creates  a	 copy  rule,  i.e.,  the
+       Using  the  equal  sign with a file name creates a copy rule, i.e., the
        given file is copied with the 'cp' command:
 
-	   TARGET = SOURCE;
+           TARGET = SOURCE;
 
-       By  default,  Stu  will	use  '/bin/cp' to perform the copy.  This can be
-       changed by setting the variable $STU_CP.	 If source ends	in a slash (out-
-       side of any parameter value), then Stu will look	for a file with	the same
-       basename	as TARGET in the directory SOURCE.
+       By default, Stu will use '/bin/cp' to perform the copy.   This  can  be
+       changed  by  setting  the  variable $STU_CP.  If source ends in a slash
+       (outside of any parameter value), then Stu will look for  a  file  with
+       the same basename as TARGET in the directory SOURCE.
 
-       A dependency can	be one of the following:
+       A dependency can be one of the following:
 
-	   NAME	   A file dependency
+           NAME    A file dependency
 
-       The target depends on the file with the name NAME.  Stu	will  make  sure
-       that  the  file	NAME is	up to date before the target itself can	be up to
+       The  target depends on the file with the name NAME.  Stu will make sure
+       that the file NAME is up to date before the target itself can be up  to
        date.
 
-	   @NAME   A transient dependency
+           @NAME   A transient dependency
 
-       A transient target.  They represent a distinct namespace	from files,  and
-       thus their command do not create	files.
+       A  transient  target.   They represent a distinct namespace from files,
+       and thus their command do not create files.
 
-	   !NAME   An existence-only dependency
+           !NAME   An existence-only dependency
 
-       Stu  will only check whether the	dependency exists, but not its modifica-
-       tion time.  This	is mostly useful for directories,  as  the  modification
-       time of directories is updated whenever files are added or removed in the
-       directory.
+       Stu will only check whether the dependency exists, but not its  modifi‐
+       cation  time.   This is mostly useful for directories, as the modifica‐
+       tion time of directories is updated whenever files are added or removed
+       in the directory.
 
-	   ?NAME   An optional dependency
+           ?NAME   An optional dependency
 
-       Optional	dependencies are never built  if  they	don't  exist.	If  they
-       exist,  they are	treated	like normal dependencies and their date	is taken
-       into account for	determining whether the	target has to be rebuilt.
+       Optional  dependencies  are  never  built if they don't exist.  If they
+       exist, they are treated like normal  dependencies  and  their  date  is
+       taken  into  account  for  determining  whether  the  target  has to be
+       rebuilt.
 
-       A dependency cannot be declared as existence-only  and  optional	 at  the
-       same time, as that would	imply that its command is never	executed.
+       A dependency cannot be declared as existence-only and optional  at  the
+       same time, as that would imply that its command is never executed.
 
-	   &NAME   A trivial dependency
+           &NAME   A trivial dependency
 
-       A trivial dependency will never cause the target	to be rebuilt.	However,
-       if the target is	rebuilt	for another reason, then the trivial  dependency
-       will  be	 rebuilt  itself.  This	is mostly useful for configuration files
-       that are	generated automatically, including the case of files  containing
-       the flags used to invoke	compilers and other programs.
+       A  trivial  dependency will never cause the target to be rebuilt.  How‐
+       ever, if the target is rebuilt for another  reason,  then  the  trivial
+       dependency  will be rebuilt itself.  This is mostly useful for configu‐
+       ration files that are generated automatically, including  the  case  of
+       files containing the flags used to invoke compilers and other programs.
 
-	   [NAME]  A dynamic dependency
+           [NAME]  A dynamic dependency
 
-       Stu will	ensure the file	named NAME exists, and then parse it as	contain-
-       ing further dependencies	of the target.	The fact that NAME needs  to  be
-       rebuild does not	imply that the target has to be	rebuilt.
+       Stu  will  ensure the file named NAME exists, and then parse it as con‐
+       taining further dependencies of the target.  The fact that  NAME  needs
+       to be rebuild does not imply that the target has to be rebuilt.
 
-	   [@NAME]  A dynamic transient	target
+           [@NAME]  A dynamic transient target
 
-       Brackets	 can  also  be used around a transient dependency name.	 In that
-       case, all dependencies of the given transient targets will be  considered
-       dynamic dependencies.
+       Brackets  can also be used around a transient dependency name.  In that
+       case, all dependencies of the given transient targets will  be  consid‐
+       ered dynamic dependencies.
 
-	   $[NAME] A variable dependency
+           $[NAME] A variable dependency
 
-       The  file  NAME	is ensured to be up to date, and the content of	the file
-       NAME is used as the value of the	variable $NAME when the	target's command
-       is executed.
+       The  file NAME is ensured to be up to date, and the content of the file
+       NAME is used as the value of the variable $NAME when the target's  com‐
+       mand is executed.
 
-	   <NAME An input dependency
+           <NAME An input dependency
 
-       The  dependency	is  a  file which will be used as standard input for the
+       The  dependency  is a file which will be used as standard input for the
        command.
 
-	   ( ... )
+           ( ... )
 
-       Groups of dependencies can be enclosed on parentheses.	Parentheses  may
-       not contain variable dependencies (i.e.,	something like The flags '!' and
-       '?' can be applied to a group of	dependencies given in parentheses:
+       Groups of dependencies can be enclosed on parentheses.  Parentheses may
+       not  contain  variable dependencies (i.e., something like The flags '!'
+       and '?' can be applied to a group of dependencies given in parentheses:
 
-	   ! ( ... )
-	   ? ( ... )
+           ! ( ... )
+           ? ( ... )
 
        The flags '!' and '?' can be applied to dynamic dependencies:
 
-	   ! [ ... ]
-	   ? [ ... ]
+           ! [ ... ]
+           ? [ ... ]
 
-       in which	case all resulting  dynamic  dependencies  will	 be  flagged  as
-       optional	of existence-only.
+       in which case all resulting dynamic dependencies  will  be  flagged  as
+       optional of existence-only.
 
-       Both parentheses	and brackets may be nested:
+       Both parentheses and brackets may be nested:
 
-	   ((A)) # Equivalent to A
-	   [[A]] # Read	out dependencies from all files	given in the file 'A'.
-
-
-PPAARRAAMMEETTEERRSS
-       Any  file  or  transient	 target	 may include parameters.  Parameters are
-       noted using the '$' character and are given a name.  Stu	will  match  the
-       pattern	to  any	 file or transient target it needs to build.  Parameters
-       can appear in dependencies and in commands any number of	times  (included
-       not  appearing  in  them).  In a	target name, a parameter can only appear
-       once.  The following example contains the parameter $name:
-
-	   list.$name:	  data.$name $name.in
-	   {
-	       ./compute-list -n "$name"
-	   }
-
-       Parameters within a single target name must be separated	by at least  one
-       character,  as  otherwise Stu would not be able to determine how	to split
-       up a chain of characters	into two parameters.  Names of parameters cannot
-       be empty.
-
-       A file or transient target name may match more than one rule.  If that is
-       the case, then Stu will use the rule that dominates  all	 other	matching
-       rules.  A rule A	is defined to dominate another rule B if for every char-
-       acter in	the target filename there is inside a parameter	in rule	A, it is
-       also  inside  a	parameter  in rule B, and at least one character is in a
-       parameter is rule B but not in rule B.  It is an	error when there  is  no
-       single matching rule that dominates all other matching rules.
-
-       In  the	following  example, the	first rule dominates the other rules for
-       the file	named 'a.b.c':
-
-	   a.$x.c: ... { ... }
-	   a.$x:   ... { ... }
-	   $x.c:   ... { ... }
-
-       In the following	example, no rule dominates the others for  the	filename
-       'a.b.c',	so Stu will report an error:
-
-	   $x.b.c: ... { ... }
-	   a.$x.c: ... { ... }
-	   a.b.$x: ... { ... }
+           ((A)) # Equivalent to A
+           [[A]] # Read out dependencies from all files given in the file 'A'.
 
 
-SSTTAATTEEMMEENNTTSS
-       Statements  in  Stu  are	introduced by '%' and serve a similar purpose to
-       the C preprocessor.  The	token '%' must	be  followed  by  the  statement
-       name.  There may	be any amount of whitespace (including none) between '%'
-       and the name of the statement.
+PARAMETERS
+       Any  file  or  transient target may include parameters.  Parameters are
+       noted using the '$' character and are given a name.  Stu will match the
+       pattern  to any file or transient target it needs to build.  Parameters
+       can appear  in  dependencies  and  in  commands  any  number  of  times
+       (included  not  appearing  in them).  In a target name, a parameter can
+       only appear once.  The following example contains the parameter $name:
 
-       File inclusion is done using the	'%include' statement.  This can	 be  put
-       at  any	place in the input file, and will temporarily continue tokeniza-
-       tion in another file.  The filename does	not have to be quoted, except if
-       it  contains special characters,	just like any other filename in	Stu.  If
-       a directory is given after include (with	or without an ending slash), the
-       file 'main.stu' within that directory is	read.
+           list.$name:    data.$name $name.in
+           {
+               ./compute-list -n "$name"
+           }
 
-	   %include a.stu
-	   %include "b.stu"
-	   %include 'c.stu'
-	   %include data/
+       Parameters within a single target name must be separated  by  at  least
+       one  character,  as otherwise Stu would not be able to determine how to
+       split up a chain of characters into two parameters.  Names  of  parame‐
+       ters cannot be empty.
 
-       To  declare  which version of Stu a script is written for, use the '%ver-
+       A  file or transient target name may match more than one rule.  If that
+       is the case, then Stu will use the rule that dominates all other match‐
+       ing rules.  A rule A is defined to dominate another rule B if for every
+       character in the target filename there is inside a parameter in rule A,
+       it  is also inside a parameter in rule B, and at least one character is
+       in a parameter is rule B but not in rule B.  It is an error when  there
+       is no single matching rule that dominates all other matching rules.
+
+       In  the following example, the first rule dominates the other rules for
+       the file named 'a.b.c':
+
+           a.$x.c: ... { ... }
+           a.$x:   ... { ... }
+           $x.c:   ... { ... }
+
+       In the following example, no rule dominates the others for the filename
+       'a.b.c', so Stu will report an error:
+
+           $x.b.c: ... { ... }
+           a.$x.c: ... { ... }
+           a.b.$x: ... { ... }
+
+
+STATEMENTS
+       Statements  in Stu are introduced by '%' and serve a similar purpose to
+       the C preprocessor.  The token '%' must be followed  by  the  statement
+       name.  There  may  be any amount of whitespace (including none) between
+       '%' and the name of the statement.
+
+       File inclusion is done using the '%include' statement.  This can be put
+       at any place in the input file, and will temporarily continue tokeniza‐
+       tion in another file.  The filename does not have to be quoted,  except
+       if it contains special characters, just like any other filename in Stu.
+       If a directory is given  after  include  (with  or  without  an  ending
+       slash), the file 'main.stu' within that directory is read.
+
+           %include a.stu
+           %include "b.stu"
+           %include 'c.stu'
+           %include data/
+
+       To declare which version of Stu a script is written for, use the '%ver‐
        sion' statement:
 
-	   %version 2.3
-	   %version 2.3.4
+           %version 2.3
+           %version 2.3.4
 
-       Both variants will allow	the script to be executed only with a version of
-       Stu  of	the  correct major version number (2 in	this example), and whose
-       minor version (and patch	level) have at least the  given	 values.   There
-       may  be	multiple  '%version'  statements; each one is then checked sepa-
-       rately.	In particular, it is possible to place a  version  statement  in
-       each  source  file.   This  treatment of	version	numbers	follows	semantic
-       versionning (semver.org).  The version statement	will not  prevent  usage
-       of Stu features that were not present in	the specified version.
+       Both variants will allow the script to be executed only with a  version
+       of  Stu  of  the  correct major version number (2 in this example), and
+       whose minor version (and patch level) have at least the  given  values.
+       There  may  be multiple '%version' statements; each one is then checked
+       separately.  In particular, it is possible to place a version statement
+       in  each source file.  This treatment of version numbers follows seman‐
+       tic versionning (semver.org).  The version statement will  not  prevent
+       usage of Stu features that were not present in the specified version.
 
 
-TTOOKKEENNIIZZAATTIIOONN
-       Unquoted	filenames in Stu may contain the following ASCII characters:
+TOKENIZATION
+       Unquoted filenames in Stu may contain the following ASCII characters:
 
-	   [a-z] [A-Z] [0-9] _ ^ ` + - . ~ /
+           [a-z] [A-Z] [0-9] _ ^ ` + - . ~ /
 
-       and all non-ASCII characters.  Filenames	containing other characters must
-       be quoted by either single or double quotes.  Inside  single  and  double
-       quotes, backslashes, single quotes and double quotes must be escaped by a
-       backslash.  Quoted or unquoted names which are not  separated  by  white-
-       space are interpreted as	a single name.
+       and  all  non-ASCII  characters.  Filenames containing other characters
+       must be quoted by either single or double quotes.   Inside  single  and
+       double  quotes,  backslashes,  single  quotes and double quotes must be
+       escaped by a backslash.  Quoted or unquoted names which are  not  sepa‐
+       rated by whitespace are interpreted as a single name.
 
-       The  following  characters have special meaning in Stu and cannot be used
+       The following characters have special meaning in Stu and cannot be used
        in unquoted filenames:
 
-	   #	 Comment (until	the end	of the line)
-	   %	 Statement (followed by	statement name and arguments)
-	   " '	 Quote
-	   :	 Separator for rule definition
-	   ;	 For rules without body, end of	variable declaration
-	   $	 Parameter
-	   @	 Transient target marker
-	   !	 Existence-only	dependency
-	   ?	 Optional dependency
-	   &	 Trivial dependency
-	   >	 Output	redirection
-	   <	 Input redirection
-	   =	 Assignment rule, copy rule, named variable
-	   { }	 Command
-	   ( )	 List
-	   [ ]	 Dynamic dependency
+           #     Comment (until the end of the line)
+           %     Statement (followed by statement name and arguments)
+           " '   Quote
+           :     Separator for rule definition
+           ;     For rules without body, end of variable declaration
+           $     Parameter
+           @     Transient target marker
+           !     Existence-only dependency
+           ?     Optional dependency
+           &     Trivial dependency
+           >     Output redirection
+           <     Input redirection
+           =     Assignment rule, copy rule, named variable
+           { }   Command
+           ( )   List
+           [ ]   Dynamic dependency
 
-       Comments	introduced by '#' go until the end of the line.	 Commands start-
-       ing with	'{' go until the matching '}', taking into account shell syntax,
-       i.e., the command itself	may contain more braces.  All  other  characters
-       are  individual	tokens and may or may not be separated from other tokens
-       by whitespace.
+       Comments introduced by '#' go until the  end  of  the  line.   Commands
+       starting  with '{' go until the matching '}', taking into account shell
+       syntax, i.e., the command itself may contain more  braces.   All  other
+       characters  are  individual tokens and may or may not be separated from
+       other tokens by whitespace.
 
-       The following characters	are reserved for future	extension:
+       The following characters are reserved for future extension:
 
-	   * \ | ,
+           * \ | ,
 
 
-SSYYNNTTAAXX
-       The syntax of a Stu file	is given in the	 following  Yacc-like  notation.
-       This  is	 the syntax after processing of	statements, which are introduced
+SYNTAX
+       The syntax of a Stu file is given in the following Yacc-like  notation.
+       This is the syntax after processing of statements, which are introduced
        with '%'.
 
-	   rule_list:		rule*
-	   rule:		('@' NAME | ['>'] NAME)+ [':' expression_list]
-				('{' COMMAND '}' | ';')
-				| NAME '=' '{' CONTENT '}'
-				| NAME '=' '!'*	NAME ';'
-	   expression_list:	expression*
-	   expression:		'(' expression_list ')'
-				| '[' expression_list ']'
-				| flag expression
-				| redirect_dependency
-				| variable_dependency
-	   redirect_dependency:	['<'] bare_dependency
-	   bare_dependency:	['@'] NAME
-	   variable_dependency:	'$' '['	flag* ['<'] NAME ']'
-	   flag:		'!' | '?' | '&'
+           rule_list:           rule*
+           rule:                ('@' NAME | ['>'] NAME)+ [':' expression_list]
+                                ('{' COMMAND '}' | ';')
+                                | NAME '=' '{' CONTENT '}'
+                                | NAME '=' '!'* NAME ';'
+           expression_list:     expression*
+           expression:          '(' expression_list ')'
+                                | '[' expression_list ']'
+                                | flag expression
+                                | redirect_dependency
+                                | variable_dependency
+           redirect_dependency: ['<'] bare_dependency
+           bare_dependency:     ['@'] NAME
+           variable_dependency: '$' '[' flag* ['<'] NAME ']'
+           flag:                '!' | '?' | '&'
 
-       Stu files read via the -f option	or as the default Stu file, as	well  as
-       the  argument  to  the  -F  option  must	 contain  a 'rule_list'.  A file
-       included	by brackets and	arguments to  the  -C  option  must  contain  an
+       Stu files read via the -f option or as the default Stu file, as well as
+       the  argument  to  the  -F  option  must contain a 'rule_list'.  A file
+       included by brackets and arguments to the -C  option  must  contain  an
        'expression_list'.
 
 
-SSEEMMAANNTTIICCSS
-       Cycles  in  the dependency graph	are not	allowed. As an example,	the fol-
+SEMANTICS
+       Cycles in the dependency graph are not allowed. As an example, the fol‐
        lowing results in an error:
 
-	   A:  B { ... }
-	   B:  A { ... }
+           A:  B { ... }
+           B:  A { ... }
 
-       Cycles are considered at	the rule level,	i.e., cycles such as the follow-
-       ing  are	 also  flagged as an error, even though	there is no cycle on the
-       filename	level.	In the following example, it is	not  possible  to  build
-       the  file 'a.gz.gz' from	the file 'a', even though it would not result in
-       a cycle,	 but  since  both  files  'a.gz'  and  'a.gz.gz'  use  the  same
-       parametrized rule, this is not allowed:
+       Cycles are considered at the rule level, i.e., cycles such as the  fol‐
+       lowing  are  also flagged as an error, even though there is no cycle on
+       the filename level.  In the following example, it is  not  possible  to
+       build  the  file  'a.gz.gz' from the file 'a', even though it would not
+       result in a cycle, but since both files 'a.gz' and  'a.gz.gz'  use  the
+       same parametrized rule, this is not allowed:
 
-	   $name.gz:  $name { gzip -k $name }
+           $name.gz:  $name { gzip -k $name }
 
-       Cycles  are  possible in	dynamic	dependencies, where they are allowed and
-       ignored.	 For instance, the following examples will correctly  build  the
-       file 'A', after having built 'B'	and 'C':
+       Cycles are possible in dynamic dependencies, where they are allowed and
+       ignored.  For instance, the following examples will correctly build the
+       file 'A', after having built 'B' and 'C':
 
-	   A:  [B] { echo CORRECT >A }
-	   B:  { echo [C] >B }
-	   C:  { echo [B] >C }
+           A:  [B] { echo CORRECT >A }
+           B:  { echo [C] >B }
+           C:  { echo [B] >C }
 
-       Symlinks	 are  treated  transparently  by  Stu.	In other words,	Stu will
-       always consider the timestamp of	the linked-to file.  A symlink to a non-
-       existing	file will be treated as	a non-existing file.
-
-
-EEXXIITT SSTTAATTUUSS
-       0      Everything was built successfully	or was up to date already.
-
-       1      Build  error.    These indicate errors in	the commands invoked and
-	      files read by Stu.  Example:  a child process produced  an  error,
-	      or  a dependency was not found and no rule was given for it.  When
-	      using the	-q option, the exit code is 1 when the given targets are
-	      not up to	date.
-
-       2      Logical  error.  These indicate errors in	the usage of Stu.  Exam-
-	      ples are syntax errors in	Stu sources and	cycles in the dependency
-	      graph.
-
-       3      Both  build and logical errors were encountered (when using the -k
-	      option).
-
-       4      An error occurred	 that  made  Stu  abort	 execution  immediately,
-	      regardless of whether the	-k option was used.
+       Symlinks  are  treated  transparently by Stu.  In other words, Stu will
+       always consider the timestamp of the linked-to file.  A  symlink  to  a
+       non-existing file will be treated as a non-existing file.
 
 
-EENNVVIIRROONNMMEENNTT
+EXIT STATUS
+       0      Everything was built successfully or was up to date already.
+
+       1      Build error.   These indicate errors in the commands invoked and
+              files read by Stu.  Example:  a child process produced an error,
+              or  a  dependency  was  not  found and no rule was given for it.
+              When using the -q option, the exit code is 1 when the given tar‐
+              gets are not up to date.
+
+       2      Logical  error.   These  indicate  errors  in  the usage of Stu.
+              Examples are syntax errors in Stu  sources  and  cycles  in  the
+              dependency graph.
+
+       3      Both  build  and logical errors were encountered (when using the
+              -k option).
+
+       4      An error occurred that made  Stu  abort  execution  immediately,
+              regardless of whether the -k option was used.
+
+
+ENVIRONMENT
        STU_SHELL
-	      If  set,	Stu  calls  the	shell from the given location instead of
-	      '/bin/sh'.  The given shell must support the -e and -c options, as
-	      well as -- to denote the end of options.	This is	mainly useful on
-	      systems where '/bin/sh' is not a POSIX shell.
+              If  set,  Stu calls the shell from the given location instead of
+              '/bin/sh'.  The given shell must support the -e and -c  options,
+              as well as -- to denote the end of options.  This is mainly use‐
+              ful on systems where '/bin/sh' is not a POSIX shell.
 
-       STU_CP If set, Stu calls	the 'cp' program from the given	location instead
-	      of  '/bin/cp'.   The given version of 'cp' must support the syntax
-	      'cp -- "$fileA" "$fileB"'.
+       STU_CP If set, Stu calls the  'cp'  program  from  the  given  location
+              instead  of  '/bin/cp'.   The given version of 'cp' must support
+              the syntax 'cp -- "$fileA" "$fileB"'.
 
        STU_STATUS
-	      Stu sets this variable to	'1' in all child processes. In order  to
-	      avoid  recursive	invocation of Stu, Stu will fail on startup when
-	      the variable is set.  To	circumvent  this,  unset  the  variable.
-	      Recursive	Stu is as harmful as recursive Make.
+              Stu sets this variable to '1' in all child processes.  In  order
+              to  avoid  recursive invocation of Stu, Stu will fail on startup
+              when the variable is set. To circumvent this,  unset  the  vari‐
+              able.  Recursive Stu is as harmful as recursive Make.
 
 
-SSIIGGNNAALLSS
+SIGNALS
        SIGUSR1
-	      When received, Stu will output a list of currently running jobs on
-	      standard output, and statistics about runtime, in	a similar way to
-	      the  -z option.  The reported runtimes include only jobs that have
-	      already terminated, and exclude currently	running	jobs.	Multiple
-	      SIGUSR1  signals	sent  in  succession  may  result in output only
-	      printed once.
+              When  received, Stu will output a list of currently running jobs
+              on standard output, and statistics about runtime, in  a  similar
+              way  to  the -z option.  The reported runtimes include only jobs
+              that have already  terminated,  and  exclude  currently  running
+              jobs.  Multiple SIGUSR1 signals sent in succession may result in
+              output only printed once.
 
 
-CCOOMMPPAATTIIBBIILLIITTYY
-       The Stu language	is unique to  this  implementation,  and  the  man  page
+COMPATIBILITY
+       The Stu language is unique to this implementation,  and  the  man  page
        serves as the reference for its syntax.
 
-       Stu  follows  Semantic Versioning (semver.org).	The major version number
-       is increased when backward-incompatible changes are made.  The minor ver-
-       sion  number  is	 increased  when  features are added. The patch	level is
+       Stu follows Semantic Versioning (semver.org).  The major version number
+       is increased when backward-incompatible changes are  made.   The  minor
+       version number is increased when features are added. The patch level is
        increased for other changes.
 
 
-EEXXAAMMPPLLEESS
+EXAMPLES
        This section contains more advanced examples of Stu usage.
 
-       The following declaration tells Stu that	the file 'config.h' must  exist,
-       and  will allow Stu to give more	meaningful error messages if the file is
-       not found.
+       The following declaration tells  Stu  that  the  file  'config.h'  must
+       exist, and will allow Stu to give more meaningful error messages if the
+       file is not found.
 
-	   config.h;
+           config.h;
 
-       Input and output	redirection can	be used	to write commands that invoke  a
-       filter  such as sed, awk	or tr.	The following example will build the 'A'
-       containing the string 'HELLO':
+       Input and output redirection can be used to write commands that  invoke
+       a  filter such as sed, awk or tr.  The following example will build the
+       'A' containing the string 'HELLO':
 
-	   >A: <B { tr a-z A-Z }
-	   >B {	echo hello }
+           >A: <B { tr a-z A-Z }
+           >B { echo hello }
 
-       Variable	dependencies may be included indirectly	through	 transient  tar-
-       gets  without commands, and through dynamic dependencies.  In the follow-
-       ing example, the	variable $V will be passed through to the  commands  for
-       the targets A and B:
+       Variable dependencies may be included indirectly through transient tar‐
+       gets  without  commands, and through dynamic dependencies.  In the fol‐
+       lowing example, the variable $V will be passed through to the  commands
+       for the targets A and B:
 
-	   V: {	echo Hello >V }
-	   @x: $[V];
-	   y: {	echo '$[V]' >y }
-	   A: @x { echo	$V >A }
-	   B: [y] { echo $V >B }
+           V: { echo Hello >V }
+           @x: $[V];
+           y: { echo '$[V]' >y }
+           A: @x { echo $V >A }
+           B: [y] { echo $V >B }
 
-       Trivial	dependencies  are  often  combined with	variable dependencies to
-       implement flags,	for instance to	a compiler, as in the following	example.
-       This  will make sure that a change in the file 'VERSION'	will not lead to
-       a recompilation of the program, but if 'program.c' is modified and  'pro-
-       gram' is	rebuilt, then 'CFLAGS' will also be rebuilt.
+       Trivial  dependencies  are often combined with variable dependencies to
+       implement flags, for instance to a compiler, as in the following  exam‐
+       ple.  This  will make sure that a change in the file 'VERSION' will not
+       lead to a recompilation of the program, but if 'program.c' is  modified
+       and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt.
 
-	   VERSION; # Contains the version number; updated by hand
-	   >CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=$VERSION }
-	   program:  program.c $[&CFLAGS] { gcc	$CFLAGS	program.c -o program }
+           VERSION; # Contains the version number; updated by hand
+           >CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=$VERSION }
+           program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
 
-       The  -C option allows to	pass any dependency in Stu syntax, and therefore
-       can be used in some advanced use	cases:
+       The  -C  option allows to pass any dependency in Stu syntax, and there‐
+       fore can be used in some advanced use cases:
 
-	   stu -C '?X' # Re-build file 'X' only	if it already exists
-	   stu -C '[X]'	# Build	all files given	in file	'X'
-	   stu -C '%version 1.7' # Make	sure Stu is compatible	with  the  given
+           stu -C '?X' # Re-build file 'X' only if it already exists
+           stu -C '[X]' # Build all files given in file 'X'
+           stu -C '%version 1.7' # Make sure Stu is compatible with the  given
        version
 
        The -F option allows to define rules on the command line:
 
-	   stu -F 'B:A {cp A B}' # Same	as GNU's 'cp -u	A B'
-	   stu -F 'A;' # Check that the	file 'A' exists
+           stu -F 'B:A {cp A B}' # Same as GNU's 'cp -u A B'
+           stu -F 'A;' # Check that the file 'A' exists
 
 
-BBUUGGSS
-       The  argument  to  the  -j  option (number of jobs to run in parallel) is
-       mandatory, as opposed to	the behavior of	 GNU  Make,  where  no	argument
-       means to	run as many jobs in parallel as	possible.
+BUGS
+       The  argument  to  the -j option (number of jobs to run in parallel) is
+       mandatory, as opposed to the behavior of GNU Make,  where  no  argument
+       means to run as many jobs in parallel as possible.
 
-       Files  read as dynamic dependencies are parsed using the	full Stu syntax,
-       meaning that certain characters must be quoted in them.	Future	versions
-       of Stu may support newline-seperated file lists,	as well	as NUL-separated
-       file lists.
+       Files  read  as dynamic dependencies are parsed using the full Stu syn‐
+       tax, meaning that certain characters must be quoted  in  them.   Future
+       versions  of  Stu  may support newline-seperated file lists, as well as
+       NUL-separated file lists.
 
-       Rule-level recursion is not allowed.  This excludes a  recursive	 parsing
-       of  C-like  dependencies.   Rule-level recursion	would be easy to enable,
-       but would open up problems related to infinite loops, which would require
-       Stu to have a maximal recursion depth.
+       Rule-level recursion is not allowed.  This excludes a recursive parsing
+       of  C-like dependencies.  Rule-level recursion would be easy to enable,
+       but would open up problems  related  to  infinite  loops,  which  would
+       require Stu to have a maximal recursion depth.
 
-       When  the  command fails	and its	target is a directory, Stu cannot remove
-       the directory as	it does	for regular files.
+       When the command fails and its target is a directory, Stu cannot remove
+       the directory as it does for regular files.
 
-       Changing	a command within a Stu file will  not  make  the  target  to  be
-       rebuilt.	 This can be seen as both a feature or a bug.  Also, all changes
-       in a file will lead to rebuilds of other	files, even if the  changes  are
-       trivial,	 e.g.,	when only whitespace was changed in C source code.  Fur-
-       thermore, touching a file without changing the contents will also lead to
-       a  rebuild, although it is not needed.  Both limitations	could be removed
-       by using	fingerprints instead of	modification times.
+       Changing a command within a Stu file will not make  the  target  to  be
+       rebuilt.   This  can  be  seen  as  both a feature or a bug.  Also, all
+       changes in a file will lead to rebuilds of other  files,  even  if  the
+       changes are trivial, e.g., when only whitespace was changed in C source
+       code.  Furthermore, touching a file without changing the contents  will
+       also  lead  to  a rebuild, although it is not needed.  Both limitations
+       could be removed by using fingerprints instead of modification times.
 
-       All timestamps have only	one-second resolution.
+       All timestamps have only one-second resolution.
 
-       Filenames in Stu	are literal.  Stu does not recognize it	when two differ-
-       ent names refer to the same file.
+       Filenames in Stu are literal.  Stu does not recognize it when two  dif‐
+       ferent names refer to the same file.
 
-       Using  optional dependencies may	make a second invocation of Stu	not out-
-       put "Nothing to be done", as the	optional dependency may	have  been  cre-
-       ated by subsequent targets.
-
-
-AAUUTTHHOORR
-       J~A(C)r~A'me Kunegis <kunegis@uni-koblenz.de>
-
-SSEEEE AALLSSOO
-       mmaakkee(1)
+       Using  optional  dependencies  may  make a second invocation of Stu not
+       output "Nothing to be done", as the optional dependency may  have  been
+       created by subsequent targets.
 
 
+AUTHOR
+       Jérôme Kunegis <kunegis@uni-koblenz.de>
 
-stu-1.15.57			    June 2016				  STU(1)
+SEE ALSO
+       make(1)
+
+
+
+stu-1.15.58                        June 2016                            STU(1)

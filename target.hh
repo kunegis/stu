@@ -207,20 +207,20 @@ public:
 		if (type != Type::FILE)
 			style |= S_MARKERS;
 
-		bool quotes2= 
+		bool quotes= 
 			(type == Type::FILE
 			 ? Color::quotes
 			 : 0);
 
-		string text= name_format(name, style, quotes2); 
+		string text= name_format(name, style, quotes); 
 		
 		return fmt("%s%s%s%s%s%s%s%s", 
 			   Color::word, 
 			   string(type.get_dynamic_depth(), '['),
 			   type.is_any_transient() ? "@" : "",
-			   quotes2 ? "'" : "",
+			   quotes ? "'" : "",
 			   text,
-			   quotes2 ? "'" : "",
+			   quotes ? "'" : "",
 			   string(type.get_dynamic_depth(), ']'),
 			   Color::end);
 	}
@@ -231,22 +231,17 @@ public:
 		if (type != Type::FILE)
 			style |= S_MARKERS;
 
-		bool quotes2= 
-			(type == Type::FILE
-			 ? Color::quotes
-			 : 0);
+		bool quotes= type == Type::FILE;
 		
-		string text= name_format(name, style, quotes2); 
+		string text= name_format(name, style, quotes); 
 
-		return fmt("%s%s%s%s%s%s%s%s", 
-			   Color::word, 
+		return fmt("%s%s%s%s%s%s", 
 			   string(type.get_dynamic_depth(), '['),
 			   type.is_any_transient() ? "@" : "",
-			   quotes2 ? "'" : "",
+			   quotes ? "'" : "",
 			   text,
-			   quotes2 ? "'" : "",
-			   string(type.get_dynamic_depth(), ']'),
-			   Color::end);
+			   quotes ? "'" : "",
+			   string(type.get_dynamic_depth(), ']')); 
 	}
 
 	bool operator== (const Target &target) const {

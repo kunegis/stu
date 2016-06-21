@@ -699,7 +699,9 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			if (iter == tokens.end()) 
 				place_end << "expected a dependency";
 			else
-				(*iter)->get_place() << "expected a dependency";
+				(*iter)->get_place() << 
+					fmt("expected a dependency, not %s",
+					    (*iter)->format_start_word());
 			place_exclam << fmt("after %s",
 					     char_format_word('!')); 
 			throw ERROR_LOGICAL;
@@ -719,15 +721,14 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 		if (! build_expression(ret, place_param_name_input, place_input, targets)) {
 			if (iter == tokens.end()) {
 				place_end << "expected a dependency";
-				place_question << fmt("after %s",
-						       char_format_word('?')); 
-				throw ERROR_LOGICAL;
 			} else {
-				(*iter)->get_place() << "expected a dependency";
-				place_question << fmt("after %s",
-						       char_format_word('?')); 
-				throw ERROR_LOGICAL;
+				(*iter)->get_place() << 
+					fmt("expected a dependency, not %s",
+					    (*iter)->format_start_word());
 			}
+			place_question << fmt("after %s",
+					      char_format_word('?')); 
+			throw ERROR_LOGICAL;
 		}
 		if (! option_nonoptional) {
 			/* D_INPUT and D_OPTIONAL cannot be used at the same
@@ -759,15 +760,14 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 		if (! build_expression(ret, place_param_name_input, place_input, targets)) {
 			if (iter == tokens.end()) {
 				place_end << "expected a dependency";
-				place_ampersand << fmt("after %s",
-						       char_format_word('&')); 
-				throw ERROR_LOGICAL;
 			} else {
-				(*iter)->get_place() << "expected a dependency";
-				place_ampersand << fmt("after %s",
-							char_format_word('&'));
-				throw ERROR_LOGICAL;
+				(*iter)->get_place() << 
+					fmt("expected a dependency, not %s",
+					    (*iter)->format_start_word());
 			}
+			place_ampersand << fmt("after %s",
+					       char_format_word('&'));
+				throw ERROR_LOGICAL;
 		}
 		for (auto &j:  ret) {
 			if (! option_nontrivial)

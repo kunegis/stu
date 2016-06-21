@@ -22,10 +22,10 @@ List of options
 -c  S      Explicit target without syntax (GNU Make:  change directory)
 -C  S   x  Specify syntax (same as non-option arguments)
 -d      G  Print debugging information 
--e    M G  Environment overrides Make macros
+-e  .  M G Existence-only dependency (Make: Environment overrides Make macros)
 -E  S      Explain errors
 -f  S M G  File
--F  .      Pass rule on the command line
+-F  S      Pass rule on the command line
 -g  S      Consider optional dependencies to be non-optional 
 -h  S   G  Show help and exit 
 -i  . M G  Ignore all errors in commands
@@ -40,7 +40,7 @@ List of options
 -M  S      Seed mode
 -n  . M G  Dry run (just print commands)
 -N  .      Dry run, but build dynamic dependencies 
--o  .   G  Mark file as old
+-o  .   G  GNU Make: Mark file as old
 -p  S M G  Print database (rule set)
 -q  S M G  Question mode / Query mode
 -r    M G  No builtin rules
@@ -55,4 +55,4 @@ List of options
 -W  .   G  What-if mode (if FILE just had been modified)
 -x  S      Enable /bin/sh -x instead of normal output
 -y  S      Disable color output
--z  .      Output statistics
+-z  S      Output statistics

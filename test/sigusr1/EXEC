@@ -30,12 +30,16 @@ grep -qF '(2 succeeded, 0 failed, 6 running)' list.out || {
 }
 
 grep -qF "'list.M'" list.out || {
-	echo >&2 '*** Output list.M'
+	echo >&2 '*** Output list.M (1)'
 	exit 1
 }
 
 grep -qF "@x" list.out || {
-	echo >&2 '*** Output list.M'
+	echo >&2 '*** Output list.M (2)'
+	echo >&2 stdout:
+	echo >&2 ____
+	cat >&2 list.out
+	echo >&2 ____
 	exit 1
 }
 

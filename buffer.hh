@@ -4,26 +4,19 @@
 /* A queue or vector of links */
 
 #include <queue>
+#include <random>
 
 #include "link.hh"
+
+static default_random_engine buffer_generator;
 
 /* A random number in [0...n-1]. 
  */
 size_t random_number(size_t n) 
 {
-	assert(n < RAND_MAX); 
-	assert(RAND_MAX <= SIZE_MAX); 
+	uniform_int_distribution <size_t> distribution(0, n - 1);
 
-	/* rand() % n does not work, as it will give higher probability
-	 * to lower numbers (given that RAND_MAX + 1 is not divisible by
-	 * n). 
-	 */
-
-	size_t r;
-	do
-		r= rand();
-	while (r >= RAND_MAX / n * n);
-	return r % n; 
+	return distribution(buffer_generator); 
 }
 
 class Buffer

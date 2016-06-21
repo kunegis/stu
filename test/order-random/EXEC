@@ -1,11 +1,11 @@
 #! /bin/sh
 
-rm -f ?
+rm -f ? || exit 1
 
 echo ../../stu.test 
 ../../stu.test >stdout-correct
 
-rm -f ?
+rm -f ? || exit 1
 
 echo ../../stu.test -m random
 ../../stu.test -m random >list.out

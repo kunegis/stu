@@ -232,7 +232,7 @@ int main(int argc, char **argv, char **envp)
 						print_error_system("gettimeofday");
 						exit(ERROR_FATAL); 
 					}
-					srand(tv.tv_sec + tv.tv_usec);
+					buffer_generator.seed(tv.tv_sec + tv.tv_usec); 
 				}
 				else if (!strcmp(optarg, "dfs"))     /* Default */ ;
 				else {
@@ -247,7 +247,7 @@ int main(int argc, char **argv, char **envp)
 
 			case 'M':
 				order= Order::RANDOM;
-				srand(hash <string> ()(string(optarg))); 
+				buffer_generator.seed(hash <string> ()(string(optarg)));
 				break;
 
 			case 'V': 

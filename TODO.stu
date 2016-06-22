@@ -3,7 +3,7 @@
 #
 #   Nothing to be done
 #   Targets are not up to date
-#   No rule for building X exists, but the file exists
+#   No rule for building X, but the file exists
 
 # Have stdout in color, too. 
 

@@ -742,7 +742,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	/* The file must be created now */
 
 	if (option_question) {
-		puts("Targets are not up to date");
+		print_out("Targets are not up to date");
 		exit(ERROR_BUILD);
 	}
 
@@ -1074,7 +1074,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 			assert(success); 
 
 		if (success && ! worked) {
-			puts("Nothing to be done"); 
+			print_out("Nothing to be done");
 		}
 
 		if (! success && option_keep_going) {
@@ -1374,9 +1374,8 @@ Execution::Execution(Target target_,
 					if (parent->targets.empty()) {
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */ 
-						string text= target_.format_out();
-						printf("No rule for building %s, but the file exists\n", 
-						       text.c_str()); 
+						print_out(fmt("No rule for building %s, but the file exists", 
+							      target_.format_out())); 
 					} 
 				}
 			}

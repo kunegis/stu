@@ -12,6 +12,18 @@
 
 #include "color.hh"
 
+/* Print a message to standard output.  This is used in only very few
+ * cases, in defiance of the principle that a program should by default
+ * only output something when there is an error. 
+ */
+void print_out(string text)
+{
+	assert(text != "");
+	assert(isupper(text[0]));
+	assert(text[text.size() - 1] != '\n');
+	puts(text.c_str()); 
+}
+
 /* Is the character a space in the C locale?  Note:  we don't use
  * isspace() because isspace() uses the current locale and may consider
  * locale-specific characters which we don't want to cover in this

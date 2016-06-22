@@ -97,9 +97,6 @@ the file INSTALL for installation instructions.  The Makefile contains
 specific compilation commands for G++; they have to be changed to use
 another compiler. 
 
-Stu is developed primarily on Linux, and has been used on FreeBSD.  It
-has been compiled with both GCC and Clang. 
-
 ## About 
 
 The name "Stu" follows the precedents of Make replacements Cook and Bake

@@ -341,7 +341,10 @@ pid_t Job::start(string command,
 
 		/* Output redirection */
 		if (filename_output != "") {
-			int fd_output= creat(filename_output.c_str(), S_IRUSR | S_IWUSR); 
+			int fd_output= creat
+				(filename_output.c_str(), 
+				 /* all +rw */
+				 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH); 
 			if (fd_output < 0) {
 				perror(filename_output.c_str());
 				_Exit(127); 

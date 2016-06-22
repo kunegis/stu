@@ -1,8 +1,8 @@
 #! /bin/sh
 
-rm -f ?
+rm -f ? || exit 1
 
-touch A
+touch A || exit 1
 
 ../../stu.test -s >list.out 2>list.err
 exitcode="$?"
@@ -12,7 +12,7 @@ exitcode="$?"
 	exit 1
 }
 
-[ -r list.out -a \! -s list.out ] || {
+grep -qFx 'Nothing to be done' list.out || {
 	echo >&2 "*** stdout"
 	echo list.out:
 	echo _______

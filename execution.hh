@@ -662,17 +662,15 @@ bool Execution::execute(Execution *parent, Link &&link)
 				assert(errno == ENOENT); 
 
 				if (rule->dependencies.size()) {
-					if (output_mode > Output::SILENT)
-						print_traces
-							(fmt("file without command %s does not exist, although all its dependencies are up to date", 
-							     target.format_word())); 
+					print_traces
+						(fmt("expected the file without command %s to exist because all its dependencies are up to date, but it does not", 
+						     target.format_word())); 
 					explain_file_without_command_with_dependencies(); 
 				} else {
-					if (output_mode > Output::SILENT)
-						rule->place_param_targets[i]->place
-							<< fmt("file without command and without dependencies %s does not exist",
-							       target.format_word()); 
-						print_traces();
+					rule->place_param_targets[i]->place
+						<< fmt("expected the file without command and without dependencies %s to exist, but it does not",
+						       target.format_word()); 
+					print_traces();
 					explain_file_without_command_without_dependencies(); 
 				}
 				done.add_one_neg(link.avoid); 
@@ -744,8 +742,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	/* The file must be created now */
 
 	if (option_question) {
-		if (output_mode > Output::SILENT) 
-			puts("Targets are not up to date");
+		puts("Targets are not up to date");
 		exit(ERROR_BUILD);
 	}
 
@@ -830,9 +827,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 		if (pid < 0) {
 			/* Starting the job failed */ 
-			if (output_mode > Output::SILENT)
-				print_traces(fmt("error executing command for %s", 
-						 targets.front().format_word())); 
+			print_traces(fmt("error executing command for %s", 
+					 targets.front().format_word())); 
 			raise(ERROR_BUILD);
 			done.add_neg(link.avoid); 
 			return false;
@@ -1002,39 +998,37 @@ void Execution::waited(int pid, int status)
 	} else {
 		/* Command failed */ 
 		
-		if (output_mode > Output::SILENT) {
-			string reason;
-			if (WIFEXITED(status)) {
-				reason= frmt("failed with exit code %s%d%s", 
-					     Color::word,
-					     WEXITSTATUS(status),
-					     Color::end);
-			} else if (WIFSIGNALED(status)) {
-				int sig= WTERMSIG(status);
-				reason= frmt("received signal %d (%s)", 
-					     sig,
-					     strsignal(sig));
-			} else {
-				/* This should not happen but the standard does not exclude
-				 * it */ 
-				reason= frmt("failed with status code %d", status); 
-			}
-
-			
-			if (! param_rule->is_copy) {
-				Target target= parents.begin()->second.dependency->get_single_target().unparametrized(); 
-				param_rule->command->place <<
-					fmt("command for %s %s", 
-					    target.format_word(), 
-					    reason); 
-			} else {
-				/* Copy rule */
-				param_rule->place <<
-					fmt("cp to %s %s", targets.front().format_word(), reason); 
-			}
-
-			print_traces(); 
+		string reason;
+		if (WIFEXITED(status)) {
+			reason= frmt("failed with exit code %s%d%s", 
+				     Color::word,
+				     WEXITSTATUS(status),
+				     Color::end);
+		} else if (WIFSIGNALED(status)) {
+			int sig= WTERMSIG(status);
+			reason= frmt("received signal %d (%s)", 
+				     sig,
+				     strsignal(sig));
+		} else {
+			/* This should not happen but the standard does not exclude
+			 * it */ 
+			reason= frmt("failed with status code %d", status); 
 		}
+
+		if (! param_rule->is_copy) {
+			Target target= parents.begin()->second.dependency
+				->get_single_target().unparametrized(); 
+			param_rule->command->place <<
+				fmt("command for %s %s", 
+				    target.format_word(), 
+				    reason); 
+		} else {
+			/* Copy rule */
+			param_rule->place <<
+				fmt("cp to %s %s", targets.front().format_word(), reason); 
+		}
+
+		print_traces(); 
 
 		remove_if_existing(true); 
 
@@ -1079,7 +1073,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		if (! option_keep_going)
 			assert(success); 
 
-		if (success && ! worked && output_mode > Output::SILENT) {
+		if (success && ! worked) {
 			puts("Nothing to be done"); 
 		}
 
@@ -1356,7 +1350,7 @@ Execution::Execution(Target target_,
 	} else {
 		/* There is no rule */ 
 
-		/* Whether to produce the "rule not found" error */ 
+		/* Whether to produce the "no rule to build target" error */ 
 		bool rule_not_found= false;
 
 		if (target_.type == Type::FILE) {
@@ -1377,17 +1371,12 @@ Execution::Execution(Target target_,
 				} else {
 					/* File exists:  Do nothing, and there are no
 					 * dependencies to build */  
-					if (parent->targets.empty()
-					    && output_mode > Output::SILENT) {
+					if (parent->targets.empty()) {
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */ 
-						/* We don't use color
-						 * for the filename because
-						 * the output goes to
-						 * stdout instead of
-						 * stderr */
-						printf("No rule for building '%s', but the file exists\n", 
-						       target_.name.c_str()); 
+						string text= target_.format_out();
+						printf("No rule for building %s, but the file exists\n", 
+						       text.c_str()); 
 					} 
 				}
 			}
@@ -1399,10 +1388,8 @@ Execution::Execution(Target target_,
 		
 		if (rule_not_found) {
 			assert(rule == nullptr); 
-			if (output_mode > Output::SILENT) {
-				print_traces(fmt("no rule to build %s", 
-						 target_.format_word()));
-			}
+			print_traces(fmt("no rule to build %s", 
+					 target_.format_word()));
 			raise(ERROR_BUILD);
 			/* Even when a rule was not found, the Execution object remains
 			 * in memory */  
@@ -1861,9 +1848,8 @@ void Execution::print_traces(string text) const
 
 		if (i->first->targets.empty()) {
 			if (first && text != "") {
-				if (output_mode > Output::SILENT)
-					print_error(fmt("No rule to build %s", 
-							text_parent)); 
+				print_error(fmt("No rule to build %s", 
+						text_parent)); 
 			}
 			break; 
 		}
@@ -2207,10 +2193,9 @@ void Execution::write_content(const char *filename,
 	if (0 != fclose(file)) {
 		rule->place <<
 			system_format(name_format_word(filename)); 
-		if (output_mode > Output::SILENT)
-			command.get_place() << 
-				fmt("error creating %s", 
-				     name_format_word(filename)); 
+		command.get_place() << 
+			fmt("error creating %s", 
+			    name_format_word(filename)); 
 		raise(ERROR_BUILD); 
 	}
 

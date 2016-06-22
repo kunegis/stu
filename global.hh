@@ -40,12 +40,11 @@ static bool option_individual= false;
 static bool option_statistics= false;
 
 
-/* Determines how commands are output
- */
+/* Determines how commands are output */
 enum class Output {
 	SILENT  = -2, /* No output */
 	SHORT   = -1, /* Only target name */
-	LONG    =  0  /* Output the command */
+	LONG    =  0, /* Output the command */
 };
 static Output output_mode= Output::LONG; 
 

@@ -1,0 +1,10 @@
+@all: A B C D;
+
+>A { echo Hello } 
+
+B = {Hello}
+
+C: { touch C }
+
+D { echo Hello >D }
+

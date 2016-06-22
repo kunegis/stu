@@ -1,3 +1,12 @@
+
+# Normal messages should be suppressed by a -Q (quiet) option. 
+#
+#   Nothing to be done
+#   Targets are not up to date
+#   No rule for building X exists, but the file exists
+
+# Have stdout in color, too. 
+
 #==== Backward-incompatible features (in the switch to version 2) ====
 
 #
@@ -116,6 +125,12 @@ A.$X.$Y:  $X * .$Y      # OK
 @plot.all:   @plot.[NETWORKS];
 
 @plot:    plot/[NETWORKS].eps;
+
+# Copy all *.dat files to the backup/ directory, but only if they don't
+# exist yet, or if they have changed. 
+@all: backup/[FILES];
+>FILES: { echo *.dat }
+dest/$file = $file;
 
 #==== Features of Stu 2:  Other features ====
 

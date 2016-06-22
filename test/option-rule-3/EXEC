@@ -4,7 +4,7 @@
 # (1) File does not exist
 #
 
-rm -f A
+rm -f A || exit 1
 
 ../../stu.test -F 'A;' >list.out 2>list.err
 exitcode="$?"
@@ -14,7 +14,7 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'not exist' list.err || {
+grep -qF "expected the file without command and without dependencies 'A' to exist" list.err || {
 	echo >&2 "*** (1) stderr A"
 	exit 1
 }
@@ -33,7 +33,7 @@ grep -qF 'Command line argument' list.err || {
 # (2) File exists
 #
 
-touch A
+touch A || exit 1
 
 ../../stu.test -F 'A;' >list.out 2>list.err
 exitcode="$?"
@@ -43,12 +43,12 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Nothing to be done' list.out || {
+grep -qFx 'Nothing to be done' list.out || {
 	echo >&2 "*** (2) stdout"
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
+[ -r list.err ] && [ \! -s list.err ] || {
 	echo >&2 "*** (2) stderr"
 	exit 1
 }

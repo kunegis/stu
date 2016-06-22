@@ -363,13 +363,17 @@ int main(int argc, char **argv, char **envp)
 
 void init_buf()
 {
-	/* If -s is not given, set STDOUT to line buffered, so that the
+	/* Set STDOUT to line buffered, so that the
 	 * output of command lines always happens before the output of
 	 * commands themselves */ 
-	if (output_mode > Output::SILENT) {
-		/* Note:  only possible if we have not written anything yet */ 
-		setvbuf(stdout, nullptr, _IOLBF, 0); 
-
+	/* Note:  Setting the buffering like this is only possible if we
+	   have not written anything yet.  */  
+	if (0 != setvbuf(stdout, nullptr, _IOLBF, 0)) {
+		print_error_system("setvbuf"); 
+		exit(ERROR_FATAL); 
+	}
+		
+	{
 		/* Set STDOUT to append mode; this is also done by GNU Make */ 
 		int flags= fcntl(fileno(stdout), F_GETFL, 0);
 		if (flags >= 0)
@@ -377,9 +381,11 @@ void init_buf()
 	}
 
 	/* Set STDERR to append mode; this is also done by GNU Make */ 
-	int flags= fcntl(fileno(stderr), F_GETFL, 0);
-	if (flags >= 0)
-		fcntl(fileno(stderr), F_SETFL, flags | O_APPEND);
+	{
+		int flags= fcntl(fileno(stderr), F_GETFL, 0);
+		if (flags >= 0)
+			fcntl(fileno(stderr), F_SETFL, flags | O_APPEND);
+	}
 }
 
 void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,

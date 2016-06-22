@@ -1,0 +1,83 @@
+#! /bin/sh
+
+set -e
+
+#
+# Perform one check
+#
+# $1:  file to check
+#
+check_one() 
+{
+	file="$1"
+
+	[ -e "$file" ] || {
+		echo >&2 "*** Expected '$file' to exist"
+		exit 1
+	}
+
+	umask_current="$(echo $(umask) | sed -e 's,^0\(...\)$,\1,')"
+	spec_created="$(ls -l "$file" | sed -e 's,^.\(..\).\(..\).\(..\)..*$,\1\2\3,;1q')"
+
+	spec_current="$(echo "$umask_current" | sed -e 's,0,--,g;s,1,--,g;s,2,-w,g;s,3,-w,g;s,4,r-,g;s,5,r-,g;s,6,rw,g;s,7,rw,g')"
+
+	echo "$spec_created" | grep -qEv x || {
+		echo >&2 "*** Created file '$file' must not have execute flag"
+		exit 1
+	}
+
+	n_current="$(echo $(echo "$spec_current" | wc -c))"
+	n_created="$(echo $(echo "$spec_created" | wc -c))"
+
+	[ "$n_created" = "$n_current" ] || {
+		echo >&2 "*** Invalid spec lengths"
+		echo >&2 "n_current='$n_current'"
+		echo >&2 "n_created='$n_created'"
+		echo >&2 "spec_current='$spec_current'"
+		echo >&2 "spec_created='$spec_created'"
+		exit 1
+	}
+
+	for mult in a+w a+r g+w g+r u+w u+r ; do
+		c_current="$(echo "$spec_current" | sed -e 's,^.*\(.\)$,\1,')"
+		c_created="$(echo "$spec_created" | sed -e 's,^.*\(.\)$,\1,')"
+
+		spec_current="$(echo "$spec_current" | sed -e 's,^\(.*\).$,\1,')"
+		spec_created="$(echo "$spec_created" | sed -e 's,^\(.*\).$,\1,')"
+
+		if [ "$c_current" = "-" ] ; then
+			if [ "$c_created" = "r" ] || [ "$c_created" = "w" ] ; then
+				: # OK
+			else
+				echo >&2 "*** Error for $mult: umask not set, and created file does not have the mode"
+				exit 1
+			fi
+		else
+			if [ "$c_created" = "-" ] ; then 
+				: # OK
+			else
+				echo >&2 "*** Error for $mult: umask set, but file has the mode"
+				exit 1
+			fi
+		fi
+	done
+}
+
+rm -f ?
+
+../../stu.test >list.out 2>list.err
+
+[ -r list.err ] && [ \! -s list.err ] || {
+	echo >&2 "*** Expected empty error output"
+	exit 1
+}
+
+check_one A
+check_one B
+check_one C
+check_one D
+
+rm -f ?
+
+exit 0
+

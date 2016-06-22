@@ -2,7 +2,7 @@ Some information for developing Stu.
 
 TODO.stu lists the next features to be implemented. 
 
-SETUP
+==== SETUP ====
 
 Stu uses the GNU Auto* tools.  For development, use "make -f Makefile.devel". 
 
@@ -17,28 +17,23 @@ Version logic:
 * Increment the major version number when backward-incompatible new
   syntax is introduced 
 
-HINTS
+==== HINTS ====
 
-* Follow CODING
-* Write unit tests for all features, including failure modes 
-* When writing shell scripts, make sure to follow POSIX.  This includes: 
-** 'sed' has *only* basic regular expressions.  In particular, no '|'.
-   The -E and -r options are not POSIX. 
-** Shell scripts don't have a filename suffix.  Use '#! /bin/sh'. 
+* Follow ./CODING
+* Write unit tests for all features, including failure modes; see sh/mktest
 
-UNIT TESTS
+==== UNIT TESTS ====
 
 Unit testing is described in sh/mktest. 
 
 To run the unit tests, do 'make -f Makefile.devel'.  It takes about five
 minutes in all.   
 
-The unit tests have additional requirements: 
+The unit tests have additional requirements on the system: 
 
 * The unit tests assume that the file system supports UTF-8 filenames.
   Stu will work without such a file system, but you can't run the unit
   tests unless you remove the one offending test (test/unicode/).  
 * The unit tests use 'test -a', which is marked as obsolete in POSIX. 
 
-If you run the tests and they fail, you can report that to Jérôme
-Kunegis <kunegis@gmail.com>.   
+If you run the tests and they fail, report that to Jérôme Kunegis <kunegis@gmail.com>.    

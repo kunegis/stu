@@ -1,2 +1,2 @@
-main.stu:5:1: file without command 'B' does not exist, although all its dependencies are up to date
+main.stu:5:1: expected the file without command 'B' to exist because all its dependencies are up to date, but it does not
 main.stu:3:6: 'C' is needed by 'A'

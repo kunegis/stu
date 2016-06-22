@@ -1,4 +1,4 @@
-main.stu:6:1: file without command and without dependencies 'B' does not exist
+main.stu:6:1: expected the file without command and without dependencies 'B' to exist, but it does not
 main.stu:3:4: 'B' is needed by 'A'
 Explanation: A filename followed by a semicolon declares a file that is
 always present.

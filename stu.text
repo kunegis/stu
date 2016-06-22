@@ -114,9 +114,9 @@ OPTIONS
               when  all  given targets (or the default target) are up to date,
               and 1 otherwise.
 
-       -s     Silent mode.  Suppress output of commands, information  messages
-              and some build error messages.  This option is comparable to the
-              same option in Make.
+       -s     Silent mode.  Suppress output of commands  when  they  are  exe‐
+              cuted.   This  option  is comparable to the same option in Make.
+              Other output is not suppressed, such as 'Nothing to be done'.
 
        -v     Verbose mode.  Show internal information about the Stu algorithm
               on  standard  error output.  All printed output lines begin with
@@ -799,4 +799,4 @@ SEE ALSO
 
 
 
-stu-1.15.60                        June 2016                            STU(1)
+stu-1.15.62                        June 2016                            STU(1)

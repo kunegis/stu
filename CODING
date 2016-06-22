@@ -79,3 +79,19 @@ necessary.
 * 'format[_*]':  a function that formats an object for display
 * 'filename':  a filename
 * 'error':  an error code or exit code (they are the same in Stu)
+
+== Shell scripts ==
+
+When writing shell scripts, make sure to follow POSIX.  This includes: 
+
+* Only use POSIX features of the shell and of standard tools.  Read the
+  manpage on the POSIX website
+  (http://pubs.opengroup.org/onlinepubs/9699919799/), rather than your
+  locally installed 
+  manpages, which are likely to describe extensions to the tools. 
+* Sed has *only* basic regular expressions.  In particular, no '|', no
+  '\s' and no '\S'.  The -E and -r options are not POSIX. 
+* Shell scripts don't have a filename suffix.  Use '#! /bin/sh'. 
+* 'test' does not support the -a option.  Use && in the shell instead. 
+
+There are many more things to be said about portable shell scripting. 

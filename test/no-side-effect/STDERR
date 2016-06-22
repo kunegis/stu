@@ -1,0 +1,1 @@
+main.stu:5:1: expected the file without command 'A' to exist because all its dependencies are up to date, but it does not

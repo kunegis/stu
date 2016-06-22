@@ -1,4 +1,8 @@
 #! /bin/sh
+#
+# The -s option (silent) does not suppress the 'Nothing to be done'
+# message. 
+#
 
 rm -f ?
 
@@ -12,7 +16,7 @@ exitcode="$?"
 	exit 1
 }
 
-[ -r list.out -a \! -s list.out ] || {
+[ -s list.out ] || {
 	echo >&2 "*** stdout"
 	echo list.out:
 	echo _______
@@ -21,8 +25,13 @@ exitcode="$?"
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
-	echo >&2 "*** stderr"
+grep -qF 'Nothing to be done' list.out || {
+	echo >&2 "*** Expected 'Nothing to be done'"
+	exit 1
+}
+
+[ -r list.err ] &&  [ \! -s list.err ] || {
+ 	echo >&2 "*** stderr"
 	exit 1
 }
 

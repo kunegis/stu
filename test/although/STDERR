@@ -1,0 +1,2 @@
+main.stu:12:1: expected the file without command and without dependencies 'B' to exist, but it does not
+main.stu:6:5: 'B' is needed by 'A'

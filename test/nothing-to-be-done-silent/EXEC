@@ -1,7 +1,7 @@
 #! /bin/sh
 #
-# The -s option (silent) does not suppress the 'Nothing to be done'
-# message. 
+# The -s option (silent) does not suppress the 'File ... exists but has
+# no rule' message. 
 #
 
 rm -f ?
@@ -25,7 +25,7 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Nothing to be done' list.out || {
+grep -qFx "No rule for building 'A', but the file exists" list.out || {
 	echo >&2 "*** Expected 'Nothing to be done'"
 	exit 1
 }

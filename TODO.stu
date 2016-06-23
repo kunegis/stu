@@ -1,7 +1,4 @@
 
-# Don't show 'Nothing to be done' when the 'No rule for building file
-# but the file exists' message is shown. 
-
 # In print_out() messages, use bold quoting. 
 
 # print_out() messages should be suppressed by a -Q (quiet) option. 

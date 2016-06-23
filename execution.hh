@@ -86,11 +86,7 @@ private:
 	/* Dependencies that have not yet begun to be built.
 	 * Initialized with all dependencies, and emptied over time when
 	 * things are built, and filled over time when dynamic dependencies
-	 * are worked on. 
-	 * Entries are not necessarily unique.  The traces within the
-	 * dependencies refer to the declaration of the dependencies,
-	 * not to the rules of the dependencies. 
-	 */ 
+	 * are worked on. Entries are not necessarily unique.  */ 
 	Buffer buf_default;
 
 	/* The buffer for dependencies in the second pass.  They are only started
@@ -306,10 +302,11 @@ private:
 	 */ 
 	static Timestamp timestamp_last; 
 
-	/* Whether something was done (either jobs were started or
-	 * files where created).  This is tracked for the purpose of the
-	 * "Nothing to be done" message. */ 
-	static bool worked;
+	/* Whether to show the "Nothing to be done" message.  The
+	 * message is shown when the build is successful and nothing had
+	 * to be done, except if another info message is printed.  Does
+	 * not keep track whether an error occurred.  */ 
+	static bool hide_nothing_to_be_done;
 
 	/* Propagate information from the subexecution to the execution, and
 	 * then delete the child execution.  The child execution is
@@ -372,7 +369,7 @@ unordered_map <string, Timestamp> Execution::transients;
 Timestamp Execution::timestamp_last;
 Rule_Set Execution::rule_set; 
 long Execution::jobs= 1;
-bool Execution::worked= false;
+bool Execution::hide_nothing_to_be_done= false;
 
 void Execution::wait() 
 {
@@ -746,7 +743,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		exit(ERROR_BUILD);
 	}
 
-	worked= true; 
+	hide_nothing_to_be_done= true; 
 	
 	print_command();
 
@@ -1069,23 +1066,18 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		assert(execution_root->finished()); 
 
 		bool success= (execution_root->error == 0);
-
-		if (! option_keep_going)
-			assert(success); 
-
-		if (success && ! worked) {
-			print_out("Nothing to be done");
-		}
-
-		if (! success && option_keep_going) {
-			print_info("Targets not rebuilt because of errors"); 
-		}
+		assert(option_keep_going || success); 
 
 		error= execution_root->error; 
 		assert(error >= 0 && error <= 3); 
-	} 
 
-	/* A build error is only thrown when options_continue is
+		if (success && ! hide_nothing_to_be_done) 
+			print_out("Nothing to be done");
+
+		if (! success && option_keep_going) 
+			print_info("Targets not rebuilt because of errors"); 
+	} 
+	/* A build error is only thrown when option_keep_going is
 	 * not set */ 
 	catch (int e) {
 
@@ -1094,7 +1086,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 
 		/* Terminate all jobs */ 
 		if (executions_by_pid.size()) {
-			print_error("Terminating all running jobs"); 
+			print_info("Terminating all running jobs"); 
 			job_terminate_all();
 		}
 
@@ -1376,6 +1368,7 @@ Execution::Execution(Target target_,
 						 * therefore we don't need traces */ 
 						print_out(fmt("No rule for building %s, but the file exists", 
 							      target_.format_out())); 
+						hide_nothing_to_be_done= true; 
 					} 
 				}
 			}

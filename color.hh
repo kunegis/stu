@@ -30,7 +30,7 @@ public:
 
 	/* Whether single quotes have to be used.  Only true when color
 	 * is not used.  */   
-	static bool quotes; 
+	static bool quotes, quotes_out; 
 
 	static const char *end;
 	static const char *error;
@@ -39,7 +39,9 @@ public:
 	static const char *error_word;
 
 	static const char *out_end; 
+	static const char *out_print_word_end;
 	static const char *out_print;
+	static const char *out_print_word;
 
 	static void set(bool is_tty_out, bool is_tty_err);
 
@@ -62,7 +64,7 @@ private:
 	}	
 };
 
-bool Color::quotes;
+bool Color::quotes, Color::quotes_out;
 
 const char *Color::end;
 const char *Color::error;
@@ -71,18 +73,26 @@ const char *Color::word;
 const char *Color::error_word;
 
 const char *Color::out_end;
+const char *Color::out_print_word_end;
 const char *Color::out_print;
+const char *Color::out_print_word;
 
 Color Color::color;
 
 void Color::set(bool is_tty_out, bool is_tty_err)
 {
 	if (is_tty_out) {
-		out_print= "[32m";
-		out_end=   "[0m";
+		quotes_out= false;
+		out_end=            "[0m";
+		out_print_word_end= "[0;32m"; 
+		out_print=          "[32m";
+		out_print_word=     "[32;1m"; 
 	} else {
-		out_print= "";
-		out_end=   ""; 
+		quotes_out= true;
+		out_end=            ""; 
+		out_print_word_end= "";
+		out_print=          "";
+		out_print_word=     "";
 	}
 
 	if (is_tty_err) {

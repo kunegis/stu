@@ -1367,7 +1367,7 @@ Execution::Execution(Target target_,
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */ 
 						print_out(fmt("No rule for building %s, but the file exists", 
-							      target_.format_out())); 
+							      target_.format_out_print_word())); 
 						hide_nothing_to_be_done= true; 
 					} 
 				}

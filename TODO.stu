@@ -1,6 +1,4 @@
 
-# In print_out() messages, use bold quoting. 
-
 # print_out() messages should be suppressed by a -Q (quiet) option. 
 
 # -h and -V in color. 

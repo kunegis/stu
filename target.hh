@@ -225,6 +225,30 @@ public:
 			   Color::end);
 	}
 
+	string format_out_print_word() const {
+
+		Style style= 0;
+		if (type != Type::FILE)
+			style |= S_MARKERS;
+
+		bool quotes= 
+			(type == Type::FILE
+			 ? Color::quotes_out
+			 : 0);
+
+		string text= name_format(name, style, quotes); 
+		
+		return fmt("%s%s%s%s%s%s%s%s", 
+			   Color::out_print_word, 
+			   string(type.get_dynamic_depth(), '['),
+			   type.is_any_transient() ? "@" : "",
+			   quotes ? "'" : "",
+			   text,
+			   quotes ? "'" : "",
+			   string(type.get_dynamic_depth(), ']'),
+			   Color::out_print_word_end);
+	}
+
 	string format_out() const {
 
 		Style style= 0;

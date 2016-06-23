@@ -152,7 +152,7 @@ int main(int argc, char **argv, char **envp)
 			case 's': output_mode= Output::SILENT; break;
 			case 'v': option_verbose= true;        break;
 			case 'w': output_mode= Output::SHORT;  break;
-			case 'y': Color::set(false);           break;
+			case 'y': Color::set(false, false);    break;
 			case 'x': option_individual= true;     break;
 			case 'z': option_statistics= true;     break;
 

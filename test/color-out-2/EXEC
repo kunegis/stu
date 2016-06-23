@@ -1,0 +1,18 @@
+#! /bin/sh
+
+rm -f ? || exit 1
+
+../../sh/tty ../../stu.test -q -F 'A={Hello}' A >list.all
+exitcode="$?"
+
+[ "$exitcode" = 1 ] || {
+	echo >&2 "*** Exit code"
+	exit 1
+}
+
+cmp list.all stdall || {
+	echo >&2 "*** Output"
+	exit 1
+}
+
+exit 0

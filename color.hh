@@ -32,13 +32,16 @@ public:
 	 * is not used.  */   
 	static bool quotes; 
 
+	static const char *end;
 	static const char *error;
 	static const char *warning;
 	static const char *word;
 	static const char *error_word;
-	static const char *end;
 
-	static void set(bool is_tty);
+	static const char *out_end; 
+	static const char *out_print;
+
+	static void set(bool is_tty_out, bool is_tty_err);
 
 private:
 
@@ -46,27 +49,43 @@ private:
 
 	Color() {
 		errno= 0;
-		bool is_tty= isatty(fileno(stderr)); 
-		if (errno == EBADF) {
+		bool is_tty_out= isatty(fileno(stdout)); 
+		if (! is_tty_out && errno != 0 && errno != ENOTTY) {
+			perror("isatty"); 
+		}
+		errno= 0;
+		bool is_tty_err= isatty(fileno(stderr)); 
+		if (! is_tty_err && errno != 0 && errno != ENOTTY) {
 			perror("isatty");
 		}
-		set(is_tty); 
+		set(is_tty_out, is_tty_err); 
 	}	
 };
 
-Color Color::color;
-
 bool Color::quotes;
 
+const char *Color::end;
 const char *Color::error;
 const char *Color::warning;
 const char *Color::word;
 const char *Color::error_word;
-const char *Color::end;
 
-void Color::set(bool is_tty)
+const char *Color::out_end;
+const char *Color::out_print;
+
+Color Color::color;
+
+void Color::set(bool is_tty_out, bool is_tty_err)
 {
-	if (is_tty) {
+	if (is_tty_out) {
+		out_print= "[32m";
+		out_end=   "[0m";
+	} else {
+		out_print= "";
+		out_end=   ""; 
+	}
+
+	if (is_tty_err) {
 		quotes= false;
 		error=             "[31m";
 		warning=           "[35m";

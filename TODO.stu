@@ -1,11 +1,14 @@
 
-# Normal messages should be suppressed by a -Q (quiet) option. 
-#
-#   Nothing to be done
-#   Targets are not up to date
-#   No rule for building X, but the file exists
+# Don't show 'Nothing to be done' when the 'No rule for building file
+# but the file exists' message is shown. 
 
-# Have stdout in color, too. 
+# In print_out() messages, use bold quoting. 
+
+# print_out() messages should be suppressed by a -Q (quiet) option. 
+
+# -h and -V in color. 
+
+# VERBOSE in color.
 
 #==== Backward-incompatible features (in the switch to version 2) ====
 

@@ -1,0 +1,15 @@
+#! /bin/sh
+
+set -e
+
+touch A 
+
+../../sh/tty ../../stu.test A >list.all
+
+cmp list.all stdall || {
+	echo >&2 "*** Output"
+	cat list.all
+	exit 1
+}
+
+exit 0

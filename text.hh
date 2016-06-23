@@ -21,7 +21,10 @@ void print_out(string text)
 	assert(text != "");
 	assert(isupper(text[0]));
 	assert(text[text.size() - 1] != '\n');
-	puts(text.c_str()); 
+	printf("%s%s%s\n",
+	       Color::out_print,
+	       text.c_str(),
+	       Color::out_end); 
 }
 
 /* Is the character a space in the C locale?  Note:  we don't use

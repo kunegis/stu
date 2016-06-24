@@ -30,6 +30,9 @@ static bool option_print= false;
 /* The -q option (question mode) */
 static bool option_question= false; 
 
+/* The -Q option (quiet) */
+static bool option_quiet= false;
+
 /* The -v option (verbose mode) */ 
 static bool option_verbose= false;
 

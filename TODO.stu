@@ -1,6 +1,4 @@
 
-# print_out() messages should be suppressed by a -Q (quiet) option. 
-
 # -h and -V in color. 
 
 # VERBOSE in color.

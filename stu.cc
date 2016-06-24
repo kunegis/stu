@@ -36,7 +36,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-#define STU_OPTIONS "ac:C:Ef:F:ghj:JkKm:M:pqsvVwxyz"
+#define STU_OPTIONS "ac:C:Ef:F:ghj:JkKm:M:pqQsvVwxyz"
 
 /* The following strings do not contain tabs, but only space characters */  
 #define STU_HELP						       \
@@ -62,6 +62,7 @@ using namespace std;
 	"  -M STRING        Pseudorandom run order, seeded by given string\n"         \
 	"  -p               Print the rules and exit\n"                               \
 	"  -q               Question mode; check whether targets are up to date\n"    \
+	"  -Q               Quiet mode; suppress special stdout messages\n"           \
 	"  -s               Silent mode; do not output commands\n"	              \
 	"  -v               Verbose mode; show execution information on stderr\n"     \
 	"  -V               Output version and exit\n"				      \
@@ -149,6 +150,7 @@ int main(int argc, char **argv, char **envp)
 			case 'K': option_no_delete= true;      break;
 			case 'p': option_print= true;          break; 
 			case 'q': option_question= true;       break;
+			case 'Q': option_quiet= true;          break; 
 			case 's': output_mode= Output::SILENT; break;
 			case 'v': option_verbose= true;        break;
 			case 'w': output_mode= Output::SHORT;  break;

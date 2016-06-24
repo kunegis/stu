@@ -43,6 +43,7 @@ List of options
 -o  .   G  GNU Make: Mark file as old
 -p  S M G  Print database (rule set)
 -q  S M G  Question mode / Query mode
+-Q  S      Quiet mode (suppress stdout messages, except building messages)
 -r    M G  No builtin rules
 -R      G  No builtin variables
 -s  S M G  Silent

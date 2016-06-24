@@ -1,0 +1,4 @@
+existingfile {
+	# This is never executed
+	exit 1
+}

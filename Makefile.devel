@@ -109,8 +109,9 @@ clean:
 # Autoconf
 #
 
+
 all-auto:  configure.ac VERSION 
-	rm -Rf build-aux
+	rm -Rf build-aux configure config.log autom4te.cache
 	mkdir build-aux
 	aclocal
 	automake --add-missing

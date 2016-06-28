@@ -1,4 +1,4 @@
-This file catalogues the usage of individual characters in Stu files.
+This file catalogues the usage of individual characters in Stu source code.
 Since Stu is used to specify filenames, many characters that are used as
 operators in programming languages are allowed in filenames, such as
 '/', '~', etc.  Other characters are used as part of the Stu syntax. 

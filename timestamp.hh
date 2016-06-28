@@ -16,7 +16,7 @@
 
 #if USE_MTIM
 
-/* This variant is not used.  Using CLOCK_REALTIME it does not work, as:
+/* This variant works only on Linux.  Using CLOCK_REALTIME it does not work, as:
  *  (1) Two files created in a row have timestamps in the wrong order 
  *  (2) Files create during Stu runtime have a timestamp before the Stu
  *      startu timestamps. 
@@ -25,12 +25,11 @@
  * one nanosecond. 
  */
 
-/* Using CLOCK_REALTIME_COARSE (Linux only) is better, but some tests
- * still fail, and it is a Linux extension.  
+/* Using CLOCK_REALTIME_COARSE (Linux only) works. 
  */ 
 
 /* Note also that this implementation has such high precision, that bugs
- * in Stu scripts may emerge which normally would have been hidden.  For instance
+ * in Stu scripts may emerge which normally would have been hidden.  
  */
 
 class Timestamp
@@ -81,7 +80,6 @@ public:
 
 	static Timestamp now() {
 		Timestamp ret;
-		/* Note:  clock_gettime() needs to be linked with -lrt */ 
 		int r= clock_gettime(CLOCK_REALTIME_COARSE, & ret.t); 
 		if (r != 0) {
 			/* If this happens, it is a bug in Stu */
@@ -102,7 +100,7 @@ const Timestamp Timestamp::UNDEFINED((time_t) -1);
 
 Timestamp Timestamp::startup= Timestamp::now();
 
-#else /* old, 1-second-precision implementation */ 
+#else /* Default, 1-second-precision implementation */ 
 
 class Timestamp
 {

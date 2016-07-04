@@ -7,24 +7,24 @@ year_b="$(expr $year - 2)"
 date_a="$year_a-01-01T07:00:00"
 date_b="$year_b-01-01T07:00:00"
 
-rm -f A B
+rm -f A B || exit 1
 
-touch -d "$date_a" A
-touch -d "$date_b" B
+touch -d "$date_a" A || exit 1
+touch -d "$date_b" B || exit 1
 
 ../../stu.test 2>list.err
 exitcode="$?"
 
-if [ "$exitcode" != 0 ] ; then
+[ "$exitcode" = 0 ] || {
 	echo >&2 "*** Wrong exit code:  $exitcode"
 	exit 1
-fi
+}
 
-if ! fgrep -q "Warning: File target 'A' which has no command is older than its dependency" list.err ; then
+grep -qF "Warning: File target 'A' which has no command is older than its dependency" list.err || {
 	echo >&2 "*** Warning is missing"
 	exit 1
-fi
+}
 
-rm -f A B
+rm -f A B || exit 1
 
 exit 0

@@ -613,8 +613,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 			}
 
 			if (ret_stat == 0) {
-				/* File exists. Check whether it has to be rebuilt
-				 * because of more up to date dependencies */ 
 
 				assert(timestamps_old[i].defined()); 
 				if (timestamp.defined() && 

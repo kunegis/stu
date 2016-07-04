@@ -1,3 +1,6 @@
+#
+# Use a proper place for everything that uses print_warning(). 
+#
 
 #==== Backward-incompatible features (in the switch to version 2) ====
 
@@ -302,3 +305,7 @@ A: -R B;  B: C;  A: D;
 # * When A is new, B does not exist, and C is old:  don't rebuild A.
 # * When A is new, B does not exist, C is old, and D is very new:  rebuild
 #   B and A. 
+
+#
+# Have a "clean" option that removes all files that can be rebuilt. 
+#

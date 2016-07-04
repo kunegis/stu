@@ -36,6 +36,7 @@ AM_MAINTAINER_MODE([disable])
 
 AC_PROG_CXX
 AC_LANG(C++)
+## ax_cxx_compile_stdcxx_11(noext, optional)
 
 #
 # Checks for specific features.  None of these is enabled at the moment,

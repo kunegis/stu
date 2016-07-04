@@ -110,7 +110,7 @@ clean:
 #
 
 
-all-auto:  configure.ac VERSION 
+all-auto:  configure.ac VERSION Makefile.am
 	rm -Rf build-aux configure config.log autom4te.cache
 	mkdir build-aux
 	aclocal

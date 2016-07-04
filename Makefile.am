@@ -1,3 +1,7 @@
+#
+# This is the input fiel to Automake. 
+#
+
 AUTOMAKE_OPTIONS = foreign
 
 CXXFLAGS = -O2 -DNDEBUG -s -std=c++11 

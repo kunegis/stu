@@ -1,1 +1,1 @@
-../../stu.test: Warning: File 'B' has modification time in the future
+main.stu:10:1: warning: File 'B' has modification time in the future after execution of command

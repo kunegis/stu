@@ -57,6 +57,7 @@
 #  	       use shell quoting and escaping.  For instance, the file
 #	       may contain -C ' A ' to pass an argument beginning and ending
 #              in space to Stu. 
+# CMDPREFIX    Prefix before command.  Used to set environment variables
 # PARALLEL     Give the arguments of the -j option for which the test is
 #              to be executed 
 # EXITCODE     The prescribed exit code; default is zero
@@ -160,7 +161,7 @@ do
 	../../sh/delete_tmps || exit 1
 
 	# Check that all all-uppercase files are of one of the allowed files 
-	allowed=",EXITCODE,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,CMD,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,"
+	allowed=",EXITCODE,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,"
 	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
 	do
 		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi
@@ -172,13 +173,17 @@ do
 	if [ -r CMD ]; then
     		CMD="$(sed -e '/^[[:space:]]*$/d' <CMD)"
 	fi
+	CMDPREFIX=
+	if [ -r CMDPREFIX ]; then
+    		CMDPREFIX="$(sed -e '/^[[:space:]]*$/d' <CMDPREFIX)"
+	fi
 
 	# The following will save:  list.def.out and list.def.err 
 
 	if [ -r EXEC ]; then
 
 		if [ -r EXITCODE -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
-			-o -r STDERR -o -r NOTINSTDERR -o -r CMD \
+			-o -r STDERR -o -r NOTINSTDERR -o -r CMD -o -r CMDPREFIX \
 			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
 			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR -o -r NOCOLOR ]; then
 			echo >&2 "$: *** EXEC does not allow any other file"
@@ -194,8 +199,8 @@ do
 
 	else
 		# Execute command
-		echo ../../stu.test "$CMD"
-		eval ../../stu.test $CMD \>list.def.out 2\>list.def.err
+		echo $CMDPREFIX ../../stu.test "$CMD"
+		eval $CMDPREFIX ../../stu.test $CMD \>list.def.out 2\>list.def.err
 		exitcode_actual="$?"
 
 		if [ "$verbose" ] ; then
@@ -360,8 +365,8 @@ do
 		# TTYSTDOUTERR
 		if { [ -r TTYSTDOUTERR ] || [ -r EXITCODE ]; } && ! [ -r NOTTY ]; then
 			../../sh/delete_tmps || exit 1
-			echo ../../stu.test "$CMD" '[TTY]'
-			eval ../../sh/tty ../../stu.test $CMD \>list.def.out 
+			echo $CMDPREFIX ../../stu.test "$CMD" '[TTY]'
+			eval $CMDPREFIX ../../sh/tty ../../stu.test $CMD \>list.def.out 
 			exitcode_actual="$?"
 
 			# Exit code
@@ -417,8 +422,8 @@ do
 
 		# Second invocation does nothing 
 		if [ "$exitcode_correct" = 0 -a ! -e NOSECOND ]; then
-			echo ../../stu.test "$CMD"
-			eval ../../stu.test $CMD \>list.def.out 2\>list.def.err 
+			echo $CMDPREFIX ../../stu.test "$CMD"
+			eval $CMDPREFIX ../../stu.test $CMD \>list.def.out 2\>list.def.err 
 			grep -qF 'Nothing to be done' list.def.out 
 			if [ "$?" = 0 ] ; then
 				echo "Second invocation...correct"
@@ -437,8 +442,8 @@ do
 			ks="$(sed -e '/^[[:space:]]*$/d' <PARALLEL)"
 			for k in $ks; do
 				../../sh/delete_tmps || exit 1
-				echo ../../stu.test "$CMD" -j "$k"
-				eval ../../stu.test $CMD -j $k \>list.def.out 2\>list.def.err
+				echo $CMDPREFIX ../../stu.test "$CMD" -j "$k"
+				eval $CMDPREFIX ../../stu.test $CMD -j $k \>list.def.out 2\>list.def.err
 				if [ $? != 0 ]
 				then
 					echo >&2 "$0: *** Parallel stu failed for '$file' with k = $k"

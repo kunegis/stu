@@ -1,2 +1,1 @@
-echo HELLO
-HELLO
+exit 1

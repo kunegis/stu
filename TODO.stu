@@ -1,5 +1,5 @@
 #
-# Use a proper place for everything that uses print_warning(). 
+# Have an option to suppress warnings. 
 #
 
 #==== Backward-incompatible features (in the switch to version 2) ====
@@ -157,19 +157,21 @@ A:  ?tmp/ {...}
 tmp: {...}
 
 #
-# Advanced file inclusion 
+# File import
 #
 
 # Import all rules from subdirectory; will prepend the directory name to
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of
 
-# Using an option
-% include -d src/main.stu
-
-# 'include' and 'import' would actually be inverted. 
+# All these are equivalent 
 % import src/main.stu
 % import src/
+% import src
+% include -d src/main.stu
+% include -d src/
+% include -d src
+
 
 #
 # New flag to ALWAYS build a target.  (We may already have this)

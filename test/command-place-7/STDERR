@@ -1,1 +1,1 @@
-main.stu:2:5: file 'A' was not built by command
+main.stu:2:5: command for 'A' failed with exit code 1

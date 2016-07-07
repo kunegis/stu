@@ -216,8 +216,13 @@ private:
 	 */ 
 	void print_traces(string text= "") const;
 
-	/* Warn when the file has a modification time in the future */ 
-	void warn_future_file(struct stat *buf, const char *filename);
+	/* Warn when the file has a modification time in the future.
+	 * MESSAGE_EXTRA may be null to not show an extra message. 
+	 */ 
+	void warn_future_file(struct stat *buf, 
+			      const char *filename,
+			      const Place &place,
+			      const char *message_extra= nullptr);
 
 	/* Note:  the top-level flags of LINK.DEPENDENCY may be
 	 * modified. 
@@ -601,7 +606,11 @@ bool Execution::execute(Execution *parent, Link &&link)
 				Timestamp timestamp_file= Timestamp(&buf); 
 				timestamps_old[i]= timestamp_file;
  				if (parent == nullptr || ! (link.flags & F_EXISTENCE)) 
-					warn_future_file(&buf, target.name.c_str());
+					warn_future_file(&buf, 
+							 target.name.c_str(), 
+							 rule == nullptr 
+							 ? parents.begin()->second.place
+							 : rule->place_param_targets[i]->place); 
 				/* EXISTS is not changed */ 
 			} else 
 				exists= -1;
@@ -619,8 +628,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 				    timestamps_old[i] < timestamp) {
 					if (no_execution) {
 						print_warning
-							(fmt("File target %s which has no command is older than its dependency",
-							     target.format_word()));
+							(rule->place_param_targets[i]->place,
+							 fmt("File target %s which has no command is older than its dependency",
+							     target.format_word())); 
 					}
 				} 
 			}
@@ -643,7 +653,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 			if (ret_stat != 0 && errno != ENOENT) {
 				/* stat() returned an actual error,
 				 * e.g. permission denied:  build error */
-				rule->place
+				rule->place_param_targets[i]->place
 					<< system_format(target.format_word()); 
 				raise(ERROR_BUILD);
 				done.add_one_neg(link.avoid); 
@@ -937,7 +947,8 @@ void Execution::waited(int pid, int status)
 		exists= +1; 
 
 		/* For file targets, check that the file was built */ 
-		for (const Target &target:  targets) {
+		for (unsigned i= 0;  i < targets.size();  ++i) {
+			const Target &target= targets[i]; 
 
 			if (target.type != Type::FILE)
 				continue;
@@ -947,7 +958,10 @@ void Execution::waited(int pid, int status)
 			if (0 == stat(target.name.c_str(), &buf)) {
 				/* Check that the file was not created with modification
 				 * time in the future */  
-				warn_future_file(&buf, target.name.c_str()); 
+				warn_future_file(&buf, 
+						 target.name.c_str(),
+						 rule->place_param_targets[i]->place,
+						 "after execution of command"); 
 				/* Check that file is not older that Stu
 				 * startup */ 
 				Timestamp timestamp_file(&buf);
@@ -962,12 +976,12 @@ void Execution::waited(int pid, int status)
 					/* Check whether the file is actually a symlink, in
 					 * which case we ignore that error */ 
 					if (0 > lstat(target.name.c_str(), &buf)) {
-						rule->place <<
+						rule->place_param_targets[i]->place <<
 							system_format(target.format_word()); 
 						raise(ERROR_BUILD);
 					}
 					if (! S_ISLNK(buf.st_mode)) {
-						rule->place 
+						rule->place_param_targets[i]->place
 							<< fmt("timestamp of file %s after execution of its command is older than %s startup", 
 							       target.format_word(), 
 							       dollar_zero)
@@ -982,10 +996,11 @@ void Execution::waited(int pid, int status)
 				}
 			} else {
 				exists= -1;
-				rule->command->place <<
+				rule->place_param_targets[i]->place <<
 					fmt("file %s was not built by command", 
 					    target.format_word()); 
-				print_traces();
+				print_traces(); 
+
 				raise(ERROR_BUILD);
 			}
 		}
@@ -1351,8 +1366,8 @@ Execution::Execution(Target target_,
 				int ret_stat= stat(target_.name.c_str(), &buf);
 				if (0 > ret_stat) {
 					if (errno != ENOENT) {
-						rule->place <<
-							system_format(target_.format_word()); 
+						string text= target_.format_word();
+						perror(text.c_str()); 
 						raise(ERROR_BUILD); 
 					}
 					/* File does not exist and there is no rule for it */ 
@@ -1795,11 +1810,20 @@ void Execution::read_dynamics(Stack avoid,
 	}
 }
 
-void Execution::warn_future_file(struct stat *buf, const char *filename)
+void Execution::warn_future_file(struct stat *buf, 
+				 const char *filename,
+				 const Place &place,
+				 const char *message_extra)
 {
   	if (timestamp_last < Timestamp(buf)) {
-		print_warning(fmt("File %s has modification time in the future",
-				  name_format_word(filename))); 
+		string suffix=
+			message_extra == nullptr 
+			? ""
+			: string(" ") + message_extra;
+		print_warning(place,
+			      fmt("File %s has modification time in the future%s",
+				  name_format_word(filename),
+				  suffix)); 
 	}
 }
 

@@ -95,52 +95,42 @@
  */ 
 
 /* Print an error without place */
-void print_error(string text)
+void print_error(string message)
 {
-	assert(text != "");
-	assert(isupper(text[0]) || text[0] == '\''); 
-	assert(text[text.size() - 1] != '\n'); 
+	assert(message != "");
+	assert(isupper(message[0]) || message[0] == '\''); 
+	assert(message[message.size() - 1] != '\n'); 
 	fprintf(stderr, "%s%s%s: *** %s\n", 
 		Color::error_word, dollar_zero, Color::end,
-		text.c_str()); 
+		message.c_str()); 
 }
 
 /* Like perror(), but use color.  TEXT should not contain color codes */ 
-void print_error_system(string text)
+void print_error_system(string message)
 {
-	assert(text.size() > 0 && text[0] != '') ;
-	string t= name_format_word(text); 
+	assert(message.size() > 0 && message[0] != '') ;
+	string t= name_format_word(message); 
 	fprintf(stderr, "%s: %s\n",
 		t.c_str(),
 		strerror(errno));
 }
 
-void print_warning(string text)
+void print_info(string message)
 {
-	assert(text != "");
-	assert(isupper(text[0]) || text[0] == '\''); 
-	assert(text[text.size() - 1] != '\n'); 
-	fprintf(stderr, "%s%s%s: Warning: %s\n", 
-		Color::warning, dollar_zero, Color::end,
-		text.c_str()); 
-}
-
-void print_info(string text)
-{
-	assert(text != "");
-	assert(isupper(text[0]) || text[0] == '\''); 
-	assert(text[text.size() - 1] != '\n'); 
+	assert(message != "");
+	assert(isupper(message[0]) || message[0] == '\''); 
+	assert(message[message.size() - 1] != '\n'); 
 	fprintf(stderr, "%s%s%s: %s\n", 
 		Color::warning, dollar_zero, Color::end,
-		text.c_str()); 
+		message.c_str()); 
 }
 
 /* System error message.  Includes the given message, and the
  * ERRNO-based text.  Cf. perror().  Color is not added.   */
-string system_format(string message)
+string system_format(string text)
 {
 	return fmt("%s: %s",
-		   message,
+		   text,
 		   strerror(errno)); 
 }
 
@@ -153,12 +143,12 @@ class Place
 public:
 
 	enum class Type {
-		EMPTY,        /* Empty */
-		INPUT_FILE,   /* Location in a file */
-		ARGV,         /* Command line argument */ 
-		OPTION_C,     /* Option -C */	
-		OPTION_f,     /* Option -f */
-		OPTION_F,     /* Option -F */
+		EMPTY,        /* Empty "Place" object */
+		INPUT_FILE,   /* In a file */
+		ARGV,         /* Command line argument (outside options) */ 
+		OPTION_C,     /* In argument to option -C */	
+		OPTION_f,     /* In argument to option -f */
+		OPTION_F,     /* In argument to option -F */
 	};
 
 	/* Empty */ 
@@ -183,7 +173,8 @@ public:
 	Place(Type type_)
 		:  type(type_)
 	{
-		assert(type_ == Type::ARGV || type_ == Type::OPTION_C || type_ == Type::OPTION_f || type_ == Type::OPTION_F); 
+		assert(type_ == Type::ARGV || type_ == Type::OPTION_C || 
+		       type_ == Type::OPTION_f || type_ == Type::OPTION_F); 
 	}
 
 	Type get_type() const { return type; }
@@ -195,6 +186,10 @@ public:
 	 * numbers are output as 1-based values.  Return THIS. 
 	 */
 	const Place &operator<<(string message) const; 
+
+	void print(string message,
+		   const char *color,
+		   const char *color_word) const;
 
 	/* The string used for the argv[0] parameter of child processes.
 	 * Does not include color codes.  */
@@ -254,28 +249,36 @@ public:
 	}
 };
 
-const Place &Place::operator<<(string text) const
+const Place &Place::operator<<(string message) const
 {
-	assert(text != "");
-	assert(! isupper(text[0])); 
+	print(message, Color::error, Color::error_word); 
+	return *this;
+}
+
+void Place::print(string message, 
+		  const char *color,
+		  const char *color_word) const
+{
+	assert(message != "");
+	assert(! isupper(message[0])); 
 
 	switch (type) {
-	default:  assert(false); 
-
+	default:  
 	case Type::EMPTY:
+		assert(false); 
 		fprintf(stderr, 
-			"<empty>: %s\n",
-			text.c_str()); 
-		return *this; 
+			"%s\n",
+			message.c_str()); 
+		break; 
 
 	case Type::INPUT_FILE:
 		fprintf(stderr,
 			"%s%s%s:%s%u%s:%s%u%s: %s\n", 
-			Color::error_word, get_filename_str(), Color::end,
-			Color::error, line, Color::end,
-			Color::error, 1 + column, Color::end,
-			text.c_str());  
-		return *this; 
+			color_word, get_filename_str(), Color::end,
+			color, line, Color::end,
+			color, 1 + column, Color::end,
+			message.c_str());  
+		break;
 
 	case Type::ARGV:
 	case Type::OPTION_C:
@@ -293,9 +296,9 @@ const Place &Place::operator<<(string text) const
 
 		fprintf(stderr,
 			"%s%s%s: %s\n",
-			Color::error, t, Color::end,
-			text.c_str());
-		return *this;
+			color, t, Color::end,
+			message.c_str());
+		break;
 	}
 }
 
@@ -305,7 +308,8 @@ string Place::as_argv0() const
 	default:  assert(false); 
 
 	case Type::EMPTY:
-		return "<empty>"; 
+		assert(false); 
+		return "command"; 
 
 	case Type::INPUT_FILE: {
 		/* The given argv[0] should not begin with a dash,
@@ -329,6 +333,15 @@ const char *Place::get_filename_str() const
 	return filename == ""
 		? "<stdin>"
 		: filename.c_str();
+}
+
+void print_warning(const Place &place, string message)
+{
+	assert(message != "");
+	assert(isupper(message[0]) || message[0] == '\''); 
+	assert(message[message.size() - 1] != '\n'); 
+	place.print(fmt("warning: %s", message),
+		    Color::warning, Color::warning_word); 
 }
 
 /* Explanation functions:  they output an explanation of a feature of

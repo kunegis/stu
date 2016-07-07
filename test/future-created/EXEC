@@ -13,15 +13,19 @@ rm -f ? || exit 1
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {
-	echo >&2 "*** Exit code must be zero"
+	echo >&2 "*** Exit code must be zero (1)"
 	exit 1
 }
 
 cmp list.err stderr || {
-	echo >&2 "*** Missing warning about future timestamp of 'B'"
+	echo >&2 "*** Missing warning about future timestamp of 'B' (1)"
 	echo >&2 list.err:
 	echo >&2 __________
 	cat >&2 list.err
+	echo >&2 __________
+	echo >&2 stderr:
+	echo >&2 __________
+	cat >&2 stderr
 	echo >&2 __________
 	exit 1
 }
@@ -32,12 +36,16 @@ cmp list.err stderr || {
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || {
-	echo >&2 "*** Exit code not zero"
+	echo >&2 "*** Exit code must be zero (2)"
 	exit 1
 }
 
-cmp list.err stderr || {
-	echo >&2 "*** Missing warning about future timestamp of 'B'"
+cmp list.err stderr.2 || {
+	echo >&2 "*** Missing warning about future timestamp of 'B' (2)"
+	echo >&2 list.err:
+	echo >&2 __________
+	cat >&2 list.err
+	echo >&2 __________
 	exit 1
 }
 

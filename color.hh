@@ -37,6 +37,7 @@ public:
 	static const char *warning;
 	static const char *word;
 	static const char *error_word;
+	static const char *warning_word;
 
 	static const char *out_end; 
 	static const char *out_print_word_end;
@@ -71,6 +72,7 @@ const char *Color::error;
 const char *Color::warning;
 const char *Color::word;
 const char *Color::error_word;
+const char *Color::warning_word;
 
 const char *Color::out_end;
 const char *Color::out_print_word_end;
@@ -101,6 +103,7 @@ void Color::set(bool is_tty_out, bool is_tty_err)
 		warning=           "[35m";
 		word=              "[1m";
 		error_word=        "[1;31m"; 
+		warning_word=      "[1;35m"; 
 		end=               "[0m";
 	} else {
 		quotes= true;
@@ -108,6 +111,7 @@ void Color::set(bool is_tty_out, bool is_tty_err)
 		warning=      "";
 		word=         ""; 
 		error_word=   ""; 
+		warning_word= ""; 
 		end=          "";
 	}
 }

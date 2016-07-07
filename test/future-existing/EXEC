@@ -1,33 +1,33 @@
 #! /bin/sh
 
-rm -f A B
+rm -f A B || exit 1
 
 now="$(LC_ALL=C date)"
 year="$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')"
 year_future="$(expr 2 + $year)"
 date="$year_future-01-01T07:00:00"
 
-touch -d "$date" B
+touch -d "$date" B || exit 1
 
 ../../stu.test 2>list.err
 exitcode="$?"
 
-if [ "$exitcode" != 0 ]; then
+[ "$exitcode" = 0 ] || {
 	echo >&2 "*** Stu failed"
 	exit 1
-fi
+}
 
-grep -qF "Warning: File 'B' has modification time in the future" list.err || {
+grep -qF "warning: File 'B' has modification time in the future" list.err || {
 	echo >&2 "*** Missing error message"
 	exit 1
 }
 
 # Check that the warning is given just once
-[ "$(fgrep -c "Warning: File 'B' has modification time in the future" list.err)" = 1 ] || {
+[ "$(grep -cF "warning: File 'B' has modification time in the future" list.err)" = 1 ] || {
 	echo >&2 "*** Warning must not be output multiple times"
 	exit 1
 }
 
-rm -f A B
+rm -f A B || exit 1
 
 exit 0

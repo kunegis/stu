@@ -93,9 +93,7 @@ https://github.com/kunegis/konect-analysis/blob/master/main.stu
 
 Stu is written in C++11 for POSIX platforms.  You should have no problem
 compiling it on vanilla Linux and other POSIX-compliant platforms.  See
-the file INSTALL for installation instructions.  The Makefile contains
-specific compilation commands for G++; they have to be changed to use
-another compiler. 
+the file INSTALL for installation instructions.  Stu uses Autoconf. 
 
 ## About 
 

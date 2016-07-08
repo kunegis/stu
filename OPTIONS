@@ -9,6 +9,7 @@ S   Implemented in Stu
 .   Proposed for Stu 
 -   Not proposed for Stu, but the option is purposefully kept unused in
     case we want to use it for Stu 
+~   Not applicable to Stu 
 M   Compatible with POSIX Make
 G   Compatible with GNU Make
 x   Incompatible
@@ -22,7 +23,8 @@ List of options
 -c  S      Explicit target without syntax (GNU Make:  change directory)
 -C  S   x  Specify syntax (same as non-option arguments)
 -d      G  Print debugging information 
--e  .  M G Existence-only dependency (Make: Environment overrides Make macros)
+-e  .      Existence-only dependency 
+-e  ~ M G  Environment overrides Make macros
 -E  S      Explain errors
 -f  S M G  File
 -F  S      Pass rule on the command line
@@ -31,7 +33,7 @@ List of options
 -i  . M G  Ignore all errors in commands
 -I  .   G  Include path
 -j  S   G  Parallel
--L  S      Don't parse Stu syntax in arguments
+-J  S      Don't parse Stu syntax in arguments
 -k  S M G  Keep going
 -K  S      Keep partially built files
 -l      G  Number of jobs depends on load average
@@ -53,7 +55,11 @@ List of options
 -v  S   x  Verbose (GNU Make:  show version)
 -V  S      Show version and exit
 -w  S	x  Short mode (GNU Make:  print directory) 
--W  .   G  What-if mode (if FILE just had been modified)
+-W  .   G  What-if mode / assume new (if FILE just had been modified) 
 -x  S      Enable /bin/sh -x instead of normal output
 -y  S      Disable color output
 -z  S      Output statistics
+
+The following options could conceivably be set externally:
+
+-E -Q -s -w -x -y -z

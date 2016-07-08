@@ -116,7 +116,7 @@ OPTIONS
 
        -Q     Quiet mode.  Suppress the messages on standard output  that  are
               not  related  to building targets.  This includes 'Nothing to be
-              done', and 'Targets are not up to date' in conjunction with  the
+              done' and 'Targets are not up to date' in conjunction  with  the
               -q option.
 
        -s     Silent  mode.   Suppress  output  of commands when they are exe‐
@@ -804,4 +804,4 @@ SEE ALSO
 
 
 
-stu-1.15.75                        July 2016                            STU(1)
+stu-1.15.76                        July 2016                            STU(1)

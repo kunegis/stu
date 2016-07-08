@@ -25,8 +25,8 @@ pattern 'list.*', and the parameter $name can be used in names of
 dependencies and in the build command.  Targets may contain any number
 of parameters. 
 
-In general, Stu is very much like Make:  Instead of a 'Makefile', there
-should be a file named 'main.stu', which is read automatically by
+In general, Stu is very much like Make:  Instead of a 'Makefile', one uses
+a file named 'main.stu', which is read by
 Stu. Also like Make, Stu will build the first target it finds, except if
 given an explicit target to built.   
 Stu is designed to follow the conventions of Make,

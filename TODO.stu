@@ -1,7 +1,3 @@
-#
-# Have an option to suppress warnings. 
-#
-
 #==== Backward-incompatible features (in the switch to version 2) ====
 
 #
@@ -9,14 +5,21 @@
 # i.e., with respect to what needs to be quoted inside them. 
 #
 
-'abc"def'; # check with /bin/sh
-"network $name"; 
-"aaa'bbb"; # check with /bin/sh
-'\';       # A single backslash
+# * Don't allow backslash-escaped sequences inside single quotes
+# * Allow double quotes, backslashes and other literal characters inside single quotes
+# * Allow single quote inside double quotes
+# * Allow parameters inside double quotes
 
-#
-# Use backslash for quoting?
-#
+# Current rules:
+#   ":  \" \' \\ \*     ':  \" \' \\ \*
+# New rules:
+#   ":  \"    \\ \* $   ':  
+
+'abc"def';         # contains a double quote
+"Image $name.png"; # contains a parameter
+"aaa'bbb";         # contains a single quote
+'aaa\bbb';         # contains a backslash
+'aaa$bbb';         # contains a dollar sign
 
 #
 # Don't allow filenames that start with '+' or '-', but allow these in
@@ -69,6 +72,16 @@ A: [ -n B ] { while read -r file ; do ... "$file" ... ; done }
 A: [ -0 <B ] { xargs -0 ... }
 
 #
+# Make 
+#
+#    A = ? B ;
+#
+# work:
+#   * Fail when both A and B are not present
+#   * Succeed when A is present and B is not
+#
+
+#
 # String multiplication.  String multiplication is to work both with the
 # binary operator '*' as well with juxtaposition.  Juxtaposition is
 # backward incompatible, as in Version 1 strings like "A[B]" where
@@ -114,7 +127,7 @@ A.$X.$Y:  $X. * $Y      # OK
 A.$X.$Y:  $X * .$Y      # OK
 
 # More examples
-
+π
 @headers:  (config parse build).h
 
 @plot.all:   @plot.[NETWORKS];
@@ -127,7 +140,13 @@ A.$X.$Y:  $X * .$Y      # OK
 >FILES: { echo *.dat }
 dest/$file = $file;
 
-#==== Features of Stu 2:  Other features ====
+#
+# Have an option to suppress warnings.  (which?)
+#
+
+#
+# Use backslash for quoting? --> No, keep it reserved 
+#
 
 #
 # What happens with relative and absolute pathnames?  When two names
@@ -139,18 +158,18 @@ dest/$file = $file;
 # * Fold multiple / to a single one, except exactly two at the beginning
 # * don't touch symlinks/hardlinks/etc. (they need syscalls to detect anyway) 
 #
-# Question:  should '/' match in parameters?
+# Question:  should '/' match in parameters?  
 #
 
-# This will fail because ../../bib/[NAME].bib will match [NAME].bib.
-# Instead, be able to write ./[NAME].bib
+# This will fail because ../../bib/$NAME.bib will match $NAME.bib.
+# Instead, be able to write ./$NAME.bib
 A:   a.bib b.bib c.bib;
 $NAME.bib:  ../../bib/$NAME.bib { cp ... }
 a.bib;
 
 # Rules:
-#     [NAME].bib:    a .bib file anywhere
-#     ./[NAME].bib:  a .bib file in the current directory
+#     $NAME.bib:    a .bib file anywhere
+#     ./$NAME.bib:  a .bib file in the current directory
 
 # Remove trailing slash from directory names.
 A:  ?tmp/ {...}
@@ -172,9 +191,8 @@ tmp: {...}
 % include -d src/
 % include -d src
 
-
 #
-# New flag to ALWAYS build a target.  (We may already have this)
+# New flag to ALWAYS build a target.  (We may already have this?)
 #
 
 #
@@ -184,11 +202,13 @@ tmp: {...}
 #
 
 A: [-d data/B];
-A: [data/B],d; 
 A: [data//B]; # ?
 
+#==== Features of Stu 2:  Other features ====
+
 #
-# Option -N:  dry run, but build dynamic dependencies 
+# Option -N:  dry run, but build dynamic dependencies.  Not clearcut
+# because dynamic dependencies can also take long to build. 
 #
 
 #
@@ -231,14 +251,14 @@ A: [data//B]; # ?
 # Flag rules
 #
 
-# Allow flags on the target filenames.  Example with '?':
+# Allow flags on the target filenames.  Example with '-o':
 
 # If $NAME.svg is present, use it to build $NAME.pdf.  If $NAME.svg is
 # not present, allow $NAME.pdf to be present without any dependencies.
 # The big question is how can the rule distinguish when the rule is
 # activated.  When all dependencies exist?  When all dependencies
 # *could* be built? 
-? $NAME.pdf:  $NAME.svg
+-o $NAME.pdf:  $NAME.svg
 {
 	inkscape ...
 }
@@ -248,12 +268,12 @@ A: [data//B]; # ?
 # ones.  
 #
 
-$ stu '!!A'
+$ stu '-E A'
 
 # will completely ignore timestamps in all files.  
 
-# This will also make
-# cover cases that are implemented as options at the moment, e.g. -g:
+# This will also cover cases that are implemented as options at the
+# moment, e.g. -g: 
 
 $ stu '\?A'
 

@@ -377,12 +377,14 @@ beginning of lines, and written into the file.
 Using the equal sign with a file name creates a copy rule, i.e., the
 given file is copied with the 'cp' command:
 
-    TARGET = SOURCE;
+    TARGET = [ ! ] SOURCE;
 
 By default, Stu will use '/bin/cp' to perform the copy.  This can be
 changed by setting the variable $STU_CP.  If source ends in a slash
 (outside of any parameter value), then Stu will look for a file with the
-same basename as TARGET in the directory SOURCE. 
+same basename as TARGET in the directory SOURCE.  The dependency SOURCE
+can be declared an existence-only dependency with '!'.  Other flags are
+not supported. 
 
 A dependency can be one of the following:
 

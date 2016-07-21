@@ -261,8 +261,8 @@ and used in the compilation command using the $[CFLAGS] dependency.
     }
     CFLAGS: { echo -Wall -Werror >CFLAGS }
 
-Variable dependencies may be declared as existence-only as in '$[!X]'
-and as trivial as in '$[&X]', but not as optional using '?'. 
+Variable dependencies may be declared as existence-only as in $[!X]
+and as trivial as in $[&X], but not as optional using '?'. 
 By default, the name of the variable set is the same as the filename.
 Another variable name can be used in the following way:
 

@@ -270,10 +270,10 @@ OVERVIEW
            }
            CFLAGS: { echo -Wall -Werror >CFLAGS }
 
-       Variable dependencies may be declared as existence-only as  in  '$[!X]'
-       and  as  trivial  as  in  '$[&X]',  but  not as optional using '?'.  By
-       default, the name of the variable set is  the  same  as  the  filename.
-       Another variable name can be used in the following way:
+       Variable dependencies may be declared as existence-only as in $[!X] and
+       as trivial as in $[&X], but not as optional using '?'.  By default, the
+       name of the variable set is the same as the filename.  Another variable
+       name can be used in the following way:
 
            $[NAME = FILENAME]
 
@@ -805,4 +805,4 @@ SEE ALSO
 
 
 
-stu-1.15.78                        July 2016                            STU(1)
+stu-1.15.79                        July 2016                            STU(1)

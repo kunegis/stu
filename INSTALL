@@ -1,5 +1,7 @@
 ========= INSTALLING STU =========
 
+--------- Generic Installation Instrucitons ---------
+
 To install Stu, run this:
 
 $ ./configure
@@ -27,6 +29,15 @@ systems.
 Stu is developed primarily on Linux, and has been used on FreeBSD.  All
 unit tests pass on both systems.  It has been compiled with both GCC and
 Clang.  
+
+--------- Arch Linux ---------
+
+Stu can be installed on Arch Linux via the following package, which will
+fetch the current version from Github and compile it locally:
+
+https://aur.archlinux.org/packages/stu-git/
+
+Credits for the package go to Holger Heinz (hheinz). 
 
 
 ==== REQUIREMENTS ====

@@ -19,6 +19,11 @@ For documentation, compile and read the manpage, or go directly to:
 
 https://raw.githubusercontent.com/kunegis/stu/master/stu.text
 
+## Installation guide
+
+* See the file INSTALL for compiling Stu yourself
+* Package for Arch Linux:  https://aur.archlinux.org/packages/stu-git/
+
 ## Design Considerations
 
 The design considerations of Stu are:

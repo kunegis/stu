@@ -351,7 +351,7 @@ void print_warning(const Place &place, string message)
 void explain_clash() 
 {
 	if (! option_explain)  return;
-	fputs("Explanation: A dependency cannot be declared as existence-only\n"
+	fputs("Explanation: A dependency cannot be declared as timestamp-ignoring\n"
 	      "(with '!') and optional (with '?') at the same time, as that would mean\n"
 	      "that its command is never executed.\n",
 	      stderr); 

@@ -81,7 +81,7 @@ Advantages over Make are:
   a lot of shell functionality is duplicated in Make functions.  Stu
   encourages all program logic to be implemented in rules, i.e. using a
   proper shell.  
-* Stu supports additional types of dependencies (existence-only
+* Stu supports additional types of dependencies (timestamp-ignoring
   dependencies with the prefix '!', optional dependencies with '?', and
   trivial dependencies with '&').  These can only be emulated partially
   with Make by using unwieldy constructs.

@@ -38,7 +38,7 @@
 #
 
 A:  
-	-e X # existence-only
+	-e X # timestamp-ignoring
 	-o X # optional
         -t X # trivial
 { ... }
@@ -79,6 +79,14 @@ A: [ -0 <B ] { xargs -0 ... }
 # work:
 #   * Fail when both A and B are not present
 #   * Succeed when A is present and B is not
+#
+
+#
+# Recursive timestamp-ignoring dependency:  If the file exists, never
+# rebuild it, regardless whether its dependencies have to be rebuilt.
+# Actual timestamp-ignoring dependencies do not work like this, as they only
+# ignore the targets timestamp, but don't change anything about its
+# dependencies.  
 #
 
 #
@@ -294,7 +302,7 @@ A: -o @x;
 A: B;
 
 #
-# Dynamic dependencies are "existence-only" by default.  Make it
+# Dynamic dependencies are "timestamp-ignoring" by default.  Make it
 # possible to switch this off using '+e'.  This is useful when the
 # dynamic dependency file itself is used by the target, e.g. when
 # creating a tarball. 

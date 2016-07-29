@@ -10,7 +10,7 @@ public:
 	 * The length is one plus the dynamicity (number of dynamic
 	 * indirections).  Small indices indicate the links lower in the
 	 * hierarchy. 
-	 * This variable only holds the EXISTENCE/OPTIONAL/TRIVIAL
+	 * This variable only holds the IGNORE_TIMESTAMP/OPTIONAL/TRIVIAL
 	 * bits (i.e., transitive bits as defined by F_COUNT). 
 	 */
 	Stack avoid;

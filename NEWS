@@ -1,9 +1,17 @@
 Stu versions are of the form X.Y.Z, where X is the major version, Y is
 the minor version and Z the patch level.  For each new patch level, no
 new features are added.  When the minor version is incremented, features
-are added, which are documented in this file.  When the major version is
-increased, backward-incompatible changes are made, which are documented
-in the file MIGRATION. 
+are added, which are documented in this file.  This file also documents
+important changes in patch level updates, which are mostly changes in
+terminology. 
+
+When the major version is increased, backward-incompatible changes are
+made, which are documented in the file MIGRATION. 
+
+2016-07-29  Version 1.15.80:
+
+* "Existence-only" dependencies are renamed to "timestamp-ignoring"
+  dependencies.  The syntax is not changed.  
 
 2016-05-18  Version 1.15:
 

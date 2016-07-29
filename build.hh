@@ -23,7 +23,7 @@
  * <...	     (prefix) Input redirection; argument cannot contain '()',
  *           '[]', '$[]' or '@' 
  * ---------------
- * !...	     (prefix) Existence-only; argument cannot contain '$[]'
+ * !...	     (prefix) Timestamp-ignoring; argument cannot contain '$[]'
  * ?...	     (prefix) Optional dependency; argument cannot contain '$[]'
  * &...      (prefix) Trivial dependency
  * ---------------
@@ -707,8 +707,8 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 			throw ERROR_LOGICAL;
 		}
 		for (auto &j:  ret) {
-			j->add_flags(F_EXISTENCE);
-			j->set_place_existence(place_exclam); 
+			j->add_flags(F_IGNORE_TIMESTAMP);
+			j->set_place_ignore_timestamp(place_exclam); 
 		}
 		return true;
 	}
@@ -834,7 +834,7 @@ shared_ptr <Dependency> Build
 		flag_last= is <Operator> ()->op; 
 		if (is_operator('!')) {
 			place_flag_last= (*iter)->get_place();
-			flags |= F_EXISTENCE; 
+			flags |= F_IGNORE_TIMESTAMP; 
 		} else if (is_operator('?')) {
 			if (! option_nonoptional) {
 				(*iter)->get_place() << 
@@ -1191,8 +1191,8 @@ shared_ptr <Dependency> Build::get_target_dependency(string text)
 
 	while (q != begin) {
 		if (q[-1] == '!') {
-			ret->add_flags(F_EXISTENCE); 
-			ret->set_place_existence(place);
+			ret->add_flags(F_IGNORE_TIMESTAMP); 
+			ret->set_place_ignore_timestamp(place);
 		} else if (q[-1] == '?') {
 			ret->add_flags(F_OPTIONAL); 
 			ret->set_place_optional(place); 

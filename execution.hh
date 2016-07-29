@@ -135,7 +135,7 @@ private:
 
 	/* Whether this target needs to be built.  When a
 	 * target is finished, this value is propagated to the parent
-	 * executions (except when the F_EXISTENCE flag is set). 
+	 * executions (except when the F_IGNORE_TIMESTAMP flag is set). 
 	 */ 
 	bool need_build;
 
@@ -605,7 +605,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 				/* File exists */ 
 				Timestamp timestamp_file= Timestamp(&buf); 
 				timestamps_old[i]= timestamp_file;
- 				if (parent == nullptr || ! (link.flags & F_EXISTENCE)) 
+ 				if (parent == nullptr || ! (link.flags & F_IGNORE_TIMESTAMP)) 
 					warn_future_file(&buf, 
 							 target.name.c_str(), 
 							 rule == nullptr 
@@ -1194,7 +1194,7 @@ void Execution::unlink(Execution *const parent,
 	 * filename == "", this is unneccesary, but it's easier to not
 	 * check, since that happens only once. */
 	/* Don't propagate the timestamp of the dynamic dependency itself */ 
-	if (! (flags_child & F_EXISTENCE) && ! (flags_child & F_READ)) {
+	if (! (flags_child & F_IGNORE_TIMESTAMP) && ! (flags_child & F_READ)) {
 		if (child->timestamp.defined()) {
 			if (! parent->timestamp.defined()) {
 				parent->timestamp= child->timestamp;
@@ -1239,7 +1239,7 @@ void Execution::unlink(Execution *const parent,
 	parent->error |= child->error; 
 
 	if (child->need_build 
-	    && ! (flags_child & F_EXISTENCE)
+	    && ! (flags_child & F_IGNORE_TIMESTAMP)
 	    && ! (flags_child & F_READ)) {
 		parent->need_build= true; 
 	}
@@ -1760,10 +1760,10 @@ void Execution::read_dynamics(Stack avoid,
 			assert(vec.size() == avoid_this.get_k());
 			avoid_this.pop(); 
 			dependency->add_flags(avoid_this.get_lowest()); 
-			if (dependency->get_place_existence().empty())
-				dependency->set_place_existence
+			if (dependency->get_place_ignore_timestamp().empty())
+				dependency->set_place_ignore_timestamp
 					(vec[target.type.get_dynamic_depth() - 1]
-					 ->get_place_existence()); 
+					 ->get_place_ignore_timestamp()); 
 			if (dependency->get_place_optional().empty())
 				dependency->set_place_optional
 					(vec[target.type.get_dynamic_depth() - 1]
@@ -1777,8 +1777,8 @@ void Execution::read_dynamics(Stack avoid,
 				avoid_this.pop(); 
 				Flags flags_level= avoid_this.get_lowest(); 
 				dependency= make_shared <Dynamic_Dependency> (flags_level, dependency); 
-				dependency->set_place_existence
-					(vec[k.get_dynamic_depth() - 1]->get_place_existence()); 
+				dependency->set_place_ignore_timestamp
+					(vec[k.get_dynamic_depth() - 1]->get_place_ignore_timestamp()); 
 				dependency->set_place_optional
 					(vec[k.get_dynamic_depth() - 1]->get_place_optional()); 
 				dependency->set_place_trivial
@@ -2033,9 +2033,9 @@ bool Execution::deploy(const Link &link,
 		if (target.type == Type::TRANSIENT) { 
 			flags_child_additional |= link.flags; 
 			avoid_child.add_highest(link.flags);
-			if (link.flags & F_EXISTENCE) {
-				link_child.dependency->set_place_existence
-					(link.dependency->get_place_existence()); 
+			if (link.flags & F_IGNORE_TIMESTAMP) {
+				link_child.dependency->set_place_ignore_timestamp
+					(link.dependency->get_place_ignore_timestamp()); 
 			}
 			if (link.flags & F_OPTIONAL) {
 				link_child.dependency->set_place_optional
@@ -2051,17 +2051,17 @@ bool Execution::deploy(const Link &link,
 	Flags flags_child_new= flags_child | flags_child_additional; 
 
 	/* '!' and '?' do not mix, even for old flags */ 
-	if ((flags_child_new & F_EXISTENCE) && 
+	if ((flags_child_new & F_IGNORE_TIMESTAMP) && 
 	    (flags_child_new & F_OPTIONAL)) {
 
 		/* '!' and '?' encountered for the same target */ 
 
-		const Place &place_existence= 
-			link_child.dependency->get_place_existence();
+		const Place &place_ignore_timestamp= 
+			link_child.dependency->get_place_ignore_timestamp();
 		const Place &place_optional= 
 			link_child.dependency->get_place_optional();
-		place_existence <<
-			fmt("declaration of existence-only dependency with %s",
+		place_ignore_timestamp <<
+			fmt("declaration of timestamp-ignoring dependency with %s",
 			     char_format_word('!')); 
 		place_optional <<
 			fmt("clashes with declaration of optional dependency with %s",
@@ -2077,14 +2077,14 @@ bool Execution::deploy(const Link &link,
 
 	/* Either of '!'/'?'/'&' does not mix with '$[' */
 	if ((flags_child & F_VARIABLE) &&
-	    (flags_child_additional & (F_EXISTENCE | F_OPTIONAL | F_TRIVIAL))) {
+	    (flags_child_additional & (F_IGNORE_TIMESTAMP | F_OPTIONAL | F_TRIVIAL))) {
 
 		assert(target_child.type == Type::FILE); 
 		const Place &place_variable= direct_dependency->place;
-		if (flags_child_additional & F_EXISTENCE) {
-			const Place &place_flag= link_child.dependency->get_place_existence(); 
+		if (flags_child_additional & F_IGNORE_TIMESTAMP) {
+			const Place &place_flag= link_child.dependency->get_place_ignore_timestamp(); 
 			place_variable << 
-				fmt("variable dependency %s must not be declared as existence-only dependency",
+				fmt("variable dependency %s must not be declared as timestamp-ignoring dependency",
 				    dynamic_variable_format_word(target_child.name)); 
 			place_flag << fmt("using %s",
 					   char_format_word('!')); 

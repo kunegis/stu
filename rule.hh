@@ -76,7 +76,7 @@ public:
 	 * flag is not used. */
 	Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	     shared_ptr <Place_Param_Name> place_param_source_,
-	     const Place &place_existence);
+	     const Place &place_ignore_timestamp);
 
 	bool is_parametrized() const {
 		return place_param_targets.front()->place_param_name.get_n() != 0; 
@@ -231,7 +231,7 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 
 Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	   shared_ptr <Place_Param_Name> place_param_source_,
-	   const Place &place_existence)
+	   const Place &place_ignore_timestamp)
 	:  place_param_targets{place_param_target_},
 	   place(place_param_target_->place),
 	   filename(*place_param_source_),
@@ -243,9 +243,9 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 		make_shared <Direct_Dependency> 
 		(0, Place_Param_Target(Type::FILE, *place_param_source_));
 
-	if (! place_existence.empty()) {
-		dependency->flags |= F_EXISTENCE;
-		dependency->place_existence= place_existence;
+	if (! place_ignore_timestamp.empty()) {
+		dependency->flags |= F_IGNORE_TIMESTAMP;
+		dependency->place_ignore_timestamp= place_ignore_timestamp;
 	}
 
 	/* Only the copy filename, with the F_COPY flag */

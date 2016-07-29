@@ -33,7 +33,7 @@ enum
 	 */ 
 
 	/* (!) When the dependency is newer than the target, don't rebuild */ 
-	F_EXISTENCE        = (1 << 0),  
+	F_IGNORE_TIMESTAMP        = (1 << 0),  
 
 	/* (?) Don't create the dependency if it doesn't exist */
 	F_OPTIONAL         = (1 << 1),
@@ -100,11 +100,11 @@ public:
 	/* Where the dependency as a whole is declared */ 
 	virtual const Place &get_place() const= 0;
 
-	virtual const Place &get_place_existence() const= 0;
+	virtual const Place &get_place_ignore_timestamp() const= 0;
 	virtual const Place &get_place_optional () const= 0; 
 	virtual const Place &get_place_trivial  () const= 0;
 
-	virtual void set_place_existence(const Place &place)= 0;
+	virtual void set_place_ignore_timestamp(const Place &place)= 0;
 	virtual void set_place_optional (const Place &place)= 0;
 	virtual void set_place_trivial  (const Place &place)= 0;
 
@@ -128,7 +128,7 @@ public:
 
 	Flags flags;
 
-	Place place_existence;
+	Place place_ignore_timestamp;
 	Place place_optional; 
 	Place place_trivial;
 
@@ -150,8 +150,8 @@ public:
 		flags |= flags_; 
 	}
 
-	const Place &get_place_existence() const {
-		return place_existence; 
+	const Place &get_place_ignore_timestamp() const {
+		return place_ignore_timestamp; 
 	}
 
 	const Place &get_place_optional() const {
@@ -162,8 +162,8 @@ public:
 		return place_trivial; 
 	}
 
-	void set_place_existence(const Place &place_) {
-		place_existence= place_;
+	void set_place_ignore_timestamp(const Place &place_) {
+		place_ignore_timestamp= place_;
 	}
 
 	void set_place_optional(const Place &place_) {

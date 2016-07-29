@@ -5,9 +5,9 @@ needed to migrate to a new major version.
 
 == Version 0 -> Version 1 ==
 
-(1) Existence-only dependencies are noted by '!' instead of '*'.  The
+(1) Timestamp-ignoring dependencies are noted by '!' instead of '*'.  The
 goal of this change is to allow '*' to be used to target list
-multiplication later on, and to make the syntax of existence-only
+multiplication later on, and to make the syntax of timestamp-ignoring
 dependencies be analogous to the notation for optional dependencies
 which will be noted with '?'. 
 

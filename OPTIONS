@@ -23,7 +23,7 @@ List of options
 -c  S      Explicit target without syntax (GNU Make:  change directory)
 -C  S   x  Specify syntax (same as non-option arguments)
 -d      G  Print debugging information 
--e  .      Existence-only dependency 
+-e  .      Timestamp-ignoring dependency 
 -e  ~ M G  Environment overrides Make macros
 -E  S      Explain errors
 -f  S M G  File

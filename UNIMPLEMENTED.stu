@@ -60,10 +60,10 @@ a.bib:  extra dependencies ... ;
 # result would be to let the second rule override the first. 
 
 #
-# Mark this target to always be an existence-only dependency 
+# Mark this target to always be a timestamp-ignoring dependency 
 #
 
-!data: { mkdir data }
+-e data: { mkdir data }
 
 # Alternatively, we may introduce the rule that for directories, the
 # modification date is not used.  (Not a good idea because the date may

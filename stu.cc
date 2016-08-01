@@ -3,13 +3,15 @@
  * See the manpage for a description of options, exit codes, etc.  
  */
 
-/* We don't read big files, but we need to stat() them.  Even if we
- * don't rad out their size, stat() will fail if the file is too big
+/*
+ * We don't read big files, but we need to stat() them.  Even if we
+ * don't read out their size, stat() will fail if the file is too big
  * without this option. 
  */
 #define _FILE_OFFSET_BITS 64
 
-/* Enable bounds checking when using GNU libc.  Must be defined before
+/*
+ * Enable bounds checking when using GNU libc.  Must be defined before
  * including any of the standard headers.  (Only in non-debug mode).  A
  * no-op for non-GNU libc++ libraries. 
  */ 
@@ -42,7 +44,7 @@ using namespace std;
 #define STU_HELP						       \
 	"Usage: stu [-f FILENAME] [OPTION]... [TARGET]...\n"           \
 	"By default, build the first target in the file 'main.stu'.\n" \
-	"TARGETS may include the special characters '!?@[]'.\n"               \
+	"TARGETS may include the special characters '!?@[]'.\n"        \
 	"Options:\n"						       \
 	"  -a               Treat all trivial dependencies as non-trivial\n"          \
 	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"      \
@@ -80,7 +82,7 @@ void init_buf();
  * the -C option.
  */
 void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
-			     const char *string_);
+			       const char *string_);
 
 /* Add a single dependency from the given STRING, in syntax used for
  * optionless arguments  
@@ -107,7 +109,7 @@ void read_option_F(const char *s,
 
 int main(int argc, char **argv, char **envp)
 {
-	/* Initialization codes */
+	/* Initialization */
 	dollar_zero= argv[0]; 
 	envp_global= (const char **)envp; 
 
@@ -302,12 +304,14 @@ int main(int argc, char **argv, char **envp)
 			filenames.push_back(FILENAME_INPUT_DEFAULT); 
 			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY); 
 			if (file_fd >= 0) {
-				read_file("", file_fd, Execution::rule_set, rule_first, place_first); 
+				read_file("", file_fd, 
+					  Execution::rule_set, rule_first, place_first); 
 			} else {
 				if (errno == ENOENT) { 
 					/* The default file does not exist --
 					 * fail if no target is given */  
-					if (dependencies.empty() && ! had_option_c && ! option_print) {
+					if (dependencies.empty() && ! had_option_c 
+					    && ! option_print) {
 						print_error(fmt("Expected a target or the default file %s",
 								name_format_word(FILENAME_INPUT_DEFAULT))); 
 
@@ -369,7 +373,7 @@ void init_buf()
 	 * output of command lines always happens before the output of
 	 * commands themselves */ 
 	/* Note:  Setting the buffering like this is only possible if we
-	   have not written anything yet.  */  
+	 * have not written anything yet.  */  
 	if (0 != setvbuf(stdout, nullptr, _IOLBF, 0)) {
 		print_error_system("setvbuf"); 
 		exit(ERROR_FATAL); 

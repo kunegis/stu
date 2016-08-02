@@ -605,7 +605,7 @@ public:
 	}
 };
 
-/* A target that is parametrized and contains places 
+/* A target that is parametrized and contains places. 
  */
 class Place_Param_Target
 {
@@ -634,7 +634,7 @@ public:
 		   place(place_)
 	{ }
 
-	/* Compares only the content, not the place */ 
+	/* Compares only the content, not the place. */ 
 	bool operator == (const Place_Param_Target &that) const {
 		return this->type == that.type &&
 			this->place_param_name == that.place_param_name; 
@@ -658,7 +658,7 @@ public:
 	shared_ptr <Place_Param_Target> 
 	instantiate(const map <string, string> &mapping) const {
 		return make_shared <Place_Param_Target> 
-			(type, *place_param_name.instantiate(mapping)); 
+			(type, *place_param_name.instantiate(mapping), place); 
 	}
 
 	Target unparametrized() const {
@@ -856,6 +856,10 @@ bool Param_Name::anchoring_dominates(vector <int> &anchoring_a,
 		/* The parameter in (A) ends before that in (B) */ 
 		if (anchoring_a[2 * i_a + 1] < anchoring_b[2 * i_b + 1])
 			dominate= true;
+
+		/* The parameter in (A) ends with that in (B) */
+		if (anchoring_a[2 * i_a + 1] == anchoring_b[2 * i_b + 1])
+			++ i_b; 
 	}
 
 	/* The are unmatched parameters left in (B) */ 

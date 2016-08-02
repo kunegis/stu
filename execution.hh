@@ -956,6 +956,7 @@ void Execution::waited(int pid, int status)
 			struct stat buf;
 
 			if (0 == stat(target.name.c_str(), &buf)) {
+				/* The file exists. */ 
 				/* Check that the file was not created with modification
 				 * time in the future */  
 				warn_future_file(&buf, 
@@ -970,9 +971,9 @@ void Execution::waited(int pid, int status)
 				    timestamp < timestamp_file)
 					timestamp= timestamp_file; 
 
-				/* Check whether the just created file
-				 * is older than Stu startup */ 
 				if (timestamp_file < Timestamp::startup) {
+					/* The target is older than Stu startup */ 
+
 					/* Check whether the file is actually a symlink, in
 					 * which case we ignore that error */ 
 					if (0 > lstat(target.name.c_str(), &buf)) {
@@ -980,19 +981,19 @@ void Execution::waited(int pid, int status)
 							system_format(target.format_word()); 
 						raise(ERROR_BUILD);
 					}
-					if (! S_ISLNK(buf.st_mode)) {
-						rule->place_param_targets[i]->place
-							<< fmt("timestamp of file %s after execution of its command is older than %s startup", 
-							       target.format_word(), 
-							       dollar_zero)
-							<< fmt("timestamp of %s is %s",
-							       target.format_word(), timestamp_file.format())
-							<< fmt("startup timestamp is %s", 
-							       Timestamp::startup.format()); 
-						print_traces();
-						explain_startup_time();
-						raise(ERROR_BUILD);
-					}
+					if (S_ISLNK(buf.st_mode)) 
+						continue;
+					rule->place_param_targets[i]->place
+						<< fmt("timestamp of file %s after execution of its command is older than %s startup", 
+						       target.format_word(), 
+						       dollar_zero)
+						<< fmt("timestamp of %s is %s",
+						       target.format_word(), timestamp_file.format())
+						<< fmt("startup timestamp is %s", 
+						       Timestamp::startup.format()); 
+					print_traces();
+					explain_startup_time();
+					raise(ERROR_BUILD);
 				}
 			} else {
 				exists= -1;

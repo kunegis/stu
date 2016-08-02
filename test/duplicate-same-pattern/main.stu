@@ -1,0 +1,15 @@
+#
+# Call with argument "list.$xyz".  Must report duplicate rule. 
+#
+# Previously observed bug:  Duplicate rule does not get noticed. 
+#
+
+list.$name
+{
+	echo 1 >list."$name"
+}
+
+list.$name
+{
+	echo 2 >list."$name"
+}

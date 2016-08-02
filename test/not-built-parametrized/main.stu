@@ -1,0 +1,8 @@
+#
+# A parametrized file rule fails to create the target file. 
+#
+# Previously observed bug:  Fails to show the error that the file was
+# not created.   
+#
+
+list.$name { }

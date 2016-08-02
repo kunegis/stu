@@ -16,7 +16,7 @@ public:
 
 	/* The targets of the rule, in the order specified in the rule.  
 	 * Contains at least one element. 
-	 * Each contains all parameters of the rule
+	 * Each element contains all parameters of the rule,
 	 * and therefore should be used for iterating of all parameters.
 	 * The place in each target is used when referring to a target
 	 * specifically.  
@@ -34,12 +34,13 @@ public:
 	const Place place;
 
 	/* The command (optional).  Contains its own place, as it is a
-	 * token. */ 
+	 * token.  Null when the rule does not have a command, i.e.,
+	 * ends in a semicolon ';'.  */  
 	const shared_ptr <const Command> command;
 
-	/* When ! is_copy:  The name of the file from which
-	 * input should be read; must be one of the file dependencies.
-	 * Empty for no input redirection.   
+	/* When !is_copy:  The name of the file from which
+	 *   input should be read; must be one of the file dependencies.
+	 *   Empty for no input redirection.   
 	 * When is_copy: the file from which to copy; never empty
 	 */ 
 	const Param_Name filename; 
@@ -49,9 +50,11 @@ public:
 
 	/* Index within PLACE_PARAM_TARGETS of the target to which
 	 * output redirection is applied. -1 if no output redirection is
-	 * used. The target with that index must be a file target. */
+	 * used. The target with that index is a file target. */
 	const int redirect_index; 
 
+	/* Whether the rule is a copy rule, i.e., declared with '='
+	 * followed by a filename. */ 
 	const bool is_copy;
 
 	/* Direct constructor that specifies everything */
@@ -64,7 +67,7 @@ public:
 	     int redirect_index_,
 	     bool is_copy_); 
 
-	/* Regular rule (all cases excpt copy rules) */
+	/* Regular rule:  all cases execpt copy rules */
 	Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	     const vector <shared_ptr <Dependency> > &dependencies_,
 	     shared_ptr <const Command> command_,
@@ -78,11 +81,12 @@ public:
 	     shared_ptr <Place_Param_Name> place_param_source_,
 	     const Place &place_ignore_timestamp);
 
+	/* Whether the rule is parametrized */ 
 	bool is_parametrized() const {
 		return place_param_targets.front()->place_param_name.get_n() != 0; 
 	}
 
-	/* Format the rule, as in the -p option */ 
+	/* Format the rule, as for the -p option */ 
 	string format_out() const; 
 
 	const vector <string> &get_parameters() const
@@ -91,46 +95,46 @@ public:
 		return place_param_targets.front()->place_param_name.get_parameters(); 
 	}
 
-	/* Return the same rule, but without parameters.  
+	/* Return the same rule as RULE, but with parameters having been
+	 * replaced by the given MAPPING.  
 	 * We pass THIS as PARAM_RULE explicitly so we can return it
 	 * itself when it is unparametrized. 
 	 */ 
-	static shared_ptr <Rule> instantiate(shared_ptr <Rule> param_rule,
+	static shared_ptr <Rule> instantiate(shared_ptr <Rule> rule,
 					     const map <string, string> &mapping);
-private:
 };
 
-/* A set of parametrized rules
+/* A set of parametrized rules. 
  */
 class Rule_Set
 {
 private:
 
-	/* All unparametrized general rules by their target.  Rules
+	/* All unparametrized rules by their target.  Rules
 	 * with multiple targets are included multiple times, for each
 	 * of their targets. */ 
 	unordered_map <Target, shared_ptr <Rule> > rules_unparametrized;
 
-	/* All parametrized general rules.  Rules with multiple targets
-	 * are included multiple times, for each of their targets. */ 
+	/* All parametrized rules. */ 
 	vector <shared_ptr <Rule> > rules_parametrized;
 
 public:
 
-	/* Add rules to the rule set.  
-	 * While adding rules, check for duplicates. 
+	/* Add rules to this rule set.  
+	 * While adding rules, check for duplicates, and print and throw
+	 * a logical error if there is. 
+	 * If the given rule has duplicate targets, print and throw a
+	 * logical error. 
 	 */ 
 	void add(vector <shared_ptr <Rule> > &rules_);
 
 	/* Match TARGET to a rule, and return the instantiated
-	 * (unparametrized) corresponding rule.  
-	 * Return nullptr when no match was found. 
-	 * The used original rule is written into ORIGINAL_RULE when a
-	 * match is found.  The matched parameters are stored in
-	 * MAPPING_OUT. 
-	 *
+	 * (unparametrized) corresponding rule.  TARGET must be
+	 * non-dynamic.  MAPPING_OUT must be empty. 
+	 * Return null when no match is found. 
+	 * When a match is found, write the original rule into
+	 * ORIGINAL_RULE and the matched parameters into MAPPING_OUT.   
 	 * Throws errors. 
-	 *
 	 * PLACE is the place of the dependency; used in error messages. 
 	 */ 
 	shared_ptr <Rule> get(Target target, 
@@ -256,21 +260,20 @@ shared_ptr <Rule>
 Rule::instantiate(shared_ptr <Rule> rule,
 		  const map <string, string> &mapping) 
 {
+	/* The rule is unparametrized -- return it */ 
 	if (rule->get_parameters().size() == 0) {
 		return rule;
 	}
 
-	vector <shared_ptr <Dependency> > dependencies;
+	vector <shared_ptr <Place_Param_Target> > 
+		place_param_targets(rule->place_param_targets.size());
+	for (unsigned i= 0;  i < rule->place_param_targets.size();  ++i) 
+		place_param_targets[i]= rule->place_param_targets[i]->instantiate(mapping);
 
+	vector <shared_ptr <Dependency> > dependencies;
 	for (auto &dependency:  rule->dependencies) {
 		dependencies.push_back(dependency->instantiate(mapping));
 	}
-
-	vector <shared_ptr <Place_Param_Target> > 
-		place_param_targets(rule->place_param_targets.size());
-
-	for (unsigned i= 0;  i < rule->place_param_targets.size();  ++i) 
-		place_param_targets[i]= rule->place_param_targets[i]->instantiate(mapping);
 
 	return make_shared <Rule> 
 		(move(place_param_targets),
@@ -309,138 +312,6 @@ string Rule::format_out() const
 	ret += ")";
 
 	return ret; 
-}
-
-shared_ptr <Rule> Rule_Set::get(Target target, 
-				shared_ptr <Rule> &rule_original,
-				map <string, string> &mapping_out,
-				const Place &place)
-{
-	assert(target.type == Type::FILE || target.type == Type::TRANSIENT); 
-	assert(mapping_out.size() == 0); 
-
-	/* Check for an unparametrized rule.  Since we keep them in a
-	 * map by filename, there can only be a single matching rule to
-	 * begin with.  (I.e., if multiple unparametrized rules for the same
-	 * filename exist, then that error is caught earlier when the
-	 * File_Rule_Set is built.)
-	 */ 
-	if (rules_unparametrized.count(target)) {
-
-		shared_ptr <Rule> rule= rules_unparametrized.at(target);
-		assert(rule->place_param_targets.front()->place_param_name.get_n() == 0);
-#ifndef NDEBUG		
-		bool found= false;
-		for (auto place_param_target:  rule->place_param_targets) {
-			if (place_param_target->unparametrized() == target)
-				found= true;
-		}
-		assert(found); 
-#endif 
-
-		rule_original= rule; 
-		return rule;
-	}
-
-	/* Search the best parametrized rule.  Since this implementation
-	 * does not have an index for parametrized rules, we simply
-	 * check all rules, and choose the best-fitting one. 
-	 */ 
-
-	/* Element [0] corresponds to the best rule whose information is
-	 * saved in the two previous variables.  Subsequent rules have
-	 * the same number of parameters. */ 
-	vector <shared_ptr <Rule> > rules_best;
-	vector <map <string, string> > mappings_best; 
-	vector <vector <int> > anchorings_best; 
-	vector <shared_ptr <Place_Param_Target> > place_param_targets_best; 
-
-	for (auto &rule:  rules_parametrized) {
-
-		for (auto place_param_target:  rule->place_param_targets) {
-
-			assert(place_param_target->place_param_name.get_n() > 0);
-		
-			map <string, string> mapping;
-			vector <int> anchoring;
-
-			/* The parametrized rule is of another type */ 
-			if (target.type != place_param_target->type)
-				continue;
-
-			/* The parametrized rule does not match */ 
-			if (! place_param_target->place_param_name
-			    .match(target.name, mapping, anchoring))
-				continue; 
-
-			assert(anchoring.size() == 
-			       (2 * place_param_target->place_param_name.get_n())); 
-
-			size_t k= rules_best.size(); 
-		
-			assert(k == anchorings_best.size()); 
-			assert(k == mappings_best.size()); 
-
-			/* Check whether the rule is dominated by at least one other rule */
-			for (int j= 0;  j < (ssize_t) k;  ++j) {
-				if (Param_Name::anchoring_dominates(anchorings_best[j], anchoring)) 
-					goto dont_add;
-			}
-
-			/* Check whether the rule dominates all other rules */ 
-			{
-				bool is_best= true;
-				for (int j= 0;  is_best && j < (ssize_t) k;  ++j) {
-					if (! Param_Name::anchoring_dominates(anchoring, anchorings_best[j]))
-						is_best= false;
-				}
-				if (is_best) {
-					k= 0;
-				}
-			} 
-			rules_best.resize(k+1); 
-			mappings_best.resize(k+1);
-			anchorings_best.resize(k+1); 
-			place_param_targets_best.resize(k+1); 
-			rules_best[k]= rule;
-			swap(mapping, mappings_best[k]);
-			swap(anchoring, anchorings_best[k]); 
-			place_param_targets_best[k]= place_param_target;
-		dont_add:;
-		}
-	}
-
-	/* No rule matches */ 
-	if (rules_best.size() == 0) {
-		assert(rules_best.size() == 0); 
-		return shared_ptr <Rule> ();
-	}
-
-	assert(rules_best.size() >= 1);
-
-	/* More than one rule matches:  error */ 
-	if (rules_best.size() > 1) {
-		place << fmt("multiple minimal rules for target %s", 
-			     target.format_word());
-		for (auto &place_param_target:  place_param_targets_best) {
-			place_param_target->place <<
-				fmt("rule with target %s", 
-				    place_param_target->format_word()); 
-		}
-		throw ERROR_LOGICAL; 
-	}
-
-	/* Instantiate */ 
-	assert(rules_best.size() == 1); 
-	shared_ptr <Rule> rule_best= rules_best[0];
-	mapping_out= mappings_best[0]; 
-
-	rule_original= rule_best; 
-
-	shared_ptr <Rule> ret
-		(Rule::instantiate(rule_best, mapping_out));
-		
-	return ret;
 }
 
 void Rule_Set::add(vector <shared_ptr <Rule> > &rules_) 
@@ -488,6 +359,139 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 			rules_parametrized.push_back(rule); 
 		}
 	}
+}
+
+shared_ptr <Rule> Rule_Set::get(Target target, 
+				shared_ptr <Rule> &rule_original,
+				map <string, string> &mapping_out,
+				const Place &place)
+{
+	assert(target.type == Type::FILE || target.type == Type::TRANSIENT); 
+	assert(mapping_out.size() == 0); 
+
+	/* Check for an unparametrized rule.  Since we keep them in a
+	 * map by target filename(s), there can only be a single matching rule to
+	 * begin with.  (I.e., if multiple unparametrized rules for the same
+	 * filename exist, then that error is caught earlier when the
+	 * Rule_Set is built.)
+	 */ 
+	auto i= rules_unparametrized.find(target);
+	if (i != rules_unparametrized.end()) {
+
+		shared_ptr <Rule> rule= i->second;
+		assert(rule != nullptr); 
+		assert(rule->place_param_targets.front()->place_param_name.get_n() == 0);
+#ifndef NDEBUG		
+		/* Check that the target is a target of the found
+		 * rule */
+		bool found= false;
+		for (auto place_param_target:  rule->place_param_targets) {
+			if (place_param_target->unparametrized() == target)
+				found= true;
+		}
+		assert(found); 
+#endif 
+
+		rule_original= rule; 
+		return rule;
+	}
+
+	/* Search the best parametrized rule.  Since this implementation
+	 * does not have an index for parametrized rules, we simply
+	 * check all rules, and choose the best-fitting one. 
+	 */ 
+
+	/* Element [0] corresponds to the best rule. */ 
+	vector <shared_ptr <Rule> > rules_best;
+	vector <map <string, string> > mappings_best; 
+	vector <vector <int> > anchorings_best; 
+	vector <shared_ptr <Place_Param_Target> > place_param_targets_best; 
+
+	for (auto &rule:  rules_parametrized) {
+
+		for (auto &place_param_target:  rule->place_param_targets) {
+
+			assert(place_param_target->place_param_name.get_n() > 0);
+		
+			map <string, string> mapping;
+			vector <int> anchoring;
+
+			/* The parametrized rule is of another type */ 
+			if (target.type != place_param_target->type)
+				continue;
+
+			/* The parametrized rule does not match */ 
+			if (! place_param_target->place_param_name
+			    .match(target.name, mapping, anchoring))
+				continue; 
+
+			assert(anchoring.size() == 
+			       (2 * place_param_target->place_param_name.get_n())); 
+
+			size_t k= rules_best.size(); 
+			assert(k == anchorings_best.size()); 
+			assert(k == mappings_best.size()); 
+
+			/* Check whether the rule is dominated by at least one other rule */
+			for (int j= 0;  j < (ssize_t) k;  ++j) {
+				if (Param_Name::anchoring_dominates
+				    (anchorings_best[j], anchoring)) {
+					goto dont_add;
+				}
+			}
+
+			/* Check whether the rule dominates all other rules */ 
+			{
+				bool is_best= true;
+				for (int j= 0;  is_best && j < (ssize_t) k;  ++j) {
+					if (! Param_Name::anchoring_dominates(anchoring, anchorings_best[j]))
+						is_best= false;
+				}
+				if (is_best) {
+					k= 0;
+				}
+			} 
+			rules_best.resize(k+1); 
+			mappings_best.resize(k+1);
+			anchorings_best.resize(k+1); 
+			place_param_targets_best.resize(k+1); 
+			rules_best[k]= rule;
+			swap(mapping, mappings_best[k]);
+			swap(anchoring, anchorings_best[k]); 
+			place_param_targets_best[k]= place_param_target;
+		dont_add:;
+		}
+	}
+
+	/* No rule matches */ 
+	if (rules_best.size() == 0) {
+		assert(rules_best.size() == 0); 
+		return nullptr; 
+	}
+	assert(rules_best.size() >= 1);
+
+	/* More than one rule matches:  error */ 
+	if (rules_best.size() > 1) {
+		place << fmt("multiple minimal rules for target %s", 
+			     target.format_word());
+		for (auto &place_param_target:  place_param_targets_best) {
+			place_param_target->place <<
+				fmt("rule with target %s", 
+				    place_param_target->format_word()); 
+		}
+		throw ERROR_LOGICAL; 
+	}
+	assert(rules_best.size() == 1); 
+
+	/* Instantiate the rule */ 
+	shared_ptr <Rule> rule_best= rules_best[0];
+	swap(mapping_out, mappings_best[0]); 
+	rule_original= rule_best; 
+
+	shared_ptr <Rule> ret
+		(Rule::instantiate(rule_best, mapping_out));
+		
+	return ret;
 }
 
 void Rule_Set::print() const

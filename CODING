@@ -87,17 +87,24 @@ The following names are used systematically:
 
 == Shell scripts ==
 
-When writing shell scripts, make sure to follow POSIX.  This includes: 
+When writing shell scripts, make sure to follow POSIX.  
 
 * Only use POSIX features of the shell and of standard tools.  Read the
-  manpage on the POSIX website
+  manpage of a tool on the POSIX website
   (http://pubs.opengroup.org/onlinepubs/9699919799/), rather than your
-  locally installed manpages, which are likely to describe extensions to
-  the tools.  
-* Sed has *only* basic regular expressions.  In particular, no '|', no
-  '\s' and no '\S'.  The -E and -r options are not POSIX. 
+  locally installed manpage, which is likely to describe extensions to
+  the tool.  
+* Sed has *only* basic regular expressions.  In particular, no '|',  and no
+  '\s'/'\S'/'\b'/'\w'.  The -r and -E options are not POSIX, they are
+  GNU and BSD extensions respectively. 
 * Shell scripts don't have a filename suffix.  Use '#! /bin/sh'. 
 * 'test' does not support the -a option.  Use && in the shell instead.
   POSIX has deprecated test -a.
+* The 'recursive' option to programs like 'ls' and 'cp' is -R and not
+  -r. 
+* Use $(...) instead of `...`.
+* Double-quote all variables, except if they should expand to multiple
+  words in a command line. 
+* Always use 'read -r' instead of 'read'. 
 
 There are many more things to be said about portable shell scripting. 

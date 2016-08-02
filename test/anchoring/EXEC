@@ -1,0 +1,112 @@
+#! /bin/sh
+#
+# Test anchoring.  See target.hh. 
+# 
+# In all cases, a target 'abcdefghijklmno' is built, and the file
+# contains two rules.  Each of the two rules git.  Either none dominates
+# the other, or the first dominates the second.  (The actual test also
+# inverts the order in all cases.)
+#
+
+do_test() 
+{
+	rm -f abcdefghijklmno || exit 1
+
+	../../stu.test abcdefghijklmno >list.out 2>list.err
+	exitcode="$?"
+
+	if [ "$result" = yes ] ; then
+
+		[ "$exitcode" = 0 ] || {
+			echo >&2 "*** Expected exit code 0, got $exitcode"
+			exit 1
+		}
+
+		[ -r abcdefghijklmno ] || {
+			echo >&2 "*** Expected target to exist, it does not"
+			exit 1
+		}
+		
+	
+	elif [ "$result" = no ] ; then
+
+		[ "$exitcode" = 2 ] || {
+			echo >&2 "*** Expected exit code 2, got $exitcode"
+			echo >&2 stdout:
+			echo >&2 ______
+			cat >&2 list.out
+			echo >&2 ______
+			echo >&2 stderr:
+			echo >&2 ______
+			cat >&2 list.err
+			echo >&2 ______
+			exit 1
+		}
+
+		# The actual output depends on whether the rules are
+		# parametrized 
+		grep -qE "(multiple minimal rules)|(there must not be a second rule) for target 'abcdefghijklmno'" list.err || {
+			echo >&2 "*** Invalid error output"
+			echo >&2 stderr:
+			echo >&2 ______
+			cat >&2 list.err
+			echo >&2 ______
+			exit 1
+		}
+
+	else
+		echo >&2 "*** Expected result 'yes' or 'no', got '$result'"
+		exit 1
+	fi
+}
+
+cat list | while read -r line ; do
+
+	if echo "$line" | grep -qE '^[[:space:]]*#' ; then
+		continue;
+	fi
+
+	if echo "$line" | grep -qE '^[[:space:]]*$' ; then
+		continue;
+	fi
+
+	result="$(echo "$line" | sed -e 's,^\([a-z][a-z]*\)[[:space:]].*$,\1,')"
+	left="$(echo "$line" | sed -e 's,^[a-z][a-z]*[[:space:]][[:space:]]*\([^[:space:]][^[:space:]]*\)[[:space:]].*$,\1,')"
+	right="$(echo "$line" | sed -e 's,^.*[[:space:]]\([a-o${XY}][a-o${XY}]*\)[[:space:]]*$,\1,')"
+
+	# Check validity of expressions
+	left_regexp="$(echo "$left" | sed -e 's,\${[XY]},.+,g')"
+	right_regexp="$(echo "$right" | sed -e 's,\${[XY]},.+,g')"
+	echo abcdefghijklmno | grep -qE "$left_regexp" || {
+		echo >&2 "*** Invalid left regexp '$left_regexp'"
+		exit 1
+	}
+	echo abcdefghijklmno | grep -qE "$right_regexp" || {
+		echo >&2 "*** Invalid right regexp '$right_regexp'"
+		exit 1
+	}
+
+	
+
+	# (A) declared before (B)
+	rm -f main.stu || exit 1
+	cat >main.stu <<EOF
+$left  : { touch abcdefghijklmno }
+$right : { echo >&2 ERROR ; exit 1 ; }
+EOF
+	do_test
+
+	# (A) declared after (B) 
+	rm -f main.stu || exit 1
+	cat >main.stu <<EOF
+$right : { echo >&2 ERROR ; exit 1 ; }
+$left  : { touch abcdefghijklmno } 
+EOF
+	do_test
+
+done
+
+rm -f abcdefghijklmno || exit 1
+rm -f main.stu || exit 1
+
+exit 0 

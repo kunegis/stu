@@ -404,7 +404,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 	/* Element [0] corresponds to the best rule. */ 
 	vector <shared_ptr <Rule> > rules_best;
 	vector <map <string, string> > mappings_best; 
-	vector <vector <int> > anchorings_best; 
+	vector <vector <unsigned> > anchorings_best; 
 	vector <shared_ptr <Place_Param_Target> > place_param_targets_best; 
 
 	for (auto &rule:  rules_parametrized) {
@@ -414,7 +414,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 			assert(place_param_target->place_param_name.get_n() > 0);
 		
 			map <string, string> mapping;
-			vector <int> anchoring;
+			vector <unsigned> anchoring;
 
 			/* The parametrized rule is of another type */ 
 			if (target.type != place_param_target->type)

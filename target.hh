@@ -403,7 +403,7 @@ public:
 	 */
 	bool match(string name, 
 		   map <string, string> &mapping,
-		   vector <int> &anchoring);
+		   vector <unsigned> &anchoring);
 	
 	/* No escape characters */
 	string raw() const {
@@ -487,8 +487,8 @@ public:
 	/* Whether anchoring A dominates anchoring B. 
 	 * The anchorings do not need to have the same number of parameters. 
 	 */
-	static bool anchoring_dominates(vector <int> &anchoring_a,
-					vector <int> &anchoring_b);
+	static bool anchoring_dominates(vector <unsigned> &anchoring_a,
+					vector <unsigned> &anchoring_b);
 };
 
 /* A parametrized name for which it is saved what type it represents.  
@@ -689,7 +689,7 @@ string Param_Name::instantiate(const map <string, string> &mapping) const
 
 bool Param_Name::match(const string name, 
 		       map <string, string> &mapping,
-		       vector <int> &anchoring)
+		       vector <unsigned> &anchoring)
 {
 	/* Rules:
 	 *  - Each parameter must match at least one character. 
@@ -806,67 +806,55 @@ bool Param_Name::valid(string &param_1, string &param_2) const
 	return true;
 }
 
-bool Param_Name::anchoring_dominates(vector <int> &anchoring_a,
-				     vector <int> &anchoring_b)
+bool Param_Name::anchoring_dominates(vector <unsigned> &anchoring_a,
+				     vector <unsigned> &anchoring_b)
 {
  	/* (A) dominates (B) when every character in a parameter in (A)
 	 * is also in a parameter in (B) and at least one character is
 	 * not parametrized in (A) but in (B). */
 
+	/* TEST: anchoring */ 
+
 	assert(anchoring_a.size() % 2 == 0);
 	assert(anchoring_b.size() % 2 == 0);
 
-	const unsigned n_a= anchoring_a.size() / 2;
-	const unsigned n_b= anchoring_b.size() / 2;
+	const unsigned k_a= anchoring_a.size();
+	const unsigned k_b= anchoring_b.size();
 
-	/* Set to TRUE when characters are found that are parametrized
-	 * in (B) but not in (A). */
 	bool dominate= false;
+	unsigned p= 0;
+	unsigned i= 0; /* Index in (A) */ 
+	unsigned j= 0; /* Index in (B) */ 
 
-	/* The following code returns with FALSE when a character is
-	 * found that is parametrized in (A) but not in (B). 
-	 */
+	for (;;) {
+		if (i < k_a && p == anchoring_a[i])  ++i;
+		if (j < k_b && p == anchoring_b[j])  ++j;
 
-	unsigned i_b= 0; 
-	for (unsigned i_a= 0;  i_a < n_a;  ++i_a) {
-
-		/* Parameter in (B) ends before that in (A) begins */ 
-		while (i_b < n_b && anchoring_b[2 * i_b + 1] <= anchoring_a[2 * i_a]) {
-			++ i_b;
+		/* Check position P */ 
+		if ((i % 2) == 0 && (j % 2) != 0) {
+			/* A character is parametrized in (B) but not in (A) */ 
 			dominate= true; 
 		}
+		else if ((i % 2) != 0 && (j % 2) == 0) {
+			/* A character is parametrized in (A) but not in (B) */ 
+			return false; 
+		}
+		
+		/* Skip to next */
+		assert(i == k_a || p <= anchoring_a[i]);
+		assert(j == k_b || p <= anchoring_b[j]);
 
-		/* The current parameter in (A) cannot be matched
-		 * anymore */ 
-		if (i_b == n_b)
-			return false;
-
-		/* The parameter in (A) begins before that in (B) */
-		if (anchoring_a[2 * i_a] < anchoring_b[2 * i_b])
-			return false;
-
-		/* The parameter in (A) begins after that in (B) */ 
-		if (anchoring_a[2 * i_a] > anchoring_b[2 * i_b])
-			dominate= true;
-
-		/* The parameter in (A) ends after that in (B) */
-		if (anchoring_a[2 * i_a + 1] > anchoring_b[2 * i_b + 1])
-			return false;
-
-		/* The parameter in (A) ends before that in (B) */ 
-		if (anchoring_a[2 * i_a + 1] < anchoring_b[2 * i_b + 1])
-			dominate= true;
-
-		/* The parameter in (A) ends with that in (B) */
-		if (anchoring_a[2 * i_a + 1] == anchoring_b[2 * i_b + 1])
-			++ i_b; 
+		/* End or increment */ 
+		if (i == k_a && j == k_b)
+			return dominate; 
+		else if (i < k_a && j == k_b)
+			p= anchoring_a[i];
+		else if (j < k_b && i == k_a)
+			p= anchoring_b[j]; 
+		else if (i < k_a && j < k_b) {
+			p= min(anchoring_a[i], anchoring_b[j]); 
+		}
 	}
-
-	/* The are unmatched parameters left in (B) */ 
-	if (i_b < n_b)
-		dominate= true;
-
-	return dominate;
 }
 
 #endif /* ! TARGET_HH */

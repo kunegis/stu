@@ -77,8 +77,8 @@
  * the targets are not up to date.  
  *
  * Logical errors (code 2) are errors with the usage of Stu.  These are
- * for instance syntax errors in the source code and cycles in the
- * dependency graph.  
+ * for instance syntax errors in the source code, cycles in the
+ * dependency graph, or multiple matching rules.  
  * 
  * Fatal errors (code 4) are errors that lead Stu to abort immediately,
  * even when the -k option is used.  

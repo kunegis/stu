@@ -1,0 +1,416 @@
+#
+# This is the list of tests.  Each tests has three words on a line:
+#
+#    * 'yes' or 'no'
+#    * Expression (A)
+#    * Expression (B)
+#
+# In the case of 'yes', (A) must dominate (B), i.e., Stu will choose (A)
+# over (B), i.e., all characters parametrized in (A) are also
+# parametrized in (B), and there is at least one character that is
+# parametrized in (B) which is not parametrized in (A).
+# 
+# In the case of 'no', no expression dominates the other, i.e., Stu will
+# produce an error because none of the expressions can be chosen, i.e.,
+# at least one character must be parametrized in (A) but not in (B), and
+# at least one character must be parametrized in (B) but not in (A).
+#
+# Empty lines and comments lines with '#' are ignored. 
+#
+# All tests are sorted by the number of parameters. 
+#
+
+# 0 : 0	- identical 
+no	abcdefghijklmno		abcdefghijklmno
+
+# 1 : 0 - never dominates
+
+# 0 : 1 - always dominates
+yes	abcdefghijklmno		${X}mno
+yes	abcdefghijklmno		abc${X}mno
+yes	abcdefghijklmno		abc${X}
+
+# 2 : 0 - never dominates
+
+# 1 : 1
+no	${X}ghijklmno		${X}ghijklmno
+yes	${X}ghijklmno		${X}jklmno
+yes	${X}ghijklmno		${X}
+no	${X}jklmno		abc${X}mno
+no	${X}jklmno		abc${X}
+no	abcdef${X}mno		${X}defghijklmno
+no	abc${X}mno		${X}defghijklmno
+no	abc${X}jklmno		${X}ghijklmno
+yes	abc${X}jklmno		${X}jklmno
+yes	abc${X}jklmno		${X}mno
+yes	abc${X}jklmno		${X}
+no	abcdefghi${X}mno	abc${X}ghijklmno
+no	abcdefghi${X}mno	abc${X}jklmno
+no	abcdef${X}mno		abc${X}jklmno
+yes	abcdef${X}mno		abc${X}mno
+yes	abcdef${X}jklmno	abc${X}mno
+yes	abcdef${X}jklmno	abc${X}
+no	abc${X}mno		abc${X}mno
+yes	abc${X}jklmno		abc${X}mno
+yes	abc${X}mno		abc${X}
+no	abc${X}jklmno		abcdef${X}mno
+no	abc${X}mno		abcdef${X}
+no	abc${X}ghijklmno	abcdef${X}jklmno
+no	abc${X}ghijklmno	abcdef${X}
+no	abc${X}ghijklmno	abcdefghi${X}mno
+no	abc${X}ghijklmno	abcdefghi${X}
+no	abcdefghijkl${X}	${X}defghijklmno
+no	abcdefghijkl${X}	${X}mno
+no	abc${X}			${X}ghijklmno
+yes	abc${X}			${X}
+no	abcdefghi${X}		abc${X}ghijklmno
+no	abcdefghi${X}		abc${X}jklmno
+no	abcdefghi${X}		abc${X}mno
+yes	abcdefghi${X}		abc${X}
+no	abc${X}			abc${X}
+
+# 0 : 2 - always dominates
+yes	abcdefghijklmno		${X}def${Y}mno
+yes	abcdefghijklmno		${X}def${Y}
+yes	abcdefghijklmno		abc${X}ghi${Y}mno
+yes	abcdefghijklmno		abc${X}ghi${Y}
+
+# 3 : 0 - never dominates
+
+#
+# 2 : 1
+#
+
+no	${X}cd${Y}ghijklmno	${X}defghijklmno
+no	${X}cd${Y}ghijklmno	${X}efghijklmno
+no	${X}cd${Y}ghijklmno	${X}fghijklmno
+yes	${X}cd${Y}ghijklmno	${X}ghijklmno
+yes	${X}cd${Y}ghijklmno	${X}hijklmno
+yes	${X}cd${Y}ghijklmno	${X}
+no	${X}def${Y}jklmno	a${X}efghijklmno
+no	${X}def${Y}jklmno	a${X}ghijklmno
+no	${X}def${Y}jklmno	a${X}hijklmno
+no	${X}def${Y}jklmno	a${X}jklmno
+no	${X}def${Y}jklmno	a${X}klmno
+no	${X}def${Y}jklmno	a${X}
+no	${X}def${Y}jklmno	abc${X}efghijklmno
+no	${X}def${Y}jklmno	abc${X}ghijklmno
+no	${X}def${Y}jklmno	abc${X}hijklmno
+no	${X}def${Y}jklmno	abc${X}jklmno
+no	${X}def${Y}jklmno	abc${X}klmno
+no	${X}def${Y}jklmno	abc${X}
+no	${X}def${Y}jklmno	abcd${X}fghijklmno
+no	${X}def${Y}jklmno	abcd${X}ghijklmno
+no	${X}def${Y}jklmno	abcd${X}hijklmno
+no	${X}def${Y}jklmno	abcd${X}jklmno
+no	${X}def${Y}jklmno	abcd${X}klmno
+no	${X}def${Y}jklmno	abcd${X}
+no	${X}def${Y}jklmno	abcdef${X}klmno
+no	${X}def${Y}jklmno	abcdef${X}
+no	${X}def${Y}jklmno	abcdefg${X}klmno
+no	${X}def${Y}jklmno	abcdefg${X}
+no	${X}def${Y}jklmno	abcdefghi${X}klmno
+no	${X}def${Y}jklmno	abcdefghi${X}
+no	${X}def${Y}jklmno	abcdefghij${X}lmno
+no	${X}def${Y}jklmno	abcdefghij${X}
+
+no	abc${X}ghi${Y}mno	${X}bcdefghijklmno
+no	abc${X}ghi${Y}mno	${X}defghijklmno
+no	abc${X}ghi${Y}mno	${X}efghijklmno
+no	abc${X}ghi${Y}mno	${X}ghijklmno
+no	abc${X}ghi${Y}mno	${X}hijklmno
+no	abc${X}ghi${Y}mno	${X}jklmno
+no	abc${X}ghi${Y}mno	${X}klmno
+yes	abc${X}ghi${Y}mno	${X}mno
+yes	abc${X}ghi${Y}mno	${X}no
+yes	abc${X}ghi${Y}mno	${X}
+no	abc${X}ghi${Y}mno	a${X}cdefghijklmno
+no	abc${X}ghi${Y}mno	a${X}defghijklmno
+no	abc${X}ghi${Y}mno	a${X}efghijklmno
+no	abc${X}ghi${Y}mno	a${X}ghijklmno
+no	abc${X}ghi${Y}mno	a${X}hijklmno
+no	abc${X}ghi${Y}mno	a${X}jklmno
+no	abc${X}ghi${Y}mno	a${X}klmno
+yes	abc${X}ghi${Y}mno	a${X}mno
+yes	abc${X}ghi${Y}mno	a${X}no
+yes	abc${X}ghi${Y}mno	a${X}
+no	abc${X}ghi${Y}mno	abc${X}hijklmno
+no	abc${X}ghi${Y}mno	abc${X}jklmno
+no	abc${X}ghi${Y}mno	abc${X}klmno
+yes	abc${X}ghi${Y}mno	abc${X}mno
+yes	abc${X}ghi${Y}mno	abc${X}no
+yes	abc${X}ghi${Y}mno	abc${X}
+no	abc${X}ghi${Y}mno	abcd${X}hijklmno
+no	abc${X}ghi${Y}mno	abcd${X}jklmno
+no	abc${X}ghi${Y}mno	abcd${X}klmno
+no	abc${X}ghi${Y}mno	abcd${X}mno
+no	abc${X}ghi${Y}mno	abcd${X}no
+no	abc${X}ghi${Y}mno	abcd${X}
+no	abc${X}ghi${Y}mno	abcdef${X}hijklmno
+no	abc${X}ghi${Y}mno	abcdef${X}jklmno
+no	abc${X}ghi${Y}mno	abcdef${X}klmno
+no	abc${X}ghi${Y}mno	abcdef${X}mno
+no	abc${X}ghi${Y}mno	abcdef${X}no
+no	abc${X}ghi${Y}mno	abcdef${X}
+no	abc${X}ghi${Y}mno	abcdefg${X}ijklmno
+no	abc${X}ghi${Y}mno	abcdefg${X}jklmno
+no	abc${X}ghi${Y}mno	abcdefg${X}klmno
+no	abc${X}ghi${Y}mno	abcdefg${X}mno
+no	abc${X}ghi${Y}mno	abcdefg${X}no
+no	abc${X}ghi${Y}mno	abcdefg${X}
+no	abc${X}ghi${Y}mno	abcdefghi${X}no
+no	abc${X}ghi${Y}mno	abcdefghi${X}
+no	abc${X}ghi${Y}mno	abcdefghij${X}no
+no	abc${X}ghi${Y}mno	abcdefghij${X}
+no	abc${X}ghi${Y}mno	abcdefghijkl${X}no
+no	abc${X}ghi${Y}mno	abcdefghijkl${X}
+no	abc${X}ghi${Y}mno	abcdefghijklm${X}o
+no	abc${X}ghi${Y}mno	abcdefghijklm${X}
+
+no	abc${X}ghi${Y}		${X}bcdefghijklmno
+no	abc${X}ghi${Y}		${X}defghijklmno
+no	abc${X}ghi${Y}		${X}efghijklmno
+no	abc${X}ghi${Y}		${X}ghijklmno
+no	abc${X}ghi${Y}		${X}hijklmno
+no	abc${X}ghi${Y}		${X}jklmno
+no	abc${X}ghi${Y}		${X}klmno
+yes	abc${X}ghi${Y}		${X}
+no	abc${X}ghi${Y}		a${X}cdefghijklmno
+no	abc${X}ghi${Y}		a${X}defghijklmno
+no	abc${X}ghi${Y}		a${X}efghijklmno
+no	abc${X}ghi${Y}		a${X}ghijklmno
+no	abc${X}ghi${Y}		a${X}hijklmno
+no	abc${X}ghi${Y}		a${X}jklmno
+no	abc${X}ghi${Y}		a${X}klmno
+yes	abc${X}ghi${Y}		a${X}
+no	abc${X}ghi${Y}		abc${X}hijklmno
+no	abc${X}ghi${Y}		abc${X}jklmno
+no	abc${X}ghi${Y}		abc${X}klmno
+yes	abc${X}ghi${Y}		abc${X}
+no	abc${X}ghi${Y}		abcd${X}hijklmno
+no	abc${X}ghi${Y}		abcd${X}jklmno
+no	abc${X}ghi${Y}		abcd${X}klmno
+no	abc${X}ghi${Y}		abcd${X}
+no	abc${X}ghi${Y}		abcdef${X}hijklmno
+no	abc${X}ghi${Y}		abcdef${X}jklmno
+no	abc${X}ghi${Y}		abcdef${X}klmno
+no	abc${X}ghi${Y}		abcdef${X}
+no	abc${X}ghi${Y}		abcdef${X}hijklmno
+no	abc${X}ghi${Y}		abcdefg${X}ijklmno
+no	abc${X}ghi${Y}		abcdefg${X}jklmno
+no	abc${X}ghi${Y}		abcdefg${X}klmno
+no	abc${X}ghi${Y}		abcdefg${X}
+
+no	${X}def${Y}		${X}efghijklmno
+no	${X}def${Y}		${X}ghijklmno
+no	${X}def${Y}		${X}hijklmno
+yes	${X}def${Y}		${X}
+no	${X}def${Y}		a${X}efghijklmno
+no	${X}def${Y}		a${X}ghijklmno
+no	${X}def${Y}		a${X}hijklmno
+no	${X}def${Y}		a${X}
+no	${X}def${Y}		abc${X}efghijklmno
+no	${X}def${Y}		abc${X}ghijklmno
+no	${X}def${Y}		abc${X}hijklmno
+no	${X}def${Y}		abc${X}
+no	${X}def${Y}		abcd${X}fghijklmno
+no	${X}def${Y}		abcd${X}ghijklmno
+no	${X}def${Y}		abcd${X}hijklmno
+no	${X}def${Y}		abcd${X}
+
+#
+# 1 : 2
+#
+
+yes	${X}bcdefghijklmno	${X}def${Y}
+yes	${X}defghijklmno	${X}def${Y}
+no	${X}efghijklmno		${X}def${Y}
+no	${X}ghijklmno		${X}def${Y}
+no	${X}hijklmno		${X}def${Y}
+yes	a${X}cdefghijklmno	${X}def${Y}
+yes	a${X}defghijklmno	${X}def${Y}
+no	a${X}efghijklmno	${X}def${Y}
+no	a${X}ghijklmno		${X}def${Y}
+no	a${X}hijklmno		${X}def${Y}
+no	a${X}			${X}def${Y}
+no	abc${X}efghijklmno	${X}def${Y}
+no	abc${X}ghijklmno	${X}def${Y}
+no	abc${X}hijklmno		${X}def${Y}
+no	abc${X}			${X}def${Y}
+no	abcd${X}fghijklmno	${X}def${Y}
+no	abcd${X}ghijklmno	${X}def${Y}
+no	abcd${X}hijklmno	${X}def${Y}
+no	abcd${X} 		${X}def${Y}
+yes	abcdef${X}hijklmno	${X}def${Y}
+yes	abcdef${X}		${X}def${Y}
+yes	abcdefg${X}ijklmno	${X}def${Y}
+yes	abcdefg${X}		${X}def${Y}
+
+yes	${X}bcdefghijklmno	${X}def${Y}jklmno
+yes	${X}defghijklmno	${X}def${Y}jklmno
+no	${X}efghijklmno		${X}def${Y}jklmno
+no	${X}ghijklmno		${X}def${Y}jklmno
+no	${X}hijklmno		${X}def${Y}jklmno
+yes	a${X}cdefghijklmno	${X}def${Y}jklmno
+yes	a${X}defghijklmno	${X}def${Y}jklmno
+no	a${X}efghijklmno	${X}def${Y}jklmno
+no	a${X}ghijklmno		${X}def${Y}jklmno
+no	a${X}hijklmno		${X}def${Y}jklmno
+no	a${X}jklmno		${X}def${Y}jklmno
+no	a${X}klmno		${X}def${Y}jklmno
+no	a${X}			${X}def${Y}jklmno
+no	abc${X}efghijklmno	${X}def${Y}jklmno
+no	abc${X}ghijklmno	${X}def${Y}jklmno
+no	abc${X}hijklmno		${X}def${Y}jklmno
+no	abc${X}jklmno		${X}def${Y}jklmno
+no	abc${X}klmno		${X}def${Y}jklmno
+no	abc${X}			${X}def${Y}jklmno
+no	abcd${X}fghijklmno	${X}def${Y}jklmno
+no	abcd${X}ghijklmno	${X}def${Y}jklmno
+no	abcd${X}hijklmno	${X}def${Y}jklmno
+no	abcd${X}jklmno		${X}def${Y}jklmno
+no	abcd${X}klmno		${X}def${Y}jklmno
+no	abcd${X}		${X}def${Y}jklmno
+yes	abcdef${X}hijklmno	${X}def${Y}jklmno
+yes	abcdef${X}jklmno	${X}def${Y}jklmno
+no	abcdef${X}klmno		${X}def${Y}jklmno
+no	abcdef${X}		${X}def${Y}jklmno
+yes	abcdefg${X}ijklmno	${X}def${Y}jklmno
+yes	abcdefg${X}jklmno	${X}def${Y}jklmno
+no	abcdefg${X}klmno	${X}def${Y}jklmno
+no	abcdefg${X}		${X}def${Y}jklmno
+yes	abcdefgh${X}jklmno	${X}def${Y}jklmno
+no	abcdefgh${X}klmno	${X}def${Y}jklmno
+no	abcdefgh${X}		${X}def${Y}jklmno
+no	abcdefghi${X}klmno	${X}def${Y}jklmno
+no	abcdefghi${X}		${X}def${Y}jklmno
+no	abcdefghij${X}lmno	${X}def${Y}jklmno
+no	abcdefghij${X}		${X}def${Y}jklmno
+
+no	${X}bcdefghijklmno	abc${X}ghi${Y}
+no	${X}defghijklmno	abc${X}ghi${Y}
+no	${X}efghijklmno		abc${X}ghi${Y}
+no	${X}ghijklmno		abc${X}ghi${Y}
+no	${X}hijklmno		abc${X}ghi${Y}
+no	${X}jklmno		abc${X}ghi${Y}
+no	${X}klmno		abc${X}ghi${Y}
+no	a${X}cdefghijklmno	abc${X}ghi${Y}
+no	a${X}defghijklmno	abc${X}ghi${Y}
+no	a${X}efghijklmno	abc${X}ghi${Y}
+no	a${X}ghijklmno		abc${X}ghi${Y}
+no	a${X}hijklmno		abc${X}ghi${Y}
+no	a${X}jklmno		abc${X}ghi${Y}
+no	a${X}klmno		abc${X}ghi${Y}
+no	ab${X}defghijklmno	abc${X}ghi${Y}
+no	ab${X}efghijklmno	abc${X}ghi${Y}
+no	ab${X}ghijklmno		abc${X}ghi${Y}
+no	ab${X}hijklmno		abc${X}ghi${Y}
+no	ab${X}jklmno		abc${X}ghi${Y}
+no	ab${X}klmno		abc${X}ghi${Y}
+yes	abc${X}efghijklmno	abc${X}ghi${Y}
+yes	abc${X}ghijklmno	abc${X}ghi${Y}
+no	abc${X}hijklmno		abc${X}ghi${Y}
+no	abc${X}jklmno		abc${X}ghi${Y}
+no	abc${X}klmno		abc${X}ghi${Y}
+yes	abcd${X}fghijklmno	abc${X}ghi${Y}
+yes	abcd${X}ghijklmno	abc${X}ghi${Y}
+no	abcd${X}hijklmno	abc${X}ghi${Y}
+no	abcd${X}jklmno		abc${X}ghi${Y}
+no	abcd${X}klmno		abc${X}ghi${Y}
+no	abcd${X}		abc${X}ghi${Y}
+no	abcdef${X}hijklmno	abc${X}ghi${Y}
+no	abcdef${X}jklmno	abc${X}ghi${Y}
+no	abcdef${X}klmno		abc${X}ghi${Y}
+no	abcdef${X}		abc${X}ghi${Y}
+no	abcdefg${X}ijklmno	abc${X}ghi${Y}
+no	abcdefg${X}jklmno	abc${X}ghi${Y}
+no	abcdefg${X}klmno	abc${X}ghi${Y}
+no	abcdefg${X}		abc${X}ghi${Y}
+yes	abcdefghi${X}klmno	abc${X}ghi${Y}
+yes	abcdefghi${X}		abc${X}ghi${Y}
+yes	abcdefghij${X}lmno	abc${X}ghi${Y}
+yes	abcdefghij${X}		abc${X}ghi${Y}
+
+no	${X}bcdefghijklmno	abc${X}ghi${Y}mno
+no	${X}defghijklmno	abc${X}ghi${Y}mno
+no	${X}efghijklmno		abc${X}ghi${Y}mno
+no	${X}ghijklmno		abc${X}ghi${Y}mno
+no	${X}hijklmno		abc${X}ghi${Y}mno
+no	${X}jklmno		abc${X}ghi${Y}mno
+no	${X}klmno		abc${X}ghi${Y}mno
+no	a${X}cdefghijklmno	abc${X}ghi${Y}mno
+no	a${X}defghijklmno	abc${X}ghi${Y}mno
+no	a${X}efghijklmno	abc${X}ghi${Y}mno
+no	a${X}ghijklmno		abc${X}ghi${Y}mno
+no	a${X}hijklmno		abc${X}ghi${Y}mno
+no	a${X}jklmno		abc${X}ghi${Y}mno
+no	a${X}klmno		abc${X}ghi${Y}mno
+no	ab${X}defghijklmno	abc${X}ghi${Y}mno
+no	ab${X}efghijklmno	abc${X}ghi${Y}mno
+no	ab${X}ghijklmno		abc${X}ghi${Y}mno
+no	ab${X}hijklmno		abc${X}ghi${Y}mno
+no	ab${X}jklmno		abc${X}ghi${Y}mno
+no	ab${X}klmno		abc${X}ghi${Y}mno
+yes	abc${X}efghijklmno	abc${X}ghi${Y}mno
+yes	abc${X}fghijklmno	abc${X}ghi${Y}mno
+yes	abc${X}ghijklmno	abc${X}ghi${Y}mno
+no	abc${X}hijklmno		abc${X}ghi${Y}mno
+no	abc${X}jklmno		abc${X}ghi${Y}mno
+no	abc${X}klmno		abc${X}ghi${Y}mno
+yes	abcd${X}fghijklmno	abc${X}ghi${Y}mno
+yes	abcd${X}ghijklmno	abc${X}ghi${Y}mno
+no	abcd${X}hijklmno	abc${X}ghi${Y}mno
+no	abcd${X}jklmno		abc${X}ghi${Y}mno
+no	abcd${X}klmno		abc${X}ghi${Y}mno
+no	abcd${X}mno		abc${X}ghi${Y}mno
+no	abcd${X}no		abc${X}ghi${Y}mno
+no	abcd${X}		abc${X}ghi${Y}mno
+yes	abcde${X}ghijklmno	abc${X}ghi${Y}mno
+no	abcde${X}hijklmno	abc${X}ghi${Y}mno
+no	abcde${X}jklmno		abc${X}ghi${Y}mno
+no	abcde${X}klmno		abc${X}ghi${Y}mno
+no	abcde${X}mno		abc${X}ghi${Y}mno
+no	abcde${X}no		abc${X}ghi${Y}mno
+no	abcde${X}		abc${X}ghi${Y}mno
+no	abcdef${X}hijklmno	abc${X}ghi${Y}mno
+no	abcdef${X}jklmno	abc${X}ghi${Y}mno
+no	abcdef${X}klmno		abc${X}ghi${Y}mno
+no	abcdef${X}mno		abc${X}ghi${Y}mno
+no	abcdef${X}no		abc${X}ghi${Y}mno
+no	abcdef${X}		abc${X}ghi${Y}mno
+no	abcdefg${X}ijklmno	abc${X}ghi${Y}mno
+no	abcdefg${X}jklmno	abc${X}ghi${Y}mno
+no	abcdefg${X}klmno	abc${X}ghi${Y}mno
+no	abcdefg${X}mno		abc${X}ghi${Y}mno
+no	abcdefg${X}no		abc${X}ghi${Y}mno
+no	abcdefg${X}		abc${X}ghi${Y}mno
+no	abcdefgh${X}jklmno	abc${X}ghi${Y}mno
+no	abcdefgh${X}klmno	abc${X}ghi${Y}mno
+no	abcdefgh${X}mno		abc${X}ghi${Y}mno
+no	abcdefgh${X}no		abc${X}ghi${Y}mno
+no	abcdefgh${X}		abc${X}ghi${Y}mno
+yes	abcdefghi${X}klmno	abc${X}ghi${Y}mno
+yes	abcdefghi${X}mno	abc${X}ghi${Y}mno
+no	abcdefghi${X}no		abc${X}ghi${Y}mno
+no	abcdefghi${X}		abc${X}ghi${Y}mno
+yes	abcdefghij${X}lmno	abc${X}ghi${Y}mno
+yes	abcdefghij${X}mno	abc${X}ghi${Y}mno
+no	abcdefghij${X}no	abc${X}ghi${Y}mno
+no	abcdefghij${X}		abc${X}ghi${Y}mno
+yes	abcdefghijk${X}mno	abc${X}ghi${Y}mno
+no	abcdefghijk${X}no	abc${X}ghi${Y}mno
+no	abcdefghijk${X}		abc${X}ghi${Y}mno
+no	abcdefghijkl${X}no	abc${X}ghi${Y}mno
+no	abcdefghijkl${X}	abc${X}ghi${Y}mno
+no	abcdefghijklm${X}o	abc${X}ghi${Y}mno
+no	abcdefghijklm${X}	abc${X}ghi${Y}mno
+no	abcdefghijklmn${X}	abc${X}ghi${Y}mno
+
+#
+# 0 : 3 - always dominates
+#
+
+yes	abcdefghijklmno		${X}defghijkl${Y}  
+yes	abcdefghijklmno		${X}defghi${Y}mno
+yes	abcdefghijklmno		abc${X}ghi${Y}mno
+yes	abcdefghijklmno		abc${X}ghijkl${Y}

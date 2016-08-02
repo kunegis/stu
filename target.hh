@@ -400,6 +400,7 @@ public:
 
 	/* Check whether NAME matches this name.  If it does, return
 	 * TRUE and set MAPPING and ANCHORING accordingly. 
+	 * MAPPING must be empty. 
 	 */
 	bool match(string name, 
 		   map <string, string> &mapping,
@@ -701,6 +702,8 @@ bool Param_Name::match(const string name,
 	 * implementation of regular expression matching. 
 	 */
 
+	assert(mapping.size() == 0); 
+
 	map <string, string> ret;
 
 	const unsigned n= get_n(); 
@@ -769,7 +772,7 @@ bool Param_Name::match(const string name,
 		}
 	}
 
-	mapping.insert(ret.begin(), ret.end());
+	swap(mapping, ret); 
 
 	assert(anchoring.size() == 2 * n); 
 
@@ -822,7 +825,7 @@ bool Param_Name::anchoring_dominates(vector <unsigned> &anchoring_a,
 	const unsigned k_b= anchoring_b.size();
 
 	bool dominate= false;
-	unsigned p= 0;
+	unsigned p= 0; /* Position in the string */ 
 	unsigned i= 0; /* Index in (A) */ 
 	unsigned j= 0; /* Index in (B) */ 
 
@@ -830,20 +833,17 @@ bool Param_Name::anchoring_dominates(vector <unsigned> &anchoring_a,
 		if (i < k_a && p == anchoring_a[i])  ++i;
 		if (j < k_b && p == anchoring_b[j])  ++j;
 
-		/* Check position P */ 
-		if ((i % 2) == 0 && (j % 2) != 0) {
-			/* A character is parametrized in (B) but not in (A) */ 
-			dominate= true; 
-		}
-		else if ((i % 2) != 0 && (j % 2) == 0) {
-			/* A character is parametrized in (A) but not in (B) */ 
-			return false; 
-		}
-		
-		/* Skip to next */
 		assert(i == k_a || p <= anchoring_a[i]);
 		assert(j == k_b || p <= anchoring_b[j]);
 
+		/* A character is parametrized in (B) but not in (A) */ 
+		if ((i % 2) == 0 && (j % 2) != 0) 
+			dominate= true; 
+
+		/* A character is parametrized in (A) but not in (B) */ 
+		else if ((i % 2) != 0 && (j % 2) == 0) 
+			return false; 
+		
 		/* End or increment */ 
 		if (i == k_a && j == k_b)
 			return dominate; 

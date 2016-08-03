@@ -1,6 +1,6 @@
+This file gives an overview of options letters used and proposed by Stu,
+and a comparison to those used by Make. 
 
-An overview of possible assignment of options letters, including those
-used by Make.  
 
 Legend
 ======
@@ -12,7 +12,8 @@ S   Implemented in Stu
 ~   Not applicable to Stu 
 M   Compatible with POSIX Make
 G   Compatible with GNU Make
-x   Incompatible
+x   Incompatible with POSIX Make
+
 
 List of options
 ===============

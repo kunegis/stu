@@ -11,15 +11,16 @@ $ sudo make install
 This will compile and install Stu as well as its manpage on your
 system. 
 
-If ./configure fails, then you are out of luck.  This is the
-Autoconf-produced configure script and should not fail.
+If ./configure fails, then you are probably out of luck.  This is the
+Autoconf-produced configure script and should not fail.  You may go on
+compiling Stu by hand though, if you know what you are doing. 
 
 If 'make' fails, you can go into the 'Makefile' and tweak some
 variables:
 * If compilation fails, you may need to add or remove options
   from CXXFLAGS.
 * If your compiler does not support -std=c++11, try replacing it with
-  -std=c++0x 
+  -std=c++0x, or whatever flags makes your compiler use C++11. 
 * If linking fails, you may need to add libraries to the LIBS variable
   (e.g., -lrt).  
 
@@ -42,23 +43,24 @@ Credits for the package go to Holger Heinz (hheinz).
 
 ==== REQUIREMENTS ====
 
-* A C++ 11 compiler 
+* A C++11 compiler 
 * POSIX
 * ASCII
 * ANSI color code-compatible terminal
 * Stu calls /bin/sh and /bin/cp at runtime.  They should behave as
   prescribed by POSIX. 
 
-
 ==== COMPILATION OPTIONS ====
+
+These are detected automatically by ./configure, but you may change them
+by hand if necessary. 
 
 * USE_MTIM (default: enabled if CLOCK_REALTIME_COARSE is present):  Use
   struct timespec instead of time_t for timekeeping.  struct timespec
   supports nanosecond timestamps in principle. In practice, most systems
   are likely to support only a precision on the order of a millisecond.
   Works only on Linux, as it uses CLOCK_REALTIME_COARSE.  See the
-  comments in timestamp.hh.  
-
+  comments in 'timestamp.hh'.  
 
 ==== UNIT TESTS ====
 

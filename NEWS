@@ -3,10 +3,12 @@ the minor version and Z the patch level.  For each new patch level, no
 new features are added.  When the minor version is incremented, features
 are added, which are documented in this file.  This file also documents
 important changes in patch level updates, which are mostly changes in
-terminology. 
+terminology, or changes in the installation procedure. 
 
 When the major version is increased, backward-incompatible changes are
 made, which are documented in the file MIGRATION. 
+
+------------------------------------------------------------------------
 
 2016-07-29  Version 1.15.80:
 
@@ -43,6 +45,8 @@ with the difference that using the new form, Stu will rebuild 'B' and
 * "Phony targets" were renamed to "transient targets" 
 * The default compilation mode is now -O2 instead of -O3
 
+The old form is still valid. 
+
 2016-05-01  Version 1.13:
 
 * Dynamic phonies are now allowed.  The following is an example:
@@ -73,7 +77,7 @@ target.
 
 2016-04-17  Version 1.11:
 
-* Variable dependency can use explicit names:
+* Variable dependencies can use explicit names:
 
 A : $[X = B] { ... use $X here ... }
 
@@ -172,4 +176,3 @@ output redirection.
 * Output commands directly into the target file using the '>'
   operator, to be used in front of the target filename.  Only for file
   rules, not for phonies.
-

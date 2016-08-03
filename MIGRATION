@@ -1,7 +1,8 @@
-
 From each major version to the next, changes in Stu are
 backward-incompatible.  This file lists required changes in Stu files
 needed to migrate to a new major version. 
+
+See the file 'NEWS' for more information about Stu versioning. 
 
 == Version 0 -> Version 1 ==
 
@@ -88,4 +89,3 @@ Also, the operators '<' and '>' are now free and will be used for file
 redirection in the future.  
 
 Migration:  Change <FILENAME> to [FILENAME].
-

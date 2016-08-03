@@ -13,7 +13,7 @@ exitcode="$?"
 }
 
 grep -qFx 'Nothing to be done' list.out || {
-	echo >&2 "*** stdout"
+	echo >&2 "*** Stdout"
 	echo list.out:
 	echo _______
 	cat list.out
@@ -21,8 +21,8 @@ grep -qFx 'Nothing to be done' list.out || {
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
-	echo >&2 "*** stderr"
+[ -r list.err ] && [ ! -s list.err ] || {
+	echo >&2 "*** Stderr"
 	exit 1
 }
 

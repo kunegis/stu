@@ -24,7 +24,7 @@ grep -qF 'Command line argument' list.err || {
 	exit 1
 }
 
-[ -r list.out -a \! -s list.out ] || {
+[ -r list.out ] && [ ! -s list.out ] || {
 	echo >&2 "*** (1) stdout"
 	exit 1
 }

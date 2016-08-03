@@ -21,7 +21,7 @@ grep -qF 'Nothing to be done' list.out || {
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
+[ -r list.err ] && [ ! -s list.err ] || {
 	echo >&2 "*** (1) stderr"
 	exit 1
 }
@@ -45,7 +45,7 @@ grep -qF 'Targets are not up to date' list.out || {
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
+[ -r list.err ] && [ ! -s list.err ] || {
 	echo >&2 "*** (2) stderr"
 	exit 1
 }
@@ -70,7 +70,7 @@ grep -qF 'Targets are not up to date' list.out || {
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
+[ -r list.err ] && [ ! -s list.err ] || {
 	echo >&2 "*** (3) stderr"
 	exit 1
 }
@@ -95,7 +95,7 @@ grep -qF 'Targets are not up to date' list.out || {
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
+[ -r list.err ] && [ ! -s list.err ] || {
 	echo >&2 "*** (4) stderr"
 	exit 1
 }
@@ -120,7 +120,7 @@ grep -qF 'Targets are not up to date' list.out || {
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
+[ -r list.err ] && [ ! -s list.err ] || {
 	echo >&2 "*** (5) stderr"
 	exit 1
 }
@@ -146,7 +146,7 @@ grep -qF 'Targets are not up to date' list.out || {
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
+[ -r list.err ] && [ ! -s list.err ] || {
 	echo >&2 "*** (6) stderr"
 	exit 1
 }
@@ -172,7 +172,7 @@ grep -qF 'Targets are not up to date' list.out || {
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
+[ -r list.err ] && [ ! -s list.err ] || {
 	echo >&2 "*** (7) stderr"
 	exit 1
 }
@@ -198,7 +198,7 @@ grep -qF 'Targets are not up to date' list.out || {
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
+[ -r list.err ] && [ ! -s list.err ] || {
 	echo >&2 "*** (8) stderr"
 	exit 1
 }

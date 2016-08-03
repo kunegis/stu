@@ -58,6 +58,9 @@ The design considerations of Stu are:
 * Stability of the interface:  We follow Semantic Versioning
   (semver.org) in order to provide stable syntax and semantics.  Stu
   files written now will still work in the future. 
+* Be familiar:  Stu follows the conventions of Make as much as possible,
+  to make it easier to make the switch from Make to Stu.  For instance,
+  the options -j and -k work like in Make.  
 
 ## Comparison to Make
 

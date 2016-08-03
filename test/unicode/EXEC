@@ -1,7 +1,9 @@
 #! /bin/sh
 #
-# Test that Unicode file names are supported.  All files here contain
-# UTF-8, which Stu should handle transparently. 
+# Test that Unicode file names are supported.  All filenames and the
+# content of this file contain UTF-8, which Stu should handle
+# transparently.  
+#
 
 rm -f *.data list.* 
 
@@ -25,7 +27,7 @@ grep -qF CORRECT A || {
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
-	echo >&2 "*** stderr should be empty"
+[ -r list.err ] && [ ! -s list.err ] || {
+	echo >&2 "*** Stderr should be empty"
 	exit 1
 }

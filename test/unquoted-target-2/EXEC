@@ -23,7 +23,7 @@ grep -Fq correct <'@:[({' || {
 	exit 1
 }
 
-[ -r list.err -a \! -s list.err ] || {
+[ -r list.err ] && [ ! -s list.err ] || {
 	echo >&2 '*** stderr'
 	rm -f ./@* ?
 	exit 1

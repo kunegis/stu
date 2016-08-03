@@ -1,35 +1,34 @@
-Here are the relevant coding conventions we use. 
+These are the relevant coding conventions we use. 
 
 == Standards == 
 
-* Follow the POSIX standard
+* Follow the POSIX standard.  It is safe to assume a POSIX environment;
+  there is no need to cater for "special" operating systems that lack
+  core POSIX features.  E.g., we always assume the directory separator
+  is '/'.   
 * Follow the GNU Coding Standards, except for coding style, but don't
-  use GNU extensions  
-* Use the C++11 version of C++; avoid GCC extensions
+  use GNU extensions.  For coding style, see below. 
+* Use the C++11 version of C++; don't use GCC extensions.  Or any other
+  extensions for that matter.  Source files are named '*.hh' and '*.cc'.  
 * Compilation is done in a single step by compiling the file 'stu.cc'.
-  All other source files are actually *.hh files which are included.
-  Therefore, we don't have to care about separation of declarations and
-  definitions.  If one day we think the compilation has become too slow,
-  we'll start using .o files. 
-* Names of targets in the Makefile follow the GNU Coding Standards  
-* Follow the behavior of Make as much as reasonable (e.g. the -k and -j
-  options behave just as in Make), but not where Make loses
-* It is safe to assume a POSIX environment; there is no need to cater
-  for "special" operating systems that lack core POSIX features.  E.g.,
-  we always assume the directory separator is '/'.  
+  All other source files are actually '*.hh' files which are included.
+  Therefore, we don't strictly separate declarations and definitions.
+  If one day we think the compilation has become too slow, we'll start
+  using '*.o' files though.  
+* Names of targets in the Makefile follow the GNU Coding Standards. 
 * Use SemVer.org for version number semantics.  We consider only changes
   on the Stu file specification, not in things like the output of Stu of
-  the supported options. 
+  the supported options.  See the file NEWS for details. 
 
 == Style == 
 
 This is my preferred style.  --Jerome Kunegis
 
-* All the following rules are broken when necessary :)
-* K&R brace style
-* Single tabs for indentation at the beginning of lines (set your editor
-  to show them at the width you prefer)  
-* Spaces for indentation in the middle of lines
+* All the following rules are broken when necessary. 
+* K&R brace style.
+* Tabs for indentation at the beginning of lines.  Set your editor
+  to show them at the width you prefer.  I use the default 8-char tabs. 
+* Spaces for indentation in the middle of lines.
 * Use C-style comments (/* ... */) for regular comments
 * Use C++-style comments on column zero (// ...) for quickly commenting
   out code and for writing TODO items; this allows us to search all
@@ -42,10 +41,10 @@ This is my preferred style.  --Jerome Kunegis
   (note:  tabs may be interpreted as different widths making this an
   approximate rule; authors use 8-char tabs)   
 * Use 'nullptr' as the null pointer constant instead of 'NULL', as per
-  C++11 
-* No space before the assignment operator 
+  C++11.  In comments, call it "null". 
+* No space before the assignment operator. 
 * We enable many G++ warnings in debug mode, and write the code so as to
-  suppress them if necessary 
+  suppress them if necessary.  (Stu is developed using G++.)
 * For vectors and strings, use operator[] for access, keeping in mind
   that this function has undefined behaviour when the argument is out of
   range.  In debug mode with glibc++, these functions include range
@@ -53,7 +52,7 @@ This is my preferred style.  --Jerome Kunegis
   unit testing in that way. 
 * For maps, we mostly use .at() for access, which terminates
   when the value is not contained, to avoid inserting values
-  accidentally with operator[]. 
+  accidentally, which is what operator[] does. 
 
 == Dynamic variables ==
 
@@ -61,7 +60,7 @@ This is my preferred style.  --Jerome Kunegis
 using shared_ptr/unique_ptr: 
 
 * all parametrized names and targets (in target.hh)
-* Rule
+* Rule (even though it is not polymorphic) 
 * Token
 * Dependency
 
@@ -85,26 +84,44 @@ The following names are used systematically:
 * 'filename':  a filename
 * 'error':  an error code or exit code (they are the same in Stu)
 
+Many variable names are written in "big endian" in defiance of English
+expressions.  In such names, the first part indicates the type (to a
+higher precision then the C++ type), and the second part indicates the
+meaning of the variable.  For instance, a variable denoting a filename
+used previously may be named 'filename_old' instead of the expected
+'old_filename'.  
+
 == Shell scripts ==
 
-When writing shell scripts, make sure to follow POSIX.  
+When writing shell scripts, make sure to follow POSIX.  Writing portable
+and safe shell scripts is hard, and the authors follow many other rules
+than those given here, mostly based on experience.  There are many more
+things to be said about portable shell scripting.  
 
 * Only use POSIX features of the shell and of standard tools.  Read the
   manpage of a tool on the POSIX website
   (http://pubs.opengroup.org/onlinepubs/9699919799/), rather than your
   locally installed manpage, which is likely to describe extensions to
   the tool.  
-* Sed has *only* basic regular expressions.  In particular, no '|',  and no
-  '\s'/'\S'/'\b'/'\w'.  The -r and -E options are not POSIX, they are
-  GNU and BSD extensions respectively. 
-* Shell scripts don't have a filename suffix.  Use '#! /bin/sh'. 
+* Use '##' for quickly commenting out lines, analogously to '//' in C++
+  code.  Code pushed to Github does not contain such lines. 
+* Sed has *only* basic regular expressions.  In particular, no '|', '+',
+  and no escape sequences like '\s'/'\S'/'\b'/'\w'.  The -r and -E
+  options are not POSIX, they are GNU and BSD extensions respectively.
+  A space can be written as [[:space:]].  One or more spaces can be
+  written as [[:space:]]\{1,\}.  
+* Grep however has the -E option for extended regular expressions.  Grep
+  is always be invoked with the -E *or* the -F option. 
+* Shell scripts don't have a filename suffix.  Use '#! /bin/sh' and set
+  the executable bit. 
 * 'test' does not support the -a option.  Use && in the shell instead.
   POSIX has deprecated test -a.
 * The 'recursive' option to programs like 'ls' and 'cp' is -R and not
   -r. 
-* Use $(...) instead of `...`.
+* Use $(...) instead of `...`.  It avoids many quoting pitfalls. 
 * Double-quote all variables, except if they should expand to multiple
-  words in a command line. 
+  words in a command line.  Also, use -- when passing variables as
+  non-option arguments to programs.  E.g. write 'cp -- "$filename_from"
+  "$filename_to"'.  All other invocation styles are unsafe under *some*
+  values of the variables. 
 * Always use 'read -r' instead of 'read'. 
-
-There are many more things to be said about portable shell scripting. 

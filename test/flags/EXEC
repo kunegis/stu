@@ -9,7 +9,8 @@ dorm
 echo "== run A"
 ../../stu.test 
 
-[ -r a -a -r b ] 
+[ -r a ]
+[ -r b ] 
 
 rm CFLAGS 
 

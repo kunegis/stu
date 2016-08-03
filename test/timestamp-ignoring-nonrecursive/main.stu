@@ -1,0 +1,19 @@
+#
+# Dependencies with '!' only make their argument ignore the timestamp.
+# They don't affect its dependencies. 
+#
+# * First, 'X' builds 'B'. 
+# * Then, even though 'B' already exists, 'C' must be built.
+#
+
+A: X  !B {
+	cp C A
+}
+
+B: C;
+
+X {
+	touch X B
+}
+
+C = {correct}

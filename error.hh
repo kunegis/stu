@@ -61,9 +61,11 @@
 #include "color.hh"
 #include "format.hh"
 
-constexpr int ERROR_BUILD=     1;
-constexpr int ERROR_LOGICAL=   2;
-constexpr int ERROR_FATAL=     4;
+/* The error constants.  Not declared as an enum because they are thrown
+ * and thus need to be integers. */
+const int ERROR_BUILD=     1;
+const int ERROR_LOGICAL=   2;
+const int ERROR_FATAL=     4;
 
 /* Errors 1 and 2 are recoverable.  If the -k option is given, Stu notes
  * these errors and continues.  If the -k option is not given, they

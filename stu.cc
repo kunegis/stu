@@ -38,42 +38,43 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-#define STU_OPTIONS "ac:C:Ef:F:ghj:JkKm:M:pqQsvVwxyz"
+const char OPTIONS[]= "ac:C:Ef:F:ghj:JkKm:M:pqQsvVwxyz"; 
 
-/* The following strings do not contain tabs, but only space characters */  
-#define STU_HELP						       \
-	"Usage: stu [-f FILENAME] [OPTION]... [TARGET]...\n"           \
-	"By default, build the first target in the file 'main.stu'.\n" \
-	"TARGETS may include the special characters '!?@[]'.\n"        \
-	"Options:\n"						       \
-	"  -a               Treat all trivial dependencies as non-trivial\n"          \
-	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"      \
-	"  -C EXPRESSIONS   Pass a target in full Stu syntax\n"		              \
-	"  -E               Explain error messages\n"                                 \
-	"  -f FILENAME      The input file to use instead of 'main.stu'\n"            \
-	"  -F RULES         Pass rules in Stu syntax\n"                               \
-	"  -g               Treat all optional dependencies as non-optional\n"        \
-	"  -h               Output help and exit\n"		                      \
-	"  -j K             Run K jobs in parallel\n"			              \
-	"  -J               Disable Stu syntax in arguments\n"                        \
-	"  -k               Keep on running after errors\n"		              \
-	"  -K               Don't delete target files on error or interruption\n"     \
-	"  -m ORDER         Order to run the targets:\n"			      \
-	"     dfs           (default) Depth-first order, like in Make\n"	      \
-	"     random        Random order\n"				              \
-	"  -M STRING        Pseudorandom run order, seeded by given string\n"         \
-	"  -p               Print the rules and exit\n"                               \
-	"  -q               Question mode; check whether targets are up to date\n"    \
-	"  -Q               Quiet mode; suppress special stdout messages\n"           \
-	"  -s               Silent mode; do not output commands\n"	              \
-	"  -v               Verbose mode; show execution information on stderr\n"     \
-	"  -V               Output version and exit\n"				      \
-	"  -w               Short output; show target filenames instead of commands\n"\
-	"  -x               Ouput each command statement individually\n"              \
-	"  -y               Disable color in output\n"                                \
-	"  -z               Output run-time statistics on stdout\n"                   \
-	"Report bugs to: kunegis@gmail.com\n" \
-	"Stu home page: <https:/""/github.com/kunegis/stu>\n"
+/* The output of the help (-h) option.  The following strings do not
+ * contain tabs, but only space characters.  */   
+const char HELP[]= 
+	"Usage: stu [-f FILENAME] [OPTION]... [TARGET]...\n"           
+	"By default, build the first target in the file 'main.stu'.\n" 
+	"TARGETS may include the special characters '!?@[]'.\n"        
+	"Options:\n"						       
+	"  -a               Treat all trivial dependencies as non-trivial\n"          
+	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"      
+	"  -C EXPRESSIONS   Pass a target in full Stu syntax\n"		              
+	"  -E               Explain error messages\n"                                 
+	"  -f FILENAME      The input file to use instead of 'main.stu'\n"            
+	"  -F RULES         Pass rules in Stu syntax\n"                               
+	"  -g               Treat all optional dependencies as non-optional\n"        
+	"  -h               Output help and exit\n"		                      
+	"  -j K             Run K jobs in parallel\n"			              
+	"  -J               Disable Stu syntax in arguments\n"                        
+	"  -k               Keep on running after errors\n"		              
+	"  -K               Don't delete target files on error or interruption\n"     
+	"  -m ORDER         Order to run the targets:\n"			      
+	"     dfs           (default) Depth-first order, like in Make\n"	      
+	"     random        Random order\n"				              
+	"  -M STRING        Pseudorandom run order, seeded by given string\n"         
+	"  -p               Print the rules and exit\n"                               
+	"  -q               Question mode; check whether targets are up to date\n"    
+	"  -Q               Quiet mode; suppress special stdout messages\n"           
+	"  -s               Silent mode; do not output commands\n"	              
+	"  -v               Verbose mode; show execution information on stderr\n"     
+	"  -V               Output version and exit\n"				      
+	"  -w               Short output; show target filenames instead of commands\n"
+	"  -x               Ouput each command statement individually\n"              
+	"  -y               Disable color in output\n"                                
+	"  -z               Output run-time statistics on stdout\n"                   
+	"Report bugs to: kunegis@gmail.com\n" 
+	"Stu home page: <https:/""/github.com/kunegis/stu>\n";
 
 /* Initialize buffers; called once from main() */ 
 void init_buf(); 
@@ -140,13 +141,13 @@ int main(int argc, char **argv, char **envp)
 		bool had_option_c= false; /* Both lower and upper case */
 		bool had_option_f= false; /* Both lower and upper case */
 
-		for (int c; (c= getopt(argc, argv, STU_OPTIONS)) != -1;) {
+		for (int c; (c= getopt(argc, argv, OPTIONS)) != -1;) {
 			switch (c) {
 
 			case 'a': option_nontrivial= true;     break;
 			case 'E': option_explain= true;        break;
 			case 'g': option_nonoptional= true;    break;
-			case 'h': fputs(STU_HELP, stdout);     exit(0);
+			case 'h': fputs(HELP, stdout);         exit(0);
 			case 'J': option_literal= true;        break;
 			case 'k': option_keep_going= true;     break;
 			case 'K': option_no_delete= true;      break;

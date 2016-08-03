@@ -14,7 +14,7 @@
 #include "version.hh"
 
 /* The default filename read  */
-#define FILENAME_INPUT_DEFAULT "main.stu"
+const char *const FILENAME_INPUT_DEFAULT= "main.stu"; 
 
 class Parse
 {

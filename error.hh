@@ -61,9 +61,9 @@
 #include "color.hh"
 #include "format.hh"
 
-#define ERROR_BUILD          1
-#define ERROR_LOGICAL        2
-#define ERROR_FATAL          4
+constexpr int ERROR_BUILD=     1;
+constexpr int ERROR_LOGICAL=   2;
+constexpr int ERROR_FATAL=     4;
 
 /* Errors 1 and 2 are recoverable.  If the -k option is given, Stu notes
  * these errors and continues.  If the -k option is not given, they

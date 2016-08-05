@@ -5,7 +5,7 @@ that set it apart:
 
 * Parametrized rules:  Like GNU Make's '%' character, but there can be
   multiple parameters, and they have names.  The syntax is '$NAME',
-  where NAME can be any string. 
+  where NAME can be any string.  
 * Dynamic dependencies:  The dependencies of a target can be generated
   dynamically.  When a dependency is enclosed in square brackets, it means
   that that file is built and dependencies are read from within that
@@ -24,6 +24,9 @@ https://raw.githubusercontent.com/kunegis/stu/master/stu.text
 * See the file INSTALL for compiling Stu yourself
 * Package for Arch Linux:  https://aur.archlinux.org/packages/stu-git/
 
+Stu is written in C++11 for POSIX platforms.  You should have no problem
+getting it to run on vanilla Linux and other POSIX-compliant platforms.  
+
 ## Design Considerations
 
 The design considerations of Stu are:
@@ -32,16 +35,18 @@ The design considerations of Stu are:
   be easy.  Many projects need to run many identical tasks only
   differing by individual parameters.  This is the main motivation of
   Stu, and where virtually all other Make replacements fail. 
-* As a use case, focus on data mining instead of software compilation. 
-  There are no built-in rules for compilation or other specific
-  applications.  Allow use case-specific rules to be written in the
-  language itself.  However, Stu is use case-agnostic. 
-* Files are the central datatype.  Everything is a file.  Think of Stu
-  as "a declarative programming language in which all variables are
-  files."  For instance, Stu has no variables like Make; instead, files
+* Genericity:  Don't focus on a particular use case such as compilation,
+  but be a generic build tool.  There are no built-in rules for
+  compilation or other specific applications.  Allow use case-specific
+  rules to be written in the language itself.  However, Stu is use
+  case-agnostic.  
+* Files are the central datatype.  Everything is a file.  You can think
+  of Stu as "a declarative programming language in which all variables
+  are files."  For instance, Stu has no variables like Make; instead, files
   are used.  
-* Files are sacred: Never make the user delete files in order to rebuild
-  things.  
+* Scalability:  Assume that projects are so large that you can't just
+  clean and rebuild everything if there are build errors.  Files are
+  sacred; never make the user delete files in order to rebuild things.  
 * Do one thing well: We don't include features such as file compression
   that can be achieved by other tools from within the shell commands.  
 * Embrace POSIX as an underlying standard. Use the shell as the
@@ -52,9 +57,9 @@ The design considerations of Stu are:
 * Keep it simple:  Don't use fancy libraries or hip programming
   languages.  Stu is written in plain C++11 with only standard
   libraries. 
-* Have extensive unit test coverage.  All published versions pass 100%
-  of unit tests.  Stu has 500+ unit tests.  All features and error paths
-  are unit tested. 
+* Reliability:  Stu has extensive unit test coverage.  All published
+  versions pass 100% of unit tests.  Stu has 500+ unit tests.  All
+  language features and error paths are unit tested. 
 * Stability of the interface:  We follow Semantic Versioning
   (semver.org) in order to provide stable syntax and semantics.  Stu
   files written now will still work in the future. 
@@ -64,12 +69,15 @@ The design considerations of Stu are:
 
 ## Comparison to Make
 
-Advantages over Make are:
+In addition to the properties described above, advantages of Stu over
+Make are: 
 
 * Error messages are much better (Make has the dreaded "missing
-  separator"); Stu gives full traces like a C compiler.
+  separator"); Stu gives full traces like a C compiler.  If you get an
+  error, you know which part of the Stu file to fix. 
 * Stu has a proper tokenization pass, instead of Make's variable
-  substitution syntax.  
+  substitution syntax.  This makes the whole language much more
+  predictable. 
 * Variables are not used; instead Stu encourages to put everything in
   files. This makes builds much faster: In a typical Makefile, a lot of
   program logic must be implemented used Make functions (because of a
@@ -77,17 +85,25 @@ Advantages over Make are:
   executed on each Make invocation, even if the variables have not
   changed. 
 * Stu catches typical Makefile errors such as dependencies that where
-  not built.
-* Stu has better support for interrupting large builds (Make will often
-  hang or leave processes running).
+  not built.  Make cannot do this because the namespace for files is
+  intermixed with namespace for phony targets.  In Stu, both namespaces
+  are separate (phony targets are called "transient targets" in Stu),
+  and thus Stu can perform all checks properly. 
+* Stu has better support for interrupting large builds.  Make will often
+  hang or leave processes running. 
 * Stu avoids the "inner platform" antipattern present in Make, in which
-  a lot of shell functionality is duplicated in Make functions.  Stu
-  encourages all program logic to be implemented in rules, i.e. using a
-  proper shell.  
-* Stu supports additional types of dependencies (timestamp-ignoring
-  dependencies with the prefix '!', optional dependencies with '?', and
-  trivial dependencies with '&').  These can only be emulated partially
-  with Make by using unwieldy constructs.
+  a lot of shell functionality is duplicated in Make functions.  For
+  instance, why are there text filtering functions in Make when the
+  shell already has grep and other tools?  That's because in Make, you
+  cannot use shell commands to define dynamic dependencies, so Make
+  evolved to have its own mini text filtering language.  Instead, Stu
+  allows and encourages all program logic to be implemented in ordinary
+  rules, i.e. using a proper shell.  
+* Stu supports additional types of dependencies which are essential in
+  large, complex projects, such as timestamp-ignoring dependencies with
+  the prefix '!', optional dependencies with '?', and trivial
+  dependencies with '&'.  These can only be emulated partially with Make
+  by using unwieldy constructs. 
 
 ## Use Stu
 
@@ -98,10 +114,6 @@ The see an example of Stu used in a large data mining project, see the
 file 'main.stu' in the KONECT-Analysis project:
 
 https://github.com/kunegis/konect-analysis/blob/master/main.stu
-
-Stu is written in C++11 for POSIX platforms.  You should have no problem
-compiling it on vanilla Linux and other POSIX-compliant platforms.  See
-the file INSTALL for installation instructions.  Stu uses Autoconf. 
 
 ## About 
 

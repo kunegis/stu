@@ -48,24 +48,23 @@ The design considerations of Stu are:
   clean and rebuild everything if there are build inconsistencies.
   Files are sacred; never make the user delete files in order to rebuild
   things.   
-* Simplicity:  Do one thing well: We don't include features such as file
-  compression   that can be achieved by other tools from within the
+* Simplicity:  Do one thing well. We don't include features such as file
+  compression that can be achieved by other tools from within the
   shell commands.   
-* Embrace POSIX as an underlying standard. Use the shell as the
-  underlying command interpreter. Don't try to create a purportedly
-  portable layer on top of it, as POSIX _already is_ a portability
-  layer.  Also, don't try to create a new portable language for
-  executing commands, as /bin/sh _already is_ one.  
-* Keep it simple:  Don't use fancy libraries or hip programming
-  languages.  Stu is written in plain C++11 with only standard
-  libraries. 
-* Reliability:  Stu has extensive unit test coverage.  All published
-  versions pass 100% of unit tests.  Stu has 500+ unit tests.  All
-  language features and error paths are unit tested. 
-* Stability of the interface:  We follow Semantic Versioning
-  (semver.org) in order to provide stable syntax and semantics.  Stu
-  files written now will still work in the future. 
-* Be familiar:  Stu follows the conventions of Make as much as possible,
+* Portability:  Embrace POSIX as an underlying standard. Use the shell
+  as the underlying command interpreter. Don't try to create a
+  purportedly portable layer on top of it, as POSIX _already is_ a
+  portability layer.  Also, don't try to create a new portable language
+  for executing commands, as /bin/sh _already is_ one.  Furthermore,
+  don't use fancy libraries or hip programming languages.  Stu is
+  written in plain C++11 with only standard libraries. 
+* Reliability:  Stu has extensive unit test coverage, with more than 500
+  tests.  All published versions pass 100% of these tests.  All language
+  features and error paths are unit tested.  
+* Stability:  We follow Semantic Versioning (semver.org) in order to
+  provide syntax and semantics that are stable over time.  Stu files
+  written now will still work in the future.  
+* Familiarity:  Stu follows the conventions of Make as much as possible,
   to make it easier to make the switch from Make to Stu.  For instance,
   the options -j and -k work like in Make.  
 

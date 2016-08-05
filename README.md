@@ -39,7 +39,7 @@ The design considerations of Stu are:
 * Generality:  Don't focus on a particular use case such as compilation,
   but be a generic build tool.  There are no built-in rules for
   compilation or other specific applications.  Instead, allow use
-  case-specific rules to be written in the language itself.  
+  case-specific rules to be written in the Stu language itself.  
 * Files are the central datatype.  Everything is a file.  You can think
   of Stu as "a declarative programming language in which all variables
   are files."  For instance, Stu has no variables like Make; instead, files
@@ -49,8 +49,11 @@ The design considerations of Stu are:
   Files are sacred; never make the user delete files in order to rebuild
   things.   
 * Simplicity:  Do one thing well. We don't include features such as file
-  compression that can be achieved by other tools from within the
-  shell commands.   
+  compression that can be achieved by other tools from within shell
+  commands.  List of files and dependencies are themselves targets that
+  are built using shell commands, and therefore any external software
+  can be used to define them, without any special support needed from
+  Stu. 
 * Portability:  Embrace POSIX as an underlying standard. Use the shell
   as the underlying command interpreter. Don't try to create a
   purportedly portable layer on top of it, as POSIX _already is_ a

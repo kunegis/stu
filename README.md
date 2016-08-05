@@ -31,11 +31,12 @@ getting it to run on vanilla Linux and other POSIX-compliant platforms.
 
 The design considerations of Stu are:
 
-* Being able to execute long, dynamic lists of identical commands should
-  be easy.  Many projects need to run many identical tasks only
-  differing by individual parameters.  This is the main motivation of
-  Stu, and where virtually all other Make replacements fail. 
-* Genericity:  Don't focus on a particular use case such as compilation,
+* Genericity:  Being able to execute long, dynamic lists of identical
+  commands should be easy.  Many projects need to run many identical
+  tasks only differing by individual parameters.  This is the main
+  motivation of Stu, and where virtually all other Make replacements
+  fail.  
+* Generality:  Don't focus on a particular use case such as compilation,
   but be a generic build tool.  There are no built-in rules for
   compilation or other specific applications.  Allow use case-specific
   rules to be written in the language itself.  However, Stu is use
@@ -47,8 +48,9 @@ The design considerations of Stu are:
 * Scalability:  Assume that projects are so large that you can't just
   clean and rebuild everything if there are build errors.  Files are
   sacred; never make the user delete files in order to rebuild things.  
-* Do one thing well: We don't include features such as file compression
-  that can be achieved by other tools from within the shell commands.  
+* Simplicity:  Do one thing well: We don't include features such as file
+  compression   that can be achieved by other tools from within the
+  shell commands.   
 * Embrace POSIX as an underlying standard. Use the shell as the
   underlying command interpreter. Don't try to create a purportedly
   portable layer on top of it, as POSIX _already is_ a portability

@@ -45,8 +45,9 @@ The design considerations of Stu are:
   are files."  For instance, Stu has no variables like Make; instead, files
   are used.  
 * Scalability:  Assume that projects are so large that you can't just
-  clean and rebuild everything if there are build errors.  Files are
-  sacred; never make the user delete files in order to rebuild things.  
+  clean and rebuild everything if there are build inconsistencies.
+  Files are sacred; never make the user delete files in order to rebuild
+  things.   
 * Simplicity:  Do one thing well: We don't include features such as file
   compression   that can be achieved by other tools from within the
   shell commands.   

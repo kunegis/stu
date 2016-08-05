@@ -38,9 +38,8 @@ The design considerations of Stu are:
   fail.  
 * Generality:  Don't focus on a particular use case such as compilation,
   but be a generic build tool.  There are no built-in rules for
-  compilation or other specific applications.  Allow use case-specific
-  rules to be written in the language itself.  However, Stu is use
-  case-agnostic.  
+  compilation or other specific applications.  Instead, allow use
+  case-specific rules to be written in the language itself.  
 * Files are the central datatype.  Everything is a file.  You can think
   of Stu as "a declarative programming language in which all variables
   are files."  For instance, Stu has no variables like Make; instead, files

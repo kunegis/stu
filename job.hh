@@ -17,7 +17,7 @@ void job_terminate_all();
 
 void job_print_jobs(); 
 
-/* Write in an async signal-safe manner. 
+/* Macro to write in an async signal-safe manner. 
  * 	FD must be 1 or 2.
  * 	MESSAGE must be a string literal. 
  * Ignore errors, as this is called from the interrupting signal handler. 
@@ -27,6 +27,7 @@ void job_print_jobs();
 		int r_write_safe= write(FD, MESSAGE, sizeof(MESSAGE) - 1); \
 		(void)r_write_safe; \
 	} while(0)
+
 
 class Job
 {
@@ -219,7 +220,7 @@ pid_t Job::start(string command,
 
 		in_child= 1; 
 
-		/* Unblock all blocked signals */ 
+		/* Unblock all signals */ 
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_termination, nullptr)) {
 			perror("sigprocmask");
 			_Exit(127); 
@@ -297,8 +298,9 @@ pid_t Job::start(string command,
 
 		/* Special handling of the case when the command
 		 * starts with '-' or '+'.  In that case, we prepend
-		 * the command with a space.  We cannot use '--'
-		 * because Linux and FreeBSD handle '--' differently:
+		 * a space to the command.  We cannot use '--' as
+		 * prescribed by POSIX because Linux and FreeBSD handle
+		 * '--' differently: 
 		 *
 		 *      /bin/sh -c -- '+x' 
 		 *      on Linux: Execute the command '+x'
@@ -310,7 +312,10 @@ pid_t Job::start(string command,
 		 *                argument to -c
 		 *      on FreeBSD: Execute the command '+x'
 		 *
-		 * See:  http://stackoverflow.com/questions/37886661/handling-of-in-arguments-of-bin-sh-posix-vs-implementations-by-bash-dash 
+		 * See:
+		 * http://stackoverflow.com/questions/37886661/handling-of-in-arguments-of-bin-sh-posix-vs-implementations-by-bash-dash 
+		 *
+		 * It seems that FreeBSD violates POSIX in this regard. 
 		 */
 
 		if (arg[0] == '-' || arg[0] == '+') {
@@ -323,12 +328,13 @@ pid_t Job::start(string command,
 		if (filename_output != "") {
 			int fd_output= creat
 				(filename_output.c_str(), 
-				 /* all +rw */
+				 /* all +rw, i.e. 0666 */
 				 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH); 
 			if (fd_output < 0) {
 				perror(filename_output.c_str());
 				_Exit(127); 
 			}
+			assert(fd_output != 1); 
 			int r= dup2(fd_output, 1); /* 1 = file descriptor of STDOUT */ 
 			if (r < 0) {
 				perror(filename_output.c_str());
@@ -363,7 +369,7 @@ pid_t Job::start(string command,
 		_Exit(127); 
 	} 
 
-	/* Parent execution */
+	/* Here, we are the parent process */
 
 	++ count_jobs_exec;
 
@@ -377,7 +383,8 @@ pid_t Job::start_copy(string target,
 	assert(target != "");
 	assert(source != ""); 
 
-	/* This function works like start() */ 
+	/* This function works analogously like start() with respect to
+	 * invocation of fork() and other system-related functions. */ 
 
 	assert(pid == -2); 
 
@@ -408,6 +415,10 @@ pid_t Job::start_copy(string target,
 				cp_command= "/bin/cp"; 
 		}
 
+		/* Using '--' as an argument guarantees that the fwo
+		 * filenames will be interpreted as filenames and not as
+		 * options, in particular when they begin with a dash. 
+		 */
 		const char *argv[]= {cp_command,
 				     "--",
 				     source.c_str(),
@@ -431,8 +442,13 @@ pid_t Job::start_copy(string target,
 
 pid_t Job::wait(int *status)
 {
- begin: 	
+	/* The main loop of Stu.  We wait for the two productive signals
+	 * SIGCHLD and SIGUSR1. */ 
+	
+	/* When this function is called, there is always at least one
+	 * child process running. */ 
 
+ begin: 	
 	/* First, try wait() without blocking */ 
 	pid_t pid= waitpid(-1, status, WNOHANG);
 	if (pid < 0) {
@@ -448,10 +464,10 @@ pid_t Job::wait(int *status)
 		return pid; 
 
 	/* Any SIGCHLD sent after the last call to sigwaitinfo() will
-	 * be ready for receiving, even those received between the last
-	 * call to waitpid() and the following call to sigwaitinfo().
-	 * This excludes a deadlock which would be possible if we would
-	 * only use sigwaitinfo(). */
+	 * be ready for receiving, even those SIGCHLD signals received
+	 * between the last call to waitpid() and the following call to
+	 * sigwaitinfo().  This excludes a deadlock which would be
+	 * possible if we would only use sigwaitinfo(). */
 
 	siginfo_t siginfo; 
 	int r;
@@ -459,9 +475,9 @@ pid_t Job::wait(int *status)
 	r= sigwaitinfo(&set_productive, &siginfo);
 
 	if (r < 0) {
-		if (errno == EINTR)
+		if (errno == EINTR) {
 			goto retry;
-		else {
+		} else {
 			assert(false);
 			perror("sigwaitinfo");
 			abort(); 
@@ -473,7 +489,8 @@ pid_t Job::wait(int *status)
 	case SIGCHLD:
 		/* We could get the PID and STATUS from siginfo, but
 		 * then the process would stay a zombie.  Therefore, we
-		 * have to call waitpid() anyway. */ 
+		 * have to call waitpid().  The call to waitpid() will
+		 * now return the proper signal.  */ 
 		goto begin; 
 
 	case SIGUSR1:
@@ -484,7 +501,7 @@ pid_t Job::wait(int *status)
 	default:
 		/* We didn't wait for that signal */ 
 		assert(false);
-		fprintf(stderr, "*** sigwaitinfo: Received %d\n", siginfo.si_signo);
+		fprintf(stderr, "*** sigwaitinfo: Received signal %d\n", siginfo.si_signo);
 		goto begin; 
 	}
 }
@@ -565,7 +582,8 @@ void Job::handler_termination(int sig)
 
 	/* We cannot call Job::Statsitics::print() here because
 	 * getrusage() is not async signal safe, and because the count_*
-	 * variables are not atomic.  */
+	 * variables are not atomic.  Not even functions like fputs()
+	 * are async signal-safe, so don't even try. */
 
 	/* Raise signal again */ 
 	int rr= raise(sig);
@@ -622,7 +640,7 @@ Job::Signal::Signal()
 	 *      of something:  
 	 *         + SIGCHLD (to know when child processes are done) 
 	 *         + SIGUSR1 (to output statistics)
-	 *      These signals are processes asynchronously, i.e., they
+	 *      These signals are processed asynchronously, i.e., they
 	 *      are blocked, and then waited for specifically.  
 	 */
 
@@ -685,7 +703,7 @@ Job::Signal::Signal()
 	act_productive.sa_flags= SA_SIGINFO;
 	sigaction(SIGCHLD, &act_productive, nullptr);
 	sigaction(SIGUSR1, &act_productive, nullptr);
-	/* Block signals so we can use sigwait() to receive them */ 
+
 	if (0 != sigemptyset(&set_productive)) {
 		perror("sigemptyset");
 		exit(ERROR_FATAL); 

@@ -76,6 +76,13 @@ const char HELP[]=
 	"Report bugs to: kunegis@gmail.com\n" 
 	"Stu home page: <https:/""/github.com/kunegis/stu>\n";
 
+const char VERSION_INFO[]=
+	"stu " STU_VERSION "\n"
+	"Copyright (C) 2016 Jerome Kunegis\n"
+	"License GPLv3+: GNU GPL version 3 or later <http:/""/gnu.org/licenses/gpl.html>\n"
+	"This is free software: you are free to change and redistribute it.\n"
+	"There is NO WARRANTY, to the extent permitted by law.\n";
+
 /* Initialize buffers; called once from main() */ 
 void init_buf(); 
 
@@ -256,11 +263,7 @@ int main(int argc, char **argv, char **envp)
 				break;
 
 			case 'V': 
-				puts("stu " STU_VERSION);    
-				puts("Copyright (C) 2016 Jerome Kunegis");
-				puts("License GPLv3+: GNU GPL version 3 or later <http:/""/gnu.org/licenses/gpl.html>");
-				puts("This is free software: you are free to change and redistribute it.");
-				puts("There is NO WARRANTY, to the extent permitted by law.");
+				fputs(VERSION_INFO, stdout); 
 				printf("USE_MTIM = %u\n", USE_MTIM); 
 				if (ferror(stdout)) {
 					print_error_system("puts"); 

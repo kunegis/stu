@@ -83,32 +83,13 @@ public:
 	class Signal_Blocker
 	{
 	private:
-		
 #ifndef NDEBUG
 		static bool blocked; 
 #endif	
 
 	public:
-		Signal_Blocker() {
-#ifndef NDEBUG
-			assert(!blocked); 
-			blocked= true;
-#endif
-			if (0 != sigprocmask(SIG_BLOCK, &set_interrupt, nullptr)) {
-				perror("sigprocmask");
-				throw ERROR_FATAL;
-			}
-		}
-		~Signal_Blocker() {
-#ifndef NDEBUG
-			assert(blocked); 
-			blocked= false;
-#endif 
-			if (0 != sigprocmask(SIG_UNBLOCK, &set_interrupt, nullptr)) {
-				perror("sigprocmask");
-				throw ERROR_FATAL; 
-			}
-		}
+		Signal_Blocker();
+		~Signal_Blocker();
 	};
 
 private:
@@ -120,8 +101,8 @@ private:
 	 */
 	pid_t pid;
 
-	static void handler_interrupt(int sig);
-	static void handler_dummy(int sig, siginfo_t *, void *);
+	static void handler_termination(int sig);
+	static void handler_productive(int sig, siginfo_t *, void *);
 
 	/* The number of jobs run.  
 	 * exec:     executed
@@ -130,12 +111,9 @@ private:
 	 */
 	static unsigned count_jobs_exec, count_jobs_success, count_jobs_fail;
 
-	/* Initialized to all signals that are blocked and then waited
-	 * for */ 
-	static sigset_t set_block;
-
-	/* All signals that interrupt Stu */ 
-	static sigset_t set_interrupt;
+	/* All signals handled specially by Stu are either in the
+	 * "termination" or in the "productive" set. */ 
+	static sigset_t set_termination, set_productive;
 
 	static sig_atomic_t in_child; 
 
@@ -153,6 +131,8 @@ private:
 		static void print(bool allow_unterminated_jobs= false); 
 	} statistics;
 
+	/* Class with one static object whose contructor executes on
+	 * startup to setup signals. */ 
 	static class Signal
 	{
 	public:
@@ -164,8 +144,8 @@ unsigned Job::count_jobs_exec=    0;
 unsigned Job::count_jobs_success= 0;
 unsigned Job::count_jobs_fail=    0;
 
-sigset_t Job::set_block;
-sigset_t Job::set_interrupt;
+sigset_t Job::set_productive;
+sigset_t Job::set_termination;
 
 Job::Statistics Job::statistics;
 Job::Signal     Job::signal;
@@ -240,11 +220,11 @@ pid_t Job::start(string command,
 		in_child= 1; 
 
 		/* Unblock all blocked signals */ 
-		if (0 != sigprocmask(SIG_UNBLOCK, &set_interrupt, nullptr)) {
+		if (0 != sigprocmask(SIG_UNBLOCK, &set_termination, nullptr)) {
 			perror("sigprocmask");
 			_Exit(127); 
 		}
-		if (0 != sigprocmask(SIG_UNBLOCK, &set_block, nullptr)) {
+		if (0 != sigprocmask(SIG_UNBLOCK, &set_productive, nullptr)) {
 			perror("sigprocmask");
 			_Exit(127); 
 		}
@@ -476,7 +456,7 @@ pid_t Job::wait(int *status)
 	siginfo_t siginfo; 
 	int r;
  retry:
-	r= sigwaitinfo(&set_block, &siginfo);
+	r= sigwaitinfo(&set_productive, &siginfo);
 
 	if (r < 0) {
 		if (errno == EINTR)
@@ -560,7 +540,7 @@ void Job::Statistics::print(bool allow_unterminated_jobs)
 
 /* The signal handler -- terminate all processes and quit. 
  */
-void Job::handler_interrupt(int sig)
+void Job::handler_termination(int sig)
 {
 	/* We can use only async signal-safe functions here */
 
@@ -597,76 +577,128 @@ void Job::handler_interrupt(int sig)
 	 * delivered after this handler is done. */ 
 }
 
-void Job::handler_dummy(int, siginfo_t *, void *)
+void Job::handler_productive(int, siginfo_t *, void *)
 {
-	/* Do nothing */
+	/* Do nothing -- the handler only exists because POSIX says that
+	 * a signal may be discarded by the kernel if doesn't have a
+	 * signal handler for it, and then it may not be possible to
+	 * wait for that signal. */ 
+}
+
+Job::Signal_Blocker::Signal_Blocker() 
+{
+#ifndef NDEBUG
+	assert(!blocked); 
+	blocked= true;
+#endif
+	if (0 != sigprocmask(SIG_BLOCK, &set_termination, nullptr)) {
+		perror("sigprocmask");
+		throw ERROR_FATAL;
+	}
+}
+
+Job::Signal_Blocker::~Signal_Blocker() 
+{
+#ifndef NDEBUG
+	assert(blocked); 
+	blocked= false;
+#endif 
+	if (0 != sigprocmask(SIG_UNBLOCK, &set_termination, nullptr)) {
+		perror("sigprocmask");
+		throw ERROR_FATAL; 
+	}
 }
 
 Job::Signal::Signal()
 {
-	struct sigaction act_interrupt;
-	act_interrupt.sa_handler= handler_interrupt;
-	if (0 != sigemptyset(&act_interrupt.sa_mask))  {
+	/* This function is called once on Stu startup from a static
+	 * constructor, and sets up all signals. */ 
+
+	/* There are two types of signals handled by Stu:
+	 *    - Termination signals which make programs abort.  Stu
+	 *      must catch them in order to stop its child processes,
+	 *      and will then raise them again. 
+	 *    - Productive signals that actually inform the Stu process
+	 *      of something:  
+	 *         + SIGCHLD (to know when child processes are done) 
+	 *         + SIGUSR1 (to output statistics)
+	 *      These signals are processes asynchronously, i.e., they
+	 *      are blocked, and then waited for specifically.  
+	 */
+
+	/* 
+	 * Termination signals 
+	 */
+
+	struct sigaction act_termination;
+	act_termination.sa_handler= handler_termination;
+	if (0 != sigemptyset(&act_termination.sa_mask))  {
 		perror("sigemptyset");
 		exit(ERROR_FATAL); 
 	}
-	act_interrupt.sa_flags= 0; 
-
-	if (0 != sigemptyset(&set_interrupt))  {
+	act_termination.sa_flags= 0; 
+	if (0 != sigemptyset(&set_termination))  {
 		perror("sigemptyset");
 		exit(ERROR_FATAL); 
 	}
 
-	/* These are all signals that by default would terminate the process */ 
-	/* Note:  Bash does something very similar */
-	int signals[]= { 
-		SIGTERM, SIGINT, SIGQUIT, SIGABRT, SIGSEGV, SIGPIPE, SIGILL, SIGHUP,
+	const static int signals_termination[]= { 
+		/* These are all signals that by default would terminate
+		 * the process. */  
+		SIGTERM, SIGINT, SIGQUIT, SIGABRT, SIGSEGV, SIGPIPE, 
+		SIGILL, SIGHUP, 
 	};
-	for (unsigned i= 0;  i < sizeof(signals) / sizeof(int);  ++i) {
-		if (0 != sigaction(signals[i], &act_interrupt, nullptr)) {
+
+	for (unsigned i= 0;  
+	     i < sizeof(signals_termination) / sizeof(signals_termination[0]);  
+	     ++i) {
+		if (0 != sigaction(signals_termination[i], &act_termination, nullptr)) {
 			perror("sigaction");
 			exit(ERROR_FATAL); 
 		}
-		if (0 != sigaddset(&set_interrupt, signals[i])) {
+		if (0 != sigaddset(&set_termination, signals_termination[i])) {
  			perror("sigaddset");
 			exit(ERROR_FATAL); 
 		}
 	}
+
+	/*
+	 * Productive signals
+	 */
 	
-	/* Handling of SIGCHLD and SIGUSR1.  These are the signals
-	 * that we wait for in the main loop.  They are blocked. 
-	 * At the same time, the blocked signal must have a signal 
-	 * handler (which can do nothing), as otherwise POSIX allows the
-	 * signal to be discarded.  Note that Linux does discard it,
-	 * while FreeBSD does.  */
+	/* The signals SIGCHLD and SIGUSR1 are the signals that we wait
+	 * for in the main loop. They are blocked.  At the same time,
+	 * the blocked signal must have a signal handler (which can do
+	 * nothing), as otherwise POSIX allows the signal to be
+	 * discarded.  Thus, we setup a no-op signal handler.  (Note
+	 * that Linux does not discard such signals, while FreeBSD does.)  */ 
+
 	/* We have to use sigaction() rather than signal() as only
 	 * sigaction() guarantees that the signal can be queued, 
 	 * as per POSIX.  */
-
-	struct sigaction sa;
-	sa.sa_sigaction= Job::handler_dummy;
-	if (sigemptyset(& sa.sa_mask)) {
-	  perror("sigemptyset");
-	  exit(ERROR_FATAL);
+	struct sigaction act_productive;
+	act_productive.sa_sigaction= Job::handler_productive;
+	if (sigemptyset(& act_productive.sa_mask)) {
+		perror("sigemptyset");
+		exit(ERROR_FATAL);
 	}
-	sa.sa_flags= SA_SIGINFO;
-	sigaction(SIGCHLD, &sa, nullptr);
-	sigaction(SIGUSR1, &sa, nullptr);
-	   
+	act_productive.sa_flags= SA_SIGINFO;
+	sigaction(SIGCHLD, &act_productive, nullptr);
+	sigaction(SIGUSR1, &act_productive, nullptr);
 	/* Block signals so we can use sigwait() to receive them */ 
-	if (0 != sigemptyset(&set_block)) {
+	if (0 != sigemptyset(&set_productive)) {
 		perror("sigemptyset");
 		exit(ERROR_FATAL); 
 	}
-	if (0 != sigaddset(&set_block, SIGCHLD)) {
+	if (0 != sigaddset(&set_productive, SIGCHLD)) {
 		perror("sigaddset");
 		exit(ERROR_FATAL);
 	}
-	if (0 != sigaddset(&set_block, SIGUSR1)) {
+	if (0 != sigaddset(&set_productive, SIGUSR1)) {
 		perror("sigaddset");
 		exit(ERROR_FATAL); 
 	}
-	if (0 != sigprocmask(SIG_BLOCK, &set_block, nullptr)) {
+	if (0 != sigprocmask(SIG_BLOCK, &set_productive, nullptr)) {
 		perror("sigprocmask");
 		exit(ERROR_FATAL); 
 	}

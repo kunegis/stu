@@ -220,7 +220,9 @@ A:  {
 # There are many practical issues with that, so that would be a huge
 # change.  Would almost likely mean the server itself would do the
 # building, and the client would only communicate with the server.  This
-# also means the server would need to be multi-threaded. 
+# also means the server would need to be multi-threaded.  This could
+# also be used to build a Stu GUI (either local or via HTTP) that allows
+# one to control a running Stu server. 
 #
 
 #
@@ -355,3 +357,10 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 
 # No very useful, since files can be used in exactly the same way, and
 # without the problem of not remembering what was already done. 
+
+#
+# An option of Stu that generates a shell script from a Stu file that
+# executes the content.  This can be done to any degree of fidelity to
+# the Stu specification, i.e., always build everything, or actually
+# check timestamps. 
+#

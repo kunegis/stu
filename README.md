@@ -121,16 +121,16 @@ https://github.com/kunegis/konect-analysis/blob/master/main.stu
 
 ## About 
 
-The name "Stu" follows the precedents of Make replacements Cook and Bake
-in referring to kitchen-related verbs, and also honours the author of
-the original Unix Make, Stuart Feldman. 
-
 Stu was written to accommodate the Koblenz Network Collection project
 (KONECT - http://konect.uni-koblenz.de/) at the University of Koblenz-Landau.
 It is thus mainly used for large data mining projects, where it manages
 everything from acquiring data from the web, to performing experiments,
 to generating plots and compiling the resulting Latex papers.  It is
 also used for compiling C/C++ code, and for generating tarballs.  
+
+The name "Stu" follows the precedents of Make replacements Cook and Bake
+in referring to kitchen-related verbs, and also honours the author of
+the original Unix Make, Stuart Feldman. 
 
 Stu was written in 2014/2015/2016 by Jérôme Kunegis at the University of
 Koblenz-Landau.  

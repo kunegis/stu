@@ -9,6 +9,38 @@
 
 #==== Normal features ====
 
+# 
+# An option (-u) to consider all targets up to date.  I.e., execute only the
+# minimum to get the given files built. 
+#
+
+#
+# Option -N:  dry run, but build dynamic dependencies.  Not clearcut
+# because dynamic dependencies can also take long to build. 
+#
+
+#
+# Option -B:  Remake all targets regardless of dates
+#
+
+#
+# Line number syntax:  A preprocessor-like construct that gives a new
+# filename and line number, such that error messages from Stu can point
+# to the original file, not the generated file.  Analogous to the
+# preprocessors #line directive.  Useful in dynamic dependencies. 
+#
+
+%line ...
+
+#
+# When accessing directories, maybe use not mtime, but something else?
+#
+# * when stat() succeeds and the file is a directory, use creation time
+#   instead of modification time
+# * this will make it impossible to build directories that are more than
+#   just { mkdir -p }
+#
+
 #
 # An option for automatic logging:  write all output (stdout/stderr) of
 # commands to a file (a different file per target).  Use the -l option. 
@@ -238,6 +270,18 @@ A = [X];
 #
 
 #==== New features that change extend Stu drastically ====
+
+#
+# Removeable files:  when a file carries the removeable flag, it does
+# not need to be present.  
+#
+
+A: -R B;  B: C;  A: D;
+
+# * When A is old, B does not exist, and C is new:  rebuild B and A.
+# * When A is new, B does not exist, and C is old:  don't rebuild A.
+# * When A is new, B does not exist, C is old, and D is very new:  rebuild
+#   B and A. 
 
 #
 # Allow regular expressions in parameters, e.g. for single-character

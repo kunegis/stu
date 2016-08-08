@@ -1,16 +1,10 @@
 #ifndef EXECUTION_HH
 #define EXECUTION_HH
 
-/* Code for executing the building process itself.  This is by far the
- * longest source code file in Stu.  Each target is
- * represented at run time by one Execution object.  All Execution
- * objects are allocated with new Execution(...), and are never deleted,
- * as the information contained in them needs to be cached.  All
- * Execution objects are also stored in the map called
- * "executions_by_target" by all their target.  All currently active
- * Execution objects form a rooted acyclic graph.  Note that it is not a
- * tree in the general case; executions may have multiple parents.  But
- * all nodes are reachable from the root node.   
+/* 
+ * Code for executing the building process itself.  
+ *
+ * If there is ever a "libstu", this will be its main entry point. 
  */
 
 #include <sys/stat.h>
@@ -23,61 +17,73 @@
 #include "rule.hh"
 #include "timestamp.hh"
 
+/*
+ * Each target is represented at run time by one Execution object.  
+ *
+ * The set of active Execution objects forms a directed acyclic graph, rooted
+ * at the root Execution object.  Edges in this graph are represented by
+ * Link objects.  Each Execution object corresponds to one or more
+ * unique Target.  Two Execution objects are connected if there is a
+ * dependency between them.  If there is an edge A ---> B, A is saif to
+ * be the parent of B, and B the child of A.  Also, B is a dependency of
+ * A.  If A is a dynamic target, then is has as an initial child only
+ * the corresponding target with one less dynamicity level; other
+ * dependency are added later. 
+ *
+ * All Execution objects are allocated with new Execution(...), and are
+ * never deleted, as the information contained in them needs to be
+ * cached.  
+ *
+ * All Execution objects are linked through the map called
+ * "executions_by_target" by all their targets.   
+ */
 class Execution
 {
 public:  
-
 	/* Number of free slots for jobs.  This is a long because
-	 * strtol() gives a long.  Parsed from the -j option. 
-	 */ 
+	 * strtol() gives a long.  Set before calling main() from the -j
+	 * option, and then changed internally by this class.  */ 
 	static long jobs;
 
 	/* Set once before calling Execution::main().  Unchanging during
-	 * the whole call to Execution::main(). 
-	 */ 
+	 * the whole call to Execution::main().  */ 
 	static Rule_Set rule_set; 
 
-	/* Main execution loop.  This throws ERROR_BUILD and ERROR_LOGICAL. 
-	 */
+	/* Main execution loop.  This throws ERROR_BUILD and
+	 * ERROR_LOGICAL.  */
 	static void main(const vector <shared_ptr <Dependency> > &dependencies);
 
 private:
-
 	friend void job_terminate_all(); 
 	friend void job_print_jobs(); 
 
 	/* Targets to build.  Empty only for the root target.
 	 * Otherwise, all entries have the same dynamic depth.  If the
 	 * dynamic depth is larger than one, then there is exactly one
-	 * target. 
-	 */ 
+	 * target.  */   
 	vector <Target> targets; 
 
 	/* The instantiated file rule for this execution.  Null when there
 	 * is no rule for this file (this happens for instance when a
 	 * source code file is given as a dependency, or when this is a
 	 * complex dependency).  Individual dynamic dependencies do have
-	 * rules, in order for cycles to be detected. 
-	 */ 
+	 * rules, in order for cycles to be detected.  */ 
 	shared_ptr <Rule> rule;
 
 	/* The rule from which this execution was derived.  This is
 	 * only used to detect strong cycles.  To manage the dependencies, the
 	 * instantiated general rule is used.  NULLPTR if and only if RULE is
-	 * NULLPTR. 
-	 */ 
+	 * NULLPTR.  */ 
 	shared_ptr <Rule> param_rule;
 
-	/* Currently running executions.  Allocated with new.  Contains
-	 * both dependency-subs and dynamic-subs.  
-	 */
+	/* Currently running executions.  Allocated with operator new().
+	 * Contains both dependency-subs and dynamic-subs.  */
 	unordered_set <Execution *> children;
 
 	/* The parent executions.
 	 * This is a map because typically, the number of elements is
 	 * always very small, i.e., mostly one, and map is better suited
-	 * in this case. 
-	 */ 
+	 * in this case.  */ 
 	map <Execution *, Link> parents; 
 
 	/* The job used to build this file */ 
@@ -819,7 +825,6 @@ bool Execution::execute(Execution *parent, Link &&link)
 				 rule->command->place); 
 		}
 
-
 		assert(pid != 0 && pid != 1); 
 
 		if (option_verbose) {
@@ -1455,7 +1460,7 @@ bool Execution::finished() const
 void job_terminate_all() 
 {
 	/* Strictly speaking, there is a bug here because the C++
-	 * containers are not async signal safe */ 
+	 * containers are not async signal-safe. */ 
 
 	for (auto i= Execution::executions_by_pid.begin();
 	     i != Execution::executions_by_pid.end();  ++i) {
@@ -2163,7 +2168,8 @@ void Execution::initialize(Stack avoid)
 
 		shared_ptr <Dependency> dependency_child= make_shared <Direct_Dependency>
 			(flags_child,
-			 Place_Param_Target(target.type.get_base(), Place_Param_Name(target.name)));
+			 Place_Param_Target(target.type.get_base(), 
+					    Place_Param_Name(target.name)));
 
 		buf_default.push(Link(dependency_child, flags_child, Place()));
 		/* The place of the [[A]]->A links is empty, meaning it will

@@ -1,3 +1,8 @@
+#
+# These are features that are planned to be implemented in the next
+# months or years. 
+#
+
 #==== Backward-incompatible features (in the switch to version 2) ====
 
 #
@@ -135,7 +140,7 @@ A.$X.$Y:  $X. * $Y      # OK
 A.$X.$Y:  $X * .$Y      # OK
 
 # More examples
-π
+
 @headers:  (config parse build).h
 
 @plot.all:   @plot.[NETWORKS];
@@ -215,11 +220,6 @@ A: [data//B]; # ?
 #==== Features of Stu 2:  Other features ====
 
 #
-# Option -N:  dry run, but build dynamic dependencies.  Not clearcut
-# because dynamic dependencies can also take long to build. 
-#
-
-#
 # Search within predefined paths for %include ($STU_PATH or $STUPATH;
 # the -I option)
 #
@@ -227,23 +227,10 @@ A: [data//B]; # ?
 % include c++.stu
  
 #
-# Option -B:  Remake all targets regardless of dates
-#
-
-#
 # Optimization:  when parsing rules, only save the "body" part of the
 # rule (everything except the target) as an unparsed string.  Parse it
 # properly only when needed. 
 #
-
-#
-# Line number syntax:  A preprocessor-like construct that gives a new
-# filename and line number, such that error messages from Stu can point
-# to the original file, not the generated file.  Analogous to the
-# preprocessors #line directive.  Useful in dynamic dependencies. 
-#
-
-%line ...
 
 #
 # Flag rules
@@ -299,29 +286,3 @@ A: B;
 #
 
 A.tar: [ +e FILES ] { tar cfvv A.tar $(cat FILES) }
-
-# 
-# An option (-u) to consider all targets up to date.  I.e., execute only the
-# minimum to get the given files built. 
-#
-
-#
-# When accessing directories, maybe use not mtime, but something else?
-#
-# * when stat() succeeds and the file is a directory, use creation time
-#   instead of modification time
-# * this will make it impossible to build directories that are more than
-#   just { mkdir -p }
-#
-
-#
-# Removeable files:  when a file carries the removeable flag, it does
-# not need to be present.  
-#
-
-A: -R B;  B: C;  A: D;
-
-# * When A is old, B does not exist, and C is new:  rebuild B and A.
-# * When A is new, B does not exist, and C is old:  don't rebuild A.
-# * When A is new, B does not exist, C is old, and D is very new:  rebuild
-#   B and A. 

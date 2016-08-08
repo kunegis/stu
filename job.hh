@@ -1,7 +1,8 @@
 #ifndef JOB_HH
 #define JOB_HH
 
-/* Handling of child processes, inlcuding signal-related issues.  
+/* 
+ * Handling of child processes, inlcuding signal-related issues.  
  */
 
 #include <fcntl.h>
@@ -28,16 +29,17 @@ void job_print_jobs();
 		(void)r_write_safe; \
 	} while(0)
 
-
+/*
+ * A job is a child process of Stu that executes the command for a given
+ * rule.  An object of this type can execute a job only once. 
+ */ 
 class Job
 {
 public:
-
 	Job():  pid(-2) { }
 
 	/* Call after having returned this process from wait_do(). 
-	 * Return TRUE if the child was successful. 
-	 */
+	 * Return TRUE if the child was successful.  */
 	bool waited(int status, pid_t pid_check);
 
 	bool started() const {

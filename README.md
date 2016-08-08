@@ -35,15 +35,22 @@ The design considerations of Stu are:
   commands should be easy.  Many projects need to run many identical
   tasks only differing by individual parameters.  This is the main
   motivation of Stu, and where virtually all other Make replacements
-  fail.  
+  fail.  Most Make replacement force the user to write loops or similar
+  constructs. 
 * Generality:  Don't focus on a particular use case such as compilation,
   but be a generic build tool.  There are no built-in rules for
   compilation or other specific applications.  Instead, allow use
-  case-specific rules to be written in the Stu language itself.  
+  case-specific rules to be written in the Stu language itself.  Most
+  Make replacement tools instead focus on one specific use-case, making
+  them unsuitable for general use. 
 * Files are the central datatype.  Everything is a file.  You can think
   of Stu as "a declarative programming language in which all variables
   are files."  For instance, Stu has no variables like Make; instead, files
-  are used.  
+  are used.  Other Make replacements are even worse than Make in this
+  regard, and allow any variable in whatever programming language they
+  are using.  Stu is based on the Unix principle that any persistent
+  object should have a name in the file system -- "everything is a
+  file". 
 * Scalability:  Assume that projects are so large that you can't just
   clean and rebuild everything if there are build inconsistencies.
   Files are sacred; never make the user delete files in order to rebuild
@@ -53,14 +60,22 @@ The design considerations of Stu are:
   commands.  List of files and dependencies are themselves targets that
   are built using shell commands, and therefore any external software
   can be used to define them, without any special support needed from
-  Stu. 
+  Stu.  Too many Make replacements try to "avoid the shell" and include
+  every transformation possible into the tool, effectively amassing
+  dozens of unnecessary dependencies, and creating an ad-hoc language
+  much less well-define, and let alone portable, than the shell. 
 * Portability:  Embrace POSIX as an underlying standard. Use the shell
   as the underlying command interpreter. Don't try to create a
   purportedly portable layer on top of it, as POSIX _already is_ a
   portability layer.  Also, don't try to create a new portable language
   for executing commands, as /bin/sh _already is_ one.  Furthermore,
   don't use fancy libraries or hip programming languages.  Stu is
-  written in plain C++11 with only standard libraries. 
+  written in plain C++11 with only standard libraries.  Many other Make
+  replacements are based on specific programming languages are their
+  "base standard", effectively limiting their use to that language, and
+  thus preventing projects to use multiple programming languages.
+  Others even do worse and create their own mini-language, invariably
+  less portable than the shell. 
 * Reliability:  Stu has extensive unit test coverage, with more than 500
   tests.  All published versions pass 100% of these tests.  All language
   features and error paths are unit tested.  

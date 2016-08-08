@@ -1,14 +1,8 @@
 /*
- * The top-level source code file, which includes the main() function.
- * See the manpage for a description of options, exit codes, etc.  
+ * This is the top-level source code file, which contains the main()
+ * function.  See the manpage for a description of options, exit codes,
+ * etc.   
  */
-
-/*
- * We don't read big files, but we need to stat() them.  Even if we
- * don't read out their size, stat() will fail if the file is too big
- * without this option. 
- */
-#define _FILE_OFFSET_BITS 64
 
 /*
  * Enable bounds checking when using GNU libc.  Must be defined before
@@ -502,4 +496,3 @@ void read_option_F(const char *s,
 		}
 	}
 }
- 

@@ -46,20 +46,22 @@ AC_LANG(C++)
 #
 
 # Headers
-##AC_CHECK_HEADERS([fcntl.h])
+AC_CHECK_HEADERS([fcntl.h])
 
 # Types
-##AC_TYPE_PID_T
-##AC_TYPE_SIZE_T
-##AC_TYPE_SSIZE_T
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
 
 # functions
-##AC_FUNC_ALLOCA
-##AC_FUNC_ERROR_AT_LINE
-##AC_FUNC_FORK
-##AC_FUNC_MMAP
-##AC_FUNC_REALLOC
-##AC_CHECK_FUNCS([clock_gettime dup2 gettimeofday memset munmap strchr strstr strtol])
+AC_FUNC_ALLOCA
+AC_FUNC_FORK
+AC_FUNC_MMAP
+AC_FUNC_REALLOC
+AC_CHECK_FUNCS([clock_gettime dup2 gettimeofday memset munmap strchr strstr strtol])
+
+# Other checks
+AC_SYS_LARGEFILE
 
 #
 # Custom checks.  These check for some nonstandard features that we
@@ -83,3 +85,4 @@ AC_COMPILE_IFELSE( [AC_LANG_PROGRAM([[#include <time.h>]],
 # Output
 #
 AC_OUTPUT(Makefile)
+

@@ -415,7 +415,7 @@ pid_t Job::start_copy(string target,
 				cp_command= "/bin/cp"; 
 		}
 
-		/* Using '--' as an argument guarantees that the fwo
+		/* Using '--' as an argument guarantees that the two
 		 * filenames will be interpreted as filenames and not as
 		 * options, in particular when they begin with a dash. 
 		 */

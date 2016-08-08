@@ -174,7 +174,8 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 
 	try {
 		if (context == SOURCE) {
-			assert(filenames.size() == 0 || filenames[filenames.size() - 1] != filename); 
+			assert(filenames.size() == 0 || 
+			       filenames[filenames.size() - 1] != filename); 
 			assert(includes.count(filename) == 0); 
 			includes.insert(filename); 
 		} else {
@@ -486,7 +487,7 @@ shared_ptr <Command> Parse::parse_command()
 
 		case '#':
 			++p;
-			if (last == '{' || last == '(' || last == '`' || last == '(') {
+			if (last == '{' || last == '(' || last == '`') {
 				while (p < p_end && *p != '\n')  ++p;
 			}
 			break;
@@ -598,10 +599,12 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 					ret->last_text() += c; 
 					++p;
 				} else if (*p == '\n') {
-					current_place() << fmt("expected a final %s",
-							       char_format_word(quote_character));
-					place_begin_quote << fmt("for quote started by %s",
-								 char_format_word(quote_character)); 
+					current_place() << 
+						fmt("expected a final %s",
+						    char_format_word(quote_character));
+					place_begin_quote << 
+						fmt("for quote started by %s",
+						    char_format_word(quote_character)); 
 					throw ERROR_LOGICAL;
 				} else if (*p == '\0') {
 					current_place() << 
@@ -616,7 +619,7 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 				}
 			}
 		} 
-
+		
 		else if (*p == '$') {
 			Place place_dollar(place_type, filename, line, p - p_line); 
 			++p;
@@ -933,7 +936,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					++p;
 				}
 				const string version_required(p_version, p - p_version); 
-				Place place_version(place_type, filename, line, p_version - p_line); 
+				Place place_version(place_type, filename, 
+						    line, p_version - p_line); 
 
 				parse_version(version_required, place_version, place_percent); 
 				
@@ -982,7 +986,6 @@ void Parse::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 
 	place_end= parse.current_place(); 
 }
-
 
 void Parse::skip_space()
 {

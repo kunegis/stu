@@ -10,16 +10,23 @@
 #==== Normal features ====
 
 #
-# Option -W FILENAME:   What-if mode.  Pretend that file FILENAME has
-# just been modified. 
+# An option for automatic logging:  write all output (stdout/stderr) of
+# commands to a file (a different file per target).  Use the -l option. 
 #
 
 #
-# Use the full autoconf/automake/etc. toolchain for better portability. 
+# -m bfs (breadth-first order) and -m target (pseudotarget by target
+# name) 
 #
-# Things to check for:
-#    * USE_MTIM:  struct timespec
-#    * -D_FILE_OFFSET_BITS=64 
+
+#
+# Have a "clean" option that removes all files that can be rebuilt.
+# Ironically, this may need to build dynamic dependency files first. 
+#
+
+#
+# Option -W FILENAME:   What-if mode.  Pretend that file FILENAME has
+# just been modified. 
 #
 
 #
@@ -38,8 +45,8 @@
 #
 
 #
-# Make the argument to the -j option optional.  (Reason for rejection:
-# not possible with standard getopt()). 
+# Make the argument to the -j option optional.  Reason for rejection:
+# not possible with standard getopt(). 
 #
 
 #
@@ -70,13 +77,6 @@ a.bib:  extra dependencies ... ;
 # be useful for directories in some cases.)
 
 #
-# Support nanosecond-precision timestamps by using struct
-# stat::st_mtim.* instead of struct stat::st_mtime.  Code is written in
-# timestamp.hh and can be enabled via USE_MTIM, but is disabled because
-# common file systems seems to give wrong timestamps. 
-#
-
-#
 # Pass name of target and dependencies as $0 and $1, $2, etc. (?).  All
 # of these can be passed to the shell after the -c option, but the
 # problem is that $0 is used in error messages of the shell as the
@@ -91,9 +91,8 @@ a.bib:  extra dependencies ... ;
 # unparametrized)  We can also make it an error to build the first
 # target automatically and always require @main.  
 #
-# Reason for rejecting:  This would break the
-# pattern where a file can be executed as-is, or included by another
-# one. 
+# Reason for rejecting:  This would break the pattern where a file can
+# be executed as-is or included by another one. 
 #
 
 @main:  A B C;
@@ -117,7 +116,7 @@ A:  ?!B { ... }
 
 #
 # Set intersection with '&'.  Clashes with trivial dependencies and can
-# be implemented indepently of Stu. 
+# be implemented indepently of Stu.  (Will not clash anymore in version 2.)
 #
 
 @x:  (A B C) & (B C D);
@@ -140,30 +139,6 @@ A:  ?!B { ... }
 #
 
 @plots:  dat/plot.([dat/NETWORKS] \ enron).eps;
-
-#
-# Allow regular expressions in parameters, e.g. for single-character
-# parameters.  This will also make it possible to allow contiguous
-# parameters, and giving a list of possible values for a parametrized
-# rule. 
-#
-
-# Allow contiguous parameters
-list.${X:.}${Y:.} {
-	compute -x $X -y $Y >list.${X}${Y}
-}
-
-# Exclude certain characters from parameter names 
-web.${NETWORK:[^.]+}
-
-# Specify a list of values
-${NAME:ref|ukob|tuberlin}.bib:  bibs-A/${NAME}.bib
-{ cp bibs-A/$NAME.bib $NAME.bib }
-$NAME.bib:  bibs-B/$NAME.bib
-{ cp bibs-B/$NAME.bib $NAME.bib }
-
-# Exclude slashes
-${NAME:[^/]+}.bib: ...;
 
 #
 # When an error is output, the column number must take into account
@@ -193,36 +168,8 @@ A:  {
 }
 
 #
-# Fingerprinting instead of timestamps is a feature that's implemented by quite
-# a few Make replacements.  This could also be combined with
-# preprocessors which ignore whitespace, etc.  Can also be used for the
-# commands embedded in Stu files, but then again we don't want to
-# rebuild everything just because a command changed. 
-#
-
-#
-# Let Stu itself be multithreaded.  Very complex to implement, and has
-# only very little benefit since Stu already starts many processes.
-# Would only make sense in scenarios with thousands of processes, which
-# would only make sense on machines with thousands of cores. 
-#
-
-#
 # Provide a set of include-stufiles for common tasks, such as C
 # programs, tex projects, etc. 
-#
-
-#
-# The current setup of Stu (and also Make) means that when nothing is to
-# be done, Stu still has to walk the complete dependency tree and stat()
-# every file.  For large projects, this may be come very slow.  Instead,
-# have a Stu daemon which uses inotify or similar to notice changes.
-# There are many practical issues with that, so that would be a huge
-# change.  Would almost likely mean the server itself would do the
-# building, and the client would only communicate with the server.  This
-# also means the server would need to be multi-threaded.  This could
-# also be used to build a Stu GUI (either local or via HTTP) that allows
-# one to control a running Stu server. 
 #
 
 #
@@ -268,7 +215,8 @@ A:  {
 >deps { ... }
 
 #
-# Multiple assignment 
+# Multiple assignment.  Needs to invoke the "cat" command.  That's not
+# really problematic, as we already invoke the "cp" command. 
 #
 
 # Multiple names result in catenation
@@ -282,7 +230,71 @@ A = @x;
 A = [X];
 <X { echo B C D }
 
-#==== New features that change extend the Stu drastically ====
+#
+# Allow to handle symlinks as files in themselves, i.e., check for their
+# own existence and their own timestamp.  This should not be the default
+# as the current behaviour is more often useful, but should be available
+# as a possibility. 
+#
+
+#==== New features that change extend Stu drastically ====
+
+#
+# Allow regular expressions in parameters, e.g. for single-character
+# parameters.  This will also make it possible to allow contiguous
+# parameters, and giving a list of possible values for a parametrized
+# rule. 
+#
+
+# Allow contiguous parameters
+list.${X:.}${Y:.} {
+	compute -x $X -y $Y >list.${X}${Y}
+}
+
+# Exclude certain characters from parameter names 
+web.${NETWORK:[^.]+}
+
+# Specify a list of values
+${NAME:ref|ukob|tuberlin}.bib:  bibs-A/${NAME}.bib
+{ cp bibs-A/$NAME.bib $NAME.bib }
+$NAME.bib:  bibs-B/$NAME.bib
+{ cp bibs-B/$NAME.bib $NAME.bib }
+
+# Exclude slashes
+${NAME:[^/]+}.bib: ...;
+
+#
+# Fingerprinting instead of timestamps is a feature that is implemented by quite
+# a few Make replacements.  This could also be combined with
+# preprocessors which ignore whitespace, etc.  Can also be used for the
+# commands embedded in Stu files, but then again we don't want to
+# rebuild everything just because a command changed.  Another downside
+# is that is needs Stu to go through every file in full, making Stu's
+# runtime be linear in the file size.  At the moment, the runtime of Stu
+# is independent of file size, but of course the command to generate a
+# file is always linear in the file size.
+#
+
+#
+# Let Stu itself be multithreaded.  Very complex to implement, and has
+# only very little benefit since Stu already starts many processes.
+# Would only make sense in scenarios with thousands of processes, which
+# would only make sense on machines with thousands of cores. 
+#
+
+#
+# A Stu server.  
+# The current setup of Stu (and also Make) means that when nothing is to
+# be done, Stu still has to walk the complete dependency tree and stat()
+# every file.  For large projects, this may be come very slow.  Instead,
+# have a Stu daemon which uses inotify or similar to notice changes.
+# There are many practical issues with that, so that would be a huge
+# change.  Would almost likely mean the server itself would do the
+# building, and the client would only communicate with the server.  This
+# also means the server would need to be multi-threaded.  This could
+# also be used to build a Stu GUI (either local or via HTTP) that allows
+# one to control a running Stu server. 
+#
 
 #
 # How to declare additional command interpreters.  Note:  we may use
@@ -315,13 +327,6 @@ octave-command;
 # This may get problematic with finding the end of a command when
 # programming languages use unusual quoting mechanisms and ways of
 # pairing parenthesis-like characters. 
-
-#
-# Allow to handle symlinks as files in themselves, i.e., check for their
-# own existence and their own timestamp.  This should not be the default
-# as the current behaviour is more often useful, but should be available
-# as a possibility. 
-#
 
 #
 # Nested rules.  Good for dependencies that are used only once. 

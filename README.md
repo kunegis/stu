@@ -1,4 +1,4 @@
-# Stu - Build Automation
+# Stu -- Build Automation
 
 This is Stu, a build tool in the spirit of Make, but with two features
 that set it apart: 

@@ -1,7 +1,7 @@
 #
 # These are features that were decided not to be implemented at some
-# point.  Many of these ideas are actually good, and we may revive them
-# in the future.  When in doubt, we prefer 
+# point.  Many of these ideas are actually good, in particular the first
+# categories, and we may revive them in the future.  When in doubt, we prefer 
 # to *not* support a feature, as adding a feature in the future can
 # always be done without breaking compatibility, whereas removing one is
 # always backward-incompatible.  
@@ -412,4 +412,28 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 # executes the content.  This can be done to any degree of fidelity to
 # the Stu specification, i.e., always build everything, or actually
 # check timestamps. 
+#
+
+#==== External features ====
+#
+# These features can be implemented outside of Stu using constructs
+# supported by Stu.  Thus, there is no need to integrate them into Stu,
+# and in fact supporting them would bloat Stu and and unnecessary
+# dependencies to it. 
+#
+
+# 
+# Things that can be implemented by simply using the appropriate
+# commands: 
+#
+# * Compression, archiving, and encryption
+# * Converting encodings, line endings, and processing escape sequences 
+# * Limitations on runtime, memory usages and other resources by jobs
+# * Calling interpreters or compilers for specific programming languages
+#
+
+#
+# Things that can be implemented by rules in Stu:
+#
+# * Rules for configuring and compiling code
 #

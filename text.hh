@@ -60,8 +60,14 @@ bool is_space(char c)
  * returns a C++ string.  Note:  does *not* support passing string()
  * objects.  
  */
+
+/* This declaration should be replaced by an Autoconf macro. 
+ */
+#ifdef __GNUC__
 string frmt(const char *format, ...) 
 	__attribute__ ((format(printf, 1, 2)));
+#endif
+
 string frmt(const char *format, ...) 
 {
 	va_list ap;

@@ -63,7 +63,7 @@ The design considerations of Stu are:
   Stu.  Too many Make replacements try to "avoid the shell" and include
   every transformation possible into the tool, effectively amassing
   dozens of unnecessary dependencies, and creating an ad-hoc language
-  much less well-define, and let alone portable, than the shell. 
+  much less well-defined, and let alone portable, than the shell. 
 * Portability:  Embrace POSIX as an underlying standard. Use the shell
   as the underlying command interpreter. Don't try to create a
   purportedly portable layer on top of it, as POSIX _already is_ a

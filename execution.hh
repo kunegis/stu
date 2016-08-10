@@ -78,7 +78,7 @@ private:
 
 	/* Currently running executions.  Allocated with operator new().
 	 * Contains both dependency-subs and dynamic-subs.  */
-	unordered_set <Execution *> children;
+	set <Execution *> children;
 
 	/* The parent executions.
 	 * This is a map because typically, the number of elements is

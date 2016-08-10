@@ -781,13 +781,15 @@ bool Param_Name::match(const string name,
 
 string Param_Name::get_duplicate_parameter() const
 {
-	unordered_set <string> seen;
+	vector <string> seen;
 
 	for (auto &parameter:  parameters) {
-		if (seen.count(parameter)) {
-			return parameter; 
+		for (const auto &parameter_seen:  seen) {
+			if (parameter_seen == parameter) {
+				return parameter; 
+			}
 		}
-		seen.insert(parameter); 
+		seen.push_back(parameter); 
 	}
 	
 	return "";

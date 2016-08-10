@@ -43,7 +43,7 @@ public:
 	{
 		vector <Trace> traces;
 		vector <string> filenames; 
-		unordered_set <string> includes;
+		set <string> includes;
 		parse_tokens_file(tokens, 
 				  context,
 				  place_end, filename, 
@@ -66,7 +66,7 @@ private:
 	/* Stacks of included files */ 
 	vector <Trace> &traces;
 	vector <string> &filenames;
-	unordered_set <string> &includes;
+	set <string> &includes;
 
 	const Place::Type place_type;
 	const string filename;
@@ -85,7 +85,7 @@ private:
 
 	Parse(vector <Trace> &traces_,
 	      vector <string> &filenames_,
-	      unordered_set <string> &includes_,
+	      set <string> &includes_,
 	      const Place::Type place_type_,
 	      const string filename_,
 	      const char *p_,
@@ -132,7 +132,7 @@ private:
 				      string filename, 
 				      vector <Trace> &traces,
 				      vector <string> &filenames,
-				      unordered_set <string> &includes,
+				      set <string> &includes,
 				      const Place &place_diagnostic,
 				      int fd= -1);
 
@@ -158,7 +158,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			      string filename, 
 			      vector <Trace> &traces,
 			      vector <string> &filenames,
-			      unordered_set <string> &includes,
+			      set <string> &includes,
 			      const Place &place_diagnostic,
 			      int fd)
 {
@@ -974,7 +974,7 @@ void Parse::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 {
 	vector <Trace> traces;
 	vector <string> filenames;
-	unordered_set <string> includes;
+	set <string> includes;
 
 	Parse parse(traces, filenames, includes, 
 		    Place::Type::ARGV, string_,

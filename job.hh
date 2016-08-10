@@ -236,7 +236,7 @@ pid_t Job::start(string command,
 		size_t v_old= 0;
 
 		/* Index of old variables */ 
-		unordered_map <string, int> old;
+		map <string, int> old;
 		while (envp_global[v_old]) {
 			const char *p= envp_global[v_old];
 			const char *q= p;

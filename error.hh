@@ -1,14 +1,16 @@
 #ifndef ERROR_HH
 #define ERROR_HH
 
-/* Code for managing errors in Stu.  Errors codes in Stu are represented
+/*
+ * Code for managing errors in Stu.  Errors codes in Stu are represented
  * by integers between 0 and 4, as defined in the ERROR_* constants
  * below.  Zero represents no error.  These codes are used for both
  * Stu's exit code and as values that are thrown and caught.   Variables
  * containing error codes are integers and are named "error". 
  */ 
 
-/* Format of error output:  There are two types of error output lines:
+/*
+ * Format of error output:  There are two types of error output lines:
  * error messages and traces.  Error messages are of the form 
  *
  *         $0: *** $MESSAGE
@@ -20,10 +22,11 @@
  * Traces are used when it is possible to refer to a specific location
  * in the input files (or command line, etc.).  Error messages are
  * avoided: all errors should be traced back to a place in the source if
- * possible. 
+ * possible. But sometimes they must be used. 
  */
 
-/* Wording of messages:  Error messages begin with uppercase letters;
+/*
+ * Wording of messages:  Error messages begin with uppercase letters;
  * trace messages with lowercase letters, as per the GNU Coding
  * Standard.  Filenames and operator names are quoted in messages using
  * single quotes.  Messages for both types of error output lines are not
@@ -37,9 +40,9 @@
  *    Location 2: XXX must not be used
  *    Location 1: in YYY 
  *
- * Use "expected TOKEN" instead of "missing TOKEN".  (Because some
+ * Use "expected TOKEN" instead of "missing TOKEN".  That's because some
  * tokens in the given list may be optional, making the "missing"
- * phrasing confusing, as it would imply that the token is mandatory.)
+ * phrasing confusing, as it would imply that the token is mandatory.
  * Include articles after "expected" to avoid interpreting "expected" as
  * an adjective.  
  *
@@ -67,31 +70,35 @@ const int ERROR_BUILD=     1;
 const int ERROR_LOGICAL=   2;
 const int ERROR_FATAL=     4;
 
-/* Errors 1 and 2 are recoverable.  If the -k option is given, Stu notes
+/*
+ * Errors 1 and 2 are recoverable.  If the -k option is given, Stu notes
  * these errors and continues.  If the -k option is not given, they
  * cause Stu to abort.  When the -k option is used, the final exit code
  * may combine errors 1 and 2, giving exit code 3.  Error 4 is
- * unrecoverable, and leads to Stu aborting immediately. 
+ * unrecoverable, and leads to Stu aborting immediately.  Error 4 is
+ * never combined.  
  *
  * Build errors (code 1) are errors encountered during the normal
  * operation of Stu.  They indicate failures of the executed commands or
- * errors with files.  Exit code 1 is also used for the -q option, when
- * the targets are not up to date.  
+ * errors with files.  Exit code 1 is also used for the -q option
+ * (question mode), when the targets are not up to date.  
  *
  * Logical errors (code 2) are errors with the usage of Stu.  These are
  * for instance syntax errors in the source code, cycles in the
  * dependency graph, or multiple matching rules.  
  * 
  * Fatal errors (code 4) are errors that lead Stu to abort immediately,
- * even when the -k option is used.  
+ * even when the -k option is used.  They are avoid as much as
+ * possible. 
  *
  * Build and logical errors can be combined to give error code 3.
  * Fatal errors are never combined with other errors as they make Stu
  * abort immediately. 
  */
 
-/* The following functions print messages that do not include a place.
- * The text should begin with an uppercase letter, not end in a period
+/*
+ * The following functions print messages that do not include a place.
+ * The text must begin with an uppercase letter, not end in a period
  * and also not end in a newline character.  All are printed to standard
  * error output. 
  */ 
@@ -107,7 +114,7 @@ void print_error(string message)
 		message.c_str()); 
 }
 
-/* Like perror(), but use color.  TEXT should not contain color codes */ 
+/* Like perror(), but use color.  TEXT must not contain color codes. */ 
 void print_error_system(string message)
 {
 	assert(message.size() > 0 && message[0] != '') ;
@@ -138,8 +145,7 @@ string system_format(string text)
 
 /* Denotes a position in Stu code.  This is either in a file or in
  * arguments to Stu.  A Place object can also be empty, which is used as
- * the "uninitialized" value. 
- */ 
+ * the "uninitialized" value.  */ 
 class Place
 {
 public:
@@ -185,8 +191,7 @@ public:
 	/* Print the trace to STDERR as part of an error message.  The 
 	 * trace is printed as a single line, which can be parsed by
 	 * tools, e.g. the compile mode of Emacs.  Line and column
-	 * numbers are output as 1-based values.  Return THIS. 
-	 */
+	 * numbers are output as 1-based values.  Return THIS.  */
 	const Place &operator<<(string message) const; 
 
 	void print(string message,
@@ -207,27 +212,23 @@ private:
 
 	/* INPUT_FILE:  File in which the error occurred.  Empty string
 	 * for standard input.  
-	 * Others:  Unused. 
-	 */ 
+	 * Others:  Unused.  */ 
 	string filename;
 
 	/* INPUT_FILE:  Line number, one-based.  
-	 * Others:  unused. 
-	 */ 
+	 * Others:  unused.  */ 
 	unsigned line; 
 
 	/* INPUT_FILE:  Column number, zero-based.  In output, column
 	 * numbers are one-based, but they are saved here as zero-based
 	 * numbers as these are easier to generate. 
-	 * Others: Unused.
-	 */ 
+	 * Others: Unused.  */ 
 	unsigned column; 
 };
 
 /* A place along with a message.  This class is only used when traces
  * cannot be printed immediately.  Otherwise, Place::operator<<() is
- * called directly. 
- */
+ * called directly.  */
 class Trace
 {
 public:

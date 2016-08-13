@@ -1,7 +1,8 @@
 #ifndef DEPENDENCY_HH
 #define DEPENDENCY_HH
 
-/* Data types for representing dependencies. 
+/*
+ * Data types for representing dependencies. 
  */
 
 #include <limits.h>
@@ -14,7 +15,8 @@
 #include "target.hh"
 #include "format.hh"
 
-/* The flags.  Each edge in the dependency graph is annotated with one
+/*
+ * The flags.  Each edge in the dependency graph is annotated with one
  * object of this type.  This contains bits related to what should be
  * done with the dependency, whether time is considered, etc.  The flags
  * are defined in such a way that the most simple dependency is
@@ -33,7 +35,7 @@ enum
 	 */ 
 
 	/* (!) When the dependency is newer than the target, don't rebuild */ 
-	F_IGNORE_TIMESTAMP        = (1 << 0),  
+	F_IGNORE_TIMESTAMP = (1 << 0),  
 
 	/* (?) Don't create the dependency if it doesn't exist */
 	F_OPTIONAL         = (1 << 1),
@@ -58,29 +60,27 @@ enum
 };
 
 /* Number of flags that are used, i.e., are transitive.  They correspond
- * to the first N flags declared in Flag */ 
+ * to the first N flags declared in Flag. */ 
 const int F_COUNT= 3;
 
 /* Total count */
 const int F_ALL=  7;
 
-/* Characters representing the individual flags -- used on verbose mode
+/* Characters representing the individual flags -- used in verbose mode
  * output */ 
-const char *const flags_chars= "!?&`$*="; 
+const char *const FLAGS_CHARS= "!?&`$*="; 
 
-/* Textual representation of a flags value. 
- */
+/* Textual representation of a flags value */
 string flags_format(Flags flags) 
 {
 	string ret= "";
 	for (int i= 0;  i < F_ALL;  ++i)
-		if (flags & (1 << i))  ret += flags_chars[i]; 
+		if (flags & (1 << i))  ret += FLAGS_CHARS[i]; 
 	return ret;
 }
 
 /* A dependency, which can be simple or compound.  All dependencies
- * carry information about their place(s) of declaration. 
- */ 
+ * carry information about their place(s) of declaration.  */ 
 class Dependency
 {
 public:
@@ -138,7 +138,7 @@ public:
 
 	Flags get_flags() {
 		return flags; 
-	}
+ 	}
 
 	bool has_flags(Flags flags_)
 	{
@@ -176,8 +176,7 @@ public:
 };
 
 /* A parametrized dependency denoting an individual target name.  Does
- * not cover dynamic dependencies. 
- */
+ * not cover dynamic dependencies.  */
 class Direct_Dependency
 	:  public Base_Dependency
 {
@@ -315,8 +314,7 @@ public:
 #endif
 };
 
-/* A dynamic dependency. 
- */
+/* A dynamic dependency */
 class Dynamic_Dependency
 	:  public Base_Dependency
 {
@@ -394,18 +392,19 @@ public:
 #endif
 };
 
-/* A stack of dependency bits. (Only transitive bits).
+/*
+ * A stack of dependency bits.  Contains only transitive bits.
  * Lower bits denote relationships lower in the hierarchy.  The depth K
  * is the number of times the link is dynamic.  (K+1) bits are actually
  * stored for each flag.  The maximum depth K is therefore CHAR_BITS *
  * sizeof(int) - 1, i.e., at least 15 on standard C platforms, and 31 on
  * almost all used platforms.  
- */
-/* As a general rule, indexes named I go over the F_COUNT different
+ *
+ * As a general rule, indexes named I go over the F_COUNT different
  * flags (0..F_COUNT-1), and indexes named J go over the (K+1) levels of
  * depth (0..K).  
- */
-/* Example:  a dynamic dependency  ?[!X]  would be represented by the stack of bits
+ *
+ * Example:  a dynamic dependency  ?[!X]  would be represented by the stack of bits
  *   J=1:    bit ?
  *   J=0:    bit !
  */
@@ -478,8 +477,7 @@ public:
 		return ret;
 	}
 
-	/* Get the flags when K = 0. 
-	 */
+	/* Get the flags when K == 0 */
 	Flags get_one() const {
 		assert(k == 0);
 		check();
@@ -596,7 +594,11 @@ public:
 	}
 
 private:
+
+	/* The depth */
 	unsigned k;
+
+	/* The bits */ 
 	unsigned bits[F_COUNT];
 };
 

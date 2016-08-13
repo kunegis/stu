@@ -24,7 +24,7 @@
  * at the root Execution object.  Edges in this graph are represented by
  * Link objects.  Each Execution object corresponds to one or more
  * unique Target.  Two Execution objects are connected if there is a
- * dependency between them.  If there is an edge A ---> B, A is saif to
+ * dependency between them.  If there is an edge A ---> B, A is said to
  * be the parent of B, and B the child of A.  Also, B is a dependency of
  * A.  If A is a dynamic target, then is has as an initial child only
  * the corresponding target with one less dynamicity level; other
@@ -97,22 +97,19 @@ private:
 
 	/* The buffer for dependencies in the second pass.  They are only started
 	 * if, after (potentially) starting all non-trivial
-	 * dependencies, the target must be rebuilt anyway. 
-	 */
+	 * dependencies, the target must be rebuilt anyway.  */
 	Buffer buf_trivial; 
 
-	/* Timestamp of each file targets, before the command is
-	 * executed.  Only valid once the job was started.  The indexes
+	/* Timestamp of each file target, before the command is
+	 * executed.  Only valid once the job was started.  The indexes 
 	 * correspond to those in TARGETS.  Non-file indexes are
-	 * uninitialized. 
-	 * Used for checking whether a file was 
-	 * rebuild to decide whether to remove it after a command failed or
-	 * was interrupted.  This is UNDEFINED when the file did
-	 * not exist, or no target is a file. 
-	 */ 
+	 * uninitialized.  Used for checking whether a file was rebuild
+	 * to decide whether to remove it after a command failed or was
+	 * interrupted.  This is UNDEFINED when the file did not exist,
+	 * or no target is a file.  */ 
 	vector <Timestamp> timestamps_old; 
 
-	/* Variable assignments from parameters for when the command is run. */
+	/* Variable assignments from parameters for when the command is run */
 	map <string, string> mapping_parameter; 
 
 	/* Variable assignments from actual variables */
@@ -120,111 +117,100 @@ private:
 
 	/* Error value of this target.  The value is propagated (using '|')
 	 * to the parent.  Values correspond to constants defined in
-	 * error.hh; zero denotes the absence of an error. 
-	 */ 
+	 * error.hh; zero denotes the absence of an error.  */ 
 	int error;
 
 	/* What parts of this target have been done. Each bit represents
 	 * one aspect that was done.  The depth K is equal to the dynamicity
-	 * for dynamic targets, and to zero for non-dynamic targets. 
-	 */
+	 * for dynamic targets, and to zero for non-dynamic targets.  */
 	Stack done;
 
 	/* Latest timestamp of a (direct or indirect) file dependency that
-	 * was not rebuilt.  (Files that were rebuilt are not
-	 * considered, since they make the target be rebuilt anyway.)
+	 * was not rebuilt.  Files that were rebuilt are not
+	 * considered, since they make the target be rebuilt anyway.
 	 * The function execute() also changes this to consider the file
 	 * itself.  This final timestamp is then carried over to the parent
-	 * executions.   
-	 */
+	 * executions.  */
 	Timestamp timestamp; 
 
 	/* Whether this target needs to be built.  When a
 	 * target is finished, this value is propagated to the parent
-	 * executions (except when the F_IGNORE_TIMESTAMP flag is set). 
-	 */ 
+	 * executions (except when the F_IGNORE_TIMESTAMP flag is set).  */ 
 	bool need_build;
 
-	/* Whether we performed the check in execute().  
-	 */ 
+	/* Whether we performed the check in execute()  */ 
 	bool checked;
 
-	/* Whether the file targets are known to exist.  
+	/* 
+	 * Whether the file targets are known to exist.  
 	 *     -1 = at least one file target is known not to exist (only
 	 *     	    possible when there is at least one file target)
 	 *      0 = status unknown
-	 *     +1 = all file targets are known to exist 
+	 *     +1 = all file targets are known to exist (possible when
+	 *          there are no file targets)
 	 * When there are no file targets, the value may be both 0 or
 	 * +1.  
 	 */
 	signed char exists;
 	
-	/* File, transient and dynamic targets.  (Everything except the
-	 * root target)
-	 */ 
+	/* File, transient and dynamic targets (everything except the
+	 * root target)  */ 
 	Execution(Target target_,
 		  Link &&link,
 		  Execution *parent);
 
-	/* Root execution.  DEPENDENCIES don't have to be unique.
-	 */
+	/* Root execution; DEPENDENCIES don't have to be unique */
 	Execution(const vector <shared_ptr <Dependency> > &dependencies_); 
 
 	/* There is no implementation of this, as it is not used.  This
 	 * serves as a compile-time check that Execution objects are not
-	 * destroyed. 
-	 */ 
+	 * destroyed.  */ 
 	~Execution(); 
 
-	/* Whether the execution is finished working for the PARENT */ 
+	/* Whether the execution is finished working for the given tasks */ 
 	bool finished(Stack avoid) const; 
 
 	/* Whether the execution is completely finished */ 
 	bool finished() const;
 
 	/* Read dynamic dependencies from a file.  Can only be called for
-	 * dynamic targets.  Called for the parent of a dynamic--file link. 
-	 */ 
+	 * dynamic targets.  Called for the parent of a dynamic--file
+	 * link.  */ 
 	void read_dynamics(Stack avoid, shared_ptr <Dependency> dependency_this);
 
 	/* Remove all file targets if they exist.  If OUTPUT is true, output a
 	 * corresponding error message.  Return whether the file was
-	 * removed.  If OUTPUT is false, only do async signal-safe things. 
-	 */
+	 * removed.  If OUTPUT is false, only do async signal-safe
+	 * things.  */
 	bool remove_if_existing(bool output); 
 
-	/* Start the next jobs. This will also terminate
+	/* Start the next job(s). This will also terminate
 	 * jobs when they don't need to be run anymore, and thus it can
 	 * be called when K = 0 just to terminate jobs that need to be
 	 * terminated.  The passed LINK.FLAG is the ORed combination
 	 * of all FLAGs up the dependency chain.  
 	 * Return value:  whether additional processes must be started.
 	 * Can only by TRUE in random mode.  When TRUE, not all possible
-	 * subjobs where started. 
-	 */
+	 * child jobs where started.  */
  	bool execute(Execution *parent, Link &&link);
 
 	/* Execute already-active children.  Parameters 
 	 * are equivalent to those of execute(). Return value:
-	 * -1: continue; 0: return false; 1: return true.
-	 */ 
+	 * -1: continue; 0: return false; 1: return true.  */ 
 	int execute_children(const Link &link);
 
 	/* Called after the job was waited for.  The PID is only passed
-	 * for checking that it is correct. 
-	 */
-	void waited(int pid, int status); 
+	 * for checking that it is correct.  */
+	void waited(pid_t pid, int status); 
 
 	/* Print full trace for the execution.  First the message is
 	 * printed, then all traces for it starting at this execution,
 	 * up to the root execution. 
-	 * TEXT may be "" to not print any additional message. 
-	 */ 
+	 * TEXT may be "" to not print any additional message.  */ 
 	void print_traces(string text= "") const;
 
 	/* Warn when the file has a modification time in the future.
-	 * MESSAGE_EXTRA may be null to not show an extra message. 
-	 */ 
+	 * MESSAGE_EXTRA may be null to not show an extra message.  */ 
 	void warn_future_file(struct stat *buf, 
 			      const char *filename,
 			      const Place &place,
@@ -232,30 +218,25 @@ private:
 
 	/* Note:  the top-level flags of LINK.DEPENDENCY may be
 	 * modified. 
-	 * Return value:  same semantics as for execute(). 
-	 */
+	 * Return value:  same semantics as for execute().  */
 	bool deploy(const Link &link,
 		    const Link &link_child);
 
 	/* Initialize the Execution object.  Used for dynamic dependencies.
 	 * Called from get_execution() before the object is connected to a
-	 * new parent. */ 
+	 * new parent.  */ 
 	void initialize(Stack avoid);
 
 	/* Print the command and its associated variable assignments,
-	 * according to the selected verbosity level.  
-	 * FILENAME_OUTPUT and FILENAME_INPUT are "" when not used. 
-	 */ 
+	 * according to the selected verbosity level.  */
 	void print_command() const; 
 
-	/* Print a line to stdout as a running job, as output of SIGUSR1.
-	 * Is currently running. 
-	 */ 
+	/* Print a line to stdout for a running job, as output of SIGUSR1.
+	 * Is currently running.  */ 
 	void print_as_job() const;
 
 	/* All errors by Execution call this function.  Set the error
-	 * code, and throw an error except with the keep-going option. 
-	 */
+	 * code, and throw an error except with the keep-going option.  */
 	void raise(int error_);
 
 	/* Create the file FILENAME with content from COMMAND */
@@ -263,8 +244,7 @@ private:
 
 	/* Read the content of the file into a string as the
 	 * variable value.  THIS is the variable target.  Return TRUE on
-	 * success. 
-	 */  
+	 * success.  */  
 	bool read_variable(string &variable_name,
 			   string &content,
 			   shared_ptr <Dependency> dependency); 
@@ -284,13 +264,12 @@ private:
 			: targets.front().format_out(); 
 	}
 
-	/* The Execution objects by their all of their target.  Execution objects
+	/* The Execution objects by each of their target.  Execution objects
 	 * are never deleted.  This serves as a caching mechanism.  The
 	 * root Execution has no targets and therefore is not included.
 	 * Non-dynamic execution objects are shared by the multiple
 	 * targets of a multi-target rule.  Dynamic multi-target rule
-	 * result in multiple non-shared execution objects. 
-	 */
+	 * result in multiple non-shared execution objects.  */
 	static unordered_map <Target, Execution *> executions_by_target;
 
 	/* The currently running executions by process IDs */ 
@@ -321,8 +300,7 @@ private:
 
 	/* Propagate information from the subexecution to the execution, and
 	 * then delete the child execution.  The child execution is
-	 * however not deleted as it is kept for caching. 
-	 */
+	 * however not deleted as it is kept for caching.  */
 	static void unlink(Execution *const parent, 
 			   Execution *const child,
 			   shared_ptr <Dependency> dependency_parent,
@@ -335,23 +313,20 @@ private:
 	 * Return NULLPTR when a strong cycle was found; return the execution
 	 * otherwise.  PLACE is the place of where the dependency was
 	 * declared.  LINK is the link from the existing parent to the
-	 * new execution. 
-	 */ 
+	 * new execution.  */ 
 	static Execution *get_execution(const Target &target, 
 					Link &&link,
 					Execution *parent); 
 
 	/* Wait for next job to finish and finish it.  Do not start anything
-	 * new.  
-	 */ 
+	 * new.  */ 
 	static void wait();
 
 	/* Find a cycle.  Assuming that the edge parent->child, find a
 	 * directed cycle that would be created.  Start at PARENT and
 	 * perform a depth-first search upwards in the hierarchy to find
 	 * CHILD.  LINK is the LINK that would be added between child
-	 * and parent, and would create a cycle. 
-	 */
+	 * and parent, and would create a cycle.  */
 	static bool find_cycle(const Execution *const parent,
 			       const Execution *const child,
 			       const Link &link);
@@ -365,8 +340,7 @@ private:
 	 * [x <- a <- b <- c <- d <- ... <- x], where A <- B denotes
 	 * that A is a dependency of B.  For each edge in this cycle,
 	 * output one line.  LINK is the link (x <- a), which is not yet
-	 * created in the execution objects. 
-	 */ 
+	 * created in the execution objects.  */ 
 	static void cycle_print(const vector <const Execution *> &path,
 				const Link &link);
 
@@ -395,9 +369,9 @@ void Execution::wait()
 	pid_t pid= Job::wait(&status); 
 
 	if (option_verbose) {
-		fprintf(stderr, "VERBOSE %s wait pid = %d\n", 
+		fprintf(stderr, "VERBOSE %s wait pid = %ld\n", 
 			Verbose::padding(),
-			(int) pid);
+			(long) pid);
 	}
 
 	timestamp_last= Timestamp::now(); 
@@ -474,8 +448,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	/* Should children even be started?  Check whether this is an
 	 * optional dependency and if it is, return when the file does not
-	 * exist.  
-	 */
+	 * exist.  */
 	if ((link.flags & F_OPTIONAL) 
 	    && link.dependency != nullptr
 	    && dynamic_pointer_cast <Direct_Dependency> (link.dependency)
@@ -692,8 +665,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		
 		/* We cannot update TIMESTAMP within the loop above
 		 * because we need to compare each TIMESTAMP_OLD with
-		 * the previous value of TIMESTAMP. 
-		 */
+		 * the previous value of TIMESTAMP. */
 		for (Timestamp timestamp_old_i:  timestamps_old) {
 			if (timestamp_old_i.defined() &&
 			    (! timestamp.defined() || timestamp < timestamp_old_i)) {
@@ -924,7 +896,7 @@ int Execution::execute_children(const Link &link)
 	return -1;
 }
 
-void Execution::waited(int pid, int status) 
+void Execution::waited(pid_t pid, int status) 
 {
 	assert(job.started()); 
 	assert(job.get_pid() == pid); 
@@ -1239,8 +1211,7 @@ void Execution::unlink(Execution *const parent,
 	 */ 
 
 	/* Note:  propagate the flags after propagating other things, since
-	 * flags can be changed by the propagations done before. 
-	 */
+	 * flags can be changed by the propagations done before. */
 
 	parent->error |= child->error; 
 
@@ -1300,7 +1271,7 @@ Execution::Execution(Target target_,
 		assert(target_.type.is_dynamic()); 
 		/* We must set the rule here, so cycles in the dependency graph
 		 * can be detected.  Note however that the rule of dynamic
-		 * file dependency executions is otherwise not used */ 
+		 * file dependency executions is otherwise not used. */ 
 		Target target_base(target_.type.get_base(), target_.name);
 		try {
 			rule= rule_set.get(target_base, param_rule, mapping_parameter, link.dependency->get_place()); 
@@ -1599,8 +1570,7 @@ bool Execution::remove_if_existing(bool output)
 			continue;
 
 		/* If the file existed before building, remove it only if it now
-		 * has a newer timestamp. 
-		 */
+		 * has a newer timestamp.  */
 
 		if (! timestamps_old[i].defined() ||
 		    timestamps_old[i] < Timestamp(&buf)) {
@@ -1809,9 +1779,8 @@ void Execution::read_dynamics(Stack avoid,
 		}
 				
 	} catch (int e) {
-		/* We catch not only the errors raise in this function,
-		 * but also the errors raised in the parser.  
-		 */
+		/* We catch not only the errors raised in this function,
+		 * but also the errors raised in the parser.  */
 		raise(e); 
 	}
 }
@@ -1969,8 +1938,7 @@ void Execution::print_command() const
 		printf("<%s", filename_input.c_str()); 
 	}
 
-	/* Print the parameter values.  (Variable assignments are not printed) 
-	 */ 
+	/* Print the parameter values (variable assignments are not printed) */ 
 	for (auto i= mapping_parameter.begin(); i != mapping_parameter.end();  ++i) {
 		string name= i->first;
 		string value= i->second;
@@ -2183,7 +2151,7 @@ void Execution::print_as_job() const
 
 	string text_target= targets.front().format_out(); 
 
-	printf("%7u %s\n", (unsigned) pid, text_target.c_str());
+	printf("%7ld %s\n", (long) pid, text_target.c_str());
 }
 
 void Execution::write_content(const char *filename, 

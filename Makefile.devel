@@ -33,8 +33,11 @@ CXXFLAGS_OTHER=-std=c++11 $(DEFS)
 # remove the flags if you use such a compiler. 
 
 CXXFLAGS_DEBUG=  -ggdb -Og \
-    -Wall -Wextra -Wunused -pedantic \
+    -Wall -Wextra -Wunused -Wpedantic \
     -Wundef -Wc++11-compat -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
+    -Wnon-virtual-dtor -Wformat-nonliteral \
+    -Wsuggest-attribute=noreturn -Wsuggest-attribute=format  \
+    -Wlogical-op -Wredundant-decls \
     -Werror                 \
     -fno-gnu-keywords       \
 

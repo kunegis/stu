@@ -113,7 +113,7 @@ int main(int argc, char **argv, char **envp)
 {
 	/* Initialization */
 	dollar_zero= argv[0]; 
-	envp_global= (const char **)envp; 
+	envp_global= (const char **) envp; 
 
 	/* Refuse to run when $STU_STATUS is set */ 
 	const char *const stu_status= getenv("STU_STATUS");
@@ -496,3 +496,4 @@ void read_option_F(const char *s,
 		}
 	}
 }
+

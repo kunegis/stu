@@ -78,6 +78,7 @@ A: [ -0 <B ] { xargs -0 ... }
 # work:
 #   * Fail when both A and B are not present
 #   * Succeed when A is present and B is not
+#   * Copy the file when B is present using the usual rules
 #
 
 #
@@ -157,7 +158,7 @@ dest/$file = $file;
 
 #
 # What happens with relative and absolute pathnames?  When two names
-# refer to the same file?  Do we need to 'normalize' names?
+# refer to the same file?  Do we need to 'normalize' (canonicalize) names?
 #
 # * fold ..
 # * fold ., except for a single .
@@ -165,7 +166,7 @@ dest/$file = $file;
 # * Fold multiple / to a single one, except exactly two at the beginning
 # * don't touch symlinks/hardlinks/etc. (they need syscalls to detect anyway) 
 #
-# Question:  should '/' match in parameters?  
+# Question:  should '/' match in parameters?  -> Yes
 #
 
 # This will fail because ../../bib/$NAME.bib will match $NAME.bib.

@@ -45,13 +45,13 @@ public:
 	 */ 
 	const Param_Name filename; 
 
-	/* Whether the command is a command or hardcoded content */ 
-	const bool is_hardcode;
-
 	/* Index within PLACE_PARAM_TARGETS of the target to which
 	 * output redirection is applied. -1 if no output redirection is
 	 * used. The target with that index is a file target. */
 	const int redirect_index; 
+
+	/* Whether the command is a command or hardcoded content */ 
+	const bool is_hardcode;
 
 	/* Whether the rule is a copy rule, i.e., declared with '='
 	 * followed by a filename. */ 
@@ -159,8 +159,8 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	   place(place_),
 	   command(command_),
 	   filename(filename_),
-	   is_hardcode(is_hardcode_),
 	   redirect_index(redirect_index_),
+	   is_hardcode(is_hardcode_),
 	   is_copy(is_copy_)
 {  }
 
@@ -175,13 +175,13 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
   	   place(place_param_targets_[0]->place),
 	   command(command_),
 	   filename(filename_),
-	   is_hardcode(is_hardcode_),
 	   redirect_index(redirect_index_),
+	   is_hardcode(is_hardcode_),
 	   is_copy(false)
 { 
 	assert(place_param_targets.size() != 0); 
 	assert(redirect_index>= -1);
-	assert(redirect_index < (int)place_param_targets.size());
+	assert(redirect_index < (ssize_t) place_param_targets.size());
 	if (redirect_index >= 0)
 		assert(place_param_targets[redirect_index]->type == Type::FILE); 
 
@@ -239,8 +239,8 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	:  place_param_targets{place_param_target_},
 	   place(place_param_target_->place),
 	   filename(*place_param_source_),
-	   is_hardcode(false),
 	   redirect_index(-1),
+	   is_hardcode(false),
 	   is_copy(true)
 {
 	auto dependency= 

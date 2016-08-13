@@ -33,8 +33,9 @@ string char_format(char c, Style style, bool &quotes)
 	else if (c >= 0x20 && c <= 0x7E) {
 		return string(1, c);
 	}
-	else    
+	else {   
 		return frmt("\\%03o", (unsigned char) c);
+	}
 }
 
 string char_format_word(char c) 

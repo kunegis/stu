@@ -801,10 +801,10 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 		if (option_verbose) {
 			string text_target= verbose_target();
-			fprintf(stderr, "VERBOSE %s %s execute pid = %d\n", 
+			fprintf(stderr, "VERBOSE %s %s execute pid = %ld\n", 
 				Verbose::padding(),
 				text_target.c_str(),
-				(int)pid); 
+				(long) pid); 
 		}
 
 		if (pid < 0) {
@@ -1037,7 +1037,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 	try {
 		while (! execution_root->finished()) {
 
-			Link link(Stack(), (Flags)0, Place(), shared_ptr <Dependency> ());
+			Link link(Stack(), (Flags) 0, Place(), shared_ptr <Dependency> ());
 
 			bool r;
 
@@ -2218,7 +2218,7 @@ bool Execution::read_variable(string &variable_name,
 
 	filesize= buf.st_size;
 	content.resize(filesize);
-	if ((ssize_t)filesize != read(fd, (void *) content.c_str(), filesize)) {
+	if ((ssize_t) filesize != read(fd, (void *) content.c_str(), filesize)) {
 		dependency->get_place() << target.format_word(); 
 		goto error_fd;
 	}
@@ -2285,7 +2285,7 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 	
 	for (unsigned i= 0;  i + 1 < path.size();  ++i) {
 		names[i]= 
-			path[i]->parents.at((Execution *)path[i+1])
+			path[i]->parents.at((Execution *) path[i+1])
 			.dependency->get_single_target().format_word();
 	}
 
@@ -2296,7 +2296,7 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 
 		/* Don't show a message for [...[A]...] -> X links */ 
 		if (i != 0 &&
-		    path[i - 1]->parents.at((Execution *)path[i])
+		    path[i - 1]->parents.at((Execution *) path[i])
 		    .dependency->get_flags() & F_READ)
 			continue;
 
@@ -2304,10 +2304,10 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 		if (i == 0 && link.dependency->get_flags() & F_READ) 
 			continue;
 
-		(i == 0 ? link : path[i - 1]->parents.at((Execution *)path[i]))
+		(i == 0 ? link : path[i - 1]->parents.at((Execution *) path[i]))
 			.place
 			<< fmt("%s%s depends on %s",
-			       i == (int)(path.size() - 1) 
+			       i == (int) (path.size() - 1) 
 			       ? (path.size() == 1 
 				  || (path.size() == 2 &&
 				      link.dependency->get_flags() & F_READ)

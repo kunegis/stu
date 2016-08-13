@@ -37,7 +37,7 @@ void print_out(string text)
  * locale-specific characters which we don't want to cover in this
  * function, whereas the syntax of Stu specifies that only these six
  * characters count as whitespace.  */
-bool is_space(char c) 
+constexpr bool is_space(char c) 
 {
 	return c != '\0' && nullptr != strchr(" \n\t\v\r\f", c);
 }

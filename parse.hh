@@ -232,8 +232,8 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		use_malloc= false;
 
 		in_size= buf.st_size;
-		in= (char *)mmap(nullptr, in_size, 
-				 PROT_READ, MAP_SHARED, fd, 0); 
+		in= (char *) mmap(nullptr, in_size, 
+				  PROT_READ, MAP_SHARED, fd, 0); 
 		if (in == MAP_FAILED) {
 
 		try_read:
@@ -249,7 +249,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			size_t len= 0;
 
 			while (true) {
-				char *mem_new= (char *)realloc(mem, len + BUFLEN);
+				char *mem_new= (char *) realloc(mem, len + BUFLEN);
 				if (mem_new == nullptr) {
 					free(mem);
 					goto error_close;
@@ -295,7 +295,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			if (use_malloc) {
 				free((void *) in); 
 			} else { /* mmap() */
-				if (0 > munmap((void *)in, in_size))
+				if (0 > munmap((void *) in, in_size))
 					goto error;
 			}
 
@@ -339,7 +339,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			if (use_malloc) {
 				free((void *) in); 
 			} else { /* mmap() */
-				munmap((void *)in, in_size);
+				munmap((void *) in, in_size);
 			}
 		}
 
@@ -694,7 +694,7 @@ bool Parse::is_name_char(char c)
 	return
 		(c >= 0x20 && c < 0x7F /* ASCII printable character */ 
 		 && nullptr == strchr(" \n\t\f\v\r[]\"\':={}#<>@$;()%*\\!?|&", c))
-		|| ((unsigned char)c) >= 0x80;
+		|| ((unsigned char) c) >= 0x80;
 }
 
 bool Parse::is_operator_char(char c) 
@@ -722,7 +722,7 @@ void Parse::parse_version(string version_req,
 			goto error; 
 	}
 	assert(chars >= 0); 
-	if ((size_t)chars != version_req.size())
+	if ((size_t) chars != version_req.size())
 		goto error; 
 
 	assert(n == 2 || n == 3); 

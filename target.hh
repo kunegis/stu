@@ -128,13 +128,13 @@ public:
 		return Type(value - 2 * diff);
 	}
 
-	Type operator ++ () {
+	Type &operator ++ () {
 		assert(value >= 0);
 		value += 2;
 		return *this; 
 	}
 
-	Type operator -- () {
+	Type &operator -- () {
 		assert(value >= T_DYNAMIC_TRANSIENT);
 		value -= 2;
 		return *this;
@@ -740,7 +740,7 @@ bool Param_Name::match(const string name,
 
 			size_t size_last= texts[n].size();
 
-			if (p_end - p < 1 + (int) size_last) 
+			if (p_end - p < 1 + (ssize_t) size_last) 
 				return false;
 
 			if (memcmp(p_end - size_last, texts[n].c_str(), size_last))

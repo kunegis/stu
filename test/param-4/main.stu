@@ -1,9 +1,6 @@
-
 #
-# Test the new parameter syntax.
+# Test the parameter syntax introduced in Stu 1.
 #
-
-%version 1.0
 
 A: list.7 {
 	if [ "$(cat list.7)" != "7" ] ; then
@@ -14,5 +11,5 @@ A: list.7 {
 }
 
 list.$N {
-	echo "$N" >"list.$N"
+	echo "$N" >list."$N"
 }

@@ -269,6 +269,12 @@ A = [X];
 # as a possibility. 
 #
 
+#
+# Internationalization:  It would be possible to translate the
+# user-facing text messages into many languages using gettext, etc.
+# There is however no plan to do so at the moment. 
+#
+
 #==== New features that change extend Stu drastically ====
 
 #

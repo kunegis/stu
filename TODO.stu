@@ -1,4 +1,4 @@
-#==== Backward-incompatible features (in the switch to version 2) ====
+#==== Backward-incompatible features (in the switch to version 2) ====   
 
 #
 # Make 'single quotes' and "double quotes" behave like in the shell,

@@ -10,10 +10,10 @@
 #include <sys/stat.h>
 
 #include "buffer.hh"
-#include "build.hh"
+#include "parser.hh"
 #include "job.hh"
 #include "link.hh"
-#include "parse.hh"
+#include "tokenizer.hh"
 #include "rule.hh"
 #include "timestamp.hh"
 
@@ -1652,17 +1652,18 @@ void Execution::read_dynamics(Stack avoid,
 		const string filename= target.name; 
 		Place place_end; 
 
-		Parse::parse_tokens_file(tokens, 
-					 Parse::DYNAMIC,
-					 place_end, filename, dependency_this->get_place()); 
+		Tokenizer::parse_tokens_file
+			(tokens, 
+			 Tokenizer::DYNAMIC,
+			 place_end, filename, dependency_this->get_place()); 
 
 		vector <shared_ptr <Dependency> > dependencies;
 		Place_Param_Name input; /* remains empty */ 
 		Place place_input; /* remains empty */ 
 
 		try {
-			Build::get_expression_list(dependencies, tokens, 
-						   place_end, input, place_input);
+			Parser::get_expression_list(dependencies, tokens, 
+						    place_end, input, place_input);
 		} catch (int e) {
 			raise(e); 
 		}

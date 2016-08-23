@@ -1,7 +1,8 @@
-#ifndef BUILD_HH
-#define BUILD_HH
+#ifndef PARSER_HH
+#define PARSER_HH
 
-/* Code for generating rules from a vector of tokens, i.e, for
+/* 
+ * Code for generating rules from a vector of tokens, i.e, for
  * performing the parsing of Stu syntax itself beyond tokenization.
  * This is a recursive descent parser. 
  * 
@@ -39,7 +40,7 @@
  * dynamic dependencies.  */  
 
 /* An object of this type represents a location within a token list */ 
-class Build
+class Parser
 {
 public:
 
@@ -80,38 +81,40 @@ public:
 
 private:
 
-	Build(vector <shared_ptr <Token> > &tokens_,
-	      vector <shared_ptr <Token> > ::iterator &iter_,
-	      const Place &place_end_)
+	Parser(vector <shared_ptr <Token> > &tokens_,
+	       vector <shared_ptr <Token> > ::iterator &iter_,
+	       const Place &place_end_)
 		:  tokens(tokens_),
 		   iter(iter_),
 		   place_end(place_end_)
 	{ }
 	
 	/* The returned rules may not be unique -- this is checked later */
-	void build_rule_list(vector <shared_ptr <Rule> > &ret);
+	void parse_rule_list(vector <shared_ptr <Rule> > &ret);
 
 	/* RET is filled.  RET is empty when called. */
-	bool build_expression_list(vector <shared_ptr <Dependency> > &ret, 
+	bool parse_expression_list(vector <shared_ptr <Dependency> > &ret, 
 				   Place_Param_Name &place_param_name_input,
 				   Place &place_input,
 				   const vector <shared_ptr <Place_Param_Target> > &targets);
 
 	/* Return null when nothing was parsed */ 
-	shared_ptr <Rule> build_rule(); 
+	shared_ptr <Rule> parse_rule(); 
 
-	bool build_expression(vector <shared_ptr <Dependency> > &ret, 
+	bool parse_expression(vector <shared_ptr <Dependency> > &ret, 
 			      Place_Param_Name &place_param_name_input,
 			      Place &place_input,
 			      const vector <shared_ptr <Place_Param_Target> > &targets);
 
-	shared_ptr <Dependency> build_variable_dependency(Place_Param_Name &place_param_name_input,
-							  Place &place_input,
-							  const vector <shared_ptr <Place_Param_Target> > &targets);
+	shared_ptr <Dependency> parse_variable_dependency
+	(Place_Param_Name &place_param_name_input,
+	 Place &place_input,
+	 const vector <shared_ptr <Place_Param_Target> > &targets);
 
-	shared_ptr <Dependency> build_redirect_dependency(Place_Param_Name &place_param_name_input,
-							  Place &place_input,
-							  const vector <shared_ptr <Place_Param_Target> > &targets);
+	shared_ptr <Dependency> parse_redirect_dependency
+	(Place_Param_Name &place_param_name_input,
+	 Place &place_input,
+	 const vector <shared_ptr <Place_Param_Target> > &targets);
 
 	/* Whether the next token is the given operator */ 
 	bool is_operator(char op) const {
@@ -140,7 +143,7 @@ private:
 				const Param_Name &from);
 };
 
-void Build::build_rule_list(vector <shared_ptr <Rule> > &ret)
+void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret)
 {
 	assert(ret.size() == 0); 
 	
@@ -150,7 +153,7 @@ void Build::build_rule_list(vector <shared_ptr <Rule> > &ret)
 		const auto iter_begin= iter; 
 #endif /* ! NDEBUG */ 
 
-		shared_ptr <Rule> rule= build_rule(); 
+		shared_ptr <Rule> rule= parse_rule(); 
 
 		if (rule == nullptr) {
 			assert(iter == iter_begin); 
@@ -161,7 +164,7 @@ void Build::build_rule_list(vector <shared_ptr <Rule> > &ret)
 	}
 }
 
-shared_ptr <Rule> Build::build_rule()
+shared_ptr <Rule> Parser::parse_rule()
 {
 	/* Used to check that when this function fails (i.e., returns
 	 * null), is has not read any tokens. */ 
@@ -339,7 +342,10 @@ shared_ptr <Rule> Build::build_rule()
 	if (is_operator(':')) {
 		had_colon= true; 
 		++iter; 
-		build_expression_list(dependencies, filename_input, place_input, place_param_targets); 
+		parse_expression_list(dependencies, 
+				      filename_input, 
+				      place_input, 
+				      place_param_targets); 
 	} 
 
 	/* Command */ 
@@ -595,7 +601,7 @@ shared_ptr <Rule> Build::build_rule()
 		 filename_input);
 }
 
-bool Build::build_expression_list(vector <shared_ptr <Dependency> > &ret, 
+bool Parser::parse_expression_list(vector <shared_ptr <Dependency> > &ret, 
 				  Place_Param_Name &place_param_name_input,
 				  Place &place_input,
 				  const vector <shared_ptr <Place_Param_Target> > &targets)
@@ -604,7 +610,9 @@ bool Build::build_expression_list(vector <shared_ptr <Dependency> > &ret,
 
 	while (iter != tokens.end()) {
 		vector <shared_ptr <Dependency> > ret_new; 
-		bool r= build_expression(ret_new, place_param_name_input, place_input, targets);
+		bool r= parse_expression(ret_new, 
+					 place_param_name_input, 
+					 place_input, targets);
 		if (!r) {
 			assert(ret_new.size() == 0); 
 			return ! ret.empty(); 
@@ -615,7 +623,7 @@ bool Build::build_expression_list(vector <shared_ptr <Dependency> > &ret,
 	return ! ret.empty(); 
 }
 
-bool Build::build_expression(vector <shared_ptr <Dependency> > &ret, 
+bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret, 
 			     Place_Param_Name &place_param_name_input,
 			     Place &place_input,
 			     const vector <shared_ptr <Place_Param_Target> > &targets)
@@ -627,7 +635,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 		Place place_paren= (*iter)->get_place();
 		++iter;
 		vector <shared_ptr <Dependency> > r;
-		while ( build_expression_list(r, place_param_name_input, place_input, targets)) {
+		while (parse_expression_list(r, place_param_name_input, place_input, targets)) {
 			ret.insert(ret.end(), r.begin(), r.end()); 
 			r.clear(); 
 		}
@@ -653,7 +661,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 		++iter;	
 		vector <shared_ptr <Dependency> > r2;
 		vector <shared_ptr <Dependency> > r;
-		while (build_expression_list(r, place_param_name_input, place_input, targets)) {
+		while (parse_expression_list(r, place_param_name_input, place_input, targets)) {
 			r2.insert(r2.end(), r.begin(), r.end()); 
 			r.clear(); 
 		}
@@ -695,7 +703,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
  	if (is_operator('!')) {
  		Place place_exclam= (*iter)->get_place();
  		++iter; 
-		if (! build_expression(ret, place_param_name_input, place_input, targets)) {
+		if (! parse_expression(ret, place_param_name_input, place_input, targets)) {
 			if (iter == tokens.end()) 
 				place_end << "expected a dependency";
 			else
@@ -718,7 +726,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
  		Place place_question= (*iter)->get_place();
  		++iter; 
 
-		if (! build_expression(ret, place_param_name_input, place_input, targets)) {
+		if (! parse_expression(ret, place_param_name_input, place_input, targets)) {
 			if (iter == tokens.end()) {
 				place_end << "expected a dependency";
 			} else {
@@ -757,7 +765,7 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 	if (is_operator('&')) {
 		Place place_ampersand= (*iter)->get_place(); 
 		++iter;
-		if (! build_expression(ret, place_param_name_input, place_input, targets)) {
+		if (! parse_expression(ret, place_param_name_input, place_input, targets)) {
 			if (iter == tokens.end()) {
 				place_end << "expected a dependency";
 			} else {
@@ -779,14 +787,14 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 		
 	/* '$' ; variable dependency */ 
 	shared_ptr <Dependency> dependency= 
-		build_variable_dependency(place_param_name_input, place_input, targets);
+		parse_variable_dependency(place_param_name_input, place_input, targets);
 	if (dependency != nullptr) {
 		ret.push_back(dependency); 
 		return true; 
 	}
 
 	shared_ptr <Dependency> r= 
-		build_redirect_dependency(place_param_name_input, place_input, targets); 
+		parse_redirect_dependency(place_param_name_input, place_input, targets); 
 	if (r != nullptr) {
 		ret.push_back(r);
 		return true; 
@@ -795,8 +803,8 @@ bool Build::build_expression(vector <shared_ptr <Dependency> > &ret,
 	return false;
 }
 
-shared_ptr <Dependency> Build
-::build_variable_dependency(Place_Param_Name &place_param_name_input, 
+shared_ptr <Dependency> Parser
+::parse_variable_dependency(Place_Param_Name &place_param_name_input, 
 			    Place &place_input,
 			    const vector <shared_ptr <Place_Param_Target> > &targets)
 {
@@ -976,7 +984,7 @@ shared_ptr <Dependency> Build
 		 variable_name);
 }
 
-shared_ptr <Dependency> Build::build_redirect_dependency
+shared_ptr <Dependency> Parser::parse_redirect_dependency
 (Place_Param_Name &place_param_name_input,
  Place &place_input,
  const vector <shared_ptr <Place_Param_Target> > &targets)
@@ -1074,7 +1082,7 @@ shared_ptr <Dependency> Build::build_redirect_dependency
 				    has_transient ? place_at : name_token->place)); 
 }
 
-void Build::append_copy(      Param_Name &to,
+void Parser::append_copy(      Param_Name &to,
 			const Param_Name &from) 
 {
 	/* Only append if TO ends in a slash */
@@ -1106,15 +1114,15 @@ void Build::append_copy(      Param_Name &to,
 	to.append(from);
 }
 
-void Build::get_rule_list(vector <shared_ptr <Rule> > &rules,
+void Parser::get_rule_list(vector <shared_ptr <Rule> > &rules,
 			  vector <shared_ptr <Token> > &tokens,
 			  const Place &place_end)
 {
 	auto iter= tokens.begin(); 
 
-	Build build(tokens, iter, place_end);
+	Parser parser(tokens, iter, place_end);
 
-	build.build_rule_list(rules); 
+	parser.parse_rule_list(rules); 
 
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start() 
@@ -1124,16 +1132,16 @@ void Build::get_rule_list(vector <shared_ptr <Rule> > &rules,
 	}
 }
 
-void Build::get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
+void Parser::get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
 				vector <shared_ptr <Token> > &tokens,
 				const Place &place_end,
 				Place_Param_Name &input,
 				Place place_input)
 {
 	auto iter= tokens.begin(); 
-	Build build(tokens, iter, place_end); 
+	Parser parser(tokens, iter, place_end); 
 	vector <shared_ptr <Place_Param_Target>> targets;
-	build.build_expression_list(dependencies, input, place_input, targets); 
+	parser.parse_expression_list(dependencies, input, place_input, targets); 
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start() 
 			<< fmt("expected a dependency, not %s",
@@ -1142,7 +1150,7 @@ void Build::get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
 	}
 }
 
-shared_ptr <Dependency> Build::get_target_dependency(string text)
+shared_ptr <Dependency> Parser::get_target_dependency(string text)
 {
 	Place place(Place::Type::ARGV);
 
@@ -1218,4 +1226,4 @@ shared_ptr <Dependency> Build::get_target_dependency(string text)
 	return ret; 
 }
 
-#endif /* ! BUILD_HH */
+#endif /* ! PARSER_HH */

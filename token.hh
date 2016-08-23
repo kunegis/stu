@@ -19,6 +19,13 @@ class Token
 {
 public:
 
+	/* Whether the token is preceded by whitespace */ 
+	const bool whitespace;
+
+	Token(bool whitespace_)
+		:  whitespace(whitespace_)
+	{  }
+
 	virtual ~Token(); 
 
 	/* The place of the token.  May be in the middle of the token.
@@ -44,8 +51,9 @@ public:
 
 	const Place place; 
 
-	Operator(char op_, Place place_)
-		:  op(op_),
+	Operator(char op_, Place place_, bool whitespace_)
+		:  Token(whitespace_),
+		   op(op_),
 		   place(place_)
 		{ }
 
@@ -69,8 +77,10 @@ class Name_Token
 	:  public Token, public Place_Param_Name
 {
 public:
-	Name_Token(const Place_Param_Name &place_param_name_) 
-		:  Place_Param_Name(place_param_name_)
+	Name_Token(const Place_Param_Name &place_param_name_, 
+		   bool whitespace_) 
+		:  Token(whitespace_),
+		   Place_Param_Name(place_param_name_)
 	{  }
 
 	const Place &get_place() const {
@@ -111,7 +121,8 @@ public:
 
 	Command(string command_, 
 		const Place &place_,
-		const Place &place_start_); 
+		const Place &place_start_,
+		bool whitespace_); 
 
 	const Place &get_place() const {
 		return place; 
@@ -132,8 +143,10 @@ Token::~Token() { }
 
 Command::Command(string command_, 
 		 const Place &place_,
-		 const Place &place_start_)
-	:  command(command_),
+		 const Place &place_start_,
+		 bool whitespace_)
+	:  Token(whitespace_),
+	   command(command_),
 	   place(place_),
 	   place_start(place_start_)
 {  }	

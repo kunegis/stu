@@ -398,17 +398,18 @@ void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 	vector <shared_ptr <Token> > tokens;
 	Place place_end;
 				
-	Parse::parse_tokens_string(tokens, 
-				   Parse::OPTION_C,
-				   place_end, string_,
-				   Place(Place::Type::OPTION_C));
+	Tokenizer::parse_tokens_string
+		(tokens, 
+		 Tokenizer::OPTION_C,
+		 place_end, string_,
+		 Place(Place::Type::OPTION_C));
 
 	vector <shared_ptr <Dependency> > dependencies_option;
 	Place_Param_Name input; /* remains empty */ 
 	Place place_input; /* remains empty */ 
 
-	Build::get_expression_list(dependencies_option, tokens, 
-				   place_end, input, place_input);
+	Parser::get_expression_list(dependencies_option, tokens, 
+				    place_end, input, place_input);
 
 	for (auto &j:  dependencies_option) {
 		dependencies.push_back(j); 
@@ -418,7 +419,7 @@ void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
 			       const char *string_)
 {
-	shared_ptr <Dependency> dep= Build::get_target_dependency(string_);
+	shared_ptr <Dependency> dep= Parser::get_target_dependency(string_);
 	dependencies.push_back(dep); 
 }
 
@@ -443,15 +444,16 @@ void read_file(string filename,
 	/* Tokenize */ 
 	vector <shared_ptr <Token> > tokens;
 	Place place_end;
-	Parse::parse_tokens_file(tokens, 
-				 Parse::SOURCE,
-				 place_end, filename_passed, 
-				 place_diagnostic, 
-				 file_fd); 
+	Tokenizer::parse_tokens_file
+		(tokens, 
+		 Tokenizer::SOURCE,
+		 place_end, filename_passed, 
+		 place_diagnostic, 
+		 file_fd); 
 
 	/* Build rules */
 	vector <shared_ptr <Rule> > rules;
-	Build::get_rule_list(rules, tokens, place_end); 
+	Parser::get_rule_list(rules, tokens, place_end); 
 
 	/* Add to set */
 	rule_set.add(rules);
@@ -476,14 +478,15 @@ void read_option_F(const char *s,
 	/* Tokenize */ 
 	vector <shared_ptr <Token> > tokens;
 	Place place_end;
-	Parse::parse_tokens_string(tokens, 
-				   Parse::OPTION_F,
-				   place_end, s,
-				   Place(Place::Type::OPTION_F));
+	Tokenizer::parse_tokens_string
+		(tokens, 
+		 Tokenizer::OPTION_F,
+		 place_end, s,
+		 Place(Place::Type::OPTION_F));
 
 	/* Build rules */
 	vector <shared_ptr <Rule> > rules;
-	Build::get_rule_list(rules, tokens, place_end);
+	Parser::get_rule_list(rules, tokens, place_end);
 
 	/* Add to set */
 	rule_set.add(rules);

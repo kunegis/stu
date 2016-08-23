@@ -1,5 +1,5 @@
-#ifndef PARSE_HH
-#define PARSE_HH
+#ifndef TOKENIZER_HH
+#define TOKENIZER_HH
 
 /* 
  * Tokenization.  I.e., parsing Stu source code into an array of tokens.    
@@ -16,7 +16,7 @@
 /* The default filename read  */
 const char *const FILENAME_INPUT_DEFAULT= "main.stu"; 
 
-class Parse
+class Tokenizer
 {
 public:
 	
@@ -82,13 +82,16 @@ private:
 	/* End of input */ 
 	const char *const p_end;
 
-	Parse(vector <Trace> &traces_,
-	      vector <string> &filenames_,
-	      set <string> &includes_,
-	      const Place::Type place_type_,
-	      const string filename_,
-	      const char *p_,
-	      size_t length)
+	/* Whether there was whitespace previously */ 
+	bool whitespace= true;
+
+	Tokenizer(vector <Trace> &traces_,
+		  vector <string> &filenames_,
+		  set <string> &includes_,
+		  const Place::Type place_type_,
+		  const string filename_,
+		  const char *p_,
+		  size_t length)
 		:  traces(traces_),
 		   filenames(filenames_),
 		   includes(includes_),
@@ -158,15 +161,15 @@ private:
 				  const Place &place_percent); 
 };
 
-void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
-			      Context context,
-			      Place &place_end,
-			      string filename, 
-			      vector <Trace> &traces,
-			      vector <string> &filenames,
-			      set <string> &includes,
-			      const Place &place_diagnostic,
-			      int fd)
+void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
+				  Context context,
+				  Place &place_end,
+				  string filename, 
+				  vector <Trace> &traces,
+				  vector <string> &filenames,
+				  set <string> &includes,
+				  const Place &place_diagnostic,
+				  int fd)
 {
 	const char *in= nullptr;
 	size_t in_size;
@@ -290,13 +293,13 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			goto error;
 
 		{
-			Parse parse(traces, filenames, includes,
-				    Place::Type::INPUT_FILE, filename, 
-				    in, in_size); 
+			Tokenizer tokenizer(traces, filenames, includes,
+					    Place::Type::INPUT_FILE, filename, 
+					    in, in_size); 
 
-			parse.parse_tokens(tokens, context, place_diagnostic); 
+			tokenizer.parse_tokens(tokens, context, place_diagnostic); 
 
-			place_end= parse.current_place(); 
+			place_end= tokenizer.current_place(); 
 
 			if (use_malloc) {
 				free((void *) in); 
@@ -354,7 +357,7 @@ void Parse::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 }
 
 
-shared_ptr <Command> Parse::parse_command()
+shared_ptr <Command> Tokenizer::parse_command()
 {
 	assert(p < p_end && *p == '{');
 
@@ -423,7 +426,7 @@ shared_ptr <Command> Parse::parse_command()
 						(place_type,
 						 filename, line_command, column_command); 
 					return make_shared <Command> 
-						(command, place_command, place_open); 
+						(command, place_command, place_open, whitespace); 
 				} else {
 					++p; 
 				}
@@ -542,7 +545,7 @@ shared_ptr <Command> Parse::parse_command()
 	throw ERROR_LOGICAL;
 }
 
-shared_ptr <Place_Param_Name> Parse::parse_name()
+shared_ptr <Place_Param_Name> Tokenizer::parse_name()
 {
 	const char *const p_begin= p; 
 	Place place_begin(place_type, filename, line, p - p_line);
@@ -701,7 +704,7 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 	return ret;
 }
 
-bool Parse::parse_parameter(string &parameter, Place &place_dollar)
+bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 {
 	assert(p < p_end && *p == '$'); 
 
@@ -768,7 +771,7 @@ bool Parse::parse_parameter(string &parameter, Place &place_dollar)
 	return true; 
 }
 
-bool Parse::is_name_char(char c) 
+bool Tokenizer::is_name_char(char c) 
 {
 	return
 		(c >= 0x20 && c < 0x7F /* ASCII printable character */ 
@@ -776,12 +779,12 @@ bool Parse::is_name_char(char c)
 		|| ((unsigned char) c) >= 0x80;
 }
 
-bool Parse::is_operator_char(char c) 
+bool Tokenizer::is_operator_char(char c) 
 {
 	return c != '\0' && nullptr != strchr(":<>=@;()?[]!&,\\|", c);
 }
 
-void Parse::parse_version(string version_req, 
+void Tokenizer::parse_version(string version_req, 
 			  const Place &place_version,
 			  const Place &place_percent) 
 {
@@ -842,7 +845,7 @@ void Parse::parse_version(string version_req,
 	throw ERROR_LOGICAL;
 }
 
-void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens, 
+void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens, 
 			 Context context,
 			 const Place &place_diagnostic)
 {
@@ -851,7 +854,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		/* Operators except '$' */ 
 		if (is_operator_char(*p)) {
 			Place place(place_type, filename, line, p - p_line);
-			tokens.push_back(make_shared <Operator> (*p, place));
+			tokens.push_back(make_shared <Operator> (*p, place, whitespace));
 			++p;
 		}
 
@@ -859,8 +862,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		else if (*p == '$' && p + 1 < p_end && p[1] == '[') {
 			Place place_dollar(place_type, filename, line, p - p_line);
 			Place place_langle(place_type, filename, line, p + 1 - p_line);
-			tokens.push_back(make_shared <Operator> ('$', place_dollar));
-			tokens.push_back(make_shared <Operator> ('[', place_langle)); 
+			tokens.push_back(make_shared <Operator> ('$', place_dollar, whitespace));
+			tokens.push_back(make_shared <Operator> ('[', place_langle, whitespace)); 
 			p += 2;
 		}
 
@@ -885,6 +888,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				}
 				++p; 
 			} while (p < p_end && is_space(*p));
+			whitespace= true;
+			goto had_whitespace; 
 		} 
 
 		/* Inclusion */ 
@@ -993,7 +998,7 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					 * used for the top-level file */  
 					Place place_end_sub; 
 					parse_tokens_file(tokens, 
-							  Parse::SOURCE,
+							  Tokenizer::SOURCE,
 							  place_end_sub, 
 							  filename_include, 
 							  traces, filenames, includes, 
@@ -1045,13 +1050,17 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				throw ERROR_LOGICAL;
 			}
 			assert(! place_param_name->empty());
-			tokens.push_back(make_shared <Name_Token> (*place_param_name)); 
+			tokens.push_back(make_shared <Name_Token>
+					 (*place_param_name, whitespace)); 
 		}
+		
+		whitespace= false;
+		
+	had_whitespace:;
 	}
-
 }
 
-void Parse::parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
+void Tokenizer::parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
 				Context context,
 				Place &place_end,
 				string string_,
@@ -1061,7 +1070,7 @@ void Parse::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 	vector <string> filenames;
 	set <string> includes;
 
-	Parse parse(traces, filenames, includes, 
+	Tokenizer parse(traces, filenames, includes, 
 		    Place::Type::ARGV, string_,
 		    string_.c_str(), string_.size());
 
@@ -1072,7 +1081,7 @@ void Parse::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 	place_end= parse.current_place(); 
 }
 
-void Parse::skip_space()
+void Tokenizer::skip_space()
 {
 	while (p < p_end && is_space(*p)) {
 		if (*p == '\n') {
@@ -1084,4 +1093,4 @@ void Parse::skip_space()
 	assert(p <= p_end); 
 }
 
-#endif /* ! PARSE_HH */
+#endif /* ! TOKENIZER_HH */

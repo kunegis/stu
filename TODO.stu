@@ -1,4 +1,4 @@
-#==== Backward-incompatible features (in the switch to version 2) ====   
+#==== Version 2.0 ====   
 
 #
 # Use '-' options for the three flags !, ?, and &.   
@@ -9,14 +9,6 @@ A:
 	-o X # optional
         -t X # trivial
 { ... }
-
-# Have options to switch all of these in subsequent targets, or to
-# switch it off. 
-
-# Maybe, invert the meaning of '-' and '+' to have '+' mean "switch
-# on". 
-
-# Have corresponding command-line options. 
 
 #
 # Deprecate !, ?, and &, and define as reserved for future extension. 
@@ -107,6 +99,18 @@ A.$X.$Y:  $X * .$Y      # OK
 @all: backup/[FILES];
 >FILES: { echo *.dat }
 dest/$file = $file;
+
+#
+# Features with flags. 
+#
+# Have options to switch all of these in subsequent targets, or to
+# switch it off. 
+#
+# Maybe, invert the meaning of '-' and '+' to have '+' mean "switch
+# on". 
+#
+# Have corresponding command-line options. 
+#
 
 #
 # What happens with relative and absolute pathnames?  When two names

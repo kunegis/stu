@@ -606,7 +606,21 @@ in the same way as outside quotes.
 Double quotes may also contain unescaped newline characters. 
 The NUL character '\\0' is not allowed inside double quotes. 
 
-The following characters are reserved for future extension:
+Spacing rules:   The lack of whitespace between tokens is an error
+under certain conditions.  Specifically:  Whitespace must appear before opening
+parentheses and brackets, and after closing parenthesis and brackets,
+when the parenthesis or bracket in question would otherwise be
+touching either a name token, or another parenthesis or bracket "from
+outside".  I.e., the following combinations are now errors:
+
+    )(  )[  ](  ][  )A  ]A  A(  A[
+
+In these examples, 'A' stands for any name, including quoted names using
+' and ".  All other tokens pairs can be written after each other without
+whitespace, except when this would create a new token, which is only the
+case for name tokens. 
+
+The following characters are reserved for future extension: 
 
     * \\ | , 
 

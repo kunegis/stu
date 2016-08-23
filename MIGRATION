@@ -33,6 +33,23 @@ In the shell, a '-' that is interpreted as an option cannot be escaped
 by quoting.  In Stu, this is possible.  The characters '-' and '+' are
 now reserved for flags, and '~' is reserved for future extension. 
 
+(3) The lack of whitespace between tokens is now an error under certain
+conditions.  Specifically:  Whitespace must appear before opening
+parentheses and brackets, and after closing parenthesis and brackets,
+when the parenthesis or bracket in question would otherwise be
+touching either a name token, or another parenthesis or bracket "from
+outside".  I.e., the following combinations are now errors:
+
+    )(  )[  ](  ][  )A  ]A  A(  A[
+
+In these examples, 'A' stands for any name, including quoted names using
+' and ". 
+
+To migrate existing code, insert whitespace where appropriate. 
+
+This change was made to prepare for the concatenation feature that will
+be implemented in Stu 2. 
+
 == Version 0 -> Version 1 ==
 
 (1) Timestamp-ignoring dependencies are noted by '!' instead of '*'.  The

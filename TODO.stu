@@ -1,12 +1,6 @@
 #==== Backward-incompatible features (in the switch to version 2) ====   
 
 #
-# Keep track of spacing between tokens, and disallow no space in
-# situations that will later be used for string concatenation.  Maybe
-# also in more cases. 
-#
-
-#
 # Use '-' options for the three flags !, ?, and &.   
 #
 

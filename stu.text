@@ -607,6 +607,18 @@ TOKENIZATION
        may also contain unescaped newline characters.  The NUL character  '\0'
        is not allowed inside double quotes.
 
+       Spacing  rules:    The  lack  of  whitespace between tokens is an error
+       under certain conditions.  Specifically:  Whitespace must appear before
+       opening  parentheses  and  brackets,  and after closing parenthesis and
+       brackets, when the parenthesis or bracket in question  would  otherwise
+       be  touching  either  a  name  token, or another parenthesis or bracket
+       "from outside".  I.e., the following combinations are now errors:
+
+           )(  )[  ](  ][  )A  ]A  A(  A[
+
+       In these examples, 'A' stands for  any  name,  including  quoted  names
+       using
+
        The following characters are reserved for future extension:
 
            * \ | ,

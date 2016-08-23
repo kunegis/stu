@@ -2,4 +2,14 @@
 # Correct line numbers after a double quote that contains a newline.
 #
 
-...
+A: "xxx
+
+yyy" Z
+{
+	touch A
+}
+
+
+'xxx
+
+yyy' = {___}

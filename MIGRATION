@@ -6,9 +6,25 @@ See the file 'NEWS' for more information about Stu versioning.
 
 == Version 1 -> Version 2 ==
 
-(1) Single quotes cannot contain escape sequences anymore.  Single
-quotes now work like single quotes in the shell:  they can contain any
-unescaped character, except single quotes. 
+(1) Quotes were changed to work like in the shell.  This makes it easier
+for shell programmers, and also makes it easier for people using shell
+syntax highlighted on Stu sources.
+
+Single quotes cannot contain escape sequences anymore.  Single quotes
+now work like single quotes in the shell:  they can contain any
+unescaped character, except single quotes.  Also, unescaped newlines are
+now allowed in single quotes. 
+
+Double quotes are now the only quotes that allow backslash escape
+sequences.  They now also allow unescaped single quotes, and newline
+characters.  Also, they may now contain parameters starting with the
+dollar character, and therefore they now also support the \$ escape
+sequence. 
+
+Code containing quoted strings may now have to be changed.  Dynamic
+dependencies automatically generating quoted strings may also have to be
+changed.  (Although in Stu 2, it is recommended to use newline- or
+NUL-delimited dynamic dependencies instead.)
 
 == Version 0 -> Version 1 ==
 

@@ -1,12 +1,12 @@
 # Newline in double quotes
 
-A: "B
+A: list."B
 C"
 {
-	cp "B
+	cp list."B
 C" A
 }
 
-'B
+list.'B
 C' = {correct}
 

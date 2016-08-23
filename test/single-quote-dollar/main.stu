@@ -1,0 +1,8 @@
+# Unquoted dollar sign within a single quote. 
+
+A:  list.'aaa$bbb'
+{
+	cp list.'aaa$bbb' A
+}
+
+list."aaa\$bbb" = {correct}

@@ -1,0 +1,9 @@
+# Double quote that contains an unquoted single quote. 
+
+A:  list."aaa'bbb"
+{
+	cp list."aaa'bbb" A
+}
+
+list.'aaa'"'"bbb = {correct}
+

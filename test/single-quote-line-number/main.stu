@@ -2,4 +2,13 @@
 # Correct line numbers after a single quote that contains a newline.
 #
 
-...
+A:  'aaa
+
+bbb' X
+{
+	touch A
+}
+
+'aaa
+
+bbb' = {abc}

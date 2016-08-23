@@ -275,6 +275,11 @@ A = [X];
 # There is however no plan to do so at the moment. 
 #
 
+#
+# Use backslash for quoting.  I.e., allow \X where X is any character
+# outside of quotes to represent X. 
+#
+
 #==== New features that change extend Stu drastically ====
 
 #

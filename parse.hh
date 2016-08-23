@@ -549,10 +549,11 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 
 			Place place_begin_quote(place_type, filename, line, p - p_line); 
 			++p;
+
 			while (p < p_end) {
 				if (*p == '"') {
 					++p;
-					break;
+					goto end_of_double_quote; 
 				} else if (*p == '\\') {
 					Place place_backslash= current_place(); 
 					++p;
@@ -585,14 +586,6 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 					}
 					ret->last_text() += c; 
 					++p;
-				} else if (*p == '\n') {
-					current_place() << 
-						fmt("expected a closing %s",
-						    char_format_word('"'));
-					place_begin_quote << 
-						fmt("for quote started by %s",
-						    char_format_word('"')); 
-					throw ERROR_LOGICAL;
 				} else if (*p == '\0') {
 					current_place() << 
 						fmt("invalid character %s",
@@ -602,9 +595,22 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 						    char_format_word('"')); 
 					throw ERROR_LOGICAL;
 				} else {
+					if (*p == '\n') {
+						++line;
+						p_line= p + 1;
+					}
 					ret->last_text() += *p++; 
 				}
 			}
+			/* Reached end of file without closing the quote */
+			current_place() <<
+				fmt("expected a closing %s", char_format_word('"'));
+			place_begin_quote <<
+				fmt("for quote started by %s",
+				    char_format_word('"')); 
+			throw ERROR_LOGICAL; 
+
+		end_of_double_quote:;
 		} 
 
 		else if (*p == '\'') {

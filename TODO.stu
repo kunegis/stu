@@ -1,17 +1,6 @@
 #==== Backward-incompatible features (in the switch to version 2) ====   
 
 #
-# Make 'single quotes' and "double quotes" behave like in the shell,
-# i.e., with respect to what needs to be quoted inside them. 
-#
-#
-# Current rules:
-#   ":  \" \' \\ \*     
-# New rules:
-#   ":  \"    \\ \* $   
-#
-
-#
 # Don't allow filenames that start with '+', '-' or '~', but allow these in
 # the middle or at the end of filenames.  
 #
@@ -140,10 +129,6 @@ dest/$file = $file;
 
 #
 # Have an option to suppress warnings.  (which?)
-#
-
-#
-# Use backslash for quoting? --> No, keep it reserved 
 #
 
 #

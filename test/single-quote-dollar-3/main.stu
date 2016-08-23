@@ -1,0 +1,12 @@
+#
+# Parameters are not used in single quotes.  I.e., a dollar is just a
+# dollar. 
+#
+
+A:  list.'ab${xyz}ef'
+{
+	cp list.ab'${'xyz'}'ef A
+}
+
+list.ab"\${"xyz"}"ef = {correct}
+

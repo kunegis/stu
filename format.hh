@@ -66,6 +66,19 @@ string char_format_word(char c)
 	}
 }
 
+string multichar_format_word(string s)
+{
+	bool quotes= Color::quotes;
+
+	if (quotes) {
+		return fmt("%s'%s'%s",
+			   Color::word, s, Color::end); 
+	} else {
+		return fmt("%s%s%s", 
+			   Color::word, s, Color::end); 
+	}
+}
+
 string name_format(string name, Style style, bool &quotes) 
 {
 	if (name == "") {

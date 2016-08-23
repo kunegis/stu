@@ -2,7 +2,7 @@
 # Correct line numbers after a double quote that contains a newline.
 #
 
-A: "xxx
+A: list."xxx
 
 yyy" Z
 {
@@ -10,6 +10,6 @@ yyy" Z
 }
 
 
-'xxx
+list.'xxx
 
 yyy' = {___}

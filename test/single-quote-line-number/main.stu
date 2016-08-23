@@ -2,13 +2,13 @@
 # Correct line numbers after a single quote that contains a newline.
 #
 
-A:  'aaa
+A:  list.'aaa
 
 bbb' X
 {
 	touch A
 }
 
-'aaa
+list.'aaa
 
 bbb' = {abc}

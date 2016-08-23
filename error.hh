@@ -43,8 +43,8 @@
  * Use "expected TOKEN" instead of "missing TOKEN".  That's because some
  * tokens in the given list may be optional, making the "missing"
  * phrasing confusing, as it would imply that the token is mandatory.
- * Include articles after "expected" to avoid interpreting "expected" as
- * an adjective.  
+ * Include definite or indefinite articles after "expected" to avoid
+ * interpreting "expected" as an adjective.  
  *
  * "not YYY" mentions the invalid token.  If end-of-file is encountered,
  * the "not ..." part is not used. 

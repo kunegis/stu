@@ -1,4 +1,4 @@
-# Error:  missing '[' after '$'. 
+# Error:  missing parameter name after '$'. 
 
 A: $;
 

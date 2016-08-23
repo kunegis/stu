@@ -1,10 +1,10 @@
 #ifndef PARSE_HH
 #define PARSE_HH
 
-/* Tokenization.  I.e., parsing Stu source code into an array of tokens.    
- */
-
-/* On errors, these functions print a message and throw integers error
+/* 
+ * Tokenization.  I.e., parsing Stu source code into an array of tokens.    
+ *
+ * On errors, these functions print a message and throw integers error
  * codes.   
  */
 
@@ -111,7 +111,8 @@ private:
 	shared_ptr <Place_Param_Name> parse_name();
 
 	/* Parse a parameter starting with '$'.  Return whether a
-	 * parameter was parsed.  The current position must be on the
+	 * parameter was parsed (always TRUE).  The current position
+	 * must be on the 
 	 * '$' character, not after it.  If a parameter is found, write
 	 * it into the parameters.  */
 	bool parse_parameter(string &parameter, Place &place_dollar); 
@@ -534,9 +535,9 @@ shared_ptr <Command> Parse::parse_command()
 	}
 
 	/* Reached the end of the file without closing the command */ 
-	current_place() << fmt("expected end of command using %s",
+	current_place() << fmt("expected a closing %s",
 			       char_format_word('}'));
-	place_open << fmt("after opening %s",
+	place_open << fmt("for command started by %s",
 			  char_format_word('{'));
 	throw ERROR_LOGICAL;
 }
@@ -559,6 +560,14 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 				if (*p == '"') {
 					++p;
 					goto end_of_double_quote; 
+				} else if (*p == '$') {
+					string parameter;
+					Place place_dollar;
+					if (parse_parameter(parameter, place_dollar)) {
+						ret->append_parameter(parameter, place_dollar);
+					} else {
+						assert(false); 
+					}
 				} else if (*p == '\\') {
 					Place place_backslash= current_place(); 
 					++p;
@@ -684,6 +693,8 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 
 bool Parse::parse_parameter(string &parameter, Place &place_dollar)
 {
+	assert(p < p_end && *p == '$'); 
+
 	place_dollar= Place(place_type, filename, line, p - p_line); 
 	++p;
 	bool braces= false; 
@@ -692,30 +703,43 @@ bool Parse::parse_parameter(string &parameter, Place &place_dollar)
 		braces= true; 
 	}
 	Place place_parameter_name(place_type, filename, line, p - p_line); 
+
 	const char *const p_parameter_name= p;
+
 	while (p < p_end && (isalnum(*p) || *p == '_')) {
 		++p;
 	}
+
 	if (braces) {
-		if (p == p_end || *p != '}') {
+		if (p == p_end) {
+			current_place() <<
+				fmt("expected a closing %s", 
+				    char_format_word('}'));
+			place_dollar <<
+				fmt("for parameter started by %s",
+				    multichar_format_word("${")); 
+			explain_parameter_character(); 
+			throw ERROR_LOGICAL;
+		} else if (*p != '}') {
 			current_place() <<
 				fmt("character %s must not appear",
 				    char_format_word(*p)); 
 			place_dollar <<
 				fmt("in parameter started by %s",
-				    char_format_word('$')); 
+				    multichar_format_word("${")); 
 			explain_parameter_character(); 
 			throw ERROR_LOGICAL;
 		} 
 	}
+
 	if (p == p_parameter_name) {
 		if (p < p_end) 
 			place_parameter_name <<
-				fmt("expected parameter name, not %s",
+				fmt("expected a parameter name, not %s",
 				    char_format_word(*p));
 		else
 			place_parameter_name <<
-				"expected parameter name";
+				"expected a parameter name";
 		place_dollar << fmt("after %s", char_format_word('$')); 
 		throw ERROR_LOGICAL;
 	}
@@ -795,7 +819,7 @@ void Parse::parse_version(string version_req,
 
  error:	
 	place_version <<
-		fmt("expected version number of the form "
+		fmt("expected a version number of the form "
 		    "%sMAJOR.MINOR%s or %sMAJOR.MINOR.PATCH%s, "
 		    "not %s",
 		    Color::word, Color::end,
@@ -870,11 +894,11 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			if (p == p_name) {
 				if (p < p_end)
 					place_name
-						<< fmt("expected statement name, not %s",
+						<< fmt("expected a statement name, not %s",
 						       char_format_word(*p));
 				else
 					place_name
-						<< "expected statement name";
+						<< "expected a statement name";
 				place_percent << fmt("after %s", char_format_word('%')); 
 				throw ERROR_LOGICAL; 
 			}
@@ -904,8 +928,8 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				if (place_param_name == nullptr) {
 					Place(place_type, filename, line, p - p_line) <<
 						(p == p_end
-						 ? "expected filename"
-						 : fmt("expected filename, not %s", char_format_word(*p)));
+						 ? "expected a filename"
+						 : fmt("expected a filename, not %s", char_format_word(*p)));
 					place_percent << frmt("after %s%%include%s",
 							      Color::word, Color::end); 
 					throw ERROR_LOGICAL;

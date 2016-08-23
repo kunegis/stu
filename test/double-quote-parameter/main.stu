@@ -1,0 +1,11 @@
+# A double quote may contain a parameter. 
+
+A:  list."Image A.png" 
+{
+	cp 'list.Image A.png' A
+}
+
+list."Image $name.png" 
+{
+	echo xxx${name}yyy >list."Image $name.png"
+}

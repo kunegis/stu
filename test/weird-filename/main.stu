@@ -3,13 +3,13 @@
 # Weird but allowed file name
 #
 
-A:  +-.~_
+A:  .+-~_
 {
-	cp +-.~_ A
+	cp .+-~_ A
 }
 
-+-.~_:
+.+-~_:
 {
-	echo CORRECT >+-.~_
+	echo CORRECT >.+-~_
 }
 

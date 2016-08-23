@@ -2,8 +2,6 @@
 #
 # Delete temporary files created by tests.  Tests only create temporary
 # files of these patterns.  Executed within each test directory. 
+#
 
-rm -Rf ? ?? A.* *.data list.* dep.* +-.~_ 
-
-
-
+rm -Rf ? ?? list.* A.* *.data dep.* .+-~_ 

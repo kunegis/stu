@@ -13,8 +13,8 @@ These characters don't have to be quoted in names.
 _ ^ ` + - . ~ / 
 <all non-ASCII characters>
 
-(In version 2 of Stu, '-', '+' and '~' will not be allowed as the first
-character of a filename.)  
+'-', '+' and '~' are not allowed as the unquoted first character of a
+name.   
 
 == Recognized as whitespace == 
 
@@ -56,14 +56,15 @@ These characters are single-character tokens.
 == As-yet unused operators ==
 
 These characters are reserved for future extension.  They are not
-allowed outside quoted strings in the current version.  The given uses
-are proposed and tentative. 
+allowed outside quoted strings, except for '-', '+' and '~' which are
+only not allowed as the unquoted first character of a name.  The given
+uses are proposed and tentative.  
 
 *	String concatenation 
 \	Escape of characters, or another use
--	(version 2, only as first character) Option
-+	(version 2, only as first character) Option
-,	(no proposed use)
-|	(no proposed use)
+- +	Flags (only as first character)
+~	(no proposed use, only as first character) 
+,	(no proposed use) Names are already whitespace separated 
+|	(no proposed use) Disjunctive dependencies
 ?!&     (version 2) Will become free again when they are replaced
  	by flags

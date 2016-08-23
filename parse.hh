@@ -671,7 +671,17 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 		}			
 
 		else if (is_name_char(*p)) {
-			/* Ordinary character */ 
+
+			/* An ordinary character */ 
+
+			/* '-', '+' and '~' are not allowed as the first
+			 * unquoted character of a name */ 
+			if (p == p_begin) {
+				if (*p == '-' || *p == '+' || *p == '~') {
+					break; 
+				}
+			}
+
 			ret->last_text() += *p++;
 		}
 		else {
@@ -1019,13 +1029,19 @@ void Parse::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			}
 		}
 
-		/* Name or invalid token */ 		
+		/* Name, invalid token, or -/+/~ */ 		
 		else {
 			shared_ptr <Place_Param_Name> place_param_name= parse_name();
 			if (place_param_name == nullptr) {
-				current_place() 
-					<< fmt("invalid character %s", 
-					       char_format_word(*p));
+				if (*p == '-' || *p == '+' || *p == '~') {
+					current_place() <<
+						fmt("as first character of a name, the character %s must be quoted",
+						    char_format_word(*p)); 
+				} else {
+					current_place() <<
+						fmt("invalid character %s", 
+						    char_format_word(*p));
+				}
 				throw ERROR_LOGICAL;
 			}
 			assert(! place_param_name->empty());

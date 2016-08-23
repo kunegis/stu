@@ -558,7 +558,9 @@ Unquoted filenames in Stu may contain the following ASCII characters:
     [a-z] [A-Z] [0-9] _ ^ ` + - . ~ / 
 
 and all non-ASCII characters.  Filenames containing
-other characters must be quoted by either single or double quotes.
+other characters must be quoted by either single or double quotes.  The
+characters -, + and ~ are not allowed as the first character of a name
+if they are not quoted. 
 
 The following characters have special meaning in Stu and cannot be used in
 unquoted filenames:

@@ -26,6 +26,13 @@ dependencies automatically generating quoted strings may also have to be
 changed.  (Although in Stu 2, it is recommended to use newline- or
 NUL-delimited dynamic dependencies instead.)
 
+(2) Unquoted names must not begin with any of the characters '-', '+' or
+'~'.  When files begin with any of these characters, they must be quoted
+using either single or double quotes.  Note the difference to the shell:
+In the shell, a '-' that is interpreted as an option cannot be escaped
+by quoting.  In Stu, this is possible.  The characters '-' and '+' are
+now reserved for flags, and '~' is reserved for future extension. 
+
 == Version 0 -> Version 1 ==
 
 (1) Timestamp-ignoring dependencies are noted by '!' instead of '*'.  The

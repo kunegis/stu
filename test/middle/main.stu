@@ -1,0 +1,10 @@
+#
+# Allow unquoted character '-', '+' and '~' in the middle of a name. 
+#
+
+A:  list.-+~
+{
+	cp 'list.-+~' A
+}
+
+list.-+~ = {correct}

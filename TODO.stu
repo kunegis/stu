@@ -1,11 +1,6 @@
 #==== Backward-incompatible features (in the switch to version 2) ====   
 
 #
-# Don't allow filenames that start with '+', '-' or '~', but allow these in
-# the middle or at the end of filenames.  
-#
-
-#
 # Keep track of spacing between tokens, and disallow no space in
 # situations that will later be used for string concatenation.  Maybe
 # also in more cases. 

@@ -1,12 +1,20 @@
 #ifndef TOKEN_HH
 #define TOKEN_HH
 
-/* Data structures for representing tokens.  There are three types of
- * tokens:  operators, names, and commands.   
+/* 
+ * Data structures for representing tokens.  
+ *
+ * There are three types of tokens:  
+ *   - operators (all single characters)
+ *   - names (including all their quoting mechanisms)
+ *   - commands (delimited by { }) 
  */
 
 #include <memory>
 
+/* 
+ * A token.  This class is mainly used through unique_ptr/shared_ptr. 
+ */
 class Token
 {
 public:
@@ -30,15 +38,15 @@ class Operator
 {
 public: 
 
-	Place place; 
-
 	/* The operator as a character, e.g. ':', '[', etc.  All
 	 * operators are single characters.  */  
-	char op; 
+	const char op; 
+
+	const Place place; 
 
 	Operator(char op_, Place place_)
-		:  place(place_),
-		   op(op_)
+		:  op(op_),
+		   place(place_)
 		{ }
 
 	const Place &get_place() const {
@@ -79,8 +87,7 @@ public:
 };
 
 /* A command delimited by braces, or the content of a file, also
- * delimited by braces. 
- */
+ * delimited by braces.  */
 class Command
 	:  public Token
 {
@@ -88,20 +95,19 @@ private:
 	/* The individual lines of the command.  Empty lines and leading
 	 * spaces are not included.  These lines are only used for
 	 * output and writing content, not for execution.  May be null.
-	 * Generated on demand, and therefore declared as mutable.  
-	 */ 
+	 * Generated on demand, and therefore declared as mutable.  */ 
 	mutable unique_ptr <vector <string> > lines;
 
 public:
 
-	/* In general, the first non-whitespace character of the command */ 
-	Place place; 
-
-	/* The opening brace */ 
-	Place place_start;
-
 	/* The command as written in the input; contains newlines */ 
 	const string command;
+
+	/* In general, the first non-whitespace character of the command */ 
+	const Place place; 
+
+	/* The opening brace */ 
+	const Place place_start;
 
 	Command(string command_, 
 		const Place &place_,
@@ -127,11 +133,10 @@ Token::~Token() { }
 Command::Command(string command_, 
 		 const Place &place_,
 		 const Place &place_start_)
-	:  place(place_),
-	   place_start(place_start_),
-	   command(command_)
-{
-}	
+	:  command(command_),
+	   place(place_),
+	   place_start(place_start_)
+{  }	
 
 const vector <string> &
 Command::get_lines() const

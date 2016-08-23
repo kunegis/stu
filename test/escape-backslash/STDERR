@@ -1,1 +1,1 @@
-main.stu:2:6: no rule to build 'aaa\'bbb"ccc\011ddd', needed by 'A'
+main.stu:2:5: no rule to build 'aaa\'bbb"ccc\011ddd', needed by 'A'

@@ -4,22 +4,12 @@
 # Make 'single quotes' and "double quotes" behave like in the shell,
 # i.e., with respect to what needs to be quoted inside them. 
 #
-
-# * Don't allow backslash-escaped sequences inside single quotes
-# * Allow double quotes, backslashes and other literal characters inside single quotes
-# * Allow single quote inside double quotes
-# * Allow parameters inside double quotes
-
+#
 # Current rules:
-#   ":  \" \' \\ \*     ':  \" \' \\ \*
+#   ":  \" \' \\ \*     
 # New rules:
-#   ":  \"    \\ \* $   ':  
-
-'abc"def';         # contains a double quote
-"Image $name.png"; # contains a parameter
-"aaa'bbb";         # contains a single quote
-'aaa\bbb';         # contains a backslash
-'aaa$bbb';         # contains a dollar sign
+#   ":  \"    \\ \* $   
+#
 
 #
 # Don't allow filenames that start with '+', '-' or '~', but allow these in

@@ -1,4 +1,9 @@
-
-# unfinished single quote string
+#
+# Unfinished single quote:  Newline characters are allowed inside single
+# quotes, so this single quote is unfinished at the end of the file.
+# (The file ends in three multiple newline characters.)
+#
 
 'aaabbb
+
+

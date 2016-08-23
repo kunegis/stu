@@ -143,6 +143,25 @@ string system_format(string text)
 		   strerror(errno)); 
 }
 
+/* Print a message to standard output.  This is used in only very few
+ * cases, in defiance of the principle that a program should by default
+ * only output something when there is an error. 
+ * These messages are suppressed by the -Q option (quiet).  */
+void print_out(string text)
+{
+	assert(text != "");
+	assert(isupper(text[0]));
+	assert(text[text.size() - 1] != '\n');
+
+	if (option_quiet)
+		return; 
+
+	printf("%s%s%s\n",
+	       Color::out_print,
+	       text.c_str(),
+	       Color::out_end); 
+}
+
 /* Denotes a position in Stu code.  This is either in a file or in
  * arguments to Stu.  A Place object can also be empty, which is used as
  * the "uninitialized" value.  */ 

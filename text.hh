@@ -1,7 +1,8 @@
 #ifndef TEXT_HH
 #define TEXT_HH
 
-/* Text functions. 
+/* 
+ * Text functions. 
  */
 
 #include <stdarg.h>
@@ -12,26 +13,6 @@
 
 #include "color.hh"
 
-/* Print a message to standard output.  This is used in only very few
- * cases, in defiance of the principle that a program should by default
- * only output something when there is an error. 
- * These messages are suppressed by the -Q option (quiet). 
- */
-void print_out(string text)
-{
-	assert(text != "");
-	assert(isupper(text[0]));
-	assert(text[text.size() - 1] != '\n');
-
-	if (option_quiet)
-		return; 
-
-	printf("%s%s%s\n",
-	       Color::out_print,
-	       text.c_str(),
-	       Color::out_end); 
-}
-
 /* Is the character a space in the C locale?  Note:  we don't use
  * isspace() because isspace() uses the current locale and may consider
  * locale-specific characters which we don't want to cover in this
@@ -41,19 +22,6 @@ constexpr bool is_space(char c)
 {
 	return c != '\0' && nullptr != strchr(" \n\t\v\r\f", c);
 }
-
-/* Format-like functions: 
- *
- * - format(...) formats the content according to the exact
- *   specification, but never surrounds it by quotes or color
- * - format_word() returns a string suitable for inclusion in a message
- *   on STDERR, including quotes and color, as appropriate. 
- * - format_out() returns the same as format_word(), but for STDERR. 
- * - raw() does not escape anything. 
- *
- * Format functions are defined in the source files where their datatype
- * is defined. 
- */
 
 /* This is a convenient function for performing printf-like formatting
  * in C++.  The function takes the same arguments as printf() and

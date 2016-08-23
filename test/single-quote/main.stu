@@ -1,16 +1,16 @@
-  
+#
+# Single quotes. 
+#
 
-
-'A':  'B\'B.data' {
-      cp 'B'"'"'B.data' A
+'A':  'B\B.data' {
+      cp 'B\B.data' A
 }
 
 
-B'\''B.data: abcd.data {
-	cp abcd.data "B'B.data"
+B'\'B.data: abcd.data {
+	cp abcd.data "B\\B.data"
 }
 
 'ab''cd'.data {
 	echo CORRECT >abcd.data
 }
-

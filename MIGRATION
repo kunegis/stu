@@ -4,6 +4,12 @@ needed to migrate to a new major version.
 
 See the file 'NEWS' for more information about Stu versioning. 
 
+== Version 1 -> Version 2 ==
+
+(1) Single quotes cannot contain escape sequences anymore.  Single
+quotes now work like single quotes in the shell:  they can contain any
+unescaped character, except single quotes. 
+
 == Version 0 -> Version 1 ==
 
 (1) Timestamp-ignoring dependencies are noted by '!' instead of '*'.  The

@@ -1,0 +1,11 @@
+#
+# Single quotes can contain unescaped newlines.
+#
+
+A:  list.'B
+C' {
+	cp list.'B
+C' A
+}
+
+list."B\nC" = {correct}

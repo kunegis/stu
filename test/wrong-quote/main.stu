@@ -1,8 +1,12 @@
+#
+# Mixed quotes are not allowed.  In Stu 2 (as opposed to Stu 1), this is
+# not flagged explicitly, as each type of quote can contain the opposite
+# type of quote. 
+#
 
-# Mixed quotes are not allowed
-
-'A": "B' {
-     cp B A
+A:  list.'A": "B' {
+	cp list.'A": "B' A
 }
 
-B { echo Bee >B }
+list.'A": "B' = {correct}
+

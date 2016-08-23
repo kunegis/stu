@@ -545,25 +545,12 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 
 	while (p < p_end) {
 		
-		if (*p == '\'' || *p == '"') {
-
-			/* The quote character used in this quote */ 
-			char quote_character= *p; 
+		if (*p == '"') {
 
 			Place place_begin_quote(place_type, filename, line, p - p_line); 
 			++p;
 			while (p < p_end) {
-				if (*p == '\'' || *p == '"') {
-					if (*p != quote_character) {
-						current_place() << 
-							fmt("expected %s, not %s",
-							    char_format_word(quote_character),
-							    char_format_word(*p));
-						place_begin_quote << 
-							fmt("after opening %s",
-							    char_format_word(quote_character));
-						throw ERROR_LOGICAL;
-					}
+				if (*p == '"') {
 					++p;
 					break;
 				} else if (*p == '\\') {
@@ -579,8 +566,8 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 					case 't':  c= '\t';  break;
 					case 'v':  c= '\v';  break;
 					case '\\': c= '\\';  break;
-					case '\'': c= '\'';  break;
 					case '\"': c= '\"';  break;
+					case '$':  c = '$';  break;
 
 					default:
 						if (*p >= 33 && *p <= 126)
@@ -593,18 +580,18 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 									Color::word, (unsigned char) *p, Color::end);
 						place_begin_quote <<
 							fmt("in quote started by %s", 
-							    char_format_word(quote_character));
+							    char_format_word('"'));
 						throw ERROR_LOGICAL;
 					}
 					ret->last_text() += c; 
 					++p;
 				} else if (*p == '\n') {
 					current_place() << 
-						fmt("expected a final %s",
-						    char_format_word(quote_character));
+						fmt("expected a closing %s",
+						    char_format_word('"'));
 					place_begin_quote << 
 						fmt("for quote started by %s",
-						    char_format_word(quote_character)); 
+						    char_format_word('"')); 
 					throw ERROR_LOGICAL;
 				} else if (*p == '\0') {
 					current_place() << 
@@ -612,15 +599,48 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 						    char_format_word('\0'));
 					place_begin_quote <<
 						fmt("in quote started by %s",
-						    char_format_word(quote_character)); 
+						    char_format_word('"')); 
 					throw ERROR_LOGICAL;
 				} else {
 					ret->last_text() += *p++; 
 				}
 			}
 		} 
+
+		else if (*p == '\'') {
 		
-		else if (*p == '$') {
+			Place place_begin_quote(place_type, filename, line, p - p_line); 
+			++p;
+			while (p < p_end) {
+				if (*p == '\'') {
+					++p;
+					goto end_of_single_quote; 
+				} else if (*p == '\0') {
+					current_place() << 
+						fmt("invalid character %s",
+						    char_format_word('\0'));
+					place_begin_quote <<
+						fmt("in quote started by %s",
+						    char_format_word('\'')); 
+					throw ERROR_LOGICAL;
+				} else {
+					if (*p == '\n') {
+						++line;
+						p_line= p + 1;
+					}
+					ret->last_text() += *p++;
+				}
+			}
+			/* Reached end of file without closing the quote */
+			current_place() <<
+				fmt("expected a closing %s", char_format_word('\''));
+			place_begin_quote <<
+				fmt("for quote started by %s",
+				    char_format_word('\'')); 
+			throw ERROR_LOGICAL; 
+		end_of_single_quote:;
+
+		} else if (*p == '$') {
 			Place place_dollar(place_type, filename, line, p - p_line); 
 			++p;
 			bool braces= false; 

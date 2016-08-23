@@ -1,0 +1,12 @@
+# Newline in double quotes
+
+A: "B
+C"
+{
+	cp "B
+C" A
+}
+
+'B
+C' = {correct}
+

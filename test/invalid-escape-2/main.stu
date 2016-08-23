@@ -1,5 +1,9 @@
+#
+# Invalid escape sequence in single quote string:  This is a literal
+# backslash followed by a space now.  
+#
 
-# invalid escape sequence in single quote string (non-printable)
+A = {correct}
 
 'sjdhjsdh\ lskdjksjd': B {
 }

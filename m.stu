@@ -1,0 +1,4 @@
+# Unfinished double quote without newline.  Make sure this file does
+# *not* end in a newline.  
+
+"xyz

@@ -1,6 +1,20 @@
 #ifndef FORMAT_HH
 #define FORMAT_HH
 
+/* 
+ * Format-like functions: 
+ *
+ * - format(...) formats the content according to the exact
+ *   specification, but never surrounds it by quotes or color
+ * - format_word() returns a string suitable for inclusion in a message
+ *   on STDERR, including quotes and color, as appropriate. 
+ * - format_out() returns the same as format_word(), but for STDERR. 
+ * - raw() does not escape anything. 
+ *
+ * Format functions are defined in the source files where their datatype
+ * is defined. 
+ */
+
 #include "color.hh"
 
 typedef unsigned Style;

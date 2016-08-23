@@ -1,2 +1,2 @@
 
-A:   'aaa\'bbb\"ccc	ddd' { touch A }
+A:  'aaa'"'"bbb'"''ccc	ddd' { touch A }

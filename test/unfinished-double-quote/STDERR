@@ -1,2 +1,2 @@
-main.stu:4:2: expected a final '"'
-main.stu:4:1: for quote started by '"'
+main.stu:5:2: expected a closing '"'
+main.stu:5:1: for quote started by '"'

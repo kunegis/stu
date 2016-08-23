@@ -1,0 +1,10 @@
+# 
+# Behavior of singles quotes in version 2.
+#
+
+A = list.'a"\\\a\tb';
+
+list.'a"\\\a\tb': 
+{
+	echo correct >list.'a"\\\a\tb'
+}

@@ -1,0 +1,10 @@
+# Unfinished double quote, containing newlines
+
+A: "abc def
+sdfkjf
+ewf
+wef
+ewf
+{ touch A }
+
+

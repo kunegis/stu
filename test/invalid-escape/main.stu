@@ -1,6 +1,7 @@
+#
+# Invalid escape sequence in double quoted string. 
+#
 
-# invalid escape sequence in single quote string
-
-'sjdhjsdh\xlskdjksjd': B {
+"sjdhjsdh\xlskdjksjd": B {
 }
 

@@ -32,7 +32,8 @@ ASCII control characters (except those that are whitespace).
 	by arguments depending on the statement); comparable to preprocessor
 	directives.  The statement name and arguments followed regular
 	Stu quoting rules. 
-" '	Quotes 
+'	Quote without escape sequences
+"       Quote with escape sequences
 {}	Command, content
 $	Parameter, variable dependencies 
 

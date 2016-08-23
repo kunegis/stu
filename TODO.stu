@@ -61,14 +61,6 @@ A: [ -0 <B ] { xargs -0 ... }
 #
 
 #
-# Recursive timestamp-ignoring dependency:  If the file exists, never
-# rebuild it, regardless whether its dependencies have to be rebuilt.
-# Actual timestamp-ignoring dependencies do not work like this, as they only
-# ignore the targets timestamp, but don't change anything about its
-# dependencies.  
-#
-
-#
 # String multiplication.  String multiplication is to work both with the
 # binary operator '*' as well with juxtaposition.  Juxtaposition is
 # backward incompatible, as in Version 1 strings like "A[B]" where
@@ -128,10 +120,6 @@ A.$X.$Y:  $X * .$Y      # OK
 dest/$file = $file;
 
 #
-# Have an option to suppress warnings.  (which?)
-#
-
-#
 # What happens with relative and absolute pathnames?  When two names
 # refer to the same file?  Do we need to 'normalize' (canonicalize) names?
 #
@@ -174,6 +162,20 @@ tmp: {...}
 % include -d src/
 % include -d src
 
+#==== Features of Stu 2:  Other features ====
+
+#
+# Recursive timestamp-ignoring dependency:  If the file exists, never
+# rebuild it, regardless whether its dependencies have to be rebuilt.
+# Actual timestamp-ignoring dependencies do not work like this, as they only
+# ignore the targets timestamp, but don't change anything about its
+# dependencies.  
+#
+
+#
+# Have an option to suppress warnings.  (which?)
+#
+
 #
 # New flag to ALWAYS build a target.  (We may already have this?)
 #
@@ -186,8 +188,6 @@ tmp: {...}
 
 A: [-d data/B];
 A: [data//B]; # ?
-
-#==== Features of Stu 2:  Other features ====
 
 #
 # Search within predefined paths for %include ($STU_PATH or $STUPATH;

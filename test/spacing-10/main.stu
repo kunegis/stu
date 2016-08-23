@@ -1,0 +1,11 @@
+# Disallow the lack of whitespace in certain situations.
+
+A: [B][C]
+{
+	touch A
+}
+
+B { touch B }
+C { touch C }
+
+BC { touch BC }

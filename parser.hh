@@ -81,6 +81,10 @@ public:
 
 private:
 
+	vector <shared_ptr <Token> > &tokens;
+	vector <shared_ptr <Token> > ::iterator &iter;
+	const Place place_end; 
+
 	Parser(vector <shared_ptr <Token> > &tokens_,
 	       vector <shared_ptr <Token> > ::iterator &iter_,
 	       const Place &place_end_)
@@ -116,6 +120,13 @@ private:
 	 Place &place_input,
 	 const vector <shared_ptr <Place_Param_Target> > &targets);
 
+	/* If the next token is of type T, return it, otherwise return
+	 * null.  Must not be at the end of the token list.  */ 
+	template <typename T>
+	shared_ptr <T> is() const {
+		return dynamic_pointer_cast <T> (*iter); 
+	}
+
 	/* Whether the next token is the given operator */ 
 	bool is_operator(char op) const {
 		return 
@@ -124,16 +135,19 @@ private:
 			is <Operator> ()->op == op;
 	}
 
-	/* If the next token is of type T, return it, otherwise return
-	 * null.  Must not be at the end of the token list.  */ 
-	template <typename T>
-	shared_ptr <T> is() const {
-		return dynamic_pointer_cast <T> (*iter); 
-	}
+	/* Check whether the current parenthesis-like token is concatenating,
+	 * i.e., whether its spacing is such that it will be
+	 * concatenated.  Throw an error if it is.  */
+	void check_concatenation() const;
 
-	vector <shared_ptr <Token> > &tokens;
-	vector <shared_ptr <Token> > ::iterator &iter;
-	const Place place_end; 
+	/* Whether a token is concatenating, i.e., will concatenate from
+	 * outside parenthesis-like operators when no whitespace is
+	 * present.  This function does not verify whitespace, only the
+	 * type of the token.  
+	 * OPEN:  whether we are checking before an opening brace. */
+	static bool is_concatenating(shared_ptr <const Token> token, bool open);
+
+	static void print_separation_message(shared_ptr <const Token> token); 
 
 	/* If TO ends in '/', append to it the part of FROM that
 	 * comes after the last slash, or the full target if it contains
@@ -633,6 +647,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 	/* '(' expression* ')' */ 
 	if (is_operator('(')) {
 		Place place_paren= (*iter)->get_place();
+		check_concatenation(); 
 		++iter;
 		vector <shared_ptr <Dependency> > r;
 		while (parse_expression_list(r, place_param_name_input, place_input, targets)) {
@@ -651,6 +666,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 					    char_format_word('(')); 
 			throw ERROR_LOGICAL;
 		}
+		check_concatenation(); 
 		++ iter; 
 		return true; 
 	} 
@@ -658,6 +674,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 	/* '[' expression* ']' */
 	if (is_operator('[')) {
 		Place place_bracket= (*iter)->get_place(); 
+		check_concatenation(); 
 		++iter;	
 		vector <shared_ptr <Dependency> > r2;
 		vector <shared_ptr <Dependency> > r;
@@ -677,6 +694,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 					      char_format_word('[')); 
 			throw ERROR_LOGICAL;
 		}
+		check_concatenation(); 
 		++ iter; 
 		for (auto &j:  r2) {
 			
@@ -1224,6 +1242,95 @@ shared_ptr <Dependency> Parser::get_target_dependency(string text)
 	}
 
 	return ret; 
+}
+
+bool Parser::is_concatenating(shared_ptr <const Token> token, bool open) 
+{
+	if (dynamic_pointer_cast <const Name_Token> (token))
+		return true;
+
+	if (dynamic_pointer_cast <const Command> (token))
+		return false;
+
+	assert(dynamic_pointer_cast <const Operator> (token));
+
+	const char op= dynamic_pointer_cast <const Operator> (token)->op; 
+
+	if (open && (op == ')' || op == ']'))
+		return true;
+
+	if (!open && (op == '(' || op == '['))
+		return true;
+	
+	return false;
+}
+
+void Parser::check_concatenation() const
+{
+	assert(is <Operator> ());
+
+	char op= is <Operator> ()->op;
+
+	if (op == '(' || op == '[') {
+
+		if ((*iter)->whitespace)  
+			return;
+		if (iter == tokens.begin())  
+			return;
+		if (! is_concatenating(*(iter-1), true))
+			return;
+		if (op == '(')
+			(*iter)->get_place() <<
+				fmt("opening parenthesis %s must be preceded by whitespace",
+				    char_format_word('(')); 
+		else if (op == '[')
+			(*iter)->get_place() <<
+				fmt("opening bracket %s must be preceded by whitespace",
+				    char_format_word('[')); 
+		else
+			assert(false); 
+		print_separation_message(*(iter-1));
+		throw ERROR_LOGICAL; 
+
+	} else if (op == ')' || op == ']') {
+
+		if (iter+1 == tokens.end())
+			return;
+		if ((*(iter+1))->whitespace)
+			return;
+		if (! is_concatenating(*(iter+1), false))
+			return;
+		if (op == ')')
+			(*iter)->get_place() <<
+				fmt("closing parenthesis %s must be followed by whitespace",
+				    char_format_word(')'));
+		else if (op == ']')
+			(*iter)->get_place() <<
+				fmt("closing bracket %s must be followed by whitespace",
+				    char_format_word(']'));
+		else
+			assert(false);
+		print_separation_message(*(iter+1));
+		throw ERROR_LOGICAL; 
+	} else
+		assert(false); 
+}
+
+void Parser::print_separation_message(shared_ptr <const Token> token)
+{
+	string text;
+
+	if (dynamic_pointer_cast <const Name_Token> (token)) {
+		text= fmt("token %s",
+			  dynamic_pointer_cast <const Name_Token> (token)->format_word()); 
+	} else if (dynamic_pointer_cast <const Operator> (token)) {
+		text= dynamic_pointer_cast <const Operator> (token)->format_long_word(); 
+	} else {
+		assert(false);
+	}
+
+	token->get_place() << 
+		fmt("to separate it from %s", text);
 }
 
 #endif /* ! PARSER_HH */

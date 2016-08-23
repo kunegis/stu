@@ -1,0 +1,4 @@
+# Error message is 'missing command', not 'missing whitespace after
+# closing bracket'. 
+
+A: [B]

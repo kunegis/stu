@@ -1,0 +1,2 @@
+main.stu:5:7: closing bracket ']' must be followed by whitespace
+main.stu:5:8: to separate it from token 'C'

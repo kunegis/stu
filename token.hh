@@ -68,6 +68,8 @@ public:
 	string format_start_word() const {
 		return char_format_word(op); 
 	}
+
+	string format_long_word() const;
 };
 
 /* This contains two types of places:  the places for the individual
@@ -218,6 +220,20 @@ Command::get_lines() const
 	}
 
 	return *lines; 
+}
+
+string Operator::format_long_word() const
+{
+	string t;
+	switch (op) {
+	default: assert(false); break;
+	case '(':  t= "opening parenthesis";  break;
+	case ')':  t= "closing parenthesis";  break;
+	case '[':  t= "opening bracket";      break;
+	case ']':  t= "closing bracket";      break;
+	}
+
+	return fmt("%s %s", t, char_format_word(op)); 
 }
 
 #endif /* ! TOKEN_HH */

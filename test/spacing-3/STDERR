@@ -1,0 +1,2 @@
+main.stu:5:6: opening bracket '[' must be preceded by whitespace
+main.stu:5:5: to separate it from token 'B'

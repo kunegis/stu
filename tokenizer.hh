@@ -368,7 +368,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 	const char *const p_beg= p;
 
 	/* The following is to determine the place of the command.  These
-	 * rules are intended to make the editor go to the right place to
+	 * rules are intended to make the editor go to the correct place to
 	 * enter a command into the editor when the command is empty. 
 	 * - If there is non-whitespace in the command, the place is the
 	 *   first non-whitespace character 

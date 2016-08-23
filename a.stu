@@ -1,0 +1,10 @@
+# 
+# Behavior of singles quotes in version 2.
+#
+
+A = 'a"\\\a\tb';
+
+'a"\\\a\tb': 
+{
+	echo correct >'a"\\\a\tb'
+}

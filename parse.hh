@@ -53,8 +53,7 @@ public:
 	}
 
 	/* Parse tokens from the given TEXT.  Other arguments are
-	 * identical to parse_tokens_file(). 
-	 */
+	 * identical to parse_tokens_file().  */
 	static void parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
 					Context context,
 					Place &place_end,
@@ -110,6 +109,12 @@ private:
 	/* Returns null when no name could be parsed.  Prints and throws
 	 * on other errors, including on empty names.  */ 
 	shared_ptr <Place_Param_Name> parse_name();
+
+	/* Parse a parameter starting with '$'.  Return whether a
+	 * parameter was parsed.  The current position must be on the
+	 * '$' character, not after it.  If a parameter is found, write
+	 * it into the parameters.  */
+	bool parse_parameter(string &parameter, Place &place_dollar); 
 
 	void skip_space(); 
 
@@ -647,51 +652,13 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 		end_of_single_quote:;
 
 		} else if (*p == '$') {
-			Place place_dollar(place_type, filename, line, p - p_line); 
-			++p;
-			bool braces= false; 
-			if (p < p_end && *p == '{') {
-				++p;
-				braces= true; 
+			string parameter;
+			Place place_dollar;
+			if (parse_parameter(parameter, place_dollar)) {
+				ret->append_parameter(parameter, place_dollar);
+			} else {
+				assert(false); 
 			}
-			Place place_parameter_name(place_type, filename, line, p - p_line); 
-			const char *const p_parameter_name= p;
-			while (p < p_end && (isalnum(*p) || *p == '_')) {
-				++p;
-			}
-			if (braces) {
-				if (p == p_end || *p != '}') {
-					current_place() <<
-						fmt("character %s must not appear",
-						    char_format_word(*p)); 
-					place_dollar <<
-						fmt("in parameter started by %s",
-						    char_format_word('$')); 
-					explain_parameter_character(); 
-					throw ERROR_LOGICAL;
-				} 
-			}
-			if (p == p_parameter_name) {
-				if (p < p_end) 
-					place_parameter_name <<
-						fmt("expected parameter name, not %s",
-						    char_format_word(*p));
-				else
-					place_parameter_name <<
-						"expected parameter name";
-				place_dollar << fmt("after %s", char_format_word('$')); 
-				throw ERROR_LOGICAL;
-			}
-			const string parameter(p_parameter_name, p - p_parameter_name);
-			if (isdigit(parameter[0])) {
-				place_parameter_name << 
-					fmt("parameter name %s must not start with a digit",
-					    prefix_format_word(parameter, "$")); 
-				throw ERROR_LOGICAL;
-			}
-			if (braces)
-				++p; 
-			ret->append_parameter(parameter, place_dollar);
 		}			
 
 		else if (is_name_char(*p)) {
@@ -713,6 +680,58 @@ shared_ptr <Place_Param_Name> Parse::parse_name()
 	}
 
 	return ret;
+}
+
+bool Parse::parse_parameter(string &parameter, Place &place_dollar)
+{
+	place_dollar= Place(place_type, filename, line, p - p_line); 
+	++p;
+	bool braces= false; 
+	if (p < p_end && *p == '{') {
+		++p;
+		braces= true; 
+	}
+	Place place_parameter_name(place_type, filename, line, p - p_line); 
+	const char *const p_parameter_name= p;
+	while (p < p_end && (isalnum(*p) || *p == '_')) {
+		++p;
+	}
+	if (braces) {
+		if (p == p_end || *p != '}') {
+			current_place() <<
+				fmt("character %s must not appear",
+				    char_format_word(*p)); 
+			place_dollar <<
+				fmt("in parameter started by %s",
+				    char_format_word('$')); 
+			explain_parameter_character(); 
+			throw ERROR_LOGICAL;
+		} 
+	}
+	if (p == p_parameter_name) {
+		if (p < p_end) 
+			place_parameter_name <<
+				fmt("expected parameter name, not %s",
+				    char_format_word(*p));
+		else
+			place_parameter_name <<
+				"expected parameter name";
+		place_dollar << fmt("after %s", char_format_word('$')); 
+		throw ERROR_LOGICAL;
+	}
+
+	parameter= string(p_parameter_name, p - p_parameter_name);
+
+	if (isdigit(parameter[0])) {
+		place_parameter_name << 
+			fmt("parameter name %s must not start with a digit",
+			    prefix_format_word(parameter, "$")); 
+		throw ERROR_LOGICAL;
+	}
+	if (braces)
+		++p; 
+
+	return true; 
 }
 
 bool Parse::is_name_char(char c) 

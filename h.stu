@@ -1,0 +1,7 @@
+#
+# Unfinished parameter with quotes inside double quotes.
+#
+# The file ends in the 'c' character, not in a newline. 
+#
+
+A:  list."$abc

@@ -1,0 +1,8 @@
+# Disallow the lack of whitespace in certain situations.
+
+A: @[C]
+{
+	touch A
+}
+
+C { touch C }

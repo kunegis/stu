@@ -456,7 +456,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	    ->place_param_target.type == Type::FILE) {
 
 		const char *name= dynamic_pointer_cast <Direct_Dependency> (link.dependency)
-			->place_param_target.place_param_name.unparametrized().c_str();
+			->place_param_target.place_name.unparametrized().c_str();
 
 		struct stat buf;
 		int ret_stat= stat(name, &buf);
@@ -784,7 +784,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 			assert(rule->place_param_targets.front()->type == Type::FILE); 
 			
 			pid= job.start_copy
-				(rule->place_param_targets[0]->place_param_name.unparametrized(),
+				(rule->place_param_targets[0]->place_name.unparametrized(),
 				 rule->filename.unparametrized());
 		} else {
 			pid= job.start
@@ -792,7 +792,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 				 mapping,
 				 rule->redirect_index < 0 ? "" :
 				 rule->place_param_targets[rule->redirect_index]
-				 ->place_param_name.unparametrized(),
+				 ->place_name.unparametrized(),
 				 rule->filename.unparametrized(),
 				 rule->command->place); 
 		}
@@ -1658,7 +1658,7 @@ void Execution::read_dynamics(Stack avoid,
 			 place_end, filename, dependency_this->get_place()); 
 
 		vector <shared_ptr <Dependency> > dependencies;
-		Place_Param_Name input; /* remains empty */ 
+		Place_Name input; /* remains empty */ 
 		Place place_input; /* remains empty */ 
 
 		try {
@@ -1679,7 +1679,7 @@ void Execution::read_dynamics(Stack avoid,
 					dep= dep2->dependency; 
 				}
 				dynamic_pointer_cast <Direct_Dependency> (dep)
-					->place_param_target.place_param_name.places[0] <<
+					->place_param_target.place_name.places[0] <<
 					fmt("dynamic dependency %s must not contain parametrized dependencies",
 					    target.format_word());
 				Target target_base= target;
@@ -1904,7 +1904,7 @@ void Execution::print_command() const
 	if (rule->is_copy) {
 		/* To the user, we hide the fact that we are using '--' */ 
 		assert(rule->place_param_targets.size() == 1); 
-		string cp_target= rule->place_param_targets[0]->place_param_name.format_out();
+		string cp_target= rule->place_param_targets[0]->place_name.format_out();
 		string cp_source= rule->filename.format_out();
 		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str()); 
 		return; 
@@ -1922,7 +1922,7 @@ void Execution::print_command() const
 
 	string filename_output= rule->redirect_index < 0 ? "" :
 		rule->place_param_targets[rule->redirect_index]
-		->place_param_name.unparametrized();
+		->place_name.unparametrized();
 	string filename_input= rule->filename.unparametrized(); 
 
 	/* Redirections */
@@ -1988,7 +1988,7 @@ bool Execution::deploy(const Link &link,
 
 	shared_ptr <Direct_Dependency> direct_dependency=
 		dynamic_pointer_cast <Direct_Dependency> (dep);
-	assert(! direct_dependency->place_param_target.place_param_name.empty()); 
+	assert(! direct_dependency->place_param_target.place_name.empty()); 
 
 	Target target_child= direct_dependency->place_param_target.unparametrized();
 	assert(target_child.type == Type::FILE || target_child.type == Type::TRANSIENT);
@@ -2138,7 +2138,7 @@ void Execution::initialize(Stack avoid)
 		shared_ptr <Dependency> dependency_child= make_shared <Direct_Dependency>
 			(flags_child,
 			 Place_Param_Target(target.type.get_base(), 
-					    Place_Param_Name(target.name)));
+					    Place_Name(target.name)));
 
 		buf_default.push(Link(dependency_child, flags_child, Place()));
 		/* The place of the [[A]]->A links is empty, meaning it will

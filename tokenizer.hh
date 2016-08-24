@@ -111,7 +111,7 @@ private:
 	
 	/* Returns null when no name could be parsed.  Prints and throws
 	 * on other errors, including on empty names.  */ 
-	shared_ptr <Place_Param_Name> parse_name();
+	shared_ptr <Place_Name> parse_name();
 
 	/* Parse a parameter starting with '$'.  Return whether a
 	 * parameter was parsed (always TRUE).  The current position
@@ -405,7 +405,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 					line_command= line; 
 					column_command= 0; 
 				}
-			} else if (! is_space(*p)) {
+			} else if (! isspace(*p)) {
 				if (*p != '}') {
 					begin= false;
 					line_command= line; 
@@ -545,12 +545,12 @@ shared_ptr <Command> Tokenizer::parse_command()
 	throw ERROR_LOGICAL;
 }
 
-shared_ptr <Place_Param_Name> Tokenizer::parse_name()
+shared_ptr <Place_Name> Tokenizer::parse_name()
 {
 	const char *const p_begin= p; 
 	Place place_begin(place_type, filename, line, p - p_line);
 
-	shared_ptr <Place_Param_Name> ret= make_shared <Place_Param_Name> ("", place_begin);
+	shared_ptr <Place_Name> ret= make_shared <Place_Name> ("", place_begin);
 
 	while (p < p_end) {
 		
@@ -880,14 +880,14 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		} 
 
 		/* Whitespace */
-		else if (is_space(*p)) { 
+		else if (isspace(*p)) { 
 			do {
 				if (*p == '\n') {
 					++line;  
 					p_line= p + 1; 
 				}
 				++p; 
-			} while (p < p_end && is_space(*p));
+			} while (p < p_end && isspace(*p));
 			whitespace= true;
 			goto had_whitespace; 
 		} 
@@ -900,7 +900,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 			const char *const p_name= p;
 
-			Place place_name(place_type, filename, line, p_name - p_line); 
+			Place place__name(place_type, filename, line, p_name - p_line); 
 
 			while (p < p_end && isalnum(*p)) {
 				++p;
@@ -908,11 +908,11 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 			if (p == p_name) {
 				if (p < p_end)
-					place_name
+					place__name
 						<< fmt("expected a statement name, not %s",
 						       char_format_word(*p));
 				else
-					place_name
+					place__name
 						<< "expected a statement name";
 				place_percent << fmt("after %s", char_format_word('%')); 
 				throw ERROR_LOGICAL; 
@@ -938,9 +938,9 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					throw ERROR_LOGICAL;
 				}
 
-				shared_ptr <Place_Param_Name> place_param_name= parse_name(); 
+				shared_ptr <Place_Name> place_name= parse_name(); 
 
-				if (place_param_name == nullptr) {
+				if (place_name == nullptr) {
 					Place(place_type, filename, line, p - p_line) <<
 						(p == p_end
 						 ? "expected a filename"
@@ -950,19 +950,19 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					throw ERROR_LOGICAL;
 				}
 				
-				if (place_param_name->get_n() != 0) {
-					place_param_name->place <<
+				if (place_name->get_n() != 0) {
+					place_name->place <<
 						fmt("name %s must not be parametrized",
-						    place_param_name->format_word());
+						    place_name->format_word());
 					place_percent << frmt("after %s%%include%s",
 							      Color::word, Color::end); 
 					throw ERROR_LOGICAL;
 				}
 			
-				const string filename_include= place_param_name->unparametrized();
+				const string filename_include= place_name->unparametrized();
 
 				Trace trace_stack
-					(place_param_name->place,
+					(place_name->place,
 					 fmt("%s is included from here", 
 					     name_format_word(filename_include))); 
 
@@ -1008,7 +1008,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				traces.pop_back(); 
 				filenames.pop_back(); 
 			} else if (name == "version") {
-				while (p < p_end && is_space(*p)) {
+				while (p < p_end && isspace(*p)) {
 					if (*p == '\n') {
 						++line;  
 						p_line= p + 1; 
@@ -1036,8 +1036,8 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 		/* Name, invalid token, or -/+/~ */ 		
 		else {
-			shared_ptr <Place_Param_Name> place_param_name= parse_name();
-			if (place_param_name == nullptr) {
+			shared_ptr <Place_Name> place_name= parse_name();
+			if (place_name == nullptr) {
 				if (*p == '-' || *p == '+' || *p == '~') {
 					current_place() <<
 						fmt("as first character of a name, the character %s must be quoted",
@@ -1049,9 +1049,9 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				}
 				throw ERROR_LOGICAL;
 			}
-			assert(! place_param_name->empty());
+			assert(! place_name->empty());
 			tokens.push_back(make_shared <Name_Token>
-					 (*place_param_name, whitespace)); 
+					 (*place_name, whitespace)); 
 		}
 		
 		whitespace= false;
@@ -1083,7 +1083,7 @@ void Tokenizer::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 
 void Tokenizer::skip_space()
 {
-	while (p < p_end && is_space(*p)) {
+	while (p < p_end && isspace(*p)) {
 		if (*p == '\n') {
 			++line;  
 			p_line= p + 1; 

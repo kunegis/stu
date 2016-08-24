@@ -1,0 +1,2 @@
+main.stu:4:1: expected a filename, not '{'
+main.stu:3:5: after input redirection using '<'

@@ -11,26 +11,14 @@
 
 #include <string>
 
-#include "color.hh"
-
-/* Is the character a space in the C locale?  Note:  we don't use
- * isspace() because isspace() uses the current locale and may consider
- * locale-specific characters which we don't want to cover in this
- * function, whereas the syntax of Stu specifies that only these six
- * characters count as whitespace.  */
-constexpr bool is_space(char c) 
-{
-	return c != '\0' && nullptr != strchr(" \n\t\v\r\f", c);
-}
-
-/* This is a convenient function for performing printf-like formatting
+/* 
+ * This is a convenient function for performing printf-like formatting
  * in C++.  The function takes the same arguments as printf() and
  * returns a C++ string.  Note:  does *not* support passing string()
  * objects.  
  */
 
-/* This declaration should be replaced by an Autoconf macro. 
- */
+/* This declaration should be replaced by an Autoconf macro. */
 #ifdef __GNUC__
 string frmt(const char *format, ...) 
 	__attribute__ ((format(printf, 1, 2)));
@@ -68,8 +56,7 @@ string frmt(const char *format, ...)
 
 /* fmt() allows *only* the unqualified '%s' format specifier with string
  * and const char * arguments, and '%%'.  Precisely, this allows any
- * argument that can be concatenated to a string with the '+' operator.  
- */
+ * argument that can be concatenated to a string with the '+' operator.  */
 
 /* Without args */ 
 string fmt(const char *s)

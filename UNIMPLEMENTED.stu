@@ -272,7 +272,9 @@ A = [X];
 #
 # Internationalization:  It would be possible to translate the
 # user-facing text messages into many languages using gettext, etc.
-# There is however no plan to do so at the moment. 
+# There is however no plan to do so at the moment.  However:  Use
+# setlocale() would also mean that we can't use isspace() anymore, and
+# we would have to roll our own space-detecting function. 
 #
 
 #

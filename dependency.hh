@@ -248,7 +248,7 @@ public:
 	shared_ptr <Dependency> instantiate(const map <string, string> &mapping) const;
 
 	bool is_unparametrized() const {
-		return place_param_target.place_param_name.get_n() == 0; 
+		return place_param_target.place_name.get_n() == 0; 
 	}
 
 	void check() const {
@@ -612,8 +612,8 @@ shared_ptr <Dependency> Direct_Dependency
 	shared_ptr <Dependency> ret= make_shared <Direct_Dependency> 
 		(flags, *ret_target, place, name);
 
-	assert(ret_target->place_param_name.get_n() == 0); 
-	string this_name= ret_target->place_param_name.unparametrized(); 
+	assert(ret_target->place_name.get_n() == 0); 
+	string this_name= ret_target->place_name.unparametrized(); 
 
 	if ((flags & F_VARIABLE) &&
 		this_name.find('=') != string::npos) {

@@ -308,7 +308,7 @@ namespace std {
  *
  * A parametrized name is empty if N = 0 and the single text is empty. 
  */
-class Param_Name
+class Name
 {
 private:
 
@@ -324,12 +324,12 @@ private:
 public:
 
 	/* A name with zero parameters */ 
-	Param_Name(string name_)
+	Name(string name_)
 		:  texts({name_})
 	{ }
 
 	/* Empty name */ 
-	Param_Name()
+	Name()
 		:  texts({""})
 	{ }
 
@@ -368,15 +368,15 @@ public:
 
 	/* Append another parametrized name.  This function checks that
 	 * the result is valid. */ 
-	void append(const Param_Name &param_name) {
+	void append(const Name &name) {
 		assert(this->texts.back() != "" ||
-		       param_name.texts.back() != "");
+		       name.texts.back() != "");
 
-		append_text(param_name.texts.front());
+		append_text(name.texts.front());
 
-		for (unsigned i= 0;  i < param_name.get_n();  ++i) {
-			append_parameter(param_name.get_parameters()[i]);
-			append_text(param_name.get_texts()[1 + i]);
+		for (unsigned i= 0;  i < name.get_n();  ++i) {
+			append_parameter(name.get_parameters()[i]);
+			append_text(name.get_texts()[1 + i]);
 		}
 	}
 
@@ -471,7 +471,7 @@ public:
 	 * parameters with the two unseparated parameters. */ 
 	bool valid(string &param_1, string &param_2) const;
 
-	bool operator == (const Param_Name &that) const {
+	bool operator == (const Name &that) const {
 		if (this->get_n() != that.get_n())
 			return false;
 		for (unsigned i= 0;  i < get_n();  ++i) {
@@ -499,22 +499,22 @@ class Param_Target
 public:
 
 	Type type;
-	Param_Name param_name; 
+	Name name; 
  
 	Param_Target(Type type_,
-		     const Param_Name &param_name_)
+		     const Name &name_)
 		:  type(type_),
-		   param_name(param_name_)
+		   name(name_)
 	{ }
 
 	/* Unparametrized target */
 	Param_Target(const Target &target)
 		:  type(target.type),
-		   param_name(target.name)
+		   name(target.name)
 	{ }
 
 	Target instantiate(const map <string, string> &mapping) const {
-		return Target(type, param_name.instantiate(mapping)); 
+		return Target(type, name.instantiate(mapping)); 
 	}
 
 	string format_word() const {
@@ -528,7 +528,7 @@ public:
 			 ? Color::quotes
 			 : 0);
 
-		string text= param_name.format(style, quotes2); 
+		string text= name.format(style, quotes2); 
 		
 		return fmt("%s%s%s%s%s%s%s%s", 
 			   Color::word, 
@@ -544,12 +544,12 @@ public:
 	/* The corresponding unparametrized target.  This target must
 	 * have zero parameters. */ 
 	Target unparametrized() const {
-		return Target(type, param_name.unparametrized());
+		return Target(type, name.unparametrized());
 	}
 
 	bool operator == (const Param_Target &that) const {
 		return this->type == that.type &&
-			this->param_name == that.param_name; 
+			this->name == that.name; 
 	}
 
 	bool operator != (const Param_Target &that) const {
@@ -557,8 +557,8 @@ public:
 	}
 };
 
-class Place_Param_Name
-	:  public Param_Name
+class Place_Name
+	:  public Name
 {
 public:
 
@@ -571,21 +571,21 @@ public:
 	vector <Place> places;
 
 	/* Empty parametrized name, and empty place */
-	Place_Param_Name() 
-		:  Param_Name(),
+	Place_Name() 
+		:  Name(),
 		   place()
 	{ }
 
 	/* Unparametrized, with empty place */ 
-	Place_Param_Name(string name)
-		:  Param_Name(name)
+	Place_Name(string name)
+		:  Name(name)
 	{ 
 		/* PLACES remains empty */ 
 	}
 	
 	/* Unparametrized, with explicit place */
-	Place_Param_Name(string name, const Place &_place) 
-		:  Param_Name(name), place(_place)
+	Place_Name(string name, const Place &_place) 
+		:  Name(name), place(_place)
 	{ }
 
 	const vector <Place> &get_places() const {
@@ -595,14 +595,14 @@ public:
 	/* Append the given PARAMETER and an empty text */ 
 	void append_parameter(string parameter,
 			      const Place &place_parameter) {
-		Param_Name::append_parameter(parameter); 
+		Name::append_parameter(parameter); 
 		places.push_back(place_parameter);
 	}
 
-	shared_ptr <Place_Param_Name> instantiate(const map <string, string> &mapping) const {
+	shared_ptr <Place_Name> instantiate(const map <string, string> &mapping) const {
 		/* In the returned object, the PLACES vector is empty */ 
-		string name= Param_Name::instantiate(mapping);
-		return make_shared <Place_Param_Name> (name);
+		string name= Name::instantiate(mapping);
+		return make_shared <Place_Name> (name);
 	}
 };
 
@@ -614,64 +614,64 @@ public:
 
 	Type type; 
 
-	Place_Param_Name place_param_name;
+	Place_Name place_name;
 
 	/* The place of the target as a whole.  The PLACE_PARAM_NAME
 	 * variable additionally contains places for each parameter. */ 
 	Place place;
 
 	Place_Param_Target(Type type_,
-			   const Place_Param_Name &place_param_name_)
+			   const Place_Name &place_name_)
 		:  type(type_),
-		   place_param_name(place_param_name_),
-		   place(place_param_name_.place)
+		   place_name(place_name_),
+		   place(place_name_.place)
 	{ }
 
 	Place_Param_Target(Type type_,
-			   const Place_Param_Name &place_param_name_,
+			   const Place_Name &place_name_,
 			   const Place &place_)
 		:  type(type_),
-		   place_param_name(place_param_name_),
+		   place_name(place_name_),
 		   place(place_)
 	{ }
 
 	/* Compares only the content, not the place. */ 
 	bool operator == (const Place_Param_Target &that) const {
 		return this->type == that.type &&
-			this->place_param_name == that.place_param_name; 
+			this->place_name == that.place_name; 
 	}
 
 	string format(Style style, bool &need_quotes) const {
-		Target target(type, place_param_name.raw());
+		Target target(type, place_name.raw());
 		return target.format(style, need_quotes); 
 	}
 	
 	string format_word() const {
-		Target target(type, place_param_name.raw());
+		Target target(type, place_name.raw());
 		return target.format_word(); 
 	}
 	
 	string format_out() const {
-		Target target(type, place_param_name.raw());
+		Target target(type, place_name.raw());
 		return target.format_out(); 
 	}
 
 	shared_ptr <Place_Param_Target> 
 	instantiate(const map <string, string> &mapping) const {
 		return make_shared <Place_Param_Target> 
-			(type, *place_param_name.instantiate(mapping), place); 
+			(type, *place_name.instantiate(mapping), place); 
 	}
 
 	Target unparametrized() const {
-		return Target(type, place_param_name.unparametrized()); 
+		return Target(type, place_name.unparametrized()); 
 	}
 
 	Param_Target get_param_target() const {
-		return Param_Target(type, place_param_name); 
+		return Param_Target(type, place_name); 
 	}
 };
 
-string Param_Name::instantiate(const map <string, string> &mapping) const
+string Name::instantiate(const map <string, string> &mapping) const
 {
 	assert(texts.size() == 1 + parameters.size()); 
 
@@ -688,9 +688,9 @@ string Param_Name::instantiate(const map <string, string> &mapping) const
 	return ret; 
 }
 
-bool Param_Name::match(const string name, 
-		       map <string, string> &mapping,
-		       vector <unsigned> &anchoring)
+bool Name::match(const string name, 
+		 map <string, string> &mapping,
+		 vector <unsigned> &anchoring)
 {
 	/* Rules:
 	 *  - Each parameter must match at least one character. 
@@ -779,7 +779,7 @@ bool Param_Name::match(const string name,
 	return true;
 }
 
-string Param_Name::get_duplicate_parameter() const
+string Name::get_duplicate_parameter() const
 {
 	vector <string> seen;
 
@@ -795,7 +795,7 @@ string Param_Name::get_duplicate_parameter() const
 	return "";
 }
 
-bool Param_Name::valid(string &param_1, string &param_2) const 
+bool Name::valid(string &param_1, string &param_2) const 
 {
 	if (empty())  
 		return false;
@@ -811,8 +811,8 @@ bool Param_Name::valid(string &param_1, string &param_2) const
 	return true;
 }
 
-bool Param_Name::anchoring_dominates(vector <unsigned> &anchoring_a,
-				     vector <unsigned> &anchoring_b)
+bool Name::anchoring_dominates(vector <unsigned> &anchoring_a,
+			       vector <unsigned> &anchoring_b)
 {
  	/* (A) dominates (B) when every character in a parameter in (A)
 	 * is also in a parameter in (B) and at least one character is

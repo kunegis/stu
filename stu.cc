@@ -28,7 +28,13 @@ using namespace std;
 #include "timestamp.hh"
 #include "color.hh"
 
-/* We use getopt(), which means that Stu does only support short
+/*
+ * Note:  Stu does not call setlocale(), and therefore can make use of
+ * isspace() detecting spaces as defined in the C locale. 
+ */
+
+/* 
+ * We use getopt(), which means that Stu does only support short
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
@@ -176,7 +182,7 @@ int main(int argc, char **argv, char **envp)
 					dependencies.push_back
 						(make_shared <Direct_Dependency>
 						 (0, Place_Param_Target
-						  (type, Place_Param_Name(name, place))));
+						  (type, Place_Name(name, place))));
 					break;
 				}
 
@@ -291,7 +297,7 @@ int main(int argc, char **argv, char **envp)
 					(make_shared <Direct_Dependency>
 					 (0, Place_Param_Target
 					  (Type::FILE, 
-					   Place_Param_Name
+					   Place_Name
 					   (argv[i],
 					    Place(Place::Type::ARGV)))));
 			}
@@ -405,7 +411,7 @@ void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 		 Place(Place::Type::OPTION_C));
 
 	vector <shared_ptr <Dependency> > dependencies_option;
-	Place_Param_Name input; /* remains empty */ 
+	Place_Name input; /* remains empty */ 
 	Place place_input; /* remains empty */ 
 
 	Parser::get_expression_list(dependencies_option, tokens, 
@@ -419,7 +425,7 @@ void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
 			       const char *string_)
 {
-	shared_ptr <Dependency> dep= Parser::get_target_dependency(string_);
+	shared_ptr <Dependency> dep= Parser::get_target_dep(string_);
 	dependencies.push_back(dep); 
 }
 

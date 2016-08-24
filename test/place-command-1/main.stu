@@ -1,0 +1,8 @@
+#
+# Make sure the error place is on the opening '{' and not on 'touch'.   
+#
+
+A:  @
+{
+	touch A
+}

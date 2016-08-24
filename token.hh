@@ -76,25 +76,25 @@ public:
  * parameters in Place_Param_Name, and the place of the complete token
  * from Token.  */
 class Name_Token
-	:  public Token, public Place_Param_Name
+	:  public Token, public Place_Name
 {
 public:
-	Name_Token(const Place_Param_Name &place_param_name_, 
+	Name_Token(const Place_Name &place_name_, 
 		   bool whitespace_) 
 		:  Token(whitespace_),
-		   Place_Param_Name(place_param_name_)
+		   Place_Name(place_name_)
 	{  }
 
 	const Place &get_place() const {
-		return Place_Param_Name::place; 
+		return Place_Name::place; 
 	}
 
 	const Place &get_place_start() const {
-		return Place_Param_Name::place; 
+		return Place_Name::place; 
 	}
 
 	string format_start_word() const {
-		return Place_Param_Name::format_word(); 
+		return Place_Name::format_word(); 
 	}
 };
 
@@ -178,7 +178,7 @@ Command::get_lines() const
 
 			bool keep= false;
 			for (size_t i= 0;  i < line.size();  ++i) {
-				if (! is_space(line[i]))
+				if (! isspace(line[i]))
 					keep= true;
 			}
 
@@ -194,7 +194,7 @@ Command::get_lines() const
 	/* Remove initial whitespace common to all lines */ 
 	while (lines->size()) {
 		char begin= (*lines)[0][0];
-		if ((begin & 0x80) || ! is_space(begin))  break;
+		if ((begin & 0x80) || ! isspace(begin))  break;
 		bool equal= true;
 		for (auto &i:  *lines) {
 			assert(i.size()); 
@@ -215,7 +215,7 @@ Command::get_lines() const
 	/* Remove whitespace at end of lines */
 	for (string &line:  *lines) {
 		int l= line.size();
-		while (l != 0 && is_space(line[l - 1]))  --l;
+		while (l != 0 && isspace(line[l - 1]))  --l;
 		line.resize(l);
 	}
 
@@ -231,6 +231,7 @@ string Operator::format_long_word() const
 	case ')':  t= "closing parenthesis";  break;
 	case '[':  t= "opening bracket";      break;
 	case ']':  t= "closing bracket";      break;
+	case '@':  t= "operator";             break;
 	}
 
 	return fmt("%s %s", t, char_format_word(op)); 

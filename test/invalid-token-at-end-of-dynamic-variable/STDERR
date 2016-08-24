@@ -1,2 +1,2 @@
-main.stu:4:8: expected ']'
+main.stu:4:8: expected ']', not ':'
 main.stu:4:5: after opening '$['

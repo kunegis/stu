@@ -1,0 +1,2 @@
+main.stu:4:1: expected the name of a transient target, not '{'
+main.stu:3:5: after '@'

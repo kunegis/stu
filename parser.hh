@@ -3,10 +3,8 @@
 
 /* 
  * Code for generating rules from a vector of tokens, i.e, for
- * performing the parsing of Stu syntax itself beyond tokenization.
- * This is a recursive descent parser. 
- * 
- * A Yacc-like description of Stu syntax is given in the manpage. 
+ * performing the parsing of Stu syntax beyond tokenization.
+ * This is a recursive descent parser written by hand. 
  */ 
 
 #include <set>
@@ -15,9 +13,16 @@
 #include "token.hh"
 
 /*
- * Operator precedence.  Higher in the list means higher precedence.  At
- * the moment, only prefix and circumfix operators exist, and thus the
- * precedence is trivial. 
+ * Stu has only prefix and circumfix operators, and therefore its syntax
+ * is trivial, i.e., there are no ambiguities, and no need to consider
+ * precendence levels or associativity. 
+ *
+ * A Yacc-like description of Stu syntax is given in the manpage. 
+ *
+ * In principle, the following gives operator precedences.  Higher in
+ * the list means higher precedence.  This list is to be understand as
+ * specifying in what order operators can be nested, not to disambguate
+ * expressions. 
  *
  * @...	     (prefix) Transient dependency; argument can only contain name
  * ---------------
@@ -36,8 +41,8 @@
 
 /* This code does not check that imcompatible constructs (like '!' and
  * '?' or '!' and '$[') are used together.  Instead, this is checked
- * within Execution and not here, because these can also come from
- * dynamic dependencies.  */  
+ * within Execution and not here, because these can also be combined
+ * from different sources, e.g., a file and a dynamic dependency. */ 
 
 /* An object of this type represents a location within a token list */ 
 class Parser
@@ -72,12 +77,12 @@ public:
 	static void get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
 					vector <shared_ptr <Token> > &tokens,
 					const Place &place_end,
-					Place_Param_Name &input,
+					Place_Name &input,
 					Place place_input);
 
 	/* Parse a dependency as given on the command line outside of
 	 * options */
-	static shared_ptr <Dependency> get_target_dependency(string text); 
+	static shared_ptr <Dependency> get_target_dep(string text); 
 
 private:
 
@@ -98,7 +103,7 @@ private:
 
 	/* RET is filled.  RET is empty when called. */
 	bool parse_expression_list(vector <shared_ptr <Dependency> > &ret, 
-				   Place_Param_Name &place_param_name_input,
+				   Place_Name &place_name_input,
 				   Place &place_input,
 				   const vector <shared_ptr <Place_Param_Target> > &targets);
 
@@ -106,17 +111,17 @@ private:
 	shared_ptr <Rule> parse_rule(); 
 
 	bool parse_expression(vector <shared_ptr <Dependency> > &ret, 
-			      Place_Param_Name &place_param_name_input,
+			      Place_Name &place_name_input,
 			      Place &place_input,
 			      const vector <shared_ptr <Place_Param_Target> > &targets);
 
-	shared_ptr <Dependency> parse_variable_dependency
-	(Place_Param_Name &place_param_name_input,
+	shared_ptr <Dependency> parse_variable_dep
+	(Place_Name &place_name_input,
 	 Place &place_input,
 	 const vector <shared_ptr <Place_Param_Target> > &targets);
 
-	shared_ptr <Dependency> parse_redirect_dependency
-	(Place_Param_Name &place_param_name_input,
+	shared_ptr <Dependency> parse_redirect_dep
+	(Place_Name &place_name_input,
 	 Place &place_input,
 	 const vector <shared_ptr <Place_Param_Target> > &targets);
 
@@ -153,8 +158,8 @@ private:
 	 * comes after the last slash, or the full target if it contains
 	 * no slashes.  Parameters are not considered for containing
 	 * slashes */
-	static void append_copy(      Param_Name &to,
-				const Param_Name &from);
+	static void append_copy(      Name &to,
+				const Name &from);
 };
 
 void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret)
@@ -207,7 +212,7 @@ shared_ptr <Rule> Parser::parse_rule()
 
 		Place place_target;
 		if (iter != tokens.end()) 
-			place_target= (*iter)->get_place();
+			place_target= (*iter)->get_place_start();
 
 		if (is_operator('@')) {
 			Place place_at= (*iter)->get_place();
@@ -219,7 +224,7 @@ shared_ptr <Rule> Parser::parse_rule()
 				throw ERROR_LOGICAL;
 			}
 			if (! is <Name_Token> ()) {
-				(*iter)->get_place() 
+				(*iter)->get_place_start() 
 					<< fmt("expected the name of transient target, not %s",
 					       (*iter)->format_start_word()); 
 				place_at << fmt("after %s", char_format_word('@'));
@@ -249,7 +254,7 @@ shared_ptr <Rule> Parser::parse_rule()
 					throw ERROR_LOGICAL;
 				}
 				else {
-					(*iter)->get_place() << 
+					(*iter)->get_place_start() << 
 						fmt("expected a filename, not %s",
 						    (*iter)->format_start_word());
 					place_output_new << 
@@ -270,7 +275,7 @@ shared_ptr <Rule> Parser::parse_rule()
 				place_output_new <<
 					fmt("there must not be a second output redirection %s",
 					    prefix_format_word(target_name->raw(), ">")); 
-				assert(place_param_targets[redirect_index]->place_param_name.get_n() == 0);
+				assert(place_param_targets[redirect_index]->place_name.get_n() == 0);
 				assert(place_param_targets[redirect_index]->type == Type::FILE); 
 				place_output <<
 					fmt("shadowing previous output redirection %s",
@@ -315,13 +320,13 @@ shared_ptr <Rule> Parser::parse_rule()
 
 	/* Check that all targets have the same set of parameters */ 
 	set <string> parameters_0;
-	for (const string &parameter:  place_param_targets[0]->place_param_name.get_parameters()) {
+	for (const string &parameter:  place_param_targets[0]->place_name.get_parameters()) {
 		parameters_0.insert(parameter); 
 	}
 	assert(place_param_targets.size() >= 1); 
 	for (unsigned i= 1;  i < place_param_targets.size();  ++i) {
 		set <string> parameters_i;
-		for (const string &parameter:  place_param_targets[i]->place_param_name.get_parameters()) {
+		for (const string &parameter:  place_param_targets[i]->place_name.get_parameters()) {
 			parameters_i.insert(parameter); 
 		}
 		if (parameters_i != parameters_0) {
@@ -350,7 +355,7 @@ shared_ptr <Rule> Parser::parse_rule()
 	bool had_colon= false;
 
 	/* Empty at first */ 
-	Place_Param_Name filename_input;
+	Place_Name filename_input;
 	Place place_input;
 
 	if (is_operator(':')) {
@@ -445,7 +450,7 @@ shared_ptr <Rule> Parser::parse_rule()
 				 * only parameters that also appear in
 				 * the target */
 				set <string> parameters;
-				for (auto &parameter:  place_param_targets[0]->place_param_name.get_parameters()) {
+				for (auto &parameter:  place_param_targets[0]->place_name.get_parameters()) {
 					parameters.insert(parameter); 
 				}
 				for (unsigned jj= 0;  jj < name_copy->get_n();  ++jj) {
@@ -512,7 +517,7 @@ shared_ptr <Rule> Parser::parse_rule()
 
 				/* Append target name when source ends
 				 * in slash */
-				append_copy(*name_copy, place_param_targets[0]->place_param_name); 
+				append_copy(*name_copy, place_param_targets[0]->place_name); 
 
 				return make_shared <Rule> (place_param_targets[0], name_copy,
 							   place_flag_exclam);
@@ -536,7 +541,7 @@ shared_ptr <Rule> Parser::parse_rule()
 					    place_param_targets[0]->format_word()); 
 				throw ERROR_LOGICAL;
 			} else {
-				(*iter)->get_place() << 
+				(*iter)->get_place_start() << 
 					fmt("expected a filename or %s, not %s", 
 					    char_format_word('{'),
 					    (*iter)->format_start_word()); 
@@ -616,7 +621,7 @@ shared_ptr <Rule> Parser::parse_rule()
 }
 
 bool Parser::parse_expression_list(vector <shared_ptr <Dependency> > &ret, 
-				  Place_Param_Name &place_param_name_input,
+				  Place_Name &place_name_input,
 				  Place &place_input,
 				  const vector <shared_ptr <Place_Param_Target> > &targets)
 {
@@ -625,7 +630,7 @@ bool Parser::parse_expression_list(vector <shared_ptr <Dependency> > &ret,
 	while (iter != tokens.end()) {
 		vector <shared_ptr <Dependency> > ret_new; 
 		bool r= parse_expression(ret_new, 
-					 place_param_name_input, 
+					 place_name_input, 
 					 place_input, targets);
 		if (!r) {
 			assert(ret_new.size() == 0); 
@@ -638,7 +643,7 @@ bool Parser::parse_expression_list(vector <shared_ptr <Dependency> > &ret,
 }
 
 bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret, 
-			     Place_Param_Name &place_param_name_input,
+			     Place_Name &place_name_input,
 			     Place &place_input,
 			     const vector <shared_ptr <Place_Param_Target> > &targets)
 {
@@ -650,7 +655,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 		check_concatenation(); 
 		++iter;
 		vector <shared_ptr <Dependency> > r;
-		while (parse_expression_list(r, place_param_name_input, place_input, targets)) {
+		while (parse_expression_list(r, place_name_input, place_input, targets)) {
 			ret.insert(ret.end(), r.begin(), r.end()); 
 			r.clear(); 
 		}
@@ -661,7 +666,10 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 			throw ERROR_LOGICAL;
 		}
 		if (! is_operator(')')) {
-			(*iter)->get_place() << fmt("expected %s", char_format_word(')'));
+			(*iter)->get_place_start() << 
+				fmt("expected %s, not %s", 
+				    char_format_word(')'),
+				    (*iter)->format_start_word());
 			place_paren << fmt("after opening %s",
 					    char_format_word('(')); 
 			throw ERROR_LOGICAL;
@@ -678,7 +686,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 		++iter;	
 		vector <shared_ptr <Dependency> > r2;
 		vector <shared_ptr <Dependency> > r;
-		while (parse_expression_list(r, place_param_name_input, place_input, targets)) {
+		while (parse_expression_list(r, place_name_input, place_input, targets)) {
 			r2.insert(r2.end(), r.begin(), r.end()); 
 			r.clear(); 
 		}
@@ -689,7 +697,10 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 			throw ERROR_LOGICAL;
 		}
 		if (! is_operator(']')) {
-			(*iter)->get_place() << fmt("expected %s", char_format_word(']'));
+			(*iter)->get_place_start() << 
+				fmt("expected %s, not %s", 
+				    char_format_word(']'),
+				    (*iter)->format_start_word());
 			place_bracket << fmt("after opening %s",
 					      char_format_word('[')); 
 			throw ERROR_LOGICAL;
@@ -721,11 +732,11 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
  	if (is_operator('!')) {
  		Place place_exclam= (*iter)->get_place();
  		++iter; 
-		if (! parse_expression(ret, place_param_name_input, place_input, targets)) {
+		if (! parse_expression(ret, place_name_input, place_input, targets)) {
 			if (iter == tokens.end()) 
 				place_end << "expected a dependency";
 			else
-				(*iter)->get_place() << 
+				(*iter)->get_place_start() << 
 					fmt("expected a dependency, not %s",
 					    (*iter)->format_start_word());
 			place_exclam << fmt("after %s",
@@ -744,11 +755,11 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
  		Place place_question= (*iter)->get_place();
  		++iter; 
 
-		if (! parse_expression(ret, place_param_name_input, place_input, targets)) {
+		if (! parse_expression(ret, place_name_input, place_input, targets)) {
 			if (iter == tokens.end()) {
 				place_end << "expected a dependency";
 			} else {
-				(*iter)->get_place() << 
+				(*iter)->get_place_start() << 
 					fmt("expected a dependency, not %s",
 					    (*iter)->format_start_word());
 			}
@@ -761,7 +772,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 			 * time. Note: Input redirection must not appear in
 			 * dynamic dependencies, and therefore it is sufficient
 			 * to check this here.     */   
-			if (! place_param_name_input.place.empty()) { 
+			if (! place_name_input.place.empty()) { 
 				place_input <<
 					fmt("input redirection using %s must not be used",
 					     char_format_word('<')); 
@@ -783,11 +794,11 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 	if (is_operator('&')) {
 		Place place_ampersand= (*iter)->get_place(); 
 		++iter;
-		if (! parse_expression(ret, place_param_name_input, place_input, targets)) {
+		if (! parse_expression(ret, place_name_input, place_input, targets)) {
 			if (iter == tokens.end()) {
 				place_end << "expected a dependency";
 			} else {
-				(*iter)->get_place() << 
+				(*iter)->get_place_start() << 
 					fmt("expected a dependency, not %s",
 					    (*iter)->format_start_word());
 			}
@@ -805,14 +816,14 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 		
 	/* '$' ; variable dependency */ 
 	shared_ptr <Dependency> dependency= 
-		parse_variable_dependency(place_param_name_input, place_input, targets);
+		parse_variable_dep(place_name_input, place_input, targets);
 	if (dependency != nullptr) {
 		ret.push_back(dependency); 
 		return true; 
 	}
 
 	shared_ptr <Dependency> r= 
-		parse_redirect_dependency(place_param_name_input, place_input, targets); 
+		parse_redirect_dep(place_name_input, place_input, targets); 
 	if (r != nullptr) {
 		ret.push_back(r);
 		return true; 
@@ -822,9 +833,9 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 }
 
 shared_ptr <Dependency> Parser
-::parse_variable_dependency(Place_Param_Name &place_param_name_input, 
-			    Place &place_input,
-			    const vector <shared_ptr <Place_Param_Target> > &targets)
+::parse_variable_dep(Place_Name &place_name_input, 
+		     Place &place_input,
+		     const vector <shared_ptr <Place_Param_Target> > &targets)
 {
 	(void) targets;
 	
@@ -886,7 +897,7 @@ shared_ptr <Dependency> Parser
 	
 	/* Name of variable dependency */ 
 	if (! is <Name_Token> ()) {
-		(*iter)->get_place() <<
+		(*iter)->get_place_start() <<
 			fmt("expected a filename, not %s",
 			    (*iter)->format_start_word()); 
 		if (has_input)
@@ -896,22 +907,21 @@ shared_ptr <Dependency> Parser
 			place_flag_last << fmt("after %s", 
 					       char_format_word(flag_last)); 
 		else
-			place_dollar << frmt("after %s$[%s",
-					     Color::word, Color::end);
+			place_dollar << fmt("after %s",
+					    multichar_format_word("$[")); 
 
 		throw ERROR_LOGICAL;
 	}
-	shared_ptr <Place_Param_Name> place_param_name= 
-		is <Name_Token> ();
+	shared_ptr <Place_Name> place_name= is <Name_Token> ();
 	++iter;
 
-	if (has_input && ! place_param_name_input.empty()) {
-		place_param_name->place << 
+	if (has_input && ! place_name_input.empty()) {
+		place_name->place << 
 			fmt("there must not be a second input redirection %s", 
-			    prefix_format_word(place_param_name->raw(), "<")); 
-		place_param_name_input.place << 
+			    prefix_format_word(place_name->raw(), "<")); 
+		place_name_input.place << 
 			fmt("shadowing previous input redirection %s<%s%s", 
-			    prefix_format_word(place_param_name_input.raw(), "<")); 
+			    prefix_format_word(place_name_input.raw(), "<")); 
 		if (targets.size() == 1) {
 			targets.front()->place <<
 				fmt("for target %s", targets.front()->format_word()); 
@@ -923,11 +933,11 @@ shared_ptr <Dependency> Parser
 	}
 
 	/* Check that the name does not contain '=' */ 
-	for (auto &j:  place_param_name->get_texts()) {
+	for (auto &j:  place_name->get_texts()) {
 		if (j.find('=') != string::npos) {
-			place_param_name->place <<
+			place_name->place <<
 				fmt("name of variable dependency %s must not contain %s",
-				    place_param_name->format_word(),
+				    place_name->format_word(),
 				     char_format_word('=')); 
 			explain_variable_equal(); 
 			throw ERROR_LOGICAL;
@@ -938,7 +948,7 @@ shared_ptr <Dependency> Parser
 	if (iter == tokens.end()) {
 		place_end << fmt("expected %s", char_format_word(']'));
 		place_dollar << fmt("after opening %s",
-				    name_format_word("$[")); 
+				    multichar_format_word("$[")); 
 		throw ERROR_LOGICAL;
 	}
 
@@ -953,43 +963,46 @@ shared_ptr <Dependency> Parser
 			place_equal << 
 				fmt("after %s in variable dependency %s",
 				    char_format_word('='),
-				    place_param_name->format_word()); 
+				    place_name->format_word()); 
 			throw ERROR_LOGICAL;
 		}
 		if (! is <Name_Token> ()) {
-			(*iter)->get_place() << 
+			(*iter)->get_place_start() << 
 				fmt("expected a filename, not %s",
 				    (*iter)->format_start_word());
 			place_equal << fmt("after %s in variable dependency %s",
 					   char_format_word('='),
-					   place_param_name->format_word()); 
+					   place_name->format_word()); 
 			throw ERROR_LOGICAL;
 		}
 
-		if (place_param_name->get_n() != 0) {
-			place_param_name->place << 
+		if (place_name->get_n() != 0) {
+			place_name->place << 
 				fmt("variable name %s must be unparametrized", 
-				    place_param_name->format_word());
+				    place_name->format_word());
 			throw ERROR_LOGICAL; 
 		}
 
-		variable_name= place_param_name->unparametrized();
+		variable_name= place_name->unparametrized();
 
-		place_param_name= is <Name_Token> ();
+		place_name= is <Name_Token> ();
 		++iter; 
 	}
 
 	/* Closing ']' */ 
 	if (! is_operator(']')) {
-		(*iter)->get_place() << fmt("expected %s", char_format_word(']'));
+		(*iter)->get_place_start() << 
+			fmt("expected %s, not %s", 
+			    char_format_word(']'),
+			    (*iter)->format_start_word());
 		place_dollar << fmt("after opening %s",
-				    name_format_word("$[")); 
+				    multichar_format_word("$[")); 
 		throw ERROR_LOGICAL;
 	}
 	++iter;
 
 	if (has_input) {
-		place_param_name_input= *place_param_name;
+		place_name_input= *place_name;
 	}
 
 	/* The place of the variable dependency as a whole is set on the
@@ -998,12 +1011,12 @@ shared_ptr <Dependency> Parser
 	 */
 	return make_shared <Direct_Dependency> 
 		(flags, 
-		 Place_Param_Target(Type::FILE, *place_param_name, place_dollar), 
+		 Place_Param_Target(Type::FILE, *place_name, place_dollar), 
 		 variable_name);
 }
 
-shared_ptr <Dependency> Parser::parse_redirect_dependency
-(Place_Param_Name &place_param_name_input,
+shared_ptr <Dependency> Parser::parse_redirect_dep
+(Place_Name &place_name_input,
  Place &place_input,
  const vector <shared_ptr <Place_Param_Target> > &targets)
 {
@@ -1013,7 +1026,6 @@ shared_ptr <Dependency> Parser::parse_redirect_dependency
 
 	if (is_operator('<')) {
 		place_input= (*iter)->get_place();
-
 		++iter;
 		has_input= true; 
 	}
@@ -1051,12 +1063,14 @@ shared_ptr <Dependency> Parser::parse_redirect_dependency
 
 	if (! is <Name_Token> ()) {
 		if (has_input) {
-			(*iter)->get_place() << "expected a filename";
+			(*iter)->get_place_start() << 
+				fmt("expected a filename, not %s",
+				    (*iter)->format_start_word());
 			place_input << fmt("after input redirection using %s",
 					    char_format_word('<')); 
 			throw ERROR_LOGICAL;
 		} else if (has_transient) {
-			(*iter)->get_place() 
+			(*iter)->get_place_start() 
 				<< fmt("expected the name of a transient target, not %s",
 				       (*iter)->format_start_word()); 
 			place_at << fmt("after %s",
@@ -1070,13 +1084,13 @@ shared_ptr <Dependency> Parser::parse_redirect_dependency
 	shared_ptr <Name_Token> name_token= is <Name_Token> ();
 	++iter; 
 
-	if (has_input && ! place_param_name_input.empty()) {
+	if (has_input && ! place_name_input.empty()) {
 		name_token->place << 
 			fmt("there must not be a second input redirection %s", 
 			    prefix_format_word(name_token->raw(), "<")); 
-		place_param_name_input.place << 
+		place_name_input.place << 
 			fmt("shadowing previous input redirection %s", 
-			    prefix_format_word(place_param_name_input.raw(), "<")); 
+			    prefix_format_word(place_name_input.raw(), "<")); 
 		if (targets.size() == 1) {
 			targets.front()->place <<
 				fmt("for target %s", targets.front()->format_word()); 
@@ -1089,8 +1103,8 @@ shared_ptr <Dependency> Parser::parse_redirect_dependency
 
 	Flags flags= 0;
 	if (has_input) {
-		assert(place_param_name_input.empty()); 
-		place_param_name_input= *name_token;
+		assert(place_name_input.empty()); 
+		place_name_input= *name_token;
 	}
 
 	return make_shared <Direct_Dependency>
@@ -1100,8 +1114,8 @@ shared_ptr <Dependency> Parser::parse_redirect_dependency
 				    has_transient ? place_at : name_token->place)); 
 }
 
-void Parser::append_copy(      Param_Name &to,
-			const Param_Name &from) 
+void Parser::append_copy(      Name &to,
+			 const Name &from) 
 {
 	/* Only append if TO ends in a slash */
 	if (! (to.last_text().size() != 0 &&
@@ -1153,7 +1167,7 @@ void Parser::get_rule_list(vector <shared_ptr <Rule> > &rules,
 void Parser::get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
 				vector <shared_ptr <Token> > &tokens,
 				const Place &place_end,
-				Place_Param_Name &input,
+				Place_Name &input,
 				Place place_input)
 {
 	auto iter= tokens.begin(); 
@@ -1168,7 +1182,7 @@ void Parser::get_expression_list(vector <shared_ptr <Dependency> > &dependencies
 	}
 }
 
-shared_ptr <Dependency> Parser::get_target_dependency(string text)
+shared_ptr <Dependency> Parser::get_target_dep(string text)
 {
 	Place place(Place::Type::ARGV);
 
@@ -1211,7 +1225,7 @@ shared_ptr <Dependency> Parser::get_target_dependency(string text)
 	shared_ptr <Dependency> ret= make_shared <Direct_Dependency> 
 		(0, Place_Param_Target
 		 (type, 
-		  Place_Param_Name
+		  Place_Name
 		  (string(begin_name, end_name - begin_name), 
 		   place)));
 
@@ -1255,6 +1269,9 @@ bool Parser::is_concatenating(shared_ptr <const Token> token, bool open)
 	assert(dynamic_pointer_cast <const Operator> (token));
 
 	const char op= dynamic_pointer_cast <const Operator> (token)->op; 
+
+	if (op == '@')
+		return true; 
 
 	if (open && (op == ')' || op == ']'))
 		return true;

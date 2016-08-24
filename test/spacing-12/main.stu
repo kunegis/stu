@@ -1,0 +1,10 @@
+# Error because there is no whitespace between ']' and '@'. 
+
+A: [C]@x
+{
+	touch A
+}
+
+C { touch C }
+
+@x;

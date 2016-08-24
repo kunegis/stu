@@ -48,7 +48,7 @@ These characters are single-character tokens.
 [ ]	Dynamic list
 >	Output redirection (target only)
 <	Input redirection (dependency only)
-!	Timestamp-ignoring dependency
+!	Persistent dependency
 ?	Optional dependency 
 &	Trivial dependency
 =	Assignment, copy, and named variable

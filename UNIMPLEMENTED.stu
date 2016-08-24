@@ -99,10 +99,10 @@ a.bib:  extra dependencies ... ;
 # result would be to let the second rule override the first. 
 
 #
-# Mark this target to always be a timestamp-ignoring dependency 
+# Mark this target to always be a persistent dependency 
 #
 
--e data: { mkdir data }
+-p data: { mkdir data }
 
 # Alternatively, we may introduce the rule that for directories, the
 # modification date is not used.  (Not a good idea because the date may
@@ -134,17 +134,17 @@ a.bib:  extra dependencies ... ;
 # inside at the moment.  
 #
 
-A:  !$[B] { ... }
+A:  -p $[B] { ... }
 
 #
-# Allow to combine '?' and '!'.  Reason for rejection:  This is not
+# Allow to combine -o and -p.  Reason for rejection:  This is not
 # needed as it would mean the command for 'B' would never be executed,
 # and 'B's existence or timestamp would also never be verified, making
-# '?!B' a no-op, and likely a bug.  It may of course be useful as a
+# '-po B' a no-op, and likely a bug.  It may of course be useful as a
 # corner case, so we may allow it in the future. 
 #
 
-A:  ?!B { ... }
+A:  -po B { ... }
 
 #
 # Set intersection with '&'.  Clashes with trivial dependencies and can

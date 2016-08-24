@@ -24,7 +24,6 @@ List of options
 -c  S      Explicit target without syntax (GNU Make:  change directory)
 -C  S   x  Specify syntax (same as non-option arguments)
 -d      G  Print debugging information 
--e  .      Timestamp-ignoring dependency 
 -e  ~ M G  Environment overrides Make macros
 -E  S      Explain errors
 -f  S M G  File
@@ -43,7 +42,9 @@ List of options
 -M  S      Seed mode
 -n  . M G  Dry run (just print commands)
 -N  .      Dry run, but build dynamic dependencies 
+-o  .      Optional dependency
 -o  .   G  GNU Make: Mark file as old
+-p  .      Persistent dependency
 -p  S M G  Print database (rule set)
 -q  S M G  Question mode / Query mode
 -Q  S      Quiet mode (suppress stdout messages, except building messages)
@@ -51,6 +52,7 @@ List of options
 -R      G  No builtin variables
 -s  S M G  Silent
 -S  - M G  No keep going
+-t  .      Trivial dependency
 -t  - M G  Touch instead of building
 -u  .      Consider all files up-to-date 
 -v  S   x  Verbose (GNU Make:  show version)

@@ -135,7 +135,7 @@ private:
 
 	/* Whether this target needs to be built.  When a
 	 * target is finished, this value is propagated to the parent
-	 * executions (except when the F_IGNORE_TIMESTAMP flag is set).  */ 
+	 * executions (except when the F_PERSISTENT flag is set).  */ 
 	bool need_build;
 
 	/* Whether we performed the check in execute()  */ 
@@ -400,7 +400,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	assert(done.get_k() == link.avoid.get_k()); 
 
 	if (targets.size() && targets.front().type == 0) {
-		assert(link.avoid.get_lowest() == (link.flags & ((1 << F_COUNT) - 1))); 
+		assert(link.avoid.get_lowest() == (link.flags & ((1 << C_TRANSITIVE) - 1))); 
 	}
 	done.check();
 
@@ -584,7 +584,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 				/* File exists */ 
 				Timestamp timestamp_file= Timestamp(&buf); 
 				timestamps_old[i]= timestamp_file;
- 				if (parent == nullptr || ! (link.flags & F_IGNORE_TIMESTAMP)) 
+ 				if (parent == nullptr || ! (link.flags & F_PERSISTENT)) 
 					warn_future_file(&buf, 
 							 target.name.c_str(), 
 							 rule == nullptr 
@@ -1172,7 +1172,7 @@ void Execution::unlink(Execution *const parent,
 	 * filename == "", this is unneccesary, but it's easier to not
 	 * check, since that happens only once. */
 	/* Don't propagate the timestamp of the dynamic dependency itself */ 
-	if (! (flags_child & F_IGNORE_TIMESTAMP) && ! (flags_child & F_READ)) {
+	if (! (flags_child & F_PERSISTENT) && ! (flags_child & F_READ)) {
 		if (child->timestamp.defined()) {
 			if (! parent->timestamp.defined()) {
 				parent->timestamp= child->timestamp;
@@ -1216,7 +1216,7 @@ void Execution::unlink(Execution *const parent,
 	parent->error |= child->error; 
 
 	if (child->need_build 
-	    && ! (flags_child & F_IGNORE_TIMESTAMP)
+	    && ! (flags_child & F_PERSISTENT)
 	    && ! (flags_child & F_READ)) {
 		parent->need_build= true; 
 	}
@@ -1408,7 +1408,7 @@ bool Execution::finished(Stack avoid) const
 		to_do_aggregate |= ~done.get(j) & ~avoid.get(j); 
 	}
 
-	return (to_do_aggregate & ((1 << F_COUNT) - 1)) == 0; 
+	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
 bool Execution::finished() const 
@@ -1424,7 +1424,7 @@ bool Execution::finished() const
 		to_do_aggregate |= ~done.get(j); 
 	}
 
-	return (to_do_aggregate & ((1 << F_COUNT) - 1)) == 0; 
+	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
 /* The declaration of this function is in job.hh */ 
@@ -1737,29 +1737,36 @@ void Execution::read_dynamics(Stack avoid,
 			assert(vec.size() == avoid_this.get_k());
 			avoid_this.pop(); 
 			dependency->add_flags(avoid_this.get_lowest()); 
-			if (dependency->get_place_ignore_timestamp().empty())
-				dependency->set_place_ignore_timestamp
-					(vec[target.type.get_dynamic_depth() - 1]
-					 ->get_place_ignore_timestamp()); 
-			if (dependency->get_place_optional().empty())
-				dependency->set_place_optional
-					(vec[target.type.get_dynamic_depth() - 1]
-					 ->get_place_optional()); 
-			if (dependency->get_place_trivial().empty())
-				dependency->set_place_trivial
-					(vec[target.type.get_dynamic_depth() - 1]
-					 ->get_place_trivial()); 
+			if (dependency->get_place_flag(I_PERSISTENT).empty())
+				dependency->set_place_flag
+					(I_PERSISTENT,
+					 vec[target.type.get_dynamic_depth() - 1]
+					 ->get_place_flag(I_PERSISTENT)); 
+			if (dependency->get_place_flag(I_OPTIONAL).empty())
+				dependency->set_place_flag
+					(I_OPTIONAL,
+					 vec[target.type.get_dynamic_depth() - 1]
+					 ->get_place_flag(I_OPTIONAL)); 
+			if (dependency->get_place_flag(I_TRIVIAL).empty())
+				dependency->set_place_flag
+					(I_TRIVIAL,
+					 vec[target.type.get_dynamic_depth() - 1]
+					 ->get_place_flag(I_TRIVIAL)); 
 
 			for (Type k= target.type - 1;  k.is_dynamic();  --k) {
 				avoid_this.pop(); 
 				Flags flags_level= avoid_this.get_lowest(); 
-				dependency= make_shared <Dynamic_Dependency> (flags_level, dependency); 
-				dependency->set_place_ignore_timestamp
-					(vec[k.get_dynamic_depth() - 1]->get_place_ignore_timestamp()); 
-				dependency->set_place_optional
-					(vec[k.get_dynamic_depth() - 1]->get_place_optional()); 
-				dependency->set_place_trivial
-					(vec[k.get_dynamic_depth() - 1]->get_place_trivial()); 
+				dependency= make_shared <Dynamic_Dependency> 
+					(flags_level, dependency); 
+				dependency->set_place_flag
+					(I_PERSISTENT,
+					 vec[k.get_dynamic_depth() - 1]->get_place_flag(I_PERSISTENT)); 
+				dependency->set_place_flag
+					(I_OPTIONAL,
+					 vec[k.get_dynamic_depth() - 1]->get_place_flag(I_OPTIONAL)); 
+				dependency->set_place_flag
+					(I_TRIVIAL,
+					 vec[k.get_dynamic_depth() - 1]->get_place_flag(I_TRIVIAL)); 
 			}
 
 			assert(avoid_this.get_k() == 0); 
@@ -2008,17 +2015,20 @@ bool Execution::deploy(const Link &link,
 		if (target.type == Type::TRANSIENT) { 
 			flags_child_additional |= link.flags; 
 			avoid_child.add_highest(link.flags);
-			if (link.flags & F_IGNORE_TIMESTAMP) {
-				link_child.dependency->set_place_ignore_timestamp
-					(link.dependency->get_place_ignore_timestamp()); 
+			if (link.flags & F_PERSISTENT) {
+				link_child.dependency->set_place_flag
+					(I_PERSISTENT,
+					 link.dependency->get_place_flag(I_PERSISTENT)); 
 			}
 			if (link.flags & F_OPTIONAL) {
-				link_child.dependency->set_place_optional
-					(link.dependency->get_place_optional()); 
+				link_child.dependency->set_place_flag
+					(I_OPTIONAL,
+					 link.dependency->get_place_flag(I_OPTIONAL)); 
 			}
 			if (link.flags & F_TRIVIAL) {
-				link_child.dependency->set_place_trivial
-					(link.dependency->get_place_trivial()); 
+				link_child.dependency->set_place_flag
+					(I_TRIVIAL,
+					 link.dependency->get_place_flag(I_TRIVIAL)); 
 			}
 		}
 	}
@@ -2026,17 +2036,17 @@ bool Execution::deploy(const Link &link,
 	Flags flags_child_new= flags_child | flags_child_additional; 
 
 	/* '!' and '?' do not mix, even for old flags */ 
-	if ((flags_child_new & F_IGNORE_TIMESTAMP) && 
+	if ((flags_child_new & F_PERSISTENT) && 
 	    (flags_child_new & F_OPTIONAL)) {
 
 		/* '!' and '?' encountered for the same target */ 
 
-		const Place &place_ignore_timestamp= 
-			link_child.dependency->get_place_ignore_timestamp();
+		const Place &place_persistent= 
+			link_child.dependency->get_place_flag(I_PERSISTENT);
 		const Place &place_optional= 
-			link_child.dependency->get_place_optional();
-		place_ignore_timestamp <<
-			fmt("declaration of timestamp-ignoring dependency with %s",
+			link_child.dependency->get_place_flag(I_OPTIONAL);
+		place_persistent <<
+			fmt("declaration of persistent dependency with %s",
 			     char_format_word('!')); 
 		place_optional <<
 			fmt("clashes with declaration of optional dependency with %s",
@@ -2052,19 +2062,21 @@ bool Execution::deploy(const Link &link,
 
 	/* Either of '!'/'?'/'&' does not mix with '$[' */
 	if ((flags_child & F_VARIABLE) &&
-	    (flags_child_additional & (F_IGNORE_TIMESTAMP | F_OPTIONAL | F_TRIVIAL))) {
+	    (flags_child_additional & (F_PERSISTENT | F_OPTIONAL | F_TRIVIAL))) {
 
 		assert(target_child.type == Type::FILE); 
 		const Place &place_variable= direct_dependency->place;
-		if (flags_child_additional & F_IGNORE_TIMESTAMP) {
-			const Place &place_flag= link_child.dependency->get_place_ignore_timestamp(); 
+		if (flags_child_additional & F_PERSISTENT) {
+			const Place &place_flag= 
+				link_child.dependency->get_place_flag(I_PERSISTENT); 
 			place_variable << 
-				fmt("variable dependency %s must not be declared as timestamp-ignoring dependency",
+				fmt("variable dependency %s must not be declared as persistent dependency",
 				    dynamic_variable_format_word(target_child.name)); 
 			place_flag << fmt("using %s",
 					   char_format_word('!')); 
 		} else if (flags_child_additional & F_OPTIONAL) {
-			const Place &place_flag= link_child.dependency->get_place_optional(); 
+			const Place &place_flag= 
+				link_child.dependency->get_place_flag(I_OPTIONAL); 
 			place_variable << 
 				fmt("variable dependency %s must not be declared as optional dependency",
 				    dynamic_variable_format_word(target_child.name)); 
@@ -2072,7 +2084,8 @@ bool Execution::deploy(const Link &link,
 					   char_format_word('?')); 
 		} else {
 			assert(flags_child_additional & F_TRIVIAL); 
-			const Place &place_flag= link_child.dependency->get_place_trivial(); 
+			const Place &place_flag= 
+				link_child.dependency->get_place_flag(I_TRIVIAL); 
 			place_variable << 
 				fmt("variable dependency %s must not be declared as trivial dependency",
 				    dynamic_variable_format_word(target_child.name)); 

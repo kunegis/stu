@@ -1,7 +1,8 @@
 #ifndef TIMESTAMP_HH
 #define TIMESTAMP_HH
 
-/* Wrapper around time_t or struct timespec.  There are two variants:
+/* 
+ * Wrapper around time_t or struct timespec.  There are two variants:
  *   - default:  1-second precision.
  *   - mtim:     nanosecond precision (in principle).  Works only on Linux; see below. 
  */
@@ -16,7 +17,8 @@
 
 #if USE_MTIM
 
-/* This variant works only on Linux.  Using CLOCK_REALTIME it does not work, as:
+/* 
+ * This variant works only on Linux.  Using CLOCK_REALTIME it does not work, as:
  *  (1) Two files created in a row have timestamps in the wrong order 
  *  (2) Files create during Stu runtime have a timestamp before the Stu
  *      startu timestamps. 
@@ -25,10 +27,10 @@
  * one nanosecond. 
  */
 
-/* Using CLOCK_REALTIME_COARSE (Linux only) works. 
- */ 
+/* Using CLOCK_REALTIME_COARSE (Linux only) works. */ 
 
-/* Note also that this implementation has such high precision, that bugs
+/* 
+ * Note also that this implementation has such high precision, that bugs
  * in Stu scripts may emerge which normally would have been hidden.  
  */
 
@@ -105,8 +107,7 @@ Timestamp Timestamp::startup= Timestamp::now();
 class Timestamp
 {
 private:
-	/* (time_t)-1 when undefined. 
-	 */
+	/* (time_t)-1 when undefined */
 	time_t t;
 
 	Timestamp(time_t t_)
@@ -149,8 +150,7 @@ public:
 	static const Timestamp UNDEFINED;
 
 	/* The time at which Stu was started.  Used to check that no generated
-	 * file must be older than that.  
-	 */
+	 * file must be older than that.  */
 	static Timestamp startup;
 
 	static Timestamp now() {

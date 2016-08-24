@@ -29,7 +29,7 @@
  * <...	     (prefix) Input redirection; argument cannot contain '()',
  *           '[]', '$[]' or '@' 
  * ---------------
- * !...	     (prefix) Timestamp-ignoring; argument cannot contain '$[]'
+ * !...	     (prefix) Persistent dependency; argument cannot contain '$[]'
  * ?...	     (prefix) Optional dependency; argument cannot contain '$[]'
  * &...      (prefix) Trivial dependency
  * ---------------
@@ -744,8 +744,8 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 			throw ERROR_LOGICAL;
 		}
 		for (auto &j:  ret) {
-			j->add_flags(F_IGNORE_TIMESTAMP);
-			j->set_place_ignore_timestamp(place_exclam); 
+			j->add_flags(F_PERSISTENT);
+			j->set_place_flag(I_PERSISTENT, place_exclam); 
 		}
 		return true;
 	}
@@ -784,7 +784,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 				
 			for (auto &j:  ret) {
 				j->add_flags(F_OPTIONAL); 
-				j->set_place_optional(place_question); 
+				j->set_place_flag(I_OPTIONAL, place_question); 
 			}
 		}
 		return true;
@@ -809,7 +809,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 		for (auto &j:  ret) {
 			if (! option_nontrivial)
 				j->add_flags(F_TRIVIAL); 
-			j->set_place_trivial(place_ampersand); 
+			j->set_place_flag(I_TRIVIAL, place_ampersand); 
 		}
 		return true;
 	}
@@ -871,7 +871,7 @@ shared_ptr <Dependency> Parser
 		flag_last= is <Operator> ()->op; 
 		if (is_operator('!')) {
 			place_flag_last= (*iter)->get_place();
-			flags |= F_IGNORE_TIMESTAMP; 
+			flags |= F_PERSISTENT; 
 		} else if (is_operator('?')) {
 			if (! option_nonoptional) {
 				(*iter)->get_place() << 
@@ -1231,11 +1231,11 @@ shared_ptr <Dependency> Parser::get_target_dep(string text)
 
 	while (q != begin) {
 		if (q[-1] == '!') {
-			ret->add_flags(F_IGNORE_TIMESTAMP); 
-			ret->set_place_ignore_timestamp(place);
+			ret->add_flags(F_PERSISTENT); 
+			ret->set_place_flag(I_PERSISTENT, place);
 		} else if (q[-1] == '?') {
 			ret->add_flags(F_OPTIONAL); 
-			ret->set_place_optional(place); 
+			ret->set_place_flag(I_OPTIONAL, place); 
 		} else if (q[-1] == '[') {
 			ret= make_shared <Dynamic_Dependency> (0, ret);
 			-- closing;

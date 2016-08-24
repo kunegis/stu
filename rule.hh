@@ -1,14 +1,17 @@
 #ifndef RULE_HH
 #define RULE_HH
 
-/* Data structures for representing rules. 
+/* 
+ * Data structures for representing rules. 
  */
 
 #include <unordered_map>
 
 #include "token.hh"
 
-/* A rule.  The class Rule allows parameters; there is no "unparametrized rule" class.  
+/* 
+ * A rule.  The class Rule allows parameters; there is no
+ * "unparametrized rule" class. 
  */ 
 class Rule
 {
@@ -19,8 +22,7 @@ public:
 	 * Each element contains all parameters of the rule,
 	 * and therefore should be used for iterating of all parameters.
 	 * The place in each target is used when referring to a target
-	 * specifically.  
-	 */ 
+	 * specifically.  */ 
 	const vector <shared_ptr <Place_Param_Target> > place_param_targets; 
 
 	/* The dependencies in order of declaration.  Dependencies are
@@ -38,7 +40,8 @@ public:
 	 * ends in a semicolon ';'.  */  
 	const shared_ptr <const Command> command;
 
-	/* When !is_copy:  The name of the file from which
+	/* 
+	 * When !is_copy:  The name of the file from which
 	 *   input should be read; must be one of the file dependencies.
 	 *   Empty for no input redirection.   
 	 * When is_copy: the file from which to copy; never empty
@@ -79,7 +82,7 @@ public:
 	 * flag is not used. */
 	Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	     shared_ptr <Place_Name> place_name_source_,
-	     const Place &place_ignore_timestamp);
+	     const Place &place_persistent);
 
 	/* Whether the rule is parametrized */ 
 	bool is_parametrized() const {
@@ -98,13 +101,13 @@ public:
 	/* Return the same rule as RULE, but with parameters having been
 	 * replaced by the given MAPPING.  
 	 * We pass THIS as PARAM_RULE explicitly so we can return it
-	 * itself when it is unparametrized. 
-	 */ 
+	 * itself when it is unparametrized.  */ 
 	static shared_ptr <Rule> instantiate(shared_ptr <Rule> rule,
 					     const map <string, string> &mapping);
 };
 
-/* A set of parametrized rules. 
+/* 
+ * A set of parametrized rules. 
  */
 class Rule_Set
 {
@@ -124,8 +127,7 @@ public:
 	 * While adding rules, check for duplicates, and print and throw
 	 * a logical error if there is. 
 	 * If the given rule has duplicate targets, print and throw a
-	 * logical error. 
-	 */ 
+	 * logical error.  */ 
 	void add(vector <shared_ptr <Rule> > &rules_);
 
 	/* Match TARGET to a rule, and return the instantiated
@@ -135,8 +137,7 @@ public:
 	 * When a match is found, write the original rule into
 	 * ORIGINAL_RULE and the matched parameters into MAPPING_OUT.   
 	 * Throws errors. 
-	 * PLACE is the place of the dependency; used in error messages. 
-	 */ 
+	 * PLACE is the place of the dependency; used in error messages.  */ 
 	shared_ptr <Rule> get(Target target, 
 			      shared_ptr <Rule> &rule_original,
 			      map <string, string> &mapping_out,
@@ -235,7 +236,7 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 
 Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	   shared_ptr <Place_Name> place_name_source_,
-	   const Place &place_ignore_timestamp)
+	   const Place &place_persistent)
 	:  place_param_targets{place_param_target_},
 	   place(place_param_target_->place),
 	   filename(*place_name_source_),
@@ -247,9 +248,9 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 		make_shared <Direct_Dependency> 
 		(0, Place_Param_Target(Type::FILE, *place_name_source_));
 
-	if (! place_ignore_timestamp.empty()) {
-		dependency->flags |= F_IGNORE_TIMESTAMP;
-		dependency->place_ignore_timestamp= place_ignore_timestamp;
+	if (! place_persistent.empty()) {
+		dependency->flags |= F_PERSISTENT;
+		dependency->places[I_PERSISTENT]= place_persistent;
 	}
 
 	/* Only the copy filename, with the F_COPY flag */
@@ -373,8 +374,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 	 * map by target filename(s), there can only be a single matching rule to
 	 * begin with.  (I.e., if multiple unparametrized rules for the same
 	 * filename exist, then that error is caught earlier when the
-	 * Rule_Set is built.)
-	 */ 
+	 * Rule_Set is built.)  */ 
 	auto i= rules_unparametrized.find(target);
 	if (i != rules_unparametrized.end()) {
 
@@ -398,8 +398,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 
 	/* Search the best parametrized rule.  Since this implementation
 	 * does not have an index for parametrized rules, we simply
-	 * check all rules, and choose the best-fitting one. 
-	 */ 
+	 * check all rules, and choose the best-fitting one.  */ 
 
 	/* Element [0] corresponds to the best rule. */ 
 	vector <shared_ptr <Rule> > rules_best;

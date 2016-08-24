@@ -1,32 +1,32 @@
 #ifndef LINK_HH
 #define LINK_HH
 
-/* Information about one parent--child link. 
+/* 
+ * Information about one parent--child link. 
  */ 
 class Link
 {
 public:
-	/* Negation of flags valid for each level. 
+	/* 
+	 * Negation of flags valid for each level. 
 	 * The length is one plus the dynamicity (number of dynamic
 	 * indirections).  Small indices indicate the links lower in the
 	 * hierarchy. 
-	 * This variable only holds the IGNORE_TIMESTAMP/OPTIONAL/TRIVIAL
+	 * This variable only holds the PERSISTENT/OPTIONAL/TRIVIAL
 	 * bits (i.e., transitive bits as defined by F_COUNT). 
 	 */
 	Stack avoid;
 
 	/* Flags that are valid for this dependency, including the
 	 * non-transitive ones.  The transitive-bit part of this
-	 * variable always equals the lowest level bits in AVOID. 
-	 */  
+	 * variable always equals the lowest level bits in AVOID.  */  
 	Flags flags;
 
 	/* The place of the declaration of the dependency */ 
 	Place place; 
 
 	/* This is null for the root target. 
-	 * May contain less flags than stored in AVOID and FLAGS. 
-	 */
+	 * May contain less flags than stored in AVOID and FLAGS.  */
 	shared_ptr <Dependency> dependency;
 
 	Link() { }
@@ -55,8 +55,7 @@ public:
 	}
 
 	/* The flags in this object only contain the top-level flags
-	 * of the dependency if this is a dynamic dependency. 
-	 */ 
+	 * of the dependency if this is a dynamic dependency.  */ 
 	Link(shared_ptr <Dependency> dependency_)
 		:  avoid(dependency_),
 		   flags(dependency_->get_flags()),
@@ -84,7 +83,8 @@ private:
 #endif
 };
 
-string Link::format_out() const {
+string Link::format_out() const 
+{
 	string text_dependency= 
 		dependency == nullptr 
 		? "NULL"
@@ -98,12 +98,13 @@ string Link::format_out() const {
 }
 
 #ifndef NDEBUG
-void Link::check() const {
+void Link::check() const 
+{
 	avoid.check();
 		
 	/* Check that the highest level in AVOID equals the
 	 * TRANSITIVE flags in FLAGS */ 
-	assert(avoid.get_highest() == (flags & ((1 << F_COUNT) - 1)));
+	assert(avoid.get_highest() == (flags & ((1 << C_TRANSITIVE) - 1)));
 
 	/* Check that the flags correspond to the flags in DEPENDENCY */
 	assert(dependency == nullptr ||

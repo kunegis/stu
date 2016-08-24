@@ -1,18 +1,14 @@
 #==== Version 2.0 ====   
 
-#
-# Use '-' options for the three flags !, ?, and &.   
-#
+# Change the -p option to e.g. -P
 
 A:  
-	-e X # timestamp-ignoring
+	-p X # persistent
 	-o X # optional
         -t X # trivial
 { ... }
 
-#
 # Deprecate !, ?, and &, and define as reserved for future extension. 
-#
 
 #==== Features of Stu 2:  Mandatory ====
 
@@ -33,7 +29,7 @@ A: [ -0 <B ] { xargs -0 ... }
 #
 # Make 
 #
-#    A = ? B ;
+#    A = -o B ;
 #
 # work:
 #   * Fail when both A and B are not present
@@ -60,15 +56,15 @@ A:  [B] * [C]; 	        # OK
 A:  (A B) * (C D); 	# OK
 A:  [B][C];             # OK
 A:  (A B)(C D);         # OK
-A:  (!B) * (C);    	# OK
-A:  (?B) * (C);    	# OK
-A:  (B) * (!C);    	# error
-A:  (B) * (?C);    	# error
-A:  (?B) * (!C);   	# error
+A:  (-p B) * (C);    	# OK
+A:  (-o B) * (C);    	# OK
+A:  (B) * (-p C);    	# error
+A:  (B) * (-o C);    	# error
+A:  (-o B) * (-p C);   	# error
 A:  (<B) * (C);    	# OK
 A:  (B) * (<C);    	# error
-A:  !B(C D);       	# OK
-A:  ?B(C D);       	# OK
+A:  -p B(C D);       	# OK
+A:  -o B(C D);       	# OK
 A:  <B(C);         	# OK
 A:  <B(C D);       	# error
 A:  @B(C);         	# OK
@@ -136,7 +132,7 @@ a.bib;
 #     ./$NAME.bib:  a .bib file in the current directory
 
 # Remove trailing slash from directory names.
-A:  ?tmp/ {...}
+A:  -o tmp/ {...}
 tmp: {...}
 
 #
@@ -158,9 +154,9 @@ tmp: {...}
 #==== Features of Stu 2:  Other features ====
 
 #
-# Recursive timestamp-ignoring dependency:  If the file exists, never
+# Recursive persistent dependency:  If the file exists, never
 # rebuild it, regardless whether its dependencies have to be rebuilt.
-# Actual timestamp-ignoring dependencies do not work like this, as they only
+# Actual persistent dependencies do not work like this, as they only
 # ignore the targets timestamp, but don't change anything about its
 # dependencies.  
 #
@@ -242,7 +238,7 @@ A: -o @x;
 A: B;
 
 #
-# Dynamic dependencies are "timestamp-ignoring" by default.  Make it
+# Dynamic dependencies are "persistent" by default.  Make it
 # possible to switch this off using '+e'.  This is useful when the
 # dynamic dependency file itself is used by the target, e.g. when
 # creating a tarball. 

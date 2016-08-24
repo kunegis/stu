@@ -18,7 +18,8 @@ void job_terminate_all();
 
 void job_print_jobs(); 
 
-/* Macro to write in an async signal-safe manner. 
+/* 
+ * Macro to write in an async signal-safe manner. 
  * 	FD must be 1 or 2.
  * 	MESSAGE must be a string literal. 
  * Ignore errors, as this is called from the interrupting signal handler. 
@@ -61,8 +62,7 @@ public:
 	 * FILENAME_INPUT are the files into which to redirect output and
 	 * input; either can be empty to denote no redirection. 
 	 * On error, output a message and return -1, otherwise return the
-	 * PID (>= 0).  MAPPING contains the environment variables to set. 
-	 */
+	 * PID (>= 0).  MAPPING contains the environment variables to set.  */
 	pid_t start(string command, 
 		    const map <string, string> &mapping,
 		    string filename_output,
@@ -81,8 +81,7 @@ public:
 	/* Block interrupt signals for the lifetime of an object of this type. 
 	 * Note that the mask of blocked signals is inherited over
 	 * exec(), so we must unblock signals also when starting child
-	 * processes. 
-	 */
+	 * processes.  */
 	class Signal_Blocker
 	{
 	private:
@@ -96,7 +95,8 @@ public:
 	};
 
 private:
-	/* -2:    process was not yet started.
+	/*
+	 * -2:    process was not yet started.
 	 * >= 0:  process was started but not yet waited for (just called
 	 *        "started" for short.  It may already be finished,
 	 * 	  i.e., a zombie.
@@ -107,7 +107,8 @@ private:
 	static void handler_termination(int sig);
 	static void handler_productive(int sig, siginfo_t *, void *);
 
-	/* The number of jobs run.  
+	/* 
+	 * The number of jobs run.  
 	 * exec:     executed
 	 * success:  returned successfully
 	 * fail:     returned as failing
@@ -176,8 +177,7 @@ pid_t Job::start(string command,
 	 * within the Makefile or in Make's parameters to a value that
 	 * *will* be used by Make instead of /bin/sh.  This is not possible
 	 * with Stu, because Stu does not have its own
-	 * set of variables.  Instead, there is the $STU_SHELL variable. 
-	 */
+	 * set of variables.  Instead, there is the $STU_SHELL variable.  */
 	static const char *shell= nullptr;
 	if (shell == nullptr) {
 		shell= getenv("STU_SHELL");
@@ -199,8 +199,7 @@ pid_t Job::start(string command,
 
 	/* Each child process is given, as process group ID, its process
 	 * ID.  This ensures that we can kill each child by killing its
-	 * corresponding process group ID. 
-	 */
+	 * corresponding process group ID.  */
 
 	/* Execute this in both the child and parent */ 
 	int pid_child= pid;
@@ -217,8 +216,7 @@ pid_t Job::start(string command,
 		/* We are the child process */ 
 
 		/* Instead of throwing exceptions, use perror() and
-		 * _Exit().  We return 127, as done e.g. by posix_spawn().  
-		 */ 
+		 * _Exit().  We return 127, as done e.g. by posix_spawn().  */ 
 
 		in_child= 1; 
 
@@ -284,8 +282,7 @@ pid_t Job::start(string command,
 		 * command followed by a colon, the line number, a colon
 		 * and the column number.
 		 * This makes the shell if it reports an error make the
-		 * most useful output. 
-		 */
+		 * most useful output.  */
 		const string argv0= place_command.as_argv0(); 
 
 		/* The one-character options to the shell */
@@ -298,7 +295,8 @@ pid_t Job::start(string command,
 		const char *argv[]= {argv0.c_str(), 
 				     shell_options, "-c", arg, nullptr}; 
 
-		/* Special handling of the case when the command
+		/* 
+		 * Special handling of the case when the command
 		 * starts with '-' or '+'.  In that case, we prepend
 		 * a space to the command.  We cannot use '--' as
 		 * prescribed by POSIX because Linux and FreeBSD handle
@@ -419,8 +417,7 @@ pid_t Job::start_copy(string target,
 
 		/* Using '--' as an argument guarantees that the two
 		 * filenames will be interpreted as filenames and not as
-		 * options, in particular when they begin with a dash. 
-		 */
+		 * options, in particular when they begin with a dash.  */
 		const char *argv[]= {cp_command,
 				     "--",
 				     source.c_str(),
@@ -557,7 +554,8 @@ void Job::Statistics::print(bool allow_unterminated_jobs)
 	printf("STATISTICS  Note: children execution times exclude running jobs\n"); 
 }
 
-/* The signal handler -- terminate all processes and quit. 
+/* 
+ * The signal handler -- terminate all processes and quit. 
  */
 void Job::handler_termination(int sig)
 {
@@ -634,7 +632,8 @@ Job::Signal::Signal()
 	/* This function is called once on Stu startup from a static
 	 * constructor, and sets up all signals. */ 
 
-	/* There are two types of signals handled by Stu:
+	/* 
+	 * There are two types of signals handled by Stu:
 	 *    - Termination signals which make programs abort.  Stu
 	 *      must catch them in order to stop its child processes,
 	 *      and will then raise them again. 
@@ -662,9 +661,9 @@ Job::Signal::Signal()
 		exit(ERROR_FATAL); 
 	}
 
+	/* These are all signals that by default would terminate the
+	 * process.  */   
 	const static int signals_termination[]= { 
-		/* These are all signals that by default would terminate
-		 * the process. */  
 		SIGTERM, SIGINT, SIGQUIT, SIGABRT, SIGSEGV, SIGPIPE, 
 		SIGILL, SIGHUP, 
 	};

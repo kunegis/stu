@@ -34,14 +34,18 @@ enum
 	 * Transitive flags
 	 */ 
 
+	I_PERSISTENT       = 0,
+	I_OPTIONAL         = 1,
+	I_TRIVIAL          = 2,
+
 	/* (!) When the dependency is newer than the target, don't rebuild */ 
-	F_IGNORE_TIMESTAMP = (1 << 0),  
+	F_PERSISTENT       = (1 << I_PERSISTENT),  
 
 	/* (?) Don't create the dependency if it doesn't exist */
-	F_OPTIONAL         = (1 << 1),
+	F_OPTIONAL         = (1 << I_OPTIONAL),
 
 	/* (&) Trivial dependency */
-	F_TRIVIAL          = (1 << 2),
+	F_TRIVIAL          = (1 << I_TRIVIAL),
 
 	/* 
 	 * Intransitive flags
@@ -57,14 +61,12 @@ enum
 	/* Used only in Link.flags in the second pass.  Not used for
 	 * dependencies.  Means to override all trivial flags. */ 
 	F_OVERRIDETRIVIAL  = (1 << 5),
+
+
+	/* Counts */ 
+	C_TRANSITIVE       = 3,
+	C_ALL              = 7
 };
-
-/* Number of flags that are used, i.e., are transitive.  They correspond
- * to the first N flags declared in Flag. */ 
-const int F_COUNT= 3;
-
-/* Total count */
-const int F_ALL=  7;
 
 /* Characters representing the individual flags -- used in verbose mode
  * output */ 
@@ -74,7 +76,7 @@ const char *const FLAGS_CHARS= "!?&`$*=";
 string flags_format(Flags flags) 
 {
 	string ret= "";
-	for (int i= 0;  i < F_ALL;  ++i)
+	for (int i= 0;  i < C_ALL;  ++i)
 		if (flags & (1 << i))  ret += FLAGS_CHARS[i]; 
 	return ret;
 }
@@ -100,13 +102,10 @@ public:
 	/* Where the dependency as a whole is declared */ 
 	virtual const Place &get_place() const= 0;
 
-	virtual const Place &get_place_ignore_timestamp() const= 0;
-	virtual const Place &get_place_optional () const= 0; 
-	virtual const Place &get_place_trivial  () const= 0;
+	/* Get the place of a single flag */ 
+	virtual const Place &get_place_flag(int i) const= 0;
 
-	virtual void set_place_ignore_timestamp(const Place &place)= 0;
-	virtual void set_place_optional (const Place &place)= 0;
-	virtual void set_place_trivial  (const Place &place)= 0;
+	virtual void set_place_flag(int i, const Place &place)= 0;
 
 	virtual string format(Style, bool &quotes) const= 0; 
 	virtual string format_word() const= 0; 
@@ -128,9 +127,7 @@ public:
 
 	Flags flags;
 
-	Place place_ignore_timestamp;
-	Place place_optional; 
-	Place place_trivial;
+	Place places[C_TRANSITIVE]; 
 
 	Base_Dependency(Flags flags_) 
 		:  flags(flags_)
@@ -150,28 +147,14 @@ public:
 		flags |= flags_; 
 	}
 
-	const Place &get_place_ignore_timestamp() const {
-		return place_ignore_timestamp; 
+	const Place &get_place_flag(int i) const {
+		assert(i >= 0 && i < C_TRANSITIVE);
+		return places[i];
 	}
 
-	const Place &get_place_optional() const {
-		return place_optional; 
-	}
-
-	const Place &get_place_trivial() const {
-		return place_trivial; 
-	}
-
-	void set_place_ignore_timestamp(const Place &place_) {
-		place_ignore_timestamp= place_;
-	}
-
-	void set_place_optional(const Place &place_) {
-		place_optional= place_; 
-	}
-
-	void set_place_trivial(const Place &place_) {
-		place_trivial= place_; 
+	void set_place_flag(int i, const Place &place) {
+		assert(i >= 0 && i < C_TRANSITIVE);
+		places[i]= place; 
 	}
 };
 
@@ -414,7 +397,7 @@ public:
 	/* Check the internal consistency of this object */ 
 	void check() const {
 		assert(k + 1 < CHAR_BIT * sizeof(int)); 
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			/* Only the (K+1) first bits may be set */ 
 			assert((bits[i] & ~((1 << (k+1)) - 1)) == 0); 
 		}
@@ -432,7 +415,7 @@ public:
 	explicit Stack(Flags flags)
 		:  k(0)
 	{
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			bits[i]= ((flags & (1 << i)) != 0);
 		}
 		check(); 
@@ -462,7 +445,7 @@ public:
 	Flags get_lowest() const {
 		check(); 
 		Flags ret= 0;
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			ret |= ((bits[i] & 1) << i);
 		}
 		return ret;
@@ -471,7 +454,7 @@ public:
 	Flags get_highest() const {
 		check(); 
 		Flags ret= 0;
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			ret |= (((bits[i] >> k) & 1) << i);
 		}
 		return ret;
@@ -482,7 +465,7 @@ public:
 		assert(k == 0);
 		check();
 		Flags ret= 0;
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			ret |= bits[i] << i;
 		}
 		return ret;
@@ -490,7 +473,7 @@ public:
 
 	Flags get(int j) const {
 		Flags ret= 0;
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			ret |= ((bits[i] >> j) & 1) << i;
 		}
 		return ret;
@@ -499,7 +482,7 @@ public:
 	void add(Stack stack_) {
 		check(); 
 		assert(stack_.get_k() == this->get_k()); 
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			this->bits[i] |= stack_.bits[i]; 
 		}
 	}
@@ -508,7 +491,7 @@ public:
 	void add_neg(Stack stack_) {
 		check(); 
 		assert(stack_.get_k() == this->get_k()); 
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			this->bits[i] |= ((1 << (k+1)) - 1) ^ stack_.bits[i]; 
 		}
 		check(); 
@@ -516,28 +499,28 @@ public:
 
 	void add_lowest(Flags flags) {
 		check();
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			bits[i] |= ((flags & (1 << i)) != 0);
 		}
 	}
 
 	void add_highest(Flags flags) {
 		check();
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			bits[i] |= ((flags & (1 << i)) != 0) << k;
 		}
 	}
 
 	void rem_highest(Flags flags) {
 		check(); 
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			bits[i] &= ~(((flags & (1 << i)) != 0) << k);
 		}
 	}
 
 	void add_highest_neg(Flags flags) {
 		check();
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			bits[i] |= ((flags & (1 << i)) == 0) << k;
 		}
 	}
@@ -546,7 +529,7 @@ public:
 	void add_one_neg(Flags flags) {
 		assert(k == 0);
 		check();
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			bits[i] |= ((flags >> i) & 1) ^ 1;
 		}
 	}
@@ -556,7 +539,7 @@ public:
 		assert(this->k == 0);
 		assert(stack_.k == 0);
 		check();
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			this->bits[i] |= stack_.bits[i] ^ 1;
 		}
 	}
@@ -569,7 +552,7 @@ public:
 			throw ERROR_FATAL; 
 		}
 		++k;
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			bits[i] <<= 1;
 		}
 	}
@@ -578,7 +561,7 @@ public:
 	void pop() {
 		assert(k > 0); 
 		--k;
-		for (int i= 0;  i < F_COUNT;  ++i) {
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			bits[i] >>= 1;
 		}
 	}
@@ -599,7 +582,7 @@ private:
 	unsigned k;
 
 	/* The bits */ 
-	unsigned bits[F_COUNT];
+	unsigned bits[C_TRANSITIVE];
 };
 
 Dependency::~Dependency() { }

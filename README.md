@@ -45,12 +45,12 @@ The design considerations of Stu are:
   them unsuitable for general use. 
 * Files are the central datatype.  Everything is a file.  You can think
   of Stu as "a declarative programming language in which all variables
-  are files."  For instance, Stu has no variables like Make; instead, files
-  are used.  Other Make replacements are even worse than Make in this
-  regard, and allow any variable in whatever programming language they
-  are using.  Stu is based on the Unix principle that any persistent
-  object should have a name in the file system -- "everything is a
-  file". 
+  are files."  For instance, Stu has no variables like Make; instead,
+  files are used.  Other Make replacements are even worse than Make in
+  this regard, and allow any variable in whatever programming language
+  they are using.  Stu is based on the Unix principle that any
+  persistent object should have a name in the file system -- "Everything
+  is a file".  
 * Scalability:  Assume that projects are so large that you can't just
   clean and rebuild everything if there are build inconsistencies.
   Files are sacred; never make the user delete files in order to rebuild
@@ -84,7 +84,9 @@ The design considerations of Stu are:
   written now will still work in the future.  
 * Familiarity:  Stu follows the conventions of Make as much as possible,
   to make it easier to make the switch from Make to Stu.  For instance,
-  the options -j and -k work like in Make.  
+  the options -j and -k work like in Make.  Also, Stu source can be
+  edited with syntax highlighting for the shell, as the syntaxes are
+  very similar.  
 
 ## Comparison to Make
 
@@ -119,7 +121,7 @@ Make are:
   allows and encourages all program logic to be implemented in ordinary
   rules, i.e. using a proper shell.  
 * Stu supports additional types of dependencies which are essential in
-  large, complex projects, such as timestamp-ignoring dependencies with
+  large, complex projects, such as persistent dependencies with
   the prefix '!', optional dependencies with '?', and trivial
   dependencies with '&'.  These can only be emulated partially with Make
   by using unwieldy constructs. 

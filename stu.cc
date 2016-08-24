@@ -87,14 +87,12 @@ const char VERSION_INFO[]=
 void init_buf(); 
 
 /* Parse a string of dependencies and add them to the vector. Used for
- * the -C option.
- */
+ * the -C option.  */
 void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 			       const char *string_);
 
 /* Add a single dependency from the given STRING, in syntax used for
- * optionless arguments  
- */
+ * optionless arguments.  */
 void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
 			       const char *string_);
 
@@ -102,8 +100,7 @@ void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
  * for the -f option and the default input file.  If not yet non-null,
  * set RULE_FIRST to the first rule.  FILE_FD can be -1 or the FD or the
  * filename, if already opened.  If FILENAME is "-", use standard
- * input.   If FILENAME is "", use the default file ('main.stu'). 
- */
+ * input.   If FILENAME is "", use the default file ('main.stu').  */
 void read_file(string filename,
 	       int file_fd,
 	       Rule_Set &rule_set, 
@@ -505,4 +502,3 @@ void read_option_F(const char *s,
 		}
 	}
 }
-

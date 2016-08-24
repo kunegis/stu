@@ -50,6 +50,18 @@ To migrate existing code, insert whitespace where appropriate.
 This change was made to prepare for the concatenation feature that will
 be implemented in Stu 2. 
 
+(4) The syntax for flags was changed.
+
+!  is now written as  -p   (persistent dependencies)
+?  is now written as  -o   (optional dependencies)
+&  is now written as  -t   (trivial dependencies)
+
+Code must be changed accordingly. 
+
+(5) Changes in terminology:  
+
+- Timestamp-ignoring dependencies are now called persistent dependencies 
+
 == Version 0 -> Version 1 ==
 
 (1) Timestamp-ignoring dependencies are noted by '!' instead of '*'.  The

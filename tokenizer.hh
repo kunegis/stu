@@ -22,7 +22,8 @@ public:
 	
 	enum Context { SOURCE, DYNAMIC, OPTION_C, OPTION_F };
 
-	/* Parse the tokens from the file FILENAME.  
+	/* 
+	 * Parse the tokens from the file FILENAME.  
 	 *
 	 * The given file descriptor FD may optionally be that file
 	 * already opened.  If the file was not yet opened, FD is -1.
@@ -176,7 +177,8 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 	struct stat buf;
 	FILE *file= nullptr; 
 
-	/* false:  use mmap()
+	/* 
+	 * false:  use mmap()
 	 * true:   use malloc()
 	 */
 	bool use_malloc;
@@ -367,7 +369,8 @@ shared_ptr <Command> Tokenizer::parse_command()
 
 	const char *const p_beg= p;
 
-	/* The following is to determine the place of the command.  These
+	/* 
+	 * The following is to determine the place of the command.  These
 	 * rules are intended to make the editor go to the correct place to
 	 * enter a command into the editor when the command is empty. 
 	 * - If there is non-whitespace in the command, the place is the
@@ -970,7 +973,9 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				filenames.push_back(filename); 
 
 				if (includes.count(filename_include)) {
-					/* Do nothing -- file was already parsed, or is being parsed */  
+					/* Do nothing -- file was
+					 * already parsed, or is being
+					 * parsed.  */  
 				
 					/* It is an error if a file includes
 					 * itself directly or indirectly */ 

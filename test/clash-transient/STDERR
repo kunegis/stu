@@ -1,4 +1,4 @@
-main.stu:7:6: declaration of timestamp-ignoring dependency with '!'
+main.stu:7:6: declaration of persistent dependency with '!'
 main.stu:5:5: clashes with declaration of optional dependency with '?'
 main.stu:7:7: in declaration of dependency 'B'
 main.stu:5:6: @x is needed by 'A'

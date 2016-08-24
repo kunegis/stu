@@ -777,9 +777,8 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 
 bool Tokenizer::is_name_char(char c) 
 {
-	return
-		(c >= 0x20 && c < 0x7F /* ASCII printable character */ 
-		 && nullptr == strchr(" \n\t\f\v\r[]\"\':={}#<>@$;()%*\\!?|&", c))
+	return (c > 0x20 && c < 0x7F /* ASCII printable character except space */ 
+		&& nullptr == strchr("[]\"\':={}#<>@$;()%*\\!?|&", c))
 		|| ((unsigned char) c) >= 0x80;
 }
 

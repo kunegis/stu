@@ -155,7 +155,7 @@ int main(int argc, char **argv, char **envp)
 			case 'J': option_literal= true;        break;
 			case 'k': option_keep_going= true;     break;
 			case 'K': option_no_delete= true;      break;
-			case 'P': option_print= true;          break; 
+			case 'P': option_print= true;          break;  
 			case 'q': option_question= true;       break;
 			case 'Q': option_quiet= true;          break; 
 			case 's': output_mode= Output::SILENT; break;

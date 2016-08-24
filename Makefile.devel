@@ -39,7 +39,10 @@ CXXFLAGS_DEBUG=  -ggdb -Og \
     -Wsuggest-attribute=noreturn -Wsuggest-attribute=format  \
     -Wlogical-op -Wredundant-decls \
     -Werror                 \
-    -fno-gnu-keywords       \
+    -fno-gnu-keywords       
+
+# TODO using a newer G++ version, try out:
+#    -fsanitize=address -fsanitize=leak -fsanitize=undefined 
 
 CXXFLAGS_PROF=   -pg -O3 -DNDEBUG 
 

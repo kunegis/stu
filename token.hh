@@ -5,7 +5,7 @@
  * Data structures for representing tokens.  
  *
  * There are three types of tokens:  
- *   - operators (all single characters)
+ *   - operators (all single characters operators and flags)
  *   - names (including all their quoting mechanisms)
  *   - commands (delimited by { }) 
  */
@@ -38,15 +38,21 @@ public:
 	virtual string format_start_word() const= 0;
 };
 
-/* An operator, e.g. ':', '[', etc.  Operators are all single
- * characters.  */  
+/* 
+ * An operator, e.g. ':', '[', etc.  Operators are all single
+ * characters.  
+ *
+ * Flags are also counted as operators, e.g., -p, -o and -t.  In that
+ * case the individual letter is stored.  This is the case when
+ * isalnum(op) is true. 
+ */  
 class Operator
 	:  public Token
 {
 public: 
 
-	/* The operator as a character, e.g. ':', '[', etc.  All
-	 * operators are single characters.  */  
+	/* The operator as a character, e.g. ':', '[', etc.  For flags,
+	 * the flag character, e.g. 'p', 'o', etc.  */
 	const char op; 
 
 	const Place place; 

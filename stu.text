@@ -104,9 +104,9 @@ OPTIONS
        -M STRING
               Run jobs in pseudorandom order, seeded by the given string.
 
-       -p     Print the set of rules to standard output and exit.   Note  that
-              Make also has a -p option to print the rules, but does not exit.
-              The output format is not specified.
+       -P     Print the set of rules to standard output and exit.   Note  that
+              Make has a -p option to print the rules, but does not exit.  The
+              output format is not specified.
 
        -q     Question mode.  Do not execute any commands.  Instead, determine
               whether  the  given  targets are up to date.  The exit code is 0
@@ -834,4 +834,4 @@ SEE ALSO
 
 
 
-stu-2.0.9                         August 2016                           STU(1)
+stu-2.0.10                        August 2016                           STU(1)

@@ -6,13 +6,13 @@ Legend
 ======
 
 S   Implemented in Stu
+M   Specified by POSIX Make
+G   Implemented in GNU Make
 .   Proposed for Stu 
 -   Not proposed for Stu, but the option is purposefully kept unused in
     case we want to use it for Stu 
 ~   Not applicable to Stu 
-M   Compatible with POSIX Make
-G   Compatible with GNU Make
-x   Incompatible with POSIX Make
+x   Incompatible 
 
 
 List of options
@@ -21,7 +21,7 @@ List of options
 -a  S      Consider trivial dependencies to be non-trivial
 -b  .   x  Enable backups (GNU Make: compatibility)
 -B  .   G  Re-make all
--c  S      Explicit target without syntax (GNU Make:  change directory)
+-c  S   x  Explicit target without syntax (GNU Make:  change directory)
 -C  S   x  Specify syntax (same as non-option arguments)
 -d      G  Print debugging information 
 -e  ~ M G  Environment overrides Make macros
@@ -45,7 +45,8 @@ List of options
 -o  .      Optional dependency
 -o  .   G  GNU Make: Mark file as old
 -p  .      Persistent dependency
--p  S M G  Print database (rule set)
+-p  x M G  Print database (rule set)
+-P  S      Print database (rule set)
 -q  S M G  Question mode / Query mode
 -Q  S      Quiet mode (suppress stdout messages, except building messages)
 -r    M G  No builtin rules

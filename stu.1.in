@@ -95,8 +95,8 @@ similar to Make. When ORDER is 'random', the order in which jobs are run
 is randomized within each target.  
 .IP "-M STRING"
 Run jobs in pseudorandom order, seeded by the given string. 
-.IP "-p"
-Print the set of rules to standard output and exit.  Note that Make also
+.IP "-P"
+Print the set of rules to standard output and exit.  Note that Make 
 has a -p option to print the rules, but does not exit.  The output
 format is not specified. 
 .IP "-q"

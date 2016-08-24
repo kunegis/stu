@@ -50,7 +50,12 @@ To migrate existing code, insert whitespace where appropriate.
 This change was made to prepare for the concatenation feature that will
 be implemented in Stu 2. 
 
-(4) The syntax for flags was changed.
+(4) The -p option (print the rule database) is now written with the
+uppercase -P.  This is now different from Make's -p option, with which
+Stu's -p was not compatible anyway, because Stu exited after printing
+the database. 
+
+(5) The syntax for flags was changed.
 
 !  is now written as  -p   (persistent dependencies)
 ?  is now written as  -o   (optional dependencies)
@@ -58,7 +63,7 @@ be implemented in Stu 2.
 
 Code must be changed accordingly. 
 
-(5) Changes in terminology:  
+(6) Changes in terminology:  
 
 - Timestamp-ignoring dependencies are now called persistent dependencies 
 

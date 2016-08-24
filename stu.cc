@@ -38,7 +38,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-const char OPTIONS[]= "ac:C:Ef:F:ghj:JkKm:M:pqQsvVwxyz"; 
+const char OPTIONS[]= "ac:C:Ef:F:ghj:JkKm:M:PqQsvVwxyz"; 
 
 /* The output of the help (-h) option.  The following strings do not
  * contain tabs, but only space characters.  */   
@@ -63,7 +63,7 @@ const char HELP[]=
 	"     dfs           (default) Depth-first order, like in Make\n"	      
 	"     random        Random order\n"				              
 	"  -M STRING        Pseudorandom run order, seeded by given string\n"         
-	"  -p               Print the rules and exit\n"                               
+	"  -P               Print the rules and exit\n"                               
 	"  -q               Question mode; check whether targets are up to date\n"    
 	"  -Q               Quiet mode; suppress special stdout messages\n"           
 	"  -s               Silent mode; do not output commands\n"	              
@@ -155,7 +155,7 @@ int main(int argc, char **argv, char **envp)
 			case 'J': option_literal= true;        break;
 			case 'k': option_keep_going= true;     break;
 			case 'K': option_no_delete= true;      break;
-			case 'p': option_print= true;          break; 
+			case 'P': option_print= true;          break; 
 			case 'q': option_question= true;       break;
 			case 'Q': option_quiet= true;          break; 
 			case 's': output_mode= Output::SILENT; break;

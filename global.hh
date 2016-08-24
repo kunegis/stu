@@ -24,7 +24,7 @@ static bool option_keep_going= false;
 /* The -K option (don't delete partially built files) */
 static bool option_no_delete= false;
 
-/* The -p option (print rules) */
+/* The -P option (print rules) */
 static bool option_print= false;
 
 /* The -q option (question mode) */

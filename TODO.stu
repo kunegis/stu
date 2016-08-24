@@ -1,7 +1,5 @@
 #==== Version 2.0 ====   
 
-# Change the -p option to e.g. -P
-
 A:  
 	-p X # persistent
 	-o X # optional

@@ -89,7 +89,7 @@ public:
 		return place_param_targets.front()->place_name.get_n() != 0; 
 	}
 
-	/* Format the rule, as for the -p option */ 
+	/* Format the rule, as for the -P option */ 
 	string format_out() const; 
 
 	const vector <string> &get_parameters() const
@@ -143,7 +143,7 @@ public:
 			      map <string, string> &mapping_out,
 			      const Place &place);
 
-	/* Print the rule set to standard output, as used in the -p option */  
+	/* Print the rule set to standard output, as used in the -P option */  
 	void print() const;
 };
 

@@ -1,7 +1,6 @@
-
 # Try with both -j2 and not. 
 
-A: ?B B {
+A: -o B B {
 	cp B A
 }
 

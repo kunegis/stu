@@ -1,5 +1,5 @@
 # Error 
 
-A:  ?[B] { touch A }   
+A:  -o [B] { touch A }   
 
->B { echo '!C' } 
+>B { echo '-p C' } 

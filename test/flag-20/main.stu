@@ -1,0 +1,4 @@
+# Error
+
+A:  & B { touch A }
+B { touch B }

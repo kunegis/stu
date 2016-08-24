@@ -1,7 +1,7 @@
 
 # is possible
 
->A: $[!&B] {
+>A: $[-p -t B] {
 	echo "$B"
 }
 

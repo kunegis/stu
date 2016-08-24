@@ -1,0 +1,8 @@
+# Error:  missing name after flag
+
+A:  -p; B 
+{
+	touch A
+}
+
+B { touch B }

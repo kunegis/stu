@@ -1,4 +1,4 @@
-A: [?@x] { touch A }
+A: [-o @x] { touch A }
 
 @x: X;
 

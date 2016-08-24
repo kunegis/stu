@@ -1,6 +1,6 @@
 # An optional trivial dependency.
 
->A: B ?&C
+>A: B -o -t C
 {
 	[ -e C ] && cat C
 	cat B

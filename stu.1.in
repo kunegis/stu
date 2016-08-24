@@ -38,7 +38,7 @@ Rules for building files are read from the file 'main.stu',
 from a file passed by the -f option, or using the -F option. 
 
 Names of targets to build passed on the command line follow a simplified Stu syntax,
-in which the only special characters are the flags '!', '?', the
+in which the only special characters are the
 transient target marker '@', and brackets '[]'.  All other characters
 are interpreted as part of filenames.  When the -J option is used,
 arguments passed on the command line are interpreted as filenames
@@ -46,14 +46,14 @@ without Stu syntax.
 
 .SH OPTIONS
 .IP -a
-Treat all trivial dependencies (declared with '&') as non-trivial.
+Treat all trivial dependencies (declared with -t) as non-trivial.
 .IP "-c FILENAME"
 Pass a target filename, without Stu syntax.  This option only allows
 file targets to be specified, not transient targets. 
 .IP "-C EXPRESSION"
 Pass a target using full Stu syntax.  The given expression is parsed as
 if it was given as one or more dependencies in a Stu file.  As a result,
-flags '!', '?' and '&', brackets and parentheses can be used, and spaces
+flags -p, -o and -t, brackets and parentheses can be used, and spaces
 separate filenames.  
 .IP "-E"
 Explain error messages.  Only some error messages have explanations. 
@@ -65,7 +65,7 @@ used multiple times.
 .IP "-F RULES"
 Pass rules in full Stu syntax.  
 .IP -g
-Treat all optional dependencies (declared with '?') as non-optional.
+Treat all optional dependencies (declared with -o) as non-optional.
 .IP -h
 Output a short help and exit.
 .IP "-j K"
@@ -220,21 +220,21 @@ is no need for the @echo construct of Make.
 Persistent dependencies:  In the following example, the
 directory 'data' is a persistent dependency, i.e. 'data' is only
 built when it does not exist, but it is never re-built.  A
-persistent dependency is indicated by the '!' prefix.  This is
+persistent dependency is indicated by the -p flag.  This is
 useful for directories, whose timestamps change when files are
 created/removed in them.  
 
-    data/file:  !data {
+    data/file:  -p data {
         echo Hello >data/file
     }
     data: { mkdir data }
 
-Optional dependencies can be declared with the '?' prefix.  An optional
+Optional dependencies can be declared with the -o flag.  An optional
 dependency will never be built if it does not already exist.  If it
 already exists, then its own rule is used (and its date checked) to
 decide whether it should be rebuilt.  
 
-    target:  ?input {
+    target:  -o input {
         if [ -r input ] ; then
             cp input target
         else
@@ -242,14 +242,14 @@ decide whether it should be rebuilt.
         fi
     }
 
-Trivial dependencies are denoted with the '&' prefix.  They denote a
+Trivial dependencies are denoted with the -t prefix.  They denote a
 dependency that should never cause a target to be rebuilt, but if the
 target is rebuilt for another reason, then they are treated like normal
 dependencies.  Trivial dependencies are typically used for
 configuration, i.e., for the setting up configuration of application.
 Trivial dependencies are not allowed if the rule has no command. 
 
-    target:  &input;
+    target:  -t input;
 
 Variable dependency:  the content of variables can come from files.  
 In the following example, the C flags are stored in the file 'CFLAGS',
@@ -261,8 +261,8 @@ and used in the compilation command using the $[CFLAGS] dependency.
     }
     CFLAGS: { echo -Wall -Werror >CFLAGS }
 
-Variable dependencies may be declared as persistent as in $[!X]
-and as trivial as in $[&X], but not as optional using '?'. 
+Variable dependencies may be declared as persistent as in $[-p X]
+and as trivial as in $[-t X], but not as optional using -o. 
 By default, the name of the variable set is the same as the filename.
 Another variable name can be used in the following way:
 
@@ -377,13 +377,13 @@ beginning of lines, and written into the file.
 Using the equal sign with a file name creates a copy rule, i.e., the
 given file is copied with the 'cp' command:
 
-    TARGET = [ ! ] SOURCE;
+    TARGET = [ -p ] SOURCE;
 
 By default, Stu will use '/bin/cp' to perform the copy.  This can be
 changed by setting the variable $STU_CP.  If source ends in a slash
 (outside of any parameter value), then Stu will look for a file with the
 same basename as TARGET in the directory SOURCE.  The dependency SOURCE
-can be declared a persistent dependency with '!'.  Other flags are
+can be declared a persistent dependency with -p.  Other flags are
 not supported. 
 
 A dependency can be one of the following:
@@ -399,14 +399,14 @@ date.
 A transient target.  They represent a distinct namespace from files, and
 thus their command do not create files. 
 
-    !NAME   A persistent dependency
+    -p NAME   A persistent dependency
 
 Stu will only check whether the dependency exists, but not its
 modification time.  This is mostly useful for directories, as the
 modification time of directories is updated whenever files are added or
 removed in the directory. 
 
-    ?NAME   An optional dependency
+    -o NAME   An optional dependency
 
 Optional dependencies are never built if they don't exist.  If they
 exist, they are treated like normal dependencies and their date is taken
@@ -415,7 +415,7 @@ into account for determining whether the target has to be rebuilt.
 A dependency cannot be declared as persistent and optional at the
 same time, as that would imply that its command is never executed. 
 
-    &NAME   A trivial dependency
+    -t NAME   A trivial dependency
 
 A trivial dependency will never cause the target to be rebuilt.
 However, if the target is rebuilt for another reason, then the trivial
@@ -452,16 +452,16 @@ command.
 Groups of dependencies can be enclosed on parentheses.  
 Parentheses may not contain variable dependencies (i.e., something like
 '$[NAME]'). 
-The flags '!' and '?' can be applied to a group of dependencies given in
+The flags -p and -o can be applied to a group of dependencies given in
 parentheses:
 
-    ! ( ... )
-    ? ( ... )
+    -p ( ... )
+    -o ( ... )
 
-The flags '!' and '?' can be applied to dynamic dependencies:
+The flags -p and -o can be applied to dynamic dependencies:
 
-    ! [ ... ]
-    ? [ ... ]
+    -p [ ... ]
+    -o [ ... ]
 
 in which case all resulting dynamic dependencies will be flagged as
 optional or persistent. 
@@ -571,11 +571,9 @@ unquoted filenames:
     "     Quote; with escape sequences
     :     Separator for rule definition
     ;     For rules without body, end of variable declaration 
+    -     Prefix character for flag, followed by a single character 
     $     Parameter
     @     Transient target marker
-    !     Persistent dependency
-    ?     Optional dependency
-    &     Trivial dependency
     >     Output redirection
     <     Input redirection
     =     Assignment rule, copy rule, named variable
@@ -633,7 +631,7 @@ introduced with '%'.
     rule_list:        rule*
     rule:             ('@' NAME | ['>'] NAME)+ [':' expression_list] ('{' COMMAND '}' | ';') 
                       NAME '=' '{' CONTENT '}'
-                      NAME '=' '!'* NAME ';'
+                      NAME '=' '-p'* NAME ';'
     expression_list:  expression*
     expression:       '(' expression_list ')' 
                       '[' expression_list ']' 
@@ -643,7 +641,7 @@ introduced with '%'.
     redirect_dep:     ['<'] bare_dep
     bare_dep:         ['@'] NAME
     variable_dep:     '$' '[' flag* ['<'] NAME ']'
-    flag:             '!' | '?' | '&'
+    flag:             '-p' | '-o' | '-t'
 
 Stu files read via the -f option or as the default Stu file, as well as
 the argument to the -F option must contain a 'rule_list'. 
@@ -771,12 +769,12 @@ and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt.
 
     VERSION; # Contains the version number; updated by hand
     >CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=$VERSION }
-    program:  program.c $[&CFLAGS] { gcc $CFLAGS program.c -o program }
+    program:  program.c $[-t CFLAGS] { gcc $CFLAGS program.c -o program }
 
 The -C option allows to pass any dependency in Stu syntax, and therefore
 can be used in some advanced use cases:
 
-    stu -C '?X' # Re-build file 'X' only if it already exists
+    stu -C '-o X' # Re-build file 'X' only if it already exists
     stu -C '[X]' # Build all files given in file 'X'
     stu -C '%version 1.7' # Make sure Stu is compatible with the given version
 

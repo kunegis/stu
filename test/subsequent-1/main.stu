@@ -1,5 +1,5 @@
 
-A:  ?B B {
+A:  -o B B {
 	[ -e B ] || exit 1
 	cp B A
 }

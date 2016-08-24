@@ -2033,11 +2033,11 @@ bool Execution::deploy(const Link &link,
 	
 	Flags flags_child_new= flags_child | flags_child_additional; 
 
-	/* '!' and '?' do not mix, even for old flags */ 
+	/* '-p' and '-o' do not mix, even for old flags */ 
 	if ((flags_child_new & F_PERSISTENT) && 
 	    (flags_child_new & F_OPTIONAL)) {
 
-		/* '!' and '?' encountered for the same target */ 
+		/* '-p' and '-o' encountered for the same target */ 
 
 		const Place &place_persistent= 
 			link_child.dependency->get_place_flag(I_PERSISTENT);
@@ -2045,10 +2045,10 @@ bool Execution::deploy(const Link &link,
 			link_child.dependency->get_place_flag(I_OPTIONAL);
 		place_persistent <<
 			fmt("declaration of persistent dependency with %s",
-			     char_format_word('!')); 
+			     multichar_format_word("-p")); 
 		place_optional <<
 			fmt("clashes with declaration of optional dependency with %s",
-			     char_format_word('?')); 
+			     multichar_format_word("-o")); 
 		direct_dependency->place <<
 			fmt("in declaration of dependency %s", 
 			    target_child.format_word());
@@ -2058,7 +2058,7 @@ bool Execution::deploy(const Link &link,
 		return false;
 	}
 
-	/* Either of '!'/'?'/'&' does not mix with '$[' */
+	/* Either of '-p'/'-o'/'-t' does not mix with '$[' */
 	if ((flags_child & F_VARIABLE) &&
 	    (flags_child_additional & (F_PERSISTENT | F_OPTIONAL | F_TRIVIAL))) {
 
@@ -2071,7 +2071,7 @@ bool Execution::deploy(const Link &link,
 				fmt("variable dependency %s must not be declared as persistent dependency",
 				    dynamic_variable_format_word(target_child.name)); 
 			place_flag << fmt("using %s",
-					   char_format_word('!')); 
+					   multichar_format_word("-p")); 
 		} else if (flags_child_additional & F_OPTIONAL) {
 			const Place &place_flag= 
 				link_child.dependency->get_place_flag(I_OPTIONAL); 
@@ -2079,7 +2079,7 @@ bool Execution::deploy(const Link &link,
 				fmt("variable dependency %s must not be declared as optional dependency",
 				    dynamic_variable_format_word(target_child.name)); 
 			place_flag << fmt("using %s",
-					   char_format_word('?')); 
+					  multichar_format_word("-o")); 
 		} else {
 			assert(flags_child_additional & F_TRIVIAL); 
 			const Place &place_flag= 
@@ -2088,7 +2088,7 @@ bool Execution::deploy(const Link &link,
 				fmt("variable dependency %s must not be declared as trivial dependency",
 				    dynamic_variable_format_word(target_child.name)); 
 			place_flag << fmt("using %s",
-					   char_format_word('&')); 
+					   multichar_format_word("-t")); 
 		} 
 		print_traces();
 		raise(ERROR_LOGICAL);

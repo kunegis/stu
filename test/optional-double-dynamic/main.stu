@@ -1,6 +1,5 @@
-
 # 'C' is not built because it is an optional dependency. 
 
 A:  [[B]] { touch A   }
->B        { echo '?C' }
+>B        { echo '-o C' }
 C         { exit 1    }

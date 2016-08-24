@@ -1,5 +1,5 @@
-# No error. '&' does nothing. 
+# No error. '-t' does nothing. 
 
-A: & [B] { touch A }
+A: -t [B] { touch A }
 >B { echo '@x' }
 @x;

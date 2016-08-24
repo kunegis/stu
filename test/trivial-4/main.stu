@@ -1,6 +1,6 @@
 # An existence-only trivial dependency. 
 
->A: B !&C
+>A: B -p -t C
 {
 	[ -e C ] && cat C
 	cat B

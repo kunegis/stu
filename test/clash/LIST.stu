@@ -1,18 +1,19 @@
+#
+# Each line is a logical error:  clash between '-o' and '-p'. 
+#
 
-# Each line is a logical error:  clash between '?' and '!'. 
+A:   -p  -o  B { touch A }      B { touch B }
+A:   -o  -p  B { touch A }      B { touch B }
+A:   -p ( -o  B) { touch A }    B { touch B }
+A:   -o ( -p  B) { touch A }    B { touch B }
+A:   -p (( -o  B)) { touch A }  B { touch B }
+A:   -o (( -p  B)) { touch A }  B { touch B }
+A:   -p  -o ((B)) { touch A }   B { touch B }
+A:   -o  -p ((B)) { touch A }   B { touch B }
 
-A:  !? B { touch A }      B { touch B }
-A:  ?! B { touch A }      B { touch B }
-A:  !(? B) { touch A }    B { touch B }
-A:  ?(! B) { touch A }    B { touch B }
-A:  !((? B)) { touch A }  B { touch B }
-A:  ?((! B)) { touch A }  B { touch B }
-A:  !?((B)) { touch A }   B { touch B }
-A:  ?!((B)) { touch A }   B { touch B }
+A:   -p  -o [B] { touch A }     >B { echo C }   
+A:   -o  -p [B] { touch A }     >B { echo C }
 
-A:  !?[B] { touch A }     >B { echo C }   
-A:  ?![B] { touch A }     >B { echo C }
-
-A:  ![B] { touch A }   >B { echo '?C' } 
-A:  ?[B] { touch A }   >B { echo '!C' } 
+A:   -p [B] { touch A }   >B { echo ' -o C' } 
+A:   -o [B] { touch A }   >B { echo ' -p C' } 
 

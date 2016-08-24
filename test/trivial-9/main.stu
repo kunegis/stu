@@ -1,6 +1,6 @@
-# Double '&' within dynamic variable 
+# Double 't' within dynamic variable 
 
->A: B $[&&C] {
+>A: B $[-t -t C] {
 	echo "$C"
 	cat B
 }

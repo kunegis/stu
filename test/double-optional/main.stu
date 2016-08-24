@@ -1,5 +1,5 @@
 
-A:  (?B ?C) 
+A:  (-o B -o C) 
 {
 	[ -e B ] && exit 1
 	[ -e C ] && exit 1

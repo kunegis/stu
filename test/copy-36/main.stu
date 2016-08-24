@@ -4,6 +4,6 @@
 
 A = x.data/;
 
-x.data/A:  !x.data { echo correct >x.data/A }
+x.data/A:  -p x.data { echo correct >x.data/A }
 
 x.data { mkdir -p x.data }

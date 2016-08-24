@@ -1,0 +1,11 @@
+# Error:  there must be a space between '-p' and '$name'. 
+
+A:  list.xyz { cp list.xyz A }
+
+list.$name:   -p$name
+{
+	cp "$name" list."$name"
+}
+
+xyz = {correct}
+

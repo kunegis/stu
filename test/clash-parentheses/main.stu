@@ -1,5 +1,5 @@
 
-# ? and ! cannot be used together. 
+# -o and -p cannot be used together. 
 
-A:  ?(!(B)) { touch A }
+A:  -o(-p(B)) { touch A }
 B { touch B }

@@ -1,2 +1,2 @@
-main.stu:3:5: trivial dependency using '&' must not be used
+main.stu:3:6: trivial dependency using '-t' must not be used
 main.stu:3:3: in copy rule using '=' for target 'A'

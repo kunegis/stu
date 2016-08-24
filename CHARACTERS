@@ -32,6 +32,7 @@ ASCII control characters (except those that are whitespace).
 	by arguments depending on the statement); comparable to preprocessor
 	directives.  The statement name and arguments followed regular
 	Stu quoting rules. 
+-	Flags (only as first character)
 '	Quote without escape sequences
 "       Quote with escape sequences
 {}	Command, content
@@ -48,9 +49,6 @@ These characters are single-character tokens.
 [ ]	Dynamic list
 >	Output redirection (target only)
 <	Input redirection (dependency only)
-!	Persistent dependency
-?	Optional dependency 
-&	Trivial dependency
 =	Assignment, copy, and named variable
 
 == As-yet unused operators ==
@@ -62,9 +60,10 @@ uses are proposed and tentative.
 
 *	String concatenation 
 \	Escape of characters, or another use
-- +	Flags (only as first character)
 ~	(no proposed use, only as first character) 
 ,	(no proposed use) Names are already whitespace separated 
-|	(no proposed use) Disjunctive dependencies
-?!&     (version 2) Will become free again when they are replaced
- 	by flags
+|	(no proposed use) 
+& 	(no proposed use)
+?	(no proposed use)
+!	(no proposed use)
++	(no proposed use)

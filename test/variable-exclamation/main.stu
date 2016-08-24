@@ -1,8 +1,6 @@
-# Allow this after all.
+# Make '-p $[X]' is a synonym of '$[-p X]'. 
 
-# Make '!$[X]' be a synonym of '$[!X]'. 
-
-A: ![B] { echo "$X" >A }  
+A: -p [B] { echo "$X" >A }  
 
 >B { echo '$[X]' }  
 

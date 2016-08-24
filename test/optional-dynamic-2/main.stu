@@ -1,9 +1,8 @@
-
 #
 # 'C' must not be built, because it is an optional dependency.  
 #
 
-A: [?C] {
+A: [-o C] {
 	[ -e C ] && exit 1
 	touch A
 }  

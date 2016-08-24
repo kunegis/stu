@@ -1,8 +1,7 @@
-
-# the '?' is not applied to 'B'; i.e., 'B' is actually created, but 'C'
+# the '-o' is not applied to 'B'; i.e., 'B' is actually created, but 'C'
 # is not. 
 
-A: ?[B] { 
+A: -o[B] { 
 	[ -e B ] || exit 1
 	touch A 
 }

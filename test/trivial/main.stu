@@ -1,5 +1,5 @@
 # The compiled file
->A:  B &C
+>A:  B -t C
 {
 	cat C B 
 }

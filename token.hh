@@ -5,7 +5,8 @@
  * Data structures for representing tokens.  
  *
  * There are three types of tokens:  
- *   - operators (all single characters operators and flags)
+ *   - operators (all single characters operators)
+ *   - flags
  *   - names (including all their quoting mechanisms)
  *   - commands (delimited by { }) 
  */
@@ -41,18 +42,13 @@ public:
 /* 
  * An operator, e.g. ':', '[', etc.  Operators are all single
  * characters.  
- *
- * Flags are also counted as operators, e.g., -p, -o and -t.  In that
- * case the individual letter is stored.  This is the case when
- * isalnum(op) is true. 
  */  
 class Operator
 	:  public Token
 {
 public: 
 
-	/* The operator as a character, e.g. ':', '[', etc.  For flags,
-	 * the flag character, e.g. 'p', 'o', etc.  */
+	/* The operator as a character, e.g. ':', '[', etc. */
 	const char op; 
 
 	const Place place; 
@@ -61,7 +57,9 @@ public:
 		:  Token(whitespace_),
 		   op(op_),
 		   place(place_)
-		{ }
+	{ 
+		assert(! isalnum(op_)); 
+	}
 
 	const Place &get_place() const {
 		return place; 
@@ -76,6 +74,51 @@ public:
 	}
 
 	string format_long_word() const;
+};
+
+class Flag_Token
+	:  public Token
+{
+public:
+
+	const char flag;
+
+	/* The place of the letter */ 
+	const Place place;
+
+	/* The place of the '-' */ 
+	mutable Place place_start;
+
+	/* PLACE is the place of the letter */
+	Flag_Token(char flag_, const Place place_, bool whitespace_)
+		:  Token(whitespace_),
+		   flag(flag_),
+		   place(place_)
+	{
+		assert(isalnum(flag)); 
+
+		/* Can never be on the first column because there is a
+		 * preceding dash.  */
+		if (place.type == Place::Type::INPUT_FILE)
+			assert(place.column > 0); 
+	}
+
+	const Place &get_place() const {
+		return place;
+	}
+
+	const Place &get_place_start() const {
+		if (place_start.type == Place::Type::EMPTY) {
+			place_start= place;
+			if (place_start.type == Place::Type::INPUT_FILE)
+				-- place_start.column; 
+		}
+		return place_start;
+	}
+
+	string format_start_word() const {
+		return char_format_word('-'); 
+	}
 };
 
 /* This contains two types of places:  the places for the individual

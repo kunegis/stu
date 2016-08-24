@@ -1,6 +1,6 @@
-# Support & within $[...]
+# Support -t within $[...]
 
->A: B $[&C] {
+>A: B $[-t C] {
 	echo "$C"
 	cat B
 }

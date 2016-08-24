@@ -3,5 +3,5 @@ A:  $[x/y]
 	echo ${x/y} >A
 }
 
->x/y: !x { echo correct }
+>x/y: -p x { echo correct }
 x { mkdir -p x }

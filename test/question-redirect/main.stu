@@ -2,5 +2,5 @@
 # An optional dependency cannot be mixed with an input dependency.  This
 # results in a logical error. 
 
-A: ?<B { touch A }
+A: -o <B { touch A }
 B { touch B }

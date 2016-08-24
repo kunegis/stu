@@ -1,7 +1,7 @@
 
-# 'B' is a full (not 'existence-only') dependency of 'A'. 
+# 'B' is a full (not 'persistent') dependency of 'A'. 
 
-A:  !B B {
+A:  -p B B {
 	cp B A
 }
 

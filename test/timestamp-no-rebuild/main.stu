@@ -10,7 +10,7 @@
 # * stu A:  B is rebuilt, but not A
 #
 
-A: !B
+A: -p B
 {
     ls -l B >A
     ln -s nonexistingfile W # This will fail when run a second time

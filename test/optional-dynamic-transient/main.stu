@@ -1,6 +1,6 @@
 # 'C' is not built, because it is optional. 
 
-A: ?@x { touch A }
+A: -o @x { touch A }
 
 @x:  [B];
 

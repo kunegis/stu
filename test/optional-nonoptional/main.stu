@@ -1,3 +1,4 @@
+# 'B' is built. 
 
-A: ?B B { cp B A }
+A: -o B B { cp B A }
 >B { echo bbb }

@@ -2,6 +2,8 @@
 
 doo() { echo "$@" ; $@ ; }
 
+echo 0 >list.exitcode
+
 <LIST.stu cat | 
 sed -e '/^[[:space:]]*$/d;/^[[:space:]]*#/d' |
 while read -r line ; do
@@ -22,20 +24,22 @@ while read -r line ; do
 	[ "$exitcode" = 2 ] || {
 		echo >&2 "*** error (a) Exit code should be 2 (logical error), but is not"
 		echo "exitcode=$exitcode"
+		echo 1 >list.exitcode
 		exit 1
 	}
 
-	grep -qF "'?'" list.err || {
-		echo >&2 "*** error (b) String \"'?'\" not found in error output"
+	grep -qF "'-o'" list.err || {
+		echo >&2 "*** error (b) String \"'-o'\" not found in error output"
 		echo "Content of error output:"
 		echo ________
 		cat list.err
 		echo ________
+		echo 1 >list.exitcode
 		exit 1
 	}
 
 done
 
-rm -f tmp.stu
+rm -f tmp.stu || exit 1
 
-exit 0
+exit $(cat list.exitcode)

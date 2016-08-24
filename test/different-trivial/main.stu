@@ -1,7 +1,7 @@
 # Run with 'B' already existing containing 'CORRECT1'.  'X' must be
 # rebuilt, and the resulting 'A' contain CORRECT1/CORRECT2.
 
->A: B C { cat B C }
->B:  &X { cat X }
->C:   X { cat X }
->X      { echo CORRECT2 }
+>A: B C  { cat B C }
+>B: -t X { cat X }
+>C:   X  { cat X }
+>X       { echo CORRECT2 }

@@ -1,5 +1,5 @@
 # Correct place
 
-A:  ! {
+A:  -p {
 	touch A 
 }

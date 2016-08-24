@@ -1,0 +1,8 @@
+# Error:  flag must not be followed by name character
+
+A:  -pB B 
+{
+	touch A
+}
+
+B { touch B }

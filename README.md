@@ -122,8 +122,8 @@ Make are:
   rules, i.e. using a proper shell.  
 * Stu supports additional types of dependencies which are essential in
   large, complex projects, such as persistent dependencies with
-  the prefix '!', optional dependencies with '?', and trivial
-  dependencies with '&'.  These can only be emulated partially with Make
+  the prefix -p, optional dependencies with -o, and trivial
+  dependencies with -t.  These can only be emulated partially with Make
   by using unwieldy constructs. 
 
 ## Use Stu

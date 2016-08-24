@@ -6,10 +6,10 @@
 # 'C' must not be built by Stu. 
 #
 
- A:  &B D  { cp B A   }
+ A:  -t B D  { cp B A   }
 
- B:  &C    { cp C B   }
+ B:  -t C    { cp C B   }
 
->C         { exit 1   }
+>C           { exit 1   }
 
->D         { echo ddd }
+>D           { echo ddd }

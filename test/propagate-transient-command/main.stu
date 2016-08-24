@@ -1,7 +1,7 @@
 # Flags also propagate over transient targets when they have a
 # command. 
 
-A: ?@x { 
+A: -o @x { 
 	[ -e B ] && exit 1
 	touch A
 }

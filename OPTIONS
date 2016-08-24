@@ -42,9 +42,9 @@ List of options
 -M  S      Seed mode
 -n  . M G  Dry run (just print commands)
 -N  .      Dry run, but build dynamic dependencies 
--o  .      Optional dependency
--o  .   G  GNU Make: Mark file as old
--p  .      Persistent dependency
+-o  .   x  Optional dependency
+-o  x   G  GNU Make: Mark file as old
+-p  . x x  Persistent dependency
 -p  x M G  Print database (rule set)
 -P  S      Print database (rule set)
 -q  S M G  Question mode / Query mode
@@ -53,8 +53,8 @@ List of options
 -R      G  No builtin variables
 -s  S M G  Silent
 -S  - M G  No keep going
--t  .      Trivial dependency
--t  - M G  Touch instead of building
+-t  . x x  Trivial dependency
+-t  x M G  Touch instead of building
 -u  .      Consider all files up-to-date 
 -v  S   x  Verbose (GNU Make:  show version)
 -V  S      Show version and exit
@@ -62,6 +62,7 @@ List of options
 -W  .   G  What-if mode / assume new (if FILE just had been modified) 
 -x  S      Enable /bin/sh -x instead of normal output
 -y  S      Disable color output
+-Y  .      Enable color output
 -z  S      Output statistics
 
 The following options could conceivably be set externally:

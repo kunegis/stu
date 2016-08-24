@@ -1,9 +1,9 @@
 # Automatically append a name with a parameter.  This assumes that -k is not
 # used, because 'Y' must exist when Y/list.x is built.
 
-A: !Y  Y/list.x { cp Y/list.x A }
+A: -p Y  Y/list.x { cp Y/list.x A }
 $prefix.$name = X/; # Will read from X/$prefix.$name, i.e. X/Y/list.x
->X/Y/list.$name:  !X/Y { echo correct }
-X/Y: !X { mkdir X/Y }
+>X/Y/list.$name:  -p X/Y { echo correct }
+X/Y: -p X { mkdir X/Y }
 X { mkdir -p X }
 Y { mkdir -p Y }

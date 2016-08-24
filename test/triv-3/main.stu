@@ -1,4 +1,4 @@
-# No error.  '&' does nothing here. 
+# No error.  '-t' does nothing here. 
 
-A: & (@x) { touch A }
+A: -t (@x) { touch A }
 @x;

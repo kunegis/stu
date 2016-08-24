@@ -1,6 +1,6 @@
-# Valid, and does the same as '$[!B]'. 
+# Valid, and does the same as '$[-p B]'. 
 
-A:  !$[B]    { 
+A:  -p $[B]    { 
 	echo "$B" >A
 }
 

@@ -1,6 +1,6 @@
-# The double '!!' works. 
+# The double '-p -p' works. 
 
->A: $[!!B] {
+>A: $[-p -p B] {
 	echo "$B"
 }
 

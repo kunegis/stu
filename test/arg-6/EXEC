@@ -5,7 +5,7 @@ rm -f A || exit 1
 ../../stu.test '?A' B >list.out 2>list.err
 exitcode="$?"
 
-[ "$exitcode" = 0 ] || {
+[ "$exitcode" = 2 ] || {
 	echo >&2 "*** Exitcode"
 	exit 1
 }
@@ -15,8 +15,8 @@ exitcode="$?"
 	exit 1
 }
 
-[ -r B ] || {
-	echo >&2 "*** B must be built"
+[ ! -e B ] || {
+	echo >&2 "*** B must not be built"
 	exit 1
 }
 

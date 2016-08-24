@@ -1,5 +1,5 @@
 
-# Double exclamation mark is syntactically allowed. 
+# Double '-p' is syntactically allowed. 
 
-A:  !!B { touch A}
+A:  -p -p B { touch A}
 B {touch B}

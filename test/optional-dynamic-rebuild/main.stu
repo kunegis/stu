@@ -1,9 +1,8 @@
-
 # * stu:  C is not built
 # * echo X >C
 # * stu:  X is built; C is not rebuilt; A is rebuilt
 
-A: [?C] { touch A }	
+A: [-o C] { touch A }	
 
 E { touch E } 
 

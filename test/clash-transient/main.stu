@@ -1,9 +1,9 @@
 
-# Error:  '?' and '!' don't mix.  Here, '?' is transitive through the
+# Error:  '-o' and '-p' don't mix.  Here, '-o' is transitive through the
 # phony @x.  
 
-A:  ?@x { touch A }
+A:  -o @x { touch A }
 
-@x:  !B;
+@x:  -p B;
 
 B { touch B }

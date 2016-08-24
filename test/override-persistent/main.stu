@@ -1,9 +1,8 @@
-
 #
 # The stronger, second dependency must be honoured. 
 #
 
-A:  !B B {
+A:  -p B B {
 	cp B A
 }
 

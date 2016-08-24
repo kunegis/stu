@@ -6,8 +6,8 @@ A: B C {
 	touch A 
 }
 
-B:  ?[[D]] { touch B }
-C:  [![D]] { touch C }
+B:  -o [[D]] { touch B }
+C:  [-p [D]] { touch C }
 
 >D { echo E }
 >E { echo F }

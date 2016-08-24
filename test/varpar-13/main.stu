@@ -1,6 +1,6 @@
-# Ultimately equivalent to '$[?X]', i.e., 'X' will not be built. 
+# Ultimately equivalent to '$[-o X]', i.e., 'X' will not be built. 
 
-A: ?[B] { 
+A: -o [B] { 
 	touch A
 }  
 

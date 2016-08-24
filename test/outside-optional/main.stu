@@ -1,7 +1,4 @@
-
-# TODO:  have Dependency objects that distinguish between ?[X] and [?X].  
-
-A: ?[B] { 
+A: -o [B] { 
 	cp B A
 }
 

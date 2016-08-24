@@ -1,0 +1,5 @@
+# Error:  invalid flag character after '-'
+
+A:  -{
+	touch A
+}

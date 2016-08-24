@@ -1,4 +1,3 @@
-
 #
 # Test the $CFLAGS idiom, i.e. using a existence-only dependency to make
 # sure programs are *not* recompiled just because the flags change.
@@ -14,7 +13,7 @@
 a: a.c @flags { echo Compiling ; echo $CFLAGS $LDFLAGS >a }
 b: b.c @flags { echo Compiling ; echo $CFLAGS $LDFLAGS >b }
 
-@flags:  $[!CFLAGS] $[!LDFLAGS];
+@flags:  $[-p CFLAGS] $[-p LDFLAGS];
 
 CFLAGS: { echo -g -Wall >CFLAGS }
 LDFLAGS: { echo -L >LDFLAGS }

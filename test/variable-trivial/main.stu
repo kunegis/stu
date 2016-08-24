@@ -1,6 +1,6 @@
 # Now allowed
 
-A: &[B] { 
+A: -t [B] { 
 	echo "$C" >A
 }
 

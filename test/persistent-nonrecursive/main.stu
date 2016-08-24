@@ -1,12 +1,12 @@
 #
-# Dependencies with '!' only make their argument ignore the timestamp.
+# Dependencies with '-p' only make their argument ignore the timestamp.
 # They don't affect its dependencies. 
 #
 # * First, 'X' builds 'B'. 
 # * Then, even though 'B' already exists, 'C' must be built.
 #
 
-A: X  !B {
+A: X  -p B {
 	cp C A
 }
 

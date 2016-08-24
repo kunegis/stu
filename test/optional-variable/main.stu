@@ -1,7 +1,6 @@
+# Error: '-o' is not allowed in dynamic variable dependencies
 
-# error: '?' is not allowed in dynamic variable dependency. 
-
-A:  $[?B] {
+A:  $[-o B] {
 	touch A
 }
 

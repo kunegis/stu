@@ -2,5 +2,5 @@
 
 A:  list.x { cp list.x A }
 list.$name = A.$name/; 
-A.$x/list.$y:  ! A.$x { echo correct >"A.$x/list.$y" }
+A.$x/list.$y:  -p A.$x { echo correct >"A.$x/list.$y" }
 A.$name { mkdir -p "A.$name" }

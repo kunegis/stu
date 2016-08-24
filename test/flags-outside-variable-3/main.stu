@@ -1,6 +1,6 @@
-# Valid, and equivalent to '$[&B]'. 
+# Valid, and equivalent to '$[-t B]'. 
 
-A: &$[B]    { 
+A: -t $[B]    { 
 	echo "$B" >A
 }
 

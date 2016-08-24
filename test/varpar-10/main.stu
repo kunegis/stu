@@ -1,6 +1,6 @@
 # Not an error 
 
-A: ? $[X] { 
+A: -o $[X] { 
 	[ -e X ] && exit 1
 	touch A
 }

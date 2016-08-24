@@ -1,14 +1,12 @@
 #==== Version 2.0 ====   
 
-A:  
-	-p X # persistent
-	-o X # optional
-        -t X # trivial
-{ ... }
-
-# Deprecate !, ?, and &, and define as reserved for future extension. 
+# add options -p, -o and -t
 
 #==== Features of Stu 2:  Mandatory ====
+
+#
+# Option -Y to enable color output explicitly
+#
 
 #
 # Flag -n for newline-separate filename lists
@@ -217,7 +215,7 @@ $ stu '-E A'
 # This will also cover cases that are implemented as options at the
 # moment, e.g. -g: 
 
-$ stu '\?A'
+$ stu '+o A'
 
 # is equivalent to
 

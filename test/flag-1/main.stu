@@ -1,0 +1,8 @@
+# Error:  invalid character +
+
+A:   +B 
+{
+	touch A
+}
+
++B { touch +B }

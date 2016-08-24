@@ -10,7 +10,7 @@
 
 A:  B C D { cat B C D >A }
 
-B:  ?X { 
+B:  -o X { 
 	if [ -r X ] ; then
 		echo yes >B 
 	else 

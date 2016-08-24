@@ -1,7 +1,7 @@
 
-# The file B counts as an existence-only dependency 
+# The file B counts as a persistent dependency 
 
->A:	$[!B]     
+>A:	$[-p B]     
 {
 	echo $B
 }

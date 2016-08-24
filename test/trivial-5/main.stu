@@ -2,7 +2,7 @@
 
 A: B { cp B A }
 
-B: &C D;
+B: -t C D;
 
 D {
 	touch D

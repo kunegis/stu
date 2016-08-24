@@ -1,4 +1,4 @@
 
->A: C &B { cat B C }
->B       { echo LINE 1 }
->C       { echo LINE 2 }
+>A: C -t B { cat B C }
+>B         { echo LINE 1 }
+>C         { echo LINE 2 }

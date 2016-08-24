@@ -63,9 +63,17 @@ the database.
 
 Code must be changed accordingly. 
 
-(6) Changes in terminology:  
+(6) Command line options passed outside of arguments as well as
+arguments to the -C option don't support persistent or optional
+dependencies anymore.  They could previously be specified using '!' and
+'?', but these characters are not supported anymore.  Instead, the
+command line options -p, -o and -t now exist for the same
+functionality. 
 
-- Timestamp-ignoring dependencies are now called persistent dependencies 
+(7) Changes in terminology:  
+
+- "Timestamp-ignoring" dependencies are now called "persistent"
+  dependencies.  This is now consistent with the flag -p used for them. 
 
 == Version 0 -> Version 1 ==
 

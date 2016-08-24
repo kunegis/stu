@@ -1,4 +1,3 @@
-
 #
 # Existence-only dependency with parameters
 #
@@ -13,7 +12,7 @@ list.$N:  data-$N-dir/list
 	cp data-$N-dir/list list.$N
 }
 
-data-$N-dir/list:  !data-$N-dir
+data-$N-dir/list:  -p data-$N-dir
 {
 	echo Hello $N >data-$N-dir/list
 }

@@ -1,7 +1,7 @@
 
-# Make sure the error message point to 'B' and not to the '!' before it.  
+# Make sure the error message point to 'B' and not to the '-p' before it.  
 
-A: !B {
+A: -p B {
 	touch A
 }
 

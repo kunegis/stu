@@ -1,0 +1,8 @@
+# Error:  space needed between '-p' and '@'. 
+
+A:  -p@x
+{
+	touch A
+}
+
+@x ;

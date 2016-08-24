@@ -26,21 +26,21 @@
  *
  * @...	     (prefix) Transient dependency; argument can only contain name
  * ---------------
- * <...	     (prefix) Input redirection; argument cannot contain '()',
+ * <...	     (prefix) Input redirection; argument must not contain '()',
  *           '[]', '$[]' or '@' 
  * ---------------
- * !...	     (prefix) Persistent dependency; argument cannot contain '$[]'
- * ?...	     (prefix) Optional dependency; argument cannot contain '$[]'
+ * !...	     (prefix) Persistent dependency; argument must not contain '$[]'
+ * ?...	     (prefix) Optional dependency; argument must not contain '$[]'
  * &...      (prefix) Trivial dependency
  * ---------------
- * [...]     (circumfix) Dynamic dependency; cannot contain '$[]' or '@'
+ * [...]     (circumfix) Dynamic dependency; must not contain '$[]' or '@'
  * (...)     (circumfix) Capture
- * $[...]    (circumfix) Variable inclusion; argument cannot contain
- *           '?', '[]', '()', '*' or '@' 
+ * $[...]    (circumfix) Variable inclusion; argument must not contain
+ *           -o, '[]', '()', '*' or '@' 
  */
 
-/* This code does not check that imcompatible constructs (like '!' and
- * '?' or '!' and '$[') are used together.  Instead, this is checked
+/* This code does not check that imcompatible constructs (like -p and
+ * -o or -p and '$[') are used together.  Instead, this is checked
  * within Execution and not here, because these can also be combined
  * from different sources, e.g., a file and a dynamic dependency. */ 
 
@@ -78,7 +78,8 @@ public:
 					Place place_input);
 
 	/* Parse a dependency as given on the command line outside of
-	 * options */
+	 * options.  This supports only the characters '@' and '[]', as
+	 * well as names.  */
 	static shared_ptr <Dependency> get_target_dep(string text); 
 
 private:
@@ -135,6 +136,14 @@ private:
 			iter != tokens.end() &&
 			is <Operator> () &&
 			is <Operator> ()->op == op;
+	}
+
+	/* Whether the next token is the given flag token */ 
+	bool is_flag(char flag) const {
+		return 
+			iter != tokens.end() &&
+			is <Flag_Token> () &&
+			is <Flag_Token> ()->flag == flag;
 	}
 
 	/* Check whether the current parenthesis-like token is concatenating,
@@ -437,7 +446,7 @@ shared_ptr <Rule> Parser::parse_rule()
 		} else {
 			Place place_flag_exclam;
 
-			while (is_operator('!')) {
+			while (is_flag('p')) {
 				place_flag_exclam= (*iter)->get_place();
 				++iter;
 			}
@@ -522,19 +531,19 @@ shared_ptr <Rule> Parser::parse_rule()
 				return make_shared <Rule> (place_param_targets[0], name_copy,
 							   place_flag_exclam);
 
-			} else if (is_operator('?')) {
+			} else if (is_flag('o')) {
 				(*iter)->get_place() 
 					<< fmt("optional dependency using %s must not be used",
-						char_format_word('?'));
+						multichar_format_word("-o"));
 				place_equal << 
 					fmt("in copy rule using %s for target %s", 
 					    char_format_word('='),
 					    place_param_targets[0]->format_word()); 
 				throw ERROR_LOGICAL;
-			} else if (is_operator('&')) {
+			} else if (is_flag('t')) {
 				(*iter)->get_place() 
 					<< fmt("trivial dependency using %s must not be used",
-						char_format_word('&')); 
+						multichar_format_word("-t")); 
 				place_equal << 
 					fmt("in copy rule using %s for target %s", 
 					    char_format_word('='),
@@ -728,8 +737,8 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 		return true; 
 	} 
 
-	/* '!' single_expression */ 
- 	if (is_operator('!')) {
+	/* '-p' single_expression */ 
+ 	if (is_flag('p')) {
  		Place place_exclam= (*iter)->get_place();
  		++iter; 
 		if (! parse_expression(ret, place_name_input, place_input, targets)) {
@@ -740,7 +749,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 					fmt("expected a dependency, not %s",
 					    (*iter)->format_start_word());
 			place_exclam << fmt("after %s",
-					     char_format_word('!')); 
+					     multichar_format_word("-p")); 
 			throw ERROR_LOGICAL;
 		}
 		for (auto &j:  ret) {
@@ -750,8 +759,8 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 		return true;
 	}
 
-	/* '?' single_expression */ 
- 	if (is_operator('?')) {
+	/* '-o' single_expression */ 
+ 	if (is_flag('o')) {
  		Place place_question= (*iter)->get_place();
  		++iter; 
 
@@ -764,7 +773,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 					    (*iter)->format_start_word());
 			}
 			place_question << fmt("after %s",
-					      char_format_word('?')); 
+					      multichar_format_word("-o")); 
 			throw ERROR_LOGICAL;
 		}
 		if (! option_nonoptional) {
@@ -777,8 +786,8 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 					fmt("input redirection using %s must not be used",
 					     char_format_word('<')); 
 				place_question <<
-					fmt("in conjunction with optional dependencies using %s",
-					     char_format_word('?')); 
+					fmt("in conjunction with optional dependency flag %s",
+					     multichar_format_word("-o")); 
 				throw ERROR_LOGICAL;
 			}
 				
@@ -790,8 +799,8 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 		return true;
 	}
 
-	/* '&' single_expression */ 
-	if (is_operator('&')) {
+	/* '-t' single_expression */ 
+	if (is_flag('t')) {
 		Place place_ampersand= (*iter)->get_place(); 
 		++iter;
 		if (! parse_expression(ret, place_name_input, place_input, targets)) {
@@ -803,7 +812,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 					    (*iter)->format_start_word());
 			}
 			place_ampersand << fmt("after %s",
-					       char_format_word('&'));
+					       multichar_format_word("-t"));
 				throw ERROR_LOGICAL;
 		}
 		for (auto &j:  ret) {
@@ -865,22 +874,22 @@ shared_ptr <Dependency> Parser
 
 	/* Flags */ 
 	Place place_flag_last;
-	char flag_last= 'E';
-	while (is_operator('!') || is_operator('&') || is_operator('?')) {
+	char flag_last= '\0';
+	while (is_flag('p') || is_flag('o') || is_flag('t')) {
 
-		flag_last= is <Operator> ()->op; 
-		if (is_operator('!')) {
+		flag_last= is <Flag_Token> ()->flag; 
+		if (is_flag('p')) {
 			place_flag_last= (*iter)->get_place();
 			flags |= F_PERSISTENT; 
-		} else if (is_operator('?')) {
+		} else if (is_flag('o')) {
 			if (! option_nonoptional) {
 				(*iter)->get_place() << 
 					fmt("optional dependency using %s must not appear",
-					     char_format_word('?')); 
+					     multichar_format_word("-o")); 
 				place_dollar << "within dynamic variable declaration";
 				throw ERROR_LOGICAL; 
 			}
-		} else if (is_operator('&')) {
+		} else if (is_flag('t')) {
 			place_flag_last= (*iter)->get_place();
 			if (! option_nontrivial)
 				flags |= F_TRIVIAL; 
@@ -903,10 +912,11 @@ shared_ptr <Dependency> Parser
 		if (has_input)
 			place_input << fmt("after %s", 
 					    char_format_word('<')); 
-		else if (! place_flag_last.empty()) 
+		else if (! place_flag_last.empty()) {
+			assert(flag_last != '\0');
 			place_flag_last << fmt("after %s", 
 					       char_format_word(flag_last)); 
-		else
+		} else
 			place_dollar << fmt("after %s",
 					    multichar_format_word("$[")); 
 
@@ -1183,6 +1193,13 @@ void Parser::get_expression_list(vector <shared_ptr <Dependency> > &dependencies
 
 shared_ptr <Dependency> Parser::get_target_dep(string text)
 {
+	/*
+	 * This syntax supports only the characters '@' and '[]', and a
+	 * single name.  Thus, the syntax is:
+	 *
+	 *         '['^n [@] NAME ']'^n
+	 */
+
 	Place place(Place::Type::ARGV);
 
 	if (text.empty()) {
@@ -1201,12 +1218,25 @@ shared_ptr <Dependency> Parser::get_target_dep(string text)
 	const char *end_name= p;
 
 	const char *q= begin;
-	while (q != end_name && 
-	       (*q == '[' || *q == '!' || *q == '?')) {
+	while (q != end_name && *q == '[') {
 		++q;
 	}
 
 	assert(q <= end_name); 
+
+	/* For catching porting errors, flag this error separately */ 
+	if (q != end_name && (*q == '!' || *q == '?')) {
+		if (*q == '!') {
+			place <<
+				fmt("character %s cannot be used to denote persistent dependencies",
+				    char_format_word('!')); 
+		} else if (*q == '?') {
+			place <<
+				fmt("character %s cannot be used to denote optional dependencies",
+				    char_format_word('?')); 
+		} else  assert(false);
+		throw ERROR_LOGICAL; 
+	}
 
 	Type type= Type::FILE;
 	const char *begin_name= q;
@@ -1229,13 +1259,7 @@ shared_ptr <Dependency> Parser::get_target_dep(string text)
 		   place)));
 
 	while (q != begin) {
-		if (q[-1] == '!') {
-			ret->add_flags(F_PERSISTENT); 
-			ret->set_place_flag(I_PERSISTENT, place);
-		} else if (q[-1] == '?') {
-			ret->add_flags(F_OPTIONAL); 
-			ret->set_place_flag(I_OPTIONAL, place); 
-		} else if (q[-1] == '[') {
+		if (q[-1] == '[') {
 			ret= make_shared <Dynamic_Dependency> (0, ret);
 			-- closing;
 		} else {
@@ -1263,6 +1287,9 @@ bool Parser::is_concatenating(shared_ptr <const Token> token, bool open)
 		return true;
 
 	if (dynamic_pointer_cast <const Command> (token))
+		return false;
+
+	if (dynamic_pointer_cast <const Flag_Token> (token))
 		return false;
 
 	assert(dynamic_pointer_cast <const Operator> (token));

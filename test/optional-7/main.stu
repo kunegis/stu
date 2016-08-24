@@ -1,7 +1,6 @@
+# Don't build dependencies of 'B'
 
-# Don't make dependencies of 'B'
-
-A: ?B { touch A }
+A: -o B { touch A }
 
 B: C { touch B }
 

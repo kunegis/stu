@@ -2,6 +2,6 @@
 
 A:  @b;
 
-@b:  &C;
+@b:  -t C;
 
 C { touch C ; touch A ; }

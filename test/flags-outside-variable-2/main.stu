@@ -1,6 +1,6 @@
-# Valid, and does the same as '$[?B]'. 
+# Valid, and does the same as '$[-o B]'. 
 
-A:  ?$[B]    { 
+A:  -o $[B]    { 
 	[ -z "$B" ] || exit 1
 	echo aaa >A
 }

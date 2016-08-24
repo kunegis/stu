@@ -1,0 +1,8 @@
+# Error
+
+A:  -p"B"
+{
+	touch A
+}
+
+B { touch B }

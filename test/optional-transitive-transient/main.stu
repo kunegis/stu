@@ -1,6 +1,6 @@
 # Syntactically allowed 
 
-A:  ?@x { touch A }
+A:  -o @x { touch A }
 
 @x: B;
 

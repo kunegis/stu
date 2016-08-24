@@ -1,7 +1,7 @@
 
 # Execute with 'C' already existing 
 
-A: [?preexisting] {
+A: [-o preexisting] {
 	touch A
 }	
 

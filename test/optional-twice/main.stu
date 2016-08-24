@@ -1,15 +1,17 @@
+#
 # An optional dependency is encountered twice -- once it exists
 # and once not.  To be executed without -k. 
 #
 # Not executed a second time, because 'B' would be rebuild, because 'X'
 # is newer than it (but only barely). 
+#
 
 A: B C D 
 {
 	touch A
 }
 
-B: ?X {
+B: -o X {
 	[ -e X ] && exit 1
 	touch B
 }
@@ -21,7 +23,7 @@ C: X
 
 >X { echo xxx }
 
-D: ?X
+D: -o X
 {
 	[ -r X ] || exit 1
 	cp X D

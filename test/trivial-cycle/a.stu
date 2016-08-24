@@ -1,7 +1,7 @@
 
 # write a script that tests the whole cycle. 
 
-A:  &B D {
+A:  -t B D {
 	echo BUILDING_A
 	cat B D >A
 }

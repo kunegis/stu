@@ -150,10 +150,18 @@ private:
 	 * Stu.  Note that all non-ASCII characters are allowed, and thus we
 	 * don't have to distinguish UTF-8 from 8-bit encodings:  all characters
 	 * with the most significant bit set will make this return TRUE. 
-	 * See the file CHARACTERS for more information. */
+	 * See the file CHARACTERS for more information. 
+	 * This returns TRUE for the mid-name characters '-', '+' and
+	 * '~'. 
+	 */
 	static bool is_name_char(char);
 
-	static bool is_operator_char(char);
+	/* Whether the character can be a standalone operator, i.e., an
+	 * operator that is not a flag.  */
+	static bool is_standalone_operator_char(char);
+
+	/* Whether the character is a valid flag */ 
+	static bool is_flag_char(char); 
 
 	/* Parse a version statement.  VERSION_REQ is the version number given after
 	 * "%version", and PLACE its place. */
@@ -556,6 +564,13 @@ shared_ptr <Place_Name> Tokenizer::parse_name()
 
 	shared_ptr <Place_Name> ret= make_shared <Place_Name> ("", place_begin);
 
+	/* Don't allow '-', '+' and '~' at beginning of name. */
+	if (p < p_end) {
+		if (*p == '-' || *p == '+' || *p == '~') {
+			return nullptr;
+		}
+	}
+
 	while (p < p_end) {
 		
 		if (*p == '"') {
@@ -681,13 +696,8 @@ shared_ptr <Place_Name> Tokenizer::parse_name()
 
 			/* An ordinary character */ 
 
-			/* '-', '+' and '~' are not allowed as the first
-			 * unquoted character of a name */ 
-			if (p == p_begin) {
-				if (*p == '-' || *p == '+' || *p == '~') {
-					break; 
-				}
-			}
+			assert(p != p_begin ||
+			       (*p != '-' && *p != '+' && *p != '~'));
 
 			ret->last_text() += *p++;
 		}
@@ -782,9 +792,17 @@ bool Tokenizer::is_name_char(char c)
 		|| ((unsigned char) c) >= 0x80;
 }
 
-bool Tokenizer::is_operator_char(char c) 
+bool Tokenizer::is_standalone_operator_char(char c) 
 {
-	return c != '\0' && nullptr != strchr(":<>=@;()?[]!&,\\|", c);
+	return c != '\0' && nullptr != strchr(":<>=@;()[],\\|", c);
+}
+
+bool Tokenizer::is_flag_char(char c)
+{
+	/* These correspond to persistent, optional and trivial
+	 * dependencies, respectively.  They were '!', '?' and '&'
+	 * formerly.  */
+	return c == 'p' || c == 'o' || c == 't';
 }
 
 void Tokenizer::parse_version(string version_req, 
@@ -855,7 +873,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 	while (p < p_end) {
 
 		/* Operators except '$' */ 
-		if (is_operator_char(*p)) {
+		if (is_standalone_operator_char(*p)) {
 			Place place(place_type, filename, line, p - p_line);
 			tokens.push_back(make_shared <Operator> (*p, place, whitespace));
 			++p;
@@ -1039,14 +1057,79 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			}
 		}
 
-		/* Name, invalid token, or -/+/~ */ 		
+		/* Flag, name, or invalid character */ 		
 		else {
+			/* Flag */ 
+			if (p < p_end &&
+			    (*p == '-' || *p == '+' || *p == '~')) {
+				if (*p == '+' || *p == '~') {
+					current_place() <<
+						fmt("an unquoted name must not begin with the character %s",
+						    char_format_word(*p));
+					throw ERROR_LOGICAL; 
+				}
+				Place place_dash= current_place(); 
+				++p;
+				assert(p <= p_end); 
+				if (p == p_end) {
+					current_place() <<
+						"expected a flag character";
+					place_dash <<
+						fmt("after dash %s",
+						    char_format_word('-')); 
+					throw ERROR_LOGICAL;
+				}
+				char op= *p;
+				if (! is_flag_char(op)) {
+					if (isalnum(op)) {
+						current_place() <<
+							fmt("invalid flag character %s",
+							    char_format_word(op)); 
+					} else {
+						current_place() <<
+							fmt("expected a flag character, not %s",
+							    char_format_word(op)); 
+					}
+					place_dash <<
+						fmt("after dash %s",
+						    char_format_word('-')); 
+					throw ERROR_LOGICAL; 
+				}
+				assert(isalnum(op)); 
+				shared_ptr <Flag_Token> token= make_shared <Flag_Token> 
+					(op, current_place(), whitespace); 
+				tokens.push_back(token); 
+				++p;
+				if (p < p_end && 
+				    (is_name_char(*p) || *p == '"' || *p == '\'' || *p == '$' || *p == '@')) {
+					current_place() <<
+						fmt("expected whitespace before character %s",
+						    char_format_word(*p));
+					token->get_place() <<
+						fmt("after flag %s",
+						    multichar_format_word
+						    (frmt("-%c", op))); 
+					throw ERROR_LOGICAL; 
+				}
+			} else {
+
 			shared_ptr <Place_Name> place_name= parse_name();
 			if (place_name == nullptr) {
-				if (*p == '-' || *p == '+' || *p == '~') {
+				if (*p == '!') {
 					current_place() <<
-						fmt("as first character of a name, the character %s must be quoted",
-						    char_format_word(*p)); 
+						fmt("character %s is invalid for persistent dependencies; use %s instead",
+						    char_format_word('!'),
+						    multichar_format_word("-p")); 
+				} else if (*p == '?') {
+					current_place() <<
+						fmt("character %s is invalid for optional dependencies; use %s instead",
+						    char_format_word('?'),
+						    multichar_format_word("-o")); 
+				} else if (*p == '&') {
+					current_place() <<
+						fmt("character %s is invalid for trivial dependencies; use %s instead",
+						    char_format_word('&'),
+						    multichar_format_word("-t")); 
 				} else {
 					current_place() <<
 						fmt("invalid character %s", 
@@ -1057,6 +1140,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			assert(! place_name->empty());
 			tokens.push_back(make_shared <Name_Token>
 					 (*place_name, whitespace)); 
+			}
 		}
 		
 		whitespace= false;

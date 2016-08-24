@@ -1,5 +1,5 @@
-A {
-	exit 1
+A: B {
+	touch A
 }
 
 B {

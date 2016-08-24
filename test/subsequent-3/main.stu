@@ -1,7 +1,7 @@
 
 # The first 'B' is built; the second then does not matter.
 
-A:  !B ?B {
+A:  -p B -o B {
 	cp B A
 }
 

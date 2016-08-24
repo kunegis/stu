@@ -1,9 +1,18 @@
 #! /bin/sh
 #
-# Simulate a TTY
+# Simulate a TTY. 
+#
+# INVOCATION 
+#
+#    sh/tty COMMAND
+#
+# Execute COMMAND as if in a TTY. 
 #
 
-# The next line is execute by sh, not by tcl \
+#\
+export TERM=xterm
+
+# The next line is executed by sh, not by tcl \
 exec tclsh8.6 "$0" ${1+"$@"}
 
 package require Expect

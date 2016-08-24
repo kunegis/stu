@@ -1,10 +1,6 @@
-
 # 'B' must be built.
 
-# Solution:  the [B]->B link must be re-added to the dependencies of
-# [B].  
-
-A:  [?B] [B] 
+A:  [-o B] [B] 
 { 
 	[ -e B ] || exit 1
 	touch A 

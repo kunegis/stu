@@ -25,6 +25,16 @@
  * particular in black-on-white vs white-on-black terminals. 
  */
 
+/*
+ * To cite the file gcc/diagnostic-color.c in gcc-6.2.0:
+ *
+ *     "It would be impractical for GCC to become a full-fledged terminal
+ *     program linked against ncurses or the like, so it will not detect
+ *     terminfo(5) capabilities."
+ *
+ * Stu takes the same approach. 
+ */
+
 class Color 
 {
 public:
@@ -52,16 +62,31 @@ private:
 	static Color color;
 
 	Color() {
-		errno= 0;
-		bool is_tty_out= isatty(fileno(stdout)); 
-		if (! is_tty_out && errno != 0 && errno != ENOTTY) {
-			perror("isatty"); 
-		}
-		errno= 0;
-		bool is_tty_err= isatty(fileno(stderr)); 
-		if (! is_tty_err && errno != 0 && errno != ENOTTY) {
-			perror("isatty");
-		}
+		
+		/* 
+		 * Logic:  Only use color when $TERM is defined, is not
+		 * equal to "dumb", and stderr/stdout is a TYY.  This is
+		 * the same logic used by GCC. 
+		 */
+
+		bool is_tty_out= false, is_tty_err= false;
+
+		const char *t= getenv("TERM");
+
+		if (t && strcmp(t, "dumb")) {
+
+			errno= 0;
+			is_tty_out= isatty(fileno(stdout)); 
+			if (! is_tty_out && errno != 0 && errno != ENOTTY) {
+				perror("isatty"); 
+			}
+			errno= 0;
+			is_tty_err= isatty(fileno(stderr)); 
+			if (! is_tty_err && errno != 0 && errno != ENOTTY) {
+				perror("isatty");
+			}
+		} 
+
 		set(is_tty_out, is_tty_err); 
 	}	
 };
@@ -84,12 +109,18 @@ Color Color::color;
 
 void Color::set(bool is_tty_out, bool is_tty_err)
 {
+	/*
+	 * Note:  GCC addition inserts "\33[K" sequences after each
+	 * color code, to avoid a bug in some terminals.  This is not
+	 * done here. 
+	 */
+
 	if (is_tty_out) {
 		quotes_out= false;
-		out_end=            "[0m";
-		out_print_word_end= "[0;32m"; 
-		out_print=          "[32m";
-		out_print_word=     "[32;1m"; 
+		out_end=            "\33[0m";
+		out_print_word_end= "\33[0;32m"; 
+		out_print=          "\33[32m";
+		out_print_word=     "\33[32;1m"; 
 	} else {
 		quotes_out= true;
 		out_end=            ""; 
@@ -100,12 +131,12 @@ void Color::set(bool is_tty_out, bool is_tty_err)
 
 	if (is_tty_err) {
 		quotes= false;
-		error=             "[31m";
-		warning=           "[35m";
-		word=              "[1m";
-		error_word=        "[1;31m"; 
-		warning_word=      "[1;35m"; 
-		end=               "[0m";
+		error=             "\33[31m";
+		warning=           "\33[35m";
+		word=              "\33[1m";
+		error_word=        "\33[1;31m"; 
+		warning_word=      "\33[1;35m"; 
+		end=               "\33[0m";
 	} else {
 		quotes= true;
 		error=        "";

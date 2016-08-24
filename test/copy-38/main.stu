@@ -2,5 +2,5 @@
 
 A:  list.x { cp list.x A }
 list.$name = X/;
->X/list.$name:  !X { echo correct }
+>X/list.$name:  -p X { echo correct }
 X { mkdir -p X }

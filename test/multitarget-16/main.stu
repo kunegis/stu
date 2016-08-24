@@ -1,5 +1,5 @@
 
-A:  ?@x { 
+A:  -o @x { 
 	[ -e B ] && exit 1
 	touch A
 }

@@ -1,4 +1,4 @@
-# Cannot mix '?' and '!'.  This must give a logical error. 
+# Cannot mix '-o' and '-p'.  This must give a logical error. 
 
-A: ? (! B) { touch A }
+A: -o (-p B) { touch A }
 B { touch B }

@@ -1,7 +1,7 @@
 
 # write a script that tests the whole cycle. 
 
-A:  &@x @y {
+A:  -t @x @y {
 	echo BUILDING_A
 	cat B D >A
 }

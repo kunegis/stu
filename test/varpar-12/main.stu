@@ -1,6 +1,6 @@
-# Not an error; variable dependency and '!' do not clash.
+# Not an error; variable dependency and -p do not clash.
 
-A: ![B] { 
+A: -p [B] { 
 	echo "$X" >A
 }
 

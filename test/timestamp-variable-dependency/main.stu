@@ -1,6 +1,6 @@
 # Valid 
 
->A:  !$[B]    { 
+>A:  -p $[B]    { 
 	echo $B
 }
 

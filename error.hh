@@ -49,12 +49,16 @@
  * "not YYY" mentions the invalid token.  If end-of-file is encountered,
  * the "not ..." part is not used. 
  * 
- * Use "must not" rather than "cannot" in error messages, e.g., "filename
- * must not be empty".  But remember that in general it is better to
- * state what what expected in the syntax than to say that what was
- * encountered cannot be used.  For instance, say "expected a filename"
- * instead of "filename must not be empty".  This cannot always be done,
- * so "must not" is sometimes used. 
+ * Use "must not" rather than "cannot" or "shall" in error messages when
+ * referring to a "part", e.g., "filename must not be empty".  On the
+ * other hand, use "cannot" when the forbidded item would not be a
+ * "part", e.g., "transient targets cannot be used with copy rule".  
+ * 
+ * But remember that in general it is better to state what what expected
+ * in the syntax than to say that what was encountered cannot be used.
+ * For instance, say "expected a filename" instead of "filename must not
+ * be empty".  This cannot always be done, so "must not" is sometimes
+ * used.  
  */
 
 #include <assert.h>
@@ -178,6 +182,23 @@ public:
 		OPTION_F,     /* In argument to option -F */
 	};
 
+	Place::Type type; 
+
+	/* INPUT_FILE:  File in which the error occurred.  Empty string
+	 * for standard input.  
+	 * Others:  Unused.  */ 
+	string filename;
+
+	/* INPUT_FILE:  Line number, one-based.  
+	 * Others:  unused.  */ 
+	unsigned line; 
+
+	/* INPUT_FILE:  Column number, zero-based.  In output, column
+	 * numbers are one-based, but they are saved here as zero-based
+	 * numbers as these are easier to generate. 
+	 * Others: Unused.  */ 
+	unsigned column; 
+
 	/* Empty */ 
 	Place() 
 		:  type(Type::EMPTY) 
@@ -225,24 +246,6 @@ public:
 		return type == Type::EMPTY;
 	}
 
-private: 
-
-	Place::Type type; 
-
-	/* INPUT_FILE:  File in which the error occurred.  Empty string
-	 * for standard input.  
-	 * Others:  Unused.  */ 
-	string filename;
-
-	/* INPUT_FILE:  Line number, one-based.  
-	 * Others:  unused.  */ 
-	unsigned line; 
-
-	/* INPUT_FILE:  Column number, zero-based.  In output, column
-	 * numbers are one-based, but they are saved here as zero-based
-	 * numbers as these are easier to generate. 
-	 * Others: Unused.  */ 
-	unsigned column; 
 };
 
 /* A place along with a message.  This class is only used when traces

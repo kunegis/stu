@@ -1,7 +1,6 @@
-
 # 'C' is not built because it is an optional dependency. 
 
-A:  ?[E] { touch A }
+A:  -o [E] { touch A }
 >E       { echo C  }
 C        { exit 1  }
 

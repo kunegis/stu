@@ -1,0 +1,8 @@
+# Error:  the place must be on the '-', not on the 'p'. 
+
+A:  < -p B
+{
+	touch A
+}
+
+B { touch B }

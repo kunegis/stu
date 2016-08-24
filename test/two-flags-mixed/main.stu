@@ -1,1 +1,1 @@
-A:  ![B] { touch A }   >B { echo '?C' } 
+A:  -p [B] { touch A }   >B { echo '-o C' } 

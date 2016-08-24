@@ -1,5 +1,5 @@
 
-A:  !@x {
+A:  -p @x {
     [ "$FAIL" ] && exit 1
     cp B A
 }

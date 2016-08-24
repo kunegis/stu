@@ -2,7 +2,7 @@
 # Not an error.  The '!' and '?' are at different levels of dynamicity
 # and therefore do not clash. 
 
-A: [!B] { touch A }    >B { echo '?C' }
+A: [-p B] { touch A }    >B { echo '-o C' }
 
 C { 
 	exit 1

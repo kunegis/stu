@@ -1,6 +1,6 @@
 # Not an error. 
 
-A: & $[X] { 
+A: -t $[X] { 
 	echo "$X" >A
 }
 

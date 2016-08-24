@@ -1,6 +1,6 @@
 # 'B' must not be built. 
 
-A: ?B { 
+A: -o B { 
 	[ -e B ] && exit 1
 	touch A
 }

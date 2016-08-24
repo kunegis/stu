@@ -1,4 +1,3 @@
-
 #
 # Existence-only dependency:  The file must be present, but its
 # modification date does not matter.  This is useful for directories. 
@@ -12,7 +11,7 @@ A:  data/B {
     cp data/B A
 }
 
-data/B:  !data
+data/B:  -p data
 {
     [ -r data/B ] && exit 1
     echo Hello >data/B

@@ -1,18 +1,19 @@
 #ifndef COLOR_HH
 #define COLOR_HH
 
-/* Handling of color output.  All color output is done on standard error
- * output.   
+/* 
+ * Handling of color output.  
  *
  * Colors:  
  *
- *   error:  the filename or argument of error messages
- *   warning:the filename or argument of warning messages
- *   name:   names quoting the input 
- *   error name:  name inside an error
+ *   error:       The filename or argument of error messages
+ *   warning:     The filename or argument of warning messages
+ *   name:        Names quoting the input 
+ *   error name:  Name inside an error
  */
 
-/* ANSI escape codes are explained in the man page console_codes(4) on
+/* 
+ * ANSI escape codes are explained in the man page console_codes(4) on
  * Linux.  What we use:
  *
  *  0: reset

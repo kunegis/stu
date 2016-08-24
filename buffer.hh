@@ -10,7 +10,8 @@
 
 static default_random_engine buffer_generator;
 
-/* A random number in [0...n-1]. 
+/* 
+ * A random number in [0...n-1]. 
  */
 size_t random_number(size_t n) 
 {

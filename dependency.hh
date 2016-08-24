@@ -171,7 +171,8 @@ public:
 	/* The place where the dependency is declared */ 
 	Place place;
 
-	/* With F_VARIABLE:  the name of the variable.
+	/* 
+	 * With F_VARIABLE:  the name of the variable.
 	 * Otherwise:  empty. 
 	 */
 	string name;

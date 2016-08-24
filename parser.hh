@@ -62,9 +62,7 @@ public:
 	 * PLACE_NAME_INPUT.  If PLACE_NAME_INPUT is alrady non-empty,
 	 * throw an error if a second input filename is specified.
 	 * PLACE_INPUT is the place of the '<' input redirection
-	 * operator.  
-	 */ 
-
+	 * operator.  */ 
 
 	static void get_rule_list(vector <shared_ptr <Rule> > &rules,
 				  vector <shared_ptr <Token> > &tokens,
@@ -72,8 +70,7 @@ public:
 
 	/* DEPENDENCIES is filled.  DEPENDENCIES is empty when called.
 	 * TARGET is used for error messages.  Empty when in a dynamic
-	 * dependency. 
-	 */
+	 * dependency.  */
 	static void get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
 					vector <shared_ptr <Token> > &tokens,
 					const Place &place_end,
@@ -326,7 +323,8 @@ shared_ptr <Rule> Parser::parse_rule()
 	assert(place_param_targets.size() >= 1); 
 	for (unsigned i= 1;  i < place_param_targets.size();  ++i) {
 		set <string> parameters_i;
-		for (const string &parameter:  place_param_targets[i]->place_name.get_parameters()) {
+		for (const string &parameter:  
+			     place_param_targets[i]->place_name.get_parameters()) {
 			parameters_i.insert(parameter); 
 		}
 		if (parameters_i != parameters_0) {
@@ -418,7 +416,8 @@ shared_ptr <Rule> Parser::parse_rule()
 			++iter; 
 			assert(place_param_targets.size() != 0); 
 			if (place_param_targets.size() != 1) {
-				place_equal << fmt("there must not be assigned content using %s", char_format_word('=')); 
+				place_equal << 
+					fmt("there must not be assigned content using %s", char_format_word('=')); 
 				place_param_targets[0]->place << 
 					fmt("in rule for %s... with multiple targets",
 					    place_param_targets[0]->format_word()); 
@@ -426,7 +425,8 @@ shared_ptr <Rule> Parser::parse_rule()
 				throw ERROR_LOGICAL; 
 			}
 			if (place_param_targets[0]->type == Type::TRANSIENT) {
-				place_equal << fmt("there must not be assigned content using %s", char_format_word('=')); 
+				place_equal << 
+					fmt("there must not be assigned content using %s", char_format_word('=')); 
 				place_param_targets[0]->place <<
 					fmt("for transient target %s", 
 					    place_param_targets[0]->format_word()); 
@@ -771,7 +771,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 			/* D_INPUT and D_OPTIONAL cannot be used at the same
 			 * time. Note: Input redirection must not appear in
 			 * dynamic dependencies, and therefore it is sufficient
-			 * to check this here.     */   
+			 * to check this here.  */   
 			if (! place_name_input.place.empty()) { 
 				place_input <<
 					fmt("input redirection using %s must not be used",
@@ -1007,8 +1007,7 @@ shared_ptr <Dependency> Parser
 
 	/* The place of the variable dependency as a whole is set on the
 	 * dollar sign.  It would be conceivable to also set it
-	 * on the name contained in it. 
-	 */
+	 * on the name contained in it.  */
 	return make_shared <Direct_Dependency> 
 		(flags, 
 		 Place_Param_Target(Type::FILE, *place_name, place_dollar), 

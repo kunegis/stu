@@ -283,8 +283,7 @@ private:
 	 * all their dependencies up to date, then the command is not
 	 * executed, even though it was never execute in the current
 	 * invocation of Stu. In that case, the transient targets are
-	 * never insert in this map. 
-	 */
+	 * never insert in this map.  */
 	static unordered_map <string, Timestamp> transients;
 
 	/* The timepoint of the last time wait() returned.  No file in the
@@ -1155,8 +1154,7 @@ void Execution::unlink(Execution *const parent,
 		/* Don't read the dependencies when the target was optional and
 		 * was not built */
 		/* child->exists was set to +1 earlier when the optional
-		 * dependency was found to exist
-		 */
+		 * dependency was found to exist  */
 		else if (flags_child & F_OPTIONAL) {
 			if (child->exists <= 0) {
 				do_read= false;
@@ -1211,7 +1209,7 @@ void Execution::unlink(Execution *const parent,
 	 */ 
 
 	/* Note:  propagate the flags after propagating other things, since
-	 * flags can be changed by the propagations done before. */
+	 * flags can be changed by the propagations done before.  */
 
 	parent->error |= child->error; 
 
@@ -1271,7 +1269,7 @@ Execution::Execution(Target target_,
 		assert(target_.type.is_dynamic()); 
 		/* We must set the rule here, so cycles in the dependency graph
 		 * can be detected.  Note however that the rule of dynamic
-		 * file dependency executions is otherwise not used. */ 
+		 * file dependency executions is otherwise not used.  */ 
 		Target target_base(target_.type.get_base(), target_.name);
 		try {
 			rule= rule_set.get(target_base, param_rule, mapping_parameter, link.dependency->get_place()); 
@@ -1374,7 +1372,7 @@ Execution::Execution(Target target_,
 					 target_.format_word()));
 			raise(ERROR_BUILD);
 			/* Even when a rule was not found, the Execution object remains
-			 * in memory */  
+			 * in memory  */  
 		}
 	}
 
@@ -1563,7 +1561,7 @@ bool Execution::remove_if_existing(bool output)
 		const char *filename= target.name.c_str();
 
 		/* Remove the file if it exists.  If it is a symlink, only the
-		 * symlink itself is removed, not the file it links to */ 
+		 * symlink itself is removed, not the file it links to.  */ 
 
 		struct stat buf;
 		if (0 > stat(filename, &buf))
@@ -2141,8 +2139,7 @@ void Execution::initialize(Stack avoid)
 		Target target= targets.front(); 
 
 		/* This is a special dynamic target.  Add, as an initial
-		 * dependency, the corresponding file or transient.  
-		 */
+		 * dependency, the corresponding file or transient.  */
 		Flags flags_child= avoid.get_lowest();
 		
 		if (target.type.is_any_file())
@@ -2244,8 +2241,7 @@ bool Execution::read_variable(string &variable_name,
 
 	/* Remove space at beginning and end of the content.
 	 * The characters are exactly those used by isspace() in
-	 * the C locale.  
-	 */ 
+	 * the C locale.  */ 
 	content.erase(0, content.find_first_not_of(" \n\t\f\r\v")); 
 	content.erase(content.find_last_not_of(" \n\t\f\r\v") + 1);  
 

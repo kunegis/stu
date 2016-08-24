@@ -338,7 +338,8 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			if (place_diagnostic
 			    .get_type()
 			    != Place::Type::EMPTY)
-				place_diagnostic << system_format(name_format_word(filename_diagnostic)); 
+				place_diagnostic << 
+					system_format(name_format_word(filename_diagnostic)); 
 			else
 				print_error(system_format(name_format_word(filename_diagnostic))); 
 		}
@@ -793,7 +794,7 @@ void Tokenizer::parse_version(string version_req,
 {
 	/* Note:  there may be any number of version statements in Stu
 	 * (in particular from multiple source files), so we don't keep
-	 * track whether one has already been provided. */ 
+	 * track whether one has already been provided.  */ 
 
 	unsigned major_req, minor_req, patch_req;
 	int chars= -1;

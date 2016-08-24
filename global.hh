@@ -62,8 +62,7 @@ static Order order= Order::DFS;
 /* Whether to use vectors for randomization */ 
 static bool order_vec; 
 
-/* The envp variable.  Set in main(). 
- */
+/* The envp variable.  Set in main(). */
 const char **envp_global;
 
 /* Does the same as program_invocation_name (which is a GNU extension,

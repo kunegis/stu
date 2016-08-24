@@ -1,12 +1,14 @@
 #ifndef TARGET_HH
 #define TARGET_HH
 
-/* Data types for representing filenames, targets, etc. 
+/* 
+ * Data types for representing filenames, targets, etc. 
  */
 
 #include <unordered_set>
 
-/* Glossary:
+/* 
+ * Glossary:
  *     * A _name_ is a filename of the name of a transient target.  They are
  *       just strings, so no special data type for it
  *     * A _target_ is either file or a transient, or a dynamic file.  It is
@@ -293,7 +295,8 @@ namespace std {
 
 }
 
-/* A parametrized name.  Each name has N >= 0 parameters.  When N > 0,
+/* 
+ * A parametrized name.  Each name has N >= 0 parameters.  When N > 0,
  * the name is parametrized, otherwise it is unparametrized.   
  * 
  * A name consists of (N+1) static text elements (in the variable TEXTS)
@@ -313,12 +316,10 @@ class Name
 private:
 
 	/* Length = N + 1.
-	 * Only the first and last elements may be empty.  
-	 */ 
+	 * Only the first and last elements may be empty.  */ 
 	vector <string> texts; 
 
-	/* Length = N.  
-	 */ 
+	/* Length = N */ 
 	vector <string> parameters;
 
 public:
@@ -354,8 +355,7 @@ public:
 	}
 
 	/* Append the given PARAMETER and an empty text.  This does not
-	 * check that the result is valid. 
-	 */ 
+	 * check that the result is valid.  */ 
 	void append_parameter(string parameter) {
 		parameters.push_back(parameter); 
 		texts.push_back("");
@@ -391,8 +391,7 @@ public:
 	/* The name may be empty, resulting in an empty string */ 
 	string instantiate(const map <string, string> &mapping) const;
 
-	/* Return the unparametrized name.  The name must be unparametrized. 
-	 */
+	/* Return the unparametrized name.  The name must be unparametrized. */
 	const string &unparametrized() const {
 		assert(get_n() == 0);
 		return texts[0]; 
@@ -400,8 +399,7 @@ public:
 
 	/* Check whether NAME matches this name.  If it does, return
 	 * TRUE and set MAPPING and ANCHORING accordingly. 
-	 * MAPPING must be empty. 
-	 */
+	 * MAPPING must be empty.  */
 	bool match(string name, 
 		   map <string, string> &mapping,
 		   vector <unsigned> &anchoring);
@@ -486,13 +484,13 @@ public:
 	}
 
 	/* Whether anchoring A dominates anchoring B. 
-	 * The anchorings do not need to have the same number of parameters. 
-	 */
+	 * The anchorings do not need to have the same number of parameters.  */
 	static bool anchoring_dominates(vector <unsigned> &anchoring_a,
 					vector <unsigned> &anchoring_b);
 };
 
-/* A parametrized name for which it is saved what type it represents.  
+/* 
+ * A parametrized name for which it is saved what type it represents.  
  */ 
 class Param_Target
 {
@@ -565,9 +563,8 @@ public:
 	/* Place of the name as a whole */ 
 	Place place;
 
-	/* length = n (number of parameters). 
-	 * The places of the individual parameters.  
-	 */
+	/* Length = n (number of parameters). 
+	 * The places of the individual parameters.  */
 	vector <Place> places;
 
 	/* Empty parametrized name, and empty place */
@@ -606,7 +603,8 @@ public:
 	}
 };
 
-/* A target that is parametrized and contains places. 
+/* 
+ * A target that is parametrized and contains places. 
  */
 class Place_Param_Target
 {
@@ -692,15 +690,15 @@ bool Name::match(const string name,
 		 map <string, string> &mapping,
 		 vector <unsigned> &anchoring)
 {
-	/* Rules:
+	/* 
+	 * Rules:
 	 *  - Each parameter must match at least one character. 
 	 */
 
 	/* The algorithm uses one pass without backtracking or
 	 * recursion.  Therefore, there are no "deadly" patterns that
 	 * can make it hang, as it is the case for trivial
-	 * implementation of regular expression matching. 
-	 */
+	 * implementation of regular expression matching.  */
 
 	assert(mapping.size() == 0); 
 

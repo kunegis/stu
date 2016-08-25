@@ -192,8 +192,8 @@ int main(int argc, char **argv, char **envp)
 
 			case 'f':
 				if (*optarg == '\0') {
-					print_error(frmt("Option %s-f%s must have non-empty argument",
-							 Color::word, Color::end)); 
+					Place(Place::Type::OPTION, 'f') <<
+						"expected non-empty argument"; 
 					exit(ERROR_FATAL);
 				}
 

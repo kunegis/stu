@@ -248,6 +248,8 @@ public:
 	 * numbers are output as 1-based values.  Return THIS.  */
 	const Place &operator<<(string message) const; 
 
+	/* Print a message.  The COLOR arguments determine whether this
+	 * is an error or a warning.  */ 
 	void print(string message,
 		   const char *color,
 		   const char *color_word) const;
@@ -329,8 +331,9 @@ void Place::print(string message,
 	case Type::OPTION:
 		assert(text.size() == 1); 
 		fprintf(stderr,
-			"%sOption -%c%s: %s\n",
-			color, 
+			"%sOption %s-%c%s: %s\n",
+			color,
+			color_word,
 			text[0],
 			Color::end,
 			message.c_str());

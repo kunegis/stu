@@ -6,20 +6,21 @@
  *
  * Colors:  
  *
- *   error:       The filename or argument of error messages
- *   warning:     The filename or argument of warning messages
- *   name:        Names quoting the input 
- *   error name:  Name inside an error
+ *   error:       The place of an error
+ *   warning:     The place of a warning
+ *   word:        Names quoting the input 
+ *   error word:  Name inside an error place
+ *   warning word:Name inside a warning place
  */
 
 /* 
- * ANSI escape codes are explained in the man page console_codes(4) on
- * Linux.  What we use:
+ * We use ANSI escape codes to display color.  ANSI escape codes are
+ * explained in the man page console_codes(4) on Linux.  What we use:
  *
  *  0: reset
- *  1: bright/bold
- * 31: red
- * 35: magenta
+ *  1: bright/bold        (for names)
+ * 31: red                (for errors)
+ * 35: magenta            (for warnings)
  *
  * Colors and styles look different in different terminals.  In
  * particular in black-on-white vs white-on-black terminals. 

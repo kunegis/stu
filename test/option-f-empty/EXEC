@@ -8,7 +8,7 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF "../../stu.test: *** Option -f must have non-empty argument" list.err || {
+grep -qF "Option -f: expected non-empty argument" list.err || {
 	echo >&2 "*** Error output"
 	exit 1
 }

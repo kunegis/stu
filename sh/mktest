@@ -411,8 +411,11 @@ do
 			fi
 
 			# No unbalanced colors
-			if grep -qE '[^0]+m[^]*$' list.def.out ||
-				grep -qE '[^0]+m[^]*[^0]+m' list.def.out ; then
+			if grep -qE '[^0]+m[^]*$' list.def.out ; then
+				# The following is disabled, as we now
+				# allow a color code to be replaced by
+				# another one directly: 
+				#      grep -qE '[^0]+m[^]*[^0]+m' list.def.out 
 				echo >&2 "$0: *** Expected closing color code"
 				error=1
 			else

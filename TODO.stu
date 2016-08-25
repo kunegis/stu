@@ -1,6 +1,17 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
+# The file 'MATLABPATH' must inherit the '-t' flag. 
+#
+
+@matlab:  -t (matlab $[MATLABPATH]);
+
+out: @matlab
+{
+	./matlab ... >out
+}
+
+#
 # Option -Y to enable color output explicitly
 #
 

@@ -59,7 +59,7 @@ public:
 	 */
 
 	/* In some of the following functions, write the input filename into
-	 * PLACE_NAME_INPUT.  If PLACE_NAME_INPUT is alrady non-empty,
+	 * PLACE_NAME_INPUT.  If PLACE_NAME_INPUT is already non-empty,
 	 * throw an error if a second input filename is specified.
 	 * PLACE_INPUT is the place of the '<' input redirection
 	 * operator.  */ 
@@ -79,8 +79,8 @@ public:
 
 	/* Parse a dependency as given on the command line outside of
 	 * options.  This supports only the characters '@' and '[]', as
-	 * well as names.  */
-	static shared_ptr <Dependency> get_target_dep(string text); 
+	 * well as names.  TEXT must not be "".  */
+	static shared_ptr <Dependency> get_target_dep(string text, const Place &place); 
 
 private:
 
@@ -1191,7 +1191,7 @@ void Parser::get_expression_list(vector <shared_ptr <Dependency> > &dependencies
 	}
 }
 
-shared_ptr <Dependency> Parser::get_target_dep(string text)
+shared_ptr <Dependency> Parser::get_target_dep(string text, const Place &place)
 {
 	/*
 	 * This syntax supports only the characters '@' and '[]', and a
@@ -1200,13 +1200,7 @@ shared_ptr <Dependency> Parser::get_target_dep(string text)
 	 *         '['^n [@] NAME ']'^n
 	 */
 
-	Place place(Place::Type::ARGV);
-
-	if (text.empty()) {
-		place << fmt("%s: name must not be empty",
-			     name_format_word(text));
-		throw ERROR_LOGICAL;
-	}
+	assert(text != ""); 
 
 	const char *begin= text.c_str();
 	const char *p= text.c_str() + text.size();

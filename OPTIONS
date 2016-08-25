@@ -42,9 +42,9 @@ List of options
 -M  S      Seed mode
 -n  . M G  Dry run (just print commands)
 -N  .      Dry run, but build dynamic dependencies 
--o  .   x  Optional dependency
--o  x   G  GNU Make: Mark file as old
--p  . x x  Persistent dependency
+-o  S   x  Optional dependency
+-o  x   G  Mark file as old
+-p  S x x  Persistent dependency
 -p  x M G  Print database (rule set)
 -P  S      Print database (rule set)
 -q  S M G  Question mode / Query mode

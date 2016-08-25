@@ -30,7 +30,8 @@ using namespace std;
 
 /*
  * Note:  Stu does not call setlocale(), and therefore can make use of
- * isspace() detecting spaces as defined in the C locale. 
+ * isspace() detecting spaces as defined in the C locale.  The same is
+ * true for isalnum(), which is used to get ASCII results. 
  */
 
 /* 
@@ -38,14 +39,14 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-const char OPTIONS[]= "ac:C:Ef:F:ghj:JkKm:M:PqQsvVwxyz"; 
+const char OPTIONS[]= "ac:C:Ef:F:ghj:JkKm:M:o:p:PqQsvVwxyz"; 
 
 /* The output of the help (-h) option.  The following strings do not
  * contain tabs, but only space characters.  */   
 const char HELP[]= 
 	"Usage: stu [-f FILENAME] [OPTION]... [TARGET]...\n"           
 	"By default, build the first target in the file 'main.stu'.\n" 
-	"TARGETS may include the special characters '!?@[]'.\n"        
+	"TARGETS may include the special characters '@[]'.\n"        
 	"Options:\n"						       
 	"  -a               Treat all trivial dependencies as non-trivial\n"          
 	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"      
@@ -63,6 +64,9 @@ const char HELP[]=
 	"     dfs           (default) Depth-first order, like in Make\n"	      
 	"     random        Random order\n"				              
 	"  -M STRING        Pseudorandom run order, seeded by given string\n"         
+	"  -o FILENAME      Build an optional dependency, i.e., build it only if it\n"
+	"                   exists and is out of date\n"
+	"  -p FILENAME      Build a persistent dependency, i.e., ignore its timestamp\n"
 	"  -P               Print the rules and exit\n"                               
 	"  -q               Question mode; check whether targets are up to date\n"    
 	"  -Q               Quiet mode; suppress special stdout messages\n"           
@@ -87,13 +91,8 @@ const char VERSION_INFO[]=
 void init_buf(); 
 
 /* Parse a string of dependencies and add them to the vector. Used for
- * the -C option.  */
+ * the -C option.  Support the full Stu syntax.  */
 void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
-			       const char *string_);
-
-/* Add a single dependency from the given STRING, in syntax used for
- * optionless arguments.  */
-void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
 			       const char *string_);
 
 /* Read in an input file and add the rules to the given rule set.  Used
@@ -142,7 +141,10 @@ int main(int argc, char **argv, char **envp)
 		/* Place of first file when no rule is contained */ 
 		Place place_first;
 
-		bool had_option_c= false; /* Both lower and upper case */
+		/* Whether target was passed through one of the options
+		 * -c, -C, -o or -p.  */
+		bool had_option_target= false;   /* Both lower and upper case */
+
 		bool had_option_f= false; /* Both lower and upper case */
 
 		for (int c; (c= getopt(argc, argv, OPTIONS)) != -1;) {
@@ -167,25 +169,23 @@ int main(int argc, char **argv, char **envp)
 
 			case 'c': 
 				{
-					had_option_c= true; 
+					had_option_target= true; 
+					Place place(Place::Type::OPTION, 'c');
 					if (*optarg == '\0') {
-						print_error(frmt("Option %s-c%s must have non-empty argument",
-								 Color::word, Color::end)); 
+						place << "expected a non-empty argument"; 
 						exit(ERROR_FATAL);
 					}
-					const char *const name= optarg;
 					Type type= Type::FILE;
-					Place place(Place::Type::ARGV, name, 1, 0);
 					dependencies.push_back
 						(make_shared <Direct_Dependency>
 						 (0, Place_Param_Target
-						  (type, Place_Name(name, place))));
+						  (type, Place_Name(optarg, place))));
 					break;
 				}
 
 			case 'C': 
 				{
-					had_option_c= true; 
+					had_option_target= true; 
 					add_dependencies_option_C(dependencies, optarg);
 					break;
 				}
@@ -259,6 +259,25 @@ int main(int argc, char **argv, char **envp)
 				buffer_generator.seed(hash <string> ()(string(optarg)));
 				break;
 
+			case 'o':
+			case 'p':
+				{
+					had_option_target= true; 
+					Place place(Place::Type::OPTION, c);
+					if (*optarg == '\0') {
+						place << "expected a non-empty argument";
+						exit(ERROR_FATAL);
+					}
+					Type type= Type::FILE;
+					dependencies.push_back
+						(make_shared <Direct_Dependency>
+						 (c == 'p' ?
+						  F_PERSISTENT : F_OPTIONAL, 
+						  Place_Param_Target
+						  (type, Place_Name(optarg, place))));
+					break; 
+				}
+
 			case 'V': 
 				fputs(VERSION_INFO, stdout); 
 				printf("USE_MTIM = %u\n", USE_MTIM); 
@@ -287,16 +306,23 @@ int main(int argc, char **argv, char **envp)
 			/* With GNU getopt(), I is not the index that the argument had
 			 * originally, because getopt() reorders its arguments.
 			 * This is why we can't put I into the trace. */ 
+
+			Place place(Place::Type::ARGUMENT); 
+			if (*argv[i] == '\0') {
+				place << fmt("%s: name must not be empty",
+					     name_format_word(argv[i])); 
+				exit(ERROR_FATAL);
+			}
+
 			if (! option_literal) {
-				add_dependencies_argument(dependencies, argv[i]); 
+				shared_ptr <Dependency> dep= 
+					Parser::get_target_dep(argv[i], place);
+				dependencies.push_back(dep); 
 			} else {
 				dependencies.push_back
 					(make_shared <Direct_Dependency>
 					 (0, Place_Param_Target
-					  (Type::FILE, 
-					   Place_Name
-					   (argv[i],
-					    Place(Place::Type::ARGV)))));
+					  (Type::FILE, Place_Name(argv[i], place))));
 			}
 		}
 
@@ -311,7 +337,7 @@ int main(int argc, char **argv, char **envp)
 				if (errno == ENOENT) { 
 					/* The default file does not exist --
 					 * fail if no target is given */  
-					if (dependencies.empty() && ! had_option_c 
+					if (dependencies.empty() && ! had_option_target 
 					    && ! option_print) {
 						print_error(fmt("Expected a target or the default file %s",
 								name_format_word(FILENAME_INPUT_DEFAULT))); 
@@ -334,7 +360,7 @@ int main(int argc, char **argv, char **envp)
 
 		/* If no targets are given on the command line,
 		 * use the first non-variable target */ 
-		if (dependencies.empty() && ! had_option_c) {
+		if (dependencies.empty() && ! had_option_target) {
 
 			if (rule_first == nullptr) {
 				if (! place_first.empty()) {
@@ -405,7 +431,7 @@ void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 		(tokens, 
 		 Tokenizer::OPTION_C,
 		 place_end, string_,
-		 Place(Place::Type::OPTION_C));
+		 Place(Place::Type::OPTION, 'C'));
 
 	vector <shared_ptr <Dependency> > dependencies_option;
 	Place_Name input; /* remains empty */ 
@@ -419,13 +445,6 @@ void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 	}
 }
 
-void add_dependencies_argument(vector <shared_ptr <Dependency> > &dependencies,
-			       const char *string_)
-{
-	shared_ptr <Dependency> dep= Parser::get_target_dep(string_);
-	dependencies.push_back(dep); 
-}
-
 void read_file(string filename,
 	       int file_fd,
 	       Rule_Set &rule_set, 
@@ -436,7 +455,7 @@ void read_file(string filename,
 
 	Place place_diagnostic= filename == "" 
 		? Place()
-		: Place(Place::Type::OPTION_f);
+		: Place(Place::Type::OPTION, 'f');
 
 	if (filename == "")
 		filename= FILENAME_INPUT_DEFAULT;
@@ -485,7 +504,7 @@ void read_option_F(const char *s,
 		(tokens, 
 		 Tokenizer::OPTION_F,
 		 place_end, s,
-		 Place(Place::Type::OPTION_F));
+		 Place(Place::Type::OPTION, 'F'));
 
 	/* Build rules */
 	vector <shared_ptr <Rule> > rules;

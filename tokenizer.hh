@@ -1160,8 +1160,8 @@ void Tokenizer::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 	set <string> includes;
 
 	Tokenizer parse(traces, filenames, includes, 
-		    Place::Type::ARGV, string_,
-		    string_.c_str(), string_.size());
+			Place::Type::ARGUMENT, string_,
+			string_.c_str(), string_.size());
 
 	parse.parse_tokens(tokens, 
 			   context,

@@ -104,6 +104,14 @@ OPTIONS
        -M STRING
               Run jobs in pseudorandom order, seeded by the given string.
 
+       -o FILENAME
+              Pass the given file as an optional dependency,  i.e.,  build  it
+              only if it already exists and is out of date.
+
+       -p FILENAME
+              Pass  the given file as a persistent dependency, i.e., build the
+              file but ignore its timestamp.
+
        -P     Print the set of rules to standard output and exit.   Note  that
               Make has a -p option to print the rules, but does not exit.  The
               output format is not specified.
@@ -645,8 +653,8 @@ SYNTAX
 
        Stu files read via the -f option or as the default Stu file, as well as
        the  argument  to  the  -F  option  must contain a 'rule_list'.  A file
-       included by brackets and arguments to the -C  option  must  contain  an
-       'expression_list'.
+       included by brackets (a dynamic dependency) and  arguments  to  the  -C
+       option must contain an 'expression_list'.
 
 
 SEMANTICS
@@ -833,4 +841,4 @@ SEE ALSO
 
 
 
-stu-2.0.12                        August 2016                           STU(1)
+stu-2.0.13                        August 2016                           STU(1)

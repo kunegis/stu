@@ -166,28 +166,34 @@ void print_out(string text)
 	       Color::out_end); 
 }
 
-/* Denotes a position in Stu code.  This is either in a file or in
+/* 
+ * Denotes a position in Stu source code.  This is either in a file or in
  * arguments to Stu.  A Place object can also be empty, which is used as
- * the "uninitialized" value.  */ 
+ * the "uninitialized" value.  
+ *
+ * Places are used to show the location of an error on standard error
+ * output. 
+ */ 
 class Place
 {
 public:
 
 	enum class Type {
 		EMPTY,        /* Empty "Place" object */
-		INPUT_FILE,   /* In a file */
-		ARGV,         /* Command line argument (outside options) */ 
-		OPTION_C,     /* In argument to option -C */	
-		OPTION_f,     /* In argument to option -f */
-		OPTION_F,     /* In argument to option -F */
+		INPUT_FILE,   /* In a file, with line/column numbers */
+		ARGUMENT,     /* Command line argument (outside options) */ 
+		OPTION,       /* In an option */
 	};
 
 	Place::Type type; 
 
-	/* INPUT_FILE:  File in which the error occurred.  Empty string
-	 * for standard input.  
-	 * Others:  Unused.  */ 
-	string filename;
+	/* 
+	 * INPUT_FILE:  Name of the file in which the error occurred.
+	 *              Empty string for standard input.  
+	 * OPTION:  Name of the option (a single character)
+	 * Others:  Unused.  
+	 */ 
+	string text;
 
 	/* INPUT_FILE:  Line number, one-based.  
 	 * Others:  unused.  */ 
@@ -204,26 +210,34 @@ public:
 		:  type(Type::EMPTY) 
 	{ }
 
-	/* General constructor */ 
+	/* Generic constructor */ 
 	Place(Type type_,
 	      string filename_, 
 	      unsigned line_, 
 	      unsigned column_)
 		:  type(type_),
-		   filename(filename_),
+		   text(filename_),
 		   line(line_),
 		   column(column_)
 	{ 
 		assert(line >= 1);
 	}
 
-	/* In command line arguments and options */ 
+	/* In command line argument (ARGV) */ 
 	Place(Type type_)
 		:  type(type_)
 	{
-		assert(type_ == Type::ARGV || type_ == Type::OPTION_C || 
-		       type_ == Type::OPTION_f || type_ == Type::OPTION_F); 
+		assert(type == Type::ARGUMENT); 
 	}
+
+	/* In an option (OPTION) */
+	Place(Type type_, char option)
+		:  type(type_),
+		   text(string(&option, 1))
+	{ 
+		assert(type == Type::OPTION); 
+	}
+	
 
 	Type get_type() const { return type; }
 	const char *get_filename_str() const;
@@ -305,23 +319,20 @@ void Place::print(string message,
 			message.c_str());  
 		break;
 
-	case Type::ARGV:
-	case Type::OPTION_C:
-	case Type::OPTION_f:
-	case Type::OPTION_F:
-
-		const char *t;
-		switch (type) {
-		default:  assert(false);
-		case Type::ARGV:     t= "Command line argument";  break; 
-		case Type::OPTION_C: t= "Option -C";  break;
-		case Type::OPTION_f: t= "Option -f";  break;
-		case Type::OPTION_F: t= "Option -F";  break;
-		}
-
+	case Type::ARGUMENT:
 		fprintf(stderr,
-			"%s%s%s: %s\n",
-			color, t, Color::end,
+			"%sCommand line argument%s: %s\n",
+			color, Color::end,
+			message.c_str());
+		break;
+
+	case Type::OPTION:
+		assert(text.size() == 1); 
+		fprintf(stderr,
+			"%sOption -%c%s: %s\n",
+			color, 
+			text[0],
+			Color::end,
 			message.c_str());
 		break;
 	}
@@ -348,16 +359,17 @@ string Place::as_argv0() const
 			    line);  
 	}
 
-	case Type::ARGV:
+	case Type::ARGUMENT:
 		return "Command line argument"; 
 	}
 }
 
 const char *Place::get_filename_str() const
 {
-	return filename == ""
+	assert(type == Type::INPUT_FILE);
+	return text == ""
 		? "<stdin>"
-		: filename.c_str();
+		: text.c_str();
 }
 
 void print_warning(const Place &place, string message)

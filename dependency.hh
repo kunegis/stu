@@ -34,6 +34,7 @@ enum
 	 * Transitive flags
 	 */ 
 
+	/* The index of the flags, used for array indexing */ 
 	I_PERSISTENT       = 0,
 	I_OPTIONAL         = 1,
 	I_TRIVIAL          = 2,
@@ -158,8 +159,10 @@ public:
 	}
 };
 
-/* A parametrized dependency denoting an individual target name.  Does
- * not cover dynamic dependencies.  */
+/* 
+ * A parametrized dependency denoting an individual target name.  Does
+ * not cover dynamic dependencies.  
+ */
 class Direct_Dependency
 	:  public Base_Dependency
 {

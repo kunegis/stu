@@ -1,0 +1,80 @@
+#! /bin/sh
+#
+# Test the -o option. 
+#
+
+set -e
+
+#
+# (1) When A does not exist, don't build it
+#
+
+echo >&2 "Case (1)"
+
+rm -f ? main.stu
+
+cat >main.stu <<EOF
+A = {correct}
+EOF
+
+../../stu.test -o A >list.out 2>list.err
+
+[ ! -e A ] || {
+	echo >&2 "*** (1) 'A' must not be built"
+	exit 1
+}
+
+#
+# (2) When A exists and has no dependency, do nothing
+#
+
+echo >&2 "Case (2)"
+
+rm -f ? main.stu
+
+cat >main.stu <<EOF
+A { exit 1 }
+EOF
+
+../../sh/touch_old A
+
+../../stu.test -o A >list.out 2>list.err
+
+[ -e A ] || {
+	echo >&2 "*** (2) 'A' must not be removed"
+	exit 1
+}
+
+#
+# (3) When A exists and has a newer dependency, rebuild it
+#
+
+echo >&2 "Case (3)"
+
+rm -f ? main.stu
+
+cat >main.stu <<EOF
+A : B { 
+   cp B A 
+   touch X
+}
+B = {correct}
+EOF
+
+../../sh/touch_old A
+touch B
+
+../../stu.test -o A >list.out 2>list.err
+
+[ -r X ] || {
+	echo >&2 "*** (3) 'X' must be built"
+	exit 1
+}
+
+#
+# End
+#
+
+rm -f main.stu
+
+exit 0

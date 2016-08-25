@@ -61,14 +61,16 @@ the database.
 ?  is now written as  -o   (optional dependencies)
 &  is now written as  -t   (trivial dependencies)
 
+'p', 'o' and 't' must not be followed by whitespace if the next token is
+a name or '@'. 
+
 Code must be changed accordingly. 
 
 (6) Command line options passed outside of arguments as well as
 arguments to the -C option don't support persistent or optional
 dependencies anymore.  They could previously be specified using '!' and
 '?', but these characters are not supported anymore.  Instead, the
-command line options -p, -o and -t now exist for the same
-functionality. 
+command line options -p and -o now exist for the same purpose. 
 
 (7) Changes in terminology:  
 

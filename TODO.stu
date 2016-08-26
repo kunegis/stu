@@ -1,6 +1,11 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
+# Option -n for \n-separated dynamic.  Do we need an option for ordinary
+# dynamics?  
+#
+
+#
 # Flag -0 for NUL-separated dynamic dependencies.  Also as command-line option. 
 #
 

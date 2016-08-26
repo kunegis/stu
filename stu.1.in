@@ -134,9 +134,9 @@ outputting a full command at once on standard output.  In the output,
 each command is prefixed by the value of '$PS4'. 
 .IP -y
 Disable color in output.  By default, Stu checks whether error output
-and standard error
-output are TTYs and if they are, uses ANSI escape sequences to color code
-messages.  
+and standard error output are TTYs and whether $TERM is defined and
+not 'dumb' and if they are, uses ANSI escape sequences to color code
+messages.   
 .IP -z 
 Output runtime statistics about child processes on standard output when
 finished.  Does not include the runtime of the Stu process itself.
@@ -716,7 +716,11 @@ of '/bin/cp'.  The given version of 'cp' must support the syntax 'cp --
 Stu sets this variable to '1' in all child processes. In order to avoid
 recursive invocation of Stu, Stu will fail on startup when the variable
 is set. To circumvent this, unset the variable.  Recursive Stu is as
-harmful as recursive Make. 
+harmful as recursive Make.
+.IP TERM
+Used to determine whether to use color output.  This variable must be
+set to a value different from 'dumb', and isatty(3) must return 1 for
+color to be enabled.   
 
 .SH "SIGNALS"
 

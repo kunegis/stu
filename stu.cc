@@ -46,7 +46,7 @@ const char OPTIONS[]= "ac:C:Ef:F:ghj:JkKm:M:o:p:PqQsvVwxyz";
 const char HELP[]= 
 	"Usage: stu [-f FILENAME] [OPTION]... [TARGET]...\n"           
 	"By default, build the first target in the file 'main.stu'.\n" 
-	"TARGETS may include the special characters '@[]'.\n"        
+	"TARGET may include the special characters '@[]'.\n"        
 	"Options:\n"						       
 	"  -a               Treat all trivial dependencies as non-trivial\n"          
 	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"      

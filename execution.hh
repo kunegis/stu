@@ -2373,7 +2373,7 @@ void Execution::raise(int error_) {
 }
 
 bool Execution::is_dynamic() const {
-	return targets.size() && targets.front().type.is_dynamic(); 
+	return targets.size() != 0 && targets.front().type.is_dynamic(); 
 }
 
 #endif /* ! EXECUTION_HH */

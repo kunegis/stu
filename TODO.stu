@@ -1,17 +1,6 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# The file 'MATLABPATH' must inherit the '-t' flag. 
-#
-
-@matlab:  -t (matlab $[MATLABPATH]);
-
-out: @matlab
-{
-	./matlab ... >out
-}
-
-#
 # Flag -n for newline-separate filename lists.  Also as command-line option. 
 #
 
@@ -93,6 +82,70 @@ A.$X.$Y:  $X * .$Y      # OK
 @all: backup/[FILES];
 >FILES: { echo *.dat }
 dest/$file = $file;
+
+#
+# The 'trivial' flag '-t' should "go up" when applied to the
+# dependencies of transient targets. 
+#
+
+# 'V' is built because 'A' does not exist. 
+A: @x {
+	[ -r V ] || {
+		exit 1
+	}
+
+	cat V >A
+}
+@x:  -t V; 
+V = {correct}
+
+# 'V' is built 'A' does not exist.  The '-t' has to "go up". 
+A: @x {
+	[ "x$V" = xcorrect ] || {
+		exit 1
+	}
+
+	echo "$V" >A
+}
+@x:  $[-t V];
+V = {correct}
+
+# The '-t' has to "go up".  Use this in KONECT. 
+@all:   list.out;
+>list.$name:
+	@octave
+{
+	./list.octave Hello 
+}
+@octave:  -t ( list.octave $[P] );
+list.octave 
+{
+	cat >list.octave <<EOF
+#! /bin/sh
+[ "x$P" = x... ] || {
+	exit 1
+}
+echo "$@"
+echo correct >A
+EOF
+	chmod u+x list.octave
+}
+P = {...}
+
+# Even when a transient target has a command, the '-t' "goes up". 
+A: @x {
+	[ -r V ] && {
+		exit 1
+	}
+
+	echo correct >A
+}
+@x:  -t V {
+	echo Executing @x
+}
+V {
+	exit 1
+}
 
 #
 # Features with flags. 

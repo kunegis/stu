@@ -113,6 +113,7 @@ private:
 			      Place &place_input,
 			      const vector <shared_ptr <Place_Param_Target> > &targets);
 
+	/* A variable dependency */ 
 	shared_ptr <Dependency> parse_variable_dep
 	(Place_Name &place_name_input,
 	 Place &place_input,
@@ -846,8 +847,6 @@ shared_ptr <Dependency> Parser
 		     Place &place_input,
 		     const vector <shared_ptr <Place_Param_Target> > &targets)
 {
-	(void) targets;
-	
 	bool has_input= false;
 
 	shared_ptr <Dependency> ret;
@@ -855,18 +854,22 @@ shared_ptr <Dependency> Parser
 	if (! is_operator('$')) 
 		return nullptr;
 
-	Place place_dollar= (*iter)->get_place();
+	const Place place_dollar= (*iter)->get_place();
 	++iter;
 
 	if (iter == tokens.end()) {
 		place_end << fmt("expected %s", char_format_word('['));
 		place_dollar << fmt("after %s", 
-				     char_format_word('$')); 
+				    char_format_word('$')); 
 		throw ERROR_LOGICAL;
 	}
 	
-	if (! is_operator('[')) 
+	if (! is_operator('[')) {
+		/* The '$' and '[' operators are only generator when
+		 * they both appear in conjunction. */ 
+		assert(false);
 		return nullptr;
+	}
 
 	++iter;
 
@@ -948,7 +951,7 @@ shared_ptr <Dependency> Parser
 			place_name->place <<
 				fmt("name of variable dependency %s must not contain %s",
 				    place_name->format_word(),
-				     char_format_word('=')); 
+				    char_format_word('=')); 
 			explain_variable_equal(); 
 			throw ERROR_LOGICAL;
 		}
@@ -1016,11 +1019,12 @@ shared_ptr <Dependency> Parser
 	}
 
 	/* The place of the variable dependency as a whole is set on the
-	 * dollar sign.  It would be conceivable to also set it
-	 * on the name contained in it.  */
+	 * name contained in it.  It would be conceivable to also set it
+	 * on the dollar sign.  */
 	return make_shared <Direct_Dependency> 
 		(flags, 
-		 Place_Param_Target(Type::FILE, *place_name, place_dollar), 
+		 Place_Param_Target(Type::FILE, *place_name, 
+				    place_name->place), 
 		 variable_name);
 }
 

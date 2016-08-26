@@ -26,14 +26,15 @@ string frmt(const char *format, ...)
 
 string frmt(const char *format, ...) 
 {
-	va_list ap;
-
 	/* Call snprintf() twice:  once to compute the needed size, then
 	 * once to actually print everything */ 
 
+	va_list ap;
 	char buf[2];
+	int n;
+
 	va_start(ap, format); 
-	int n= vsnprintf(buf, 2, format, ap);
+	n= vsnprintf(buf, 2, format, ap);
 	va_end(ap); 
 
 	string ret(n, '\0');

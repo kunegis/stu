@@ -614,8 +614,9 @@ public:
 
 	Place_Name place_name;
 
-	/* The place of the target as a whole.  The PLACE_PARAM_NAME
-	 * variable additionally contains places for each parameter. */ 
+	/* The place of the target as a whole.  The PLACE_NAME
+	 * variable additionally contains a place for the name itself,
+	 * as well as for individual parameters.  */ 
 	Place place;
 
 	Place_Param_Target(Type type_,

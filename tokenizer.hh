@@ -156,9 +156,8 @@ private:
 	 */
 	static bool is_name_char(char);
 
-	/* Whether the character can be a standalone operator, i.e., an
-	 * operator that is not a flag.  */
-	static bool is_standalone_operator_char(char);
+	/* Whether the character can be an operator */ 
+	static bool is_operator_char(char);
 
 	/* Whether the character is a valid flag */ 
 	static bool is_flag_char(char); 
@@ -792,7 +791,7 @@ bool Tokenizer::is_name_char(char c)
 		|| ((unsigned char) c) >= 0x80;
 }
 
-bool Tokenizer::is_standalone_operator_char(char c) 
+bool Tokenizer::is_operator_char(char c) 
 {
 	return c != '\0' && nullptr != strchr(":<>=@;()[],\\|", c);
 }
@@ -873,7 +872,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 	while (p < p_end) {
 
 		/* Operators except '$' */ 
-		if (is_standalone_operator_char(*p)) {
+		if (is_operator_char(*p)) {
 			Place place(place_type, filename, line, p - p_line);
 			tokens.push_back(make_shared <Operator> (*p, place, whitespace));
 			++p;

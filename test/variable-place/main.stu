@@ -1,0 +1,6 @@
+# No rule for 'V':  error with a place on the 'V'
+
+A:  $[V] 
+{
+	echo "$V" >A
+}

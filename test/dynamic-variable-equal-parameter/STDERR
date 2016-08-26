@@ -1,2 +1,2 @@
-main.stu:11:14: dynamic variable $[data.X=] must not be instantiated with parameter value that contains '='
+main.stu:11:16: dynamic variable $[data.X=] must not be instantiated with parameter value that contains '='
 main.stu:6:5: 'list.X=' is needed by 'A'

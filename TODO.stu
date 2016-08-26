@@ -12,19 +12,14 @@ out: @matlab
 }
 
 #
-# Option -Y to enable color output explicitly
-#
-
-#
-# Flag -n for newline-separate filename lists
+# Flag -n for newline-separate filename lists.  Also as command-line option. 
 #
 
 A: [ -n B ] { while read -r file ; do ... "$file" ... ; done }
 >B { find ... }
 
 #
-# Have a way for dynamic dependencies to contain \0-separated filenames,
-# to avoid quoting.  Not clear that this is the best syntax for it.
+# Flag -0 for NUL-separated dynamic dependencies.  Also as command-line option. 
 #
 
 A: [ -0 <B ] { xargs -0 ... }

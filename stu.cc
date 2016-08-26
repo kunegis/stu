@@ -39,7 +39,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-const char OPTIONS[]= "ac:C:Ef:F:ghj:JkKm:M:o:p:PqQsvVwxyz"; 
+const char OPTIONS[]= "ac:C:Ef:F:ghj:JkKm:M:o:p:PqQsvVwxyYz"; 
 
 /* The output of the help (-h) option.  The following strings do not
  * contain tabs, but only space characters.  */   
@@ -76,6 +76,7 @@ const char HELP[]=
 	"  -w               Short output; show target filenames instead of commands\n"
 	"  -x               Ouput each command statement individually\n"              
 	"  -y               Disable color in output\n"                                
+	"  -Y               Enable color in output\n"
 	"  -z               Output run-time statistics on stdout\n"                   
 	"Report bugs to: kunegis@gmail.com\n" 
 	"Stu home page: <https:/""/github.com/kunegis/stu>\n";
@@ -116,6 +117,8 @@ int main(int argc, char **argv, char **envp)
 	/* Initialization */
 	dollar_zero= argv[0]; 
 	envp_global= (const char **) envp; 
+	init_buf();
+	Color::set(); 
 
 	/* Refuse to run when $STU_STATUS is set */ 
 	const char *const stu_status= getenv("STU_STATUS");
@@ -124,8 +127,6 @@ int main(int argc, char **argv, char **envp)
 				 Color::word, Color::end));
 		exit(ERROR_FATAL); 
 	}
-
-	init_buf();
 
 	try {
 		/* Filenames passed using the -f option.  Entries are
@@ -163,7 +164,8 @@ int main(int argc, char **argv, char **envp)
 			case 's': output_mode= Output::SILENT; break;
 			case 'v': option_verbose= true;        break;
 			case 'w': output_mode= Output::SHORT;  break;
-			case 'y': Color::set(false, false);    break;
+			case 'y': Color::set(false);           break;
+			case 'Y': Color::set(true);            break;
 			case 'x': option_individual= true;     break;
 			case 'z': option_statistics= true;     break;
 

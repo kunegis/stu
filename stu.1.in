@@ -137,6 +137,8 @@ Disable color in output.  By default, Stu checks whether error output
 and standard error output are TTYs and whether $TERM is defined and
 not 'dumb' and if they are, uses ANSI escape sequences to color code
 messages.   
+.IP -Y
+Enable color output unconditionally. 
 .IP -z 
 Output runtime statistics about child processes on standard output when
 finished.  Does not include the runtime of the Stu process itself.

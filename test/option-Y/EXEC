@@ -1,0 +1,19 @@
+#! /bin/sh
+
+unset TERM
+
+../../stu.test -Y >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 2 ] || {
+	echo >&2 "*** Expected exit code 2"
+	echo >&2 "exitcode='$exitcode'"
+	exit 1
+}
+
+cmp list.err stderr || {
+	echo >&2 "*** Standard error output"
+	exit 1
+}
+
+exit 0

@@ -56,40 +56,12 @@ public:
 	static const char *out_print;
 	static const char *out_print_word;
 
-	static void set(bool is_tty_out, bool is_tty_err);
+	/* At least one of the following functions must be called before
+	 * any output.  */ 
 
-private:
-
-	static Color color;
-
-	Color() {
-		
-		/* 
-		 * Logic:  Only use color when $TERM is defined, is not
-		 * equal to "dumb", and stderr/stdout is a TYY.  This is
-		 * the same logic used by GCC. 
-		 */
-
-		bool is_tty_out= false, is_tty_err= false;
-
-		const char *t= getenv("TERM");
-
-		if (t && strcmp(t, "dumb")) {
-
-			errno= 0;
-			is_tty_out= isatty(fileno(stdout)); 
-			if (! is_tty_out && errno != 0 && errno != ENOTTY) {
-				perror("isatty"); 
-			}
-			errno= 0;
-			is_tty_err= isatty(fileno(stderr)); 
-			if (! is_tty_err && errno != 0 && errno != ENOTTY) {
-				perror("isatty");
-			}
-		} 
-
-		set(is_tty_out, is_tty_err); 
-	}	
+	static void set(); 
+	static void set(bool enable_color); 
+	static void set(bool enable_color_out, bool enable_color_err);
 };
 
 bool Color::quotes, Color::quotes_out;
@@ -106,9 +78,41 @@ const char *Color::out_print_word_end;
 const char *Color::out_print;
 const char *Color::out_print_word;
 
-Color Color::color;
+void Color::set() 
+{
+	/* 
+	 * Logic:  Only use color when $TERM is defined, is not
+	 * equal to "dumb", and stderr/stdout is a TYY.  This is
+	 * the same logic used by GCC. 
+	 */
 
-void Color::set(bool is_tty_out, bool is_tty_err)
+	bool is_tty_out= false, is_tty_err= false;
+
+	const char *t= getenv("TERM");
+
+	if (t && strcmp(t, "dumb")) {
+
+		errno= 0;
+		is_tty_out= isatty(fileno(stdout)); 
+		if (! is_tty_out && errno != 0 && errno != ENOTTY) {
+			perror("isatty"); 
+		}
+		errno= 0;
+		is_tty_err= isatty(fileno(stderr)); 
+		if (! is_tty_err && errno != 0 && errno != ENOTTY) {
+			perror("isatty");
+		}
+	} 
+	
+	set(is_tty_out, is_tty_err); 
+}	
+
+void Color::set(bool enable_color)
+{
+	set(enable_color, enable_color); 
+}
+
+void Color::set(bool enable_color_out, bool enable_color_err)
 {
 	/*
 	 * Note:  GCC addition inserts "\33[K" sequences after each
@@ -116,7 +120,7 @@ void Color::set(bool is_tty_out, bool is_tty_err)
 	 * done here. 
 	 */
 
-	if (is_tty_out) {
+	if (enable_color_out) {
 		quotes_out= false;
 		out_end=            "\33[0m";
 		out_print_word_end= "\33[0;32m"; 
@@ -130,7 +134,7 @@ void Color::set(bool is_tty_out, bool is_tty_err)
 		out_print_word=     "";
 	}
 
-	if (is_tty_err) {
+	if (enable_color_err) {
 		quotes= false;
 		error=             "\33[31m";
 		warning=           "\33[35m";

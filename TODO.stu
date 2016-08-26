@@ -1,7 +1,7 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# Flag -n for newline-separate filename lists.  Also as command-line option. 
+# Flag -n for newline-separated filename lists.  Also as command-line option. 
 #
 
 A: [ -n B ] { while read -r file ; do ... "$file" ... ; done }
@@ -31,6 +31,10 @@ A: [ -0 <B ] { xargs -0 ... }
 # interpreted as two dependencies, and with it they will be interpreted
 # as one. 
 #
+
+# - implement compound dependencies
+# - implement compound targets, which are deleted when they are done
+#   (they don't have a Target object)
 
 A:  B * C;    	        # Binary multiplication operator
 A:  B * (C D); 	        # Parentheses
@@ -148,16 +152,14 @@ V {
 }
 
 #
-# Features with flags. 
+# Use the '+' sign to invert flags. 
 #
-# Have options to switch all of these in subsequent targets, or to
-# switch it off. 
-#
-# Maybe, invert the meaning of '-' and '+' to have '+' mean "switch
-# on". 
-#
-# Have corresponding command-line options. 
-#
+
+# E.g.: Dynamic dependencies are "persistent" by default.  Make it
+# possible to switch this off using '+e'.  This is useful when the
+# dynamic dependency file itself is used by the target, e.g. when
+# creating a tarball. 
+A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 
 #
 # What happens with relative and absolute pathnames?  When two names
@@ -288,11 +290,3 @@ A: -o @x;
 # Equivalent to
 A: B;
 
-#
-# Dynamic dependencies are "persistent" by default.  Make it
-# possible to switch this off using '+e'.  This is useful when the
-# dynamic dependency file itself is used by the target, e.g. when
-# creating a tarball. 
-#
-
-A.tar: [ +e FILES ] { tar cfvv A.tar $(cat FILES) }

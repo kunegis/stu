@@ -283,10 +283,6 @@ int main(int argc, char **argv, char **envp)
 			case 'V': 
 				fputs(VERSION_INFO, stdout); 
 				printf("USE_MTIM = %u\n", USE_MTIM); 
-				if (ferror(stdout)) {
-					print_error_system("puts"); 
-					exit(ERROR_FATAL);
-				}
 				exit(0);
 
 			default:  

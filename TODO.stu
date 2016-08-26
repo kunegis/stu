@@ -4,9 +4,6 @@
 # Flag -n for newline-separated filename lists.  Also as command-line option. 
 #
 
-A: [ -n B ] { while read -r file ; do ... "$file" ... ; done }
->B { find ... }
-
 #
 # Flag -0 for NUL-separated dynamic dependencies.  Also as command-line option. 
 #

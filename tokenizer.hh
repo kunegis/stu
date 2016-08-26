@@ -1082,16 +1082,16 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				if (! is_flag_char(op)) {
 					if (isalnum(op)) {
 						current_place() <<
-							fmt("invalid flag character %s",
-							    char_format_word(op)); 
+							fmt("invalid flag %s",
+							    multichar_format_word(frmt("-%c", op))); 
 					} else {
 						current_place() <<
 							fmt("expected a flag character, not %s",
 							    char_format_word(op)); 
+						place_dash <<
+							fmt("after dash %s",
+							    char_format_word('-')); 
 					}
-					place_dash <<
-						fmt("after dash %s",
-						    char_format_word('-')); 
 					throw ERROR_LOGICAL; 
 				}
 				assert(isalnum(op)); 

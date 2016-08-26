@@ -1,2 +1,2 @@
-main.stu:3:9: optional dependency using '-o' must not be used
+main.stu:3:9: flag '-o' must not be used
 main.stu:3:3: in copy rule using '=' for target 'A'

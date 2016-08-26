@@ -1,0 +1,13 @@
+# 'B' is *not* a newline-separated file.  If it was interpreted as one,
+# the dependency would be parsed as the file named '$[V]'.
+
+>A: -n [B]
+{
+	echo "$V"
+}
+
+B = {
+	$[V]
+}
+
+V = {correct}

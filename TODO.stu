@@ -1,10 +1,6 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# Flag -n for newline-separated filename lists.  Also as command-line option. 
-#
-
-#
 # Flag -0 for NUL-separated dynamic dependencies.  Also as command-line option. 
 #
 

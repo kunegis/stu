@@ -75,7 +75,7 @@ public:
 					vector <shared_ptr <Token> > &tokens,
 					const Place &place_end,
 					Place_Name &input,
-					Place place_input);
+					Place &place_input);
 
 	/* Parse a dependency as given on the command line outside of
 	 * options.  This supports only the characters '@' and '[]', as
@@ -167,6 +167,9 @@ private:
 	 * slashes */
 	static void append_copy(      Name &to,
 				const Name &from);
+
+	/* Get the flag index corresponding to a character */ 
+	static int get_i_flag(char c); 
 };
 
 void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret)
@@ -532,19 +535,11 @@ shared_ptr <Rule> Parser::parse_rule()
 				return make_shared <Rule> (place_param_targets[0], name_copy,
 							   place_flag_exclam);
 
-			} else if (is_flag('o')) {
-				(*iter)->get_place() 
-					<< fmt("optional dependency using %s must not be used",
-						multichar_format_word("-o"));
-				place_equal << 
-					fmt("in copy rule using %s for target %s", 
-					    char_format_word('='),
-					    place_param_targets[0]->format_word()); 
-				throw ERROR_LOGICAL;
-			} else if (is_flag('t')) {
-				(*iter)->get_place() 
-					<< fmt("trivial dependency using %s must not be used",
-						multichar_format_word("-t")); 
+			} else if (iter != tokens.end() && is <Flag_Token> ()) {
+
+				(*iter)->get_place()
+					<< fmt("flag %s must not be used",
+					       multichar_format_word(frmt("-%c", is <Flag_Token> ()->flag))); 
 				place_equal << 
 					fmt("in copy rule using %s for target %s", 
 					    char_format_word('='),
@@ -738,31 +733,11 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 		return true; 
 	} 
 
-	/* '-p' single_expression */ 
- 	if (is_flag('p')) {
- 		Place place_exclam= (*iter)->get_place();
- 		++iter; 
-		if (! parse_expression(ret, place_name_input, place_input, targets)) {
-			if (iter == tokens.end()) 
-				place_end << "expected a dependency";
-			else
-				(*iter)->get_place_start() << 
-					fmt("expected a dependency, not %s",
-					    (*iter)->format_start_word());
-			place_exclam << fmt("after %s",
-					     multichar_format_word("-p")); 
-			throw ERROR_LOGICAL;
-		}
-		for (auto &j:  ret) {
-			j->add_flags(F_PERSISTENT);
-			j->set_place_flag(I_PERSISTENT, place_exclam); 
-		}
-		return true;
-	}
-
-	/* '-o' single_expression */ 
- 	if (is_flag('o')) {
- 		Place place_question= (*iter)->get_place();
+	/* flag expression */ 
+	if (iter != tokens.end() && is <Flag_Token> ()) {
+		const Flag_Token &flag_token= *is <Flag_Token> (); 
+ 		const Place place_flag= (*iter)->get_place();
+		const int i_flag= get_i_flag(flag_token.flag); 
  		++iter; 
 
 		if (! parse_expression(ret, place_name_input, place_input, targets)) {
@@ -773,57 +748,42 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 					fmt("expected a dependency, not %s",
 					    (*iter)->format_start_word());
 			}
-			place_question << fmt("after %s",
-					      multichar_format_word("-o")); 
+			place_flag << fmt("after flag %s",
+					  multichar_format_word(frmt("-%c", flag_token.flag))); 
 			throw ERROR_LOGICAL;
 		}
-		if (! option_nonoptional) {
-			/* D_INPUT and D_OPTIONAL cannot be used at the same
-			 * time. Note: Input redirection must not appear in
-			 * dynamic dependencies, and therefore it is sufficient
-			 * to check this here.  */   
-			if (! place_name_input.place.empty()) { 
-				place_input <<
-					fmt("input redirection using %s must not be used",
-					     char_format_word('<')); 
-				place_question <<
-					fmt("in conjunction with optional dependency flag %s",
-					     multichar_format_word("-o")); 
-				throw ERROR_LOGICAL;
-			}
-				
-			for (auto &j:  ret) {
-				j->add_flags(F_OPTIONAL); 
-				j->set_place_flag(I_OPTIONAL, place_question); 
+
+		for (auto &j:  ret) {
+
+			if ((i_flag != I_TRIVIAL && i_flag != I_OPTIONAL) ||
+			    (i_flag == I_TRIVIAL  && ! option_nontrivial) ||
+			    (i_flag == I_OPTIONAL && ! option_nonoptional)) {
+
+				if (i_flag == I_OPTIONAL) {
+					/* D_INPUT and D_OPTIONAL cannot be used at the same
+					 * time. Note: Input redirection must not appear in
+					 * dynamic dependencies, and therefore it is sufficient
+					 * to check this here.  */   
+					if (! place_name_input.place.empty()) { 
+						place_input <<
+							fmt("input redirection using %s must not be used",
+							    char_format_word('<')); 
+						place_flag <<
+							fmt("in conjunction with optional dependency flag %s",
+							    multichar_format_word("-o")); 
+						throw ERROR_LOGICAL;
+					}
+				}
+
+				j->add_flags(1 << i_flag); 
+
+				if (i_flag < C_TRANSITIVE)
+					j->set_place_flag(i_flag, place_flag); 
 			}
 		}
 		return true;
 	}
 
-	/* '-t' single_expression */ 
-	if (is_flag('t')) {
-		Place place_ampersand= (*iter)->get_place(); 
-		++iter;
-		if (! parse_expression(ret, place_name_input, place_input, targets)) {
-			if (iter == tokens.end()) {
-				place_end << "expected a dependency";
-			} else {
-				(*iter)->get_place_start() << 
-					fmt("expected a dependency, not %s",
-					    (*iter)->format_start_word());
-			}
-			place_ampersand << fmt("after %s",
-					       multichar_format_word("-t"));
-				throw ERROR_LOGICAL;
-		}
-		for (auto &j:  ret) {
-			if (! option_nontrivial)
-				j->add_flags(F_TRIVIAL); 
-			j->set_place_flag(I_TRIVIAL, place_ampersand); 
-		}
-		return true;
-	}
-		
 	/* '$' ; variable dependency */ 
 	shared_ptr <Dependency> dependency= 
 		parse_variable_dep(place_name_input, place_input, targets);
@@ -1039,6 +999,7 @@ shared_ptr <Dependency> Parser::parse_redirect_dep
 
 	if (is_operator('<')) {
 		place_input= (*iter)->get_place();
+		assert(! place_input.empty()); 
 		++iter;
 		has_input= true; 
 	}
@@ -1120,6 +1081,10 @@ shared_ptr <Dependency> Parser::parse_redirect_dep
 		place_name_input= *name_token;
 	}
 
+	if (! place_name_input.empty()) {
+		assert(! place_input.empty()); 
+	}
+
 	return make_shared <Direct_Dependency>
 		(flags,
 		 Place_Param_Target(has_transient ? Type::TRANSIENT : Type::FILE,
@@ -1181,7 +1146,7 @@ void Parser::get_expression_list(vector <shared_ptr <Dependency> > &dependencies
 				vector <shared_ptr <Token> > &tokens,
 				const Place &place_end,
 				Place_Name &input,
-				Place place_input)
+				Place &place_input)
 {
 	auto iter= tokens.begin(); 
 	Parser parser(tokens, iter, place_end); 
@@ -1372,6 +1337,20 @@ void Parser::print_separation_message(shared_ptr <const Token> token)
 
 	token->get_place() << 
 		fmt("to separate it from %s", text);
+}
+
+int Parser::get_i_flag(char c)
+{
+	switch (c) {
+	case 'p':  return I_PERSISTENT;
+	case 'o':  return I_OPTIONAL;
+	case 't':  return I_TRIVIAL;
+	case 'n':  return I_NEWLINE_SEPARATED;
+
+	default:
+		assert(false);
+		return 0;
+	}
 }
 
 #endif /* ! PARSER_HH */

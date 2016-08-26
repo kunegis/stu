@@ -30,23 +30,30 @@
 typedef unsigned Flags; 
 enum 
 {
+	/* The index of the flags, used for array indexing */ 
+	I_PERSISTENT       = 0,
+	I_OPTIONAL,         
+	I_TRIVIAL,          
+	I_READ,              
+	I_VARIABLE,
+	I_OVERRIDE_TRIVIAL,
+	I_NEWLINE_SEPARATED,
+
+	C_ALL,              
+	C_TRANSITIVE       = 3,
+
 	/* 
 	 * Transitive flags
 	 */ 
 
-	/* The index of the flags, used for array indexing */ 
-	I_PERSISTENT       = 0,
-	I_OPTIONAL         = 1,
-	I_TRIVIAL          = 2,
-
 	/* (!) When the dependency is newer than the target, don't rebuild */ 
-	F_PERSISTENT       = (1 << I_PERSISTENT),  
+	F_PERSISTENT       = 1 << I_PERSISTENT,  
 
 	/* (?) Don't create the dependency if it doesn't exist */
-	F_OPTIONAL         = (1 << I_OPTIONAL),
+	F_OPTIONAL         = 1 << I_OPTIONAL,
 
 	/* (&) Trivial dependency */
-	F_TRIVIAL          = (1 << I_TRIVIAL),
+	F_TRIVIAL          = 1 << I_TRIVIAL,
 
 	/* 
 	 * Intransitive flags
@@ -54,24 +61,24 @@ enum
 
 	/* Read content of file and add it as new dependencies.  Used
 	 * only for [...[X]...]->X links. */
-	F_READ             = (1 << 3),  
+	F_READ             = 1 << I_READ,  
 
 	/* ($[...]) Content of file is used as variable */ 
-	F_VARIABLE         = (1 << 4),
+	F_VARIABLE         = 1 << I_VARIABLE,
 
 	/* Used only in Link.flags in the second pass.  Not used for
 	 * dependencies.  Means to override all trivial flags. */ 
-	F_OVERRIDETRIVIAL  = (1 << 5),
+	F_OVERRIDE_TRIVIAL = 1 << I_OVERRIDE_TRIVIAL,
 
+	/* For dynamic dependencies, the file contains newline-separated
+	 * filenames, without any markup  */ 
+	F_NEWLINE_SEPARATED= 1 << I_NEWLINE_SEPARATED,
 
-	/* Counts */ 
-	C_TRANSITIVE       = 3,
-	C_ALL              = 7
 };
 
 /* Characters representing the individual flags -- used in verbose mode
  * output */ 
-const char *const FLAGS_CHARS= "!?&`$*="; 
+const char *const FLAGS_CHARS= "!?&`$*n"; 
 
 /* Textual representation of a flags value */
 string flags_format(Flags flags) 

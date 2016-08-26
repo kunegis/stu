@@ -1,7 +1,4 @@
-
-# Can dynamic dependencies contain input redirections?  Either make 'A'
-# contain 'CORRECT' or fail with an error.  Note that if the input
-# dependency in C is simply ignored by Stu, the test will just hang. 
+# Can dynamic dependencies contain input redirections?  No. 
 
 A: [B] { tr a-z A-Z }
 >B { echo '<C' }

@@ -432,13 +432,15 @@ configuration files that are generated automatically, including the case
 of files containing the flags used to invoke compilers and other
 programs. 
 
-    [NAME]  A dynamic dependency
+    '[' ['-n'] NAME ']'  A dynamic dependency
 
 Stu will ensure the file named NAME exists, and then parse it as
 containing further dependencies of the target.  The fact that NAME needs
-to be rebuild does not imply that the target has to be rebuilt.
+to be rebuild does not imply that the target has to be rebuilt.  The
+flag '-n' makes interpret the content of the file as a newline-separated
+list of filenames.  Otherwise, the file is parsed in full Stu syntax. 
 
-    [@NAME]  A dynamic transient target 
+    '[' @NAME ']'  A dynamic transient target 
 
 Brackets can also be used around a transient dependency name.  In that case, all
 dependencies of the given transient targets will be considered dynamic

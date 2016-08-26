@@ -11,6 +11,18 @@ made, which are documented in the file MIGRATION.
 
 ------------------------------------------------------------------------
 
+2016-08-26  Version 2.2
+
+* Dynamic dependencies can now be declared to be newline-separated list
+  of filenames by using the '-n' flag.  For instance:
+
+A: [ -n B ] { ... } 
+>B { find ... }
+
+In this example, the file 'B' is generate by a 'find' command that
+outputs on filename per line.  Stu will then interpret each file
+contained in 'B' as a dependency of 'A'. 
+
 2016-08-26  Version 2.1.4
 
 * There is now a new option '-Y' to turn on color output

@@ -1,0 +1,15 @@
+# Error:  input redirection in dynamic dependency
+
+# Check the place
+
+A: [B] 
+{
+	touch A
+}
+
+B = {
+	X
+	Y
+	<Z
+	W
+}

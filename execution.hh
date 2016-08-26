@@ -176,7 +176,7 @@ private:
 	/* Read dynamic dependencies from a file.  Can only be called for
 	 * dynamic targets.  Called for the parent of a dynamic--file
 	 * link.  */ 
-	void read_dynamics(Stack avoid, shared_ptr <Dependency> dependency_this);
+	void read_dynamic_dependency(Stack avoid, shared_ptr <Dependency> dependency_this);
 
 	/* Remove all file targets if they exist.  If OUTPUT is true, output a
 	 * corresponding error message.  Return whether the file was
@@ -416,7 +416,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 
 	/* Override the trivial flag */ 
-	if (link.flags & F_OVERRIDETRIVIAL) {
+	if (link.flags & F_OVERRIDE_TRIVIAL) {
 		link.flags &= ~F_TRIVIAL; 
 		link.avoid.rem_highest(F_TRIVIAL); 
 	}
@@ -498,8 +498,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 	while (! buf_default.empty()) {
 		Link link_child= buf_default.next(); 
 		Link link_child_overridetrivial= link_child;
-		link_child_overridetrivial.avoid.add_highest(F_OVERRIDETRIVIAL); 
-		link_child_overridetrivial.flags |= F_OVERRIDETRIVIAL; 
+		link_child_overridetrivial.avoid.add_highest(F_OVERRIDE_TRIVIAL); 
+		link_child_overridetrivial.flags |= F_OVERRIDE_TRIVIAL; 
 		buf_trivial.push(move(link_child_overridetrivial)); 
 		if (deploy(link, link_child))
 			return true;
@@ -1162,7 +1162,7 @@ void Execution::unlink(Execution *const parent,
 		}
 
 		if (do_read) {
-			parent->read_dynamics(avoid_parent, dependency_parent); 
+			parent->read_dynamic_dependency(avoid_parent, dependency_parent); 
 		}
 	}
 
@@ -1636,9 +1636,11 @@ Execution *Execution::get_execution(const Target &target,
 	return execution;
 }
 
-void Execution::read_dynamics(Stack avoid,
-			      shared_ptr <Dependency> dependency_this)
+void Execution::read_dynamic_dependency(Stack avoid,
+					shared_ptr <Dependency> dependency_this)
 {
+	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
+
 	Target target= dependency_this->get_single_target().unparametrized(); 
 
 	assert(target.type.is_dynamic());
@@ -1646,24 +1648,96 @@ void Execution::read_dynamics(Stack avoid,
 	assert(avoid.get_k() == target.type.get_dynamic_depth()); 
 
 	try {
-		vector <shared_ptr <Token> > tokens;
 		const string filename= target.name; 
-		Place place_end; 
-
-		Tokenizer::parse_tokens_file
-			(tokens, 
-			 Tokenizer::DYNAMIC,
-			 place_end, filename, dependency_this->get_place()); 
-
 		vector <shared_ptr <Dependency> > dependencies;
-		Place_Name input; /* remains empty */ 
-		Place place_input; /* remains empty */ 
 
-		try {
-			Parser::get_expression_list(dependencies, tokens, 
-						    place_end, input, place_input);
-		} catch (int e) {
-			raise(e); 
+		Flags flags= dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)->dependency->get_flags();
+
+		if (! (flags & F_NEWLINE_SEPARATED)) {
+			vector <shared_ptr <Token> > tokens;
+			Place place_end; 
+
+			Tokenizer::parse_tokens_file
+				(tokens, 
+				 Tokenizer::DYNAMIC,
+				 place_end, filename, dependency_this->get_place()); 
+
+			Place_Name input; /* remains empty */ 
+			Place place_input; /* remains empty */ 
+
+			try {
+				Parser::get_expression_list(dependencies, tokens, 
+							    place_end, input, place_input);
+			} catch (int e) {
+				raise(e); 
+				goto end_normal;
+			}
+
+			/* Check that there are no input dependencies */ 
+			if (! input.empty()) {
+				place_input <<
+					fmt("dynamic dependency %s must not contain input redirection %s", 
+					    target.format_word(),
+					    prefix_format_word(input.raw(), "<")); 
+				Target target_file= target;
+				target_file.type= Type::FILE;
+				print_traces(fmt("%s is declared here", target_file.format_word())); 
+				raise(ERROR_LOGICAL);
+			}
+		end_normal:;
+
+		} else {
+			/* Newline-separated */
+
+			char *lineptr= nullptr;
+			size_t n= 0;
+			ssize_t len;
+			int line= 0; 
+			
+			FILE *file= fopen(filename.c_str(), "r"); 
+			if (file == nullptr) {
+				print_error_system(filename); 
+				raise(ERROR_BUILD); 
+				goto end;
+			}
+
+			while ((len= getline(&lineptr, &n, file)) >= 0) {
+				
+				string filename_dependency;
+
+				assert(lineptr[len] == '\0'); 
+
+				if (len == 0) {
+					/* Should not happen, so abort parse */ 
+					assert(false); 
+					break;
+				} 
+
+				/* There may or may not be terminating
+				 * \n.  getline(3) will include it if it is
+				 * present, but the file may not have
+				 * one.  */ 
+				if (lineptr[len - 1] == '\n') {
+					filename_dependency= string(lineptr, len-1);
+				} else {
+					filename_dependency= string(lineptr, len); 
+				}
+
+				dependencies.push_back
+					(make_shared <Direct_Dependency>
+					 (0,
+					  Place_Param_Target
+					  (Type::FILE, 
+					   Place_Name
+					   (filename_dependency, 
+					    Place(Place::Type::INPUT_FILE, filename, ++line, 0))))); 
+			}
+			free(lineptr); 
+			if (fclose(file)) {
+				print_error_system(filename); 
+				raise(ERROR_BUILD);
+			}
+		end:;
 		}
 
 		for (auto &j:  dependencies) {
@@ -1771,17 +1845,6 @@ void Execution::read_dynamics(Stack avoid,
 
 			buf_default.push(Link(dependency));
 
-			/* Check that there are no input dependencies */ 
-			if (! input.empty()) {
-				j->get_place() <<
-					fmt("dynamic dependency %s must not contain input redirection", 
-					    target.format_word());
-				Target target_file= target;
-				target_file.type= Type::FILE;
-				print_traces(fmt("%s is declared here", target_file.format_word())); 
-				raise(ERROR_LOGICAL);
-				continue; 
-			}
 		}
 				
 	} catch (int e) {
@@ -2179,11 +2242,13 @@ void Execution::write_content(const char *filename,
 	for (const string &line:  command.get_lines()) {
 		if (fwrite(line.c_str(), 1, line.size(), file) != line.size()) {
 			assert(ferror(file));
+			fclose(file); 
 			rule->place <<
 				system_format(name_format_word(filename)); 
 			raise(ERROR_BUILD); 
 		}
 		if (EOF == putc('\n', file)) {
+			fclose(file); 
 			rule->place <<
 				system_format(name_format_word(filename)); 
 			raise(ERROR_BUILD); 

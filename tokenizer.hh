@@ -800,8 +800,8 @@ bool Tokenizer::is_flag_char(char c)
 {
 	/* These correspond to persistent, optional and trivial
 	 * dependencies, respectively.  They were '!', '?' and '&'
-	 * formerly.  */
-	return c == 'p' || c == 'o' || c == 't';
+	 * formerly.  'n' is new.  */
+	return c == 'p' || c == 'o' || c == 't' || c == 'n';
 }
 
 void Tokenizer::parse_version(string version_req, 

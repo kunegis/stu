@@ -1,2 +1,2 @@
 main.stu:2:8: expected a dependency, not ':'
-main.stu:2:6: after '-p'
+main.stu:2:6: after flag '-p'

@@ -1,0 +1,4 @@
+# Error:  -n cannot be used in copy rule
+
+A = -n B;
+B = {correct}

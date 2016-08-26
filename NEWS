@@ -1,14 +1,24 @@
 Stu versions are of the form X.Y.Z, where X is the major version, Y is
 the minor version and Z the patch level.  For each new patch level, no
-new features are added.  When the minor version is incremented, features
-are added, which are documented in this file.  This file also documents
-important changes in patch level updates, which are mostly changes in
-terminology, or changes in the installation procedure. 
+new syntax features are added.  When the minor version is incremented,
+features are added, which are documented in this file.  This file also
+documents important changes in patch level updates, which are mostly
+changes in terminology, changes in the installation procedure, or
+changes in invocation. 
 
 When the major version is increased, backward-incompatible changes are
 made, which are documented in the file MIGRATION. 
 
 ------------------------------------------------------------------------
+
+2016-08-26  Version 2.1.4
+
+* There is now a new option '-Y' to turn on color output
+  unconditionally.  
+
+2016-08-25  Version 2.1
+
+See 'MIGRATION'
 
 2016-07-29  Version 1.15.80:
 

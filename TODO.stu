@@ -1,15 +1,18 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# Option -n for \n-separated dynamic.  Do we need an option for ordinary
-# dynamics?  
+# Option -n for \n-separated dynamic.  
 #
 
 #
-# Flag -0 for NUL-separated dynamic dependencies.  Also as command-line option. 
+# Flag -0 for NUL-separated dynamic dependencies.  
 #
 
 A: [ -0 <B ] { xargs -0 ... }
+
+#
+# Option -0 
+#
 
 #
 # Make 
@@ -84,6 +87,14 @@ A.$X.$Y:  $X * .$Y      # OK
 @all: backup/[FILES];
 >FILES: { echo *.dat }
 dest/$file = $file;
+
+#
+# Allow a better integrated syntax on the command line after '--'.  This
+# will make the options -o/-p/-n/-0 obsolete. 
+#
+
+$ stu -- [ -n FILES ]
+$ stu -- -o FILE
 
 #
 # The 'trivial' flag '-t' should "go up" when applied to the

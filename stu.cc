@@ -39,7 +39,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-const char OPTIONS[]= "ac:C:Ef:F:ghj:JkKm:M:o:p:PqQsvVwxyYz"; 
+const char OPTIONS[]= "ac:C:Ef:F:ghj:JkKm:M:n:o:p:PqQsvVwxyYz"; 
 
 /* The output of the help (-h) option.  The following strings do not
  * contain tabs, but only space characters.  */   
@@ -64,6 +64,7 @@ const char HELP[]=
 	"     dfs           (default) Depth-first order, like in Make\n"	      
 	"     random        Random order\n"				              
 	"  -M STRING        Pseudorandom run order, seeded by given string\n"         
+	"  -n FILENAME      Read \\n-separated file targets from the given file\n"
 	"  -o FILENAME      Build an optional dependency, i.e., build it only if it\n"
 	"                   exists and is out of date\n"
 	"  -p FILENAME      Build a persistent dependency, i.e., ignore its timestamp\n"
@@ -142,8 +143,10 @@ int main(int argc, char **argv, char **envp)
 		/* Place of first file when no rule is contained */ 
 		Place place_first;
 
-		/* Whether target was passed through one of the options
-		 * -c, -C, -o or -p.  */
+		/* Whether any target(s) was passed through one of the options
+		 * -c, -C, -o, -p, -n.  Also set when zero targets are
+		 * passed through one of these, e.g., when -n is used on
+		 * an empty file.  */
 		bool had_option_target= false;   /* Both lower and upper case */
 
 		bool had_option_f= false; /* Both lower and upper case */
@@ -169,28 +172,26 @@ int main(int argc, char **argv, char **envp)
 			case 'x': option_individual= true;     break;
 			case 'z': option_statistics= true;     break;
 
-			case 'c': 
-				{
-					had_option_target= true; 
-					Place place(Place::Type::OPTION, 'c');
-					if (*optarg == '\0') {
-						place << "expected a non-empty argument"; 
-						exit(ERROR_FATAL);
-					}
-					Type type= Type::FILE;
-					dependencies.push_back
-						(make_shared <Direct_Dependency>
-						 (0, Place_Param_Target
-						  (type, Place_Name(optarg, place))));
-					break;
+			case 'c':  {
+				had_option_target= true; 
+				Place place(Place::Type::OPTION, 'c');
+				if (*optarg == '\0') {
+					place << "expected a non-empty argument"; 
+					exit(ERROR_FATAL);
 				}
+				Type type= Type::FILE;
+				dependencies.push_back
+					(make_shared <Direct_Dependency>
+					 (0, Place_Param_Target
+					  (type, Place_Name(optarg, place))));
+				break;
+			}
 
-			case 'C': 
-				{
-					had_option_target= true; 
-					add_dependencies_option_C(dependencies, optarg);
-					break;
-				}
+			case 'C':  {
+				had_option_target= true; 
+				add_dependencies_option_C(dependencies, optarg);
+				break;
+			}
 
 			case 'f':
 				if (*optarg == '\0') {
@@ -261,24 +262,39 @@ int main(int argc, char **argv, char **envp)
 				buffer_generator.seed(hash <string> ()(string(optarg)));
 				break;
 
-			case 'o':
-			case 'p':
-				{
-					had_option_target= true; 
-					Place place(Place::Type::OPTION, c);
-					if (*optarg == '\0') {
-						place << "expected a non-empty argument";
-						exit(ERROR_FATAL);
-					}
-					Type type= Type::FILE;
-					dependencies.push_back
-						(make_shared <Direct_Dependency>
-						 (c == 'p' ?
-						  F_PERSISTENT : F_OPTIONAL, 
-						  Place_Param_Target
-						  (type, Place_Name(optarg, place))));
-					break; 
+			case 'n': {
+				had_option_target= true; 
+				Place place(Place::Type::OPTION, c); 
+				if (*optarg == '\0') {
+					place << "expected a non-empty argument";
+					exit(ERROR_FATAL);
 				}
+				dependencies.push_back
+					(make_shared <Dynamic_Dependency>
+					 (0,
+					  make_shared <Direct_Dependency>
+					  (F_NEWLINE_SEPARATED, 
+					   Place_Param_Target
+					   (Type::FILE, Place_Name(optarg, place)))));
+				break;
+			}
+
+			case 'o':
+			case 'p':  {
+				had_option_target= true; 
+				Place place(Place::Type::OPTION, c);
+				if (*optarg == '\0') {
+					place << "expected a non-empty argument";
+					exit(ERROR_FATAL);
+				}
+				dependencies.push_back
+					(make_shared <Direct_Dependency>
+					 (c == 'p' ?
+					  F_PERSISTENT : F_OPTIONAL, 
+					  Place_Param_Target
+					  (Type::FILE, Place_Name(optarg, place))));
+				break; 
+			}
 
 			case 'V': 
 				fputs(VERSION_INFO, stdout); 
@@ -298,7 +314,7 @@ int main(int argc, char **argv, char **envp)
 
 		order_vec= (order == Order::RANDOM); 
 
-		/* Targets passed as-is on the command line, outside of options */ 
+		/* Targets passed on the command line, outside of options */ 
 		for (int i= optind;  i < argc;  ++i) {
 
 			/* With GNU getopt(), I is not the index that the argument had

@@ -51,58 +51,63 @@ OPTIONS
        -C EXPRESSION
               Pass  a  target  using full Stu syntax.  The given expression is
               parsed as if it was given as one or more dependencies in  a  Stu
-              file.   As a result, flags -p, -o and -t, brackets and parenthe‐
-              ses can be used, and spaces separate filenames.
+              file.   As  a result, flags -p, -o and -t, brackets, parentheses
+              and other Stu syntax elements can be used, and  spaces  separate
+              filenames.
 
-       -E     Explain error messages.  Only some error messages have  explana‐
+       -E     Explain  error messages.  Only some error messages have explana‐
               tions.
 
        -f FILENAME
-              Read  the  given file instead of the default 'main.stu'.  If the
-              name of a directory is passed, the file 'main.stu' in the  given
-              directory  is read.  If '-' is passed, read standard input.  The
+              Read the given file instead of the default 'main.stu'.   If  the
+              name  of a directory is passed, the file 'main.stu' in the given
+              directory is read.  If '-' is passed, read standard input.   The
               -f option can be used multiple times.
 
        -F RULES
               Pass rules in full Stu syntax.
 
-       -g     Treat all optional  dependencies  (declared  with  -o)  as  non-
+       -g     Treat  all  optional  dependencies  (declared  with  -o) as non-
               optional.
 
        -h     Output a short help and exit.
 
-       -j K   Run  K  jobs  in  parallel.   K must be a positive integer.  The
-              default value is one, meaning that Stu does not  start  jobs  in
-              parallel.   This  option  works like the corresponding option in
+       -j K   Run K jobs in parallel.  K must  be  a  positive  integer.   The
+              default  value  is  one, meaning that Stu does not start jobs in
+              parallel.  This option works like the  corresponding  option  in
               GNU Make. The parameter K is mandatory.
 
-       -J     Parse all arguments to Stu as filenames, disabling all Stu  syn‐
-              tax  that  is  otherwise  used.   Intended when Stu is used with
-              tools such as 'xargs'.  The -J option itself does  not  take  an
-              argument;  it  only changes the way arguments outside of options
+       -J     Parse  all arguments to Stu as filenames, disabling all Stu syn‐
+              tax that is otherwise used.  Intended  when  Stu  is  used  with
+              tools  such  as  'xargs'.  The -J option itself does not take an
+              argument; it only changes the way arguments outside  of  options
               are interpreted.
 
        -k     Keep going.  Do not stop running when an error occurs.  Instead,
-              try  to build as much as possible.  This option is equivalent to
+              try to build as much as possible.  This option is equivalent  to
               that of Make.
 
-       -K     Don't delete partially built files when a command fails or  when
+       -K     Don't  delete partially built files when a command fails or when
               Stu is interrupted.  By default, Stu will delete the target of a
               command after the command fails or is interrupted, when the file
-              is  newer  than  it was before starting the command. This option
-              disables that behaviour.  Note that with this option,  a  subse‐
-              quent  invocation  of  Stu  may lead to the partially built file
+              is newer than it was before starting the  command.  This  option
+              disables  that  behaviour.  Note that with this option, a subse‐
+              quent invocation of Stu may lead to  the  partially  built  file
               being considered up to date.
 
        -m ORDER
-              Specify the order in which jobs are run.  When  ORDER  is  'dfs'
-              (the  default),  Stu  traverses the dependency graph in a depth-
+              Specify  the  order  in which jobs are run.  When ORDER is 'dfs'
+              (the default), Stu traverses the dependency graph  in  a  depth-
               first fashion, in a way similar to Make. When ORDER is 'random',
-              the  order  in which jobs are run is randomized within each tar‐
+              the order in which jobs are run is randomized within  each  tar‐
               get.
 
        -M STRING
               Run jobs in pseudorandom order, seeded by the given string.
+
+       -n FILENAME
+              Read targets from FILENAME, which must contain newline-separated
+              filenames.  No Stu syntax is processed.
 
        -o FILENAME
               Pass the given file as an optional dependency,  i.e.,  build  it
@@ -655,7 +660,7 @@ SYNTAX
            redirect_dep:     ['<'] bare_dep
            bare_dep:         ['@'] NAME
            variable_dep:     '$' '[' flag* ['<'] NAME ']'
-           flag:             '-p' | '-o' | '-t'
+           flag:             '-p' | '-o' | '-t' | '-n'
 
        Stu files read via the -f option or as the default Stu file, as well as
        the  argument  to  the  -F  option  must contain a 'rule_list'.  A file
@@ -852,4 +857,4 @@ SEE ALSO
 
 
 
-stu-2.2.1                         August 2016                           STU(1)
+stu-2.2.2                         August 2016                           STU(1)

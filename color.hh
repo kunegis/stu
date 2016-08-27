@@ -30,8 +30,8 @@
  * To cite the file gcc/diagnostic-color.c in gcc-6.2.0:
  *
  *     "It would be impractical for GCC to become a full-fledged terminal
- *     program linked against ncurses or the like, so it will not detect
- *     terminfo(5) capabilities."
+ *      program linked against ncurses or the like, so it will not detect
+ *      terminfo(5) capabilities."
  *
  * Stu takes the same approach. 
  */
@@ -40,7 +40,7 @@ class Color
 {
 public:
 
-	/* Whether single quotes have to be used.  Only true when color
+	/* Whether single quotes have to be used.  Only set when color
 	 * is not used.  */   
 	static bool quotes, quotes_out; 
 
@@ -115,7 +115,7 @@ void Color::set(bool enable_color)
 void Color::set(bool enable_color_out, bool enable_color_err)
 {
 	/*
-	 * Note:  GCC addition inserts "\33[K" sequences after each
+	 * Note:  GCC additionally inserts "\33[K" sequences after each
 	 * color code, to avoid a bug in some terminals.  This is not
 	 * done here. 
 	 */

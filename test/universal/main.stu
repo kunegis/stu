@@ -1,0 +1,17 @@
+# A universal rule:  It is used for all file targets that don't
+# otherwise have a rule.  
+
+A: B {
+	cp B A
+}
+
+# The universal file rule
+$X: { touch -- "$X" }
+
+>B: list.X list.Y
+{
+	echo BEGIN
+	cat list.X list.Y
+	echo END
+}
+

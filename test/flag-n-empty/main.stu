@@ -1,0 +1,10 @@
+#
+# Empty file for -n
+#
+
+A:  [ -n B ] 
+{
+	touch A
+}
+
+B { touch B }

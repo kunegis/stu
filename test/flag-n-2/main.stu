@@ -1,0 +1,15 @@
+# An empty line within a -n file:  Error because filenames must not be empty.  
+
+A: [ -n B ]
+{
+	touch A
+}
+
+>B {
+	echo X
+	echo 
+	echo Y
+}
+
+X { touch X }
+Y { touch Y }

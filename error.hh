@@ -69,7 +69,7 @@
 #include "format.hh"
 
 /* The error constants.  Not declared as an enum because they are thrown
- * and thus need to be integers. */
+ * and thus need to be integers.  */
 const int ERROR_BUILD=     1;
 const int ERROR_LOGICAL=   2;
 const int ERROR_FATAL=     4;

@@ -40,7 +40,8 @@ List of options
 -L      G  Special handling of symlinks
 -m  S   x  Mode; e.g., random order, etc. (GNU Make: compatibility)
 -M  S      Seed mode
--n  . M G  Dry run (just print commands)
+-n  S x x  Pass a file containing newline-separated file targets, without syntax parsing 
+-n  x M G  Dry run (just print commands)
 -N  .      Dry run, but build dynamic dependencies 
 -o  S   x  Optional dependency
 -o  x   G  Mark file as old
@@ -62,7 +63,7 @@ List of options
 -W  .   G  What-if mode / assume new (if FILE just had been modified) 
 -x  S      Enable /bin/sh -x instead of normal output
 -y  S      Disable color output
--Y  .      Enable color output
+-Y  S      Enable color output
 -z  S      Output statistics
 
 The following options could conceivably be set externally:

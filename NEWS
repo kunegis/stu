@@ -11,6 +11,22 @@ made, which are documented in the file MIGRATION.
 
 ------------------------------------------------------------------------
 
+2016-08-27  Version 2.2.2
+
+* There is now a command-line option '-n' to pass the name of a file
+  that contains newline-separated names of files to be built.  This is
+  in analogy with the '-n' flag.  Example:
+
+$ find ... >FILES
+$ stu -n FILES
+
+The same can be achieved by
+
+$ stu -C '[ -n FILES]'
+
+but the -n option avoids quoting and escaping problems in case the
+filename contains brackets, spaces, etc. 
+
 2016-08-26  Version 2.2
 
 * Dynamic dependencies can now be declared to be newline-separated list

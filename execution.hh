@@ -173,7 +173,7 @@ private:
 	/* Whether the execution is completely finished */ 
 	bool finished() const;
 
-	/* Read dynamic dependencies from a file.  Can only be called for
+	/* Read dynamic dependencies from a file.  Only called for
 	 * dynamic targets.  Called for the parent of a dynamic--file
 	 * link.  */ 
 	void read_dynamic_dependency(Stack avoid, shared_ptr <Dependency> dependency_this);
@@ -1654,6 +1654,9 @@ void Execution::read_dynamic_dependency(Stack avoid,
 		Flags flags= dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)->dependency->get_flags();
 
 		if (! (flags & F_NEWLINE_SEPARATED)) {
+
+			/* Parse dynamic dependency in full Stu syntax */ 
+
 			vector <shared_ptr <Token> > tokens;
 			Place place_end; 
 
@@ -1703,7 +1706,7 @@ void Execution::read_dynamic_dependency(Stack avoid,
 
 			while ((len= getline(&lineptr, &n, file)) >= 0) {
 				
-				string filename_dependency;
+				Place place(Place::Type::INPUT_FILE, filename, ++line, 0); 
 
 				assert(lineptr[len] == '\0'); 
 
@@ -1717,20 +1720,32 @@ void Execution::read_dynamic_dependency(Stack avoid,
 				 * \n.  getline(3) will include it if it is
 				 * present, but the file may not have
 				 * one.  */ 
+
 				if (lineptr[len - 1] == '\n') {
-					filename_dependency= string(lineptr, len-1);
-				} else {
-					filename_dependency= string(lineptr, len); 
+					--len; 
 				}
+
+				/* An empty line:  This corresponds to
+				 * an empty filename, and thus it is a
+				 * syntax error. 
+				 */ 
+				if (len == 0) {
+					free(lineptr); 
+					fclose(file); 
+					place << "filename must not be empty"; 
+					print_traces(fmt("in newline-separated dynamic dependency declared with flag %s",
+							 multichar_format_word("-n")));
+					throw ERROR_LOGICAL; 
+				}
+				
+				string filename_dependency= string(lineptr, len); 
 
 				dependencies.push_back
 					(make_shared <Direct_Dependency>
 					 (0,
 					  Place_Param_Target
 					  (Type::FILE, 
-					   Place_Name
-					   (filename_dependency, 
-					    Place(Place::Type::INPUT_FILE, filename, ++line, 0))))); 
+					   Place_Name(filename_dependency, place)))); 
 			}
 			free(lineptr); 
 			if (fclose(file)) {

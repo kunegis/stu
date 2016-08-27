@@ -1,0 +1,12 @@
+# An empty string in a -n file:  Error because filenames must not be
+# empty.  
+
+A: [ -n B ]
+{
+	touch A
+}
+
+>B {
+	# Print a single empty line
+	echo 
+}

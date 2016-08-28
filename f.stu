@@ -1,5 +1,0 @@
-$ stu -n FILE
-
-# FILE does not exist, but there is a rule for it and it is built to
-# contain only files that already exist:  Stu builds FILE, but no other
-# files. 

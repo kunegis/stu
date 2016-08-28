@@ -1,0 +1,17 @@
+@all:  [ -n list.files ] ;
+
+>list.files
+{
+	echo aaa
+	echo bbb
+	echo ccc
+	echo A
+}
+
+aaa { exit 1 }
+bbb { exit 1 }
+ccc { exit 1 }
+
+A {
+	touch A
+}

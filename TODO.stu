@@ -1,7 +1,10 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# Option -n for \n-separated dynamic.  
+# $ stu nonexistingfile
+#
+# Use a place that refers to the command line, not the non-place error
+# syntax.  
 #
 
 #

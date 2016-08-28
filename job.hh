@@ -2,7 +2,7 @@
 #define JOB_HH
 
 /* 
- * Handling of child processes, inlcuding signal-related issues.  
+ * Handling of child processes, including signal-related issues. 
  */
 
 #include <fcntl.h>
@@ -20,9 +20,9 @@ void job_print_jobs();
 
 /* 
  * Macro to write in an async signal-safe manner. 
- * 	FD must be 1 or 2.
+ * 	FD must be '1' or '2'.
  * 	MESSAGE must be a string literal. 
- * Ignore errors, as this is called from the interrupting signal handler. 
+ * Ignore errors, as this is called from the terminating signal handler. 
  */
 #define write_safe(FD, MESSAGE) \
 	do { \
@@ -40,7 +40,8 @@ public:
 	Job():  pid(-2) { }
 
 	/* Call after having returned this process from wait_do(). 
-	 * Return TRUE if the child was successful.  */
+	 * Return TRUE if the child was successful.  The PID is passed
+	 * to verify that it is the correct one.  */
 	bool waited(int status, pid_t pid_check);
 
 	bool started() const {
@@ -78,6 +79,10 @@ public:
 	 * used in wait(2).  Return the PID of the waited-for process (>=0). */  
 	static pid_t wait(int *status);
 
+	/* Print the statistics about jobs, regardless of OPTION_STATISTICS.  If
+	 * the argument is set, there must not be unterminated jobs.  */ 
+	static void print_statistics(bool allow_unterminated_jobs= false); 
+
 	/* Block interrupt signals for the lifetime of an object of this type. 
 	 * Note that the mask of blocked signals is inherited over
 	 * exec(), so we must unblock signals also when starting child
@@ -108,10 +113,12 @@ private:
 	static void handler_productive(int sig, siginfo_t *, void *);
 
 	/* 
-	 * The number of jobs run.  
-	 * exec:     executed
-	 * success:  returned successfully
-	 * fail:     returned as failing
+	 * The number of jobs run.  Each job is/was of exactly one
+	 * type. 
+	 *	 
+	 * Exec:     Currently being executed
+	 * Success:  Finished, with success
+	 * Fail:     Finished, without success
 	 */
 	static unsigned count_jobs_exec, count_jobs_success, count_jobs_fail;
 
@@ -119,21 +126,11 @@ private:
 	 * "termination" or in the "productive" set. */ 
 	static sigset_t set_termination, set_productive;
 
+	/* Set to 1 in the child process, before execve() is called.
+	 * Used to avoid doing too much in the terminating signal
+	 * handler.  Note:  There is a race condition because the signal
+	 * handler may be called before the variable is set.  */
 	static sig_atomic_t in_child; 
-
-	static class Statistics
-	{
-	public:
-		/* Run after main() */ 
-		~Statistics() 
-		{
-			if (! option_statistics)  return; 
-			print(); 
-		}
-
-		/* Print the statistics, regardless of OPTION_STATISTICS */ 
-		static void print(bool allow_unterminated_jobs= false); 
-	} statistics;
 
 	/* Class with one static object whose contructor executes on
 	 * startup to setup signals. */ 
@@ -151,7 +148,6 @@ unsigned Job::count_jobs_fail=    0;
 sigset_t Job::set_productive;
 sigset_t Job::set_termination;
 
-Job::Statistics Job::statistics;
 Job::Signal     Job::signal;
 
 sig_atomic_t Job::in_child= 0; 
@@ -493,7 +489,7 @@ pid_t Job::wait(int *status)
 		goto begin; 
 
 	case SIGUSR1:
-		Statistics::print(true); 
+		print_statistics(true); 
 		job_print_jobs(); 
 		goto retry; 
 
@@ -520,7 +516,7 @@ bool Job::waited(int status, pid_t pid_check)
 	return success; 
 }
 
-void Job::Statistics::print(bool allow_unterminated_jobs)
+void Job::print_statistics(bool allow_unterminated_jobs)
 {
 	/* Avoid double writing in case the destructor gets still called */ 
 	option_statistics= false;
@@ -555,7 +551,7 @@ void Job::Statistics::print(bool allow_unterminated_jobs)
 }
 
 /* 
- * The signal handler -- terminate all processes and quit. 
+ * The termination signal handler -- terminate all processes and quit. 
  */
 void Job::handler_termination(int sig)
 {

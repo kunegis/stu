@@ -1,1 +1,1 @@
-../../stu.test: *** Invalid argument '5X' to option -j
+Option -j: expected the number of jobs, not '5X'

@@ -583,7 +583,9 @@ public:
 	/* Unparametrized, with explicit place */
 	Place_Name(string name, const Place &_place) 
 		:  Name(name), place(_place)
-	{ }
+	{
+		assert(! place.empty()); 
+	}
 
 	const vector <Place> &get_places() const {
 		return places;

@@ -80,12 +80,12 @@ const char HELP[]=
 	"  -Y               Enable color in output\n"
 	"  -z               Output run-time statistics on stdout\n"                   
 	"Report bugs to: kunegis@gmail.com\n" 
-	"Stu home page: <https:/""/github.com/kunegis/stu>\n";
+	"Stu home page: <https://github.com/kunegis/stu>\n";
 
 const char VERSION_INFO[]=
 	"stu " STU_VERSION "\n"
 	"Copyright (C) 2016 Jerome Kunegis\n"
-	"License GPLv3+: GNU GPL version 3 or later <http:/""/gnu.org/licenses/gpl.html>\n"
+	"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 	"This is free software: you are free to change and redistribute it.\n"
 	"There is NO WARRANTY, to the extent permitted by law.\n";
 
@@ -119,7 +119,8 @@ int main(int argc, char **argv, char **envp)
 	dollar_zero= argv[0]; 
 	envp_global= (const char **) envp; 
 	init_buf();
-	Color::set(); 
+	Color::set();
+	int error= 0;
 
 	/* Refuse to run when $STU_STATUS is set */ 
 	const char *const stu_status= getenv("STU_STATUS");
@@ -214,24 +215,23 @@ int main(int argc, char **argv, char **envp)
 				read_option_F(optarg, Execution::rule_set, rule_first);
 				break;
 
-			case 'j':
+			case 'j':  {
 				errno= 0;
 				char *endptr;
 				Execution::jobs= strtol(optarg, &endptr, 0);
+				Place place(Place::Type::OPTION, c); 
 				if (errno != 0 || *endptr != '\0') {
-					print_error(fmt("Invalid argument %s to option %s-j%s",
-							name_format_word(optarg),
-							Color::word, Color::end)); 
+					place << fmt("expected the number of jobs, not %s",
+						     name_format_word(optarg)); 
 					exit(ERROR_FATAL); 
 				}
 				if (Execution::jobs < 1) {
-					print_error(fmt("Argument %s to option %s-j%s must be positive",
-							name_format_word(optarg),
-							Color::word, Color::end)); 
-						    
+					place << fmt("expected a positive number of jobs, not %s",
+						     name_format_word(optarg));
 					exit(ERROR_FATAL); 
 				}
 				break;
+			}
 
 			case 'm':
 				if (!strcmp(optarg, "random"))  {
@@ -317,8 +317,9 @@ int main(int argc, char **argv, char **envp)
 		/* Targets passed on the command line, outside of options */ 
 		for (int i= optind;  i < argc;  ++i) {
 
-			/* With GNU getopt(), I is not the index that the argument had
-			 * originally, because getopt() reorders its arguments.
+			/* I may not be the index that the argument had
+			 * originally, because getopt() may reorder its
+			 * arguments. (I.e., using GNU getopt.)
 			 * This is why we can't put I into the trace. */ 
 
 			Place place(Place::Type::ARGUMENT); 
@@ -399,13 +400,31 @@ int main(int argc, char **argv, char **envp)
 
 		/* Execute */
 		Execution::main(dependencies);
+		
 
-	} catch (int error) {
-		assert(error >= 1 && error <= 3); 
-		exit(error); 
+	} catch (int e) {
+		assert(e >= 1 && e <= 3); 
+		error= e;
 	}
 
-	exit(0); 
+	/*
+	 * Code executed before exiting:  This must be executed even of
+	 * Stu fails.  
+	 */
+	
+	if (option_statistics) {
+		Job::print_statistics();
+	}
+
+	if (fclose(stdout)) {
+		perror("stdout");
+		exit(ERROR_FATAL);
+	}
+	if (fclose(stderr)) {
+		exit(ERROR_FATAL); 
+	}
+
+	exit(error); 
 }
 
 void init_buf()

@@ -57,10 +57,12 @@ private:
 	friend void job_terminate_all(); 
 	friend void job_print_jobs(); 
 
-	/* Targets to build.  Empty only for the root target.
+	/* The targets to which this execution object corresponds.
+	 * Empty only for the root target.  
 	 * Otherwise, all entries have the same dynamic depth.  If the
 	 * dynamic depth is larger than one, then there is exactly one
-	 * target.  */   
+	 * target.  There are multiple targets here when the rule had
+	 * multiple targets.  */   
 	vector <Target> targets; 
 
 	/* The instantiated file rule for this execution.  Null when there
@@ -72,12 +74,12 @@ private:
 
 	/* The rule from which this execution was derived.  This is
 	 * only used to detect strong cycles.  To manage the dependencies, the
-	 * instantiated general rule is used.  NULLPTR if and only if RULE is
-	 * NULLPTR.  */ 
+	 * instantiated general rule is used.  Null if and only if RULE is
+	 * null.  */ 
 	shared_ptr <Rule> param_rule;
 
-	/* Currently running executions.  Allocated with operator new().
-	 * Contains both dependency-subs and dynamic-subs.  */
+	/* Currently running executions.  Allocated with operator new()
+	 * and never deleted.  */ 
 	set <Execution *> children;
 
 	/* The parent executions.
@@ -1920,9 +1922,22 @@ void Execution::print_traces(string text) const
 		auto i= execution->parents.begin(); 
 
 		if (i->first->targets.empty()) {
+
+			/* We are in a child of the root execution */ 
+
 			if (first && text != "") {
-				print_error(fmt("No rule to build %s", 
-						text_parent)); 
+
+				/* No text was printed yet, but there
+				 * was a TEXT passed:  Print it with the
+				 * place available.  */ 
+				   
+				/* This is a top-level target, i.e.,
+				 * passed on the command line via an
+				 * argument or an option  */
+
+				i->second.place <<
+					fmt("no rule to build %s", 
+					    text_parent);
 			}
 			break; 
 		}
@@ -1932,13 +1947,15 @@ void Execution::print_traces(string text) const
 		text_parent= i->first->parents.begin()->second.dependency
 			->get_single_target().format_word();
 
+		/* set even if not output, because it may be used later
+		 * for the root target  */
+ 		const Place place= i->second.place;
+
 		/* Don't show [[A]]->A edges */
 		if (i->second.flags & F_READ) {
 			execution= i->first; 
 			continue;
 		}
-
-		Place place= i->second.place;
 
 		string msg;
 		if (first && text != "") {

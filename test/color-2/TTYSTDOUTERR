@@ -1,1 +1,1 @@
-[1;31m../../stu.test[0m: *** Invalid argument [1mkasjhkjsahfd[0m to option [1m-j[0m
+[31mOption [1;31m-j[0m: expected the number of jobs, not [1mkasjhkjsahfd[0m

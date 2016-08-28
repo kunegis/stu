@@ -323,8 +323,10 @@ void Place::print(string message,
 
 	case Type::ARGUMENT:
 		fprintf(stderr,
-			"%sCommand line argument%s: %s\n",
-			color, Color::end,
+			"%s%s%s: %s\n",
+			color,
+			"Command line argument",
+			Color::end,
 			message.c_str());
 		break;
 

@@ -52,7 +52,8 @@
 #              of the default 'A'.  This does not change the invocation:
 #              Stu is invoked without arguments by default.  It only
 #              changes the check that the file was built, and its
-#              content.   
+#              content.   May be an empty file to omit the test for an
+#	       existing target. 
 # CMD          Additional command arguments passed to Stu.  Content may
 #  	       use shell quoting and escaping.  For instance, the file
 #	       may contain -C ' A ' to pass an argument beginning and ending
@@ -244,33 +245,40 @@ do
 			if [ -r TARGET ]; then
 				target="$(sed -e '/^[[:space:]]*$/d' <TARGET)"
 			fi
-			if [ ! -r "$target" ]; then  # The main target must have been built
-				echo >&2 "$0: *** Target '$target' was not built"
-				error=1
-			else
-				# Check that INCONTENT is found in the built file
-				if [ -r INCONTENT ]; then
-					if fgrep -q -- "$(cat INCONTENT)" "$target" ; then
-						echo "INCONTENT...correct"
-					else
-					    echo >&2 "$0: *** '$(cat INCONTENT)' must appear in generated file"
-					    echo >&2 "$target:"
-					    echo >&2 ____
-					    cat "$target"
-					    echo >&2 ____
-					    error=1
+			if [ -n "$target" ] ; then
+				if [ ! -r "$target" ]; then  # The main target must have been built
+					echo >&2 "$0: *** Target '$target' was not built"
+					error=1
+				else
+					# Check that INCONTENT is found in the built file
+					if [ -r INCONTENT ]; then
+						if fgrep -q -- "$(cat INCONTENT)" "$target" ; then
+							echo "INCONTENT...correct"
+						else
+							echo >&2 "$0: *** '$(cat INCONTENT)' must appear in generated file"
+							echo >&2 "$target:"
+							echo >&2 ____
+							cat "$target"
+							echo >&2 ____
+							error=1
+						fi
+					fi
+				
+					# Check exact content of the target file
+					if [ -r CONTENT ] ; then
+						if cmp "$target" CONTENT ; then
+							echo "CONTENT...correct"
+						else	
+							echo >&2 "$0: *** CONTENT error"
+							diff "$target" CONTENT
+							error=1
+						fi
 					fi
 				fi
-				
-				# Check exact content of the target file
-				if [ -r CONTENT ] ; then
-					if cmp "$target" CONTENT ; then
-						echo "CONTENT...correct"
-					else	
-						echo >&2 "$0: *** CONTENT error"
-						diff "$target" CONTENT
-						error=1
-					fi
+			else
+				if [ -r INCONTENT ] || [ -r CONTENT ] ; then
+					echo >&2 "$0: *** CONTENT and INCONTENT must not appear in conjunction with an empty TARGET"
+					error=1
 				fi
 			fi
 		else
@@ -305,6 +313,9 @@ do
 				echo "INSTDOUT...correct"
 			else
 				echo >&2 "$0: *** '$(cat INSTDOUT)' was not found in output"
+				echo >&2 ____ stdout:
+				cat >&2 list.def.out
+				echo >&2 ____
 				error=1
 			fi
 		fi

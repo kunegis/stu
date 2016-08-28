@@ -1,1 +1,1 @@
-../../stu.test: *** Invalid argument 'lsdkjflskdjf' to option -j
+Option -j: expected the number of jobs, not 'lsdkjflskdjf'

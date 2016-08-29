@@ -1,0 +1,1 @@
+-s -F 'A { echo "$0" ; touch A ; }'

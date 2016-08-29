@@ -1,8 +1,5 @@
 #==== Features of Stu 2:  Mandatory ====
 
-# Check that ARGV0 is correct when the place is an OPTION
-# $ stu -F 'A { touch A }'
-
 #
 # Flag -0 for NUL-separated dynamic dependencies.  
 #
@@ -26,6 +23,10 @@ A: [ -0 <B ] { xargs -0 ... }
 
 #
 # Maybe enable explanations by default?
+#
+
+#
+# Have $STU_OPTIONS
 #
 
 #
@@ -301,4 +302,3 @@ A: -o @x;
 
 # Equivalent to
 A: B;
-

@@ -257,7 +257,8 @@ public:
 		   const char *color_word) const;
 
 	/* The string used for the argv[0] parameter of child processes.
-	 * Does not include color codes.  */
+	 * Does not include color codes.  Returns "" when no special
+	 * string should be used.  */
 	string as_argv0() const;
 
 	bool empty() const { 
@@ -353,7 +354,8 @@ string Place::as_argv0() const
 	default:  
 	case Type::EMPTY:
 		assert(false); 
-		return "command"; 
+	case Type::ARGUMENT:
+		return ""; 
 
 	case Type::INPUT_FILE: {
 		/* The given argv[0] should not begin with a dash,
@@ -366,9 +368,6 @@ string Place::as_argv0() const
 			    s,
 			    line);  
 	}
-
-	case Type::ARGUMENT:
-		return "Command line argument"; 
 	}
 }
 

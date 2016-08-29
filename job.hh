@@ -279,7 +279,9 @@ pid_t Job::start(string command,
 		 * and the column number.
 		 * This makes the shell if it reports an error make the
 		 * most useful output.  */
-		const string argv0= place_command.as_argv0(); 
+		string argv0= place_command.as_argv0();
+		if (argv0 == "")
+			argv0= shell; 
 
 		/* The one-character options to the shell */
 		/* We use the -e option ('error'), which makes the shell abort

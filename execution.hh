@@ -23,12 +23,12 @@
  * The set of active Execution objects forms a directed acyclic graph, rooted
  * at the root Execution object.  Edges in this graph are represented by
  * Link objects.  Each Execution object corresponds to one or more
- * unique Target.  Two Execution objects are connected if there is a
+ * unique Target objects.  Two Execution objects are connected if there is a
  * dependency between them.  If there is an edge A ---> B, A is said to
  * be the parent of B, and B the child of A.  Also, B is a dependency of
- * A.  If A is a dynamic target, then is has as an initial child only
+ * A.  If A is a dynamic target, then it has as an initial child only
  * the corresponding target with one less dynamicity level; other
- * dependency are added later. 
+ * dependencies are added later. 
  *
  * All Execution objects are allocated with new Execution(...), and are
  * never deleted, as the information contained in them needs to be
@@ -84,17 +84,17 @@ private:
 
 	/* The parent executions.
 	 * This is a map because typically, the number of elements is
-	 * always very small, i.e., mostly one, and map is better suited
+	 * always very small, i.e., mostly one, and a map is better suited
 	 * in this case.  */ 
 	map <Execution *, Link> parents; 
 
-	/* The job used to build this file */ 
+	/* The job used to execute this rule's command */ 
 	Job job;
 	
 	/* Dependencies that have not yet begun to be built.
 	 * Initialized with all dependencies, and emptied over time when
 	 * things are built, and filled over time when dynamic dependencies
-	 * are worked on. Entries are not necessarily unique.  */ 
+	 * are worked on.  Entries are not necessarily unique.  */ 
 	Buffer buf_default;
 
 	/* The buffer for dependencies in the second pass.  They are only started
@@ -114,7 +114,7 @@ private:
 	/* Variable assignments from parameters for when the command is run */
 	map <string, string> mapping_parameter; 
 
-	/* Variable assignments from actual variables */
+	/* Variable assignments from variables dependencies */
 	map <string, string> mapping_variable; 
 
 	/* Error value of this target.  The value is propagated (using '|')
@@ -165,7 +165,7 @@ private:
 	Execution(const vector <shared_ptr <Dependency> > &dependencies_); 
 
 	/* There is no implementation of this, as it is not used.  This
-	 * serves as a compile-time check that Execution objects are not
+	 * serves as a link-time check that Execution objects are not
 	 * destroyed.  */ 
 	~Execution(); 
 
@@ -270,7 +270,7 @@ private:
 	 * are never deleted.  This serves as a caching mechanism.  The
 	 * root Execution has no targets and therefore is not included.
 	 * Non-dynamic execution objects are shared by the multiple
-	 * targets of a multi-target rule.  Dynamic multi-target rule
+	 * targets of a multi-target rule.  A dynamic multi-target rule
 	 * result in multiple non-shared execution objects.  */
 	static unordered_map <Target, Execution *> executions_by_target;
 
@@ -283,14 +283,13 @@ private:
 	 * rule has both file targets and transient targets, and all
 	 * file targets are up to date and the transient targets have
 	 * all their dependencies up to date, then the command is not
-	 * executed, even though it was never execute in the current
+	 * executed, even though it was never executed in the current
 	 * invocation of Stu. In that case, the transient targets are
 	 * never insert in this map.  */
 	static unordered_map <string, Timestamp> transients;
 
 	/* The timepoint of the last time wait() returned.  No file in the
-	 * file system should be newer than this. 
-	 */ 
+	 * file system should be newer than this.  */ 
 	static Timestamp timestamp_last; 
 
 	/* Whether to show the "Nothing to be done" message.  The
@@ -723,7 +722,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 		return false;
 	}
 
-	/* The file must be created now */
+	/* The command must be run or the file created now */
 
 	if (option_question) {
 		print_out("Targets are not up to date");
@@ -1000,7 +999,7 @@ void Execution::waited(pid_t pid, int status)
 				     strsignal(sig));
 		} else {
 			/* This should not happen but the standard does not exclude
-			 * it */ 
+			 * it  */ 
 			reason= frmt("failed with status code %d", status); 
 		}
 
@@ -1577,7 +1576,7 @@ bool Execution::remove_if_existing(bool output)
 
 			if (output) {
 				print_info(fmt("Removing file %s because command failed",
-					       name_format_word(filename))); 
+						  name_format_word(filename))); 
 			}
 			
 			removed= true;

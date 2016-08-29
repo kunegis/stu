@@ -6,7 +6,7 @@
  * by integers between 0 and 4, as defined in the ERROR_* constants
  * below.  Zero represents no error.  These codes are used for both
  * Stu's exit code and as values that are thrown and caught.   Variables
- * containing error codes are integers and are named "error". 
+ * containing error codes are ints and are named "error". 
  */ 
 
 /*
@@ -50,9 +50,10 @@
  * the "not ..." part is not used. 
  * 
  * Use "must not" rather than "cannot" or "shall" in error messages when
- * referring to a "part", e.g., "filename must not be empty".  On the
- * other hand, use "cannot" when the forbidded item would not be a
- * "part", e.g., "transient targets cannot be used with copy rule".  
+ * something must be present, but is erroneous, e.g., "filename must not
+ * be empty".  On the other hand, use "cannot" when something completely
+ * unexpected was encountered, e.g., "transient targets cannot be used
+ * with copy rule".
  * 
  * But remember that in general it is better to state what what expected
  * in the syntax than to say that what was encountered cannot be used.
@@ -92,7 +93,7 @@ const int ERROR_FATAL=     4;
  * dependency graph, or multiple matching rules.  
  * 
  * Fatal errors (code 4) are errors that lead Stu to abort immediately,
- * even when the -k option is used.  They are avoid as much as
+ * even when the -k option is used.  They are avoided as much as
  * possible. 
  *
  * Build and logical errors can be combined to give error code 3.
@@ -118,7 +119,7 @@ void print_error(string message)
 		message.c_str()); 
 }
 
-/* Like perror(), but use color.  TEXT must not contain color codes. */ 
+/* Like perror(), but use color.  MESSAGE must not contain color codes. */ 
 void print_error_system(string message)
 {
 	assert(message.size() > 0 && message[0] != '') ;
@@ -139,7 +140,9 @@ void print_info(string message)
 }
 
 /* System error message.  Includes the given message, and the
- * ERRNO-based text.  Cf. perror().  Color is not added.   */
+ * ERRNO-based text.  Cf. perror().  Color is not added.  The output of
+ * this function is used as input to one of the print_*() functions. 
+ */
 string system_format(string text)
 {
 	return fmt("%s: %s",
@@ -149,7 +152,8 @@ string system_format(string text)
 
 /* Print a message to standard output.  This is used in only very few
  * cases, in defiance of the principle that a program should by default
- * only output something when there is an error. 
+ * only output something when there is an error.  We do it mostly
+ * because Make does it, and users expect it. 
  * These messages are suppressed by the -Q option (quiet).  */
 void print_out(string text)
 {
@@ -168,8 +172,8 @@ void print_out(string text)
 
 /* 
  * Denotes a position in Stu source code.  This is either in a file or in
- * arguments to Stu.  A Place object can also be empty, which is used as
- * the "uninitialized" value.  
+ * arguments/options to Stu.  A Place object can also be empty, which is
+ * used as the "uninitialized" value.  
  *
  * Places are used to show the location of an error on standard error
  * output. 
@@ -183,9 +187,7 @@ public:
 		INPUT_FILE,   /* In a file, with line/column numbers */
 		ARGUMENT,     /* Command line argument (outside options) */ 
 		OPTION,       /* In an option */
-	};
-
-	Place::Type type; 
+	} type;
 
 	/* 
 	 * INPUT_FILE:  Name of the file in which the error occurred.
@@ -274,13 +276,13 @@ public:
 	Place place;
 
 	/* The message associated with it.  This may be "". 
-	 * If the trace is printed, it must not be empty, and not begin
-	 * with an upper-case letter */      
+	 * When the trace is printed, it must not be empty, and not begin
+	 * with an upper-case letter.  */
 	string message; 
 
 	Trace(const Place &place_, string message_) 
 		:  place(place_), message(message_) 
-	{ }
+	{  }
 
 	/* Print the trace to STDERR as part of an error message; see
 	 * Place::operator<< for format information.  */
@@ -306,6 +308,8 @@ void Place::print(string message,
 	switch (type) {
 	default:  
 	case Type::EMPTY:
+		/* It's a common bug in Stu to have empty places, so
+		 * better provide sensible behavior in NDEBUG builds.  */ 
 		assert(false); 
 		fprintf(stderr, 
 			"%s\n",
@@ -346,8 +350,7 @@ void Place::print(string message,
 string Place::as_argv0() const
 {
 	switch (type) {
-	default:  assert(false); 
-
+	default:  
 	case Type::EMPTY:
 		assert(false); 
 		return "command"; 

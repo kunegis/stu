@@ -9,12 +9,14 @@
 
 /* 
  * Glossary:
- *     * A _name_ is a filename of the name of a transient target.  They are
- *       just strings, so no special data type for it
- *     * A _target_ is either file or a transient, or a dynamic file.  It is
- *       represented by a name (string) and a type (integer). 
+ *     * A _name_ is a filename or the name of a transient target.  They are
+ *       just strings, so no special data type for it.  There are two
+ *       distinct namespaces for them. 
+ *     * A _target_ is either file, transient target, or a dynamic
+ *       variant of them.  It is represented by a name (string) and a
+ *       type.  
  *     * A _parametrized_ target or name additionally can have
- *       parameters
+ *       parameters. 
  *     * Dedicated classes exist to represent these with _places_. 
  */
 
@@ -24,7 +26,7 @@ class Type
 {
 private:  
 
-	/* >= T_ROOT */
+	/* >= 0 */
 	int value;
 
 	friend class Target; 
@@ -42,26 +44,22 @@ private:
 
 	enum: int {
 		/* A transient target */ 
-		T_TRANSIENT     = 0,
+		T_TRANSIENT         = 0,
 	
 		/* A file in the file system; this entry has to come before
 		 * T_DYNAMIC because it counts also as a dynamic dependency of
 		 * depth zero. */
-		T_FILE          = 1,
+		T_FILE              = 1,
 
 		/* A dynamic transient target -- only used for the Target object of
 		 * executions */
 		T_DYNAMIC_TRANSIENT = 2,
 
 		/* A dynamic target -- only used for the Target object of executions */   
-		T_DYNAMIC_FILE  = 3
+		T_DYNAMIC_FILE      = 3
 
 		/* Larger values denote multiply dynamic targets.  They are only
-		 * used as the target of Execution objects.  Therefore, T_DYNAMIC is
-		 * always last in this enum. */
-	
-		/* Note:  all dynamic targets are files, and therefore T_FILE can be
-		 * thought of as a dynamic target of depth zero. */
+		 * used as the target of Execution objects.  */
 	};
 
 	Type(int value_)
@@ -156,7 +154,7 @@ const Type Type::DYNAMIC_TRANSIENT(Type::T_DYNAMIC_TRANSIENT);
 const Type Type::DYNAMIC_FILE(Type::T_DYNAMIC_FILE);
 
 /* 
- * The basic object in Stu:  a file, a variable or a transient target.  This
+ * The basic object in Stu:  a file, a variable, or a dynamic version of these.  This
  * consists of a name together with a type.  This class is not
  * parametrized, and does not contain a place object.  It is used as
  * keys in maps. 
@@ -281,8 +279,9 @@ public:
 	}
 };
 
+/* A hash function for Target objects, because they are used as keys in
+ * containers.  */
 namespace std {
-
 	template <>
 	struct hash <Target>
 	{
@@ -292,7 +291,6 @@ namespace std {
 				^ target.type.get_value();
 		}
 	};
-
 }
 
 /* 
@@ -461,8 +459,7 @@ public:
 	}
 
 	/* Check whether there are duplicate parameters.  Return the
-	 * name of the found duplicate parameter, or "" none is found. 
-	 */
+	 * name of the found duplicate parameter, or "" none is found.  */
 	string get_duplicate_parameter() const;
 
 	/* Whether this is a valid name.  If it is not, fill the given
@@ -555,6 +552,9 @@ public:
 	}
 };
 
+/*
+ * A parametrized name annotated with places. 
+ */
 class Place_Name
 	:  public Name
 {
@@ -563,7 +563,7 @@ public:
 	/* Place of the name as a whole */ 
 	Place place;
 
-	/* Length = n (number of parameters). 
+	/* Length = N (number of parameters). 
 	 * The places of the individual parameters.  */
 	vector <Place> places;
 
@@ -698,10 +698,10 @@ bool Name::match(const string name,
 	 *  - Each parameter must match at least one character. 
 	 */
 
-	/* The algorithm uses one pass without backtracking or
+	/* This algorithm uses one pass without backtracking or
 	 * recursion.  Therefore, there are no "deadly" patterns that
 	 * can make it hang, as it is the case for trivial
-	 * implementation of regular expression matching.  */
+	 * implementation or regular expression matching.  */
 
 	assert(mapping.size() == 0); 
 
@@ -819,7 +819,7 @@ bool Name::anchoring_dominates(vector <unsigned> &anchoring_a,
 	 * is also in a parameter in (B) and at least one character is
 	 * not parametrized in (A) but in (B). */
 
-	/* TEST: anchoring */ 
+	/* CORRESPONDING TEST: anchoring */ 
 
 	assert(anchoring_a.size() % 2 == 0);
 	assert(anchoring_b.size() % 2 == 0);
@@ -854,9 +854,8 @@ bool Name::anchoring_dominates(vector <unsigned> &anchoring_a,
 			p= anchoring_a[i];
 		else if (j < k_b && i == k_a)
 			p= anchoring_b[j]; 
-		else if (i < k_a && j < k_b) {
+		else if (i < k_a && j < k_b) 
 			p= min(anchoring_a[i], anchoring_b[j]); 
-		}
 	}
 }
 

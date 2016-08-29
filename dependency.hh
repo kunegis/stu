@@ -16,7 +16,11 @@
 #include "format.hh"
 
 /*
- * The flags.  Each edge in the dependency graph is annotated with one
+ * Flags are represented in Stu files with a syntax that resembles
+ * command line options, i.e., -p, -o, etc.  Here, flags are defined as
+ * bit fields. 
+ *
+ * Each edge in the dependency graph is annotated with one
  * object of this type.  This contains bits related to what should be
  * done with the dependency, whether time is considered, etc.  The flags
  * are defined in such a way that the most simple dependency is
@@ -40,19 +44,22 @@ enum
 	I_NEWLINE_SEPARATED,
 
 	C_ALL,              
+
+	/* The first C_TRANSITIVE flags are transitive, i.e., inherited
+	 * across transient targets  */
 	C_TRANSITIVE       = 3,
 
 	/* 
 	 * Transitive flags
 	 */ 
 
-	/* (!) When the dependency is newer than the target, don't rebuild */ 
+	/* (-p) When the dependency is newer than the target, don't rebuild */ 
 	F_PERSISTENT       = 1 << I_PERSISTENT,  
 
-	/* (?) Don't create the dependency if it doesn't exist */
+	/* (-o) Don't create the dependency if it doesn't exist */
 	F_OPTIONAL         = 1 << I_OPTIONAL,
 
-	/* (&) Trivial dependency */
+	/* (-t) Trivial dependency */
 	F_TRIVIAL          = 1 << I_TRIVIAL,
 
 	/* 
@@ -89,8 +96,12 @@ string flags_format(Flags flags)
 	return ret;
 }
 
-/* A dependency, which can be simple or compound.  All dependencies
- * carry information about their place(s) of declaration.  */ 
+/* 
+ * A dependency, which can be simple or compound.  All dependencies
+ * carry information about their place(s) of declaration.  
+ *
+ * Objects of this type are usually used with shared_ptr/unique_ptr. 
+ */ 
 class Dependency
 {
 public:
@@ -398,9 +409,9 @@ public:
  * flags (0..F_COUNT-1), and indexes named J go over the (K+1) levels of
  * depth (0..K).  
  *
- * Example:  a dynamic dependency  ?[!X]  would be represented by the stack of bits
- *   J=1:    bit ?
- *   J=0:    bit !
+ * Example:  a dynamic dependency  -o [ -p X]  would be represented by the stack of bits
+ *   J=1:    bit 'o'
+ *   J=0:    bit 'p'
  */
 class Stack
 {

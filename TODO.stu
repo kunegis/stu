@@ -1,5 +1,8 @@
 #==== Features of Stu 2:  Mandatory ====
 
+# Check that ARGV0 is correct when the place is an OPTION
+# $ stu -F 'A { touch A }'
+
 #
 # Flag -0 for NUL-separated dynamic dependencies.  
 #
@@ -30,7 +33,7 @@ A: [ -0 <B ] { xargs -0 ... }
 #
 
 # - implement compound dependencies
-# - implement compound targets, which are deleted when they are done
+# - implement compound execution objects, which are deleted when they are done
 #   (they don't have a Target object)
 
 A:  B * C;    	        # Binary multiplication operator
@@ -86,7 +89,7 @@ dest/$file = $file;
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This
-# will make the options -o/-p/-n/-0 obsolete. 
+# will complement the options -o/-p/-n/-0. 
 #
 
 $ stu -- [ -n FILES ]

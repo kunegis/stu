@@ -6,11 +6,11 @@
  *
  * Colors:  
  *
- *   error:       The place of an error
- *   warning:     The place of a warning
- *   word:        Names quoting the input 
- *   error word:  Name inside an error place
- *   warning word:Name inside a warning place
+ *   error:          The place of an error
+ *   warning:        The place of a warning
+ *   word:           Names quoting the input 
+ *   error word:     Name inside an error place
+ *   warning word:   Name inside a warning place
  */
 
 /* 
@@ -83,7 +83,7 @@ void Color::set()
 	/* 
 	 * Logic:  Only use color when $TERM is defined, is not
 	 * equal to "dumb", and stderr/stdout is a TYY.  This is
-	 * the same logic used by GCC. 
+	 * the same logic as used by GCC. 
 	 */
 
 	bool is_tty_out= false, is_tty_err= false;

@@ -1,0 +1,36 @@
+
+>A: [ -0 B ] 
+{ 
+	IFS=
+	<B tr '\0' '\n' |
+	while read -r file 
+	do
+		echo "Information about '$file':"
+		file -- "$file" 
+		[ -f "$file" ] || {
+			echo >&2 "*** File '$file' is not a regular file"
+			exit 1
+		}
+	done 
+}
+
+# \0-separated list of files 
+>B:  list.dir  { 
+	find list.dir -type f | tr '\n' '\0'
+}
+
+list.dir:
+{
+	rm -Rf list.dir
+	mkdir list.dir
+	touch 'list.dir/abc'
+	touch 'list.dir/Image 0123.png'
+	touch 'list.dir/:::::'
+	touch 'list.dir/;'
+	touch 'list.dir/'"\\"
+	touch 'list.dir/ '
+	touch 'list.dir/'"$(printf '\t')"
+	touch 'list.dir/a <b'
+	touch 'list.dir/a -p b'
+	touch 'list.dir/a [X]'
+}

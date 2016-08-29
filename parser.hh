@@ -11,6 +11,7 @@
 
 #include "rule.hh"
 #include "token.hh"
+#include "dependency.hh"
 
 /*
  * Stu has only prefix and circumfix operators, and therefore its syntax
@@ -167,9 +168,6 @@ private:
 	 * slashes */
 	static void append_copy(      Name &to,
 				const Name &from);
-
-	/* Get the flag index corresponding to a character */ 
-	static int get_i_flag(char c); 
 };
 
 void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret)
@@ -737,7 +735,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 	if (iter != tokens.end() && is <Flag_Token> ()) {
 		const Flag_Token &flag_token= *is <Flag_Token> (); 
  		const Place place_flag= (*iter)->get_place();
-		const int i_flag= get_i_flag(flag_token.flag); 
+		const int i_flag= flag_get_index(flag_token.flag); 
  		++iter; 
 
 		if (! parse_expression(ret, place_name_input, place_input, targets)) {
@@ -1337,20 +1335,6 @@ void Parser::print_separation_message(shared_ptr <const Token> token)
 
 	token->get_place() << 
 		fmt("to separate it from %s", text);
-}
-
-int Parser::get_i_flag(char c)
-{
-	switch (c) {
-	case 'p':  return I_PERSISTENT;
-	case 'o':  return I_OPTIONAL;
-	case 't':  return I_TRIVIAL;
-	case 'n':  return I_NEWLINE_SEPARATED;
-
-	default:
-		assert(false);
-		return 0;
-	}
 }
 
 #endif /* ! PARSER_HH */

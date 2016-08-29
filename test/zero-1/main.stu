@@ -1,0 +1,4 @@
+# Error:  -0 cannot be used in copy rule
+
+A = -0 B;
+B = {correct}

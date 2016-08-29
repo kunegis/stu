@@ -1652,9 +1652,10 @@ void Execution::read_dynamic_dependency(Stack avoid,
 		const string filename= target.name; 
 		vector <shared_ptr <Dependency> > dependencies;
 
-		Flags flags= dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)->dependency->get_flags();
+		Flags flags= dynamic_pointer_cast <Dynamic_Dependency>
+			(dependency_this)->dependency->get_flags();
 
-		if (! (flags & F_NEWLINE_SEPARATED)) {
+		if (! (flags & (F_NEWLINE_SEPARATED | F_ZERO_SEPARATED))) {
 
 			/* Parse dynamic dependency in full Stu syntax */ 
 
@@ -1680,19 +1681,26 @@ void Execution::read_dynamic_dependency(Stack avoid,
 			/* Check that there are no input dependencies */ 
 			if (! input.empty()) {
 				place_input <<
-					fmt("dynamic dependency %s must not contain input redirection %s", 
+					fmt("dynamic dependency %s "
+					    "must not contain input redirection %s", 
 					    target.format_word(),
 					    prefix_format_word(input.raw(), "<")); 
 				Target target_file= target;
 				target_file.type= Type::FILE;
-				print_traces(fmt("%s is declared here", target_file.format_word())); 
+				print_traces(fmt("%s is declared here",
+						 target_file.format_word())); 
 				raise(ERROR_LOGICAL);
 			}
 		end_normal:;
 
 		} else {
-			/* Newline-separated */
+			/* Delimiter-separated */
 
+			/* The delimiter */ 
+			const char c= (flags & F_NEWLINE_SEPARATED) ? '\n' : '\0';
+			const char c_printed=
+				(flags & F_NEWLINE_SEPARATED) ? 'n' : '0';
+			
 			char *lineptr= nullptr;
 			size_t n= 0;
 			ssize_t len;
@@ -1705,7 +1713,7 @@ void Execution::read_dynamic_dependency(Stack avoid,
 				goto end;
 			}
 
-			while ((len= getline(&lineptr, &n, file)) >= 0) {
+			while ((len= getdelim(&lineptr, &n, c, file)) >= 0) {
 				
 				Place place(Place::Type::INPUT_FILE, filename, ++line, 0); 
 
@@ -1722,20 +1730,22 @@ void Execution::read_dynamic_dependency(Stack avoid,
 				 * present, but the file may not have
 				 * one.  */ 
 
-				if (lineptr[len - 1] == '\n') {
+				if (lineptr[len - 1] == c) {
 					--len; 
 				}
 
 				/* An empty line:  This corresponds to
 				 * an empty filename, and thus it is a
-				 * syntax error. 
-				 */ 
+				 * syntax error.  */ 
 				if (len == 0) {
 					free(lineptr); 
 					fclose(file); 
 					place << "filename must not be empty"; 
-					print_traces(fmt("in newline-separated dynamic dependency declared with flag %s",
-							 multichar_format_word("-n")));
+					print_traces(fmt("in %s-separated dynamic dependency "
+							 "declared with flag %s",
+							 c == '\0' ? "zero" : "newline",
+							 multichar_format_word
+							 (frmt("-%c", c_printed))));
 					throw ERROR_LOGICAL; 
 				}
 				

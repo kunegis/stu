@@ -42,6 +42,7 @@ enum
 	I_VARIABLE,
 	I_OVERRIDE_TRIVIAL,
 	I_NEWLINE_SEPARATED,
+	I_ZERO_SEPARATED,
 
 	C_ALL,              
 
@@ -81,11 +82,30 @@ enum
 	 * filenames, without any markup  */ 
 	F_NEWLINE_SEPARATED= 1 << I_NEWLINE_SEPARATED,
 
+	/* For dynamic dependencies, the file contains NUL-separated
+	 * filenames, without any markup  */ 
+	F_ZERO_SEPARATED=    1 << I_ZERO_SEPARATED,
 };
 
 /* Characters representing the individual flags -- used in verbose mode
  * output */ 
-const char *const FLAGS_CHARS= "!?&`$*n"; 
+const char *const FLAGS_CHARS= "pot`$*n0"; 
+
+/* Get the flag index corresponding to a character */ 
+int flag_get_index(char c)
+{
+	switch (c) {
+	case 'p':  return I_PERSISTENT;
+	case 'o':  return I_OPTIONAL;
+	case 't':  return I_TRIVIAL;
+	case 'n':  return I_NEWLINE_SEPARATED;
+	case '0':  return I_ZERO_SEPARATED;
+		
+	default:
+		assert(false);
+		return 0;
+	}
+}
 
 /* Textual representation of a flags value */
 string flags_format(Flags flags) 

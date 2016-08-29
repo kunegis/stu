@@ -11,6 +11,18 @@ made, which are documented in the file MIGRATION.
 
 ------------------------------------------------------------------------
 
+2016-08-29  Version 2.3
+
+* A flag and an option '-0' is now available for \0-separated dynamic
+  dependencies, that work analogously to '-n' for newline-separated
+  dependency.  Thus, this is now possible (using the nonportable find
+  -print0 as an example):
+
+@all [ -0 FILES ];
+>FILES { find ... -print0 }
+
+A corresponding command-line option '-0' also exists now. 
+
 2016-08-27  Version 2.2.2
 
 * There is now a command-line option '-n' to pass the name of a file

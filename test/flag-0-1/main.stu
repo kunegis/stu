@@ -1,0 +1,13 @@
+# An empty string in a -0 file:  Error because filenames must not be
+# empty.  
+
+A: [ -0 B ]
+{
+	touch A
+}
+
+>B {
+	# Print a single empty "line", i.e., a single \0 character in
+	# the file
+	printf '\0'
+}

@@ -1,0 +1,10 @@
+#
+# Empty file for -0
+#
+
+A:  [ -0 B ] 
+{
+	touch A
+}
+
+B { touch B }

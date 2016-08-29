@@ -39,7 +39,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-const char OPTIONS[]= "ac:C:Ef:F:ghj:JkKm:M:n:o:p:PqQsvVwxyYz"; 
+const char OPTIONS[]= "0:ac:C:Ef:F:ghj:JkKm:M:n:o:p:PqQsvVwxyYz"; 
 
 /* The output of the help (-h) option.  The following strings do not
  * contain tabs, but only space characters.  */   
@@ -48,6 +48,7 @@ const char HELP[]=
 	"By default, build the first target in the file 'main.stu'.\n" 
 	"TARGET may include the special characters '@[]'.\n"     
 	"Options:\n"						       
+	"  -0 FILENAME      Read \\0-separated file targets from the given file\n"
 	"  -a               Treat all trivial dependencies as non-trivial\n"          
 	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"      
 	"  -C EXPRESSIONS   Pass a target in full Stu syntax\n"		              
@@ -145,7 +146,7 @@ int main(int argc, char **argv, char **envp)
 		Place place_first;
 
 		/* Whether any target(s) was passed through one of the options
-		 * -c, -C, -o, -p, -n.  Also set when zero targets are
+		 * -c, -C, -o, -p, -n, -0.  Also set when zero targets are
 		 * passed through one of these, e.g., when -n is used on
 		 * an empty file.  */
 		bool had_option_target= false;   /* Both lower and upper case */
@@ -262,7 +263,8 @@ int main(int argc, char **argv, char **envp)
 				buffer_generator.seed(hash <string> ()(string(optarg)));
 				break;
 
-			case 'n': {
+			case 'n':
+			case '0':  {
 				had_option_target= true; 
 				Place place(Place::Type::OPTION, c); 
 				if (*optarg == '\0') {
@@ -273,7 +275,7 @@ int main(int argc, char **argv, char **envp)
 					(make_shared <Dynamic_Dependency>
 					 (0,
 					  make_shared <Direct_Dependency>
-					  (F_NEWLINE_SEPARATED, 
+					  (1 << flag_get_index(c), 
 					   Place_Param_Target
 					   (Type::FILE, Place_Name(optarg, place)))));
 				break;

@@ -1,0 +1,2 @@
+main.stu:3:6: flag '-0' must not be used
+main.stu:3:3: in copy rule using '=' for target 'A'

@@ -1,0 +1,23 @@
+#
+# A longer example of NUL-separated dynamic dependencies with the
+# flag '-0'.  
+#
+# This is also an example of parameters contained in double quotes. 
+#
+
+@all:  A [ -0 list.files ]; 
+
+A = {correct}
+
+>list.files
+{
+	seq 1 99 | 
+		sed -e 's,^,list.File ,' |
+		tr '\n' '\0'
+}
+
+>"list.File $k"
+{
+	echo "File no. $k" 
+}
+

@@ -1,0 +1,17 @@
+@all:  [ -0 list.files ] ;
+
+>list.files
+{
+	printf 'aaa\0'
+	printf 'bbb\0'
+	printf 'ccc\0'
+	printf 'A\0'
+}
+
+aaa { exit 1 }
+bbb { exit 1 }
+ccc { exit 1 }
+
+A {
+	touch A
+}

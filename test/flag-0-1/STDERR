@@ -1,0 +1,3 @@
+B:1:1: filename must not be empty
+main.stu:9:2: in zero-separated dynamic dependency declared with flag '-0'
+main.stu:4:9: [B] is needed by 'A'

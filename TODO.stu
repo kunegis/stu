@@ -1,21 +1,11 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# Flag -0 for NUL-separated dynamic dependencies.  
-#
-
-A: [ -0 <B ] { xargs -0 ... }
-
-#
-# Option -0 
-#
-
-#
 # Make 
 #
 #    A = -o B ;
 #
-# work:
+# work:   [2.4]
 #   * Fail when both A and B are not present
 #   * Succeed when A is present and B is not
 #   * Copy the file when B is present using the usual rules
@@ -30,11 +20,8 @@ A: [ -0 <B ] { xargs -0 ... }
 #
 
 #
-# String multiplication.  String multiplication is to work both with the
-# binary operator '*' as well with juxtaposition.  Juxtaposition is
-# backward incompatible, as in Version 1 strings like "A[B]" where
-# interpreted as two dependencies, and with it they will be interpreted
-# as one. 
+# Concatenation.  Concatenation is to work both with the
+# binary operator '*' as well with juxtaposition.     [2.5]
 #
 
 # - implement compound dependencies
@@ -290,8 +277,6 @@ $ stu '+o A'
 # is equivalent to
 
 $ stu -g A
-
-# In this example, '\' is the negation operator. 
 
 #
 # Disable flags with '+' options

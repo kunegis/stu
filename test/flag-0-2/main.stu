@@ -1,0 +1,15 @@
+# An empty line within a -0 file:  Error because filenames must not be empty.  
+
+A: [ -0 B ]
+{
+	touch A
+}
+
+>B {
+	printf 'X\0'
+	printf '\0' 
+	printf 'Y\0'
+}
+
+X { touch X }
+Y { touch Y }

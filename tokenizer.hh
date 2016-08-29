@@ -114,7 +114,7 @@ private:
 	 * on other errors, including on empty names.  */ 
 	shared_ptr <Place_Name> parse_name();
 
-	/* Parse a parameter starting with '$'.  Return whether a
+/* Parse a parameter starting with '$'.  Return whether a
 	 * parameter was parsed (always TRUE).  The current position
 	 * must be on the 
 	 * '$' character, not after it.  If a parameter is found, write
@@ -801,7 +801,7 @@ bool Tokenizer::is_flag_char(char c)
 	/* These correspond to persistent, optional and trivial
 	 * dependencies, respectively.  They were '!', '?' and '&'
 	 * formerly.  'n' is new.  */
-	return c == 'p' || c == 'o' || c == 't' || c == 'n';
+	return c == 'p' || c == 'o' || c == 't' || c == 'n' || c == '0';
 }
 
 void Tokenizer::parse_version(string version_req, 

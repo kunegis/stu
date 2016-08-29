@@ -18,6 +18,7 @@ x   Incompatible
 List of options
 ===============
 
+-0  S      Pass a \0-separated dynamic dependency 
 -a  S      Consider trivial dependencies to be non-trivial
 -b  .   x  Enable backups (GNU Make: compatibility)
 -B  .   G  Re-make all

@@ -805,8 +805,8 @@ bool Tokenizer::is_flag_char(char c)
 }
 
 void Tokenizer::parse_version(string version_req, 
-			  const Place &place_version,
-			  const Place &place_percent) 
+			      const Place &place_version,
+			      const Place &place_percent) 
 {
 	/* Note:  there may be any number of version statements in Stu
 	 * (in particular from multiple source files), so we don't keep
@@ -840,13 +840,14 @@ void Tokenizer::parse_version(string version_req,
 
 	return; 
 
- wrong_version:
-	{
+ wrong_version: {
 		place_version <<
-			fmt("requested version %s using %s%%version%s is incompatible with this Stu's version %s%s%s",
+			fmt("requested version %s using %s%%version%s "
+			    "is incompatible with this Stu's version %s%s%s",
 			    name_format_word(version_req),
 			    Color::word, Color::end,
 			    Color::word, STU_VERSION, Color::end);
+		explain_version();
 		throw ERROR_LOGICAL;
 	}
 

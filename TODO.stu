@@ -25,6 +25,10 @@ A: [ -0 <B ] { xargs -0 ... }
 #
 
 #
+# Maybe enable explanations by default?
+#
+
+#
 # String multiplication.  String multiplication is to work both with the
 # binary operator '*' as well with juxtaposition.  Juxtaposition is
 # backward incompatible, as in Version 1 strings like "A[B]" where

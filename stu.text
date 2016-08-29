@@ -740,7 +740,7 @@ SIGNALS
               jobs.  Multiple SIGUSR1 signals sent in succession may result in
               output only printed once.
 
-COMPATIBILITY
+CONFORMING TO
        The Stu language is unique to this implementation,  and  the  man  page
        serves as the reference for its syntax.
 
@@ -792,7 +792,7 @@ EXAMPLES
 
            stu -C '-o X' # Re-build file 'X' only if it already exists
            stu -C '[X]' # Build all files given in file 'X'
-           stu  -C '%version 1.7' # Make sure Stu is compatible with the given
+           stu  -C '%version 2.7' # Make sure Stu is compatible with the given
        version
 
        The -F option allows to define rules on the command line:
@@ -801,14 +801,12 @@ EXAMPLES
            stu -F 'A;' # Check that the file 'A' exists
 
 BUGS
-       The argument to the -j option (number of jobs to run  in  parallel)  is
-       mandatory,  as  opposed  to the behavior of GNU Make, where no argument
-       means to run as many jobs in parallel as possible.
+       Filenames in Stu are literal.  Stu does not recognize it when two  dif‐
+       ferent names refer to the same file.
 
-       Files read as dynamic dependencies are parsed using the full  Stu  syn‐
-       tax,  meaning  that  certain characters must be quoted in them.  Future
-       versions of Stu may support newline-seperated file lists,  as  well  as
-       NUL-separated file lists.
+       The  argument  to  the -j option (number of jobs to run in parallel) is
+       mandatory, as opposed to the behavior of GNU Make,  where  no  argument
+       means to run as many jobs in parallel as possible.
 
        Rule-level recursion is not allowed.  This excludes a recursive parsing
        of C-like dependencies.  Rule-level recursion would be easy to  enable,
@@ -830,17 +828,14 @@ BUGS
        only USE_MTIM option is set on compilation.  (Which it is by default on
        Linux.)
 
-       Filenames  in Stu are literal.  Stu does not recognize it when two dif‐
-       ferent names refer to the same file.
-
-       Using optional dependencies may make a second  invocation  of  Stu  not
-       output  'Nothing  to be done', as the optional dependency may have been
+       Using  optional  dependencies  may  make a second invocation of Stu not
+       output 'Nothing to be done', as the optional dependency may  have  been
        created by subsequent targets.
 
 AUTHOR
        Jérôme Kunegis <kunegis@uni-koblenz.de>
 
 SEE ALSO
-       make(1)
+       make(1) cook(1)
 
-stu-2.3.1                         August 2016                           STU(1)
+stu-2.3.2                         August 2016                           STU(1)

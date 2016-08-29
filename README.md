@@ -150,7 +150,7 @@ in referring to kitchen-related verbs, and also honours the author of
 the original Unix Make, Stuart Feldman. 
 
 Stu was written in 2014/2015/2016 by Jérôme Kunegis at the University of
-Koblenz-Landau.  
+Koblenz-Landau, with help from other contributors. 
 
 Stu is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free

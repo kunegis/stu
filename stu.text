@@ -587,7 +587,7 @@ TOKENIZATION
            '     Quote; without escape sequences
            "     Quote; with escape sequences
            :     Separator for rule definition
-           ;     For rules without body, end of variable declaration
+           ;     For rules without command, end of variable declaration
            -     Prefix character for flag, followed by a single character
            $     Parameter
            @     Transient target marker
@@ -635,7 +635,7 @@ TOKENIZATION
 
        The following characters are reserved for future extension:
 
-           * \ | ,
+           * \ | , & ! ?
 
 SYNTAX
        The  syntax of a Stu file is given in the following Yacc-like notation.
@@ -838,4 +838,4 @@ AUTHOR
 SEE ALSO
        make(1) cook(1)
 
-stu-2.3.3                         August 2016                           STU(1)
+stu-2.3.4                         August 2016                           STU(1)

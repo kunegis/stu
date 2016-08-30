@@ -52,7 +52,7 @@ OPTIONS
               Warning:   When  jobs are not put in the background, Stu may not
               be able to correctly kill all the indirect  child  processes  of
               jobs,  and  this may result in processes continuing to run after
-              Stu has terminated.  (This may happen when St itself  is  inter‐
+              Stu has terminated.  (This may happen when Stu itself is  inter‐
               rupted,  or  when  Stu  interrupts a job because another job has
               failed.)  Also, this will lead to unpredictable behavior if jobs
               read from their STDIN (except when input redirection is used).
@@ -864,4 +864,4 @@ AUTHOR
 SEE ALSO
        make(1) cook(1)
 
-stu-2.3.6                         August 2016                           STU(1)
+stu-2.3.7                         August 2016                           STU(1)

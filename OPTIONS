@@ -69,6 +69,3 @@ List of options
 -Y  S      Enable color output
 -z  S      Output statistics
 
-The following options could conceivably be set externally:
-
--E -Q -s -w -x -y -z

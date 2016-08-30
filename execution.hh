@@ -1757,7 +1757,8 @@ void Execution::read_dynamic_dependency(Stack avoid,
 				}
 				dynamic_pointer_cast <Direct_Dependency> (dep)
 					->place_param_target.place_name.places[0] <<
-					fmt("dynamic dependency %s must not contain parametrized dependencies",
+					fmt("dynamic dependency %s must not contain "
+					    "parametrized dependencies",
 					    target.format_word());
 				Target target_base= target;
 				target_base.type= target.type.get_base();
@@ -1876,14 +1877,14 @@ void Execution::warn_future_file(struct stat *buf,
 	}
 }
 
+/* 
+ * The following traverses the execution graph backwards until it finds
+ * the root. We always take the first found parent, which is an
+ * arbitrary choice, but it doesn't matter here *which* dependency path
+ * we point out as an error, so the first one it is.  
+ */
 void Execution::print_traces(string text) const
 {	
-	/* The following traverses the execution graph backwards until it
-	 * finds the root. We always take the first found parent, which
-	 * is an arbitrary choice, but it doesn't matter here *which*
-	 * dependency path we point out as an error, so the first one
-	 * it is.  */
-
 	const Execution *execution= this; 
 
 	/* If the error happens directly for the root execution, it was
@@ -2151,7 +2152,8 @@ bool Execution::deploy(const Link &link,
 			const Place &place_flag= 
 				link_child.dependency->get_place_flag(I_PERSISTENT); 
 			place_variable << 
-				fmt("variable dependency %s must not be declared as persistent dependency",
+				fmt("variable dependency %s must not be declared "
+				    "as persistent dependency",
 				    dynamic_variable_format_word(target_child.name)); 
 			place_flag << fmt("using %s",
 					   multichar_format_word("-p")); 
@@ -2159,7 +2161,8 @@ bool Execution::deploy(const Link &link,
 			const Place &place_flag= 
 				link_child.dependency->get_place_flag(I_OPTIONAL); 
 			place_variable << 
-				fmt("variable dependency %s must not be declared as optional dependency",
+				fmt("variable dependency %s must not be declared "
+				    "as optional dependency",
 				    dynamic_variable_format_word(target_child.name)); 
 			place_flag << fmt("using %s",
 					  multichar_format_word("-o")); 
@@ -2168,7 +2171,8 @@ bool Execution::deploy(const Link &link,
 			const Place &place_flag= 
 				link_child.dependency->get_place_flag(I_TRIVIAL); 
 			place_variable << 
-				fmt("variable dependency %s must not be declared as trivial dependency",
+				fmt("variable dependency %s must not be declared "
+				    "as trivial dependency",
 				    dynamic_variable_format_word(target_child.name)); 
 			place_flag << fmt("using %s",
 					   multichar_format_word("-t")); 

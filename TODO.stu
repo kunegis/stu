@@ -22,6 +22,16 @@
 #
 
 #
+# Rethink the process group mechanism:  set a single PGID for Stu
+# itself, and us kill(2) just once on interruption.  This may also make
+# Stu completely async-signal safe, by storing on filenames of targets
+# to be read from the signal handler.  This is also what bash(1) seems
+# to be doing.  On the other hand, this may interfere with shell child
+# processes that also do this, and in turn not kill them when we want it
+# to. 
+#
+
+#
 # Concatenation.  Concatenation is to work both with the
 # binary operator '*' as well with juxtaposition.     [2.5]
 #

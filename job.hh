@@ -447,14 +447,15 @@ pid_t Job::start_copy(string target,
 }
 
 
+/* 
+ * The main loop of Stu.  We wait for the two productive signals SIGCHLD
+ * and SIGUSR1. 
+ * 	
+ * When this function is called, there is always at least one child
+ * process running. 
+ */
 pid_t Job::wait(int *status)
 {
-	/* The main loop of Stu.  We wait for the two productive signals
-	 * SIGCHLD and SIGUSR1. */ 
-	
-	/* When this function is called, there is always at least one
-	 * child process running. */ 
-
  begin: 	
 	/* First, try wait() without blocking */ 
 	pid_t pid= waitpid(-1, status, WNOHANG);
@@ -546,10 +547,12 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 	assert(count_jobs_exec >= count_jobs_success + count_jobs_fail); 
 
 	if (! allow_unterminated_jobs) 
-		printf("STATISTICS  number of jobs started = %u (%u succeeded, %u failed)\n", 
+		printf("STATISTICS  number of jobs started = %u "
+		       "(%u succeeded, %u failed)\n", 
 		       count_jobs_exec, count_jobs_success, count_jobs_fail); 
 	else 
-		printf("STATISTICS  number of jobs started = %u (%u succeeded, %u failed, %u running)\n", 
+		printf("STATISTICS  number of jobs started = %u "
+		       "(%u succeeded, %u failed, %u running)\n", 
 		       count_jobs_exec, count_jobs_success, count_jobs_fail, 
 		       count_jobs_exec - count_jobs_success - count_jobs_fail); 
 
@@ -603,12 +606,14 @@ void Job::handler_termination(int sig)
 	 * delivered after this handler is done. */ 
 }
 
+/* 
+ * Do nothing -- the handler only exists because POSIX says that a
+ * signal may be discarded by the kernel if doesn't have a signal
+ * handler for it, and then it may not be possible to wait for that
+ * signal. 
+ */  
 void Job::handler_productive(int, siginfo_t *, void *)
 {
-	/* Do nothing -- the handler only exists because POSIX says that
-	 * a signal may be discarded by the kernel if doesn't have a
-	 * signal handler for it, and then it may not be possible to
-	 * wait for that signal. */ 
 }
 
 Job::Signal_Blocker::Signal_Blocker() 
@@ -635,24 +640,30 @@ Job::Signal_Blocker::~Signal_Blocker()
 	}
 }
 
+/* 
+ * This function is called once on Stu startup from a static
+ * constructor, and sets up all signals.   
+ *
+ * There are two types of signals handled by Stu:
+ *    - Termination signals which make programs abort.  Stu must catch
+ *      them in order to stop its child processes, and will then raise
+ *      them again.  
+ *    - Productive signals that actually inform the Stu process of
+ *      something:   
+ *         + SIGCHLD (to know when child processes are done) 
+ *         + SIGUSR1 (to output statistics)
+ *      These signals are processed asynchronously, i.e., they are
+ *      blocked, and then waited for specifically.   
+ * 
+ * The signals SIGCHLD and SIGUSR1 are the signals that we wait for in
+ * the main loop. They are blocked.  At the same time, the blocked
+ * signal must have a signal handler (which can do nothing), as
+ * otherwise POSIX allows the signal to be discarded.  Thus, we setup a
+ * no-op signal handler.  (Note that Linux does not discard such
+ * signals, while FreeBSD does.)  
+ */  
 Job::Signal::Signal()
 {
-	/* This function is called once on Stu startup from a static
-	 * constructor, and sets up all signals. */ 
-
-	/* 
-	 * There are two types of signals handled by Stu:
-	 *    - Termination signals which make programs abort.  Stu
-	 *      must catch them in order to stop its child processes,
-	 *      and will then raise them again. 
-	 *    - Productive signals that actually inform the Stu process
-	 *      of something:  
-	 *         + SIGCHLD (to know when child processes are done) 
-	 *         + SIGUSR1 (to output statistics)
-	 *      These signals are processed asynchronously, i.e., they
-	 *      are blocked, and then waited for specifically.  
-	 */
-
 	/* 
 	 * Termination signals 
 	 */
@@ -693,13 +704,6 @@ Job::Signal::Signal()
 	 * Productive signals
 	 */
 	
-	/* The signals SIGCHLD and SIGUSR1 are the signals that we wait
-	 * for in the main loop. They are blocked.  At the same time,
-	 * the blocked signal must have a signal handler (which can do
-	 * nothing), as otherwise POSIX allows the signal to be
-	 * discarded.  Thus, we setup a no-op signal handler.  (Note
-	 * that Linux does not discard such signals, while FreeBSD does.)  */ 
-
 	/* We have to use sigaction() rather than signal() as only
 	 * sigaction() guarantees that the signal can be queued, 
 	 * as per POSIX.  */
@@ -731,18 +735,15 @@ Job::Signal::Signal()
 	}
 }
 
+/* Passing (-pid) to kill() kills the whole process group with PGID
+ * (pid).  Since we set each child process to have its PID as its
+ * process group ID, this kills the child and all its children
+ * (recursively), up to programs that change this PGID of processes,
+ * such as Stu and shells, which have to kill their children explicitly
+ * in their signal handlers.  */ 
 void Job::kill(pid_t pid)
 {
 	assert(pid > 1); 
-
-	/* Passing (-pid) to kill() kills the whole process
-	 * group with PGID (pid).  Since we set each child
-	 * process to have its PID as its process group ID,
-	 * this kills the child and all its children
-	 * (recursively), up to programs that change this PGID
-	 * of processes, such as Stu and shells, which have to
-	 * kill their children explicitly in their signal
-	 * handlers.  */ 
 
 	/* In background mode, kill the process group, otherwise just
 	 * the process.  */

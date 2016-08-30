@@ -9,8 +9,13 @@ A: B { cp B A }
 EOF
 exitcode="$?"
 
-[ "$exitcode" = 0 ] || { echo >&2 '*** Exit code' ; exit 1 ; }
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** Expected exit code 0, not '$exitcode'" 
+	exit 1
+}
+
 [ -r list.err ] && [ ! -s list.err ] || { echo >&2 '*** stderr' ; exit 1 ; }
+
 grep -qE '^correct$' A || { echo '*** Content' ; exit 1 ; }
 
 exit 0

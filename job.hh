@@ -83,6 +83,8 @@ public:
 	 * the argument is set, there must not be unterminated jobs.  */ 
 	static void print_statistics(bool allow_unterminated_jobs= false); 
 
+	static void kill(pid_t pid); 
+	
 	/* Block interrupt signals for the lifetime of an object of this type. 
 	 * Note that the mask of blocked signals is inherited over
 	 * exec(), so we must unblock signals also when starting child
@@ -201,11 +203,13 @@ pid_t Job::start(string command,
 	int pid_child= pid;
 	if (pid_child == 0)
 		pid_child= getpid();
-	if (0 > setpgid(pid_child, pid_child)) {
-		/* This should only fail when we are the parent and the
-		 * child has already quit.  In that case we can ignore
-		 * the error, since the child is dead anyway, so there
-		 * is no need to kill it in the future */ 
+	if (! option_no_background) {
+		if (0 > setpgid(pid_child, pid_child)) {
+			/* This should only fail when we are the parent and the
+			 * child has already quit.  In that case we can ignore
+			 * the error, since the child is dead anyway, so there
+			 * is no need to kill it in the future */ 
+		}
 	}
 
 	if (pid == 0) {
@@ -342,11 +346,15 @@ pid_t Job::start(string command,
 			close(fd_output); 
 		}
 
-		/* Input redirection */
-		if (filename_input != "") {
-			int fd_input= open(filename_input.c_str(), O_RDONLY); 
+		/* Input redirection:  from the given file, or from
+		 * /dev/zero (when BACKGROUND is set)  */
+		if (filename_input != "" || ! option_no_background) {
+			const char *name= filename_input == ""
+				? "/dev/null"
+				: filename_input.c_str(); 
+			int fd_input= open(name, O_RDONLY); 
 			if (fd_input < 0) {
-				perror(filename_input.c_str());
+				perror(name);
 				_Exit(127); 
 			}
 			assert(fd_input >= 3); 
@@ -397,8 +405,10 @@ pid_t Job::start_copy(string target,
 	int pid_child= pid;
 	if (pid_child == 0)
 		pid_child= getpid();
-	if (0 > setpgid(pid_child, pid_child)) {
-		/* no-op */ 
+	if (! option_no_background) {
+		if (0 > setpgid(pid_child, pid_child)) {
+			/* no-op */ 
+		}
 	}
 
 	if (pid == 0) {
@@ -718,6 +728,47 @@ Job::Signal::Signal()
 	if (0 != sigprocmask(SIG_BLOCK, &set_productive, nullptr)) {
 		perror("sigprocmask");
 		exit(ERROR_FATAL); 
+	}
+}
+
+void Job::kill(pid_t pid)
+{
+	assert(pid > 1); 
+
+	/* Passing (-pid) to kill() kills the whole process
+	 * group with PGID (pid).  Since we set each child
+	 * process to have its PID as its process group ID,
+	 * this kills the child and all its children
+	 * (recursively), up to programs that change this PGID
+	 * of processes, such as Stu and shells, which have to
+	 * kill their children explicitly in their signal
+	 * handlers.  */ 
+
+	/* In background mode, kill the process group, otherwise just
+	 * the process.  */
+	pid_t pid_passed= (! option_no_background) ? -pid : pid; 
+
+	/* We send first SIGTERM, then SIGCONT */ 
+	
+	if (0 > ::kill(pid_passed, SIGTERM)) {
+		if (errno == ESRCH) {
+			/* The child process is a zombie.  This
+			 * means the child process has already
+			 * terminated but we haven't wait()ed
+			 * for it yet. */ 
+		} else {
+			write_safe(2, "*** Error: Kill\n"); 
+			/* Note:  Don't call exit() yet; we want all
+			 * children to be killed. */ 
+		}
+	}
+
+	if (0 > ::kill(pid_passed, SIGCONT)) {
+		if (errno == ESRCH) {
+			/* ... */
+		} else {
+			write_safe(2, "*** Error: Kill\n"); 
+		}
 	}
 }
 

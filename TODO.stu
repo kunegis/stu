@@ -1,6 +1,19 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
+# On non-parallel mode, have better handling of the child process.
+# E.g. be able to kill the child process directly with Ctrl-C, and pass
+# it input.  For instance, running
+#
+#	$ stu -F '@all { cat }'
+#
+# should allow input to be written, as well as ^C and ^D to work.
+#
+# Possible solution:  don't assign a new process group to child
+# processes. 
+#
+
+#
 # Make 
 #
 #    A = -o B ;

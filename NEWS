@@ -11,6 +11,19 @@ made, which are documented in the file MIGRATION.
 
 ------------------------------------------------------------------------
 
+2016-08-30  Version 2.3.6
+
+* Stu now starts all commands with their standard input redirected from
+  /dev/null, except for command whose rule has an input redirection.
+  This behavior, along with the usage of a separate process group for
+  each job, can be disabled with the '-B' option.  Thus, jobs will now
+  systematically get a STDIN of size zero instead of (erratically)
+  getting Stu's STDIN.  If jobs should be able to read Stu's STDIN, then
+  '-B' has to be used.  For technical reasons, this cannot be used in
+  conjunction with process groups, and as a result, it may happen that
+  indirect child processes (i.e., grandchild processes) may not be
+  terminated correctly by Stu when -B is used. 
+
 2016-08-29  Version 2.3
 
 * A flag and an option '-0' is now available for \0-separated dynamic

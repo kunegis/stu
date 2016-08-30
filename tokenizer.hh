@@ -289,17 +289,26 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				}
 				len += r;
 			}
+
+			/* Close the input file, but not if it is STDIN */ 
 			if (filename != "") {
 				if (fclose(file) != 0) {
 					goto error_close;
 				}
+			} else {
+				if (ferror(file))
+					goto error_close; 
 			}
+
 			in= mem; 
 			in_size= len;
 		}
 
-		if (0 > close(fd)) 
-			goto error;
+		if (filename != "") {
+			assert(fd >= 3); 
+			if (0 > close(fd)) 
+				goto error;
+		}
 
 		{
 			Tokenizer tokenizer(traces, filenames, includes,
@@ -321,12 +330,20 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		}
 
 	return_close:
-		if (0 > close(fd)) 
-			goto error; 
+		if (filename != "") {
+			assert(fd >= 3); 
+			if (0 > close(fd)) 
+				goto error;
+		} else
+			assert(fd == 0); 
 		return;
 
 	error_close:
-		close(fd);
+		if (filename != "") {
+			assert(fd >= 3); 
+			close(fd);
+		} else
+			assert(fd == 0); 
 	error:
 		const char *filename_diagnostic= filename != ""
 			? filename.c_str() : "<stdin>";

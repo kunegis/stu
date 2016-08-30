@@ -22,8 +22,13 @@ exitcode="$?"
 
 echo >&2 RUN '(2)'
 
-rm -f ?
+rm -f ? || exit 1
  
+if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" != 0 ]; then
+	echo >&2 "$0: *** There are still processes running from previously (2b)"
+	exit 1
+fi
+
 ../../stu.test -k >list.out 2>list.err &
 pid="$!"
 
@@ -34,12 +39,16 @@ if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" = 0 ]; then
 	exit 1
 fi
 
+ps -fA | grep "$pid"
 kill -TERM "$pid"  || {
 	echo >&2 "$0: *** Kill (2)"
 	exit 1
 }
 
 sleep 1 || exit 1
+
+ps -fA | grep  74634275
+ps -fA | grep  stu
 
 if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" != 0 ]; then
 	echo >&2 "$0: *** Stu is still running (2b)"

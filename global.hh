@@ -9,6 +9,9 @@
 /* The -a option (consider all trivial dependencies to be non-trivial) */ 
 static bool option_nontrivial= false;
 
+/* The -B option (don't use process groups and </dev/null) */
+static bool option_no_background= false;
+
 /* The -E option (explain error messages) */
 static bool option_explain= false;
 
@@ -41,7 +44,6 @@ static bool option_individual= false;
 
 /* The -z option (output statistics) */
 static bool option_statistics= false;
-
 
 /* Determines how commands are output */
 enum class Output {

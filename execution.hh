@@ -1436,29 +1436,8 @@ void job_terminate_all()
 	     i != Execution::executions_by_pid.end();  ++i) {
 
 		const pid_t pid= i->first;
-		
-		assert(pid > 1); 
 
-		/* Passing (-pid) to kill() kills the whole process
-		 * group with PGID (pid).  Since we set each child
-		 * process to have its PID as its process group ID,
-		 * this kills the child and all its children
-		 * (recursively), up to programs that change this PGID
-		 * of processes, such as Stu and shells, which have to
-		 * kill their children explicitly in their signal
-		 * handlers.  */ 
-		if (0 > kill(-pid, SIGTERM)) {
-			if (errno == ESRCH) {
-				/* The child process is a zombie.  This
-				 * means the child process has already
-				 * terminated but we haven't wait()ed
-				 * for it yet. */ 
-			} else {
-				write_safe(2, "*** Error: Kill\n"); 
-				/* Note:  Don't call exit() yet; we want all
-				 * children to be killed. */ 
-			}
-		}
+		Job::kill(pid); 
 	}
 
 	bool terminated= false;

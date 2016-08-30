@@ -39,7 +39,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-const char OPTIONS[]= "0:ac:C:Ef:F:ghj:JkKm:M:n:o:p:PqQsvVwxyYz"; 
+const char OPTIONS[]= "0:Bac:C:Ef:F:ghj:JkKm:M:n:o:p:PqQsvVwxyYz"; 
 
 /* The output of the help (-h) option.  The following strings do not
  * contain tabs, but only space characters.  */   
@@ -50,6 +50,7 @@ const char HELP[]=
 	"Options:\n"						       
 	"  -0 FILENAME      Read \\0-separated file targets from the given file\n"
 	"  -a               Treat all trivial dependencies as non-trivial\n"          
+	"  -B               Disable process groups and </dev/null for all jobs\n"
 	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"      
 	"  -C EXPRESSIONS   Pass a target in full Stu syntax\n"		              
 	"  -E               Explain error messages\n"                                 
@@ -126,7 +127,8 @@ int main(int argc, char **argv, char **envp)
 	/* Refuse to run when $STU_STATUS is set */ 
 	const char *const stu_status= getenv("STU_STATUS");
 	if (stu_status != nullptr) {
-		print_error(frmt("Refusing to run recursive Stu; unset %s$STU_STATUS%s to circumvent",
+		print_error(frmt("Refusing to run recursive Stu; "
+				 "unset %s$STU_STATUS%s to circumvent",
 				 Color::word, Color::end));
 		exit(ERROR_FATAL); 
 	}
@@ -157,6 +159,7 @@ int main(int argc, char **argv, char **envp)
 			switch (c) {
 
 			case 'a': option_nontrivial= true;     break;
+			case 'B': option_no_background= true;  break;
 			case 'E': option_explain= true;        break;
 			case 'g': option_nonoptional= true;    break;
 			case 'h': fputs(HELP, stdout);         exit(0);
@@ -314,7 +317,7 @@ int main(int argc, char **argv, char **envp)
 			}
 		}
 
-		order_vec= (order == Order::RANDOM); 
+		order_vec= (order == Order::RANDOM);
 
 		/* Targets passed on the command line, outside of options */ 
 		for (int i= optind;  i < argc;  ++i) {

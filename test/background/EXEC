@@ -1,0 +1,79 @@
+#! /bin/sh
+#
+# Test that non-background processes don't hang.
+#
+
+#
+# (1) Non-background
+#
+
+for arg in '-B' '-B -j1' '-B -j2' ; do
+
+# Only '1' is written to 'X'
+
+echo "(1) '$arg'"
+
+rm -f X || exit 1
+
+{ echo 1 ; sleep 5 ; echo 2 ; sleep 9999 ; } |
+	../../stu.test $arg -F '@all{cat >X}' >list.out 2>list.err &
+pid="$!"
+echo "pid='$pid'"
+
+sleep 1
+kill -INT "$pid"
+
+grep -qF 1 X || {
+	echo >&2 "*** (1) X must contain '1'"
+	exit 1
+}
+
+grep -qF 2 X && {
+	echo >&2 "*** (1) X must not contain '1'"
+	exit 1
+}
+
+done
+
+#
+# (2) -j2:  background
+#
+
+for arg in '' '-j1' '-j2' ; do
+
+echo "(2) '$arg'"
+
+rm -f X || exit 1
+
+# This must return immediately, because stdin is set to /dev/null, and
+# nothing is written to 'X'. 
+
+echo Bla | ../../stu.test $arg -F '@all{sleep 1 ; cat >X}' >list.out 2>list.err &
+pid="$!"
+echo "pid='$pid'"
+
+ps -fe | grep stu
+
+wait "$pid"
+exitcode="$?"
+
+# 'cat' returned without error 
+[ "$exitcode" = 0 ] || {
+	echo >&2 "*** (2) Expected exit 0, not $exitcode"
+	exit 1
+}
+
+[ -r X ] && [ ! -s X ] || {
+	echo >&2 "*** (2) Expected 'X' to be empty"
+	exit 1
+}
+
+done
+
+#
+# End
+#
+
+rm -f X || exit 1
+
+exit 0

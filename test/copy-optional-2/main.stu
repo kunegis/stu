@@ -1,0 +1,12 @@
+A: X  B
+{
+	cp B A
+}
+
+# B is present and C is not:  succeed. 
+B = -o C;
+
+X {
+	touch B
+	touch X
+}

@@ -1,17 +1,6 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# Make 
-#
-#    A = -o B ;
-#
-# work:   [2.4]
-#   * Fail when both A and B are not present
-#   * Succeed when A is present and B is not
-#   * Copy the file when B is present using the usual rules
-#
-
-#
 # Proper job control.
 #
 # Support foreground process groups:  If only a single job is running,

@@ -82,7 +82,8 @@ public:
 	 * flag is not used. */
 	Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	     shared_ptr <Place_Name> place_name_source_,
-	     const Place &place_persistent);
+	     const Place &place_persistent,
+	     const Place &place_optional); 
 
 	/* Whether the rule is parametrized */ 
 	bool is_parametrized() const {
@@ -236,7 +237,8 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 
 Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	   shared_ptr <Place_Name> place_name_source_,
-	   const Place &place_persistent)
+	   const Place &place_persistent,
+	   const Place &place_optional)
 	:  place_param_targets{place_param_target_},
 	   place(place_param_target_->place),
 	   filename(*place_name_source_),
@@ -252,8 +254,11 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 		dependency->flags |= F_PERSISTENT;
 		dependency->places[I_PERSISTENT]= place_persistent;
 	}
+	if (! place_optional.empty()) {
+		dependency->flags |= F_OPTIONAL;
+		dependency->places[I_OPTIONAL]= place_optional;
+	}
 
-	/* Only the copy filename, with the F_COPY flag */
 	dependencies.push_back(dependency);
 }
 

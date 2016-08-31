@@ -130,26 +130,23 @@ private:
 	 const vector <shared_ptr <Place_Param_Target> > &targets);
 
 	/* If the next token is of type T, return it, otherwise return
-	 * null.  Must not be at the end of the token list.  */ 
+	 * null.  Also return null when at the end of the token list.  */
 	template <typename T>
 	shared_ptr <T> is() const {
-		return dynamic_pointer_cast <T> (*iter); 
+		if (iter == tokens.end())
+			return nullptr;
+		else 
+			return dynamic_pointer_cast <T> (*iter); 
 	}
 
 	/* Whether the next token is the given operator */ 
 	bool is_operator(char op) const {
-		return 
-			iter != tokens.end() &&
-			is <Operator> () &&
-			is <Operator> ()->op == op;
+		return is <Operator> () && is <Operator> ()->op == op;
 	}
 
 	/* Whether the next token is the given flag token */ 
 	bool is_flag(char flag) const {
-		return 
-			iter != tokens.end() &&
-			is <Flag_Token> () &&
-			is <Flag_Token> ()->flag == flag;
+		return is <Flag_Token> () && is <Flag_Token> ()->flag == flag;
 	}
 
 	/* Check whether the current parenthesis-like token is concatenating,
@@ -256,8 +253,7 @@ shared_ptr <Rule> Parser::parse_rule()
 			type= Type::TRANSIENT;
 		}
 		
-		if (iter == tokens.end() ||
-		    ! is <Name_Token> ()) {
+		if (! is <Name_Token> ()) {
 			if (! place_output_new.empty()) {
 				if (iter == tokens.end()) {
 					place_end << "expected a filename";
@@ -457,118 +453,132 @@ shared_ptr <Rule> Parser::parse_rule()
 			/* No redirected output is checked later */ 
 			is_hardcode= true; 
 		} else {
-			Place place_flag_exclam;
+			Place place_flag_persistent;
+			Place place_flag_optional; 
 
-			while (is_flag('p')) {
-				place_flag_exclam= (*iter)->get_place();
-				++iter;
-			}
-
-			if ((name_copy= is <Name_Token> ())) {
-				/* Copy rule */ 
-				++iter;
-
-				/* Check that the source file contains
-				 * only parameters that also appear in
-				 * the target */
-				set <string> parameters;
-				for (auto &parameter:
-					     place_param_targets[0]->place_name.get_parameters()) {
-					parameters.insert(parameter); 
-				}
-				for (unsigned jj= 0;  jj < name_copy->get_n();  ++jj) {
-					string parameter= 
-						name_copy->get_parameters()[jj]; 
-					if (parameters.count(parameter) == 0) {
-						name_copy->places[jj] <<
-							fmt("parameter %s must not appear in copied file %s", 
-							    prefix_format_word(parameter, "$"), 
-							    name_copy->format_word());
-						place_param_targets[0]->place << 
-							fmt("because it does not appear in target %s",
-							    place_param_targets[0]->format_word());
-						throw ERROR_LOGICAL;
-					}
-				}
-
-				if (iter == tokens.end()) {
-					place_end << fmt("expected %s", char_format_word(';'));
-					name_copy->get_place() << 
-						fmt("after copy dependency %s",
-						    name_copy->format_word()); 
-					throw ERROR_LOGICAL; 
-				}
-				if (! is_operator(';')) {
-					(*iter)->get_place() <<
-						fmt("expected %s", char_format_word(';'));
-					name_copy->place << 
-						fmt("after copy dependency %s",
-						    name_copy->format_word()); 
-					throw ERROR_LOGICAL; 
-				}
-				++iter;
-
-				if (! place_output.empty()) {
-					place_output << 
-						fmt("output redirection using %s must not be used",
-						     char_format_word('>'));
+			while (is <Flag_Token> ()) {
+				shared_ptr <Flag_Token> flag= is <Flag_Token> ();
+				if (flag->flag == 'p') {
+					place_flag_persistent= flag->get_place();
+					++iter;
+				} else if (flag->flag == 'o') {
+					place_flag_optional= flag->get_place(); 
+					++iter;
+				} else {
+					flag->get_place()
+						<< fmt("flag %s must not be used",
+						       multichar_format_word
+						       (frmt("-%c", flag->flag))); 
 					place_equal << 
 						fmt("in copy rule using %s for target %s", 
 						    char_format_word('='),
 						    place_param_targets[0]->format_word()); 
 					throw ERROR_LOGICAL;
 				}
+			}
 
-				/* Check that there is just a single
-				 * target */
-				if (place_param_targets.size() != 1) {
-					place_equal <<
-						fmt("there must not be a copy rule using %s",
-						    char_format_word('=')); 
-					place_param_targets[0]->place << 
-						fmt("for multiple targets %s...",
-						    place_param_targets[0]->format_word()); 
-					throw ERROR_LOGICAL; 
+			if (! is <Name_Token> ()) {
+				if (iter == tokens.end()) {
+					(*iter)->get_place_start() << 
+						fmt("expected a filename or %s", 
+						    char_format_word('{')); 
+				} else {
+					(*iter)->get_place_start() << 
+						fmt("expected a filename or %s, not %s", 
+						    char_format_word('{'),
+						    (*iter)->format_start_word()); 
 				}
+				place_equal << fmt("after %s", char_format_word('='));
+				throw ERROR_LOGICAL;
+			}
 
-				if (place_param_targets[0]->type != Type::FILE) {
-					assert(place_param_targets[0]->type == Type::TRANSIENT); 
-					place_equal << fmt("copy rule using %s cannot be used",
-							   char_format_word('='));
-					place_param_targets[0]->place 
-						<< fmt("with transient target %s",
-						       place_param_targets[0]->format_word()); 
+			/* Copy rule */ 
+			name_copy= is <Name_Token> (); 
+			++iter;
+
+			/* Check that the source file contains
+			 * only parameters that also appear in
+			 * the target  */
+			set <string> parameters;
+			for (auto &parameter:
+				     place_param_targets[0]->place_name.get_parameters()) {
+				parameters.insert(parameter); 
+			}
+			for (unsigned jj= 0;  jj < name_copy->get_n();  ++jj) {
+				string parameter= 
+					name_copy->get_parameters()[jj]; 
+				if (parameters.count(parameter) == 0) {
+					name_copy->places[jj] <<
+						fmt("parameter %s must not appear in copied file %s", 
+						    prefix_format_word(parameter, "$"), 
+						    name_copy->format_word());
+					place_param_targets[0]->place << 
+						fmt("because it does not appear in target %s",
+						    place_param_targets[0]->format_word());
 					throw ERROR_LOGICAL;
 				}
+			}
 
-				assert(place_param_targets.size() == 1); 
+			if (iter == tokens.end()) {
+				place_end << fmt("expected %s", char_format_word(';'));
+				name_copy->get_place() << 
+					fmt("after copy dependency %s",
+					    name_copy->format_word()); 
+				throw ERROR_LOGICAL; 
+			}
+			if (! is_operator(';')) {
+				(*iter)->get_place() <<
+					fmt("expected %s", char_format_word(';'));
+				name_copy->place << 
+					fmt("after copy dependency %s",
+					    name_copy->format_word()); 
+				throw ERROR_LOGICAL; 
+			}
+			++iter;
 
-				/* Append target name when source ends
-				 * in slash */
-				append_copy(*name_copy, place_param_targets[0]->place_name); 
-
-				return make_shared <Rule> (place_param_targets[0], name_copy,
-							   place_flag_exclam);
-
-			} else if (iter != tokens.end() && is <Flag_Token> ()) {
-
-				(*iter)->get_place()
-					<< fmt("flag %s must not be used",
-					       multichar_format_word
-					       (frmt("-%c", is <Flag_Token> ()->flag))); 
+			if (! place_output.empty()) {
+				place_output << 
+					fmt("output redirection using %s must not be used",
+					    char_format_word('>'));
 				place_equal << 
 					fmt("in copy rule using %s for target %s", 
 					    char_format_word('='),
 					    place_param_targets[0]->format_word()); 
 				throw ERROR_LOGICAL;
-			} else {
-				(*iter)->get_place_start() << 
-					fmt("expected a filename or %s, not %s", 
-					    char_format_word('{'),
-					    (*iter)->format_start_word()); 
-				place_equal << fmt("after %s", char_format_word('='));
+			}
+
+			/* Check that there is just a single
+			 * target */
+			if (place_param_targets.size() != 1) {
+				place_equal <<
+					fmt("there must not be a copy rule using %s",
+					    char_format_word('=')); 
+				place_param_targets[0]->place << 
+					fmt("for multiple targets %s...",
+					    place_param_targets[0]->format_word()); 
+				throw ERROR_LOGICAL; 
+			}
+
+			/* Check that target is not transient */ 
+			if (place_param_targets[0]->type != Type::FILE) {
+				assert(place_param_targets[0]->type == Type::TRANSIENT); 
+				place_equal << fmt("copy rule using %s cannot be used",
+						   char_format_word('='));
+				place_param_targets[0]->place 
+					<< fmt("with transient target %s",
+					       place_param_targets[0]->format_word()); 
 				throw ERROR_LOGICAL;
 			}
+
+			assert(place_param_targets.size() == 1); 
+
+			/* Append target name when source ends
+			 * in slash */
+			append_copy(*name_copy, place_param_targets[0]->place_name); 
+
+			return make_shared <Rule> (place_param_targets[0], name_copy,
+						   place_flag_persistent,
+						   place_flag_optional);
 		}
 		
 	} else if (is_operator(';')) {
@@ -750,7 +760,7 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 	} 
 
 	/* flag expression */ 
-	if (iter != tokens.end() && is <Flag_Token> ()) {
+	if (is <Flag_Token> ()) {
 		const Flag_Token &flag_token= *is <Flag_Token> (); 
  		const Place place_flag= (*iter)->get_place();
 		const int i_flag= flag_get_index(flag_token.flag); 

@@ -1,0 +1,14 @@
+# An optional copy rule works like a normal rule when the source file is
+# present.
+
+A:  X B
+{
+	cp B A
+}
+
+X {
+	echo correct >C
+	touch X
+}
+
+B = -o C ;

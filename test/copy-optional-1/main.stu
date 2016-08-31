@@ -1,0 +1,3 @@
+# Optional copy rule when both files are absent:  Fail. 
+
+A = -o B;

@@ -429,14 +429,16 @@ FEATURES
        Using  the  equal  sign with a file name creates a copy rule, i.e., the
        given file is copied with the 'cp' command:
 
-           TARGET = [ -p ] SOURCE;
+           TARGET = [ -p | -o ] SOURCE;
 
        By default, Stu will use '/bin/cp' to perform the copy.   This  can  be
        changed  by  setting  the  variable $STU_CP.  If source ends in a slash
        (outside of any parameter value), then Stu will look for  a  file  with
-       the  same  basename  as TARGET in the directory SOURCE.  The dependency
-       SOURCE can be declared a persistent dependency with  -p.   Other  flags
-       are not supported.
+       the same basename as TARGET in the directory SOURCE.  If the persistent
+       flag (-p) is used, the tiemstamp of the source file is  not  verifying,
+       only  its  existence.   If the optional flag (-o) is used, it is not an
+       error if the target exists and not the source:  in that case the target
+       is considered up to date.  Both flags must not be used simultaenously.
 
        A dependency can be one of the following:
 
@@ -675,7 +677,7 @@ SYNTAX
            rule:             ('@' NAME | ['>']  NAME)+  [':'  expression_list]
        ('{' COMMAND '}' | ';')
                              NAME '=' '{' CONTENT '}'
-                             NAME '=' '-p'* NAME ';'
+                             NAME '=' ('-p' | '-o')* NAME ';'
            expression_list:  expression*
            expression:       '(' expression_list ')'
                              '[' expression_list ']'
@@ -821,6 +823,25 @@ EXAMPLES
            program:  program.c $[-t CFLAGS] { gcc $CFLAGS program.c -o program
        }
 
+       Copy  rules  are  often used to copy a file from another directory into
+       the current directory.  If both files have the same name, the  name  of
+       the source file can be omitted.
+
+           #  Copy  the file bsd/config.h to the current directory.  The slash
+       at
+           # the end of the directory name is not necessary, but provides a
+           # useful hint to the reader.
+           config.h = bsd/;
+
+       Optional copy rules can be used in project in which a certain  will  be
+       available for some developers, but not others:
+
+           # The file 'config.h' is delivered with this project.  For users
+           # having the /usr/share/project/ directory, the file will always be
+           # updated from there by Stu.  For users who don't, the file
+           # delivered with the project is always used.
+           config.h = -o /usr/share/project/;
+
        The  -C  option allows to pass any dependency in Stu syntax, and there‐
        fore can be used in some advanced use cases:
 
@@ -896,4 +917,4 @@ AUTHOR
 SEE ALSO
        make(1) cook(1)
 
-stu-2.3.12                        August 2016                           STU(1)
+stu-2.4.1                         August 2016                           STU(1)

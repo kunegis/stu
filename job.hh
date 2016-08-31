@@ -70,8 +70,7 @@ public:
 
 	/* Start a copy job.  The return value has the same semantics as
 	 * in start().  */  
-	pid_t start_copy(string target,
-			 string source);
+	pid_t start_copy(string target, string source);
 
 	/* Wait for the next process to terminate; provide the STATUS as
 	 * used in wait(2).  Return the PID of the waited-for process (>=0). */  

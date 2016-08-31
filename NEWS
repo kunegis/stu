@@ -11,6 +11,25 @@ made, which are documented in the file MIGRATION.
 
 ------------------------------------------------------------------------
 
+2016-08-31  Version 2.4
+
+* Copy rules can now use the -o flag to denote optional copy rules:
+
+A = -o B;
+
+The semantics are:
+- When B is not present:
+   - Fail when both A is not present
+   - Succeed when A is present 
+- When B is present, apply the usual rules 
+
+This is particularly useful when working in projects where a certain file
+can be updated from a source only for some developers:  The file can be
+distributed for the project, and an optional copy rule can be used such
+that for developers who have the source file, it will be updated when
+necessary, and for developers who don't have the source file, the copy
+delivered with the project can always be used. 
+
 2016-08-31  Version 2.3.10
 
 * The environment variable $STU_OPTIONS can now be used to pass options

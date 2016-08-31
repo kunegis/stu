@@ -1,0 +1,2 @@
+main.stu:3:8: source file 'B' in optional copy rule must exist
+main.stu:3:1: when target file 'A' does not exist

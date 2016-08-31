@@ -749,8 +749,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 		write_content(targets.front().name.c_str(), *(rule->command)); 
 		return false;
 	}
-
-	/* Start the job */ 
+       
+	/* We have to start the job now */ 
 
 	for (const Target &target:  targets) {
 		if (target.type != Type::TRANSIENT)  
@@ -782,10 +782,35 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 			assert(rule->place_param_targets.size() == 1); 
 			assert(rule->place_param_targets.front()->type == Type::FILE); 
+
+			string source= rule->filename.unparametrized();
+			
+			/* If optional copy, don't just call 'cp' and
+			 * let it fail:  look up whether the source
+			 * exists in the cache */
+			if (rule->dependencies.at(0)->get_flags() & F_OPTIONAL) {
+				Execution *execution_source=
+					executions_by_target.at(Target(Type::FILE, source));
+				assert(execution_source); 
+				if (execution_source->exists < 0) {
+					/* Neither the source file nor
+					 * the target file exist:  an
+					 * error  */
+					rule->dependencies.at(0)->get_place()
+						<< fmt("source file %s in optional copy rule "
+						       "must exist",
+						       name_format_word(source));
+					print_traces(fmt("when target file %s does not exist",
+							 targets.at(0).format_word())); 
+					raise(ERROR_BUILD);
+					done.add_neg(link.avoid); 
+					return false;
+				}
+			}
 			
 			pid= job.start_copy
 				(rule->place_param_targets[0]->place_name.unparametrized(),
-				 rule->filename.unparametrized());
+				 source);
 		} else {
 			pid= job.start
 				(rule->command->command, 

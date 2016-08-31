@@ -1,21 +1,29 @@
 #! /bin/sh
 #
 # Test that no source contains '//' (for C++ code) or '#''#' (for shell
-# scripts or Stu files).  
+# scripts or Stu files).  Also test other similar constraints.
 #
 
 ret=0
 
+# Check for // in C++ files
 grep -lE '(^|[^:])//' *.cc *.hh && {
-	echo >&2 "*** found '//'"
+	echo >&2 "*** C++ source files must not contain //"
 	ret=1
 }
 
+# Check for double # in script files 
 find . -type f -a \( -name '*.stu' -o -perm -u+x \) -a \! -name '*~' \
 	-a \! -path './.git*' -a \! -path './stu.*' -a \! -path './stu' \
 	-a \! -path './config*' -a \! -path './build-aux/*' | 
 xargs grep -lF '#''#' && {
 	echo >&2 "*** found '#""#'"
+	ret=1
+}
+
+# Check for tab in manpage source
+grep -qF "$(printf '\t')" stu.1.in && {
+	echo >&2 "*** 'stu.1.in' must not contain tabs"
 	ret=1
 }
 

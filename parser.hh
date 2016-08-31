@@ -40,12 +40,16 @@
  *           -o, '[]', '()', '*' or '@' 
  */
 
-/* This code does not check that imcompatible constructs (like -p and
+/* 
+ * This code does not check that imcompatible constructs (like -p and
  * -o or -p and '$[') are used together.  Instead, this is checked
  * within Execution and not here, because these can also be combined
- * from different sources, e.g., a file and a dynamic dependency. */ 
+ * from different sources, e.g., a file and a dynamic dependency. 
+ */ 
 
-/* An object of this type represents a location within a token list */ 
+/* 
+ * An object of this type represents a location within a token list 
+ */ 
 class Parser
 {
 public:
@@ -258,7 +262,8 @@ shared_ptr <Rule> Parser::parse_rule()
 				if (iter == tokens.end()) {
 					place_end << "expected a filename";
 					place_output_new << 
-						fmt("after output redirection using %s", char_format_word('>'));
+						fmt("after output redirection using %s",
+						    char_format_word('>'));
 					throw ERROR_LOGICAL;
 				}
 				else {
@@ -283,11 +288,14 @@ shared_ptr <Rule> Parser::parse_rule()
 				place_output_new <<
 					fmt("there must not be a second output redirection %s",
 					    prefix_format_word(target_name->raw(), ">")); 
-				assert(place_param_targets[redirect_index]->place_name.get_n() == 0);
+				assert(place_param_targets[redirect_index]
+				       ->place_name.get_n() == 0);
 				assert(place_param_targets[redirect_index]->type == Type::FILE); 
 				place_output <<
 					fmt("shadowing previous output redirection %s",
-					    prefix_format_word(place_param_targets[redirect_index]->unparametrized().name, ">")); 
+					    prefix_format_word
+					    (place_param_targets[redirect_index]
+					     ->unparametrized().name, ">")); 
 				throw ERROR_LOGICAL;
 			}
 			place_output= place_output_new; 
@@ -298,7 +306,8 @@ shared_ptr <Rule> Parser::parse_rule()
 		string param_1, param_2;
 		if (! target_name->valid(param_1, param_2)) {
 			place_target <<
-				fmt("the two parameters %s and %s in the name %s must be separated by at least one character",
+				fmt("the two parameters %s and %s in the name %s "
+				    "must be separated by at least one character",
 				    name_format_word('$' + param_1),
 				    name_format_word('$' + param_2),
 				    target_name->format_word()); 
@@ -428,7 +437,8 @@ shared_ptr <Rule> Parser::parse_rule()
 			assert(place_param_targets.size() != 0); 
 			if (place_param_targets.size() != 1) {
 				place_equal << 
-					fmt("there must not be assigned content using %s", char_format_word('=')); 
+					fmt("there must not be assigned content using %s",
+					    char_format_word('=')); 
 				place_param_targets[0]->place << 
 					fmt("in rule for %s... with multiple targets",
 					    place_param_targets[0]->format_word()); 
@@ -437,7 +447,8 @@ shared_ptr <Rule> Parser::parse_rule()
 			}
 			if (place_param_targets[0]->type == Type::TRANSIENT) {
 				place_equal << 
-					fmt("there must not be assigned content using %s", char_format_word('=')); 
+					fmt("there must not be assigned content using %s",
+					    char_format_word('=')); 
 				place_param_targets[0]->place <<
 					fmt("for transient target %s", 
 					    place_param_targets[0]->format_word()); 
@@ -461,7 +472,8 @@ shared_ptr <Rule> Parser::parse_rule()
 				 * only parameters that also appear in
 				 * the target */
 				set <string> parameters;
-				for (auto &parameter:  place_param_targets[0]->place_name.get_parameters()) {
+				for (auto &parameter:
+					     place_param_targets[0]->place_name.get_parameters()) {
 					parameters.insert(parameter); 
 				}
 				for (unsigned jj= 0;  jj < name_copy->get_n();  ++jj) {
@@ -473,7 +485,8 @@ shared_ptr <Rule> Parser::parse_rule()
 							    prefix_format_word(parameter, "$"), 
 							    name_copy->format_word());
 						place_param_targets[0]->place << 
-							fmt("because it does not appear in target %s", place_param_targets[0]->format_word());
+							fmt("because it does not appear in target %s",
+							    place_param_targets[0]->format_word());
 						throw ERROR_LOGICAL;
 					}
 				}
@@ -509,7 +522,9 @@ shared_ptr <Rule> Parser::parse_rule()
 				/* Check that there is just a single
 				 * target */
 				if (place_param_targets.size() != 1) {
-					place_equal << fmt("there must not be a copy rule using %s", char_format_word('=')); 
+					place_equal <<
+						fmt("there must not be a copy rule using %s",
+						    char_format_word('=')); 
 					place_param_targets[0]->place << 
 						fmt("for multiple targets %s...",
 						    place_param_targets[0]->format_word()); 
@@ -518,9 +533,11 @@ shared_ptr <Rule> Parser::parse_rule()
 
 				if (place_param_targets[0]->type != Type::FILE) {
 					assert(place_param_targets[0]->type == Type::TRANSIENT); 
-					place_equal << fmt("copy rule using %s cannot be used", char_format_word('='));
+					place_equal << fmt("copy rule using %s cannot be used",
+							   char_format_word('='));
 					place_param_targets[0]->place 
-						<< fmt("with transient target %s", place_param_targets[0]->format_word()); 
+						<< fmt("with transient target %s",
+						       place_param_targets[0]->format_word()); 
 					throw ERROR_LOGICAL;
 				}
 
@@ -537,7 +554,8 @@ shared_ptr <Rule> Parser::parse_rule()
 
 				(*iter)->get_place()
 					<< fmt("flag %s must not be used",
-					       multichar_format_word(frmt("-%c", is <Flag_Token> ()->flag))); 
+					       multichar_format_word
+					       (frmt("-%c", is <Flag_Token> ()->flag))); 
 				place_equal << 
 					fmt("in copy rule using %s for target %s", 
 					    char_format_word('='),

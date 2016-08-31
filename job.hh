@@ -10,8 +10,6 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 
-#include <unordered_map>
-
 /* Called to terminate all running processes, and remove their target
  * files if present.  Implemented in execution.hh, and called from here. */
 void job_terminate_all(); 
@@ -735,12 +733,14 @@ Job::Signal::Signal()
 	}
 }
 
-/* Passing (-pid) to kill() kills the whole process group with PGID
+/* 
+ * Passing (-pid) to kill() kills the whole process group with PGID
  * (pid).  Since we set each child process to have its PID as its
  * process group ID, this kills the child and all its children
  * (recursively), up to programs that change this PGID of processes,
  * such as Stu and shells, which have to kill their children explicitly
- * in their signal handlers.  */ 
+ * in their signal handlers.  
+ */ 
 void Job::kill(pid_t pid)
 {
 	assert(pid > 1); 

@@ -5,8 +5,6 @@
  * Data types for representing filenames, targets, etc. 
  */
 
-#include <unordered_set>
-
 /* 
  * Glossary:
  *     * A _name_ is a filename or the name of a transient target.  They are

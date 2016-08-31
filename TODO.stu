@@ -12,7 +12,7 @@
 #
 
 #
-# Proper jobs control.
+# Proper job control.
 #
 # Support foreground process groups:  If only a single job is running,
 # put it into the foreground using 

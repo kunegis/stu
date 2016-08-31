@@ -286,6 +286,16 @@ A = [X];
 #==== New features that change extend Stu drastically ====
 
 #
+# Use C instead of C++.  This is tempting for simplicity and also out of
+# principle.  What would be necessary:
+#  - Write container classed indexed with strings, targets, and maybe
+#    PIDs.
+#  - Convert certain containers to arrays.
+#  - More complex and error-prone memory management
+#  - A replacement for exceptions
+#
+
+#
 # Removeable files:  when a file carries the removeable flag, it does
 # not need to be present.  
 #
@@ -437,6 +447,7 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 #
 
 #==== External features ====
+
 #
 # These features can be implemented outside of Stu using constructs
 # supported by Stu.  Thus, there is no need to integrate them into Stu,

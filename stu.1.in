@@ -51,16 +51,16 @@ No Stu syntax is processed.
 .IP -a
 Treat all trivial dependencies (declared with -t) as non-trivial.
 .IP "-B"
-Don't put jobs in the background when run.  By default, Stu runs each
-job inside a separate process group, and redirects stdin from /dev/null
+Don't use job control.  By default, Stu runs each
+job inside a separate process group, and, when more than one job is run
+parallely, redirects stdin from /dev/null for all but the first 
 (except when an explicit input redirection is defined by the rule.)  
-This option disables that behavior.  Warning:  When jobs are not put in
-the background, Stu may not be able to correctly kill all the indirect child
+This option disables that behavior.  Warning:  When job control is not
+used, Stu may not be able to correctly kill all the indirect child 
 processes of jobs, and this may result in processes continuing to run
 after Stu has terminated.  (This may happen when Stu itself is
 interrupted, or when Stu interrupts a job because another job has
-failed.)  Also, this will lead to unpredictable behavior if jobs read
-from their STDIN (except when input redirection is used). 
+failed.)  
 .IP "-c FILENAME"
 Pass a target filename, without Stu syntax.  This option only allows
 file targets to be specified, not transient targets. 
@@ -327,6 +327,7 @@ can depend on it, to effectively depend on the individual files:
     }
 
 .SH FEATURES
+
 Like a makefile, a Stu file consists of rules.  In Stu, the order of
 rules is not important, except for the fact that the first rule is
 used by default if no rule is given explicitly.  Comments are written
@@ -727,6 +728,15 @@ Symlinks are treated transparently by Stu.  In other words, Stu will
 always consider the timestamp of the linked-to file.  A symlink to a
 non-existing file will be treated as a non-existing file. 
 
+Stu uses jobs control:  Each job is put into its own process group.
+All jobs are put into the background, except those jobs started while no
+other jobs are in the foreground.  Jobs in the foreground have the same
+standard input as Stu, and will receive all signals sent via the
+terminal, i.e. Ctrl-C for an interrupt, Ctrl-D for an end-of-input,
+etc.  Processes in the background that read from the standard input may
+fail or hang, depending on the system.
+Job control can be disabled with the -B option. 
+
 .SH "EXIT STATUS"
 .IP 0
 Everything was built successfully or was up to date already.
@@ -840,7 +850,7 @@ source file can be omitted.
     # useful hint to the reader. 
     config.h = bsd/;
 
-Optional copy rules can be used in project in which a certain will be
+Optional copy rules can be used in projects in which certain files will be
 available for some developers, but not others:
 
     # The file 'config.h' is delivered with this project.  For users
@@ -883,6 +893,17 @@ You can use Stu to just execute something, like a poor man's shell:
     stu -F '@all{ echo Hello World }'
 
 (of course, you can also type that directly or use 'sh -c', etc.)
+
+Stu commands can read from their standard input, as long as only a
+single job is run at a time.  For instance, the following will read a
+line from the user and use it.  This cannot be used in conjunction with
+the -j option.
+
+    >config.h: {
+        echo >&2 "Please enter the value of COUNT"
+        read -r count
+        echo "#define COUNT $count"
+    }
 
 .SH "BUGS"
 

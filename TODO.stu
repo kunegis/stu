@@ -1,18 +1,6 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# Proper job control.
-#
-# Support foreground process groups:  If only a single job is running,
-# put it into the foreground using 
-# tcsetpgrp().  Do this also with -j, so there is always a single job in
-# the foreground.  The will then also make </dev/null unnecessary (jobs
-# that read stdin will simply hang until it's their turn).  See:
-# https://www.gnu.org/software/libc/manual/html_node/Foreground-and-Background.html
-# https://ftp.gnu.org/old-gnu/Manuals/glibc-2.2.3/html_chapter/libc_27.html
-#
-
-#
 # Concatenation.  Concatenation is to work both with the
 # binary operator '*' as well with juxtaposition.     [2.5]
 #
@@ -284,3 +272,8 @@ A: -o @x;
 
 # Equivalent to
 A: B;
+
+#
+# Job control:  When a foreground process is finished, put another
+# running process into the foreground, instead of none. 
+#

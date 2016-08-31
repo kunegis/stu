@@ -141,6 +141,7 @@ int main(int argc, char **argv, char **envp)
 	dollar_zero= argv[0]; 
 	envp_global= (const char **) envp; 
 	init_buf();
+	Job::init_tty();
 	Color::set();
 	int error= 0;
 

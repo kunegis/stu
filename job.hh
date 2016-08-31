@@ -81,6 +81,8 @@ public:
 	static void print_statistics(bool allow_unterminated_jobs= false); 
 
 	static void kill(pid_t pid); 
+
+	static void init_tty(); 
 	
 	/* Block interrupt signals for the lifetime of an object of this type. 
 	 * Note that the mask of blocked signals is inherited over
@@ -131,6 +133,12 @@ private:
 	 * handler may be called before the variable is set.  */
 	static sig_atomic_t in_child; 
 
+	/* The job that is in the foreground, or -1 when none is */ 
+	static pid_t foreground_pid;
+	
+	/* The file descriptor of the TTY used by Stu.  -1 if there is none. */
+	static int tty;
+
 	/* Class with one static object whose contructor executes on
 	 * startup to setup signals. */ 
 	static class Signal
@@ -150,6 +158,10 @@ sigset_t Job::set_termination;
 Job::Signal     Job::signal;
 
 sig_atomic_t Job::in_child= 0; 
+
+pid_t Job::foreground_pid= -1;
+
+int Job::tty= -1;
 
 #ifndef NDEBUG
 bool Job::Signal_Blocker::blocked= false; 
@@ -217,7 +229,7 @@ pid_t Job::start(string command,
 
 		in_child= 1; 
 
-		/* Unblock all signals */ 
+		/* Unblock/reset all signals */ 
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_termination, nullptr)) {
 			perror("sigprocmask");
 			_Exit(127); 
@@ -226,7 +238,9 @@ pid_t Job::start(string command,
 			perror("sigprocmask");
 			_Exit(127); 
 		}
-
+		::signal(SIGTTIN, SIG_DFL);
+		::signal(SIGTTOU, SIG_DFL); 
+		
 		/* Set variables */ 
 		size_t v_old= 0;
 
@@ -345,7 +359,8 @@ pid_t Job::start(string command,
 
 		/* Input redirection:  from the given file, or from
 		 * /dev/zero (when BACKGROUND is set)  */
-		if (filename_input != "" || ! option_no_background) {
+		if (filename_input != "" ||
+		    (! option_no_background && tty < 0)) {
 			const char *name= filename_input == ""
 				? "/dev/null"
 				: filename_input.c_str(); 
@@ -374,9 +389,16 @@ pid_t Job::start(string command,
 
 	/* Here, we are the parent process */
 
+	assert(pid >= 1); 
+
+	if (! option_no_background && foreground_pid < 0 && tty >= 0) {
+		if (tcsetpgrp(tty, pid) < 0)
+			print_error_system("tcsetpgrp");
+		foreground_pid= pid; 
+	}
+		
 	++ count_jobs_exec;
 
-	assert(pid >= 1); 
 	return pid; 
 }
 
@@ -515,14 +537,23 @@ bool Job::waited(int status, pid_t pid_check)
 {
 	assert(pid_check >= 0);
 	assert(pid >= 0); 
-	(void) pid_check;
 	assert(pid_check == pid); 
+
 	pid= -1;
 	bool success= WIFEXITED(status) && WEXITSTATUS(status) == 0;
+
 	if (success)
 		++ count_jobs_success;
 	else
 		++ count_jobs_fail; 
+
+	if (pid_check == foreground_pid) {
+		assert(tty >= 0);
+		assert(! option_no_background); 
+		if (tcsetpgrp(tty, getpid()) < 0)
+			print_error_system("tcsetpgrp");
+	}
+	
 	return success; 
 }
 
@@ -641,7 +672,7 @@ Job::Signal_Blocker::~Signal_Blocker()
  * This function is called once on Stu startup from a static
  * constructor, and sets up all signals.   
  *
- * There are two types of signals handled by Stu:
+ * There are three types of signals handled by Stu:
  *    - Termination signals which make programs abort.  Stu must catch
  *      them in order to stop its child processes, and will then raise
  *      them again.  
@@ -651,6 +682,9 @@ Job::Signal_Blocker::~Signal_Blocker()
  *         + SIGUSR1 (to output statistics)
  *      These signals are processed asynchronously, i.e., they are
  *      blocked, and then waited for specifically.   
+ *    - The job control signals SIGTTIN and SIGTTOU.  They are both
+ *      produced by certain job control events that Stu triggers, and
+ *      ignored. 
  * 
  * The signals SIGCHLD and SIGUSR1 are the signals that we wait for in
  * the main loop. They are blocked.  At the same time, the blocked
@@ -730,6 +764,15 @@ Job::Signal::Signal()
 		perror("sigprocmask");
 		exit(ERROR_FATAL); 
 	}
+
+	/*
+	 * Job control signals 
+	 */
+	if (::signal(SIGTTIN, SIG_IGN) == SIG_ERR)
+		print_error_system("signal");
+
+	if (::signal(SIGTTOU, SIG_IGN) == SIG_ERR)
+		print_error_system("signal"); 
 }
 
 /* 
@@ -772,4 +815,16 @@ void Job::kill(pid_t pid)
 	}
 }
 
+void Job::init_tty()
+{
+	assert(tty == -1); 
+
+	if (! isatty(2)) 
+		return;
+
+	tty= open("/dev/tty", O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	if (tty < 0)
+		return;
+}
+	
 #endif /* ! JOB_HH */

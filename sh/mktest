@@ -117,6 +117,8 @@ fi
 
 exec 6>error.log
 
+unset STU_OPTIONS
+
 cd test
 
 if [ "$1" ] ; then

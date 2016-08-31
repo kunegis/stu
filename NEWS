@@ -11,6 +11,14 @@ made, which are documented in the file MIGRATION.
 
 ------------------------------------------------------------------------
 
+2016-08-31  Version 2.4.2
+
+* Job control:  at most one job is now put into the foreground.  All
+  other jobs are put into the background, as before.  This means that it
+  is now possible to read from STDIN in Stu commands, as long as -j is
+  not used, or -j is used but the dependencies are such that only a
+  single job is run at a time. 
+
 2016-08-31  Version 2.4
 
 * Copy rules can now use the -o flag to denote optional copy rules:

@@ -115,6 +115,26 @@ void read_option_F(const char *s,
 		   Rule_Set &rule_set, 
 		   shared_ptr <Rule> &rule_first);
 
+/* Set one of the "setting options", i.e., of of those that can appear
+ * in $STU_OPTIONS.  Return whether this was a valid settings option.  */ 
+bool stu_setting(char c)
+{
+	switch (c) {
+	default:  return false;
+
+	case 'E': option_explain= true;        break;
+	case 'Q': option_quiet= true;          break; 
+	case 's': output_mode= Output::SILENT; break;
+	case 'w': output_mode= Output::SHORT;  break;
+	case 'x': option_individual= true;     break;
+	case 'y': Color::set(false);           break;
+	case 'Y': Color::set(true);            break;
+	case 'z': option_statistics= true;     break;
+	}
+
+	return true; 
+}
+
 int main(int argc, char **argv, char **envp)
 {
 	/* Initialization */
@@ -155,12 +175,31 @@ int main(int argc, char **argv, char **envp)
 
 		bool had_option_f= false; /* Both lower and upper case */
 
+		/* Parse $STU_OPTIONS */ 
+		const char *stu_options= getenv("STU_OPTIONS");
+		if (stu_options != NULL) {
+			while (*stu_options) {
+				char c= *stu_options++;
+				if (c == '-' || isspace(c))
+					continue; 
+				if (! stu_setting(c)) {
+					Place place(Place::Type::ENV_OPTIONS);
+					place << fmt("invalid option %s",
+						     multichar_format_word(frmt("-%c", c)));
+					throw ERROR_FATAL; 
+				}
+			}
+		}
+		
 		for (int c; (c= getopt(argc, argv, OPTIONS)) != -1;) {
+
+			if (stu_setting(c))
+				continue;
+
 			switch (c) {
 
 			case 'a': option_nontrivial= true;     break;
 			case 'B': option_no_background= true;  break;
-			case 'E': option_explain= true;        break;
 			case 'g': option_nonoptional= true;    break;
 			case 'h': fputs(HELP, stdout);         exit(0);
 			case 'J': option_literal= true;        break;
@@ -168,14 +207,7 @@ int main(int argc, char **argv, char **envp)
 			case 'K': option_no_delete= true;      break;
 			case 'P': option_print= true;          break;  
 			case 'q': option_question= true;       break;
-			case 'Q': option_quiet= true;          break; 
-			case 's': output_mode= Output::SILENT; break;
 			case 'v': option_verbose= true;        break;
-			case 'w': output_mode= Output::SHORT;  break;
-			case 'y': Color::set(false);           break;
-			case 'Y': Color::set(true);            break;
-			case 'x': option_individual= true;     break;
-			case 'z': option_statistics= true;     break;
 
 			case 'c':  {
 				had_option_target= true; 

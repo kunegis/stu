@@ -740,15 +740,20 @@ EXIT STATUS
               regardless of whether the -k option was used.
 
 ENVIRONMENT
+       STU_CP If set, Stu calls the  'cp'  program  from  the  given  location
+              instead  of  '/bin/cp'.   The given version of 'cp' must support
+              the syntax 'cp -- "$fileA" "$fileB"'.
+
+       STU_OPTIONS
+              Contains options to be set on every run  of  Stu.   All  letters
+              except for those in EQswxyYz are ignored.  Options passed on the
+              command line apply after this passed using this variable.
+
        STU_SHELL
               If set, Stu calls the shell from the given location  instead  of
               '/bin/sh'.   The given shell must support the -e and -c options.
               This is mainly useful on systems where '/bin/sh' is not a  POSIX
               shell.
-
-       STU_CP If  set,  Stu  calls  the  'cp'  program from the given location
-              instead of '/bin/cp'.  The given version of  'cp'  must  support
-              the syntax 'cp -- "$fileA" "$fileB"'.
 
        STU_STATUS
               Stu  sets  this variable to '1' in all child processes. In order
@@ -891,4 +896,4 @@ AUTHOR
 SEE ALSO
        make(1) cook(1)
 
-stu-2.3.9                         August 2016                           STU(1)
+stu-2.3.11                        August 2016                           STU(1)

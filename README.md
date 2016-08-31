@@ -19,6 +19,19 @@ For documentation, compile and read the manpage, or go directly to:
 
 https://raw.githubusercontent.com/kunegis/stu/master/stu.text
 
+## News
+
+- Tip:  Set "export STU_OPTIONS=-E" in your .bashrc file to get
+  explanations of common error messages in Stu. 
+
+- Version 2 is out:  This contains backward-incompatible changes to the
+  Stu 1 series.  See 'MIGRATION' for a list.  Most changes are safe,
+  i.e., Stu will produce an error when an old construct is used.  This
+  is to make place for new features.  The only non-safe new syntax is in
+  quoting using " and ', which now work exactly like in the shell. 
+
+See the file 'NEWS' for more news. 
+
 ## Installation guide
 
 * See the file INSTALL for compiling Stu yourself

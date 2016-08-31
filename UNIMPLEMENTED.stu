@@ -52,7 +52,8 @@
 #
 
 #
-# Have a "clean" option that removes all files that can be rebuilt.
+# Have a "clean" option that removes all files that can be rebuilt,
+# based on the given Stu file.
 # Ironically, this may need to build dynamic dependency files first. 
 #
 
@@ -319,6 +320,14 @@ $NAME.bib:  bibs-B/$NAME.bib
 
 # Exclude slashes
 ${NAME:[^/]+}.bib: ...;
+
+#
+# Interactive Stu.  Have a command line with functions like:
+#  - add file to the queue
+#  - remove file from the queue
+#  - get stats about running / completed jobs
+#  - foreground/background jobs control like the shell has
+#
 
 #
 # Fingerprinting instead of timestamps is a feature that is implemented by quite

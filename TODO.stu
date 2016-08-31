@@ -12,16 +12,6 @@
 #
 
 #
-# Maybe enable explanations by default?
-#
-
-#
-# Have $STU_OPTIONS, to read:
-#
-# 	-E -Q -s -w -x -y -Y -z
-#
-
-#
 # Proper jobs control.
 #
 # Support foreground process groups:  If only a single job is running,
@@ -29,7 +19,8 @@
 # tcsetpgrp().  Do this also with -j, so there is always a single job in
 # the foreground.  The will then also make </dev/null unnecessary (jobs
 # that read stdin will simply hang until it's their turn).  See:
-# https://www.gnu.org/software/libc/manual/html_node/Foreground-and-Background.html 
+# https://www.gnu.org/software/libc/manual/html_node/Foreground-and-Background.html
+# https://ftp.gnu.org/old-gnu/Manuals/glibc-2.2.3/html_chapter/libc_27.html
 #
 
 #
@@ -217,7 +208,11 @@ tmp: {...}
 % include -d src/
 % include -d src
 
-#==== Features of Stu 2:  Other features ====
+#
+# Maybe enable explanations by default?
+#
+
+o#==== Features of Stu 2:  Other features ====
 
 #
 # Recursive persistent dependency:  If the file exists, never

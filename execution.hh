@@ -1440,6 +1440,7 @@ void job_terminate_all()
 		Job::kill(pid); 
 	}
 
+
 	bool terminated= false;
 
 	for (auto i= Execution::executions_by_pid.begin();
@@ -1675,6 +1676,10 @@ void Execution::read_dynamic_dependency(Stack avoid,
 		} else {
 			/* Delimiter-separated */
 
+			/* We use getdelim() for parsing.  A more
+			 * optimized way would be via mmap()+strchr, but
+			 * why the complexity?  */
+			
 			/* The delimiter */ 
 			const char c= (flags & F_NEWLINE_SEPARATED) ? '\n' : '\0';
 			const char c_printed=

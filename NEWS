@@ -11,6 +11,15 @@ made, which are documented in the file MIGRATION.
 
 ------------------------------------------------------------------------
 
+2016-08-31  Version 2.3.10
+
+* The environment variable $STU_OPTIONS can now be used to pass options
+  to Stu.  All non-option charaters are ignored, i.e., you can include
+  spaces an preceded all options with a dash, but it doesn't matter.
+  This works only for options for which it makes sense to set them
+  globally:  "EQswxyYz".  Options passed on the command line take
+  precedence over options passed in $STU_OPTIONS. 
+
 2016-08-30  Version 2.3.6
 
 * Stu now starts all commands with their standard input redirected from

@@ -1,0 +1,18 @@
+#! /bin/sh
+
+export STU_OPTIONS=-Ey
+
+../../stu.test >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 2 ] || {
+	echo >&2 "*** Expected exit code 2, not $exitcode"
+	exit 1
+}
+
+grep -qF 'Explanation: Each Stu file can declare a version to which it is compatible' list.err || {
+	echo >&2 "*** Expected a message"
+	exit 1
+}
+
+exit 0

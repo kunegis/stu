@@ -187,6 +187,7 @@ public:
 		INPUT_FILE,   /* In a file, with line/column numbers */
 		ARGUMENT,     /* Command line argument (outside options) */ 
 		OPTION,       /* In an option */
+		ENV_OPTIONS   /* In $STU_OPTIONS */
 	} type;
 
 	/* 
@@ -345,6 +346,13 @@ void Place::print(string message,
 			Color::end,
 			message.c_str());
 		break;
+
+	case Type::ENV_OPTIONS:
+		fprintf(stderr,
+			"In %s$STU_OPTIONS%s: %s\n",
+			color_word, Color::end,
+			message.c_str()); 
+		break;
 	}
 }
 
@@ -422,8 +430,9 @@ void explain_no_target()
 {
 	if (! option_explain)  return;
 	fputs("Explanation: There must be either a target given as an argument to Stu\n"
-	      "invocation, a -c or -C option, an -f option with a default target, a file\n"
-	      "'main.stu' with a default target, or an -F option.\n",
+	      "invocation, one of the target-specifying options -c/-C/-p/-o/-n/-0,\n"
+	      "an -f option with a default target, a file 'main.stu' with a default\n"
+	      "target, or an -F option.\n",
 	      stderr); 
 }
 
@@ -465,7 +474,7 @@ void explain_variable_equal()
 void explain_version()
 {
 	if (! option_explain)  return;
-	fputs("Explanation: Each Stu file can declare a version to which it is compatiable\n"
+	fputs("Explanation: Each Stu file can declare a version to which it is compatible\n"
 	      "using the syntax '% version X.Y' or '% version X.Y.Z'.  Stu will then fail at\n"
 	      "runtime if (a) 'X' does not equal the major version number of Stu,\n"
 	      "(b) 'Y' is larger than Stu's minor version number, or (c) 'X' equals Stu's\n"

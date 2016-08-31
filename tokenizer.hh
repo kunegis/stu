@@ -114,13 +114,26 @@ private:
 	 * on other errors, including on empty names.  */ 
 	shared_ptr <Place_Name> parse_name();
 
-/* Parse a parameter starting with '$'.  Return whether a
+	/* Parse a parameter starting with '$'.  Return whether a
 	 * parameter was parsed (always TRUE).  The current position
 	 * must be on the 
 	 * '$' character, not after it.  If a parameter is found, write
 	 * it into the parameters.  */
 	bool parse_parameter(string &parameter, Place &place_dollar); 
 
+	/* The following two functions parse the two types of quotes.
+	 * The pointer must be on a " or ' character respectively.  A
+	 * single such quote is appended to RET, or a logical error is
+	 * thrown.  */ 
+	void parse_double_quote(Place_Name &ret);
+	void parse_single_quote(Place_Name &ret); 
+
+	/* Parse a statement.  The pointer must be on the '%'
+	 * character.  Throw a logical error when encountered.  */
+	void parse_statement(vector <shared_ptr <Token> > &tokens,
+			     Context context,
+			     const Place &place_diagnostic);
+	
 	void skip_space(); 
 
 	Place current_place() const {
@@ -384,6 +397,21 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 }
 
 
+/* 
+ * To determine the place of the command:  These rules are intended to
+ * make the editor go to the correct place to enter a command into the
+ * editor when the command is empty.  
+ *    - If there is non-whitespace in the command, the place is the
+ *      first non-whitespace character  
+ *    - If the command is completely empty (i.e., {}), then the place is
+ *      the closing bracket. 
+ *    - If the command contains only whitespace, is on one line and is
+ *      not empty, the place is on the first whitespace character. 
+ *    - If the command contains only whitespace and a single newline,
+ *      then the place is the end of the first line. 
+ *    - If the command contains only whitespace and at least two
+ *      newlines, the place is the first character of the second line.   
+ */
 shared_ptr <Command> Tokenizer::parse_command()
 {
 	assert(p < p_end && *p == '{');
@@ -394,21 +422,6 @@ shared_ptr <Command> Tokenizer::parse_command()
 
 	const char *const p_beg= p;
 
-	/* 
-	 * The following is to determine the place of the command.  These
-	 * rules are intended to make the editor go to the correct place to
-	 * enter a command into the editor when the command is empty. 
-	 * - If there is non-whitespace in the command, the place is the
-	 *   first non-whitespace character 
-	 * - If the command is completely empty (i.e., {}), then the place
-	 *   is the closing bracket.
-	 * - If the command contains only whitespace, is on one line and is
-	 *   not empty, the place is on the first whitespace character.
-	 * - If the command contains only whitespace and a single newline,
-	 *   then the place is the end of the first line.
-	 * - If the command contains only whitespace and at least two
-	 *   newlines, the place is the first character of the second line. 
-	 */
 	unsigned line_command= line; /* The line of the place of the command */
 	unsigned column_command= p - p_line; /* The column of the place of
 					      *	the command */
@@ -588,116 +601,10 @@ shared_ptr <Place_Name> Tokenizer::parse_name()
 	}
 
 	while (p < p_end) {
-		
 		if (*p == '"') {
-
-			Place place_begin_quote(place_type, filename, line, p - p_line); 
-			++p;
-
-			while (p < p_end) {
-				if (*p == '"') {
-					++p;
-					goto end_of_double_quote; 
-				} else if (*p == '$') {
-					string parameter;
-					Place place_dollar;
-					if (parse_parameter(parameter, place_dollar)) {
-						ret->append_parameter(parameter, place_dollar);
-					} else {
-						assert(false); 
-					}
-				} else if (*p == '\\') {
-					Place place_backslash= current_place(); 
-					++p;
-					char c;
-					switch (*p) {
-					case 'a':  c= '\a';  break;
-					case 'b':  c= '\b';  break;
-					case 'f':  c= '\f';  break;
-					case 'n':  c= '\n';  break;
-					case 'r':  c= '\r';  break;
-					case 't':  c= '\t';  break;
-					case 'v':  c= '\v';  break;
-					case '\\': c= '\\';  break;
-					case '\"': c= '\"';  break;
-					case '$':  c = '$';  break;
-
-					default:
-						if (*p >= 33 && *p <= 126)
-							place_backslash
-								<< frmt("invalid escape sequence %s\\%c%s",  
-									Color::word, *p, Color::end);
-						else 
-							place_backslash
-								<< frmt("invalid escape sequence %s\\\\%03o%s",  
-									Color::word, (unsigned char) *p, Color::end);
-						place_begin_quote <<
-							fmt("in quote started by %s", 
-							    char_format_word('"'));
-						throw ERROR_LOGICAL;
-					}
-					ret->last_text() += c; 
-					++p;
-				} else if (*p == '\0') {
-					current_place() << 
-						fmt("invalid character %s",
-						    char_format_word('\0'));
-					place_begin_quote <<
-						fmt("in quote started by %s",
-						    char_format_word('"')); 
-					throw ERROR_LOGICAL;
-				} else {
-					if (*p == '\n') {
-						++line;
-						p_line= p + 1;
-					}
-					ret->last_text() += *p++; 
-				}
-			}
-			/* Reached end of file without closing the quote */
-			current_place() <<
-				fmt("expected a closing %s", char_format_word('"'));
-			place_begin_quote <<
-				fmt("for quote started by %s",
-				    char_format_word('"')); 
-			throw ERROR_LOGICAL; 
-
-		end_of_double_quote:;
-		} 
-
-		else if (*p == '\'') {
-		
-			Place place_begin_quote(place_type, filename, line, p - p_line); 
-			++p;
-			while (p < p_end) {
-				if (*p == '\'') {
-					++p;
-					goto end_of_single_quote; 
-				} else if (*p == '\0') {
-					current_place() << 
-						fmt("invalid character %s",
-						    char_format_word('\0'));
-					place_begin_quote <<
-						fmt("in quote started by %s",
-						    char_format_word('\'')); 
-					throw ERROR_LOGICAL;
-				} else {
-					if (*p == '\n') {
-						++line;
-						p_line= p + 1;
-					}
-					ret->last_text() += *p++;
-				}
-			}
-			/* Reached end of file without closing the quote */
-			current_place() <<
-				fmt("expected a closing %s", char_format_word('\''));
-			place_begin_quote <<
-				fmt("for quote started by %s",
-				    char_format_word('\'')); 
-			throw ERROR_LOGICAL; 
-		end_of_single_quote:;
-
+			parse_double_quote(*ret); 
+		} else if (*p == '\'') {
+			parse_single_quote(*ret); 
 		} else if (*p == '$') {
 			string parameter;
 			Place place_dollar;
@@ -706,15 +613,10 @@ shared_ptr <Place_Name> Tokenizer::parse_name()
 			} else {
 				assert(false); 
 			}
-		}			
-
-		else if (is_name_char(*p)) {
-
+		} else if (is_name_char(*p)) {
 			/* An ordinary character */ 
-
 			assert(p != p_begin ||
 			       (*p != '-' && *p != '+' && *p != '~'));
-
 			ret->last_text() += *p++;
 		}
 		else {
@@ -884,8 +786,8 @@ void Tokenizer::parse_version(string version_req,
 }
 
 void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens, 
-			 Context context,
-			 const Place &place_diagnostic)
+			     Context context,
+			     const Place &place_diagnostic)
 {
 	while (p < p_end) {
 
@@ -930,148 +832,9 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			goto had_whitespace; 
 		} 
 
-		/* Inclusion */ 
+		/* Statement */ 
 		else if (*p == '%') {
-			Place place_percent(place_type, filename, line, p - p_line); 
-			++p;
-			skip_space(); 
-
-			const char *const p_name= p;
-
-			Place place__name(place_type, filename, line, p_name - p_line); 
-
-			while (p < p_end && isalnum(*p)) {
-				++p;
-			}
-
-			if (p == p_name) {
-				if (p < p_end)
-					place__name
-						<< fmt("expected a statement name, not %s",
-						       char_format_word(*p));
-				else
-					place__name
-						<< "expected a statement name";
-				place_percent << fmt("after %s", char_format_word('%')); 
-				throw ERROR_LOGICAL; 
-			}
-
-			const string name(p_name, p - p_name); 
-
-			skip_space(); 
-
-			if (name == "include") {
-
-				if (context == DYNAMIC) {
-					place_percent 
-						<< frmt("%s%%include%s must not appear in dynamic dependencies",
-							Color::word, Color::end);
-					throw ERROR_LOGICAL;
-				}
-				if (context == OPTION_C || context == OPTION_F) {
-					place_percent 
-						<< frmt("%s%%include%s must not appear in the argument to the %s-%c%s option",
-							Color::word, Color::end,
-							Color::word, context == OPTION_C ? 'C' : 'F', Color::end); 
-					throw ERROR_LOGICAL;
-				}
-
-				shared_ptr <Place_Name> place_name= parse_name(); 
-
-				if (place_name == nullptr) {
-					Place(place_type, filename, line, p - p_line) <<
-						(p == p_end
-						 ? "expected a filename"
-						 : fmt("expected a filename, not %s", char_format_word(*p)));
-					place_percent << frmt("after %s%%include%s",
-							      Color::word, Color::end); 
-					throw ERROR_LOGICAL;
-				}
-				
-				if (place_name->get_n() != 0) {
-					place_name->place <<
-						fmt("name %s must not be parametrized",
-						    place_name->format_word());
-					place_percent << frmt("after %s%%include%s",
-							      Color::word, Color::end); 
-					throw ERROR_LOGICAL;
-				}
-			
-				const string filename_include= place_name->unparametrized();
-
-				Trace trace_stack
-					(place_name->place,
-					 fmt("%s is included from here", 
-					     name_format_word(filename_include))); 
-
-				traces.push_back(trace_stack);
-				filenames.push_back(filename); 
-
-				if (includes.count(filename_include)) {
-					/* Do nothing -- file was
-					 * already parsed, or is being
-					 * parsed.  */  
-				
-					/* It is an error if a file includes
-					 * itself directly or indirectly */ 
-					for (auto &i:  filenames) {
-						if (filename_include == i) {
-							vector <Trace> traces_backward;
-							for (auto j= traces.rbegin();  j != traces.rend(); ++j) {
-								Trace trace(*j);
-								if (j == traces.rbegin()) {
-									trace.message= 
-										fmt("recursive inclusion of %s using %s%%include%s", 
-										    name_format_word(filename_include),
-										    Color::word, Color::end);
-								}
-								traces_backward.push_back(trace); 
-						}
-							for (auto &j:  traces_backward) {
-								j.print(); 
-							}
-							throw ERROR_LOGICAL;
-						}					
-					}
-				} else {
-					/* Ignore the end place; it is only
-					 * used for the top-level file */  
-					Place place_end_sub; 
-					parse_tokens_file(tokens, 
-							  Tokenizer::SOURCE,
-							  place_end_sub, 
-							  filename_include, 
-							  traces, filenames, includes, 
-							  place_diagnostic,
-							  -1);
-				}
-				traces.pop_back(); 
-				filenames.pop_back(); 
-			} else if (name == "version") {
-				while (p < p_end && isspace(*p)) {
-					if (*p == '\n') {
-						++line;  
-						p_line= p + 1; 
-					}
-					++p; 
-				}
-				const char *const p_version= p;
-				while (p < p_end && is_name_char(*p)) {
-					++p;
-				}
-				const string version_required(p_version, p - p_version); 
-				Place place_version(place_type, filename, 
-						    line, p_version - p_line); 
-
-				parse_version(version_required, place_version, place_percent); 
-				
-			} else {
-				/* Invalid statement */ 
-				place_percent << 
-					fmt("invalid statement %s", 
-					    prefix_format_word(name, "%")); 
-				throw ERROR_LOGICAL;
-			}
+			parse_statement(tokens, context, place_diagnostic); 
 		}
 
 		/* Flag, name, or invalid character */ 		
@@ -1197,6 +960,266 @@ void Tokenizer::skip_space()
 		++p; 
 	}
 	assert(p <= p_end); 
+}
+
+void Tokenizer::parse_double_quote(Place_Name &ret)
+{
+	Place place_begin_quote(place_type, filename, line, p - p_line); 
+	++p;
+
+	while (p < p_end) {
+		if (*p == '"') {
+			++p;
+			goto end_of_double_quote; 
+		} else if (*p == '$') {
+			string parameter;
+			Place place_dollar;
+			if (parse_parameter(parameter, place_dollar)) {
+				ret.append_parameter(parameter, place_dollar);
+			} else {
+				assert(false); 
+			}
+		} else if (*p == '\\') {
+			Place place_backslash= current_place(); 
+			++p;
+			char c;
+			switch (*p) {
+			case 'a':  c= '\a';  break;
+			case 'b':  c= '\b';  break;
+			case 'f':  c= '\f';  break;
+			case 'n':  c= '\n';  break;
+			case 'r':  c= '\r';  break;
+			case 't':  c= '\t';  break;
+			case 'v':  c= '\v';  break;
+			case '\\': c= '\\';  break;
+			case '\"': c= '\"';  break;
+			case '$':  c = '$';  break;
+
+			default:
+				if (*p >= 33 && *p <= 126)
+					place_backslash
+						<< frmt("invalid escape sequence %s\\%c%s",  
+							Color::word, *p, Color::end);
+				else 
+					place_backslash
+						<< frmt("invalid escape sequence %s\\\\%03o%s",  
+							Color::word,
+							(unsigned char) *p,
+							Color::end);
+				place_begin_quote <<
+					fmt("in quote started by %s", 
+					    char_format_word('"'));
+				throw ERROR_LOGICAL;
+			}
+			ret.last_text() += c; 
+			++p;
+		} else if (*p == '\0') {
+			current_place() << 
+				fmt("invalid character %s",
+				    char_format_word('\0'));
+			place_begin_quote <<
+				fmt("in quote started by %s",
+				    char_format_word('"')); 
+			throw ERROR_LOGICAL;
+		} else {
+			if (*p == '\n') {
+				++line;
+				p_line= p + 1;
+			}
+			ret.last_text() += *p++; 
+		}
+	}
+	/* Reached end of file without closing the quote */
+	current_place() <<
+		fmt("expected a closing %s", char_format_word('"'));
+	place_begin_quote <<
+		fmt("for quote started by %s",
+		    char_format_word('"')); 
+	throw ERROR_LOGICAL; 
+	
+ end_of_double_quote:;
+}
+
+void Tokenizer::parse_single_quote(Place_Name &ret)
+{
+	Place place_begin_quote(place_type, filename, line, p - p_line); 
+	++p;
+	while (p < p_end) {
+		if (*p == '\'') {
+			++p;
+			goto end_of_single_quote; 
+		} else if (*p == '\0') {
+			current_place() << 
+				fmt("invalid character %s",
+				    char_format_word('\0'));
+			place_begin_quote <<
+				fmt("in quote started by %s",
+				    char_format_word('\'')); 
+			throw ERROR_LOGICAL;
+		} else {
+			if (*p == '\n') {
+				++line;
+				p_line= p + 1;
+			}
+			ret.last_text() += *p++;
+		}
+	}
+	/* Reached end of file without closing the quote */
+	current_place() <<
+		fmt("expected a closing %s", char_format_word('\''));
+	place_begin_quote <<
+		fmt("for quote started by %s",
+		    char_format_word('\'')); 
+	throw ERROR_LOGICAL; 
+ end_of_single_quote:;
+}
+
+void Tokenizer::parse_statement(vector <shared_ptr <Token> > &tokens, 
+				Context context,
+				const Place &place_diagnostic)
+{
+	Place place_percent(place_type, filename, line, p - p_line); 
+	++p;
+	skip_space(); 
+
+	const char *const p_name= p;
+
+	Place place__name(place_type, filename, line, p_name - p_line); 
+
+	while (p < p_end && isalnum(*p)) {
+		++p;
+	}
+
+	if (p == p_name) {
+		if (p < p_end)
+			place__name
+				<< fmt("expected a statement name, not %s",
+				       char_format_word(*p));
+		else
+			place__name
+				<< "expected a statement name";
+		place_percent << fmt("after %s", char_format_word('%')); 
+		throw ERROR_LOGICAL; 
+	}
+
+	const string name(p_name, p - p_name); 
+
+	skip_space(); 
+
+	if (name == "include") {
+
+		if (context == DYNAMIC) {
+			place_percent 
+				<< frmt("%s%%include%s must not appear in dynamic dependencies",
+					Color::word, Color::end);
+			throw ERROR_LOGICAL;
+		}
+		if (context == OPTION_C || context == OPTION_F) {
+			place_percent 
+				<< frmt("%s%%include%s must not appear "
+					"in the argument to the %s-%c%s option",
+					Color::word, Color::end,
+					Color::word, context == OPTION_C ? 'C' : 'F', Color::end); 
+			throw ERROR_LOGICAL;
+		}
+
+		shared_ptr <Place_Name> place_name= parse_name(); 
+
+		if (place_name == nullptr) {
+			Place(place_type, filename, line, p - p_line) <<
+				(p == p_end
+				 ? "expected a filename"
+				 : fmt("expected a filename, not %s", char_format_word(*p)));
+			place_percent << frmt("after %s%%include%s",
+					      Color::word, Color::end); 
+			throw ERROR_LOGICAL;
+		}
+				
+		if (place_name->get_n() != 0) {
+			place_name->place <<
+				fmt("name %s must not be parametrized",
+				    place_name->format_word());
+			place_percent << frmt("after %s%%include%s",
+					      Color::word, Color::end); 
+			throw ERROR_LOGICAL;
+		}
+			
+		const string filename_include= place_name->unparametrized();
+
+		Trace trace_stack
+			(place_name->place,
+			 fmt("%s is included from here", 
+			     name_format_word(filename_include))); 
+
+		traces.push_back(trace_stack);
+		filenames.push_back(filename); 
+
+		if (includes.count(filename_include)) {
+			/* Do nothing -- file was
+			 * already parsed, or is being
+			 * parsed.  */  
+				
+			/* It is an error if a file includes
+			 * itself directly or indirectly */ 
+			for (auto &i:  filenames) {
+				if (filename_include != i)
+					continue;
+				vector <Trace> traces_backward;
+				for (auto j= traces.rbegin();  j != traces.rend(); ++j) {
+					Trace trace(*j);
+					if (j == traces.rbegin()) {
+						trace.message= 
+							fmt("recursive inclusion of %s using %s%%include%s", 
+							    name_format_word(filename_include),
+							    Color::word, Color::end);
+					}
+					traces_backward.push_back(trace); 
+				}
+				for (auto &j:  traces_backward) {
+					j.print(); 
+				}
+				throw ERROR_LOGICAL;
+			}
+		} else {
+			/* Ignore the end place; it is only
+			 * used for the top-level file */  
+			Place place_end_sub; 
+			parse_tokens_file(tokens, 
+					  Tokenizer::SOURCE,
+					  place_end_sub, 
+					  filename_include, 
+					  traces, filenames, includes, 
+					  place_diagnostic,
+					  -1);
+		}
+		traces.pop_back(); 
+		filenames.pop_back(); 
+
+	} else if (name == "version") {
+		while (p < p_end && isspace(*p)) {
+			if (*p == '\n') {
+				++line;  
+				p_line= p + 1; 
+			}
+			++p; 
+		}
+		const char *const p_version= p;
+		while (p < p_end && is_name_char(*p)) {
+			++p;
+		}
+		const string version_required(p_version, p - p_version); 
+		Place place_version(place_type, filename, 
+				    line, p_version - p_line); 
+
+		parse_version(version_required, place_version, place_percent); 
+				
+	} else {
+		/* Invalid statement */ 
+		place_percent << 
+			fmt("invalid statement %s", 
+			    prefix_format_word(name, "%")); 
+		throw ERROR_LOGICAL;
+	}
 }
 
 #endif /* ! TOKENIZER_HH */

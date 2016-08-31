@@ -68,7 +68,10 @@ file targets to be specified, not transient targets.
 Pass a target using full Stu syntax.  The given expression is parsed as
 if it was given as one or more dependencies in a Stu file.  As a result,
 flags -p, -o and -t, brackets, parentheses and other Stu syntax elements
-can be used, and spaces separate filenames.  
+can be used, and spaces separate filenames.  This is not equivalent to
+passing a string as an argument to Stu outside of options, because '-C'
+supports full Stu syntax, while arguments supports only a reduced syntax
+(see below). 
 .IP "-E"
 Explain error messages.  Only some error messages have explanations. 
 .IP "-f FILENAME"
@@ -90,7 +93,9 @@ parameter K is mandatory.
 .IP "-J"
 Parse all arguments to Stu as filenames, disabling all Stu syntax that
 is otherwise used.  Intended when Stu is used with tools such
-as 'xargs'.  The -J option itself does not take an argument; it only
+as
+.B xargs(1)
+or similar.  The -J option itself does not take an argument; it only
 changes the way arguments outside of options are interpreted.
 .IP -k
 Keep going.  Do not stop running when an error occurs.  Instead, try to build as much
@@ -99,9 +104,9 @@ as possible.  This option is equivalent to that of Make.
 Don't delete partially built files when a command fails or when Stu is
 interrupted.  By default, Stu will delete the target of a command after
 the command fails or is interrupted, when the file is newer than it was
-before starting the command. This option disables that behaviour.  Note
+before starting the command. This option disables that behavior.  Note
 that with this option, a subsequent invocation of Stu may lead to the
-partially built file being considered up to date. 
+partially built file being erroneously considered up to date. 
 .IP "-m ORDER"
 Specify the order in which jobs are run.  When ORDER is 'dfs' (the default),
 Stu traverses the dependency graph in a depth-first fashion, in a way
@@ -125,7 +130,8 @@ format is not specified.
 .IP "-q"
 Question mode.  Do not execute any commands.  Instead, determine whether
 the given targets are up to date.  The exit code is 0 when all given
-targets (or the default target) are up to date, and 1 otherwise. 
+targets (or the default target) are up to date, 1 when not, and 4 on
+errors. 
 .IP "-Q"
 Quiet mode.  Suppress the messages on standard output that are not
 related to building targets.  This includes 'Nothing to be done'
@@ -634,7 +640,7 @@ Quoted or unquoted names which
 are not separated by whitespace are interpreted as a single name. 
 
 Single quotes may contain any character except single
-quotes and the NULL character '\\0'.
+quotes and the NUL character '\\0'.
 Backslashes and newline characters always have their literal meaning inside
 single quotes. 
 
@@ -651,7 +657,7 @@ under certain conditions.  Specifically:  Whitespace must appear before opening
 parentheses and brackets, and after closing parenthesis and brackets,
 when the parenthesis or bracket in question would otherwise be
 touching either a name token, or another parenthesis or bracket "from
-outside".  I.e., the following combinations are now errors:
+outside".  I.e., the following combinations are errors:
 
     )(  )[  ](  ][  )A  ]A  A(  A[
 
@@ -822,13 +828,36 @@ can be used in some advanced use cases:
 
     stu -C '-o X' # Re-build file 'X' only if it already exists
     stu -C '[X]' # Build all files given in file 'X'
-    stu -C '%version 2.7' # Make sure Stu is compatible with the given version
 
-The -F option allows to define rules on the command line:
+To check whether Stu is compatible with a particular version of the Stu syntax:
 
-    stu -F 'B:A {cp A B}' # Same as GNU's 'cp -u A B'
-    stu -F 'A;' # Check that the file 'A' exists
-    
+    # Make sure Stu is compatible with the given version
+    if stu -C '%version 2.7' ; then
+        echo "Your Stu is compatible with version 2.7"
+    fi
+
+The -F option allows to define rules on the command line, e.g.:
+
+    # Same as GNU's 'cp -u A B'   
+    stu -F 'B=A;' 
+
+You can also use -F to use Stu as a replacement for 'test':
+
+    # Check that the file 'A' exists; similar to [ -e A ]
+    if stu -c A ; then
+        echo "The file 'A' exists"
+    fi
+
+    # The same, but works also when there is a file 'main.stu' present
+    # that should be ignored
+    if stu -F 'A;' ...
+
+You can use Stu to just execute something, like a poor man's shell:
+
+    stu -F '@all{ echo Hello World }'
+
+(of course, you can also type that directly or use 'sh -c', etc.)
+
 .SH "BUGS"
 
 Filenames in Stu are literal.  Stu does not recognize it when two
@@ -863,7 +892,9 @@ output 'Nothing to be done', as the optional dependency may have been
 created by subsequent targets. 
 
 .SH AUTHOR
-Jérôme Kunegis <kunegis@uni-koblenz.de>
+Written by Jérôme Kunegis <kunegis@uni-koblenz.de>, with contributions
+and help by Jun Sun, Aaron McDaid, Heinrich Hartmann. 
+
 .SH "SEE ALSO"
 .BR make (1)
 .BR cook (1)

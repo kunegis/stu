@@ -22,13 +22,14 @@
 #
 
 #
-# Rethink the process group mechanism:  set a single PGID for Stu
-# itself, and us kill(2) just once on interruption.  This may also make
-# Stu completely async-signal safe, by storing on filenames of targets
-# to be read from the signal handler.  This is also what bash(1) seems
-# to be doing.  On the other hand, this may interfere with shell child
-# processes that also do this, and in turn not kill them when we want it
-# to. 
+# Proper jobs control.
+#
+# Support foreground process groups:  If only a single job is running,
+# put it into the foreground using 
+# tcsetpgrp().  Do this also with -j, so there is always a single job in
+# the foreground.  The will then also make </dev/null unnecessary (jobs
+# that read stdin will simply hang until it's their turn).  See:
+# https://www.gnu.org/software/libc/manual/html_node/Foreground-and-Background.html 
 #
 
 #

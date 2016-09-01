@@ -83,6 +83,8 @@ public:
 	static void kill(pid_t pid); 
 
 	static void init_tty(); 
+
+	static pid_t get_tty()  {  return tty;  }
 	
 	/* Block interrupt signals for the lifetime of an object of this type. 
 	 * Note that the mask of blocked signals is inherited over
@@ -212,13 +214,11 @@ pid_t Job::start(string command,
 	int pid_child= pid;
 	if (pid_child == 0)
 		pid_child= getpid();
-	if (! option_no_background) {
-		if (0 > setpgid(pid_child, pid_child)) {
-			/* This should only fail when we are the parent and the
-			 * child has already quit.  In that case we can ignore
-			 * the error, since the child is dead anyway, so there
-			 * is no need to kill it in the future */ 
-		}
+	if (0 > setpgid(pid_child, pid_child)) {
+		/* This should only fail when we are the parent and the
+		 * child has already quit.  In that case we can ignore
+		 * the error, since the child is dead anyway, so there
+		 * is no need to kill it in the future */ 
 	}
 
 	if (pid == 0) {
@@ -360,7 +360,7 @@ pid_t Job::start(string command,
 		/* Input redirection:  from the given file, or from
 		 * /dev/zero (when BACKGROUND is set)  */
 		if (filename_input != "" ||
-		    (! option_no_background && tty < 0)) {
+		    (! option_foreground && tty < 0)) {
 			const char *name= filename_input == ""
 				? "/dev/null"
 				: filename_input.c_str(); 
@@ -391,7 +391,8 @@ pid_t Job::start(string command,
 
 	assert(pid >= 1); 
 
-	if (! option_no_background && foreground_pid < 0 && tty >= 0) {
+	if (option_foreground && tty >= 0) {
+		assert(foreground_pid < 0); 
 		if (tcsetpgrp(tty, pid) < 0)
 			print_error_system("tcsetpgrp");
 		foreground_pid= pid; 
@@ -424,10 +425,8 @@ pid_t Job::start_copy(string target,
 	int pid_child= pid;
 	if (pid_child == 0)
 		pid_child= getpid();
-	if (! option_no_background) {
-		if (0 > setpgid(pid_child, pid_child)) {
-			/* no-op */ 
-		}
+	if (0 > setpgid(pid_child, pid_child)) {
+		/* no-op */ 
 	}
 
 	if (pid == 0) {
@@ -539,7 +538,6 @@ bool Job::waited(int status, pid_t pid_check)
 	assert(pid >= 0); 
 	assert(pid_check == pid); 
 
-	pid= -1;
 	bool success= WIFEXITED(status) && WEXITSTATUS(status) == 0;
 
 	if (success)
@@ -547,13 +545,15 @@ bool Job::waited(int status, pid_t pid_check)
 	else
 		++ count_jobs_fail; 
 
-	if (pid_check == foreground_pid) {
+	if (pid == foreground_pid) {
 		assert(tty >= 0);
-		assert(! option_no_background); 
+		assert(option_foreground); 
 		if (tcsetpgrp(tty, getpid()) < 0)
 			print_error_system("tcsetpgrp");
 	}
 	
+	pid= -1;
+
 	return success; 
 }
 
@@ -787,13 +787,9 @@ void Job::kill(pid_t pid)
 {
 	assert(pid > 1); 
 
-	/* In background mode, kill the process group, otherwise just
-	 * the process.  */
-	pid_t pid_passed= (! option_no_background) ? -pid : pid; 
-
 	/* We send first SIGTERM, then SIGCONT */ 
 	
-	if (0 > ::kill(pid_passed, SIGTERM)) {
+	if (0 > ::kill(-pid, SIGTERM)) {
 		if (errno == ESRCH) {
 			/* The child process is a zombie.  This
 			 * means the child process has already
@@ -806,7 +802,7 @@ void Job::kill(pid_t pid)
 		}
 	}
 
-	if (0 > ::kill(pid_passed, SIGCONT)) {
+	if (0 > ::kill(-pid, SIGCONT)) {
 		if (errno == ESRCH) {
 			/* ... */
 		} else {

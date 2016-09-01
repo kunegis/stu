@@ -50,7 +50,7 @@ const char HELP[]=
 	"Options:\n"						       
 	"  -0 FILENAME      Read \\0-separated file targets from the given file\n"
 	"  -a               Treat all trivial dependencies as non-trivial\n"          
-	"  -B               Disable process groups and </dev/null for all jobs\n"
+	"  -B               Run jobs in the foreground\n"
 	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"      
 	"  -C EXPRESSIONS   Pass a target in full Stu syntax\n"		              
 	"  -E               Explain error messages\n"                                 
@@ -200,7 +200,6 @@ int main(int argc, char **argv, char **envp)
 			switch (c) {
 
 			case 'a': option_nontrivial= true;     break;
-			case 'B': option_no_background= true;  break;
 			case 'g': option_nonoptional= true;    break;
 			case 'h': fputs(HELP, stdout);         exit(0);
 			case 'J': option_literal= true;        break;
@@ -210,6 +209,14 @@ int main(int argc, char **argv, char **envp)
 			case 'q': option_question= true;       break;
 			case 'v': option_verbose= true;        break;
 
+			case 'B':
+				option_foreground= true;
+				if (Job::get_tty() < 0) {
+					Place place(Place::Type::OPTION, 'B');
+					print_warning(place, "Foreground mode cannot be used because no TTY is available"); 
+				}
+				break;
+		
 			case 'c':  {
 				had_option_target= true; 
 				Place place(Place::Type::OPTION, 'c');
@@ -351,6 +358,14 @@ int main(int argc, char **argv, char **envp)
 		}
 
 		order_vec= (order == Order::RANDOM);
+
+		if (option_foreground && Execution::jobs > 1) {
+			Place(Place::Type::OPTION, 'B')
+				<< fmt("parallel mode with %s cannot be used in conjunction with the option %s",
+				       multichar_format_word("-j"),
+				       multichar_format_word("-B"));
+			exit(ERROR_FATAL); 
+		}
 
 		/* Targets passed on the command line, outside of options */ 
 		for (int i= optind;  i < argc;  ++i) {

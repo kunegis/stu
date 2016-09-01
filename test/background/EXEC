@@ -7,7 +7,7 @@
 # (1) Non-background
 #
 
-for arg in '-B' '-B -j1' '-B -j2' ; do
+for arg in '-B' '-B -j1' ; do
 
 # Only '1' is written to 'X'
 

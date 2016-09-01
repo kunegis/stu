@@ -1,0 +1,16 @@
+#! /bin/sh
+
+../../stu.test -B -j2 >list.out 2>list.err
+exitcode="$?"
+
+[ "$exitcode" = 4 ] || {
+	echo >&2 "*** Expected exit code 4, not $exitcode"
+	exit 1
+}
+
+grep -qF "Option -B: parallel mode with '-j' cannot be used in conjunction with the option '-B'" list.err || {
+	echo >&2 "*** Expected error message"
+	exit 1
+}
+
+exit 0

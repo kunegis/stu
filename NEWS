@@ -13,11 +13,9 @@ made, which are documented in the file MIGRATION.
 
 2016-08-31  Version 2.4.2
 
-* Job control:  at most one job is now put into the foreground.  All
-  other jobs are put into the background, as before.  This means that it
-  is now possible to read from STDIN in Stu commands, as long as -j is
-  not used, or -j is used but the dependencies are such that only a
-  single job is run at a time. 
+* Job control:  Jobs are now always put into the background, except when
+  the -B function is used.  The -B function must now be used when Stu
+  command should read from their standard input. 
 
 2016-08-31  Version 2.4
 

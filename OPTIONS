@@ -23,7 +23,7 @@ List of options
 -b  x   G  Compatibility option
 -b  .   x  Enable backups
 -B      G  Re-make all
--B  S   x  Disable putting jobs in the background
+-B  S   x  Foreground mode 
 -c  S   x  Explicit target without syntax (GNU Make:  change directory)
 -C  S   x  Specify syntax (same as non-option arguments)
 -d      G  Print debugging information 

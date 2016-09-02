@@ -1,5 +1,5 @@
-#ifndef GLOBAL_HH
-#define GLOBAL_HH
+#ifndef OPTIONS_HH
+#define OPTIONS_HH
 
 /* 
  * Global variables of the process.  All boolean option variables are
@@ -71,4 +71,4 @@ const char **envp_global;
  * so we don't use it); the value of argv[0], set in main() */ 
 static const char *dollar_zero;
 
-#endif /* ! GLOBAL_HH */
+#endif /* ! OPTIONS_HH */

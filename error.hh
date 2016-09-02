@@ -64,7 +64,7 @@
 
 #include <assert.h>
 
-#include "global.hh"
+#include "options.hh"
 #include "text.hh"
 #include "color.hh"
 #include "format.hh"

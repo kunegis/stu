@@ -945,7 +945,7 @@ void Execution::waited(pid_t pid, int status)
 	if (job.waited(status, pid)) {
 		/* Command was successful */ 
 
-		/* Set to -1 if at least one target file is missing */
+		/* Subsequently set to -1 if at least one target file is missing */
 		exists= +1; 
 
 		/* For file targets, check that the file was built */ 
@@ -958,21 +958,20 @@ void Execution::waited(pid_t pid, int status)
 			struct stat buf;
 
 			if (0 == stat(target.name.c_str(), &buf)) {
-				/* The file exists. */ 
-				/* Check that the file was not created with modification
-				 * time in the future */  
+
+				/* The file exists */ 
+
 				warn_future_file(&buf, 
 						 target.name.c_str(),
 						 rule->place_param_targets[i]->place,
 						 "after execution of command"); 
+
 				/* Check that file is not older that Stu
 				 * startup */ 
 				Timestamp timestamp_file(&buf);
-
 				if (! timestamp.defined() ||
 				    timestamp < timestamp_file)
 					timestamp= timestamp_file; 
-
 				if (timestamp_file < Timestamp::startup) {
 					/* The target is older than Stu startup */ 
 
@@ -1404,6 +1403,12 @@ Execution::Execution(Target target_,
 
 }
 
+/* 
+ * This is the root execution object.  It has an empty TARGET list, and
+ * in principle should be deleted once its lifetime is over.  This is
+ * not done however, as there is only a single such object, and its
+ * lifetime span the whole lifetime of the Stu process anyway. 
+ */
 Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
 	:  error(0),
 	   need_build(false),
@@ -1704,7 +1709,7 @@ void Execution::read_dynamic_dependency(Stack avoid,
 			/* Delimiter-separated */
 
 			/* We use getdelim() for parsing.  A more
-			 * optimized way would be via mmap()+strchr, but
+			 * optimized way would be via mmap()+strchr(), but
 			 * why the complexity?  */
 			
 			/* The delimiter */ 
@@ -1736,8 +1741,8 @@ void Execution::read_dynamic_dependency(Stack avoid,
 					break;
 				} 
 
-				/* There may or may not be terminating
-				 * \n.  getline(3) will include it if it is
+				/* There may or may not be a terminating
+				 * \n.  getdelim(3) will include it if it is
 				 * present, but the file may not have
 				 * one.  */ 
 
@@ -2376,33 +2381,33 @@ bool Execution::read_variable(string &variable_name,
 
 	return true;
 
-	error_fd:
-		close(fd); 
-	error:
-		assert(dynamic_pointer_cast <Direct_Dependency> (dependency)); 
-		Target target_variable= 
-			dynamic_pointer_cast <Direct_Dependency> (dependency)->place_param_target
-			.unparametrized(); 
+ error_fd:
+	close(fd); 
+ error:
+	assert(dynamic_pointer_cast <Direct_Dependency> (dependency)); 
+	Target target_variable= 
+		dynamic_pointer_cast <Direct_Dependency> (dependency)->place_param_target
+		.unparametrized(); 
 
-		if (rule == nullptr) {
-			dependency->get_place() <<
-				fmt("file %s was up to date but cannot be found now", 
-				    target_variable.format_word());
-		} else {
-			for (auto const &place_param_target: rule->place_param_targets) {
-				if (place_param_target->unparametrized() == target_variable) {
-					place_param_target->place <<
-						fmt("generated file %s was built but cannot be found now", 
-						    place_param_target->format_word());
-					break;
-				}
+	if (rule == nullptr) {
+		dependency->get_place() <<
+			fmt("file %s was up to date but cannot be found now", 
+			    target_variable.format_word());
+	} else {
+		for (auto const &place_param_target: rule->place_param_targets) {
+			if (place_param_target->unparametrized() == target_variable) {
+				place_param_target->place <<
+					fmt("generated file %s was built but cannot be found now", 
+					    place_param_target->format_word());
+				break;
 			}
 		}
-		print_traces();
+	}
+	print_traces();
 
-		raise(ERROR_BUILD); 
+	raise(ERROR_BUILD); 
 		
-		return false;
+	return false;
 }
 
 void Execution::cycle_print(const vector <const Execution *> &path,
@@ -2465,10 +2470,9 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 		t1.type= t1.type.get_base();
 		t2.type= t2.type.get_base(); 
 
-		path.back()
-			->rule->place
-			<< fmt("both %s and %s match the same rule",
-			       t1.format_word(), t2.format_word());
+		path.back()->rule->place <<
+			fmt("both %s and %s match the same rule",
+			    t1.format_word(), t2.format_word());
 	}
 
 	path.back()->print_traces();

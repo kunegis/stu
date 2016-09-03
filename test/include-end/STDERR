@@ -1,2 +1,2 @@
-main.stu:4:2: expected a statement name
+main.stu:4:2: expected a directive name
 main.stu:4:1: after '%'

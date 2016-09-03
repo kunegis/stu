@@ -128,9 +128,9 @@ private:
 	void parse_double_quote(Place_Name &ret);
 	void parse_single_quote(Place_Name &ret); 
 
-	/* Parse a statement.  The pointer must be on the '%'
+	/* Parse a directive.  The pointer must be on the '%'
 	 * character.  Throw a logical error when encountered.  */
-	void parse_statement(vector <shared_ptr <Token> > &tokens,
+	void parse_directive(vector <shared_ptr <Token> > &tokens,
 			     Context context,
 			     const Place &place_diagnostic);
 	
@@ -175,7 +175,7 @@ private:
 	/* Whether the character is a valid flag */ 
 	static bool is_flag_char(char); 
 
-	/* Parse a version statement.  VERSION_REQ is the version number given after
+	/* Parse a version directive.  VERSION_REQ is the version number given after
 	 * "%version", and PLACE its place. */
 	static void parse_version(string version_req, 
 				  const Place &place_version,
@@ -727,7 +727,7 @@ void Tokenizer::parse_version(string version_req,
 			      const Place &place_version,
 			      const Place &place_percent) 
 {
-	/* Note:  there may be any number of version statements in Stu
+	/* Note:  there may be any number of version directives in Stu
 	 * (in particular from multiple source files), so we don't keep
 	 * track whether one has already been provided.  */ 
 
@@ -832,9 +832,9 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			goto had_whitespace; 
 		} 
 
-		/* Statement */ 
+		/* Directive */ 
 		else if (*p == '%') {
-			parse_statement(tokens, context, place_diagnostic); 
+			parse_directive(tokens, context, place_diagnostic); 
 		}
 
 		/* Flag, name, or invalid character */ 		
@@ -1074,7 +1074,7 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
  end_of_single_quote:;
 }
 
-void Tokenizer::parse_statement(vector <shared_ptr <Token> > &tokens, 
+void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens, 
 				Context context,
 				const Place &place_diagnostic)
 {
@@ -1093,11 +1093,11 @@ void Tokenizer::parse_statement(vector <shared_ptr <Token> > &tokens,
 	if (p == p_name) {
 		if (p < p_end)
 			place__name
-				<< fmt("expected a statement name, not %s",
+				<< fmt("expected a directive name, not %s",
 				       char_format_word(*p));
 		else
 			place__name
-				<< "expected a statement name";
+				<< "expected a directive name";
 		place_percent << fmt("after %s", char_format_word('%')); 
 		throw ERROR_LOGICAL; 
 	}
@@ -1214,9 +1214,9 @@ void Tokenizer::parse_statement(vector <shared_ptr <Token> > &tokens,
 		parse_version(version_required, place_version, place_percent); 
 				
 	} else {
-		/* Invalid statement */ 
+		/* Invalid directive */ 
 		place_percent << 
-			fmt("invalid statement %s", 
+			fmt("invalid directive %s", 
 			    prefix_format_word(name, "%")); 
 		throw ERROR_LOGICAL;
 	}

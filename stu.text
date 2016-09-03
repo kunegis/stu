@@ -165,9 +165,9 @@ OPTIONS
               selves do not produce any output.
 
        -x     Call  the shell using the -x option, i.e., each individual shell
-              statement is  output  to  standard  error  output  individually,
-              instead of outputting a full command at once on standard output.
-              In the output, each command is prefixed by the value of '$PS4'.
+              command is output to standard error output individually, instead
+              of outputting a full command at once on standard output.  In the
+              output, each command is prefixed by the value of '$PS4'.
 
        -y     Disable color in output.  By default, Stu checks  whether  error
               output  and  standard error output are TTYs and whether $TERM is
@@ -566,13 +566,13 @@ PARAMETERS
            a.$x.c: ... { ... }
            a.b.$x: ... { ... }
 
-STATEMENTS
-       Statements in Stu are introduced by '%' and serve a similar purpose  to
-       the  C  preprocessor.   The token '%' must be followed by the statement
+DIRECTIVES
+       Directives in Stu are introduced by '%' and serve a similar purpose  to
+       the  C  preprocessor.   The token '%' must be followed by the directive
        name. There may be any amount of whitespace  (including  none)  between
-       '%' and the name of the statement.
+       '%' and the name of the directive.
 
-       File inclusion is done using the '%include' statement.  This can be put
+       File inclusion is done using the '%include' directive.  This can be put
        at any place in the input file, and will temporarily continue tokeniza‐
        tion  in another file.  The filename does not have to be quoted, except
        if it contains special characters, just like any other filename in Stu.
@@ -585,7 +585,7 @@ STATEMENTS
            % include data/
 
        To declare which version of Stu a script is written for, use the '%ver‐
-       sion' statement:
+       sion' directive:
 
            % version 2.3
            % version 2.3.4
@@ -593,10 +593,10 @@ STATEMENTS
        Both  variants will allow the script to be executed only with a version
        of Stu of the correct major version number (2  in  this  example),  and
        whose  minor  version (and patch level) have at least the given values.
-       There may be multiple '%version' statements; each one is  then  checked
-       separately.  In particular, it is possible to place a version statement
+       There may be multiple '%version' directives; each one is  then  checked
+       separately.  In particular, it is possible to place a version directive
        in each source file.  This treatment of version numbers follows  seman‐
-       tic  versionning  (semver.org).  The version statement will not prevent
+       tic  versionning  (semver.org).  The version directive will not prevent
        usage of Stu features that were not present in the specified version.
 
 TOKENIZATION
@@ -613,7 +613,7 @@ TOKENIZATION
        in unquoted filenames:
 
            #     Comment (until the end of the line)
-           %     Statement (followed by statement name and arguments)
+           %     Directive (followed by directive name and arguments)
            '     Quote; without escape sequences
            "     Quote; with escape sequences
            :     Separator for rule definition
@@ -669,7 +669,7 @@ TOKENIZATION
 
 SYNTAX
        The  syntax of a Stu file is given in the following Yacc-like notation.
-       This is the syntax after processing of statements, which are introduced
+       This is the syntax after processing of directives, which are introduced
        with '%'.
 
            rule_list:        rule*
@@ -931,4 +931,4 @@ AUTHOR
 SEE ALSO
        make(1), cook(1)
 
-stu-2.4.7                       September 2016                          STU(1)
+stu-2.4.8                       September 2016                          STU(1)

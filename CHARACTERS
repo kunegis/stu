@@ -28,9 +28,9 @@ ASCII control characters (except those that are whitespace).
 == Characters introducing longer tokens == 
 
 # 	Comment (until the end of the line) 
-%	Statements (followed by the statement name, and optionally followed
-	by arguments depending on the statement); comparable to preprocessor
-	directives.  The statement name and arguments followed regular
+%	Directives (followed by the directive name, and optionally followed
+	by arguments depending on the directive); comparable to preprocessor
+	directives.  The directive name and arguments followed regular
 	Stu quoting rules. 
 -	Flags (only as first character)
 '	Quote without escape sequences

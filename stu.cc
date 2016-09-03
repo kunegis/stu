@@ -77,7 +77,7 @@ const char HELP[]=
 	"  -v               Verbose mode; show execution information on stderr\n"     
 	"  -V               Output version and exit\n"				      
 	"  -w               Short output; show target filenames instead of commands\n"
-	"  -x               Ouput each command statement individually\n"              
+	"  -x               Ouput each line in a command individually\n"              
 	"  -y               Disable color in output\n"                                
 	"  -Y               Enable color in output\n"
 	"  -z               Output run-time statistics on stdout\n"                   

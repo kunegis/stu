@@ -1,0 +1,2 @@
+main.stu:5:3: expected a directive name, not '{'
+main.stu:5:1: after '%'

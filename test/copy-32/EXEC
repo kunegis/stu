@@ -1,4 +1,11 @@
 #! /bin/sh
+#
+# A reminder:  use
+#
+#    rm -- FILE
+#
+# to remove files with ANY possible name. 
+#
 
 rm -f -- A -r -s || exit 1
 
@@ -12,6 +19,10 @@ exitcode="$?"
 
 [ -r list.err ] && ! [ -s list.err ] || {
 	echo >&2 "*** Error output"
+	echo >&2 list.err:
+	echo >&2 _______________
+	cat  >&2 list.err
+	echo >&2 _______________
 	exit 1
 }
 

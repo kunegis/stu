@@ -4,4 +4,4 @@
 # files of these patterns.  Executed within each test directory. 
 #
 
-rm -Rf ? ?? list.* A.* *.data dep.* .+-~_ 
+rm -Rf -- ? ?? list.* A.* *.data dep.* .+-~_ 

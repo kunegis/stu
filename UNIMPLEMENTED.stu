@@ -24,13 +24,14 @@
 #
 
 #
-# Line number syntax:  A preprocessor-like construct that gives a new
+# Line number and file syntax:  A preprocessor-like construct that gives a new
 # filename and line number, such that error messages from Stu can point
 # to the original file, not the generated file.  Analogous to the
 # preprocessors #line directive.  Useful in dynamic dependencies. 
 #
 
-%line ...
+% file datasets.list
+% line 120
 
 #
 # When accessing directories, maybe use not mtime, but something else?
@@ -39,6 +40,8 @@
 #   instead of modification time
 # * this will make it impossible to build directories that are more than
 #   just { mkdir -p }
+#
+# Maybe:  introduce flags to use other timestamps than mtime. 
 #
 
 #
@@ -280,7 +283,22 @@ A = [X];
 
 #
 # Use backslash for quoting.  I.e., allow \X where X is any character
-# outside of quotes to represent X. 
+# outside of quotes to represent X.  We're not doing it because there
+# may be other uses for \.  
+#
+
+#
+# Job control:
+#  - Allow job control with any number of jobs, not just one.
+#  - When a job is put into the background, have a command line that
+#    allows things to be done:
+#      - continue
+#      - abort
+#      - ... (in theory, also;  adding new jobs, cancelling jobs,
+#        getting info about a particular task, etc.)
+# This would actually not be that hard to implement, and would be really
+# cool.  It could then also be used to implement a GUI on top of Stu, to
+# inspect running jobs, etc. 
 #
 
 #==== New features that change extend Stu drastically ====
@@ -311,7 +329,17 @@ A: -R B;  B: C;  A: D;
 # Allow regular expressions in parameters, e.g. for single-character
 # parameters.  This will also make it possible to allow contiguous
 # parameters, and giving a list of possible values for a parametrized
-# rule. 
+# rule.
+#
+# The reason we don't implement it is that it opens a gigantic can of
+# worms, with many follow-up questions, and the danger that people will
+# use the regexps to embed a list of filenames in it (using the |
+# operator), giving essentially the same anti-pattern of listing all
+# possible filenames statically like in Make, only with a much worse
+# syntax.  Currently, most cases can be programmed with the current
+# facilities, but a few use cases exist that are not possible now, such
+# as distinguishing lowercase from uppercase parameters, but then again
+# such cases can be argued to be bad design in themselves. 
 #
 
 # Allow contiguous parameters
@@ -348,14 +376,16 @@ ${NAME:[^/]+}.bib: ...;
 # is that is needs Stu to go through every file in full, making Stu's
 # runtime be linear in the file size.  At the moment, the runtime of Stu
 # is independent of file size, but of course the command to generate a
-# file is always linear in the file size.
+# file is always linear in the file size.  As many features in this
+# file, this opens a enormous can of worms. 
 #
 
 #
 # Let Stu itself be multithreaded.  Very complex to implement, and has
 # only very little benefit since Stu already starts many processes.
 # Would only make sense in scenarios with thousands of processes, which
-# would only make sense on machines with thousands of cores. 
+# would only make sense on machines with thousands of cores.  But still
+# very sensible and maybe necessary one day, in princple. 
 #
 
 #
@@ -369,36 +399,54 @@ ${NAME:[^/]+}.bib: ...;
 # building, and the client would only communicate with the server.  This
 # also means the server would need to be multi-threaded.  This could
 # also be used to build a Stu GUI (either local or via HTTP) that allows
-# one to control a running Stu server. 
+# one to control a running Stu server.
+#
+# Maybe actually be trivial to implement once we have proper job
+# control.  But not for now. 
 #
 
 #
-# How to declare additional command interpreters.  Note:  we may use
-# another character than the backslash. 
+# The ability to declare additional command interpreters.  Note:  we may
+# use another character than the backslash.
+#
+# A common theme among Make replacements is to hardcode specific,
+# high-level, programming languages.  This makes certain applications
+# very nice and elegant, namely those that use only features found in
+# these languages.  The idea for Stu is to allow to use any programming
+# language in commands, with a syntax that makes it easy to add new
+# command interpreters.  What we don't want to have are hardcoded
+# programming languages.
+#
+# There are many details to think about for this, and in general this
+# type of feature pushes people to want to hardcode their favorite
+# programming language in Stu, which we don't want.
+#
+# Here's a random example using Julia, assuming that "everything is a
+# matrix". 
 #
 
-A.mat:  B.mat C.mat 
-\octave{
-	% This command will be executed by the Octave wrapper, and
+A.data:  B.data C.data 
+\julia{
+	% This command will be executed by the Julia wrapper, and
 	% read/write the three matrices automatically. 
 	A = B * C;
 }
 
-octave:  octave-command {
-	# This will be executed whenever A.mat is built, and the three
+julia:  julia-command {
+	# This will be executed whenever A.data is built, and the three
 	# variables used below will be filled by Stu with the dependencies,
 	# the target and the command, which are worked on by the script
-	# ./matlab to invoke Matlab accordingly. 
-	./octave-command "$STU_DEPENDENCIES" "$STU_TARGET" "$STU_COMMAND"
+	# ./julia-command to invoke Julia accordingly. 
+	./julia-command "$STU_DEPENDENCIES" "$STU_TARGET" "$STU_COMMAND"
 }
 
-# A shell script that converts command to correct Octave scripts.  E.g.,
-# it will load B.mat and C.mat as the variables B and C, and will save
-# the generated variable A into A.mat. 
-octave-command;
+# A shell script that converts command to correct Julia scripts.  E.g.,
+# it will load B.data and C.data as the variables B and C, and will save
+# the generated variable A into A.data. 
+julia-command;
 
 # Interpreters can be chained
-\matlab-or-octave:  \octave;
+\julia-or-octave:  \julia;
 
 # This may get problematic with finding the end of a command when
 # programming languages use unusual quoting mechanisms and ways of
@@ -406,13 +454,16 @@ octave-command;
 
 #
 # Nested rules.  Good for dependencies that are used only once. 
+# This is quite hard to read, honestly, and mostly fulfills the fantasy
+# of people who like deeply nested constructs.  
 #
 
 A: (B: C { cp C B}) (D: E {cp E D}) { cat B D >A }
-# This is quite hard to read, honestly. 
 
 #
-# Alternative dependencies
+# Alternative dependencies.  Would not be used often, and where it would
+# be needed, it can be implemented using dynamic dependency.  On the
+# other hand, the '|' operator is free... 
 #
 
 A:  B | C { ... }
@@ -420,7 +471,14 @@ A:  (B C) | (D E) { ... }
 
 #
 # Transient targets can have content.  This will be executed at every Stu
-# invocation. 
+# invocation.  
+#
+# This might be used like variables in Make, but the result will be that
+# targets depending on them will always be rebuilt.  It would thus only
+# make sense together with fingerprinting. 
+#
+# No very useful, since files can be used in exactly the same way, and
+# without the problem of not remembering what was already done. 
 #
 
 # Their definition:
@@ -431,13 +489,6 @@ A:  (B C) | (D E) { ... }
 # Their use:
 file:  <@NAME { sed -e '...' >file }
 result.eps:  $[@NAME] { ./compute --name "$NAME" }
-
-# This might be used like variables in Make, but the result will be that
-# targets depending on them will always be rebuilt.  It would thus only
-# make sense together with fingerprinting. 
-
-# No very useful, since files can be used in exactly the same way, and
-# without the problem of not remembering what was already done. 
 
 #
 # An option of Stu that generates a shell script from a Stu file that
@@ -452,7 +503,13 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 # These features can be implemented outside of Stu using constructs
 # supported by Stu.  Thus, there is no need to integrate them into Stu,
 # and in fact supporting them would bloat Stu and and unnecessary
-# dependencies to it. 
+# dependencies to it.
+#
+# If anything, the question we should ask for each of these features is
+# not whether we should hardcode it into Stu, but how easily these
+# things can be implemented using the Stu language.  If necessary, we
+# may then extend the Stu language to make such implementations
+# possible, and easy. 
 #
 
 # 
@@ -462,7 +519,7 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 # * Compression, archiving, and encryption
 # * Converting encodings, line endings, and processing escape sequences 
 # * Limitations on runtime, memory usages and other resources by jobs
-# * Calling interpreters or compilers for specific programming languages
+# * Calling interpreters or compilers for specific programming languages 
 #
 
 #

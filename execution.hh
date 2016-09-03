@@ -1457,6 +1457,8 @@ void job_terminate_all()
 	/* Strictly speaking, there is a bug here because the C++
 	 * containers are not async signal-safe. */ 
 
+	write_safe(2, "stu: Terminating all jobs\n"); 
+	
 	for (auto i= Execution::executions_by_pid.begin();
 	     i != Execution::executions_by_pid.end();  ++i) {
 
@@ -1476,7 +1478,7 @@ void job_terminate_all()
 	}
 
 	if (terminated) {
-		write_safe(2, "Removing partially built files\n");
+		write_safe(2, "stu: Removing partially built files\n");
 	}
 
 	/* Check that all children are terminated */ 
@@ -1488,7 +1490,7 @@ void job_terminate_all()
 			/* wait() sets errno to ECHILD when there was no
 			 * child to wait for */ 
 			if (errno != ECHILD) {
-				write_safe(2, "*** Error: waitpid\n"); 
+				write_safe(2, "*** Error: wait\n"); 
 			}
 
 			return; 

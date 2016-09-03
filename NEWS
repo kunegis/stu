@@ -11,6 +11,11 @@ made, which are documented in the file MIGRATION.
 
 ------------------------------------------------------------------------
 
+2016-09-03  Version 2.4.7
+
+* The -B is renamed to -i, because it is mainly an interactive mode,
+tu  even if only very rudimentary. 
+
 2016-08-31  Version 2.4.2
 
 * Job control:  Jobs are now always put into the background, except when

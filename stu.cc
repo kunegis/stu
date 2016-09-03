@@ -39,7 +39,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-const char OPTIONS[]= "0:Bac:C:Ef:F:ghj:JkKm:M:n:o:p:PqQsvVwxyYz"; 
+const char OPTIONS[]= "0:ac:C:Ef:F:ghij:JkKm:M:n:o:p:PqQsvVwxyYz"; 
 
 /* The output of the help (-h) option.  The following strings do not
  * contain tabs, but only space characters.  */   
@@ -50,7 +50,6 @@ const char HELP[]=
 	"Options:\n"						       
 	"  -0 FILENAME      Read \\0-separated file targets from the given file\n"
 	"  -a               Treat all trivial dependencies as non-trivial\n"          
-	"  -B               Run jobs in the foreground\n"
 	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"      
 	"  -C EXPRESSIONS   Pass a target in full Stu syntax\n"		              
 	"  -E               Explain error messages\n"                                 
@@ -58,6 +57,7 @@ const char HELP[]=
 	"  -F RULES         Pass rules in Stu syntax\n"                               
 	"  -g               Treat all optional dependencies as non-optional\n"        
 	"  -h               Output help and exit\n"		                      
+	"  -i               Interactive mode (run jobs in foreground)\n"
 	"  -j K             Run K jobs in parallel\n"			              
 	"  -J               Disable Stu syntax in arguments\n"                        
 	"  -k               Keep on running after errors\n"		              
@@ -209,14 +209,6 @@ int main(int argc, char **argv, char **envp)
 			case 'q': option_question= true;       break;
 			case 'v': option_verbose= true;        break;
 
-			case 'B':
-				option_foreground= true;
-				if (Job::get_tty() < 0) {
-					Place place(Place::Type::OPTION, 'B');
-					print_warning(place, "Foreground mode cannot be used because no TTY is available"); 
-				}
-				break;
-		
 			case 'c':  {
 				had_option_target= true; 
 				Place place(Place::Type::OPTION, 'c');
@@ -259,6 +251,14 @@ int main(int argc, char **argv, char **envp)
 				read_option_F(optarg, Execution::rule_set, rule_first);
 				break;
 
+			case 'i':
+				option_interactive= true;
+				if (Job::get_tty() < 0) {
+					Place place(Place::Type::OPTION, 'i');
+					print_warning(place, "Interactive mode cannot be used because no TTY is available"); 
+				}
+				break;
+		
 			case 'j':  {
 				errno= 0;
 				char *endptr;
@@ -359,11 +359,10 @@ int main(int argc, char **argv, char **envp)
 
 		order_vec= (order == Order::RANDOM);
 
-		if (option_foreground && Execution::jobs > 1) {
-			Place(Place::Type::OPTION, 'B')
-				<< fmt("parallel mode with %s cannot be used in conjunction with the option %s",
-				       multichar_format_word("-j"),
-				       multichar_format_word("-B"));
+		if (option_interactive && Execution::jobs > 1) {
+			Place(Place::Type::OPTION, 'i')
+				<< fmt("parallel mode with %s cannot be used in interactive mode",
+				       multichar_format_word("-j")); 
 			exit(ERROR_FATAL); 
 		}
 

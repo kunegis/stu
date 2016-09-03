@@ -360,7 +360,7 @@ pid_t Job::start(string command,
 		/* Input redirection:  from the given file, or from
 		 * /dev/zero (when BACKGROUND is set)  */
 		if (filename_input != "" ||
-		    (! option_foreground && tty < 0)) {
+		    (! option_interactive && tty < 0)) {
 			const char *name= filename_input == ""
 				? "/dev/null"
 				: filename_input.c_str(); 
@@ -391,7 +391,7 @@ pid_t Job::start(string command,
 
 	assert(pid >= 1); 
 
-	if (option_foreground && tty >= 0) {
+	if (option_interactive && tty >= 0) {
 		assert(foreground_pid < 0); 
 		if (tcsetpgrp(tty, pid) < 0)
 			print_error_system("tcsetpgrp");
@@ -475,8 +475,10 @@ pid_t Job::start_copy(string target,
 pid_t Job::wait(int *status)
 {
  begin: 	
-	/* First, try wait() without blocking */ 
-	pid_t pid= waitpid(-1, status, WNOHANG);
+	/* First, try wait() without blocking.  WUNTRACED is used to
+	 * also get notified when a job is suspended (e.g. with
+	 * Ctrl-Z).  */ 
+	pid_t pid= waitpid(-1, status, WNOHANG | WUNTRACED);
 	if (pid < 0) {
 		/* Should not happen as there is always something
 		 * running when this function is called.  However, this may be
@@ -485,9 +487,40 @@ pid_t Job::wait(int *status)
 		perror("waitpid"); 
 		abort(); 
 	}
-	
-	if (pid > 0)
-		return pid; 
+
+	if (pid > 0) {
+		if (WIFSTOPPED(*status)) {
+			/* 
+			 * The job was suspended.  This is the simplest
+			 * thing possible we can do:  put ourselves in
+			 * the foreground, ask the user to press ENTER,
+			 * and then put the job back into the foreground
+			 * and continue it.  In principle, we
+			 * could do much more:  allow the user to enter
+			 * commands, having an own command language.
+			 */
+
+			if (tcsetpgrp(tty, getpid()) < 0)
+				print_error_system("tcsetpgrp");
+			fprintf(stderr, "stu: job stopped.  Press ENTER to continue, Ctrl-C to terminate Stu, Ctrl-Z to suspend Stu\n");
+			char *lineptr= nullptr;
+			size_t n= 0;
+			ssize_t r= getline(&lineptr, &n, stdin);
+			if (r < 0) {
+				perror("getline");
+				/* On error, continue anyway */ 
+			}
+			
+			/* Continue job */
+			fprintf(stderr, "stu: continuing\n"); 
+			if (tcsetpgrp(tty, pid) < 0)
+				print_error_system("tcsetpgrp");
+			::kill(-pid, SIGCONT); 
+			goto begin;
+		}
+
+		return pid;
+	}
 
 	/* Any SIGCHLD sent after the last call to sigwaitinfo() will
 	 * be ready for receiving, even those SIGCHLD signals received
@@ -547,7 +580,7 @@ bool Job::waited(int status, pid_t pid_check)
 
 	if (pid == foreground_pid) {
 		assert(tty >= 0);
-		assert(option_foreground); 
+		assert(option_interactive); 
 		if (tcsetpgrp(tty, getpid()) < 0)
 			print_error_system("tcsetpgrp");
 	}

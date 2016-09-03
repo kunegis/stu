@@ -273,7 +273,3 @@ A: -o @x;
 # Equivalent to
 A: B;
 
-#
-# Job control:  When a foreground process is finished, put another
-# running process into the foreground, instead of none. 
-#

@@ -23,7 +23,6 @@ List of options
 -b  x   G  Compatibility option
 -b  .   x  Enable backups
 -B      G  Re-make all
--B  S   x  Foreground mode 
 -c  S   x  Explicit target without syntax (GNU Make:  change directory)
 -C  S   x  Specify syntax (same as non-option arguments)
 -d      G  Print debugging information 
@@ -33,7 +32,8 @@ List of options
 -F  S      Pass rule on the command line
 -g  S      Consider optional dependencies to be non-optional 
 -h  S   G  Show help and exit 
--i  . M G  Ignore all errors in commands
+-i  S x x  Interaction mode
+-i  x M G  Ignore all errors in commands
 -I  .   G  Include path
 -j  S   G  Parallel
 -J  S      Don't parse Stu syntax in arguments

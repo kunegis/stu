@@ -9,14 +9,14 @@
 /* The -a option (consider all trivial dependencies to be non-trivial) */ 
 static bool option_nontrivial= false;
 
-/* The -B option (put jobs into the foreground) */
-static bool option_foreground= false;
-
 /* The -E option (explain error messages) */
 static bool option_explain= false;
 
 /* The -g option (consider all optional dependencies to be non-optional) */
 static bool option_nonoptional= false;
+
+/* The -i option (interactive mode) */
+static bool option_interactive= false;
 
 /* The -J option (literal interpretation of argumens) */
 static bool option_literal= false; 

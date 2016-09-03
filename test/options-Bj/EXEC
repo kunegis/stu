@@ -1,6 +1,6 @@
 #! /bin/sh
 
-../../stu.test -B -j2 >list.out 2>list.err
+../../stu.test -i -j2 >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 4 ] || {
@@ -8,8 +8,8 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF "Option -B: parallel mode with '-j' cannot be used in conjunction with the option '-B'" list.err || {
-	echo >&2 "*** Expected error message"
+grep -qF "Option -i: parallel mode with '-j' cannot be used in interactive mode" list.err || {
+	echo >&2 "*** Expected the correct error message"
 	exit 1
 }
 

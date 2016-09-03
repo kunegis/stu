@@ -665,7 +665,7 @@ TOKENIZATION
 
        The following characters are reserved for future extension:
 
-           * \ | , & ! ?
+           * \ & | ! ? ,
 
 SYNTAX
        The  syntax of a Stu file is given in the following Yacc-like notation.

@@ -1,16 +1,16 @@
-This file gives an overview of options letters used and proposed by Stu,
-and a comparison to those used by Make. 
+This file lists options letters used and proposed by Stu, and gives a
+comparison to those prescribed by POSIX for Make, and those used in GNU
+Make. 
 
 
 Legend
 ======
 
-S   Implemented in Stu
+S   Implemented in Stu and considered stable
+s   Implemented in Stu and considered unstable - may be subject to change
 M   Specified by POSIX Make
 G   Implemented in GNU Make
-.   Proposed for Stu 
--   Not proposed for Stu, but the option is purposefully kept unused in
-    case we want to use it for Stu 
+.   Proposed or at least reserved in Stu 
 ~   Not applicable to Stu 
 x   Incompatible 
 
@@ -19,53 +19,54 @@ List of options
 ===============
 
 -0  S      Pass a \0-separated dynamic dependency 
--a  S      Consider trivial dependencies to be non-trivial
--b  x   G  Compatibility option
--b  .   x  Enable backups
--B      G  Re-make all
--c  S   x  Explicit target without syntax (GNU Make:  change directory)
--C  S   x  Specify syntax (same as non-option arguments)
--d      G  Print debugging information 
+-a  s      Consider trivial dependencies to be non-trivial
+-b      G  Compatibility option
+-B  .   G  Re-build all
+-c  S      Explicit file target without syntax
+-C  S   x  Explicit target with syntax 
+-C  x   G  Change directory
+-d  .   G  Print debugging information 
 -e  ~ M G  Environment overrides Make macros
 -E  S      Explain errors
 -f  S M G  File
 -F  S      Pass rule on the command line
--g  S      Consider optional dependencies to be non-optional 
+-g  s      Consider optional dependencies to be non-optional 
 -h  S   G  Show help and exit 
--i  S x x  Interaction mode
+-i  S x x  Interactive mode
 -i  x M G  Ignore all errors in commands
 -I  .   G  Include path
 -j  S   G  Parallel
 -J  S      Don't parse Stu syntax in arguments
 -k  S M G  Keep going
 -K  S      Keep partially built files
--l      G  Number of jobs depends on load average
--L      G  Special handling of symlinks
--m  S   x  Mode; e.g., random order, etc. (GNU Make: compatibility)
+-l  .   G  Number of jobs depends on load average
+-L  .   G  Special handling of symlinks
+-m  S   x  Mode
+-m  x   G  Compatibility
 -M  S      Seed mode
--n  S x x  Pass a file containing newline-separated file targets, without syntax parsing 
--n  x M G  Dry run (just print commands)
--N  .      Dry run, but build dynamic dependencies 
--o  S   x  Optional dependency
+-n  s x x  Pass a file containing newline-separated file targets, without syntax parsing 
+-n  x M G  Dry run 
+-o  s   x  Optional dependency
 -o  x   G  Mark file as old
--p  S x x  Persistent dependency
--p  x M G  Print database (rule set)
--P  S      Print database (rule set)
--q  S M G  Question mode / Query mode
--Q  S      Quiet mode (suppress stdout messages, except building messages)
--r    M G  No builtin rules
--R      G  No builtin variables
+-O  .   G  Output sync
+-p  s x x  Persistent dependency
+-p  x M G  Print database 
+-P  S      Print database 
+-q  S M G  Question mode / query mode
+-Q  S      Quiet mode
+-r  ~ M G  No builtin rules
+-R  ~   G  No builtin variables
 -s  S M G  Silent
--S  - M G  No keep going
--t  . x x  Trivial dependency
--t  x M G  Touch instead of building
--u  .      Consider all files up-to-date 
--v  S   x  Verbose (GNU Make:  show version)
--V  S      Show version and exit
--w  S	x  Short mode (GNU Make:  print directory) 
--W  .   G  What-if mode / assume new (if FILE just had been modified) 
+-S  . M G  No keep going
+-t  . M G  Touch instead of building
+-u
+-v  S   x  Verbose
+-v  x   G  Show version
+-V  S      Show version
+-w  S	x  Short mode 
+-w  x   G  Print directory
+-W  .   G  What-if mode / assume new 
 -x  S      Enable /bin/sh -x instead of normal output
 -y  S      Disable color output
 -Y  S      Enable color output
 -z  S      Output statistics
-

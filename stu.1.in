@@ -728,7 +728,7 @@ case for name tokens.
 
 The following characters are reserved for future extension: 
 
-    * \\ | , & ! ?
+    * \\ & | ! ? ,
 
 .SH "SYNTAX"
 

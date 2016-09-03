@@ -185,11 +185,7 @@ tmp: {...}
 % include -d src/
 % include -d src
 
-#
-# Maybe enable explanations by default?
-#
-
-o#==== Features of Stu 2:  Other features ====
+#==== Features of Stu 2:  Other features ====
 
 #
 # Recursive persistent dependency:  If the file exists, never
@@ -200,21 +196,12 @@ o#==== Features of Stu 2:  Other features ====
 #
 
 #
-# Have an option to suppress warnings.  (which?)
-#
-
-#
-# New flag to ALWAYS build a target.  (We may already have this?)
-#
-
-#
 # When including files using dynamic dependencies, make a
 # difference between inclusion and import, as is done for %include and
 # %import. 
 #
 
 A: [-d data/B];
-A: [data//B]; # ?
 
 #
 # Search within predefined paths for %include ($STU_PATH or $STUPATH;
@@ -244,32 +231,3 @@ A: [data//B]; # ?
 {
 	inkscape ...
 }
-
-#
-# Variables of the flags that apply to all children, not just immediate
-# ones.  
-#
-
-$ stu '-E A'
-
-# will completely ignore timestamps in all files.  
-
-# This will also cover cases that are implemented as options at the
-# moment, e.g. -g: 
-
-$ stu '+o A'
-
-# is equivalent to
-
-$ stu -g A
-
-#
-# Disable flags with '+' options
-#
-
-A: -o @x;
-@x: +o B;
-
-# Equivalent to
-A: B;
-

@@ -1,7 +1,7 @@
 #
 # These are features that were decided not to be implemented at some
 # point.  Many of these ideas are actually good, in particular the first
-# categories, and we may revive them in the future.  When in doubt, we prefer 
+# category, and we may revive them in the future.  When in doubt, we prefer 
 # to *not* support a feature, as adding a feature in the future can
 # always be done without breaking compatibility, whereas removing one is
 # always backward-incompatible.  
@@ -71,7 +71,7 @@
 #
 
 #
-# Option -i:  ignore all errors, like POSIX Make
+# An option to ignore all errors, like POSIX Make's -i
 #
 
 #
@@ -288,20 +288,83 @@ A = [X];
 #
 
 #
-# Job control:
+# Features of interactive mode:
 #  - Allow job control with any number of jobs, not just one.
 #  - When a job is put into the background, have a command line that
 #    allows things to be done:
 #      - continue
 #      - abort
 #      - ... (in theory, also;  adding new jobs, cancelling jobs,
-#        getting info about a particular task, etc.)
+#        getting info about a particular task, load/remove rules, etc.)
+#  - Allow to start directly into the command line, without targets to
+#    build.
 # This would actually not be that hard to implement, and would be really
 # cool.  It could then also be used to implement a GUI on top of Stu, to
 # inspect running jobs, etc. 
 #
 
+#
+# Maybe enable explanations by default?  No.  
+#
+
+#
+# Have an option to suppress warnings.  
+#
+
+#
+# Option to ALWAYS build a target. 
+#
+
+#
+# Variables of the flags that apply to all children, not just immediate
+# ones.  
+#
+
+$ stu '+p A'
+
+# will completely ignore timestamps in all files.  
+
+# This will also cover cases that are implemented as options at the
+# moment, e.g. -g: 
+
+$ stu '+o A'
+
+# is equivalent to
+
+$ stu -g A
+
+#
+# Disable flags with '+' options
+#
+
+A: -o @x;
+@x: +o B;
+
+# Equivalent to
+A: B;
+
+#
+# Some form of embedding the value of environment variables into names.
+# The ${VAR} syntax is already taken by parameters, so maybe use $().
+# We could also let parameters use $(VAR) and then have ${VAR} for
+# environment variables, but that would be backward-incompatible. 
+#
+
+/home/$(USER)/.emacs = lib/ ; 
+
+#
+# Option -A:  build all (non-parametrized) targets.
+#
+
 #==== New features that change extend Stu drastically ====
+
+#
+# Allow non-file targets.  E.g., files within archives, or remote
+# files.  Would almost always need to incorporate some unwanted
+# dependency, and be highly specific to a single use-case.  Instead of
+# implementing this in Stu, a better implementation is via mounting, or
+# virtual filesystems.  Make traditionally supports "ar" archives. 
+#
 
 #
 # Use C instead of C++.  This is tempting for simplicity and also out of
@@ -309,7 +372,8 @@ A = [X];
 #  - Write container classed indexed with strings, targets, and maybe
 #    PIDs.
 #  - Convert certain containers to arrays.
-#  - More complex and error-prone memory management
+#  - More complex and error-prone memory management, in particular for
+#    strings 
 #  - A replacement for exceptions
 #
 
@@ -358,14 +422,6 @@ $NAME.bib:  bibs-B/$NAME.bib
 
 # Exclude slashes
 ${NAME:[^/]+}.bib: ...;
-
-#
-# Interactive Stu.  Have a command line with functions like:
-#  - add file to the queue
-#  - remove file from the queue
-#  - get stats about running / completed jobs
-#  - foreground/background jobs control like the shell has
-#
 
 #
 # Fingerprinting instead of timestamps is a feature that is implemented by quite
@@ -478,7 +534,7 @@ A:  (B C) | (D E) { ... }
 # make sense together with fingerprinting. 
 #
 # No very useful, since files can be used in exactly the same way, and
-# without the problem of not remembering what was already done. 
+# without the problem of not remembering what was already done.  
 #
 
 # Their definition:

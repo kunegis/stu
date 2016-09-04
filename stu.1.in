@@ -831,7 +831,7 @@ of '/bin/cp'.  The given version of 'cp' must support the syntax 'cp --
 Contains options to be set on every run of Stu.  All letters except for
 those in
 .BR EQswxyYz
-are ignored.  Options passed on the command line apply after this passed
+are ignored.  Options passed on the command line apply after those passed
 using this variable. 
 .IP STU_SHELL
 If set, Stu calls the shell from the given location instead of '/bin/sh'.  The given shell
@@ -848,8 +848,9 @@ is set. To circumvent this, unset the variable.  Recursive Stu is as
 harmful as recursive Make.
 .IP TERM
 Used to determine whether to use color output.  This variable must be
-set to a value different from 'dumb', and isatty(3) must return 1 for
-color to be enabled.   
+set to a value different from 'dumb', and
+.B isatty(3)
+must return 1 for color to be enabled.   
 
 .SH "SIGNALS"
 
@@ -1023,7 +1024,7 @@ created by subsequent targets.
 
 .SH AUTHOR
 Written by Jérôme Kunegis <kunegis@uni-koblenz.de>, with contributions
-and help by Jun Sun, Aaron McDaid, Heinrich Hartmann. 
+and help by Jun Sun, Aaron McDaid, Heinrich Hartmann, and Holger Heinz. 
 
 .SH "SEE ALSO"
 .BR make (1)\

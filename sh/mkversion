@@ -1,10 +1,15 @@
 #! /bin/sh
 #
-# Generate the file 'version.hh'.
+# Generate the content of the file 'version.hh'.
 # 
-# INPUT
+# INPUT FILES 
 #	VERSION	- file containing the version number
 #
+# STDOUT
+#	The content to be put in the file 'version.hh'
+#
+
+set -e
 
 VERSION="$(echo $(cat VERSION))"
 

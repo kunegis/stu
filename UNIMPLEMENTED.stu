@@ -359,6 +359,32 @@ A: B;
 #==== New features that change extend Stu drastically ====
 
 #
+# Glob patterns.  This only makes sense when the files found by globbing
+# don't have rules for themselves, as then they would never be able to
+# be built in the first place.  Thus, it can only be used for checking
+# the files' timestamps.
+#
+# Only * and ? would make sense here, since both [] and {} can be
+# replaced by ().
+#
+# Also, a glob executed at each invocation of Stu is not good:  better
+# execute it once and place the result in a file. 
+#
+
+example:  *.c *.h
+{
+	cc example.c -o example 
+}
+
+# better:
+example:  [FILES]
+{
+	cc example.c -o example
+}
+
+>FILES { echo *.c *.h }
+
+#
 # Allow non-file targets.  E.g., files within archives, or remote
 # files.  Would almost always need to incorporate some unwanted
 # dependency, and be highly specific to a single use-case.  Instead of

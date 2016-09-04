@@ -1,5 +1,6 @@
 #
-# Makefile that also enables the test.  
+# Use this Makefile if you're hacking Stu, and not just installing it.
+# In particular, this Makefile performs all tests. 
 # 
 
 all-devel: \

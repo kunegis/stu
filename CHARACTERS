@@ -1,7 +1,7 @@
 This file catalogues the usage of individual characters in Stu source
 files.  
 
-Since Stu sources consist promarily of filenames, many characters that
+Since Stu sources consist primarily of filenames, many characters that
 are used as operators in programming languages cannot be used in Stu as
 they are needed as part of filenames, such as '/', '~', etc.  
 
@@ -25,7 +25,7 @@ recognized as whitespace by Stu.  I.e., " \f\n\r\t\v".
 
 ASCII control characters (except those that are whitespace). 
 
-== Characters introducing longer tokens == 
+== Characters introducing longer sequences == 
 
 # 	Comment (until the end of the line) 
 %	Directives (followed by the directive name, and optionally followed
@@ -36,7 +36,7 @@ ASCII control characters (except those that are whitespace).
 '	Quote without escape sequences
 "       Quote with escape sequences
 {}	Command, content
-$	Parameter, variable dependencies 
+$	Parameter prefix (when not followed by '[')
 
 == Operators == 
 
@@ -50,8 +50,10 @@ These characters are single-character tokens.
 >	Output redirection (target only)
 <	Input redirection (dependency only)
 =	Assignment, copy, and named variable
+$[	The sequence '$[' is analysed as a sequence of the two operators
+        '$' and '['.  In other environments, '$' introduces parameters. 
 
-== As-yet unused operators ==
+== As-yet unused characters ==
 
 These characters are reserved for future extension.  They are not
 allowed outside quoted strings, except for '-', '+' and '~' which are
@@ -66,13 +68,18 @@ would also require more complex (and harder to understand) precedence
 rules.  This leaves binary and ternary operators as possible uses, or as
 forms of non-operators, i.e., new tokens. 
 
-+	Inverted flag
-~	Home directory
-*	Concatenation 
-\	Escape of characters outside of quotes
-\	Command interpreter 
-& |	Some form of conjunction and disjunction 
+*   	Concatenation (very likely)
++	Inverted flag (likely)
+~	Home directory (maybe)
+\	Difference operator (maybe)
+\	Command interpreter (maybe)
+\	Escape of characters outside of quotes (maybe)
+& 	Intersection (maybe)
+|	Componentwise concatenation (maybe)
+|	Union (redundant to juxtaposition) 
 ! ?	Some form of dual operators
+!	Command interpreter
+* ?     For file globbing 
 ,	Names are already whitespace-separated, and any other use than
 	as a list constructor would be unintuitive   
 ,	As optional file separator; completely redundant 

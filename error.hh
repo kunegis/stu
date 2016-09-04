@@ -396,9 +396,11 @@ void print_warning(const Place &place, string message)
 		    Color::warning, Color::warning_word); 
 }
 
-/* Explanation functions:  they output an explanation of a feature of
+/* 
+ * Explanation functions:  they output an explanation of a feature of
  * Stu on standard output.  This is used after certain non-trivial error
- * messages, and is enabled by the -E option. */
+ * messages, and is enabled by the -E option. 
+ */
 
 void explain_clash() 
 {

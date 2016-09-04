@@ -641,7 +641,7 @@ shared_ptr <Dependency> Direct_Dependency
 	string this_name= ret_target->place_name.unparametrized(); 
 
 	if ((flags & F_VARIABLE) &&
-		this_name.find('=') != string::npos) {
+	    this_name.find('=') != string::npos) {
 
 		assert(ret_target->type == Type::FILE); 
 

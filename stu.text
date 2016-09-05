@@ -753,7 +753,7 @@ ENVIRONMENT
        STU_OPTIONS
               Contains options to be set on every run  of  Stu.   All  letters
               except for those in EQswxyYz are ignored.  Options passed on the
-              command line apply after this passed using this variable.
+              command line apply after those passed using this variable.
 
        STU_SHELL
               If set, Stu calls the shell from the given location  instead  of
@@ -926,9 +926,9 @@ BUGS
 
 AUTHOR
        Written by Jérôme Kunegis <kunegis@uni-koblenz.de>, with  contributions
-       and help by Jun Sun, Aaron McDaid, Heinrich Hartmann.
+       and help by Jun Sun, Aaron McDaid, Heinrich Hartmann, and Holger Heinz.
 
 SEE ALSO
        make(1), cook(1)
 
-stu-2.4.10                      September 2016                          STU(1)
+stu-2.4.12                      September 2016                          STU(1)

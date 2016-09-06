@@ -62,11 +62,22 @@ dest/$file = $file;
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This
-# will complement the options -o/-p/-n/-0. 
+# will complement the options -o/-p/-n/-0.
+#
+# Write a tokenizer for it and use the usual parser.  The tokenizer
+# should:
+#    - recognize operators only at the beginning and end of arguments
+#    - treat whitespace within arguments as part of the name, and only
+#      consider the separation between arguments to be whitespace
+#    - don't support '$'
+#    - don't need space after flags 
 #
 
 $ stu -- [ -n FILES ]
 $ stu -- -o FILE
+$ stu -- -oFILE
+$ stu -- [FILE]
+$ stu -- [-oFILE]
 
 #
 # The 'trivial' flag '-t' should "go up" when applied to the
@@ -133,6 +144,11 @@ V {
 }
 
 #
+# By default, don't show whole commands, but only the name of the
+# target. 
+# 
+
+#
 # Use the '+' sign to invert flags. 
 #
 
@@ -143,31 +159,57 @@ V {
 A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 
 #
-# What happens with relative and absolute pathnames?  When two names
-# refer to the same file?  Do we need to 'normalize' (canonicalize) names?
+# Canonicalize names 
 #
-# * fold ..
-# * fold ., except for a single .
-# * Remove ending / 
-# * Fold multiple / to a single one, except exactly two at the beginning
-# * don't touch symlinks/hardlinks/etc. (they need syscalls to detect anyway) 
+# - Fold multiple / to a single one, except exactly two at the beginning
+# - Remove ending /, except for single '/'
+# - Fold ., except for a single .
+# - Fold */.. (.. at beginning stays)
+# 
+# (Don't do anything special with symlinks/hardlinks/etc.; they need
+# syscalls to detect anyway.)
 #
-# Question:  should '/' match in parameters?  -> Yes
+# Questions
+#   - Should '/' match in parameters?  -> Yes
+#   - Does that also apply to transient targets? 
 #
 
-# This will fail because ../../bib/$NAME.bib will match $NAME.bib.
-# Instead, be able to write ./$NAME.bib
-A:   a.bib b.bib c.bib;
-$NAME.bib:  ../../bib/$NAME.bib { cp ... }
-a.bib;
+#      - aaa/.. ->  .
+#      - aaa/../bbb -> bbb
+#      - .. -> ..
+#      - ../aaa -> ../aaa
+#      - /../aaa -> /aaa
+#      - aaa/bbb/../../ccc -> ccc
+#      - . -> .
+#      - ./ -> .
+#      - aaa/. -> aaa
+#      - aaa/ -> aaa
+#      - ./aaa -> aaa
+#      - .//aaa -> aaa
+#      - ./. -> .
+#      - aaa//bbb -> aaa/bbb
+#      - //aaa -> //aaa
+#      - ///aaa -> /aaa
+#      - ////aaa -> /aaa
+#      - // -> /
+#      - /// -> /
+#      - ./ -> .
+#      - /. -> /
+#      - aaa -> aaa
+#      - aaa/bbb -> aaa/bbb
+#      - / -> / 
 
-# Rules:
-#     $NAME.bib:    a .bib file anywhere
-#     ./$NAME.bib:  a .bib file in the current directory
+#
+# When a parametrized name contains a slash in a nonparametrized part,
+# any subsequent parameters cannot match a slash.  This is taken into
+# account for computation of dominance. 
+#
 
-# Remove trailing slash from directory names.
-A:  -o tmp/ {...}
-tmp: {...}
+# Given
+$name.bib;   # Rule (1)
+./$name.bib; # Rule (2)
+# The name dir/aaa.bib will match rule (1).
+# The name aaa.bib will match both rules. 
 
 #
 # File import
@@ -185,6 +227,20 @@ tmp: {...}
 % include -d src/
 % include -d src
 
+# - What about transient transient targets imported in that way.  Do we
+#   prepend a directory to them?
+%import dir   # contains:   @all:  ...;
+# gets converted to:       @dir/all:  ...;
+# or to:                   dir/@all:  ...;  # ???
+
+#
+# When including files using dynamic dependencies, make a
+# difference between inclusion and import, as is done for %include and
+# %import. 
+#
+
+A: [-d data/B];
+
 #==== Features of Stu 2:  Other features ====
 
 #
@@ -194,14 +250,6 @@ tmp: {...}
 # ignore the targets timestamp, but don't change anything about its
 # dependencies.  
 #
-
-#
-# When including files using dynamic dependencies, make a
-# difference between inclusion and import, as is done for %include and
-# %import. 
-#
-
-A: [-d data/B];
 
 #
 # Search within predefined paths for %include ($STU_PATH or $STUPATH;
@@ -231,3 +279,25 @@ A: [-d data/B];
 {
 	inkscape ...
 }
+
+#
+# Uppercase flag is recursive:
+#
+
+# Ignores timestamps recursively
+A: -P B;
+
+#
+# Have a flag to present echoing of the command. (Similar to '@' in
+# Make)
+#
+
+#
+# A "hard optional" option:  If a dependency is not present, don't even
+# try to rebuild the target if it's already present. 
+#
+
+#
+# Have at least one mode in which Stu outputs "Build successful" at the
+# end.  (In green.)
+#

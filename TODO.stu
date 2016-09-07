@@ -1,6 +1,11 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
+# In the output made by SIGUSR1, don't put quotes around target names in
+# the job list. 
+#
+
+#
 # Concatenation.  Concatenation is to work both with the
 # binary operator '*' as well with juxtaposition.     [2.5]
 #
@@ -301,5 +306,5 @@ A: -P B;
 
 #
 # Have at least one mode in which Stu outputs "Build successful" at the
-# end.  (In green.)
+# end.  (In green.)  Also, one which shows the PIDs of started jobs.
 #

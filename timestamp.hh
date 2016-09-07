@@ -33,7 +33,6 @@
  * Note also that this implementation has such high precision, that bugs
  * in Stu scripts may emerge which normally would have been hidden.  
  */
-
 class Timestamp
 {
 private:
@@ -73,7 +72,7 @@ public:
 
 	string format() const {
 		assert(defined()); 
-		return frmt("%lld.%9ld", (long long) t.tv_sec, (long) t.tv_nsec); 
+		return frmt("%lld.%09ld", (long long) t.tv_sec, (long) t.tv_nsec); 
 	}
 
 	static const Timestamp UNDEFINED;

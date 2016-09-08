@@ -45,16 +45,6 @@
 #
 
 #
-# An option for automatic logging:  write all output (stdout/stderr) of
-# commands to a file (a different file per target).  Use the -l option. 
-#
-
-#
-# -m bfs (breadth-first order) and -m target (pseudotarget by target
-# name) 
-#
-
-#
 # Have a "clean" option that removes all files that can be rebuilt,
 # based on the given Stu file.
 # Ironically, this may need to build dynamic dependency files first. 
@@ -71,18 +61,22 @@
 #
 
 #
-# An option to ignore all errors, like POSIX Make's -i
+# An option to ignore all errors, like POSIX Make's -i.  That's a really
+# far-reaching feature.  Wait until someones tells us their use-case for
+# it. 
 #
 
 #
 # When reporting an error, always report how the .stu file was included
 # by another .stu file.  Use "light" traces in green, like GCC does.
-# (Maybe only do this in a special mode.) 
+# (Maybe only do this in a special mode.)  (Also, this will become
+# important later when import is implemented.)
 #
 
 #
 # Make the argument to the -j option optional.  Reason for rejection:
-# not possible with standard getopt(). 
+# not possible with standard getopt().  Will be possible when/if Stu
+# switches to something else than plain getopt(). 
 #
 
 #
@@ -101,6 +95,9 @@ $NAME.bib:  { ... }
 a.bib:  extra dependencies ... ;
 # The intention is to add dependencies to only certain files, but the
 # result would be to let the second rule override the first. 
+
+# On the other hand, this may be achieved by using a special flag for
+# it, in which case it would be easy to implement. 
 
 #
 # Mark this target to always be a persistent dependency 
@@ -151,8 +148,9 @@ A:  -p $[B] { ... }
 A:  -po B { ... }
 
 #
-# Set intersection with '&'.  Clashes with trivial dependencies and can
-# be implemented indepently of Stu.  (Will not clash anymore in version 2.)
+# Set intersection with '&'.  Can be implemented indepently of Stu.  We
+# may implement it if there is demand for using this often in a sensible
+# use-case. 
 #
 
 @x:  (A B C) & (B C D);
@@ -160,7 +158,7 @@ A:  -po B { ... }
 @x:  B C;
 
 #
-# Index-wise concatenation with '|'
+# Index-wise concatenation with '|'. 
 #
 
 @x:  (A B) | (X Y);
@@ -168,7 +166,7 @@ A:  -po B { ... }
 @x:  AX BY;
 
 # This corresponds to the paste(1) command.  It is rarely useful,
-# though.    
+# though.  (
 
 #
 # Set difference, e.g. with '\'. 

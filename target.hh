@@ -266,6 +266,31 @@ public:
 			   string(type.get_dynamic_depth(), ']')); 
 	}
 
+	string format_src() const {
+
+		Style style= 0;
+		if (type != Type::FILE)
+			style |= S_MARKERS;
+
+		bool quotes= false;
+		for (char c: name) {
+			if (! isalnum(c) &&
+			    ! strchr("+-./^`_~", c) &&
+			    ! (c & 0x80))
+				quotes= true;
+		}
+		
+		string text= name_format(name, style, quotes); 
+
+		return fmt("%s%s%s%s%s%s", 
+			   string(type.get_dynamic_depth(), '['),
+			   type.is_any_transient() ? "@" : "",
+			   quotes ? "'" : "",
+			   text,
+			   quotes ? "'" : "",
+			   string(type.get_dynamic_depth(), ']')); 
+	}
+
 	bool operator== (const Target &target) const {
 		return this->type == target.type &&
 			this->name == target.name;

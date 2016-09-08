@@ -4,7 +4,7 @@
 # In this test, send a SIGUSR1 signal one second after starting Stu with
 # the -j 5 option. 
 
-A:  D E   @x  list.K list.L list.M list.N list.O
+A:  D E   @x  list.K list.L list.M  "list.File 123" list.N list.O
 {
 	touch A
 }
@@ -19,4 +19,10 @@ $X: {
 
 @x {
 	sleep 2
+}
+
+>"list.File 123"
+{
+	sleep 2
+	seq 1 99 
 }

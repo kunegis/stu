@@ -2284,7 +2284,7 @@ void Execution::print_as_job() const
 {
 	pid_t pid= job.get_pid();
 
-	string text_target= targets.front().format_out(); 
+	string text_target= targets.front().format_src(); 
 
 	printf("%7ld %s\n", (long) pid, text_target.c_str());
 }

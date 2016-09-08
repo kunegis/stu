@@ -10,7 +10,7 @@ S   Implemented in Stu and considered stable
 s   Implemented in Stu and considered unstable - may be subject to change
 M   Specified by POSIX Make
 G   Implemented in GNU Make
-.   Proposed or at least reserved in Stu 
+.   Possible to implement in Stu 
 ~   Not applicable to Stu 
 x   Incompatible 
 
@@ -39,6 +39,7 @@ List of options
 -J  S      Don't parse Stu syntax in arguments
 -k  S M G  Keep going
 -K  S      Keep partially built files
+-l  .   x  Logging into a file with the given name 
 -l  .   G  Number of jobs depends on load average
 -L  .   G  Special handling of symlinks
 -m  S   x  Mode

@@ -403,15 +403,13 @@ pid_t Job::start(string command,
 	return pid; 
 }
 
+/* This function works analogously like start() with respect to
+ * invocation of fork() and other system-related functions.  */
 pid_t Job::start_copy(string target,
 		      string source)
 {
 	assert(target != "");
 	assert(source != ""); 
-
-	/* This function works analogously like start() with respect to
-	 * invocation of fork() and other system-related functions. */ 
-
 	assert(pid == -2); 
 
 	pid= fork();
@@ -434,7 +432,7 @@ pid_t Job::start_copy(string target,
 
 		/* We don't set $STU_STATUS for copy jobs */ 
 
-		const char *cp_command= nullptr;
+		static const char *cp_command= nullptr;
 		if (cp_command == nullptr) {
 			cp_command= getenv("STU_CP");
 			if (cp_command == nullptr || cp_command[0] == '\0') 
@@ -497,12 +495,15 @@ pid_t Job::wait(int *status)
 			 * and then put the job back into the foreground
 			 * and continue it.  In principle, we
 			 * could do much more:  allow the user to enter
-			 * commands, having an own command language.
+			 * commands, having an own command language,
+			 * etc. 
 			 */
 
 			if (tcsetpgrp(tty, getpid()) < 0)
 				print_error_system("tcsetpgrp");
-			fprintf(stderr, "stu: job stopped.  Press ENTER to continue, Ctrl-C to terminate Stu, Ctrl-Z to suspend Stu\n");
+			fprintf(stderr,
+				"stu: job stopped.  "
+				"Press ENTER to continue, Ctrl-C to terminate Stu, Ctrl-Z to suspend Stu\n");
 			char *lineptr= nullptr;
 			size_t n= 0;
 			ssize_t r= getline(&lineptr, &n, stdin);
@@ -546,10 +547,11 @@ pid_t Job::wait(int *status)
 	switch (siginfo.si_signo) {
 
 	case SIGCHLD:
-		/* We could get the PID and STATUS from siginfo, but
-		 * then the process would stay a zombie.  Therefore, we
-		 * have to call waitpid().  The call to waitpid() will
-		 * now return the proper signal.  */ 
+		/* Don't act on the signal here.  We could get the PID
+		 * and STATUS from siginfo, but then the process would
+		 * stay a zombie.  Therefore, we have to call waitpid().
+		 * The call to waitpid() will now return the proper
+		 * signal.  */
 		goto begin; 
 
 	case SIGUSR1:
@@ -558,7 +560,7 @@ pid_t Job::wait(int *status)
 		goto retry; 
 
 	default:
-		/* We didn't wait for that signal */ 
+		/* We didn't wait for this signal */ 
 		assert(false);
 		fprintf(stderr, "*** sigwaitinfo: Received signal %d\n", siginfo.si_signo);
 		goto begin; 
@@ -717,7 +719,7 @@ Job::Signal_Blocker::~Signal_Blocker()
  *      blocked, and then waited for specifically.   
  *    - The job control signals SIGTTIN and SIGTTOU.  They are both
  *      produced by certain job control events that Stu triggers, and
- *      ignored. 
+ *      ignored by Stu. 
  * 
  * The signals SIGCHLD and SIGUSR1 are the signals that we wait for in
  * the main loop. They are blocked.  At the same time, the blocked
@@ -836,9 +838,7 @@ void Job::kill(pid_t pid)
 	}
 
 	if (0 > ::kill(-pid, SIGCONT)) {
-		if (errno == ESRCH) {
-			/* ... */
-		} else {
+		if (errno != ESRCH) {
 			write_safe(2, "*** Error: Kill\n"); 
 		}
 	}

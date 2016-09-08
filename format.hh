@@ -8,7 +8,10 @@
  *   specification, but never surrounds it by quotes or color
  * - format_word() returns a string suitable for inclusion in a message
  *   on STDERR, including quotes and color, as appropriate. 
- * - format_out() returns the same as format_word(), but for STDERR. 
+ * - format_out() returns the same as format_word(), but for STDOUT. 
+ * - format_src() formats an expression as if if was part of the source,
+ *   e.g., use quotes only if the name contains characters that need to
+ *   be quoted.  
  * - raw() does not escape anything. 
  *
  * Format functions are defined in the source files where their datatype

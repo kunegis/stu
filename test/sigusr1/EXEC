@@ -26,16 +26,33 @@ grep -qE '^STATISTICS  ' list.out || {
 
 grep -qF '(2 succeeded, 0 failed, 6 running)' list.out || {
 	echo >&2 '*** Output B'
+	echo >&2 stdout:
+	echo >&2 ________________
+	cat  >&2 list.out
+	echo >&2 ________________
 	exit 1
 }
 
-grep -qF "'list.M'" list.out || {
+grep -qF " list.M" list.out || {
 	echo >&2 '*** Output list.M (1)'
+	echo >&2 stdout:
+	echo >&2 ________________
+	cat  >&2 list.out
+	echo >&2 ________________
 	exit 1
 }
 
-grep -qF "@x" list.out || {
-	echo >&2 '*** Output list.M (2)'
+grep -qF " 'list.File 123'" list.out || {
+	echo >&2 '*** Output list.File 123 (1)'
+	echo >&2 stdout:
+	echo >&2 ________________
+	cat  >&2 list.out
+	echo >&2 ________________
+	exit 1
+}
+
+grep -qF " @x" list.out || {
+	echo >&2 '*** Output @x (2)'
 	echo >&2 stdout:
 	echo >&2 ____
 	cat >&2 list.out

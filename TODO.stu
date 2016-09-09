@@ -147,7 +147,12 @@ V {
 # By default, don't show whole commands, but only the name of the
 # target.
 #
-# Also, in parallel mode, show extra "done" messages for each command. 
+# Also, in parallel mode, show extra "done" messages for each command.
+#
+# Or, show nothing by default?
+#
+# Maybe:  if a command has a single line, show a "Building X" message,
+# otherwise show the command. 
 # 
 
 #
@@ -243,6 +248,11 @@ $name.bib;   # Rule (1)
 
 A: [-d data/B];
 
+#
+# An option for automatic logging:  write all output (stdout/stderr) of
+# commands to a file (a different file per target).  Use the -l option. 
+#
+
 #==== Features of Stu 2:  Other features ====
 
 #
@@ -305,11 +315,6 @@ A: -P B;
 #
 
 #
-# An option for automatic logging:  write all output (stdout/stderr) of
-# commands to a file (a different file per target).  Use the -l option. 
-#
-
-#
 # -m bfs (breadth-first order) and -m target (pseudotarget by target
 # name) 
 #
@@ -317,4 +322,9 @@ A: -P B;
 #
 # In output for the 'cp' command, don't put quotes around filenames if
 # they are not special. 
+#
+
+#
+# Have a mode to show only the first error message, not all subsequent
+# traces. 
 #

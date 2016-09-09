@@ -1,6 +1,18 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
+# By default, don't show whole commands, but only the name of the
+# target.
+#
+# Also, in parallel mode, show extra "done" messages for each command. 
+# 
+
+#
+# In output for the 'cp' command, don't put quotes around filenames if
+# they are not special. 
+#
+
+#
 # Concatenation.  Concatenation is to work both with the
 # binary operator '*' as well with juxtaposition.     [2.5]
 #
@@ -142,13 +154,6 @@ A: @x {
 V {
 	exit 1
 }
-
-#
-# By default, don't show whole commands, but only the name of the
-# target.
-#
-# Also, in parallel mode, show extra "done" messages for each command. 
-# 
 
 #
 # Use the '+' sign to invert flags. 
@@ -314,7 +319,3 @@ A: -P B;
 # name) 
 #
 
-#
-# In output for the 'cp' command, don't put quotes around filenames if
-# they are not special. 
-#

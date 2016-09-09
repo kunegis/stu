@@ -1,0 +1,9 @@
+Creating 'E'
+cp E '$'
+cp '$' '"'
+cp '"' ''\'''
+cp ''\''' '@'
+cp '@' D
+cp D C
+cp C B
+cp B A

@@ -2030,8 +2030,8 @@ void Execution::print_command() const
 	if (rule->is_copy) {
 		/* To the user, we hide the fact that we are using '--' */ 
 		assert(rule->place_param_targets.size() == 1); 
-		string cp_target= rule->place_param_targets[0]->place_name.format_out();
-		string cp_source= rule->filename.format_out();
+		string cp_target= rule->place_param_targets[0]->place_name.format_src();
+		string cp_source= rule->filename.format_src();
 		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str()); 
 		return; 
 	}

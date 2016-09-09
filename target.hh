@@ -272,13 +272,7 @@ public:
 		if (type != Type::FILE)
 			style |= S_MARKERS;
 
-		bool quotes= false;
-		for (char c: name) {
-			if (! isalnum(c) &&
-			    ! strchr("+-./^`_~", c) &&
-			    ! (c & 0x80))
-				quotes= true;
-		}
+		bool quotes= src_need_quotes(name); 
 		
 		string text= name_format(name, style, quotes); 
 
@@ -474,6 +468,18 @@ public:
 
 	string format_out() const {
 		bool quotes= true;
+		string s= format(0, quotes); 
+		return fmt("%s%s%s",
+			   quotes ? "'" : "",
+			   s,
+			   quotes ? "'" : "");
+	}
+
+	string format_src() const {
+		bool quotes= false;
+		for (const string &t:  texts)
+			if (src_need_quotes(t))
+				quotes= true; 
 		string s= format(0, quotes); 
 		return fmt("%s%s%s",
 			   quotes ? "'" : "",

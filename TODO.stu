@@ -1,11 +1,6 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# In output for the 'cp' command, don't put quotes around filenames if
-# they are not special. 
-#
-
-#
 # By default, don't show whole commands, but only the name of the
 # target.
 #

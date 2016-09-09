@@ -1,2 +1,2 @@
 Creating 'B'
-cp 'B' 'A'
+cp B A

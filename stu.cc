@@ -39,7 +39,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-const char OPTIONS[]= "0:ac:C:Ef:F:ghij:JkKm:M:n:o:p:PqQsvVwxyYz"; 
+const char OPTIONS[]= "0:ac:C:dEf:F:ghij:JkKm:M:n:o:p:PqQsVwxyYz"; 
 
 /* The output of the help (-h) option.  The following strings do not
  * contain tabs, but only space characters.  */   
@@ -52,6 +52,7 @@ const char HELP[]=
 	"  -a               Treat all trivial dependencies as non-trivial\n"          
 	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"      
 	"  -C EXPRESSIONS   Pass a target in full Stu syntax\n"		              
+	"  -d               Debug mode; show execution information on stderr\n"     
 	"  -E               Explain error messages\n"                                 
 	"  -f FILENAME      The input file to use instead of 'main.stu'\n"            
 	"  -F RULES         Pass rules in Stu syntax\n"                               
@@ -74,7 +75,6 @@ const char HELP[]=
 	"  -q               Question mode; check whether targets are up to date\n"    
 	"  -Q               Quiet mode; suppress special stdout messages\n"           
 	"  -s               Silent mode; do not output commands\n"	              
-	"  -v               Verbose mode; show execution information on stderr\n"     
 	"  -V               Output version and exit\n"				      
 	"  -w               Short output; show target filenames instead of commands\n"
 	"  -x               Ouput each line in a command individually\n"              
@@ -200,6 +200,7 @@ int main(int argc, char **argv, char **envp)
 			switch (c) {
 
 			case 'a': option_nontrivial= true;     break;
+			case 'd': option_debug= true;          break;
 			case 'g': option_nonoptional= true;    break;
 			case 'h': fputs(HELP, stdout);         exit(0);
 			case 'J': option_literal= true;        break;
@@ -207,7 +208,6 @@ int main(int argc, char **argv, char **envp)
 			case 'K': option_no_delete= true;      break;
 			case 'P': option_print= true;          break;  
 			case 'q': option_question= true;       break;
-			case 'v': option_verbose= true;        break;
 
 			case 'c':  {
 				had_option_target= true; 

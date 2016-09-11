@@ -358,8 +358,8 @@ bool Execution::hide_nothing_to_be_done= false;
 
 void Execution::wait() 
 {
-	if (option_verbose) {
-		fprintf(stderr, "VERBOSE %s wait\n",
+	if (option_debug) {
+		fprintf(stderr, "DEBUG %s wait\n",
 			Verbose::padding()); 
 	}
 
@@ -368,8 +368,8 @@ void Execution::wait()
 	int status;
 	pid_t pid= Job::wait(&status); 
 
-	if (option_verbose) {
-		fprintf(stderr, "VERBOSE %s wait pid = %ld\n", 
+	if (option_debug) {
+		fprintf(stderr, "DEBUG %s wait pid = %ld\n", 
 			Verbose::padding(),
 			(long) pid);
 	}
@@ -404,12 +404,12 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 	done.check();
 
-	if (option_verbose) {
+	if (option_debug) {
 		string text_target= verbose_target(); 
 		string text_flags= flags_format(link.flags);
 		string text_avoid= link.avoid.format(); 
 
-		fprintf(stderr, "VERBOSE %s %s execute %s %s\n", 
+		fprintf(stderr, "DEBUG %s %s execute %s %s\n", 
 			Verbose::padding(),
 			text_target.c_str(),
 			text_flags.c_str(),
@@ -423,9 +423,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 
  	if (finished(link.avoid)) {
-		if (option_verbose) {
+		if (option_debug) {
 			string text_target= verbose_target(); 
-			fprintf(stderr, "VERBOSE %s %s finished\n",
+			fprintf(stderr, "DEBUG %s %s finished\n",
 				Verbose::padding(),
 				text_target.c_str());
 		}
@@ -739,9 +739,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 		
 		done.add_one_neg(0); 
 
-		if (option_verbose) {
+		if (option_debug) {
 			string text_target= verbose_target();
-			fprintf(stderr, "VERBOSE %s %s create content\n",
+			fprintf(stderr, "DEBUG %s %s create content\n",
 				Verbose::padding(),
 				text_target.c_str());
 		}
@@ -824,9 +824,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 		assert(pid != 0 && pid != 1); 
 
-		if (option_verbose) {
+		if (option_debug) {
 			string text_target= verbose_target();
-			fprintf(stderr, "VERBOSE %s %s execute pid = %ld\n", 
+			fprintf(stderr, "DEBUG %s %s execute pid = %ld\n", 
 				Verbose::padding(),
 				text_target.c_str(),
 				(long) pid); 
@@ -1066,8 +1066,8 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 			bool r;
 
 			do {
-				if (option_verbose) {
-					fprintf(stderr, "VERBOSE %s main.next\n", 
+				if (option_debug) {
+					fprintf(stderr, "DEBUG %s main.next\n", 
 						Verbose::padding());
 				}
 				r= execution_root->execute(nullptr, move(link));
@@ -1125,11 +1125,11 @@ void Execution::unlink(Execution *const parent,
 {
 	(void) avoid_child;
 
-	if (option_verbose) {
+	if (option_debug) {
 		string text_parent= parent->verbose_target();
 		string text_child= child->verbose_target();
 		string text_done_child= child->done.format();
-		fprintf(stderr, "VERBOSE %s %s unlink %s %s\n",
+		fprintf(stderr, "DEBUG %s %s unlink %s %s\n",
 			Verbose::padding(),
 			text_parent.c_str(),
 			text_child.c_str(),
@@ -1314,10 +1314,10 @@ Execution::Execution(Target target_,
 		executions_by_target[target]= this; 
 	}
 
-	if (option_verbose) {
+	if (option_debug) {
 		string text_target= verbose_target();
 		string text_rule= rule == nullptr ? "(no rule)" : rule->format_out(); 
-		fprintf(stderr, "VERBOSE  %s   %s %s\n",
+		fprintf(stderr, "DEBUG  %s   %s %s\n",
 			Verbose::padding(),
 			text_target.c_str(),
 			text_rule.c_str()); 
@@ -1342,10 +1342,10 @@ Execution::Execution(Target target_,
 
 			Link link_new(dep); 
 
-			if (option_verbose) {
+			if (option_debug) {
 				string text_target= verbose_target();
 				string text_link_new= link_new.format_out(); 
-				fprintf(stderr, "VERBOSE %s    %s push %s\n",
+				fprintf(stderr, "DEBUG %s    %s push %s\n",
 					Verbose::padding(),
 					text_target.c_str(),
 					text_link_new.c_str()); 
@@ -2092,10 +2092,10 @@ void Execution::print_command() const
 bool Execution::deploy(const Link &link,
 		       const Link &link_child)
 {
-	if (option_verbose) {
+	if (option_debug) {
 		string text_target= verbose_target();
 		string text_link_child= link_child.format_out(); 
-		fprintf(stderr, "VERBOSE %s %s deploy %s\n",
+		fprintf(stderr, "DEBUG %s %s deploy %s\n",
 			Verbose::padding(),
 			text_target.c_str(),
 			text_link_child.c_str());

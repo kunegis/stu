@@ -1,5 +1,0 @@
-# Test the -v option when a file is already existing. 
-
-A: edit.c {
-	cat edit.c edit.c >A
-}

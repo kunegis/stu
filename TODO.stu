@@ -1,11 +1,44 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# By default, don't show whole commands, but only the name of the
-# target.
+# (0) Quiet / silent:  show nothing
+# (1) One-liners:  show single lines for commands, end-of-commands, and summary
 #
-# Also, in parallel mode, show extra "done" messages for each command. 
-# 
+# Default is (0) in non-terminal mode, (1) in terminal. 
+#
+
+# Remove the -s and -Q options, replace by only the -s command.  Check
+# which one of the two is supposed to suppress errors, and choosing the
+# one that doesn't.
+
+# Maybe:  use (0) by default, with the option -v to set (1)
+
+# By default, don't show whole commands, but only the name of the
+# target.  (Only show a command if it is a single line and we're not in
+# parallel mode.)  The text should read "Building X" in non-parallel
+# mode, and "Running command for X" in parallel mode. 
+
+# Also, in parallel mode, show extra "done" messages for each command.
+# In color by return code (success, normal error, signal [show signal
+# name and number])
+
+# Maybe:  if a command has a single line, show a "Building X" message,
+# otherwise show the command.
+
+# In parallel mode, show a "Build successful" or "Failed" message.  Include the total number of jobs, etc. 
+
+# Have at least one mode in which Stu outputs "Build successful" at the
+# end.  (In green.)  Also, one which shows the PIDs of started jobs.
+
+# In parallel mode, one-liner should include the PID
+
+# For content commands, show the content when short and ASCII-ish
+
+# When removing files automatically at the end, display the number of
+# files removed. 
+
+# In parallel mode, don't show the full trace after and error, but only
+# a one-liner. 
 
 #
 # Concatenation.  Concatenation is to work both with the
@@ -149,18 +182,6 @@ A: @x {
 V {
 	exit 1
 }
-
-#
-# By default, don't show whole commands, but only the name of the
-# target.
-#
-# Also, in parallel mode, show extra "done" messages for each command.
-#
-# Or, show nothing by default?
-#
-# Maybe:  if a command has a single line, show a "Building X" message,
-# otherwise show the command. 
-# 
 
 #
 # Use the '+' sign to invert flags. 
@@ -314,11 +335,6 @@ A: -P B;
 #
 # A "hard optional" option:  If a dependency is not present, don't even
 # try to rebuild the target if it's already present. 
-#
-
-#
-# Have at least one mode in which Stu outputs "Build successful" at the
-# end.  (In green.)  Also, one which shows the PIDs of started jobs.
 #
 
 #

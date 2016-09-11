@@ -25,7 +25,7 @@ List of options
 -c  S      Explicit file target without syntax
 -C  S   x  Explicit target with syntax 
 -C  x   G  Change directory
--d  .   G  Print debugging information 
+-d  s   G  Print debugging information 
 -e  ~ M G  Environment overrides Make macros
 -E  S      Explain errors
 -f  S M G  File
@@ -61,7 +61,7 @@ List of options
 -S  . M G  No keep going
 -t  . M G  Touch instead of building
 -u
--v  S   x  Verbose
+-v  .   x  Verbose
 -v  x   G  Show version
 -V  S      Show version
 -w  S	x  Short mode 

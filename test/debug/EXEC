@@ -2,7 +2,7 @@
 
 rm -f ?
 
-../../stu.test -vs >list.out 2>list.err
+../../stu.test -ds >list.out 2>list.err
 exitcode="$?"
 
 [ "$exitcode" = 0 ] || { 
@@ -14,7 +14,7 @@ exitcode="$?"
 
 lines="$(echo $(<list.err wc -l))"
 [ "$lines" -gt 10 ] || { echo >&2 '*** Not enough error output' ; exit 1 ; }
-grep -Eqv '^VERBOSE  ' list.err && { echo >&2 '*** Invalid error output' ; exit 1 ; }
+grep -Eqv '^DEBUG  ' list.err && { echo >&2 '*** Invalid error output' ; exit 1 ; }
 
 exit 0
 

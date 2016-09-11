@@ -9,6 +9,9 @@
 /* The -a option (consider all trivial dependencies to be non-trivial) */ 
 static bool option_nontrivial= false;
 
+/* The -d option (debug mode) */ 
+static bool option_debug= false;
+
 /* The -E option (explain error messages) */
 static bool option_explain= false;
 
@@ -35,9 +38,6 @@ static bool option_question= false;
 
 /* The -Q option (quiet) */
 static bool option_quiet= false;
-
-/* The -v option (verbose mode) */ 
-static bool option_verbose= false;
 
 /* The -x option (use sh -x) */ 
 static bool option_individual= false;

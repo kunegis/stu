@@ -73,6 +73,10 @@ passing a string as an argument to Stu outside of options, because
 .BR -C 
 supports full Stu syntax, while arguments supports only a reduced syntax
 (see below). 
+.IP -d
+Debug mode.  Show internal information about the Stu algorithm on
+standard error output.  All printed output lines begin with the
+string 'DEBUG  ', i.e. the word DEBUG followed by two spaces. 
 .IP "-E"
 Explain error messages.  Only some error messages have explanations. 
 .IP "-f FILENAME"
@@ -171,10 +175,6 @@ option.
 Silent mode.  Suppress output of commands when they are executed. 
 This option is comparable to the same option in Make.  Other output is
 not suppressed, such as 'Nothing to be done'.  
-.IP -v
-Verbose mode.  Show internal information about the Stu algorithm on
-standard error output.  All printed output lines begin with the
-string 'VERBOSE  '.   
 .IP -V 
 Output the version number of Stu and exit.
 .IP -w

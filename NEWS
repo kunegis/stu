@@ -11,6 +11,11 @@ made, which are documented in the file MIGRATION.
 
 ------------------------------------------------------------------------
 
+2016-09-11  Version 2.4.17
+
+* "Verbose mode" is now called "debug mode", and the option was changed
+  from -v to -d.  
+
 2016-09-03  Version 2.4.7
 
 * The -B is renamed to -i, because it is mainly an interactive mode,

@@ -1,7 +1,7 @@
 /*
  * This is the top-level source code file, which contains the main()
- * function.  See the manpage for a description of options, exit codes,
- * etc.   
+ * function.  See the manpage for a description of options, the exit
+ * status, etc.   
  */
 
 /*

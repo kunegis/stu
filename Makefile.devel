@@ -26,7 +26,7 @@ CXXFLAGS_OTHER=-std=c++11 $(DEFS)
 #
 # Possible flags to add to CXXFLAGS_OTHER:
 #
-#     -DUSE_MTIM=1		Enable nonsecond-precision timestamps
+#     -DUSE_MTIM=1		Enable nanosecond-precision timestamps
 #
 
 # Some of the specialized flags may not be present in other

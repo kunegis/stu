@@ -1,17 +1,17 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
+# for sh/mktest:  rename 'EXITCODE' to 'EXITSTATUS'
+#
+
+#
 # (0) Quiet / silent:  show nothing
 # (1) One-liners:  show single lines for commands, end-of-commands, and summary
 #
 # Default is (0) in non-terminal mode, (1) in terminal. 
 #
 
-# Remove the -s and -Q options, replace by only the -s command.  Check
-# which one of the two is supposed to suppress errors, and choosing the
-# one that doesn't.
-
-# Maybe:  use (0) by default, with the option -v to set (1)
+# Remove the -s and -Q options, replace by only the -s command.  
 
 # By default, don't show whole commands, but only the name of the
 # target.  (Only show a command if it is a single line and we're not in
@@ -22,23 +22,19 @@
 # In color by return code (success, normal error, signal [show signal
 # name and number])
 
-# Maybe:  if a command has a single line, show a "Building X" message,
-# otherwise show the command.
+# In parallel mode, show a "Build successful" or "Failed" message.
+# Include the total number of jobs, etc.  
 
-# In parallel mode, show a "Build successful" or "Failed" message.  Include the total number of jobs, etc. 
+# verbose mode -v:  Show PIDs when commands are started, and always show
+# end-of-commands outputs.  
 
-# Have at least one mode in which Stu outputs "Build successful" at the
-# end.  (In green.)  Also, one which shows the PIDs of started jobs.
-
-# In parallel mode, one-liner should include the PID
+# In parallel mode, one-liner should include the PID (only with the -v
+# option) 
 
 # For content commands, show the content when short and ASCII-ish
 
 # When removing files automatically at the end, display the number of
-# files removed. 
-
-# In parallel mode, don't show the full trace after and error, but only
-# a one-liner. 
+# files removed.  With the -v option, show the list of files removed. 
 
 #
 # Concatenation.  Concatenation is to work both with the
@@ -345,4 +341,25 @@ A: -P B;
 #
 # Have a mode to show only the first error message, not all subsequent
 # traces. 
+#
+
+#
+# Correct parsing of shell syntax in commands:  { and } only have their
+# meaning when they are not attached to other words, and when they are
+# the first word in a command.
+#
+
+# Write '}' to the file 'A'
+>A { echo } ; }
+
+# It will mean that ';' will be mandatory before a closing '}' that is
+# not preceded by whitespace, just like it is in the shell. 
+
+#
+# Allow access to environment variables via e.g. $(HOME). 
+#
+
+#
+# In parallel mode, don't show the full trace after and error, but only
+# a one-liner. 
 #

@@ -54,7 +54,7 @@ List of options
 -p  x M G  Print database 
 -P  S      Print database 
 -q  S M G  Question mode / query mode
--Q  S      Quiet mode
+-Q  s      Quiet mode
 -r  ~ M G  No builtin rules
 -R  ~   G  No builtin variables
 -s  S M G  Silent

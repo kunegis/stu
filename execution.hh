@@ -1012,7 +1012,7 @@ void Execution::waited(pid_t pid, int status)
 		
 		string reason;
 		if (WIFEXITED(status)) {
-			reason= frmt("failed with exit code %s%d%s", 
+			reason= frmt("failed with exit status %s%d%s", 
 				     Color::word,
 				     WEXITSTATUS(status),
 				     Color::end);
@@ -1024,7 +1024,10 @@ void Execution::waited(pid_t pid, int status)
 		} else {
 			/* This should not happen but the standard does not exclude
 			 * it  */ 
-			reason= frmt("failed with status code %d", status); 
+			reason= frmt("failed with status %s%d%s",
+				     Color::word,
+				     status,
+				     Color::end); 
 		}
 
 		if (! param_rule->is_copy) {

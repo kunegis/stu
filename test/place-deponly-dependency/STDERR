@@ -1,2 +1,2 @@
-main.stu:9:2: command for 'B' failed with exit code 1
+main.stu:9:2: command for 'B' failed with exit status 1
 main.stu:4:7: 'B' is needed by 'A'

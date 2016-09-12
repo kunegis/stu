@@ -5,7 +5,7 @@
  * Code for managing errors in Stu.  Errors codes in Stu are represented
  * by integers between 0 and 4, as defined in the ERROR_* constants
  * below.  Zero represents no error.  These codes are used for both
- * Stu's exit code and as values that are thrown and caught.   Variables
+ * Stu's exit status and as values that are thrown and caught.   Variables
  * containing error codes are ints and are named "error". 
  */ 
 
@@ -78,14 +78,14 @@ const int ERROR_FATAL=     4;
 /*
  * Errors 1 and 2 are recoverable.  If the -k option is given, Stu notes
  * these errors and continues.  If the -k option is not given, they
- * cause Stu to abort.  When the -k option is used, the final exit code
- * may combine errors 1 and 2, giving exit code 3.  Error 4 is
+ * cause Stu to abort.  When the -k option is used, the final exit status
+ * may combine errors 1 and 2, giving exit status 3.  Error 4 is
  * unrecoverable, and leads to Stu aborting immediately.  Error 4 is
  * never combined.  
  *
  * Build errors (code 1) are errors encountered during the normal
  * operation of Stu.  They indicate failures of the executed commands or
- * errors with files.  Exit code 1 is also used for the -q option
+ * errors with files.  Exit status 1 is also used for the -q option
  * (question mode), when the targets are not up to date.  
  *
  * Logical errors (code 2) are errors with the usage of Stu.  These are

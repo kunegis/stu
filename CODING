@@ -82,7 +82,7 @@ The following names are used systematically:
 * 'text':  a string used for display
 * 'format[_*]':  a function that formats an object for display
 * 'filename':  a filename
-* 'error':  an error code or exit code (they are the same in Stu)
+* 'error':  an error code or exit status (they are the same in Stu)
 
 Many variable names are written in "big endian" in defiance of English
 expressions.  In such names, the first part indicates the type (to a

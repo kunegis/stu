@@ -1,2 +1,2 @@
 +x
-main.stu:12:4: command for 'A' failed with exit code 127
+main.stu:12:4: command for 'A' failed with exit status 127

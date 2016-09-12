@@ -146,7 +146,7 @@ OPTIONS
               output format is not specified.
 
        -q     Question mode.  Do not execute any commands.  Instead, determine
-              whether  the  given  targets are up to date.  The exit code is 0
+              whether  the given targets are up to date.  The exit status is 0
               when all given targets (or the default target) are up to date, 1
               when not, and 4 on errors.
 
@@ -733,8 +733,8 @@ EXIT STATUS
        1      Build error.   These indicate errors in the commands invoked and
               files read by Stu.  Example:  a child process produced an error,
               or  a  dependency  was  not  found and no rule was given for it.
-              When using the -q option, the exit code is 1 when the given tar‐
-              gets are not up to date.
+              When using the -q option, the exit status is 1  when  the  given
+              targets are not up to date.
 
        2      Logical  error.   These  indicate  errors  in  the usage of Stu.
               Examples are syntax errors in Stu  sources  and  cycles  in  the
@@ -932,4 +932,4 @@ AUTHOR
 SEE ALSO
        make(1), cook(1)
 
-stu-2.4.17                      September 2016                          STU(1)
+stu-2.4.18                      September 2016                          STU(1)

@@ -529,13 +529,15 @@ pid_t Job::wait(int *status)
 	 * sigwaitinfo().  This excludes a deadlock which would be
 	 * possible if we would only use sigwaitinfo(). */
 
-	siginfo_t siginfo; 
+	int sig;
 	int r;
  retry:
-	r= sigwaitinfo(&set_productive, &siginfo);
+	errno= 0;
+	r= sigwait(&set_productive, &sig);
 
-	if (r < 0) {
+	if (r != 0) {
 		if (errno == EINTR) {
+			/* This should not happen, but be prepared */
 			goto retry;
 		} else {
 			assert(false);
@@ -544,7 +546,7 @@ pid_t Job::wait(int *status)
 		}
 	}
 
-	switch (siginfo.si_signo) {
+	switch (sig) {
 
 	case SIGCHLD:
 		/* Don't act on the signal here.  We could get the PID
@@ -562,7 +564,8 @@ pid_t Job::wait(int *status)
 	default:
 		/* We didn't wait for this signal */ 
 		assert(false);
-		fprintf(stderr, "*** sigwaitinfo: Received signal %d\n", siginfo.si_signo);
+		fprintf(stderr, "*** sigwaitinfo: Received signal %d\n",
+			sig);
 		goto begin; 
 	}
 }

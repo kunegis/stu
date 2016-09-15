@@ -61,7 +61,7 @@
 # CMDPREFIX    Prefix before command.  Used to set environment variables
 # PARALLEL     Give the arguments of the -j option for which the test is
 #              to be executed 
-# EXITCODE     The prescribed exit code; default is zero
+# EXITSTATUS   The prescribed exit code; default is zero
 # NOSECOND     If file is present, do not check that second invocation
 #              results in "Nothing to be done"  
 # NOTTY	       Don't do the extra TTY test (e.g., when the -q option is
@@ -165,7 +165,7 @@ do
 	../../sh/delete_tmps || exit 1
 
 	# Check that all all-uppercase files are of one of the allowed files 
-	allowed=",EXITCODE,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,"
+	allowed=",EXITSTATUS,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,"
 	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
 	do
 		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi
@@ -186,7 +186,7 @@ do
 
 	if [ -r EXEC ]; then
 
-		if [ -r EXITCODE -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
+		if [ -r EXITSTATUS -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
 			-o -r STDERR -o -r NOTINSTDERR -o -r CMD -o -r CMDPREFIX \
 			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
 			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR -o -r NOCOLOR ]; then
@@ -220,10 +220,10 @@ do
 		
 		# Exit code
 		exitcode_correct=0
-		if [ -r EXITCODE ]; then
-			exitcode_correct="$(sed -e '/^[[:space:]]*$/d;s/[[:space:]]\{1,\}//g' <EXITCODE)"
+		if [ -r EXITSTATUS ]; then
+			exitcode_correct="$(sed -e '/^[[:space:]]*$/d;s/[[:space:]]\{1,\}//g' <EXITSTATUS)"
 			if [ "$exitcode_correct" = 0 ]; then
-				echo >&2 "$0: *** Content of EXITCODE should not be zero"
+				echo >&2 "$0: *** Content of EXITSTATUS should not be zero"
 				error=1
 			fi
 		fi
@@ -239,7 +239,7 @@ do
 			echo >&2 ______________
 			error=1
 		else
-			echo "EXITCODE...$exitcode_correct correct"
+			echo "EXITSTATUS...$exitcode_correct correct"
 		fi
 
 		# Target was built or not generate in case of error
@@ -374,7 +374,7 @@ do
 		fi
 
 		# TTYSTDOUTERR
-		if { [ -r TTYSTDOUTERR ] || [ -r EXITCODE ]; } && ! [ -r NOTTY ]; then
+		if { [ -r TTYSTDOUTERR ] || [ -r EXITSTATUS ]; } && ! [ -r NOTTY ]; then
 			../../sh/delete_tmps || exit 1
 			echo $CMDPREFIX ../../stu.test "$CMD" '[TTY]'
 			eval $CMDPREFIX ../../sh/tty ../../stu.test $CMD \>list.def.out 
@@ -385,7 +385,7 @@ do
 				echo >&2 "$0: *** Test '$file' should have returned $exitcode_correct, but returned $exitcode_actual [TTY]"
 				error=1
 			else
-				echo "EXITCODE:TTY...$exitcode_correct correct"
+				echo "EXITSTATUS:TTY...$exitcode_correct correct"
 			fi
 
 			# correct output
@@ -406,9 +406,9 @@ do
 			fi
 
 			# There is color
-			if [ -r EXITCODE ] && ! [ -r NOCOLOR ] ; then
+			if [ -r EXITSTATUS ] && ! [ -r NOCOLOR ] ; then
 				if ! grep -qE '' list.def.out ; then
-					echo >&2 "$0: *** Expected ESC in TTY output because EXITCODE exists"
+					echo >&2 "$0: *** Expected ESC in TTY output because EXITSTATUS exists"
 					echo >&2 output:
 					echo >&2 _________
 					cat >&2 list.def.out

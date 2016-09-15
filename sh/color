@@ -42,7 +42,7 @@ do
 
 	cd "$file"
 
-	if [ -r EXITCODE ] && ! [ -r NOTTY ]; then
+	if [ -r EXITSTATUS ] && ! [ -r NOTTY ]; then
 
 		../../sh/delete_tmps || exit 1
 

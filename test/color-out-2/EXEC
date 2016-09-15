@@ -10,7 +10,7 @@ exitcode="$?"
 	exit 1
 }
 
-cmp list.all stdall || {
+diff list.all stdall || {
 	echo >&2 "*** Output"
 	echo >&2 stdout+stderr:
 	echo >&2 _____________

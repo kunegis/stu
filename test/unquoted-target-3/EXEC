@@ -3,7 +3,7 @@
 # Empty argument to -c
 #
 
-rm -f ?
+rm -f ? || exit 1
 
 ../../stu.test -c '' >list.out 2>list.err
 exitcode="$?"
@@ -13,7 +13,7 @@ exitcode="$?"
 	exit 1
 }
 
-cmp list.err stderr || {
+diff list.err stderr || {
 	echo >&2 '*** stderr'
 	echo >&2 list.err:
 	echo >&2 ______

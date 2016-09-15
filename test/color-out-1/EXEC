@@ -8,5 +8,4 @@ rm -f ?
 
 ../../sh/tty ../../stu.test -F 'A=B;B={Hello}' >list.all
 
-cmp list.all stdall
-
+diff list.all stdall

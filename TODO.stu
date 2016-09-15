@@ -1,15 +1,12 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# In tests replace 'cmp' by 'diff'. 
-# 
-
-#
 # for sh/mktest:  rename 'EXITCODE' to 'EXITSTATUS'
 #
 
 #
-# "Nothing to be done" -> "Targets are up-to-date"
+# "Nothing to be done" -> "Targets are up-to-date".  Also "up to date"
+# -> "up-to-date" everywhere else. 
 #
 
 #

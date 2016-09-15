@@ -11,7 +11,7 @@ exitcode="$?"
 	exit 1
 }
 
-cmp list.err stderr || {
+diff list.err stderr || {
 	echo >&2 "*** Standard error output"
 	exit 1
 }

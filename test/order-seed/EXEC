@@ -1,11 +1,11 @@
 #! /bin/sh
 
-rm -f ?
+rm -f ? || exit 1
 
 echo ../../stu.test 
 ../../stu.test >stdout-correct
 
-rm -f ?
+rm -f ? || exit 1
 
 echo ../../stu.test -M Hello
 ../../stu.test -M Hello >list.out
@@ -16,19 +16,19 @@ if [ "$exitcode" != 0 ] ; then
 	exit 1
 fi
 
-cmp list.out stdout-correct && {
+diff list.out stdout-correct && {
 	echo '*** (B)'
 	exit 1
 }
 
-cmp out output-correct || {
+diff out output-correct || {
 	echo '*** (C)'
 	exit 1
 }
 
 # Check that two invocations do not give the same order
 
-rm -f ?
+rm -f ? || exit 1
 
 echo ../../stu.test -M Hello
 ../../stu.test -M Hello >list.out2
@@ -40,17 +40,17 @@ if [ "$exitcode" != 0 ] ; then
 fi
 
 # The two runs *must* have identical order 
-cmp list.out list.out2 || {
+diff list.out list.out2 || {
 	echo '*** (B2)'
 	exit 1
 }
 
-cmp out output-correct || {
+diff out output-correct || {
 	echo '*** (C2)'
 	exit 1
 }
 
 
-rm -f out list.* stdout-correct
+rm -f out list.* stdout-correct || exit 1
 
 exit 0

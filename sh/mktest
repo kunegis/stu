@@ -92,7 +92,8 @@
 #   second on systems where file modification times have a precision of
 #   only one second. 
 # * Tests output '***' only in case of error.  This is convenient for
-#   grepping while the tests are running. 
+#   grepping while the tests are running.
+# * Tests use 'diff' to compare files, not 'cmp'. 
 #
 
 # Note:  we can't use "set -e" here (which is a good general practice in
@@ -268,11 +269,10 @@ do
 				
 					# Check exact content of the target file
 					if [ -r CONTENT ] ; then
-						if cmp "$target" CONTENT ; then
+						if diff "$target" CONTENT ; then
 							echo "CONTENT...correct"
 						else	
 							echo >&2 "$0: *** CONTENT error"
-							diff "$target" CONTENT
 							error=1
 						fi
 					fi
@@ -302,7 +302,6 @@ do
 				echo >&2 _____
 				wc -l list.def.out STDOUT
 				ls -l list.def.out STDOUT
-				cmp list.def.out STDOUT
 				error=1
 			else
 				echo "STDOUT...correct"
@@ -358,7 +357,6 @@ do
 				echo >&2 _____
 				wc -l list.def.err STDERR
 				ls -l list.def.err STDERR
-				cmp list.def.err STDERR
 				error=1
 			else
 				echo "STDERR...correct"
@@ -401,7 +399,6 @@ do
 					echo >&2 _____
 					wc -l list.def.out TTYSTDOUTERR
 					ls -l list.def.out TTYSTDOUTERR
-					cmp list.def.out TTYSTDOUTERR
 					error=1
 				else
 					echo "TTYSTDOUTERR...correct"

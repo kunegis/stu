@@ -17,7 +17,7 @@ exitcode="$?"
 	exit 1
 }
 
-cmp list.err stderr || {
+diff list.err stderr || {
 	echo >&2 "*** Missing warning about future timestamp of 'B' (1)"
 	echo >&2 list.err:
 	echo >&2 __________
@@ -40,7 +40,7 @@ exitcode="$?"
 	exit 1
 }
 
-cmp list.err stderr.2 || {
+diff list.err stderr.2 || {
 	echo >&2 "*** Missing warning about future timestamp of 'B' (2)"
 	echo >&2 list.err:
 	echo >&2 __________

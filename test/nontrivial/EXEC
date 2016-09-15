@@ -11,13 +11,11 @@
 
 set -e
 
-doo() { echo "$@" ; "$@" ; }
-
-doo rm -f ?
+rm -f ?
 
 ../../stu.test -a >list.out 2>list.err
 
-cmp list.out stdout-1 || {
+diff list.out stdout-1 || {
 	echo >&2 '*** (1out)' 
 	exit 1 
 }
@@ -27,12 +25,12 @@ cmp list.out stdout-1 || {
 	exit 1 
 }
 
-doo ../../sh/touch_old A 2
-doo touch B C
+../../sh/touch_old A 2
+touch B C
 
 ../../stu.test -a >list.out 2>list.err
 
-cmp list.out stdout-2 || {
+diff list.out stdout-2 || {
 	echo >&2 '*** (2out)' 
 	exit 1 
 }

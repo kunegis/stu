@@ -1,8 +1,8 @@
 #! /bin/sh
 
-rm -f ?
+rm -f ? || exit 1
 
-touch C
+touch C || exit 1
 
 ../../stu.test >list.out 2>list.err
 exitcode="$?"
@@ -12,7 +12,7 @@ exitcode="$?"
 	exit 1
 }
 
-cmp list.out stdout || {
+diff list.out stdout || {
 	echo >&2 '*** stdout'
 	exit 1
 }

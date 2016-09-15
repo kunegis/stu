@@ -1,6 +1,0 @@
-# Use with short mode.  All targets are output.
-
-@x A: B C D { touch A }
-B @y { touch B }
-C D { touch C D }
-

@@ -108,7 +108,7 @@ const int ERROR_FATAL=     4;
  * error output. 
  */ 
 
-/* Print an error without place */
+/* Print an error without a place */
 void print_error(string message)
 {
 	assert(message != "");
@@ -129,7 +129,13 @@ void print_error_system(string message)
 		strerror(errno));
 }
 
-void print_info(string message)
+/* 
+ * Print a reminder of an error on STDERR.  This is used in situations
+ * where an error has already been output, but it is better to reming
+ * the user of the error.  Since the error as already been output, use
+ * the color of warnings. 
+ */
+void print_error_reminder(string message)
 {
 	assert(message != "");
 	assert(isupper(message[0]) || message[0] == '\''); 
@@ -150,24 +156,44 @@ string system_format(string text)
 		   strerror(errno)); 
 }
 
-/* Print a message to standard output.  This is used in only very few
+/* 
+ * Print a message to standard output.  This is used in only very few
  * cases, in defiance of the principle that a program should by default
  * only output something when there is an error.  We do it mostly
- * because Make does it, and users expect it. 
- * These messages are suppressed by the -Q option (quiet).  */
+ * because Make does it, and users expect it, and because not doing it
+ * would be very strange for most users. 
+ * These messages are suppressed by the -s option (silent).  
+ */
 void print_out(string text)
 {
 	assert(text != "");
 	assert(isupper(text[0]));
 	assert(text[text.size() - 1] != '\n');
 
-	if (option_quiet)
+	if (option_silent)
 		return; 
 
 	printf("%s%s%s\n",
 	       Color::out_print,
 	       text.c_str(),
 	       Color::out_end); 
+}
+
+/* A message on STDERR that is made silent by the silent option (-s) */ 
+void print_err(string text)
+{
+	assert(text != "");
+	assert(isupper(text[0]));
+	assert(text[text.size() - 1] != '\n');
+
+	if (option_silent)
+		return;
+
+	fprintf(stderr,
+		"%s%s%s\n",
+		Color::error,
+		text.c_str(),
+		Color::end);
 }
 
 /* 

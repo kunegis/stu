@@ -584,6 +584,11 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 # check timestamps. 
 #
 
+#
+# libstu:  have the functionality available as a library for C, or for
+# any other programming language. 
+#
+
 #==== External features ====
 
 #
@@ -614,3 +619,4 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 #
 # * Rules for configuring and compiling code
 #
+

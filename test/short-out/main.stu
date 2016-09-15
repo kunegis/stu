@@ -1,6 +1,0 @@
-
-# Test with -w
-
-A: B { cp B A }
-B: C { cp C B }
->C { echo ccc }

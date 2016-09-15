@@ -12,7 +12,7 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qFx 'Nothing to be done' list.out || {
+grep -qF 'Nothing to be done' list.out && {
 	echo >&2 "*** Stdout"
 	echo list.out:
 	echo _______

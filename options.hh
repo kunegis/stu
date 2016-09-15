@@ -36,22 +36,14 @@ static bool option_print= false;
 /* The -q option (question mode) */
 static bool option_question= false; 
 
-/* The -Q option (quiet) */
-static bool option_quiet= false;
+/* The -s option (silent) */
+static bool option_silent= false;
 
 /* The -x option (use sh -x) */ 
 static bool option_individual= false;
 
 /* The -z option (output statistics) */
 static bool option_statistics= false;
-
-/* Determines how commands are output */
-enum class Output {
-	SILENT  = -2, /* No output */
-	SHORT   = -1, /* Only target name */
-	LONG    =  0, /* Output the command */
-};
-static Output output_mode= Output::LONG; 
 
 enum class Order {
 	DFS   = 0,
@@ -60,6 +52,9 @@ enum class Order {
 	/* -M mode is coded as Order::RANDOM */ 
 };
 static Order order= Order::DFS; 
+
+/* Whether the -j option is used with a value >1 */ 
+bool option_parallel= false;
 
 /* Whether to use vectors for randomization */ 
 static bool order_vec; 

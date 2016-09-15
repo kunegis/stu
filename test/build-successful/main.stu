@@ -1,0 +1,6 @@
+A = B ;
+B = C ;
+>C {
+	echo ccc
+	echo ccc
+}

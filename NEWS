@@ -11,6 +11,12 @@ made, which are documented in the file MIGRATION.
 
 ------------------------------------------------------------------------
 
+2016-09-13  Version 2.4.19
+
+* The rules governing what is written on stdout where reworked:  There
+  is now only the -s option (silent).  The options -Q and -w were
+  removed. 
+
 2016-09-11  Version 2.4.17
 
 * "Verbose mode" is now called "debug mode", and the option was changed
@@ -18,8 +24,8 @@ made, which are documented in the file MIGRATION.
 
 2016-09-03  Version 2.4.7
 
-* The -B is renamed to -i, because it is mainly an interactive mode,
-tu  even if only very rudimentary. 
+* The -B option is renamed to -i, because it is mainly an interactive
+  mode, even if only very rudimentary. 
 
 2016-08-31  Version 2.4.2
 

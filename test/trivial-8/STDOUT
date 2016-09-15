@@ -1,5 +1,4 @@
-# Execute this first
-touch B
-# Then this
-touch C
+Build B
+Build C
 >A: cat B C
+Build successful

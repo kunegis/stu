@@ -214,6 +214,10 @@ Command::get_lines() const
 	/* The following code parses the command string into lines ready for
 	 * output.  Most of the code is for making the output pretty. */   
 
+	/* We only output a command when it has a single line, but the
+	 * following code also handles the case of multiline commands.
+	 * We keep it because we may need it in the future.  */
+	
 	const char *p= command.c_str();
 	const char *p_end= p + command.size(); 
 

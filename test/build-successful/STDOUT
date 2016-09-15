@@ -1,3 +1,4 @@
->B: echo bbb
+Build C
+cp C B
 cp B A
 Build successful

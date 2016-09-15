@@ -1,3 +1,2 @@
->A:
-echo "$C"
-cat B
+Build A
+Build successful

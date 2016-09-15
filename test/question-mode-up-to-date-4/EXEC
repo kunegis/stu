@@ -4,9 +4,9 @@
 # (1) All files exist
 #
 
-touch P
-touch Q 
-touch R
+touch P || exit 1
+touch Q || exit 1
+touch R || exit 1
 
 ../../stu.test -q P Q R >list.out 2>list.err
 exitcode="$?"
@@ -16,7 +16,7 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Nothing to be done' list.out || {
+grep -qFx 'Nothing to be done' list.out || {
 	echo >&2 "*** (1) stdout"
 	exit 1
 }
@@ -30,7 +30,7 @@ grep -qF 'Nothing to be done' list.out || {
 # (2) No file exists
 #
 
-rm -f P Q R
+rm -f P Q R || exit 1
 
 ../../stu.test -q >list.out 2>list.err
 exitcode="$?"
@@ -40,13 +40,13 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Targets are not up to date' list.out || {
-	echo >&2 "*** (2) stdout"
+grep -qFx 'Targets are not up to date' list.err || {
+	echo >&2 "*** (2) stderr:  expected 'Targets are not up to date'"
 	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || {
-	echo >&2 "*** (2) stderr"
+[ -r list.out ] && [ ! -s list.out ] || {
+	echo >&2 "*** (2) stdout"
 	exit 1
 }
 
@@ -54,8 +54,8 @@ grep -qF 'Targets are not up to date' list.out || {
 # (3) Only P exists
 #
 
-rm -f Q R
-touch P
+rm -f Q R || exit 1
+touch P || exit 1
 
 ../../stu.test -q >list.out 2>list.err
 exitcode="$?"
@@ -65,13 +65,13 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Targets are not up to date' list.out || {
-	echo >&2 "*** (3) stdout"
+grep -qFx 'Targets are not up to date' list.err || {
+	echo >&2 "*** (3) stderr"
 	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || {
-	echo >&2 "*** (3) stderr"
+[ -r list.out ] && [ ! -s list.out ] || {
+	echo >&2 "*** (3) stdout"
 	exit 1
 }
 
@@ -79,8 +79,8 @@ grep -qF 'Targets are not up to date' list.out || {
 # (4) Only Q exists
 #
 
-rm -f P R
-touch Q
+rm -f P R || exit 1
+touch Q || exit 1
 
 ../../stu.test -q >list.out 2>list.err
 exitcode="$?"
@@ -90,13 +90,13 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Targets are not up to date' list.out || {
-	echo >&2 "*** (4) stdout"
+grep -qFx 'Targets are not up to date' list.err || {
+	echo >&2 "*** (4) stderr"
 	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || {
-	echo >&2 "*** (4) stderr"
+[ -r list.out ] && [ ! -s list.out ] || {
+	echo >&2 "*** (4) stdout"
 	exit 1
 }
 
@@ -104,8 +104,8 @@ grep -qF 'Targets are not up to date' list.out || {
 # (5) Only R exists
 #
 
-rm -f P Q
-touch R
+rm -f P Q || exit 1
+touch R || exit 1
 
 ../../stu.test -q >list.out 2>list.err
 exitcode="$?"
@@ -115,13 +115,13 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Targets are not up to date' list.out || {
-	echo >&2 "*** (5) stdout"
+grep -qFx 'Targets are not up to date' list.err || {
+	echo >&2 "*** (5) stderr"
 	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || {
-	echo >&2 "*** (5) stderr"
+[ -r list.out ] && [ ! -s list.out ] || {
+	echo >&2 "*** (5) stdout"
 	exit 1
 }
 
@@ -129,9 +129,9 @@ grep -qF 'Targets are not up to date' list.out || {
 # (6) Only P and Q exist
 #
 
-rm -f R
-touch P
-touch Q
+rm -f R || exit 1
+touch P || exit 1
+touch Q || exit 1
 
 ../../stu.test -q >list.out 2>list.err
 exitcode="$?"
@@ -141,13 +141,13 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Targets are not up to date' list.out || {
-	echo >&2 "*** (6) stdout"
+grep -qFx 'Targets are not up to date' list.err || {
+	echo >&2 "*** (6) stderr"
 	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || {
-	echo >&2 "*** (6) stderr"
+[ -r list.out ] && [ ! -s list.out ] || {
+	echo >&2 "*** (6) stdout"
 	exit 1
 }
 
@@ -155,9 +155,9 @@ grep -qF 'Targets are not up to date' list.out || {
 # (7) Only P and R exist
 #
 
-rm -f Q
-touch P
-touch R
+rm -f Q || exit 1
+touch P || exit 1
+touch R || exit 1
 
 ../../stu.test -q >list.out 2>list.err
 exitcode="$?"
@@ -167,13 +167,13 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Targets are not up to date' list.out || {
-	echo >&2 "*** (7) stdout"
+grep -qFx 'Targets are not up to date' list.err || {
+	echo >&2 "*** (7) stderr"
 	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || {
-	echo >&2 "*** (7) stderr"
+[ -r list.out ] && [ ! -s list.out ] || {
+	echo >&2 "*** (7) stdout"
 	exit 1
 }
 
@@ -181,9 +181,9 @@ grep -qF 'Targets are not up to date' list.out || {
 # (8) Only Q and R exist
 #
 
-rm -f P
-touch Q
-touch R
+rm -f P || exit 1
+touch Q || exit 1
+touch R || exit 1 
 
 ../../stu.test -q >list.out 2>list.err
 exitcode="$?"
@@ -193,13 +193,13 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Targets are not up to date' list.out || {
-	echo >&2 "*** (8) stdout"
+grep -qFx 'Targets are not up to date' list.err || {
+	echo >&2 "*** (8) stderr"
 	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || {
-	echo >&2 "*** (8) stderr"
+[ -r list.out ] && [ ! -s list.out ] || {
+	echo >&2 "*** (8) stdout"
 	exit 1
 }
 

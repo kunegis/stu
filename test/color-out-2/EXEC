@@ -12,6 +12,14 @@ exitcode="$?"
 
 cmp list.all stdall || {
 	echo >&2 "*** Output"
+	echo >&2 stdout+stderr:
+	echo >&2 _____________
+	cat  >&2 list.all
+	echo >&2 _____________
+	echo >&2 expected:
+	echo >&2 _____________
+	cat  >&2 stdall
+	echo >&2 _____________
 	exit 1
 }
 

@@ -31,7 +31,7 @@ rm -f ?
 
 ../../stu.test >list.out 2>list.err
 
-cmp list.out stdout-0 || { echo >&2 '*** (0) Stdout' ; exit 1 ; }
+diff list.out stdout-0 || { echo >&2 '*** (0) Stdout' ; exit 1 ; }
 [ -r list.err ] && [ ! -s list.err ] || { echo >&2 '*** (0) Stderr' ; exit 1 ; }
 [ -r A ] || { echo >&2 "*** (0) A" ; exit 1 ; }
 [ -r B ] || { echo >&2 "*** (0) B" ; exit 1 ; }
@@ -46,7 +46,7 @@ touch C
 
 ../../stu.test >list.out 2>list.err
 
-cmp list.out stdout-1 || { echo >&2 '*** (1) Stdout' ; exit 1 ; }
+diff list.out stdout-1 || { echo >&2 '*** (1) Stdout' ; exit 1 ; }
 [ -r list.err ] && [ ! -s list.err ] || { echo >&2 '*** (1) Stderr' ; exit 1 ; }
 
 #
@@ -60,7 +60,7 @@ touch D
 
 ../../stu.test >list.out 2>list.err
 
-cmp list.out stdout-2 || { echo >&2 '*** (2) Stdout' ; exit 1 ; }
+diff list.out stdout-2 || { echo >&2 '*** (2) Stdout' ; exit 1 ; }
 [ -r list.err ] && [ ! -s list.err ] || { echo >&2 '*** (2) Stderr' ; exit 1 ; }
 
 #
@@ -74,7 +74,7 @@ rm D
 
 ../../stu.test >list.out 2>list.err
 
-cmp list.out stdout-3 || { echo >&2 '*** (3) Stdout' ; exit 1 ; }
+diff list.out stdout-3 || { echo >&2 '*** (3) Stdout' ; exit 1 ; }
 [ -r list.err ] && [ ! -s list.err ] || { echo >&2 '*** (3) Stderr' ; exit 1 ; }
 
 #
@@ -87,7 +87,7 @@ touch B
 
 ../../stu.test >list.out 2>list.err
 
-cmp list.out stdout-4 || {
+diff list.out stdout-4 || {
 	echo >&2 "*** (4) Stdout"
 	echo list.out:
 	echo ________
@@ -113,7 +113,7 @@ touch B
 
 ../../stu.test >list.out 2>list.err
 
-cmp list.out stdout-5 || { echo >&2 '*** (5) Stdout' ; exit 1 ; }
+diff list.out stdout-5 || { echo >&2 '*** (5) Stdout' ; exit 1 ; }
 [ -r list.err ] && [ ! -s list.err ] || { echo >&2 '*** (5) Stderr' ; exit 1 ; }
 
 exit 0

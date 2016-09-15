@@ -292,11 +292,11 @@ private:
 	 * file system should be newer than this.  */ 
 	static Timestamp timestamp_last; 
 
-	/* Whether to show the "Nothing to be done" message.  The
-	 * message is shown when the build is successful and nothing had
-	 * to be done, except if another info message is printed.  Does
-	 * not keep track whether an error occurred.  */ 
-	static bool hide_nothing_to_be_done;
+	/* Whether to show a STDOUT message at the end */
+	static bool hide_out_message;
+
+	/* Whether the STDOUT message is not "Nothing to be done" */
+	static bool out_message_done;
 
 	/* Propagate information from the subexecution to the execution, and
 	 * then delete the child execution.  The child execution is
@@ -354,7 +354,8 @@ unordered_map <string, Timestamp> Execution::transients;
 Timestamp Execution::timestamp_last;
 Rule_Set Execution::rule_set; 
 long Execution::jobs= 1;
-bool Execution::hide_nothing_to_be_done= false;
+bool Execution::hide_out_message= false;
+bool Execution::out_message_done= false;
 
 void Execution::wait() 
 {
@@ -725,11 +726,11 @@ bool Execution::execute(Execution *parent, Link &&link)
 	/* The command must be run or the file created now */
 
 	if (option_question) {
-		print_out("Targets are not up to date");
+		print_err("Targets are not up to date");
 		exit(ERROR_BUILD);
 	}
 
-	hide_nothing_to_be_done= true; 
+	out_message_done= true;
 	
 	print_command();
 
@@ -1089,11 +1090,17 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		error= execution_root->error; 
 		assert(error >= 0 && error <= 3); 
 
-		if (success && ! hide_nothing_to_be_done) 
-			print_out("Nothing to be done");
-
-		if (! success && option_keep_going) 
-			print_info("Targets not rebuilt because of errors"); 
+		if (success) {
+			if (! hide_out_message) {
+				if (out_message_done)
+					print_out("Build successful");
+				else 
+					print_out("Nothing to be done");
+			}
+		} else {
+			if (option_keep_going) 
+				print_error_reminder("Targets not rebuilt because of errors");
+		}
 	} 
 	/* A build error is only thrown when option_keep_going is
 	 * not set */ 
@@ -1104,7 +1111,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 
 		/* Terminate all jobs */ 
 		if (executions_by_pid.size()) {
-			print_info("Terminating all running jobs"); 
+			print_error_reminder("Terminating all running jobs"); 
 			job_terminate_all();
 		}
 
@@ -1384,7 +1391,7 @@ Execution::Execution(Target target_,
 						 * therefore we don't need traces */ 
 						print_out(fmt("No rule for building %s, but the file exists", 
 							      target_.format_out_print_word())); 
-						hide_nothing_to_be_done= true; 
+						hide_out_message= true; 
 					} 
 				}
 			}
@@ -1590,8 +1597,8 @@ bool Execution::remove_if_existing(bool output)
 		    timestamps_old[i] < Timestamp(&buf)) {
 
 			if (output) {
-				print_info(fmt("Removing file %s because command failed",
-						  name_format_word(filename))); 
+				print_error_reminder(fmt("Removing file %s because command failed",
+							 name_format_word(filename))); 
 			}
 			
 			removed= true;
@@ -2002,36 +2009,17 @@ void Execution::print_traces(string text) const
 
 void Execution::print_command() const
 {
-	if (output_mode < Output::SHORT)
+	if (option_silent)
 		return; 
-
-	if (output_mode == Output::SHORT) {
-		bool first= true; 
-		for (const Target &target:  targets) {
-			if (first) { 
-				first= false;  
-			} else
-				putc(' ', stdout); 
-			bool quotes= false;
-			string text= target.format(S_MARKERS, quotes);
-			printf("%s%s%s", 
-			       quotes ? "'" : "",
-			       text.c_str(),
-			       quotes ? "'" : ""); 
-		}
-		putc('\n', stdout); 
-		return;
-	} 
 
 	if (rule->is_hardcode) {
 		assert(targets.size() == 1); 
-		string text= targets.front().format_out(); 
-		printf("Creating %s\n", text.c_str());
+		string text= targets.front().format_src(); 
+		printf("Create %s\n", text.c_str());
 		return;
 	} 
 
 	if (rule->is_copy) {
-		/* To the user, we hide the fact that we are using '--' */ 
 		assert(rule->place_param_targets.size() == 1); 
 		string cp_target= rule->place_param_targets[0]->place_name.format_src();
 		string cp_source= rule->filename.format_src();
@@ -2041,12 +2029,24 @@ void Execution::print_command() const
 
 	/* We are printing a regular command */
 
+	bool single_line= rule->command->get_lines().size() == 1;
+
+	if (!single_line || option_parallel) {
+		fputs("Build", stdout);
+ 		for (const Target &target:  targets) {
+			putc(' ', stdout);
+			string text= target.format_src(); 
+			fputs(text.c_str(), stdout);
+		}
+		putc('\n', stdout);
+		return; 
+	}
+
 	if (option_individual)
 		return; 
 
 	/* For single-line commands, show the variables on the same line.
 	 * For multi-line commands, show them on a separate line. */ 
-	bool single_line= rule->command->get_lines().size() == 1;
 	bool begin= true; 
 
 	string filename_output= rule->redirect_index < 0 ? "" :

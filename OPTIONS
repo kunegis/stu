@@ -10,7 +10,7 @@ S   Implemented in Stu and considered stable
 s   Implemented in Stu and considered unstable - may be subject to change
 M   Specified by POSIX Make
 G   Implemented in GNU Make
-.   Possible to implement in Stu 
+.   Could be implemented in Stu 
 ~   Not applicable to Stu 
 x   Incompatible 
 
@@ -54,7 +54,6 @@ List of options
 -p  x M G  Print database 
 -P  S      Print database 
 -q  S M G  Question mode / query mode
--Q  s      Quiet mode
 -r  ~ M G  No builtin rules
 -R  ~   G  No builtin variables
 -s  S M G  Silent
@@ -64,8 +63,7 @@ List of options
 -v  .   x  Verbose
 -v  x   G  Show version
 -V  S      Show version
--w  S	x  Short mode 
--w  x   G  Print directory
+-w      G  Print directory
 -W  .   G  What-if mode / assume new 
 -x  S      Enable /bin/sh -x instead of normal output
 -y  S      Disable color output

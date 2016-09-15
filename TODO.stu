@@ -1,40 +1,47 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
+# Replace sigwaitinfo() by sigwait().
+#
+
+#
+# In tests replace 'cmp' by 'diff'. 
+# 
+
+#
 # for sh/mktest:  rename 'EXITCODE' to 'EXITSTATUS'
 #
 
 #
-# (0) Quiet / silent:  show nothing
-# (1) One-liners:  show single lines for commands, end-of-commands, and summary
-#
-# Default is (0) in non-terminal mode, (1) in terminal. 
+# "Nothing to be done" -> "Targets are up-to-date"
 #
 
-# Remove the -s and -Q options, replace by only the -s command.  
+#
+# verbose mode -v:
+#  - Show PIDs when commands are started, and always show
+#    end-of-commands outputs.
+#  - With the -v option, show the list of all files removed, regardless
+#    of the number.  
+#
 
-# By default, don't show whole commands, but only the name of the
-# target.  (Only show a command if it is a single line and we're not in
-# parallel mode.)  The text should read "Building X" in non-parallel
-# mode, and "Running command for X" in parallel mode. 
-
-# Also, in parallel mode, show extra "done" messages for each command.
-# In color by return code (success, normal error, signal [show signal
-# name and number])
-
-# In parallel mode, show a "Build successful" or "Failed" message.
-# Include the total number of jobs, etc.  
-
-# verbose mode -v:  Show PIDs when commands are started, and always show
-# end-of-commands outputs.  
-
+#
 # In parallel mode, one-liner should include the PID (only with the -v
-# option) 
+# option)
+#
 
+#
 # For content commands, show the content when short and ASCII-ish
+#
 
+#
+# In parallel mode, show extra "done successfully" messages for each
+# command, in green.
+#
+
+#
 # When removing files automatically at the end, display the number of
-# files removed.  With the -v option, show the list of files removed. 
+# files removed.
+#
 
 #
 # Concatenation.  Concatenation is to work both with the
@@ -362,4 +369,15 @@ A: -P B;
 #
 # In parallel mode, don't show the full trace after and error, but only
 # a one-liner. 
+#
+
+#
+# More ways to specify how many/which commands to run, apart from -j.
+# These can be based on:
+#  - Memory consumption
+#  - CPU usage / load average
+#  - etc.
+#
+# It's hard to define which of such rules would be universal enough to
+# be included in Stu. 
 #

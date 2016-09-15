@@ -488,10 +488,11 @@ printf 'Runtime: %u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)"
 
 if [ "$errors" != 0 ]
 then
-	echo >&2 "$0: *** The following $(echo $(<../error.log wc -l)) tests failed:"
+	echo >&2 "[31m$0: *** The following $(echo $(<../error.log wc -l)) tests failed:"
 	cat ../error.log
+	echo "[m"
 	exit 1
 else
-	echo "TESTS SUCCESSFUL"
+	echo "[32mTests successful[m"
 	exit 0
 fi

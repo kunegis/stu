@@ -1,6 +1,4 @@
-
-# Make sure the output is pretty.
-# The '{' is followed by space characters.  Each indented line begins with a tab
+# The command is not shown. 
 
 A {    
 	rm -f A

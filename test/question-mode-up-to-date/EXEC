@@ -38,13 +38,17 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Targets are not up to date' list.out || {
-	echo >&2 "*** (2) stdout"
+grep -qF 'Targets are not up to date' list.err || {
+	echo >&2 "*** (2) stderr:  expected 'Targets are not up to date'"
+	echo >&2 list.out
+	echo >&2 _________
+	cat  >&2 list.out
+	echo >&2 _________
 	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || {
-	echo >&2 "*** (2) stderr"
+[ -r list.out ] && [ ! -s list.out ] || {
+	echo >&2 "*** (2) stdout"
 	exit 1
 }
 

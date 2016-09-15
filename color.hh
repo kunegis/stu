@@ -36,6 +36,10 @@
  * Stu takes the same approach. 
  */
 
+#include <errno.h>
+#include <stdio.h>
+#include <unistd.h>
+
 class Color 
 {
 public:

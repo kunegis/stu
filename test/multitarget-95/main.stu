@@ -5,6 +5,7 @@
 A: B [C] { cat B D >A }
 
 B C {
+	echo PRINTF
 	printf cor >B
 	echo D >C
 }

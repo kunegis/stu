@@ -1,3 +1,4 @@
 echo C >B
 echo CORRECT >C
 cp C A
+Build successful

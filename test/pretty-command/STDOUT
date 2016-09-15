@@ -1,3 +1,2 @@
-rm -f A
-echo Hello >A
-echo World >>A
+Build A
+Build successful

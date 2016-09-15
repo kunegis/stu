@@ -1,5 +1,4 @@
 >D: echo ddd
 cp D C
->A:
-[ -e C ] && cat C
-cat B
+Build A
+Build successful

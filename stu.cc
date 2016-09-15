@@ -39,7 +39,7 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
-const char OPTIONS[]= "0:ac:C:dEf:F:ghij:JkKm:M:n:o:p:PqQsVwxyYz"; 
+const char OPTIONS[]= "0:ac:C:dEf:F:ghij:JkKm:M:n:o:p:PqsVxyYz"; 
 
 /* The output of the help (-h) option.  The following strings do not
  * contain tabs, but only space characters.  */   
@@ -73,10 +73,8 @@ const char HELP[]=
 	"  -p FILENAME      Build a persistent dependency, i.e., ignore its timestamp\n"
 	"  -P               Print the rules and exit\n"                               
 	"  -q               Question mode; check whether targets are up to date\n"    
-	"  -Q               Quiet mode; suppress special stdout messages\n"           
-	"  -s               Silent mode; do not output commands\n"	              
+	"  -s               Silent mode; don't use standard output\n"
 	"  -V               Output version and exit\n"				      
-	"  -w               Short output; show target filenames instead of commands\n"
 	"  -x               Ouput each line in a command individually\n"              
 	"  -y               Disable color in output\n"                                
 	"  -Y               Enable color in output\n"
@@ -123,9 +121,7 @@ bool stu_setting(char c)
 	default:  return false;
 
 	case 'E': option_explain= true;        break;
-	case 'Q': option_quiet= true;          break; 
-	case 's': output_mode= Output::SILENT; break;
-	case 'w': output_mode= Output::SHORT;  break;
+	case 's': option_silent= true;         break;
 	case 'x': option_individual= true;     break;
 	case 'y': Color::set(false);           break;
 	case 'Y': Color::set(true);            break;
@@ -359,7 +355,9 @@ int main(int argc, char **argv, char **envp)
 
 		order_vec= (order == Order::RANDOM);
 
-		if (option_interactive && Execution::jobs > 1) {
+		option_parallel= Execution::jobs > 1; 
+		
+		if (option_interactive && option_parallel) {
 			Place(Place::Type::OPTION, 'i')
 				<< fmt("parallel mode with %s cannot be used in interactive mode",
 				       multichar_format_word("-j")); 

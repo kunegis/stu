@@ -1,11 +1,12 @@
-Creating 'x'
-Creating 'B'
-Creating 'E'
-Creating 'F'
-Creating 'C'
-Creating 'G'
-Creating 'H'
-Creating 'D'
-Creating 'I'
-Creating 'J'
+Create x
+Create B
+Create E
+Create F
+Create C
+Create G
+Create H
+Create D
+Create I
+Create J
 >A: cat $(cat $(cat x))
+Build successful

@@ -29,7 +29,7 @@ grep -qF 'Nothing to be done' list.out || {
 # (2) Neither 'A' nor 'B' exist
 #
 
-rm -f A B
+rm -f A B || exit 1
 
 ../../stu.test -q >list.out 2>list.err
 exitcode="$?"
@@ -39,12 +39,12 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Targets are not up to date' list.out || {
-	echo >&2 "*** (2) stdout"
+grep -qFx 'Targets are not up to date' list.err || {
+	echo >&2 "*** (2) stderr:  expected 'Targets are not up to date'"
 	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || {
+[ -r list.out ] && [ ! -s list.out ] || {
 	echo >&2 "*** (2) stderr"
 	exit 1
 }
@@ -78,8 +78,8 @@ grep -qF 'Nothing to be done' list.out || {
 # (4) Only 'A' exists
 #
 
-touch A
-rm -f B
+touch A || exit 1
+rm -f B || exit 1
 
 ../../stu.test -q >list.out 2>list.err
 exitcode="$?"
@@ -89,13 +89,13 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Targets are not up to date' list.out || {
-	echo >&2 "*** (4) stdout"
+grep -qFx 'Targets are not up to date' list.err || {
+	echo >&2 "*** (4) stderr"
 	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || {
-	echo >&2 "*** (4) stderr"
+[ -r list.out ] && [ ! -s list.out ] || {
+	echo >&2 "*** (4) stdout"
 	exit 1
 }
 
@@ -103,8 +103,8 @@ grep -qF 'Targets are not up to date' list.out || {
 # (5) Only 'B' exists
 #
 
-rm -f A
-touch B
+rm -f A || exit 1
+touch B || exit 1
 
 ../../stu.test -q >list.out 2>list.err
 exitcode="$?"
@@ -114,13 +114,13 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF 'Targets are not up to date' list.out || {
-	echo >&2 "*** (5) stdout"
+grep -qFx 'Targets are not up to date' list.err || {
+	echo >&2 "*** (5) stderr"
 	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || {
-	echo >&2 "*** (5) stderr"
+[ -r list.out ] && [ ! -s list.out ] || {
+	echo >&2 "*** (5) stdout"
 	exit 1
 }
 

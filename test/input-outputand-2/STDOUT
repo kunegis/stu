@@ -1,3 +1,4 @@
 >C: echo ECT
 >B: echo abc
 >A <B: sed -e 's,abc,CORR,' | tr -d '\n' ; cat C
+Build successful

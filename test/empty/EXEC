@@ -16,6 +16,14 @@ exitcode="$?"
 
 cmp list.out stdout || {
 	echo >&2 '*** error:  stdout'
+	echo >&2 actual stdout:
+	echo >&2 ____________
+	cat  >&2 list.out
+	echo >&2 ____________
+	echo >&2 expected stdout:
+	echo >&2 ____________
+	cat  >&2 stdout
+	echo >&2 ____________
 	exit 1
 }
 

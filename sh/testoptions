@@ -19,6 +19,8 @@ if ! cmp testoptions.a testoptions.b ; then
 	cat >&2 testoptions.a
 	echo >&2 "Options from 'stu.1.in':"
 	cat >&2 testoptions.b
+	echo >&2 "Diff:"
+	diff testoptions.a testoptions.b
 	ret=1
 fi
 

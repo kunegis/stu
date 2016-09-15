@@ -21,10 +21,6 @@ N=19: echo "$N" >"list.$N"
 N=20: echo "$N" >"list.$N"
 echo Beeee > B
 M=456 N=123: echo "$N + $M" >"list.$N.$M"
-y=y:
-{
-	echo Xxxx
-	echo Yyyy
-	echo Zzzz
-} >"list.x${y}z"
+Build list.xyz
 cat B $(cat list.dep) >A
+Build successful

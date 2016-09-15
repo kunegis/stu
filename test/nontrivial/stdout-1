@@ -1,3 +1,4 @@
 >B: echo bbb
 >C: echo ccc
 >A: echo "$C";cat B
+Build successful

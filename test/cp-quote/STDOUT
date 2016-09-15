@@ -1,4 +1,4 @@
-Creating 'E'
+Create E
 cp E '$'
 cp '$' '"'
 cp '"' ''\'''
@@ -7,3 +7,4 @@ cp '@' D
 cp D C
 cp C B
 cp B A
+Build successful

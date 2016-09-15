@@ -1,10 +1,6 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# Replace sigwaitinfo() by sigwait().
-#
-
-#
 # In tests replace 'cmp' by 'diff'. 
 # 
 

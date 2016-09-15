@@ -9,8 +9,8 @@ touch B
 
 ../../stu.test >list.out 2>list.err
 
-grep -qF 'Nothing to be done' list.out || {
-	echo >&2 "*** Missing 'Nothing to be done'"
+grep -qFx 'Targets are up to date' list.out || {
+	echo >&2 "*** Missing 'Targets are up to date'"
 	exit 1
 }
 

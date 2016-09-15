@@ -14,7 +14,7 @@ echo ../../stu.test
 echo ../../stu.test 
 ../../stu.test >list.output || exit 1
 
-grep -Fq 'Nothing to be done' list.output || {
+grep -Fq 'Targets are up to date' list.output || {
 	exit 1
 }
 
@@ -33,7 +33,7 @@ echo ../../stu.test A
 echo ../../stu.test A
 ../../stu.test A >list.output || exit 1
 
-grep -Fq 'Nothing to be done' list.output || {
+grep -Fq 'Targets are up to date' list.output || {
 	exit 1
 }
 

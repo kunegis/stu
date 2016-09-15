@@ -63,7 +63,7 @@
 #              to be executed 
 # EXITSTATUS   The prescribed exit code; default is zero
 # NOSECOND     If file is present, do not check that second invocation
-#              results in "Nothing to be done"  
+#              results in "Targets are up to date"  
 # NOTTY	       Don't do the extra TTY test (e.g., when the -q option is
 #	       used and the exit code is expected to be one)
 # NOCOLOR      Don't test for color in stderr (e.g., with the -y option)
@@ -437,11 +437,11 @@ do
 		if [ "$exitcode_correct" = 0 ] && [ ! -e NOSECOND ]; then
 			echo $CMDPREFIX ../../stu.test "$CMD"
 			eval $CMDPREFIX ../../stu.test $CMD \>list.def.out 2\>list.def.err 
-			grep -qF 'Nothing to be done' list.def.out 
+			grep -qF 'Targets are up to date' list.def.out 
 			if [ "$?" = 0 ] ; then
 				echo "Second invocation...correct"
 			else
-				echo >&2 "$0: *** Second invocation did no result in 'Nothing to be done'"
+				echo >&2 "$0: *** Second invocation did no result in 'Targets are up to date'"
 				echo >&2 STDOUT:
 				echo >&2 _____
 				cat >&2 list.def.out

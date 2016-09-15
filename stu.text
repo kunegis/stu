@@ -915,8 +915,8 @@ BUGS
        Linux.)
 
        Using optional dependencies may make a second  invocation  of  Stu  not
-       output  'Nothing  to be done', as the optional dependency may have been
-       created by subsequent targets.
+       output  'Targets  are  up to date', as the optional dependency may have
+       been created by subsequent targets.
 
 AUTHOR
        Written by Jérôme Kunegis <kunegis@uni-koblenz.de>, with  contributions
@@ -925,4 +925,4 @@ AUTHOR
 SEE ALSO
        make(1), cook(1)
 
-stu-2.4.22                      September 2016                          STU(1)
+stu-2.4.23                      September 2016                          STU(1)

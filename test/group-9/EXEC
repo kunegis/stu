@@ -4,7 +4,6 @@ set -e
 rm -f ?
 ../../stu.test A 
 [ -e A ] 
-fgrep -q CORRECT A
+grep -qF CORRECT A
 touch B
-FAIL=1 ../../stu.test A | fgrep -q "Nothing to be done"
-
+FAIL=1 ../../stu.test A | grep -qFx 'Targets are up to date'

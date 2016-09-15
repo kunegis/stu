@@ -13,7 +13,7 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qxF 'Nothing to be done' list.out || {
+grep -qxF 'Targets are up to date' list.out || {
 	echo >&2 "*** Output"
 	exit 1
 }

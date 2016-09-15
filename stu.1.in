@@ -1010,7 +1010,7 @@ Linux-only USE_MTIM option is set on compilation.  (Which it is by
 default on Linux.)  
 
 Using optional dependencies may make a second invocation of Stu not
-output 'Nothing to be done', as the optional dependency may have been
+output 'Targets are up to date', as the optional dependency may have been
 created by subsequent targets. 
 
 .SH AUTHOR

@@ -295,7 +295,7 @@ private:
 	/* Whether to show a STDOUT message at the end */
 	static bool hide_out_message;
 
-	/* Whether the STDOUT message is not "Nothing to be done" */
+	/* Whether the STDOUT message is not "Targets are up to date" */
 	static bool out_message_done;
 
 	/* Propagate information from the subexecution to the execution, and
@@ -1095,7 +1095,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 				if (out_message_done)
 					print_out("Build successful");
 				else 
-					print_out("Nothing to be done");
+					print_out("Targets are up to date");
 			}
 		} else {
 			if (option_keep_going) 

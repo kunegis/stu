@@ -13,7 +13,7 @@ touch B
 
 ../../stu.test >list.out
 
-grep -qF 'Nothing to be done' list.out || { echo >&2 "*** (2) Stdout" ; exit 1 ; }
+grep -qFx 'Targets are up to date' list.out || { echo >&2 "*** (2) Stdout" ; exit 1 ; }
 
 rm -f ? list.*
 

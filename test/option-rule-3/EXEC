@@ -43,7 +43,7 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qFx 'Nothing to be done' list.out || {
+grep -qFx 'Targets are up to date' list.out || {
 	echo >&2 "*** (2) stdout"
 	exit 1
 }

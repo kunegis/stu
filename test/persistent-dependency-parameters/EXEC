@@ -1,8 +1,6 @@
 #! /bin/sh
 
-doo() { echo "$@" ; "$@" ; }
-
-doo rm -Rf data-X-dir
+rm -Rf data-X-dir || exit 1
 
 echo >&2 ../../stu.test 
 ../../stu.test 
@@ -22,11 +20,11 @@ if [ "$?" != 0 ]; then
 	exit 1
 fi
 
-grep -Fq 'Nothing to be done' list.output || {
-	echo >&2 "$0:  *** stu did not output 'Nothing to be done'"
+grep -qFx 'Targets are up to date' list.output || {
+	echo >&2 "$0:  *** stu did not output 'Targets are up to date'"
 	exit 1
 }
 
-doo rm -Rf data-X-dir list.output A list.*
+rm -Rf data-X-dir list.output A list.* || exit 1
 
 exit 0

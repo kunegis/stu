@@ -70,8 +70,8 @@ while read -r line ; do
 	}
 
 	# Check that nothing is done
-	grep -qxF 'Nothing to be done' list.out || {
-		echo >&2 "*** (4) Missing 'Nothing to be done'"
+	grep -qxF 'Targets are up to date' list.out || {
+		echo >&2 "*** (4) Missing 'Targets are up to date'"
 		exit 1
 	}
 
@@ -100,8 +100,8 @@ while read -r line ; do
 	}
 
 	# Check that something is done
-	grep -qF 'Nothing to be done' list.out && {
-		echo >&2 "*** (6) Erroneous 'Nothing to be done'"
+	grep -qFx 'Targets are up to date' list.out && {
+		echo >&2 "*** (6) Erroneous 'Targets are up to date'"
 		exit 1
 	}
 
@@ -136,8 +136,8 @@ while read -r line ; do
 	}
 
 	# Check that something is done
-	grep -qF 'Nothing to be done' list.out && {
-		echo >&2 "*** (9) Erroneous 'Nothing to be done'"
+	grep -qFx 'Targets are up to date' list.out && {
+		echo >&2 "*** (9) Erroneous 'Targets are up to date'"
 		exit 1
 	}
 

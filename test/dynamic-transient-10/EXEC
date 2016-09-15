@@ -19,6 +19,6 @@ exitcode="$?"
 
 [ "$exitcode" = 0 ] || { echo >&2 "*** Exit code" ; exit 1 ; }
 [ -r list.err ] && [ ! -s list.err ] || { echo >&2 "*** Standard error" ; exit 1 ; }
-grep -qxF 'Nothing to be done' list.out || { echo >&2 "*** Standard output" ; exit 1 ; }
+grep -qxF 'Targets are up to date' list.out || { echo >&2 "*** Standard output" ; exit 1 ; }
 
 exit 0

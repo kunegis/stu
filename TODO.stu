@@ -1,19 +1,6 @@
 #==== Features of Stu 2:  Mandatory ====
 
 #
-# "Nothing to be done" -> "Targets are up-to-date".  Also "up to date"
-# -> "up-to-date" everywhere else. 
-#
-
-#
-# verbose mode -v:
-#  - Show PIDs when commands are started, and always show
-#    end-of-commands outputs.
-#  - With the -v option, show the list of all files removed, regardless
-#    of the number.  
-#
-
-#
 # In parallel mode, one-liner should include the PID (only with the -v
 # option)
 #
@@ -30,6 +17,14 @@
 #
 # When removing files automatically at the end, display the number of
 # files removed.
+#
+
+#
+# verbose mode -v:
+#  - Show PIDs when commands are started, and always show
+#    end-of-commands outputs.
+#  - With the -v option, show the list of all files removed, regardless
+#    of the number.  
 #
 
 #

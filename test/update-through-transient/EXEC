@@ -1,8 +1,6 @@
 #! /bin/sh
 
-doo() { echo "$@" ; "$@" ; }
-
-doo rm -Rf BBB A
+rm -Rf BBB A || exit 1
 
 echo CORRECT >BBB
 
@@ -23,8 +21,8 @@ echo ../../stu.test
 	exit 1
 }
 
-grep -qF 'Nothing to be done' list.content || {
-	echo >&2 "$0:  *** 'Nothing to be done' not found in output'"
+grep -qFx 'Targets are up to date' list.content || {
+	echo >&2 "$0:  *** 'Targets are up to date' not found in output'"
 	exit 1
 }
 
@@ -48,11 +46,11 @@ echo ../../stu.test
 	exit 1
 }
 
-grep -qF 'Nothing to be done' list.content || {
-	echo >&2 "$0:  *** 'Nothing to be done' not found in output'"
+grep -qFx 'Targets are up to date' list.content || {
+	echo >&2 "$0:  *** 'Targets are up to date' not found in output'"
 	exit 1
 }
 
-rm -f BBB
+rm -f BBB || exit 1
 
 exit 0

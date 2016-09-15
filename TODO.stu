@@ -1,10 +1,3 @@
-#==== Features of Stu 2:  Mandatory ====
-
-#
-# In parallel mode, one-liner should include the PID (only with the -v
-# option)
-#
-
 #
 # For content commands, show the content when short and ASCII-ish
 #
@@ -267,8 +260,6 @@ A: [-d data/B];
 # An option for automatic logging:  write all output (stdout/stderr) of
 # commands to a file (a different file per target).  Use the -l option. 
 #
-
-#==== Features of Stu 2:  Other features ====
 
 #
 # Recursive persistent dependency:  If the file exists, never

@@ -1014,7 +1014,7 @@ output 'Targets are up to date', as the optional dependency may have been
 created by subsequent targets. 
 
 .SH AUTHOR
-Written by Jérôme Kunegis <kunegis@uni-koblenz.de>, with contributions
+Written by J\['e]r\[^o]me Kunegis <kunegis@uni-koblenz.de>, with contributions
 and help by Jun Sun, Aaron McDaid, Heinrich Hartmann, and Holger Heinz. 
 
 .SH "SEE ALSO"

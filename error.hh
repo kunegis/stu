@@ -147,8 +147,7 @@ void print_error_reminder(string message)
 
 /* System error message.  Includes the given message, and the
  * ERRNO-based text.  Cf. perror().  Color is not added.  The output of
- * this function is used as input to one of the print_*() functions. 
- */
+ * this function is used as input to one of the print_*() functions.  */
 string system_format(string text)
 {
 	return fmt("%s: %s",
@@ -180,7 +179,7 @@ void print_out(string text)
 }
 
 /* A message on STDERR that is made silent by the silent option (-s) */ 
-void print_err(string text)
+void print_error_silenceable(string text)
 {
 	assert(text != "");
 	assert(isupper(text[0]));
@@ -291,12 +290,13 @@ public:
 	bool empty() const { 
 		return type == Type::EMPTY;
 	}
-
 };
 
-/* A place along with a message.  This class is only used when traces
+/* 
+ * A place along with a message.  This class is only used when traces
  * cannot be printed immediately.  Otherwise, Place::operator<<() is
- * called directly.  */
+ * called directly.  
+ */
 class Trace
 {
 public:

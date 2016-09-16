@@ -1,0 +1,11 @@
+>A: X Y Z
+{
+	cat X Y Z
+}
+
+>X { sleep 2 ; echo xxx ; }
+>Y { echo yyy ; }
+>Z { sleep 1 ; echo zzz ; }
+
+
+	

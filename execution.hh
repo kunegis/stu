@@ -726,7 +726,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	/* The command must be run or the file created now */
 
 	if (option_question) {
-		print_err("Targets are not up to date");
+		print_error_silenceable("Targets are not up to date");
 		exit(ERROR_BUILD);
 	}
 
@@ -1005,6 +1005,12 @@ void Execution::waited(pid_t pid, int status)
 				print_traces(); 
 
 				raise(ERROR_BUILD);
+			}
+
+			/* In parallel mode, print "done" message */
+			if (option_parallel) {
+				string text= targets[0].format_src();
+				printf("Successfully built %s\n", text.c_str()); 
 			}
 		}
 

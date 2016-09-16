@@ -1,10 +1,9 @@
 #
-# For content commands, show the content when short and ASCII-ish
+# In message on stdout that use format_src(), put filenames in bold. 
 #
 
 #
-# In parallel mode, show extra "done successfully" messages for each
-# command, in green.
+# For content commands, show the content when short and ASCII-ish
 #
 
 #
@@ -330,12 +329,15 @@ A: -P B;
 # meaning when they are not attached to other words, and when they are
 # the first word in a command.
 #
+# However, do this everywhere except at the outer level.  At the outer
+# level, every } preceded by whitespace ends the command. 
+#
 
-# Write '}' to the file 'A'
+# Unexpected ';'
 >A { echo } ; }
 
-# It will mean that ';' will be mandatory before a closing '}' that is
-# not preceded by whitespace, just like it is in the shell. 
+# OK
+>A { { echo } ; } ; echo aaa }
 
 #
 # Allow access to environment variables via e.g. $(HOME). 

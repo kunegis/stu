@@ -1,0 +1,9 @@
+# Mention only '@all' in 'Build X' message.
+
+@all >A:
+{
+	# Multiline command to avoid echo of command
+	echo correct
+	echo aaa
+	echo bbb
+}

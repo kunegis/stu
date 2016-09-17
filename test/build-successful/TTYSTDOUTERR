@@ -1,4 +1,4 @@
-Build C
+Building C
 cp C B
 cp B A
 [32mBuild successful[0m

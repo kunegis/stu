@@ -1,8 +1,4 @@
 #
-# In message on stdout that use format_src(), put filenames in bold. 
-#
-
-#
 # For content commands, show the content when short and ASCII-ish
 #
 

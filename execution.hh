@@ -2021,7 +2021,7 @@ void Execution::print_command() const
 	if (rule->is_hardcode) {
 		assert(targets.size() == 1); 
 		string text= targets.front().format_src(); 
-		printf("Create %s\n", text.c_str());
+		printf("Creating %s\n", text.c_str());
 		return;
 	} 
 
@@ -2038,13 +2038,8 @@ void Execution::print_command() const
 	bool single_line= rule->command->get_lines().size() == 1;
 
 	if (!single_line || option_parallel) {
-		fputs("Build", stdout);
- 		for (const Target &target:  targets) {
-			putc(' ', stdout);
-			string text= target.format_src(); 
-			fputs(text.c_str(), stdout);
-		}
-		putc('\n', stdout);
+		string text= targets.front().format_src();
+		printf("Building %s\n", text.c_str());
 		return; 
 	}
 

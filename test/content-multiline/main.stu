@@ -1,0 +1,6 @@
+# Don't show the content on STDOUT
+
+A = {
+	aaa
+	bbb
+}

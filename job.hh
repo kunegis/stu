@@ -80,6 +80,7 @@ public:
 	 * the argument is set, there must not be unterminated jobs.  */ 
 	static void print_statistics(bool allow_unterminated_jobs= false); 
 
+	/* Kill this job */
 	static void kill(pid_t pid); 
 
 	static void init_tty(); 

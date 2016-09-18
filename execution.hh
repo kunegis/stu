@@ -180,10 +180,10 @@ private:
 	 * link.  */ 
 	void read_dynamic_dependency(Stack avoid, shared_ptr <Dependency> dependency_this);
 
-	/* Remove all file targets if they exist.  If OUTPUT is true, output a
-	 * corresponding error message.  Return whether the file was
-	 * removed.  If OUTPUT is false, only do async signal-safe
-	 * things.  */
+	/* Remove all file targets of this execution object if they
+	 * exist.  If OUTPUT is true, output a corresponding message.
+	 * Return whether the file was removed.  If OUTPUT is false,
+	 * only do async signal-safe things.  */  
 	bool remove_if_existing(bool output); 
 
 	/* Start the next job(s). This will also terminate
@@ -1476,7 +1476,9 @@ bool Execution::finished() const
 void job_terminate_all() 
 {
 	/* Strictly speaking, there is a bug here because the C++
-	 * containers are not async signal-safe. */ 
+	 * containers are not async signal-safe.  But we block the
+	 * relevant signals while we update the containers, so it
+	 * should be OK.  */ 
 
 	write_safe(2, "stu: Terminating all jobs\n"); 
 	
@@ -1489,17 +1491,30 @@ void job_terminate_all()
 	}
 
 
-	bool terminated= false;
+	int count_terminated= 0;
 
 	for (auto i= Execution::executions_by_pid.begin();
 	     i != Execution::executions_by_pid.end();  ++i) {
 
 		if (i->second->remove_if_existing(false))
-			terminated= true; 
+			++count_terminated;
 	}
 
-	if (terminated) {
-		write_safe(2, "stu: Removing partially built files\n");
+	if (count_terminated) {
+		write_safe(2, "stu: Removing partially built files (");
+		constexpr int len= sizeof(int) / 3 + 3;
+		char out[len];
+		out[len - 1]= '\n';
+		out[len - 2]= ')';
+		int i= len - 3;
+		int n= count_terminated;
+		do {
+			assert(i >= 0); 
+			out[i]= '0' + n % 10;
+			n /= 10;
+		} while (n > 0 && --i >= 0);
+		int r= write(2, out + i, len - i);
+		(void) r;
 	}
 
 	/* Check that all children are terminated */ 

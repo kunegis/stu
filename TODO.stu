@@ -1,10 +1,5 @@
 #
-# When removing files automatically at the end, display the number of
-# files removed.
-#
-
-#
-# verbose mode -v:
+# verbose mode -v:  (or show this in debug mode -d)
 #  - Show PIDs when commands are started, and always show
 #    end-of-commands outputs.
 #  - With the -v option, show the list of all files removed, regardless

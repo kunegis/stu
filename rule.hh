@@ -27,24 +27,27 @@ public:
 
 	/* The dependencies in order of declaration.  Dependencies are
 	 * included multiple times if they appear multiple times in the
-	 * source.  All parameters occuring in the dependencies also
-	 * occur in the target. */ 
+	 * source.  Any parameter occuring any dependency also
+	 * occurs in every target. */ 
 	vector <shared_ptr <Dependency> > dependencies;
 
-	/* The place of the rule as a whole.  Taken from the place of the
-	 * target (but could be different, in principle) */ 
+	/* The place of the rule as a whole.  Taken from the place of
+	 * the first target (but could be different, in principle)  */   
 	const Place place;
 
-	/* The command (optional).  Contains its own place, as it is a
+	/* 
+	 * The command (optional).  Contains its own place, as it is a
 	 * token.  Null when the rule does not have a command, i.e.,
-	 * ends in a semicolon ';'.  */  
+	 * ends in a semicolon ';'.  For hardcoded rules, the content of
+	 * the file (not optional). 
+	 */  
 	const shared_ptr <const Command> command;
 
 	/* 
 	 * When !is_copy:  The name of the file from which
 	 *   input should be read; must be one of the file dependencies.
 	 *   Empty for no input redirection.   
-	 * When is_copy: the file from which to copy; never empty
+	 * When is_copy: the file from which to copy; never empty.
 	 */ 
 	const Name filename; 
 

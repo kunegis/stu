@@ -2015,13 +2015,30 @@ void Execution::print_traces(string text) const
 
 void Execution::print_command() const
 {
+	static const int SIZE_MAX_PRINT_CONTENT= 20;
+	
 	if (option_silent)
 		return; 
 
 	if (rule->is_hardcode) {
 		assert(targets.size() == 1); 
+		string content= rule->command->command;
+		bool is_printable= false;
+		if (content.size() < SIZE_MAX_PRINT_CONTENT) {
+			is_printable= true;
+			for (const char c:  content) {
+				int cc= c;
+				if (! (cc >= ' ' && c <= '~'))
+					is_printable= false;
+			}
+		}
 		string text= targets.front().format_src(); 
-		printf("Creating %s\n", text.c_str());
+		if (is_printable) {
+			string content_src= name_format_src(content); 
+			printf("Creating %s: %s\n", text.c_str(), content_src.c_str());
+		} else {
+			printf("Creating %s\n", text.c_str());
+		}
 		return;
 	} 
 

@@ -147,8 +147,10 @@ public:
 	}
 };
 
-/* A command delimited by braces, or the content of a file, also
- * delimited by braces.  */
+/* 
+ * A command delimited by braces, or the content of a file, also
+ * delimited by braces.  
+ */
 class Command
 	:  public Token
 {

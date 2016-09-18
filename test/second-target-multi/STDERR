@@ -1,0 +1,2 @@
+main.stu:5:12: parameters of target 'list.${name}.${extra}' differ
+main.stu:5:1: from parameters of target 'list.${name}' in rule with multiple targets

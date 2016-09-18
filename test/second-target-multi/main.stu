@@ -1,0 +1,9 @@
+# Error:  "$extra" must appear in all targets, or not all all. 
+
+A:  list.a { cp list.a A ; }
+
+list.$name list.$name.$extra
+{
+	echo aaa >list."$name"
+	echo bbb >list."$name"."$extra"
+}

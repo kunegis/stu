@@ -1,8 +1,4 @@
 #
-# For content commands, show the content when short and ASCII-ish
-#
-
-#
 # When removing files automatically at the end, display the number of
 # files removed.
 #

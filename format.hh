@@ -30,6 +30,31 @@ enum
 	S_NOEMPTY=       1 << 1,
 };
 
+/*
+ * Whether a string needs to be quoted in the shell or in Stu (which
+ * have the same quoting syntax.)  This is used so that Stu output looks
+ * like input to the shell.  Note that for strings beginning with ~ or
+ * -, quoting is not enough:  they have to be separated with '--'
+ * additionally in the shell.   
+ */
+bool src_need_quotes(const string &name)
+{
+	if (name.size() == 0)
+		return true;
+
+	if (name[0] == '-' || name[0] == '~' || name[0] == '+')
+		return true; 
+
+	bool ret= false;
+	for (char c:  name) {
+		if (! isalnum(c) &&
+		    ! strchr("+-./^`_~", c) &&
+		    ! (c & 0x80))
+			ret= true;
+	}
+	return ret; 
+}
+
 string char_format(char c, Style style, bool &quotes)
 {
 	(void) style; 
@@ -143,6 +168,20 @@ string name_format_word(string name)
 		   Color::end); 
 }
 
+string name_format_src(string name) 
+{
+	Style style= 0;
+
+	bool quotes= src_need_quotes(name); 
+		
+	string text= name_format(name, style, quotes); 
+
+	return fmt("%s%s%s", 
+		   quotes ? "'" : "",
+		   text,
+		   quotes ? "'" : ""); 
+}
+
 string dynamic_variable_format_word(string name)
 {
 	bool quotes= false;
@@ -167,31 +206,6 @@ string prefix_format_word(string name, string prefix)
 		   s,
 		   quotes ? "'" : "",
 		   Color::end); 
-}
-
-/*
- * Whether a string needs to be quoted in the shell or in Stu (which
- * have the same quoting syntax.)  This is used so that Stu output looks
- * like input to the shell.  Note that for strings beginning with ~ or
- * -, quoting is not enough:  they have to be separated with '--'
- * additionally in the shell.   
- */
-bool src_need_quotes(const string &name)
-{
-	if (name.size() == 0)
-		return true;
-
-	if (name[0] == '-' || name[0] == '~' || name[0] == '+')
-		return true; 
-
-	bool ret= false;
-	for (char c:  name) {
-		if (! isalnum(c) &&
-		    ! strchr("+-./^`_~", c) &&
-		    ! (c & 0x80))
-			ret= true;
-	}
-	return ret; 
 }
 
 #endif /* ! FORMAT_HH */

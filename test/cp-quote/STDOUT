@@ -1,4 +1,4 @@
-Creating E
+Creating E: correct
 cp E '$'
 cp '$' '"'
 cp '"' ''\'''

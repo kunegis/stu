@@ -2,7 +2,7 @@
 #
 # Perform all unit tests.  Each unit test is in one subdirectory of the
 # directory test/.  By default, each test directory contains a file
-# 'main.stu' that performs one unit test.  Additional files may be
+# 'main.stu' that performs one unit test.  Additional files may be 
 # present to configure how the test is performed, see below.  
 # 
 # INVOCATION
@@ -485,7 +485,7 @@ printf 'Runtime: %u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)"
 
 if [ "$errors" != 0 ]
 then
-	echo >&2 "[31m$0: *** The following $(echo $(<../error.log wc -l)) tests failed:"
+	echo >&2 "[31m$0: *** The following $(echo $(<../error.log wc -l)) test(s) failed:"
 	cat ../error.log
 	echo "[m"
 	exit 1

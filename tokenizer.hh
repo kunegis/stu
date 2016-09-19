@@ -762,10 +762,10 @@ void Tokenizer::parse_version(string version_req,
  wrong_version: {
 		place_version <<
 			fmt("requested version %s using %s%%version%s "
-			    "is incompatible with this Stu's version %s%s%s",
+			    "is incompatible with this Stu's version %s" STU_VERSION "%s",
 			    name_format_word(version_req),
 			    Color::word, Color::end,
-			    Color::word, STU_VERSION, Color::end);
+			    Color::word, Color::end);
 		explain_version();
 		throw ERROR_LOGICAL;
 	}

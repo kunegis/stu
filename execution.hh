@@ -20,22 +20,22 @@
 /*
  * Each target is represented at run time by one Execution object.  
  *
- * The set of active Execution objects forms a directed acyclic graph, rooted
- * at the root Execution object.  Edges in this graph are represented by
- * Link objects.  Each Execution object corresponds to one or more
- * unique Target objects.  Two Execution objects are connected if there is a
- * dependency between them.  If there is an edge A ---> B, A is said to
- * be the parent of B, and B the child of A.  Also, B is a dependency of
- * A.  If A is a dynamic target, then it has as an initial child only
- * the corresponding target with one less dynamicity level; other
- * dependencies are added later. 
+ * The set of active Execution objects forms a directed acyclic graph,
+ * rooted at the root Execution object.  Edges in this graph are
+ * represented by Link objects.  Each Execution object corresponds to
+ * one or more unique Target objects.  Two Execution objects are
+ * connected if there is a dependency between them.  If there is an edge
+ * A ---> B, A is said to be the parent of B, and B the child of A.
+ * Also, B is a dependency of A.  If A is a dynamic target, then it has
+ * as an initial child only the corresponding target with one less
+ * dynamicity level; other dependencies are added later.
  *
  * All Execution objects are allocated with new Execution(...), and are
  * never deleted, as the information contained in them needs to be
- * cached.  
+ * cached.
  *
  * All Execution objects are linked through the map called
- * "executions_by_target" by all their targets.   
+ * "executions_by_target" by all their targets.
  */
 class Execution
 {
@@ -58,34 +58,33 @@ private:
 	friend void job_print_jobs(); 
 
 	/* The targets to which this execution object corresponds.
-	 * Empty only for the root target.  
-	 * Otherwise, all entries have the same dynamic depth.  If the
-	 * dynamic depth is larger than one, then there is exactly one
-	 * target.  There are multiple targets here when the rule had
-	 * multiple targets.  */   
+	 * Empty only for the root target.  Otherwise, all entries have
+	 * the same dynamic depth.  If the dynamic depth is larger than
+	 * one, then there is exactly one target.  There are multiple
+	 * targets here when the rule had multiple targets.  */   
 	vector <Target> targets; 
 
-	/* The instantiated file rule for this execution.  Null when there
-	 * is no rule for this file (this happens for instance when a
-	 * source code file is given as a dependency, or when this is a
-	 * complex dependency).  Individual dynamic dependencies do have
-	 * rules, in order for cycles to be detected.  */ 
+	/* The instantiated file rule for this execution.  Null when
+	 * there is no rule for this file (this happens for instance
+	 * when a source code file is given as a dependency, or when
+	 * this is a complex dependency).  Individual dynamic
+	 * dependencies do have rules, in order for cycles to be
+	 * detected.  */ 
 	shared_ptr <Rule> rule;
 
-	/* The rule from which this execution was derived.  This is
-	 * only used to detect strong cycles.  To manage the dependencies, the
-	 * instantiated general rule is used.  Null if and only if RULE is
-	 * null.  */ 
+	/* The rule from which this execution was derived.  This is only
+	 * used to detect strong cycles.  To manage the dependencies,
+	 * the instantiated general rule is used.  Null if and only if
+	 * RULE is null.  */ 
 	shared_ptr <Rule> param_rule;
 
 	/* Currently running executions.  Allocated with operator new()
 	 * and never deleted.  */ 
 	set <Execution *> children;
 
-	/* The parent executions.
-	 * This is a map because typically, the number of elements is
-	 * always very small, i.e., mostly one, and a map is better suited
-	 * in this case.  */ 
+	/* The parent executions.  This is a map because typically, the
+	 * number of elements is always very small, i.e., mostly one,
+	 * and a map is better suited in this case.  */ 
 	map <Execution *, Link> parents; 
 
 	/* The job used to execute this rule's command */ 
@@ -93,17 +92,18 @@ private:
 	
 	/* Dependencies that have not yet begun to be built.
 	 * Initialized with all dependencies, and emptied over time when
-	 * things are built, and filled over time when dynamic dependencies
-	 * are worked on.  Entries are not necessarily unique.  */ 
+	 * things are built, and filled over time when dynamic
+	 * dependencies are worked on.  Entries are not necessarily
+	 * unique.  */ 
 	Buffer buf_default;
 
-	/* The buffer for dependencies in the second pass.  They are only started
-	 * if, after (potentially) starting all non-trivial
+	/* The buffer for dependencies in the second pass.  They are
+	 * only started if, after (potentially) starting all non-trivial
 	 * dependencies, the target must be rebuilt anyway.  */
 	Buffer buf_trivial; 
 
 	/* Timestamp of each file target, before the command is
-	 * executed.  Only valid once the job was started.  The indexes 
+	 * executed.  Only valid once the job was started.  The indexes
 	 * correspond to those in TARGETS.  Non-file indexes are
 	 * uninitialized.  Used for checking whether a file was rebuild
 	 * to decide whether to remove it after a command failed or was
@@ -127,17 +127,17 @@ private:
 	 * for dynamic targets, and to zero for non-dynamic targets.  */
 	Stack done;
 
-	/* Latest timestamp of a (direct or indirect) file dependency that
-	 * was not rebuilt.  Files that were rebuilt are not
+	/* Latest timestamp of a (direct or indirect) file dependency
+	 * that was not rebuilt.  Files that were rebuilt are not
 	 * considered, since they make the target be rebuilt anyway.
 	 * The function execute() also changes this to consider the file
-	 * itself.  This final timestamp is then carried over to the parent
-	 * executions.  */
+	 * itself.  This final timestamp is then carried over to the
+	 * parent executions.  */
 	Timestamp timestamp; 
 
-	/* Whether this target needs to be built.  When a
-	 * target is finished, this value is propagated to the parent
-	 * executions (except when the F_PERSISTENT flag is set).  */ 
+	/* Whether this target needs to be built.  When a target is
+	 * finished, this value is propagated to the parent executions
+	 * (except when the F_PERSISTENT flag is set).  */ 
 	bool need_build;
 
 	/* Whether we performed the check in execute()  */ 
@@ -186,14 +186,13 @@ private:
 	 * only do async signal-safe things.  */  
 	bool remove_if_existing(bool output); 
 
-	/* Start the next job(s). This will also terminate
-	 * jobs when they don't need to be run anymore, and thus it can
-	 * be called when K = 0 just to terminate jobs that need to be
-	 * terminated.  The passed LINK.FLAG is the ORed combination
-	 * of all FLAGs up the dependency chain.  
-	 * Return value:  whether additional processes must be started.
-	 * Can only by TRUE in random mode.  When TRUE, not all possible
-	 * child jobs where started.  */
+	/* Start the next job(s). This will also terminate jobs when
+	 * they don't need to be run anymore, and thus it can be called
+	 * when K = 0 just to terminate jobs that need to be terminated.
+	 * The passed LINK.FLAG is the ORed combination of all FLAGs up
+	 * the dependency chain.  Return value: whether additional
+	 * processes must be started.  Can only by TRUE in random mode.
+	 * When TRUE, not all possible child jobs where started.  */
  	bool execute(Execution *parent, Link &&link);
 
 	/* Execute already-active children.  Parameters 
@@ -1233,8 +1232,8 @@ void Execution::unlink(Execution *const parent,
 	}
 
 	/*
-	 * Propagate variables over transient targets without commands and dynamic
-	 * targets
+	 * Propagate variables over transient targets without commands
+	 * and dynamic targets
 	 */
 	if (child->is_dynamic() ||
 	    (dynamic_pointer_cast <Direct_Dependency> (dependency_child)
@@ -1249,8 +1248,9 @@ void Execution::unlink(Execution *const parent,
 	 * Propagate attributes
 	 */ 
 
-	/* Note:  propagate the flags after propagating other things, since
-	 * flags can be changed by the propagations done before.  */
+	/* Note: propagate the flags after propagating other things,
+	 * since flags can be changed by the propagations done
+	 * before.  */ 
 
 	parent->error |= child->error; 
 
@@ -1308,9 +1308,10 @@ Execution::Execution(Target target_,
 		}
 	} else {
 		assert(target_.type.is_dynamic()); 
-		/* We must set the rule here, so cycles in the dependency graph
-		 * can be detected.  Note however that the rule of dynamic
-		 * file dependency executions is otherwise not used.  */ 
+		/* We must set the rule here, so cycles in the
+		 * dependency graph can be detected.  Note however that
+		 * the rule of dynamic file dependency executions is
+		 * otherwise not used.  */ 
 		Target target_base(target_.type.get_base(), target_.name);
 		try {
 			rule= rule_set.get(target_base, param_rule, mapping_parameter, link.dependency->get_place()); 
@@ -1423,7 +1424,7 @@ Execution::Execution(Target target_,
  * This is the root execution object.  It has an empty TARGET list, and
  * in principle should be deleted once its lifetime is over.  This is
  * not done however, as there is only a single such object, and its
- * lifetime span the whole lifetime of the Stu process anyway. 
+ * lifetime span the whole lifetime of the Stu process anyway.
  */
 Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
 	:  error(0),
@@ -1477,8 +1478,8 @@ void job_terminate_all()
 {
 	/* Strictly speaking, there is a bug here because the C++
 	 * containers are not async signal-safe.  But we block the
-	 * relevant signals while we update the containers, so it
-	 * should be OK.  */ 
+	 * relevant signals while we update the containers, so it should
+	 * be OK.  */ 
 
 	write_safe(2, "stu: Terminating all jobs\n"); 
 	

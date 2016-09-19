@@ -3,7 +3,8 @@
 #  - Show PIDs when commands are started, and always show
 #    end-of-commands outputs.
 #  - With the -v option, show the list of all files removed, regardless
-#    of the number.  
+#    of the number.
+#  - Show flags correctly 
 #
 
 #

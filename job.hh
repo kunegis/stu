@@ -11,7 +11,8 @@
 #include <sys/wait.h>
 
 /* Called to terminate all running processes, and remove their target
- * files if present.  Implemented in execution.hh, and called from here. */
+ * files if present.  Implemented in execution.hh, and called from
+ * here. */
 void job_terminate_all(); 
 
 void job_print_jobs(); 
@@ -30,7 +31,7 @@ void job_print_jobs();
 
 /*
  * A job is a child process of Stu that executes the command for a given
- * rule.  An object of this type can execute a job only once. 
+ * rule.  An object of this type can execute a job only once.
  */ 
 class Job
 {
@@ -56,12 +57,13 @@ public:
 		return pid;
 	}
 
-	/* Start the process.  Don't output the command -- this 
-	 * is done by callers of this functions.   FILENAME_OUTPUT and
-	 * FILENAME_INPUT are the files into which to redirect output and
-	 * input; either can be empty to denote no redirection. 
-	 * On error, output a message and return -1, otherwise return the
-	 * PID (>= 0).  MAPPING contains the environment variables to set.  */
+	/* Start the process.  Don't output the command -- this is done
+	 * by callers of this functions.  FILENAME_OUTPUT and
+	 * FILENAME_INPUT are the files into which to redirect output
+	 * and input; either can be empty to denote no redirection.  On
+	 * error, output a message and return -1, otherwise return the
+	 * PID (>= 0).  MAPPING contains the environment variables to
+	 * set.  */
 	pid_t start(string command, 
 		    const map <string, string> &mapping,
 		    string filename_output,
@@ -87,10 +89,10 @@ public:
 
 	static pid_t get_tty()  {  return tty;  }
 	
-	/* Block interrupt signals for the lifetime of an object of this type. 
-	 * Note that the mask of blocked signals is inherited over
-	 * exec(), so we must unblock signals also when starting child
-	 * processes.  */
+	/* Block interrupt signals for the lifetime of an object of this
+	 * type.  Note that the mask of blocked signals is inherited
+	 * over exec(), so we must unblock signals also when starting
+	 * child processes.  */
 	class Signal_Blocker
 	{
 	private:
@@ -132,7 +134,7 @@ private:
 
 	/* Set to 1 in the child process, before execve() is called.
 	 * Used to avoid doing too much in the terminating signal
-	 * handler.  Note:  There is a race condition because the signal
+	 * handler.  Note: There is a race condition because the signal
 	 * handler may be called before the variable is set.  */
 	static sig_atomic_t in_child; 
 
@@ -182,12 +184,13 @@ pid_t Job::start(string command,
 	 * "/bin/sh" as a shell instead.  Note that the variable $SHELL
 	 * is intended to denote the user's chosen interactive shell,
 	 * and may not be a POSIX-compatible shell.  Note also that
-	 * POSIX prescribes that Make use "/bin/sh" by default. 
-	 * Other note:  Make allows to declare the Make variable $SHELL
-	 * within the Makefile or in Make's parameters to a value that
-	 * *will* be used by Make instead of /bin/sh.  This is not possible
-	 * with Stu, because Stu does not have its own
-	 * set of variables.  Instead, there is the $STU_SHELL variable.  */
+	 * POSIX prescribes that Make use "/bin/sh" by default.  Other
+	 * note: Make allows to declare the Make variable $SHELL within
+	 * the Makefile or in Make's parameters to a value that *will*
+	 * be used by Make instead of /bin/sh.  This is not possible
+	 * with Stu, because Stu does not have its own set of variables.
+	 * Instead, there is the $STU_SHELL variable.  The proper way to
+	 * do it in Stu would be via a directive.  */
 	static const char *shell= nullptr;
 	if (shell == nullptr) {
 		shell= getenv("STU_SHELL");
@@ -292,9 +295,8 @@ pid_t Job::start(string command,
 
 		/* As $0 of the process, we pass the filename of the
 		 * command followed by a colon, the line number, a colon
-		 * and the column number.
-		 * This makes the shell if it reports an error make the
-		 * most useful output.  */
+		 * and the column number.  This makes the shell if it
+		 * reports an error make the most useful output.  */
 		string argv0= place_command.as_argv0();
 		if (argv0 == "")
 			argv0= shell; 
@@ -491,13 +493,12 @@ pid_t Job::wait(int *status)
 		if (WIFSTOPPED(*status)) {
 			/* 
 			 * The job was suspended.  This is the simplest
-			 * thing possible we can do:  put ourselves in
+			 * thing possible we can do: put ourselves in
 			 * the foreground, ask the user to press ENTER,
 			 * and then put the job back into the foreground
-			 * and continue it.  In principle, we
-			 * could do much more:  allow the user to enter
-			 * commands, having an own command language,
-			 * etc. 
+			 * and continue it.  In principle, we could do
+			 * much more: allow the user to enter commands,
+			 * having an own command language, etc.
 			 */
 
 			if (tcsetpgrp(tty, getpid()) < 0)
@@ -524,8 +525,8 @@ pid_t Job::wait(int *status)
 		return pid;
 	}
 
-	/* Any SIGCHLD sent after the last call to sigwaitinfo() will
-	 * be ready for receiving, even those SIGCHLD signals received
+	/* Any SIGCHLD sent after the last call to sigwaitinfo() will be
+	 * ready for receiving, even those SIGCHLD signals received
 	 * between the last call to waitpid() and the following call to
 	 * sigwaitinfo().  This excludes a deadlock which would be
 	 * possible if we would only use sigwaitinfo(). */
@@ -677,7 +678,7 @@ void Job::handler_termination(int sig)
  * Do nothing -- the handler only exists because POSIX says that a
  * signal may be discarded by the kernel if doesn't have a signal
  * handler for it, and then it may not be possible to wait for that
- * signal. 
+ * signal.
  */  
 void Job::handler_productive(int, siginfo_t *, void *)
 {
@@ -730,7 +731,7 @@ Job::Signal_Blocker::~Signal_Blocker()
  * signal must have a signal handler (which can do nothing), as
  * otherwise POSIX allows the signal to be discarded.  Thus, we setup a
  * no-op signal handler.  (Note that Linux does not discard such
- * signals, while FreeBSD does.)  
+ * signals, while FreeBSD does.)
  */  
 Job::Signal::Signal()
 {
@@ -775,8 +776,8 @@ Job::Signal::Signal()
 	 */
 	
 	/* We have to use sigaction() rather than signal() as only
-	 * sigaction() guarantees that the signal can be queued, 
-	 * as per POSIX.  */
+	 * sigaction() guarantees that the signal can be queued, as per
+	 * POSIX.  */
 	struct sigaction act_productive;
 	act_productive.sa_sigaction= Job::handler_productive;
 	if (sigemptyset(& act_productive.sa_mask)) {
@@ -820,7 +821,7 @@ Job::Signal::Signal()
  * process group ID, this kills the child and all its children
  * (recursively), up to programs that change this PGID of processes,
  * such as Stu and shells, which have to kill their children explicitly
- * in their signal handlers.  
+ * in their signal handlers.
  */ 
 void Job::kill(pid_t pid)
 {

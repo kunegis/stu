@@ -487,7 +487,7 @@ if [ "$errors" != 0 ]
 then
 	echo >&2 "[31m$0: *** The following $(echo $(<../error.log wc -l)) test(s) failed:"
 	cat ../error.log
-	echo "[m"
+	printf "[m"
 	exit 1
 else
 	echo "[32mTests successful[m"

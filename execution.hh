@@ -1615,23 +1615,29 @@ bool Execution::remove_if_existing(bool output)
 		/* If the file existed before building, remove it only if it now
 		 * has a newer timestamp.  */
 
-		if (! timestamps_old[i].defined() ||
-		    timestamps_old[i] < Timestamp(&buf)) {
+		if (! (! timestamps_old[i].defined() ||
+		       timestamps_old[i] < Timestamp(&buf)))
+			continue;
 
-			if (output) {
-				print_error_reminder(fmt("Removing file %s because command failed",
-							 name_format_word(filename))); 
-			}
+		if (option_debug) {
+			string text_filename= name_format_word(filename); 
+			fprintf(stderr, "DEBUG  remove %s\n",
+				text_filename.c_str()); 
+		}
+		
+		if (output) {
+			print_error_reminder(fmt("Removing file %s because command failed",
+						 name_format_word(filename))); 
+		}
 			
-			removed= true;
+		removed= true;
 
-			if (0 > ::unlink(filename)) {
-				if (output) {
-					rule->place
-						<< system_format(target.format_word()); 
-				} else {
-					write_safe(2, "*** Error: unlink\n");
-				}
+		if (0 > ::unlink(filename)) {
+			if (output) {
+				rule->place
+					<< system_format(target.format_word()); 
+			} else {
+				write_safe(2, "*** Error: unlink\n");
 			}
 		}
 	}

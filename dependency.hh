@@ -107,12 +107,16 @@ int flag_get_index(char c)
 	}
 }
 
-/* Textual representation of a flags value */
+/* 
+ * Textual representation of a flags value.  To be shown before the
+ * argument.  Empty when flags are empty. 
+ */
 string flags_format(Flags flags) 
 {
 	string ret= "";
 	for (int i= 0;  i < C_ALL;  ++i)
-		if (flags & (1 << i))  ret += FLAGS_CHARS[i]; 
+		if (flags & (1 << i))
+			ret += frmt("-%c ", FLAGS_CHARS[i]); 
 	return ret;
 }
 

@@ -1,9 +1,4 @@
 #
-# Debug mode -d
-#  - Show flags correctly 
-#
-
-#
 # Concatenation.  Concatenation is to work both with the
 # binary operator '*' as well with juxtaposition.     [2.5]
 #

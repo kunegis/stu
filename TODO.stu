@@ -313,10 +313,10 @@ A: -P B;
 #
 
 # Unexpected ';'
->A { echo } ; }
+### >A { echo } ; }
 
 # OK
->A { { echo } ; } ; echo aaa }
+### >A { { echo } ; } ; echo aaa }
 
 #
 # Allow access to environment variables via e.g. $(HOME). 
@@ -337,3 +337,16 @@ A: -P B;
 # It's hard to define which of such rules would be universal enough to
 # be included in Stu. 
 #
+
+#
+# Have proper Autoconf support for C++11, and not just using -std=c++11
+# directly.  
+#
+
+#
+# A 'why' option that shows why things are built.
+#
+
+### 'abc' does not exist
+### 'abc' is older than its dependency 'xyz'
+### ...

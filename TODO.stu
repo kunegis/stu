@@ -235,6 +235,11 @@ $name.bib;   # Rule (1)
 A: [-d data/B];
 
 #
+# Logging:  an option to write log messages into a file.  In particular,
+# which commands failed.   
+#
+
+#
 # An option for automatic logging:  write all output (stdout/stderr) of
 # commands to a file (a different file per target).  Use the -l option. 
 #

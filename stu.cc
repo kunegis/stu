@@ -100,8 +100,8 @@ void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 /* Read in an input file and add the rules to the given rule set.  Used
  * for the -f option and the default input file.  If not yet non-null,
  * set RULE_FIRST to the first rule.  FILE_FD can be -1 or the FD or the
- * filename, if already opened.  If FILENAME is "-", use standard
- * input.   If FILENAME is "", use the default file ('main.stu').  */
+ * filename, if already opened.  If FILENAME is "-", use standard input.
+ * If FILENAME is "", use the default file ('main.stu').  */
 void read_file(string filename,
 	       int file_fd,
 	       Rule_Set &rule_set, 
@@ -164,10 +164,10 @@ int main(int argc, char **argv, char **envp)
 		/* Place of first file when no rule is contained */ 
 		Place place_first;
 
-		/* Whether any target(s) was passed through one of the options
-		 * -c, -C, -o, -p, -n, -0.  Also set when zero targets are
-		 * passed through one of these, e.g., when -n is used on
-		 * an empty file.  */
+		/* Whether any target(s) was passed through one of the
+		 * options -c, -C, -o, -p, -n, -0.  Also set when zero
+		 * targets are passed through one of these, e.g., when
+		 * -n is used on an empty file.  */
 		bool had_option_target= false;   /* Both lower and upper case */
 
 		bool had_option_f= false; /* Both lower and upper case */

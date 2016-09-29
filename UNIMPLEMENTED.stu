@@ -455,16 +455,20 @@ $NAME.bib:  bibs-B/$NAME.bib
 ${NAME:[^/]+}.bib: ...;
 
 #
-# Fingerprinting instead of timestamps is a feature that is implemented by quite
-# a few Make replacements.  This could also be combined with
+# Fingerprinting instead of timestamps is a feature that is implemented
+# by quite a few Make replacements.  This could also be combined with
 # preprocessors which ignore whitespace, etc.  Can also be used for the
 # commands embedded in Stu files, but then again we don't want to
 # rebuild everything just because a command changed.  Another downside
-# is that is needs Stu to go through every file in full, making Stu's
+# is that it needs Stu to go through every file in full, making Stu's
 # runtime be linear in the file size.  At the moment, the runtime of Stu
 # is independent of file size, but of course the command to generate a
 # file is always linear in the file size.  As many features in this
-# file, this opens a enormous can of worms. 
+# file, this opens a enormous can of worms.  Another way to implement it
+# is to compute a fingerprint when before executing the command, and
+# then again after the command succeeds, and when the result is
+# identical, then reset the timestamp of the file back to its old
+# value. 
 #
 
 #
@@ -472,24 +476,23 @@ ${NAME:[^/]+}.bib: ...;
 # only very little benefit since Stu already starts many processes.
 # Would only make sense in scenarios with thousands of processes, which
 # would only make sense on machines with thousands of cores.  But still
-# very sensible and maybe necessary one day, in princple. 
+# very sensible and maybe necessary one day, in princple.
 #
 
 #
-# A Stu server.  
-# The current setup of Stu (and also Make) means that when nothing is to
-# be done, Stu still has to walk the complete dependency tree and stat()
-# every file.  For large projects, this may be come very slow.  Instead,
-# have a Stu daemon which uses inotify or similar to notice changes.
-# There are many practical issues with that, so that would be a huge
-# change.  Would almost likely mean the server itself would do the
-# building, and the client would only communicate with the server.  This
-# also means the server would need to be multi-threaded.  This could
-# also be used to build a Stu GUI (either local or via HTTP) that allows
-# one to control a running Stu server.
+# A Stu server.  The current setup of Stu (and also Make) means that
+# when nothing is to be done, Stu still has to walk the complete
+# dependency tree and stat() every file.  For large projects, this may
+# be come very slow.  Instead, have a Stu daemon which uses inotify or
+# similar to notice changes.  There are many practical issues with that,
+# so that would be a huge change.  Would almost likely mean the server
+# itself would do the building, and the client would only communicate
+# with the server.  This also means the server would need to be
+# multi-threaded.  This could also be used to build a Stu GUI (either
+# local or via HTTP) that allows one to control a running Stu server.
 #
 # Maybe actually be trivial to implement once we have proper job
-# control.  But not for now. 
+# control.  But not for now.
 #
 
 #
@@ -529,7 +532,7 @@ julia:  julia-command {
 
 # A shell script that converts command to correct Julia scripts.  E.g.,
 # it will load B.data and C.data as the variables B and C, and will save
-# the generated variable A into A.data. 
+# the generated variable A into A.data.
 julia-command;
 
 # Interpreters can be chained
@@ -601,7 +604,7 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 # not whether we should hardcode it into Stu, but how easily these
 # things can be implemented using the Stu language.  If necessary, we
 # may then extend the Stu language to make such implementations
-# possible, and easy. 
+# possible, and easy.
 #
 
 # 

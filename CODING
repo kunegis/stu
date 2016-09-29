@@ -41,8 +41,10 @@ This is my preferred style.  --Jérôme Kunegis
   interpreted as different widths, this is an approximate rule; authors
   use 8-char tabs. 
 * Use 'nullptr' as the null pointer constant instead of 'NULL', as per
-  C++11.  In comments, call it "null". 
-* No space before the assignment operator. 
+  C++11.  In comments, call it "null" (in lowercase, like you would
+  write 'zero' or 'five'). 
+* No space before the assignment operator and around parentheses.
+  Otherwise, spaces around most operators. 
 * We enable many G++ warnings in debug mode, and write the code so as to
   suppress them if necessary.  (Stu is developed using G++.)
 * For vectors and strings, use operator[] for access, keeping in mind
@@ -85,11 +87,11 @@ The following names are used systematically:
 * 'error':  an error code or exit status (they are the same in Stu)
 
 Many variable names are written in "big endian" in defiance of English
-expressions.  In such names, the first part indicates the type (to a
-higher precision then the C++ type), and the second part indicates the
-meaning of the variable.  For instance, a variable denoting a filename
-used previously may be named 'filename_old' instead of the expected
-'old_filename'.  
+noun phrase syntax.  In such names, the first part indicates the type
+(to a higher precision then the C++ type), and the second part indicates
+the meaning of the variable.  For instance, a variable denoting a
+filename used previously may be named 'filename_old' instead of the
+expected 'old_filename'.  
 
 == Shell scripts ==
 
@@ -107,21 +109,42 @@ things to be said about portable shell scripting.
   code.  Code pushed to Github does not contain such lines. 
 * Sed has *only* basic regular expressions.  In particular, no '|', '+',
   and no escape sequences like '\s'/'\S'/'\b'/'\w'.  The -r and -E
-  options are not POSIX, they are GNU and BSD extensions respectively.
-  A space can be written as [[:space:]].  One or more spaces can be
-  written as [[:space:]]\{1,\}.  
+  options are not POSIX; they are GNU and/or BSD extensions.
+  A space can be written as [[:space:]].  '+' can be emulated with
+  \{1,\}.  There is no way to write alternatives, i.e., the
+  '|' operator in extended regular regular expressions.  (Note:  there
+  are rumors that -E is going to be in a future POSIX standard.)
 * Grep however has the -E option for extended regular expressions.  Grep
-  is always be invoked with the -E *or* the -F option. 
+  is always be invoked with the -E *or* the -F option.  (Using basic
+  regular expressions with Grep is also portable, but we don't do it.)
 * Shell scripts don't have a filename suffix.  Use '#! /bin/sh' and set
-  the executable bit. 
+  the executable bit.  The space after '!' is not necessary, but has a
+  certain tradition and we think it looks good, so we always use it. 
 * 'test' does not support the -a option.  Use && in the shell instead.
-  POSIX has deprecated test -a.
-* The 'recursive' option to programs like 'ls' and 'cp' is -R and not
-  -r. 
-* Use $(...) instead of `...`.  It avoids many quoting pitfalls. 
+  POSIX has deprecated 'test -a'.
+* The 'recursive' option to programs such as 'ls' and 'cp' is -R and not
+  -r.   '-r' for recursive behavior is available and prescribed by POSIX
+  for *some* commands such as 'rm', but it's easier to always use '-R'.
+  Mnemonic:  Output will be *big*, hence a big letter.  The idiomatic
+  'rm -rf' is thus not recommended, and 'rm -Rf' is used instead. 
+* Use $(...) instead of `...`.  It avoids many quoting pitfalls.  In
+  shell syntax, backticks is a form a quote which also executes its
+  content.  Thus, characters such as other backticks and backslashes
+  inside it must be quoted by a backslash, leading to ugly code.  $(...)
+  does not have this problem.  Also, in Unicode ` is a standalone grave
+  accent character, and thus a letter-like character.  This is also the
+  reason why ` doesn't need to be quoted in Stu, like any other letter.
+  The same goes for ^ and the non-ASCII ´. 
 * Double-quote all variables, except if they should expand to multiple
   words in a command line.  Also, use -- when passing variables as
   non-option arguments to programs.  E.g. write 'cp -- "$filename_from"
   "$filename_to"'.  All other invocation styles are unsafe under *some*
-  values of the variables. 
-* Always use 'read -r' instead of 'read'. 
+  values of the variables.  Some programs such as printf don't have
+  options and thus don't support '--'. 
+* Always use 'IFS= read -r' instead of 'read'.  It's the safe way to
+  read anything that's \n-delimited.
+* With 'echo', both '-n' and \c are non-portable.  Instead, use printf.
+  In general, printf is an underused command.  It can often be used
+  judiciously instead of 'echo'.  Note that the format string of printf
+  should not start with a dash.  In such cases, use %s and a subsequent
+  string, that can start with a dash.

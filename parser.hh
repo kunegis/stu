@@ -21,7 +21,7 @@
  * A Yacc-like description of Stu syntax is given in the manpage. 
  *
  * In principle, the following gives operator precedences.  Higher in
- * the list means higher precedence.  This list is to be understand as
+ * the list means higher precedence.  This list is to be understood as
  * specifying in what order operators can be nested, not to disambguate
  * expressions. 
  *
@@ -48,7 +48,7 @@
  */ 
 
 /* 
- * An object of this type represents a location within a token list 
+ * An object of this type represents a location within a token list.
  */ 
 class Parser
 {

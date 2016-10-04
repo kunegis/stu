@@ -98,8 +98,12 @@ OPTIONS
 
        -j K   Run K jobs in parallel.  K must  be  a  positive  integer.   The
               default  value  is  one, meaning that Stu does not start jobs in
-              parallel.  This option works like the  corresponding  option  in
-              GNU Make. The parameter K is mandatory.
+              parallel.  When running jobs in parallel and the  -k  option  is
+              not  used, a single job that fails will make Stu abort all other
+              running jobs and terminate.  Thus, the -j option is  often  used
+              in  conjunction  with  the -k option.  The parameter K is manda‐
+              tory.  This option works like the corresponding  option  in  GNU
+              Make, but note that in GNU Make, the argument is optional.
 
        -J     Parse  all arguments to Stu as filenames, disabling all Stu syn‐
               tax that is otherwise used.  Intended  when  Stu  is  used  with
@@ -925,4 +929,4 @@ AUTHOR
 SEE ALSO
        make(1), cook(1)
 
-stu-2.4.36                      September 2016                          STU(1)
+stu-2.4.37                       October 2016                           STU(1)

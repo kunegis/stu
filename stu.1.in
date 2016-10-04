@@ -116,9 +116,18 @@ suspend Stu itself.
 does not work when Stu does not run in a terminal. 
 .IP "-j K"
 Run K jobs in parallel.  K must be a positive integer.  The default
-value is one, meaning that Stu does not start jobs in parallel. 
-This option works like the corresponding option in GNU Make. The
-parameter K is mandatory. 
+value is one, meaning that Stu does not start jobs in parallel.
+When running jobs in parallel and the
+.BR -k
+option is not used, a single job that fails will make Stu abort all
+other running jobs and terminate.  Thus, the
+.BR -j
+option is often used in conjunction with the
+.BR -k
+option. 
+The parameter K is mandatory.
+This option works like the corresponding option in GNU Make, but note
+that in GNU Make, the argument is optional. 
 .IP "-J"
 Parse all arguments to Stu as filenames, disabling all Stu syntax that
 is otherwise used.  Intended when Stu is used with tools such

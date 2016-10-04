@@ -355,3 +355,8 @@ A: -P B;
 ### 'abc' does not exist
 ### 'abc' is older than its dependency 'xyz'
 ### ...
+
+#
+# An option to ignore all timestamps:  Whenever a file already exists,
+# it is not rebuilt.  
+#

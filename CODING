@@ -17,8 +17,8 @@ These are the relevant coding conventions we use.
   using '*.o' files though.  
 * Names of targets in the Makefile follow the GNU Coding Standards. 
 * Use SemVer.org for version number semantics.  We consider only changes
-  on the Stu file specification, not in things like the output of Stu of
-  the supported options.  See the file NEWS for details. 
+  on the Stu file specification and options marked as stable in
+  'OPTIONS'.  See the file 'NEWS' for details.   
 
 == Style == 
 
@@ -84,7 +84,7 @@ The following names are used systematically:
 * 'text':  a string used for display
 * 'format[_*]':  a function that formats an object for display
 * 'filename':  a filename
-* 'error':  an error code or exit status (they are the same in Stu)
+* 'error':  an integer error code or exit status (they are the same in Stu)
 
 Many variable names are written in "big endian" in defiance of English
 noun phrase syntax.  In such names, the first part indicates the type
@@ -113,7 +113,8 @@ things to be said about portable shell scripting.
   A space can be written as [[:space:]].  '+' can be emulated with
   \{1,\}.  There is no way to write alternatives, i.e., the
   '|' operator in extended regular regular expressions.  (Note:  there
-  are rumors that -E is going to be in a future POSIX standard.)
+  are rumors that -E is going to be in a future POSIX standard; we'll
+  switch to -E once it's standardized.)
 * Grep however has the -E option for extended regular expressions.  Grep
   is always be invoked with the -E *or* the -F option.  (Using basic
   regular expressions with Grep is also portable, but we don't do it.)

@@ -1,4 +1,4 @@
-This file lists options letters used and proposed by Stu, and gives a
+This file lists option letters used and proposed by Stu, and gives a
 comparison to those prescribed by POSIX for Make, and those used in GNU
 Make. 
 
@@ -6,19 +6,22 @@ Make.
 Legend
 ======
 
-S   Implemented in Stu and considered stable
-s   Implemented in Stu and considered unstable - may be subject to change
+S   Implemented in Stu and considered stable with respect to version
+    numbers:  The behavior will not be change within the same major
+    version number of Stu
+s   Implemented in Stu and considered unstable:  May be subject to
+    change at any time
 M   Specified by POSIX Make
 G   Implemented in GNU Make
 .   Could be implemented in Stu 
-~   Not applicable to Stu 
+-   Not applicable to Stu 
 x   Incompatible 
 
 
 List of options
 ===============
 
--0  S      Pass a \0-separated dynamic dependency 
+-0  S      Pass a \0-separated list of file targets 
 -a  s      Consider trivial dependencies to be non-trivial
 -b      G  Compatibility option
 -B  .   G  Re-build all
@@ -26,39 +29,40 @@ List of options
 -C  S   x  Explicit target with syntax 
 -C  x   G  Change directory
 -d  s   G  Print debugging information 
--e  ~ M G  Environment overrides Make macros
+-e  - M G  Environment overrides Make macros
 -E  S      Explain errors
--f  S M G  File
+-f  S M G  Read file containing rules 
 -F  S      Pass rule on the command line
 -g  s      Consider optional dependencies to be non-optional 
 -h  S   G  Show help and exit 
 -i  S x x  Interactive mode
 -i  x M G  Ignore all errors in commands
 -I  .   G  Include path
--j  S   G  Parallel
--J  S      Don't parse Stu syntax in arguments
+-j  S   G  Parallel mode (1)
+-J  S      Don't parse Stu syntax in arguments outside of options
 -k  S M G  Keep going
 -K  S      Keep partially built files
 -l  .   x  Logging into a file with the given name 
 -l  .   G  Number of jobs depends on load average
 -L  .   G  Special handling of symlinks
--m  S   x  Mode
--m  x   G  Compatibility
--M  S      Seed mode
--n  s x x  Pass a file containing newline-separated file targets, without syntax parsing 
+-m  S   x  Set job ordering mode
+-m  x   G  Compatibility option
+-M  S      Set job ordering mode to random with seed
+-n  s x x  Pass a \n-separated list of file targets
 -n  x M G  Dry run 
--o  s   x  Optional dependency
+-o  s   x  Optional dependency (2)
 -o  x   G  Mark file as old
 -O  .   G  Output sync
--p  s x x  Persistent dependency
+-p  s x x  Persistent dependency (2)
 -p  x M G  Print database 
 -P  S      Print database 
 -q  S M G  Question mode / query mode
--r  ~ M G  No builtin rules
--R  ~   G  No builtin variables
+-r  - M G  No builtin rules
+-R  -   G  No builtin variables
 -s  S M G  Silent
 -S  . M G  No keep going
--t  . M G  Touch instead of building
+-t  s x x  Trivial dependency (2)
+-t  x M G  Touch instead of building
 -u
 -v  .   x  Verbose
 -v  x   G  Show version
@@ -69,3 +73,6 @@ List of options
 -y  S      Disable color output
 -Y  S      Enable color output
 -z  S      Output statistics
+
+(1) The argument is optional in GNU Make, but mandatory in Stu.
+(2) This Stu option has the same name as the corresponding Stu flag.

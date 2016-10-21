@@ -34,7 +34,8 @@ The unit tests have additional requirements on the system:
 * The unit tests assume that the file system supports UTF-8 filenames.
   Stu will work without such a file system, but you can't run the unit
   tests unless you remove the one offending test (test/unicode/).  
-* You need to install "expect" and "autoconf". 
+* You need to install the packages 'expect' and 'autoconf'.  On some
+  systems, also 'tclsh'.  (Exact package vary by operating system.)
 
 If you run the tests and they fail, report that to Jérôme Kunegis
 <kunegis@gmail.com>.     

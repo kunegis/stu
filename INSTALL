@@ -27,8 +27,9 @@ variables:
 Stu is still a quite small program, and has not been tested on many
 systems.  
 
-Stu is developed primarily on Linux, and has been used on FreeBSD and OS
-X 10.11.  It has been compiled with both GCC and Clang.  
+Stu is developed primarily on Linux, and has been used on FreeBSD, OS
+X 10.11 and Microsoft Windows 10.  It has been compiled with both GCC
+and Clang.    
 
 --------- Arch Linux ---------
 

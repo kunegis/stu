@@ -20,6 +20,7 @@
  *  0: reset
  *  1: bright/bold        (for names)
  * 31: red                (for errors)
+ * 32: green              (for success)
  * 35: magenta            (for warnings)
  *
  * Colors and styles look different in different terminals.  In

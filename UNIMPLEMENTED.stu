@@ -623,3 +623,11 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 # * Rules for configuring and compiling code
 #
 
+#
+# Run jobs in a distributed fashion, i.e., on different hosts.  The idea
+# here would be to use any software for distributing jobs and call it
+# for each Stu job.  This would slightly interfere with what Stu itself
+# is doing, since a distributed job management system also has to decide
+# when a job is executed.  Most also have dependency management
+# capabilities. 
+#

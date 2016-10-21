@@ -22,7 +22,7 @@
  * Traces are used when it is possible to refer to a specific location
  * in the input files (or command line, etc.).  Error messages are
  * avoided: all errors should be traced back to a place in the source if
- * possible. But sometimes they must be used. 
+ * possible.  But sometimes they must be used. 
  */
 
 /*
@@ -34,7 +34,7 @@
  *
  * The general forms of error messages is:
  *
- *    Location 2: expected XXX, not YYY
+ *    Location 2: expected an XXX, not YYY
  *    Location 1: in ZZZ	
  *
  *    Location 2: XXX must not be used
@@ -131,7 +131,7 @@ void print_error_system(string message)
 
 /* 
  * Print a reminder of an error on STDERR.  This is used in situations
- * where an error has already been output, but it is better to reming
+ * where an error has already been output, but it is better to remind
  * the user of the error.  Since the error as already been output, use
  * the color of warnings. 
  */

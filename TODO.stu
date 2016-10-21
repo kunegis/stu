@@ -1,3 +1,5 @@
+# TODO document the -0 in the manpage.
+
 #
 # Concatenation.  Concatenation is to work both with the
 # binary operator '*' as well with juxtaposition.     [2.5]
@@ -57,6 +59,10 @@ A.$X.$Y:  $X * .$Y      # OK
 @all: backup/[FILES];
 >FILES: { echo *.dat }
 dest/$file = $file;
+
+# The following has ambiguous syntax.  Define and document it to have
+# higher precedence for concatenation, then the flag.
+A:   -p ( X )( Y );
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This
@@ -241,7 +247,9 @@ A: [-d data/B];
 
 #
 # An option for automatic logging:  write all output (stdout/stderr) of
-# commands to a file (a different file per target).  Use the -l option. 
+# commands to a file (a different file per target).  Use the -l option.
+# To do this, we need to generate a logfile name for each file and
+# transient target in a systematic mannner.  This opens many questions. 
 #
 
 #
@@ -304,8 +312,8 @@ A: -P B;
 #
 
 #
-# Have a mode to show only the first error message, not all subsequent
-# traces. 
+# Have a mode or option to show only the first error message, not all
+# subsequent traces.
 #
 
 #

@@ -64,6 +64,13 @@ dest/$file = $file;
 # higher precedence for concatenation, then the flag.
 A:   -p ( X )( Y );
 
+# Other tests
+A:  B() { cp B A }  B = {correct}
+A:  ()B { cp B A }  B = {correct}
+... (a)(b)(c) 
+... A<B  # Two dependencies
+... A(<B)  # Error
+
 #
 # Allow a better integrated syntax on the command line after '--'.  This
 # will complement the options -o/-p/-n/-0.

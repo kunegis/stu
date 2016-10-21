@@ -113,6 +113,7 @@ private:
 	/* Return null when nothing was parsed */ 
 	shared_ptr <Rule> parse_rule(); 
 
+	// TODO have single RET, not a vector
 	bool parse_expression(vector <shared_ptr <Dependency> > &ret, 
 			      Place_Name &place_name_input,
 			      Place &place_input,
@@ -154,12 +155,12 @@ private:
 //	 * concatenated.  Throw an error if it is.  */
 //	void check_concatenation() const;
 
-	/* Whether a token is concatenating, i.e., will concatenate from
-	 * outside parenthesis-like operators when no whitespace is
-	 * present.  This function does not verify whitespace, only the
-	 * type of the token.  
-	 * OPEN:  whether we are checking before an opening brace. */
-	static bool is_concatenating(shared_ptr <const Token> token, bool open);
+//	/* Whether a token is concatenating, i.e., will concatenate from
+//	 * outside parenthesis-like operators when no whitespace is
+//	 * present.  This function does not verify whitespace, only the
+//	 * type of the token.  
+//	 * OPEN:  whether we are checking before an opening brace. */
+//	static bool is_concatenating(shared_ptr <const Token> token, bool open);
 
 	static void print_separation_message(shared_ptr <const Token> token); 
 
@@ -707,6 +708,11 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 		}
 //		check_concatenation(); 
 		++ iter; 
+
+		if (next_concatenates()) {
+			abort(); // TODO
+		}
+
 		return true; 
 	} 
 
@@ -756,6 +762,11 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 				make_shared <Dynamic_Dependency> (0, j);
 			ret.push_back(dependency_new);
 		}
+
+		if (next_concatenates()) {
+			abort(); // TODO
+		}
+
 		return true; 
 	} 
 
@@ -1084,6 +1095,8 @@ shared_ptr <Dependency> Parser::parse_redirect_dep
 	shared_ptr <Name_Token> name_token= is <Name_Token> ();
 	++iter; 
 
+	// TODO parse a following concatenated expression (must not contain redirects, etc.)
+	
 	if (has_input && ! place_name_input.empty()) {
 		name_token->place << 
 			fmt("there must not be a second input redirection %s", 
@@ -1270,32 +1283,32 @@ shared_ptr <Dependency> Parser::get_target_dep(string text, const Place &place)
 	return ret; 
 }
 
-bool Parser::is_concatenating(shared_ptr <const Token> token, bool open) 
-{
-	if (dynamic_pointer_cast <const Name_Token> (token))
-		return true;
+// bool Parser::is_concatenating(shared_ptr <const Token> token, bool open) 
+// {
+// 	if (dynamic_pointer_cast <const Name_Token> (token))
+// 		return true;
 
-	if (dynamic_pointer_cast <const Command> (token))
-		return false;
+// 	if (dynamic_pointer_cast <const Command> (token))
+// 		return false;
 
-	if (dynamic_pointer_cast <const Flag_Token> (token))
-		return false;
+// 	if (dynamic_pointer_cast <const Flag_Token> (token))
+// 		return false;
 
-	assert(dynamic_pointer_cast <const Operator> (token));
+// 	assert(dynamic_pointer_cast <const Operator> (token));
 
-	const char op= dynamic_pointer_cast <const Operator> (token)->op; 
+// 	const char op= dynamic_pointer_cast <const Operator> (token)->op; 
 
-	if (op == '@')
-		return true; 
+// 	if (op == '@')
+// 		return true; 
 
-	if (open && (op == ')' || op == ']'))
-		return true;
+// 	if (open && (op == ')' || op == ']'))
+// 		return true;
 
-	if (!open && (op == '(' || op == '['))
-		return true;
+// 	if (!open && (op == '(' || op == '['))
+// 		return true;
 	
-	return false;
-}
+// 	return false;
+// }
 
 // void Parser::check_concatenation() const
 // {

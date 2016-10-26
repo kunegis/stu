@@ -422,6 +422,14 @@ public:
 };
 
 /*
+ * A dependency that is the concatenation of multiple dependencies. 
+ */
+class Concatenated_Dependency
+	:  public Dependency
+{
+};
+
+/*
  * A stack of dependency bits.  Contains only transitive bits.
  * Lower bits denote relationships lower in the hierarchy.  The depth K
  * is the number of times the link is dynamic.  (K+1) bits are actually

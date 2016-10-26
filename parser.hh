@@ -73,19 +73,19 @@ public:
 				  vector <shared_ptr <Token> > &tokens,
 				  const Place &place_end);
 
-	/* DEPENDENCIES is filled.  DEPENDENCIES is empty when called.
-	 * TARGET is used for error messages.  Empty when in a dynamic
-	 * dependency.  */
 	static void get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
 					vector <shared_ptr <Token> > &tokens,
 					const Place &place_end,
 					Place_Name &input,
 					Place &place_input);
+	/* DEPENDENCIES is filled.  DEPENDENCIES is empty when called.
+	 * TARGET is used for error messages.  Empty when in a dynamic
+	 * dependency.  */
 
+	static shared_ptr <Dependency> get_target_dep(string text, const Place &place); 
 	/* Parse a dependency as given on the command line outside of
 	 * options.  This supports only the characters '@' and '[]', as
 	 * well as names.  TEXT must not be "".  */
-	static shared_ptr <Dependency> get_target_dep(string text, const Place &place); 
 
 private:
 
@@ -101,29 +101,34 @@ private:
 		   place_end(place_end_)
 	{ }
 	
-	/* The returned rules may not be unique -- this is checked later */
 	void parse_rule_list(vector <shared_ptr <Rule> > &ret);
+	/* The returned rules may not be unique -- this is checked later */ 
 
-	/* RET is filled.  RET is empty when called. */
 	bool parse_expression_list(vector <shared_ptr <Dependency> > &ret, 
 				   Place_Name &place_name_input,
 				   Place &place_input,
 				   const vector <shared_ptr <Place_Param_Target> > &targets);
+	/* RET is filled.  RET is empty when called. */
 
-	/* Return null when nothing was parsed */ 
 	shared_ptr <Rule> parse_rule(); 
+	/* Return null when nothing was parsed */ 
 
-	// TODO have single RET, not a vector
 	bool parse_expression(vector <shared_ptr <Dependency> > &ret, 
 			      Place_Name &place_name_input,
 			      Place &place_input,
 			      const vector <shared_ptr <Place_Param_Target> > &targets);
+	/* Parse an expression.  Write the parsed expression into RET.
+	 * RET must be empty when called.  This function parses a single
+	 * syntactical expression, but since parenthesis and brackets
+	 * may be used, multiple dependencies may be read.  Return
+	 * whether an expression was parsed.  TARGETS is passed to
+	 * construct error messages.  */
 
-	/* A variable dependency */ 
 	shared_ptr <Dependency> parse_variable_dep
 	(Place_Name &place_name_input,
 	 Place &place_input,
 	 const vector <shared_ptr <Place_Param_Target> > &targets);
+	/* A variable dependency */ 
 
 	shared_ptr <Dependency> parse_redirect_dep
 	(Place_Name &place_name_input,
@@ -150,6 +155,11 @@ private:
 		return is <Flag_Token> () && is <Flag_Token> ()->flag == flag;
 	}
 
+	bool next_concatenates() const;
+	/* Whether there is a next token which concatenates to the
+	 * current token.  The current token is assumed to be a
+	 * candidate for concatenation.  */
+	
 //	/* Check whether the current parenthesis-like token is concatenating,
 //	 * i.e., whether its spacing is such that it will be
 //	 * concatenated.  Throw an error if it is.  */
@@ -164,12 +174,12 @@ private:
 
 	static void print_separation_message(shared_ptr <const Token> token); 
 
+	static void append_copy(      Name &to,
+				const Name &from);
 	/* If TO ends in '/', append to it the part of FROM that
 	 * comes after the last slash, or the full target if it contains
 	 * no slashes.  Parameters are not considered for containing
 	 * slashes */
-	static void append_copy(      Name &to,
-				const Name &from);
 };
 
 void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret)
@@ -710,7 +720,18 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 		++ iter; 
 
 		if (next_concatenates()) {
-			abort(); // TODO
+			vector <shared_ptr <Dependency> > next;
+			bool rr= parse_expression(next, place_name_input, place_input, targets);
+			/* It can be that an empty list was parsed, in
+			 * which case RR is true but the list is empty */
+			if (rr && next.size() != 0) {
+				shared_ptr <Dependency> ret_new=
+					make_shared <Compound_Dependency> ();
+				ret_new.push_back(ret);
+				ret_new.push_back(next);
+				ret.reset();
+				ret.push_back(ret_new); 
+			}
 		}
 
 		return true; 
@@ -1376,6 +1397,25 @@ void Parser::print_separation_message(shared_ptr <const Token> token)
 
 	token->get_place() << 
 		fmt("to separate it from %s", text);
+}
+
+bool Parser::next_concatenates() const
+{
+	if (iter == tokens.end())
+		return false;
+
+	if ((*iter)->whitespace)
+		return false;
+
+	if (is <Name_Token> ())
+		return true;
+
+	if (! is <Operator> ())
+		return false;
+
+	char op= is <Operator> ()->op;
+
+	return op == '(' || op == '['; 
 }
 
 #endif /* ! PARSER_HH */

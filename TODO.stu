@@ -335,7 +335,7 @@ A: -P B;
 # Unexpected ';'
 ### >A { echo } ; }
 
-# OK
+# OK -- this does not work at the moment 
 ### >A { { echo } ; } ; echo aaa }
 
 #

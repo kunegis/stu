@@ -23,11 +23,11 @@
 typedef unsigned Style;
 enum 
 {
-	/* There will be some markers around or to the left of the text */
 	S_MARKERS=       1 << 0,
+	/* There will be some markers around or to the left of the text */
 
-	/* Don't need quote around empty content */ 
 	S_NOEMPTY=       1 << 1,
+	/* Don't need quote around empty content */ 
 };
 
 /*

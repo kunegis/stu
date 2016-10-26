@@ -13,8 +13,8 @@
 #include "token.hh"
 #include "version.hh"
 
-/* The default filename read  */
 const char *const FILENAME_INPUT_DEFAULT= "main.stu"; 
+/* The default filename read  */
 
 class Tokenizer
 {
@@ -53,38 +53,39 @@ public:
 				  fd);
 	}
 
-	/* Parse tokens from the given TEXT.  Other arguments are
-	 * identical to parse_tokens_file().  */
 	static void parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
 					Context context,
 					Place &place_end,
 					string text,
 					const Place &place_diagnostic);
+	/* Parse tokens from the given TEXT.  Other arguments are
+	 * identical to parse_tokens_file().  */
 
 private:
 
 	/* Stacks of included files */ 
 	vector <Trace> &traces;
 	vector <string> &filenames;
+
 	set <string> &includes;
 
 	const Place::Type place_type;
 	const string filename;
 
-	/* Line number */
 	unsigned line;
+	/* Line number */
 
-	/* Beginning of current line */ 
 	const char *p_line;
+	/* Beginning of current line */ 
 
-	/* Current position */
 	const char *p;
+	/* Current position */
 
-	/* End of input */ 
 	const char *const p_end;
+	/* End of input */ 
 
-	/* Whether there was whitespace previously */ 
 	bool whitespace= true;
+	/* Whether there was whitespace previously */ 
 
 	Tokenizer(vector <Trace> &traces_,
 		  vector <string> &filenames_,
@@ -110,16 +111,16 @@ private:
 
 	shared_ptr <Command> parse_command();
 	
+	shared_ptr <Place_Name> parse_name();
 	/* Returns null when no name could be parsed.  Prints and throws
 	 * on other errors, including on empty names.  */ 
-	shared_ptr <Place_Name> parse_name();
 
+	bool parse_parameter(string &parameter, Place &place_dollar); 
 	/* Parse a parameter starting with '$'.  Return whether a
 	 * parameter was parsed (always TRUE).  The current position
 	 * must be on the 
 	 * '$' character, not after it.  If a parameter is found, write
 	 * it into the parameters.  */
-	bool parse_parameter(string &parameter, Place &place_dollar); 
 
 	/* The following two functions parse the two types of quotes.
 	 * The pointer must be on a " or ' character respectively.  A
@@ -128,11 +129,11 @@ private:
 	void parse_double_quote(Place_Name &ret);
 	void parse_single_quote(Place_Name &ret); 
 
-	/* Parse a directive.  The pointer must be on the '%'
-	 * character.  Throw a logical error when encountered.  */
 	void parse_directive(vector <shared_ptr <Token> > &tokens,
 			     Context context,
 			     const Place &place_diagnostic);
+	/* Parse a directive.  The pointer must be on the '%'
+	 * character.  Throw a logical error when encountered.  */
 	
 	void skip_space(); 
 
@@ -159,27 +160,26 @@ private:
 				      const Place &place_diagnostic,
 				      int fd= -1);
 
-	/* Whether the given character can be used as part of a bare filename in
-	 * Stu.  Note that all non-ASCII characters are allowed, and thus we
-	 * don't have to distinguish UTF-8 from 8-bit encodings:  all characters
-	 * with the most significant bit set will make this return TRUE. 
-	 * See the file CHARACTERS for more information. 
-	 * This returns TRUE for the mid-name characters '-', '+' and
-	 * '~'. 
-	 */
+	/* Whether the given character can be used as part of a bare
+	 * filename in Stu.  Note that all non-ASCII characters are
+	 * allowed, and thus we don't have to distinguish UTF-8 from
+	 * 8-bit encodings: all characters with the most significant bit
+	 * set will make this return TRUE.  See the file CHARACTERS for
+	 * more information.  This returns TRUE for the mid-name
+	 * characters '-', '+' and '~'.  */
 	static bool is_name_char(char);
 
-	/* Whether the character can be an operator */ 
 	static bool is_operator_char(char);
+	/* Whether the character can be an operator */ 
 
-	/* Whether the character is a valid flag */ 
 	static bool is_flag_char(char); 
+	/* Whether the character is a valid flag */ 
 
-	/* Parse a version directive.  VERSION_REQ is the version number given after
-	 * "%version", and PLACE its place. */
 	static void parse_version(string version_req, 
 				  const Place &place_version,
 				  const Place &place_percent); 
+	/* Parse a version directive.  VERSION_REQ is the version number
+	 * given after "%version", and PLACE its place.  */
 };
 
 void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
@@ -197,11 +197,9 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 	struct stat buf;
 	FILE *file= nullptr; 
 
-	/* 
-	 * false:  use mmap()
-	 * true:   use malloc()
-	 */
 	bool use_malloc;
+	/* False:  use mmap()
+	 * True:   use malloc()  */
 
 	try {
 		if (context == SOURCE) {
@@ -428,9 +426,9 @@ shared_ptr <Command> Tokenizer::parse_command()
 	const unsigned line_first= line; /* Where the command started */ 
 	bool begin= true; /* We have not yet seen non-whitespace */ 
 
+	string stack= "{"; 
 	/* Stack of opened parenthesis-like symbols to parse shell
 	 * syntax.  May contain:  {'"`( */ 
-	string stack= "{"; 
 
 	while (p < p_end) {
 		

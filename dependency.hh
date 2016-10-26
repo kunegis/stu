@@ -46,50 +46,50 @@ enum
 
 	C_ALL,              
 
+	C_TRANSITIVE       = 3,
 	/* The first C_TRANSITIVE flags are transitive, i.e., inherited
 	 * across transient targets  */
-	C_TRANSITIVE       = 3,
 
 	/* 
 	 * Transitive flags
 	 */ 
 
-	/* (-p) When the dependency is newer than the target, don't rebuild */ 
 	F_PERSISTENT       = 1 << I_PERSISTENT,  
+	/* (-p) When the dependency is newer than the target, don't rebuild */ 
 
-	/* (-o) Don't create the dependency if it doesn't exist */
 	F_OPTIONAL         = 1 << I_OPTIONAL,
+	/* (-o) Don't create the dependency if it doesn't exist */
 
-	/* (-t) Trivial dependency */
 	F_TRIVIAL          = 1 << I_TRIVIAL,
+	/* (-t) Trivial dependency */
 
 	/* 
 	 * Intransitive flags
 	 */ 
 
+	F_READ             = 1 << I_READ,  
 	/* Read content of file and add it as new dependencies.  Used
 	 * only for [...[X]...]->X links. */
-	F_READ             = 1 << I_READ,  
 
-	/* ($[...]) Content of file is used as variable */ 
 	F_VARIABLE         = 1 << I_VARIABLE,
+	/* ($[...]) Content of file is used as variable */ 
 
+	F_OVERRIDE_TRIVIAL = 1 << I_OVERRIDE_TRIVIAL,
 	/* Used only in Link.flags in the second pass.  Not used for
 	 * dependencies.  Means to override all trivial flags. */ 
-	F_OVERRIDE_TRIVIAL = 1 << I_OVERRIDE_TRIVIAL,
 
+	F_NEWLINE_SEPARATED= 1 << I_NEWLINE_SEPARATED,
 	/* For dynamic dependencies, the file contains newline-separated
 	 * filenames, without any markup  */ 
-	F_NEWLINE_SEPARATED= 1 << I_NEWLINE_SEPARATED,
 
+	F_ZERO_SEPARATED=    1 << I_ZERO_SEPARATED,
 	/* For dynamic dependencies, the file contains NUL-separated
 	 * filenames, without any markup  */ 
-	F_ZERO_SEPARATED=    1 << I_ZERO_SEPARATED,
 };
 
+const char *const FLAGS_CHARS= "pot`$*n0"; 
 /* Characters representing the individual flags -- used in verbose mode
  * output */ 
-const char *const FLAGS_CHARS= "pot`$*n0"; 
 
 /* Get the flag index corresponding to a character */ 
 int flag_get_index(char c)
@@ -135,18 +135,20 @@ public:
 	instantiate(const map <string, string> &mapping) const= 0;
 	virtual bool is_unparametrized() const= 0; 
 
-	/* Returns all flags */
 	virtual Flags get_flags()= 0;
-	/* Checks all given bits */
+	/* Returns all flags */
+
 	virtual bool has_flags(Flags flags_)= 0; 
-	/* Sets the given bits for this dependency */
+	/* Checks all given bits */
+
 	virtual void add_flags(Flags flags_)= 0;
+	/* Sets the given bits for this dependency */
 
-	/* Where the dependency as a whole is declared */ 
 	virtual const Place &get_place() const= 0;
+	/* Where the dependency as a whole is declared */ 
 
-	/* Get the place of a single flag */ 
 	virtual const Place &get_place_flag(int i) const= 0;
+	/* Get the place of a single flag */ 
 
 	virtual void set_place_flag(int i, const Place &place)= 0;
 
@@ -154,9 +156,9 @@ public:
 	virtual string format_word() const= 0; 
 	virtual string format_out() const= 0; 
 
+	virtual Param_Target get_single_target() const= 0;
 	/* Collapse the dependency into a single target, ignoring all
 	 * flags */   
-	virtual Param_Target get_single_target() const= 0;
 
 #ifndef NDEBUG
 	virtual void print() const= 0; 
@@ -210,11 +212,11 @@ class Direct_Dependency
 {
 public:
 
-	/* Cannot be a root target */ 
 	Place_Param_Target place_param_target; 
+	/* Cannot be a root target */ 
 	
-	/* The place where the dependency is declared */ 
 	Place place;
+	/* The place where the dependency is declared */ 
 
 	/* 
 	 * With F_VARIABLE:  the name of the variable.
@@ -349,8 +351,8 @@ class Dynamic_Dependency
 {
 public:
 
-	/* Non-null */ 
 	shared_ptr <Dependency> dependency;
+	/* Non-null */ 
 
 	Dynamic_Dependency(Flags flags_,
 			   shared_ptr <Dependency> dependency_)
@@ -427,6 +429,18 @@ public:
 class Concatenated_Dependency
 	:  public Dependency
 {
+public:
+
+	/* Append a dependency to the list */
+	void push_back(shared_ptr <Dependency> dependency)
+	{
+		dependencies.push_back(dependency); 
+	}
+
+private:
+
+	vector <shared_ptr <Dependency> > dependencies;
+	/* The dependencies.  May be empty.  */
 };
 
 /*
@@ -632,11 +646,11 @@ public:
 
 private:
 
-	/* The depth */
 	unsigned k;
+	/* The depth */
 
-	/* The bits */ 
 	unsigned bits[C_TRANSITIVE];
+	/* The bits */ 
 };
 
 Dependency::~Dependency() { }

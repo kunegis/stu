@@ -17,53 +17,48 @@ class Rule
 {
 public:
 
+	const vector <shared_ptr <Place_Param_Target> > place_param_targets; 
 	/* The targets of the rule, in the order specified in the rule.  
 	 * Contains at least one element. 
 	 * Each element contains all parameters of the rule,
 	 * and therefore should be used for iterating of all parameters.
 	 * The place in each target is used when referring to a target
 	 * specifically.  */ 
-	const vector <shared_ptr <Place_Param_Target> > place_param_targets; 
 
+	vector <shared_ptr <Dependency> > dependencies;
 	/* The dependencies in order of declaration.  Dependencies are
 	 * included multiple times if they appear multiple times in the
 	 * source.  Any parameter occuring any dependency also
 	 * occurs in every target. */ 
-	vector <shared_ptr <Dependency> > dependencies;
 
+	const Place place;
 	/* The place of the rule as a whole.  Taken from the place of
 	 * the first target (but could be different, in principle)  */   
-	const Place place;
 
-	/* 
-	 * The command (optional).  Contains its own place, as it is a
+	const shared_ptr <const Command> command;
+	/* The command (optional).  Contains its own place, as it is a
 	 * token.  Null when the rule does not have a command, i.e.,
 	 * ends in a semicolon ';'.  For hardcoded rules, the content of
-	 * the file (not optional). 
-	 */  
-	const shared_ptr <const Command> command;
+	 * the file (not optional).  */  
 
-	/* 
-	 * When !is_copy:  The name of the file from which
+	const Name filename; 
+	/* When !is_copy:  The name of the file from which
 	 *   input should be read; must be one of the file dependencies.
 	 *   Empty for no input redirection.   
-	 * When is_copy: the file from which to copy; never empty.
-	 */ 
-	const Name filename; 
+	 * When is_copy: the file from which to copy; never empty.  */ 
 
+	const int redirect_index; 
 	/* Index within PLACE_PARAM_TARGETS of the target to which
 	 * output redirection is applied. -1 if no output redirection is
-	 * used. The target with that index is a file target. */
-	const int redirect_index; 
+	 * used. The target with that index is a file target.  */
 
-	/* Whether the command is a command or hardcoded content */ 
 	const bool is_hardcode;
+	/* Whether the command is a command or hardcoded content */ 
 
+	const bool is_copy;
 	/* Whether the rule is a copy rule, i.e., declared with '='
 	 * followed by a filename. */ 
-	const bool is_copy;
 
-	/* Direct constructor that specifies everything */
 	Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets,
 	     vector <shared_ptr <Dependency> > &&dependencies_,
 	     const Place &place_,
@@ -72,29 +67,30 @@ public:
 	     bool is_hardcode_,
 	     int redirect_index_,
 	     bool is_copy_); 
+	/* Direct constructor that specifies everything */
 
-	/* Regular rule:  all cases execpt copy rules */
 	Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	     const vector <shared_ptr <Dependency> > &dependencies_,
 	     shared_ptr <const Command> command_,
 	     bool is_hardcode_,
 	     int redirect_index_,
 	     const Name &filename_input_);
+	/* Regular rule:  all cases execpt copy rules */
 
-	/* A copy rule.  When the places are EMPTY, the corresponding
-	 * flag is not used. */
 	Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	     shared_ptr <Place_Name> place_name_source_,
 	     const Place &place_persistent,
 	     const Place &place_optional); 
+	/* A copy rule.  When the places are EMPTY, the corresponding
+	 * flag is not used. */
 
 	/* Whether the rule is parametrized */ 
 	bool is_parametrized() const {
 		return place_param_targets.front()->place_name.get_n() != 0; 
 	}
 
-	/* Format the rule, as for the -P option */ 
 	string format_out() const; 
+	/* Format the rule, as for the -P option */ 
 
 	const vector <string> &get_parameters() const
 	{
@@ -102,12 +98,12 @@ public:
 		return place_param_targets.front()->place_name.get_parameters(); 
 	}
 
+	static shared_ptr <Rule> instantiate(shared_ptr <Rule> rule,
+					     const map <string, string> &mapping);
 	/* Return the same rule as RULE, but with parameters having been
 	 * replaced by the given MAPPING.  
 	 * We pass THIS as PARAM_RULE explicitly so we can return it
 	 * itself when it is unparametrized.  */ 
-	static shared_ptr <Rule> instantiate(shared_ptr <Rule> rule,
-					     const map <string, string> &mapping);
 };
 
 /* 
@@ -117,23 +113,27 @@ class Rule_Set
 {
 private:
 
+	unordered_map <Target, shared_ptr <Rule> > rules_unparametrized;
 	/* All unparametrized rules by their target.  Rules
 	 * with multiple targets are included multiple times, for each
 	 * of their targets. */ 
-	unordered_map <Target, shared_ptr <Rule> > rules_unparametrized;
 
-	/* All parametrized rules. */ 
 	vector <shared_ptr <Rule> > rules_parametrized;
+	/* All parametrized rules. */ 
 
 public:
 
+	void add(vector <shared_ptr <Rule> > &rules_);
 	/* Add rules to this rule set.  
 	 * While adding rules, check for duplicates, and print and throw
 	 * a logical error if there is. 
 	 * If the given rule has duplicate targets, print and throw a
 	 * logical error.  */ 
-	void add(vector <shared_ptr <Rule> > &rules_);
 
+	shared_ptr <Rule> get(Target target, 
+			      shared_ptr <Rule> &rule_original,
+			      map <string, string> &mapping_out,
+			      const Place &place);
 	/* Match TARGET to a rule, and return the instantiated
 	 * (unparametrized) corresponding rule.  TARGET must be
 	 * non-dynamic.  MAPPING_OUT must be empty. 
@@ -142,13 +142,9 @@ public:
 	 * ORIGINAL_RULE and the matched parameters into MAPPING_OUT.   
 	 * Throws errors. 
 	 * PLACE is the place of the dependency; used in error messages.  */ 
-	shared_ptr <Rule> get(Target target, 
-			      shared_ptr <Rule> &rule_original,
-			      map <string, string> &mapping_out,
-			      const Place &place);
 
-	/* Print the rule set to standard output, as used in the -P option */  
 	void print() const;
+	/* Print the rule set to standard output, as used in the -P option */  
 };
 
 Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,

@@ -78,27 +78,27 @@ const int ERROR_FATAL=     4;
 /*
  * Errors 1 and 2 are recoverable.  If the -k option is given, Stu notes
  * these errors and continues.  If the -k option is not given, they
- * cause Stu to abort.  When the -k option is used, the final exit status
- * may combine errors 1 and 2, giving exit status 3.  Error 4 is
+ * cause Stu to abort.  When the -k option is used, the final exit
+ * status may combine errors 1 and 2, giving exit status 3.  Error 4 is
  * unrecoverable, and leads to Stu aborting immediately.  Error 4 is
- * never combined.  
+ * never combined.
  *
  * Build errors (code 1) are errors encountered during the normal
  * operation of Stu.  They indicate failures of the executed commands or
  * errors with files.  Exit status 1 is also used for the -q option
- * (question mode), when the targets are not up to date.  
+ * (question mode), when the targets are not up to date.
  *
  * Logical errors (code 2) are errors with the usage of Stu.  These are
  * for instance syntax errors in the source code, cycles in the
- * dependency graph, or multiple matching rules.  
+ * dependency graph, or multiple matching rules.
  * 
  * Fatal errors (code 4) are errors that lead Stu to abort immediately,
  * even when the -k option is used.  They are avoided as much as
- * possible. 
+ * possible.
  *
- * Build and logical errors can be combined to give error code 3.
- * Fatal errors are never combined with other errors as they make Stu
- * abort immediately. 
+ * Build and logical errors can be combined to give error code 3.  Fatal
+ * errors are never combined with other errors as they make Stu abort
+ * immediately.
  */
 
 /*
@@ -160,8 +160,8 @@ string system_format(string text)
  * cases, in defiance of the principle that a program should by default
  * only output something when there is an error.  We do it mostly
  * because Make does it, and users expect it, and because not doing it
- * would be very strange for most users. 
- * These messages are suppressed by the -s option (silent).  
+ * would be very strange for most users.  These messages are suppressed
+ * by the -s option (silent).
  */
 void print_out(string text)
 {
@@ -196,12 +196,12 @@ void print_error_silenceable(string text)
 }
 
 /* 
- * Denotes a position in Stu source code.  This is either in a file or in
- * arguments/options to Stu.  A Place object can also be empty, which is
- * used as the "uninitialized" value.  
+ * Denotes a position in Stu source code.  This is either in a file or
+ * in arguments/options to Stu.  A Place object can also be empty, which
+ * is used as the "uninitialized" value.
  *
  * Places are used to show the location of an error on standard error
- * output. 
+ * output.
  */ 
 class Place
 {
@@ -215,23 +215,21 @@ public:
 		ENV_OPTIONS   /* In $STU_OPTIONS */
 	} type;
 
-	/* 
-	 * INPUT_FILE:  Name of the file in which the error occurred.
+	string text;
+	/* INPUT_FILE:  Name of the file in which the error occurred.
 	 *              Empty string for standard input.  
 	 * OPTION:  Name of the option (a single character)
-	 * Others:  Unused.  
-	 */ 
-	string text;
+	 * Others:  Unused  */ 
 
+	unsigned line; 
 	/* INPUT_FILE:  Line number, one-based.  
 	 * Others:  unused.  */ 
-	unsigned line; 
 
+	unsigned column; 
 	/* INPUT_FILE:  Column number, zero-based.  In output, column
 	 * numbers are one-based, but they are saved here as zero-based
 	 * numbers as these are easier to generate. 
 	 * Others: Unused.  */ 
-	unsigned column; 
 
 	/* Empty */ 
 	Place() 
@@ -270,22 +268,22 @@ public:
 	Type get_type() const { return type; }
 	const char *get_filename_str() const;
 
+	const Place &operator<<(string message) const; 
 	/* Print the trace to STDERR as part of an error message.  The 
 	 * trace is printed as a single line, which can be parsed by
 	 * tools, e.g. the compile mode of Emacs.  Line and column
 	 * numbers are output as 1-based values.  Return THIS.  */
-	const Place &operator<<(string message) const; 
 
-	/* Print a message.  The COLOR arguments determine whether this
-	 * is an error or a warning.  */ 
 	void print(string message,
 		   const char *color,
 		   const char *color_word) const;
+	/* Print a message.  The COLOR arguments determine whether this
+	 * is an error or a warning.  */ 
 
+	string as_argv0() const;
 	/* The string used for the argv[0] parameter of child processes.
 	 * Does not include color codes.  Returns "" when no special
 	 * string should be used.  */
-	string as_argv0() const;
 
 	bool empty() const { 
 		return type == Type::EMPTY;
@@ -303,10 +301,10 @@ public:
 
 	Place place;
 
+	string message; 
 	/* The message associated with it.  This may be "". 
 	 * When the trace is printed, it must not be empty, and not begin
 	 * with an upper-case letter.  */
-	string message; 
 
 	Trace(const Place &place_, string message_) 
 		:  place(place_), message(message_) 

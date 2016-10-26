@@ -5,8 +5,8 @@
 # binary operator '*' as well with juxtaposition.     [2.5]
 #
 
-# - implement compound dependencies
-# - implement compound execution objects, which are deleted when they are done
+# - implement concatenated dependencies
+# - implement concatenated execution objects, which are deleted when they are done
 #   (they don't have a Target object)
 
 A:  B * C;    	        # Binary multiplication operator
@@ -61,7 +61,8 @@ A.$X.$Y:  $X * .$Y      # OK
 dest/$file = $file;
 
 # The following has ambiguous syntax.  Define and document it to have
-# higher precedence for concatenation, then the flag.
+# higher precedence for concatenation, then the flag.  (Should be the
+# default in the current implementation.)  
 A:   -p ( X )( Y );
 
 # Other tests
@@ -155,16 +156,6 @@ V {
 }
 
 #
-# Use the '+' sign to invert flags. 
-#
-
-# E.g.: Dynamic dependencies are "persistent" by default.  Make it
-# possible to switch this off using '+e'.  This is useful when the
-# dynamic dependency file itself is used by the target, e.g. when
-# creating a tarball. 
-A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
-
-#
 # Canonicalize names 
 #
 # - Fold multiple / to a single one, except exactly two at the beginning
@@ -246,6 +237,16 @@ $name.bib;   # Rule (1)
 #
 
 A: [-d data/B];
+
+#
+# Use the '+' sign to invert flags. 
+#
+
+# E.g.: Dynamic dependencies are "persistent" by default.  Make it
+# possible to switch this off using '+e'.  This is useful when the
+# dynamic dependency file itself is used by the target, e.g. when
+# creating a tarball. 
+A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 
 #
 # Logging:  an option to write log messages into a file.  In particular,

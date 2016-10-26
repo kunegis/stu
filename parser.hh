@@ -113,6 +113,8 @@ private:
 	shared_ptr <Rule> parse_rule(); 
 	/* Return null when nothing was parsed */ 
 
+	// TODO return only a single dependency, which may be of a novel
+	// type Multiple_Dependency or similar. 
 	bool parse_expression(vector <shared_ptr <Dependency> > &ret, 
 			      Place_Name &place_name_input,
 			      Place &place_input,
@@ -205,30 +207,30 @@ void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret)
 
 shared_ptr <Rule> Parser::parse_rule()
 {
+	const auto iter_begin= iter;
 	/* Used to check that when this function fails (i.e., returns
 	 * null), is has not read any tokens. */ 
-	const auto iter_begin= iter;
 
-	/* T_EMPTY when output is not redirected */
 	Place place_output; 
+	/* T_EMPTY when output is not redirected */
 
-	/* Index of the target that has the output, or -1 */ 
 	int redirect_index= -1; 
+	/* Index of the target that has the output, or -1 */ 
 
 	vector <shared_ptr <Place_Param_Target> > place_param_targets; 
 
 	while (iter != tokens.end()) {
 
-		/* Remains EMPTY when '>' is not present */ 
 		Place place_output_new; 
+		/* Remains EMPTY when '>' is not present */ 
 		
 		if (is_operator('>')) {
 			place_output_new= (*iter)->get_place();
 			++iter; 
 		}
 
-		/* Set to TRANSIENT when '@' is found */ 
 		Type type= Type::FILE;
+		/* Set to TRANSIENT when '@' is found */ 
 
 		Place place_target;
 		if (iter != tokens.end()) 
@@ -407,21 +409,21 @@ shared_ptr <Rule> Parser::parse_rule()
 		throw ERROR_LOGICAL;
 	}
 
-	/* Remains null when there is no command */ 
 	shared_ptr <Command> command;
+	/* Remains null when there is no command */ 
 
+	bool is_hardcode;
 	/* When command is not null, whether the command is a command or
 	 * hardcoded content */
-	bool is_hardcode;
 
-	/* Place of ';' */ 
 	Place place_nocommand; 
+	/* Place of ';' */ 
 
-	/* Place of '=' */
 	Place place_equal;
+	/* Place of '=' */
 
-	/* Name of the copy-from file */ 
 	shared_ptr <Name_Token> name_copy;
+	/* Name of the copy-from file */ 
 
 	if ((command= is <Command> ())) {
 		++iter; 
@@ -725,12 +727,12 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 			/* It can be that an empty list was parsed, in
 			 * which case RR is true but the list is empty */
 			if (rr && next.size() != 0) {
-				shared_ptr <Dependency> ret_new=
-					make_shared <Compound_Dependency> ();
-				ret_new.push_back(ret);
-				ret_new.push_back(next);
+				shared_ptr <Concatenated_Dependency> ret_new=
+					make_shared <Concatenated_Dependency> ();
+				ret_new->push_back(ret);
+				ret_new->push_back(next);
 				ret.reset();
-				ret.push_back(ret_new); 
+				ret= move(ret_new); 
 			}
 		}
 

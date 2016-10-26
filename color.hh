@@ -45,9 +45,9 @@ class Color
 {
 public:
 
+	static bool quotes, quotes_out; 
 	/* Whether single quotes have to be used.  Only set when color
 	 * is not used.  */   
-	static bool quotes, quotes_out; 
 
 	static const char *end;
 	static const char *error;
@@ -62,7 +62,7 @@ public:
 	static const char *out_print_word;
 
 	/* At least one of the following functions must be called before
-	 * any output.  */ 
+	 * any output is written.  */ 
 
 	static void set(); 
 	static void set(bool enable_color); 

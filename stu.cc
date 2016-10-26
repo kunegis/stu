@@ -89,29 +89,29 @@ const char VERSION_INFO[]=
 	"This is free software: you are free to change and redistribute it.\n"
 	"There is NO WARRANTY, to the extent permitted by law.\n";
 
-/* Initialize buffers; called once from main() */ 
 void init_buf(); 
+/* Initialize buffers; called once from main() */ 
 
-/* Parse a string of dependencies and add them to the vector. Used for
- * the -C option.  Support the full Stu syntax.  */
 void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 			       const char *string_);
+/* Parse a string of dependencies and add them to the vector. Used for
+ * the -C option.  Support the full Stu syntax.  */
 
-/* Read in an input file and add the rules to the given rule set.  Used
- * for the -f option and the default input file.  If not yet non-null,
- * set RULE_FIRST to the first rule.  FILE_FD can be -1 or the FD or the
- * filename, if already opened.  If FILENAME is "-", use standard input.
- * If FILENAME is "", use the default file ('main.stu').  */
 void read_file(string filename,
 	       int file_fd,
 	       Rule_Set &rule_set, 
 	       shared_ptr <Rule> &rule_first,
 	       Place &place_first); 
+/* Read in an input file and add the rules to the given rule set.  Used
+ * for the -f option and the default input file.  If not yet non-null,
+ * set RULE_FIRST to the first rule.  FILE_FD can be -1 or the FD or the
+ * filename, if already opened.  If FILENAME is "-", use standard input.
+ * If FILENAME is "", use the default file ('main.stu').  */
 
-/* Read rules from the argument to the -F option */ 
 void read_option_F(const char *s,
 		   Rule_Set &rule_set, 
 		   shared_ptr <Rule> &rule_first);
+/* Read rules from the argument to the -F option */ 
 
 /* Set one of the "setting options", i.e., of of those that can appear
  * in $STU_OPTIONS.  Return whether this was a valid settings option.  */ 
@@ -151,24 +151,25 @@ int main(int argc, char **argv, char **envp)
 	}
 
 	try {
+		vector <string> filenames;
 		/* Filenames passed using the -f option.  Entries are
 		 * unique and sorted as they were given, except
 		 * duplicates. */   
-		vector <string> filenames;
 
-		/* Assemble targets here */ 
 		vector <shared_ptr <Dependency> > dependencies; 
+		/* Assemble targets here */ 
 
-		/* Set to the first rule when there is one */ 
 		shared_ptr <Rule> rule_first;
-		/* Place of first file when no rule is contained */ 
-		Place place_first;
+		/* Set to the first rule when there is one */ 
 
+		Place place_first;
+		/* Place of first file when no rule is contained */ 
+
+		bool had_option_target= false;   
 		/* Whether any target(s) was passed through one of the
 		 * options -c, -C, -o, -p, -n, -0.  Also set when zero
 		 * targets are passed through one of these, e.g., when
 		 * -n is used on an empty file.  */
-		bool had_option_target= false;   /* Both lower and upper case */
 
 		bool had_option_f= false; /* Both lower and upper case */
 

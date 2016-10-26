@@ -24,8 +24,8 @@ class Type
 {
 private:  
 
-	/* >= 0 */
 	int value;
+	/* >= 0 */
 
 	friend class Target; 
 	friend struct std::hash <Target> ;
@@ -41,20 +41,20 @@ private:
 	}
 
 	enum: int {
-		/* A transient target */ 
 		T_TRANSIENT         = 0,
+		/* A transient target */ 
 	
+		T_FILE              = 1,
 		/* A file in the file system; this entry has to come before
 		 * T_DYNAMIC because it counts also as a dynamic dependency of
 		 * depth zero. */
-		T_FILE              = 1,
 
+		T_DYNAMIC_TRANSIENT = 2,
 		/* A dynamic transient target -- only used for the Target object of
 		 * executions */
-		T_DYNAMIC_TRANSIENT = 2,
 
-		/* A dynamic target -- only used for the Target object of executions */   
 		T_DYNAMIC_FILE      = 3
+		/* A dynamic target -- only used for the Target object of executions */   
 
 		/* Larger values denote multiply dynamic targets.  They are only
 		 * used as the target of Execution objects.  */
@@ -330,12 +330,12 @@ class Name
 {
 private:
 
+	vector <string> texts; 
 	/* Length = N + 1.
 	 * Only the first and last elements may be empty.  */ 
-	vector <string> texts; 
 
-	/* Length = N */ 
 	vector <string> parameters;
+	/* Length = N */ 
 
 public:
 
@@ -403,8 +403,8 @@ public:
 		return texts[texts.size() - 1];
 	}
 
-	/* The name may be empty, resulting in an empty string */ 
 	string instantiate(const map <string, string> &mapping) const;
+	/* The name may be empty, resulting in an empty string */ 
 
 	/* Return the unparametrized name.  The name must be unparametrized. */
 	const string &unparametrized() const {
@@ -412,12 +412,12 @@ public:
 		return texts[0]; 
 	}
 
-	/* Check whether NAME matches this name.  If it does, return
-	 * TRUE and set MAPPING and ANCHORING accordingly. 
-	 * MAPPING must be empty.  */
 	bool match(string name, 
 		   map <string, string> &mapping,
 		   vector <unsigned> &anchoring);
+	/* Check whether NAME matches this name.  If it does, return
+	 * TRUE and set MAPPING and ANCHORING accordingly. 
+	 * MAPPING must be empty.  */
 	
 	/* No escape characters */
 	string raw() const {
@@ -487,13 +487,13 @@ public:
 			   quotes ? "'" : "");
 	}
 
+	string get_duplicate_parameter() const;
 	/* Check whether there are duplicate parameters.  Return the
 	 * name of the found duplicate parameter, or "" none is found.  */
-	string get_duplicate_parameter() const;
 
-	/* Whether this is a valid name.  If it is not, fill the given
-	 * parameters with the two unseparated parameters. */ 
 	bool valid(string &param_1, string &param_2) const;
+	/* Whether this is a valid name.  If it is not, fill the given
+	 * parameters with the two unseparated parameters.  */ 
 
 	bool operator == (const Name &that) const {
 		if (this->get_n() != that.get_n())
@@ -509,10 +509,10 @@ public:
 		return true;
 	}
 
-	/* Whether anchoring A dominates anchoring B. 
-	 * The anchorings do not need to have the same number of parameters.  */
 	static bool anchoring_dominates(vector <unsigned> &anchoring_a,
 					vector <unsigned> &anchoring_b);
+	/* Whether anchoring A dominates anchoring B.  The anchorings do
+	 * not need to have the same number of parameters.  */
 };
 
 /* 
@@ -589,12 +589,12 @@ class Place_Name
 {
 public:
 
-	/* Place of the name as a whole */ 
 	Place place;
+	/* Place of the name as a whole */ 
 
+	vector <Place> places;
 	/* Length = N (number of parameters). 
 	 * The places of the individual parameters.  */
-	vector <Place> places;
 
 	/* Empty parametrized name, and empty place */
 	Place_Name() 
@@ -645,10 +645,10 @@ public:
 
 	Place_Name place_name;
 
+	Place place;
 	/* The place of the target as a whole.  The PLACE_NAME
 	 * variable additionally contains a place for the name itself,
 	 * as well as for individual parameters.  */ 
-	Place place;
 
 	Place_Param_Target(Type type_,
 			   const Place_Name &place_name_)
@@ -729,8 +729,8 @@ bool Name::match(const string name,
 
 	/* This algorithm uses one pass without backtracking or
 	 * recursion.  Therefore, there are no "deadly" patterns that
-	 * can make it hang, as it is the case for trivial
-	 * implementation or regular expression matching.  */
+	 * can make it hang, as is the case for a trivial implementation
+	 * or regular expression matching.  */
 
 	assert(mapping.size() == 0); 
 

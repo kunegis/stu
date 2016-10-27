@@ -449,6 +449,8 @@ private:
 class Compound_Dependency
 	:  public Dependency
 {
+	// TODO how to handle flags?  They can be different in the
+	// multiple contained dependencies. 
 };
 
 /*

@@ -712,7 +712,7 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 			if (r.size() > 1) {
 				ret= make_shared <Compound_Dependency> (move(r)); 
 			} else {
-				ret= move(r); 
+				ret= move(r.at(0)); 
 			}
 //			ret.insert(ret.end(), r.begin(), r.end()); 
 			r.clear(); 
@@ -736,11 +736,12 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 		++ iter; 
 
 		if (next_concatenates()) {
-			vector <shared_ptr <Dependency> > next;
+			shared_ptr <Dependency> next;
 			bool rr= parse_expression(next, place_name_input, place_input, targets);
 			/* It can be that an empty list was parsed, in
 			 * which case RR is true but the list is empty */
-			if (rr && next.size() != 0) {
+			if (rr && next != nullptr) {
+//			if (rr && next.size() != 0) {
 				shared_ptr <Concatenated_Dependency> ret_new=
 					make_shared <Concatenated_Dependency> ();
 				ret_new->push_back(ret);
@@ -759,10 +760,11 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 //		check_concatenation(); 
 		++iter;	
 		vector <shared_ptr <Dependency> > r2;
-		vector <shared_ptr <Dependency> > r;
-		while (parse_expression_list(r, place_name_input, place_input, targets)) {
-			r2.insert(r2.end(), r.begin(), r.end()); 
-			r.clear(); 
+//		vector <shared_ptr <Dependency> > r;
+//		while
+		if (parse_expression_list(r2, place_name_input, place_input, targets)) {
+//			r.insert(r2.end(), r.begin(), r.end()); 
+//			r.clear(); 
 		}
 		if (iter == tokens.end()) {
 			place_end << fmt("expected %s", char_format_word(']'));

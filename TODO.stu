@@ -71,6 +71,7 @@ A:  ()B { cp B A }  B = {correct}
 ... (a)(b)(c) 
 ... A<B  # Two dependencies
 ... A(<B)  # Error
+... (A (B C)D  # same as:  AD BD CD
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This

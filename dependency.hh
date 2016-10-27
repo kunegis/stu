@@ -443,6 +443,14 @@ private:
 	/* The dependencies.  May be empty.  */
 };
 
+/* 
+ * A list of dependencies that act as a unit. 
+ */
+class Compound_Dependency
+	:  public Dependency
+{
+};
+
 /*
  * A stack of dependency bits.  Contains only transitive bits.
  * Lower bits denote relationships lower in the hierarchy.  The depth K

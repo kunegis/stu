@@ -115,14 +115,17 @@ private:
 
 	// TODO return only a single dependency, which may be of a novel
 	// type Multiple_Dependency or similar. 
-	bool parse_expression(vector <shared_ptr <Dependency> > &ret, 
+	bool parse_expression(shared_ptr <Dependency> &ret,
+			      //vector <shared_ptr <Dependency> > &ret,
 			      Place_Name &place_name_input,
 			      Place &place_input,
 			      const vector <shared_ptr <Place_Param_Target> > &targets);
 	/* Parse an expression.  Write the parsed expression into RET.
-	 * RET must be empty when called.  This function parses a single
-	 * syntactical expression, but since parenthesis and brackets
-	 * may be used, multiple dependencies may be read.  Return
+	 * RET must be empty when called.  
+//	 * This function parses a single
+//	 * syntactical expression, but since parenthesis and brackets
+//	 * may be used, multiple dependencies may be read.  
+	 * Return
 	 * whether an expression was parsed.  TARGETS is passed to
 	 * construct error messages.  */
 
@@ -672,26 +675,31 @@ bool Parser::parse_expression_list(vector <shared_ptr <Dependency> > &ret,
 	assert(ret.size() == 0);
 
 	while (iter != tokens.end()) {
-		vector <shared_ptr <Dependency> > ret_new; 
+		shared_ptr <Dependency> ret_new; 
+//		vector <shared_ptr <Dependency> > ret_new; 
 		bool r= parse_expression(ret_new, 
 					 place_name_input, 
 					 place_input, targets);
 		if (!r) {
-			assert(ret_new.size() == 0); 
+			assert(ret_new == nullptr); 
+//			assert(ret_new.size() == 0); 
 			return ! ret.empty(); 
 		}
-		ret.insert(ret.end(), ret_new.begin(), ret_new.end()); 
+		ret.push_back(ret_new); 
+//		ret.insert(ret.end(), ret_new.begin(), ret_new.end()); 
 	}
 
 	return ! ret.empty(); 
 }
 
-bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret, 
+bool Parser::parse_expression(shared_ptr <Dependency> &ret,
+			      //vector <shared_ptr <Dependency> > &ret, 
 			     Place_Name &place_name_input,
 			     Place &place_input,
 			     const vector <shared_ptr <Place_Param_Target> > &targets)
 {
-	assert(ret.size() == 0); 
+	assert(ret == nullptr); 
+//	assert(ret.size() == 0); 
 
 	/* '(' expression* ')' */ 
 	if (is_operator('(')) {
@@ -699,8 +707,14 @@ bool Parser::parse_expression(vector <shared_ptr <Dependency> > &ret,
 //		check_concatenation(); 
 		++iter;
 		vector <shared_ptr <Dependency> > r;
-		while (parse_expression_list(r, place_name_input, place_input, targets)) {
-			ret.insert(ret.end(), r.begin(), r.end()); 
+//		while
+		if (parse_expression_list(r, place_name_input, place_input, targets)) {
+			if (r.size() > 1) {
+				ret= make_shared <Compound_Dependency> (move(r)); 
+			} else {
+				ret= move(r); 
+			}
+//			ret.insert(ret.end(), r.begin(), r.end()); 
 			r.clear(); 
 		}
 		if (iter == tokens.end()) {

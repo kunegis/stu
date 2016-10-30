@@ -165,7 +165,10 @@ public:
 #endif
 };
 
-class Base_Dependency
+/*
+ * A non-compound dependency.  Has well-defined top-level flags. 
+ */
+class Single_Dependency
 	:  public Dependency
 {
 public:
@@ -174,7 +177,7 @@ public:
 
 	Place places[C_TRANSITIVE]; 
 
-	Base_Dependency(Flags flags_) 
+	Single_Dependency(Flags flags_) 
 		:  flags(flags_)
 	{ }
 
@@ -208,7 +211,7 @@ public:
  * not cover dynamic dependencies.  
  */
 class Direct_Dependency
-	:  public Base_Dependency
+	:  public Single_Dependency
 {
 public:
 
@@ -227,7 +230,7 @@ public:
 	/* Take the dependency place from the target place */ 
 	Direct_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_)
-		:  Base_Dependency(flags_),
+		:  Single_Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place)
 	{ 
@@ -238,7 +241,7 @@ public:
 	Direct_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_,
 			  const string &name_)
-		:  Base_Dependency(flags_),
+		:  Single_Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place),
 		   name(name_)
@@ -250,7 +253,7 @@ public:
 	Direct_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_,
 			  const Place &place_)
-		:  Base_Dependency(flags_),
+		:  Single_Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_)
 	{ 
@@ -263,7 +266,7 @@ public:
 			  const Place_Param_Target &place_param_target_,
 			  const Place &place_,
 			  const string &name_)
-		:  Base_Dependency(flags_),
+		:  Single_Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_),
 		   name(name_)
@@ -347,7 +350,7 @@ public:
 
 /* A dynamic dependency */
 class Dynamic_Dependency
-	:  public Base_Dependency
+	:  public Single_Dependency
 {
 public:
 
@@ -356,7 +359,7 @@ public:
 
 	Dynamic_Dependency(Flags flags_,
 			   shared_ptr <Dependency> dependency_)
-		:  Base_Dependency(flags_), 
+		:  Single_Dependency(flags_), 
 		   dependency(dependency_)
 	{
 		assert((flags & F_READ) == 0); 

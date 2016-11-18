@@ -454,6 +454,16 @@ class Compound_Dependency
 {
 	// TODO how to handle flags?  They can be different in the
 	// multiple contained dependencies. 
+
+private:
+	/* The contained dependencies, in given order */ 
+	vector <shared_ptr <Dependency> > dependencies;
+
+public:
+	void push_back(shared_ptr <Dependency> dependency)
+	{
+		dependencies.push_back(dependency); 
+	}
 };
 
 /*

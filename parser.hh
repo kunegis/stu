@@ -694,9 +694,9 @@ bool Parser::parse_expression_list(vector <shared_ptr <Dependency> > &ret,
 
 bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 			      //vector <shared_ptr <Dependency> > &ret, 
-			     Place_Name &place_name_input,
-			     Place &place_input,
-			     const vector <shared_ptr <Place_Param_Target> > &targets)
+			      Place_Name &place_name_input,
+			      Place &place_input,
+			      const vector <shared_ptr <Place_Param_Target> > &targets)
 {
 	assert(ret == nullptr); 
 //	assert(ret.size() == 0); 
@@ -783,6 +783,8 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 		}
 //		check_concatenation(); 
 		++ iter; 
+		shared_ptr <Compound_Dependency> ret_nondynamic= 
+			make_shared <Compound_Dependency> (); 
 		for (auto &j:  r2) {
 			
 			/* Variable dependency cannot appear within
@@ -797,13 +799,28 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 				throw ERROR_LOGICAL; 
 			}
 
-			shared_ptr <Dependency> dependency_new= 
-				make_shared <Dynamic_Dependency> (0, j);
-			ret.push_back(dependency_new);
+//			shared_ptr <Dependency> dependency_new= 
+//				make_shared <Dynamic_Dependency> (0, j);
+//			ret.push_back(dependency_new);
+			ret_nondynamic->push_back(j);
 		}
+		ret= make_shared <Dynamic_Dependency> (0, ret_nondynamic); 
 
 		if (next_concatenates()) {
-			abort(); // TODO
+			shared_ptr <Dependency> next;
+			bool rr= parse_expression(next, place_name_input, place_input, targets);
+			/* It can be that an empty list was parsed, in
+			 * which case RR is true but the list is empty */
+			if (rr && next != nullptr) {
+//			if (rr && next.size() != 0) {
+				shared_ptr <Concatenated_Dependency> ret_new=
+					make_shared <Concatenated_Dependency> ();
+				ret_new->push_back(ret);
+				ret_new->push_back(next);
+				ret.reset();
+				ret= move(ret_new); 
+			}
+//			abort(); // TODO
 		}
 
 		return true; 

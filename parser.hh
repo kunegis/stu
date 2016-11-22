@@ -846,34 +846,56 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 			throw ERROR_LOGICAL;
 		}
 
-		for (auto &j:  ret) {
-
-			if ((i_flag != I_TRIVIAL && i_flag != I_OPTIONAL) ||
-			    (i_flag == I_TRIVIAL  && ! option_nontrivial) ||
-			    (i_flag == I_OPTIONAL && ! option_nonoptional)) {
-
-				if (i_flag == I_OPTIONAL) {
-					/* D_INPUT and D_OPTIONAL cannot be used at the same
-					 * time. Note: Input redirection must not appear in
-					 * dynamic dependencies, and therefore it is sufficient
-					 * to check this here.  */   
-					if (! place_name_input.place.empty()) { 
-						place_input <<
-							fmt("input redirection using %s must not be used",
-							    char_format_word('<')); 
-						place_flag <<
-							fmt("in conjunction with optional dependency flag %s",
-							    multichar_format_word("-o")); 
-						throw ERROR_LOGICAL;
-					}
-				}
-
-				j->add_flags(1 << i_flag); 
-
-				if (i_flag < C_TRANSITIVE)
-					j->set_place_flag(i_flag, place_flag); 
-			}
+		/* D_INPUT and D_OPTIONAL cannot be used at the same
+		 * time. Note: Input redirection must not appear in
+		 * dynamic dependencies, and therefore it is sufficient
+		 * to check this here.  */   
+		if (! place_name_input.place.empty()
+		    && flag_token.flag == F_OPTIONAL
+		    && ! option_nonoptional) {
+			place_input <<
+				fmt("input redirection using %s must not be used",
+				    char_format_word('<')); 
+			place_flag <<
+				fmt("in conjunction with optional dependency flag %s",
+				    multichar_format_word("-o")); 
+			throw ERROR_LOGICAL;
 		}
+
+		/* Add the flag */ 
+		ret->add_flags(1 << i_flag); 
+		if (i_flag < C_TRANSITIVE)
+			ret->set_place_flag(i_flag, place_flag); 
+
+		// for (auto &j:  ret) {
+
+		// 	if ((i_flag != I_TRIVIAL  && i_flag != I_OPTIONAL) ||
+		// 	    (i_flag == I_TRIVIAL  && ! option_nontrivial) ||
+		// 	    (i_flag == I_OPTIONAL && ! option_nonoptional)) {
+
+		// 		if (i_flag == I_OPTIONAL) {
+		// 			/* D_INPUT and D_OPTIONAL cannot be used at the same
+		// 			 * time. Note: Input redirection must not appear in
+		// 			 * dynamic dependencies, and therefore it is sufficient
+		// 			 * to check this here.  */   
+		// 			if (! place_name_input.place.empty()) { 
+		// 				place_input <<
+		// 					fmt("input redirection using %s must not be used",
+		// 					    char_format_word('<')); 
+		// 				place_flag <<
+		// 					fmt("in conjunction with optional dependency flag %s",
+		// 					    multichar_format_word("-o")); 
+		// 				throw ERROR_LOGICAL;
+		// 			}
+		// 		}
+
+		// 		j->add_flags(1 << i_flag); 
+
+		// 		if (i_flag < C_TRANSITIVE)
+		// 			j->set_place_flag(i_flag, place_flag); 
+		// 	}
+		// }
+
 		return true;
 	}
 
@@ -881,14 +903,17 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 	shared_ptr <Dependency> dependency= 
 		parse_variable_dep(place_name_input, place_input, targets);
 	if (dependency != nullptr) {
-		ret.push_back(dependency); 
+		ret= dependency; 
+//		ret.push_back(dependency); 
 		return true; 
 	}
 
-	shared_ptr <Dependency> r= 
+	/* Redirect dependency */
+	dependency= 
 		parse_redirect_dep(place_name_input, place_input, targets); 
-	if (r != nullptr) {
-		ret.push_back(r);
+	if (dependency != nullptr) {
+		ret= dependency;
+//		ret.push_back(r);
 		return true; 
 	}
 

@@ -91,7 +91,9 @@ const char *const FLAGS_CHARS= "pot`$*n0";
 /* Characters representing the individual flags -- used in verbose mode
  * output */ 
 
-/* Get the flag index corresponding to a character */ 
+/* 
+ * Get the flag index corresponding to a character.
+ */ 
 int flag_get_index(char c)
 {
 	switch (c) {

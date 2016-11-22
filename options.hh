@@ -2,8 +2,9 @@
 #define OPTIONS_HH
 
 /* 
- * Global variables of the process.  All boolean option variables are
- * FALSE by default. 
+ * Global variables of the process.  
+ *
+ * All boolean option variables are FALSE by default. 
  */ 
 
 static bool option_nontrivial= false;
@@ -60,7 +61,7 @@ static bool order_vec;
 /* Whether to use vectors for randomization */ 
 
 const char **envp_global;
-/* The envp variable.  Set in main(). */
+/* The envp variable.  Set in main().  */
 
 static const char *dollar_zero;
 /* Does the same as program_invocation_name (which is a GNU extension,

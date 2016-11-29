@@ -72,6 +72,7 @@ A:  ()B { cp B A }  B = {correct}
 ... A<B  # Two dependencies
 ... A(<B)  # Error
 ... (A (B C)D  # same as:  AD BD CD
+... ("'")X  # escape the quote correctly in error message 
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This
@@ -376,4 +377,10 @@ A: -P B;
 #
 # An option to ignore all timestamps:  Whenever a file already exists,
 # it is not rebuilt.  
+#
+
+#
+# Have an option for: For hardcoded rules, compare the content of the
+# file (if it exists) with the declared content, and regenerate the file
+# if necessary.
 #

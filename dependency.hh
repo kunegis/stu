@@ -172,6 +172,8 @@ public:
 
 #ifndef NDEBUG
 	virtual void print() const= 0; 
+	/* Write the dependency to standard output (only for debugging
+	 * purposes)  */
 #endif
 };
 
@@ -457,9 +459,21 @@ class Concatenated_Dependency
 /*
  * A dependency that is the concatenation of multiple dependencies. 
  */
-	:  public Dependency
+	:  public Single_Dependency
 {
 public:
+
+	/* The dependency as a whole does not have a place */ 
+
+	Concatenated_Dependency()
+	{
+	}
+
+	Concatenated_Dependency(Flags flags_, const Place places_[C_TRANSITIVE])
+		:  Single_Dependency(flags_, places_)
+	{
+		/* The list of dependencies is empty */ 
+	}
 
 	/* Append a dependency to the list */
 	void push_back(shared_ptr <Dependency> dependency)
@@ -468,6 +482,25 @@ public:
 	}
 
 	virtual bool is_simple() const { return false; }
+
+	virtual shared_ptr <Dependency> 
+	instantiate(const map <string, string> &mapping) const;
+
+	virtual bool is_unparametrized() const; 
+
+	virtual const Place &get_place() const;
+
+	virtual string format(Style, bool &quotes) const; 
+	virtual string format_word() const; 
+	virtual string format_out() const; 
+
+	virtual Param_Target get_single_target() const { assert(false); }
+	/* Collapse the dependency into a single target, ignoring all
+	 * flags.  Only if this is a simple dependency.  */   
+
+#ifndef NDEBUG
+	virtual void print() const; 
+#endif
 
 private:
 
@@ -485,6 +518,9 @@ public:
 	Place place; 
 	/* The place of the compound ; usually the opening parenthesis
 	 * or brace  */
+
+	Compound_Dependency() 
+	{  }
 	
 	Compound_Dependency(Flags flags_, const Place places_[C_TRANSITIVE])
 		:  Single_Dependency(flags_, places_),
@@ -783,7 +819,7 @@ Compound_Dependency::instantiate(const map <string, string> &mapping) const
 {
 	shared_ptr <Compound_Dependency> ret= make_shared <Compound_Dependency> (flags, places);
 
-	for (shared_ptr <Dependency> d:  dependencies) {
+	for (const shared_ptr <Dependency> &d:  dependencies) {
 		ret->push_back(d->instantiate(mapping));
 	}
 	
@@ -852,15 +888,99 @@ void Compound_Dependency::print() const
 }
 #endif
 
-#ifndef NDEBUG
+shared_ptr <Dependency> 
+Concatenated_Dependency::instantiate(const map <string, string> &mapping) const
+{
+	shared_ptr <Concatenated_Dependency> ret= 
+		make_shared <Concatenated_Dependency>
+		(flags, places);
 
+	for (const shared_ptr <Dependency> &d:  dependencies) {
+		ret->push_back(d->instantiate(mapping)); 
+	}
+
+	return ret; 
+}
+
+bool Concatenated_Dependency::is_unparametrized() const
+/* A concatenated dependency is parametrized when any of its contained 
+ * dependency is parametrized.  */
+{
+	for (shared_ptr <Dependency> d:  dependencies) {
+		if (! d->is_unparametrized())
+			return false;
+	}
+
+	return true;
+}
+
+const Place &Concatenated_Dependency::get_place() const
+/* Return the place of the first dependency, or an empty place */
+{
+	static Place place_empty;
+
+	if (dependencies.empty())
+		return place_empty;
+
+	return dependencies.front()->get_place(); 
+}
+
+string Concatenated_Dependency::format(Style style, bool &quotes) const
+{
+	string ret;
+
+	for (const shared_ptr <Dependency> &d:  dependencies) {
+		if (! ret.empty())
+			ret += '*';
+		ret += d->format(style, quotes); 
+	}
+
+	return ret; 
+}
+
+string Concatenated_Dependency::format_word() const
+{
+	string ret;
+
+	for (const shared_ptr <Dependency> &d:  dependencies) {
+		if (! ret.empty())
+			ret += '*';
+		ret += d->format_word(); 
+	}
+	
+	return ret; 
+}
+
+string Concatenated_Dependency::format_out() const
+{
+	string ret;
+
+	for (const shared_ptr <Dependency> &d:  dependencies) {
+		if (! ret.empty())
+			ret += '*';
+		ret += d->format_out(); 
+	}
+	
+	return ret; 
+}
+
+#ifndef NDEBUG
+void Concatenated_Dependency::print() const
+{
+	if (dependencies.empty())
+		fprintf(stderr, "empty\n"); 
+	else
+		dependencies.front()->get_place() << format_word(); 
+}
+#endif
+
+#ifndef NDEBUG
 void print_dependencies(const vector <shared_ptr <Dependency> > &dependencies)
 {
 	for (auto &i:  dependencies) {
 		i->print(); 
 	}
 }
-
 #endif /* ! NDEBUG */
 
 Stack::Stack(shared_ptr <Dependency> dependency) 

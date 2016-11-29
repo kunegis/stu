@@ -1,6 +1,6 @@
 # Check that multiple dependencies still work
 
->A: B C { cat B C }
+>A: (B C) { cat B C }
 
 B = {bbb}
 C = {ccc}

@@ -8,14 +8,12 @@ class Link
 {
 public:
 	Stack avoid;
-	/* 
-	 * Negation of flags valid for each level. 
+	/* Negation of flags valid for each level. 
 	 * The length is one plus the dynamicity (number of dynamic
 	 * indirections).  Small indices indicate the links lower in the
 	 * hierarchy. 
 	 * This variable only holds the PERSISTENT/OPTIONAL/TRIVIAL
-	 * bits (i.e., transitive bits as defined by F_COUNT). 
-	 */
+	 * bits (i.e., transitive bits as defined by F_COUNT).  */
 
 	Flags flags;
 	/* Flags that are valid for this dependency, including the
@@ -27,7 +25,9 @@ public:
 
 	shared_ptr <Dependency> dependency;
 	/* This is null for the root target. 
-	 * May contain less flags than stored in AVOID and FLAGS.  */
+	 * May contain less flags than stored in AVOID and FLAGS.  
+	 * May also contain more flags, when a compound dependency. 
+	 */
 
 	Link() { }
 

@@ -81,10 +81,11 @@ necessary.
 Variables names uses underscore for word separation.  No camel case.   
 
 The following names are used systematically: 
-* 'text':  a string used for display
-* 'format[_*]':  a function that formats an object for display
-* 'filename':  a filename
 * 'error':  an integer error code or exit status (they are the same in Stu)
+* 'filename':  a filename
+* 'format[_*]':  a function that formats an object for display
+* 'ret':  the return value of a function
+* 'text':  a string used for display
 
 Many variable names are written in "big endian" in defiance of English
 noun phrase syntax.  In such names, the first part indicates the type

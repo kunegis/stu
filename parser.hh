@@ -3,8 +3,8 @@
 
 /* 
  * Code for generating rules from a vector of tokens, i.e, for
- * performing the parsing of Stu syntax beyond tokenization.
- * This is a recursive descent parser written by hand. 
+ * performing the parsing of Stu syntax beyond tokenization.  This is a
+ * recursive descent parser written by hand.
  */ 
 
 #include <set>
@@ -16,14 +16,14 @@
 /*
  * Stu has only prefix and circumfix operators, and therefore its syntax
  * is trivial, i.e., there are no ambiguities, and no need to consider
- * precendence levels or associativity. 
+ * precendence levels or associativity.
  *
  * A Yacc-like description of Stu syntax is given in the manpage. 
  *
  * In principle, the following gives operator precedences.  Higher in
  * the list means higher precedence.  This list is to be understood as
  * specifying in what order operators can be nested, not to disambguate
- * expressions. 
+ * expressions.
  *
  * @...	     (prefix) Transient dependency; argument can only contain name
  * ---------------
@@ -41,16 +41,16 @@
  */
 
 /* 
- * This code does not check that imcompatible constructs (like -p and
- * -o or -p and '$[') are used together.  Instead, this is checked
- * within Execution and not here, because these can also be combined
- * from different sources, e.g., a file and a dynamic dependency. 
+ * This code does not check that imcompatible constructs (like -p and -o
+ * or -p and '$[') are used together.  Instead, this is checked within
+ * Execution and not here, because these can also be combined from
+ * different sources, e.g., a file and a dynamic dependency.
  */ 
 
+class Parser
 /* 
  * An object of this type represents a location within a token list.
  */ 
-class Parser
 {
 public:
 
@@ -113,21 +113,15 @@ private:
 	shared_ptr <Rule> parse_rule(); 
 	/* Return null when nothing was parsed */ 
 
-	// TODO return only a single dependency, which may be of a novel
-	// type Multiple_Dependency or similar. 
 	bool parse_expression(shared_ptr <Dependency> &ret,
 			      //vector <shared_ptr <Dependency> > &ret,
 			      Place_Name &place_name_input,
 			      Place &place_input,
 			      const vector <shared_ptr <Place_Param_Target> > &targets);
 	/* Parse an expression.  Write the parsed expression into RET.
-	 * RET must be empty when called.  
-//	 * This function parses a single
-//	 * syntactical expression, but since parenthesis and brackets
-//	 * may be used, multiple dependencies may be read.  
-	 * Return
-	 * whether an expression was parsed.  TARGETS is passed to
-	 * construct error messages.  */
+	 * RET must be empty when called.  Return whether an expression
+	 * was parsed.  TARGETS is passed to construct error
+	 * messages.  */
 
 	shared_ptr <Dependency> parse_variable_dep
 	(Place_Name &place_name_input,
@@ -1317,7 +1311,8 @@ shared_ptr <Dependency> Parser::get_target_dep(string text, const Place &place)
 			place <<
 				fmt("character %s cannot be used to denote optional dependencies",
 				    char_format_word('?')); 
-		} else  assert(false);
+		} else  
+			assert(false);
 		throw ERROR_LOGICAL; 
 	}
 

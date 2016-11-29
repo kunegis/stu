@@ -17,6 +17,7 @@
 #include "rule.hh"
 #include "timestamp.hh"
 
+class Execution
 /*
  * Each target is represented at run time by one Execution object.  
  *
@@ -37,7 +38,6 @@
  * All Execution objects are linked through the map called
  * "executions_by_target" by all their targets.
  */
-class Execution
 {
 public:  
 	static long jobs;
@@ -143,6 +143,7 @@ private:
 	bool checked;
 	/* Whether we performed the check in execute()  */ 
 
+	signed char exists;
 	/* 
 	 * Whether the file targets are known to exist.  
 	 *     -1 = at least one file target is known not to exist (only
@@ -153,7 +154,6 @@ private:
 	 * When there are no file targets, the value may be both 0 or
 	 * +1.  
 	 */
-	signed char exists;
 	
 	Execution(Target target_,
 		  Link &&link,
@@ -252,8 +252,9 @@ private:
 
 	bool is_dynamic() const;
 
+	int get_dynamic_depth() const 
 	/* The dynamic depth, or -1 for the root execution. */ 
-	int get_dynamic_depth() const {
+	{
 		return targets.empty()
 			? -1
 			: targets.front().type.get_dynamic_depth(); 
@@ -604,13 +605,12 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 				assert(timestamps_old[i].defined()); 
 				if (timestamp.defined() && 
-				    timestamps_old[i] < timestamp) {
-					if (no_execution) {
-						print_warning
-							(rule->place_param_targets[i]->place,
-							 fmt("File target %s which has no command is older than its dependency",
-							     target.format_word())); 
-					}
+				    timestamps_old[i] < timestamp &&
+				    no_execution) {
+					print_warning
+						(rule->place_param_targets[i]->place,
+						 fmt("File target %s which has no command is older than its dependency",
+						     target.format_word())); 
 				} 
 			}
 			
@@ -861,9 +861,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 int Execution::execute_children(const Link &link)
 {
-	/* Since unlink() may change execution->children,
-	 * we must first copy it over locally, and then iterate
-	 * through it */ 
+	/* Since unlink() may change execution->children, we must first
+	 * copy it over locally, and then iterate through it */ 
 
 	vector <Execution *> executions_children_vector
 		(children.begin(), children.end()); 
@@ -937,8 +936,8 @@ void Execution::waited(pid_t pid, int status)
 		executions_by_pid.erase(pid); 
 	}
 
-	/* The file(s) may have been built, so forget that it was known to
-	 * not exist */
+	/* The file(s) may have been built, so forget that it was known
+	 * to not exist */
 	if (exists < 0)  
 		exists= 0;
 	
@@ -1421,13 +1420,13 @@ Execution::Execution(Target target_,
 
 }
 
+Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
 /* 
  * This is the root execution object.  It has an empty TARGET list, and
  * in principle should be deleted once its lifetime is over.  This is
  * not done however, as there is only a single such object, and its
  * lifetime span the whole lifetime of the Stu process anyway.
  */
-Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
 	:  error(0),
 	   need_build(false),
 	   checked(false),
@@ -1474,10 +1473,10 @@ bool Execution::finished() const
 	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
+void job_terminate_all() 
 /* 
  * The declaration of this function is in job.hh 
  */ 
-void job_terminate_all() 
 {
 	/* Strictly speaking, there is a bug here because the C++
 	 * containers are not async signal-safe.  But we block the
@@ -1493,7 +1492,6 @@ void job_terminate_all()
 
 		Job::kill(pid); 
 	}
-
 
 	int count_terminated= 0;
 
@@ -1539,8 +1537,8 @@ void job_terminate_all()
 	}
 }
 
-/* The definition of this function is in job.hh */ 
 void job_print_jobs()
+/* The definition of this function is in job.hh */ 
 {
 	for (auto &i:  Execution::executions_by_pid) {
 		i.second->print_as_job(); 
@@ -1956,13 +1954,11 @@ void Execution::warn_future_file(struct stat *buf,
 	}
 }
 
-/* 
- * The following traverses the execution graph backwards until it finds
+void Execution::print_traces(string text) const
+/* The following traverses the execution graph backwards until it finds
  * the root.  We always take the first found parent, which is an
  * arbitrary choice, but it doesn't matter here which dependency path
- * we point out as an error, so the first one it is.  
- */
-void Execution::print_traces(string text) const
+ * we point out as an error, so the first one it is.  */
 {	
 	const Execution *execution= this; 
 

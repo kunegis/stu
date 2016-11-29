@@ -29,13 +29,14 @@ void job_print_jobs();
 		(void)r_write_safe; \
 	} while(0)
 
+class Job
 /*
  * A job is a child process of Stu that executes the command for a given
  * rule.  An object of this type can execute a job only once.
  */ 
-class Job
 {
 public:
+
 	Job():  pid(-2) { }
 
 	bool waited(int status, pid_t pid_check);
@@ -89,13 +90,13 @@ public:
 
 	static pid_t get_tty()  {  return tty;  }
 	
+	class Signal_Blocker
 	/* 
 	 * Block interrupt signals for the lifetime of an object of this
 	 * type.  Note that the mask of blocked signals is inherited
 	 * over exec(), so we must unblock signals also when starting
 	 * child processes.  
 	 */
-	class Signal_Blocker
 	{
 	private:
 #ifndef NDEBUG
@@ -226,7 +227,7 @@ pid_t Job::start(string command,
 		/* This should only fail when we are the parent and the
 		 * child has already quit.  In that case we can ignore
 		 * the error, since the child is dead anyway, so there
-		 * is no need to kill it in the future */ 
+		 * is no need to kill it in the future.  */ 
 	}
 
 	if (pid == 0) {
@@ -472,6 +473,7 @@ pid_t Job::start_copy(string target,
 }
 
 
+pid_t Job::wait(int *status)
 /* 
  * The main loop of Stu.  We wait for the two productive signals SIGCHLD
  * and SIGUSR1. 
@@ -479,7 +481,6 @@ pid_t Job::start_copy(string target,
  * When this function is called, there is always at least one child
  * process running. 
  */
-pid_t Job::wait(int *status)
 {
  begin: 	
 	/* First, try wait() without blocking.  WUNTRACED is used to
@@ -640,10 +641,10 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 	printf("STATISTICS  Note: children execution times exclude running jobs\n"); 
 }
 
+void Job::handler_termination(int sig)
 /* 
  * The termination signal handler -- terminate all processes and quit. 
  */
-void Job::handler_termination(int sig)
 {
 	/* We can use only async signal-safe functions here */
 
@@ -666,10 +667,10 @@ void Job::handler_termination(int sig)
 		assert(Job::in_child == 1);
 	}
 
-	/* We cannot call Job::Statsitics::print() here because
+	/* We cannot call Job::Statistics::print() here because
 	 * getrusage() is not async signal safe, and because the count_*
 	 * variables are not atomic.  Not even functions like fputs()
-	 * are async signal-safe, so don't even try. */
+	 * are async signal-safe, so don't even try.  */
 
 	/* Raise signal again */ 
 	int rr= raise(sig);
@@ -681,13 +682,13 @@ void Job::handler_termination(int sig)
 	 * delivered after this handler is done. */ 
 }
 
+void Job::handler_productive(int, siginfo_t *, void *)
 /* 
  * Do nothing -- the handler only exists because POSIX says that a
  * signal may be discarded by the kernel if doesn't have a signal
  * handler for it, and then it may not be possible to wait for that
  * signal.
  */  
-void Job::handler_productive(int, siginfo_t *, void *)
 {
 }
 
@@ -715,6 +716,7 @@ Job::Signal_Blocker::~Signal_Blocker()
 	}
 }
 
+Job::Signal::Signal()
 /* 
  * This function is called once on Stu startup from a static
  * constructor, and sets up all signals.   
@@ -740,7 +742,6 @@ Job::Signal_Blocker::~Signal_Blocker()
  * no-op signal handler.  (Note that Linux does not discard such
  * signals, while FreeBSD does.)
  */  
-Job::Signal::Signal()
 {
 	/* 
 	 * Termination signals 
@@ -822,6 +823,7 @@ Job::Signal::Signal()
 		print_error_system("signal"); 
 }
 
+void Job::kill(pid_t pid)
 /* 
  * Passing (-pid) to kill() kills the whole process group with PGID
  * (pid).  Since we set each child process to have its PID as its
@@ -830,7 +832,6 @@ Job::Signal::Signal()
  * such as Stu and shells, which have to kill their children explicitly
  * in their signal handlers.
  */ 
-void Job::kill(pid_t pid)
 {
 	assert(pid > 1); 
 

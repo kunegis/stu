@@ -9,13 +9,19 @@
  * - format_word() returns a string suitable for inclusion in a message
  *   on STDERR, including quotes and color, as appropriate. 
  * - format_out() returns the same as format_word(), but for STDOUT. 
- * - format_src() formats an expression as if if was part of the source,
+ * - format_src() formats an expression as if it was part of the source,
  *   e.g., use quotes only if the name contains characters that need to
  *   be quoted.  
  * - raw() does not escape anything. 
  *
  * Format functions are defined in the source files where their datatype
- * is defined. 
+ * is defined.  In classes, they are member functions. 
+ *
+ * The QUOTES parameter is used as both an input and output parameter:
+ * as input parameter, it tells the functions whether we are in a
+ * context where quotes are needed.  As output parameter, it is set to
+ * true when the function detects that quotes are needed.  (It is never
+ * set to false.)
  */
 
 #include "color.hh"
@@ -30,14 +36,12 @@ enum
 	/* Don't need quote around empty content */ 
 };
 
-/*
- * Whether a string needs to be quoted in the shell or in Stu (which
+bool src_need_quotes(const string &name)
+/* Whether a string needs to be quoted in the shell or in Stu (which
  * have the same quoting syntax.)  This is used so that Stu output looks
  * like input to the shell.  Note that for strings beginning with ~ or
  * -, quoting is not enough:  they have to be separated with '--'
- * additionally in the shell.   
- */
-bool src_need_quotes(const string &name)
+ * additionally in the shell.   */
 {
 	if (name.size() == 0)
 		return true;

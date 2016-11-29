@@ -50,6 +50,8 @@ enum
 	/* The first C_TRANSITIVE flags are transitive, i.e., inherited
 	 * across transient targets  */
 
+	/* What follows are the actual flag bits to be ORed together */ 
+
 	/* 
 	 * Transitive flags
 	 */ 
@@ -91,10 +93,10 @@ const char *const FLAGS_CHARS= "pot`$*n0";
 /* Characters representing the individual flags -- used in verbose mode
  * output */ 
 
+int flag_get_index(char c)
 /* 
  * Get the flag index corresponding to a character.
  */ 
-int flag_get_index(char c)
 {
 	switch (c) {
 	case 'p':  return I_PERSISTENT;
@@ -109,11 +111,11 @@ int flag_get_index(char c)
 	}
 }
 
+string flags_format(Flags flags) 
 /* 
  * Textual representation of a flags value.  To be shown before the
  * argument.  Empty when flags are empty. 
  */
-string flags_format(Flags flags) 
 {
 	string ret= "";
 	for (int i= 0;  i < C_ALL;  ++i)
@@ -122,13 +124,16 @@ string flags_format(Flags flags)
 	return ret;
 }
 
+class Dependency
 /* 
  * A dependency, which can be simple or compound.  All dependencies
  * carry information about their place(s) of declaration.  
  *
  * Objects of this type are usually used with shared_ptr/unique_ptr. 
+ *
+ * The flags only represent immediate flags.  Compound dependencies for
+ * instance may contain additional inner flags. 
  */ 
-class Dependency
 {
 public:
 
@@ -141,7 +146,7 @@ public:
 	/* Returns all flags */
 
 	virtual bool has_flags(Flags flags_)= 0; 
-	/* Checks all given bits */
+	/* Return whether the dependency has all the given flags */
 
 	virtual void add_flags(Flags flags_)= 0;
 	/* Sets the given bits for this dependency */
@@ -160,17 +165,21 @@ public:
 
 	virtual Param_Target get_single_target() const= 0;
 	/* Collapse the dependency into a single target, ignoring all
-	 * flags */   
+	 * flags.  Only if this is a simple dependency.  */   
+
+	virtual bool is_simple() const= 0;
+	/* A simple dependency is neither compound, nor concatenated */ 
 
 #ifndef NDEBUG
 	virtual void print() const= 0; 
 #endif
 };
 
-/*
- * A non-compound dependency.  Has well-defined top-level flags. 
- */
 class Single_Dependency
+/*
+ * A dependency with well-defined top-level flags.  This class is
+ * intended to be inherited from and not instantiated directly. 
+ */
 	:  public Dependency
 {
 public:
@@ -178,10 +187,24 @@ public:
 	Flags flags;
 
 	Place places[C_TRANSITIVE]; 
+	/* For each transitive flag that is set, the place.  An empty
+	 * place if a flag is not set  */
+
+	Single_Dependency()
+		:  flags(0)
+	{  }
 
 	Single_Dependency(Flags flags_) 
 		:  flags(flags_)
 	{ }
+
+	Single_Dependency(Flags flags_, const Place places_[C_TRANSITIVE])
+		:  flags(flags_)
+	{
+		assert(places != places_);
+		assert(sizeof(places) == sizeof(places_)); 
+		memcpy(places, places_, sizeof(places)); 
+	}
 
 	Flags get_flags() {
 		return flags; 
@@ -208,11 +231,11 @@ public:
 	}
 };
 
+class Direct_Dependency
 /* 
  * A parametrized dependency denoting an individual target name.  Does
  * not cover dynamic dependencies.  
  */
-class Direct_Dependency
 	:  public Single_Dependency
 {
 public:
@@ -223,15 +246,13 @@ public:
 	Place place;
 	/* The place where the dependency is declared */ 
 
-	/* 
-	 * With F_VARIABLE:  the name of the variable.
-	 * Otherwise:  empty. 
-	 */
 	string name;
+	/* With F_VARIABLE:  the name of the variable.
+	 * Otherwise:  empty.  */
 	
-	/* Take the dependency place from the target place */ 
 	Direct_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_)
+		/* Take the dependency place from the target place */ 
 		:  Single_Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place)
@@ -239,10 +260,10 @@ public:
 		check(); 
 	}
 
-	/* Take the dependency place from the target place, with variable_name */ 
 	Direct_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_,
 			  const string &name_)
+		/* Take the dependency place from the target place, with variable_name */ 
 		:  Single_Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place),
@@ -251,10 +272,10 @@ public:
 		check(); 
 	}
 
-	/* Use an explicit dependency place */ 
 	Direct_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_,
 			  const Place &place_)
+		/* Use an explicit dependency place */ 
 		:  Single_Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_)
@@ -263,11 +284,11 @@ public:
 		check(); 
 	}
 
-	/* Use an explicit dependency place */ 
 	Direct_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_,
 			  const Place &place_,
 			  const string &name_)
+		/* Use an explicit dependency place */ 
 		:  Single_Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_),
@@ -341,6 +362,8 @@ public:
 		return place_param_target.get_param_target();
 	}
 
+	virtual bool is_simple() const { return true; }
+
 #ifndef NDEBUG
 	void print() const {
 		string text= place_param_target.format_word();
@@ -350,8 +373,8 @@ public:
 #endif
 };
 
-/* A dynamic dependency */
 class Dynamic_Dependency
+/* A dynamic dependency */
 	:  public Single_Dependency
 {
 public:
@@ -420,6 +443,8 @@ public:
 		return ret; 
 	}
 
+	virtual bool is_simple() const { return true; }
+
 #ifndef NDEBUG
 	void print() const {
 		fprintf(stderr, "dynamic %d of:  ", flags);
@@ -428,10 +453,10 @@ public:
 #endif
 };
 
+class Concatenated_Dependency
 /*
  * A dependency that is the concatenation of multiple dependencies. 
  */
-class Concatenated_Dependency
 	:  public Dependency
 {
 public:
@@ -442,32 +467,72 @@ public:
 		dependencies.push_back(dependency); 
 	}
 
+	virtual bool is_simple() const { return false; }
+
 private:
 
 	vector <shared_ptr <Dependency> > dependencies;
 	/* The dependencies.  May be empty.  */
 };
 
-/* 
- * A list of dependencies that act as a unit. 
- */
 class Compound_Dependency
-	:  public Dependency
+/* A list of dependencies that act as a unit, corresponding
+ * syntactically to a list of dependencies in parentheses.  */
+	:  public Single_Dependency
 {
-	// TODO how to handle flags?  They can be different in the
-	// multiple contained dependencies. 
-
-private:
-	/* The contained dependencies, in given order */ 
-	vector <shared_ptr <Dependency> > dependencies;
-
 public:
+
+	Place place; 
+	/* The place of the compound ; usually the opening parenthesis
+	 * or brace  */
+	
+	Compound_Dependency(Flags flags_, const Place places_[C_TRANSITIVE])
+		:  Single_Dependency(flags_, places_),
+		   place()
+	{
+		/* The list of dependencies is empty */ 
+	}
+
+	Compound_Dependency(vector <shared_ptr <Dependency> > &&dependencies_)
+		:  dependencies(dependencies_)
+	{  }
+
 	void push_back(shared_ptr <Dependency> dependency)
 	{
 		dependencies.push_back(dependency); 
 	}
+
+	virtual shared_ptr <Dependency> 
+	instantiate(const map <string, string> &mapping) const;
+
+	virtual bool is_unparametrized() const; 
+
+	virtual const Place &get_place() const
+	{
+		return place; 
+	}
+
+	virtual string format(Style, bool &quotes) const; 
+	virtual string format_word() const; 
+	virtual string format_out() const; 
+
+	virtual Param_Target get_single_target() const { assert(false); }
+	/* Collapse the dependency into a single target, ignoring all
+	 * flags.  Only if this is a simple dependency.  */   
+
+	virtual bool is_simple() const { return false; }
+
+#ifndef NDEBUG
+	virtual void print() const; 
+#endif
+
+private:
+
+	vector <shared_ptr <Dependency> > dependencies;
+	/* The contained dependencies, in given order */ 
 };
 
+class Stack
 /*
  * A stack of dependency bits.  Contains only transitive bits.
  * Lower bits denote relationships lower in the hierarchy.  The depth K
@@ -484,11 +549,11 @@ public:
  *   J=1:    bit 'o'
  *   J=0:    bit 'p'
  */
-class Stack
 {
 public:
+	void check() const 
 	/* Check the internal consistency of this object */ 
-	void check() const {
+	{
 		assert(k + 1 < CHAR_BIT * sizeof(int)); 
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			/* Only the (K+1) first bits may be set */ 
@@ -496,16 +561,16 @@ public:
 		}
 	}
 
-	/* Depth is zero, the single flag is zero */ 
 	Stack()
+		/* Depth is zero, the single flag is zero */ 
 		:  k(0)
 	{
 		memset(bits, 0, sizeof(bits));
 		check();
 	}
 
-	/* Depth is zero, the flag type is given */ 
 	explicit Stack(Flags flags)
+		/* Depth is zero, the flag type is given */ 
 		:  k(0)
 	{
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
@@ -514,8 +579,8 @@ public:
 		check(); 
 	}
 
-	/* Initalize to all-zero with the given depth K_ */ 
 	Stack(unsigned k_, int zero) 
+		/* Initalize to all-zero with the given depth K_ */ 
 		:  k(k_)
 	{
 		(void) zero; 
@@ -533,9 +598,10 @@ public:
 		return k;
 	}
 
+	Flags get_lowest() const 
 	/* Return the front dependency type, i.e. the lowest bits
 	 * corresponding to the lowest level in the hierarchy. */
-	Flags get_lowest() const {
+	{
 		check(); 
 		Flags ret= 0;
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
@@ -553,8 +619,9 @@ public:
 		return ret;
 	}
 
+	Flags get_one() const 
 	/* Get the flags when K == 0 */
-	Flags get_one() const {
+	{
 		assert(k == 0);
 		check();
 		Flags ret= 0;
@@ -580,8 +647,9 @@ public:
 		}
 	}
 
+	void add_neg(Stack stack_) 
 	/* Add the negation of the argument */ 
-	void add_neg(Stack stack_) {
+	{
 		check(); 
 		assert(stack_.get_k() == this->get_k()); 
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
@@ -618,8 +686,9 @@ public:
 		}
 	}
 
+	void add_one_neg(Flags flags) 
 	/* K must be zero */ 
-	void add_one_neg(Flags flags) {
+	{
 		assert(k == 0);
 		check();
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
@@ -627,8 +696,9 @@ public:
 		}
 	}
 
+	void add_one_neg(Stack stack_) 
 	/* K must be zero */ 
-	void add_one_neg(Stack stack_) {
+	{
 		assert(this->k == 0);
 		assert(stack_.k == 0);
 		check();
@@ -637,8 +707,9 @@ public:
 		}
 	}
 
+	void push() 
 	/* Add a lowest level. (In-place change) */ 
-	void push() {
+	{
 		assert(k < CHAR_BIT * sizeof(int)); 
 		if (k == CHAR_BIT * sizeof(int) - 2) {
 			print_error("dynamic dependency recursion limit exceeded");
@@ -650,8 +721,9 @@ public:
 		}
 	}
 
+	void pop() 
 	/* Remove the lowest level. (In-place change) */
-	void pop() {
+	{
 		assert(k > 0); 
 		--k;
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
@@ -705,6 +777,80 @@ shared_ptr <Dependency> Direct_Dependency
 
 	return ret;
 }
+
+shared_ptr <Dependency> 
+Compound_Dependency::instantiate(const map <string, string> &mapping) const
+{
+	shared_ptr <Compound_Dependency> ret= make_shared <Compound_Dependency> (flags, places);
+
+	for (shared_ptr <Dependency> d:  dependencies) {
+		ret->push_back(d->instantiate(mapping));
+	}
+	
+	return ret; 
+}
+
+bool Compound_Dependency::is_unparametrized() const
+/* A compound dependency is parametrized when any of its contained
+ * dependency is parametrized.  */
+{
+	for (shared_ptr <Dependency> d:  dependencies) {
+		if (! d->is_unparametrized())
+			return false;
+	}
+
+	return true;
+}
+
+string Compound_Dependency::format(Style style, bool &) const
+/* Ignore QUOTES, as everything inside the parentheses will not need
+ * it.  */  
+{
+	string ret;
+
+	bool quotes= false;
+
+	for (const shared_ptr <Dependency> &d:  dependencies) {
+		if (! ret.empty())
+			ret += ", ";
+		ret += d->format(style, quotes); 
+	}
+
+	return fmt("(%s)", ret); 
+}
+
+string Compound_Dependency::format_word() const
+{
+	string ret;
+
+	for (const shared_ptr <Dependency> &d:  dependencies) {
+		if (! ret.empty())
+			ret += ", ";
+		ret += d->format_word(); 
+	}
+	
+	return fmt("(%s)", ret); 
+}
+
+string Compound_Dependency::format_out() const
+{
+	string ret;
+
+	for (const shared_ptr <Dependency> &d:  dependencies) {
+		if (! ret.empty())
+			ret += ", ";
+		ret += d->format_out(); 
+	}
+	
+	return fmt("(%s)", ret); 
+}
+
+#ifndef NDEBUG
+void Compound_Dependency::print() const
+{
+	place << format_word(); 
+}
+#endif
 
 #ifndef NDEBUG
 

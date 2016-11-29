@@ -108,8 +108,8 @@ const int ERROR_FATAL=     4;
  * error output. 
  */ 
 
-/* Print an error without a place */
 void print_error(string message)
+/* Print an error without a place */
 {
 	assert(message != "");
 	assert(isupper(message[0]) || message[0] == '\''); 
@@ -119,8 +119,8 @@ void print_error(string message)
 		message.c_str()); 
 }
 
-/* Like perror(), but use color.  MESSAGE must not contain color codes. */ 
 void print_error_system(string message)
+/* Like perror(), but use color.  MESSAGE must not contain color codes. */ 
 {
 	assert(message.size() > 0 && message[0] != '') ;
 	string t= name_format_word(message); 
@@ -129,13 +129,11 @@ void print_error_system(string message)
 		strerror(errno));
 }
 
-/* 
- * Print a reminder of an error on STDERR.  This is used in situations
+void print_error_reminder(string message)
+/* Print a reminder of an error on STDERR.  This is used in situations
  * where an error has already been output, but it is better to remind
  * the user of the error.  Since the error as already been output, use
- * the color of warnings. 
- */
-void print_error_reminder(string message)
+ * the color of warnings.  */
 {
 	assert(message != "");
 	assert(isupper(message[0]) || message[0] == '\''); 
@@ -145,25 +143,23 @@ void print_error_reminder(string message)
 		message.c_str()); 
 }
 
+string system_format(string text)
 /* System error message.  Includes the given message, and the
  * ERRNO-based text.  Cf. perror().  Color is not added.  The output of
  * this function is used as input to one of the print_*() functions.  */
-string system_format(string text)
 {
 	return fmt("%s: %s",
 		   text,
 		   strerror(errno)); 
 }
 
-/* 
- * Print a message to standard output.  This is used in only very few
+void print_out(string text)
+/* Print a message to standard output.  This is used in only very few
  * cases, in defiance of the principle that a program should by default
  * only output something when there is an error.  We do it mostly
  * because Make does it, and users expect it, and because not doing it
  * would be very strange for most users.  These messages are suppressed
- * by the -s option (silent).
- */
-void print_out(string text)
+ * by the -s option (silent).  */
 {
 	assert(text != "");
 	assert(isupper(text[0]));
@@ -178,8 +174,8 @@ void print_out(string text)
 	       Color::out_end); 
 }
 
-/* A message on STDERR that is made silent by the silent option (-s) */ 
 void print_error_silenceable(string text)
+/* A message on STDERR that is made silent by the silent option (-s) */ 
 {
 	assert(text != "");
 	assert(isupper(text[0]));
@@ -195,6 +191,7 @@ void print_error_silenceable(string text)
 		Color::end);
 }
 
+class Place
 /* 
  * Denotes a position in Stu source code.  This is either in a file or
  * in arguments/options to Stu.  A Place object can also be empty, which
@@ -203,7 +200,6 @@ void print_error_silenceable(string text)
  * Places are used to show the location of an error on standard error
  * output.
  */ 
-class Place
 {
 public:
 
@@ -231,16 +227,16 @@ public:
 	 * numbers as these are easier to generate. 
 	 * Others: Unused.  */ 
 
-	/* Empty */ 
 	Place() 
+	/* Empty */ 
 		:  type(Type::EMPTY) 
 	{ }
 
-	/* Generic constructor */ 
 	Place(Type type_,
 	      string filename_, 
 	      unsigned line_, 
 	      unsigned column_)
+	/* Generic constructor */ 
 		:  type(type_),
 		   text(filename_),
 		   line(line_),
@@ -249,15 +245,15 @@ public:
 		assert(line >= 1);
 	}
 
-	/* In command line argument (ARGV) */ 
 	Place(Type type_)
+	/* In command line argument (ARGV) */ 
 		:  type(type_)
 	{
 		assert(type == Type::ARGUMENT); 
 	}
 
-	/* In an option (OPTION) */
 	Place(Type type_, char option)
+	/* In an option (OPTION) */
 		:  type(type_),
 		   text(string(&option, 1))
 	{ 
@@ -290,12 +286,12 @@ public:
 	}
 };
 
+class Trace
 /* 
  * A place along with a message.  This class is only used when traces
  * cannot be printed immediately.  Otherwise, Place::operator<<() is
  * called directly.  
  */
-class Trace
 {
 public:
 
@@ -310,9 +306,9 @@ public:
 		:  place(place_), message(message_) 
 	{  }
 
+	void print() const 
 	/* Print the trace to STDERR as part of an error message; see
 	 * Place::operator<< for format information.  */
-	void print() const 
 	{
 		place << message; 
 	}

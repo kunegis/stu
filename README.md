@@ -89,9 +89,9 @@ The design considerations of Stu are:
   thus preventing projects to use multiple programming languages.
   Others even do worse and create their own mini-language, invariably
   less portable than the shell. 
-* Reliability:  Stu has extensive unit test coverage, with more than 500
+* Reliability:  Stu has extensive unit test coverage, with about 1,000
   tests.  All published versions pass 100% of these tests.  All language
-  features and error paths are unit tested.  
+  features and error paths are unit tested.   
 * Stability:  We follow Semantic Versioning (semver.org) in order to
   provide syntax and semantics that are stable over time.  Stu files
   written now will still work in the future.  

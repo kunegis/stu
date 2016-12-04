@@ -28,13 +28,15 @@ This is my preferred style.  --Jérôme Kunegis
 * K&R brace style.
 * Tabs for indentation at the beginning of lines.  Set your editor
   to show them at the width you prefer.  I use the default 8-char tabs. 
-* Spaces for indentation in the middle of lines.
+* Spaces for alignment in the middle of lines.
 * Use C-style comments (/* ... */) for regular comments
 * Use C++-style comments on column zero (// ...) for quickly commenting
   out code and for writing TODO items; this allows us to search all
   source files for the string '//' to find areas that are currently
-  worked on.  Code pushed to git does not contain '//'.  When used, we
-  put '//' at the beginning of the line, not preceded by whitespace.  
+  worked on.  Code pushed to Git on the master branch does not contain
+  '//'.  When used, we put '//' at the beginning of the line, not
+  preceded by whitespace, in order to not break the alignment of
+  commented code with uncommented code.
 * In comments, names of variables are in all uppercase. 
 * Use 72-character lines in general, but allow more where reasonable,
   e.g., to avoid breaking message string literals.  Since tabs may be
@@ -42,7 +44,7 @@ This is my preferred style.  --Jérôme Kunegis
   use 8-char tabs. 
 * Use 'nullptr' as the null pointer constant instead of 'NULL', as per
   C++11.  In comments, call it "null" (in lowercase, like you would
-  write 'zero' or 'five'). 
+  write "zero" or "five"). 
 * No space before the assignment operator and around parentheses.
   Otherwise, spaces around most operators. 
 * We enable many G++ warnings in debug mode, and write the code so as to

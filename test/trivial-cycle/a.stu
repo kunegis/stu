@@ -1,5 +1,5 @@
 
-# write a script that tests the whole cycle. 
+
 
 A:  -t B D {
 	echo BUILDING_A

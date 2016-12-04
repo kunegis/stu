@@ -143,7 +143,7 @@ public:
 	virtual bool is_unparametrized() const= 0; 
 
 	virtual Flags get_flags()= 0;
-	/* Returns all flags */
+	/* Returns the flags */
 
 	virtual bool has_flags(Flags flags_)= 0; 
 	/* Return whether the dependency has all the given flags */
@@ -475,6 +475,10 @@ public:
 		/* The list of dependencies is empty */ 
 	}
 
+	const vector <shared_ptr <Dependency> > get_dependencies() const {
+		return dependencies; 
+	}
+
 	/* Append a dependency to the list */
 	void push_back(shared_ptr <Dependency> dependency)
 	{
@@ -532,6 +536,10 @@ public:
 	Compound_Dependency(vector <shared_ptr <Dependency> > &&dependencies_)
 		:  dependencies(dependencies_)
 	{  }
+
+	const vector <shared_ptr <Dependency> > get_dependencies() const {
+		return dependencies; 
+	}
 
 	void push_back(shared_ptr <Dependency> dependency)
 	{
@@ -997,10 +1005,11 @@ Stack::Stack(shared_ptr <Dependency> dependency)
 		dependency= dynamic_dependency->dependency; 
 	}
 
-	assert(dynamic_pointer_cast <Direct_Dependency> (dependency));
-	shared_ptr <Direct_Dependency> direct_dependency=
-		dynamic_pointer_cast <Direct_Dependency> (dependency);
-	add_lowest(direct_dependency->flags); 
+//	assert(dynamic_pointer_cast <Direct_Dependency> (dependency));
+//	shared_ptr <Direct_Dependency> direct_dependency=
+//		dynamic_pointer_cast <Direct_Dependency> (dependency);
+	add_lowest(dependency->get_flags()); 
+//	add_lowest(direct_dependency->flags); 
 }
 
 #endif /* ! DEPENDENCY_HH */

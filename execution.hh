@@ -89,18 +89,19 @@ private:
 
 	Job job;
 	/* The job used to execute this rule's command */ 
-	
-	Buffer buf_default;
+
+	Buffer buffer_default;
 	/* Dependencies that have not yet begun to be built.
 	 * Initialized with all dependencies, and emptied over time when
 	 * things are built, and filled over time when dynamic
 	 * dependencies are worked on.  Entries are not necessarily
-	 * unique.  */ 
+	 * unique.  Does not contain compound dependencies.  */ 
 
-	Buffer buf_trivial; 
+	Buffer buffer_trivial; 
 	/* The buffer for dependencies in the second pass.  They are
 	 * only started if, after (potentially) starting all non-trivial
-	 * dependencies, the target must be rebuilt anyway.  */
+	 * dependencies, the target must be rebuilt anyway.  Does not
+	 * contain compound dependencies.  */
 
 	vector <Timestamp> timestamps_old; 
 	/* Timestamp of each file target, before the command is
@@ -219,9 +220,11 @@ private:
 
 	bool deploy(const Link &link,
 		    const Link &link_child);
-	/* Note:  the top-level flags of LINK.DEPENDENCY may be
-	 * modified. 
-	 * Return value:  same semantics as for execute().  */
+	/* Deploy a new child execution.  LINK_CHILD is the link from
+	 * THIS execution to the child; LINK is the link from the THIS's
+	 * parent to this.  Note: the top-level flags of LINK.DEPENDENCY
+	 * may be modified.  Return value: same semantics as for
+	 * execute().  */
 
 	void initialize(Stack avoid);
 	/* Initialize the Execution object.  Used for dynamic dependencies.
@@ -259,6 +262,10 @@ private:
 			? -1
 			: targets.front().type.get_dynamic_depth(); 
 	}
+
+	void push_default(Link &&link);
+	/* Push a link to the default buffer, breaking down compound
+	 * dependencies while doing so.  */
 
 	string verbose_target() const {
 		return targets.empty() 
@@ -497,18 +504,18 @@ bool Execution::execute(Execution *parent, Link &&link)
 	/* 
 	 * Deploy dependencies (first pass), with the F_NOTRIVIAL flag
 	 */ 
-	while (! buf_default.empty()) {
-		Link link_child= buf_default.next(); 
+	while (! buffer_default.empty()) {
+		Link link_child= buffer_default.next(); 
 		Link link_child_overridetrivial= link_child;
 		link_child_overridetrivial.avoid.add_highest(F_OVERRIDE_TRIVIAL); 
 		link_child_overridetrivial.flags |= F_OVERRIDE_TRIVIAL; 
-		buf_trivial.push(move(link_child_overridetrivial)); 
+		buffer_trivial.push(move(link_child_overridetrivial)); 
 		if (deploy(link, link_child))
 			return true;
 		if (jobs == 0)
 			return false;
 	} 
-	assert(buf_default.empty()); 
+	assert(buffer_default.empty()); 
 
 	if (order == Order::RANDOM) {
 		int ret= execute_children(link);
@@ -549,7 +556,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	assert(! targets.empty());
 	assert(targets.front().type.get_dynamic_depth() == 0); 
 	assert(targets.back().type.get_dynamic_depth() == 0); 
-	assert(buf_default.empty()); 
+	assert(buffer_default.empty()); 
 	assert(children.empty()); 
 	assert(error == 0);
 
@@ -707,14 +714,14 @@ bool Execution::execute(Execution *parent, Link &&link)
 	/*
 	 * Re-deploy all dependencies (second pass)
 	 */
-	while (! buf_trivial.empty()) {
-		Link link_child= buf_trivial.next(); 
+	while (! buffer_trivial.empty()) {
+		Link link_child= buffer_trivial.next(); 
 		if (deploy(link, link_child))
 			return true;
 		if (jobs == 0)
 			return false;
 	} 
-	assert(buf_trivial.empty()); 
+	assert(buffer_trivial.empty()); 
 
 	if (no_execution) {
 		/* A target without a command */ 
@@ -924,8 +931,8 @@ void Execution::waited(pid_t pid, int status)
 {
 	assert(job.started()); 
 	assert(job.get_pid() == pid); 
-	assert(buf_default.empty()); 
-	assert(buf_trivial.empty()); 
+	assert(buffer_default.empty()); 
+	assert(buffer_trivial.empty()); 
 	assert(children.size() == 0); 
 
 	assert(done.get_k() == 0);
@@ -1342,10 +1349,11 @@ Execution::Execution(Target target_,
 
 	if (! (target_.type.is_dynamic() && target_.type.is_any_file()) 
 	    && rule != nullptr) {
-
 		/* There is a rule for this execution */ 
+
 		for (auto &dependency:  rule->dependencies) {
-			assert(! dependency->get_place().empty());
+
+//			assert(! dependency->get_place().empty());
 
 			shared_ptr <Dependency> dep= dependency;
 			if (target_.type.is_any_transient()) {
@@ -1367,10 +1375,11 @@ Execution::Execution(Target target_,
 					text_target.c_str(),
 					text_link_new.c_str()); 
 			}
-			buf_default.push(move(link_new)); 
+			push_default(move(link_new)); 
+//			buffer_default.push(move(link_new)); 
 		}
 	} else {
-		/* There is no rule */ 
+		/* There is no rule for this execution */ 
 
 		bool rule_not_found= false;
 		/* Whether to produce the "no rule to build target" error */ 
@@ -1433,7 +1442,8 @@ Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
 	   exists(0)
 {
 	for (auto &i:  dependencies_) {
-		buf_default.push(Link(i)); 
+		push_default(Link(i)); 
+//		buffer_default.push(Link(i)); 
 	}
 }
 
@@ -1926,7 +1936,8 @@ void Execution::read_dynamic_dependency(Stack avoid,
 
 			assert(avoid_this.get_k() == 0); 
 
-			buf_default.push(Link(dependency));
+			push_default(Link(dependency)); 
+//			buffer_default.push(Link(dependency));
 
 		}
 				
@@ -2148,6 +2159,16 @@ bool Execution::deploy(const Link &link,
 	Flags flags_child= link_child.flags; 
 	Flags flags_child_additional= 0; 
 
+	/* Compound dependency */
+	if (dynamic_pointer_cast <Compound_Dependency> (link_child.dependency)) {
+
+		/* Does not happen as the buffers do not contain
+		 * compound dependencies.  */
+		assert(false); 
+//		shared_ptr <Compound_Dependency> compound_dependency= 
+//			dynamic_pointer_cast <Compound_Dependency> (link_child.dependency);
+	}
+
 	int dynamic_depth= 0;
 	shared_ptr <Dependency> dep= link_child.dependency;
 	while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
@@ -2317,7 +2338,8 @@ void Execution::initialize(Stack avoid)
 			 Place_Param_Target(target.type.get_base(), 
 					    Place_Name(target.name)));
 
-		buf_default.push(Link(dependency_child, flags_child, Place()));
+ 		push_default(Link(dependency_child, flags_child, Place()));
+// 		buffer_default.push(Link(dependency_child, flags_child, Place()));
 		/* The place of the [[A]]->A links is empty, meaning it will
 		 * not be output in traces. */ 
 	} 
@@ -2546,6 +2568,24 @@ void Execution::raise(int error_)
 bool Execution::is_dynamic() const
 {
 	return targets.size() != 0 && targets.front().type.is_dynamic(); 
+}
+
+void Execution::push_default(Link &&link)
+{
+	if (nullptr == dynamic_pointer_cast <Compound_Dependency> (link.dependency)) {
+		buffer_default.push(forward <Link> (link)); 
+		return;
+	}
+
+	shared_ptr <Compound_Dependency> compound_dependency=
+		dynamic_pointer_cast <Compound_Dependency> (link.dependency); 
+
+	for (auto &d:  compound_dependency->get_dependencies()) {
+
+		Link link_sub(link.avoid, link.flags, d->get_place(), d);
+
+		buffer_default.push(move(link_sub)); 
+	}
 }
 
 #endif /* ! EXECUTION_HH */

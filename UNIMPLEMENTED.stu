@@ -390,11 +390,11 @@ example:  [FILES]
 >FILES { echo *.c *.h }
 
 #
-# Allow non-file targets.  E.g., files within archives, or remote
-# files.  Would almost always need to incorporate some unwanted
-# dependency, and be highly specific to a single use-case.  Instead of
-# implementing this in Stu, a better implementation is via mounting, or
-# virtual filesystems.  Make traditionally supports "ar" archives. 
+# Allow non-file targets.  E.g., files within archives, or remote files.
+# Would almost always need to incorporate some unwanted dependency, and
+# be highly specific to a single use-case.  Instead of implementing this
+# in Stu, a better implementation is via mounting, or virtual
+# filesystems.  Make traditionally supports "ar" archives.
 #
 
 #
@@ -406,6 +406,9 @@ example:  [FILES]
 #  - More complex and error-prone memory management, in particular for
 #    strings 
 #  - A replacement for exceptions
+#
+# Remember:  Even GCC is written in C++ nowadays, so we are not in bad
+# company.    
 #
 
 #
@@ -561,7 +564,7 @@ A:  (B C) | (D E) { ... }
 
 #
 # Transient targets can have content.  This will be executed at every Stu
-# invocation.  
+# invocation.  This is similar to the way variables worked in Stu 0. 
 #
 # This might be used like variables in Make, but the result will be that
 # targets depending on them will always be rebuilt.  It would thus only

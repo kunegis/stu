@@ -20,6 +20,7 @@ public:
 	 * non-transitive ones.  The transitive-bit part of this
 	 * variable always equals the lowest level bits in AVOID.  */  
 
+	// TODO deprecate and use the place from the dependency instead.
 	Place place; 
 	/* The place of the declaration of the dependency */ 
 

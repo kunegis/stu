@@ -92,6 +92,11 @@ public:
 	string format_out() const; 
 	/* Format the rule, as for the -P option */ 
 
+	void check_unparametrized(shared_ptr <Dependency> dependency,
+				  const set <string> &parameters);
+	/* Print error message and throw a logical error when the
+	 * dependency contains parameters */
+
 	const vector <string> &get_parameters() const
 	{
 		assert(place_param_targets.size() != 0); 
@@ -194,43 +199,45 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	}
 
 	/* Check that only valid parameters are used */ 
-	for (auto &i:  dependencies) {
+	for (const auto &d:  dependencies) {
 
-		shared_ptr <Dependency> dep= i;
-		while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
-			dep= dynamic_pointer_cast <Dynamic_Dependency> (dep)->dependency;
-		}
+		check_unparametrized(d, parameters);
 
-		if (dynamic_pointer_cast <Direct_Dependency> (dep)) {
+		// shared_ptr <Dependency> dep= i;
+		// while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
+		// 	dep= dynamic_pointer_cast <Dynamic_Dependency> (dep)->dependency;
+		// }
 
-			shared_ptr <Direct_Dependency> dependency= 
-				dynamic_pointer_cast <Direct_Dependency> (dep); 
+		// if (dynamic_pointer_cast <Direct_Dependency> (dep)) {
 
-			for (unsigned jj= 0;  
-			     jj < dependency->place_param_target.place_name.get_n();
-			     ++jj) {
-				string parameter= dependency->place_param_target
-					.place_name.get_parameters()[jj]; 
-				if (parameters.count(parameter) == 0) {
-					dependency->place_param_target
-						.place_name.get_places()[jj] <<
-						fmt("parameter %s must not appear in dependency %s", 
-						    prefix_format_word(parameter, "$"),
-						    dependency->place_param_target.format_word());
-					if (place_param_targets.size() == 1) {
-						place_param_targets[0]->place <<
-							fmt("because it does not appear in target %s",
-							    place_param_targets[0]->format_word());
-					} else {
-						place << fmt("because it does not appear in any of the targets %s... of the rule",
-							     place_param_targets[0]->format_word()); 
-					}
-					throw ERROR_LOGICAL; 
-				}
-			}
-		} else {
-			assert(false); 
-		}
+		// 	shared_ptr <Direct_Dependency> dependency= 
+		// 		dynamic_pointer_cast <Direct_Dependency> (dep); 
+
+		// 	for (unsigned jj= 0;  
+		// 	     jj < dependency->place_param_target.place_name.get_n();
+		// 	     ++jj) {
+		// 		string parameter= dependency->place_param_target
+		// 			.place_name.get_parameters()[jj]; 
+		// 		if (parameters.count(parameter) == 0) {
+		// 			dependency->place_param_target
+		// 				.place_name.get_places()[jj] <<
+		// 				fmt("parameter %s must not appear in dependency %s", 
+		// 				    prefix_format_word(parameter, "$"),
+		// 				    dependency->place_param_target.format_word());
+		// 			if (place_param_targets.size() == 1) {
+		// 				place_param_targets[0]->place <<
+		// 					fmt("because it does not appear in target %s",
+		// 					    place_param_targets[0]->format_word());
+		// 			} else {
+		// 				place << fmt("because it does not appear in any of the targets %s... of the rule",
+		// 					     place_param_targets[0]->format_word()); 
+		// 			}
+		// 			throw ERROR_LOGICAL; 
+		// 		}
+		// 	}
+		// } else {
+		// 	assert(false); 
+		// }
 	}
 }
 
@@ -317,6 +324,56 @@ string Rule::format_out() const
 	ret += ")";
 
 	return ret; 
+}
+
+void Rule::check_unparametrized(shared_ptr <Dependency> dependency,
+				const set <string> &parameters)
+{
+	if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
+		shared_ptr <Dynamic_Dependency> dynamic_dependency=
+			dynamic_pointer_cast <Dynamic_Dependency> (dependency); 
+		check_unparametrized(dynamic_dependency->dependency, parameters); 
+	} else if (dynamic_pointer_cast <Compound_Dependency> (dependency)) {
+		shared_ptr <Compound_Dependency> compound_dependency=
+			dynamic_pointer_cast <Compound_Dependency> (dependency);
+		for (const auto &d:  compound_dependency->get_dependencies()) {
+			check_unparametrized(d, parameters); 
+		}
+	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
+		shared_ptr <Concatenated_Dependency> concatenated_dependency=
+			dynamic_pointer_cast <Concatenated_Dependency> (dependency);
+		for (const auto &d:  concatenated_dependency->get_dependencies()) {
+			check_unparametrized(d, parameters); 
+		}
+	} else if (dynamic_pointer_cast <Direct_Dependency> (dependency)) {
+		shared_ptr <Direct_Dependency> direct_dependency=
+			dynamic_pointer_cast <Direct_Dependency> (dependency);
+		for (unsigned jj= 0;  
+		     jj < direct_dependency->place_param_target.place_name.get_n();
+		     ++jj) {
+			string parameter= direct_dependency->place_param_target
+				.place_name.get_parameters()[jj]; 
+			if (parameters.count(parameter) == 0) {
+				direct_dependency->place_param_target
+					.place_name.get_places()[jj] <<
+					fmt("parameter %s must not appear in dependency %s", 
+					    prefix_format_word(parameter, "$"),
+					    direct_dependency->place_param_target.format_word());
+				if (place_param_targets.size() == 1) {
+					place_param_targets[0]->place <<
+						fmt("because it does not appear in target %s",
+						    place_param_targets[0]->format_word());
+				} else {
+					place << fmt("because it does not appear in any of the targets %s... of the rule",
+						     place_param_targets[0]->format_word()); 
+				}
+				throw ERROR_LOGICAL; 
+			}
+		}
+	} else {
+		assert(false); 
+		throw ERROR_LOGICAL;
+	}
 }
 
 void Rule_Set::add(vector <shared_ptr <Rule> > &rules_) 

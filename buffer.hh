@@ -36,6 +36,9 @@ private:
 	 * union-like data structure, but we don't in this
 	 * implementation  */   
 
+	// TODO investigate whether we need a link here, or whether it
+	// could be replaced by a Dependency.   
+
 	queue <Link> q;
 	vector <Link> v;
 

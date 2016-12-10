@@ -5,7 +5,6 @@
 # binary operator '*' as well with juxtaposition.     [2.5]
 #
 
-# - implement concatenated dependencies
 # - implement concatenated execution objects, which are deleted when they are done
 #   (they don't have a Target object)
 

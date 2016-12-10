@@ -704,7 +704,8 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 //		while
 		if (parse_expression_list(r, place_name_input, place_input, targets)) {
 			if (r.size() > 1) {
-				ret= make_shared <Compound_Dependency> (move(r)); 
+				ret= make_shared <Compound_Dependency> 
+					(move(r), place_paren); 
 			} else {
 				ret= move(r.at(0)); 
 			}
@@ -778,7 +779,7 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 //		check_concatenation(); 
 		++ iter; 
 		shared_ptr <Compound_Dependency> ret_nondynamic= 
-			make_shared <Compound_Dependency> (); 
+			make_shared <Compound_Dependency> (place_bracket); 
 		for (auto &j:  r2) {
 			
 			/* Variable dependency cannot appear within

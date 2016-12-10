@@ -260,7 +260,7 @@ private:
 	{
 		return targets.empty()
 			? -1
-			: targets.front().type.get_dynamic_depth(); 
+			: targets.front().type.get_depth(); 
 	}
 
 	void push_default(Link &&link);
@@ -403,9 +403,11 @@ bool Execution::execute(Execution *parent, Link &&link)
 	assert(jobs >= 0); 
 
 	for (const Target &target:  targets) {
-		assert(target.type.get_dynamic_depth() == done.get_k());
+		assert(target.type.get_depth() == done.get_depth());
 	}
-	assert(done.get_k() == link.avoid.get_k()); 
+	Stack tmp_stack= link.avoid; 
+	(void) tmp_stack; 
+	assert(done.get_depth() == link.avoid.get_depth()); 
 
 	if (targets.size() && targets.front().type == 0) {
 		assert(link.avoid.get_lowest() == (link.flags & ((1 << C_TRANSITIVE) - 1))); 
@@ -494,9 +496,9 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 
 	if (targets.empty())
-		assert(done.get_k() == 0);
+		assert(done.get_depth() == 0);
 	else 
-		assert(done.get_k() == targets.front().type.get_dynamic_depth());
+		assert(done.get_depth() == targets.front().type.get_depth());
 
 	if (error) 
 		assert(option_keep_going); 
@@ -554,8 +556,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 
 	assert(jobs > 0); 
 	assert(! targets.empty());
-	assert(targets.front().type.get_dynamic_depth() == 0); 
-	assert(targets.back().type.get_dynamic_depth() == 0); 
+	assert(targets.front().type.get_depth() == 0); 
+	assert(targets.back().type.get_depth() == 0); 
 	assert(buffer_default.empty()); 
 	assert(children.empty()); 
 	assert(error == 0);
@@ -935,7 +937,7 @@ void Execution::waited(pid_t pid, int status)
 	assert(buffer_trivial.empty()); 
 	assert(children.size() == 0); 
 
-	assert(done.get_k() == 0);
+	assert(done.get_depth() == 0);
 	done.add_one_neg(0); 
 
 	{
@@ -1190,7 +1192,7 @@ void Execution::unlink(Execution *const parent,
 		assert(found); 
 #endif 
 
-		assert(child->done.get_k() == 0); 
+		assert(child->done.get_depth() == 0); 
 		
 		bool do_read= true;
 
@@ -1282,7 +1284,7 @@ Execution::Execution(Target target_,
 		     Link &&link,
 		     Execution *parent)
 	:  error(0),
-	   done(target_.type.get_dynamic_depth(), 0),
+	   done(target_.type.get_depth(), 0),
 	   timestamp(Timestamp::UNDEFINED),
 	   need_build(false),
 	   checked(false),
@@ -1359,7 +1361,7 @@ Execution::Execution(Target target_,
 			if (target_.type.is_any_transient()) {
 				dep->add_flags(link.avoid.get_lowest());
 			
-				for (unsigned i= 0;  i < target_.type.get_dynamic_depth();  ++i) {
+				for (unsigned i= 0;  i < target_.type.get_depth();  ++i) {
 					Flags flags= link.avoid.get(i + 1);
 					dep= make_shared <Dynamic_Dependency> (flags, dep);
 				}
@@ -1449,18 +1451,18 @@ Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
 
 bool Execution::finished(Stack avoid) const
 {
-	assert(avoid.get_k() == done.get_k());
+	assert(avoid.get_depth() == done.get_depth());
 
 	if (targets.empty())
-		assert(done.get_k() == 0);
+		assert(done.get_depth() == 0);
 	else {
-		assert(done.get_k() == targets.front().type.get_dynamic_depth());
-		assert(done.get_k() == targets.back().type.get_dynamic_depth());
+		assert(done.get_depth() == targets.front().type.get_depth());
+		assert(done.get_depth() == targets.back().type.get_depth());
 	}
 
 	Flags to_do_aggregate= 0;
 	
-	for (unsigned j= 0;  j <= done.get_k();  ++j) {
+	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
 		to_do_aggregate |= ~done.get(j) & ~avoid.get(j); 
 	}
 
@@ -1470,13 +1472,13 @@ bool Execution::finished(Stack avoid) const
 bool Execution::finished() const 
 {
 	if (targets.empty())
-		assert(done.get_k() == 0);
+		assert(done.get_depth() == 0);
 	else 
-		assert(done.get_k() == targets.front().type.get_dynamic_depth());
+		assert(done.get_depth() == targets.front().type.get_depth());
 
 	Flags to_do_aggregate= 0;
 	
-	for (unsigned j= 0;  j <= done.get_k();  ++j) {
+	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
 		to_do_aggregate |= ~done.get(j); 
 	}
 
@@ -1707,7 +1709,7 @@ void Execution::read_dynamic_dependency(Stack avoid,
 
 	assert(target.type.is_dynamic());
 
-	assert(avoid.get_k() == target.type.get_dynamic_depth()); 
+	assert(avoid.get_depth() == target.type.get_depth()); 
 
 	try {
 		const string filename= target.name; 
@@ -1899,23 +1901,23 @@ void Execution::read_dynamic_dependency(Stack avoid,
 			}
 
 			Stack avoid_this= avoid;
-			assert(vec.size() == avoid_this.get_k());
+			assert(vec.size() == avoid_this.get_depth());
 			avoid_this.pop(); 
 			dependency->add_flags(avoid_this.get_lowest()); 
 			if (dependency->get_place_flag(I_PERSISTENT).empty())
 				dependency->set_place_flag
 					(I_PERSISTENT,
-					 vec[target.type.get_dynamic_depth() - 1]
+					 vec[target.type.get_depth() - 1]
 					 ->get_place_flag(I_PERSISTENT)); 
 			if (dependency->get_place_flag(I_OPTIONAL).empty())
 				dependency->set_place_flag
 					(I_OPTIONAL,
-					 vec[target.type.get_dynamic_depth() - 1]
+					 vec[target.type.get_depth() - 1]
 					 ->get_place_flag(I_OPTIONAL)); 
 			if (dependency->get_place_flag(I_TRIVIAL).empty())
 				dependency->set_place_flag
 					(I_TRIVIAL,
-					 vec[target.type.get_dynamic_depth() - 1]
+					 vec[target.type.get_depth() - 1]
 					 ->get_place_flag(I_TRIVIAL)); 
 
 			for (Type k= target.type - 1;  k.is_dynamic();  --k) {
@@ -1925,16 +1927,16 @@ void Execution::read_dynamic_dependency(Stack avoid,
 					(flags_level, dependency); 
 				dependency->set_place_flag
 					(I_PERSISTENT,
-					 vec[k.get_dynamic_depth() - 1]->get_place_flag(I_PERSISTENT)); 
+					 vec[k.get_depth() - 1]->get_place_flag(I_PERSISTENT)); 
 				dependency->set_place_flag
 					(I_OPTIONAL,
-					 vec[k.get_dynamic_depth() - 1]->get_place_flag(I_OPTIONAL)); 
+					 vec[k.get_depth() - 1]->get_place_flag(I_OPTIONAL)); 
 				dependency->set_place_flag
 					(I_TRIVIAL,
-					 vec[k.get_dynamic_depth() - 1]->get_place_flag(I_TRIVIAL)); 
+					 vec[k.get_depth() - 1]->get_place_flag(I_TRIVIAL)); 
 			}
 
-			assert(avoid_this.get_k() == 0); 
+			assert(avoid_this.get_depth() == 0); 
 
 			push_default(Link(dependency)); 
 //			buffer_default.push(Link(dependency));
@@ -2169,27 +2171,35 @@ bool Execution::deploy(const Link &link,
 //			dynamic_pointer_cast <Compound_Dependency> (link_child.dependency);
 	}
 
-	int dynamic_depth= 0;
+	unsigned depth= 0;
 	shared_ptr <Dependency> dep= link_child.dependency;
 	while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
 		dep= dynamic_pointer_cast <Dynamic_Dependency> (dep)->dependency;
-		++dynamic_depth;
+		++depth;
 	}
+	assert(dynamic_pointer_cast <Direct_Dependency> (dep)); 
+//	fprintf(stderr, "depth == %u\n", depth); // TODO RM
+//	fprintf(stderr, "link_child.avoid.get_depth == %u\n", link_child.avoid.get_depth()); 
+//	string tmp_link_child_dep= link_child.dependency->format_word(); 
+//	fprintf(stderr, "link_child.dependency == %s\n", tmp_link_child_dep.c_str()); 
+	assert(depth == link_child.avoid.get_depth()); 
 
 	shared_ptr <Direct_Dependency> direct_dependency=
 		dynamic_pointer_cast <Direct_Dependency> (dep);
+	assert(direct_dependency != nullptr); 
 	assert(! direct_dependency->place_param_target.place_name.empty()); 
 
 	Target target_child= direct_dependency->place_param_target.unparametrized();
 	assert(target_child.type == Type::FILE || target_child.type == Type::TRANSIENT);
+	assert(target_child.type.get_depth() == 0); 
 
-	if (dynamic_depth != 0) {
-		assert(dynamic_depth > 0);
-
-		target_child.type += dynamic_depth; 
+	if (depth != 0) {
+		assert(depth > 0);
+		target_child.type += depth; 
 	}
 
 	Stack avoid_child= link_child.avoid;
+	assert(avoid_child.get_depth() == target_child.type.get_depth()); 
 
 	/* Carry flags over transient targets */ 
 	if (! targets.empty()) {
@@ -2572,18 +2582,16 @@ bool Execution::is_dynamic() const
 
 void Execution::push_default(Link &&link)
 {
-	if (nullptr == dynamic_pointer_cast <Compound_Dependency> (link.dependency)) {
-		buffer_default.push(forward <Link> (link)); 
-		return;
-	}
+	shared_ptr <Dependency> dependency= link.dependency;
 
-	shared_ptr <Compound_Dependency> compound_dependency=
-		dynamic_pointer_cast <Compound_Dependency> (link.dependency); 
+	vector <shared_ptr <Dependency> > dependencies;
+	
+	split_compound_dependencies(dependencies, dependency); 
 
-	for (auto &d:  compound_dependency->get_dependencies()) {
-
+	assert(dependencies.size() > 0);
+       
+	for (const auto &d:  dependencies) {
 		Link link_sub(link.avoid, link.flags, d->get_place(), d);
-
 		buffer_default.push(move(link_sub)); 
 	}
 }

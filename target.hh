@@ -74,7 +74,10 @@ public:
 		return value >= T_DYNAMIC_TRANSIENT;
 	}
 
-	unsigned get_dynamic_depth() const {
+	unsigned get_depth() const 
+	/* Also known as the dynamicity */
+	// TODO "dynamicity" -> "depth" everywhere in the prose
+	{
 		assert(value >= 0);
 		return value >> 1;
 	}
@@ -120,10 +123,10 @@ public:
 		return (this->value - type.value) / 2; 
 	}
 
-	Type operator - (int diff) const {
+	Type operator - (int depth) const {
 		assert(value >= 0); 
-		assert(value - 2 * diff >= 0); 
-		return Type(value - 2 * diff);
+		assert(value - 2 * depth >= 0); 
+		return Type(value - 2 * depth);
 	}
 
 	Type &operator ++ () {
@@ -138,9 +141,9 @@ public:
 		return *this;
 	}
 
-	Type &operator += (int diff) {
+	Type &operator += (int depth) {
 		assert(value >= 0);
-		value += 2 * diff;
+		value += 2 * depth;
 		assert(value >= 0);
 		return *this;
 	}
@@ -191,12 +194,12 @@ public:
 		quotes= false;
 		
 		return fmt("%s%s%s%s%s%s", 
-			   string(type.get_dynamic_depth(), '['),
+			   string(type.get_depth(), '['),
 			   type.is_any_transient() ? "@" : "",
 			   quotes2 ? "'" : "",
 			   text,
 			   quotes2 ? "'" : "",
-			   string(type.get_dynamic_depth(), ']'));
+			   string(type.get_depth(), ']'));
 	}
 
 	string format_word() const {
@@ -214,12 +217,12 @@ public:
 		
 		return fmt("%s%s%s%s%s%s%s%s", 
 			   Color::word, 
-			   string(type.get_dynamic_depth(), '['),
+			   string(type.get_depth(), '['),
 			   type.is_any_transient() ? "@" : "",
 			   quotes ? "'" : "",
 			   text,
 			   quotes ? "'" : "",
-			   string(type.get_dynamic_depth(), ']'),
+			   string(type.get_depth(), ']'),
 			   Color::end);
 	}
 
@@ -238,12 +241,12 @@ public:
 		
 		return fmt("%s%s%s%s%s%s%s%s", 
 			   Color::out_print_word, 
-			   string(type.get_dynamic_depth(), '['),
+			   string(type.get_depth(), '['),
 			   type.is_any_transient() ? "@" : "",
 			   quotes ? "'" : "",
 			   text,
 			   quotes ? "'" : "",
-			   string(type.get_dynamic_depth(), ']'),
+			   string(type.get_depth(), ']'),
 			   Color::out_print_word_end);
 	}
 
@@ -258,12 +261,12 @@ public:
 		string text= name_format(name, style, quotes); 
 
 		return fmt("%s%s%s%s%s%s", 
-			   string(type.get_dynamic_depth(), '['),
+			   string(type.get_depth(), '['),
 			   type.is_any_transient() ? "@" : "",
 			   quotes ? "'" : "",
 			   text,
 			   quotes ? "'" : "",
-			   string(type.get_dynamic_depth(), ']')); 
+			   string(type.get_depth(), ']')); 
 	}
 
 	string format_src() const {
@@ -277,12 +280,12 @@ public:
 		string text= name_format(name, style, quotes); 
 
 		return fmt("%s%s%s%s%s%s", 
-			   string(type.get_dynamic_depth(), '['),
+			   string(type.get_depth(), '['),
 			   type.is_any_transient() ? "@" : "",
 			   quotes ? "'" : "",
 			   text,
 			   quotes ? "'" : "",
-			   string(type.get_dynamic_depth(), ']')); 
+			   string(type.get_depth(), ']')); 
 	}
 
 	bool operator== (const Target &target) const {
@@ -556,12 +559,12 @@ public:
 		
 		return fmt("%s%s%s%s%s%s%s%s", 
 			   Color::word, 
-			   string(type.get_dynamic_depth(), '['),
+			   string(type.get_depth(), '['),
 			   type.is_any_transient() ? "@" : "",
 			   quotes2 ? "'" : "",
 			   text,
 			   quotes2 ? "'" : "",
-			   string(type.get_dynamic_depth(), ']'),
+			   string(type.get_depth(), ']'),
 			   Color::end);
 	}
 

@@ -132,9 +132,13 @@ else
 	tests="$(echo *)"
 fi
 
+count_total=0
+
 for file in $tests
 do
 	error=0
+	
+	count_total="$(( count_total + 1 ))"
 
 	# Remove optional 'test/' prefix
 	file="$(echo "$file" | sed -e 's,^test/,,')"
@@ -485,7 +489,10 @@ printf 'Runtime: %u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)"
 
 if [ "$errors" != 0 ]
 then
-	echo >&2 "[31m$0: *** The following $(echo $(<../error.log wc -l)) test(s) failed (out of $(echo $(ls -1 | wc -l))):"
+##	count_total="$(echo $(ls -1 | wc -l))"
+	count_failed="$(echo $(<../error.log wc -l))"
+	success_rate="$(awk 'BEGIN{print int(('"$count_total"'-'"$count_failed"')/'"$count_total"'*10000)/100}')"
+	echo >&2 "[31m$0: *** ${success_rate}% success rate.  The following $count_failed test(s) failed (out of $count_total):"
 	cat ../error.log
 	printf "[m"
 	exit 1

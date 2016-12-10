@@ -3,6 +3,9 @@
 
 /*
  * Data types for representing dependencies. 
+ *
+ * All dependencies derive from the class Dependency, and are used via
+ * shared_ptr.    
  */
 
 #include <limits.h>
@@ -134,6 +137,9 @@ class Dependency
  * The flags only represent immediate flags.  Compound dependencies for
  * instance may contain additional inner flags. 
  */ 
+// TODO since all Dependency's are also Single_Dependency's, fold the
+// Single_Dependency field into Dependency, and remove the dynamic
+// accessor functions, replacing them with direct access. 
 {
 public:
 
@@ -204,7 +210,6 @@ public:
 		:  flags(flags_)
 	{
 		assert(places != places_);
-		assert(sizeof(places) == sizeof(places_)); 
 		memcpy(places, places_, sizeof(places)); 
 	}
 
@@ -394,6 +399,17 @@ public:
 		assert(dependency_ != nullptr); 
 	}
 
+	Dynamic_Dependency(Flags flags_,
+			   const Place places_[C_TRANSITIVE],
+			   shared_ptr <Dependency> dependency_)
+		:  Single_Dependency(flags_, places_),
+		   dependency(dependency_)
+	{
+		assert((flags & F_READ) == 0); 
+		assert((flags & F_VARIABLE) == 0); 
+		assert(dependency_ != nullptr); 
+	}
+
 	shared_ptr <Dependency> 
 	instantiate(const map <string, string> &mapping) const
 	{
@@ -423,7 +439,7 @@ public:
 	string format_word() const {
 		bool quotes= false;
 		string s= dependency->format(S_MARKERS, quotes);
-		return fmt("%s%s[%s%s%s]%s",
+		return fmt("%s[%s%s%s]%s",
 			   Color::word, 
 			   quotes ? "'" : "",
 			   s,
@@ -449,8 +465,10 @@ public:
 
 #ifndef NDEBUG
 	void print() const {
-		fprintf(stderr, "dynamic %d of:  ", flags);
+		string text_flags= flags_format(flags); 
+		fprintf(stderr, "%s[", text_flags.c_str());
 		dependency->print(); 
+		fprintf(stderr, "]"); 
 	}
 #endif
 };
@@ -521,20 +539,23 @@ public:
 
 	Place place; 
 	/* The place of the compound ; usually the opening parenthesis
-	 * or brace  */
+	 * or brace.  Not empty.  */
 
-	Compound_Dependency() 
+	Compound_Dependency(const Place &place_) 
+		:  place(place_)
 	{  }
 	
-	Compound_Dependency(Flags flags_, const Place places_[C_TRANSITIVE])
+	Compound_Dependency(Flags flags_, const Place places_[C_TRANSITIVE], const Place &place_)
 		:  Single_Dependency(flags_, places_),
-		   place()
+		   place(place_)
 	{
 		/* The list of dependencies is empty */ 
 	}
 
-	Compound_Dependency(vector <shared_ptr <Dependency> > &&dependencies_)
-		:  dependencies(dependencies_)
+	Compound_Dependency(vector <shared_ptr <Dependency> > &&dependencies_, 
+			    const Place &place_)
+		:  place(place_),
+		   dependencies(dependencies_)
 	{  }
 
 	const vector <shared_ptr <Dependency> > get_dependencies() const {
@@ -579,15 +600,15 @@ private:
 class Stack
 /*
  * A stack of dependency bits.  Contains only transitive bits.
- * Lower bits denote relationships lower in the hierarchy.  The depth K
- * is the number of times the link is dynamic.  (K+1) bits are actually
- * stored for each flag.  The maximum depth K is therefore CHAR_BITS *
+ * Lower bits denote relationships lower in the hierarchy.  The DEPTH
+ * is the number of times the link is dynamic.  (DEPTH+1) bits are actually
+ * stored for each flag.  The maximum DEPTH is therefore CHAR_BITS *
  * sizeof(int) - 1, i.e., at least 15 on standard C platforms, and 31 on
  * almost all used platforms.  
  *
  * As a general rule, indexes named I go over the F_COUNT different
- * flags (0..F_COUNT-1), and indexes named J go over the (K+1) levels of
- * depth (0..K).  
+ * flags (0..F_COUNT-1), and indexes named J go over the (DEPTH+1) levels of
+ * depth (0..DEPTH).  
  *
  * Example:  a dynamic dependency  -o [ -p X]  would be represented by the stack of bits
  *   J=1:    bit 'o'
@@ -598,16 +619,16 @@ public:
 	void check() const 
 	/* Check the internal consistency of this object */ 
 	{
-		assert(k + 1 < CHAR_BIT * sizeof(int)); 
+		assert(depth + 1 < CHAR_BIT * sizeof(int)); 
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			/* Only the (K+1) first bits may be set */ 
-			assert((bits[i] & ~((1 << (k+1)) - 1)) == 0); 
+			assert((bits[i] & ~((1 << (depth+1)) - 1)) == 0); 
 		}
 	}
 
 	Stack()
 		/* Depth is zero, the single flag is zero */ 
-		:  k(0)
+		:  depth(0)
 	{
 		memset(bits, 0, sizeof(bits));
 		check();
@@ -615,7 +636,7 @@ public:
 
 	explicit Stack(Flags flags)
 		/* Depth is zero, the flag type is given */ 
-		:  k(0)
+		:  depth(0)
 	{
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			bits[i]= ((flags & (1 << i)) != 0);
@@ -623,12 +644,12 @@ public:
 		check(); 
 	}
 
-	Stack(unsigned k_, int zero) 
+	Stack(unsigned depth_, int zero) 
 		/* Initalize to all-zero with the given depth K_ */ 
-		:  k(k_)
+		:  depth(depth_)
 	{
 		(void) zero; 
-		if (k >= CHAR_BIT * sizeof(int) - 1) {
+		if (depth >= CHAR_BIT * sizeof(int) - 1) {
 			print_error("dynamic dependency recursion limit exceeded");
 			throw ERROR_FATAL; 
 		}
@@ -638,8 +659,9 @@ public:
 
 	Stack(shared_ptr <Dependency> dependency);
 
-	unsigned get_k() const {
-		return k;
+	unsigned get_depth() const 
+	{
+		return depth;
 	}
 
 	Flags get_lowest() const 
@@ -658,7 +680,7 @@ public:
 		check(); 
 		Flags ret= 0;
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
-			ret |= (((bits[i] >> k) & 1) << i);
+			ret |= (((bits[i] >> depth) & 1) << i);
 		}
 		return ret;
 	}
@@ -666,7 +688,7 @@ public:
 	Flags get_one() const 
 	/* Get the flags when K == 0 */
 	{
-		assert(k == 0);
+		assert(depth == 0);
 		check();
 		Flags ret= 0;
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
@@ -685,7 +707,7 @@ public:
 
 	void add(Stack stack_) {
 		check(); 
-		assert(stack_.get_k() == this->get_k()); 
+		assert(stack_.get_depth() == this->get_depth()); 
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			this->bits[i] |= stack_.bits[i]; 
 		}
@@ -695,9 +717,9 @@ public:
 	/* Add the negation of the argument */ 
 	{
 		check(); 
-		assert(stack_.get_k() == this->get_k()); 
+		assert(stack_.get_depth() == this->get_depth()); 
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
-			this->bits[i] |= ((1 << (k+1)) - 1) ^ stack_.bits[i]; 
+			this->bits[i] |= ((1 << (depth+1)) - 1) ^ stack_.bits[i]; 
 		}
 		check(); 
 	}
@@ -712,28 +734,28 @@ public:
 	void add_highest(Flags flags) {
 		check();
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
-			bits[i] |= ((flags & (1 << i)) != 0) << k;
+			bits[i] |= ((flags & (1 << i)) != 0) << depth;
 		}
 	}
 
 	void rem_highest(Flags flags) {
 		check(); 
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
-			bits[i] &= ~(((flags & (1 << i)) != 0) << k);
+			bits[i] &= ~(((flags & (1 << i)) != 0) << depth);
 		}
 	}
 
 	void add_highest_neg(Flags flags) {
 		check();
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
-			bits[i] |= ((flags & (1 << i)) == 0) << k;
+			bits[i] |= ((flags & (1 << i)) == 0) << depth;
 		}
 	}
 
 	void add_one_neg(Flags flags) 
 	/* K must be zero */ 
 	{
-		assert(k == 0);
+		assert(depth == 0);
 		check();
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			bits[i] |= ((flags >> i) & 1) ^ 1;
@@ -743,8 +765,8 @@ public:
 	void add_one_neg(Stack stack_) 
 	/* K must be zero */ 
 	{
-		assert(this->k == 0);
-		assert(stack_.k == 0);
+		assert(this->depth == 0);
+		assert(stack_.depth == 0);
 		check();
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			this->bits[i] |= stack_.bits[i] ^ 1;
@@ -754,12 +776,12 @@ public:
 	void push() 
 	/* Add a lowest level. (In-place change) */ 
 	{
-		assert(k < CHAR_BIT * sizeof(int)); 
-		if (k == CHAR_BIT * sizeof(int) - 2) {
+		assert(depth < CHAR_BIT * sizeof(int)); 
+		if (depth == CHAR_BIT * sizeof(int) - 2) {
 			print_error("dynamic dependency recursion limit exceeded");
 			throw ERROR_FATAL; 
 		}
-		++k;
+		++depth;
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			bits[i] <<= 1;
 		}
@@ -768,8 +790,8 @@ public:
 	void pop() 
 	/* Remove the lowest level. (In-place change) */
 	{
-		assert(k > 0); 
-		--k;
+		assert(depth > 0); 
+		--depth;
 		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
 			bits[i] >>= 1;
 		}
@@ -777,7 +799,7 @@ public:
 
 	string format() const {
 		string ret= "";
-		for (int j= k;  j >= 0;  --j) {
+		for (int j= depth;  j >= 0;  --j) {
 			Flags flags_j= get(j);
 			ret += flags_format(flags_j);
 			if (j)  ret += ',';
@@ -787,7 +809,7 @@ public:
 
 private:
 
-	unsigned k;
+	unsigned depth;
 	/* The depth */
 
 	unsigned bits[C_TRANSITIVE];
@@ -825,7 +847,9 @@ shared_ptr <Dependency> Direct_Dependency
 shared_ptr <Dependency> 
 Compound_Dependency::instantiate(const map <string, string> &mapping) const
 {
-	shared_ptr <Compound_Dependency> ret= make_shared <Compound_Dependency> (flags, places);
+	shared_ptr <Compound_Dependency> ret= 
+		make_shared <Compound_Dependency> 
+		(flags, places, place);
 
 	for (const shared_ptr <Dependency> &d:  dependencies) {
 		ret->push_back(d->instantiate(mapping));
@@ -892,7 +916,7 @@ string Compound_Dependency::format_out() const
 #ifndef NDEBUG
 void Compound_Dependency::print() const
 {
-	place << format_word(); 
+	place << (flags_format(flags) + format_word()); 
 }
 #endif
 
@@ -993,7 +1017,7 @@ void print_dependencies(const vector <shared_ptr <Dependency> > &dependencies)
 
 Stack::Stack(shared_ptr <Dependency> dependency) 
 {
-	k= 0;
+	depth= 0;
 	memset(bits, 0, sizeof(bits));
 
 	while (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
@@ -1010,6 +1034,61 @@ Stack::Stack(shared_ptr <Dependency> dependency)
 //		dynamic_pointer_cast <Direct_Dependency> (dependency);
 	add_lowest(dependency->get_flags()); 
 //	add_lowest(direct_dependency->flags); 
+}
+
+void split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies, 
+				 shared_ptr <Dependency> dependency)
+/* Split the given DEPENDENCY into multiple DEPENDENCIES that do not
+ * contain compound dependencies.  (Recursively)
+ * DEPENDENCY will be changed. 
+ */
+{
+//	fprintf(stderr, "aaa\n"); // TODO RM ...
+//	dependency->print(); 
+//	fprintf(stderr, "vvvv\n"); 
+
+	if (dynamic_pointer_cast <Direct_Dependency> (dependency)) {
+		dependencies.push_back(dependency);
+	} else if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
+		shared_ptr <Dynamic_Dependency> dynamic_dependency= 
+			dynamic_pointer_cast <Dynamic_Dependency> (dependency);
+		vector <shared_ptr <Dependency> > dependencies_child;
+		split_compound_dependencies(dependencies_child, dynamic_dependency->dependency);
+		assert(dependencies_child.size() >= 1); 
+//		if (dependencies_child.size() == 1) {
+//			dependencies.push_back(dependency);
+//		} else {
+			for (auto &d:  dependencies_child) {
+				shared_ptr <Dependency> dependency_new= 
+					make_shared <Dynamic_Dependency> 
+					(dynamic_dependency->flags, dynamic_dependency->places,
+					 d);
+				dependencies.push_back(dependency_new); 
+//				split_compound_dependencies(dependencies, d);
+			}
+//		}
+	} else if (dynamic_pointer_cast <Compound_Dependency> (dependency)) {
+		shared_ptr <Compound_Dependency> compound_dependency=
+			dynamic_pointer_cast <Compound_Dependency> (dependency);
+		for (auto &d:  compound_dependency->get_dependencies()) {
+			d->add_flags(compound_dependency->flags); 
+			split_compound_dependencies(dependencies, d); 
+//			dependencies.push_back(d); 
+		}
+	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
+		shared_ptr <Concatenated_Dependency> concatenated_dependency=
+			dynamic_pointer_cast <Concatenated_Dependency> (dependency);
+		assert(false); // TODO not yet implemented 
+	} else {
+		/* Unhandled dependency type */ 
+		assert(false);
+	}
+
+//	for (auto &d:  dependencies) {
+//		d->print(); 
+//	}
+
+//	fprintf(stderr, "bbb\n"); 
 }
 
 #endif /* ! DEPENDENCY_HH */

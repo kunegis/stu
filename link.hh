@@ -67,7 +67,7 @@ public:
 	}
 
 	void add(Stack avoid_, Flags flags_) {
-		assert(avoid.get_k() == avoid_.get_k());
+		assert(avoid.get_depth() == avoid_.get_depth());
 		avoid.add(avoid_);
 		flags |= flags_;
 		check(); 

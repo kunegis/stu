@@ -95,7 +95,7 @@ cat list | while read -r line ; do
 $left  : { touch abcdefghijklmno }
 $right : { echo >&2 ERROR ; exit 1 ; }
 EOF
-	do_test
+	do_test || exit 1
 
 	# (A) declared after (B) 
 	rm -f main.stu || exit 1
@@ -104,7 +104,7 @@ EOF
 right : { echo >&2 ERROR ; exit 1 ; }
 $left  : { touch abcdefghijklmno } 
 EOF
-	do_test
+	do_test || exit 1
 
 done
 

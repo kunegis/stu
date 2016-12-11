@@ -9,9 +9,7 @@ class Link
 public:
 	Stack avoid;
 	/* Negation of flags valid for each level. 
-	 * The length is one plus the dynamicity (number of dynamic
-	 * indirections).  Small indices indicate the links lower in the
-	 * hierarchy. 
+	 * The depth equals the depth of the dependency. 
 	 * This variable only holds the PERSISTENT/OPTIONAL/TRIVIAL
 	 * bits (i.e., transitive bits as defined by F_COUNT).  */
 
@@ -19,16 +17,18 @@ public:
 	/* Flags that are valid for this dependency, including the
 	 * non-transitive ones.  The transitive-bit part of this
 	 * variable always equals the lowest level bits in AVOID.  */  
-
-	// TODO deprecate and use the place from the dependency instead.
+	
 	Place place; 
-	/* The place of the declaration of the dependency */ 
+	/* The place of the declaration of the dependency.  Empty for
+	 * A->[...[A]...] links */ 
+	// TODO deprecate and use the place from the dependency
+	// instead. -- Can't be done because it is used for generated
+	// traces.  
 
 	shared_ptr <Dependency> dependency;
 	/* This is null for the root target. 
 	 * May contain less flags than stored in AVOID and FLAGS.  
-	 * May also contain more flags, when a compound dependency. 
-	 */
+	 * May also contain more flags, when a compound dependency.  */
 
 	Link() { }
 

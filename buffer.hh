@@ -36,11 +36,10 @@ private:
 	 * union-like data structure, but we don't in this
 	 * implementation  */   
 
-	// TODO investigate whether we need a link here, or whether it
-	// could be replaced by a Dependency.   
-
-	queue <Link> q;
-	vector <Link> v;
+	queue <shared_ptr <Dependency> > q;
+	vector <shared_ptr <Dependency> > v;
+//	queue <Link> q;
+//	vector <Link> v;
 
 public:
 
@@ -51,7 +50,7 @@ public:
 			return q.size();
 	}
 
-	Link next() 
+	shared_ptr <Dependency> next() 
 	/* Return the next element, removing it from the buffer at the
 	 * same time  */
 	{
@@ -60,25 +59,27 @@ public:
 			size_t k= random_number(s);
 			if (k + 1 < s) 
 				swap(v[k], v[s - 1]); 
-			Link ret= move(v[s - 1]);
+			shared_ptr <Dependency> ret= v[s - 1];
 			v.resize(s - 1); 
-			return move(ret); 
+			return ret; 
 		} else {
-			Link ret= move(q.front());
+			shared_ptr <Dependency> ret= q.front();
 			q.pop(); 
-			return move(ret); 
+			return ret; 
 		}
 	}
 
-	void push(Link &&link) 
+	void push(shared_ptr <Dependency> d)
+//	void push(Link &&link) 
 	/* Add to the end of the queue (if sorted, otherwise, just
 	   add) */ 
 	{
-		assert(dynamic_pointer_cast <Compound_Dependency> (link.dependency) == nullptr); 
+		assert(d->is_simple_recursively()); 
+//		assert(dynamic_pointer_cast <Compound_Dependency> (d) == nullptr); 
 		if (order_vec) {
-			v.emplace_back(link); 
+			v.emplace_back(d); 
 		} else {
-			q.push(move(link)); 
+			q.push(d); 
 		}
 	}
 

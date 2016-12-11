@@ -129,7 +129,10 @@ string flags_format(Flags flags)
 
 class Dependency
 /* 
- * A dependency, which can be simple or compound.  All dependencies
+ * A dependency, which can be simple or complex.  Complex dependencies
+ * are those that contain compound or concatenated dependencies
+ * (recursively). 
+ * All dependencies
  * carry information about their place(s) of declaration.  
  *
  * Objects of this type are usually used with shared_ptr/unique_ptr. 
@@ -176,10 +179,14 @@ public:
 	virtual bool is_simple() const= 0;
 	/* A simple dependency is neither compound, nor concatenated */ 
 
+	virtual bool is_simple_recursively() const= 0;
+
 #ifndef NDEBUG
 	virtual void print() const= 0; 
 	/* Write the dependency to standard output (only for debugging
 	 * purposes)  */
+	// TODO remove all these print() functions for dependencies:
+	// the format_out() functions are enough for debugging. 
 #endif
 };
 
@@ -369,7 +376,8 @@ public:
 		return place_param_target.get_param_target();
 	}
 
-	virtual bool is_simple() const { return true; }
+	virtual bool is_simple() const { return true;  }
+	virtual bool is_simple_recursively() const { return true;  }
 
 #ifndef NDEBUG
 	void print() const {
@@ -462,6 +470,9 @@ public:
 	}
 
 	virtual bool is_simple() const { return true; }
+	virtual bool is_simple_recursively() const {
+		return dependency->is_simple_recursively(); 
+	}
 
 #ifndef NDEBUG
 	void print() const {
@@ -519,6 +530,8 @@ public:
 	virtual Param_Target get_single_target() const { assert(false); }
 	/* Collapse the dependency into a single target, ignoring all
 	 * flags.  Only if this is a simple dependency.  */   
+
+	virtual bool is_simple_recursively() const { return false;  }
 
 #ifndef NDEBUG
 	virtual void print() const; 
@@ -586,6 +599,7 @@ public:
 	 * flags.  Only if this is a simple dependency.  */   
 
 	virtual bool is_simple() const { return false; }
+	virtual bool is_simple_recursively() const { return false; }
 
 #ifndef NDEBUG
 	virtual void print() const; 
@@ -1017,6 +1031,8 @@ void print_dependencies(const vector <shared_ptr <Dependency> > &dependencies)
 
 Stack::Stack(shared_ptr <Dependency> dependency) 
 {
+	assert(dependency->is_simple_recursively()); 
+
 	depth= 0;
 	memset(bits, 0, sizeof(bits));
 
@@ -1029,11 +1045,7 @@ Stack::Stack(shared_ptr <Dependency> dependency)
 		dependency= dynamic_dependency->dependency; 
 	}
 
-//	assert(dynamic_pointer_cast <Direct_Dependency> (dependency));
-//	shared_ptr <Direct_Dependency> direct_dependency=
-//		dynamic_pointer_cast <Direct_Dependency> (dependency);
 	add_lowest(dependency->get_flags()); 
-//	add_lowest(direct_dependency->flags); 
 }
 
 void split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies, 
@@ -1089,6 +1101,21 @@ void split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies
 //	}
 
 //	fprintf(stderr, "bbb\n"); 
+}
+
+shared_ptr <Dependency> clone_dependency(shared_ptr <Dependency> dependency)
+/* A shallow clone.  */
+{
+	if (dynamic_pointer_cast <Direct_Dependency> (dependency)) {
+		return make_shared <Direct_Dependency> (* dynamic_pointer_cast <Direct_Dependency> (dependency)); 
+	} else if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
+		return make_shared <Dynamic_Dependency> (* dynamic_pointer_cast <Dynamic_Dependency> (dependency)); 
+	} else if (dynamic_pointer_cast <Compound_Dependency> (dependency)) {
+		return make_shared <Compound_Dependency> (* dynamic_pointer_cast <Compound_Dependency> (dependency)); 
+	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
+		return make_shared <Concatenated_Dependency> (* dynamic_pointer_cast <Concatenated_Dependency> (dependency)); 
+	} else
+		assert(false); // ...
 }
 
 #endif /* ! DEPENDENCY_HH */

@@ -60,9 +60,9 @@ private:
 	vector <Target> targets; 
 	/* The targets to which this execution object corresponds.
 	 * Empty only for the root target.  Otherwise, all entries have
-	 * the same dynamic depth.  If the dynamic depth is larger than
-	 * one, then there is exactly one target.  There are multiple
-	 * targets here when the rule had multiple targets.  */   
+	 * the same depth.  If the dynamic depth is larger than one,
+	 * then there is exactly one target.  There are multiple targets
+	 * here when the rule had multiple targets.  */   
 
 	shared_ptr <Rule> rule;
 	/* The instantiated file rule for this execution.  Null when
@@ -219,12 +219,11 @@ private:
 	 * MESSAGE_EXTRA may be null to not show an extra message.  */ 
 
 	bool deploy(const Link &link,
-		    const Link &link_child);
-	/* Deploy a new child execution.  LINK_CHILD is the link from
-	 * THIS execution to the child; LINK is the link from the THIS's
-	 * parent to this.  Note: the top-level flags of LINK.DEPENDENCY
-	 * may be modified.  Return value: same semantics as for
-	 * execute().  */
+		    shared_ptr <Dependency> dependency_child);
+	/* Deploy a new child execution.  LINK is the link from the
+	 * THIS's parent to this.  Note: the top-level flags of
+	 * LINK.DEPENDENCY may be modified.  Return value: same
+	 * semantics as for execute().  */
 
 	void initialize(Stack avoid);
 	/* Initialize the Execution object.  Used for dynamic dependencies.
@@ -263,7 +262,7 @@ private:
 			: targets.front().type.get_depth(); 
 	}
 
-	void push_default(Link &&link);
+	void push_default(shared_ptr <Dependency> );
 	/* Push a link to the default buffer, breaking down compound
 	 * dependencies while doing so.  */
 
@@ -507,12 +506,14 @@ bool Execution::execute(Execution *parent, Link &&link)
 	 * Deploy dependencies (first pass), with the F_NOTRIVIAL flag
 	 */ 
 	while (! buffer_default.empty()) {
-		Link link_child= buffer_default.next(); 
-		Link link_child_overridetrivial= link_child;
-		link_child_overridetrivial.avoid.add_highest(F_OVERRIDE_TRIVIAL); 
-		link_child_overridetrivial.flags |= F_OVERRIDE_TRIVIAL; 
-		buffer_trivial.push(move(link_child_overridetrivial)); 
-		if (deploy(link, link_child))
+		shared_ptr <Dependency> dependency_child= buffer_default.next(); 
+		shared_ptr <Dependency> dependency_child_overridetrivial= 
+			clone_dependency(dependency_child);
+		dependency_child_overridetrivial->add_flags(F_OVERRIDE_TRIVIAL); 
+//		link_child_overridetrivial.flags |= F_OVERRIDE_TRIVIAL; 
+		buffer_trivial.push(dependency_child_overridetrivial); 
+//		buffer_trivial.push(move(link_child_overridetrivial)); 
+		if (deploy(link, dependency_child))
 			return true;
 		if (jobs == 0)
 			return false;
@@ -717,8 +718,8 @@ bool Execution::execute(Execution *parent, Link &&link)
 	 * Re-deploy all dependencies (second pass)
 	 */
 	while (! buffer_trivial.empty()) {
-		Link link_child= buffer_trivial.next(); 
-		if (deploy(link, link_child))
+		shared_ptr <Dependency> dependency_child= buffer_trivial.next(); 
+		if (deploy(link, dependency_child))
 			return true;
 		if (jobs == 0)
 			return false;
@@ -1355,8 +1356,6 @@ Execution::Execution(Target target_,
 
 		for (auto &dependency:  rule->dependencies) {
 
-//			assert(! dependency->get_place().empty());
-
 			shared_ptr <Dependency> dep= dependency;
 			if (target_.type.is_any_transient()) {
 				dep->add_flags(link.avoid.get_lowest());
@@ -1367,18 +1366,17 @@ Execution::Execution(Target target_,
 				}
 			} 
 
-			Link link_new(dep); 
+//			Link link_new(dep); 
 
 			if (option_debug) {
 				string text_target= verbose_target();
-				string text_link_new= link_new.format_out(); 
+				string text_link_new= dep->format_out(); 
 				fprintf(stderr, "DEBUG %s    %s push %s\n",
 					Verbose::padding(),
 					text_target.c_str(),
 					text_link_new.c_str()); 
 			}
-			push_default(move(link_new)); 
-//			buffer_default.push(move(link_new)); 
+			push_default(dep); 
 		}
 	} else {
 		/* There is no rule for this execution */ 
@@ -1443,8 +1441,8 @@ Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
 	   checked(false),
 	   exists(0)
 {
-	for (auto &i:  dependencies_) {
-		push_default(Link(i)); 
+	for (auto &d:  dependencies_) {
+		push_default(d); 
 //		buffer_default.push(Link(i)); 
 	}
 }
@@ -1938,7 +1936,7 @@ void Execution::read_dynamic_dependency(Stack avoid,
 
 			assert(avoid_this.get_depth() == 0); 
 
-			push_default(Link(dependency)); 
+			push_default(dependency); 
 //			buffer_default.push(Link(dependency));
 
 		}
@@ -2146,23 +2144,24 @@ void Execution::print_command() const
 }
 
 bool Execution::deploy(const Link &link,
-		       const Link &link_child)
+		       shared_ptr <Dependency> dependency_child)
 {
 	if (option_debug) {
 		string text_target= verbose_target();
-		string text_link_child= link_child.format_out(); 
+		string text_child= dependency_child->format_out(); 
 		fprintf(stderr, "DEBUG %s %s deploy %s\n",
 			Verbose::padding(),
 			text_target.c_str(),
-			text_link_child.c_str());
+			text_child.c_str());
 	}
 
 	/* Additional flags for the child are added here */ 
-	Flags flags_child= link_child.flags; 
+	Flags flags_child= dependency_child->get_flags(); 
+//	Flags flags_child= link_child.flags; 
 	Flags flags_child_additional= 0; 
 
 	/* Compound dependency */
-	if (dynamic_pointer_cast <Compound_Dependency> (link_child.dependency)) {
+	if (dynamic_pointer_cast <Compound_Dependency> (dependency_child)) {
 
 		/* Does not happen as the buffers do not contain
 		 * compound dependencies.  */
@@ -2172,17 +2171,12 @@ bool Execution::deploy(const Link &link,
 	}
 
 	unsigned depth= 0;
-	shared_ptr <Dependency> dep= link_child.dependency;
+	shared_ptr <Dependency> dep= dependency_child;
 	while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
 		dep= dynamic_pointer_cast <Dynamic_Dependency> (dep)->dependency;
 		++depth;
 	}
 	assert(dynamic_pointer_cast <Direct_Dependency> (dep)); 
-//	fprintf(stderr, "depth == %u\n", depth); // TODO RM
-//	fprintf(stderr, "link_child.avoid.get_depth == %u\n", link_child.avoid.get_depth()); 
-//	string tmp_link_child_dep= link_child.dependency->format_word(); 
-//	fprintf(stderr, "link_child.dependency == %s\n", tmp_link_child_dep.c_str()); 
-	assert(depth == link_child.avoid.get_depth()); 
 
 	shared_ptr <Direct_Dependency> direct_dependency=
 		dynamic_pointer_cast <Direct_Dependency> (dep);
@@ -2198,8 +2192,9 @@ bool Execution::deploy(const Link &link,
 		target_child.type += depth; 
 	}
 
-	Stack avoid_child= link_child.avoid;
-	assert(avoid_child.get_depth() == target_child.type.get_depth()); 
+	Stack avoid_child{depth, 0};
+//	Stack avoid_child= link_child.avoid;
+//	assert(avoid_child.get_depth() == target_child.type.get_depth()); 
 
 	/* Carry flags over transient targets */ 
 	if (! targets.empty()) {
@@ -2209,17 +2204,17 @@ bool Execution::deploy(const Link &link,
 			flags_child_additional |= link.flags; 
 			avoid_child.add_highest(link.flags);
 			if (link.flags & F_PERSISTENT) {
-				link_child.dependency->set_place_flag
+				dependency_child->set_place_flag
 					(I_PERSISTENT,
 					 link.dependency->get_place_flag(I_PERSISTENT)); 
 			}
 			if (link.flags & F_OPTIONAL) {
-				link_child.dependency->set_place_flag
+				dependency_child->set_place_flag
 					(I_OPTIONAL,
 					 link.dependency->get_place_flag(I_OPTIONAL)); 
 			}
 			if (link.flags & F_TRIVIAL) {
-				link_child.dependency->set_place_flag
+				dependency_child->set_place_flag
 					(I_TRIVIAL,
 					 link.dependency->get_place_flag(I_TRIVIAL)); 
 			}
@@ -2235,9 +2230,9 @@ bool Execution::deploy(const Link &link,
 		/* '-p' and '-o' encountered for the same target */ 
 
 		const Place &place_persistent= 
-			link_child.dependency->get_place_flag(I_PERSISTENT);
+			dependency_child->get_place_flag(I_PERSISTENT);
 		const Place &place_optional= 
-			link_child.dependency->get_place_flag(I_OPTIONAL);
+			dependency_child->get_place_flag(I_OPTIONAL);
 		place_persistent <<
 			fmt("declaration of persistent dependency with %s",
 			     multichar_format_word("-p")); 
@@ -2261,7 +2256,7 @@ bool Execution::deploy(const Link &link,
 		const Place &place_variable= direct_dependency->place;
 		if (flags_child_additional & F_PERSISTENT) {
 			const Place &place_flag= 
-				link_child.dependency->get_place_flag(I_PERSISTENT); 
+				dependency_child->get_place_flag(I_PERSISTENT); 
 			place_variable << 
 				fmt("variable dependency %s must not be declared "
 				    "as persistent dependency",
@@ -2270,7 +2265,7 @@ bool Execution::deploy(const Link &link,
 					   multichar_format_word("-p")); 
 		} else if (flags_child_additional & F_OPTIONAL) {
 			const Place &place_flag= 
-				link_child.dependency->get_place_flag(I_OPTIONAL); 
+				dependency_child->get_place_flag(I_OPTIONAL); 
 			place_variable << 
 				fmt("variable dependency %s must not be declared "
 				    "as optional dependency",
@@ -2280,7 +2275,7 @@ bool Execution::deploy(const Link &link,
 		} else {
 			assert(flags_child_additional & F_TRIVIAL); 
 			const Place &place_flag= 
-				link_child.dependency->get_place_flag(I_TRIVIAL); 
+				dependency_child->get_place_flag(I_TRIVIAL); 
 			place_variable << 
 				fmt("variable dependency %s must not be declared "
 				    "as trivial dependency",
@@ -2300,7 +2295,7 @@ bool Execution::deploy(const Link &link,
 		 Link(avoid_child,
 		      flags_child,
 		      direct_dependency->place,
-		      link_child.dependency),
+		      dependency_child),
 		 this);  
 	if (child == nullptr) {
 		/* Strong cycle was found */ 
@@ -2309,7 +2304,10 @@ bool Execution::deploy(const Link &link,
 
 	children.insert(child);
 
-	Link link_child_new(avoid_child, flags_child, link_child.place, link_child.dependency); 
+	Link link_child_new(avoid_child, 
+			    flags_child, 
+			    dependency_child->get_place(), 
+			    dependency_child); 
 	
 	if (child->execute(this, move(link_child_new)))
 		return true;
@@ -2321,7 +2319,7 @@ bool Execution::deploy(const Link &link,
 		unlink(this, child, 
 		       link.dependency,
 		       link.avoid, 
-		       link_child.dependency,
+		       dependency_child,
 		       avoid_child, flags_child);
 	}
 
@@ -2348,7 +2346,8 @@ void Execution::initialize(Stack avoid)
 			 Place_Param_Target(target.type.get_base(), 
 					    Place_Name(target.name)));
 
- 		push_default(Link(dependency_child, flags_child, Place()));
+		push_default(dependency_child); 
+// 		push_default(Link(dependency_child, flags_child, Place()));
 // 		buffer_default.push(Link(dependency_child, flags_child, Place()));
 		/* The place of the [[A]]->A links is empty, meaning it will
 		 * not be output in traces. */ 
@@ -2580,9 +2579,9 @@ bool Execution::is_dynamic() const
 	return targets.size() != 0 && targets.front().type.is_dynamic(); 
 }
 
-void Execution::push_default(Link &&link)
+void Execution::push_default(shared_ptr <Dependency> dependency)
 {
-	shared_ptr <Dependency> dependency= link.dependency;
+//	shared_ptr <Dependency> dependency= link.dependency;
 
 	vector <shared_ptr <Dependency> > dependencies;
 	
@@ -2591,8 +2590,9 @@ void Execution::push_default(Link &&link)
 	assert(dependencies.size() > 0);
        
 	for (const auto &d:  dependencies) {
-		Link link_sub(link.avoid, link.flags, d->get_place(), d);
-		buffer_default.push(move(link_sub)); 
+		buffer_default.push(d);
+//		Link link_sub(link.avoid, link.flags, d->get_place(), d);
+//		buffer_default.push(move(link_sub)); 
 	}
 }
 

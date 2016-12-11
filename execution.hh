@@ -2174,9 +2174,13 @@ bool Execution::deploy(const Link &link,
 
 	unsigned depth= 0;
 	shared_ptr <Dependency> dep= dependency_child;
+	Stack avoid_child;
+	avoid_child.add_lowest(dep->get_flags()); 
 	while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
 		dep= dynamic_pointer_cast <Dynamic_Dependency> (dep)->dependency;
 		++depth;
+		avoid_child.push();
+		avoid_child.add_lowest(dep->get_flags()); 
 	}
 	assert(dynamic_pointer_cast <Direct_Dependency> (dep)); 
 
@@ -2291,9 +2295,6 @@ bool Execution::deploy(const Link &link,
 
 	flags_child= flags_child_new; 
 
-	Stack avoid_child{depth, 0};
-	avoid_child.add_highest(flags_child); 
-
 	Link link_child_new(avoid_child, 
 			    flags_child, 
 			    dependency_child->get_place(), 
@@ -2329,14 +2330,15 @@ bool Execution::deploy(const Link &link,
 
 void Execution::initialize(Stack avoid) 
 {
+	/* Add the special dynamic dependency, i.e., the [[A]]-A type
+	 * link.  Add, as an initial dependency, the corresponding file
+	 * or transient.  */
 	if (! targets.empty() &&
 	    targets.front().type.is_dynamic()) {
 
 		assert(targets.size() == 1); 
-		Target target= targets.front(); 
+		const Target &target= targets.front(); 
 
-		/* This is a special dynamic target.  Add, as an initial
-		 * dependency, the corresponding file or transient.  */
 		Flags flags_child= avoid.get_lowest();
 		
 		if (target.type.is_any_file())

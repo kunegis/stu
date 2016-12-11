@@ -1,5 +1,8 @@
+# There is no rule for 'X', but the build still succeeds because X is an
+# optional dependency, transitively through @x. 
+
 A: [-o @x] { touch A }
 
 @x: X;
 
-# There is no rule for 'X'
+

@@ -157,7 +157,7 @@ private:
 	 */
 	
 	Execution(Target target_,
-		  Link &&link,
+		  Link &link,
 		  Execution *parent);
 	/* File, transient and dynamic targets (everything except the
 	 * root target)  */ 
@@ -316,7 +316,7 @@ private:
 	 * however not deleted as it is kept for caching.  */
 
 	static Execution *get_execution(const Target &target, 
-					Link &&link,
+					Link &link,
 					Execution *parent); 
 	/* Get an existing execution or create a new one.
 	 * Return NULLPTR when a strong cycle was found; return the execution
@@ -1282,7 +1282,7 @@ void Execution::unlink(Execution *const parent,
 }
 
 Execution::Execution(Target target_,
-		     Link &&link,
+		     Link &link,
 		     Execution *parent)
 	:  error(0),
 	   done(target_.type.get_depth(), 0),
@@ -1302,7 +1302,8 @@ Execution::Execution(Target target_,
 	 */ 
 	if (target_.type == Type::FILE || target_.type == Type::TRANSIENT) {
 		try {
-			rule= rule_set.get(target_, param_rule, mapping_parameter, link.dependency->get_place()); 
+			rule= rule_set.get(target_, param_rule, mapping_parameter, 
+					   link.dependency->get_place()); 
 		} catch (int e) {
 			print_traces(); 
 			raise(e); 
@@ -1324,7 +1325,8 @@ Execution::Execution(Target target_,
 		 * otherwise not used.  */ 
 		Target target_base(target_.type.get_base(), target_.name);
 		try {
-			rule= rule_set.get(target_base, param_rule, mapping_parameter, link.dependency->get_place()); 
+			rule= rule_set.get(target_base, param_rule, mapping_parameter, 
+					   link.dependency->get_place()); 
 		} catch (int e) {
 			print_traces(); 
 			raise(e); 
@@ -1657,7 +1659,7 @@ bool Execution::remove_if_existing(bool output)
 }
 
 Execution *Execution::get_execution(const Target &target, 
-				    Link &&link,
+				    Link &link,
 				    Execution *parent)
 {
 	/* Set to the returned Execution object when one is found or created */    
@@ -1683,7 +1685,7 @@ Execution *Execution::get_execution(const Target &target,
 	} else { 
 		/* Create a new Execution object */ 
 
-		execution= new Execution(target, move(link), parent);  
+		execution= new Execution(target, link, parent);  
 
 		assert(execution->parents.size() == 1); 
 	}
@@ -2192,7 +2194,6 @@ bool Execution::deploy(const Link &link,
 		target_child.type += depth; 
 	}
 
-	Stack avoid_child{depth, 0};
 //	Stack avoid_child= link_child.avoid;
 //	assert(avoid_child.get_depth() == target_child.type.get_depth()); 
 
@@ -2202,7 +2203,7 @@ bool Execution::deploy(const Link &link,
 
 		if (target.type == Type::TRANSIENT) { 
 			flags_child_additional |= link.flags; 
-			avoid_child.add_highest(link.flags);
+//			avoid_child.add_highest(link.flags);
 			if (link.flags & F_PERSISTENT) {
 				dependency_child->set_place_flag
 					(I_PERSISTENT,
@@ -2290,12 +2291,17 @@ bool Execution::deploy(const Link &link,
 
 	flags_child= flags_child_new; 
 
+	Stack avoid_child{depth, 0};
+	avoid_child.add_highest(flags_child); 
+
+	Link link_child_new(avoid_child, 
+			    flags_child, 
+			    dependency_child->get_place(), 
+			    dependency_child); 
+
 	Execution *child= Execution::get_execution
 		(target_child, 
-		 Link(avoid_child,
-		      flags_child,
-		      direct_dependency->place,
-		      dependency_child),
+		 link_child_new,
 		 this);  
 	if (child == nullptr) {
 		/* Strong cycle was found */ 
@@ -2303,11 +2309,6 @@ bool Execution::deploy(const Link &link,
 	}
 
 	children.insert(child);
-
-	Link link_child_new(avoid_child, 
-			    flags_child, 
-			    dependency_child->get_place(), 
-			    dependency_child); 
 	
 	if (child->execute(this, move(link_child_new)))
 		return true;

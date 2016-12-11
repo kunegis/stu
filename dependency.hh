@@ -1029,25 +1029,6 @@ void print_dependencies(const vector <shared_ptr <Dependency> > &dependencies)
 }
 #endif /* ! NDEBUG */
 
-Stack::Stack(shared_ptr <Dependency> dependency) 
-{
-	assert(dependency->is_simple_recursively()); 
-
-	depth= 0;
-	memset(bits, 0, sizeof(bits));
-
-	while (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
-		shared_ptr <Dynamic_Dependency> dynamic_dependency
-			= dynamic_pointer_cast <Dynamic_Dependency> (dependency);
-		add_lowest(dynamic_dependency->flags);
-
-		push(); 
-		dependency= dynamic_dependency->dependency; 
-	}
-
-	add_lowest(dependency->get_flags()); 
-}
-
 void split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies, 
 				 shared_ptr <Dependency> dependency)
 /* Split the given DEPENDENCY into multiple DEPENDENCIES that do not
@@ -1116,6 +1097,25 @@ shared_ptr <Dependency> clone_dependency(shared_ptr <Dependency> dependency)
 		return make_shared <Concatenated_Dependency> (* dynamic_pointer_cast <Concatenated_Dependency> (dependency)); 
 	} else
 		assert(false); // ...
+}
+
+Stack::Stack(shared_ptr <Dependency> dependency) 
+{
+	assert(dependency->is_simple_recursively()); 
+
+	depth= 0;
+	memset(bits, 0, sizeof(bits));
+
+	while (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
+		shared_ptr <Dynamic_Dependency> dynamic_dependency
+			= dynamic_pointer_cast <Dynamic_Dependency> (dependency);
+		add_lowest(dynamic_dependency->flags);
+
+		push(); 
+		dependency= dynamic_dependency->dependency; 
+	}
+
+	add_lowest(dependency->get_flags()); 
 }
 
 #endif /* ! DEPENDENCY_HH */

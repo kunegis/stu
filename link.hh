@@ -21,14 +21,14 @@ public:
 	Place place; 
 	/* The place of the declaration of the dependency.  Empty for
 	 * A->[...[A]...] links */ 
-	// TODO deprecate and use the place from the dependency
+	// TODO Deprecate and use the place from the dependency
 	// instead. -- Can't be done because it is used for generated
 	// traces.  
 
 	shared_ptr <Dependency> dependency;
 	/* This is null for the root target. 
 	 * May contain less flags than stored in AVOID and FLAGS.  
-	 * May also contain more flags, when a compound dependency.  */
+	 * Always a recursively simple dependency.  */
 
 	Link() { }
 
@@ -102,6 +102,8 @@ string Link::format_out() const
 void Link::check() const 
 {
 	avoid.check();
+
+	assert(dependency == nullptr || dependency->is_simple_recursively()); 
 		
 	/* Check that the highest level in AVOID equals the
 	 * TRANSITIVE flags in FLAGS */ 

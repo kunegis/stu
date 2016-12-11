@@ -383,3 +383,8 @@ A: -P B;
 # file (if it exists) with the declared content, and regenerate the file
 # if necessary.
 #
+
+#
+# An option that make Stu rebuild everything, regardless of status. (-B,
+# like GNU Make)   
+#

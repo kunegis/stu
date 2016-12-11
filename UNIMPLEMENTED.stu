@@ -20,10 +20,6 @@
 #
 
 #
-# Option -B:  Remake all targets regardless of dates
-#
-
-#
 # Line number and file syntax:  A preprocessor-like construct that gives a new
 # filename and line number, such that error messages from Stu can point
 # to the original file, not the generated file.  Analogous to the

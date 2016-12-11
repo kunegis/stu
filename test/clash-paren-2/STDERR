@@ -1,0 +1,3 @@
+main.stu:3:6: declaration of persistent dependency with '-p'
+main.stu:3:17: clashes with declaration of optional dependency with '-o'
+main.stu:3:19: in declaration of dependency 'B'

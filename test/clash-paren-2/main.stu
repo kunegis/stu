@@ -1,0 +1,7 @@
+# Error (clash)
+
+A:  -p ((((((X -o B)))))) { touch A ; }
+
+B { touch B ; }
+X { touch X ; }
+

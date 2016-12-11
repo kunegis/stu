@@ -37,7 +37,8 @@
 typedef unsigned Flags; 
 enum 
 {
-	/* The index of the flags, used for array indexing */ 
+	/* The index of the flags, used for array indexing.  Variables
+	 * iterating over these values are usually called I.  */ 
 	I_PERSISTENT       = 0,
 	I_OPTIONAL,         
 	I_TRIVIAL,          
@@ -151,7 +152,7 @@ public:
 	instantiate(const map <string, string> &mapping) const= 0;
 	virtual bool is_unparametrized() const= 0; 
 
-	virtual Flags get_flags()= 0;
+	virtual Flags get_flags() const= 0;
 	/* Returns the flags */
 
 	virtual bool has_flags(Flags flags_)= 0; 
@@ -188,6 +189,15 @@ public:
 	// TODO remove all these print() functions for dependencies:
 	// the format_out() functions are enough for debugging. 
 #endif
+
+	static void split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies, 
+						shared_ptr <Dependency> dependency);
+	/* Split the given DEPENDENCY into multiple DEPENDENCIES that do
+	 * not contain compound dependencies.  (Recursively) DEPENDENCY
+	 * will be changed.  */
+
+	static shared_ptr <Dependency> clone_dependency(shared_ptr <Dependency> dependency);
+	/* A shallow clone.  */
 };
 
 class Single_Dependency
@@ -220,7 +230,7 @@ public:
 		memcpy(places, places_, sizeof(places)); 
 	}
 
-	Flags get_flags() {
+	Flags get_flags() const {
 		return flags; 
  	}
 
@@ -243,6 +253,12 @@ public:
 		assert(i >= 0 && i < C_TRANSITIVE);
 		places[i]= place; 
 	}
+
+	void add_flags(shared_ptr <const Dependency> dependency, 
+		       bool overwrite_places);
+	/* Add the flags from DEPENDENCY.  Also copy over the
+	 * corresponding places.  If a place is already given in THIS,
+	 * only copy a place over if OVERWRITE_PLACES is set.  */
 };
 
 class Direct_Dependency
@@ -555,6 +571,7 @@ public:
 	 * or brace.  Not empty.  */
 
 	Compound_Dependency(const Place &place_) 
+		/* Empty, with zero dependencies */
 		:  place(place_)
 	{  }
 	
@@ -832,6 +849,74 @@ private:
 
 Dependency::~Dependency() { }
 
+void Dependency::split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies, 
+					     shared_ptr <Dependency> dependency)
+{
+	if (dynamic_pointer_cast <Direct_Dependency> (dependency)) {
+		dependencies.push_back(dependency);
+
+	} else if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
+		shared_ptr <Dynamic_Dependency> dynamic_dependency= 
+			dynamic_pointer_cast <Dynamic_Dependency> (dependency);
+		vector <shared_ptr <Dependency> > dependencies_child;
+		split_compound_dependencies(dependencies_child, dynamic_dependency->dependency);
+//		assert(dependencies_child.size() >= 1); 
+		for (auto &d:  dependencies_child) {
+			shared_ptr <Dependency> dependency_new= 
+				make_shared <Dynamic_Dependency> 
+				(dynamic_dependency->flags, dynamic_dependency->places, d);
+			dependencies.push_back(dependency_new); 
+		}
+
+	} else if (dynamic_pointer_cast <Compound_Dependency> (dependency)) {
+		shared_ptr <Compound_Dependency> compound_dependency=
+			dynamic_pointer_cast <Compound_Dependency> (dependency);
+		for (auto &d:  compound_dependency->get_dependencies()) {
+			dynamic_pointer_cast <Single_Dependency> (d)
+				->add_flags(compound_dependency, false);  
+			split_compound_dependencies(dependencies, d); 
+		}
+
+	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
+		shared_ptr <Concatenated_Dependency> concatenated_dependency=
+			dynamic_pointer_cast <Concatenated_Dependency> (dependency);
+		assert(false); // TODO not yet implemented 
+
+	} else {
+		/* Bug:  Unhandled dependency type */ 
+		assert(false);
+	}
+}
+
+shared_ptr <Dependency> Dependency::clone_dependency(shared_ptr <Dependency> dependency)
+{
+	if (dynamic_pointer_cast <Direct_Dependency> (dependency)) {
+		return make_shared <Direct_Dependency> (* dynamic_pointer_cast <Direct_Dependency> (dependency)); 
+	} else if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
+		return make_shared <Dynamic_Dependency> (* dynamic_pointer_cast <Dynamic_Dependency> (dependency)); 
+	} else if (dynamic_pointer_cast <Compound_Dependency> (dependency)) {
+		return make_shared <Compound_Dependency> (* dynamic_pointer_cast <Compound_Dependency> (dependency)); 
+	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
+		return make_shared <Concatenated_Dependency> (* dynamic_pointer_cast <Concatenated_Dependency> (dependency)); 
+	} else {
+		assert(false); 
+		/* Bug:  Unhaldled dependency type */ 
+	}
+}
+
+void Single_Dependency::add_flags(shared_ptr <const Dependency> dependency, 
+				  bool overwrite_places)
+{
+	for (int i= 0;  i < C_TRANSITIVE;  ++i) {
+		if (dependency->get_flags() & (1 << i)) {
+			if (overwrite_places || ! (this->flags & (1 << i))) {
+				this->set_place_flag(i, dependency->get_place_flag(i)); 
+			}
+		}
+	}
+	this->flags |= dependency->get_flags(); 
+}
+
 shared_ptr <Dependency> Direct_Dependency
 ::instantiate(const map <string, string> &mapping) const
 {
@@ -1022,82 +1107,14 @@ void Concatenated_Dependency::print() const
 
 #ifndef NDEBUG
 void print_dependencies(const vector <shared_ptr <Dependency> > &dependencies)
+// TODO remove this (only used for debugging, and superceded by
+// Dependency::format_out() )
 {
 	for (auto &i:  dependencies) {
 		i->print(); 
 	}
 }
 #endif /* ! NDEBUG */
-
-void split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies, 
-				 shared_ptr <Dependency> dependency)
-/* Split the given DEPENDENCY into multiple DEPENDENCIES that do not
- * contain compound dependencies.  (Recursively)
- * DEPENDENCY will be changed. 
- */
-{
-//	fprintf(stderr, "aaa\n"); // TODO RM ...
-//	dependency->print(); 
-//	fprintf(stderr, "vvvv\n"); 
-
-	if (dynamic_pointer_cast <Direct_Dependency> (dependency)) {
-		dependencies.push_back(dependency);
-	} else if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
-		shared_ptr <Dynamic_Dependency> dynamic_dependency= 
-			dynamic_pointer_cast <Dynamic_Dependency> (dependency);
-		vector <shared_ptr <Dependency> > dependencies_child;
-		split_compound_dependencies(dependencies_child, dynamic_dependency->dependency);
-		assert(dependencies_child.size() >= 1); 
-//		if (dependencies_child.size() == 1) {
-//			dependencies.push_back(dependency);
-//		} else {
-			for (auto &d:  dependencies_child) {
-				shared_ptr <Dependency> dependency_new= 
-					make_shared <Dynamic_Dependency> 
-					(dynamic_dependency->flags, dynamic_dependency->places,
-					 d);
-				dependencies.push_back(dependency_new); 
-//				split_compound_dependencies(dependencies, d);
-			}
-//		}
-	} else if (dynamic_pointer_cast <Compound_Dependency> (dependency)) {
-		shared_ptr <Compound_Dependency> compound_dependency=
-			dynamic_pointer_cast <Compound_Dependency> (dependency);
-		for (auto &d:  compound_dependency->get_dependencies()) {
-			d->add_flags(compound_dependency->flags); 
-			split_compound_dependencies(dependencies, d); 
-//			dependencies.push_back(d); 
-		}
-	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
-		shared_ptr <Concatenated_Dependency> concatenated_dependency=
-			dynamic_pointer_cast <Concatenated_Dependency> (dependency);
-		assert(false); // TODO not yet implemented 
-	} else {
-		/* Unhandled dependency type */ 
-		assert(false);
-	}
-
-//	for (auto &d:  dependencies) {
-//		d->print(); 
-//	}
-
-//	fprintf(stderr, "bbb\n"); 
-}
-
-shared_ptr <Dependency> clone_dependency(shared_ptr <Dependency> dependency)
-/* A shallow clone.  */
-{
-	if (dynamic_pointer_cast <Direct_Dependency> (dependency)) {
-		return make_shared <Direct_Dependency> (* dynamic_pointer_cast <Direct_Dependency> (dependency)); 
-	} else if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
-		return make_shared <Dynamic_Dependency> (* dynamic_pointer_cast <Dynamic_Dependency> (dependency)); 
-	} else if (dynamic_pointer_cast <Compound_Dependency> (dependency)) {
-		return make_shared <Compound_Dependency> (* dynamic_pointer_cast <Compound_Dependency> (dependency)); 
-	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
-		return make_shared <Concatenated_Dependency> (* dynamic_pointer_cast <Concatenated_Dependency> (dependency)); 
-	} else
-		assert(false); // ...
-}
 
 Stack::Stack(shared_ptr <Dependency> dependency) 
 {

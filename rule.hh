@@ -329,6 +329,8 @@ string Rule::format_out() const
 void Rule::check_unparametrized(shared_ptr <Dependency> dependency,
 				const set <string> &parameters)
 {
+	assert(dependency != nullptr); 
+
 	if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
 		shared_ptr <Dynamic_Dependency> dynamic_dependency=
 			dynamic_pointer_cast <Dynamic_Dependency> (dependency); 

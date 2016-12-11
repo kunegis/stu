@@ -508,7 +508,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 	while (! buffer_default.empty()) {
 		shared_ptr <Dependency> dependency_child= buffer_default.next(); 
 		shared_ptr <Dependency> dependency_child_overridetrivial= 
-			clone_dependency(dependency_child);
+			Dependency::clone_dependency(dependency_child);
 		dependency_child_overridetrivial->add_flags(F_OVERRIDE_TRIVIAL); 
 //		link_child_overridetrivial.flags |= F_OVERRIDE_TRIVIAL; 
 		buffer_trivial.push(dependency_child_overridetrivial); 
@@ -2584,18 +2584,12 @@ bool Execution::is_dynamic() const
 
 void Execution::push_default(shared_ptr <Dependency> dependency)
 {
-//	shared_ptr <Dependency> dependency= link.dependency;
-
 	vector <shared_ptr <Dependency> > dependencies;
-	
-	split_compound_dependencies(dependencies, dependency); 
-
-	assert(dependencies.size() > 0);
+	Dependency::split_compound_dependencies(dependencies, dependency); 
+//	assert(dependencies.size() > 0);
        
 	for (const auto &d:  dependencies) {
 		buffer_default.push(d);
-//		Link link_sub(link.avoid, link.flags, d->get_place(), d);
-//		buffer_default.push(move(link_sub)); 
 	}
 }
 

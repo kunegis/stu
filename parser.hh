@@ -662,38 +662,34 @@ shared_ptr <Rule> Parser::parse_rule()
 }
 
 bool Parser::parse_expression_list(vector <shared_ptr <Dependency> > &ret, 
-				  Place_Name &place_name_input,
-				  Place &place_input,
-				  const vector <shared_ptr <Place_Param_Target> > &targets)
+				   Place_Name &place_name_input,
+				   Place &place_input,
+				   const vector <shared_ptr <Place_Param_Target> > &targets)
 {
 	assert(ret.size() == 0);
 
 	while (iter != tokens.end()) {
 		shared_ptr <Dependency> ret_new; 
-//		vector <shared_ptr <Dependency> > ret_new; 
 		bool r= parse_expression(ret_new, 
 					 place_name_input, 
 					 place_input, targets);
 		if (!r) {
 			assert(ret_new == nullptr); 
-//			assert(ret_new.size() == 0); 
 			return ! ret.empty(); 
 		}
+		assert(ret_new != nullptr); 
 		ret.push_back(ret_new); 
-//		ret.insert(ret.end(), ret_new.begin(), ret_new.end()); 
 	}
 
 	return ! ret.empty(); 
 }
 
 bool Parser::parse_expression(shared_ptr <Dependency> &ret,
-			      //vector <shared_ptr <Dependency> > &ret, 
 			      Place_Name &place_name_input,
 			      Place &place_input,
 			      const vector <shared_ptr <Place_Param_Target> > &targets)
 {
 	assert(ret == nullptr); 
-//	assert(ret.size() == 0); 
 
 	/* '(' expression* ')' */ 
 	if (is_operator('(')) {
@@ -701,15 +697,14 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 //		check_concatenation(); 
 		++iter;
 		vector <shared_ptr <Dependency> > r;
-//		while
 		if (parse_expression_list(r, place_name_input, place_input, targets)) {
+			assert(r.size() >= 1); 
 			if (r.size() > 1) {
 				ret= make_shared <Compound_Dependency> 
 					(move(r), place_paren); 
 			} else {
 				ret= move(r.at(0)); 
 			}
-//			ret.insert(ret.end(), r.begin(), r.end()); 
 			r.clear(); 
 		}
 		if (iter == tokens.end()) {
@@ -744,6 +739,12 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 				ret.reset();
 				ret= move(ret_new); 
 			}
+		}
+
+		/* If RET is null, it means we had empty parentheses.
+		 * Return an empty Compound_Dependency in that case  */ 
+		if (ret == nullptr) {
+			ret= make_shared <Compound_Dependency> (place_paren); 
 		}
 
 		return true; 
@@ -794,9 +795,6 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 				throw ERROR_LOGICAL; 
 			}
 
-//			shared_ptr <Dependency> dependency_new= 
-//				make_shared <Dynamic_Dependency> (0, j);
-//			ret.push_back(dependency_new);
 			ret_nondynamic->push_back(j);
 		}
 		ret= make_shared <Dynamic_Dependency> (0, ret_nondynamic); 
@@ -807,7 +805,6 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 			/* It can be that an empty list was parsed, in
 			 * which case RR is true but the list is empty */
 			if (rr && next != nullptr) {
-//			if (rr && next.size() != 0) {
 				shared_ptr <Concatenated_Dependency> ret_new=
 					make_shared <Concatenated_Dependency> ();
 				ret_new->push_back(ret);
@@ -815,7 +812,12 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 				ret.reset();
 				ret= move(ret_new); 
 			}
-//			abort(); // TODO
+		}
+
+		/* If RET is null, it means we had empty parentheses.
+		 * Return an empty Compound_Dependency in that case  */ 
+		if (ret == nullptr) {
+			ret= make_shared <Compound_Dependency> (place_bracket); 
 		}
 
 		return true; 
@@ -846,7 +848,7 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 		 * dynamic dependencies, and therefore it is sufficient
 		 * to check this here.  */   
 		if (! place_name_input.place.empty()
-		    && flag_token.flag == F_OPTIONAL) {
+		    && flag_token.flag == 'o') {
 //		    && ! option_nonoptional) {
 			place_input <<
 				fmt("input redirection using %s must not be used",

@@ -82,6 +82,7 @@ class Flag_Token
 public:
 
 	const char flag;
+	/* The flag character */
 
 	const Place place;
 	/* The place of the letter */ 

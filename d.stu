@@ -1,0 +1,5 @@
+# Use the inner -o for the error message
+
+A:  -p (-o ( -o (B)) ) { touch A ; }
+
+B { touch B ; }

@@ -846,8 +846,8 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 		 * dynamic dependencies, and therefore it is sufficient
 		 * to check this here.  */   
 		if (! place_name_input.place.empty()
-		    && flag_token.flag == F_OPTIONAL
-		    && ! option_nonoptional) {
+		    && flag_token.flag == F_OPTIONAL) {
+//		    && ! option_nonoptional) {
 			place_input <<
 				fmt("input redirection using %s must not be used",
 				    char_format_word('<')); 
@@ -858,9 +858,12 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 		}
 
 		/* Add the flag */ 
-		ret->add_flags(1 << i_flag); 
-		if (i_flag < C_TRANSITIVE)
-			ret->set_place_flag(i_flag, place_flag); 
+		if (! ((i_flag == I_OPTIONAL && option_nonoptional) ||
+		       (i_flag == I_TRIVIAL  && option_nontrivial))) {
+			ret->add_flags(1 << i_flag); 
+			if (i_flag < C_TRANSITIVE)
+				ret->set_place_flag(i_flag, place_flag); 
+		}
 
 		// for (auto &j:  ret) {
 
@@ -965,6 +968,7 @@ shared_ptr <Dependency> Parser
 				place_dollar << "within dynamic variable declaration";
 				throw ERROR_LOGICAL; 
 			}
+			/* If the nonoptional (-g) option is set, ignore the -o flag */
 		} else if (is_flag('t')) {
 			place_flag_last= (*iter)->get_place();
 			if (! option_nontrivial)

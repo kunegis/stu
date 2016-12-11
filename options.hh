@@ -23,7 +23,7 @@ static bool option_interactive= false;
 /* The -i option (interactive mode) */
 
 static bool option_literal= false; 
-/* The -J option (literal interpretation of argumens) */
+/* The -J option (literal interpretation of arguments) */
 
 static bool option_keep_going= false;
 /* The -k option (keep going) */ 

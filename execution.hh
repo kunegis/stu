@@ -29,7 +29,7 @@ class Execution
  * A ---> B, A is said to be the parent of B, and B the child of A.
  * Also, B is a dependency of A.  If A is a dynamic target, then it has
  * as an initial child only the corresponding target with one less
- * dynamicity level; other dependencies are added later.
+ * level of depth; other dependencies are added later.
  *
  * All Execution objects are allocated with new Execution(...), and are
  * never deleted, as the information contained in them needs to be
@@ -125,7 +125,7 @@ private:
 
 	Stack done;
 	/* What parts of this target have been done. Each bit represents
-	 * one aspect that was done.  The depth K is equal to the dynamicity
+	 * one aspect that was done.  The depth K is equal to the depth
 	 * for dynamic targets, and to zero for non-dynamic targets.  */
 
 	Timestamp timestamp; 

@@ -75,8 +75,8 @@ public:
 	}
 
 	unsigned get_depth() const 
-	/* Also known as the dynamicity */
-	// TODO "dynamicity" -> "depth" everywhere in the prose
+	/* The level of dynamicity, i.e., corresponding to the number of
+	 * bracket pairs in the syntax.  Zero for non-dynamic targets.  */
 	{
 		assert(value >= 0);
 		return value >> 1;

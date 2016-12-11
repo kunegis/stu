@@ -182,13 +182,13 @@ public:
 
 	virtual bool is_simple_recursively() const= 0;
 
-#ifndef NDEBUG
-	virtual void print() const= 0; 
-	/* Write the dependency to standard output (only for debugging
-	 * purposes)  */
-	// TODO remove all these print() functions for dependencies:
-	// the format_out() functions are enough for debugging. 
-#endif
+// #ifndef NDEBUG
+// 	virtual void print() const= 0; 
+// 	/* Write the dependency to standard output (only for debugging
+// 	 * purposes)  */
+// 	// TODO remove all these print() functions for dependencies:
+// 	// the format_out() functions are enough for debugging. 
+// #endif
 
 	static void split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies, 
 						shared_ptr <Dependency> dependency);
@@ -395,13 +395,13 @@ public:
 	virtual bool is_simple() const { return true;  }
 	virtual bool is_simple_recursively() const { return true;  }
 
-#ifndef NDEBUG
-	void print() const {
-		string text= place_param_target.format_word();
-		place <<
-			frmt("%d %s", flags, text.c_str()); 
-	}
-#endif
+// #ifndef NDEBUG
+// 	void print() const {
+// 		string text= place_param_target.format_word();
+// 		place <<
+// 			frmt("%d %s", flags, text.c_str()); 
+// 	}
+// #endif
 };
 
 class Dynamic_Dependency
@@ -490,14 +490,14 @@ public:
 		return dependency->is_simple_recursively(); 
 	}
 
-#ifndef NDEBUG
-	void print() const {
-		string text_flags= flags_format(flags); 
-		fprintf(stderr, "%s[", text_flags.c_str());
-		dependency->print(); 
-		fprintf(stderr, "]"); 
-	}
-#endif
+// #ifndef NDEBUG
+// 	void print() const {
+// 		string text_flags= flags_format(flags); 
+// 		fprintf(stderr, "%s[", text_flags.c_str());
+// 		dependency->print(); 
+// 		fprintf(stderr, "]"); 
+// 	}
+// #endif
 };
 
 class Concatenated_Dependency
@@ -549,9 +549,9 @@ public:
 
 	virtual bool is_simple_recursively() const { return false;  }
 
-#ifndef NDEBUG
-	virtual void print() const; 
-#endif
+// #ifndef NDEBUG
+// 	virtual void print() const; 
+// #endif
 
 private:
 
@@ -618,9 +618,9 @@ public:
 	virtual bool is_simple() const { return false; }
 	virtual bool is_simple_recursively() const { return false; }
 
-#ifndef NDEBUG
-	virtual void print() const; 
-#endif
+// #ifndef NDEBUG
+// 	virtual void print() const; 
+// #endif
 
 private:
 
@@ -1012,12 +1012,12 @@ string Compound_Dependency::format_out() const
 	return fmt("(%s)", ret); 
 }
 
-#ifndef NDEBUG
-void Compound_Dependency::print() const
-{
-	place << (flags_format(flags) + format_word()); 
-}
-#endif
+// #ifndef NDEBUG
+// void Compound_Dependency::print() const
+// {
+// 	place << (flags_format(flags) + format_word()); 
+// }
+// #endif
 
 shared_ptr <Dependency> 
 Concatenated_Dependency::instantiate(const map <string, string> &mapping) const
@@ -1095,26 +1095,26 @@ string Concatenated_Dependency::format_out() const
 	return ret; 
 }
 
-#ifndef NDEBUG
-void Concatenated_Dependency::print() const
-{
-	if (dependencies.empty())
-		fprintf(stderr, "empty\n"); 
-	else
-		dependencies.front()->get_place() << format_word(); 
-}
-#endif
+// #ifndef NDEBUG
+// void Concatenated_Dependency::print() const
+// {
+// 	if (dependencies.empty())
+// 		fprintf(stderr, "empty\n"); 
+// 	else
+// 		dependencies.front()->get_place() << format_word(); 
+// }
+// #endif
 
-#ifndef NDEBUG
-void print_dependencies(const vector <shared_ptr <Dependency> > &dependencies)
-// TODO remove this (only used for debugging, and superceded by
-// Dependency::format_out() )
-{
-	for (auto &i:  dependencies) {
-		i->print(); 
-	}
-}
-#endif /* ! NDEBUG */
+// #ifndef NDEBUG
+// void print_dependencies(const vector <shared_ptr <Dependency> > &dependencies)
+// // TODO remove this (only used for debugging, and superceded by
+// // Dependency::format_out() )
+// {
+// 	for (auto &i:  dependencies) {
+// 		i->print(); 
+// 	}
+// }
+// #endif /* ! NDEBUG */
 
 Stack::Stack(shared_ptr <Dependency> dependency) 
 {

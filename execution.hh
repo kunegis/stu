@@ -18,6 +18,45 @@
 #include "timestamp.hh"
 
 class Execution
+{
+public: 
+	int error;
+	/* Error value of this execution.  The value is propagated
+	 * (using '|') to the parent.  Values correspond to constants
+	 * defined in error.hh; zero denotes the absence of an
+	 * error.  */ 
+
+	Execution()
+		:  error(0)
+	{  }
+
+	virtual ~Execution(); 
+
+	static long jobs;
+	/* Number of free slots for jobs.  This is a long because
+	 * strtol() gives a long.  Set before calling main() from the -j
+	 * option, and then changed internally by this class.  */ 
+
+	static Rule_Set rule_set; 
+	/* Set once before calling Execution::main().  Unchanging during
+	 * the whole call to Execution::main().  */ 
+
+	static Timestamp timestamp_last; 
+	/* The timepoint of the last time wait() returned.  No file in the
+	 * file system should be newer than this.  */ 
+
+	static bool hide_out_message;
+	/* Whether to show a STDOUT message at the end */
+
+	static bool out_message_done;
+	/* Whether the STDOUT message is not "Targets are up to date" */
+
+	static void main(const vector <shared_ptr <Dependency> > &dependencies);
+	/* Main execution loop.  This throws ERROR_BUILD and
+	 * ERROR_LOGICAL.  */
+};
+
+class Single_Execution
 /*
  * Each target is represented at run time by one Execution object.  
  *
@@ -38,20 +77,37 @@ class Execution
  * All Execution objects are linked through the map called
  * "executions_by_target" by all their targets.
  */
+	:  public Execution 
 {
-public:  
-	static long jobs;
-	/* Number of free slots for jobs.  This is a long because
-	 * strtol() gives a long.  Set before calling main() from the -j
-	 * option, and then changed internally by this class.  */ 
+public:
 
-	static Rule_Set rule_set; 
-	/* Set once before calling Execution::main().  Unchanging during
-	 * the whole call to Execution::main().  */ 
+	Single_Execution(const vector <shared_ptr <Dependency> > &dependencies_); 
+	/* Root execution; DEPENDENCIES don't have to be unique */
 
-	static void main(const vector <shared_ptr <Dependency> > &dependencies);
-	/* Main execution loop.  This throws ERROR_BUILD and
-	 * ERROR_LOGICAL.  */
+	Single_Execution(Target target_,
+			 Link &link,
+			 Single_Execution *parent);
+	/* File, transient and dynamic targets (everything except the
+	 * root target)  */ 
+
+	bool finished() const;
+	/* Whether the execution is completely finished */ 
+
+ 	bool execute(Single_Execution *parent, Link &&link);
+	/* Start the next job(s). This will also terminate jobs when
+	 * they don't need to be run anymore, and thus it can be called
+	 * when K = 0 just to terminate jobs that need to be terminated.
+	 * The passed LINK.FLAG is the ORed combination of all FLAGs up
+	 * the dependency chain.  Return value: whether additional
+	 * processes must be started.  Can only by TRUE in random mode.
+	 * When TRUE, not all possible child jobs where started.  */
+
+	static unordered_map <pid_t, Single_Execution *> executions_by_pid;
+	/* The currently running executions by process IDs */ 
+
+	static void wait();
+	/* Wait for next job to finish and finish it.  Do not start anything
+	 * new.  */ 
 
 private:
 	friend void job_terminate_all(); 
@@ -78,11 +134,11 @@ private:
 	 * the instantiated general rule is used.  Null if and only if
 	 * RULE is null.  */ 
 
-	set <Execution *> children;
+	set <Single_Execution *> children;
 	/* Currently running executions.  Allocated with operator new()
 	 * and never deleted.  */ 
 
-	map <Execution *, Link> parents; 
+	map <Single_Execution *, Link> parents; 
 	/* The parent executions.  This is a map because typically, the
 	 * number of elements is always very small, i.e., mostly one,
 	 * and a map is better suited in this case.  */ 
@@ -119,11 +175,6 @@ private:
 	map <string, string> mapping_variable; 
 	/* Variable assignments from variables dependencies */
 
-	int error;
-	/* Error value of this target.  The value is propagated (using '|')
-	 * to the parent.  Values correspond to constants defined in
-	 * error.hh; zero denotes the absence of an error.  */ 
-
 	Stack done;
 	/* What parts of this target have been done. Each bit represents
 	 * one aspect that was done.  The depth K is equal to the depth
@@ -157,25 +208,10 @@ private:
 	 * +1.  
 	 */
 	
-	Execution(Target target_,
-		  Link &link,
-		  Execution *parent);
-	/* File, transient and dynamic targets (everything except the
-	 * root target)  */ 
-
-	Execution(const vector <shared_ptr <Dependency> > &dependencies_); 
-	/* Root execution; DEPENDENCIES don't have to be unique */
-
-	~Execution(); 
-	/* There is no implementation of this, as it is not used.  This
-	 * serves as a link-time check that Execution objects are not
-	 * destroyed.  */ 
+	~Single_Execution(); 
 
 	bool finished(Stack avoid) const; 
 	/* Whether the execution is finished working for the given tasks */ 
-
-	bool finished() const;
-	/* Whether the execution is completely finished */ 
 
 	void read_dynamic_dependency(Stack avoid, shared_ptr <Dependency> dependency_this);
 	/* Read dynamic dependencies from a file.  Only called for
@@ -187,15 +223,6 @@ private:
 	 * exist.  If OUTPUT is true, output a corresponding message.
 	 * Return whether the file was removed.  If OUTPUT is false,
 	 * only do async signal-safe things.  */  
-
- 	bool execute(Execution *parent, Link &&link);
-	/* Start the next job(s). This will also terminate jobs when
-	 * they don't need to be run anymore, and thus it can be called
-	 * when K = 0 just to terminate jobs that need to be terminated.
-	 * The passed LINK.FLAG is the ORed combination of all FLAGs up
-	 * the dependency chain.  Return value: whether additional
-	 * processes must be started.  Can only by TRUE in random mode.
-	 * When TRUE, not all possible child jobs where started.  */
 
 	int execute_children(const Link &link);
 	/* Execute already-active children.  Parameters 
@@ -273,16 +300,13 @@ private:
 			: targets.front().format_out(); 
 	}
 
-	static unordered_map <Target, Execution *> executions_by_target;
+	static unordered_map <Target, Single_Execution *> executions_by_target;
 	/* The Execution objects by each of their target.  Execution objects
 	 * are never deleted.  This serves as a caching mechanism.  The
 	 * root Execution has no targets and therefore is not included.
 	 * Non-dynamic execution objects are shared by the multiple
 	 * targets of a multi-target rule.  A dynamic multi-target rule
 	 * result in multiple non-shared execution objects.  */
-
-	static unordered_map <pid_t, Execution *> executions_by_pid;
-	/* The currently running executions by process IDs */ 
 
 	static unordered_map <string, Timestamp> transients;
 	/* The timestamps for transient targets.  This container plays the role of
@@ -295,18 +319,8 @@ private:
 	 * invocation of Stu. In that case, the transient targets are
 	 * never insert in this map.  */
 
-	static Timestamp timestamp_last; 
-	/* The timepoint of the last time wait() returned.  No file in the
-	 * file system should be newer than this.  */ 
-
-	static bool hide_out_message;
-	/* Whether to show a STDOUT message at the end */
-
-	static bool out_message_done;
-	/* Whether the STDOUT message is not "Targets are up to date" */
-
-	static void unlink(Execution *const parent, 
-			   Execution *const child,
+	static void unlink(Single_Execution *const parent, 
+			   Single_Execution *const child,
 			   shared_ptr <Dependency> dependency_parent,
 			   Stack avoid_parent,
 			   shared_ptr <Dependency> dependency_child,
@@ -316,21 +330,17 @@ private:
 	 * then delete the child execution.  The child execution is
 	 * however not deleted as it is kept for caching.  */
 
-	static Execution *get_execution(const Target &target, 
-					Link &link,
-					Execution *parent); 
+	static Single_Execution *get_execution(const Target &target, 
+					       Link &link,
+					       Single_Execution *parent); 
 	/* Get an existing execution or create a new one.
 	 * Return NULLPTR when a strong cycle was found; return the execution
 	 * otherwise.  PLACE is the place of where the dependency was
 	 * declared.  LINK is the link from the existing parent to the
 	 * new execution.  */ 
 
-	static void wait();
-	/* Wait for next job to finish and finish it.  Do not start anything
-	 * new.  */ 
-
-	static bool find_cycle(const Execution *const parent,
-			       const Execution *const child,
+	static bool find_cycle(const Single_Execution *const parent,
+			       const Single_Execution *const child,
 			       const Link &link);
 	/* Find a cycle.  Assuming that the edge parent->child, find a
 	 * directed cycle that would be created.  Start at PARENT and
@@ -338,11 +348,11 @@ private:
 	 * CHILD.  LINK is the LINK that would be added between child
 	 * and parent, and would create a cycle.  */
 
-	static bool find_cycle(vector <const Execution *> &path,
-				const Execution *const child,
+	static bool find_cycle(vector <const Single_Execution *> &path,
+				const Single_Execution *const child,
 				const Link &link); 
 
-	static void cycle_print(const vector <const Execution *> &path,
+	static void cycle_print(const vector <const Single_Execution *> &path,
 				const Link &link);
 	/* Print the error message of a cycle on rule level.
 	 * Given the path [a, b, c, d, ..., x], the found cycle is
@@ -351,27 +361,39 @@ private:
 	 * output one line.  LINK is the link (x <- a), which is not yet
 	 * created in the execution objects.  */ 
 
-	static bool same_rule(const Execution *execution_a,
-			      const Execution *execution_b);
+	static bool same_rule(const Single_Execution *execution_a,
+			      const Single_Execution *execution_b);
 };
 
-unordered_map <pid_t, Execution *> Execution::executions_by_pid;
-unordered_map <Target, Execution *> Execution::executions_by_target;
-unordered_map <string, Timestamp> Execution::transients;
-Timestamp Execution::timestamp_last;
-Rule_Set Execution::rule_set; 
 long Execution::jobs= 1;
+Rule_Set Execution::rule_set; 
+Timestamp Execution::timestamp_last;
 bool Execution::hide_out_message= false;
 bool Execution::out_message_done= false;
 
-void Execution::wait() 
+unordered_map <pid_t, Single_Execution *> Single_Execution::executions_by_pid;
+unordered_map <Target, Single_Execution *> Single_Execution::executions_by_target;
+unordered_map <string, Timestamp> Single_Execution::transients;
+
+Execution::~Execution()
+{
+
+}
+
+Single_Execution::~Single_Execution()
+/* Objects of this type are never deleted */ 
+{
+	assert(false);
+}
+
+void Single_Execution::wait() 
 {
 	if (option_debug) {
 		fprintf(stderr, "DEBUG %s wait\n",
 			Verbose::padding()); 
 	}
 
-	assert(Execution::executions_by_pid.size()); 
+	assert(Single_Execution::executions_by_pid.size()); 
 
 	int status;
 	pid_t pid= Job::wait(&status); 
@@ -389,14 +411,14 @@ void Execution::wait()
 		return; 
 	}
 
-	Execution *const execution= executions_by_pid.at(pid); 
+	Single_Execution *const execution= executions_by_pid.at(pid); 
 
 	execution->waited(pid, status); 
 
 	++jobs; 
 }
 
-bool Execution::execute(Execution *parent, Link &&link)
+bool Single_Execution::execute(Single_Execution *parent, Link &&link)
 {
 	Verbose verbose;
 
@@ -800,7 +822,7 @@ bool Execution::execute(Execution *parent, Link &&link)
 			 * let it fail:  look up whether the source
 			 * exists in the cache */
 			if (rule->dependencies.at(0)->get_flags() & F_OPTIONAL) {
-				Execution *execution_source=
+				Single_Execution *execution_source=
 					executions_by_target.at(Target(Type::FILE, source));
 				assert(execution_source); 
 				if (execution_source->exists < 0) {
@@ -870,12 +892,12 @@ bool Execution::execute(Execution *parent, Link &&link)
 	}
 }
 
-int Execution::execute_children(const Link &link)
+int Single_Execution::execute_children(const Link &link)
 {
 	/* Since unlink() may change execution->children, we must first
 	 * copy it over locally, and then iterate through it */ 
 
-	vector <Execution *> executions_children_vector
+	vector <Single_Execution *> executions_children_vector
 		(children.begin(), children.end()); 
 
 	while (! executions_children_vector.empty()) {
@@ -890,7 +912,7 @@ int Execution::execute_children(const Link &link)
 			}
 		}
 
-		Execution *child= executions_children_vector.at
+		Single_Execution *child= executions_children_vector.at
 			(executions_children_vector.size() - 1);
 		executions_children_vector.resize(executions_children_vector.size() - 1); 
 		
@@ -931,7 +953,7 @@ int Execution::execute_children(const Link &link)
 	return -1;
 }
 
-void Execution::waited(pid_t pid, int status) 
+void Single_Execution::waited(pid_t pid, int status) 
 {
 	assert(job.started()); 
 	assert(job.get_pid() == pid); 
@@ -1073,7 +1095,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 
 	timestamp_last= Timestamp::now(); 
 
-	Execution *execution_root= new Execution(dependencies); 
+	Single_Execution *execution_root= new Single_Execution(dependencies); 
 
 	int error= 0; 
 
@@ -1092,8 +1114,8 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 				r= execution_root->execute(nullptr, move(link));
 			} while (r);
 
-			if (executions_by_pid.size()) {
-				wait();
+			if (Single_Execution::executions_by_pid.size()) {
+				Single_Execution::wait();
 			}
 		}
 
@@ -1126,7 +1148,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		assert(e >= 1 && e <= 4); 
 
 		/* Terminate all jobs */ 
-		if (executions_by_pid.size()) {
+		if (Single_Execution::executions_by_pid.size()) {
 			print_error_reminder("Terminating all running jobs"); 
 			job_terminate_all();
 		}
@@ -1141,8 +1163,8 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		throw error; 
 }
 
-void Execution::unlink(Execution *const parent, 
-		       Execution *const child,
+void Single_Execution::unlink(Single_Execution *const parent, 
+		       Single_Execution *const child,
 		       shared_ptr <Dependency> dependency_parent,
 		       Stack avoid_parent,
 		       shared_ptr <Dependency> dependency_child,
@@ -1282,11 +1304,10 @@ void Execution::unlink(Execution *const parent,
 	child->parents.erase(parent);
 }
 
-Execution::Execution(Target target_,
-		     Link &link,
-		     Execution *parent)
-	:  error(0),
-	   done(target_.type.get_depth(), 0),
+Single_Execution::Single_Execution(Target target_,
+				   Link &link,
+				   Single_Execution *parent)
+	:  done(target_.type.get_depth(), 0),
 	   timestamp(Timestamp::UNDEFINED),
 	   need_build(false),
 	   checked(false),
@@ -1425,32 +1446,30 @@ Execution::Execution(Target target_,
 			print_traces(fmt("no rule to build %s", 
 					 target_.format_word()));
 			raise(ERROR_BUILD);
-			/* Even when a rule was not found, the Execution object remains
+			/* Even when a rule was not found, the Single_Execution object remains
 			 * in memory  */  
 		}
 	}
 
 }
 
-Execution::Execution(const vector <shared_ptr <Dependency> > &dependencies_)
+Single_Execution::Single_Execution(const vector <shared_ptr <Dependency> > &dependencies_)
 /* 
  * This is the root execution object.  It has an empty TARGET list, and
  * in principle should be deleted once its lifetime is over.  This is
  * not done however, as there is only a single such object, and its
  * lifetime span the whole lifetime of the Stu process anyway.
  */
-	:  error(0),
-	   need_build(false),
+	:  need_build(false),
 	   checked(false),
 	   exists(0)
 {
 	for (auto &d:  dependencies_) {
 		push_default(d); 
-//		buffer_default.push(Link(i)); 
 	}
 }
 
-bool Execution::finished(Stack avoid) const
+bool Single_Execution::finished(Stack avoid) const
 {
 	assert(avoid.get_depth() == done.get_depth());
 
@@ -1470,7 +1489,7 @@ bool Execution::finished(Stack avoid) const
 	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
-bool Execution::finished() const 
+bool Single_Execution::finished() const 
 {
 	if (targets.empty())
 		assert(done.get_depth() == 0);
@@ -1498,8 +1517,8 @@ void job_terminate_all()
 
 	write_safe(2, "stu: Terminating all jobs\n"); 
 	
-	for (auto i= Execution::executions_by_pid.begin();
-	     i != Execution::executions_by_pid.end();  ++i) {
+	for (auto i= Single_Execution::executions_by_pid.begin();
+	     i != Single_Execution::executions_by_pid.end();  ++i) {
 
 		const pid_t pid= i->first;
 
@@ -1508,8 +1527,8 @@ void job_terminate_all()
 
 	int count_terminated= 0;
 
-	for (auto i= Execution::executions_by_pid.begin();
-	     i != Execution::executions_by_pid.end();  ++i) {
+	for (auto i= Single_Execution::executions_by_pid.begin();
+	     i != Single_Execution::executions_by_pid.end();  ++i) {
 
 		if (i->second->remove_if_existing(false))
 			++count_terminated;
@@ -1553,13 +1572,13 @@ void job_terminate_all()
 void job_print_jobs()
 /* The definition of this function is in job.hh */ 
 {
-	for (auto &i:  Execution::executions_by_pid) {
+	for (auto &i:  Single_Execution::executions_by_pid) {
 		i.second->print_as_job(); 
 	}
 }
 
-bool Execution::find_cycle(const Execution *const parent, 
-			   const Execution *const child,
+bool Single_Execution::find_cycle(const Single_Execution *const parent, 
+			   const Single_Execution *const child,
 			   const Link &link)
 {
 	/* Happens when the parent is the root execution */ 
@@ -1570,14 +1589,14 @@ bool Execution::find_cycle(const Execution *const parent,
 	if (child->param_rule == nullptr)
 		return false; 
 
-	vector <const Execution *> path;
+	vector <const Single_Execution *> path;
 	path.push_back(parent); 
 
 	return find_cycle(path, child, link); 
 }
 
-bool Execution::find_cycle(vector <const Execution *> &path,
-			   const Execution *const child,
+bool Single_Execution::find_cycle(vector <const Single_Execution *> &path,
+			   const Single_Execution *const child,
 			   const Link &link)
 {
 	if (same_rule(path.back(), child)) {
@@ -1586,7 +1605,7 @@ bool Execution::find_cycle(vector <const Execution *> &path,
 	}
 
 	for (auto &i:  path.back()->parents) {
-		const Execution *next= i.first; 
+		const Single_Execution *next= i.first; 
 		assert(next != nullptr);
 		if (next->param_rule == nullptr)
 			continue;
@@ -1603,7 +1622,7 @@ bool Execution::find_cycle(vector <const Execution *> &path,
 	return false; 
 }
 
-bool Execution::remove_if_existing(bool output) 
+bool Single_Execution::remove_if_existing(bool output) 
 {
 	if (option_no_delete)
 		return false;
@@ -1659,17 +1678,17 @@ bool Execution::remove_if_existing(bool output)
 	return removed; 
 }
 
-Execution *Execution::get_execution(const Target &target, 
+Single_Execution *Single_Execution::get_execution(const Target &target, 
 				    Link &link,
-				    Execution *parent)
+				    Single_Execution *parent)
 {
-	/* Set to the returned Execution object when one is found or created */    
-	Execution *execution= nullptr; 
+	/* Set to the returned Single_Execution object when one is found or created */    
+	Single_Execution *execution= nullptr; 
 
 	auto it= executions_by_target.find(target);
 
 	if (it != executions_by_target.end()) {
-		/* An Execution object already exists for the target */ 
+		/* An Single_Execution object already exists for the target */ 
 
 		execution= it->second; 
 		if (execution->parents.count(parent)) {
@@ -1684,9 +1703,9 @@ Execution *Execution::get_execution(const Target &target,
 		}
 		
 	} else { 
-		/* Create a new Execution object */ 
+		/* Create a new Single_Execution object */ 
 
-		execution= new Execution(target, link, parent);  
+		execution= new Single_Execution(target, link, parent);  
 
 		assert(execution->parents.size() == 1); 
 	}
@@ -1701,7 +1720,7 @@ Execution *Execution::get_execution(const Target &target,
 	return execution;
 }
 
-void Execution::read_dynamic_dependency(Stack avoid,
+void Single_Execution::read_dynamic_dependency(Stack avoid,
 					shared_ptr <Dependency> dependency_this)
 {
 	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
@@ -1951,7 +1970,7 @@ void Execution::read_dynamic_dependency(Stack avoid,
 	}
 }
 
-void Execution::warn_future_file(struct stat *buf, 
+void Single_Execution::warn_future_file(struct stat *buf, 
 				 const char *filename,
 				 const Place &place,
 				 const char *message_extra)
@@ -1968,13 +1987,13 @@ void Execution::warn_future_file(struct stat *buf,
 	}
 }
 
-void Execution::print_traces(string text) const
+void Single_Execution::print_traces(string text) const
 /* The following traverses the execution graph backwards until it finds
  * the root.  We always take the first found parent, which is an
  * arbitrary choice, but it doesn't matter here which dependency path
  * we point out as an error, so the first one it is.  */
 {	
-	const Execution *execution= this; 
+	const Single_Execution *execution= this; 
 
 	/* If the error happens directly for the root execution, it was
 	 * an error on the command line; don't output anything beyond
@@ -2049,7 +2068,7 @@ void Execution::print_traces(string text) const
 	}
 }
 
-void Execution::print_command() const
+void Single_Execution::print_command() const
 {
 	static const int SIZE_MAX_PRINT_CONTENT= 20;
 	
@@ -2146,7 +2165,7 @@ void Execution::print_command() const
 	}
 }
 
-bool Execution::deploy(const Link &link,
+bool Single_Execution::deploy(const Link &link,
 		       shared_ptr <Dependency> dependency_child)
 {
 	if (option_debug) {
@@ -2291,7 +2310,7 @@ bool Execution::deploy(const Link &link,
 			    dependency_child->get_place(), 
 			    dependency_child); 
 
-	Execution *child= Execution::get_execution
+	Single_Execution *child= Single_Execution::get_execution
 		(target_child, 
 		 link_child_new,
 		 this);  
@@ -2319,7 +2338,7 @@ bool Execution::deploy(const Link &link,
 	return false;
 }
 
-void Execution::initialize(Stack avoid) 
+void Single_Execution::initialize(Stack avoid) 
 {
 	/* Add the special dynamic dependency, i.e., the [[A]]-A type
 	 * link.  Add, as an initial dependency, the corresponding file
@@ -2348,7 +2367,7 @@ void Execution::initialize(Stack avoid)
 	} 
 }
 
-void Execution::print_as_job() const
+void Single_Execution::print_as_job() const
 {
 	pid_t pid= job.get_pid();
 
@@ -2357,7 +2376,7 @@ void Execution::print_as_job() const
 	printf("%7ld %s\n", (long) pid, text_target.c_str());
 }
 
-void Execution::write_content(const char *filename, 
+void Single_Execution::write_content(const char *filename, 
 			      const Command &command)
 {
 	FILE *file= fopen(filename, "w"); 
@@ -2396,7 +2415,7 @@ void Execution::write_content(const char *filename,
 	exists= +1;
 }
 
-bool Execution::read_variable(string &variable_name,
+bool Single_Execution::read_variable(string &variable_name,
 			      string &content,
 			      shared_ptr <Dependency> dependency)
 {
@@ -2478,7 +2497,7 @@ bool Execution::read_variable(string &variable_name,
 	return false;
 }
 
-void Execution::cycle_print(const vector <const Execution *> &path,
+void Single_Execution::cycle_print(const vector <const Single_Execution *> &path,
 			    const Link &link)
 {
 	assert(path.size() > 0); 
@@ -2489,7 +2508,7 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 	
 	for (unsigned i= 0;  i + 1 < path.size();  ++i) {
 		names[i]= 
-			path[i]->parents.at((Execution *) path[i+1])
+			path[i]->parents.at((Single_Execution *) path[i+1])
 			.dependency->get_single_target().format_word();
 	}
 
@@ -2500,7 +2519,7 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 
 		/* Don't show a message for [...[A]...] -> X links */ 
 		if (i != 0 &&
-		    path[i - 1]->parents.at((Execution *) path[i])
+		    path[i - 1]->parents.at((Single_Execution *) path[i])
 		    .dependency->get_flags() & F_READ)
 			continue;
 
@@ -2508,7 +2527,7 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 		if (i == 0 && link.dependency->get_flags() & F_READ) 
 			continue;
 
-		(i == 0 ? link : path[i - 1]->parents.at((Execution *) path[i]))
+		(i == 0 ? link : path[i - 1]->parents.at((Single_Execution *) path[i]))
 			.place
 			<< fmt("%s%s depends on %s",
 			       i == (int) (path.size() - 1) 
@@ -2548,8 +2567,8 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 	explain_cycle(); 
 }
 
-bool Execution::same_rule(const Execution *execution_a,
-			  const Execution *execution_b)
+bool Single_Execution::same_rule(const Single_Execution *execution_a,
+			  const Single_Execution *execution_b)
 {
 	return 
 		execution_a->param_rule != nullptr &&
@@ -2558,7 +2577,7 @@ bool Execution::same_rule(const Execution *execution_a,
 		execution_a->param_rule == execution_b->param_rule;
 }
 
-void Execution::raise(int error_)
+void Single_Execution::raise(int error_)
 {
 	assert(error_ >= 1 && error_ <= 3); 
 
@@ -2568,12 +2587,12 @@ void Execution::raise(int error_)
 		throw error;
 }
 
-bool Execution::is_dynamic() const
+bool Single_Execution::is_dynamic() const
 {
 	return targets.size() != 0 && targets.front().type.is_dynamic(); 
 }
 
-void Execution::push_default(shared_ptr <Dependency> dependency)
+void Single_Execution::push_default(shared_ptr <Dependency> dependency)
 {
 	vector <shared_ptr <Dependency> > dependencies;
 	Dependency::split_compound_dependencies(dependencies, dependency); 

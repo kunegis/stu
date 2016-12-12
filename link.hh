@@ -103,7 +103,7 @@ void Link::check() const
 {
 	avoid.check();
 
-	assert(dependency == nullptr || dependency->is_simple_recursively()); 
+	assert(dependency == nullptr || dependency->is_simple()); 
 		
 	/* Check that the highest level in AVOID equals the
 	 * TRANSITIVE flags in FLAGS */ 

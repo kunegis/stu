@@ -2,11 +2,12 @@
 #define BUFFER_HH
 
 /* 
- * A buffer is a container of Link objects.  It is a queue or vector,
- * depending on the mode in which Stu is run, i.e., whether targets are
- * built in depth-first order (the default), or in random order.  Which
- * is used is determined by the global variable OPTION_VEC defined in
- * global.hh, which is set once before any Buffer object is created. 
+ * A buffer is a container of simple dependencies.  It is a queue or
+ * vector, depending on the mode in which Stu is run, i.e., whether
+ * targets are built in depth-first order (the default), or in random
+ * order.  Which is used is determined by the global variable OPTION_VEC
+ * defined in global.hh, which is set once before any Buffer object is
+ * created.
  */
 
 #include <queue>
@@ -27,14 +28,13 @@ size_t random_number(size_t n)
 }
 
 class Buffer
-/*
- * All contained Links contain non-compound dependencies.
- */
 {
 private:
 	/* Since we only ever use one of the two, we could use a
 	 * union-like data structure, but we don't in this
 	 * implementation  */   
+
+	/* All contained dependencies are simple */
 
 	queue <shared_ptr <Dependency> > q;
 	vector <shared_ptr <Dependency> > v;
@@ -74,7 +74,7 @@ public:
 	/* Add to the end of the queue (if sorted, otherwise, just
 	   add) */ 
 	{
-		assert(d->is_simple_recursively()); 
+		assert(d->is_simple()); 
 //		assert(dynamic_pointer_cast <Compound_Dependency> (d) == nullptr); 
 		if (order_vec) {
 			v.emplace_back(d); 

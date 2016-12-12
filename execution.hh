@@ -95,7 +95,8 @@ private:
 	 * Initialized with all dependencies, and emptied over time when
 	 * things are built, and filled over time when dynamic
 	 * dependencies are worked on.  Entries are not necessarily
-	 * unique.  Does not contain compound dependencies.  */ 
+	 * unique.  Does not contain compound dependencies, except under
+	 * concatenating ones.  */  
 
 	Buffer buffer_trivial; 
 	/* The buffer for dependencies in the second pass.  They are
@@ -2183,6 +2184,7 @@ bool Execution::deploy(const Link &link,
 		avoid_child.add_lowest(dep->get_flags()); 
 	}
 	assert(dynamic_pointer_cast <Direct_Dependency> (dep)); 
+	// TODO handle concatenated dependencies. 
 
 	shared_ptr <Direct_Dependency> direct_dependency=
 		dynamic_pointer_cast <Direct_Dependency> (dep);

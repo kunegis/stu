@@ -72,6 +72,8 @@ A:  ()B { cp B A }  B = {correct}
 ... A(<B)  # Error
 ... (A (B C)D  # same as:  AD BD CD
 ... ("'")X  # escape the quote correctly in error message 
+... ()(A)  # Empty or just 'A' (empty would be logical, because () is an
+           # empty list
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This

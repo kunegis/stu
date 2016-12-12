@@ -24,11 +24,16 @@ These are the relevant coding conventions we use.
 
 This is my preferred style.  --Jérôme Kunegis
 
+=== Layout ===
+
 * All the following rules are broken when necessary. 
-* K&R brace style.
 * Tabs for indentation at the beginning of lines.  Set your editor
   to show them at the width you prefer.  I use the default 8-char tabs. 
 * Spaces for alignment in the middle of lines.
+* Use 72-character lines in general, but allow more where reasonable,
+  e.g., to avoid breaking message string literals.  Since tabs may be
+  interpreted as different widths, this is an approximate rule; authors
+  use 8-char tabs. 
 * Use C-style comments (/* ... */) for regular comments
 * Use C++-style comments on column zero (// ...) for quickly commenting
   out code and for writing TODO items; this allows us to search all
@@ -38,17 +43,19 @@ This is my preferred style.  --Jérôme Kunegis
   preceded by whitespace, in order to not break the alignment of
   commented code with uncommented code.
 * In comments, names of variables are in all uppercase. 
-* Use 72-character lines in general, but allow more where reasonable,
-  e.g., to avoid breaking message string literals.  Since tabs may be
-  interpreted as different widths, this is an approximate rule; authors
-  use 8-char tabs. 
+* K&R brace style.
+* No space before the assignment operator and around parentheses.
+  Otherwise, spaces around most operators. 
+* Pointer and reference characters (* and &) attach to the variable name
+  in declarations. 
+
+=== Code ===
+
 * Use 'nullptr' as the null pointer constant instead of 'NULL', as per
   C++11.  In comments, call it "null" (in lowercase, like you would
   write "zero" or "five"). 
-* No space before the assignment operator and around parentheses.
-  Otherwise, spaces around most operators. 
-* We enable many G++ warnings in debug mode, and write the code so as to
-  suppress them if necessary.  (Stu is developed using G++.)
+* We enable many GCC warnings in debug mode, and write the code so as to
+  suppress them if necessary.  (Stu is developed using GCC.)
 * For vectors and strings, use operator[] for access, keeping in mind
   that this function has undefined behavior when the argument is out of
   range.  In debug mode with glibc++, these functions include range

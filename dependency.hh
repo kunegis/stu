@@ -130,13 +130,19 @@ string flags_format(Flags flags)
 
 class Dependency
 /* 
- * A dependency, which can be simple or complex.  Complex dependencies
- * are those that contain compound or concatenated dependencies
- * (recursively). 
- * All dependencies
- * carry information about their place(s) of declaration.  
+ * The abstract base class for all dependencies.  Objects of this type
+ * are used with shared_ptr/unique_ptr.
  *
- * Objects of this type are usually used with shared_ptr/unique_ptr. 
+ * A dependency, which can be simple or complex.  A dependency is simple
+ * if it is:
+ *    - a direct dependency
+ *    - a dynamic dependency containing a simple dependency
+ *    - a concatenated dependency (which may contain non-simple
+ *      dependencies)
+ * Simple dependencies are those used in practice.  A complex dependency
+ * can always be reduced to a simple one. 
+ * 
+ * All dependencies carry information about their place(s) of declaration.  
  *
  * The flags only represent immediate flags.  Compound dependencies for
  * instance may contain additional inner flags. 
@@ -147,88 +153,28 @@ class Dependency
 {
 public:
 
-	virtual ~Dependency(); 
-	virtual shared_ptr <Dependency> 
-	instantiate(const map <string, string> &mapping) const= 0;
-	virtual bool is_unparametrized() const= 0; 
-
-	virtual Flags get_flags() const= 0;
-	/* Returns the flags */
-
-	virtual bool has_flags(Flags flags_)= 0; 
-	/* Return whether the dependency has all the given flags */
-
-	virtual void add_flags(Flags flags_)= 0;
-	/* Sets the given bits for this dependency */
-
-	virtual const Place &get_place() const= 0;
-	/* Where the dependency as a whole is declared */ 
-
-	virtual const Place &get_place_flag(int i) const= 0;
-	/* Get the place of a single flag */ 
-
-	virtual void set_place_flag(int i, const Place &place)= 0;
-
-	virtual string format(Style, bool &quotes) const= 0; 
-	virtual string format_word() const= 0; 
-	virtual string format_out() const= 0; 
-
-	virtual Param_Target get_single_target() const= 0;
-	/* Collapse the dependency into a single target, ignoring all
-	 * flags.  Only if this is a simple dependency.  */   
-
-	virtual bool is_simple() const= 0;
-	/* A simple dependency is neither compound, nor concatenated */ 
-
-	virtual bool is_simple_recursively() const= 0;
-
-// #ifndef NDEBUG
-// 	virtual void print() const= 0; 
-// 	/* Write the dependency to standard output (only for debugging
-// 	 * purposes)  */
-// 	// TODO remove all these print() functions for dependencies:
-// 	// the format_out() functions are enough for debugging. 
-// #endif
-
-	static void split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies, 
-						shared_ptr <Dependency> dependency);
-	/* Split the given DEPENDENCY into multiple DEPENDENCIES that do
-	 * not contain compound dependencies.  (Recursively) DEPENDENCY
-	 * will be changed.  */
-
-	static shared_ptr <Dependency> clone_dependency(shared_ptr <Dependency> dependency);
-	/* A shallow clone.  */
-};
-
-class Single_Dependency
-/*
- * A dependency with well-defined top-level flags.  This class is
- * intended to be inherited from and not instantiated directly. 
- */
-	:  public Dependency
-{
-public:
-
 	Flags flags;
 
 	Place places[C_TRANSITIVE]; 
 	/* For each transitive flag that is set, the place.  An empty
 	 * place if a flag is not set  */
 
-	Single_Dependency()
-		:  flags(0)
+	Dependency()
+		:  flags(0) 
 	{  }
 
-	Single_Dependency(Flags flags_) 
+	Dependency(Flags flags_) 
 		:  flags(flags_)
 	{ }
 
-	Single_Dependency(Flags flags_, const Place places_[C_TRANSITIVE])
+	Dependency(Flags flags_, const Place places_[C_TRANSITIVE])
 		:  flags(flags_)
 	{
 		assert(places != places_);
 		memcpy(places, places_, sizeof(places)); 
 	}
+
+	virtual ~Dependency(); 
 
 	Flags get_flags() const {
 		return flags; 
@@ -259,6 +205,46 @@ public:
 	/* Add the flags from DEPENDENCY.  Also copy over the
 	 * corresponding places.  If a place is already given in THIS,
 	 * only copy a place over if OVERWRITE_PLACES is set.  */
+
+	virtual shared_ptr <Dependency> 
+	instantiate(const map <string, string> &mapping) const= 0;
+	virtual bool is_unparametrized() const= 0; 
+
+//	virtual Flags get_flags() const= 0;
+//	/* Returns the flags */
+
+//	virtual bool has_flags(Flags flags_)= 0; 
+//	/* Return whether the dependency has all the given flags */
+
+//	virtual void add_flags(Flags flags_)= 0;
+//	/* Sets the given bits for this dependency */
+
+	virtual const Place &get_place() const= 0;
+	/* Where the dependency as a whole is declared */ 
+
+//	virtual const Place &get_place_flag(int i) const= 0;
+//	/* Get the place of a single flag */ 
+
+//	virtual void set_place_flag(int i, const Place &place)= 0;
+
+	virtual string format(Style, bool &quotes) const= 0; 
+	virtual string format_word() const= 0; 
+	virtual string format_out() const= 0; 
+
+	virtual Param_Target get_single_target() const= 0;
+	/* Collapse the dependency into a single target, ignoring all
+	 * flags.  Only if this is a simple dependency.  */   
+
+	virtual bool is_simple() const= 0;
+
+	static void split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies, 
+						shared_ptr <Dependency> dependency);
+	/* Split the given DEPENDENCY into multiple DEPENDENCIES that do
+	 * not contain compound dependencies.  (Recursively) DEPENDENCY
+	 * will be changed.  */
+
+	static shared_ptr <Dependency> clone_dependency(shared_ptr <Dependency> dependency);
+	/* A shallow clone.  */
 };
 
 class Direct_Dependency
@@ -266,7 +252,7 @@ class Direct_Dependency
  * A parametrized dependency denoting an individual target name.  Does
  * not cover dynamic dependencies.  
  */
-	:  public Single_Dependency
+	:  public Dependency
 {
 public:
 
@@ -283,7 +269,7 @@ public:
 	Direct_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_)
 		/* Take the dependency place from the target place */ 
-		:  Single_Dependency(flags_),
+		:  Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place)
 	{ 
@@ -294,7 +280,7 @@ public:
 			  const Place_Param_Target &place_param_target_,
 			  const string &name_)
 		/* Take the dependency place from the target place, with variable_name */ 
-		:  Single_Dependency(flags_),
+		:  Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place),
 		   name(name_)
@@ -306,7 +292,7 @@ public:
 			  const Place_Param_Target &place_param_target_,
 			  const Place &place_)
 		/* Use an explicit dependency place */ 
-		:  Single_Dependency(flags_),
+		:  Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_)
 	{ 
@@ -319,7 +305,7 @@ public:
 			  const Place &place_,
 			  const string &name_)
 		/* Use an explicit dependency place */ 
-		:  Single_Dependency(flags_),
+		:  Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_),
 		   name(name_)
@@ -393,20 +379,11 @@ public:
 	}
 
 	virtual bool is_simple() const { return true;  }
-	virtual bool is_simple_recursively() const { return true;  }
-
-// #ifndef NDEBUG
-// 	void print() const {
-// 		string text= place_param_target.format_word();
-// 		place <<
-// 			frmt("%d %s", flags, text.c_str()); 
-// 	}
-// #endif
 };
 
 class Dynamic_Dependency
 /* A dynamic dependency */
-	:  public Single_Dependency
+	:  public Dependency
 {
 public:
 
@@ -415,7 +392,7 @@ public:
 
 	Dynamic_Dependency(Flags flags_,
 			   shared_ptr <Dependency> dependency_)
-		:  Single_Dependency(flags_), 
+		:  Dependency(flags_), 
 		   dependency(dependency_)
 	{
 		assert((flags & F_READ) == 0); 
@@ -426,7 +403,7 @@ public:
 	Dynamic_Dependency(Flags flags_,
 			   const Place places_[C_TRANSITIVE],
 			   shared_ptr <Dependency> dependency_)
-		:  Single_Dependency(flags_, places_),
+		:  Dependency(flags_, places_),
 		   dependency(dependency_)
 	{
 		assert((flags & F_READ) == 0); 
@@ -485,26 +462,16 @@ public:
 		return ret; 
 	}
 
-	virtual bool is_simple() const { return true; }
-	virtual bool is_simple_recursively() const {
-		return dependency->is_simple_recursively(); 
+	virtual bool is_simple() const {
+		return dependency->is_simple(); 
 	}
-
-// #ifndef NDEBUG
-// 	void print() const {
-// 		string text_flags= flags_format(flags); 
-// 		fprintf(stderr, "%s[", text_flags.c_str());
-// 		dependency->print(); 
-// 		fprintf(stderr, "]"); 
-// 	}
-// #endif
 };
 
 class Concatenated_Dependency
 /*
  * A dependency that is the concatenation of multiple dependencies. 
  */
-	:  public Single_Dependency
+	:  public Dependency
 {
 public:
 
@@ -515,7 +482,7 @@ public:
 	}
 
 	Concatenated_Dependency(Flags flags_, const Place places_[C_TRANSITIVE])
-		:  Single_Dependency(flags_, places_)
+		:  Dependency(flags_, places_)
 	{
 		/* The list of dependencies is empty */ 
 	}
@@ -529,8 +496,6 @@ public:
 	{
 		dependencies.push_back(dependency); 
 	}
-
-	virtual bool is_simple() const { return false; }
 
 	virtual shared_ptr <Dependency> 
 	instantiate(const map <string, string> &mapping) const;
@@ -547,11 +512,7 @@ public:
 	/* Collapse the dependency into a single target, ignoring all
 	 * flags.  Only if this is a simple dependency.  */   
 
-	virtual bool is_simple_recursively() const { return false;  }
-
-// #ifndef NDEBUG
-// 	virtual void print() const; 
-// #endif
+	virtual bool is_simple() const { return true;  }
 
 private:
 
@@ -562,7 +523,7 @@ private:
 class Compound_Dependency
 /* A list of dependencies that act as a unit, corresponding
  * syntactically to a list of dependencies in parentheses.  */
-	:  public Single_Dependency
+	:  public Dependency
 {
 public:
 
@@ -576,7 +537,7 @@ public:
 	{  }
 	
 	Compound_Dependency(Flags flags_, const Place places_[C_TRANSITIVE], const Place &place_)
-		:  Single_Dependency(flags_, places_),
+		:  Dependency(flags_, places_),
 		   place(place_)
 	{
 		/* The list of dependencies is empty */ 
@@ -616,11 +577,6 @@ public:
 	 * flags.  Only if this is a simple dependency.  */   
 
 	virtual bool is_simple() const { return false; }
-	virtual bool is_simple_recursively() const { return false; }
-
-// #ifndef NDEBUG
-// 	virtual void print() const; 
-// #endif
 
 private:
 
@@ -860,7 +816,6 @@ void Dependency::split_compound_dependencies(vector <shared_ptr <Dependency> > &
 			dynamic_pointer_cast <Dynamic_Dependency> (dependency);
 		vector <shared_ptr <Dependency> > dependencies_child;
 		split_compound_dependencies(dependencies_child, dynamic_dependency->dependency);
-//		assert(dependencies_child.size() >= 1); 
 		for (auto &d:  dependencies_child) {
 			shared_ptr <Dependency> dependency_new= 
 				make_shared <Dynamic_Dependency> 
@@ -872,15 +827,16 @@ void Dependency::split_compound_dependencies(vector <shared_ptr <Dependency> > &
 		shared_ptr <Compound_Dependency> compound_dependency=
 			dynamic_pointer_cast <Compound_Dependency> (dependency);
 		for (auto &d:  compound_dependency->get_dependencies()) {
-			dynamic_pointer_cast <Single_Dependency> (d)
+//			dynamic_pointer_cast <Single_Dependency> (d)
+			d
 				->add_flags(compound_dependency, false);  
 			split_compound_dependencies(dependencies, d); 
 		}
 
 	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
-		shared_ptr <Concatenated_Dependency> concatenated_dependency=
-			dynamic_pointer_cast <Concatenated_Dependency> (dependency);
-		assert(false); // TODO not yet implemented 
+		/* Don't split at all:  these will be split in child
+		 * Concatenating_Execution's  */
+		dependencies.push_back(dependency); 
 
 	} else {
 		/* Bug:  Unhandled dependency type */ 
@@ -904,7 +860,7 @@ shared_ptr <Dependency> Dependency::clone_dependency(shared_ptr <Dependency> dep
 	}
 }
 
-void Single_Dependency::add_flags(shared_ptr <const Dependency> dependency, 
+void Dependency::add_flags(shared_ptr <const Dependency> dependency, 
 				  bool overwrite_places)
 {
 	for (int i= 0;  i < C_TRANSITIVE;  ++i) {
@@ -1012,13 +968,6 @@ string Compound_Dependency::format_out() const
 	return fmt("(%s)", ret); 
 }
 
-// #ifndef NDEBUG
-// void Compound_Dependency::print() const
-// {
-// 	place << (flags_format(flags) + format_word()); 
-// }
-// #endif
-
 shared_ptr <Dependency> 
 Concatenated_Dependency::instantiate(const map <string, string> &mapping) const
 {
@@ -1095,30 +1044,9 @@ string Concatenated_Dependency::format_out() const
 	return ret; 
 }
 
-// #ifndef NDEBUG
-// void Concatenated_Dependency::print() const
-// {
-// 	if (dependencies.empty())
-// 		fprintf(stderr, "empty\n"); 
-// 	else
-// 		dependencies.front()->get_place() << format_word(); 
-// }
-// #endif
-
-// #ifndef NDEBUG
-// void print_dependencies(const vector <shared_ptr <Dependency> > &dependencies)
-// // TODO remove this (only used for debugging, and superceded by
-// // Dependency::format_out() )
-// {
-// 	for (auto &i:  dependencies) {
-// 		i->print(); 
-// 	}
-// }
-// #endif /* ! NDEBUG */
-
 Stack::Stack(shared_ptr <Dependency> dependency) 
 {
-	assert(dependency->is_simple_recursively()); 
+	assert(dependency->is_simple()); 
 
 	depth= 0;
 	memset(bits, 0, sizeof(bits));

@@ -1,0 +1,5 @@
+# Should this mean 'list.', or an empty list as dependencies of 'A'?
+
+A:   list.[B] { ... }
+B = { }
+

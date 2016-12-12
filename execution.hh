@@ -2160,18 +2160,7 @@ bool Execution::deploy(const Link &link,
 
 	/* Additional flags for the child are added here */ 
 	Flags flags_child= dependency_child->get_flags(); 
-//	Flags flags_child= link_child.flags; 
 	Flags flags_child_additional= 0; 
-
-	/* Compound dependency */
-	if (dynamic_pointer_cast <Compound_Dependency> (dependency_child)) {
-
-		/* Does not happen as the buffers do not contain
-		 * compound dependencies.  */
-		assert(false); 
-//		shared_ptr <Compound_Dependency> compound_dependency= 
-//			dynamic_pointer_cast <Compound_Dependency> (link_child.dependency);
-	}
 
 	unsigned depth= 0;
 	shared_ptr <Dependency> dep= dependency_child;

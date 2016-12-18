@@ -603,16 +603,6 @@ class Stack
  */
 {
 public:
-	void check() const 
-	/* Check the internal consistency of this object */ 
-	{
-		assert(depth + 1 < CHAR_BIT * sizeof(int)); 
-		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
-			/* Only the (K+1) first bits may be set */ 
-			assert((bits[i] & ~((1 << (depth+1)) - 1)) == 0); 
-		}
-	}
-
 	Stack()
 		/* Depth is zero, the single flag is zero */ 
 		:  depth(0)
@@ -645,6 +635,16 @@ public:
 	}
 
 	Stack(shared_ptr <Dependency> dependency);
+
+	void check() const 
+	/* Check the internal consistency of this object */ 
+	{
+		assert(depth + 1 < CHAR_BIT * sizeof(int)); 
+		for (int i= 0;  i < C_TRANSITIVE;  ++i) {
+			/* Only the (K+1) first bits may be set */ 
+			assert((bits[i] & ~((1 << (depth+1)) - 1)) == 0); 
+		}
+	}
 
 	unsigned get_depth() const 
 	{
@@ -997,10 +997,10 @@ bool Concatenated_Dependency::is_unparametrized() const
 const Place &Concatenated_Dependency::get_place() const
 /* Return the place of the first dependency, or an empty place */
 {
-	static Place place_empty;
+//	static Place place_empty;
 
 	if (dependencies.empty())
-		return place_empty;
+		return Place::place_empty;
 
 	return dependencies.front()->get_place(); 
 }

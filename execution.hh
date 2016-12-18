@@ -539,7 +539,6 @@ bool Execution::find_cycle(const Execution *const parent,
 {
 	/* Happens when the parent is the root execution */ 
 	if (parent->is_root())
-//	if (parent->param_rule == nullptr)
 		return false;
 		
 	/* Happens with files that should be there and have no rule */ 
@@ -565,7 +564,6 @@ bool Execution::find_cycle(vector <const Execution *> &path,
 		const Execution *next= i.first; 
 		assert(next != nullptr);
 		if (next->is_root())
-//		if (next->param_rule == nullptr)
 			continue;
 
 		path.push_back(next); 
@@ -641,7 +639,6 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 		t2.type= t2.type.get_base(); 
 
 		path.back()->get_place() <<
-//		path.back()->rule->place <<
 			fmt("both %s and %s match the same rule",
 			    t1.format_word(), t2.format_word());
 	}
@@ -673,7 +670,6 @@ void Execution::print_traces(string text) const
 	 * an error on the command line; don't output anything beyond
 	 * the error message. */
 	if (execution->is_root()) 
-//	if (execution->targets.empty())
 		return;
 
 	bool first= true; 
@@ -694,7 +690,6 @@ void Execution::print_traces(string text) const
 		auto i= execution->parents.begin(); 
 
 		if (i->first->is_root()) {
-//		if (i->first->targets.empty()) {
 
 			/* We are in a child of the root execution */ 
 
@@ -814,13 +809,11 @@ void Execution::unlink(Execution *const parent,
 		       Flags flags_child)
 {
 	(void) avoid_child;
-//	(void) avoid_parent; 
 
 	if (option_debug) {
 		string text_parent= parent->debug_text();
 		string text_child= child->debug_text();
 		string text_done_child= child->debug_done_text();
-//		string text_done_child= child->done.format();
 		fprintf(stderr, "DEBUG %s %s unlink %s %s\n",
 			Verbose::padding(),
 			text_parent.c_str(),
@@ -866,15 +859,9 @@ void Execution::unlink(Execution *const parent,
 	}
 
 	/* Propagate variable dependencies */
-	if (flags_child & F_VARIABLE) { // && child->exists > 0) {
-
-//		string variable_name;
-//		string content;
-//		if (
+	if (flags_child & F_VARIABLE) { 
 		dynamic_cast <Single_Execution *> (child)
 			->propagate_variable(dependency_child, parent);
-		//)
-//			parent->mapping_variable[variable_name]= content;
 	}
 
 	/*
@@ -890,8 +877,6 @@ void Execution::unlink(Execution *const parent,
 	     && dynamic_cast <Single_Execution *> (child)->get_rule()->command == nullptr)) {
 		dynamic_cast <Single_Execution *> (parent)->add_variables
 			(dynamic_cast <Single_Execution *> (child)->get_mapping_variable()); 
-//mapping_variable.insert
-//			(child->mapping_variable.begin(), child->mapping_variable.end()); 
 	}
 
 	/* 
@@ -1074,9 +1059,7 @@ bool Single_Execution::execute(Execution *parent, Link &&link)
 		shared_ptr <Dependency> dependency_child_overridetrivial= 
 			Dependency::clone_dependency(dependency_child);
 		dependency_child_overridetrivial->add_flags(F_OVERRIDE_TRIVIAL); 
-//		link_child_overridetrivial.flags |= F_OVERRIDE_TRIVIAL; 
 		buffer_trivial.push(dependency_child_overridetrivial); 
-//		buffer_trivial.push(move(link_child_overridetrivial)); 
 		if (deploy(link, dependency_child))
 			return true;
 		if (jobs == 0)
@@ -1653,8 +1636,6 @@ Single_Execution::Single_Execution(Target target_,
 				}
 			} 
 
-//			Link link_new(dep); 
-
 			if (option_debug) {
 				string text_target= debug_text();
 				string text_link_new= dep->format_out(); 
@@ -2179,8 +2160,6 @@ void Single_Execution::read_dynamic_dependency(Stack avoid,
 			assert(avoid_this.get_depth() == 0); 
 
 			push_default(dependency); 
-//			buffer_default.push(Link(dependency));
-
 		}
 				
 	} catch (int e) {
@@ -2305,7 +2284,7 @@ void Single_Execution::print_command() const
 }
 
 bool Single_Execution::deploy(const Link &link,
-		       shared_ptr <Dependency> dependency_child)
+			      shared_ptr <Dependency> dependency_child)
 {
 	if (option_debug) {
 		string text_target= debug_text();
@@ -2347,16 +2326,12 @@ bool Single_Execution::deploy(const Link &link,
 		target_child.type += depth; 
 	}
 
-//	Stack avoid_child= link_child.avoid;
-//	assert(avoid_child.get_depth() == target_child.type.get_depth()); 
-
 	/* Carry flags over transient targets */ 
 	if (! targets.empty()) {
 		Target target= link.dependency->get_single_target().unparametrized();
 
 		if (target.type == Type::TRANSIENT) { 
 			flags_child_additional |= link.flags; 
-//			avoid_child.add_highest(link.flags);
 			if (link.flags & F_PERSISTENT) {
 				dependency_child->set_place_flag
 					(I_PERSISTENT,
@@ -2499,8 +2474,6 @@ void Single_Execution::initialize(Stack avoid)
 					    Place_Name(target.name)));
 
 		push_default(dependency_child); 
-// 		push_default(Link(dependency_child, flags_child, Place()));
-// 		buffer_default.push(Link(dependency_child, flags_child, Place()));
 		/* The place of the [[A]]->A links is empty, meaning it will
 		 * not be output in traces. */ 
 	} 
@@ -2667,7 +2640,6 @@ void Single_Execution::push_default(shared_ptr <Dependency> dependency)
 {
 	vector <shared_ptr <Dependency> > dependencies;
 	Dependency::split_compound_dependencies(dependencies, dependency); 
-//	assert(dependencies.size() > 0);
        
 	for (const auto &d:  dependencies) {
 		buffer_default.push(d);

@@ -2,10 +2,11 @@
 #define DEPENDENCY_HH
 
 /*
- * Data types for representing dependencies. 
- *
- * All dependencies derive from the class Dependency, and are used via
- * shared_ptr.    
+ * Data types for representing dependencies.  Dependencies are the
+ * central data structures in Stu, as all dependencies in the syntax of
+ * a Stu file get mapped to Dependency objects.  Dependencies are highly
+ * polymorphous objects, and all dependencies derive from the class
+ * Dependency, and are used via shared_ptr<>.    
  */
 
 #include <limits.h>
@@ -20,8 +21,8 @@
 
 /*
  * Flags are represented in Stu files with a syntax that resembles
- * command line options, i.e., -p, -o, etc.  Here, flags are defined as
- * bit fields. 
+ * command line options, i.e., -p, -o, etc.  Internally, flags are
+ * defined as bit fields. 
  *
  * Each edge in the dependency graph is annotated with one
  * object of this type.  This contains bits related to what should be
@@ -48,7 +49,7 @@ enum
 	I_NEWLINE_SEPARATED,
 	I_ZERO_SEPARATED,
 
-	C_ALL,              
+	C_ALL, /* Total number of flags */ 
 
 	C_TRANSITIVE       = 3,
 	/* The first C_TRANSITIVE flags are transitive, i.e., inherited
@@ -91,6 +92,7 @@ enum
 	F_ZERO_SEPARATED=    1 << I_ZERO_SEPARATED,
 	/* For dynamic dependencies, the file contains NUL-separated
 	 * filenames, without any markup  */ 
+	// TODO rename to F_NUL_SEPARATED
 };
 
 const char *const FLAGS_CHARS= "pot`$*n0"; 
@@ -131,10 +133,10 @@ string flags_format(Flags flags)
 class Dependency
 /* 
  * The abstract base class for all dependencies.  Objects of this type
- * are used with shared_ptr/unique_ptr.
+ * are used via shared_ptr<>.
  *
- * A dependency, which can be simple or complex.  A dependency is simple
- * if it is:
+ * A dependency can be simple or complex.  A dependency is simple if it
+ * is one of:  
  *    - a direct dependency
  *    - a dynamic dependency containing a simple dependency
  *    - a concatenated dependency (which may contain non-simple
@@ -147,9 +149,6 @@ class Dependency
  * The flags only represent immediate flags.  Compound dependencies for
  * instance may contain additional inner flags. 
  */ 
-// TODO since all Dependency's are also Single_Dependency's, fold the
-// Single_Dependency field into Dependency, and remove the dynamic
-// accessor functions, replacing them with direct access. 
 {
 public:
 
@@ -245,6 +244,12 @@ public:
 
 	static shared_ptr <Dependency> clone_dependency(shared_ptr <Dependency> dependency);
 	/* A shallow clone.  */
+
+	static shared_ptr <Dependency> strip_dynamic(shared_ptr <Dependency> d);
+	/* Strip dynamic dependencies from the given dependency.
+	 * Perform recursively:  If D is a dynamic dependency, return
+	 * its contained dependency, otherwise return D.  Thus, never
+	 * return null.  */
 };
 
 class Direct_Dependency
@@ -252,6 +257,7 @@ class Direct_Dependency
  * A parametrized dependency denoting an individual target name.  Does
  * not cover dynamic dependencies.  
  */
+// TODO rename Direct_Dependency to Single_Dependency
 	:  public Dependency
 {
 public:
@@ -468,23 +474,21 @@ public:
 };
 
 class Concatenated_Dependency
-/*
- * A dependency that is the concatenation of multiple dependencies. 
- */
+/* A dependency that is the concatenation of multiple dependencies. 
+ * The dependency as a whole does not have a place stored; the
+ * place of the first sub-dependency is used.  */ 
 	:  public Dependency
 {
 public:
 
-	/* The dependency as a whole does not have a place */ 
-
 	Concatenated_Dependency()
-	{
-	}
+	/* An empty concatenation, i.e., a concatenation of zero dependencies */ 
+	{  }
 
 	Concatenated_Dependency(Flags flags_, const Place places_[C_TRANSITIVE])
+		/* The list of dependencies is empty */ 
 		:  Dependency(flags_, places_)
 	{
-		/* The list of dependencies is empty */ 
 	}
 
 	const vector <shared_ptr <Dependency> > get_dependencies() const {
@@ -827,7 +831,6 @@ void Dependency::split_compound_dependencies(vector <shared_ptr <Dependency> > &
 		shared_ptr <Compound_Dependency> compound_dependency=
 			dynamic_pointer_cast <Compound_Dependency> (dependency);
 		for (auto &d:  compound_dependency->get_dependencies()) {
-//			dynamic_pointer_cast <Single_Dependency> (d)
 			d
 				->add_flags(compound_dependency, false);  
 			split_compound_dependencies(dependencies, d); 
@@ -871,6 +874,16 @@ void Dependency::add_flags(shared_ptr <const Dependency> dependency,
 		}
 	}
 	this->flags |= dependency->get_flags(); 
+}
+
+shared_ptr <Dependency> Dependency::strip_dynamic(shared_ptr <Dependency> d)
+{
+	assert(d != nullptr); 
+	while (dynamic_pointer_cast <Dynamic_Dependency> (d)) {
+		d= dynamic_pointer_cast <Dynamic_Dependency> (d)->dependency;
+	}
+	assert(d != nullptr); 
+	return d;
 }
 
 shared_ptr <Dependency> Direct_Dependency

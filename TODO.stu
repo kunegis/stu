@@ -74,6 +74,10 @@ A:  ()B { cp B A }  B = {correct}
 ... ("'")X  # escape the quote correctly in error message 
 ... ()(A)  # Empty or just 'A' (empty would be logical, because () is an
            # empty list
+A:  list.[B];
+A:  list.[[B]];
+A:  [[B]][[B]]; 
+A:  [[B][C]]; 
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This

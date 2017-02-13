@@ -75,6 +75,12 @@ protected:
 	 * -1: continue; 0: abort and don't call again; 1: abort and
 	 * call again.  */ 
 
+	void check_waited() const {
+		assert(buffer_default.empty()); 
+		assert(buffer_trivial.empty()); 
+		assert(children.size() == 0); 
+	}
+	
 	virtual int execute(Execution *parent, Link &&link);
 	/* Start the next job(s). This will also terminate jobs when
 	 * they don't need to be run anymore, and thus it can be called
@@ -180,6 +186,7 @@ protected:
 	 * however not deleted as it is kept for caching.  */
 
 private: 
+
 	Stack done;
 	/* What parts of this target have been done.  Each bit
 	 * represents one aspect that was done.  The depth is equal to
@@ -287,10 +294,22 @@ public:
 	/* Wait for next job to finish and finish it.  Do not start anything
 	 * new.  */ 
 
+	static Single_Execution *get_execution(const Target &target, 
+					       Link &link,
+					       Execution *parent); 
+	/* Get an existing Single_Execution or create a new one for the
+	 * given TARGET.  Return null when a strong cycle was found;
+	 * return the execution otherwise.  PLACE is the place of where
+	 * the dependency was declared.  LINK is the link from the
+	 * existing parent to the new execution.  */ 
+
 protected:
+
 	virtual int execute(Execution *parent, Link &&link);
 
 private:
+
+	friend class Execution; 
 	friend void job_terminate_all(); 
 	friend void job_print_jobs(); 
 
@@ -440,15 +459,6 @@ private:
 	 * executed, even though it was never executed in the current
 	 * invocation of Stu. In that case, the transient targets are
 	 * never insert in this map.  */
-
-	static Single_Execution *get_execution(const Target &target, 
-					       Link &link,
-					       Single_Execution *parent); 
-	/* Get an existing execution or create a new one.
-	 * Return NULLPTR when a strong cycle was found; return the execution
-	 * otherwise.  PLACE is the place of where the dependency was
-	 * declared.  LINK is the link from the existing parent to the
-	 * new execution.  */ 
 };
 
 class Concatenated_Execution
@@ -1325,9 +1335,8 @@ void Single_Execution::waited(pid_t pid, int status)
 {
 	assert(job.started()); 
 	assert(job.get_pid() == pid); 
-	assert(buffer_default.empty()); 
-	assert(buffer_trivial.empty()); 
-	assert(children.size() == 0); 
+
+	Execution::check_waited(); 
 
 	assert(done.get_depth() == 0);
 	done.add_one_neg(0); 
@@ -1787,7 +1796,7 @@ bool Single_Execution::remove_if_existing(bool output)
 
 Single_Execution *Single_Execution::get_execution(const Target &target, 
 				    Link &link,
-				    Single_Execution *parent)
+				    Execution *parent)
 {
 	/* Set to the returned Single_Execution object when one is found or created */    
 	Single_Execution *execution= nullptr; 

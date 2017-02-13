@@ -64,6 +64,8 @@ This is my preferred style.  --Jérôme Kunegis
 * For maps, we mostly use .at() for access, which terminates
   when the value is not contained, to avoid inserting values
   accidentally, which is what operator[] does. 
+* We put friend declarations in the "private" block.  The placement is
+  irrelevant to the meaning of the code; this is just a style issue. 
 
 == Dynamic variables ==
 
@@ -126,20 +128,20 @@ things to be said about portable shell scripting.
   are rumors that -E is going to be in a future POSIX standard; we'll
   switch to -E once it's standardized.)
 * Grep however has the -E option for extended regular expressions.  Grep
-  is always be invoked with the -E *or* the -F option.  (Using basic
+  is always invoked with the -E *or* the -F option.  (Using basic
   regular expressions with Grep is also portable, but we don't do it.)
 * Shell scripts don't have a filename suffix.  Use '#! /bin/sh' and set
   the executable bit.  The space after '!' is not necessary, but has a
   certain tradition and we think it looks good, so we always use it. 
 * 'test' does not support the -a option.  Use && in the shell instead.
   POSIX has deprecated 'test -a'.
-* The 'recursive' option to programs such as 'ls' and 'cp' is -R and not
+* The "recursive" option to programs such as 'ls' and 'cp' is -R and not
   -r.   '-r' for recursive behavior is available and prescribed by POSIX
   for *some* commands such as 'rm', but it's easier to always use '-R'.
   Mnemonic:  Output will be *big*, hence a big letter.  The idiomatic
   'rm -rf' is thus not recommended, and 'rm -Rf' is used instead. 
 * Use $(...) instead of `...`.  It avoids many quoting pitfalls.  In
-  shell syntax, backticks is a form a quote which also executes its
+  shell syntax, backticks is a form of quote which also executes its
   content.  Thus, characters such as other backticks and backslashes
   inside it must be quoted by a backslash, leading to ugly code.  $(...)
   does not have this problem.  Also, in Unicode ` is a standalone grave
@@ -154,8 +156,9 @@ things to be said about portable shell scripting.
   options and thus don't support '--'. 
 * Always use 'IFS= read -r' instead of 'read'.  It's the safe way to
   read anything that's \n-delimited.
-* With 'echo', both '-n' and \c are non-portable.  Instead, use printf.
-  In general, printf is an underused command.  It can often be used
-  judiciously instead of 'echo'.  Note that the format string of printf
-  should not start with a dash.  In such cases, use %s and a subsequent
-  string, that can start with a dash.
+* To omit the trailing newline with 'echo', both '-n' and \c are
+  non-portable.  Instead, use printf.  In general, printf is an
+  underused command.  It can often be used judiciously instead of
+  'echo'.  Note that the format string of printf should not start with a
+  dash.  In such cases, use %s and a subsequent string, which can start
+  with a dash.

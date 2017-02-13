@@ -317,6 +317,7 @@ shared_ptr <Rule> Parser::parse_rule()
 				    name_format_word('$' + param_1),
 				    name_format_word('$' + param_2),
 				    target_name->format_word()); 
+			// TODO print an explanation 
 				    
 			throw ERROR_LOGICAL;
 		}

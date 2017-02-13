@@ -22,50 +22,6 @@ class Target;
 
 class Type
 {
-private:  
-
-	int value;
-	/* >= 0 */
-
-	friend class Target; 
-	friend struct std::hash <Target> ;
-
-	/* Only used for hashing */
-	int get_value() const {
-		return value; 
-	}
-
-	/* Only used by containers */
-	bool operator < (const Type &type) const {
-		return this->value < type.value; 
-	}
-
-	enum: int {
-		T_TRANSIENT         = 0,
-		/* A transient target */ 
-	
-		T_FILE              = 1,
-		/* A file in the file system; this entry has to come before
-		 * T_DYNAMIC because it counts also as a dynamic dependency of
-		 * depth zero. */
-
-		T_DYNAMIC_TRANSIENT = 2,
-		/* A dynamic transient target -- only used for the Target object of
-		 * executions */
-
-		T_DYNAMIC_FILE      = 3
-		/* A dynamic target -- only used for the Target object of executions */   
-
-		/* Larger values denote multiply dynamic targets.  They are only
-		 * used as the target of Execution objects.  */
-	};
-
-	Type(int value_)
-		:  value(value_)
-	{
-		assert(value >= 0);
-	}
-
 public:
 
 	static const Type TRANSIENT, FILE, DYNAMIC_TRANSIENT, DYNAMIC_FILE;
@@ -146,6 +102,50 @@ public:
 		value += 2 * depth;
 		assert(value >= 0);
 		return *this;
+	}
+
+private:  
+
+	int value;
+	/* >= 0 */
+
+	friend class Target; 
+	friend struct std::hash <Target> ;
+
+	/* Only used for hashing */
+	int get_value() const {
+		return value; 
+	}
+
+	/* Only used by containers */
+	bool operator < (const Type &type) const {
+		return this->value < type.value; 
+	}
+
+	enum: int {
+		T_TRANSIENT         = 0,
+		/* A transient target */ 
+	
+		T_FILE              = 1,
+		/* A file in the file system; this entry has to come before
+		 * T_DYNAMIC because it counts also as a dynamic dependency of
+		 * depth zero. */
+
+		T_DYNAMIC_TRANSIENT = 2,
+		/* A dynamic transient target -- only used for the Target object of
+		 * executions */
+
+		T_DYNAMIC_FILE      = 3
+		/* A dynamic target -- only used for the Target object of executions */   
+
+		/* Larger values denote multiply dynamic targets.  They are only
+		 * used as the target of Execution objects.  */
+	};
+
+	Type(int value_)
+		:  value(value_)
+	{
+		assert(value >= 0);
 	}
 };
 

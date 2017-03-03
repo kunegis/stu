@@ -590,20 +590,23 @@ private:
 
 class Stack
 /*
- * A stack of dependency bits.  Contains only transitive bits.
- * Lower bits denote relationships lower in the hierarchy.  The DEPTH
- * is the number of times the link is dynamic.  (DEPTH+1) bits are actually
- * stored for each flag.  The maximum DEPTH is therefore CHAR_BITS *
- * sizeof(int) - 1, i.e., at least 15 on standard C platforms, and 31 on
- * almost all used platforms.  
+ * A stack of dependency bits.  Contains only transitive bits.  Lower
+ * bits denote relationships lower in the hierarchy.  The DEPTH is the
+ * number of times the link is dynamic.  (DEPTH+1) bits are stored for
+ * each flag.  The maximum DEPTH is therefore CHAR_BITS * sizeof(int) -
+ * 1, i.e., at least 15 on standard C platforms, and 31 on almost all
+ * used platforms.
  *
  * As a general rule, indexes named I go over the F_COUNT different
- * flags (0..F_COUNT-1), and indexes named J go over the (DEPTH+1) levels of
- * depth (0..DEPTH).  
+ * flags (0..F_COUNT-1), and indexes named J go over the (DEPTH+1)
+ * levels of depth (0..DEPTH).
  *
- * Example:  a dynamic dependency  -o [ -p X]  would be represented by the stack of bits
+ * Example:  a dynamic dependency  -o [ -p X]  would be represented by
+ * the stack of bits 
  *   J=1:    bit 'o'
  *   J=0:    bit 'p'
+ *
+ * Objects of this type are small enough to be passed by value. 
  */
 {
 public:
@@ -744,7 +747,7 @@ public:
 	}
 
 	void add_one_neg(Flags flags) 
-	/* K must be zero */ 
+	/* Add the negation of FLAGS to the only level when K is zero.  */  
 	{
 		assert(depth == 0);
 		check();

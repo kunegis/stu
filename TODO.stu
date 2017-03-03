@@ -1,5 +1,3 @@
-# TODO document the -0 in the manpage.
-
 #
 # Concatenation.  Concatenation is to work both with the
 # binary operator '*' as well with juxtaposition.     [2.5]
@@ -78,6 +76,10 @@ A:  list.[B];
 A:  list.[[B]];
 A:  [[B]][[B]]; 
 A:  [[B][C]]; 
+
+#
+# TODO document the -0 in the manpage.
+#
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This

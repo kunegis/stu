@@ -25,6 +25,25 @@ class Execution
  * and deleted (if nercessary), via delete().  
  */
 {
+public: 
+
+	bool is_root() const { return parents.empty(); }
+	/* Whether this is the root execution */
+
+	virtual int execute(Execution *parent, const Link &link);
+	/* Start the next job(s).  This will also terminate jobs when
+	 * they don't need to be run anymore, and thus it can be called
+	 * when K = 0 just to terminate jobs that need to be terminated.
+	 * The passed LINK.FLAG is the ORed combination of all FLAGs up
+	 * the dependency chain.  Return value:  the same as
+	 * execute_children().  Can only by TRUE in random mode. 
+	 * When TRUE, not all possible child jobs where started.  
+	 * Child implementations call this implementation.  */
+
+	void raise(int error_);
+	/* All errors by Execution call this function.  Set the error
+	 * code, and throw an error except with the keep-going option.  */
+
 protected: 
 	
 	int error;
@@ -55,13 +74,15 @@ protected:
 	 * finished, this value is propagated to the parent executions
 	 * (except when the F_PERSISTENT flag is set).  */ 
 
-	Execution()
+	Execution(int k)
+		/* K is the depth of the done field, i.e. the depth of
+		 * the dependency for purposes of keeping track of
+		 * caching.  */
 		:  error(0),
 		   timestamp(Timestamp::UNDEFINED),
-		   need_build(false)
+		   need_build(false),
+		   done(k, 0) 
 	{  }
-
-	bool is_root() const { return parents.empty(); }
 
 	void print_traces(string text= "") const;
 	/* Print full trace for the execution.  First the message is
@@ -75,22 +96,47 @@ protected:
 	 * -1: continue; 0: abort and don't call again; 1: abort and
 	 * call again.  */ 
 
+	int execute_second_pass(const Link &link); 
+	/* Second pass (trivial dependencies).  Called once we are sure
+	 * that the target must be built.  Return value:  same
+	 * semantics as execute_children().  */ 
+
 	void check_waited() const {
 		assert(buffer_default.empty()); 
 		assert(buffer_trivial.empty()); 
 		assert(children.size() == 0); 
 	}
+
+	const Stack &get_done() const {  return done;  }
+
+	void done_set_all_one() 
+	/* Set all flags in DONE, given that the depth of DONE is zero */
+	{
+		done.add_one_neg(0); 
+	}
+
+	void done_add_neg(Stack stack_) {
+		done.add_neg(stack_); 
+	}
+
+	void done_add_one_neg(Flags flags_) {
+		done.add_one_neg(flags_); 
+	}
+
+	void done_add_one_neg(Stack stack_) {
+		done.add_one_neg(stack_); 
+	}
+
+	void done_add_highest_neg(Flags flags_) {
+		done.add_highest_neg(flags_); 
+	}
+
+	const Buffer &get_buffer_default() const {  return buffer_default;  }
+	const Buffer &get_buffer_trivial() const {  return buffer_trivial;  }
 	
-	virtual int execute(Execution *parent, Link &&link);
-	/* Start the next job(s). This will also terminate jobs when
-	 * they don't need to be run anymore, and thus it can be called
-	 * when K = 0 just to terminate jobs that need to be terminated.
-	 * The passed LINK.FLAG is the ORed combination of all FLAGs up
-	 * the dependency chain.  Return value:  the same as
-	 * execute_child.  Can only by TRUE in random mode. 
-	 * When TRUE, not all possible child jobs where started.  
-	 * Child implementations call this implementation. 
-	 */
+	void push_default(shared_ptr <Dependency> );
+	/* Push a link to the default buffer, breaking down compound
+	 * dependencies while doing so.  */
 
 	virtual ~Execution(); 
 
@@ -104,14 +150,14 @@ protected:
 	virtual const Place &get_place() const= 0;
 	/* The place for the execution; e.g. the rule; empty if there is no place */
 
-	virtual bool execute_optional()= 0;
+	virtual bool execute_optional(const Link &)= 0;
 	/* Should children even be started?  Check whether this is an
 	 * optional dependency and if it is, return when the file does not
 	 * exist.  Return FALSE when execution should stop, TRUE when it
 	 * should continue.  */
 
 #ifndef NDEBUG
-	virtual void check_execution() const= 0; 
+	virtual void check_execution(const Link &link) const= 0; 
 	/* Perform consistency assertions */ 
 #endif
 
@@ -251,7 +297,7 @@ public:
 
 	Single_Execution(Target target_,
 			 Link &link,
-			 Single_Execution *parent);
+			 Execution *parent);
 	/* File, transient and dynamic targets (everything except the
 	 * root target and concatenated dependencies)  */ 
 
@@ -284,8 +330,10 @@ public:
 		return mapping_variable; 
 	}
 
-	void check_execution() const;
-	bool execute_optional();
+	void check_execution(const Link &link) const;
+	bool execute_optional(const Link &);
+
+	virtual int execute(Execution *parent, const Link &link);
 
 	static unordered_map <pid_t, Single_Execution *> executions_by_pid;
 	/* The currently running executions by process IDs */ 
@@ -304,8 +352,6 @@ public:
 	 * existing parent to the new execution.  */ 
 
 protected:
-
-	virtual int execute(Execution *parent, Link &&link);
 
 private:
 
@@ -417,10 +463,6 @@ private:
 	/* Print a line to stdout for a running job, as output of SIGUSR1.
 	 * Is currently running.  */ 
 
-	void raise(int error_);
-	/* All errors by Execution call this function.  Set the error
-	 * code, and throw an error except with the keep-going option.  */
-
 	void write_content(const char *filename, const Command &command); 
 	/* Create the file FILENAME with content from COMMAND */
 
@@ -430,10 +472,6 @@ private:
 			? -1
 			: targets.front().type.get_depth(); 
 	}
-
-	void push_default(shared_ptr <Dependency> );
-	/* Push a link to the default buffer, breaking down compound
-	 * dependencies while doing so.  */
 
 	string debug_text() const {
 		return targets.empty() 
@@ -469,37 +507,10 @@ class Concatenated_Execution
  *
  * Concatenated executions always have exactly one parent.  They are not
  * cached, and they are deleted when done.  Thus, they also don't need
- * the 'done' field. 
+ * the 'done' field.  (But the parent class has it.)
  */
 	:  public Execution
 {
-private:
-
-	shared_ptr <Dependency> dependency;
-	/* This is always a dynamic^* of a concatenated dependency,
-	 * itself containing each a Compound_Dependency^{0,1} of
-	 * Dynamic_Dependency^* of a simple dependency. 
-	 * Set to null when the first phase is done, after which a
-	 * normal child Single_Executed is opened */ 
-
-	int stage;
-	/* 0:  nothing done yet. 
-	 *  --> put dependencies into the queue
-	 * 1:  we're building the normal dependencies
-	 *  --> read out the dependencies and construct the list of actual dependencies
-	 * 2:  building actual dependencies 
-	 * 3:  finished
-	 */
-
-	void add_stage0_dependency(shared_ptr <Dependency> d);
-
-protected:
-
-#ifndef NDEBUG
-	virtual void check_execution() const  {  }
-	/* Perform consistency assertions */ 
-#endif
-
 public:
 
 	Concatenated_Execution(shared_ptr <Dependency> dependency_); 
@@ -510,13 +521,44 @@ public:
 	virtual const Place &get_place() const {
 		return dependency->get_place(); 
 	}
-// 	virtual bool execute(Execution *parent, Link &&link);
-	virtual bool execute_optional()  { return true;  }
+	virtual int execute(Execution *parent, 
+			    const Link &link);
+	virtual bool execute_optional(const Link &)  { return true;  }
 	virtual bool finished() const;
 	virtual bool finished(Stack avoid) const; 
 
 	// TODO properly implement these
 	virtual string debug_text() const { return "aaa"; }
+
+protected:
+
+#ifndef NDEBUG
+	virtual void check_execution(const Link &) const  {  }
+	/* Perform consistency assertions */ 
+#endif
+
+private:
+
+	shared_ptr <Dependency> dependency;
+	/* This is always a dynamic^* of a concatenated dependency,
+	 * itself containing each a Compound_Dependency^{0,1} of
+	 * Dynamic_Dependency^* of a simple dependency. 
+	 * Set to null when stage 1 is done, after which a
+	 * normal child Single_Execution is opened */ 
+
+	int stage;
+	/* 0:  Nothing done yet. 
+	 *  --> put dependencies into the queue
+	 * 1:  We're building the normal dependencies.
+	 *  --> read out the dependencies and construct the list of actual dependencies
+	 * 2:  Building actual dependencies.
+	 * 3:  Finished.  */
+
+	void add_stage0_dependency(shared_ptr <Dependency> d);
+	
+	static void read_concatenation(shared_ptr <Dependency> dependency);
+	/* DEPENDENCY is in the same format as this->dependency.  Assume
+	 * that all mentioned dependencies have been built.  */
 };
 
 long Execution::jobs= 1;
@@ -875,14 +917,24 @@ int Execution::execute_children(const Link &link)
 	return -1;
 }
 
-int Execution::execute(Execution *, Link &&link)
+void Execution::push_default(shared_ptr <Dependency> dependency)
+{
+	vector <shared_ptr <Dependency> > dependencies;
+	Dependency::split_compound_dependencies(dependencies, dependency); 
+       
+	for (const auto &d:  dependencies) {
+		buffer_default.push(d);
+	}
+}
+
+int Execution::execute(Execution *, const Link &link)
 {
 	Verbose verbose;
 
 	assert(jobs >= 0); 
 
 #ifndef NDEBUG
-	check_execution(); 
+	check_execution(link); 
 #endif
 
 	if (option_debug) {
@@ -898,12 +950,13 @@ int Execution::execute(Execution *, Link &&link)
 	}
 
 	/* Override the trivial flag */ 
-	if (link.flags & F_OVERRIDE_TRIVIAL) {
-		link.flags &= ~F_TRIVIAL; 
-		link.avoid.rem_highest(F_TRIVIAL); 
+	Link link2{link}; 
+	if (link2.flags & F_OVERRIDE_TRIVIAL) {
+		link2.flags &= ~F_TRIVIAL; 
+		link2.avoid.rem_highest(F_TRIVIAL); 
 	}
 
- 	if (finished(link.avoid)) {
+ 	if (finished(link2.avoid)) {
 		if (option_debug) {
 			string text_target= debug_text(); 
 			fprintf(stderr, "DEBUG %s %s finished\n",
@@ -922,18 +975,18 @@ int Execution::execute(Execution *, Link &&link)
 	 */  
 
 	if (order != Order::RANDOM) {
-		int ret= execute_children(link);
+		int ret= execute_children(link2);
 		if (ret >= 0)
 			return ret;
 	}
 
-	if (! execute_optional())
+	if (! execute_optional(link2))
 		return false;
 
 	/* Is this a trivial dependency and we are not in trivial
 	 * override mode?  Then skip the dependency. */
-	if (link.flags & F_TRIVIAL) {
-		done.add_neg(link.avoid);
+	if (link2.flags & F_TRIVIAL) {
+		done.add_neg(link2.avoid);
 		return false;
 	}
 
@@ -954,7 +1007,7 @@ int Execution::execute(Execution *, Link &&link)
 			Dependency::clone_dependency(dependency_child);
 		dependency_child_overridetrivial->add_flags(F_OVERRIDE_TRIVIAL); 
 		buffer_trivial.push(dependency_child_overridetrivial); 
-		if (deploy(link, dependency_child))
+		if (deploy(link2, dependency_child))
 			return 1;
 		if (jobs == 0)
 			return 0;
@@ -962,7 +1015,7 @@ int Execution::execute(Execution *, Link &&link)
 	assert(buffer_default.empty()); 
 
 	if (order == Order::RANDOM) {
-		int ret= execute_children(link);
+		int ret= execute_children(link2);
 		if (ret >= 0)
 			return ret;
 	}
@@ -974,7 +1027,7 @@ int Execution::execute(Execution *, Link &&link)
 	/* There was an error in a child */ 
 	if (error != 0) {
 		assert(option_keep_going == true); 
-		done.add_neg(link.avoid);
+		done.add_neg(link2.avoid);
 		return false;
 	}
 
@@ -1187,6 +1240,16 @@ bool Execution::deploy(const Link &link,
 	return -1; 
 }
 
+void Execution::raise(int error_)
+{
+	assert(error_ >= 1 && error_ <= 3); 
+
+	error |= error_;
+
+	if (! option_keep_going)
+		throw error;
+}
+
 void Execution::unlink(Execution *const parent, 
 		       Execution *const child,
 		       shared_ptr <Dependency> dependency_parent,
@@ -1293,6 +1356,18 @@ void Execution::unlink(Execution *const parent,
 	child->parents.erase(parent);
 }
 
+int Execution::execute_second_pass(const Link &link)
+{
+	while (! buffer_trivial.empty()) {
+		shared_ptr <Dependency> dependency_child= buffer_trivial.next(); 
+		if (deploy(link, dependency_child))
+			return 1;
+		if (jobs == 0)
+			return 0;
+	} 
+	assert(buffer_trivial.empty()); 
+}
+
 Single_Execution::~Single_Execution()
 /* Objects of this type are never deleted */ 
 {
@@ -1338,8 +1413,10 @@ void Single_Execution::waited(pid_t pid, int status)
 
 	Execution::check_waited(); 
 
-	assert(done.get_depth() == 0);
-	done.add_one_neg(0); 
+	assert(Execution::get_done().get_depth() == 0); 
+//	assert(done.get_depth() == 0);
+	Execution::done_set_all_one(); 
+//	done.add_one_neg(0); 
 
 	{
 		Job::Signal_Blocker sb;
@@ -1468,11 +1545,12 @@ void Single_Execution::waited(pid_t pid, int status)
 
 Single_Execution::Single_Execution(Target target_,
 				   Link &link,
-				   Single_Execution *parent)
+				   Execution *parent)
 	/* This is a regular non-root object */
-	:  checked(false),
-	   exists(0),
-	   done(target_.type.get_depth(), 0)
+	:  Execution(target_.type.get_depth()),
+	   checked(false),
+	   exists(0)//,
+//	   done(target_.type.get_depth(), 0)
 {
 	assert(parent != nullptr); 
 	assert(parents.empty()); 
@@ -1585,7 +1663,8 @@ Single_Execution::Single_Execution(Target target_,
 				} else {
 					/* File exists:  Do nothing, and there are no
 					 * dependencies to build */  
-					if (parent->targets.empty()) {
+					if (parent->is_root()) {
+//					if (parent->targets.empty()) {
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */ 
 						print_out(fmt("No rule for building %s, but the file exists", 
@@ -1619,9 +1698,10 @@ Single_Execution::Single_Execution(const vector <shared_ptr <Dependency> > &depe
  * not done however, as there is only a single such object, and its
  * lifetime span the whole lifetime of the Stu process anyway.
  */
-	:  checked(false),
-	   exists(0),
-	   done()
+	:  Execution(0),
+	   checked(false),
+	   exists(0)//,
+//	   done()
 {
 	for (auto &d:  dependencies_) {
 		push_default(d); 
@@ -1631,16 +1711,16 @@ Single_Execution::Single_Execution(const vector <shared_ptr <Dependency> > &depe
 bool Single_Execution::finished() const 
 {
 	if (targets.empty()) {
-		assert(done.get_depth() == 0);
+		assert(get_done().get_depth() == 0);
 	} else {
-		assert(done.get_depth() == targets.front().type.get_depth());
-		assert(done.get_depth() == targets.back().type.get_depth());
+		assert(get_done().get_depth() == targets.front().type.get_depth());
+		assert(get_done().get_depth() == targets.back().type.get_depth());
 	}
 
 	Flags to_do_aggregate= 0;
 	
-	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
-		to_do_aggregate |= ~done.get(j); 
+	for (unsigned j= 0;  j <= get_done().get_depth();  ++j) {
+		to_do_aggregate |= ~get_done().get(j); 
 	}
 
 	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
@@ -1649,18 +1729,18 @@ bool Single_Execution::finished() const
 bool Single_Execution::finished(Stack avoid) const
 {
 	if (targets.empty())
-		assert(done.get_depth() == 0);
+		assert(get_done().get_depth() == 0);
 	else {
-		assert(done.get_depth() == targets.front().type.get_depth());
-		assert(done.get_depth() == targets.back().type.get_depth());
+		assert(get_done().get_depth() == targets.front().type.get_depth());
+		assert(get_done().get_depth() == targets.back().type.get_depth());
 	}
 
-	assert(avoid.get_depth() == done.get_depth());
+	assert(avoid.get_depth() == get_done().get_depth());
 
 	Flags to_do_aggregate= 0;
 	
-	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
-		to_do_aggregate |= ~done.get(j) & ~avoid.get(j); 
+	for (unsigned j= 0;  j <= get_done().get_depth();  ++j) {
+		to_do_aggregate |= ~get_done().get(j) & ~avoid.get(j); 
 	}
 
 	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
@@ -2225,7 +2305,7 @@ void Single_Execution::initialize(Stack avoid)
 	} 
 }
 
-int Single_Execution::execute(Execution *parent, Link &&link)
+int Single_Execution::execute(Execution *parent, const Link &link)
 {
 	int r= Execution::execute(parent, link); 
 	if (r >= 0) 
@@ -2240,7 +2320,8 @@ int Single_Execution::execute(Execution *parent, Link &&link)
 	 * don't have commands. */ 
 	// TODO move the file-existence checking code into Direct_Dependency
 	if (targets.empty() || get_depth() != 0) {
-		done.add_neg(link.avoid);
+		Execution::done_add_neg(link.avoid); 
+//		done.add_neg(link.avoid);
 		return 0;
 	}
 
@@ -2255,7 +2336,8 @@ int Single_Execution::execute(Execution *parent, Link &&link)
 	assert(! targets.empty());
 	assert(targets.front().type.get_depth() == 0); 
 	assert(targets.back().type.get_depth() == 0); 
-	assert(buffer_default.empty()); 
+	assert(get_buffer_default().empty()); 
+//	assert(buffer_default.empty()); 
 	assert(children.empty()); 
 	assert(error == 0);
 
@@ -2330,7 +2412,8 @@ int Single_Execution::execute(Execution *parent, Link &&link)
 					/* Optional dependency:  don't create the file;
 					 * it will then not exist when the parent is
 					 * called. */ 
-					done.add_one_neg(F_OPTIONAL); 
+					Execution::done_add_one_neg(F_OPTIONAL); 
+//					done.add_one_neg(F_OPTIONAL); 
 					return 0;
 				}
 			}
@@ -2341,7 +2424,8 @@ int Single_Execution::execute(Execution *parent, Link &&link)
 				rule->place_param_targets[i]->place
 					<< system_format(target.format_word()); 
 				raise(ERROR_BUILD);
-				done.add_one_neg(link.avoid); 
+				Execution::done_add_one_neg(link.avoid); 
+//				done.add_one_neg(link.avoid); 
 				return 0;
 			}
 
@@ -2363,7 +2447,8 @@ int Single_Execution::execute(Execution *parent, Link &&link)
 					print_traces();
 					explain_file_without_command_without_dependencies(); 
 				}
-				done.add_one_neg(link.avoid); 
+				Execution::done_add_one_neg(link.avoid); 
+//				done.add_one_neg(link.avoid); 
 				raise(ERROR_BUILD);
 				return 0;
 			}		
@@ -2402,7 +2487,8 @@ int Single_Execution::execute(Execution *parent, Link &&link)
 
 	if (! need_build) {
 		/* The file does not have to be built */ 
-		done.add_neg(link.avoid);
+		Execution::done_add_neg(link.avoid); 
+//		done.add_neg(link.avoid);
 		return 0;
 	}
 
@@ -2410,21 +2496,13 @@ int Single_Execution::execute(Execution *parent, Link &&link)
 	 * The command must be run now, or there is no command. 
 	 */
 
-	/*
-	 * Re-deploy all dependencies (second pass)
-	 */
-	while (! buffer_trivial.empty()) {
-		shared_ptr <Dependency> dependency_child= buffer_trivial.next(); 
-		if (deploy(link, dependency_child))
-			return 1;
-		if (jobs == 0)
-			return 0;
-	} 
-	assert(buffer_trivial.empty()); 
+	/* Re-deploy all dependencies (second pass) */
+	int rr= Execution::execute_second_pass(link); 
+	if (rr >= 0)  return rr; 
 
 	if (no_execution) {
 		/* A target without a command */ 
-		done.add_neg(link.avoid); 
+		Execution::done_add_neg(link.avoid); 
 		return 0;
 	}
 
@@ -2443,7 +2521,7 @@ int Single_Execution::execute(Execution *parent, Link &&link)
 		assert(targets.size() == 1);
 		assert(targets.front().type == Type::FILE); 
 		
-		done.add_one_neg(0); 
+		Execution::done_add_one_neg(0); 
 
 		if (option_debug) {
 			string text_target= debug_text();
@@ -2509,7 +2587,7 @@ int Single_Execution::execute(Execution *parent, Link &&link)
 					print_traces(fmt("when target file %s does not exist",
 							 targets.at(0).format_word())); 
 					raise(ERROR_BUILD);
-					done.add_neg(link.avoid); 
+					Execution::done_add_neg(link.avoid); 
 					return 0;
 				}
 			}
@@ -2543,7 +2621,7 @@ int Single_Execution::execute(Execution *parent, Link &&link)
 			print_traces(fmt("error executing command for %s", 
 					 targets.front().format_word())); 
 			raise(ERROR_BUILD);
-			done.add_neg(link.avoid); 
+			Execution::done_add_neg(link.avoid); 
 			return 0;
 		}
 
@@ -2707,29 +2785,9 @@ void Single_Execution::propagate_variable(shared_ptr <Dependency> dependency,
 	return;
 }
 
-void Single_Execution::raise(int error_)
-{
-	assert(error_ >= 1 && error_ <= 3); 
-
-	error |= error_;
-
-	if (! option_keep_going)
-		throw error;
-}
-
 bool Single_Execution::is_dynamic() const
 {
 	return targets.size() != 0 && targets.front().type.is_dynamic(); 
-}
-
-void Single_Execution::push_default(shared_ptr <Dependency> dependency)
-{
-	vector <shared_ptr <Dependency> > dependencies;
-	Dependency::split_compound_dependencies(dependencies, dependency); 
-       
-	for (const auto &d:  dependencies) {
-		buffer_default.push(d);
-	}
 }
 
 void Single_Execution::propagate_dynamic(Single_Execution *parent,
@@ -2758,7 +2816,7 @@ void Single_Execution::propagate_dynamic(Single_Execution *parent,
 	assert(found); 
 #endif 
 
-	assert(done.get_depth() == 0); 
+	assert(get_done().get_depth() == 0); 
 		
 	bool do_read= true;
 
@@ -2778,23 +2836,23 @@ void Single_Execution::propagate_dynamic(Single_Execution *parent,
 	}
 }
 
-void Single_Execution::check_execution() const
+void Single_Execution::check_execution(const Link &link) const
 {
 	for (const Target &target:  targets) {
-		assert(target.type.get_depth() == done.get_depth());
+		assert(target.type.get_depth() == get_done().get_depth());
 	}
+
 	Stack tmp_stack= link.avoid; 
 	(void) tmp_stack; 
-	assert(done.get_depth() == link.avoid.get_depth()); 
+	assert(get_done().get_depth() == link.avoid.get_depth()); 
 
 	if (targets.size() && targets.front().type == 0) {
 		assert(link.avoid.get_lowest() == (link.flags & ((1 << C_TRANSITIVE) - 1))); 
 	}
-	done.check();
-
+	get_done().check();
 }
 
-bool Single_Execution::execute_optional()
+bool Single_Execution::execute_optional(const Link &link)
 {
 	if ((link.flags & F_OPTIONAL) 
 	    && link.dependency != nullptr
@@ -2814,10 +2872,10 @@ bool Single_Execution::execute_optional()
 					->place_param_target.place <<
 					system_format(name_format_word(name)); 
 				raise(ERROR_BUILD);
-				done.add_neg(link.avoid); 
+				Execution::done_add_neg(link.avoid); 
 				return false;
 			}
-			done.add_highest_neg(link.avoid.get_highest()); 
+			Execution::done_add_highest_neg(link.avoid.get_highest()); 
 			return false;
 		} else {
 			assert(ret_stat == 0);
@@ -2829,7 +2887,8 @@ bool Single_Execution::execute_optional()
 }
 
 Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependency_)
-	:  dependency(dependency_),
+	:  Execution(0), // Should it always by zero
+	   dependency(dependency_),
 	   stage(0)
 {
 	/* Check the structure of the dependency */
@@ -2853,7 +2912,7 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependenc
 }
 
 int Concatenated_Execution::execute(Execution *parent, 
-				    Link &&link)
+				    const Link &link)
 {
 	assert(stage >= 0 && stage <= 2); 
 
@@ -2866,8 +2925,7 @@ int Concatenated_Execution::execute(Execution *parent,
 		 *
 		 * Add, as extra dependencies, all sub-dependencies of
 		 * the concatenated dependency, minus one dynamic level,
-		 * or not at all if they are not dynamic.   
-		 */
+		 * or not at all if they are not dynamic.  */
 
 		shared_ptr <Dependency> dep= Dependency::strip_dynamic(dependency); 
 		assert(dynamic_pointer_cast <Concatenated_Dependency> (dep));
@@ -2883,7 +2941,7 @@ int Concatenated_Execution::execute(Execution *parent,
 			} else {
 				add_stage0_dependency(d); 
 			}
-	}
+		}
 
 		stage= 1; 
 	} 
@@ -2894,8 +2952,8 @@ int Concatenated_Execution::execute(Execution *parent,
 		if (r >= 0)
 			return r;
 
-		// TODO:  insert newly concatenated targets 
-		...;
+		read_concatenation(dependency); 
+		push_default(...); 
 
 		stage= 2; 
 		
@@ -2939,6 +2997,13 @@ void Concatenated_Execution::add_stage0_dependency(shared_ptr <Dependency> d)
 		// TODO handle the other dependency types
 		assert(false);
 	}
+}
+
+void Concatenated_Execution::read_concatenation(shared_ptr <Dependency> dependency)
+{
+	...;
+	
+	// In what form to return the list of dependencies?
 }
 
 #endif /* ! EXECUTION_HH */

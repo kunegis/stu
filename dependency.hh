@@ -394,7 +394,7 @@ class Dynamic_Dependency
 public:
 
 	shared_ptr <Dependency> dependency;
-	/* Non-null */ 
+	/* The contained dependency.  Non-null. */ 
 
 	Dynamic_Dependency(Flags flags_,
 			   shared_ptr <Dependency> dependency_)

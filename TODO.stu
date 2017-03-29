@@ -76,6 +76,13 @@ A:  list.[B];
 A:  list.[[B]];
 A:  [[B]][[B]]; 
 A:  [[B][C]]; 
+A:  [[(B)(C)]]; 
+
+# Test a case in which the concatenated files are not readable, i.e. because of chmod(2). 
+
+#
+# sh/test:  log all tests and their runtime, version number, date, etc. 
+#
 
 #
 # TODO document the -0 in the manpage.

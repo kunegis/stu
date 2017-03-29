@@ -138,6 +138,11 @@ protected:
 	/* Push a link to the default buffer, breaking down compound
 	 * dependencies while doing so.  */
 
+	void read_dynamic(Stack avoid, 
+			  shared_ptr <Dependency> dependency_this, 
+			  vector <shared_ptr <Dependency> > dependencies);
+	/* Read dynamic dependencies.  */
+
 	virtual ~Execution(); 
 
 	virtual shared_ptr <Rule> get_param_rule() const= 0; 
@@ -501,7 +506,7 @@ private:
 
 class Concatenated_Execution
 /* 
- * An execution representating a concatenation.  It's dependency is
+ * An execution representating a concatenation.  Its dependency is
  * always a compound dependency containing simple dependencies, whose
  * results are concatenated as new targets added to the parent.
  *
@@ -540,7 +545,8 @@ protected:
 private:
 
 	shared_ptr <Dependency> dependency;
-	/* This is always a dynamic^* of a concatenated dependency,
+	/* Contains the concatenation. 
+	 * This is a dynamic^* of a concatenated dependency,
 	 * itself containing each a Compound_Dependency^{0,1} of
 	 * Dynamic_Dependency^* of a simple dependency. 
 	 * Set to null when stage 1 is done, after which a
@@ -556,9 +562,12 @@ private:
 
 	void add_stage0_dependency(shared_ptr <Dependency> d);
 	
-	static void read_concatenation(shared_ptr <Dependency> dependency);
-	/* DEPENDENCY is in the same format as this->dependency.  Assume
-	 * that all mentioned dependencies have been built.  */
+	static void read_concatenation(shared_ptr <Dependency> dependency,
+				       vector <shared_ptr <Dependency> > &dependencies_read);
+	/* DEPENDENCY has the same structural constraints as this->dependency.  Assume
+	 * that all mentioned dependencies have been built.  The read
+	 * dependencies are stored into DEPENDENCIES_READ, which must
+	 * be empty on calling this function.  */
 };
 
 long Execution::jobs= 1;
@@ -648,6 +657,192 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 
 	if (error)
 		throw error; 
+}
+
+void Execution::read_dynamic(Stack avoid, 
+			     shared_ptr <Dependency> dependency_this, 
+			     vector <shared_ptr <Dependency> > dependencies)
+{
+	Target target= dependency_this->get_single_target().unparametrized(); 
+
+	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
+	assert(dependencies.empty()); 
+	assert(target.type.is_dynamic());
+	assert(target.type.is_any_file()); 
+	assert(avoid.get_depth() == target.type.get_depth()); 
+
+	string filename= target.name;
+
+	Flags flags= dynamic_pointer_cast <Dynamic_Dependency>
+		(dependency_this)->dependency->get_flags();
+
+	if (! (flags & (F_NEWLINE_SEPARATED | F_ZERO_SEPARATED))) {
+
+		/* Parse dynamic dependency in full Stu syntax */ 
+
+		vector <shared_ptr <Token> > tokens;
+		Place place_end; 
+
+		Tokenizer::parse_tokens_file
+			(tokens, 
+			 Tokenizer::DYNAMIC,
+			 place_end, filename, dependency_this->get_place()); 
+
+		Place_Name input; /* remains empty */ 
+		Place place_input; /* remains empty */ 
+
+		try {
+			Parser::get_expression_list(dependencies, tokens, 
+						    place_end, input, place_input);
+		} catch (int e) {
+			raise(e); 
+			goto end_normal;
+		}
+
+		/* Check that there are no input dependencies */ 
+		if (! input.empty()) {
+			place_input <<
+				fmt("dynamic dependency %s "
+				    "must not contain input redirection %s", 
+				    target.format_word(),
+				    prefix_format_word(input.raw(), "<")); 
+			Target target_file= target;
+			target_file.type= Type::FILE;
+			print_traces(fmt("%s is declared here",
+					 target_file.format_word())); 
+			raise(ERROR_LOGICAL);
+		}
+	end_normal:;
+
+	} else {
+		/* Delimiter-separated */
+
+		/* We use getdelim() for parsing.  A more optimized way
+		 * would be via mmap()+strchr(), but why the
+		 * complexity?  */ 
+			
+		const char c= (flags & F_NEWLINE_SEPARATED) ? '\n' : '\0';
+		/* The delimiter */ 
+
+		const char c_printed
+			/* The character to print as the delimiter */
+			= (flags & F_NEWLINE_SEPARATED) ? 'n' : '0';
+		
+		char *lineptr= nullptr;
+		size_t n= 0;
+		ssize_t len;
+		int line= 0; 
+			
+		FILE *file= fopen(filename.c_str(), "r"); 
+		if (file == nullptr) {
+			print_error_system(filename); 
+			raise(ERROR_BUILD); 
+			goto end;
+		}
+
+		while ((len= getdelim(&lineptr, &n, c, file)) >= 0) {
+				
+			Place place(Place::Type::INPUT_FILE, filename, ++line, 0); 
+
+			assert(lineptr[len] == '\0'); 
+
+			if (len == 0) {
+				/* Should not happen by the definition
+				 * of getdelim(), so abort parse.  */ 
+				assert(false); 
+				break;
+			} 
+
+			/* There may or may not be a terminating \n.
+			 * getdelim(3) will include it if it is present,
+			 * but the file may not have one.  */ 
+
+			if (lineptr[len - 1] == c) {
+				--len; 
+			}
+
+			/* An empty line: This corresponds to an empty
+			 * filename, and thus we treat is as a syntax
+			 * error, because filenames can never be
+			 * empty.  */ 
+			if (len == 0) {
+				free(lineptr); 
+				fclose(file); 
+				place << "filename must not be empty"; 
+				print_traces(fmt("in %s-separated dynamic dependency "
+						 "declared with flag %s",
+						 c == '\0' ? "zero" : "newline",
+						 multichar_format_word
+						 (frmt("-%c", c_printed))));
+				throw ERROR_LOGICAL; 
+			}
+				
+			string filename_dependency= string(lineptr, len); 
+
+			dependencies.push_back
+				(make_shared <Direct_Dependency>
+				 (0,
+				  Place_Param_Target
+				  (Type::FILE, 
+				   Place_Name(filename_dependency, place)))); 
+		}
+		free(lineptr); 
+		if (fclose(file)) {
+			print_error_system(filename); 
+			raise(ERROR_BUILD);
+		}
+	end:;
+	}
+
+	for (auto &j:  dependencies) {
+
+		/* Check that it is unparametrized */ 
+		if (! j->is_unparametrized()) {
+			shared_ptr <Dependency> dep= j;
+			while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
+				shared_ptr <Dynamic_Dependency> dep2= 
+					dynamic_pointer_cast <Dynamic_Dependency> (dep);
+				dep= dep2->dependency; 
+			}
+			dynamic_pointer_cast <Direct_Dependency> (dep)
+				->place_param_target.place_name.places[0] <<
+				fmt("dynamic dependency %s must not contain "
+				    "parametrized dependencies",
+				    target.format_word());
+			Target target_base= target;
+			target_base.type= target.type.get_base();
+			print_traces(fmt("%s is declared here", 
+					 target_base.format_word())); 
+			raise(ERROR_LOGICAL);
+			continue; 
+		}
+
+		/* Check that there is no multiply-dynamic variable dependency */ 
+		if (j->has_flags(F_VARIABLE) && 
+		    target.type.is_dynamic() && target.type != Type::DYNAMIC_FILE) {
+			
+			/* Only direct dependencies can have the F_VARIABLE flag set */ 
+			assert(dynamic_pointer_cast <Direct_Dependency> (j));
+			
+			shared_ptr <Direct_Dependency> dep= 
+				dynamic_pointer_cast <Direct_Dependency> (j);
+
+			bool quotes= false;
+			string s= dep->place_param_target.format(0, quotes);
+
+			j->get_place() <<
+				fmt("variable dependency %s$[%s%s%s]%s must not appear",
+				    Color::word,
+				    quotes ? "'" : "",
+				    s,
+				    quotes ? "'" : "",
+				    Color::end);
+			print_traces(fmt("within multiply-dynamic dependency %s", 
+					 target.format_word())); 
+			raise(ERROR_LOGICAL);
+			continue; 
+		}
+	}
 }
 
 bool Execution::find_cycle(const Execution *const parent, 
@@ -1917,191 +2112,21 @@ Single_Execution *Single_Execution::get_execution(const Target &target,
 }
 
 void Single_Execution::read_dynamic_dependency(Stack avoid,
-					shared_ptr <Dependency> dependency_this)
+					       shared_ptr <Dependency> dependency_this)
 {
-	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
-
-	Target target= dependency_this->get_single_target().unparametrized(); 
-
-	assert(target.type.is_dynamic());
-
-	assert(avoid.get_depth() == target.type.get_depth()); 
+	const Target target= dependency_this->get_single_target().unparametrized(); 
+//	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
 
 	try {
-		const string filename= target.name; 
+//		const string filename= target.name; 
 		vector <shared_ptr <Dependency> > dependencies;
 
-		Flags flags= dynamic_pointer_cast <Dynamic_Dependency>
-			(dependency_this)->dependency->get_flags();
-
-		if (! (flags & (F_NEWLINE_SEPARATED | F_ZERO_SEPARATED))) {
-
-			/* Parse dynamic dependency in full Stu syntax */ 
-
-			vector <shared_ptr <Token> > tokens;
-			Place place_end; 
-
-			Tokenizer::parse_tokens_file
-				(tokens, 
-				 Tokenizer::DYNAMIC,
-				 place_end, filename, dependency_this->get_place()); 
-
-			Place_Name input; /* remains empty */ 
-			Place place_input; /* remains empty */ 
-
-			try {
-				Parser::get_expression_list(dependencies, tokens, 
-							    place_end, input, place_input);
-			} catch (int e) {
-				raise(e); 
-				goto end_normal;
-			}
-
-			/* Check that there are no input dependencies */ 
-			if (! input.empty()) {
-				place_input <<
-					fmt("dynamic dependency %s "
-					    "must not contain input redirection %s", 
-					    target.format_word(),
-					    prefix_format_word(input.raw(), "<")); 
-				Target target_file= target;
-				target_file.type= Type::FILE;
-				print_traces(fmt("%s is declared here",
-						 target_file.format_word())); 
-				raise(ERROR_LOGICAL);
-			}
-		end_normal:;
-
-		} else {
-			/* Delimiter-separated */
-
-			/* We use getdelim() for parsing.  A more
-			 * optimized way would be via mmap()+strchr(), but
-			 * why the complexity?  */
-			
-			const char c= (flags & F_NEWLINE_SEPARATED) ? '\n' : '\0';
-			/* The delimiter */ 
-
-			const char c_printed=
-				(flags & F_NEWLINE_SEPARATED) ? 'n' : '0';
-			
-			char *lineptr= nullptr;
-			size_t n= 0;
-			ssize_t len;
-			int line= 0; 
-			
-			FILE *file= fopen(filename.c_str(), "r"); 
-			if (file == nullptr) {
-				print_error_system(filename); 
-				raise(ERROR_BUILD); 
-				goto end;
-			}
-
-			while ((len= getdelim(&lineptr, &n, c, file)) >= 0) {
-				
-				Place place(Place::Type::INPUT_FILE, filename, ++line, 0); 
-
-				assert(lineptr[len] == '\0'); 
-
-				if (len == 0) {
-					/* Should not happen, so abort parse */ 
-					assert(false); 
-					break;
-				} 
-
-				/* There may or may not be a terminating
-				 * \n.  getdelim(3) will include it if it is
-				 * present, but the file may not have
-				 * one.  */ 
-
-				if (lineptr[len - 1] == c) {
-					--len; 
-				}
-
-				/* An empty line: This corresponds to an
-				 * empty filename, and thus we treat is
-				 * as a syntax error.  */ 
-				if (len == 0) {
-					free(lineptr); 
-					fclose(file); 
-					place << "filename must not be empty"; 
-					print_traces(fmt("in %s-separated dynamic dependency "
-							 "declared with flag %s",
-							 c == '\0' ? "zero" : "newline",
-							 multichar_format_word
-							 (frmt("-%c", c_printed))));
-					throw ERROR_LOGICAL; 
-				}
-				
-				string filename_dependency= string(lineptr, len); 
-
-				dependencies.push_back
-					(make_shared <Direct_Dependency>
-					 (0,
-					  Place_Param_Target
-					  (Type::FILE, 
-					   Place_Name(filename_dependency, place)))); 
-			}
-			free(lineptr); 
-			if (fclose(file)) {
-				print_error_system(filename); 
-				raise(ERROR_BUILD);
-			}
-		end:;
-		}
+		read_dynamic(avoid, dependency_this, dependencies);
 
 		for (auto &j:  dependencies) {
 
-			/* Check that it is unparametrized */ 
-			if (! j->is_unparametrized()) {
-				shared_ptr <Dependency> dep= j;
-				while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
-					shared_ptr <Dynamic_Dependency> dep2= 
-						dynamic_pointer_cast <Dynamic_Dependency> (dep);
-					dep= dep2->dependency; 
-				}
-				dynamic_pointer_cast <Direct_Dependency> (dep)
-					->place_param_target.place_name.places[0] <<
-					fmt("dynamic dependency %s must not contain "
-					    "parametrized dependencies",
-					    target.format_word());
-				Target target_base= target;
-				target_base.type= target.type.get_base();
-				print_traces(fmt("%s is declared here", 
-						 target_base.format_word())); 
-				raise(ERROR_LOGICAL);
-				continue; 
-			}
-
-			/* Check that there is no multiply-dynamic variable dependency */ 
-			if (j->has_flags(F_VARIABLE) && 
-			    target.type.is_dynamic() && target.type != Type::DYNAMIC_FILE) {
-				
-				/* Only direct dependencies can have the F_VARIABLE flag set */ 
-				assert(dynamic_pointer_cast <Direct_Dependency> (j));
-
-				shared_ptr <Direct_Dependency> dep= 
-					dynamic_pointer_cast <Direct_Dependency> (j);
-
-				bool quotes= false;
-				string s= dep->place_param_target.format(0, quotes);
-
-				j->get_place() <<
-					fmt("variable dependency %s$[%s%s%s]%s must not appear",
-					    Color::word,
-					    quotes ? "'" : "",
-					    s,
-					    quotes ? "'" : "",
-					    Color::end
-					    );
-				print_traces(fmt("within multiply-dynamic dependency %s", 
-						 target.format_word())); 
-				raise(ERROR_LOGICAL);
-				continue; 
-			}
-
-			/* Add the found dependencies, with one less dynamic level
-			 * than the current target.  */
+			/* Add the dependency, with one less dynamic level
+			 * than the current target  */
 
 			shared_ptr <Dependency> dependency(j);
 
@@ -2159,15 +2184,15 @@ void Single_Execution::read_dynamic_dependency(Stack avoid,
 				
 	} catch (int e) {
 		/* We catch not only the errors raised in this function,
-		 * but also the errors raised in the parser.  */
+		 * but also the errors raised in read_dynamic().  */
 		raise(e); 
 	}
 }
 
 void Single_Execution::warn_future_file(struct stat *buf, 
-				 const char *filename,
-				 const Place &place,
-				 const char *message_extra)
+					const char *filename,
+					const Place &place,
+					const char *message_extra)
 {
   	if (timestamp_last < Timestamp(buf)) {
 		string suffix=
@@ -2952,20 +2977,28 @@ int Concatenated_Execution::execute(Execution *parent,
 		if (r >= 0)
 			return r;
 
-		read_concatenation(dependency); 
-		push_default(...); 
+		vector <shared_ptr <Dependency> > dependencies_read; 
+
+		read_concatenation(dependency, dependencies_read); 
+
+		for (auto &i:  dependencies_read) {
+			push_default(i); 
+		}
+
+		dependency= nullptr; 
 
 		stage= 2; 
 		
 	} else if (stage == 2) {
 		/* Second phase:  normal child executions */
+		assert(! dependency); 
 		int r= Execution::execute(parent, link); 
 		if (r >= 0)
 			return r;
 
 		stage= 3; 
 	} else {
-		assert(false); 
+		assert(false);  /* Invalid stage */ 
 	}
 }
 
@@ -2976,8 +3009,10 @@ bool Concatenated_Execution::finished() const
 
 bool Concatenated_Execution::finished(Stack avoid) const
 /* Since Concatenated_Execution objects are used just once, by a single
- * parent, this always returns the same as finished() itself.  */
+ * parent, this always returns the same as finished() itself.
+ * Therefore, the AVOID parameter is ignored.  */
 {
+	(void) avoid;
 	return finished(); 
 }
 
@@ -2999,11 +3034,31 @@ void Concatenated_Execution::add_stage0_dependency(shared_ptr <Dependency> d)
 	}
 }
 
-void Concatenated_Execution::read_concatenation(shared_ptr <Dependency> dependency)
+void Concatenated_Execution::read_concatenation(shared_ptr <Dependency> dependency,
+						vector <shared_ptr <Dependency> > &dependencies_read)
 {
+	assert(dependencies_read.empty()); 
+
+	/* First, handle the outermost dynamic dependencies */
+	if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
+		shared_ptr <Dynamic_Dependency> dependency_dynamic= 
+			dynamic_pointer_cast <Dynamic_Dependency> (dependency);
+		read_concatenation(dependency_dynamic->dependency, dependencies_read);
+		for (size_t i= 0;  i < dependencies_read.size();  ++i) {
+			dependencies_read[i]= 
+				make_shared <Dynamic_Dependency> 
+				(dependency->get_flags(),
+				 dependency->places,
+				 dependencies_read[i]);
+		}
+		return; 
+	}
+
+	/* Now DEPENDENCY is Concatenated_Dependency, containing a
+	 * Compounds_Dependency_{0,1} of Dynamic_Dependency^* of a
+	 * Direct_Dependency  */ 
+
 	...;
-	
-	// In what form to return the list of dependencies?
 }
 
 #endif /* ! EXECUTION_HH */

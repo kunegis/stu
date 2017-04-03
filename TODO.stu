@@ -77,8 +77,23 @@ A:  list.[[B]];
 A:  [[B]][[B]]; 
 A:  [[B][C]]; 
 A:  [[(B)(C)]]; 
+A:  ()();  # Empty or error?   Empty is logical; error may catch some Stu code bugs. 
 
 # Test a case in which the concatenated files are not readable, i.e. because of chmod(2). 
+
+# Ordering:  in 
+A:  (X Y)(W Z);
+# the dependencies are made in order XW XZ YW YZ. 
+
+A: [[X]](Y);  
+
+A:  A(?B);  # Error 
+A:  A[?B];  # When B does not exist:  empty dependency list?
+
+#
+# Replace "unsigned" by "size_t" where appropriate.  Mainly as "for"
+# variables. 
+#
 
 #
 # sh/test:  log all tests and their runtime, version number, date, etc. 

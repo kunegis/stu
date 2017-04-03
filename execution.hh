@@ -30,6 +30,10 @@ public:
 	bool is_root() const { return parents.empty(); }
 	/* Whether this is the root execution */
 
+	void raise(int error_);
+	/* All errors by Execution call this function.  Set the error
+	 * code, and throw an error except with the keep-going option.  */
+
 	virtual int execute(Execution *parent, const Link &link);
 	/* Start the next job(s).  This will also terminate jobs when
 	 * they don't need to be run anymore, and thus it can be called
@@ -40,9 +44,18 @@ public:
 	 * When TRUE, not all possible child jobs where started.  
 	 * Child implementations call this implementation.  */
 
-	void raise(int error_);
-	/* All errors by Execution call this function.  Set the error
-	 * code, and throw an error except with the keep-going option.  */
+	static long jobs;
+	/* Number of free slots for jobs.  This is a long because
+	 * strtol() gives a long.  Set before calling main() from the -j
+	 * option, and then changed internally by this class.  */ 
+
+	static Rule_Set rule_set; 
+	/* Set once before calling Execution::main().  Unchanging during
+	 * the whole call to Execution::main().  */ 
+
+	static void main(const vector <shared_ptr <Dependency> > &dependencies);
+	/* Main execution loop.  This throws ERROR_BUILD and
+	 * ERROR_LOGICAL.  */
 
 protected: 
 	
@@ -175,15 +188,6 @@ protected:
 	virtual string debug_text() const= 0;
 	/* The text shown for this execution in verbose output */ 
 
-	static long jobs;
-	/* Number of free slots for jobs.  This is a long because
-	 * strtol() gives a long.  Set before calling main() from the -j
-	 * option, and then changed internally by this class.  */ 
-
-	static Rule_Set rule_set; 
-	/* Set once before calling Execution::main().  Unchanging during
-	 * the whole call to Execution::main().  */ 
-
 	static Timestamp timestamp_last; 
 	/* The timepoint of the last time wait() returned.  No file in the
 	 * file system should be newer than this.  */ 
@@ -193,10 +197,6 @@ protected:
 
 	static bool out_message_done;
 	/* Whether the STDOUT message is not "Targets are up to date" */
-
-	static void main(const vector <shared_ptr <Dependency> > &dependencies);
-	/* Main execution loop.  This throws ERROR_BUILD and
-	 * ERROR_LOGICAL.  */
 
 	static bool find_cycle(const Execution *const parent,
 			       const Execution *const child,
@@ -564,10 +564,21 @@ private:
 	
 	static void read_concatenation(shared_ptr <Dependency> dependency,
 				       vector <shared_ptr <Dependency> > &dependencies_read);
-	/* DEPENDENCY has the same structural constraints as this->dependency.  Assume
-	 * that all mentioned dependencies have been built.  The read
-	 * dependencies are stored into DEPENDENCIES_READ, which must
-	 * be empty on calling this function.  */
+	/* Extract individual dependencies from a given concatenated
+	 * dependency.  The read dependencies are stored into
+	 * DEPENDENCIES_READ, which must be empty on calling this
+	 * function.  DEPENDENCY has the same structural constraints as
+	 * this->dependency.  Assume that all mentioned dependencies
+	 * have been built.  */
+
+	static void concatenate_dependency(shared_ptr <Dependency> dependency_1,
+					   shared_ptr <Dependency> dependency_2,
+					   shared_ptr <Dependency> dependency_flags,
+					   vector <shared_ptr <Dependency> > &dependencies);
+	/* Concatenate DEPENDENCY_{1,2}, adding flags from
+	 * DEPENDENCY_FLAGS, appending the result to DEPENDENCIES.  Each
+	 * of the parameters DEPENDENCY_{1,2} is a
+	 * Dynamic_Dependency^{0,1} of Direct_Dependency.  */
 };
 
 long Execution::jobs= 1;
@@ -1158,7 +1169,7 @@ int Execution::execute(Execution *, const Link &link)
 				Verbose::padding(),
 				text_target.c_str());
 		}
-		return false;
+		return -1;
 	}
 
 	/* In DFS mode, first continue the already-open children, then
@@ -1176,13 +1187,13 @@ int Execution::execute(Execution *, const Link &link)
 	}
 
 	if (! execute_optional(link2))
-		return false;
+		return 0;
 
 	/* Is this a trivial dependency and we are not in trivial
 	 * override mode?  Then skip the dependency. */
 	if (link2.flags & F_TRIVIAL) {
 		done.add_neg(link2.avoid);
-		return false;
+		return -1;
 	}
 
 //	if (targets.empty())
@@ -1217,15 +1228,16 @@ int Execution::execute(Execution *, const Link &link)
 
 	/* Some dependencies are still running */ 
 	if (children.size())
-		return false;
+		return -1;
 
 	/* There was an error in a child */ 
 	if (error != 0) {
 		assert(option_keep_going == true); 
 		done.add_neg(link2.avoid);
-		return false;
+		return 0;
 	}
 
+	return -1; 
 }
 
 bool Execution::deploy(const Link &link,
@@ -1561,6 +1573,8 @@ int Execution::execute_second_pass(const Link &link)
 			return 0;
 	} 
 	assert(buffer_trivial.empty()); 
+
+	return -1; 
 }
 
 Single_Execution::~Single_Execution()
@@ -2969,6 +2983,8 @@ int Concatenated_Execution::execute(Execution *parent,
 		}
 
 		stage= 1; 
+		
+		return -1; 
 	} 
 
 	if (stage == 1) {
@@ -2988,6 +3004,8 @@ int Concatenated_Execution::execute(Execution *parent,
 		dependency= nullptr; 
 
 		stage= 2; 
+
+		return -1; 
 		
 	} else if (stage == 2) {
 		/* Second phase:  normal child executions */
@@ -2997,8 +3015,11 @@ int Concatenated_Execution::execute(Execution *parent,
 			return r;
 
 		stage= 3; 
+
+		return -1; 
 	} else {
 		assert(false);  /* Invalid stage */ 
+		return 0; 
 	}
 }
 
@@ -3054,11 +3075,95 @@ void Concatenated_Execution::read_concatenation(shared_ptr <Dependency> dependen
 		return; 
 	}
 
-	/* Now DEPENDENCY is Concatenated_Dependency, containing a
-	 * Compounds_Dependency_{0,1} of Dynamic_Dependency^* of a
-	 * Direct_Dependency  */ 
+	/* Now DEPENDENCY is a Concatenated_Dependency, containing each:
+	 * Compound_Dependency^{0,1} of Dynamic_Dependency^* of a
+	 * Direct_Dependency.  */ 
 
-	...;
+	shared_ptr <Concatenated_Dependency> concatenated_dependency=
+		dynamic_pointer_cast <Concatenated_Dependency> (dependency);
+	assert(concatenated_dependency);
+
+	/* An concatenation of zero components would logically be an
+	 * empty product and could be argued to result in a single
+	 * empty-string dependency.  
+	 * Does not happen.  */
+	if (concatenated_dependency->get_dependencies().size() == 0) {
+		assert(false);
+		return; 
+	}
+
+	for (size_t i= 0;  i < concatenated_dependency->get_dependencies().size();  ++i) {
+
+		vector <shared_ptr <Dependency> > dependencies_read_new; 
+		
+		shared_ptr <Dependency> &d= concatenated_dependency->get_dependencies()[i]; 
+
+		/* D is a Compound_Dependency^{0,1} of
+		 * Dynamic_Dependency^* of a Direct_Dependency */ 
+
+		/* If a single component is empty, the whole result is
+		 * an empty set of dependencies.  */
+		if (dynamic_pointer_cast <Compound_Dependency> (d) &&
+		    dynamic_pointer_cast <Compound_Dependency> (d)->get_dependencies().size() == 0) {
+			dependencies_read= vector <shared_ptr <Dependency> > (); 
+			return; 
+		}
+
+		/* If D is not a Compound_Dependency, then it contains
+		 * only a single components.  Append it to all read
+		 * dependencies */
+		if (nullptr == dynamic_pointer_cast <Compound_Dependency> (d)) {
+			for (size_t j= 0;  j < dependencies_read.size();  ++j) {
+				concatenate_dependency(dependencies_read[j], d, nullptr, dependencies_read_new); 
+			}
+			continue;
+		} 
+		
+		shared_ptr <Compound_Dependency> compound_dependency=
+			dynamic_pointer_cast <Compound_Dependency> (d);
+		assert(compound_dependency); 
+		
+		for (size_t j= 0;  j < dependencies_read.size();  ++j) {
+			for (size_t k= 0;  k < compound_dependency->get_dependencies().size();  ++k) {
+				concatenate_dependency(dependencies_read[j], 
+						       compound_dependency->get_dependencies()[k],
+						       d, dependencies_read_new); 
+			}
+		}
+		
+		swap(dependencies_read, dependencies_read_new); 
+	}
+}
+
+void Concatenated_Execution::concatenate_dependency(shared_ptr <Dependency> dependency_1,
+						    shared_ptr <Dependency> dependency_2,
+						    shared_ptr <Dependency> dependency_flags,
+						    vector <shared_ptr <Dependency> > &dependencies)
+{
+	vector <shared_ptr <Dependency> > dependencies_1, dependencies_2; 
+
+	/* Replace dynamic dependencies by actual dependencies, if
+	 * necessary  */ 
+	if (dynamic_pointer_cast <Dynamic_Dependency> dependency_1) {
+		read_dynamic(...); 
+	} else {
+		dependencies_1.push_back(dependency_1); 
+	}
+
+	if (dynamic_pointer_cast <Dynamic_Dependency> dependency_1) {
+		...;
+	} else {
+		dependencies_2.push_back(dependency_1); 
+	}
+
+	/* Concatenate */ 
+	for (auto &i;  dependencies_1) {
+		for (auto &j:  dependencies_2) {
+			shared_ptr <Dependency> d= concatenate_dependency_one(i, j, dependency_flags);
+			assert(d);
+			dependencies.push_back(d); 
+		}
+	}
 }
 
 #endif /* ! EXECUTION_HH */

@@ -263,8 +263,6 @@ class Direct_Dependency
 public:
 
 	Place_Param_Target place_param_target; 
-	/* Cannot be a root target */ 
-	
 	Place place;
 	/* The place where the dependency is declared */ 
 
@@ -474,9 +472,15 @@ public:
 };
 
 class Concatenated_Dependency
-/* A dependency that is the concatenation of multiple dependencies. 
+/* 
+ * A dependency that is the concatenation of multiple dependencies. 
  * The dependency as a whole does not have a place stored; the
- * place of the first sub-dependency is used.  */ 
+ * place of the first sub-dependency is used.  
+ *
+ * In terms of Stu code, a concatenated dependency corresponds to
+ *
+ *         (( X )( Y )( Z )...)
+ */ 
 	:  public Dependency
 {
 public:
@@ -488,10 +492,13 @@ public:
 	Concatenated_Dependency(Flags flags_, const Place places_[C_TRANSITIVE])
 		/* The list of dependencies is empty */ 
 		:  Dependency(flags_, places_)
-	{
-	}
+	{  }
 
 	const vector <shared_ptr <Dependency> > get_dependencies() const {
+		return dependencies; 
+	}
+
+	vector <shared_ptr <Dependency> > get_dependencies() {
 		return dependencies; 
 	}
 
@@ -521,12 +528,19 @@ public:
 private:
 
 	vector <shared_ptr <Dependency> > dependencies;
-	/* The dependencies.  May be empty.  */
+	/* The dependencies.  May be empty in code, which is something
+	 * that is not allowed in Stu code.  */
 };
 
 class Compound_Dependency
-/* A list of dependencies that act as a unit, corresponding
- * syntactically to a list of dependencies in parentheses.  */
+/* 
+ * A list of dependencies that act as a unit, corresponding
+ * syntactically to a list of dependencies in parentheses.  
+ *
+ * In terms of Stu source code, a compound dependency corresponds to
+ *
+ *         (X Y Z ...)
+ */
 	:  public Dependency
 {
 public:

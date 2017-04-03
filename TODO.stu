@@ -87,8 +87,15 @@ A:  (X Y)(W Z);
 
 A: [[X]](Y);  
 
-A:  A(?B);  # Error 
-A:  A[?B];  # When B does not exist:  empty dependency list?
+A:  A(-o B);  # Error 
+A:  A[-o B];  # When B does not exist:  empty dependency list?
+
+A:  @B(C);    # OK
+A:  B(@C);    # Error
+
+A:  $[B(C D)];  # ??
+
+A:  B.${X}(${Y});  # Error because of contiguous parameters 
 
 #
 # Replace "unsigned" by "size_t" where appropriate.  Mainly as "for"

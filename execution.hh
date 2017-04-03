@@ -152,9 +152,10 @@ protected:
 	 * dependencies while doing so.  */
 
 	void read_dynamic(Stack avoid, 
-			  shared_ptr <Dependency> dependency_this, 
+			  shared_ptr <Dynamic_Dependency> dependency_this, 
 			  vector <shared_ptr <Dependency> > dependencies);
-	/* Read dynamic dependencies.  */
+	/* Read dynamic dependencies.  The only reason this is not
+	 * static is that errors can be raised correctly.  */
 
 	virtual ~Execution(); 
 
@@ -562,23 +563,35 @@ private:
 
 	void add_stage0_dependency(shared_ptr <Dependency> d);
 	
-	static void read_concatenation(shared_ptr <Dependency> dependency,
-				       vector <shared_ptr <Dependency> > &dependencies_read);
+	void read_concatenation(Stack avoid,
+				shared_ptr <Dependency> dependency,
+				vector <shared_ptr <Dependency> > &dependencies_read);
 	/* Extract individual dependencies from a given concatenated
 	 * dependency.  The read dependencies are stored into
 	 * DEPENDENCIES_READ, which must be empty on calling this
 	 * function.  DEPENDENCY has the same structural constraints as
 	 * this->dependency.  Assume that all mentioned dependencies
-	 * have been built.  */
+	 * have been built.  The only reason this is not static is that
+	 * errors can be raised.  */
 
-	static void concatenate_dependency(shared_ptr <Dependency> dependency_1,
-					   shared_ptr <Dependency> dependency_2,
-					   shared_ptr <Dependency> dependency_flags,
-					   vector <shared_ptr <Dependency> > &dependencies);
+	void concatenate_dependency(Stack avoid,
+				    shared_ptr <Dependency> dependency_1,
+				    shared_ptr <Dependency> dependency_2,
+				    Flags dependency_flags,
+//				    shared_ptr <Dependency> dependency_flags,
+				    vector <shared_ptr <Dependency> > &dependencies);
 	/* Concatenate DEPENDENCY_{1,2}, adding flags from
 	 * DEPENDENCY_FLAGS, appending the result to DEPENDENCIES.  Each
 	 * of the parameters DEPENDENCY_{1,2} is a
-	 * Dynamic_Dependency^{0,1} of Direct_Dependency.  */
+	 * Dynamic_Dependency^{0,1} of Direct_Dependency.  
+	 * The only reason this is not static is that errors can be
+	 * raised.  */
+
+	static shared_ptr <Dependency> concatenate_dependency_one(shared_ptr <Direct_Dependency> dependency_1,
+								  shared_ptr <Direct_Dependency> dependency_2,
+								  Flags dependency_flags);
+	/* Concatenate to two given direct dependencies, additionally
+	 * adding the given flags.  */
 };
 
 long Execution::jobs= 1;
@@ -671,12 +684,12 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 }
 
 void Execution::read_dynamic(Stack avoid, 
-			     shared_ptr <Dependency> dependency_this, 
+			     shared_ptr <Dynamic_Dependency> dependency_this, 
 			     vector <shared_ptr <Dependency> > dependencies)
 {
 	Target target= dependency_this->get_single_target().unparametrized(); 
 
-	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
+//	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
 	assert(dependencies.empty()); 
 	assert(target.type.is_dynamic());
 	assert(target.type.is_any_file()); 
@@ -684,8 +697,11 @@ void Execution::read_dynamic(Stack avoid,
 
 	string filename= target.name;
 
-	Flags flags= dynamic_pointer_cast <Dynamic_Dependency>
-		(dependency_this)->dependency->get_flags();
+	Flags flags= 
+//		dynamic_pointer_cast <Dynamic_Dependency>
+//		(dependency_this)->
+		dependency_this->
+		dependency->get_flags();
 
 	if (! (flags & (F_NEWLINE_SEPARATED | F_ZERO_SEPARATED))) {
 
@@ -2129,13 +2145,15 @@ void Single_Execution::read_dynamic_dependency(Stack avoid,
 					       shared_ptr <Dependency> dependency_this)
 {
 	const Target target= dependency_this->get_single_target().unparametrized(); 
-//	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
+	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
 
 	try {
 //		const string filename= target.name; 
 		vector <shared_ptr <Dependency> > dependencies;
 
-		read_dynamic(avoid, dependency_this, dependencies);
+		read_dynamic(avoid, 
+			     dynamic_pointer_cast <Dynamic_Dependency> (dependency_this), 
+			     dependencies);
 
 		for (auto &j:  dependencies) {
 
@@ -2995,7 +3013,7 @@ int Concatenated_Execution::execute(Execution *parent,
 
 		vector <shared_ptr <Dependency> > dependencies_read; 
 
-		read_concatenation(dependency, dependencies_read); 
+		read_concatenation(link.avoid, dependency, dependencies_read); 
 
 		for (auto &i:  dependencies_read) {
 			push_default(i); 
@@ -3055,21 +3073,22 @@ void Concatenated_Execution::add_stage0_dependency(shared_ptr <Dependency> d)
 	}
 }
 
-void Concatenated_Execution::read_concatenation(shared_ptr <Dependency> dependency,
+void Concatenated_Execution::read_concatenation(Stack avoid,
+						shared_ptr <Dependency> dependency_x,
 						vector <shared_ptr <Dependency> > &dependencies_read)
 {
 	assert(dependencies_read.empty()); 
 
 	/* First, handle the outermost dynamic dependencies */
-	if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
+	if (dynamic_pointer_cast <Dynamic_Dependency> (dependency_x)) {
 		shared_ptr <Dynamic_Dependency> dependency_dynamic= 
-			dynamic_pointer_cast <Dynamic_Dependency> (dependency);
-		read_concatenation(dependency_dynamic->dependency, dependencies_read);
+			dynamic_pointer_cast <Dynamic_Dependency> (dependency_x);
+		read_concatenation(avoid, dependency_dynamic->dependency, dependencies_read);
 		for (size_t i= 0;  i < dependencies_read.size();  ++i) {
 			dependencies_read[i]= 
 				make_shared <Dynamic_Dependency> 
-				(dependency->get_flags(),
-				 dependency->places,
+				(dependency_x->get_flags(),
+				 dependency_x->places,
 				 dependencies_read[i]);
 		}
 		return; 
@@ -3080,7 +3099,7 @@ void Concatenated_Execution::read_concatenation(shared_ptr <Dependency> dependen
 	 * Direct_Dependency.  */ 
 
 	shared_ptr <Concatenated_Dependency> concatenated_dependency=
-		dynamic_pointer_cast <Concatenated_Dependency> (dependency);
+		dynamic_pointer_cast <Concatenated_Dependency> (dependency_x);
 	assert(concatenated_dependency);
 
 	/* An concatenation of zero components would logically be an
@@ -3114,7 +3133,9 @@ void Concatenated_Execution::read_concatenation(shared_ptr <Dependency> dependen
 		 * dependencies */
 		if (nullptr == dynamic_pointer_cast <Compound_Dependency> (d)) {
 			for (size_t j= 0;  j < dependencies_read.size();  ++j) {
-				concatenate_dependency(dependencies_read[j], d, nullptr, dependencies_read_new); 
+				concatenate_dependency(avoid,
+						       dependencies_read[j], d, 
+						       0, dependencies_read_new); 
 			}
 			continue;
 		} 
@@ -3125,9 +3146,9 @@ void Concatenated_Execution::read_concatenation(shared_ptr <Dependency> dependen
 		
 		for (size_t j= 0;  j < dependencies_read.size();  ++j) {
 			for (size_t k= 0;  k < compound_dependency->get_dependencies().size();  ++k) {
-				concatenate_dependency(dependencies_read[j], 
+				concatenate_dependency(avoid, dependencies_read[j], 
 						       compound_dependency->get_dependencies()[k],
-						       d, dependencies_read_new); 
+						       d->get_flags(), dependencies_read_new); 
 			}
 		}
 		
@@ -3135,35 +3156,69 @@ void Concatenated_Execution::read_concatenation(shared_ptr <Dependency> dependen
 	}
 }
 
-void Concatenated_Execution::concatenate_dependency(shared_ptr <Dependency> dependency_1,
+void Concatenated_Execution::concatenate_dependency(Stack avoid,
+						    shared_ptr <Dependency> dependency_1,
 						    shared_ptr <Dependency> dependency_2,
-						    shared_ptr <Dependency> dependency_flags,
+						    Flags dependency_flags,
+//						    shared_ptr <Dependency> dependency_flags,
 						    vector <shared_ptr <Dependency> > &dependencies)
 {
 	vector <shared_ptr <Dependency> > dependencies_1, dependencies_2; 
 
 	/* Replace dynamic dependencies by actual dependencies, if
 	 * necessary  */ 
-	if (dynamic_pointer_cast <Dynamic_Dependency> dependency_1) {
-		read_dynamic(...); 
+	if (dynamic_pointer_cast <Dynamic_Dependency> (dependency_1)) {
+		read_dynamic(avoid, 
+			     dynamic_pointer_cast <Dynamic_Dependency> (dependency_1), 
+			     dependencies_1); 
 	} else {
 		dependencies_1.push_back(dependency_1); 
 	}
 
-	if (dynamic_pointer_cast <Dynamic_Dependency> dependency_1) {
-		...;
+	if (dynamic_pointer_cast <Dynamic_Dependency> (dependency_2)) {
+		read_dynamic(avoid, 
+			     dynamic_pointer_cast <Dynamic_Dependency> (dependency_2), 
+			     dependencies_2); 
 	} else {
 		dependencies_2.push_back(dependency_1); 
 	}
 
 	/* Concatenate */ 
-	for (auto &i;  dependencies_1) {
+	for (auto &i:  dependencies_1) {
 		for (auto &j:  dependencies_2) {
-			shared_ptr <Dependency> d= concatenate_dependency_one(i, j, dependency_flags);
+			assert(dynamic_pointer_cast <Direct_Dependency> (i)); 
+			assert(dynamic_pointer_cast <Direct_Dependency> (j)); 
+			shared_ptr <Dependency> d= concatenate_dependency_one
+				(dynamic_pointer_cast <Direct_Dependency> (i), 
+				 dynamic_pointer_cast <Direct_Dependency> (j), 
+				 dependency_flags);
 			assert(d);
 			dependencies.push_back(d); 
 		}
 	}
+}
+
+shared_ptr <Dependency> Concatenated_Execution::concatenate_dependency_one(shared_ptr <Direct_Dependency> dependency_1,
+									   shared_ptr <Direct_Dependency> dependency_2,
+									   Flags dependency_flags)
+/* Rules for concatenation:
+ *   - Flags are not allowed on the second component.
+ */
+{
+	assert(dependency_2->get_flags() == 0);
+	// TODO test:  replace by a proper error 
+
+	assert(dependency_2->place_param_target.type == Type::FILE); 
+	// TODO proper test.  
+
+	Place_Param_Target target= dependency_1->place_param_target; 
+	target.place_name.append(dependency_2->place_param_target.place_name); 
+
+	return make_shared <Direct_Dependency> 
+		(dependency_flags & dependency_1->get_flags(),
+		 target,
+		 dependency_1->place,
+		 "");
 }
 
 #endif /* ! EXECUTION_HH */

@@ -263,6 +263,9 @@ class Direct_Dependency
 public:
 
 	Place_Param_Target place_param_target; 
+	/* The target of the dependency.  Has its own place, which may
+	 * differ from the dependency's place, e.g. in '@all'.  */
+
 	Place place;
 	/* The place where the dependency is declared */ 
 

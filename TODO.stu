@@ -92,6 +92,7 @@ A:  A[-o B];  # When B does not exist:  empty dependency list?
 
 A:  @B(C);    # OK
 A:  B(@C);    # Error
+A:  @B(@C);   # Error
 
 A:  $[B(C D)];  # ??
 

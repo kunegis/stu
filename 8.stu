@@ -1,0 +1,6 @@
+A:  B 
+{
+	cp B A
+}
+
+B = {correct}

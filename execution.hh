@@ -21,10 +21,14 @@ typedef unsigned Proceed;
 enum {
 	/* This is used as the return value of the functions execute()
 	 * and similar.  Defined as a typedef to make arithmetic with it.  */
+	
+	/* WAIT and FINISHED cannot be used simultaneously, because an
+	 * execution is not finished if there are jobs to wait for.  */
 
 	P_BIT_WAIT =     1 << 0,
 	P_BIT_LATER =    1 << 1,
-	P_BIT_FINISHED = 1 << 2,
+	P_BIT_FINISHED = 1 << 2,  // TODO deprecate this and call
+				  // finished() instead
 
 	P_CONTINUE = 0, 
 	/* Execution can continue in the process */
@@ -134,8 +138,7 @@ protected:
 
 	Proceed execute_second_pass(const Link &link); 
 	/* Second pass (trivial dependencies).  Called once we are sure
-	 * that the target must be built.  Return value:  same
-	 * semantics as execute_children().  */ 
+	 * that the target must be built.  */
 
 	void check_waited() const {
 		assert(buffer_default.empty()); 
@@ -1109,6 +1112,8 @@ Proceed Execution::execute_children(const Link &link)
 	vector <Execution *> executions_children_vector
 		(children.begin(), children.end()); 
 
+	Proceed proceed_all= P_CONTINUE;
+
 	while (! executions_children_vector.empty()) {
 
 		if (order_vec) {
@@ -1143,13 +1148,15 @@ Proceed Execution::execute_children(const Link &link)
 				dependency_child);
 
 		Proceed proceed= child->execute(this, move(link_child));
-		if (proceed & P_BIT_WAIT)
-			return proceed;
+		proceed_all |= (proceed & ~P_BIT_FINISHED); 
+//		if (proceed & P_BIT_WAIT)
+//			return proceed;
 		assert(jobs >= 0);
 		if (jobs == 0)  
-			return P_BIT_WAIT;
+			return proceed_all;
 
-		if (child->finished(avoid_child)) {
+		if (proceed & P_BIT_FINISHED) {
+//		if (child->finished(avoid_child)) {
 			unlink(this, child, 
 			       link.dependency,
 			       link.avoid, 
@@ -1160,7 +1167,8 @@ Proceed Execution::execute_children(const Link &link)
 	if (error) 
 		assert(option_keep_going); 
 
-	return P_CONTINUE;
+	return proceed_all; 
+//	return P_CONTINUE;
 }
 
 void Execution::push_default(shared_ptr <Dependency> dependency)
@@ -1233,7 +1241,7 @@ Proceed Execution::execute(Execution *, const Link &link)
 	/* Is this a trivial dependency?  Then skip the dependency. */
 	if (link2.flags & F_TRIVIAL) {
 		done.add_neg(link2.avoid);
-		return P_CONTINUE;
+		return P_BIT_FINISHED;
 	}
 
 //	if (targets.empty())
@@ -1247,6 +1255,7 @@ Proceed Execution::execute(Execution *, const Link &link)
 	/* 
 	 * Deploy dependencies (first pass), with the F_NOTRIVIAL flag
 	 */ 
+	Proceed proceed_all= P_CONTINUE;
 	while (! buffer_default.empty()) {
 		shared_ptr <Dependency> dependency_child= buffer_default.next(); 
 		shared_ptr <Dependency> dependency_child_overridetrivial= 
@@ -1254,10 +1263,11 @@ Proceed Execution::execute(Execution *, const Link &link)
 		dependency_child_overridetrivial->add_flags(F_OVERRIDE_TRIVIAL); 
 		buffer_trivial.push(dependency_child_overridetrivial); 
 		Proceed proceed_2= deploy(link2, dependency_child);
-		if (proceed_2 & P_BIT_WAIT)
-			return proceed_2;
+		proceed_all |= proceed_2;
+//		if (proceed_2 & P_BIT_WAIT)
+//			return proceed_2;
 		if (jobs == 0)
-			return P_BIT_WAIT;
+			return proceed_all;
 	} 
 	assert(buffer_default.empty()); 
 
@@ -1269,20 +1279,20 @@ Proceed Execution::execute(Execution *, const Link &link)
 
 	/* Some dependencies are still running */ 
 	if (children.size() != 0)
-		return P_BIT_WAIT;
+		return proceed_all;
 
 	/* There was an error in a child */ 
 	if (error != 0) {
 		assert(option_keep_going == true); 
 		done.add_neg(link2.avoid);
-		return P_CONTINUE;
+		return P_BIT_FINISHED;
 	}
 
 	return P_CONTINUE; 
 }
 
 Proceed Execution::deploy(const Link &link,
-				     shared_ptr <Dependency> dependency_child)
+			  shared_ptr <Dependency> dependency_child)
 {
 	if (option_debug) {
 		string text_target= debug_text();
@@ -1314,7 +1324,6 @@ Proceed Execution::deploy(const Link &link,
 		shared_ptr <Concatenated_Dependency> concatenated_dependency=
 			dynamic_pointer_cast <Concatenated_Dependency> (dep); 
 
-
 		Link link_child_new(avoid_child, flags_child,
 				    dependency_child->get_place(),
 				    dependency_child);
@@ -1331,10 +1340,11 @@ Proceed Execution::deploy(const Link &link,
 
 		Proceed proceed= child->execute(this, move(link_child_new));
 		if (proceed & P_BIT_WAIT)
-			return proceed;
-		assert(jobs >= 0);
-		if (jobs == 0)  
-			return P_BIT_WAIT;
+			return (proceed & ~P_BIT_FINISHED);
+		assert(jobs >= 1); 
+//		assert(jobs >= 0);
+//		if (jobs == 0)  
+//			return proceed;
 			
 		if (child->finished(avoid_child)) {
 			unlink(this, child, 
@@ -1363,7 +1373,6 @@ Proceed Execution::deploy(const Link &link,
 		/* Carry flags over transient targets */ 
 		// TODO maybe this will fail for the root target?
 		if (link.dependency != nullptr) {
-			//	if (! targets.empty()) {
 			Target target= link.dependency->get_single_target().unparametrized();
 
 			if (target.type == Type::TRANSIENT) { 
@@ -1471,9 +1480,10 @@ Proceed Execution::deploy(const Link &link,
 		Proceed proceed= child->execute(this, move(link_child_new));
 		if (proceed & P_BIT_WAIT)
 			return proceed;
-		assert(jobs >= 0);
-		if (jobs == 0)  
-			return P_BIT_WAIT;
+		assert(jobs >= 1); 
+//		assert(jobs >= 0);
+//		if (jobs == 0)  
+//			return P_BIT_WAIT;
 			
 		if (child->finished(avoid_child)) {
 			unlink(this, child, 
@@ -1614,8 +1624,8 @@ Proceed Execution::execute_second_pass(const Link &link)
 		Proceed proceed= deploy(link, dependency_child);
 		if (proceed & P_BIT_WAIT)
 			return proceed;
-		if (jobs == 0)
-			return P_BIT_WAIT | proceed;
+//		if (jobs == 0)
+//			return P_BIT_WAIT | proceed;
 	} 
 	assert(buffer_trivial.empty()); 
 
@@ -2395,7 +2405,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 {
 	Proceed proceed= Execution::execute(parent, link); 
 	if (proceed & (P_BIT_FINISHED | P_BIT_WAIT)) {
-		return proceed & ~P_BIT_FINISHED;
+		return proceed;
 	}
 
 	/* Rule does not have a command.  This includes the case of dynamic
@@ -2408,12 +2418,12 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 	// TODO move the file-existence checking code into Direct_Dependency
 	if (is_root() || get_depth() != 0) {
 		Execution::done_add_neg(link.avoid); 
-		return P_CONTINUE;
+		return proceed | P_BIT_FINISHED;
 	}
 
 	/* Job has already been started */ 
 	if (job.started_or_waited()) {
-		return P_BIT_WAIT;
+		return proceed | P_BIT_WAIT;
 	}
 
 	/* Build the file itself */ 
@@ -2423,7 +2433,6 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 	assert(targets.front().type.get_depth() == 0); 
 	assert(targets.back().type.get_depth() == 0); 
 	assert(get_buffer_default().empty()); 
-//	assert(buffer_default.empty()); 
 	assert(children.empty()); 
 	assert(error == 0);
 
@@ -2499,7 +2508,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 					 * it will then not exist when the parent is
 					 * called. */ 
 					Execution::done_add_one_neg(F_OPTIONAL); 
-					return P_CONTINUE;
+					return proceed;
 				}
 			}
 
@@ -2510,7 +2519,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 					<< system_format(target.format_word()); 
 				raise(ERROR_BUILD);
 				Execution::done_add_one_neg(link.avoid); 
-				return P_CONTINUE;
+				return proceed;
 			}
 
 			/* File does not exist, all its dependencies are up to
@@ -2533,7 +2542,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 				}
 				Execution::done_add_one_neg(link.avoid); 
 				raise(ERROR_BUILD);
-				return P_CONTINUE;
+				return proceed;
 			}		
 		}
 		
@@ -2571,7 +2580,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 	if (! need_build) {
 		/* The file does not have to be built */ 
 		Execution::done_add_neg(link.avoid); 
-		return P_CONTINUE;
+		return proceed;
 	}
 
 	/*
@@ -2586,7 +2595,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 	if (no_execution) {
 		/* A target without a command */ 
 		Execution::done_add_neg(link.avoid); 
-		return P_CONTINUE;
+		return proceed;
 	}
 
 	/* The command must be run or the file created now */
@@ -2614,7 +2623,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 		}
 
 		write_content(targets.front().name.c_str(), *(rule->command)); 
-		return P_CONTINUE;
+		return proceed;
 	}
        
 	/* We have to start the job now */ 
@@ -2671,7 +2680,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 							 targets.at(0).format_word())); 
 					raise(ERROR_BUILD);
 					Execution::done_add_neg(link.avoid); 
-					return P_CONTINUE;
+					return proceed;
 				}
 			}
 			
@@ -2705,7 +2714,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 					 targets.front().format_word())); 
 			raise(ERROR_BUILD);
 			Execution::done_add_neg(link.avoid); 
-			return P_CONTINUE;
+			return proceed;
 		}
 
 		executions_by_pid[pid]= this;
@@ -3041,7 +3050,7 @@ Proceed Concatenated_Execution::execute(Execution *parent,
 		/* First phase:  we build all individual targets, if there are some */ 
 		Proceed proceed= Execution::execute(parent, link); 
 		if (proceed & (P_BIT_FINISHED | P_BIT_WAIT)) {
-			return proceed & ~P_BIT_FINISHED;
+			return proceed;
 		}
 
 		vector <shared_ptr <Dependency> > dependencies_read; 
@@ -3056,19 +3065,19 @@ Proceed Concatenated_Execution::execute(Execution *parent,
 
 		stage= 2; 
 
-		return P_CONTINUE; 
+		return proceed; 
 		
 	} else if (stage == 2) {
 		/* Second phase:  normal child executions */
 		assert(! dependency); 
 		Proceed proceed= Execution::execute(parent, link); 
 		if (proceed & (P_BIT_FINISHED | P_BIT_WAIT)) {
-			return proceed & ~P_BIT_FINISHED;
+			return proceed;
 		}
 
 		stage= 3; 
 
-		return P_CONTINUE; 
+		return proceed | P_BIT_FINISHED; 
 	} else {
 		assert(false);  /* Invalid stage */ 
 		return P_CONTINUE; 

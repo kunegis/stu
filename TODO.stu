@@ -99,6 +99,14 @@ A:  $[B(C D)];  # ??
 A:  B.${X}(${Y});  # Error because of contiguous parameters 
 
 #
+# At the moment, "stu -g" does not disable the flag -o in copy rules, i.e.
+#
+#   A = -o B;
+#
+# but it should.  
+#
+
+#
 # Replace "unsigned" by "size_t" where appropriate.  Mainly as "for"
 # variables. 
 #

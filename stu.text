@@ -294,7 +294,7 @@ OVERVIEW
        tion,  i.e.,  for the setting up configuration of application.  Trivial
        dependencies are not allowed if the rule has no command.
 
-           target:  -t input;
+           target:  -t input { ... }
 
        Variable dependency:  the content of variables can come from files.  In
        the following example, the C flags are stored in the file 'CFLAGS', and
@@ -953,4 +953,4 @@ SEE ALSO
 
 
 
-stu-2.5.0                        November 2016                          STU(1)
+stu-2.5.0                        February 2017                          STU(1)

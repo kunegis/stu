@@ -1335,6 +1335,7 @@ bool Execution::deploy(const Link &link,
 
 	/* Carry flags over transient targets */ 
 	// TODO maybe this will fail for the root target?
+	if (link.dependency != nullptr) {
 //	if (! targets.empty()) {
 		Target target= link.dependency->get_single_target().unparametrized();
 
@@ -1356,7 +1357,7 @@ bool Execution::deploy(const Link &link,
 					 link.dependency->get_place_flag(I_TRIVIAL)); 
 			}
 		}
-//	}
+	}
 	
 	Flags flags_child_new= flags_child | flags_child_additional; 
 

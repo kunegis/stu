@@ -1,3 +1,5 @@
+# 'B' should be created only once, and not twice. 
+
 A:  B 
 {
 	cp B A

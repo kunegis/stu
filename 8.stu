@@ -1,0 +1,6 @@
+# Run with -j2
+
+>A: B C { cat B C ; }
+
+B { touch B ; }
+C { touch C ; }

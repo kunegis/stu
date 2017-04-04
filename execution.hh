@@ -27,6 +27,16 @@ class Execution
 {
 public: 
 
+	enum class Proceed
+	/* This is used as the return value of the functions execute()
+	 * and similar.  */
+	{
+		CONTINUE =    -1, /* Execution can continue in the process */
+		WAIT     =     0, /* Execution must wait for jobs to finish */ 
+		LATER    =    +1, /* Execution is not finished, but execution was delayed to random ordering */
+		RETURN   =    +2, /* Return, but only from this execution object, then return CONTINUE */
+	};
+
 	bool is_root() const { return parents.empty(); }
 	/* Whether this is the root execution */
 
@@ -34,14 +44,15 @@ public:
 	/* All errors by Execution call this function.  Set the error
 	 * code, and throw an error except with the keep-going option.  */
 
-	virtual int execute(Execution *parent, const Link &link);
+	virtual Proceed execute(Execution *parent, const Link &link);
 	/* Start the next job(s).  This will also terminate jobs when
 	 * they don't need to be run anymore, and thus it can be called
 	 * when K = 0 just to terminate jobs that need to be terminated.
 	 * The passed LINK.FLAG is the ORed combination of all FLAGs up
-	 * the dependency chain.  Return value:  the same as
-	 * execute_children().  Can only by TRUE in random mode. 
-	 * When TRUE, not all possible child jobs where started.  
+	 * the dependency chain.
+	 * // Return value:  the same as execute_children().  
+	 * Can only return 1 in random mode. 
+	 * When returning 1, not all possible child jobs where started.  
 	 * Child implementations call this implementation.  */
 
 	static long jobs;
@@ -103,13 +114,11 @@ protected:
 	 * up to the root execution. 
 	 * TEXT may be "" to not print any additional message.  */ 
 
-	int execute_children(const Link &link);
+	Proceed execute_children(const Link &link);
 	/* Execute already-active children.  Parameters 
-	 * are equivalent to those of execute(). Return value:
-	 * -1: continue; 0: abort and don't call again; 1: abort and
-	 * call again.  */ 
+	 * are equivalent to those of execute().  */
 
-	int execute_second_pass(const Link &link); 
+	Proceed execute_second_pass(const Link &link); 
 	/* Second pass (trivial dependencies).  Called once we are sure
 	 * that the target must be built.  Return value:  same
 	 * semantics as execute_children().  */ 
@@ -169,11 +178,10 @@ protected:
 	virtual const Place &get_place() const= 0;
 	/* The place for the execution; e.g. the rule; empty if there is no place */
 
-	virtual bool execute_optional(const Link &)= 0;
+	virtual Proceed execute_optional(const Link &)= 0;
 	/* Should children even be started?  Check whether this is an
 	 * optional dependency and if it is, return when the file does not
-	 * exist.  Return FALSE when execution should stop, TRUE when it
-	 * should continue.  */
+	 * exist.  */
 
 #ifndef NDEBUG
 	virtual void check_execution(const Link &link) const= 0; 
@@ -259,12 +267,11 @@ private:
 	 * dependencies, the target must be rebuilt anyway.  Does not
 	 * contain compound dependencies.  */
 
-	bool deploy(const Link &link,
-		    shared_ptr <Dependency> dependency_child);
+	Proceed deploy(const Link &link,
+		       shared_ptr <Dependency> dependency_child);
 	/* Deploy a new child execution.  LINK is the link from the
 	 * THIS's parent to this.  Note: the top-level flags of
-	 * LINK.DEPENDENCY may be modified.  Return value: same
-	 * semantics as for execute().  */
+	 * LINK.DEPENDENCY may be modified.  */
 
 	string debug_done_text() const
 	{
@@ -337,9 +344,9 @@ public:
 	}
 
 	void check_execution(const Link &link) const;
-	bool execute_optional(const Link &);
+	Proceed execute_optional(const Link &);
 
-	virtual int execute(Execution *parent, const Link &link);
+	virtual Proceed execute(Execution *parent, const Link &link);
 
 	static unordered_map <pid_t, Single_Execution *> executions_by_pid;
 	/* The currently running executions by process IDs */ 
@@ -367,12 +374,12 @@ private:
 
 	vector <Target> targets; 
 	/* The targets to which this execution object corresponds.
-	 * Empty only for the root target.  // TODO will never be empty
-	 * in the future. 
+	 * Empty only for the root target.  // TODO will change
 	 * Otherwise, all entries have
 	 * the same depth.  If the dynamic depth is larger than one,
 	 * then there is exactly one target.  There are multiple targets
 	 * here when the rule had multiple targets.  */   
+	// TODO have a dedicated class for the root target. 
 
 	shared_ptr <Rule> rule;
 	/* The instantiated file rule for this execution.  Null when
@@ -527,9 +534,9 @@ public:
 	virtual const Place &get_place() const {
 		return dependency->get_place(); 
 	}
-	virtual int execute(Execution *parent, 
-			    const Link &link);
-	virtual bool execute_optional(const Link &)  { return true;  }
+	virtual Proceed execute(Execution *parent, 
+			       const Link &link);
+	virtual Proceed execute_optional(const Link &)  { return Proceed::CONTINUE;  }
 	virtual bool finished() const;
 	virtual bool finished(Stack avoid) const; 
 
@@ -624,15 +631,19 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 
 			Link link(Stack(), (Flags) 0, Place(), shared_ptr <Dependency> ());
 
-			bool r;
+			Proceed proceed;
 
 			do {
 				if (option_debug) {
 					fprintf(stderr, "DEBUG %s main.next\n", 
 						Verbose::padding());
 				}
-				r= execution_root->execute(nullptr, move(link));
-			} while (r);
+				proceed= 
+					execution_root->execute(nullptr, move(link));
+			} while (proceed == 
+				 Proceed::LATER
+//				 Proceed::WAIT
+);
 
 			if (Single_Execution::executions_by_pid.size()) {
 				Single_Execution::wait();
@@ -640,6 +651,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		}
 
 		assert(execution_root->finished()); 
+		assert(Single_Execution::executions_by_pid.size() == 0);
 
 		bool success= (execution_root->error == 0);
 		assert(option_keep_going || success); 
@@ -669,7 +681,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 
 		/* Terminate all jobs */ 
 		if (Single_Execution::executions_by_pid.size()) {
-			print_error_reminder("Terminating all running jobs"); 
+			print_error_reminder("Terminating all jobs"); 
 			job_terminate_all();
 		}
 
@@ -1078,7 +1090,7 @@ void Execution::print_traces(string text) const
 	}
 }
 
-int Execution::execute_children(const Link &link)
+Execution::Proceed Execution::execute_children(const Link &link)
 {
 	/* Since unlink() may change execution->children, we must first
 	 * copy it over locally, and then iterate through it */ 
@@ -1119,11 +1131,12 @@ int Execution::execute_children(const Link &link)
 		Link link_child(avoid_child, flags_child, child->parents.at(this).place,
 				dependency_child);
 
-		if (child->execute(this, move(link_child)))
-			return 1;
+		Proceed proceed= child->execute(this, move(link_child));
+		if (proceed != Proceed::CONTINUE)
+			return proceed;
 		assert(jobs >= 0);
 		if (jobs == 0)  
-			return 0;
+			return Proceed::WAIT;
 
 		if (child->finished(avoid_child)) {
 			unlink(this, child, 
@@ -1136,7 +1149,7 @@ int Execution::execute_children(const Link &link)
 	if (error) 
 		assert(option_keep_going); 
 
-	return -1;
+	return Proceed::CONTINUE;
 }
 
 void Execution::push_default(shared_ptr <Dependency> dependency)
@@ -1149,7 +1162,7 @@ void Execution::push_default(shared_ptr <Dependency> dependency)
 	}
 }
 
-int Execution::execute(Execution *, const Link &link)
+Execution::Proceed Execution::execute(Execution *, const Link &link)
 {
 	Verbose verbose;
 
@@ -1185,7 +1198,7 @@ int Execution::execute(Execution *, const Link &link)
 				Verbose::padding(),
 				text_target.c_str());
 		}
-		return -1;
+		return Proceed::RETURN;
 	}
 
 	/* In DFS mode, first continue the already-open children, then
@@ -1197,19 +1210,19 @@ int Execution::execute(Execution *, const Link &link)
 	 */  
 
 	if (order != Order::RANDOM) {
-		int ret= execute_children(link2);
-		if (ret >= 0)
-			return ret;
+		Proceed proceed= execute_children(link2);
+		if (proceed != Proceed::CONTINUE)
+			return proceed;
 	}
 
-	if (! execute_optional(link2))
-		return 0;
+	Proceed proceed= execute_optional(link2);
+	if (proceed != Proceed::CONTINUE)
+		return proceed;
 
-	/* Is this a trivial dependency and we are not in trivial
-	 * override mode?  Then skip the dependency. */
+	/* Is this a trivial dependency?  Then skip the dependency. */
 	if (link2.flags & F_TRIVIAL) {
 		done.add_neg(link2.avoid);
-		return -1;
+		return Proceed::CONTINUE;
 	}
 
 //	if (targets.empty())
@@ -1229,35 +1242,36 @@ int Execution::execute(Execution *, const Link &link)
 			Dependency::clone_dependency(dependency_child);
 		dependency_child_overridetrivial->add_flags(F_OVERRIDE_TRIVIAL); 
 		buffer_trivial.push(dependency_child_overridetrivial); 
-		if (deploy(link2, dependency_child))
-			return 1;
+		Proceed proceed_2= deploy(link2, dependency_child);
+		if (proceed_2 != Proceed::CONTINUE)
+			return proceed_2;
 		if (jobs == 0)
-			return 0;
+			return Proceed::WAIT;
 	} 
 	assert(buffer_default.empty()); 
 
 	if (order == Order::RANDOM) {
-		int ret= execute_children(link2);
-		if (ret >= 0)
-			return ret;
+		Proceed proceed_2= execute_children(link2);
+		if (proceed_2 != Proceed::CONTINUE)
+			return proceed_2;
 	}
 
 	/* Some dependencies are still running */ 
-	if (children.size())
-		return -1;
+	if (children.size() != 0)
+		return Proceed::WAIT;
 
 	/* There was an error in a child */ 
 	if (error != 0) {
 		assert(option_keep_going == true); 
 		done.add_neg(link2.avoid);
-		return 0;
+		return Proceed::CONTINUE;
 	}
 
-	return -1; 
+	return Proceed::CONTINUE; 
 }
 
-bool Execution::deploy(const Link &link,
-		       shared_ptr <Dependency> dependency_child)
+Execution::Proceed Execution::deploy(const Link &link,
+				     shared_ptr <Dependency> dependency_child)
 {
 	if (option_debug) {
 		string text_target= debug_text();
@@ -1299,16 +1313,17 @@ bool Execution::deploy(const Link &link,
 
 		if (child == nullptr) {
 			/* Strong cycle was found */ 
-			return 0;
+			return Proceed::CONTINUE;
 		}
 
 		children.insert(child);
-	
-		if (child->execute(this, move(link_child_new)))
-			return 1;
+
+		Proceed proceed= child->execute(this, move(link_child_new));
+		if (proceed != Proceed::CONTINUE)
+			return proceed;
 		assert(jobs >= 0);
 		if (jobs == 0)  
-			return 0;
+			return Proceed::WAIT;
 			
 		if (child->finished(avoid_child)) {
 			unlink(this, child, 
@@ -1318,150 +1333,154 @@ bool Execution::deploy(const Link &link,
 			       avoid_child, flags_child);
 		}
 
-		return 0;
+		return Proceed::CONTINUE;
+//		return Proceed::WAIT;
+
 	} else if (dynamic_pointer_cast <Direct_Dependency> (dep)) {
 
-	shared_ptr <Direct_Dependency> direct_dependency=
-		dynamic_pointer_cast <Direct_Dependency> (dep);
-	assert(direct_dependency != nullptr); 
-	assert(! direct_dependency->place_param_target.place_name.empty()); 
-	Target target_child= direct_dependency->place_param_target.unparametrized();
-	assert(target_child.type == Type::FILE || target_child.type == Type::TRANSIENT);
-	assert(target_child.type.get_depth() == 0); 
-	if (depth != 0) {
-		assert(depth > 0);
-		target_child.type += depth; 
-	}
+		shared_ptr <Direct_Dependency> direct_dependency=
+			dynamic_pointer_cast <Direct_Dependency> (dep);
+		assert(direct_dependency != nullptr); 
+		assert(! direct_dependency->place_param_target.place_name.empty()); 
+		Target target_child= direct_dependency->place_param_target.unparametrized();
+		assert(target_child.type == Type::FILE || target_child.type == Type::TRANSIENT);
+		assert(target_child.type.get_depth() == 0); 
+		if (depth != 0) {
+			assert(depth > 0);
+			target_child.type += depth; 
+		}
 
-	/* Carry flags over transient targets */ 
-	// TODO maybe this will fail for the root target?
-	if (link.dependency != nullptr) {
-//	if (! targets.empty()) {
-		Target target= link.dependency->get_single_target().unparametrized();
+		/* Carry flags over transient targets */ 
+		// TODO maybe this will fail for the root target?
+		if (link.dependency != nullptr) {
+			//	if (! targets.empty()) {
+			Target target= link.dependency->get_single_target().unparametrized();
 
-		if (target.type == Type::TRANSIENT) { 
-			flags_child_additional |= link.flags; 
-			if (link.flags & F_PERSISTENT) {
-				dependency_child->set_place_flag
-					(I_PERSISTENT,
-					 link.dependency->get_place_flag(I_PERSISTENT)); 
-			}
-			if (link.flags & F_OPTIONAL) {
-				dependency_child->set_place_flag
-					(I_OPTIONAL,
-					 link.dependency->get_place_flag(I_OPTIONAL)); 
-			}
-			if (link.flags & F_TRIVIAL) {
-				dependency_child->set_place_flag
-					(I_TRIVIAL,
-					 link.dependency->get_place_flag(I_TRIVIAL)); 
+			if (target.type == Type::TRANSIENT) { 
+				flags_child_additional |= link.flags; 
+				if (link.flags & F_PERSISTENT) {
+					dependency_child->set_place_flag
+						(I_PERSISTENT,
+						 link.dependency->get_place_flag(I_PERSISTENT)); 
+				}
+				if (link.flags & F_OPTIONAL) {
+					dependency_child->set_place_flag
+						(I_OPTIONAL,
+						 link.dependency->get_place_flag(I_OPTIONAL)); 
+				}
+				if (link.flags & F_TRIVIAL) {
+					dependency_child->set_place_flag
+						(I_TRIVIAL,
+						 link.dependency->get_place_flag(I_TRIVIAL)); 
+				}
 			}
 		}
-	}
 	
-	Flags flags_child_new= flags_child | flags_child_additional; 
+		Flags flags_child_new= flags_child | flags_child_additional; 
+		
+		/* '-p' and '-o' do not mix, even for old flags */ 
+		if ((flags_child_new & F_PERSISTENT) && 
+		    (flags_child_new & F_OPTIONAL)) {
 
-	/* '-p' and '-o' do not mix, even for old flags */ 
-	if ((flags_child_new & F_PERSISTENT) && 
-	    (flags_child_new & F_OPTIONAL)) {
+			/* '-p' and '-o' encountered for the same target */ 
 
-		/* '-p' and '-o' encountered for the same target */ 
+			const Place &place_persistent= 
+				dependency_child->get_place_flag(I_PERSISTENT);
+			const Place &place_optional= 
+				dependency_child->get_place_flag(I_OPTIONAL);
+			place_persistent <<
+				fmt("declaration of persistent dependency with %s",
+				    multichar_format_word("-p")); 
+			place_optional <<
+				fmt("clashes with declaration of optional dependency with %s",
+				    multichar_format_word("-o")); 
+			direct_dependency->place <<
+				fmt("in declaration of dependency %s", 
+				    target_child.format_word());
+			print_traces();
+			explain_clash(); 
+			raise(ERROR_LOGICAL);
+			return Proceed::CONTINUE;
+		}
 
-		const Place &place_persistent= 
-			dependency_child->get_place_flag(I_PERSISTENT);
-		const Place &place_optional= 
-			dependency_child->get_place_flag(I_OPTIONAL);
-		place_persistent <<
-			fmt("declaration of persistent dependency with %s",
-			     multichar_format_word("-p")); 
-		place_optional <<
-			fmt("clashes with declaration of optional dependency with %s",
-			     multichar_format_word("-o")); 
-		direct_dependency->place <<
-			fmt("in declaration of dependency %s", 
-			    target_child.format_word());
-		print_traces();
-		explain_clash(); 
-		raise(ERROR_LOGICAL);
-		return 0;
-	}
+		/* Either of '-p'/'-o'/'-t' does not mix with '$[' */
+		if ((flags_child & F_VARIABLE) &&
+		    (flags_child_additional & (F_PERSISTENT | F_OPTIONAL | F_TRIVIAL))) {
 
-	/* Either of '-p'/'-o'/'-t' does not mix with '$[' */
-	if ((flags_child & F_VARIABLE) &&
-	    (flags_child_additional & (F_PERSISTENT | F_OPTIONAL | F_TRIVIAL))) {
+			assert(target_child.type == Type::FILE); 
+			const Place &place_variable= direct_dependency->place;
+			if (flags_child_additional & F_PERSISTENT) {
+				const Place &place_flag= 
+					dependency_child->get_place_flag(I_PERSISTENT); 
+				place_variable << 
+					fmt("variable dependency %s must not be declared "
+					    "as persistent dependency",
+					    dynamic_variable_format_word(target_child.name)); 
+				place_flag << fmt("using %s",
+						  multichar_format_word("-p")); 
+			} else if (flags_child_additional & F_OPTIONAL) {
+				const Place &place_flag= 
+					dependency_child->get_place_flag(I_OPTIONAL); 
+				place_variable << 
+					fmt("variable dependency %s must not be declared "
+					    "as optional dependency",
+					    dynamic_variable_format_word(target_child.name)); 
+				place_flag << fmt("using %s",
+						  multichar_format_word("-o")); 
+			} else {
+				assert(flags_child_additional & F_TRIVIAL); 
+				const Place &place_flag= 
+					dependency_child->get_place_flag(I_TRIVIAL); 
+				place_variable << 
+					fmt("variable dependency %s must not be declared "
+					    "as trivial dependency",
+					    dynamic_variable_format_word(target_child.name)); 
+				place_flag << fmt("using %s",
+						  multichar_format_word("-t")); 
+			} 
+			print_traces();
+			raise(ERROR_LOGICAL);
+			return Proceed::CONTINUE;
+		}
 
-		assert(target_child.type == Type::FILE); 
-		const Place &place_variable= direct_dependency->place;
-		if (flags_child_additional & F_PERSISTENT) {
-			const Place &place_flag= 
-				dependency_child->get_place_flag(I_PERSISTENT); 
-			place_variable << 
-				fmt("variable dependency %s must not be declared "
-				    "as persistent dependency",
-				    dynamic_variable_format_word(target_child.name)); 
-			place_flag << fmt("using %s",
-					   multichar_format_word("-p")); 
-		} else if (flags_child_additional & F_OPTIONAL) {
-			const Place &place_flag= 
-				dependency_child->get_place_flag(I_OPTIONAL); 
-			place_variable << 
-				fmt("variable dependency %s must not be declared "
-				    "as optional dependency",
-				    dynamic_variable_format_word(target_child.name)); 
-			place_flag << fmt("using %s",
-					  multichar_format_word("-o")); 
-		} else {
-			assert(flags_child_additional & F_TRIVIAL); 
-			const Place &place_flag= 
-				dependency_child->get_place_flag(I_TRIVIAL); 
-			place_variable << 
-				fmt("variable dependency %s must not be declared "
-				    "as trivial dependency",
-				    dynamic_variable_format_word(target_child.name)); 
-			place_flag << fmt("using %s",
-					   multichar_format_word("-t")); 
-		} 
-		print_traces();
-		raise(ERROR_LOGICAL);
-		return 0;
-	}
+		flags_child= flags_child_new; 
 
-	flags_child= flags_child_new; 
+		Link link_child_new(avoid_child, flags_child, 
+				    dependency_child->get_place(), 
+				    dependency_child); 
 
-	Link link_child_new(avoid_child, flags_child, 
-			    dependency_child->get_place(), 
-			    dependency_child); 
+		Single_Execution *child= Single_Execution::get_execution
+			(target_child, link_child_new, this);  
+		if (child == nullptr) {
+			/* Strong cycle was found */ 
+			return Proceed::CONTINUE;
+		}
 
-	Single_Execution *child= Single_Execution::get_execution
-		(target_child, link_child_new, this);  
-	if (child == nullptr) {
-		/* Strong cycle was found */ 
-		return 0;
-	}
-
-	children.insert(child);
-	
-	if (child->execute(this, move(link_child_new)))
-		return 1;
-	assert(jobs >= 0);
-	if (jobs == 0)  
-		return 0;
+		children.insert(child);
+		
+		Proceed proceed= child->execute(this, move(link_child_new));
+		if (proceed != Proceed::CONTINUE)
+			return proceed;
+		assert(jobs >= 0);
+		if (jobs == 0)  
+			return Proceed::WAIT;
 			
-	if (child->finished(avoid_child)) {
-		unlink(this, child, 
-		       link.dependency,
-		       link.avoid, 
-		       dependency_child,
-		       avoid_child, flags_child);
-	}
+		if (child->finished(avoid_child)) {
+			unlink(this, child, 
+			       link.dependency,
+			       link.avoid, 
+			       dependency_child,
+			       avoid_child, flags_child);
+		}
 
-	return 0;
+		return Proceed::CONTINUE;
 
 	} else {
 		assert(false); /* Invalid dependency type */ 
+		return Proceed::CONTINUE;
 	}
 
-	return -1; 
+//	return Proceed::CONTINUE; 
 }
 
 void Execution::raise(int error_)
@@ -1580,18 +1599,19 @@ void Execution::unlink(Execution *const parent,
 	child->parents.erase(parent);
 }
 
-int Execution::execute_second_pass(const Link &link)
+Execution::Proceed Execution::execute_second_pass(const Link &link)
 {
 	while (! buffer_trivial.empty()) {
 		shared_ptr <Dependency> dependency_child= buffer_trivial.next(); 
-		if (deploy(link, dependency_child))
-			return 1;
+		Proceed proceed= deploy(link, dependency_child);
+		if (proceed != Proceed::CONTINUE)
+			return proceed;
 		if (jobs == 0)
-			return 0;
+			return Proceed::WAIT;
 	} 
 	assert(buffer_trivial.empty()); 
 
-	return -1; 
+	return Proceed::CONTINUE; 
 }
 
 Single_Execution::~Single_Execution()
@@ -1607,7 +1627,7 @@ void Single_Execution::wait()
 			Verbose::padding()); 
 	}
 
-	assert(Single_Execution::executions_by_pid.size()); 
+	assert(Single_Execution::executions_by_pid.size() != 0); 
 
 	int status;
 	pid_t pid= Job::wait(&status); 
@@ -2363,11 +2383,13 @@ void Single_Execution::initialize(Stack avoid)
 	} 
 }
 
-int Single_Execution::execute(Execution *parent, const Link &link)
+Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link)
 {
-	int r= Execution::execute(parent, link); 
-	if (r >= 0) 
-		return r;
+	Proceed proceed= Execution::execute(parent, link); 
+	if (proceed != Proceed::CONTINUE) {
+		if (proceed == Proceed::RETURN)  proceed= Proceed::CONTINUE;
+		return proceed;
+	}
 
 	/* Rule does not have a command.  This includes the case of dynamic
 	 * executions, even though for dynamic executions the RULE variable
@@ -2377,15 +2399,19 @@ int Single_Execution::execute(Execution *parent, const Link &link)
 	 * must still check that the target files exist, even if they
 	 * don't have commands. */ 
 	// TODO move the file-existence checking code into Direct_Dependency
-	if (targets.empty() || get_depth() != 0) {
+	if (
+	    is_root()
+//	    targets.empty() 
+	    || get_depth() != 0) {
 		Execution::done_add_neg(link.avoid); 
 //		done.add_neg(link.avoid);
-		return 0;
+		return Proceed::CONTINUE;
+//		return Proceed::WAIT;
 	}
 
 	/* Job has already been started */ 
 	if (job.started_or_waited()) {
-		return 0;
+		return Proceed::WAIT;
 	}
 
 	/* Build the file itself */ 
@@ -2472,7 +2498,7 @@ int Single_Execution::execute(Execution *parent, const Link &link)
 					 * called. */ 
 					Execution::done_add_one_neg(F_OPTIONAL); 
 //					done.add_one_neg(F_OPTIONAL); 
-					return 0;
+					return Proceed::CONTINUE;
 				}
 			}
 
@@ -2484,7 +2510,7 @@ int Single_Execution::execute(Execution *parent, const Link &link)
 				raise(ERROR_BUILD);
 				Execution::done_add_one_neg(link.avoid); 
 //				done.add_one_neg(link.avoid); 
-				return 0;
+				return Proceed::CONTINUE;
 			}
 
 			/* File does not exist, all its dependencies are up to
@@ -2508,7 +2534,7 @@ int Single_Execution::execute(Execution *parent, const Link &link)
 				Execution::done_add_one_neg(link.avoid); 
 //				done.add_one_neg(link.avoid); 
 				raise(ERROR_BUILD);
-				return 0;
+				return Proceed::CONTINUE;
 			}		
 		}
 		
@@ -2524,7 +2550,7 @@ int Single_Execution::execute(Execution *parent, const Link &link)
 	}
 
 	if (! need_build) {
-		bool has_file= false;
+		bool has_file= false; /* One of the targets is a file */
 		for (const Target &target:  targets) {
 			if (target.type == Type::FILE) {
 				has_file= true; 
@@ -2547,7 +2573,8 @@ int Single_Execution::execute(Execution *parent, const Link &link)
 		/* The file does not have to be built */ 
 		Execution::done_add_neg(link.avoid); 
 //		done.add_neg(link.avoid);
-		return 0;
+		return Proceed::CONTINUE;
+//		return Proceed::WAIT;
 	}
 
 	/*
@@ -2555,13 +2582,14 @@ int Single_Execution::execute(Execution *parent, const Link &link)
 	 */
 
 	/* Re-deploy all dependencies (second pass) */
-	int rr= Execution::execute_second_pass(link); 
-	if (rr >= 0)  return rr; 
+	Proceed proceed_2= Execution::execute_second_pass(link); 
+	if (proceed_2 != Proceed::CONTINUE)
+		return proceed_2; 
 
 	if (no_execution) {
 		/* A target without a command */ 
 		Execution::done_add_neg(link.avoid); 
-		return 0;
+		return Proceed::CONTINUE;
 	}
 
 	/* The command must be run or the file created now */
@@ -2589,7 +2617,7 @@ int Single_Execution::execute(Execution *parent, const Link &link)
 		}
 
 		write_content(targets.front().name.c_str(), *(rule->command)); 
-		return 0;
+		return Proceed::CONTINUE;
 	}
        
 	/* We have to start the job now */ 
@@ -2646,7 +2674,7 @@ int Single_Execution::execute(Execution *parent, const Link &link)
 							 targets.at(0).format_word())); 
 					raise(ERROR_BUILD);
 					Execution::done_add_neg(link.avoid); 
-					return 0;
+					return Proceed::CONTINUE;
 				}
 			}
 			
@@ -2680,7 +2708,7 @@ int Single_Execution::execute(Execution *parent, const Link &link)
 					 targets.front().format_word())); 
 			raise(ERROR_BUILD);
 			Execution::done_add_neg(link.avoid); 
-			return 0;
+			return Proceed::CONTINUE;
 		}
 
 		executions_by_pid[pid]= this;
@@ -2692,12 +2720,12 @@ int Single_Execution::execute(Execution *parent, const Link &link)
 	assert(jobs >= 0);
 
 	if (order == Order::RANDOM) {
-		return jobs > 0 ? 1 : 0; 
+		return jobs > 0 ? Proceed::LATER : Proceed::WAIT; 
 	} else if (order == Order::DFS) {
-		return 0;
+		return Proceed::WAIT;
 	} else {
-		assert(false);
-		return 0;
+		assert(false); /* Invalid order */
+		return Proceed::WAIT;
 	}
 }
 
@@ -2910,7 +2938,7 @@ void Single_Execution::check_execution(const Link &link) const
 	get_done().check();
 }
 
-bool Single_Execution::execute_optional(const Link &link)
+Execution::Proceed Single_Execution::execute_optional(const Link &link)
 {
 	if ((link.flags & F_OPTIONAL) 
 	    && link.dependency != nullptr
@@ -2931,17 +2959,17 @@ bool Single_Execution::execute_optional(const Link &link)
 					system_format(name_format_word(name)); 
 				raise(ERROR_BUILD);
 				Execution::done_add_neg(link.avoid); 
-				return false;
+				return Proceed::CONTINUE;
 			}
 			Execution::done_add_highest_neg(link.avoid.get_highest()); 
-			return false;
+			return Proceed::CONTINUE;
 		} else {
 			assert(ret_stat == 0);
 			exists= +1;
 		}
 	}
 
-	return true; 
+	return Proceed::CONTINUE; 
 }
 
 Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependency_)
@@ -2969,8 +2997,8 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependenc
 	}
 }
 
-int Concatenated_Execution::execute(Execution *parent, 
-				    const Link &link)
+Execution::Proceed Concatenated_Execution::execute(Execution *parent, 
+						   const Link &link)
 {
 	assert(stage >= 0 && stage <= 2); 
 
@@ -3003,14 +3031,16 @@ int Concatenated_Execution::execute(Execution *parent,
 
 		stage= 1; 
 		
-		return -1; 
+		return Proceed::CONTINUE; 
 	} 
 
 	if (stage == 1) {
 		/* First phase:  we build all individual targets, if there are some */ 
-		int r= Execution::execute(parent, link); 
-		if (r >= 0)
-			return r;
+		Proceed proceed= Execution::execute(parent, link); 
+		if (proceed != Proceed::CONTINUE) {
+			if (proceed == Proceed::RETURN)  proceed= Proceed::CONTINUE;
+			return proceed;
+		}
 
 		vector <shared_ptr <Dependency> > dependencies_read; 
 
@@ -3024,21 +3054,23 @@ int Concatenated_Execution::execute(Execution *parent,
 
 		stage= 2; 
 
-		return -1; 
+		return Proceed::CONTINUE; 
 		
 	} else if (stage == 2) {
 		/* Second phase:  normal child executions */
 		assert(! dependency); 
-		int r= Execution::execute(parent, link); 
-		if (r >= 0)
-			return r;
+		Proceed proceed= Execution::execute(parent, link); 
+		if (proceed != Proceed::CONTINUE) {
+			if (proceed == Proceed::RETURN)  proceed= Proceed::CONTINUE;
+			return proceed;
+		}
 
 		stage= 3; 
 
-		return -1; 
+		return Proceed::CONTINUE; 
 	} else {
 		assert(false);  /* Invalid stage */ 
-		return 0; 
+		return Proceed::CONTINUE; 
 	}
 }
 

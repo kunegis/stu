@@ -1,8 +1,24 @@
+#
 # Sending SIGUSR1 to Stu will print statistics and a list of running
 # jobs.  
 #
 # In this test, send a SIGUSR1 signal one second after starting Stu with
-# the -j 5 option. 
+# the -j 6 option. 
+#
+# The following is executed:
+#
+#                               v
+# t:                   0        1        2        3        4
+#    D                 |
+#    E                 |
+#    @x                |-----------------|
+#    list.K            |-----------------|
+#    list.L            |-----------------|
+#    list.M            |-----------------|
+#    list.File 123     |-----------------|
+#    list.N            |-----------------|
+#    list.O                              |-----------------|
+#
 
 A:  D E   @x  list.K list.L list.M  "list.File 123" list.N list.O
 {

@@ -647,11 +647,8 @@ Execution::~Execution()
 void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 {
 	assert(jobs >= 0);
-
 	timestamp_last= Timestamp::now(); 
-
 	Execution *execution_root= new Single_Execution(dependencies); 
-
 	int error= 0; 
 
 	try {
@@ -660,14 +657,12 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 			Link link(Stack(), (Flags) 0, Place(), shared_ptr <Dependency> ());
 
 			Proceed proceed;
-
 			do {
 				if (option_debug) {
 					fprintf(stderr, "DEBUG %s main.next\n", 
 						Verbose::padding());
 				}
-				proceed= 
-					execution_root->execute(nullptr, move(link));
+				proceed= execution_root->execute(nullptr, move(link));
 			} while (proceed & P_BIT_LATER);
 
 			if (Single_Execution::executions_by_pid.size()) {
@@ -1263,25 +1258,31 @@ Proceed Execution::execute(Execution *, const Link &link)
 	 * Continue the already-active child executions 
 	 */  
 
+	Proceed proceed_all= P_CONTINUE; 
+
 	if (order != Order::RANDOM) {
 		Proceed proceed= execute_children(link2);
-		if (proceed & P_BIT_WAIT)
-			return proceed;
-		// TODO the next if block is unnecessary?
+		proceed_all |= (proceed & ~P_BIT_FINISHED); 
+//		if (proceed & P_BIT_WAIT)
+//			return proceed_all;
 		if ((proceed & P_BIT_FINISHED) && ! option_keep_going) {
 			done.add_neg(link2.avoid);
-			return proceed;
+			return proceed_all;
 		}
 	}
 
-	Proceed proceed= execute_optional(link2);
-	if (proceed & P_BIT_FINISHED)
-		return proceed;
+	// TODO but this *before* the execution of already-opened
+	// children. 
+	Proceed proceed_optional= execute_optional(link2);
+	proceed_all |= proceed_optional; 
+	if (proceed_optional & P_BIT_FINISHED) {
+		return proceed_optional;
+	}
 
-	/* Is this a trivial dependency?  Then skip the dependency. */
+	/* Is this a trivial run?  Then skip the dependency. */
 	if (link2.flags & F_TRIVIAL) {
 		done.add_neg(link2.avoid);
-		return P_BIT_FINISHED;
+		return P_BIT_FINISHED | proceed_all;
 	}
 
 	if (error) 
@@ -1290,7 +1291,13 @@ Proceed Execution::execute(Execution *, const Link &link)
 	/* 
 	 * Deploy dependencies (first pass), with the F_NOTRIVIAL flag
 	 */ 
-	Proceed proceed_all= P_CONTINUE;
+//	Proceed proceed_all= P_CONTINUE;
+
+	if (jobs == 0) {
+		assert(proceed_all & P_BIT_WAIT); 
+		return proceed_all;
+	}
+
 	while (! buffer_default.empty()) {
 		shared_ptr <Dependency> dependency_child= buffer_default.next(); 
 		shared_ptr <Dependency> dependency_child_overridetrivial= 
@@ -1308,7 +1315,6 @@ Proceed Execution::execute(Execution *, const Link &link)
 		Proceed proceed_2= execute_children(link2);
 		if (proceed_2 & P_BIT_WAIT)
 			return proceed_2;
-		// TODO the next if block is unnecessary?
 		if ((proceed_2 & P_BIT_FINISHED) && ! option_keep_going) {
 			done.add_neg(link2.avoid);
 			return proceed_2;
@@ -1395,7 +1401,7 @@ Proceed Execution::execute_deploy(const Link &link,
 
 	} else if (dynamic_pointer_cast <Direct_Dependency> (dep)) {
 
-		shared_ptr <Direct_Dependency> direct_dependency=
+ 		shared_ptr <Direct_Dependency> direct_dependency=
 			dynamic_pointer_cast <Direct_Dependency> (dep);
 		assert(direct_dependency != nullptr); 
 		assert(! direct_dependency->place_param_target.place_name.empty()); 
@@ -1460,7 +1466,7 @@ Proceed Execution::execute_deploy(const Link &link,
 			print_traces();
 			explain_clash(); 
 			raise(ERROR_LOGICAL);
-			return P_BIT_FINISHED;
+			return P_CONTINUE;
 		}
 
 		/* Either of '-p'/'-o'/'-t' does not mix with '$[' */
@@ -1500,7 +1506,7 @@ Proceed Execution::execute_deploy(const Link &link,
 			} 
 			print_traces();
 			raise(ERROR_LOGICAL);
-			return P_BIT_FINISHED;
+			return P_CONTINUE;
 		}
 
 		flags_child= flags_child_new; 
@@ -1520,7 +1526,7 @@ Proceed Execution::execute_deploy(const Link &link,
 		
 		Proceed proceed= child->execute(this, move(link_child_new));
 		if (proceed & P_BIT_WAIT)
-			return proceed;
+			return proceed & ~P_BIT_FINISHED;
 		assert(jobs >= 1); 
 			
 		if (child->finished(avoid_child)) {
@@ -1688,6 +1694,9 @@ Single_Execution::~Single_Execution()
 
 void Single_Execution::wait() 
 {
+	// TODO use a non-blocking wait() function to handle all
+	// finished jobs in a loop in this function. 
+	
 	if (option_debug) {
 		fprintf(stderr, "DEBUG %s wait\n",
 			Verbose::padding()); 
@@ -1707,6 +1716,9 @@ void Single_Execution::wait()
 	timestamp_last= Timestamp::now(); 
 
 	if (executions_by_pid.count(pid) == 0) {
+		/* Should not happen, but since the PID value came from
+		 * outside this process, we better handle this case
+		 * gracefully, i.e., do nothing.  */
 		assert(false);
 		return; 
 	}
@@ -1726,9 +1738,7 @@ void Single_Execution::waited(pid_t pid, int status)
 	Execution::check_waited(); 
 
 	assert(Execution::get_done().get_depth() == 0); 
-//	assert(done.get_depth() == 0);
 	Execution::done_set_all_one(); 
-//	done.add_one_neg(0); 
 
 	{
 		Job::Signal_Blocker sb;

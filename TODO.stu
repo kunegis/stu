@@ -98,6 +98,17 @@ A:  $[B(C D)];  # ??
 
 A:  B.${X}(${Y});  # Error because of contiguous parameters 
 
+A:  oo(B)(C);   # Make sure -o is not ignored 
+
+A:  -o @B(C);  @BC:  xxx;   # Make sure 'xxx' is correctly handled as an optional target 
+
+A:  (A)(B);   # Error:  No rule for target 'AB'
+A:  @(A)(B);  
+
+# Two different meanings [assuming three strings in each of X/Y/Z):
+A:  list.[X Y Z];   # Same as list.( [X] [Y] [Z] ):  9 variants
+A:  list.[X][Y][Z]; # Multiple all together:  27 variants 
+
 #
 # At the moment, "stu -g" does not disable the flag -o in copy rules, i.e.
 #

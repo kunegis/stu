@@ -552,7 +552,6 @@ public:
 	Concatenated_Execution(shared_ptr <Dependency> dependency_,
 			       Execution *parent,
 			       Link &link);
-//			       Stack avoid);
 	/* The given dependency is of the form described above */
 
 	~Concatenated_Execution(); 
@@ -613,7 +612,6 @@ private:
 				    shared_ptr <Dependency> dependency_1,
 				    shared_ptr <Dependency> dependency_2,
 				    Flags dependency_flags,
-//				    shared_ptr <Dependency> dependency_flags,
 				    vector <shared_ptr <Dependency> > &dependencies);
 	/* Concatenate DEPENDENCY_{1,2}, adding flags from
 	 * DEPENDENCY_FLAGS, appending the result to DEPENDENCIES.  Each
@@ -1275,8 +1273,6 @@ Proceed Execution::execute(Execution *, const Link &link)
 		buffer_trivial.push(dependency_child_overridetrivial); 
 		Proceed proceed_2= execute_deploy(link2, dependency_child);
 		proceed_all |= proceed_2;
-//		if (proceed_2 & P_BIT_WAIT)
-//			return proceed_2;
 		if (jobs == 0)
 			return proceed_all;
 	} 
@@ -1382,7 +1378,11 @@ Proceed Execution::execute_deploy(const Link &link,
 
 		/* Carry flags over transient targets */ 
 		// TODO maybe this will fail for the root target?
-		if (link.dependency != nullptr) {
+		// TODO instead of this test, use a new virtual function
+		// Dependency::get_type() to determine whether this is a
+		// transient. 
+		if (link.dependency != nullptr &&
+		    dynamic_pointer_cast <Direct_Dependency> (link.dependency)) {
 			Target target= link.dependency->get_single_target().unparametrized();
 
 			if (target.type == Type::TRANSIENT) { 
@@ -3038,7 +3038,7 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependenc
 Proceed Concatenated_Execution::execute(Execution *parent, 
 					const Link &link)
 {
-	assert(stage >= 0 && stage <= 2); 
+	assert(stage >= 0 && stage <= 3); 
 
 	if (stage == 0) {
 		/* Construct all initial dependencies */ 
@@ -3143,7 +3143,8 @@ void Concatenated_Execution::add_stage0_dependency(shared_ptr <Dependency> d)
 		 * in which nothing is dynamic:  There is nothing to
 		 * do in stage 1.  */
 	} else {
-		// TODO handle the other dependency types
+		// TODO handle the other dependency types, e.g., dynamic
+		// dependencies, etc. 
 		assert(false);
 	}
 }
@@ -3204,26 +3205,37 @@ void Concatenated_Execution::read_concatenation(Stack avoid,
 		}
 
 		/* If D is not a Compound_Dependency, then it contains
-		 * only a single components.  Append it to all read
+		 * only a single component.  Append it to all read
 		 * dependencies */
 		if (nullptr == dynamic_pointer_cast <Compound_Dependency> (d)) {
-			for (size_t j= 0;  j < dependencies_read.size();  ++j) {
-				concatenate_dependency(avoid,
-						       dependencies_read[j], d, 
-						       0, dependencies_read_new); 
+			if (i == 0) {
+				dependencies_read_new.push_back(d);
+			} else {
+				for (size_t j= 0;  j < dependencies_read.size();  ++j) {
+					concatenate_dependency(avoid,
+							       dependencies_read[j], d, 
+							       0, dependencies_read_new); 
+				}
 			}
-			continue;
-		} 
+		} else {
 		
-		shared_ptr <Compound_Dependency> compound_dependency=
-			dynamic_pointer_cast <Compound_Dependency> (d);
-		assert(compound_dependency); 
+			shared_ptr <Compound_Dependency> compound_dependency=
+				dynamic_pointer_cast <Compound_Dependency> (d);
+			assert(compound_dependency); 
 		
-		for (size_t j= 0;  j < dependencies_read.size();  ++j) {
-			for (size_t k= 0;  k < compound_dependency->get_dependencies().size();  ++k) {
-				concatenate_dependency(avoid, dependencies_read[j], 
-						       compound_dependency->get_dependencies()[k],
-						       d->get_flags(), dependencies_read_new); 
+			if (i == 0) {
+				for (size_t k= 0;  k < compound_dependency->get_dependencies().size();  ++k) {
+					dependencies_read_new.push_back(compound_dependency->get_dependencies()[k]);
+					// TODO add flags d->get_flags
+				}
+			} else {
+				for (size_t j= 0;  j < dependencies_read.size();  ++j) {
+					for (size_t k= 0;  k < compound_dependency->get_dependencies().size();  ++k) {
+						concatenate_dependency(avoid, dependencies_read[j], 
+								       compound_dependency->get_dependencies()[k],
+								       d->get_flags(), dependencies_read_new); 
+					}
+				}
 			}
 		}
 		
@@ -3235,7 +3247,6 @@ void Concatenated_Execution::concatenate_dependency(Stack avoid,
 						    shared_ptr <Dependency> dependency_1,
 						    shared_ptr <Dependency> dependency_2,
 						    Flags dependency_flags,
-//						    shared_ptr <Dependency> dependency_flags,
 						    vector <shared_ptr <Dependency> > &dependencies)
 {
 	vector <shared_ptr <Dependency> > dependencies_1, dependencies_2; 
@@ -3255,7 +3266,7 @@ void Concatenated_Execution::concatenate_dependency(Stack avoid,
 			     dynamic_pointer_cast <Dynamic_Dependency> (dependency_2), 
 			     dependencies_2); 
 	} else {
-		dependencies_2.push_back(dependency_1); 
+		dependencies_2.push_back(dependency_2); 
 	}
 
 	/* Concatenate */ 

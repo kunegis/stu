@@ -217,7 +217,7 @@ public:
 
 	virtual Param_Target get_single_target() const= 0;
 	/* Collapse the dependency into a single target, ignoring all
-	 * flags.  Only if this is a simple dependency.  */   
+	 * flags.  Only called if this is a simple dependency.  */   
 
 	virtual bool is_simple() const= 0;
 

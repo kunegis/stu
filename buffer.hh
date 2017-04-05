@@ -38,8 +38,6 @@ private:
 
 	queue <shared_ptr <Dependency> > q;
 	vector <shared_ptr <Dependency> > v;
-//	queue <Link> q;
-//	vector <Link> v;
 
 public:
 
@@ -70,12 +68,10 @@ public:
 	}
 
 	void push(shared_ptr <Dependency> d)
-//	void push(Link &&link) 
 	/* Add to the end of the queue (if sorted, otherwise, just
-	   add) */ 
+	 * add) */ 
 	{
 		assert(d->is_simple()); 
-//		assert(dynamic_pointer_cast <Compound_Dependency> (d) == nullptr); 
 		if (order_vec) {
 			v.emplace_back(d); 
 		} else {

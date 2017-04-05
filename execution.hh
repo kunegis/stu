@@ -27,8 +27,7 @@ enum {
 
 	P_BIT_WAIT =     1 << 0,
 	P_BIT_LATER =    1 << 1,
-	P_BIT_FINISHED = 1 << 2,  // TODO deprecate this and call
-				  // finished() instead
+	P_BIT_FINISHED = 1 << 2,
 
 	P_CONTINUE = 0, 
 	/* Execution can continue in the process */
@@ -395,12 +394,10 @@ private:
 
 	vector <Target> targets; 
 	/* The targets to which this execution object corresponds.
-	 * Empty only for the root target.  // TODO will change
 	 * Otherwise, all entries have
 	 * the same depth.  If the dynamic depth is larger than one,
 	 * then there is exactly one target.  There are multiple targets
 	 * here when the rule had multiple targets.  */   
-	// TODO have a dedicated class for the root target. 
 
 	shared_ptr <Rule> rule;
 	/* The instantiated file rule for this execution.  Null when
@@ -616,16 +613,16 @@ private:
 	/* Concatenate DEPENDENCY_{1,2}, adding flags from
 	 * DEPENDENCY_FLAGS, appending the result to DEPENDENCIES.  Each
 	 * of the parameters DEPENDENCY_{1,2} is a
-	 * Dynamic_Dependency^{0,1} of Direct_Dependency.  
+	 * Dynamic_Dependency^{0,1} of Single_Dependency.  
 	 * The only reason this is not static is that errors can be
 	 * raised.  */
 
 	virtual bool want_delete() const {  return true;  }
 
-	static shared_ptr <Dependency> concatenate_dependency_one(shared_ptr <Direct_Dependency> dependency_1,
-								  shared_ptr <Direct_Dependency> dependency_2,
+	static shared_ptr <Dependency> concatenate_dependency_one(shared_ptr <Single_Dependency> dependency_1,
+								  shared_ptr <Single_Dependency> dependency_2,
 								  Flags dependency_flags);
-	/* Concatenate to two given direct dependencies, additionally
+	/* Concatenate to two given single dependencies, additionally
 	 * adding the given flags.  */
 };
 
@@ -834,7 +831,7 @@ void Execution::read_dynamic(Stack avoid,
 			string filename_dependency= string(lineptr, len); 
 
 			dependencies.push_back
-				(make_shared <Direct_Dependency>
+				(make_shared <Single_Dependency>
 				 (0,
 				  Place_Param_Target
 				  (Type::FILE, 
@@ -865,7 +862,7 @@ void Execution::read_dynamic(Stack avoid,
 					dynamic_pointer_cast <Dynamic_Dependency> (dep);
 				dep= dep2->dependency; 
 			}
-			dynamic_pointer_cast <Direct_Dependency> (dep)
+			dynamic_pointer_cast <Single_Dependency> (dep)
 				->place_param_target.place_name.places[0] <<
 				fmt("dynamic dependency %s must not contain "
 				    "parametrized dependencies",
@@ -884,11 +881,11 @@ void Execution::read_dynamic(Stack avoid,
 		if (j->has_flags(F_VARIABLE) && 
 		    target.type.is_dynamic() && target.type != Type::DYNAMIC_FILE) {
 			
-			/* Only direct dependencies can have the F_VARIABLE flag set */ 
-			assert(dynamic_pointer_cast <Direct_Dependency> (j));
+			/* Only single dependencies can have the F_VARIABLE flag set */ 
+			assert(dynamic_pointer_cast <Single_Dependency> (j));
 			
-			shared_ptr <Direct_Dependency> dep= 
-				dynamic_pointer_cast <Direct_Dependency> (j);
+			shared_ptr <Single_Dependency> dep= 
+				dynamic_pointer_cast <Single_Dependency> (j);
 
 			bool quotes= false;
 			string s= dep->place_param_target.format(0, quotes);
@@ -1157,8 +1154,8 @@ Proceed Execution::execute_children(const Link &link)
 		Flags flags_child= child->parents.at(this).flags;
 
 		if (link.dependency != nullptr 
-		    && dynamic_pointer_cast <Direct_Dependency> (link.dependency)
-		    && dynamic_pointer_cast <Direct_Dependency> (link.dependency)
+		    && dynamic_pointer_cast <Single_Dependency> (link.dependency)
+		    && dynamic_pointer_cast <Single_Dependency> (link.dependency)
 		    ->place_param_target.type == Type::TRANSIENT) {
 			flags_child |= link.flags; 
 		}
@@ -1263,8 +1260,6 @@ Proceed Execution::execute(Execution *, const Link &link)
 	if (order != Order::RANDOM) {
 		Proceed proceed= execute_children(link2);
 		proceed_all |= (proceed & ~P_BIT_FINISHED); 
-//		if (proceed & P_BIT_WAIT)
-//			return proceed_all;
 		if ((proceed & P_BIT_FINISHED) && ! option_keep_going) {
 			done.add_neg(link2.avoid);
 			return proceed_all;
@@ -1291,7 +1286,6 @@ Proceed Execution::execute(Execution *, const Link &link)
 	/* 
 	 * Deploy dependencies (first pass), with the F_NOTRIVIAL flag
 	 */ 
-//	Proceed proceed_all= P_CONTINUE;
 
 	if (jobs == 0) {
 		assert(proceed_all & P_BIT_WAIT); 
@@ -1399,13 +1393,13 @@ Proceed Execution::execute_deploy(const Link &link,
 
 		return P_CONTINUE;
 
-	} else if (dynamic_pointer_cast <Direct_Dependency> (dep)) {
+	} else if (dynamic_pointer_cast <Single_Dependency> (dep)) {
 
- 		shared_ptr <Direct_Dependency> direct_dependency=
-			dynamic_pointer_cast <Direct_Dependency> (dep);
-		assert(direct_dependency != nullptr); 
-		assert(! direct_dependency->place_param_target.place_name.empty()); 
-		Target target_child= direct_dependency->place_param_target.unparametrized();
+ 		shared_ptr <Single_Dependency> single_dependency=
+			dynamic_pointer_cast <Single_Dependency> (dep);
+		assert(single_dependency != nullptr); 
+		assert(! single_dependency->place_param_target.place_name.empty()); 
+		Target target_child= single_dependency->place_param_target.unparametrized();
 		assert(target_child.type == Type::FILE || target_child.type == Type::TRANSIENT);
 		assert(target_child.type.get_depth() == 0); 
 		if (depth != 0) {
@@ -1414,12 +1408,11 @@ Proceed Execution::execute_deploy(const Link &link,
 		}
 
 		/* Carry flags over transient targets */ 
-		// TODO maybe this will fail for the root target?
 		// TODO instead of this test, use a new virtual function
 		// Dependency::get_type() to determine whether this is a
 		// transient. 
 		if (link.dependency != nullptr &&
-		    dynamic_pointer_cast <Direct_Dependency> (link.dependency)) {
+		    dynamic_pointer_cast <Single_Dependency> (link.dependency)) {
 			Target target= link.dependency->get_single_target().unparametrized();
 
 			if (target.type == Type::TRANSIENT) { 
@@ -1460,7 +1453,7 @@ Proceed Execution::execute_deploy(const Link &link,
 			place_optional <<
 				fmt("clashes with declaration of optional dependency with %s",
 				    multichar_format_word("-o")); 
-			direct_dependency->place <<
+			single_dependency->place <<
 				fmt("in declaration of dependency %s", 
 				    target_child.format_word());
 			print_traces();
@@ -1474,7 +1467,7 @@ Proceed Execution::execute_deploy(const Link &link,
 		    (flags_child_additional & (F_PERSISTENT | F_OPTIONAL | F_TRIVIAL))) {
 
 			assert(target_child.type == Type::FILE); 
-			const Place &place_variable= direct_dependency->place;
+			const Place &place_variable= single_dependency->place;
 			if (flags_child_additional & F_PERSISTENT) {
 				const Place &place_flag= 
 					dependency_child->get_place_flag(I_PERSISTENT); 
@@ -1626,8 +1619,8 @@ void Execution::unlink(Execution *const parent,
 	 */
 	if ((dynamic_cast <Single_Execution *>(child) && 
 	     dynamic_cast <Single_Execution *> (child)->is_dynamic()) ||
-	    (dynamic_pointer_cast <Direct_Dependency> (dependency_child)
-	     && dynamic_pointer_cast <Direct_Dependency> (dependency_child)
+	    (dynamic_pointer_cast <Single_Dependency> (dependency_child)
+	     && dynamic_pointer_cast <Single_Dependency> (dependency_child)
 	     ->place_param_target.type == Type::TRANSIENT
 	     && dynamic_cast <Single_Execution *> (child)->get_rule() != nullptr 
 	     && dynamic_cast <Single_Execution *> (child)->get_rule()->command == nullptr)) {
@@ -1675,8 +1668,6 @@ Proceed Execution::execute_second_pass(const Link &link)
 		shared_ptr <Dependency> dependency_child= buffer_trivial.next(); 
 		Proceed proceed= execute_deploy(link, dependency_child);
 		proceed_all |= proceed; 
-//		if (proceed & P_BIT_WAIT)
-//			return proceed;
 		assert(jobs >= 0);
 		if (jobs == 0)
 			return proceed_all; 
@@ -2443,7 +2434,7 @@ void Single_Execution::initialize(Stack avoid)
 		if (target.type.is_any_file())
 			flags_child |= F_READ;
 
-		shared_ptr <Dependency> dependency_child= make_shared <Direct_Dependency>
+		shared_ptr <Dependency> dependency_child= make_shared <Single_Dependency>
 			(flags_child,
 			 Place_Param_Target(target.type.get_base(), 
 					    Place_Name(target.name)));
@@ -2468,7 +2459,6 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 	/* We cannot return here in the non-dynamic case, because we
 	 * must still check that the target files exist, even if they
 	 * don't have commands. */ 
-	// TODO move the file-existence checking code into Direct_Dependency
 	if (is_root() || get_depth() != 0) {
 		Execution::done_add_neg(link.avoid); 
 		return proceed | P_BIT_FINISHED;
@@ -2840,7 +2830,7 @@ void Single_Execution::write_content(const char *filename,
 void Single_Execution::propagate_variable(shared_ptr <Dependency> dependency,
 					  Execution *parent)
 {
-	assert(dynamic_pointer_cast <Direct_Dependency> (dependency)); 
+	assert(dynamic_pointer_cast <Single_Dependency> (dependency)); 
 
 	if (exists <= 0)
 		return;
@@ -2886,7 +2876,7 @@ void Single_Execution::propagate_variable(shared_ptr <Dependency> dependency,
 
 	/* The variable name */ 
 	dependency_variable_name=
-		dynamic_pointer_cast <Direct_Dependency> (dependency)->name; 
+		dynamic_pointer_cast <Single_Dependency> (dependency)->name; 
 
 	{
 	string variable_name= 
@@ -2903,7 +2893,7 @@ void Single_Execution::propagate_variable(shared_ptr <Dependency> dependency,
 	close(fd); 
  error:
 	Target target_variable= 
-		dynamic_pointer_cast <Direct_Dependency> (dependency)->place_param_target
+		dynamic_pointer_cast <Single_Dependency> (dependency)->place_param_target
 		.unparametrized(); 
 
 	if (rule == nullptr) {
@@ -2946,8 +2936,8 @@ void Single_Execution::propagate_dynamic(Single_Execution *parent,
 	/* Parent->This is a [...[A]...] -> A link */
 
 	assert(flags_child & F_READ); 
-	assert(dynamic_pointer_cast <Direct_Dependency> (dependency_child)
-	       && dynamic_pointer_cast <Direct_Dependency> (dependency_child)
+	assert(dynamic_pointer_cast <Single_Dependency> (dependency_child)
+	       && dynamic_pointer_cast <Single_Dependency> (dependency_child)
 	       ->place_param_target.type == Type::FILE);
 	assert(dependency_parent->get_single_target().type.is_dynamic());
 	assert(dependency_parent->get_single_target().type.is_any_file());
@@ -3002,11 +2992,11 @@ Proceed Single_Execution::execute_optional(const Link &link)
 {
 	if ((link.flags & F_OPTIONAL) 
 	    && link.dependency != nullptr
-	    && dynamic_pointer_cast <Direct_Dependency> (link.dependency)
-	    && dynamic_pointer_cast <Direct_Dependency> (link.dependency)
+	    && dynamic_pointer_cast <Single_Dependency> (link.dependency)
+	    && dynamic_pointer_cast <Single_Dependency> (link.dependency)
 	    ->place_param_target.type == Type::FILE) {
 
-		const char *name= dynamic_pointer_cast <Direct_Dependency> (link.dependency)
+		const char *name= dynamic_pointer_cast <Single_Dependency> (link.dependency)
 			->place_param_target.place_name.unparametrized().c_str();
 
 		struct stat buf;
@@ -3014,7 +3004,7 @@ Proceed Single_Execution::execute_optional(const Link &link)
 		if (ret_stat < 0) {
 			exists= -1;
 			if (errno != ENOENT) {
-				dynamic_pointer_cast <Direct_Dependency> (link.dependency)
+				dynamic_pointer_cast <Single_Dependency> (link.dependency)
 					->place_param_target.place <<
 					system_format(name_format_word(name)); 
 				raise(ERROR_BUILD);
@@ -3035,14 +3025,10 @@ Proceed Single_Execution::execute_optional(const Link &link)
 Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependency_,
 					       Execution *parent,
 					       Link &link)
-//					       Stack avoid)
 	:  Execution(0, parent, link),
-		     //Link(avoid, dependency_->get_flags(), dependency_->get_place(), dependency_)), 
 	   dependency(dependency_),
 	   stage(0)
 {
-//	parents[parent]= link; 
-
 	/* Check the structure of the dependency */
 	shared_ptr <Dependency> dep= dependency;
 	dep= Dependency::strip_dynamic(dep); 
@@ -3054,11 +3040,11 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependenc
 			for (shared_ptr <Dependency> dd:  
 				     dynamic_pointer_cast <Compound_Dependency> (d)->get_dependencies()) {
 				shared_ptr <Dependency> dddd= Dependency::strip_dynamic(dd);
-				assert(dynamic_pointer_cast <Direct_Dependency> (dddd)); 
+				assert(dynamic_pointer_cast <Single_Dependency> (dddd)); 
 			}
 		} else {
 			shared_ptr <Dependency> ddd= Dependency::strip_dynamic(d);
-			assert(dynamic_pointer_cast <Direct_Dependency> (ddd)); 
+			assert(dynamic_pointer_cast <Single_Dependency> (ddd)); 
 		}
 	}
 }
@@ -3163,7 +3149,7 @@ void Concatenated_Execution::add_stage0_dependency(shared_ptr <Dependency> d)
  * The given dependency can be complex (i.e., not simple). 
  */
 {
-	if (dynamic_pointer_cast <Direct_Dependency> (d)) {
+	if (dynamic_pointer_cast <Single_Dependency> (d)) {
 		/* We don't have to add the dependency to anything,
 		 * because it is not dynamic.  This corresponds to the
 		 * case of e.g.     
@@ -3171,8 +3157,7 @@ void Concatenated_Execution::add_stage0_dependency(shared_ptr <Dependency> d)
 		 * in which nothing is dynamic:  There is nothing to
 		 * do in stage 1.  */
 	} else {
-		// TODO handle the other dependency types, e.g., dynamic
-		// dependencies, etc. 
+		/* Not implemented */
 		assert(false);
 	}
 }
@@ -3200,7 +3185,7 @@ void Concatenated_Execution::read_concatenation(Stack avoid,
 
 	/* Now DEPENDENCY is a Concatenated_Dependency, containing each:
 	 * Compound_Dependency^{0,1} of Dynamic_Dependency^* of a
-	 * Direct_Dependency.  */ 
+	 * Single_Dependency.  */ 
 
 	shared_ptr <Concatenated_Dependency> concatenated_dependency=
 		dynamic_pointer_cast <Concatenated_Dependency> (dependency_x);
@@ -3222,7 +3207,7 @@ void Concatenated_Execution::read_concatenation(Stack avoid,
 		shared_ptr <Dependency> d= concatenated_dependency->get_dependencies()[i]; 
 
 		/* D is a Compound_Dependency^{0,1} of
-		 * Dynamic_Dependency^* of a Direct_Dependency */ 
+		 * Dynamic_Dependency^* of a Single_Dependency */ 
 
 		/* If a single component is empty, the whole result is
 		 * an empty set of dependencies.  */
@@ -3300,11 +3285,11 @@ void Concatenated_Execution::concatenate_dependency(Stack avoid,
 	/* Concatenate */ 
 	for (auto &i:  dependencies_1) {
 		for (auto &j:  dependencies_2) {
-			assert(dynamic_pointer_cast <Direct_Dependency> (i)); 
-			assert(dynamic_pointer_cast <Direct_Dependency> (j)); 
+			assert(dynamic_pointer_cast <Single_Dependency> (i)); 
+			assert(dynamic_pointer_cast <Single_Dependency> (j)); 
 			shared_ptr <Dependency> d= concatenate_dependency_one
-				(dynamic_pointer_cast <Direct_Dependency> (i), 
-				 dynamic_pointer_cast <Direct_Dependency> (j), 
+				(dynamic_pointer_cast <Single_Dependency> (i), 
+				 dynamic_pointer_cast <Single_Dependency> (j), 
 				 dependency_flags);
 			assert(d);
 			dependencies.push_back(d); 
@@ -3312,8 +3297,8 @@ void Concatenated_Execution::concatenate_dependency(Stack avoid,
 	}
 }
 
-shared_ptr <Dependency> Concatenated_Execution::concatenate_dependency_one(shared_ptr <Direct_Dependency> dependency_1,
-									   shared_ptr <Direct_Dependency> dependency_2,
+shared_ptr <Dependency> Concatenated_Execution::concatenate_dependency_one(shared_ptr <Single_Dependency> dependency_1,
+									   shared_ptr <Single_Dependency> dependency_2,
 									   Flags dependency_flags)
 /* 
  * Rules for concatenation:
@@ -3329,7 +3314,7 @@ shared_ptr <Dependency> Concatenated_Execution::concatenate_dependency_one(share
 	Place_Param_Target target= dependency_1->place_param_target; 
 	target.place_name.append(dependency_2->place_param_target.place_name); 
 
-	return make_shared <Direct_Dependency> 
+	return make_shared <Single_Dependency> 
 		(dependency_flags & dependency_1->get_flags(),
 		 target,
 		 dependency_1->place,

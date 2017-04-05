@@ -215,7 +215,7 @@ int main(int argc, char **argv, char **envp)
 				}
 				Type type= Type::FILE;
 				dependencies.push_back
-					(make_shared <Direct_Dependency>
+					(make_shared <Single_Dependency>
 					 (0, Place_Param_Target
 					  (type, Place_Name(optarg, place))));
 				break;
@@ -314,7 +314,7 @@ int main(int argc, char **argv, char **envp)
 				dependencies.push_back
 					(make_shared <Dynamic_Dependency>
 					 (0,
-					  make_shared <Direct_Dependency>
+					  make_shared <Single_Dependency>
 					  (1 << flag_get_index(c), 
 					   Place_Param_Target
 					   (Type::FILE, Place_Name(optarg, place)))));
@@ -330,7 +330,7 @@ int main(int argc, char **argv, char **envp)
 					exit(ERROR_FATAL);
 				}
 				dependencies.push_back
-					(make_shared <Direct_Dependency>
+					(make_shared <Single_Dependency>
 					 (c == 'p' ?
 					  F_PERSISTENT : F_OPTIONAL, 
 					  Place_Param_Target
@@ -386,7 +386,7 @@ int main(int argc, char **argv, char **envp)
 				dependencies.push_back(dep); 
 			} else {
 				dependencies.push_back
-					(make_shared <Direct_Dependency>
+					(make_shared <Single_Dependency>
 					 (0, Place_Param_Target
 					  (Type::FILE, Place_Name(argv[i], place))));
 			}
@@ -446,7 +446,7 @@ int main(int argc, char **argv, char **envp)
 			}
 
 			dependencies.push_back
-				(make_shared <Direct_Dependency> (0, *(rule_first->place_param_targets[0])));  
+				(make_shared <Single_Dependency> (0, *(rule_first->place_param_targets[0])));  
 		}
 
 		/* Execute */

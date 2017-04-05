@@ -136,7 +136,7 @@ class Dependency
  *
  * A dependency can be simple or complex.  A dependency is simple if it
  * is one of:  
- *    - a direct dependency
+ *    - a single dependency
  *    - a dynamic dependency containing a simple dependency
  *    - a concatenated dependency (which may contain non-simple
  *      dependencies)
@@ -236,12 +236,11 @@ public:
 	 * return null.  */
 };
 
-class Direct_Dependency
+class Single_Dependency
 /* 
  * A parametrized dependency denoting an individual target name.  Does
  * not cover dynamic dependencies.  
  */
-// TODO rename Direct_Dependency to Single_Dependency
 	:  public Dependency
 {
 public:
@@ -257,7 +256,7 @@ public:
 	/* With F_VARIABLE:  the name of the variable.
 	 * Otherwise:  empty.  */
 	
-	Direct_Dependency(Flags flags_,
+	Single_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_)
 		/* Take the dependency place from the target place */ 
 		:  Dependency(flags_),
@@ -267,7 +266,7 @@ public:
 		check(); 
 	}
 
-	Direct_Dependency(Flags flags_,
+	Single_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_,
 			  const string &name_)
 		/* Take the dependency place from the target place, with variable_name */ 
@@ -279,7 +278,7 @@ public:
 		check(); 
 	}
 
-	Direct_Dependency(Flags flags_,
+	Single_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_,
 			  const Place &place_)
 		/* Use an explicit dependency place */ 
@@ -291,7 +290,7 @@ public:
 		check(); 
 	}
 
-	Direct_Dependency(Flags flags_,
+	Single_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_,
 			  const Place &place_,
 			  const string &name_)
@@ -819,7 +818,7 @@ Dependency::~Dependency() { }
 void Dependency::split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies, 
 					     shared_ptr <Dependency> dependency)
 {
-	if (dynamic_pointer_cast <Direct_Dependency> (dependency)) {
+	if (dynamic_pointer_cast <Single_Dependency> (dependency)) {
 		dependencies.push_back(dependency);
 
 	} else if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
@@ -856,8 +855,8 @@ void Dependency::split_compound_dependencies(vector <shared_ptr <Dependency> > &
 
 shared_ptr <Dependency> Dependency::clone_dependency(shared_ptr <Dependency> dependency)
 {
-	if (dynamic_pointer_cast <Direct_Dependency> (dependency)) {
-		return make_shared <Direct_Dependency> (* dynamic_pointer_cast <Direct_Dependency> (dependency)); 
+	if (dynamic_pointer_cast <Single_Dependency> (dependency)) {
+		return make_shared <Single_Dependency> (* dynamic_pointer_cast <Single_Dependency> (dependency)); 
 	} else if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
 		return make_shared <Dynamic_Dependency> (* dynamic_pointer_cast <Dynamic_Dependency> (dependency)); 
 	} else if (dynamic_pointer_cast <Compound_Dependency> (dependency)) {
@@ -893,12 +892,12 @@ shared_ptr <Dependency> Dependency::strip_dynamic(shared_ptr <Dependency> d)
 	return d;
 }
 
-shared_ptr <Dependency> Direct_Dependency
+shared_ptr <Dependency> Single_Dependency
 ::instantiate(const map <string, string> &mapping) const
 {
 	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
 
-	shared_ptr <Dependency> ret= make_shared <Direct_Dependency> 
+	shared_ptr <Dependency> ret= make_shared <Single_Dependency> 
 		(flags, *ret_target, place, name);
 
 	assert(ret_target->place_name.get_n() == 0); 
@@ -1017,8 +1016,6 @@ bool Concatenated_Dependency::is_unparametrized() const
 const Place &Concatenated_Dependency::get_place() const
 /* Return the place of the first dependency, or an empty place */
 {
-//	static Place place_empty;
-
 	if (dependencies.empty())
 		return Place::place_empty;
 

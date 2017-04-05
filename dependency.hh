@@ -205,26 +205,11 @@ public:
 	 * corresponding places.  If a place is already given in THIS,
 	 * only copy a place over if OVERWRITE_PLACES is set.  */
 
-	virtual shared_ptr <Dependency> 
-	instantiate(const map <string, string> &mapping) const= 0;
+	virtual shared_ptr <Dependency> instantiate(const map <string, string> &mapping) const= 0;
 	virtual bool is_unparametrized() const= 0; 
-
-//	virtual Flags get_flags() const= 0;
-//	/* Returns the flags */
-
-//	virtual bool has_flags(Flags flags_)= 0; 
-//	/* Return whether the dependency has all the given flags */
-
-//	virtual void add_flags(Flags flags_)= 0;
-//	/* Sets the given bits for this dependency */
 
 	virtual const Place &get_place() const= 0;
 	/* Where the dependency as a whole is declared */ 
-
-//	virtual const Place &get_place_flag(int i) const= 0;
-//	/* Get the place of a single flag */ 
-
-//	virtual void set_place_flag(int i, const Place &place)= 0;
 
 	virtual string format(Style, bool &quotes) const= 0; 
 	virtual string format_word() const= 0; 
@@ -341,7 +326,7 @@ public:
 		}
 	}
 
-	string format(Style style, bool &quotes) const {
+	virtual string format(Style style, bool &quotes) const {
 		string f= flags_format(flags & ~F_VARIABLE); 
 		if (f != "")
 			style |= S_MARKERS;
@@ -355,7 +340,7 @@ public:
 			   flags & F_VARIABLE ? "]" : "");
 	}
 
-	string format_word() const {
+	virtual string format_word() const {
 		string f= flags_format(flags & ~F_VARIABLE);
 		bool quotes= Color::quotes; 
 		string t= place_param_target.format
@@ -373,7 +358,7 @@ public:
 			   Color::end); 
 	}
 
-	string format_out() const {
+	virtual string format_out() const {
 		return fmt("%s%s%s%s",
 			   flags_format(flags & ~F_VARIABLE),
 			   flags & F_VARIABLE ? "$[" : "",
@@ -434,7 +419,7 @@ public:
 		return dependency->get_place(); 
 	}
 
-	string format(Style, bool &quotes) const {
+	virtual string format(Style, bool &quotes) const {
 		quotes= false;
 		bool quotes2= false;
 		string s= dependency->format(S_MARKERS, quotes2);
@@ -444,7 +429,7 @@ public:
 			   quotes2 ? "'" : "");
 	}
 
-	string format_word() const {
+	virtual string format_word() const {
 		bool quotes= false;
 		string s= dependency->format(S_MARKERS, quotes);
 		return fmt("%s[%s%s%s]%s",
@@ -455,7 +440,7 @@ public:
 			   Color::end); 
 	}
 
-	string format_out() const {
+	virtual string format_out() const {
 		string text_flags= flags_format(flags);
 		string text_dependency= dependency->format_out(); 
 		return fmt("%s[%s]",
@@ -526,7 +511,9 @@ public:
 	/* Collapse the dependency into a single target, ignoring all
 	 * flags.  Only if this is a simple dependency.  */   
 
-	virtual bool is_simple() const { return true;  }
+	virtual bool is_simple() const  { return true; }
+	/* A concatenated dependency is always simple, regardless of
+	 * whether the contained dependencies are simple.  */ 
 
 private:
 
@@ -598,6 +585,7 @@ public:
 	 * flags.  Only if this is a simple dependency.  */   
 
 	virtual bool is_simple() const { return false; }
+	/* A compound dependency is never simple */
 
 private:
 

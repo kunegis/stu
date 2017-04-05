@@ -19,11 +19,9 @@ public:
 	 * variable always equals the lowest level bits in AVOID.  */  
 	
 	Place place; 
-	/* The place of the declaration of the dependency.  Empty for
-	 * A->[...[A]...] links */ 
-	// TODO Deprecate and use the place from the dependency
-	// instead. -- Can't be done because it is used for generated
-	// traces.  
+	/* The place of the declaration of the dependency for purposes
+	 * of printing error messages.  Empty for 
+	 * A->[...[A]...] links and other links which are not printed */ 
 
 	shared_ptr <Dependency> dependency;
 	/* This is null for the root target. 

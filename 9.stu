@@ -7,5 +7,5 @@ A:  ( li )( st.x )
 
 list.x:
 {
-	echo corrent >list.x
+	echo correct >list.x
 }

@@ -32,18 +32,7 @@ enum {
 
 	P_CONTINUE = 0, 
 	/* Execution can continue in the process */
-
-//	P_WAIT     = P_BIT_WAIT, 
-//	/* Execution must wait for jobs to finish */ 
-
-//	P_LATER    = P_BIT_LATER, 
-//	/* Execution is not finished, but execution was delayed to random ordering */
-
-//	P_RETURN   = P_BIT_RETURN, 
-//	/* Return, but only from this execution object, then return CONTINUE */
 };
-
-//	static Proceed remove_finished(Proceed p) { return p & ~P_BIT_FINISHED; }
 
 class Execution
 /*
@@ -99,12 +88,13 @@ protected:
 	 * and never deleted.  */ 
 
 	map <Execution *, Link> parents; 
-	/* The parent executions.  This is a map because typically, the
+	/* The parent executions.  This is a map rather than an
+	 * unsorted_map because typically, the
 	 * number of elements is always very small, i.e., mostly one,
 	 * and a map is better suited in this case.  */ 
 
 	Timestamp timestamp; 
-	/* Latest timestamp of a (direct or indirect) file dependency
+	/* Latest timestamp of a (direct or indirect) dependency
 	 * that was not rebuilt.  Files that were rebuilt are not
 	 * considered, since they make the target be rebuilt anyway.
 	 * Implementations also changes this to consider the file
@@ -116,7 +106,7 @@ protected:
 	 * finished, this value is propagated to the parent executions
 	 * (except when the F_PERSISTENT flag is set).  */ 
 
-	Execution(int k)
+	Execution(int k, Execution *parent, Link &link)
 		/* K is the depth of the done field, i.e. the depth of
 		 * the dependency for purposes of keeping track of
 		 * caching.  */
@@ -124,13 +114,25 @@ protected:
 		   timestamp(Timestamp::UNDEFINED),
 		   need_build(false),
 		   done(k, 0) 
-	{  }
+	{  
+		parents[parent]= link; 
+	}
+
+	Execution(int k, Execution *parent_null)
+		/* Without a parent; PARENT_NULL must be null */
+		:  error(0),
+		   timestamp(Timestamp::UNDEFINED),
+		   need_build(false),
+		   done(k, 0) 
+	{  
+		assert(parent_null == nullptr); 
+	}
 
 	void print_traces(string text= "") const;
 	/* Print full trace for the execution.  First the message is
 	 * printed, then all traces for it starting at this execution,
 	 * up to the root execution. 
-	 * TEXT may be "" to not print any additional message.  */ 
+	 * TEXT may be "" to not print the first message.  */ 
 
 	Proceed execute_children(const Link &link);
 	/* Execute already-active children.  Parameters 
@@ -180,7 +182,7 @@ protected:
 	void read_dynamic(Stack avoid, 
 			  shared_ptr <Dynamic_Dependency> dependency_this, 
 			  vector <shared_ptr <Dependency> > dependencies);
-	/* Read dynamic dependencies.  The only reason this is not
+  	/* Read dynamic dependencies.  The only reason this is not
 	 * static is that errors can be raised correctly.  */
 
 	virtual ~Execution(); 
@@ -213,6 +215,8 @@ protected:
 
 	virtual string debug_text() const= 0;
 	/* The text shown for this execution in verbose output */ 
+
+	virtual bool want_delete() const= 0; 
 
 	static Timestamp timestamp_last; 
 	/* The timepoint of the last time wait() returned.  No file in the
@@ -259,8 +263,7 @@ protected:
 			   Stack avoid_child,
 			   Flags flags_child); 
 	/* Propagate information from the subexecution to the execution, and
-	 * then delete the child execution.  The child execution is
-	 * however not deleted as it is kept for caching.  */
+	 * then delete the child execution if necessary.  */
 
 private: 
 
@@ -284,11 +287,12 @@ private:
 	 * dependencies, the target must be rebuilt anyway.  Does not
 	 * contain compound dependencies.  */
 
-	Proceed deploy(const Link &link,
-		       shared_ptr <Dependency> dependency_child);
+	Proceed execute_deploy(const Link &link,
+			       shared_ptr <Dependency> dependency_child);
 	/* Deploy a new child execution.  LINK is the link from the
-	 * THIS's parent to this.  Note: the top-level flags of
-	 * LINK.DEPENDENCY may be modified.  */
+	 * THIS's parent to THIS.  Note: the top-level flags of
+	 * LINK.DEPENDENCY may be modified.   DEPENDENCY_CHILD must be
+	 * simple.  */
 
 	string debug_done_text() const
 	{
@@ -310,11 +314,11 @@ class Single_Execution
  * as an initial child only the corresponding target with one less
  * level of depth; other dependencies are added later.
  *
- * All Execution objects are allocated with new Execution(...), and are
+ * All Single_Execution objects are allocated with new Single_Execution(...), and are
  * never deleted, as the information contained in them needs to be
  * cached.
  *
- * All Execution objects are linked through the map called
+ * All Single_Execution objects are linked through the map called
  * "executions_by_target" by all their targets.
  */
 	:  public Execution 
@@ -509,6 +513,8 @@ private:
 			: targets.front().format_out(); 
 	}
 
+	virtual bool want_delete() const {  return false;  }
+
 	static unordered_map <Target, Single_Execution *> executions_by_target;
 	/* The Execution objects by each of their target.  Execution objects
 	 * are never deleted.  This serves as a caching mechanism.  The
@@ -543,8 +549,13 @@ class Concatenated_Execution
 {
 public:
 
-	Concatenated_Execution(shared_ptr <Dependency> dependency_); 
+	Concatenated_Execution(shared_ptr <Dependency> dependency_,
+			       Execution *parent,
+			       Link &link);
+//			       Stack avoid);
 	/* The given dependency is of the form described above */
+
+	~Concatenated_Execution(); 
 
 	virtual shared_ptr <Rule> get_param_rule() const { return nullptr; }
 	virtual int get_depth() const { return -1; }
@@ -611,6 +622,8 @@ private:
 	 * The only reason this is not static is that errors can be
 	 * raised.  */
 
+	virtual bool want_delete() const {  return true;  }
+
 	static shared_ptr <Dependency> concatenate_dependency_one(shared_ptr <Direct_Dependency> dependency_1,
 								  shared_ptr <Direct_Dependency> dependency_2,
 								  Flags dependency_flags);
@@ -630,7 +643,7 @@ unordered_map <string, Timestamp> Single_Execution::transients;
 
 Execution::~Execution()
 {
-
+	/* Nop */
 }
 
 void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
@@ -1149,8 +1162,6 @@ Proceed Execution::execute_children(const Link &link)
 
 		Proceed proceed= child->execute(this, move(link_child));
 		proceed_all |= (proceed & ~P_BIT_FINISHED); 
-//		if (proceed & P_BIT_WAIT)
-//			return proceed;
 		assert(jobs >= 0);
 		if (jobs == 0)  
 			return proceed_all;
@@ -1262,7 +1273,7 @@ Proceed Execution::execute(Execution *, const Link &link)
 			Dependency::clone_dependency(dependency_child);
 		dependency_child_overridetrivial->add_flags(F_OVERRIDE_TRIVIAL); 
 		buffer_trivial.push(dependency_child_overridetrivial); 
-		Proceed proceed_2= deploy(link2, dependency_child);
+		Proceed proceed_2= execute_deploy(link2, dependency_child);
 		proceed_all |= proceed_2;
 //		if (proceed_2 & P_BIT_WAIT)
 //			return proceed_2;
@@ -1291,9 +1302,11 @@ Proceed Execution::execute(Execution *, const Link &link)
 	return P_CONTINUE; 
 }
 
-Proceed Execution::deploy(const Link &link,
-			  shared_ptr <Dependency> dependency_child)
+Proceed Execution::execute_deploy(const Link &link,
+				  shared_ptr <Dependency> dependency_child)
 {
+	assert(dependency_child->is_simple()); 
+
 	if (option_debug) {
 		string text_target= debug_text();
 		string text_child= dependency_child->format_out(); 
@@ -1316,7 +1329,7 @@ Proceed Execution::deploy(const Link &link,
 		avoid_child.push();
 		avoid_child.add_lowest(dep->get_flags()); 
 	}
-	assert(dynamic_pointer_cast <Direct_Dependency> (dep)); 
+//	assert(dynamic_pointer_cast <Direct_Dependency> (dep)); 
 
 	if (dynamic_pointer_cast <Concatenated_Dependency> (dep)) {
 		/* This is a concatenated dependency:  Create a new
@@ -1329,7 +1342,7 @@ Proceed Execution::deploy(const Link &link,
 				    dependency_child);
 
 		Concatenated_Execution *child= new Concatenated_Execution
-			(dependency_child);
+			(dependency_child, this, link_child_new);
 
 		if (child == nullptr) {
 			/* Strong cycle was found */ 
@@ -1342,9 +1355,6 @@ Proceed Execution::deploy(const Link &link,
 		if (proceed & P_BIT_WAIT)
 			return (proceed & ~P_BIT_FINISHED);
 		assert(jobs >= 1); 
-//		assert(jobs >= 0);
-//		if (jobs == 0)  
-//			return proceed;
 			
 		if (child->finished(avoid_child)) {
 			unlink(this, child, 
@@ -1496,7 +1506,8 @@ Proceed Execution::deploy(const Link &link,
 		return P_CONTINUE;
 
 	} else {
-		assert(false); /* Invalid dependency type */ 
+		/* Invalid dependency type.  The dependency must be simple. */ 
+		assert(false); 
 		return P_CONTINUE;
 	}
 }
@@ -1615,17 +1626,26 @@ void Execution::unlink(Execution *const parent,
 
 	assert(child->parents.count(parent) == 1);
 	child->parents.erase(parent);
+
+	/*
+	 * Delete the Execution object
+	 */
+	if (child->want_delete())
+		delete child; 
 }
 
 Proceed Execution::execute_second_pass(const Link &link)
 {
+	Proceed proceed_all= P_CONTINUE;
 	while (! buffer_trivial.empty()) {
 		shared_ptr <Dependency> dependency_child= buffer_trivial.next(); 
-		Proceed proceed= deploy(link, dependency_child);
-		if (proceed & P_BIT_WAIT)
-			return proceed;
-//		if (jobs == 0)
-//			return P_BIT_WAIT | proceed;
+		Proceed proceed= execute_deploy(link, dependency_child);
+		proceed_all |= proceed; 
+//		if (proceed & P_BIT_WAIT)
+//			return proceed;
+		assert(jobs >= 0);
+		if (jobs == 0)
+			return proceed_all; 
 	} 
 	assert(buffer_trivial.empty()); 
 
@@ -1811,15 +1831,16 @@ Single_Execution::Single_Execution(Target target_,
 				   Link &link,
 				   Execution *parent)
 	/* This is a regular non-root object */
-	:  Execution(target_.type.get_depth()),
+	:  Execution(target_.type.get_depth(), parent, link),
 	   checked(false),
-	   exists(0)//,
-//	   done(target_.type.get_depth(), 0)
+	   exists(0)
 {
 	assert(parent != nullptr); 
-	assert(parents.empty()); 
+	assert(parents.size() == 1); 
+//	assert(parents.empty()); 
 
-	parents[parent]= link; 
+//	parents[parent]= link; 
+
 	targets.push_back(target_); 
 
 	/* 
@@ -1962,10 +1983,9 @@ Single_Execution::Single_Execution(const vector <shared_ptr <Dependency> > &depe
  * not done however, as there is only a single such object, and its
  * lifetime span the whole lifetime of the Stu process anyway.
  */
-	:  Execution(0),
+	:  Execution(0, nullptr),
 	   checked(false),
-	   exists(0)//,
-//	   done()
+	   exists(0)
 {
 	for (auto &d:  dependencies_) {
 		push_default(d); 
@@ -2984,11 +3004,17 @@ Proceed Single_Execution::execute_optional(const Link &link)
 	return P_CONTINUE; 
 }
 
-Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependency_)
-	:  Execution(0), // Should it always by zero
+Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependency_,
+					       Execution *parent,
+					       Link &link)
+//					       Stack avoid)
+	:  Execution(0, parent, link),
+		     //Link(avoid, dependency_->get_flags(), dependency_->get_place(), dependency_)), 
 	   dependency(dependency_),
 	   stage(0)
 {
+//	parents[parent]= link; 
+
 	/* Check the structure of the dependency */
 	shared_ptr <Dependency> dep= dependency;
 	dep= Dependency::strip_dynamic(dep); 
@@ -3010,7 +3036,7 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependenc
 }
 
 Proceed Concatenated_Execution::execute(Execution *parent, 
-						   const Link &link)
+					const Link &link)
 {
 	assert(stage >= 0 && stage <= 2); 
 
@@ -3042,8 +3068,8 @@ Proceed Concatenated_Execution::execute(Execution *parent,
 		}
 
 		stage= 1; 
-		
-		return P_CONTINUE; 
+
+		/* Fall through to stage 1 */ 
 	} 
 
 	if (stage == 1) {
@@ -3065,9 +3091,11 @@ Proceed Concatenated_Execution::execute(Execution *parent,
 
 		stage= 2; 
 
-		return proceed; 
+		/* Fall through to stage 2 */
 		
-	} else if (stage == 2) {
+	} 
+
+	if (stage == 2) {
 		/* Second phase:  normal child executions */
 		assert(! dependency); 
 		Proceed proceed= Execution::execute(parent, link); 
@@ -3075,9 +3103,13 @@ Proceed Concatenated_Execution::execute(Execution *parent,
 			return proceed;
 		}
 
+		assert((proceed & P_BIT_WAIT) == 0); 
+
 		stage= 3; 
 
 		return proceed | P_BIT_FINISHED; 
+	} else if (stage == 3) {
+		return P_BIT_FINISHED; 
 	} else {
 		assert(false);  /* Invalid stage */ 
 		return P_CONTINUE; 
@@ -3158,7 +3190,7 @@ void Concatenated_Execution::read_concatenation(Stack avoid,
 
 		vector <shared_ptr <Dependency> > dependencies_read_new; 
 		
-		shared_ptr <Dependency> &d= concatenated_dependency->get_dependencies()[i]; 
+		shared_ptr <Dependency> d= concatenated_dependency->get_dependencies()[i]; 
 
 		/* D is a Compound_Dependency^{0,1} of
 		 * Dynamic_Dependency^* of a Direct_Dependency */ 
@@ -3244,7 +3276,8 @@ void Concatenated_Execution::concatenate_dependency(Stack avoid,
 shared_ptr <Dependency> Concatenated_Execution::concatenate_dependency_one(shared_ptr <Direct_Dependency> dependency_1,
 									   shared_ptr <Direct_Dependency> dependency_2,
 									   Flags dependency_flags)
-/* Rules for concatenation:
+/* 
+ * Rules for concatenation:
  *   - Flags are not allowed on the second component.
  */
 {
@@ -3262,6 +3295,11 @@ shared_ptr <Dependency> Concatenated_Execution::concatenate_dependency_one(share
 		 target,
 		 dependency_1->place,
 		 "");
+}
+
+Concatenated_Execution::~Concatenated_Execution()
+{
+	/* Nop */ 
 }
 
 #endif /* ! EXECUTION_HH */

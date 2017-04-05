@@ -1,3 +1,0 @@
-A:  list.(X Y Z) {  cat list.X list.Y list .Z >A }
-
->list.$n { echo "This is list #$n" ; }

@@ -114,7 +114,6 @@ private:
 	/* Return null when nothing was parsed */ 
 
 	bool parse_expression(shared_ptr <Dependency> &ret,
-			      //vector <shared_ptr <Dependency> > &ret,
 			      Place_Name &place_name_input,
 			      Place &place_input,
 			      const vector <shared_ptr <Place_Param_Target> > &targets);
@@ -829,7 +828,6 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 		 * to check this here.  */   
 		if (! place_name_input.place.empty()
 		    && flag_token.flag == 'o') {
-//		    && ! option_nonoptional) {
 			place_input <<
 				fmt("input redirection using %s must not be used",
 				    char_format_word('<')); 
@@ -847,35 +845,6 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 				ret->set_place_flag(i_flag, place_flag); 
 		}
 
-		// for (auto &j:  ret) {
-
-		// 	if ((i_flag != I_TRIVIAL  && i_flag != I_OPTIONAL) ||
-		// 	    (i_flag == I_TRIVIAL  && ! option_nontrivial) ||
-		// 	    (i_flag == I_OPTIONAL && ! option_nonoptional)) {
-
-		// 		if (i_flag == I_OPTIONAL) {
-		// 			/* D_INPUT and D_OPTIONAL cannot be used at the same
-		// 			 * time. Note: Input redirection must not appear in
-		// 			 * dynamic dependencies, and therefore it is sufficient
-		// 			 * to check this here.  */   
-		// 			if (! place_name_input.place.empty()) { 
-		// 				place_input <<
-		// 					fmt("input redirection using %s must not be used",
-		// 					    char_format_word('<')); 
-		// 				place_flag <<
-		// 					fmt("in conjunction with optional dependency flag %s",
-		// 					    multichar_format_word("-o")); 
-		// 				throw ERROR_LOGICAL;
-		// 			}
-		// 		}
-
-		// 		j->add_flags(1 << i_flag); 
-
-		// 		if (i_flag < C_TRANSITIVE)
-		// 			j->set_place_flag(i_flag, place_flag); 
-		// 	}
-		// }
-
 		return true;
 	}
 
@@ -884,16 +853,13 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 		parse_variable_dep(place_name_input, place_input, targets);
 	if (dependency != nullptr) {
 		ret= dependency; 
-//		ret.push_back(dependency); 
 		return true; 
 	}
 
 	/* Redirect dependency */
-	dependency= 
-		parse_redirect_dep(place_name_input, place_input, targets); 
+	dependency= parse_redirect_dep(place_name_input, place_input, targets); 
 	if (dependency != nullptr) {
 		ret= dependency;
-//		ret.push_back(r);
 		return true; 
 	}
 
@@ -1097,10 +1063,10 @@ shared_ptr <Dependency> Parser::parse_redirect_dep
 	bool has_input= false;
 
 	if (is_operator('<')) {
+		has_input= true; 
 		place_input= (*iter)->get_place();
 		assert(! place_input.empty()); 
 		++iter;
-		has_input= true; 
 	}
 
 	bool has_transient= false;
@@ -1184,11 +1150,28 @@ shared_ptr <Dependency> Parser::parse_redirect_dep
 		assert(! place_input.empty()); 
 	}
 
-	return make_shared <Direct_Dependency>
+	shared_ptr <Dependency> ret= make_shared <Direct_Dependency>
 		(flags,
 		 Place_Param_Target(has_transient ? Type::TRANSIENT : Type::FILE,
 				    *name_token,
 				    has_transient ? place_at : name_token->place)); 
+
+	if (next_concatenates()) {
+		shared_ptr <Dependency> next;
+		bool rr= parse_expression(next, place_name_input, place_input, targets);
+		/* It can be that an empty list was parsed, in
+		 * which case RR is true but the list is empty */
+		if (rr && next != nullptr) {
+			shared_ptr <Concatenated_Dependency> ret_new=
+				make_shared <Concatenated_Dependency> ();
+			ret_new->push_back(ret);
+			ret_new->push_back(next);
+			ret.reset();
+			ret= move(ret_new); 
+		}
+	}
+
+	return ret; 
 }
 
 void Parser::append_copy(      Name &to,

@@ -105,6 +105,9 @@ A:  @(A)(B);
 A:  list.[X Y Z];   # Same as list.( [X] [Y] [Z] ):  9 variants
 A:  list.[X][Y][Z]; # Multiple all together:  27 variants 
 
+A:  ((X)(Y))(Z);
+A:  (X)((Y)(Z); 
+
 # Man page
 
 #

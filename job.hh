@@ -314,7 +314,6 @@ pid_t Job::start(string command,
 		 * invokes the whole (possibly multiline) command in one step. */
 		const char *shell_options= option_individual ? "-ex" : "-e"; 
 
-		// TODO -c can be folded into -e/-ex as -ce/-cex. 
 		const char *argv[]= {argv0.c_str(), 
 				     shell_options, "-c", arg, nullptr}; 
 

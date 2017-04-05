@@ -142,6 +142,13 @@ A:  [X](Y); # OK
 #
 
 #
+# In the following case, there should be an explanation message that two
+# parameters cannot be continguous.
+#
+
+A.$X$Y;
+
+#
 # Allow a better integrated syntax on the command line after '--'.  This
 # will complement the options -o/-p/-n/-0.
 #

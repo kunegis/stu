@@ -47,7 +47,7 @@ enum
 	I_VARIABLE,
 	I_OVERRIDE_TRIVIAL,
 	I_NEWLINE_SEPARATED,
-	I_ZERO_SEPARATED,
+	I_NUL_SEPARATED,
 
 	C_ALL, /* Total number of flags */ 
 
@@ -89,10 +89,9 @@ enum
 	/* For dynamic dependencies, the file contains newline-separated
 	 * filenames, without any markup  */ 
 
-	F_ZERO_SEPARATED=    1 << I_ZERO_SEPARATED,
+	F_NUL_SEPARATED=    1 << I_NUL_SEPARATED,
 	/* For dynamic dependencies, the file contains NUL-separated
 	 * filenames, without any markup  */ 
-	// TODO rename to F_NUL_SEPARATED
 };
 
 const char *const FLAGS_CHARS= "pot`$*n0"; 
@@ -109,7 +108,7 @@ int flag_get_index(char c)
 	case 'o':  return I_OPTIONAL;
 	case 't':  return I_TRIVIAL;
 	case 'n':  return I_NEWLINE_SEPARATED;
-	case '0':  return I_ZERO_SEPARATED;
+	case '0':  return I_NUL_SEPARATED;
 		
 	default:
 		assert(false);

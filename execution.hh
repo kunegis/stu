@@ -136,8 +136,7 @@ protected:
 	 * TEXT may be "" to not print the first message.  */ 
 
 	Proceed execute_children(const Link &link);
-	/* Execute already-active children.  Parameters 
-	 * are equivalent to those of execute().  */
+	/* Execute already-active children */
 
 	Proceed execute_second_pass(const Link &link); 
 	/* Second pass (trivial dependencies).  Called once we are sure
@@ -727,7 +726,6 @@ void Execution::read_dynamic(Stack avoid,
 {
 	Target target= dependency_this->get_single_target().unparametrized(); 
 
-//	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
 	assert(dependencies.empty()); 
 	assert(target.type.is_dynamic());
 	assert(target.type.is_any_file()); 
@@ -735,13 +733,9 @@ void Execution::read_dynamic(Stack avoid,
 
 	string filename= target.name;
 
-	Flags flags= 
-//		dynamic_pointer_cast <Dynamic_Dependency>
-//		(dependency_this)->
-		dependency_this->
-		dependency->get_flags();
+	Flags flags= dependency_this->dependency->get_flags();
 
-	if (! (flags & (F_NEWLINE_SEPARATED | F_ZERO_SEPARATED))) {
+	if (! (flags & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
 
 		/* Parse dynamic dependency in full Stu syntax */ 
 
@@ -859,6 +853,13 @@ void Execution::read_dynamic(Stack avoid,
 	end:;
 	}
 
+	
+	/* 
+	 * Perform checks on forbidden features in dynamic dependencies.
+	 * In keep-going mode (-k), we set the error, set the erroneous
+	 * dependency to null, and at the end prune the null entries. 
+	 */
+	bool found_error= false; 
 	for (auto &j:  dependencies) {
 
 		/* Check that it is unparametrized */ 
@@ -879,6 +880,8 @@ void Execution::read_dynamic(Stack avoid,
 			print_traces(fmt("%s is declared here", 
 					 target_base.format_word())); 
 			raise(ERROR_LOGICAL);
+			j= nullptr;
+			found_error= true; 
 			continue; 
 		}
 
@@ -905,8 +908,19 @@ void Execution::read_dynamic(Stack avoid,
 			print_traces(fmt("within multiply-dynamic dependency %s", 
 					 target.format_word())); 
 			raise(ERROR_LOGICAL);
+			j= nullptr; 
+			found_error= true; 
 			continue; 
 		}
+	}
+	if (found_error) {
+		assert(option_keep_going); 
+		vector <shared_ptr <Dependency> > dependencies_new;
+		for (auto &j:  dependencies) {
+			if (j)
+				dependencies_new.push_back(j); 
+		}
+		swap(dependencies, dependencies_new); 
 	}
 }
 
@@ -1177,13 +1191,16 @@ Proceed Execution::execute_children(const Link &link)
 		}
 	}
 
-	if (error) 
+	if (error) {
 		assert(option_keep_going); 
+	}
 
 	if ((proceed_all & (P_BIT_WAIT | P_BIT_LATER)) == P_CONTINUE) {
 		/* If there are still children, they must have returned
 		 * WAIT or LATER */ 
 		assert(children.empty()); 
+		if (error)
+			proceed_all |= P_BIT_FINISHED; 
 	}
 
 	return proceed_all; 
@@ -1250,6 +1267,11 @@ Proceed Execution::execute(Execution *, const Link &link)
 		Proceed proceed= execute_children(link2);
 		if (proceed & P_BIT_WAIT)
 			return proceed;
+		// TODO the next if block is unnecessary?
+		if ((proceed & P_BIT_FINISHED) && ! option_keep_going) {
+			done.add_neg(link2.avoid);
+			return proceed;
+		}
 	}
 
 	Proceed proceed= execute_optional(link2);
@@ -1286,6 +1308,11 @@ Proceed Execution::execute(Execution *, const Link &link)
 		Proceed proceed_2= execute_children(link2);
 		if (proceed_2 & P_BIT_WAIT)
 			return proceed_2;
+		// TODO the next if block is unnecessary?
+		if ((proceed_2 & P_BIT_FINISHED) && ! option_keep_going) {
+			done.add_neg(link2.avoid);
+			return proceed_2;
+		}
 	}
 
 	/* Some dependencies are still running */ 
@@ -1433,7 +1460,7 @@ Proceed Execution::execute_deploy(const Link &link,
 			print_traces();
 			explain_clash(); 
 			raise(ERROR_LOGICAL);
-			return P_CONTINUE;
+			return P_BIT_FINISHED;
 		}
 
 		/* Either of '-p'/'-o'/'-t' does not mix with '$[' */
@@ -1473,7 +1500,7 @@ Proceed Execution::execute_deploy(const Link &link,
 			} 
 			print_traces();
 			raise(ERROR_LOGICAL);
-			return P_CONTINUE;
+			return P_BIT_FINISHED;
 		}
 
 		flags_child= flags_child_new; 
@@ -1838,9 +1865,6 @@ Single_Execution::Single_Execution(Target target_,
 {
 	assert(parent != nullptr); 
 	assert(parents.size() == 1); 
-//	assert(parents.empty()); 
-
-//	parents[parent]= link; 
 
 	targets.push_back(target_); 
 
@@ -2159,8 +2183,8 @@ bool Single_Execution::remove_if_existing(bool output)
 }
 
 Single_Execution *Single_Execution::get_execution(const Target &target, 
-				    Link &link,
-				    Execution *parent)
+						  Link &link,
+						  Execution *parent)
 {
 	/* Set to the returned Single_Execution object when one is found or created */    
 	Single_Execution *execution= nullptr; 
@@ -2207,7 +2231,6 @@ void Single_Execution::read_dynamic_dependency(Stack avoid,
 	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
 
 	try {
-//		const string filename= target.name; 
 		vector <shared_ptr <Dependency> > dependencies;
 
 		read_dynamic(avoid, 
@@ -2766,7 +2789,7 @@ void Single_Execution::print_as_job() const
 }
 
 void Single_Execution::write_content(const char *filename, 
-			      const Command &command)
+				     const Command &command)
 {
 	FILE *file= fopen(filename, "w"); 
 
@@ -2986,7 +3009,7 @@ Proceed Single_Execution::execute_optional(const Link &link)
 					system_format(name_format_word(name)); 
 				raise(ERROR_BUILD);
 				Execution::done_add_neg(link.avoid); 
-				return P_CONTINUE;
+				return P_BIT_FINISHED;
 			}
 			Execution::done_add_highest_neg(link.avoid.get_highest()); 
 			return P_BIT_FINISHED;

@@ -1,0 +1,12 @@
+# With the -k option.
+# The whole thing fails, but Y is still built.
+
+A: [B] {
+	touch A
+}
+
+B = { X.$name Y }
+
+Y { touch Y ; }
+
+X.$name { touch X."$name" ; }

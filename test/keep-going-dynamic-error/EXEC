@@ -1,0 +1,31 @@
+#! /bin/sh
+
+rm -f ? list.* || exit 1
+
+../../stu.test -k >list.out 2>list.err
+statuscode="$?"
+
+[ "$statuscode" = 2 ] || {
+	echo >&2 '*** Status code'
+	exit 1
+}
+
+cmp list.out stdout || {
+	echo >&2 '*** stdout'
+	exit 1
+}
+
+cmp list.err stderr || {
+	echo >&2 '*** stderr'
+	exit 1
+}
+
+[ -r Y ] || {
+	echo >&2 '*** Expected Y to exist'
+	exit 1
+}
+
+
+rm -f ? list.* || exit 1
+
+exit 0

@@ -1,6 +1,4 @@
-# Works
-
-A: B { cp B A }
+A: B { cp B A ; }
 
 B: -t C D;
 

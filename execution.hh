@@ -57,10 +57,11 @@ public:
 	 * when K = 0 just to terminate jobs that need to be terminated.
 	 * The passed LINK.FLAG is the ORed combination of all FLAGs up
 	 * the dependency chain.
-	 * // Return value:  the same as execute_children().  
-	 * Can only return 1 in random mode. 
-	 * When returning 1, not all possible child jobs where started.  
-	 * Child implementations call this implementation.  */
+	 * Can only return LATER in random mode. 
+	 * When returning LATER, not all possible child jobs where started.  
+	 * Child implementations call this implementation.  
+	 * Never returns P_CONTINUE:  When everything is finished, the
+	 * FINISHED bit is set.  */
 
 	static long jobs;
 	/* Number of free slots for jobs.  This is a long because
@@ -1159,13 +1160,16 @@ Proceed Execution::execute_children(const Link &link)
 				dependency_child);
 
 		Proceed proceed= child->execute(this, move(link_child));
+
+		assert(proceed != P_CONTINUE); /* If not waiting, the FINISHED bit
+						* is set  */
+
 		proceed_all |= (proceed & ~P_BIT_FINISHED); 
 		assert(jobs >= 0);
 		if (jobs == 0)  
 			return proceed_all;
 
 		if (proceed & P_BIT_FINISHED) {
-//		if (child->finished(avoid_child)) {
 			unlink(this, child, 
 			       link.dependency,
 			       link.avoid, 
@@ -1176,8 +1180,13 @@ Proceed Execution::execute_children(const Link &link)
 	if (error) 
 		assert(option_keep_going); 
 
+	if ((proceed_all & (P_BIT_WAIT | P_BIT_LATER)) == P_CONTINUE) {
+		/* If there are still children, they must have returned
+		 * WAIT or LATER */ 
+		assert(children.empty()); 
+	}
+
 	return proceed_all; 
-//	return P_CONTINUE;
 }
 
 void Execution::push_default(shared_ptr <Dependency> dependency)
@@ -1280,8 +1289,10 @@ Proceed Execution::execute(Execution *, const Link &link)
 	}
 
 	/* Some dependencies are still running */ 
-	if (children.size() != 0)
+	if (children.size() != 0) {
+		assert(proceed_all != P_CONTINUE); 
 		return proceed_all;
+	}
 
 	/* There was an error in a child */ 
 	if (error != 0) {
@@ -2517,7 +2528,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 					 * it will then not exist when the parent is
 					 * called. */ 
 					Execution::done_add_one_neg(F_OPTIONAL); 
-					return proceed;
+					return proceed | P_BIT_FINISHED;
 				}
 			}
 
@@ -2528,7 +2539,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 					<< system_format(target.format_word()); 
 				raise(ERROR_BUILD);
 				Execution::done_add_one_neg(link.avoid); 
-				return proceed;
+				return proceed | P_BIT_FINISHED;
 			}
 
 			/* File does not exist, all its dependencies are up to
@@ -2551,7 +2562,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 				}
 				Execution::done_add_one_neg(link.avoid); 
 				raise(ERROR_BUILD);
-				return proceed;
+				return proceed | P_BIT_FINISHED;
 			}		
 		}
 		
@@ -2589,7 +2600,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 	if (! need_build) {
 		/* The file does not have to be built */ 
 		Execution::done_add_neg(link.avoid); 
-		return proceed;
+		return proceed | P_BIT_FINISHED;
 	}
 
 	/*
@@ -2604,7 +2615,7 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 	if (no_execution) {
 		/* A target without a command */ 
 		Execution::done_add_neg(link.avoid); 
-		return proceed;
+		return proceed | P_BIT_FINISHED;
 	}
 
 	/* The command must be run or the file created now */
@@ -2632,7 +2643,9 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 		}
 
 		write_content(targets.front().name.c_str(), *(rule->command)); 
-		return proceed;
+
+		assert(proceed == P_CONTINUE); 
+		return proceed | P_BIT_FINISHED;
 	}
        
 	/* We have to start the job now */ 
@@ -2689,7 +2702,8 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 							 targets.at(0).format_word())); 
 					raise(ERROR_BUILD);
 					Execution::done_add_neg(link.avoid); 
-					return proceed;
+					assert(proceed == P_CONTINUE); 
+					return proceed | P_BIT_FINISHED;
 				}
 			}
 			
@@ -2723,7 +2737,8 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 					 targets.front().format_word())); 
 			raise(ERROR_BUILD);
 			Execution::done_add_neg(link.avoid); 
-			return proceed;
+			assert(proceed == P_CONTINUE); 
+			return proceed | P_BIT_FINISHED;
 		}
 
 		executions_by_pid[pid]= this;
@@ -2739,15 +2754,6 @@ Proceed Single_Execution::execute(Execution *parent, const Link &link)
 		p |= P_BIT_LATER; 
 
 	return p;
-
-	// if (order == Order::RANDOM) {
-	// 	return jobs > 0 ? Proceed::LATER : Proceed::WAIT; 
-	// } else if (order == Order::DFS) {
-	// 	return Proceed::WAIT;
-	// } else {
-	// 	assert(false); /* Invalid order */
-	// 	return Proceed::WAIT;
-	// }
 }
 
 void Single_Execution::print_as_job() const

@@ -1,0 +1,8 @@
+# Should we allow this?
+
+A: @[C]
+{
+	touch A
+}
+
+C { touch C }

@@ -108,6 +108,16 @@ A:  list.[X][Y][Z]; # Multiple all together:  27 variants
 A:  ((X)(Y))(Z);
 A:  (X)((Y)(Z); 
 
+A:  X(Y);   # OK
+A:  [X][Y]; # OK
+A:  [X]@Y;  # Error
+A:  (X)Y;   # OK
+A:  X[Y];   # OK
+A:  [X]Y;   # OK
+A:  (X)(Y); # OK
+A:  (X)[Y]; # OK
+A:  [X](Y); # OK
+
 # Man page
 
 #

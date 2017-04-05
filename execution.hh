@@ -1244,7 +1244,7 @@ Proceed Execution::execute(Execution *, const Link &link)
 	}
 
 	Proceed proceed= execute_optional(link2);
-	if (proceed & P_BIT_WAIT)
+	if (proceed & P_BIT_FINISHED)
 		return proceed;
 
 	/* Is this a trivial dependency?  Then skip the dependency. */
@@ -1252,11 +1252,6 @@ Proceed Execution::execute(Execution *, const Link &link)
 		done.add_neg(link2.avoid);
 		return P_BIT_FINISHED;
 	}
-
-//	if (targets.empty())
-//		assert(done.get_depth() == 0);
-//	else 
-//		assert(done.get_depth() == targets.front().type.get_depth());
 
 	if (error) 
 		assert(option_keep_going); 
@@ -1944,7 +1939,6 @@ Single_Execution::Single_Execution(Target target_,
 					/* File exists:  Do nothing, and there are no
 					 * dependencies to build */  
 					if (parent->is_root()) {
-//					if (parent->targets.empty()) {
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */ 
 						print_out(fmt("No rule for building %s, but the file exists", 
@@ -2989,7 +2983,7 @@ Proceed Single_Execution::execute_optional(const Link &link)
 				return P_CONTINUE;
 			}
 			Execution::done_add_highest_neg(link.avoid.get_highest()); 
-			return P_CONTINUE;
+			return P_BIT_FINISHED;
 		} else {
 			assert(ret_stat == 0);
 			exists= +1;

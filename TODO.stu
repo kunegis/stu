@@ -1,10 +1,6 @@
 #
-# Concatenation.  Concatenation is to work both with the
-# binary operator '*' as well with juxtaposition.     [2.5]
+# Concatenation [2.5]
 #
-
-# - implement concatenated execution objects, which are deleted when they are done
-#   (they don't have a Target object)
 
 A:  B * C;    	        # Binary multiplication operator
 A:  B * (C D); 	        # Parentheses
@@ -108,6 +104,8 @@ A:  @(A)(B);
 # Two different meanings [assuming three strings in each of X/Y/Z):
 A:  list.[X Y Z];   # Same as list.( [X] [Y] [Z] ):  9 variants
 A:  list.[X][Y][Z]; # Multiple all together:  27 variants 
+
+# Man page
 
 #
 # At the moment, "stu -g" does not disable the flag -o in copy rules, i.e.

@@ -181,7 +181,7 @@ protected:
 
 	void read_dynamic(Stack avoid, 
 			  shared_ptr <Dynamic_Dependency> dependency_this, 
-			  vector <shared_ptr <Dependency> > dependencies);
+			  vector <shared_ptr <Dependency> > &dependencies);
   	/* Read dynamic dependencies.  The only reason this is not
 	 * static is that errors can be raised correctly.  */
 
@@ -464,7 +464,7 @@ private:
 
 	void read_dynamic_dependency(Stack avoid, shared_ptr <Dependency> dependency_this);
 	/* Read dynamic dependencies from a file.  Only called for
-	 * dynamic targets.  Called for the parent of a dynamic--file
+	 * dynamic targets as DEPENDENCY_THIS and THIS.  Called for the parent of a dynamic--file
 	 * link.  */ 
 
 	bool remove_if_existing(bool output); 
@@ -722,7 +722,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 
 void Execution::read_dynamic(Stack avoid, 
 			     shared_ptr <Dynamic_Dependency> dependency_this, 
-			     vector <shared_ptr <Dependency> > dependencies)
+			     vector <shared_ptr <Dependency> > &dependencies)
 {
 	Target target= dependency_this->get_single_target().unparametrized(); 
 
@@ -1325,7 +1325,6 @@ Proceed Execution::execute_deploy(const Link &link,
 		avoid_child.push();
 		avoid_child.add_lowest(dep->get_flags()); 
 	}
-//	assert(dynamic_pointer_cast <Direct_Dependency> (dep)); 
 
 	if (dynamic_pointer_cast <Concatenated_Dependency> (dep)) {
 		/* This is a concatenated dependency:  Create a new
@@ -1356,8 +1355,7 @@ Proceed Execution::execute_deploy(const Link &link,
 			unlink(this, child, 
 			       link.dependency,
 			       link.avoid, 
-			       dependency_child,
-			       avoid_child, flags_child);
+			       dependency_child, avoid_child, flags_child);
 		}
 
 		return P_CONTINUE;
@@ -1491,9 +1489,6 @@ Proceed Execution::execute_deploy(const Link &link,
 		if (proceed & P_BIT_WAIT)
 			return proceed;
 		assert(jobs >= 1); 
-//		assert(jobs >= 0);
-//		if (jobs == 0)  
-//			return P_BIT_WAIT;
 			
 		if (child->finished(avoid_child)) {
 			unlink(this, child, 

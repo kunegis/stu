@@ -2,7 +2,7 @@
 #define BUFFER_HH
 
 /* 
- * A buffer is a container of simple dependencies.  It is a queue or
+ * A buffer is a container of normalized dependencies.  It is a queue or
  * vector, depending on the mode in which Stu is run, i.e., whether
  * targets are built in depth-first order (the default), or in random
  * order.  Which is used is determined by the global variable OPTION_VEC
@@ -34,7 +34,7 @@ private:
 	 * union-like data structure, but we don't in this
 	 * implementation  */   
 
-	/* All contained dependencies are simple */
+	/* All contained dependencies are normalized */
 
 	queue <shared_ptr <Dependency> > q;
 	vector <shared_ptr <Dependency> > v;
@@ -71,7 +71,7 @@ public:
 	/* Add to the end of the queue (if sorted, otherwise, just
 	 * add) */ 
 	{
-		assert(d->is_simple()); 
+		assert(d->is_normalized()); 
 		if (order_vec) {
 			v.emplace_back(d); 
 		} else {

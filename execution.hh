@@ -291,7 +291,7 @@ private:
 	/* Deploy a new child execution.  LINK is the link from the
 	 * THIS's parent to THIS.  Note: the top-level flags of
 	 * LINK.DEPENDENCY may be modified.   DEPENDENCY_CHILD must be
-	 * simple.  */
+	 * normalized.  */
 
 	string debug_done_text() const
 	{
@@ -535,7 +535,7 @@ private:
 class Concatenated_Execution
 /* 
  * An execution representating a concatenation.  Its dependency is
- * always a compound dependency containing simple dependencies, whose
+ * always a compound dependency containing normalized dependencies, whose
  * results are concatenated as new targets added to the parent.
  *
  * Concatenated executions always have exactly one parent.  They are not
@@ -549,7 +549,8 @@ public:
 	Concatenated_Execution(shared_ptr <Dependency> dependency_,
 			       Execution *parent,
 			       Link &link);
-	/* The given dependency is of the form described above */
+	/* The given dependency must be normalized, and contain at least
+	 * one Concatenated_Dependency.  */
 
 	~Concatenated_Execution(); 
 
@@ -578,9 +579,9 @@ private:
 
 	shared_ptr <Dependency> dependency;
 	/* Contains the concatenation. 
-	 * This is a dynamic^* of a concatenated dependency,
+	 * This is a Dynamic_Dependency^* of a Concatenated_Dependency,
 	 * itself containing each a Compound_Dependency^{0,1} of
-	 * Dynamic_Dependency^* of a simple dependency. 
+	 * Dynamic_Dependency^* of a single dependency. 
 	 * Set to null when stage 1 is done, after which a
 	 * normal child Single_Execution is opened */ 
 
@@ -1201,7 +1202,7 @@ Proceed Execution::execute_children(const Link &link)
 void Execution::push_default(shared_ptr <Dependency> dependency)
 {
 	vector <shared_ptr <Dependency> > dependencies;
-	Dependency::split_compound_dependencies(dependencies, dependency); 
+	Dependency::make_normalized(dependencies, dependency); 
        
 	for (const auto &d:  dependencies) {
 		buffer_default.push(d);
@@ -1334,7 +1335,7 @@ Proceed Execution::execute(Execution *, const Link &link)
 Proceed Execution::execute_deploy(const Link &link,
 				  shared_ptr <Dependency> dependency_child)
 {
-	assert(dependency_child->is_simple()); 
+	assert(dependency_child->is_normalized()); 
 
 	if (option_debug) {
 		string text_target= debug_text();
@@ -1533,7 +1534,7 @@ Proceed Execution::execute_deploy(const Link &link,
 		return P_CONTINUE;
 
 	} else {
-		/* Invalid dependency type.  The dependency must be simple. */ 
+		/* Invalid dependency type.  The dependency must be normalized. */ 
 		assert(false); 
 		return P_CONTINUE;
 	}
@@ -3029,23 +3030,46 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependenc
 	   dependency(dependency_),
 	   stage(0)
 {
+	assert(dependency_->is_normalized()); 
+
 	/* Check the structure of the dependency */
 	shared_ptr <Dependency> dep= dependency;
 	dep= Dependency::strip_dynamic(dep); 
 	assert(dynamic_pointer_cast <Concatenated_Dependency> (dep));
 	shared_ptr <Concatenated_Dependency> concatenated_dependency= 
 		dynamic_pointer_cast <Concatenated_Dependency> (dep);
-	for (shared_ptr <Dependency> d:  concatenated_dependency->get_dependencies()) {
-		if (dynamic_pointer_cast <Compound_Dependency> (d)) {
-			for (shared_ptr <Dependency> dd:  
-				     dynamic_pointer_cast <Compound_Dependency> (d)->get_dependencies()) {
-				shared_ptr <Dependency> dddd= Dependency::strip_dynamic(dd);
-				assert(dynamic_pointer_cast <Single_Dependency> (dddd)); 
-			}
-		} else {
-			shared_ptr <Dependency> ddd= Dependency::strip_dynamic(d);
-			assert(dynamic_pointer_cast <Single_Dependency> (ddd)); 
-		}
+
+	for (size_t i= 0;  i < concatenated_dependency->get_dependencies().size();  ++i) {
+//	for (shared_ptr <Dependency> d:  concatenated_dependency->get_dependencies()) {
+
+		shared_ptr <Dependency> d= concatenated_dependency->get_dependencies()[i]; 
+
+		shared_ptr <Dependency> dependency_normalized= 
+			Dependency::make_normalized_compound(d); 
+//	/		d->normalize_compound(); 
+
+		concatenated_dependency->get_dependencies()[i]= dependency_normalized; 
+
+//		assert(dependencies_new.size() > 0); 
+
+//		if (dependencies_new.size() == 1) {
+//			concatenated_dependency->get_dependencies()[i]= dependencies_new[0]; 
+//		} else {
+//			shared_ptr <Compound_Dependency> cd= make_shared <Compound_Dependency> (...);
+//			swap(cd->get_dependencies(), dependencies_new); 
+//			concatenated_dependency->get_dependencies()[i]= cd; 
+//		}
+
+//		if (dynamic_pointer_cast <Compound_Dependency> (d)) {
+//			for (shared_ptr <Dependency> dd:  
+//				     dynamic_pointer_cast <Compound_Dependency> (d)->get_dependencies()) {
+//				shared_ptr <Dependency> dddd= Dependency::strip_dynamic(dd);
+//				assert(dynamic_pointer_cast <Single_Dependency> (dddd)); 
+//			}
+//		} else {
+//			shared_ptr <Dependency> ddd= Dependency::strip_dynamic(d);
+//			assert(dynamic_pointer_cast <Single_Dependency> (ddd)); 
+//		}
 	}
 }
 
@@ -3146,14 +3170,16 @@ bool Concatenated_Execution::finished(Stack avoid) const
 
 void Concatenated_Execution::add_stage0_dependency(shared_ptr <Dependency> d)
 /* 
- * The given dependency can be complex (i.e., not simple). 
+ * The given dependency can be non-normalized. 
  */
 {
 	if (dynamic_pointer_cast <Single_Dependency> (d)) {
 		/* We don't have to add the dependency to anything,
 		 * because it is not dynamic.  This corresponds to the
 		 * case of e.g.     
+		 *
 		 *                    list.(a b c)
+		 *
 		 * in which nothing is dynamic:  There is nothing to
 		 * do in stage 1.  */
 	} else {

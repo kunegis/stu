@@ -27,7 +27,7 @@
  * Each edge in the dependency graph is annotated with one
  * object of this type.  This contains bits related to what should be
  * done with the dependency, whether time is considered, etc.  The flags
- * are defined in such a way that the most simple dependency is
+ * are defined in such a way that the simplest dependency is
  * represented by zero, and each flag enables an optional feature.  
  *
  * The transitive bits effectively are set for tasks not to do.
@@ -134,14 +134,14 @@ class Dependency
  * The abstract base class for all dependencies.  Objects of this type
  * are used via shared_ptr<>.
  *
- * A dependency can be simple or complex.  A dependency is simple if it
+ * A dependency can be normalized or not.  A dependency is normalized if it
  * is one of:  
  *    - a single dependency
- *    - a dynamic dependency containing a simple dependency
- *    - a concatenated dependency (which may contain non-simple
+ *    - a dynamic dependency containing a normalized dependency
+ *    - a concatenated dependency (which may contain non-normalized
  *      dependencies)
- * Simple dependencies are those used in practice.  A complex dependency
- * can always be reduced to a simple one. 
+ * Normalized dependencies are those used in practice.  A complex dependency
+ * can always be reduced to a normalized one. 
  * 
  * All dependencies carry information about their place(s) of declaration.  
  *
@@ -216,15 +216,21 @@ public:
 
 	virtual Param_Target get_single_target() const= 0;
 	/* Collapse the dependency into a single target, ignoring all
-	 * flags.  Only called if this is a simple dependency.  */   
+	 * flags.  Only called if this is a normalized dependency.  */   
 
-	virtual bool is_simple() const= 0;
+	virtual bool is_normalized() const= 0;
+	/* Whether the dependency is normalized */
 
-	static void split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies, 
-						shared_ptr <Dependency> dependency);
+	static void make_normalized(vector <shared_ptr <Dependency> > &dependencies, 
+				    shared_ptr <Dependency> dependency);
 	/* Split the given DEPENDENCY into multiple DEPENDENCIES that do
-	 * not contain compound dependencies.  (Recursively) DEPENDENCY
-	 * will be changed.  */
+	 * not contain compound dependencies (recursively). DEPENDENCY
+	 * will be changed.  The result is written into DEPENDENCIES,
+	 * which does not have to be empty.  */
+
+	static shared_ptr <Dependency> make_normalized_compound(shared_ptr <Dependency> dependency);
+	/* Return either a normalized version of this dependency, or a
+	 * Compound_Dependency containing normalized dependencies */ 
 
 	static shared_ptr <Dependency> clone_dependency(shared_ptr <Dependency> dependency);
 	/* A shallow clone.  */
@@ -368,7 +374,7 @@ public:
 		return place_param_target.get_param_target();
 	}
 
-	virtual bool is_simple() const { return true;  }
+	virtual bool is_normalized() const { return true;  }
 };
 
 class Dynamic_Dependency
@@ -452,9 +458,11 @@ public:
 		return ret; 
 	}
 
-	virtual bool is_simple() const {
-		return dependency->is_simple(); 
+	virtual bool is_normalized() const {
+		return dependency->is_normalized(); 
 	}
+
+//	virtual shared_ptr <Dependency> normalize_compound() const;
 };
 
 class Concatenated_Dependency
@@ -507,11 +515,11 @@ public:
 
 	virtual Param_Target get_single_target() const { assert(false); }
 	/* Collapse the dependency into a single target, ignoring all
-	 * flags.  Only if this is a simple dependency.  */   
+	 * flags.  Only if this is a normalized dependency.  */   
 
-	virtual bool is_simple() const  { return true; }
-	/* A concatenated dependency is always simple, regardless of
-	 * whether the contained dependencies are simple.  */ 
+	virtual bool is_normalized() const  { return true; }
+	/* A concatenated dependency is always normalized, regardless of
+	 * whether the contained dependencies are normalized.  */ 
 
 private:
 
@@ -535,7 +543,9 @@ public:
 
 	Place place; 
 	/* The place of the compound ; usually the opening parenthesis
-	 * or brace.  Not empty.  */
+	 * or brace.  May be empty to denote no place, in particular if
+	 * this is a "logical" compound dependency not coming from a
+	 * parenthesised expression.  */
 
 	Compound_Dependency(const Place &place_) 
 		/* Empty, with zero dependencies */
@@ -555,7 +565,11 @@ public:
 		   dependencies(dependencies_)
 	{  }
 
-	const vector <shared_ptr <Dependency> > get_dependencies() const {
+	const vector <shared_ptr <Dependency> > &get_dependencies() const {
+		return dependencies; 
+	}
+
+	vector <shared_ptr <Dependency> > &get_dependencies() {
 		return dependencies; 
 	}
 
@@ -580,10 +594,10 @@ public:
 
 	virtual Param_Target get_single_target() const { assert(false); }
 	/* Collapse the dependency into a single target, ignoring all
-	 * flags.  Only if this is a simple dependency.  */   
+	 * flags.  Only if this is a normalized dependency.  */   
 
-	virtual bool is_simple() const { return false; }
-	/* A compound dependency is never simple */
+	virtual bool is_normalized() const { return false; }
+	/* A compound dependency is never normalized */
 
 private:
 
@@ -815,8 +829,8 @@ private:
 
 Dependency::~Dependency() { }
 
-void Dependency::split_compound_dependencies(vector <shared_ptr <Dependency> > &dependencies, 
-					     shared_ptr <Dependency> dependency)
+void Dependency::make_normalized(vector <shared_ptr <Dependency> > &dependencies, 
+				 shared_ptr <Dependency> dependency)
 {
 	if (dynamic_pointer_cast <Single_Dependency> (dependency)) {
 		dependencies.push_back(dependency);
@@ -825,7 +839,7 @@ void Dependency::split_compound_dependencies(vector <shared_ptr <Dependency> > &
 		shared_ptr <Dynamic_Dependency> dynamic_dependency= 
 			dynamic_pointer_cast <Dynamic_Dependency> (dependency);
 		vector <shared_ptr <Dependency> > dependencies_child;
-		split_compound_dependencies(dependencies_child, dynamic_dependency->dependency);
+		make_normalized(dependencies_child, dynamic_dependency->dependency);
 		for (auto &d:  dependencies_child) {
 			shared_ptr <Dependency> dependency_new= 
 				make_shared <Dynamic_Dependency> 
@@ -837,9 +851,8 @@ void Dependency::split_compound_dependencies(vector <shared_ptr <Dependency> > &
 		shared_ptr <Compound_Dependency> compound_dependency=
 			dynamic_pointer_cast <Compound_Dependency> (dependency);
 		for (auto &d:  compound_dependency->get_dependencies()) {
-			d
-				->add_flags(compound_dependency, false);  
-			split_compound_dependencies(dependencies, d); 
+			d->add_flags(compound_dependency, false);  
+			make_normalized(dependencies, d); 
 		}
 
 	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
@@ -850,6 +863,23 @@ void Dependency::split_compound_dependencies(vector <shared_ptr <Dependency> > &
 	} else {
 		/* Bug:  Unhandled dependency type */ 
 		assert(false);
+	}
+}
+
+shared_ptr <Dependency> Dependency::make_normalized_compound(shared_ptr <Dependency> dependency)
+{
+	vector <shared_ptr <Dependency> > dependencies;
+
+	make_normalized(dependencies, dependency); 
+	
+	assert(dependencies.size() >= 1);
+	
+	if (dependencies.size() == 1) {
+		return dependencies[0];
+	} else {
+		shared_ptr <Compound_Dependency> ret= make_shared <Compound_Dependency> (Place()); 
+		swap(dependencies, ret->get_dependencies()); 
+		return ret;
 	}
 }
 
@@ -1063,7 +1093,7 @@ string Concatenated_Dependency::format_out() const
 
 Stack::Stack(shared_ptr <Dependency> dependency) 
 {
-	assert(dependency->is_simple()); 
+	assert(dependency->is_normalized()); 
 
 	depth= 0;
 	memset(bits, 0, sizeof(bits));

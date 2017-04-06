@@ -26,7 +26,7 @@ public:
 	shared_ptr <Dependency> dependency;
 	/* This is null for the root target. 
 	 * May contain less flags than stored in AVOID and FLAGS.  
-	 * Always a recursively simple dependency.  */
+	 * Always a normalized dependency.  */
 
 	Link() { }
 
@@ -101,7 +101,7 @@ void Link::check() const
 {
 	avoid.check();
 
-	assert(dependency == nullptr || dependency->is_simple()); 
+	assert(dependency == nullptr || dependency->is_normalized()); 
 		
 	/* Check that the highest level in AVOID equals the
 	 * TRANSITIVE flags in FLAGS */ 

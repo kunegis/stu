@@ -126,6 +126,8 @@ A:  list.(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2);
 
 # Update the man page
 
+A:  [ (X) (Y) (Z) ]; 
+
 #
 # TODO document the -0 in the manpage.
 #

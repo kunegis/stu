@@ -127,6 +127,17 @@ A:  list.(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2);
 # Update the man page
 
 A:  [ (X) (Y) (Z) ]; 
+A:  list.((((((((((X)))))))))); 
+A:  list.((((((((([X]))))))))); 
+A:  list.(((([(((((X)))))]))));
+A:  list.[(((((((((X)))))))))]; 
+A:  list.([X][Y]); 
+A:  (X)((Y)(Z));
+A:  ((X)(Y))(Z); 
+
+A:  [B];   B = { ([X])(([Y]([Z]))) }   X = { list. }   Y = { 1 2 }   Z = Y;
+
+A:  list.[X][X][X][X][X][X][X][X];   X = { 1 2 }   >list.$n { echo Number "$n" ; }
 
 #
 # TODO document the -0 in the manpage.

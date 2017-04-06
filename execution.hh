@@ -119,7 +119,7 @@ protected:
 	}
 
 	Execution(int k, Execution *parent_null)
-		/* Without a parent; PARENT_NULL must be null */
+		/* Without a parent.  PARENT_NULL must be null.  */
 		:  error(0),
 		   timestamp(Timestamp::UNDEFINED),
 		   need_build(false),
@@ -175,14 +175,15 @@ protected:
 	const Buffer &get_buffer_trivial() const {  return buffer_trivial;  }
 	
 	void push_default(shared_ptr <Dependency> );
-	/* Push a link to the default buffer, breaking down compound
+	/* Push a default to the default buffer, breaking down non-normalized
 	 * dependencies while doing so.  */
 
 	void read_dynamic(Stack avoid, 
 			  shared_ptr <Dynamic_Dependency> dependency_this, 
 			  vector <shared_ptr <Dependency> > &dependencies);
   	/* Read dynamic dependencies.  The only reason this is not
-	 * static is that errors can be raised correctly.  */
+	 * static is that errors can be raised correctly.
+	 * DEPENDENCY_THIS is normalized.  */
 
 	virtual ~Execution(); 
 
@@ -594,6 +595,9 @@ private:
 	 * 3:  Finished.  */
 
 	void add_stage0_dependency(shared_ptr <Dependency> d);
+	/* Add a dependency during Stage 0.  The given dependency can be
+	 * non-normalized, because it comes from within a concatenated
+	 * dependency.  */
 	
 	void read_concatenation(Stack avoid,
 				shared_ptr <Dependency> dependency,
@@ -717,6 +721,8 @@ void Execution::read_dynamic(Stack avoid,
 			     shared_ptr <Dynamic_Dependency> dependency_this, 
 			     vector <shared_ptr <Dependency> > &dependencies)
 {
+	assert(dependency_this->is_normalized()); 
+
 	Target target= dependency_this->get_single_target().unparametrized(); 
 
 	assert(dependencies.empty()); 
@@ -3080,7 +3086,8 @@ Proceed Concatenated_Execution::execute(Execution *parent,
 
 	if (stage == 0) {
 		/* Construct all initial dependencies */ 
-		/* Not all parts need to have something constructed.  Only those that are dynamic:
+		/* Not all parts need to have something constructed.
+		 * Only those that are dynamic do:
 		 *
 		 *    list.(X Y Z)     # Nothing to build in stage 0
 		 *    list.[X Y Z]     # Build X, Y, Z in stage 0
@@ -3090,9 +3097,9 @@ Proceed Concatenated_Execution::execute(Execution *parent,
 		 * or not at all if they are not dynamic.  */
 
 		shared_ptr <Dependency> dep= Dependency::strip_dynamic(dependency); 
-		assert(dynamic_pointer_cast <Concatenated_Dependency> (dep));
 		shared_ptr <Concatenated_Dependency> concatenated_dependency= 
 			dynamic_pointer_cast <Concatenated_Dependency> (dep);
+		assert(concatenated_dependency != nullptr); 
 
 		for (shared_ptr <Dependency> d:  concatenated_dependency->get_dependencies()) {
 			if (dynamic_pointer_cast <Compound_Dependency> (d)) {
@@ -3119,6 +3126,8 @@ Proceed Concatenated_Execution::execute(Execution *parent,
 
 		vector <shared_ptr <Dependency> > dependencies_read; 
 
+		// TODO we can't pass DEPENDENCY here, in the case of
+		// multiply-nested concatenations with dynamics. 
 		read_concatenation(link.avoid, dependency, dependencies_read); 
 
 		for (auto &i:  dependencies_read) {
@@ -3182,8 +3191,15 @@ void Concatenated_Execution::add_stage0_dependency(shared_ptr <Dependency> d)
 		 *
 		 * in which nothing is dynamic:  There is nothing to
 		 * do in stage 1.  */
+	} else if (dynamic_pointer_cast <Dynamic_Dependency> (d)) {
+		shared_ptr <Dynamic_Dependency> dynamic_dependency=
+			dynamic_pointer_cast <Dynamic_Dependency> (d); 
+		shared_ptr <Dependency> dependency_inner=
+			dynamic_dependency->dependency;
+		push_default(dependency_inner); 
 	} else {
 		/* Not implemented */
+		// TODO implement 
 		assert(false);
 	}
 }
@@ -3288,6 +3304,9 @@ void Concatenated_Execution::concatenate_dependency(Stack avoid,
 						    Flags dependency_flags,
 						    vector <shared_ptr <Dependency> > &dependencies)
 {
+	assert(dependency_1->is_normalized()); 
+	assert(dependency_2->is_normalized()); 
+
 	vector <shared_ptr <Dependency> > dependencies_1, dependencies_2; 
 
 	/* Replace dynamic dependencies by actual dependencies, if

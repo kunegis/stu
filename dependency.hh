@@ -136,11 +136,12 @@ class Dependency
  *
  * A dependency can be normalized or not.  A dependency is normalized if it
  * is one of:  
- *    - a single dependency
- *    - a dynamic dependency containing a normalized dependency
- *    - a concatenated dependency (which may contain non-normalized
- *      dependencies)
- * Normalized dependencies are those used in practice.  A complex dependency
+ *    - a single dependency;
+ *    - a dynamic dependency containing a normalized dependency; 
+ *    - a concatenated dependency, each of whose component is either a
+ *      normalized dependency or a compound dependency of normalized
+ *      dependencies.
+ * Normalized dependencies are those used in practice.  A non-normalized dependency
  * can always be reduced to a normalized one. 
  * 
  * All dependencies carry information about their place(s) of declaration.  
@@ -216,10 +217,12 @@ public:
 
 	virtual Param_Target get_single_target() const= 0;
 	/* Collapse the dependency into a single target, ignoring all
-	 * flags.  Only called if this is a normalized dependency.  */   
+	 * flags.  Only called if this is a normalized dependency and
+	 * this is possible.  */   
 
 	virtual bool is_normalized() const= 0;
-	/* Whether the dependency is normalized */
+	/* Whether the dependency is normalized, according to the
+	 * definition given above.  */
 
 	static void make_normalized(vector <shared_ptr <Dependency> > &dependencies, 
 				    shared_ptr <Dependency> dependency);
@@ -502,6 +505,9 @@ public:
 		dependencies.push_back(dependency); 
 	}
 
+	void make_normalized();
+	/* Change in-place to make it normalized */ 
+
 	virtual shared_ptr <Dependency> 
 	instantiate(const map <string, string> &mapping) const;
 
@@ -513,11 +519,11 @@ public:
 	virtual string format_word() const; 
 	virtual string format_out() const; 
 
-	virtual Param_Target get_single_target() const { assert(false); }
+	virtual Param_Target get_single_target() const {  assert(false);  }
 	/* Collapse the dependency into a single target, ignoring all
 	 * flags.  Only if this is a normalized dependency.  */   
 
-	virtual bool is_normalized() const  { return true; }
+	virtual bool is_normalized() const; 
 	/* A concatenated dependency is always normalized, regardless of
 	 * whether the contained dependencies are normalized.  */ 
 
@@ -592,11 +598,11 @@ public:
 	virtual string format_word() const; 
 	virtual string format_out() const; 
 
-	virtual Param_Target get_single_target() const { assert(false); }
-	/* Collapse the dependency into a single target, ignoring all
-	 * flags.  Only if this is a normalized dependency.  */   
+	virtual Param_Target get_single_target() const {  assert(false);  }
+	/* Since a compound dependency is never normalized, this is not
+	 * called.  */ 
 
-	virtual bool is_normalized() const { return false; }
+	virtual bool is_normalized() const {  return false;  }
 	/* A compound dependency is never normalized */
 
 private:
@@ -856,9 +862,12 @@ void Dependency::make_normalized(vector <shared_ptr <Dependency> > &dependencies
 		}
 
 	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
-		/* Don't split at all:  these will be split in child
-		 * Concatenating_Execution's  */
-		dependencies.push_back(dependency); 
+
+		shared_ptr <Concatenated_Dependency> concatenated_dependency=
+			dynamic_pointer_cast <Concatenated_Dependency> (dependency);
+		concatenated_dependency->make_normalized(); 
+
+//		dependencies.push_back(dependency); 
 
 	} else {
 		/* Bug:  Unhandled dependency type */ 
@@ -1089,6 +1098,34 @@ string Concatenated_Dependency::format_out() const
 	}
 	
 	return ret; 
+}
+
+bool Concatenated_Dependency::is_normalized() const
+{
+	for (auto &i:  dependencies) {
+		if (i->is_normalized())
+			continue;
+		shared_ptr <Compound_Dependency> i_compound= 
+			dynamic_pointer_cast <Compound_Dependency> (i);			
+		if (i_compound != nullptr) {
+			for (auto &j:  i_compound->get_dependencies()) {
+				if (! j->is_normalized()) 
+					return false;
+			}
+		} else {
+			return false;
+		}
+	}
+	return true;
+}
+
+void Concatenated_Dependency::make_normalized()
+{
+	for (size_t i= 0;  i < dependencies.size();  ++i) {
+		shared_ptr <Dependency> d_normalized_compound= 
+			make_normalized_compound(dependencies[i]);
+		dependencies[i]= d_normalized_compound; 
+	}
 }
 
 Stack::Stack(shared_ptr <Dependency> dependency) 

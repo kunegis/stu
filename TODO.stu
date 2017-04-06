@@ -118,7 +118,24 @@ A:  (X)(Y); # OK
 A:  (X)[Y]; # OK
 A:  [X](Y); # OK
 
-# Man page
+# The following two are not the same 
+A:  [X][[Y][Z]];
+A:  [[X][Y]][Z];
+
+A:  list.(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2); 
+
+# Update the man page
+
+#
+# TODO document the -0 in the manpage.
+#
+
+#
+# In the following case, there should be an explanation message that two
+# parameters cannot be continguous.
+#
+
+A.$X$Y;
 
 #
 # At the moment, "stu -g" does not disable the flag -o in copy rules, i.e.
@@ -134,19 +151,10 @@ A:  [X](Y); # OK
 #
 
 #
-# sh/test:  log all tests and their runtime, version number, date, etc. 
+# sh/test:  log all tests and their runtime, version number, date, etc.
+# This is to detected regression such as "a new version of Stu is much
+# slower than old versions."
 #
-
-#
-# TODO document the -0 in the manpage.
-#
-
-#
-# In the following case, there should be an explanation message that two
-# parameters cannot be continguous.
-#
-
-A.$X$Y;
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This
@@ -349,6 +357,8 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 # the -I option)
 #
 
+# This is included from the "Stu path", and could be installed in
+# e.g. /usr/share/stu/lib/ or ~/share/stu/lib/, etc. 
 % include c++.stu
  
 #
@@ -387,17 +397,18 @@ A: -P B;
 
 #
 # A "hard optional" option:  If a dependency is not present, don't even
-# try to rebuild the target if it's already present. 
+# try to rebuild the target if it's already present.  I.e., an
+# "up-percolating" 'optional' flag.
 #
 
 #
 # -m bfs (breadth-first order) and -m target (pseudotarget by target
-# name) 
+# name). 
 #
 
 #
-# Have a mode or option to show only the first error message, not all
-# subsequent traces.
+# Have a mode or option to show only once message per error, omitting
+# all subsequent traces.
 #
 
 #
@@ -410,10 +421,10 @@ A: -P B;
 #
 
 # Unexpected ';'
-### >A { echo } ; }
+#     >A { echo } ; }
 
 # OK -- this does not work at the moment 
-### >A { { echo } ; } ; echo aaa }
+#     >A { { echo } ; } ; echo aaa }
 
 #
 # Allow access to environment variables via e.g. $(HOME). 
@@ -444,9 +455,9 @@ A: -P B;
 # A 'why' option that shows why things are built.
 #
 
-### 'abc' does not exist
-### 'abc' is older than its dependency 'xyz'
-### ...
+# * 'abc' does not exist
+# * 'abc' is older than its dependency 'xyz'
+# * ...
 
 #
 # An option to ignore all timestamps:  Whenever a file already exists,

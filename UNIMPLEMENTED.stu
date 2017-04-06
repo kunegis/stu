@@ -1,10 +1,10 @@
 #
-# These are features that were decided not to be implemented at some
-# point.  Many of these ideas are actually good, in particular the first
-# category, and we may revive them in the future.  When in doubt, we prefer 
-# to *not* support a feature, as adding a feature in the future can
-# always be done without breaking compatibility, whereas removing one is
-# always backward-incompatible.  
+# These are features that were decided not to be implemented.  Many of
+# these ideas are actually good, in particular the first category, and
+# we may revive them in the future.  When in doubt, we prefer to *not*
+# support a feature, as adding a feature in the future can always be
+# done without breaking compatibility, whereas removing one is always
+# backward-incompatible.
 #
 
 #==== Normal features ====

@@ -1,6 +1,8 @@
 #ifndef TARGET_HH
 #define TARGET_HH
 
+#include "type.hh"
+
 /* 
  * Data types for representing filenames, targets, etc. 
  */
@@ -18,145 +20,7 @@
  *     * Dedicated classes exist to represent these with _places_. 
  */
 
-class Target;
-
-class Type
-/* 
- * The type of a target. 
- */
-{
-public:
-
-	static const Type TRANSIENT, FILE, DYNAMIC_TRANSIENT, DYNAMIC_FILE;
-	/* Some predefined values */ 
-
-	bool is_dynamic() const {
-		return value >= T_DYNAMIC_TRANSIENT;
-	}
-
-	unsigned get_depth() const 
-	/* The level of dynamicity, i.e., corresponding to the number of
-	 * bracket pairs in the syntax.  Zero for non-dynamic targets.  */
-	{
-		assert(value >= 0);
-		return value >> 1;
-	}
-
-	bool is_any_transient() const {
-		assert(value >= 0); 
-		return ! (value & 1);
-	}
-
-	bool is_any_file() const {
-		assert(value >= 0); 
-		return value & 1;
-	}
-
-	Type get_base() const {
-		assert(value >= 0); 
-		return Type(value & 1); 
-	}
-
-	bool operator == (const Type &type) const {
-		return this->value == type.value;
-	}
-
-	bool operator == (int value_) const {
-		return this->value == value_; 
-	}
-
-	bool operator != (const Type &type) const {
-		return this->value != type.value;
-	}
-
-	bool operator != (int value_) const {
-		return this->value != value_; 
-	}
-
-	int operator - (const Type &type) const {
-		assert(this->value >= T_TRANSIENT);
-		assert(type .value >= T_TRANSIENT);
-
-		/* We can only subtract compatible types */ 
-		assert(((this->value ^ type.value) & 1) == 0);
-
-		return (this->value - type.value) / 2; 
-	}
-
-	Type operator - (int depth) const {
-		assert(value >= 0); 
-		assert(value - 2 * depth >= 0); 
-		return Type(value - 2 * depth);
-	}
-
-	Type &operator ++ () {
-		assert(value >= 0);
-		value += 2;
-		return *this; 
-	}
-
-	Type &operator -- () {
-		assert(value >= T_DYNAMIC_TRANSIENT);
-		value -= 2;
-		return *this;
-	}
-
-	Type &operator += (int depth) {
-		assert(value >= 0);
-		value += 2 * depth;
-		assert(value >= 0);
-		return *this;
-	}
-
-private:  
-
-	int value;
-	/* >= 0 */
-
-	friend class Target; 
-	friend struct std::hash <Target> ;
-
-	/* Only used for hashing */
-	int get_value() const {
-		return value; 
-	}
-
-	/* Only used by containers */
-	bool operator < (const Type &type) const {
-		return this->value < type.value; 
-	}
-
-	enum: int {
-		T_TRANSIENT         = 0,
-		/* A transient target */ 
-	
-		T_FILE              = 1,
-		/* A file in the file system; this entry has to come before
-		 * T_DYNAMIC because it counts also as a dynamic dependency of
-		 * depth zero. */
-
-		T_DYNAMIC_TRANSIENT = 2,
-		/* A dynamic transient target -- only used for the Target object of
-		 * executions */
-
-		T_DYNAMIC_FILE      = 3
-		/* A dynamic target -- only used for the Target object of executions */   
-
-		/* Larger values denote multiply dynamic targets.  They are only
-		 * used as the target of Execution objects.  */
-	};
-
-	Type(int value_)
-		:  value(value_)
-	{
-		assert(value >= 0);
-	}
-};
-
-const Type Type::TRANSIENT(Type::T_TRANSIENT);
-const Type Type::FILE(Type::T_FILE);
-const Type Type::DYNAMIC_TRANSIENT(Type::T_DYNAMIC_TRANSIENT);
-const Type Type::DYNAMIC_FILE(Type::T_DYNAMIC_FILE);
+// class Target;
 
 /* 
  * The basic object in Stu:  a file, a variable, or a dynamic version of these.  This
@@ -312,7 +176,7 @@ namespace std {
 		size_t operator()(const Target &target) const {
 			return
 				hash <string> ()(target.name)
-				^ target.type.get_value();
+				^ target.type.get_value_for_hash();
 		}
 	};
 }

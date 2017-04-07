@@ -1,5 +1,8 @@
 # TODO 
-# Introduce a new type of Execution which is a "Concatenate Child
+#
+# * Add a "part" bit to Type. 
+#
+# *  Introduce a new type of Execution which is a "Concatenate Child
 # Execution", and keeps track of the list of eventual single dynamic
 # dependencies of an individual (arbitralily dynamically nested)
 # dependency.  These Execution types are cached. 

@@ -21,10 +21,14 @@
 class Target;
 
 class Type
+/* 
+ * The type of a target. 
+ */
 {
 public:
 
 	static const Type TRANSIENT, FILE, DYNAMIC_TRANSIENT, DYNAMIC_FILE;
+	/* Some predefined values */ 
 
 	bool is_dynamic() const {
 		return value >= T_DYNAMIC_TRANSIENT;

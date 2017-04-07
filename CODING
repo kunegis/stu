@@ -80,6 +80,9 @@ using shared_ptr/unique_ptr:
 I.e., we always assume an object of one of these types may be of a
 subtype.  
 
+For Dependency and its subclasses, we also assume that a single object
+has many persistent pointers to it, so they are considered final.  
+
 (2) Objects of type Execution are allocated using new() and never
 released; this is necessary for caching.  They are always accessed
 through ordinary pointers. 

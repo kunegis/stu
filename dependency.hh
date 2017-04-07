@@ -43,13 +43,19 @@ enum
 	I_PERSISTENT       = 0,
 	I_OPTIONAL,         
 	I_TRIVIAL,          
-	I_READ,              
+	I_DYNAMIC,
+	I_CONCATENATE,
 	I_VARIABLE,
 	I_OVERRIDE_TRIVIAL,
 	I_NEWLINE_SEPARATED,
 	I_NUL_SEPARATED,
 
 	C_ALL, /* Total number of flags */ 
+
+	/* Base bit and length of the concatenation index numbers */
+	C_CONCATENATE_BASE  = C_ALL,
+	C_CONCATENATE_COUNT = CHAR_BIT * sizeof(unsigned) - C_ALL,
+	C_CONCATENATE_MAX = (1 << C_CONCATENATE_COUNT) - 1,
 
 	C_TRANSITIVE       = 3,
 	/* The first C_TRANSITIVE flags are transitive, i.e., inherited
@@ -74,9 +80,12 @@ enum
 	 * Intransitive flags
 	 */ 
 
-	F_READ             = 1 << I_READ,  
-	/* Read content of file and add it as new dependencies.  Used
-	 * only for [...[X]...]->X links. */
+	F_DYNAMIC          = 1 << I_DYNAMIC,  
+	/* This is a [...[X]...]->X special dynamic link */
+
+	F_CONCATENATE      = 1 << I_CONCATENATE,
+	/* This is a link between a Concatenating_Execution and its
+	 * child Execution in Stage 0.  */
 
 	F_VARIABLE         = 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */ 
@@ -224,6 +233,8 @@ public:
 	/* Whether the dependency is normalized, according to the
 	 * definition given above.  */
 
+	virtual shared_ptr <Dependency> clone_shallow() const= 0; 
+
 	static void make_normalized(vector <shared_ptr <Dependency> > &dependencies, 
 				    shared_ptr <Dependency> dependency);
 	/* Split the given DEPENDENCY into multiple DEPENDENCIES that do
@@ -295,7 +306,7 @@ public:
 		   place_param_target(place_param_target_),
 		   place(place_)
 	{ 
-		assert((flags_ & F_READ) == 0); 
+		assert((flags_ & F_DYNAMIC) == 0); 
 		check(); 
 	}
 
@@ -309,7 +320,7 @@ public:
 		   place(place_),
 		   name(name_)
 	{ 
-		assert((flags_ & F_READ) == 0); 
+		assert((flags_ & F_DYNAMIC) == 0); 
 		check(); 
 	}
 
@@ -378,6 +389,7 @@ public:
 	}
 
 	virtual bool is_normalized() const { return true;  }
+	shared_ptr <Dependency> clone_shallow() const; 
 };
 
 class Dynamic_Dependency
@@ -394,7 +406,7 @@ public:
 		:  Dependency(flags_), 
 		   dependency(dependency_)
 	{
-		assert((flags & F_READ) == 0); 
+		assert((flags & F_DYNAMIC) == 0); 
 		assert((flags & F_VARIABLE) == 0); 
 		assert(dependency_ != nullptr); 
 	}
@@ -405,7 +417,7 @@ public:
 		:  Dependency(flags_, places_),
 		   dependency(dependency_)
 	{
-		assert((flags & F_READ) == 0); 
+		assert((flags & F_DYNAMIC) == 0); 
 		assert((flags & F_VARIABLE) == 0); 
 		assert(dependency_ != nullptr); 
 	}
@@ -464,6 +476,8 @@ public:
 	virtual bool is_normalized() const {
 		return dependency->is_normalized(); 
 	}
+
+	virtual shared_ptr <Dependency> clone_shallow() const; 
 
 //	virtual shared_ptr <Dependency> normalize_compound() const;
 };
@@ -526,6 +540,8 @@ public:
 	virtual bool is_normalized() const; 
 	/* A concatenated dependency is always normalized, regardless of
 	 * whether the contained dependencies are normalized.  */ 
+
+	virtual shared_ptr <Dependency> clone_shallow() const;
 
 private:
 
@@ -604,6 +620,8 @@ public:
 
 	virtual bool is_normalized() const {  return false;  }
 	/* A compound dependency is never normalized */
+
+	virtual shared_ptr <Dependency> clone_shallow() const;
 
 private:
 
@@ -931,6 +949,19 @@ shared_ptr <Dependency> Dependency::strip_dynamic(shared_ptr <Dependency> d)
 	return d;
 }
 
+shared_ptr <Dependency> Single_Dependency::clone_shallow() const
+{
+	// TODO
+	assert(false);
+	return nullptr; 
+}
+
+shared_ptr <Dependency> Dynamic_Dependency::clone_shallow() const
+{
+	assert(false); 
+	return nullptr; 
+}
+
 shared_ptr <Dependency> Single_Dependency
 ::instantiate(const map <string, string> &mapping) const
 {
@@ -1024,6 +1055,13 @@ string Compound_Dependency::format_out() const
 	}
 	
 	return fmt("(%s)", ret); 
+}
+
+shared_ptr <Dependency> Compound_Dependency::clone_shallow() const
+{
+	// TODO 
+	assert(false);
+	return nullptr; 
 }
 
 shared_ptr <Dependency> 
@@ -1126,6 +1164,13 @@ void Concatenated_Dependency::make_normalized()
 			make_normalized_compound(dependencies[i]);
 		dependencies[i]= d_normalized_compound; 
 	}
+}
+
+shared_ptr <Dependency> Concatenated_Dependency::clone_shallow() const
+{
+	// TODO
+	assert(false);
+	return nullptr; 
 }
 
 Stack::Stack(shared_ptr <Dependency> dependency) 

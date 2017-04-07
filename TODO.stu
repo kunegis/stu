@@ -139,6 +139,46 @@ A:  [B];   B = { ([X])(([Y]([Z]))) }   X = { list. }   Y = { 1 2 }   Z = Y;
 
 A:  list.[X][X][X][X][X][X][X][X];   X = { 1 2 }   >list.$n { echo Number "$n" ; }
 
+A: [(X)(Y)(Z)]; 
+
+A: list.[X];   X = {[Y]}   Y = {Z};  # Equivalent to   A: list.Z;
+A: [list.[X]]; X = {[Y]} Y = {Z} list.Z = {Q}  # Equivalent to    A: Q;
+
+# This case.  Make sure all six list.* files are built. 
+@all:  A B;
+A:  list.a[[M]];
+B:  list.b[[M]];
+M = { N }
+N = { 1 2 3 }
+list.$x = { xxx }
+
+# Order of parts
+A:  [B][C] { ... }
+>B { sleep 2 ; echo list. ; }
+C = { 1 2 3 }
+list.$n;
+
+# Start building 'list.C' immediately, and 'list.D' later. 
+A:  list.([B] C) { ... }
+B = { sleep 1 ; echo D ; }
+list.$n;
+
+# Should this mean 'list.', or an empty list as dependencies of 'A'?
+A:   list.[B] { ... }
+B = { }
+
+# Works, and 'B' is stat()'ed only once. 
+A:  -o B { touch A ; }
+B { }
+
+# Should we allow this?
+A: @[C]
+{
+	touch A
+}
+C { touch C }
+
+
 #
 # TODO document the -0 in the manpage.
 #

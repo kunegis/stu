@@ -43,9 +43,6 @@ public:
 		/* Execution can continue in the process */
 	};
 
-//	bool is_root() const { return parents.empty(); }
-//	/* Whether this is the root execution */
-
 	void raise(int error_);
 	/* All errors by Execution call this function.  Set the error
 	 * code, and throw an error except with the keep-going option.  */
@@ -330,10 +327,6 @@ class Single_Execution
 {
 public:
 
-//	Single_Execution(const vector <shared_ptr <Dependency> > &dependencies_); 
-//	/* Root execution; DEPENDENCIES don't have to be unique */
-//	// TODO make the root execution be a distinct class. 
-
 	Single_Execution(Target target_,
 			 Link &link,
 			 Execution *parent);
@@ -392,11 +385,7 @@ protected:
 
 	virtual string debug_text() const {
 		assert(targets.size()); 
-		return
-			// targets.empty() 
-			// ? "ROOT"
-			// : 
-			targets.front().format_out(); 
+		return targets.front().format_out(); 
 	}
 
 private:
@@ -515,11 +504,7 @@ private:
 	int get_depth() const 
 	{
 		assert(targets.size()); 
-		return
-//			targets.empty()
-//			? -1
-//			: 
-			targets.front().type.get_depth(); 
+		return targets.front().type.get_depth(); 
 	}
 
 	static unordered_map <Target, Single_Execution *> executions_by_target;
@@ -599,7 +584,6 @@ public:
 	virtual bool finished() const;
 	virtual bool finished(Stack avoid) const; 
 
-	// TODO properly implement these
 	virtual string debug_text() const {  return "CONCAT";  }
 
 protected:
@@ -970,7 +954,6 @@ bool Execution::find_cycle(const Execution *const parent,
 {
 	/* Happens when the parent is the root execution */ 
 	if (dynamic_cast <const Root_Execution *> (parent))
-//	if (parent->is_root())
 		return false;
 		
 	/* Happens with files that should be there and have no rule */ 
@@ -996,7 +979,6 @@ bool Execution::find_cycle(vector <const Execution *> &path,
 		const Execution *next= i.first; 
 		assert(next != nullptr);
 		if (dynamic_cast <const Root_Execution *> (next)) 
-//		if (next->is_root())
 			continue;
 
 		path.push_back(next); 
@@ -1103,7 +1085,6 @@ void Execution::print_traces(string text) const
 	 * an error on the command line; don't output anything beyond
 	 * the error message. */
 	if (dynamic_cast <const Root_Execution *> (execution)) 
-//	if (execution->is_root()) 
 		return;
 
 	bool first= true; 
@@ -1124,7 +1105,6 @@ void Execution::print_traces(string text) const
 		auto i= execution->parents.begin(); 
 
 		if (dynamic_cast <Root_Execution *> (i->first)) {
-//		if (i->first->is_root()) {
 
 			/* We are in a child of the root execution */ 
 
@@ -2067,7 +2047,6 @@ Single_Execution::Single_Execution(Target target_,
 					/* File exists:  Do nothing, and there are no
 					 * dependencies to build */  
 					if (dynamic_cast <Root_Execution *> (parent)) {
-//					if (parent->is_root()) {
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */ 
 						print_out(fmt("No rule for building %s, but the file exists", 
@@ -2096,12 +2075,8 @@ Single_Execution::Single_Execution(Target target_,
 
 bool Single_Execution::finished() const 
 {
-//	if (targets.empty()) {
-//		assert(get_done().get_depth() == 0);
-//	} else {
-		assert(get_done().get_depth() == targets.front().type.get_depth());
-		assert(get_done().get_depth() == targets.back().type.get_depth());
-//	}
+	assert(get_done().get_depth() == targets.front().type.get_depth());
+	assert(get_done().get_depth() == targets.back().type.get_depth());
 
 	Flags to_do_aggregate= 0;
 	
@@ -2114,12 +2089,8 @@ bool Single_Execution::finished() const
 
 bool Single_Execution::finished(Stack avoid) const
 {
-//	if (targets.empty())
-//		assert(get_done().get_depth() == 0);
-//	else {
-		assert(get_done().get_depth() == targets.front().type.get_depth());
-		assert(get_done().get_depth() == targets.back().type.get_depth());
-//	}
+	assert(get_done().get_depth() == targets.front().type.get_depth());
+	assert(get_done().get_depth() == targets.back().type.get_depth());
 
 	assert(avoid.get_depth() == get_done().get_depth());
 
@@ -2500,8 +2471,7 @@ void Single_Execution::initialize(Stack avoid)
 	/* Add the special dynamic dependency, i.e., the [...[A]...]--A type
 	 * link.  Add, as an initial dependency, the corresponding file
 	 * or transient.  */
-	if ( // ! targets.empty() &&
-	    targets.front().type.is_dynamic()) {
+	if (targets.front().type.is_dynamic()) {
 
 		assert(targets.size() == 1); 
 		const Target &target= targets.front(); 
@@ -2536,9 +2506,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 	/* We cannot return here in the non-dynamic case, because we
 	 * must still check that the target files exist, even if they
 	 * don't have commands. */ 
-	if (
-//	    is_root() || 
-	    get_depth() != 0) {
+	if (get_depth() != 0) {
 		Execution::done_add_neg(link.avoid); 
 		return proceed | P_BIT_FINISHED;
 	}
@@ -3003,9 +2971,7 @@ void Single_Execution::propagate_variable(shared_ptr <Dependency> dependency,
 bool Single_Execution::is_dynamic() const
 {
 	assert(targets.size() != 0); 
-	return 
-//		targets.size() != 0 && 
-		targets.front().type.is_dynamic(); 
+	return targets.front().type.is_dynamic(); 
 }
 
 void Single_Execution::propagate_dynamic(Single_Execution *parent,
@@ -3105,7 +3071,6 @@ Execution::Proceed Single_Execution::execute_optional(const Link &link)
 }
 
 bool Root_Execution::finished() const
-// TODO create prototype for this function
 {
 	assert(get_done().get_depth() == 0);
 

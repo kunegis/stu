@@ -360,8 +360,6 @@ public:
 	}
 
 	virtual shared_ptr <Dependency> clone_shallow() const; 
-
-//	virtual shared_ptr <Dependency> normalize_compound() const;
 };
 
 class Concatenated_Dependency
@@ -766,8 +764,6 @@ void Dependency::make_normalized(vector <shared_ptr <Dependency> > &dependencies
 		shared_ptr <Concatenated_Dependency> concatenated_dependency=
 			dynamic_pointer_cast <Concatenated_Dependency> (dependency);
 		concatenated_dependency->make_normalized(); 
-
-//		dependencies.push_back(dependency); 
 
 	} else {
 		/* Bug:  Unhandled dependency type */ 

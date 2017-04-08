@@ -20,8 +20,6 @@
  *     * Dedicated classes exist to represent these with _places_. 
  */
 
-// class Target;
-
 /* 
  * The basic object in Stu:  a file, a variable, or a dynamic version of these.  This
  * consists of a name together with a type.  This class is not

@@ -120,7 +120,8 @@ denoting a filename used previously may be named 'filename_old' instead
 of the expected 'old_filename'.  You can think of this convention as
 being influenced by the French language, which by default places
 adjectives after the noun, or as being compatible with names such as
-'filename_1', etc. 
+'filename_1', etc.  This convention is not used for type names, e.g., we
+have Dynamic_Dependency.  
 
 == Shell scripts ==
 

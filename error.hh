@@ -287,7 +287,8 @@ public:
 
 	static const Place place_empty;
 	/* A static empty place object, used in various places when a
-	 * reference to an empty place object is needed.  */
+	 * reference to an empty place object is needed.  Otherwise,
+	 * Place() is an empty place.  */
 };
 
 class Trace

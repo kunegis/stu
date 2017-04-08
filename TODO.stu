@@ -178,6 +178,7 @@ A: @[C]
 }
 C { touch C }
 
+# Concatenation in debug mode 
 
 #
 # TODO document the -0 in the manpage.
@@ -208,6 +209,16 @@ A.$X$Y;
 # This is to detected regression such as "a new version of Stu is much
 # slower than old versions."
 #
+
+#
+# Dynamic transients.  This does the expected thing, and will be
+# easy to implement after the big "concatenation" cleanup. 
+#
+
+# A will contain the three lines 'x', 'y' and 'z'
+>A: [@x] { cat X Y Z ; }
+@x:  X Y Z; 
+X = {x}   Y = {y}  Z = {z}
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This
@@ -394,7 +405,7 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 # An option for automatic logging:  write all output (stdout/stderr) of
 # commands to a file (a different file per target).  Use the -l option.
 # To do this, we need to generate a logfile name for each file and
-# transient target in a systematic mannner.  This opens many questions. 
+# transient target in a systematic manner.  This opens many questions. 
 #
 
 #

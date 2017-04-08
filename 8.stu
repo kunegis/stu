@@ -1,3 +1,7 @@
+* move DONE from Execution to Single_Execution 
+* write new Dynamic_Execution
+* write Concatenated_Execution 
+
 # New dynamic dependency code.
 
 ### Not dynamic, not concatenated, file  (Single_Execution) 

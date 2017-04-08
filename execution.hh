@@ -38,6 +38,8 @@ public:
 		P_BIT_WAIT =     1 << 0,
 		P_BIT_LATER =    1 << 1,
 		P_BIT_FINISHED = 1 << 2,
+//		P_BIT_DONE =     1 << 3, /* Caller sets the DONE bit,
+//					    if any */ 
 
 		P_CONTINUE = 0, 
 		/* Execution can continue in the process */
@@ -47,7 +49,9 @@ public:
 	/* All errors by Execution call this function.  Set the error
 	 * code, and throw an error except with the keep-going option.  */
 
-	virtual Proceed execute(Execution *parent, const Link &link);
+	Proceed execute_base(Execution *parent, const Link &link, Stack &done_here);
+
+	virtual Proceed execute(Execution *parent, const Link &link)= 0;
 	/* Start the next job(s).  This will also terminate jobs when
 	 * they don't need to be run anymore, and thus it can be called
 	 * when K = 0 just to terminate jobs that need to be terminated.
@@ -58,6 +62,7 @@ public:
 	 * Child implementations call this implementation.  
 	 * Never returns P_CONTINUE:  When everything is finished, the
 	 * FINISHED bit is set.  
+	 * In DONE, set those bits that have been done. 
 	 */
 	// TODO does not set the DONE bits, bit that will be moot once
 	// DONE is move to Single_Execution. 
@@ -67,6 +72,15 @@ public:
 
 	virtual bool finished(Stack avoid) const= 0; 
 	/* Whether the execution is finished working for the given tasks */ 
+
+	virtual string debug_done_text() const
+	/* Extra string for the "done" information; may be empty.  */
+	{ 
+		return ""; 
+	}
+//	{
+//		return done.format(); 
+//	}
 
 	static long jobs;
 	/* Number of free slots for jobs.  This is a long because
@@ -112,24 +126,23 @@ protected:
 	 * finished, this value is propagated to the parent executions
 	 * (except when the F_PERSISTENT flag is set).  */ 
 
-	Execution(int k, Execution *parent, Link &link)
+	Execution(Execution *parent, Link &link)
 		/* K is the depth of the done field, i.e. the depth of
 		 * the dependency for purposes of keeping track of
 		 * caching.  */
 		:  error(0),
 		   timestamp(Timestamp::UNDEFINED),
-		   need_build(false),
-		   done(k, 0) 
+		   need_build(false)//,
+//		   done(k, 0) 
 	{  
 		parents[parent]= link; 
 	}
 
-	Execution(int k, Execution *parent_null)
+	Execution(Execution *parent_null)
 		/* Without a parent.  PARENT_NULL must be null.  */
 		:  error(0),
 		   timestamp(Timestamp::UNDEFINED),
-		   need_build(false),
-		   done(k, 0) 
+		   need_build(false)
 	{  
 		assert(parent_null == nullptr); 
 	}
@@ -153,29 +166,7 @@ protected:
 		assert(children.size() == 0); 
 	}
 
-	const Stack &get_done() const {  return done;  }
-
-	void done_set_all_one() 
-	/* Set all flags in DONE, given that the depth of DONE is zero */
-	{
-		done.add_one_neg(0); 
-	}
-
-	void done_add_neg(Stack stack_) {
-		done.add_neg(stack_); 
-	}
-
-	void done_add_one_neg(Flags flags_) {
-		done.add_one_neg(flags_); 
-	}
-
-	void done_add_one_neg(Stack stack_) {
-		done.add_one_neg(stack_); 
-	}
-
-	void done_add_highest_neg(Flags flags_) {
-		done.add_highest_neg(flags_); 
-	}
+//	const Stack &get_done() const {  return done;  }
 
 	const Buffer &get_buffer_default() const {  return buffer_default;  }
 	const Buffer &get_buffer_trivial() const {  return buffer_trivial;  }
@@ -268,13 +259,6 @@ protected:
 
 private: 
 
-	Stack done;
-	// TODO move to Single_Execution 
-	/* What parts of this target have been done.  Each bit
-	 * represents one aspect that was done.  The depth is equal to
-	 * the depth for dynamic targets, and to zero for non-dynamic
-	 * targets.  */
-
 	Buffer buffer_default;
 	/* Dependencies that have not yet begun to be built.
 	 * Initialized with all dependencies, and emptied over time when
@@ -296,10 +280,6 @@ private:
 	 * LINK.DEPENDENCY may be modified.   DEPENDENCY_CHILD must be
 	 * normalized.  */
 
-	string debug_done_text() const
-	{
-		return done.format(); 
-	}
 };
 
 class Single_Execution
@@ -355,6 +335,10 @@ public:
 
 	const map <string, string> &get_mapping_variable() const {
 		return mapping_variable; 
+	}
+
+	virtual string debug_done_text() const {
+		return done.format(); 
 	}
 
 	virtual Proceed execute(Execution *parent, const Link &link);
@@ -450,6 +434,12 @@ private:
 	 * +1.  
 	 */
 	
+	Stack done;
+	/* What parts of this target have been done.  Each bit
+	 * represents one aspect that was done.  The depth is equal to
+	 * the depth for dynamic targets, and to zero for non-dynamic
+	 * targets.  */
+
 	~Single_Execution(); 
 
 	shared_ptr <Rule> get_param_rule() const {
@@ -507,6 +497,33 @@ private:
 		return targets.front().type.get_depth(); 
 	}
 
+	void done_set_all_one() 
+	/* Set all flags in DONE, given that the depth of DONE is zero */
+	// TODO deprecate and replace by direct call
+	{
+		done.add_one_neg(0); 
+	}
+
+	void done_add_neg(Stack stack_) {
+	// TODO deprecate and replace by direct call
+		done.add_neg(stack_); 
+	}
+
+	void done_add_one_neg(Flags flags_) {
+	// TODO deprecate and replace by direct call
+		done.add_one_neg(flags_); 
+	}
+
+	void done_add_one_neg(Stack stack_) {
+	// TODO deprecate and replace by direct call
+		done.add_one_neg(stack_); 
+	}
+
+	void done_add_highest_neg(Flags flags_) {
+	// TODO deprecate and replace by direct call
+		done.add_highest_neg(flags_); 
+	}
+
 	static unordered_map <Target, Single_Execution *> executions_by_target;
 	/* The Execution objects by each of their target.  Execution objects
 	 * are never deleted.  This serves as a caching mechanism.  The
@@ -547,6 +564,11 @@ protected:
 	virtual void check_execution(const Link &) const  {   }
 	virtual string debug_text() const { return "ROOT"; }
 	virtual bool want_delete() const {  return true;  }
+
+private:
+
+	Stack done; 
+	/* Always has depth zero */
 };
 
 class Concatenated_Execution
@@ -1240,7 +1262,7 @@ void Execution::push_default(shared_ptr <Dependency> dependency)
 	}
 }
 
-Execution::Proceed Execution::execute(Execution *, const Link &link)
+Execution::Proceed Execution::execute_base(Execution *, const Link &link, Stack &done_here)
 {
 	Verbose verbose;
 
@@ -1293,7 +1315,7 @@ Execution::Proceed Execution::execute(Execution *, const Link &link)
 		Proceed proceed= execute_children(link2);
 		proceed_all |= (proceed & ~P_BIT_FINISHED); 
 		if ((proceed & P_BIT_FINISHED) && ! option_keep_going) {
-			done.add_neg(link2.avoid);
+			done_here.add_neg(link2.avoid); // XXX
 			return proceed_all;
 		}
 	}
@@ -1308,8 +1330,8 @@ Execution::Proceed Execution::execute(Execution *, const Link &link)
 
 	/* Is this a trivial run?  Then skip the dependency. */
 	if (link2.flags & F_TRIVIAL) {
-		done.add_neg(link2.avoid);
-		return P_BIT_FINISHED | proceed_all;
+		done_here.add_neg(link2.avoid); // XXX
+		return proceed_all | P_BIT_FINISHED;
 	}
 
 	if (error) 
@@ -1342,7 +1364,8 @@ Execution::Proceed Execution::execute(Execution *, const Link &link)
 		if (proceed_2 & P_BIT_WAIT)
 			return proceed_2;
 		if ((proceed_2 & P_BIT_FINISHED) && ! option_keep_going) {
-			done.add_neg(link2.avoid);
+//		flags |= ~link2.avoid; 
+		done_here.add_neg(link2.avoid); // XXX
 			return proceed_2;
 		}
 	}
@@ -1356,7 +1379,7 @@ Execution::Proceed Execution::execute(Execution *, const Link &link)
 	/* There was an error in a child */ 
 	if (error != 0) {
 		assert(option_keep_going == true); 
-		done.add_neg(link2.avoid);
+		done_here.add_neg(link2.avoid); // XXX
 		return P_BIT_FINISHED;
 	}
 
@@ -1548,7 +1571,7 @@ Execution::Proceed Execution::execute_deploy(const Link &link,
 		}
 
 		children.insert(child);
-		
+
 		Proceed proceed= child->execute(this, move(link_child_new));
 		if (proceed & P_BIT_WAIT)
 			return proceed & ~P_BIT_FINISHED;
@@ -1799,8 +1822,8 @@ void Single_Execution::waited(pid_t pid, int status)
 
 	Execution::check_waited(); 
 
-	assert(Execution::get_done().get_depth() == 0); 
-	Execution::done_set_all_one(); 
+	assert(done.get_depth() == 0); 
+	done_set_all_one(); 
 
 	{
 		Job::Signal_Blocker sb;
@@ -1930,9 +1953,10 @@ void Single_Execution::waited(pid_t pid, int status)
 Single_Execution::Single_Execution(Target target_,
 				   Link &link,
 				   Execution *parent)
-	:  Execution(target_.type.get_depth(), parent, link),
+	:  Execution(parent, link),
 	   checked(false),
-	   exists(0)
+	   exists(0),
+	   done(target_.type.get_depth(), 0)
 {
 	assert(parent != nullptr); 
 	assert(parents.size() == 1); 
@@ -2075,13 +2099,13 @@ Single_Execution::Single_Execution(Target target_,
 
 bool Single_Execution::finished() const 
 {
-	assert(get_done().get_depth() == targets.front().type.get_depth());
-	assert(get_done().get_depth() == targets.back().type.get_depth());
+	assert(done.get_depth() == targets.front().type.get_depth());
+	assert(done.get_depth() == targets.back().type.get_depth());
 
 	Flags to_do_aggregate= 0;
 	
-	for (unsigned j= 0;  j <= get_done().get_depth();  ++j) {
-		to_do_aggregate |= ~get_done().get(j); 
+	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
+		to_do_aggregate |= ~done.get(j); 
 	}
 
 	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
@@ -2089,15 +2113,15 @@ bool Single_Execution::finished() const
 
 bool Single_Execution::finished(Stack avoid) const
 {
-	assert(get_done().get_depth() == targets.front().type.get_depth());
-	assert(get_done().get_depth() == targets.back().type.get_depth());
+	assert(done.get_depth() == targets.front().type.get_depth());
+	assert(done.get_depth() == targets.back().type.get_depth());
 
-	assert(avoid.get_depth() == get_done().get_depth());
+	assert(avoid.get_depth() == done.get_depth());
 
 	Flags to_do_aggregate= 0;
 	
-	for (unsigned j= 0;  j <= get_done().get_depth();  ++j) {
-		to_do_aggregate |= ~get_done().get(j) & ~avoid.get(j); 
+	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
+		to_do_aggregate |= ~done.get(j) & ~avoid.get(j); 
 	}
 
 	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
@@ -2494,7 +2518,11 @@ void Single_Execution::initialize(Stack avoid)
 
 Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link)
 {
-	Proceed proceed= Execution::execute(parent, link); 
+	Proceed proceed= Execution::execute_base(parent, link, done); 
+//	if (proceed & P_BIT_DONE) {
+//		done.add_neg(link.avoid);
+//		proceed &= ~P_BIT_DONE; 
+//	}
 	if (proceed & (P_BIT_FINISHED | P_BIT_WAIT)) {
 		return proceed;
 	}
@@ -2507,7 +2535,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 	 * must still check that the target files exist, even if they
 	 * don't have commands. */ 
 	if (get_depth() != 0) {
-		Execution::done_add_neg(link.avoid); 
+		done_add_neg(link.avoid); 
 		return proceed | P_BIT_FINISHED;
 	}
 
@@ -2597,7 +2625,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 					/* Optional dependency:  don't create the file;
 					 * it will then not exist when the parent is
 					 * called. */ 
-					Execution::done_add_one_neg(F_OPTIONAL); 
+					done_add_one_neg(F_OPTIONAL); 
 					return proceed | P_BIT_FINISHED;
 				}
 			}
@@ -2608,7 +2636,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 				rule->place_param_targets[i]->place
 					<< system_format(target.format_word()); 
 				raise(ERROR_BUILD);
-				Execution::done_add_one_neg(link.avoid); 
+				done_add_one_neg(link.avoid); 
 				return proceed | P_BIT_FINISHED;
 			}
 
@@ -2630,7 +2658,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 					print_traces();
 					explain_file_without_command_without_dependencies(); 
 				}
-				Execution::done_add_one_neg(link.avoid); 
+				done_add_one_neg(link.avoid); 
 				raise(ERROR_BUILD);
 				return proceed | P_BIT_FINISHED;
 			}		
@@ -2669,7 +2697,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 
 	if (! need_build) {
 		/* The file does not have to be built */ 
-		Execution::done_add_neg(link.avoid); 
+		done_add_neg(link.avoid); 
 		return proceed | P_BIT_FINISHED;
 	}
 
@@ -2684,7 +2712,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 
 	if (no_execution) {
 		/* A target without a command */ 
-		Execution::done_add_neg(link.avoid); 
+		done_add_neg(link.avoid); 
 		return proceed | P_BIT_FINISHED;
 	}
 
@@ -2703,7 +2731,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 		assert(targets.size() == 1);
 		assert(targets.front().type == Type::FILE); 
 		
-		Execution::done_add_one_neg(0); 
+		done_add_one_neg(0); 
 
 		if (option_debug) {
 			string text_target= debug_text();
@@ -2771,7 +2799,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 					print_traces(fmt("when target file %s does not exist",
 							 targets.at(0).format_word())); 
 					raise(ERROR_BUILD);
-					Execution::done_add_neg(link.avoid); 
+					done_add_neg(link.avoid); 
 					assert(proceed == P_CONTINUE); 
 					return proceed | P_BIT_FINISHED;
 				}
@@ -2806,7 +2834,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 			print_traces(fmt("error executing command for %s", 
 					 targets.front().format_word())); 
 			raise(ERROR_BUILD);
-			Execution::done_add_neg(link.avoid); 
+			done_add_neg(link.avoid); 
 			assert(proceed == P_CONTINUE); 
 			return proceed | P_BIT_FINISHED;
 		}
@@ -3000,7 +3028,7 @@ void Single_Execution::propagate_dynamic(Single_Execution *parent,
 	assert(found); 
 #endif 
 
-	assert(get_done().get_depth() == 0); 
+	assert(done.get_depth() == 0); 
 		
 	bool do_read= true;
 
@@ -3023,17 +3051,17 @@ void Single_Execution::propagate_dynamic(Single_Execution *parent,
 void Single_Execution::check_execution(const Link &link) const
 {
 	for (const Target &target:  targets) {
-		assert(target.type.get_depth() == get_done().get_depth());
+		assert(target.type.get_depth() == done.get_depth());
 	}
 
 	Stack tmp_stack= link.avoid; 
 	(void) tmp_stack; 
-	assert(get_done().get_depth() == link.avoid.get_depth()); 
+	assert(done.get_depth() == link.avoid.get_depth()); 
 
 	if (targets.size() && targets.front().type == 0) {
 		assert(link.avoid.get_lowest() == (link.flags & ((1 << C_TRANSITIVE) - 1))); 
 	}
-	get_done().check();
+	done.check();
 }
 
 Execution::Proceed Single_Execution::execute_optional(const Link &link)
@@ -3056,10 +3084,10 @@ Execution::Proceed Single_Execution::execute_optional(const Link &link)
 					->place_param_target.place <<
 					system_format(name_format_word(name)); 
 				raise(ERROR_BUILD);
-				Execution::done_add_neg(link.avoid); 
+				done_add_neg(link.avoid); 
 				return P_BIT_FINISHED;
 			}
-			Execution::done_add_highest_neg(link.avoid.get_highest()); 
+			done_add_highest_neg(link.avoid.get_highest()); 
 			return P_BIT_FINISHED;
 		} else {
 			assert(ret_stat == 0);
@@ -3072,20 +3100,21 @@ Execution::Proceed Single_Execution::execute_optional(const Link &link)
 
 bool Root_Execution::finished() const
 {
-	assert(get_done().get_depth() == 0);
+	assert(done.get_depth() == 0);
 
-	return ((~ get_done().get(0)) & ((1 << C_TRANSITIVE) - 1)) == 0; 
+	return ((~ done.get(0)) & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
 bool Root_Execution::finished(Stack avoid) const
 {
-	assert(get_done().get_depth() == 0);
+	assert(done.get_depth() == 0);
 
-	return ((~ get_done().get(0) & ~avoid.get(0)) & ((1 << C_TRANSITIVE) - 1)) == 0; 
+	return ((~ done.get(0) & ~avoid.get(0)) & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
 Root_Execution::Root_Execution(const vector <shared_ptr <Dependency> > &dependencies)
-	:  Execution(0, nullptr)
+	:  Execution(nullptr),
+	   done(0, 0)
 {
 	for (auto &d:  dependencies) {
 		push_default(d); 
@@ -3094,20 +3123,25 @@ Root_Execution::Root_Execution(const vector <shared_ptr <Dependency> > &dependen
 
 Execution::Proceed Root_Execution::execute(Execution *parent, const Link &link)
 {
-	Proceed proceed= Execution::execute(parent, link); 
-
+	Proceed proceed= Execution::execute_base(parent, link, done); 
+//	if (proceed & P_BIT_DONE) {
+//		done.add_neg(link.avoid);
+//		proceed &= ~P_BIT_DONE; 
+//	}
 	if (proceed & (P_BIT_FINISHED | P_BIT_WAIT)) {
 		return proceed;
 	}
 
-	Execution::done_add_neg(link.avoid); 
+	done.add_neg(link.avoid); 
+//	Execution::done_add_neg(link.avoid); 
+
 	return proceed | P_BIT_FINISHED;
 }
 
 Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependency_,
 					       Execution *parent,
 					       Link &link)
-	:  Execution(0, parent, link),
+	:  Execution(parent, link),
 	   dependency(dependency_),
 	   stage(0)
 {
@@ -3200,7 +3234,8 @@ Execution::Proceed Concatenated_Execution::execute(Execution *parent,
 
 	if (stage == 1) {
 		/* First phase:  we build all individual targets, if there are some */ 
-		Proceed proceed= Execution::execute(parent, link); 
+		Stack done_here; 
+		Proceed proceed= Execution::execute_base(parent, link, done_here); 
 		if (proceed & (P_BIT_FINISHED | P_BIT_WAIT)) {
 			return proceed;
 		}
@@ -3233,7 +3268,8 @@ Execution::Proceed Concatenated_Execution::execute(Execution *parent,
 	if (stage == 2) {
 		/* Second phase:  normal child executions */
 		assert(! dependency); 
-		Proceed proceed= Execution::execute(parent, link); 
+		Stack done_here;
+		Proceed proceed= Execution::execute_base(parent, link, done_here); 
 		if (proceed & (P_BIT_FINISHED | P_BIT_WAIT)) {
 			return proceed;
 		}

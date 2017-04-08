@@ -37,9 +37,7 @@ public:
 
 		P_BIT_WAIT =     1 << 0,
 		P_BIT_LATER =    1 << 1,
-		P_BIT_FINISHED = 1 << 2,
-//		P_BIT_DONE =     1 << 3, /* Caller sets the DONE bit,
-//					    if any */ 
+		P_BIT_FINISHED = 1 << 2, /* Only used by execute_base() */
 
 		P_CONTINUE = 0, 
 		/* Execution can continue in the process */
@@ -64,8 +62,6 @@ public:
 	 * FINISHED bit is set.  
 	 * In DONE, set those bits that have been done. 
 	 */
-	// TODO does not set the DONE bits, bit that will be moot once
-	// DONE is move to Single_Execution. 
 
 	virtual bool finished() const= 0;
 	/* Whether the execution is completely finished */ 
@@ -78,9 +74,6 @@ public:
 	{ 
 		return ""; 
 	}
-//	{
-//		return done.format(); 
-//	}
 
 	static long jobs;
 	/* Number of free slots for jobs.  This is a long because
@@ -132,8 +125,7 @@ protected:
 		 * caching.  */
 		:  error(0),
 		   timestamp(Timestamp::UNDEFINED),
-		   need_build(false)//,
-//		   done(k, 0) 
+		   need_build(false)
 	{  
 		parents[parent]= link; 
 	}
@@ -165,8 +157,6 @@ protected:
 		assert(buffer_trivial.empty()); 
 		assert(children.size() == 0); 
 	}
-
-//	const Stack &get_done() const {  return done;  }
 
 	const Buffer &get_buffer_default() const {  return buffer_default;  }
 	const Buffer &get_buffer_trivial() const {  return buffer_trivial;  }
@@ -1315,7 +1305,7 @@ Execution::Proceed Execution::execute_base(Execution *, const Link &link, Stack 
 		Proceed proceed= execute_children(link2);
 		proceed_all |= (proceed & ~P_BIT_FINISHED); 
 		if ((proceed & P_BIT_FINISHED) && ! option_keep_going) {
-			done_here.add_neg(link2.avoid); // XXX
+			done_here.add_neg(link2.avoid); 
 			return proceed_all;
 		}
 	}
@@ -1330,7 +1320,7 @@ Execution::Proceed Execution::execute_base(Execution *, const Link &link, Stack 
 
 	/* Is this a trivial run?  Then skip the dependency. */
 	if (link2.flags & F_TRIVIAL) {
-		done_here.add_neg(link2.avoid); // XXX
+		done_here.add_neg(link2.avoid); 
 		return proceed_all | P_BIT_FINISHED;
 	}
 
@@ -1364,8 +1354,7 @@ Execution::Proceed Execution::execute_base(Execution *, const Link &link, Stack 
 		if (proceed_2 & P_BIT_WAIT)
 			return proceed_2;
 		if ((proceed_2 & P_BIT_FINISHED) && ! option_keep_going) {
-//		flags |= ~link2.avoid; 
-		done_here.add_neg(link2.avoid); // XXX
+		done_here.add_neg(link2.avoid); 
 			return proceed_2;
 		}
 	}
@@ -1379,7 +1368,7 @@ Execution::Proceed Execution::execute_base(Execution *, const Link &link, Stack 
 	/* There was an error in a child */ 
 	if (error != 0) {
 		assert(option_keep_going == true); 
-		done_here.add_neg(link2.avoid); // XXX
+		done_here.add_neg(link2.avoid); 
 		return P_BIT_FINISHED;
 	}
 

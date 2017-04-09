@@ -99,6 +99,10 @@ private:
 	 *    F    whether this is a transient (0) or a file (1) 
 	 */
 
+	Type(unsigned value_)
+		:  value(value_)
+	{  }
+
 	enum: unsigned {
 		T_TRANSIENT         = 0,
 		/* A transient target */ 
@@ -118,10 +122,6 @@ private:
 		/* Larger values denote multiply dynamic targets.  They are only
 		 * used as the target of Execution objects.  */
 	};
-
-	Type(unsigned value_)
-		:  value(value_)
-	{  }
 };
 
 const Type Type::TRANSIENT(Type::T_TRANSIENT);

@@ -64,7 +64,7 @@ A:  ()B { cp B A }  B = {correct}
 ... (a)(b)(c) 
 ... A<B  # Two dependencies
 ... A(<B)  # Error
-... (A (B C)D  # same as:  AD BD CD
+... (A (B C))D  # same as:  AD BD CD
 ... ("'")X  # escape the quote correctly in error message 
 ... ()(A)  # Empty or just 'A' (empty would be logical, because () is an
            # empty list
@@ -94,7 +94,7 @@ A:  $[B(C D)];  # ??
 
 A:  B.${X}(${Y});  # Error because of contiguous parameters 
 
-A:  oo(B)(C);   # Make sure -o is not ignored 
+A:  -o(B)(C);   # Make sure -o is not ignored 
 
 A:  -o @B(C);  @BC:  xxx;   # Make sure 'xxx' is correctly handled as an optional target 
 
@@ -163,13 +163,14 @@ A:  list.([B] C) { ... }
 B = { sleep 1 ; echo D ; }
 list.$n;
 
-# Should this mean 'list.', or an empty list as dependencies of 'A'?
+# Should this mean 'list.', or an empty list as dependencies of 'A'?  It
+# should mean an empty list. 
 A:   list.[B] { ... }
 B = { }
 
 # Works, and 'B' is stat()'ed only once. 
 A:  -o B { touch A ; }
-B { }
+B { exit 1 ; }
 
 # Should we allow this?
 A: @[C]
@@ -215,7 +216,7 @@ A.$X$Y;
 # easy to implement after the big "concatenation" cleanup. 
 #
 
-# A will contain the three lines 'x', 'y' and 'z'
+# 'A' will contain the three lines 'x', 'y' and 'z'
 >A: [@x] { cat X Y Z ; }
 @x:  X Y Z; 
 X = {x}   Y = {y}  Z = {z}
@@ -316,7 +317,7 @@ V {
 #
 # Questions
 #   - Should '/' match in parameters?  -> Yes
-#   - Does that also apply to transient targets? 
+#   - Does that also apply to transient targets?  -> Yes
 #
 
 #      - aaa/.. ->  .
@@ -355,6 +356,9 @@ $name.bib;   # Rule (1)
 ./$name.bib; # Rule (2)
 # The name dir/aaa.bib will match rule (1).
 # The name aaa.bib will match both rules. 
+
+# This is not nice because it starts doing the "allow regexp for
+# parameter thing". 
 
 #
 # File import

@@ -1,0 +1,35 @@
+### Not dynamic, not concatenated, file  (Single_Execution) 
+* (1): [ ] Build own dependencies 
+* (a):     Execute command, if any
+* Own list contains only the own filename 
+
+### Not dynamic, not concatenated, transient  (Single_Execution) 
+* (1): [ ] Build own dependencies
+* (a):     Execute command, if any
+* Own list is concatenation of the lists of own dependencies
+
+### Not dynamic, concatenated  (Concatenated_Execution) 
+* (1): [*] Each part
+* (2): [=] From concatenation of the lists given by (1)
+* Own list comes from (1) 
+
+### Dynamic, not concatenated, file  (Dynamic_Execution)
+* (1): [*] Own dependency with the single outer dynamic level removed
+* (2): [=] list of (1) with the own (d-1) dynamic levels added in, where d is the own outer dynamic level, omitted if not dynamic
+* Own list comes from (2) 
+
+### Dynamic, not concatenated, transient  (Dynamic_Execution)
+(Presumably the same as for all dynamic targets) 
+
+### Dynamic, concatenated  (Dynamic_Execution) 
+* (1): [*] Own dependency with the single outer dynamic level removed 
+* (2): [=] list of (1) with the own (d-1) dynamic levels added in, where d is the own outer dynamic level, omitted if not dynamic
+* Own list comes from (2) 
+
+LEGEND:
+(1)... Child executions
+(a)... Other actions
+[ ]    Don't set the * bit in child executions
+[*]    Set the * bit in child executions
+[=]    Pass own the own * bit to child executions
+d      Own outer dynamicity

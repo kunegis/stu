@@ -29,11 +29,17 @@ enum
 {
 	/* The index of the flags, used for array indexing.  Variables
 	 * iterating over these values are usually called I.  */ 
+
 	I_PERSISTENT       = 0,
 	I_OPTIONAL,         
 	I_TRIVIAL,          
-	I_DYNAMIC,
-	I_CONCATENATE,
+
+	I_RESULT_ONLY,
+
+	I_DYNAMIC_LIST,
+	I_COPY_RESULT,
+//	I_DYNAMIC,
+//	I_CONCATENATE,
 	I_VARIABLE,
 	I_OVERRIDE_TRIVIAL,
 	I_NEWLINE_SEPARATED,
@@ -46,14 +52,17 @@ enum
 	C_CONCATENATE_COUNT = CHAR_BIT * sizeof(Flags) - C_ALL,
 	C_CONCATENATE_MAX = (1 << C_CONCATENATE_COUNT) - 1,
 
-	C_TRANSITIVE       = 3,
+	C_PLACED           = 3,
+	/* Only the first C_PLACED flags have a place associated with them */
+
+	C_TRANSITIVE       = 4,
 	/* The first C_TRANSITIVE flags are transitive, i.e., inherited
 	 * across transient targets  */
 
 	/* What follows are the actual flag bits to be ORed together */ 
 
 	/* 
-	 * Transitive flags
+	 * Placed and transitive flags
 	 */ 
 
 	F_PERSISTENT       = 1 << I_PERSISTENT,  
@@ -66,15 +75,29 @@ enum
 	/* (-t) Trivial dependency */
 
 	/* 
+	 * Transitive and non-placed flags 
+	 */
+
+	F_RESULT_ONLY      = 1 << I_RESULT_ONLY,
+	/* Only compute the result list of dependencies associated with
+	 * this dependency, rather than building the dependency.  */ 
+
+	/* 
 	 * Intransitive flags
 	 */ 
 
-	F_DYNAMIC          = 1 << I_DYNAMIC,  
-	/* This is a [...[X]...]->X special dynamic link */
+	F_DYNAMIC_LIST     = 1 << I_DYNAMIC_LIST,
+	/* This is the link between a Dynamic_Execution and its left branch */
 
-	F_CONCATENATE      = 1 << I_CONCATENATE,
-	/* This is a link between a Concatenating_Execution and its
-	 * child Execution in Stage 0.  */
+	F_COPY_RESULT      = 1 << I_COPY_RESULT,
+	/* Copy the result list of the child to the parent */
+
+//	F_DYNAMIC          = 1 << I_DYNAMIC,  
+//	/* This is a [...[X]...]->X special dynamic link */
+
+//	F_CONCATENATE      = 1 << I_CONCATENATE,
+//	/* This is a link between a Concatenating_Execution and its
+//	 * child Execution in Stage 0.  */
 
 	F_VARIABLE         = 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */ 

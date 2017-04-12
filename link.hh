@@ -1,6 +1,8 @@
 #ifndef LINK_HH
 #define LINK_HH
 
+#include "stack.hh"
+
 /* 
  * Information about one parent--child link. 
  */ 

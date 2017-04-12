@@ -186,6 +186,12 @@ A:  list.[B];
 B = {C}
 list.C:  A; 
 
+A:  [B] { cat E >A ; }
+B = { list.[C] }
+C = { D }
+list.D = {E}
+E = {correct}
+
 #
 # TODO document the -0 in the manpage.
 #

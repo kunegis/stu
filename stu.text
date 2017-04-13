@@ -1,5 +1,7 @@
 STU(1)                   University of Koblenz-Landau                   STU(1)
 
+
+
 NAME
        stu - Build automation
 
@@ -36,6 +38,7 @@ DESCRIPTION
        preted  as  part  of  filenames.  When the -J option is used, arguments
        passed on the command line are interpreted  as  filenames  without  Stu
        syntax.
+
 
 OPTIONS
        -0 FILENAME
@@ -180,6 +183,7 @@ OPTIONS
               child processes, and so on.  Does not  include  the  runtime  of
               children  or  grandchildren that have not been waited for (which
               only happens when Stu is interrupted by a signal.)
+
 
 OVERVIEW
        A simple rule looks as follows:
@@ -335,6 +339,7 @@ OVERVIEW
            y:  y.c @headers {
                cc y.c -o y
            }
+
 
 FEATURES
        Like a makefile, a Stu file consists of rules.  In Stu,  the  order  of
@@ -524,6 +529,7 @@ FEATURES
            ((A)) # Equivalent to A
            [[A]] # Read out dependencies from all files given in the file 'A'.
 
+
 PARAMETERS
        Any file or transient target may include  parameters.   Parameters  are
        noted using the '$' character and are given a name.  Stu will match the
@@ -564,6 +570,7 @@ PARAMETERS
            a.$x.c: ... { ... }
            a.b.$x: ... { ... }
 
+
 DIRECTIVES
        Directives in Stu are introduced by '%' and serve a similar purpose  to
        the  C  preprocessor.   The token '%' must be followed by the directive
@@ -596,6 +603,7 @@ DIRECTIVES
        in each source file.  This treatment of version numbers follows  seman‐
        tic  versionning  (semver.org).  The version directive will not prevent
        usage of Stu features that were not present in the specified version.
+
 
 TOKENIZATION
        Unquoted filenames in Stu may contain the following ASCII characters:
@@ -665,6 +673,7 @@ TOKENIZATION
 
            * \ & | ! ? ,
 
+
 SYNTAX
        The  syntax of a Stu file is given in the following Yacc-like notation.
        This is the syntax after processing of directives, which are introduced
@@ -690,6 +699,7 @@ SYNTAX
        the  argument  to  the  -F  option  must contain a 'rule_list'.  A file
        included by brackets (a dynamic dependency) and  arguments  to  the  -C
        option must contain an 'expression_list'.
+
 
 SEMANTICS
        Cycles in the dependency graph are not allowed. As an example, the fol‐
@@ -724,6 +734,7 @@ SEMANTICS
        used.   When  -i  is  not used, the standard input of all jobs is redi‐
        rected from /dev/null.
 
+
 EXIT STATUS
        0      Everything was built successfully or was up to date already.
 
@@ -742,6 +753,7 @@ EXIT STATUS
 
        4      An  error  occurred  that  made Stu abort execution immediately,
               regardless of whether the -k option was used.
+
 
 ENVIRONMENT
        STU_CP If set, Stu calls the  'cp'  program  from  the  given  location
@@ -769,6 +781,7 @@ ENVIRONMENT
               must be set to a value different from 'dumb', and isatty(3) must
               return 1 for color to be enabled.
 
+
 SIGNALS
        SIGUSR1
               When received, Stu will output a list of currently running  jobs
@@ -778,6 +791,7 @@ SIGNALS
               jobs.  Multiple SIGUSR1 signals sent in succession may result in
               output only printed once.
 
+
 CONFORMING TO
        The  Stu  language  is  unique to this implementation, and the man page
        serves as the reference for its syntax.
@@ -786,6 +800,7 @@ CONFORMING TO
        is  increased  when  backward-incompatible changes are made.  The minor
        version number is increased when features are added. The patch level is
        increased for other changes.
+
 
 EXAMPLES
        This section contains more advanced examples of Stu usage.
@@ -890,6 +905,7 @@ EXAMPLES
                echo "#define COUNT $count"
            }
 
+
 BUGS
        Filenames  in Stu are literal.  Stu does not recognize it when two dif‐
        ferent names refer to the same file.
@@ -922,11 +938,15 @@ BUGS
        output  'Targets  are  up to date', as the optional dependency may have
        been created by subsequent targets.
 
+
 AUTHOR
        Written by Jérôme Kunegis <kunegis@uni-koblenz.de>, with  contributions
        and help by Jun Sun, Aaron McDaid, Heinrich Hartmann, and Holger Heinz.
 
+
 SEE ALSO
        make(1), cook(1)
 
-stu-2.4.38                       October 2016                           STU(1)
+
+
+stu-2.4.39                        April 2017                            STU(1)

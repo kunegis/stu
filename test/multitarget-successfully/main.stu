@@ -1,0 +1,8 @@
+A B:  C D
+{
+	cat C D >A
+	cat D C >B
+}
+
+C = {ccc}
+D = {ddd}

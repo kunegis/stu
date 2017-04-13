@@ -2016,11 +2016,11 @@ void Single_Execution::waited(pid_t pid, int status)
 				raise(ERROR_BUILD);
 			}
 
-			/* In parallel mode, print "done" message */
-			if (option_parallel) {
-				string text= targets[0].format_src();
-				printf("Successfully built %s\n", text.c_str()); 
-			}
+		}
+		/* In parallel mode, print "done" message */
+		if (option_parallel) {
+			string text= targets[0].format_src();
+			printf("Successfully built %s\n", text.c_str()); 
 		}
 
 	} else {

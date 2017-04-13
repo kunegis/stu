@@ -193,6 +193,11 @@ list.D = {E}
 E = {correct}
 
 #
+# Make sure that in -j2 -k mode, the "successfully built" message is
+# output just once, when the rule that was run has multiple targets.
+#
+
+#
 # TODO document the -0 in the manpage.
 #
 

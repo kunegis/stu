@@ -6,8 +6,14 @@ echo '../../stu.test -j1000 &'
 ../../stu.test -j1000 >list.out 2>list.err &
 pid="$!"
 
-# Wait until a first line has been written
-while [ \! -s list.out ] ; do : ; done 
+# Write until a first line has been written
+while [ \! -s list.out ] ; do 
+	now="$(date +%s)"
+	if [ "$now" -gt "$((begin + 2))" ] ; then
+		echo >&2 '*** No output written in first 2 seconds'
+		break
+	fi
+done 
 
 echo "kill -s USR1 $pid"
 kill -s USR1 "$pid" || {

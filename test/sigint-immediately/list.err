@@ -1,2 +1,0 @@
-stu.test: dependency.hh:623: virtual std::shared_ptr<Dependency> Single_Dependency::clone_shallow() const: Assertion `false' failed.
-stu: Terminating all jobs

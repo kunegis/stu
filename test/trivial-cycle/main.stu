@@ -1,0 +1,30 @@
+
+
+
+A:  -t [X] [Y] {
+	echo BUILDING_A
+	cat B D >A
+}
+
+>X { echo B }
+>Y { echo D }
+
+B: I { 
+	echo BUILDING_B
+	cp I B
+}
+
+D: J { 
+	echo BUILDING_D
+	cp J D
+}
+
+I { 
+	echo BUILDING_I
+	echo iii >I
+}
+
+J { 
+	echo BUILDING_J
+	echo jjj >J
+}

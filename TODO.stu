@@ -209,6 +209,11 @@ E = {correct}
 A.$X$Y;
 
 #
+# When '*' is encountered in a file, show an explanation saying which
+# characters are not allowed. 
+#
+
+#
 # At the moment, "stu -g" does not disable the flag -o in copy rules, i.e.
 #
 #   A = -o B;

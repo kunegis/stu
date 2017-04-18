@@ -1,4 +1,4 @@
-* write new Dynamic_Execution
+# * write new Dynamic_Execution
 
 A:   [B] { cat C >A; }
 B = { C }

@@ -206,6 +206,13 @@ public:
 		check(); 
 	}
 
+	Single_Dependency(const Single_Dependency &single_dependency)
+		:  Dependency(single_dependency.get_flags()),
+		   place_param_target(single_dependency.place_param_target),
+		   place(single_dependency.place),
+		   name(single_dependency.name)
+	{  }
+
 	const Place &get_place() const {
 		return place; 
 	}
@@ -620,8 +627,10 @@ shared_ptr <Dependency> Dependency::strip_dynamic(shared_ptr <Dependency> d)
 shared_ptr <Dependency> Single_Dependency::clone_shallow() const
 {
 	// TODO
-	assert(false);
-	return nullptr; 
+//	assert(false);
+//	return nullptr; 
+	
+	return make_shared <Single_Dependency> (*this);
 }
 
 shared_ptr <Dependency> Dynamic_Dependency::clone_shallow() const

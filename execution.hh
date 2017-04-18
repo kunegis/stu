@@ -695,7 +695,7 @@ public:
 	void left_done(Execution *child); 
 	/* Called when a left-branch child dependency is done. */
 
-	void propagate_to_dynamic(Single_Execution *child,
+	void propagate_to_dynamic(Execution *child,
 				  Flags flags_child,
 				  Stack avoid_parent,
 				  shared_ptr <Dependency> dependency_parent,
@@ -1709,7 +1709,7 @@ void Execution::unlink(Execution *const parent,
 		parent_dynamic->left_done(child); 
 
 		dynamic_cast <Dynamic_Execution *> (parent)
-			->propagate_to_dynamic(dynamic_cast <Single_Execution *> (child),
+			->propagate_to_dynamic(child,
 					       flags_child,
 					       avoid_parent,
 					       dependency_parent,
@@ -3675,21 +3675,26 @@ void Dynamic_Execution::read_dynamic_dependency(Stack avoid,
 
 void Dynamic_Execution::left_done(Execution *child)
 {
-	if (dynamic_cast <Single_Execution *> (child)) {
+	assert(child); 
 
-		read_dynamic_dependency(avoid_parent, dependency_parent); 
+	// XXX implement this 
 
-	} else {
-		assert(dynamic_cast <Dynamic_Execution *> (child) ||
-		       dynamic_cast <Concatenated_Execution *> (child)); 
-		...;
-	}
+//	if (dynamic_cast <Single_Execution *> (child)) {
+//
+//		read_dynamic_dependency(avoid_parent, dependency_parent); 
+//
+//	} else {
+//		assert(dynamic_cast <Dynamic_Execution *> (child) ||
+//		       dynamic_cast <Concatenated_Execution *> (child)); 
+//		...;
+//	}
 }
 
 bool Dynamic_Execution::finished() const 
 {
-	assert(done.get_depth() == targets.front().type.get_depth());
-	assert(done.get_depth() == targets.back().type.get_depth());
+	assert(done.get_depth() == dependency->get_depth()); 
+//	assert(done.get_depth() == targets.front().type.get_depth());
+//	assert(done.get_depth() == targets.back().type.get_depth());
 
 	Flags to_do_aggregate= 0;
 	
@@ -3702,8 +3707,9 @@ bool Dynamic_Execution::finished() const
 
 bool Dynamic_Execution::finished(Stack avoid) const
 {
-	assert(done.get_depth() == targets.front().type.get_depth());
-	assert(done.get_depth() == targets.back().type.get_depth());
+	assert(done.get_depth() == dependency->get_depth()); 
+//	assert(done.get_depth() == targets.front().type.get_depth());
+//	assert(done.get_depth() == targets.back().type.get_depth());
 
 	assert(avoid.get_depth() == done.get_depth());
 
@@ -3718,32 +3724,37 @@ bool Dynamic_Execution::finished(Stack avoid) const
 
 bool Dynamic_Execution::want_delete() const
 {
-	return ! dynamic_cast <Single_Execution *> (skip_dynamic(dependency)); 
+	return dynamic_pointer_cast <Single_Dependency> (Dependency::strip_dynamic(dependency)) == nullptr; 
 }
 
-void Dynamic_Execution::propagate_to_dynamic(Single_Execution *child,
+void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 					     Flags flags_child,
 					     Stack avoid_parent,
 					     shared_ptr <Dependency> dependency_parent,
 					     shared_ptr <Dependency> dependency_child)
+/* A left branch child is done */
 {
-	assert(flags_child & F_DYNAMIC); 
+	(void) child; 
+	(void) avoid_parent; 
+
+	assert(flags_child & F_DYNAMIC_LIST); 
 	assert(dynamic_pointer_cast <Single_Dependency> (dependency_child)
 	       && dynamic_pointer_cast <Single_Dependency> (dependency_child)
 	       ->place_param_target.type == Type::FILE);
 	assert(dependency_parent->get_individual_target().type.is_dynamic());
 	assert(dependency_parent->get_individual_target().type.is_any_file());
-	assert(parent->targets.size() == 1);
+//	assert(parent->targets.size() == 1);
 
-#ifndef NDEBUG
-	bool found= false;
-	for (const Target &target:  targets) {
-		if (target.name == parent->targets.front().name)
-			found= true;
-	}
-	assert(found); 
-#endif 
+//#ifndef NDEBUG
+//	bool found= false;
+//	for (const Target &target:  targets) {
+//		if (target.name == parent->targets.front().name)
+//			found= true;
+//	}
+//	assert(found); 
+//#endif 
 
+#if 0 /* XXX enable */
 	assert(done.get_depth() == 0); 
 		
 	bool do_read= true;
@@ -3760,8 +3771,9 @@ void Dynamic_Execution::propagate_to_dynamic(Single_Execution *child,
 	}
 
 	if (do_read) {
-		parent->read_dynamic_dependency(avoid_parent, dependency_parent); 
+		read_dynamic_dependency(avoid_parent, dependency_parent); 
 	}
+#endif /* 0 */ 
 }
 
 #endif /* ! EXECUTION_HH */

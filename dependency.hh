@@ -361,7 +361,7 @@ public:
 
 	virtual shared_ptr <Dependency> clone_shallow() const; 
 
-	int get_depth() const 
+	unsigned get_depth() const 
 		/* The depth of the dependency, i.e., how many dynamic
 		 * dependencies are stacked in a row.  */
 	{

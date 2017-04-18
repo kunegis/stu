@@ -106,7 +106,7 @@ public:
 	virtual string format_word() const= 0; 
 	virtual string format_out() const= 0; 
 
-	virtual Param_Target get_single_target() const= 0;
+	virtual Param_Target get_individual_target() const= 0;
 	/* Collapse the dependency into a single target, ignoring all
 	 * flags.  Only called if this is a normalized dependency and
 	 * this is possible.  */   
@@ -266,7 +266,7 @@ public:
 			   flags & F_VARIABLE ? "]" : "");
 	}
 
-	Param_Target get_single_target() const {
+	Param_Target get_individual_target() const {
 		return place_param_target.get_param_target();
 	}
 
@@ -349,8 +349,8 @@ public:
 			   text_dependency); 
 	}
 
-	Param_Target get_single_target() const {
-		Param_Target ret= dependency->get_single_target();
+	Param_Target get_individual_target() const {
+		Param_Target ret= dependency->get_individual_target();
 		++ ret.type;
 		return ret; 
 	}
@@ -360,6 +360,18 @@ public:
 	}
 
 	virtual shared_ptr <Dependency> clone_shallow() const; 
+
+	int get_depth() const 
+		/* The depth of the dependency, i.e., how many dynamic
+		 * dependencies are stacked in a row.  */
+	{
+		assert(dependency); 
+		if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
+			return 1 + dynamic_pointer_cast <Dynamic_Dependency> (dependency)->get_depth(); 
+		} else {
+			return 1; 
+		}
+	}
 };
 
 class Concatenated_Dependency
@@ -413,7 +425,7 @@ public:
 	virtual string format_word() const; 
 	virtual string format_out() const; 
 
-	virtual Param_Target get_single_target() const {  assert(false);  }
+	virtual Param_Target get_individual_target() const {  assert(false);  }
 	/* Collapse the dependency into a single target, ignoring all
 	 * flags.  Only if this is a normalized dependency.  */   
 
@@ -494,7 +506,7 @@ public:
 	virtual string format_word() const; 
 	virtual string format_out() const; 
 
-	virtual Param_Target get_single_target() const {  assert(false);  }
+	virtual Param_Target get_individual_target() const {  assert(false);  }
 	/* Since a compound dependency is never normalized, this is not
 	 * called.  */ 
 
@@ -614,6 +626,7 @@ shared_ptr <Dependency> Single_Dependency::clone_shallow() const
 
 shared_ptr <Dependency> Dynamic_Dependency::clone_shallow() const
 {
+	// TODO
 	assert(false); 
 	return nullptr; 
 }

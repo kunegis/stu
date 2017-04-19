@@ -115,7 +115,7 @@ public:
 	/* Whether the dependency is normalized, according to the
 	 * definition given above.  */
 
-	virtual shared_ptr <Dependency> clone_shallow() const= 0; 
+//	virtual shared_ptr <Dependency> clone_shallow() const= 0; 
 
 	static void make_normalized(vector <shared_ptr <Dependency> > &dependencies, 
 				    shared_ptr <Dependency> dependency);
@@ -278,7 +278,7 @@ public:
 	}
 
 	virtual bool is_normalized() const { return true;  }
-	shared_ptr <Dependency> clone_shallow() const; 
+//	shared_ptr <Dependency> clone_shallow() const; 
 };
 
 class Dynamic_Dependency
@@ -366,7 +366,7 @@ public:
 		return dependency->is_normalized(); 
 	}
 
-	virtual shared_ptr <Dependency> clone_shallow() const; 
+//	virtual shared_ptr <Dependency> clone_shallow() const; 
 
 	unsigned get_depth() const 
 		/* The depth of the dependency, i.e., how many dynamic
@@ -440,7 +440,7 @@ public:
 	/* A concatenated dependency is always normalized, regardless of
 	 * whether the contained dependencies are normalized.  */ 
 
-	virtual shared_ptr <Dependency> clone_shallow() const;
+//	virtual shared_ptr <Dependency> clone_shallow() const;
 
 private:
 
@@ -520,7 +520,7 @@ public:
 	virtual bool is_normalized() const {  return false;  }
 	/* A compound dependency is never normalized */
 
-	virtual shared_ptr <Dependency> clone_shallow() const;
+//	virtual shared_ptr <Dependency> clone_shallow() const;
 
 private:
 
@@ -624,21 +624,21 @@ shared_ptr <Dependency> Dependency::strip_dynamic(shared_ptr <Dependency> d)
 	return d;
 }
 
-shared_ptr <Dependency> Single_Dependency::clone_shallow() const
-{
-	// TODO
-//	assert(false);
-//	return nullptr; 
+// shared_ptr <Dependency> Single_Dependency::clone_shallow() const
+// {
+// 	// TODO
+// //	assert(false);
+// //	return nullptr; 
 	
-	return make_shared <Single_Dependency> (*this);
-}
+// 	return make_shared <Single_Dependency> (*this);
+// }
 
-shared_ptr <Dependency> Dynamic_Dependency::clone_shallow() const
-{
-	// TODO
-	assert(false); 
-	return nullptr; 
-}
+// shared_ptr <Dependency> Dynamic_Dependency::clone_shallow() const
+// {
+// 	// TODO
+// 	assert(false); 
+// 	return nullptr; 
+// }
 
 shared_ptr <Dependency> Single_Dependency
 ::instantiate(const map <string, string> &mapping) const
@@ -735,12 +735,12 @@ string Compound_Dependency::format_out() const
 	return fmt("(%s)", ret); 
 }
 
-shared_ptr <Dependency> Compound_Dependency::clone_shallow() const
-{
-	// TODO 
-	assert(false);
-	return nullptr; 
-}
+// shared_ptr <Dependency> Compound_Dependency::clone_shallow() const
+// {
+// 	// TODO 
+// 	assert(false);
+// 	return nullptr; 
+// }
 
 shared_ptr <Dependency> 
 Concatenated_Dependency::instantiate(const map <string, string> &mapping) const
@@ -844,11 +844,11 @@ void Concatenated_Dependency::make_normalized()
 	}
 }
 
-shared_ptr <Dependency> Concatenated_Dependency::clone_shallow() const
-{
-	// TODO
-	assert(false);
-	return nullptr; 
-}
+// shared_ptr <Dependency> Concatenated_Dependency::clone_shallow() const
+// {
+// 	// TODO
+// 	assert(false);
+// 	return nullptr; 
+// }
 
 #endif /* ! DEPENDENCY_HH */

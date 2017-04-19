@@ -179,7 +179,7 @@ protected:
 	void check_waited() const {
 		assert(buffer_default.empty()); 
 		assert(buffer_trivial.empty()); 
-		assert(children.size() == 0); 
+		assert(children.empty()); 
 	}
 
 	const Buffer &get_buffer_default() const {  return buffer_default;  }
@@ -444,6 +444,8 @@ private:
 	/* What parts of this target have been done.  Each bit
 	 * represents one aspect that was done.  The depth is always
 	 * zero.  */
+	// TODO replace by a single Flag, since it always has depth
+	// zero. 
 
 	~Single_Execution(); 
 
@@ -1244,8 +1246,6 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 	while (! executions_children_vector.empty()) {
 
 		assert(jobs >= 0);
-//		if (jobs == 0)  
-//			return proceed_all;
 
 		if (order_vec) {
 			/* Exchange a random position with last position */ 
@@ -1282,11 +1282,7 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 //		assert(! (proceed & P_BIT_FINISHED)); 
 //		assert(proceed != P_CONTINUE); 
 
-		proceed_all |= 
-//			(
-			 proceed_child
-//			 & ~P_BIT_FINISHED)
-			; 
+		proceed_all |= proceed_child; 
 
 		if (child->finished(done_here)) {
 //		if (proceed & P_BIT_FINISHED) {
@@ -1327,8 +1323,6 @@ void Execution::push_default(shared_ptr <Dependency> dependency)
 
 Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 {
-	fprintf(stderr, "execute_base\n"); // RM
-
 	Verbose verbose;
 
 	assert(jobs >= 0); 
@@ -1452,7 +1446,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	}
 
 	/* Some dependencies are still running */ 
-	if (children.size() != 0) {
+	if (! children.empty()) {
 		assert(proceed_all != P_CONTINUE); 
 		return proceed_all;
 	}
@@ -1659,7 +1653,7 @@ Execution::Proceed Execution::execute_deploy(const Link &link,
 
 		Proceed proceed_child= child->execute(this, move(link_child_new));
 //		assert(! (proceed & P_BIT_FINISHED)); 
-		if (proceed_child & P_BIT_WAIT)
+		if (proceed_child & (P_BIT_WAIT | P_BIT_LATER))
 			return proceed_child; 
 //			return proceed & ~P_BIT_FINISHED;
 //		assert(jobs >= 1); 
@@ -1699,8 +1693,6 @@ void Execution::unlink(Execution *const parent,
 		       Stack avoid_child,
 		       Flags flags_child)
 {
-	fprintf(stderr, "Execution::unlink()\n"); // RM
-
 	(void) avoid_child;
 
 	if (option_debug) {
@@ -1951,10 +1943,11 @@ void Single_Execution::wait()
 	timestamp_last= Timestamp::now(); 
 
 	if (executions_by_pid.count(pid) == 0) {
-		/* Should not happen, but since the PID value came from
-		 * outside this process, we better handle this case
-		 * gracefully, i.e., do nothing.  */
-		assert(false);
+		/* No Single_Execution is registered for the PID that
+		 * just finished.  Should not happen, but since the PID
+		 * value came from outside this process, we better
+		 * handle this case gracefully, i.e., do nothing.  */
+		print_warning(Place(), frmt("The function waitpid(2) returned the invalid proceed ID %jd", (intmax_t)pid)); 
 		return; 
 	}
 
@@ -2108,8 +2101,6 @@ Single_Execution::Single_Execution(Target target_,
 	   exists(0),
 	   done(target_.type.get_depth(), 0)
 {
-	fprintf(stderr, "Single_Execution::Single_Execution(%s)\n", target_.name.c_str()); 
-
 	assert(parent != nullptr); 
 	assert(parents.size() == 1); 
 	assert(target_.type.get_depth() == 0); // CHANGED
@@ -2550,32 +2541,40 @@ void Single_Execution::print_command() const
 
 Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link)
 {
-	fprintf(stderr, "Single_Execution::execute(%s)\n", targets[0].name.c_str()); 
+	if (job.started()) {
+		assert(children.empty()); 
+	}       
 
 	Proceed proceed= Execution::execute_base(link, done); 
-	if (proceed & P_BIT_WAIT) {
+	if (proceed & (P_BIT_WAIT | P_BIT_LATER)) {
 		return proceed; 
 //		return proceed & ~P_BIT_FINISHED;
 	}
 
-	/* Rule does not have a command.  This includes the case of dynamic
-	 * executions, even though for dynamic executions the RULE variable
-	 * is set (to detect cycles). */ 
+	assert(children.empty()); 
 
-	/* We cannot return here in the non-dynamic case, because we
-	 * must still check that the target files exist, even if they
-	 * don't have commands. */ 
-	if (get_depth() != 0) {
-		done_add_neg(link.avoid); 
-		return proceed;
+	if (finished(link.avoid)) {
+		return P_CONTINUE; 
 	}
+
+//	/* Rule does not have a command.  This includes the case of dynamic
+//	 * executions, even though for dynamic executions the RULE variable
+//	 * is set (to detect cycles). */ 
+
+//	/* We cannot return here in the non-dynamic case, because we
+//	 * must still check that the target files exist, even if they
+//	 * don't have commands. */ 
+//	if (get_depth() != 0) {
+//		done_add_neg(link.avoid); 
+//		return proceed;
+//	}
 
 	/* Job has already been started */ 
 	if (job.started_or_waited()) {
 		return proceed | P_BIT_WAIT;
 	}
 
-	/* Build the file itself */ 
+	/* The file must be built */ 
 
 //	assert(jobs > 0); 
 	assert(! targets.empty());
@@ -3119,19 +3118,12 @@ Root_Execution::Root_Execution(const vector <shared_ptr <Dependency> > &dependen
 
 Execution::Proceed Root_Execution::execute(Execution *, const Link &link)
 {
-	fprintf(stderr, "Root_Execution::execute()\n"); // RM
-
 	Proceed proceed= Execution::execute_base(link, done); 
-//	if (proceed & P_BIT_DONE) {
-//		done.add_neg(link.avoid);
-//		proceed &= ~P_BIT_DONE; 
-//	}
 	if (proceed & (P_BIT_WAIT | P_BIT_LATER)) {
 		return proceed;
 	}
 
 	done.add_neg(link.avoid); 
-//	Execution::done_add_neg(link.avoid); 
 
 	return proceed; 
 }
@@ -3646,7 +3638,7 @@ Dynamic_Execution::Dynamic_Execution(Link &link,
 Execution::Proceed Dynamic_Execution::execute(Execution *, const Link &link)
 {
 	Proceed proceed= Execution::execute_base(link, done); 
-	if (proceed & P_BIT_WAIT) {
+	if (proceed & (P_BIT_WAIT | P_BIT_LATER)) {
 		return proceed; 
 	}
 

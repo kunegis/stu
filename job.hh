@@ -549,7 +549,6 @@ pid_t Job::wait(int *status)
 			/* This should not happen, but be prepared */
 			goto retry;
 		} else {
-			assert(false);
 			perror("sigwaitinfo");
 			abort(); 
 		}

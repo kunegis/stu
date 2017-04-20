@@ -192,6 +192,13 @@ C = { D }
 list.D = {E}
 E = {correct}
 
+# This fails because there is no rule for 'D', but with the -k option,
+# 'E' is still built. 
+A: [[B]] { touch A ; }
+B = { C D }
+C = { E }
+E = { echo eee >E ; }
+
 #
 # Make sure that in -j2 -k mode, the "successfully built" message is
 # output just once, when the rule that was run has multiple targets.

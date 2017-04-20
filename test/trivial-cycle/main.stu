@@ -1,13 +1,10 @@
 
 
 
-A:  -t [X] [Y] {
+A:  -t B D {
 	echo BUILDING_A
 	cat B D >A
 }
-
->X { echo B }
->Y { echo D }
 
 B: I { 
 	echo BUILDING_B

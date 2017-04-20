@@ -43,12 +43,8 @@ public:
 		/* This is used as the return value of the functions execute()
 		 * and similar.  Defined as a typedef to make arithmetic with it.  */
 	
-//		/* WAIT and FINISHED cannot be used simultaneously, because an
-//		 * execution is not finished if there are jobs to wait for.  */
-
 		P_BIT_WAIT =     1 << 0,
 		P_BIT_LATER =    1 << 1,
-//		P_BIT_FINISHED = 1 << 2, /* Only used by execute_base() */
 
 		P_CONTINUE = 0, 
 		/* Execution can continue in the process */
@@ -59,6 +55,7 @@ public:
 	 * code, and throw an error except with the keep-going option.  */
 
 	Proceed execute_base(const Link &link, Stack &done_here);
+	int get_error() const {  return error;  }
 
 	virtual Proceed execute(Execution *parent, const Link &link)= 0;
 	/* Start the next job(s).  This will also terminate jobs when
@@ -198,10 +195,6 @@ protected:
 	 * are written into DEPENDENCIES, which must be empty on calling.  */
 
 	virtual ~Execution(); 
-
-//	virtual shared_ptr <Rule> get_param_rule() const= 0; 
-//	/* Return null when there is no parametrized rule.  Used for
-//	 * finding cycles.  */ 
 
 	virtual int get_depth() const= 0;
 	/* The dynamic depth, or -1 when
@@ -430,10 +423,10 @@ private:
 
 	signed char exists;
 	/* 
-	 * Whether the file targets are known to exist.  
+	 * Whether the file target(s) are known to exist.  
 	 *     -1 = at least one file target is known not to exist (only
 	 *     	    possible when there is at least one file target)
-	 *      0 = status unknown
+	 *      0 = status unknown:  nothing has been checked yet
 	 *     +1 = all file targets are known to exist (possible when
 	 *          there are no file targets)
 	 * When there are no file targets (i.e., when all targets are
@@ -448,10 +441,6 @@ private:
 	// zero. 
 
 	~Single_Execution(); 
-
-//	shared_ptr <Rule> get_param_rule() const {
-//		return param_rule; 
-//	}
 
 	virtual const Place &get_place() const {
 		if (param_rule == nullptr)
@@ -477,11 +466,6 @@ private:
 	/* Warn when the file has a modification time in the future.
 	 * MESSAGE_EXTRA may be null to not show an extra message.  */ 
 
-//	void initialize(Stack avoid);
-//	/* Initialize the Execution object.  Used for dynamic dependencies.
-//	 * Called from get_execution() before the object is connected to a
-//	 * new parent.  */ 
-
 	void print_command() const; 
 	/* Print the command and its associated variable assignments,
 	 * according to the selected verbosity level.  */
@@ -495,8 +479,6 @@ private:
 
 	int get_depth() const {
 		return 0; 
-//		assert(targets.size()); 
-//		return targets.front().type.get_depth(); 
 	}
 
 	void done_set_all_one() 
@@ -551,7 +533,6 @@ public:
 
 protected:
 
-//	virtual shared_ptr <Rule> get_param_rule() const {  return nullptr;  }
 	virtual int get_depth() const {  return -1;  }
 	virtual const Place &get_place() const {  return Place::place_empty;  }
 	virtual bool optional_finished(const Link &) {  return false;  }
@@ -593,7 +574,6 @@ public:
 
 	void assemble_parts(); 
 
-//	virtual shared_ptr <Rule> get_param_rule() const {  return nullptr;  }
 	virtual int get_depth() const { return -1; }
 	virtual const Place &get_place() const {  return dependency->get_place();  }
 	virtual Proceed execute(Execution *parent, const Link &link);
@@ -677,9 +657,9 @@ class Dynamic_Execution
  * This is used for all dynamic targets, regardless of whether they are
  * files, transients, or concatenations. 
  *
- * If it corresponds to a dynamic transient or file, it used caching and
- * is not deleted.  If it corresponds to a concatenation, it is not
- * cached and deleted when not used anymore. 
+ * If it corresponds to a (possibly multiply) dynamic transient or file,
+ * it used for caching and is not deleted.  If it corresponds to a
+ * concatenation, it is not cached, and is deleted when not used anymore.
  */
 	:  public Execution 
 {
@@ -690,20 +670,16 @@ public:
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const;
 	virtual bool finished(Stack avoid) const; 
-//	virtual shared_ptr <Rule> get_param_rule() const {  return param_rule;  }
 	virtual int get_depth() const {  return done.get_depth();  }
 	virtual const Place &get_place() const {  return dependency->get_place();  }
 	virtual bool optional_finished(const Link &) {  return false;  }
-
-	void left_done(Execution *child); 
-	/* Called when a left-branch child dependency is done. */
 
 	void propagate_to_dynamic(Execution *child,
 				  Flags flags_child,
 				  Stack avoid_parent,
 				  shared_ptr <Dependency> dependency_parent,
 				  shared_ptr <Dependency> dependency_child);
-	/* Propagate dynamic dependencies from CHILD to its parent (THIS) */ 
+	/* Propagate dynamic dependencies from CHILD to its parent (THIS)  */ 
 
 
 protected:
@@ -730,10 +706,9 @@ private:
 	 * manage the dependencies, the instantiated general rule is
 	 * used.  Null if and only if RULE is null.  */ 
 
-	void read_dynamic_dependency(Stack avoid_this, shared_ptr <Dependency> dependency_this);
-	/* Read dynamic dependencies from a file.  Only called for
-	 * dynamic targets as DEPENDENCY_THIS and THIS.  Called for the parent of a dynamic--file
-	 * link.  */ 
+//	void read_dynamic_dependency(Stack avoid_this, shared_ptr <Dependency> dependency_this);
+//	/* Read dynamic dependencies from a file.  Called for the parent
+//	 * of a left dynamic branch.  */ 
 };
 
 long Execution::jobs= 1;
@@ -1718,29 +1693,19 @@ void Execution::unlink(Execution *const parent,
 	 * Propagations
 	 */
 
-	// TODO fold the up-propagation into concatenated dependencies
-	// into the dynamic code. 
-	// Somewhere we need to keep track of, for any dynamic target,
-	// what are al finally result non-dynamic dependencies. 
-//	...; 
-
 	/* Propagate dynamic dependencies */ 
 	if (flags_child & F_DYNAMIC_LIST) {
-
 		/* This was the left branch between a dynamic dependency
-		 * and its child.  */
+		 * and its child.  Add the right branch.  */
 
 		Dynamic_Execution *parent_dynamic= dynamic_cast <Dynamic_Execution *> (parent);
 		assert(parent_dynamic); 
 
-		parent_dynamic->left_done(child); 
-
-		dynamic_cast <Dynamic_Execution *> (parent)
-			->propagate_to_dynamic(child,
-					       flags_child,
-					       avoid_parent,
-					       dependency_parent,
-					       dependency_child);  
+		parent_dynamic->propagate_to_dynamic(child,
+						     flags_child,
+						     avoid_parent,
+						     dependency_parent,
+						     dependency_child);  
 	}
 
 	// /* Propagate concatenated dependencies */
@@ -2599,7 +2564,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 		checked= true; 
 
 		exists= +1; 
-		/* Set to -1 when a file is found not to exist */ 
+		/* Now, set EXISTS to -1 when a file is found not to exist */ 
 
 		for (unsigned i= 0;  i < targets.size();  ++i) {
 			const Target &target= targets[i]; 
@@ -2625,8 +2590,9 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 							 ? parents.begin()->second.place
 							 : rule->place_param_targets[i]->place); 
 				/* EXISTS is not changed */ 
-			} else 
+			} else {
 				exists= -1;
+			}
 
 			if (! need_build && ret_stat == 0 &&
 			    timestamp.defined() && timestamps_old[i] < timestamp &&
@@ -3647,16 +3613,74 @@ Execution::Proceed Dynamic_Execution::execute(Execution *, const Link &link)
 	return proceed; 
 }
 
-void Dynamic_Execution::read_dynamic_dependency(Stack avoid,
-						shared_ptr <Dependency> dependency_this)
+//void Dynamic_Execution::read_dynamic_dependency(Stack avoid,
+//						shared_ptr <Dependency> dependency_this)
+//{
+//}
+
+bool Dynamic_Execution::finished() const 
 {
+	assert(done.get_depth() == dependency->get_depth()); 
+//	assert(done.get_depth() == targets.front().type.get_depth());
+//	assert(done.get_depth() == targets.back().type.get_depth());
+
+	Flags to_do_aggregate= 0;
+	
+	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
+		to_do_aggregate |= ~done.get(j); 
+	}
+
+	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
+}
+
+bool Dynamic_Execution::finished(Stack avoid) const
+{
+	assert(done.get_depth() == dependency->get_depth()); 
+//	assert(done.get_depth() == targets.front().type.get_depth());
+//	assert(done.get_depth() == targets.back().type.get_depth());
+
+	assert(avoid.get_depth() == done.get_depth());
+
+	Flags to_do_aggregate= 0;
+	
+	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
+		to_do_aggregate |= ~done.get(j) & ~avoid.get(j); 
+	}
+
+	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
+}
+
+bool Dynamic_Execution::want_delete() const
+{
+	return dynamic_pointer_cast <Single_Dependency> (Dependency::strip_dynamic(dependency)) == nullptr; 
+}
+
+void Dynamic_Execution::propagate_to_dynamic(Execution *child,
+					     Flags flags_child,
+					     Stack avoid_parent,
+					     shared_ptr <Dependency> dependency_this,
+					     shared_ptr <Dependency> dependency_child)
+/* A left branch child is done */
+{
+	(void) child; 
+	
+	assert(flags_child & F_DYNAMIC_LIST); 
+	assert(dynamic_pointer_cast <Single_Dependency> (dependency_child)
+	       && dynamic_pointer_cast <Single_Dependency> (dependency_child)
+	       ->place_param_target.type == Type::FILE);
+	assert(dependency_this->get_individual_target().type.is_dynamic());
+	assert(dependency_this->get_individual_target().type.is_any_file());
+
+	/* Even if the child produced an error, we still want to read
+	 * its partially assembled list of filenames.  */
+
 	const Target target= dependency_this->get_individual_target().unparametrized(); 
 	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
 
 	try {
 		vector <shared_ptr <Dependency> > dependencies;
 
-		read_dynamic(avoid, 
+		read_dynamic(avoid_parent, 
 			     dynamic_pointer_cast <Dynamic_Dependency> (dependency_this), 
 			     dependencies);
 
@@ -3678,7 +3702,7 @@ void Dynamic_Execution::read_dynamic_dependency(Stack avoid,
 				p= dynamic_dependency->dependency;   
 			}
 
-			Stack avoid_this= avoid;
+			Stack avoid_this= avoid_parent;
 			assert(vec.size() == avoid_this.get_depth());
 			avoid_this.pop(); 
 			dd->add_flags(avoid_this.get_lowest()); 
@@ -3724,109 +3748,6 @@ void Dynamic_Execution::read_dynamic_dependency(Stack avoid,
 		 * but also the errors raised in read_dynamic().  */
 		raise(e); 
 	}
-}
-
-void Dynamic_Execution::left_done(Execution *child)
-{
-	assert(child); 
-
-	// XXX implement this 
-
-//	if (dynamic_cast <Single_Execution *> (child)) {
-//
-//		read_dynamic_dependency(avoid_parent, dependency_parent); 
-//
-//	} else {
-//		assert(dynamic_cast <Dynamic_Execution *> (child) ||
-//		       dynamic_cast <Concatenated_Execution *> (child)); 
-//		...;
-//	}
-}
-
-bool Dynamic_Execution::finished() const 
-{
-	assert(done.get_depth() == dependency->get_depth()); 
-//	assert(done.get_depth() == targets.front().type.get_depth());
-//	assert(done.get_depth() == targets.back().type.get_depth());
-
-	Flags to_do_aggregate= 0;
-	
-	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
-		to_do_aggregate |= ~done.get(j); 
-	}
-
-	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
-}
-
-bool Dynamic_Execution::finished(Stack avoid) const
-{
-	assert(done.get_depth() == dependency->get_depth()); 
-//	assert(done.get_depth() == targets.front().type.get_depth());
-//	assert(done.get_depth() == targets.back().type.get_depth());
-
-	assert(avoid.get_depth() == done.get_depth());
-
-	Flags to_do_aggregate= 0;
-	
-	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
-		to_do_aggregate |= ~done.get(j) & ~avoid.get(j); 
-	}
-
-	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
-}
-
-bool Dynamic_Execution::want_delete() const
-{
-	return dynamic_pointer_cast <Single_Dependency> (Dependency::strip_dynamic(dependency)) == nullptr; 
-}
-
-void Dynamic_Execution::propagate_to_dynamic(Execution *child,
-					     Flags flags_child,
-					     Stack avoid_parent,
-					     shared_ptr <Dependency> dependency_parent,
-					     shared_ptr <Dependency> dependency_child)
-/* A left branch child is done */
-{
-	(void) child; 
-	(void) avoid_parent; 
-
-	assert(flags_child & F_DYNAMIC_LIST); 
-	assert(dynamic_pointer_cast <Single_Dependency> (dependency_child)
-	       && dynamic_pointer_cast <Single_Dependency> (dependency_child)
-	       ->place_param_target.type == Type::FILE);
-	assert(dependency_parent->get_individual_target().type.is_dynamic());
-	assert(dependency_parent->get_individual_target().type.is_any_file());
-//	assert(parent->targets.size() == 1);
-
-//#ifndef NDEBUG
-//	bool found= false;
-//	for (const Target &target:  targets) {
-//		if (target.name == parent->targets.front().name)
-//			found= true;
-//	}
-//	assert(found); 
-//#endif 
-
-#if 0 /* XXX enable */
-	assert(done.get_depth() == 0); 
-		
-	bool do_read= true;
-
-	if (error != 0) {
-		do_read= false;
-	} else if (flags_child & F_OPTIONAL) {
-		/* Don't read the dependencies when the target was optional and
-		 * was not built.  this->exists was set to +1 earlier when the
-		 * optional dependency was found to exist.  */
-		if (child->exists <= 0) {
-			do_read= false;
-		}
-	}
-
-	if (do_read) {
-		read_dynamic_dependency(avoid_parent, dependency_parent); 
-	}
-#endif /* 0 */ 
 }
 
 #endif /* ! EXECUTION_HH */

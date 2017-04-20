@@ -1,7 +1,0 @@
-A: B {
-	cp B A
-}
-
-B {
-	echo correct >B
-}

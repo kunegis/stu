@@ -75,7 +75,7 @@ const char HELP[]=
 	"  -q               Question mode: check whether targets are up to date\n"    
 	"  -s               Silent mode: don't use standard output\n"
 	"  -V               Output version and exit\n"				      
-	"  -x               Ouput each line in a command individually\n"              
+	"  -x               Output each line in a command individually\n"              
 	"  -y               Disable color in output\n"                                
 	"  -Y               Enable color in output\n"
 	"  -z               Output run-time statistics on stdout\n"                   

@@ -3787,7 +3787,7 @@ void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 			for (auto &i:  child->get_list()) {
 				dependency_right= make_shared <Dynamic_Dependency> 
 					(dependency_this->flags,
-					 dpeendency_this->places,
+					 dependency_this->places,
 					 i); 
 				push_default(dependency_right); 
 			}

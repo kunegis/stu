@@ -1,0 +1,15 @@
+# * Implement the PENDING bit instead of the the LATER proceed value,
+#   and also instead of iterating through the whole tree again after
+#   each wait(). 
+
+A: B {
+	cp B A
+}
+
+B: C {
+	cp C B
+}
+
+C {
+	echo ccc >C
+}

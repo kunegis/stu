@@ -1,3 +1,9 @@
+# * Whenever a dependency that is the child of a left branch, percolate
+#   the dependency up immediately, and set the LATER bit on that
+#   execution and all its parents.  Instead of using the LATER proceed
+#   value, then go through the tree again, but only over nodes in which
+#   the LATER bit is set.  Rename it to PENDING. 
+
 A:  [[B]] {
 	cp D A
 }

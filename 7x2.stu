@@ -1,0 +1,12 @@
+# Make sure 'D' is built.  
+#
+# Make sure the cached execution for [B] has its list ready and outputs
+# it correctly.  
+
+A:  -o [[B]]  [[B]]  {
+	cp D A
+}
+
+B = { C }
+C = { D }
+D = {ddd}

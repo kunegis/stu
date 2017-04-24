@@ -2,6 +2,7 @@
 * (1): [ ] Build own dependencies 
 * (a):     Execute command, if any
 * Own result contains only the own filename 
+* Result not percolated up 
 
 ### Not dynamic, not concatenated, transient  (Single_Execution) 
 * (1): [ ] Build own dependencies

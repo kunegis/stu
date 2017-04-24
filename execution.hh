@@ -83,13 +83,6 @@ public:
 		return ""; 
 	}
 
-	/* Fill the passes vector with the "list" of dependency, i.e.,
-	 * the dependencies "contained in" this dependency.  This is the
-	 * list of dependencies equivalent to building the dependency of
-	 * this execution as a dynamic dependency.  The passed list must
-	 * be empty on call.  */
-	virtual void next_list(vector <shared_ptr <Dependency> > &list) const= 0; 
-
 	static long jobs;
 	/* Number of free slots for jobs.  This is a long because
 	 * strtol() gives a long.  Set before calling main() from the -j
@@ -322,9 +315,10 @@ private:
 
 class Single_Execution
 /*
- * Each file or transient target is represented at run time by one
- * Single_Execution object.  Each Single_Execution object may correspond
- * to multiple files or transients, but not to dynamic targets. 
+ * Each non-dynamic file or transient target is represented at run time
+ * by one Single_Execution object.  Each Single_Execution object may
+ * correspond to multiple files or transients, but not to dynamic
+ * targets.
  *
  * All Single_Execution objects are allocated with new Single_Execution(...), and are
  * never deleted, as the information contained in them needs to be
@@ -537,7 +531,6 @@ public:
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const; 
 	virtual bool finished(Stack avoid) const;
-	virtual void next_list(vector <shared_ptr <Dependency> > &) const {  assert(false);  }
 
 protected:
 
@@ -587,7 +580,6 @@ public:
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const;
 	virtual bool finished(Stack avoid) const; 
-	virtual void next_list(vector <shared_ptr <Dependency> > &list) const;
 
 	virtual string debug_text() const {  return "CONCAT";  }
 
@@ -1080,11 +1072,11 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 		/* Don't show a message for left-branch dynamic links */ 
 		if (i != 0 &&
 		    path[i - 1]->parents.at(const_cast <Execution *> (path[i]))
-		    .dependency->get_flags() & F_DYNAMIC_LIST)
+		    .dependency->get_flags() & F_DYNAMIC_LEFT)
 			continue;
 
 		/* Same, but when the dynamic execution is at the bottom */
-		if (i == 0 && link.dependency->get_flags() & F_DYNAMIC_LIST) 
+		if (i == 0 && link.dependency->get_flags() & F_DYNAMIC_LEFT) 
 			continue;
 
 		(i == 0 ? link : path[i - 1]->parents.at((Execution *) path[i])).place
@@ -1092,7 +1084,7 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 			       i == (ssize_t)(path.size() - 1) 
 			       ? (path.size() == 1 
 				  || (path.size() == 2 &&
-				      link.dependency->get_flags() & F_DYNAMIC_LIST)
+				      link.dependency->get_flags() & F_DYNAMIC_LEFT)
 				  ? "target must not depend on itself: " 
 				  : "cyclic dependency: ") 
 			       : "",
@@ -1198,7 +1190,7 @@ void Execution::print_traces(string text) const
 		 * for the root target  */
 
 		/* Don't show left-branch edges of dynamic executions */
-		if (i->second.flags & F_DYNAMIC_LIST) {
+		if (i->second.flags & F_DYNAMIC_LEFT) {
 			execution= i->first; 
 			continue;
 		}
@@ -1703,7 +1695,7 @@ void Execution::unlink(Execution *const parent,
 	 */
 
 	/* Propagate dynamic dependencies */ 
-	if (flags_child & F_DYNAMIC_LIST) {
+	if (flags_child & F_DYNAMIC_LEFT) {
 		/* This was the left branch between a dynamic dependency
 		 * and its child.  Add the right branch.  */
 
@@ -1751,7 +1743,7 @@ void Execution::unlink(Execution *const parent,
 	 * filename == "", this is unneccesary, but it's easier to not
 	 * check, since that happens only once. */
 	/* Don't propagate the timestamp of the dynamic dependency itself */ 
-	if (! (flags_child & F_PERSISTENT) && ! (flags_child & F_DYNAMIC_LIST)) {
+	if (! (flags_child & F_PERSISTENT) && ! (flags_child & F_DYNAMIC_LEFT)) {
 		if (child->timestamp.defined()) {
 			if (! parent->timestamp.defined()) {
 				parent->timestamp= child->timestamp;
@@ -1799,7 +1791,7 @@ void Execution::unlink(Execution *const parent,
 
 	if (child->need_build 
 	    && ! (flags_child & F_PERSISTENT)
-	    && ! (flags_child & F_DYNAMIC_LIST)) {
+	    && ! (flags_child & F_DYNAMIC_LEFT)) {
 		parent->need_build= true; 
 	}
 
@@ -3103,11 +3095,6 @@ Execution::Proceed Root_Execution::execute(Execution *, const Link &link)
 	return proceed; 
 }
 
-void Concatenated_Execution::next_list(vector <shared_ptr <Dependency> > &list) const
-{
-	assert(false); // TODO
-}
-
 Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependency_,
 					       Link &link,
 					       Execution *parent)
@@ -3611,7 +3598,7 @@ Dynamic_Execution::Dynamic_Execution(Link &link,
 	/* Push left branch dependency */ 
 	shared_ptr <Dependency> dependency_left=
 		Dependency::clone_dependency(dependency->dependency);
-	dependency_left->add_flags(F_DYNAMIC_LIST); 
+	dependency_left->add_flags(F_DYNAMIC_LEFT); 
 	push_default(dependency_left); 
 }
 
@@ -3678,7 +3665,7 @@ void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 {
 	(void) child; 
 	
-	assert(flags_child & F_DYNAMIC_LIST); 
+	assert(flags_child & F_DYNAMIC_LEFT); 
 //	assert(dynamic_pointer_cast <Single_Dependency> (dependency_child)
 //	       && dynamic_pointer_cast <Single_Dependency> (dependency_child)
 //	       ->place_param_target.type == Type::FILE);
@@ -3779,18 +3766,8 @@ void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 			/* This is another type of dynamic dependency:
 			 * Add, as a right branch, each dependency from
 			 * the child's list, with our own outer dynamic
-			 * dependency added.  */
-
-			shared_ptr <Dynamic_Dependency> dynamic_dependency_this=
-				dynamic_pointer_cast <Dynamic_Dependency> (dependency_this); 
-
-			for (auto &i:  child->get_list()) {
-				dependency_right= make_shared <Dynamic_Dependency> 
-					(dependency_this->flags,
-					 dependency_this->places,
-					 i); 
-				push_default(dependency_right); 
-			}
+			 * dependency added.  However, this is not done
+			 * here, but continuously.  */
 		}
 
 	} catch (int e) {

@@ -36,10 +36,9 @@ enum
 
 	I_RESULT_ONLY,
 
-	I_DYNAMIC_LIST,
+	I_DYNAMIC_LEFT,
+	I_DYNAMIC_RIGHT,
 	I_COPY_RESULT,
-//	I_DYNAMIC,
-//	I_CONCATENATE,
 	I_VARIABLE,
 	I_OVERRIDE_TRIVIAL,
 	I_NEWLINE_SEPARATED,
@@ -86,8 +85,11 @@ enum
 	 * Intransitive flags
 	 */ 
 
-	F_DYNAMIC_LIST     = 1 << I_DYNAMIC_LIST,
+	F_DYNAMIC_LEFT     = 1 << I_DYNAMIC_LEFT,
 	/* This is the link between a Dynamic_Execution and its left branch */
+
+	F_DYNAMIC_RIGHT    = 1 << I_DYNAMIC_RIGHT,
+	/* The right dynamic branch.  The result is percolated up this link */
 
 	F_COPY_RESULT      = 1 << I_COPY_RESULT,
 	/* Copy the result list of the child to the parent */

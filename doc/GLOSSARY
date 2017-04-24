@@ -1,0 +1,7 @@
+
+// TODO This list was just started and is incomplete. 
+
+Transient - One of the two basic datatypes ("targets") of Stu.  They are
+	noted with the '@' symbol, e.g., '@all'.  A transient can be
+	built like a file, but will not result in a built file.  A
+	transient can also be used only for its dependency. 

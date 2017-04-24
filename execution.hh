@@ -83,6 +83,13 @@ public:
 		return ""; 
 	}
 
+	/* Fill the passes vector with the "list" of dependency, i.e.,
+	 * the dependencies "contained in" this dependency.  This is the
+	 * list of dependencies equivalent to building the dependency of
+	 * this execution as a dynamic dependency.  The passed list must
+	 * be empty on call.  */
+	virtual void next_list(vector <shared_ptr <Dependency> > &list) const= 0; 
+
 	static long jobs;
 	/* Number of free slots for jobs.  This is a long because
 	 * strtol() gives a long.  Set before calling main() from the -j
@@ -530,6 +537,7 @@ public:
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const; 
 	virtual bool finished(Stack avoid) const;
+	virtual void next_list(vector <shared_ptr <Dependency> > &) const {  assert(false);  }
 
 protected:
 
@@ -579,6 +587,7 @@ public:
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const;
 	virtual bool finished(Stack avoid) const; 
+	virtual void next_list(vector <shared_ptr <Dependency> > &list) const;
 
 	virtual string debug_text() const {  return "CONCAT";  }
 
@@ -3094,6 +3103,11 @@ Execution::Proceed Root_Execution::execute(Execution *, const Link &link)
 	return proceed; 
 }
 
+void Concatenated_Execution::next_list(vector <shared_ptr <Dependency> > &list) const
+{
+	assert(false); // TODO
+}
+
 Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependency_,
 					       Link &link,
 					       Execution *parent)
@@ -3665,84 +3679,120 @@ void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 	(void) child; 
 	
 	assert(flags_child & F_DYNAMIC_LIST); 
-	assert(dynamic_pointer_cast <Single_Dependency> (dependency_child)
-	       && dynamic_pointer_cast <Single_Dependency> (dependency_child)
-	       ->place_param_target.type == Type::FILE);
+//	assert(dynamic_pointer_cast <Single_Dependency> (dependency_child)
+//	       && dynamic_pointer_cast <Single_Dependency> (dependency_child)
+//	       ->place_param_target.type == Type::FILE);
 	assert(dependency_this->get_individual_target().type.is_dynamic());
-	assert(dependency_this->get_individual_target().type.is_any_file());
 
 	/* Even if the child produced an error, we still want to read
 	 * its partially assembled list of filenames.  */
 
-	const Target target= dependency_this->get_individual_target().unparametrized(); 
-	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
+	/* 
+	 * There are two cases:
+	 *  - This is a singly dynamic file:  read out the file here. 
+	 *  - Any other dynamic:  start, as right branch, the list of
+	 *    the child with our own outer dynamic layer added. 
+	 */
 
 	try {
-		vector <shared_ptr <Dependency> > dependencies;
+		shared_ptr <Single_Dependency> single_dependency_child=
+		dynamic_pointer_cast <Single_Dependency> (dependency_child);
 
-		read_dynamic(avoid_parent, 
-			     dynamic_pointer_cast <Dynamic_Dependency> (dependency_this), 
-			     dependencies);
+		if (single_dependency_child &&
+		    single_dependency_child->place_param_target.type == Type::FILE) {
 
-		for (auto &j:  dependencies) {
+			/* This is a dynamic file dependency; read out
+			 * the file.  This is not an optimization of a
+			 * common case, but necessary because otherwise
+			 * we would start, as a right branch, the same
+			 * execution as ourselves.  */ 
 
-			/* Add the dependency, with one less dynamic level
-			 * than the current target  */
+			const Target target= dependency_this->get_individual_target().unparametrized(); 
+			assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
 
-			shared_ptr <Dependency> dd(j);
+			vector <shared_ptr <Dependency> > dependencies;
 
-			vector <shared_ptr <Dynamic_Dependency> > vec;
-			shared_ptr <Dependency> p= dependency_this;
+			read_dynamic(avoid_parent, 
+				     dynamic_pointer_cast <Dynamic_Dependency> (dependency_this), 
+				     dependencies);
 
-			while (dynamic_pointer_cast <Dynamic_Dependency> (p)) {
-				shared_ptr <Dynamic_Dependency> dynamic_dependency= 
-					dynamic_pointer_cast <Dynamic_Dependency> (p);
-				vec.resize(vec.size() + 1);
-				vec[vec.size() - 1]= dynamic_dependency;
-				p= dynamic_dependency->dependency;   
-			}
+			for (auto &j:  dependencies) {
 
-			Stack avoid_this= avoid_parent;
-			assert(vec.size() == avoid_this.get_depth());
-			avoid_this.pop(); 
-			dd->add_flags(avoid_this.get_lowest()); 
-			if (dd->get_place_flag(I_PERSISTENT).empty())
-				dd->set_place_flag
-					(I_PERSISTENT,
-					 vec[target.type.get_depth() - 1]
-					 ->get_place_flag(I_PERSISTENT)); 
-			if (dd->get_place_flag(I_OPTIONAL).empty())
-				dd->set_place_flag
-					(I_OPTIONAL,
-					 vec[target.type.get_depth() - 1]
-					 ->get_place_flag(I_OPTIONAL)); 
-			if (dd->get_place_flag(I_TRIVIAL).empty())
-				dd->set_place_flag
-					(I_TRIVIAL,
-					 vec[target.type.get_depth() - 1]
-					 ->get_place_flag(I_TRIVIAL)); 
+				/* Add the dependency, with one less dynamic level
+				 * than the current target  */
 
-			for (Type k= target.type - 1;  k.is_dynamic();  --k) {
+				shared_ptr <Dependency> dd(j);
+
+				vector <shared_ptr <Dynamic_Dependency> > vec;
+				shared_ptr <Dependency> p= dependency_this;
+
+				while (dynamic_pointer_cast <Dynamic_Dependency> (p)) {
+					shared_ptr <Dynamic_Dependency> dynamic_dependency= 
+						dynamic_pointer_cast <Dynamic_Dependency> (p);
+					vec.resize(vec.size() + 1);
+					vec[vec.size() - 1]= dynamic_dependency;
+					p= dynamic_dependency->dependency;   
+				}
+
+				Stack avoid_this= avoid_parent;
+				assert(vec.size() == avoid_this.get_depth());
 				avoid_this.pop(); 
-				Flags flags_level= avoid_this.get_lowest(); 
-				dd= make_shared <Dynamic_Dependency> 
-					(flags_level, dd); 
-				dd->set_place_flag
-					(I_PERSISTENT,
-					 vec[k.get_depth() - 1]->get_place_flag(I_PERSISTENT)); 
-				dd->set_place_flag
-					(I_OPTIONAL,
-					 vec[k.get_depth() - 1]->get_place_flag(I_OPTIONAL)); 
-				dd->set_place_flag
-					(I_TRIVIAL,
-					 vec[k.get_depth() - 1]->get_place_flag(I_TRIVIAL)); 
+				dd->add_flags(avoid_this.get_lowest()); 
+				if (dd->get_place_flag(I_PERSISTENT).empty())
+					dd->set_place_flag
+						(I_PERSISTENT,
+						 vec[target.type.get_depth() - 1]
+						 ->get_place_flag(I_PERSISTENT)); 
+				if (dd->get_place_flag(I_OPTIONAL).empty())
+					dd->set_place_flag
+						(I_OPTIONAL,
+						 vec[target.type.get_depth() - 1]
+						 ->get_place_flag(I_OPTIONAL)); 
+				if (dd->get_place_flag(I_TRIVIAL).empty())
+					dd->set_place_flag
+						(I_TRIVIAL,
+						 vec[target.type.get_depth() - 1]
+						 ->get_place_flag(I_TRIVIAL)); 
+
+				for (Type k= target.type - 1;  k.is_dynamic();  --k) {
+					avoid_this.pop(); 
+					Flags flags_level= avoid_this.get_lowest(); 
+					dd= make_shared <Dynamic_Dependency> 
+						(flags_level, dd); 
+					dd->set_place_flag
+						(I_PERSISTENT,
+						 vec[k.get_depth() - 1]->get_place_flag(I_PERSISTENT)); 
+					dd->set_place_flag
+						(I_OPTIONAL,
+						 vec[k.get_depth() - 1]->get_place_flag(I_OPTIONAL)); 
+					dd->set_place_flag
+						(I_TRIVIAL,
+						 vec[k.get_depth() - 1]->get_place_flag(I_TRIVIAL)); 
+				}
+
+				assert(avoid_this.get_depth() == 0); 
+
+				push_default(dd); 
 			}
-
-			assert(avoid_this.get_depth() == 0); 
-
-			push_default(dd); 
-		}
 				
+		} else {
+			/* This is another type of dynamic dependency:
+			 * Add, as a right branch, each dependency from
+			 * the child's list, with our own outer dynamic
+			 * dependency added.  */
+
+			shared_ptr <Dynamic_Dependency> dynamic_dependency_this=
+				dynamic_pointer_cast <Dynamic_Dependency> (dependency_this); 
+
+			for (auto &i:  child->get_list()) {
+				dependency_right= make_shared <Dynamic_Dependency> 
+					(dependency_this->flags,
+					 dpeendency_this->places,
+					 i); 
+				push_default(dependency_right); 
+			}
+		}
+
 	} catch (int e) {
 		/* We catch not only the errors raised in this function,
 		 * but also the errors raised in read_dynamic().  */

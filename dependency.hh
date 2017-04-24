@@ -4,9 +4,12 @@
 /*
  * Data types for representing dependencies.  Dependencies are the
  * central data structures in Stu, as all dependencies in the syntax of
- * a Stu file get mapped to Dependency objects.  Dependencies are highly
- * polymorphous objects, and all dependencies derive from the class
- * Dependency, and are used via shared_ptr<>.    
+ * a Stu file get mapped to Dependency objects.  
+ *
+ * Dependencies are polymorphous objects, and all dependencies derive
+ * from the class Dependency, and are used via shared_ptr<>.
+ *
+ * All dependency classes allow parametrized targets.  
  */
 
 #include <map>
@@ -140,8 +143,8 @@ public:
 
 class Single_Dependency
 /* 
- * A parametrized dependency denoting an individual target name.  Does
- * not cover dynamic dependencies.  
+ * A dependency denoting an individual target name.  Does not cover
+ * dynamic dependencies.
  */
 	:  public Dependency
 {
@@ -157,6 +160,7 @@ public:
 	string name;
 	/* With F_VARIABLE:  the name of the variable.
 	 * Otherwise:  empty.  */
+	// TODO rename to 'variable_name'
 	
 	Single_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_)
@@ -278,7 +282,6 @@ public:
 	}
 
 	virtual bool is_normalized() const { return true;  }
-//	shared_ptr <Dependency> clone_shallow() const; 
 };
 
 class Dynamic_Dependency
@@ -295,7 +298,6 @@ public:
 		:  Dependency(flags_), 
 		   dependency(dependency_)
 	{
-//		assert((flags & F_DYNAMIC) == 0); 
 		assert((flags & F_VARIABLE) == 0); 
 		assert(dependency_ != nullptr); 
 	}
@@ -306,8 +308,7 @@ public:
 		:  Dependency(flags_, places_),
 		   dependency(dependency_)
 	{
-//		assert((flags & F_DYNAMIC) == 0); 
-		assert((flags & F_VARIABLE) == 0); 
+		assert((flags & F_VARIABLE) == 0); /* Variables cannot be dynamic */
 		assert(dependency_ != nullptr); 
 	}
 

@@ -4,7 +4,16 @@
 #include "type.hh"
 
 /* 
- * Data types for representing filenames, targets, etc. 
+ * Targets are the individual "objects" of Stu.  They can be thought of
+ * as the "native types" of Stu.  
+ *
+ * Targets can be either files or transients, and can have any level of
+ * dynamicity. 
+ * 
+ * Targets are to be distinguished from the more general dependencies,
+ * which can represent any nested expression, including concatenations,
+ * flags, compound expressions, etc., while targets only represent
+ * individual files or transients. 
  */
 
 /* 

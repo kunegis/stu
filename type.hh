@@ -3,13 +3,15 @@
 
 class Type
 /* 
- * The type of a target. 
+ * The type of a target.  A target can:
+ *  - Be a file or a transient
+ *  - Have any dynamicity level, including node
  */
 {
 public:
 
 	static const Type TRANSIENT, FILE, DYNAMIC_TRANSIENT, DYNAMIC_FILE;
-	/* Some predefined values */ 
+	/* Predefined values for the four smallest cases */ 
 
 	bool is_dynamic() const {
 		return value >= T_DYNAMIC_TRANSIENT;

@@ -1,0 +1,25 @@
+#
+# This is the most basic example that shows off the interplay between
+# Stu's three main features.
+#
+# The example also shows a few more features. 
+#
+
+@all: plots/[@datasets].eps;
+
+@datasets:  DATASETS  random-(1 2 3 4 5); 
+
+>DATASETS:  -p datasets 
+{
+	ls -1 datasets 
+}
+
+plots/$dataset.eps:   data/$dataset.filtered.txt mkplots
+{
+	./mkplot 
+}
+
+>data/$dataset.filtered.txt:  <data/$dataset.txt filter
+{
+	./filter
+}

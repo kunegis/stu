@@ -1,15 +1,22 @@
 # Stu -- Build Automation
 
-This is Stu, a build tool in the spirit of Make, but with two features
-that set it apart: 
+This is Stu, a build tool in the spirit of Make, but with three features
+that set it apart:  
 
 * Parametrized rules:  Like GNU Make's '%' character, but there can be
   multiple parameters, and they have names.  The syntax is '$NAME',
-  where NAME can be any string.  
+  where NAME can be any string.  Parameters are injected transparently
+  into the commands. 
 * Dynamic dependencies:  The dependencies of a target can be generated
   dynamically.  When a dependency is enclosed in square brackets, it means
   that that file is built and dependencies are read from within that
   file. 
+* Parentheses and brackets support concatenation, allowing parametrized
+  filenames to be generated in the first place. 
+
+In many scenarios, these three features interact judiciously to give
+very concise and easy to understand constructs that are nearly
+impossible to realize with Make. 
 
 See this blog article for a motivation:
 
@@ -63,7 +70,7 @@ The design considerations of Stu are:
   this regard, and allow any variable in whatever programming language
   they are using.  Stu is based on the Unix principle that any
   persistent object should have a name in the file system -- "Everything
-  is a file".  
+  is a file."  
 * Scalability:  Assume that projects are so large that you can't just
   clean and rebuild everything if there are build inconsistencies.
   Files are sacred; never make the user delete files in order to rebuild
@@ -84,22 +91,22 @@ The design considerations of Stu are:
   for executing commands, as /bin/sh _already is_ one.  Furthermore,
   don't use fancy libraries or hip programming languages.  Stu is
   written in plain C++11 with only standard libraries.  Many other Make
-  replacements are based on specific programming languages are their
+  replacements are based on specific programming languages as their
   "base standard", effectively limiting their use to that language, and
   thus preventing projects to use multiple programming languages.
   Others even do worse and create their own mini-language, invariably
-  less portable than the shell. 
+  less portable and more buggy than the shell. 
 * Reliability:  Stu has extensive unit test coverage, with more than 1,000
   tests.  All published versions pass 100% of these tests.  All language
   features and error paths are unit tested.   
 * Stability:  We follow Semantic Versioning (semver.org) in order to
   provide syntax and semantics that are stable over time.  Stu files
   written now will still work in the future.  
-* Familiarity:  Stu follows the conventions of Make as much as possible,
-  to make it easier to make the switch from Make to Stu.  For instance,
-  the options -j and -k work like in Make.  Also, Stu source can be
-  edited with syntax highlighting for the shell, as the syntaxes are
-  very similar.  
+* Familiarity:  Stu follows the conventions of Make and of the shell as
+  much as possible, to make it easier to make the switch from Make to
+  Stu.  For instance, the options -j and -k work like in Make.  Also,
+  Stu source can be edited with syntax highlighting for the shell, as
+  the syntaxes are very similar.  
 
 ## Comparison to Make
 
@@ -134,10 +141,13 @@ Make are:
   allows and encourages all program logic to be implemented in ordinary
   rules, i.e. using a proper shell.  
 * Stu supports additional types of dependencies which are essential in
-  large, complex projects, such as persistent dependencies with
-  the prefix -p, optional dependencies with -o, and trivial
-  dependencies with -t.  These can only be emulated partially with Make
-  by using unwieldy constructs. 
+  large, complex projects, such as persistent dependencies with the
+  prefix -p (whose timestamps are always ignored), optional dependencies
+  with -o (instead of writing custom code that check whether a file is
+  present and making it impossible to let that file have dependencies of
+  its own), and trivial dependencies with -t (used e.g. for generating
+  compile-time options, or even a custom compiler).  These can only be
+  emulated partially with Make by using unwieldy constructs.
 
 ## Use Stu
 
@@ -151,20 +161,22 @@ https://github.com/kunegis/konect-analysis/blob/master/main.stu
 
 ## About 
 
-Stu was written to accommodate the Koblenz Network Collection project
-(KONECT - http://konect.uni-koblenz.de/).  It is thus mainly used for
-large data mining projects, where it manages everything from acquiring
-data from the web, to performing experiments, to generating plots and
-compiling the resulting Latex papers.  It is also used for compiling
-C/C++ code, and for generating tarballs.
+Stu was originally written to accommodate the Koblenz Network Collection
+project (KONECT -- http://konect.uni-koblenz.de/).  It is thus mainly
+used for large data mining projects, where it manages everything from
+acquiring data from the web, preprocessing data in various ways, to
+performing data mining experiments, to generating plots and compiling
+the resulting Latex papers.  It is also used for compiling C/C++ code,
+for generating tarballs, for generating websites, and by students at the
+University of Koblenz--Landau for student projects.
 
-The name "Stu" follows the precedents of Make replacements Cook and Bake
-in referring to kitchen-related verbs, and also honours the author of
-the original Unix Make, Stuart Feldman.
+The name "Stu" follows the precedents of Make replacements such as Cook,
+Bake, and Brew in referring to kitchen-related verbs, and also honors
+the author of the original Unix Make, Stuart Feldman.
 
-Stu was written in 2014-2017 by Jérôme Kunegis at the University of
-Koblenz-Landau (Germany) and at the University of Namur (Belgium), with
-help from other contributors. 
+Stu was written in 2014--2017 by Jérôme Kunegis at the University of
+Koblenz--Landau (Germany) and at the University of Namur (Belgium), with
+help from other contributors.
 
 Stu is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free

@@ -42,7 +42,7 @@ public:
 	enum {
 	
 		P_BIT_WAIT =     1 << 0,
-		P_BIT_LATER =    1 << 1,
+		P_BIT_PENDING =  1 << 1,
 
 		P_CONTINUE = 0, 
 		/* Execution can continue in the process */
@@ -53,16 +53,16 @@ public:
 	 * semantics of each is chosen such that in a new execution
 	 * object, the value is zero.  */ 
 	enum {
-		B_NEED_BUILD,
+		B_NEED_BUILD = 1 << 0,
 		/* Whether this target needs to be built.  When a target is
 		 * finished, this value is propagated to the parent executions
 		 * (except when the F_PERSISTENT flag is set).  */ 
 
-		B_PENDING,
+		B_PENDING    = 1 << 1,
 		/* There are pending changes.  If set, it is also set
 		 * for all parents, recursively.  */
 
-		B_CHECKED,
+		B_CHECKED    = 1 << 2,
 		/* Whether a certain check has been performed.  Only
 		 * used by Single_Execution.  */
 	};
@@ -86,6 +86,7 @@ public:
 	 * Never returns P_CONTINUE:  When everything is finished, the
 	 * FINISHED bit is set.  
 	 * In DONE, set those bits that have been done. 
+	 * When the call is over, clear the PENDING bit. 
 	 */
 
 	virtual bool finished() const= 0;
@@ -116,8 +117,6 @@ public:
 protected: 
 
 	Bits bits;
-	
-//	bool need_build;
 
 	int error;
 	/* Error value of this execution.  The value is propagated
@@ -159,10 +158,9 @@ protected:
 		/* K is the depth of the done field, i.e. the depth of
 		 * the dependency for purposes of keeping track of
 		 * caching.  */
-		:  bits(0),
+		:  bits(B_PENDING),
 		   error(0),
-		   timestamp(Timestamp::UNDEFINED)//,
-//	/	   need_build(false)
+		   timestamp(Timestamp::UNDEFINED)
 	{  
 		assert(parent != nullptr); 
 		parents[parent]= link; 
@@ -170,10 +168,9 @@ protected:
 
 	explicit Execution(Execution *parent_null)
 		/* Without a parent.  PARENT_NULL must be null. */
-		:  bits(0),  
+		:  bits(B_PENDING),  
 		   error(0),
-		   timestamp(Timestamp::UNDEFINED)//,
-		   //need_build(false)
+		   timestamp(Timestamp::UNDEFINED)
 	{  
 		assert(parent_null == nullptr); 
 	}
@@ -436,9 +433,6 @@ private:
 
 	map <string, string> mapping_variable; 
 	/* Variable assignments from variables dependencies */
-
-	//	bool checked;
-	//	/* Whether we performed the check in execute()  */ 
 
 	signed char exists;
 	/* 
@@ -759,16 +753,18 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 			Link link(Stack(), (Flags) 0, Place(), shared_ptr <Dependency> ());
 
 			Proceed proceed;
-			do {
+			while (root_execution->bits & B_PENDING) {
 				if (option_debug) {
 					fprintf(stderr, "DEBUG %s main.next\n", 
 						Verbose::padding());
 				}
 				proceed= root_execution->execute(nullptr, move(link));
-//				assert(! (proceed & P_BIT_FINISHED)); 
-			} while (proceed & P_BIT_LATER);
+				assert(Single_Execution::executions_by_pid.empty() == ! (proceed & P_BIT_WAIT)); 
+				assert(! (root_execution->bits & B_PENDING)
+				       == ! (proceed & P_BIT_PENDING)); 
+			}
 
-			if (Single_Execution::executions_by_pid.size()) {
+			if (proceed & P_BIT_WAIT) {
 				Single_Execution::wait();
 			}
 		}
@@ -1274,13 +1270,10 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 				dependency_child);
 
 		Proceed proceed_child= child->execute(this, move(link_child));
-//		assert(! (proceed & P_BIT_FINISHED)); 
-//		assert(proceed != P_CONTINUE); 
 
 		proceed_all |= proceed_child; 
 
 		if (child->finished(done_here)) {
-//		if (proceed & P_BIT_FINISHED) {
 			unlink(this, child, 
 			       link.dependency,
 			       link.avoid, 
@@ -1292,15 +1285,13 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 		assert(option_keep_going); 
 	}
 
-	if ((proceed_all & (P_BIT_WAIT | P_BIT_LATER)) == P_CONTINUE) {
+	if ((proceed_all & (P_BIT_WAIT | P_BIT_PENDING)) == P_CONTINUE) {
 		/* If there are still children, they must have returned
-		 * WAIT or LATER */ 
+		 * WAIT or PENDING */ 
 		assert(children.empty()); 
 		if (error) {
 			done_here.add_neg(link.avoid); 
-//			proceed_all |= P_BIT_FINISHED; 
 		}
-//		assert(finished(link.avoid)); 
 	}
 
 	return proceed_all; 
@@ -1353,7 +1344,6 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 				text_target.c_str());
 		}
 		return P_CONTINUE; 
-//		return P_BIT_FINISHED;
 	}
 
 	/* In DFS mode, first continue the already-open children, then
@@ -1369,20 +1359,16 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	if (order != Order::RANDOM) {
 		Proceed proceed= execute_children(link2, done_here);
 		proceed_all |= proceed;
-//		proceed_all |= (proceed & ~P_BIT_FINISHED); 
 		if (proceed_all & P_BIT_WAIT) {
 			return proceed_all; 
 		}
-		if (
-		    finished(link2.avoid) 
-		    && ! option_keep_going) {
+		if (finished(link2.avoid) && ! option_keep_going) {
 			if (option_debug) {
 				string text_target= debug_text(); 
 				fprintf(stderr, "DEBUG %s %s finished\n",
 					Verbose::padding(),
 					text_target.c_str());
 			}
-//			done_here.add_neg(link2.avoid); 
 			return proceed_all;
 		}
 	}
@@ -1390,8 +1376,6 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	// TODO but this *before* the execution of already-opened
 	// children. 
 	if (optional_finished(link2)) {
-//	proceed_all |= proceed_optional; 
-//	if (proceed_optional & P_BIT_FINISHED) {
 		return proceed_all;
 	}
 
@@ -1399,7 +1383,6 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	if (link2.flags & F_TRIVIAL) {
 		done_here.add_neg(link2.avoid); 
 		return proceed_all; 
-//		return proceed_all | P_BIT_FINISHED;
 	}
 
 	if (error) 
@@ -1410,7 +1393,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	 */ 
 
 	if (jobs == 0) {
-		assert(proceed_all & P_BIT_WAIT); 
+//		assert(proceed_all & P_BIT_WAIT); 
 		return proceed_all;
 	}
 
@@ -1422,8 +1405,6 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 		buffer_trivial.push(dependency_child_overridetrivial); 
 		Proceed proceed_2= execute_deploy(link2, dependency_child);
 		proceed_all |= proceed_2;
-//		if (jobs == 0)
-//			return proceed_all;
 	} 
 	assert(buffer_default.empty()); 
 
@@ -1431,11 +1412,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 		Proceed proceed_2= execute_children(link2, done_here);
 		if (proceed_2 & P_BIT_WAIT)
 			return proceed_2;
-		if (
-		    finished(done_here)
-//		    (proceed_2 & P_BIT_FINISHED) 
-		    && ! option_keep_going) {
-//			done_here.add_neg(link2.avoid); 
+		if (finished(done_here) && ! option_keep_going) {
 			return proceed_2;
 		}
 	}
@@ -1647,11 +1624,8 @@ Execution::Proceed Execution::execute_deploy(const Link &link,
 		children.insert(child);
 
 		Proceed proceed_child= child->execute(this, move(link_child_new));
-//		assert(! (proceed & P_BIT_FINISHED)); 
-		if (proceed_child & (P_BIT_WAIT | P_BIT_LATER))
+		if (proceed_child & (P_BIT_WAIT | P_BIT_PENDING))
 			return proceed_child; 
-//			return proceed & ~P_BIT_FINISHED;
-//		assert(jobs >= 1); 
 			
 		if (child->finished(avoid_child)) {
 			unlink(this, child, 
@@ -2528,42 +2502,34 @@ void Single_Execution::print_command() const
 
 Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link)
 {
+	assert(bits & B_PENDING); 
+	bits &= ~B_PENDING; 
+
 	if (job.started()) {
 		assert(children.empty()); 
 	}       
 
 	Proceed proceed= Execution::execute_base(link, done); 
-	if (proceed & (P_BIT_WAIT | P_BIT_LATER)) {
+	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
+		assert(!(proceed & P_BIT_PENDING) == !(bits & B_PENDING)); 
 		return proceed; 
-//		return proceed & ~P_BIT_FINISHED;
 	}
 
 	assert(children.empty()); 
 
 	if (finished(link.avoid)) {
+		assert(! (bits & B_PENDING)); 
 		return P_CONTINUE; 
 	}
 
-//	/* Rule does not have a command.  This includes the case of dynamic
-//	 * executions, even though for dynamic executions the RULE variable
-//	 * is set (to detect cycles). */ 
-
-//	/* We cannot return here in the non-dynamic case, because we
-//	 * must still check that the target files exist, even if they
-//	 * don't have commands. */ 
-//	if (get_depth() != 0) {
-//		done_add_neg(link.avoid); 
-//		return proceed;
-//	}
-
 	/* Job has already been started */ 
 	if (job.started_or_waited()) {
+		assert(false); 
 		return proceed | P_BIT_WAIT;
 	}
 
 	/* The file must be built */ 
 
-//	assert(jobs > 0); 
 	assert(! targets.empty());
 	assert(targets.front().type.get_depth() == 0); 
 	assert(targets.back().type.get_depth() == 0); 
@@ -2583,9 +2549,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 		rule != nullptr && rule->command == nullptr && ! rule->is_copy;
 
 	if (! (bits & B_CHECKED)) {
-//	if (! checked) {
 		bits |= B_CHECKED; 
-//		checked= true; 
 
 		exists= +1; 
 		/* Now, set EXISTS to -1 when a file is found not to exist */ 
@@ -2619,13 +2583,11 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 			}
 
 			if (! (bits & B_NEED_BUILD)
-			    //! need_build 
 			    && ret_stat == 0 
 			    && timestamp.defined() 
 			    && timestamps_old[i] < timestamp 
 			    && ! no_execution) {
 				bits |= B_NEED_BUILD;
-//				need_build= true;
 			}
 
 			if (ret_stat == 0) {
@@ -2642,14 +2604,12 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 			}
 			
 			if (! (bits & B_NEED_BUILD)
-//			    ! need_build
 			    && ret_stat != 0 && errno == ENOENT) {
 				/* File does not exist */
 
 				if (! (link.flags & F_OPTIONAL)) {
 					/* Non-optional dependency */  
 					bits |= B_NEED_BUILD;
-//					need_build= true; 
 				} else {
 					/* Optional dependency:  don't create the file;
 					 * it will then not exist when the parent is
@@ -2705,7 +2665,6 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 	}
 
 	if (! (bits & B_NEED_BUILD)) {
-//	if (! need_build) {
 		bool has_file= false; /* One of the targets is a file */
 		for (const Target &target:  targets) {
 			if (target.type == Type::FILE) {
@@ -2719,7 +2678,6 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 				/* Transient was not yet executed */ 
 				if (! no_execution && ! has_file) {
 					bits |= B_NEED_BUILD; 
-//					need_build= true; 
 				}
 				break;
 			}
@@ -2727,7 +2685,6 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 	}
 
 	if (! (bits & B_NEED_BUILD)) {
-//	if (! need_build) {
 		/* The file does not have to be built */ 
 		done_add_neg(link.avoid); 
 		return proceed;
@@ -2890,7 +2847,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 
 	Proceed p= P_BIT_WAIT;
 	if (order == Order::RANDOM && jobs > 0)
-		p |= P_BIT_LATER; 
+		p |= P_BIT_PENDING; 
 
 	return p;
 }
@@ -3118,8 +3075,11 @@ Root_Execution::Root_Execution(const vector <shared_ptr <Dependency> > &dependen
 
 Execution::Proceed Root_Execution::execute(Execution *, const Link &link)
 {
+	assert(bits & B_PENDING); 
+	bits &= ~B_PENDING; 
+
 	Proceed proceed= Execution::execute_base(link, done); 
-	if (proceed & (P_BIT_WAIT | P_BIT_LATER)) {
+	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
 		return proceed;
 	}
 
@@ -3181,6 +3141,9 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependenc
 Execution::Proceed Concatenated_Execution::execute(Execution *, 
 						   const Link &link)
 {
+	assert(bits & B_PENDING); 
+	bits &= ~B_PENDING; 
+
 	assert(stage >= 0 && stage <= 3); 
 
 	if (stage == 0) {
@@ -3637,8 +3600,11 @@ Dynamic_Execution::Dynamic_Execution(Link &link,
 
 Execution::Proceed Dynamic_Execution::execute(Execution *, const Link &link)
 {
+	assert(bits & B_PENDING);
+	bits &= ~B_PENDING; 
+
 	Proceed proceed= Execution::execute_base(link, done); 
-	if (proceed & (P_BIT_WAIT | P_BIT_LATER)) {
+	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
 		return proceed; 
 	}
 
@@ -3647,16 +3613,9 @@ Execution::Proceed Dynamic_Execution::execute(Execution *, const Link &link)
 	return proceed; 
 }
 
-//void Dynamic_Execution::read_dynamic_dependency(Stack avoid,
-//						shared_ptr <Dependency> dependency_this)
-//{
-//}
-
 bool Dynamic_Execution::finished() const 
 {
 	assert(done.get_depth() == dependency->get_depth()); 
-//	assert(done.get_depth() == targets.front().type.get_depth());
-//	assert(done.get_depth() == targets.back().type.get_depth());
 
 	Flags to_do_aggregate= 0;
 	

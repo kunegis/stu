@@ -1,15 +1,19 @@
-# * Implement the PENDING bit instead of the LATER proceed value,
-#   and also instead of iterating through the whole tree again after
-#   each wait(). 
+# * Implement the PENDING bit in random mode
+#
+# Run with -m random 
 
-A: B {
-	cp B A
+>A:  B C 
+{
+	cat B C 
 }
 
-B: C {
-	cp C B
+B { echo bbb >B ; }
+
+C { 
+	[ -e C ] || {
+		echo >&2 '*** C must not exist'
+		exit 1
+	}
+	echo ccc >C ; 
 }
 
-C {
-	echo ccc >C
-}

@@ -1,0 +1,6 @@
+# Check that 'A' is indeed built. 
+
+A 
+{
+	echo aaa >A 
+}

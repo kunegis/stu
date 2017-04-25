@@ -1,4 +1,4 @@
-# * Implement the PENDING bit instead of the the LATER proceed value,
+# * Implement the PENDING bit instead of the LATER proceed value,
 #   and also instead of iterating through the whole tree again after
 #   each wait(). 
 

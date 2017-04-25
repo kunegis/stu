@@ -25,29 +25,46 @@ class Execution
  * and deleted (if nercessary), via delete().  
  *
  * The set of active Execution objects forms a directed acyclic graph,
- * rooted at the root Execution object.  Edges in this graph are
- * represented by Link objects.  Each Execution object corresponds to
- * one or more unique Target objects.  Two Execution objects are
- * connected if there is a dependency between them.  If there is an edge
- * A ---> B, A is said to be the parent of B, and B the child of A.
- * Also, B is a dependency of A.  If A is a dynamic target, then it has
- * as an initial child only the corresponding target with one less
- * level of depth; other dependencies are added later.
+ * rooted at a single Root_Execution object.  Edges in this graph are
+ * represented by Link objects.  An edge is said to go from a parent to
+ * a child.  Each Execution object corresponds to one or more unique
+ * dependencies.  Two Execution objects are connected if there is a
+ * dependency between them.  If there is an edge A ---> B, A is said to
+ * be the parent of B, and B the child of A.  Also, B is a dependency of
+ * A.  
  */
 {
 public: 
 
 	typedef unsigned Proceed;
-
+	/* This is used as the return value of the functions execute()
+	 * and similar.  Defined as a typedef to make arithmetic with it.  */
 	enum {
-		/* This is used as the return value of the functions execute()
-		 * and similar.  Defined as a typedef to make arithmetic with it.  */
 	
 		P_BIT_WAIT =     1 << 0,
 		P_BIT_LATER =    1 << 1,
 
 		P_CONTINUE = 0, 
 		/* Execution can continue in the process */
+	};
+
+	typedef unsigned Bits;
+	/* These are bits set for individual execution objects.  The
+	 * semantics of each is chosen such that in a new execution
+	 * object, the value is zero.  */ 
+	enum {
+		B_NEED_BUILD,
+		/* Whether this target needs to be built.  When a target is
+		 * finished, this value is propagated to the parent executions
+		 * (except when the F_PERSISTENT flag is set).  */ 
+
+		B_PENDING,
+		/* There are pending changes.  If set, it is also set
+		 * for all parents, recursively.  */
+
+		B_CHECKED,
+		/* Whether a certain check has been performed.  Only
+		 * used by Single_Execution.  */
 	};
 
 	void raise(int error_);
@@ -97,7 +114,11 @@ public:
 	 * ERROR_LOGICAL.  */
 
 protected: 
+
+	Bits bits;
 	
+//	bool need_build;
+
 	int error;
 	/* Error value of this execution.  The value is propagated
 	 * (using '|') to the parent.  Values correspond to constants
@@ -122,11 +143,6 @@ protected:
 	 * itself, if any.  This final timestamp is then carried over to the
 	 * parent executions.  */
 
-	bool need_build;
-	/* Whether this target needs to be built.  When a target is
-	 * finished, this value is propagated to the parent executions
-	 * (except when the F_PERSISTENT flag is set).  */ 
-
 	vector <shared_ptr <Single_Dependency> > result; 
 	/* The final list of dependencies represented by the target.
 	 * This does not include any dynamic dependencies, i.e., all
@@ -143,9 +159,10 @@ protected:
 		/* K is the depth of the done field, i.e. the depth of
 		 * the dependency for purposes of keeping track of
 		 * caching.  */
-		:  error(0),
-		   timestamp(Timestamp::UNDEFINED),
-		   need_build(false)
+		:  bits(0),
+		   error(0),
+		   timestamp(Timestamp::UNDEFINED)//,
+//	/	   need_build(false)
 	{  
 		assert(parent != nullptr); 
 		parents[parent]= link; 
@@ -153,9 +170,10 @@ protected:
 
 	explicit Execution(Execution *parent_null)
 		/* Without a parent.  PARENT_NULL must be null. */
-		:  error(0),
-		   timestamp(Timestamp::UNDEFINED),
-		   need_build(false)
+		:  bits(0),  
+		   error(0),
+		   timestamp(Timestamp::UNDEFINED)//,
+		   //need_build(false)
 	{  
 		assert(parent_null == nullptr); 
 	}
@@ -419,8 +437,8 @@ private:
 	map <string, string> mapping_variable; 
 	/* Variable assignments from variables dependencies */
 
-	bool checked;
-	/* Whether we performed the check in execute()  */ 
+	//	bool checked;
+	//	/* Whether we performed the check in execute()  */ 
 
 	signed char exists;
 	/* 
@@ -433,6 +451,7 @@ private:
 	 * When there are no file targets (i.e., when all targets are
 	 * transients), the value may be both 0 or +1.  
 	 */
+	// TODO fold this into BITS. 
 	
 	Stack done;
 	/* What parts of this target have been done.  Each bit
@@ -1789,10 +1808,12 @@ void Execution::unlink(Execution *const parent,
 
 	parent->error |= child->error; 
 
-	if (child->need_build 
+	if (child->bits & B_NEED_BUILD
+	    //child->need_build 
 	    && ! (flags_child & F_PERSISTENT)
 	    && ! (flags_child & F_DYNAMIC_LEFT)) {
-		parent->need_build= true; 
+		parent->bits |= B_NEED_BUILD; 
+//		parent->need_build= true; 
 	}
 
 	/* 
@@ -2063,7 +2084,7 @@ Single_Execution::Single_Execution(Target target_,
 				   Link &link,
 				   Execution *parent)
 	:  Execution(link, parent),
-	   checked(false),
+//	   checked(false),
 	   exists(0),
 	   done(target_.type.get_depth(), 0)
 {
@@ -2561,8 +2582,10 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 	const bool no_execution= 
 		rule != nullptr && rule->command == nullptr && ! rule->is_copy;
 
-	if (! checked) {
-		checked= true; 
+	if (! (bits & B_CHECKED)) {
+//	if (! checked) {
+		bits |= B_CHECKED; 
+//		checked= true; 
 
 		exists= +1; 
 		/* Now, set EXISTS to -1 when a file is found not to exist */ 
@@ -2595,10 +2618,14 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 				exists= -1;
 			}
 
-			if (! need_build && ret_stat == 0 &&
-			    timestamp.defined() && timestamps_old[i] < timestamp &&
-			    ! no_execution) {
-				need_build= true;
+			if (! (bits & B_NEED_BUILD)
+			    //! need_build 
+			    && ret_stat == 0 
+			    && timestamp.defined() 
+			    && timestamps_old[i] < timestamp 
+			    && ! no_execution) {
+				bits |= B_NEED_BUILD;
+//				need_build= true;
 			}
 
 			if (ret_stat == 0) {
@@ -2614,12 +2641,15 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 				} 
 			}
 			
-			if (! need_build && ret_stat != 0 && errno == ENOENT) {
+			if (! (bits & B_NEED_BUILD)
+//			    ! need_build
+			    && ret_stat != 0 && errno == ENOENT) {
 				/* File does not exist */
 
 				if (! (link.flags & F_OPTIONAL)) {
 					/* Non-optional dependency */  
-					need_build= true; 
+					bits |= B_NEED_BUILD;
+//					need_build= true; 
 				} else {
 					/* Optional dependency:  don't create the file;
 					 * it will then not exist when the parent is
@@ -2674,7 +2704,8 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 		}
 	}
 
-	if (! need_build) {
+	if (! (bits & B_NEED_BUILD)) {
+//	if (! need_build) {
 		bool has_file= false; /* One of the targets is a file */
 		for (const Target &target:  targets) {
 			if (target.type == Type::FILE) {
@@ -2687,14 +2718,16 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 			if (transients.count(target.name) == 0) {
 				/* Transient was not yet executed */ 
 				if (! no_execution && ! has_file) {
-					need_build= true; 
+					bits |= B_NEED_BUILD; 
+//					need_build= true; 
 				}
 				break;
 			}
 		}
 	}
 
-	if (! need_build) {
+	if (! (bits & B_NEED_BUILD)) {
+//	if (! need_build) {
 		/* The file does not have to be built */ 
 		done_add_neg(link.avoid); 
 		return proceed;

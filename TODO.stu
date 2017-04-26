@@ -199,6 +199,11 @@ B = { C D }
 C = { E }
 E = { echo eee >E ; }
 
+>A:  B -t list.[C] { cat B list.{1,2,3} ; }
+B = {bbb}
+C = {1 2 3}
+>list.$n { echo "$n$n$n" ; }
+
 #
 # Make sure that in -j2 -k mode, the "successfully built" message is
 # output just once, when the rule that was run has multiple targets.

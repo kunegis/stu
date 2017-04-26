@@ -209,6 +209,10 @@ protected:
 	 * DEPENDENCY_THIS is normalized.  Dependencies that were read
 	 * are written into DEPENDENCIES, which must be empty on calling.  */
 
+	void set_pending(); 
+	/* Set the PENDING bit for this execution and all parents
+	 * recursively */
+
 	virtual ~Execution(); 
 
 	virtual int get_depth() const= 0;
@@ -1485,11 +1489,8 @@ Execution::Proceed Execution::execute_deploy(const Link &link,
 		children.insert(child);
 
 		Proceed proceed_child= child->execute(this, move(link_child_new));
-//		assert(! (proceed & P_BIT_FINISHED)); 
 		if (proceed_child & P_BIT_WAIT)
 			return proceed_child; 
-//			return (proceed & ~P_BIT_FINISHED);
-//		assert(jobs >= 1); 
 			
 		if (child->finished(avoid_child)) {
 			unlink(this, child, 
@@ -1874,6 +1875,15 @@ void Execution::copy_result(Execution *parent, Execution *child)
 	parent->result= child->result; 
 }
 
+void Execution::set_pending()
+{
+	bits |= B_PENDING; 
+
+	for (auto &i:  parents) {
+		i.first->set_pending(); 
+	}
+}
+
 Single_Execution::~Single_Execution()
 /* Objects of this type are never deleted */ 
 {
@@ -1938,6 +1948,8 @@ void Single_Execution::waited(pid_t pid, int status)
 	 * to not exist */
 	if (exists < 0)  
 		exists= 0;
+
+	set_pending(); 
 	
 	if (job.waited(status, pid)) {
 		/* Command was successful */ 
@@ -2002,7 +2014,6 @@ void Single_Execution::waited(pid_t pid, int status)
 
 				raise(ERROR_BUILD);
 			}
-
 		}
 		/* In parallel mode, print "done" message */
 		if (option_parallel) {
@@ -2528,7 +2539,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 		return proceed | P_BIT_WAIT;
 	}
 
-	/* The file must be built */ 
+	/* The file must now be built */ 
 
 	assert(! targets.empty());
 	assert(targets.front().type.get_depth() == 0); 

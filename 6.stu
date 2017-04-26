@@ -1,6 +1,7 @@
 # * Implement the PENDING bit in random mode
 #
-# Run with -m random 
+# (1) bug when run without options
+# (2) Run with -m random 
 
 >A:  B C 
 {

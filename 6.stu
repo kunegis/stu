@@ -1,5 +1,4 @@
-# (1) bug when run without options
-# (2) Run with -m random 
+# * Run with -m random 
 
 >A:  B C 
 {
@@ -9,7 +8,7 @@
 B { echo bbb >B ; }
 
 C { 
-	[ -e C ] || {
+	[ -e C ] && {
 		echo >&2 '*** C must not exist'
 		exit 1
 	}

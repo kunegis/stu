@@ -2520,23 +2520,18 @@ void Single_Execution::print_command() const
 
 Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link)
 {
-//	assert(bits & B_PENDING); 
-//	bits &= ~B_PENDING; 
-
 	if (job.started()) {
 		assert(children.empty()); 
 	}       
 
 	Proceed proceed= Execution::execute_base(link, done); 
 	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
-//		assert(!(proceed & P_BIT_PENDING) == !(bits & B_PENDING)); 
 		return proceed; 
 	}
 
 	assert(children.empty()); 
 
 	if (finished(link.avoid)) {
-//		assert(! (bits & B_PENDING)); 
 		return P_CONTINUE; 
 	}
 
@@ -2731,9 +2726,12 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 	}
 
 	out_message_done= true;
-	
-	print_command();
 
+	assert(jobs >= 0); 
+
+	/* For hardcoded rules (i.e., static content), we don't need to
+	 * start a job, and therefore this is executed even if JOBS is
+	 * zero.  */
 	if (rule->is_hardcode) {
 		assert(targets.size() == 1);
 		assert(targets.front().type == Type::FILE); 
@@ -2747,6 +2745,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 				text_target.c_str());
 		}
 
+		print_command();
 		write_content(targets.front().name.c_str(), *(rule->command)); 
 
 		assert(proceed == P_CONTINUE); 
@@ -2755,11 +2754,12 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 
 	/* We know that a job has to be started now */
 
-	assert(jobs >= 0); 
 	if (jobs == 0) 
 		return proceed | P_BIT_WAIT; 
        
-	/* We have to start the job now */ 
+	/* We have to start a job now */ 
+
+	print_command();
 
 	for (const Target &target:  targets) {
 		if (target.type != Type::TRANSIENT)  

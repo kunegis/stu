@@ -44,6 +44,8 @@ public:
 		P_BIT_WAIT =     1 << 0,
 		P_BIT_PENDING =  1 << 1,
 
+		// TODO rename them, removing the "_BIT" part. 
+
 		P_CONTINUE = 0, 
 		/* Execution can continue in the process */
 	};
@@ -51,16 +53,18 @@ public:
 	typedef unsigned Bits;
 	/* These are bits set for individual execution objects.  The
 	 * semantics of each is chosen such that in a new execution
-	 * object, the value is zero.  */ 
+	 * object, the value is zero.  The semantics of the different
+	 * bits are distinct and could just as well be realized as
+	 * individual "bool" variables.  */ 
 	enum {
 		B_NEED_BUILD = 1 << 0,
 		/* Whether this target needs to be built.  When a target is
 		 * finished, this value is propagated to the parent executions
 		 * (except when the F_PERSISTENT flag is set).  */ 
 
-		B_PENDING    = 1 << 1,
-		/* There are pending changes.  If set, it is also set
-		 * for all parents, recursively.  */
+//		B_PENDING    = 1 << 1,
+//		/* There are pending changes.  If set, it is also set
+//		 * for all parents, recursively.  */
 
 		B_CHECKED    = 1 << 2,
 		/* Whether a certain check has been performed.  Only
@@ -158,7 +162,7 @@ protected:
 		/* K is the depth of the done field, i.e. the depth of
 		 * the dependency for purposes of keeping track of
 		 * caching.  */
-		:  bits(B_PENDING),
+		:  bits(0),
 		   error(0),
 		   timestamp(Timestamp::UNDEFINED)
 	{  
@@ -168,7 +172,7 @@ protected:
 
 	explicit Execution(Execution *parent_null)
 		/* Without a parent.  PARENT_NULL must be null. */
-		:  bits(B_PENDING),  
+		:  bits(0),  
 		   error(0),
 		   timestamp(Timestamp::UNDEFINED)
 	{  
@@ -209,9 +213,9 @@ protected:
 	 * DEPENDENCY_THIS is normalized.  Dependencies that were read
 	 * are written into DEPENDENCIES, which must be empty on calling.  */
 
-	void set_pending(); 
-	/* Set the PENDING bit for this execution and all parents
-	 * recursively */
+//	void set_pending(); 
+//	/* Set the PENDING bit for this execution and all parents
+//	 * recursively */
 
 	virtual ~Execution(); 
 
@@ -757,16 +761,18 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 			Link link(Stack(), (Flags) 0, Place(), shared_ptr <Dependency> ());
 
 			Proceed proceed;
-			while (root_execution->bits & B_PENDING) {
+			do {
+//			while (root_execution->bits & B_PENDING) {
 				if (option_debug) {
 					fprintf(stderr, "DEBUG %s main.next\n", 
 						Verbose::padding());
 				}
 				proceed= root_execution->execute(nullptr, move(link));
 				assert(Single_Execution::executions_by_pid.empty() == ! (proceed & P_BIT_WAIT)); 
-				assert(! (root_execution->bits & B_PENDING)
-				       == ! (proceed & P_BIT_PENDING)); 
-			}
+//				assert(! (root_execution->bits & B_PENDING)
+//				       == ! (proceed & P_BIT_PENDING)); 
+			} while (proceed & P_BIT_PENDING); 
+//			}
 
 			if (proceed & P_BIT_WAIT) {
 				Single_Execution::wait();
@@ -1503,6 +1509,8 @@ Execution::Proceed Execution::execute_deploy(const Link &link,
 
 	} else if (dynamic_pointer_cast <Single_Dependency> (dep)) {
 
+		/* This is a possibly dynamic single dependency */ 
+
  		shared_ptr <Single_Dependency> single_dependency=
 			dynamic_pointer_cast <Single_Dependency> (dep);
 		assert(single_dependency != nullptr); 
@@ -1847,6 +1855,7 @@ Execution *Execution::get_execution(const Target &target,
 			 * connection */ 
 			execution->parents[parent]= link;
 		}
+//		execution->set_pending(); 
 		
 	} else { 
 		/* Create a new Execution object */ 
@@ -1865,8 +1874,6 @@ Execution *Execution::get_execution(const Target &target,
 		return nullptr;
 	}
 
-//	execution->initialize(link.avoid); 
-
 	return execution;
 }
 
@@ -1875,14 +1882,14 @@ void Execution::copy_result(Execution *parent, Execution *child)
 	parent->result= child->result; 
 }
 
-void Execution::set_pending()
-{
-	bits |= B_PENDING; 
-
-	for (auto &i:  parents) {
-		i.first->set_pending(); 
-	}
-}
+//void Execution::set_pending()
+//{
+//	bits |= B_PENDING; 
+//
+//	for (auto &i:  parents) {
+//		i.first->set_pending(); 
+//	}
+//}
 
 Single_Execution::~Single_Execution()
 /* Objects of this type are never deleted */ 
@@ -1949,7 +1956,7 @@ void Single_Execution::waited(pid_t pid, int status)
 	if (exists < 0)  
 		exists= 0;
 
-	set_pending(); 
+//	set_pending(); 
 	
 	if (job.waited(status, pid)) {
 		/* Command was successful */ 
@@ -2513,8 +2520,8 @@ void Single_Execution::print_command() const
 
 Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link)
 {
-	assert(bits & B_PENDING); 
-	bits &= ~B_PENDING; 
+//	assert(bits & B_PENDING); 
+//	bits &= ~B_PENDING; 
 
 	if (job.started()) {
 		assert(children.empty()); 
@@ -2522,14 +2529,14 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 
 	Proceed proceed= Execution::execute_base(link, done); 
 	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
-		assert(!(proceed & P_BIT_PENDING) == !(bits & B_PENDING)); 
+//		assert(!(proceed & P_BIT_PENDING) == !(bits & B_PENDING)); 
 		return proceed; 
 	}
 
 	assert(children.empty()); 
 
 	if (finished(link.avoid)) {
-		assert(! (bits & B_PENDING)); 
+//		assert(! (bits & B_PENDING)); 
 		return P_CONTINUE; 
 	}
 
@@ -3086,8 +3093,8 @@ Root_Execution::Root_Execution(const vector <shared_ptr <Dependency> > &dependen
 
 Execution::Proceed Root_Execution::execute(Execution *, const Link &link)
 {
-	assert(bits & B_PENDING); 
-	bits &= ~B_PENDING; 
+//	assert(bits & B_PENDING); 
+//	bits &= ~B_PENDING; 
 
 	Proceed proceed= Execution::execute_base(link, done); 
 	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
@@ -3152,8 +3159,8 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependenc
 Execution::Proceed Concatenated_Execution::execute(Execution *, 
 						   const Link &link)
 {
-	assert(bits & B_PENDING); 
-	bits &= ~B_PENDING; 
+//	assert(bits & B_PENDING); 
+//	bits &= ~B_PENDING; 
 
 	assert(stage >= 0 && stage <= 3); 
 
@@ -3611,8 +3618,8 @@ Dynamic_Execution::Dynamic_Execution(Link &link,
 
 Execution::Proceed Dynamic_Execution::execute(Execution *, const Link &link)
 {
-	assert(bits & B_PENDING);
-	bits &= ~B_PENDING; 
+//	assert(bits & B_PENDING);
+//	bits &= ~B_PENDING; 
 
 	Proceed proceed= Execution::execute_base(link, done); 
 	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {

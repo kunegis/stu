@@ -1,5 +1,3 @@
-# * Implement the PENDING bit in random mode
-#
 # (1) bug when run without options
 # (2) Run with -m random 
 

@@ -1387,11 +1387,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 			return proceed_all;
 		}
 	} else {
-		/* We didn't get to check all children, and if we return
-		 * before the RANDOM call to execute_children(), this
-		 * will be set.  */
-		if (! children.empty()) 
-			proceed_all |= P_BIT_PENDING; 
+		proceed_all |= P_BIT_PENDING; 
 	}
 
 	// TODO put this *before* the execution of already-opened
@@ -1414,6 +1410,8 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	 */ 
 
 	if (jobs == 0) {
+		if (proceed_all & P_BIT_WAIT) 
+			proceed_all &= ~P_BIT_PENDING;
 		return proceed_all;
 	}
 

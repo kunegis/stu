@@ -1383,7 +1383,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 		}
 	}
 
-	// TODO but this *before* the execution of already-opened
+	// TODO put this *before* the execution of already-opened
 	// children. 
 	if (optional_finished(link2)) {
 		return proceed_all;
@@ -1403,7 +1403,6 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	 */ 
 
 	if (jobs == 0) {
-//		assert(proceed_all & P_BIT_WAIT); 
 		return proceed_all;
 	}
 
@@ -2537,7 +2536,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 
 	/* Job has already been started */ 
 	if (job.started_or_waited()) {
-		assert(false); 
+//		assert(false); 
 		return proceed | P_BIT_WAIT;
 	}
 

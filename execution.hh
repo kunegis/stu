@@ -42,7 +42,12 @@ public:
 	enum {
 	
 		P_BIT_WAIT =     1 << 0,
+		/* There's more to do, which can only be started after
+		 * having waited for a finishing jobs.  */
+
 		P_BIT_PENDING =  1 << 1,
+		/* The function execute() should be called again for
+		 * this execution at least.  */
 
 		// TODO rename them, removing the "_BIT" part. 
 
@@ -768,7 +773,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 						Verbose::padding());
 				}
 				proceed= root_execution->execute(nullptr, move(link));
-				assert(Single_Execution::executions_by_pid.empty() == ! (proceed & P_BIT_WAIT)); 
+//				assert(Single_Execution::executions_by_pid.empty() == ! (proceed & P_BIT_WAIT)); 
 //				assert(! (root_execution->bits & B_PENDING)
 //				       == ! (proceed & P_BIT_PENDING)); 
 			} while (proceed & P_BIT_PENDING); 
@@ -1381,6 +1386,12 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 			}
 			return proceed_all;
 		}
+	} else {
+		/* We didn't get to check all children, and if we return
+		 * before the RANDOM call to execute_children(), this
+		 * will be set.  */
+		if (! children.empty()) 
+			proceed_all |= P_BIT_PENDING; 
 	}
 
 	// TODO put this *before* the execution of already-opened
@@ -1419,10 +1430,11 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 
 	if (order == Order::RANDOM) {
 		Proceed proceed_2= execute_children(link2, done_here);
-		if (proceed_2 & P_BIT_WAIT)
-			return proceed_2;
+		proceed_all |= proceed_2; 
+		if (proceed_all & P_BIT_WAIT)
+			return proceed_all;
 		if (finished(done_here) && ! option_keep_going) {
-			return proceed_2;
+			return proceed_all;
 		}
 	}
 

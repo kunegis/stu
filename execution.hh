@@ -1889,8 +1889,7 @@ Execution *Execution::get_execution(const Target &target,
 
 void Execution::copy_result(Execution *parent, Execution *child)
 {
-	...; // XXX
-	parent->result= child->result; 
+	parent->result.append(child->result);
 }
 
 //void Execution::set_pending()

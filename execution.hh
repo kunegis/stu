@@ -727,11 +727,7 @@ private:
 	Stack done;
 	/* Same semantics as in Single_Execution */ 
 
-	shared_ptr <Rule> param_rule;
-	/* The (possibly parametrized) rule from which this execution
-	 * was derived.  This is only used to detect strong cycles.  To
-	 * manage the dependencies, the instantiated general rule is
-	 * used.  Null if and only if RULE is null.  */ 
+//	shared_ptr <Rule> param_rule;
 
 //	void read_dynamic_dependency(Stack avoid_this, shared_ptr <Dependency> dependency_this);
 //	/* Read dynamic dependencies from a file.  Called for the parent
@@ -1042,10 +1038,6 @@ bool Execution::find_cycle(const Execution *const parent,
 	if (dynamic_cast <const Root_Execution *> (parent))
 		return false;
 		
-	/* Happens with files that should be there and have no rule */ 
-//	if (child->get_param_rule() == nullptr)
-//		return false; 
-
 	vector <const Execution *> path;
 	path.push_back(parent); 
 
@@ -1288,7 +1280,10 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 
 		proceed_all |= proceed_child; 
 
-		if (child->finished(done_here)) {
+		if (child->finished(
+				    avoid_child
+//				    done_here
+				    )) {
 			unlink(this, child, 
 			       link.dependency,
 			       link.avoid, 
@@ -2249,12 +2244,6 @@ bool Single_Execution::finished(Stack avoid) const
 {
 	assert(done.get_depth() == 0); 
 	assert(avoid.get_depth() == 0); 
-
-//	Flags to_do_aggregate= 0;
-	
-//	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
-//		to_do_aggregate |= ~done.get(j) & ~avoid.get(j); 
-//	}
 
 	return ((~done.get(0) & ~avoid.get(0)) & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }

@@ -95,6 +95,12 @@
 #   grepping while the tests are running.
 # * Tests use 'diff' to compare files, not 'cmp'. 
 #
+# TODO
+#
+# * For each test, interrupt the test after a specified timeout, to
+#   avoid that the whole testing procedure hangs when a single test
+#   hangs. 
+#
 
 # Note:  we can't use "set -e" here (which is a good general practice in
 # shell scripts), because otherwise we can't use $? to check the exit

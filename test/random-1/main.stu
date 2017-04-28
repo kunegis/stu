@@ -1,0 +1,19 @@
+# Run with -m random:  Check that 'C' is not built twice.  (And also
+# that both 'B' and 'C' are built.  The order of building 'B' and 'C' is
+# unspecified. 
+
+>A:  B C 
+{
+	cat B C 
+}
+
+B { echo bbb >B ; }
+
+C { 
+	[ -e C ] && {
+		echo >&2 '*** C must not exist'
+		exit 1
+	}
+	echo ccc >C ; 
+}
+

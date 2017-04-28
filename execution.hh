@@ -1372,11 +1372,10 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	Proceed proceed_all= P_CONTINUE; 
 
 	if (order != Order::RANDOM) {
-		Proceed proceed= execute_children(link2, done_here);
-		proceed_all |= proceed;
-		if (proceed_all & P_BIT_WAIT) {
+		Proceed proceed_2= execute_children(link2, done_here);
+		proceed_all |= proceed_2;
+		if (proceed_all & P_BIT_WAIT) 
 			return proceed_all; 
-		}
 		if (finished(link2.avoid) && ! option_keep_going) {
 			if (option_debug) {
 				string text_target= debug_text(); 
@@ -1386,9 +1385,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 			}
 			return proceed_all;
 		}
-	} else {
-		proceed_all |= P_BIT_PENDING; 
-	}
+	} 
 
 	// TODO put this *before* the execution of already-opened
 	// children. 
@@ -1410,8 +1407,8 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	 */ 
 
 	if (jobs == 0) {
-		if (proceed_all & P_BIT_WAIT) 
-			proceed_all &= ~P_BIT_PENDING;
+//		if (proceed_all & P_BIT_WAIT) 
+//			proceed_all &= ~P_BIT_PENDING;
 		return proceed_all;
 	}
 
@@ -1423,6 +1420,9 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 		buffer_trivial.push(dependency_child_overridetrivial); 
 		Proceed proceed_2= execute_deploy(link2, dependency_child);
 		proceed_all |= proceed_2;
+
+		if (jobs == 0)
+			return proceed_all; 
 	} 
 	assert(buffer_default.empty()); 
 
@@ -2541,6 +2541,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 	assert(children.empty()); 
 
 	if (finished(link.avoid)) {
+		assert(!(proceed & P_BIT_WAIT)); 
 		return P_CONTINUE; 
 	}
 

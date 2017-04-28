@@ -1,4 +1,4 @@
-STU(1)                                                                  STU(1)
+STU(1)                        University of Namur                       STU(1)
 
 
 
@@ -10,19 +10,21 @@ SYNOPSIS
 
 DESCRIPTION
        Stu  is  a  tool  for  build automation.  Like Make, it is used to call
-       other programs in order to build files.  Stu has two features that  set
-       it  apart  from  Make: (1) dynamic dependencies:  The dependencies of a
-       target can be themselves computed by a command.  When  '[FILENAME]'  (a
-       filename  currounded  by  angle  brackets) is used as a dependency, Stu
-       will build the file FILENAME and read dependencies from it.  (2) Param‐
-       eters:   Names  of files (and transient targets) can contain parameters
-       written using dollar syntax.  For example, a rule with a  target  file‐
-       name  'list.$name'  will be used to build any file matching the pattern
-       'list.*', and the parameter $name can be used in names of  dependencies
-       and  in  the  build command.  Targets may contain any number of parame‐
-       ters.
+       other programs in order to build files.  Stu  has  two  three  features
+       that  work  in  conjunction to allow contructs impossible to realize in
+       Make: (1) dynamic dependencies:  The dependencies of a  target  can  be
+       themselves  computed  by a command.  When '[FILENAME]' (a filename cur‐
+       rounded by angle brackets) is used as a dependency, Stu will build  the
+       file FILENAME and read dependencies from it.  (2) Parameters:  Names of
+       files (and transient targets) can contain parameters written using dol‐
+       lar  syntax.   For  example, a rule with a target filename 'list.$name'
+       will be used to build any file matching the pattern 'list.*',  and  the
+       parameter  $name  can be used in names of dependencies and in the build
+       command.  Targets may contain any number of parameters.  (3) Concatena‐
+       tion:   Stu allows expressions such as list.[FILENAME] and list.(a b c)
+       to construct a list of files following a certain patterns.
 
-       In general, Stu is very much like Make:  Instead of a  'Makefile',  one
+       At its core, Stu is very much like Make: Instead of a  'Makefile',  one
        uses a file named 'main.stu', which is read by Stu. Also like Make, Stu
        will build the first target it finds, except if given an explicit  tar‐
        get  to  built.   Stu is designed to follow the conventions of Make, of
@@ -774,35 +776,36 @@ ENVIRONMENT
               If set, Stu calls the shell from the given location  instead  of
               '/bin/sh'.   The given shell must support the -e and -c options.
               This is mainly useful on systems where '/bin/sh' is not a  POSIX
-              shell.
+              shell.  Stu ignores the $SHELL variable, like Make does, as that
+              variable is only intended to set the user's interactive shell.
 
        STU_STATUS
-              Stu  sets  this variable to '1' in all child processes. In order
-              to avoid recursive invocation of Stu, Stu will fail  on  startup
-              when  the  variable  is set. To circumvent this, unset the vari‐
+              Stu sets this variable to '1' in all child processes.  In  order
+              to  avoid  recursive invocation of Stu, Stu will fail on startup
+              when the variable is set. To circumvent this,  unset  the  vari‐
               able.  Recursive Stu is as harmful as recursive Make.
 
-       TERM   Used to determine whether to use color  output.   This  variable
+       TERM   Used  to  determine  whether to use color output.  This variable
               must be set to a value different from 'dumb', and isatty(3) must
               return 1 for color to be enabled.
 
 
 SIGNALS
        SIGUSR1
-              When received, Stu will output a list of currently running  jobs
-              on  standard  output, and statistics about runtime, in a similar
-              way to the -z option.  The reported runtimes include  only  jobs
-              that  have  already  terminated,  and  exclude currently running
+              When  received, Stu will output a list of currently running jobs
+              on standard output, and statistics about runtime, in  a  similar
+              way  to  the -z option.  The reported runtimes include only jobs
+              that have already  terminated,  and  exclude  currently  running
               jobs.  Multiple SIGUSR1 signals sent in succession may result in
               output only printed once.
 
 
 CONFORMING TO
-       The  Stu  language  is  unique to this implementation, and the man page
+       The Stu language is unique to this implementation,  and  the  man  page
        serves as the reference for its syntax.
 
        Stu follows Semantic Versioning (semver.org).  The major version number
-       is  increased  when  backward-incompatible changes are made.  The minor
+       is increased when backward-incompatible changes are  made.   The  minor
        version number is increased when features are added. The patch level is
        increased for other changes.
 
@@ -810,22 +813,22 @@ CONFORMING TO
 EXAMPLES
        This section contains more advanced examples of Stu usage.
 
-       The  following  declaration  tells  Stu  that  the file 'config.h' must
+       The following declaration tells  Stu  that  the  file  'config.h'  must
        exist, and will allow Stu to give more meaningful error messages if the
        file is not found.
 
            config.h;
 
-       Input  and output redirection can be used to write commands that invoke
-       a filter such as sed, awk or tr.  The following example will build  the
-       'A' containing the string 'HELLO':
+       Input and output redirection can be used to write commands that  invoke
+       a  filter such as sed, awk or tr.  The following example will build the
+       file 'A' containing the string 'HELLO':
 
-           >A: <B { tr a-z A-Z }
-           >B { echo hello }
+           >A: <B { tr a-z A-Z ; }
+           B = { hello }
 
        Variable dependencies may be included indirectly through transient tar‐
-       gets without commands, and through dynamic dependencies.  In  the  fol‐
-       lowing  example, the variable $V will be passed through to the commands
+       gets  without  commands, and through dynamic dependencies.  In the fol‐
+       lowing example, the variable $V will be passed through to the  commands
        for the targets A and B:
 
            V: { echo Hello >V }
@@ -834,10 +837,10 @@ EXAMPLES
            A: @x { echo $V >A }
            B: [y] { echo $V >B }
 
-       Trivial dependencies are often combined with variable  dependencies  to
-       implement  flags, for instance to a compiler, as in the following exam‐
-       ple. This will make sure that a change in the file 'VERSION'  will  not
-       lead  to a recompilation of the program, but if 'program.c' is modified
+       Trivial  dependencies  are often combined with variable dependencies to
+       implement flags, for instance to a compiler, as in the following  exam‐
+       ple.  This  will make sure that a change in the file 'VERSION' will not
+       lead to a recompilation of the program, but if 'program.c' is  modified
        and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt.
 
            VERSION; # Contains the version number; updated by hand
@@ -845,11 +848,11 @@ EXAMPLES
            program:  program.c $[-t CFLAGS] { gcc $CFLAGS program.c -o program
        }
 
-       Copy  rules  are  often used to copy a file from another directory into
-       the current directory.  If both files have the same name, the  name  of
+       Copy rules are often used to copy a file from  another  directory  into
+       the  current  directory.  If both files have the same name, the name of
        the source file can be omitted.
 
-           #  Copy  the file bsd/config.h to the current directory.  The slash
+           # Copy the file bsd/config.h to the current directory.   The  slash
        at
            # the end of the directory name is not necessary, but provides a
            # useful hint to the reader.
@@ -864,7 +867,7 @@ EXAMPLES
            # delivered with the project is always used.
            config.h = -o /usr/share/project/;
 
-       The  -C  option allows to pass any dependency in Stu syntax, and there‐
+       The -C option allows to pass any dependency in Stu syntax,  and  there‐
        fore can be used in some advanced use cases:
 
            stu -C '-o X' # Re-build file 'X' only if it already exists
@@ -900,8 +903,8 @@ EXAMPLES
 
        (of course, you can also type that directly or use 'sh -c', etc.)
 
-       Using  the  -i option, Stu commands can read from their standard input.
-       For instance, the following will read a line from the user and use  it.
+       Using the -i option, Stu commands can read from their  standard  input.
+       For  instance, the following will read a line from the user and use it.
        This cannot be used in conjunction with the -j option (except for -j1).
 
            >config.h: {
@@ -912,8 +915,9 @@ EXAMPLES
 
 
 BUGS
-       Filenames  in Stu are literal.  Stu does not recognize it when two dif‐
-       ferent names refer to the same file.
+       Filenames in Stu are literal.  Stu does not recognize it when two  dif‐
+       ferent names refer to the same file.  For instance, Stu does not notice
+       that "config.h" and "./config.h" refer to the same file.
 
        The argument to the -j option (number of jobs to run  in  parallel)  is
        mandatory,  as  opposed  to the behavior of GNU Make, where no argument
@@ -924,7 +928,7 @@ BUGS
        but would open up problems  related  to  infinite  loops,  which  would
        require Stu to have a maximal recursion depth.
 
-       When the command fails and its target is a directory, Stu cannot remove
+       When  a  command fails and its target is a directory, Stu cannot remove
        the directory as it does for regular files.
 
        Changing a command within a Stu file will not make  the  target  to  be
@@ -957,7 +961,7 @@ AUTHOR
 
 
 SEE ALSO
-       make(1), cook(1)
+       make(1), cook(1), sh(1)
 
 
 

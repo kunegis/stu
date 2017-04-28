@@ -1,17 +1,3 @@
-# * Run with -m random 
-
->A:  B C 
-{
-	cat B C 
-}
-
-B { echo bbb >B ; }
-
-C { 
-	[ -e C ] && {
-		echo >&2 '*** C must not exist'
-		exit 1
-	}
-	echo ccc >C ; 
-}
-
+A: [B] { cp C A ; }
+B      { echo C >B ; }
+C      { echo correct >C ; }

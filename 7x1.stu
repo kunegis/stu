@@ -1,3 +1,5 @@
+# * Dynamic_Execution::propagate_to_dynamic():  management of Execution::results
+
 A:  [[B]] {
 	cp D A
 }

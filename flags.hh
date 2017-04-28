@@ -10,7 +10,7 @@
  * object of this type.  This contains bits related to what should be
  * done with the dependency, whether time is considered, etc.  The flags
  * are defined in such a way that the simplest dependency is
- * represented by zero, and each flag enables an optional feature.  
+ * represented by zero, and each flag enables a specific feature.  
  *
  * The transitive bits effectively are set for tasks not to do.
  * Therefore, inverting them gives the bits for the tasks to do.   

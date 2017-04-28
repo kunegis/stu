@@ -390,7 +390,13 @@ public:
 	virtual bool finished(Stack avoid) const; 
 
 	static unordered_map <pid_t, Single_Execution *> executions_by_pid;
-	/* The currently running executions by process IDs */ 
+	/*
+	 * The currently running executions by process IDs.  Write
+	 * access to this is enclosed in a Signal_Blocker.
+	 */ 
+	// TODO have a dedicated array for the list of currently running
+	// PIDs, and maintain an atomic pid_count to maintain the list,
+	// to avoid access a stdlib container from a signal handler. 
 
 	static void wait();
 	/* Wait for next job to finish and finish it.  Do not start anything
@@ -1883,6 +1889,7 @@ Execution *Execution::get_execution(const Target &target,
 
 void Execution::copy_result(Execution *parent, Execution *child)
 {
+	...; // XXX
 	parent->result= child->result; 
 }
 
@@ -3672,27 +3679,25 @@ void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 					     shared_ptr <Dependency> dependency_child)
 /* A left branch child is done */
 {
-	(void) child; 
+	(void) child; // TODO remove arg if unused 
 	
 	assert(flags_child & F_DYNAMIC_LEFT); 
-//	assert(dynamic_pointer_cast <Single_Dependency> (dependency_child)
-//	       && dynamic_pointer_cast <Single_Dependency> (dependency_child)
-//	       ->place_param_target.type == Type::FILE);
 	assert(dependency_this->get_individual_target().type.is_dynamic());
 
-	/* Even if the child produced an error, we still want to read
+	/* Even if the child produced an error, we still read
 	 * its partially assembled list of filenames.  */
 
 	/* 
 	 * There are two cases:
-	 *  - This is a singly dynamic file:  read out the file here. 
+	 *  - This is a singly dynamic file:  read out the file in this
+	 *    function. 
 	 *  - Any other dynamic:  start, as right branch, the list of
 	 *    the child with our own outer dynamic layer added. 
 	 */
 
 	try {
 		shared_ptr <Single_Dependency> single_dependency_child=
-		dynamic_pointer_cast <Single_Dependency> (dependency_child);
+			dynamic_pointer_cast <Single_Dependency> (dependency_child);
 
 		if (single_dependency_child &&
 		    single_dependency_child->place_param_target.type == Type::FILE) {
@@ -3703,7 +3708,8 @@ void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 			 * we would start, as a right branch, the same
 			 * execution as ourselves.  */ 
 
-			const Target target= dependency_this->get_individual_target().unparametrized(); 
+			const Target target= dependency_this->
+				get_individual_target().unparametrized(); 
 			assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
 
 			vector <shared_ptr <Dependency> > dependencies;

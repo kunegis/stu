@@ -1,0 +1,98 @@
+Stu does not fit any existing software category neatly.  As such, it is
+often compared with very diverse systems. 
+
+== List of Tools == 
+
+The following list gives competing system and explains their different
+from Stu. 
+
+This list is currently a work in progress; items are added
+sporadically.  The list is far from being complete. 
+
+The list should be converted to a table with feature comparisons. 
+________________________________________________________________________
+
+Make and its many implementations and extensions 
+  - Standardized
+  - Has single unnamed parameter with %
+  - No dynamic dependencies, but dialects allow certain tricks to
+    emulate it, e.g. using 'include' with GNU Make
+
+mk
+
+Cook 
+  - Has numbered parameters %1 %2 %2 ...
+  - Sort-of has dynamic dependencies using:   NAME [cat NAME]
+
+Ant
+  - Java-specific 
+  - No dynamic dependencies; Java plugins can be written instead 
+
+Maven 
+  - Java-specific
+
+Jenkins
+  - For software building/deploying/etc. 
+
+https://github.com/threatgrid/declarative.bash
+
+Chef
+  - Software building
+  - Proprietary 
+
+SCons
+
+Rake
+
+Ansible
+  - Software building 
+
+Puppet 
+  - Configuration management 
+
+Fabric
+
+Hudson
+
+Gradle
+
+A-A-P
+
+BitBake 
+
+Perforce Jam
+
+Waf 
+
+Buck 
+
+Ninja - https://ninja-build.org/
+
+== Type of Tools ==
+
+* Build automation:  focused on software build 
+
+* Declarative programming:  uses variables, not files 
+
+* Shell:  Is imperative, not declarative 
+
+* Configuration management
+
+* Logic programming 
+
+* Functional programming:  Cf. the fact that individual files in Stu can
+  be programs, too; i.e., the different between variable and function is
+  eliminated 
+
+== Descriptions of Stu ==
+
+The following are attempts to describe what Stu is.
+
+________________________________________________________________________
+
+* A build tool like Make, but with better support for sets of files
+* A declarative programming language in which all objects are files
+* A declarative extension of the shell
+* A build automation tool for data mining
+* A data mining automation tool 
+

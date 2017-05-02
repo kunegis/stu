@@ -20,16 +20,6 @@
 #
 
 #
-# Line number and file syntax:  A preprocessor-like construct that gives a new
-# filename and line number, such that error messages from Stu can point
-# to the original file, not the generated file.  Analogous to the
-# preprocessors #line directive.  Useful in dynamic dependencies. 
-#
-
-% file datasets.list
-% line 120
-
-#
 # When accessing directories, maybe use not mtime, but something else?
 #
 # * when stat() succeeds and the file is a directory, use creation time

@@ -50,7 +50,7 @@ A.$X.$Y:  $X * .$Y      # OK
 # Copy all *.dat files to the backup/ directory, but only if they don't
 # exist yet, or if they have changed. 
 @all: backup/[FILES];
->FILES: { echo *.dat }
+>FILES: { echo *.dat ; }
 dest/$file = $file;
 
 # The following has ambiguous syntax.  Define and document it to have
@@ -573,6 +573,18 @@ A: -P B;
 #
 
 #
+# Line number and file syntax:  A preprocessor-like construct that gives a new
+# filename and line number, such that error messages from Stu can point
+# to the original file, not the generated file.  Analogous to the
+# preprocessors #line directive.  Useful in dynamic dependencies. 
+#
+
+% file datasets.list
+% line 120
+
+# Use this in texdep and other stu-utils programs judiciously. 
+
+#
 # A 'why' option that shows why things are built.
 #
 
@@ -595,3 +607,4 @@ A: -P B;
 # An option that make Stu rebuild everything, regardless of status. (-B,
 # like GNU Make)   
 #
+

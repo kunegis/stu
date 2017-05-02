@@ -1,9 +1,3 @@
-# * Dynamic_Execution::propagate_to_dynamic():  management of Execution::results
-# ** When a result item gets known, add to th own result list, and
-#    percolate it to the DYNAMIC_LEFT parents. 
-# ** When a new DYNAMIC_LEFT link is created, percolate all current
-#    result items of the child to the parent.  (using copy_result()) 
-
 A:  [[B]] {
 	cp D A
 }

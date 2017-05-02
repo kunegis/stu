@@ -159,9 +159,9 @@ C = { 1 2 3 }
 list.$n;
 
 # Start building 'list.C' immediately, and 'list.D' later. 
-A:  list.([B] C) { ... }
+A:  list.([B] C) { ... ; }
 B = { sleep 1 ; echo D ; }
-list.$n;
+>list.$n { echo "$n" ; }
 
 # Should this mean 'list.', or an empty list as dependencies of 'A'?  It
 # should mean an empty list. 
@@ -203,6 +203,18 @@ E = { echo eee >E ; }
 B = {bbb}
 C = {1 2 3}
 >list.$n { echo "$n$n$n" ; }
+
+# Execute with -j2 
+A:  C X [[B]] { cat C X D >A ; }
+B {           echo C   >B ; }
+C { sleep 2 ; echo D   >C ; }
+X { sleep 1 ; echo xxx >X ; }
+
+# Execute with -j2 
+A:  [C] X [[B]] { cat C X D >A ; }
+B {           echo C   >B ; }
+C { sleep 2 ; echo D   >C ; }
+X { sleep 1 ; echo xxx >X ; }
 
 #
 # Make sure that in -j2 -k mode, the "successfully built" message is

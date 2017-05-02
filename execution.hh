@@ -154,7 +154,7 @@ protected:
 	vector <shared_ptr <Single_Dependency> > result; 
 	/* The final list of dependencies represented by the target.
 	 * This does not include any dynamic dependencies, i.e., all
-	 * dependencies are Single_Dependency's.  */
+	 * dependencies are flattened to Single_Dependency's.  */
 
 	shared_ptr <Rule> param_rule;
 	/* The (possibly parametrized) rule from which this execution
@@ -3773,6 +3773,10 @@ void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 
 				assert(avoid_this.get_depth() == 0); 
 
+				...;// XXX:
+				// put dependencies into own RESULT and percolate them up the dependency chain. 
+
+				...; // XXX only if we have a right branch. 
 				push_default(dd); 
 			}
 				

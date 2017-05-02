@@ -154,7 +154,9 @@ protected:
 	vector <shared_ptr <Single_Dependency> > result; 
 	/* The final list of dependencies represented by the target.
 	 * This does not include any dynamic dependencies, i.e., all
-	 * dependencies are flattened to Single_Dependency's.  */
+	 * dependencies are flattened to Single_Dependency's.  Not used
+	 * for single executions that have file targets, neither for
+	 * single executions that have multiple targets.  */ 
 
 	shared_ptr <Rule> param_rule;
 	/* The (possibly parametrized) rule from which this execution
@@ -221,6 +223,8 @@ protected:
 //	void set_pending(); 
 //	/* Set the PENDING bit for this execution and all parents
 //	 * recursively */
+
+	void push_result(shared_ptr <Dependency> dd);
 
 	virtual ~Execution(); 
 
@@ -709,8 +713,8 @@ public:
 
 	void propagate_to_dynamic(Execution *child,
 				  Flags flags_child,
-				  Stack avoid_parent,
-				  shared_ptr <Dependency> dependency_parent,
+				  Stack avoid_this,
+				  shared_ptr <Dependency> dependency_this,
 				  shared_ptr <Dependency> dependency_child);
 	/* Propagate dynamic dependencies from CHILD to its parent (THIS)  */ 
 
@@ -1889,17 +1893,55 @@ Execution *Execution::get_execution(const Target &target,
 
 void Execution::copy_result(Execution *parent, Execution *child)
 {
-	parent->result.append(child->result);
+	/* Check that the child is not of a type for which RESULT is not
+	 * used */
+	if (dynamic_cast <Single_Execution *> (child)) {
+		Single_Execution *single_child= dynamic_cast <Single_Execution *> (child);
+		assert(single_child->targets.size() == 1 &&
+		       single_child->targets.at(0).type == Type::TRANSIENT); 
+	}
+
+	for (auto &i:  child->result) {
+		parent->result.push_back(i);
+	}
 }
 
-//void Execution::set_pending()
-//{
-//	bits |= B_PENDING; 
-//
-//	for (auto &i:  parents) {
-//		i.first->set_pending(); 
-//	}
-//}
+void Execution::push_result(shared_ptr <Dependency> dd)
+{
+	shared_ptr <Single_Dependency> single_dd= 
+		dynamic_pointer_cast <Single_Dependency> (dd); 
+	
+	if (single_dd) 
+		result.push_back(single_dd); 
+	
+	for (auto &i:  parents) {
+
+		Execution *parent= i.first;
+		const Link &link= i.second;
+
+		Single_Execution *single_parent= dynamic_cast <Single_Execution *> (parent);
+
+		const bool via_transient= 
+			single_parent && single_parent->targets.size() == 1 &&
+			single_parent->targets.at(0).type == Type::TRANSIENT; 
+
+		if (via_transient ||
+		    ((link.flags & F_DYNAMIC_LEFT) &&
+		     ~(link.flags & F_RESULT_ONLY))) {
+			parent->push_result(dd); 
+		} 
+
+		
+		if ((link.flags & F_DYNAMIC_LEFT) &&
+		     ~(link.flags & F_RESULT_ONLY)) {
+			shared_ptr <Dependency> dd_right= 
+				Dependency::clone_dependency(dd);
+			dd_right->flags |= F_DYNAMIC_RIGHT;
+			assert(! (dd_right->flags & F_DYNAMIC_LEFT)); 
+			parent->push_default(dd_right);
+		}
+	}
+}
 
 Single_Execution::~Single_Execution()
 /* Objects of this type are never deleted */ 
@@ -3673,7 +3715,7 @@ bool Dynamic_Execution::want_delete() const
 
 void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 					     Flags flags_child,
-					     Stack avoid_parent,
+					     Stack avoid_this,
 					     shared_ptr <Dependency> dependency_this,
 					     shared_ptr <Dependency> dependency_child)
 /* A left branch child is done */
@@ -3713,7 +3755,7 @@ void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 
 			vector <shared_ptr <Dependency> > dependencies;
 
-			read_dynamic(avoid_parent, 
+			read_dynamic(avoid_this, 
 				     dynamic_pointer_cast <Dynamic_Dependency> (dependency_this), 
 				     dependencies);
 
@@ -3735,10 +3777,10 @@ void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 					p= dynamic_dependency->dependency;   
 				}
 
-				Stack avoid_this= avoid_parent;
-				assert(vec.size() == avoid_this.get_depth());
-				avoid_this.pop(); 
-				dd->add_flags(avoid_this.get_lowest()); 
+				Stack avoid_this2= avoid_this;
+				assert(vec.size() == avoid_this2.get_depth());
+				avoid_this2.pop(); 
+				dd->add_flags(avoid_this2.get_lowest()); 
 				if (dd->get_place_flag(I_PERSISTENT).empty())
 					dd->set_place_flag
 						(I_PERSISTENT,
@@ -3756,8 +3798,8 @@ void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 						 ->get_place_flag(I_TRIVIAL)); 
 
 				for (Type k= target.type - 1;  k.is_dynamic();  --k) {
-					avoid_this.pop(); 
-					Flags flags_level= avoid_this.get_lowest(); 
+					avoid_this2.pop(); 
+					Flags flags_level= avoid_this2.get_lowest(); 
 					dd= make_shared <Dynamic_Dependency> 
 						(flags_level, dd); 
 					dd->set_place_flag
@@ -3771,13 +3813,13 @@ void Dynamic_Execution::propagate_to_dynamic(Execution *child,
 						 vec[k.get_depth() - 1]->get_place_flag(I_TRIVIAL)); 
 				}
 
-				assert(avoid_this.get_depth() == 0); 
+				assert(avoid_this2.get_depth() == 0); 
 
-				...;// XXX:
-				// put dependencies into own RESULT and percolate them up the dependency chain. 
+				push_result(dd); 
 
-				...; // XXX only if we have a right branch. 
-				push_default(dd); 
+				if (! (avoid_this.get_highest() & F_RESULT_ONLY)) {
+					push_default(dd); 
+				}
 			}
 				
 		} else {

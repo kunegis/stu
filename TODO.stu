@@ -2,44 +2,42 @@
 # Concatenation [2.5]
 #
 
-A:  B * C;    	        # Binary multiplication operator
-A:  B * (C D); 	        # Parentheses
+A:  B(C);    	        
+A:  B(C D); 	        # Parentheses
 A:  B[C];      	        # Juxtaposition
 A:  [B]C;      	        # OK
 A:  B(C D);    	        # OK
 A:  B(C D)E;   	        # OK
 A:  B[C]D;     	        # OK
-A:  [B] * [C]; 	        # OK
-A:  (A B) * (C D); 	# OK
+A:  [B][C]; 	        # OK
+A:  (A B)(C D); 	# OK
 A:  [B][C];             # OK
-A:  (A B)(C D);         # OK
-A:  (-p B) * (C);    	# OK
-A:  (-o B) * (C);    	# OK
-A:  (B) * (-p C);    	# error
-A:  (B) * (-o C);    	# error
-A:  (-o B) * (-p C);   	# error
-A:  (<B) * (C);    	# OK
-A:  (B) * (<C);    	# error
+A:  (-p B)(C);    	# OK
+A:  (-o B)(C);    	# OK
+A:  (B)(-p C);    	# error
+A:  (B)(-o C);    	# error
+A:  (-o B)(-p C);   	# error
+A:  (<B)(C);    	# OK
+A:  (B)(<C);    	# error
 A:  -p B(C D);       	# OK
 A:  -o B(C D);       	# OK
 A:  <B(C);         	# OK
 A:  <B(C D);       	# error
 A:  @B(C);         	# OK
 A:  @B(C D);     	# OK
-A:  B * @C;      	# error 
-A:  $[B] * C;    	# error
-A:  B * $[C];    	# error
-A:  <B * C;      	# OK (or maybe:  ambiguous)
-A:  B * <C;      	# error
-A:  <B[C];		# OK iff C contains exactly one dependency (or an error)
+A:  (B)(@C);      	# error 
+A:  ($[B])(C);    	# error
+A:  (B)($[C]);    	# error
+A:  <B(C);      	# OK 
+A:  (B)(<C);      	# error
+A:  (B)<C;              # OK, two distinct dependencies 'B' and 'C' (with input redirection)
+A:  <B[C];		# OK iff C contains exactly one dependency (otherwise an error)
 @A: @B[C];       	# OK
-A:  B@C;		# error
-A.$X.$Y:  $X * $Y       # OK (can be contiguous)
-A.$X.$Y:  $X.a * b.$X   # OK (despite duplicate parameter) 
-A.$X.$Y:  $X. * $Y      # OK
-A.$X.$Y:  $X * .$Y      # OK
-
-# More examples
+A:  B@C;		# error, or not concatenation 
+A.$X.$Y:  ($X)($Y)      # OK (can be contiguous)
+A.$X.$Y:  ($X.a)(b.$X)  # OK (despite duplicate parameter) 
+A.$X.$Y:  ($X.)($Y)     # OK
+A.$X.$Y:  ($X)(.$Y)     # OK
 
 @headers:  (config parse build).h
 
@@ -84,7 +82,7 @@ A:  (X Y)(W Z);
 A: [[X]](Y);  
 
 A:  A(-o B);  # Error 
-A:  A[-o B];  # When B does not exist:  empty dependency list?
+A:  A[-o B];  # When B does not exist:  empty dependency list. 
 
 A:  @B(C);    # OK
 A:  B(@C);    # Error
@@ -106,7 +104,7 @@ A:  list.[X Y Z];   # Same as list.( [X] [Y] [Z] ):  9 variants
 A:  list.[X][Y][Z]; # Multiple all together:  27 variants 
 
 A:  ((X)(Y))(Z);
-A:  (X)((Y)(Z); 
+A:  (X)((Y)(Z)); 
 
 A:  X(Y);   # OK
 A:  [X][Y]; # OK
@@ -123,8 +121,6 @@ A:  [X][[Y][Z]];
 A:  [[X][Y]][Z];
 
 A:  list.(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2); 
-
-# Update the man page
 
 A:  [ (X) (Y) (Z) ]; 
 A:  list.((((((((((X)))))))))); 
@@ -172,16 +168,15 @@ B = { }
 A:  -o B { touch A ; }
 B { exit 1 ; }
 
-# Should we allow this?
+# Should we allow this?  Yes.  Since 'C' is empty, this is an empty
+# dependency. 
 A: @[C]
 {
 	touch A
 }
-C { touch C }
+C { touch C ; }
 
-# Concatenation in debug mode 
-
-# String cycle in the context of concatenation 
+# Strong cycle in the context of concatenation 
 A:  list.[B];
 B = {C}
 list.C:  A; 
@@ -216,6 +211,22 @@ B {           echo C   >B ; }
 C { sleep 2 ; echo D   >C ; }
 X { sleep 1 ; echo xxx >X ; }
 
+# Transients don't pass dependencies for dynamics when they are in a
+# rule with multiple targets.
+# This example succeeds; 'D' is not built. 
+A: [@x] { cat B C >A ; }
+@x B: C { cp C B ; }
+C = {D}
+D { exit 1 ; }
+
+A: @[X] { cp C A ; }
+X = { y }
+@y: C;
+C = {correct}
+
+# * Update the man page
+# * Concatenation in debug mode 
+
 #
 # Make sure that in -j2 -k mode, the "successfully built" message is
 # output just once, when the rule that was run has multiple targets.
@@ -231,6 +242,10 @@ X { sleep 1 ; echo xxx >X ; }
 #
 
 A.$X$Y;
+
+#
+# Implement '*' as alternative for concatenation. 
+#
 
 #
 # When '*' is encountered in a file, show an explanation saying which

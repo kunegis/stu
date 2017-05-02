@@ -118,8 +118,6 @@ public:
 	/* Whether the dependency is normalized, according to the
 	 * definition given above.  */
 
-//	virtual shared_ptr <Dependency> clone_shallow() const= 0; 
-
 	static void make_normalized(vector <shared_ptr <Dependency> > &dependencies, 
 				    shared_ptr <Dependency> dependency);
 	/* Split the given DEPENDENCY into multiple DEPENDENCIES that do

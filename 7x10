@@ -1,0 +1,4 @@
+A:  -o [@x] { [ -e X ] && exit 1 ; touch A ; }
+@x:  B;
+B { echo X >B ; }
+# No rule for 'X'

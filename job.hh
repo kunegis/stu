@@ -740,6 +740,7 @@ Job::Signal::Signal()
  * no-op signal handler.  (Note that Linux does not discard such
  * signals, while FreeBSD does.)
  */  
+// TODO execute this only when needed, i.e., when something is started 
 {
 	/* 
 	 * Termination signals 

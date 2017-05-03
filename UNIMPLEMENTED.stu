@@ -620,3 +620,13 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 # when a job is executed.  Most also have dependency management
 # capabilities. 
 #
+
+#
+# A flag to ignore errors when a file already exists.  E.g. in the
+# example below, when Stu is called and 'B' already exists and
+# 'X'/'Y'/'Z' don't and cannot be generated, still consider 'B' up to
+# date, and call the command for 'A'. 
+#
+
+A:  -x B { cp B A ; }
+B: X Y Z { cat X Y Z >B ; }

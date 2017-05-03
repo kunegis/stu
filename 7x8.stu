@@ -1,0 +1,5 @@
+A: [@x] { cp D A ; }
+@x: @y; 
+@y: C;
+C { echo D >C ; }
+D { echo correct >D ; }

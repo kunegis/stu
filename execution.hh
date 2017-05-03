@@ -1349,13 +1349,14 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 			text_avoid.c_str()); 
 	}
 
-	/* Override the trivial flag */ 
 	Link link2{link}; 
+
+	/* Override the trivial flag */ 
 	if (link2.flags & F_OVERRIDE_TRIVIAL) {
 		link2.flags &= ~F_TRIVIAL; 
 		link2.avoid.rem_highest(F_TRIVIAL); 
 	}
-
+	
  	if (finished(link2.avoid)) {
 		if (option_debug) {
 			string text_target= debug_text(); 
@@ -1486,6 +1487,14 @@ Execution::Proceed Execution::execute_deploy(const Link &link,
 		++depth;
 		avoid_child.push();
 		avoid_child.add_lowest(dep->get_flags()); 
+	}
+
+	/* Remove the F_DYNAMIC_LEFT flag to the child, except in a
+	 * transient--X link  */ 
+	if ((link.flags & F_DYNAMIC_LEFT) &&
+	    ! (dynamic_pointer_cast <Single_Dependency> (link.dependency)
+	       && dynamic_pointer_cast <Single_Dependency> (link.dependency)->place_param_target.type == Type::TRANSIENT)) {
+		flags_child &= ~F_DYNAMIC_LEFT; 
 	}
 
 	if (dynamic_pointer_cast <Concatenated_Dependency> (dep)) {
@@ -1716,7 +1725,10 @@ void Execution::unlink(Execution *const parent,
 		 * and its child.  Add the right branch.  */
 
 		Dynamic_Execution *parent_dynamic= dynamic_cast <Dynamic_Execution *> (parent);
-		assert(parent_dynamic); 
+		Single_Execution *parent_single= dynamic_cast <Single_Execution *> (parent); 
+		assert(parent_dynamic || 
+		       (parent_single && parent_single->targets.size() == 1 &&
+			parent_single->targets.at(0).type == Type::TRANSIENT)); 
 
 		parent_dynamic->propagate_to_dynamic(child,
 						     flags_child,

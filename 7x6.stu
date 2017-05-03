@@ -1,0 +1,7 @@
+A:  [[@´]] { cp F A ; }
+F { echo correct >F ; }
+E { echo F >E ; }
+D { echo E >D ; }
+C { echo '[D]' >C ; }
+B { echo C >B ; }
+@´:  B;

@@ -34,6 +34,9 @@
 # Have a "clean" option that removes all files that can be rebuilt,
 # based on the given Stu file.
 # Ironically, this may need to build dynamic dependency files first. 
+# We may also just have a command line option to output a list of files
+# that can be rebuilt, for instance to initialize a .gitignore file or
+# similar. 
 #
 
 #
@@ -47,9 +50,11 @@
 #
 
 #
-# An option to ignore all errors, like POSIX Make's -i.  That's a really
+# An option to ignore all errors, like POSIX Make's -i.  That is a really
 # far-reaching feature.  Wait until someones tells us their use-case for
-# it. 
+# it.  My impression is that the corresponding feature of Make is used
+# mainly to execute broken Makefile.  One could instead insert "exit 0"
+# appropriately. 
 #
 
 #
@@ -60,9 +65,10 @@
 #
 
 #
-# Make the argument to the -j option optional.  Reason for rejection:
-# not possible with standard getopt().  Will be possible when/if Stu
-# switches to something else than plain getopt(). 
+# Make the argument to the -j option optional, to parallel GNU Make.
+# Reason for not being implemented: not possible with standard getopt().
+# Will be possible when/if Stu switches to something else than plain
+# getopt().
 #
 
 #
@@ -76,11 +82,11 @@ data-$NAME.txt:  build {
 
 data-$NAME.txt:  some-other-dependency; 
 
-# We cannot have this feature, because this will then not work:
+# We cannot have this feature, because the following will then not work:
 $NAME.bib:  { ... }
 a.bib:  extra dependencies ... ;
 # The intention is to add dependencies to only certain files, but the
-# result would be to let the second rule override the first. 
+# result would be to let the second rule override the first.  
 
 # On the other hand, this may be achieved by using a special flag for
 # it, in which case it would be easy to implement. 
@@ -94,6 +100,8 @@ a.bib:  extra dependencies ... ;
 # Alternatively, we may introduce the rule that for directories, the
 # modification date is not used.  (Not a good idea because the date may
 # be useful for directories in some cases.)
+
+# This can also work with other flags. 
 
 #
 # Pass name of target and dependencies as $0 and $1, $2, etc. (?).  All
@@ -111,14 +119,16 @@ a.bib:  extra dependencies ... ;
 # target automatically and always require @main.  
 #
 # Reason for rejecting:  This would break the pattern where a file can
-# be executed as-is or included by another one. 
+# be executed as-is or included by another one.  It would also be
+# different from Make.  It would also introduce a needlessly hardcoded
+# name for the default target.  Many Stu files use @all or @main, etc.  
 #
 
 @main:  A B C;
 
 #
 # Allow flags outside of variable dependencies.  They are only allowed
-# inside at the moment.  
+# inside at the moment.  The semantics would be the same. 
 #
 
 A:  -p $[B] { ... }
@@ -152,10 +162,11 @@ A:  -po B { ... }
 @x:  AX BY;
 
 # This corresponds to the paste(1) command.  It is rarely useful,
-# though.  (
+# though.  
 
 #
-# Set difference, e.g. with '\'. 
+# Set difference, e.g. with '\'.  That's nice, but can easily be
+# realized with sed(1)/grep(1), etc. 
 #
 
 @plots:  dat/plot.([dat/NETWORKS] \ enron).eps;
@@ -166,7 +177,7 @@ A:  -po B { ... }
 # to be at character 13.  This was implemented, but was decided to be
 # too slow.  Also, first find a standard that prescribes how such output
 # is to be made.  It actually makes more sense to report bytes, not
-# characters. 
+# characters, so that's what we'll do as long as there is no standard. 
 #
 
 éäçöôüœß柏林: {
@@ -188,11 +199,6 @@ A:  {
 }
 
 #
-# Provide a set of include-stufiles for common tasks, such as C
-# programs, tex projects, etc. 
-#
-
-#
 # An option to remove the target before each execution.  Not needed. 
 #
 
@@ -201,7 +207,8 @@ A:  {
 #
 
 #
-# Option -o FILENAME:    Never rebuild that file ("old")
+# Option -o FILENAME:    Never rebuild that file ("old").  Clashes with
+# the "optional" flag. 
 #
 
 #
@@ -210,24 +217,26 @@ A:  {
 #
 
 #
-# Chain of commands are useful for dynamic dependencies
+# Chain of commands are useful for dynamic dependencies.  Looks cool,
+# would would lead to enormous complications for only a small benefit,
+# and on top of that a lot of confusion. 
 #
 
 @bidd:  [>dep.bidd]:  <NETWORKS { sed -e 's,^,bidd.,' }
 
 #
-# Input redirection for a dynamic dependency or list is catenation
+# Input redirection for a dynamic dependency or list is catenation. 
 #
 
->all.gz:  <[files] { gz }
+>all.gz:  <[files] { gz ; }
 
-# Not very useful since it can be emulated very simply using cat:
->all.gz:  [<files] { xargs cat | gz }
+# Can be emulated very simply using xargs/cat:
+>all.gz:  [<files] { xargs cat | gz ; }
 
->A: <(B C) { sed -e '...' }
+>A: <(B C) { sed -e '...' ; }
 
 # With transient targets
->A: <@x { sed -e '...' }
+>A: <@x { sed -e '...' ; }
 @x:  D E F;
 
 # With dynamic dependencies
@@ -254,7 +263,7 @@ A = [X];
 # Allow to handle symlinks as files in themselves, i.e., check for their
 # own existence and their own timestamp.  This should not be the default
 # as the current behaviour is more often useful, but should be available
-# as a possibility. 
+# as a possibility, probably using a new flag (-L). 
 #
 
 #
@@ -262,13 +271,15 @@ A = [X];
 # user-facing text messages into many languages using gettext, etc.
 # There is however no plan to do so at the moment.  However:  Use
 # setlocale() would also mean that we can't use isspace() anymore, and
-# we would have to roll our own space-detecting function. 
+# we would have to roll our own space-detecting function.  Since Stu is
+# used by developers, the demand for this would be minimal.  (I've
+# always wondered by things like Make are even internationalized.)
 #
 
 #
 # Use backslash for quoting.  I.e., allow \X where X is any character
 # outside of quotes to represent X.  We're not doing it because there
-# may be other uses for \.  
+# may be other uses for \.  On the other hand, the shell does it. 
 #
 
 #
@@ -295,7 +306,8 @@ A = [X];
 #
 
 #
-# Maybe enable explanations by default?  No.  
+# Maybe enable explanations by default?  No.  Output should be terse by
+# default. 
 #
 
 #
@@ -343,11 +355,25 @@ A: B;
 
 /home/$(USER)/.emacs = lib/ ; 
 
+# Counterargument:  The syntax for parameters in Stu rules and in the
+# shell commands should be identical.  Also, the path case can be
+# realized via symlinks. 
+
 #
 # Option -A:  build all (non-parametrized) targets.
 #
 
-#==== New features that change extend Stu drastically ====
+#
+# A flag to ignore errors when a file already exists.  E.g. in the
+# example below, when Stu is called and 'B' already exists and
+# 'X'/'Y'/'Z' don't and cannot be generated, still consider 'B' up to
+# date, and call the command for 'A'. 
+#
+
+A:  -x B { cp B A ; }
+B: X Y Z { cat X Y Z >B ; }
+
+#==== New features that change/extend Stu drastically ====
 
 #
 # Glob patterns.  This only makes sense when the files found by globbing
@@ -355,11 +381,12 @@ A: B;
 # be built in the first place.  Thus, it can only be used for checking
 # the files' timestamps.
 #
-# Only * and ? would make sense here, since both [] and {} can be
-# replaced by ().
+# Only * and ? are needed, since both [] and {} can be replaced by ().
 #
-# Also, a glob executed at each invocation of Stu is not good:  better
-# execute it once and place the result in a file. 
+# Also, a glob executed at each invocation of Stu is not good.  It's
+# slow and this is one of the Make antipatterns that Stu was created to
+# avoid.  Better execute the glob once and place the result in a file,
+# as can already be done. 
 #
 
 example:  *.c *.h
@@ -372,15 +399,15 @@ example:  [FILES]
 {
 	cc example.c -o example
 }
-
->FILES { echo *.c *.h }
+>FILES { echo *.c *.h ; }
 
 #
 # Allow non-file targets.  E.g., files within archives, or remote files.
 # Would almost always need to incorporate some unwanted dependency, and
 # be highly specific to a single use-case.  Instead of implementing this
-# in Stu, a better implementation is via mounting, or virtual
-# filesystems.  Make traditionally supports "ar" archives.
+# in Stu, a better implementation would be via mounting, or virtual
+# filesystems, but that seems not to be a thing at the moment.  Make
+# traditionally supports "ar" archives.
 #
 
 #
@@ -388,7 +415,7 @@ example:  [FILES]
 # principle.  What would be necessary:
 #  - Write container classed indexed with strings, targets, and maybe
 #    PIDs.
-#  - Convert certain containers to arrays.
+#  - Convert certain containers to arrays/linked lists. 
 #  - More complex and error-prone memory management, in particular for
 #    strings 
 #  - A replacement for exceptions
@@ -399,7 +426,9 @@ example:  [FILES]
 
 #
 # Removeable files:  when a file carries the removeable flag, it does
-# not need to be present.  
+# not need to be present.  Similar to the ".SECONDARY" flag in GNU
+# Make.  We could also remove these automatically when they are not
+# needed anymore. 
 #
 
 A: -R B;  B: C;  A: D;
@@ -465,14 +494,14 @@ ${NAME:[^/]+}.bib: ...;
 # only very little benefit since Stu already starts many processes.
 # Would only make sense in scenarios with thousands of processes, which
 # would only make sense on machines with thousands of cores.  But still
-# very sensible and maybe necessary one day, in princple.
+# very sensible and maybe necessary one day, in principle.
 #
 
 #
 # A Stu server.  The current setup of Stu (and also Make) means that
 # when nothing is to be done, Stu still has to walk the complete
 # dependency tree and stat() every file.  For large projects, this may
-# be come very slow.  Instead, have a Stu daemon which uses inotify or
+# become very slow.  Instead, have a Stu daemon which uses inotify or
 # similar to notice changes.  There are many practical issues with that,
 # so that would be a huge change.  Would almost likely mean the server
 # itself would do the building, and the client would only communicate
@@ -480,7 +509,7 @@ ${NAME:[^/]+}.bib: ...;
 # multi-threaded.  This could also be used to build a Stu GUI (either
 # local or via HTTP) that allows one to control a running Stu server.
 #
-# Maybe actually be trivial to implement once we have proper job
+# May actually be trivial to implement once we have proper job
 # control.  But not for now.
 #
 
@@ -578,7 +607,8 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 
 #
 # libstu:  have the functionality available as a library for C, or for
-# any other programming language. 
+# any other programming language.  I would rather have a Stu server and
+# any programming language can then communicate with the Stu server. 
 #
 
 #==== External features ====
@@ -620,13 +650,3 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 # when a job is executed.  Most also have dependency management
 # capabilities. 
 #
-
-#
-# A flag to ignore errors when a file already exists.  E.g. in the
-# example below, when Stu is called and 'B' already exists and
-# 'X'/'Y'/'Z' don't and cannot be generated, still consider 'B' up to
-# date, and call the command for 'A'. 
-#
-
-A:  -x B { cp B A ; }
-B: X Y Z { cat X Y Z >B ; }

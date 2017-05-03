@@ -623,3 +623,10 @@ A: -P B;
 # like GNU Make)   
 #
 
+#
+# We may rewrite part of execution.hh to not use the flag bits, and
+# instead use classes such as 
+#
+#	Optional_Execution, Trivial_Execution, Persistent_Execution,
+# 	etc. 
+#

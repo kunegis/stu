@@ -68,7 +68,6 @@ would also require more complex (and harder to understand) precedence
 rules.  This leaves binary and ternary operators as possible uses, or as
 forms of non-operators, i.e., new tokens. 
 
-*   	Concatenation (very likely)
 +	Inverted flag (likely)
 ~	Home directory (maybe)
 \	Difference operator (maybe)
@@ -82,6 +81,5 @@ forms of non-operators, i.e., new tokens.
 * ?     For file globbing 
 ,	Names are already whitespace-separated, and any other use than
 	as a list constructor would be unintuitive   
-,	As optional file separator; completely redundant 
 ,	As higher-level file separator, allowing "lists of lists", for
 	whatever purpose 

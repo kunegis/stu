@@ -373,6 +373,10 @@ A: B;
 A:  -x B { cp B A ; }
 B: X Y Z { cat X Y Z >B ; }
 
+#
+# Implement '*' as alternative for concatenation. 
+#
+
 #==== New features that change/extend Stu drastically ====
 
 #

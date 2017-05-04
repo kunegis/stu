@@ -244,10 +244,6 @@ C = {correct}
 A.$X$Y;
 
 #
-# Implement '*' as alternative for concatenation. 
-#
-
-#
 # When '*' is encountered in a file, show an explanation saying which
 # characters are not allowed. 
 #

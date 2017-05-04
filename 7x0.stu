@@ -1,13 +1,15 @@
-# * Should the F_DYNAMIC_LEFT flag be inherited from @x to 'B'?
+# Inheriting a dynamic dependency through a transient target. 
 
 A:  [@x] { cp C A ; }
 @x:  B;
 B = { C }
 
 #
-#     A
-#    / \ 
-#   @x  C
-#  /
-# B
+#        A
+#       / 
+#     [@x] 
+#     /  \
+#    @x   C
+#   /
+#  B
 #

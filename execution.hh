@@ -220,13 +220,21 @@ protected:
 	/* Push a dependency to the default buffer, breaking down non-normalized
 	 * dependencies while doing so.  */
 
-	void read_dynamic(Stack avoid_this, 
-			  shared_ptr <Dynamic_Dependency> dependency_this, 
+	void read_dynamic(
+			  Flags flags_this,
+//			  Stack avoid_this, 
+			  const Place_Param_Target &place_param_target,
+//			  shared_ptr <Dynamic_Dependency> dependency_this, 
 			  vector <shared_ptr <Dependency> > &dependencies);
-  	/* Read dynamic dependencies.  The only reason this is not
-	 * static is that errors can be raised correctly.
-	 * DEPENDENCY_THIS is normalized.  Dependencies that were read
-	 * are written into DEPENDENCIES, which must be empty on calling.  */
+  	/* 
+	 * Read dynamic dependencies from the content of the file
+	 * TARGET.  The only reason this is not static is that errors
+	 * can be raised correctly.  Dependencies that were read are
+	 * written into DEPENDENCIES, which must be empty on
+	 * calling.  
+	 * FLAGS_THIS determines whether the -n/-0/etc. flag was used.
+	 * FLAGS_NEW are flags added to all dependencies. 
+	 */
 
 //	void set_pending(); 
 //	/* Set the PENDING bit for this execution and all parents
@@ -838,24 +846,29 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		throw error; 
 }
 
-void Execution::read_dynamic(Stack avoid, 
-			     shared_ptr <Dynamic_Dependency> dependency_this, 
+void Execution::read_dynamic(
+			     Flags flags_this, 
+//			     Flags flags_new,
+//			     Stack avoid, 
+			     const Place_Param_Target &place_param_target,
+//			     shared_ptr <Dynamic_Dependency> dependency_this, 
 			     vector <shared_ptr <Dependency> > &dependencies)
 {
-	assert(dependency_this->is_normalized()); 
-
-	Target target= dependency_this->get_individual_target().unparametrized(); 
-
+	assert(place_param_target.place_name.get_n() == 0); 
+	assert(place_param_target.type == Type::FILE); 
+//	assert(dependency_this->is_normalized()); 
+	const Target target= place_param_target.unparametrized(); 
+//	Target target= dependency_this->get_individual_target().unparametrized(); 
 	assert(dependencies.empty()); 
-	assert(target.type.is_dynamic());
-	assert(target.type.is_any_file()); 
-	assert(avoid.get_depth() == target.type.get_depth()); 
+//	assert(target.type.is_dynamic());
+//	assert(target.type.is_any_file()); 
+//	assert(avoid.get_depth() == target.type.get_depth()); 
 
 	string filename= target.name;
 
-	Flags flags= dependency_this->dependency->get_flags();
+//	Flags flags= dependency_this->dependency->get_flags();
 
-	if (! (flags & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
+	if (! (flags_this & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
 
 		/* Parse dynamic dependency in full Stu syntax */ 
 
@@ -865,7 +878,7 @@ void Execution::read_dynamic(Stack avoid,
 		Tokenizer::parse_tokens_file
 			(tokens, 
 			 Tokenizer::DYNAMIC,
-			 place_end, filename, dependency_this->get_place()); 
+			 place_end, filename, place_param_target.place); 
 
 		Place_Name input; /* remains empty */ 
 		Place place_input; /* remains empty */ 
@@ -900,12 +913,12 @@ void Execution::read_dynamic(Stack avoid,
 		 * would be via mmap()+strchr(), but why the
 		 * complexity?  */ 
 			
-		const char c= (flags & F_NEWLINE_SEPARATED) ? '\n' : '\0';
+		const char c= (flags_this & F_NEWLINE_SEPARATED) ? '\n' : '\0';
 		/* The delimiter */ 
 
 		const char c_printed
 			/* The character to print as the delimiter */
-			= (flags & F_NEWLINE_SEPARATED) ? 'n' : '0';
+			= (flags_this & F_NEWLINE_SEPARATED) ? 'n' : '0';
 		
 		char *lineptr= nullptr;
 		size_t n= 0;
@@ -2011,10 +2024,11 @@ void Execution::propagate_to_dynamic(Execution *child,
 
 	shared_ptr <Single_Dependency> single_dependency_child=
 		dynamic_pointer_cast <Single_Dependency> (dependency_child);
+	assert(single_dependency_child); 
 
-	if (single_dependency_child &&
-	    single_dependency_child->place_param_target.type == Type::FILE &&
-	    dynamic_this) {
+//	if (single_dependency_child &&
+//	    single_dependency_child->place_param_target.type == Type::FILE &&
+//	    dynamic_this) {
 
 		/* This is a dynamic file dependency; read out
 		 * the file.  This is not an optimization of a
@@ -2023,19 +2037,31 @@ void Execution::propagate_to_dynamic(Execution *child,
 		 * execution as ourselves.  */ 
 
 		try {
-			const Target target= dependency_this->
-				get_individual_target().unparametrized(); 
-			assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
+			const Place_Param_Target &place_param_target= 
+				single_dependency_child->place_param_target; 
+//			const Target target= dependency_this->
+//				get_individual_target().unparametrized(); 
+//			assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
 
 			vector <shared_ptr <Dependency> > dependencies;
-			read_dynamic(avoid_this, 
-				     dynamic_pointer_cast <Dynamic_Dependency> (dependency_this), 
+			read_dynamic(
+				     dependency_this->get_flags(),
+//				     avoid_this.get_bottom(),
+//				     avoid_this, 
+				     place_param_target,
+//				     dynamic_pointer_cast <Dynamic_Dependency> (dependency_this), 
 				     dependencies);
+
+			const Target &target= place_param_target.unparametrized();
 
 			for (auto &j:  dependencies) {
 
 				/* Add the dependency, with one less dynamic level
 				 * than the current target  */
+				// XXX instead, just percolate the
+				// dependency. Don't forget to set the
+				// flags. 
+				...;
 
 				shared_ptr <Dependency> dd(j);
 
@@ -2100,38 +2126,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 			 * but also the errors raised in read_dynamic().  */
 			raise(e); 
 		}
-
-	} else {
-//		shared_ptr <Dependency> dd= Dependency::clone_dependency(dependency_child);
-
-//		// XXX instead of using DD, use the dependencies contained in the corresponding file. 
-//		...; 
-
-		try {
-			vector <shared_ptr <Dependency> > dependencies;
-			assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
-			read_dynamic(avoid_this, 
-				     dynamic_pointer_cast <Dynamic_Dependency> (dependency_this), 
-				     dependencies);
-
-			for (auto &j:  dependencies) {
-
-				/* Add the dependency, with one less dynamic level
-				 * than the current target  */
-
-				shared_ptr <Dependency> dd= Dependency::clone_dependency(j);
-				dd->flags &= ~F_DYNAMIC_LEFT; 
-
-				// TODO add other flags to DD. 
-
-				this->push_result(dd); 
-			}
-		} catch (int e) {
-			/* We catch not only the errors raised in this function,
-			 * but also the errors raised in read_dynamic().  */
-			raise(e); 
-		}
-	}
+//	}
 }
 
 Single_Execution::~Single_Execution()

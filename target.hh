@@ -235,8 +235,12 @@ public:
 	/* Number of parameters; zero when the name is unparametrized. */ 
 	unsigned get_n() const {
 		assert(texts.size() == 1 + parameters.size()); 
-
 		return parameters.size(); 
+	}
+
+	bool is_parametrized() const {
+		assert(texts.size() == 1 + parameters.size()); 
+		return !parameters.empty(); 
 	}
 
 	const vector <string> &get_texts() const {

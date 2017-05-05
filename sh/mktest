@@ -97,10 +97,12 @@
 #
 # TODO
 #
+# * Allow wildcards in the arguments. 
+# * First, execute all tests without 'EXEC', and then all tests with
+#   'EXEC'.  
 # * For each test, interrupt the test after a specified timeout, to
 #   avoid that the whole testing procedure hangs when a single test
 #   hangs. 
-# * Allow wildcards in the arguments. 
 #
 
 # Note:  we can't use "set -e" here (which is a good general practice in

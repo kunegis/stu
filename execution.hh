@@ -2052,19 +2052,19 @@ void Execution::propagate_to_dynamic(Execution *child,
 //				     dynamic_pointer_cast <Dynamic_Dependency> (dependency_this), 
 				     dependencies);
 
-			const Target &target= place_param_target.unparametrized();
+//			const Target &target= place_param_target.unparametrized();
 
 			for (auto &j:  dependencies) {
 
-				/* Add the dependency, with one less dynamic level
-				 * than the current target  */
+//				/* Add the dependency, with one less dynamic level
+//				 * than the current target  */
 				// XXX instead, just percolate the
 				// dependency. Don't forget to set the
 				// flags. 
-				...;
 
-				shared_ptr <Dependency> dd(j);
+				shared_ptr <Dependency> dd{j};
 
+#if 0 // RM
 				vector <shared_ptr <Dynamic_Dependency> > vec;
 				shared_ptr <Dependency> p= dependency_this;
 
@@ -2113,6 +2113,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 				}
 
 				assert(avoid_this2.get_depth() == 0); 
+#endif /* 0 */
 
 				push_result(dd); 
 

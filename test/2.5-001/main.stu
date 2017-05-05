@@ -1,0 +1,3 @@
+A: [B]  { cp C A ; }
+B { echo C >B ; }
+C { echo correct >C ; }

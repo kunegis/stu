@@ -244,6 +244,11 @@ C = {correct}
 A.$X$Y;
 
 #
+# When an unknown flag is encountered, have an explanation of all valid
+# flags.  
+#
+
+#
 # When '*' is encountered in a file, show an explanation saying which
 # characters are not allowed. 
 #

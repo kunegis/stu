@@ -1976,14 +1976,15 @@ void Execution::push_result(shared_ptr <Dependency> dd,
 	}
 
 	/* If THIS is a dynamic execution, add DD as a right branch */
-	Dynamic_Execution *dynamic_this= dynamic_cast <Dynamic_Execution *> (this); 
+//	Dynamic_Execution *dynamic_this= dynamic_cast <Dynamic_Execution *> (this); 
 	if (! (dd->flags & F_RESULT_ONLY)) {
 //	if (dynamic_this &&
 //	    ) {
 //		shared_ptr <Dependency> dd_right= Dependency::clone_dependency(dd);
 //		dd_right->flags |= F_DYNAMIC_RIGHT;
 		assert(! (dd->flags & F_DYNAMIC_LEFT)); // or maybe unset it
-		dynamic_this->push_dependency(dd); 
+//		dynamic_this->
+			push_dependency(dd); 
 	}
 }
 

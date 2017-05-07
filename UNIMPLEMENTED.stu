@@ -377,6 +377,13 @@ B: X Y Z { cat X Y Z >B ; }
 # Implement '*' as alternative for concatenation. 
 #
 
+#
+# Uppercase flag is recursive:
+#
+
+# Ignores timestamps recursively
+A: -P B;
+
 #==== New features that change/extend Stu drastically ====
 
 #

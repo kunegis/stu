@@ -10,10 +10,10 @@ class Link
 {
 public:
 	Stack avoid;
-	/* Negation of flags valid for each level. 
-	 * The depth equals the depth of the dependency. 
-	 * This variable only holds the PERSISTENT/OPTIONAL/TRIVIAL
-	 * bits (i.e., transitive bits as defined by F_COUNT).  */
+	/* Negation of flags valid for each level.  The depth equals the
+	 * depth of the dependency.  This variable only holds the
+	 * PERSISTENT/OPTIONAL/TRIVIAL bits (i.e., transitive bits as
+	 * defined by F_COUNT).  */
 
 	Flags flags;
 	/* Flags that are valid for this dependency, including the
@@ -26,9 +26,10 @@ public:
 	 * A->[...[A]...] links and other links which are not printed */ 
 
 	shared_ptr <Dependency> dependency;
-	/* This is null for the root target. 
-	 * May contain less flags than stored in AVOID and FLAGS.  
-	 * Always a normalized dependency.  */
+	/* This is null for the root target.  May contain less flags
+	 * than stored in AVOID and FLAGS, if additional flags came not
+	 * from the dependency but from other sources.  Always a
+	 * normalized dependency.  */
 
 	Link() { }
 

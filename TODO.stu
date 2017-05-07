@@ -283,9 +283,14 @@ A.$X$Y;
 X = {x}   Y = {y}  Z = {z}
 
 #
-# Check that rando mode and -j2 work together when there is just a
+# Check that random mode and -j2 work together when there is just a
 # single thing to run in parallel.  Same for higher -jK when there are
 # less than K things to run. 
+#
+
+#
+# Write a test with really long filenames and really long chains of
+# dependencies.  
 #
 
 #################### Further features #########################
@@ -519,13 +524,6 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 {
 	inkscape ...
 }
-
-#
-# Uppercase flag is recursive:
-#
-
-# Ignores timestamps recursively
-A: -P B;
 
 #
 # Have a flag to present echoing of the command. (Similar to '@' in

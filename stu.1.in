@@ -77,7 +77,8 @@ supports full Stu syntax, while arguments supports only a reduced syntax
 .IP -d
 Debug mode.  Show internal information about the Stu algorithm on
 standard error output.  All printed output lines begin with the
-string 'DEBUG  ', i.e. the word DEBUG followed by two spaces. 
+string 'DEBUG  ', i.e. the word DEBUG followed by two spaces.  The
+output is not standardized and is subject to change. 
 .IP "-E"
 Explain error messages.  Only some error messages have explanations. 
 .IP "-f FILENAME"
@@ -1039,8 +1040,10 @@ while it would be an error for the shell, as the closing } would be
 interpreted as a second argument to 'echo'. 
 
 .SH AUTHOR
-Written by J\['e]r\[^o]me Kunegis <kunegis@gmail.com>, with contributions
-and help by Jun Sun, Aaron McDaid, Heinrich Hartmann, and Holger Heinz. 
+Written by J\['e]r\[^o]me Kunegis <kunegis@gmail.com> at the University
+of Namur, Belgium, as well as at the University of Koblenz-Landau,
+Germany, with contributions and help by Jun Sun, Aaron McDaid, Heinrich
+Hartmann, Holger Heinz, and others.
 
 .SH "SEE ALSO"
 .BR make (1)\

@@ -143,6 +143,7 @@ fi
 
 count_total=0
 
+# In the next line, '$tests' expands with glob replacement 
 for file in $tests
 do
 	error=0

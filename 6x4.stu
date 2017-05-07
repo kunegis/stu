@@ -1,0 +1,5 @@
+A:  -o @x { touch A ; }
+@x:  [B];
+B { echo C >B ; }
+C { exit 1 ; }
+

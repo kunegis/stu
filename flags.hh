@@ -37,7 +37,7 @@ enum
 	I_RESULT_ONLY,
 
 	I_DYNAMIC_LEFT,
-	I_DYNAMIC_RIGHT,
+//	I_DYNAMIC_RIGHT,
 	I_COPY_RESULT,
 	I_VARIABLE,
 	I_OVERRIDE_TRIVIAL,
@@ -88,18 +88,11 @@ enum
 	F_DYNAMIC_LEFT     = 1 << I_DYNAMIC_LEFT,
 	/* This is the link between a Dynamic_Execution and its left branch */
 
-	F_DYNAMIC_RIGHT    = 1 << I_DYNAMIC_RIGHT,
-	/* The right dynamic branch.  The result is percolated up this link */
+//	F_DYNAMIC_RIGHT    = 1 << I_DYNAMIC_RIGHT,
+//	/* The right dynamic branch.  The result is percolated up this link */
 
 	F_COPY_RESULT      = 1 << I_COPY_RESULT,
 	/* Copy the result list of the child to the parent */
-
-//	F_DYNAMIC          = 1 << I_DYNAMIC,  
-//	/* This is a [...[X]...]->X special dynamic link */
-
-//	F_CONCATENATE      = 1 << I_CONCATENATE,
-//	/* This is a link between a Concatenating_Execution and its
-//	 * child Execution in Stage 0.  */
 
 	F_VARIABLE         = 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */ 
@@ -117,7 +110,7 @@ enum
 	 * filenames, without any markup  */ 
 };
 
-const char *const FLAGS_CHARS= "pot`$*n0"; 
+const char *const FLAGS_CHARS= "pot*/=$Tn0"; 
 /* Characters representing the individual flags -- used in verbose mode
  * output */ 
 

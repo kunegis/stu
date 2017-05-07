@@ -239,7 +239,9 @@ protected:
 //	/* Set the PENDING bit for this execution and all parents
 //	 * recursively */
 
-	void push_result(shared_ptr <Dependency> dd);
+	void push_result(shared_ptr <Dependency> dd,
+			 shared_ptr <Dependency> dependency_this,
+			 Flags flags);
 
 	virtual ~Execution(); 
 
@@ -865,6 +867,8 @@ void Execution::read_dynamic(Flags flags_this,
 			 place_param_target.place,
 			 -1,
 			 flags_this & F_OPTIONAL); 
+		// TODO instead of using ALLOW_ENOENT, read the EXISTS
+		// field from the child execution. 
 
 		Place_Name input; /* remains empty */ 
 		Place place_input; /* remains empty */ 
@@ -1922,15 +1926,25 @@ void Execution::copy_result(Execution *parent, Execution *child)
 	}
 }
 
-void Execution::push_result(shared_ptr <Dependency> dd)
+void Execution::push_result(shared_ptr <Dependency> dd, 
+			    shared_ptr <Dependency> dependency_this,
+			    Flags flags)
 {
 	assert(! (dd->flags & F_DYNAMIC_LEFT)); 
 
-	shared_ptr <Single_Dependency> single_dd= 
-		dynamic_pointer_cast <Single_Dependency> (dd); 
-	
+	shared_ptr <Single_Dependency> single_dd= dynamic_pointer_cast <Single_Dependency> (dd); 
+
+	/* Without extra flags */
 	if (single_dd) 
 		result.push_back(single_dd); 
+	
+	/* Add flags from self */
+	dd= Dependency::clone_dependency(dd); 
+	dd->add_flags(flags);
+	for (int i= 0;  i < C_PLACED;  ++i) {
+		if (dd->get_place_flag(i).empty())
+			dd->set_place_flag(i, dependency_this->get_place_flag(i)); 
+	}
 	
 	for (auto &i:  parents) {
 
@@ -1946,27 +1960,30 @@ void Execution::push_result(shared_ptr <Dependency> dd)
 		if (via_transient ||
 		    ((link.flags & F_DYNAMIC_LEFT) &&
 		     ~(link.flags & F_RESULT_ONLY))) {
-			parent->push_result(dd); 
+			parent->push_result(dd, link.dependency, link.flags); 
 		} 
 
-		
+#if 0
+		// TODO isn't this redundant ?
 		if ((link.flags & F_DYNAMIC_LEFT) &&
 		     ~(link.flags & F_RESULT_ONLY)) {
-			shared_ptr <Dependency> dd_right= Dependency::clone_dependency(dd);
-			dd_right->flags |= F_DYNAMIC_RIGHT;
-			assert(! (dd_right->flags & F_DYNAMIC_LEFT)); 
-			parent->push_dependency(dd_right);
+//			shared_ptr <Dependency> dd_right= Dependency::clone_dependency(dd);
+//			dd_right->flags |= F_DYNAMIC_RIGHT;
+			assert(! (dd->flags & F_DYNAMIC_LEFT)); 
+			parent->push_dependency(dd);
 		}
+#endif /* 0 */
 	}
-
 
 	/* If THIS is a dynamic execution, add DD as a right branch */
 	Dynamic_Execution *dynamic_this= dynamic_cast <Dynamic_Execution *> (this); 
-	if (dynamic_this) {
-		shared_ptr <Dependency> dd_right= Dependency::clone_dependency(dd);
-		dd_right->flags |= F_DYNAMIC_RIGHT;
-		assert(! (dd_right->flags & F_DYNAMIC_LEFT)); // or maybe unset it
-		dynamic_this->push_dependency(dd_right); 
+	if (! (dd->flags & F_RESULT_ONLY)) {
+//	if (dynamic_this &&
+//	    ) {
+//		shared_ptr <Dependency> dd_right= Dependency::clone_dependency(dd);
+//		dd_right->flags |= F_DYNAMIC_RIGHT;
+		assert(! (dd->flags & F_DYNAMIC_LEFT)); // or maybe unset it
+		dynamic_this->push_dependency(dd); 
 	}
 }
 
@@ -2096,11 +2113,12 @@ void Execution::propagate_to_dynamic(Execution *child,
 				assert(avoid_this2.get_depth() == 0); 
 #endif /* 0 */
 
-				push_result(dd); 
+				push_result(dd, dependency_this,
+					    avoid_this.get_highest()); 
 
-				if (! (avoid_this.get_highest() & F_RESULT_ONLY)) {
-					push_dependency(dd); 
-				}
+//				if (! (avoid_this.get_highest() & F_RESULT_ONLY)) {
+//					push_dependency(dd); 
+//				}
 			}
 				
 		} catch (int e) {

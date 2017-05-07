@@ -1285,8 +1285,7 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 
 		if (link.dependency != nullptr 
 		    && dynamic_pointer_cast <Single_Dependency> (link.dependency)
-		    && dynamic_pointer_cast <Single_Dependency> (link.dependency)
-		    ->place_param_target.type == Type::TRANSIENT) {
+		    && dynamic_pointer_cast <Single_Dependency> (link.dependency)->place_param_target.type == Type::TRANSIENT) {
 			flags_child |= link.flags; 
 		}
 
@@ -1299,10 +1298,7 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 
 		proceed_all |= proceed_child; 
 
-		if (child->finished(
-				    avoid_child
-//				    done_here
-				    )) {
+		if (child->finished(avoid_child)) {
 			disconnect(this, child, 
 			       link.dependency,
 			       link.avoid, 
@@ -1476,7 +1472,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 }
 
 Execution::Proceed Execution::connect(const Link &link,
-					     shared_ptr <Dependency> dependency_child)
+				      shared_ptr <Dependency> dependency_child)
 {
 	assert(dependency_child->is_normalized()); 
 

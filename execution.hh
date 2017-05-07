@@ -263,7 +263,8 @@ protected:
 #endif
 
 	virtual string debug_text() const= 0;
-	/* The text shown for this execution in verbose output */ 
+	/* The text shown for this execution in verbose output.  Usually
+	 * calls a format_out() function on the appropriate object.  */ 
 
 	virtual bool want_delete() const= 0; 
 
@@ -316,7 +317,7 @@ protected:
 	/* Whether both executions have the same parametrized rule.
 	 * Only used for finding cycle.  */ 
 
-	static void unlink(Execution *const parent, 
+	static void disconnect(Execution *const parent, 
 			   Execution *const child,
 			   shared_ptr <Dependency> dependency_parent,
 			   Stack avoid_parent,
@@ -342,7 +343,7 @@ private:
 	 * dependencies, the target must be rebuilt anyway.  Does not
 	 * contain compound dependencies.  */
 
-	Proceed execute_deploy(const Link &link,
+	Proceed connect(const Link &link,
 			       shared_ptr <Dependency> dependency_child);
 	/* Deploy a new child execution.  LINK is the link from the
 	 * THIS's parent to THIS.  Note: the top-level flags of
@@ -636,7 +637,10 @@ public:
 	virtual bool finished() const;
 	virtual bool finished(Stack avoid) const; 
 
-	virtual string debug_text() const {  return "CONCAT";  }
+	virtual string debug_text() const {  
+		// TODO return actual dependency text
+		return "CONCAT";  
+	}
 
 protected:
 
@@ -667,7 +671,7 @@ private:
 	vector <vector <shared_ptr <Single_Dependency> > > parts; 
 	/* 
 	 * The individual parts, inserted here during stage 1 by
-	 * Execution::unlink().  
+	 * Execution::disconnect().  
 	 * Excludes the outer layer. 
 	 */
 
@@ -730,10 +734,9 @@ public:
 	virtual const Place &get_place() const {  return dependency->get_place();  }
 	virtual bool optional_finished(const Link &) {  return false;  }
 
-
 protected:
 
-	virtual string debug_text() const {  return "DYNAMIC";  }
+	virtual string debug_text() const;
 	virtual bool want_delete() const;
 
 #ifndef NDEBUG
@@ -1249,7 +1252,7 @@ void Execution::print_traces(string text) const
 
 Execution::Proceed Execution::execute_children(const Link &link, Stack &done_here)
 {
-	/* Since unlink() may change execution->children, we must first
+	/* Since disconnect() may change execution->children, we must first
 	 * copy it over locally, and then iterate through it */ 
 
 	vector <Execution *> executions_children_vector
@@ -1300,7 +1303,7 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 				    avoid_child
 //				    done_here
 				    )) {
-			unlink(this, child, 
+			disconnect(this, child, 
 			       link.dependency,
 			       link.avoid, 
 			       dependency_child, avoid_child, flags_child); 
@@ -1344,6 +1347,8 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 #endif
 
 	if (option_debug) {
+		// TODO provide a function à la print_debug() to
+		// encapsulate all this. 
 		string text_target= debug_text(); 
 		string text_flags= flags_format(link.flags);
 		string text_avoid= link.avoid.format(); 
@@ -1361,6 +1366,14 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	if (link2.flags & F_OVERRIDE_TRIVIAL) {
 		link2.flags &= ~F_TRIVIAL; 
 		link2.avoid.rem_highest(F_TRIVIAL); 
+	}
+
+	/* Remove the F_DYNAMIC_LEFT flag to the child, except in a
+	 * transient--X link  */ 
+	if ((link2.flags & F_DYNAMIC_LEFT) &&
+	    ! (dynamic_pointer_cast <Single_Dependency> (link2.dependency)
+	       && dynamic_pointer_cast <Single_Dependency> (link2.dependency)->place_param_target.type == Type::TRANSIENT)) {
+		link2.flags &= ~F_DYNAMIC_LEFT; 
 	}
 	
  	if (finished(link2.avoid)) {
@@ -1419,8 +1432,6 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	 */ 
 
 	if (jobs == 0) {
-//		if (proceed_all & P_BIT_WAIT) 
-//			proceed_all &= ~P_BIT_PENDING;
 		return proceed_all;
 	}
 
@@ -1430,7 +1441,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 			Dependency::clone_dependency(dependency_child);
 		dependency_child_overridetrivial->add_flags(F_OVERRIDE_TRIVIAL); 
 		buffer_trivial.push(dependency_child_overridetrivial); 
-		Proceed proceed_2= execute_deploy(link2, dependency_child);
+		Proceed proceed_2= connect(link2, dependency_child);
 		proceed_all |= proceed_2;
 
 		if (jobs == 0)
@@ -1464,17 +1475,21 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	return proceed_all; 
 }
 
-Execution::Proceed Execution::execute_deploy(const Link &link,
+Execution::Proceed Execution::connect(const Link &link,
 					     shared_ptr <Dependency> dependency_child)
 {
 	assert(dependency_child->is_normalized()); 
 
 	if (option_debug) {
 		string text_target= debug_text();
+		string text_flags= flags_format(link.flags);
+		string text_avoid= link.avoid.format(); 
 		string text_child= dependency_child->format_out(); 
-		fprintf(stderr, "DEBUG %s %s deploy %s\n",
+		fprintf(stderr, "DEBUG %s %s connect %s %s %s\n",
 			Verbose::padding(),
 			text_target.c_str(),
+			text_flags.c_str(),
+			text_avoid.c_str(),
 			text_child.c_str());
 	}
 
@@ -1493,14 +1508,6 @@ Execution::Proceed Execution::execute_deploy(const Link &link,
 		++depth;
 		avoid_child.push();
 		avoid_child.add_lowest(dep->get_flags()); 
-	}
-
-	/* Remove the F_DYNAMIC_LEFT flag to the child, except in a
-	 * transient--X link  */ 
-	if ((link.flags & F_DYNAMIC_LEFT) &&
-	    ! (dynamic_pointer_cast <Single_Dependency> (link.dependency)
-	       && dynamic_pointer_cast <Single_Dependency> (link.dependency)->place_param_target.type == Type::TRANSIENT)) {
-		flags_child &= ~F_DYNAMIC_LEFT; 
 	}
 
 	if (dynamic_pointer_cast <Concatenated_Dependency> (dep)) {
@@ -1528,7 +1535,7 @@ Execution::Proceed Execution::execute_deploy(const Link &link,
 			return proceed_child; 
 			
 		if (child->finished(avoid_child)) {
-			unlink(this, child, 
+			disconnect(this, child, 
 			       link.dependency,
 			       link.avoid, 
 			       dependency_child, avoid_child, flags_child);
@@ -1666,7 +1673,7 @@ Execution::Proceed Execution::execute_deploy(const Link &link,
 			return proceed_child; 
 			
 		if (child->finished(avoid_child)) {
-			unlink(this, child, 
+			disconnect(this, child, 
 			       link.dependency,
 			       link.avoid, 
 			       dependency_child,
@@ -1692,7 +1699,7 @@ void Execution::raise(int error_)
 		throw error;
 }
 
-void Execution::unlink(Execution *const parent, 
+void Execution::disconnect(Execution *const parent, 
 		       Execution *const child,
 		       shared_ptr <Dependency> dependency_parent,
 		       Stack avoid_parent,
@@ -1708,7 +1715,7 @@ void Execution::unlink(Execution *const parent,
 		string text_parent= parent->debug_text();
 		string text_child= child->debug_text();
 		string text_done_child= child->debug_done_text();
-		fprintf(stderr, "DEBUG %s %s unlink %s %s\n",
+		fprintf(stderr, "DEBUG %s %s disconnect %s %s\n",
 			Verbose::padding(),
 			text_parent.c_str(),
 			text_child.c_str(),
@@ -1855,7 +1862,7 @@ Execution::Proceed Execution::execute_second_pass(const Link &link)
 	Proceed proceed_all= P_CONTINUE;
 	while (! buffer_trivial.empty()) {
 		shared_ptr <Dependency> dependency_child= buffer_trivial.next(); 
-		Proceed proceed= execute_deploy(link, dependency_child);
+		Proceed proceed= connect(link, dependency_child);
 		proceed_all |= proceed; 
 		assert(jobs >= 0);
 //		if (jobs == 0)
@@ -1962,29 +1969,13 @@ void Execution::push_result(shared_ptr <Dependency> dd,
 		     ~(link.flags & F_RESULT_ONLY))) {
 			parent->push_result(dd, link.dependency, link.flags); 
 		} 
-
-#if 0
-		// TODO isn't this redundant ?
-		if ((link.flags & F_DYNAMIC_LEFT) &&
-		     ~(link.flags & F_RESULT_ONLY)) {
-//			shared_ptr <Dependency> dd_right= Dependency::clone_dependency(dd);
-//			dd_right->flags |= F_DYNAMIC_RIGHT;
-			assert(! (dd->flags & F_DYNAMIC_LEFT)); 
-			parent->push_dependency(dd);
-		}
-#endif /* 0 */
 	}
 
 	/* If THIS is a dynamic execution, add DD as a right branch */
-//	Dynamic_Execution *dynamic_this= dynamic_cast <Dynamic_Execution *> (this); 
 	if (! (dd->flags & F_RESULT_ONLY)) {
-//	if (dynamic_this &&
-//	    ) {
-//		shared_ptr <Dependency> dd_right= Dependency::clone_dependency(dd);
-//		dd_right->flags |= F_DYNAMIC_RIGHT;
-		assert(! (dd->flags & F_DYNAMIC_LEFT)); // or maybe unset it
-//		dynamic_this->
-			push_dependency(dd); 
+		shared_ptr <Dependency> dd_right= Dependency::clone_dependency(dd);
+		dd_right->flags &= ~F_DYNAMIC_LEFT; 
+		push_dependency(dd_right); 
 	}
 }
 
@@ -2033,101 +2024,33 @@ void Execution::propagate_to_dynamic(Execution *child,
 		dynamic_pointer_cast <Single_Dependency> (dependency_child);
 	assert(single_dependency_child); 
 
-//	if (single_dependency_child &&
-//	    single_dependency_child->place_param_target.type == Type::FILE &&
-//	    dynamic_this) {
+	/* This is a dynamic file dependency; read out the file.  This
+	 * is not an optimization of a common case, but necessary
+	 * because otherwise we would start, as a right branch, the same
+	 * execution as ourselves.  */ 
 
-		/* This is a dynamic file dependency; read out
-		 * the file.  This is not an optimization of a
-		 * common case, but necessary because otherwise
-		 * we would start, as a right branch, the same
-		 * execution as ourselves.  */ 
+	try {
+		const Place_Param_Target &place_param_target= 
+			single_dependency_child->place_param_target; 
 
-		try {
-			const Place_Param_Target &place_param_target= 
-				single_dependency_child->place_param_target; 
+		vector <shared_ptr <Dependency> > dependencies;
+		read_dynamic(flags_child,
+			     place_param_target,
+			     dependencies);
 
-			vector <shared_ptr <Dependency> > dependencies;
-			read_dynamic(flags_child,
-				     //dependency_this->get_flags(),
-				     place_param_target,
-				     dependencies);
+		for (auto &j:  dependencies) {
 
-			for (auto &j:  dependencies) {
+//			shared_ptr <Dependency> dd{j};
 
-//				/* Add the dependency, with one less dynamic level
-//				 * than the current target  */
-				// XXX instead, just percolate the
-				// dependency. Don't forget to set the
-				// flags. 
-
-				shared_ptr <Dependency> dd{j};
-
-#if 0 // RM
-				vector <shared_ptr <Dynamic_Dependency> > vec;
-				shared_ptr <Dependency> p= dependency_this;
-
-				while (dynamic_pointer_cast <Dynamic_Dependency> (p)) {
-					shared_ptr <Dynamic_Dependency> dynamic_dependency= 
-						dynamic_pointer_cast <Dynamic_Dependency> (p);
-					vec.resize(vec.size() + 1);
-					vec[vec.size() - 1]= dynamic_dependency;
-					p= dynamic_dependency->dependency;   
-				}
-
-				Stack avoid_this2= avoid_this;
-				assert(vec.size() == avoid_this2.get_depth());
-				avoid_this2.pop(); 
-				dd->add_flags(avoid_this2.get_lowest()); 
-				if (dd->get_place_flag(I_PERSISTENT).empty())
-					dd->set_place_flag
-						(I_PERSISTENT,
-						 vec[target.type.get_depth() - 1]
-						 ->get_place_flag(I_PERSISTENT)); 
-				if (dd->get_place_flag(I_OPTIONAL).empty())
-					dd->set_place_flag
-						(I_OPTIONAL,
-						 vec[target.type.get_depth() - 1]
-						 ->get_place_flag(I_OPTIONAL)); 
-				if (dd->get_place_flag(I_TRIVIAL).empty())
-					dd->set_place_flag
-						(I_TRIVIAL,
-						 vec[target.type.get_depth() - 1]
-						 ->get_place_flag(I_TRIVIAL)); 
-
-				for (Type k= target.type - 1;  k.is_dynamic();  --k) {
-					avoid_this2.pop(); 
-					Flags flags_level= avoid_this2.get_lowest(); 
-					dd= make_shared <Dynamic_Dependency> 
-						(flags_level, dd); 
-					dd->set_place_flag
-						(I_PERSISTENT,
-						 vec[k.get_depth() - 1]->get_place_flag(I_PERSISTENT)); 
-					dd->set_place_flag
-						(I_OPTIONAL,
-						 vec[k.get_depth() - 1]->get_place_flag(I_OPTIONAL)); 
-					dd->set_place_flag
-						(I_TRIVIAL,
-						 vec[k.get_depth() - 1]->get_place_flag(I_TRIVIAL)); 
-				}
-
-				assert(avoid_this2.get_depth() == 0); 
-#endif /* 0 */
-
-				push_result(dd, dependency_this,
-					    avoid_this.get_highest()); 
-
-//				if (! (avoid_this.get_highest() & F_RESULT_ONLY)) {
-//					push_dependency(dd); 
-//				}
-			}
-				
-		} catch (int e) {
-			/* We catch not only the errors raised in this function,
-			 * but also the errors raised in read_dynamic().  */
-			raise(e); 
+			push_result(j, dependency_this,
+				    avoid_this.get_highest()); 
 		}
-//	}
+				
+	} catch (int e) {
+		/* We catch not only the errors raised in this function,
+		 * but also the errors raised in read_dynamic().  */
+		raise(e); 
+	}
 }
 
 Single_Execution::~Single_Execution()
@@ -2152,7 +2075,7 @@ void Single_Execution::wait()
 	pid_t pid= Job::wait(&status); 
 
 	if (option_debug) {
-		fprintf(stderr, "DEBUG %s wait pid = %ld\n", 
+		fprintf(stderr, "DEBUG %s wait: pid = %ld\n", 
 			Verbose::padding(),
 			(long) pid);
 	}
@@ -2378,7 +2301,7 @@ Single_Execution::Single_Execution(Target target_,
 	if (option_debug) {
 		string text_target= debug_text();
 		string text_rule= rule == nullptr ? "(no rule)" : rule->format_out(); 
-		fprintf(stderr, "DEBUG  %s   %s %s\n",
+		fprintf(stderr, "DEBUG %s    %s %s\n",
 			Verbose::padding(),
 			text_target.c_str(),
 			text_rule.c_str()); 
@@ -2598,7 +2521,7 @@ bool Single_Execution::remove_if_existing(bool output)
 			
 		removed= true;
 
-		if (0 > ::unlink(filename)) {
+		if (0 > unlink(filename)) {
 			if (output) {
 				rule->place
 					<< system_format(target.format_word()); 
@@ -2761,6 +2684,8 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
 		return proceed; 
 	}
+
+	Verbose verbose;
 
 	assert(children.empty()); 
 
@@ -2974,7 +2899,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 
 		if (option_debug) {
 			string text_target= debug_text();
-			fprintf(stderr, "DEBUG %s %s create content\n",
+			fprintf(stderr, "DEBUG %s    %s create content\n",
 				Verbose::padding(),
 				text_target.c_str());
 		}
@@ -3073,7 +2998,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 
 		if (option_debug) {
 			string text_target= debug_text();
-			fprintf(stderr, "DEBUG %s %s execute pid = %ld\n", 
+			fprintf(stderr, "DEBUG %s %s execute: pid = %ld\n", 
 				Verbose::padding(),
 				text_target.c_str(),
 				(long) pid); 
@@ -3698,6 +3623,11 @@ bool Dynamic_Execution::finished(Stack avoid) const
 bool Dynamic_Execution::want_delete() const
 {
 	return dynamic_pointer_cast <Single_Dependency> (Dependency::strip_dynamic(dependency)) == nullptr; 
+}
+
+string Dynamic_Execution::debug_text() const
+{
+	return dependency->format_out();
 }
 
 #endif /* ! EXECUTION_HH */

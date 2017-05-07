@@ -3,6 +3,7 @@
 A:  [@x] { cp C A ; }
 @x:  B;
 B = { C }
+C { echo ::: >C ; }
 
 #
 #        A

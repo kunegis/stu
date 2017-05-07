@@ -161,22 +161,22 @@ https://github.com/kunegis/konect-analysis/blob/master/main.stu
 
 ## About 
 
-Stu was originally written to accommodate the Koblenz Network Collection
-project (KONECT -- http://konect.uni-koblenz.de/).  It is thus mainly
+Stu was originally written to accommodate the KONECT project (Koblenz
+Network Collection -- http://konect.uni-koblenz.de/).  It is thus mainly
 used for large data mining projects, where it manages everything from
 acquiring data from the web, preprocessing data in various ways, to
 performing data mining experiments, to generating plots and compiling
 the resulting Latex papers.  It is also used for compiling C/C++ code,
-for generating tarballs, for generating websites, and by students at the
-University of Koblenz--Landau for student projects.
+for generating tarballs, for generating websites, and by students
+associated with Jérôme Kunegis.  
 
 The name "Stu" follows the precedents of Make replacements such as Cook,
 Bake, and Brew in referring to kitchen-related verbs, and also honors
 the author of the original Unix Make, Stuart Feldman.
 
-Stu was written in 2014--2017 by Jérôme Kunegis at the University of
-Koblenz--Landau (Germany) and at the University of Namur (Belgium), with
-help from other contributors.
+Stu was written by Jérôme Kunegis at the University of Koblenz-Landau
+(Germany) and at the University of Namur (Belgium), with help from other
+contributors; see the file AUTHORS. 
 
 Stu is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free

@@ -34,13 +34,17 @@ public:
 	 *
 	 * PLACE_DIAGNOSTIC is the place where this file is included
 	 * from, e.g. the -f option. 
+	 *
+	 * If ALLOW_ENOENT, an ENOENT error on this first open() is not
+	 * reported as an error, and the function just returns. 
 	 */
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
 				      Context context,
 				      Place &place_end,
 				      string filename, 
 				      const Place &place_diagnostic,
-				      int fd= -1)
+				      int fd= -1,
+				      bool allow_enoent= false)
 	{
 		vector <Trace> traces;
 		vector <string> filenames; 
@@ -50,7 +54,8 @@ public:
 				  place_end, filename, 
 				  traces, filenames, includes,
 				  place_diagnostic,
-				  fd);
+				  fd,
+				  allow_enoent);
 	}
 
 	static void parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
@@ -158,7 +163,8 @@ private:
 				      vector <string> &filenames,
 				      set <string> &includes,
 				      const Place &place_diagnostic,
-				      int fd= -1);
+				      int fd= -1,
+				      bool allow_enoent= false);
 
 	/* Whether the given character can be used as part of a bare
 	 * filename in Stu.  Note that all non-ASCII characters are
@@ -190,7 +196,8 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				  vector <string> &filenames,
 				  set <string> &includes,
 				  const Place &place_diagnostic,
-				  int fd)
+				  int fd,
+				  bool allow_enoent)
 {
 	const char *in= nullptr;
 	size_t in_size;
@@ -221,8 +228,14 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 
 		if (fd < 0) {
 			fd= open(filename.c_str(), O_RDONLY); 
-			if (fd < 0) 
+			if (fd < 0) {
+				if (allow_enoent) {
+					if (errno == ENOENT) {
+						return;
+					}
+				}
 				goto error;
+			}
 		}
 
 		if (fstat(fd, &buf) < 0) {
@@ -370,11 +383,8 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 					j->print(); 
 			}
 		} else {
-			if (place_diagnostic
-			    .get_type()
-			    != Place::Type::EMPTY)
-				place_diagnostic << 
-					system_format(name_format_word(filename_diagnostic)); 
+			if (place_diagnostic.get_type() != Place::Type::EMPTY)
+				place_diagnostic << system_format(name_format_word(filename_diagnostic)); 
 			else
 				print_error(system_format(name_format_word(filename_diagnostic))); 
 		}

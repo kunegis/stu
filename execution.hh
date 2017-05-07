@@ -220,11 +220,8 @@ protected:
 	/* Push a dependency to the default buffer, breaking down non-normalized
 	 * dependencies while doing so.  */
 
-	void read_dynamic(
-			  Flags flags_this,
-//			  Stack avoid_this, 
+	void read_dynamic(Flags flags_this,
 			  const Place_Param_Target &place_param_target,
-//			  shared_ptr <Dynamic_Dependency> dependency_this, 
 			  vector <shared_ptr <Dependency> > &dependencies);
   	/* 
 	 * Read dynamic dependencies from the content of the file
@@ -232,8 +229,10 @@ protected:
 	 * can be raised correctly.  Dependencies that were read are
 	 * written into DEPENDENCIES, which must be empty on
 	 * calling.  
-	 * FLAGS_THIS determines whether the -n/-0/etc. flag was used.
-	 * FLAGS_NEW are flags added to all dependencies. 
+	 * FLAGS_THIS determines whether the -n/-0/etc. flag was used,
+	 * and may also contain the -o flag to ignore a non-existing
+	 * file. 
+//	 * FLAGS_NEW are flags added to all dependencies. 
 	 */
 
 //	void set_pending(); 
@@ -747,12 +746,6 @@ private:
 
 	Stack done;
 	/* Same semantics as in Single_Execution */ 
-
-//	shared_ptr <Rule> param_rule;
-
-//	void read_dynamic_dependency(Stack avoid_this, shared_ptr <Dependency> dependency_this);
-//	/* Read dynamic dependencies from a file.  Called for the parent
-//	 * of a left dynamic branch.  */ 
 };
 
 long Execution::jobs= 1;
@@ -846,27 +839,16 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		throw error; 
 }
 
-void Execution::read_dynamic(
-			     Flags flags_this, 
-//			     Flags flags_new,
-//			     Stack avoid, 
+void Execution::read_dynamic(Flags flags_this, 
 			     const Place_Param_Target &place_param_target,
-//			     shared_ptr <Dynamic_Dependency> dependency_this, 
 			     vector <shared_ptr <Dependency> > &dependencies)
 {
 	assert(place_param_target.place_name.get_n() == 0); 
 	assert(place_param_target.type == Type::FILE); 
-//	assert(dependency_this->is_normalized()); 
 	const Target target= place_param_target.unparametrized(); 
-//	Target target= dependency_this->get_individual_target().unparametrized(); 
 	assert(dependencies.empty()); 
-//	assert(target.type.is_dynamic());
-//	assert(target.type.is_any_file()); 
-//	assert(avoid.get_depth() == target.type.get_depth()); 
 
 	string filename= target.name;
-
-//	Flags flags= dependency_this->dependency->get_flags();
 
 	if (! (flags_this & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
 
@@ -878,7 +860,11 @@ void Execution::read_dynamic(
 		Tokenizer::parse_tokens_file
 			(tokens, 
 			 Tokenizer::DYNAMIC,
-			 place_end, filename, place_param_target.place); 
+			 place_end, 
+			 filename, 
+			 place_param_target.place,
+			 -1,
+			 flags_this & F_OPTIONAL); 
 
 		Place_Name input; /* remains empty */ 
 		Place place_input; /* remains empty */ 
@@ -1710,7 +1696,9 @@ void Execution::unlink(Execution *const parent,
 		       Stack avoid_child,
 		       Flags flags_child)
 {
-	(void) avoid_child;
+	// TODO is FLAGS_CHILD always identical to
+	// DEPENDENCY_CHILD->FLAGS ?
+	(void) avoid_child; // TODO rm if unused
 
 	if (option_debug) {
 		string text_parent= parent->debug_text();
@@ -1990,6 +1978,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 /* A left branch child is done */
 {
 	(void) child; // TODO remove arg if unused 
+	(void) dependency_this; // TODO remove if unused
 	
 	assert(flags_child & F_DYNAMIC_LEFT); 
 
@@ -2007,7 +1996,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 		assert(found); 
 	} else if (dynamic_this) {
 		/* OK */
-	} else {
+	} else /* Another execution type */ {
 		assert(false); 
 	}
 
@@ -2039,20 +2028,12 @@ void Execution::propagate_to_dynamic(Execution *child,
 		try {
 			const Place_Param_Target &place_param_target= 
 				single_dependency_child->place_param_target; 
-//			const Target target= dependency_this->
-//				get_individual_target().unparametrized(); 
-//			assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_this)); 
 
 			vector <shared_ptr <Dependency> > dependencies;
-			read_dynamic(
-				     dependency_this->get_flags(),
-//				     avoid_this.get_bottom(),
-//				     avoid_this, 
+			read_dynamic(flags_child,
+				     //dependency_this->get_flags(),
 				     place_param_target,
-//				     dynamic_pointer_cast <Dynamic_Dependency> (dependency_this), 
 				     dependencies);
-
-//			const Target &target= place_param_target.unparametrized();
 
 			for (auto &j:  dependencies) {
 

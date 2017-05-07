@@ -11,7 +11,8 @@
 #
 # Without any arguments, perform all tests.  With one or more arguments,
 # perform the given tests.  The given test names are the names of the
-# subdirectories of test/, and may or may not include the 'test/' prefix. 
+# subdirectories of test/, and may or may not include the 'test/'
+# prefix.  The arguments may contain glob patterns. 
 #
 # PARAMETERS
 #
@@ -97,7 +98,6 @@
 #
 # TODO
 #
-# * Allow wildcards in the arguments. 
 # * First, execute all tests without 'EXEC', and then all tests with
 #   'EXEC'.  
 # * For each test, interrupt the test after a specified timeout, to

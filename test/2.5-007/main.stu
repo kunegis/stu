@@ -1,6 +1,3 @@
-# Decide where the -/ flag is put:  in the Dependency's, in the Link, in
-# the passed Flags, etc.  
-
 A:  [@x] { cp C A ; }
 @x:  B;
 B = { C }

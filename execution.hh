@@ -318,14 +318,15 @@ protected:
 	 * Only used for finding cycle.  */ 
 
 	static void disconnect(Execution *const parent, 
-			   Execution *const child,
-			   shared_ptr <Dependency> dependency_parent,
-			   Stack avoid_parent,
-			   shared_ptr <Dependency> dependency_child,
-			   Stack avoid_child,
-			   Flags flags_child); 
-	/* Propagate information from the subexecution to the execution, and
-	 * then delete the child execution if necessary.  */
+			       Execution *const child,
+			       shared_ptr <Dependency> dependency_parent,
+			       Stack avoid_parent,
+			       shared_ptr <Dependency> dependency_child,
+			       Stack avoid_child,
+			       Flags flags_child); 
+	/* Remove an edge from the dependency graph.  Propagate
+	 * information from the subexecution to the execution, and then
+	 * delete the child execution if necessary.  */
 
 private: 
 
@@ -345,10 +346,10 @@ private:
 
 	Proceed connect(const Link &link,
 			       shared_ptr <Dependency> dependency_child);
-	/* Deploy a new child execution.  LINK is the link from the
-	 * THIS's parent to THIS.  Note: the top-level flags of
-	 * LINK.DEPENDENCY may be modified.   DEPENDENCY_CHILD must be
-	 * normalized.  */
+	/* Add an edge to the dependency graph.  Deploy a new child
+	 * execution.  LINK is the link from the THIS's parent to THIS.
+	 * Note: the top-level flags of LINK.DEPENDENCY may be modified.
+	 * DEPENDENCY_CHILD must be normalized.  */
 	
 	static Execution *get_execution(const Target &target, 
 					Link &link,
@@ -496,6 +497,7 @@ private:
 	 * zero.  */
 	// TODO replace by a single Flag, since it always has depth
 	// zero. 
+	// TODO rename 'finished_flags' or similar. 
 
 	~Single_Execution(); 
 
@@ -669,11 +671,8 @@ private:
 	 * 3:  Finished.  */
 	
 	vector <vector <shared_ptr <Single_Dependency> > > parts; 
-	/* 
-	 * The individual parts, inserted here during stage 1 by
-	 * Execution::disconnect().  
-	 * Excludes the outer layer. 
-	 */
+	/* The individual parts, inserted here during stage 1 by
+	 * Execution::disconnect().  Excludes the outer layer.  */
 
 	void add_stage0_dependency(shared_ptr <Dependency> d, unsigned concatenate_index);
 	/* Add a dependency during Stage 0.  The given dependency can be
@@ -1112,8 +1111,7 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 
 		/* Don't show a message for left-branch dynamic links */ 
 		if (i != 0 &&
-		    path[i - 1]->parents.at(const_cast <Execution *> (path[i]))
-		    .dependency->get_flags() & F_DYNAMIC_LEFT)
+		    path[i - 1]->parents.at(const_cast <Execution *> (path[i])).dependency->get_flags() & F_DYNAMIC_LEFT)
 			continue;
 
 		/* Same, but when the dynamic execution is at the bottom */
@@ -1124,8 +1122,7 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 			<< fmt("%s%s depends on %s",
 			       i == (ssize_t)(path.size() - 1) 
 			       ? (path.size() == 1 
-				  || (path.size() == 2 &&
-				      link.dependency->get_flags() & F_DYNAMIC_LEFT)
+				  || (path.size() == 2 && link.dependency->get_flags() & F_DYNAMIC_LEFT)
 				  ? "target must not depend on itself: " 
 				  : "cyclic dependency: ") 
 			       : "",
@@ -1300,9 +1297,8 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 
 		if (child->finished(avoid_child)) {
 			disconnect(this, child, 
-			       link.dependency,
-			       link.avoid, 
-			       dependency_child, avoid_child, flags_child); 
+				   link.dependency, link.avoid, 
+				   dependency_child, avoid_child, flags_child); 
 		}
 	}
 
@@ -1364,9 +1360,14 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 		link2.avoid.rem_highest(F_TRIVIAL); 
 	}
 
+	/* Override the dynamic flag */
+	if (link2.flags & F_DYNAMIC_RIGHT) {
+		link2.flags &= ~F_DYNAMIC_LEFT;
+	}
+
 	/* Remove the F_DYNAMIC_LEFT flag to the child, except in a
 	 * transient--X link  */ 
-	if ((link2.flags & F_DYNAMIC_LEFT) &&
+	if (link2.flags & F_DYNAMIC_LEFT &&
 	    ! (dynamic_pointer_cast <Single_Dependency> (link2.dependency)
 	       && dynamic_pointer_cast <Single_Dependency> (link2.dependency)->place_param_target.type == Type::TRANSIENT)) {
 		link2.flags &= ~F_DYNAMIC_LEFT; 
@@ -1532,9 +1533,8 @@ Execution::Proceed Execution::connect(const Link &link,
 			
 		if (child->finished(avoid_child)) {
 			disconnect(this, child, 
-			       link.dependency,
-			       link.avoid, 
-			       dependency_child, avoid_child, flags_child);
+				   link.dependency, link.avoid, 
+				   dependency_child, avoid_child, flags_child);
 		}
 
 		return P_CONTINUE;
@@ -1670,10 +1670,8 @@ Execution::Proceed Execution::connect(const Link &link,
 			
 		if (child->finished(avoid_child)) {
 			disconnect(this, child, 
-			       link.dependency,
-			       link.avoid, 
-			       dependency_child,
-			       avoid_child, flags_child);
+				   link.dependency, link.avoid, 
+				   dependency_child, avoid_child, flags_child);
 		}
 
 		return P_CONTINUE;
@@ -1696,15 +1694,16 @@ void Execution::raise(int error_)
 }
 
 void Execution::disconnect(Execution *const parent, 
-		       Execution *const child,
-		       shared_ptr <Dependency> dependency_parent,
-		       Stack avoid_parent,
-		       shared_ptr <Dependency> dependency_child,
-		       Stack avoid_child,
-		       Flags flags_child)
+			   Execution *const child,
+			   shared_ptr <Dependency> dependency_parent,
+			   Stack avoid_parent,
+			   shared_ptr <Dependency> dependency_child,
+			   Stack avoid_child,
+			   Flags flags_child)
 {
 	// TODO is FLAGS_CHILD always identical to
 	// DEPENDENCY_CHILD->FLAGS ?
+
 	(void) avoid_child; // TODO rm if unused
 
 	if (option_debug) {
@@ -1731,7 +1730,8 @@ void Execution::disconnect(Execution *const parent,
 	 */
 
 	/* Propagate dynamic dependencies */ 
-	if (flags_child & F_DYNAMIC_LEFT) {
+	if (flags_child & F_DYNAMIC_LEFT &&
+	    ! (flags_child & F_DYNAMIC_RIGHT)) {
 		/* This was the left branch between a dynamic dependency
 		 * and its child.  Add the right branch.  */
 
@@ -1747,36 +1747,6 @@ void Execution::disconnect(Execution *const parent,
 					     dependency_parent,
 					     dependency_child);  
 	}
-
-	// /* Propagate concatenated dependencies */
-	// if ((flags_child & F_CONCATENATE) && ! (flags_child & F_DYNAMIC)) {
-	// 	unsigned concatenation_index= 
-	// 		(flags_child >> C_CONCATENATE_BASE) & ((1 << C_CONCATENATE_COUNT) - 1); 
-
-	// 	// TODO if DEPENDENCY_CHILD is a Single_Dependency, add
-	// 	// it to the parts of the parent.  If it is dynamic, do
-	// 	// the same that is done
-	// 	...; 
-
-	// 	// shared_ptr <Dynamic_Dependency> dynamic_dependency_child=
-	// 	// 	dynamic_pointer_cast <Dynamic_Dependency> (dependency_child); 
-	// 	// if (dynamic_dependency_child) {
-	// 	// 	shared_ptr <Single_Dependency> dependency_inner=
-	// 	// 		dynamic_pointer_cast <Single_Dependency> (dynamic_dependency_child->dependency); 
-	// 	// 	if (dependency_inner && dependency_inner->place_param_target.type == Type::FILE) {
-	// 	// 		vector <shared_ptr <Single_Dependency> > list;
-	// 	// 		shared_ptr <Dynamic_Dependency> dynamic_dependency
-	// 	// 			= make_shared <Dynamic_Dependency> 
-	// 	// 			(flags_child & ~(((1 << C_CONCATENATE_COUNT) - 1) << C_CONCATENATE_BASE), 
-	// 	// 			 dependency_inner); 
-	// 	// 		parent->read_dynamic(avoid_parent, dynamic_dependency, list); 
-	// 	// 		for (auto &i:  list) {
-	// 	// 			dynamic_cast <Concatenated_Execution *> (parent)
-	// 	// 				->add_part(i, concatenation_index);
-	// 	// 		}
-	// 	// 	}
-	// 	// }
-	// }
 
 	/* Propagate timestamp.  Note:  When the parent execution has
 	 * filename == "", this is unneccesary, but it's easier to not
@@ -1828,12 +1798,13 @@ void Execution::disconnect(Execution *const parent,
 
 	parent->error |= child->error; 
 
+	/* Don't propagate the NEED_BUILD flag via DYNAMIC_LEFT links:
+	 * It just means the list of depenencies have changed, not the
+	 * dependencies themselves.  */
 	if (child->bits & B_NEED_BUILD
-	    //child->need_build 
 	    && ! (flags_child & F_PERSISTENT)
 	    && ! (flags_child & F_DYNAMIC_LEFT)) {
 		parent->bits |= B_NEED_BUILD; 
-//		parent->need_build= true; 
 	}
 
 	/* 
@@ -1970,7 +1941,7 @@ void Execution::push_result(shared_ptr <Dependency> dd,
 	/* If THIS is a dynamic execution, add DD as a right branch */
 	if (! (dd->flags & F_RESULT_ONLY)) {
 		shared_ptr <Dependency> dd_right= Dependency::clone_dependency(dd);
-		dd_right->flags &= ~F_DYNAMIC_LEFT; 
+		dd_right->flags |= F_DYNAMIC_RIGHT; 
 		push_dependency(dd_right); 
 	}
 }
@@ -2020,26 +1991,19 @@ void Execution::propagate_to_dynamic(Execution *child,
 		dynamic_pointer_cast <Single_Dependency> (dependency_child);
 	assert(single_dependency_child); 
 
-	/* This is a dynamic file dependency; read out the file.  This
-	 * is not an optimization of a common case, but necessary
-	 * because otherwise we would start, as a right branch, the same
-	 * execution as ourselves.  */ 
-
 	try {
 		const Place_Param_Target &place_param_target= 
 			single_dependency_child->place_param_target; 
 
-		vector <shared_ptr <Dependency> > dependencies;
-		read_dynamic(flags_child,
-			     place_param_target,
-			     dependencies);
-
-		for (auto &j:  dependencies) {
-
-//			shared_ptr <Dependency> dd{j};
-
-			push_result(j, dependency_this,
+		if (place_param_target.type == Type::FILE) {
+			vector <shared_ptr <Dependency> > dependencies;
+			read_dynamic(flags_child,
+				     place_param_target,
+				     dependencies);
+			for (auto &j:  dependencies) {
+				push_result(j, dependency_this,
 				    avoid_this.get_highest()); 
+			}
 		}
 				
 	} catch (int e) {

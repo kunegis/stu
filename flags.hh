@@ -2,20 +2,24 @@
 #define FLAGS_HH
 
 /*
- * Flags are represented in Stu files with a syntax that resembles
- * command line options, i.e., -p, -o, etc.  Internally, flags are
- * defined as bit fields. 
+ * Flags apply to dependencies and represents things like "optional
+ * dependency" or "\0-separated file".  Flags are binary option-like,
+ * and apply at multiple levels in Stu, from Stu source code where they
+ * are represented by a syntax ressembling that of command line flags,
+ * to attributes of edges in the dependency graph.  Internally, flags
+ * are defined as bit fields.
  *
- * Each edge in the dependency graph is annotated with one
- * object of this type.  This contains bits related to what should be
- * done with the dependency, whether time is considered, etc.  The flags
- * are defined in such a way that the simplest dependency is
- * represented by zero, and each flag enables a specific feature.  
+ * Each edge in the dependency graph is annotated with one object of
+ * this type.  This contains bits related to what should be done with
+ * the dependency, whether time is considered, etc.  The flags are
+ * defined in such a way that the simplest dependency is represented by
+ * zero, and each flag enables a specific feature.
  *
  * The transitive bits effectively are set for tasks not to do.
- * Therefore, inverting them gives the bits for the tasks to do.   
- *
- * Declared as integer so arithmetic can be performed on it.
+ * Therefore, inverting them gives the bits for the tasks to do.  In
+ * particular, the flag fields that store the information which part of
+ * a task has been done has inverse semantics: They have a bit set when
+ * that part has been done, i.e., when the flag initially was not set.
  */
 
 #include <limits.h>
@@ -24,11 +28,13 @@
 #include "text.hh"
 
 typedef unsigned Flags; 
+/* Declared as integer so arithmetic can be performed on it */
 
 enum 
 {
-	/* The index of the flags, used for array indexing.  Variables
-	 * iterating over these values are usually called I.  */ 
+	/* The index of the flags (I_*), used for array indexing.
+	 * Variables iterating over these values are usually called
+	 * I.  */ 
 
 	I_PERSISTENT       = 0,
 	I_OPTIONAL,         
@@ -37,6 +43,7 @@ enum
 	I_RESULT_ONLY,
 
 	I_DYNAMIC_LEFT,
+	I_DYNAMIC_RIGHT,
 	I_COPY_RESULT,
 	I_VARIABLE,
 	I_OVERRIDE_TRIVIAL,
@@ -87,6 +94,10 @@ enum
 	F_DYNAMIC_LEFT     = 1 << I_DYNAMIC_LEFT,
 	/* This is the link between a Dynamic_Execution and its left branch */
 
+	F_DYNAMIC_RIGHT    = 1 << I_DYNAMIC_RIGHT,
+	/* For right branches of dynamic.  Overrides the otherwise
+	 * passed F_DYNAMIC_LEFT flag.  */
+
 	F_COPY_RESULT      = 1 << I_COPY_RESULT,
 	/* Copy the result list of the child to the parent */
 
@@ -106,7 +117,7 @@ enum
 	 * filenames, without any markup  */ 
 };
 
-const char *const FLAGS_CHARS= "pot*/=$Tn0"; 
+const char *const FLAGS_CHARS= "pot*/\\=$Tn0"; 
 /* Characters representing the individual flags -- used in verbose mode
  * output */ 
 
@@ -116,6 +127,7 @@ int flag_get_index(char c)
  */ 
 {
 	switch (c) {
+
 	case 'p':  return I_PERSISTENT;
 	case 'o':  return I_OPTIONAL;
 	case 't':  return I_TRIVIAL;
@@ -131,13 +143,15 @@ int flag_get_index(char c)
 string flags_format(Flags flags) 
 /* 
  * Textual representation of a flags value.  To be shown before the
- * argument.  Empty when flags are empty. 
+ * argument.  Empty when flags are empty.  This is used only for debug
+ * mode output, as of version 2.5.0. 
  */
 {
 	string ret= "";
 	for (int i= 0;  i < C_ALL;  ++i)
 		if (flags & (1 << i))
 			ret += frmt("-%c ", FLAGS_CHARS[i]); 
+	// TODO avoid a space character at the end 
 	return ret;
 }
 

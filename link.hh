@@ -14,6 +14,10 @@ public:
 	 * depth of the dependency.  This variable only holds the
 	 * PERSISTENT/OPTIONAL/TRIVIAL bits (i.e., transitive bits as
 	 * defined by F_COUNT).  */
+	// TODO rename the 'avoid' variables to 'flag_stack' or similar,
+	// to emphasize that they contain flags, and make clear that
+	// they are not inverted with respected to flags.  At best, only
+	// the 'done' variables should be called 'avoid'. 
 
 	Flags flags;
 	/* Flags that are valid for this dependency, including the

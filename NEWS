@@ -11,6 +11,14 @@ made, which are documented in the file MIGRATION.
 
 ------------------------------------------------------------------------
 
+XXXXXXXXXX  Version 2.5
+
+* Concatenation is now supported
+* Dynamic transient is now supported
+* The handling of dynamic dependencies was rewritten to allow
+  concatenation and dynamic transients.  The semantics of existing
+  functionality was not changed. 
+
 2016-09-13  Version 2.4.19
 
 * The rules governing what is written on stdout where reworked:  There

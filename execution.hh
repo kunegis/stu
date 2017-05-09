@@ -1984,13 +1984,15 @@ void Execution::propagate_to_dynamic(Execution *child,
 	 *  - This is a singly dynamic file:  read out the file in this
 	 *    function. 
 	 *  - Any other dynamic:  start, as right branch, the list of
-	 *    the child with our own outer dynamic layer added. 
+	 *    the child with our own outer dynamic layer added.  This is
+	 *    done continuously, and not here. 
 	 */
 
 	shared_ptr <Single_Dependency> single_dependency_child=
 		dynamic_pointer_cast <Single_Dependency> (dependency_child);
-	assert(single_dependency_child); 
+//	assert(single_dependency_child); 
 
+	if (single_dependency_child) { 
 	try {
 		const Place_Param_Target &place_param_target= 
 			single_dependency_child->place_param_target; 
@@ -2010,6 +2012,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 		/* We catch not only the errors raised in this function,
 		 * but also the errors raised in read_dynamic().  */
 		raise(e); 
+	}
 	}
 }
 

@@ -1,6 +1,14 @@
-# Make sure the F_DYNAMIC_LEFT flag is not passed to 'C'.
-
 A: [B]  { cp D A ; }
 B:  C { cp C B ; }
 C:    { echo D >C ; }
 D     { echo correct >D ; }
+
+#
+#        A
+#        |
+#       [B]
+#       / \
+#      B   D
+#      |
+#      C
+# 

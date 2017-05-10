@@ -36,19 +36,19 @@ enum
 	 * Variables iterating over these values are usually called
 	 * I.  */ 
 
-	I_PERSISTENT       = 0,
-	I_OPTIONAL,         
-	I_TRIVIAL,          
+	I_PERSISTENT           /* -p */    = 0,
+	I_OPTIONAL,            /* -o */
+	I_TRIVIAL,             /* -t */
 
-	I_RESULT_ONLY,
+	I_RESULT_ONLY,         /* -* */
 
-	I_DYNAMIC_LEFT,
-	I_DYNAMIC_RIGHT,
-	I_COPY_RESULT,
-	I_VARIABLE,
-	I_OVERRIDE_TRIVIAL,
-	I_NEWLINE_SEPARATED,
-	I_NUL_SEPARATED,
+	I_DYNAMIC_LEFT,        /* -/ */
+	I_DYNAMIC_RIGHT,       /* -\ */
+//	I_COPY_RESULT,         /* -= */
+	I_VARIABLE,            /* -$ */
+	I_OVERRIDE_TRIVIAL,    /* -T */
+	I_NEWLINE_SEPARATED,   /* -n */
+	I_NUL_SEPARATED,       /* -0 */
 
 	C_ALL, /* Total number of flags */ 
 
@@ -98,8 +98,8 @@ enum
 	/* For right branches of dynamic.  Overrides the otherwise
 	 * passed F_DYNAMIC_LEFT flag.  */
 
-	F_COPY_RESULT      = 1 << I_COPY_RESULT,
-	/* Copy the result list of the child to the parent */
+//	F_COPY_RESULT      = 1 << I_COPY_RESULT,
+//	/* Copy the result list of the child to the parent */
 
 	F_VARIABLE         = 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */ 
@@ -117,7 +117,7 @@ enum
 	 * filenames, without any markup  */ 
 };
 
-const char *const FLAGS_CHARS= "pot*/\\=$Tn0"; 
+const char *const FLAGS_CHARS= "pot*/\\$Tn0"; 
 /* Characters representing the individual flags -- used in verbose mode
  * output */ 
 

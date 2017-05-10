@@ -1363,6 +1363,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	/* Override the dynamic flag */
 	if (link2.flags & F_DYNAMIC_RIGHT) {
 		link2.flags &= ~F_DYNAMIC_LEFT;
+		// XXX should we also override -* ?
 	}
 
 	/* Remove the F_DYNAMIC_LEFT flag to the child, except in a
@@ -1371,6 +1372,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	    ! (dynamic_pointer_cast <Single_Dependency> (link2.dependency)
 	       && dynamic_pointer_cast <Single_Dependency> (link2.dependency)->place_param_target.type == Type::TRANSIENT)) {
 		link2.flags &= ~F_DYNAMIC_LEFT; 
+		// XXX should we also override -* ?
 	}
 	
  	if (finished(link2.avoid)) {
@@ -1730,10 +1732,10 @@ void Execution::disconnect(Execution *const parent,
 	 */
 
 	/* Propagate dynamic dependencies */ 
-	if (flags_child & F_DYNAMIC_LEFT &&
-	    ! (flags_child & F_DYNAMIC_RIGHT)) {
+	if (flags_child & F_DYNAMIC_LEFT && ! (flags_child & F_DYNAMIC_RIGHT)) {
 		/* This was the left branch between a dynamic dependency
 		 * and its child.  Add the right branch.  */
+		// XXX everywhere where DYNAMIC_LEFT is checked, also check that DYNAMIC_RRIGHT is not set 
 
 		Dynamic_Execution *parent_dynamic= dynamic_cast <Dynamic_Execution *> (parent);
 		Single_Execution *parent_single= dynamic_cast <Single_Execution *> (parent); 
@@ -1919,30 +1921,38 @@ void Execution::push_result(shared_ptr <Dependency> dd,
 		if (dd->get_place_flag(i).empty())
 			dd->set_place_flag(i, dependency_this->get_place_flag(i)); 
 	}
+
+	/* If THIS is a dynamic execution, add DD as a right branch */
+	if (dynamic_cast <Dynamic_Execution *> (this)) {
+//	if (! (dd->flags & F_RESULT_ONLY)) {
+		shared_ptr <Dependency> dd_right= Dependency::clone_dependency(dd);
+		dd_right->flags |= F_DYNAMIC_RIGHT; 
+		push_dependency(dd_right); 
+	}
 	
 	for (auto &i:  parents) {
 
 		Execution *parent= i.first;
 		const Link &link= i.second;
 
-		Single_Execution *single_parent= dynamic_cast <Single_Execution *> (parent);
+		if (!((link.flags & F_DYNAMIC_LEFT) && !(link.flags & F_DYNAMIC_RIGHT))) 
+			continue; 
+		
+		Single_Execution *single_this= dynamic_cast <Single_Execution *> (this);
 
-		const bool via_transient= 
-			single_parent && single_parent->targets.size() == 1 &&
-			single_parent->targets.at(0).type == Type::TRANSIENT; 
-
-		if (via_transient ||
-		    ((link.flags & F_DYNAMIC_LEFT) &&
-		     ~(link.flags & F_RESULT_ONLY))) {
+		if (single_this && single_this->targets.size() == 1 &&
+		    single_this->targets.at(0).type == Type::TRANSIENT) {
 			parent->push_result(dd, link.dependency, link.flags); 
-		} 
-	}
+		}
 
-	/* If THIS is a dynamic execution, add DD as a right branch */
-	if (! (dd->flags & F_RESULT_ONLY)) {
-		shared_ptr <Dependency> dd_right= Dependency::clone_dependency(dd);
-		dd_right->flags |= F_DYNAMIC_RIGHT; 
-		push_dependency(dd_right); 
+		else if (dynamic_cast <Dynamic_Execution *> (this)) {
+//		else if ((link.flags & F_DYNAMIC_LEFT) && !(link.flags & F_DYNAMIC_RIGHT)) {
+			shared_ptr <Dependency> dd2=
+				make_shared <Dynamic_Dependency> (0, dd); 
+			dd2->add_flags(link.dependency, false); 
+			dd2->flags &= ~(F_DYNAMIC_LEFT | F_DYNAMIC_RIGHT | F_RESULT_ONLY); 
+			parent->push_result(dd2, link.dependency, 0); 
+		} 
 	}
 }
 
@@ -1979,40 +1989,29 @@ void Execution::propagate_to_dynamic(Execution *child,
 	/* Even if the child produced an error, we still read
 	 * its partially assembled list of filenames.  */
 
-	/* 
-	 * There are two cases:
-	 *  - This is a singly dynamic file:  read out the file in this
-	 *    function. 
-	 *  - Any other dynamic:  start, as right branch, the list of
-	 *    the child with our own outer dynamic layer added.  This is
-	 *    done continuously, and not here. 
-	 */
-
 	shared_ptr <Single_Dependency> single_dependency_child=
 		dynamic_pointer_cast <Single_Dependency> (dependency_child);
-//	assert(single_dependency_child); 
 
 	if (single_dependency_child) { 
-	try {
-		const Place_Param_Target &place_param_target= 
-			single_dependency_child->place_param_target; 
+		try {
+			const Place_Param_Target &place_param_target= 
+				single_dependency_child->place_param_target; 
 
-		if (place_param_target.type == Type::FILE) {
-			vector <shared_ptr <Dependency> > dependencies;
-			read_dynamic(flags_child,
-				     place_param_target,
-				     dependencies);
-			for (auto &j:  dependencies) {
-				push_result(j, dependency_this,
-				    avoid_this.get_highest()); 
+			if (place_param_target.type == Type::FILE) {
+				vector <shared_ptr <Dependency> > dependencies;
+				read_dynamic(flags_child,
+					     place_param_target,
+					     dependencies);
+				for (auto &j:  dependencies) {
+					push_result(j, dependency_this,
+						    avoid_this.get_highest()); 
+				}
 			}
+		} catch (int e) {
+			/* We catch not only the errors raised in this function,
+			 * but also the errors raised in read_dynamic().  */
+			raise(e); 
 		}
-				
-	} catch (int e) {
-		/* We catch not only the errors raised in this function,
-		 * but also the errors raised in read_dynamic().  */
-		raise(e); 
-	}
 	}
 }
 
@@ -3536,15 +3535,12 @@ Dynamic_Execution::Dynamic_Execution(Link &link,
 	/* Push left branch dependency */ 
 	shared_ptr <Dependency> dependency_left=
 		Dependency::clone_dependency(dependency->dependency);
-	dependency_left->add_flags(F_DYNAMIC_LEFT); 
+	dependency_left->add_flags(F_DYNAMIC_LEFT | F_RESULT_ONLY); 
 	push_dependency(dependency_left); 
 }
 
 Execution::Proceed Dynamic_Execution::execute(Execution *, const Link &link)
 {
-//	assert(bits & B_PENDING);
-//	bits &= ~B_PENDING; 
-
 	Proceed proceed= Execution::execute_base(link, done); 
 	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
 		return proceed; 

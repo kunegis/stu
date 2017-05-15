@@ -404,6 +404,7 @@ public:
 
 	bool is_dynamic() const;
 	/* Whether the target is dynamic */ 
+	// TODO do we still need this?
 
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
@@ -1343,7 +1344,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	check_execution(link); 
 #endif
 
-	print_debug(fmt("execute %s %s", flags_format(link.flags), link.avoid.format())); 
+	print_debug(fmt("execute ⟨%s⟩ %s", link.format_out(), link.avoid.format())); 
 
 	Link link2{link}; 
 
@@ -1462,7 +1463,7 @@ Execution::Proceed Execution::connect(const Link &link,
 {
 	assert(dependency_child->is_normalized()); 
 
-	print_debug(fmt("connect %s %s", link.format_out(), dependency_child->format_out())); 
+	print_debug(fmt("connect ⟨%s⟩ %s", link.format_out(), dependency_child->format_out())); 
 
 	Flags flags_child= dependency_child->get_flags(); 
 	Flags flags_child_additional= 0; 
@@ -1680,7 +1681,9 @@ void Execution::disconnect(Execution *const parent,
 
 	(void) avoid_child; // TODO rm if unused
 
-	parent->print_debug(fmt("disconnect %s %s", child->debug_text(), child->debug_done_text())); 
+	parent->print_debug(fmt("disconnect {%s} %s", 
+				child->debug_done_text(),
+				child->debug_text())); 
 
 	assert(parent != nullptr);
 	assert(child != nullptr); 
@@ -1875,7 +1878,7 @@ void Execution::push_result(shared_ptr <Dependency> dd,
 	assert(! (flags & F_DYNAMIC_LEFT)); 
 	assert(! (dd->flags & F_DYNAMIC_LEFT)); 
 
-	print_debug(fmt("push_result %s %s", flags_format(flags), dd->format_out())); 
+	print_debug(fmt("push_result ⟨%s⟩ %s", flags_format(flags), dd->format_out())); 
 
 	shared_ptr <Single_Dependency> single_dd= dynamic_pointer_cast <Single_Dependency> (dd); 
 
@@ -2253,14 +2256,6 @@ Single_Execution::Single_Execution(Target target_,
 				}
 			} 
 
-			// if (option_debug) {
-			// 	string text_target= debug_text();
-			// 	string text_link_new= dep->format_out(); 
-			// 	fprintf(stderr, "DEBUG %s    %s push %s\n",
-			// 		Verbose::padding(),
-			// 		text_target.c_str(),
-			// 		text_link_new.c_str()); 
-			// }
 			push_dependency(dep); 
 		}
 	} else {

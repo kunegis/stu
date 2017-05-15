@@ -293,6 +293,11 @@ X = {x}   Y = {y}  Z = {z}
 # dependencies.  
 #
 
+#
+# Have a feature to indicate that a file contains only a single
+# filename.  To complement -n and -0.  
+#
+
 #################### Further features #########################
 
 #
@@ -441,7 +446,7 @@ $name.bib;   # Rule (1)
 # Import all rules from subdirectory; will prepend the directory name to
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of
-
+ 
 # All these are equivalent 
 % import src/main.stu
 % import src/
@@ -526,7 +531,7 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 }
 
 #
-# Have a flag to present echoing of the command. (Similar to '@' in
+# Have a flag to prevent echoing of the command. (Similar to '@' in
 # Make)
 #
 

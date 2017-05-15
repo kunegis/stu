@@ -232,16 +232,26 @@ protected:
 	 * FLAGS_THIS determines whether the -n/-0/etc. flag was used,
 	 * and may also contain the -o flag to ignore a non-existing
 	 * file. 
-//	 * FLAGS_NEW are flags added to all dependencies. 
 	 */
 
-//	void set_pending(); 
-//	/* Set the PENDING bit for this execution and all parents
-//	 * recursively */
-
+	/* Add an item to the result list, giving it FLAGS, and
+	 * percolate up.  FLAGS does not have the F_DYNAMIC_LEFT bit
+	 * set.  */ 
 	void push_result(shared_ptr <Dependency> dd,
-			 shared_ptr <Dependency> dependency_this,
+//			 shared_ptr <Dependency> dependency_this,
 			 Flags flags);
+
+	void print_debug(string text) const;
+	/* Print a line for debug mode.  The given TEXT starts with the
+	 * lower-case name of the operation being performed, followed by
+	 * parameters, and not ending in a newline or period.  */
+
+	static void print_debug_static(string text_target,
+				       string text);
+	static void print_debug_static(string text)
+	{
+		print_debug_static("", text); 
+	}
 
 	virtual ~Execution(); 
 
@@ -327,6 +337,7 @@ protected:
 	/* Remove an edge from the dependency graph.  Propagate
 	 * information from the subexecution to the execution, and then
 	 * delete the child execution if necessary.  */
+	// TODO make this a non-static function of PARENT. 
 
 private: 
 
@@ -345,7 +356,7 @@ private:
 	 * contain compound dependencies.  */
 
 	Proceed connect(const Link &link,
-			       shared_ptr <Dependency> dependency_child);
+			shared_ptr <Dependency> dependency_child);
 	/* Add an edge to the dependency graph.  Deploy a new child
 	 * execution.  LINK is the link from the THIS's parent to THIS.
 	 * Note: the top-level flags of LINK.DEPENDENCY may be modified.
@@ -781,17 +792,9 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 
 			Proceed proceed;
 			do {
-//			while (root_execution->bits & B_PENDING) {
-				if (option_debug) {
-					fprintf(stderr, "DEBUG %s main.next\n", 
-						Verbose::padding());
-				}
+				print_debug_static("main.next"); 
 				proceed= root_execution->execute(nullptr, move(link));
-//				assert(Single_Execution::executions_by_pid.empty() == ! (proceed & P_BIT_WAIT)); 
-//				assert(! (root_execution->bits & B_PENDING)
-//				       == ! (proceed & P_BIT_PENDING)); 
 			} while (proceed & P_BIT_PENDING); 
-//			}
 
 			if (proceed & P_BIT_WAIT) {
 				Single_Execution::wait();
@@ -1320,6 +1323,8 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 
 void Execution::push_dependency(shared_ptr <Dependency> dependency)
 {
+	print_debug(fmt("push_dependency %s", dependency->format_out())); 
+
 	vector <shared_ptr <Dependency> > dependencies;
 	Dependency::make_normalized(dependencies, dependency); 
        
@@ -1338,19 +1343,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	check_execution(link); 
 #endif
 
-	if (option_debug) {
-		// TODO provide a function à la print_debug() to
-		// encapsulate all this. 
-		string text_target= debug_text(); 
-		string text_flags= flags_format(link.flags);
-		string text_avoid= link.avoid.format(); 
-
-		fprintf(stderr, "DEBUG %s %s execute %s %s\n", 
-			Verbose::padding(),
-			text_target.c_str(),
-			text_flags.c_str(),
-			text_avoid.c_str()); 
-	}
+	print_debug(fmt("execute %s %s", flags_format(link.flags), link.avoid.format())); 
 
 	Link link2{link}; 
 
@@ -1376,12 +1369,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	}
 	
  	if (finished(link2.avoid)) {
-		if (option_debug) {
-			string text_target= debug_text(); 
-			fprintf(stderr, "DEBUG %s %s finished\n",
-				Verbose::padding(),
-				text_target.c_str());
-		}
+		print_debug("finished"); 
 		return P_CONTINUE; 
 	}
 
@@ -1401,12 +1389,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 		if (proceed_all & P_BIT_WAIT) 
 			return proceed_all; 
 		if (finished(link2.avoid) && ! option_keep_going) {
-			if (option_debug) {
-				string text_target= debug_text(); 
-				fprintf(stderr, "DEBUG %s %s finished\n",
-					Verbose::padding(),
-					text_target.c_str());
-			}
+			print_debug("finished"); 
 			return proceed_all;
 		}
 	} 
@@ -1479,18 +1462,7 @@ Execution::Proceed Execution::connect(const Link &link,
 {
 	assert(dependency_child->is_normalized()); 
 
-	if (option_debug) {
-		string text_target= debug_text();
-		string text_flags= flags_format(link.flags);
-		string text_avoid= link.avoid.format(); 
-		string text_child= dependency_child->format_out(); 
-		fprintf(stderr, "DEBUG %s %s connect %s %s %s\n",
-			Verbose::padding(),
-			text_target.c_str(),
-			text_flags.c_str(),
-			text_avoid.c_str(),
-			text_child.c_str());
-	}
+	print_debug(fmt("connect %s %s", link.format_out(), dependency_child->format_out())); 
 
 	Flags flags_child= dependency_child->get_flags(); 
 	Flags flags_child_additional= 0; 
@@ -1708,16 +1680,7 @@ void Execution::disconnect(Execution *const parent,
 
 	(void) avoid_child; // TODO rm if unused
 
-	if (option_debug) {
-		string text_parent= parent->debug_text();
-		string text_child= child->debug_text();
-		string text_done_child= child->debug_done_text();
-		fprintf(stderr, "DEBUG %s %s disconnect %s %s\n",
-			Verbose::padding(),
-			text_parent.c_str(),
-			text_child.c_str(),
-			text_done_child.c_str());
-	}
+	parent->print_debug(fmt("disconnect %s %s", child->debug_text(), child->debug_done_text())); 
 
 	assert(parent != nullptr);
 	assert(child != nullptr); 
@@ -1739,9 +1702,13 @@ void Execution::disconnect(Execution *const parent,
 
 		Dynamic_Execution *parent_dynamic= dynamic_cast <Dynamic_Execution *> (parent);
 		Single_Execution *parent_single= dynamic_cast <Single_Execution *> (parent); 
-		assert(parent_dynamic || 
-		       (parent_single && parent_single->targets.size() == 1 &&
-			parent_single->targets.at(0).type == Type::TRANSIENT)); 
+		if (! parent_dynamic) {
+			assert(parent_single); 
+			shared_ptr <Single_Dependency> single_dependency_parent
+				= dynamic_pointer_cast <Single_Dependency> (dependency_parent); 
+			assert(single_dependency_parent &&
+			       single_dependency_parent->place_param_target.type == Type::TRANSIENT); 
+		}
 
 		parent->propagate_to_dynamic(child,
 					     flags_child,
@@ -1865,7 +1832,6 @@ Execution *Execution::get_execution(const Target &target,
 			 * connection */ 
 			execution->parents[parent]= link;
 		}
-//		execution->set_pending(); 
 		
 	} else { 
 		/* Create a new Execution object */ 
@@ -1903,10 +1869,13 @@ void Execution::copy_result(Execution *parent, Execution *child)
 }
 
 void Execution::push_result(shared_ptr <Dependency> dd, 
-			    shared_ptr <Dependency> dependency_this,
+//			    shared_ptr <Dependency> dependency_this,
 			    Flags flags)
 {
+	assert(! (flags & F_DYNAMIC_LEFT)); 
 	assert(! (dd->flags & F_DYNAMIC_LEFT)); 
+
+	print_debug(fmt("push_result %s %s", flags_format(flags), dd->format_out())); 
 
 	shared_ptr <Single_Dependency> single_dd= dynamic_pointer_cast <Single_Dependency> (dd); 
 
@@ -1914,17 +1883,21 @@ void Execution::push_result(shared_ptr <Dependency> dd,
 	if (single_dd) 
 		result.push_back(single_dd); 
 	
-	/* Add flags from self */
-	dd= Dependency::clone_dependency(dd); 
-	dd->add_flags(flags);
-	for (int i= 0;  i < C_PLACED;  ++i) {
-		if (dd->get_place_flag(i).empty())
-			dd->set_place_flag(i, dependency_this->get_place_flag(i)); 
-	}
-
 	/* If THIS is a dynamic execution, add DD as a right branch */
-	if (dynamic_cast <Dynamic_Execution *> (this)) {
-//	if (! (dd->flags & F_RESULT_ONLY)) {
+	if (dynamic_cast <Dynamic_Execution *> (this) && 
+	    ! (
+	       flags
+//	       dependency_this->flags 
+	       & F_RESULT_ONLY)) {
+
+//		/* Add flags from self */
+//		dd= Dependency::clone_dependency(dd); 
+//		dd->add_flags(flags);
+//		for (int i= 0;  i < C_PLACED;  ++i) {
+//			if (dd->get_place_flag(i).empty())
+//				dd->set_place_flag(i, dependency_this->get_place_flag(i)); 
+//		}
+
 		shared_ptr <Dependency> dd_right= Dependency::clone_dependency(dd);
 		dd_right->flags |= F_DYNAMIC_RIGHT; 
 		push_dependency(dd_right); 
@@ -1937,21 +1910,22 @@ void Execution::push_result(shared_ptr <Dependency> dd,
 
 		if (!((link.flags & F_DYNAMIC_LEFT) && !(link.flags & F_DYNAMIC_RIGHT))) 
 			continue; 
-		
-		Single_Execution *single_this= dynamic_cast <Single_Execution *> (this);
 
-		if (single_this && single_this->targets.size() == 1 &&
-		    single_this->targets.at(0).type == Type::TRANSIENT) {
-			parent->push_result(dd, link.dependency, link.flags); 
+		if (dynamic_pointer_cast <Single_Dependency> (link.dependency) &&
+		    dynamic_pointer_cast <Single_Dependency> (link.dependency)->place_param_target.type == Type::TRANSIENT) {
+			parent->push_result(dd, 
+//					    link.dependency, 
+					    link.flags & ~F_DYNAMIC_LEFT); 
 		}
 
 		else if (dynamic_cast <Dynamic_Execution *> (this)) {
-//		else if ((link.flags & F_DYNAMIC_LEFT) && !(link.flags & F_DYNAMIC_RIGHT)) {
 			shared_ptr <Dependency> dd2=
 				make_shared <Dynamic_Dependency> (0, dd); 
 			dd2->add_flags(link.dependency, false); 
 			dd2->flags &= ~(F_DYNAMIC_LEFT | F_DYNAMIC_RIGHT | F_RESULT_ONLY); 
-			parent->push_result(dd2, link.dependency, 0); 
+			parent->push_result(dd2, 
+//					    link.dependency, 
+					    0); 
 		} 
 	}
 }
@@ -2003,7 +1977,8 @@ void Execution::propagate_to_dynamic(Execution *child,
 					     place_param_target,
 					     dependencies);
 				for (auto &j:  dependencies) {
-					push_result(j, dependency_this,
+					push_result(j, 
+//						    dependency_this,
 						    avoid_this.get_highest()); 
 				}
 			}
@@ -2013,6 +1988,30 @@ void Execution::propagate_to_dynamic(Execution *child,
 			raise(e); 
 		}
 	}
+}
+
+void Execution::print_debug(string text) const
+{
+	print_debug_static(debug_text(), text); 
+}
+
+void Execution::print_debug_static(string text_target,
+				   string text)
+{
+	assert(text != "");
+	assert(text[0] >= 'a' && text[0] <= 'z'); 
+	assert(text[text.size() - 1] != '\n');
+
+	if (! option_debug) 
+		return;
+
+	if (text_target != "")
+		text_target += ' ';
+
+	fprintf(stderr, "DEBUG %s    %s%s\n",
+		Verbose::padding(),
+		text_target.c_str(),
+		text.c_str()); 
 }
 
 Single_Execution::~Single_Execution()
@@ -2025,22 +2024,15 @@ void Single_Execution::wait()
 {
 	// TODO use a non-blocking wait() function to handle all
 	// finished jobs in a loop in this function. 
-	
-	if (option_debug) {
-		fprintf(stderr, "DEBUG %s wait\n",
-			Verbose::padding()); 
-	}
+
+	print_debug_static("wait...");
 
 	assert(Single_Execution::executions_by_pid.size() != 0); 
 
 	int status;
 	pid_t pid= Job::wait(&status); 
 
-	if (option_debug) {
-		fprintf(stderr, "DEBUG %s wait: pid = %ld\n", 
-			Verbose::padding(),
-			(long) pid);
-	}
+	print_debug_static(frmt("wait: pid = %ld", (long) pid)); 
 
 	timestamp_last= Timestamp::now(); 
 
@@ -2200,13 +2192,12 @@ Single_Execution::Single_Execution(Target target_,
 				   Link &link,
 				   Execution *parent)
 	:  Execution(link, parent),
-//	   checked(false),
 	   exists(0),
 	   done(target_.type.get_depth(), 0)
 {
 	assert(parent != nullptr); 
 	assert(parents.size() == 1); 
-	assert(target_.type.get_depth() == 0); // CHANGED
+	assert(target_.type.get_depth() == 0); 
 
 	targets.push_back(target_); 
 
@@ -2233,41 +2224,18 @@ Single_Execution::Single_Execution(Target target_,
 		}
 	} else {
 		assert(false); 
-
-		// assert(target_.type.is_dynamic()); 
-		// /* We must set the rule here, so cycles in the
-		//  * dependency graph can be detected.  Note however that
-		//  * the rule of dynamic file dependency executions is
-		//  * otherwise not used.  */ 
-		// Target target_base(target_.type.get_base(), target_.name);
-		// try {
-		// 	rule= rule_set.get(target_base, param_rule, mapping_parameter, 
-		// 			   link.dependency->get_place()); 
-		// } catch (int e) {
-		// 	print_traces(); 
-		// 	raise(e); 
-		// 	return; 
-		// }
-
-		// /* For dynamic executions, the TARGETS variables
-		//  * contains only a single target, which is already
-		//  * contained in TARGETS.  */   
 	}
+
 	assert((param_rule == nullptr) == (rule == nullptr)); 
 
-	/* Fill TARGETS with *all* targets from the rule */
+	/* Fill EXECUTIONS_BY_TARGET with all targets from the rule, not
+	 * just the one given in the dependency.  */
 	for (const Target &target:  targets) {
 		executions_by_target[target]= this; 
 	}
 
-	if (option_debug) {
-		string text_target= debug_text();
-		string text_rule= rule == nullptr ? "(no rule)" : rule->format_out(); 
-		fprintf(stderr, "DEBUG %s    %s %s\n",
-			Verbose::padding(),
-			text_target.c_str(),
-			text_rule.c_str()); 
-	}
+	string text_rule= rule == nullptr ? "(no rule)" : rule->format_out(); 
+	print_debug(fmt("rule %s", text_rule));  
 
 	if (! (target_.type.is_dynamic() && target_.type.is_any_file()) 
 	    && rule != nullptr) {
@@ -2285,14 +2253,14 @@ Single_Execution::Single_Execution(Target target_,
 				}
 			} 
 
-			if (option_debug) {
-				string text_target= debug_text();
-				string text_link_new= dep->format_out(); 
-				fprintf(stderr, "DEBUG %s    %s push %s\n",
-					Verbose::padding(),
-					text_target.c_str(),
-					text_link_new.c_str()); 
-			}
+			// if (option_debug) {
+			// 	string text_target= debug_text();
+			// 	string text_link_new= dep->format_out(); 
+			// 	fprintf(stderr, "DEBUG %s    %s push %s\n",
+			// 		Verbose::padding(),
+			// 		text_target.c_str(),
+			// 		text_link_new.c_str()); 
+			// }
 			push_dependency(dep); 
 		}
 	} else {
@@ -2332,7 +2300,6 @@ Single_Execution::Single_Execution(Target target_,
 			rule_not_found= true;
 		} else {
 			assert(false); 
-//			assert(target_.type.is_dynamic()); 
 		}
 		
 		if (rule_not_found) {
@@ -2470,11 +2437,8 @@ bool Single_Execution::remove_if_existing(bool output)
 		       timestamps_old[i] < Timestamp(&buf)))
 			continue;
 
-		if (option_debug) {
-			string text_filename= name_format_word(filename); 
-			fprintf(stderr, "DEBUG  remove %s\n",
-				text_filename.c_str()); 
-		}
+		string text_filename= name_format_word(filename); 
+		print_debug(fmt("remove %s", text_filename)); 
 		
 		if (output) {
 			print_error_reminder(fmt("Removing file %s because command failed",
@@ -2609,32 +2573,6 @@ void Single_Execution::print_command() const
 		puts(i.c_str()); 
 	}
 }
-
-// void Single_Execution::initialize(Stack avoid) 
-// {
-// 	/* Add the special dynamic dependency, i.e., the [...[A]...]--A type
-// 	 * link.  Add, as an initial dependency, the corresponding file
-// 	 * or transient.  */
-// 	if (targets.front().type.is_dynamic()) {
-
-// 		assert(targets.size() == 1); 
-// 		const Target &target= targets.front(); 
-
-// 		Flags flags_child= avoid.get_lowest();
-		
-// 		if (target.type.is_any_file())
-// 			flags_child |= F_DYNAMIC;
-
-// 		shared_ptr <Dependency> dependency_child= make_shared <Single_Dependency>
-// 			(flags_child,
-// 			 Place_Param_Target(target.type.get_base(), 
-// 					    Place_Name(target.name)));
-
-// 		push_dependency(dependency_child); 
-// 		/* The place of the [[A]]->A links is empty, meaning it will
-// 		 * not be output in traces. */ 
-// 	} 
-// }
 
 Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link)
 {
@@ -2859,12 +2797,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 		
 		done_add_one_neg(0); 
 
-		if (option_debug) {
-			string text_target= debug_text();
-			fprintf(stderr, "DEBUG %s    %s create content\n",
-				Verbose::padding(),
-				text_target.c_str());
-		}
+		print_debug("create content"); 
 
 		print_command();
 		write_content(targets.front().name.c_str(), *(rule->command)); 
@@ -2958,13 +2891,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 
 		assert(pid != 0 && pid != 1); 
 
-		if (option_debug) {
-			string text_target= debug_text();
-			fprintf(stderr, "DEBUG %s %s execute: pid = %ld\n", 
-				Verbose::padding(),
-				text_target.c_str(),
-				(long) pid); 
-		}
+		print_debug(frmt("execute: pid = %ld", (long) pid)); 
 
 		if (pid < 0) {
 			/* Starting the job failed */ 
@@ -3244,36 +3171,13 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependenc
 		dynamic_pointer_cast <Concatenated_Dependency> (dep);
 
 	for (size_t i= 0;  i < concatenated_dependency->get_dependencies().size();  ++i) {
-//	for (shared_ptr <Dependency> d:  concatenated_dependency->get_dependencies()) {
 
 		shared_ptr <Dependency> d= concatenated_dependency->get_dependencies()[i]; 
 
 		shared_ptr <Dependency> dependency_normalized= 
 			Dependency::make_normalized_compound(d); 
-//	/		d->normalize_compound(); 
 
 		concatenated_dependency->get_dependencies()[i]= dependency_normalized; 
-
-//		assert(dependencies_new.size() > 0); 
-
-//		if (dependencies_new.size() == 1) {
-//			concatenated_dependency->get_dependencies()[i]= dependencies_new[0]; 
-//		} else {
-//			shared_ptr <Compound_Dependency> cd= make_shared <Compound_Dependency> (...);
-//			swap(cd->get_dependencies(), dependencies_new); 
-//			concatenated_dependency->get_dependencies()[i]= cd; 
-//		}
-
-//		if (dynamic_pointer_cast <Compound_Dependency> (d)) {
-//			for (shared_ptr <Dependency> dd:  
-//				     dynamic_pointer_cast <Compound_Dependency> (d)->get_dependencies()) {
-//				shared_ptr <Dependency> dddd= Dependency::strip_dynamic(dd);
-//				assert(dynamic_pointer_cast <Single_Dependency> (dddd)); 
-//			}
-//		} else {
-//			shared_ptr <Dependency> ddd= Dependency::strip_dynamic(d);
-//			assert(dynamic_pointer_cast <Single_Dependency> (ddd)); 
-//		}
 	}
 }
 

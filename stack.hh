@@ -206,11 +206,18 @@ public:
 
 	string format() const {
 		string ret= "";
+		bool empty= true; 
 		for (int j= depth;  j >= 0;  --j) {
 			Flags flags_j= get(j);
-			ret += flags_format(flags_j);
+			string f= flags_format(flags_j); 
+			if (! f.empty()) {
+				ret += f;
+				empty= false;
+			}
 			if (j)  ret += ',';
 		}
+		if (empty)
+			return ""; 
 		return fmt("{%s}", ret); 
 	}
 

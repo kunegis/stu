@@ -237,8 +237,10 @@ public:
 
 	virtual string format(Style style, bool &quotes) const {
 		string f= flags_format(flags & ~F_VARIABLE); 
-		if (f != "")
+		if (f != "") {
 			style |= S_MARKERS;
+			f += ' '; 
+		}
 		string t= place_param_target.format(style, quotes);
 		return fmt("%s%s%s%s%s%s",
 			   f,
@@ -251,6 +253,8 @@ public:
 
 	virtual string format_word() const {
 		string f= flags_format(flags & ~F_VARIABLE);
+		if (f != "") 
+			f += ' ';
 		bool quotes= Color::quotes; 
 		string t= place_param_target.format
 			(f.empty() ? 0 : 
@@ -268,8 +272,11 @@ public:
 	}
 
 	virtual string format_out() const {
+		string f= flags_format(flags & ~F_VARIABLE);
+		if (f != "")
+			f += ' '; 
 		return fmt("%s%s%s%s",
-			   flags_format(flags & ~F_VARIABLE),
+			   f,
 			   flags & F_VARIABLE ? "$[" : "",
 			   place_param_target.format_out(),
 			   flags & F_VARIABLE ? "]" : "");
@@ -349,6 +356,8 @@ public:
 
 	virtual string format_out() const {
 		string text_flags= flags_format(flags);
+		if (text_flags != "")
+			text_flags += ' '; 
 		string text_dependency= dependency->format_out(); 
 		return fmt("%s[%s]",
 			   text_flags,

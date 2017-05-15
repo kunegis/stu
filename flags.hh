@@ -149,9 +149,11 @@ string flags_format(Flags flags)
 {
 	string ret= "";
 	for (int i= 0;  i < C_ALL;  ++i)
-		if (flags & (1 << i))
-			ret += frmt("-%c ", FLAGS_CHARS[i]); 
-	// TODO avoid a space character at the end 
+		if (flags & (1 << i)) {
+			if (! ret.empty())
+				ret += ' ';
+			ret += frmt("-%c", FLAGS_CHARS[i]); 
+		}
 	return ret;
 }
 

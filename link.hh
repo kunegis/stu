@@ -95,9 +95,14 @@ string Link::format_out() const
 		dependency == nullptr 
 		? "NULL"
 		: dependency->format_out(); 
-	string text_avoid= avoid.format();
+
 	string text_flags= flags_format(flags);
-	return fmt("Link(%s, %s, %s)",
+	string text_avoid= avoid.format();
+
+	if (text_flags != "")  text_flags= ", " + text_flags;
+	if (text_avoid != "")  text_avoid= ", " + text_avoid; 
+
+	return fmt("Link(%s%s%s)",
 		   text_dependency,
 		   text_flags, 
 		   text_avoid); 

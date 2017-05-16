@@ -111,29 +111,4 @@ string fmt(const char *s, T value, Args... args)
 	return ret + value + fmt(s, args...); 
 }
 
-/* Padding for verbose output (option -v).  During the lifetime of an
- * object, padding is increased by one.  */
-class Verbose
-{
-private:
-	static string padding_current;
-
-public:
-	Verbose() 
-	{
-		padding_current += "   ";
-	}
-
-	~Verbose() 
-	{
-		padding_current.resize(padding_current.size() - 3);
-	}
-
-	static const char *padding() {
-		return padding_current.c_str(); 
-	}
-};
-
-string Verbose::padding_current= "";
-
 #endif /* ! TEXT_HH */

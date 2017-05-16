@@ -118,6 +118,10 @@ public:
 		return ""; 
 	}
 
+	virtual string debug_text() const= 0;
+	/* The text shown for this execution in verbose output.  Usually
+	 * calls a format_out() function on the appropriate object.  */ 
+
 	static long jobs;
 	/* Number of free slots for jobs.  This is a long because
 	 * strtol() gives a long.  Set before calling main() from the -j
@@ -196,7 +200,7 @@ protected:
 
 	void print_traces(string text= "") const;
 	/* Print full trace for the execution.  First the message is
-	 * printed, then all traces for it starting at this execution,
+	 * Printed, then all traces for it starting at this execution,
 	 * up to the root execution. 
 	 * TEXT may be "" to not print the first message.  */ 
 
@@ -241,18 +245,6 @@ protected:
 //			 shared_ptr <Dependency> dependency_this,
 			 Flags flags);
 
-	void print_debug(string text) const;
-	/* Print a line for debug mode.  The given TEXT starts with the
-	 * lower-case name of the operation being performed, followed by
-	 * parameters, and not ending in a newline or period.  */
-
-	static void print_debug_static(string text_target,
-				       string text);
-	static void print_debug_static(string text)
-	{
-		print_debug_static("", text); 
-	}
-
 	virtual ~Execution(); 
 
 	virtual int get_depth() const= 0;
@@ -271,10 +263,6 @@ protected:
 	virtual void check_execution(const Link &link) const= 0; 
 	/* Perform consistency assertions */ 
 #endif
-
-	virtual string debug_text() const= 0;
-	/* The text shown for this execution in verbose output.  Usually
-	 * calls a format_out() function on the appropriate object.  */ 
 
 	virtual bool want_delete() const= 0; 
 
@@ -423,6 +411,11 @@ public:
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const;
 	virtual bool finished(Stack avoid) const; 
+	virtual string debug_text() const {
+		assert(targets.size()); 
+		return targets.front().format_out(); 
+	}
+
 
 	static unordered_map <pid_t, Single_Execution *> executions_by_pid;
 	/*
@@ -443,11 +436,6 @@ protected:
 	virtual bool optional_finished(const Link &);
 	virtual void check_execution(const Link &link) const;
 	virtual bool want_delete() const {  return false;  }
-
-	virtual string debug_text() const {
-		assert(targets.size()); 
-		return targets.front().format_out(); 
-	}
 
 private:
 
@@ -601,6 +589,7 @@ public:
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const; 
 	virtual bool finished(Stack avoid) const;
+	virtual string debug_text() const { return "ROOT"; }
 
 protected:
 
@@ -608,7 +597,6 @@ protected:
 	virtual const Place &get_place() const {  return Place::place_empty;  }
 	virtual bool optional_finished(const Link &) {  return false;  }
 	virtual void check_execution(const Link &) const  {   }
-	virtual string debug_text() const { return "ROOT"; }
 	virtual bool want_delete() const {  return true;  }
 
 private:
@@ -744,10 +732,10 @@ public:
 	virtual int get_depth() const {  return done.get_depth();  }
 	virtual const Place &get_place() const {  return dependency->get_place();  }
 	virtual bool optional_finished(const Link &) {  return false;  }
+	virtual string debug_text() const;
 
 protected:
 
-	virtual string debug_text() const;
 	virtual bool want_delete() const;
 
 #ifndef NDEBUG
@@ -764,6 +752,39 @@ private:
 	/* Same semantics as in Single_Execution */ 
 };
 
+/* Padding for debug output (option -d).  During the lifetime of an
+ * object, padding is increased by one step.  */
+class Debug
+{
+public:
+	Debug(Execution *e) 
+	{
+		padding_current += "   ";
+		executions.push_back(e); 
+	}
+
+	~Debug() 
+	{
+		padding_current.resize(padding_current.size() - 3);
+		executions.pop_back(); 
+	}
+
+	static const char *padding() {
+		return padding_current.c_str(); 
+	}
+
+	static void print(Execution *, string text);
+	/* Print a line for debug mode.  The given TEXT starts with the
+	 * lower-case name of the operation being performed, followed by
+	 * parameters, and not ending in a newline or period.  */
+
+private:
+	static string padding_current;
+	static vector <Execution *> executions; 
+
+	static void print(string text_target, string text);
+};
+
 long Execution::jobs= 1;
 Rule_Set Execution::rule_set; 
 Timestamp Execution::timestamp_last;
@@ -773,6 +794,9 @@ unordered_map <Target, Execution *> Execution::executions_by_target;
 
 unordered_map <pid_t, Single_Execution *> Single_Execution::executions_by_pid;
 unordered_map <string, Timestamp> Single_Execution::transients;
+
+string Debug::padding_current= "";
+vector <Execution *> Debug::executions; 
 
 Execution::~Execution()
 {
@@ -793,7 +817,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 
 			Proceed proceed;
 			do {
-				print_debug_static("main.next"); 
+				Debug::print(nullptr, "main.next"); 
 				proceed= root_execution->execute(nullptr, move(link));
 			} while (proceed & P_BIT_PENDING); 
 
@@ -1324,7 +1348,7 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 
 void Execution::push_dependency(shared_ptr <Dependency> dependency)
 {
-	print_debug(fmt("push_dependency %s", dependency->format_out())); 
+	Debug::print(this, fmt("push_dependency %s", dependency->format_out())); 
 
 	vector <shared_ptr <Dependency> > dependencies;
 	Dependency::make_normalized(dependencies, dependency); 
@@ -1336,7 +1360,7 @@ void Execution::push_dependency(shared_ptr <Dependency> dependency)
 
 Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 {
-	Verbose verbose;
+	Debug debug(this);
 
 	assert(jobs >= 0); 
 
@@ -1344,7 +1368,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	check_execution(link); 
 #endif
 
-	print_debug(fmt("execute ⟨%s⟩ %s", link.format_out(), link.avoid.format())); 
+	Debug::print(this, fmt("execute ⟨%s⟩ %s", link.format_out(), link.avoid.format())); 
 
 	Link link2{link}; 
 
@@ -1370,7 +1394,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	}
 	
  	if (finished(link2.avoid)) {
-		print_debug("finished"); 
+		Debug::print(this, "finished"); 
 		return P_CONTINUE; 
 	}
 
@@ -1390,7 +1414,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 		if (proceed_all & P_BIT_WAIT) 
 			return proceed_all; 
 		if (finished(link2.avoid) && ! option_keep_going) {
-			print_debug("finished"); 
+			Debug::print(this, "finished"); 
 			return proceed_all;
 		}
 	} 
@@ -1463,7 +1487,7 @@ Execution::Proceed Execution::connect(const Link &link,
 {
 	assert(dependency_child->is_normalized()); 
 
-	print_debug(fmt("connect ⟨%s⟩ %s", link.format_out(), dependency_child->format_out())); 
+	Debug::print(this, fmt("connect ⟨%s⟩ %s", link.format_out(), dependency_child->format_out())); 
 
 	Flags flags_child= dependency_child->get_flags(); 
 	Flags flags_child_additional= 0; 
@@ -1681,9 +1705,9 @@ void Execution::disconnect(Execution *const parent,
 
 	(void) avoid_child; // TODO rm if unused
 
-	parent->print_debug(fmt("disconnect {%s} %s", 
-				child->debug_done_text(),
-				child->debug_text())); 
+	Debug::print(parent, fmt("disconnect {%s} %s", 
+				 child->debug_done_text(),
+				 child->debug_text())); 
 
 	assert(parent != nullptr);
 	assert(child != nullptr); 
@@ -1878,7 +1902,7 @@ void Execution::push_result(shared_ptr <Dependency> dd,
 	assert(! (flags & F_DYNAMIC_LEFT)); 
 	assert(! (dd->flags & F_DYNAMIC_LEFT)); 
 
-	print_debug(fmt("push_result ⟨%s⟩ %s", flags_format(flags), dd->format_out())); 
+	Debug::print(this, fmt("push_result ⟨%s⟩ %s", flags_format(flags), dd->format_out())); 
 
 	shared_ptr <Single_Dependency> single_dd= dynamic_pointer_cast <Single_Dependency> (dd); 
 
@@ -1993,30 +2017,6 @@ void Execution::propagate_to_dynamic(Execution *child,
 	}
 }
 
-void Execution::print_debug(string text) const
-{
-	print_debug_static(debug_text(), text); 
-}
-
-void Execution::print_debug_static(string text_target,
-				   string text)
-{
-	assert(text != "");
-	assert(text[0] >= 'a' && text[0] <= 'z'); 
-	assert(text[text.size() - 1] != '\n');
-
-	if (! option_debug) 
-		return;
-
-	if (text_target != "")
-		text_target += ' ';
-
-	fprintf(stderr, "DEBUG %s    %s%s\n",
-		Verbose::padding(),
-		text_target.c_str(),
-		text.c_str()); 
-}
-
 Single_Execution::~Single_Execution()
 /* Objects of this type are never deleted */ 
 {
@@ -2028,14 +2028,14 @@ void Single_Execution::wait()
 	// TODO use a non-blocking wait() function to handle all
 	// finished jobs in a loop in this function. 
 
-	print_debug_static("wait...");
+	Debug::print(nullptr, "wait...");
 
 	assert(Single_Execution::executions_by_pid.size() != 0); 
 
 	int status;
 	pid_t pid= Job::wait(&status); 
 
-	print_debug_static(frmt("wait: pid = %ld", (long) pid)); 
+	Debug::print(nullptr, frmt("wait: pid = %ld", (long) pid)); 
 
 	timestamp_last= Timestamp::now(); 
 
@@ -2238,7 +2238,7 @@ Single_Execution::Single_Execution(Target target_,
 	}
 
 	string text_rule= rule == nullptr ? "(no rule)" : rule->format_out(); 
-	print_debug(fmt("rule %s", text_rule));  
+	Debug::print(this, fmt("rule %s", text_rule));  
 
 	if (! (target_.type.is_dynamic() && target_.type.is_any_file()) 
 	    && rule != nullptr) {
@@ -2433,7 +2433,7 @@ bool Single_Execution::remove_if_existing(bool output)
 			continue;
 
 		string text_filename= name_format_word(filename); 
-		print_debug(fmt("remove %s", text_filename)); 
+		Debug::print(this, fmt("remove %s", text_filename)); 
 		
 		if (output) {
 			print_error_reminder(fmt("Removing file %s because command failed",
@@ -2580,7 +2580,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 		return proceed; 
 	}
 
-	Verbose verbose;
+	Debug debug(this);
 
 	assert(children.empty()); 
 
@@ -2792,7 +2792,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 		
 		done_add_one_neg(0); 
 
-		print_debug("create content"); 
+		Debug::print(nullptr, "create content"); 
 
 		print_command();
 		write_content(targets.front().name.c_str(), *(rule->command)); 
@@ -2886,7 +2886,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 
 		assert(pid != 0 && pid != 1); 
 
-		print_debug(frmt("execute: pid = %ld", (long) pid)); 
+		Debug::print(this, frmt("execute: pid = %ld", (long) pid)); 
 
 		if (pid < 0) {
 			/* Starting the job failed */ 
@@ -3486,6 +3486,41 @@ bool Dynamic_Execution::want_delete() const
 string Dynamic_Execution::debug_text() const
 {
 	return dependency->format_out();
+}
+
+void Debug::print(Execution *e, string text) 
+{
+	if (e == nullptr) {
+		print("", text);
+	}
+	else {
+		if (executions.size() > 0 &&
+		    executions[executions.size() - 1] == e) {
+			print(e->debug_text(), text); 
+		} else {
+			Debug debug(e);
+			print(e->debug_text(), text); 
+		}
+	}
+}
+
+void Debug::print(string text_target,
+		  string text)
+{
+	assert(text != "");
+	assert(text[0] >= 'a' && text[0] <= 'z'); 
+	assert(text[text.size() - 1] != '\n');
+
+	if (! option_debug) 
+		return;
+
+	if (text_target != "")
+		text_target += ' ';
+
+	fprintf(stderr, "DEBUG  %s%s%s\n",
+		padding(),
+		text_target.c_str(),
+		text.c_str()); 
 }
 
 #endif /* ! EXECUTION_HH */

@@ -1,13 +1,13 @@
 /*
- * This is the top-level e code file, which contains the main()
+ * This is the top-level source code file, which contains the main()
  * function.  See the manpage for a description of options, the exit
- * status, etc.   
+ * status, etc.
  */
 
 /*
  * Enable bounds checking when using GNU libc.  Must be defined before
  * including any of the standard headers.  (Only in non-debug mode).  A
- * no-op for non-GNU libc++ libraries. 
+ * no-op for non-GNU libc++ libraries.
  */ 
 #ifndef NDEBUG
 #    define _GLIBCXX_DEBUG
@@ -84,7 +84,7 @@ const char HELP[]=
 
 const char VERSION_INFO[]=
 	"stu " STU_VERSION "\n"
-	"Copyright (C) 2014, 2015, 2016 Jerome Kunegis\n"
+	"Copyright (C) 2014, 2015, 2016, 2017 Jerome Kunegis\n"
 	"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 	"This is free software: you are free to change and redistribute it.\n"
 	"There is NO WARRANTY, to the extent permitted by law.\n";
@@ -153,7 +153,7 @@ int main(int argc, char **argv, char **envp)
 	try {
 		vector <string> filenames;
 		/* Filenames passed using the -f option.  Entries are
-		 * unique and sorted as they were given, except
+		 * unique and sorted as they were given, except for
 		 * duplicates. */   
 
 		vector <shared_ptr <Dependency> > dependencies; 

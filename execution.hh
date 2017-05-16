@@ -242,7 +242,6 @@ protected:
 	 * percolate up.  FLAGS does not have the F_DYNAMIC_LEFT bit
 	 * set.  */ 
 	void push_result(shared_ptr <Dependency> dd,
-//			 shared_ptr <Dependency> dependency_this,
 			 Flags flags);
 
 	virtual ~Execution(); 
@@ -367,12 +366,12 @@ class Single_Execution
 /*
  * Each non-dynamic file or transient target is represented at run time
  * by one Single_Execution object.  Each Single_Execution object may
- * correspond to multiple files or transients, but not to dynamic
+ * correspond to multiple files or transients, when a rule has multiple
  * targets.
  *
- * All Single_Execution objects are allocated with new Single_Execution(...), and are
- * never deleted, as the information contained in them needs to be
- * cached.
+ * All Single_Execution objects are allocated with new
+ * Single_Execution(...), and are never deleted, as the information
+ * contained in them needs to be cached.
  */
 	:  public Execution 
 {
@@ -1896,7 +1895,6 @@ void Execution::copy_result(Execution *parent, Execution *child)
 }
 
 void Execution::push_result(shared_ptr <Dependency> dd, 
-//			    shared_ptr <Dependency> dependency_this,
 			    Flags flags)
 {
 	assert(! (flags & F_DYNAMIC_LEFT)); 
@@ -1912,14 +1910,12 @@ void Execution::push_result(shared_ptr <Dependency> dd,
 	
 	/* If THIS is a dynamic execution, add DD as a right branch */
 	if (dynamic_cast <Dynamic_Execution *> (this) && 
-	    ! (
-	       flags
-//	       dependency_this->flags 
-	       & F_RESULT_ONLY)) {
+	    ! (flags & F_RESULT_ONLY)) {
 
-//		/* Add flags from self */
-//		dd= Dependency::clone_dependency(dd); 
-//		dd->add_flags(flags);
+		/* Add flags from self */
+		dd= Dependency::clone_dependency(dd); 
+		dd->add_flags(flags);
+		// XXX add places of flags 
 //		for (int i= 0;  i < C_PLACED;  ++i) {
 //			if (dd->get_place_flag(i).empty())
 //				dd->set_place_flag(i, dependency_this->get_place_flag(i)); 
@@ -2201,32 +2197,30 @@ Single_Execution::Single_Execution(Target target_,
 	assert(parent != nullptr); 
 	assert(parents.size() == 1); 
 	assert(target_.type.get_depth() == 0); 
+	assert(target_.type == Type::FILE || target_.type == Type::TRANSIENT); 
 
+	/* Later replaced with all targets from the rule, when a rule exists */ 
 	targets.push_back(target_); 
 
 	/* 
 	 * Fill in the rules and their parameters 
 	 */ 
-	if (target_.type == Type::FILE || target_.type == Type::TRANSIENT) {
-		try {
-			rule= rule_set.get(target_, param_rule, mapping_parameter, 
-					   link.dependency->get_place()); 
-		} catch (int e) {
-			print_traces(); 
-			raise(e); 
-			return; 
-		}
-		if (rule == nullptr) {
-			/* TARGETS contains only TARGET_ */
-		} else {
-			targets.clear(); 
-			for (auto &place_param_target:  rule->place_param_targets) {
-				targets.push_back(place_param_target->unparametrized()); 
-			}
-			assert(targets.size()); 
-		}
+	try {
+		rule= rule_set.get(target_, param_rule, mapping_parameter, 
+				   link.dependency->get_place()); 
+	} catch (int e) {
+		print_traces(); 
+		raise(e); 
+		return; 
+	}
+	if (rule == nullptr) {
+		/* TARGETS contains only TARGET_ */
 	} else {
-		assert(false); 
+		targets.clear(); 
+		for (auto &place_param_target:  rule->place_param_targets) {
+			targets.push_back(place_param_target->unparametrized()); 
+		}
+		assert(targets.size()); 
 	}
 
 	assert((param_rule == nullptr) == (rule == nullptr)); 

@@ -1,0 +1,8 @@
+# For delegating executions, have different execution objects when the
+# transitive flags are different.   Have different classes
+# File_Execution, Transient_Execution, Dynamic_Execution,
+# Concatenated_Execution.  Hash them by the flag, too. 
+
+A:  -o @x   @x  { cp C A ; }
+@x:  C;
+C { echo correct >C ; }

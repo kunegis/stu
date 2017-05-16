@@ -1,0 +1,11 @@
+# Test all 'switch' cases, like this:
+
+A:  -X <CCC>  -Y <CCC>  { ... }
+
+# where:
+#   -X and -Y are all possible combinations of transitive flags
+#   <CCC> is one of:
+#      (1) Direct dependency C
+#      (2) Transient to C
+#      (3) Dynamic dependency that contains C
+#      (4) Concatenation that results in C

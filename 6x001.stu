@@ -1,4 +1,0 @@
-# * Fix the indentation of debug mode. 
-
-A:  -o B   B  { cp B A ; }
-B { echo bbb >B ; }

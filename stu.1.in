@@ -680,7 +680,7 @@ unquoted filenames:
     '     Quote; without escape sequences
     "     Quote; with escape sequences
     :     Separator for rule definition
-    ;     For rules without command, end of variable declaration 
+    ;     For rules without command, end of dependency declaration 
     -     Prefix character for flag, followed by a single character 
     $     Parameter
     @     Transient target marker

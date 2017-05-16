@@ -118,7 +118,7 @@ public:
 		return ""; 
 	}
 
-	virtual string debug_text() const= 0;
+	virtual string format_out() const= 0;
 	/* The text shown for this execution in verbose output.  Usually
 	 * calls a format_out() function on the appropriate object.  */ 
 
@@ -411,7 +411,7 @@ public:
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const;
 	virtual bool finished(Stack avoid) const; 
-	virtual string debug_text() const {
+	virtual string format_out() const {
 		assert(targets.size()); 
 		return targets.front().format_out(); 
 	}
@@ -589,7 +589,7 @@ public:
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const; 
 	virtual bool finished(Stack avoid) const;
-	virtual string debug_text() const { return "ROOT"; }
+	virtual string format_out() const { return "ROOT"; }
 
 protected:
 
@@ -639,7 +639,7 @@ public:
 	virtual bool finished() const;
 	virtual bool finished(Stack avoid) const; 
 
-	virtual string debug_text() const {  
+	virtual string format_out() const {  
 		// TODO return actual dependency text
 		return "CONCAT";  
 	}
@@ -732,7 +732,7 @@ public:
 	virtual int get_depth() const {  return done.get_depth();  }
 	virtual const Place &get_place() const {  return dependency->get_place();  }
 	virtual bool optional_finished(const Link &) {  return false;  }
-	virtual string debug_text() const;
+	virtual string format_out() const;
 
 protected:
 
@@ -817,7 +817,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 
 			Proceed proceed;
 			do {
-				Debug::print(nullptr, "main.next"); 
+				Debug::print(nullptr, "main loop"); 
 				proceed= root_execution->execute(nullptr, move(link));
 			} while (proceed & P_BIT_PENDING); 
 
@@ -1368,7 +1368,7 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	check_execution(link); 
 #endif
 
-	Debug::print(this, fmt("execute ⟨%s⟩ %s", link.format_out(), link.avoid.format())); 
+	Debug::print(this, fmt("execute(%s) %s", link.format_out(), link.avoid.format())); 
 
 	Link link2{link}; 
 
@@ -1487,7 +1487,7 @@ Execution::Proceed Execution::connect(const Link &link,
 {
 	assert(dependency_child->is_normalized()); 
 
-	Debug::print(this, fmt("connect ⟨%s⟩ %s", link.format_out(), dependency_child->format_out())); 
+	Debug::print(this, fmt("connect(%s) %s", link.format_out(), dependency_child->format_out())); 
 
 	Flags flags_child= dependency_child->get_flags(); 
 	Flags flags_child_additional= 0; 
@@ -1707,7 +1707,7 @@ void Execution::disconnect(Execution *const parent,
 
 	Debug::print(parent, fmt("disconnect {%s} %s", 
 				 child->debug_done_text(),
-				 child->debug_text())); 
+				 child->format_out())); 
 
 	assert(parent != nullptr);
 	assert(child != nullptr); 
@@ -1902,7 +1902,7 @@ void Execution::push_result(shared_ptr <Dependency> dd,
 	assert(! (flags & F_DYNAMIC_LEFT)); 
 	assert(! (dd->flags & F_DYNAMIC_LEFT)); 
 
-	Debug::print(this, fmt("push_result ⟨%s⟩ %s", flags_format(flags), dd->format_out())); 
+	Debug::print(this, fmt("push_result(%s) %s", flags_format(flags), dd->format_out())); 
 
 	shared_ptr <Single_Dependency> single_dd= dynamic_pointer_cast <Single_Dependency> (dd); 
 
@@ -3483,7 +3483,7 @@ bool Dynamic_Execution::want_delete() const
 	return dynamic_pointer_cast <Single_Dependency> (Dependency::strip_dynamic(dependency)) == nullptr; 
 }
 
-string Dynamic_Execution::debug_text() const
+string Dynamic_Execution::format_out() const
 {
 	return dependency->format_out();
 }
@@ -3496,10 +3496,10 @@ void Debug::print(Execution *e, string text)
 	else {
 		if (executions.size() > 0 &&
 		    executions[executions.size() - 1] == e) {
-			print(e->debug_text(), text); 
+			print(e->format_out(), text); 
 		} else {
 			Debug debug(e);
-			print(e->debug_text(), text); 
+			print(e->format_out(), text); 
 		}
 	}
 }

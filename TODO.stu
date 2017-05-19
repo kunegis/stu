@@ -294,6 +294,10 @@ X = {x}   Y = {y}  Z = {z}
 #
 
 #
+# Test what happens when a file passed with -n contains a \0 character. 
+#
+
+#
 # Have a feature to indicate that a file contains only a single
 # filename.  To complement -n and -0.  
 #

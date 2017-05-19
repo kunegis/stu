@@ -1,7 +1,11 @@
+DEPRECATED -- use only Flags
+// XXX remove file
+
 #ifndef STACK_HH
 #define STACK_HH
 
 class Stack
+// XXX remove class
 /*
  * A stack of dependency bits.  Contains only placed bits.  Lower
  * bits denote relationships lower in the hierarchy.  The DEPTH is the

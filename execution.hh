@@ -67,25 +67,23 @@ public:
 		 * finished, this value is propagated to the parent executions
 		 * (except when the F_PERSISTENT flag is set).  */ 
 
-//		B_PENDING    = 1 << 1,
-//		/* There are pending changes.  If set, it is also set
-//		 * for all parents, recursively.  */
-
-		B_CHECKED    = 1 << 2,
+		B_CHECKED    = 1 << 1,
 		/* Whether a certain check has been performed.  Only
-		 * used by Single_Execution.  */
+		 * used by File_Execution.  */
 	};
 
 	void raise(int error_);
 	/* All errors by Execution call this function.  Set the error
 	 * code, and throw an error except with the keep-going option.  */
 
-	Proceed execute_base(const Link &link, Stack &done_here);
+	Proceed execute_base(const Link &link
+//			     , Stack &done_here
+			     );
 	int get_error() const {  return error;  }
 
 	void propagate_to_dynamic(Execution *child,
 				  Flags flags_child,
-				  Stack avoid_this,
+//				  Stack avoid_this,
 				  shared_ptr <Dependency> dependency_this,
 				  shared_ptr <Dependency> dependency_child);
 	/* Propagate dynamic dependencies from CHILD to its parent
@@ -109,7 +107,10 @@ public:
 	virtual bool finished() const= 0;
 	/* Whether the execution is completely finished */ 
 
-	virtual bool finished(Stack avoid) const= 0; 
+	virtual bool finished(
+			      Flags flags
+//			      Stack avoid
+			      ) const= 0; 
 	/* Whether the execution is finished working for the given tasks */ 
 
 	virtual string debug_done_text() const
@@ -204,7 +205,9 @@ protected:
 	 * up to the root execution. 
 	 * TEXT may be "" to not print the first message.  */ 
 
-	Proceed execute_children(const Link &link, Stack &done_here);
+	Proceed execute_children(const Link &link
+//				 , Stack &done_here
+				 );
 	/* Execute already-active children */
 
 	Proceed execute_second_pass(const Link &link); 
@@ -247,8 +250,10 @@ protected:
 	virtual ~Execution(); 
 
 	virtual int get_depth() const= 0;
-	/* The dynamic depth, or -1 when
-	 * undefined as in concatenated executions and the root execution. */ 
+	/* The dynamic depth, or -1 when undefined as in concatenated
+	 * executions and the root execution, in which case PARAM_RULE
+	 * is always null.  Only used to check for cycles on the rule
+	 * level.  */ 
 
 	virtual const Place &get_place() const= 0;
 	/* The place for the execution; e.g. the rule; empty if there is no place */
@@ -256,7 +261,8 @@ protected:
 	virtual bool optional_finished(const Link &)= 0;
 	/* Should children even be started?  Check whether this is an
 	 * optional dependency and if it is, return TRUE when the file does not
-	 * exist.  Return FALSE when children should be started.  */
+	 * exist.  Return FALSE when children should be started.  Return
+	 * FALSE in execution types that are not affected.  */
 
 #ifndef NDEBUG
 	virtual void check_execution(const Link &link) const= 0; 
@@ -282,9 +288,20 @@ protected:
 	 * Non-dynamic execution objects are shared by the multiple
 	 * targets of a multi-target rule.  A dynamic multi-target rule
 	 * result in multiple non-shared execution objects.  
-	 * The objects are of type Single_Execution (when not dynamic)
+	 * The objects are of type File_Execution (when not dynamic)
 	 * or Dynamic_Execution (when dynamic). 
 	 */
+
+	static unordered_map <string, Timestamp> transients;
+	/* The timestamps for transient targets.  This container plays the role of
+	 * the file system for transient targets, holding their timestamps, and
+	 * remembering whether they have been executed.  Note that if a
+	 * rule has both file targets and transient targets, and all
+	 * file targets are up to date and the transient targets have
+	 * all their dependencies up to date, then the command is not
+	 * executed, even though it was never executed in the current
+	 * invocation of Stu. In that case, the transient targets are
+	 * never insert in this map.  */
 
 	static bool find_cycle(const Execution *const parent,
 			       const Execution *const child,
@@ -317,9 +334,9 @@ protected:
 	static void disconnect(Execution *const parent, 
 			       Execution *const child,
 			       shared_ptr <Dependency> dependency_parent,
-			       Stack avoid_parent,
+//			       Stack avoid_parent,
 			       shared_ptr <Dependency> dependency_child,
-			       Stack avoid_child,
+//			       Stack avoid_child,
 			       Flags flags_child); 
 	/* Remove an edge from the dependency graph.  Propagate
 	 * information from the subexecution to the execution, and then
@@ -362,30 +379,32 @@ private:
 	/* Copy the result list from CHILD to PARENT */
 };
 
-class Single_Execution
+class File_Execution
 /*
- * Each non-dynamic file or transient target is represented at run time
- * by one Single_Execution object.  Each Single_Execution object may
- * correspond to multiple files or transients, when a rule has multiple
- * targets.
+ * Each non-dynamic file target is represented at run time by one
+ * File_Execution object.  Each File_Execution object may correspond to
+ * multiple files or transients, when a rule has multiple targets.
+ * Transients are only represented by a File_Execution when they appear
+ * as targets of rules that have at least one file target, or when the
+ * rule has a command.  Otherwise, Transient_Execution is used for them.
  *
- * All Single_Execution objects are allocated with new
- * Single_Execution(...), and are never deleted, as the information
- * contained in them needs to be cached.
+ * This is the only Execution subclass that actually starts jobs -- all
+ * other Execution subclasses only delegate their tasks to child
+ * executions. 
  */
 	:  public Execution 
 {
 public:
 
-	Single_Execution(Target target_,
-			 Link &link,
-			 Execution *parent);
+	File_Execution(Target target_,
+		       Link &link,
+		       Execution *parent);
 	/* The TARGET must not by dynamic */ 
 	// TODO remove the TARGET parameter (?).  It is already
 	// contained in LINK.DEPENDENCY. 
 
 	void propagate_variable(shared_ptr <Dependency> dependency,
-			   Execution *parent); 
+				Execution *parent); 
 	/* Read the content of the file into a string as the
 	 * variable value.  THIS is the variable target.  */
 
@@ -404,19 +423,21 @@ public:
 	}
 
 	virtual string debug_done_text() const {
-		return done.format(); 
+		return flags_format(flags_finished);
 	}
 
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const;
-	virtual bool finished(Stack avoid) const; 
+	virtual bool finished(
+			      Flags flags
+//			      Stack avoid
+			      ) const; 
 	virtual string format_out() const {
 		assert(targets.size()); 
 		return targets.front().format_out(); 
 	}
 
-
-	static unordered_map <pid_t, Single_Execution *> executions_by_pid;
+	static unordered_map <pid_t, File_Execution *> executions_by_pid;
 	/*
 	 * The currently running executions by process IDs.  Write
 	 * access to this is enclosed in a Signal_Blocker.
@@ -435,6 +456,7 @@ protected:
 	virtual bool optional_finished(const Link &);
 	virtual void check_execution(const Link &link) const;
 	virtual bool want_delete() const {  return false;  }
+	virtual int get_depth() const {  return 0;  }
 
 private:
 
@@ -490,15 +512,14 @@ private:
 	 */
 	// TODO fold this into BITS. 
 	
-	Stack done;
-	/* What parts of this target have been done.  Each bit
-	 * represents one aspect that was done.  The depth is always
-	 * zero.  */
-	// TODO replace by a single Flag, since it always has depth
-	// zero. 
-	// TODO rename 'finished_flags' or similar. 
+	Flags flags_finished; 
+//	Stack done;
+	/* What parts of this target have been done.  Each bit that is
+	 * set represents one aspect that was done.  When an execution
+	 * is invoke with a certain set of flags, all flags *not*
+	 * passed will be set when the execution is finished.  */
 
-	~Single_Execution(); 
+	~File_Execution(); 
 
 	virtual const Place &get_place() const {
 		if (param_rule == nullptr)
@@ -534,48 +555,65 @@ private:
 
 	void write_content(const char *filename, const Command &command); 
 	/* Create the file FILENAME with content from COMMAND */
+};
 
-	int get_depth() const {
-		return 0; 
+class Transient_Execution
+/* 
+ * Used for non-dynamic transients that appear in rules that have only
+ * transients as targets, and have no command.  If at least one file
+ * target or a command is present in the rule, File_Execution is used.
+ */
+	:  public Execution 
+{
+public:
+
+	Transient_Execution(Target target_,
+			    Link &link,
+			    Execution *parent);
+	// TODO remove the TARGET parameter 
+	
+	shared_ptr <const Rule> get_rule() const { return rule; }
+
+	virtual Proceed execute(Execution *parent, const Link &link);
+	virtual bool finished() const;
+	virtual bool finished(
+			      Flags flags
+//			      Stack avoid
+			      ) const; 
+	virtual string format_out() const {
+		assert(targets.size()); 
+		return targets.front().format_out(); 
 	}
 
-	void done_set_all_one() 
-	/* Set all flags in DONE, given that the depth of DONE is zero */
-	// TODO deprecate and replace by direct call
-	{
-		done.add_one_neg(0); 
+protected:
+
+	virtual bool want_delete() const {  return false;  }
+	virtual int get_depth() const {  return 0;  }
+	virtual bool optional_finished(const Link &) {  return false;  }
+	virtual void check_execution(const Link &) const { }
+
+private:
+
+	vector <Target> targets; 
+	/* The targets to which this execution object corresponds.  All
+	 * are transients.  */
+
+	shared_ptr <Rule> rule;
+	/* The instantiated file rule for this execution.  Never null. */ 
+
+	Timestamp timestamp_old;
+
+	~Transient_Execution() {
+		/* Objects of this type are never deleted */ 
+		assert(false);
 	}
 
-	void done_add_neg(Stack stack_) {
-	// TODO deprecate and replace by direct call
-		done.add_neg(stack_); 
+	virtual const Place &get_place() const {
+//		if (param_rule == nullptr)
+//			return Place::place_empty;
+//		else
+		return param_rule->place; 
 	}
-
-	void done_add_one_neg(Flags flags_) {
-	// TODO deprecate and replace by direct call
-		done.add_one_neg(flags_); 
-	}
-
-	void done_add_one_neg(Stack stack_) {
-	// TODO deprecate and replace by direct call
-		done.add_one_neg(stack_); 
-	}
-
-	void done_add_highest_neg(Flags flags_) {
-	// TODO deprecate and replace by direct call
-		done.add_highest_neg(flags_); 
-	}
-
-	static unordered_map <string, Timestamp> transients;
-	/* The timestamps for transient targets.  This container plays the role of
-	 * the file system for transient targets, holding their timestamps, and
-	 * remembering whether they have been executed.  Note that if a
-	 * rule has both file targets and transient targets, and all
-	 * file targets are up to date and the transient targets have
-	 * all their dependencies up to date, then the command is not
-	 * executed, even though it was never executed in the current
-	 * invocation of Stu. In that case, the transient targets are
-	 * never insert in this map.  */
 };
 
 class Root_Execution
@@ -587,7 +625,10 @@ public:
 
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const; 
-	virtual bool finished(Stack avoid) const;
+	virtual bool finished(
+			      Flags flags
+//			      Stack avoid
+			      ) const;
 	virtual string format_out() const { return "ROOT"; }
 
 protected:
@@ -600,8 +641,9 @@ protected:
 
 private:
 
-	Stack done; 
-	/* Always has depth zero */
+	bool is_finished; 
+//	Stack done; 
+//	/* Always has depth zero */
 };
 
 class Concatenated_Execution
@@ -636,7 +678,10 @@ public:
 	virtual const Place &get_place() const {  return dependency->get_place();  }
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const;
-	virtual bool finished(Stack avoid) const; 
+	virtual bool finished(
+			      Flags flags
+//			      Stack avoid
+			      ) const; 
 
 	virtual string format_out() const {  
 		// TODO return actual dependency text
@@ -727,7 +772,10 @@ public:
 
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const;
-	virtual bool finished(Stack avoid) const; 
+	virtual bool finished(
+			      Flags flags
+//			      Stack avoid
+			      ) const; 
 	virtual int get_depth() const {  return done.get_depth();  }
 	virtual const Place &get_place() const {  return dependency->get_place();  }
 	virtual bool optional_finished(const Link &) {  return false;  }
@@ -747,8 +795,9 @@ private:
 	shared_ptr <Dynamic_Dependency> dependency; 
 	/* A dynamic of anything */
 
-	Stack done;
-	/* Same semantics as in Single_Execution */ 
+	bool is_finished; 
+//	Stack done;
+//	/* Same semantics as in File_Execution */ 
 };
 
 /* Padding for debug output (option -d).  During the lifetime of an
@@ -790,9 +839,9 @@ Timestamp Execution::timestamp_last;
 bool Execution::hide_out_message= false;
 bool Execution::out_message_done= false;
 unordered_map <Target, Execution *> Execution::executions_by_target;
+unordered_map <string, Timestamp> Execution::transients;
 
-unordered_map <pid_t, Single_Execution *> Single_Execution::executions_by_pid;
-unordered_map <string, Timestamp> Single_Execution::transients;
+unordered_map <pid_t, File_Execution *> File_Execution::executions_by_pid;
 
 string Debug::padding_current= "";
 vector <Execution *> Debug::executions; 
@@ -821,12 +870,12 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 			} while (proceed & P_BIT_PENDING); 
 
 			if (proceed & P_BIT_WAIT) {
-				Single_Execution::wait();
+				File_Execution::wait();
 			}
 		}
 
 		assert(root_execution->finished()); 
-		assert(Single_Execution::executions_by_pid.size() == 0);
+		assert(File_Execution::executions_by_pid.size() == 0);
 
 		bool success= (root_execution->error == 0);
 		assert(option_keep_going || success); 
@@ -855,7 +904,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 		assert(e >= 1 && e <= 4); 
 
 		/* Terminate all jobs */ 
-		if (Single_Execution::executions_by_pid.size()) {
+		if (File_Execution::executions_by_pid.size()) {
 			print_error_reminder("Terminating all jobs"); 
 			job_terminate_all();
 		}
@@ -1185,6 +1234,11 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 
 bool Execution::same_rule(const Execution *execution_a,
 			  const Execution *execution_b)
+/* 
+ * This must also take into account that two execution could use the
+ * same rule but parametrized differently, thus the two executions could
+ * have different targets, but the same rule. 
+ */ 
 {
 	return 
 		execution_a->param_rule != nullptr &&
@@ -1727,7 +1781,7 @@ void Execution::disconnect(Execution *const parent,
 		// XXX everywhere where DYNAMIC_LEFT is checked, also check that DYNAMIC_RRIGHT is not set 
 
 		Dynamic_Execution *parent_dynamic= dynamic_cast <Dynamic_Execution *> (parent);
-		Single_Execution *parent_single= dynamic_cast <Single_Execution *> (parent); 
+		File_Execution *parent_single= dynamic_cast <File_Execution *> (parent); 
 		if (! parent_dynamic) {
 			assert(parent_single); 
 			shared_ptr <Single_Dependency> single_dependency_parent
@@ -1738,7 +1792,7 @@ void Execution::disconnect(Execution *const parent,
 
 		parent->propagate_to_dynamic(child,
 					     flags_child,
-					     avoid_parent,
+//					     avoid_parent,
 					     dependency_parent,
 					     dependency_child);  
 	}
@@ -1761,7 +1815,7 @@ void Execution::disconnect(Execution *const parent,
 
 	/* Propagate variable dependencies */
 	if (flags_child & F_VARIABLE) { 
-		dynamic_cast <Single_Execution *> (child)
+		dynamic_cast <File_Execution *> (child)
 			->propagate_variable(dependency_child, parent);
 	}
 
@@ -1769,17 +1823,17 @@ void Execution::disconnect(Execution *const parent,
 	 * Propagate variables over transient targets without commands
 	 * and dynamic targets
 	 */
-	if ((dynamic_cast <Single_Execution *>(child) && 
-	     dynamic_cast <Single_Execution *> (child)->is_dynamic()) ||
+	if ((dynamic_cast <File_Execution *>(child) && 
+	     dynamic_cast <File_Execution *> (child)->is_dynamic()) ||
 	    (dynamic_pointer_cast <Single_Dependency> (dependency_child)
 	     && dynamic_pointer_cast <Single_Dependency> (dependency_child)
 	     ->place_param_target.type == Type::TRANSIENT
-	     && dynamic_cast <Single_Execution *> (child)->get_rule() != nullptr 
-	     && dynamic_cast <Single_Execution *> (child)->get_rule()->command == nullptr)) {
+	     && dynamic_cast <File_Execution *> (child)->get_rule() != nullptr 
+	     && dynamic_cast <File_Execution *> (child)->get_rule()->command == nullptr)) {
 
-		if (dynamic_cast <Single_Execution *> (parent)) {
-			dynamic_cast <Single_Execution *> (parent)->add_variables
-				(dynamic_cast <Single_Execution *> (child)->get_mapping_variable()); 
+		if (dynamic_cast <File_Execution *> (parent)) {
+			dynamic_cast <File_Execution *> (parent)->add_variables
+				(dynamic_cast <File_Execution *> (child)->get_mapping_variable()); 
 		}
 	}
 
@@ -1863,7 +1917,10 @@ Execution *Execution::get_execution(const Target &target,
 		/* Create a new Execution object */ 
 
 		if (! target.type.is_dynamic()) {
-			execution= new Single_Execution(target, link, parent);  
+			if (target.type == Type::FILE) 
+				execution= new File_Execution(target, link, parent);  
+			else if (target.type == Type::TRANSIENT) 
+				execution= new Transient_Execution(target, link, parent); 
 		} else {
 			execution= new Dynamic_Execution(link, parent); 
 		}
@@ -1883,8 +1940,8 @@ void Execution::copy_result(Execution *parent, Execution *child)
 {
 	/* Check that the child is not of a type for which RESULT is not
 	 * used */
-	if (dynamic_cast <Single_Execution *> (child)) {
-		Single_Execution *single_child= dynamic_cast <Single_Execution *> (child);
+	if (dynamic_cast <File_Execution *> (child)) {
+		File_Execution *single_child= dynamic_cast <File_Execution *> (child);
 		assert(single_child->targets.size() == 1 &&
 		       single_child->targets.at(0).type == Type::TRANSIENT); 
 	}
@@ -1955,7 +2012,7 @@ void Execution::push_result(shared_ptr <Dependency> dd,
 
 void Execution::propagate_to_dynamic(Execution *child,
 				     Flags flags_child,
-				     Stack avoid_this,
+//				     Stack avoid_this,
 				     shared_ptr <Dependency> dependency_this,
 				     shared_ptr <Dependency> dependency_child)
 /* A left branch child is done */
@@ -1965,7 +2022,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 	
 	assert(flags_child & F_DYNAMIC_LEFT); 
 
-	Single_Execution *single_this= dynamic_cast <Single_Execution *> (this); 
+	File_Execution *single_this= dynamic_cast <File_Execution *> (this); 
 	Dynamic_Execution *dynamic_this= dynamic_cast <Dynamic_Execution *> (this); 
 	
 	/* Check that THIS is one of the allowed dynamics */
@@ -2013,20 +2070,20 @@ void Execution::propagate_to_dynamic(Execution *child,
 	}
 }
 
-Single_Execution::~Single_Execution()
+File_Execution::~File_Execution()
 /* Objects of this type are never deleted */ 
 {
 	assert(false);
 }
 
-void Single_Execution::wait() 
+void File_Execution::wait() 
 {
 	// TODO use a non-blocking wait() function to handle all
 	// finished jobs in a loop in this function. 
 
 	Debug::print(nullptr, "wait...");
 
-	assert(Single_Execution::executions_by_pid.size() != 0); 
+	assert(File_Execution::executions_by_pid.size() != 0); 
 
 	int status;
 	pid_t pid= Job::wait(&status); 
@@ -2036,7 +2093,7 @@ void Single_Execution::wait()
 	timestamp_last= Timestamp::now(); 
 
 	if (executions_by_pid.count(pid) == 0) {
-		/* No Single_Execution is registered for the PID that
+		/* No File_Execution is registered for the PID that
 		 * just finished.  Should not happen, but since the PID
 		 * value came from outside this process, we better
 		 * handle this case gracefully, i.e., do nothing.  */
@@ -2044,22 +2101,22 @@ void Single_Execution::wait()
 		return; 
 	}
 
-	Single_Execution *const execution= executions_by_pid.at(pid); 
+	File_Execution *const execution= executions_by_pid.at(pid); 
 
 	execution->waited(pid, status); 
 
 	++jobs; 
 }
 
-void Single_Execution::waited(pid_t pid, int status) 
+void File_Execution::waited(pid_t pid, int status) 
 {
 	assert(job.started()); 
 	assert(job.get_pid() == pid); 
 
 	Execution::check_waited(); 
 
-	assert(done.get_depth() == 0); 
-	done_set_all_one(); 
+	flags_finished= ~0; 
+//	done_set_all_one(); 
 
 	{
 		Job::Signal_Blocker sb;
@@ -2187,17 +2244,18 @@ void Single_Execution::waited(pid_t pid, int status)
 	}
 }
 
-Single_Execution::Single_Execution(Target target_,
-				   Link &link,
-				   Execution *parent)
+File_Execution::File_Execution(Target target_,
+			       Link &link,
+			       Execution *parent)
 	:  Execution(link, parent),
 	   exists(0),
-	   done(target_.type.get_depth(), 0)
+	   flags_finished(0)
+//	   done(target_.type.get_depth(), 0)
 {
 	assert(parent != nullptr); 
 	assert(parents.size() == 1); 
 	assert(target_.type.get_depth() == 0); 
-	assert(target_.type == Type::FILE || target_.type == Type::TRANSIENT); 
+	assert(target_.type == Type::FILE); 
 
 	/* Later replaced with all targets from the rule, when a rule exists */ 
 	targets.push_back(target_); 
@@ -2296,16 +2354,16 @@ Single_Execution::Single_Execution(Target target_,
 			print_traces(fmt("no rule to build %s", 
 					 target_.format_word()));
 			raise(ERROR_BUILD);
-			/* Even when a rule was not found, the Single_Execution object remains
+			/* Even when a rule was not found, the File_Execution object remains
 			 * in memory  */  
 		}
 	}
 
 }
 
-bool Single_Execution::finished() const 
+bool File_Execution::finished() const 
 {
-	assert(done.get_depth() == 0); 
+//	assert(done.get_depth() == 0); 
 
 //	Flags to_do_aggregate= 0;
 	
@@ -2313,15 +2371,23 @@ bool Single_Execution::finished() const
 //		to_do_aggregate |= ~done.get(j); 
 //	}
 
-	return ((~done.get(0)) & ((1 << C_TRANSITIVE) - 1)) == 0; 
+	return ((~
+		 flags_finished
+//		 done.get(0)
+		 ) & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
-bool Single_Execution::finished(Stack avoid) const
+bool File_Execution::finished(Stack avoid) const
 {
-	assert(done.get_depth() == 0); 
+//	assert(done.get_depth() == 0); 
 	assert(avoid.get_depth() == 0); 
 
-	return ((~done.get(0) & ~avoid.get(0)) & ((1 << C_TRANSITIVE) - 1)) == 0; 
+	return ((~
+		 flags_finished
+//		 done.get(0)
+		 & ~
+		 avoid.get(0)
+		 ) & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
 void job_terminate_all() 
@@ -2336,8 +2402,8 @@ void job_terminate_all()
 
 	write_safe(2, "stu: Terminating all jobs\n"); 
 	
-	for (auto i= Single_Execution::executions_by_pid.begin();
-	     i != Single_Execution::executions_by_pid.end();  ++i) {
+	for (auto i= File_Execution::executions_by_pid.begin();
+	     i != File_Execution::executions_by_pid.end();  ++i) {
 
 		const pid_t pid= i->first;
 
@@ -2346,8 +2412,8 @@ void job_terminate_all()
 
 	int count_terminated= 0;
 
-	for (auto i= Single_Execution::executions_by_pid.begin();
-	     i != Single_Execution::executions_by_pid.end();  ++i) {
+	for (auto i= File_Execution::executions_by_pid.begin();
+	     i != File_Execution::executions_by_pid.end();  ++i) {
 
 		if (i->second->remove_if_existing(false))
 			++count_terminated;
@@ -2391,12 +2457,12 @@ void job_terminate_all()
 void job_print_jobs()
 /* The definition of this function is in job.hh */ 
 {
-	for (auto &i:  Single_Execution::executions_by_pid) {
+	for (auto &i:  File_Execution::executions_by_pid) {
 		i.second->print_as_job(); 
 	}
 }
 
-bool Single_Execution::remove_if_existing(bool output) 
+bool File_Execution::remove_if_existing(bool output) 
 {
 	if (option_no_delete)
 		return false;
@@ -2449,7 +2515,7 @@ bool Single_Execution::remove_if_existing(bool output)
 	return removed; 
 }
 
-void Single_Execution::warn_future_file(struct stat *buf, 
+void File_Execution::warn_future_file(struct stat *buf, 
 					const char *filename,
 					const Place &place,
 					const char *message_extra)
@@ -2466,7 +2532,7 @@ void Single_Execution::warn_future_file(struct stat *buf,
 	}
 }
 
-void Single_Execution::print_command() const
+void File_Execution::print_command() const
 {
 	static const int SIZE_MAX_PRINT_CONTENT= 20;
 	
@@ -2563,7 +2629,7 @@ void Single_Execution::print_command() const
 	}
 }
 
-Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link)
+Execution::Proceed File_Execution::execute(Execution *parent, const Link &link)
 {
 	if (job.started()) {
 		assert(children.empty()); 
@@ -2844,8 +2910,8 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 				Execution *execution_source_base=
 					executions_by_target.at(Target(Type::FILE, source));
 				assert(execution_source_base); 
-				Single_Execution *execution_source
-					= dynamic_cast <Single_Execution *> (execution_source_base); 
+				File_Execution *execution_source
+					= dynamic_cast <File_Execution *> (execution_source_base); 
 				assert(execution_source); 
 				if (execution_source->exists < 0) {
 					/* Neither the source file nor
@@ -2907,7 +2973,7 @@ Execution::Proceed Single_Execution::execute(Execution *parent, const Link &link
 	return p;
 }
 
-void Single_Execution::print_as_job() const
+void File_Execution::print_as_job() const
 {
 	pid_t pid= job.get_pid();
 
@@ -2916,7 +2982,7 @@ void Single_Execution::print_as_job() const
 	printf("%7ld %s\n", (long) pid, text_target.c_str());
 }
 
-void Single_Execution::write_content(const char *filename, 
+void File_Execution::write_content(const char *filename, 
 				     const Command &command)
 {
 	FILE *file= fopen(filename, "w"); 
@@ -2955,8 +3021,8 @@ void Single_Execution::write_content(const char *filename,
 	exists= +1;
 }
 
-void Single_Execution::propagate_variable(shared_ptr <Dependency> dependency,
-					  Execution *parent)
+void File_Execution::propagate_variable(shared_ptr <Dependency> dependency,
+					Execution *parent)
 {
 	assert(dynamic_pointer_cast <Single_Dependency> (dependency)); 
 
@@ -2964,7 +3030,7 @@ void Single_Execution::propagate_variable(shared_ptr <Dependency> dependency,
 		return;
 
 	Target target= dependency->get_individual_target().unparametrized(); 
-	assert(target.type == Type::FILE);
+	assert(target.type == Type::FILE || target.type == Type::TRANSIENT);
 
 	size_t filesize;
 	struct stat buf;
@@ -3011,7 +3077,7 @@ void Single_Execution::propagate_variable(shared_ptr <Dependency> dependency,
 		dependency_variable_name == "" ?
 		target.name : dependency_variable_name;
 	
-	dynamic_cast <Single_Execution *> (parent)
+	dynamic_cast <File_Execution *> (parent)
 		->mapping_variable[variable_name]= content;
 	}
 
@@ -3049,13 +3115,13 @@ void Single_Execution::propagate_variable(shared_ptr <Dependency> dependency,
 	return;
 }
 
-bool Single_Execution::is_dynamic() const
+bool File_Execution::is_dynamic() const
 {
 	assert(targets.size() != 0); 
 	return targets.front().type.is_dynamic(); 
 }
 
-void Single_Execution::check_execution(const Link &link) const
+void File_Execution::check_execution(const Link &link) const
 {
 	for (const Target &target:  targets) {
 		assert(target.type.get_depth() == done.get_depth());
@@ -3071,7 +3137,7 @@ void Single_Execution::check_execution(const Link &link) const
 	done.check();
 }
 
-bool Single_Execution::optional_finished(const Link &link)
+bool File_Execution::optional_finished(const Link &link)
 {
 	if ((link.flags & F_OPTIONAL) 
 	    && link.dependency != nullptr

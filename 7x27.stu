@@ -1,0 +1,7 @@
+# When a transient target rule has a command, flags are not passed
+# transitively.  Should this give an error, or build B?  It should give
+# an error. 
+
+A:  -o @x { cp B A ; }
+@x:  B  { echo building @x ; }
+B { echo correct >B ; }

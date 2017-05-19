@@ -1,7 +1,7 @@
-# For delegating executions, have different execution objects when the
-# transitive flags are different.   Have different classes
-# File_Execution, Transient_Execution, Dynamic_Execution,
-# Concatenated_Execution.  Hash them by the flag, too. 
+# * File_Execution, without flags
+# * Transient_Execution, by flags
+# * Dynamic_Execution (already exists), by flags
+# * Concatenated_Execution, by flags 
 
 A:  -o @x   @x  { cp C A ; }
 @x:  C;

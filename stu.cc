@@ -239,13 +239,13 @@ int main(int argc, char **argv, char **envp)
 				}
 				had_option_f= true;
 				filenames.push_back(optarg); 
-				read_file(optarg, -1, Single_Execution::rule_set, rule_first, place_first);
+				read_file(optarg, -1, Execution::rule_set, rule_first, place_first);
 			end:
 				break;
 
 			case 'F':
 				had_option_f= true;
-				read_option_F(optarg, Single_Execution::rule_set, rule_first);
+				read_option_F(optarg, Execution::rule_set, rule_first);
 				break;
 
 			case 'i':
@@ -259,14 +259,14 @@ int main(int argc, char **argv, char **envp)
 			case 'j':  {
 				errno= 0;
 				char *endptr;
-				Single_Execution::jobs= strtol(optarg, &endptr, 0);
+				Execution::jobs= strtol(optarg, &endptr, 0);
 				Place place(Place::Type::OPTION, c); 
 				if (errno != 0 || *endptr != '\0') {
 					place << fmt("expected the number of jobs, not %s",
 						     name_format_word(optarg)); 
 					exit(ERROR_FATAL); 
 				}
-				if (Single_Execution::jobs < 1) {
+				if (Execution::jobs < 1) {
 					place << fmt("expected a positive number of jobs, not %s",
 						     name_format_word(optarg));
 					exit(ERROR_FATAL); 
@@ -356,7 +356,7 @@ int main(int argc, char **argv, char **envp)
 
 		order_vec= (order == Order::RANDOM);
 
-		option_parallel= Single_Execution::jobs > 1; 
+		option_parallel= Execution::jobs > 1; 
 		
 		if (option_interactive && option_parallel) {
 			Place(Place::Type::OPTION, 'i')
@@ -398,7 +398,7 @@ int main(int argc, char **argv, char **envp)
 			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY); 
 			if (file_fd >= 0) {
 				read_file("", file_fd, 
-					  Single_Execution::rule_set, rule_first, place_first); 
+					  Execution::rule_set, rule_first, place_first); 
 			} else {
 				if (errno == ENOENT) { 
 					/* The default file does not exist --
@@ -420,7 +420,7 @@ int main(int argc, char **argv, char **envp)
 		}
 
 		if (option_print) {
-			Single_Execution::rule_set.print(); 
+			Execution::rule_set.print(); 
 			exit(0); 
 		}
 
@@ -450,8 +450,7 @@ int main(int argc, char **argv, char **envp)
 		}
 
 		/* Execute */
-		Single_Execution::main(dependencies);
-		
+		Execution::main(dependencies);
 
 	} catch (int e) {
 		assert(e >= 1 && e <= 3); 

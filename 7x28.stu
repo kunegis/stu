@@ -1,0 +1,5 @@
+# The -o flag applies to 'C'
+
+A:  -o @x { echo correct >A ; }
+@x C:  B  { exit 1 ; }
+B { exit 1 ; }

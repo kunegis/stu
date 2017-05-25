@@ -1,8 +1,6 @@
 #ifndef LINK_HH
 #define LINK_HH
 
-//#include "stack.hh"
-
 /* 
  * Information about one parent--child link. 
  */ 
@@ -22,8 +20,7 @@ public:
 
 	Flags flags;
 	/* Flags that are valid for this dependency, including the
-	 * non-transitive ones.  The transitive-bit part of this
-	 * variable always equals the lowest level bits in AVOID.  */  
+	 * non-transitive ones. */
 	
 	Place place; 
 	/* The place of the declaration of the dependency for purposes
@@ -32,9 +29,9 @@ public:
 
 	shared_ptr <Dependency> dependency;
 	/* This is null for the root target.  May contain less flags
-	 * than stored in AVOID and FLAGS, if additional flags came not
-	 * from the dependency but from other sources.  Always a
-	 * normalized dependency.  */
+	 * than stored in FLAGS, if additional flags came not from the
+	 * dependency but from other sources.  Always a normalized
+	 * dependency.  */
 
 	Link() { }
 
@@ -73,6 +70,7 @@ public:
 	}
 
 	void add(
+		 // TODO make it obsolete as the operation is too simple
 //		 Stack avoid_, 
 		 Flags flags_) {
 //		assert(avoid.get_depth() == avoid_.get_depth());

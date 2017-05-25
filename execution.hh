@@ -76,9 +76,12 @@ public:
 	/* All errors by Execution call this function.  Set the error
 	 * code, and throw an error except with the keep-going option.  */
 
-	Proceed execute_base(const Link &link
+	/* FINISHED_HERE must be FALSE on call and is set to TRUE when finished. */
+	Proceed execute_base(const Link &link,
+			     bool &finished_here
 //			     , Stack &done_here
 			     );
+
 	int get_error() const {  return error;  }
 
 	void propagate_to_dynamic(Execution *child,
@@ -205,7 +208,8 @@ protected:
 	 * up to the root execution. 
 	 * TEXT may be "" to not print the first message.  */ 
 
-	Proceed execute_children(const Link &link
+	Proceed execute_children(const Link &link,
+				 bool &finished_here
 //				 , Stack &done_here
 				 );
 	/* Execute already-active children */
@@ -289,8 +293,7 @@ protected:
 	 * targets of a multi-target rule.  A dynamic multi-target rule
 	 * result in multiple non-shared execution objects.  
 	 * The objects are of type File_Execution (when not dynamic)
-	 * or Dynamic_Execution (when dynamic). 
-	 */
+	 * or Dynamic_Execution (when dynamic).  */
 
 	static unordered_map <string, Timestamp> transients;
 	/* The timestamps for transient targets.  This container plays the role of
@@ -428,10 +431,7 @@ public:
 
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const;
-	virtual bool finished(
-			      Flags flags
-//			      Stack avoid
-			      ) const; 
+	virtual bool finished(Flags flags) const; 
 	virtual string format_out() const {
 		assert(targets.size()); 
 		return targets.front().format_out(); 
@@ -449,7 +449,6 @@ public:
 	static void wait();
 	/* Wait for next job to finish and finish it.  Do not start anything
 	 * new.  */ 
-
 
 protected:
 
@@ -625,10 +624,7 @@ public:
 
 	virtual Proceed execute(Execution *parent, const Link &link);
 	virtual bool finished() const; 
-	virtual bool finished(
-			      Flags flags
-//			      Stack avoid
-			      ) const;
+	virtual bool finished(Flags flags) const;
 	virtual string format_out() const { return "ROOT"; }
 
 protected:
@@ -636,14 +632,12 @@ protected:
 	virtual int get_depth() const {  return -1;  }
 	virtual const Place &get_place() const {  return Place::place_empty;  }
 	virtual bool optional_finished(const Link &) {  return false;  }
-	virtual void check_execution(const Link &) const  {   }
+	virtual void check_execution(const Link &) const {   }
 	virtual bool want_delete() const {  return true;  }
 
 private:
 
 	bool is_finished; 
-//	Stack done; 
-//	/* Always has depth zero */
 };
 
 class Concatenated_Execution
@@ -776,7 +770,7 @@ public:
 			      Flags flags
 //			      Stack avoid
 			      ) const; 
-	virtual int get_depth() const {  return done.get_depth();  }
+	virtual int get_depth() const {  return dependency->get_depth();  }
 	virtual const Place &get_place() const {  return dependency->get_place();  }
 	virtual bool optional_finished(const Link &) {  return false;  }
 	virtual string format_out() const;
@@ -796,8 +790,6 @@ private:
 	/* A dynamic of anything */
 
 	bool is_finished; 
-//	Stack done;
-//	/* Same semantics as in File_Execution */ 
 };
 
 /* Padding for debug output (option -d).  During the lifetime of an
@@ -861,7 +853,7 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 	try {
 		while (! root_execution->finished()) {
 
-			Link link(Stack(), (Flags) 0, Place(), shared_ptr <Dependency> ());
+			Link link((Flags) 0, Place(), shared_ptr <Dependency> ());
 
 			Proceed proceed;
 			do {
@@ -1328,7 +1320,8 @@ void Execution::print_traces(string text) const
 	}
 }
 
-Execution::Proceed Execution::execute_children(const Link &link, Stack &done_here)
+Execution::Proceed Execution::execute_children(const Link &link,
+					       bool &finished_here)
 {
 	/* Since disconnect() may change execution->children, we must first
 	 * copy it over locally, and then iterate through it */ 
@@ -1358,7 +1351,7 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 		
 		assert(child != nullptr);
 
-		Stack avoid_child= child->parents.at(this).avoid;
+//		Stack avoid_child= child->parents.at(this).avoid;
 		Flags flags_child= child->parents.at(this).flags;
 
 		if (link.dependency != nullptr 
@@ -1369,17 +1362,21 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 
 		shared_ptr <Dependency> dependency_child= child->parents.at(this).dependency;
 		
-		Link link_child(avoid_child, flags_child, child->parents.at(this).place,
+		Link link_child(//avoid_child, 
+				flags_child, child->parents.at(this).place,
 				dependency_child);
 
 		Proceed proceed_child= child->execute(this, move(link_child));
 
 		proceed_all |= proceed_child; 
 
-		if (child->finished(avoid_child)) {
+		if (child->finished(
+				    flags_child
+//				    avoid_child
+				    )) {
 			disconnect(this, child, 
-				   link.dependency, link.avoid, 
-				   dependency_child, avoid_child, flags_child); 
+				   link.dependency, 
+				   dependency_child, flags_child); 
 		}
 	}
 
@@ -1392,7 +1389,8 @@ Execution::Proceed Execution::execute_children(const Link &link, Stack &done_her
 		 * WAIT or PENDING */ 
 		assert(children.empty()); 
 		if (error) {
-			done_here.add_neg(link.avoid); 
+			finished_here= true; 
+//			done_here.add_neg(link.avoid); 
 		}
 	}
 
@@ -1411,8 +1409,13 @@ void Execution::push_dependency(shared_ptr <Dependency> dependency)
 	}
 }
 
-Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
+Execution::Proceed Execution::execute_base(const Link &link,
+					   bool &finished_here
+//					   , Stack &done_here
+					   )
 {
+	assert(! finished_here); 
+
 	Debug debug(this);
 
 	assert(jobs >= 0); 
@@ -1421,14 +1424,14 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	check_execution(link); 
 #endif
 
-	Debug::print(this, fmt("execute(%s) %s", link.format_out(), link.avoid.format())); 
+	Debug::print(this, fmt("execute(%s)", link.format_out())); 
 
 	Link link2{link}; 
 
 	/* Override the trivial flag */ 
 	if (link2.flags & F_OVERRIDE_TRIVIAL) {
 		link2.flags &= ~F_TRIVIAL; 
-		link2.avoid.rem_highest(F_TRIVIAL); 
+//		link2.avoid.rem_highest(F_TRIVIAL); 
 	}
 
 	/* Override the dynamic flag */
@@ -1446,7 +1449,8 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 		// XXX should we also override -* ?
 	}
 	
- 	if (finished(link2.avoid)) {
+	if (finished(link2.flags)) {
+// 	if (finished(link2.avoid)) {
 		Debug::print(this, "finished"); 
 		return P_CONTINUE; 
 	}
@@ -1462,11 +1466,11 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	Proceed proceed_all= P_CONTINUE; 
 
 	if (order != Order::RANDOM) {
-		Proceed proceed_2= execute_children(link2, done_here);
+		Proceed proceed_2= execute_children(link2, finished_here);
 		proceed_all |= proceed_2;
 		if (proceed_all & P_BIT_WAIT) 
 			return proceed_all; 
-		if (finished(link2.avoid) && ! option_keep_going) {
+		if (finished(link2.flags) && ! option_keep_going) {
 			Debug::print(this, "finished"); 
 			return proceed_all;
 		}
@@ -1480,7 +1484,8 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 
 	/* Is this a trivial run?  Then skip the dependency. */
 	if (link2.flags & F_TRIVIAL) {
-		done_here.add_neg(link2.avoid); 
+		finished_here= true; 
+//		done_here.add_neg(link2.avoid); 
 		return proceed_all; 
 	}
 
@@ -1510,11 +1515,13 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	assert(buffer_default.empty()); 
 
 	if (order == Order::RANDOM) {
-		Proceed proceed_2= execute_children(link2, done_here);
+		Proceed proceed_2= execute_children(link2, finished_here);
 		proceed_all |= proceed_2; 
 		if (proceed_all & P_BIT_WAIT)
 			return proceed_all;
-		if (finished(done_here) && ! option_keep_going) {
+		if (//finished(done_here) 
+		    finished_here
+		    && ! option_keep_going) {
 			return proceed_all;
 		}
 	}
@@ -1528,7 +1535,8 @@ Execution::Proceed Execution::execute_base(const Link &link, Stack &done_here)
 	/* There was an error in a child */ 
 	if (error) {
 		assert(option_keep_going == true); 
-		done_here.add_neg(link2.avoid); 
+		finished_here= true;
+//		done_here.add_neg(link2.avoid); 
 		return proceed_all;
 	}
 
@@ -1550,13 +1558,13 @@ Execution::Proceed Execution::connect(const Link &link,
 
 	unsigned depth= 0;
 	shared_ptr <Dependency> dep= dependency_child;
-	Stack avoid_child;
-	avoid_child.add_lowest(dep->get_flags()); 
+//	Stack avoid_child;
+//	avoid_child.add_lowest(dep->get_flags()); 
 	while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
 		dep= dynamic_pointer_cast <Dynamic_Dependency> (dep)->dependency;
 		++depth;
-		avoid_child.push();
-		avoid_child.add_lowest(dep->get_flags()); 
+//		avoid_child.push();
+//		avoid_child.add_lowest(dep->get_flags()); 
 	}
 
 	if (dynamic_pointer_cast <Concatenated_Dependency> (dep)) {
@@ -1565,7 +1573,7 @@ Execution::Proceed Execution::connect(const Link &link,
 		shared_ptr <Concatenated_Dependency> concatenated_dependency=
 			dynamic_pointer_cast <Concatenated_Dependency> (dep); 
 
-		Link link_child_new(avoid_child, flags_child,
+		Link link_child_new(flags_child,
 				    dependency_child->get_place(),
 				    dependency_child);
 
@@ -1583,10 +1591,10 @@ Execution::Proceed Execution::connect(const Link &link,
 		if (proceed_child & P_BIT_WAIT)
 			return proceed_child; 
 			
-		if (child->finished(avoid_child)) {
+		if (child->finished(flags_child)) {
 			disconnect(this, child, 
-				   link.dependency, link.avoid, 
-				   dependency_child, avoid_child, flags_child);
+				   link.dependency, 
+				   dependency_child, flags_child);
 		}
 
 		return P_CONTINUE;
@@ -1704,7 +1712,7 @@ Execution::Proceed Execution::connect(const Link &link,
 
 		flags_child= flags_child_new; 
 
-		Link link_child_new(avoid_child, flags_child, 
+		Link link_child_new(flags_child, 
 				    dependency_child->get_place(), 
 				    dependency_child); 
 
@@ -1720,10 +1728,10 @@ Execution::Proceed Execution::connect(const Link &link,
 		if (proceed_child & (P_BIT_WAIT | P_BIT_PENDING))
 			return proceed_child; 
 			
-		if (child->finished(avoid_child)) {
+		if (child->finished(flags_child)) {
 			disconnect(this, child, 
-				   link.dependency, link.avoid, 
-				   dependency_child, avoid_child, flags_child);
+				   link.dependency, 
+				   dependency_child, flags_child);
 		}
 
 		return P_CONTINUE;
@@ -1748,15 +1756,13 @@ void Execution::raise(int error_)
 void Execution::disconnect(Execution *const parent, 
 			   Execution *const child,
 			   shared_ptr <Dependency> dependency_parent,
-			   Stack avoid_parent,
+//			   Stack avoid_parent,
 			   shared_ptr <Dependency> dependency_child,
-			   Stack avoid_child,
+//			   Stack avoid_child,
 			   Flags flags_child)
 {
 	// TODO is FLAGS_CHILD always identical to
 	// DEPENDENCY_CHILD->FLAGS ?
-
-	(void) avoid_child; // TODO rm if unused
 
 	Debug::print(parent, fmt("disconnect {%s} %s", 
 				 child->debug_done_text(),
@@ -1765,7 +1771,7 @@ void Execution::disconnect(Execution *const parent,
 	assert(parent != nullptr);
 	assert(child != nullptr); 
 	assert(parent != child); 
-	assert(child->finished(avoid_child)); 
+	assert(child->finished(flags_child)); 
 
 	if (! option_keep_going)  
 		assert(child->error == 0); 
@@ -1905,8 +1911,7 @@ Execution *Execution::get_execution(const Target &target,
 		if (execution->parents.count(parent)) {
 			/* The parent and child are already connected -- add the
 			 * necessary flags */ 
-			execution->parents.at(parent).add(link.avoid, 
-							  link.flags);
+			execution->parents.at(parent).add(link.flags);
 		} else {
 			/* The parent and child are not connected -- add the
 			 * connection */ 
@@ -2059,7 +2064,8 @@ void Execution::propagate_to_dynamic(Execution *child,
 				for (auto &j:  dependencies) {
 					push_result(j, 
 //						    dependency_this,
-						    avoid_this.get_highest()); 
+						    dependency_this->get_flags()); 
+//						    avoid_this.get_highest()); 
 				}
 			}
 		} catch (int e) {
@@ -2300,12 +2306,15 @@ File_Execution::File_Execution(Target target_,
 
 			shared_ptr <Dependency> dep= dependency;
 			if (target_.type.is_any_transient()) {
-				dep->add_flags(link.avoid.get_lowest());
+				dep->add_flags(
+					       link.flags
+//					       link.avoid.get_lowest()
+					       );
 			
-				for (unsigned i= 0;  i < target_.type.get_depth();  ++i) {
-					Flags flags= link.avoid.get(i + 1);
-					dep= make_shared <Dynamic_Dependency> (flags, dep);
-				}
+//				for (unsigned i= 0;  i < target_.type.get_depth();  ++i) {
+//					Flags flags= link.avoid.get(i + 1);
+//					dep= make_shared <Dynamic_Dependency> (flags, dep);
+//				}
 			} 
 
 			push_dependency(dep); 
@@ -2377,16 +2386,20 @@ bool File_Execution::finished() const
 		 ) & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
-bool File_Execution::finished(Stack avoid) const
+bool File_Execution::finished(
+			      Flags flags
+//			      Stack avoid
+			      ) const
 {
 //	assert(done.get_depth() == 0); 
-	assert(avoid.get_depth() == 0); 
+//	assert(avoid.get_depth() == 0); 
 
 	return ((~
 		 flags_finished
 //		 done.get(0)
 		 & ~
-		 avoid.get(0)
+		 flags
+//		 avoid.get(0)
 		 ) & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
@@ -2635,7 +2648,17 @@ Execution::Proceed File_Execution::execute(Execution *parent, const Link &link)
 		assert(children.empty()); 
 	}       
 
-	Proceed proceed= Execution::execute_base(link, done); 
+	bool finished_here= false;
+
+	Proceed proceed= Execution::execute_base(link, 
+						 finished_here
+//						 done
+						 ); 
+
+	if (finished_here) {
+		flags_finished |= ~link.flags;
+	}
+
 	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
 		return proceed; 
 	}
@@ -2644,7 +2667,7 @@ Execution::Proceed File_Execution::execute(Execution *parent, const Link &link)
 
 	assert(children.empty()); 
 
-	if (finished(link.avoid)) {
+	if (finished(link.flags)) {
 		assert(!(proceed & P_BIT_WAIT)); 
 		return P_CONTINUE; 
 	}
@@ -2741,7 +2764,8 @@ Execution::Proceed File_Execution::execute(Execution *parent, const Link &link)
 					/* Optional dependency:  don't create the file;
 					 * it will then not exist when the parent is
 					 * called. */ 
-					done_add_one_neg(F_OPTIONAL); 
+					flags_finished |= ~F_OPTIONAL; 
+//					done_add_one_neg(F_OPTIONAL); 
 					return proceed;
 				}
 			}
@@ -2752,7 +2776,8 @@ Execution::Proceed File_Execution::execute(Execution *parent, const Link &link)
 				rule->place_param_targets[i]->place
 					<< system_format(target.format_word()); 
 				raise(ERROR_BUILD);
-				done_add_one_neg(link.avoid); 
+				flags_finished |= ~link.flags; 
+//				done_add_one_neg(link.avoid); 
 				return proceed;
 			}
 
@@ -2774,7 +2799,8 @@ Execution::Proceed File_Execution::execute(Execution *parent, const Link &link)
 					print_traces();
 					explain_file_without_command_without_dependencies(); 
 				}
-				done_add_one_neg(link.avoid); 
+				flags_finished |= ~link.flags; 
+//				done_add_one_neg(link.avoid); 
 				raise(ERROR_BUILD);
 				return proceed;
 			}		
@@ -2813,7 +2839,8 @@ Execution::Proceed File_Execution::execute(Execution *parent, const Link &link)
 
 	if (! (bits & B_NEED_BUILD)) {
 		/* The file does not have to be built */ 
-		done_add_neg(link.avoid); 
+		flags_finished |= ~link.flags; 
+//		done_add_neg(link.avoid); 
 		return proceed;
 	}
 

@@ -21,6 +21,8 @@ public:
 	Flags flags;
 	/* Flags that are valid for this dependency, including the
 	 * non-transitive ones. */
+	// TODO we don't really need the distinction between the flags
+	// in FLAGS and in DEPENDENCY -- just deprecate FLAGS. 
 	
 	Place place; 
 	/* The place of the declaration of the dependency for purposes

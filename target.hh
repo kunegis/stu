@@ -35,6 +35,7 @@
  * parametrized, and does not contain a place object.  It is used as
  * keys in maps. 
  */ 
+// TODO deprecate 
 class Target
 {
 public:
@@ -193,6 +194,7 @@ namespace std {
  * dependencies, mainly used as the key in the caching of Execution
  * objects. 
  */
+// TODO rename 'Target' after class Target is removed 
 class Target2
 {
 public:

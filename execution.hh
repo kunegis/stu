@@ -359,14 +359,14 @@ private:
 	 * dependencies, the target must be rebuilt anyway.  Does not
 	 * contain compound dependencies.  */
 
-	Proceed connect(const Link &link,
+	Proceed connect(const Link &link_parent,
 			shared_ptr <Dependency> dependency_child);
 	/* Add an edge to the dependency graph.  Deploy a new child
 	 * execution.  LINK is the link from the THIS's parent to THIS.
 	 * Note: the top-level flags of LINK.DEPENDENCY may be modified.
 	 * DEPENDENCY_CHILD must be normalized.  */
 	
-	static Execution *get_execution(const Target &target, 
+	static Execution *get_execution(Target2 target,
 					Link &link,
 					Execution *parent); 
 	/* Get an existing Execution or create a new one for the
@@ -1557,12 +1557,14 @@ Execution::Proceed Execution::execute_base(const Link &link,
 	return proceed_all; 
 }
 
-Execution::Proceed Execution::connect(const Link &link,
+Execution::Proceed Execution::connect(const Link &link_this,
 				      shared_ptr <Dependency> dependency_child)
 {
 	assert(dependency_child->is_normalized()); 
 
-	Debug::print(this, fmt("connect(%s) %s", link.format_out(), dependency_child->format_out())); 
+	Debug::print(this, fmt("connect(%s) %s", 
+			       link_this.format_out(), 
+			       dependency_child->format_out())); 
 
 	Flags flags_child= dependency_child->get_flags(); 
 	Flags flags_child_additional= 0; 
@@ -1570,18 +1572,18 @@ Execution::Proceed Execution::connect(const Link &link,
 	// TODO check directly whether the top-level dependency is
 	// dynamic, and if it is, return a Dynamic_Execution
 
-	unsigned depth= 0;
-	shared_ptr <Dependency> dep= dependency_child;
+//	unsigned depth= 0;
+//	shared_ptr <Dependency> dep= dependency_child;
 //	Stack avoid_child;
 //	avoid_child.add_lowest(dep->get_flags()); 
-	while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
-		dep= dynamic_pointer_cast <Dynamic_Dependency> (dep)->dependency;
-		++depth;
+//	while (dynamic_pointer_cast <Dynamic_Dependency> (dep)) {
+//		dep= dynamic_pointer_cast <Dynamic_Dependency> (dep)->dependency;
+//		++depth;
 //		avoid_child.push();
 //		avoid_child.add_lowest(dep->get_flags()); 
-	}
+//	}
 
-	if (dynamic_pointer_cast <Concatenated_Dependency> (dep)) {
+	if (dynamic_pointer_cast <Concatenated_Dependency> (dependency_child)) {
 		/* This is a concatenated dependency:  Create a new
 		 * concatenated execution for it. */ 
 		shared_ptr <Concatenated_Dependency> concatenated_dependency=
@@ -1909,14 +1911,14 @@ Execution::Proceed Execution::execute_second_pass(const Link &link)
 	return P_CONTINUE; 
 }
 
-Execution *Execution::get_execution(const Target &target, 
+Execution *Execution::get_execution(Target target2,
 				    Link &link,
 				    Execution *parent)
 {
 	/* Set to the returned Execution object when one is found or created */    
 	Execution *execution= nullptr; 
 
-	auto it= executions_by_target.find(target);
+	auto it= executions_by_target.find(target2);
 
 	if (it != executions_by_target.end()) {
 		/* An Execution object already exists for the target */ 

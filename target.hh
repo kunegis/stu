@@ -189,6 +189,42 @@ namespace std {
 }
 
 /* 
+ * A representation of single dependency, as well as dyn^* of single
+ * dependencies, mainly used as the key in the caching of Execution
+ * objects. 
+ */
+class Target2
+{
+public:
+
+	const string &get_text() const {  return text;  }
+
+private:
+
+	string text; 
+	/*
+	 * Linear representation of the dependency.
+	 *
+	 * A non-dynamic dependency is represented as a Type byte (\002 or \004)
+	 * followed by the name. 
+	 *
+	 * A dynamic is represented as a dynamic byte (\001 & flags),
+	 * following by the Target2 representation of the contained
+	 * dependency. 
+	 */
+};
+
+namespace std {
+	template <>
+	struct hash <Target2>
+	{
+		size_t operator()(const Target2 &target) const {
+			return hash <string> ()(target.get_text()); 
+		}
+	};
+}
+
+/* 
  * A parametrized name.  Each name has N >= 0 parameters.  When N > 0,
  * the name is parametrized, otherwise it is unparametrized.   
  * 

@@ -7,6 +7,8 @@ class Type
  *  - Be a file or a transient
  *  - Have any dynamicity level, including node
  */
+// TODO deprecate the dynamic part of this.  It now only needs to store
+// the file/transient distinction. 
 {
 public:
 
@@ -21,19 +23,19 @@ public:
 	/* The level of dynamicity, i.e., corresponding to the number of
 	 * bracket pairs in the syntax.  Zero for non-dynamic targets.  */
 	{
-		return value >> 1;
+		return value >> 2;
 	}
 
 	bool is_any_transient() const {
-		return ! (value & 1);
+		return ! (value & 2);
 	}
 
 	bool is_any_file() const {
-		return value & 1;
+		return value & 2;
 	}
 
 	Type get_base() const {
-		return Type(value & 1); 
+		return Type(value & 2); 
 	}
 
 	bool operator == (const Type &type) const {
@@ -54,30 +56,30 @@ public:
 
 	int operator - (const Type &type) const {
 		/* We can only subtract compatible types */ 
-		assert(((this->value ^ type.value) & 1) == 0);
+		assert(((this->value ^ type.value) & 2) == 0);
 
-		return (this->value - type.value) / 2; 
+		return (this->value - type.value) / 4; 
 	}
 
 	Type operator - (int depth) const {
-		assert((int)(value >> 1) - depth >= 0); 
-		return Type(value - 2 * depth);
+		assert((int)(value >> 2) - depth >= 0); 
+		return Type(value - 4 * depth);
 	}
 
 	Type &operator ++ () {
-		value += 2;
+		value += 4;
 		return *this; 
 	}
 
 	Type &operator -- () {
 		assert(value >= T_DYNAMIC_TRANSIENT);
-		value -= 2;
+		value -= 4;
 		return *this;
 	}
 
 	Type &operator += (int depth) {
-		assert(depth >= 0 || value > value + 2 * depth); 
-		value += 2 * depth;
+		assert(depth >= 0 || value > value + 4 * depth); 
+		value += 4 * depth;
 		return *this;
 	}
 
@@ -94,11 +96,15 @@ private:
 	unsigned value;
 	/*
 	 * LSB                        MSB
-	 * +-----+-------------...------+
-	 * |  F  | dynamicity           | 
-	 * +-----+-------------...------+ 
+	 * +-----+-----+-------------...------+
+	 * |  R  |  F  | dynamicity           | 
+	 * +-----+-----+-------------...------+ 
 	 *
+	 *    R    Reserved for the purpose of Target2, always zero in
+	 *         normal used, but used as extra value sometimes
 	 *    F    whether this is a transient (0) or a file (1) 
+	 *
+	 * Due to the reserved bit, all values are even. 
 	 */
 
 	Type(unsigned value_)
@@ -109,16 +115,16 @@ private:
 		T_TRANSIENT         = 0,
 		/* A transient target */ 
 	
-		T_FILE              = 1,
+		T_FILE              = 2,
 		/* A file in the file system; this entry has to come before
 		 * T_DYNAMIC because it counts also as a dynamic dependency of
 		 * depth zero. */
 
-		T_DYNAMIC_TRANSIENT = 2,
+		T_DYNAMIC_TRANSIENT = 4,
 		/* A dynamic transient target -- only used for the Target object of
 		 * executions */
 
-		T_DYNAMIC_FILE      = 3
+		T_DYNAMIC_FILE      = 6
 		/* A dynamic target -- only used for the Target object of executions */   
 
 		/* Larger values denote multiply dynamic targets.  They are only

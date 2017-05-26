@@ -20,14 +20,22 @@ public:
 
 	Flags flags;
 	/* Flags that are valid for this dependency, including the
-	 * non-transitive ones. */
+	 * non-transitive ones.  Always a superset of the flags
+	 * contained in DEPENDENCY.  */
 	// TODO we don't really need the distinction between the flags
-	// in FLAGS and in DEPENDENCY -- just deprecate FLAGS. 
+	// in FLAGS and in DEPENDENCY -- just deprecate FLAGS.  It may
+	// be that this will make extra flags to appear in error
+	// messages, which we don't want.  
 	
 	Place place; 
 	/* The place of the declaration of the dependency for purposes
 	 * of printing error messages.  Empty for 
 	 * A->[...[A]...] links and other links which are not printed */ 
+	// TODO remove this place from Link, since it's already
+	// contained in this->dependency.  The extra links can be
+	// recognised by their flags.  Then, only this->dependency will
+	// be left and we can replace Link by shared_ptr <Dependency>
+	// everywhere. 
 
 	shared_ptr <Dependency> dependency;
 	/* This is null for the root target.  May contain less flags

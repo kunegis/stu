@@ -35,8 +35,9 @@ enum
 	/* The index of the flags (I_*), used for array indexing.
 	 * Variables iterating over these values are usually called
 	 * I.  */ 
-
-	I_PERSISTENT           /* -p */    = 0,
+	
+	I_RESERVED                         = 0,
+	I_PERSISTENT,          /* -p */    
 	I_OPTIONAL,            /* -o */
 	I_TRIVIAL,             /* -t */
 
@@ -57,10 +58,10 @@ enum
 	C_CONCATENATE_COUNT = CHAR_BIT * sizeof(Flags) - C_ALL,
 	C_CONCATENATE_MAX = (1 << C_CONCATENATE_COUNT) - 1,
 
-	C_PLACED           = 3,
+	C_PLACED           = 4,
 	/* Only the first C_PLACED flags have a place associated with them */
 
-	C_TRANSITIVE       = 4,
+	C_TRANSITIVE       = 5,
 	/* The first C_TRANSITIVE flags are transitive, i.e., inherited
 	 * across transient targets  */
 

@@ -5,6 +5,19 @@
  * Code for executing the building process itself.  
  *
  * If there is ever a "libstu", this will be its main entry point. 
+ * 
+ * OVERVIEW OF TYPES
+ *
+ * Root_Ex.		not cached; single object 	The root of the dependency graph; no 
+ *							associated dependency
+ * File_Ex.		cached by Target2 (no flags)	Non-dynamic targets with at least one
+ *							file target in rule OR a command in rule OR
+ *							files without a rule
+ * Transient_Ex.	cached by Target2 (w/ flags)	Transients without commands and without file
+ * 							file target in the same rule
+ * Dynamic_Ex.[nocat]	cached by Target2 (w/ flags)	Dynamic^+ targets of Single_Dep.
+ * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concat._Dep.
+ * Concatenated_Ex.	not cached			Concatenated targets
  */
 
 #include <sys/stat.h>
@@ -285,26 +298,10 @@ protected:
 	static bool out_message_done;
 	/* Whether the STDOUT message is not "Targets are up to date" */
 
-	static unordered_map <Target, Execution *> executions_by_target;
-	/* The Execution objects by each of their target, for
-	 * non-concatenated targets.  Such Execution objects
-	 * are never deleted.  This serves as a caching mechanism.  
-	 * Non-dynamic execution objects are shared by the multiple
-	 * targets of a multi-target rule.  A dynamic multi-target rule
-	 * result in multiple non-shared execution objects.  
-	 * The objects are of type File_Execution (when not dynamic)
-	 * or Dynamic_Execution (when dynamic).  */
-
-	static unordered_map <string, Timestamp> transients;
-	/* The timestamps for transient targets.  This container plays the role of
-	 * the file system for transient targets, holding their timestamps, and
-	 * remembering whether they have been executed.  Note that if a
-	 * rule has both file targets and transient targets, and all
-	 * file targets are up to date and the transient targets have
-	 * all their dependencies up to date, then the command is not
-	 * executed, even though it was never executed in the current
-	 * invocation of Stu. In that case, the transient targets are
-	 * never insert in this map.  */
+	static unordered_map <Target2, Execution *> executions_by_target2;
+	/* The cached Execution objects by each of their Target2. 
+	 * Such Execution objects
+	 * are never deleted.  */
 
 	static bool find_cycle(const Execution *const parent,
 			       const Execution *const child,
@@ -602,6 +599,17 @@ private:
 
 	Timestamp timestamp_old;
 
+	static unordered_map <string, Timestamp> transients;
+	/* The timestamps for transient targets.  This container plays the role of
+	 * the file system for transient targets, holding their timestamps, and
+	 * remembering whether they have been executed.  Note that if a
+	 * rule has both file targets and transient targets, and all
+	 * file targets are up to date and the transient targets have
+	 * all their dependencies up to date, then the command is not
+	 * executed, even though it was never executed in the current
+	 * invocation of Stu. In that case, the transient targets are
+	 * never insert in this map.  */
+
 	~Transient_Execution() {
 		/* Objects of this type are never deleted */ 
 		assert(false);
@@ -757,6 +765,11 @@ class Dynamic_Execution
  * If it corresponds to a (possibly multiply) dynamic transient or file,
  * it used for caching and is not deleted.  If it corresponds to a
  * concatenation, it is not cached, and is deleted when not used anymore.
+ *
+ * Each dynamic execution corresponds to an exact dynamic dependency,
+ * taking into account all flags.  This is as opposed to file
+ * executions, where multiple file dependencies share a single execution
+ * object. 
  */
 	:  public Execution 
 {
@@ -830,10 +843,11 @@ Rule_Set Execution::rule_set;
 Timestamp Execution::timestamp_last;
 bool Execution::hide_out_message= false;
 bool Execution::out_message_done= false;
-unordered_map <Target, Execution *> Execution::executions_by_target;
-unordered_map <string, Timestamp> Execution::transients;
+unordered_map <Target2, Execution *> Execution::executions_by_target2;
 
 unordered_map <pid_t, File_Execution *> File_Execution::executions_by_pid;
+
+unordered_map <string, Timestamp> Transient_Execution::transients;
 
 string Debug::padding_current= "";
 vector <Execution *> Debug::executions; 
@@ -2855,7 +2869,8 @@ Execution::Proceed File_Execution::execute(Execution *parent, const Link &link)
 
 	if (no_execution) {
 		/* A target without a command */ 
-		done_add_neg(link.avoid); 
+		flags_finished |= ~link.flags; 
+//		done_add_neg(link.avoid); 
 		return proceed;
 	}
 
@@ -2877,12 +2892,14 @@ Execution::Proceed File_Execution::execute(Execution *parent, const Link &link)
 		assert(targets.size() == 1);
 		assert(targets.front().type == Type::FILE); 
 		
-		done_add_one_neg(0); 
+//		done_add_one_neg(0); 
 
 		Debug::print(nullptr, "create content"); 
 
 		print_command();
 		write_content(targets.front().name.c_str(), *(rule->command)); 
+
+		flags_finished= ~0;
 
 		assert(proceed == P_CONTINUE); 
 		return proceed;
@@ -2951,7 +2968,8 @@ Execution::Proceed File_Execution::execute(Execution *parent, const Link &link)
 					print_traces(fmt("when target file %s does not exist",
 							 targets.at(0).format_word())); 
 					raise(ERROR_BUILD);
-					done_add_neg(link.avoid); 
+					flags_finished |= ~link.flags; 
+//					done_add_neg(link.avoid); 
 					assert(proceed == P_CONTINUE); 
 					return proceed;
 				}
@@ -2980,7 +2998,8 @@ Execution::Proceed File_Execution::execute(Execution *parent, const Link &link)
 			print_traces(fmt("error executing command for %s", 
 					 targets.front().format_word())); 
 			raise(ERROR_BUILD);
-			done_add_neg(link.avoid); 
+			flags_finished |= ~link.flags; 
+//			done_add_neg(link.avoid); 
 			assert(proceed == P_CONTINUE); 
 			return proceed;
 		}
@@ -3154,14 +3173,14 @@ void File_Execution::check_execution(const Link &link) const
 		assert(target.type.get_depth() == done.get_depth());
 	}
 
-	Stack tmp_stack= link.avoid; 
-	(void) tmp_stack; 
+//	Stack tmp_stack= link.avoid; 
+//	(void) tmp_stack; 
 	assert(done.get_depth() == link.avoid.get_depth()); 
 
 	if (targets.size() && targets.front().type == 0) {
 		assert(link.avoid.get_lowest() == (link.flags & ((1 << C_TRANSITIVE) - 1))); 
 	}
-	done.check();
+//	done.check();
 }
 
 bool File_Execution::optional_finished(const Link &link)
@@ -3184,10 +3203,12 @@ bool File_Execution::optional_finished(const Link &link)
 					->place_param_target.place <<
 					system_format(name_format_word(name)); 
 				raise(ERROR_BUILD);
-				done_add_neg(link.avoid); 
+				flags_finished |= ~link.flags; 
+//				done_add_neg(link.avoid); 
 				return true;
 			}
-			done_add_highest_neg(link.avoid.get_highest()); 
+			flags_finished |= ~link.flags; 
+//			done_add_highest_neg(link.avoid.get_highest()); 
 			return true;
 		} else {
 			assert(ret_stat == 0);
@@ -3200,21 +3221,26 @@ bool File_Execution::optional_finished(const Link &link)
 
 bool Root_Execution::finished() const
 {
-	assert(done.get_depth() == 0);
+//	assert(done.get_depth() == 0);
 
-	return ((~ done.get(0)) & ((1 << C_TRANSITIVE) - 1)) == 0; 
+	return is_finished; 
+//	return ((~ 
+//		 done.get(0)
+//		 ) & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
-bool Root_Execution::finished(Stack avoid) const
+bool Root_Execution::finished(Flags flags) const
 {
-	assert(done.get_depth() == 0);
+//	assert(done.get_depth() == 0);
 
-	return ((~ done.get(0) & ~avoid.get(0)) & ((1 << C_TRANSITIVE) - 1)) == 0; 
+	return is_finished; 
+//	return ((~ done.get(0) & ~avoid.get(0)) & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
 Root_Execution::Root_Execution(const vector <shared_ptr <Dependency> > &dependencies)
 	:  Execution(nullptr),
-	   done(0, 0)
+	   is_finished(false)
+//	   done(0, 0)
 {
 	for (auto &d:  dependencies) {
 		push_dependency(d); 
@@ -3226,12 +3252,17 @@ Execution::Proceed Root_Execution::execute(Execution *, const Link &link)
 //	assert(bits & B_PENDING); 
 //	bits &= ~B_PENDING; 
 
-	Proceed proceed= Execution::execute_base(link, done); 
+	bool finished_here= false;
+
+	Proceed proceed= Execution::execute_base(link, finished_here); 
 	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
 		return proceed;
 	}
 
-	done.add_neg(link.avoid); 
+	if (finished_here) {
+		is_finished= true;
+	}
+//	done.add_neg(link.avoid); 
 
 	return proceed; 
 }
@@ -3312,8 +3343,9 @@ Execution::Proceed Concatenated_Execution::execute(Execution *,
 
 	if (stage == 1) {
 		/* First phase:  we build all individual targets, if there are some */ 
-		Stack done_here; 
-		Proceed proceed= Execution::execute_base(link, done_here); 
+		bool finished_here= false;
+//		Stack done_here; 
+		Proceed proceed= Execution::execute_base(link, finished_here); 
 		if (proceed & P_BIT_WAIT) {
 			return proceed;
 		}
@@ -3346,8 +3378,9 @@ Execution::Proceed Concatenated_Execution::execute(Execution *,
 	if (stage == 2) {
 		/* Second phase:  normal child executions */
 		assert(! dependency); 
-		Stack done_here;
-		Proceed proceed= Execution::execute_base(link, done_here); 
+		bool finished_here= false;
+//		Stack done_here;
+		Proceed proceed= Execution::execute_base(link, finished_here); 
 		if (proceed & P_BIT_WAIT) {
 			return proceed;
 		}
@@ -3377,12 +3410,13 @@ bool Concatenated_Execution::finished() const
 	return stage == 3;
 }
 
-bool Concatenated_Execution::finished(Stack avoid) const
+bool Concatenated_Execution::finished(Flags flags) const
 /* Since Concatenated_Execution objects are used just once, by a single
  * parent, this always returns the same as finished() itself.
- * Therefore, the AVOID parameter is ignored.  */
+ * Therefore, the FLAGS parameter is ignored.  */
 {
-	(void) avoid;
+	(void) flags; 
+//	(void) avoid;
 	return finished(); 
 }
 
@@ -3485,7 +3519,8 @@ Dynamic_Execution::Dynamic_Execution(Link &link,
 				     Execution *parent)
 	:  Execution(link, parent),
 	   dependency(dynamic_pointer_cast <Dynamic_Dependency> (link.dependency)),
-	   done(dynamic_pointer_cast <Dynamic_Dependency> (link.dependency)->get_depth(), 0)
+	   is_finished(false)
+//	   done(dynamic_pointer_cast <Dynamic_Dependency> (link.dependency)->get_depth(), 0)
 {
 	assert(parent != nullptr); 
 	assert(parents.size() == 1); 
@@ -3527,42 +3562,52 @@ Dynamic_Execution::Dynamic_Execution(Link &link,
 
 Execution::Proceed Dynamic_Execution::execute(Execution *, const Link &link)
 {
-	Proceed proceed= Execution::execute_base(link, done); 
+	bool finished_here= false;
+
+	Proceed proceed= Execution::execute_base(link, finished_here); 
+
+	if (finished_here) {
+		is_finished= true; 
+//		done.add_neg(link.avoid); 
+	}
+
 	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
 		return proceed; 
 	}
-
-	done.add_neg(link.avoid); 
 
 	return proceed; 
 }
 
 bool Dynamic_Execution::finished() const 
 {
-	assert(done.get_depth() == dependency->get_depth()); 
+	return is_finished; 
 
-	Flags to_do_aggregate= 0;
+//	assert(done.get_depth() == dependency->get_depth()); 
+
+//	Flags to_do_aggregate= 0;
 	
-	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
-		to_do_aggregate |= ~done.get(j); 
-	}
+//	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
+//		to_do_aggregate |= ~done.get(j); 
+//	}
 
-	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
+//	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
-bool Dynamic_Execution::finished(Stack avoid) const
+bool Dynamic_Execution::finished(Flags flags) const
 {
-	assert(done.get_depth() == dependency->get_depth()); 
+	return is_finished; 
 
-	assert(avoid.get_depth() == done.get_depth());
+//	assert(done.get_depth() == dependency->get_depth()); 
 
-	Flags to_do_aggregate= 0;
+//	assert(avoid.get_depth() == done.get_depth());
+
+//	Flags to_do_aggregate= 0;
 	
-	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
-		to_do_aggregate |= ~done.get(j) & ~avoid.get(j); 
-	}
+//	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
+//		to_do_aggregate |= ~done.get(j) & ~avoid.get(j); 
+//	}
 
-	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
+//	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
 bool Dynamic_Execution::want_delete() const

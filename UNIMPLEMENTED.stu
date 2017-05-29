@@ -32,11 +32,10 @@
 
 #
 # Have a "clean" option that removes all files that can be rebuilt,
-# based on the given Stu file.
-# Ironically, this may need to build dynamic dependency files first. 
-# We may also just have a command line option to output a list of files
-# that can be rebuilt, for instance to initialize a .gitignore file or
-# similar. 
+# based on the given Stu file.  Ironically, this may need to build
+# dynamic dependency files first.  We may also just have a command line
+# option to output a list of files that can be rebuilt, for instance to
+# initialize a .gitignore file or similar.
 #
 
 #

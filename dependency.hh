@@ -151,6 +151,8 @@ public:
 	Place_Param_Target place_param_target; 
 	/* The target of the dependency.  Has its own place, which may
 	 * differ from the dependency's place, e.g. in '@all'.  */
+	// TODO with Target only support non-dynamic targets,
+	// Single_Dependency will only support non-dynamic dependency. 
 
 	Place place;
 	/* The place where the dependency is declared */ 

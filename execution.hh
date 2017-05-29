@@ -1586,38 +1586,43 @@ Execution::Proceed Execution::connect(const Link &link_this,
 	if (dynamic_pointer_cast <Concatenated_Dependency> (dependency_child)) {
 		/* This is a concatenated dependency:  Create a new
 		 * concatenated execution for it. */ 
-		shared_ptr <Concatenated_Dependency> concatenated_dependency=
-			dynamic_pointer_cast <Concatenated_Dependency> (dep); 
 
-		Link link_child_new(flags_child,
-				    dependency_child->get_place(),
-				    dependency_child);
+		assert(false); 
 
-		Concatenated_Execution *child= new Concatenated_Execution
-			(dependency_child, link_child_new, this);
+		// shared_ptr <Concatenated_Dependency> concatenated_dependency=
+		// 	dynamic_pointer_cast <Concatenated_Dependency> (dep); 
 
-		if (child == nullptr) {
-			/* Strong cycle was found */ 
-			return P_CONTINUE;
-		}
+		// Link link_child_new(flags_child,
+		// 		    dependency_child->get_place(),
+		// 		    dependency_child);
 
-		children.insert(child);
+		// Concatenated_Execution *child= new Concatenated_Execution
+		// 	(dependency_child, link_child_new, this);
 
-		Proceed proceed_child= child->execute(this, move(link_child_new));
-		if (proceed_child & P_BIT_WAIT)
-			return proceed_child; 
+		// if (child == nullptr) {
+		// 	/* Strong cycle was found */ 
+		// 	return P_CONTINUE;
+		// }
+
+		// children.insert(child);
+
+		// Proceed proceed_child= child->execute(this, move(link_child_new));
+		// if (proceed_child & P_BIT_WAIT)
+		// 	return proceed_child; 
 			
-		if (child->finished(flags_child)) {
-			disconnect(this, child, 
-				   link.dependency, 
-				   dependency_child, flags_child);
-		}
+		// if (child->finished(flags_child)) {
+		// 	disconnect(this, child, 
+		// 		   link.dependency, 
+		// 		   dependency_child, flags_child);
+		// }
 
 		return P_CONTINUE;
 
-	} else if (dynamic_pointer_cast <Single_Dependency> (dep)) {
+	} else if (dynamic_pointer_cast <Single_Dependency> (dependency_child)) {
 
-		/* This is a possibly dynamic single dependency */ 
+		/* File or transient -- determine whether we are using
+		 * File_Execution or Transient_Execution  */
+		...; // XXX determine which one it is 
 
  		shared_ptr <Single_Dependency> single_dependency=
 			dynamic_pointer_cast <Single_Dependency> (dep);

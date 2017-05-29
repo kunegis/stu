@@ -638,3 +638,8 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 #	Optional_Execution, Trivial_Execution, Persistent_Execution,
 # 	etc. 
 #
+
+#
+# Have an option to output the dependency graph, i.e., output each edge
+# on a single like, e.g. separated by tab. 
+#

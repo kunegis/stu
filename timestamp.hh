@@ -78,6 +78,7 @@ public:
 	static const Timestamp UNDEFINED;
 
 	static Timestamp startup;
+	// TODO initialize only when it is used 
 
 	static Timestamp now() {
 		Timestamp ret;

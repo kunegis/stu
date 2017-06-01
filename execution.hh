@@ -25,7 +25,7 @@
 #include "buffer.hh"
 #include "parser.hh"
 #include "job.hh"
-#include "link.hh"
+//#include "link.hh"
 #include "tokenizer.hh"
 #include "rule.hh"
 #include "timestamp.hh"
@@ -89,11 +89,12 @@ public:
 	/* All errors by Execution call this function.  Set the error
 	 * code, and throw an error except with the keep-going option.  */
 
-	/* FINISHED_HERE must be FALSE on call and is set to TRUE when finished. */
-	Proceed execute_base(const Link &link,
-			     bool &finished_here
-//			     , Stack &done_here
-			     );
+	Proceed execute_base(
+			     shared_ptr <Dependency> dependency_link,
+			     //const Link &link,
+			     bool &finished_here);
+	/* FINISHED_HERE must be FALSE on calling, and is set to TRUE
+	 * when finished.  */  
 
 	int get_error() const {  return error;  }
 
@@ -105,12 +106,14 @@ public:
 	/* Propagate dynamic dependencies from CHILD to its parent
 	 * (THIS), which does not need to be dynamic  */ 
 
-	virtual Proceed execute(Execution *parent, const Link &link)= 0;
-	/* Start the next job(s).  This will also terminate jobs when
+	virtual Proceed execute(Execution *parent, 
+				shared_ptr <Dependency> dependency_link
+//				const Link &link
+				)= 0;
+	/* 
+	 * Start the next job(s).  This will also terminate jobs when
 	 * they don't need to be run anymore, and thus it can be called
 	 * when K = 0 just to terminate jobs that need to be terminated.
-	 * The passed LINK.FLAG is the ORed combination of all FLAGs up
-	 * the dependency chain.
 	 * Can only return LATER in random mode. 
 	 * When returning LATER, not all possible child jobs where started.  
 	 * Child implementations call this implementation.  
@@ -118,6 +121,9 @@ public:
 	 * FINISHED bit is set.  
 	 * In DONE, set those bits that have been done. 
 	 * When the call is over, clear the PENDING bit. 
+	 * DEPENDENCY_LINK is only null when called on the root
+	 * execution, because it is the only execution that is not
+	 * linked from another execution.
 	 */
 
 	virtual bool finished() const= 0;
@@ -166,7 +172,10 @@ protected:
 	/* Currently running executions.  Allocated with operator new()
 	 * and never deleted.  */ 
 
-	map <Execution *, Link> parents; 
+	map <Execution *, 
+	     shared_ptr <Dependency>
+//	     Link
+	     > parents; 
 	/* The parent executions.  This is a map rather than an
 	 * unsorted_map because typically, the
 	 * number of elements is always very small, i.e., mostly one,
@@ -194,16 +203,16 @@ protected:
 	 * used.  Null by default, and set by individual implementations
 	 * in their constructor if necessary.  */ 
 
-	Execution(Link &link, Execution *parent)
-		/* K is the depth of the done field, i.e. the depth of
-		 * the dependency for purposes of keeping track of
-		 * caching.  */
+	Execution(
+		  shared_ptr <Dependency> dependency_link,
+//		  Link &link, 
+		  Execution *parent)
 		:  bits(0),
 		   error(0),
 		   timestamp(Timestamp::UNDEFINED)
 	{  
 		assert(parent != nullptr); 
-		parents[parent]= link; 
+		parents[parent]= dependency_link; 
 	}
 
 	explicit Execution(Execution *parent_null)
@@ -221,13 +230,16 @@ protected:
 	 * up to the root execution. 
 	 * TEXT may be "" to not print the first message.  */ 
 
-	Proceed execute_children(const Link &link,
-				 bool &finished_here
-//				 , Stack &done_here
-				 );
+	Proceed execute_children(
+				 shared_ptr <Dependency> dependency_link,
+//				 const Link &link,
+				 bool &finished_here);
 	/* Execute already-active children */
 
-	Proceed execute_second_pass(const Link &link); 
+	Proceed execute_second_pass(
+				    shared_ptr <Dependency> dependency_link
+//				    const Link &link
+				    ); 
 	/* Second pass (trivial dependencies).  Called once we are sure
 	 * that the target must be built.  */
 
@@ -275,7 +287,10 @@ protected:
 	virtual const Place &get_place() const= 0;
 	/* The place for the execution; e.g. the rule; empty if there is no place */
 
-	virtual bool optional_finished(const Link &)= 0;
+	virtual bool optional_finished(
+				       shared_ptr <Dependency> dependency_link
+//				       const Link &
+				       )= 0;
 	/* Should children even be started?  Check whether this is an
 	 * optional dependency and if it is, return TRUE when the file does not
 	 * exist.  Return FALSE when children should be started.  Return
@@ -305,20 +320,27 @@ protected:
 
 	static bool find_cycle(const Execution *const parent,
 			       const Execution *const child,
-			       const Link &link);
-	/* Find a cycle.  Assuming that the edge parent->child will be added, find a
-	 * directed cycle that would be created.  Start at PARENT and
-	 * perform a depth-first search upwards in the hierarchy to find
-	 * CHILD.  LINK is the LINK that would be added between child
-	 * and parent, and would create a cycle.  */
+			       shared_ptr <Dependency> dependency_link
+//			       const Link &link
+			       );
+	/* Find a cycle.  Assuming that the edge parent->child will be
+	 * added, find a directed cycle that would be created.  Start at
+	 * PARENT and perform a depth-first search upwards in the
+	 * hierarchy to find CHILD.  DEPENDENCY_LINK is the link that
+	 * would be added between child and parent, and would create a
+	 * cycle.  */
 
 	static bool find_cycle(vector <const Execution *> &path,
 				const Execution *const child,
-				const Link &link); 
+			       shared_ptr <Dependency> dependency_link
+//				const Link &link
+			       ); 
 	/* Helper function */ 
 
 	static void cycle_print(const vector <const Execution *> &path,
-				const Link &link);
+				shared_ptr <Dependency> dependency_link
+//				const Link &link
+				);
 	/* Print the error message of a cycle on rule level.
 	 * Given the path [a, b, c, d, ..., x], the found cycle is
 	 * [x <- a <- b <- c <- d <- ... <- x], where A <- B denotes
@@ -359,7 +381,9 @@ private:
 	 * dependencies, the target must be rebuilt anyway.  Does not
 	 * contain compound dependencies.  */
 
-	Proceed connect(const Link &link_parent,
+	Proceed connect(
+			shared_ptr <Dependency> dependency_link_parent,
+//			const Link &link_parent,
 			shared_ptr <Dependency> dependency_child);
 	/* Add an edge to the dependency graph.  Deploy a new child
 	 * execution.  LINK is the link from the THIS's parent to THIS.
@@ -367,7 +391,8 @@ private:
 	 * DEPENDENCY_CHILD must be normalized.  */
 	
 	static Execution *get_execution(Target2 target,
-					Link &link,
+					shared_ptr <Dependency> dependency_link,
+//					Link &link,
 					Execution *parent); 
 	/* Get an existing Execution or create a new one for the
 	 * given TARGET.  Return null when a strong cycle was found;
@@ -397,7 +422,8 @@ class File_Execution
 public:
 
 	File_Execution(Target target_,
-		       Link &link,
+		       shared_ptr <Dependency> dependency_link,
+//		       Link &link,
 		       Execution *parent);
 	/* The TARGET must not by dynamic */ 
 	// TODO remove the TARGET parameter (?).  It is already
@@ -426,7 +452,10 @@ public:
 		return flags_format(flags_finished);
 	}
 
-	virtual Proceed execute(Execution *parent, const Link &link);
+	virtual Proceed execute(Execution *parent, 
+				shared_ptr <Dependency> dependency_link
+//				const Link &link
+				);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual string format_out() const {
@@ -449,8 +478,14 @@ public:
 
 protected:
 
-	virtual bool optional_finished(const Link &);
-	virtual void check_execution(const Link &link) const;
+	virtual bool optional_finished(
+				       shared_ptr <Dependency> dependency_link
+//				       const Link &
+				       );
+	virtual void check_execution(
+				     shared_ptr <Dependency> dependency_link
+//				     const Link &link
+				     ) const;
 	virtual bool want_delete() const {  return false;  }
 	virtual int get_depth() const {  return 0;  }
 
@@ -564,13 +599,17 @@ class Transient_Execution
 public:
 
 	Transient_Execution(Target target_,
-			    Link &link,
+			    shared_ptr <Dependency> dependency_link,
+//			    Link &link,
 			    Execution *parent);
 	// TODO remove the TARGET parameter 
 	
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
-	virtual Proceed execute(Execution *parent, const Link &link);
+	virtual Proceed execute(Execution *parent, 
+				shared_ptr <Dependency> dependency_link
+//				const Link &link
+				);
 	virtual bool finished() const;
 	virtual bool finished(
 			      Flags flags
@@ -585,8 +624,14 @@ protected:
 
 	virtual bool want_delete() const {  return false;  }
 	virtual int get_depth() const {  return 0;  }
-	virtual bool optional_finished(const Link &) {  return false;  }
-	virtual void check_execution(const Link &) const { }
+	virtual bool optional_finished(
+				       shared_ptr <Dependency> dependency_link
+//				       const Link &
+				       ) {  return false;  }
+	virtual void check_execution(
+				     shared_ptr <Dependency>
+//				     const Link &
+				     ) const { }
 
 private:
 
@@ -630,7 +675,10 @@ public:
 
 	Root_Execution(const vector <shared_ptr <Dependency> > &dependencies); 
 
-	virtual Proceed execute(Execution *parent, const Link &link);
+	virtual Proceed execute(Execution *parent, 
+				shared_ptr <Dependency> dependency_link
+//				const Link &link
+				);
 	virtual bool finished() const; 
 	virtual bool finished(Flags flags) const;
 	virtual string format_out() const { return "ROOT"; }
@@ -639,8 +687,14 @@ protected:
 
 	virtual int get_depth() const {  return -1;  }
 	virtual const Place &get_place() const {  return Place::place_empty;  }
-	virtual bool optional_finished(const Link &) {  return false;  }
-	virtual void check_execution(const Link &) const {   }
+	virtual bool optional_finished(
+				       shared_ptr <Dependency>
+//				       const Link &
+				       ) {  return false;  }
+	virtual void check_execution(
+				     shared_ptr <Dependency>
+//				     const Link &
+				     ) const {   }
 	virtual bool want_delete() const {  return true;  }
 
 private:
@@ -663,7 +717,8 @@ class Concatenated_Execution
 public:
 
 	Concatenated_Execution(shared_ptr <Dependency> dependency_,
-			       Link &link,
+			       shared_ptr <Dependency> dependency_link,
+//			       Link &link,
 			       Execution *parent);
 	/* The given dependency must be normalized, and contain at least
 	 * one Concatenated_Dependency.  */
@@ -678,7 +733,10 @@ public:
 
 	virtual int get_depth() const { return -1; }
 	virtual const Place &get_place() const {  return dependency->get_place();  }
-	virtual Proceed execute(Execution *parent, const Link &link);
+	virtual Proceed execute(Execution *parent, 
+				shared_ptr <Dependency> dependency_link
+//				const Link &link
+				);
 	virtual bool finished() const;
 	virtual bool finished(
 			      Flags flags
@@ -692,7 +750,10 @@ public:
 
 protected:
 
-	virtual bool optional_finished(const Link &) {  return false;  }
+	virtual bool optional_finished(
+				       shared_ptr <Dependency> 
+//				       const Link &
+				       ) {  return false;  }
 
 #ifndef NDEBUG
 	virtual void check_execution(const Link &) const  {  }
@@ -775,9 +836,15 @@ class Dynamic_Execution
 {
 public:
 	
-	Dynamic_Execution(Link &link, Execution *parent);
+	Dynamic_Execution(
+			  shared_ptr <Dependency> ,
+//			  Link &link, 
+			  Execution *parent);
 
-	virtual Proceed execute(Execution *parent, const Link &link);
+	virtual Proceed execute(Execution *parent, 
+				shared_ptr <Dependency> dependency_link
+//				const Link &link
+				);
 	virtual bool finished() const;
 	virtual bool finished(
 			      Flags flags
@@ -785,7 +852,10 @@ public:
 			      ) const; 
 	virtual int get_depth() const {  return dependency->get_depth();  }
 	virtual const Place &get_place() const {  return dependency->get_place();  }
-	virtual bool optional_finished(const Link &) {  return false;  }
+	virtual bool optional_finished(
+				       shared_ptr <Dependency>
+//				       const Link &
+				       ) {  return false;  }
 	virtual string format_out() const;
 
 protected:
@@ -867,12 +937,15 @@ void Execution::main(const vector <shared_ptr <Dependency> > &dependencies)
 	try {
 		while (! root_execution->finished()) {
 
-			Link link((Flags) 0, Place(), shared_ptr <Dependency> ());
+//			Link link((Flags) 0, Place(), shared_ptr <Dependency> ());
 
 			Proceed proceed;
 			do {
 				Debug::print(nullptr, "main loop"); 
-				proceed= root_execution->execute(nullptr, move(link));
+				proceed= root_execution->execute(nullptr, 
+								 nullptr
+//								 move(link)
+								 );
 			} while (proceed & P_BIT_PENDING); 
 
 			if (proceed & P_BIT_WAIT) {
@@ -1133,7 +1206,9 @@ void Execution::read_dynamic(Flags flags_this,
 
 bool Execution::find_cycle(const Execution *const parent, 
 			   const Execution *const child,
-			   const Link &link)
+			   shared_ptr <Dependency> dependency_link
+//			   const Link &link
+			   )
 {
 	if (dynamic_cast <const Root_Execution *> (parent))
 		return false;
@@ -1141,15 +1216,17 @@ bool Execution::find_cycle(const Execution *const parent,
 	vector <const Execution *> path;
 	path.push_back(parent); 
 
-	return find_cycle(path, child, link); 
+	return find_cycle(path, child, dependency_link); 
 }
 
 bool Execution::find_cycle(vector <const Execution *> &path,
 			   const Execution *const child,
-			   const Link &link)
+			   shared_ptr <Dependency> dependency_link
+//			   const Link &link
+			   )
 {
 	if (same_rule(path.back(), child)) {
-		cycle_print(path, link); 
+		cycle_print(path, dependency_link); 
 		return true; 
 	}
 
@@ -1161,7 +1238,7 @@ bool Execution::find_cycle(vector <const Execution *> &path,
 
 		path.push_back(next); 
 
-		bool found= find_cycle(path, child, link);
+		bool found= find_cycle(path, child, dependency_link);
 		if (found)
 			return true;
 
@@ -1172,7 +1249,9 @@ bool Execution::find_cycle(vector <const Execution *> &path,
 }
 
 void Execution::cycle_print(const vector <const Execution *> &path,
-			    const Link &link)
+			    shared_ptr <Dependency> dependency_link
+//			    const Link &link
+			    )
 {
 	assert(path.size() > 0); 
 
@@ -1183,48 +1262,48 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 	for (unsigned i= 0;  i + 1 < path.size();  ++i) {
 		names[i]= 
 			path[i]->parents.at((Execution *) path[i+1])
-			.dependency->get_individual_target().format_word();
+			->get_individual_target().format_word();
 	}
 
 	names.back()= path.back()->parents.begin()->second
-		.dependency->get_individual_target().format_word();
+		->get_individual_target().format_word();
 		
 	for (ssize_t i= path.size() - 1;  i >= 0;  --i) {
 
 		/* Don't show a message for left-branch dynamic links */ 
 		if (i != 0 &&
-		    path[i - 1]->parents.at(const_cast <Execution *> (path[i])).dependency->get_flags() & F_DYNAMIC_LEFT)
+		    path[i - 1]->parents.at(const_cast <Execution *> (path[i]))->get_flags() & F_DYNAMIC_LEFT)
 			continue;
 
 		/* Same, but when the dynamic execution is at the bottom */
-		if (i == 0 && link.dependency->get_flags() & F_DYNAMIC_LEFT) 
+		if (i == 0 && dependency_link->get_flags() & F_DYNAMIC_LEFT) 
 			continue;
 
-		(i == 0 ? link : path[i - 1]->parents.at((Execution *) path[i])).place
+		(i == 0 ? dependency_link->get_place() : path[i - 1]->parents.at((Execution *) path[i])->get_place())
 			<< fmt("%s%s depends on %s",
 			       i == (ssize_t)(path.size() - 1) 
 			       ? (path.size() == 1 
-				  || (path.size() == 2 && link.dependency->get_flags() & F_DYNAMIC_LEFT)
+				  || (path.size() == 2 && dependency_link->get_flags() & F_DYNAMIC_LEFT)
 				  ? "target must not depend on itself: " 
 				  : "cyclic dependency: ") 
 			       : "",
 			       names[i],
 			       i == 0
-			       ? link.dependency->get_individual_target().format_word()
+			       ? dependency_link->get_individual_target().format_word()
 			       : names[i - 1]);
 	}
 
 	/* If the two targets are different (but have the same rule
 	 * because they match the same pattern), then output a notice to
 	 * that effect */ 
-	if (link.dependency->get_individual_target() !=
+	if (dependency_link->get_individual_target() !=
 	    path.back()->parents.begin()->second
-	    .dependency->get_individual_target()) {
+	    ->get_individual_target()) {
 
 		
 		Param_Target t1= path.back()->parents.begin()->second
-			.dependency->get_individual_target();
-		Param_Target t2= link.dependency->get_individual_target();
+			->get_individual_target();
+		Param_Target t2= dependency_link->get_individual_target();
 		t1.type= t1.type.get_base();
 		t2.type= t2.type.get_base(); 
 
@@ -1277,7 +1356,7 @@ void Execution::print_traces(string text) const
 		first= false;
 	}
 
-	string text_parent= parents.begin()->second.dependency
+	string text_parent= parents.begin()->second
 		->get_individual_target().format_word();
 
 	while (true) {
@@ -1298,7 +1377,7 @@ void Execution::print_traces(string text) const
 				 * passed on the command line via an
 				 * argument or an option  */
 
-				i->second.place <<
+				i->second->get_place() <<
 					fmt("no rule to build %s", 
 					    text_parent);
 			}
@@ -1307,15 +1386,15 @@ void Execution::print_traces(string text) const
 
 		string text_child= text_parent; 
 
-		text_parent= i->first->parents.begin()->second.dependency
+		text_parent= i->first->parents.begin()->second
 			->get_individual_target().format_word();
 
- 		const Place place= i->second.place;
+ 		const Place place= i->second->get_place();
 		/* Set even if not output, because it may be used later
 		 * for the root target  */
 
 		/* Don't show left-branch edges of dynamic executions */
-		if (i->second.flags & F_DYNAMIC_LEFT) {
+		if (i->second->flags & F_DYNAMIC_LEFT) {
 			execution= i->first; 
 			continue;
 		}
@@ -1334,7 +1413,9 @@ void Execution::print_traces(string text) const
 	}
 }
 
-Execution::Proceed Execution::execute_children(const Link &link,
+Execution::Proceed Execution::execute_children(
+					       shared_ptr <Dependency> dependency_link,
+//					       const Link &link,
 					       bool &finished_here)
 {
 	/* Since disconnect() may change execution->children, we must first
@@ -1366,21 +1447,21 @@ Execution::Proceed Execution::execute_children(const Link &link,
 		assert(child != nullptr);
 
 //		Stack avoid_child= child->parents.at(this).avoid;
-		Flags flags_child= child->parents.at(this).flags;
+		Flags flags_child= child->parents.at(this)->flags;
 
-		if (link.dependency != nullptr 
-		    && dynamic_pointer_cast <Single_Dependency> (link.dependency)
-		    && dynamic_pointer_cast <Single_Dependency> (link.dependency)->place_param_target.type == Type::TRANSIENT) {
-			flags_child |= link.flags; 
+		if (dependency_link != nullptr 
+		    && dynamic_pointer_cast <Single_Dependency> (dependency_link)
+		    && dynamic_pointer_cast <Single_Dependency> (dependency_link)->place_param_target.type == Type::TRANSIENT) {
+			flags_child |= dependency_link->flags; 
 		}
 
-		shared_ptr <Dependency> dependency_child= child->parents.at(this).dependency;
+		shared_ptr <Dependency> dependency_child= child->parents.at(this);
 		
-		Link link_child(//avoid_child, 
-				flags_child, child->parents.at(this).place,
-				dependency_child);
+//		Link link_child(
+//				flags_child, child->parents.at(this).place,
+//				dependency_child);
 
-		Proceed proceed_child= child->execute(this, move(link_child));
+		Proceed proceed_child= child->execute(this, dependency_child);
 
 		proceed_all |= proceed_child; 
 
@@ -1389,7 +1470,7 @@ Execution::Proceed Execution::execute_children(const Link &link,
 //				    avoid_child
 				    )) {
 			disconnect(this, child, 
-				   link.dependency, 
+				   dependency_link, 
 				   dependency_child, flags_child); 
 		}
 	}
@@ -1423,7 +1504,9 @@ void Execution::push_dependency(shared_ptr <Dependency> dependency)
 	}
 }
 
-Execution::Proceed Execution::execute_base(const Link &link,
+Execution::Proceed Execution::execute_base(
+					   shared_ptr <Dependency> dependency_link,
+//					   const Link &link,
 					   bool &finished_here
 //					   , Stack &done_here
 					   )
@@ -1438,28 +1521,29 @@ Execution::Proceed Execution::execute_base(const Link &link,
 	check_execution(link); 
 #endif
 
-	Debug::print(this, fmt("execute(%s)", link.format_out())); 
+	Debug::print(this, fmt("execute(%s)", dependency_link->format_out())); 
 
-	Link link2{link}; 
+	shared_ptr <Dependency> dependency_link2= dependency_link; 
+//	Link link2{link}; 
 
 	/* Override the trivial flag */ 
-	if (link2.flags & F_OVERRIDE_TRIVIAL) {
-		link2.flags &= ~F_TRIVIAL; 
+	if (dependency_link2->flags & F_OVERRIDE_TRIVIAL) {
+		dependency_link2->flags &= ~F_TRIVIAL; 
 //		link2.avoid.rem_highest(F_TRIVIAL); 
 	}
 
 	/* Override the dynamic flag */
-	if (link2.flags & F_DYNAMIC_RIGHT) {
-		link2.flags &= ~F_DYNAMIC_LEFT;
+	if (dependency_link2->flags & F_DYNAMIC_RIGHT) {
+		dependency_link2->flags &= ~F_DYNAMIC_LEFT;
 		// XXX should we also override -* ?
 	}
 
 	/* Remove the F_DYNAMIC_LEFT flag to the child, except in a
 	 * transient--X link  */ 
-	if (link2.flags & F_DYNAMIC_LEFT &&
-	    ! (dynamic_pointer_cast <Single_Dependency> (link2.dependency)
-	       && dynamic_pointer_cast <Single_Dependency> (link2.dependency)->place_param_target.type == Type::TRANSIENT)) {
-		link2.flags &= ~F_DYNAMIC_LEFT; 
+	if (dependency_link2->flags & F_DYNAMIC_LEFT &&
+	    ! (dependency_link2->to <Single_Dependency> ()
+	       && dependency_link2->to <Single_Dependency> ()->place_param_target.type == Type::TRANSIENT)) {
+		dependency_link2->flags &= ~F_DYNAMIC_LEFT; 
 		// XXX should we also override -* ?
 	}
 	
@@ -1622,24 +1706,21 @@ Execution::Proceed Execution::connect(const Link &link_this,
 
 		/* File or transient -- determine whether we are using
 		 * File_Execution or Transient_Execution  */
-		...; // XXX determine which one it is 
 
- 		shared_ptr <Single_Dependency> single_dependency=
-			dynamic_pointer_cast <Single_Dependency> (dep);
-		assert(single_dependency != nullptr); 
-		assert(! single_dependency->place_param_target.place_name.empty()); 
-		Target target_child= single_dependency->place_param_target.unparametrized();
-		assert(target_child.type == Type::FILE || target_child.type == Type::TRANSIENT);
-		assert(target_child.type.get_depth() == 0); 
-		if (depth != 0) {
-			assert(depth > 0);
-			target_child.type += depth; 
-		}
+ 		// shared_ptr <Single_Dependency> single_dependency=
+		// 	dynamic_pointer_cast <Single_Dependency> (dep);
+		// assert(single_dependency != nullptr); 
+		// assert(! single_dependency->place_param_target.place_name.empty()); 
+		// Target target_child= single_dependency->place_param_target.unparametrized();
+		// assert(target_child.type == Type::FILE || target_child.type == Type::TRANSIENT);
+		// assert(target_child.type.get_depth() == 0); 
+		// if (depth != 0) {
+		// 	assert(depth > 0);
+		// 	target_child.type += depth; 
+		// }
 
+#if 0
 		/* Carry flags over transient targets */ 
-		// TODO instead of this test, use a new virtual function
-		// Dependency::get_type() to determine whether this is a
-		// transient. 
 		if (link.dependency != nullptr &&
 		    dynamic_pointer_cast <Single_Dependency> (link.dependency)) {
 			Target target= link.dependency->get_individual_target().unparametrized();
@@ -1666,7 +1747,7 @@ Execution::Proceed Execution::connect(const Link &link_this,
 	
 		Flags flags_child_new= flags_child | flags_child_additional; 
 		
-		/* '-p' and '-o' do not mix, even for old flags */ 
+		/* '-p' and '-o' do not mix */ 
 		if ((flags_child_new & F_PERSISTENT) && 
 		    (flags_child_new & F_OPTIONAL)) {
 
@@ -1732,6 +1813,7 @@ Execution::Proceed Execution::connect(const Link &link_this,
 		}
 
 		flags_child= flags_child_new; 
+#endif /* 0 */ 
 
 		Link link_child_new(flags_child, 
 				    dependency_child->get_place(), 

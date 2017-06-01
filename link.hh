@@ -1,3 +1,5 @@
+UNUSED -- we use a plain Dependency now 
+
 #ifndef LINK_HH
 #define LINK_HH
 
@@ -18,14 +20,10 @@ public:
 //	// they are not inverted with respected to flags.  At best, only
 //	// the 'done' variables should be called 'avoid'. 
 
-	Flags flags;
+//	Flags flags;
 	/* Flags that are valid for this dependency, including the
 	 * non-transitive ones.  Always a superset of the flags
 	 * contained in DEPENDENCY.  */
-	// TODO we don't really need the distinction between the flags
-	// in FLAGS and in DEPENDENCY -- just deprecate FLAGS.  It may
-	// be that this will make extra flags to appear in error
-	// messages, which we don't want.  
 	
 	Place place; 
 	/* The place of the declaration of the dependency for purposes

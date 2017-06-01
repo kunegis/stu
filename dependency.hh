@@ -47,6 +47,8 @@ class Dependency
 public:
 
 	Flags flags;
+	// TODO in principle, we could save the type within FLAGS and
+	// save on using the C++ polymorphic overhead. 
 
 	Place places[C_PLACED]; 
 	/* For each transitive flag that is set, the place.  An empty
@@ -68,6 +70,9 @@ public:
 	}
 
 	virtual ~Dependency(); 
+
+	// TODO deprecate the following FLAGS-accessing functions in
+	// favor of access Dependency::flags directly. 
 
 	Flags get_flags() const {
 		return flags; 
@@ -98,6 +103,11 @@ public:
 	/* Add the flags from DEPENDENCY.  Also copy over the
 	 * corresponding places.  If a place is already given in THIS,
 	 * only copy a place over if OVERWRITE_PLACES is set.  */
+
+	template <typename T>
+	shared_ptr <T> to() {
+		return dynamic_pointer_cast <T> (this); 
+	}
 
 	virtual shared_ptr <Dependency> instantiate(const map <string, string> &mapping) const= 0;
 	virtual bool is_unparametrized() const= 0; 

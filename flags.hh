@@ -36,7 +36,8 @@ enum
 	 * Variables iterating over these values are usually called
 	 * I.  */ 
 	
-	I_RESERVED                         = 0,
+	I_DYNAMIC_TARGET = 0, /* for dynamic bit in Type */
+
 	I_PERSISTENT,          /* -p */    
 	I_OPTIONAL,            /* -o */
 	I_TRIVIAL,             /* -t */
@@ -66,6 +67,8 @@ enum
 	 * across transient targets  */
 
 	/* What follows are the actual flag bits to be ORed together */ 
+
+	F_DYNAMIC_TARGET       = 1 << I_DYNAMIC_TARGET,  
 
 	/* 
 	 * Placed and transitive flags

@@ -43,6 +43,8 @@ class Dependency
  * so they are considered final, i.e., immutable, except if we just
  * created the object in which case we know that it is not shared.  
  */ 
+// TODO make all accesses through shared_ptr use shared_ptr <const
+// Dependency> .
 {
 public:
 
@@ -123,6 +125,11 @@ public:
 	/* Collapse the dependency into a single target, ignoring all
 	 * flags.  Only called if this is a normalized dependency and
 	 * this is possible.  */   
+	// TODO deprecate together with the old Target. 
+
+	virtual Target2 get_target2() const= 0;
+	/* Get the corresponding Target2 object.  Only called for
+	 * non-compound dependencies.  */
 
 	virtual bool is_normalized() const= 0;
 	/* Whether the dependency is normalized, according to the
@@ -141,6 +148,10 @@ public:
 
 	static shared_ptr <Dependency> clone_dependency(shared_ptr <Dependency> dependency);
 	/* A shallow clone.  */
+	// TODO we may additionally use clone_dependency() functions
+	// that automatically set or unset flags.  (and make it smart so
+	// that if the flags don't have to be changed, we don't clone
+	// it). 
 
 	static shared_ptr <Dependency> strip_dynamic(shared_ptr <Dependency> d);
 	/* Strip dynamic dependencies from the given dependency.

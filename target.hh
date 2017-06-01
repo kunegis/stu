@@ -2,6 +2,7 @@
 #define TARGET_HH
 
 #include "type.hh"
+#include "flags.hh"
 
 /* 
  * Targets are the individual "objects" of Stu.  They can be thought of
@@ -35,7 +36,8 @@
  * parametrized, and does not contain a place object.  It is used as
  * keys in maps. 
  */ 
-// TODO deprecate 
+// TODO deprecate:  This was only used for indexing Execution objects,
+// and is now replaced by Target2. 
 class Target
 {
 public:
@@ -201,6 +203,21 @@ public:
 
 	const string &get_text() const {  return text;  }
 
+	bool is_dynamic() const {
+		assert(text.size() >= 2); 
+		return (text.at(0) & F_DYNAMIC_TARGET) != 0; 
+	}
+
+	bool is_file() const {
+		assert(text.size() >= 2); 
+		return (text.at(0) & (F_DYNAMIC_TARGET | Type::T_MASK_FILE_TRANSIENT)) == Type::T_FILE; 
+	}
+
+	bool is_transient() const {
+		assert(text.size() >= 2); 
+		return (text.at(0) & (F_DYNAMIC_TARGET | Type::T_MASK_FILE_TRANSIENT)) == Type::T_TRANSIENT;
+	}
+
 private:
 
 	string text; 
@@ -211,7 +228,7 @@ private:
 	 * followed by the name. 
 	 *
 	 * A dynamic is represented as a dynamic byte (\001 & flags),
-	 * following by the Target2 representation of the contained
+	 * following by the string representation of the contained
 	 * dependency. 
 	 */
 };

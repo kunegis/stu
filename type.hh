@@ -8,7 +8,9 @@ class Type
  *  - Have any dynamicity level, including node
  */
 // TODO deprecate the dynamic part of this.  It now only needs to store
-// the file/transient distinction. 
+// the file/transient distinction.  
+// TODO maybe even deprecate it completely.  We only need the FILE and
+// TRANSIENT bits, so get back to a int representation. 
 {
 public:
 
@@ -91,6 +93,29 @@ public:
 		return this->value < type.value; 
 	}
 
+	enum: unsigned {
+
+		T_TRANSIENT         = 0,
+		/* A transient target */ 
+	
+		T_FILE              = 2,
+		/* A file in the file system; this entry has to come before
+		 * T_DYNAMIC because it counts also as a dynamic dependency of
+		 * depth zero. */
+
+		T_MASK_FILE_TRANSIENT = 2,
+
+		T_DYNAMIC_TRANSIENT = 4,
+		/* A dynamic transient target -- only used for the Target object of
+		 * executions */
+
+		T_DYNAMIC_FILE      = 6
+		/* A dynamic target -- only used for the Target object of executions */   
+
+		/* Larger values denote multiply dynamic targets.  They are only
+		 * used as the target of Execution objects.  */
+	};
+
 private:  
 
 	unsigned value;
@@ -110,26 +135,6 @@ private:
 	Type(unsigned value_)
 		:  value(value_)
 	{  }
-
-	enum: unsigned {
-		T_TRANSIENT         = 0,
-		/* A transient target */ 
-	
-		T_FILE              = 2,
-		/* A file in the file system; this entry has to come before
-		 * T_DYNAMIC because it counts also as a dynamic dependency of
-		 * depth zero. */
-
-		T_DYNAMIC_TRANSIENT = 4,
-		/* A dynamic transient target -- only used for the Target object of
-		 * executions */
-
-		T_DYNAMIC_FILE      = 6
-		/* A dynamic target -- only used for the Target object of executions */   
-
-		/* Larger values denote multiply dynamic targets.  They are only
-		 * used as the target of Execution objects.  */
-	};
 };
 
 const Type Type::TRANSIENT(Type::T_TRANSIENT);

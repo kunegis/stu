@@ -314,9 +314,8 @@ protected:
 	/* Whether the STDOUT message is not "Targets are up to date" */
 
 	static unordered_map <Target2, Execution *> executions_by_target2;
-	/* The cached Execution objects by each of their Target2. 
-	 * Such Execution objects
-	 * are never deleted.  */
+	/* The cached Execution objects by each of their Target2.  Such
+	 * Execution objects are never deleted.  */
 
 	static bool find_cycle(const Execution *const parent,
 			       const Execution *const child,
@@ -421,13 +420,12 @@ class File_Execution
 {
 public:
 
-	File_Execution(Target target_,
+	File_Execution(Target2 target2_,
 		       shared_ptr <Dependency> dependency_link,
-//		       Link &link,
 		       Execution *parent);
 	/* The TARGET must not by dynamic */ 
-	// TODO remove the TARGET parameter (?).  It is already
-	// contained in LINK.DEPENDENCY. 
+	// TODO remove the TARGET2 parameter (?).  It is already
+	// contained in DEPENDENCY_LINK. 
 
 	void propagate_variable(shared_ptr <Dependency> dependency,
 				Execution *parent); 
@@ -598,11 +596,11 @@ class Transient_Execution
 {
 public:
 
-	Transient_Execution(Target target_,
+	Transient_Execution(Target2 target2_,
 			    shared_ptr <Dependency> dependency_link,
 //			    Link &link,
 			    Execution *parent);
-	// TODO remove the TARGET parameter 
+	// TODO remove the TARGET2 parameter 
 	
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
@@ -1547,7 +1545,7 @@ Execution::Proceed Execution::execute_base(
 		// XXX should we also override -* ?
 	}
 	
-	if (finished(link2.flags)) {
+	if (finished(dependency_link2->flags)) {
 // 	if (finished(link2.avoid)) {
 		Debug::print(this, "finished"); 
 		return P_CONTINUE; 
@@ -1564,11 +1562,12 @@ Execution::Proceed Execution::execute_base(
 	Proceed proceed_all= P_CONTINUE; 
 
 	if (order != Order::RANDOM) {
-		Proceed proceed_2= execute_children(link2, finished_here);
+		Proceed proceed_2= execute_children(dependency_link2, finished_here);
 		proceed_all |= proceed_2;
 		if (proceed_all & P_BIT_WAIT) 
 			return proceed_all; 
-		if (finished(link2.flags) && ! option_keep_going) {
+
+		if (finished(dependency_link2->flags) && ! option_keep_going) {
 			Debug::print(this, "finished"); 
 			return proceed_all;
 		}
@@ -1576,12 +1575,12 @@ Execution::Proceed Execution::execute_base(
 
 	// TODO put this *before* the execution of already-opened
 	// children. 
-	if (optional_finished(link2)) {
+	if (optional_finished(dependency_link2)) {
 		return proceed_all;
 	}
 
 	/* Is this a trivial run?  Then skip the dependency. */
-	if (link2.flags & F_TRIVIAL) {
+	if (dependency_link2->flags & F_TRIVIAL) {
 		finished_here= true; 
 //		done_here.add_neg(link2.avoid); 
 		return proceed_all; 
@@ -1604,7 +1603,7 @@ Execution::Proceed Execution::execute_base(
 			Dependency::clone_dependency(dependency_child);
 		dependency_child_overridetrivial->add_flags(F_OVERRIDE_TRIVIAL); 
 		buffer_trivial.push(dependency_child_overridetrivial); 
-		Proceed proceed_2= connect(link2, dependency_child);
+		Proceed proceed_2= connect(dependency_link2, dependency_child);
 		proceed_all |= proceed_2;
 
 		if (jobs == 0)
@@ -1613,7 +1612,7 @@ Execution::Proceed Execution::execute_base(
 	assert(buffer_default.empty()); 
 
 	if (order == Order::RANDOM) {
-		Proceed proceed_2= execute_children(link2, finished_here);
+		Proceed proceed_2= execute_children(dependency_link2, finished_here);
 		proceed_all |= proceed_2; 
 		if (proceed_all & P_BIT_WAIT)
 			return proceed_all;
@@ -1641,13 +1640,15 @@ Execution::Proceed Execution::execute_base(
 	return proceed_all; 
 }
 
-Execution::Proceed Execution::connect(const Link &link_this,
+Execution::Proceed Execution::connect(
+				      shared_ptr <Dependency> dependency_link_this,
+//				      const Link &link_this,
 				      shared_ptr <Dependency> dependency_child)
 {
 	assert(dependency_child->is_normalized()); 
 
 	Debug::print(this, fmt("connect(%s) %s", 
-			       link_this.format_out(), 
+			       dependency_link_this->format_out(), 
 			       dependency_child->format_out())); 
 
 	Flags flags_child= dependency_child->get_flags(); 
@@ -1815,11 +1816,19 @@ Execution::Proceed Execution::connect(const Link &link_this,
 		flags_child= flags_child_new; 
 #endif /* 0 */ 
 
-		Link link_child_new(flags_child, 
-				    dependency_child->get_place(), 
-				    dependency_child); 
+		shared_ptr <Dependency> dependency_link_child_new=
+			Dependency::clone_dependency(dependency_child);
+		dependency_link_child_new->flags= flags_child;
+//		Link link_child_new(flags_child, 
+//				    dependency_child->get_place(), 
+//				    dependency_child); 
 
-		Execution *child= get_execution(target_child, link_child_new, this);  
+		Execution *child= get_execution(
+						dependency_link_child_new->get_target2(),
+//						dependency_link_child_new->to <Single_Dependency> ()
+//						->place_param_target.unparametrized(),
+//						target_child, 
+						dependency_link_child_new, this);  
 		if (child == nullptr) {
 			/* Strong cycle was found */ 
 			return P_CONTINUE;
@@ -1827,13 +1836,13 @@ Execution::Proceed Execution::connect(const Link &link_this,
 
 		children.insert(child);
 
-		Proceed proceed_child= child->execute(this, move(link_child_new));
+		Proceed proceed_child= child->execute(this, dependency_link_child_new);
 		if (proceed_child & (P_BIT_WAIT | P_BIT_PENDING))
 			return proceed_child; 
 			
 		if (child->finished(flags_child)) {
 			disconnect(this, child, 
-				   link.dependency, 
+				   dependency_link_this, 
 				   dependency_child, flags_child);
 		}
 
@@ -1982,12 +1991,15 @@ void Execution::disconnect(Execution *const parent,
 		delete child; 
 }
 
-Execution::Proceed Execution::execute_second_pass(const Link &link)
+Execution::Proceed Execution::execute_second_pass(
+						  shared_ptr <Dependency> dependency_link
+//						  const Link &link
+						  )
 {
 	Proceed proceed_all= P_CONTINUE;
 	while (! buffer_trivial.empty()) {
 		shared_ptr <Dependency> dependency_child= buffer_trivial.next(); 
-		Proceed proceed= connect(link, dependency_child);
+		Proceed proceed= connect(dependency_link, dependency_child);
 		proceed_all |= proceed; 
 		assert(jobs >= 0);
 //		if (jobs == 0)
@@ -1998,45 +2010,56 @@ Execution::Proceed Execution::execute_second_pass(const Link &link)
 	return P_CONTINUE; 
 }
 
-Execution *Execution::get_execution(Target target2,
-				    Link &link,
+Execution *Execution::get_execution(Target2 target2,
+				    shared_ptr <Dependency> dependency_link,
+//				    Link &link,
 				    Execution *parent)
 {
 	/* Set to the returned Execution object when one is found or created */    
 	Execution *execution= nullptr; 
 
-	auto it= executions_by_target.find(target2);
+	auto it= executions_by_target2.find(target2);
 
-	if (it != executions_by_target.end()) {
+	if (it != executions_by_target2.end()) {
 		/* An Execution object already exists for the target */ 
 
 		execution= it->second; 
 		if (execution->parents.count(parent)) {
 			/* The parent and child are already connected -- add the
 			 * necessary flags */ 
-			execution->parents.at(parent).add(link.flags);
+			Flags flags= dependency_link->flags; 
+			if (flags & ~execution->parents.at(parent)->flags) {
+				dependency_link= Dependency::clone_dependency(execution->parents.at(parent));
+				dependency_link->flags |= flags;
+				execution->parents[parent]= dependency_link; 
+//			execution->parents.at(parent).flags |= dependency_link->flags;
+			}
 		} else {
 			/* The parent and child are not connected -- add the
 			 * connection */ 
-			execution->parents[parent]= link;
+			execution->parents[parent]= dependency_link;
 		}
 		
 	} else { 
 		/* Create a new Execution object */ 
 
-		if (! target.type.is_dynamic()) {
-			if (target.type == Type::FILE) 
-				execution= new File_Execution(target, link, parent);  
-			else if (target.type == Type::TRANSIENT) 
-				execution= new Transient_Execution(target, link, parent); 
+		if (! target2.is_dynamic()) {
+//		if (! target.type.is_dynamic()) {
+			if (target2.is_file()) {
+//			if (target.type == Type::FILE) 
+				execution= new File_Execution(target2, dependency_link, parent);  
+			} else if (target2.is_transient()) {
+//			} else if (target.type == Type::TRANSIENT) {
+				execution= new Transient_Execution(target2, dependency_link, parent); 
+			}
 		} else {
-			execution= new Dynamic_Execution(link, parent); 
+			execution= new Dynamic_Execution(dependency_link, parent); 
 		}
 
 		assert(execution->parents.size() == 1); 
 	}
 
-	if (find_cycle(parent, execution, link)) {
+	if (find_cycle(parent, execution, dependency_link)) {
 		parent->raise(ERROR_LOGICAL);
 		return nullptr;
 	}
@@ -2359,7 +2382,6 @@ File_Execution::File_Execution(Target target_,
 	:  Execution(link, parent),
 	   exists(0),
 	   flags_finished(0)
-//	   done(target_.type.get_depth(), 0)
 {
 	assert(parent != nullptr); 
 	assert(parents.size() == 1); 

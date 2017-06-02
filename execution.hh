@@ -423,7 +423,7 @@ public:
 	File_Execution(Target2 target2_,
 		       shared_ptr <Dependency> dependency_link,
 		       Execution *parent);
-	/* The TARGET must not by dynamic */ 
+	/* The TARGET2 must not by dynamic */ 
 	// TODO remove the TARGET2 parameter (?).  It is already
 	// contained in DEPENDENCY_LINK. 
 
@@ -458,7 +458,7 @@ public:
 	virtual bool finished(Flags flags) const; 
 	virtual string format_out() const {
 		assert(targets.size()); 
-		return targets.front().format_out(); 
+		return targets2.front().format_out(); 
 	}
 
 	static unordered_map <pid_t, File_Execution *> executions_by_pid;
@@ -493,14 +493,10 @@ private:
 	friend void job_terminate_all(); 
 	friend void job_print_jobs(); 
 
-	vector <Target> targets; 
+	vector <Target2> targets2; 
 	/* The targets to which this execution object corresponds.
-	 * Otherwise, all entries have the same depth.  If the dynamic
-	 * depth is larger than one, then there is exactly one target.
-	 * There are multiple targets here when the rule had multiple
-	 * targets.  Never empty.  */   
-	// TODO document and check:  all targets must be non-dynamic with a depth of
-	// zero. 
+	 * Never empty.  
+	 * All targets are non-dynamic  */
 
 	shared_ptr <Rule> rule;
 	/* The instantiated file rule for this execution.  Null when
@@ -2117,22 +2113,23 @@ void Execution::push_result(shared_ptr <Dependency> dd,
 	for (auto &i:  parents) {
 
 		Execution *parent= i.first;
-		const Link &link= i.second;
+		shared_ptr <Dependency> dependency_link= i.second; 
+//		const Link &link= i.second;
 
-		if (!((link.flags & F_DYNAMIC_LEFT) && !(link.flags & F_DYNAMIC_RIGHT))) 
+		if (!((dependency_link->flags & F_DYNAMIC_LEFT) && !(dependency_link->flags & F_DYNAMIC_RIGHT))) 
 			continue; 
 
-		if (dynamic_pointer_cast <Single_Dependency> (link.dependency) &&
-		    dynamic_pointer_cast <Single_Dependency> (link.dependency)->place_param_target.type == Type::TRANSIENT) {
+		if (dependency_link->to <Single_Dependency> () &&
+		    dependency_link->to <Single_Dependency> ()->place_param_target.type == Type::TRANSIENT) {
 			parent->push_result(dd, 
 //					    link.dependency, 
-					    link.flags & ~F_DYNAMIC_LEFT); 
+					    dependency_link->flags & ~F_DYNAMIC_LEFT); 
 		}
 
 		else if (dynamic_cast <Dynamic_Execution *> (this)) {
 			shared_ptr <Dependency> dd2=
 				make_shared <Dynamic_Dependency> (0, dd); 
-			dd2->add_flags(link.dependency, false); 
+			dd2->add_flags(dependency_link, false); 
 			dd2->flags &= ~(F_DYNAMIC_LEFT | F_DYNAMIC_RIGHT | F_RESULT_ONLY); 
 			parent->push_result(dd2, 
 //					    link.dependency, 
@@ -2160,9 +2157,11 @@ void Execution::propagate_to_dynamic(Execution *child,
 	if (single_this) {
 		/* At least a single target is a transient */
 		bool found= false;
-		for (auto &i:  single_this->targets) {
-			if (i.type == Type::TRANSIENT) 
-				found= true;
+		for (auto &i:  single_this->targets2) {
+			if (i.is_transient()) {
+//			if (i.type == Type::TRANSIENT) {
+				found= true; 
+			}
 		}
 		assert(found); 
 	} else if (dynamic_this) {
@@ -2269,20 +2268,23 @@ void File_Execution::waited(pid_t pid, int status)
 		/* Subsequently set to -1 if at least one target file is missing */
 
 		/* For file targets, check that the file was built */ 
-		for (unsigned i= 0;  i < targets.size();  ++i) {
-			const Target &target= targets[i]; 
+		for (size_t i= 0;  i < targets2.size();  ++i) {
+			const Target2 target2= targets2[i]; 
 
-			if (target.type != Type::FILE)
+			if (! target2.is_file()) {
+//			if (target2.type != Type::FILE) {
 				continue;
+			}
 
+			const char *const filename= target2.get_nondynamic_name_c_str();
 			struct stat buf;
 
-			if (0 == stat(target.name.c_str(), &buf)) {
+			if (0 == stat(filename, &buf)) {
 
 				/* The file exists */ 
 
 				warn_future_file(&buf, 
-						 target.name.c_str(),
+						 filename,
 						 rule->place_param_targets[i]->place,
 						 "after execution of command"); 
 
@@ -2297,9 +2299,9 @@ void File_Execution::waited(pid_t pid, int status)
 
 					/* Check whether the file is actually a symlink, in
 					 * which case we ignore that error */ 
-					if (0 > lstat(target.name.c_str(), &buf)) {
+					if (0 > lstat(filename, &buf)) {
 						rule->place_param_targets[i]->place <<
-							system_format(target.format_word()); 
+							system_format(target2.format_word()); 
 						raise(ERROR_BUILD);
 					}
 					if (S_ISLNK(buf.st_mode)) 
@@ -2356,7 +2358,7 @@ void File_Execution::waited(pid_t pid, int status)
 		}
 
 		if (! param_rule->is_copy) {
-			Target target= parents.begin()->second.dependency
+			Target target= parents.begin()->second
 				->get_individual_target().unparametrized(); 
 			param_rule->command->place <<
 				fmt("command for %s %s", 
@@ -2376,10 +2378,11 @@ void File_Execution::waited(pid_t pid, int status)
 	}
 }
 
-File_Execution::File_Execution(Target target_,
-			       Link &link,
+File_Execution::File_Execution(Target2 target2_,
+			       shared_ptr <Dependency> dependency_link,
+//			       Link &link,
 			       Execution *parent)
-	:  Execution(link, parent),
+	:  Execution(dependency_link, parent),
 	   exists(0),
 	   flags_finished(0)
 {

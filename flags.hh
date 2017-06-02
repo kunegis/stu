@@ -151,7 +151,7 @@ string flags_format(Flags flags)
  * mode output, as of version 2.5.0. 
  */
 {
-	string ret= "";
+	string ret;
 	for (int i= 0;  i < C_ALL;  ++i)
 		if (flags & (1 << i)) {
 			if (! ret.empty())

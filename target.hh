@@ -218,6 +218,19 @@ public:
 		return (text.at(0) & (F_DYNAMIC_TARGET | Type::T_MASK_FILE_TRANSIENT)) == Type::T_TRANSIENT;
 	}
 
+	string format_out() const;
+	
+	const char *get_nondynamic_name_c_str() const 
+	/*
+	 * Return a C pointer to the name of the file or transient.  The
+	 * object must be non-dynamic. 
+	 */
+	{
+		assert(text.size() >= 2);
+		assert((text.at(0) & F_DYNAMIC_TARGET) == 0); 
+		return text.c_str() + 1; 
+	}
+
 private:
 
 	string text; 
@@ -637,6 +650,37 @@ public:
 		return Param_Target(type, place_name); 
 	}
 };
+
+string Target2::format_out() const
+{
+	Style style= 0;
+	if (! is_file()) {
+//	if (type != Type::FILE) {
+		style |= S_MARKERS;
+	}
+	bool quotes= is_file();
+	string ret; 
+	size_t i= 0;
+	while (text.at(i) & F_DYNAMIC_TARGET) {
+		ret += flags_format(text.at(i) & ~F_DYNAMIC_TARGET);
+		++i;
+		ret += '[';
+	}
+	assert(text.size() > i + 1);
+	ret += flags_format(text.at(i)); 
+	if ((text.at(i) & F_MASK_FILE_TRANSIENT) == F_TRANSIENT) {
+		ret += '@'; 
+	}
+	if (quotes)  ret += '\'';
+	ret += name_format(text.substr(i+1), style, quotes); 
+	if (quotes)  ret += '\'';
+	i= 0;
+	while (text.at(i) & F_DYNAMIC_TARGET) {
+		++i;
+		ret += ']';
+	}
+	return ret; 
+}
 
 string Name::instantiate(const map <string, string> &mapping) const
 {

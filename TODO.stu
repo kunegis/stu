@@ -227,6 +227,11 @@ C = {correct}
 # * Update the man page
 # * Concatenation in debug mode 
 
+# Dynamic transients.  This does the expected thing, and will be
+# easy to implement after the big "concatenation" cleanup.  Does not
+# work if the transient in question has a command, or is co-target with
+# a file.  Test these two cases. 
+
 #
 # Make sure that in -j2 -k mode, the "successfully built" message is
 # output just once, when the rule that was run has multiple targets.
@@ -262,19 +267,9 @@ A.$X$Y;
 #
 
 #
-# Replace "unsigned" by "size_t" where appropriate.  Mainly as "for"
-# variables. 
-#
-
-#
 # sh/test:  log all tests and their runtime, version number, date, etc.
 # This is to detected regression such as "a new version of Stu is much
 # slower than old versions."
-#
-
-#
-# Dynamic transients.  This does the expected thing, and will be
-# easy to implement after the big "concatenation" cleanup. 
 #
 
 # 'A' will contain the three lines 'x', 'y' and 'z'
@@ -294,12 +289,15 @@ X = {x}   Y = {y}  Z = {z}
 #
 
 #
-# Test what happens when a file passed with -n contains a \0 character. 
+# Test what happens when a file passed with -n contains a \0 character.
+# It should be considered a syntax error and thus should should be a
+# logica error (exit status 2). 
 #
 
 #
 # Have a feature to indicate that a file contains only a single
-# filename.  To complement -n and -0.  
+# filename.  To complement -n and -0.  Must produce a logical error when
+# the file contains the nul byte '\0'. 
 #
 
 #################### Further features #########################
@@ -608,7 +606,8 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 # Use this in texdep and other stu-utils programs judiciously. 
 
 #
-# A 'why' option that shows why things are built.
+# A 'why' option that shows why things are built.  Will look similar to
+# error traces, only containing explanations. 
 #
 
 # * 'abc' does not exist
@@ -641,5 +640,6 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 
 #
 # Have an option to output the dependency graph, i.e., output each edge
-# on a single like, e.g. separated by tab. 
+# on a single like, e.g. separated by tab.  (Use it then to perform a network
+# analysis of the KONECT-Analysis dependency graph.)
 #

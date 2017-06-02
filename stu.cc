@@ -4,6 +4,9 @@
  * status, etc.
  */
 
+// TODO Replace "unsigned" by "size_t" where appropriate.  Mainly as "for" loop
+// variables, in particular when looping over containers, strings, etc. 
+
 /*
  * Enable bounds checking when using GNU libc.  Must be defined before
  * including any of the standard headers.  (Only in non-debug mode).  A
@@ -604,3 +607,4 @@ void read_option_F(const char *s,
 		}
 	}
 }
+

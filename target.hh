@@ -19,11 +19,12 @@
 
 /* 
  * Glossary:
- *     * A _name_ is a filename or the name of a transient target.  They are
- *       just strings, so no special data type for it.  There are two
- *       distinct namespaces for them. 
- *     * A _target_ is either file, transient target, or a dynamic
- *       variant of them.  It is represented by a name (string) and a
+ *     * A _name_ is a filename or the name of a transient target.  They
+ *       are just strings, so no special data type is used for them.
+ *       There are two distinct namespaces for them.  They can contain
+ * 	 any character except \0, and must not be the empty string. 
+ *     * A _target_ is either file, transient target (, or a dynamic
+ *       variant of them -- removed in 2.5).  It is represented by a name (string) and a
  *       type.  
  *     * A _parametrized_ target or name additionally can have
  *       parameters. 
@@ -31,10 +32,10 @@
  */
 
 /* 
- * The basic object in Stu:  a file, a variable, or a dynamic version of these.  This
- * consists of a name together with a type.  This class is not
- * parametrized, and does not contain a place object.  It is used as
- * keys in maps. 
+ * The basic object in Stu: a file, a variable, or a dynamic version of
+ * these.  This consists of a name together with a type.  This class is
+ * not parametrized, and does not contain a place object.  It is used as
+ * keys in maps.
  */ 
 // TODO deprecate:  This was only used for indexing Execution objects,
 // and is now replaced by Target2. 
@@ -194,7 +195,7 @@ namespace std {
 /* 
  * A representation of single dependency, as well as dyn^* of single
  * dependencies, mainly used as the key in the caching of Execution
- * objects. 
+ * objects.
  */
 // TODO rename 'Target' after class Target is removed 
 class Target2
@@ -206,6 +207,7 @@ public:
 		: text(((char) type.get_value()) + name)
 	{
 		assert(type.is_file() || type.is_transient()); 
+		assert(name.find('\0') == string::npos); /* Names do not contain \0 */
 	}
 
 	const string &get_text() const {  return text;  }

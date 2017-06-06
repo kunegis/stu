@@ -752,7 +752,7 @@ introduced with '%'.
     redirect_dep:     ['<'] bare_dep
     bare_dep:         ['@'] NAME
     variable_dep:     '$' '[' flag* ['<'] NAME ']'
-    flag:             '-p' | '-o' | '-t' | '-n'
+    flag:             '-p' | '-o' | '-t' | '-n' | '-0'
 
 {1} with intervening whitespace
 {2} without intervening whitespace

@@ -10,7 +10,8 @@ class Type
 // TODO deprecate the dynamic part of this.  It now only needs to store
 // the file/transient distinction.  
 // TODO maybe even deprecate it completely.  We only need the FILE and
-// TRANSIENT bits, so get back to a int representation. 
+// TRANSIENT bits, so get back to a int representation.  I.e., make the
+// individual bits defined below be in the global namespace. 
 {
 public:
 
@@ -84,6 +85,8 @@ public:
 		value += 4 * depth;
 		return *this;
 	}
+
+	unsigned get_value() const {  return value;  }
 
 	size_t get_value_for_hash() const {
 		return hash <unsigned> ()(value); 

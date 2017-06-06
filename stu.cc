@@ -216,11 +216,10 @@ int main(int argc, char **argv, char **envp)
 					place << "expected a non-empty argument"; 
 					exit(ERROR_FATAL);
 				}
-				Type type= Type::FILE;
 				dependencies.push_back
 					(make_shared <Single_Dependency>
 					 (0, Place_Param_Target
-					  (type, Place_Name(optarg, place))));
+					  (Type::FILE, Place_Name(optarg, place))));
 				break;
 			}
 

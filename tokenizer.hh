@@ -425,6 +425,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 	assert(p < p_end && *p == '{');
 
 	const Place place_open(place_type, filename, line, p - p_line);
+	// TODO in declarations of the place like this, use a function Tokenizer::current_place(). 
 
 	++p;
 
@@ -938,10 +939,10 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 }
 
 void Tokenizer::parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
-				Context context,
-				Place &place_end,
-				string string_,
-				const Place &place_diagnostic)
+				    Context context,
+				    Place &place_end,
+				    string string_,
+				    const Place &place_diagnostic)
 {
 	vector <Trace> traces;
 	vector <string> filenames;
@@ -1059,7 +1060,7 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 		} else if (*p == '\0') {
 			current_place() << 
 				fmt("invalid character %s",
-				    char_format_word('\0'));
+				    char_format_word(*p));
 			place_begin_quote <<
 				fmt("in quote started by %s",
 				    char_format_word('\'')); 
@@ -1076,8 +1077,7 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 	current_place() <<
 		fmt("expected a closing %s", char_format_word('\''));
 	place_begin_quote <<
-		fmt("for quote started by %s",
-		    char_format_word('\'')); 
+		fmt("for quote started by %s", char_format_word('\'')); 
 	throw ERROR_LOGICAL; 
  end_of_single_quote:;
 }
@@ -1093,6 +1093,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 	const char *const p_name= p;
 
 	Place place__name(place_type, filename, line, p_name - p_line); 
+	// TODO correct '__' in name. 
 
 	while (p < p_end && isalnum(*p)) {
 		++p;
@@ -1165,10 +1166,10 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 		if (includes.count(filename_include)) {
 			/* Do nothing -- file was
 			 * already parsed, or is being
-			 * parsed.  */  
-				
-			/* It is an error if a file includes
-			 * itself directly or indirectly */ 
+			 * parsed.  
+			 * It is an error if a file includes
+			 * itself directly or indirectly.
+			 * It it ignored if a file is included a second time non-recursively.  */ 
 			for (auto &i:  filenames) {
 				if (filename_include != i)
 					continue;

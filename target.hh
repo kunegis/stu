@@ -89,7 +89,7 @@ public:
 		bool quotes= 
 			(type == Type::FILE
 			 ? Color::quotes
-			 : 0);
+			 : false);
 
 		string text= name_format(name, style, quotes); 
 		
@@ -201,6 +201,13 @@ class Target2
 {
 public:
 
+	Target2(Type type, string name) 
+	/* Non-dynamic */
+		: text(((char) type.get_value()) + name)
+	{
+		assert(type.is_file() || type.is_transient()); 
+	}
+
 	const string &get_text() const {  return text;  }
 
 	bool is_dynamic() const {
@@ -219,6 +226,15 @@ public:
 	}
 
 	string format_out() const;
+	string format_word() const;
+	string format_src() const;
+
+	string get_nondynamic_name() const 
+	{
+		assert(text.size() >= 2);
+		assert((text.at(0) & F_DYNAMIC_TARGET) == 0); 
+		return text.substr(1); 
+	}
 	
 	const char *get_nondynamic_name_c_str() const 
 	/*
@@ -230,6 +246,10 @@ public:
 		assert((text.at(0) & F_DYNAMIC_TARGET) == 0); 
 		return text.c_str() + 1; 
 	}
+
+	unsigned get_front_byte() const {  return text.at(0);  }
+
+	bool operator== (const Target2 target2) const {  return text == target2.text;  }
 
 private:
 
@@ -466,13 +486,15 @@ public:
 };
 
 /* 
- * A parametrized name for which it is saved what type it represents.  
+ * A parametrized name for which it is saved what type it represents.  Non-dynamic. 
  */ 
 class Param_Target
 {
 public:
 
 	Type type;
+	/* Non-dynamic */ 
+
 	Name name; 
  
 	Param_Target(Type type_,
@@ -585,13 +607,14 @@ public:
 };
 
 /* 
- * A target that is parametrized and contains places. 
+ * A target that is parametrized and contains places.  Non-dynamic. 
  */
 class Place_Param_Target
 {
 public:
 
 	Type type; 
+	/* Non-dynamic */ 
 
 	Place_Name place_name;
 
@@ -642,8 +665,8 @@ public:
 			(type, *place_name.instantiate(mapping), place); 
 	}
 
-	Target unparametrized() const {
-		return Target(type, place_name.unparametrized()); 
+	Target2 unparametrized() const {
+		return Target2(type, place_name.unparametrized()); 
 	}
 
 	Param_Target get_param_target() const {
@@ -668,9 +691,72 @@ string Target2::format_out() const
 	}
 	assert(text.size() > i + 1);
 	ret += flags_format(text.at(i)); 
-	if ((text.at(i) & F_MASK_FILE_TRANSIENT) == F_TRANSIENT) {
+	if ((text.at(i) & Type::T_MASK_FILE_TRANSIENT) == Type::T_TRANSIENT) {
 		ret += '@'; 
 	}
+	if (quotes)  ret += '\'';
+	ret += name_format(text.substr(i+1), style, quotes); 
+	if (quotes)  ret += '\'';
+	i= 0;
+	while (text.at(i) & F_DYNAMIC_TARGET) {
+		++i;
+		ret += ']';
+	}
+	return ret; 
+}
+
+string Target2::format_word() const
+{
+	Style style= 0;
+	if (! is_file()) {
+		style |= S_MARKERS;
+	}
+	bool quotes= is_file() ? Color::quotes : false;
+	string ret; 
+	ret += Color::word; 
+	size_t i= 0;
+	while (text.at(i) & F_DYNAMIC_TARGET) {
+		ret += flags_format(text.at(i) & ~F_DYNAMIC_TARGET);
+		++i;
+		ret += '[';
+	}
+	assert(text.size() > i + 1);
+	ret += flags_format(text.at(i)); 
+	if ((text.at(i) & Type::T_MASK_FILE_TRANSIENT) == Type::T_TRANSIENT) {
+		ret += '@'; 
+	}
+	if (quotes)  ret += '\'';
+	ret += name_format(text.substr(i+1), style, quotes); 
+	if (quotes)  ret += '\'';
+	i= 0;
+	while (text.at(i) & F_DYNAMIC_TARGET) {
+		++i;
+		ret += ']';
+	}
+	ret += Color::end;
+	return ret; 
+}
+
+string Target2::format_src() const
+{
+	Style style= 0;
+	if (! is_file()) {
+		style |= S_MARKERS;
+	}
+	string ret; 
+	size_t i= 0;
+	while (text.at(i) & F_DYNAMIC_TARGET) {
+		ret += flags_format(text.at(i) & ~F_DYNAMIC_TARGET);
+		++i;
+		ret += '[';
+	}
+	assert(text.size() > i + 1);
+	ret += flags_format(text.at(i)); 
+	if ((text.at(i) & Type::T_MASK_FILE_TRANSIENT) == Type::T_TRANSIENT) {
+		ret += '@'; 
+	}
+	const char *const name= text.c_str() + i + 1;
+	bool quotes= src_need_quotes(name); 
 	if (quotes)  ret += '\'';
 	ret += name_format(text.substr(i+1), style, quotes); 
 	if (quotes)  ret += '\'';

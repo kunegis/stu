@@ -288,7 +288,7 @@ shared_ptr <Rule> Parser::parse_rule()
 					fmt("shadowing previous output redirection %s",
 					    prefix_format_word
 					    (place_param_targets[redirect_index]
-					     ->unparametrized().name, ">")); 
+					     ->unparametrized().get_nondynamic_name(), ">")); 
 				throw ERROR_LOGICAL;
 			}
 			place_output= place_output_new; 
@@ -1245,7 +1245,7 @@ shared_ptr <Dependency> Parser::get_target_dep(string text, const Place &place)
 {
 	/*
 	 * This syntax supports only the characters '@' and '[]', and a
-	 * single name.  Thus, the syntax is:
+	 * single name, without whitespace.  Thus, the syntax is:
 	 *
 	 *         '['^n [@] NAME ']'^n
 	 */

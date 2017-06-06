@@ -46,7 +46,6 @@ enum
 
 	I_DYNAMIC_LEFT,        /* -/ */
 	I_DYNAMIC_RIGHT,       /* -\ */
-//	I_COPY_RESULT,         /* -= */
 	I_VARIABLE,            /* -$ */
 	I_OVERRIDE_TRIVIAL,    /* -T */
 	I_NEWLINE_SEPARATED,   /* -n */
@@ -101,9 +100,6 @@ enum
 	F_DYNAMIC_RIGHT    = 1 << I_DYNAMIC_RIGHT,
 	/* For right branches of dynamic.  Overrides the otherwise
 	 * passed F_DYNAMIC_LEFT flag.  */
-
-//	F_COPY_RESULT      = 1 << I_COPY_RESULT,
-//	/* Copy the result list of the child to the parent */
 
 	F_VARIABLE         = 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */ 

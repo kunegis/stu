@@ -451,9 +451,7 @@ public:
 	}
 
 	virtual Proceed execute(Execution *parent, 
-				shared_ptr <Dependency> dependency_link
-//				const Link &link
-				);
+				shared_ptr <Dependency> dependency_link);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual string format_out() const {
@@ -496,7 +494,7 @@ private:
 	vector <Target2> targets2; 
 	/* The targets to which this execution object corresponds.
 	 * Never empty.  
-	 * All targets are non-dynamic  */
+	 * All targets are non-dynamic, i.e., only plain files and transients are included.  */
 
 	shared_ptr <Rule> rule;
 	/* The instantiated file rule for this execution.  Null when
@@ -998,10 +996,11 @@ void Execution::read_dynamic(Flags flags_this,
 {
 	assert(place_param_target.place_name.get_n() == 0); 
 	assert(place_param_target.type == Type::FILE); 
-	const Target target= place_param_target.unparametrized(); 
+	const Target2 target2= place_param_target.unparametrized(); 
+	assert(target2.is_file()); 
 	assert(dependencies.empty()); 
 
-	string filename= target.name;
+	string filename= target2.get_nondynamic_name();
 
 	if (! (flags_this & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
 
@@ -1037,9 +1036,9 @@ void Execution::read_dynamic(Flags flags_this,
 			place_input <<
 				fmt("dynamic dependency %s "
 				    "must not contain input redirection %s", 
-				    target.format_word(),
+				    target2.format_word(),
 				    prefix_format_word(input.raw(), "<")); 
-			Target target_file= target;
+			Target2 target2_file= target2;
 			target_file.type= Type::FILE;
 			print_traces(fmt("%s is declared here",
 					 target_file.format_word())); 
@@ -2308,10 +2307,10 @@ void File_Execution::waited(pid_t pid, int status)
 						continue;
 					rule->place_param_targets[i]->place
 						<< fmt("timestamp of file %s after execution of its command is older than %s startup", 
-						       target.format_word(), 
+						       target2.format_word(), 
 						       dollar_zero)
 						<< fmt("timestamp of %s is %s",
-						       target.format_word(), timestamp_file.format())
+						       target2.format_word(), timestamp_file.format())
 						<< fmt("startup timestamp is %s", 
 						       Timestamp::startup.format()); 
 					print_traces();
@@ -2322,7 +2321,7 @@ void File_Execution::waited(pid_t pid, int status)
 				exists= -1;
 				rule->place_param_targets[i]->place <<
 					fmt("file %s was not built by command", 
-					    target.format_word()); 
+					    target2.format_word()); 
 				print_traces(); 
 
 				raise(ERROR_BUILD);
@@ -2330,7 +2329,7 @@ void File_Execution::waited(pid_t pid, int status)
 		}
 		/* In parallel mode, print "done" message */
 		if (option_parallel) {
-			string text= targets[0].format_src();
+			string text= targets2[0].format_src();
 			printf("Successfully built %s\n", text.c_str()); 
 		}
 
@@ -2367,7 +2366,7 @@ void File_Execution::waited(pid_t pid, int status)
 		} else {
 			/* Copy rule */
 			param_rule->place <<
-				fmt("cp to %s %s", targets.front().format_word(), reason); 
+				fmt("cp to %s %s", targets2.front().format_word(), reason); 
 		}
 
 		print_traces(); 
@@ -2380,7 +2379,6 @@ void File_Execution::waited(pid_t pid, int status)
 
 File_Execution::File_Execution(Target2 target2_,
 			       shared_ptr <Dependency> dependency_link,
-//			       Link &link,
 			       Execution *parent)
 	:  Execution(dependency_link, parent),
 	   exists(0),
@@ -2392,14 +2390,14 @@ File_Execution::File_Execution(Target2 target2_,
 	assert(target_.type == Type::FILE); 
 
 	/* Later replaced with all targets from the rule, when a rule exists */ 
-	targets.push_back(target_); 
+	targets2.push_back(target2_); 
 
 	/* 
 	 * Fill in the rules and their parameters 
 	 */ 
 	try {
-		rule= rule_set.get(target_, param_rule, mapping_parameter, 
-				   link.dependency->get_place()); 
+		rule= rule_set.get(target2_, param_rule, mapping_parameter, 
+				   dependency_link->get_place()); 
 	} catch (int e) {
 		print_traces(); 
 		raise(e); 

@@ -1,7 +1,7 @@
 #ifndef TARGET_HH
 #define TARGET_HH
 
-#include "type.hh"
+//#include "type.hh"
 #include "flags.hh"
 
 /* 
@@ -31,6 +31,7 @@
  *     * Dedicated classes exist to represent these with _places_. 
  */
 
+#if 0 // TODO RM
 /* 
  * The basic object in Stu: a file, a variable, or a dynamic version of
  * these.  This consists of a name together with a type.  This class is
@@ -70,7 +71,7 @@ public:
 
 		string text= name_format(name, style2, quotes2); 
 
-		quotes= false;
+//		quotes= false;
 		
 		return fmt("%s%s%s%s%s%s", 
 			   string(type.get_depth(), '['),
@@ -191,65 +192,95 @@ namespace std {
 		}
 	};
 }
+#endif /* 0 */ 
 
 /* 
  * A representation of single dependency, as well as dyn^* of single
  * dependencies, mainly used as the key in the caching of Execution
  * objects.
+ * 
+ * This also encodes the options at all levels of the dependency. 
  */
 // TODO rename 'Target' after class Target is removed 
 class Target2
 {
 public:
 
-	Target2(Type type, string name) 
+	Target2(Flags flags, string name) 
 	/* Non-dynamic */
-		: text(((char) type.get_value()) + name)
+		: text(((char) flags) + name)
 	{
-		assert(type.is_file() || type.is_transient()); 
+		assert((flags & ~F_TARGET_TRANSIENT) == 0); 
+//		assert(type.is_file() || type.is_transient()); 
 		assert(name.find('\0') == string::npos); /* Names do not contain \0 */
+		assert(name != ""); 
 	}
 
 	const string &get_text() const {  return text;  }
 
 	bool is_dynamic() const {
 		assert(text.size() >= 2); 
-		return (text.at(0) & F_DYNAMIC_TARGET) != 0; 
+		return text.at(0) & F_TARGET_DYNAMIC; 
+//		return (text.at(0) & F_DYNAMIC_TARGET) != 0; 
 	}
 
 	bool is_file() const {
 		assert(text.size() >= 2); 
-		return (text.at(0) & (F_DYNAMIC_TARGET | Type::T_MASK_FILE_TRANSIENT)) == Type::T_FILE; 
+		return (text.at(0) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0; 
+//		return (text.at(0) & (F_DYNAMIC_TARGET | Type::T_MASK_FILE_TRANSIENT)) == Type::T_FILE; 
 	}
 
 	bool is_transient() const {
 		assert(text.size() >= 2); 
-		return (text.at(0) & (F_DYNAMIC_TARGET | Type::T_MASK_FILE_TRANSIENT)) == Type::T_TRANSIENT;
+		return (text.at(0) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == F_TARGET_TRANSIENT; 
+//		return (text.at(0) & (F_DYNAMIC_TARGET | Type::T_MASK_FILE_TRANSIENT)) == Type::T_TRANSIENT;
 	}
 
+	string format(Style style, bool &quotes) const;
 	string format_out() const;
 	string format_word() const;
 	string format_src() const;
 
-	string get_nondynamic_name() const 
+	string get_name_nondynamic() const 
+	/* Get the name of the target, given that the target is not dynamic */
 	{
 		assert(text.size() >= 2);
-		assert((text.at(0) & F_DYNAMIC_TARGET) == 0); 
+		assert((text.at(0) & F_TARGET_DYNAMIC) == 0); 
 		return text.substr(1); 
 	}
 	
-	const char *get_nondynamic_name_c_str() const 
+	const char *get_name_c_str_nondynamic() const 
 	/*
 	 * Return a C pointer to the name of the file or transient.  The
 	 * object must be non-dynamic. 
 	 */
 	{
 		assert(text.size() >= 2);
-		assert((text.at(0) & F_DYNAMIC_TARGET) == 0); 
+		assert((text.at(0) & F_TARGET_DYNAMIC) == 0); 
 		return text.c_str() + 1; 
 	}
 
-	unsigned get_front_byte() const {  return text.at(0);  }
+	unsigned get_front_byte() const {  return (unsigned char) text.at(0);  }
+	
+	unsigned char &get_front_byte_nondynamic() 
+	/* Get the front byte, given that the target is not dynamic */
+	{
+		assert(text.size() >= 2); 
+		assert((text.at(0) & F_TARGET_DYNAMIC) == 0); 
+		return (unsigned char &) text[0]; 
+	}
+
+	unsigned get_front_byte_nondynamic() const {
+		assert(text.size() >= 2); 
+		assert((text.at(0) & F_TARGET_DYNAMIC) == 0); 
+		return (unsigned)(unsigned char) text[0]; 
+	}
+	
+	unsigned at(size_t i) const 
+	/* For access any front byte */
+	{
+		return (unsigned) (unsigned char) text.at(i); 
+	}
 
 	bool operator== (const Target2 target2) const {  return text == target2.text;  }
 
@@ -259,12 +290,14 @@ private:
 	/*
 	 * Linear representation of the dependency.
 	 *
-	 * A non-dynamic dependency is represented as a Type byte (\002 or \004)
+	 * A non-dynamic dependency is represented as a Type byte (F_TARGET_TRANSIENT or 0)
 	 * followed by the name. 
 	 *
-	 * A dynamic is represented as a dynamic byte (\001 & flags),
-	 * following by the string representation of the contained
+	 * A dynamic is represented as a dynamic byte (F_TARGET_DYNAMIC)
+	 * followed by the string representation of the contained
 	 * dependency. 
+	 *
+	 * Any of the front bytes may contain additional flag bits. 
 	 */
 };
 
@@ -494,59 +527,75 @@ class Param_Target
 {
 public:
 
-	Type type;
-	/* Non-dynamic */ 
+	Flags flags;
+	/* Only file/transient target info */
+//	Type type;
+//	/* Non-dynamic */ 
 
 	Name name; 
  
-	Param_Target(Type type_,
+	Param_Target(
+		     Flags flags_,
+		     //Type type_,
 		     const Name &name_)
-		:  type(type_),
+		:  
+		flags(flags_),
+		//type(type_),
 		   name(name_)
-	{ }
+	{ 
+		assert((flags_ & ~F_TARGET_TRANSIENT) == 0); 
+	}
 
-	/* Unparametrized target */
-	Param_Target(const Target &target)
-		:  type(target.type),
-		   name(target.name)
-	{ }
+	Param_Target(Target2 target2)
+	/* Unparametrized target.   The passed TARGET2 must be non-dynamic. */
+		:  flags(target2.get_front_byte_nondynamic() & F_TARGET_TRANSIENT),
+		   name(target2.get_name_nondynamic())
+	{ 
+		assert(! target2.is_dynamic()); 
+	}
 
-	Target instantiate(const map <string, string> &mapping) const {
-		return Target(type, name.instantiate(mapping)); 
+	Target2 instantiate(const map <string, string> &mapping) const {
+		return Target2(flags, name.instantiate(mapping)); 
 	}
 
 	string format_word() const {
 
 		Style style= 0;
-		if (type != Type::FILE)
+		if (flags & F_TARGET_TRANSIENT)
+//		if (type != Type::FILE)
 			style |= S_MARKERS;
 
 		bool quotes2= 
-			(type == Type::FILE
+			(
+			 flags == 0
+			 //type == Type::FILE
 			 ? Color::quotes
 			 : 0);
 
 		string text= name.format(style, quotes2); 
 		
-		return fmt("%s%s%s%s%s%s%s%s", 
+		return fmt("%s%s%s%s%s%s", 
 			   Color::word, 
-			   string(type.get_depth(), '['),
-			   type.is_any_transient() ? "@" : "",
+//			   string(type.get_depth(), '['),
+			   flags ? "@" : "",
+//			   type.is_any_transient() ? "@" : "",
 			   quotes2 ? "'" : "",
 			   text,
 			   quotes2 ? "'" : "",
-			   string(type.get_depth(), ']'),
+//			   string(type.get_depth(), ']'),
 			   Color::end);
 	}
 
+	Target2 unparametrized() const 
 	/* The corresponding unparametrized target.  This target must
-	 * have zero parameters. */ 
-	Target unparametrized() const {
-		return Target(type, name.unparametrized());
+	 * have zero parameters.  */ 
+	{
+		return Target2(flags, name.unparametrized());
 	}
 
 	bool operator == (const Param_Target &that) const {
-		return this->type == that.type &&
+		return this->flags == that.flags &&
+//		return this->type == that.type &&
 			this->name == that.name; 
 	}
 
@@ -615,8 +664,10 @@ class Place_Param_Target
 {
 public:
 
-	Type type; 
-	/* Non-dynamic */ 
+	Flags flags;
+	/* Only F_TARGET_TRANSIENT is used */ 
+//	Type type; 
+//	/* Non-dynamic */ 
 
 	Place_Name place_name;
 
@@ -625,56 +676,105 @@ public:
 	 * variable additionally contains a place for the name itself,
 	 * as well as for individual parameters.  */ 
 
-	Place_Param_Target(Type type_,
+	Place_Param_Target(
+			   Flags flags_,
+			   //Type type_,
 			   const Place_Name &place_name_)
-		:  type(type_),
+		:  
+		flags(flags_),
+		//type(type_),
 		   place_name(place_name_),
 		   place(place_name_.place)
-	{ }
+	{ 
+		assert((flags_ & ~F_TARGET_TRANSIENT) == 0); 
+	}
 
-	Place_Param_Target(Type type_,
+	Place_Param_Target(
+			   Flags flags_,
+			   //Type type_,
 			   const Place_Name &place_name_,
 			   const Place &place_)
-		:  type(type_),
+		:  
+		flags(flags_),
+		//type(type_),
 		   place_name(place_name_),
 		   place(place_)
-	{ }
+	{ 
+		assert((flags_ & ~F_TARGET_TRANSIENT) == 0); 
+	}
 
 	/* Compares only the content, not the place. */ 
 	bool operator == (const Place_Param_Target &that) const {
-		return this->type == that.type &&
+		return this->flags == that.flags && 
+//		return this->type == that.type &&
 			this->place_name == that.place_name; 
 	}
 
 	string format(Style style, bool &need_quotes) const {
-		Target target(type, place_name.raw());
-		return target.format(style, need_quotes); 
+		Target2 target2(flags, place_name.raw()); 
+//		Target target(type, place_name.raw());
+		return target2.format(style, need_quotes); 
 	}
 	
 	string format_word() const {
-		Target target(type, place_name.raw());
-		return target.format_word(); 
+		Target2 target2(flags, place_name.raw());
+		return target2.format_word(); 
 	}
 	
 	string format_out() const {
-		Target target(type, place_name.raw());
-		return target.format_out(); 
+		Target2 target2(flags, place_name.raw());
+		return target2.format_out(); 
 	}
 
 	shared_ptr <Place_Param_Target> 
 	instantiate(const map <string, string> &mapping) const {
 		return make_shared <Place_Param_Target> 
-			(type, *place_name.instantiate(mapping), place); 
+			(flags, *place_name.instantiate(mapping), place); 
 	}
 
 	Target2 unparametrized() const {
-		return Target2(type, place_name.unparametrized()); 
+		return Target2(flags, place_name.unparametrized()); 
 	}
 
 	Param_Target get_param_target() const {
-		return Param_Target(type, place_name); 
+		return Param_Target(flags, place_name); 
 	}
 };
+
+string Target2::format(Style style, bool &quotes) const
+{
+	quotes= false;
+
+	Style style2= 0;
+	if (! is_file()) {
+		style2 |= S_MARKERS;
+	} else {
+		style2 |= style; 
+	}
+	bool quotes2= false;
+	string ret; 
+	size_t i= 0;
+	while (text.at(i) & F_TARGET_DYNAMIC) {
+		assert((text.at(i) & F_TARGET_TRANSIENT) == 0); 
+		ret += flags_format(text.at(i) & ~F_TARGET_DYNAMIC);
+		++i;
+		ret += '[';
+	}
+	assert(text.size() > i + 1);
+	ret += flags_format(text.at(i)); 
+	if (text.at(i) & F_TARGET_TRANSIENT) {
+		ret += '@'; 
+	}
+	if (quotes)  ret += '\'';
+	ret += name_format(text.substr(i+1), style2, quotes2); 
+	if (quotes)  ret += '\'';
+	i= 0;
+	while (text.at(i) & F_TARGET_DYNAMIC) {
+		++i;
+		ret += ']';
+	}
+	return ret; 
+}
 
 string Target2::format_out() const
 {
@@ -686,21 +786,21 @@ string Target2::format_out() const
 	bool quotes= is_file();
 	string ret; 
 	size_t i= 0;
-	while (text.at(i) & F_DYNAMIC_TARGET) {
-		ret += flags_format(text.at(i) & ~F_DYNAMIC_TARGET);
+	while (text.at(i) & F_TARGET_DYNAMIC) {
+		ret += flags_format(text.at(i) & ~F_TARGET_DYNAMIC);
 		++i;
 		ret += '[';
 	}
 	assert(text.size() > i + 1);
 	ret += flags_format(text.at(i)); 
-	if ((text.at(i) & Type::T_MASK_FILE_TRANSIENT) == Type::T_TRANSIENT) {
+	if (text.at(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
 	if (quotes)  ret += '\'';
 	ret += name_format(text.substr(i+1), style, quotes); 
 	if (quotes)  ret += '\'';
 	i= 0;
-	while (text.at(i) & F_DYNAMIC_TARGET) {
+	while (text.at(i) & F_TARGET_DYNAMIC) {
 		++i;
 		ret += ']';
 	}
@@ -717,21 +817,21 @@ string Target2::format_word() const
 	string ret; 
 	ret += Color::word; 
 	size_t i= 0;
-	while (text.at(i) & F_DYNAMIC_TARGET) {
-		ret += flags_format(text.at(i) & ~F_DYNAMIC_TARGET);
+	while (text.at(i) & F_TARGET_DYNAMIC) {
+		ret += flags_format(text.at(i) & ~F_TARGET_DYNAMIC);
 		++i;
 		ret += '[';
 	}
 	assert(text.size() > i + 1);
 	ret += flags_format(text.at(i)); 
-	if ((text.at(i) & Type::T_MASK_FILE_TRANSIENT) == Type::T_TRANSIENT) {
+	if (text.at(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
 	if (quotes)  ret += '\'';
 	ret += name_format(text.substr(i+1), style, quotes); 
 	if (quotes)  ret += '\'';
 	i= 0;
-	while (text.at(i) & F_DYNAMIC_TARGET) {
+	while (text.at(i) & F_TARGET_DYNAMIC) {
 		++i;
 		ret += ']';
 	}
@@ -747,14 +847,14 @@ string Target2::format_src() const
 	}
 	string ret; 
 	size_t i= 0;
-	while (text.at(i) & F_DYNAMIC_TARGET) {
-		ret += flags_format(text.at(i) & ~F_DYNAMIC_TARGET);
+	while (text.at(i) & F_TARGET_DYNAMIC) {
+		ret += flags_format(text.at(i) & ~F_TARGET_DYNAMIC);
 		++i;
 		ret += '[';
 	}
 	assert(text.size() > i + 1);
 	ret += flags_format(text.at(i)); 
-	if ((text.at(i) & Type::T_MASK_FILE_TRANSIENT) == Type::T_TRANSIENT) {
+	if (text.at(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
 	const char *const name= text.c_str() + i + 1;
@@ -763,7 +863,7 @@ string Target2::format_src() const
 	ret += name_format(text.substr(i+1), style, quotes); 
 	if (quotes)  ret += '\'';
 	i= 0;
-	while (text.at(i) & F_DYNAMIC_TARGET) {
+	while (text.at(i) & F_TARGET_DYNAMIC) {
 		++i;
 		ret += ']';
 	}

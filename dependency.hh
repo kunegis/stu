@@ -249,11 +249,10 @@ public:
 	}
 
 	void check() const {
-		/* Must not be dynamic, since dynamic dependencies are
-		 * represented using Dynamic_Dependency */ 
-		assert(! place_param_target.type.is_dynamic());
+//		assert(! place_param_target.type.is_dynamic());
 		if (name != "") {
-			assert(place_param_target.type == Type::FILE);
+			assert((place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
+//			assert(place_param_target.type == Type::FILE);
 			assert(flags & F_VARIABLE); 
 		}
 	}
@@ -387,11 +386,12 @@ public:
 			   text_dependency); 
 	}
 
-	Param_Target get_individual_target() const {
-		Param_Target ret= dependency->get_individual_target();
-		++ ret.type;
-		return ret; 
-	}
+	// Cannot work anymore since Param_Target does not support dynamic dependencies anymore. 
+//	Param_Target get_individual_target() const {
+//		Param_Target ret= dependency->get_individual_target();
+//		++ ret.type;
+//		return ret; 
+//	}
 
 	virtual bool is_normalized() const {
 		return dependency->is_normalized(); 

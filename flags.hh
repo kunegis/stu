@@ -32,17 +32,20 @@ typedef unsigned Flags;
 
 enum 
 {
-	/* The index of the flags (I_*), used for array indexing.
+	/* 
+	 * The index of the flags (I_*), used for array indexing.
 	 * Variables iterating over these values are usually called
-	 * I.  */ 
+	 * I.  
+	 */ 
 	
-	I_DYNAMIC_TARGET = 0, /* for dynamic bit in Type */
-
-	I_PERSISTENT,          /* -p */    
+	I_PERSISTENT= 0,       /* -p */    
 	I_OPTIONAL,            /* -o */
 	I_TRIVIAL,             /* -t */
 
 	I_RESULT_ONLY,         /* -* */
+
+	I_TARGET_DYNAMIC,      /* Used by Target2 as dynamic bit */
+	I_TARGET_TRANSIENT,    /* Used by Target2 as type bit */
 
 	I_DYNAMIC_LEFT,        /* -/ */
 	I_DYNAMIC_RIGHT,       /* -\ */
@@ -51,23 +54,23 @@ enum
 	I_NEWLINE_SEPARATED,   /* -n */
 	I_NUL_SEPARATED,       /* -0 */
 
-	C_ALL, /* Total number of flags */ 
+	C_ALL,                 /* Total number of flags */ 
 
 	/* Base bit and length of the concatenation index numbers */
-	C_CONCATENATE_BASE  = C_ALL,
-	C_CONCATENATE_COUNT = CHAR_BIT * sizeof(Flags) - C_ALL,
-	C_CONCATENATE_MAX = (1 << C_CONCATENATE_COUNT) - 1,
+//	C_CONCATENATE_BASE  = C_ALL,
+//	C_CONCATENATE_COUNT = CHAR_BIT * sizeof(Flags) - C_ALL,
+//	C_CONCATENATE_MAX = (1 << C_CONCATENATE_COUNT) - 1,
 
-	C_PLACED           = 4,
+	C_PLACED           = 3,
 	/* Only the first C_PLACED flags have a place associated with them */
 
-	C_TRANSITIVE       = 5,
+	C_TRANSITIVE       = 4,
 	/* The first C_TRANSITIVE flags are transitive, i.e., inherited
 	 * across transient targets  */
 
-	/* What follows are the actual flag bits to be ORed together */ 
-
-	F_DYNAMIC_TARGET       = 1 << I_DYNAMIC_TARGET,  
+	/* 
+	 * What follows are the actual flag bits to be ORed together 
+	 */ 
 
 	/* 
 	 * Placed and transitive flags
@@ -89,6 +92,13 @@ enum
 	F_RESULT_ONLY      = 1 << I_RESULT_ONLY,
 	/* Only compute the result list of dependencies associated with
 	 * this dependency, rather than building the dependency.  */ 
+
+	/*
+	 * Target flags
+	 */
+
+	F_TARGET_DYNAMIC   = 1 << I_TARGET_DYNAMIC,
+	F_TARGET_TRANSIENT = 1 << I_TARGET_TRANSIENT,
 
 	/* 
 	 * Intransitive flags
@@ -117,7 +127,7 @@ enum
 	 * filenames, without any markup  */ 
 };
 
-const char *const FLAGS_CHARS= "pot*/\\$Tn0"; 
+const char *const FLAGS_CHARS= "pot*[@/\\$Tn0"; 
 /* Characters representing the individual flags -- used in verbose mode
  * output */ 
 

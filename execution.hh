@@ -1039,9 +1039,10 @@ void Execution::read_dynamic(Flags flags_this,
 				    target2.format_word(),
 				    prefix_format_word(input.raw(), "<")); 
 			Target2 target2_file= target2;
-			target_file.type= Type::FILE;
+			target2_file.get_front_nondynamic_byte() |= Type::T_FILE; 
+//			target_file.type= Type::FILE;
 			print_traces(fmt("%s is declared here",
-					 target_file.format_word())); 
+					 target2_file.format_word())); 
 			raise(ERROR_LOGICAL);
 		}
 	end_normal:;
@@ -1147,11 +1148,14 @@ void Execution::read_dynamic(Flags flags_this,
 				->place_param_target.place_name.places[0] <<
 				fmt("dynamic dependency %s must not contain "
 				    "parametrized dependencies",
-				    target.format_word());
-			Target target_base= target;
-			target_base.type= target.type.get_base();
+				    target2.format_word());
+			Target2 target2_base= target2;
+			target2_base.get_front_nondynamic_byte() &= ~Type::T_FILE;
+			target2_base.get_front_nondynamic_byte() |= 
+				(target2.get_front_nondynamic_byte() & Type::T_MASK_FILE_TRANSIENT); 
+//			target2_base.type= target.type.get_base();
 			print_traces(fmt("%s is declared here", 
-					 target_base.format_word())); 
+					 target2_base.format_word())); 
 			raise(ERROR_LOGICAL);
 			j= nullptr;
 			found_error= true; 
@@ -1160,7 +1164,10 @@ void Execution::read_dynamic(Flags flags_this,
 
 		/* Check that there is no multiply-dynamic variable dependency */ 
 		if (j->has_flags(F_VARIABLE) && 
-		    target.type.is_dynamic() && target.type != Type::DYNAMIC_FILE) {
+		    target2.is_dynamic() && 
+		    (target2.at(1) & (Type::T_MASK_FILE_TRANSIENT | F_DYNAMIC_TARGET)) != Type::T_FILE
+//		    target.type != Type::DYNAMIC_FILE
+		    ) {
 			
 			/* Only single dependencies can have the F_VARIABLE flag set */ 
 			assert(dynamic_pointer_cast <Single_Dependency> (j));
@@ -1179,7 +1186,7 @@ void Execution::read_dynamic(Flags flags_this,
 				    quotes ? "'" : "",
 				    Color::end);
 			print_traces(fmt("within multiply-dynamic dependency %s", 
-					 target.format_word())); 
+					 target2.format_word())); 
 			raise(ERROR_LOGICAL);
 			j= nullptr; 
 			found_error= true; 
@@ -2406,9 +2413,9 @@ File_Execution::File_Execution(Target2 target2_,
 	if (rule == nullptr) {
 		/* TARGETS contains only TARGET_ */
 	} else {
-		targets.clear(); 
+		targets2.clear(); 
 		for (auto &place_param_target:  rule->place_param_targets) {
-			targets.push_back(place_param_target->unparametrized()); 
+			targets2.push_back(place_param_target->unparametrized()); 
 		}
 		assert(targets.size()); 
 	}
@@ -2417,14 +2424,14 @@ File_Execution::File_Execution(Target2 target2_,
 
 	/* Fill EXECUTIONS_BY_TARGET with all targets from the rule, not
 	 * just the one given in the dependency.  */
-	for (const Target &target:  targets) {
-		executions_by_target[target]= this; 
+	for (const Target2 &target2:  targets2) {
+		executions_by_target2[target2]= this; 
 	}
 
 	string text_rule= rule == nullptr ? "(no rule)" : rule->format_out(); 
 	Debug::print(this, fmt("rule %s", text_rule));  
 
-	if (! (target_.type.is_dynamic() && target_.type.is_any_file()) 
+	if (! (target2_.is_dynamic() && target_.type.is_any_file()) 
 	    && rule != nullptr) {
 		/* There is a rule for this execution */ 
 

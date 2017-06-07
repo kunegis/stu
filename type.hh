@@ -1,3 +1,5 @@
+DEPRECATED -- use Flags directly 
+
 #ifndef TYPE_HH
 #define TYPE_HH
 
@@ -97,6 +99,8 @@ public:
 	}
 
 	enum: unsigned {
+
+		// TODO invert the meaning of the FILE/TRANSIENT bit to have files be the zero bit. 
 
 		T_TRANSIENT         = 0,
 		/* A transient target */ 

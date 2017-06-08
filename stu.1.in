@@ -13,7 +13,7 @@ stu \- Build automation
 .SH DESCRIPTION
 Stu is a tool for build automation.  Like Make, it is used to call other
 programs in 
-order to build files.  Stu has two three features that work in
+order to build files.  Stu has three features that work in
 conjunction to allow contructs impossible to realize in Make: 
 (1) dynamic dependencies:  The dependencies of a target can be
 themselves computed by a command.  When '[FILENAME]' (a filename
@@ -803,6 +803,16 @@ is used.  When
 .BR -i 
 is not used, the standard input of all jobs is redirected from
 /dev/null. 
+
+If a command fails, Stu will remove any of its target files, if they
+have been already touch by the command.  If the failing command did not
+touch a target file, that existing target file is not removed.  This
+behavior is necessary to avoid the case that a commands partially
+creates a target file, then fails, and then a subsequent invocation of
+Stu sees the new file and considers it as up to date, even though it was
+only partially created.  Thus, commands in Stu do not need to make sure
+they delete any output files when they fail.  This behavior is
+equivalent to that in Make. 
 
 .SH "EXIT STATUS"
 .IP 0

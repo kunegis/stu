@@ -313,6 +313,8 @@ public:
 //	}
 
 	virtual bool is_normalized() const { return true;  }
+
+	virtual Target2 get_target2() const;
 };
 
 class Dynamic_Dependency
@@ -478,6 +480,7 @@ public:
 	 * whether the contained dependencies are normalized.  */ 
 
 //	virtual shared_ptr <Dependency> clone_shallow() const;
+	virtual Target2 get_target2() const;
 
 private:
 
@@ -671,6 +674,11 @@ shared_ptr <Dependency> Dependency::strip_dynamic(shared_ptr <Dependency> d)
 	
 // 	return make_shared <Single_Dependency> (*this);
 // }
+
+Target2 Single_Dependency::get_target2() const
+{
+	return place_param_target.unparametrized(); 
+}
 
 // shared_ptr <Dependency> Dynamic_Dependency::clone_shallow() const
 // {
@@ -910,5 +918,10 @@ void Concatenated_Dependency::make_normalized()
 // 	assert(false);
 // 	return nullptr; 
 // }
+
+Target2 Concatenated_Dependency::get_target2() const
+{
+	assert(false);
+}
 
 #endif /* ! DEPENDENCY_HH */

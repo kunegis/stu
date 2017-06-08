@@ -595,8 +595,13 @@ public:
 	Transient_Execution(Target2 target2_,
 			    shared_ptr <Dependency> dependency_link,
 //			    Link &link,
-			    Execution *parent);
+			    Execution *parent) 
 	// TODO remove the TARGET2 parameter 
+		:  Execution(dependency_link, parent) 
+	{
+		(void) target2_; 
+		assert(false); 
+	}
 	
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
@@ -634,10 +639,7 @@ private:
 
 	Timestamp timestamp_old;
 
-	~Transient_Execution() {
-		/* Objects of this type are never deleted */ 
-		assert(false);
-	}
+	virtual ~Transient_Execution();
 
 	virtual const Place &get_place() const {
 //		if (param_rule == nullptr)
@@ -3280,6 +3282,12 @@ bool File_Execution::optional_finished(shared_ptr <Dependency> dependency_link)
 	}
 
 	return false; 
+}
+
+Transient_Execution::~Transient_Execution()
+{
+	/* Objects of this type are never deleted */ 
+	assert(false);
 }
 
 bool Root_Execution::finished() const

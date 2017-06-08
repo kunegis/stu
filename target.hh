@@ -172,7 +172,7 @@ public:
 		return this->type == target.type &&
 			this->name == target.name;
 	}
-	
+
 	bool operator< (const Target &target) const {
 		return this->type < target.type ||
 			(this->type == target.type && this->name < target.name);
@@ -221,7 +221,6 @@ public:
 	bool is_dynamic() const {
 		assert(text.size() >= 2); 
 		return text.at(0) & F_TARGET_DYNAMIC; 
-//		return (text.at(0) & F_DYNAMIC_TARGET) != 0; 
 	}
 
 	bool is_file() const {
@@ -236,8 +235,29 @@ public:
 //		return (text.at(0) & (F_DYNAMIC_TARGET | Type::T_MASK_FILE_TRANSIENT)) == Type::T_TRANSIENT;
 	}
 
+	bool is_any_file() const {
+		size_t i= 0;
+		assert(text.size() > i); 
+		while (text.at(i) & F_TARGET_DYNAMIC) {
+			++i;
+			assert(text.size() > i); 
+		}
+		return (text.at(i) & F_TARGET_TRANSIENT) == 0; 
+	}
+
+	bool is_any_transient() const {
+		size_t i= 0;
+		assert(text.size() > i); 
+		while (text.at(i) & F_TARGET_DYNAMIC) {
+			++i;
+			assert(text.size() > i); 
+		}
+		return text.at(i) & F_TARGET_TRANSIENT; 
+	}
+
 	string format(Style style, bool &quotes) const;
 	string format_out() const;
+	string format_out_print_word() const;
 	string format_word() const;
 	string format_src() const;
 
@@ -277,12 +297,13 @@ public:
 	}
 	
 	unsigned at(size_t i) const 
-	/* For access any front byte */
+	/* For access to any front byte */
 	{
 		return (unsigned) (unsigned char) text.at(i); 
 	}
 
-	bool operator== (const Target2 target2) const {  return text == target2.text;  }
+	bool operator== (const Target2 &target2) const {  return text == target2.text;  }
+	bool operator!= (const Target2 &target2) const {  return text != target2.text;  }
 
 private:
 
@@ -780,7 +801,6 @@ string Target2::format_out() const
 {
 	Style style= 0;
 	if (! is_file()) {
-//	if (type != Type::FILE) {
 		style |= S_MARKERS;
 	}
 	bool quotes= is_file();
@@ -804,6 +824,38 @@ string Target2::format_out() const
 		++i;
 		ret += ']';
 	}
+	return ret; 
+}
+
+string Target2::format_out_print_word() const
+{
+	Style style= 0;
+	if (! is_file()) {
+		style |= S_MARKERS;
+	}
+	bool quotes= is_file() ? Color::quotes : false;
+	string ret; 
+	ret += Color::out_print_word; 
+	size_t i= 0;
+	while (text.at(i) & F_TARGET_DYNAMIC) {
+		ret += flags_format(text.at(i) & ~F_TARGET_DYNAMIC);
+		++i;
+		ret += '[';
+	}
+	assert(text.size() > i + 1);
+	ret += flags_format(text.at(i)); 
+	if (text.at(i) & F_TARGET_TRANSIENT) {
+		ret += '@'; 
+	}
+	if (quotes)  ret += '\'';
+	ret += name_format(text.substr(i+1), style, quotes); 
+	if (quotes)  ret += '\'';
+	i= 0;
+	while (text.at(i) & F_TARGET_DYNAMIC) {
+		++i;
+		ret += ']';
+	}
+	ret += Color::out_print_word_end;
 	return ret; 
 }
 

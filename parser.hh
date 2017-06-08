@@ -213,8 +213,9 @@ shared_ptr <Rule> Parser::parse_rule()
 			++iter; 
 		}
 
-		Type type= Type::FILE;
-		/* Set to TRANSIENT when '@' is found */ 
+		Flags flags_type= 0;
+		/* F_TARGET_TRANSIENT is set when '@' is found */ 
+//		Type type= Type::FILE;
 
 		Place place_target;
 		if (iter != tokens.end()) 
@@ -238,16 +239,20 @@ shared_ptr <Rule> Parser::parse_rule()
 			}
 
 			if (! place_output_new.empty()) {
-				Target target(Type::TRANSIENT, is <Name_Token> ()->raw()); 
+				Target2 target2(
+					       F_TARGET_TRANSIENT
+//					       Type::TRANSIENT
+					       , is <Name_Token> ()->raw()); 
 				place_at << 
 					fmt("transient target %s is invalid",
-					    target.format_word()); 
+					    target2.format_word()); 
 				place_output_new << fmt("after output redirection using %s", 
 							char_format_word('>'));
 				throw ERROR_LOGICAL;
 			}
 
-			type= Type::TRANSIENT;
+			flags_type= F_TARGET_TRANSIENT; 
+//			flags_type= Type::TRANSIENT;
 		}
 		
 		if (! is <Name_Token> ()) {
@@ -283,12 +288,12 @@ shared_ptr <Rule> Parser::parse_rule()
 					    prefix_format_word(target_name->raw(), ">")); 
 				assert(place_param_targets[redirect_index]
 				       ->place_name.get_n() == 0);
-				assert(place_param_targets[redirect_index]->type == Type::FILE); 
+				assert((place_param_targets[redirect_index]->flags & F_TARGET_TRANSIENT) == 0); 
 				place_output <<
 					fmt("shadowing previous output redirection %s",
 					    prefix_format_word
 					    (place_param_targets[redirect_index]
-					     ->unparametrized().get_nondynamic_name(), ">")); 
+					     ->unparametrized().get_name_nondynamic(), ">")); 
 				throw ERROR_LOGICAL;
 			}
 			place_output= place_output_new; 
@@ -318,7 +323,7 @@ shared_ptr <Rule> Parser::parse_rule()
 		}
 
 		shared_ptr <Place_Param_Target> place_param_target= make_shared <Place_Param_Target>
-			(type, *target_name, place_target);
+			(flags_type, *target_name, place_target);
 
 		place_param_targets.push_back(place_param_target); 
 	}
@@ -438,7 +443,7 @@ shared_ptr <Rule> Parser::parse_rule()
 					    
 				throw ERROR_LOGICAL; 
 			}
-			if (place_param_targets[0]->type == Type::TRANSIENT) {
+			if ((place_param_targets[0]->flags & F_TARGET_TRANSIENT)) {
 				place_equal << 
 					fmt("there must not be assigned content using %s",
 					    char_format_word('=')); 
@@ -557,8 +562,8 @@ shared_ptr <Rule> Parser::parse_rule()
 			}
 
 			/* Check that target is not transient */ 
-			if (place_param_targets[0]->type != Type::FILE) {
-				assert(place_param_targets[0]->type == Type::TRANSIENT); 
+			if (place_param_targets[0]->flags & F_TARGET_TRANSIENT) {
+				assert(place_param_targets[0]->flags & F_TARGET_TRANSIENT); 
 				place_equal << fmt("copy rule using %s cannot be used",
 						   char_format_word('='));
 				place_param_targets[0]->place 
@@ -601,7 +606,7 @@ shared_ptr <Rule> Parser::parse_rule()
 	/* Cases where output redirection is not possible */ 
 	if (! place_output.empty()) {
 		/* Already checked before */ 
-		assert(place_param_targets[redirect_index]->type == Type::FILE); 
+		assert((place_param_targets[redirect_index]->flags & F_TARGET_TRANSIENT) == 0); 
 
 		if (command == nullptr) {
 			place_output << 
@@ -1047,7 +1052,7 @@ shared_ptr <Dependency> Parser
 	 * on the dollar sign.  */
 	return make_shared <Single_Dependency> 
 		(flags, 
-		 Place_Param_Target(Type::FILE, *place_name, 
+		 Place_Param_Target(0, *place_name, 
 				    place_name->place), 
 		 variable_name);
 }
@@ -1151,7 +1156,7 @@ shared_ptr <Dependency> Parser::parse_redirect_dep
 
 	shared_ptr <Dependency> ret= make_shared <Single_Dependency>
 		(flags,
-		 Place_Param_Target(has_transient ? Type::TRANSIENT : Type::FILE,
+		 Place_Param_Target(has_transient ? F_TARGET_TRANSIENT : 0,
 				    *name_token,
 				    has_transient ? place_at : name_token->place)); 
 
@@ -1283,10 +1288,12 @@ shared_ptr <Dependency> Parser::get_target_dep(string text, const Place &place)
 		throw ERROR_LOGICAL; 
 	}
 
-	Type type= Type::FILE;
+	Flags flags_type= 0; 
+//	Type type= Type::FILE;
 	const char *begin_name= q;
 	if (begin_name != end_name && *q == '@') {
-		type= Type::TRANSIENT;
+		flags_type= F_TARGET_TRANSIENT; 
+//		type= Type::TRANSIENT;
 		++ begin_name;
 	}
 
@@ -1298,7 +1305,7 @@ shared_ptr <Dependency> Parser::get_target_dep(string text, const Place &place)
 
 	shared_ptr <Dependency> ret= make_shared <Single_Dependency> 
 		(0, Place_Param_Target
-		 (type, 
+		 (flags_type, 
 		  Place_Name
 		  (string(begin_name, end_name - begin_name), 
 		   place)));

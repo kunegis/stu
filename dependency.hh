@@ -121,11 +121,10 @@ public:
 	virtual string format_word() const= 0; 
 	virtual string format_out() const= 0; 
 
-	virtual Param_Target get_individual_target() const= 0;
-	/* Collapse the dependency into a single target, ignoring all
-	 * flags.  Only called if this is a normalized dependency and
-	 * this is possible.  */   
-	// TODO deprecate together with the old Target. 
+//	virtual Target2 get_individual_target() const= 0;
+//	/* Collapse the dependency into a single target, ignoring all
+//	 * flags.  Only called if this is a normalized dependency and
+//	 * this is possible.  */   
 
 	virtual Target2 get_target2() const= 0;
 	/* Get the corresponding Target2 object.  Only called for
@@ -304,9 +303,9 @@ public:
 			   flags & F_VARIABLE ? "]" : "");
 	}
 
-	Param_Target get_individual_target() const {
-		return place_param_target.get_param_target();
-	}
+//	Param_Target get_individual_target() const {
+//		return place_param_target.get_param_target();
+//	}
 
 	virtual bool is_normalized() const { return true;  }
 };
@@ -463,9 +462,9 @@ public:
 	virtual string format_word() const; 
 	virtual string format_out() const; 
 
-	virtual Param_Target get_individual_target() const {  assert(false);  }
-	/* Collapse the dependency into a single target, ignoring all
-	 * flags.  Only if this is a normalized dependency.  */   
+//	virtual Param_Target get_individual_target() const {  assert(false);  }
+//	/* Collapse the dependency into a single target, ignoring all
+//	 * flags.  Only if this is a normalized dependency.  */   
 
 	virtual bool is_normalized() const; 
 	/* A concatenated dependency is always normalized, regardless of
@@ -544,9 +543,9 @@ public:
 	virtual string format_word() const; 
 	virtual string format_out() const; 
 
-	virtual Param_Target get_individual_target() const {  assert(false);  }
-	/* Since a compound dependency is never normalized, this is not
-	 * called.  */ 
+//	virtual Param_Target get_individual_target() const {  assert(false);  }
+//	/* Since a compound dependency is never normalized, this is not
+//	 * called.  */ 
 
 	virtual bool is_normalized() const {  return false;  }
 	/* A compound dependency is never normalized */
@@ -685,7 +684,8 @@ shared_ptr <Dependency> Single_Dependency
 	if ((flags & F_VARIABLE) &&
 	    this_name.find('=') != string::npos) {
 
-		assert(ret_target->type == Type::FILE); 
+		assert((ret_target->flags & F_TARGET_TRANSIENT) == 0); 
+//		assert(ret_target->type == Type::FILE); 
 
 		place << 
 			fmt("dynamic variable %s must not be instantiated with parameter value that contains %s", 

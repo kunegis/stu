@@ -188,8 +188,10 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	assert(place_param_targets.size() != 0); 
 	assert(redirect_index>= -1);
 	assert(redirect_index < (ssize_t) place_param_targets.size());
-	if (redirect_index >= 0)
-		assert(place_param_targets[redirect_index]->type == Type::FILE); 
+	if (redirect_index >= 0) {
+		assert((place_param_targets[redirect_index]->flags & F_TARGET_TRANSIENT) == 0); 
+//		assert(place_param_targets[redirect_index]->type == Type::FILE); 
+	}
 
 	/* Check that all dependencies only include
 	 * parameters from the target */ 
@@ -217,7 +219,10 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 {
 	auto dependency= 
 		make_shared <Single_Dependency> 
-		(0, Place_Param_Target(Type::FILE, *place_name_source_));
+		(0, Place_Param_Target(
+				       0
+//				       Type::FILE
+				       , *place_name_source_));
 
 	if (! place_persistent.empty()) {
 		dependency->flags |= F_PERSISTENT;
@@ -413,7 +418,7 @@ shared_ptr <Rule> Rule_Set::get(Target2 target2,
 		 * rule */
 		bool found= false;
 		for (auto place_param_target:  rule->place_param_targets) {
-			if (place_param_target->unparametrized() == target)
+			if (place_param_target->unparametrized() == target2)
 				found= true;
 		}
 		assert(found); 
@@ -443,12 +448,12 @@ shared_ptr <Rule> Rule_Set::get(Target2 target2,
 			vector <unsigned> anchoring;
 
 			/* The parametrized rule is of another type */ 
-			if (target2.get_front_byte() != place_param_target->type.get_value())
+			if (target2.get_front_byte() != (place_param_target->flags & F_TARGET_TRANSIENT))
 				continue;
 
 			/* The parametrized rule does not match */ 
 			if (! place_param_target->place_name
-			    .match(target2.get_nondynamic_name(), mapping, anchoring))
+			    .match(target2.get_name_nondynamic(), mapping, anchoring))
 				continue; 
 
 			assert(anchoring.size() == 

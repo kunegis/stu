@@ -18,7 +18,7 @@ These are the relevant coding conventions we use.
 * Names of targets in the Makefile follow the GNU Coding Standards. 
 * Use SemVer.org for version number semantics.  We consider only changes
   on the Stu file specification and options marked as stable in
-  'OPTIONS'.  See the file 'NEWS' for details.   
+  'OPTIONS'.  See the file 'NEWS' for details.  
 
 == Style == 
 
@@ -44,11 +44,13 @@ This is my preferred style.  --Jérôme Kunegis
   commented code with uncommented code.  This is possible because we use
   tabs for indentation. 
 * In comments, names of variables are in all uppercase. 
-* K&R brace style.  
-* No space before the assignment operator and around parentheses.
-  Otherwise, spaces around most operators. 
+* K&R brace placement. 
+* No space before the assignment operator and around parentheses.  Also,
+  no space between 'operator' and the operator symbol.  Otherwise,
+  spaces around most operators.  
 * Pointer and reference characters (* and &) attach to the variable name
-  in declarations.  This is in defiance of common C++ wisdom. 
+  in declarations.  This is compatible to C usage, and in defiance of
+  common C++ wisdom.  
 
 === Code ===
 
@@ -121,7 +123,7 @@ of the expected 'old_filename'.  You can think of this convention as
 being influenced by the French language, which by default places
 adjectives after the noun, or as being compatible with names such as
 'filename_1', etc.  This convention is not used for type names, e.g., we
-have Dynamic_Dependency.  
+have Dynamic_Dependency.
 
 == Shell scripts ==
 

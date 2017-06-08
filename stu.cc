@@ -219,7 +219,7 @@ int main(int argc, char **argv, char **envp)
 				dependencies.push_back
 					(make_shared <Single_Dependency>
 					 (0, Place_Param_Target
-					  (Type::FILE, Place_Name(optarg, place))));
+					  (0, Place_Name(optarg, place))));
 				break;
 			}
 
@@ -319,7 +319,7 @@ int main(int argc, char **argv, char **envp)
 					  make_shared <Single_Dependency>
 					  (1 << flag_get_index(c), 
 					   Place_Param_Target
-					   (Type::FILE, Place_Name(optarg, place)))));
+					   (0, Place_Name(optarg, place)))));
 				break;
 			}
 
@@ -336,7 +336,7 @@ int main(int argc, char **argv, char **envp)
 					 (c == 'p' ?
 					  F_PERSISTENT : F_OPTIONAL, 
 					  Place_Param_Target
-					  (Type::FILE, Place_Name(optarg, place))));
+					  (0, Place_Name(optarg, place))));
 				break; 
 			}
 
@@ -390,7 +390,7 @@ int main(int argc, char **argv, char **envp)
 				dependencies.push_back
 					(make_shared <Single_Dependency>
 					 (0, Place_Param_Target
-					  (Type::FILE, Place_Name(argv[i], place))));
+					  (0, Place_Name(argv[i], place))));
 			}
 		}
 

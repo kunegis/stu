@@ -296,11 +296,6 @@ protected:
 	 * exist.  Return FALSE when children should be started.  Return
 	 * FALSE in execution types that are not affected.  */
 
-#ifndef NDEBUG
-	virtual void check_execution(shared_ptr <Dependency> dependency_link) const= 0; 
-	/* Perform consistency assertions */ 
-#endif
-
 	virtual bool want_delete() const= 0; 
 
 	static Timestamp timestamp_last; 
@@ -478,10 +473,6 @@ protected:
 				       shared_ptr <Dependency> dependency_link
 //				       const Link &
 				       );
-	virtual void check_execution(
-				     shared_ptr <Dependency> dependency_link
-//				     const Link &link
-				     ) const;
 	virtual bool want_delete() const {  return false;  }
 	virtual int get_depth() const {  return 0;  }
 
@@ -631,10 +622,6 @@ protected:
 		(void) dependency_link; 
 		return false;  
 	}
-	virtual void check_execution(
-				     shared_ptr <Dependency>
-//				     const Link &
-				     ) const { }
 
 private:
 
@@ -683,10 +670,6 @@ protected:
 				       shared_ptr <Dependency>
 //				       const Link &
 				       ) {  return false;  }
-	virtual void check_execution(
-				     shared_ptr <Dependency>
-//				     const Link &
-				     ) const {   }
 	virtual bool want_delete() const {  return true;  }
 
 private:
@@ -746,11 +729,6 @@ protected:
 				       shared_ptr <Dependency> 
 //				       const Link &
 				       ) {  return false;  }
-
-#ifndef NDEBUG
-	virtual void check_execution(shared_ptr <Dependency> ) const {  }
-	/* Perform consistency assertions */ 
-#endif
 
 private:
 
@@ -853,11 +831,6 @@ public:
 protected:
 
 	virtual bool want_delete() const;
-
-#ifndef NDEBUG
-	virtual void check_execution(shared_ptr <Dependency> ) const {  } 
-	/* Perform consistency assertions */ 
-#endif
 
 private: 
 
@@ -1506,10 +1479,6 @@ Execution::Proceed Execution::execute_base(
 	Debug debug(this);
 
 	assert(jobs >= 0); 
-
-#ifndef NDEBUG
-	check_execution(dependency_link); 
-#endif
 
 	Debug::print(this, fmt("execute(%s)", dependency_link->format_out())); 
 
@@ -3027,16 +2996,16 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	print_command();
 
 	for (const Target2 &target2:  targets2) {
-		if (target.type != Type::TRANSIENT)  
+		if (! target2.is_transient())  
 			continue; 
 		Timestamp timestamp_now= Timestamp::now(); 
 		assert(timestamp_now.defined()); 
-		assert(transients.count(target.name) == 0); 
-		transients[target.name]= timestamp_now; 
+		assert(transients.count(target2.get_name_nondynamic()) == 0); 
+		transients[target2.get_name_nondynamic()]= timestamp_now; 
 	}
 
 	if (rule->redirect_index >= 0)
-		assert(rule->place_param_targets[rule->redirect_index]->type == Type::FILE); 
+		assert(! (rule->place_param_targets[rule->redirect_index]->flags & F_TARGET_TRANSIENT)); 
 
 	assert(jobs >= 1); 
 
@@ -3055,7 +3024,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 		if (rule->is_copy) {
 
 			assert(rule->place_param_targets.size() == 1); 
-			assert(rule->place_param_targets.front()->type == Type::FILE); 
+			assert(! (rule->place_param_targets.front()->flags & F_TARGET_TRANSIENT)); 
 
 			string source= rule->filename.unparametrized();
 			
@@ -3064,7 +3033,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 			 * exists in the cache */
 			if (rule->dependencies.at(0)->get_flags() & F_OPTIONAL) {
 				Execution *execution_source_base=
-					executions_by_target.at(Target(Type::FILE, source));
+					executions_by_target2.at(Target2(0, source));
 				assert(execution_source_base); 
 				File_Execution *execution_source
 					= dynamic_cast <File_Execution *> (execution_source_base); 
@@ -3078,9 +3047,9 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 						       "must exist",
 						       name_format_word(source));
 					print_traces(fmt("when target file %s does not exist",
-							 targets.at(0).format_word())); 
+							 targets2.at(0).format_word())); 
 					raise(ERROR_BUILD);
-					flags_finished |= ~link.flags; 
+					flags_finished |= ~dependency_link->flags; 
 //					done_add_neg(link.avoid); 
 					assert(proceed == P_CONTINUE); 
 					return proceed;
@@ -3108,9 +3077,9 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 		if (pid < 0) {
 			/* Starting the job failed */ 
 			print_traces(fmt("error executing command for %s", 
-					 targets.front().format_word())); 
+					 targets2.front().format_word())); 
 			raise(ERROR_BUILD);
-			flags_finished |= ~link.flags; 
+			flags_finished |= ~dependency_link->flags; 
 //			done_add_neg(link.avoid); 
 			assert(proceed == P_CONTINUE); 
 			return proceed;
@@ -3135,7 +3104,7 @@ void File_Execution::print_as_job() const
 {
 	pid_t pid= job.get_pid();
 
-	string text_target= targets.front().format_src(); 
+	string text_target= targets2.front().format_src(); 
 
 	printf("%7ld %s\n", (long) pid, text_target.c_str());
 }
@@ -3187,36 +3156,36 @@ void File_Execution::propagate_variable(shared_ptr <Dependency> dependency,
 	if (exists <= 0)
 		return;
 
-	Target target= dependency->get_individual_target().unparametrized(); 
-	assert(target.type == Type::FILE || target.type == Type::TRANSIENT);
+	Target2 target2= dependency->get_target2(); 
+	assert(! target2.is_dynamic()); 
+//	assert(target.type == Type::FILE || target.type == Type::TRANSIENT);
 
 	size_t filesize;
 	struct stat buf;
 	string dependency_variable_name;
 	string content; 
 	
-	int fd= open(target.name.c_str(), O_RDONLY);
+	int fd= open(target2.get_name_c_str_nondynamic(), O_RDONLY);
 	if (fd < 0) {
 		if (errno != ENOENT) {
-			dependency->get_place() <<
-				target.format_word();
+			dependency->get_place() << target2.format_word();
 		}
 		goto error;
 	}
 	if (0 > fstat(fd, &buf)) {
-		dependency->get_place() << target.format_word(); 
+		dependency->get_place() << target2.format_word(); 
 		goto error_fd;
 	}
 
 	filesize= buf.st_size;
 	content.resize(filesize);
 	if ((ssize_t) filesize != read(fd, (void *) content.c_str(), filesize)) {
-		dependency->get_place() << target.format_word(); 
+		dependency->get_place() << target2.format_word(); 
 		goto error_fd;
 	}
 
 	if (0 > close(fd)) { 
-		dependency->get_place() << target.format_word(); 
+		dependency->get_place() << target2.format_word(); 
 		goto error;
 	}
 
@@ -3233,7 +3202,7 @@ void File_Execution::propagate_variable(shared_ptr <Dependency> dependency,
 	{
 	string variable_name= 
 		dependency_variable_name == "" ?
-		target.name : dependency_variable_name;
+		target2.get_name_nondynamic() : dependency_variable_name;
 	
 	dynamic_cast <File_Execution *> (parent)
 		->mapping_variable[variable_name]= content;
@@ -3244,17 +3213,17 @@ void File_Execution::propagate_variable(shared_ptr <Dependency> dependency,
  error_fd:
 	close(fd); 
  error:
-	Target target_variable= 
+	Target2 target2_variable= 
 		dynamic_pointer_cast <Single_Dependency> (dependency)->place_param_target
 		.unparametrized(); 
 
 	if (rule == nullptr) {
 		dependency->get_place() <<
 			fmt("file %s was up to date but cannot be found now", 
-			    target_variable.format_word());
+			    target2_variable.format_word());
 	} else {
 		for (auto const &place_param_target: rule->place_param_targets) {
-			if (place_param_target->unparametrized() == target_variable) {
+			if (place_param_target->unparametrized() == target2_variable) {
 				place_param_target->place <<
 					fmt("generated file %s was built but cannot be found now", 
 					    place_param_target->format_word());
@@ -3275,35 +3244,17 @@ void File_Execution::propagate_variable(shared_ptr <Dependency> dependency,
 
 bool File_Execution::is_dynamic() const
 {
-	assert(targets.size() != 0); 
-	return targets.front().type.is_dynamic(); 
+	assert(targets2.size() != 0); 
+	return targets2.front().is_dynamic(); 
 }
 
-void File_Execution::check_execution(const Link &link) const
+bool File_Execution::optional_finished(shared_ptr <Dependency> dependency_link)
 {
-	for (const Target &target:  targets) {
-		assert(target.type.get_depth() == done.get_depth());
-	}
+	if ((dependency_link->flags & F_OPTIONAL) 
+	    && dependency_link->to <Single_Dependency> ()
+	    && ! (dependency_link->to <Single_Dependency> ()->place_param_target.flags & F_TARGET_TRANSIENT)) {
 
-//	Stack tmp_stack= link.avoid; 
-//	(void) tmp_stack; 
-	assert(done.get_depth() == link.avoid.get_depth()); 
-
-	if (targets.size() && targets.front().type == 0) {
-		assert(link.avoid.get_lowest() == (link.flags & ((1 << C_TRANSITIVE) - 1))); 
-	}
-//	done.check();
-}
-
-bool File_Execution::optional_finished(const Link &link)
-{
-	if ((link.flags & F_OPTIONAL) 
-	    && link.dependency != nullptr
-	    && dynamic_pointer_cast <Single_Dependency> (link.dependency)
-	    && dynamic_pointer_cast <Single_Dependency> (link.dependency)
-	    ->place_param_target.type == Type::FILE) {
-
-		const char *name= dynamic_pointer_cast <Single_Dependency> (link.dependency)
+		const char *name= dependency_link->to <Single_Dependency> ()
 			->place_param_target.place_name.unparametrized().c_str();
 
 		struct stat buf;
@@ -3311,15 +3262,15 @@ bool File_Execution::optional_finished(const Link &link)
 		if (ret_stat < 0) {
 			exists= -1;
 			if (errno != ENOENT) {
-				dynamic_pointer_cast <Single_Dependency> (link.dependency)
+				dependency_link->to <Single_Dependency> ()
 					->place_param_target.place <<
 					system_format(name_format_word(name)); 
 				raise(ERROR_BUILD);
-				flags_finished |= ~link.flags; 
+				flags_finished |= ~dependency_link->flags; 
 //				done_add_neg(link.avoid); 
 				return true;
 			}
-			flags_finished |= ~link.flags; 
+			flags_finished |= ~dependency_link->flags; 
 //			done_add_highest_neg(link.avoid.get_highest()); 
 			return true;
 		} else {
@@ -3343,6 +3294,8 @@ bool Root_Execution::finished() const
 
 bool Root_Execution::finished(Flags flags) const
 {
+	(void) flags; 
+
 //	assert(done.get_depth() == 0);
 
 	return is_finished; 
@@ -3359,14 +3312,11 @@ Root_Execution::Root_Execution(const vector <shared_ptr <Dependency> > &dependen
 	}
 }
 
-Execution::Proceed Root_Execution::execute(Execution *, const Link &link)
+Execution::Proceed Root_Execution::execute(Execution *, shared_ptr <Dependency> dependency_link)
 {
-//	assert(bits & B_PENDING); 
-//	bits &= ~B_PENDING; 
-
 	bool finished_here= false;
 
-	Proceed proceed= Execution::execute_base(link, finished_here); 
+	Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
 	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
 		return proceed;
 	}
@@ -3374,15 +3324,14 @@ Execution::Proceed Root_Execution::execute(Execution *, const Link &link)
 	if (finished_here) {
 		is_finished= true;
 	}
-//	done.add_neg(link.avoid); 
 
 	return proceed; 
 }
 
 Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependency_,
-					       Link &link,
+					       shared_ptr <Dependency> dependency_link,
 					       Execution *parent)
-	:  Execution(link, parent),
+	:  Execution(dependency_link, parent),
 	   dependency(dependency_),
 	   stage(0)
 {
@@ -3407,11 +3356,8 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <Dependency> dependenc
 }
 
 Execution::Proceed Concatenated_Execution::execute(Execution *, 
-						   const Link &link)
+						   shared_ptr <Dependency> dependency_link)
 {
-//	assert(bits & B_PENDING); 
-//	bits &= ~B_PENDING; 
-
 	assert(stage >= 0 && stage <= 3); 
 
 	if (stage == 0) {
@@ -3456,8 +3402,7 @@ Execution::Proceed Concatenated_Execution::execute(Execution *,
 	if (stage == 1) {
 		/* First phase:  we build all individual targets, if there are some */ 
 		bool finished_here= false;
-//		Stack done_here; 
-		Proceed proceed= Execution::execute_base(link, finished_here); 
+		Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
 		if (proceed & P_BIT_WAIT) {
 			return proceed;
 		}
@@ -3491,8 +3436,7 @@ Execution::Proceed Concatenated_Execution::execute(Execution *,
 		/* Second phase:  normal child executions */
 		assert(! dependency); 
 		bool finished_here= false;
-//		Stack done_here;
-		Proceed proceed= Execution::execute_base(link, finished_here); 
+		Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
 		if (proceed & P_BIT_WAIT) {
 			return proceed;
 		}
@@ -3556,7 +3500,7 @@ concatenate_dependency_one(shared_ptr <Single_Dependency> dependency_1,
 	assert(dependency_2->get_flags() == 0);
 	// TODO test:  replace by a proper error 
 
-	assert(dependency_2->place_param_target.type == Type::FILE); 
+	assert(! (dependency_2->place_param_target.flags & F_TARGET_TRANSIENT)); 
 	// TODO proper test.  
 
 	Place_Param_Target target= dependency_1->place_param_target; 
@@ -3627,16 +3571,15 @@ void Concatenated_Execution::assemble_parts()
 	}
 }
 
-Dynamic_Execution::Dynamic_Execution(Link &link,
+Dynamic_Execution::Dynamic_Execution(shared_ptr <Dependency> dependency_link,
 				     Execution *parent)
-	:  Execution(link, parent),
-	   dependency(dynamic_pointer_cast <Dynamic_Dependency> (link.dependency)),
+	:  Execution(dependency_link, parent),
+	   dependency(dependency_link->to <Dynamic_Dependency> ()),
 	   is_finished(false)
-//	   done(dynamic_pointer_cast <Dynamic_Dependency> (link.dependency)->get_depth(), 0)
 {
 	assert(parent != nullptr); 
 	assert(parents.size() == 1); 
-	assert(dynamic_pointer_cast <Dynamic_Dependency> (link.dependency)); 
+	assert(dependency_link->to <Dynamic_Dependency> ()); 
 	assert(dependency); 
 	
 	/* Set the rule here, so cycles in the dependency graph can be
@@ -3648,21 +3591,21 @@ Dynamic_Execution::Dynamic_Execution(Link &link,
 	if (dynamic_pointer_cast <Single_Dependency> (inner_dependency)) {
 		shared_ptr <Single_Dependency> inner_single_dependency
 			= dynamic_pointer_cast <Single_Dependency> (inner_dependency); 
-		Target target_base(inner_single_dependency->place_param_target.type,
-				   inner_single_dependency->place_param_target.place_name.unparametrized());
-		Target target= dependency->get_individual_target().unparametrized(); 
+		Target2 target2_base(inner_single_dependency->place_param_target.flags,
+				     inner_single_dependency->place_param_target.place_name.unparametrized());
+		Target2 target2= dependency->get_target2(); 
 		try {
 			map <string, string> mapping_parameter; 
 			shared_ptr <Rule> rule= 
-				rule_set.get(target_base, param_rule, mapping_parameter, 
-					     link.dependency->get_place()); 
+				rule_set.get(target2_base, param_rule, mapping_parameter, 
+					     dependency_link->get_place()); 
 		} catch (int e) {
 			print_traces(); 
 			raise(e); 
 			return; 
 		}
 
-		executions_by_target[target]= this; 
+		executions_by_target2[target2]= this; 
 	}
 
 	/* Push left branch dependency */ 
@@ -3672,11 +3615,12 @@ Dynamic_Execution::Dynamic_Execution(Link &link,
 	push_dependency(dependency_left); 
 }
 
-Execution::Proceed Dynamic_Execution::execute(Execution *, const Link &link)
+Execution::Proceed Dynamic_Execution::execute(Execution *, 
+					      shared_ptr <Dependency> dependency_link)
 {
 	bool finished_here= false;
 
-	Proceed proceed= Execution::execute_base(link, finished_here); 
+	Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
 
 	if (finished_here) {
 		is_finished= true; 
@@ -3707,19 +3651,8 @@ bool Dynamic_Execution::finished() const
 
 bool Dynamic_Execution::finished(Flags flags) const
 {
+	(void) flags; 
 	return is_finished; 
-
-//	assert(done.get_depth() == dependency->get_depth()); 
-
-//	assert(avoid.get_depth() == done.get_depth());
-
-//	Flags to_do_aggregate= 0;
-	
-//	for (unsigned j= 0;  j <= done.get_depth();  ++j) {
-//		to_do_aggregate |= ~done.get(j) & ~avoid.get(j); 
-//	}
-
-//	return (to_do_aggregate & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
 bool Dynamic_Execution::want_delete() const

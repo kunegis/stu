@@ -108,7 +108,12 @@ public:
 
 	template <typename T>
 	shared_ptr <T> to() {
-		return dynamic_pointer_cast <T> (this); 
+		return dynamic_pointer_cast <T> (shared_ptr <Dependency> (this)); 
+	}
+
+	template <typename T>
+	shared_ptr <const T> to() const {
+		return dynamic_pointer_cast <const T> (shared_ptr <const Dependency> (this)); 
 	}
 
 	virtual shared_ptr <Dependency> instantiate(const map <string, string> &mapping) const= 0;
@@ -128,7 +133,7 @@ public:
 
 	virtual Target2 get_target2() const= 0;
 	/* Get the corresponding Target2 object.  Only called for
-	 * non-compound dependencies.  */
+	 * non-compound and non-parametrized dependencies.  */
 
 	virtual bool is_normalized() const= 0;
 	/* Whether the dependency is normalized, according to the
@@ -398,6 +403,8 @@ public:
 
 //	virtual shared_ptr <Dependency> clone_shallow() const; 
 
+	virtual Target2 get_target2() const;
+
 	unsigned get_depth() const 
 		/* The depth of the dependency, i.e., how many dynamic
 		 * dependencies are stacked in a row.  */
@@ -550,6 +557,8 @@ public:
 	virtual bool is_normalized() const {  return false;  }
 	/* A compound dependency is never normalized */
 
+	virtual Target2 get_target2() const {  assert(false);  }
+
 //	virtual shared_ptr <Dependency> clone_shallow() const;
 
 private:
@@ -669,6 +678,26 @@ shared_ptr <Dependency> Dependency::strip_dynamic(shared_ptr <Dependency> d)
 // 	assert(false); 
 // 	return nullptr; 
 // }
+
+Target2 Dynamic_Dependency::get_target2() const
+{
+	string text;
+
+	shared_ptr <const Dependency> d(this); 
+	
+	do {
+		shared_ptr <const Dynamic_Dependency> dyn= d->to <const Dynamic_Dependency> (); 
+		Flags f= F_TARGET_DYNAMIC; 
+		f |= dyn->flags; 
+		text += (char) f; 
+		d= dyn->dependency; 
+	} while (d-> to <const Dynamic_Dependency> ());
+	assert(d->to <const Single_Dependency> ()); 
+	shared_ptr <const Single_Dependency> sin= d->to <const Single_Dependency> (); 
+	text += sin->place_param_target.unparametrized().get_text();
+
+	return Target2(text); 
+}
 
 shared_ptr <Dependency> Single_Dependency
 ::instantiate(const map <string, string> &mapping) const

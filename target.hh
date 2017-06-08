@@ -205,6 +205,11 @@ namespace std {
 class Target2
 {
 public:
+	
+	Target2(string text_)
+		/* TEXT_ is the full text field of this Target2 */
+		:  text(text_)
+	{  }
 
 	Target2(Flags flags, string name) 
 	/* Non-dynamic */
@@ -697,13 +702,9 @@ public:
 	 * variable additionally contains a place for the name itself,
 	 * as well as for individual parameters.  */ 
 
-	Place_Param_Target(
-			   Flags flags_,
-			   //Type type_,
+	Place_Param_Target(Flags flags_,
 			   const Place_Name &place_name_)
-		:  
-		flags(flags_),
-		//type(type_),
+		:  flags(flags_),
 		   place_name(place_name_),
 		   place(place_name_.place)
 	{ 

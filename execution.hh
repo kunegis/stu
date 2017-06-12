@@ -606,9 +606,7 @@ public:
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
 	virtual Proceed execute(Execution *parent, 
-				shared_ptr <Dependency> dependency_link
-//				const Link &link
-				);
+				shared_ptr <Dependency> dependency_link);
 	virtual bool finished() const;
 	virtual bool finished(
 			      Flags flags
@@ -639,7 +637,7 @@ private:
 
 	Timestamp timestamp_old;
 
-	virtual ~Transient_Execution();
+	~Transient_Execution();
 
 	virtual const Place &get_place() const {
 //		if (param_rule == nullptr)
@@ -648,7 +646,6 @@ private:
 		return param_rule->place; 
 	}
 };
-
 class Root_Execution
 	:  public Execution
 {
@@ -3284,12 +3281,6 @@ bool File_Execution::optional_finished(shared_ptr <Dependency> dependency_link)
 	return false; 
 }
 
-Transient_Execution::~Transient_Execution()
-{
-	/* Objects of this type are never deleted */ 
-	assert(false);
-}
-
 bool Root_Execution::finished() const
 {
 //	assert(done.get_depth() == 0);
@@ -3671,6 +3662,25 @@ bool Dynamic_Execution::want_delete() const
 string Dynamic_Execution::format_out() const
 {
 	return dependency->format_out();
+}
+
+Transient_Execution::~Transient_Execution()
+/* Objects of this type are never deleted */ 
+{
+	assert(false);
+}
+
+Execution::Proceed Transient_Execution::execute(Execution *parent, 
+						shared_ptr <Dependency> dependency_link)
+{
+}
+
+bool Transient_Execution::finished() const
+{
+}
+
+bool Transient_Execuion::finished(Flags flags) const
+{
 }
 
 void Debug::print(Execution *e, string text) 

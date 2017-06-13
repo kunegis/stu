@@ -25,7 +25,7 @@ public:
 	 * The place in each target is used when referring to a target
 	 * specifically.  */ 
 
-	vector <shared_ptr <Dependency> > dependencies;
+	vector <shared_ptr <const Dependency> > dependencies;
 	/* The dependencies in order of declaration.  Dependencies are
 	 * included multiple times if they appear multiple times in the
 	 * source.  Any parameter occuring any dependency also
@@ -60,7 +60,7 @@ public:
 	 * followed by a filename. */ 
 
 	Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets,
-	     vector <shared_ptr <Dependency> > &&dependencies_,
+	     vector <shared_ptr <const Dependency> > &&dependencies_,
 	     const Place &place_,
 	     const shared_ptr <const Command> &command_,
 	     Name &&filename_,
@@ -70,7 +70,7 @@ public:
 	/* Direct constructor that specifies everything */
 
 	Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
-	     const vector <shared_ptr <Dependency> > &dependencies_,
+	     const vector <shared_ptr <const Dependency> > &dependencies_,
 	     shared_ptr <const Command> command_,
 	     bool is_hardcode_,
 	     int redirect_index_,
@@ -92,7 +92,7 @@ public:
 	string format_out() const; 
 	/* Format the rule, as for the -P option */ 
 
-	void check_unparametrized(shared_ptr <Dependency> dependency,
+	void check_unparametrized(shared_ptr <const Dependency> dependency,
 				  const set <string> &parameters);
 	/* Print error message and throw a logical error when the
 	 * dependency contains parameters */
@@ -153,7 +153,7 @@ public:
 };
 
 Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
-	   vector <shared_ptr <Dependency> > &&dependencies_,
+	   vector <shared_ptr <const Dependency> > &&dependencies_,
 	   const Place &place_,
 	   const shared_ptr <const Command> &command_,
 	   Name &&filename_,
@@ -171,7 +171,7 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 {  }
 
 Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
-	   const vector <shared_ptr <Dependency> > &dependencies_,
+	   const vector <shared_ptr <const Dependency> > &dependencies_,
 	   shared_ptr <const Command> command_,
 	   bool is_hardcode_,
 	   int redirect_index_,
@@ -250,7 +250,7 @@ Rule::instantiate(shared_ptr <Rule> rule,
 	for (unsigned i= 0;  i < rule->place_param_targets.size();  ++i) 
 		place_param_targets[i]= rule->place_param_targets[i]->instantiate(mapping);
 
-	vector <shared_ptr <Dependency> > dependencies;
+	vector <shared_ptr <const Dependency> > dependencies;
 	for (auto &dependency:  rule->dependencies) {
 		dependencies.push_back(dependency->instantiate(mapping));
 	}
@@ -294,30 +294,30 @@ string Rule::format_out() const
 	return ret; 
 }
 
-void Rule::check_unparametrized(shared_ptr <Dependency> dependency,
+void Rule::check_unparametrized(shared_ptr <const Dependency> dependency,
 				const set <string> &parameters)
 {
 	assert(dependency != nullptr); 
 
-	if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
-		shared_ptr <Dynamic_Dependency> dynamic_dependency=
-			dynamic_pointer_cast <Dynamic_Dependency> (dependency); 
+	if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
+		shared_ptr <const Dynamic_Dependency> dynamic_dependency=
+			dynamic_pointer_cast <const Dynamic_Dependency> (dependency); 
 		check_unparametrized(dynamic_dependency->dependency, parameters); 
-	} else if (dynamic_pointer_cast <Compound_Dependency> (dependency)) {
-		shared_ptr <Compound_Dependency> compound_dependency=
-			dynamic_pointer_cast <Compound_Dependency> (dependency);
+	} else if (dynamic_pointer_cast <const Compound_Dependency> (dependency)) {
+		shared_ptr <const Compound_Dependency> compound_dependency=
+			dynamic_pointer_cast <const Compound_Dependency> (dependency);
 		for (const auto &d:  compound_dependency->get_dependencies()) {
 			check_unparametrized(d, parameters); 
 		}
-	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
-		shared_ptr <Concatenated_Dependency> concatenated_dependency=
-			dynamic_pointer_cast <Concatenated_Dependency> (dependency);
+	} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency)) {
+		shared_ptr <const Concatenated_Dependency> concatenated_dependency=
+			dynamic_pointer_cast <const Concatenated_Dependency> (dependency);
 		for (const auto &d:  concatenated_dependency->get_dependencies()) {
 			check_unparametrized(d, parameters); 
 		}
-	} else if (dynamic_pointer_cast <Single_Dependency> (dependency)) {
-		shared_ptr <Single_Dependency> single_dependency=
-			dynamic_pointer_cast <Single_Dependency> (dependency);
+	} else if (dynamic_pointer_cast <const Single_Dependency> (dependency)) {
+		shared_ptr <const Single_Dependency> single_dependency=
+			dynamic_pointer_cast <const Single_Dependency> (dependency);
 		for (unsigned jj= 0;  
 		     jj < single_dependency->place_param_target.place_name.get_n();
 		     ++jj) {

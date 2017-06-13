@@ -324,6 +324,8 @@ private:
 	 * dependency. 
 	 *
 	 * Any of the front bytes may contain additional flag bits. 
+	 *
+	 * Empty to denote a "null" value, in which case most functions should not be used. 
 	 */
 };
 

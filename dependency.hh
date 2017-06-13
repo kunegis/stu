@@ -43,8 +43,7 @@ class Dependency
  * so they are considered final, i.e., immutable, except if we just
  * created the object in which case we know that it is not shared.  
  */ 
-// TODO make all accesses through shared_ptr use shared_ptr <const
-// Dependency> .
+// TODO replace all instances of dynamic_pointer_cast by ->to(). 
 {
 public:
 
@@ -80,7 +79,7 @@ public:
 		return flags; 
  	}
 
-	bool has_flags(Flags flags_)
+	bool has_flags(Flags flags_) const
 	{
 		return (flags & flags_) == flags_; 
 	}
@@ -106,17 +105,7 @@ public:
 	 * corresponding places.  If a place is already given in THIS,
 	 * only copy a place over if OVERWRITE_PLACES is set.  */
 
-	template <typename T>
-	shared_ptr <T> to() {
-		return dynamic_pointer_cast <T> (shared_ptr <Dependency> (this)); 
-	}
-
-	template <typename T>
-	shared_ptr <const T> to() const {
-		return dynamic_pointer_cast <const T> (shared_ptr <const Dependency> (this)); 
-	}
-
-	virtual shared_ptr <Dependency> instantiate(const map <string, string> &mapping) const= 0;
+	virtual shared_ptr <const Dependency> instantiate(const map <string, string> &mapping) const= 0;
 	virtual bool is_unparametrized() const= 0; 
 
 	virtual const Place &get_place() const= 0;
@@ -126,11 +115,6 @@ public:
 	virtual string format_word() const= 0; 
 	virtual string format_out() const= 0; 
 
-//	virtual Target2 get_individual_target() const= 0;
-//	/* Collapse the dependency into a single target, ignoring all
-//	 * flags.  Only called if this is a normalized dependency and
-//	 * this is possible.  */   
-
 	virtual Target2 get_target2() const= 0;
 	/* Get the corresponding Target2 object.  Only called for
 	 * non-compound and non-parametrized dependencies.  */
@@ -139,14 +123,13 @@ public:
 	/* Whether the dependency is normalized, according to the
 	 * definition given above.  */
 
-	static void make_normalized(vector <shared_ptr <Dependency> > &dependencies, 
-				    shared_ptr <Dependency> dependency);
+	static void make_normalized(vector <shared_ptr <const Dependency> > &dependencies, 
+				    shared_ptr <const Dependency> dependency);
 	/* Split the given DEPENDENCY into multiple DEPENDENCIES that do
-	 * not contain compound dependencies (recursively). DEPENDENCY
-	 * will be changed.  The result is written into DEPENDENCIES,
+	 * not contain compound dependencies (recursively). The result is written into DEPENDENCIES,
 	 * which does not have to be empty.  */
 
-	static shared_ptr <Dependency> make_normalized_compound(shared_ptr <Dependency> dependency);
+	static shared_ptr <const Dependency> make_normalized_compound(shared_ptr <const Dependency> dependency);
 	/* Return either a normalized version of this dependency, or a
 	 * Compound_Dependency containing normalized dependencies */ 
 
@@ -157,7 +140,7 @@ public:
 	// that if the flags don't have to be changed, we don't clone
 	// it). 
 
-	static shared_ptr <Dependency> strip_dynamic(shared_ptr <Dependency> d);
+	static shared_ptr <const Dependency> strip_dynamic(shared_ptr <const Dependency> d);
 	/* Strip dynamic dependencies from the given dependency.
 	 * Perform recursively:  If D is a dynamic dependency, return
 	 * its contained dependency, otherwise return D.  Thus, never
@@ -217,7 +200,6 @@ public:
 		   place_param_target(place_param_target_),
 		   place(place_)
 	{ 
-//		assert((flags_ & F_DYNAMIC) == 0); 
 		check(); 
 	}
 
@@ -231,7 +213,6 @@ public:
 		   place(place_),
 		   name(name_)
 	{ 
-//		assert((flags_ & F_DYNAMIC) == 0); 
 		check(); 
 	}
 
@@ -246,17 +227,15 @@ public:
 		return place; 
 	}
 
-	shared_ptr <Dependency> instantiate(const map <string, string> &mapping) const;
+	shared_ptr <const Dependency> instantiate(const map <string, string> &mapping) const;
 
 	bool is_unparametrized() const {
 		return place_param_target.place_name.get_n() == 0; 
 	}
 
 	void check() const {
-//		assert(! place_param_target.type.is_dynamic());
 		if (name != "") {
 			assert((place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
-//			assert(place_param_target.type == Type::FILE);
 			assert(flags & F_VARIABLE); 
 		}
 	}
@@ -308,10 +287,6 @@ public:
 			   flags & F_VARIABLE ? "]" : "");
 	}
 
-//	Param_Target get_individual_target() const {
-//		return place_param_target.get_param_target();
-//	}
-
 	virtual bool is_normalized() const { return true;  }
 
 	virtual Target2 get_target2() const;
@@ -323,11 +298,11 @@ class Dynamic_Dependency
 {
 public:
 
-	shared_ptr <Dependency> dependency;
+	shared_ptr <const Dependency> dependency;
 	/* The contained dependency.  Non-null. */ 
 
 	Dynamic_Dependency(Flags flags_,
-			   shared_ptr <Dependency> dependency_)
+			   shared_ptr <const Dependency> dependency_)
 		:  Dependency(flags_), 
 		   dependency(dependency_)
 	{
@@ -337,7 +312,7 @@ public:
 
 	Dynamic_Dependency(Flags flags_,
 			   const Place places_[C_PLACED],
-			   shared_ptr <Dependency> dependency_)
+			   shared_ptr <const Dependency> dependency_)
 		:  Dependency(flags_, places_),
 		   dependency(dependency_)
 	{
@@ -345,7 +320,7 @@ public:
 		assert(dependency_ != nullptr); 
 	}
 
-	shared_ptr <Dependency> 
+	shared_ptr <const Dependency> 
 	instantiate(const map <string, string> &mapping) const
 	{
 		return make_shared <Dynamic_Dependency> 
@@ -392,18 +367,9 @@ public:
 			   text_dependency); 
 	}
 
-	// Cannot work anymore since Param_Target does not support dynamic dependencies anymore. 
-//	Param_Target get_individual_target() const {
-//		Param_Target ret= dependency->get_individual_target();
-//		++ ret.type;
-//		return ret; 
-//	}
-
 	virtual bool is_normalized() const {
 		return dependency->is_normalized(); 
 	}
-
-//	virtual shared_ptr <Dependency> clone_shallow() const; 
 
 	virtual Target2 get_target2() const;
 
@@ -411,9 +377,8 @@ public:
 		/* The depth of the dependency, i.e., how many dynamic
 		 * dependencies are stacked in a row.  */
 	{
-		assert(dependency); 
-		if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
-			return 1 + dynamic_pointer_cast <Dynamic_Dependency> (dependency)->get_depth(); 
+		if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
+			return 1 + dynamic_pointer_cast <const Dynamic_Dependency> (dependency)->get_depth(); 
 		} else {
 			return 1; 
 		}
@@ -443,24 +408,23 @@ public:
 		:  Dependency(flags_, places_)
 	{  }
 
-	const vector <shared_ptr <Dependency> > get_dependencies() const {
+	const vector <shared_ptr <const Dependency> > &get_dependencies() const {
 		return dependencies; 
 	}
 
-	vector <shared_ptr <Dependency> > get_dependencies() {
+	vector <shared_ptr <const Dependency> > &get_dependencies() {
 		return dependencies; 
 	}
 
 	/* Append a dependency to the list */
-	void push_back(shared_ptr <Dependency> dependency)
+	void push_back(shared_ptr <const Dependency> dependency)
 	{
 		dependencies.push_back(dependency); 
 	}
 
 	void make_normalized();
-	/* Change in-place to make it normalized */ 
 
-	virtual shared_ptr <Dependency> 
+	virtual shared_ptr <const Dependency> 
 	instantiate(const map <string, string> &mapping) const;
 
 	virtual bool is_unparametrized() const; 
@@ -471,20 +435,15 @@ public:
 	virtual string format_word() const; 
 	virtual string format_out() const; 
 
-//	virtual Param_Target get_individual_target() const {  assert(false);  }
-//	/* Collapse the dependency into a single target, ignoring all
-//	 * flags.  Only if this is a normalized dependency.  */   
-
 	virtual bool is_normalized() const; 
 	/* A concatenated dependency is always normalized, regardless of
 	 * whether the contained dependencies are normalized.  */ 
 
-//	virtual shared_ptr <Dependency> clone_shallow() const;
 	virtual Target2 get_target2() const;
 
 private:
 
-	vector <shared_ptr <Dependency> > dependencies;
+	vector <shared_ptr <const Dependency> > dependencies;
 	/* The dependencies.  May be empty in code, which is something
 	 * that is not allowed in Stu code.  */
 };
@@ -520,27 +479,26 @@ public:
 		/* The list of dependencies is empty */ 
 	}
 
-	Compound_Dependency(vector <shared_ptr <Dependency> > &&dependencies_, 
+	Compound_Dependency(vector <shared_ptr <const Dependency> > &&dependencies_, 
 			    const Place &place_)
 		:  place(place_),
 		   dependencies(dependencies_)
 	{  }
 
-	const vector <shared_ptr <Dependency> > &get_dependencies() const {
+	const vector <shared_ptr <const Dependency> > &get_dependencies() const {
 		return dependencies; 
 	}
 
-	vector <shared_ptr <Dependency> > &get_dependencies() {
+	vector <shared_ptr <const Dependency> > &get_dependencies() {
 		return dependencies; 
 	}
 
-	void push_back(shared_ptr <Dependency> dependency)
+	void push_back(shared_ptr <const Dependency> dependency)
 	{
 		dependencies.push_back(dependency); 
 	}
 
-	virtual shared_ptr <Dependency> 
-	instantiate(const map <string, string> &mapping) const;
+	virtual shared_ptr <const Dependency> instantiate(const map <string, string> &mapping) const;
 
 	virtual bool is_unparametrized() const; 
 
@@ -566,22 +524,38 @@ public:
 
 private:
 
-	vector <shared_ptr <Dependency> > dependencies;
+	vector <shared_ptr <const Dependency> > dependencies;
 	/* The contained dependencies, in given order */ 
+};
+
+class Root_Dependency
+	:  public Dependency
+{
+public:
+	virtual shared_ptr <const Dependency> instantiate(const map <string, string> &) const {
+		return shared_ptr <const Dependency> (this); 
+	}
+	virtual bool is_unparametrized() const {  return false;  }
+	virtual const Place &get_place() const {  return Place::place_empty;  }
+	virtual string format(Style, bool &) const {  return "ROOT";  }
+	virtual string format_word() const {  return "ROOT";  }
+	virtual string format_out() const {  return "ROOT";  }
+	virtual Target2 get_target2() const {  return Target2("");  }
+	virtual bool is_normalized() const {  return true;  }
 };
 
 Dependency::~Dependency() { }
 
-void Dependency::make_normalized(vector <shared_ptr <Dependency> > &dependencies, 
-				 shared_ptr <Dependency> dependency)
+void Dependency::make_normalized(vector <shared_ptr <const Dependency> > &dependencies, 
+				 shared_ptr <const Dependency> dependency)
 {
-	if (dynamic_pointer_cast <Single_Dependency> (dependency)) {
+	if (dynamic_pointer_cast <const Single_Dependency> (dependency)) {
 		dependencies.push_back(dependency);
 
-	} else if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
-		shared_ptr <Dynamic_Dependency> dynamic_dependency= 
-			dynamic_pointer_cast <Dynamic_Dependency> (dependency);
-		vector <shared_ptr <Dependency> > dependencies_child;
+	} else if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
+		shared_ptr <const Dynamic_Dependency> dynamic_dependency= 
+			dynamic_pointer_cast <const Dynamic_Dependency> (dependency);
+		vector <shared_ptr <const Dependency> > dependencies_child;
 		make_normalized(dependencies_child, dynamic_dependency->dependency);
 		for (auto &d:  dependencies_child) {
 			shared_ptr <Dependency> dependency_new= 
@@ -590,19 +564,21 @@ void Dependency::make_normalized(vector <shared_ptr <Dependency> > &dependencies
 			dependencies.push_back(dependency_new); 
 		}
 
-	} else if (dynamic_pointer_cast <Compound_Dependency> (dependency)) {
-		shared_ptr <Compound_Dependency> compound_dependency=
-			dynamic_pointer_cast <Compound_Dependency> (dependency);
+	} else if (dynamic_pointer_cast <const Compound_Dependency> (dependency)) {
+		shared_ptr <const Compound_Dependency> compound_dependency=
+			dynamic_pointer_cast <const Compound_Dependency> (dependency);
 		for (auto &d:  compound_dependency->get_dependencies()) {
-			d->add_flags(compound_dependency, false);  
-			make_normalized(dependencies, d); 
+			shared_ptr <Dependency> dd= Dependency::clone_dependency(d); 
+			dd->add_flags(compound_dependency, false);  
+			make_normalized(dependencies, dd); 
 		}
 
-	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
+	} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency)) {
 
-		shared_ptr <Concatenated_Dependency> concatenated_dependency=
-			dynamic_pointer_cast <Concatenated_Dependency> (dependency);
-		concatenated_dependency->make_normalized(); 
+		shared_ptr <Concatenated_Dependency> d= 
+			dynamic_pointer_cast <Concatenated_Dependency> (Dependency::clone_dependency(dependency)); 
+		d->make_normalized(); 
+		// TODO use D 
 
 	} else {
 		/* Bug:  Unhandled dependency type */ 
@@ -610,9 +586,9 @@ void Dependency::make_normalized(vector <shared_ptr <Dependency> > &dependencies
 	}
 }
 
-shared_ptr <Dependency> Dependency::make_normalized_compound(shared_ptr <Dependency> dependency)
+shared_ptr <const Dependency> Dependency::make_normalized_compound(shared_ptr <const Dependency> dependency)
 {
-	vector <shared_ptr <Dependency> > dependencies;
+	vector <shared_ptr <const Dependency> > dependencies;
 
 	make_normalized(dependencies, dependency); 
 	
@@ -629,7 +605,10 @@ shared_ptr <Dependency> Dependency::make_normalized_compound(shared_ptr <Depende
 
 shared_ptr <Dependency> Dependency::clone_dependency(shared_ptr <const Dependency> dependency)
 {
-	if (dependency->to <const Single_Dependency> ()) {
+//	if (dependency.unique())
+//		return dependency; 
+
+	if (dynamic_pointer_cast <const Single_Dependency> (dependency)) {
 		return make_shared <Single_Dependency> (* dynamic_pointer_cast <const Single_Dependency> (dependency)); 
 	} else if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
 		return make_shared <Dynamic_Dependency> (* dynamic_pointer_cast <const Dynamic_Dependency> (dependency)); 
@@ -637,6 +616,8 @@ shared_ptr <Dependency> Dependency::clone_dependency(shared_ptr <const Dependenc
 		return make_shared <Compound_Dependency> (* dynamic_pointer_cast <const Compound_Dependency> (dependency)); 
 	} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency)) {
 		return make_shared <Concatenated_Dependency> (* dynamic_pointer_cast <const Concatenated_Dependency> (dependency)); 
+	} else if (dynamic_pointer_cast <const Root_Dependency> (dependency)) {
+		return make_shared <Root_Dependency> (* dynamic_pointer_cast <const Root_Dependency> (dependency)); 
 	} else {
 		assert(false); 
 		/* Bug:  Unhandled dependency type */ 
@@ -656,11 +637,11 @@ void Dependency::add_flags(shared_ptr <const Dependency> dependency,
 	this->flags |= dependency->get_flags(); 
 }
 
-shared_ptr <Dependency> Dependency::strip_dynamic(shared_ptr <Dependency> d)
+shared_ptr <const Dependency> Dependency::strip_dynamic(shared_ptr <const Dependency> d)
 {
 	assert(d != nullptr); 
-	while (dynamic_pointer_cast <Dynamic_Dependency> (d)) {
-		d= dynamic_pointer_cast <Dynamic_Dependency> (d)->dependency;
+	while (dynamic_pointer_cast <const Dynamic_Dependency> (d)) {
+		d= dynamic_pointer_cast <const Dynamic_Dependency> (d)->dependency;
 	}
 	assert(d != nullptr); 
 	return d;
@@ -694,20 +675,20 @@ Target2 Dynamic_Dependency::get_target2() const
 	shared_ptr <const Dependency> d(this); 
 	
 	do {
-		shared_ptr <const Dynamic_Dependency> dyn= d->to <const Dynamic_Dependency> (); 
+		shared_ptr <const Dynamic_Dependency> dyn= dynamic_pointer_cast <const Dynamic_Dependency> (d); 
 		Flags f= F_TARGET_DYNAMIC; 
 		f |= dyn->flags; 
 		text += (char) f; 
 		d= dyn->dependency; 
-	} while (d-> to <const Dynamic_Dependency> ());
-	assert(d->to <const Single_Dependency> ()); 
-	shared_ptr <const Single_Dependency> sin= d->to <const Single_Dependency> (); 
+	} while (dynamic_pointer_cast <const Dynamic_Dependency> (d));
+	assert(dynamic_pointer_cast <const Single_Dependency> (d)); 
+	shared_ptr <const Single_Dependency> sin= dynamic_pointer_cast <const Single_Dependency> (d); 
 	text += sin->place_param_target.unparametrized().get_text();
 
 	return Target2(text); 
 }
 
-shared_ptr <Dependency> Single_Dependency
+shared_ptr <const Dependency> Single_Dependency
 ::instantiate(const map <string, string> &mapping) const
 {
 	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
@@ -734,14 +715,14 @@ shared_ptr <Dependency> Single_Dependency
 	return ret;
 }
 
-shared_ptr <Dependency> 
+shared_ptr <const Dependency> 
 Compound_Dependency::instantiate(const map <string, string> &mapping) const
 {
 	shared_ptr <Compound_Dependency> ret= 
 		make_shared <Compound_Dependency> 
 		(flags, places, place);
 
-	for (const shared_ptr <Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dependency> &d:  dependencies) {
 		ret->push_back(d->instantiate(mapping));
 	}
 	
@@ -752,7 +733,7 @@ bool Compound_Dependency::is_unparametrized() const
 /* A compound dependency is parametrized when any of its contained
  * dependency is parametrized.  */
 {
-	for (shared_ptr <Dependency> d:  dependencies) {
+	for (shared_ptr <const Dependency> d:  dependencies) {
 		if (! d->is_unparametrized())
 			return false;
 	}
@@ -768,7 +749,7 @@ string Compound_Dependency::format(Style style, bool &) const
 
 	bool quotes= false;
 
-	for (const shared_ptr <Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dependency> &d:  dependencies) {
 		if (! ret.empty())
 			ret += ", ";
 		ret += d->format(style, quotes); 
@@ -781,7 +762,7 @@ string Compound_Dependency::format_word() const
 {
 	string ret;
 
-	for (const shared_ptr <Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dependency> &d:  dependencies) {
 		if (! ret.empty())
 			ret += ", ";
 		ret += d->format_word(); 
@@ -794,7 +775,7 @@ string Compound_Dependency::format_out() const
 {
 	string ret;
 
-	for (const shared_ptr <Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dependency> &d:  dependencies) {
 		if (! ret.empty())
 			ret += ", ";
 		ret += d->format_out(); 
@@ -803,21 +784,14 @@ string Compound_Dependency::format_out() const
 	return fmt("(%s)", ret); 
 }
 
-// shared_ptr <Dependency> Compound_Dependency::clone_shallow() const
-// {
-// 	// TODO 
-// 	assert(false);
-// 	return nullptr; 
-// }
-
-shared_ptr <Dependency> 
+shared_ptr <const Dependency> 
 Concatenated_Dependency::instantiate(const map <string, string> &mapping) const
 {
 	shared_ptr <Concatenated_Dependency> ret= 
 		make_shared <Concatenated_Dependency>
 		(flags, places);
 
-	for (const shared_ptr <Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dependency> &d:  dependencies) {
 		ret->push_back(d->instantiate(mapping)); 
 	}
 
@@ -828,7 +802,7 @@ bool Concatenated_Dependency::is_unparametrized() const
 /* A concatenated dependency is parametrized when any of its contained 
  * dependency is parametrized.  */
 {
-	for (shared_ptr <Dependency> d:  dependencies) {
+	for (shared_ptr <const Dependency> d:  dependencies) {
 		if (! d->is_unparametrized())
 			return false;
 	}
@@ -849,7 +823,7 @@ string Concatenated_Dependency::format(Style style, bool &quotes) const
 {
 	string ret;
 
-	for (const shared_ptr <Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dependency> &d:  dependencies) {
 		if (! ret.empty())
 			ret += '*';
 		ret += d->format(style, quotes); 
@@ -862,7 +836,7 @@ string Concatenated_Dependency::format_word() const
 {
 	string ret;
 
-	for (const shared_ptr <Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dependency> &d:  dependencies) {
 		if (! ret.empty())
 			ret += '*';
 		ret += d->format_word(); 
@@ -875,7 +849,7 @@ string Concatenated_Dependency::format_out() const
 {
 	string ret;
 
-	for (const shared_ptr <Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dependency> &d:  dependencies) {
 		if (! ret.empty())
 			ret += '*';
 		ret += d->format_out(); 
@@ -889,8 +863,8 @@ bool Concatenated_Dependency::is_normalized() const
 	for (auto &i:  dependencies) {
 		if (i->is_normalized())
 			continue;
-		shared_ptr <Compound_Dependency> i_compound= 
-			dynamic_pointer_cast <Compound_Dependency> (i);			
+		shared_ptr <const Compound_Dependency> i_compound= 
+			dynamic_pointer_cast <const Compound_Dependency> (i);			
 		if (i_compound != nullptr) {
 			for (auto &j:  i_compound->get_dependencies()) {
 				if (! j->is_normalized()) 
@@ -903,13 +877,16 @@ bool Concatenated_Dependency::is_normalized() const
 	return true;
 }
 
-void Concatenated_Dependency::make_normalized()
+void Concatenated_Dependency::make_normalized() 
 {
+	assert(0);  // actually implement it
+#if 0
 	for (size_t i= 0;  i < dependencies.size();  ++i) {
-		shared_ptr <Dependency> d_normalized_compound= 
+		shared_ptr <const Dependency> d_normalized_compound= 
 			make_normalized_compound(dependencies[i]);
 		dependencies[i]= d_normalized_compound; 
 	}
+#endif /* 0 */ 
 }
 
 // shared_ptr <Dependency> Concatenated_Dependency::clone_shallow() const

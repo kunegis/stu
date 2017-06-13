@@ -95,7 +95,7 @@ const char VERSION_INFO[]=
 void init_buf(); 
 /* Initialize buffers; called once from main() */ 
 
-void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
+void add_dependencies_option_C(vector <shared_ptr <const Dependency> > &dependencies,
 			       const char *string_);
 /* Parse a string of dependencies and add them to the vector. Used for
  * the -C option.  Support the full Stu syntax.  */
@@ -159,7 +159,7 @@ int main(int argc, char **argv, char **envp)
 		 * unique and sorted as they were given, except for
 		 * duplicates. */   
 
-		vector <shared_ptr <Dependency> > dependencies; 
+		vector <shared_ptr <const Dependency> > dependencies; 
 		/* Assemble targets here */ 
 
 		shared_ptr <Rule> rule_first;
@@ -237,6 +237,7 @@ int main(int argc, char **argv, char **envp)
 				}
 
 				for (string &filename:  filenames) {
+					/* Silently ignore duplicate input file on command line */
 					if (filename == optarg)  goto end;
 				}
 				had_option_f= true;
@@ -273,6 +274,7 @@ int main(int argc, char **argv, char **envp)
 						     name_format_word(optarg));
 					exit(ERROR_FATAL); 
 				}
+				option_parallel= Execution::jobs > 1; 
 				break;
 			}
 
@@ -358,8 +360,6 @@ int main(int argc, char **argv, char **envp)
 
 		order_vec= (order == Order::RANDOM);
 
-		option_parallel= Execution::jobs > 1; 
-		
 		if (option_interactive && option_parallel) {
 			Place(Place::Type::OPTION, 'i')
 				<< fmt("parallel mode with %s cannot be used in interactive mode",
@@ -383,7 +383,7 @@ int main(int argc, char **argv, char **envp)
 			}
 
 			if (! option_literal) {
-				shared_ptr <Dependency> dep= 
+				shared_ptr <const Dependency> dep= 
 					Parser::get_target_dep(argv[i], place);
 				dependencies.push_back(dep); 
 			} else {
@@ -506,7 +506,7 @@ void init_buf()
 	}
 }
 
-void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
+void add_dependencies_option_C(vector <shared_ptr <const Dependency> > &dependencies,
 			       const char *string_)
 {
 	vector <shared_ptr <Token> > tokens;
@@ -518,7 +518,7 @@ void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 		 place_end, string_,
 		 Place(Place::Type::OPTION, 'C'));
 
-	vector <shared_ptr <Dependency> > dependencies_option;
+	vector <shared_ptr <const Dependency> > dependencies_option;
 	Place_Name input; /* remains empty */ 
 	Place place_input; /* remains empty */ 
 

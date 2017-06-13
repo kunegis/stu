@@ -73,7 +73,7 @@ public:
 				  vector <shared_ptr <Token> > &tokens,
 				  const Place &place_end);
 
-	static void get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
+	static void get_expression_list(vector <shared_ptr <const Dependency> > &dependencies,
 					vector <shared_ptr <Token> > &tokens,
 					const Place &place_end,
 					Place_Name &input,
@@ -82,7 +82,7 @@ public:
 	 * TARGET is used for error messages.  Empty when in a dynamic
 	 * dependency.  */
 
-	static shared_ptr <Dependency> get_target_dep(string text, const Place &place); 
+	static shared_ptr <const Dependency> get_target_dep(string text, const Place &place); 
 	/* Parse a dependency as given on the command line outside of
 	 * options.  This supports only the characters '@' and '[]', as
 	 * well as names.  TEXT must not be "".  */
@@ -104,7 +104,7 @@ private:
 	void parse_rule_list(vector <shared_ptr <Rule> > &ret);
 	/* The returned rules may not be unique -- this is checked later */ 
 
-	bool parse_expression_list(vector <shared_ptr <Dependency> > &ret, 
+	bool parse_expression_list(vector <shared_ptr <const Dependency> > &ret, 
 				   Place_Name &place_name_input,
 				   Place &place_input,
 				   const vector <shared_ptr <Place_Param_Target> > &targets);
@@ -113,7 +113,7 @@ private:
 	shared_ptr <Rule> parse_rule(); 
 	/* Return null when nothing was parsed */ 
 
-	bool parse_expression(shared_ptr <Dependency> &ret,
+	bool parse_expression(shared_ptr <const Dependency> &ret,
 			      Place_Name &place_name_input,
 			      Place &place_input,
 			      const vector <shared_ptr <Place_Param_Target> > &targets);
@@ -122,13 +122,13 @@ private:
 	 * was parsed.  TARGETS is passed to construct error
 	 * messages.  */
 
-	shared_ptr <Dependency> parse_variable_dep
+	shared_ptr <const Dependency> parse_variable_dep
 	(Place_Name &place_name_input,
 	 Place &place_input,
 	 const vector <shared_ptr <Place_Param_Target> > &targets);
 	/* A variable dependency */ 
 
-	shared_ptr <Dependency> parse_redirect_dep
+	shared_ptr <const Dependency> parse_redirect_dep
 	(Place_Name &place_name_input,
 	 Place &place_input,
 	 const vector <shared_ptr <Place_Param_Target> > &targets);
@@ -366,7 +366,7 @@ shared_ptr <Rule> Parser::parse_rule()
 		throw ERROR_LOGICAL;
 	}
 
-	vector <shared_ptr <Dependency> > dependencies;
+	vector <shared_ptr <const Dependency> > dependencies;
 
 	bool had_colon= false;
 
@@ -653,7 +653,7 @@ shared_ptr <Rule> Parser::parse_rule()
 		 filename_input);
 }
 
-bool Parser::parse_expression_list(vector <shared_ptr <Dependency> > &ret, 
+bool Parser::parse_expression_list(vector <shared_ptr <const Dependency> > &ret, 
 				   Place_Name &place_name_input,
 				   Place &place_input,
 				   const vector <shared_ptr <Place_Param_Target> > &targets)
@@ -661,7 +661,7 @@ bool Parser::parse_expression_list(vector <shared_ptr <Dependency> > &ret,
 	assert(ret.size() == 0);
 
 	while (iter != tokens.end()) {
-		shared_ptr <Dependency> ret_new; 
+		shared_ptr <const Dependency> ret_new; 
 		bool r= parse_expression(ret_new, 
 					 place_name_input, 
 					 place_input, targets);
@@ -676,7 +676,7 @@ bool Parser::parse_expression_list(vector <shared_ptr <Dependency> > &ret,
 	return ! ret.empty(); 
 }
 
-bool Parser::parse_expression(shared_ptr <Dependency> &ret,
+bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 			      Place_Name &place_name_input,
 			      Place &place_input,
 			      const vector <shared_ptr <Place_Param_Target> > &targets)
@@ -687,7 +687,7 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 	if (is_operator('(')) {
 		Place place_paren= (*iter)->get_place();
 		++iter;
-		vector <shared_ptr <Dependency> > r;
+		vector <shared_ptr <const Dependency> > r;
 		if (parse_expression_list(r, place_name_input, place_input, targets)) {
 			assert(r.size() >= 1); 
 			if (r.size() > 1) {
@@ -716,7 +716,7 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 		++ iter; 
 
 		if (next_concatenates()) {
-			shared_ptr <Dependency> next;
+			shared_ptr <const Dependency> next;
 			bool rr= parse_expression(next, place_name_input, place_input, targets);
 			/* It can be that an empty list was parsed, in
 			 * which case RR is true but the list is empty */
@@ -743,7 +743,7 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 	if (is_operator('[')) {
 		Place place_bracket= (*iter)->get_place(); 
 		++iter;	
-		vector <shared_ptr <Dependency> > r2;
+		vector <shared_ptr <const Dependency> > r2;
 		parse_expression_list(r2, place_name_input, place_input, targets);
 
 		if (iter == tokens.end()) {
@@ -783,7 +783,7 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 		ret= make_shared <Dynamic_Dependency> (0, ret_nondynamic); 
 
 		if (next_concatenates()) {
-			shared_ptr <Dependency> next;
+			shared_ptr <const Dependency> next;
 			bool rr= parse_expression(next, place_name_input, place_input, targets);
 			/* It can be that an empty list was parsed, in
 			 * which case RR is true but the list is empty */
@@ -844,16 +844,18 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 		/* Add the flag */ 
 		if (! ((i_flag == I_OPTIONAL && option_nonoptional) ||
 		       (i_flag == I_TRIVIAL  && option_nontrivial))) {
-			ret->add_flags(1 << i_flag); 
+			shared_ptr <Dependency> ret_new= Dependency::clone_dependency(ret);
+			ret_new->add_flags(1 << i_flag); 
 			if (i_flag < C_TRANSITIVE)
-				ret->set_place_flag(i_flag, place_flag); 
+				ret_new->set_place_flag(i_flag, place_flag); 
+			ret= ret_new; 
 		}
 
 		return true;
 	}
 
 	/* '$' ; variable dependency */ 
-	shared_ptr <Dependency> dependency= 
+	shared_ptr <const Dependency> dependency= 
 		parse_variable_dep(place_name_input, place_input, targets);
 	if (dependency != nullptr) {
 		ret= dependency; 
@@ -870,14 +872,14 @@ bool Parser::parse_expression(shared_ptr <Dependency> &ret,
 	return false;
 }
 
-shared_ptr <Dependency> Parser
+shared_ptr <const Dependency> Parser
 ::parse_variable_dep(Place_Name &place_name_input, 
 		     Place &place_input,
 		     const vector <shared_ptr <Place_Param_Target> > &targets)
 {
 	bool has_input= false;
 
-	shared_ptr <Dependency> ret;
+	shared_ptr <const Dependency> ret;
 
 	if (! is_operator('$')) 
 		return nullptr;
@@ -1057,7 +1059,7 @@ shared_ptr <Dependency> Parser
 		 variable_name);
 }
 
-shared_ptr <Dependency> Parser::parse_redirect_dep
+shared_ptr <const Dependency> Parser::parse_redirect_dep
 (Place_Name &place_name_input,
  Place &place_input,
  const vector <shared_ptr <Place_Param_Target> > &targets)
@@ -1154,14 +1156,14 @@ shared_ptr <Dependency> Parser::parse_redirect_dep
 		assert(! place_input.empty()); 
 	}
 
-	shared_ptr <Dependency> ret= make_shared <Single_Dependency>
+	shared_ptr <const Dependency> ret= make_shared <Single_Dependency>
 		(flags,
 		 Place_Param_Target(has_transient ? F_TARGET_TRANSIENT : 0,
 				    *name_token,
 				    has_transient ? place_at : name_token->place)); 
 
 	if (next_concatenates()) {
-		shared_ptr <Dependency> next;
+		shared_ptr <const Dependency> next;
 		bool rr= parse_expression(next, place_name_input, place_input, targets);
 		/* It can be that an empty list was parsed, in
 		 * which case RR is true but the list is empty */
@@ -1228,7 +1230,7 @@ void Parser::get_rule_list(vector <shared_ptr <Rule> > &rules,
 	}
 }
 
-void Parser::get_expression_list(vector <shared_ptr <Dependency> > &dependencies,
+void Parser::get_expression_list(vector <shared_ptr <const Dependency> > &dependencies,
 				vector <shared_ptr <Token> > &tokens,
 				const Place &place_end,
 				Place_Name &input,
@@ -1246,7 +1248,7 @@ void Parser::get_expression_list(vector <shared_ptr <Dependency> > &dependencies
 	}
 }
 
-shared_ptr <Dependency> Parser::get_target_dep(string text, const Place &place)
+shared_ptr <const Dependency> Parser::get_target_dep(string text, const Place &place)
 {
 	/*
 	 * This syntax supports only the characters '@' and '[]', and a
@@ -1303,7 +1305,7 @@ shared_ptr <Dependency> Parser::get_target_dep(string text, const Place &place)
 		throw ERROR_LOGICAL; 
 	}
 
-	shared_ptr <Dependency> ret= make_shared <Single_Dependency> 
+	shared_ptr <const Dependency> ret= make_shared <Single_Dependency> 
 		(0, Place_Param_Target
 		 (flags_type, 
 		  Place_Name

@@ -150,7 +150,7 @@ public:
 	/* Return either a normalized version of this dependency, or a
 	 * Compound_Dependency containing normalized dependencies */ 
 
-	static shared_ptr <Dependency> clone_dependency(shared_ptr <Dependency> dependency);
+	static shared_ptr <Dependency> clone_dependency(shared_ptr <const Dependency> dependency);
 	/* A shallow clone.  */
 	// TODO we may additionally use clone_dependency() functions
 	// that automatically set or unset flags.  (and make it smart so
@@ -627,16 +627,16 @@ shared_ptr <Dependency> Dependency::make_normalized_compound(shared_ptr <Depende
 	}
 }
 
-shared_ptr <Dependency> Dependency::clone_dependency(shared_ptr <Dependency> dependency)
+shared_ptr <Dependency> Dependency::clone_dependency(shared_ptr <const Dependency> dependency)
 {
-	if (dynamic_pointer_cast <Single_Dependency> (dependency)) {
-		return make_shared <Single_Dependency> (* dynamic_pointer_cast <Single_Dependency> (dependency)); 
-	} else if (dynamic_pointer_cast <Dynamic_Dependency> (dependency)) {
-		return make_shared <Dynamic_Dependency> (* dynamic_pointer_cast <Dynamic_Dependency> (dependency)); 
-	} else if (dynamic_pointer_cast <Compound_Dependency> (dependency)) {
-		return make_shared <Compound_Dependency> (* dynamic_pointer_cast <Compound_Dependency> (dependency)); 
-	} else if (dynamic_pointer_cast <Concatenated_Dependency> (dependency)) {
-		return make_shared <Concatenated_Dependency> (* dynamic_pointer_cast <Concatenated_Dependency> (dependency)); 
+	if (dependency->to <const Single_Dependency> ()) {
+		return make_shared <Single_Dependency> (* dynamic_pointer_cast <const Single_Dependency> (dependency)); 
+	} else if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
+		return make_shared <Dynamic_Dependency> (* dynamic_pointer_cast <const Dynamic_Dependency> (dependency)); 
+	} else if (dynamic_pointer_cast <const Compound_Dependency> (dependency)) {
+		return make_shared <Compound_Dependency> (* dynamic_pointer_cast <const Compound_Dependency> (dependency)); 
+	} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency)) {
+		return make_shared <Concatenated_Dependency> (* dynamic_pointer_cast <const Concatenated_Dependency> (dependency)); 
 	} else {
 		assert(false); 
 		/* Bug:  Unhandled dependency type */ 

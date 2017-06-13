@@ -89,9 +89,7 @@ public:
 	/* All errors by Execution call this function.  Set the error
 	 * code, and throw an error except with the keep-going option.  */
 
-	Proceed execute_base(
-			     shared_ptr <Dependency> dependency_link,
-			     //const Link &link,
+	Proceed execute_base(shared_ptr <const Dependency> dependency_link,
 			     bool &finished_here);
 	/* FINISHED_HERE must be FALSE on calling, and is set to TRUE
 	 * when finished.  */  
@@ -594,7 +592,6 @@ public:
 
 	Transient_Execution(Target2 target2_,
 			    shared_ptr <Dependency> dependency_link,
-//			    Link &link,
 			    Execution *parent) 
 	// TODO remove the TARGET2 parameter 
 		:  Execution(dependency_link, parent) 
@@ -608,10 +605,7 @@ public:
 	virtual Proceed execute(Execution *parent, 
 				shared_ptr <Dependency> dependency_link);
 	virtual bool finished() const;
-	virtual bool finished(
-			      Flags flags
-//			      Stack avoid
-			      ) const; 
+	virtual bool finished(Flags flags) const; 
 	virtual string format_out() const {
 		assert(targets2.size()); 
 		return targets2.front().format_out(); 
@@ -637,12 +631,11 @@ private:
 
 	Timestamp timestamp_old;
 
+	bool is_finished; 
+
 	~Transient_Execution();
 
 	virtual const Place &get_place() const {
-//		if (param_rule == nullptr)
-//			return Place::place_empty;
-//		else
 		return param_rule->place; 
 	}
 };
@@ -1466,12 +1459,8 @@ void Execution::push_dependency(shared_ptr <Dependency> dependency)
 	}
 }
 
-Execution::Proceed Execution::execute_base(
-					   shared_ptr <Dependency> dependency_link,
-//					   const Link &link,
-					   bool &finished_here
-//					   , Stack &done_here
-					   )
+Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> dependency_link,
+					   bool &finished_here)
 {
 	assert(! finished_here); 
 
@@ -1481,13 +1470,11 @@ Execution::Proceed Execution::execute_base(
 
 	Debug::print(this, fmt("execute(%s)", dependency_link->format_out())); 
 
-	shared_ptr <Dependency> dependency_link2= dependency_link; 
-//	Link link2{link}; 
+	shared_ptr <Dependency> dependency_link2= Dependency::clone_dependency(dependency_link); 
 
 	/* Override the trivial flag */ 
 	if (dependency_link2->flags & F_OVERRIDE_TRIVIAL) {
 		dependency_link2->flags &= ~F_TRIVIAL; 
-//		link2.avoid.rem_highest(F_TRIVIAL); 
 	}
 
 	/* Override the dynamic flag */
@@ -2742,11 +2729,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	}       
 
 	bool finished_here= false;
-
-	Proceed proceed= Execution::execute_base(dependency_link, 
-						 finished_here
-//						 done
-						 ); 
+	Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
 
 	if (finished_here) {
 		flags_finished |= ~dependency_link->flags;
@@ -3283,22 +3266,14 @@ bool File_Execution::optional_finished(shared_ptr <Dependency> dependency_link)
 
 bool Root_Execution::finished() const
 {
-//	assert(done.get_depth() == 0);
-
 	return is_finished; 
-//	return ((~ 
-//		 done.get(0)
-//		 ) & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
 bool Root_Execution::finished(Flags flags) const
 {
 	(void) flags; 
 
-//	assert(done.get_depth() == 0);
-
 	return is_finished; 
-//	return ((~ done.get(0) & ~avoid.get(0)) & ((1 << C_TRANSITIVE) - 1)) == 0; 
 }
 
 Root_Execution::Root_Execution(const vector <shared_ptr <Dependency> > &dependencies)
@@ -3311,11 +3286,16 @@ Root_Execution::Root_Execution(const vector <shared_ptr <Dependency> > &dependen
 	}
 }
 
-Execution::Proceed Root_Execution::execute(Execution *, shared_ptr <Dependency> dependency_link)
+Execution::Proceed Root_Execution::execute(Execution *, 
+					   shared_ptr <Dependency> dependency_link)
 {
+	/* This is an example of a "plain" execute() function,
+	 * containing the minimal wrapper around execute_base()  */ 
+	
 	bool finished_here= false;
 
 	Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
+
 	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
 		return proceed;
 	}
@@ -3670,17 +3650,34 @@ Transient_Execution::~Transient_Execution()
 	assert(false);
 }
 
-Execution::Proceed Transient_Execution::execute(Execution *parent, 
+Execution::Proceed Transient_Execution::execute(Execution *, 
 						shared_ptr <Dependency> dependency_link)
 {
+	bool finished_here= false;
+
+	Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
+
+	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
+		return proceed; 
+	}
+
+	if (finished_here) {
+		is_finished= true; 
+	}
+
+	return proceed; 
 }
 
 bool Transient_Execution::finished() const
 {
+	return is_finished; 
 }
 
-bool Transient_Execuion::finished(Flags flags) const
+bool Transient_Execution::finished(Flags flags) const
 {
+	(void) flags; 
+
+	return is_finished; 
 }
 
 void Debug::print(Execution *e, string text) 

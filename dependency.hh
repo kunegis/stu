@@ -7,7 +7,10 @@
  * a Stu file get mapped to Dependency objects.  
  *
  * Dependencies are polymorphous objects, and all dependencies derive
- * from the class Dependency, and are used via shared_ptr<>.
+ * from the class Dependency, and are used via shared_ptr<>, except in
+ * cases where access is read-only.  This is necessary in cases where a
+ * member function has to access its own THIS pointer, because we can't
+ * put THIS into a shared pointer. 
  *
  * All dependency classes allow parametrized targets.  
  */
@@ -627,18 +630,19 @@ Target2 Single_Dependency::get_target2() const
 Target2 Dynamic_Dependency::get_target2() const
 {
 	string text;
-
-	shared_ptr <const Dependency> d(this); 
 	
-	do {
-		shared_ptr <const Dynamic_Dependency> dyn= dynamic_pointer_cast <const Dynamic_Dependency> (d); 
+	const Dependency *d= this; 
+//	shared_ptr <const Dependency> d(this); 
+	
+	while (dynamic_cast <const Dynamic_Dependency *> (d)) {
+//		auto dyn= dynamic_pointer_cast <const Dynamic_Dependency> (d); 
 		Flags f= F_TARGET_DYNAMIC; 
-		f |= dyn->flags; 
+		f |= d->flags; 
 		text += (char) f; 
-		d= dyn->dependency; 
-	} while (dynamic_pointer_cast <const Dynamic_Dependency> (d));
-	assert(dynamic_pointer_cast <const Single_Dependency> (d)); 
-	shared_ptr <const Single_Dependency> sin= dynamic_pointer_cast <const Single_Dependency> (d); 
+		d= dynamic_cast <const Dynamic_Dependency *> (d)->dependency.get(); 
+	}
+	assert(dynamic_cast <const Single_Dependency *> (d)); 
+	const Single_Dependency *sin= dynamic_cast <const Single_Dependency *> (d); 
 	text += sin->place_param_target.unparametrized().get_text();
 
 	return Target2(text); 

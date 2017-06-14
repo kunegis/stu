@@ -1321,7 +1321,7 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 		assert(option_keep_going); 
 	}
 
-	if ((proceed_all & (P_WAIT | P_PENDING)) == P_CONTINUE) {
+	if (proceed_all == P_CONTINUE) {
 		/* If there are still children, they must have returned
 		 * WAIT or PENDING */ 
 		assert(children.empty()); 

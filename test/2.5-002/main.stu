@@ -1,6 +1,3 @@
-A: [-o B] { 
-	[ -e B ] && exit 1;
-	touch A ; 
-}
-
-B { exit 1 ; }
+A: [B]  { cp C A ; }
+B { echo C >B ; }
+C { echo correct >C ; }

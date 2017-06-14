@@ -605,6 +605,8 @@ shared_ptr <const Dependency> Dependency::make_normalized_compound(shared_ptr <c
 
 shared_ptr <Dependency> Dependency::clone_dependency(shared_ptr <const Dependency> dependency)
 {
+	// TODO we can optimize this by returning the object itself if
+	// it is unique.  This however violates const-correctness. 
 //	if (dependency.unique())
 //		return dependency; 
 

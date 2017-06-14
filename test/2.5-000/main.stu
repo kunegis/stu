@@ -1,2 +1,1 @@
-A: B { cp B A ; }
-B { echo bbb >B ; }
+A { echo aaa >A ; }

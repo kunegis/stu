@@ -1,3 +1,2 @@
-A: [B]  { cp C A ; }
-B { echo C >B ; }
-C { echo correct >C ; }
+A: B { cp B A ; }
+B { echo bbb >B ; }

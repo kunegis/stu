@@ -8,8 +8,7 @@
  * 
  * OVERVIEW OF TYPES
  *
- * Root_Ex.		not cached; single object 	The root of the dependency graph; no 
- *							associated dependency
+ * Root_Ex.		not cached; single object 	The root of the dependency graph; uses the dummy Root_Dependency 
  * File_Ex.		cached by Target2 (no flags)	Non-dynamic targets with at least one
  *							file target in rule OR a command in rule OR
  *							files without a rule
@@ -290,7 +289,7 @@ protected:
 
 	static bool find_cycle(const Execution *const parent,
 			       const Execution *const child,
-			       shared_ptr <Dependency> dependency_link);
+			       shared_ptr <const Dependency> dependency_link);
 	/* Find a cycle.  Assuming that the edge parent->child will be
 	 * added, find a directed cycle that would be created.  Start at
 	 * PARENT and perform a depth-first search upwards in the
@@ -300,11 +299,11 @@ protected:
 
 	static bool find_cycle(vector <const Execution *> &path,
 			       const Execution *const child,
-			       shared_ptr <Dependency> dependency_link); 
+			       shared_ptr <const Dependency> dependency_link); 
 	/* Helper function */ 
 
 	static void cycle_print(const vector <const Execution *> &path,
-				shared_ptr <Dependency> dependency_link);
+				shared_ptr <const Dependency> dependency_link);
 	/* Print the error message of a cycle on rule level.
 	 * Given the path [a, b, c, d, ..., x], the found cycle is
 	 * [x <- a <- b <- c <- d <- ... <- x], where A <- B denotes
@@ -326,6 +325,9 @@ protected:
 	 * information from the subexecution to the execution, and then
 	 * delete the child execution if necessary.  */
 	// TODO make this a non-static function of PARENT. 
+
+	static bool is_cached(shared_ptr <const Dependency> dependency); 
+	/* Whether the dependency corresponds to an execution type that is cached */
 
 private: 
 
@@ -351,7 +353,7 @@ private:
 	 * DEPENDENCY_CHILD must be normalized.  */
 	
 	static Execution *get_execution(Target2 target,
-					shared_ptr <Dependency> dependency_link,
+					shared_ptr <const Dependency> dependency_link,
 					Execution *parent); 
 	/* Get an existing Execution or create a new one for the
 	 * given TARGET.  Return null when a strong cycle was found;
@@ -381,7 +383,7 @@ class File_Execution
 public:
 
 	File_Execution(Target2 target2_,
-		       shared_ptr <Dependency> dependency_link,
+		       shared_ptr <const Dependency> dependency_link,
 		       Execution *parent);
 	/* The TARGET2 must not by dynamic */ 
 	// TODO remove the TARGET2 parameter (?).  It is already
@@ -550,7 +552,7 @@ class Transient_Execution
 public:
 
 	Transient_Execution(Target2 target2_,
-			    shared_ptr <Dependency> dependency_link,
+			    shared_ptr <const Dependency> dependency_link,
 			    Execution *parent) 
 	// TODO remove the TARGET2 parameter 
 		:  Execution(dependency_link, parent) 
@@ -720,7 +722,7 @@ class Dynamic_Execution
 {
 public:
 	
-	Dynamic_Execution(shared_ptr <Dependency> , Execution *parent);
+	Dynamic_Execution(shared_ptr <const Dependency> , Execution *parent);
 
 	virtual Proceed execute(Execution *parent, 
 				shared_ptr <const Dependency> dependency_link);
@@ -737,7 +739,7 @@ protected:
 
 private: 
 
-	shared_ptr <Dynamic_Dependency> dependency; 
+	shared_ptr <const Dynamic_Dependency> dependency; 
 	/* A dynamic of anything */
 
 	bool is_finished; 
@@ -1072,7 +1074,7 @@ void Execution::read_dynamic(Flags flags_this,
 
 bool Execution::find_cycle(const Execution *const parent, 
 			   const Execution *const child,
-			   shared_ptr <Dependency> dependency_link)
+			   shared_ptr <const Dependency> dependency_link)
 {
 	if (dynamic_cast <const Root_Execution *> (parent))
 		return false;
@@ -1085,7 +1087,7 @@ bool Execution::find_cycle(const Execution *const parent,
 
 bool Execution::find_cycle(vector <const Execution *> &path,
 			   const Execution *const child,
-			   shared_ptr <Dependency> dependency_link)
+			   shared_ptr <const Dependency> dependency_link)
 {
 	if (same_rule(path.back(), child)) {
 		cycle_print(path, dependency_link); 
@@ -1111,7 +1113,7 @@ bool Execution::find_cycle(vector <const Execution *> &path,
 }
 
 void Execution::cycle_print(const vector <const Execution *> &path,
-			    shared_ptr <Dependency> dependency_link)
+			    shared_ptr <const Dependency> dependency_link)
 {
 	assert(path.size() > 0); 
 
@@ -1479,18 +1481,9 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_l
 
 	Flags flags_child= dependency_child->flags; 
 
-	if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency_child)) {
-		/* This is a concatenated dependency:  Create a new
-		 * concatenated execution for it. */ 
-
-		assert(false); 
-
-		return P_CONTINUE;
-
-	} else if (dynamic_pointer_cast <const Single_Dependency> (dependency_child)) {
-
-		/* File or transient -- determine whether we are using
-		 * File_Execution or Transient_Execution  */
+	if (is_cached(dependency_child)) {
+		
+		/* Cached execution */ 
 
 #if 0 // TODO reinstore this 
 		/* Carry flags over transient targets */ 
@@ -1766,7 +1759,7 @@ Execution::Proceed Execution::execute_second_pass(shared_ptr <const Dependency> 
 }
 
 Execution *Execution::get_execution(Target2 target2,
-				    shared_ptr <Dependency> dependency_link,
+				    shared_ptr <const Dependency> dependency_link,
 				    Execution *parent)
 {
 	/* Set to the returned Execution object when one is found or created */    
@@ -1783,8 +1776,9 @@ Execution *Execution::get_execution(Target2 target2,
 			 * necessary flags */ 
 			Flags flags= dependency_link->flags; 
 			if (flags & ~execution->parents.at(parent)->flags) {
-				dependency_link= Dependency::clone_dependency(execution->parents.at(parent));
-				dependency_link->flags |= flags;
+				shared_ptr <Dependency> d= Dependency::clone_dependency(execution->parents.at(parent));
+				d->flags |= flags;
+				dependency_link= d;
 				execution->parents[parent]= dependency_link; 
 			}
 		} else {
@@ -1944,6 +1938,23 @@ void Execution::propagate_to_dynamic(Execution *child,
 			 * but also the errors raised in read_dynamic().  */
 			raise(e); 
 		}
+	}
+}
+
+bool Execution::is_cached(shared_ptr <const Dependency> dependency)
+{
+	if (dynamic_pointer_cast <const Single_Dependency> (dependency)) {
+		return true; 
+	} else if (dynamic_pointer_cast <const Root_Dependency> (dependency)) {
+		return false;
+	} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency)) {
+		return false;
+	} else if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
+		return is_cached(dynamic_pointer_cast <const Dynamic_Dependency> (dependency)->dependency);
+		/* A dynamic dependencu is cached when its contained dependency is cached */
+	} else {
+		assert(false); 
+		/* In particular, Compound_Dependency is not used here */ 
 	}
 }
 
@@ -2121,7 +2132,7 @@ void File_Execution::waited(pid_t pid, int status)
 }
 
 File_Execution::File_Execution(Target2 target2_,
-			       shared_ptr <Dependency> dependency_link,
+			       shared_ptr <const Dependency> dependency_link,
 			       Execution *parent)
 	:  Execution(dependency_link, parent),
 	   exists(0),
@@ -3287,15 +3298,15 @@ void Concatenated_Execution::assemble_parts()
 	}
 }
 
-Dynamic_Execution::Dynamic_Execution(shared_ptr <Dependency> dependency_link,
+Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dependency> dependency_link,
 				     Execution *parent)
 	:  Execution(dependency_link, parent),
-	   dependency(dynamic_pointer_cast <Dynamic_Dependency> (dependency_link)),
+	   dependency(dynamic_pointer_cast <const Dynamic_Dependency> (dependency_link)),
 	   is_finished(false)
 {
 	assert(parent != nullptr); 
 	assert(parents.size() == 1); 
-	assert(dynamic_pointer_cast <Dynamic_Dependency> (dependency_link)); 
+	assert(dynamic_pointer_cast <const Dynamic_Dependency> (dependency_link)); 
 	assert(dependency); 
 	
 	/* Set the rule here, so cycles in the dependency graph can be

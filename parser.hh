@@ -768,7 +768,7 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 			
 			/* Variable dependency cannot appear within
 			 * dynamic dependency */ 
-			if (j->has_flags(F_VARIABLE)) {
+			if (j->flags & F_VARIABLE) {
 				j->get_place() <<
 					fmt("variable dependency %s must not appear", 
 					    j->format_word()); 
@@ -845,7 +845,7 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 		if (! ((i_flag == I_OPTIONAL && option_nonoptional) ||
 		       (i_flag == I_TRIVIAL  && option_nontrivial))) {
 			shared_ptr <Dependency> ret_new= Dependency::clone_dependency(ret);
-			ret_new->add_flags(1 << i_flag); 
+			ret_new->flags |= (1 << i_flag); 
 			if (i_flag < C_TRANSITIVE)
 				ret_new->set_place_flag(i_flag, place_flag); 
 			ret= ret_new; 

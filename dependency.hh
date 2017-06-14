@@ -43,7 +43,6 @@ class Dependency
  * so they are considered final, i.e., immutable, except if we just
  * created the object in which case we know that it is not shared.  
  */ 
-// TODO replace all instances of dynamic_pointer_cast by ->to(). 
 {
 public:
 
@@ -71,23 +70,6 @@ public:
 	}
 
 	virtual ~Dependency(); 
-
-	// TODO deprecate the following FLAGS-accessing functions in
-	// favor of access Dependency::flags directly. 
-
-	Flags get_flags() const {
-		return flags; 
- 	}
-
-	bool has_flags(Flags flags_) const
-	{
-		return (flags & flags_) == flags_; 
-	}
-
-	void add_flags(Flags flags_)
-	{
-		flags |= flags_; 
-	}
 
 	const Place &get_place_flag(int i) const {
 		assert(i >= 0 && i < C_PLACED);
@@ -135,10 +117,6 @@ public:
 
 	static shared_ptr <Dependency> clone_dependency(shared_ptr <const Dependency> dependency);
 	/* A shallow clone.  */
-	// TODO we may additionally use clone_dependency() functions
-	// that automatically set or unset flags.  (and make it smart so
-	// that if the flags don't have to be changed, we don't clone
-	// it). 
 
 	static shared_ptr <const Dependency> strip_dynamic(shared_ptr <const Dependency> d);
 	/* Strip dynamic dependencies from the given dependency.
@@ -158,17 +136,15 @@ public:
 
 	Place_Param_Target place_param_target; 
 	/* The target of the dependency.  Has its own place, which may
-	 * differ from the dependency's place, e.g. in '@all'.  */
-	/* Is non-dynamic */
-	// TODO use Target2, because only non-dynamic targets are possible. 
+	 * differ from the dependency's place, e.g. in '@all'.  Is
+	 * non-dynamic.  */
 
 	Place place;
 	/* The place where the dependency is declared */ 
 
-	string name;
+	string variable_name;
 	/* With F_VARIABLE:  the name of the variable.
 	 * Otherwise:  empty.  */
-	// TODO rename to 'variable_name'
 	
 	Single_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_)
@@ -182,12 +158,12 @@ public:
 
 	Single_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_,
-			  const string &name_)
+			  const string &variable_name_)
 		/* Take the dependency place from the target place, with variable_name */ 
 		:  Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place),
-		   name(name_)
+		   variable_name(variable_name_)
 	{ 
 		check(); 
 	}
@@ -206,21 +182,21 @@ public:
 	Single_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_,
 			  const Place &place_,
-			  const string &name_)
+			  const string &variable_name_)
 		/* Use an explicit dependency place */ 
 		:  Dependency(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_),
-		   name(name_)
+		   variable_name(variable_name_)
 	{ 
 		check(); 
 	}
 
 	Single_Dependency(const Single_Dependency &single_dependency)
-		:  Dependency(single_dependency.get_flags()),
+		:  Dependency(single_dependency.flags),
 		   place_param_target(single_dependency.place_param_target),
 		   place(single_dependency.place),
-		   name(single_dependency.name)
+		   variable_name(single_dependency.variable_name)
 	{  }
 
 	const Place &get_place() const {
@@ -234,7 +210,7 @@ public:
 	}
 
 	void check() const {
-		if (name != "") {
+		if (variable_name != "") {
 			assert((place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
 			assert(flags & F_VARIABLE); 
 		}
@@ -511,16 +487,10 @@ public:
 	virtual string format_word() const; 
 	virtual string format_out() const; 
 
-//	virtual Param_Target get_individual_target() const {  assert(false);  }
-//	/* Since a compound dependency is never normalized, this is not
-//	 * called.  */ 
-
 	virtual bool is_normalized() const {  return false;  }
 	/* A compound dependency is never normalized */
 
 	virtual Target2 get_target2() const {  assert(false);  }
-
-//	virtual shared_ptr <Dependency> clone_shallow() const;
 
 private:
 
@@ -630,13 +600,13 @@ void Dependency::add_flags(shared_ptr <const Dependency> dependency,
 			   bool overwrite_places)
 {
 	for (int i= 0;  i < C_PLACED;  ++i) {
-		if (dependency->get_flags() & (1 << i)) {
+		if (dependency->flags & (1 << i)) {
 			if (overwrite_places || ! (this->flags & (1 << i))) {
 				this->set_place_flag(i, dependency->get_place_flag(i)); 
 			}
 		}
 	}
-	this->flags |= dependency->get_flags(); 
+	this->flags |= dependency->flags; 
 }
 
 shared_ptr <const Dependency> Dependency::strip_dynamic(shared_ptr <const Dependency> d)
@@ -649,26 +619,10 @@ shared_ptr <const Dependency> Dependency::strip_dynamic(shared_ptr <const Depend
 	return d;
 }
 
-// shared_ptr <Dependency> Single_Dependency::clone_shallow() const
-// {
-// 	// TODO
-// //	assert(false);
-// //	return nullptr; 
-	
-// 	return make_shared <Single_Dependency> (*this);
-// }
-
 Target2 Single_Dependency::get_target2() const
 {
 	return place_param_target.unparametrized(); 
 }
-
-// shared_ptr <Dependency> Dynamic_Dependency::clone_shallow() const
-// {
-// 	// TODO
-// 	assert(false); 
-// 	return nullptr; 
-// }
 
 Target2 Dynamic_Dependency::get_target2() const
 {
@@ -696,7 +650,7 @@ shared_ptr <const Dependency> Single_Dependency
 	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
 
 	shared_ptr <Dependency> ret= make_shared <Single_Dependency> 
-		(flags, *ret_target, place, name);
+		(flags, *ret_target, place, variable_name);
 
 	assert(ret_target->place_name.get_n() == 0); 
 	string this_name= ret_target->place_name.unparametrized(); 
@@ -705,7 +659,6 @@ shared_ptr <const Dependency> Single_Dependency
 	    this_name.find('=') != string::npos) {
 
 		assert((ret_target->flags & F_TARGET_TRANSIENT) == 0); 
-//		assert(ret_target->type == Type::FILE); 
 
 		place << 
 			fmt("dynamic variable %s must not be instantiated with parameter value that contains %s", 
@@ -890,13 +843,6 @@ void Concatenated_Dependency::make_normalized()
 	}
 #endif /* 0 */ 
 }
-
-// shared_ptr <Dependency> Concatenated_Dependency::clone_shallow() const
-// {
-// 	// TODO
-// 	assert(false);
-// 	return nullptr; 
-// }
 
 Target2 Concatenated_Dependency::get_target2() const
 {

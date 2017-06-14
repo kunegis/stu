@@ -53,15 +53,13 @@ public:
 	 * Defined as typedef to make arithmetic with it.  */
 	enum {
 	
-		P_BIT_WAIT =     1 << 0,
+		P_WAIT =     1 << 0,
 		/* There's more to do, which can only be started after
 		 * having waited for a finishing jobs.  */
 
-		P_BIT_PENDING =  1 << 1,
+		P_PENDING =  1 << 1,
 		/* The function execute() should be called again for
 		 * this execution at least.  */
-
-		// TODO rename them, removing the "_BIT" part. 
 
 		P_CONTINUE = 0, 
 		/* Execution can continue in the process */
@@ -393,10 +391,6 @@ public:
 				Execution *parent); 
 	/* Read the content of the file into a string as the
 	 * variable value.  THIS is the variable target.  */
-
-	bool is_dynamic() const;
-	/* Whether the target is dynamic */ 
-	// TODO do we still need this?
 
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
@@ -815,9 +809,9 @@ void Execution::main(const vector <shared_ptr <const Dependency> > &dependencies
 			do {
 				Debug::print(nullptr, "main loop"); 
 				proceed= root_execution->execute(nullptr, dependency_root);
-			} while (proceed & P_BIT_PENDING); 
+			} while (proceed & P_PENDING); 
 
-			if (proceed & P_BIT_WAIT) {
+			if (proceed & P_WAIT) {
 				File_Execution::wait();
 			}
 		}
@@ -1037,7 +1031,7 @@ void Execution::read_dynamic(Flags flags_this,
 		}
 
 		/* Check that there is no multiply-dynamic variable dependency */ 
-		if (j->has_flags(F_VARIABLE) && 
+		if ((j->flags | F_VARIABLE) && 
 		    target2.is_dynamic() && 
 		    (target2.at(1) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == F_TARGET_TRANSIENT) {
 			
@@ -1137,18 +1131,18 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 
 		/* Don't show a message for left-branch dynamic links */ 
 		if (i != 0 &&
-		    path[i - 1]->parents.at(const_cast <Execution *> (path[i]))->get_flags() & F_DYNAMIC_LEFT)
+		    path[i - 1]->parents.at(const_cast <Execution *> (path[i]))->flags & F_DYNAMIC_LEFT)
 			continue;
 
 		/* Same, but when the dynamic execution is at the bottom */
-		if (i == 0 && dependency_link->get_flags() & F_DYNAMIC_LEFT) 
+		if (i == 0 && (dependency_link->flags & F_DYNAMIC_LEFT)) 
 			continue;
 
 		(i == 0 ? dependency_link->get_place() : path[i - 1]->parents.at((Execution *) path[i])->get_place())
 			<< fmt("%s%s depends on %s",
 			       i == (ssize_t)(path.size() - 1) 
 			       ? (path.size() == 1 
-				  || (path.size() == 2 && dependency_link->get_flags() & F_DYNAMIC_LEFT)
+				  || (path.size() == 2 && dependency_link->flags & F_DYNAMIC_LEFT)
 				  ? "target must not depend on itself: " 
 				  : "cyclic dependency: ") 
 			       : "",
@@ -1325,7 +1319,7 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 		assert(option_keep_going); 
 	}
 
-	if ((proceed_all & (P_BIT_WAIT | P_BIT_PENDING)) == P_CONTINUE) {
+	if ((proceed_all & (P_WAIT | P_PENDING)) == P_CONTINUE) {
 		/* If there are still children, they must have returned
 		 * WAIT or PENDING */ 
 		assert(children.empty()); 
@@ -1402,7 +1396,7 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	if (order != Order::RANDOM) {
 		Proceed proceed_2= execute_children(dependency_link2, finished_here);
 		proceed_all |= proceed_2;
-		if (proceed_all & P_BIT_WAIT) 
+		if (proceed_all & P_WAIT) 
 			return proceed_all; 
 
 		if (finished(dependency_link2->flags) && ! option_keep_going) {
@@ -1438,7 +1432,7 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 		shared_ptr <const Dependency> dependency_child= buffer_default.next(); 
 		shared_ptr <Dependency> dependency_child_overridetrivial= 
 			Dependency::clone_dependency(dependency_child);
-		dependency_child_overridetrivial->add_flags(F_OVERRIDE_TRIVIAL); 
+		dependency_child_overridetrivial->flags |= F_OVERRIDE_TRIVIAL; 
 		buffer_trivial.push(dependency_child_overridetrivial); 
 		Proceed proceed_2= connect(dependency_link2, dependency_child);
 		proceed_all |= proceed_2;
@@ -1451,7 +1445,7 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	if (order == Order::RANDOM) {
 		Proceed proceed_2= execute_children(dependency_link2, finished_here);
 		proceed_all |= proceed_2; 
-		if (proceed_all & P_BIT_WAIT)
+		if (proceed_all & P_WAIT)
 			return proceed_all;
 		if (finished_here && ! option_keep_going) {
 			return proceed_all;
@@ -1483,7 +1477,7 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_l
 			       dependency_link_this->format_out(), 
 			       dependency_child->format_out())); 
 
-	Flags flags_child= dependency_child->get_flags(); 
+	Flags flags_child= dependency_child->flags; 
 
 	if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency_child)) {
 		/* This is a concatenated dependency:  Create a new
@@ -1608,7 +1602,7 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_l
 		children.insert(child);
 
 		Proceed proceed_child= child->execute(this, dependency_link_child_new);
-		if (proceed_child & (P_BIT_WAIT | P_BIT_PENDING))
+		if (proceed_child & (P_WAIT | P_PENDING))
 			return proceed_child; 
 			
 		if (child->finished(flags_child)) {
@@ -1709,13 +1703,11 @@ void Execution::disconnect(Execution *const parent,
 	 * Propagate variables over transient targets without commands
 	 * and dynamic targets
 	 */
-	if ((dynamic_cast <File_Execution *>(child) && 
-	     dynamic_cast <File_Execution *> (child)->is_dynamic()) ||
-	    (dynamic_pointer_cast <const Single_Dependency> (dependency_child)
-	     && dynamic_pointer_cast <const Single_Dependency> (dependency_child)
-	     ->place_param_target.flags & F_TARGET_TRANSIENT
-	     && dynamic_cast <File_Execution *> (child)->get_rule() != nullptr 
-	     && dynamic_cast <File_Execution *> (child)->get_rule()->command == nullptr)) {
+	if (dynamic_pointer_cast <const Single_Dependency> (dependency_child)
+	    && dynamic_pointer_cast <const Single_Dependency> (dependency_child)
+	    ->place_param_target.flags & F_TARGET_TRANSIENT
+	    && dynamic_cast <File_Execution *> (child)->get_rule() != nullptr 
+	    && dynamic_cast <File_Execution *> (child)->get_rule()->command == nullptr) {
 
 		if (dynamic_cast <File_Execution *> (parent)) {
 			dynamic_cast <File_Execution *> (parent)->add_variables
@@ -1860,7 +1852,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 
 		/* Add flags from self */
 		shared_ptr <Dependency> dd_new= Dependency::clone_dependency(dd); 
-		dd_new->add_flags(flags);
+		dd_new->flags |= flags;
 		dd= dd_new; 
 		// XXX add places of flags 
 //		for (int i= 0;  i < C_PLACED;  ++i) {
@@ -1944,8 +1936,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 					     place_param_target,
 					     dependencies);
 				for (auto &j:  dependencies) {
-					push_result(j, 
-						    dependency_this->get_flags()); 
+					push_result(j, dependency_this->flags); 
 				}
 			}
 		} catch (int e) {
@@ -2185,7 +2176,7 @@ File_Execution::File_Execution(Target2 target2_,
 			if (target2_.is_any_transient()) {
 				shared_ptr <Dependency> dep_new= Dependency::clone_dependency(dep); 
 					
-				dep_new->add_flags(dependency_link->flags);
+				dep_new->flags |= dependency_link->flags;
 				dep= dep_new;
 			
 			} 
@@ -2506,7 +2497,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 		flags_finished |= ~dependency_link->flags;
 	}
 
-	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
+	if (proceed & (P_WAIT | P_PENDING)) {
 		return proceed; 
 	}
 
@@ -2515,13 +2506,13 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	assert(children.empty()); 
 
 	if (finished(dependency_link->flags)) {
-		assert(!(proceed & P_BIT_WAIT)); 
+		assert(!(proceed & P_WAIT)); 
 		return P_CONTINUE; 
 	}
 
 	/* Job has already been started */ 
 	if (job.started_or_waited()) {
-		return proceed | P_BIT_WAIT;
+		return proceed | P_WAIT;
 	}
 
 	/* The file must now be built */ 
@@ -2693,7 +2684,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 
 	/* Re-deploy all dependencies (second pass) */
 	Proceed proceed_2= Execution::execute_second_pass(dependency_link); 
-	if (proceed_2 & P_BIT_WAIT)
+	if (proceed_2 & P_WAIT)
 		return proceed_2; 
 
 	if (no_execution) {
@@ -2734,7 +2725,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	/* We know that a job has to be started now */
 
 	if (jobs == 0) 
-		return proceed | P_BIT_WAIT; 
+		return proceed | P_WAIT; 
        
 	/* We have to start a job now */ 
 
@@ -2776,7 +2767,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 			/* If optional copy, don't just call 'cp' and
 			 * let it fail:  look up whether the source
 			 * exists in the cache */
-			if (rule->dependencies.at(0)->get_flags() & F_OPTIONAL) {
+			if (rule->dependencies.at(0)->flags & F_OPTIONAL) {
 				Execution *execution_source_base=
 					executions_by_target2.at(Target2(0, source));
 				assert(execution_source_base); 
@@ -2836,9 +2827,9 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	--jobs;
 	assert(jobs >= 0);
 
-	Proceed p= P_BIT_WAIT;
+	Proceed p= P_WAIT;
 	if (order == Order::RANDOM && jobs > 0)
-		p |= P_BIT_PENDING; 
+		p |= P_PENDING; 
 
 	return p;
 }
@@ -2939,7 +2930,7 @@ void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency
 
 	/* The variable name */ 
 	dependency_variable_name=
-		dynamic_pointer_cast <const Single_Dependency> (dependency)->name; 
+		dynamic_pointer_cast <const Single_Dependency> (dependency)->variable_name; 
 
 	{
 	string variable_name= 
@@ -2982,12 +2973,6 @@ void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency
 	 * threw an error, or set the error, which will be picked up by
 	 * the parent.  */
 	return;
-}
-
-bool File_Execution::is_dynamic() const
-{
-	assert(targets2.size() != 0); 
-	return targets2.front().is_dynamic(); 
 }
 
 bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_link)
@@ -3054,7 +3039,7 @@ Execution::Proceed Root_Execution::execute(Execution *,
 
 	Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
 
-	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
+	if (proceed & (P_WAIT | P_PENDING)) {
 		assert(! finished_here); 
 		return proceed;
 	}
@@ -3146,7 +3131,7 @@ Execution::Proceed Concatenated_Execution::execute(Execution *,
 		/* First phase:  we build all individual targets, if there are some */ 
 		bool finished_here= false;
 		Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
-		if (proceed & P_BIT_WAIT) {
+		if (proceed & P_WAIT) {
 			return proceed;
 		}
 
@@ -3172,11 +3157,11 @@ Execution::Proceed Concatenated_Execution::execute(Execution *,
 		assert(! dependency); 
 		bool finished_here= false;
 		Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
-		if (proceed & P_BIT_WAIT) {
+		if (proceed & P_WAIT) {
 			return proceed;
 		}
 
-		assert((proceed & P_BIT_WAIT) == 0); 
+		assert((proceed & P_WAIT) == 0); 
 
 		stage= 3; 
 
@@ -3230,7 +3215,7 @@ concatenate_dependency_one(shared_ptr <const Single_Dependency> dependency_1,
  *   - The second component must not be transient. 
  */
 {
-	assert(dependency_2->get_flags() == 0);
+	assert(dependency_2->flags == 0);
 	// TODO test:  replace by a proper error 
 
 	assert(! (dependency_2->place_param_target.flags & F_TARGET_TRANSIENT)); 
@@ -3240,7 +3225,7 @@ concatenate_dependency_one(shared_ptr <const Single_Dependency> dependency_1,
 	target.place_name.append(dependency_2->place_param_target.place_name); 
 
 	return make_shared <Single_Dependency> 
-		(dependency_flags & dependency_1->get_flags(),
+		(dependency_flags & dependency_1->flags,
 		 target,
 		 dependency_1->place,
 		 "");
@@ -3342,7 +3327,7 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <Dependency> dependency_link,
 	/* Push left branch dependency */ 
 	shared_ptr <Dependency> dependency_left=
 		Dependency::clone_dependency(dependency->dependency);
-	dependency_left->add_flags(F_DYNAMIC_LEFT | F_RESULT_ONLY); 
+	dependency_left->flags |= F_DYNAMIC_LEFT | F_RESULT_ONLY; 
 	push_dependency(dependency_left); 
 }
 
@@ -3357,7 +3342,7 @@ Execution::Proceed Dynamic_Execution::execute(Execution *,
 		is_finished= true; 
 	}
 
-	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
+	if (proceed & (P_WAIT | P_PENDING)) {
 		return proceed; 
 	}
 
@@ -3398,7 +3383,7 @@ Execution::Proceed Transient_Execution::execute(Execution *,
 
 	Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
 
-	if (proceed & (P_BIT_WAIT | P_BIT_PENDING)) {
+	if (proceed & (P_WAIT | P_PENDING)) {
 		return proceed; 
 	}
 

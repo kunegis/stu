@@ -76,13 +76,13 @@ const char HELP[]=
 	"  -p FILENAME      Build a persistent dependency, i.e., ignore its timestamp\n"
 	"  -P               Print the rules and exit\n"                               
 	"  -q               Question mode: check whether targets are up to date\n"    
-	"  -s               Silent mode: don't use standard output\n"
+	"  -s               Silent mode: don't use stdout\n"
 	"  -V               Output version and exit\n"				      
 	"  -x               Output each line in a command individually\n"              
 	"  -y               Disable color in output\n"                                
 	"  -Y               Enable color in output\n"
 	"  -z               Output run-time statistics on stdout\n"                   
-	"Report bugs to: kunegis@gmail.com\n" 
+	"Report bugs to: " PACKAGE_BUGREPORT "\n" 
 	"Stu home page: <https://github.com/kunegis/stu>\n";
 
 const char VERSION_INFO[]=

@@ -37,7 +37,7 @@ class Execution
  *
  * The set of active Execution objects forms a directed acyclic graph,
  * rooted at a single Root_Execution object.  Edges in this graph are
- * represented by Link objects.  An edge is said to go from a parent to
+ * represented by dependencies.  An edge is said to go from a parent to
  * a child.  Each Execution object corresponds to one or more unique
  * dependencies.  Two Execution objects are connected if there is a
  * dependency between them.  If there is an edge A ---> B, A is said to
@@ -73,8 +73,8 @@ public:
 	enum {
 		B_NEED_BUILD = 1 << 0,
 		/* Whether this target needs to be built.  When a target is
-		 * finished, this value is propagated to the parent executions
-		 * (except when the F_PERSISTENT flag is set).  */ 
+		 * finished, this value is propagated to the parent executions,
+		 * except when the F_PERSISTENT flag is set.  */ 
 
 		B_CHECKED    = 1 << 1,
 		/* Whether a certain check has been performed.  Only
@@ -82,8 +82,9 @@ public:
 	};
 
 	void raise(int error_);
-	/* All errors by Execution call this function.  Set the error
-	 * code, and throw an error except with the keep-going option.  */
+	/* All errors by Execution objects call this function.  Set the
+	 * error code, and throw an error except with the keep-going
+	 * option.  */
 
 	Proceed execute_base(shared_ptr <const Dependency> dependency_link,
 			     bool &finished_here);
@@ -1314,6 +1315,11 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 			disconnect(this, child, 
 				   dependency_link, 
 				   dependency_child, flags_child); 
+		} else {
+			assert(proceed_child == P_CONTINUE); 
+			/* If the child execution is not finished, it
+			 * must have returned either the P_WAIT or
+			 * P_PENDING bit.  */
 		}
 	}
 
@@ -1358,7 +1364,7 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	Debug::print(this, fmt("execute(%s)", 
 			       dependency_link != nullptr ? dependency_link->format_out() : "NULL")); 
 
-	shared_ptr <Dependency> dependency_link2= Dependency::clone_dependency(dependency_link); 
+	shared_ptr <Dependency> dependency_link2= Dependency::clone(dependency_link); 
 
 	/* Override the trivial flag */ 
 	if (dependency_link2->flags & F_OVERRIDE_TRIVIAL) {
@@ -1433,7 +1439,7 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	while (! buffer_default.empty()) {
 		shared_ptr <const Dependency> dependency_child= buffer_default.next(); 
 		shared_ptr <Dependency> dependency_child_overridetrivial= 
-			Dependency::clone_dependency(dependency_child);
+			Dependency::clone(dependency_child);
 		dependency_child_overridetrivial->flags |= F_OVERRIDE_TRIVIAL; 
 		buffer_trivial.push(dependency_child_overridetrivial); 
 		Proceed proceed_2= connect(dependency_link2, dependency_child);
@@ -1582,7 +1588,7 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_l
 #endif /* 0 */ 
 
 		shared_ptr <Dependency> dependency_link_child_new=
-			Dependency::clone_dependency(dependency_child);
+			Dependency::clone(dependency_child);
 		dependency_link_child_new->flags= flags_child;
 
 		Execution *child= get_execution(dependency_link_child_new->get_target2(),
@@ -1776,7 +1782,7 @@ Execution *Execution::get_execution(Target2 target2,
 			 * necessary flags */ 
 			Flags flags= dependency_link->flags; 
 			if (flags & ~execution->parents.at(parent)->flags) {
-				shared_ptr <Dependency> d= Dependency::clone_dependency(execution->parents.at(parent));
+				shared_ptr <Dependency> d= Dependency::clone(execution->parents.at(parent));
 				d->flags |= flags;
 				dependency_link= d;
 				execution->parents[parent]= dependency_link; 
@@ -1845,7 +1851,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 	    ! (flags & F_RESULT_ONLY)) {
 
 		/* Add flags from self */
-		shared_ptr <Dependency> dd_new= Dependency::clone_dependency(dd); 
+		shared_ptr <Dependency> dd_new= Dependency::clone(dd); 
 		dd_new->flags |= flags;
 		dd= dd_new; 
 		// XXX add places of flags 
@@ -2185,7 +2191,7 @@ File_Execution::File_Execution(Target2 target2_,
 
 			shared_ptr <const Dependency> dep= dependency;
 			if (target2_.is_any_transient()) {
-				shared_ptr <Dependency> dep_new= Dependency::clone_dependency(dep); 
+				shared_ptr <Dependency> dep_new= Dependency::clone(dep); 
 					
 				dep_new->flags |= dependency_link->flags;
 				dep= dep_new;
@@ -2502,7 +2508,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	}       
 
 	bool finished_here= false;
-	Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
+	Proceed proceed= execute_base(dependency_link, finished_here); 
 
 	if (finished_here) {
 		flags_finished |= ~dependency_link->flags;
@@ -3048,7 +3054,7 @@ Execution::Proceed Root_Execution::execute(Execution *,
 	
 	bool finished_here= false;
 
-	Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
+	Proceed proceed= execute_base(dependency_link, finished_here); 
 
 	if (proceed & (P_WAIT | P_PENDING)) {
 		assert(! finished_here); 
@@ -3080,7 +3086,7 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <const Dependency> dep
 	dep= Dependency::strip_dynamic(dep); 
 	assert(dynamic_pointer_cast <const Concatenated_Dependency> (dep));
 	shared_ptr <Concatenated_Dependency> concatenated_dependency= 
-		dynamic_pointer_cast <Concatenated_Dependency> (Dependency::clone_dependency(dep));
+		dynamic_pointer_cast <Concatenated_Dependency> (Dependency::clone(dep));
 
 	for (size_t i= 0;  i < concatenated_dependency->get_dependencies().size();  ++i) {
 
@@ -3141,7 +3147,7 @@ Execution::Proceed Concatenated_Execution::execute(Execution *,
 	if (stage == 1) {
 		/* First phase:  we build all individual targets, if there are some */ 
 		bool finished_here= false;
-		Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
+		Proceed proceed= execute_base(dependency_link, finished_here); 
 		if (proceed & P_WAIT) {
 			return proceed;
 		}
@@ -3167,7 +3173,7 @@ Execution::Proceed Concatenated_Execution::execute(Execution *,
 		/* Second phase:  normal child executions */
 		assert(! dependency); 
 		bool finished_here= false;
-		Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
+		Proceed proceed= execute_base(dependency_link, finished_here); 
 		if (proceed & P_WAIT) {
 			return proceed;
 		}
@@ -3336,8 +3342,7 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dependency> dependency_li
 	}
 
 	/* Push left branch dependency */ 
-	shared_ptr <Dependency> dependency_left=
-		Dependency::clone_dependency(dependency->dependency);
+	shared_ptr <Dependency> dependency_left= Dependency::clone(dependency->dependency);
 	dependency_left->flags |= F_DYNAMIC_LEFT | F_RESULT_ONLY; 
 	push_dependency(dependency_left); 
 }
@@ -3347,15 +3352,17 @@ Execution::Proceed Dynamic_Execution::execute(Execution *,
 {
 	bool finished_here= false;
 
-	Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
+	Proceed proceed= execute_base(dependency_link, finished_here); 
+
+	assert(proceed != P_CONTINUE || finished_here); 
 
 	if (finished_here) {
 		is_finished= true; 
 	}
 
-	if (proceed & (P_WAIT | P_PENDING)) {
-		return proceed; 
-	}
+//	if (proceed & (P_WAIT | P_PENDING)) {
+//		return proceed; 
+//	}
 
 	return proceed; 
 }
@@ -3392,7 +3399,7 @@ Execution::Proceed Transient_Execution::execute(Execution *,
 {
 	bool finished_here= false;
 
-	Proceed proceed= Execution::execute_base(dependency_link, finished_here); 
+	Proceed proceed= execute_base(dependency_link, finished_here); 
 
 	if (proceed & (P_WAIT | P_PENDING)) {
 		return proceed; 

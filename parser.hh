@@ -844,7 +844,7 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 		/* Add the flag */ 
 		if (! ((i_flag == I_OPTIONAL && option_nonoptional) ||
 		       (i_flag == I_TRIVIAL  && option_nontrivial))) {
-			shared_ptr <Dependency> ret_new= Dependency::clone_dependency(ret);
+			shared_ptr <Dependency> ret_new= Dependency::clone(ret);
 			ret_new->flags |= (1 << i_flag); 
 			if (i_flag < C_TRANSITIVE)
 				ret_new->set_place_flag(i_flag, place_flag); 

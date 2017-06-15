@@ -118,7 +118,7 @@ public:
 	/* Return either a normalized version of this dependency, or a
 	 * Compound_Dependency containing normalized dependencies */ 
 
-	static shared_ptr <Dependency> clone_dependency(shared_ptr <const Dependency> dependency);
+	static shared_ptr <Dependency> clone(shared_ptr <const Dependency> dependency);
 	/* A shallow clone.  */
 
 	static shared_ptr <const Dependency> strip_dynamic(shared_ptr <const Dependency> d);
@@ -541,7 +541,7 @@ void Dependency::make_normalized(vector <shared_ptr <const Dependency> > &depend
 		shared_ptr <const Compound_Dependency> compound_dependency=
 			dynamic_pointer_cast <const Compound_Dependency> (dependency);
 		for (auto &d:  compound_dependency->get_dependencies()) {
-			shared_ptr <Dependency> dd= Dependency::clone_dependency(d); 
+			shared_ptr <Dependency> dd= Dependency::clone(d); 
 			dd->add_flags(compound_dependency, false);  
 			make_normalized(dependencies, dd); 
 		}
@@ -549,7 +549,7 @@ void Dependency::make_normalized(vector <shared_ptr <const Dependency> > &depend
 	} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency)) {
 
 		shared_ptr <Concatenated_Dependency> d= 
-			dynamic_pointer_cast <Concatenated_Dependency> (Dependency::clone_dependency(dependency)); 
+			dynamic_pointer_cast <Concatenated_Dependency> (Dependency::clone(dependency)); 
 		d->make_normalized(); 
 		// TODO use D 
 
@@ -576,7 +576,7 @@ shared_ptr <const Dependency> Dependency::make_normalized_compound(shared_ptr <c
 	}
 }
 
-shared_ptr <Dependency> Dependency::clone_dependency(shared_ptr <const Dependency> dependency)
+shared_ptr <Dependency> Dependency::clone(shared_ptr <const Dependency> dependency)
 {
 	// TODO we can optimize this by returning the object itself if
 	// it is unique.  This however violates const-correctness. 
@@ -632,10 +632,8 @@ Target2 Dynamic_Dependency::get_target2() const
 	string text;
 	
 	const Dependency *d= this; 
-//	shared_ptr <const Dependency> d(this); 
 	
 	while (dynamic_cast <const Dynamic_Dependency *> (d)) {
-//		auto dyn= dynamic_pointer_cast <const Dynamic_Dependency> (d); 
 		Flags f= F_TARGET_DYNAMIC; 
 		f |= d->flags; 
 		text += (char) f; 

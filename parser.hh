@@ -215,7 +215,6 @@ shared_ptr <Rule> Parser::parse_rule()
 
 		Flags flags_type= 0;
 		/* F_TARGET_TRANSIENT is set when '@' is found */ 
-//		Type type= Type::FILE;
 
 		Place place_target;
 		if (iter != tokens.end()) 
@@ -239,10 +238,7 @@ shared_ptr <Rule> Parser::parse_rule()
 			}
 
 			if (! place_output_new.empty()) {
-				Target2 target2(
-					       F_TARGET_TRANSIENT
-//					       Type::TRANSIENT
-					       , is <Name_Token> ()->raw()); 
+				Target2 target2(F_TARGET_TRANSIENT, is <Name_Token> ()->raw()); 
 				place_at << 
 					fmt("transient target %s is invalid",
 					    target2.format_word()); 

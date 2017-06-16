@@ -190,7 +190,6 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	assert(redirect_index < (ssize_t) place_param_targets.size());
 	if (redirect_index >= 0) {
 		assert((place_param_targets[redirect_index]->flags & F_TARGET_TRANSIENT) == 0); 
-//		assert(place_param_targets[redirect_index]->type == Type::FILE); 
 	}
 
 	/* Check that all dependencies only include
@@ -219,10 +218,7 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 {
 	auto dependency= 
 		make_shared <Single_Dependency> 
-		(0, Place_Param_Target(
-				       0
-//				       Type::FILE
-				       , *place_name_source_));
+		(0, Place_Param_Target(0, *place_name_source_));
 
 	if (! place_persistent.empty()) {
 		dependency->flags |= F_PERSISTENT;
@@ -399,7 +395,6 @@ shared_ptr <Rule> Rule_Set::get(Target2 target2,
 				const Place &place)
 {
 	assert(target2.is_file() || target2.is_transient()); 
-//	assert(target.type == Type::FILE || target.type == Type::TRANSIENT); 
 	assert(mapping_out.size() == 0); 
 
 	/* Check for an unparametrized rule.  Since we keep them in a

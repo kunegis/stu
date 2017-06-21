@@ -300,6 +300,10 @@ X = {x}   Y = {y}  Z = {z}
 # the file contains the nul byte '\0'. 
 #
 
+#
+# Make sure we don't compile in any of the multi-threaded libraries. 
+#
+
 #################### Further features #########################
 
 #

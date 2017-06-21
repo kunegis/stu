@@ -22,7 +22,8 @@
 #		containing only (e.g.) ".svn".  Ignores dotfiles. 
 #     $NDEBUG	Set to non-empty to test the nondebug version; by default
 #		the debug version is tested 
-#     $VARIANT  Other variant of the compiled file 
+#     $VARIANT  Other variant of the compiled file; the default is to
+#		take the file that matches the value of $NDEBUG
 #     $verbose  Set to non-empty for verbose output 
 #
 # OUTPUT FILES

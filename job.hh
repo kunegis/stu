@@ -460,7 +460,7 @@ pid_t Job::start_copy(string target,
 		int r= execv(cp_command, (char *const *) argv); 
 
 		assert(r == -1); 
-		perror("execve");
+		perror("execv");
 		_Exit(127); 
 	}
 
@@ -532,11 +532,11 @@ pid_t Job::wait(int *status)
 		return pid;
 	}
 
-	/* Any SIGCHLD sent after the last call to sigwaitinfo() will be
+	/* Any SIGCHLD sent after the last call to sigwait() will be
 	 * ready for receiving, even those SIGCHLD signals received
 	 * between the last call to waitpid() and the following call to
-	 * sigwaitinfo().  This excludes a deadlock which would be
-	 * possible if we would only use sigwaitinfo(). */
+	 * sigwait().  This excludes a deadlock which would be
+	 * possible if we would only use sigwait(). */
 
 	int sig;
 	int r;
@@ -549,7 +549,7 @@ pid_t Job::wait(int *status)
 			/* This should not happen, but be prepared */
 			goto retry;
 		} else {
-			perror("sigwaitinfo");
+			perror("sigwait");
 			abort(); 
 		}
 	}

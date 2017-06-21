@@ -1,7 +1,6 @@
 #ifndef TARGET_HH
 #define TARGET_HH
 
-//#include "type.hh"
 #include "flags.hh"
 
 /* 
@@ -31,169 +30,6 @@
  *     * Dedicated classes exist to represent these with _places_. 
  */
 
-#if 0 // TODO RM
-/* 
- * The basic object in Stu: a file, a variable, or a dynamic version of
- * these.  This consists of a name together with a type.  This class is
- * not parametrized, and does not contain a place object.  It is used as
- * keys in maps.
- */ 
-// TODO deprecate:  This was only used for indexing Execution objects,
-// and is now replaced by Target2. 
-class Target
-{
-public:
-
-	Type type;
-	string name;
-
-	Target(Type type_)
-		:  type(type_),
-		   name("")
-		{ }
-
-	Target(Type type_, string name_)
-		:  type(type_),
-		   name(name_)
-		{ }
-
-	string format(Style style, bool &quotes) const {
-
-		quotes= false;
-
-		Style style2= 0;
-		if (type != Type::FILE)
-			style2 |= S_MARKERS;
-		else 
-			style2 |= style; 
-
-		bool quotes2= false;
-
-		string text= name_format(name, style2, quotes2); 
-
-//		quotes= false;
-		
-		return fmt("%s%s%s%s%s%s", 
-			   string(type.get_depth(), '['),
-			   type.is_any_transient() ? "@" : "",
-			   quotes2 ? "'" : "",
-			   text,
-			   quotes2 ? "'" : "",
-			   string(type.get_depth(), ']'));
-	}
-
-	string format_word() const {
-
-		Style style= 0;
-		if (type != Type::FILE)
-			style |= S_MARKERS;
-
-		bool quotes= 
-			(type == Type::FILE
-			 ? Color::quotes
-			 : false);
-
-		string text= name_format(name, style, quotes); 
-		
-		return fmt("%s%s%s%s%s%s%s%s", 
-			   Color::word, 
-			   string(type.get_depth(), '['),
-			   type.is_any_transient() ? "@" : "",
-			   quotes ? "'" : "",
-			   text,
-			   quotes ? "'" : "",
-			   string(type.get_depth(), ']'),
-			   Color::end);
-	}
-
-	string format_out_print_word() const {
-
-		Style style= 0;
-		if (type != Type::FILE)
-			style |= S_MARKERS;
-
-		bool quotes= 
-			(type == Type::FILE
-			 ? Color::quotes_out
-			 : 0);
-
-		string text= name_format(name, style, quotes); 
-		
-		return fmt("%s%s%s%s%s%s%s%s", 
-			   Color::out_print_word, 
-			   string(type.get_depth(), '['),
-			   type.is_any_transient() ? "@" : "",
-			   quotes ? "'" : "",
-			   text,
-			   quotes ? "'" : "",
-			   string(type.get_depth(), ']'),
-			   Color::out_print_word_end);
-	}
-
-	string format_out() const {
-
-		Style style= 0;
-		if (type != Type::FILE)
-			style |= S_MARKERS;
-
-		bool quotes= type == Type::FILE;
-		
-		string text= name_format(name, style, quotes); 
-
-		return fmt("%s%s%s%s%s%s", 
-			   string(type.get_depth(), '['),
-			   type.is_any_transient() ? "@" : "",
-			   quotes ? "'" : "",
-			   text,
-			   quotes ? "'" : "",
-			   string(type.get_depth(), ']')); 
-	}
-
-	string format_src() const {
-
-		Style style= 0;
-		if (type != Type::FILE)
-			style |= S_MARKERS;
-
-		bool quotes= src_need_quotes(name); 
-		
-		string text= name_format(name, style, quotes); 
-
-		return fmt("%s%s%s%s%s%s", 
-			   string(type.get_depth(), '['),
-			   type.is_any_transient() ? "@" : "",
-			   quotes ? "'" : "",
-			   text,
-			   quotes ? "'" : "",
-			   string(type.get_depth(), ']')); 
-	}
-
-	bool operator== (const Target &target) const {
-		return this->type == target.type &&
-			this->name == target.name;
-	}
-
-	bool operator< (const Target &target) const {
-		return this->type < target.type ||
-			(this->type == target.type && this->name < target.name);
-	}
-};
-
-/* A hash function for Target objects, because they are used as keys in
- * containers.  */
-namespace std {
-	template <>
-	struct hash <Target>
-	{
-		size_t operator()(const Target &target) const {
-			return
-				hash <string> ()(target.name)
-				^ target.type.get_value_for_hash();
-		}
-	};
-}
-#endif /* 0 */ 
-
 /* 
  * A representation of single dependency, as well as dyn^* of single
  * dependencies, mainly used as the key in the caching of Execution
@@ -201,7 +37,7 @@ namespace std {
  * 
  * This also encodes the options at all levels of the dependency. 
  */
-// TODO rename 'Target' after class Target is removed 
+// TODO rename 'Target' 
 class Target2
 {
 public:
@@ -216,7 +52,6 @@ public:
 		: text(((char) flags) + name)
 	{
 		assert((flags & ~F_TARGET_TRANSIENT) == 0); 
-//		assert(type.is_file() || type.is_transient()); 
 		assert(name.find('\0') == string::npos); /* Names do not contain \0 */
 		assert(name != ""); 
 	}
@@ -231,13 +66,11 @@ public:
 	bool is_file() const {
 		assert(text.size() >= 2); 
 		return (text.at(0) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0; 
-//		return (text.at(0) & (F_DYNAMIC_TARGET | Type::T_MASK_FILE_TRANSIENT)) == Type::T_FILE; 
 	}
 
 	bool is_transient() const {
 		assert(text.size() >= 2); 
 		return (text.at(0) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == F_TARGET_TRANSIENT; 
-//		return (text.at(0) & (F_DYNAMIC_TARGET | Type::T_MASK_FILE_TRANSIENT)) == Type::T_TRANSIENT;
 	}
 
 	bool is_any_file() const {
@@ -324,6 +157,8 @@ private:
 	 * dependency. 
 	 *
 	 * Any of the front bytes may contain additional flag bits. 
+	 *
+	 * Empty to denote a "null" value, in which case most functions should not be used. 
 	 */
 };
 
@@ -555,18 +390,12 @@ public:
 
 	Flags flags;
 	/* Only file/transient target info */
-//	Type type;
-//	/* Non-dynamic */ 
 
 	Name name; 
  
-	Param_Target(
-		     Flags flags_,
-		     //Type type_,
+	Param_Target(Flags flags_,
 		     const Name &name_)
-		:  
-		flags(flags_),
-		//type(type_),
+		:  flags(flags_),
 		   name(name_)
 	{ 
 		assert((flags_ & ~F_TARGET_TRANSIENT) == 0); 
@@ -588,13 +417,10 @@ public:
 
 		Style style= 0;
 		if (flags & F_TARGET_TRANSIENT)
-//		if (type != Type::FILE)
 			style |= S_MARKERS;
 
 		bool quotes2= 
-			(
-			 flags == 0
-			 //type == Type::FILE
+			(flags == 0
 			 ? Color::quotes
 			 : 0);
 
@@ -602,13 +428,10 @@ public:
 		
 		return fmt("%s%s%s%s%s%s", 
 			   Color::word, 
-//			   string(type.get_depth(), '['),
 			   flags ? "@" : "",
-//			   type.is_any_transient() ? "@" : "",
 			   quotes2 ? "'" : "",
 			   text,
 			   quotes2 ? "'" : "",
-//			   string(type.get_depth(), ']'),
 			   Color::end);
 	}
 
@@ -621,7 +444,6 @@ public:
 
 	bool operator == (const Param_Target &that) const {
 		return this->flags == that.flags &&
-//		return this->type == that.type &&
 			this->name == that.name; 
 	}
 
@@ -692,8 +514,6 @@ public:
 
 	Flags flags;
 	/* Only F_TARGET_TRANSIENT is used */ 
-//	Type type; 
-//	/* Non-dynamic */ 
 
 	Place_Name place_name;
 
@@ -711,14 +531,10 @@ public:
 		assert((flags_ & ~F_TARGET_TRANSIENT) == 0); 
 	}
 
-	Place_Param_Target(
-			   Flags flags_,
-			   //Type type_,
+	Place_Param_Target(Flags flags_,
 			   const Place_Name &place_name_,
 			   const Place &place_)
-		:  
-		flags(flags_),
-		//type(type_),
+		:  flags(flags_),
 		   place_name(place_name_),
 		   place(place_)
 	{ 
@@ -728,13 +544,11 @@ public:
 	/* Compares only the content, not the place. */ 
 	bool operator == (const Place_Param_Target &that) const {
 		return this->flags == that.flags && 
-//		return this->type == that.type &&
 			this->place_name == that.place_name; 
 	}
 
 	string format(Style style, bool &need_quotes) const {
 		Target2 target2(flags, place_name.raw()); 
-//		Target target(type, place_name.raw());
 		return target2.format(style, need_quotes); 
 	}
 	

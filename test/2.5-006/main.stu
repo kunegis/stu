@@ -1,14 +1,11 @@
-A:  -o @x { touch A ; }
-@x:  [B];
-B { echo C >B ; }
+A: [B] { touch A ; }
+B { printf '%s\n' '-o C' >B ; }
 C { exit 1 ; }
 
 #
-#      A
-#      |
-#     @x
-#      |
-#     [B]
-#     /
-#    B
+#       A
+#       |
+#      [B]
+#      / \
+#     B   C
 #

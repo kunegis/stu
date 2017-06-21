@@ -13,8 +13,6 @@
 #include <queue>
 #include <random>
 
-//#include "link.hh"
-
 static default_random_engine buffer_generator;
 
 /* 
@@ -36,8 +34,8 @@ private:
 
 	/* All contained dependencies are normalized */
 
-	queue <shared_ptr <Dependency> > q;
-	vector <shared_ptr <Dependency> > v;
+	queue <shared_ptr <const Dependency> > q;
+	vector <shared_ptr <const Dependency> > v;
 
 public:
 
@@ -48,7 +46,7 @@ public:
 			return q.size();
 	}
 
-	shared_ptr <Dependency> next() 
+	shared_ptr <const Dependency> next() 
 	/* Return the next element, removing it from the buffer at the
 	 * same time  */
 	{
@@ -57,17 +55,17 @@ public:
 			size_t k= random_number(s);
 			if (k + 1 < s) 
 				swap(v[k], v[s - 1]); 
-			shared_ptr <Dependency> ret= v[s - 1];
+			shared_ptr <const Dependency> ret= v[s - 1];
 			v.resize(s - 1); 
 			return ret; 
 		} else {
-			shared_ptr <Dependency> ret= q.front();
+			shared_ptr <const Dependency> ret= q.front();
 			q.pop(); 
 			return ret; 
 		}
 	}
 
-	void push(shared_ptr <Dependency> d)
+	void push(shared_ptr <const Dependency> d)
 	/* Add to the end of the queue (if sorted, otherwise, just
 	 * add) */ 
 	{

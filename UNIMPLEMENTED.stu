@@ -658,6 +658,21 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 # any programming language can then communicate with the Stu server. 
 #
 
+#
+# Input and output to transients as a way to implement pipe-like
+# constructs.  
+#
+
+>@data.filtered:  <data
+{
+	sed -e '...' 
+}
+
+plot.eps:  <@data.filtered
+{
+	... -o plot.eps 
+}
+
 #==== External features ====
 
 #

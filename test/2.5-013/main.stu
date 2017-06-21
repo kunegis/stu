@@ -1,14 +1,18 @@
-A: [@x] { cp D A ; }
-@x B: C { echo bbb >B ; }
-C { echo D >C ; }
-D { echo correct >D ; }
+A:  [[@´]] { cp E A ; }
+E { echo correct >E ; }
+D { echo E >D ; }
+C { echo '[D]' >C ; }
+B { echo C >B ; }
+@´:  B;
 
 #
-#         A
-#         |
-#       [@x] 
-#        / \
-#      @x,B D
-#       |
-#       C
+#           A 
+#           |   
+#        [[@´]]  
+#          / \
+#       [@´] [C]
+#        /   / \
+#      @´   C  [D]
+#       |      / \
+#       B     D   E
 #

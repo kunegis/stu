@@ -1,14 +1,12 @@
-A: [B] { cp D A ; }
-B = {[C]}
-C = {D}
-D = {correct}
+# Make sure 'D' is built.  
+#
+# Make sure the cached execution for [B] has its list ready and outputs
+# it correctly.  
 
-#
-#         A
-#         |
-#        [B]
-#        / \
-#       B  [C]
-#          / \
-#         C   D
-#
+A:  -o [[B]]  [[B]]  {
+	cp D A
+}
+
+B = { C }
+C = { D }
+D = {ddd}

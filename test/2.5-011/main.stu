@@ -1,14 +1,14 @@
-A: [B]  { cp D A ; }
-B:  C { cp C B ; }
-C:    { echo D >C ; }
-D     { echo correct >D ; }
+A: [B] { cp D A ; }
+B = {[C]}
+C = {D}
+D = {correct}
 
 #
-#        A
-#        |
-#       [B]
-#       / \
-#      B   D
-#      |
-#      C
-# 
+#         A
+#         |
+#        [B]
+#        / \
+#       B  [C]
+#          / \
+#         C   D
+#

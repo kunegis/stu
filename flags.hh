@@ -56,11 +56,6 @@ enum
 
 	C_ALL,                 /* Total number of flags */ 
 
-	/* Base bit and length of the concatenation index numbers */
-//	C_CONCATENATE_BASE  = C_ALL,
-//	C_CONCATENATE_COUNT = CHAR_BIT * sizeof(Flags) - C_ALL,
-//	C_CONCATENATE_MAX = (1 << C_CONCATENATE_COUNT) - 1,
-
 	C_PLACED           = 3,
 	/* Only the first C_PLACED flags have a place associated with them */
 

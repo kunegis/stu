@@ -677,16 +677,16 @@ unquoted filenames:
 
     #     Comment (until the end of the line)
     %     Directive (followed by directive name and arguments)
-    '     Quote; without escape sequences
-    "     Quote; with escape sequences
+    '     Quote, without escape sequences
+    "     Quote, with escape sequences
     :     Separator for rule definition
-    ;     For rules without command, end of dependency declaration 
+    ;     In rules without command, end of dependency declaration 
     -     Prefix character for flag, followed by a single character 
     $     Parameter
     @     Transient target marker
     >     Output redirection
     <     Input redirection
-    =     Assignment rule, copy rule, named variable
+    =     Assignment rule; copy rule; named variable
     { }   Command
     ( )   List
     [ ]   Dynamic dependency
@@ -796,7 +796,7 @@ Symlinks are treated transparently by Stu.  In other words, Stu will
 always consider the timestamp of the linked-to file.  A symlink to a
 non-existing file will be treated as a non-existing file. 
 
-Stu uses jobs control:  Each job is put into its own process group.
+Stu uses job control:  Each job is put into its own process group.
 All jobs are put into the background, except when the option 
 .BR -i 
 is used.  When 

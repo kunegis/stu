@@ -3673,10 +3673,12 @@ Transient_Execution::~Transient_Execution()
 Execution::Proceed Transient_Execution::execute(Execution *parent, 
 						shared_ptr <Dependency> dependency_link)
 {
+	...;
 }
 
 bool Transient_Execution::finished() const
 {
+	...;
 }
 
 bool Transient_Execuion::finished(Flags flags) const

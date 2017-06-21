@@ -41,7 +41,8 @@ CXXFLAGS_DEBUG=  -ggdb -O0 \
     -Wlogical-op -Wredundant-decls \
     -Werror                 \
     -fno-gnu-keywords       \
-    -fsanitize=address
+    -fsanitize=address      \
+    -Wno-unknown-warning-option 
 
 # TODO using a newer G++ version, try out:
 #    -fsanitize=address -fsanitize=leak -fsanitize=undefined 

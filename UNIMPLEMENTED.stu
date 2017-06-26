@@ -420,6 +420,12 @@ A: B { cp B A ; }
 # shown above lets people use -o @x as intended, without the need for
 # the extra rules for mixed targets that we have at the moment. 
 
+#
+# Stu 3:  Don't allow both transients and files as targets in the same
+# rule.  Also, never allow multiple transient targets.  Then,
+# File_Execution will not have to support transients anymore.
+#
+
 #==== New features that change/extend Stu drastically ====
 
 #

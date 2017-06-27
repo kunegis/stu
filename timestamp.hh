@@ -116,10 +116,10 @@ private:
 		assert(t != (time_t) -1); 
 	}
 
-	Timestamp(time_t t_, bool ignore) 
+	Timestamp(time_t t_, bool ignore_) 
 		:  t(t_)
 	{ 
-		(void) ignore; 
+		(void) ignore_; 
 	}
 
 public:

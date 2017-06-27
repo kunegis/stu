@@ -42,7 +42,7 @@ CXXFLAGS_DEBUG=  -ggdb -O0 \
     -Werror                 \
     -fno-gnu-keywords       \
     -fsanitize=address      \
-    -Wno-unknown-warning-option 
+    -Wno-unknown-warning-option -Wno-pessimizing-move
 
 # TODO using a newer G++ version, try out:
 #    -fsanitize=address -fsanitize=leak -fsanitize=undefined 

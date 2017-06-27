@@ -4,7 +4,7 @@
 #
 
 find_sed() {
-	find . -type f -a \! -path './.git*' -a \! -name '*~' | xargs grep -lE -- 'sed\s+-re'
+	find . -type f -a \! -path './.git*' -a \! -name '*~' | xargs grep -lE -- 'sed[[:space:]]+-re'
 }
 
 count="$(echo $(find_sed | wc -l))"

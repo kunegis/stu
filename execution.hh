@@ -1316,7 +1316,7 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 				   dependency_link, 
 				   dependency_child, flags_child); 
 		} else {
-			assert(proceed_child == P_CONTINUE); 
+			assert(proceed_child != P_CONTINUE); 
 			/* If the child execution is not finished, it
 			 * must have returned either the P_WAIT or
 			 * P_PENDING bit.  */

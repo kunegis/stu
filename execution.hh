@@ -90,6 +90,7 @@ public:
 			     bool &finished_here);
 	/* FINISHED_HERE must be FALSE on calling, and is set to TRUE
 	 * when finished.  DEPENDENCY_LINK must not be null.  */  
+	// TODO get rid of FINISHED_HERE. 
 
 	int get_error() const {  return error;  }
 
@@ -267,7 +268,8 @@ protected:
 	/* The place for the execution; e.g. the rule; empty if there is no place */
 
 	virtual bool optional_finished(shared_ptr <const Dependency> dependency_link)= 0;
-	/* Should children even be started?  Check whether this is an
+	/* Whether the execution would be finished if this was an
+	 * optional dependency?  Check whether this is an  
 	 * optional dependency and if it is, return TRUE when the file does not
 	 * exist.  Return FALSE when children should be started.  Return
 	 * FALSE in execution types that are not affected.  */
@@ -1388,6 +1390,7 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	
 	if (finished(dependency_link2->flags)) {
 		Debug::print(this, "finished"); 
+		finished_here= true;
 		return P_CONTINUE; 
 	}
 
@@ -1404,11 +1407,13 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	if (order != Order::RANDOM) {
 		Proceed proceed_2= execute_children(dependency_link2, finished_here);
 		proceed_all |= proceed_2;
-		if (proceed_all & P_WAIT) 
+		if (proceed_all & P_WAIT) {
 			return proceed_all; 
+		}
 
 		if (finished(dependency_link2->flags) && ! option_keep_going) {
 			Debug::print(this, "finished"); 
+			finished_here= true; 
 			return proceed_all;
 		}
 	} 
@@ -1416,17 +1421,18 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	// TODO put this *before* the execution of already-opened
 	// children. 
 	if (optional_finished(dependency_link2)) {
+		finished_here= true; 
 		return proceed_all;
 	}
 
 	/* Is this a trivial run?  Then skip the dependency. */
 	if (dependency_link2->flags & F_TRIVIAL) {
-		finished_here= true; 
 		return proceed_all; 
 	}
 
-	if (error) 
+	if (error) {
 		assert(option_keep_going); 
+	}
 
 	/* 
 	 * Deploy dependencies (first pass), with the F_NOTRIVIAL flag
@@ -1445,8 +1451,9 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 		Proceed proceed_2= connect(dependency_link2, dependency_child);
 		proceed_all |= proceed_2;
 
-		if (jobs == 0)
+		if (jobs == 0) {
 			return proceed_all; 
+		}
 	} 
 	assert(buffer_default.empty()); 
 
@@ -1472,6 +1479,11 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 		finished_here= true;
 		return proceed_all;
 	}
+
+	if (proceed_all == P_CONTINUE)
+		finished_here= true; 
+
+	assert(finished_here || proceed_all != P_CONTINUE); 
 
 	return proceed_all; 
 }
@@ -3359,10 +3371,6 @@ Execution::Proceed Dynamic_Execution::execute(Execution *,
 	if (finished_here) {
 		is_finished= true; 
 	}
-
-//	if (proceed & (P_WAIT | P_PENDING)) {
-//		return proceed; 
-//	}
 
 	return proceed; 
 }

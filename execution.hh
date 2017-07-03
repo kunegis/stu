@@ -60,6 +60,13 @@ public:
 		/* The function execute() should be called again for
 		 * this execution at least.  */
 
+		P_FINISHED = 1 << 2,
+		/* The Execution is finished */ 
+
+		P_ABORT    = 1 << 3,
+		/* This Execution should be finished immediately.  When
+		 * set, P_FINISHED is also set.  */
+
 		P_CONTINUE = 0, 
 		/* Execution can continue in the process */
 	};
@@ -86,11 +93,11 @@ public:
 	 * error code, and throw an error except with the keep-going
 	 * option.  */
 
-	Proceed execute_base(shared_ptr <const Dependency> dependency_link,
-			     bool &finished_here);
-	/* FINISHED_HERE must be FALSE on calling, and is set to TRUE
-	 * when finished.  DEPENDENCY_LINK must not be null.  */  
-	// TODO get rid of FINISHED_HERE. 
+	Proceed execute_base(shared_ptr <const Dependency> dependency_link);
+	/* DEPENDENCY_LINK must not be null.  In the return value, at
+	 * least one bit is set.  The P_FINISHED bit indicates only that
+	 * tasks related to this function are done, not the whole
+	 * Execution.  */
 
 	int get_error() const {  return error;  }
 
@@ -215,8 +222,7 @@ protected:
 	 * up to the root execution. 
 	 * TEXT may be "" to not print the first message.  */ 
 
-	Proceed execute_children(shared_ptr <Dependency> dependency_link,
-				 bool &finished_here);
+	Proceed execute_children(shared_ptr <Dependency> dependency_link);
 	/* Execute already-active children */
 
 	Proceed execute_second_pass(shared_ptr <const Dependency> dependency_link); 
@@ -814,6 +820,7 @@ void Execution::main(const vector <shared_ptr <const Dependency> > &dependencies
 			do {
 				Debug::print(nullptr, "main loop"); 
 				proceed= root_execution->execute(nullptr, dependency_root);
+				assert(proceed); 
 			} while (proceed & P_PENDING); 
 
 			if (proceed & P_WAIT) {
@@ -1267,8 +1274,8 @@ void Execution::print_traces(string text) const
 	}
 }
 
-Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependency_link,
-					       bool &finished_here)
+Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependency_link)
+// TODO remove parameter FINISHED_HERE
 {
 	/* Since disconnect() may change execution->children, we must first
 	 * copy it over locally, and then iterate through it */ 
@@ -1310,15 +1317,21 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 		shared_ptr <const Dependency> dependency_child= child->parents.at(this);
 
 		Proceed proceed_child= child->execute(this, dependency_child);
+		assert(proceed_child); 
 
-		proceed_all |= proceed_child; 
+		proceed_all |= (proceed_child & ~(P_FINISHED | P_ABORT));
+		/* The finished and abort flags of the child only apply to the
+		 * child, not to us  */
 
-		if (child->finished(flags_child)) {
+		assert(((proceed_child & P_FINISHED) == 0) == ((child->finished(flags_child)) == 0));
+
+		if (proceed_child & P_FINISHED) {
+//		if (child->finished(flags_child)) {
 			disconnect(this, child, 
 				   dependency_link, 
 				   dependency_child, flags_child); 
 		} else {
-			assert(proceed_child != P_CONTINUE); 
+			assert((proceed_child & ~P_FINISHED) != P_CONTINUE); 
 			/* If the child execution is not finished, it
 			 * must have returned either the P_WAIT or
 			 * P_PENDING bit.  */
@@ -1327,6 +1340,7 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 
 	if (error) {
 		assert(option_keep_going); 
+		/* Otherwise, Stu would have aborted */ 
 	}
 
 	if (proceed_all == P_CONTINUE) {
@@ -1334,7 +1348,8 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 		 * WAIT or PENDING */ 
 		assert(children.empty()); 
 		if (error) {
-			finished_here= true; 
+			assert(option_keep_going); 
+//			finished_here= true; 
 		}
 	}
 
@@ -1353,11 +1368,10 @@ void Execution::push_dependency(shared_ptr <const Dependency> dependency)
 	}
 }
 
-Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> dependency_link,
-					   bool &finished_here)
+Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> dependency_link)
 {
 	assert(dependency_link); 
-	assert(! finished_here); 
+//	assert(! finished_here); 
 
 	Debug debug(this);
 
@@ -1390,8 +1404,9 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	
 	if (finished(dependency_link2->flags)) {
 		Debug::print(this, "finished"); 
-		finished_here= true;
-		return P_CONTINUE; 
+		return P_FINISHED; 
+//		finished_here= true;
+//		return P_CONTINUE; 
 	}
 
 	/* In DFS mode, first continue the already-open children, then
@@ -1405,7 +1420,7 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	Proceed proceed_all= P_CONTINUE; 
 
 	if (order != Order::RANDOM) {
-		Proceed proceed_2= execute_children(dependency_link2, finished_here);
+		Proceed proceed_2= execute_children(dependency_link2);
 		proceed_all |= proceed_2;
 		if (proceed_all & P_WAIT) {
 			return proceed_all; 
@@ -1413,15 +1428,15 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 
 		if (finished(dependency_link2->flags) && ! option_keep_going) {
 			Debug::print(this, "finished"); 
-			finished_here= true; 
-			return proceed_all;
+//			finished_here= true; 
+			return proceed_all | P_FINISHED;
 		}
 	} 
 
 	// TODO put this *before* the execution of already-opened
 	// children. 
 	if (optional_finished(dependency_link2)) {
-		finished_here= true; 
+//		finished_here= true; 
 		return proceed_all;
 	}
 
@@ -1458,13 +1473,15 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	assert(buffer_default.empty()); 
 
 	if (order == Order::RANDOM) {
-		Proceed proceed_2= execute_children(dependency_link2, finished_here);
+		Proceed proceed_2= execute_children(dependency_link2);
 		proceed_all |= proceed_2; 
 		if (proceed_all & P_WAIT)
 			return proceed_all;
-		if (finished_here && ! option_keep_going) {
-			return proceed_all;
-		}
+//		if (finished_here 
+//		    && ! option_keep_going
+//		    ) {
+//			return proceed_all;
+//		}
 	}
 
 	/* Some dependencies are still running */ 
@@ -1476,14 +1493,20 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	/* There was an error in a child */ 
 	if (error) {
 		assert(option_keep_going == true); 
-		finished_here= true;
+//		finished_here= true;
+		proceed_all |= P_ABORT | P_FINISHED; 
 		return proceed_all;
 	}
 
-	if (proceed_all == P_CONTINUE)
-		finished_here= true; 
+//	if (proceed_all == P_CONTINUE)
+//		finished_here= true; 
 
-	assert(finished_here || proceed_all != P_CONTINUE); 
+//	assert(finished_here || proceed_all != P_CONTINUE); 
+	
+	if (proceed_all)
+		return proceed_all; 
+
+	proceed_all |= P_FINISHED; 
 
 	return proceed_all; 
 }
@@ -1613,6 +1636,7 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_l
 		children.insert(child);
 
 		Proceed proceed_child= child->execute(this, dependency_link_child_new);
+		assert(proceed_child); 
 		if (proceed_child & (P_WAIT | P_PENDING))
 			return proceed_child; 
 			
@@ -1636,6 +1660,7 @@ void Execution::raise(int error_)
 	assert(error_ >= 1 && error_ <= 3); 
 
 	error |= error_;
+	// TODO we don't need to set this variable in case of ! OPTION_KEEP_GOING
 
 	if (! option_keep_going)
 		throw error;
@@ -2519,24 +2544,27 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 		assert(children.empty()); 
 	}       
 
-	bool finished_here= false;
-	Proceed proceed= execute_base(dependency_link, finished_here); 
+//	bool finished_here= false;
+	Proceed proceed= execute_base(dependency_link); 
+	assert(proceed); 
 
-	if (finished_here) {
+	if (proceed & P_ABORT) {
+		assert(proceed & P_FINISHED); 
 		flags_finished |= ~dependency_link->flags;
+		return proceed; 
 	}
 
 	if (proceed & (P_WAIT | P_PENDING)) {
 		return proceed; 
 	}
-
+	
 	Debug debug(this);
 
 	assert(children.empty()); 
 
 	if (finished(dependency_link->flags)) {
-		assert(!(proceed & P_WAIT)); 
-		return P_CONTINUE; 
+		assert(! (proceed & P_WAIT)); 
+		return P_FINISHED; 
 	}
 
 	/* Job has already been started */ 
@@ -2631,17 +2659,20 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 					 * it will then not exist when the parent is
 					 * called. */ 
 					flags_finished |= ~F_OPTIONAL; 
+					proceed |= P_FINISHED; 
 					return proceed;
 				}
 			}
 
 			if (ret_stat != 0 && errno != ENOENT) {
 				/* stat() returned an actual error,
-				 * e.g. permission denied:  build error */
+				 * e.g. permission denied.  This is a
+				 * build error.  */
 				rule->place_param_targets[i]->place
 					<< system_format(target2.format_word()); 
 				raise(ERROR_BUILD);
 				flags_finished |= ~dependency_link->flags; 
+				proceed |= P_ABORT | P_FINISHED; 
 				return proceed;
 			}
 
@@ -2665,6 +2696,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 				}
 				flags_finished |= ~dependency_link->flags; 
 				raise(ERROR_BUILD);
+				proceed |= P_ABORT | P_FINISHED; 
 				return proceed;
 			}		
 		}
@@ -2704,6 +2736,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	if (! (bits & B_NEED_BUILD)) {
 		/* The file does not have to be built */ 
 		flags_finished |= ~dependency_link->flags; 
+		proceed |= P_FINISHED; 
 		return proceed;
 	}
 
@@ -2713,12 +2746,14 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 
 	/* Re-deploy all dependencies (second pass) */
 	Proceed proceed_2= Execution::execute_second_pass(dependency_link); 
-	if (proceed_2 & P_WAIT)
+	if (proceed_2 & P_WAIT) {
 		return proceed_2; 
+	}
 
 	if (no_execution) {
-		/* A target without a command */ 
+		/* A target without a command:  Nothing to do anymore */ 
 		flags_finished |= ~dependency_link->flags; 
+		proceed |= P_FINISHED; 
 		return proceed;
 	}
 
@@ -2748,13 +2783,16 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 		flags_finished= ~0;
 
 		assert(proceed == P_CONTINUE); 
+		proceed |= P_FINISHED; 
 		return proceed;
 	}
 
 	/* We know that a job has to be started now */
 
-	if (jobs == 0) 
-		return proceed | P_WAIT; 
+	if (jobs == 0) {
+		proceed |= P_WAIT;
+		return proceed; 
+	}
        
 	/* We have to start a job now */ 
 
@@ -2816,6 +2854,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 					raise(ERROR_BUILD);
 					flags_finished |= ~dependency_link->flags; 
 					assert(proceed == P_CONTINUE); 
+					proceed |= P_ABORT | P_FINISHED; 
 					return proceed;
 				}
 			}
@@ -2845,6 +2884,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 			raise(ERROR_BUILD);
 			flags_finished |= ~dependency_link->flags; 
 			assert(proceed == P_CONTINUE); 
+			proceed |= P_ABORT | P_FINISHED; 
 			return proceed;
 		}
 
@@ -3064,16 +3104,19 @@ Execution::Proceed Root_Execution::execute(Execution *,
 	/* This is an example of a "plain" execute() function,
 	 * containing the minimal wrapper around execute_base()  */ 
 	
-	bool finished_here= false;
+//	bool finished_here= false;
 
-	Proceed proceed= execute_base(dependency_link, finished_here); 
+	Proceed proceed= execute_base(dependency_link); 
+	assert(proceed); 
 
 	if (proceed & (P_WAIT | P_PENDING)) {
-		assert(! finished_here); 
+		assert((proceed & P_FINISHED) == 0); 
+//		assert(! finished_here); 
 		return proceed;
 	}
 
-	if (finished_here) {
+	if (proceed & P_FINISHED) {
+//	if (finished_here) {
 		is_finished= true;
 	}
 
@@ -3158,8 +3201,9 @@ Execution::Proceed Concatenated_Execution::execute(Execution *,
 
 	if (stage == 1) {
 		/* First phase:  we build all individual targets, if there are some */ 
-		bool finished_here= false;
-		Proceed proceed= execute_base(dependency_link, finished_here); 
+//		bool finished_here= false;
+		Proceed proceed= execute_base(dependency_link); 
+		assert(proceed); 
 		if (proceed & P_WAIT) {
 			return proceed;
 		}
@@ -3184,8 +3228,9 @@ Execution::Proceed Concatenated_Execution::execute(Execution *,
 	if (stage == 2) {
 		/* Second phase:  normal child executions */
 		assert(! dependency); 
-		bool finished_here= false;
-		Proceed proceed= execute_base(dependency_link, finished_here); 
+//		bool finished_here= false;
+		Proceed proceed= execute_base(dependency_link); 
+		assert(proceed); 
 		if (proceed & P_WAIT) {
 			return proceed;
 		}
@@ -3362,13 +3407,13 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dependency> dependency_li
 Execution::Proceed Dynamic_Execution::execute(Execution *, 
 					      shared_ptr <const Dependency> dependency_link)
 {
-	bool finished_here= false;
+//	bool finished_here= false;
 
-	Proceed proceed= execute_base(dependency_link, finished_here); 
+	Proceed proceed= execute_base(dependency_link); 
+	assert(proceed); 
 
-	assert(proceed != P_CONTINUE || finished_here); 
-
-	if (finished_here) {
+	if (proceed & P_FINISHED) {
+//	if (finished_here) {
 		is_finished= true; 
 	}
 
@@ -3405,15 +3450,17 @@ Transient_Execution::~Transient_Execution()
 Execution::Proceed Transient_Execution::execute(Execution *, 
 						shared_ptr <const Dependency> dependency_link)
 {
-	bool finished_here= false;
+//	bool finished_here= false;
 
-	Proceed proceed= execute_base(dependency_link, finished_here); 
+	Proceed proceed= execute_base(dependency_link); 
+	assert(proceed); 
 
 	if (proceed & (P_WAIT | P_PENDING)) {
 		return proceed; 
 	}
 
-	if (finished_here) {
+	if (proceed & P_FINISHED) {
+//	if (finished_here) {
 		is_finished= true; 
 	}
 

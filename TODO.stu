@@ -655,5 +655,7 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 
 #
 # For output redirection:  Do what stu-utils/output-finally does,
-# integrated into Stu. 
+# integrated into Stu.  On the other hand, this is not totally good,
+# because users expect a > operator to write into the file immediately.
+# Maybe only enable it with a flag. 
 #

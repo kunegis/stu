@@ -1,5 +1,5 @@
 #
-# Concatenation [2.5]
+# Concatenation [2.5]    test/2.5-*
 #
 
 A:  B(C);    	        
@@ -657,5 +657,11 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 # For output redirection:  Do what stu-utils/output-finally does,
 # integrated into Stu.  On the other hand, this is not totally good,
 # because users expect a > operator to write into the file immediately.
-# Maybe only enable it with a flag. 
+# Maybe only enable it with a flag.  Alternatively, automatically make a
+# backup of the target file, and restore it if the command fails.
+# Again, this should only be done with a flag, because given the large
+# possible files, it would take lots of memory.  A smart way to do it
+# would be to open() the file, keeping only a reference in the Stu
+# process to it, and then linking it again if needed, but that is
+# probably not possible ini POSIX. 
 #

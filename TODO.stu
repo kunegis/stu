@@ -652,3 +652,8 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 # on a single like, e.g. separated by tab.  (Use it then to perform a network
 # analysis of the KONECT-Analysis dependency graph.)
 #
+
+#
+# For output redirection:  Do what stu-utils/output-finally does,
+# integrated into Stu. 
+#

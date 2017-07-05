@@ -426,6 +426,11 @@ A: B { cp B A ; }
 # File_Execution will not have to support transients anymore.
 #
 
+#
+# Make the %version mandatory in every file, to avoid parsing a file of
+# the wrong Stu version.  
+#
+
 #==== New features that change/extend Stu drastically ====
 
 #

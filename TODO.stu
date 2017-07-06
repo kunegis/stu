@@ -665,3 +665,10 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 # process to it, and then linking it again if needed, but that is
 # probably not possible ini POSIX. 
 #
+
+#
+# Have an option defined on targets that will make a backup of the
+# target file before running the command, and restore the target on
+# error.  To be used with badly-behaving commands that overwrite the
+# target immediately.
+#

@@ -10,12 +10,12 @@ SYNOPSIS
 
 DESCRIPTION
        Stu  is  a  tool  for  build automation.  Like Make, it is used to call
-       other programs in order to build files.  Stu  has  two  three  features
-       that  work  in  conjunction to allow contructs impossible to realize in
-       Make: (1) dynamic dependencies:  The dependencies of a  target  can  be
-       themselves  computed  by a command.  When '[FILENAME]' (a filename cur‐
-       rounded by angle brackets) is used as a dependency, Stu will build  the
-       file FILENAME and read dependencies from it.  (2) Parameters:  Names of
+       other programs in order to build files.  Stu has  three  features  that
+       work  in  conjunction to allow contructs impossible to realize in Make:
+       (1) dynamic dependencies:  The dependencies of a target  can  be  them‐
+       selves computed by a command.  When '[FILENAME]' (a filename currounded
+       by angle brackets) is used as a dependency, Stu  will  build  the  file
+       FILENAME  and  read  dependencies  from  it.  (2) Parameters:  Names of
        files (and transient targets) can contain parameters written using dol‐
        lar  syntax.   For  example, a rule with a target filename 'list.$name'
        will be used to build any file matching the pattern 'list.*',  and  the
@@ -67,7 +67,9 @@ OPTIONS
        -d     Debug  mode.   Show internal information about the Stu algorithm
               on standard error output.  All printed output lines  begin  with
               the  string  'DEBUG  ', i.e. the word DEBUG followed by two spa‐
-              ces.
+              ces.  The output is otherwise not standardized and is subject to
+              change,  in  particular  with internal changes to the algorithms
+              used.
 
        -E     Explain error messages.  Only some error messages have  explana‐
               tions.
@@ -624,16 +626,16 @@ TOKENIZATION
 
            #     Comment (until the end of the line)
            %     Directive (followed by directive name and arguments)
-           '     Quote; without escape sequences
-           "     Quote; with escape sequences
+           '     Quote, without escape sequences
+           "     Quote, with escape sequences
            :     Separator for rule definition
-           ;     For rules without command, end of variable declaration
+           ;     In rules without command, end of dependency declaration
            -     Prefix character for flag, followed by a single character
            $     Parameter
            @     Transient target marker
            >     Output redirection
            <     Input redirection
-           =     Assignment rule, copy rule, named variable
+           =     Assignment rule; copy rule; named variable
            { }   Command
            ( )   List
            [ ]   Dynamic dependency
@@ -698,7 +700,7 @@ SYNTAX
            redirect_dep:     ['<'] bare_dep
            bare_dep:         ['@'] NAME
            variable_dep:     '$' '[' flag* ['<'] NAME ']'
-           flag:             '-p' | '-o' | '-t' | '-n'
+           flag:             '-p' | '-o' | '-t' | '-n' | '-0'
 
        {1} with intervening whitespace {2} without intervening whitespace
 
@@ -736,10 +738,20 @@ SEMANTICS
        always consider the timestamp of the linked-to file.  A  symlink  to  a
        non-existing file will be treated as a non-existing file.
 
-       Stu  uses  jobs  control:   Each job is put into its own process group.
-       All jobs are put into the background, except  when  the  option  -i  is
-       used.   When  -i  is  not used, the standard input of all jobs is redi‐
-       rected from /dev/null.
+       Stu uses job control:  Each job is put into its own process group.  All
+       jobs are put into the background, except when the option  -i  is  used.
+       When  -i is not used, the standard input of all jobs is redirected from
+       /dev/null.
+
+       If a command fails, Stu will remove any of its target  files,  if  they
+       have been already touch by the command.  If the failing command did not
+       touch a target file, that existing target file is  not  removed.   This
+       behavior  is necessary to avoid the case that a commands partially cre‐
+       ates a target file, then fails, and then a subsequent invocation of Stu
+       sees  the  new  file and considers it as up to date, even though it was
+       only partially created.  Thus, commands in Stu do not need to make sure
+       they  delete any output files when they fail.  This behavior is equiva‐
+       lent to that in Make.
 
 
 EXIT STATUS
@@ -956,8 +968,10 @@ BUGS
 
 
 AUTHOR
-       Written  by  Jérôme Kunegis <kunegis@gmail.com>, with contributions and
-       help by Jun Sun, Aaron McDaid, Heinrich Hartmann, and Holger Heinz.
+       Written  by  Jérôme  Kunegis  <kunegis@gmail.com>  at the University of
+       Namur, Belgium, as well as at the University  of  Koblenz-Landau,  Ger‐
+       many,  with  contributions  and help by Jun Sun, Aaron McDaid, Heinrich
+       Hartmann, Holger Heinz, and others.
 
 
 SEE ALSO
@@ -965,4 +979,4 @@ SEE ALSO
 
 
 
-stu-2.5.0                         April 2017                            STU(1)
+stu-2.5.0                          July 2017                            STU(1)

@@ -1429,6 +1429,7 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	// TODO put this *before* the execution of already-opened
 	// children. 
 	if (optional_finished(dependency_link2)) {
+		proceed_all |= P_FINISHED; 
 		return proceed_all;
 	}
 
@@ -3030,6 +3031,8 @@ bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_
 	    && dynamic_pointer_cast <const Single_Dependency> (dependency_link)
 	    && ! (dynamic_pointer_cast <const Single_Dependency> (dependency_link)
 		  ->place_param_target.flags & F_TARGET_TRANSIENT)) {
+
+		// TODO check whether EXISTS is already -1 here.  (?)
 
 		const char *name= dynamic_pointer_cast <const Single_Dependency> (dependency_link)
 			->place_param_target.place_name.unparametrized().c_str();

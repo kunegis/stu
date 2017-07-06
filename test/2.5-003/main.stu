@@ -1,6 +1,5 @@
-A: [-o B] { 
-	[ -e B ] && exit 1;
-	touch A ; 
+A:  -o B 
+{
+	[ -e B ] && exit 1
+	echo aaa >A
 }
-
-B { exit 1 ; }

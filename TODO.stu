@@ -264,6 +264,12 @@ A.$X$Y;
 #
 
 #
+# Semi-bug:  when a command read stdin but there is no input redirection, the
+# current behaviour of Stu is to go into "fake interactive" because a
+# fatal signal is sent.  Make it such that the job fails immediately. 
+#
+
+#
 # At the moment, "stu -g" does not disable the flag -o in copy rules, i.e.
 #
 #   A = -o B;

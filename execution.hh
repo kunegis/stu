@@ -1818,6 +1818,12 @@ Execution *Execution::get_execution(Target target,
 		/* Create a new Execution object */ 
 
 		if (! target.is_dynamic()) {
+			...; 
+			// for test/2.1-clean:  we must determine
+			// whether there are other file targets or a
+			// command to decide, and therefore we must
+			// first search for the rule, and then call
+			// new. 
 			if (target.is_file()) {
 				execution= new File_Execution(target, dependency_link, parent);  
 			} else if (target.is_transient()) {

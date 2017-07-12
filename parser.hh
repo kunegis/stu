@@ -1288,11 +1288,9 @@ shared_ptr <const Dependency> Parser::get_target_dep(string text, const Place &p
 	}
 
 	Flags flags_type= 0; 
-//	Type type= Type::FILE;
 	const char *begin_name= q;
 	if (begin_name != end_name && *q == '@') {
 		flags_type= F_TARGET_TRANSIENT; 
-//		type= Type::TRANSIENT;
 		++ begin_name;
 	}
 
@@ -1303,7 +1301,7 @@ shared_ptr <const Dependency> Parser::get_target_dep(string text, const Place &p
 	}
 
 	shared_ptr <const Dependency> ret= make_shared <Single_Dependency> 
-		(0, Place_Param_Target
+		(flags_type, Place_Param_Target
 		 (flags_type, 
 		  Place_Name
 		  (string(begin_name, end_name - begin_name), 

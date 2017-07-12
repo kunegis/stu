@@ -141,7 +141,7 @@ public:
 			      const Place &place);
 	/* Match TARGET to a rule, and return the instantiated
 	 * (non-parametrized) corresponding rule.  TARGET must be
-	 * non-dynamic.  MAPPING_OUT must be empty.  Return null when no
+	 * non-dynamic.  MAPPING_PARAMETER must be empty.  Return null when no
 	 * match is found.  When a match is found, write the original
 	 * (possibly parametrized) rule into ORIGINAL_RULE and the
 	 * matched parameters into MAPPING_OUT.  Throws errors.  PLACE

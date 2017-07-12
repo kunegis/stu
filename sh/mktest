@@ -137,7 +137,7 @@ errors=0
 error_do() {
 	errors=1
 	[ -n "$notall" ] && { 
-		echo >&2 "[31m$0: *** failed[m"
+		echo >&2 "[31m$0: *** Test '$file' failed [notall][m"
 		exit 1 
 	}
 }

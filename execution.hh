@@ -14,6 +14,7 @@
  *							files without a rule
  * Transient_Ex.	cached by Target (w/ flags)	Transients without commands and without file
  * 							file target in the same rule
+ * "Single Ex."		cached by Target		Name for File_Ex. or Transient_Ex. 
  * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Single_Dep.
  * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concat._Dep.
  * Concatenated_Ex.	not cached			Concatenated targets
@@ -393,8 +394,9 @@ public:
 
 	File_Execution(Target target_,
 		       shared_ptr <const Dependency> dependency_link,
-		       Execution *parent);
-	/* The TARGET must not by dynamic */ 
+		       Execution *parent,
+		       shared_ptr <Rule> rule,
+		       shared_ptr <Rule> param_rule); 
 	// TODO remove the TARGET parameter.  It is already
 	// contained in DEPENDENCY_LINK. 
 
@@ -561,7 +563,10 @@ class Transient_Execution
 public:
 
 	Transient_Execution(shared_ptr <const Dependency> dependency_link,
-			    Execution *parent);
+			    Execution *parent,
+			    shared_ptr <Rule> rule,
+			    shared_ptr <Rule> param_rule); 
+			    
 	shared_ptr <const Rule> get_rule() const { return rule; }
 	
 	const map <string, string> &get_mapping_variable() const {
@@ -1818,17 +1823,50 @@ Execution *Execution::get_execution(Target target,
 		/* Create a new Execution object */ 
 
 		if (! target.is_dynamic()) {
-			...; 
-			// for test/2.1-clean:  we must determine
-			// whether there are other file targets or a
-			// command to decide, and therefore we must
-			// first search for the rule, and then call
-			// new. 
-			if (target.is_file()) {
-				execution= new File_Execution(target, dependency_link, parent);  
-			} else if (target.is_transient()) {
-				execution= new Transient_Execution(dependency_link, parent); 
+			/* Single execution */ 
+
+			shared_ptr <Rule> rule, param_rule; 
+			map <string, string> mapping_parameter;
+			bool use_file_execution= false;
+			try {
+				rule= rule_set.get(target, param_rule, mapping_parameter, 
+						   dependency_link->get_place()); 
+			} catch (int e) {
+				execution= target.is_file()
+					? (Execution *)new File_Execution(target, dependency_link, parent, rule, param_rule) 
+					: (Execution *)new Transient_Execution(dependency_link, parent, rule, param_rule); 
+				execution->print_traces(); 
+				execution->raise(e); 
+				goto end; 
 			}
+
+			/* RULE may be null here; this is handled in the constructors */ 
+
+			/* We use a File_Execution if:  there is at
+			 * least one file target in the rule OR there is
+			 * a command in the rule.  When there is no
+			 * rule, we consult the type of TARGET.  */
+
+			if (target.is_file()) {
+				use_file_execution= true;
+			} else if (rule == nullptr) {
+				use_file_execution= target.is_file(); /* Always FALSE */
+				assert(! use_file_execution); 
+			} else if (rule->command) {
+				use_file_execution= true; 
+			} else {
+				for (auto &i:  rule->place_param_targets) {
+					if ((i->flags & F_TARGET_TRANSIENT) == 0) 
+						use_file_execution= true; 
+				}
+			}
+			
+			if (use_file_execution) {
+				execution= new File_Execution(target, dependency_link, parent, rule, param_rule);  
+			} else if (target.is_transient()) {
+				execution= new Transient_Execution(dependency_link, parent, rule, param_rule); 
+			}
+		end:;
 		} else {
 			execution= new Dynamic_Execution(dependency_link, parent); 
 		}
@@ -2166,29 +2204,23 @@ void File_Execution::waited(pid_t pid, int status)
 
 File_Execution::File_Execution(Target target_,
 			       shared_ptr <const Dependency> dependency_link,
-			       Execution *parent)
+			       Execution *parent,
+			       shared_ptr <Rule> rule_,
+			       shared_ptr <Rule> param_rule_)
 	:  Execution(dependency_link, parent),
+	   rule(rule_),
 	   exists(0),
 	   flags_finished(0)
 {
+	param_rule= param_rule_;
 	assert(parent != nullptr); 
 	assert(parents.size() == 1); 
-	assert(target_.is_file()); 
+//	assert(target_.is_file()); 
+	assert((param_rule == nullptr) == (rule == nullptr)); 
 
 	/* Later replaced with all targets from the rule, when a rule exists */ 
 	targets.push_back(target_); 
 
-	/* 
-	 * Fill in the rules and their parameters 
-	 */ 
-	try {
-		rule= rule_set.get(target_, param_rule, mapping_parameter, 
-				   dependency_link->get_place()); 
-	} catch (int e) {
-		print_traces(); 
-		raise(e); 
-		return; 
-	}
 	if (rule == nullptr) {
 		/* TARGETS contains only TARGET_ */
 	} else {
@@ -2198,8 +2230,6 @@ File_Execution::File_Execution(Target target_,
 		}
 		assert(targets.size()); 
 	}
-
-	assert((param_rule == nullptr) == (rule == nullptr)); 
 
 	/* Fill EXECUTIONS_BY_TARGET with all targets from the rule, not
 	 * just the one given in the dependency.  */
@@ -3455,28 +3485,19 @@ bool Transient_Execution::finished(Flags flags) const
 }
 
 Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependency_link,
-					 Execution *parent) 
-	:  Execution(dependency_link, parent) 
+					 Execution *parent,
+					 shared_ptr <Rule> rule_,
+					 shared_ptr <Rule> param_rule_)
+	:  Execution(dependency_link, parent),
+	   rule(rule_)
 {
+	param_rule= param_rule_; 
 	assert(dynamic_pointer_cast <const Single_Dependency> (dependency_link)); 
 	shared_ptr <const Single_Dependency> single_dependency= 
 		dynamic_pointer_cast <const Single_Dependency> (dependency_link);
 
 	Target target= single_dependency->place_param_target.unparametrized();
 	assert(target.is_transient()); 
-
-	/* 
-	 * Fill in the rules and their parameters 
-	 */ 
-	try {
-		map <string, string> mapping_parameter;
-		rule= rule_set.get(target, param_rule, mapping_parameter, 
-				   dependency_link->get_place()); 
-	} catch (int e) {
-		print_traces(); 
-		raise(e); 
-		return; 
-	}
 
 	if (rule == nullptr) {
 		/* There must be a rule for transient targets (as

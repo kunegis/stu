@@ -132,6 +132,9 @@ class Single_Dependency
 /* 
  * A dependency denoting an individual target name.  Does not cover
  * dynamic dependencies.
+ *
+ * When the target is a transient, the dependency flags have the
+ * F_TARGET_TRANSIENT bit set, which is redundent. 
  */
 	:  public Dependency
 {
@@ -213,14 +216,20 @@ public:
 	}
 
 	void check() const {
+#ifndef NDEBUG
 		if (variable_name != "") {
 			assert((place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
 			assert(flags & F_VARIABLE); 
 		}
+
+		/* The F_TARGET_TRANSIENT flag is always set in the
+		 * dependency flags, even though that is redundant.  */
+		assert((flags & F_TARGET_TRANSIENT) == (place_param_target.flags)); 
+#endif /* ! NDEBUG */ 
 	}
 
 	virtual string format(Style style, bool &quotes) const {
-		string f= flags_format(flags & ~F_VARIABLE); 
+		string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT)); 
 		if (f != "") {
 			style |= S_MARKERS;
 			f += ' '; 
@@ -236,7 +245,7 @@ public:
 	}
 
 	virtual string format_word() const {
-		string f= flags_format(flags & ~F_VARIABLE);
+		string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
 		if (f != "") 
 			f += ' ';
 		bool quotes= Color::quotes; 
@@ -255,16 +264,7 @@ public:
 			   Color::end); 
 	}
 
-	virtual string format_out() const {
-		string f= flags_format(flags & ~F_VARIABLE);
-		if (f != "")
-			f += ' '; 
-		return fmt("%s%s%s%s",
-			   f,
-			   flags & F_VARIABLE ? "$[" : "",
-			   place_param_target.format_out(),
-			   flags & F_VARIABLE ? "]" : "");
-	}
+	virtual string format_out() const;
 
 	virtual bool is_normalized() const { return true;  }
 
@@ -625,6 +625,18 @@ shared_ptr <const Dependency> Dependency::strip_dynamic(shared_ptr <const Depend
 Target Single_Dependency::get_target() const
 {
 	return place_param_target.unparametrized(); 
+}
+
+string Single_Dependency::format_out() const 
+{
+	string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
+	if (f != "")
+		f += ' '; 
+	return fmt("%s%s%s%s",
+		   f,
+		   flags & F_VARIABLE ? "$[" : "",
+		   place_param_target.format_out(),
+		   flags & F_VARIABLE ? "]" : "");
 }
 
 Target Dynamic_Dependency::get_target() const

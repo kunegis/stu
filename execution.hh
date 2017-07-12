@@ -293,7 +293,7 @@ protected:
 	/* Whether the STDOUT message is not "Targets are up to date" */
 
 	static unordered_map <Target, Execution *> executions_by_target;
-	/* The cached Execution objects by each of their Target.  Such
+	/* All cached Execution objects by each of their Target.  Such
 	 * Execution objects are never deleted.  */
 
 	static bool find_cycle(const Execution *const parent,
@@ -563,6 +563,10 @@ public:
 	Transient_Execution(shared_ptr <const Dependency> dependency_link,
 			    Execution *parent);
 	shared_ptr <const Rule> get_rule() const { return rule; }
+	
+	const map <string, string> &get_mapping_variable() const {
+		return mapping_variable; 
+	}
 
 	virtual Proceed execute(Execution *parent, 
 				shared_ptr <const Dependency> dependency_link);
@@ -594,6 +598,11 @@ private:
 	Timestamp timestamp_old;
 
 	bool is_finished; 
+
+	map <string, string> mapping_variable; 
+	/* Variable assignments from variables dependencies.  This is in
+	 * Transient_Execution because it may be percolated up to the
+	 * parent execution.  */
 
 	~Transient_Execution();
 
@@ -1714,15 +1723,11 @@ void Execution::disconnect(Execution *const parent,
 	 * and dynamic targets
 	 */
 	if (dynamic_pointer_cast <const Single_Dependency> (dependency_child)
-	    && dynamic_pointer_cast <const Single_Dependency> (dependency_child)
-	    ->place_param_target.flags & F_TARGET_TRANSIENT
-	    && dynamic_cast <File_Execution *> (child)->get_rule() != nullptr 
-	    && dynamic_cast <File_Execution *> (child)->get_rule()->command == nullptr) {
-
-		if (dynamic_cast <File_Execution *> (parent)) {
-			dynamic_cast <File_Execution *> (parent)->add_variables
-				(dynamic_cast <File_Execution *> (child)->get_mapping_variable()); 
-		}
+	    && dynamic_pointer_cast <const Single_Dependency> (dependency_child)->place_param_target.flags & F_TARGET_TRANSIENT
+	    && dynamic_cast <Transient_Execution *> (child)
+	    && dynamic_cast <File_Execution *> (parent)) {
+		dynamic_cast <File_Execution *> (parent)->add_variables
+			(dynamic_cast <Transient_Execution *> (child)->get_mapping_variable()); 
 	}
 
 	/* 
@@ -3454,8 +3459,54 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 	Target target= single_dependency->place_param_target.unparametrized();
 	assert(target.is_transient()); 
 
-	// TODO look up the dependencies in the rules; // based on File_Execution::File_Execution(). 
-	assert(false); 
+	/* 
+	 * Fill in the rules and their parameters 
+	 */ 
+	try {
+		map <string, string> mapping_parameter;
+		rule= rule_set.get(target, param_rule, mapping_parameter, 
+				   dependency_link->get_place()); 
+	} catch (int e) {
+		print_traces(); 
+		raise(e); 
+		return; 
+	}
+
+	if (rule == nullptr) {
+		/* There must be a rule for transient targets (as
+		 * opposed to file targets), so this is an error.  */
+		print_traces(fmt("no rule to build %s", target.format_word()));
+		raise(ERROR_BUILD);
+		/* Even when a rule was not found, the Transient_Execution object remains
+		 * in memory  */  
+		return; 
+	} 
+
+	for (auto &place_param_target:  rule->place_param_targets) {
+		targets.push_back(place_param_target->unparametrized()); 
+	}
+	assert(targets.size()); 
+
+	assert((param_rule == nullptr) == (rule == nullptr)); 
+
+	/* Fill EXECUTIONS_BY_TARGET with all targets from the rule, not
+	 * just the one given in the dependency.  */
+	for (const Target &t:  targets) {
+		executions_by_target[t]= this; 
+	}
+
+	string text_rule= rule == nullptr ? "(no rule)" : rule->format_out(); 
+	Debug::print(this, fmt("rule %s", text_rule));  
+
+	for (auto &dependency:  rule->dependencies) {
+		shared_ptr <const Dependency> dep= dependency;
+		if (dependency_link->flags) {
+			shared_ptr <Dependency> dep_new= Dependency::clone(dep); 
+			dep_new->flags |= dependency_link->flags;
+			dep= dep_new;
+		}
+		push_dependency(dep); 
+	}
 }
 	
 void Debug::print(Execution *e, string text) 

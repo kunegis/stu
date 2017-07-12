@@ -232,6 +232,12 @@ C = {correct}
 # work if the transient in question has a command, or is co-target with
 # a file.  Test these two cases. 
 
+# 'A' contains two lines with each containing 'correct'
+>A:  B @x { echo "$V" ; cat B ; }
+>B:  @x  { echo "$V" ; }
+@x:  $[V];
+V = {correct}
+
 #
 # * Don`t use `;` in sed
 # * Don`t use \s, \S and \t in sed
@@ -314,6 +320,13 @@ X = {x}   Y = {y}  Z = {z}
 #
 # Make sure we don't compile in any of the multi-threaded libraries. 
 #
+
+# 
+# Test that this fails as it should:
+# 
+
+@all:  @x.abc;
+@x.$name A.$name: { exit 0 ; }
 
 #################### Further features #########################
 

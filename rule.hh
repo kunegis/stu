@@ -90,7 +90,7 @@ public:
 	}
 
 	string format_out() const; 
-	/* Format the rule, as for the -P option */ 
+	/* Format the rule, as for the -P or -d options */ 
 
 	void check_unparametrized(shared_ptr <const Dependency> dependency,
 				  const set <string> &parameters);
@@ -137,19 +137,19 @@ public:
 
 	shared_ptr <Rule> get(Target target, 
 			      shared_ptr <Rule> &rule_original,
-			      map <string, string> &mapping_out,
+			      map <string, string> &mapping_parameter,
 			      const Place &place);
 	/* Match TARGET to a rule, and return the instantiated
-	 * (unparametrized) corresponding rule.  TARGET must be
-	 * non-dynamic.  MAPPING_OUT must be empty. 
-	 * Return null when no match is found. 
-	 * When a match is found, write the original rule into
-	 * ORIGINAL_RULE and the matched parameters into MAPPING_OUT.   
-	 * Throws errors. 
-	 * PLACE is the place of the dependency; used in error messages.  */ 
+	 * (non-parametrized) corresponding rule.  TARGET must be
+	 * non-dynamic.  MAPPING_OUT must be empty.  Return null when no
+	 * match is found.  When a match is found, write the original
+	 * (possibly parametrized) rule into ORIGINAL_RULE and the
+	 * matched parameters into MAPPING_OUT.  Throws errors.  PLACE
+	 * is the place of the dependency; used in error messages.  */ 
 
 	void print() const;
-	/* Print the rule set to standard output, as used in the -P option */  
+	/* Print the rule set to standard output, as used by the -P and
+	 * -d options */   
 };
 
 Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,

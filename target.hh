@@ -621,12 +621,12 @@ string Target::format_out() const
 	string ret; 
 	size_t i= 0;
 	while (text.at(i) & F_TARGET_DYNAMIC) {
-		ret += flags_format(text.at(i) & ~F_TARGET_DYNAMIC);
+		ret += flags_format(text.at(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
 		++i;
 		ret += '[';
 	}
 	assert(text.size() > i + 1);
-	ret += flags_format(text.at(i)); 
+	ret += flags_format(text.at(i) & ~F_TARGET_TRANSIENT); 
 	if (text.at(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}

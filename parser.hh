@@ -1152,9 +1152,10 @@ shared_ptr <const Dependency> Parser::parse_redirect_dep
 		assert(! place_input.empty()); 
 	}
 
+	Flags transient_bit= has_transient ? F_TARGET_TRANSIENT : 0;
 	shared_ptr <const Dependency> ret= make_shared <Single_Dependency>
-		(flags,
-		 Place_Param_Target(has_transient ? F_TARGET_TRANSIENT : 0,
+		(flags | transient_bit,
+		 Place_Param_Target(transient_bit,
 				    *name_token,
 				    has_transient ? place_at : name_token->place)); 
 

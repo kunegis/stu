@@ -29,4 +29,3 @@ year_old="$(expr $year - $y)"
 touch -d $year_old-01-01T07:00:00 "$filename" || exit 1
 
 exit 0
-

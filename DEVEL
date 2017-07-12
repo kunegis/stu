@@ -26,8 +26,8 @@ Version logic (see 'NEWS' for an explanation of version numbers):
 
 Unit testing is described in 'sh/mktest'. 
 
-To run the unit tests, do 'make -f Makefile.devel'.  It takes about five
-minutes in all.   
+To compile everything and run all unit tests, do 'make -f
+Makefile.devel'.  It takes about five minutes in all.   
 
 The unit tests have additional requirements on the system than just
 compiling Stu:   
@@ -36,7 +36,7 @@ compiling Stu:
   Stu will work without such a file system, but you can't run the unit
   tests unless you remove the one offending test (test/unicode/).  
 * You need to install the packages 'expect' and 'autoconf'.  On some
-  systems, also 'tclsh'.  (Exact package vary by operating system.)
+  systems, also 'tclsh'.  (Exact packages vary by operating system.)
 
 If you run the tests and they fail, report that to Jérôme Kunegis
 <kunegis@gmail.com>.     

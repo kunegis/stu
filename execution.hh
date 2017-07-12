@@ -296,8 +296,8 @@ protected:
 	/* All cached Execution objects by each of their Target.  Such
 	 * Execution objects are never deleted.  */
 
-	static bool find_cycle(const Execution *const parent,
-			       const Execution *const child,
+	static bool find_cycle(Execution *parent,
+			       Execution *child,
 			       shared_ptr <const Dependency> dependency_link);
 	/* Find a cycle.  Assuming that the edge parent->child will be
 	 * added, find a directed cycle that would be created.  Start at
@@ -306,12 +306,12 @@ protected:
 	 * would be added between child and parent, and would create a
 	 * cycle.  */
 
-	static bool find_cycle(vector <const Execution *> &path,
-			       const Execution *const child,
+	static bool find_cycle(vector <Execution *> &path,
+			       Execution *child,
 			       shared_ptr <const Dependency> dependency_link); 
 	/* Helper function */ 
 
-	static void cycle_print(const vector <const Execution *> &path,
+	static void cycle_print(const vector <Execution *> &path,
 				shared_ptr <const Dependency> dependency_link);
 	/* Print the error message of a cycle on rule level.
 	 * Given the path [a, b, c, d, ..., x], the found cycle is
@@ -1083,21 +1083,21 @@ void Execution::read_dynamic(Flags flags_this,
 	}
 }
 
-bool Execution::find_cycle(const Execution *const parent, 
-			   const Execution *const child,
+bool Execution::find_cycle(Execution *parent, 
+			   Execution *child,
 			   shared_ptr <const Dependency> dependency_link)
 {
 	if (dynamic_cast <const Root_Execution *> (parent))
 		return false;
 		
-	vector <const Execution *> path;
+	vector <Execution *> path;
 	path.push_back(parent); 
 
 	return find_cycle(path, child, dependency_link); 
 }
 
-bool Execution::find_cycle(vector <const Execution *> &path,
-			   const Execution *const child,
+bool Execution::find_cycle(vector <Execution *> &path,
+			   Execution *child,
 			   shared_ptr <const Dependency> dependency_link)
 {
 	if (same_rule(path.back(), child)) {
@@ -1106,7 +1106,7 @@ bool Execution::find_cycle(vector <const Execution *> &path,
 	}
 
 	for (auto &i:  path.back()->parents) {
-		const Execution *next= i.first; 
+		Execution *next= i.first; 
 		assert(next != nullptr);
 		if (dynamic_cast <const Root_Execution *> (next)) 
 			continue;
@@ -1123,7 +1123,7 @@ bool Execution::find_cycle(vector <const Execution *> &path,
 	return false; 
 }
 
-void Execution::cycle_print(const vector <const Execution *> &path,
+void Execution::cycle_print(const vector <Execution *> &path,
 			    shared_ptr <const Dependency> dependency_link)
 {
 	assert(path.size() > 0); 
@@ -1175,6 +1175,12 @@ void Execution::cycle_print(const vector <const Execution *> &path,
 			fmt("both %s and %s match the same rule",
 			    t1.format_word(), t2.format_word());
 	}
+
+	/* Remove the offending (cycle-generating) link between the
+	 * two.  The offending link is from path[0] as a parent to
+	 * path[end] (as a child).  */
+	path.back()->parents.erase(path.at(0)); 
+	path.at(0)->children.erase(path.back()); 
 
 	path.back()->print_traces();
 
@@ -1791,7 +1797,6 @@ Execution *Execution::get_execution(Target target,
 
 	if (it != executions_by_target.end()) {
 		/* An Execution object already exists for the target */ 
-
 		execution= it->second; 
 		if (execution->parents.count(parent)) {
 			/* The parent and child are already connected -- add the
@@ -2535,6 +2540,9 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	if (proceed & (P_WAIT | P_PENDING)) {
 		return proceed; 
 	}
+
+	assert(proceed & P_FINISHED);
+	proceed &= ~P_FINISHED; 
 	
 	Debug debug(this);
 
@@ -2637,8 +2645,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 					 * it will then not exist when the parent is
 					 * called. */ 
 					flags_finished |= ~F_OPTIONAL; 
-					proceed |= P_FINISHED; 
-					return proceed;
+					return proceed |= P_FINISHED; 
 				}
 			}
 
@@ -2650,8 +2657,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 					<< system_format(target.format_word()); 
 				raise(ERROR_BUILD);
 				flags_finished |= ~dependency_link->flags; 
-				proceed |= P_ABORT | P_FINISHED; 
-				return proceed;
+				return proceed |= P_ABORT | P_FINISHED; 
 			}
 
 			/* File does not exist, all its dependencies are up to
@@ -2674,8 +2680,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 				}
 				flags_finished |= ~dependency_link->flags; 
 				raise(ERROR_BUILD);
-				proceed |= P_ABORT | P_FINISHED; 
-				return proceed;
+				return proceed |= P_ABORT | P_FINISHED; 
 			}		
 		}
 		
@@ -2714,8 +2719,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	if (! (bits & B_NEED_BUILD)) {
 		/* The file does not have to be built */ 
 		flags_finished |= ~dependency_link->flags; 
-		proceed |= P_FINISHED; 
-		return proceed;
+		return proceed |= P_FINISHED; 
 	}
 
 	/*
@@ -2731,8 +2735,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */ 
 		flags_finished |= ~dependency_link->flags; 
-		proceed |= P_FINISHED; 
-		return proceed;
+		return proceed |= P_FINISHED; 
 	}
 
 	/* The command must be run or the file created now */
@@ -2761,15 +2764,13 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 		flags_finished= ~0;
 
 		assert(proceed == P_CONTINUE); 
-		proceed |= P_FINISHED; 
-		return proceed;
+		return proceed |= P_FINISHED; 
 	}
 
 	/* We know that a job has to be started now */
 
 	if (jobs == 0) {
-		proceed |= P_WAIT;
-		return proceed; 
+		return proceed |= P_WAIT;
 	}
        
 	/* We have to start a job now */ 
@@ -2832,8 +2833,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 					raise(ERROR_BUILD);
 					flags_finished |= ~dependency_link->flags; 
 					assert(proceed == P_CONTINUE); 
-					proceed |= P_ABORT | P_FINISHED; 
-					return proceed;
+					return proceed |= P_ABORT | P_FINISHED; 
 				}
 			}
 			

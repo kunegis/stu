@@ -100,8 +100,8 @@ public:
 	virtual string format_word() const= 0; 
 	virtual string format_out() const= 0; 
 
-	virtual Target2 get_target2() const= 0;
-	/* Get the corresponding Target2 object.  Only called for
+	virtual Target get_target() const= 0;
+	/* Get the corresponding Target object.  Only called for
 	 * non-compound and non-parametrized dependencies.  */
 
 	virtual bool is_normalized() const= 0;
@@ -268,7 +268,7 @@ public:
 
 	virtual bool is_normalized() const { return true;  }
 
-	virtual Target2 get_target2() const;
+	virtual Target get_target() const;
 };
 
 class Dynamic_Dependency
@@ -350,7 +350,7 @@ public:
 		return dependency->is_normalized(); 
 	}
 
-	virtual Target2 get_target2() const;
+	virtual Target get_target() const;
 
 	unsigned get_depth() const 
 		/* The depth of the dependency, i.e., how many dynamic
@@ -418,7 +418,7 @@ public:
 	/* A concatenated dependency is always normalized, regardless of
 	 * whether the contained dependencies are normalized.  */ 
 
-	virtual Target2 get_target2() const;
+	virtual Target get_target() const;
 
 private:
 
@@ -493,7 +493,7 @@ public:
 	virtual bool is_normalized() const {  return false;  }
 	/* A compound dependency is never normalized */
 
-	virtual Target2 get_target2() const {  assert(false);  }
+	virtual Target get_target() const {  assert(false);  }
 
 private:
 
@@ -513,7 +513,7 @@ public:
 	virtual string format(Style, bool &) const {  return "ROOT";  }
 	virtual string format_word() const {  return "ROOT";  }
 	virtual string format_out() const {  return "ROOT";  }
-	virtual Target2 get_target2() const {  return Target2("");  }
+	virtual Target get_target() const {  return Target("");  }
 	virtual bool is_normalized() const {  return true;  }
 };
 
@@ -622,12 +622,12 @@ shared_ptr <const Dependency> Dependency::strip_dynamic(shared_ptr <const Depend
 	return d;
 }
 
-Target2 Single_Dependency::get_target2() const
+Target Single_Dependency::get_target() const
 {
 	return place_param_target.unparametrized(); 
 }
 
-Target2 Dynamic_Dependency::get_target2() const
+Target Dynamic_Dependency::get_target() const
 {
 	string text;
 	
@@ -643,7 +643,7 @@ Target2 Dynamic_Dependency::get_target2() const
 	const Single_Dependency *sin= dynamic_cast <const Single_Dependency *> (d); 
 	text += sin->place_param_target.unparametrized().get_text();
 
-	return Target2(text); 
+	return Target(text); 
 }
 
 shared_ptr <const Dependency> Single_Dependency
@@ -846,7 +846,7 @@ void Concatenated_Dependency::make_normalized()
 #endif /* 0 */ 
 }
 
-Target2 Concatenated_Dependency::get_target2() const
+Target Concatenated_Dependency::get_target() const
 {
 	assert(false);
 }

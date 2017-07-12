@@ -238,10 +238,10 @@ shared_ptr <Rule> Parser::parse_rule()
 			}
 
 			if (! place_output_new.empty()) {
-				Target2 target2(F_TARGET_TRANSIENT, is <Name_Token> ()->raw()); 
+				Target target(F_TARGET_TRANSIENT, is <Name_Token> ()->raw()); 
 				place_at << 
 					fmt("transient target %s is invalid",
-					    target2.format_word()); 
+					    target.format_word()); 
 				place_output_new << fmt("after output redirection using %s", 
 							char_format_word('>'));
 				throw ERROR_LOGICAL;

@@ -37,17 +37,16 @@
  * 
  * This also encodes the options at all levels of the dependency. 
  */
-// TODO rename 'Target' 
-class Target2
+class Target
 {
 public:
 	
-	Target2(string text_)
-		/* TEXT_ is the full text field of this Target2 */
+	Target(string text_)
+		/* TEXT_ is the full text field of this Target */
 		:  text(text_)
 	{  }
 
-	Target2(Flags flags, string name) 
+	Target(Flags flags, string name) 
 	/* Non-dynamic */
 		: text(((char) flags) + name)
 	{
@@ -140,8 +139,8 @@ public:
 		return (unsigned) (unsigned char) text.at(i); 
 	}
 
-	bool operator== (const Target2 &target2) const {  return text == target2.text;  }
-	bool operator!= (const Target2 &target2) const {  return text != target2.text;  }
+	bool operator== (const Target &target) const {  return text == target.text;  }
+	bool operator!= (const Target &target) const {  return text != target.text;  }
 
 private:
 
@@ -164,9 +163,9 @@ private:
 
 namespace std {
 	template <>
-	struct hash <Target2>
+	struct hash <Target>
 	{
-		size_t operator()(const Target2 &target) const {
+		size_t operator()(const Target &target) const {
 			return hash <string> ()(target.get_text()); 
 		}
 	};
@@ -401,16 +400,16 @@ public:
 		assert((flags_ & ~F_TARGET_TRANSIENT) == 0); 
 	}
 
-	Param_Target(Target2 target2)
-	/* Unparametrized target.   The passed TARGET2 must be non-dynamic. */
-		:  flags(target2.get_front_byte_nondynamic() & F_TARGET_TRANSIENT),
-		   name(target2.get_name_nondynamic())
+	Param_Target(Target target)
+	/* Unparametrized target.   The passed TARGET must be non-dynamic. */
+		:  flags(target.get_front_byte_nondynamic() & F_TARGET_TRANSIENT),
+		   name(target.get_name_nondynamic())
 	{ 
-		assert(! target2.is_dynamic()); 
+		assert(! target.is_dynamic()); 
 	}
 
-	Target2 instantiate(const map <string, string> &mapping) const {
-		return Target2(flags, name.instantiate(mapping)); 
+	Target instantiate(const map <string, string> &mapping) const {
+		return Target(flags, name.instantiate(mapping)); 
 	}
 
 	string format_word() const {
@@ -435,11 +434,11 @@ public:
 			   Color::end);
 	}
 
-	Target2 unparametrized() const 
+	Target unparametrized() const 
 	/* The corresponding unparametrized target.  This target must
 	 * have zero parameters.  */ 
 	{
-		return Target2(flags, name.unparametrized());
+		return Target(flags, name.unparametrized());
 	}
 
 	bool operator == (const Param_Target &that) const {
@@ -548,18 +547,18 @@ public:
 	}
 
 	string format(Style style, bool &need_quotes) const {
-		Target2 target2(flags, place_name.raw()); 
-		return target2.format(style, need_quotes); 
+		Target target(flags, place_name.raw()); 
+		return target.format(style, need_quotes); 
 	}
 	
 	string format_word() const {
-		Target2 target2(flags, place_name.raw());
-		return target2.format_word(); 
+		Target target(flags, place_name.raw());
+		return target.format_word(); 
 	}
 	
 	string format_out() const {
-		Target2 target2(flags, place_name.raw());
-		return target2.format_out(); 
+		Target target(flags, place_name.raw());
+		return target.format_out(); 
 	}
 
 	shared_ptr <Place_Param_Target> 
@@ -568,8 +567,8 @@ public:
 			(flags, *place_name.instantiate(mapping), place); 
 	}
 
-	Target2 unparametrized() const {
-		return Target2(flags, place_name.unparametrized()); 
+	Target unparametrized() const {
+		return Target(flags, place_name.unparametrized()); 
 	}
 
 	Param_Target get_param_target() const {
@@ -577,7 +576,7 @@ public:
 	}
 };
 
-string Target2::format(Style style, bool &quotes) const
+string Target::format(Style style, bool &quotes) const
 {
 	quotes= false;
 
@@ -612,7 +611,7 @@ string Target2::format(Style style, bool &quotes) const
 	return ret; 
 }
 
-string Target2::format_out() const
+string Target::format_out() const
 {
 	Style style= 0;
 	if (! is_file()) {
@@ -642,7 +641,7 @@ string Target2::format_out() const
 	return ret; 
 }
 
-string Target2::format_out_print_word() const
+string Target::format_out_print_word() const
 {
 	Style style= 0;
 	if (! is_file()) {
@@ -674,7 +673,7 @@ string Target2::format_out_print_word() const
 	return ret; 
 }
 
-string Target2::format_word() const
+string Target::format_word() const
 {
 	Style style= 0;
 	if (! is_file()) {
@@ -706,7 +705,7 @@ string Target2::format_word() const
 	return ret; 
 }
 
-string Target2::format_src() const
+string Target::format_src() const
 {
 	Style style= 0;
 	if (! is_file()) {

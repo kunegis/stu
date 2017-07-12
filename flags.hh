@@ -44,8 +44,8 @@ enum
 
 	I_RESULT_ONLY,         /* -* */
 
-	I_TARGET_DYNAMIC,      /* Used by Target2 as dynamic bit */
-	I_TARGET_TRANSIENT,    /* Used by Target2 as type bit */
+	I_TARGET_DYNAMIC,      /* Used by Target as dynamic bit */
+	I_TARGET_TRANSIENT,    /* Used by Target as type bit */
 
 	I_DYNAMIC_LEFT,        /* -/ */
 	I_DYNAMIC_RIGHT,       /* -\ */

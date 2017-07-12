@@ -118,7 +118,7 @@ class Rule_Set
 {
 private:
 
-	unordered_map <Target2, shared_ptr <Rule> > rules_unparametrized;
+	unordered_map <Target, shared_ptr <Rule> > rules_unparametrized;
 	/* All unparametrized rules by their target.  Rules
 	 * with multiple targets are included multiple times, for each
 	 * of their targets. */ 
@@ -135,11 +135,11 @@ public:
 	 * If the given rule has duplicate targets, print and throw a
 	 * logical error.  */ 
 
-	shared_ptr <Rule> get(Target2 target2, 
+	shared_ptr <Rule> get(Target target, 
 			      shared_ptr <Rule> &rule_original,
 			      map <string, string> &mapping_out,
 			      const Place &place);
-	/* Match TARGET2 to a rule, and return the instantiated
+	/* Match TARGET to a rule, and return the instantiated
 	 * (unparametrized) corresponding rule.  TARGET must be
 	 * non-dynamic.  MAPPING_OUT must be empty. 
 	 * Return null when no match is found. 
@@ -364,24 +364,24 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 
 		if (! rule->is_parametrized()) {
 			for (auto place_param_target:  rule->place_param_targets) {
-				Target2 target2= place_param_target->unparametrized(); 
-				if (rules_unparametrized.count(target2)) {
+				Target target= place_param_target->unparametrized(); 
+				if (rules_unparametrized.count(target)) {
 					place_param_target->place <<
 						fmt("there must not be a second rule for target %s", 
-						    target2.format_word());
-					auto rule_2= rules_unparametrized.at(target2); 
+						    target.format_word());
+					auto rule_2= rules_unparametrized.at(target); 
 					for (auto place_param_target_2: rule_2->place_param_targets) {
 						assert(place_param_target_2->place_name.get_n() == 0);
-						if (place_param_target_2->unparametrized() == target2) {
+						if (place_param_target_2->unparametrized() == target) {
 							place_param_target_2->place << 
 								fmt("shadowing previous rule %s", 
-								    target2.format_word());  
+								    target.format_word());  
 							break;
 						}
 					}
 					throw ERROR_LOGICAL; 
 				}
-				rules_unparametrized[target2]= rule;
+				rules_unparametrized[target]= rule;
 			}
 		} else {
 			rules_parametrized.push_back(rule); 
@@ -389,12 +389,12 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 	}
 }
 
-shared_ptr <Rule> Rule_Set::get(Target2 target2, 
+shared_ptr <Rule> Rule_Set::get(Target target, 
 				shared_ptr <Rule> &rule_original,
 				map <string, string> &mapping_out,
 				const Place &place)
 {
-	assert(target2.is_file() || target2.is_transient()); 
+	assert(target.is_file() || target.is_transient()); 
 	assert(mapping_out.size() == 0); 
 
 	/* Check for an unparametrized rule.  Since we keep them in a
@@ -402,7 +402,7 @@ shared_ptr <Rule> Rule_Set::get(Target2 target2,
 	 * begin with.  (I.e., if multiple unparametrized rules for the same
 	 * filename exist, then that error is caught earlier when the
 	 * Rule_Set is built.)  */ 
-	auto i= rules_unparametrized.find(target2);
+	auto i= rules_unparametrized.find(target);
 	if (i != rules_unparametrized.end()) {
 
 		shared_ptr <Rule> rule= i->second;
@@ -413,7 +413,7 @@ shared_ptr <Rule> Rule_Set::get(Target2 target2,
 		 * rule */
 		bool found= false;
 		for (auto place_param_target:  rule->place_param_targets) {
-			if (place_param_target->unparametrized() == target2)
+			if (place_param_target->unparametrized() == target)
 				found= true;
 		}
 		assert(found); 
@@ -443,12 +443,12 @@ shared_ptr <Rule> Rule_Set::get(Target2 target2,
 			vector <unsigned> anchoring;
 
 			/* The parametrized rule is of another type */ 
-			if (target2.get_front_byte() != (place_param_target->flags & F_TARGET_TRANSIENT))
+			if (target.get_front_byte() != (place_param_target->flags & F_TARGET_TRANSIENT))
 				continue;
 
 			/* The parametrized rule does not match */ 
 			if (! place_param_target->place_name
-			    .match(target2.get_name_nondynamic(), mapping, anchoring))
+			    .match(target.get_name_nondynamic(), mapping, anchoring))
 				continue; 
 
 			assert(anchoring.size() == 
@@ -499,7 +499,7 @@ shared_ptr <Rule> Rule_Set::get(Target2 target2,
 	/* More than one rule matches:  error */ 
 	if (rules_best.size() > 1) {
 		place << fmt("multiple minimal rules for target %s", 
-			     target2.format_word());
+			     target.format_word());
 		for (auto &place_param_target:  place_param_targets_best) {
 			place_param_target->place <<
 				fmt("rule with target %s", 

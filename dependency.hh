@@ -151,6 +151,14 @@ public:
 	string variable_name;
 	/* With F_VARIABLE:  the name of the variable.
 	 * Otherwise:  empty.  */
+
+	explicit Single_Dependency(const Place_Param_Target &place_param_target_)
+		:  Dependency(place_param_target_.flags),
+		   place_param_target(place_param_target_),
+		   place(place_param_target_.place)
+	{
+		check(); 
+	}
 	
 	Single_Dependency(Flags flags_,
 			  const Place_Param_Target &place_param_target_)

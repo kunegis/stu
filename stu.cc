@@ -448,7 +448,7 @@ int main(int argc, char **argv, char **envp)
 			}
 
 			dependencies.push_back
-				(make_shared <Single_Dependency> (0, *(rule_first->place_param_targets[0])));  
+				(make_shared <Single_Dependency> (*(rule_first->place_param_targets[0])));  
 		}
 
 		/* Execute */

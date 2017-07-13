@@ -120,6 +120,11 @@ enum
 	F_NUL_SEPARATED=    1 << I_NUL_SEPARATED,
 	/* For dynamic dependencies, the file contains NUL-separated
 	 * filenames, without any markup  */ 
+
+	/*
+	 * Aggregates
+	 */
+	F_PLACED = (1 << C_PLACED) - 1,
 };
 
 const char *const FLAGS_CHARS= "pot*[@/\\$Tn0"; 

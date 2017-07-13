@@ -1922,6 +1922,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 {
 	Debug::print(this, fmt("push_result(%s) %s", flags_format(flags), dd->format_out())); 
 
+	assert(! (flags & ~F_PLACED));
 	assert(! (dd->flags & F_DYNAMIC_LEFT)); 
 	shared_ptr <const Single_Dependency> single_dd= dynamic_pointer_cast <const Single_Dependency> (dd); 
 
@@ -1929,7 +1930,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 		/* Percolate one up */ 
 		for (auto &i:  parents) {
 			if (i.second->flags & F_DYNAMIC_LEFT) {
-				i.first->push_result(dd, flags & ~F_DYNAMIC_LEFT);
+				i.first->push_result(dd, flags);
 			}
 		}
 
@@ -1971,8 +1972,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 		if (dynamic_pointer_cast <const Single_Dependency> (dependency_link) &&
 		    dynamic_pointer_cast <const Single_Dependency> (dependency_link)
 		    ->place_param_target.flags & F_TARGET_TRANSIENT) {
-			parent->push_result(dd, 
-					    dependency_link->flags & ~F_DYNAMIC_LEFT); 
+			parent->push_result(dd, dependency_link->flags & F_PLACED); 
 		}
 
 		else if (dynamic_cast <Dynamic_Execution *> (this)) {
@@ -2036,7 +2036,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 					     place_param_target,
 					     dependencies);
 				for (auto &j:  dependencies) {
-					push_result(j, dependency_this->flags); 
+					push_result(j, dependency_this->flags & F_PLACED); 
 				}
 			}
 		} catch (int e) {

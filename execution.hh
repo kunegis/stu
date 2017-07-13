@@ -143,6 +143,8 @@ public:
 	/* The text shown for this execution in verbose output.  Usually
 	 * calls a format_out() function on the appropriate object.  */ 
 
+	virtual void propagate_variable_content(string variable_name, string content)= 0; 
+
 	static long jobs;
 	/* Number of free slots for jobs.  This is a long because
 	 * strtol() gives a long.  Set before calling main() from the -j
@@ -396,7 +398,8 @@ public:
 		       shared_ptr <const Dependency> dependency_link,
 		       Execution *parent,
 		       shared_ptr <Rule> rule,
-		       shared_ptr <Rule> param_rule); 
+		       shared_ptr <Rule> param_rule,
+		       map <string, string> &mapping_parameter_); 
 	// TODO remove the TARGET parameter.  It is already
 	// contained in DEPENDENCY_LINK. 
 
@@ -426,6 +429,9 @@ public:
 	virtual string format_out() const {
 		assert(targets.size()); 
 		return targets.front().format_out(); 
+	}
+	virtual void propagate_variable_content(string variable_name, string content) {
+		mapping_variable[variable_name]= content;
 	}
 
 	static unordered_map <pid_t, File_Execution *> executions_by_pid;
@@ -565,7 +571,8 @@ public:
 	Transient_Execution(shared_ptr <const Dependency> dependency_link,
 			    Execution *parent,
 			    shared_ptr <Rule> rule,
-			    shared_ptr <Rule> param_rule); 
+			    shared_ptr <Rule> param_rule,
+			    map <string, string> &mapping_parameter); 
 			    
 	shared_ptr <const Rule> get_rule() const { return rule; }
 	
@@ -580,6 +587,10 @@ public:
 	virtual string format_out() const {
 		assert(targets.size()); 
 		return targets.front().format_out(); 
+	}
+	virtual void propagate_variable_content(string variable_name, string content) {
+		for (auto &i:  parents) 
+			i.first->propagate_variable_content(variable_name, content); 
 	}
 
 protected:
@@ -604,11 +615,14 @@ private:
 
 	bool is_finished; 
 
+	map <string, string> mapping_parameter; 
+	/* Contains the parameters; is not used */
+
 	map <string, string> mapping_variable; 
 	/* Variable assignments from variables dependencies.  This is in
 	 * Transient_Execution because it may be percolated up to the
 	 * parent execution.  */
-
+	
 	~Transient_Execution();
 
 	virtual const Place &get_place() const {
@@ -627,6 +641,7 @@ public:
 	virtual bool finished() const; 
 	virtual bool finished(Flags flags) const;
 	virtual string format_out() const { return "ROOT"; }
+	virtual void propagate_variable_content(string, string) {  }
 
 protected:
 
@@ -679,6 +694,7 @@ public:
 		// TODO return actual dependency text
 		return "CONCAT";  
 	}
+	virtual void propagate_variable_content(string, string) {  }
 
 protected:
 
@@ -747,6 +763,10 @@ public:
 	virtual const Place &get_place() const {  return dependency->get_place();  }
 	virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
 	virtual string format_out() const;
+	virtual void propagate_variable_content(string variable_name, string content) {
+		for (auto &i:  parents) 
+			i.first->propagate_variable_content(variable_name, content); 
+	}
 
 protected:
 
@@ -1833,8 +1853,8 @@ Execution *Execution::get_execution(Target target,
 						   dependency_link->get_place()); 
 			} catch (int e) {
 				execution= target.is_file()
-					? (Execution *)new File_Execution(target, dependency_link, parent, rule, param_rule) 
-					: (Execution *)new Transient_Execution(dependency_link, parent, rule, param_rule); 
+					? (Execution *)new File_Execution(target, dependency_link, parent, rule, param_rule, mapping_parameter) 
+					: (Execution *)new Transient_Execution(dependency_link, parent, rule, param_rule, mapping_parameter); 
 				execution->print_traces(); 
 				execution->raise(e); 
 				goto end; 
@@ -1862,9 +1882,9 @@ Execution *Execution::get_execution(Target target,
 			}
 			
 			if (use_file_execution) {
-				execution= new File_Execution(target, dependency_link, parent, rule, param_rule);  
+				execution= new File_Execution(target, dependency_link, parent, rule, param_rule, mapping_parameter);  
 			} else if (target.is_transient()) {
-				execution= new Transient_Execution(dependency_link, parent, rule, param_rule); 
+				execution= new Transient_Execution(dependency_link, parent, rule, param_rule, mapping_parameter); 
 			}
 		end:;
 		} else {
@@ -2206,17 +2226,19 @@ File_Execution::File_Execution(Target target_,
 			       shared_ptr <const Dependency> dependency_link,
 			       Execution *parent,
 			       shared_ptr <Rule> rule_,
-			       shared_ptr <Rule> param_rule_)
+			       shared_ptr <Rule> param_rule_,
+			       map <string, string> &mapping_parameter_)
 	:  Execution(dependency_link, parent),
 	   rule(rule_),
 	   exists(0),
 	   flags_finished(0)
 {
-	param_rule= param_rule_;
 	assert(parent != nullptr); 
 	assert(parents.size() == 1); 
-//	assert(target_.is_file()); 
-	assert((param_rule == nullptr) == (rule == nullptr)); 
+	assert((param_rule_ == nullptr) == (rule_ == nullptr)); 
+
+	param_rule= param_rule_;
+	swap(mapping_parameter, mapping_parameter_); 
 
 	/* Later replaced with all targets from the rule, when a rule exists */ 
 	targets.push_back(target_); 
@@ -3016,12 +3038,13 @@ void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency
 		dynamic_pointer_cast <const Single_Dependency> (dependency)->variable_name; 
 
 	{
-	string variable_name= 
-		dependency_variable_name == "" ?
-		target.get_name_nondynamic() : dependency_variable_name;
-	
-	dynamic_cast <File_Execution *> (parent)
-		->mapping_variable[variable_name]= content;
+		string variable_name= 
+			dependency_variable_name == "" ?
+			target.get_name_nondynamic() : dependency_variable_name;
+
+		parent->propagate_variable_content(variable_name, content); 
+//		dynamic_cast <File_Execution *> (parent)
+//			->mapping_variable[variable_name]= content;
 	}
 
 	return;
@@ -3487,11 +3510,14 @@ bool Transient_Execution::finished(Flags flags) const
 Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependency_link,
 					 Execution *parent,
 					 shared_ptr <Rule> rule_,
-					 shared_ptr <Rule> param_rule_)
+					 shared_ptr <Rule> param_rule_,
+					 map <string, string> &mapping_parameter_)
 	:  Execution(dependency_link, parent),
 	   rule(rule_)
 {
 	param_rule= param_rule_; 
+	swap(mapping_parameter, mapping_parameter_); 
+
 	assert(dynamic_pointer_cast <const Single_Dependency> (dependency_link)); 
 	shared_ptr <const Single_Dependency> single_dependency= 
 		dynamic_pointer_cast <const Single_Dependency> (dependency_link);

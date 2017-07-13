@@ -238,6 +238,16 @@ C = {correct}
 @x:  $[V];
 V = {correct}
 
+A: @x { cp A B ; }
+@x: B $[V]; # Allowed?
+B = {correct}
+
+# In the command in the second line, what should $V contain, 'abc' or
+# 'xyz'?  Or should this be an error? 
+A: list.abc { cp list.abc A ; }
+>list.$V: $[V] { echo "$V" ; }
+V = {xyz}
+
 #
 # * Don`t use `;` in sed
 # * Don`t use \s, \S and \t in sed

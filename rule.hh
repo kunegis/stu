@@ -144,7 +144,7 @@ public:
 	 * non-dynamic.  MAPPING_PARAMETER must be empty.  Return null when no
 	 * match is found.  When a match is found, write the original
 	 * (possibly parametrized) rule into ORIGINAL_RULE and the
-	 * matched parameters into MAPPING_OUT.  Throws errors.  PLACE
+	 * matched parameters into MAPPING_PARAMETER.  Throws errors.  PLACE
 	 * is the place of the dependency; used in error messages.  */ 
 
 	void print() const;
@@ -391,11 +391,11 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 
 shared_ptr <Rule> Rule_Set::get(Target target, 
 				shared_ptr <Rule> &rule_original,
-				map <string, string> &mapping_out,
+				map <string, string> &mapping_parameter,
 				const Place &place)
 {
 	assert(target.is_file() || target.is_transient()); 
-	assert(mapping_out.size() == 0); 
+	assert(mapping_parameter.size() == 0); 
 
 	/* Check for an unparametrized rule.  Since we keep them in a
 	 * map by target filename(s), there can only be a single matching rule to
@@ -511,11 +511,11 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 
 	/* Instantiate the rule */ 
 	shared_ptr <Rule> rule_best= rules_best[0];
-	swap(mapping_out, mappings_best[0]); 
+	swap(mapping_parameter, mappings_best[0]); 
 	rule_original= rule_best; 
 
 	shared_ptr <Rule> ret
-		(Rule::instantiate(rule_best, mapping_out));
+		(Rule::instantiate(rule_best, mapping_parameter));
 		
 	return ret;
 }

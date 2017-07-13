@@ -259,11 +259,11 @@ protected:
 	 * file. 
 	 */
 
+	void push_result(shared_ptr <const Dependency> dd,
+			 Flags flags);
 	/* Add an item to the result list, giving it FLAGS, and
 	 * percolate up.  FLAGS does not have the F_DYNAMIC_LEFT bit
 	 * set.  */ 
-	void push_result(shared_ptr <const Dependency> dd,
-			 Flags flags);
 
 	virtual ~Execution(); 
 
@@ -1712,9 +1712,9 @@ void Execution::disconnect(Execution *const parent,
 		// XXX everywhere where DYNAMIC_LEFT is checked, also check that DYNAMIC_RRIGHT is not set 
 
 		Dynamic_Execution *parent_dynamic= dynamic_cast <Dynamic_Execution *> (parent);
-		File_Execution *parent_single= dynamic_cast <File_Execution *> (parent); 
+		Transient_Execution *parent_transient= dynamic_cast <Transient_Execution *> (parent); 
 		if (! parent_dynamic) {
-			assert(parent_single); 
+			assert(parent_transient); 
 			shared_ptr <const Single_Dependency> single_dependency_parent
 				= dynamic_pointer_cast <const Single_Dependency> (dependency_parent); 
 			assert(single_dependency_parent &&
@@ -1920,12 +1920,23 @@ void Execution::copy_result(Execution *parent, Execution *child)
 void Execution::push_result(shared_ptr <const Dependency> dd, 
 			    Flags flags)
 {
-	assert(! (flags & F_DYNAMIC_LEFT)); 
-	assert(! (dd->flags & F_DYNAMIC_LEFT)); 
-
 	Debug::print(this, fmt("push_result(%s) %s", flags_format(flags), dd->format_out())); 
 
+	assert(! (dd->flags & F_DYNAMIC_LEFT)); 
 	shared_ptr <const Single_Dependency> single_dd= dynamic_pointer_cast <const Single_Dependency> (dd); 
+
+	if (dynamic_cast <Transient_Execution *> (this)) {
+		/* Percolate one up */ 
+		for (auto &i:  parents) {
+			if (i.second->flags & F_DYNAMIC_LEFT) {
+				i.first->push_result(dd, flags & ~F_DYNAMIC_LEFT);
+			}
+		}
+
+		return;
+	}
+
+	assert(! (flags & F_DYNAMIC_LEFT)); 
 
 	/* Without extra flags */
 	if (single_dd) 
@@ -1987,6 +1998,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 
 	File_Execution *single_this= dynamic_cast <File_Execution *> (this); 
 	Dynamic_Execution *dynamic_this= dynamic_cast <Dynamic_Execution *> (this); 
+	Transient_Execution *transient_this= dynamic_cast <Transient_Execution *> (this); 
 	
 	/* Check that THIS is one of the allowed dynamics */
 	if (single_this) {
@@ -2000,8 +2012,11 @@ void Execution::propagate_to_dynamic(Execution *child,
 		assert(found); 
 	} else if (dynamic_this) {
 		/* OK */
+	} else if (transient_this) {
+		/* OK */
 	} else /* Another execution type */ {
 		assert(false); 
+		/* This does not happen */ 
 	}
 
 	/* Even if the child produced an error, we still read

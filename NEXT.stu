@@ -1,0 +1,45 @@
+#
+# These features are backward-incompatible and can therefore only be
+# implemented in the next major version.
+#
+
+#
+# Have the same brace syntax as in the shell.  In particular:
+#
+
+# The semicolon is required
+A { touch A ; }  
+
+# Write a closing brace character into 'A'
+>A { echo } ; }
+
+# Error: The command started by '{' is not closed 
+A { touch A }
+
+#
+# Disallow a mix of transient and files as targets in the same rule.
+#
+
+# This is an error
+@x A: B  { cp B A ; }
+
+# It can be rewritten as
+A: B { cp B A ; }
+@x: A; 
+
+# The reason is that in these cases, we currently interpret -o @x as
+# equivalent to -o A, rather than -o B.  This is inconsistent with the
+# case where '@x' is not used as a target.  The way to rewrite this
+# shown above lets people use -o @x as intended, without the need for
+# the extra rules for mixed targets that we have at the moment. 
+
+#
+# Stu 3:  Don't allow both transients and files as targets in the same
+# rule.  Also, never allow multiple transient targets.  Then,
+# File_Execution will not have to support transients anymore.
+#
+
+#
+# Make the %version mandatory in every file, to avoid parsing a file of
+# the wrong Stu version.  
+#

@@ -59,7 +59,7 @@ public:
 
 		P_PENDING =  1 << 1,
 		/* The function execute() should be called again for
-		 * this execution at least.  */
+		 * this execution at least, for various reasons.  */
 
 		P_FINISHED = 1 << 2,
 		/* The Execution is finished */ 
@@ -506,7 +506,7 @@ private:
 	Flags flags_finished; 
 	/* What parts of this target have been done.  Each bit that is
 	 * set represents one aspect that was done.  When an execution
-	 * is invoke with a certain set of flags, all flags *not*
+	 * is invoked with a certain set of flags, all flags *not*
 	 * passed will be set when the execution is finished.  */
 
 	~File_Execution(); 
@@ -1399,14 +1399,12 @@ void Execution::push_dependency(shared_ptr <const Dependency> dependency)
 
 Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> dependency_link)
 {
-	assert(dependency_link); 
-
 	Debug debug(this);
-
-	assert(jobs >= 0); 
-
 	Debug::print(this, fmt("execute(%s)", 
 			       dependency_link != nullptr ? dependency_link->format_out() : "NULL")); 
+
+	assert(jobs >= 0); 
+	assert(dependency_link); 
 
 	shared_ptr <Dependency> dependency_link2= Dependency::clone(dependency_link); 
 
@@ -1443,31 +1441,30 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	 * Continue the already-active child executions 
 	 */  
 
-	Proceed proceed_all= P_CONTINUE; 
+	Proceed proceed= P_CONTINUE; 
 
 	if (order != Order::RANDOM) {
 		Proceed proceed_2= execute_children(dependency_link2);
-		proceed_all |= proceed_2;
-		if (proceed_all & P_WAIT) {
-			return proceed_all; 
+		proceed |= proceed_2;
+		if (proceed & P_WAIT) {
+			return proceed; 
 		}
 
 		if (finished(dependency_link2->flags) && ! option_keep_going) {
 			Debug::print(this, "finished"); 
-			return proceed_all | P_FINISHED;
+			return proceed | P_FINISHED;
 		}
 	} 
 
 	// TODO put this *before* the execution of already-opened
 	// children. 
 	if (optional_finished(dependency_link2)) {
-		proceed_all |= P_FINISHED; 
-		return proceed_all;
+		return proceed |= P_FINISHED; 
 	}
 
 	/* Is this a trivial run?  Then skip the dependency. */
 	if (dependency_link2->flags & F_TRIVIAL) {
-		return proceed_all; 
+		return proceed |= P_PENDING; 
 	}
 
 	if (error) {
@@ -1479,7 +1476,7 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	 */ 
 
 	if (jobs == 0) {
-		return proceed_all;
+		return proceed;
 	}
 
 	while (! buffer_default.empty()) {
@@ -1489,40 +1486,38 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 		dependency_child_overridetrivial->flags |= F_OVERRIDE_TRIVIAL; 
 		buffer_trivial.push(dependency_child_overridetrivial); 
 		Proceed proceed_2= connect(dependency_link2, dependency_child);
-		proceed_all |= proceed_2;
+		proceed |= proceed_2;
 
 		if (jobs == 0) {
-			return proceed_all; 
+			// XXX Can PROCEED be P_CONTINUE here?
+			return proceed; 
 		}
 	} 
 	assert(buffer_default.empty()); 
 
 	if (order == Order::RANDOM) {
 		Proceed proceed_2= execute_children(dependency_link2);
-		proceed_all |= proceed_2; 
-		if (proceed_all & P_WAIT)
-			return proceed_all;
+		proceed |= proceed_2; 
+		if (proceed & P_WAIT)
+			return proceed;
 	}
 
 	/* Some dependencies are still running */ 
 	if (! children.empty()) {
-		assert(proceed_all != P_CONTINUE); 
-		return proceed_all;
+		assert(proceed != P_CONTINUE); 
+		return proceed;
 	}
 
 	/* There was an error in a child */ 
 	if (error) {
 		assert(option_keep_going == true); 
-		proceed_all |= P_ABORT | P_FINISHED; 
-		return proceed_all;
+		return proceed |= P_ABORT | P_FINISHED; 
 	}
 
-	if (proceed_all)
-		return proceed_all; 
+	if (proceed)
+		return proceed; 
 
-	proceed_all |= P_FINISHED; 
-
-	return proceed_all; 
+	return proceed |= P_FINISHED; 
 }
 
 Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_link_this,
@@ -1944,8 +1939,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 		result.push_back(single_dd); 
 	
 	/* If THIS is a dynamic execution, add DD as a right branch */
-	if (dynamic_cast <Dynamic_Execution *> (this) && 
-	    ! (flags & F_RESULT_ONLY)) {
+	if (dynamic_cast <Dynamic_Execution *> (this) && ! (flags & F_RESULT_ONLY)) {
 
 		/* Add flags from self */
 		shared_ptr <Dependency> dd_new= Dependency::clone(dd); 
@@ -1972,15 +1966,17 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 		if (dynamic_pointer_cast <const Single_Dependency> (dependency_link) &&
 		    dynamic_pointer_cast <const Single_Dependency> (dependency_link)
 		    ->place_param_target.flags & F_TARGET_TRANSIENT) {
-			parent->push_result(dd, dependency_link->flags & F_PLACED); 
+			shared_ptr <Dependency> dd2= Dependency::clone(dd); 
+			dd2->flags &= F_PLACED; 
+			parent->push_result(dd2, dependency_link->flags & F_PLACED); 
 		}
-
 		else if (dynamic_cast <Dynamic_Execution *> (this)) {
-			shared_ptr <Dependency> dd2=
-				make_shared <Dynamic_Dependency> (0, dd); 
-			dd2->add_flags(dependency_link, false); 
-			dd2->flags &= ~(F_DYNAMIC_LEFT | F_DYNAMIC_RIGHT | F_RESULT_ONLY); 
-			parent->push_result(dd2, 0); 
+			shared_ptr <Dependency> dd2= Dependency::clone(dd); 
+			dd2->flags &= F_PLACED; 
+			shared_ptr <Dependency> ddd= make_shared <Dynamic_Dependency> (0, dd2); 
+			ddd->add_flags(dependency_link, false); 
+			ddd->flags &= ~(F_DYNAMIC_LEFT | F_DYNAMIC_RIGHT | F_RESULT_ONLY); 
+			parent->push_result(ddd, 0); 
 		} 
 	}
 }

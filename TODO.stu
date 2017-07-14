@@ -249,6 +249,11 @@ A: list.abc { cp list.abc A ; }
 V = {xyz}
 
 #
+# TODO document the -0 in the manpage.
+#
+
+#
+# BSD/Macos compatibility:
 # * Don`t use `;` in sed
 # * Don`t use \s, \S and \t in sed
 #
@@ -256,10 +261,6 @@ V = {xyz}
 #
 # Make sure that in -j2 -k mode, the "successfully built" message is
 # output just once, when the rule that was run has multiple targets.
-#
-
-#
-# TODO document the -0 in the manpage.
 #
 
 #
@@ -318,7 +319,7 @@ X = {x}   Y = {y}  Z = {z}
 #
 # Test what happens when a file passed with -n contains a \0 character.
 # It should be considered a syntax error and thus should should be a
-# logica error (exit status 2). 
+# logical error (exit status 2). 
 #
 
 #
@@ -328,7 +329,8 @@ X = {x}   Y = {y}  Z = {z}
 #
 
 #
-# Make sure we don't compile in any of the multi-threaded libraries. 
+# Make sure we don't compile in any of the multi-threaded libraries.
+# (For curiosity)   
 #
 
 # 
@@ -427,7 +429,7 @@ V {
 # Canonicalize names 
 #
 # - Fold multiple / to a single one, except exactly two at the beginning
-# - Remove ending /, except for single '/'
+# - Remove ending /, except in single '/'
 # - Fold ., except for a single .
 # - Fold */.. (.. at beginning stays)
 # 
@@ -526,7 +528,7 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 
 #
 # An option for automatic logging:  write all output (stdout/stderr) of
-# commands to a file (a different file per target).  Use the -l option.
+# commands to a file (a different file per target).  
 # To do this, we need to generate a logfile name for each file and
 # transient target in a systematic manner.  This opens many questions. 
 #
@@ -551,7 +553,8 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 #
 # Optimization:  when parsing rules, only save the "body" part of the
 # rule (everything except the target) as an unparsed string.  Parse it
-# properly only when needed. 
+# properly only when needed.  This will not catch certain errors
+# anymore. 
 #
 
 #

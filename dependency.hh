@@ -134,7 +134,7 @@ class Single_Dependency
  * dynamic dependencies.
  *
  * When the target is a transient, the dependency flags have the
- * F_TARGET_TRANSIENT bit set, which is redundent. 
+ * F_TARGET_TRANSIENT bit set, which is redundant. 
  */
 	:  public Dependency
 {
@@ -207,7 +207,7 @@ public:
 	}
 
 	Single_Dependency(const Single_Dependency &single_dependency)
-		:  Dependency(single_dependency.flags),
+		:  Dependency(single_dependency),
 		   place_param_target(single_dependency.place_param_target),
 		   place(single_dependency.place),
 		   variable_name(single_dependency.variable_name)

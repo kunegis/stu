@@ -84,11 +84,11 @@
 # CMDPREFIX    Prefix before command.  Used to set environment variables
 # PARALLEL     Give the arguments of the -j option for which the test is
 #              to be executed 
-# EXITSTATUS   The prescribed exit code; default is zero
+# EXITSTATUS   The prescribed exit status; default is zero
 # NOSECOND     If file is present, do not check that second invocation
 #              results in "Targets are up to date"  
 # NOTTY	       Don't do the extra TTY test (e.g., when the -q option is
-#	       used and the exit code is expected to be one)
+#	       used and the exit status is expected to be one)
 # NOCOLOR      Don't test for color in stderr (e.g., with the -y option)
 # CONTENT      Prescribe the exact content of the built file
 # INCONTENT    Prescribe strings that must appear in the built file 
@@ -99,7 +99,7 @@
 # NOTINSTDERR  A text that must not be present in Stu's error output
 # TTYSTDOUTERR The output and error output (interleaved) when in TTY mode
 # EXEC         Can be an alternative test script; it can do anything and
-#              should return a sensible exit code (i.e., 0 on success,
+#              should return a sensible exit status (i.e., 0 on success,
 #              nonzero otherwise).  It should also behave like sh/mktest,
 #              e.g., output '***' only on error, etc.
 #
@@ -134,13 +134,7 @@
 # Set to "1" on error 
 errors=0
 
-error_do() {
-	errors=1
-	[ -n "$notall" ] && { 
-		echo >&2 "[31m$0: *** Test '$file' failed [notall][m"
-		exit 1 
-	}
-}
+exec 6>error.log
 
 time_begin="$(date +%s)"
 
@@ -154,8 +148,6 @@ else
 		ln -s stu.debug stu.test
 	fi
 fi
-
-exec 6>error.log
 
 unset STU_OPTIONS
 
@@ -176,6 +168,7 @@ count_total=0
 # In the next line, '$tests' expands with glob replacement 
 for file in $tests
 do
+	# Whether there is an error in this test 
 	error=0
 	
 	count_total="$(( count_total + 1 ))"
@@ -186,8 +179,6 @@ do
 	if [ ! -d "$file" ]; then
 		echo >&2 "$0: *** '$file' is not a directory"
 		error=1
-		echo "$file" >&6
-		error_do
 		continue
 	fi
 
@@ -196,8 +187,6 @@ do
 		if [ "$emptyok" != 1 ] ; then
 			echo >&2 "$0: *** Test directory $file/ does not contain any files"
 			error=1
-			echo "$file" >&6
-			error_do
 		fi
 		continue;
 	fi
@@ -234,7 +223,7 @@ do
 			-o -r STDERR -o -r NOTINSTDERR -o -r CMD -o -r CMDPREFIX \
 			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
 			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR -o -r NOCOLOR ]; then
-			echo >&2 "$: *** EXEC does not allow any other file"
+			echo >&2 "$0: *** EXEC does not allow any other file"
 			error=1
 		fi
 
@@ -262,7 +251,7 @@ do
 			echo _______
 		fi
 		
-		# Exit code
+		# Exit status
 		exitcode_correct=0
 		if [ -r EXITSTATUS ]; then
 			exitcode_correct="$(sed -e '/^[[:space:]]*$/d;s/[[:space:]]\{1,\}//g' <EXITSTATUS)"
@@ -368,7 +357,7 @@ do
 		# Check that at least one line of error message is generated 
 		if [ "$exitcode_correct" != 0 ] && [ \! -r STDERR ]; then
 			if [ \! \( "$(echo $(cat list.def.err | wc -l))" -gt 0 \) ]; then
-				echo >&2 "$0: *** Nothing written to stderr although exit code is >0"
+				echo >&2 "$0: *** Nothing written to stderr although exit status is >0"
 				error=1
 			fi
 		fi
@@ -517,7 +506,11 @@ do
 
 	if [ "$error" != 0 ] ; then
 		echo "$file" >&6
-		error_do
+		errors=1
+		[ -n "$notall" ] && { 
+			echo >&2 "[31m$0: *** Test '$file' failed [notall][m"
+			exit 1 
+		}
 	fi
 done
 

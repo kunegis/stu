@@ -1429,9 +1429,11 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 		// XXX should we also override -* ?
 	}
 	
+	Proceed proceed= P_CONTINUE; 
+
 	if (finished(dependency_link2->flags)) {
 		Debug::print(this, "finished"); 
-		return P_FINISHED; 
+		return proceed |= P_FINISHED; 
 	}
 
 	/* In DFS mode, first continue the already-open children, then
@@ -1442,8 +1444,6 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	 * Continue the already-active child executions 
 	 */  
 
-	Proceed proceed= P_CONTINUE; 
-
 	if (order != Order::RANDOM) {
 		Proceed proceed_2= execute_children(dependency_link2);
 		proceed |= proceed_2;
@@ -1453,7 +1453,7 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 
 		if (finished(dependency_link2->flags) && ! option_keep_going) {
 			Debug::print(this, "finished"); 
-			return proceed | P_FINISHED;
+			return proceed |= P_FINISHED;
 		}
 	} 
 
@@ -1477,7 +1477,7 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 	 */ 
 
 	if (jobs == 0) {
-		return proceed;
+		return proceed |= P_WAIT;
 	}
 
 	while (! buffer_default.empty()) {
@@ -1490,8 +1490,7 @@ Execution::Proceed Execution::execute_base(shared_ptr <const Dependency> depende
 		proceed |= proceed_2;
 
 		if (jobs == 0) {
-			// XXX Can PROCEED be P_CONTINUE here?
-			return proceed; 
+			return proceed |= P_WAIT; 
 		}
 	} 
 	assert(buffer_default.empty()); 

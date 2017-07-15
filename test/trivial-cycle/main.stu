@@ -1,10 +1,13 @@
 
 
 
-A:  -t B D {
+A:  -t @x @y {
 	echo BUILDING_A
 	cat B D >A
 }
+
+@x:  B;
+@y:  D;
 
 B: I { 
 	echo BUILDING_B

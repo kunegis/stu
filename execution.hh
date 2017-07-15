@@ -66,7 +66,9 @@
 
 		 P_ABORT    = 1 << 3,
 		 /* This Execution should be finished immediately.  When
-		  * set, P_FINISHED is also set.  */
+		  * set, P_FINISHED is also set.  This does not imply
+		  * that there was an error -- for instance, the trivial
+		  * flag -t may mean that nothing more should be done.  */
 
 		 P_CONTINUE = 0, 
 		 /* Execution can continue in the process */
@@ -1409,11 +1411,6 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 
 	shared_ptr <Dependency> dependency_this2= Dependency::clone(dependency_this); 
 
-//	/* Override the trivial flag */ 
-//	if (dependency_this2->flags & F_OVERRIDE_TRIVIAL) {
-//		dependency_this2->flags &= ~F_TRIVIAL; 
-//	}
-
 	/* Override the dynamic flag */
 	if (dependency_this2->flags & F_DYNAMIC_RIGHT) {
 		dependency_this2->flags &= ~F_DYNAMIC_LEFT;
@@ -1465,7 +1462,7 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 
 	/* Is this a trivial run?  Then skip the dependency. */
 	if (dependency_this2->flags & F_TRIVIAL) {
-		return proceed |= P_FINISHED; 
+		return proceed |= P_ABORT | P_FINISHED; 
 	}
 
 	if (error) {
@@ -2596,19 +2593,15 @@ void File_Execution::print_command() const
 Execution::Proceed File_Execution::execute(Execution *parent, 
 					   shared_ptr <const Dependency> dependency_this)
 {
-	if (job.started()) {
-		assert(children.empty()); 
-	}       
+	assert(! job.started() || children.empty()); 
 
 	Proceed proceed= execute_base_A(dependency_this); 
 	assert(proceed); 
-
 	if (proceed & P_ABORT) {
 		assert(proceed & P_FINISHED); 
 		flags_finished |= ~dependency_this->flags;
 		return proceed; 
 	}
-
 	if (proceed & (P_WAIT | P_PENDING)) {
 		return proceed; 
 	}
@@ -3521,10 +3514,10 @@ Execution::Proceed Transient_Execution::execute(Execution *,
 	if (proceed & P_FINISHED) {
 		is_finished= true; 
 	}
-	proceed |= execute_base_B(dependency_this); 
-	if (proceed & P_FINISHED) {
-		is_finished= true; 
-	}
+//	proceed |= execute_base_B(dependency_this); 
+//	if (proceed & P_FINISHED) {
+//		is_finished= true; 
+//	}
 
 	return proceed; 
 }

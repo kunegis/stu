@@ -1,0 +1,13 @@
+# 'C' is not built because it is a trivial dependency.  It does not
+# matter that 'A' is build anyway, because A lists @b as a non-trivial
+# dependency, i.e. building @b itself will not build 'C', and once @b is
+# done, 'A' doesn't care about 'C' anymore. 
+
+A:  @b {
+	[ -e C ] && exit 2
+	touch A
+}
+
+@b:  -t C;
+
+C { touch C ; }

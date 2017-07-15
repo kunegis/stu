@@ -1,0 +1,8 @@
+# Error:  the command for 'C' is not executed because of the -t flag,
+# and 'A' too is not built. 
+
+A:  @b;
+
+@b:  -t C;
+
+C { touch C ; touch A ; }

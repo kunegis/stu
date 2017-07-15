@@ -50,7 +50,7 @@ enum
 	I_DYNAMIC_LEFT,        /* -/ */
 	I_DYNAMIC_RIGHT,       /* -\ */
 	I_VARIABLE,            /* -$ */
-	I_OVERRIDE_TRIVIAL,    /* -T */
+//	I_OVERRIDE_TRIVIAL,    /* -T */
 	I_NEWLINE_SEPARATED,   /* -n */
 	I_NUL_SEPARATED,       /* -0 */
 
@@ -109,9 +109,9 @@ enum
 	F_VARIABLE         = 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */ 
 
-	F_OVERRIDE_TRIVIAL = 1 << I_OVERRIDE_TRIVIAL,
-	/* Used only in Link.flags in the second pass.  Not used for
-	 * dependencies.  Means to override all trivial flags. */ 
+//	F_OVERRIDE_TRIVIAL = 1 << I_OVERRIDE_TRIVIAL,
+//	/* Used only in pass B.  Not used for
+//	 * dependencies.  Means to override all trivial flags. */ 
 
 	F_NEWLINE_SEPARATED= 1 << I_NEWLINE_SEPARATED,
 	/* For dynamic dependencies, the file contains newline-separated
@@ -127,7 +127,7 @@ enum
 	F_PLACED = (1 << C_PLACED) - 1,
 };
 
-const char *const FLAGS_CHARS= "pot*[@/\\$Tn0"; 
+const char *const FLAGS_CHARS= "pot*[@/\\$n0"; 
 /* Characters representing the individual flags -- used in verbose mode
  * output */ 
 

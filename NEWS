@@ -7,14 +7,14 @@ changes in terminology, changes in the installation procedure, or
 changes in invocation. 
 
 When the major version is increased, backward-incompatible changes are
-made, which are documented in the file MIGRATION. 
+made, which are documented in the file 'MIGRATION', and summarized here. 
 
 ------------------------------------------------------------------------
 
 XXXXXXXXXX  Version 2.5
 
 * Concatenation is now supported
-* Dynamic transient is now supported
+* Dynamic transients are now supported
 * The handling of dynamic dependencies was rewritten to allow
   concatenation and dynamic transients.  The semantics of existing
   functionality was not changed. 

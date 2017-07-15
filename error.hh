@@ -284,6 +284,10 @@ public:
 	bool empty() const { 
 		return type == Type::EMPTY;
 	}
+	
+	void clear() {
+		type= Type::EMPTY; 
+	}
 
 	static const Place place_empty;
 	/* A static empty place object, used in various places when a

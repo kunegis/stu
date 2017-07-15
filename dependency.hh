@@ -79,6 +79,11 @@ public:
 		return places[i];
 	}
 
+	Place &get_place_flag(int i) {
+		assert(i >= 0 && i < C_PLACED);
+		return places[i];
+	}
+
 	void set_place_flag(int i, const Place &place) {
 		assert(i >= 0 && i < C_PLACED);
 		places[i]= place; 
@@ -89,6 +94,15 @@ public:
 	/* Add the flags from DEPENDENCY.  Also copy over the
 	 * corresponding places.  If a place is already given in THIS,
 	 * only copy a place over if OVERWRITE_PLACES is set.  */
+
+	void check() const {
+#ifndef NDEBUG
+		for (int i= 0;  i < C_PLACED;  ++i) {
+			assert(((flags & (1 << i)) == 0) ==
+			       get_place_flag(i).empty()); 
+		}
+#endif		
+	}
 
 	virtual shared_ptr <const Dependency> instantiate(const map <string, string> &mapping) const= 0;
 	virtual bool is_unparametrized() const= 0; 
@@ -206,6 +220,19 @@ public:
 		check(); 
 	}
 
+	Single_Dependency(Flags flags_,
+			  const Place places_[C_PLACED],
+			  const Place_Param_Target &place_param_target_,
+			  const string &variable_name_)
+		/* Use an explicit dependency place */ 
+		:  Dependency(flags_, places_),
+		   place_param_target(place_param_target_),
+		   place(place_param_target_.place),
+		   variable_name(variable_name_)
+	{ 
+		check(); 
+	}
+
 	Single_Dependency(const Single_Dependency &single_dependency)
 		:  Dependency(single_dependency),
 		   place_param_target(single_dependency.place_param_target),
@@ -233,6 +260,7 @@ public:
 		/* The F_TARGET_TRANSIENT flag is always set in the
 		 * dependency flags, even though that is redundant.  */
 		assert((flags & F_TARGET_TRANSIENT) == (place_param_target.flags)); 
+		Dependency::check(); 
 #endif /* ! NDEBUG */ 
 	}
 

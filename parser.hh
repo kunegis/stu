@@ -891,7 +891,7 @@ shared_ptr <const Dependency> Parser
 	}
 	
 	if (! is_operator('[')) {
-		/* The '$' and '[' operators are only generator when
+		/* The '$' and '[' operators are only generated when
 		 * they both appear in conjunction. */ 
 		assert(false);
 		return nullptr;
@@ -899,18 +899,23 @@ shared_ptr <const Dependency> Parser
 
 	++iter;
 
-	Flags flags= F_VARIABLE;
 
 	/* Flags */ 
+	Flags flags= F_VARIABLE;
+	Place places_flags[C_PLACED]; 
+	for (int i= 0;  i < C_PLACED;  ++i)
+		places_flags[i].clear(); 
 	Place place_flag_last;
 	char flag_last= '\0';
 	while (is_flag('p') || is_flag('o') || is_flag('t')) {
 
 		flag_last= is <Flag_Token> ()->flag; 
+		place_flag_last= (*iter)->get_place();
 		if (is_flag('p')) {
-			place_flag_last= (*iter)->get_place();
 			flags |= F_PERSISTENT; 
+			places_flags[I_PERSISTENT]= place_flag_last; 
 		} else if (is_flag('o')) {
+			/* If the nonoptional (-g) option is set, ignore the -o flag */
 			if (! option_nonoptional) {
 				(*iter)->get_place() << 
 					fmt("optional dependency using %s must not appear",
@@ -918,12 +923,12 @@ shared_ptr <const Dependency> Parser
 				place_dollar << "within dynamic variable declaration";
 				throw ERROR_LOGICAL; 
 			}
-			/* If the nonoptional (-g) option is set, ignore the -o flag */
 		} else if (is_flag('t')) {
-			place_flag_last= (*iter)->get_place();
-			if (! option_nontrivial)
+			if (! option_nontrivial) {
 				flags |= F_TRIVIAL; 
-		}
+				places_flags[I_TRIVIAL]= place_flag_last; 
+			}
+		} else assert(false);
 		++iter;
 	}
 
@@ -992,9 +997,8 @@ shared_ptr <const Dependency> Parser
 		throw ERROR_LOGICAL;
 	}
 
-	string variable_name= "";
-	
 	/* Explicit variable name */ 
+	string variable_name= "";
 	if (is_operator('=')) {
 		Place place_equal= (*iter)->get_place();
 		++iter;
@@ -1050,6 +1054,7 @@ shared_ptr <const Dependency> Parser
 	 * on the dollar sign.  */
 	return make_shared <Single_Dependency> 
 		(flags, 
+		 places_flags,
 		 Place_Param_Target(0, *place_name, 
 				    place_name->place), 
 		 variable_name);

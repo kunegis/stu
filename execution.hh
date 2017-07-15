@@ -1396,6 +1396,7 @@ void Execution::push_dependency(shared_ptr <const Dependency> dependency)
 	Dependency::make_normalized(dependencies, dependency); 
        
 	for (const auto &d:  dependencies) {
+		d->check(); 
 		buffer_A.push(d);
 	}
 }
@@ -1482,7 +1483,7 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 		shared_ptr <Dependency> dependency_child_2= 
 			Dependency::clone(dependency_child);
 		dependency_child_2->flags &= ~F_TRIVIAL; 
-//		dependency_child_2->flags |= F_OVERRIDE_TRIVIAL; 
+		dependency_child_2->get_place_flag(I_TRIVIAL)= Place::place_empty; 
 		buffer_B.push(dependency_child_2); 
 		Proceed proceed_2= connect(dependency_this2, dependency_child);
 		proceed |= proceed_2;
@@ -1585,54 +1586,26 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_l
 			return P_CONTINUE;
 		}
 
-		/* Either of '-p'/'-o'/'-t' does not mix with '$[' */
+		/* '-o' does not mix with '$[' */
 		if (dependency_child_new->flags & F_VARIABLE &&
-		    dependency_child_new->flags & (F_PERSISTENT | F_OPTIONAL | F_TRIVIAL)) {
+		    dependency_child_new->flags & F_OPTIONAL) {
 
 			assert(single_dependency_child_new); 
 			assert((dependency_child_new->flags & F_TARGET_TRANSIENT) == 0); 
-//			assert(target_child.type == Type::FILE); 
 			const Place &place_variable= dependency_child_new->get_place();
-			if (dependency_child_new->flags & F_PERSISTENT) {
-				const Place &place_flag= 
-					dependency_child_new->get_place_flag(I_PERSISTENT); 
-				place_variable << 
-					fmt("variable dependency %s must not be declared "
-					    "as persistent dependency",
-					    dynamic_variable_format_word(
-									 single_dependency_child_new->place_param_target.place_name.unparametrized()
-//									 target_child.name
-									 )); 
-				place_flag << fmt("using %s",
-						  multichar_format_word("-p")); 
-			} else if (dependency_child_new->flags & F_OPTIONAL) {
-				const Place &place_flag= 
-					dependency_child_new->get_place_flag(I_OPTIONAL); 
-				place_variable << 
-					fmt("variable dependency %s must not be declared "
-					    "as optional dependency",
-					    dynamic_variable_format_word(single_dependency_child_new->place_param_target.place_name.unparametrized())); 
-				place_flag << fmt("using %s",
-						  multichar_format_word("-o")); 
-			} else {
-				assert(dependency_child_new->flags & F_TRIVIAL); 
-				const Place &place_flag= 
-					dependency_child_new->get_place_flag(I_TRIVIAL); 
-				place_variable << 
-					fmt("variable dependency %s must not be declared "
-					    "as trivial dependency",
-					    dynamic_variable_format_word(single_dependency_child_new->place_param_target.place_name.unparametrized())); 
-				place_flag << fmt("using %s",
-						  multichar_format_word("-t")); 
-			} 
+			const Place &place_flag= 
+				dependency_child_new->get_place_flag(I_OPTIONAL); 
+			place_variable << 
+				fmt("variable dependency %s must not be declared "
+				    "as optional dependency",
+				    dynamic_variable_format_word
+				    (single_dependency_child_new->place_param_target.place_name.unparametrized())); 
+			place_flag << fmt("using %s",
+					  multichar_format_word("-o")); 
 			print_traces();
 			raise(ERROR_LOGICAL);
 			return P_CONTINUE;
 		}
-
-//		flags_child= flags_child_new; 
-
-//		dependency_link_child_new->flags= flags_child;
 
 		Execution *child= get_execution(dependency_child_new->get_target(),
 						dependency_child_new, this);  
@@ -1824,6 +1797,7 @@ Execution *Execution::get_execution(Target target,
 			if (flags & ~execution->parents.at(parent)->flags) {
 				shared_ptr <Dependency> d= Dependency::clone(execution->parents.at(parent));
 				d->flags |= flags;
+				// XXX also set the place in D, from DEPENDENCY_LINK
 				dependency_link= d;
 				execution->parents[parent]= dependency_link; 
 			}
@@ -1954,6 +1928,8 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 		if (dependency_flags) {
 			dd_new->flags |= dependency_flags->flags & F_PLACED;
 			for (int i= 0;  i < C_PLACED;  ++i) {
+				assert(!(dependency_flags->flags & (1 << i)) ==
+				       dependency_flags->get_place_flag(i).empty());
 				if (dd_new->get_place_flag(i).empty() && ! dependency_flags->get_place_flag(i).empty())
 					dd_new->set_place_flag(i, dependency_flags->get_place_flag(i)); 
 			}
@@ -2280,21 +2256,21 @@ File_Execution::File_Execution(Target target_,
 	string text_rule= rule == nullptr ? "(no rule)" : rule->format_out(); 
 	Debug::print(this, fmt("rule %s", text_rule));  
 
-	if (! (target_.is_dynamic() && target_.is_any_file()) 
-	    && rule != nullptr) {
+	if (! (target_.is_dynamic() && target_.is_any_file()) && rule != nullptr) {
 		/* There is a rule for this execution */ 
-
 		for (auto &dependency:  rule->dependencies) {
-
 			shared_ptr <const Dependency> dep= dependency;
 			if (target_.is_any_transient()) {
 				shared_ptr <Dependency> dep_new= Dependency::clone(dep); 
-					
 				dep_new->flags |= dependency_link->flags;
+				for (int i= 0;  i < C_PLACED;  ++i) {
+					assert(!(dependency_link->flags & (1 << i)) ==
+					       dependency_link->get_place_flag(i).empty());
+					if (dep_new->get_place_flag(i).empty() && ! dependency_link->get_place_flag(i).empty())
+						dep_new->set_place_flag(i, dependency_link->get_place_flag(i)); 
+				}
 				dep= dep_new;
-			
 			} 
-
 			push_dependency(dep); 
 		}
 	} else {
@@ -3590,6 +3566,12 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 		if (dependency_link->flags) {
 			shared_ptr <Dependency> dep_new= Dependency::clone(dep); 
 			dep_new->flags |= dependency_link->flags;
+			for (int i= 0;  i < C_PLACED;  ++i) {
+				assert(!(dependency_link->flags & (1 << i)) ==
+				       dependency_link->get_place_flag(i).empty());
+				if (dep_new->get_place_flag(i).empty() && ! dependency_link->get_place_flag(i).empty())
+					dep_new->set_place_flag(i, dependency_link->get_place_flag(i)); 
+			}
 			dep= dep_new;
 		}
 		push_dependency(dep); 

@@ -48,11 +48,21 @@ public:
 
 	Target(Flags flags, string name) 
 	/* Non-dynamic */
-		: text(((char) flags) + name)
+		: text(((char)(unsigned char)flags) + name)
 	{
 		assert((flags & ~F_TARGET_TRANSIENT) == 0); 
+		assert(flags <= (unsigned)CHAR_MAX); 
 		assert(name.find('\0') == string::npos); /* Names do not contain \0 */
 		assert(name != ""); 
+	}
+
+	Target(Flags flags, Target target)
+	/* Makes the given target once more dynamic with the given
+	 * flags, which must *not* contain the 'dynamic' flag.  */
+		:  text((char)(unsigned char)(flags) + target.text)
+	{
+		assert((flags & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0);
+		assert(flags <= (unsigned)CHAR_MAX); 
 	}
 
 	const string &get_text() const {  return text;  }
@@ -117,26 +127,26 @@ public:
 		return text.c_str() + 1; 
 	}
 
-	unsigned get_front_byte() const {  return (unsigned char) text.at(0);  }
+	unsigned get_front_byte() const {  return (unsigned char)text.at(0);  }
 	
 	unsigned char &get_front_byte_nondynamic() 
 	/* Get the front byte, given that the target is not dynamic */
 	{
 		assert(text.size() >= 2); 
 		assert((text.at(0) & F_TARGET_DYNAMIC) == 0); 
-		return (unsigned char &) text[0]; 
+		return (unsigned char &)text[0]; 
 	}
 
 	unsigned get_front_byte_nondynamic() const {
 		assert(text.size() >= 2); 
 		assert((text.at(0) & F_TARGET_DYNAMIC) == 0); 
-		return (unsigned)(unsigned char) text[0]; 
+		return (unsigned char)text[0]; 
 	}
 	
 	unsigned at(size_t i) const 
 	/* For access to any front byte */
 	{
-		return (unsigned) (unsigned char) text.at(i); 
+		return (unsigned char)text.at(i); 
 	}
 
 	bool operator== (const Target &target) const {  return text == target.text;  }
@@ -630,8 +640,9 @@ string Target::format_out() const
 	if (text.at(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
+	string name_text = name_format(text.substr(i+1), style, quotes); 
 	if (quotes)  ret += '\'';
-	ret += name_format(text.substr(i+1), style, quotes); 
+	ret += name_text; 
 	if (quotes)  ret += '\'';
 	i= 0;
 	while (text.at(i) & F_TARGET_DYNAMIC) {
@@ -661,8 +672,9 @@ string Target::format_out_print_word() const
 	if (text.at(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
+	string name_text= name_format(text.substr(i+1), style, quotes); 
 	if (quotes)  ret += '\'';
-	ret += name_format(text.substr(i+1), style, quotes); 
+	ret += name_text; 
 	if (quotes)  ret += '\'';
 	i= 0;
 	while (text.at(i) & F_TARGET_DYNAMIC) {
@@ -674,6 +686,8 @@ string Target::format_out_print_word() const
 }
 
 string Target::format_word() const
+/* Don't include flags in the output */
+// TODO maybe the other format*() functions should also avoid to output the flags?
 {
 	Style style= 0;
 	if (! is_file()) {
@@ -684,17 +698,18 @@ string Target::format_word() const
 	ret += Color::word; 
 	size_t i= 0;
 	while (text.at(i) & F_TARGET_DYNAMIC) {
-		ret += flags_format(text.at(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
+//		ret += flags_format(text.at(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
 		++i;
 		ret += '[';
 	}
 	assert(text.size() > i + 1);
-	ret += flags_format(text.at(i) & ~F_TARGET_TRANSIENT); 
+//	ret += flags_format(text.at(i) & ~F_TARGET_TRANSIENT); 
 	if (text.at(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
+	string name_text= name_format(text.substr(i+1), style, quotes); 
 	if (quotes)  ret += '\'';
-	ret += name_format(text.substr(i+1), style, quotes); 
+	ret += name_text;
 	if (quotes)  ret += '\'';
 	i= 0;
 	while (text.at(i) & F_TARGET_DYNAMIC) {
@@ -725,8 +740,9 @@ string Target::format_src() const
 	}
 	const char *const name= text.c_str() + i + 1;
 	bool quotes= src_need_quotes(name); 
+	string name_text= name_format(text.substr(i+1), style, quotes); 
 	if (quotes)  ret += '\'';
-	ret += name_format(text.substr(i+1), style, quotes); 
+	ret += name_text; 
 	if (quotes)  ret += '\'';
 	i= 0;
 	while (text.at(i) & F_TARGET_DYNAMIC) {

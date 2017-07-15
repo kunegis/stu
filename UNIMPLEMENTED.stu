@@ -383,6 +383,38 @@ B: X Y Z { cat X Y Z >B ; }
 # Ignores timestamps recursively
 A: -P B;
 
+#
+# When a parametrized name contains a slash in a nonparametrized part,
+# any subsequent parameters cannot match a slash.  This is taken into
+# account for computation of dominance. 
+#
+
+# Given
+$name.bib;   # Rule (1)
+./$name.bib; # Rule (2)
+# The name dir/aaa.bib will match rule (1).
+# The name aaa.bib will match both rules. 
+
+# This is not nice because it starts doing the "allow regexp for
+# parameter thing". 
+
+#
+# An option for automatic logging:  write all output (stdout/stderr) of
+# commands to a file (a different file per target).  
+# To do this, we need to generate a logfile name for each file and
+# transient target in a systematic manner.  This opens many questions. 
+#
+
+#
+# Have a flag to prevent echoing of the command. (Similar to '@' in
+# Make)
+#
+
+#
+# In parallel mode, don't show the full trace after and error, but only
+# a one-liner. 
+#
+
 #==== New features that change/extend Stu drastically ====
 
 #

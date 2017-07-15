@@ -14,7 +14,7 @@
   *							files without a rule
   * Transient_Ex.	cached by Target (w/ flags)	Transients without commands and without file
   * 							file target in the same rule
-  * "Single Ex."		cached by Target		Name for File_Ex. or Transient_Ex. 
+  * "Single Ex."	cached by Target		Name for File_Ex. or Transient_Ex. 
   * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Single_Dep.
   * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concat._Dep.
   * Concatenated_Ex.	not cached			Concatenated targets
@@ -250,22 +250,23 @@
 	 void read_dynamic(Flags flags_this,
 			   const Place_Param_Target &place_param_target,
 			   vector <shared_ptr <const Dependency> > &dependencies);
-	 /* 
-	  * Read dynamic dependencies from the content of the file
-	  * TARGET.  The only reason this is not static is that errors
+	 /* Read dynamic dependencies from the content of
+	  * PLACE_PARAM_TARGET.  The only reason this is not static is
+	  * that errors 
 	  * can be raised correctly.  Dependencies that were read are
-	  * written into DEPENDENCIES, which must be empty on
-	  * calling.  
+	  * written into DEPENDENCIES, which must be empty on calling.
 	  * FLAGS_THIS determines whether the -n/-0/etc. flag was used,
 	  * and may also contain the -o flag to ignore a non-existing
-	  * file. 
-	  */
+	  * file.  */
 
-	 void push_result(shared_ptr <const Dependency> dd,
-			  Flags flags);
-	 /* Add an item to the result list, giving it FLAGS, and
-	  * percolate up.  FLAGS does not have the F_DYNAMIC_LEFT bit
-	  * set.  */ 
+	 void push_result(shared_ptr <const Dependency> dd, 
+			  shared_ptr <const Dependency> dependency_flags,
+			  bool result_only
+			  );
+//			  Flags flags);
+	 /* Add an item to the result list, giving it the placed flags
+	  * from DEPENDENCY_FLAGS, and percolate up.  DEPENDENCY_FLAGS
+	  * may be null if no flags should be added.  */
 
 	 virtual ~Execution(); 
 
@@ -968,9 +969,8 @@ void Execution::read_dynamic(Flags flags_this,
 		const char c= (flags_this & F_NEWLINE_SEPARATED) ? '\n' : '\0';
 		/* The delimiter */ 
 
-		const char c_printed
-			/* The character to print as the delimiter */
-			= (flags_this & F_NEWLINE_SEPARATED) ? 'n' : '0';
+		const char c_printed= (flags_this & F_NEWLINE_SEPARATED) ? 'n' : '0';
+		/* The character to print as the delimiter */
 		
 		char *lineptr= nullptr;
 		size_t n= 0;
@@ -1579,7 +1579,6 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_l
 			dependency_child_new->get_place() <<
 				fmt("in declaration of dependency %s", 
 				    single_dependency_child_new->place_param_target.format_word()); 
-//				    dependency_child_new->format_word());
 			print_traces();
 			explain_clash(); 
 			raise(ERROR_LOGICAL);
@@ -1913,11 +1912,17 @@ void Execution::copy_result(Execution *parent, Execution *child)
 }
 
 void Execution::push_result(shared_ptr <const Dependency> dd, 
-			    Flags flags)
+			    shared_ptr <const Dependency> dependency_flags,
+			    bool result_only)
+//			    Flags flags)
 {
-	Debug::print(this, fmt("push_result(%s) %s", flags_format(flags), dd->format_out())); 
+	Debug::print(this, fmt("push_result(%s) %s", 
+			       dependency_flags 
+			       ? flags_format(dependency_flags->flags & F_PLACED)
+			       : "", 
+			       dd->format_out())); 
 
-	assert(! (flags & ~F_PLACED));
+//	assert(! (flags & ~F_PLACED));
 	assert(! (dd->flags & F_DYNAMIC_LEFT)); 
 	shared_ptr <const Single_Dependency> single_dd= dynamic_pointer_cast <const Single_Dependency> (dd); 
 
@@ -1925,34 +1930,36 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 		/* Percolate one up */ 
 		for (auto &i:  parents) {
 			if (i.second->flags & F_DYNAMIC_LEFT) {
-				i.first->push_result(dd, flags);
+				i.first->push_result(dd, dependency_flags, 0);
 			}
 		}
 
 		return;
 	}
 
-	assert(! (flags & F_DYNAMIC_LEFT)); 
+//	assert(! (flags & F_DYNAMIC_LEFT)); 
 
 	/* Without extra flags */
 	if (single_dd) 
 		result.push_back(single_dd); 
 	
 	/* If THIS is a dynamic execution, add DD as a right branch */
-	if (dynamic_cast <Dynamic_Execution *> (this) && ! (flags & F_RESULT_ONLY)) {
+	if (dynamic_cast <Dynamic_Execution *> (this) && 
+	    ! result_only) {
+//	    ! (dependency_flags && (dependency_flags->flags & F_RESULT_ONLY))) {
 
-		/* Add flags from self */
+		/* Add F_DYNAMIC_RIGHT and flags from self */
 		shared_ptr <Dependency> dd_new= Dependency::clone(dd); 
-		dd_new->flags |= flags;
-		dd= dd_new; 
-		// XXX add places of flags 
-		//		for (int i= 0;  i < C_PLACED;  ++i) {
-		//			if (dd->get_place_flag(i).empty())
-		//				dd->set_place_flag(i, dependency_this->get_place_flag(i)); 
-		//		}
-
 		dd_new->flags |= F_DYNAMIC_RIGHT; 
-		push_dependency(dd_new); 
+		if (dependency_flags) {
+			dd_new->flags |= dependency_flags->flags & F_PLACED;
+			for (int i= 0;  i < C_PLACED;  ++i) {
+				if (dd_new->get_place_flag(i).empty() && ! dependency_flags->get_place_flag(i).empty())
+					dd_new->set_place_flag(i, dependency_flags->get_place_flag(i)); 
+			}
+		}
+		dd= dd_new; 
+		push_dependency(dd); 
 	}
 	
 	for (auto &i:  parents) {
@@ -1968,7 +1975,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 		    ->place_param_target.flags & F_TARGET_TRANSIENT) {
 			shared_ptr <Dependency> dd2= Dependency::clone(dd); 
 			dd2->flags &= F_PLACED; 
-			parent->push_result(dd2, dependency_link->flags & F_PLACED); 
+			parent->push_result(dd2, dependency_link, false); 
 		}
 		else if (dynamic_cast <Dynamic_Execution *> (this)) {
 			shared_ptr <Dependency> dd2= Dependency::clone(dd); 
@@ -1976,7 +1983,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 			shared_ptr <Dependency> ddd= make_shared <Dynamic_Dependency> (0, dd2); 
 			ddd->add_flags(dependency_link, false); 
 			ddd->flags &= ~(F_DYNAMIC_LEFT | F_DYNAMIC_RIGHT | F_RESULT_ONLY); 
-			parent->push_result(ddd, 0); 
+			parent->push_result(ddd, nullptr, false); 
 		} 
 	}
 }
@@ -2032,7 +2039,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 					     place_param_target,
 					     dependencies);
 				for (auto &j:  dependencies) {
-					push_result(j, dependency_this->flags & F_PLACED); 
+					push_result(j, dependency_this, dependency_this->flags & F_RESULT_ONLY); 
 				}
 			}
 		} catch (int e) {

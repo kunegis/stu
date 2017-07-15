@@ -362,70 +362,6 @@ $ stu -- [FILE]
 $ stu -- [-oFILE]
 
 #
-# The 'trivial' flag '-t' should "go up" when applied to the
-# dependencies of transient targets. 
-#
-
-# 'V' is built because 'A' does not exist. 
-A: @x {
-	[ -r V ] || {
-		exit 1
-	}
-
-	cat V >A
-}
-@x:  -t V; 
-V = {correct}
-
-# 'V' is built 'A' does not exist.  The '-t' has to "go up". 
-A: @x {
-	[ "x$V" = xcorrect ] || {
-		exit 1
-	}
-
-	echo "$V" >A
-}
-@x:  $[-t V];
-V = {correct}
-
-# The '-t' has to "go up".  Use this in KONECT. 
-@all:   list.out;
->list.$name:
-	@octave
-{
-	./list.octave Hello 
-}
-@octave:  -t ( list.octave $[P] );
-list.octave 
-{
-	cat >list.octave <<EOF
-#! /bin/sh
-[ "x$P" = x... ] || {
-	exit 1
-}
-echo "$@"
-echo correct >A
-EOF
-	chmod u+x list.octave
-}
-P = {...}
-
-# Even when a transient target has a command, the '-t' "goes up". 
-A: @x {
-	[ -r V ] && {
-		exit 1
-	}
-
-	echo correct >A
-}
-@x:  -t V {
-	echo Executing @x
-}
-V {
-	exit 1
-}
-
-#
 # Canonicalize names 
 #
 # - Fold multiple / to a single one, except exactly two at the beginning
@@ -465,21 +401,6 @@ V {
 #      - aaa -> aaa
 #      - aaa/bbb -> aaa/bbb
 #      - / -> / 
-
-#
-# When a parametrized name contains a slash in a nonparametrized part,
-# any subsequent parameters cannot match a slash.  This is taken into
-# account for computation of dominance. 
-#
-
-# Given
-$name.bib;   # Rule (1)
-./$name.bib; # Rule (2)
-# The name dir/aaa.bib will match rule (1).
-# The name aaa.bib will match both rules. 
-
-# This is not nice because it starts doing the "allow regexp for
-# parameter thing". 
 
 #
 # File import
@@ -527,13 +448,6 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 #
 
 #
-# An option for automatic logging:  write all output (stdout/stderr) of
-# commands to a file (a different file per target).  
-# To do this, we need to generate a logfile name for each file and
-# transient target in a systematic manner.  This opens many questions. 
-#
-
-#
 # Recursive persistent dependency:  If the file exists, never
 # rebuild it, regardless whether its dependencies have to be rebuilt.
 # Actual persistent dependencies do not work like this, as they only
@@ -574,23 +488,18 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 }
 
 #
-# Have a flag to prevent echoing of the command. (Similar to '@' in
-# Make)
-#
-
-#
 # A "hard optional" option:  If a dependency is not present, don't even
 # try to rebuild the target if it's already present.  I.e., an
 # "up-percolating" 'optional' flag.
 #
 
 #
-# -m bfs (breadth-first order) and -m target (pseudotarget by target
+# -m bfs (breadth-first order) and -m target (pseudorandom by target
 # name). 
 #
 
 #
-# Have a mode or option to show only once message per error, omitting
+# Have a mode or option to show only one message per error, omitting
 # all subsequent traces.
 #
 
@@ -611,11 +520,6 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 
 #
 # Allow access to environment variables via e.g. $(HOME). 
-#
-
-#
-# In parallel mode, don't show the full trace after and error, but only
-# a one-liner. 
 #
 
 #

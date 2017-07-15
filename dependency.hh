@@ -62,8 +62,10 @@ public:
 	{  }
 
 	Dependency(Flags flags_) 
+	/* This constructor probably needs to be removed, because when
+	 * FLAGS is set, PLACES should always also be set.  */
 		:  flags(flags_)
-	{ }
+	{  }
 
 	Dependency(Flags flags_, const Place places_[C_PLACED])
 		:  flags(flags_)
@@ -213,6 +215,20 @@ public:
 			  const string &variable_name_)
 		/* Use an explicit dependency place */ 
 		:  Dependency(flags_),
+		   place_param_target(place_param_target_),
+		   place(place_),
+		   variable_name(variable_name_)
+	{ 
+		check(); 
+	}
+
+	Single_Dependency(Flags flags_,
+			  const Place places_[C_PLACED],
+			  const Place_Param_Target &place_param_target_,
+			  const Place &place_,
+			  const string &variable_name_)
+		/* Use an explicit dependency place */ 
+		:  Dependency(flags_, places_),
 		   place_param_target(place_param_target_),
 		   place(place_),
 		   variable_name(variable_name_)
@@ -700,7 +716,7 @@ shared_ptr <const Dependency> Single_Dependency
 	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
 
 	shared_ptr <Dependency> ret= make_shared <Single_Dependency> 
-		(flags, *ret_target, place, variable_name);
+		(flags, places, *ret_target, place, variable_name);
 
 	assert(ret_target->place_name.get_n() == 0); 
 	string this_name= ret_target->place_name.unparametrized(); 

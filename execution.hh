@@ -1064,9 +1064,8 @@ void Execution::read_dynamic(Flags flags_this,
 			}
 			dynamic_pointer_cast <const Single_Dependency> (dep)
 				->place_param_target.place_name.places[0] <<
-				fmt("dynamic dependency %s must not contain "
-				    "parametrized dependencies",
-				    target.format_word());
+				fmt("dynamic dependency %s must not contain parametrized dependencies",
+				    Target(0, target).format_word());
 			Target target_base= target;
 			target_base.get_front_byte_nondynamic() &= ~F_TARGET_TRANSIENT; 
 			target_base.get_front_byte_nondynamic() |= (target.get_front_byte_nondynamic() & F_TARGET_TRANSIENT); 

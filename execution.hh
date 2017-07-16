@@ -955,8 +955,7 @@ void Execution::read_dynamic(Flags flags_this,
 		if (! input.empty()) {
 			Target target_dynamic(0, target);
 			place_input <<
-				fmt("dynamic dependency %s "
-				    "must not contain input redirection %s", 
+				fmt("dynamic dependency %s must not contain input redirection %s", 
 				    target_dynamic.format_word(),
 				    prefix_format_word(input.raw(), "<")); 
 			Target target_file= target;
@@ -2268,6 +2267,13 @@ File_Execution::File_Execution(Target target_,
 
 	/* Later replaced with all targets from the rule, when a rule exists */ 
 	targets.push_back(target_); 
+	executions_by_target[target_]= this; 
+
+	if (error_additional) {
+		print_traces(); 
+		raise(error_additional);
+		return;
+	}
 
 	if (rule == nullptr) {
 		/* TARGETS contains only TARGET_ */
@@ -2283,10 +2289,6 @@ File_Execution::File_Execution(Target target_,
 	 * just the one given in the dependency.  */
 	for (const Target &target:  targets) {
 		executions_by_target[target]= this; 
-	}
-
-	if (error_additional) {
-		raise(error_additional);
 	}
 
 	string text_rule= rule == nullptr ? "(no rule)" : rule->format_out(); 

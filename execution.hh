@@ -246,12 +246,11 @@
 			   vector <shared_ptr <const Dependency> > &dependencies);
 	 /* Read dynamic dependencies from the content of
 	  * PLACE_PARAM_TARGET.  The only reason this is not static is
-	  * that errors 
-	  * can be raised correctly.  Dependencies that were read are
-	  * written into DEPENDENCIES, which must be empty on calling.
-	  * FLAGS_THIS determines whether the -n/-0/etc. flag was used,
-	  * and may also contain the -o flag to ignore a non-existing
-	  * file.  */
+	  * that errors can be raised and printed correctly.
+	  * Dependencies that were read are written into DEPENDENCIES,
+	  * which must be empty on calling.  FLAGS_THIS determines
+	  * whether the -n/-0/etc. flag was used, and may also contain
+	  * the -o flag to ignore a non-existing file.  */
 
 	 void push_result(shared_ptr <const Dependency> dd, 
 			  shared_ptr <const Dependency> dependency_flags,
@@ -396,6 +395,8 @@
   * other Execution subclasses only delegate their tasks to child
   * executions. 
   */
+// TODO Check that there are no remnants of any dynamic-handling code in
+// this class. 
 	 :  public Execution 
  {
  public:
@@ -2017,7 +2018,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 
 			if ((place_param_target.flags & F_TARGET_TRANSIENT) == 0) {
 				vector <shared_ptr <const Dependency> > dependencies;
-				read_dynamic(flags_child,
+				child->read_dynamic(flags_child,
 					     place_param_target,
 					     dependencies);
 				for (auto &j:  dependencies) {

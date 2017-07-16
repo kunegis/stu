@@ -375,6 +375,7 @@
 	  * return the execution otherwise.  PLACE is the place of where
 	  * the dependency was declared.  LINK is the link from the
 	  * existing parent to the new execution.  */ 
+	 // TODO make this a non-static member function of PARENT. 
 
 	 static void copy_result(Execution *parent, Execution *child); 
 	 /* Copy the result list from CHILD to PARENT */
@@ -1820,11 +1821,11 @@ Execution *Execution::get_execution(Target target,
 				rule= rule_set.get(target, param_rule, mapping_parameter, 
 						   dependency_link->get_place()); 
 			} catch (int e) {
-				execution= target.is_file()
-					? (Execution *)new File_Execution(target, dependency_link, parent, rule, param_rule, mapping_parameter) 
-					: (Execution *)new Transient_Execution(dependency_link, parent, rule, param_rule, mapping_parameter); 
-				execution->print_traces(); 
-				execution->raise(e); 
+//				execution= target.is_file()
+//					? (Execution *)new File_Execution(target, dependency_link, parent, rule, param_rule, mapping_parameter) 
+//					: (Execution *)new Transient_Execution(dependency_link, parent, rule, param_rule, mapping_parameter); 
+				parent->print_traces(""); 
+				parent->raise(e); 
 				goto end; 
 			}
 

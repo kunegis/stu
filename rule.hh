@@ -498,8 +498,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 
 	/* More than one rule matches:  error */ 
 	if (rules_best.size() > 1) {
-		place << fmt("multiple minimal rules for target %s", 
-			     target.format_word());
+		place << fmt("multiple minimal rules for target %s", target.format_word());
 		for (auto &place_param_target:  place_param_targets_best) {
 			place_param_target->place <<
 				fmt("rule with target %s", 

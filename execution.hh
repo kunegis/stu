@@ -221,12 +221,6 @@
 		 assert(parent_null == nullptr); 
 	 }
 
-	 void print_traces(string text= "") const;
-	 /* Print full trace for the execution.  First the message is
-	  * Printed, then all traces for it starting at this execution,
-	  * up to the root execution. 
-	  * TEXT may be "" to not print the first message.  */ 
-
 	 Proceed execute_children(shared_ptr <Dependency> dependency_link);
 	 /* Execute already-active children */
 
@@ -268,6 +262,12 @@
 	  * from DEPENDENCY_FLAGS, and percolate up.  DEPENDENCY_FLAGS
 	  * may be null if no flags should be added.  */
 
+	 void print_traces(string text= "") const;
+	 /* Print full trace for the execution.  First the message is
+	  * Printed, then all traces for it starting at this execution,
+	  * up to the root execution. 
+	  * TEXT may be "" to not print the first message.  */ 
+
 	 virtual ~Execution(); 
 
 	 virtual int get_depth() const= 0;
@@ -278,6 +278,8 @@
 
 	 virtual const Place &get_place() const= 0;
 	 /* The place for the execution; e.g. the rule; empty if there is no place */
+	 // TODO If implementations of this always read out the place of
+	 // PARAM_RULE, this doesn't need to be virtual. 
 
 	 virtual bool optional_finished(shared_ptr <const Dependency> dependency_link)= 0;
 	 /* Whether the execution would be finished if this was an
@@ -630,7 +632,10 @@
 	 ~Transient_Execution();
 
 	 virtual const Place &get_place() const {
-		 return param_rule->place; 
+		 if (param_rule == nullptr)
+			 return Place::place_empty;
+		 else
+			 return param_rule->place; 
 	 }
  };
  class Root_Execution

@@ -591,10 +591,7 @@ public:
 				shared_ptr <const Dependency> dependency_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
-	virtual string format_out() const {
-		assert(targets.size()); 
-		return targets.front().format_out(); 
-	}
+	virtual string format_out() const;
 	virtual void propagate_variable_content(string variable_name, string content) {
 		for (auto &i:  parents) 
 			i.first->propagate_variable_content(variable_name, content); 
@@ -613,7 +610,7 @@ private:
 
 	vector <Target> targets; 
 	/* The targets to which this execution object corresponds.  All
-	 * are transients.  */
+	 * are transients.  Contains at least one element.  */
 
 	shared_ptr <Rule> rule;
 	/* The instantiated file rule for this execution.  Never null. */ 
@@ -1834,9 +1831,6 @@ Execution *Execution::get_execution(Target target,
 				rule= rule_set.get(target, param_rule, mapping_parameter, 
 						   dependency_link->get_place()); 
 			} catch (int e) {
-//				execution= target.is_file()
-//					? (Execution *)new File_Execution(target, dependency_link, parent, rule, param_rule, mapping_parameter) 
-//					: (Execution *)new Transient_Execution(dependency_link, parent, rule, param_rule, mapping_parameter); 
 				parent->print_traces(""); 
 				parent->raise(e); 
 				goto end; 
@@ -3180,6 +3174,7 @@ Execution::Proceed Root_Execution::execute(Execution *,
 	}
 	if (proceed & P_FINISHED) {
 		is_finished= true; 
+		return proceed; 
 	}
 
 	proceed |= execute_base_B(dependency_this);
@@ -3577,6 +3572,8 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 	if (rule == nullptr) {
 		/* There must be a rule for transient targets (as
 		 * opposed to file targets), so this is an error.  */
+		targets.push_back(dependency_link->get_target());
+		is_finished= true; 
 		print_traces(fmt("no rule to build %s", target.format_word()));
 		raise(ERROR_BUILD);
 		/* Even when a rule was not found, the Transient_Execution object remains
@@ -3617,6 +3614,11 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 	}
 }
 	
+string Transient_Execution::format_out() const {
+	assert(targets.size()); 
+	return targets.front().format_out(); 
+}
+
 void Debug::print(Execution *e, string text) 
 {
 	if (e == nullptr) {

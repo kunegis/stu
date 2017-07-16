@@ -406,7 +406,8 @@ public:
 		       Execution *parent,
 		       shared_ptr <Rule> rule,
 		       shared_ptr <Rule> param_rule,
-		       map <string, string> &mapping_parameter_); 
+		       map <string, string> &mapping_parameter_,
+		       int error_additional); 
 	// TODO remove the TARGET parameter.  It is already
 	// contained in DEPENDENCY_LINK. 
 
@@ -579,7 +580,8 @@ public:
 			    Execution *parent,
 			    shared_ptr <Rule> rule,
 			    shared_ptr <Rule> param_rule,
-			    map <string, string> &mapping_parameter); 
+			    map <string, string> &mapping_parameter,
+			    int error_additional);
 
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
@@ -1270,22 +1272,16 @@ void Execution::print_traces(string text) const
 		auto i= execution->parents.begin(); 
 
 		if (dynamic_cast <Root_Execution *> (i->first)) {
-
 			/* We are in a child of the root execution */ 
-
 			if (first && text != "") {
-
 				/* No text was printed yet, but there
 				 * was a TEXT passed:  Print it with the
 				 * place available.  */ 
-				   
 				/* This is a top-level target, i.e.,
 				 * passed on the command line via an
-				 * argument or an option  */
-
+ 				 * argument or an option  */
 				i->second->get_place() <<
-					fmt("no rule to build %s", 
-					    text_parent);
+					fmt("no rule to build %s", text_parent);
 			}
 			break; 
 		}
@@ -1827,13 +1823,12 @@ Execution *Execution::get_execution(Target target,
 			shared_ptr <Rule> rule, param_rule; 
 			map <string, string> mapping_parameter;
 			bool use_file_execution= false;
+			int error_additional= 0; /* Passed to the execution */
 			try {
 				rule= rule_set.get(target, param_rule, mapping_parameter, 
 						   dependency_link->get_place()); 
 			} catch (int e) {
-				parent->print_traces(""); 
-				parent->raise(e); 
-				goto end; 
+				error_additional= e; 
 			}
 
 			/* RULE may be null here; this is handled in the constructors */ 
@@ -1858,11 +1853,16 @@ Execution *Execution::get_execution(Target target,
 			}
 			
 			if (use_file_execution) {
-				execution= new File_Execution(target, dependency_link, parent, rule, param_rule, mapping_parameter);  
+				execution= new File_Execution
+					(target, dependency_link, 
+					 parent, rule, param_rule, mapping_parameter,
+					 error_additional);  
 			} else if (target.is_transient()) {
-				execution= new Transient_Execution(dependency_link, parent, rule, param_rule, mapping_parameter); 
+				execution= new Transient_Execution
+					(dependency_link, 
+					 parent, rule, param_rule, mapping_parameter,
+					 error_additional); 
 			}
-		end:;
 		} else {
 			execution= new Dynamic_Execution(dependency_link, parent); 
 		}
@@ -2252,7 +2252,8 @@ File_Execution::File_Execution(Target target_,
 			       Execution *parent,
 			       shared_ptr <Rule> rule_,
 			       shared_ptr <Rule> param_rule_,
-			       map <string, string> &mapping_parameter_)
+			       map <string, string> &mapping_parameter_,
+			       int error_additional)
 	:  Execution(dependency_link, parent),
 	   rule(rule_),
 	   exists(0),
@@ -2282,6 +2283,10 @@ File_Execution::File_Execution(Target target_,
 	 * just the one given in the dependency.  */
 	for (const Target &target:  targets) {
 		executions_by_target[target]= this; 
+	}
+
+	if (error_additional) {
+		raise(error_additional);
 	}
 
 	string text_rule= rule == nullptr ? "(no rule)" : rule->format_out(); 
@@ -2345,8 +2350,7 @@ File_Execution::File_Execution(Target target_,
 		
 		if (rule_not_found) {
 			assert(rule == nullptr); 
-			print_traces(fmt("no rule to build %s", 
-					 target_.format_word()));
+			print_traces(fmt("no rule to build %s", target_.format_word()));
 			raise(ERROR_BUILD);
 			/* Even when a rule was not found, the File_Execution object remains
 			 * in memory  */  
@@ -3555,7 +3559,8 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 					 Execution *parent,
 					 shared_ptr <Rule> rule_,
 					 shared_ptr <Rule> param_rule_,
-					 map <string, string> &mapping_parameter_)
+					 map <string, string> &mapping_parameter_,
+					 int error_additional)
 	:  Execution(dependency_link, parent),
 	   rule(rule_)
 {
@@ -3570,9 +3575,19 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 	assert(target.is_transient()); 
 
 	if (rule == nullptr) {
+		targets.push_back(dependency_link->get_target());
+	}
+	
+	if (error_additional) {
+		print_traces(); 
+		raise(error_additional); 
+		is_finished= true;
+		return; 
+	}
+
+	if (rule == nullptr) {
 		/* There must be a rule for transient targets (as
 		 * opposed to file targets), so this is an error.  */
-		targets.push_back(dependency_link->get_target());
 		is_finished= true; 
 		print_traces(fmt("no rule to build %s", target.format_word()));
 		raise(ERROR_BUILD);

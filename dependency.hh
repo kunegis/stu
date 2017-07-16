@@ -71,7 +71,10 @@ public:
 		:  flags(flags_)
 	{
 		assert(places != places_);
-		memcpy(places, places_, sizeof(places)); 
+		for (int i= 0;  i < C_PLACED;  ++i)
+			places[i]= places_[i]; 
+//		places= places_; 
+//		memcpy(places, places_, sizeof(places)); 
 	}
 
 	virtual ~Dependency(); 
@@ -168,6 +171,9 @@ public:
 	/* With F_VARIABLE:  the name of the variable.
 	 * Otherwise:  empty.  */
 
+	// TODO in the following, deprecate all constructors that have a
+	// FLAGS parameter without a PLACES parameter. 
+
 	explicit Single_Dependency(const Place_Param_Target &place_param_target_)
 		:  Dependency(place_param_target_.flags),
 		   place_param_target(place_param_target_),
@@ -180,6 +186,17 @@ public:
 			  const Place_Param_Target &place_param_target_)
 		/* Take the dependency place from the target place */ 
 		:  Dependency(flags_),
+		   place_param_target(place_param_target_),
+		   place(place_param_target_.place)
+	{ 
+		check(); 
+	}
+
+	Single_Dependency(Flags flags_,
+			  const Place places_[C_PLACED],
+			  const Place_Param_Target &place_param_target_)
+		/* Take the dependency place from the target place */ 
+		:  Dependency(flags_, places_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place)
 	{ 

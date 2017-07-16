@@ -129,7 +129,16 @@ contained in 'B' as a dependency of 'A'.
 
 2016-08-25  Version 2.1
 
-See 'MIGRATION'
+See 'MIGRATION'.
+
+* "Timestamp-ignoring dependencies" are now called "persistent dependencies". 
+* Quoting rules were changed.
+* Unquoted names cannot begin with -, + or ~ anymore. 
+* Whitespace is now mandatory in certain environments. 
+* The "print database" option is now -P instead of -p.
+* The flags !, ? and & have been replaced by -p, -o and -t. 
+* The options -o and -p now denote optional and persistent dependencies. 
+* Command line argument are now parsed differently.
 
 2016-07-29  Version 1.15.80:
 

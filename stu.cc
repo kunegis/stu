@@ -333,12 +333,12 @@ int main(int argc, char **argv, char **envp)
 					place << "expected a non-empty argument";
 					exit(ERROR_FATAL);
 				}
+				Place places[C_PLACED];
+				places[c == 'p' ? I_PERSISTENT : I_OPTIONAL]= place; 
 				dependencies.push_back
 					(make_shared <Single_Dependency>
-					 (c == 'p' ?
-					  F_PERSISTENT : F_OPTIONAL, 
-					  Place_Param_Target
-					  (0, Place_Name(optarg, place))));
+					 (c == 'p' ? F_PERSISTENT : F_OPTIONAL, places,
+					  Place_Param_Target(0, Place_Name(optarg, place))));
 				break; 
 			}
 

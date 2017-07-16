@@ -1499,7 +1499,6 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 		buffer_B.push(dependency_child_2); 
 		Proceed proceed_2= connect(dependency_this2, dependency_child);
 		proceed |= proceed_2;
-
 		if (jobs == 0) {
 			return proceed |= P_WAIT; 
 		}
@@ -1778,16 +1777,19 @@ void Execution::disconnect(Execution *const parent,
 
 Execution::Proceed Execution::execute_base_B(shared_ptr <const Dependency> dependency_link)
 {
-	Proceed proceed_all= P_CONTINUE;
+	Proceed proceed= P_CONTINUE;
 	while (! buffer_B.empty()) {
 		shared_ptr <const Dependency> dependency_child= buffer_B.next(); 
-		Proceed proceed= connect(dependency_link, dependency_child);
-		proceed_all |= proceed; 
+		Proceed proceed_2= connect(dependency_link, dependency_child);
+		proceed |= proceed_2; 
 		assert(jobs >= 0);
+		if (jobs == 0) {
+			return proceed |= P_WAIT; 
+		}
 	} 
 	assert(buffer_B.empty()); 
 
-	return P_CONTINUE; 
+	return proceed; 
 }
 
 Execution *Execution::get_execution(Target target,
@@ -2629,7 +2631,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	
 	Debug debug(this);
 
-	assert(children.empty()); 
+//	assert(children.empty()); 
 
 	if (finished(dependency_this->flags)) {
 		assert(! (proceed & P_WAIT)); 
@@ -2814,6 +2816,8 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	if (proceed_2 & P_WAIT) {
 		return proceed_2; 
 	}
+
+	assert(children.empty()); 
 
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */ 

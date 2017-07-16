@@ -59,7 +59,7 @@ public:
 	Target(Flags flags, Target target)
 	/* Makes the given target once more dynamic with the given
 	 * flags, which must *not* contain the 'dynamic' flag.  */
-		:  text((char)(unsigned char)(flags) + target.text)
+		:  text((char)(unsigned char)(flags | F_TARGET_DYNAMIC) + target.text)
 	{
 		assert((flags & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0);
 		assert(flags <= (unsigned)CHAR_MAX); 

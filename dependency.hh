@@ -313,31 +313,13 @@ public:
 			   flags & F_VARIABLE ? "]" : "");
 	}
 
-	virtual string format_word() const {
-		string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
-		if (f != "") 
-			f += ' ';
-		bool quotes= Color::quotes; 
-		string t= place_param_target.format
-			(f.empty() ? 0 : 
-			 S_MARKERS, 
-			 quotes);
-		return fmt("%s%s%s%s%s%s%s%s",
-			   Color::word, 
-			   f,
-			   flags & F_VARIABLE ? "$[" : "",
-			   quotes ? "'" : "",
-			   t,
-			   quotes ? "'" : "",
-			   flags & F_VARIABLE ? "]" : "",
-			   Color::end); 
-	}
-
+	virtual string format_word() const;
 	virtual string format_out() const;
 
 	virtual bool is_normalized() const { return true;  }
 
 	virtual Target get_target() const;
+	/* Does not preserve the F_VARIABLE bit */ 
 };
 
 class Dynamic_Dependency
@@ -388,7 +370,7 @@ public:
 		quotes= false;
 		bool quotes2= false;
 		string s= dependency->format(S_MARKERS, quotes2);
-		return fmt("%s[%s%s%s]",
+		return fmt("[%s%s%s]",
 			   quotes2 ? "'" : "",
 			   s,
 			   quotes2 ? "'" : "");
@@ -706,6 +688,27 @@ string Single_Dependency::format_out() const
 		   flags & F_VARIABLE ? "$[" : "",
 		   place_param_target.format_out(),
 		   flags & F_VARIABLE ? "]" : "");
+}
+
+string Single_Dependency::format_word() const
+{
+	string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
+	if (f != "") 
+		f += ' ';
+	bool quotes= Color::quotes; 
+	string t= place_param_target.format
+		(f.empty() ? 0 : 
+		 S_MARKERS, 
+		 quotes);
+	return fmt("%s%s%s%s%s%s%s%s",
+		   Color::word, 
+		   f,
+		   flags & F_VARIABLE ? "$[" : "",
+		   quotes ? "'" : "",
+		   t,
+		   quotes ? "'" : "",
+		   flags & F_VARIABLE ? "]" : "",
+		   Color::end); 
 }
 
 Target Dynamic_Dependency::get_target() const

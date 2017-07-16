@@ -1,769 +1,771 @@
- #ifndef EXECUTION_HH
- #define EXECUTION_HH
+#ifndef EXECUTION_HH
+#define EXECUTION_HH
 
- /* 
-  * Code for executing the building process itself.  
-  *
-  * If there is ever a "libstu", this will be its main entry point. 
-  * 
-  * OVERVIEW OF TYPES
-  *
-  * Root_Ex.		not cached; single object 	The root of the dependency graph; uses the dummy Root_Dependency 
-  * File_Ex.		cached by Target (no flags)	Non-dynamic targets with at least one
-  *							file target in rule OR a command in rule OR
-  *							files without a rule
-  * Transient_Ex.	cached by Target (w/ flags)	Transients without commands and without file
-  * 							file target in the same rule
-  * "Single Ex."	cached by Target		Name for File_Ex. or Transient_Ex. 
-  * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Single_Dep.
-  * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concat._Dep.
-  * Concatenated_Ex.	not cached			Concatenated targets
-  */
+/* 
+ * Code for executing the building process itself.  
+ *
+ * If there is ever a "libstu", this will be its main entry point. 
+ * 
+ * OVERVIEW OF TYPES
+ *
+ * Root_Ex.		not cached; single object 	The root of the dependency graph; uses the dummy Root_Dependency 
+ * File_Ex.		cached by Target (no flags)	Non-dynamic targets with at least one
+ *							file target in rule OR a command in rule OR
+ *							files without a rule
+ * Transient_Ex.	cached by Target (w/ flags)	Transients without commands and without file
+ * 							file target in the same rule
+ * "Single Ex."	cached by Target		Name for File_Ex. or Transient_Ex. 
+ * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Single_Dep.
+ * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concat._Dep.
+ * Concatenated_Ex.	not cached			Concatenated targets
+ */
 
- #include <sys/stat.h>
+#include <sys/stat.h>
 
- #include "buffer.hh"
- #include "parser.hh"
- #include "job.hh"
- #include "tokenizer.hh"
- #include "rule.hh"
- #include "timestamp.hh"
+#include "buffer.hh"
+#include "parser.hh"
+#include "job.hh"
+#include "tokenizer.hh"
+#include "rule.hh"
+#include "timestamp.hh"
 
- class Execution
- /*
-  * Base class of all executions.
-  *
-  * Executions are allocated with new(), are used via ordinary pointers,
-  * and deleted (if nercessary), via delete().  
-  *
-  * The set of active Execution objects forms a directed acyclic graph,
-  * rooted at a single Root_Execution object.  Edges in this graph are
-  * represented by dependencies.  An edge is said to go from a parent to
-  * a child.  Each Execution object corresponds to one or more unique
-  * dependencies.  Two Execution objects are connected if there is a
-  * dependency between them.  If there is an edge A ---> B, A is said to
-  * be the parent of B, and B the child of A.  Also, B is a dependency of
-  * A.  
-  */
- {
- public: 
+class Execution
+/*
+ * Base class of all executions.
+ *
+ * Executions are allocated with new(), are used via ordinary pointers,
+ * and deleted (if nercessary), via delete().  
+ *
+ * The set of active Execution objects forms a directed acyclic graph,
+ * rooted at a single Root_Execution object.  Edges in this graph are
+ * represented by dependencies.  An edge is said to go from a parent to
+ * a child.  Each Execution object corresponds to one or more unique
+ * dependencies.  Two Execution objects are connected if there is a
+ * dependency between them.  If there is an edge A ---> B, A is said to
+ * be the parent of B, and B the child of A.  Also, B is a dependency of
+ * A.  
+ */
+{
+public: 
 
-	 typedef unsigned Proceed;
-	 /* This is used as the return value of the functions execute*()
-	  * Defined as typedef to make arithmetic with it.  */
-	 enum {
+	typedef unsigned Proceed;
+	/* This is used as the return value of the functions execute*()
+	 * Defined as typedef to make arithmetic with it.  */
+	enum {
 
-		 P_WAIT =     1 << 0,
-		 /* There's more to do, which can only be started after
-		  * having waited for a finishing jobs.  */
+		P_WAIT =     1 << 0,
+		/* There's more to do, which can only be started after
+		 * having waited for a finishing jobs.  */
+		
+		P_PENDING =  1 << 1,
+		/* The function execute() should be called again for
+		 * this execution at least, for various reasons.  */
 
-		 P_PENDING =  1 << 1,
-		 /* The function execute() should be called again for
-		  * this execution at least, for various reasons.  */
+		P_FINISHED = 1 << 2,
+		/* The Execution is finished */ 
 
-		 P_FINISHED = 1 << 2,
-		 /* The Execution is finished */ 
+		P_ABORT    = 1 << 3,
+		/* This Execution should be finished immediately.  When
+		 * set, P_FINISHED is also set.  This does not imply
+		 * that there was an error -- for instance, the trivial
+		 * flag -t may mean that nothing more should be done.  */
 
-		 P_ABORT    = 1 << 3,
-		 /* This Execution should be finished immediately.  When
-		  * set, P_FINISHED is also set.  This does not imply
-		  * that there was an error -- for instance, the trivial
-		  * flag -t may mean that nothing more should be done.  */
+		P_CONTINUE = 0, 
+		/* Execution can continue in the process */
+	};
 
-		 P_CONTINUE = 0, 
-		 /* Execution can continue in the process */
-	 };
+	typedef unsigned Bits;
+	/* These are bits set for individual execution objects.  The
+	 * semantics of each is chosen such that in a new execution
+	 * object, the value is zero.  The semantics of the different
+	 * bits are distinct and could just as well be realized as
+	 * individual "bool" variables.  */ 
+	enum {
+		B_NEED_BUILD = 1 << 0,
+		/* Whether this target needs to be built.  When a target is
+		 * finished, this value is propagated to the parent executions,
+		 * except when the F_PERSISTENT flag is set.  */ 
 
-	 typedef unsigned Bits;
-	 /* These are bits set for individual execution objects.  The
-	  * semantics of each is chosen such that in a new execution
-	  * object, the value is zero.  The semantics of the different
-	  * bits are distinct and could just as well be realized as
-	  * individual "bool" variables.  */ 
-	 enum {
-		 B_NEED_BUILD = 1 << 0,
-		 /* Whether this target needs to be built.  When a target is
-		  * finished, this value is propagated to the parent executions,
-		  * except when the F_PERSISTENT flag is set.  */ 
+		B_CHECKED    = 1 << 1,
+		/* Whether a certain check has been performed.  Only
+		 * used by File_Execution.  */
+	};
 
-		 B_CHECKED    = 1 << 1,
-		 /* Whether a certain check has been performed.  Only
-		  * used by File_Execution.  */
-	 };
+	void raise(int error_);
+	/* All errors by Execution objects call this function.  Set the
+	 * error code, and throw an error except with the keep-going
+	 * option.  */
 
-	 void raise(int error_);
-	 /* All errors by Execution objects call this function.  Set the
-	  * error code, and throw an error except with the keep-going
-	  * option.  */
+	Proceed execute_base_A(shared_ptr <const Dependency> dependency_link);
+	/* DEPENDENCY_LINK must not be null.  In the return value, at
+	 * least one bit is set.  The P_FINISHED bit indicates only that
+	 * tasks related to this function are done, not the whole
+	 * Execution.  */
 
-	 Proceed execute_base_A(shared_ptr <const Dependency> dependency_link);
-	 /* DEPENDENCY_LINK must not be null.  In the return value, at
-	  * least one bit is set.  The P_FINISHED bit indicates only that
-	  * tasks related to this function are done, not the whole
-	  * Execution.  */
+	int get_error() const {  return error;  }
 
-	 int get_error() const {  return error;  }
+	void propagate_to_dynamic(Execution *child,
+				  Flags flags_child,
+				  shared_ptr <const Dependency> dependency_this,
+				  shared_ptr <const Dependency> dependency_child);
+	/* Propagate dynamic dependencies from CHILD to its parent
+	 * (THIS), which does not need to be dynamic  */ 
 
-	 void propagate_to_dynamic(Execution *child,
-				   Flags flags_child,
-				   shared_ptr <const Dependency> dependency_this,
-				   shared_ptr <const Dependency> dependency_child);
-	 /* Propagate dynamic dependencies from CHILD to its parent
-	  * (THIS), which does not need to be dynamic  */ 
+	virtual Proceed execute(Execution *parent, 
+				shared_ptr <const Dependency> dependency_this)= 0;
+	/* 
+	 * Start the next job(s).  This will also terminate jobs when
+	 * they don't need to be run anymore, and thus it can be called
+	 * when K = 0 just to terminate jobs that need to be terminated.
+	 * Can only return LATER in random mode. 
+	 * When returning LATER, not all possible child jobs where started.  
+	 * Child implementations call this implementation.  
+	 * Never returns P_CONTINUE:  When everything is finished, the
+	 * FINISHED bit is set.  
+	 * In DONE, set those bits that have been done. 
+	 * When the call is over, clear the PENDING bit. 
+	 * DEPENDENCY_LINK is only null when called on the root
+	 * execution, because it is the only execution that is not
+	 * linked from another execution.
+	 */
 
-	 virtual Proceed execute(Execution *parent, 
-				 shared_ptr <const Dependency> dependency_this)= 0;
-	 /* 
-	  * Start the next job(s).  This will also terminate jobs when
-	  * they don't need to be run anymore, and thus it can be called
-	  * when K = 0 just to terminate jobs that need to be terminated.
-	  * Can only return LATER in random mode. 
-	  * When returning LATER, not all possible child jobs where started.  
-	  * Child implementations call this implementation.  
-	  * Never returns P_CONTINUE:  When everything is finished, the
-	  * FINISHED bit is set.  
-	  * In DONE, set those bits that have been done. 
-	  * When the call is over, clear the PENDING bit. 
-	  * DEPENDENCY_LINK is only null when called on the root
-	  * execution, because it is the only execution that is not
-	  * linked from another execution.
-	  */
+	virtual bool finished() const= 0;
+	/* Whether the execution is completely finished */ 
 
-	 virtual bool finished() const= 0;
-	 /* Whether the execution is completely finished */ 
+	virtual bool finished(Flags flags) const= 0; 
+	/* Whether the execution is finished working for the given tasks */ 
 
-	 virtual bool finished(Flags flags) const= 0; 
-	 /* Whether the execution is finished working for the given tasks */ 
+	virtual string debug_done_text() const
+	/* Extra string for the "done" information; may be empty.  */
+	{ 
+		return ""; 
+	}
 
-	 virtual string debug_done_text() const
-	 /* Extra string for the "done" information; may be empty.  */
-	 { 
-		 return ""; 
-	 }
+	virtual string format_out() const= 0;
+	/* The text shown for this execution in verbose output.  Usually
+	 * calls a format_out() function on the appropriate object.  */ 
 
-	 virtual string format_out() const= 0;
-	 /* The text shown for this execution in verbose output.  Usually
-	  * calls a format_out() function on the appropriate object.  */ 
+	virtual void propagate_variable_content(string variable_name, string content)= 0; 
 
-	 virtual void propagate_variable_content(string variable_name, string content)= 0; 
+	static long jobs;
+	/* Number of free slots for jobs.  This is a long because
+	 * strtol() gives a long.  Set before calling main() from the -j
+	 * option, and then changed internally by this class.  */ 
 
-	 static long jobs;
-	 /* Number of free slots for jobs.  This is a long because
-	  * strtol() gives a long.  Set before calling main() from the -j
-	  * option, and then changed internally by this class.  */ 
+	static Rule_Set rule_set; 
+	/* Set once before calling Execution::main().  Unchanging during
+	 * the whole call to Execution::main().  */ 
 
-	 static Rule_Set rule_set; 
-	 /* Set once before calling Execution::main().  Unchanging during
-	  * the whole call to Execution::main().  */ 
+	static void main(const vector <shared_ptr <const Dependency> > &dependencies);
+	/* Main execution loop.  This throws ERROR_BUILD and
+	 * ERROR_LOGICAL.  */
 
-	 static void main(const vector <shared_ptr <const Dependency> > &dependencies);
-	 /* Main execution loop.  This throws ERROR_BUILD and
-	  * ERROR_LOGICAL.  */
+protected: 
 
- protected: 
+	Bits bits;
 
-	 Bits bits;
+	int error;
+	/* Error value of this execution.  The value is propagated
+	 * (using '|') to the parent.  Values correspond to constants
+	 * defined in error.hh; zero denotes the absence of an
+	 * error.  */ 
 
-	 int error;
-	 /* Error value of this execution.  The value is propagated
-	  * (using '|') to the parent.  Values correspond to constants
-	  * defined in error.hh; zero denotes the absence of an
-	  * error.  */ 
+	set <Execution *> children;
+	/* Currently running executions.  Allocated with operator new()
+	 * and never deleted.  */ 
 
-	 set <Execution *> children;
-	 /* Currently running executions.  Allocated with operator new()
-	  * and never deleted.  */ 
+	map <Execution *, shared_ptr <const Dependency> > parents; 
+	/* The parent executions.  This is a map rather than an
+	 * unsorted_map because typically, the
+	 * number of elements is always very small, i.e., mostly one,
+	 * and a map is better suited in this case.  */ 
 
-	 map <Execution *, shared_ptr <const Dependency> > parents; 
-	 /* The parent executions.  This is a map rather than an
-	  * unsorted_map because typically, the
-	  * number of elements is always very small, i.e., mostly one,
-	  * and a map is better suited in this case.  */ 
+	Timestamp timestamp; 
+	/* Latest timestamp of a (direct or indirect) dependency
+	 * that was not rebuilt.  Files that were rebuilt are not
+	 * considered, since they make the target be rebuilt anyway.
+	 * Implementations also changes this to consider the file
+	 * itself, if any.  This final timestamp is then carried over to the
+	 * parent executions.  */
 
-	 Timestamp timestamp; 
-	 /* Latest timestamp of a (direct or indirect) dependency
-	  * that was not rebuilt.  Files that were rebuilt are not
-	  * considered, since they make the target be rebuilt anyway.
-	  * Implementations also changes this to consider the file
-	  * itself, if any.  This final timestamp is then carried over to the
-	  * parent executions.  */
+	vector <shared_ptr <const Single_Dependency> > result; 
+	/* The final list of dependencies represented by the target.
+	 * This does not include any dynamic dependencies, i.e., all
+	 * dependencies are flattened to Single_Dependency's.  Not used
+	 * for single executions that have file targets, neither for
+	 * single executions that have multiple targets.  */ 
 
-	 vector <shared_ptr <const Single_Dependency> > result; 
-	 /* The final list of dependencies represented by the target.
-	  * This does not include any dynamic dependencies, i.e., all
-	  * dependencies are flattened to Single_Dependency's.  Not used
-	  * for single executions that have file targets, neither for
-	  * single executions that have multiple targets.  */ 
+	shared_ptr <Rule> param_rule;
+	/* The (possibly parametrized) rule from which this execution
+	 * was derived.  This is only used to detect strong cycles.  To
+	 * manage the dependencies, the instantiated general rule is
+	 * used.  Null by default, and set by individual implementations
+	 * in their constructor if necessary.  */ 
 
-	 shared_ptr <Rule> param_rule;
-	 /* The (possibly parametrized) rule from which this execution
-	  * was derived.  This is only used to detect strong cycles.  To
-	  * manage the dependencies, the instantiated general rule is
-	  * used.  Null by default, and set by individual implementations
-	  * in their constructor if necessary.  */ 
+	Execution(shared_ptr <const Dependency> dependency_link,
+		  Execution *parent)
+		:  bits(0),
+		   error(0),
+		   timestamp(Timestamp::UNDEFINED)
+	{  
+		assert(parent != nullptr); 
+		parents[parent]= dependency_link; 
+	}
 
-	 Execution(shared_ptr <const Dependency> dependency_link,
-		   Execution *parent)
-		 :  bits(0),
-		    error(0),
-		    timestamp(Timestamp::UNDEFINED)
-	 {  
-		 assert(parent != nullptr); 
-		 parents[parent]= dependency_link; 
-	 }
+	explicit Execution(Execution *parent_null)
+		/* Without a parent.  PARENT_NULL must be null. */
+		:  bits(0),  
+		   error(0),
+		   timestamp(Timestamp::UNDEFINED)
+	{  
+		assert(parent_null == nullptr); 
+	}
 
-	 explicit Execution(Execution *parent_null)
-		 /* Without a parent.  PARENT_NULL must be null. */
-		 :  bits(0),  
-		    error(0),
-		    timestamp(Timestamp::UNDEFINED)
-	 {  
-		 assert(parent_null == nullptr); 
-	 }
+	Proceed execute_children(shared_ptr <Dependency> dependency_link);
+	/* Execute already-active children */
 
-	 Proceed execute_children(shared_ptr <Dependency> dependency_link);
-	 /* Execute already-active children */
+	Proceed execute_base_B(shared_ptr <const Dependency> dependency_link); 
+	/* Second pass (trivial dependencies).  Called once we are sure
+	 * that the target must be built.  */
 
-	 Proceed execute_base_B(shared_ptr <const Dependency> dependency_link); 
-	 /* Second pass (trivial dependencies).  Called once we are sure
-	  * that the target must be built.  */
+	void check_waited() const {
+		assert(buffer_A.empty()); 
+		assert(buffer_B.empty()); 
+		assert(children.empty()); 
+	}
 
-	 void check_waited() const {
-		 assert(buffer_A.empty()); 
-		 assert(buffer_B.empty()); 
-		 assert(children.empty()); 
-	 }
+	const Buffer &get_buffer_A() const {  return buffer_A;  }
+	const Buffer &get_buffer_B() const {  return buffer_B;  }
 
-	 const Buffer &get_buffer_A() const {  return buffer_A;  }
-	 const Buffer &get_buffer_B() const {  return buffer_B;  }
+	void push_dependency(shared_ptr <const Dependency> );
+	/* Push a dependency to the default buffer, breaking down non-normalized
+	 * dependencies while doing so.  */
 
-	 void push_dependency(shared_ptr <const Dependency> );
-	 /* Push a dependency to the default buffer, breaking down non-normalized
-	  * dependencies while doing so.  */
+	void read_dynamic(Flags flags_this,
+			  const Place_Param_Target &place_param_target,
+			  vector <shared_ptr <const Dependency> > &dependencies);
+	/* Read dynamic dependencies from the content of
+	 * PLACE_PARAM_TARGET.  The only reason this is not static is
+	 * that errors can be raised and printed correctly.
+	 * Dependencies that are read are written into DEPENDENCIES,
+	 * which must be empty on calling.  FLAGS_THIS determines
+	 * whether the -n/-0/etc. flag was used, and may also contain
+	 * the -o flag to ignore a non-existing file.  */
 
-	 void read_dynamic(Flags flags_this,
-			   const Place_Param_Target &place_param_target,
-			   vector <shared_ptr <const Dependency> > &dependencies);
-	 /* Read dynamic dependencies from the content of
-	  * PLACE_PARAM_TARGET.  The only reason this is not static is
-	  * that errors can be raised and printed correctly.
-	  * Dependencies that were read are written into DEPENDENCIES,
-	  * which must be empty on calling.  FLAGS_THIS determines
-	  * whether the -n/-0/etc. flag was used, and may also contain
-	  * the -o flag to ignore a non-existing file.  */
+	void push_result(shared_ptr <const Dependency> dd, 
+			 shared_ptr <const Dependency> dependency_flags,
+			 bool result_only,
+			 Execution *child); 
+	/* Add an item to the result list, giving it the placed flags
+	 * from DEPENDENCY_FLAGS, and percolate up.  DEPENDENCY_FLAGS
+	 * may be null if no flags should be added.  CHILD is only used
+	 * as the starting point for the traces.  */
 
-	 void push_result(shared_ptr <const Dependency> dd, 
-			  shared_ptr <const Dependency> dependency_flags,
-			  bool result_only
-			  );
-//			  Flags flags);
-	 /* Add an item to the result list, giving it the placed flags
-	  * from DEPENDENCY_FLAGS, and percolate up.  DEPENDENCY_FLAGS
-	  * may be null if no flags should be added.  */
+	void print_traces(string text= "") const;
+	/* Print full trace for the execution.  First the message is
+	 * Printed, then all traces for it starting at this execution,
+	 * up to the root execution. 
+	 * TEXT may be "" to not print the first message.  */ 
 
-	 void print_traces(string text= "") const;
-	 /* Print full trace for the execution.  First the message is
-	  * Printed, then all traces for it starting at this execution,
-	  * up to the root execution. 
-	  * TEXT may be "" to not print the first message.  */ 
+	virtual ~Execution(); 
 
-	 virtual ~Execution(); 
+	virtual int get_depth() const= 0;
+	/* The dynamic depth, or -1 when undefined as in concatenated
+	 * executions and the root execution, in which case PARAM_RULE
+	 * is always null.  Only used to check for cycles on the rule
+	 * level.  */ 
 
-	 virtual int get_depth() const= 0;
-	 /* The dynamic depth, or -1 when undefined as in concatenated
-	  * executions and the root execution, in which case PARAM_RULE
-	  * is always null.  Only used to check for cycles on the rule
-	  * level.  */ 
+	virtual const Place &get_place() const= 0;
+	/* The place for the execution; e.g. the rule; empty if there is no place */
+	// TODO If implementations of this always read out the place of
+	// PARAM_RULE, this doesn't need to be virtual. 
 
-	 virtual const Place &get_place() const= 0;
-	 /* The place for the execution; e.g. the rule; empty if there is no place */
-	 // TODO If implementations of this always read out the place of
-	 // PARAM_RULE, this doesn't need to be virtual. 
+	virtual bool optional_finished(shared_ptr <const Dependency> dependency_link)= 0;
+	/* Whether the execution would be finished if this was an
+	 * optional dependency?  Check whether this is an  
+	 * optional dependency and if it is, return TRUE when the file does not
+	 * exist.  Return FALSE when children should be started.  Return
+	 * FALSE in execution types that are not affected.  */
 
-	 virtual bool optional_finished(shared_ptr <const Dependency> dependency_link)= 0;
-	 /* Whether the execution would be finished if this was an
-	  * optional dependency?  Check whether this is an  
-	  * optional dependency and if it is, return TRUE when the file does not
-	  * exist.  Return FALSE when children should be started.  Return
-	  * FALSE in execution types that are not affected.  */
+	virtual bool want_delete() const= 0; 
 
-	 virtual bool want_delete() const= 0; 
+	static Timestamp timestamp_last; 
+	/* The timepoint of the last time wait() returned.  No file in the
+	 * file system should be newer than this.  */ 
 
-	 static Timestamp timestamp_last; 
-	 /* The timepoint of the last time wait() returned.  No file in the
-	  * file system should be newer than this.  */ 
+	static bool hide_out_message;
+	/* Whether to show a STDOUT message at the end */
 
-	 static bool hide_out_message;
-	 /* Whether to show a STDOUT message at the end */
+	static bool out_message_done;
+	/* Whether the STDOUT message is not "Targets are up to date" */
 
-	 static bool out_message_done;
-	 /* Whether the STDOUT message is not "Targets are up to date" */
+	static unordered_map <Target, Execution *> executions_by_target;
+	/* All cached Execution objects by each of their Target.  Such
+	 * Execution objects are never deleted.  */
 
-	 static unordered_map <Target, Execution *> executions_by_target;
-	 /* All cached Execution objects by each of their Target.  Such
-	  * Execution objects are never deleted.  */
+	static bool find_cycle(Execution *parent,
+			       Execution *child,
+			       shared_ptr <const Dependency> dependency_link);
+	/* Find a cycle.  Assuming that the edge parent->child will be
+	 * added, find a directed cycle that would be created.  Start at
+	 * PARENT and perform a depth-first search upwards in the
+	 * hierarchy to find CHILD.  DEPENDENCY_LINK is the link that
+	 * would be added between child and parent, and would create a
+	 * cycle.  */
 
-	 static bool find_cycle(Execution *parent,
-				Execution *child,
+	static bool find_cycle(vector <Execution *> &path,
+			       Execution *child,
+			       shared_ptr <const Dependency> dependency_link); 
+	/* Helper function */ 
+
+	static void cycle_print(const vector <Execution *> &path,
 				shared_ptr <const Dependency> dependency_link);
-	 /* Find a cycle.  Assuming that the edge parent->child will be
-	  * added, find a directed cycle that would be created.  Start at
-	  * PARENT and perform a depth-first search upwards in the
-	  * hierarchy to find CHILD.  DEPENDENCY_LINK is the link that
-	  * would be added between child and parent, and would create a
-	  * cycle.  */
+	/* Print the error message of a cycle on rule level.
+	 * Given the path [a, b, c, d, ..., x], the found cycle is
+	 * [x <- a <- b <- c <- d <- ... <- x], where A <- B denotes
+	 * that A is a dependency of B.  For each edge in this cycle,
+	 * output one line.  LINK is the link (x <- a), which is not yet
+	 * created in the execution objects.  */ 
 
-	 static bool find_cycle(vector <Execution *> &path,
-				Execution *child,
-				shared_ptr <const Dependency> dependency_link); 
-	 /* Helper function */ 
+	static bool same_rule(const Execution *execution_a,
+			      const Execution *execution_b);
+	/* Whether both executions have the same parametrized rule.
+	 * Only used for finding cycle.  */ 
 
-	 static void cycle_print(const vector <Execution *> &path,
-				 shared_ptr <const Dependency> dependency_link);
-	 /* Print the error message of a cycle on rule level.
-	  * Given the path [a, b, c, d, ..., x], the found cycle is
-	  * [x <- a <- b <- c <- d <- ... <- x], where A <- B denotes
-	  * that A is a dependency of B.  For each edge in this cycle,
-	  * output one line.  LINK is the link (x <- a), which is not yet
-	  * created in the execution objects.  */ 
+	static void disconnect(Execution *const parent, 
+			       Execution *const child,
+			       shared_ptr <const Dependency> dependency_parent,
+			       shared_ptr <const Dependency> dependency_child,
+			       Flags flags_child); 
+	/* Remove an edge from the dependency graph.  Propagate
+	 * information from the subexecution to the execution, and then
+	 * delete the child execution if necessary.  */
+	// TODO make this a non-static function of PARENT. 
 
-	 static bool same_rule(const Execution *execution_a,
-			       const Execution *execution_b);
-	 /* Whether both executions have the same parametrized rule.
-	  * Only used for finding cycle.  */ 
+	static bool is_cached(shared_ptr <const Dependency> dependency); 
+	/* Whether the dependency corresponds to an execution type that is cached */
 
-	 static void disconnect(Execution *const parent, 
-				Execution *const child,
-				shared_ptr <const Dependency> dependency_parent,
-				shared_ptr <const Dependency> dependency_child,
-				Flags flags_child); 
-	 /* Remove an edge from the dependency graph.  Propagate
-	  * information from the subexecution to the execution, and then
-	  * delete the child execution if necessary.  */
-	 // TODO make this a non-static function of PARENT. 
+private: 
 
-	 static bool is_cached(shared_ptr <const Dependency> dependency); 
-	 /* Whether the dependency corresponds to an execution type that is cached */
+	Buffer buffer_A;
+	/* Dependencies that have not yet begun to be built.
+	 * Initialized with all dependencies, and emptied over time when
+	 * things are built, and filled over time when dynamic
+	 * dependencies are worked on.  Entries are not necessarily
+	 * unique.  Does not contain compound dependencies, except under
+	 * concatenating ones.  */  
 
- private: 
+	Buffer buffer_B; 
+	/* The buffer for dependencies in the second pass.  They are
+	 * only started if, after (potentially) starting all non-trivial
+	 * dependencies, the target must be rebuilt anyway.  Does not
+	 * contain compound dependencies.  */
 
-	 Buffer buffer_A;
-	 /* Dependencies that have not yet begun to be built.
-	  * Initialized with all dependencies, and emptied over time when
-	  * things are built, and filled over time when dynamic
-	  * dependencies are worked on.  Entries are not necessarily
-	  * unique.  Does not contain compound dependencies, except under
-	  * concatenating ones.  */  
+	Proceed connect(shared_ptr <const Dependency> dependency_link_parent,
+			shared_ptr <const Dependency> dependency_child);
+	/* Add an edge to the dependency graph.  Deploy a new child
+	 * execution.  LINK is the link from the THIS's parent to THIS.
+	 * Note: the top-level flags of LINK.DEPENDENCY may be modified.
+	 * DEPENDENCY_CHILD must be normalized.  */
 
-	 Buffer buffer_B; 
-	 /* The buffer for dependencies in the second pass.  They are
-	  * only started if, after (potentially) starting all non-trivial
-	  * dependencies, the target must be rebuilt anyway.  Does not
-	  * contain compound dependencies.  */
+	static Execution *get_execution(Target target,
+					shared_ptr <const Dependency> dependency_link,
+					Execution *parent); 
+	/* Get an existing Execution or create a new one for the
+	 * given TARGET.  Return null when a strong cycle was found;
+	 * return the execution otherwise.  PLACE is the place of where
+	 * the dependency was declared.  LINK is the link from the
+	 * existing parent to the new execution.  */ 
+	// TODO make this a non-static member function of PARENT. 
 
-	 Proceed connect(shared_ptr <const Dependency> dependency_link_parent,
-			 shared_ptr <const Dependency> dependency_child);
-	 /* Add an edge to the dependency graph.  Deploy a new child
-	  * execution.  LINK is the link from the THIS's parent to THIS.
-	  * Note: the top-level flags of LINK.DEPENDENCY may be modified.
-	  * DEPENDENCY_CHILD must be normalized.  */
+	static void copy_result(Execution *parent, Execution *child); 
+	/* Copy the result list from CHILD to PARENT */
+};
 
-	 static Execution *get_execution(Target target,
-					 shared_ptr <const Dependency> dependency_link,
-					 Execution *parent); 
-	 /* Get an existing Execution or create a new one for the
-	  * given TARGET.  Return null when a strong cycle was found;
-	  * return the execution otherwise.  PLACE is the place of where
-	  * the dependency was declared.  LINK is the link from the
-	  * existing parent to the new execution.  */ 
-	 // TODO make this a non-static member function of PARENT. 
-
-	 static void copy_result(Execution *parent, Execution *child); 
-	 /* Copy the result list from CHILD to PARENT */
- };
-
- class File_Execution
- /*
-  * Each non-dynamic file target is represented at run time by one
-  * File_Execution object.  Each File_Execution object may correspond to
-  * multiple files or transients, when a rule has multiple targets.
-  * Transients are only represented by a File_Execution when they appear
-  * as targets of rules that have at least one file target, or when the
-  * rule has a command.  Otherwise, Transient_Execution is used for them.
-  *
-  * This is the only Execution subclass that actually starts jobs -- all
-  * other Execution subclasses only delegate their tasks to child
-  * executions. 
-  */
+class File_Execution
+/*
+ * Each non-dynamic file target is represented at run time by one
+ * File_Execution object.  Each File_Execution object may correspond to
+ * multiple files or transients, when a rule has multiple targets.
+ * Transients are only represented by a File_Execution when they appear
+ * as targets of rules that have at least one file target, or when the
+ * rule has a command.  Otherwise, Transient_Execution is used for them.
+ *
+ * This is the only Execution subclass that actually starts jobs -- all
+ * other Execution subclasses only delegate their tasks to child
+ * executions. 
+ */
 // TODO Check that there are no remnants of any dynamic-handling code in
 // this class. 
-	 :  public Execution 
- {
- public:
-
-	 File_Execution(Target target_,
-			shared_ptr <const Dependency> dependency_link,
-			Execution *parent,
-			shared_ptr <Rule> rule,
-			shared_ptr <Rule> param_rule,
-			map <string, string> &mapping_parameter_); 
-	 // TODO remove the TARGET parameter.  It is already
-	 // contained in DEPENDENCY_LINK. 
-
-	 void propagate_variable(shared_ptr <const Dependency> dependency,
-				 Execution *parent); 
-	 /* Read the content of the file into a string as the
-	  * variable value.  THIS is the variable target.  */
-
-	 shared_ptr <const Rule> get_rule() const { return rule; }
-
-	 void add_variables(map <string, string> mapping) {
-		 mapping_variable.insert(mapping.begin(), mapping.end()); 
-	 }
-
-	 const map <string, string> &get_mapping_variable() const {
-		 return mapping_variable; 
-	 }
-
-	 virtual string debug_done_text() const {
-		 return flags_format(flags_finished);
-	 }
-
-	 virtual Proceed execute(Execution *parent, 
-				 shared_ptr <const Dependency> dependency_this);
-	 virtual bool finished() const;
-	 virtual bool finished(Flags flags) const; 
-	 virtual string format_out() const {
-		 assert(targets.size()); 
-		 return targets.front().format_out(); 
-	 }
-	 virtual void propagate_variable_content(string variable_name, string content) {
-		 mapping_variable[variable_name]= content;
-	 }
-
-	 static unordered_map <pid_t, File_Execution *> executions_by_pid;
-	 /*
-	  * The currently running executions by process IDs.  Write
-	  * access to this is enclosed in a Signal_Blocker.
-	  */ 
-	 // TODO have a dedicated array for the list of currently running
-	 // PIDs, and maintain an atomic pid_count to maintain the list,
-	 // to avoid access a stdlib container from a signal handler. 
-
-	 static void wait();
-	 /* Wait for next job to finish and finish it.  Do not start anything
-	  * new.  */ 
-
- protected:
-
-	 virtual bool optional_finished(shared_ptr <const Dependency> dependency_link);
-	 virtual bool want_delete() const {  return false;  }
-	 virtual int get_depth() const {  return 0;  }
-
- private:
-
-	 friend class Execution; 
-	 friend void job_terminate_all(); 
-	 friend void job_print_jobs(); 
-
-	 vector <Target> targets; 
-	 /* The targets to which this execution object corresponds.
-	  * Never empty.  
-	  * All targets are non-dynamic, i.e., only plain files and transients are included.  */
-
-	 shared_ptr <Rule> rule;
-	 /* The instantiated file rule for this execution.  Null when
-	  * there is no rule for this file (this happens for instance
-	  * when a source code file is given as a dependency, or when
-	  * this is a complex dependency).  Individual dynamic
-	  * dependencies do have rules, in order for cycles to be
-	  * detected.  Null if and only if PARAM_RULE is null.  */ 
-
-	 Job job;
-	 /* The job used to execute this rule's command */ 
-
-	 vector <Timestamp> timestamps_old; 
-	 /* Timestamp of each file target, before the command is
-	  * executed.  Only valid once the job was started.  The indexes
-	  * correspond to those in TARGETS.  Non-file indexes are
-	  * uninitialized.  Used for checking whether a file was rebuild
-	  * to decide whether to remove it after a command failed or was
-	  * interrupted.  This is UNDEFINED when the file did not exist,
-	  * or no target is a file.  */ 
-
-	 map <string, string> mapping_parameter; 
-	 /* Variable assignments from parameters for when the command is run */
-
-	 map <string, string> mapping_variable; 
-	 /* Variable assignments from variables dependencies */
-
-	 signed char exists;
-	 /* 
-	  * Whether the file target(s) are known to exist.  
-	  *     -1 = at least one file target is known not to exist (only
-	  *     	    possible when there is at least one file target)
-	  *      0 = status unknown:  nothing has been checked yet
-	  *     +1 = all file targets are known to exist (possible when
-	  *          there are no file targets)
-	  * When there are no file targets (i.e., when all targets are
-	  * transients), the value may be both 0 or +1.  
-	  */
-	 // TODO fold this into BITS. 
-
-	 Flags flags_finished; 
-	 /* What parts of this target have been done.  Each bit that is
-	  * set represents one aspect that was done.  When an execution
-	  * is invoked with a certain set of flags, all flags *not*
-	  * passed will be set when the execution is finished.  */
-
-	 ~File_Execution(); 
-
-	 virtual const Place &get_place() const {
-		 if (param_rule == nullptr)
-			 return Place::place_empty;
-		 else
-			 return param_rule->place; 
-	 }
-
-	 bool remove_if_existing(bool output); 
-	 /* Remove all file targets of this execution object if they
-	  * exist.  If OUTPUT is true, output a corresponding message.
-	  * Return whether the file was removed.  If OUTPUT is false,
-	  * only do async signal-safe things.  */  
-
-	 void waited(pid_t pid, int status); 
-	 /* Called after the job was waited for.  The PID is only passed
-	  * for checking that it is correct.  */
-
-	 void warn_future_file(struct stat *buf, 
-			       const char *filename,
-			       const Place &place,
-			       const char *message_extra= nullptr);
-	 /* Warn when the file has a modification time in the future.
-	  * MESSAGE_EXTRA may be null to not show an extra message.  */ 
-
-	 void print_command() const; 
-	 /* Print the command and its associated variable assignments,
-	  * according to the selected verbosity level.  */
-
-	 void print_as_job() const;
-	 /* Print a line to stdout for a running job, as output of SIGUSR1.
-	  * Is currently running.  */ 
-
-	 void write_content(const char *filename, const Command &command); 
-	 /* Create the file FILENAME with content from COMMAND */
-
-	 static unordered_map <string, Timestamp> transients;
-	 /* The timestamps for transient targets.  This container plays the role of
-	  * the file system for transient targets, holding their timestamps, and
-	  * remembering whether they have been executed.  Note that if a
-	  * rule has both file targets and transient targets, and all
-	  * file targets are up to date and the transient targets have
-	  * all their dependencies up to date, then the command is not
-	  * executed, even though it was never executed in the current
-	  * invocation of Stu. In that case, the transient targets are
-	  * never insert in this map.  */
- };
-
- class Transient_Execution
- /* 
-  * Used for non-dynamic transients that appear in rules that have only
-  * transients as targets, and have no command.  If at least one file
-  * target or a command is present in the rule, File_Execution is used.
-  */
-	 :  public Execution 
- {
- public:
-
-	 Transient_Execution(shared_ptr <const Dependency> dependency_link,
-			     Execution *parent,
-			     shared_ptr <Rule> rule,
-			     shared_ptr <Rule> param_rule,
-			     map <string, string> &mapping_parameter); 
-
-	 shared_ptr <const Rule> get_rule() const { return rule; }
-
-	 const map <string, string> &get_mapping_variable() const {
-		 return mapping_variable; 
-	 }
-
-	 virtual Proceed execute(Execution *parent, 
-				 shared_ptr <const Dependency> dependency_this);
-	 virtual bool finished() const;
-	 virtual bool finished(Flags flags) const; 
-	 virtual string format_out() const {
-		 assert(targets.size()); 
-		 return targets.front().format_out(); 
-	 }
-	 virtual void propagate_variable_content(string variable_name, string content) {
-		 for (auto &i:  parents) 
-			 i.first->propagate_variable_content(variable_name, content); 
-	 }
-
- protected:
-
-	 virtual bool want_delete() const {  return false;  }
-	 virtual int get_depth() const {  return 0;  }
-	 virtual bool optional_finished(shared_ptr <const Dependency> dependency_link) {  
-		 (void) dependency_link; 
-		 return false;  
-	 }
-
- private:
-
-	 vector <Target> targets; 
-	 /* The targets to which this execution object corresponds.  All
-	  * are transients.  */
-
-	 shared_ptr <Rule> rule;
-	 /* The instantiated file rule for this execution.  Never null. */ 
-
-	 Timestamp timestamp_old;
-
-	 bool is_finished; 
-
-	 map <string, string> mapping_parameter; 
-	 /* Contains the parameters; is not used */
-
-	 map <string, string> mapping_variable; 
-	 /* Variable assignments from variables dependencies.  This is in
-	  * Transient_Execution because it may be percolated up to the
-	  * parent execution.  */
-
-	 ~Transient_Execution();
-
-	 virtual const Place &get_place() const {
-		 if (param_rule == nullptr)
-			 return Place::place_empty;
-		 else
-			 return param_rule->place; 
-	 }
- };
- class Root_Execution
-	 :  public Execution
- {
- public:
-
-	 Root_Execution(const vector <shared_ptr <const Dependency> > &dependencies); 
-
-	 virtual Proceed execute(Execution *parent, 
-				 shared_ptr <const Dependency> dependency_this);
-	 virtual bool finished() const; 
-	 virtual bool finished(Flags flags) const;
-	 virtual string format_out() const { return "ROOT"; }
-	 virtual void propagate_variable_content(string, string) {  }
-
- protected:
-
-	 virtual int get_depth() const {  return -1;  }
-	 virtual const Place &get_place() const {  return Place::place_empty;  }
-	 virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
-	 virtual bool want_delete() const {  return true;  }
-
- private:
-
-	 bool is_finished; 
- };
-
- class Concatenated_Execution
- /* 
-  * An execution representating a concatenation.  Its dependency is
-  * always a compound dependency containing normalized dependencies, whose
-  * results are concatenated as new targets added to the parent.
-  *
-  * Concatenated executions always have exactly one parent.  They are not
-  * cached, and they are deleted when done.  Thus, they also don't need
-  * the 'done' field.  (But the parent class has it.)
-  */
-	 :  public Execution
- {
- public:
-
-	 Concatenated_Execution(shared_ptr <const Dependency> dependency_,
-				shared_ptr <const Dependency> dependency_link,
-				Execution *parent);
-	 /* The given dependency must be normalized, and contain at least
-	  * one Concatenated_Dependency.  */
-
-	 ~Concatenated_Execution(); 
-
-	 void add_part(shared_ptr <Single_Dependency> dependency, 
-		       int concatenation_index);
-	 /* Add a single part -- exclude the outer layer */
-
-	 void assemble_parts(); 
-
-	 virtual int get_depth() const { return -1; }
-	 virtual const Place &get_place() const {  return dependency->get_place();  }
-	 virtual Proceed execute(Execution *parent, 
-				 shared_ptr <const Dependency> dependency_this);
-	 virtual bool finished() const;
-	 virtual bool finished(Flags flags) const; 
-
-	 virtual string format_out() const {  
-		 // TODO return actual dependency text
-		 return "CONCAT";  
-	 }
-	 virtual void propagate_variable_content(string, string) {  }
-
- protected:
-
-	 virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
-
- private:
-
-	 shared_ptr <const Dependency> dependency;
-	 /* Contains the concatenation. 
-	  * This is a Dynamic_Dependency^* of a Concatenated_Dependency,
-	  * itself containing each a Compound_Dependency^{0,1} of
-	  * Dynamic_Dependency^* of a single dependency. 
-	  * Is normalized.  */
-
-	 int stage;
-	 /* 0:  Nothing done yet. 
-	  *  --> put dependencies into the queue
-	  * 1:  We're building the normal dependencies.
-	  *  --> read out the dependencies and construct the list of actual dependencies
-	  * 2:  Building actual dependencies.
-	  * 3:  Finished.  */
-
-	 vector <vector <shared_ptr <const Single_Dependency> > > parts; 
-	 /* The individual parts, inserted here during stage 1 by
-	  * Execution::disconnect().  Excludes the outer layer.  */
-
-	 void add_stage0_dependency(shared_ptr <const Dependency> d, unsigned concatenate_index);
-	 /* Add a dependency during Stage 0.  The given dependency can be
-	  * non-normalized, because it comes from within a concatenated
-	  * dependency.  */
-
-	 virtual bool want_delete() const {  return true;  }
-
-	 static shared_ptr <const Dependency> concatenate_dependency_one(shared_ptr <const Single_Dependency> dependency_1,
-									 shared_ptr <const Single_Dependency> dependency_2,
-									 Flags dependency_flags);
-	 /* Concatenate to two given dependencies, additionally
-	  * adding the given flags.  */
- };
-
- class Dynamic_Execution
- /*
-  * This is used for all dynamic targets, regardless of whether they are
-  * files, transients, or concatenations. 
-  *
-  * If it corresponds to a (possibly multiply) dynamic transient or file,
-  * it used for caching and is not deleted.  If it corresponds to a
-  * concatenation, it is not cached, and is deleted when not used anymore.
-  *
-  * Each dynamic execution corresponds to an exact dynamic dependency,
-  * taking into account all flags.  This is as opposed to file
-  * executions, where multiple file dependencies share a single execution
-  * object. 
-  */
-	 :  public Execution 
- {
- public:
-
-	 Dynamic_Execution(shared_ptr <const Dependency> , Execution *parent);
+	:  public Execution 
+{
+public:
+
+	File_Execution(Target target_,
+		       shared_ptr <const Dependency> dependency_link,
+		       Execution *parent,
+		       shared_ptr <Rule> rule,
+		       shared_ptr <Rule> param_rule,
+		       map <string, string> &mapping_parameter_); 
+	// TODO remove the TARGET parameter.  It is already
+	// contained in DEPENDENCY_LINK. 
+
+	void propagate_variable(shared_ptr <const Dependency> dependency,
+				Execution *parent); 
+	/* Read the content of the file into a string as the
+	 * variable value.  THIS is the variable target.  */
+
+	shared_ptr <const Rule> get_rule() const { return rule; }
+
+	void add_variables(map <string, string> mapping) {
+		mapping_variable.insert(mapping.begin(), mapping.end()); 
+	}
+
+	const map <string, string> &get_mapping_variable() const {
+		return mapping_variable; 
+	}
+
+	virtual string debug_done_text() const {
+		return flags_format(flags_finished);
+	}
+
+	virtual Proceed execute(Execution *parent, 
+				shared_ptr <const Dependency> dependency_this);
+	virtual bool finished() const;
+	virtual bool finished(Flags flags) const; 
+	virtual string format_out() const {
+		assert(targets.size()); 
+		return targets.front().format_out(); 
+	}
+	virtual void propagate_variable_content(string variable_name, string content) {
+		mapping_variable[variable_name]= content;
+	}
+
+	static unordered_map <pid_t, File_Execution *> executions_by_pid;
+	/*
+	 * The currently running executions by process IDs.  Write
+	 * access to this is enclosed in a Signal_Blocker.
+	 */ 
+	// TODO have a dedicated array for the list of currently running
+	// PIDs, and maintain an atomic pid_count to maintain the list,
+	// to avoid access a stdlib container from a signal handler. 
+
+	static void wait();
+	/* Wait for next job to finish and finish it.  Do not start anything
+	 * new.  */ 
+
+protected:
+
+	virtual bool optional_finished(shared_ptr <const Dependency> dependency_link);
+	virtual bool want_delete() const {  return false;  }
+	virtual int get_depth() const {  return 0;  }
+
+private:
+
+	friend class Execution; 
+	friend void job_terminate_all(); 
+	friend void job_print_jobs(); 
+
+	vector <Target> targets; 
+	/* The targets to which this execution object corresponds.
+	 * Never empty.  
+	 * All targets are non-dynamic, i.e., only plain files and transients are included.  */
+
+	shared_ptr <Rule> rule;
+	/* The instantiated file rule for this execution.  Null when
+	 * there is no rule for this file (this happens for instance
+	 * when a source code file is given as a dependency, or when
+	 * this is a complex dependency).  Individual dynamic
+	 * dependencies do have rules, in order for cycles to be
+	 * detected.  Null if and only if PARAM_RULE is null.  */ 
+
+	Job job;
+	/* The job used to execute this rule's command */ 
+
+	vector <Timestamp> timestamps_old; 
+	/* Timestamp of each file target, before the command is
+	 * executed.  Only valid once the job was started.  The indexes
+	 * correspond to those in TARGETS.  Non-file indexes are
+	 * uninitialized.  Used for checking whether a file was rebuild
+	 * to decide whether to remove it after a command failed or was
+	 * interrupted.  This is UNDEFINED when the file did not exist,
+	 * or no target is a file.  */ 
+
+	map <string, string> mapping_parameter; 
+	/* Variable assignments from parameters for when the command is run */
+
+	map <string, string> mapping_variable; 
+	/* Variable assignments from variables dependencies */
+
+	signed char exists;
+	/* 
+	 * Whether the file target(s) are known to exist.  
+	 *     -1 = at least one file target is known not to exist (only
+	 *     	    possible when there is at least one file target)
+	 *      0 = status unknown:  nothing has been checked yet
+	 *     +1 = all file targets are known to exist (possible when
+	 *          there are no file targets)
+	 * When there are no file targets (i.e., when all targets are
+	 * transients), the value may be both 0 or +1.  
+	 */
+	// TODO fold this into BITS. 
+
+	Flags flags_finished; 
+	/* What parts of this target have been done.  Each bit that is
+	 * set represents one aspect that was done.  When an execution
+	 * is invoked with a certain set of flags, all flags *not*
+	 * passed will be set when the execution is finished.  */
+
+	~File_Execution(); 
+
+	virtual const Place &get_place() const {
+		if (param_rule == nullptr)
+			return Place::place_empty;
+		else
+			return param_rule->place; 
+	}
+
+	bool remove_if_existing(bool output); 
+	/* Remove all file targets of this execution object if they
+	 * exist.  If OUTPUT is true, output a corresponding message.
+	 * Return whether the file was removed.  If OUTPUT is false,
+	 * only do async signal-safe things.  */  
+
+	void waited(pid_t pid, int status); 
+	/* Called after the job was waited for.  The PID is only passed
+	 * for checking that it is correct.  */
+
+	void warn_future_file(struct stat *buf, 
+			      const char *filename,
+			      const Place &place,
+			      const char *message_extra= nullptr);
+	/* Warn when the file has a modification time in the future.
+	 * MESSAGE_EXTRA may be null to not show an extra message.  */ 
+
+	void print_command() const; 
+	/* Print the command and its associated variable assignments,
+	 * according to the selected verbosity level.  */
+
+	void print_as_job() const;
+	/* Print a line to stdout for a running job, as output of SIGUSR1.
+	 * Is currently running.  */ 
+
+	void write_content(const char *filename, const Command &command); 
+	/* Create the file FILENAME with content from COMMAND */
+
+	static unordered_map <string, Timestamp> transients;
+	/* The timestamps for transient targets.  This container plays the role of
+	 * the file system for transient targets, holding their timestamps, and
+	 * remembering whether they have been executed.  Note that if a
+	 * rule has both file targets and transient targets, and all
+	 * file targets are up to date and the transient targets have
+	 * all their dependencies up to date, then the command is not
+	 * executed, even though it was never executed in the current
+	 * invocation of Stu. In that case, the transient targets are
+	 * never insert in this map.  */
+};
+
+class Transient_Execution
+/* 
+ * Used for non-dynamic transients that appear in rules that have only
+ * transients as targets, and have no command.  If at least one file
+ * target or a command is present in the rule, File_Execution is used.
+ */
+	:  public Execution 
+{
+public:
+
+	Transient_Execution(shared_ptr <const Dependency> dependency_link,
+			    Execution *parent,
+			    shared_ptr <Rule> rule,
+			    shared_ptr <Rule> param_rule,
+			    map <string, string> &mapping_parameter); 
+
+	shared_ptr <const Rule> get_rule() const { return rule; }
+
+	const map <string, string> &get_mapping_variable() const {
+		return mapping_variable; 
+	}
+
+	virtual Proceed execute(Execution *parent, 
+				shared_ptr <const Dependency> dependency_this);
+	virtual bool finished() const;
+	virtual bool finished(Flags flags) const; 
+	virtual string format_out() const {
+		assert(targets.size()); 
+		return targets.front().format_out(); 
+	}
+	virtual void propagate_variable_content(string variable_name, string content) {
+		for (auto &i:  parents) 
+			i.first->propagate_variable_content(variable_name, content); 
+	}
+
+protected:
+
+	virtual bool want_delete() const {  return false;  }
+	virtual int get_depth() const {  return 0;  }
+	virtual bool optional_finished(shared_ptr <const Dependency> dependency_link) {  
+		(void) dependency_link; 
+		return false;  
+	}
+
+private:
+
+	vector <Target> targets; 
+	/* The targets to which this execution object corresponds.  All
+	 * are transients.  */
+
+	shared_ptr <Rule> rule;
+	/* The instantiated file rule for this execution.  Never null. */ 
+
+	Timestamp timestamp_old;
+
+	bool is_finished; 
+
+	map <string, string> mapping_parameter; 
+	/* Contains the parameters; is not used */
+
+	map <string, string> mapping_variable; 
+	/* Variable assignments from variables dependencies.  This is in
+	 * Transient_Execution because it may be percolated up to the
+	 * parent execution.  */
+
+	~Transient_Execution();
+
+	virtual const Place &get_place() const {
+		if (param_rule == nullptr)
+			return Place::place_empty;
+		else
+			return param_rule->place; 
+	}
+};
+class Root_Execution
+	:  public Execution
+{
+public:
+
+	Root_Execution(const vector <shared_ptr <const Dependency> > &dependencies); 
+
+	virtual Proceed execute(Execution *parent, 
+				shared_ptr <const Dependency> dependency_this);
+	virtual bool finished() const; 
+	virtual bool finished(Flags flags) const;
+	virtual string format_out() const { return "ROOT"; }
+	virtual void propagate_variable_content(string, string) {  }
+
+protected:
+
+	virtual int get_depth() const {  return -1;  }
+	virtual const Place &get_place() const {  return Place::place_empty;  }
+	virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
+	virtual bool want_delete() const {  return true;  }
+
+private:
+
+	bool is_finished; 
+};
+
+class Concatenated_Execution
+/* 
+ * An execution representating a concatenation.  Its dependency is
+ * always a compound dependency containing normalized dependencies, whose
+ * results are concatenated as new targets added to the parent.
+ *
+ * Concatenated executions always have exactly one parent.  They are not
+ * cached, and they are deleted when done.  Thus, they also don't need
+ * the 'done' field.  (But the parent class has it.)
+ */
+	:  public Execution
+{
+public:
+
+	Concatenated_Execution(shared_ptr <const Dependency> dependency_,
+			       shared_ptr <const Dependency> dependency_link,
+			       Execution *parent);
+	/* The given dependency must be normalized, and contain at least
+	 * one Concatenated_Dependency.  */
+
+	~Concatenated_Execution(); 
+
+	void add_part(shared_ptr <Single_Dependency> dependency, 
+		      int concatenation_index);
+	/* Add a single part -- exclude the outer layer */
+
+	void assemble_parts(); 
+
+	virtual int get_depth() const { return -1; }
+	virtual const Place &get_place() const {  return dependency->get_place();  }
+	virtual Proceed execute(Execution *parent, 
+				shared_ptr <const Dependency> dependency_this);
+	virtual bool finished() const;
+	virtual bool finished(Flags flags) const; 
+
+	virtual string format_out() const {  
+		// TODO return actual dependency text
+		return "CONCAT";  
+	}
+	virtual void propagate_variable_content(string, string) {  }
+
+protected:
+
+	virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
+
+private:
+
+	shared_ptr <const Dependency> dependency;
+	/* Contains the concatenation. 
+	 * This is a Dynamic_Dependency^* of a Concatenated_Dependency,
+	 * itself containing each a Compound_Dependency^{0,1} of
+	 * Dynamic_Dependency^* of a single dependency. 
+	 * Is normalized.  */
+
+	int stage;
+	/* 0:  Nothing done yet. 
+	 *  --> put dependencies into the queue
+	 * 1:  We're building the normal dependencies.
+	 *  --> read out the dependencies and construct the list of actual dependencies
+	 * 2:  Building actual dependencies.
+	 * 3:  Finished.  */
+
+	vector <vector <shared_ptr <const Single_Dependency> > > parts; 
+	/* The individual parts, inserted here during stage 1 by
+	 * Execution::disconnect().  Excludes the outer layer.  */
+
+	void add_stage0_dependency(shared_ptr <const Dependency> d, unsigned concatenate_index);
+	/* Add a dependency during Stage 0.  The given dependency can be
+	 * non-normalized, because it comes from within a concatenated
+	 * dependency.  */
+
+	virtual bool want_delete() const {  return true;  }
+
+	static shared_ptr <const Dependency> concatenate_dependency_one(shared_ptr <const Single_Dependency> dependency_1,
+									shared_ptr <const Single_Dependency> dependency_2,
+									Flags dependency_flags);
+	/* Concatenate to two given dependencies, additionally
+	 * adding the given flags.  */
+};
+
+class Dynamic_Execution
+/*
+ * This is used for all dynamic targets, regardless of whether they are
+ * files, transients, or concatenations. 
+ *
+ * If it corresponds to a (possibly multiply) dynamic transient or file,
+ * it used for caching and is not deleted.  If it corresponds to a
+ * concatenation, it is not cached, and is deleted when not used anymore.
+ *
+ * Each dynamic execution corresponds to an exact dynamic dependency,
+ * taking into account all flags.  This is as opposed to file
+ * executions, where multiple file dependencies share a single execution
+ * object. 
+ */
+	:  public Execution 
+{
+public:
+
+	Dynamic_Execution(shared_ptr <const Dependency> , Execution *parent);
+
+	shared_ptr <const Dynamic_Dependency> get_dependency() const {  return dependency;  }
 
 	 virtual Proceed execute(Execution *parent, 
 				 shared_ptr <const Dependency> dependency_this);
@@ -778,57 +780,57 @@
 			 i.first->propagate_variable_content(variable_name, content); 
 	 }
 
- protected:
+protected:
 
-	 virtual bool want_delete() const;
+	virtual bool want_delete() const;
 
- private: 
+private: 
 
-	 shared_ptr <const Dynamic_Dependency> dependency; 
-	 /* A dynamic of anything */
+	shared_ptr <const Dynamic_Dependency> dependency; 
+	/* A dynamic of anything */
 
-	 bool is_finished; 
- };
+	bool is_finished; 
+};
 
- /* Padding for debug output (option -d).  During the lifetime of an
-  * object, padding is increased by one step.  */
- class Debug
- {
- public:
-	 Debug(Execution *e) 
-	 {
-		 padding_current += "   ";
-		 executions.push_back(e); 
-	 }
+/* Padding for debug output (option -d).  During the lifetime of an
+ * object, padding is increased by one step.  */
+class Debug
+{
+public:
+	Debug(Execution *e) 
+	{
+		padding_current += "   ";
+		executions.push_back(e); 
+	}
 
-	 ~Debug() 
-	 {
-		 padding_current.resize(padding_current.size() - 3);
-		 executions.pop_back(); 
-	 }
+	~Debug() 
+	{
+		padding_current.resize(padding_current.size() - 3);
+		executions.pop_back(); 
+	}
 
-	 static const char *padding() {
-		 return padding_current.c_str(); 
-	 }
+	static const char *padding() {
+		return padding_current.c_str(); 
+	}
 
-	 static void print(Execution *, string text);
-	 /* Print a line for debug mode.  The given TEXT starts with the
-	  * lower-case name of the operation being performed, followed by
-	  * parameters, and not ending in a newline or period.  */
+	static void print(Execution *, string text);
+	/* Print a line for debug mode.  The given TEXT starts with the
+	 * lower-case name of the operation being performed, followed by
+	 * parameters, and not ending in a newline or period.  */
 
- private:
-	 static string padding_current;
-	 static vector <Execution *> executions; 
+private:
+	static string padding_current;
+	static vector <Execution *> executions; 
 
-	 static void print(string text_target, string text);
- };
+	static void print(string text_target, string text);
+};
 
- long Execution::jobs= 1;
- Rule_Set Execution::rule_set; 
- Timestamp Execution::timestamp_last;
- bool Execution::hide_out_message= false;
- bool Execution::out_message_done= false;
- unordered_map <Target, Execution *> Execution::executions_by_target;
+long Execution::jobs= 1;
+Rule_Set Execution::rule_set; 
+Timestamp Execution::timestamp_last;
+bool Execution::hide_out_message= false;
+bool Execution::out_message_done= false;
+unordered_map <Target, Execution *> Execution::executions_by_target;
 
 unordered_map <pid_t, File_Execution *> File_Execution::executions_by_pid;
 unordered_map <string, Timestamp> File_Execution::transients;
@@ -1078,34 +1080,37 @@ void Execution::read_dynamic(Flags flags_this,
 			continue; 
 		}
 
-		/* Check that there is no multiply-dynamic variable dependency */ 
-		if ((j->flags | F_VARIABLE) && 
-		    target.is_dynamic() && 
-		    (target.at(1) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == F_TARGET_TRANSIENT) {
+		// XXX put the check somewhere else 
+// 		/* Check that there is no multiply-dynamic variable dependency */ 
+// 		if ((j->flags | F_VARIABLE) && 
+// 		    false // XXX ...
+// 		    ) {
+// //		    target.is_dynamic() && 
+// //		    (target.at(1) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == F_TARGET_TRANSIENT) {
 			
-			/* Only single dependencies can have the F_VARIABLE flag set */ 
-			assert(dynamic_pointer_cast <const Single_Dependency> (j));
+// 			/* Only single dependencies can have the F_VARIABLE flag set */ 
+// 			assert(dynamic_pointer_cast <const Single_Dependency> (j));
 			
-			shared_ptr <const Single_Dependency> dep= 
-				dynamic_pointer_cast <const Single_Dependency> (j);
+// 			shared_ptr <const Single_Dependency> dep= 
+// 				dynamic_pointer_cast <const Single_Dependency> (j);
 
-			bool quotes= false;
-			string s= dep->place_param_target.format(0, quotes);
+// 			bool quotes= false;
+// 			string s= dep->place_param_target.format(0, quotes);
 
-			j->get_place() <<
-				fmt("variable dependency %s$[%s%s%s]%s must not appear",
-				    Color::word,
-				    quotes ? "'" : "",
-				    s,
-				    quotes ? "'" : "",
-				    Color::end);
-			print_traces(fmt("within multiply-dynamic dependency %s", 
-					 target.format_word())); 
-			raise(ERROR_LOGICAL);
-			j= nullptr; 
-			found_error= true; 
-			continue; 
-		}
+// 			j->get_place() <<
+// 				fmt("variable dependency %s$[%s%s%s]%s must not appear",
+// 				    Color::word,
+// 				    quotes ? "'" : "",
+// 				    s,
+// 				    quotes ? "'" : "",
+// 				    Color::end);
+// 			print_traces(fmt("within multiply-dynamic dependency %s", 
+// 					 target.format_word())); 
+// 			raise(ERROR_LOGICAL);
+// 			j= nullptr; 
+// 			found_error= true; 
+// 			continue; 
+// 		}
 	}
 	if (found_error) {
 		assert(option_keep_going); 
@@ -1894,16 +1899,15 @@ void Execution::copy_result(Execution *parent, Execution *child)
 
 void Execution::push_result(shared_ptr <const Dependency> dd, 
 			    shared_ptr <const Dependency> dependency_flags,
-			    bool result_only)
-//			    Flags flags)
+			    bool result_only,
+			    Execution *child)
 {
-	Debug::print(this, fmt("push_result(%s) %s", 
+	Debug::print(this, fmt("push_result(%s%s)", 
 			       dependency_flags 
-			       ? flags_format(dependency_flags->flags & F_PLACED)
+			       ? flags_format(dependency_flags->flags & F_PLACED) + ", "
 			       : "", 
 			       dd->format_out())); 
 
-//	assert(! (flags & ~F_PLACED));
 	assert(! (dd->flags & F_DYNAMIC_LEFT)); 
 	shared_ptr <const Single_Dependency> single_dd= dynamic_pointer_cast <const Single_Dependency> (dd); 
 
@@ -1911,23 +1915,19 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 		/* Percolate one up */ 
 		for (auto &i:  parents) {
 			if (i.second->flags & F_DYNAMIC_LEFT) {
-				i.first->push_result(dd, dependency_flags, 0);
+				i.first->push_result(dd, dependency_flags, 0, child);
 			}
 		}
 
 		return;
 	}
 
-//	assert(! (flags & F_DYNAMIC_LEFT)); 
-
 	/* Without extra flags */
 	if (single_dd) 
 		result.push_back(single_dd); 
-	
+
 	/* If THIS is a dynamic execution, add DD as a right branch */
-	if (dynamic_cast <Dynamic_Execution *> (this) && 
-	    ! result_only) {
-//	    ! (dependency_flags && (dependency_flags->flags & F_RESULT_ONLY))) {
+	if (dynamic_cast <Dynamic_Execution *> (this) && ! result_only) {
 
 		/* Add F_DYNAMIC_RIGHT and flags from self */
 		shared_ptr <Dependency> dd_new= Dependency::clone(dd); 
@@ -1957,16 +1957,43 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 		    dynamic_pointer_cast <const Single_Dependency> (dependency_link)
 		    ->place_param_target.flags & F_TARGET_TRANSIENT) {
 			shared_ptr <Dependency> dd2= Dependency::clone(dd); 
-			dd2->flags &= F_PLACED; 
-			parent->push_result(dd2, dependency_link, false); 
+			dd2->flags &= (F_PLACED | F_VARIABLE); 
+			parent->push_result(dd2, dependency_link, false, child); 
 		}
 		else if (dynamic_cast <Dynamic_Execution *> (this)) {
+
+			/* Check:  variable dependencies are not allowed in multiply
+			 * dynamic dependencies.  */
+			// if (dd->flags & F_VARIABLE &&
+			//     dynamic_cast <Dynamic_Execution *> (this) &&
+			//     dynamic_pointer_cast <const Dynamic_Dependency> (dynamic_cast <Dynamic_Execution *> (this)->get_dependency()) &&
+			//     dynamic_pointer_cast <const Dynamic_Dependency> 
+			//     (
+			//      dynamic_pointer_cast <const Dynamic_Dependency> (dynamic_cast <Dynamic_Execution *> (this)->get_dependency())
+			//      ->dependency
+			//      )
+			//     ) {
+			if (dd->flags & F_VARIABLE) {
+				bool quotes= false;
+				string s= dd->get_target().format(S_MARKERS | S_NOEMPTY, quotes);
+				dd->get_place() << fmt("variable dependency %s$[%s%s%s]%s must not appear", 
+						       Color::word,
+						       quotes ? "'" : "",
+						       s,
+						       quotes ? "'" : "",
+						       Color::end); 
+				child->print_traces
+					(fmt("within multiply-dynamic dependency %s", 
+					     dynamic_cast <Dynamic_Execution *> (parent)->get_dependency()->get_target().format_word()));
+				raise(ERROR_LOGICAL);
+			} 
+
 			shared_ptr <Dependency> dd2= Dependency::clone(dd); 
-			dd2->flags &= F_PLACED; 
+			dd2->flags &= (F_PLACED | F_VARIABLE); 
 			shared_ptr <Dependency> ddd= make_shared <Dynamic_Dependency> (0, dd2); 
 			ddd->add_flags(dependency_link, false); 
 			ddd->flags &= ~(F_DYNAMIC_LEFT | F_DYNAMIC_RIGHT | F_RESULT_ONLY); 
-			parent->push_result(ddd, nullptr, false); 
+			parent->push_result(ddd, nullptr, false, child); 
 		} 
 	}
 }
@@ -1985,7 +2012,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 	File_Execution *single_this= dynamic_cast <File_Execution *> (this); 
 	Dynamic_Execution *dynamic_this= dynamic_cast <Dynamic_Execution *> (this); 
 	Transient_Execution *transient_this= dynamic_cast <Transient_Execution *> (this); 
-	
+
 	/* Check that THIS is one of the allowed dynamics */
 	if (single_this) {
 		/* At least a single target is a transient */
@@ -2019,10 +2046,11 @@ void Execution::propagate_to_dynamic(Execution *child,
 			if ((place_param_target.flags & F_TARGET_TRANSIENT) == 0) {
 				vector <shared_ptr <const Dependency> > dependencies;
 				child->read_dynamic(flags_child,
-					     place_param_target,
-					     dependencies);
+						    place_param_target,
+						    dependencies); 
 				for (auto &j:  dependencies) {
-					push_result(j, dependency_this, dependency_this->flags & F_RESULT_ONLY); 
+					push_result(j, dependency_this, dependency_this->flags & F_RESULT_ONLY, 
+						    child); 
 				}
 			}
 		} catch (int e) {

@@ -73,7 +73,7 @@ string fmt(const char *s)
 		ret += string(s, q - s); 
 		s= q + 1;
 		if (*s != '%') {
-			/* Missing argument */ 
+			/* Missing argument, or one too many %s */ 
 			assert(false);
 			break;
 		}

@@ -608,3 +608,8 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 # error.  To be used with badly-behaving commands that overwrite the
 # target immediately.
 #
+
+#
+# In -k mode, Start trivial dependencies immediately when it iss clear
+# they must be started, not just when everything else is done.
+#

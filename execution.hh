@@ -202,15 +202,11 @@ protected:
 	 * used.  Null by default, and set by individual implementations
 	 * in their constructor if necessary.  */ 
 
-	Execution(shared_ptr <const Dependency> dependency_link,
-		  Execution *parent)
+	Execution()
 		:  bits(0),
 		   error(0),
 		   timestamp(Timestamp::UNDEFINED)
-	{  
-		assert(parent != nullptr); 
-		parents[parent]= dependency_link; 
-	}
+	{  }
 
 	explicit Execution(Execution *parent_null)
 		/* Without a parent.  PARENT_NULL must be null. */
@@ -316,16 +312,19 @@ protected:
 	static bool find_cycle(vector <Execution *> &path,
 			       Execution *child,
 			       shared_ptr <const Dependency> dependency_link); 
-	/* Helper function */ 
+	/* Helper function.  PATH is the currently explored path.
+	 * PATH[0] is the original PARENT; PATH[end] is the oldest
+	 * grandparent found yet.  */ 
 
 	static void cycle_print(const vector <Execution *> &path,
-				shared_ptr <const Dependency> dependency_link);
+				shared_ptr <const Dependency> dependency);
 	/* Print the error message of a cycle on rule level.
-	 * Given the path [a, b, c, d, ..., x], the found cycle is
+	 * Given PATH = [a, b, c, d, ..., x], the found cycle is
 	 * [x <- a <- b <- c <- d <- ... <- x], where A <- B denotes
 	 * that A is a dependency of B.  For each edge in this cycle,
-	 * output one line.  LINK is the link (x <- a), which is not yet
-	 * created in the execution objects.  */ 
+	 * output one line.  DEPENDENCY is the link (x <- a), which is not yet
+	 * created in the execution objects.  All other link
+	 * dependencies are read from the execution objects.  */ 
 
 	static bool same_rule(const Execution *execution_a,
 			      const Execution *execution_b);
@@ -407,7 +406,12 @@ public:
 		       shared_ptr <Rule> rule,
 		       shared_ptr <Rule> param_rule,
 		       map <string, string> &mapping_parameter_,
-		       int error_additional); 
+		       int &error_additional);
+	/* ERROR_ADDITIONAL indicates whether an error will be thrown
+	 * after the call.  (Because an error can only be thrown after
+	 * the execution has been connected to a parent, which is not
+	 * done in the constructor.  The parent is connected to this iff
+	 * ERROR_ADDITIONAL is zero after the call.  */
 	// TODO remove the TARGET parameter.  It is already
 	// contained in DEPENDENCY_LINK. 
 
@@ -581,7 +585,7 @@ public:
 			    shared_ptr <Rule> rule,
 			    shared_ptr <Rule> param_rule,
 			    map <string, string> &mapping_parameter,
-			    int error_additional);
+			    int &error_additional);
 
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
@@ -680,7 +684,8 @@ public:
 
 	Concatenated_Execution(shared_ptr <const Dependency> dependency_,
 			       shared_ptr <const Dependency> dependency_link,
-			       Execution *parent);
+			       Execution *parent,
+			       bool &found_cycle);
 	/* The given dependency must be normalized, and contain at least
 	 * one Concatenated_Dependency.  */
 
@@ -762,7 +767,9 @@ class Dynamic_Execution
 {
 public:
 
-	Dynamic_Execution(shared_ptr <const Dependency> , Execution *parent);
+	Dynamic_Execution(shared_ptr <const Dependency> dependency_,
+			  Execution *parent,
+			  int &error_additional); 
 
 	shared_ptr <const Dynamic_Dependency> get_dependency() const {  return dependency;  }
 
@@ -1076,38 +1083,6 @@ void Execution::read_dynamic(Flags flags_this,
 			found_error= true; 
 			continue; 
 		}
-
-		// XXX put the check somewhere else 
-// 		/* Check that there is no multiply-dynamic variable dependency */ 
-// 		if ((j->flags | F_VARIABLE) && 
-// 		    false // XXX ...
-// 		    ) {
-// //		    target.is_dynamic() && 
-// //		    (target.at(1) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == F_TARGET_TRANSIENT) {
-			
-// 			/* Only single dependencies can have the F_VARIABLE flag set */ 
-// 			assert(dynamic_pointer_cast <const Single_Dependency> (j));
-			
-// 			shared_ptr <const Single_Dependency> dep= 
-// 				dynamic_pointer_cast <const Single_Dependency> (j);
-
-// 			bool quotes= false;
-// 			string s= dep->place_param_target.format(0, quotes);
-
-// 			j->get_place() <<
-// 				fmt("variable dependency %s$[%s%s%s]%s must not appear",
-// 				    Color::word,
-// 				    quotes ? "'" : "",
-// 				    s,
-// 				    quotes ? "'" : "",
-// 				    Color::end);
-// 			print_traces(fmt("within multiply-dynamic dependency %s", 
-// 					 target.format_word())); 
-// 			raise(ERROR_LOGICAL);
-// 			j= nullptr; 
-// 			found_error= true; 
-// 			continue; 
-// 		}
 	}
 	if (found_error) {
 		assert(option_keep_going); 
@@ -1124,6 +1099,10 @@ bool Execution::find_cycle(Execution *parent,
 			   Execution *child,
 			   shared_ptr <const Dependency> dependency_link)
 {
+	// TODO in both find_cycle() functions:  don't test
+	// Root_Execution explicitly, as it should not have parents
+	// anyway. 
+
 	if (dynamic_cast <const Root_Execution *> (parent))
 		return false;
 		
@@ -1161,7 +1140,20 @@ bool Execution::find_cycle(vector <Execution *> &path,
 }
 
 void Execution::cycle_print(const vector <Execution *> &path,
-			    shared_ptr <const Dependency> dependency_link)
+			    shared_ptr <const Dependency> dependency)
+/*
+ * Given PATH = [a, b, c, d, ..., x], we print:
+ *
+ * 	x depends on ...      \
+ *      ... depends on d      |
+ *      d depends on c        | printed from PATH
+ *      c depends on b        |
+ *      b depends on a        /
+ *      a depends on x        > printed from DEPENDENCY
+ *      x is needed by ...    \ 
+ *      ...                   | printed by print_traces() 
+ *      ...                   /
+ */
 {
 	assert(path.size() > 0); 
 
@@ -1173,41 +1165,49 @@ void Execution::cycle_print(const vector <Execution *> &path,
 		names[i]= path[i]->parents.at((Execution *) path[i+1])
 			->get_target().format_word();
 	}
-
 	names.back()= path.back()->parents.begin()->second
 		->get_target().format_word();
 		
 	for (ssize_t i= path.size() - 1;  i >= 0;  --i) {
 
+		shared_ptr <const Dependency> d= i == 0 
+			? dependency
+			: path[i - 1]->parents.at(const_cast <Execution *> (path[i])); 
+
 		/* Don't show a message for left-branch dynamic links */ 
-		if (i != 0 &&
-		    path[i - 1]->parents.at(const_cast <Execution *> (path[i]))->flags & F_DYNAMIC_LEFT)
+		if (d->flags & F_DYNAMIC_LEFT) {
+//		if (i != 0 && path[i - 1]->parents.at(const_cast <Execution *> (path[i]))->flags & F_DYNAMIC_LEFT) {
 			continue;
+		}
 
-		/* Same, but when the dynamic execution is at the bottom */
-		if (i == 0 && (dependency_link->flags & F_DYNAMIC_LEFT)) 
-			continue;
+//		/* Same, but when the dynamic execution is at the bottom */
+//		if (i == 0 && (dependency->flags & F_DYNAMIC_LEFT)) 
+//			continue;
 
-		(i == 0 ? dependency_link->get_place() : path[i - 1]->parents.at((Execution *) path[i])->get_place())
+		d->get_place()
+//		(i == 0 ? dependency_link->get_place() : path[i - 1]->parents.at((Execution *) path[i])->get_place())
 			<< fmt("%s%s depends on %s",
 			       i == (ssize_t)(path.size() - 1) 
 			       ? (path.size() == 1 
-				  || (path.size() == 2 && dependency_link->flags & F_DYNAMIC_LEFT)
+				  || (path.size() == 2 && dependency->flags & F_DYNAMIC_LEFT)
 				  ? "target must not depend on itself: " 
 				  : "cyclic dependency: ") 
 			       : "",
 			       names[i],
-			       i == 0 ? dependency_link->get_target().format_word() : names[i - 1]);
+			       i == 0 ? dependency->get_target().format_word() : names[i - 1]);
 	}
 
 	/* If the two targets are different (but have the same rule
-	 * because they match the same pattern), then output a notice to
-	 * that effect */ 
+	 * because they match the same pattern and/or because they are
+	 * two different targets of a multitarget rule), then output a
+	 * notice to that effect */ 
 	Target t1= path.back()->parents.begin()->second->get_target();
-	Target t2= dependency_link->get_target();
+	Target t2= dependency->get_target();
+	// string xxx1= path.back()->parents.begin()->first->format_out();
+	// fprintf(stderr, "xxx %s %s %s\n", 
+	// 	t1.get_name_c_str_any(), t2.get_name_c_str_any(),
+	// 	xxx1.c_str()); 
 	if (strcmp(t1.get_name_c_str_any(), t2.get_name_c_str_any())) {
-//	if (t1 != t2) {
-//	if (dependency_link->get_target() != path.back()->parents.begin()->second->get_target()) {
 		path.back()->get_place() <<
 			fmt("both %s and %s match the same rule",
 			    t1.format_word(), t2.format_word());
@@ -1681,13 +1681,11 @@ void Execution::disconnect(Execution *const parent,
 		// XXX everywhere where DYNAMIC_LEFT is checked, also check that DYNAMIC_RRIGHT is not set 
 
 		Dynamic_Execution *parent_dynamic= dynamic_cast <Dynamic_Execution *> (parent);
-//		Transient_Execution *parent_transient= dynamic_cast <Transient_Execution *> (parent); 
 		if (! parent_dynamic) {
 			shared_ptr <const Single_Dependency> single_dependency_parent
 				= dynamic_pointer_cast <const Single_Dependency> (dependency_parent); 
 			assert(single_dependency_parent &&
 			       single_dependency_parent->place_param_target.flags & F_TARGET_TRANSIENT); 
-//			assert(parent_transient); 
 		}
 
 		parent->propagate_to_dynamic(child,
@@ -1804,9 +1802,17 @@ Execution *Execution::get_execution(Target target,
 				d->flags |= flags;
 				// XXX also set the place in D, from DEPENDENCY_LINK
 				dependency_link= d;
+				/* No need to check for cycles here,
+				 * because a link between the two
+				 * already exists and therefore a cycle
+				 * cannot be present.  */
 				execution->parents[parent]= dependency_link; 
 			}
 		} else {
+			if (find_cycle(parent, execution, dependency_link)) {
+				parent->raise(ERROR_LOGICAL);
+				return nullptr;
+			}
 			/* The parent and child are not connected -- add the
 			 * connection */ 
 			execution->parents[parent]= dependency_link;
@@ -1815,17 +1821,19 @@ Execution *Execution::get_execution(Target target,
 	} else { 
 		/* Create a new Execution object */ 
 
+		int error_additional= 0; /* Passed to the execution */
+
 		if (! target.is_dynamic()) {
 			/* Single execution */ 
 
 			shared_ptr <Rule> rule, param_rule; 
 			map <string, string> mapping_parameter;
 			bool use_file_execution= false;
-			int error_additional= 0; /* Passed to the execution */
 			try {
 				rule= rule_set.get(target, param_rule, mapping_parameter, 
 						   dependency_link->get_place()); 
 			} catch (int e) {
+				assert(e); 
 				error_additional= e; 
 			}
 			assert((rule == nullptr) == (param_rule == nullptr)); 
@@ -1853,25 +1861,37 @@ Execution *Execution::get_execution(Target target,
 			
 			if (use_file_execution) {
 				execution= new File_Execution
-					(target, dependency_link, 
-					 parent, rule, param_rule, mapping_parameter,
-					 error_additional);  
+					(target, dependency_link, parent,
+					 rule, param_rule, mapping_parameter,
+					 error_additional); 
 			} else if (target.is_transient()) {
 				execution= new Transient_Execution
-					(dependency_link, 
-					 parent, rule, param_rule, mapping_parameter,
-					 error_additional); 
+					(dependency_link, parent,
+					 rule, param_rule, mapping_parameter,
+					 error_additional);
 			}
 		} else {
-			execution= new Dynamic_Execution(dependency_link, parent); 
+			execution= new Dynamic_Execution(dependency_link, parent, error_additional); 
 		}
 
-		assert(execution->parents.size() == 1); 
-	}
+		if (error_additional) {
+//			execution->parents[parent]= dependency_link; 
+		// 	execution->print_traces();
+		// 	execution->parents.erase(parent); 
+		// 	execution->raise(ERROR_LOGICAL);
+			parent->error |= error_additional; 
+			if (execution->want_delete())
+				delete execution; 
+			return nullptr; 
+		}
 
-	if (find_cycle(parent, execution, dependency_link)) {
-		parent->raise(ERROR_LOGICAL);
-		return nullptr;
+//		if (find_cycle(parent, execution, dependency_link)) {
+//			parent->raise(ERROR_LOGICAL);
+//			return nullptr;
+//		}
+//		execution->parents[parent]= dependency_link; 
+
+		assert(execution->parents.size() == 1); 
 	}
 
 	return execution;
@@ -2248,18 +2268,16 @@ void File_Execution::waited(pid_t pid, int status)
 
 File_Execution::File_Execution(Target target_,
 			       shared_ptr <const Dependency> dependency_link,
-			       Execution *parent,
+			       Execution *parent, 
 			       shared_ptr <Rule> rule_,
 			       shared_ptr <Rule> param_rule_,
 			       map <string, string> &mapping_parameter_,
-			       int error_additional)
-	:  Execution(dependency_link, parent),
+			       int &error_additional)
+	:  Execution(),
 	   rule(rule_),
 	   exists(0),
 	   flags_finished(0)
 {
-	assert(parent != nullptr); 
-	assert(parents.size() == 1); 
 	assert((param_rule_ == nullptr) == (rule_ == nullptr)); 
 
 	param_rule= param_rule_;
@@ -2269,9 +2287,12 @@ File_Execution::File_Execution(Target target_,
 	targets.push_back(target_); 
 	executions_by_target[target_]= this; 
 
+	parents[parent]= dependency_link; 
 	if (error_additional) {
 		print_traces(); 
-		raise(error_additional);
+		flags_finished= ~0; 
+		parents.erase(parent); 
+		raise(error_additional); 
 		return;
 	}
 
@@ -2327,15 +2348,15 @@ File_Execution::File_Execution(Target target_,
 					if (errno != ENOENT) {
 						string text= target_.format_word();
 						perror(text.c_str()); 
-						raise(ERROR_BUILD); 
+						raise(ERROR_BUILD);
 					}
 					/* File does not exist and there is no rule for it */ 
-					error |= ERROR_BUILD;
 					rule_not_found= true;
 				} else {
 					/* File exists:  Do nothing, and there are no
 					 * dependencies to build */  
 					if (dynamic_cast <Root_Execution *> (parent)) {
+//					if (parent_is_root) {
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */ 
 						print_out(fmt("No rule for building %s, but the file exists", 
@@ -2353,12 +2374,19 @@ File_Execution::File_Execution(Target target_,
 		if (rule_not_found) {
 			assert(rule == nullptr); 
 			print_traces(fmt("no rule to build %s", target_.format_word()));
+			error_additional |= error |= ERROR_BUILD;
 			raise(ERROR_BUILD);
-			/* Even when a rule was not found, the File_Execution object remains
-			 * in memory  */  
+			return; 
 		}
 	}
 
+	parents.erase(parent); 
+	if (find_cycle(parent, this, dependency_link)) {
+		parent->raise(ERROR_LOGICAL);
+		error_additional |= ERROR_LOGICAL; 
+		return;
+	}
+	parents[parent]= dependency_link; 
 }
 
 bool File_Execution::finished() const 
@@ -3197,8 +3225,9 @@ Execution::Proceed Root_Execution::execute(Execution *,
 
 Concatenated_Execution::Concatenated_Execution(shared_ptr <const Dependency> dependency_,
 					       shared_ptr <const Dependency> dependency_link,
-					       Execution *parent)
-	:  Execution(dependency_link, parent),
+					       Execution *parent,
+					       bool &found_cycle)
+	:  Execution(),
 	   dependency(dependency_),
 	   stage(0)
 {
@@ -3222,6 +3251,14 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <const Dependency> dep
 	}
 
 	dependency= concatenated_dependency; 
+
+	if (find_cycle(parent, this, dependency_link)) {
+		parent->raise(ERROR_LOGICAL);
+		found_cycle= true; 
+		return;
+	}
+	parents[parent]= dependency_link; 
+
 }
 
 Execution::Proceed Concatenated_Execution::execute(Execution *, 
@@ -3440,19 +3477,27 @@ void Concatenated_Execution::assemble_parts()
 }
 
 Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dependency> dependency_link,
-				     Execution *parent)
-	:  Execution(dependency_link, parent),
-	   dependency(dynamic_pointer_cast <const Dynamic_Dependency> (dependency_link)),
+				     Execution *parent,
+				     int &error_additional)
+	:  dependency(dynamic_pointer_cast <const Dynamic_Dependency> (dependency_link)),
 	   is_finished(false)
 {
-	assert(parent != nullptr); 
-	assert(parents.size() == 1); 
+//	assert(parent != nullptr); 
 	assert(dynamic_pointer_cast <const Dynamic_Dependency> (dependency_link)); 
 	assert(dependency); 
 	
 	/* Set the rule here, so cycles in the dependency graph can be
 	 * detected.  Note however that the rule of dynamic executions
 	 * is otherwise not used.  */ 
+
+	parents[parent]= dependency_link;
+	if (error_additional) {
+		print_traces(); 
+		is_finished= true; 
+		parents.erase(parent); 
+		raise(error_additional); 
+		return;
+	}
 
 	shared_ptr <const Dependency> inner_dependency= Dependency::strip_dynamic(dependency);
 
@@ -3468,13 +3513,23 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dependency> dependency_li
 				rule_set.get(target_base, param_rule, mapping_parameter, 
 					     dependency_link->get_place()); 
 		} catch (int e) {
+			assert(e); 
 			print_traces(); 
+			error_additional |= e;
 			raise(e); 
 			return; 
 		}
 
 		executions_by_target[target]= this; 
 	}
+
+	parents.erase(parent); 
+	if (find_cycle(parent, this, dependency_link)) {
+		parent->raise(ERROR_LOGICAL);
+		error_additional |= ERROR_LOGICAL; 
+		return;
+	}
+	parents[parent]= dependency_link; 
 
 	/* Push left branch dependency */ 
 	shared_ptr <Dependency> dependency_left= Dependency::clone(dependency->dependency);
@@ -3562,9 +3617,8 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 					 shared_ptr <Rule> rule_,
 					 shared_ptr <Rule> param_rule_,
 					 map <string, string> &mapping_parameter_,
-					 int error_additional)
-	:  Execution(dependency_link, parent),
-	   rule(rule_)
+					 int &error_additional)
+	:  rule(rule_)
 {
 	param_rule= param_rule_; 
 	swap(mapping_parameter, mapping_parameter_); 
@@ -3579,22 +3633,25 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 	if (rule == nullptr) {
 		targets.push_back(dependency_link->get_target());
 	}
-	
+
+	parents[parent]= dependency_link; 
 	if (error_additional) {
-		print_traces(); 
-		raise(error_additional); 
+		print_traces();
 		is_finished= true;
+		parents.erase(parent); 
+		raise(error_additional); 
 		return; 
 	}
+
 
 	if (rule == nullptr) {
 		/* There must be a rule for transient targets (as
 		 * opposed to file targets), so this is an error.  */
 		is_finished= true; 
 		print_traces(fmt("no rule to build %s", target.format_word()));
+		parents.erase(parent); 
+		error_additional |= ERROR_BUILD; 
 		raise(ERROR_BUILD);
-		/* Even when a rule was not found, the Transient_Execution object remains
-		 * in memory  */  
 		return; 
 	} 
 
@@ -3629,6 +3686,15 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 		}
 		push_dependency(dep); 
 	}
+
+	parents.erase(parent); 
+	if (find_cycle(parent, this, dependency_link)) {
+		raise(ERROR_LOGICAL);
+//		found_cycle= true;
+		error_additional |= ERROR_LOGICAL; 
+		return; 
+	}
+	parents[parent]= dependency_link; 
 }
 	
 string Transient_Execution::format_out() const {

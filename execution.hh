@@ -1828,6 +1828,7 @@ Execution *Execution::get_execution(Target target,
 			} catch (int e) {
 				error_additional= e; 
 			}
+			assert((rule == nullptr) == (param_rule == nullptr)); 
 
 			/* RULE may be null here; this is handled in the constructors */ 
 

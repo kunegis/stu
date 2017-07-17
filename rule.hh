@@ -136,16 +136,18 @@ public:
 	 * logical error.  */ 
 
 	shared_ptr <Rule> get(Target target, 
-			      shared_ptr <Rule> &rule_original,
+			      shared_ptr <Rule> &param_rule,
 			      map <string, string> &mapping_parameter,
 			      const Place &place);
 	/* Match TARGET to a rule, and return the instantiated
 	 * (non-parametrized) corresponding rule.  TARGET must be
 	 * non-dynamic.  MAPPING_PARAMETER must be empty.  Return null when no
 	 * match is found.  When a match is found, write the original
-	 * (possibly parametrized) rule into ORIGINAL_RULE and the
-	 * matched parameters into MAPPING_PARAMETER.  Throws errors.  PLACE
-	 * is the place of the dependency; used in error messages.  */ 
+	 * (possibly parametrized) rule into PARAM_RULE and the
+	 * matched parameters into MAPPING_PARAMETER.  Throws errors, in
+	 * which case PARAM_RULE is never set.  PLACE  
+	 * is the place of the dependency; used in error messages.  
+	 */ 
 
 	void print() const;
 	/* Print the rule set to standard output, as used by the -P and
@@ -390,7 +392,7 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 }
 
 shared_ptr <Rule> Rule_Set::get(Target target, 
-				shared_ptr <Rule> &rule_original,
+				shared_ptr <Rule> &param_rule,
 				map <string, string> &mapping_parameter,
 				const Place &place)
 {
@@ -419,7 +421,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 		assert(found); 
 #endif 
 
-		rule_original= rule; 
+		param_rule= rule; 
 		return rule;
 	}
 
@@ -511,11 +513,8 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 	/* Instantiate the rule */ 
 	shared_ptr <Rule> rule_best= rules_best[0];
 	swap(mapping_parameter, mappings_best[0]); 
-	rule_original= rule_best; 
-
-	shared_ptr <Rule> ret
-		(Rule::instantiate(rule_best, mapping_parameter));
-		
+	shared_ptr <Rule> ret(Rule::instantiate(rule_best, mapping_parameter));
+	param_rule= rule_best; 
 	return ret;
 }
 

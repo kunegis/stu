@@ -745,11 +745,9 @@ shared_ptr <const Dependency> Single_Dependency
 	    this_name.find('=') != string::npos) {
 
 		assert((ret_target->flags & F_TARGET_TRANSIENT) == 0); 
-
-		place << 
-			fmt("dynamic variable %s must not be instantiated with parameter value that contains %s", 
-			    dynamic_variable_format_word(this_name),
-			    char_format_word('='));
+		place << fmt("dynamic variable %s must not be instantiated with parameter value that contains %s", 
+			     dynamic_variable_format_word(this_name),
+			     char_format_word('='));
 		throw ERROR_LOGICAL; 
 	}
 

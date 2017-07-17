@@ -127,6 +127,14 @@ public:
 		return text.c_str() + 1; 
 	}
 
+	const char *get_name_c_str_any() const
+	{
+		const char *ret= text.c_str();
+		while (((unsigned char)*ret) & F_TARGET_DYNAMIC)
+			++ret;
+		return ++ret; 
+	}
+
 	unsigned get_front_byte() const {  return (unsigned char)text.at(0);  }
 	
 	unsigned char &get_front_byte_nondynamic() 

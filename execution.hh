@@ -1203,11 +1203,11 @@ void Execution::cycle_print(const vector <Execution *> &path,
 	/* If the two targets are different (but have the same rule
 	 * because they match the same pattern), then output a notice to
 	 * that effect */ 
-	if (dependency_link->get_target() != path.back()->parents.begin()->second->get_target()) {
-
-		Target t1= path.back()->parents.begin()->second->get_target();
-		Target t2= dependency_link->get_target();
-
+	Target t1= path.back()->parents.begin()->second->get_target();
+	Target t2= dependency_link->get_target();
+	if (strcmp(t1.get_name_c_str_any(), t2.get_name_c_str_any())) {
+//	if (t1 != t2) {
+//	if (dependency_link->get_target() != path.back()->parents.begin()->second->get_target()) {
 		path.back()->get_place() <<
 			fmt("both %s and %s match the same rule",
 			    t1.format_word(), t2.format_word());

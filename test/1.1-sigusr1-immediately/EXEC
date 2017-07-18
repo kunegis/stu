@@ -1,12 +1,13 @@
 #! /bin/sh
 
-rm -f ? list.*
+rm -f ? list.* || exit 1
 
 echo '../../stu.test -j1000 &'
 ../../stu.test -j1000 >list.out 2>list.err &
 pid="$!"
 
-# Write until a first line has been written
+# Wait until a first line has been written
+begin="$(date +%s)"
 while [ \! -s list.out ] ; do 
 	now="$(date +%s)"
 	if [ "$now" -gt "$((begin + 2))" ] ; then

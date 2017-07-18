@@ -7,8 +7,10 @@
 #
 # The following is executed:
 #
+#                           test point
 #                               v
-# t:                   0        1        2        3        4
+# time [s]:            0        1        2        3        4
+# ---------------------------------------------------------------
 #    D                 |
 #    E                 |
 #    @x                |-----------------|
@@ -18,6 +20,7 @@
 #    list.File 123     |-----------------|
 #    list.N            |-----------------|
 #    list.O                              |-----------------|
+#    A                                                     |
 #
 
 A:  D E   @x  list.K list.L list.M  "list.File 123" list.N list.O

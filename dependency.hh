@@ -15,6 +15,20 @@
  * All dependency classes allow parametrized targets.  
  */
 
+/*
+ * A dependency can be normalized or not.  A dependency is normalized if it
+ * is one of:  
+ *    - a single dependency;
+ *    - a dynamic dependency containing a normalized dependency; 
+ *    - a concatenated dependency, each of whose component is either a
+ *      normalized dependency or a compound dependency of normalized
+ *      dependencies.
+ * In particular, compound dependencies are never normalized; they only
+ * appear immediately within concatenated dependencies.  
+ * Normalized dependencies are those used in practice.  A non-normalized dependency
+ * can always be reduced to a normalized one. 
+ */
+
 #include <map>
 
 #include "error.hh"
@@ -26,32 +40,24 @@ class Dependency
  * The abstract base class for all dependencies.  Objects of this type
  * are used via shared_ptr<>.
  *
- * A dependency can be normalized or not.  A dependency is normalized if it
- * is one of:  
- *    - a single dependency;
- *    - a dynamic dependency containing a normalized dependency; 
- *    - a concatenated dependency, each of whose component is either a
- *      normalized dependency or a compound dependency of normalized
- *      dependencies.
- * Normalized dependencies are those used in practice.  A non-normalized dependency
- * can always be reduced to a normalized one. 
- * 
- * All dependencies carry information about their place(s) of declaration.  
- *
  * The flags only represent immediate flags.  Compound dependencies for
  * instance may contain additional inner flags. 
  *
  * Objects of type Dependency and subclasses are always handled through
  * shared_ptr<>.  All objects may have many persistent pointers to it,
  * so they are considered final, i.e., immutable, except if we just
- * created the object in which case we know that it is not shared.  
+ * created the object in which case we know that it is not shared.
+ * Therefore, we always use shared_ptr <const ...>, except when we just
+ * created the dependency.  All dependencies are created via
+ * make_shared<>. 
  */ 
 {
 public:
 
 	Flags flags;
 	// TODO in principle, we could save the type within FLAGS and
-	// save on using the C++ polymorphic overhead. 
+	// save on using the C++ polymorphic overhead.  But then we'd
+	// have to write our own functions...
 
 	Place places[C_PLACED]; 
 	/* For each transitive flag that is set, the place.  An empty
@@ -73,8 +79,6 @@ public:
 		assert(places != places_);
 		for (int i= 0;  i < C_PLACED;  ++i)
 			places[i]= places_[i]; 
-//		places= places_; 
-//		memcpy(places, places_, sizeof(places)); 
 	}
 
 	virtual ~Dependency(); 
@@ -323,7 +327,12 @@ public:
 };
 
 class Dynamic_Dependency
-/* A dynamic dependency */
+/*
+ * The Dependency::flags field does *not* have the F_TARGET_DYNAMIC
+ * set. 
+ */
+// TODO make the F_TARGET_DYNAMIC field always be set in the
+// Dependency::flags field. 
 	:  public Dependency
 {
 public:
@@ -714,19 +723,25 @@ string Single_Dependency::format_word() const
 Target Dynamic_Dependency::get_target() const
 {
 	string text;
-	
 	const Dependency *d= this; 
-	
 	while (dynamic_cast <const Dynamic_Dependency *> (d)) {
 		Flags f= F_TARGET_DYNAMIC; 
+		assert((d->flags & F_TARGET_DYNAMIC) == 0); 
 		f |= d->flags; 
-		text += (char) f; 
+		text += (char)(unsigned char)f; 
 		d= dynamic_cast <const Dynamic_Dependency *> (d)->dependency.get(); 
 	}
 	assert(dynamic_cast <const Single_Dependency *> (d)); 
 	const Single_Dependency *sin= dynamic_cast <const Single_Dependency *> (d); 
-	text += sin->place_param_target.unparametrized().get_text();
-
+	Flags f= sin->flags;
+	text += (char)(unsigned char)f; 
+	
+	// TODO in next line, copy the string directly from one string
+	// object to another, without passing through a temporary string
+	// object. 
+	text += sin->place_param_target.unparametrized().get_name_nondynamic(); 
+	
+//	text += sin->place_param_target.unparametrized().get_text();
 	return Target(text); 
 }
 
@@ -918,14 +933,11 @@ bool Concatenated_Dependency::is_normalized() const
 
 void Concatenated_Dependency::make_normalized() 
 {
-	assert(0);  // actually implement it
-#if 0
 	for (size_t i= 0;  i < dependencies.size();  ++i) {
 		shared_ptr <const Dependency> d_normalized_compound= 
 			make_normalized_compound(dependencies[i]);
 		dependencies[i]= d_normalized_compound; 
 	}
-#endif /* 0 */ 
 }
 
 Target Concatenated_Dependency::get_target() const

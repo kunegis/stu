@@ -8,13 +8,16 @@
  * 
  * OVERVIEW OF TYPES
  *
- * Root_Ex.		not cached; single object 	The root of the dependency graph; uses the dummy Root_Dependency 
+ * EXECUTION CLASS	CACHED?				WHEN USED
+ * ---------------------------------------------------------------------------------------------------
+ * Root_Ex.		not cached; single object 	The root of the dependency graph; 
+ *       						uses the dummy Root_Dependency 
  * File_Ex.		cached by Target (no flags)	Non-dynamic targets with at least one
  *							file target in rule OR a command in rule OR
  *							files without a rule
- * Transient_Ex.	cached by Target (w/ flags)	Transients without commands and without file
+ * Transient_Ex.	cached by Target (w/ flags)	Transients without commands nor files
  * 							file target in the same rule
- * "Single Ex."	cached by Target		Name for File_Ex. or Transient_Ex. 
+ * "Single Ex."		cached by Target		Name for File_Ex. or Transient_Ex. 
  * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Single_Dep.
  * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concat._Dep.
  * Concatenated_Ex.	not cached			Concatenated targets
@@ -150,7 +153,8 @@ public:
 	static long jobs;
 	/* Number of free slots for jobs.  This is a long because
 	 * strtol() gives a long.  Set before calling main() from the -j
-	 * option, and then changed internally by this class.  */ 
+	 * option, and then changed internally by this class.  Always
+	 * nonnegative.  */ 
 
 	static Rule_Set rule_set; 
 	/* Set once before calling Execution::main().  Unchanging during
@@ -698,7 +702,7 @@ public:
 	void assemble_parts(); 
 
 	virtual int get_depth() const { return -1; }
-	virtual const Place &get_place() const {  return dependency->get_place();  }
+	virtual const Place &get_place() const {  return Place::place_empty;  }
 	virtual Proceed execute(Execution *parent, 
 				shared_ptr <const Dependency> dependency_this);
 	virtual bool finished() const;
@@ -773,18 +777,25 @@ public:
 
 	shared_ptr <const Dynamic_Dependency> get_dependency() const {  return dependency;  }
 
-	 virtual Proceed execute(Execution *parent, 
-				 shared_ptr <const Dependency> dependency_this);
-	 virtual bool finished() const;
-	 virtual bool finished(Flags flags) const; 
-	 virtual int get_depth() const {  return dependency->get_depth();  }
-	 virtual const Place &get_place() const {  return dependency->get_place();  }
-	 virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
-	 virtual string format_out() const;
-	 virtual void propagate_variable_content(string variable_name, string content) {
-		 for (auto &i:  parents) 
-			 i.first->propagate_variable_content(variable_name, content); 
-	 }
+	virtual Proceed execute(Execution *parent, 
+				shared_ptr <const Dependency> dependency_this);
+	virtual bool finished() const;
+	virtual bool finished(Flags flags) const; 
+	virtual int get_depth() const {  return dependency->get_depth();  }
+	virtual const Place &get_place() const {
+		if (param_rule == nullptr)
+			return Place::place_empty;
+		else
+			return param_rule->place; 
+	}
+//	virtual const Place &get_place() const 
+//	{  return dependency->get_place();  }
+	virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
+	virtual string format_out() const;
+	virtual void propagate_variable_content(string variable_name, string content) {
+		for (auto &i:  parents) 
+			i.first->propagate_variable_content(variable_name, content); 
+	}
 
 protected:
 
@@ -855,11 +866,10 @@ void Execution::main(const vector <shared_ptr <const Dependency> > &dependencies
 	timestamp_last= Timestamp::now(); 
 	Root_Execution *root_execution= new Root_Execution(dependencies); 
 	int error= 0; 
-	shared_ptr <Root_Dependency> dependency_root= make_shared <Root_Dependency> (); 
+	shared_ptr <const Root_Dependency> dependency_root= make_shared <Root_Dependency> (); 
 
 	try {
 		while (! root_execution->finished()) {
-
 			Proceed proceed;
 			do {
 				Debug::print(nullptr, "main loop"); 
@@ -907,6 +917,8 @@ void Execution::main(const vector <shared_ptr <const Dependency> > &dependencies
 			job_terminate_all();
 		}
 
+		// TODO is this needed?  Shouldn't ERROR_FATAL not
+		// always be used directly in the form of exit(ERROR_FATAL)?
 		if (e == ERROR_FATAL)
 			exit(ERROR_FATAL); 
 
@@ -1176,16 +1188,10 @@ void Execution::cycle_print(const vector <Execution *> &path,
 
 		/* Don't show a message for left-branch dynamic links */ 
 		if (d->flags & F_DYNAMIC_LEFT) {
-//		if (i != 0 && path[i - 1]->parents.at(const_cast <Execution *> (path[i]))->flags & F_DYNAMIC_LEFT) {
 			continue;
 		}
 
-//		/* Same, but when the dynamic execution is at the bottom */
-//		if (i == 0 && (dependency->flags & F_DYNAMIC_LEFT)) 
-//			continue;
-
 		d->get_place()
-//		(i == 0 ? dependency_link->get_place() : path[i - 1]->parents.at((Execution *) path[i])->get_place())
 			<< fmt("%s%s depends on %s",
 			       i == (ssize_t)(path.size() - 1) 
 			       ? (path.size() == 1 
@@ -1207,10 +1213,14 @@ void Execution::cycle_print(const vector <Execution *> &path,
 	// fprintf(stderr, "xxx %s %s %s\n", 
 	// 	t1.get_name_c_str_any(), t2.get_name_c_str_any(),
 	// 	xxx1.c_str()); 
-	if (strcmp(t1.get_name_c_str_any(), t2.get_name_c_str_any())) {
-		path.back()->get_place() <<
+ const char *c1= t1.get_name_c_str_any();
+ const char *c2= t2.get_name_c_str_any();
+ if (strcmp(c1, c2)) {
+//		path.back()->get_param_rule()->get_place()
+		path.back()->get_place() 
+			<<
 			fmt("both %s and %s match the same rule",
-			    t1.format_word(), t2.format_word());
+			    name_format_word(c1), name_format_word(c2));
 	}
 
 	/* Remove the offending (cycle-generating) link between the
@@ -1449,10 +1459,9 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 		Proceed proceed_2= execute_children(dependency_this2);
 		proceed |= proceed_2;
 		if (proceed & P_WAIT) {
-			return proceed; 
-		}
-
-		if (finished(dependency_this2->flags) && ! option_keep_going) {
+			if (jobs == 0) 
+				return proceed; 
+		} else if (finished(dependency_this2->flags) && ! option_keep_going) {
 			Debug::print(this, "finished"); 
 			return proceed |= P_FINISHED;
 		}
@@ -1788,7 +1797,13 @@ Execution *Execution::get_execution(Target target,
 	/* Set to the returned Execution object when one is found or created */    
 	Execution *execution= nullptr; 
 
-	auto it= executions_by_target.find(target);
+	Target target_for_cache= target;
+	if (target.is_file()) {
+		/* For file targets, we don't use flags for hashing. 
+		 * Zero is the byte for file targets.  */
+		target_for_cache.get_front_byte_nondynamic()= 0; 
+	}
+	auto it= executions_by_target.find(target_for_cache);
 
 	if (it != executions_by_target.end()) {
 		/* An Execution object already exists for the target */ 
@@ -1979,15 +1994,6 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 
 			/* Check:  variable dependencies are not allowed in multiply
 			 * dynamic dependencies.  */
-			// if (dd->flags & F_VARIABLE &&
-			//     dynamic_cast <Dynamic_Execution *> (this) &&
-			//     dynamic_pointer_cast <const Dynamic_Dependency> (dynamic_cast <Dynamic_Execution *> (this)->get_dependency()) &&
-			//     dynamic_pointer_cast <const Dynamic_Dependency> 
-			//     (
-			//      dynamic_pointer_cast <const Dynamic_Dependency> (dynamic_cast <Dynamic_Execution *> (this)->get_dependency())
-			//      ->dependency
-			//      )
-			//     ) {
 			if (dd->flags & F_VARIABLE) {
 				bool quotes= false;
 				string s= dd->get_target().format(S_MARKERS | S_NOEMPTY, quotes);
@@ -1999,15 +2005,15 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 						       Color::end); 
 				child->print_traces
 					(fmt("within multiply-dynamic dependency %s", 
-					     dynamic_cast <Dynamic_Execution *> (parent)->get_dependency()->get_target().format_word()));
+					     dynamic_cast <Dynamic_Execution *> (parent)
+					     ->get_dependency()->get_target().format_word()));
 				raise(ERROR_LOGICAL);
 			} 
 
 			shared_ptr <Dependency> dd2= Dependency::clone(dd); 
+			dd2->add_flags(dependency_link, false); 
 			dd2->flags &= (F_PLACED | F_VARIABLE); 
 			shared_ptr <Dependency> ddd= make_shared <Dynamic_Dependency> (0, dd2); 
-			ddd->add_flags(dependency_link, false); 
-			ddd->flags &= ~(F_DYNAMIC_LEFT | F_DYNAMIC_RIGHT | F_RESULT_ONLY); 
 			parent->push_result(ddd, nullptr, false, child); 
 		} 
 	}

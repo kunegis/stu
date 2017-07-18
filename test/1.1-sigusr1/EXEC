@@ -1,6 +1,6 @@
 #! /bin/sh
 
-rm -f ? list.*
+rm -f ? list.* || exit 1
 
 # Use the silent option (-s) to avoid false positives, i.e., that the
 # greps find the string '@x' erroneously. 
@@ -70,6 +70,6 @@ echo __________
 cat list.out
 echo __________
 
-rm -f ? list.*
+rm -f ? list.* || exit 1
 
 exit 0

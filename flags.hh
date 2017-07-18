@@ -160,10 +160,13 @@ string flags_format(Flags flags)
 	string ret;
 	for (int i= 0;  i < C_ALL;  ++i)
 		if (flags & (1 << i)) {
-			if (! ret.empty())
-				ret += ' ';
-			ret += frmt("-%c", FLAGS_CHARS[i]); 
+//			if (! ret.empty())
+//				ret += ' ';
+			ret += FLAGS_CHARS[i]; 
+//			ret += frmt("-%c", FLAGS_CHARS[i]); 
 		}
+	if (! ret.empty())
+		ret= '-' + ret; 
 	return ret;
 }
 

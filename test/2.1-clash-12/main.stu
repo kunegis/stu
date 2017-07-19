@@ -1,0 +1,3 @@
+@all:  A; 
+
+A:   -p  -o [B] { touch A }     >B { echo C }   

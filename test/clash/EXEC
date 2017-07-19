@@ -34,7 +34,7 @@ while read -r line ; do
 		echo ________
 		cat list.err
 		echo ________
-		echo 1 >list.exitcode
+		echo 1 >list.exitcode || exit 1
 		exit 1
 	}
 

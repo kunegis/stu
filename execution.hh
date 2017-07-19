@@ -1588,8 +1588,10 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_l
 				fmt("clashes with declaration of optional dependency with %s",
 				    multichar_format_word("-o")); 
 			dependency_child_new->get_place() <<
-				fmt("in declaration of dependency %s", 
-				    single_dependency_child_new->place_param_target.format_word()); 
+				fmt("in declaration of dependency %s, needed by %s", 
+				    dependency_child_new->get_target().format_word(),
+				    dependency_link_this->get_target().format_word()); 
+//				    single_dependency_child_new->place_param_target.format_word()); 
 			print_traces();
 			explain_clash(); 
 			raise(ERROR_LOGICAL);

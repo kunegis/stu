@@ -1943,7 +1943,6 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 				i.first->push_result(dd, dependency_flags, 0, child);
 			}
 		}
-
 		return;
 	}
 
@@ -1954,18 +1953,23 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 	/* If THIS is a dynamic execution, add DD as a right branch */
 	if (dynamic_cast <Dynamic_Execution *> (this) && ! result_only) {
 
-		/* Add F_DYNAMIC_RIGHT and flags from self */
+		/* Add F_DYNAMIC_RIGHT, flags passed to this function,
+		 * and flags from self  */  
 		shared_ptr <Dependency> dd_new= Dependency::clone(dd); 
 		dd_new->flags |= F_DYNAMIC_RIGHT; 
+		const Dynamic_Execution* dynamic_this= dynamic_cast <const Dynamic_Execution *> (this);
 		if (dependency_flags) {
-			dd_new->flags |= dependency_flags->flags & F_PLACED;
+			dd_new->flags |= (dependency_flags->flags | dynamic_this->get_dependency()->flags) & F_PLACED;
 			for (int i= 0;  i < C_PLACED;  ++i) {
 				assert(!(dependency_flags->flags & (1 << i)) ==
 				       dependency_flags->get_place_flag(i).empty());
 				if (dd_new->get_place_flag(i).empty() && ! dependency_flags->get_place_flag(i).empty())
 					dd_new->set_place_flag(i, dependency_flags->get_place_flag(i)); 
+				if (dd_new->get_place_flag(i).empty() && ! dynamic_this->get_dependency()->get_place_flag(i).empty())
+					dd_new->set_place_flag(i, dynamic_this->get_dependency()->get_place_flag(i)); 
 			}
 		}
+//		dd_new->flags |= dynamic_this->get_dependency()->flags & F_PLACED; 
 		dd= dd_new; 
 		push_dependency(dd); 
 	}

@@ -1,0 +1,12 @@
+# In stderr, the output is printed only once.
+
+A: @b {
+	echo NEVER REACHED
+	touch A
+}
+
+@b:  X C;
+
+X { exit 1 ;  }
+C { touch C ; }
+

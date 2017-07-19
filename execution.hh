@@ -226,7 +226,8 @@ protected:
 
 	Proceed execute_base_B(shared_ptr <const Dependency> dependency_link); 
 	/* Second pass (trivial dependencies).  Called once we are sure
-	 * that the target must be built.  */
+	 * that the target must be built.  Arguments and return value
+	 * have the same semantics as execute_base_B().  */
 
 	void check_waited() const {
 		assert(buffer_A.empty()); 
@@ -248,7 +249,7 @@ protected:
 	 * PLACE_PARAM_TARGET.  The only reason this is not static is
 	 * that errors can be raised and printed correctly.
 	 * Dependencies that are read are written into DEPENDENCIES,
-	 * which must be empty on calling.  FLAGS_THIS determines
+	 * which is empty on calling.  FLAGS_THIS determines
 	 * whether the -n/-0/etc. flag was used, and may also contain
 	 * the -o flag to ignore a non-existing file.  */
 
@@ -956,8 +957,6 @@ void Execution::read_dynamic(Flags flags_this,
 			 place_param_target.place,
 			 -1,
 			 flags_this & F_OPTIONAL); 
-		// TODO instead of using ALLOW_ENOENT, read the EXISTS
-		// field from the child execution. 
 
 		Place_Name input; /* remains empty */ 
 		Place place_input; /* remains empty */ 
@@ -1428,7 +1427,8 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 	/* Override the dynamic flag */
 	if (dependency_this2->flags & F_DYNAMIC_RIGHT) {
 		dependency_this2->flags &= ~F_DYNAMIC_LEFT;
-		// XXX should we also override -* ?
+		// TODO Set things up such that LEFT and RIGHT are
+		// always exclusive, so we don't have to do this here.  
 	}
 
 	/* Remove the F_DYNAMIC_LEFT flag to the child, except in a
@@ -1437,7 +1437,6 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 	    ! (dynamic_pointer_cast <Single_Dependency> (dependency_this2)
 	       && dynamic_pointer_cast <Single_Dependency> (dependency_this2)->place_param_target.flags == F_TARGET_TRANSIENT)) {
 		dependency_this2->flags &= ~F_DYNAMIC_LEFT; 
-		// XXX should we also override -* ?
 	}
 	
 	Proceed proceed= P_CONTINUE; 
@@ -1478,9 +1477,7 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 		return proceed |= P_ABORT | P_FINISHED; 
 	}
 
-	if (error) {
-		assert(option_keep_going); 
-	}
+	assert(error == 0 || option_keep_going); 
 
 	/* 
 	 * Deploy dependencies (first pass), with the F_NOTRIVIAL flag
@@ -1492,11 +1489,13 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 
 	while (! buffer_A.empty()) {
 		shared_ptr <const Dependency> dependency_child= buffer_A.next(); 
-		shared_ptr <Dependency> dependency_child_2= 
-			Dependency::clone(dependency_child);
-		dependency_child_2->flags &= ~F_TRIVIAL; 
-		dependency_child_2->get_place_flag(I_TRIVIAL)= Place::place_empty; 
-		buffer_B.push(dependency_child_2); 
+		if (! (dependency_child->flags & F_DYNAMIC_LEFT)) {
+			shared_ptr <Dependency> dependency_child_2= 
+				Dependency::clone(dependency_child);
+			dependency_child_2->flags &= ~F_TRIVIAL; 
+			dependency_child_2->get_place_flag(I_TRIVIAL)= Place::place_empty; 
+			buffer_B.push(dependency_child_2); 
+		}
 		Proceed proceed_2= connect(dependency_this2, dependency_child);
 		proceed |= proceed_2;
 		if (jobs == 0) {
@@ -1687,7 +1686,9 @@ void Execution::disconnect(Execution *const parent,
 	if (flags_child & F_DYNAMIC_LEFT && ! (flags_child & F_DYNAMIC_RIGHT)) {
 		/* This was the left branch between a dynamic dependency
 		 * and its child.  Add the right branch.  */
-		// XXX everywhere where DYNAMIC_LEFT is checked, also check that DYNAMIC_RRIGHT is not set 
+
+		// TODO everywhere where DYNAMIC_LEFT is checked, also
+		// check that DYNAMIC_RRIGHT is not set. 
 
 		Dynamic_Execution *parent_dynamic= dynamic_cast <Dynamic_Execution *> (parent);
 		if (! parent_dynamic) {
@@ -1703,9 +1704,7 @@ void Execution::disconnect(Execution *const parent,
 					     dependency_child);  
 	}
 
-	/* Propagate timestamp.  Note:  When the parent execution has
-	 * filename == "", this is unneccesary, but it's easier to not
-	 * check, since that happens only once. */
+	/* Propagate timestamp */
 	/* Don't propagate the timestamp of the dynamic dependency itself */ 
 	if (! (flags_child & F_PERSISTENT) && ! (flags_child & F_DYNAMIC_LEFT)) {
 		if (child->timestamp.defined()) {
@@ -1756,19 +1755,13 @@ void Execution::disconnect(Execution *const parent,
 		parent->bits |= B_NEED_BUILD; 
 	}
 
-	/* 
-	 * Remove the links between them 
-	 */ 
-
+	/* Remove the links between them */ 
 	assert(parent->children.count(child) == 1); 
-	parent->children.erase(child);
-
 	assert(child->parents.count(parent) == 1);
+	parent->children.erase(child);
 	child->parents.erase(parent);
 
-	/*
-	 * Delete the Execution object
-	 */
+	/* Delete the Execution object */
 	if (child->want_delete())
 		delete child; 
 }
@@ -1933,7 +1926,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 			    Execution *child)
 {
 	Debug::print(this, fmt("push_result(%s%s)", 
-			       dependency_flags 
+			       dependency_flags && dependency_flags->flags
 			       ? flags_format(dependency_flags->flags & F_PLACED) + ", "
 			       : "", 
 			       dd->format_out())); 
@@ -2025,9 +2018,6 @@ void Execution::propagate_to_dynamic(Execution *child,
 				     shared_ptr <const Dependency> dependency_child)
 /* A left branch child is done */
 {
-	(void) child; // TODO remove arg if unused 
-	(void) dependency_this; // TODO remove if unused
-	
 	assert(flags_child & F_DYNAMIC_LEFT); 
 
 	File_Execution *single_this= dynamic_cast <File_Execution *> (this); 
@@ -3204,7 +3194,7 @@ Execution::Proceed Root_Execution::execute(Execution *,
 					   shared_ptr <const Dependency> dependency_this)
 {
 	/* This is an example of a "plain" execute() function,
-	 * containing the minimal wrapper around execute_base()  */ 
+	 * containing the minimal wrapper around execute_base_?()  */ 
 	
 	Proceed proceed= execute_base_A(dependency_this); 
 	assert(proceed); 
@@ -3488,7 +3478,7 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dependency> dependency_li
 	:  dependency(dynamic_pointer_cast <const Dynamic_Dependency> (dependency_link)),
 	   is_finished(false)
 {
-//	assert(parent != nullptr); 
+	assert(parent); 
 	assert(dynamic_pointer_cast <const Dynamic_Dependency> (dependency_link)); 
 	assert(dependency); 
 	

@@ -461,6 +461,9 @@ example:  [FILES]
 #  - More complex and error-prone memory management, in particular for
 #    strings 
 #  - A replacement for exceptions
+#  - For Dependency objects, keep track of the type in the FLAGS, and
+#    have our own pointer conversion functions.  Also, have our own
+#    reference counting. 
 #
 # Remember:  Even GCC is written in C++ nowadays, so we are not in bad
 # company.    

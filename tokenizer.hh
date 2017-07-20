@@ -1092,8 +1092,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 
 	const char *const p_name= p;
 
-	Place place__name(place_type, filename, line, p_name - p_line); 
-	// TODO correct '__' in name. 
+	Place place_directive(place_type, filename, line, p_name - p_line); 
 
 	while (p < p_end && isalnum(*p)) {
 		++p;
@@ -1101,11 +1100,11 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 
 	if (p == p_name) {
 		if (p < p_end)
-			place__name
+			place_directive
 				<< fmt("expected a directive name, not %s",
 				       char_format_word(*p));
 		else
-			place__name
+			place_directive
 				<< "expected a directive name";
 		place_percent << fmt("after %s", char_format_word('%')); 
 		throw ERROR_LOGICAL; 

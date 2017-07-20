@@ -698,6 +698,7 @@ string Target::format_out_print_word() const
 string Target::format_word() const
 /* Don't include flags in the output */
 // TODO maybe the other format*() functions should also avoid to output the flags?
+// TODO or they should be output, but then there should be a new function that doesn't output them 
 {
 	Style style= 0;
 	if (! is_file()) {

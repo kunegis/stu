@@ -248,7 +248,6 @@ shared_ptr <Rule> Parser::parse_rule()
 			}
 
 			flags_type= F_TARGET_TRANSIENT; 
-//			flags_type= Type::TRANSIENT;
 		}
 		
 		if (! is <Name_Token> ()) {
@@ -844,7 +843,6 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 			ret_new->flags |= (1 << i_flag); 
 			assert(i_flag != F_RESULT_ONLY); 
 			if (i_flag < C_PLACED)
-//			if (i_flag < C_TRANSITIVE)
 				ret_new->set_place_flag(i_flag, place_flag); 
 			ret= ret_new; 
 		}

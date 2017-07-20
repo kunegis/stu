@@ -55,9 +55,6 @@ class Dependency
 public:
 
 	Flags flags;
-	// TODO in principle, we could save the type within FLAGS and
-	// save on using the C++ polymorphic overhead.  But then we'd
-	// have to write our own functions...
 
 	Place places[C_PLACED]; 
 	/* For each transitive flag that is set, the place.  An empty
@@ -622,11 +619,6 @@ shared_ptr <const Dependency> Dependency::make_normalized_compound(shared_ptr <c
 
 shared_ptr <Dependency> Dependency::clone(shared_ptr <const Dependency> dependency)
 {
-	// TODO we can optimize this by returning the object itself if
-	// it is unique.  This however violates const-correctness. 
-//	if (dependency.unique())
-//		return dependency; 
-
 	if (dynamic_pointer_cast <const Single_Dependency> (dependency)) {
 		return make_shared <Single_Dependency> (* dynamic_pointer_cast <const Single_Dependency> (dependency)); 
 	} else if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
@@ -678,7 +670,6 @@ void Dependency::check() const
 	const Dynamic_Dependency *dynamic_this= dynamic_cast <const Dynamic_Dependency *> (this); 
 
 	if (single_this) {
-		
 		/* The F_TARGET_TRANSIENT flag is always set in the
 		 * dependency flags, even though that is redundant.  */
 		assert((single_this->flags & F_TARGET_TRANSIENT) == (single_this->place_param_target.flags)); 
@@ -687,11 +678,6 @@ void Dependency::check() const
 			assert((single_this->place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
 			assert(single_this->flags & F_VARIABLE); 
 		}
-		
-//	assert(((flags & F_TARGET_TRANSIENT) != 0) ==
-//	       (dynamic_cast <const Single_Dependency *> (this) &&
-//		dynamic_cast <const Single_Dependency *>
-//	       (this)->place_param_target.flags & F_TARGET_TRANSIENT)); 
 	}
 
 	if (dynamic_this) {

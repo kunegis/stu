@@ -50,7 +50,6 @@ enum
 	I_DYNAMIC_LEFT,        /* -/ */
 	I_DYNAMIC_RIGHT,       /* -\ */
 	I_VARIABLE,            /* -$ */
-//	I_OVERRIDE_TRIVIAL,    /* -T */
 	I_NEWLINE_SEPARATED,   /* -n */
 	I_NUL_SEPARATED,       /* -0 */
 
@@ -109,10 +108,6 @@ enum
 	F_VARIABLE         = 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */ 
 
-//	F_OVERRIDE_TRIVIAL = 1 << I_OVERRIDE_TRIVIAL,
-//	/* Used only in pass B.  Not used for
-//	 * dependencies.  Means to override all trivial flags. */ 
-
 	F_NEWLINE_SEPARATED= 1 << I_NEWLINE_SEPARATED,
 	/* For dynamic dependencies, the file contains newline-separated
 	 * filenames, without any markup  */ 
@@ -129,7 +124,8 @@ enum
 
 	/* Bits that act transitively over transient targets */
 	F_TRANSITIVE= F_FINISHABLE | F_DYNAMIC_LEFT | F_DYNAMIC_RIGHT,
-	
+
+	/* Bits used for Target objects */
 	F_TARGET_INFO= F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
 
 };
@@ -167,10 +163,7 @@ string flags_format(Flags flags)
 	string ret;
 	for (int i= 0;  i < C_ALL;  ++i)
 		if (flags & (1 << i)) {
-//			if (! ret.empty())
-//				ret += ' ';
 			ret += FLAGS_CHARS[i]; 
-//			ret += frmt("-%c", FLAGS_CHARS[i]); 
 		}
 	if (! ret.empty())
 		ret= '-' + ret; 

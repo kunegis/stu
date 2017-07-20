@@ -73,8 +73,8 @@ public:
 		 * that there was an error -- for instance, the trivial
 		 * flag -t may mean that nothing more should be done.  */
 
-		P_CONTINUE = 0, 
-		/* Execution can continue in the process */
+//		P_CONTINUE = 0, 
+//		/* Execution can continue in the process */
 	};
 
 	typedef unsigned Bits;
@@ -679,6 +679,8 @@ class Concatenated_Execution
  * always a compound dependency containing normalized dependencies, whose
  * results are concatenated as new targets added to the parent.
  *
+ * Dynamic concatenations are handled by Dynamic_Execution, not by this class. 
+ *
  * Concatenated executions always have exactly one parent.  They are not
  * cached, and they are deleted when done.  Thus, they also don't need
  * the 'done' field.  (But the parent class has it.)
@@ -687,7 +689,7 @@ class Concatenated_Execution
 {
 public:
 
-	Concatenated_Execution(shared_ptr <const Dependency> dependency_,
+	Concatenated_Execution(shared_ptr <const Concatenated_Dependency> dependency_,
 			       shared_ptr <const Dependency> dependency_link,
 			       Execution *parent,
 			       bool &found_cycle);
@@ -720,9 +722,9 @@ protected:
 
 private:
 
-	shared_ptr <const Dependency> dependency;
+	shared_ptr <const Concatenated_Dependency> dependency;
 	/* Contains the concatenation. 
-	 * This is a Dynamic_Dependency^* of a Concatenated_Dependency,
+	 * This is a Concatenated_Dependency,
 	 * itself containing each a Compound_Dependency^{0,1} of
 	 * Dynamic_Dependency^* of a single dependency. 
 	 * Is normalized.  */
@@ -1321,7 +1323,7 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 	vector <Execution *> executions_children_vector
 		(children.begin(), children.end()); 
 
-	Proceed proceed_all= P_CONTINUE;
+	Proceed proceed_all= 0;
 
 	while (! executions_children_vector.empty()) {
 
@@ -1369,7 +1371,7 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 				   dependency_link, 
 				   dependency_child); 
 		} else {
-			assert((proceed_child & ~P_FINISHED) != P_CONTINUE); 
+			assert((proceed_child & ~P_FINISHED) != 0); 
 			/* If the child execution is not finished, it
 			 * must have returned either the P_WAIT or
 			 * P_PENDING bit.  */
@@ -1381,7 +1383,7 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 		/* Otherwise, Stu would have aborted */ 
 	}
 
-	if (proceed_all == P_CONTINUE) {
+	if (proceed_all == 0) {
 		/* If there are still children, they must have returned
 		 * WAIT or PENDING */ 
 		assert(children.empty()); 
@@ -1432,7 +1434,7 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 		dependency_this2->flags &= ~F_DYNAMIC_LEFT; 
 	}
 	
-	Proceed proceed= P_CONTINUE; 
+	Proceed proceed= 0; 
 
 	if (finished(dependency_this2->flags)) {
 		Debug::print(this, "finished"); 
@@ -1506,7 +1508,7 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 
 	/* Some dependencies are still running */ 
 	if (! children.empty()) {
-		assert(proceed != P_CONTINUE); 
+		assert(proceed != 0); 
 		return proceed;
 	}
 
@@ -1585,7 +1587,7 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 			print_traces();
 			explain_clash(); 
 			raise(ERROR_LOGICAL);
-			return P_CONTINUE;
+			return 0;
 		}
 
 		/* '-o' does not mix with '$[' */
@@ -1606,13 +1608,13 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 					  multichar_format_word("-o")); 
 			print_traces();
 			raise(ERROR_LOGICAL);
-			return P_CONTINUE;
+			return 0;
 		}
 
 		Execution *child= get_execution(dependency_child_new, this);  
 		if (child == nullptr) {
 			/* Strong cycle was found */ 
-			return P_CONTINUE;
+			return 0;
 		}
 
 		children.insert(child);
@@ -1628,12 +1630,12 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 				   dependency_child_new);
 		}
 
-		return P_CONTINUE;
+		return 0;
 
 	} else {
 		/* Invalid dependency type.  The dependency must be normalized. */ 
 		assert(false); 
-		return P_CONTINUE;
+		return 0;
 	}
 }
 
@@ -1755,7 +1757,7 @@ void Execution::disconnect(Execution *const parent,
 
 Execution::Proceed Execution::execute_base_B(shared_ptr <const Dependency> dependency_link)
 {
-	Proceed proceed= P_CONTINUE;
+	Proceed proceed= 0;
 	while (! buffer_B.empty()) {
 		shared_ptr <const Dependency> dependency_child= buffer_B.next(); 
 		Proceed proceed_2= connect(dependency_link, dependency_child);
@@ -2859,7 +2861,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 
 		flags_finished= ~0;
 
-		assert(proceed == P_CONTINUE); 
+		assert(proceed == 0); 
 		return proceed |= P_FINISHED; 
 	}
 
@@ -2928,7 +2930,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 							 targets.at(0).format_word())); 
 					raise(ERROR_BUILD);
 					flags_finished |= ~ dependency_this->flags; 
-					assert(proceed == P_CONTINUE); 
+					assert(proceed == 0); 
 					return proceed |= P_ABORT | P_FINISHED; 
 				}
 			}
@@ -2957,7 +2959,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 					 targets.front().format_word())); 
 			raise(ERROR_BUILD);
 			flags_finished |= ~ dependency_this->flags; 
-			assert(proceed == P_CONTINUE); 
+			assert(proceed == 0); 
 			proceed |= P_ABORT | P_FINISHED; 
 			return proceed;
 		}
@@ -3202,7 +3204,7 @@ Execution::Proceed Root_Execution::execute(Execution *,
 	return proceed; 
 }
 
-Concatenated_Execution::Concatenated_Execution(shared_ptr <const Dependency> dependency_,
+Concatenated_Execution::Concatenated_Execution(shared_ptr <const Concatenated_Dependency> dependency_,
 					       shared_ptr <const Dependency> dependency_link,
 					       Execution *parent,
 					       bool &found_cycle)
@@ -3335,10 +3337,10 @@ Execution::Proceed Concatenated_Execution::execute(Execution *,
 		return proceed; 
 
 	} else if (stage == 3) {
-		return P_CONTINUE; 
+		return 0; 
 	} else {
 		assert(false);  /* Invalid stage */ 
-		return P_CONTINUE; 
+		return 0; 
 	}
 }
 

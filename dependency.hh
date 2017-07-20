@@ -25,8 +25,19 @@
  *      dependencies.
  * In particular, compound dependencies are never normalized; they only
  * appear immediately within concatenated dependencies.  
- * Normalized dependencies are those used in practice.  A non-normalized dependency
- * can always be reduced to a normalized one. 
+ * Normalized dependencies are those used in practice.  A non-normalized
+ * dependency can always be reduced to a normalized one. 
+ */
+
+/*
+ * A single dependency is a file or a transient. 
+ *
+ * A dependency is simple when is does not involve concatenation or
+ * compound dependencies, i.e., when it is a possible multiply dynamic
+ * dependency of a single dependency.
+ *
+ * A dependency that is not simple is complex.  I.e.m a complex
+ * dependency involves concatenation and/or compound dependencies. 
  */
 
 #include <map>
@@ -147,8 +158,8 @@ public:
 
 class Single_Dependency
 /* 
- * A dependency denoting an individual target name.  Does not cover
- * dynamic dependencies.
+ * A dependency denoting an individual target name, which can be a file
+ * or a transient.  
  *
  * When the target is a transient, the dependency flags have the
  * F_TARGET_TRANSIENT bit set, which is redundant.  No other Dependency
@@ -413,7 +424,7 @@ class Concatenated_Dependency
  *
  * In terms of Stu code, a concatenated dependency corresponds to
  *
- *         (( X )( Y )( Z )...)
+ *         ( X )( Y )( Z )...
  */ 
 	:  public Dependency
 {
@@ -465,7 +476,9 @@ private:
 
 	vector <shared_ptr <const Dependency> > dependencies;
 	/* The dependencies.  May be empty in code, which is something
-	 * that is not allowed in Stu code.  */
+	 * that is not allowed in Stu code.  Otherwise, there is at
+	 * least one element, which is either a Compound_Dependency, or
+	 * a normalized dependency.  */
 };
 
 class Compound_Dependency
@@ -948,6 +961,7 @@ void Concatenated_Dependency::make_normalized()
 
 Target Concatenated_Dependency::get_target() const
 {
+	/* Dependency::get_target() is not used for complex dependencies */
 	assert(false);
 }
 

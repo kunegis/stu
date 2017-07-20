@@ -1024,11 +1024,13 @@ Target Concatenated_Dependency::get_target() const
 }
 
 shared_ptr <const Plain_Dependency> Concatenated_Dependency::concatenate(shared_ptr <const Plain_Dependency> a,
-		shared_ptr <const Plain_Dependency> b)
+									 shared_ptr <const Plain_Dependency> b)
 {
 	assert(a);
 	assert(b); 
 
+	assert(! a->place_param_target.place_name.is_parametrized()); 
+	assert(! b->place_param_target.place_name.is_parametrized()); 
 	assert(a->variable_name == "");  // TEST
 	assert(b->variable_name == "");  // TEST
 	assert((b->flags & F_TARGET_TRANSIENT) == 0); // TEST
@@ -1036,10 +1038,14 @@ shared_ptr <const Plain_Dependency> Concatenated_Dependency::concatenate(shared_
 
 	Flags flags_combined= a->flags | b->flags; 
 
+	Place_Name place_name_combined(a->place_param_target.place_name.unparametrized() +
+				       b->place_param_target.place_name.unparametrized(),
+				       a->place_param_target.place_name.place); 
+
 	shared_ptr <Plain_Dependency> ret= 
 		make_shared <Plain_Dependency> (flags_combined,
 						Place_Param_Target(flags_combined & F_TARGET_TRANSIENT,
-								   a->place_param_target.place_name,
+								   place_name_combined,
 								   a->place_param_target.place),
 						a->place,
 						""); 

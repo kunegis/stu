@@ -221,7 +221,7 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	   is_copy(true)
 {
 	auto dependency= 
-		make_shared <Single_Dependency> 
+		make_shared <Plain_Dependency> 
 		(0, Place_Param_Target(0, *place_name_source_));
 
 	if (! place_persistent.empty()) {
@@ -315,20 +315,20 @@ void Rule::check_unparametrized(shared_ptr <const Dependency> dependency,
 		for (const auto &d:  concatenated_dependency->get_dependencies()) {
 			check_unparametrized(d, parameters); 
 		}
-	} else if (dynamic_pointer_cast <const Single_Dependency> (dependency)) {
-		shared_ptr <const Single_Dependency> single_dependency=
-			dynamic_pointer_cast <const Single_Dependency> (dependency);
+	} else if (dynamic_pointer_cast <const Plain_Dependency> (dependency)) {
+		shared_ptr <const Plain_Dependency> plain_dependency=
+			dynamic_pointer_cast <const Plain_Dependency> (dependency);
 		for (unsigned jj= 0;  
-		     jj < single_dependency->place_param_target.place_name.get_n();
+		     jj < plain_dependency->place_param_target.place_name.get_n();
 		     ++jj) {
-			string parameter= single_dependency->place_param_target
+			string parameter= plain_dependency->place_param_target
 				.place_name.get_parameters()[jj]; 
 			if (parameters.count(parameter) == 0) {
-				single_dependency->place_param_target
+				plain_dependency->place_param_target
 					.place_name.get_places()[jj] <<
 					fmt("parameter %s must not appear in dependency %s", 
 					    prefix_format_word(parameter, "$"),
-					    single_dependency->place_param_target.format_word());
+					    plain_dependency->place_param_target.format_word());
 				if (place_param_targets.size() == 1) {
 					place_param_targets[0]->place <<
 						fmt("because it does not appear in target %s",

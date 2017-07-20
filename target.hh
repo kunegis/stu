@@ -31,11 +31,11 @@
  */
 
 /* 
- * A representation of single dependency, as well as dyn^* of single
- * dependencies, mainly used as the key in the caching of Execution
- * objects.
- * 
- * This also encodes the options at all levels of the dependency. 
+ * A representation of a simple dependency, mainly used as the key in
+ * the caching of Execution objects.  The difference to the Dependency
+ * class is that Target objects don't store the Place objects, and don't
+ * support parametrization.  Thus, Target objects are used as keys in
+ * maps, etc.  Flags are included however. 
  */
 class Target
 {

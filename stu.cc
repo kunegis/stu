@@ -217,7 +217,7 @@ int main(int argc, char **argv, char **envp)
 					exit(ERROR_FATAL);
 				}
 				dependencies.push_back
-					(make_shared <Single_Dependency>
+					(make_shared <Plain_Dependency>
 					 (0, Place_Param_Target
 					  (0, Place_Name(optarg, place))));
 				break;
@@ -319,7 +319,7 @@ int main(int argc, char **argv, char **envp)
 				dependencies.push_back
 					(make_shared <Dynamic_Dependency>
 					 (0,
-					  make_shared <Single_Dependency>
+					  make_shared <Plain_Dependency>
 					  (1 << flag_get_index(c), 
 					   Place_Param_Target
 					   (0, Place_Name(optarg, place)))));
@@ -337,7 +337,7 @@ int main(int argc, char **argv, char **envp)
 				Place places[C_PLACED];
 				places[c == 'p' ? I_PERSISTENT : I_OPTIONAL]= place; 
 				dependencies.push_back
-					(make_shared <Single_Dependency>
+					(make_shared <Plain_Dependency>
 					 (c == 'p' ? F_PERSISTENT : F_OPTIONAL, places,
 					  Place_Param_Target(0, Place_Name(optarg, place))));
 				break; 
@@ -389,7 +389,7 @@ int main(int argc, char **argv, char **envp)
 				dependencies.push_back(dep); 
 			} else {
 				dependencies.push_back
-					(make_shared <Single_Dependency>
+					(make_shared <Plain_Dependency>
 					 (0, Place_Param_Target
 					  (0, Place_Name(argv[i], place))));
 			}
@@ -449,7 +449,7 @@ int main(int argc, char **argv, char **envp)
 			}
 
 			dependencies.push_back
-				(make_shared <Single_Dependency> (*(rule_first->place_param_targets[0])));  
+				(make_shared <Plain_Dependency> (*(rule_first->place_param_targets[0])));  
 		}
 
 		/* Execute */

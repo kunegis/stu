@@ -1052,7 +1052,7 @@ shared_ptr <const Dependency> Parser
 	/* The place of the variable dependency as a whole is set on the
 	 * name contained in it.  It would be conceivable to also set it
 	 * on the dollar sign.  */
-	return make_shared <Single_Dependency> 
+	return make_shared <Plain_Dependency> 
 		(flags, 
 		 places_flags,
 		 Place_Param_Target(0, *place_name, 
@@ -1158,7 +1158,7 @@ shared_ptr <const Dependency> Parser::parse_redirect_dep
 	}
 
 	Flags transient_bit= has_transient ? F_TARGET_TRANSIENT : 0;
-	shared_ptr <const Dependency> ret= make_shared <Single_Dependency>
+	shared_ptr <const Dependency> ret= make_shared <Plain_Dependency>
 		(flags | transient_bit,
 		 Place_Param_Target(transient_bit,
 				    *name_token,
@@ -1305,7 +1305,7 @@ shared_ptr <const Dependency> Parser::get_target_dep(string text, const Place &p
 		throw ERROR_LOGICAL; 
 	}
 
-	shared_ptr <const Dependency> ret= make_shared <Single_Dependency> 
+	shared_ptr <const Dependency> ret= make_shared <Plain_Dependency> 
 		(flags_type, Place_Param_Target
 		 (flags_type, 
 		  Place_Name

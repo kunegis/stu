@@ -10,16 +10,16 @@
  *
  * EXECUTION CLASS	CACHED?				WHEN USED
  * ---------------------------------------------------------------------------------------------------
- * Root_Ex.		not cached; single object 	The root of the dependency graph; 
+ * Root_Execution	not cached; single object 	The root of the dependency graph; 
  *       						uses the dummy Root_Dependency 
- * File_Ex.		cached by Target (no flags)	Non-dynamic targets with at least one
+ * File_Execution	cached by Target (no flags)	Non-dynamic targets with at least one
  *							file target in rule OR a command in rule OR
  *							files without a rule
- * Transient_Ex.	cached by Target (w/ flags)	Transients without commands nor 
+ * Transient_Execution	cached by Target (w/ flags)	Transients without commands nor 
  * 							file targets in the same rule
- * "Single Ex."		cached by Target		Name for File_Ex. or Transient_Ex. 
- * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Single_Dep.
- * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concat._Dep.
+ * "Plain execution"	cached by Target		Name for File_Execution or Transient_Execution
+ * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Plain_Dependency
+ * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concatenated_Dependency
  * Concatenated_Ex.	not cached			Concatenated targets
  */
 
@@ -192,12 +192,12 @@ protected:
 	 * itself, if any.  This final timestamp is then carried over to the
 	 * parent executions.  */
 
-	vector <shared_ptr <const Single_Dependency> > result; 
+	vector <shared_ptr <const Plain_Dependency> > result; 
 	/* The final list of dependencies represented by the target.
 	 * This does not include any dynamic dependencies, i.e., all
-	 * dependencies are flattened to Single_Dependency's.  Not used
-	 * for single executions that have file targets, neither for
-	 * single executions that have multiple targets.  */ 
+	 * dependencies are flattened to Plain_Dependency's.  Not used
+	 * for executions that have file targets, neither for
+	 * executions that have multiple targets.  */ 
 
 	shared_ptr <Rule> param_rule;
 	/* The (possibly parametrized) rule from which this execution
@@ -698,7 +698,7 @@ public:
 
 	~Concatenated_Execution(); 
 
-	void add_part(shared_ptr <Single_Dependency> dependency, 
+	void add_part(shared_ptr <Plain_Dependency> dependency, 
 		      int concatenation_index);
 	/* Add a single part -- exclude the outer layer */
 
@@ -726,7 +726,7 @@ private:
 	/* Contains the concatenation. 
 	 * This is a Concatenated_Dependency,
 	 * itself containing each a Compound_Dependency^{0,1} of
-	 * Dynamic_Dependency^* of a single dependency. 
+	 * Dynamic_Dependency^* of a plain dependency. 
 	 * Is normalized.  */
 
 	int stage;
@@ -737,7 +737,7 @@ private:
 	 * 2:  Building actual dependencies.
 	 * 3:  Finished.  */
 
-	vector <vector <shared_ptr <const Single_Dependency> > > parts; 
+	vector <vector <shared_ptr <const Plain_Dependency> > > parts; 
 	/* The individual parts, inserted here during stage 1 by
 	 * disconnect().  Excludes the outer layer.  */
 
@@ -748,8 +748,8 @@ private:
 
 	virtual bool want_delete() const {  return true;  }
 
-	static shared_ptr <const Dependency> concatenate_dependency_one(shared_ptr <const Single_Dependency> dependency_1,
-									shared_ptr <const Single_Dependency> dependency_2,
+	static shared_ptr <const Dependency> concatenate_dependency_one(shared_ptr <const Plain_Dependency> dependency_1,
+									shared_ptr <const Plain_Dependency> dependency_2,
 									Flags dependency_flags);
 	/* Concatenate to two given dependencies, additionally
 	 * adding the given flags.  */
@@ -1048,7 +1048,7 @@ void Execution::read_dynamic(Flags flags_this,
 			string filename_dependency= string(lineptr, len); 
 
 			dependencies.push_back
-				(make_shared <Single_Dependency>
+				(make_shared <Plain_Dependency>
 				 (0,
 				  Place_Param_Target
 				  (0, 
@@ -1079,7 +1079,7 @@ void Execution::read_dynamic(Flags flags_this,
 					dynamic_pointer_cast <const Dynamic_Dependency> (dep);
 				dep= dep2->dependency; 
 			}
-			dynamic_pointer_cast <const Single_Dependency> (dep)
+			dynamic_pointer_cast <const Plain_Dependency> (dep)
 				->place_param_target.place_name.places[0] <<
 				fmt("dynamic dependency %s must not contain parametrized dependencies",
 				    Target(0, target).format_word());
@@ -1348,8 +1348,8 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 		shared_ptr <const Dependency> dependency_child= child->parents.at(this);
 
 		if (dependency_link != nullptr 
-		    && dynamic_pointer_cast <Single_Dependency> (dependency_link)
-		    && dynamic_pointer_cast <Single_Dependency> (dependency_link)
+		    && dynamic_pointer_cast <Plain_Dependency> (dependency_link)
+		    && dynamic_pointer_cast <Plain_Dependency> (dependency_link)
 		    ->place_param_target.flags == F_TARGET_TRANSIENT) {
 			shared_ptr <Dependency> dependency_child_2= Dependency::clone(dependency_child);
 			dependency_child_2->flags |= dependency_link->flags; 
@@ -1429,8 +1429,8 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 	/* Remove the F_DYNAMIC_LEFT flag to the child, except in a
 	 * transient--X link  */ 
 	if (dependency_this2->flags & F_DYNAMIC_LEFT &&
-	    ! (dynamic_pointer_cast <Single_Dependency> (dependency_this2)
-	       && dynamic_pointer_cast <Single_Dependency> (dependency_this2)->place_param_target.flags == F_TARGET_TRANSIENT)) {
+	    ! (dynamic_pointer_cast <Plain_Dependency> (dependency_this2)
+	       && dynamic_pointer_cast <Plain_Dependency> (dependency_this2)->place_param_target.flags == F_TARGET_TRANSIENT)) {
 		dependency_this2->flags &= ~F_DYNAMIC_LEFT; 
 	}
 	
@@ -1536,15 +1536,15 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 	if (is_cached(dependency_child)) {
 		
 		shared_ptr <Dependency> dependency_child_new= Dependency::clone(dependency_child);
-		shared_ptr <Single_Dependency> single_dependency_child_new=
-			dynamic_pointer_cast <Single_Dependency> (dependency_child_new); 
-		shared_ptr <const Single_Dependency> single_dependency_this=
-			dynamic_pointer_cast <const Single_Dependency> (dependency_this);
+		shared_ptr <Plain_Dependency> plain_dependency_child_new=
+			dynamic_pointer_cast <Plain_Dependency> (dependency_child_new); 
+		shared_ptr <const Plain_Dependency> plain_dependency_this=
+			dynamic_pointer_cast <const Plain_Dependency> (dependency_this);
 
 		/* Carry flags over transient targets */ 
-		if (single_dependency_this) {
+		if (plain_dependency_this) {
 
-			if (single_dependency_this->place_param_target.flags & F_TARGET_TRANSIENT) {
+			if (plain_dependency_this->place_param_target.flags & F_TARGET_TRANSIENT) {
 				dependency_child_new->flags |= dependency_this->flags & F_TRANSITIVE; 
 				// TODO in the following, iterate over all C_PLACED flags. 
 				if (dependency_this->flags & F_PERSISTENT) {
@@ -1594,7 +1594,7 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 		if (dependency_child_new->flags & F_VARIABLE &&
 		    dependency_child_new->flags & F_OPTIONAL) {
 
-			assert(single_dependency_child_new); 
+			assert(plain_dependency_child_new); 
 			assert((dependency_child_new->flags & F_TARGET_TRANSIENT) == 0); 
 			const Place &place_variable= dependency_child_new->get_place();
 			const Place &place_flag= 
@@ -1603,7 +1603,7 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 				fmt("variable dependency %s must not be declared "
 				    "as optional dependency",
 				    dynamic_variable_format_word
-				    (single_dependency_child_new->place_param_target.place_name.unparametrized())); 
+				    (plain_dependency_child_new->place_param_target.place_name.unparametrized())); 
 			place_flag << fmt("using %s",
 					  multichar_format_word("-o")); 
 			print_traces();
@@ -1680,10 +1680,10 @@ void Execution::disconnect(Execution *const parent,
 
 		Dynamic_Execution *parent_dynamic= dynamic_cast <Dynamic_Execution *> (parent);
 		if (! parent_dynamic) {
-			shared_ptr <const Single_Dependency> single_dependency_parent
-				= dynamic_pointer_cast <const Single_Dependency> (dependency_parent); 
-			assert(single_dependency_parent &&
-			       single_dependency_parent->place_param_target.flags & F_TARGET_TRANSIENT); 
+			shared_ptr <const Plain_Dependency> plain_dependency_parent
+				= dynamic_pointer_cast <const Plain_Dependency> (dependency_parent); 
+			assert(plain_dependency_parent &&
+			       plain_dependency_parent->place_param_target.flags & F_TARGET_TRANSIENT); 
 		}
 
 		parent->propagate_to_dynamic(child,
@@ -1717,8 +1717,8 @@ void Execution::disconnect(Execution *const parent,
 	 * Propagate variables over transient targets without commands
 	 * and dynamic targets
 	 */
-	if (dynamic_pointer_cast <const Single_Dependency> (dependency_child)
-	    && dynamic_pointer_cast <const Single_Dependency> (dependency_child)->place_param_target.flags & F_TARGET_TRANSIENT
+	if (dynamic_pointer_cast <const Plain_Dependency> (dependency_child)
+	    && dynamic_pointer_cast <const Plain_Dependency> (dependency_child)->place_param_target.flags & F_TARGET_TRANSIENT
 	    && dynamic_cast <Transient_Execution *> (child)
 	    && dynamic_cast <File_Execution *> (parent)) {
 		dynamic_cast <File_Execution *> (parent)->add_variables
@@ -1822,7 +1822,7 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency_lin
 		int error_additional= 0; /* Passed to the execution */
 
 		if (! target.is_dynamic()) {
-			/* Single execution */ 
+			/* Plain execution */ 
 
 			shared_ptr <Rule> rule, param_rule; 
 			map <string, string> mapping_parameter;
@@ -1893,9 +1893,9 @@ void Execution::copy_result(Execution *parent, Execution *child)
 	/* Check that the child is not of a type for which RESULT is not
 	 * used */
 	if (dynamic_cast <File_Execution *> (child)) {
-		File_Execution *single_child= dynamic_cast <File_Execution *> (child);
-		assert(single_child->targets.size() == 1 &&
-		       single_child->targets.at(0).is_transient()); 
+		File_Execution *file_child= dynamic_cast <File_Execution *> (child);
+		assert(file_child->targets.size() == 1 &&
+		       file_child->targets.at(0).is_transient()); 
 	}
 
 	for (auto &i:  child->result) {
@@ -1916,7 +1916,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 
 	assert(! (dd->flags & F_DYNAMIC_LEFT)); 
 	dd->check(); 
-	shared_ptr <const Single_Dependency> single_dd= dynamic_pointer_cast <const Single_Dependency> (dd); 
+	shared_ptr <const Plain_Dependency> plain_dd= dynamic_pointer_cast <const Plain_Dependency> (dd); 
 
 	if (dynamic_cast <Transient_Execution *> (this)) {
 		/* Percolate one up */ 
@@ -1929,8 +1929,8 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 	}
 
 	/* Without extra flags */
-	if (single_dd) 
-		result.push_back(single_dd); 
+	if (plain_dd) 
+		result.push_back(plain_dd); 
 
 	/* If THIS is a dynamic execution, add DD as a right branch */
 	if (dynamic_cast <Dynamic_Execution *> (this) && ! result_only) {
@@ -1963,8 +1963,8 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 		if (!((dependency_link->flags & F_DYNAMIC_LEFT) && !(dependency_link->flags & F_DYNAMIC_RIGHT))) 
 			continue; 
 
-		if (dynamic_pointer_cast <const Single_Dependency> (dependency_link) &&
-		    dynamic_pointer_cast <const Single_Dependency> (dependency_link)
+		if (dynamic_pointer_cast <const Plain_Dependency> (dependency_link) &&
+		    dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
 		    ->place_param_target.flags & F_TARGET_TRANSIENT) {
 			shared_ptr <Dependency> dd2= Dependency::clone(dd); 
 			dd2->flags &= (F_PLACED | F_VARIABLE);  
@@ -2008,15 +2008,15 @@ void Execution::propagate_to_dynamic(Execution *child,
 {
 	assert(flags_child & F_DYNAMIC_LEFT); 
 
-	File_Execution *single_this= dynamic_cast <File_Execution *> (this); 
+	File_Execution *file_this= dynamic_cast <File_Execution *> (this); 
 	Dynamic_Execution *dynamic_this= dynamic_cast <Dynamic_Execution *> (this); 
 	Transient_Execution *transient_this= dynamic_cast <Transient_Execution *> (this); 
 
 	/* Check that THIS is one of the allowed dynamics */
-	if (single_this) {
+	if (file_this) {
 		/* At least a single target is a transient */
 		bool found= false;
-		for (auto &i:  single_this->targets) {
+		for (auto &i:  file_this->targets) {
 			if (i.is_transient()) {
 				found= true; 
 			}
@@ -2034,13 +2034,13 @@ void Execution::propagate_to_dynamic(Execution *child,
 	/* Even if the child produced an error, we still read
 	 * its partially assembled list of filenames.  */
 
-	shared_ptr <const Single_Dependency> single_dependency_child=
-		dynamic_pointer_cast <const Single_Dependency> (dependency_child);
+	shared_ptr <const Plain_Dependency> plain_dependency_child=
+		dynamic_pointer_cast <const Plain_Dependency> (dependency_child);
 
-	if (single_dependency_child) { 
+	if (plain_dependency_child) { 
 		try {
 			const Place_Param_Target &place_param_target= 
-				single_dependency_child->place_param_target; 
+				plain_dependency_child->place_param_target; 
 
 			if ((place_param_target.flags & F_TARGET_TRANSIENT) == 0) {
 				vector <shared_ptr <const Dependency> > dependencies;
@@ -2062,7 +2062,7 @@ void Execution::propagate_to_dynamic(Execution *child,
 
 bool Execution::is_cached(shared_ptr <const Dependency> dependency)
 {
-	if (dynamic_pointer_cast <const Single_Dependency> (dependency)) {
+	if (dynamic_pointer_cast <const Plain_Dependency> (dependency)) {
 		return true; 
 	} else if (dynamic_pointer_cast <const Root_Dependency> (dependency)) {
 		return false;
@@ -3030,7 +3030,7 @@ void File_Execution::write_content(const char *filename,
 void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency,
 					Execution *parent)
 {
-	assert(dynamic_pointer_cast <const Single_Dependency> (dependency)); 
+	assert(dynamic_pointer_cast <const Plain_Dependency> (dependency)); 
 
 	if (exists <= 0)
 		return;
@@ -3075,7 +3075,7 @@ void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency
 
 	/* The variable name */ 
 	dependency_variable_name=
-		dynamic_pointer_cast <const Single_Dependency> (dependency)->variable_name; 
+		dynamic_pointer_cast <const Plain_Dependency> (dependency)->variable_name; 
 
 	{
 		string variable_name= 
@@ -3091,7 +3091,7 @@ void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency
 	close(fd); 
  error:
 	Target target_variable= 
-		dynamic_pointer_cast <const Single_Dependency> (dependency)->place_param_target
+		dynamic_pointer_cast <const Plain_Dependency> (dependency)->place_param_target
 		.unparametrized(); 
 
 	if (rule == nullptr) {
@@ -3122,13 +3122,13 @@ void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency
 bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_link)
 {
 	if ((dependency_link->flags & F_OPTIONAL) 
-	    && dynamic_pointer_cast <const Single_Dependency> (dependency_link)
-	    && ! (dynamic_pointer_cast <const Single_Dependency> (dependency_link)
+	    && dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
+	    && ! (dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
 		  ->place_param_target.flags & F_TARGET_TRANSIENT)) {
 
 		// TODO check whether EXISTS is already -1 here.  (?)
 
-		const char *name= dynamic_pointer_cast <const Single_Dependency> (dependency_link)
+		const char *name= dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
 			->place_param_target.place_name.unparametrized().c_str();
 
 		struct stat buf;
@@ -3136,7 +3136,7 @@ bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_
 		if (ret_stat < 0) {
 			exists= -1;
 			if (errno != ENOENT) {
-				dynamic_pointer_cast <const Single_Dependency> (dependency_link)
+				dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
 					->place_param_target.place <<
 					system_format(name_format_word(name)); 
 				raise(ERROR_BUILD);
@@ -3370,8 +3370,8 @@ void Concatenated_Execution::add_stage0_dependency(shared_ptr <const Dependency>
 }
 
 shared_ptr <const Dependency> Concatenated_Execution::
-concatenate_dependency_one(shared_ptr <const Single_Dependency> dependency_1,
-			   shared_ptr <const Single_Dependency> dependency_2,
+concatenate_dependency_one(shared_ptr <const Plain_Dependency> dependency_1,
+			   shared_ptr <const Plain_Dependency> dependency_2,
 			   Flags dependency_flags)
 /* 
  * Rules for concatenation:
@@ -3388,7 +3388,7 @@ concatenate_dependency_one(shared_ptr <const Single_Dependency> dependency_1,
 	Place_Param_Target target= dependency_1->place_param_target; 
 	target.place_name.append(dependency_2->place_param_target.place_name); 
 
-	return make_shared <Single_Dependency> 
+	return make_shared <Plain_Dependency> 
 		(dependency_flags & dependency_1->flags,
 		 target,
 		 dependency_1->place,
@@ -3477,11 +3477,11 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dependency> dependency_li
 
 	shared_ptr <const Dependency> inner_dependency= Dependency::strip_dynamic(dependency);
 
-	if (dynamic_pointer_cast <const Single_Dependency> (inner_dependency)) {
-		shared_ptr <const Single_Dependency> inner_single_dependency
-			= dynamic_pointer_cast <const Single_Dependency> (inner_dependency); 
-		Target target_base(inner_single_dependency->place_param_target.flags,
-				   inner_single_dependency->place_param_target.place_name.unparametrized());
+	if (dynamic_pointer_cast <const Plain_Dependency> (inner_dependency)) {
+		shared_ptr <const Plain_Dependency> inner_plain_dependency
+			= dynamic_pointer_cast <const Plain_Dependency> (inner_dependency); 
+		Target target_base(inner_plain_dependency->place_param_target.flags,
+				   inner_plain_dependency->place_param_target.place_name.unparametrized());
 		Target target= dependency->get_target(); 
 		try {
 			map <string, string> mapping_parameter; 
@@ -3543,7 +3543,7 @@ bool Dynamic_Execution::finished(Flags flags) const
 
 bool Dynamic_Execution::want_delete() const
 {
-	return dynamic_pointer_cast <const Single_Dependency> (Dependency::strip_dynamic(dependency)) == nullptr; 
+	return dynamic_pointer_cast <const Plain_Dependency> (Dependency::strip_dynamic(dependency)) == nullptr; 
 }
 
 string Dynamic_Execution::format_out() const
@@ -3595,11 +3595,11 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 	param_rule= param_rule_; 
 	swap(mapping_parameter, mapping_parameter_); 
 
-	assert(dynamic_pointer_cast <const Single_Dependency> (dependency_link)); 
-	shared_ptr <const Single_Dependency> single_dependency= 
-		dynamic_pointer_cast <const Single_Dependency> (dependency_link);
+	assert(dynamic_pointer_cast <const Plain_Dependency> (dependency_link)); 
+	shared_ptr <const Plain_Dependency> plain_dependency= 
+		dynamic_pointer_cast <const Plain_Dependency> (dependency_link);
 
-	Target target= single_dependency->place_param_target.unparametrized();
+	Target target= plain_dependency->place_param_target.unparametrized();
 	assert(target.is_transient()); 
 
 	if (rule == nullptr) {

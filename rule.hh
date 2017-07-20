@@ -121,7 +121,8 @@ private:
 	unordered_map <Target, shared_ptr <Rule> > rules_unparametrized;
 	/* All unparametrized rules by their target.  Rules
 	 * with multiple targets are included multiple times, for each
-	 * of their targets. */ 
+	 * of their targets.  None of the targets has flags set (except
+	 * F_TARGET_TARNSIENT of course.)  */ 
 
 	vector <shared_ptr <Rule> > rules_parametrized;
 	/* All parametrized rules. */ 
@@ -141,7 +142,8 @@ public:
 			      const Place &place);
 	/* Match TARGET to a rule, and return the instantiated
 	 * (non-parametrized) corresponding rule.  TARGET must be
-	 * non-dynamic.  MAPPING_PARAMETER must be empty.  Return null when no
+	 * non-dynamic and not have flags (except F_TARGET_TRANSIENT).
+	 * MAPPING_PARAMETER must be empty.  Return null when no 
 	 * match is found.  When a match is found, write the original
 	 * (possibly parametrized) rule into PARAM_RULE and the
 	 * matched parameters into MAPPING_PARAMETER.  Throws errors, in
@@ -397,6 +399,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 				const Place &place)
 {
 	assert(target.is_file() || target.is_transient()); 
+	assert((target.get_front_byte() & ~F_TARGET_TRANSIENT) == 0); 
 	assert(mapping_parameter.size() == 0); 
 
 	/* Check for an unparametrized rule.  Since we keep them in a

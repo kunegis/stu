@@ -15,8 +15,8 @@
  * File_Ex.		cached by Target (no flags)	Non-dynamic targets with at least one
  *							file target in rule OR a command in rule OR
  *							files without a rule
- * Transient_Ex.	cached by Target (w/ flags)	Transients without commands nor files
- * 							file target in the same rule
+ * Transient_Ex.	cached by Target (w/ flags)	Transients without commands nor 
+ * 							file targets in the same rule
  * "Single Ex."		cached by Target		Name for File_Ex. or Transient_Ex. 
  * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Single_Dep.
  * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concat._Dep.
@@ -339,8 +339,8 @@ protected:
 	static void disconnect(Execution *const parent, 
 			       Execution *const child,
 			       shared_ptr <const Dependency> dependency_parent,
-			       shared_ptr <const Dependency> dependency_child,
-			       Flags flags_child); 
+			       shared_ptr <const Dependency> dependency_child);
+//			       Flags flags_child); 
 	/* Remove an edge from the dependency graph.  Propagate
 	 * information from the subexecution to the execution, and then
 	 * delete the child execution if necessary.  */
@@ -372,7 +372,7 @@ private:
 	 * Note: the top-level flags of LINK.DEPENDENCY may be modified.
 	 * DEPENDENCY_CHILD must be normalized.  */
 
-	static Execution *get_execution(Target target,
+	static Execution *get_execution(//Target target,
 					shared_ptr <const Dependency> dependency_link,
 					Execution *parent); 
 	/* Get an existing Execution or create a new one for the
@@ -479,7 +479,9 @@ private:
 	vector <Target> targets; 
 	/* The targets to which this execution object corresponds.
 	 * Never empty.  
-	 * All targets are non-dynamic, i.e., only plain files and transients are included.  */
+	 * All targets are non-dynamic, i.e., only plain files and
+	 * transients are included.   
+	 * Does not include flags (except F_TRANSIENT).  */
 
 	shared_ptr <Rule> rule;
 	/* The instantiated file rule for this execution.  Null when
@@ -524,7 +526,8 @@ private:
 	/* What parts of this target have been done.  Each bit that is
 	 * set represents one aspect that was done.  When an execution
 	 * is invoked with a certain set of flags, all flags *not*
-	 * passed will be set when the execution is finished.  */
+	 * passed will be set when the execution is finished.  Only the
+	 * first C_FINISHABLE flags are used.  */
 
 	~File_Execution(); 
 
@@ -738,7 +741,7 @@ private:
 
 	vector <vector <shared_ptr <const Single_Dependency> > > parts; 
 	/* The individual parts, inserted here during stage 1 by
-	 * Execution::disconnect().  Excludes the outer layer.  */
+	 * disconnect().  Excludes the outer layer.  */
 
 	void add_stage0_dependency(shared_ptr <const Dependency> d, unsigned concatenate_index);
 	/* Add a dependency during Stage 0.  The given dependency can be
@@ -1351,16 +1354,19 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 		
 		assert(child != nullptr);
 
-		Flags flags_child= child->parents.at(this)->flags;
+		shared_ptr <const Dependency> dependency_child= child->parents.at(this);
+
+//		Flags flags_child= dependency_child->flags;
 
 		if (dependency_link != nullptr 
 		    && dynamic_pointer_cast <Single_Dependency> (dependency_link)
 		    && dynamic_pointer_cast <Single_Dependency> (dependency_link)
 		    ->place_param_target.flags == F_TARGET_TRANSIENT) {
-			flags_child |= dependency_link->flags; 
+			shared_ptr <Dependency> dependency_child_2= Dependency::clone(dependency_child);
+			dependency_child_2->flags |= dependency_link->flags; 
+			dependency_child= dependency_child_2; 
+//			flags_child |= dependency_link->flags; 
 		}
-
-		shared_ptr <const Dependency> dependency_child= child->parents.at(this);
 
 		Proceed proceed_child= child->execute(this, dependency_child);
 		assert(proceed_child); 
@@ -1369,12 +1375,18 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> dependenc
 		/* The finished and abort flags of the child only apply to the
 		 * child, not to us  */
 
-		assert(((proceed_child & P_FINISHED) == 0) == ((child->finished(flags_child)) == 0));
+		assert(((proceed_child & P_FINISHED) == 0) == 
+		       ((child->finished(
+					 dependency_child->flags
+//					 flags_child
+					 )) == 0));
 
 		if (proceed_child & P_FINISHED) {
 			disconnect(this, child, 
 				   dependency_link, 
-				   dependency_child, flags_child); 
+				   dependency_child
+//				   , flags_child
+				   ); 
 		} else {
 			assert((proceed_child & ~P_FINISHED) != P_CONTINUE); 
 			/* If the child execution is not finished, it
@@ -1489,7 +1501,7 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 
 	while (! buffer_A.empty()) {
 		shared_ptr <const Dependency> dependency_child= buffer_A.next(); 
-		if (! (dependency_child->flags & F_DYNAMIC_LEFT)) {
+		if ((dependency_child->flags & (F_DYNAMIC_LEFT | F_TRIVIAL)) == F_TRIVIAL) {
 			shared_ptr <Dependency> dependency_child_2= 
 				Dependency::clone(dependency_child);
 			dependency_child_2->flags &= ~F_TRIVIAL; 
@@ -1529,45 +1541,43 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 	return proceed |= P_FINISHED; 
 }
 
-Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_link_this,
+Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_this,
 				      shared_ptr <const Dependency> dependency_child)
 {
-	// TODO Remove '_link_' from variable names in this function. 
-
 	assert(dependency_child->is_normalized()); 
 
 	Debug::print(this, fmt("connect(%s) %s", 
-			       dependency_link_this->format_out(), 
+			       dependency_this->format_out(), 
 			       dependency_child->format_out())); 
 
 	if (is_cached(dependency_child)) {
 		
-		/* Cached execution */ 
-
 		shared_ptr <Dependency> dependency_child_new= Dependency::clone(dependency_child);
 		shared_ptr <Single_Dependency> single_dependency_child_new=
 			dynamic_pointer_cast <Single_Dependency> (dependency_child_new); 
 		shared_ptr <const Single_Dependency> single_dependency_this=
-			dynamic_pointer_cast <const Single_Dependency> (dependency_link_this);
+			dynamic_pointer_cast <const Single_Dependency> (dependency_this);
+
 		/* Carry flags over transient targets */ 
 		if (single_dependency_this) {
 
 			if (single_dependency_this->place_param_target.flags & F_TARGET_TRANSIENT) {
-				dependency_child_new->flags |= dependency_link_this->flags; 
-				if (dependency_link_this->flags & F_PERSISTENT) {
+				dependency_child_new->flags |= dependency_this->flags & F_TRANSITIVE; 
+				// TODO in the following, iterate over all C_PLACED flags. 
+				if (dependency_this->flags & F_PERSISTENT) {
 					dependency_child_new->set_place_flag
 						(I_PERSISTENT,
-						 dependency_link_this->get_place_flag(I_PERSISTENT)); 
+						 dependency_this->get_place_flag(I_PERSISTENT)); 
 				}
-				if (dependency_link_this->flags & F_OPTIONAL) {
+				if (dependency_this->flags & F_OPTIONAL) {
 					dependency_child_new->set_place_flag
 						(I_OPTIONAL,
-						 dependency_link_this->get_place_flag(I_OPTIONAL)); 
+						 dependency_this->get_place_flag(I_OPTIONAL)); 
 				}
-				if (dependency_link_this->flags & F_TRIVIAL) {
+				if (dependency_this->flags & F_TRIVIAL) {
 					dependency_child_new->set_place_flag
 						(I_TRIVIAL,
-						 dependency_link_this->get_place_flag(I_TRIVIAL)); 
+						 dependency_this->get_place_flag(I_TRIVIAL)); 
 				}
 			}
 		}
@@ -1590,8 +1600,7 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_l
 			dependency_child_new->get_place() <<
 				fmt("in declaration of dependency %s, needed by %s", 
 				    dependency_child_new->get_target().format_word(),
-				    dependency_link_this->get_target().format_word()); 
-//				    single_dependency_child_new->place_param_target.format_word()); 
+				    dependency_this->get_target().format_word()); 
 			print_traces();
 			explain_clash(); 
 			raise(ERROR_LOGICAL);
@@ -1619,7 +1628,7 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_l
 			return P_CONTINUE;
 		}
 
-		Execution *child= get_execution(dependency_child_new->get_target(),
+		Execution *child= get_execution(//dependency_child_new->get_target(),
 						dependency_child_new, this);  
 		if (child == nullptr) {
 			/* Strong cycle was found */ 
@@ -1635,8 +1644,10 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_l
 			
 		if (child->finished(dependency_child_new->flags)) {
 			disconnect(this, child, 
-				   dependency_link_this, 
-				   dependency_child_new, dependency_child_new->flags);
+				   dependency_this, 
+				   dependency_child_new
+//				   , dependency_child_new->flags
+				   );
 		}
 
 		return P_CONTINUE;
@@ -1662,30 +1673,40 @@ void Execution::raise(int error_)
 void Execution::disconnect(Execution *const parent, 
 			   Execution *const child,
 			   shared_ptr <const Dependency> dependency_parent,
-			   shared_ptr <const Dependency> dependency_child,
-			   Flags flags_child)
+			   shared_ptr <const Dependency> dependency_child)
+//			   Flags flags_child)
 {
-	// TODO is FLAGS_CHILD always identical to
-	// DEPENDENCY_CHILD->FLAGS ?
+//	// TODO is FLAGS_CHILD always identical to
+//	// DEPENDENCY_CHILD->FLAGS ? --> remove FLAGS_CHILD.
+//	assert(flags_child == dependency_child->flags); 
 
-	Debug::print(parent, fmt("disconnect {%s} %s", 
-				 child->debug_done_text(),
+	Debug::print(parent, fmt("disconnect %s", 
+//				 child->debug_done_text(),
 				 child->format_out())); 
 
 	assert(parent != nullptr);
 	assert(child != nullptr); 
 	assert(parent != child); 
-	assert(child->finished(flags_child)); 
+	assert(child->finished(
+			       dependency_child->flags
+//			       flags_child
+			       )); 
 
 	if (! option_keep_going)  
 		assert(child->error == 0); 
 
 	/*
-	 * Propagations
+	 * Propagations from child to parent 
 	 */
 
 	/* Propagate dynamic dependencies */ 
-	if (flags_child & F_DYNAMIC_LEFT && ! (flags_child & F_DYNAMIC_RIGHT)) {
+	if (
+	    dependency_child->flags
+//	    flags_child
+	    & F_DYNAMIC_LEFT && ! (
+				   dependency_child->flags
+//				   flags_child
+				   & F_DYNAMIC_RIGHT)) {
 		/* This was the left branch between a dynamic dependency
 		 * and its child.  Add the right branch.  */
 
@@ -1701,14 +1722,21 @@ void Execution::disconnect(Execution *const parent,
 		}
 
 		parent->propagate_to_dynamic(child,
-					     flags_child,
+					     dependency_child->flags,
+//					     flags_child,
 					     dependency_parent,
 					     dependency_child);  
 	}
 
 	/* Propagate timestamp */
 	/* Don't propagate the timestamp of the dynamic dependency itself */ 
-	if (! (flags_child & F_PERSISTENT) && ! (flags_child & F_DYNAMIC_LEFT)) {
+	if (! (
+	       dependency_child->flags
+//	       flags_child
+	       & F_PERSISTENT) && ! (
+				     dependency_child->flags
+//				     flags_child
+				     & F_DYNAMIC_LEFT)) {
 		if (child->timestamp.defined()) {
 			if (! parent->timestamp.defined()) {
 				parent->timestamp= child->timestamp;
@@ -1721,7 +1749,10 @@ void Execution::disconnect(Execution *const parent,
 	}
 
 	/* Propagate variable dependencies */
-	if (flags_child & F_VARIABLE) { 
+	if (
+	    dependency_child->flags
+//	    flags_child
+	    & F_VARIABLE) { 
 		dynamic_cast <File_Execution *> (child)
 			->propagate_variable(dependency_child, parent);
 	}
@@ -1752,8 +1783,14 @@ void Execution::disconnect(Execution *const parent,
 	 * It just means the list of depenencies have changed, not the
 	 * dependencies themselves.  */
 	if (child->bits & B_NEED_BUILD
-	    && ! (flags_child & F_PERSISTENT)
-	    && ! (flags_child & F_DYNAMIC_LEFT)) {
+	    && ! (
+		  dependency_child->flags
+//		  flags_child
+		  & F_PERSISTENT)
+	    && ! (
+		  dependency_child->flags
+//		  flags_child
+		  & F_DYNAMIC_LEFT)) {
 		parent->bits |= B_NEED_BUILD; 
 	}
 
@@ -1785,10 +1822,12 @@ Execution::Proceed Execution::execute_base_B(shared_ptr <const Dependency> depen
 	return proceed; 
 }
 
-Execution *Execution::get_execution(Target target,
+Execution *Execution::get_execution(//Target target,
 				    shared_ptr <const Dependency> dependency_link,
 				    Execution *parent)
 {
+	Target target= dependency_link->get_target(); 
+
 	/* Set to the returned Execution object when one is found or created */    
 	Execution *execution= nullptr; 
 
@@ -1840,7 +1879,10 @@ Execution *Execution::get_execution(Target target,
 			map <string, string> mapping_parameter;
 			bool use_file_execution= false;
 			try {
-				rule= rule_set.get(target, param_rule, mapping_parameter, 
+				Target target_without_flags= target; 
+				target_without_flags.get_front_byte_nondynamic() &= F_TARGET_TRANSIENT; 
+				rule= rule_set.get(target_without_flags, 
+						   param_rule, mapping_parameter, 
 						   dependency_link->get_place()); 
 			} catch (int e) {
 				assert(e); 
@@ -1929,11 +1971,12 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 {
 	Debug::print(this, fmt("push_result(%s%s)", 
 			       dependency_flags && dependency_flags->flags
-			       ? flags_format(dependency_flags->flags & F_PLACED) + ", "
+			       ? flags_format(dependency_flags->flags & F_TRANSITIVE) + ", "
 			       : "", 
 			       dd->format_out())); 
 
 	assert(! (dd->flags & F_DYNAMIC_LEFT)); 
+	dd->check(); 
 	shared_ptr <const Single_Dependency> single_dd= dynamic_pointer_cast <const Single_Dependency> (dd); 
 
 	if (dynamic_cast <Transient_Execution *> (this)) {
@@ -1969,7 +2012,6 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 					dd_new->set_place_flag(i, dynamic_this->get_dependency()->get_place_flag(i)); 
 			}
 		}
-//		dd_new->flags |= dynamic_this->get_dependency()->flags & F_PLACED; 
 		dd= dd_new; 
 		push_dependency(dd); 
 	}
@@ -1986,7 +2028,8 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 		    dynamic_pointer_cast <const Single_Dependency> (dependency_link)
 		    ->place_param_target.flags & F_TARGET_TRANSIENT) {
 			shared_ptr <Dependency> dd2= Dependency::clone(dd); 
-			dd2->flags &= (F_PLACED | F_VARIABLE); 
+			dd2->flags &= (F_PLACED | F_VARIABLE);  
+			dd2->check(); 
 			parent->push_result(dd2, dependency_link, false, child); 
 		}
 		else if (dynamic_cast <Dynamic_Execution *> (this)) {
@@ -2011,7 +2054,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 
 			shared_ptr <Dependency> dd2= Dependency::clone(dd); 
 			dd2->add_flags(dependency_link, false); 
-			dd2->flags &= (F_PLACED | F_VARIABLE); 
+			dd2->flags &= (F_PLACED | F_VARIABLE | F_TARGET_INFO); 
 			shared_ptr <Dependency> ddd= make_shared <Dynamic_Dependency> (0, dd2); 
 			parent->push_result(ddd, nullptr, false, child); 
 		} 
@@ -2286,8 +2329,10 @@ File_Execution::File_Execution(Target target_,
 	swap(mapping_parameter, mapping_parameter_); 
 
 	/* Later replaced with all targets from the rule, when a rule exists */ 
-	targets.push_back(target_); 
-	executions_by_target[target_]= this; 
+	Target target_no_flags= target_;
+	target_no_flags.get_front_byte_nondynamic() &= F_TARGET_TRANSIENT; 
+	targets.push_back(target_no_flags); 
+	executions_by_target[target_no_flags]= this; 
 
 	parents[parent]= dependency_link; 
 	if (error_additional) {
@@ -2323,7 +2368,7 @@ File_Execution::File_Execution(Target target_,
 			shared_ptr <const Dependency> dep= dependency;
 			if (target_.is_any_transient()) {
 				shared_ptr <Dependency> dep_new= Dependency::clone(dep); 
-				dep_new->flags |= dependency_link->flags;
+				dep_new->flags |= dependency_link->flags & F_TRANSITIVE;
 				for (int i= 0;  i < C_PLACED;  ++i) {
 					assert(!(dependency_link->flags & (1 << i)) ==
 					       dependency_link->get_place_flag(i).empty());
@@ -2393,12 +2438,12 @@ File_Execution::File_Execution(Target target_,
 
 bool File_Execution::finished() const 
 {
-	return ((~ flags_finished) & ((1 << C_TRANSITIVE) - 1)) == 0; 
+	return ((~ flags_finished) & ((1 << C_FINISHABLE) - 1)) == 0; 
 }
 
 bool File_Execution::finished(Flags flags) const
 {
-	return ((~ flags_finished & ~ flags) & ((1 << C_TRANSITIVE) - 1)) == 0; 
+	return ((~ flags_finished & ~ flags) & ((1 << C_FINISHABLE) - 1)) == 0; 
 }
 
 void job_terminate_all() 
@@ -3487,6 +3532,7 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dependency> dependency_li
 	assert(parent); 
 	assert(dynamic_pointer_cast <const Dynamic_Dependency> (dependency_link)); 
 	assert(dependency); 
+	dependency->check();
 	
 	/* Set the rule here, so cycles in the dependency graph can be
 	 * detected.  Note however that the rule of dynamic executions
@@ -3665,8 +3711,9 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 	assert((param_rule == nullptr) == (rule == nullptr)); 
 
 	/* Fill EXECUTIONS_BY_TARGET with all targets from the rule, not
-	 * just the one given in the dependency.  */
-	for (const Target &t:  targets) {
+	 * just the one given in the dependency.  Also, add the flags.  */
+	for (Target t:  targets) {
+		t.get_front_byte_nondynamic() |= dependency_link->flags; 
 		executions_by_target[t]= this; 
 	}
 
@@ -3677,7 +3724,7 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 		shared_ptr <const Dependency> dep= dependency;
 		if (dependency_link->flags) {
 			shared_ptr <Dependency> dep_new= Dependency::clone(dep); 
-			dep_new->flags |= dependency_link->flags;
+			dep_new->flags |= dependency_link->flags & F_TRANSITIVE;
 			for (int i= 0;  i < C_PLACED;  ++i) {
 				assert(!(dependency_link->flags & (1 << i)) ==
 				       dependency_link->get_place_flag(i).empty());

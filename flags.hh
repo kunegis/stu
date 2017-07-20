@@ -59,9 +59,9 @@ enum
 	C_PLACED           = 3,
 	/* Only the first C_PLACED flags have a place associated with them */
 
-	C_TRANSITIVE       = 4,
-	/* The first C_TRANSITIVE flags are transitive, i.e., inherited
-	 * across transient targets  */
+	C_FINISHABLE       = 4,
+	/* The first C_FINISHABLE flags are used for the "finished" flag
+	 * of File_Execution objects.  */
 
 	/* 
 	 * What follows are the actual flag bits to be ORed together 
@@ -124,7 +124,14 @@ enum
 	/*
 	 * Aggregates
 	 */
-	F_PLACED = (1 << C_PLACED) - 1,
+	F_PLACED= (1 << C_PLACED) - 1,
+	F_FINISHABLE= (1 << C_FINISHABLE) - 1,
+
+	/* Bits that act transitively over transient targets */
+	F_TRANSITIVE= F_FINISHABLE | F_DYNAMIC_LEFT | F_DYNAMIC_RIGHT,
+	
+	F_TARGET_INFO= F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
+
 };
 
 const char *const FLAGS_CHARS= "pot*[@/\\$n0"; 

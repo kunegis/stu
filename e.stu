@@ -1,0 +1,5 @@
+# The -o flag is given twice 
+A:  -o [B] { touch A ; }
+B = { -o C }
+C { exit 1 ; }
+

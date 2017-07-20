@@ -1,0 +1,9 @@
+# In the test, 'A' exists when Stu is run.  Check that all files (B, D,
+# I) are built. 
+A:  -t @x 
+D 
+{  cat B D >A ;  }
+@x:  B;
+B: I {  cp I B ;  }
+D    {  touch D ; }
+I    {  echo iii >I ;  }

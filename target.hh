@@ -79,27 +79,27 @@ public:
 
 	bool is_transient() const {
 		assert(text.size() >= 2); 
-		return (text.at(0) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == F_TARGET_TRANSIENT; 
+		return (text[0] & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == F_TARGET_TRANSIENT; 
 	}
 
 	bool is_any_file() const {
 		size_t i= 0;
 		assert(text.size() > i); 
-		while (text.at(i) & F_TARGET_DYNAMIC) {
+		while (text[i] & F_TARGET_DYNAMIC) {
 			++i;
 			assert(text.size() > i); 
 		}
-		return (text.at(i) & F_TARGET_TRANSIENT) == 0; 
+		return (text[i] & F_TARGET_TRANSIENT) == 0; 
 	}
 
 	bool is_any_transient() const {
 		size_t i= 0;
 		assert(text.size() > i); 
-		while (text.at(i) & F_TARGET_DYNAMIC) {
+		while (text[i] & F_TARGET_DYNAMIC) {
 			++i;
 			assert(text.size() > i); 
 		}
-		return text.at(i) & F_TARGET_TRANSIENT; 
+		return text[i] & F_TARGET_TRANSIENT; 
 	}
 
 	string format(Style style, bool &quotes) const;
@@ -175,7 +175,9 @@ private:
 	 *
 	 * Any of the front bytes may contain additional flag bits. 
 	 *
-	 * Empty to denote a "null" value, in which case most functions should not be used. 
+	 * Empty to denote a "null" value, or equivalently the target of
+	 * the roo dependency, in which case most functions should not
+	 * be used.   
 	 */
 };
 

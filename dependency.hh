@@ -104,14 +104,11 @@ public:
 	 * corresponding places.  If a place is already given in THIS,
 	 * only copy a place over if OVERWRITE_PLACES is set.  */
 
-	void check() const {
 #ifndef NDEBUG
-		for (int i= 0;  i < C_PLACED;  ++i) {
-			assert(((flags & (1 << i)) == 0) ==
-			       get_place_flag(i).empty()); 
-		}
+	void check() const;
+#else
+	void check() const {  }
 #endif		
-	}
 
 	virtual shared_ptr <const Dependency> instantiate(const map <string, string> &mapping) const= 0;
 	virtual bool is_unparametrized() const= 0; 
@@ -157,7 +154,8 @@ class Single_Dependency
  * dynamic dependencies.
  *
  * When the target is a transient, the dependency flags have the
- * F_TARGET_TRANSIENT bit set, which is redundant. 
+ * F_TARGET_TRANSIENT bit set, which is redundant.  No other Dependency
+ * has the F_TARGET_TRANSIENT flag set. 
  */
 	:  public Dependency
 {
@@ -285,20 +283,6 @@ public:
 
 	bool is_unparametrized() const {
 		return place_param_target.place_name.get_n() == 0; 
-	}
-
-	void check() const {
-#ifndef NDEBUG
-		if (variable_name != "") {
-			assert((place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
-			assert(flags & F_VARIABLE); 
-		}
-
-		/* The F_TARGET_TRANSIENT flag is always set in the
-		 * dependency flags, even though that is redundant.  */
-		assert((flags & F_TARGET_TRANSIENT) == (place_param_target.flags)); 
-		Dependency::check(); 
-#endif /* ! NDEBUG */ 
 	}
 
 	virtual string format(Style style, bool &quotes) const {
@@ -682,9 +666,46 @@ shared_ptr <const Dependency> Dependency::strip_dynamic(shared_ptr <const Depend
 	return d;
 }
 
+#ifndef NDEBUG
+void Dependency::check() const
+{
+	for (int i= 0;  i < C_PLACED;  ++i) {
+		assert(((flags & (1 << i)) == 0) ==
+		       get_place_flag(i).empty()); 
+	}
+
+	const Single_Dependency *single_this= dynamic_cast <const Single_Dependency *> (this);
+	const Dynamic_Dependency *dynamic_this= dynamic_cast <const Dynamic_Dependency *> (this); 
+
+	if (single_this) {
+		
+		/* The F_TARGET_TRANSIENT flag is always set in the
+		 * dependency flags, even though that is redundant.  */
+		assert((single_this->flags & F_TARGET_TRANSIENT) == (single_this->place_param_target.flags)); 
+
+		if (single_this->variable_name != "") {
+			assert((single_this->place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
+			assert(single_this->flags & F_VARIABLE); 
+		}
+		
+//	assert(((flags & F_TARGET_TRANSIENT) != 0) ==
+//	       (dynamic_cast <const Single_Dependency *> (this) &&
+//		dynamic_cast <const Single_Dependency *>
+//	       (this)->place_param_target.flags & F_TARGET_TRANSIENT)); 
+	}
+
+	if (dynamic_this) {
+		dynamic_this->dependency->check(); 
+	}
+}
+#endif
+
+
 Target Single_Dependency::get_target() const
 {
-	return place_param_target.unparametrized(); 
+	Target ret= place_param_target.unparametrized(); 
+	ret.get_front_byte_nondynamic() |= flags;
+	return ret; 
 }
 
 string Single_Dependency::format_out() const 
@@ -741,7 +762,6 @@ Target Dynamic_Dependency::get_target() const
 	// object. 
 	text += sin->place_param_target.unparametrized().get_name_nondynamic(); 
 	
-//	text += sin->place_param_target.unparametrized().get_text();
 	return Target(text); 
 }
 

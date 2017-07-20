@@ -1,6 +1,18 @@
 #! /bin/sh
 #
-# Test the full feature set of trivial dependencies:
+# Test the full feature set of trivial dependencies.
+#
+# Dependency graph:
+#
+#                             A
+#                            / \
+#                        -t B   D
+#                           |   |
+#                           I   J
+#
+# This dependency graph is realized in three different ways
+# (a.stu/b.stu/c.stu).  Depending on whether the different files exist
+# when Stu is called, and on their relative ages, Stu will do different things:
 #
 #            A    B    I    D    J
 #	(1) old   -    -    -    -    -> build A B I D J
@@ -21,16 +33,15 @@
 #      (16) old  old  new  new  old   -> build A B - - -
 #      (17) old  new  old  new  old   -> build A - - - -
 #
-# 'old' and 'new' are to be understood as 'than A'. 
+# 'old' and 'new' are to be understood as 'than A'.  '-' means the file
+# is not present. 
 #	
 # Using three types ways of declaring a trivial dependency:
-#
-#	(a) Direct
-#	(b) Via a dynamic dependency
-#	(c) Via a phony
+#	(a.stu) Direct
+#	(b.stu) Via a phony
+#	(c.stu) Via a dynamic dependency
 #
 # Files:
-#
 #	'A'     Overall target
 #	'B'     Trivial dependency of 'A'
 #	'D'     Non-trivial dependency of 'A'
@@ -85,11 +96,22 @@ for type in a b c ; do
 			echo xxx >$file
 		done
 
+		ls -l ? >list.ls
+
 		../../stu.test -f main.stu >list.out 2>list.err
 		exitcode="$?"
 
 		[ "$exitcode" = 0 ] || {
-			echo >&2 "*** ($type $cas) invalid exit code $exitcode"
+			echo >&2 "*** ($type $cas) expected exit code 0, got $exitcode"
+			echo >&2 _____
+			echo >&2 main.stu
+			echo >&2 _____
+			cat  >&2 main.stu
+			echo >&2 _____
+			echo >&2 ls -l '?'
+			echo >&2 _____
+			cat  >&2 list.ls
+			echo >&2 _____
 			exit 1
 		}
 		[ -r A ] || {

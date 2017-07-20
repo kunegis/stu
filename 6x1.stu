@@ -1,8 +1,0 @@
-# * File_Execution, without flags
-# * Transient_Execution, by flags
-# * Dynamic_Execution (already exists), by flags
-# * Concatenated_Execution, by flags 
-
-A:  -o @x   @x  { cp C A ; }
-@x:  C;
-C { echo correct >C ; }

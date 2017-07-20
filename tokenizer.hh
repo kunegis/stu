@@ -424,8 +424,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 {
 	assert(p < p_end && *p == '{');
 
-	const Place place_open(place_type, filename, line, p - p_line);
-	// TODO in declarations of the place like this, use a function Tokenizer::current_place(). 
+	const Place place_open= current_place();
 
 	++p;
 
@@ -473,8 +472,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 					const string command= string(p_beg, p - p_beg);
 					++p;
 					const Place place_command
-						(place_type,
-						 filename, line_command, column_command); 
+						(place_type, filename, line_command, column_command); 
 					return make_shared <Command> 
 						(command, place_command, place_open, whitespace); 
 				} else {
@@ -598,7 +596,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 shared_ptr <Place_Name> Tokenizer::parse_name()
 {
 	const char *const p_begin= p; 
-	Place place_begin(place_type, filename, line, p - p_line);
+	Place place_begin= current_place(); 
 
 	shared_ptr <Place_Name> ret= make_shared <Place_Name> ("", place_begin);
 
@@ -649,14 +647,14 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 {
 	assert(p < p_end && *p == '$'); 
 
-	place_dollar= Place(place_type, filename, line, p - p_line); 
+	place_dollar= current_place(); 
 	++p;
 	bool braces= false; 
 	if (p < p_end && *p == '{') {
 		++p;
 		braces= true; 
 	}
-	Place place_parameter_name(place_type, filename, line, p - p_line); 
+	Place place_parameter_name= current_place(); 
 
 	const char *const p_parameter_name= p;
 
@@ -802,14 +800,14 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 
 		/* Operators except '$' */ 
 		if (is_operator_char(*p)) {
-			Place place(place_type, filename, line, p - p_line);
+			Place place= current_place(); 
 			tokens.push_back(make_shared <Operator> (*p, place, whitespace));
 			++p;
 		}
 
 		/* Variable dependency */ 
 		else if (*p == '$' && p + 1 < p_end && p[1] == '[') {
-			Place place_dollar(place_type, filename, line, p - p_line);
+			Place place_dollar= current_place(); 
 			Place place_langle(place_type, filename, line, p + 1 - p_line);
 			tokens.push_back(make_shared <Operator> ('$', place_dollar, whitespace));
 			tokens.push_back(make_shared <Operator> ('[', place_langle, whitespace)); 
@@ -973,7 +971,7 @@ void Tokenizer::skip_space()
 
 void Tokenizer::parse_double_quote(Place_Name &ret)
 {
-	Place place_begin_quote(place_type, filename, line, p - p_line); 
+	Place place_begin_quote= current_place(); 
 	++p;
 
 	while (p < p_end) {
@@ -1051,7 +1049,7 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 
 void Tokenizer::parse_single_quote(Place_Name &ret)
 {
-	Place place_begin_quote(place_type, filename, line, p - p_line); 
+	Place place_begin_quote= current_place(); 
 	++p;
 	while (p < p_end) {
 		if (*p == '\'') {
@@ -1086,13 +1084,11 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 				Context context,
 				const Place &place_diagnostic)
 {
-	Place place_percent(place_type, filename, line, p - p_line); 
+	Place place_percent= current_place(); 
 	++p;
 	skip_space(); 
-
 	const char *const p_name= p;
-
-	Place place_directive(place_type, filename, line, p_name - p_line); 
+	Place place_directive= current_place(); 
 
 	while (p < p_end && isalnum(*p)) {
 		++p;
@@ -1134,7 +1130,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 		shared_ptr <Place_Name> place_name= parse_name(); 
 
 		if (place_name == nullptr) {
-			Place(place_type, filename, line, p - p_line) <<
+			current_place() <<
 				(p == p_end
 				 ? "expected a filename"
 				 : fmt("expected a filename, not %s", char_format_word(*p)));

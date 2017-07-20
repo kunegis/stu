@@ -178,7 +178,8 @@ do
 
 	if [ ! -d "$file" ]; then
 		echo >&2 "$0: *** '$file' is not a directory"
-		error=1
+		errors=1
+		echo "$file" >&6
 		continue
 	fi
 
@@ -186,9 +187,10 @@ do
 	if [ "$(echo $(ls -1 "$file" | wc -l))" = 0 ] ; then
 		if [ "$emptyok" != 1 ] ; then
 			echo >&2 "$0: *** Test directory $file/ does not contain any files"
-			error=1
+			errors=1
+			echo "$file" >&6
+			continue;
 		fi
-		continue;
 	fi
 
 	echo '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
@@ -203,7 +205,9 @@ do
 	do
 		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi
 		echo >&2 "$0: *** Invalid file '$otherfile' in test directory"
-		error=1
+		errors=1
+		echo "$file" >&6
+		continue
 	done
 
 	CMD=
@@ -224,7 +228,9 @@ do
 			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
 			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR -o -r NOCOLOR ]; then
 			echo >&2 "$0: *** EXEC does not allow any other file"
-			error=1
+			errors=1
+			echo "$file" >&6
+			continue
 		fi
 
 		echo >&2 ./EXEC

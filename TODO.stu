@@ -340,6 +340,10 @@ X = {x}   Y = {y}  Z = {z}
 @all:  @x.abc;
 @x.$name A.$name: { exit 0 ; }
 
+#
+# Actually use the PACKAGE_URL field from autoconf. 
+#
+
 #################### Further features #########################
 
 #

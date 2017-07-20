@@ -1993,7 +1993,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd,
 
 			shared_ptr <Dependency> dd2= Dependency::clone(dd); 
 			dd2->add_flags(dependency_link, false); 
-			dd2->flags &= (F_PLACED | F_VARIABLE | F_TARGET_INFO); 
+			dd2->flags &= (F_PLACED | F_DIRECT | F_TARGET_INFO);
 			shared_ptr <Dependency> ddd= make_shared <Dynamic_Dependency> (0, dd2); 
 			parent->push_result(ddd, nullptr, false, child); 
 		} 

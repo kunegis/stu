@@ -1,0 +1,9 @@
+A:  [-o @x] { 
+	[ -e nonexistingfile ] && {
+		echo >&2 "*** 'nonexistingfile' must not be built"
+		exit 2
+	}
+	touch A ; 
+}
+
+@x:  nonexistingfile;

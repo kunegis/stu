@@ -127,7 +127,11 @@ enum
 
 	/* Bits used for Target objects */
 	F_TARGET_INFO= F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
-
+	
+	/* Flags that are not transitive, and "go through" dynamics,
+	 * i.e, if 'A' contains the text 'B', '-X [A]' is equivalent to
+	 * '-X B'.  */
+	F_DIRECT= F_VARIABLE | F_NEWLINE_SEPARATED | F_NUL_SEPARATED,
 };
 
 const char *const FLAGS_CHARS= "pot*[@/\\$n0"; 

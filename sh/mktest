@@ -205,9 +205,7 @@ do
 	do
 		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi
 		echo >&2 "$0: *** Invalid file '$otherfile' in test directory"
-		errors=1
-		echo "$file" >&6
-		continue
+		error=1
 	done
 
 	CMD=

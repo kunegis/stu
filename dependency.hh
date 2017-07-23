@@ -699,8 +699,7 @@ shared_ptr <const Dependency> Dependency::strip_dynamic(shared_ptr <const Depend
 void Dependency::check() const
 {
 	for (int i= 0;  i < C_PLACED;  ++i) {
-		assert(((flags & (1 << i)) == 0) ==
-		       get_place_flag(i).empty()); 
+		assert(((flags & (1 << i)) == 0) == get_place_flag(i).empty()); 
 	}
 
 	const Plain_Dependency *plain_this= dynamic_cast <const Plain_Dependency *> (this);

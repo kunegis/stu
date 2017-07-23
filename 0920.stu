@@ -1,0 +1,9 @@
+# This must result in an error, because [B] resolves to $[V], which must
+# not appear within [...]. 
+
+A:    $[V]   [[B]]
+{
+	touch A
+}
+V = {correct}
+B = {$[V]}

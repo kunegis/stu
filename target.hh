@@ -623,7 +623,7 @@ string Target::format(Style style, bool &quotes) const
 		ret += '[';
 	}
 	assert(text.size() > i + 1);
-	ret += flags_format(text.at(i) & ~F_TARGET_TRANSIENT); 
+	ret += flags_format(text.at(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE)); 
 	if (text.at(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
@@ -653,7 +653,7 @@ string Target::format_out() const
 		ret += '[';
 	}
 	assert(text.size() > i + 1);
-	ret += flags_format(text.at(i) & ~F_TARGET_TRANSIENT); 
+	ret += flags_format(text.at(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE)); 
 	if (text.at(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
@@ -685,7 +685,7 @@ string Target::format_out_print_word() const
 		ret += '[';
 	}
 	assert(text.size() > i + 1);
-	ret += flags_format(text.at(i) & ~F_TARGET_TRANSIENT); 
+	ret += flags_format(text.at(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE)); 
 	if (text.at(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
@@ -716,12 +716,10 @@ string Target::format_word() const
 	ret += Color::word; 
 	size_t i= 0;
 	while (text.at(i) & F_TARGET_DYNAMIC) {
-//		ret += flags_format(text.at(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
 		++i;
 		ret += '[';
 	}
 	assert(text.size() > i + 1);
-//	ret += flags_format(text.at(i) & ~F_TARGET_TRANSIENT); 
 	if (text.at(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}

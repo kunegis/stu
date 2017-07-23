@@ -2,12 +2,12 @@
 #define FLAGS_HH
 
 /*
- * Flags apply to dependencies and represents things like "optional
- * dependency" or "\0-separated file".  Flags are binary option-like,
- * and apply at multiple levels in Stu, from Stu source code where they
- * are represented by a syntax ressembling that of command line flags,
- * to attributes of edges in the dependency graph.  Internally, flags
- * are defined as bit fields.
+ * Flags are bit fields that to dependencies and represents things like
+ * "optional dependency" or "\0-separated file".  Flags are binary
+ * option-like, and apply at multiple levels in Stu, from Stu source
+ * code where they are represented by a syntax ressembling that of
+ * command line flags, to attributes of edges in the dependency graph.
+ * Internally, flags are defined as bit fields.
  *
  * Each edge in the dependency graph is annotated with one object of
  * this type.  This contains bits related to what should be done with
@@ -37,19 +37,20 @@ enum
 	 * Variables iterating over these values are usually called
 	 * I.  
 	 */ 
-	I_PERSISTENT= 0,	/* -p  \               \                       */
-	I_OPTIONAL,		/* -o   | placed flags  | finishable flags     */
-	I_TRIVIAL,		/* -t  /                |                      */
-	I_RESULT,		/* -*                  /                       */
-	I_TARGET_DYNAMIC,	/* [ ] \ target flags                          */
-	I_TARGET_TRANSIENT,	/* @   /                                       */
-	I_VARIABLE,		/* $                                           */
-	I_NEWLINE_SEPARATED,	/* -n  \ attribute flags                       */
-	I_NUL_SEPARATED,	/* -0  /                                       */
+	I_PERSISTENT= 0,	/* -p  \                  \                     */
+	I_OPTIONAL,		/* -o   | placed flags     |                    */
+	I_TRIVIAL,		/* -t  /                   | target byte flags  */
+	I_TARGET_DYNAMIC,	/* [ ] \ target flags      |                    */
+	I_TARGET_TRANSIENT,	/* @   /                   |                    */
+	I_VARIABLE,		/* $                       |                    */
+	I_NEWLINE_SEPARATED,	/* -n  \ attribute flags   |                    */
+	I_NUL_SEPARATED,	/* -0  /                  /                     */
+	I_RESULT_NOTIFY,        /* -*                                           */
+	I_RESULT_PUT,           /* -%                                           */
 
 	C_ALL,                 
 	C_PLACED           	= 3,
-	C_FINISHABLE       	= 4,
+	C_TARGET_BYTE		= 8,
 
 	/* 
 	 * What follows are the actual flag bits to be ORed together 
@@ -63,11 +64,6 @@ enum
 
 	F_TRIVIAL		= 1 << I_TRIVIAL,
 	/* (-t) Trivial dependency */
-
-	F_RESULT		= 1 << I_RESULT,
-	/* Only compute the result list of dependencies associated with
-	 * this dependency, rather than building the dependency, and
-	 * propagate the results.  */ 
 
 	F_TARGET_DYNAMIC	= 1 << I_TARGET_DYNAMIC,
 	/* A dynamic target */
@@ -86,23 +82,32 @@ enum
 	/* For dynamic dependencies, the file contains NUL-separated
 	 * filenames, without any markup  */ 
 
+	F_RESULT_NOTIFY		= 1 << I_RESULT_NOTIFY,
+	/* The link A ---> B between two executions annotated with this
+	 * flags means that A is notified of B's results.  */
+
+	F_RESULT_PUT		= 1 << I_RESULT_PUT,
+	/* The link A ---> B between two executions annotated with this
+	 * flags means that the target B will be put in A's result  */
+
 	/*
 	 * Aggregates
 	 */
 	F_PLACED	= (1 << C_PLACED) - 1,
-	F_FINISHABLE	= (1 << C_FINISHABLE) - 1,
+	F_TARGET_BYTE	= (1 << C_TARGET_BYTE) - 1,
 	F_TARGET	= F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
 	F_ATTRIBUTE	= F_NEWLINE_SEPARATED | F_NUL_SEPARATED,
 	F_TRANSITIVE_TRANSIENT	= F_PLACED | F_ATTRIBUTE,
 };
 
-const char *const FLAGS_CHARS= "pot*[@/\\$n0"; 
+const char *const FLAGS_CHARS= "pot[@$n0*%"; 
 /* Characters representing the individual flags -- used in verbose mode
  * output */ 
 
 int flag_get_index(char c)
 /* 
  * Get the flag index corresponding to a character.
+ * Not all cases are implemented 
  */ 
 {
 	switch (c) {

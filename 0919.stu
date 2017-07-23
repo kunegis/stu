@@ -1,0 +1,16 @@
+A:  [B]  [-n B]
+{
+	cat W X Y Z 'W X' 'Y Z' >A
+}
+
+>B {
+	echo W X
+	echo Y Z
+}
+
+W = {www}
+X = {xxx}
+Y = {yyy}
+Z = {zzz}
+'W X' = {wxwxwx}
+'Y Z' = {yzyzyz}

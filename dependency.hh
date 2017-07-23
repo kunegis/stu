@@ -727,7 +727,7 @@ void Dependency::check() const
 Target Plain_Dependency::get_target() const
 {
 	Target ret= place_param_target.unparametrized(); 
-	ret.get_front_byte_nondynamic() |= flags;
+	ret.get_front_byte_nondynamic() |= (char)(unsigned char)(flags & F_TARGET_BYTE);
 	return ret; 
 }
 
@@ -783,13 +783,13 @@ Target Dynamic_Dependency::get_target() const
 	while (dynamic_cast <const Dynamic_Dependency *> (d)) {
 		Flags f= F_TARGET_DYNAMIC; 
 		assert((d->flags & F_TARGET_DYNAMIC) == 0); 
-		f |= d->flags; 
+		f |= d->flags & F_TARGET_BYTE; 
 		text += (char)(unsigned char)f; 
 		d= dynamic_cast <const Dynamic_Dependency *> (d)->dependency.get(); 
 	}
 	assert(dynamic_cast <const Plain_Dependency *> (d)); 
 	const Plain_Dependency *sin= dynamic_cast <const Plain_Dependency *> (d); 
-	Flags f= sin->flags;
+	Flags f= sin->flags & F_TARGET_BYTE;
 	text += (char)(unsigned char)f; 
 	
 	// TODO in next line, copy the string directly from one string

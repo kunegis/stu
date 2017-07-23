@@ -618,6 +618,11 @@ public:
 		for (auto &i:  parents) 
 			i.first->propagate_variable_content(variable_name, content); 
 	}
+	virtual void notify_result(shared_ptr <const Dependency> dependency,
+				   Execution *)
+	{
+		push_result(dependency); 
+	}
 
 protected:
 
@@ -1582,28 +1587,28 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 	shared_ptr <const Plain_Dependency> plain_dependency_this=
 		dynamic_pointer_cast <const Plain_Dependency> (dependency_this);
 
-	/* Carry flags over transient targets */ 
-	if (plain_dependency_this) {
-		if (plain_dependency_this->place_param_target.flags & F_TARGET_TRANSIENT) {
-			dependency_child_new->flags |= dependency_this->flags & F_TRANSITIVE_TRANSIENT; 
-			// TODO in the following, iterate over all C_PLACED flags. 
-			if (dependency_this->flags & F_PERSISTENT) {
-				dependency_child_new->set_place_flag
-					(I_PERSISTENT,
-					 dependency_this->get_place_flag(I_PERSISTENT)); 
-			}
-			if (dependency_this->flags & F_OPTIONAL) {
-				dependency_child_new->set_place_flag
-					(I_OPTIONAL,
-					 dependency_this->get_place_flag(I_OPTIONAL)); 
-			}
-			if (dependency_this->flags & F_TRIVIAL) {
-				dependency_child_new->set_place_flag
-					(I_TRIVIAL,
-					 dependency_this->get_place_flag(I_TRIVIAL)); 
-			}
-		}
-	}
+	// /* Carry flags over transient targets */ 
+	// if (plain_dependency_this) {
+	// 	if (plain_dependency_this->place_param_target.flags & F_TARGET_TRANSIENT) {
+	// 		dependency_child_new->flags |= dependency_this->flags & F_TRANSITIVE_TRANSIENT; 
+	// 		// TODO in the following, iterate over all C_PLACED flags. 
+	// 		if (dependency_this->flags & F_PERSISTENT) {
+	// 			dependency_child_new->set_place_flag
+	// 				(I_PERSISTENT,
+	// 				 dependency_this->get_place_flag(I_PERSISTENT)); 
+	// 		}
+	// 		if (dependency_this->flags & F_OPTIONAL) {
+	// 			dependency_child_new->set_place_flag
+	// 				(I_OPTIONAL,
+	// 				 dependency_this->get_place_flag(I_OPTIONAL)); 
+	// 		}
+	// 		if (dependency_this->flags & F_TRIVIAL) {
+	// 			dependency_child_new->set_place_flag
+	// 				(I_TRIVIAL,
+	// 				 dependency_this->get_place_flag(I_TRIVIAL)); 
+	// 		}
+	// 	}
+	// }
 		
 	/* '-p' and '-o' do not mix */ 
 	if (dependency_child_new->flags & F_PERSISTENT && dependency_child_new->flags & F_OPTIONAL) {
@@ -2189,22 +2194,24 @@ File_Execution::File_Execution(Target target_,
 //	string text_rule= rule == nullptr ? "(no rule)" : rule->format_src(); 
 //	Debug::print(this, fmt("rule %s", text_rule));  
 
-	if (! (target_.is_dynamic() && target_.is_any_file()) && rule != nullptr) {
+	if (
+//	    ! (target_.is_dynamic() && target_.is_any_file()) && 
+	    rule != nullptr) {
 		/* There is a rule for this execution */ 
-		for (auto &dependency:  rule->dependencies) {
-			shared_ptr <const Dependency> dep= dependency;
-			if (target_.is_any_transient()) {
-				shared_ptr <Dependency> dep_new= Dependency::clone(dep); 
-				dep_new->flags |= dependency_link->flags & F_TRANSITIVE_TRANSIENT;
-				for (int i= 0;  i < C_PLACED;  ++i) {
-					assert(!(dependency_link->flags & (1 << i)) ==
-					       dependency_link->get_place_flag(i).empty());
-					if (dep_new->get_place_flag(i).empty() && ! dependency_link->get_place_flag(i).empty())
-						dep_new->set_place_flag(i, dependency_link->get_place_flag(i)); 
-				}
-				dep= dep_new;
-			} 
-			push(dep); 
+		for (auto &d:  rule->dependencies) {
+//			shared_ptr <const Dependency> dep= dependency;
+			// if (target_.is_any_transient()) {
+			// 	shared_ptr <Dependency> dep_new= Dependency::clone(dep); 
+			// 	dep_new->flags |= dependency_link->flags & F_TRANSITIVE_TRANSIENT;
+			// 	for (int i= 0;  i < C_PLACED;  ++i) {
+			// 		assert(!(dependency_link->flags & (1 << i)) ==
+			// 		       dependency_link->get_place_flag(i).empty());
+			// 		if (dep_new->get_place_flag(i).empty() && ! dependency_link->get_place_flag(i).empty())
+			// 			dep_new->set_place_flag(i, dependency_link->get_place_flag(i)); 
+			// 	}
+			// 	dep= dep_new;
+			// } 
+			push(d); 
 		}
 	} else {
 		/* There is no rule for this execution */ 
@@ -3689,7 +3696,6 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 		return; 
 	}
 
-
 	if (rule == nullptr) {
 		/* There must be a rule for transient targets (as
 		 * opposed to file targets), so this is an error.  */
@@ -3715,14 +3721,11 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 		executions_by_target[t]= this; 
 	}
 
-//	string text_rule= rule == nullptr ? "(no rule)" : rule->format_src(); 
-//	Debug::print(this, fmt("rule %s", text_rule));  
-
 	for (auto &dependency:  rule->dependencies) {
 		shared_ptr <const Dependency> dep= dependency;
 		if (dependency_link->flags) {
 			shared_ptr <Dependency> dep_new= Dependency::clone(dep); 
-			dep_new->flags |= dependency_link->flags & F_TRANSITIVE_TRANSIENT;
+			dep_new->flags |= dependency_link->flags & (F_PLACED | F_ATTRIBUTE | F_RESULT_NOTIFY | F_RESULT_PUT);
 			for (int i= 0;  i < C_PLACED;  ++i) {
 				assert(!(dependency_link->flags & (1 << i)) ==
 				       dependency_link->get_place_flag(i).empty());

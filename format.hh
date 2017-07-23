@@ -122,6 +122,7 @@ string name_format(string name, Style style, bool &quotes)
 		quotes= true;
 
 	string ret(4 * name.size(), '\0');
+	// TODO we shouldn't use c_str() for write access. 
 	char *const q_begin= (char *) ret.c_str(), *q= q_begin; 
 	for (const char *p= name.c_str();  *p;  ++p) {
 		char c= *p;

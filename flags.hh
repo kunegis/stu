@@ -37,101 +37,63 @@ enum
 	 * Variables iterating over these values are usually called
 	 * I.  
 	 */ 
-	
-	I_PERSISTENT= 0,       /* -p */    
-	I_OPTIONAL,            /* -o */
-	I_TRIVIAL,             /* -t */
+	I_PERSISTENT= 0,	/* -p  \               \                       */
+	I_OPTIONAL,		/* -o   | placed flags  | finishable flags     */
+	I_TRIVIAL,		/* -t  /                |                      */
+	I_RESULT,		/* -*                  /                       */
+	I_TARGET_DYNAMIC,	/* [ ] \ target flags                          */
+	I_TARGET_TRANSIENT,	/* @   /                                       */
+	I_VARIABLE,		/* $                                           */
+	I_NEWLINE_SEPARATED,	/* -n  \ attribute flags                       */
+	I_NUL_SEPARATED,	/* -0  /                                       */
 
-	I_RESULT_ONLY,         /* -* */
-
-	I_TARGET_DYNAMIC,      /* Used by Target as dynamic bit */
-	I_TARGET_TRANSIENT,    /* Used by Target as type bit */
-
-	I_DYNAMIC_LEFT,        /* -/ */
-	I_DYNAMIC_RIGHT,       /* -\ */
-	I_VARIABLE,            /* -$ */
-	I_NEWLINE_SEPARATED,   /* -n */
-	I_NUL_SEPARATED,       /* -0 */
-
-	C_ALL,                 /* Total number of flags */ 
-
-	C_PLACED           = 3,
-	/* Only the first C_PLACED flags have a place associated with them */
-
-	C_FINISHABLE       = 4,
-	/* The first C_FINISHABLE flags are used for the "finished" flag
-	 * of File_Execution objects.  */
+	C_ALL,                 
+	C_PLACED           	= 3,
+	C_FINISHABLE       	= 4,
 
 	/* 
 	 * What follows are the actual flag bits to be ORed together 
 	 */ 
 
-	/* 
-	 * Placed and transitive flags
-	 */ 
-
-	F_PERSISTENT       = 1 << I_PERSISTENT,  
+	F_PERSISTENT		= 1 << I_PERSISTENT,  
 	/* (-p) When the dependency is newer than the target, don't rebuild */ 
 
-	F_OPTIONAL         = 1 << I_OPTIONAL,
+	F_OPTIONAL		= 1 << I_OPTIONAL,
 	/* (-o) Don't create the dependency if it doesn't exist */
 
-	F_TRIVIAL          = 1 << I_TRIVIAL,
+	F_TRIVIAL		= 1 << I_TRIVIAL,
 	/* (-t) Trivial dependency */
 
-	/* 
-	 * Transitive and non-placed flags 
-	 */
-
-	F_RESULT_ONLY      = 1 << I_RESULT_ONLY,
+	F_RESULT		= 1 << I_RESULT,
 	/* Only compute the result list of dependencies associated with
-	 * this dependency, rather than building the dependency.  */ 
+	 * this dependency, rather than building the dependency, and
+	 * propagate the results.  */ 
 
-	/*
-	 * Target flags
-	 */
+	F_TARGET_DYNAMIC	= 1 << I_TARGET_DYNAMIC,
+	/* A dynamic target */
 
-	F_TARGET_DYNAMIC   = 1 << I_TARGET_DYNAMIC,
-	F_TARGET_TRANSIENT = 1 << I_TARGET_TRANSIENT,
+	F_TARGET_TRANSIENT	= 1 << I_TARGET_TRANSIENT,
+	/* A transient target */
 
-	/* 
-	 * Intransitive flags
-	 */ 
-
-	F_DYNAMIC_LEFT     = 1 << I_DYNAMIC_LEFT,
-	/* This is the link between a Dynamic_Execution and its left branch */
-
-	F_DYNAMIC_RIGHT    = 1 << I_DYNAMIC_RIGHT,
-	/* For right branches of dynamic.  Overrides the otherwise
-	 * passed F_DYNAMIC_LEFT flag.  */
-
-	F_VARIABLE         = 1 << I_VARIABLE,
+	F_VARIABLE		= 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */ 
 
-	F_NEWLINE_SEPARATED= 1 << I_NEWLINE_SEPARATED,
+	F_NEWLINE_SEPARATED	= 1 << I_NEWLINE_SEPARATED,
 	/* For dynamic dependencies, the file contains newline-separated
 	 * filenames, without any markup  */ 
 
-	F_NUL_SEPARATED=    1 << I_NUL_SEPARATED,
+	F_NUL_SEPARATED		= 1 << I_NUL_SEPARATED,
 	/* For dynamic dependencies, the file contains NUL-separated
 	 * filenames, without any markup  */ 
 
 	/*
 	 * Aggregates
 	 */
-	F_PLACED= (1 << C_PLACED) - 1,
-	F_FINISHABLE= (1 << C_FINISHABLE) - 1,
-
-	/* Bits that act transitively over transient targets */
-	F_TRANSITIVE= F_FINISHABLE | F_DYNAMIC_LEFT | F_DYNAMIC_RIGHT,
-
-	/* Bits used for Target objects */
-	F_TARGET_INFO= F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
-	
-	/* Flags that are not transitive, and "go through" dynamics,
-	 * i.e, if 'A' contains the text 'B', '-X [A]' is equivalent to
-	 * '-X B'.  */
-	F_DIRECT= F_VARIABLE | F_NEWLINE_SEPARATED | F_NUL_SEPARATED,
+	F_PLACED	= (1 << C_PLACED) - 1,
+	F_FINISHABLE	= (1 << C_FINISHABLE) - 1,
+	F_TARGET	= F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
+	F_ATTRIBUTE	= F_NEWLINE_SEPARATED | F_NUL_SEPARATED,
+	F_TRANSITIVE_TRANSIENT	= F_PLACED | F_ATTRIBUTE,
 };
 
 const char *const FLAGS_CHARS= "pot*[@/\\$n0"; 

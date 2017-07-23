@@ -127,6 +127,7 @@ public:
 	virtual string format(Style, bool &quotes) const= 0; 
 	virtual string format_word() const= 0; 
 	virtual string format_out() const= 0; 
+	virtual string format_src() const= 0; 
 
 	virtual Target get_target() const= 0;
 	/* Get the corresponding Target object.  Only called for
@@ -310,6 +311,7 @@ public:
 
 	virtual string format_word() const;
 	virtual string format_out() const;
+	virtual string format_src() const;
 
 	virtual bool is_normalized() const { return true;  }
 
@@ -397,6 +399,16 @@ public:
 			   text_dependency); 
 	}
 
+	virtual string format_src() const {
+		string text_flags= flags_format(flags);
+		if (text_flags != "")
+			text_flags += ' '; 
+		string text_dependency= dependency->format_src(); 
+		return fmt("%s[%s]",
+			   text_flags,
+			   text_dependency); 
+	}
+
 	virtual bool is_normalized() const {
 		return dependency->is_normalized(); 
 	}
@@ -473,6 +485,7 @@ public:
 	virtual string format(Style, bool &quotes) const; 
 	virtual string format_word() const; 
 	virtual string format_out() const; 
+	virtual string format_src() const; 
 
 	virtual bool is_normalized() const; 
 	/* A concatenated dependency is always normalized, regardless of
@@ -554,6 +567,7 @@ public:
 	virtual string format(Style, bool &quotes) const; 
 	virtual string format_word() const; 
 	virtual string format_out() const; 
+	virtual string format_src() const; 
 
 	virtual bool is_normalized() const {  return false;  }
 	/* A compound dependency is never normalized */
@@ -578,6 +592,7 @@ public:
 	virtual string format(Style, bool &) const {  return "ROOT";  }
 	virtual string format_word() const {  return "ROOT";  }
 	virtual string format_out() const {  return "ROOT";  }
+	virtual string format_src() const {  return "ROOT";  }
 	virtual Target get_target() const {  return Target("");  }
 	virtual bool is_normalized() const {  return true;  }
 };
@@ -728,6 +743,18 @@ string Plain_Dependency::format_out() const
 		   flags & F_VARIABLE ? "]" : "");
 }
 
+string Plain_Dependency::format_src() const 
+{
+	string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
+	if (f != "")
+		f += ' '; 
+	return fmt("%s%s%s%s",
+		   f,
+		   flags & F_VARIABLE ? "$[" : "",
+		   place_param_target.format_src(),
+		   flags & F_VARIABLE ? "]" : "");
+}
+
 string Plain_Dependency::format_word() const
 {
 	string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
@@ -828,42 +855,54 @@ string Compound_Dependency::format(Style style, bool &) const
  * it.  */  
 {
 	string ret;
-
 	bool quotes= false;
-
 	for (const shared_ptr <const Dependency> &d:  dependencies) {
 		if (! ret.empty())
 			ret += ", ";
 		ret += d->format(style, quotes); 
 	}
-
-	return fmt("(%s)", ret); 
+	if (dependencies.size() != 1) 
+		ret= fmt("(%s)", ret); 
+	return ret;
 }
 
 string Compound_Dependency::format_word() const
 {
 	string ret;
-
 	for (const shared_ptr <const Dependency> &d:  dependencies) {
 		if (! ret.empty())
 			ret += ", ";
 		ret += d->format_word(); 
 	}
-	
-	return fmt("(%s)", ret); 
+	if (dependencies.size() != 1) 
+		ret= fmt("(%s)", ret); 
+	return ret;
 }
 
 string Compound_Dependency::format_out() const
 {
 	string ret;
-
 	for (const shared_ptr <const Dependency> &d:  dependencies) {
 		if (! ret.empty())
 			ret += ", ";
 		ret += d->format_out(); 
 	}
-	
-	return fmt("(%s)", ret); 
+	if (dependencies.size() != 1) 
+		ret= fmt("(%s)", ret); 
+	return ret;
+}
+
+string Compound_Dependency::format_src() const
+{
+	string ret;
+	for (const shared_ptr <const Dependency> &d:  dependencies) {
+		if (! ret.empty())
+			ret += ", ";
+		ret += d->format_src(); 
+	}
+	if (dependencies.size() != 1) 
+		ret= fmt("(%s)", ret); 
+	return ret;
 }
 
 shared_ptr <const Dependency> 
@@ -935,6 +974,19 @@ string Concatenated_Dependency::format_out() const
 		if (! ret.empty())
 			ret += '*';
 		ret += d->format_out(); 
+	}
+	
+	return ret; 
+}
+
+string Concatenated_Dependency::format_src() const
+{
+	string ret;
+
+	for (const shared_ptr <const Dependency> &d:  dependencies) {
+		if (! ret.empty())
+			ret += '*';
+		ret += d->format_src(); 
 	}
 	
 	return ret; 

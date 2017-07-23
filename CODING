@@ -27,8 +27,8 @@ This is my preferred style.  --Jérôme Kunegis
 === Layout ===
 
 * All the following rules are broken when necessary. 
-* Tabs for indentation at the beginning of lines.  Set your editor
-  to show them at the width you prefer.  I use the default 8-char tabs. 
+* Tabs for indentation.  Set your editor to show them at the width you
+  prefer.  I use the default 8-char tabs.   
 * Spaces for alignment in the middle of lines.
 * Use 72-character lines in general, but allow more where reasonable,
   e.g., to avoid breaking message string literals or to make table-like
@@ -72,6 +72,8 @@ This is my preferred style.  --Jérôme Kunegis
 * Inside class declarations, the order is public->protected->private. 
 * We put friend declarations in the "private" block.  The placement is
   irrelevant to the meaning of the code; this is just a style issue. 
+* When overriding a virtual function, we do use the 'virtual' keyword,
+  even if it is redundant. 
 
 == Dynamic variables ==
 

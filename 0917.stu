@@ -1,0 +1,6 @@
+A:  -o [@x]   [@y] { cp C A ; }
+@x:  B;
+@y:  B;
+B = {C}
+C = {correct}
+

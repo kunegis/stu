@@ -841,7 +841,7 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 		       (i_flag == I_TRIVIAL  && option_nontrivial))) {
 			shared_ptr <Dependency> ret_new= Dependency::clone(ret);
 			ret_new->flags |= (1 << i_flag); 
-			assert(i_flag != F_RESULT_ONLY); 
+			assert(i_flag != F_RESULT); 
 			if (i_flag < C_PLACED)
 				ret_new->set_place_flag(i_flag, place_flag); 
 			ret= ret_new; 

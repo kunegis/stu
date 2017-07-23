@@ -66,6 +66,8 @@ public:
 	}
 
 	const string &get_text() const {  return text;  }
+	string &get_text() {  return text;  }
+	const char *get_text_c_str() const {  return text.c_str();  }
 
 	bool is_dynamic() const {
 		assert(text.size() >= 2); 
@@ -579,6 +581,11 @@ public:
 	string format_out() const {
 		Target target(flags, place_name.raw());
 		return target.format_out(); 
+	}
+
+	string format_src() const {
+		Target target(flags, place_name.raw());
+		return target.format_src(); 
 	}
 
 	shared_ptr <Place_Param_Target> 

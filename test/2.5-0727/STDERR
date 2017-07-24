@@ -1,0 +1,3 @@
+main.stu:4:8: dependency -o @x must not be optional
+main.stu:5:1: because rule for transient target @x has a command
+main.stu:4:8: @x is needed by 'A'

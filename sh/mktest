@@ -527,7 +527,7 @@ printf 'Runtime: %u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)"
 if [ "$errors" != 0 ]
 then
 	count_failed="$(echo $(<../error.log wc -l))"
-	success_rate="$(awk 'BEGIN{print int(('"$count_total"'-'"$count_failed"')/'"$count_total"'*10000)/100}')"
+	success_rate="$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')"
 	echo >&2 "[31m$0: *** ${success_rate}% success rate.  The following $count_failed test(s) failed (out of $count_total):"
 	cat ../error.log
 	printf "[m"

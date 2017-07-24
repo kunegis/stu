@@ -3537,10 +3537,8 @@ bool Transient_Execution::finished() const
 	return is_finished; 
 }
 
-bool Transient_Execution::finished(Flags flags) const
+bool Transient_Execution::finished(Flags) const
 {
-	(void) flags; 
-
 	return is_finished; 
 }
 

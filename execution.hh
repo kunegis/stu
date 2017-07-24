@@ -2207,6 +2207,7 @@ File_Execution::File_Execution(Target target_,
 	if (dynamic_cast <Dynamic_Execution *> (parent) &&
 	    dependency->flags & F_RESULT_NOTIFY &&
 	    dependency->flags & F_TARGET_TRANSIENT) {
+
 		Place place_target;
 		for (auto &i:  rule->place_param_targets) {
 			if (i->place_name.unparametrized() == target_.get_name_nondynamic()) {
@@ -2225,6 +2226,36 @@ File_Execution::File_Execution(Target target_,
 		dependency->get_place() << fmt("when used as dynamic dependency of %s",
 					       parent->get_parents().begin()->second->get_target().format_word());
 		parent->get_parents().begin()->first->print_traces();
+		parent->raise(ERROR_LOGICAL);
+		error_additional |= ERROR_LOGICAL;
+		return;
+	}
+
+	/* -o and -p are not allowed on non-transitive transients */
+	if (dependency->flags & F_TARGET_TRANSIENT &&
+	    dependency->flags & (F_OPTIONAL | F_PERSISTENT)) {
+
+		Place place_target;
+		for (auto &i:  rule->place_param_targets) {
+			if (i->place_name.unparametrized() == target_.get_name_nondynamic()) {
+				place_target= i->place;
+				break;
+			}
+		}
+		assert(! place_target.empty());
+		dependency->get_place() << fmt(
+					       (dependency->flags & F_OPTIONAL)
+					       ? "dependency %s must not be optional"
+					       : "dependency %s must not be persistent"
+					       ,
+					       dependency->format_word()); 
+//					       parent->get_parents().begin()->second->get_target().format_word());
+		if (rule->command) 
+			place_target << fmt("because rule for transient target %s has a command", target_.format_word());
+		else 
+			place_target << fmt("because rule for transient target %s has file targets", target_.format_word()); 
+		print_traces();
+//		parent->get_parents().begin()->first->print_traces();
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
 		return;

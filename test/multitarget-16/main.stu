@@ -1,6 +1,5 @@
+# This is an error:  the -o option can only apply to files, to to
+# transitive transient targets.  
 
-A:  -o @x { 
-	[ -e B ] && exit 1
-	touch A
-}
-@x B { echo correct >B }
+A:  -o @x { touch A ; }
+@x B { touch B ; }

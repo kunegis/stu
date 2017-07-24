@@ -1,5 +1,5 @@
-# Flags also propagate over transient targets when they have a
-# command. 
+# Flags don't propagate over transient targets when they have a
+# command.  This is an error. 
 
 A: -o @x { 
 	[ -e B ] && exit 1

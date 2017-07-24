@@ -1,0 +1,8 @@
+# 'A' contains 'ddd\nccc\nfff'
+A:  [B] { cat D C F >A ; }
+B = { @x D [E] }
+D = {ddd}
+@x: C;
+C = {ccc}
+E = {F}
+F = {fff}

@@ -163,14 +163,17 @@ public:
 	virtual void propagate_variable_content(string variable_name, string content)= 0; 
 
 	virtual void notify_result(shared_ptr <const Dependency> dependency,
-				   Execution *source)
+				   Execution *source,
+				   Flags flags)
 	/* The child execution SOURCE notifies THIS about a new result.
-	 * Only called when the dependency linking the two has the
-	 * F_RESULT flag.  */
+	 * Only called when the dependency linking the two had one of the
+	 * F_RESULT_* flag.  The given flag contains only one of the two
+	 * F_RESULT_* flags.  */ 
 	{
-		/* Execution classes that use F_RESULT override this function */
+		/* Execution classes that use F_RESULT_* override this function */
 		(void) dependency;
 		(void) source; 
+		(void) flags;
 		assert(false);
 	}
 
@@ -622,7 +625,7 @@ public:
 	virtual bool finished(Flags flags) const; 
 	virtual string format_out() const;
 	virtual string format_src() const;
-	virtual void notify_result(shared_ptr <const Dependency> dependency, Execution *);
+	virtual void notify_result(shared_ptr <const Dependency> dependency, Execution *, Flags flags);
 	virtual void propagate_variable_content(string variable_name, string content) {
 		for (auto &i:  parents) 
 			i.first->propagate_variable_content(variable_name, content); 
@@ -826,7 +829,7 @@ public:
 		for (auto &i:  parents) 
 			i.first->propagate_variable_content(variable_name, content); 
 	}
-	virtual void notify_result(shared_ptr <const Dependency> dependency, Execution *source);
+	virtual void notify_result(shared_ptr <const Dependency> dependency, Execution *source, Flags flags);
 
 protected:
 
@@ -1617,7 +1620,7 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 
 	if (dependency_child->flags & F_RESULT_NOTIFY) {
 		for (const auto &dependency:  child->result) {
-			this->notify_result(dependency, this); 
+			this->notify_result(dependency, this, F_RESULT_NOTIFY); 
 		}
 	}
 
@@ -1660,13 +1663,14 @@ void Execution::disconnect(Execution *const parent,
 	if (dependency_child->flags & F_RESULT_NOTIFY && dynamic_cast <File_Execution *> (child)) {
 		shared_ptr <Dependency> d= Dependency::clone(dependency_child);
 		d->flags &= ~F_RESULT_NOTIFY; 
-		parent->notify_result(d, child); 
+		parent->notify_result(d, child, F_RESULT_NOTIFY); 
 	}
 
-	if (dependency_child->flags & F_RESULT_PUT) {
+	if (dependency_child->flags & F_RESULT_PUT && dynamic_cast <File_Execution *> (child)) {
 		shared_ptr <Dependency> d= Dependency::clone(dependency_child);
 		d->flags &= ~F_RESULT_PUT; 
-		parent->push_result(d); 
+		parent->notify_result(d, child, F_RESULT_PUT); 
+//		parent->push_result(d); 
 	}
 
 	/* Propagate timestamp */
@@ -1891,8 +1895,9 @@ void Execution::push_result(shared_ptr <const Dependency> dd)
 
 	/* Notify parents */
 	for (auto &i:  parents) {
-		if (i.second->flags & F_RESULT_NOTIFY) {
-			i.first->notify_result(dd, this); 
+		Flags flags= i.second->flags & (F_RESULT_NOTIFY | F_RESULT_PUT); 
+		if (flags) {
+			i.first->notify_result(dd, this, flags); 
 		}
 	}
 }
@@ -3412,14 +3417,16 @@ string Dynamic_Execution::format_src() const
 	return dependency->format_src();
 }
 
-void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, Execution *source)
+void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, Execution *source, Flags flags)
 {
+	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_PUT))); 
+	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_PUT)) != (F_RESULT_NOTIFY | F_RESULT_PUT)); 
+
+	if (flags & F_RESULT_NOTIFY) {
 	if (dynamic_pointer_cast <const Plain_Dependency> (d)) {
 		try {
 			const Place_Param_Target &place_param_target= 
-				dynamic_pointer_cast <const Plain_Dependency> (d)
-				->
-				place_param_target; 
+				dynamic_pointer_cast <const Plain_Dependency> (d)->place_param_target; 
 
 			/* Check:  variable dependencies are not allowed in multiply
 			 * dynamic dependencies.  */
@@ -3464,8 +3471,12 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, Execution
 			raise(e); 
 		}
 	} else {
-		// TODO push the dynamic of D 
+		// TODO push the dynamic of D?
 		assert(false);
+	}
+	} else {
+		assert(flags & F_RESULT_PUT);
+		push_result(d); 
 	}
 }
 
@@ -3595,10 +3606,10 @@ string Transient_Execution::format_src() const {
 }
 
 void Transient_Execution::notify_result(shared_ptr <const Dependency> dependency,
-					Execution *)
+					Execution *,
+					Flags flags)
 {
-//	shared_ptr <Dependency> dependency_new = Dependency::clone(dependency); 
-//	dependency_new->flags 
+	assert(flags == F_RESULT_PUT); 
 	push_result(dependency); 
 }
 
@@ -3607,8 +3618,7 @@ void Debug::print(Execution *e, string text)
 {
 	if (e == nullptr) {
 		print("", text);
-	}
-	else {
+	} else {
 		if (executions.size() > 0 &&
 		    executions[executions.size() - 1] == e) {
 			print(e->format_src(), text); 

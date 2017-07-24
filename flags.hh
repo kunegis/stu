@@ -88,7 +88,7 @@ enum
 
 	F_RESULT_PUT		= 1 << I_RESULT_PUT,
 	/* The link A ---> B between two executions annotated with this
-	 * flags means that the target B will be put in A's result  */
+	 * flags means that the results B will be put into A's result  */
 
 	/*
 	 * Aggregates

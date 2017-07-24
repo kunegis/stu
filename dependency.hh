@@ -163,7 +163,7 @@ class Plain_Dependency
  *
  * When the target is a transient, the dependency flags have the
  * F_TARGET_TRANSIENT bit set, which is redundant.  No other Dependency
- * has the F_TARGET_TRANSIENT flag set. 
+ * type has the F_TARGET_TRANSIENT flag set.
  */
 	:  public Dependency
 {

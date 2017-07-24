@@ -2,7 +2,5 @@
 # act transitively.  Instead, this is an error:  non-transitive
 # transients cannot be used in dynamic dependencies. 
 
-A: [@x] { cp D A ; }
-B @x: C { echo bbb >B ; }
-C { echo D >C ; }
-D { echo correct >D ; }
+A: [@x] { touch A ; }
+@x { echo Building @x ; }

@@ -1364,7 +1364,6 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 		return proceed |= P_FINISHED; 
 	}
 
-	// TODO placement
 	if (optional_finished(dependency_this2)) {
 		Debug::print(this, "finished"); 
 		return proceed |= P_FINISHED; 
@@ -1385,8 +1384,6 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 			return proceed |= P_FINISHED;
 		}
 	} 
-
-	// XXX old placement
 
 	/* Is this a trivial run?  Then skip the dependency. */
 	if (dependency_this2->flags & F_TRIVIAL) {
@@ -2388,7 +2385,7 @@ void File_Execution::print_command() const
 Execution::Proceed File_Execution::execute(Execution *parent, 
 					   shared_ptr <const Dependency> dependency_this)
 {
-	assert(parent); // TODO if not triggered, remove the PARENT arg
+	assert(parent); 
 	assert(! job.started() || children.empty()); 
 
 	Proceed proceed= execute_base_A(dependency_this); 
@@ -2458,9 +2455,8 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 				/* File exists */ 
 				Timestamp timestamp_file= Timestamp(&buf); 
 				timestamps_old[i]= timestamp_file;
-				// TODO this is the only place execute()
-				// accesses PARENT.  Why is this needed? 
- 				if (parent == nullptr || ! (dependency_this->flags & F_PERSISTENT)) 
+ 				if (//parent == nullptr || 
+				    ! (dependency_this->flags & F_PERSISTENT)) 
 					warn_future_file(&buf, 
 							 target.get_name_c_str_nondynamic(), 
 							 rule == nullptr 

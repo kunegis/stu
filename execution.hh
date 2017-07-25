@@ -366,7 +366,6 @@ private:
 	 * DEPENDENCY_CHILD must be normalized.  */
 
 	Execution *get_execution(shared_ptr <const Dependency> dependency);
-				 //					Execution *parent); 
 	/* Get an existing Execution or create a new one for the
 	 * given DEPENDENCY.  Return null when a strong cycle was found;
 	 * return the execution otherwise.  PLACE is the place of where
@@ -375,7 +374,7 @@ private:
 	static void copy_result(Execution *parent, Execution *child); 
 	/* Copy the result list from CHILD to PARENT */
 
-	 static bool hide_link_from_message(Flags flags) {
+	static bool hide_link_from_message(Flags flags) {
 		return flags & F_RESULT_NOTIFY; 
 	}
 };
@@ -393,8 +392,6 @@ class File_Execution
  * other Execution subclasses only delegate their tasks to child
  * executions. 
  */
-// TODO Check that there are no remnants of any dynamic-handling code in
-// this class. 
 	:  public Execution 
 {
 public:
@@ -480,10 +477,10 @@ private:
 	shared_ptr <Rule> rule;
 	/* The instantiated file rule for this execution.  Null when
 	 * there is no rule for this file (this happens for instance
-	 * when a source code file is given as a dependency, or when
-	 * this is a complex dependency).  Individual dynamic
-	 * dependencies do have rules, in order for cycles to be
-	 * detected.  Null if and only if PARAM_RULE is null.  */ 
+	 * when a source code file is given as a dependency).
+	 * Individual dynamic dependencies do have rules, in order for
+	 * cycles to be detected.  Null if and only if PARAM_RULE is
+	 * null.  */ 
 
 	Job job;
 	/* The job used to execute this rule's command */ 
@@ -524,13 +521,6 @@ private:
 
 	~File_Execution(); 
 
-	// virtual const Place &get_place() const {
-	// 	if (param_rule == nullptr)
-	// 		return Place::place_empty;
-	// 	else
-	// 		return param_rule->place; 
-	// }
-
 	bool remove_if_existing(bool output); 
 	/* Remove all file targets of this execution object if they
 	 * exist.  If OUTPUT is true, output a corresponding message.
@@ -560,15 +550,15 @@ private:
 	/* Create the file FILENAME with content from COMMAND */
 
 	static unordered_map <string, Timestamp> transients;
-	/* The timestamps for transient targets.  This container plays the role of
-	 * the file system for transient targets, holding their timestamps, and
-	 * remembering whether they have been executed.  Note that if a
-	 * rule has both file targets and transient targets, and all
-	 * file targets are up to date and the transient targets have
-	 * all their dependencies up to date, then the command is not
-	 * executed, even though it was never executed in the current
-	 * invocation of Stu. In that case, the transient targets are
-	 * never insert in this map.  */
+	/* The timestamps for transient targets.  This container plays
+	 * the role of the file system for transient targets, holding
+	 * their timestamps, and remembering whether they have been
+	 * executed.  Note that if a rule has both file targets and
+	 * transient targets, and all file targets are up to date and
+	 * the transient targets have all their dependencies up to date,
+	 * then the command is not executed, even though it was never
+	 * executed in the current invocation of Stu. In that case, the
+	 * transient targets are never inserted in this map.  */
 };
 
 class Transient_Execution
@@ -1625,8 +1615,7 @@ void Execution::disconnect(//Execution *const parent,
 	if (dependency_child->flags & F_RESULT_NOTIFY && dynamic_cast <File_Execution *> (child)) {
 		shared_ptr <Dependency> d= Dependency::clone(dependency_child);
 		d->flags &= ~F_RESULT_NOTIFY; 
-//		parent->
-			notify_result(d, child, F_RESULT_NOTIFY); 
+		notify_result(d, child, F_RESULT_NOTIFY); 
 	}
 
 	if (dependency_child->flags & F_RESULT_PUT && dynamic_cast <File_Execution *> (child)) {
@@ -1660,10 +1649,7 @@ void Execution::disconnect(//Execution *const parent,
 	/* Propagate variable dependencies */
 	if (dependency_child->flags & F_VARIABLE) { 
 		dynamic_cast <File_Execution *> (child)
-			->propagate_variable(dependency_child, 
-					     this
-//					     parent
-					     );
+			->propagate_variable(dependency_child, this);
 	}
 
 	/*
@@ -1673,10 +1659,7 @@ void Execution::disconnect(//Execution *const parent,
 	if (dynamic_pointer_cast <const Plain_Dependency> (dependency_child)
 	    && dynamic_pointer_cast <const Plain_Dependency> (dependency_child)->place_param_target.flags & F_TARGET_TRANSIENT
 	    && dynamic_cast <Transient_Execution *> (child)
-	    && dynamic_cast <File_Execution *> (
-						this
-//						parent
-						)) {
+	    && dynamic_cast <File_Execution *> (this)) {
 		dynamic_cast <File_Execution *> (
 						 this
 //						 parent
@@ -1929,23 +1912,6 @@ Target Execution::get_target_for_cache(Target target)
 	return target; 
 }
 
-// bool Execution::is_cached(shared_ptr <const Dependency> dependency)
-// {
-// 	if (dynamic_pointer_cast <const Plain_Dependency> (dependency)) {
-// 		return true; 
-// 	} else if (dynamic_pointer_cast <const Root_Dependency> (dependency)) {
-// 		return false;
-// 	} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency)) {
-// 		return false;
-// 	} else if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
-// 		return is_cached(dynamic_pointer_cast <const Dynamic_Dependency> (dependency)->dependency);
-// 		/* A dynamic dependency is cached when its contained dependency is cached */
-// 	} else {
-// 		assert(false); 
-// 		/* In particular, Compound_Dependency is not used here */ 
-// 	}
-// }
-
 File_Execution::~File_Execution()
 /* Objects of this type are never deleted */ 
 {
@@ -1973,14 +1939,12 @@ void File_Execution::wait()
 		 * just finished.  Should not happen, but since the PID
 		 * value came from outside this process, we better
 		 * handle this case gracefully, i.e., do nothing.  */
-		print_warning(Place(), frmt("The function waitpid(2) returned the invalid proceed ID %jd", (intmax_t)pid)); 
+		print_warning(Place(), frmt("The function waitpid(2) returned the invalid process ID %jd", (intmax_t)pid)); 
 		return; 
 	}
 
 	File_Execution *const execution= executions_by_pid.at(pid); 
-
 	execution->waited(pid, status); 
-
 	++jobs; 
 }
 
@@ -2112,9 +2076,7 @@ void File_Execution::waited(pid_t pid, int status)
 		}
 
 		print_traces(); 
-
 		remove_if_existing(true); 
-
 		raise(ERROR_BUILD);
 	}
 }
@@ -2726,16 +2688,15 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 		return proceed |= P_FINISHED; 
 	}
 
-	/*
-	 * The command must be run now, or there is no command. 
-	 */
+	/* We now know that the command must be run, or that there is no
+	 * command.  */
 
-	/* Re-deploy all dependencies (second pass) */
+	/* Re-deploy all dependencies (second pass to execute also all
+	 * transient targets) */
 	Proceed proceed_2= Execution::execute_base_B(dependency_this); 
 	if (proceed_2 & P_WAIT) {
 		return proceed_2; 
 	}
-
 	assert(children.empty()); 
 
 	if (no_execution) {
@@ -2744,7 +2705,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 		return proceed |= P_FINISHED; 
 	}
 
-	/* The command must be run or the file created now */
+	/* The command must be run (or the file created, etc.) now */
 
 	if (option_question) {
 		print_error_silenceable("Targets are not up to date");
@@ -2766,9 +2727,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 
 		print_command();
 		write_content(targets.front().get_name_c_str_nondynamic(), *(rule->command)); 
-
 		flags_finished= ~0;
-
 		assert(proceed == 0); 
 		return proceed |= P_FINISHED; 
 	}
@@ -2880,6 +2839,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	--jobs;
 	assert(jobs >= 0);
 
+	// TODO continue to use PROCEED instead of a new P. 
 	Proceed p= P_WAIT;
 	if (order == Order::RANDOM && jobs > 0)
 		p |= P_PENDING; 
@@ -2902,9 +2862,9 @@ void File_Execution::write_content(const char *filename,
 	FILE *file= fopen(filename, "w"); 
 
 	if (file == nullptr) {
-		rule->place <<
-			system_format(name_format_word(filename)); 
+		rule->place << system_format(name_format_word(filename)); 
 		raise(ERROR_BUILD); 
+		return;
 	}
 
 	for (const string &line:  command.get_lines()) {
@@ -3020,11 +2980,11 @@ void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency
 
 	raise(ERROR_BUILD); 
 
-	/* Note:  we don't have to propagate the error via the return
-	 * value, because we already raised the error, i.e., we either
-	 * threw an error, or set the error, which will be picked up by
-	 * the parent.  */
-	return;
+	// /* Note:  we don't have to propagate the error via the return
+	//  * value, because we already raised the error, i.e., we either
+	//  * threw an error, or set the error, which will be picked up by
+	//  * the parent.  */
+	// return;
 }
 
 bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_link)

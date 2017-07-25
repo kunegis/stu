@@ -1,0 +1,6 @@
+# Test with the -k option. 
+# Error: cannot create file, but 'C' must be created. 
+A: D /abcdef/ghi C { touch A ; }
+D = {ddd}
+/abcdef/ghi = D;
+C = {correct}

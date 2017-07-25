@@ -1077,8 +1077,8 @@ bool Execution::find_cycle(Execution *parent,
 	// Root_Execution explicitly, as it should not have parents
 	// anyway. 
 
-	if (dynamic_cast <const Root_Execution *> (parent))
-		return false;
+//	if (dynamic_cast <const Root_Execution *> (parent))
+//		return false;
 		
 	vector <Execution *> path;
 	path.push_back(parent); 
@@ -1098,8 +1098,8 @@ bool Execution::find_cycle(vector <Execution *> &path,
 	for (auto &i:  path.back()->parents) {
 		Execution *next= i.first; 
 		assert(next != nullptr);
-		if (dynamic_cast <const Root_Execution *> (next)) 
-			continue;
+//		if (dynamic_cast <const Root_Execution *> (next)) 
+//			continue;
 
 		path.push_back(next); 
 

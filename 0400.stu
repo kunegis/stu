@@ -1,3 +1,6 @@
+# In Dependency, add a field  Dependency::upper of type Dependency,
+# which contains "upper" dependencies.  
+
 # Check that the error message is correct
 A: [[[B]]] { touch A ; }
 >B { echo C }

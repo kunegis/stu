@@ -154,12 +154,7 @@ public:
 		return ""; 
 	}
 
-	// TODO check whether the format_*() functions are still needed
-	virtual string format_out() const= 0;
-	/* The text shown for this execution in verbose output.  Usually
-	 * calls a format_out() function on the appropriate object.  */ 
 	virtual string format_src() const= 0;
-
 	virtual void propagate_variable_content(string variable_name, string content)= 0; 
 
 	virtual void notify_result(shared_ptr <const Dependency> dependency,
@@ -247,18 +242,7 @@ protected:
 		   timestamp(Timestamp::UNDEFINED)
 	{  }
 
-	// TODO deprecate this constructor.
-	explicit Execution(Execution *parent_null)
-		/* Without a parent.  PARENT_NULL must be null. */
-		:  bits(0),  
-		   error(0),
-		   timestamp(Timestamp::UNDEFINED)
-	{  
-		assert(parent_null == nullptr); 
-	}
-
-	// TODO is the argument needed?
-	Proceed execute_children(shared_ptr <Dependency> dependency_link);
+	Proceed execute_children();
 	/* Execute already-active children */
 
 	Proceed execute_base_B(shared_ptr <const Dependency> dependency_link); 
@@ -281,6 +265,15 @@ protected:
 
 	void push_result(shared_ptr <const Dependency> dd); 
 
+	const Place &get_place() const 
+	/* The place for the execution; e.g. the rule; empty if there is no place */
+	{
+		if (param_rule == nullptr)
+			return Place::place_empty;
+		else
+			return param_rule->place; 
+	}
+
 	virtual ~Execution(); 
 
 	virtual int get_depth() const= 0;
@@ -288,11 +281,6 @@ protected:
 	 * executions and the root execution, in which case PARAM_RULE
 	 * is always null.  Only used to check for cycles on the rule
 	 * level.  */ 
-
-	virtual const Place &get_place() const= 0;
-	/* The place for the execution; e.g. the rule; empty if there is no place */
-	// TODO If implementations of this always read out the place of
-	// PARAM_RULE, this doesn't need to be virtual. 
 
 	virtual bool optional_finished(shared_ptr <const Dependency> dependency_link)= 0;
 	/* Whether the execution would be finished if this was an
@@ -458,10 +446,6 @@ public:
 				shared_ptr <const Dependency> dependency_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
-	virtual string format_out() const {
-		assert(targets.size()); 
-		return targets.front().format_out(); 
-	}
 	virtual string format_src() const {
 		assert(targets.size()); 
 		return targets.front().format_src(); 
@@ -549,12 +533,12 @@ private:
 
 	~File_Execution(); 
 
-	virtual const Place &get_place() const {
-		if (param_rule == nullptr)
-			return Place::place_empty;
-		else
-			return param_rule->place; 
-	}
+	// virtual const Place &get_place() const {
+	// 	if (param_rule == nullptr)
+	// 		return Place::place_empty;
+	// 	else
+	// 		return param_rule->place; 
+	// }
 
 	bool remove_if_existing(bool output); 
 	/* Remove all file targets of this execution object if they
@@ -623,7 +607,6 @@ public:
 				shared_ptr <const Dependency> dependency_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
-	virtual string format_out() const;
 	virtual string format_src() const;
 	virtual void notify_result(shared_ptr <const Dependency> dependency, Execution *, Flags flags);
 	virtual void propagate_variable_content(string variable_name, string content) {
@@ -663,12 +646,12 @@ private:
 
 	~Transient_Execution();
 
-	virtual const Place &get_place() const {
-		if (param_rule == nullptr)
-			return Place::place_empty;
-		else
-			return param_rule->place; 
-	}
+	// virtual const Place &get_place() const {
+	// 	if (param_rule == nullptr)
+	// 		return Place::place_empty;
+	// 	else
+	// 		return param_rule->place; 
+	// }
 };
 
 class Root_Execution
@@ -682,14 +665,13 @@ public:
 				shared_ptr <const Dependency> dependency_this);
 	virtual bool finished() const; 
 	virtual bool finished(Flags flags) const;
-	virtual string format_out() const { return "ROOT"; }
 	virtual string format_src() const { return "ROOT"; }
 	virtual void propagate_variable_content(string, string) {  }
 
 protected:
 
 	virtual int get_depth() const {  return -1;  }
-	virtual const Place &get_place() const {  return Place::place_empty;  }
+	// virtual const Place &get_place() const {  return Place::place_empty;  }
 	virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
 	virtual bool want_delete() const {  return true;  }
 
@@ -730,18 +712,12 @@ public:
 	void assemble_parts(); 
 
 	virtual int get_depth() const { return -1; }
-	virtual const Place &get_place() const {  return Place::place_empty;  }
+	// virtual const Place &get_place() const {  return Place::place_empty;  }
 	virtual Proceed execute(Execution *parent, 
 				shared_ptr <const Dependency> dependency_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
-
-	virtual string format_out() const {  
-		return "CONCAT";  
-	}
-	virtual string format_src() const {  
-		return "CONCAT";  
-	}
+	virtual string format_src() const {  return "CONCAT";  }
 	virtual void propagate_variable_content(string, string) {  }
 
 protected:
@@ -816,14 +792,13 @@ public:
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual int get_depth() const {  return dependency->get_depth();  }
-	virtual const Place &get_place() const {
-		if (param_rule == nullptr)
-			return Place::place_empty;
-		else
-			return param_rule->place; 
-	}
+	// virtual const Place &get_place() const {
+	// 	if (param_rule == nullptr)
+	// 		return Place::place_empty;
+	// 	else
+	// 		return param_rule->place; 
+	// }
 	virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
-	virtual string format_out() const;
 	virtual string format_src() const;
 	virtual void propagate_variable_content(string variable_name, string content) {
 		for (auto &i:  parents) 
@@ -1351,7 +1326,7 @@ void Execution::print_traces(string text) const
 	}
 }
 
-Execution::Proceed Execution::execute_children(shared_ptr <Dependency> )
+Execution::Proceed Execution::execute_children()
 {
 	/* Since disconnect() may change execution->children, we must first
 	 * copy it over locally, and then iterate through it */ 
@@ -1459,7 +1434,7 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 	 */  
 
 	if (order != Order::RANDOM) {
-		Proceed proceed_2= execute_children(dependency_this2);
+		Proceed proceed_2= execute_children();
 		proceed |= proceed_2;
 		if (proceed & P_WAIT) {
 			if (jobs == 0) 
@@ -1509,7 +1484,7 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 	assert(buffer_A.empty()); 
 
 	if (order == Order::RANDOM) {
-		Proceed proceed_2= execute_children(dependency_this2);
+		Proceed proceed_2= execute_children();
 		proceed |= proceed_2; 
 		if (proceed & P_WAIT)
 			return proceed;
@@ -3049,8 +3024,7 @@ bool Root_Execution::finished(Flags flags) const
 }
 
 Root_Execution::Root_Execution(const vector <shared_ptr <const Dependency> > &dependencies)
-	:  Execution(nullptr),
-	   is_finished(false)
+	:  is_finished(false)
 {
 	for (auto &d:  dependencies) {
 		push(d); 
@@ -3316,10 +3290,7 @@ void Concatenated_Execution::assemble_parts()
 		} else {
 			for (size_t j= 0;  j < dependencies_read.size();  ++j) {
 				for (size_t k= 0;  k < parts[i].size();  ++k) {
-					// dependencies_read_new.push_back
-					// 	(concatenate_dependency_one(dependencies_read[j], 
-					// 				    parts[i][k],
-					// 				    0)); 
+					// TODO do something here ...
 				}
 			}
 		}
@@ -3422,11 +3393,6 @@ bool Dynamic_Execution::finished(Flags) const
 bool Dynamic_Execution::want_delete() const
 {
 	return dynamic_pointer_cast <const Plain_Dependency> (Dependency::strip_dynamic(dependency)) == nullptr; 
-}
-
-string Dynamic_Execution::format_out() const
-{
-	return dependency->format_out();
 }
 
 string Dynamic_Execution::format_src() const
@@ -3610,11 +3576,6 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 	parents[parent]= dependency_link; 
 }
 	
-string Transient_Execution::format_out() const {
-	assert(targets.size()); 
-	return targets.front().format_out(); 
-}
-
 string Transient_Execution::format_src() const {
 	assert(targets.size()); 
 	return targets.front().format_src(); 

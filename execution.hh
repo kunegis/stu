@@ -342,9 +342,6 @@ protected:
 	/* Whether both executions have the same parametrized rule.
 	 * Only used for finding cycle.  */ 
 
-//	static bool is_cached(shared_ptr <const Dependency> dependency); 
-//	/* Whether the dependency corresponds to an execution type that is cached */
-
 private: 
 
 	Buffer buffer_A;
@@ -368,14 +365,12 @@ private:
 	 * Note: the top-level flags of LINK.DEPENDENCY may be modified.
 	 * DEPENDENCY_CHILD must be normalized.  */
 
-	static Execution *get_execution(shared_ptr <const Dependency> dependency,
-					Execution *parent); 
+	Execution *get_execution(shared_ptr <const Dependency> dependency);
+				 //					Execution *parent); 
 	/* Get an existing Execution or create a new one for the
-	 * given TARGET.  Return null when a strong cycle was found;
+	 * given DEPENDENCY.  Return null when a strong cycle was found;
 	 * return the execution otherwise.  PLACE is the place of where
-	 * the dependency was declared.  LINK is the link from the
-	 * existing parent to the new execution.  */ 
-	// TODO make this a non-static member function of PARENT. 
+	 * the dependency was declared.  */
 
 	static void copy_result(Execution *parent, Execution *child); 
 	/* Copy the result list from CHILD to PARENT */
@@ -1574,7 +1569,9 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 	 * Actually do the connection 
 	 */
 
-	Execution *child= get_execution(dependency_child, this);  
+	Execution *child= get_execution(dependency_child
+//					, this
+					);  
 	if (child == nullptr) {
 		/* Strong cycle was found */ 
 		return 0;
@@ -1745,8 +1742,8 @@ Execution::Proceed Execution::execute_base_B(shared_ptr <const Dependency> depen
 	return proceed; 
 }
 
-Execution *Execution::get_execution(shared_ptr <const Dependency> dependency,
-				    Execution *parent)
+Execution *Execution::get_execution(shared_ptr <const Dependency> dependency)
+//				    Execution *parent)
 {
 	const Target target= dependency->get_target(); 
 
@@ -1759,12 +1756,21 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency,
 	if (it != executions_by_target.end()) {
 		/* An Execution object already exists for the target */ 
 		execution= it->second; 
-		if (execution->parents.count(parent)) {
-			/* The parent and child are already connected -- add the
+		if (execution->parents.count(
+					     this
+//					     parent
+					     )) {
+			/* THIS and CHILD are already connected -- add the
 			 * necessary flags */ 
 			Flags flags= dependency->flags; 
-			if (flags & ~execution->parents.at(parent)->flags) {
-				shared_ptr <Dependency> dependency_new= Dependency::clone(execution->parents.at(parent));
+			if (flags & ~execution->parents.at(
+							   this
+//							   parent
+							   )->flags) {
+				shared_ptr <Dependency> dependency_new= Dependency::clone(execution->parents.at(
+														this
+//														parent
+														));
 				dependency_new->flags |= flags;
 				// TODO also set the place in D, from DEPENDENCY_LINK
 				dependency= dependency_new;
@@ -1772,16 +1778,26 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency,
 				 * because a link between the two
 				 * already exists and therefore a cycle
 				 * cannot be present.  */
-				execution->parents[parent]= dependency; 
+				execution->parents[
+						   this
+//						   parent
+						   ]= dependency; 
 			}
 		} else {
-			if (find_cycle(parent, execution, dependency)) {
-				parent->raise(ERROR_LOGICAL);
+			if (find_cycle(
+				       this
+//				       parent
+				       , execution, dependency)) {
+//				parent->
+					raise(ERROR_LOGICAL);
 				return nullptr;
 			}
 			/* The parent and child are not connected -- add the
 			 * connection */ 
-			execution->parents[parent]= dependency;
+			execution->parents[
+					   this
+//					   parent
+					   ]= dependency;
 		}
 		return execution;
 	} 
@@ -1793,22 +1809,22 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency,
 	if (! target.is_dynamic()) {
 		/* Plain execution */ 
 
-		shared_ptr <Rule> rule, param_rule; 
+		shared_ptr <Rule> rule_child, param_rule_child; 
 		map <string, string> mapping_parameter;
 		bool use_file_execution= false;
 		try {
 			Target target_without_flags= target; 
 			target_without_flags.get_front_byte_nondynamic() &= F_TARGET_TRANSIENT; 
-			rule= rule_set.get(target_without_flags, 
-					   param_rule, mapping_parameter, 
+			rule_child= rule_set.get(target_without_flags, 
+					   param_rule_child, mapping_parameter, 
 					   dependency->get_place()); 
 		} catch (int e) {
 			assert(e); 
 			error_additional= e; 
 		}
-		assert((rule == nullptr) == (param_rule == nullptr)); 
+		assert((rule_child == nullptr) == (param_rule_child == nullptr)); 
 
-		/* RULE may be null here; this is handled in the constructors */ 
+		/* RULE_CHILD may be null here; this is handled in the constructors */ 
 		
 		/* We use a File_Execution if:  there is at
 		 * least one file target in the rule OR there is
@@ -1817,13 +1833,13 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency,
 
 		if (target.is_file()) {
 			use_file_execution= true;
-		} else if (rule == nullptr) {
+		} else if (rule_child == nullptr) {
 			use_file_execution= target.is_file(); /* Always FALSE */
 			assert(! use_file_execution); 
-		} else if (rule->command) {
+		} else if (rule_child->command) {
 			use_file_execution= true; 
 		} else {
-			for (auto &i:  rule->place_param_targets) {
+			for (auto &i:  rule_child->place_param_targets) {
 				if ((i->flags & F_TARGET_TRANSIENT) == 0) 
 					use_file_execution= true; 
 			}
@@ -1832,23 +1848,31 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency,
 		if (use_file_execution) {
 
 			execution= new File_Execution
-				(target, dependency, parent,
-				 rule, param_rule, mapping_parameter,
+				(target, dependency, 
+				 this,
+//				 parent,
+				 rule_child, param_rule_child, mapping_parameter,
 				 error_additional); 
 		} else if (target.is_transient()) {
 			execution= new Transient_Execution
-				(dependency, parent,
-				 rule, param_rule, mapping_parameter,
+				(dependency, 
+				 this,
+//				 parent,
+				 rule_child, param_rule_child, mapping_parameter,
 				 error_additional);
 		}
 	} else {
 		shared_ptr <const Dynamic_Dependency> dynamic_dependency=
 			dynamic_pointer_cast <const Dynamic_Dependency> (dependency); 
-		execution= new Dynamic_Execution(dynamic_dependency, parent, error_additional); 
+		execution= new Dynamic_Execution(dynamic_dependency, 
+						 this,
+//						 parent, 
+						 error_additional); 
 	}
 
 	if (error_additional) {
-		parent->error |= error_additional; 
+//		parent->
+			error |= error_additional; 
 		if (execution->want_delete())
 			delete execution; 
 		return nullptr; 

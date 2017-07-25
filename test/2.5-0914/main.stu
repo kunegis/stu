@@ -1,0 +1,14 @@
+# -n is transitive through a transitive transient. 
+A: [-n @x] { 
+	cat 'list.aaa bbb' 'list.ccc ddd' >A
+}
+@x:  B;
+>B { 
+	echo list.'aaa bbb'
+	echo list.'ccc ddd'
+}
+
+list.$name
+{
+	echo "$name" >list."$name"
+}

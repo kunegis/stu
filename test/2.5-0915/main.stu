@@ -1,0 +1,7 @@
+# -0 is transitive through @x. 
+A: [-0 @x] { 
+	cat list.'X Y' list.'W Z' >A
+}
+@x:  B;
+B { printf 'list.X Y\0list.W Z\0' >B ; }
+>list.$name { echo "$name" ; }

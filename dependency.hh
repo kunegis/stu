@@ -76,7 +76,7 @@ public:
 	{  }
 
 	Dependency(Flags flags_) 
-	/* This constructor probably needs to be removed, because when
+	/* TODO This constructor probably needs to be removed, because when
 	 * FLAGS is set, PLACES should always also be set.  */
 		:  flags(flags_)
 	{  }
@@ -193,7 +193,7 @@ public:
 	}
 	
 	Plain_Dependency(Flags flags_,
-			  const Place_Param_Target &place_param_target_)
+			 const Place_Param_Target &place_param_target_)
 		/* Take the dependency place from the target place */ 
 		:  Dependency(flags_),
 		   place_param_target(place_param_target_),
@@ -203,8 +203,8 @@ public:
 	}
 
 	Plain_Dependency(Flags flags_,
-			  const Place places_[C_PLACED],
-			  const Place_Param_Target &place_param_target_)
+			 const Place places_[C_PLACED],
+			 const Place_Param_Target &place_param_target_)
 		/* Take the dependency place from the target place */ 
 		:  Dependency(flags_, places_),
 		   place_param_target(place_param_target_),
@@ -214,8 +214,8 @@ public:
 	}
 
 	Plain_Dependency(Flags flags_,
-			  const Place_Param_Target &place_param_target_,
-			  const string &variable_name_)
+			 const Place_Param_Target &place_param_target_,
+			 const string &variable_name_)
 		/* Take the dependency place from the target place, with variable_name */ 
 		:  Dependency(flags_),
 		   place_param_target(place_param_target_),
@@ -226,8 +226,8 @@ public:
 	}
 
 	Plain_Dependency(Flags flags_,
-			  const Place_Param_Target &place_param_target_,
-			  const Place &place_)
+			 const Place_Param_Target &place_param_target_,
+			 const Place &place_)
 		/* Use an explicit dependency place */ 
 		:  Dependency(flags_),
 		   place_param_target(place_param_target_),
@@ -237,9 +237,9 @@ public:
 	}
 
 	Plain_Dependency(Flags flags_,
-			  const Place_Param_Target &place_param_target_,
-			  const Place &place_,
-			  const string &variable_name_)
+			 const Place_Param_Target &place_param_target_,
+			 const Place &place_,
+			 const string &variable_name_)
 		/* Use an explicit dependency place */ 
 		:  Dependency(flags_),
 		   place_param_target(place_param_target_),
@@ -1058,15 +1058,6 @@ void Concatenated_Dependency::make_normalized_concatenated(vector <shared_ptr <c
 		}
 	}
 }
-
-// void Concatenated_Dependency::make_normalized() 
-// {
-// 	for (size_t i= 0;  i < dependencies.size();  ++i) {
-// 		shared_ptr <const Dependency> d_normalized_compound= 
-// 			make_normalized_compound(dependencies[i]);
-// 		dependencies[i]= d_normalized_compound; 
-// 	}
-// }
 
 Target Concatenated_Dependency::get_target() const
 {

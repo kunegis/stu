@@ -1,0 +1,16 @@
+# Using -j2.  Make sure that C is being created while B is being built. 
+
+A: B [C]
+{
+	cat B D >A
+}
+
+C = {D}
+
+B { 
+	sleep 1 
+	[ -e D ] || exit 1 
+	touch B 
+}
+
+D { touch D ; }

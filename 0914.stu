@@ -1,4 +1,0 @@
-# Error.  -n is not applied to 'B'.
-A: [-n @x] { touch A ; }
-@x:  B;
-B { touch B ; }

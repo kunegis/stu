@@ -1383,15 +1383,6 @@ Execution::Proceed Execution::execute_children(shared_ptr <Dependency> )
 
 		shared_ptr <const Dependency> dependency_child= child->parents.at(this);
 
-		// if (dependency_link != nullptr 
-		//     && dynamic_pointer_cast <Plain_Dependency> (dependency_link)
-		//     && dynamic_pointer_cast <Plain_Dependency> (dependency_link)
-		//     ->place_param_target.flags == F_TARGET_TRANSIENT) {
-		// 	shared_ptr <Dependency> dependency_child_2= Dependency::clone(dependency_child);
-		// 	dependency_child_2->flags |= dependency_link->flags & F_TRANSITIVE_TRANSIENT; 
-		// 	dependency_child= dependency_child_2; 
-		// }
-
 		Proceed proceed_child= child->execute(this, dependency_child);
 		assert(proceed_child); 
 
@@ -1670,7 +1661,6 @@ void Execution::disconnect(Execution *const parent,
 		shared_ptr <Dependency> d= Dependency::clone(dependency_child);
 		d->flags &= ~F_RESULT_PUT; 
 		parent->notify_result(d, child, F_RESULT_PUT); 
-//		parent->push_result(d); 
 	}
 
 	/* Propagate timestamp */
@@ -2243,19 +2233,15 @@ File_Execution::File_Execution(Target target_,
 			}
 		}
 		assert(! place_target.empty());
-		dependency->get_place() << fmt(
-					       (dependency->flags & F_OPTIONAL)
+		dependency->get_place() << fmt((dependency->flags & F_OPTIONAL)
 					       ? "dependency %s must not be optional"
-					       : "dependency %s must not be persistent"
-					       ,
+					       : "dependency %s must not be persistent",
 					       dependency->format_word()); 
-//					       parent->get_parents().begin()->second->get_target().format_word());
 		if (rule->command) 
 			place_target << fmt("because rule for transient target %s has a command", target_.format_word());
 		else 
 			place_target << fmt("because rule for transient target %s has file targets", target_.format_word()); 
 		print_traces();
-//		parent->get_parents().begin()->first->print_traces();
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
 		return;

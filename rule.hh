@@ -221,8 +221,7 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	   is_copy(true)
 {
 	auto dependency= 
-		make_shared <Plain_Dependency> 
-		(0, Place_Param_Target(0, *place_name_source_));
+		make_shared <Plain_Dependency> (Place_Param_Target(0, *place_name_source_));
 
 	if (! place_persistent.empty()) {
 		dependency->flags |= F_PERSISTENT;

@@ -1,4 +1,0 @@
-# Error.  -0 is not applied to 'B'.
-A: [-0 @x] { touch A ; }
-@x:  B;
-B { touch B ; }

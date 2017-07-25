@@ -1,0 +1,5 @@
+# Check the traces
+A:  [@x] { touch A ; }
+@x:  B;
+B = {C}
+C: X { touch C ; }

@@ -7,8 +7,8 @@ details of other (non-major) version changes.
 
 == Version 1 -> Version 2 ==
 
-(1) Quotes ("/') were changed to work like in the shell.  This makes it
-easier for shell programmers to use Stu, and also makes it easier for
+(1) Quotes (" and ') were changed to work like in the shell.  This makes
+it easier for shell programmers to use Stu, and also makes it easier for
 people using shell syntax highlighting on Stu sources.
 
 Single quotes (') cannot contain escape sequences anymore.  Single

@@ -264,6 +264,12 @@ protected:
 	 * dependencies while doing so.  */
 
 	void push_result(shared_ptr <const Dependency> dd); 
+	void disconnect(//Execution *const parent, 
+			Execution *const child,
+			shared_ptr <const Dependency> dependency_child);
+	/* Remove an edge from the dependency graph.  Propagate
+	 * information from CHILD to THIS, and then delete CHILD if
+	 * necessary.  */
 
 	const Place &get_place() const 
 	/* The place for the execution; e.g. the rule; empty if there is no place */
@@ -336,14 +342,6 @@ protected:
 			      const Execution *execution_b);
 	/* Whether both executions have the same parametrized rule.
 	 * Only used for finding cycle.  */ 
-
-	static void disconnect(Execution *const parent, 
-			       Execution *const child,
-			       shared_ptr <const Dependency> dependency_child);
-	/* Remove an edge from the dependency graph.  Propagate
-	 * information from the subexecution to the execution, and then
-	 * delete the child execution if necessary.  */
-	// TODO make this a non-static function of PARENT. 
 
 	static bool is_cached(shared_ptr <const Dependency> dependency); 
 	/* Whether the dependency corresponds to an execution type that is cached */
@@ -1369,7 +1367,8 @@ Execution::Proceed Execution::execute_children()
 		       ((child->finished(dependency_child->flags)) == 0));
 
 		if (proceed_child & P_FINISHED) {
-			disconnect(this, child, dependency_child); 
+			disconnect(//this, 
+				   child, dependency_child); 
 		} else {
 			assert((proceed_child & ~P_FINISHED) != 0); 
 			/* If the child execution is not finished, it
@@ -1596,7 +1595,8 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 		return proceed_child; 
 			
 	if (child->finished(dependency_child->flags)) {
-		disconnect(this, child, dependency_child);
+		disconnect(//this, 
+			   child, dependency_child);
 	}
 	
 	return 0;
@@ -1613,15 +1613,15 @@ void Execution::raise(int error_)
 		throw error;
 }
 
-void Execution::disconnect(Execution *const parent, 
+void Execution::disconnect(//Execution *const parent, 
 			   Execution *const child,
 			   shared_ptr <const Dependency> dependency_child)
 {
-	Debug::print(parent, fmt("disconnect %s", dependency_child->format_src())); 
+	Debug::print(this, fmt("disconnect %s", dependency_child->format_src())); 
 
-	assert(parent != nullptr);
+//	assert(parent != nullptr);
 	assert(child != nullptr); 
-	assert(parent != child); 
+	assert(child != this); 
 	assert(child->finished(dependency_child->flags)); 
 	assert(option_keep_going || child->error == 0); 
 	dependency_child->check(); 
@@ -1629,13 +1629,15 @@ void Execution::disconnect(Execution *const parent,
 	if (dependency_child->flags & F_RESULT_NOTIFY && dynamic_cast <File_Execution *> (child)) {
 		shared_ptr <Dependency> d= Dependency::clone(dependency_child);
 		d->flags &= ~F_RESULT_NOTIFY; 
-		parent->notify_result(d, child, F_RESULT_NOTIFY); 
+//		parent->
+			notify_result(d, child, F_RESULT_NOTIFY); 
 	}
 
 	if (dependency_child->flags & F_RESULT_PUT && dynamic_cast <File_Execution *> (child)) {
 		shared_ptr <Dependency> d= Dependency::clone(dependency_child);
 		d->flags &= ~F_RESULT_PUT; 
-		parent->notify_result(d, child, F_RESULT_PUT); 
+//		parent->
+			notify_result(d, child, F_RESULT_PUT); 
 	}
 
 	/* Propagate timestamp */
@@ -1643,11 +1645,17 @@ void Execution::disconnect(Execution *const parent,
 	if (! (dependency_child->flags & F_PERSISTENT) && 
 	    ! (dependency_child->flags & F_RESULT_NOTIFY)) {
 		if (child->timestamp.defined()) {
-			if (! parent->timestamp.defined()) {
-				parent->timestamp= child->timestamp;
+			if (! 
+			    //parent->
+			    timestamp.defined()) {
+//				parent->
+					timestamp= child->timestamp;
 			} else {
-				if (parent->timestamp < child->timestamp) {
-					parent->timestamp= child->timestamp; 
+				if (
+//				    parent->
+				    timestamp < child->timestamp) {
+//					parent->
+						timestamp= child->timestamp; 
 				}
 			}
 		}
@@ -1656,7 +1664,10 @@ void Execution::disconnect(Execution *const parent,
 	/* Propagate variable dependencies */
 	if (dependency_child->flags & F_VARIABLE) { 
 		dynamic_cast <File_Execution *> (child)
-			->propagate_variable(dependency_child, parent);
+			->propagate_variable(dependency_child, 
+					     this
+//					     parent
+					     );
 	}
 
 	/*
@@ -1666,8 +1677,14 @@ void Execution::disconnect(Execution *const parent,
 	if (dynamic_pointer_cast <const Plain_Dependency> (dependency_child)
 	    && dynamic_pointer_cast <const Plain_Dependency> (dependency_child)->place_param_target.flags & F_TARGET_TRANSIENT
 	    && dynamic_cast <Transient_Execution *> (child)
-	    && dynamic_cast <File_Execution *> (parent)) {
-		dynamic_cast <File_Execution *> (parent)->add_variables
+	    && dynamic_cast <File_Execution *> (
+						this
+//						parent
+						)) {
+		dynamic_cast <File_Execution *> (
+						 this
+//						 parent
+						 )->add_variables
 			(dynamic_cast <Transient_Execution *> (child)->get_mapping_variable()); 
 	}
 
@@ -1679,7 +1696,8 @@ void Execution::disconnect(Execution *const parent,
 	 * since flags can be changed by the propagations done
 	 * before.  */ 
 
-	parent->error |= child->error; 
+//	parent->
+		error |= child->error; 
 
 	/* Don't propagate the NEED_BUILD flag via DYNAMIC_LEFT links:
 	 * It just means the list of depenencies have changed, not the
@@ -1687,14 +1705,24 @@ void Execution::disconnect(Execution *const parent,
 	if (child->bits & B_NEED_BUILD
 	    && ! (dependency_child->flags & F_PERSISTENT)
 	    && ! (dependency_child->flags & F_RESULT_NOTIFY)) {
-		parent->bits |= B_NEED_BUILD; 
+//		parent->
+			bits |= B_NEED_BUILD; 
 	}
 
 	/* Remove the links between them */ 
-	assert(parent->children.count(child) == 1); 
-	assert(child->parents.count(parent) == 1);
-	parent->children.erase(child);
-	child->parents.erase(parent);
+	assert(
+//	       parent->
+	       children.count(child) == 1); 
+	assert(child->parents.count(
+				    this
+//				    parent
+				    ) == 1);
+//	parent->
+		children.erase(child);
+	child->parents.erase(
+			     this
+//			     parent
+			     );
 
 	/* Delete the Execution object */
 	if (child->want_delete())

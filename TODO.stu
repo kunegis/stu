@@ -344,7 +344,19 @@ X = {x}   Y = {y}  Z = {z}
 # Actually use the PACKAGE_URL field from autoconf. 
 #
 
-#################### Further features #########################
+#
+# Instead File_Execution::executions_by_pid, have a dedicated array for
+# the list of currently running PIDs, and maintain an atomic pid_count
+# to maintain the list, to avoid access a stdlib container from a signal
+# handler.
+#
+
+#
+# In File_Execution::wait(), use a non-blocking wait() function to
+# handle all finished jobs in a loop in that function.
+#
+
+#=================== Further features =======================
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This

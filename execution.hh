@@ -396,8 +396,7 @@ class File_Execution
 {
 public:
 
-	File_Execution(//Target target_,
-		       shared_ptr <const Dependency> dependency_link,
+	File_Execution(shared_ptr <const Dependency> dependency_link,
 		       Execution *parent,
 		       shared_ptr <Rule> rule,
 		       shared_ptr <Rule> param_rule,
@@ -408,8 +407,6 @@ public:
 	 * the execution has been connected to a parent, which is not
 	 * done in the constructor.  The parent is connected to this iff
 	 * ERROR_ADDITIONAL is zero after the call.  */
-	// TODO remove the TARGET parameter.  It is already
-	// contained in DEPENDENCY_LINK. 
 
 	void propagate_variable(shared_ptr <const Dependency> dependency,
 				Execution *parent); 
@@ -447,9 +444,6 @@ public:
 	 * The currently running executions by process IDs.  Write
 	 * access to this is enclosed in a Signal_Blocker.
 	 */ 
-	// TODO have a dedicated array for the list of currently running
-	// PIDs, and maintain an atomic pid_count to maintain the list,
-	// to avoid access a stdlib container from a signal handler. 
 
 	static void wait();
 	/* Wait for next job to finish and finish it.  Do not start anything
@@ -626,13 +620,6 @@ private:
 	 * parent execution.  */
 
 	~Transient_Execution();
-
-	// virtual const Place &get_place() const {
-	// 	if (param_rule == nullptr)
-	// 		return Place::place_empty;
-	// 	else
-	// 		return param_rule->place; 
-	// }
 };
 
 class Root_Execution
@@ -652,7 +639,6 @@ public:
 protected:
 
 	virtual int get_depth() const {  return -1;  }
-	// virtual const Place &get_place() const {  return Place::place_empty;  }
 	virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
 	virtual bool want_delete() const {  return true;  }
 
@@ -693,7 +679,6 @@ public:
 	void assemble_parts(); 
 
 	virtual int get_depth() const { return -1; }
-	// virtual const Place &get_place() const {  return Place::place_empty;  }
 	virtual Proceed execute(Execution *parent, 
 				shared_ptr <const Dependency> dependency_this);
 	virtual bool finished() const;
@@ -773,12 +758,6 @@ public:
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual int get_depth() const {  return dependency->get_depth();  }
-	// virtual const Place &get_place() const {
-	// 	if (param_rule == nullptr)
-	// 		return Place::place_empty;
-	// 	else
-	// 		return param_rule->place; 
-	// }
 	virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
 	virtual string format_src() const;
 	virtual void propagate_variable_content(string variable_name, string content) {
@@ -899,21 +878,14 @@ void Execution::main(const vector <shared_ptr <const Dependency> > &dependencies
 	/* A build error is only thrown when option_keep_going is
 	 * not set */ 
 	catch (int e) {
-
 		assert(! option_keep_going); 
 		assert(e >= 1 && e <= 4); 
-
 		/* Terminate all jobs */ 
 		if (File_Execution::executions_by_pid.size()) {
 			print_error_reminder("Terminating all jobs"); 
 			job_terminate_all();
 		}
-
-		// TODO is this needed?  Shouldn't ERROR_FATAL not
-		// always be used directly in the form of exit(ERROR_FATAL)?
-		if (e == ERROR_FATAL)
-			exit(ERROR_FATAL); 
-
+		assert(e > 0 && e < ERROR_FATAL); 
 		error= e; 
 	}
 
@@ -1350,8 +1322,7 @@ Execution::Proceed Execution::execute_children()
 		       ((child->finished(dependency_child->flags)) == 0));
 
 		if (proceed_child & P_FINISHED) {
-			disconnect(//this, 
-				   child, dependency_child); 
+			disconnect(child, dependency_child); 
 		} else {
 			assert((proceed_child & ~P_FINISHED) != 0); 
 			/* If the child execution is not finished, it
@@ -1498,12 +1469,6 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 	assert(dependency_child->is_normalized()); 
 	assert(! dynamic_pointer_cast <const Root_Dependency> (dependency_child)); 
 
-//	if (! is_cached(dependency_child)) {
-//		/* Invalid dependency type.  The dependency must be normalized. */ 
-//		assert(false); 
-//		return 0;
-//	}
-		
 	shared_ptr <const Plain_Dependency> plain_dependency_this=
 		dynamic_pointer_cast <const Plain_Dependency> (dependency_this);
 
@@ -1559,9 +1524,7 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 	 * Actually do the connection 
 	 */
 
-	Execution *child= get_execution(dependency_child
-//					, this
-					);  
+	Execution *child= get_execution(dependency_child);  
 	if (child == nullptr) {
 		/* Strong cycle was found */ 
 		return 0;
@@ -1581,8 +1544,7 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 		return proceed_child; 
 			
 	if (child->finished(dependency_child->flags)) {
-		disconnect(//this, 
-			   child, dependency_child);
+		disconnect(child, dependency_child);
 	}
 	
 	return 0;
@@ -1593,19 +1555,16 @@ void Execution::raise(int error_)
 	assert(error_ >= 1 && error_ <= 3); 
 
 	error |= error_;
-	// TODO we don't need to set this variable in case of ! OPTION_KEEP_GOING
 
 	if (! option_keep_going)
 		throw error;
 }
 
-void Execution::disconnect(//Execution *const parent, 
-			   Execution *const child,
+void Execution::disconnect(Execution *const child,
 			   shared_ptr <const Dependency> dependency_child)
 {
 	Debug::print(this, fmt("disconnect %s", dependency_child->format_src())); 
 
-//	assert(parent != nullptr);
 	assert(child != nullptr); 
 	assert(child != this); 
 	assert(child->finished(dependency_child->flags)); 
@@ -1621,8 +1580,7 @@ void Execution::disconnect(//Execution *const parent,
 	if (dependency_child->flags & F_RESULT_PUT && dynamic_cast <File_Execution *> (child)) {
 		shared_ptr <Dependency> d= Dependency::clone(dependency_child);
 		d->flags &= ~F_RESULT_PUT; 
-//		parent->
-			notify_result(d, child, F_RESULT_PUT); 
+		notify_result(d, child, F_RESULT_PUT); 
 	}
 
 	/* Propagate timestamp */
@@ -1630,18 +1588,10 @@ void Execution::disconnect(//Execution *const parent,
 	if (! (dependency_child->flags & F_PERSISTENT) && 
 	    ! (dependency_child->flags & F_RESULT_NOTIFY)) {
 		if (child->timestamp.defined()) {
-			if (! 
-			    //parent->
-			    timestamp.defined()) {
-//				parent->
-					timestamp= child->timestamp;
-			} else {
-				if (
-//				    parent->
-				    timestamp < child->timestamp) {
-//					parent->
-						timestamp= child->timestamp; 
-				}
+			if (! timestamp.defined()) {
+				timestamp= child->timestamp;
+			} else if (timestamp < child->timestamp) {
+				timestamp= child->timestamp; 
 			}
 		}
 	}
@@ -1660,10 +1610,7 @@ void Execution::disconnect(//Execution *const parent,
 	    && dynamic_pointer_cast <const Plain_Dependency> (dependency_child)->place_param_target.flags & F_TARGET_TRANSIENT
 	    && dynamic_cast <Transient_Execution *> (child)
 	    && dynamic_cast <File_Execution *> (this)) {
-		dynamic_cast <File_Execution *> (
-						 this
-//						 parent
-						 )->add_variables
+		dynamic_cast <File_Execution *> (this)->add_variables
 			(dynamic_cast <Transient_Execution *> (child)->get_mapping_variable()); 
 	}
 
@@ -1675,8 +1622,7 @@ void Execution::disconnect(//Execution *const parent,
 	 * since flags can be changed by the propagations done
 	 * before.  */ 
 
-//	parent->
-		error |= child->error; 
+	error |= child->error; 
 
 	/* Don't propagate the NEED_BUILD flag via DYNAMIC_LEFT links:
 	 * It just means the list of depenencies have changed, not the
@@ -1684,24 +1630,14 @@ void Execution::disconnect(//Execution *const parent,
 	if (child->bits & B_NEED_BUILD
 	    && ! (dependency_child->flags & F_PERSISTENT)
 	    && ! (dependency_child->flags & F_RESULT_NOTIFY)) {
-//		parent->
-			bits |= B_NEED_BUILD; 
+		bits |= B_NEED_BUILD; 
 	}
 
 	/* Remove the links between them */ 
-	assert(
-//	       parent->
-	       children.count(child) == 1); 
-	assert(child->parents.count(
-				    this
-//				    parent
-				    ) == 1);
-//	parent->
-		children.erase(child);
-	child->parents.erase(
-			     this
-//			     parent
-			     );
+	assert(children.count(child) == 1); 
+	assert(child->parents.count(this) == 1);
+	children.erase(child);
+	child->parents.erase(this);
 
 	/* Delete the Execution object */
 	if (child->want_delete())
@@ -1810,8 +1746,7 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency)
 		if (use_file_execution) {
 
 			execution= new File_Execution
-				(//target, 
-				 dependency, 
+				(dependency, 
 				 this,
 				 rule_child, param_rule_child, mapping_parameter,
 				 error_additional); 
@@ -1896,9 +1831,6 @@ File_Execution::~File_Execution()
 
 void File_Execution::wait() 
 {
-	// TODO use a non-blocking wait() function to handle all
-	// finished jobs in a loop in this function. 
-
 	Debug::print(nullptr, "wait...");
 
 	assert(File_Execution::executions_by_pid.size() != 0); 
@@ -2057,8 +1989,7 @@ void File_Execution::waited(pid_t pid, int status)
 	}
 }
 
-File_Execution::File_Execution(//Target target_,
-			       shared_ptr <const Dependency> dependency,
+File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 			       Execution *parent, 
 			       shared_ptr <Rule> rule_,
 			       shared_ptr <Rule> param_rule_,
@@ -2473,6 +2404,7 @@ void File_Execution::print_command() const
 Execution::Proceed File_Execution::execute(Execution *parent, 
 					   shared_ptr <const Dependency> dependency_this)
 {
+	assert(parent); // TODO if not triggered, remove the PARENT arg
 	assert(! job.started() || children.empty()); 
 
 	Proceed proceed= execute_base_A(dependency_this); 

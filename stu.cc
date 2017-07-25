@@ -187,6 +187,7 @@ int main(int argc, char **argv, char **envp)
 					Place place(Place::Type::ENV_OPTIONS);
 					place << fmt("invalid option %s",
 						     multichar_format_word(frmt("-%c", c)));
+					// TODO instead, exit(ERROR_FATAL)
 					throw ERROR_FATAL; 
 				}
 			}
@@ -474,6 +475,7 @@ int main(int argc, char **argv, char **envp)
 		exit(ERROR_FATAL);
 	}
 	if (fclose(stderr)) {
+		perror("stderr");
 		exit(ERROR_FATAL); 
 	}
 

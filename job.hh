@@ -613,7 +613,7 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 	int r= getrusage(RUSAGE_CHILDREN, &usage);
 	if (r < 0) {
 		print_error_system("getrusage");
-		throw ERROR_FATAL; 
+		throw ERROR_BUILD; 
 	}
 
 	if (! allow_unterminated_jobs)
@@ -698,6 +698,7 @@ Job::Signal_Blocker::Signal_Blocker()
 #endif
 	if (0 != sigprocmask(SIG_BLOCK, &set_termination, nullptr)) {
 		perror("sigprocmask");
+		// TODO exit() instead 
 		throw ERROR_FATAL;
 	}
 }
@@ -710,6 +711,7 @@ Job::Signal_Blocker::~Signal_Blocker()
 #endif 
 	if (0 != sigprocmask(SIG_UNBLOCK, &set_termination, nullptr)) {
 		perror("sigprocmask");
+		// TODO exit() instead
 		throw ERROR_FATAL; 
 	}
 }

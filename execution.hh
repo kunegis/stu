@@ -299,8 +299,8 @@ protected:
 
 	virtual bool optional_finished(shared_ptr <const Dependency> dependency_link)= 0;
 	/* Whether the execution would be finished if this was an
-	 * optional dependency.  Check whether this is an  
-	 * optional dependency and if it is, return TRUE when the file does not
+	 * optional dependency.  Check whether this is an optional
+	 * dependency and if it is, return TRUE when the file does not
 	 * exist.  Return FALSE when children should be started.  Return
 	 * FALSE in execution types that are not affected.  */
 
@@ -2727,18 +2727,10 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	--jobs;
 	assert(jobs >= 0);
 
-	// TODO continue to use PROCEED instead of a new P. 
 	proceed |= P_WAIT; 
-//	Proceed p= P_WAIT;
 	if (order == Order::RANDOM && jobs > 0)
-		proceed
-//		p
-			|= P_PENDING; 
-
-	return 
-		proceed
-//		p
-		;
+		proceed |= P_PENDING; 
+	return proceed;
 }
 
 void File_Execution::print_as_job() const
@@ -2883,8 +2875,12 @@ bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_
 	    && ! (dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
 		  ->place_param_target.flags & F_TARGET_TRANSIENT)) {
 
-		// TODO check whether B_MISSING is already set here.  (?)
-
+		/* We already know a file to be missing */ 
+		if (bits & B_MISSING) {
+			flags_finished |= ~dependency_link->flags; 
+			return true; 
+		}
+		
 		const char *name= dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
 			->place_param_target.place_name.unparametrized().c_str();
 

@@ -504,19 +504,6 @@ private:
 	map <string, string> mapping_variable; 
 	/* Variable assignments from variables dependencies */
 
-//	signed char exists;
-//	// TODO fold into BITS
-//	/* 
-//	 * Whether the file target(s) are known to exist.  
-//	 *     -1 = at least one file target is known not to exist (only
-//	 *     	    possible when there is at least one file target)
-//	 *      0 = status unknown:  nothing has been checked yet
-//	 *     +1 = all file targets are known to exist (possible when
-//	 *          there are no file targets)
-//	 * When there are no file targets (i.e., when all targets are
-//	 * transients), the value may be both 0 or +1.  
-//	 */
-
 	Flags flags_finished; 
 	/* What parts of this target have been done.  Each bit that is
 	 * set represents one aspect that was done.  When an execution
@@ -1865,20 +1852,13 @@ void File_Execution::waited(pid_t pid, int status)
 	/* The file(s) may have been built, so forget that it was known
 	 * to not exist */
 	bits &= ~B_MISSING; 
-//	if (
-//	    bits & B_MISSING
-//	    exists < 0
-//	    ) {
-//		exists= 0;
-//	}
 
 	if (job.waited(status, pid)) {
 		/* Command was successful */ 
 
-		bits &= ~B_MISSING;
 		bits |=  B_EXISTING; 
-//		exists= +1; 
-		/* Subsequently set to -1 if at least one target file is missing */
+		bits &= ~B_MISSING;
+		/* Subsequently set to B_MISSING if at least one target file is missing */
 
 		/* For file targets, check that the file was built */ 
 		for (size_t i= 0;  i < targets.size();  ++i) {
@@ -1933,7 +1913,6 @@ void File_Execution::waited(pid_t pid, int status)
 			} else {
 				bits |= B_MISSING; 
 				bits &= ~B_EXISTING;
-//				exists= -1;
 				rule->place_param_targets[i]->place <<
 					fmt("file %s was not built by command", 
 					    target.format_word()); 
@@ -1998,7 +1977,6 @@ File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 			       int &error_additional)
 	:  Execution(),
 	   rule(rule_),
-//	   exists(0),
 	   flags_finished(0)
 {
 	assert((param_rule_ == nullptr) == (rule_ == nullptr)); 
@@ -2459,8 +2437,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 
 		bits |= B_EXISTING;
 		bits &= ~B_MISSING;
-//		exists= +1; 
-		/* Now, set EXISTS to -1 when a file is found not to exist */ 
+		/* Now, set to B_MISSING when a file is found not to exist */ 
 
 		for (size_t i= 0;  i < targets.size();  ++i) {
 			const Target &target= targets[i]; 
@@ -2487,7 +2464,6 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 			} else {
 				bits |= B_MISSING;
 				bits &= ~B_EXISTING; 
-//				exists= -1;
 			}
 
 			if (! (bits & B_NEED_BUILD)
@@ -2697,10 +2673,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 				File_Execution *execution_source
 					= dynamic_cast <File_Execution *> (execution_source_base); 
 				assert(execution_source); 
-				if (
-				    execution_source->bits & B_MISSING
-//				    execution_source->exists < 0
-				    ) {
+				if (execution_source->bits & B_MISSING) {
 					/* Neither the source file nor
 					 * the target file exist:  an
 					 * error  */
@@ -2809,7 +2782,6 @@ void File_Execution::write_content(const char *filename,
 
 	bits |= B_EXISTING;
 	bits &= ~B_MISSING; 
-//	exists= +1;
 }
 
 void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency,
@@ -2818,7 +2790,6 @@ void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency
 	assert(dynamic_pointer_cast <const Plain_Dependency> (dependency)); 
 
 	if (!(bits & B_EXISTING))
-//	if (exists <= 0)
 		return;
 
 	Target target= dependency->get_target(); 
@@ -2906,7 +2877,7 @@ bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_
 	    && ! (dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
 		  ->place_param_target.flags & F_TARGET_TRANSIENT)) {
 
-		// TODO check whether EXISTS is already -1 here.  (?)
+		// TODO check whether B_MISSING is already set here.  (?)
 
 		const char *name= dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
 			->place_param_target.place_name.unparametrized().c_str();
@@ -2916,7 +2887,6 @@ bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_
 		if (ret_stat < 0) {
 			bits |= B_MISSING;
 			bits &= ~B_EXISTING; 
-//			exists= -1;
 			if (errno != ENOENT) {
 				dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
 					->place_param_target.place <<
@@ -2931,7 +2901,6 @@ bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_
 			assert(ret_stat == 0);
 			bits |= B_EXISTING;
 			bits &= ~B_MISSING;
-//			exists= +1;
 		}
 	}
 

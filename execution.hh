@@ -5,35 +5,35 @@
  * Code for executing the building process itself.  
  *
  * If there is ever a "libstu", this will be its main entry point. 
-  * 
-  * OVERVIEW OF TYPES
-  *
-  * EXECUTION CLASS	CACHED?				WHEN USED
-  * ---------------------------------------------------------------------------------------------------
-  * Root_Execution	not cached (single object) 	The root of the dependency graph; 
-  *       						uses the dummy Root_Dependency 
-  * File_Execution	cached by Target (no flags)	Non-dynamic targets with at least one
-  *							file target in rule OR a command in rule OR
-  *							files without a rule
-  * Transient_Execution	cached by Target (w/ flags)	Transients without commands nor file targets in
-  * 							the same rule, i.e., transitive transient targets
-  * "Plain execution"	cached by Target		Name for File_Execution or Transient_Execution
-  * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Plain_Dependency w/o -* flag
-  * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concatenated_Dependency w/o -* flag
-  * Concatenated_Ex.	not cached			Concatenated targets
-  *
-  * Caching with flags excludes flags that are not stored in Target
-  * objects, i.e., F_RESULT_* flags.   
-  */
+ * 
+ * OVERVIEW OF TYPES
+ *
+ * EXECUTION CLASS	CACHED?				WHEN USED
+ * ---------------------------------------------------------------------------------------------------
+ * Root_Execution	not cached (single object) 	The root of the dependency graph; 
+ *       						uses the dummy Root_Dependency 
+ * File_Execution	cached by Target (no flags)	Non-dynamic targets with at least one
+ *							file target in rule OR a command in rule OR
+ *							files without a rule
+ * Transient_Execution	cached by Target (w/ flags)	Transients without commands nor file targets in
+ * 							the same rule, i.e., transitive transient targets
+ * "Plain execution"	cached by Target		Name for File_Execution or Transient_Execution
+ * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Plain_Dependency w/o -* flag
+ * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concatenated_Dependency w/o -* flag
+ * Concatenated_Ex.	not cached			Concatenated targets
+ *
+ * Caching with flags excludes flags that are not stored in Target
+ * objects, i.e., F_RESULT_* flags.   
+ */
 
 #include <sys/stat.h>
 
- #include "buffer.hh"
- #include "parser.hh"
- #include "job.hh"
- #include "tokenizer.hh"
- #include "rule.hh"
- #include "timestamp.hh"
+#include "buffer.hh"
+#include "parser.hh"
+#include "job.hh"
+#include "tokenizer.hh"
+#include "rule.hh"
+#include "timestamp.hh"
 
 class Execution
 /*
@@ -2728,11 +2728,17 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	assert(jobs >= 0);
 
 	// TODO continue to use PROCEED instead of a new P. 
-	Proceed p= P_WAIT;
+	proceed |= P_WAIT; 
+//	Proceed p= P_WAIT;
 	if (order == Order::RANDOM && jobs > 0)
-		p |= P_PENDING; 
+		proceed
+//		p
+			|= P_PENDING; 
 
-	return p;
+	return 
+		proceed
+//		p
+		;
 }
 
 void File_Execution::print_as_job() const

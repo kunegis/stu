@@ -264,8 +264,7 @@ protected:
 	 * dependencies while doing so.  */
 
 	void push_result(shared_ptr <const Dependency> dd); 
-	void disconnect(//Execution *const parent, 
-			Execution *const child,
+	void disconnect(Execution *const child,
 			shared_ptr <const Dependency> dependency_child);
 	/* Remove an edge from the dependency graph.  Propagate
 	 * information from CHILD to THIS, and then delete CHILD if
@@ -343,9 +342,8 @@ protected:
 	/* Whether both executions have the same parametrized rule.
 	 * Only used for finding cycle.  */ 
 
-	static bool is_cached(shared_ptr <const Dependency> dependency); 
-	/* Whether the dependency corresponds to an execution type that is cached */
-	// TODO This function is probably not needed. 
+//	static bool is_cached(shared_ptr <const Dependency> dependency); 
+//	/* Whether the dependency corresponds to an execution type that is cached */
 
 private: 
 
@@ -1513,12 +1511,13 @@ Execution::Proceed Execution::connect(shared_ptr <const Dependency> dependency_t
 	Debug::print(this, fmt("connect %s",  dependency_child->format_src())); 
 
 	assert(dependency_child->is_normalized()); 
+	assert(! dynamic_pointer_cast <const Root_Dependency> (dependency_child)); 
 
-	if (! is_cached(dependency_child)) {
-		/* Invalid dependency type.  The dependency must be normalized. */ 
-		assert(false); 
-		return 0;
-	}
+//	if (! is_cached(dependency_child)) {
+//		/* Invalid dependency type.  The dependency must be normalized. */ 
+//		assert(false); 
+//		return 0;
+//	}
 		
 	shared_ptr <const Plain_Dependency> plain_dependency_this=
 		dynamic_pointer_cast <const Plain_Dependency> (dependency_this);
@@ -1906,22 +1905,22 @@ Target Execution::get_target_for_cache(Target target)
 	return target; 
 }
 
-bool Execution::is_cached(shared_ptr <const Dependency> dependency)
-{
-	if (dynamic_pointer_cast <const Plain_Dependency> (dependency)) {
-		return true; 
-	} else if (dynamic_pointer_cast <const Root_Dependency> (dependency)) {
-		return false;
-	} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency)) {
-		return false;
-	} else if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
-		return is_cached(dynamic_pointer_cast <const Dynamic_Dependency> (dependency)->dependency);
-		/* A dynamic dependency is cached when its contained dependency is cached */
-	} else {
-		assert(false); 
-		/* In particular, Compound_Dependency is not used here */ 
-	}
-}
+// bool Execution::is_cached(shared_ptr <const Dependency> dependency)
+// {
+// 	if (dynamic_pointer_cast <const Plain_Dependency> (dependency)) {
+// 		return true; 
+// 	} else if (dynamic_pointer_cast <const Root_Dependency> (dependency)) {
+// 		return false;
+// 	} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency)) {
+// 		return false;
+// 	} else if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
+// 		return is_cached(dynamic_pointer_cast <const Dynamic_Dependency> (dependency)->dependency);
+// 		/* A dynamic dependency is cached when its contained dependency is cached */
+// 	} else {
+// 		assert(false); 
+// 		/* In particular, Compound_Dependency is not used here */ 
+// 	}
+// }
 
 File_Execution::~File_Execution()
 /* Objects of this type are never deleted */ 

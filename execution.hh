@@ -82,14 +82,24 @@ public:
 	 * bits are distinct and could just as well be realized as
 	 * individual "bool" variables.  */ 
 	enum {
-		B_NEED_BUILD = 1 << 0,
+		B_NEED_BUILD	= 1 << 0,
 		/* Whether this target needs to be built.  When a target is
 		 * finished, this value is propagated to the parent executions,
 		 * except when the F_PERSISTENT flag is set.  */ 
 
-		B_CHECKED    = 1 << 1,
+		B_CHECKED  	= 1 << 1,
 		/* Whether a certain check has been performed.  Only
 		 * used by File_Execution.  */
+
+		B_EXISTING	= 1 << 2, 
+		/* All file targets are known to exist (only in
+		 * File_Execution; may be set when there are no file
+		 * targets).  */
+
+		B_MISSING	= 1 << 3,
+		/* At least one file target is known not to exist (only
+		 * possible if there is at least one file target in
+		 * File_Execution).  */
 	};
 
 	void raise(int error_);
@@ -494,18 +504,18 @@ private:
 	map <string, string> mapping_variable; 
 	/* Variable assignments from variables dependencies */
 
-	signed char exists;
-	// TODO fold into BITS
-	/* 
-	 * Whether the file target(s) are known to exist.  
-	 *     -1 = at least one file target is known not to exist (only
-	 *     	    possible when there is at least one file target)
-	 *      0 = status unknown:  nothing has been checked yet
-	 *     +1 = all file targets are known to exist (possible when
-	 *          there are no file targets)
-	 * When there are no file targets (i.e., when all targets are
-	 * transients), the value may be both 0 or +1.  
-	 */
+//	signed char exists;
+//	// TODO fold into BITS
+//	/* 
+//	 * Whether the file target(s) are known to exist.  
+//	 *     -1 = at least one file target is known not to exist (only
+//	 *     	    possible when there is at least one file target)
+//	 *      0 = status unknown:  nothing has been checked yet
+//	 *     +1 = all file targets are known to exist (possible when
+//	 *          there are no file targets)
+//	 * When there are no file targets (i.e., when all targets are
+//	 * transients), the value may be both 0 or +1.  
+//	 */
 
 	Flags flags_finished; 
 	/* What parts of this target have been done.  Each bit that is
@@ -1854,13 +1864,20 @@ void File_Execution::waited(pid_t pid, int status)
 
 	/* The file(s) may have been built, so forget that it was known
 	 * to not exist */
-	if (exists < 0)  
-		exists= 0;
+	bits &= ~B_MISSING; 
+//	if (
+//	    bits & B_MISSING
+//	    exists < 0
+//	    ) {
+//		exists= 0;
+//	}
 
 	if (job.waited(status, pid)) {
 		/* Command was successful */ 
 
-		exists= +1; 
+		bits &= ~B_MISSING;
+		bits |=  B_EXISTING; 
+//		exists= +1; 
 		/* Subsequently set to -1 if at least one target file is missing */
 
 		/* For file targets, check that the file was built */ 
@@ -1914,7 +1931,9 @@ void File_Execution::waited(pid_t pid, int status)
 					raise(ERROR_BUILD);
 				}
 			} else {
-				exists= -1;
+				bits |= B_MISSING; 
+				bits &= ~B_EXISTING;
+//				exists= -1;
 				rule->place_param_targets[i]->place <<
 					fmt("file %s was not built by command", 
 					    target.format_word()); 
@@ -1979,7 +1998,7 @@ File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 			       int &error_additional)
 	:  Execution(),
 	   rule(rule_),
-	   exists(0),
+//	   exists(0),
 	   flags_finished(0)
 {
 	assert((param_rule_ == nullptr) == (rule_ == nullptr)); 
@@ -2438,7 +2457,9 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 	if (! (bits & B_CHECKED)) {
 		bits |= B_CHECKED; 
 
-		exists= +1; 
+		bits |= B_EXISTING;
+		bits &= ~B_MISSING;
+//		exists= +1; 
 		/* Now, set EXISTS to -1 when a file is found not to exist */ 
 
 		for (size_t i= 0;  i < targets.size();  ++i) {
@@ -2464,7 +2485,9 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 							 : rule->place_param_targets[i]->place); 
 				/* EXISTS is not changed */ 
 			} else {
-				exists= -1;
+				bits |= B_MISSING;
+				bits &= ~B_EXISTING; 
+//				exists= -1;
 			}
 
 			if (! (bits & B_NEED_BUILD)
@@ -2674,7 +2697,10 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 				File_Execution *execution_source
 					= dynamic_cast <File_Execution *> (execution_source_base); 
 				assert(execution_source); 
-				if (execution_source->exists < 0) {
+				if (
+				    execution_source->bits & B_MISSING
+//				    execution_source->exists < 0
+				    ) {
 					/* Neither the source file nor
 					 * the target file exist:  an
 					 * error  */
@@ -2781,7 +2807,9 @@ void File_Execution::write_content(const char *filename,
 		raise(ERROR_BUILD); 
 	}
 
-	exists= +1;
+	bits |= B_EXISTING;
+	bits &= ~B_MISSING; 
+//	exists= +1;
 }
 
 void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency,
@@ -2789,7 +2817,8 @@ void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency
 {
 	assert(dynamic_pointer_cast <const Plain_Dependency> (dependency)); 
 
-	if (exists <= 0)
+	if (!(bits & B_EXISTING))
+//	if (exists <= 0)
 		return;
 
 	Target target= dependency->get_target(); 
@@ -2885,7 +2914,9 @@ bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_
 		struct stat buf;
 		int ret_stat= stat(name, &buf);
 		if (ret_stat < 0) {
-			exists= -1;
+			bits |= B_MISSING;
+			bits &= ~B_EXISTING; 
+//			exists= -1;
 			if (errno != ENOENT) {
 				dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
 					->place_param_target.place <<
@@ -2898,7 +2929,9 @@ bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_
 			return true;
 		} else {
 			assert(ret_stat == 0);
-			exists= +1;
+			bits |= B_EXISTING;
+			bits &= ~B_MISSING;
+//			exists= +1;
 		}
 	}
 

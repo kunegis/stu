@@ -77,7 +77,7 @@ private:
 	const Place::Type place_type;
 	const string filename;
 
-	unsigned line;
+	size_t line;
 	/* Line number */
 
 	const char *p_line;
@@ -430,10 +430,10 @@ shared_ptr <Command> Tokenizer::parse_command()
 
 	const char *const p_beg= p;
 
-	unsigned line_command= line; /* The line of the place of the command */
-	unsigned column_command= p - p_line; /* The column of the place of
+	size_t line_command= line; /* The line of the place of the command */
+	size_t column_command= p - p_line; /* The column of the place of
 					      *	the command */
-	const unsigned line_first= line; /* Where the command started */ 
+	const size_t line_first= line; /* Where the command started */ 
 	bool begin= true; /* We have not yet seen non-whitespace */ 
 
 	string stack= "{"; 

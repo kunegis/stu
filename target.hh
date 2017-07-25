@@ -238,7 +238,7 @@ public:
 	}
 
 	/* Number of parameters; zero when the name is unparametrized. */ 
-	unsigned get_n() const {
+	size_t get_n() const {
 		assert(texts.size() == 1 + parameters.size()); 
 		return parameters.size(); 
 	}
@@ -276,7 +276,7 @@ public:
 
 		append_text(name.texts.front());
 
-		for (unsigned i= 0;  i < name.get_n();  ++i) {
+		for (size_t i= 0;  i < name.get_n();  ++i) {
 			append_parameter(name.get_parameters()[i]);
 			append_text(name.get_texts()[1 + i]);
 		}
@@ -301,7 +301,7 @@ public:
 
 	bool match(string name, 
 		   map <string, string> &mapping,
-		   vector <unsigned> &anchoring);
+		   vector <size_t> &anchoring);
 	/* Check whether NAME matches this name.  If it does, return
 	 * TRUE and set MAPPING and ANCHORING accordingly. 
 	 * MAPPING must be empty.  */
@@ -310,7 +310,7 @@ public:
 	string raw() const {
 		assert(texts.size() == 1 + parameters.size()); 
 		string ret= texts[0];
-		for (unsigned i= 0;  i < get_n();  ++i) {
+		for (size_t i= 0;  i < get_n();  ++i) {
 			ret += "${";
 			ret += parameters[i];
 			ret += '}';
@@ -326,7 +326,7 @@ public:
 					style | S_MARKERS | S_NOEMPTY,
 					quotes);
 
-		for (unsigned i= 0;  i < get_n();  ++i) {
+		for (size_t i= 0;  i < get_n();  ++i) {
 			ret += "${";
 			ret += name_format(parameters[i],
 					   style | S_MARKERS | S_NOEMPTY,
@@ -385,7 +385,7 @@ public:
 	bool operator == (const Name &that) const {
 		if (this->get_n() != that.get_n())
 			return false;
-		for (unsigned i= 0;  i < get_n();  ++i) {
+		for (size_t i= 0;  i < get_n();  ++i) {
 			if (this->parameters[i] != that.parameters[i])
 				return false;
 			if (this->texts[i] != that.texts[i])
@@ -396,8 +396,8 @@ public:
 		return true;
 	}
 
-	static bool anchoring_dominates(vector <unsigned> &anchoring_a,
-					vector <unsigned> &anchoring_b);
+	static bool anchoring_dominates(vector <size_t> &anchoring_a,
+					vector <size_t> &anchoring_b);
 	/* Whether anchoring A dominates anchoring B.  The anchorings do
 	 * not need to have the same number of parameters.  */
 };
@@ -787,7 +787,7 @@ string Name::instantiate(const map <string, string> &mapping) const
 
 bool Name::match(const string name, 
 		 map <string, string> &mapping,
-		 vector <unsigned> &anchoring)
+		 vector <size_t> &anchoring)
 {
 	/* 
 	 * Rules:
@@ -803,7 +803,7 @@ bool Name::match(const string name,
 
 	map <string, string> ret;
 
-	const unsigned n= get_n(); 
+	const size_t n= get_n(); 
 
 	if (name == "") {
 		return n == 0 && texts[0] == ""; 
@@ -829,7 +829,7 @@ bool Name::match(const string name,
 
 	anchoring[0]= k;
 
-	for (unsigned i= 0;  i < n;  ++i) {
+	for (size_t i= 0;  i < n;  ++i) {
 
 		if (i == n - 1) {
 			/* For the last segment, the texts[n-1] must
@@ -897,7 +897,7 @@ bool Name::valid(string &param_1, string &param_2) const
 	if (empty())  
 		return false;
 
-	for (unsigned i= 1;  i + 1 < get_n() + 1;  ++i) {
+	for (size_t i= 1;  i + 1 < get_n() + 1;  ++i) {
 		if (texts[i] == "") {
 			param_1= parameters[i-1];
 			param_2= parameters[i];
@@ -908,8 +908,8 @@ bool Name::valid(string &param_1, string &param_2) const
 	return true;
 }
 
-bool Name::anchoring_dominates(vector <unsigned> &anchoring_a,
-			       vector <unsigned> &anchoring_b)
+bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
+			       vector <size_t> &anchoring_b)
 {
  	/* (A) dominates (B) when every character in a parameter in (A)
 	 * is also in a parameter in (B) and at least one character is
@@ -920,13 +920,13 @@ bool Name::anchoring_dominates(vector <unsigned> &anchoring_a,
 	assert(anchoring_a.size() % 2 == 0);
 	assert(anchoring_b.size() % 2 == 0);
 
-	const unsigned k_a= anchoring_a.size();
-	const unsigned k_b= anchoring_b.size();
+	const size_t k_a= anchoring_a.size();
+	const size_t k_b= anchoring_b.size();
 
 	bool dominate= false;
-	unsigned p= 0; /* Position in the string */ 
-	unsigned i= 0; /* Index in (A) */ 
-	unsigned j= 0; /* Index in (B) */ 
+	size_t p= 0; /* Position in the string */ 
+	size_t i= 0; /* Index in (A) */ 
+	size_t j= 0; /* Index in (B) */ 
 
 	for (;;) {
 		if (i < k_a && p == anchoring_a[i])  ++i;

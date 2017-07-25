@@ -334,7 +334,7 @@ shared_ptr <Rule> Parser::parse_rule()
 		parameters_0.insert(parameter); 
 	}
 	assert(place_param_targets.size() >= 1); 
-	for (unsigned i= 1;  i < place_param_targets.size();  ++i) {
+	for (size_t i= 1;  i < place_param_targets.size();  ++i) {
 		set <string> parameters_i;
 		for (const string &parameter:  
 			     place_param_targets[i]->place_name.get_parameters()) {
@@ -501,7 +501,7 @@ shared_ptr <Rule> Parser::parse_rule()
 				     place_param_targets[0]->place_name.get_parameters()) {
 				parameters.insert(parameter); 
 			}
-			for (unsigned jj= 0;  jj < name_copy->get_n();  ++jj) {
+			for (size_t jj= 0;  jj < name_copy->get_n();  ++jj) {
 				string parameter= 
 					name_copy->get_parameters()[jj]; 
 				if (parameters.count(parameter) == 0) {
@@ -1200,7 +1200,7 @@ void Parser::append_copy(      Name &to,
 				 * already ends in a slash */ 
 				to.append_text(from.get_texts()[i].substr(j + 1));
 
-				for (unsigned k= i;  k < from.get_n();  ++k) {
+				for (size_t k= i;  k < from.get_n();  ++k) {
 					to.append_parameter(from.get_parameters()[k]);
 					to.append_text(from.get_texts()[k + 1]);
 				}

@@ -181,9 +181,6 @@ public:
 	/* With F_VARIABLE:  the name of the variable.
 	 * Otherwise:  empty.  */
 
-	// TODO in the following, deprecate all constructors that have a
-	// FLAGS parameter without a PLACES parameter. 
-
 	explicit Plain_Dependency(const Place_Param_Target &place_param_target_)
 		:  Dependency(place_param_target_.flags),
 		   place_param_target(place_param_target_),
@@ -213,28 +210,28 @@ public:
 		check(); 
 	}
 
-	Plain_Dependency(Flags flags_,
-			 const Place_Param_Target &place_param_target_,
-			 const string &variable_name_)
-		/* Take the dependency place from the target place, with variable_name */ 
-		:  Dependency(flags_),
-		   place_param_target(place_param_target_),
-		   place(place_param_target_.place),
-		   variable_name(variable_name_)
-	{ 
-		check(); 
-	}
+	// Plain_Dependency(Flags flags_,
+	// 		 const Place_Param_Target &place_param_target_,
+	// 		 const string &variable_name_)
+	// 	/* Take the dependency place from the target place, with variable_name */ 
+	// 	:  Dependency(flags_),
+	// 	   place_param_target(place_param_target_),
+	// 	   place(place_param_target_.place),
+	// 	   variable_name(variable_name_)
+	// { 
+	// 	check(); 
+	// }
 
-	Plain_Dependency(Flags flags_,
-			 const Place_Param_Target &place_param_target_,
-			 const Place &place_)
-		/* Use an explicit dependency place */ 
-		:  Dependency(flags_),
-		   place_param_target(place_param_target_),
-		   place(place_)
-	{ 
-		check(); 
-	}
+	// Plain_Dependency(Flags flags_,
+	// 		 const Place_Param_Target &place_param_target_,
+	// 		 const Place &place_)
+	// 	/* Use an explicit dependency place */ 
+	// 	:  Dependency(flags_),
+	// 	   place_param_target(place_param_target_),
+	// 	   place(place_)
+	// { 
+	// 	check(); 
+	// }
 
 	Plain_Dependency(Flags flags_,
 			 const Place_Param_Target &place_param_target_,
@@ -790,10 +787,6 @@ Target Dynamic_Dependency::get_target() const
 	const Plain_Dependency *sin= dynamic_cast <const Plain_Dependency *> (d); 
 	Flags f= sin->flags & F_TARGET_BYTE;
 	text += (char)(unsigned char)f; 
-	
-	// TODO in next line, copy the string directly from one string
-	// object to another, without passing through a temporary string
-	// object. 
 	text += sin->place_param_target.unparametrized().get_name_nondynamic(); 
 	
 	return Target(text); 
@@ -1073,10 +1066,10 @@ shared_ptr <const Plain_Dependency> Concatenated_Dependency::concatenate(shared_
 
 	assert(! a->place_param_target.place_name.is_parametrized()); 
 	assert(! b->place_param_target.place_name.is_parametrized()); 
-	assert(a->variable_name == "");  // TEST
-	assert(b->variable_name == "");  // TEST
-	assert((b->flags & F_TARGET_TRANSIENT) == 0); // TEST
-	// TODO test all other flags 
+	assert(a->variable_name == "");  // XXX test
+	assert(b->variable_name == "");  // XXX test
+	assert((b->flags & F_TARGET_TRANSIENT) == 0); // XXX test
+	// XXX test all other flags 
 
 	Flags flags_combined= a->flags | b->flags; 
 

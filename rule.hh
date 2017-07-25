@@ -246,7 +246,7 @@ Rule::instantiate(shared_ptr <Rule> rule,
 
 	vector <shared_ptr <Place_Param_Target> > 
 		place_param_targets(rule->place_param_targets.size());
-	for (unsigned i= 0;  i < rule->place_param_targets.size();  ++i) 
+	for (size_t i= 0;  i < rule->place_param_targets.size();  ++i) 
 		place_param_targets[i]= rule->place_param_targets[i]->instantiate(mapping);
 
 	vector <shared_ptr <const Dependency> > dependencies;
@@ -317,7 +317,7 @@ void Rule::check_unparametrized(shared_ptr <const Dependency> dependency,
 	} else if (dynamic_pointer_cast <const Plain_Dependency> (dependency)) {
 		shared_ptr <const Plain_Dependency> plain_dependency=
 			dynamic_pointer_cast <const Plain_Dependency> (dependency);
-		for (unsigned jj= 0;  
+		for (size_t jj= 0;  
 		     jj < plain_dependency->place_param_target.place_name.get_n();
 		     ++jj) {
 			string parameter= plain_dependency->place_param_target
@@ -350,8 +350,8 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 	for (auto &rule:  rules_) {
 
 		/* Check that the rule doesn't have a duplicate target */ 
-		for (unsigned i= 0;  i < rule->place_param_targets.size();  ++i) {
-			for (unsigned j= 0;  j < i;  ++j) {
+		for (size_t i= 0;  i < rule->place_param_targets.size();  ++i) {
+			for (size_t j= 0;  j < i;  ++j) {
 				if (*rule->place_param_targets[i] ==
 				    *rule->place_param_targets[j]) {
 					rule->place_param_targets[i]->place << 
@@ -434,7 +434,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 	/* Element [0] corresponds to the best rule. */ 
 	vector <shared_ptr <Rule> > rules_best;
 	vector <map <string, string> > mappings_best; 
-	vector <vector <unsigned> > anchorings_best; 
+	vector <vector <size_t> > anchorings_best; 
 	vector <shared_ptr <Place_Param_Target> > place_param_targets_best; 
 
 	for (auto &rule:  rules_parametrized) {
@@ -444,7 +444,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 			assert(place_param_target->place_name.get_n() > 0);
 		
 			map <string, string> mapping;
-			vector <unsigned> anchoring;
+			vector <size_t> anchoring;
 
 			/* The parametrized rule is of another type */ 
 			if (target.get_front_byte() != (place_param_target->flags & F_TARGET_TRANSIENT))
@@ -473,7 +473,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 			/* Check whether the rule dominates all other rules */ 
 			{
 				bool is_best= true;
-				for (int j= 0;  is_best && j < (ssize_t) k;  ++j) {
+				for (ssize_t j= 0;  is_best && j < (ssize_t) k;  ++j) {
 					if (! Name::anchoring_dominates(anchoring, anchorings_best[j]))
 						is_best= false;
 				}

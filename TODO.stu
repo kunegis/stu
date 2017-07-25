@@ -356,6 +356,11 @@ X = {x}   Y = {y}  Z = {z}
 # handle all finished jobs in a loop in that function.
 #
 
+#
+# Job::Signal::Signal: Execute the signal setup code only when needed,
+# i.e., when something is started. 
+#
+
 #=================== Further features =======================
 
 #

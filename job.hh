@@ -698,8 +698,8 @@ Job::Signal_Blocker::Signal_Blocker()
 #endif
 	if (0 != sigprocmask(SIG_BLOCK, &set_termination, nullptr)) {
 		perror("sigprocmask");
-		// TODO exit() instead 
-		throw ERROR_FATAL;
+		exit(ERROR_FATAL); 
+//		throw ERROR_FATAL;
 	}
 }
 
@@ -711,8 +711,8 @@ Job::Signal_Blocker::~Signal_Blocker()
 #endif 
 	if (0 != sigprocmask(SIG_UNBLOCK, &set_termination, nullptr)) {
 		perror("sigprocmask");
-		// TODO exit() instead
-		throw ERROR_FATAL; 
+		exit(ERROR_FATAL); 
+//		throw ERROR_FATAL; 
 	}
 }
 
@@ -742,7 +742,6 @@ Job::Signal::Signal()
  * no-op signal handler.  (Note that Linux does not discard such
  * signals, while FreeBSD does.)
  */  
-// TODO execute this only when needed, i.e., when something is started 
 {
 	/* 
 	 * Termination signals 
@@ -767,7 +766,7 @@ Job::Signal::Signal()
 		SIGILL, SIGHUP, 
 	};
 
-	for (unsigned i= 0;  
+	for (size_t i= 0;  
 	     i < sizeof(signals_termination) / sizeof(signals_termination[0]);  
 	     ++i) {
 		if (0 != sigaction(signals_termination[i], &act_termination, nullptr)) {

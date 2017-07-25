@@ -258,7 +258,7 @@ Command::get_lines() const
 			if (i[0] != begin)  equal= false;
 		}
 		if (! equal)  break;
-		for (unsigned i= 0; i < lines->size(); ) {
+		for (size_t i= 0; i < lines->size(); ) {
 			string &line= (*lines)[i]; 
 			assert(line.size()); 
 			line.erase(0, 1); 

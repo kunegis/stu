@@ -289,7 +289,7 @@ protected:
 
 	virtual bool optional_finished(shared_ptr <const Dependency> dependency_link)= 0;
 	/* Whether the execution would be finished if this was an
-	 * optional dependency?  Check whether this is an  
+	 * optional dependency.  Check whether this is an  
 	 * optional dependency and if it is, return TRUE when the file does not
 	 * exist.  Return FALSE when children should be started.  Return
 	 * FALSE in execution types that are not affected.  */
@@ -1073,16 +1073,8 @@ bool Execution::find_cycle(Execution *parent,
 			   Execution *child,
 			   shared_ptr <const Dependency> dependency_link)
 {
-	// TODO in both find_cycle() functions:  don't test
-	// Root_Execution explicitly, as it should not have parents
-	// anyway. 
-
-//	if (dynamic_cast <const Root_Execution *> (parent))
-//		return false;
-		
 	vector <Execution *> path;
 	path.push_back(parent); 
-
 	return find_cycle(path, child, dependency_link); 
 }
 
@@ -1098,15 +1090,10 @@ bool Execution::find_cycle(vector <Execution *> &path,
 	for (auto &i:  path.back()->parents) {
 		Execution *next= i.first; 
 		assert(next != nullptr);
-//		if (dynamic_cast <const Root_Execution *> (next)) 
-//			continue;
-
 		path.push_back(next); 
-
 		bool found= find_cycle(path, child, dependency_link);
 		if (found)
 			return true;
-
 		path.pop_back(); 
 	}
 	
@@ -1370,7 +1357,6 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 	assert(dependency_this); 
 
 	shared_ptr <Dependency> dependency_this2= Dependency::clone(dependency_this); 
-
 	Proceed proceed= 0; 
 
 	if (finished(dependency_this2->flags)) {
@@ -1378,14 +1364,16 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 		return proceed |= P_FINISHED; 
 	}
 
+	// TODO placement
+	if (optional_finished(dependency_this2)) {
+		Debug::print(this, "finished"); 
+		return proceed |= P_FINISHED; 
+	}
+
 	/* In DFS mode, first continue the already-open children, then
 	 * open new children.  In random mode, start new children first
 	 * and continue already-open children second */ 
-
-	/* 
-	 * Continue the already-active child executions 
-	 */  
-
+	/* Continue the already-active child executions */  
 	if (order != Order::RANDOM) {
 		Proceed proceed_2= execute_children();
 		proceed |= proceed_2;
@@ -1398,11 +1386,7 @@ Execution::Proceed Execution::execute_base_A(shared_ptr <const Dependency> depen
 		}
 	} 
 
-	// TODO put this *before* the execution of already-opened
-	// children. 
-	if (optional_finished(dependency_this2)) {
-		return proceed |= P_FINISHED; 
-	}
+	// XXX old placement
 
 	/* Is this a trivial run?  Then skip the dependency. */
 	if (dependency_this2->flags & F_TRIVIAL) {

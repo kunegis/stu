@@ -396,7 +396,7 @@ class File_Execution
 {
 public:
 
-	File_Execution(Target target_,
+	File_Execution(//Target target_,
 		       shared_ptr <const Dependency> dependency_link,
 		       Execution *parent,
 		       shared_ptr <Rule> rule,
@@ -1726,7 +1726,6 @@ Execution::Proceed Execution::execute_base_B(shared_ptr <const Dependency> depen
 }
 
 Execution *Execution::get_execution(shared_ptr <const Dependency> dependency)
-//				    Execution *parent)
 {
 	const Target target= dependency->get_target(); 
 
@@ -1739,48 +1738,28 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency)
 	if (it != executions_by_target.end()) {
 		/* An Execution object already exists for the target */ 
 		execution= it->second; 
-		if (execution->parents.count(
-					     this
-//					     parent
-					     )) {
+		if (execution->parents.count(this)) {
 			/* THIS and CHILD are already connected -- add the
 			 * necessary flags */ 
 			Flags flags= dependency->flags; 
-			if (flags & ~execution->parents.at(
-							   this
-//							   parent
-							   )->flags) {
-				shared_ptr <Dependency> dependency_new= Dependency::clone(execution->parents.at(
-														this
-//														parent
-														));
+			if (flags & ~execution->parents.at(this)->flags) {
+				shared_ptr <Dependency> dependency_new= Dependency::clone(execution->parents.at(this));
 				dependency_new->flags |= flags;
-				// TODO also set the place in D, from DEPENDENCY_LINK
 				dependency= dependency_new;
 				/* No need to check for cycles here,
 				 * because a link between the two
 				 * already exists and therefore a cycle
 				 * cannot be present.  */
-				execution->parents[
-						   this
-//						   parent
-						   ]= dependency; 
+				execution->parents[this]= dependency; 
 			}
 		} else {
-			if (find_cycle(
-				       this
-//				       parent
-				       , execution, dependency)) {
-//				parent->
-					raise(ERROR_LOGICAL);
+			if (find_cycle(this, execution, dependency)) {
+				raise(ERROR_LOGICAL);
 				return nullptr;
 			}
 			/* The parent and child are not connected -- add the
 			 * connection */ 
-			execution->parents[
-					   this
-//					   parent
-					   ]= dependency;
+			execution->parents[this]= dependency;
 		}
 		return execution;
 	} 
@@ -1831,16 +1810,15 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency)
 		if (use_file_execution) {
 
 			execution= new File_Execution
-				(target, dependency, 
+				(//target, 
+				 dependency, 
 				 this,
-//				 parent,
 				 rule_child, param_rule_child, mapping_parameter,
 				 error_additional); 
 		} else if (target.is_transient()) {
 			execution= new Transient_Execution
 				(dependency, 
 				 this,
-//				 parent,
 				 rule_child, param_rule_child, mapping_parameter,
 				 error_additional);
 		}
@@ -1849,13 +1827,11 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency)
 			dynamic_pointer_cast <const Dynamic_Dependency> (dependency); 
 		execution= new Dynamic_Execution(dynamic_dependency, 
 						 this,
-//						 parent, 
 						 error_additional); 
 	}
 
 	if (error_additional) {
-//		parent->
-			error |= error_additional; 
+		error |= error_additional; 
 		if (execution->want_delete())
 			delete execution; 
 		return nullptr; 
@@ -2081,7 +2057,7 @@ void File_Execution::waited(pid_t pid, int status)
 	}
 }
 
-File_Execution::File_Execution(Target target_,
+File_Execution::File_Execution(//Target target_,
 			       shared_ptr <const Dependency> dependency,
 			       Execution *parent, 
 			       shared_ptr <Rule> rule_,
@@ -2097,6 +2073,7 @@ File_Execution::File_Execution(Target target_,
 
 	param_rule= param_rule_;
 	swap(mapping_parameter, mapping_parameter_); 
+	Target target_= dependency->get_target(); 
 
 	/* Later replaced with all targets from the rule, when a rule exists */ 
 	Target target_no_flags= target_;
@@ -2114,7 +2091,7 @@ File_Execution::File_Execution(Target target_,
 	}
 
 	if (rule == nullptr) {
-		/* TARGETS contains only TARGET_ */
+		/* TARGETS contains only DEPENDENCY->TARGET */
 	} else {
 		targets.clear(); 
 		for (auto &place_param_target:  rule->place_param_targets) {

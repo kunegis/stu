@@ -185,7 +185,6 @@ int main(int argc, char **argv, char **envp)
 					place << fmt("invalid option %s",
 						     multichar_format_word(frmt("-%c", c)));
 					exit(ERROR_FATAL); 
-//					throw ERROR_FATAL; 
 				}
 			}
 		}

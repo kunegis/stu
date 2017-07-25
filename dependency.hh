@@ -210,29 +210,6 @@ public:
 		check(); 
 	}
 
-	// Plain_Dependency(Flags flags_,
-	// 		 const Place_Param_Target &place_param_target_,
-	// 		 const string &variable_name_)
-	// 	/* Take the dependency place from the target place, with variable_name */ 
-	// 	:  Dependency(flags_),
-	// 	   place_param_target(place_param_target_),
-	// 	   place(place_param_target_.place),
-	// 	   variable_name(variable_name_)
-	// { 
-	// 	check(); 
-	// }
-
-	// Plain_Dependency(Flags flags_,
-	// 		 const Place_Param_Target &place_param_target_,
-	// 		 const Place &place_)
-	// 	/* Use an explicit dependency place */ 
-	// 	:  Dependency(flags_),
-	// 	   place_param_target(place_param_target_),
-	// 	   place(place_)
-	// { 
-	// 	check(); 
-	// }
-
 	Plain_Dependency(Flags flags_,
 			 const Place_Param_Target &place_param_target_,
 			 const Place &place_,
@@ -318,11 +295,8 @@ public:
 
 class Dynamic_Dependency
 /*
- * The Dependency::flags field does *not* have the F_TARGET_DYNAMIC
- * set. 
+ * The Dependency::flags field has the F_TARGET_DYNAMIC set. 
  */
-// TODO make the F_TARGET_DYNAMIC field always be set in the
-// Dependency::flags field. 
 	:  public Dependency
 {
 public:
@@ -332,7 +306,7 @@ public:
 
 	Dynamic_Dependency(Flags flags_,
 			   shared_ptr <const Dependency> dependency_)
-		:  Dependency(flags_), 
+		:  Dependency(flags_ | F_TARGET_DYNAMIC), 
 		   dependency(dependency_)
 	{
 		assert((flags & F_VARIABLE) == 0); 
@@ -342,7 +316,7 @@ public:
 	Dynamic_Dependency(Flags flags_,
 			   const Place places_[C_PLACED],
 			   shared_ptr <const Dependency> dependency_)
-		:  Dependency(flags_, places_),
+		:  Dependency(flags_ | F_TARGET_DYNAMIC, places_),
 		   dependency(dependency_)
 	{
 		assert((flags & F_VARIABLE) == 0); /* Variables cannot be dynamic */
@@ -714,7 +688,10 @@ void Dependency::check() const
 	}
 
 	if (dynamic_this) {
+		assert(flags & F_TARGET_DYNAMIC); 
 		dynamic_this->dependency->check(); 
+	} else {
+		assert(!(flags & F_TARGET_DYNAMIC)); 
 	}
 }
 #endif
@@ -778,13 +755,14 @@ Target Dynamic_Dependency::get_target() const
 	const Dependency *d= this; 
 	while (dynamic_cast <const Dynamic_Dependency *> (d)) {
 		Flags f= F_TARGET_DYNAMIC; 
-		assert((d->flags & F_TARGET_DYNAMIC) == 0); 
+		assert(d->flags & F_TARGET_DYNAMIC); 
 		f |= d->flags & F_TARGET_BYTE; 
 		text += (char)(unsigned char)f; 
 		d= dynamic_cast <const Dynamic_Dependency *> (d)->dependency.get(); 
 	}
 	assert(dynamic_cast <const Plain_Dependency *> (d)); 
 	const Plain_Dependency *sin= dynamic_cast <const Plain_Dependency *> (d); 
+	assert(!(sin->flags & F_TARGET_DYNAMIC)); 
 	Flags f= sin->flags & F_TARGET_BYTE;
 	text += (char)(unsigned char)f; 
 	text += sin->place_param_target.unparametrized().get_name_nondynamic(); 

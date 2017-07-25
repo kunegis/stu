@@ -3336,7 +3336,7 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, Execution
 					/* Add -% flag */
 					j_new->flags |= F_RESULT_PUT;
 					/* Add flags from self  */  
-					j_new->flags |= dependency->flags & F_TARGET_BYTE; 
+					j_new->flags |= dependency->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
 					for (int i= 0;  i < C_PLACED;  ++i) {
 						if (j_new->get_place_flag(i).empty() && 
 						    ! dependency->get_place_flag(i).empty())
@@ -3443,7 +3443,8 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 	/* Fill EXECUTIONS_BY_TARGET with all targets from the rule, not
 	 * just the one given in the dependency.  Also, add the flags.  */
 	for (Target t:  targets) {
-		t.get_front_byte_nondynamic() |= (char)(unsigned char)(dependency_link->flags & F_TARGET_BYTE); 
+		t.get_front_byte_nondynamic() |= (char)(unsigned char)
+			(dependency_link->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC)); 
 		executions_by_target[t]= this; 
 	}
 

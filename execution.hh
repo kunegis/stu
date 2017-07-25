@@ -495,6 +495,7 @@ private:
 	/* Variable assignments from variables dependencies */
 
 	signed char exists;
+	// TODO fold into BITS
 	/* 
 	 * Whether the file target(s) are known to exist.  
 	 *     -1 = at least one file target is known not to exist (only
@@ -2455,8 +2456,7 @@ Execution::Proceed File_Execution::execute(Execution *parent,
 				/* File exists */ 
 				Timestamp timestamp_file= Timestamp(&buf); 
 				timestamps_old[i]= timestamp_file;
- 				if (//parent == nullptr || 
-				    ! (dependency_this->flags & F_PERSISTENT)) 
+ 				if (! (dependency_this->flags & F_PERSISTENT)) 
 					warn_future_file(&buf, 
 							 target.get_name_c_str_nondynamic(), 
 							 rule == nullptr 
@@ -2868,12 +2868,6 @@ void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency
 	print_traces();
 
 	raise(ERROR_BUILD); 
-
-	// /* Note:  we don't have to propagate the error via the return
-	//  * value, because we already raised the error, i.e., we either
-	//  * threw an error, or set the error, which will be picked up by
-	//  * the parent.  */
-	// return;
 }
 
 bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_link)
@@ -3136,10 +3130,10 @@ concatenate_dependency_one(shared_ptr <const Plain_Dependency> dependency_1,
  */
 {
 	assert(dependency_2->flags == 0);
-	// TODO test:  replace by a proper error 
+	// XXX test:  replace by a proper error 
 
 	assert(! (dependency_2->place_param_target.flags & F_TARGET_TRANSIENT)); 
-	// TODO proper test.  
+	// XXX proper test.  
 
 	Place_Param_Target target= dependency_1->place_param_target; 
 	target.place_name.append(dependency_2->place_param_target.place_name); 
@@ -3190,7 +3184,7 @@ void Concatenated_Execution::assemble_parts()
 		} else {
 			for (size_t j= 0;  j < dependencies_read.size();  ++j) {
 				for (size_t k= 0;  k < parts[i].size();  ++k) {
-					// TODO do something here ...
+					// XXX do something here ...
 				}
 			}
 		}
@@ -3354,7 +3348,6 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, Execution
 			raise(e); 
 		}
 	} else {
-		// TODO push the dynamic of D?
 		assert(false);
 	}
 	} else {

@@ -1,0 +1,4 @@
+# escape the quote correctly in error message 
+
+A:  ("'")X  { touch A ; }
+

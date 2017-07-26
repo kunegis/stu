@@ -1,1 +1,3 @@
-... A(<B)  # Error
+# Error
+A: B(<C)  { touch A ; }
+

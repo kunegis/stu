@@ -1,6 +1,0 @@
-# 'A' contains two lines with each containing 'correct'
->A:  B @x { echo "$V" ; cat B ; }
->B:  @x  { echo "$V" ; }
-@x:  $[V];
-V = {correct}
-

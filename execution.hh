@@ -165,7 +165,9 @@ public:
 	}
 
 	virtual string format_src() const= 0;
-	virtual void propagate_variable_content(string variable_name, string content)= 0; 
+
+//	virtual void propagate_variable_content(string variable_name, string content)= 0; 
+//	/* Propagate the given variable to this execution */
 
 	virtual void notify_result(shared_ptr <const Dependency> dependency,
 				   Execution *source,
@@ -180,6 +182,10 @@ public:
 		(void) source; 
 		(void) flags;
 		assert(false);
+	}
+
+	virtual void notify_variable(const map <string, string> &result_variable_child) {  
+		(void) result_variable_child; 
 	}
 
 	static long jobs;
@@ -238,6 +244,10 @@ protected:
 	 * of its files, depending in the parent -- for file
 	 * dependencies, parents are notified directly, bypassing
 	 * push_result().  */ 
+
+	map <string, string > result_variable; 
+	/* Same semantics as RESULT, but for variable values, stored as
+	 * KEY-VALUE pairs.  */
 
 	shared_ptr <Rule> param_rule;
 	/* The (possibly parametrized) rule from which this execution
@@ -418,16 +428,16 @@ public:
 	 * done in the constructor.  The parent is connected to this iff
 	 * ERROR_ADDITIONAL is zero after the call.  */
 
-	void propagate_variable(shared_ptr <const Dependency> dependency,
-				Execution *parent); 
+	void read_variable(shared_ptr <const Dependency> dependency); 
 	/* Read the content of the file into a string as the
-	 * variable value.  THIS is the variable target.  */
+	 * variable value.  THIS is the variable execution.  Write the
+	 * result into THIS's RESULT_VARIABLE.  */
 
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
-	void add_variables(map <string, string> mapping) {
-		mapping_variable.insert(mapping.begin(), mapping.end()); 
-	}
+//	void add_variables(map <string, string> mapping) {
+//		mapping_variable.insert(mapping.begin(), mapping.end()); 
+//	}
 
 	const map <string, string> &get_mapping_variable() const {
 		return mapping_variable; 
@@ -445,8 +455,10 @@ public:
 		assert(targets.size()); 
 		return targets.front().format_src(); 
 	}
-	virtual void propagate_variable_content(string variable_name, string content) {
-		mapping_variable[variable_name]= content;
+	virtual void notify_variable(const map <string, string> &result_variable_child) {  
+//	virtual void propagate_variable_content(string variable_name, string content) {
+		mapping_variable.insert(result_variable_child.begin(), result_variable_child.end()); 
+//		mapping_variable[variable_name]= content;
 	}
 
 	static unordered_map <pid_t, File_Execution *> executions_by_pid;
@@ -582,9 +594,11 @@ public:
 	virtual bool finished(Flags flags) const; 
 	virtual string format_src() const;
 	virtual void notify_result(shared_ptr <const Dependency> dependency, Execution *, Flags flags);
-	virtual void propagate_variable_content(string variable_name, string content) {
-		for (auto &i:  parents) 
-			i.first->propagate_variable_content(variable_name, content); 
+	virtual void notify_variable(const map <string, string> &result_variable_child) {  
+//	virtual void propagate_variable_content(string variable_name, string content) {
+		result_variable.insert(result_variable_child.begin(), result_variable_child.end()); 
+//		for (auto &i:  parents) 
+//			i.first->propagate_variable_content(variable_name, content); 
 	}
 
 protected:
@@ -632,7 +646,7 @@ public:
 	virtual bool finished() const; 
 	virtual bool finished(Flags flags) const;
 	virtual string format_src() const { return "ROOT"; }
-	virtual void propagate_variable_content(string, string) {  }
+//	virtual void propagate_variable_content(string, string) {  }
 
 protected:
 
@@ -682,7 +696,7 @@ public:
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual string format_src() const {  return "CONCAT";  }
-	virtual void propagate_variable_content(string, string) {  }
+//	virtual void propagate_variable_content(string, string) {  }
 
 protected:
 
@@ -758,10 +772,13 @@ public:
 	virtual int get_depth() const {  return dependency->get_depth();  }
 	virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
 	virtual string format_src() const;
-	virtual void propagate_variable_content(string variable_name, string content) {
-		for (auto &i:  parents) 
-			i.first->propagate_variable_content(variable_name, content); 
+	virtual void notify_variable(const map <string, string> &result_variable_child) {  
+		result_variable.insert(result_variable_child.begin(), result_variable_child.end()); 
 	}
+//	virtual void propagate_variable_content(string variable_name, string content) {
+//		for (auto &i:  parents) 
+//			i.first->propagate_variable_content(variable_name, content); 
+//	}
 	virtual void notify_result(shared_ptr <const Dependency> dependency, Execution *source, Flags flags);
 
 protected:
@@ -1579,23 +1596,26 @@ void Execution::disconnect(Execution *const child,
 		}
 	}
 
-	/* Propagate variable dependencies */
-	if (dependency_child->flags & F_VARIABLE) { 
-		dynamic_cast <File_Execution *> (child)
-			->propagate_variable(dependency_child, this);
+	/* Propagate variables */
+	if ((dependency_child->flags & F_VARIABLE)) { 
+		assert(dynamic_cast <File_Execution *> (child)); 
+		dynamic_cast <File_Execution *> (child)->read_variable(dependency_child);
+	}
+	if (! child->result_variable.empty()) {
+		notify_variable(child->result_variable); 
 	}
 
-	/*
-	 * Propagate variables over transient targets without commands
-	 * and dynamic targets
-	 */
-	if (dynamic_pointer_cast <const Plain_Dependency> (dependency_child)
-	    && dynamic_pointer_cast <const Plain_Dependency> (dependency_child)->place_param_target.flags & F_TARGET_TRANSIENT
-	    && dynamic_cast <Transient_Execution *> (child)
-	    && dynamic_cast <File_Execution *> (this)) {
-		dynamic_cast <File_Execution *> (this)->add_variables
-			(dynamic_cast <Transient_Execution *> (child)->get_mapping_variable()); 
-	}
+	// /*
+	//  * Propagate variables over transient targets without commands
+	//  * and dynamic targets
+	//  */
+	// if (dynamic_pointer_cast <const Plain_Dependency> (dependency_child)
+	//     && dynamic_pointer_cast <const Plain_Dependency> (dependency_child)->place_param_target.flags & F_TARGET_TRANSIENT
+	//     && dynamic_cast <Transient_Execution *> (child)
+	//     && dynamic_cast <File_Execution *> (this)) {
+	// 	dynamic_cast <File_Execution *> (this)->add_variables
+	// 		(dynamic_cast <Transient_Execution *> (child)->get_mapping_variable()); 
+	// }
 
 	/* 
 	 * Propagate attributes
@@ -2786,13 +2806,22 @@ void File_Execution::write_content(const char *filename,
 	bits &= ~B_MISSING; 
 }
 
-void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency,
-					Execution *parent)
+void File_Execution::read_variable(shared_ptr <const Dependency> dependency)
 {
+	Debug::print(this, fmt("read_variable %s", dependency->format_src())); 
+	
 	assert(dynamic_pointer_cast <const Plain_Dependency> (dependency)); 
 
-	if (!(bits & B_EXISTING))
+	if (! result_variable.empty()) {
+		/* It was already read */
+		return; 
+	}
+
+	if (!(bits & B_EXISTING)) {
+		// TODO do we need to print and raise an error here?
+		// Probably not. 
 		return;
+	}
 
 	Target target= dependency->get_target(); 
 	assert(! target.is_dynamic()); 
@@ -2841,7 +2870,10 @@ void File_Execution::propagate_variable(shared_ptr <const Dependency> dependency
 			dependency_variable_name == "" ?
 			target.get_name_nondynamic() : dependency_variable_name;
 
-		parent->propagate_variable_content(variable_name, content); 
+		result_variable[variable_name]= content; 
+//		execution->mapping_variable[variable_name]= content;
+//		push_result(...);
+//		parent->propagate_variable_content(variable_name, content); 
 	}
 
 	return;
@@ -3489,6 +3521,15 @@ void Transient_Execution::notify_result(shared_ptr <const Dependency> dependency
 {
 	assert(flags == F_RESULT_PUT); 
 	push_result(dependency); 
+
+//	if (dependency->flags & F_VARIABLE) {
+//		for (auto &i:  parents) {
+//			File_Execution *p= dynamic_cast <File_Execution *> (i.first); 
+//			if (p) {
+//				p->read_variable(dependency, p);
+//			}
+//		}
+//	}
 }
 
 

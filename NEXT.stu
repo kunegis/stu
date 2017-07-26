@@ -34,7 +34,7 @@ A: B { cp B A ; }
 # the extra rules for mixed targets that we have at the moment. 
 
 #
-# Stu 3:  Don't allow both transients and files as targets in the same
+# Don't allow both transients and files as targets in the same
 # rule.  Also, never allow multiple transient targets.  Then,
 # File_Execution will not have to support transients anymore.
 #
@@ -108,3 +108,13 @@ V {
 	exit 1
 }
 
+#
+# Make it an error when a parameter has the same name as a variable
+# dependency. 
+#
+
+# In the command in the second line, what should $V contain, 'abc' or
+# 'xyz'?  Or should this be an error? 
+A: list.abc { cp list.abc A ; }
+>list.$V: $[V] { echo "$V" ; }
+V = {xyz}

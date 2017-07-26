@@ -1,6 +1,0 @@
-# In the command in the second line, what should $V contain, 'abc' or
-# 'xyz'?  Or should this be an error? 
-A: list.abc { cp list.abc A ; }
->list.$V: $[V] { echo "$V" ; }
-V = {xyz}
-

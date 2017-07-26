@@ -1,0 +1,25 @@
+#! /bin/sh
+
+rm -f ? list.* || exit 2
+
+../../stu.test -k >list.out 2>list.err
+exitstatus="$?"
+
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** Exit status:  expected 1, got $exitstatus"
+	exit 2
+}
+
+[ -e C ] || {
+	echo >2 "*** Expected 'C' to be built"
+	exit 2
+}
+
+grep -qF "cp to '/abcdef/ghi' failed" list.err || {
+	echo >&2 "*** Expected error message"
+	exit 2
+}
+
+rm -f ? list.* || exit 2
+
+exit 0

@@ -21,8 +21,8 @@
  *    - a plain dependency (file or transient);
  *    - a dynamic dependency containing a normalized dependency; 
  *    - a concatenated dependency, each of whose component is either a
- *      normalized dependency or a compound dependency of normalized
- *      dependencies.
+ *      plain dependency, a dynamic dependency, or a compound dependency 
+ * 	of plain and dynamic dependencies. 
  * In particular, compound dependencies are never normalized; they only
  * appear immediately within concatenated dependencies.  
  * Normalized dependencies are those used in practice.  A non-normalized
@@ -436,7 +436,7 @@ public:
 	}
 
 	void make_normalized_concatenated(vector <shared_ptr <const Dependency> > &dependencies) const; 
-	/* Normalized this object's dependencies into a list of simple
+	/* Normalize this object's dependencies into a list of simple
 	 * dependencies.  The generated dependencies are appended to
 	 * DEPENDENCIES which does not need to be empty on entry into
 	 * this function.  */
@@ -983,6 +983,9 @@ bool Concatenated_Dependency::is_normalized() const
 
 void Concatenated_Dependency::make_normalized_concatenated(vector <shared_ptr <const Dependency> > &dependencies_) const
 {
+	// XXX first step:  flatten all Concatenated_Dependency's that
+	// are inside this->DEPENDENCIES. 
+
 	make_normalized_concatenated(dependencies_, 0); 
 }
 
@@ -999,9 +1002,10 @@ void Concatenated_Dependency::make_normalized_concatenated(vector <shared_ptr <c
 				assert(dynamic_pointer_cast <const Plain_Dependency> (d));
 				dependencies_.push_back(d); 
 			}
-		} else {
-			assert(dynamic_pointer_cast <const Plain_Dependency> (dependencies.at(start_index)));
+		} else if (dynamic_pointer_cast <const Plain_Dependency> (dependencies.at(start_index))) {
 			dependencies_.push_back(dependencies.at(start_index)); 
+		} else {
+			assert(false); 
 		}
 	} else {
 		vector <shared_ptr <const Dependency> > vec;

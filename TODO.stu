@@ -2,44 +2,19 @@
 # Concatenation [2.5]    test/2.5-*
 #
 
-A:  B(C);    	        
-A:  B(C D); 	        # Parentheses
 A:  B[C];      	        # Juxtaposition
 A:  [B]C;      	        # OK
-A:  B(C D);    	        # OK
-A:  B(C D)E;   	        # OK
 A:  B[C]D;     	        # OK
 A:  [B][C]; 	        # OK
-A:  (A B)(C D); 	# OK
 A:  [B][C];             # OK
-A:  (-p B)(C);    	# OK
-A:  (-o B)(C);    	# OK
-A:  (B)(-p C);    	# error
-A:  (B)(-o C);    	# error
-A:  (-o B)(-p C);   	# error
-A:  (<B)(C);    	# OK
-A:  (B)(<C);    	# error
-A:  -p B(C D);       	# OK
-A:  -o B(C D);       	# OK
-A:  <B(C);         	# OK
-A:  <B(C D);       	# error
-A:  @B(C);         	# OK
-A:  @B(C D);     	# OK
-A:  (B)(@C);      	# error 
 A:  ($[B])(C);    	# error
 A:  (B)($[C]);    	# error
-A:  <B(C);      	# OK 
-A:  (B)(<C);      	# error
-A:  (B)<C;              # OK, two distinct dependencies 'B' and 'C' (with input redirection)
 A:  <B[C];		# OK iff C contains exactly one dependency (otherwise an error)
 @A: @B[C];       	# OK
-A:  B@C;		# error, or not concatenation 
 A.$X.$Y:  ($X)($Y)      # OK (can be contiguous)
 A.$X.$Y:  ($X.a)(b.$X)  # OK (despite duplicate parameter) 
 A.$X.$Y:  ($X.)($Y)     # OK
 A.$X.$Y:  ($X)(.$Y)     # OK
-
-@headers:  (config parse build).h
 
 @plot.all:   @plot.[NETWORKS];
 
@@ -49,21 +24,13 @@ A.$X.$Y:  ($X)(.$Y)     # OK
 # exist yet, or if they have changed. 
 @all: backup/[FILES];
 >FILES: { echo *.dat ; }
-dest/$file = $file;
+backup/$file = $file;
 
-# The following has ambiguous syntax.  Define and document it to have
-# higher precedence for concatenation, then the flag.  (Should be the
-# default in the current implementation.)  
 A:   -p ( X )( Y );
 
 # Other tests
 A:  B() { cp B A }  B = {correct}
 A:  ()B { cp B A }  B = {correct}
-... (a)(b)(c) 
-... A<B  # Two dependencies
-... A(<B)  # Error
-... (A (B C))D  # same as:  AD BD CD
-... ("'")X  # escape the quote correctly in error message 
 ... ()(A)  # Empty or just 'A' (empty would be logical, because () is an
            # empty list
 A:  list.[B];
@@ -75,44 +42,22 @@ A:  ()();  # Empty or error?   Empty is logical; error may catch some Stu code b
 
 # Test a case in which the concatenated files are not readable, i.e. because of chmod(2). 
 
-# Ordering:  in 
-A:  (X Y)(W Z);
-# the dependencies are made in order XW XZ YW YZ. 
-
 A: [[X]](Y);  
 
-A:  A(-o B);  # Error 
 A:  A[-o B];  # When B does not exist:  empty dependency list. 
-
-A:  @B(C);    # OK
-A:  B(@C);    # Error
-A:  @B(@C);   # Error
 
 A:  $[B(C D)];  # ??
 
 A:  B.${X}(${Y});  # Error because of contiguous parameters 
 
-A:  -o(B)(C);   # Make sure -o is not ignored 
-
-A:  -o @B(C);  @BC:  xxx;   # Make sure 'xxx' is correctly handled as an optional target 
-
-A:  (A)(B);   # Error:  No rule for target 'AB'
-A:  @(A)(B);  
-
 # Two different meanings [assuming three strings in each of X/Y/Z):
 A:  list.[X Y Z];   # Same as list.( [X] [Y] [Z] ):  9 variants
 A:  list.[X][Y][Z]; # Multiple all together:  27 variants 
 
-A:  ((X)(Y))(Z);
-A:  (X)((Y)(Z)); 
-
-A:  X(Y);   # OK
 A:  [X][Y]; # OK
 A:  [X]@Y;  # Error
-A:  (X)Y;   # OK
 A:  X[Y];   # OK
 A:  [X]Y;   # OK
-A:  (X)(Y); # OK
 A:  (X)[Y]; # OK
 A:  [X](Y); # OK
 
@@ -120,22 +65,12 @@ A:  [X](Y); # OK
 A:  [X][[Y][Z]];
 A:  [[X][Y]][Z];
 
-A:  list.(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2)(1 2); 
-
 A:  [ (X) (Y) (Z) ]; 
-A:  list.((((((((((X)))))))))); 
-A:  list.((((((((([X]))))))))); 
-A:  list.(((([(((((X)))))]))));
-A:  list.[(((((((((X)))))))))]; 
 A:  list.([X][Y]); 
-A:  (X)((Y)(Z));
-A:  ((X)(Y))(Z); 
 
 A:  [B];   B = { ([X])(([Y]([Z]))) }   X = { list. }   Y = { 1 2 }   Z = Y;
 
 A:  list.[X][X][X][X][X][X][X][X];   X = { 1 2 }   >list.$n { echo Number "$n" ; }
-
-A: [(X)(Y)(Z)]; 
 
 A: list.[X];   X = {[Y]}   Y = {Z};  # Equivalent to   A: list.Z;
 A: [list.[X]]; X = {[Y]} Y = {Z} list.Z = {Q}  # Equivalent to    A: Q;
@@ -164,10 +99,6 @@ B = { sleep 1 ; echo D ; }
 A:   list.[B] { ... }
 B = { }
 
-# Works, and 'B' is stat()'ed only once. 
-A:  -o B { touch A ; }
-B { exit 1 ; }
-
 # Should we allow this?  Yes.  Since 'C' is empty, this is an empty
 # dependency. 
 A: @[C]
@@ -181,72 +112,19 @@ A:  list.[B];
 B = {C}
 list.C:  A; 
 
-A:  [B] { cat E >A ; }
-B = { list.[C] }
-C = { D }
-list.D = {E}
-E = {correct}
-
-# This fails because there is no rule for 'D', but with the -k option,
-# 'E' is still built. 
-A: [[B]] { touch A ; }
-B = { C D }
-C = { E }
-E = { echo eee >E ; }
-
 >A:  B -t list.[C] { cat B list.{1,2,3} ; }
 B = {bbb}
 C = {1 2 3}
 >list.$n { echo "$n$n$n" ; }
-
-# Execute with -j2 
-A:  C X [[B]] { cat C X D >A ; }
-B {           echo C   >B ; }
-C { sleep 2 ; echo D   >C ; }
-X { sleep 1 ; echo xxx >X ; }
-
-# Execute with -j2 
-A:  [C] X [[B]] { cat C X D >A ; }
-B {           echo C   >B ; }
-C { sleep 2 ; echo D   >C ; }
-X { sleep 1 ; echo xxx >X ; }
-
-# Transients don't pass dependencies for dynamics when they are in a
-# rule with multiple targets.
-# This example succeeds; 'D' is not built. 
-A: [@x] { cat B C >A ; }
-@x B: C { cp C B ; }
-C = {D}
-D { exit 1 ; }
 
 A: @[X] { cp C A ; }
 X = { y }
 @y: C;
 C = {correct}
 
-# * Update the man page
-# * Concatenation in debug mode 
+# * Update the man page for concatenation 
 
-# Dynamic transients.  This does the expected thing, and will be
-# easy to implement after the big "concatenation" cleanup.  Does not
-# work if the transient in question has a command, or is co-target with
-# a file.  Test these two cases. 
-
-# 'A' contains two lines with each containing 'correct'
->A:  B @x { echo "$V" ; cat B ; }
->B:  @x  { echo "$V" ; }
-@x:  $[V];
-V = {correct}
-
-A: @x { cp A B ; }
-@x: B $[V]; # Allowed?
-B = {correct}
-
-# In the command in the second line, what should $V contain, 'abc' or
-# 'xyz'?  Or should this be an error? 
-A: list.abc { cp list.abc A ; }
->list.$V: $[V] { echo "$V" ; }
-V = {xyz}
+# * error traces from concatenation 
 
 #
 # TODO document the -0 in the manpage.

@@ -1,0 +1,2 @@
+A:  -o @B(C);  @BC:  xxx;   # Make sure 'xxx' is correctly handled as an optional target 
+

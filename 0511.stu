@@ -1,0 +1,2 @@
+A:  -o(B)(C);   # Make sure -o is not ignored 
+

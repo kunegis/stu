@@ -868,8 +868,12 @@ void Execution::main(const vector <shared_ptr <const Dependency> > &dependencies
 					print_out("Targets are up to date");
 			}
 		} else {
-			if (option_keep_going) 
+			if (option_keep_going) {
+				// TODO avoid "rebuild", as the targets
+				// may not have been present to begin
+				// with 
 				print_error_reminder("Targets not rebuilt because of errors");
+			}
 		}
 	} 
 

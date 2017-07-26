@@ -1,0 +1,4 @@
+# Works, and 'B' is stat()'ed only once. 
+A:  -o B { touch A ; }
+B { exit 1 ; }
+

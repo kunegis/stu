@@ -1,5 +1,5 @@
-# In Dependency, add a field  Dependency::upper of type Dependency,
-# which contains "upper" dependencies.  
+# make Execution::parent have vector <shared_ptr <const Dependency> > as
+# second type arg. 
 
 # Check that the error message is correct
 A: [[[B]]] { touch A ; }

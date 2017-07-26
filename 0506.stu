@@ -1,0 +1,3 @@
+# Ordering:  in 
+A:  (X Y)(W Z);
+# the dependencies are made in order XW XZ YW YZ. 

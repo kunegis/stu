@@ -1,0 +1,6 @@
+# Execute with -j2 
+A:  [C] X [[B]] { cat C X D >A ; }
+B {           echo C   >B ; }
+C { sleep 2 ; echo D   >C ; }
+X { sleep 1 ; echo xxx >X ; }
+

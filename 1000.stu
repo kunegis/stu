@@ -1,0 +1,6 @@
+A:  [B] { cat E >A ; }
+B = { list.[C] }
+C = { D }
+list.D = {E}
+E = {correct}
+

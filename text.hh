@@ -40,7 +40,7 @@ string frmt(const char *format, ...)
 	string ret(n, '\0');
 
 	va_start(ap, format); 
-	n= vsnprintf((char *) ret.c_str(), n+1, format, ap); 
+	n= vsnprintf(&ret[0], n+1, format, ap); 
 	va_end(ap); 
 
 	if (n < 0) { 

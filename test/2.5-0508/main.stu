@@ -1,0 +1,6 @@
+# OK
+A:  @B(C) {
+	cp D A
+}
+@BC:  D;
+D = {correct}

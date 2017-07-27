@@ -1,0 +1,4 @@
+A:  (list. A.)(P Q) { cat list.P list.Q A.P A.Q >A ; }
+>list.$x { echo "$x" ; }
+>A.$x    { echo "$x$x" ; }
+

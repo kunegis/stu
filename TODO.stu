@@ -75,7 +75,7 @@ A:  list.[X][X][X][X][X][X][X][X];   X = { 1 2 }   >list.$n { echo Number "$n" ;
 A: list.[X];   X = {[Y]}   Y = {Z};  # Equivalent to   A: list.Z;
 A: [list.[X]]; X = {[Y]} Y = {Z} list.Z = {Q}  # Equivalent to    A: Q;
 
-# This case.  Make sure all six list.* files are built. 
+# All six list.* files are built. 
 @all:  A B;
 A:  list.a[[M]];
 B:  list.b[[M]];
@@ -203,7 +203,8 @@ X = {x}   Y = {y}  Z = {z}
 #
 # Have a feature to indicate that a file contains only a single
 # filename.  To complement -n and -0.  Must produce a logical error when
-# the file contains the nul byte '\0'. 
+# the file contains the nul byte '\0'.  '\n' and other whitespaces
+# should work.  
 #
 
 #

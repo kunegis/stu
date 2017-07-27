@@ -1,0 +1,2 @@
+A:  list.(Y) { cp list.Y A ; }
+>list.Y { echo yyy ; }

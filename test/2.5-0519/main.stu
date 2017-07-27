@@ -1,0 +1,3 @@
+A:  ( lis )( t.Y ) { cp list.Y A ; }
+list.Y { touch list.Y ; }
+

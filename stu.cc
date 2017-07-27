@@ -259,8 +259,7 @@ int main(int argc, char **argv, char **envp)
 			case 'j':  {
 				errno= 0;
 				char *endptr;
-				// TODO do we accept octal arguments to -j ?
-				Execution::jobs= strtol(optarg, &endptr, 0);
+				Execution::jobs= strtol(optarg, &endptr, 10);
 				Place place(Place::Type::OPTION, c); 
 				if (errno != 0 || *endptr != '\0') {
 					place << fmt("expected the number of jobs, not %s",

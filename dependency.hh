@@ -76,8 +76,6 @@ public:
 	{  }
 
 	Dependency(Flags flags_) 
-	/* TODO This constructor probably needs to be removed, because when
-	 * FLAGS is set, PLACES should always also be set.  */
 		:  flags(flags_)
 	{  }
 
@@ -112,6 +110,12 @@ public:
 	 * corresponding places.  If a place is already given in THIS,
 	 * only copy a place over if OVERWRITE_PLACES is set.  */
 
+	/* The check function checks the internal consistency of a
+	 * Dependency object.  This is purely an assertion, and not a
+	 * programmatic check.  It is possible for Dependency objects to
+	 * be temporarily inconsistent while they are changed --
+	 * therefore, consistency is not enforced by the accessor
+	 * functions, but only by this function.  */
 #ifndef NDEBUG
 	void check() const;
 #else

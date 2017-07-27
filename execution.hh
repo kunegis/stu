@@ -865,10 +865,7 @@ void Execution::main(const vector <shared_ptr <const Dependency> > &dependencies
 			}
 		} else {
 			if (option_keep_going) {
-				// TODO avoid "rebuild", as the targets
-				// may not have been present to begin
-				// with 
-				print_error_reminder("Targets not rebuilt because of errors");
+				print_error_reminder("Targets not up to date because of errors");
 			}
 		}
 	} 

@@ -14,10 +14,18 @@ made, which are documented in the file 'MIGRATION', and summarized here.
 XXXXXXXXXX  Version 2.5
 
 * Concatenation is now supported
-* Dynamic transients are now supported
 * The handling of dynamic dependencies was rewritten to allow
-  concatenation and dynamic transients.  The semantics of existing
-  functionality was not changed. 
+  concatenation.  The semantics of existing functionality was not
+  changed, except in certain undocumented corner cases.  These include
+  transients whose rules contain a command or file targets.  These acted
+  transitively previously, but do not now.  Only transient rules without
+  command and without file targets act transitively now.  This applies
+  to transients used in dynamic dependencies, transients used to import
+  variable dependencies, as well as transients used to carry over flags
+  to child targets. 
+* Arguments to -j cannot be in octal anymore.  In previous versions, the
+  -j option accepted numbers in octal when they started with a zero.
+  This behavior was accidental, and has been removed. 
 
 2016-09-13  Version 2.4.19
 

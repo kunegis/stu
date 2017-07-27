@@ -47,7 +47,7 @@ if ! grep -qF "main.stu:29:5: command for 'list.2' failed" list.err ; then
 	exit 1
 fi
 
-if ! grep -qF "Targets not rebuilt because of errors" list.err ; then
+if ! grep -qF "Targets not up to date because of errors" list.err ; then
 	echo >&2 "*** Wrong error output (B2)"
 	exit 1
 fi
@@ -76,7 +76,7 @@ if ! fgrep -q "main.stu:29:5: command for 'list.2' failed" list.err ; then
 	exit 1
 fi
 
-if grep -qF "Targets not rebuilt because of errors" list.err ; then
+if grep -qF "Targets not up to date because of errors" list.err ; then
 	echo >&2 "*** Wrong error output (C2)"
 	exit 1
 fi
@@ -106,7 +106,7 @@ if ! fgrep -q "main.stu:29:5: command for 'list.2' failed" list.err ; then
 	exit 1
 fi
 
-if ! grep -qF "Targets not rebuilt because of errors" list.err ; then
+if ! grep -qF "Targets not up to date because of errors" list.err ; then
 	echo >&2 "*** Wrong error output (D2)"
 	exit 1
 fi

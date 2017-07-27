@@ -136,8 +136,7 @@ public:
 
 	const map <Execution *, shared_ptr <const Dependency> > &get_parents() const {  return parents;  }
 	
-	virtual Proceed execute(//Execution *parent, 
-				shared_ptr <const Dependency> dependency_this)= 0;
+	virtual Proceed execute(shared_ptr <const Dependency> dependency_this)= 0;
 	/* 
 	 * Start the next job(s).  This will also terminate jobs when
 	 * they don't need to be run anymore, and thus it can be called
@@ -249,18 +248,17 @@ protected:
 	 * KEY-VALUE pairs.  */
 
 	shared_ptr <Rule> param_rule;
-	// TODO no need to pass this to all individual constructors;
-	// set it immediately in Execution. 
 	/* The (possibly parametrized) rule from which this execution
 	 * was derived.  This is only used to detect strong cycles.  To
 	 * manage the dependencies, the instantiated general rule is
 	 * used.  Null by default, and set by individual implementations
 	 * in their constructor if necessary.  */ 
 
-	Execution()
+	Execution(shared_ptr <Rule> param_rule_= nullptr)
 		:  bits(0),
 		   error(0),
-		   timestamp(Timestamp::UNDEFINED)
+		   timestamp(Timestamp::UNDEFINED),
+		   param_rule(param_rule_)
 	{  }
 
 	Proceed execute_children();
@@ -444,8 +442,7 @@ public:
 		return flags_format(flags_finished);
 	}
 
-	virtual Proceed execute(//Execution *parent, 
-				shared_ptr <const Dependency> dependency_this);
+	virtual Proceed execute(shared_ptr <const Dependency> dependency_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual string format_src() const {
@@ -583,8 +580,7 @@ public:
 		return mapping_variable; 
 	}
 
-	virtual Proceed execute(//Execution *parent, 
-				shared_ptr <const Dependency> dependency_this);
+	virtual Proceed execute(shared_ptr <const Dependency> dependency_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual string format_src() const;
@@ -633,8 +629,7 @@ public:
 
 	Root_Execution(const vector <shared_ptr <const Dependency> > &dependencies); 
 
-	virtual Proceed execute(//Execution *parent, 
-				shared_ptr <const Dependency> dependency_this);
+	virtual Proceed execute(shared_ptr <const Dependency> dependency_this);
 	virtual bool finished() const; 
 	virtual bool finished(Flags flags) const;
 	virtual string format_src() const { return "ROOT"; }
@@ -682,8 +677,7 @@ public:
 	void assemble_parts(); 
 
 	virtual int get_depth() const { return -1; }
-	virtual Proceed execute(//Execution *parent, 
-				shared_ptr <const Dependency> dependency_this);
+	virtual Proceed execute(shared_ptr <const Dependency> dependency_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual string format_src() const {  return "CONCAT";  }
@@ -755,8 +749,7 @@ public:
 
 	shared_ptr <const Dynamic_Dependency> get_dependency() const {  return dependency;  }
 
-	virtual Proceed execute(//Execution *parent, 
-				shared_ptr <const Dependency> dependency_this);
+	virtual Proceed execute(shared_ptr <const Dependency> dependency_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual int get_depth() const {  return dependency->get_depth();  }
@@ -845,8 +838,7 @@ void Execution::main(const vector <shared_ptr <const Dependency> > &dependencies
 			Proceed proceed;
 			do {
 				Debug::print(nullptr, "loop"); 
-				proceed= root_execution->execute(//nullptr, 
-								 dependency_root);
+				proceed= root_execution->execute(dependency_root);
 				assert(proceed); 
 			} while (proceed & P_PENDING); 
 
@@ -1304,8 +1296,7 @@ Proceed Execution::execute_children()
 
 		shared_ptr <const Dependency> dependency_child= child->parents.at(this);
 
-		Proceed proceed_child= child->execute(//this, 
-						      dependency_child);
+		Proceed proceed_child= child->execute(dependency_child);
 		assert(proceed_child); 
 
 		proceed_all |= (proceed_child & ~(P_FINISHED | P_ABORT));
@@ -1526,8 +1517,7 @@ Proceed Execution::connect(shared_ptr <const Dependency> dependency_this,
 		}
 	}
 
-	Proceed proceed_child= child->execute(//this, 
-					      dependency_child);
+	Proceed proceed_child= child->execute(dependency_child);
 	assert(proceed_child); 
 	if (proceed_child & (P_WAIT | P_PENDING))
 		return proceed_child; 
@@ -1722,13 +1712,15 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency)
 					use_file_execution= true; 
 			}
 		}
-			
+		
 		if (use_file_execution) {
 
 			execution= new File_Execution
 				(dependency, 
 				 this,
-				 rule_child, param_rule_child, mapping_parameter,
+				 rule_child, 
+				 param_rule_child, 
+				 mapping_parameter,
 				 error_additional); 
 		} else if (target.is_transient()) {
 			execution= new Transient_Execution
@@ -1976,13 +1968,12 @@ File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 			       shared_ptr <Rule> param_rule_,
 			       map <string, string> &mapping_parameter_,
 			       int &error_additional)
-	:  Execution(),
+	:  Execution(param_rule_),
 	   rule(rule_),
 	   flags_finished(0)
 {
 	assert((param_rule_ == nullptr) == (rule_ == nullptr)); 
 
-	param_rule= param_rule_;
 	swap(mapping_parameter, mapping_parameter_); 
 	Target target_= dependency->get_target(); 
 
@@ -2381,10 +2372,8 @@ void File_Execution::print_command() const
 	}
 }
 
-Proceed File_Execution::execute(//Execution *parent, 
-				shared_ptr <const Dependency> dependency_this)
+Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 {
-//	assert(parent); 
 	assert(! job.started() || children.empty()); 
 
 	Proceed proceed= execute_base_A(dependency_this); 
@@ -2939,8 +2928,7 @@ Root_Execution::Root_Execution(const vector <shared_ptr <const Dependency> > &de
 	}
 }
 
-Proceed Root_Execution::execute(//Execution *, 
-				shared_ptr <const Dependency> dependency_this)
+Proceed Root_Execution::execute(shared_ptr <const Dependency> dependency_this)
 {
 	/* This is an example of a "plain" execute() function,
 	 * containing the minimal wrapper around execute_base_?()  */ 
@@ -3006,8 +2994,7 @@ Concatenated_Execution::Concatenated_Execution(shared_ptr <const Concatenated_De
 
 }
 
-Proceed Concatenated_Execution::execute(//Execution *, 
-					shared_ptr <const Dependency> dependency_this)
+Proceed Concatenated_Execution::execute(shared_ptr <const Dependency> dependency_this)
 {
 	assert(stage >= 0 && stage <= 3); 
 
@@ -3271,8 +3258,7 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dependency> depen
 	push(dependency_child); 
 }
 
-Proceed Dynamic_Execution::execute(//Execution *, 
-				   shared_ptr <const Dependency> dependency_this)
+Proceed Dynamic_Execution::execute(shared_ptr <const Dependency> dependency_this)
 {
 	Proceed proceed= execute_base_A(dependency_this); 
 	assert(proceed); 
@@ -3376,8 +3362,7 @@ Transient_Execution::~Transient_Execution()
 	assert(false);
 }
 
-Proceed Transient_Execution::execute(//Execution *, 
-				     shared_ptr <const Dependency> dependency_this)
+Proceed Transient_Execution::execute(shared_ptr <const Dependency> dependency_this)
 {
 	Proceed proceed= execute_base_A(dependency_this); 
 	assert(proceed); 
@@ -3407,9 +3392,9 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 					 shared_ptr <Rule> param_rule_,
 					 map <string, string> &mapping_parameter_,
 					 int &error_additional)
-	:  rule(rule_)
+	:  Execution(param_rule_),
+	   rule(rule_)
 {
-	param_rule= param_rule_; 
 	swap(mapping_parameter, mapping_parameter_); 
 
 	assert(dynamic_pointer_cast <const Plain_Dependency> (dependency_link)); 

@@ -101,7 +101,7 @@ Output a short help and exit.
 Interactive mode.  I.e., put the jobs run into the foreground.  Must not
 be used in conjunction with
 .B -j N
-when N > 1.  By default, jobs are run in the
+when N > 1.  Without this option, jobs are run in the
 background, meaning they can't read standard input, will not get any
 terminal signals, and pressing Ctrl-C will stop Stu as a whole.  Using
 this option, each job is run in the foreground, and therefore they can
@@ -118,8 +118,10 @@ suspend Stu itself.
 .BR -i
 does not work when Stu does not run in a terminal. 
 .IP "-j K"
-Run K jobs in parallel.  K must be a positive integer.  The default
-value is one, meaning that Stu does not start jobs in parallel.
+Run K jobs in parallel.  K must be a positive integer.  Without this
+option, jobs are not run in parallel, which is equivalent to using the 
+.BR "-j 1" 
+setting.
 When running jobs in parallel and the
 .BR -k
 option is not used, a single job that fails will make Stu abort all

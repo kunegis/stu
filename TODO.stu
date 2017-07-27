@@ -240,6 +240,11 @@ X = {x}   Y = {y}  Z = {z}
 # i.e., when something is started. 
 #
 
+#
+# Can the options -k or -j be used in -q mode?  Yes; they should be a
+# no-op then. 
+#
+
 #=================== Further features =======================
 
 #

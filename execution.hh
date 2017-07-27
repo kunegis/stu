@@ -2779,11 +2779,18 @@ void File_Execution::read_variable(shared_ptr <const Dependency> dependency)
 		/* It was already read */
 		return; 
 	}
-
+	
+	/* It could be that the file exists but the bit is not set --
+	 * this would happen if the file was not there before and we had
+	 * no reason to check.  In such cases, we don't need the
+	 * variable.  */
 	if (!(bits & B_EXISTING)) {
-		// TODO do we need to print and raise an error here?
-		// Probably not. 
+		assert(dependency->flags & F_TRIVIAL); 
 		return;
+	}
+
+	if (error) {
+		return; 
 	}
 
 	Target target= dependency->get_target(); 

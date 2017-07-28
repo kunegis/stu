@@ -1,5 +1,6 @@
-# make Execution::parent have vector <shared_ptr <const Dependency> > as
-# second type arg. 
+# * Add a "top" field to Dependency, of type Dependency
+# * When "going up" a -% link, append the corresponding Dependency. 
+# * In traces code, output all extra dependencies. 
 
 # Check that the error message is correct
 A: [[[B]]] { touch A ; }

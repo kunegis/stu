@@ -218,7 +218,7 @@ protected:
 	/* The parent executions.  This is a map rather than an
 	 * unsorted_map because typically, the number of elements is
 	 * always very small, i.e., mostly one, and a map is better
-	 * suited in this case.  */ 
+	 * suited in this case.  */
 
 	set <Execution *> children;
 	/* Currently running executions.  Allocated with operator new()

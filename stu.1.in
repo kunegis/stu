@@ -1052,6 +1052,11 @@ command.  E.g., the command { echo Hello } is a valid command for Stu,
 while it would be an error for the shell, as the closing } would be
 interpreted as a second argument to 'echo'. 
 
+In error messages, the column numbers are based on the number of bytes,
+and do not take into account multibyte characters or combining
+characters, etc.  Thus, the placement of error messages may be wrong
+within the line in certain editors or GUIs. 
+
 .SH AUTHOR
 Written by J\['e]r\[^o]me Kunegis <kunegis@gmail.com> at the University
 of Namur, Belgium, as well as at the University of Koblenz-Landau,

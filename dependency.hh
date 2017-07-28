@@ -339,7 +339,11 @@ public:
 		return dependency->is_unparametrized(); 
 	}
 
-	const Place &get_place() const {
+	const Place &get_place() const 
+	/* In error message pointing to dynamic dependency such as
+	 * '[B]', it is more useful to the user to point to the 'B' than
+	 * to the '['.  */
+	{
 		return dependency->get_place(); 
 	}
 
@@ -560,7 +564,7 @@ class Root_Dependency
 {
 public:
 	virtual shared_ptr <const Dependency> instantiate(const map <string, string> &) const {
-		return shared_ptr <const Dependency> (this); 
+		return shared_ptr <const Dependency> (make_shared <Root_Dependency> ()); 
 	}
 	virtual bool is_unparametrized() const {  return false;  }
 	virtual const Place &get_place() const {  return Place::place_empty;  }

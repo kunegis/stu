@@ -126,6 +126,12 @@ C = {correct}
 
 # * error traces from concatenation 
 
+# * a concatenation dynamic file containing comments
+
+# * a concatenation dynamic file containing '% include'
+
+# * a concatenation dynamic file containing '% version'
+
 #
 # TODO document the -0 in the manpage.
 #

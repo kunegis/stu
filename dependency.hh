@@ -71,6 +71,8 @@ public:
 	/* For each transitive flag that is set, the place.  An empty
 	 * place if a flag is not set  */
 
+	shared_ptr <const Dependency> top; 
+
 	Dependency()
 		:  flags(0) 
 	{  }

@@ -1194,12 +1194,10 @@ void Execution::print_traces(string text) const
  * arbitrary choice, but it doesn't matter here which dependency path
  * we point out as an error, so the first one it is.  */
 {	
-	const Execution *execution= this; 
-
 	/* If the error happens directly for the root execution, it was
 	 * an error on the command line; don't output anything beyond
-	 * the error message. */
-	if (dynamic_cast <const Root_Execution *> (execution)) 
+	 * the error message itself, which was already output.  */
+	if (dynamic_cast <const Root_Execution *> (this)) 
 		return;
 
 	bool first= true; 
@@ -1207,43 +1205,33 @@ void Execution::print_traces(string text) const
 	/* If there is a rule for this target, show the message with the
 	 * rule's trace, otherwise show the message with the first
 	 * dependency trace */ 
-	if (execution->get_place().type != Place::Type::EMPTY && text != "") {
-		execution->get_place() << text;
+	if (this->get_place().type != Place::Type::EMPTY && text != "") {
+		this->get_place() << text;
 		first= false;
 	}
 
-	string text_parent= parents.begin()->second->get_target().format_word();
+	const Execution *execution= this->parents.begin()->first;
+	shared_ptr <const Dependency> dep= this->parents.begin()->second; 
+
+	string text_parent= dep->get_target().format_word(); 
 
 	while (true) {
+ 		const Place place= dep->get_place();
 
-		auto i= execution->parents.begin(); 
-
-		if (dynamic_cast <Root_Execution *> (i->first)) {
-			/* We are in a child of the root execution */ 
-			if (first && text != "") {
-				/* No text was printed yet, but there
-				 * was a TEXT passed:  Print it with the
-				 * place available.  */ 
-				/* This is a top-level target, i.e.,
-				 * passed on the command line via an
- 				 * argument or an option  */
-				i->second->get_place() <<
-					fmt("no rule to build %s", text_parent);
-			}
-			break; 
+		/* Increment */
+		if (! dep->top) {
+			/* Assign DEP first, because we change EXECUTION */
+			dep= execution->parents.begin()->second; 
+			execution= execution->parents.begin()->first;
+		} else {
+			dep= dep->top; 
 		}
 
 		string text_child= text_parent; 
-
-		text_parent= i->first->parents.begin()->second->get_target().format_word();
-
- 		const Place place= i->second->get_place();
-		/* Set even if not output, because it may be used later
-		 * for the root target  */
+		text_parent= dep->get_target().format_word();
 
 		/* Don't show left-branch edges of dynamic executions */
-		if (hide_link_from_message(i->second->flags)) {
-			execution= i->first; 
+		if (hide_link_from_message(dep->flags)) {
 			continue;
 		}
 
@@ -1256,8 +1244,21 @@ void Execution::print_traces(string text) const
 				 text_child, text_parent);
 		}
 		place << msg;
-		
-		execution= i->first; 
+
+		if (dynamic_cast <const Root_Execution *> (execution)) {
+			/* We are in a child of the root execution */ 
+			assert(! dep->top); 
+			if (first && text != "") {
+				/* No text was printed yet, but there
+				 * was a TEXT passed:  Print it with the
+				 * place available.  */ 
+				/* This is a top-level target, i.e.,
+				 * passed on the command line via an
+ 				 * argument or an option  */
+				dep->get_place() << text;
+			}
+			break; 
+		}
 	}
 }
 

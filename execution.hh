@@ -1216,35 +1216,6 @@ void Execution::print_traces(string text) const
 	string text_parent= dep->get_target().format_word(); 
 
 	while (true) {
- 		const Place place= dep->get_place();
-
-		/* Increment */
-		if (! dep->top) {
-			/* Assign DEP first, because we change EXECUTION */
-			dep= execution->parents.begin()->second; 
-			execution= execution->parents.begin()->first;
-		} else {
-			dep= dep->top; 
-		}
-
-		string text_child= text_parent; 
-		text_parent= dep->get_target().format_word();
-
-		/* Don't show left-branch edges of dynamic executions */
-		if (hide_link_from_message(dep->flags)) {
-			continue;
-		}
-
-		string msg;
-		if (first && text != "") {
-			msg= fmt("%s, needed by %s", text, text_parent); 
-			first= false;
-		} else {	
-			msg= fmt("%s is needed by %s",
-				 text_child, text_parent);
-		}
-		place << msg;
-
 		if (dynamic_cast <const Root_Execution *> (execution)) {
 			/* We are in a child of the root execution */ 
 			assert(! dep->top); 
@@ -1259,6 +1230,40 @@ void Execution::print_traces(string text) const
 			}
 			break; 
 		}
+
+
+		/* Increment */
+// 		const Place place= dep->get_place();
+		shared_ptr <const Dependency> dep_old= dep; 
+		if (! dep->top) {
+			/* Assign DEP first, because we change EXECUTION */
+			dep= execution->parents.begin()->second; 
+			execution= execution->parents.begin()->first;
+		} else {
+			dep= dep->top; 
+		}
+
+		/* New text */
+		string text_child= text_parent; 
+		text_parent= dep->get_target().format_word();
+
+		/* Don't show left-branch edges of dynamic executions */
+		if (hide_link_from_message(dep_old->flags)) {
+			continue;
+		}
+
+		/* Print */
+		string msg;
+		if (first && text != "") {
+			msg= fmt("%s, needed by %s", text, text_parent); 
+			first= false;
+		} else {	
+			msg= fmt("%s is needed by %s",
+				 text_child, text_parent);
+		}
+		dep_old->get_place()
+//		place
+			<< msg;
 	}
 }
 
@@ -1554,10 +1559,10 @@ void Execution::disconnect(Execution *const child,
 		notify_result(d, child, F_RESULT_NOTIFY); 
 	}
 
-	if (dependency_child->flags & F_RESULT_PUT && dynamic_cast <File_Execution *> (child)) {
+	if (dependency_child->flags & F_RESULT_COPY && dynamic_cast <File_Execution *> (child)) {
 		shared_ptr <Dependency> d= Dependency::clone(dependency_child);
-		d->flags &= ~F_RESULT_PUT; 
-		notify_result(d, child, F_RESULT_PUT); 
+		d->flags &= ~F_RESULT_COPY; 
+		notify_result(d, child, F_RESULT_COPY); 
 	}
 
 	/* Propagate timestamp */
@@ -1775,7 +1780,7 @@ void Execution::push_result(shared_ptr <const Dependency> dd)
 
 	/* Notify parents */
 	for (auto &i:  parents) {
-		Flags flags= i.second->flags & (F_RESULT_NOTIFY | F_RESULT_PUT); 
+		Flags flags= i.second->flags & (F_RESULT_NOTIFY | F_RESULT_COPY); 
 		if (flags) {
 			i.first->notify_result(dd, this, flags); 
 		}
@@ -3301,8 +3306,8 @@ string Dynamic_Execution::format_src() const
 
 void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, Execution *source, Flags flags)
 {
-	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_PUT))); 
-	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_PUT)) != (F_RESULT_NOTIFY | F_RESULT_PUT)); 
+	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))); 
+	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)) != (F_RESULT_NOTIFY | F_RESULT_COPY)); 
 
 	if (flags & F_RESULT_NOTIFY) {
 	if (dynamic_pointer_cast <const Plain_Dependency> (d)) {
@@ -3335,7 +3340,7 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, Execution
 				for (auto &j:  dependencies) {
 					shared_ptr <Dependency> j_new= Dependency::clone(j); 
 					/* Add -% flag */
-					j_new->flags |= F_RESULT_PUT;
+					j_new->flags |= F_RESULT_COPY;
 					/* Add flags from self  */  
 					j_new->flags |= dependency->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
 					for (int i= 0;  i < C_PLACED;  ++i) {
@@ -3356,7 +3361,8 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, Execution
 		assert(false);
 	}
 	} else {
-		assert(flags & F_RESULT_PUT);
+		assert(flags & F_RESULT_COPY);
+		// XXX append to D->TOP. 
 		push_result(d); 
 	}
 }
@@ -3453,7 +3459,7 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 		if (dependency_link->flags) {
 			shared_ptr <Dependency> dep_new= Dependency::clone(dep); 
 			dep_new->flags |= dependency_link->flags & (F_PLACED | F_ATTRIBUTE);
-			dep_new->flags |= F_RESULT_PUT; 
+			dep_new->flags |= F_RESULT_COPY; 
 			for (int i= 0;  i < C_PLACED;  ++i) {
 				assert(!(dependency_link->flags & (1 << i)) ==
 				       dependency_link->get_place_flag(i).empty());
@@ -3483,7 +3489,10 @@ void Transient_Execution::notify_result(shared_ptr <const Dependency> dependency
 					Execution *,
 					Flags flags)
 {
-	assert(flags == F_RESULT_PUT); 
+	assert(flags == F_RESULT_COPY); 
+
+	// XXX append to DEPENDENCY->TOP
+
 	push_result(dependency); 
 }
 

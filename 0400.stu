@@ -1,4 +1,5 @@
-# * When "going up" a -% link, append the corresponding Dependency to Dependency::top 
+# * In all notify_result() functions: When "going up" a F_RESULT_COPY
+#   link, append the corresponding Dependency to Dependency::top   
 
 # Check that the error message is correct
 A: [[[B]]] { touch A ; }

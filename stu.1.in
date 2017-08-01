@@ -57,7 +57,12 @@ without Stu syntax.
 .SH OPTIONS
 .IP "-0 FILENAME"
 Read targets from FILENAME, which must contain \\0-separated filenames.
-No Stu syntax is processed.   
+No Stu syntax is processed.  This option is also suitable in all cases
+where a file contains only the name of a single file, since filenames do
+not contain the \\0 character. 
+Using this option is equivalent to using the
+.BR "[-0 FILENAME]" 
+syntax.
 .IP -a
 Treat all trivial dependencies, which are declared with the
 .BR -t
@@ -161,7 +166,9 @@ is randomized within each target.
 Run jobs in pseudorandom order, seeded by the given string. 
 .IP "-n FILENAME"
 Read targets from FILENAME, which must contain newline-separated
-filenames.  No Stu syntax is processed. 
+filenames.  No Stu syntax is processed.  Using this option is equivalent to using the
+.BR "[-n FILENAME]" 
+syntax.
 .IP "-o FILENAME"
 Pass the given file as an optional dependency, i.e., build it only if it
 already exists and is out of date. 
@@ -532,7 +539,8 @@ makes interpret the content of the file as a newline-separated
 list of filenames.  Analogously, the
 .BR -0
 flag can be used when the file
-contains \\0-separated filenames. 
+contains \\0-separated filenames, or when the file contains the name of
+exactly one file. 
 If no flag is used, the file is parsed in full Stu syntax. 
 
     '[' @NAME ']'  A dynamic transient target 

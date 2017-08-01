@@ -46,7 +46,7 @@ enum
 	I_NEWLINE_SEPARATED,	/* -n  \ attribute flags   |                    */
 	I_NUL_SEPARATED,	/* -0  /                  /                     */
 	I_RESULT_NOTIFY,        /* -*                                           */
-	I_RESULT_PUT,           /* -%                                           */
+	I_RESULT_COPY,           /* -%                                           */
 
 	C_ALL,                 
 	C_PLACED           	= 3,
@@ -86,9 +86,9 @@ enum
 	/* The link A ---> B between two executions annotated with this
 	 * flags means that A is notified of B's results.  */
 
-	F_RESULT_PUT		= 1 << I_RESULT_PUT,
+	F_RESULT_COPY		= 1 << I_RESULT_COPY,
 	/* The link A ---> B between two executions annotated with this
-	 * flags means that the results B will be put into A's result  */
+	 * flags means that the results B will be copied into A's result  */
 
 	/*
 	 * Aggregates

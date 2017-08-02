@@ -1,0 +1,24 @@
+# A really complete example of traces with F_RESULT_COPY going over many types of edges. 
+
+A:  [[[[@a]]]] { touch A ; }
+@a: @b;
+@b: @c;
+@c: B;
+B = { [[C]] }
+C = {[[ @d ]]}
+@d: @e;
+@e: @f;
+@f:  [[[ D ]]];
+D = {[[E]]}
+E = {[[F]]}
+F = {G}
+G = {H}
+H = {I}
+I = {J}
+J = {K}
+K = {L}
+L = {M}
+M = {N}
+N = {O}
+O = {P}
+P: X { touch P ; }

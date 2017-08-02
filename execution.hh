@@ -119,6 +119,7 @@ public:
 
 	void read_dynamic(Flags flags_this,
 			  const Place_Param_Target &place_param_target,
+			  shared_ptr <const Dependency> dependency_target,
 			  vector <shared_ptr <const Dependency> > &dependencies);
 	/* Read dynamic dependencies from the content of
 	 * PLACE_PARAM_TARGET.  The only reason this is not static is
@@ -169,16 +170,19 @@ public:
 
 	virtual void notify_result(shared_ptr <const Dependency> dependency,
 				   Execution *source,
-				   Flags flags)
+				   Flags flags,
+				   shared_ptr <const Dependency> dependency_source)
 	/* The child execution SOURCE notifies THIS about a new result.
 	 * Only called when the dependency linking the two had one of the
 	 * F_RESULT_* flag.  The given flag contains only one of the two
-	 * F_RESULT_* flags.  */ 
+	 * F_RESULT_* flags.  DEPENDENCY_SOURCE is the dependency
+	 * leading from THIS to SOURCE (for F_RESULT_COPY), otherwise null.  */ 
 	{
 		/* Execution classes that use F_RESULT_* override this function */
 		(void) dependency;
 		(void) source; 
 		(void) flags;
+		(void) dependency_source; 
 		assert(false);
 	}
 
@@ -361,6 +365,11 @@ protected:
 	/* Whether both executions have the same parametrized rule.
 	 * Only used for finding cycle.  */ 
 
+	shared_ptr <const Dependency> append_top(shared_ptr <const Dependency> dependency, 
+						 shared_ptr <const Dependency> top); 
+	shared_ptr <const Dependency> set_top(shared_ptr <const Dependency> dependency,
+					      shared_ptr <const Dependency> top); 
+
 private: 
 
 	Buffer buffer_A;
@@ -395,6 +404,28 @@ private:
 
 	static bool hide_link_from_message(Flags flags) {
 		return flags & F_RESULT_NOTIFY; 
+	}
+	static bool same_dependency_for_print(shared_ptr <const Dependency> d1,
+					      shared_ptr <const Dependency> d2)
+	{
+		shared_ptr <const Plain_Dependency> p1=
+			dynamic_pointer_cast <const Plain_Dependency> (d1); 
+		shared_ptr <const Plain_Dependency> p2=
+			dynamic_pointer_cast <const Plain_Dependency> (d2); 
+		if (!p1 && dynamic_pointer_cast <const Dynamic_Dependency> (d1))
+			p1= dynamic_pointer_cast <const Plain_Dependency>
+				(Dynamic_Dependency::strip_dynamic(dynamic_pointer_cast <const Dynamic_Dependency> (d1)));
+		if (!p2 && dynamic_pointer_cast <const Dynamic_Dependency> (d2))
+			p2= dynamic_pointer_cast <const Plain_Dependency>
+				(Dynamic_Dependency::strip_dynamic(dynamic_pointer_cast <const Dynamic_Dependency> (d2)));
+		if (! (p1 && p2))
+			return false;
+		if (p1->place_param_target.unparametrized() 
+		    ==
+		    p2->place_param_target.unparametrized())
+			return true;
+		else
+			return false;
 	}
 };
 
@@ -584,7 +615,10 @@ public:
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual string format_src() const;
-	virtual void notify_result(shared_ptr <const Dependency> dependency, Execution *, Flags flags);
+	virtual void notify_result(shared_ptr <const Dependency> dependency, 
+				   Execution *, 
+				   Flags flags,
+				   shared_ptr <const Dependency> dependency_source);
 	virtual void notify_variable(const map <string, string> &result_variable_child) {  
 		result_variable.insert(result_variable_child.begin(), result_variable_child.end()); 
 	}
@@ -758,7 +792,10 @@ public:
 	virtual void notify_variable(const map <string, string> &result_variable_child) {  
 		result_variable.insert(result_variable_child.begin(), result_variable_child.end()); 
 	}
-	virtual void notify_result(shared_ptr <const Dependency> dependency, Execution *source, Flags flags);
+	virtual void notify_result(shared_ptr <const Dependency> dependency, 
+				   Execution *source, 
+				   Flags flags,
+				   shared_ptr <const Dependency> dependency_source);
 
 protected:
 
@@ -779,7 +816,7 @@ class Debug
  */
 {
 public:
-	Debug(Execution *e) 
+	Debug(const Execution *e) 
 	{
 		padding_current += "   ";
 		executions.push_back(e); 
@@ -795,14 +832,14 @@ public:
 		return padding_current.c_str(); 
 	}
 
-	static void print(Execution *, string text);
+	static void print(const Execution *, string text);
 	/* Print a line for debug mode.  The given TEXT starts with the
 	 * lower-case name of the operation being performed, followed by
 	 * parameters, and not ending in a newline or period.  */
 
 private:
 	static string padding_current;
-	static vector <Execution *> executions; 
+	static vector <const Execution *> executions; 
 
 	static void print(string text_target, string text);
 };
@@ -818,7 +855,7 @@ unordered_map <pid_t, File_Execution *> File_Execution::executions_by_pid;
 unordered_map <string, Timestamp> File_Execution::transients;
 
 string Debug::padding_current= "";
-vector <Execution *> Debug::executions; 
+vector <const Execution *> Debug::executions; 
 
 Execution::~Execution()
 {
@@ -890,6 +927,7 @@ void Execution::main(const vector <shared_ptr <const Dependency> > &dependencies
 
 void Execution::read_dynamic(Flags flags_this, 
 			     const Place_Param_Target &place_param_target,
+			     shared_ptr <const Dependency> dependency_target,
 			     vector <shared_ptr <const Dependency> > &dependencies)
 {
 	assert(place_param_target.place_name.get_n() == 0); 
@@ -897,9 +935,11 @@ void Execution::read_dynamic(Flags flags_this,
 	const Target target= place_param_target.unparametrized(); 
 	assert(target.is_file()); 
 	assert(dependencies.empty()); 
-
+	
 	string filename= target.get_name_nondynamic();
 
+//	Debug::print(this, fmt("read_dynamic \"%s\"", filename.c_str())); // RM
+	
 	if (! (flags_this & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
 
 		/* Parse dynamic dependency in full Stu syntax */ 
@@ -1021,7 +1061,6 @@ void Execution::read_dynamic(Flags flags_this,
 	end:;
 	}
 
-	
 	/* 
 	 * Perform checks on forbidden features in dynamic dependencies.
 	 * In keep-going mode (-k), we set the error, set the erroneous
@@ -1053,15 +1092,24 @@ void Execution::read_dynamic(Flags flags_this,
 			continue; 
 		}
 	}
-	if (found_error) {
-		assert(option_keep_going); 
-		vector <shared_ptr <const Dependency> > dependencies_new;
-		for (auto &j:  dependencies) {
-			if (j)
-				dependencies_new.push_back(j); 
+
+	assert(! found_error || option_keep_going); 
+	vector <shared_ptr <const Dependency> > dependencies_new;
+
+	shared_ptr <const Dependency> top_top= dependency_target->top;
+	shared_ptr <Dependency> no_top= Dependency::clone(dependency_target);
+	no_top->top= nullptr; 
+	shared_ptr <Dependency> top= make_shared <Dynamic_Dependency> (no_top); 
+	top->top= top_top;
+		
+	for (auto &j:  dependencies) {
+		if (j) {
+			shared_ptr <Dependency> j_new= Dependency::clone(j);
+			j_new->top= top; 
+			dependencies_new.push_back(j_new); 
 		}
-		swap(dependencies, dependencies_new); 
 	}
+	swap(dependencies, dependencies_new); 
 }
 
 bool Execution::find_cycle(Execution *parent, 
@@ -1233,7 +1281,6 @@ void Execution::print_traces(string text) const
 
 
 		/* Increment */
-// 		const Place place= dep->get_place();
 		shared_ptr <const Dependency> dep_old= dep; 
 		if (! dep->top) {
 			/* Assign DEP first, because we change EXECUTION */
@@ -1250,6 +1297,13 @@ void Execution::print_traces(string text) const
 		/* Don't show left-branch edges of dynamic executions */
 		if (hide_link_from_message(dep_old->flags)) {
 			continue;
+		}
+
+//			// RM
+//			Debug::print(this, fmt("print_traces cmp %s | %s", dep->format_src(), dep_old->format_src())); 
+
+		if (same_dependency_for_print(dep, dep_old)) {
+			continue; 
 		}
 
 		/* Print */
@@ -1516,7 +1570,7 @@ Proceed Execution::connect(shared_ptr <const Dependency> dependency_this,
 
 	if (dependency_child->flags & F_RESULT_NOTIFY) {
 		for (const auto &dependency:  child->result) {
-			this->notify_result(dependency, this, F_RESULT_NOTIFY); 
+			this->notify_result(dependency, this, F_RESULT_NOTIFY, nullptr); 
 		}
 	}
 
@@ -1556,13 +1610,13 @@ void Execution::disconnect(Execution *const child,
 	if (dependency_child->flags & F_RESULT_NOTIFY && dynamic_cast <File_Execution *> (child)) {
 		shared_ptr <Dependency> d= Dependency::clone(dependency_child);
 		d->flags &= ~F_RESULT_NOTIFY; 
-		notify_result(d, child, F_RESULT_NOTIFY); 
+		notify_result(d, child, F_RESULT_NOTIFY, nullptr); 
 	}
 
 	if (dependency_child->flags & F_RESULT_COPY && dynamic_cast <File_Execution *> (child)) {
 		shared_ptr <Dependency> d= Dependency::clone(dependency_child);
 		d->flags &= ~F_RESULT_COPY; 
-		notify_result(d, child, F_RESULT_COPY); 
+		notify_result(d, child, F_RESULT_COPY, dependency_child); 
 	}
 
 	/* Propagate timestamp */
@@ -1782,7 +1836,10 @@ void Execution::push_result(shared_ptr <const Dependency> dd)
 	for (auto &i:  parents) {
 		Flags flags= i.second->flags & (F_RESULT_NOTIFY | F_RESULT_COPY); 
 		if (flags) {
-			i.first->notify_result(dd, this, flags); 
+			i.first->notify_result(dd, this, flags,
+					       (flags == F_RESULT_NOTIFY)
+					       ? nullptr
+					       : i.second); 
 		}
 	}
 }
@@ -1796,6 +1853,43 @@ Target Execution::get_target_for_cache(Target target)
 	}
 
 	return target; 
+}
+
+shared_ptr <const Dependency> Execution::append_top(shared_ptr <const Dependency> dependency, 
+						    shared_ptr <const Dependency> top)
+{
+	assert(dependency);
+	assert(top); 
+	assert(dependency != top); 
+
+//	// RM
+//	string s1= dependency->format_src();
+//	string s2= top->format_src();
+//	fprintf(stderr, "append_top(%s, %s)\n", s1.c_str(), s2.c_str()); 
+
+	shared_ptr <Dependency> ret= Dependency::clone(dependency);
+
+	if (dependency->top) {
+		ret->top= append_top(dependency->top, top); 
+	} else {
+		ret->top= top;
+	}
+
+	return ret; 
+}
+
+shared_ptr <const Dependency> Execution::set_top(shared_ptr <const Dependency> dependency,
+						 shared_ptr <const Dependency> top)
+{
+	assert(dependency); 
+	assert(dependency != top); 
+
+	if (dependency->top == nullptr && top == nullptr)
+		return dependency;
+
+	shared_ptr <Dependency> ret= Dependency::clone(dependency);
+	ret->top= top;
+	return ret; 
 }
 
 File_Execution::~File_Execution()
@@ -3304,14 +3398,18 @@ string Dynamic_Execution::format_src() const
 	return dependency->format_src();
 }
 
-void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, Execution *source, Flags flags)
+void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, 
+				      Execution *source, 
+				      Flags flags,
+				      shared_ptr <const Dependency> dependency_source)
 {
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))); 
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)) != (F_RESULT_NOTIFY | F_RESULT_COPY)); 
+	assert((dependency_source == nullptr) == (flags == F_RESULT_NOTIFY)); 
 
 	if (flags & F_RESULT_NOTIFY) {
-	if (dynamic_pointer_cast <const Plain_Dependency> (d)) {
 		try {
+			assert(dynamic_pointer_cast <const Plain_Dependency> (d));
 			const Place_Param_Target &place_param_target= 
 				dynamic_pointer_cast <const Plain_Dependency> (d)->place_param_target; 
 
@@ -3336,6 +3434,7 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, Execution
 				vector <shared_ptr <const Dependency> > dependencies;
 				source->read_dynamic(d->flags,
 						     place_param_target,
+						     d,
 						     dependencies); 
 				for (auto &j:  dependencies) {
 					shared_ptr <Dependency> j_new= Dependency::clone(j); 
@@ -3349,6 +3448,9 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, Execution
 							j_new->set_place_flag(i, dependency->get_place_flag(i)); 
 					}
 					j= j_new; 
+//					if (d->top) {
+//						j= append_top(j, d->top); 
+//					}
 					push(j); 
 				}
 			}
@@ -3358,11 +3460,8 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, Execution
 			raise(e); 
 		}
 	} else {
-		assert(false);
-	}
-	} else {
 		assert(flags & F_RESULT_COPY);
-		// XXX append to D->TOP. 
+//		d= append_top(d, dependency_source); 
 		push_result(d); 
 	}
 }
@@ -3487,16 +3586,16 @@ string Transient_Execution::format_src() const {
 
 void Transient_Execution::notify_result(shared_ptr <const Dependency> dependency,
 					Execution *,
-					Flags flags)
+					Flags flags,
+					shared_ptr <const Dependency> dependency_source)
 {
 	assert(flags == F_RESULT_COPY); 
-
-	// XXX append to DEPENDENCY->TOP
-
+	assert(dependency_source);
+	dependency= append_top(dependency, dependency_source); 
 	push_result(dependency); 
 }
 
-void Debug::print(Execution *e, string text) 
+void Debug::print(const Execution *e, string text) 
 {
 	if (e == nullptr) {
 		print("", text);

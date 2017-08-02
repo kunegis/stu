@@ -1,0 +1,5 @@
+main.stu:7:4: no rule to build 'X', needed by 'D'
+C:1:1: 'D' is needed by [C]
+B:1:1: [C] is needed by [B]
+main.stu:4:6: 'B' is needed by [[@x]]
+main.stu:3:7: [[@x]] is needed by 'A'

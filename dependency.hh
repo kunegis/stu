@@ -72,9 +72,11 @@ public:
 	 * place if a flag is not set  */
 
 	shared_ptr <const Dependency> top; 
+	/* Additional place.  Most of the properties (such as extra
+	 * flags) are ignored.  */
 
 	Dependency()
-		:  flags(0) 
+		:  flags(0)
 	{  }
 
 	Dependency(Flags flags_) 
@@ -261,6 +263,7 @@ public:
 		   place_param_target(plain_dependency.place_param_target),
 		   place(plain_dependency.place),
 		   variable_name(plain_dependency.variable_name)
+//		   top(plain_dependency.top)
 	{  }
 
 	const Place &get_place() const {
@@ -309,6 +312,13 @@ public:
 
 	shared_ptr <const Dependency> dependency;
 	/* The contained dependency.  Non-null. */ 
+
+	Dynamic_Dependency(shared_ptr <const Dependency> dependency_)
+		:  Dependency(F_TARGET_DYNAMIC),
+		   dependency(dependency_)
+	{
+		assert(dependency_ != nullptr); 
+	}
 
 	Dynamic_Dependency(Flags flags_,
 			   shared_ptr <const Dependency> dependency_)
@@ -371,7 +381,7 @@ public:
 	}
 
 	virtual string format_out() const {
-		string text_flags= flags_format(flags);
+		string text_flags= flags_format(flags & ~F_TARGET_DYNAMIC);
 		if (text_flags != "")
 			text_flags += ' '; 
 		string text_dependency= dependency->format_out(); 
@@ -381,13 +391,18 @@ public:
 	}
 
 	virtual string format_src() const {
-		string text_flags= flags_format(flags);
+		string text_flags= flags_format(flags & ~F_TARGET_DYNAMIC);
 		if (text_flags != "")
 			text_flags += ' '; 
 		string text_dependency= dependency->format_src(); 
-		return fmt("%s[%s]",
+		string ret= fmt("%s[%s]",
 			   text_flags,
 			   text_dependency); 
+		if (top) { // RM
+			ret += " : "; 
+			ret += top->format_src();
+		}
+		return ret; 
 	}
 
 	virtual bool is_normalized() const {
@@ -679,6 +694,9 @@ shared_ptr <const Dependency> Dependency::strip_dynamic(shared_ptr <const Depend
 #ifndef NDEBUG
 void Dependency::check() const
 {
+//	assert(zero == 0); 
+	assert(top.get() != this); 
+
 	for (int i= 0;  i < C_PLACED;  ++i) {
 		assert(((flags & (1 << i)) == 0) == get_place_flag(i).empty()); 
 	}
@@ -731,11 +749,16 @@ string Plain_Dependency::format_src() const
 	string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
 	if (f != "")
 		f += ' '; 
-	return fmt("%s%s%s%s",
+	string ret= fmt("%s%s%s%s",
 		   f,
 		   flags & F_VARIABLE ? "$[" : "",
 		   place_param_target.format_src(),
 		   flags & F_VARIABLE ? "]" : "");
+	if (top) { // RM
+		ret += " : "; 
+		ret += top->format_src();
+	}
+	return ret;
 }
 
 string Plain_Dependency::format_word() const
@@ -993,9 +1016,6 @@ bool Concatenated_Dependency::is_normalized() const
 
 void Concatenated_Dependency::make_normalized_concatenated(vector <shared_ptr <const Dependency> > &dependencies_) const
 {
-	// XXX first step:  flatten all Concatenated_Dependency's that
-	// are inside this->DEPENDENCIES. 
-
 	make_normalized_concatenated(dependencies_, 0); 
 }
 
@@ -1014,6 +1034,14 @@ void Concatenated_Dependency::make_normalized_concatenated(vector <shared_ptr <c
 			}
 		} else if (dynamic_pointer_cast <const Plain_Dependency> (dependencies.at(start_index))) {
 			dependencies_.push_back(dependencies.at(start_index)); 
+		} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependencies.at(start_index))) {
+			vector <shared_ptr <const Dependency> > ds;
+			dynamic_pointer_cast <const Concatenated_Dependency> (dependencies.at(start_index))
+				->make_normalized_concatenated(ds);
+			for (const auto &d:  ds) {
+				assert(dynamic_pointer_cast <const Plain_Dependency> (d));
+				dependencies_.push_back(d); 
+			}
 		} else {
 			assert(false); 
 		}
@@ -1029,17 +1057,22 @@ void Concatenated_Dependency::make_normalized_concatenated(vector <shared_ptr <c
 				for (const auto &e:  vec) {
 					shared_ptr <const Plain_Dependency> e_plain=
 						dynamic_pointer_cast <const Plain_Dependency> (e); 
+					assert(e_plain); 
 					dependencies_.push_back(concatenate(d_plain, e_plain)); 
 				}
 			}
-		} else {
+		} else if (dynamic_pointer_cast <const Plain_Dependency> (dependencies.at(start_index))) {
 			shared_ptr <const Plain_Dependency> d_plain=
 				dynamic_pointer_cast <const Plain_Dependency> (dependencies.at(start_index)); 
+			assert(d_plain); 
 			for (const auto &e:  vec) {
 				shared_ptr <const Plain_Dependency> e_plain=
 					dynamic_pointer_cast <const Plain_Dependency> (e); 
+				assert(e_plain); 
 				dependencies_.push_back(concatenate(d_plain, e_plain)); 
 			}
+		} else {
+			assert(false); 
 		}
 	}
 }
@@ -1056,12 +1089,20 @@ shared_ptr <const Plain_Dependency> Concatenated_Dependency::concatenate(shared_
 	assert(a);
 	assert(b); 
 
-	assert(! a->place_param_target.place_name.is_parametrized()); 
-	assert(! b->place_param_target.place_name.is_parametrized()); 
+	assert(! a->place_param_target.place_name.is_parametrized());  // XXX allow
+	assert(! b->place_param_target.place_name.is_parametrized());  // XXX allow 
 	assert(a->variable_name == "");  // XXX test
 	assert(b->variable_name == "");  // XXX test
 	assert((b->flags & F_TARGET_TRANSIENT) == 0); // XXX test
 	// XXX test all other flags 
+
+	/*
+	 * Test
+	 */
+
+	/*
+	 * Combine 
+	 */ 
 
 	Flags flags_combined= a->flags | b->flags; 
 

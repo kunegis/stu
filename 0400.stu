@@ -1,9 +1,0 @@
-# * In all notify_result() functions: When "going up" a F_RESULT_COPY
-#   link, append the corresponding Dependency to Dependency::top   
-
-# Check that the error message is correct
-A: [[[B]]] { touch A ; }
->B { echo C }
->C { echo D }
->D { echo E }
-E: X { touch E }

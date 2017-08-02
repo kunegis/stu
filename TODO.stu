@@ -132,6 +132,8 @@ C = {correct}
 
 # * a concatenation dynamic file containing '% version'
 
+# Make sure the -d output does not contain the unnecessary -[ flags for dynamic targets 
+
 #
 # TODO document the -0 in the manpage.
 #

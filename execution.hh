@@ -282,9 +282,10 @@ protected:
 	const Buffer &get_buffer_A() const {  return buffer_A;  }
 	const Buffer &get_buffer_B() const {  return buffer_B;  }
 
-	void push(shared_ptr <const Dep> );
-	/* Push a dependency to the default buffer, breaking down non-normalized
-	 * dependencies while doing so.  */
+	void push(shared_ptr <const Dep> dep);
+	/* Push a dependency to the default buffer, breaking down
+	 * non-normalized dependencies while doing so.  DEP does not
+	 * have to be normalized.  */
 
 	void push_result(shared_ptr <const Dep> dd); 
 	void disconnect(Execution *const child,
@@ -3204,7 +3205,7 @@ bool Concat_Execution::finished() const
 }
 
 bool Concat_Execution::finished(Flags flags) const
-/* Since Concatenated_Execution objects are used just once, by a single
+/* Since Concat_Execution objects are used just once, by a single
  * parent, this always returns the same as finished() itself.
  * Therefore, the FLAGS parameter is ignored.  */
 {

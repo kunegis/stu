@@ -4,10 +4,10 @@
 /*
  * Data types for representing dependencies.  Dependencies are the
  * central data structures in Stu, as all dependencies in the syntax of
- * a Stu file get mapped to Dependency objects.  
+ * a Stu file get mapped to Dep objects.  
  *
  * Dependencies are polymorphous objects, and all dependencies derive
- * from the class Dependency, and are used via shared_ptr<>, except in
+ * from the class Dep, and are used via shared_ptr<>, except in
  * cases where access is read-only.  This is necessary in cases where a
  * member function has to access its own THIS pointer, because we can't
  * put THIS into a shared pointer. 
@@ -66,7 +66,7 @@ class Dep
  * The flags only represent immediate flags.  Compound dependencies for
  * instance may contain additional inner flags. 
  *
- * Objects of type Dependency and subclasses are always handled through
+ * Objects of type Dep and subclasses are always handled through
  * shared_ptr<>.  All objects may have many persistent pointers to it,
  * so they are considered final, i.e., immutable, except if we just
  * created the object in which case we know that it is not shared.
@@ -77,7 +77,7 @@ class Dep
  * The use of shared_ptr<> also means that certain functions cannot be
  * member functions but must be static functions instead:  clone(),
  * normalize(), etc.  This is because we cannot use a construct like
- * shared_ptr <Dependency> (this), which is erroneous (the object would
+ * shared_ptr <Dep> (this), which is erroneous (the object would
  * be released twice, etc.).  As a result, we replace THIS by an
  * argument of type shared_ptr<>.  [Note:  there is also
  * std::enable_shared_from_this as a possibility.]
@@ -135,8 +135,8 @@ public:
 	 * only copy a place over if OVERWRITE_PLACES is set.  */
 
 	/* The check function checks the internal consistency of a
-	 * Dependency object.  This is purely an assertion, and not a
-	 * programmatic check.  It is possible for Dependency objects to
+	 * Dep object.  This is purely an assertion, and not a
+	 * programmatic check.  It is possible for Dep objects to
 	 * be temporarily inconsistent while they are changed --
 	 * therefore, consistency is not enforced by the accessor
 	 * functions, but only by this function.  */
@@ -165,14 +165,14 @@ public:
 
 	static void normalize(shared_ptr <const Dep> dep,
 			      vector <shared_ptr <const Dep> > &deps);
-	/* Split THIS into multiple DEPENDENCIES that do
-	 * not contain compound dependencies (recursively). The
-	 * resulting dependencies are appended DEPENDENCIES, which does
-	 * not have to be empty on entering the function.  */
+	/* Split THIS into multiple DEPENDENCIES that are each
+	 * normalized.  The resulting dependencies are appended
+	 * DEPENDENCIES, which does not have to be empty on entering the
+	 * function.  */
 
 	static shared_ptr <const Dep> normalize_compound(shared_ptr <const Dep> dep);
 	/* Return either a normalized version of the given dependency, or a
-	 * Compound_Dependency containing normalized dependencies */ 
+	 * Compound_Dep containing normalized dependencies */ 
 
 	static shared_ptr <Dep> clone(shared_ptr <const Dep> dep);
 	/* A shallow clone */
@@ -190,7 +190,7 @@ class Plain_Dep
  * or a transient.  
  *
  * When the target is a transient, the dependency flags have the
- * F_TARGET_TRANSIENT bit set, which is redundant.  No other Dependency
+ * F_TARGET_TRANSIENT bit set, which is redundant.  No other Dep
  * type has the F_TARGET_TRANSIENT flag set.
  */
 	:  public Dep
@@ -323,7 +323,7 @@ public:
 
 class Dynamic_Dep
 /*
- * The Dependency::flags field has the F_TARGET_DYNAMIC set. 
+ * The Dep::flags field has the F_TARGET_DYNAMIC set. 
  */
 	:  public Dep
 {
@@ -517,7 +517,7 @@ private:
 	vector <shared_ptr <const Dep> > deps;
 	/* The dependencies for each part.  May be empty in code, which is something
 	 * that is not allowed in Stu code.  Otherwise, there is at
-	 * least one element, which is either a Compound_Dependency, or
+	 * least one element, which is either a Compound_Dep, or
 	 * a normalized dependency.  */
 };
 
@@ -621,8 +621,7 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 	if (to <Plain_Dep> (dep)) {
 		deps.push_back(dep);
 	} else if (to <Dynamic_Dep> (dep)) {
-		shared_ptr <const Dynamic_Dep> dynamic_dep= 
-			to <Dynamic_Dep> (dep);
+		shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep);
 		vector <shared_ptr <const Dep> > deps_child;
 		normalize(dynamic_dep->dep, deps_child);
 		for (auto &d:  deps_child) {
@@ -631,26 +630,17 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 				(dynamic_dep->flags, dynamic_dep->places, d);
 			deps.push_back(dep_new); 
 		}
-
 	} else if (to <Compound_Dep> (dep)) {
-		shared_ptr <const Compound_Dep> compound_dep=
-			to <Compound_Dep> (dep);
+		shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dep);
 		for (auto &d:  compound_dep->get_deps()) {
 			shared_ptr <Dep> dd= Dep::clone(d); 
 			dd->add_flags(compound_dep, false);  
 			normalize(dd, deps); 
 		}
-
 	} else if (to <Concat_Dep> (dep)) {
-
-		shared_ptr <const Concat_Dep> concat_dep= 
-			to <Concat_Dep>
-			//			dynamic_pointer_cast <Concatenated_Dependency>
-			(Dep::clone(dep)); 
+		shared_ptr <const Concat_Dep> concat_dep= to <Concat_Dep> (Dep::clone(dep)); 
 		Concat_Dep::normalize_concat(concat_dep, deps);
-
 	} else {
-		/* Bug:  Unhandled dependency type */ 
 		assert(false);
 	}
 }
@@ -1067,14 +1057,11 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 		normalize_concat(dep, vec, start_index + 1); 
 		shared_ptr <const Dep> dd= dep->deps.at(start_index); 
 		if (to <Compound_Dep> (dd)) {
-			shared_ptr <const Compound_Dep> compound_dep= 
-				to <Compound_Dep> (dd);
+			shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dd);
 			for (const auto &d:  compound_dep->get_deps()) {
-				shared_ptr <const Plain_Dep> d_plain=
-					to <Plain_Dep> (d); 
+				shared_ptr <const Plain_Dep> d_plain= to <Plain_Dep> (d); 
 				for (const auto &e:  vec) {
-					shared_ptr <const Plain_Dep> e_plain=
-						to <Plain_Dep> (e); 
+					shared_ptr <const Plain_Dep> e_plain= to <Plain_Dep> (e); 
 					assert(e_plain); 
 					deps_.push_back(concat(d_plain, e_plain)); 
 				}
@@ -1097,7 +1084,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 
 Target Concat_Dep::get_target() const
 {
-	/* Dependency::get_target() is not used for complex dependencies */
+	/* Dep::get_target() is not used for complex dependencies */
 	assert(false);
 }
 
@@ -1135,7 +1122,7 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
 								   a->place_param_target.place),
 						a->place,
 					 ""); 
-	// XXX set Dependency::places
+	// XXX set Dep::places
 	
 	return ret; 
 }

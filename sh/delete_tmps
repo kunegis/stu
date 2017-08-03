@@ -3,5 +3,8 @@
 # Delete temporary files created by tests.  Tests only create temporary
 # files of these patterns.  Executed within each test directory. 
 #
+# NOTE:   *don't* execute this in stu/, because we have the files 'sh'
+# and 'dep.hh' there.  
+#
 
 rm -Rf -- ? ?? list.* A.* *.data dep.* .+-~_ 

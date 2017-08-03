@@ -34,8 +34,8 @@ private:
 
 	/* All contained dependencies are normalized */
 
-	queue <shared_ptr <const Dependency> > q;
-	vector <shared_ptr <const Dependency> > v;
+	queue <shared_ptr <const Dep> > q;
+	vector <shared_ptr <const Dep> > v;
 
 public:
 
@@ -46,7 +46,7 @@ public:
 			return q.size();
 	}
 
-	shared_ptr <const Dependency> next() 
+	shared_ptr <const Dep> next() 
 	/* Return the next element, removing it from the buffer at the
 	 * same time  */
 	{
@@ -55,17 +55,17 @@ public:
 			size_t k= random_number(s);
 			if (k + 1 < s) 
 				swap(v[k], v[s - 1]); 
-			shared_ptr <const Dependency> ret= v[s - 1];
+			shared_ptr <const Dep> ret= v[s - 1];
 			v.resize(s - 1); 
 			return ret; 
 		} else {
-			shared_ptr <const Dependency> ret= q.front();
+			shared_ptr <const Dep> ret= q.front();
 			q.pop(); 
 			return ret; 
 		}
 	}
 
-	void push(shared_ptr <const Dependency> d)
+	void push(shared_ptr <const Dep> d)
 	/* Add to the end of the queue (if sorted, otherwise, just
 	 * add) */ 
 	{

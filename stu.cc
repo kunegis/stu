@@ -22,7 +22,7 @@
 /* Used for all of Stu */
 using namespace std; 
 
-#include "dependency.hh"
+#include "dep.hh"
 #include "execution.hh" 
 #include "rule.hh"
 #include "timestamp.hh"
@@ -92,8 +92,8 @@ const char VERSION_INFO[]=
 void init_buf(); 
 /* Initialize buffers; called once from main() */ 
 
-void add_dependencies_option_C(vector <shared_ptr <const Dependency> > &dependencies,
-			       const char *string_);
+void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
+		       const char *string_);
 /* Parse a string of dependencies and add them to the vector. Used for
  * the -C option.  Support the full Stu syntax.  */
 
@@ -156,7 +156,7 @@ int main(int argc, char **argv, char **envp)
 		 * unique and sorted as they were given, except for
 		 * duplicates. */   
 
-		vector <shared_ptr <const Dependency> > dependencies; 
+		vector <shared_ptr <const Dep> > deps; 
 		/* Assemble targets here */ 
 
 		shared_ptr <Rule> rule_first;
@@ -213,8 +213,8 @@ int main(int argc, char **argv, char **envp)
 					place << "expected a non-empty argument"; 
 					exit(ERROR_FATAL);
 				}
-				dependencies.push_back
-					(make_shared <Plain_Dependency>
+				deps.push_back
+					(make_shared <Plain_Dep>
 					 (0, Place_Param_Target
 					  (0, Place_Name(optarg, place))));
 				break;
@@ -222,7 +222,7 @@ int main(int argc, char **argv, char **envp)
 
 			case 'C':  {
 				had_option_target= true; 
-				add_dependencies_option_C(dependencies, optarg);
+				add_deps_option_C(deps, optarg);
 				break;
 			}
 
@@ -312,10 +312,10 @@ int main(int argc, char **argv, char **envp)
 					place << "expected a non-empty argument";
 					exit(ERROR_FATAL);
 				}
-				dependencies.push_back
-					(make_shared <Dynamic_Dependency>
+				deps.push_back
+					(make_shared <Dynamic_Dep>
 					 (0,
-					  make_shared <Plain_Dependency>
+					  make_shared <Plain_Dep>
 					  (1 << flag_get_index(c), 
 					   Place_Param_Target
 					   (0, Place_Name(optarg, place)))));
@@ -332,8 +332,8 @@ int main(int argc, char **argv, char **envp)
 				}
 				Place places[C_PLACED];
 				places[c == 'p' ? I_PERSISTENT : I_OPTIONAL]= place; 
-				dependencies.push_back
-					(make_shared <Plain_Dependency>
+				deps.push_back
+					(make_shared <Plain_Dep>
 					 (c == 'p' ? F_PERSISTENT : F_OPTIONAL, places,
 					  Place_Param_Target(0, Place_Name(optarg, place))));
 				break; 
@@ -380,12 +380,12 @@ int main(int argc, char **argv, char **envp)
 			}
 
 			if (! option_literal) {
-				shared_ptr <const Dependency> dep= 
+				shared_ptr <const Dep> dep= 
 					Parser::get_target_dep(argv[i], place);
-				dependencies.push_back(dep); 
+				deps.push_back(dep); 
 			} else {
-				dependencies.push_back
-					(make_shared <Plain_Dependency>
+				deps.push_back
+					(make_shared <Plain_Dep>
 					 (0, Place_Param_Target
 					  (0, Place_Name(argv[i], place))));
 			}
@@ -402,7 +402,7 @@ int main(int argc, char **argv, char **envp)
 				if (errno == ENOENT) { 
 					/* The default file does not exist --
 					 * fail if no target is given */  
-					if (dependencies.empty() && ! had_option_target 
+					if (deps.empty() && ! had_option_target 
 					    && ! option_print) {
 						print_error(fmt("Expected a target or the default file %s",
 								name_format_word(FILENAME_INPUT_DEFAULT))); 
@@ -425,7 +425,7 @@ int main(int argc, char **argv, char **envp)
 
 		/* If no targets are given on the command line,
 		 * use the first non-variable target */ 
-		if (dependencies.empty() && ! had_option_target) {
+		if (deps.empty() && ! had_option_target) {
 
 			if (rule_first == nullptr) {
 				if (! place_first.empty()) {
@@ -444,12 +444,12 @@ int main(int argc, char **argv, char **envp)
 				exit(ERROR_FATAL);
 			}
 
-			dependencies.push_back
-				(make_shared <Plain_Dependency> (*(rule_first->place_param_targets[0])));  
+			deps.push_back
+				(make_shared <Plain_Dep> (*(rule_first->place_param_targets[0])));  
 		}
 
 		/* Execute */
-		Execution::main(dependencies);
+		Execution::main(deps);
 
 	} catch (int e) {
 		assert(e >= 1 && e <= 3); 
@@ -504,8 +504,8 @@ void init_buf()
 	}
 }
 
-void add_dependencies_option_C(vector <shared_ptr <const Dependency> > &dependencies,
-			       const char *string_)
+void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
+		       const char *string_)
 {
 	vector <shared_ptr <Token> > tokens;
 	Place place_end;
@@ -516,15 +516,15 @@ void add_dependencies_option_C(vector <shared_ptr <const Dependency> > &dependen
 		 place_end, string_,
 		 Place(Place::Type::OPTION, 'C'));
 
-	vector <shared_ptr <const Dependency> > dependencies_option;
+	vector <shared_ptr <const Dep> > deps_option;
 	Place_Name input; /* remains empty */ 
 	Place place_input; /* remains empty */ 
 
-	Parser::get_expression_list(dependencies_option, tokens, 
+	Parser::get_expression_list(deps_option, tokens, 
 				    place_end, input, place_input);
 
-	for (auto &j:  dependencies_option) {
-		dependencies.push_back(j); 
+	for (auto &j:  deps_option) {
+		deps.push_back(j); 
 	}
 }
 

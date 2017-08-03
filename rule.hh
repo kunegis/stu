@@ -25,7 +25,7 @@ public:
 	 * The place in each target is used when referring to a target
 	 * specifically.  */ 
 
-	vector <shared_ptr <const Dependency> > dependencies;
+	vector <shared_ptr <const Dep> > deps;
 	/* The dependencies in order of declaration.  Dependencies are
 	 * included multiple times if they appear multiple times in the
 	 * source.  Any parameter occuring any dependency also
@@ -60,7 +60,7 @@ public:
 	 * followed by a filename. */ 
 
 	Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets,
-	     vector <shared_ptr <const Dependency> > &&dependencies_,
+	     vector <shared_ptr <const Dep> > &&deps_,
 	     const Place &place_,
 	     const shared_ptr <const Command> &command_,
 	     Name &&filename_,
@@ -70,7 +70,7 @@ public:
 	/* Direct constructor that specifies everything */
 
 	Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
-	     const vector <shared_ptr <const Dependency> > &dependencies_,
+	     const vector <shared_ptr <const Dep> > &deps_,
 	     shared_ptr <const Command> command_,
 	     bool is_hardcode_,
 	     int redirect_index_,
@@ -92,7 +92,7 @@ public:
 	string format_out() const; 
 	/* Format the rule, as for the -P or -d options */ 
 
-	void check_unparametrized(shared_ptr <const Dependency> dependency,
+	void check_unparametrized(shared_ptr <const Dep> dep,
 				  const set <string> &parameters);
 	/* Print error message and throw a logical error when the
 	 * dependency contains parameters */
@@ -157,7 +157,7 @@ public:
 };
 
 Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
-	   vector <shared_ptr <const Dependency> > &&dependencies_,
+	   vector <shared_ptr <const Dep> > &&deps_,
 	   const Place &place_,
 	   const shared_ptr <const Command> &command_,
 	   Name &&filename_,
@@ -165,7 +165,7 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	   int redirect_index_,
 	   bool is_copy_)
 	:  place_param_targets(place_param_targets_),
-	   dependencies(dependencies_),
+	   deps(deps_),
 	   place(place_),
 	   command(command_),
 	   filename(filename_),
@@ -175,13 +175,13 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 {  }
 
 Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
-	   const vector <shared_ptr <const Dependency> > &dependencies_,
+	   const vector <shared_ptr <const Dep> > &deps_,
 	   shared_ptr <const Command> command_,
 	   bool is_hardcode_,
 	   int redirect_index_,
 	   const Name &filename_)
 	:  place_param_targets(place_param_targets_), 
-	   dependencies(dependencies_),
+	   deps(deps_),
   	   place(place_param_targets_[0]->place),
 	   command(command_),
 	   filename(filename_),
@@ -204,7 +204,7 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 	}
 
 	/* Check that only valid parameters are used */ 
-	for (const auto &d:  dependencies) {
+	for (const auto &d:  deps) {
 		check_unparametrized(d, parameters);
 	}
 }
@@ -220,19 +220,19 @@ Rule::Rule(shared_ptr <Place_Param_Target> place_param_target_,
 	   is_hardcode(false),
 	   is_copy(true)
 {
-	auto dependency= 
-		make_shared <Plain_Dependency> (Place_Param_Target(0, *place_name_source_));
+	auto dep= 
+		make_shared <Plain_Dep> (Place_Param_Target(0, *place_name_source_));
 
 	if (! place_persistent.empty()) {
-		dependency->flags |= F_PERSISTENT;
-		dependency->places[I_PERSISTENT]= place_persistent;
+		dep->flags |= F_PERSISTENT;
+		dep->places[I_PERSISTENT]= place_persistent;
 	}
 	if (! place_optional.empty()) {
-		dependency->flags |= F_OPTIONAL;
-		dependency->places[I_OPTIONAL]= place_optional;
+		dep->flags |= F_OPTIONAL;
+		dep->places[I_OPTIONAL]= place_optional;
 	}
 
-	dependencies.push_back(dependency);
+	deps.push_back(dep);
 }
 
 shared_ptr <Rule> 
@@ -249,14 +249,14 @@ Rule::instantiate(shared_ptr <Rule> rule,
 	for (size_t i= 0;  i < rule->place_param_targets.size();  ++i) 
 		place_param_targets[i]= rule->place_param_targets[i]->instantiate(mapping);
 
-	vector <shared_ptr <const Dependency> > dependencies;
-	for (auto &dependency:  rule->dependencies) {
-		dependencies.push_back(dependency->instantiate(mapping));
+	vector <shared_ptr <const Dep> > deps;
+	for (auto &dep:  rule->deps) {
+		deps.push_back(dep->instantiate(mapping));
 	}
 
 	return make_shared <Rule> 
 		(move(place_param_targets),
-		 move(dependencies),
+		 move(deps),
 		 rule->place,
 		 rule->command,
 		 move(rule->filename.instantiate(mapping)),
@@ -280,10 +280,10 @@ string Rule::format_out() const
 		ret += place_param_target->format_out(); 
 	}
 
-	if (dependencies.size() != 0)
+	if (deps.size() != 0)
 		ret += ": ";
-	for (auto i= dependencies.begin();  i != dependencies.end();  ++i) {
-		if (i != dependencies.begin())
+	for (auto i= deps.begin();  i != deps.end();  ++i) {
+		if (i != deps.begin())
 			ret += ", ";
 		ret += (*i)->format_out(); 
 	}
@@ -293,41 +293,41 @@ string Rule::format_out() const
 	return ret; 
 }
 
-void Rule::check_unparametrized(shared_ptr <const Dependency> dependency,
+void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 				const set <string> &parameters)
 {
-	assert(dependency != nullptr); 
+	assert(dep != nullptr); 
 
-	if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
-		shared_ptr <const Dynamic_Dependency> dynamic_dependency=
-			dynamic_pointer_cast <const Dynamic_Dependency> (dependency); 
-		check_unparametrized(dynamic_dependency->dependency, parameters); 
-	} else if (dynamic_pointer_cast <const Compound_Dependency> (dependency)) {
-		shared_ptr <const Compound_Dependency> compound_dependency=
-			dynamic_pointer_cast <const Compound_Dependency> (dependency);
-		for (const auto &d:  compound_dependency->get_dependencies()) {
+	if (to <Dynamic_Dep> (dep)) {
+		shared_ptr <const Dynamic_Dep> dynamic_dep=
+			to <Dynamic_Dep> (dep); 
+		check_unparametrized(dynamic_dep->dep, parameters); 
+	} else if (to <Compound_Dep> (dep)) {
+		shared_ptr <const Compound_Dep> compound_dep=
+			to <Compound_Dep> (dep);
+		for (const auto &d:  compound_dep->get_deps()) {
 			check_unparametrized(d, parameters); 
 		}
-	} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency)) {
-		shared_ptr <const Concatenated_Dependency> concatenated_dependency=
-			dynamic_pointer_cast <const Concatenated_Dependency> (dependency);
-		for (const auto &d:  concatenated_dependency->get_dependencies()) {
+	} else if (to <Concat_Dep> (dep)) {
+		shared_ptr <const Concat_Dep> concat_dep=
+			to <Concat_Dep> (dep);
+		for (const auto &d:  concat_dep->get_deps()) {
 			check_unparametrized(d, parameters); 
 		}
-	} else if (dynamic_pointer_cast <const Plain_Dependency> (dependency)) {
-		shared_ptr <const Plain_Dependency> plain_dependency=
-			dynamic_pointer_cast <const Plain_Dependency> (dependency);
+	} else if (to <Plain_Dep> (dep)) {
+		shared_ptr <const Plain_Dep> plain_dep=
+			to <Plain_Dep> (dep);
 		for (size_t jj= 0;  
-		     jj < plain_dependency->place_param_target.place_name.get_n();
+		     jj < plain_dep->place_param_target.place_name.get_n();
 		     ++jj) {
-			string parameter= plain_dependency->place_param_target
+			string parameter= plain_dep->place_param_target
 				.place_name.get_parameters()[jj]; 
 			if (parameters.count(parameter) == 0) {
-				plain_dependency->place_param_target
+				plain_dep->place_param_target
 					.place_name.get_places()[jj] <<
 					fmt("parameter %s must not appear in dependency %s", 
 					    prefix_format_word(parameter, "$"),
-					    plain_dependency->place_param_target.format_word());
+					    plain_dep->place_param_target.format_word());
 				if (place_param_targets.size() == 1) {
 					place_param_targets[0]->place <<
 						fmt("because it does not appear in target %s",

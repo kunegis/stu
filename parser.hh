@@ -11,7 +11,7 @@
 
 #include "rule.hh"
 #include "token.hh"
-#include "dependency.hh"
+#include "dep.hh"
 
 /*
  * Stu has only prefix and circumfix operators, and therefore its syntax
@@ -73,7 +73,7 @@ public:
 				  vector <shared_ptr <Token> > &tokens,
 				  const Place &place_end);
 
-	static void get_expression_list(vector <shared_ptr <const Dependency> > &dependencies,
+	static void get_expression_list(vector <shared_ptr <const Dep> > &deps,
 					vector <shared_ptr <Token> > &tokens,
 					const Place &place_end,
 					Place_Name &input,
@@ -82,7 +82,7 @@ public:
 	 * TARGET is used for error messages.  Empty when in a dynamic
 	 * dependency.  */
 
-	static shared_ptr <const Dependency> get_target_dep(string text, const Place &place); 
+	static shared_ptr <const Dep> get_target_dep(string text, const Place &place); 
 	/* Parse a dependency as given on the command line outside of
 	 * options.  This supports only the characters '@' and '[]', as
 	 * well as names.  TEXT must not be "".  */
@@ -104,7 +104,7 @@ private:
 	void parse_rule_list(vector <shared_ptr <Rule> > &ret);
 	/* The returned rules may not be unique -- this is checked later */ 
 
-	bool parse_expression_list(vector <shared_ptr <const Dependency> > &ret, 
+	bool parse_expression_list(vector <shared_ptr <const Dep> > &ret, 
 				   Place_Name &place_name_input,
 				   Place &place_input,
 				   const vector <shared_ptr <Place_Param_Target> > &targets);
@@ -113,7 +113,7 @@ private:
 	shared_ptr <Rule> parse_rule(); 
 	/* Return null when nothing was parsed */ 
 
-	bool parse_expression(shared_ptr <const Dependency> &ret,
+	bool parse_expression(shared_ptr <const Dep> &ret,
 			      Place_Name &place_name_input,
 			      Place &place_input,
 			      const vector <shared_ptr <Place_Param_Target> > &targets);
@@ -122,13 +122,13 @@ private:
 	 * was parsed.  TARGETS is passed to construct error
 	 * messages.  */
 
-	shared_ptr <const Dependency> parse_variable_dep
+	shared_ptr <const Dep> parse_variable_dep
 	(Place_Name &place_name_input,
 	 Place &place_input,
 	 const vector <shared_ptr <Place_Param_Target> > &targets);
 	/* A variable dependency */ 
 
-	shared_ptr <const Dependency> parse_redirect_dep
+	shared_ptr <const Dep> parse_redirect_dep
 	(Place_Name &place_name_input,
 	 Place &place_input,
 	 const vector <shared_ptr <Place_Param_Target> > &targets);
@@ -361,7 +361,7 @@ shared_ptr <Rule> Parser::parse_rule()
 		throw ERROR_LOGICAL;
 	}
 
-	vector <shared_ptr <const Dependency> > dependencies;
+	vector <shared_ptr <const Dep> > deps;
 
 	bool had_colon= false;
 
@@ -372,7 +372,7 @@ shared_ptr <Rule> Parser::parse_rule()
 	if (is_operator(':')) {
 		had_colon= true; 
 		++iter; 
-		parse_expression_list(dependencies, 
+		parse_expression_list(deps, 
 				      filename_input, 
 				      place_input, 
 				      place_param_targets); 
@@ -642,13 +642,13 @@ shared_ptr <Rule> Parser::parse_rule()
 
 	return make_shared <Rule> 
 		(move(place_param_targets), 
-		 dependencies, 
+		 deps, 
 		 command, is_hardcode, 
 		 redirect_index,
 		 filename_input);
 }
 
-bool Parser::parse_expression_list(vector <shared_ptr <const Dependency> > &ret, 
+bool Parser::parse_expression_list(vector <shared_ptr <const Dep> > &ret, 
 				   Place_Name &place_name_input,
 				   Place &place_input,
 				   const vector <shared_ptr <Place_Param_Target> > &targets)
@@ -656,7 +656,7 @@ bool Parser::parse_expression_list(vector <shared_ptr <const Dependency> > &ret,
 	assert(ret.size() == 0);
 
 	while (iter != tokens.end()) {
-		shared_ptr <const Dependency> ret_new; 
+		shared_ptr <const Dep> ret_new; 
 		bool r= parse_expression(ret_new, 
 					 place_name_input, 
 					 place_input, targets);
@@ -671,7 +671,7 @@ bool Parser::parse_expression_list(vector <shared_ptr <const Dependency> > &ret,
 	return ! ret.empty(); 
 }
 
-bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
+bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 			      Place_Name &place_name_input,
 			      Place &place_input,
 			      const vector <shared_ptr <Place_Param_Target> > &targets)
@@ -682,11 +682,11 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 	if (is_operator('(')) {
 		Place place_paren= (*iter)->get_place();
 		++iter;
-		vector <shared_ptr <const Dependency> > r;
+		vector <shared_ptr <const Dep> > r;
 		if (parse_expression_list(r, place_name_input, place_input, targets)) {
 			assert(r.size() >= 1); 
 			if (r.size() > 1) {
-				ret= make_shared <Compound_Dependency> 
+				ret= make_shared <Compound_Dep> 
 					(move(r), place_paren); 
 			} else {
 				ret= move(r.at(0)); 
@@ -711,13 +711,13 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 		++ iter; 
 
 		if (next_concatenates()) {
-			shared_ptr <const Dependency> next;
+			shared_ptr <const Dep> next;
 			bool rr= parse_expression(next, place_name_input, place_input, targets);
 			/* It can be that an empty list was parsed, in
 			 * which case RR is true but the list is empty */
 			if (rr && next != nullptr) {
-				shared_ptr <Concatenated_Dependency> ret_new=
-					make_shared <Concatenated_Dependency> ();
+				shared_ptr <Concat_Dep> ret_new=
+					make_shared <Concat_Dep> ();
 				ret_new->push_back(ret);
 				ret_new->push_back(next);
 				ret.reset();
@@ -728,7 +728,7 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 		/* If RET is null, it means we had empty parentheses.
 		 * Return an empty Compound_Dependency in that case  */ 
 		if (ret == nullptr) {
-			ret= make_shared <Compound_Dependency> (place_paren); 
+			ret= make_shared <Compound_Dep> (place_paren); 
 		}
 
 		return true; 
@@ -738,7 +738,7 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 	if (is_operator('[')) {
 		Place place_bracket= (*iter)->get_place(); 
 		++iter;	
-		vector <shared_ptr <const Dependency> > r2;
+		vector <shared_ptr <const Dep> > r2;
 		parse_expression_list(r2, place_name_input, place_input, targets);
 
 		if (iter == tokens.end()) {
@@ -757,8 +757,8 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 			throw ERROR_LOGICAL;
 		}
 		++ iter; 
-		shared_ptr <Compound_Dependency> ret_nondynamic= 
-			make_shared <Compound_Dependency> (place_bracket); 
+		shared_ptr <Compound_Dep> ret_nondynamic= 
+			make_shared <Compound_Dep> (place_bracket); 
 		for (auto &j:  r2) {
 			
 			/* Variable dependency cannot appear within
@@ -775,16 +775,16 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 
 			ret_nondynamic->push_back(j);
 		}
-		ret= make_shared <Dynamic_Dependency> (0, ret_nondynamic); 
+		ret= make_shared <Dynamic_Dep> (0, ret_nondynamic); 
 
 		if (next_concatenates()) {
-			shared_ptr <const Dependency> next;
+			shared_ptr <const Dep> next;
 			bool rr= parse_expression(next, place_name_input, place_input, targets);
 			/* It can be that an empty list was parsed, in
 			 * which case RR is true but the list is empty */
 			if (rr && next != nullptr) {
-				shared_ptr <Concatenated_Dependency> ret_new=
-					make_shared <Concatenated_Dependency> ();
+				shared_ptr <Concat_Dep> ret_new=
+					make_shared <Concat_Dep> ();
 				ret_new->push_back(ret);
 				ret_new->push_back(next);
 				ret.reset();
@@ -795,7 +795,7 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 		/* If RET is null, it means we had empty parentheses.
 		 * Return an empty Compound_Dependency in that case  */ 
 		if (ret == nullptr) {
-			ret= make_shared <Compound_Dependency> (place_bracket); 
+			ret= make_shared <Compound_Dep> (place_bracket); 
 		}
 
 		return true; 
@@ -839,7 +839,7 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 		/* Add the flag */ 
 		if (! ((i_flag == I_OPTIONAL && option_nonoptional) ||
 		       (i_flag == I_TRIVIAL  && option_nontrivial))) {
-			shared_ptr <Dependency> ret_new= Dependency::clone(ret);
+			shared_ptr <Dep> ret_new= Dep::clone(ret);
 			ret_new->flags |= (1 << i_flag); 
 			assert(i_flag < C_TARGET_BYTE); 
 			if (i_flag < C_PLACED)
@@ -851,31 +851,31 @@ bool Parser::parse_expression(shared_ptr <const Dependency> &ret,
 	}
 
 	/* '$' ; variable dependency */ 
-	shared_ptr <const Dependency> dependency= 
+	shared_ptr <const Dep> dep= 
 		parse_variable_dep(place_name_input, place_input, targets);
-	if (dependency != nullptr) {
-		ret= dependency; 
+	if (dep != nullptr) {
+		ret= dep; 
 		return true; 
 	}
 
 	/* Redirect dependency */
-	dependency= parse_redirect_dep(place_name_input, place_input, targets); 
-	if (dependency != nullptr) {
-		ret= dependency;
+	dep= parse_redirect_dep(place_name_input, place_input, targets); 
+	if (dep != nullptr) {
+		ret= dep;
 		return true; 
 	}
 
 	return false;
 }
 
-shared_ptr <const Dependency> Parser
+shared_ptr <const Dep> Parser
 ::parse_variable_dep(Place_Name &place_name_input, 
 		     Place &place_input,
 		     const vector <shared_ptr <Place_Param_Target> > &targets)
 {
 	bool has_input= false;
 
-	shared_ptr <const Dependency> ret;
+	shared_ptr <const Dep> ret;
 
 	if (! is_operator('$')) 
 		return nullptr;
@@ -1052,7 +1052,7 @@ shared_ptr <const Dependency> Parser
 	/* The place of the variable dependency as a whole is set on the
 	 * name contained in it.  It would be conceivable to also set it
 	 * on the dollar sign.  */
-	return make_shared <Plain_Dependency> 
+	return make_shared <Plain_Dep> 
 		(flags, 
 		 places_flags,
 		 Place_Param_Target(0, *place_name, 
@@ -1060,7 +1060,7 @@ shared_ptr <const Dependency> Parser
 		 variable_name);
 }
 
-shared_ptr <const Dependency> Parser::parse_redirect_dep
+shared_ptr <const Dep> Parser::parse_redirect_dep
 (Place_Name &place_name_input,
  Place &place_input,
  const vector <shared_ptr <Place_Param_Target> > &targets)
@@ -1158,20 +1158,20 @@ shared_ptr <const Dependency> Parser::parse_redirect_dep
 	}
 
 	Flags transient_bit= has_transient ? F_TARGET_TRANSIENT : 0;
-	shared_ptr <const Dependency> ret= make_shared <Plain_Dependency>
+	shared_ptr <const Dep> ret= make_shared <Plain_Dep>
 		(flags | transient_bit,
 		 Place_Param_Target(transient_bit,
 				    *name_token,
 				    has_transient ? place_at : name_token->place)); 
 
 	if (next_concatenates()) {
-		shared_ptr <const Dependency> next;
+		shared_ptr <const Dep> next;
 		bool rr= parse_expression(next, place_name_input, place_input, targets);
 		/* It can be that an empty list was parsed, in
 		 * which case RR is true but the list is empty */
 		if (rr && next != nullptr) {
-			shared_ptr <Concatenated_Dependency> ret_new=
-				make_shared <Concatenated_Dependency> ();
+			shared_ptr <Concat_Dep> ret_new=
+				make_shared <Concat_Dep> ();
 			ret_new->push_back(ret);
 			ret_new->push_back(next);
 			ret.reset();
@@ -1232,7 +1232,7 @@ void Parser::get_rule_list(vector <shared_ptr <Rule> > &rules,
 	}
 }
 
-void Parser::get_expression_list(vector <shared_ptr <const Dependency> > &dependencies,
+void Parser::get_expression_list(vector <shared_ptr <const Dep> > &deps,
 				vector <shared_ptr <Token> > &tokens,
 				const Place &place_end,
 				Place_Name &input,
@@ -1241,7 +1241,7 @@ void Parser::get_expression_list(vector <shared_ptr <const Dependency> > &depend
 	auto iter= tokens.begin(); 
 	Parser parser(tokens, iter, place_end); 
 	vector <shared_ptr <Place_Param_Target>> targets;
-	parser.parse_expression_list(dependencies, input, place_input, targets); 
+	parser.parse_expression_list(deps, input, place_input, targets); 
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start() 
 			<< fmt("expected a dependency, not %s",
@@ -1250,7 +1250,7 @@ void Parser::get_expression_list(vector <shared_ptr <const Dependency> > &depend
 	}
 }
 
-shared_ptr <const Dependency> Parser::get_target_dep(string text, const Place &place)
+shared_ptr <const Dep> Parser::get_target_dep(string text, const Place &place)
 {
 	/*
 	 * This syntax supports only the characters '@' and '[]', and a
@@ -1305,7 +1305,7 @@ shared_ptr <const Dependency> Parser::get_target_dep(string text, const Place &p
 		throw ERROR_LOGICAL; 
 	}
 
-	shared_ptr <const Dependency> ret= make_shared <Plain_Dependency> 
+	shared_ptr <const Dep> ret= make_shared <Plain_Dep> 
 		(flags_type, Place_Param_Target
 		 (flags_type, 
 		  Place_Name
@@ -1314,7 +1314,7 @@ shared_ptr <const Dependency> Parser::get_target_dep(string text, const Place &p
 
 	while (q != begin) {
 		if (q[-1] == '[') {
-			ret= make_shared <Dynamic_Dependency> (0, ret);
+			ret= make_shared <Dynamic_Dep> (0, ret);
 			-- closing;
 		} else {
 			assert(false); 

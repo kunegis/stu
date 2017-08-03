@@ -1,5 +1,5 @@
-#ifndef DEPENDENCY_HH
-#define DEPENDENCY_HH
+#ifndef DEP_HH
+#define DEP_HH
 
 /*
  * Data types for representing dependencies.  Dependencies are the
@@ -36,7 +36,7 @@
  * compound dependencies, i.e., when it is a possible multiply dynamic
  * dependency of a plain dependency.
  *
- * A dependency that is not simple is complex.  I.e.m a complex
+ * A dependency that is not simple is complex.  I.e., a complex
  * dependency involves concatenation and/or compound dependencies. 
  */
 
@@ -46,7 +46,19 @@
 #include "target.hh"
 #include "flags.hh"
 
-class Dependency
+template <typename T, typename U>
+shared_ptr <const T> to(shared_ptr <const U> d)
+{
+	return dynamic_pointer_cast <const T> (d); 
+}
+
+template <typename T, typename U>
+shared_ptr <const T> to(shared_ptr <U> d)
+{
+	return dynamic_pointer_cast <const T> (d); 
+}
+
+class Dep
 /* 
  * The abstract base class for all dependencies.  Objects of this type
  * are used via shared_ptr<>.
@@ -61,6 +73,14 @@ class Dependency
  * Therefore, we always use shared_ptr <const ...>, except when we just
  * created the dependency.  All dependencies are created via
  * make_shared<>. 
+ *
+ * The use of shared_ptr<> also means that certain functions cannot be
+ * member functions but must be static functions instead:  clone(),
+ * normalize(), etc.  This is because we cannot use a construct like
+ * shared_ptr <Dependency> (this), which is erroneous (the object would
+ * be released twice, etc.).  As a result, we replace THIS by an
+ * argument of type shared_ptr<>.  [Note:  there is also
+ * std::enable_shared_from_this as a possibility.]
  */ 
 {
 public:
@@ -71,19 +91,19 @@ public:
 	/* For each transitive flag that is set, the place.  An empty
 	 * place if a flag is not set  */
 
-	shared_ptr <const Dependency> top; 
+	shared_ptr <const Dep> top; 
 	/* Additional place.  Most of the properties (such as extra
 	 * flags) are ignored.  */
 
-	Dependency()
+	Dep()
 		:  flags(0)
 	{  }
 
-	Dependency(Flags flags_) 
+	Dep(Flags flags_) 
 		:  flags(flags_)
 	{  }
 
-	Dependency(Flags flags_, const Place places_[C_PLACED])
+	Dep(Flags flags_, const Place places_[C_PLACED])
 		:  flags(flags_)
 	{
 		assert(places != places_);
@@ -91,7 +111,7 @@ public:
 			places[i]= places_[i]; 
 	}
 
-	virtual ~Dependency(); 
+	virtual ~Dep(); 
 
 	const Place &get_place_flag(int i) const {
 		assert(i >= 0 && i < C_PLACED);
@@ -108,7 +128,7 @@ public:
 		places[i]= place; 
 	}
 
-	void add_flags(shared_ptr <const Dependency> dependency, 
+	void add_flags(shared_ptr <const Dep> dep, 
 		       bool overwrite_places);
 	/* Add the flags from DEPENDENCY.  Also copy over the
 	 * corresponding places.  If a place is already given in THIS,
@@ -126,7 +146,7 @@ public:
 	void check() const {  }
 #endif		
 
-	virtual shared_ptr <const Dependency> instantiate(const map <string, string> &mapping) const= 0;
+	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const= 0;
 	virtual bool is_unparametrized() const= 0; 
 
 	virtual const Place &get_place() const= 0;
@@ -143,28 +163,28 @@ public:
 
 	virtual bool is_normalized() const= 0;
 
-	static void make_normalized(vector <shared_ptr <const Dependency> > &dependencies, 
-				    shared_ptr <const Dependency> dependency);
-	/* Split the given DEPENDENCY into multiple DEPENDENCIES that do
+	static void normalize(shared_ptr <const Dep> dep,
+			      vector <shared_ptr <const Dep> > &deps);
+	/* Split THIS into multiple DEPENDENCIES that do
 	 * not contain compound dependencies (recursively). The
 	 * resulting dependencies are appended DEPENDENCIES, which does
 	 * not have to be empty on entering the function.  */
 
-	static shared_ptr <const Dependency> make_normalized_compound(shared_ptr <const Dependency> dependency);
-	/* Return either a normalized version of this dependency, or a
+	static shared_ptr <const Dep> normalize_compound(shared_ptr <const Dep> dep);
+	/* Return either a normalized version of the given dependency, or a
 	 * Compound_Dependency containing normalized dependencies */ 
 
-	static shared_ptr <Dependency> clone(shared_ptr <const Dependency> dependency);
+	static shared_ptr <Dep> clone(shared_ptr <const Dep> dep);
 	/* A shallow clone */
 
-	static shared_ptr <const Dependency> strip_dynamic(shared_ptr <const Dependency> d);
+	static shared_ptr <const Dep> strip_dynamic(shared_ptr <const Dep> d);
 	/* Strip dynamic dependencies from the given dependency.
 	 * Perform recursively:  If D is a dynamic dependency, return
 	 * its contained dependency, otherwise return D.  Thus, never
 	 * return null.  */
 };
 
-class Plain_Dependency
+class Plain_Dep
 /* 
  * A dependency denoting an individual target name, which can be a file
  * or a transient.  
@@ -173,7 +193,7 @@ class Plain_Dependency
  * F_TARGET_TRANSIENT bit set, which is redundant.  No other Dependency
  * type has the F_TARGET_TRANSIENT flag set.
  */
-	:  public Dependency
+	:  public Dep
 {
 public:
 
@@ -189,41 +209,41 @@ public:
 	/* With F_VARIABLE:  the name of the variable.
 	 * Otherwise:  empty.  */
 
-	explicit Plain_Dependency(const Place_Param_Target &place_param_target_)
-		:  Dependency(place_param_target_.flags),
+	explicit Plain_Dep(const Place_Param_Target &place_param_target_)
+		:  Dep(place_param_target_.flags),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place)
 	{
 		check(); 
 	}
 	
-	Plain_Dependency(Flags flags_,
-			 const Place_Param_Target &place_param_target_)
+	Plain_Dep(Flags flags_,
+		  const Place_Param_Target &place_param_target_)
 		/* Take the dependency place from the target place */ 
-		:  Dependency(flags_),
+		:  Dep(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place)
 	{ 
 		check(); 
 	}
 
-	Plain_Dependency(Flags flags_,
-			 const Place places_[C_PLACED],
-			 const Place_Param_Target &place_param_target_)
+	Plain_Dep(Flags flags_,
+		  const Place places_[C_PLACED],
+		  const Place_Param_Target &place_param_target_)
 		/* Take the dependency place from the target place */ 
-		:  Dependency(flags_, places_),
+		:  Dep(flags_, places_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place)
 	{ 
 		check(); 
 	}
 
-	Plain_Dependency(Flags flags_,
-			 const Place_Param_Target &place_param_target_,
-			 const Place &place_,
-			 const string &variable_name_)
+	Plain_Dep(Flags flags_,
+		  const Place_Param_Target &place_param_target_,
+		  const Place &place_,
+		  const string &variable_name_)
 		/* Use an explicit dependency place */ 
-		:  Dependency(flags_),
+		:  Dep(flags_),
 		   place_param_target(place_param_target_),
 		   place(place_),
 		   variable_name(variable_name_)
@@ -231,13 +251,13 @@ public:
 		check(); 
 	}
 
-	Plain_Dependency(Flags flags_,
-			  const Place places_[C_PLACED],
-			  const Place_Param_Target &place_param_target_,
-			  const Place &place_,
-			  const string &variable_name_)
+	Plain_Dep(Flags flags_,
+		  const Place places_[C_PLACED],
+		  const Place_Param_Target &place_param_target_,
+		  const Place &place_,
+		  const string &variable_name_)
 		/* Use an explicit dependency place */ 
-		:  Dependency(flags_, places_),
+		:  Dep(flags_, places_),
 		   place_param_target(place_param_target_),
 		   place(place_),
 		   variable_name(variable_name_)
@@ -245,12 +265,12 @@ public:
 		check(); 
 	}
 
-	Plain_Dependency(Flags flags_,
-			  const Place places_[C_PLACED],
-			  const Place_Param_Target &place_param_target_,
-			  const string &variable_name_)
+	Plain_Dep(Flags flags_,
+		  const Place places_[C_PLACED],
+		  const Place_Param_Target &place_param_target_,
+		  const string &variable_name_)
 		/* Use an explicit dependency place */ 
-		:  Dependency(flags_, places_),
+		:  Dep(flags_, places_),
 		   place_param_target(place_param_target_),
 		   place(place_param_target_.place),
 		   variable_name(variable_name_)
@@ -258,19 +278,18 @@ public:
 		check(); 
 	}
 
-	Plain_Dependency(const Plain_Dependency &plain_dependency)
-		:  Dependency(plain_dependency),
-		   place_param_target(plain_dependency.place_param_target),
-		   place(plain_dependency.place),
-		   variable_name(plain_dependency.variable_name)
-//		   top(plain_dependency.top)
+	Plain_Dep(const Plain_Dep &plain_dep)
+		:  Dep(plain_dep),
+		   place_param_target(plain_dep.place_param_target),
+		   place(plain_dep.place),
+		   variable_name(plain_dep.variable_name)
 	{  }
 
 	const Place &get_place() const {
 		return place; 
 	}
 
-	shared_ptr <const Dependency> instantiate(const map <string, string> &mapping) const;
+	shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
 
 	bool is_unparametrized() const {
 		return place_param_target.place_name.get_n() == 0; 
@@ -302,53 +321,51 @@ public:
 	/* Does not preserve the F_VARIABLE bit */ 
 };
 
-class Dynamic_Dependency
+class Dynamic_Dep
 /*
  * The Dependency::flags field has the F_TARGET_DYNAMIC set. 
  */
-	:  public Dependency
+	:  public Dep
 {
 public:
 
-	shared_ptr <const Dependency> dependency;
+	shared_ptr <const Dep> dep;
 	/* The contained dependency.  Non-null. */ 
 
-	Dynamic_Dependency(shared_ptr <const Dependency> dependency_)
-		:  Dependency(F_TARGET_DYNAMIC),
-		   dependency(dependency_)
+	Dynamic_Dep(shared_ptr <const Dep> dep_)
+		:  Dep(F_TARGET_DYNAMIC),
+		   dep(dep_)
 	{
-		assert(dependency_ != nullptr); 
+		assert(dep_ != nullptr); 
 	}
 
-	Dynamic_Dependency(Flags flags_,
-			   shared_ptr <const Dependency> dependency_)
-		:  Dependency(flags_ | F_TARGET_DYNAMIC), 
-		   dependency(dependency_)
+	Dynamic_Dep(Flags flags_,
+		    shared_ptr <const Dep> dep_)
+		:  Dep(flags_ | F_TARGET_DYNAMIC), 
+		   dep(dep_)
 	{
 		assert((flags & F_VARIABLE) == 0); 
-		assert(dependency_ != nullptr); 
+		assert(dep_ != nullptr); 
 	}
 
-	Dynamic_Dependency(Flags flags_,
-			   const Place places_[C_PLACED],
-			   shared_ptr <const Dependency> dependency_)
-		:  Dependency(flags_ | F_TARGET_DYNAMIC, places_),
-		   dependency(dependency_)
+	Dynamic_Dep(Flags flags_,
+		    const Place places_[C_PLACED],
+		    shared_ptr <const Dep> dep_)
+		:  Dep(flags_ | F_TARGET_DYNAMIC, places_),
+		   dep(dep_)
 	{
 		assert((flags & F_VARIABLE) == 0); /* Variables cannot be dynamic */
-		assert(dependency_ != nullptr); 
+		assert(dep_ != nullptr); 
 	}
 
-	shared_ptr <const Dependency> 
-	instantiate(const map <string, string> &mapping) const
+	shared_ptr <const Dep>  instantiate(const map <string, string> &mapping) const
 	{
-		return make_shared <Dynamic_Dependency> 
-			(flags, dependency->instantiate(mapping));
+		return make_shared <Dynamic_Dep> (flags, dep->instantiate(mapping));
 	}
 
 	bool is_unparametrized() const
 	{
-		return dependency->is_unparametrized(); 
+		return dep->is_unparametrized(); 
 	}
 
 	const Place &get_place() const 
@@ -356,13 +373,13 @@ public:
 	 * '[B]', it is more useful to the user to point to the 'B' than
 	 * to the '['.  */
 	{
-		return dependency->get_place(); 
+		return dep->get_place(); 
 	}
 
 	virtual string format(Style, bool &quotes) const {
 		quotes= false;
 		bool quotes2= false;
-		string s= dependency->format(S_MARKERS, quotes2);
+		string s= dep->format(S_MARKERS, quotes2);
 		return fmt("[%s%s%s]",
 			   quotes2 ? "'" : "",
 			   s,
@@ -371,7 +388,7 @@ public:
 
 	virtual string format_word() const {
 		bool quotes= false;
-		string s= dependency->format(S_MARKERS, quotes);
+		string s= dep->format(S_MARKERS, quotes);
 		return fmt("%s[%s%s%s]%s",
 			   Color::word, 
 			   quotes ? "'" : "",
@@ -384,20 +401,20 @@ public:
 		string text_flags= flags_format(flags & ~F_TARGET_DYNAMIC);
 		if (text_flags != "")
 			text_flags += ' '; 
-		string text_dependency= dependency->format_out(); 
+		string text_dep= dep->format_out(); 
 		return fmt("%s[%s]",
 			   text_flags,
-			   text_dependency); 
+			   text_dep); 
 	}
 
 	virtual string format_src() const {
 		string text_flags= flags_format(flags & ~F_TARGET_DYNAMIC);
 		if (text_flags != "")
 			text_flags += ' '; 
-		string text_dependency= dependency->format_src(); 
+		string text_dep= dep->format_src(); 
 		string ret= fmt("%s[%s]",
-			   text_flags,
-			   text_dependency); 
+				text_flags,
+				text_dep); 
 		if (top) { // RM
 			ret += " : "; 
 			ret += top->format_src();
@@ -406,24 +423,24 @@ public:
 	}
 
 	virtual bool is_normalized() const {
-		return dependency->is_normalized(); 
+		return dep->is_normalized(); 
 	}
 
 	virtual Target get_target() const;
 
 	unsigned get_depth() const 
-		/* The depth of the dependency, i.e., how many dynamic
-		 * dependencies are stacked in a row.  */
+	/* The depth of the dependency, i.e., how many dynamic
+	 * dependencies are stacked in a row.  */
 	{
-		if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
-			return 1 + dynamic_pointer_cast <const Dynamic_Dependency> (dependency)->get_depth(); 
+		if (to <Dynamic_Dep> (dep)) {
+			return 1 + to <Dynamic_Dep> (dep)->get_depth(); 
 		} else {
 			return 1; 
 		}
 	}
 };
 
-class Concatenated_Dependency
+class Concat_Dep
 /* 
  * A dependency that is the concatenation of multiple dependencies. 
  * The dependency as a whole does not have a place stored; the
@@ -433,45 +450,34 @@ class Concatenated_Dependency
  *
  *         ( X )( Y )( Z )...
  */ 
-	:  public Dependency
+	:  public Dep
 {
 public:
 
-	Concatenated_Dependency()
+	Concat_Dep()
 	/* An empty concatenation, i.e., a concatenation of zero dependencies */ 
 	{  }
 
-	Concatenated_Dependency(Flags flags_, const Place places_[C_PLACED])
+	Concat_Dep(Flags flags_, const Place places_[C_PLACED])
 		/* The list of dependencies is empty */ 
-		:  Dependency(flags_, places_)
+		:  Dep(flags_, places_)
 	{  }
 
-	const vector <shared_ptr <const Dependency> > &get_dependencies() const {
-		return dependencies; 
+	const vector <shared_ptr <const Dep> > &get_deps() const {
+		return deps; 
 	}
 
-	vector <shared_ptr <const Dependency> > &get_dependencies() {
-		return dependencies; 
+	vector <shared_ptr <const Dep> > &get_deps() {
+		return deps; 
 	}
 
 	/* Append a dependency to the list */
-	void push_back(shared_ptr <const Dependency> dependency)
+	void push_back(shared_ptr <const Dep> dep)
 	{
-		dependencies.push_back(dependency); 
+		deps.push_back(dep); 
 	}
 
-	void make_normalized_concatenated(vector <shared_ptr <const Dependency> > &dependencies) const; 
-	/* Normalize this object's dependencies into a list of simple
-	 * dependencies.  The generated dependencies are appended to
-	 * DEPENDENCIES which does not need to be empty on entry into
-	 * this function.  */
-
-	void make_normalized_concatenated(vector <shared_ptr <const Dependency> > &dependencies,
-					  size_t start_index) const;
-	/* Helper function.  Write result into DEPENDENCIES,
-	   concatenating all starting at the given index.  */
-
-	virtual shared_ptr <const Dependency> 
+	virtual shared_ptr <const Dep> 
 	instantiate(const map <string, string> &mapping) const;
 
 	virtual bool is_unparametrized() const; 
@@ -489,19 +495,33 @@ public:
 
 	virtual Target get_target() const;
 
-	static shared_ptr <const Plain_Dependency> concatenate(shared_ptr <const Plain_Dependency> a,
-								shared_ptr <const Plain_Dependency> b); 
+	static shared_ptr <const Plain_Dep> concat(shared_ptr <const Plain_Dep> a,
+						   shared_ptr <const Plain_Dep> b); 
+
+	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
+				     vector <shared_ptr <const Dep> > &deps); 
+	/* Normalize this object's dependencies into a list of simple
+	 * dependencies.  The generated dependencies are appended to
+	 * DEPENDENCIES which does not need to be empty on entry into
+	 * this function.  */
+
+	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
+				     vector <shared_ptr <const Dep> > &deps,
+				     size_t start_index);
+	/* Helper function.  Write result into DEPENDENCIES,
+	   concatenating all starting at the given index.  */
+
 
 private:
 
-	vector <shared_ptr <const Dependency> > dependencies;
+	vector <shared_ptr <const Dep> > deps;
 	/* The dependencies for each part.  May be empty in code, which is something
 	 * that is not allowed in Stu code.  Otherwise, there is at
 	 * least one element, which is either a Compound_Dependency, or
 	 * a normalized dependency.  */
 };
 
-class Compound_Dependency
+class Compound_Dep
 /* 
  * A list of dependencies that act as a unit, corresponding
  * syntactically to a list of dependencies in parentheses.  
@@ -510,7 +530,7 @@ class Compound_Dependency
  *
  *         (X Y Z ...)
  */
-	:  public Dependency
+	:  public Dep
 {
 public:
 
@@ -520,38 +540,38 @@ public:
 	 * this is a "logical" compound dependency not coming from a
 	 * parenthesised expression.  */
 
-	Compound_Dependency(const Place &place_) 
+	Compound_Dep(const Place &place_) 
 		/* Empty, with zero dependencies */
 		:  place(place_)
 	{  }
 	
-	Compound_Dependency(Flags flags_, const Place places_[C_PLACED], const Place &place_)
-		:  Dependency(flags_, places_),
+	Compound_Dep(Flags flags_, const Place places_[C_PLACED], const Place &place_)
+		:  Dep(flags_, places_),
 		   place(place_)
 	{
 		/* The list of dependencies is empty */ 
 	}
 
-	Compound_Dependency(vector <shared_ptr <const Dependency> > &&dependencies_, 
-			    const Place &place_)
+	Compound_Dep(vector <shared_ptr <const Dep> > &&deps_, 
+		     const Place &place_)
 		:  place(place_),
-		   dependencies(dependencies_)
+		   deps(deps_)
 	{  }
 
-	const vector <shared_ptr <const Dependency> > &get_dependencies() const {
-		return dependencies; 
+	const vector <shared_ptr <const Dep> > &get_deps() const {
+		return deps; 
 	}
 
-	vector <shared_ptr <const Dependency> > &get_dependencies() {
-		return dependencies; 
+	vector <shared_ptr <const Dep> > &get_deps() {
+		return deps; 
 	}
 
-	void push_back(shared_ptr <const Dependency> dependency)
+	void push_back(shared_ptr <const Dep> dep)
 	{
-		dependencies.push_back(dependency); 
+		deps.push_back(dep); 
 	}
 
-	virtual shared_ptr <const Dependency> instantiate(const map <string, string> &mapping) const;
+	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
 
 	virtual bool is_unparametrized() const; 
 
@@ -572,16 +592,16 @@ public:
 
 private:
 
-	vector <shared_ptr <const Dependency> > dependencies;
+	vector <shared_ptr <const Dep> > deps;
 	/* The contained dependencies, in given order */ 
 };
 
-class Root_Dependency
-	:  public Dependency
+class Root_Dep
+	:  public Dep
 {
 public:
-	virtual shared_ptr <const Dependency> instantiate(const map <string, string> &) const {
-		return shared_ptr <const Dependency> (make_shared <Root_Dependency> ()); 
+	virtual shared_ptr <const Dep> instantiate(const map <string, string> &) const {
+		return shared_ptr <const Dep> (make_shared <Root_Dep> ()); 
 	}
 	virtual bool is_unparametrized() const {  return false;  }
 	virtual const Place &get_place() const {  return Place::place_empty;  }
@@ -593,39 +613,41 @@ public:
 	virtual bool is_normalized() const {  return true;  }
 };
 
-Dependency::~Dependency() { }
+Dep::~Dep() { }
 
-void Dependency::make_normalized(vector <shared_ptr <const Dependency> > &dependencies, 
-				 shared_ptr <const Dependency> dependency)
+void Dep::normalize(shared_ptr <const Dep> dep,
+		    vector <shared_ptr <const Dep> > &deps)
 {
-	if (dynamic_pointer_cast <const Plain_Dependency> (dependency)) {
-		dependencies.push_back(dependency);
-	} else if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
-		shared_ptr <const Dynamic_Dependency> dynamic_dependency= 
-			dynamic_pointer_cast <const Dynamic_Dependency> (dependency);
-		vector <shared_ptr <const Dependency> > dependencies_child;
-		make_normalized(dependencies_child, dynamic_dependency->dependency);
-		for (auto &d:  dependencies_child) {
-			shared_ptr <Dependency> dependency_new= 
-				make_shared <Dynamic_Dependency> 
-				(dynamic_dependency->flags, dynamic_dependency->places, d);
-			dependencies.push_back(dependency_new); 
+	if (to <Plain_Dep> (dep)) {
+		deps.push_back(dep);
+	} else if (to <Dynamic_Dep> (dep)) {
+		shared_ptr <const Dynamic_Dep> dynamic_dep= 
+			to <Dynamic_Dep> (dep);
+		vector <shared_ptr <const Dep> > deps_child;
+		normalize(dynamic_dep->dep, deps_child);
+		for (auto &d:  deps_child) {
+			shared_ptr <Dep> dep_new= 
+				make_shared <Dynamic_Dep> 
+				(dynamic_dep->flags, dynamic_dep->places, d);
+			deps.push_back(dep_new); 
 		}
 
-	} else if (dynamic_pointer_cast <const Compound_Dependency> (dependency)) {
-		shared_ptr <const Compound_Dependency> compound_dependency=
-			dynamic_pointer_cast <const Compound_Dependency> (dependency);
-		for (auto &d:  compound_dependency->get_dependencies()) {
-			shared_ptr <Dependency> dd= Dependency::clone(d); 
-			dd->add_flags(compound_dependency, false);  
-			make_normalized(dependencies, dd); 
+	} else if (to <Compound_Dep> (dep)) {
+		shared_ptr <const Compound_Dep> compound_dep=
+			to <Compound_Dep> (dep);
+		for (auto &d:  compound_dep->get_deps()) {
+			shared_ptr <Dep> dd= Dep::clone(d); 
+			dd->add_flags(compound_dep, false);  
+			normalize(dd, deps); 
 		}
 
-	} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency)) {
+	} else if (to <Concat_Dep> (dep)) {
 
-		shared_ptr <Concatenated_Dependency> concatenated_dependency= 
-			dynamic_pointer_cast <Concatenated_Dependency> (Dependency::clone(dependency)); 
-		concatenated_dependency->make_normalized_concatenated(dependencies);
+		shared_ptr <const Concat_Dep> concat_dep= 
+			to <Concat_Dep>
+			//			dynamic_pointer_cast <Concatenated_Dependency>
+			(Dep::clone(dep)); 
+		Concat_Dep::normalize_concat(concat_dep, deps);
 
 	} else {
 		/* Bug:  Unhandled dependency type */ 
@@ -633,76 +655,75 @@ void Dependency::make_normalized(vector <shared_ptr <const Dependency> > &depend
 	}
 }
 
-shared_ptr <const Dependency> Dependency::make_normalized_compound(shared_ptr <const Dependency> dependency)
+shared_ptr <const Dep> Dep::normalize_compound(shared_ptr <const Dep> dep)
 {
-	vector <shared_ptr <const Dependency> > dependencies;
+	vector <shared_ptr <const Dep> > deps;
 
-	make_normalized(dependencies, dependency); 
+	normalize(dep, deps); 
 	
-	assert(dependencies.size() >= 1);
+	assert(deps.size() >= 1);
 	
-	if (dependencies.size() == 1) {
-		return dependencies[0];
+	if (deps.size() == 1) {
+		return deps[0];
 	} else {
-		shared_ptr <Compound_Dependency> ret= make_shared <Compound_Dependency> (Place()); 
-		swap(dependencies, ret->get_dependencies()); 
+		shared_ptr <Compound_Dep> ret= make_shared <Compound_Dep> (Place()); 
+		swap(deps, ret->get_deps()); 
 		return ret;
 	}
 }
 
-shared_ptr <Dependency> Dependency::clone(shared_ptr <const Dependency> dependency)
+shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 {
-	if (dynamic_pointer_cast <const Plain_Dependency> (dependency)) {
-		return make_shared <Plain_Dependency> (* dynamic_pointer_cast <const Plain_Dependency> (dependency)); 
-	} else if (dynamic_pointer_cast <const Dynamic_Dependency> (dependency)) {
-		return make_shared <Dynamic_Dependency> (* dynamic_pointer_cast <const Dynamic_Dependency> (dependency)); 
-	} else if (dynamic_pointer_cast <const Compound_Dependency> (dependency)) {
-		return make_shared <Compound_Dependency> (* dynamic_pointer_cast <const Compound_Dependency> (dependency)); 
-	} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependency)) {
-		return make_shared <Concatenated_Dependency> (* dynamic_pointer_cast <const Concatenated_Dependency> (dependency)); 
-	} else if (dynamic_pointer_cast <const Root_Dependency> (dependency)) {
-		return make_shared <Root_Dependency> (* dynamic_pointer_cast <const Root_Dependency> (dependency)); 
+	if (to <Plain_Dep> (dep)) {
+		return make_shared <Plain_Dep> (* to <Plain_Dep> (dep)); 
+	} else if (to <Dynamic_Dep> (dep)) {
+		return make_shared <Dynamic_Dep> (* to <Dynamic_Dep> (dep)); 
+	} else if (to <Compound_Dep> (dep)) {
+		return make_shared <Compound_Dep> (* to <Compound_Dep> (dep)); 
+	} else if (to <Concat_Dep> (dep)) {
+		return make_shared <Concat_Dep> (* to <Concat_Dep> (dep)); 
+	} else if (to <Root_Dep> (dep)) {
+		return make_shared <Root_Dep> (* to <Root_Dep> (dep)); 
 	} else {
 		assert(false); 
 		/* Bug:  Unhandled dependency type */ 
 	}
 }
 
-void Dependency::add_flags(shared_ptr <const Dependency> dependency, 
-			   bool overwrite_places)
+void Dep::add_flags(shared_ptr <const Dep> dep, 
+		    bool overwrite_places)
 {
 	for (int i= 0;  i < C_PLACED;  ++i) {
-		if (dependency->flags & (1 << i)) {
+		if (dep->flags & (1 << i)) {
 			if (overwrite_places || ! (this->flags & (1 << i))) {
-				this->set_place_flag(i, dependency->get_place_flag(i)); 
+				this->set_place_flag(i, dep->get_place_flag(i)); 
 			}
 		}
 	}
-	this->flags |= dependency->flags; 
+	this->flags |= dep->flags; 
 }
 
-shared_ptr <const Dependency> Dependency::strip_dynamic(shared_ptr <const Dependency> d)
+shared_ptr <const Dep> Dep::strip_dynamic(shared_ptr <const Dep> d)
 {
 	assert(d != nullptr); 
-	while (dynamic_pointer_cast <const Dynamic_Dependency> (d)) {
-		d= dynamic_pointer_cast <const Dynamic_Dependency> (d)->dependency;
+	while (to <Dynamic_Dep> (d)) {
+		d= to <Dynamic_Dep> (d)->dep;
 	}
 	assert(d != nullptr); 
 	return d;
 }
 
 #ifndef NDEBUG
-void Dependency::check() const
+void Dep::check() const
 {
-//	assert(zero == 0); 
 	assert(top.get() != this); 
 
 	for (int i= 0;  i < C_PLACED;  ++i) {
 		assert(((flags & (1 << i)) == 0) == get_place_flag(i).empty()); 
 	}
 
-	const Plain_Dependency *plain_this= dynamic_cast <const Plain_Dependency *> (this);
-	const Dynamic_Dependency *dynamic_this= dynamic_cast <const Dynamic_Dependency *> (this); 
+	const Plain_Dep *plain_this= dynamic_cast <const Plain_Dep *> (this);
+	const Dynamic_Dep *dynamic_this= dynamic_cast <const Dynamic_Dep *> (this); 
 
 	if (plain_this) {
 		/* The F_TARGET_TRANSIENT flag is always set in the
@@ -717,7 +738,7 @@ void Dependency::check() const
 
 	if (dynamic_this) {
 		assert(flags & F_TARGET_DYNAMIC); 
-		dynamic_this->dependency->check(); 
+		dynamic_this->dep->check(); 
 	} else {
 		assert(!(flags & F_TARGET_DYNAMIC)); 
 	}
@@ -725,14 +746,14 @@ void Dependency::check() const
 #endif
 
 
-Target Plain_Dependency::get_target() const
+Target Plain_Dep::get_target() const
 {
 	Target ret= place_param_target.unparametrized(); 
 	ret.get_front_byte_nondynamic() |= (char)(unsigned char)(flags & F_TARGET_BYTE);
 	return ret; 
 }
 
-string Plain_Dependency::format_out() const 
+string Plain_Dep::format_out() const 
 {
 	string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
 	if (f != "")
@@ -744,16 +765,16 @@ string Plain_Dependency::format_out() const
 		   flags & F_VARIABLE ? "]" : "");
 }
 
-string Plain_Dependency::format_src() const 
+string Plain_Dep::format_src() const 
 {
 	string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
 	if (f != "")
 		f += ' '; 
 	string ret= fmt("%s%s%s%s",
-		   f,
-		   flags & F_VARIABLE ? "$[" : "",
-		   place_param_target.format_src(),
-		   flags & F_VARIABLE ? "]" : "");
+			f,
+			flags & F_VARIABLE ? "$[" : "",
+			place_param_target.format_src(),
+			flags & F_VARIABLE ? "]" : "");
 	if (top) { // RM
 		ret += " : "; 
 		ret += top->format_src();
@@ -761,7 +782,7 @@ string Plain_Dependency::format_src() const
 	return ret;
 }
 
-string Plain_Dependency::format_word() const
+string Plain_Dep::format_word() const
 {
 	string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
 	if (f != "") 
@@ -782,19 +803,19 @@ string Plain_Dependency::format_word() const
 		   Color::end); 
 }
 
-Target Dynamic_Dependency::get_target() const
+Target Dynamic_Dep::get_target() const
 {
 	string text;
-	const Dependency *d= this; 
-	while (dynamic_cast <const Dynamic_Dependency *> (d)) {
+	const Dep *d= this; 
+	while (dynamic_cast <const Dynamic_Dep *> (d)) {
 		Flags f= F_TARGET_DYNAMIC; 
 		assert(d->flags & F_TARGET_DYNAMIC); 
 		f |= d->flags & F_TARGET_BYTE; 
 		text += (char)(unsigned char)f; 
-		d= dynamic_cast <const Dynamic_Dependency *> (d)->dependency.get(); 
+		d= dynamic_cast <const Dynamic_Dep *> (d)->dep.get(); 
 	}
-	assert(dynamic_cast <const Plain_Dependency *> (d)); 
-	const Plain_Dependency *sin= dynamic_cast <const Plain_Dependency *> (d); 
+	assert(dynamic_cast <const Plain_Dep *> (d)); 
+	const Plain_Dep *sin= dynamic_cast <const Plain_Dep *> (d); 
 	assert(!(sin->flags & F_TARGET_DYNAMIC)); 
 	Flags f= sin->flags & F_TARGET_BYTE;
 	text += (char)(unsigned char)f; 
@@ -803,12 +824,11 @@ Target Dynamic_Dependency::get_target() const
 	return Target(text); 
 }
 
-shared_ptr <const Dependency> Plain_Dependency
-::instantiate(const map <string, string> &mapping) const
+shared_ptr <const Dep> Plain_Dep::instantiate(const map <string, string> &mapping) const
 {
 	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
 
-	shared_ptr <Dependency> ret= make_shared <Plain_Dependency> 
+	shared_ptr <Dep> ret= make_shared <Plain_Dep> 
 		(flags, places, *ret_target, place, variable_name);
 
 	assert(ret_target->place_name.get_n() == 0); 
@@ -827,25 +847,23 @@ shared_ptr <const Dependency> Plain_Dependency
 	return ret;
 }
 
-shared_ptr <const Dependency> 
-Compound_Dependency::instantiate(const map <string, string> &mapping) const
+shared_ptr <const Dep> 
+Compound_Dep::instantiate(const map <string, string> &mapping) const
 {
-	shared_ptr <Compound_Dependency> ret= 
-		make_shared <Compound_Dependency> 
-		(flags, places, place);
+	shared_ptr <Compound_Dep> ret= make_shared <Compound_Dep> (flags, places, place);
 
-	for (const shared_ptr <const Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dep> &d:  deps) {
 		ret->push_back(d->instantiate(mapping));
 	}
 	
 	return ret; 
 }
 
-bool Compound_Dependency::is_unparametrized() const
+bool Compound_Dep::is_unparametrized() const
 /* A compound dependency is parametrized when any of its contained
  * dependency is parametrized.  */
 {
-	for (shared_ptr <const Dependency> d:  dependencies) {
+	for (shared_ptr <const Dep> d:  deps) {
 		if (! d->is_unparametrized())
 			return false;
 	}
@@ -853,80 +871,77 @@ bool Compound_Dependency::is_unparametrized() const
 	return true;
 }
 
-string Compound_Dependency::format(Style style, bool &) const
+string Compound_Dep::format(Style style, bool &) const
 /* Ignore QUOTES, as everything inside the parentheses will not need
  * it.  */  
 {
 	string ret;
 	bool quotes= false;
-	for (const shared_ptr <const Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
 			ret += ", ";
 		ret += d->format(style, quotes); 
 	}
-	if (dependencies.size() != 1) 
+	if (deps.size() != 1) 
 		ret= fmt("(%s)", ret); 
 	return ret;
 }
 
-string Compound_Dependency::format_word() const
+string Compound_Dep::format_word() const
 {
 	string ret;
-	for (const shared_ptr <const Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
 			ret += ", ";
 		ret += d->format_word(); 
 	}
-	if (dependencies.size() != 1) 
+	if (deps.size() != 1) 
 		ret= fmt("(%s)", ret); 
 	return ret;
 }
 
-string Compound_Dependency::format_out() const
+string Compound_Dep::format_out() const
 {
 	string ret;
-	for (const shared_ptr <const Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
 			ret += ", ";
 		ret += d->format_out(); 
 	}
-	if (dependencies.size() != 1) 
+	if (deps.size() != 1) 
 		ret= fmt("(%s)", ret); 
 	return ret;
 }
 
-string Compound_Dependency::format_src() const
+string Compound_Dep::format_src() const
 {
 	string ret;
-	for (const shared_ptr <const Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
 			ret += ", ";
 		ret += d->format_src(); 
 	}
-	if (dependencies.size() != 1) 
+	if (deps.size() != 1) 
 		ret= fmt("(%s)", ret); 
 	return ret;
 }
 
-shared_ptr <const Dependency> 
-Concatenated_Dependency::instantiate(const map <string, string> &mapping) const
+shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mapping) const
 {
-	shared_ptr <Concatenated_Dependency> ret= 
-		make_shared <Concatenated_Dependency>
-		(flags, places);
+	shared_ptr <Concat_Dep> ret= make_shared <Concat_Dep> (flags, places);
 
-	for (const shared_ptr <const Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dep> &d:  deps) {
 		ret->push_back(d->instantiate(mapping)); 
 	}
 
 	return ret; 
 }
 
-bool Concatenated_Dependency::is_unparametrized() const
+bool Concat_Dep::is_unparametrized() const
 /* A concatenated dependency is parametrized when any of its contained 
  * dependency is parametrized.  */
 {
-	for (shared_ptr <const Dependency> d:  dependencies) {
+	for (shared_ptr <const Dep> d:  deps) {
 		if (! d->is_unparametrized())
 			return false;
 	}
@@ -934,20 +949,20 @@ bool Concatenated_Dependency::is_unparametrized() const
 	return true;
 }
 
-const Place &Concatenated_Dependency::get_place() const
+const Place &Concat_Dep::get_place() const
 /* Return the place of the first dependency, or an empty place */
 {
-	if (dependencies.empty())
+	if (deps.empty())
 		return Place::place_empty;
 
-	return dependencies.front()->get_place(); 
+	return deps.front()->get_place(); 
 }
 
-string Concatenated_Dependency::format(Style style, bool &quotes) const
+string Concat_Dep::format(Style style, bool &quotes) const
 {
 	string ret;
 
-	for (const shared_ptr <const Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
 			ret += '*';
 		ret += d->format(style, quotes); 
@@ -956,11 +971,11 @@ string Concatenated_Dependency::format(Style style, bool &quotes) const
 	return ret; 
 }
 
-string Concatenated_Dependency::format_word() const
+string Concat_Dep::format_word() const
 {
 	string ret;
 
-	for (const shared_ptr <const Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
 			ret += '*';
 		ret += d->format_word(); 
@@ -969,11 +984,11 @@ string Concatenated_Dependency::format_word() const
 	return ret; 
 }
 
-string Concatenated_Dependency::format_out() const
+string Concat_Dep::format_out() const
 {
 	string ret;
 
-	for (const shared_ptr <const Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
 			ret += '*';
 		ret += d->format_out(); 
@@ -982,11 +997,11 @@ string Concatenated_Dependency::format_out() const
 	return ret; 
 }
 
-string Concatenated_Dependency::format_src() const
+string Concat_Dep::format_src() const
 {
 	string ret;
 
-	for (const shared_ptr <const Dependency> &d:  dependencies) {
+	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
 			ret += '*';
 		ret += d->format_src(); 
@@ -995,15 +1010,15 @@ string Concatenated_Dependency::format_src() const
 	return ret; 
 }
 
-bool Concatenated_Dependency::is_normalized() const
+bool Concat_Dep::is_normalized() const
 {
-	for (auto &i:  dependencies) {
+	for (auto &i:  deps) {
 		if (i->is_normalized())
 			continue;
-		shared_ptr <const Compound_Dependency> i_compound= 
-			dynamic_pointer_cast <const Compound_Dependency> (i);			
+		shared_ptr <const Compound_Dep> i_compound= 
+			to <Compound_Dep> (i);			
 		if (i_compound != nullptr) {
-			for (auto &j:  i_compound->get_dependencies()) {
+			for (auto &j:  i_compound->get_deps()) {
 				if (! j->is_normalized()) 
 					return false;
 			}
@@ -1014,62 +1029,65 @@ bool Concatenated_Dependency::is_normalized() const
 	return true;
 }
 
-void Concatenated_Dependency::make_normalized_concatenated(vector <shared_ptr <const Dependency> > &dependencies_) const
+void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
+				  vector <shared_ptr <const Dep> > &deps_) 
 {
-	make_normalized_concatenated(dependencies_, 0); 
+	normalize_concat(dep, deps_, 0); 
 }
 
-void Concatenated_Dependency::make_normalized_concatenated(vector <shared_ptr <const Dependency> > &dependencies_,
-							   size_t start_index) const
+void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep, 
+				  vector <shared_ptr <const Dep> > &deps_,
+				  size_t start_index) 
 {
-	assert(start_index < dependencies.size()); 
+	assert(start_index < dep->deps.size()); 
 
-	if (start_index + 1 == dependencies.size()) {
-		if (dynamic_pointer_cast <const Compound_Dependency> (dependencies.at(start_index))) {
-			shared_ptr <const Compound_Dependency> compound_dependency= 
-				dynamic_pointer_cast <const Compound_Dependency> (dependencies.at(start_index));
-			for (const auto &d:  compound_dependency->get_dependencies()) {
-				assert(dynamic_pointer_cast <const Plain_Dependency> (d));
-				dependencies_.push_back(d); 
+	if (start_index + 1 == dep->deps.size()) {
+		shared_ptr <const Dep> dd= dep->deps.at(start_index);
+		if (to <Compound_Dep> (dd)) {
+			shared_ptr <const Compound_Dep> compound_dep= 
+				to <Compound_Dep> (dd);
+			for (const auto &d:  compound_dep->get_deps()) {
+				assert(to <Plain_Dep> (d));
+				deps_.push_back(d); 
 			}
-		} else if (dynamic_pointer_cast <const Plain_Dependency> (dependencies.at(start_index))) {
-			dependencies_.push_back(dependencies.at(start_index)); 
-		} else if (dynamic_pointer_cast <const Concatenated_Dependency> (dependencies.at(start_index))) {
-			vector <shared_ptr <const Dependency> > ds;
-			dynamic_pointer_cast <const Concatenated_Dependency> (dependencies.at(start_index))
-				->make_normalized_concatenated(ds);
+		} else if (to <Plain_Dep> (dd)) {
+			deps_.push_back(dd); 
+		} else if (to <Concat_Dep> (dd)) {
+			vector <shared_ptr <const Dep> > ds;
+			normalize_concat(to <Concat_Dep> (dd), ds);
 			for (const auto &d:  ds) {
-				assert(dynamic_pointer_cast <const Plain_Dependency> (d));
-				dependencies_.push_back(d); 
+				assert(to <Plain_Dep> (d));
+				deps_.push_back(d); 
 			}
 		} else {
 			assert(false); 
 		}
 	} else {
-		vector <shared_ptr <const Dependency> > vec;
-		make_normalized_concatenated(vec, start_index + 1); 
-		if (dynamic_pointer_cast <const Compound_Dependency> (dependencies.at(start_index))) {
-			shared_ptr <const Compound_Dependency> compound_dependency= 
-				dynamic_pointer_cast <const Compound_Dependency> (dependencies.at(start_index));
-			for (const auto &d:  compound_dependency->get_dependencies()) {
-				shared_ptr <const Plain_Dependency> d_plain=
-					dynamic_pointer_cast <const Plain_Dependency> (d); 
+		vector <shared_ptr <const Dep> > vec;
+		normalize_concat(dep, vec, start_index + 1); 
+		shared_ptr <const Dep> dd= dep->deps.at(start_index); 
+		if (to <Compound_Dep> (dd)) {
+			shared_ptr <const Compound_Dep> compound_dep= 
+				to <Compound_Dep> (dd);
+			for (const auto &d:  compound_dep->get_deps()) {
+				shared_ptr <const Plain_Dep> d_plain=
+					to <Plain_Dep> (d); 
 				for (const auto &e:  vec) {
-					shared_ptr <const Plain_Dependency> e_plain=
-						dynamic_pointer_cast <const Plain_Dependency> (e); 
+					shared_ptr <const Plain_Dep> e_plain=
+						to <Plain_Dep> (e); 
 					assert(e_plain); 
-					dependencies_.push_back(concatenate(d_plain, e_plain)); 
+					deps_.push_back(concat(d_plain, e_plain)); 
 				}
 			}
-		} else if (dynamic_pointer_cast <const Plain_Dependency> (dependencies.at(start_index))) {
-			shared_ptr <const Plain_Dependency> d_plain=
-				dynamic_pointer_cast <const Plain_Dependency> (dependencies.at(start_index)); 
+		} else if (to <Plain_Dep> (dd)) {
+			shared_ptr <const Plain_Dep> d_plain=
+				to <Plain_Dep> (dd); 
 			assert(d_plain); 
 			for (const auto &e:  vec) {
-				shared_ptr <const Plain_Dependency> e_plain=
-					dynamic_pointer_cast <const Plain_Dependency> (e); 
+				shared_ptr <const Plain_Dep> e_plain=
+					to <Plain_Dep> (e); 
 				assert(e_plain); 
-				dependencies_.push_back(concatenate(d_plain, e_plain)); 
+				deps_.push_back(concat(d_plain, e_plain)); 
 			}
 		} else {
 			assert(false); 
@@ -1077,14 +1095,14 @@ void Concatenated_Dependency::make_normalized_concatenated(vector <shared_ptr <c
 	}
 }
 
-Target Concatenated_Dependency::get_target() const
+Target Concat_Dep::get_target() const
 {
 	/* Dependency::get_target() is not used for complex dependencies */
 	assert(false);
 }
 
-shared_ptr <const Plain_Dependency> Concatenated_Dependency::concatenate(shared_ptr <const Plain_Dependency> a,
-									 shared_ptr <const Plain_Dependency> b)
+shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
+						shared_ptr <const Plain_Dep> b)
 {
 	assert(a);
 	assert(b); 
@@ -1097,7 +1115,7 @@ shared_ptr <const Plain_Dependency> Concatenated_Dependency::concatenate(shared_
 	// XXX test all other flags 
 
 	/*
-	 * Test
+	 * XXX Test
 	 */
 
 	/*
@@ -1110,16 +1128,16 @@ shared_ptr <const Plain_Dependency> Concatenated_Dependency::concatenate(shared_
 				       b->place_param_target.place_name.unparametrized(),
 				       a->place_param_target.place_name.place); 
 
-	shared_ptr <Plain_Dependency> ret= 
-		make_shared <Plain_Dependency> (flags_combined,
+	shared_ptr <Plain_Dep> ret= 
+		make_shared <Plain_Dep> (flags_combined,
 						Place_Param_Target(flags_combined & F_TARGET_TRANSIENT,
 								   place_name_combined,
 								   a->place_param_target.place),
 						a->place,
-						""); 
+					 ""); 
 	// XXX set Dependency::places
 	
 	return ret; 
 }
 
-#endif /* ! DEPENDENCY_HH */
+#endif /* ! DEP_HH */

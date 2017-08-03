@@ -19,8 +19,8 @@
  * 							the same rule, i.e., transitive transient targets
  * "Plain execution"	cached by Target		Name for File_Execution or Transient_Execution
  * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Plain_Dependency w/o -* flag
- * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concatenated_Dependency w/o -* flag
- * Concatenated_Ex.	not cached			Concatenated targets
+ * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concat_Dependency w/o -* flag
+ * Concat_Ex.		not cached			Concatenated targets
  *
  * Caching with flags excludes flags that are not stored in Target
  * objects, i.e., F_RESULT_* flags.   
@@ -109,7 +109,7 @@ public:
 	 * error code, and throw an error except with the keep-going
 	 * option.  */
 
-	Proceed execute_base_A(shared_ptr <const Dependency> dependency_link);
+	Proceed execute_base_A(shared_ptr <const Dep> dep_link);
 	/* DEPENDENCY_LINK must not be null.  In the return value, at
 	 * least one bit is set.  The P_FINISHED bit indicates only that
 	 * tasks related to this function are done, not the whole
@@ -119,8 +119,8 @@ public:
 
 	void read_dynamic(Flags flags_this,
 			  const Place_Param_Target &place_param_target,
-			  shared_ptr <const Dependency> dependency_target,
-			  vector <shared_ptr <const Dependency> > &dependencies);
+			  shared_ptr <const Dep> dep_target,
+			  vector <shared_ptr <const Dep> > &deps);
 	/* Read dynamic dependencies from the content of
 	 * PLACE_PARAM_TARGET.  The only reason this is not static is
 	 * that errors can be raised and printed correctly.
@@ -135,9 +135,9 @@ public:
 	 * up to the root execution. 
 	 * TEXT may be "" to not print the first message.  */ 
 
-	const map <Execution *, shared_ptr <const Dependency> > &get_parents() const {  return parents;  }
+	const map <Execution *, shared_ptr <const Dep> > &get_parents() const {  return parents;  }
 	
-	virtual Proceed execute(shared_ptr <const Dependency> dependency_this)= 0;
+	virtual Proceed execute(shared_ptr <const Dep> dep_this)= 0;
 	/* 
 	 * Start the next job(s).  This will also terminate jobs when
 	 * they don't need to be run anymore, and thus it can be called
@@ -168,10 +168,10 @@ public:
 
 	virtual string format_src() const= 0;
 
-	virtual void notify_result(shared_ptr <const Dependency> dependency,
+	virtual void notify_result(shared_ptr <const Dep> dep,
 				   Execution *source,
 				   Flags flags,
-				   shared_ptr <const Dependency> dependency_source)
+				   shared_ptr <const Dep> dep_source)
 	/* The child execution SOURCE notifies THIS about a new result.
 	 * Only called when the dependency linking the two had one of the
 	 * F_RESULT_* flag.  The given flag contains only one of the two
@@ -179,10 +179,10 @@ public:
 	 * leading from THIS to SOURCE (for F_RESULT_COPY), otherwise null.  */ 
 	{
 		/* Execution classes that use F_RESULT_* override this function */
-		(void) dependency;
+		(void) dep;
 		(void) source; 
 		(void) flags;
-		(void) dependency_source; 
+		(void) dep_source; 
 		assert(false);
 	}
 
@@ -200,7 +200,7 @@ public:
 	/* Set once before calling Execution::main().  Unchanging during
 	 * the whole call to Execution::main().  */ 
 
-	static void main(const vector <shared_ptr <const Dependency> > &dependencies);
+	static void main(const vector <shared_ptr <const Dep> > &deps);
 	/* Main execution loop.  This throws ERROR_BUILD and
 	 * ERROR_LOGICAL.  */
 
@@ -218,7 +218,7 @@ protected:
 	 * defined in error.hh; zero denotes the absence of an
 	 * error.  */ 
 
-	map <Execution *, shared_ptr <const Dependency> > parents; 
+	map <Execution *, shared_ptr <const Dep> > parents; 
 	/* The parent executions.  This is a map rather than an
 	 * unsorted_map because typically, the number of elements is
 	 * always very small, i.e., mostly one, and a map is better
@@ -236,7 +236,7 @@ protected:
 	 * itself, if any.  This final timestamp is then carried over to the
 	 * parent executions.  */
 
-	vector <shared_ptr <const Dependency> > result; 
+	vector <shared_ptr <const Dep> > result; 
 	/* The final list of dependencies represented by the target.
 	 * This does not include any dynamic dependencies, i.e., all
 	 * dependencies are flattened to Plain_Dependency's.  Not used
@@ -268,7 +268,7 @@ protected:
 	Proceed execute_children();
 	/* Execute already-active children */
 
-	Proceed execute_base_B(shared_ptr <const Dependency> dependency_link); 
+	Proceed execute_base_B(shared_ptr <const Dep> dep_link); 
 	/* Second pass (trivial dependencies).  Called once we are sure
 	 * that the target must be built.  Arguments and return value
 	 * have the same semantics as execute_base_B().  */
@@ -282,13 +282,13 @@ protected:
 	const Buffer &get_buffer_A() const {  return buffer_A;  }
 	const Buffer &get_buffer_B() const {  return buffer_B;  }
 
-	void push(shared_ptr <const Dependency> );
+	void push(shared_ptr <const Dep> );
 	/* Push a dependency to the default buffer, breaking down non-normalized
 	 * dependencies while doing so.  */
 
-	void push_result(shared_ptr <const Dependency> dd); 
+	void push_result(shared_ptr <const Dep> dd); 
 	void disconnect(Execution *const child,
-			shared_ptr <const Dependency> dependency_child);
+			shared_ptr <const Dep> dep_child);
 	/* Remove an edge from the dependency graph.  Propagate
 	 * information from CHILD to THIS, and then delete CHILD if
 	 * necessary.  */
@@ -310,7 +310,7 @@ protected:
 	 * is always null.  Only used to check for cycles on the rule
 	 * level.  */ 
 
-	virtual bool optional_finished(shared_ptr <const Dependency> dependency_link)= 0;
+	virtual bool optional_finished(shared_ptr <const Dep> dep_link)= 0;
 	/* Whether the execution would be finished if this was an
 	 * optional dependency.  Check whether this is an optional
 	 * dependency and if it is, return TRUE when the file does not
@@ -335,7 +335,7 @@ protected:
 
 	static bool find_cycle(Execution *parent,
 			       Execution *child,
-			       shared_ptr <const Dependency> dependency_link);
+			       shared_ptr <const Dep> dep_link);
 	/* Find a cycle.  Assuming that the edge parent->child will be
 	 * added, find a directed cycle that would be created.  Start at
 	 * PARENT and perform a depth-first search upwards in the
@@ -345,13 +345,13 @@ protected:
 
 	static bool find_cycle(vector <Execution *> &path,
 			       Execution *child,
-			       shared_ptr <const Dependency> dependency_link); 
+			       shared_ptr <const Dep> dep_link); 
 	/* Helper function.  PATH is the currently explored path.
 	 * PATH[0] is the original PARENT; PATH[end] is the oldest
 	 * grandparent found yet.  */ 
 
 	static void cycle_print(const vector <Execution *> &path,
-				shared_ptr <const Dependency> dependency);
+				shared_ptr <const Dep> dep);
 	/* Print the error message of a cycle on rule level.
 	 * Given PATH = [a, b, c, d, ..., x], the found cycle is
 	 * [x <- a <- b <- c <- d <- ... <- x], where A <- B denotes
@@ -365,10 +365,10 @@ protected:
 	/* Whether both executions have the same parametrized rule.
 	 * Only used for finding cycle.  */ 
 
-	shared_ptr <const Dependency> append_top(shared_ptr <const Dependency> dependency, 
-						 shared_ptr <const Dependency> top); 
-	shared_ptr <const Dependency> set_top(shared_ptr <const Dependency> dependency,
-					      shared_ptr <const Dependency> top); 
+	shared_ptr <const Dep> append_top(shared_ptr <const Dep> dep, 
+					  shared_ptr <const Dep> top); 
+	shared_ptr <const Dep> set_top(shared_ptr <const Dep> dep,
+				       shared_ptr <const Dep> top); 
 
 private: 
 
@@ -386,14 +386,14 @@ private:
 	 * dependencies, the target must be rebuilt anyway.  Does not
 	 * contain compound dependencies.  */
 
-	Proceed connect(shared_ptr <const Dependency> dependency_link_parent,
-			shared_ptr <const Dependency> dependency_child);
+	Proceed connect(shared_ptr <const Dep> dep_link_parent,
+			shared_ptr <const Dep> dep_child);
 	/* Add an edge to the dependency graph.  Deploy a new child
 	 * execution.  LINK is the link from the THIS's parent to THIS.
 	 * Note: the top-level flags of LINK.DEPENDENCY may be modified.
 	 * DEPENDENCY_CHILD must be normalized.  */
 
-	Execution *get_execution(shared_ptr <const Dependency> dependency);
+	Execution *get_execution(shared_ptr <const Dep> dep);
 	/* Get an existing Execution or create a new one for the
 	 * given DEPENDENCY.  Return null when a strong cycle was found;
 	 * return the execution otherwise.  PLACE is the place of where
@@ -405,19 +405,19 @@ private:
 	static bool hide_link_from_message(Flags flags) {
 		return flags & F_RESULT_NOTIFY; 
 	}
-	static bool same_dependency_for_print(shared_ptr <const Dependency> d1,
-					      shared_ptr <const Dependency> d2)
+	static bool same_dependency_for_print(shared_ptr <const Dep> d1,
+					      shared_ptr <const Dep> d2)
 	{
-		shared_ptr <const Plain_Dependency> p1=
-			dynamic_pointer_cast <const Plain_Dependency> (d1); 
-		shared_ptr <const Plain_Dependency> p2=
-			dynamic_pointer_cast <const Plain_Dependency> (d2); 
-		if (!p1 && dynamic_pointer_cast <const Dynamic_Dependency> (d1))
-			p1= dynamic_pointer_cast <const Plain_Dependency>
-				(Dynamic_Dependency::strip_dynamic(dynamic_pointer_cast <const Dynamic_Dependency> (d1)));
-		if (!p2 && dynamic_pointer_cast <const Dynamic_Dependency> (d2))
-			p2= dynamic_pointer_cast <const Plain_Dependency>
-				(Dynamic_Dependency::strip_dynamic(dynamic_pointer_cast <const Dynamic_Dependency> (d2)));
+		shared_ptr <const Plain_Dep> p1=
+			to <Plain_Dep> (d1); 
+		shared_ptr <const Plain_Dep> p2=
+			to <Plain_Dep> (d2); 
+		if (!p1 && to <Dynamic_Dep> (d1))
+			p1= to <Plain_Dep>
+				(Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d1)));
+		if (!p2 && to <Dynamic_Dep> (d2))
+			p2= to <Plain_Dep>
+				(Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d2)));
 		if (! (p1 && p2))
 			return false;
 		if (p1->place_param_target.unparametrized() 
@@ -446,7 +446,7 @@ class File_Execution
 {
 public:
 
-	File_Execution(shared_ptr <const Dependency> dependency_link,
+	File_Execution(shared_ptr <const Dep> dep_link,
 		       Execution *parent,
 		       shared_ptr <Rule> rule,
 		       shared_ptr <Rule> param_rule,
@@ -458,7 +458,7 @@ public:
 	 * done in the constructor.  The parent is connected to this iff
 	 * ERROR_ADDITIONAL is zero after the call.  */
 
-	void read_variable(shared_ptr <const Dependency> dependency); 
+	void read_variable(shared_ptr <const Dep> dep); 
 	/* Read the content of the file into a string as the
 	 * variable value.  THIS is the variable execution.  Write the
 	 * result into THIS's RESULT_VARIABLE.  */
@@ -473,7 +473,7 @@ public:
 		return flags_format(flags_finished);
 	}
 
-	virtual Proceed execute(shared_ptr <const Dependency> dependency_this);
+	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual string format_src() const {
@@ -496,7 +496,7 @@ public:
 
 protected:
 
-	virtual bool optional_finished(shared_ptr <const Dependency> dependency_link);
+	virtual bool optional_finished(shared_ptr <const Dep> dep_link);
 	virtual bool want_delete() const {  return false;  }
 	virtual int get_depth() const {  return 0;  }
 
@@ -598,7 +598,7 @@ class Transient_Execution
 {
 public:
 
-	Transient_Execution(shared_ptr <const Dependency> dependency_link,
+	Transient_Execution(shared_ptr <const Dep> dep_link,
 			    Execution *parent,
 			    shared_ptr <Rule> rule,
 			    shared_ptr <Rule> param_rule,
@@ -611,14 +611,14 @@ public:
 		return mapping_variable; 
 	}
 
-	virtual Proceed execute(shared_ptr <const Dependency> dependency_this);
+	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual string format_src() const;
-	virtual void notify_result(shared_ptr <const Dependency> dependency, 
+	virtual void notify_result(shared_ptr <const Dep> dep, 
 				   Execution *, 
 				   Flags flags,
-				   shared_ptr <const Dependency> dependency_source);
+				   shared_ptr <const Dep> dep_source);
 	virtual void notify_variable(const map <string, string> &result_variable_child) {  
 		result_variable.insert(result_variable_child.begin(), result_variable_child.end()); 
 	}
@@ -627,8 +627,8 @@ protected:
 
 	virtual bool want_delete() const {  return false;  }
 	virtual int get_depth() const {  return 0;  }
-	virtual bool optional_finished(shared_ptr <const Dependency> dependency_link) {  
-		(void) dependency_link; 
+	virtual bool optional_finished(shared_ptr <const Dep> dep_link) {  
+		(void) dep_link; 
 		return false;  
 	}
 
@@ -661,9 +661,9 @@ class Root_Execution
 {
 public:
 
-	Root_Execution(const vector <shared_ptr <const Dependency> > &dependencies); 
+	Root_Execution(const vector <shared_ptr <const Dep> > &dep); 
 
-	virtual Proceed execute(shared_ptr <const Dependency> dependency_this);
+	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const; 
 	virtual bool finished(Flags flags) const;
 	virtual string format_src() const { return "ROOT"; }
@@ -671,7 +671,7 @@ public:
 protected:
 
 	virtual int get_depth() const {  return -1;  }
-	virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
+	virtual bool optional_finished(shared_ptr <const Dep> ) {  return false;  }
 	virtual bool want_delete() const {  return true;  }
 
 private:
@@ -679,7 +679,7 @@ private:
 	bool is_finished; 
 };
 
-class Concatenated_Execution
+class Concat_Execution
 /* 
  * An execution representating a concatenation.  Its dependency is
  * always a compound dependency containing normalized dependencies, whose
@@ -695,36 +695,36 @@ class Concatenated_Execution
 {
 public:
 
-	Concatenated_Execution(shared_ptr <const Concatenated_Dependency> dependency_,
-			       shared_ptr <const Dependency> dependency_link,
+	Concat_Execution(shared_ptr <const Concat_Dep> dep_,
+			 shared_ptr <const Dep> dep_link,
 			       Execution *parent,
 			       bool &found_cycle);
 	/* The given dependency must be normalized, and contain at least
-	 * one Concatenated_Dependency.  */
+	 * one Concat_Dep.  */
 
-	~Concatenated_Execution(); 
+	~Concat_Execution(); 
 
-	void add_part(shared_ptr <Plain_Dependency> dependency, 
+	void add_part(shared_ptr <Plain_Dep> dep, 
 		      int concatenation_index);
 	/* Add a single part -- exclude the outer layer */
 
 	void assemble_parts(); 
 
 	virtual int get_depth() const { return -1; }
-	virtual Proceed execute(shared_ptr <const Dependency> dependency_this);
+	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
 	virtual string format_src() const {  return "CONCAT";  }
 
 protected:
 
-	virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
+	virtual bool optional_finished(shared_ptr <const Dep> ) {  return false;  }
 
 private:
 
-	shared_ptr <const Concatenated_Dependency> dependency;
+	shared_ptr <const Concat_Dep> dep;
 	/* Contains the concatenation. 
-	 * This is a Concatenated_Dependency,
+	 * This is a Concat_Dep,
 	 * itself containing each a Compound_Dependency^{0,1} of
 	 * Dynamic_Dependency^* of a plain dependency. 
 	 * Is normalized.  */
@@ -737,20 +737,20 @@ private:
 	 * 2:  Building actual dependencies.
 	 * 3:  Finished.  */
 
-	vector <vector <shared_ptr <const Plain_Dependency> > > parts; 
+	vector <vector <shared_ptr <const Plain_Dep> > > parts; 
 	/* The individual parts, inserted here during stage 1 by
 	 * disconnect().  Excludes the outer layer.  */
 
-	void add_stage0_dependency(shared_ptr <const Dependency> d, unsigned concatenate_index);
+	void add_stage0_dep(shared_ptr <const Dep> d, unsigned concat_index);
 	/* Add a dependency during Stage 0.  The given dependency can be
 	 * non-normalized, because it comes from within a concatenated
 	 * dependency.  */
 
 	virtual bool want_delete() const {  return true;  }
 
-	static shared_ptr <const Dependency> concatenate_dependency_one(shared_ptr <const Plain_Dependency> dependency_1,
-									shared_ptr <const Plain_Dependency> dependency_2,
-									Flags dependency_flags);
+	static shared_ptr <const Dep> concat_dep_one(shared_ptr <const Plain_Dep> dep_1,
+						     shared_ptr <const Plain_Dep> dep_2,
+						     Flags dep_flags);
 	/* Concatenate to two given dependencies, additionally
 	 * adding the given flags.  */
 };
@@ -777,25 +777,25 @@ class Dynamic_Execution
 {
 public:
 
-	Dynamic_Execution(shared_ptr <const Dynamic_Dependency> dependency_,
+	Dynamic_Execution(shared_ptr <const Dynamic_Dep> dep_,
 			  Execution *parent,
 			  int &error_additional); 
 
-	shared_ptr <const Dynamic_Dependency> get_dependency() const {  return dependency;  }
+	shared_ptr <const Dynamic_Dep> get_dep() const {  return dep;  }
 
-	virtual Proceed execute(shared_ptr <const Dependency> dependency_this);
+	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
-	virtual int get_depth() const {  return dependency->get_depth();  }
-	virtual bool optional_finished(shared_ptr <const Dependency> ) {  return false;  }
+	virtual int get_depth() const {  return dep->get_depth();  }
+	virtual bool optional_finished(shared_ptr <const Dep> ) {  return false;  }
 	virtual string format_src() const;
 	virtual void notify_variable(const map <string, string> &result_variable_child) {  
 		result_variable.insert(result_variable_child.begin(), result_variable_child.end()); 
 	}
-	virtual void notify_result(shared_ptr <const Dependency> dependency, 
+	virtual void notify_result(shared_ptr <const Dep> dep, 
 				   Execution *source, 
 				   Flags flags,
-				   shared_ptr <const Dependency> dependency_source);
+				   shared_ptr <const Dep> dep_source);
 
 protected:
 
@@ -803,7 +803,7 @@ protected:
 
 private: 
 
-	const shared_ptr <const Dynamic_Dependency> dependency; 
+	const shared_ptr <const Dynamic_Dep> dep; 
 	/* A dynamic of anything */
 
 	bool is_finished; 
@@ -862,20 +862,20 @@ Execution::~Execution()
 	/* Nop */
 }
 
-void Execution::main(const vector <shared_ptr <const Dependency> > &dependencies)
+void Execution::main(const vector <shared_ptr <const Dep> > &deps)
 {
 	assert(jobs >= 0);
 	timestamp_last= Timestamp::now(); 
-	Root_Execution *root_execution= new Root_Execution(dependencies); 
+	Root_Execution *root_execution= new Root_Execution(deps); 
 	int error= 0; 
-	shared_ptr <const Root_Dependency> dependency_root= make_shared <Root_Dependency> (); 
+	shared_ptr <const Root_Dep> dep_root= make_shared <Root_Dep> (); 
 
 	try {
 		while (! root_execution->finished()) {
 			Proceed proceed;
 			do {
 				Debug::print(nullptr, "loop"); 
-				proceed= root_execution->execute(dependency_root);
+				proceed= root_execution->execute(dep_root);
 				assert(proceed); 
 			} while (proceed & P_PENDING); 
 
@@ -927,18 +927,18 @@ void Execution::main(const vector <shared_ptr <const Dependency> > &dependencies
 
 void Execution::read_dynamic(Flags flags_this, 
 			     const Place_Param_Target &place_param_target,
-			     shared_ptr <const Dependency> dependency_target,
-			     vector <shared_ptr <const Dependency> > &dependencies)
+			     shared_ptr <const Dep> dep_target,
+			     vector <shared_ptr <const Dep> > &deps)
 {
 	assert(place_param_target.place_name.get_n() == 0); 
 	assert((place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
 	const Target target= place_param_target.unparametrized(); 
 	assert(target.is_file()); 
-	assert(dependencies.empty()); 
+	assert(deps.empty()); 
 	
 	string filename= target.get_name_nondynamic();
 
-//	Debug::print(this, fmt("read_dynamic \"%s\"", filename.c_str())); // RM
+	//	Debug::print(this, fmt("read_dynamic \"%s\"", filename.c_str())); // RM
 	
 	if (! (flags_this & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
 
@@ -960,7 +960,7 @@ void Execution::read_dynamic(Flags flags_this,
 		Place place_input; /* remains empty */ 
 
 		try {
-			Parser::get_expression_list(dependencies, tokens, 
+			Parser::get_expression_list(deps, tokens, 
 						    place_end, input, place_input);
 		} catch (int e) {
 			raise(e); 
@@ -1044,14 +1044,14 @@ void Execution::read_dynamic(Flags flags_this,
 				throw ERROR_LOGICAL; 
 			}
 				
-			string filename_dependency= string(lineptr, len); 
+			string filename_dep= string(lineptr, len); 
 
-			dependencies.push_back
-				(make_shared <Plain_Dependency>
+			deps.push_back
+				(make_shared <Plain_Dep>
 				 (0,
 				  Place_Param_Target
 				  (0, 
-				   Place_Name(filename_dependency, place)))); 
+				   Place_Name(filename_dep, place)))); 
 		}
 		free(lineptr); 
 		if (fclose(file)) {
@@ -1067,17 +1067,17 @@ void Execution::read_dynamic(Flags flags_this,
 	 * dependency to null, and at the end prune the null entries. 
 	 */
 	bool found_error= false; 
-	for (auto &j:  dependencies) {
+	for (auto &j:  deps) {
 
 		/* Check that it is unparametrized */ 
 		if (! j->is_unparametrized()) {
-			shared_ptr <const Dependency> dep= j;
-			while (dynamic_pointer_cast <const Dynamic_Dependency> (dep)) {
-				shared_ptr <const Dynamic_Dependency> dep2= 
-					dynamic_pointer_cast <const Dynamic_Dependency> (dep);
-				dep= dep2->dependency; 
+			shared_ptr <const Dep> depp= j;
+			while (to <Dynamic_Dep> (depp)) {
+				shared_ptr <const Dynamic_Dep> depp2= 
+					to <Dynamic_Dep> (depp);
+				depp= depp2->dep; 
 			}
-			dynamic_pointer_cast <const Plain_Dependency> (dep)
+			to <Plain_Dep> (depp)
 				->place_param_target.place_name.places[0] <<
 				fmt("dynamic dependency %s must not contain parametrized dependencies",
 				    Target(0, target).format_word());
@@ -1094,39 +1094,39 @@ void Execution::read_dynamic(Flags flags_this,
 	}
 
 	assert(! found_error || option_keep_going); 
-	vector <shared_ptr <const Dependency> > dependencies_new;
+	vector <shared_ptr <const Dep> > deps_new;
 
-	shared_ptr <const Dependency> top_top= dependency_target->top;
-	shared_ptr <Dependency> no_top= Dependency::clone(dependency_target);
+	shared_ptr <const Dep> top_top= dep_target->top;
+	shared_ptr <Dep> no_top= Dep::clone(dep_target);
 	no_top->top= nullptr; 
-	shared_ptr <Dependency> top= make_shared <Dynamic_Dependency> (no_top); 
+	shared_ptr <Dep> top= make_shared <Dynamic_Dep> (no_top); 
 	top->top= top_top;
 		
-	for (auto &j:  dependencies) {
+	for (auto &j:  deps) {
 		if (j) {
-			shared_ptr <Dependency> j_new= Dependency::clone(j);
+			shared_ptr <Dep> j_new= Dep::clone(j);
 			j_new->top= top; 
-			dependencies_new.push_back(j_new); 
+			deps_new.push_back(j_new); 
 		}
 	}
-	swap(dependencies, dependencies_new); 
+	swap(deps, deps_new); 
 }
 
 bool Execution::find_cycle(Execution *parent, 
 			   Execution *child,
-			   shared_ptr <const Dependency> dependency_link)
+			   shared_ptr <const Dep> dep_link)
 {
 	vector <Execution *> path;
 	path.push_back(parent); 
-	return find_cycle(path, child, dependency_link); 
+	return find_cycle(path, child, dep_link); 
 }
 
 bool Execution::find_cycle(vector <Execution *> &path,
 			   Execution *child,
-			   shared_ptr <const Dependency> dependency_link)
+			   shared_ptr <const Dep> dep_link)
 {
 	if (same_rule(path.back(), child)) {
-		cycle_print(path, dependency_link); 
+		cycle_print(path, dep_link); 
 		return true; 
 	}
 
@@ -1134,7 +1134,7 @@ bool Execution::find_cycle(vector <Execution *> &path,
 		Execution *next= i.first; 
 		assert(next != nullptr);
 		path.push_back(next); 
-		bool found= find_cycle(path, child, dependency_link);
+		bool found= find_cycle(path, child, dep_link);
 		if (found)
 			return true;
 		path.pop_back(); 
@@ -1144,7 +1144,7 @@ bool Execution::find_cycle(vector <Execution *> &path,
 }
 
 void Execution::cycle_print(const vector <Execution *> &path,
-			    shared_ptr <const Dependency> dependency)
+			    shared_ptr <const Dep> dep)
 /*
  * Given PATH = [a, b, c, d, ..., x], we print:
  *
@@ -1174,8 +1174,8 @@ void Execution::cycle_print(const vector <Execution *> &path,
 		
 	for (ssize_t i= path.size() - 1;  i >= 0;  --i) {
 
-		shared_ptr <const Dependency> d= i == 0 
-			? dependency
+		shared_ptr <const Dep> d= i == 0 
+			? dep
 			: path[i - 1]->parents.at(const_cast <Execution *> (path[i])); 
 
 		/* Don't show a message for left-branch dynamic links */ 
@@ -1187,12 +1187,12 @@ void Execution::cycle_print(const vector <Execution *> &path,
 			<< fmt("%s%s depends on %s",
 			       i == (ssize_t)(path.size() - 1) 
 			       ? (path.size() == 1 
-				  || (path.size() == 2 && hide_link_from_message(dependency->flags))
+				  || (path.size() == 2 && hide_link_from_message(dep->flags))
 				  ? "target must not depend on itself: " 
 				  : "cyclic dependency: ") 
 			       : "",
 			       names[i],
-			       i == 0 ? dependency->get_target().format_word() : names[i - 1]);
+			       i == 0 ? dep->get_target().format_word() : names[i - 1]);
 	}
 
 	/* If the two targets are different (but have the same rule
@@ -1200,7 +1200,7 @@ void Execution::cycle_print(const vector <Execution *> &path,
 	 * two different targets of a multitarget rule), then output a
 	 * notice to that effect */ 
 	Target t1= path.back()->parents.begin()->second->get_target();
-	Target t2= dependency->get_target();
+	Target t2= dep->get_target();
 	const char *c1= t1.get_name_c_str_any();
 	const char *c2= t2.get_name_c_str_any();
 	if (strcmp(c1, c2)) {
@@ -1259,14 +1259,14 @@ void Execution::print_traces(string text) const
 	}
 
 	const Execution *execution= this->parents.begin()->first;
-	shared_ptr <const Dependency> dep= this->parents.begin()->second; 
+	shared_ptr <const Dep> depp= this->parents.begin()->second; 
 
-	string text_parent= dep->get_target().format_word(); 
+	string text_parent= depp->get_target().format_word(); 
 
 	while (true) {
 		if (dynamic_cast <const Root_Execution *> (execution)) {
 			/* We are in a child of the root execution */ 
-			assert(! dep->top); 
+			assert(! depp->top); 
 			if (first && text != "") {
 				/* No text was printed yet, but there
 				 * was a TEXT passed:  Print it with the
@@ -1274,35 +1274,35 @@ void Execution::print_traces(string text) const
 				/* This is a top-level target, i.e.,
 				 * passed on the command line via an
  				 * argument or an option  */
-				dep->get_place() << text;
+				depp->get_place() << text;
 			}
 			break; 
 		}
 
 
 		/* Increment */
-		shared_ptr <const Dependency> dep_old= dep; 
-		if (! dep->top) {
-			/* Assign DEP first, because we change EXECUTION */
-			dep= execution->parents.begin()->second; 
+		shared_ptr <const Dep> depp_old= depp; 
+		if (! depp->top) {
+			/* Assign DEPP first, because we change EXECUTION */
+			depp= execution->parents.begin()->second; 
 			execution= execution->parents.begin()->first;
 		} else {
-			dep= dep->top; 
+			depp= depp->top; 
 		}
 
 		/* New text */
 		string text_child= text_parent; 
-		text_parent= dep->get_target().format_word();
+		text_parent= depp->get_target().format_word();
 
 		/* Don't show left-branch edges of dynamic executions */
-		if (hide_link_from_message(dep_old->flags)) {
+		if (hide_link_from_message(depp_old->flags)) {
 			continue;
 		}
 
-//			// RM
-//			Debug::print(this, fmt("print_traces cmp %s | %s", dep->format_src(), dep_old->format_src())); 
+		//			// RM
+		//			Debug::print(this, fmt("print_traces cmp %s | %s", dep->format_src(), depp_old->format_src())); 
 
-		if (same_dependency_for_print(dep, dep_old)) {
+		if (same_dependency_for_print(depp, depp_old)) {
 			continue; 
 		}
 
@@ -1315,9 +1315,7 @@ void Execution::print_traces(string text) const
 			msg= fmt("%s is needed by %s",
 				 text_child, text_parent);
 		}
-		dep_old->get_place()
-//		place
-			<< msg;
+		depp_old->get_place() << msg;
 	}
 }
 
@@ -1351,9 +1349,9 @@ Proceed Execution::execute_children()
 		
 		assert(child != nullptr);
 
-		shared_ptr <const Dependency> dependency_child= child->parents.at(this);
+		shared_ptr <const Dep> dep_child= child->parents.at(this);
 
-		Proceed proceed_child= child->execute(dependency_child);
+		Proceed proceed_child= child->execute(dep_child);
 		assert(proceed_child); 
 
 		proceed_all |= (proceed_child & ~(P_FINISHED | P_ABORT));
@@ -1361,10 +1359,10 @@ Proceed Execution::execute_children()
 		 * child, not to us  */
 
 		assert(((proceed_child & P_FINISHED) == 0) == 
-		       ((child->finished(dependency_child->flags)) == 0));
+		       ((child->finished(dep_child->flags)) == 0));
 
 		if (proceed_child & P_FINISHED) {
-			disconnect(child, dependency_child); 
+			disconnect(child, dep_child); 
 		} else {
 			assert((proceed_child & ~P_FINISHED) != 0); 
 			/* If the child execution is not finished, it
@@ -1390,36 +1388,36 @@ Proceed Execution::execute_children()
 	return proceed_all; 
 }
 
-void Execution::push(shared_ptr <const Dependency> dependency)
+void Execution::push(shared_ptr <const Dep> dep)
 {
-	assert(dependency); 
-	dependency->check();
+	assert(dep); 
+	dep->check();
 	
-	vector <shared_ptr <const Dependency> > dependencies;
-	Dependency::make_normalized(dependencies, dependency); 
+	vector <shared_ptr <const Dep> > deps;
+	Dep::normalize(dep, deps); 
        
-	for (const auto &d:  dependencies) {
+	for (const auto &d:  deps) {
 		d->check(); 
 		buffer_A.push(d);
 	}
 }
 
-Proceed Execution::execute_base_A(shared_ptr <const Dependency> dependency_this)
+Proceed Execution::execute_base_A(shared_ptr <const Dep> dep_this)
 {
 	Debug debug(this);
 
 	assert(jobs >= 0); 
-	assert(dependency_this); 
+	assert(dep_this); 
 
-	shared_ptr <Dependency> dependency_this2= Dependency::clone(dependency_this); 
+	shared_ptr <Dep> dep_this2= Dep::clone(dep_this); 
 	Proceed proceed= 0; 
 
-	if (finished(dependency_this2->flags)) {
+	if (finished(dep_this2->flags)) {
 		Debug::print(this, "finished"); 
 		return proceed |= P_FINISHED; 
 	}
 
-	if (optional_finished(dependency_this2)) {
+	if (optional_finished(dep_this2)) {
 		Debug::print(this, "finished"); 
 		return proceed |= P_FINISHED; 
 	}
@@ -1434,14 +1432,14 @@ Proceed Execution::execute_base_A(shared_ptr <const Dependency> dependency_this)
 		if (proceed & P_WAIT) {
 			if (jobs == 0) 
 				return proceed; 
-		} else if (finished(dependency_this2->flags) && ! option_keep_going) {
+		} else if (finished(dep_this2->flags) && ! option_keep_going) {
 			Debug::print(this, "finished"); 
 			return proceed |= P_FINISHED;
 		}
 	} 
 
 	/* Is this a trivial run?  Then skip the dependency. */
-	if (dependency_this2->flags & F_TRIVIAL) {
+	if (dep_this2->flags & F_TRIVIAL) {
 		return proceed |= P_ABORT | P_FINISHED; 
 	}
 
@@ -1456,15 +1454,15 @@ Proceed Execution::execute_base_A(shared_ptr <const Dependency> dependency_this)
 	}
 
 	while (! buffer_A.empty()) {
-		shared_ptr <const Dependency> dependency_child= buffer_A.next(); 
-		if ((dependency_child->flags & (F_RESULT_NOTIFY | F_TRIVIAL)) == F_TRIVIAL) {
-			shared_ptr <Dependency> dependency_child_2= 
-				Dependency::clone(dependency_child);
-			dependency_child_2->flags &= ~F_TRIVIAL; 
-			dependency_child_2->get_place_flag(I_TRIVIAL)= Place::place_empty; 
-			buffer_B.push(dependency_child_2); 
+		shared_ptr <const Dep> dep_child= buffer_A.next(); 
+		if ((dep_child->flags & (F_RESULT_NOTIFY | F_TRIVIAL)) == F_TRIVIAL) {
+			shared_ptr <Dep> dep_child_2= 
+				Dep::clone(dep_child);
+			dep_child_2->flags &= ~F_TRIVIAL; 
+			dep_child_2->get_place_flag(I_TRIVIAL)= Place::place_empty; 
+			buffer_B.push(dep_child_2); 
 		}
-		Proceed proceed_2= connect(dependency_this2, dependency_child);
+		Proceed proceed_2= connect(dep_this2, dep_child);
 		proceed |= proceed_2;
 		if (jobs == 0) {
 			return proceed |= P_WAIT; 
@@ -1497,39 +1495,39 @@ Proceed Execution::execute_base_A(shared_ptr <const Dependency> dependency_this)
 	return proceed |= P_FINISHED; 
 }
 
-Proceed Execution::connect(shared_ptr <const Dependency> dependency_this,
-				      shared_ptr <const Dependency> dependency_child)
+Proceed Execution::connect(shared_ptr <const Dep> dep_this,
+			   shared_ptr <const Dep> dep_child)
 {
-	Debug::print(this, fmt("connect %s",  dependency_child->format_src())); 
+	Debug::print(this, fmt("connect %s",  dep_child->format_src())); 
 
-	assert(dependency_child->is_normalized()); 
-	assert(! dynamic_pointer_cast <const Root_Dependency> (dependency_child)); 
+	assert(dep_child->is_normalized()); 
+	assert(! to <Root_Dep> (dep_child)); 
 
-	shared_ptr <const Plain_Dependency> plain_dependency_this=
-		dynamic_pointer_cast <const Plain_Dependency> (dependency_this);
+	shared_ptr <const Plain_Dep> plain_dep_this=
+		to <Plain_Dep> (dep_this);
 
 	/*
 	 * Check for various invalid types of connections 
 	 */
 
 	/* '-p' and '-o' do not mix */ 
-	if (dependency_child->flags & F_PERSISTENT && dependency_child->flags & F_OPTIONAL) {
+	if (dep_child->flags & F_PERSISTENT && dep_child->flags & F_OPTIONAL) {
 
 		/* '-p' and '-o' encountered for the same target */ 
 		const Place &place_persistent= 
-			dependency_child->get_place_flag(I_PERSISTENT);
+			dep_child->get_place_flag(I_PERSISTENT);
 		const Place &place_optional= 
-			dependency_child->get_place_flag(I_OPTIONAL);
+			dep_child->get_place_flag(I_OPTIONAL);
 		place_persistent <<
 			fmt("declaration of persistent dependency with %s",
 			    multichar_format_word("-p")); 
 		place_optional <<
 			fmt("clashes with declaration of optional dependency with %s",
 			    multichar_format_word("-o")); 
-		dependency_child->get_place() <<
+		dep_child->get_place() <<
 			fmt("in declaration of dependency %s, needed by %s", 
-			    dependency_child->get_target().format_word(),
-			    dependency_this->get_target().format_word()); 
+			    dep_child->get_target().format_word(),
+			    dep_this->get_target().format_word()); 
 		print_traces();
 		explain_clash(); 
 		raise(ERROR_LOGICAL);
@@ -1537,18 +1535,18 @@ Proceed Execution::connect(shared_ptr <const Dependency> dependency_this,
 	}
 
 	/* '-o' does not mix with '$[' */
-	if (dependency_child->flags & F_VARIABLE && dependency_child->flags & F_OPTIONAL) {
-		shared_ptr <const Plain_Dependency> plain_dependency_child=
-			dynamic_pointer_cast <const Plain_Dependency> (dependency_child); 
-		assert(plain_dependency_child); 
-		assert(!(dependency_child->flags & F_TARGET_TRANSIENT)); 
-		const Place &place_variable= dependency_child->get_place();
-		const Place &place_flag= dependency_child->get_place_flag(I_OPTIONAL); 
+	if (dep_child->flags & F_VARIABLE && dep_child->flags & F_OPTIONAL) {
+		shared_ptr <const Plain_Dep> plain_dep_child=
+			to <Plain_Dep> (dep_child); 
+		assert(plain_dep_child); 
+		assert(!(dep_child->flags & F_TARGET_TRANSIENT)); 
+		const Place &place_variable= dep_child->get_place();
+		const Place &place_flag= dep_child->get_place_flag(I_OPTIONAL); 
 		place_variable << 
 			fmt("variable dependency %s must not be declared "
 			    "as optional dependency",
 			    dynamic_variable_format_word
-			    (plain_dependency_child->place_param_target.place_name.unparametrized())); 
+			    (plain_dep_child->place_param_target.place_name.unparametrized())); 
 		place_flag << fmt("using %s",
 				  multichar_format_word("-o")); 
 		print_traces();
@@ -1560,7 +1558,7 @@ Proceed Execution::connect(shared_ptr <const Dependency> dependency_this,
 	 * Actually do the connection 
 	 */
 
-	Execution *child= get_execution(dependency_child);  
+	Execution *child= get_execution(dep_child);  
 	if (child == nullptr) {
 		/* Strong cycle was found */ 
 		return 0;
@@ -1568,19 +1566,19 @@ Proceed Execution::connect(shared_ptr <const Dependency> dependency_this,
 
 	children.insert(child);
 
-	if (dependency_child->flags & F_RESULT_NOTIFY) {
+	if (dep_child->flags & F_RESULT_NOTIFY) {
 		for (const auto &dependency:  child->result) {
 			this->notify_result(dependency, this, F_RESULT_NOTIFY, nullptr); 
 		}
 	}
 
-	Proceed proceed_child= child->execute(dependency_child);
+	Proceed proceed_child= child->execute(dep_child);
 	assert(proceed_child); 
 	if (proceed_child & (P_WAIT | P_PENDING))
 		return proceed_child; 
 			
-	if (child->finished(dependency_child->flags)) {
-		disconnect(child, dependency_child);
+	if (child->finished(dep_child->flags)) {
+		disconnect(child, dep_child);
 	}
 	
 	return 0;
@@ -1597,32 +1595,32 @@ void Execution::raise(int error_)
 }
 
 void Execution::disconnect(Execution *const child,
-			   shared_ptr <const Dependency> dependency_child)
+			   shared_ptr <const Dep> dep_child)
 {
-	Debug::print(this, fmt("disconnect %s", dependency_child->format_src())); 
+	Debug::print(this, fmt("disconnect %s", dep_child->format_src())); 
 
 	assert(child != nullptr); 
 	assert(child != this); 
-	assert(child->finished(dependency_child->flags)); 
+	assert(child->finished(dep_child->flags)); 
 	assert(option_keep_going || child->error == 0); 
-	dependency_child->check(); 
+	dep_child->check(); 
 
-	if (dependency_child->flags & F_RESULT_NOTIFY && dynamic_cast <File_Execution *> (child)) {
-		shared_ptr <Dependency> d= Dependency::clone(dependency_child);
+	if (dep_child->flags & F_RESULT_NOTIFY && dynamic_cast <File_Execution *> (child)) {
+		shared_ptr <Dep> d= Dep::clone(dep_child);
 		d->flags &= ~F_RESULT_NOTIFY; 
 		notify_result(d, child, F_RESULT_NOTIFY, nullptr); 
 	}
 
-	if (dependency_child->flags & F_RESULT_COPY && dynamic_cast <File_Execution *> (child)) {
-		shared_ptr <Dependency> d= Dependency::clone(dependency_child);
+	if (dep_child->flags & F_RESULT_COPY && dynamic_cast <File_Execution *> (child)) {
+		shared_ptr <Dep> d= Dep::clone(dep_child);
 		d->flags &= ~F_RESULT_COPY; 
-		notify_result(d, child, F_RESULT_COPY, dependency_child); 
+		notify_result(d, child, F_RESULT_COPY, dep_child); 
 	}
 
 	/* Propagate timestamp */
 	/* Don't propagate the timestamp of the dynamic dependency itself */ 
-	if (! (dependency_child->flags & F_PERSISTENT) && 
-	    ! (dependency_child->flags & F_RESULT_NOTIFY)) {
+	if (! (dep_child->flags & F_PERSISTENT) && 
+	    ! (dep_child->flags & F_RESULT_NOTIFY)) {
 		if (child->timestamp.defined()) {
 			if (! timestamp.defined()) {
 				timestamp= child->timestamp;
@@ -1633,9 +1631,9 @@ void Execution::disconnect(Execution *const child,
 	}
 
 	/* Propagate variables */
-	if ((dependency_child->flags & F_VARIABLE)) { 
+	if ((dep_child->flags & F_VARIABLE)) { 
 		assert(dynamic_cast <File_Execution *> (child)); 
-		dynamic_cast <File_Execution *> (child)->read_variable(dependency_child);
+		dynamic_cast <File_Execution *> (child)->read_variable(dep_child);
 	}
 	if (! child->result_variable.empty()) {
 		notify_variable(child->result_variable); 
@@ -1655,8 +1653,8 @@ void Execution::disconnect(Execution *const child,
 	 * It just means the list of depenencies have changed, not the
 	 * dependencies themselves.  */
 	if (child->bits & B_NEED_BUILD
-	    && ! (dependency_child->flags & F_PERSISTENT)
-	    && ! (dependency_child->flags & F_RESULT_NOTIFY)) {
+	    && ! (dep_child->flags & F_PERSISTENT)
+	    && ! (dep_child->flags & F_RESULT_NOTIFY)) {
 		bits |= B_NEED_BUILD; 
 	}
 
@@ -1671,12 +1669,12 @@ void Execution::disconnect(Execution *const child,
 		delete child; 
 }
 
-Proceed Execution::execute_base_B(shared_ptr <const Dependency> dependency_link)
+Proceed Execution::execute_base_B(shared_ptr <const Dep> dep_link)
 {
 	Proceed proceed= 0;
 	while (! buffer_B.empty()) {
-		shared_ptr <const Dependency> dependency_child= buffer_B.next(); 
-		Proceed proceed_2= connect(dependency_link, dependency_child);
+		shared_ptr <const Dep> dep_child= buffer_B.next(); 
+		Proceed proceed_2= connect(dep_link, dep_child);
 		proceed |= proceed_2; 
 		assert(jobs >= 0);
 		if (jobs == 0) {
@@ -1688,9 +1686,9 @@ Proceed Execution::execute_base_B(shared_ptr <const Dependency> dependency_link)
 	return proceed; 
 }
 
-Execution *Execution::get_execution(shared_ptr <const Dependency> dependency)
+Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 {
-	const Target target= dependency->get_target(); 
+	const Target target= dep->get_target(); 
 
 	/* Set to the returned Execution object when one is found or created */    
 	Execution *execution= nullptr; 
@@ -1704,25 +1702,25 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency)
 		if (execution->parents.count(this)) {
 			/* THIS and CHILD are already connected -- add the
 			 * necessary flags */ 
-			Flags flags= dependency->flags; 
+			Flags flags= dep->flags; 
 			if (flags & ~execution->parents.at(this)->flags) {
-				shared_ptr <Dependency> dependency_new= Dependency::clone(execution->parents.at(this));
-				dependency_new->flags |= flags;
-				dependency= dependency_new;
+				shared_ptr <Dep> dep_new= Dep::clone(execution->parents.at(this));
+				dep_new->flags |= flags;
+				dep= dep_new;
 				/* No need to check for cycles here,
 				 * because a link between the two
 				 * already exists and therefore a cycle
 				 * cannot be present.  */
-				execution->parents[this]= dependency; 
+				execution->parents[this]= dep; 
 			}
 		} else {
-			if (find_cycle(this, execution, dependency)) {
+			if (find_cycle(this, execution, dep)) {
 				raise(ERROR_LOGICAL);
 				return nullptr;
 			}
 			/* The parent and child are not connected -- add the
 			 * connection */ 
-			execution->parents[this]= dependency;
+			execution->parents[this]= dep;
 		}
 		return execution;
 	} 
@@ -1742,7 +1740,7 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency)
 			target_without_flags.get_front_byte_nondynamic() &= F_TARGET_TRANSIENT; 
 			rule_child= rule_set.get(target_without_flags, 
 						 param_rule_child, mapping_parameter, 
-						 dependency->get_place()); 
+						 dep->get_place()); 
 		} catch (int e) {
 			assert(e); 
 			error_additional= e; 
@@ -1773,7 +1771,7 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency)
 		if (use_file_execution) {
 
 			execution= new File_Execution
-				(dependency, 
+				(dep, 
 				 this,
 				 rule_child, 
 				 param_rule_child, 
@@ -1781,15 +1779,15 @@ Execution *Execution::get_execution(shared_ptr <const Dependency> dependency)
 				 error_additional); 
 		} else if (target.is_transient()) {
 			execution= new Transient_Execution
-				(dependency, 
+				(dep, 
 				 this,
 				 rule_child, param_rule_child, mapping_parameter,
 				 error_additional);
 		}
 	} else {
-		shared_ptr <const Dynamic_Dependency> dynamic_dependency=
-			dynamic_pointer_cast <const Dynamic_Dependency> (dependency); 
-		execution= new Dynamic_Execution(dynamic_dependency, 
+		shared_ptr <const Dynamic_Dep> dynamic_dep=
+			to <Dynamic_Dep> (dep); 
+		execution= new Dynamic_Execution(dynamic_dep, 
 						 this,
 						 error_additional); 
 	}
@@ -1821,7 +1819,7 @@ void Execution::copy_result(Execution *parent, Execution *child)
 	}
 }
 
-void Execution::push_result(shared_ptr <const Dependency> dd)
+void Execution::push_result(shared_ptr <const Dep> dd)
 {
 	Debug::print(this, fmt("push_result %s", dd->format_src())); 
 
@@ -1855,22 +1853,22 @@ Target Execution::get_target_for_cache(Target target)
 	return target; 
 }
 
-shared_ptr <const Dependency> Execution::append_top(shared_ptr <const Dependency> dependency, 
-						    shared_ptr <const Dependency> top)
+shared_ptr <const Dep> Execution::append_top(shared_ptr <const Dep> dep, 
+					     shared_ptr <const Dep> top)
 {
-	assert(dependency);
+	assert(dep);
 	assert(top); 
-	assert(dependency != top); 
+	assert(dep != top); 
 
-//	// RM
-//	string s1= dependency->format_src();
-//	string s2= top->format_src();
-//	fprintf(stderr, "append_top(%s, %s)\n", s1.c_str(), s2.c_str()); 
+	//	// RM
+	//	string s1= dependency->format_src();
+	//	string s2= top->format_src();
+	//	fprintf(stderr, "append_top(%s, %s)\n", s1.c_str(), s2.c_str()); 
 
-	shared_ptr <Dependency> ret= Dependency::clone(dependency);
+	shared_ptr <Dep> ret= Dep::clone(dep);
 
-	if (dependency->top) {
-		ret->top= append_top(dependency->top, top); 
+	if (dep->top) {
+		ret->top= append_top(dep->top, top); 
 	} else {
 		ret->top= top;
 	}
@@ -1878,16 +1876,16 @@ shared_ptr <const Dependency> Execution::append_top(shared_ptr <const Dependency
 	return ret; 
 }
 
-shared_ptr <const Dependency> Execution::set_top(shared_ptr <const Dependency> dependency,
-						 shared_ptr <const Dependency> top)
+shared_ptr <const Dep> Execution::set_top(shared_ptr <const Dep> dep,
+					  shared_ptr <const Dep> top)
 {
-	assert(dependency); 
-	assert(dependency != top); 
+	assert(dep); 
+	assert(dep != top); 
 
-	if (dependency->top == nullptr && top == nullptr)
-		return dependency;
+	if (dep->top == nullptr && top == nullptr)
+		return dep;
 
-	shared_ptr <Dependency> ret= Dependency::clone(dependency);
+	shared_ptr <Dep> ret= Dep::clone(dep);
 	ret->top= top;
 	return ret; 
 }
@@ -2059,7 +2057,7 @@ void File_Execution::waited(pid_t pid, int status)
 	}
 }
 
-File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
+File_Execution::File_Execution(shared_ptr <const Dep> dep,
 			       Execution *parent, 
 			       shared_ptr <Rule> rule_,
 			       shared_ptr <Rule> param_rule_,
@@ -2072,7 +2070,7 @@ File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 	assert((param_rule_ == nullptr) == (rule_ == nullptr)); 
 
 	swap(mapping_parameter, mapping_parameter_); 
-	Target target_= dependency->get_target(); 
+	Target target_= dep->get_target(); 
 
 	/* Later replaced with all targets from the rule, when a rule exists */ 
 	Target target_no_flags= target_;
@@ -2080,7 +2078,7 @@ File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 	targets.push_back(target_no_flags); 
 	executions_by_target[target_no_flags]= this; 
 
-	parents[parent]= dependency; 
+	parents[parent]= dep; 
 	if (error_additional) {
 		print_traces(); 
 		flags_finished= ~0; 
@@ -2107,7 +2105,7 @@ File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 
 	if (rule != nullptr) {
 		/* There is a rule for this execution */ 
-		for (auto &d:  rule->dependencies) {
+		for (auto &d:  rule->deps) {
 			push(d); 
 		}
 	} else {
@@ -2117,7 +2115,7 @@ File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 		/* Whether to produce the "no rule to build target" error */ 
 
 		if (target_.is_file()) {
-			if (! (dependency->flags & F_OPTIONAL)) {
+			if (! (dep->flags & F_OPTIONAL)) {
 				/* Check that the file is present,
 				 * or make it an error */ 
 				struct stat buf;
@@ -2159,8 +2157,8 @@ File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 
 	/* It is not allowed to have a dynamic of a non-transitive transient */
 	if (dynamic_cast <Dynamic_Execution *> (parent) &&
-	    dependency->flags & F_RESULT_NOTIFY &&
-	    dependency->flags & F_TARGET_TRANSIENT) {
+	    dep->flags & F_RESULT_NOTIFY &&
+	    dep->flags & F_TARGET_TRANSIENT) {
 
 		Place place_target;
 		for (auto &i:  rule->place_param_targets) {
@@ -2172,13 +2170,13 @@ File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 		assert(! place_target.empty());
 		if (rule->command) {
 			place_target << fmt("rule for transient target %s must not have a command", 
-					   target_.format_word());
+					    target_.format_word());
 		} else {
 			place_target << fmt("rule for transient target %s must not have file targets",
-					   target_.format_word());
+					    target_.format_word());
 		}
-		dependency->get_place() << fmt("when used as dynamic dependency of %s",
-					       parent->get_parents().begin()->second->get_target().format_word());
+		dep->get_place() << fmt("when used as dynamic dependency of %s",
+					parent->get_parents().begin()->second->get_target().format_word());
 		parent->get_parents().begin()->first->print_traces();
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
@@ -2186,8 +2184,8 @@ File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 	}
 
 	/* -o and -p are not allowed on non-transitive transients */
-	if (dependency->flags & F_TARGET_TRANSIENT &&
-	    dependency->flags & (F_OPTIONAL | F_PERSISTENT)) {
+	if (dep->flags & F_TARGET_TRANSIENT &&
+	    dep->flags & (F_OPTIONAL | F_PERSISTENT)) {
 
 		Place place_target;
 		for (auto &i:  rule->place_param_targets) {
@@ -2197,10 +2195,10 @@ File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 			}
 		}
 		assert(! place_target.empty());
-		dependency->get_place() << fmt((dependency->flags & F_OPTIONAL)
-					       ? "dependency %s must not be optional"
-					       : "dependency %s must not be persistent",
-					       dependency->format_word()); 
+		dep->get_place() << fmt((dep->flags & F_OPTIONAL)
+					? "dependency %s must not be optional"
+					: "dependency %s must not be persistent",
+					dep->format_word()); 
 		if (rule->command) 
 			place_target << fmt("because rule for transient target %s has a command", target_.format_word());
 		else 
@@ -2212,12 +2210,12 @@ File_Execution::File_Execution(shared_ptr <const Dependency> dependency,
 	}
 
 	parents.erase(parent); 
-	if (find_cycle(parent, this, dependency)) {
+	if (find_cycle(parent, this, dep)) {
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL; 
 		return;
 	}
-	parents[parent]= dependency; 
+	parents[parent]= dep; 
 }
 
 bool File_Execution::finished() const 
@@ -2356,9 +2354,9 @@ bool File_Execution::remove_if_existing(bool output)
 }
 
 void File_Execution::warn_future_file(struct stat *buf, 
-					const char *filename,
-					const Place &place,
-					const char *message_extra)
+				      const char *filename,
+				      const Place &place,
+				      const char *message_extra)
 {
   	if (timestamp_last < Timestamp(buf)) {
 		string suffix=
@@ -2469,15 +2467,15 @@ void File_Execution::print_command() const
 	}
 }
 
-Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
+Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 {
 	assert(! job.started() || children.empty()); 
 
-	Proceed proceed= execute_base_A(dependency_this); 
+	Proceed proceed= execute_base_A(dep_this); 
 	assert(proceed); 
 	if (proceed & P_ABORT) {
 		assert(proceed & P_FINISHED); 
-		flags_finished |= ~dependency_this->flags;
+		flags_finished |= ~dep_this->flags;
 		return proceed; 
 	}
 	if (proceed & (P_WAIT | P_PENDING)) {
@@ -2489,7 +2487,7 @@ Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 	
 	Debug debug(this);
 
-	if (finished(dependency_this->flags)) {
+	if (finished(dep_this->flags)) {
 		assert(! (proceed & P_WAIT)); 
 		return proceed |= P_FINISHED; 
 	}
@@ -2541,7 +2539,7 @@ Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 				/* File exists */ 
 				Timestamp timestamp_file= Timestamp(&buf); 
 				timestamps_old[i]= timestamp_file;
- 				if (! (dependency_this->flags & F_PERSISTENT)) 
+ 				if (! (dep_this->flags & F_PERSISTENT)) 
 					warn_future_file(&buf, 
 							 target.get_name_c_str_nondynamic(), 
 							 rule == nullptr 
@@ -2578,7 +2576,7 @@ Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 			    && ret_stat != 0 && errno == ENOENT) {
 				/* File does not exist */
 
-				if (! (dependency_this->flags & F_OPTIONAL)) {
+				if (! (dep_this->flags & F_OPTIONAL)) {
 					/* Non-optional dependency */  
 					bits |= B_NEED_BUILD;
 				} else {
@@ -2597,7 +2595,7 @@ Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 				rule->place_param_targets[i]->place
 					<< system_format(target.format_word()); 
 				raise(ERROR_BUILD);
-				flags_finished |= ~ dependency_this->flags; 
+				flags_finished |= ~ dep_this->flags; 
 				return proceed |= P_ABORT | P_FINISHED; 
 			}
 
@@ -2607,7 +2605,7 @@ Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 
 				assert(errno == ENOENT); 
 
-				if (rule->dependencies.size()) {
+				if (rule->deps.size()) {
 					print_traces
 						(fmt("expected the file without command %s to exist because all its dependencies are up to date, but it does not", 
 						     target.format_word())); 
@@ -2619,7 +2617,7 @@ Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 					print_traces();
 					explain_file_without_command_without_dependencies(); 
 				}
-				flags_finished |= ~ dependency_this->flags; 
+				flags_finished |= ~ dep_this->flags; 
 				raise(ERROR_BUILD);
 				return proceed |= P_ABORT | P_FINISHED; 
 			}		
@@ -2659,7 +2657,7 @@ Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 
 	if (! (bits & B_NEED_BUILD)) {
 		/* The file does not have to be built */ 
-		flags_finished |= ~ dependency_this->flags; 
+		flags_finished |= ~ dep_this->flags; 
 		return proceed |= P_FINISHED; 
 	}
 
@@ -2668,7 +2666,7 @@ Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 
 	/* Re-deploy all dependencies (second pass to execute also all
 	 * transient targets) */
-	Proceed proceed_2= Execution::execute_base_B(dependency_this); 
+	Proceed proceed_2= Execution::execute_base_B(dep_this); 
 	if (proceed_2 & P_WAIT) {
 		return proceed_2; 
 	}
@@ -2676,7 +2674,7 @@ Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */ 
-		flags_finished |= ~ dependency_this->flags; 
+		flags_finished |= ~ dep_this->flags; 
 		return proceed |= P_FINISHED; 
 	}
 
@@ -2753,7 +2751,7 @@ Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 			/* If optional copy, don't just call 'cp' and
 			 * let it fail:  look up whether the source
 			 * exists in the cache */
-			if (rule->dependencies.at(0)->flags & F_OPTIONAL) {
+			if (rule->deps.at(0)->flags & F_OPTIONAL) {
 				Execution *execution_source_base=
 					executions_by_target.at(Target(0, source));
 				assert(execution_source_base); 
@@ -2764,14 +2762,14 @@ Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 					/* Neither the source file nor
 					 * the target file exist:  an
 					 * error  */
-					rule->dependencies.at(0)->get_place()
+					rule->deps.at(0)->get_place()
 						<< fmt("source file %s in optional copy rule "
 						       "must exist",
 						       name_format_word(source));
 					print_traces(fmt("when target file %s does not exist",
 							 targets.at(0).format_word())); 
 					raise(ERROR_BUILD);
-					flags_finished |= ~ dependency_this->flags; 
+					flags_finished |= ~ dep_this->flags; 
 					assert(proceed == 0); 
 					return proceed |= P_ABORT | P_FINISHED; 
 				}
@@ -2800,7 +2798,7 @@ Proceed File_Execution::execute(shared_ptr <const Dependency> dependency_this)
 			print_traces(fmt("error executing command for %s", 
 					 targets.front().format_word())); 
 			raise(ERROR_BUILD);
-			flags_finished |= ~ dependency_this->flags; 
+			flags_finished |= ~ dep_this->flags; 
 			assert(proceed == 0); 
 			proceed |= P_ABORT | P_FINISHED; 
 			return proceed;
@@ -2830,7 +2828,7 @@ void File_Execution::print_as_job() const
 }
 
 void File_Execution::write_content(const char *filename, 
-				     const Command &command)
+				   const Command &command)
 {
 	FILE *file= fopen(filename, "w"); 
 
@@ -2869,11 +2867,11 @@ void File_Execution::write_content(const char *filename,
 	bits &= ~B_MISSING; 
 }
 
-void File_Execution::read_variable(shared_ptr <const Dependency> dependency)
+void File_Execution::read_variable(shared_ptr <const Dep> dep)
 {
-	Debug::print(this, fmt("read_variable %s", dependency->format_src())); 
+	Debug::print(this, fmt("read_variable %s", dep->format_src())); 
 	
-	assert(dynamic_pointer_cast <const Plain_Dependency> (dependency)); 
+	assert(to <Plain_Dep> (dep)); 
 
 	if (! result_variable.empty()) {
 		/* It was already read */
@@ -2885,7 +2883,7 @@ void File_Execution::read_variable(shared_ptr <const Dependency> dependency)
 	 * no reason to check.  In such cases, we don't need the
 	 * variable.  */
 	if (!(bits & B_EXISTING)) {
-		assert(dependency->flags & F_TRIVIAL); 
+		assert(dep->flags & F_TRIVIAL); 
 		return;
 	}
 
@@ -2893,7 +2891,7 @@ void File_Execution::read_variable(shared_ptr <const Dependency> dependency)
 		return; 
 	}
 
-	Target target= dependency->get_target(); 
+	Target target= dep->get_target(); 
 	assert(! target.is_dynamic()); 
 
 	size_t filesize;
@@ -2904,24 +2902,24 @@ void File_Execution::read_variable(shared_ptr <const Dependency> dependency)
 	int fd= open(target.get_name_c_str_nondynamic(), O_RDONLY);
 	if (fd < 0) {
 		if (errno != ENOENT) {
-			dependency->get_place() << target.format_word();
+			dep->get_place() << target.format_word();
 		}
 		goto error;
 	}
 	if (0 > fstat(fd, &buf)) {
-		dependency->get_place() << target.format_word(); 
+		dep->get_place() << target.format_word(); 
 		goto error_fd;
 	}
 
 	filesize= buf.st_size;
 	content.resize(filesize);
 	if ((ssize_t) filesize != read(fd, (void *) content.c_str(), filesize)) {
-		dependency->get_place() << target.format_word(); 
+		dep->get_place() << target.format_word(); 
 		goto error_fd;
 	}
 
 	if (0 > close(fd)) { 
-		dependency->get_place() << target.format_word(); 
+		dep->get_place() << target.format_word(); 
 		goto error;
 	}
 
@@ -2933,7 +2931,7 @@ void File_Execution::read_variable(shared_ptr <const Dependency> dependency)
 
 	/* The variable name */ 
 	dependency_variable_name=
-		dynamic_pointer_cast <const Plain_Dependency> (dependency)->variable_name; 
+		to <Plain_Dep> (dep)->variable_name; 
 
 	{
 		string variable_name= 
@@ -2949,11 +2947,11 @@ void File_Execution::read_variable(shared_ptr <const Dependency> dependency)
 	close(fd); 
  error:
 	Target target_variable= 
-		dynamic_pointer_cast <const Plain_Dependency> (dependency)->place_param_target
+		to <Plain_Dep> (dep)->place_param_target
 		.unparametrized(); 
 
 	if (rule == nullptr) {
-		dependency->get_place() <<
+		dep->get_place() <<
 			fmt("file %s was up to date but cannot be found now", 
 			    target_variable.format_word());
 	} else {
@@ -2971,20 +2969,20 @@ void File_Execution::read_variable(shared_ptr <const Dependency> dependency)
 	raise(ERROR_BUILD); 
 }
 
-bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_link)
+bool File_Execution::optional_finished(shared_ptr <const Dep> dep_link)
 {
-	if ((dependency_link->flags & F_OPTIONAL) 
-	    && dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
-	    && ! (dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
+	if ((dep_link->flags & F_OPTIONAL) 
+	    && to <Plain_Dep> (dep_link)
+	    && ! (to <Plain_Dep> (dep_link)
 		  ->place_param_target.flags & F_TARGET_TRANSIENT)) {
 
 		/* We already know a file to be missing */ 
 		if (bits & B_MISSING) {
-			flags_finished |= ~dependency_link->flags; 
+			flags_finished |= ~dep_link->flags; 
 			return true; 
 		}
 		
-		const char *name= dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
+		const char *name= to <Plain_Dep> (dep_link)
 			->place_param_target.place_name.unparametrized().c_str();
 
 		struct stat buf;
@@ -2993,14 +2991,14 @@ bool File_Execution::optional_finished(shared_ptr <const Dependency> dependency_
 			bits |= B_MISSING;
 			bits &= ~B_EXISTING; 
 			if (errno != ENOENT) {
-				dynamic_pointer_cast <const Plain_Dependency> (dependency_link)
+				to <Plain_Dep> (dep_link)
 					->place_param_target.place <<
 					system_format(name_format_word(name)); 
 				raise(ERROR_BUILD);
-				flags_finished |= ~dependency_link->flags; 
+				flags_finished |= ~dep_link->flags; 
 				return true;
 			}
-			flags_finished |= ~dependency_link->flags; 
+			flags_finished |= ~dep_link->flags; 
 			return true;
 		} else {
 			assert(ret_stat == 0);
@@ -3024,20 +3022,20 @@ bool Root_Execution::finished(Flags flags) const
 	return is_finished; 
 }
 
-Root_Execution::Root_Execution(const vector <shared_ptr <const Dependency> > &dependencies)
+Root_Execution::Root_Execution(const vector <shared_ptr <const Dep> > &deps)
 	:  is_finished(false)
 {
-	for (auto &d:  dependencies) {
+	for (auto &d:  deps) {
 		push(d); 
 	}
 }
 
-Proceed Root_Execution::execute(shared_ptr <const Dependency> dependency_this)
+Proceed Root_Execution::execute(shared_ptr <const Dep> dep_this)
 {
 	/* This is an example of a "plain" execute() function,
 	 * containing the minimal wrapper around execute_base_?()  */ 
 	
-	Proceed proceed= execute_base_A(dependency_this); 
+	Proceed proceed= execute_base_A(dep_this); 
 	assert(proceed); 
 	if (proceed & (P_WAIT | P_PENDING)) {
 		assert((proceed & P_FINISHED) == 0); 
@@ -3048,7 +3046,7 @@ Proceed Root_Execution::execute(shared_ptr <const Dependency> dependency_this)
 		return proceed; 
 	}
 
-	proceed |= execute_base_B(dependency_this);
+	proceed |= execute_base_B(dep_this);
 	if (proceed & (P_WAIT | P_PENDING)) {
 		assert((proceed & P_FINISHED) == 0); 
 		return proceed;
@@ -3060,45 +3058,45 @@ Proceed Root_Execution::execute(shared_ptr <const Dependency> dependency_this)
 	return proceed; 
 }
 
-Concatenated_Execution::Concatenated_Execution(shared_ptr <const Concatenated_Dependency> dependency_,
-					       shared_ptr <const Dependency> dependency_link,
-					       Execution *parent,
-					       bool &found_cycle)
+Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
+				   shared_ptr <const Dep> dep_link,
+				   Execution *parent,
+				   bool &found_cycle)
 	:  Execution(),
-	   dependency(dependency_),
+	   dep(dep_),
 	   stage(0)
 {
-	assert(dependency_->is_normalized()); 
+	assert(dep_->is_normalized()); 
 
 	/* Check the structure of the dependency */
-	shared_ptr <const Dependency> dep= dependency;
-	dep= Dependency::strip_dynamic(dep); 
-	assert(dynamic_pointer_cast <const Concatenated_Dependency> (dep));
-	shared_ptr <Concatenated_Dependency> concatenated_dependency= 
-		dynamic_pointer_cast <Concatenated_Dependency> (Dependency::clone(dep));
+	shared_ptr <const Dep> depp= dep;
+	depp= Dep::strip_dynamic(depp); 
+	assert(to <Concat_Dep> (depp));
+	shared_ptr <Concat_Dep> concat_dep= 
+		dynamic_pointer_cast <Concat_Dep> (Dep::clone(depp));
 
-	for (size_t i= 0;  i < concatenated_dependency->get_dependencies().size();  ++i) {
+	for (size_t i= 0;  i < concat_dep->get_deps().size();  ++i) {
 
-		shared_ptr <const Dependency> d= concatenated_dependency->get_dependencies()[i]; 
+		shared_ptr <const Dep> d= concat_dep->get_deps()[i]; 
 
-		shared_ptr <const Dependency> dependency_normalized= 
-			Dependency::make_normalized_compound(d); 
+		shared_ptr <const Dep> dep_normalized= 
+			Dep::normalize_compound(d); 
 
-		concatenated_dependency->get_dependencies()[i]= dependency_normalized; 
+		concat_dep->get_deps()[i]= dep_normalized; 
 	}
 
-	dependency= concatenated_dependency; 
+	dep= concat_dep; 
 
-	if (find_cycle(parent, this, dependency_link)) {
+	if (find_cycle(parent, this, dep_link)) {
 		parent->raise(ERROR_LOGICAL);
 		found_cycle= true; 
 		return;
 	}
-	parents[parent]= dependency_link; 
+	parents[parent]= dep_link; 
 
 }
 
-Proceed Concatenated_Execution::execute(shared_ptr <const Dependency> dependency_this)
+Proceed Concat_Execution::execute(shared_ptr <const Dep> dep_this)
 {
 	assert(stage >= 0 && stage <= 3); 
 
@@ -3114,22 +3112,22 @@ Proceed Concatenated_Execution::execute(shared_ptr <const Dependency> dependency
 		 * the concatenated dependency, minus one dynamic level,
 		 * or not at all if they are not dynamic.  */
 
-		shared_ptr <const Dependency> dep= Dependency::strip_dynamic(dependency); 
-		shared_ptr <const Concatenated_Dependency> concatenated_dependency= 
-			dynamic_pointer_cast <const Concatenated_Dependency> (dep);
-		assert(concatenated_dependency != nullptr); 
+		shared_ptr <const Dep> depp= Dep::strip_dynamic(dep); 
+		shared_ptr <const Concat_Dep> concat_depp= 
+			to <Concat_Dep> (depp);
+		assert(concat_depp != nullptr); 
 
-		const size_t n= concatenated_dependency->get_dependencies().size(); 
+		const size_t n= concat_depp->get_deps().size(); 
 
 		for (size_t i= 0;  i < n;  ++i) {
-			shared_ptr <const Dependency> d= concatenated_dependency->get_dependencies()[i]; 
-			if (dynamic_pointer_cast <const Compound_Dependency> (d)) {
-				for (shared_ptr <const Dependency> dd:  
-					     dynamic_pointer_cast <const Compound_Dependency> (d)->get_dependencies()) {
-					add_stage0_dependency(dd, i); 
+			shared_ptr <const Dep> d= concat_depp->get_deps()[i]; 
+			if (to <Compound_Dep> (d)) {
+				for (shared_ptr <const Dep> dd:  
+					     to <Compound_Dep> (d)->get_deps()) {
+					add_stage0_dep(dd, i); 
 				}
 			} else {
-				add_stage0_dependency(d, i); 
+				add_stage0_dep(d, i); 
 			}
 		}
 
@@ -3142,13 +3140,13 @@ Proceed Concatenated_Execution::execute(shared_ptr <const Dependency> dependency
 
 	if (stage == 1) {
 		/* First phase:  we build all individual targets, if there are some */ 
-		Proceed proceed= execute_base_A(dependency_this); 
+		Proceed proceed= execute_base_A(dep_this); 
 		assert(proceed); 
 		if (proceed & P_WAIT) {
 			return proceed;
 		}
 
-		proceed |= execute_base_B(dependency_this); 
+		proceed |= execute_base_B(dep_this); 
 		assert(proceed); 
 		if (proceed & P_WAIT) {
 			return proceed;
@@ -3168,14 +3166,14 @@ Proceed Concatenated_Execution::execute(shared_ptr <const Dependency> dependency
 
 	if (stage == 2) {
 		/* Second phase:  normal child executions */
-		assert(! dependency); 
-		Proceed proceed= execute_base_A(dependency_this); 
+		assert(! dep); 
+		Proceed proceed= execute_base_A(dep_this); 
 		assert(proceed); 
 		if (proceed & P_WAIT) {
 			return proceed;
 		}
 
-		proceed |= execute_base_B(dependency_this); 
+		proceed |= execute_base_B(dep_this); 
 		assert(proceed); 
 		if (proceed & P_WAIT) {
 			return proceed;
@@ -3199,13 +3197,13 @@ Proceed Concatenated_Execution::execute(shared_ptr <const Dependency> dependency
 	}
 }
 
-bool Concatenated_Execution::finished() const
+bool Concat_Execution::finished() const
 {
 	/* We ignore DONE here */
 	return stage == 3;
 }
 
-bool Concatenated_Execution::finished(Flags flags) const
+bool Concat_Execution::finished(Flags flags) const
 /* Since Concatenated_Execution objects are used just once, by a single
  * parent, this always returns the same as finished() itself.
  * Therefore, the FLAGS parameter is ignored.  */
@@ -3214,48 +3212,48 @@ bool Concatenated_Execution::finished(Flags flags) const
 	return finished(); 
 }
 
-void Concatenated_Execution::add_stage0_dependency(shared_ptr <const Dependency> d,
-						   unsigned concatenate_index)
+void Concat_Execution::add_stage0_dep(shared_ptr <const Dep> d,
+				      unsigned concat_index)
 /* 
  * The given dependency can be non-normalized. 
  */
 {
 	assert(false);
-	(void) d;  (void) concatenate_index;  
+	(void) d;  (void) concat_index;  
 }
 
-shared_ptr <const Dependency> Concatenated_Execution::
-concatenate_dependency_one(shared_ptr <const Plain_Dependency> dependency_1,
-			   shared_ptr <const Plain_Dependency> dependency_2,
-			   Flags dependency_flags)
+shared_ptr <const Dep> Concat_Execution::
+concat_dep_one(shared_ptr <const Plain_Dep> dep_1,
+	       shared_ptr <const Plain_Dep> dep_2,
+	       Flags dep_flags)
 /* 
  * Rules for concatenation:
  *   - Flags are not allowed on the second component.
  *   - The second component must not be transient. 
  */
 {
-	assert(dependency_2->flags == 0);
+	assert(dep_2->flags == 0);
 	// XXX test:  replace by a proper error 
 
-	assert(! (dependency_2->place_param_target.flags & F_TARGET_TRANSIENT)); 
+	assert(! (dep_2->place_param_target.flags & F_TARGET_TRANSIENT)); 
 	// XXX proper test.  
 
-	Place_Param_Target target= dependency_1->place_param_target; 
-	target.place_name.append(dependency_2->place_param_target.place_name); 
+	Place_Param_Target target= dep_1->place_param_target; 
+	target.place_name.append(dep_2->place_param_target.place_name); 
 
-	return make_shared <Plain_Dependency> 
-		(dependency_flags & dependency_1->flags,
+	return make_shared <Plain_Dep> 
+		(dep_flags & dep_1->flags,
 		 target,
-		 dependency_1->place,
+		 dep_1->place,
 		 "");
 }
 
-Concatenated_Execution::~Concatenated_Execution()
+Concat_Execution::~Concat_Execution()
 {
 	/* Nop */ 
 }
 
-void Concatenated_Execution::assemble_parts()
+void Concat_Execution::assemble_parts()
 {
 	if (parts.size() == 0) {
 		/* This is theoretically and empty product and should
@@ -3265,16 +3263,16 @@ void Concatenated_Execution::assemble_parts()
 		return; 
 	}
 
-	vector <shared_ptr <const Dependency> > dependencies_read; 
+	vector <shared_ptr <const Dep> > deps_read; 
 
 	for (size_t i= 0;  i < parts.size();  ++i) {
 
-		vector <shared_ptr <const Dependency> > dependencies_read_new; 
+		vector <shared_ptr <const Dep> > deps_read_new; 
 		
 		/* If a single index is empty, the whole result is
 		 * an empty set of dependencies.  */
 		if (parts[i].empty()) {
-			dependencies_read= vector <shared_ptr <const Dependency> > (); 
+			deps_read= vector <shared_ptr <const Dep> > (); 
 			return; 
 		}
 
@@ -3284,39 +3282,39 @@ void Concatenated_Execution::assemble_parts()
 			 * be transient and have flags, while subsequent
 			 * parts cannot.  */
 			for (size_t k= 0;  k < parts[i].size();  ++k) {
-				dependencies_read_new.push_back(parts[i][k]);
+				deps_read_new.push_back(parts[i][k]);
 			}
 		} else {
-			for (size_t j= 0;  j < dependencies_read.size();  ++j) {
+			for (size_t j= 0;  j < deps_read.size();  ++j) {
 				for (size_t k= 0;  k < parts[i].size();  ++k) {
 					// XXX do something here ...
 				}
 			}
 		}
 		
-		swap(dependencies_read, dependencies_read_new); 
+		swap(deps_read, deps_read_new); 
 	}
 
-	for (auto &i:  dependencies_read) {
+	for (auto &i:  deps_read) {
 		push(i); 
 	}
 }
 
-Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dependency> dependency_,
+Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dep> dep_,
 				     Execution *parent,
 				     int &error_additional)
-	:  dependency(dependency_),
+	:  dep(dep_),
 	   is_finished(false)
 {
-	assert(dependency_); 
+	assert(dep_); 
 	assert(parent); 
-	dependency->check();
+	dep->check();
 	
 	/* Set the rule here, so cycles in the dependency graph can be
 	 * detected.  Note however that the rule of dynamic executions
 	 * is otherwise not used.  */ 
 
-	parents[parent]= dependency;
+	parents[parent]= dep;
 	if (error_additional) {
 		print_traces(); 
 		is_finished= true; 
@@ -3326,18 +3324,18 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dependency> depen
 	}
 
 	/* Find the rule of the inner dependency */
-	shared_ptr <const Dependency> inner_dependency= Dependency::strip_dynamic(dependency);
-	if (dynamic_pointer_cast <const Plain_Dependency> (inner_dependency)) {
-		shared_ptr <const Plain_Dependency> inner_plain_dependency
-			= dynamic_pointer_cast <const Plain_Dependency> (inner_dependency); 
-		Target target_base(inner_plain_dependency->place_param_target.flags,
-				   inner_plain_dependency->place_param_target.place_name.unparametrized());
-		Target target= dependency->get_target(); 
+	shared_ptr <const Dep> inner_dep= Dep::strip_dynamic(dep);
+	if (to <Plain_Dep> (inner_dep)) {
+		shared_ptr <const Plain_Dep> inner_plain_dep
+			= to <Plain_Dep> (inner_dep); 
+		Target target_base(inner_plain_dep->place_param_target.flags,
+				   inner_plain_dep->place_param_target.place_name.unparametrized());
+		Target target= dep->get_target(); 
 		try {
 			map <string, string> mapping_parameter; 
 			shared_ptr <Rule> rule= 
 				rule_set.get(target_base, param_rule, mapping_parameter, 
-					     dependency->get_place()); 
+					     dep->get_place()); 
 		} catch (int e) {
 			assert(e); 
 			print_traces(); 
@@ -3349,28 +3347,28 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dependency> depen
 	}
 
 	parents.erase(parent); 
-	if (find_cycle(parent, this, dependency)) {
+	if (find_cycle(parent, this, dep)) {
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL; 
 		return;
 	}
-	parents[parent]= dependency; 
+	parents[parent]= dep; 
 
 	/* Push single initial dependency */ 
-	shared_ptr <Dependency> dependency_child= Dependency::clone(dependency->dependency);
-	dependency_child->flags |= F_RESULT_NOTIFY; 
-	push(dependency_child); 
+	shared_ptr <Dep> dep_child= Dep::clone(dep->dep);
+	dep_child->flags |= F_RESULT_NOTIFY; 
+	push(dep_child); 
 }
 
-Proceed Dynamic_Execution::execute(shared_ptr <const Dependency> dependency_this)
+Proceed Dynamic_Execution::execute(shared_ptr <const Dep> dep_this)
 {
-	Proceed proceed= execute_base_A(dependency_this); 
+	Proceed proceed= execute_base_A(dep_this); 
 	assert(proceed); 
 	if (proceed & P_FINISHED) {
 		is_finished= true; 
 		return proceed;
 	}
-	proceed |= execute_base_B(dependency_this);
+	proceed |= execute_base_B(dep_this);
 	if (proceed & P_FINISHED) {
 		is_finished= true; 
 	}
@@ -3390,28 +3388,28 @@ bool Dynamic_Execution::finished(Flags) const
 
 bool Dynamic_Execution::want_delete() const
 {
-	return dynamic_pointer_cast <const Plain_Dependency> (Dependency::strip_dynamic(dependency)) == nullptr; 
+	return to <Plain_Dep> (Dep::strip_dynamic(dep)) == nullptr; 
 }
 
 string Dynamic_Execution::format_src() const
 {
-	return dependency->format_src();
+	return dep->format_src();
 }
 
-void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d, 
+void Dynamic_Execution::notify_result(shared_ptr <const Dep> d, 
 				      Execution *source, 
 				      Flags flags,
-				      shared_ptr <const Dependency> dependency_source)
+				      shared_ptr <const Dep> dep_source)
 {
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))); 
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)) != (F_RESULT_NOTIFY | F_RESULT_COPY)); 
-	assert((dependency_source == nullptr) == (flags == F_RESULT_NOTIFY)); 
+	assert((dep_source == nullptr) == (flags == F_RESULT_NOTIFY)); 
 
 	if (flags & F_RESULT_NOTIFY) {
 		try {
-			assert(dynamic_pointer_cast <const Plain_Dependency> (d));
+			assert(to <Plain_Dep> (d));
 			const Place_Param_Target &place_param_target= 
-				dynamic_pointer_cast <const Plain_Dependency> (d)->place_param_target; 
+				to <Plain_Dep> (d)->place_param_target; 
 
 			/* Check:  variable dependencies are not allowed in multiply
 			 * dynamic dependencies.  */
@@ -3426,26 +3424,26 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dependency> d,
 						      Color::end); 
 				source->print_traces
 					(fmt("within multiply-dynamic dependency %s", 
-					     dependency->get_target().format_word()));
+					     dep->get_target().format_word()));
 				raise(ERROR_LOGICAL);
 			} 
 
 			if ((place_param_target.flags & F_TARGET_TRANSIENT) == 0) {
-				vector <shared_ptr <const Dependency> > dependencies;
+				vector <shared_ptr <const Dep> > deps;
 				source->read_dynamic(d->flags,
 						     place_param_target,
 						     d,
-						     dependencies); 
-				for (auto &j:  dependencies) {
-					shared_ptr <Dependency> j_new= Dependency::clone(j); 
+						     deps); 
+				for (auto &j:  deps) {
+					shared_ptr <Dep> j_new= Dep::clone(j); 
 					/* Add -% flag */
 					j_new->flags |= F_RESULT_COPY;
 					/* Add flags from self  */  
-					j_new->flags |= dependency->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
+					j_new->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
 					for (int i= 0;  i < C_PLACED;  ++i) {
 						if (j_new->get_place_flag(i).empty() && 
-						    ! dependency->get_place_flag(i).empty())
-							j_new->set_place_flag(i, dependency->get_place_flag(i)); 
+						    ! dep->get_place_flag(i).empty())
+							j_new->set_place_flag(i, dep->get_place_flag(i)); 
 					}
 					j= j_new; 
 //					if (d->top) {
@@ -3472,9 +3470,9 @@ Transient_Execution::~Transient_Execution()
 	assert(false);
 }
 
-Proceed Transient_Execution::execute(shared_ptr <const Dependency> dependency_this)
+Proceed Transient_Execution::execute(shared_ptr <const Dep> dep_this)
 {
-	Proceed proceed= execute_base_A(dependency_this); 
+	Proceed proceed= execute_base_A(dep_this); 
 	assert(proceed); 
 	if (proceed & (P_WAIT | P_PENDING)) {
 		return proceed; 
@@ -3496,7 +3494,7 @@ bool Transient_Execution::finished(Flags) const
 	return is_finished; 
 }
 
-Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependency_link,
+Transient_Execution::Transient_Execution(shared_ptr <const Dep> dep_link,
 					 Execution *parent,
 					 shared_ptr <Rule> rule_,
 					 shared_ptr <Rule> param_rule_,
@@ -3507,18 +3505,18 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 {
 	swap(mapping_parameter, mapping_parameter_); 
 
-	assert(dynamic_pointer_cast <const Plain_Dependency> (dependency_link)); 
-	shared_ptr <const Plain_Dependency> plain_dependency= 
-		dynamic_pointer_cast <const Plain_Dependency> (dependency_link);
+	assert(to <Plain_Dep> (dep_link)); 
+	shared_ptr <const Plain_Dep> plain_dep= 
+		to <Plain_Dep> (dep_link);
 
-	Target target= plain_dependency->place_param_target.unparametrized();
+	Target target= plain_dep->place_param_target.unparametrized();
 	assert(target.is_transient()); 
 
 	if (rule == nullptr) {
-		targets.push_back(dependency_link->get_target());
+		targets.push_back(dep_link->get_target());
 	}
 
-	parents[parent]= dependency_link; 
+	parents[parent]= dep_link; 
 	if (error_additional) {
 		print_traces();
 		is_finished= true;
@@ -3549,34 +3547,34 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dependency> dependenc
 	 * just the one given in the dependency.  Also, add the flags.  */
 	for (Target t:  targets) {
 		t.get_front_byte_nondynamic() |= (char)(unsigned char)
-			(dependency_link->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC)); 
+			(dep_link->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC)); 
 		executions_by_target[t]= this; 
 	}
 
-	for (auto &dependency:  rule->dependencies) {
-		shared_ptr <const Dependency> dep= dependency;
-		if (dependency_link->flags) {
-			shared_ptr <Dependency> dep_new= Dependency::clone(dep); 
-			dep_new->flags |= dependency_link->flags & (F_PLACED | F_ATTRIBUTE);
-			dep_new->flags |= F_RESULT_COPY; 
+	for (auto &dependency:  rule->deps) {
+		shared_ptr <const Dep> depp= dependency;
+		if (dep_link->flags) {
+			shared_ptr <Dep> depp_new= Dep::clone(depp); 
+			depp_new->flags |= dep_link->flags & (F_PLACED | F_ATTRIBUTE);
+			depp_new->flags |= F_RESULT_COPY; 
 			for (int i= 0;  i < C_PLACED;  ++i) {
-				assert(!(dependency_link->flags & (1 << i)) ==
-				       dependency_link->get_place_flag(i).empty());
-				if (dep_new->get_place_flag(i).empty() && ! dependency_link->get_place_flag(i).empty())
-					dep_new->set_place_flag(i, dependency_link->get_place_flag(i)); 
+				assert(!(dep_link->flags & (1 << i)) ==
+				       dep_link->get_place_flag(i).empty());
+				if (depp_new->get_place_flag(i).empty() && ! dep_link->get_place_flag(i).empty())
+					depp_new->set_place_flag(i, dep_link->get_place_flag(i)); 
 			}
-			dep= dep_new;
+			depp= depp_new;
 		}
-		push(dep); 
+		push(depp); 
 	}
 
 	parents.erase(parent); 
-	if (find_cycle(parent, this, dependency_link)) {
+	if (find_cycle(parent, this, dep_link)) {
 		raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL; 
 		return; 
 	}
-	parents[parent]= dependency_link; 
+	parents[parent]= dep_link; 
 }
 	
 string Transient_Execution::format_src() const {
@@ -3584,15 +3582,15 @@ string Transient_Execution::format_src() const {
 	return targets.front().format_src(); 
 }
 
-void Transient_Execution::notify_result(shared_ptr <const Dependency> dependency,
+void Transient_Execution::notify_result(shared_ptr <const Dep> dep,
 					Execution *,
 					Flags flags,
-					shared_ptr <const Dependency> dependency_source)
+					shared_ptr <const Dep> dep_source)
 {
 	assert(flags == F_RESULT_COPY); 
-	assert(dependency_source);
-	dependency= append_top(dependency, dependency_source); 
-	push_result(dependency); 
+	assert(dep_source);
+	dep= append_top(dep, dep_source); 
+	push_result(dep); 
 }
 
 void Debug::print(const Execution *e, string text) 

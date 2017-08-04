@@ -1043,15 +1043,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 		} else if (to <Plain_Dep> (dd)) {
 			deps_.push_back(dd); 
 		} else if (to <Concat_Dep> (dd)) {
-//			vector <shared_ptr <const Dep> > ds;
-			normalize_concat(to <Concat_Dep> (dd), 
-					 deps_
-//					 ds
-					 );
-//			for (const auto &d:  ds) {
-//				assert(to <Plain_Dep> (d));
-//				deps_.push_back(d); 
-//			}
+			normalize_concat(to <Concat_Dep> (dd), deps_);
 		} else {
 			assert(false); 
 		}
@@ -1063,25 +1055,14 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dd);
 			for (const auto &d:  compound_dep->get_deps()) {
 				normalize(d, vec1); 
-//				shared_ptr <const Plain_Dep> d_plain= to <Plain_Dep> (d); 
-//				for (const auto &e:  vec2) {
-//					shared_ptr <const Plain_Dep> e_plain= to <Plain_Dep> (e); 
-//					assert(e_plain); 
-//					deps_.push_back(concat(d_plain, e_plain)); 
-//				}
 			}
 		} else if (to <Plain_Dep> (dd)) {
 			shared_ptr <const Plain_Dep> dd_plain= to <Plain_Dep> (dd); 
 			vec1.push_back(dd); 
-//			assert(dd_plain); 
-//			for (const auto &e:  vec2) {
-//				shared_ptr <const Plain_Dep> e_plain=
-//					to <Plain_Dep> (e); 
-//				assert(e_plain); 
-//				deps_.push_back(concat(dd_plain, e_plain)); 
-//			}
 		} else if (to <Dynamic_Dep> (dd)) {
 			assert(false); // XX implement case
+		} else if (to <Concat_Dep> (dd)) {
+			normalize_concat(to <Concat_Dep> (dd), vec1); 
 		} else {
 			assert(false); 
 		}

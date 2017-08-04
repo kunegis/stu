@@ -1,0 +1,14 @@
+A: [C] {
+	cp B A
+}
+
+>C:  $[N]
+{
+	printf '%0.s(' $(seq 1 $N)
+	printf B
+	printf '%0.s)' $(seq 1 $N)
+}
+
+N = {1000}
+
+B = {correct}

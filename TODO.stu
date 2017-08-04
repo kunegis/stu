@@ -253,6 +253,10 @@ X = {x}   Y = {y}  Z = {z}
 # no-op then. 
 #
 
+#
+# In -s -j mode, 'Successfully built' messages should not be output. 
+#
+
 #=================== Further features =======================
 
 #

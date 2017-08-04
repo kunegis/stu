@@ -130,7 +130,7 @@ public:
 
 	void add_flags(shared_ptr <const Dep> dep, 
 		       bool overwrite_places);
-	/* Add the flags from DEPENDENCY.  Also copy over the
+	/* Add the flags from DEP.  Also copy over the
 	 * corresponding places.  If a place is already given in THIS,
 	 * only copy a place over if OVERWRITE_PLACES is set.  */
 
@@ -165,9 +165,9 @@ public:
 
 	static void normalize(shared_ptr <const Dep> dep,
 			      vector <shared_ptr <const Dep> > &deps);
-	/* Split THIS into multiple DEPENDENCIES that are each
-	 * normalized.  The resulting dependencies are appended
-	 * DEPENDENCIES, which does not have to be empty on entering the
+	/* Split DEP into multiple DEPS that are each
+	 * normalized.  The resulting dependencies are appended to
+	 * DEPS, which does not have to be empty on entering the
 	 * function.  */
 
 	static shared_ptr <const Dep> normalize_compound(shared_ptr <const Dep> dep);
@@ -500,15 +500,15 @@ public:
 
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
 				     vector <shared_ptr <const Dep> > &deps); 
-	/* Normalize this object's dependencies into a list of simple
+	/* Normalize this object's dependencies into a list of individual
 	 * dependencies.  The generated dependencies are appended to
-	 * DEPENDENCIES which does not need to be empty on entry into
+	 * DEPS which does not need to be empty on entry into
 	 * this function.  */
 
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
 				     vector <shared_ptr <const Dep> > &deps,
 				     size_t start_index);
-	/* Helper function.  Write result into DEPENDENCIES,
+	/* Helper function.  Write result into DEPS,
 	   concatenating all starting at the given index.  */
 
 
@@ -1034,50 +1034,68 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 	if (start_index + 1 == dep->deps.size()) {
 		shared_ptr <const Dep> dd= dep->deps.at(start_index);
 		if (to <Compound_Dep> (dd)) {
-			shared_ptr <const Compound_Dep> compound_dep= 
-				to <Compound_Dep> (dd);
+			shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dd);
 			for (const auto &d:  compound_dep->get_deps()) {
 				assert(to <Plain_Dep> (d));
-				deps_.push_back(d); 
+				normalize(d, deps_); 
+//				deps_.push_back(d); 
 			}
 		} else if (to <Plain_Dep> (dd)) {
 			deps_.push_back(dd); 
 		} else if (to <Concat_Dep> (dd)) {
-			vector <shared_ptr <const Dep> > ds;
-			normalize_concat(to <Concat_Dep> (dd), ds);
-			for (const auto &d:  ds) {
-				assert(to <Plain_Dep> (d));
-				deps_.push_back(d); 
-			}
+//			vector <shared_ptr <const Dep> > ds;
+			normalize_concat(to <Concat_Dep> (dd), 
+					 deps_
+//					 ds
+					 );
+//			for (const auto &d:  ds) {
+//				assert(to <Plain_Dep> (d));
+//				deps_.push_back(d); 
+//			}
 		} else {
 			assert(false); 
 		}
 	} else {
-		vector <shared_ptr <const Dep> > vec;
-		normalize_concat(dep, vec, start_index + 1); 
+		vector <shared_ptr <const Dep> > vec1, vec2;
+		normalize_concat(dep, vec2, start_index + 1); 
 		shared_ptr <const Dep> dd= dep->deps.at(start_index); 
 		if (to <Compound_Dep> (dd)) {
 			shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dd);
 			for (const auto &d:  compound_dep->get_deps()) {
-				shared_ptr <const Plain_Dep> d_plain= to <Plain_Dep> (d); 
-				for (const auto &e:  vec) {
-					shared_ptr <const Plain_Dep> e_plain= to <Plain_Dep> (e); 
-					assert(e_plain); 
-					deps_.push_back(concat(d_plain, e_plain)); 
-				}
+				normalize(d, vec1); 
+//				shared_ptr <const Plain_Dep> d_plain= to <Plain_Dep> (d); 
+//				for (const auto &e:  vec2) {
+//					shared_ptr <const Plain_Dep> e_plain= to <Plain_Dep> (e); 
+//					assert(e_plain); 
+//					deps_.push_back(concat(d_plain, e_plain)); 
+//				}
 			}
 		} else if (to <Plain_Dep> (dd)) {
-			shared_ptr <const Plain_Dep> d_plain=
-				to <Plain_Dep> (dd); 
-			assert(d_plain); 
-			for (const auto &e:  vec) {
-				shared_ptr <const Plain_Dep> e_plain=
-					to <Plain_Dep> (e); 
-				assert(e_plain); 
-				deps_.push_back(concat(d_plain, e_plain)); 
-			}
+			shared_ptr <const Plain_Dep> dd_plain= to <Plain_Dep> (dd); 
+			vec1.push_back(dd); 
+//			assert(dd_plain); 
+//			for (const auto &e:  vec2) {
+//				shared_ptr <const Plain_Dep> e_plain=
+//					to <Plain_Dep> (e); 
+//				assert(e_plain); 
+//				deps_.push_back(concat(dd_plain, e_plain)); 
+//			}
+		} else if (to <Dynamic_Dep> (dd)) {
+			assert(false); // XX implement case
 		} else {
 			assert(false); 
+		}
+
+		for (const auto &d1:  vec1) {
+			for (const auto &d2:  vec2) {
+				// XXX handle the case of D1 and D2
+				// being other things than plain
+				// dependencies (return a Concat_Dep of
+				// them, eventually with flattening if
+				// one if them is already a Concat_Dep)
+				deps_.push_back(concat(to <Plain_Dep> (d1), 
+						       to <Plain_Dep> (d2))); 
+			}
 		}
 	}
 }

@@ -497,6 +497,11 @@ public:
 
 	static shared_ptr <const Plain_Dep> concat(shared_ptr <const Plain_Dep> a,
 						   shared_ptr <const Plain_Dep> b); 
+	/* Concatenate two plain dependencies to a single plain
+	 * dependency.  
+	 * XXX how are errors handled?
+	 */
+
 
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
 				     vector <shared_ptr <const Dep> > &deps); 

@@ -939,8 +939,6 @@ void Execution::read_dynamic(Flags flags_this,
 	
 	string filename= target.get_name_nondynamic();
 
-	//	Debug::print(this, fmt("read_dynamic \"%s\"", filename.c_str())); // RM
-	
 	if (! (flags_this & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
 
 		/* Parse dynamic dependency in full Stu syntax */ 
@@ -1299,9 +1297,6 @@ void Execution::print_traces(string text) const
 		if (hide_link_from_message(depp_old->flags)) {
 			continue;
 		}
-
-		//			// RM
-		//			Debug::print(this, fmt("print_traces cmp %s | %s", dep->format_src(), depp_old->format_src())); 
 
 		if (same_dependency_for_print(depp, depp_old)) {
 			continue; 
@@ -1860,11 +1855,6 @@ shared_ptr <const Dep> Execution::append_top(shared_ptr <const Dep> dep,
 	assert(dep);
 	assert(top); 
 	assert(dep != top); 
-
-	//	// RM
-	//	string s1= dependency->format_src();
-	//	string s2= top->format_src();
-	//	fprintf(stderr, "append_top(%s, %s)\n", s1.c_str(), s2.c_str()); 
 
 	shared_ptr <Dep> ret= Dep::clone(dep);
 
@@ -3447,9 +3437,6 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dep> d,
 							j_new->set_place_flag(i, dep->get_place_flag(i)); 
 					}
 					j= j_new; 
-//					if (d->top) {
-//						j= append_top(j, d->top); 
-//					}
 					push(j); 
 				}
 			}
@@ -3460,7 +3447,6 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dep> d,
 		}
 	} else {
 		assert(flags & F_RESULT_COPY);
-//		d= append_top(d, dependency_source); 
 		push_result(d); 
 	}
 }

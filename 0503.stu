@@ -1,5 +1,3 @@
-# * Change the Target byte to 16 bit values
-# * Add a flag for INPUT 
 # * Make Dependency::concat() be able to handle errors in some way, e.g.:
 #   (1) Move the concat() and normalize() code into Execution
 #   (2) Use a Raiser virtual class

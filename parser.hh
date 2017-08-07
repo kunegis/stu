@@ -821,12 +821,11 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 			throw ERROR_LOGICAL;
 		}
 
-		/* D_INPUT and D_OPTIONAL cannot be used at the same
-		 * time. Note: Input redirection must not appear in
-		 * dynamic dependencies, and therefore it is sufficient
-		 * to check this here.  */   
-		if (! place_name_input.place.empty()
-		    && flag_token.flag == 'o') {
+		/* A dependency cannot be an input dependency and
+		 * optional at the same time.  Note: Input redirection
+		 * must not appear in dynamic dependencies, and
+		 * therefore it is sufficient to check this here.  */   
+		if (! place_name_input.place.empty() && flag_token.flag == 'o') {
 			place_input <<
 				fmt("input redirection using %s must not be used",
 				    char_format_word('<')); 
@@ -936,6 +935,7 @@ shared_ptr <const Dep> Parser
 	if (is_operator('<')) {
 		has_input= true;
 		place_input= (*iter)->get_place(); 
+		flags |= F_INPUT; 
 		++iter;
 	}
 	
@@ -1151,6 +1151,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 	if (has_input) {
 		assert(place_name_input.empty()); 
 		place_name_input= *name_token;
+		flags |= F_INPUT;
 	}
 
 	if (! place_name_input.empty()) {

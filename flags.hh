@@ -39,20 +39,20 @@ enum
 	 */ 
 	I_PERSISTENT= 0,	/* -p  \                  \                     */
 	I_OPTIONAL,		/* -o   | placed flags     |                    */
-	I_TRIVIAL,		/* -t  /                   | target byte flags  */
+	I_TRIVIAL,		/* -t  /                   | target word flags  */
 	I_TARGET_DYNAMIC,	/* [ ] \ target flags      |                    */
 	I_TARGET_TRANSIENT,	/* @   /                   |                    */
 	I_VARIABLE,		/* $                       |                    */
 	I_NEWLINE_SEPARATED,	/* -n  \ attribute flags   |                    */
 	I_NUL_SEPARATED,	/* -0  /                  /                     */
-	I_XXX,
+	I_INPUT,		/* <                                            */
 	I_RESULT_NOTIFY,        /* -*                                           */
 	I_RESULT_COPY,          /* -%                                           */
 
 	C_ALL,                 
-	C_PLACED           	= 3,
-	C_WORD			= 9,
-#define C_WORD			  9 /* Used statically */
+	C_PLACED           	= 3,  /* Flags for which we store a place in Dep */
+	C_WORD			= 8,  /* Flags used for caching; they are stored in Target */
+#define C_WORD			  8 /* Used statically */
 
 	/* 
 	 * What follows are the actual flag bits to be ORed together 
@@ -83,6 +83,9 @@ enum
 	F_NUL_SEPARATED		= 1 << I_NUL_SEPARATED,
 	/* For dynamic dependencies, the file contains NUL-separated
 	 * filenames, without any markup  */ 
+
+	F_INPUT 		= 1 << I_INPUT,
+	/* A dependency is annotated with the input redirection flag '<' */
 
 	F_RESULT_NOTIFY		= 1 << I_RESULT_NOTIFY,
 	/* The link A ---> B between two executions annotated with this

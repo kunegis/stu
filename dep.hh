@@ -744,7 +744,7 @@ void Dep::check() const
 Target Plain_Dep::get_target() const
 {
 	Target ret= place_param_target.unparametrized(); 
-	ret.get_front_byte_nondynamic() |= (char)(unsigned char)(flags & F_TARGET_BYTE);
+	ret.get_front_word_nondynamic() |= (word_t)(flags & F_TARGET_BYTE);
 	return ret; 
 }
 
@@ -806,14 +806,14 @@ Target Dynamic_Dep::get_target() const
 		Flags f= F_TARGET_DYNAMIC; 
 		assert(d->flags & F_TARGET_DYNAMIC); 
 		f |= d->flags & F_TARGET_BYTE; 
-		text += (char)(unsigned char)f; 
+		text += Target::string_from_word(f); 
 		d= dynamic_cast <const Dynamic_Dep *> (d)->dep.get(); 
 	}
 	assert(dynamic_cast <const Plain_Dep *> (d)); 
 	const Plain_Dep *sin= dynamic_cast <const Plain_Dep *> (d); 
 	assert(!(sin->flags & F_TARGET_DYNAMIC)); 
 	Flags f= sin->flags & F_TARGET_BYTE;
-	text += (char)(unsigned char)f; 
+	text += Target::string_from_word(f); 
 	text += sin->place_param_target.unparametrized().get_name_nondynamic(); 
 	
 	return Target(text); 
@@ -1043,7 +1043,6 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			for (const auto &d:  compound_dep->get_deps()) {
 				assert(to <Plain_Dep> (d));
 				normalize(d, deps_); 
-//				deps_.push_back(d); 
 			}
 		} else if (to <Plain_Dep> (dd)) {
 			deps_.push_back(dd); 
@@ -1065,7 +1064,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			shared_ptr <const Plain_Dep> dd_plain= to <Plain_Dep> (dd); 
 			vec1.push_back(dd); 
 		} else if (to <Dynamic_Dep> (dd)) {
-			assert(false); // XX implement case
+			assert(false); // XXX implement case
 		} else if (to <Concat_Dep> (dd)) {
 			normalize_concat(to <Concat_Dep> (dd), vec1); 
 		} else {

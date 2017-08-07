@@ -20,15 +20,23 @@
  * Glossary:
  *     * A _name_ is a filename or the name of a transient target.  They
  *       are just strings, so no special data type is used for them.
- *       There are two distinct namespaces for them.  They can contain
- * 	 any character except \0, and must not be the empty string. 
- *     * A _target_ is either file, transient target (, or a dynamic
- *       variant of them -- removed in 2.5).  It is represented by a name (string) and a
- *       type.  
+ *       There are two distinct namespaces for them (files and
+ *       transients.)  They can contain any character except \0, and
+ *       must not be the empty string.  
+ *     * A _target_ is either file, transient target, or a dynamic^*
+ *       of them.  It is represented by a name (string) and a type.  
  *     * A _parametrized_ target or name additionally can have
  *       parameters. 
  *     * Dedicated classes exist to represent these with _places_. 
  */
+
+#if   C_WORD <= 8
+typedef uint8_t  word_t;
+#elif C_WORD <= 16
+typedef uint16_t word_t;
+#else
+#	error "Invalid word size" 
+#endif
 
 /* 
  * A representation of a simple dependency, mainly used as the key in
@@ -41,17 +49,18 @@ class Target
 {
 public:
 	
-	Target(string text_)
+	explicit Target(string text_)
 		/* TEXT_ is the full text field of this Target */
 		:  text(text_)
 	{  }
 
 	Target(Flags flags, string name) 
-	/* Non-dynamic */
-		: text(((char)(unsigned char)flags) + name)
+	/* A plain target */
+	// TODO optmize by constructing TEXT having the correct
+	// size directly
+		: text(string_from_word(flags) + name)
 	{
 		assert((flags & ~F_TARGET_TRANSIENT) == 0); 
-		assert(flags <= (unsigned)CHAR_MAX); 
 		assert(name.find('\0') == string::npos); /* Names do not contain \0 */
 		assert(name != ""); 
 	}
@@ -59,10 +68,12 @@ public:
 	Target(Flags flags, Target target)
 	/* Makes the given target once more dynamic with the given
 	 * flags, which must *not* contain the 'dynamic' flag.  */
-		:  text((char)(unsigned char)(flags | F_TARGET_DYNAMIC) + target.text)
+	// TODO optmize by constructing TEXT having the correct
+	// size directly
+		:  text(string_from_word(flags | F_TARGET_DYNAMIC) + target.text)
 	{
 		assert((flags & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0);
-		assert(flags <= (unsigned)CHAR_MAX); 
+		assert(flags <= (unsigned)(1 << C_WORD)); 
 	}
 
 	const string &get_text() const {  return text;  }
@@ -70,38 +81,34 @@ public:
 	const char *get_text_c_str() const {  return text.c_str();  }
 
 	bool is_dynamic() const {
-		assert(text.size() >= 2); 
-		return text.at(0) & F_TARGET_DYNAMIC; 
+		check(); 
+		return get_word(0) & F_TARGET_DYNAMIC; 
 	}
 
 	bool is_file() const {
-		assert(text.size() >= 2); 
-		return (text.at(0) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0; 
+		check(); 
+		return (get_word(0) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0; 
 	}
 
 	bool is_transient() const {
-		assert(text.size() >= 2); 
-		return (text[0] & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == F_TARGET_TRANSIENT; 
+		check(); 
+		return (get_word(0) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == F_TARGET_TRANSIENT; 
 	}
 
 	bool is_any_file() const {
 		size_t i= 0;
-		assert(text.size() > i); 
-		while (text[i] & F_TARGET_DYNAMIC) {
+		while (get_word(i) & F_TARGET_DYNAMIC) {
 			++i;
-			assert(text.size() > i); 
 		}
-		return (text[i] & F_TARGET_TRANSIENT) == 0; 
+		return (get_word(i) & F_TARGET_TRANSIENT) == 0; 
 	}
 
 	bool is_any_transient() const {
 		size_t i= 0;
-		assert(text.size() > i); 
-		while (text[i] & F_TARGET_DYNAMIC) {
+		while (get_word(i) & F_TARGET_DYNAMIC) {
 			++i;
-			assert(text.size() > i); 
 		}
-		return text[i] & F_TARGET_TRANSIENT; 
+		return get_word(i) & F_TARGET_TRANSIENT; 
 	}
 
 	string format(Style style, bool &quotes) const;
@@ -113,9 +120,9 @@ public:
 	string get_name_nondynamic() const 
 	/* Get the name of the target, given that the target is not dynamic */
 	{
-		assert(text.size() >= 2);
-		assert((text.at(0) & F_TARGET_DYNAMIC) == 0); 
-		return text.substr(1); 
+		check(); 
+		assert((get_word(0) & F_TARGET_DYNAMIC) == 0); 
+		return text.substr(sizeof(word_t)); 
 	}
 	
 	const char *get_name_c_str_nondynamic() const 
@@ -124,43 +131,56 @@ public:
 	 * object must be non-dynamic. 
 	 */
 	{
-		assert(text.size() >= 2);
-		assert((text.at(0) & F_TARGET_DYNAMIC) == 0); 
-		return text.c_str() + 1; 
+		check(); 
+		assert((get_word(0) & F_TARGET_DYNAMIC) == 0); 
+		return text.c_str() + sizeof(word_t); 
 	}
 
 	const char *get_name_c_str_any() const
 	{
 		const char *ret= text.c_str();
-		while (((unsigned char)*ret) & F_TARGET_DYNAMIC)
-			++ret;
-		return ++ret; 
+		while ((*(word_t *)ret) & F_TARGET_DYNAMIC)
+			ret += sizeof(word_t);
+		return 
+			ret += sizeof(word_t); 
 	}
 
-	unsigned get_front_byte() const {  return (unsigned char)text.at(0);  }
+	Flags get_front_word() const {  return get_word(0);  }
 	
-	unsigned char &get_front_byte_nondynamic() 
+	word_t &get_front_word_nondynamic() 
 	/* Get the front byte, given that the target is not dynamic */
 	{
-		assert(text.size() >= 2); 
-		assert((text.at(0) & F_TARGET_DYNAMIC) == 0); 
-		return (unsigned char &)text[0]; 
+		check(); 
+		assert((get_word(0) & F_TARGET_DYNAMIC) == 0); 
+		return *(word_t *)&text[0]; 
 	}
 
-	unsigned get_front_byte_nondynamic() const {
-		assert(text.size() >= 2); 
-		assert((text.at(0) & F_TARGET_DYNAMIC) == 0); 
-		return (unsigned char)text[0]; 
+	Flags get_front_word_nondynamic() const {
+		check(); 
+		assert((get_word(0) & F_TARGET_DYNAMIC) == 0); 
+		return *(word_t *)&text[0]; 
 	}
 	
-	unsigned at(size_t i) const 
-	/* For access to any front byte */
+	Flags get_word(size_t i) const 
+	/* For access to any front word */
 	{
-		return (unsigned char)text.at(i); 
+		assert(text.size() > sizeof(word_t) * (i + 1)); 
+		return ((word_t *)&text[0])[i]; 
 	}
 
 	bool operator== (const Target &target) const {  return text == target.text;  }
 	bool operator!= (const Target &target) const {  return text != target.text;  }
+
+	static string string_from_word(Flags flags)
+	/* Return a string of length sizeof(word_t) containing the given
+	 * flags  */
+	{
+		assert(flags <= 1 << C_WORD); 
+		char ret[sizeof(word_t) + 1];
+		ret[sizeof(word_t)] = '\0';
+		*(word_t *)ret= (word_t)flags;
+		return string(ret, sizeof(word_t)); 
+	}
 
 private:
 
@@ -168,19 +188,32 @@ private:
 	/*
 	 * Linear representation of the dependency.
 	 *
-	 * A non-dynamic dependency is represented as a Type byte (F_TARGET_TRANSIENT or 0)
-	 * followed by the name. 
+	 * This begins with a certain number of words (word_t, at least
+	 * one), followed by the name of the target as a string.  A
+	 * word_t is represented by a fixed number of characters. 
 	 *
-	 * A dynamic is represented as a dynamic byte (F_TARGET_DYNAMIC)
+	 * A non-dynamic dependency is represented as a Type word
+	 * (F_TARGET_TRANSIENT or 0) followed by the name.
+	 *
+	 * A dynamic is represented as a dynamic word (F_TARGET_DYNAMIC)
 	 * followed by the string representation of the contained
 	 * dependency. 
 	 *
-	 * Any of the front bytes may contain additional flag bits. 
+	 * Any of the front words may contain additional flag bits.
+	 * There may be nul ('\0') bytes in the front words, but the
+	 * name does not contain nul, as that is invalid in names.  The
+	 * name proper (excluding front words) is non-empty. 
 	 *
-	 * Empty to denote a "null" value, or equivalently the target of
-	 * the roo dependency, in which case most functions should not
-	 * be used.   
+	 * The empty string denotes a "null" value for the type Target,
+	 * or equivalently the target of the root dependency, in which
+	 * case most functions should not be used.
 	 */
+
+	void check() const {
+#ifndef NDEBUG
+		assert(text.size() > sizeof(word_t)); 
+#endif /* ! NDEBUG */
+	}
 };
 
 namespace std {
@@ -424,7 +457,7 @@ public:
 
 	Param_Target(Target target)
 	/* Unparametrized target.   The passed TARGET must be non-dynamic. */
-		:  flags(target.get_front_byte_nondynamic() & F_TARGET_TRANSIENT),
+		:  flags(target.get_front_word_nondynamic() & F_TARGET_TRANSIENT),
 		   name(target.get_name_nondynamic())
 	{ 
 		assert(! target.is_dynamic()); 
@@ -616,22 +649,22 @@ string Target::format(Style style, bool &quotes) const
 	bool quotes2= false;
 	string ret; 
 	size_t i= 0;
-	while (text.at(i) & F_TARGET_DYNAMIC) {
-		assert((text.at(i) & F_TARGET_TRANSIENT) == 0); 
-		ret += flags_format(text.at(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)); 
+	while (get_word(i) & F_TARGET_DYNAMIC) {
+		assert((get_word(i) & F_TARGET_TRANSIENT) == 0); 
+		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)); 
 		++i;
 		ret += '[';
 	}
-	assert(text.size() > i + 1);
-	ret += flags_format(text.at(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE)); 
-	if (text.at(i) & F_TARGET_TRANSIENT) {
+	assert(text.size() > sizeof(word_t) * (i + 1));
+	ret += flags_format(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE)); 
+	if (get_word(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
 	if (quotes)  ret += '\'';
-	ret += name_format(text.substr(i+1), style2, quotes2); 
+	ret += name_format(text.substr(sizeof(word_t) * (i + 1)), style2, quotes2); 
 	if (quotes)  ret += '\'';
 	i= 0;
-	while (text.at(i) & F_TARGET_DYNAMIC) {
+	while (get_word(i) & F_TARGET_DYNAMIC) {
 		++i;
 		ret += ']';
 	}
@@ -647,22 +680,22 @@ string Target::format_out() const
 	bool quotes= is_file();
 	string ret; 
 	size_t i= 0;
-	while (text.at(i) & F_TARGET_DYNAMIC) {
-		ret += flags_format(text.at(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
+	while (get_word(i) & F_TARGET_DYNAMIC) {
+		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
 		++i;
 		ret += '[';
 	}
-	assert(text.size() > i + 1);
-	ret += flags_format(text.at(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE)); 
-	if (text.at(i) & F_TARGET_TRANSIENT) {
+	assert(text.size() > sizeof(word_t) * (i + 1));
+	ret += flags_format(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE)); 
+	if (get_word(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
-	string name_text = name_format(text.substr(i+1), style, quotes); 
+	string name_text = name_format(text.substr(sizeof(word_t) * (i + 1)), style, quotes); 
 	if (quotes)  ret += '\'';
 	ret += name_text; 
 	if (quotes)  ret += '\'';
 	i= 0;
-	while (text.at(i) & F_TARGET_DYNAMIC) {
+	while (get_word(i) & F_TARGET_DYNAMIC) {
 		++i;
 		ret += ']';
 	}
@@ -679,22 +712,22 @@ string Target::format_out_print_word() const
 	string ret; 
 	ret += Color::out_print_word; 
 	size_t i= 0;
-	while (text.at(i) & F_TARGET_DYNAMIC) {
-		ret += flags_format(text.at(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
+	while (get_word(i) & F_TARGET_DYNAMIC) {
+		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
 		++i;
 		ret += '[';
 	}
-	assert(text.size() > i + 1);
-	ret += flags_format(text.at(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE)); 
-	if (text.at(i) & F_TARGET_TRANSIENT) {
+	assert(text.size() > sizeof(word_t) * (i + 1));
+	ret += flags_format(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE)); 
+	if (get_word(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
-	string name_text= name_format(text.substr(i+1), style, quotes); 
+	string name_text= name_format(text.substr(sizeof(word_t) * (i + 1)), style, quotes); 
 	if (quotes)  ret += '\'';
 	ret += name_text; 
 	if (quotes)  ret += '\'';
 	i= 0;
-	while (text.at(i) & F_TARGET_DYNAMIC) {
+	while (get_word(i) & F_TARGET_DYNAMIC) {
 		++i;
 		ret += ']';
 	}
@@ -715,20 +748,20 @@ string Target::format_word() const
 	string ret; 
 	ret += Color::word; 
 	size_t i= 0;
-	while (text.at(i) & F_TARGET_DYNAMIC) {
+	while (get_word(i) & F_TARGET_DYNAMIC) {
 		++i;
 		ret += '[';
 	}
-	assert(text.size() > i + 1);
-	if (text.at(i) & F_TARGET_TRANSIENT) {
+	assert(text.size() > sizeof(word_t) * (i + 1));
+	if (get_word(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
-	string name_text= name_format(text.substr(i+1), style, quotes); 
+	string name_text= name_format(text.substr(sizeof(word_t) * (i + 1)), style, quotes); 
 	if (quotes)  ret += '\'';
 	ret += name_text;
 	if (quotes)  ret += '\'';
 	i= 0;
-	while (text.at(i) & F_TARGET_DYNAMIC) {
+	while (get_word(i) & F_TARGET_DYNAMIC) {
 		++i;
 		ret += ']';
 	}
@@ -744,24 +777,24 @@ string Target::format_src() const
 	}
 	string ret; 
 	size_t i= 0;
-	while (text.at(i) & F_TARGET_DYNAMIC) {
-		ret += flags_format(text.at(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
+	while (get_word(i) & F_TARGET_DYNAMIC) {
+		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
 		++i;
 		ret += '[';
 	}
-	assert(text.size() > i + 1);
-	ret += flags_format(text.at(i) & ~F_TARGET_TRANSIENT); 
-	if (text.at(i) & F_TARGET_TRANSIENT) {
+	assert(text.size() > sizeof(word_t) * (i + 1));
+	ret += flags_format(get_word(i) & ~F_TARGET_TRANSIENT); 
+	if (get_word(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
-	const char *const name= text.c_str() + i + 1;
+	const char *const name= text.c_str() + sizeof(word_t) * (i + 1);
 	bool quotes= src_need_quotes(name); 
-	string name_text= name_format(text.substr(i+1), style, quotes); 
+	string name_text= name_format(text.substr(sizeof(word_t) * (i + 1)), style, quotes); 
 	if (quotes)  ret += '\'';
 	ret += name_text; 
 	if (quotes)  ret += '\'';
 	i= 0;
-	while (text.at(i) & F_TARGET_DYNAMIC) {
+	while (get_word(i) & F_TARGET_DYNAMIC) {
 		++i;
 		ret += ']';
 	}

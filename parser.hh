@@ -841,7 +841,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		       (i_flag == I_TRIVIAL  && option_nontrivial))) {
 			shared_ptr <Dep> ret_new= Dep::clone(ret);
 			ret_new->flags |= (1 << i_flag); 
-			assert(i_flag < C_TARGET_BYTE); 
+			assert(i_flag < C_WORD); 
 			if (i_flag < C_PLACED)
 				ret_new->set_place_flag(i_flag, place_flag); 
 			ret= ret_new; 

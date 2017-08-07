@@ -118,3 +118,9 @@ V {
 A: list.abc { cp list.abc A ; }
 >list.$V: $[V] { echo "$V" ; }
 V = {xyz}
+
+#
+# $STU_OPTIONS should be called $STUFLAGS (?), to be consistent with
+# $MAKEFLAGS, $CFLAGS, etc. 
+#
+ 

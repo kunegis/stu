@@ -398,7 +398,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 				const Place &place)
 {
 	assert(target.is_file() || target.is_transient()); 
-	assert((target.get_front_byte() & ~F_TARGET_TRANSIENT) == 0); 
+	assert((target.get_front_word() & ~F_TARGET_TRANSIENT) == 0); 
 	assert(mapping_parameter.size() == 0); 
 
 	/* Check for an unparametrized rule.  Since we keep them in a
@@ -447,7 +447,7 @@ shared_ptr <Rule> Rule_Set::get(Target target,
 			vector <size_t> anchoring;
 
 			/* The parametrized rule is of another type */ 
-			if (target.get_front_byte() != (place_param_target->flags & F_TARGET_TRANSIENT))
+			if (target.get_front_word() != (place_param_target->flags & F_TARGET_TRANSIENT))
 				continue;
 
 			/* The parametrized rule does not match */ 

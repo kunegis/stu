@@ -974,7 +974,7 @@ void Execution::read_dynamic(Flags flags_this,
 				    target_dynamic.format_word(),
 				    prefix_format_word(input.raw(), "<")); 
 			Target target_file= target;
-			target_file.get_front_byte_nondynamic() &= ~F_TARGET_TRANSIENT; 
+			target_file.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT; 
 			print_traces(fmt("%s is declared here",
 					 target_file.format_word())); 
 			raise(ERROR_LOGICAL);
@@ -1081,8 +1081,8 @@ void Execution::read_dynamic(Flags flags_this,
 				fmt("dynamic dependency %s must not contain parametrized dependencies",
 				    Target(0, target).format_word());
 			Target target_base= target;
-			target_base.get_front_byte_nondynamic() &= ~F_TARGET_TRANSIENT; 
-			target_base.get_front_byte_nondynamic() |= (target.get_front_byte_nondynamic() & F_TARGET_TRANSIENT); 
+			target_base.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT; 
+			target_base.get_front_word_nondynamic() |= (target.get_front_word_nondynamic() & F_TARGET_TRANSIENT); 
 			print_traces(fmt("%s is declared here", 
 					 target_base.format_word())); 
 			raise(ERROR_LOGICAL);
@@ -1733,7 +1733,7 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 		bool use_file_execution= false;
 		try {
 			Target target_without_flags= target; 
-			target_without_flags.get_front_byte_nondynamic() &= F_TARGET_TRANSIENT; 
+			target_without_flags.get_front_word_nondynamic() &= F_TARGET_TRANSIENT; 
 			rule_child= rule_set.get(target_without_flags, 
 						 param_rule_child, mapping_parameter, 
 						 dep->get_place()); 
@@ -1842,8 +1842,8 @@ Target Execution::get_target_for_cache(Target target)
 {
 	if (target.is_file()) {
 		/* For file targets, we don't use flags for hashing. 
-		 * Zero is the byte for file targets.  */
-		target.get_front_byte_nondynamic()= 0; 
+		 * Zero is the word for file targets.  */
+		target.get_front_word_nondynamic()= (word_t)0; 
 	}
 
 	return target; 
@@ -2065,7 +2065,7 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 
 	/* Later replaced with all targets from the rule, when a rule exists */ 
 	Target target_no_flags= target_;
-	target_no_flags.get_front_byte_nondynamic() &= F_TARGET_TRANSIENT; 
+	target_no_flags.get_front_word_nondynamic() &= F_TARGET_TRANSIENT; 
 	targets.push_back(target_no_flags); 
 	executions_by_target[target_no_flags]= this; 
 
@@ -3533,7 +3533,7 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dep> dep_link,
 	/* Fill EXECUTIONS_BY_TARGET with all targets from the rule, not
 	 * just the one given in the dependency.  Also, add the flags.  */
 	for (Target t:  targets) {
-		t.get_front_byte_nondynamic() |= (char)(unsigned char)
+		t.get_front_word_nondynamic() |= (word_t)
 			(dep_link->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC)); 
 		executions_by_target[t]= this; 
 	}

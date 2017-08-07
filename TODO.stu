@@ -360,8 +360,8 @@ A: [-d data/B];
 A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 
 #
-# Logging:  an option to write log messages into a file.  In particular,
-# which commands failed. (option -l)
+# Trace (logging): an option to write log messages into a file.  In
+# particular, which commands failed. (option -T)
 #
 
 #

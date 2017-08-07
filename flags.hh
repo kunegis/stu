@@ -45,12 +45,14 @@ enum
 	I_VARIABLE,		/* $                       |                    */
 	I_NEWLINE_SEPARATED,	/* -n  \ attribute flags   |                    */
 	I_NUL_SEPARATED,	/* -0  /                  /                     */
+	I_XXX,
 	I_RESULT_NOTIFY,        /* -*                                           */
-	I_RESULT_COPY,           /* -%                                           */
+	I_RESULT_COPY,          /* -%                                           */
 
 	C_ALL,                 
 	C_PLACED           	= 3,
-	C_TARGET_BYTE		= 8,
+	C_WORD			= 9,
+#define C_WORD			  9 /* Used statically */
 
 	/* 
 	 * What follows are the actual flag bits to be ORed together 
@@ -94,7 +96,7 @@ enum
 	 * Aggregates
 	 */
 	F_PLACED	= (1 << C_PLACED) - 1,
-	F_TARGET_BYTE	= (1 << C_TARGET_BYTE) - 1,
+	F_TARGET_BYTE	= (1 << C_WORD) - 1,
 	F_TARGET	= F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
 	F_ATTRIBUTE	= F_NEWLINE_SEPARATED | F_NUL_SEPARATED,
 };

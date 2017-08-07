@@ -291,6 +291,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			size_t len= 0;
 
 			while (true) {
+				// TODO check for overflow
 				char *mem_new= (char *) realloc(mem, len + BUFLEN);
 				if (mem_new == nullptr) {
 					free(mem);

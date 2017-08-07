@@ -359,7 +359,7 @@ int main(int argc, char **argv, char **envp)
 
 		if (option_interactive && option_parallel) {
 			Place(Place::Type::OPTION, 'i')
-				<< fmt("parallel mode with %s cannot be used in interactive mode",
+				<< fmt("parallel mode using %s cannot be used in interactive mode",
 				       multichar_format_word("-j")); 
 			exit(ERROR_FATAL); 
 		}
@@ -465,6 +465,8 @@ int main(int argc, char **argv, char **envp)
 		Job::print_statistics();
 	}
 
+	// TODO why do we need to close these two streams by hand?  Does
+	// exit() not do the same?  
 	if (fclose(stdout)) {
 		perror("stdout");
 		exit(ERROR_FATAL);

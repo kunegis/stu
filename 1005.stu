@@ -1,0 +1,5 @@
+# Error.  Check the traces. 
+A:  F { touch A ; }
+F:  G { touch F ; }
+G: (B(<C))  { touch G ; }
+

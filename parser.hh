@@ -931,7 +931,7 @@ shared_ptr <const Dep> Parser
 		++iter;
 	}
 
-	/* Input redirection with '<' */ 
+	/* Input redirection using '<' */ 
 	if (is_operator('<')) {
 		has_input= true;
 		place_input= (*iter)->get_place(); 

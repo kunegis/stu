@@ -26,25 +26,29 @@
  */
 
 /*
- * Wording of messages:  Error messages begin with uppercase letters;
- * trace messages with lowercase letters, as per the GNU Coding
- * Standard.  Filenames and operator names are quoted in messages using
- * single quotes.  Messages for both types of error output lines are not
- * terminated by periods.   
+ * Wording of messages:  
  *
- * The general forms of error messages is:
+ * Error messages begin with uppercase letters; trace messages with
+ * lowercase letters, as per the GNU Coding Standards.  Filenames and
+ * operator names are quoted in messages using single quotes.  Messages
+ * for both types of error output lines are not terminated by periods.
+ *
+ * Typical forms of error messages are:
  *
  *    Location 2: expected an XXX, not YYY
- *    Location 1: in ZZZ	
+ *    Location 1: in ZZZ
  *
  *    Location 2: XXX must not be used
  *    Location 1: in YYY 
  *
- * Use "expected TOKEN" instead of "missing TOKEN".  That's because some
- * tokens in the given list may be optional, making the "missing"
+ *    Location 2: XXX must not be used
+ *    Location 1: in FEATURE_NAME using OPERATOR
+ *
+ * Use "expected TOKEN" instead of "missing TOKEN".  That is because
+ * some tokens in the given list may be optional, making the "missing"
  * phrasing confusing, as it would imply that the token is mandatory.
  * Include definite or indefinite articles after "expected" to avoid
- * interpreting "expected" as an adjective.  
+ * interpreting "expected" as an adjective.
  *
  * "not YYY" mentions the invalid token.  If end-of-file is encountered,
  * the "not ..." part is not used. 
@@ -54,12 +58,29 @@
  * be empty".  On the other hand, use "cannot" when something completely
  * unexpected was encountered, e.g., "transient targets cannot be used
  * with copy rule".
+ *
+ * Operators and other syntax elements are often introduced by the word
+ * "using" rather than "with", etc., e.g., "expected a filename after
+ * input redirection using '<'".  We always mention both the operator as
+ * well as its function.
+ *
+ * When referring to dependencies and targets, we don't use the words
+ * "dependency" or "target".  For instance, just write "'X' is needed by
+ * 'A'" instead of "dependency 'X' is needed by 'A'".  The exception is
+ * when the word "dependency" is qualified, e.g. "dynamic dependency [X]
+ * must not have input redirection using '<'", or when referring
+ * specifically to a dependency with respect to a target. 
  * 
  * But remember that in general it is better to state what what expected
  * in the syntax than to say that what was encountered cannot be used.
  * For instance, say "expected a filename" instead of "filename must not
  * be empty".  This cannot always be done, so "must not" is sometimes
  * used.  
+ *
+ * Even though error messages should contain all the information
+ * mentioned above, they should still be terse.  More information is
+ * included in the explanations using the -E options, output by the
+ * explain_*() functions.
  */
 
 #include <assert.h>

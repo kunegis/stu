@@ -415,6 +415,14 @@ $name.bib;   # Rule (1)
 # a one-liner. 
 #
 
+# 
+# Switch the verbose option from -V to -v.  That would make it
+# compatible with GNU Make of FreeBSD Make, but then different Stu
+# versions would have different ways to print the version number, and
+# that's not good since the verbose-number-outputting function is
+# exactly what should work regardless of the version number. 
+# 
+
 #==== New features that change/extend Stu drastically ====
 
 #

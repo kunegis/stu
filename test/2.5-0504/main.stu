@@ -1,0 +1,4 @@
+# Error:  Right dependency in concatenation must not have input redirection 
+A:  F { touch A ; }
+F:  G { touch F ; }
+G: B(<C)  { touch G ; }

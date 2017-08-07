@@ -28,6 +28,8 @@
  * Normalized dependencies are those used in practice.  A non-normalized
  * dependency can always be reduced to a normalized one. 
  */
+// TODO check that all format_word() functions everywhere do NOT output
+// the flags. 
 
 /*
  * A plain dependency is a file or a transient. 
@@ -41,6 +43,10 @@
  */
 
 #include <map>
+
+#ifndef NDEBUG
+#	include <bitset>
+#endif
 
 #include "error.hh"
 #include "target.hh"
@@ -164,15 +170,24 @@ public:
 	virtual bool is_normalized() const= 0;
 
 	static void normalize(shared_ptr <const Dep> dep,
-			      vector <shared_ptr <const Dep> > &deps);
+			      vector <shared_ptr <const Dep> > &deps,
+			      int &error);
 	/* Split DEP into multiple DEPS that are each
 	 * normalized.  The resulting dependencies are appended to
 	 * DEPS, which does not have to be empty on entering the
-	 * function.  */
+	 * function.  
+	 * On errors, a message is printed, bits are set in ERROR, and
+	 * if not in keep-going mode, the function returns immediately. 
+	 */
 
-	static shared_ptr <const Dep> normalize_compound(shared_ptr <const Dep> dep);
+	static shared_ptr <const Dep> normalize_compound(shared_ptr <const Dep> dep,
+							 int &error);
 	/* Return either a normalized version of the given dependency, or a
-	 * Compound_Dep containing normalized dependencies */ 
+	 * Compound_Dep containing normalized dependencies 
+	 * On errors, a message is printed, bits are set in ERROR, and
+	 * if not in keep-going mode, the function returns immediately
+	 * with null. 
+	 */ 
 
 	static shared_ptr <Dep> clone(shared_ptr <const Dep> dep);
 	/* A shallow clone */
@@ -295,22 +310,7 @@ public:
 		return place_param_target.place_name.get_n() == 0; 
 	}
 
-	virtual string format(Style style, bool &quotes) const {
-		string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT)); 
-		if (f != "") {
-			style |= S_MARKERS;
-			f += ' '; 
-		}
-		string t= place_param_target.format(style, quotes);
-		return fmt("%s%s%s%s%s%s",
-			   f,
-			   flags & F_VARIABLE ? "$[" : "",
-			   quotes ? "'" : "",
-			   t,
-			   quotes ? "'" : "",
-			   flags & F_VARIABLE ? "]" : "");
-	}
-
+	virtual string format(Style style, bool &quotes) const;
 	virtual string format_word() const;
 	virtual string format_out() const;
 	virtual string format_src() const;
@@ -496,25 +496,32 @@ public:
 	virtual Target get_target() const;
 
 	static shared_ptr <const Plain_Dep> concat(shared_ptr <const Plain_Dep> a,
-						   shared_ptr <const Plain_Dep> b); 
+						   shared_ptr <const Plain_Dep> b,
+						   int &error); 
 	/* Concatenate two plain dependencies to a single plain
-	 * dependency.  
-	 * XXX how are errors handled?
-	 */
-
-
-	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
-				     vector <shared_ptr <const Dep> > &deps); 
-	/* Normalize this object's dependencies into a list of individual
-	 * dependencies.  The generated dependencies are appended to
-	 * DEPS which does not need to be empty on entry into
-	 * this function.  */
+	 * dependency.  On error, a message is printed, bits are set in
+	 * ERROR, and null is returned.  */
 
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
 				     vector <shared_ptr <const Dep> > &deps,
-				     size_t start_index);
+				     int &error); 
+	/* Normalize this object's dependencies into a list of individual
+	 * dependencies.  The generated dependencies are appended to
+	 * DEPS which does not need to be empty on entry into
+	 * this function.  
+	 * On errors, a message is printed, bits are set in ERROR, and
+	 * if not in keep-going mode, the function returns immediately. 
+	 */
+
+	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
+				     vector <shared_ptr <const Dep> > &deps,
+				     size_t start_index,
+				     int &error);
 	/* Helper function.  Write result into DEPS,
-	   concatenating all starting at the given index.  */
+	 * concatenating all starting at the given index.  
+	 * On errors, a message is printed, bits are set in ERROR, and
+	 * if not in keep-going mode, the function returns immediately. 
+	 */
 
 
 private:
@@ -621,14 +628,17 @@ public:
 Dep::~Dep() { }
 
 void Dep::normalize(shared_ptr <const Dep> dep,
-		    vector <shared_ptr <const Dep> > &deps)
+		    vector <shared_ptr <const Dep> > &deps,
+		    int &error)
 {
 	if (to <Plain_Dep> (dep)) {
 		deps.push_back(dep);
 	} else if (to <Dynamic_Dep> (dep)) {
 		shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep);
 		vector <shared_ptr <const Dep> > deps_child;
-		normalize(dynamic_dep->dep, deps_child);
+		normalize(dynamic_dep->dep, deps_child, error);
+		if (error && ! option_keep_going)
+			return;
 		for (auto &d:  deps_child) {
 			shared_ptr <Dep> dep_new= 
 				make_shared <Dynamic_Dep> 
@@ -640,21 +650,28 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 		for (auto &d:  compound_dep->get_deps()) {
 			shared_ptr <Dep> dd= Dep::clone(d); 
 			dd->add_flags(compound_dep, false);  
-			normalize(dd, deps); 
+			normalize(dd, deps, error); 
+			if (error && ! option_keep_going)
+				return; 
 		}
 	} else if (to <Concat_Dep> (dep)) {
 		shared_ptr <const Concat_Dep> concat_dep= to <Concat_Dep> (Dep::clone(dep)); 
-		Concat_Dep::normalize_concat(concat_dep, deps);
+		Concat_Dep::normalize_concat(concat_dep, deps, error);
+		if (error && ! option_keep_going)
+			return; 
 	} else {
 		assert(false);
 	}
 }
 
-shared_ptr <const Dep> Dep::normalize_compound(shared_ptr <const Dep> dep)
+shared_ptr <const Dep> Dep::normalize_compound(shared_ptr <const Dep> dep,
+					       int &error)
 {
 	vector <shared_ptr <const Dep> > deps;
 
-	normalize(dep, deps); 
+	normalize(dep, deps, error); 
+	if (error && ! option_keep_going)
+		return nullptr;
 	
 	assert(deps.size() >= 1);
 	
@@ -748,6 +765,34 @@ Target Plain_Dep::get_target() const
 	return ret; 
 }
 
+string Plain_Dep::format(Style style, bool &quotes) const 
+{
+	string f;
+	if (!(style & S_NOFLAGS)) {
+		f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT)); 
+		if (f != "") {
+			style |= S_MARKERS;
+			f += ' '; 
+		}
+	}
+	string t= place_param_target.format(style, quotes);
+	bool quotes_print= quotes && (flags & F_VARIABLE); 
+	string ret= fmt("%s%s%s%s%s%s",
+			f,
+			flags & F_VARIABLE ? "$[" : "",
+			quotes_print ? "'" : "",
+			t,
+			quotes_print ? "'" : "",
+			flags & F_VARIABLE ? "]" : "");
+	if (style & S_WORD) {
+		ret= fmt("%s%s%s",
+			 Color::word, 
+			 ret.c_str(),
+			 Color::end); 
+	}
+	return ret;
+}
+
 string Plain_Dep::format_out() const 
 {
 	string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
@@ -779,17 +824,16 @@ string Plain_Dep::format_src() const
 
 string Plain_Dep::format_word() const
 {
-	string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
-	if (f != "") 
-		f += ' ';
+//	string f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
+//	if (f != "") 
+//		f += ' ';
 	bool quotes= Color::quotes; 
-	string t= place_param_target.format
-		(f.empty() ? 0 : 
-		 S_MARKERS, 
-		 quotes);
-	return fmt("%s%s%s%s%s%s%s%s",
+	if (flags & F_VARIABLE)
+		quotes= false;
+	string t= place_param_target.format(0, quotes);
+	return fmt("%s%s%s%s%s%s%s",
 		   Color::word, 
-		   f,
+//		   f,
 		   flags & F_VARIABLE ? "$[" : "",
 		   quotes ? "'" : "",
 		   t,
@@ -955,54 +999,54 @@ const Place &Concat_Dep::get_place() const
 
 string Concat_Dep::format(Style style, bool &quotes) const
 {
+	assert(bitset <sizeof(Style)> (style & S_CHANNEL).count() <= 1); 
 	string ret;
-
 	for (const shared_ptr <const Dep> &d:  deps) {
-		if (! ret.empty())
-			ret += '*';
 		ret += d->format(style, quotes); 
 	}
-
 	return ret; 
 }
 
 string Concat_Dep::format_word() const
 {
-	string ret;
-
-	for (const shared_ptr <const Dep> &d:  deps) {
-		if (! ret.empty())
-			ret += '*';
-		ret += d->format_word(); 
-	}
-	
+	bool quotes= Color::quotes;
+	string ret= format(S_WORD | S_NOFLAGS, quotes); 
+	if (quotes)
+		ret= '\'' + ret + '\''; 
 	return ret; 
+//	string ret;
+//	for (const shared_ptr <const Dep> &d:  deps) {
+//		ret += d->format_word(); 
+//	}
+//	return ret; 
 }
 
 string Concat_Dep::format_out() const
 {
-	string ret;
-
-	for (const shared_ptr <const Dep> &d:  deps) {
-		if (! ret.empty())
-			ret += '*';
-		ret += d->format_out(); 
-	}
-	
+	bool quotes= Color::quotes;
+	string ret= format(S_OUT | S_NOFLAGS, quotes); 
+	if (quotes)
+		ret= '\'' + ret + '\''; 
 	return ret; 
+//	string ret;
+//	for (const shared_ptr <const Dep> &d:  deps) {
+//		ret += d->format_out(); 
+//	}
+//	return ret; 
 }
 
 string Concat_Dep::format_src() const
 {
-	string ret;
-
-	for (const shared_ptr <const Dep> &d:  deps) {
-		if (! ret.empty())
-			ret += '*';
-		ret += d->format_src(); 
-	}
-	
+	bool quotes= Color::quotes;
+	string ret= format(S_SRC, quotes); 
+	if (quotes)
+		ret= '\'' + ret + '\''; 
 	return ret; 
+//	string ret;
+//	for (const shared_ptr <const Dep> &d:  deps) {
+//		ret += d->format_src(); 
+//	}
+//	return ret; 
 }
 
 bool Concat_Dep::is_normalized() const
@@ -1025,14 +1069,20 @@ bool Concat_Dep::is_normalized() const
 }
 
 void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
-				  vector <shared_ptr <const Dep> > &deps_) 
+				  vector <shared_ptr <const Dep> > &deps_,
+				  int &error) 
 {
-	normalize_concat(dep, deps_, 0); 
+	normalize_concat(dep, deps_, 0, error); 
+
+	/* Unnecessary, but consistent with what we do everywhere */
+	if (error && ! option_keep_going)
+		return;
 }
 
 void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep, 
 				  vector <shared_ptr <const Dep> > &deps_,
-				  size_t start_index) 
+				  size_t start_index,
+				  int &error) 
 {
 	assert(start_index < dep->deps.size()); 
 
@@ -1042,23 +1092,31 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dd);
 			for (const auto &d:  compound_dep->get_deps()) {
 				assert(to <Plain_Dep> (d));
-				normalize(d, deps_); 
+				normalize(d, deps_, error); 
+				if (error && ! option_keep_going)
+					return;
 			}
 		} else if (to <Plain_Dep> (dd)) {
 			deps_.push_back(dd); 
 		} else if (to <Concat_Dep> (dd)) {
-			normalize_concat(to <Concat_Dep> (dd), deps_);
+			normalize_concat(to <Concat_Dep> (dd), deps_, error);
+			if (error && ! option_keep_going)
+				return;
 		} else {
 			assert(false); 
 		}
 	} else {
 		vector <shared_ptr <const Dep> > vec1, vec2;
-		normalize_concat(dep, vec2, start_index + 1); 
+		normalize_concat(dep, vec2, start_index + 1, error); 
+		if (error && ! option_keep_going)
+			return; 
 		shared_ptr <const Dep> dd= dep->deps.at(start_index); 
 		if (to <Compound_Dep> (dd)) {
 			shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dd);
 			for (const auto &d:  compound_dep->get_deps()) {
-				normalize(d, vec1); 
+				normalize(d, vec1, error); 
+				if (error && ! option_keep_going)
+					return; 
 			}
 		} else if (to <Plain_Dep> (dd)) {
 			shared_ptr <const Plain_Dep> dd_plain= to <Plain_Dep> (dd); 
@@ -1066,7 +1124,9 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 		} else if (to <Dynamic_Dep> (dd)) {
 			assert(false); // XXX implement case
 		} else if (to <Concat_Dep> (dd)) {
-			normalize_concat(to <Concat_Dep> (dd), vec1); 
+			normalize_concat(to <Concat_Dep> (dd), vec1, error); 
+			if (error && ! option_keep_going)
+				return; 
 		} else {
 			assert(false); 
 		}
@@ -1078,8 +1138,10 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 				// dependencies (return a Concat_Dep of
 				// them, eventually with flattening if
 				// one if them is already a Concat_Dep)
-				deps_.push_back(concat(to <Plain_Dep> (d1), 
-						       to <Plain_Dep> (d2))); 
+				shared_ptr <const Dep> d= concat(to <Plain_Dep> (d1), to <Plain_Dep> (d2), error);
+				if (error && ! option_keep_going) 
+					return; 
+				deps_.push_back(d); 
 			}
 		}
 	}
@@ -1092,7 +1154,8 @@ Target Concat_Dep::get_target() const
 }
 
 shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
-						shared_ptr <const Plain_Dep> b)
+						shared_ptr <const Plain_Dep> b,
+						int &error)
 {
 	assert(a);
 	assert(b); 
@@ -1107,6 +1170,14 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
 	/*
 	 * XXX Test
 	 */
+	if (b->flags & F_INPUT) {
+		b->get_place() << fmt("%s cannot have input redirection using %s", 
+				      b->format_word(),
+				      char_format_word('<')); 
+		a->get_place() << fmt("in concatenation to %s", a->format_word()); 
+		error |= ERROR_LOGICAL;
+		return nullptr; 
+	}
 
 	/*
 	 * Combine 

@@ -1,8 +1,0 @@
-# * Make Dependency::concat() be able to handle errors in some way, e.g.:
-#   (1) Move the concat() and normalize() code into Execution
-#   (2) Use a Raiser virtual class
-#   (3) Throw an exception annotated with all necessary places and error messages
-
-# Error:  Right dependency in concatenation must not have input redirection 
-A: B(<C)  { touch A ; }
-

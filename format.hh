@@ -5,23 +5,32 @@
  * Format-like functions: 
  *
  * - format(...) formats the content according to the exact
- *   specification, but never surrounds it by quotes or color
+ *   specification, but never surrounds it by quotes or color.  It may
+ *   include more parameters to configure the output. 
  * - format_word() returns a string suitable for inclusion in a message
- *   on STDERR, including quotes and color, as appropriate. 
+ *   on STDERR, including quotes and color, as appropriate.  It does not
+ *   show flags. 
  * - format_out() returns the same as format_word(), but for STDOUT. 
  * - format_src() formats an expression as if it was part of the source,
  *   e.g., use quotes only if the name contains characters that need to
- *   be quoted.  
+ *   be quoted.  It does include the flags. 
  * - raw() does not escape anything. 
+ * // TODO deprecate all these functions in favor of format(S_*), etc. 
  *
  * Format functions are defined in the source files where their datatype
  * is defined.  In classes, they are member functions. 
  *
- * The QUOTES parameter is used as both an input and output parameter:
- * as input parameter, it tells the functions whether we are in a
- * context where quotes are needed.  As output parameter, it is set to
- * true when the function detects that quotes are needed.  (It is never
- * set to false.)
+ * Some functions take a QUOTE parameter that is a reference to a
+ * boolean.  Such functions never output surrounding quotes themselves,
+ * and the QUOTES parameter is used as both an input and output
+ * parameter: as input parameter, it tells the functions whether we are
+ * in a context where quotes are always needed.  As output parameter, it
+ * is set to true when the function detects that quotes are needed.  It
+ * is never set to false.  If the input parameter is true, it is never
+ * changed.
+ * // TODO Change this to always have the functions output their own
+ * quotes, and make the QUOTES parameter be a bit in Style (since we
+ * don't need it for output anymore). 
  */
 
 #include "color.hh"
@@ -29,11 +38,29 @@
 typedef unsigned Style;
 enum 
 {
-	S_MARKERS=       1 << 0,
-	/* There will be some markers around or to the left of the text */
+	S_MARKERS=      1 << 0,
+	/* There will be markers around or to the left of the text */
 
-	S_NOEMPTY=       1 << 1,
+	S_NOEMPTY=      1 << 1,
 	/* Don't need quote around empty content */ 
+
+	S_NOFLAGS=	1 << 2,
+	/* Do not output flags; normally used with S_OUT and S_WORD */ 
+
+	S_OUT=		1 << 3,
+	/* Output for standard output words */
+
+	S_WORD= 	1 << 4,
+	/* Output for standard error output words */
+	
+	S_SRC=		1 << 5,
+	/* Output in Stu notation */
+	
+	S_RAW= 		1 << 6,
+	/* Output in raw form */
+
+	S_CHANNEL=	S_OUT | S_WORD | S_SRC | S_RAW,
+	/* Only one of those is set */
 };
 
 bool src_need_quotes(const string &name)
@@ -114,11 +141,12 @@ string multichar_format_word(string s)
 string name_format(string name, Style style, bool &quotes) 
 {
 	if (name == "") {
-		if (! (style & S_NOEMPTY))  quotes= true; 
+		if (! (style & S_NOEMPTY))  
+			quotes= true; 
 		return ""; 
 	}
 
-	if (! quotes && strchr(name.c_str(), ' '))
+	if (!quotes && strchr(name.c_str(), ' '))
 		quotes= true;
 
 	string ret(4 * name.size(), '\0');

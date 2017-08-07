@@ -1390,8 +1390,16 @@ void Execution::push(shared_ptr <const Dep> dep)
 	dep->check();
 	
 	vector <shared_ptr <const Dep> > deps;
-	Dep::normalize(dep, deps); 
-       
+	int e= 0;
+	Dep::normalize(dep, deps, e); 
+	if (e) {
+		dep->get_place() << fmt("%s is needed by %s",
+					dep->format_word(),
+					parents.begin()->second->get_target().format_word());
+		print_traces(); 
+		raise(e); 
+	}
+	
 	for (const auto &d:  deps) {
 		d->check(); 
 		buffer_A.push(d);
@@ -1515,13 +1523,13 @@ Proceed Execution::connect(shared_ptr <const Dep> dep_this,
 		const Place &place_optional= 
 			dep_child->get_place_flag(I_OPTIONAL);
 		place_persistent <<
-			fmt("declaration of persistent dependency with %s",
+			fmt("declaration of persistent dependency using %s",
 			    multichar_format_word("-p")); 
 		place_optional <<
-			fmt("clashes with declaration of optional dependency with %s",
+			fmt("clashes with declaration of optional dependency using %s",
 			    multichar_format_word("-o")); 
 		dep_child->get_place() <<
-			fmt("in declaration of dependency %s, needed by %s", 
+			fmt("in declaration of %s, needed by %s", 
 			    dep_child->get_target().format_word(),
 			    dep_this->get_target().format_word()); 
 		print_traces();
@@ -2186,10 +2194,13 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 			}
 		}
 		assert(! place_target.empty());
+		int ind= dep->flags & F_OPTIONAL ? I_OPTIONAL : I_PERSISTENT; 
 		dep->get_place() << fmt((dep->flags & F_OPTIONAL)
-					? "dependency %s must not be optional"
-					: "dependency %s must not be persistent",
+					? "dependency %s must not be declared as optional"
+					: "dependency %s must not be declared as persistent",
 					dep->format_word()); 
+		dep->places[ind] <<
+			fmt("using flag %s", name_format_word(frmt("-%c", FLAGS_CHARS[ind]))); 
 		if (rule->command) 
 			place_target << fmt("because rule for transient target %s has a command", target_.format_word());
 		else 
@@ -3059,24 +3070,24 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 {
 	assert(dep_->is_normalized()); 
 
-	/* Check the structure of the dependency */
-	shared_ptr <const Dep> depp= dep;
-	depp= Dep::strip_dynamic(depp); 
-	assert(to <Concat_Dep> (depp));
-	shared_ptr <Concat_Dep> concat_dep= 
-		dynamic_pointer_cast <Concat_Dep> (Dep::clone(depp));
+//	/* Check the structure of the dependency */
+//	shared_ptr <const Dep> depp= dep;
+//	depp= Dep::strip_dynamic(depp); 
+//	assert(to <Concat_Dep> (depp));
+//	shared_ptr <Concat_Dep> concat_dep= 
+//		dynamic_pointer_cast <Concat_Dep> (Dep::clone(depp));
 
-	for (size_t i= 0;  i < concat_dep->get_deps().size();  ++i) {
+//	for (size_t i= 0;  i < concat_dep->get_deps().size();  ++i) {
 
-		shared_ptr <const Dep> d= concat_dep->get_deps()[i]; 
+//		shared_ptr <const Dep> d= concat_dep->get_deps()[i]; 
 
-		shared_ptr <const Dep> dep_normalized= 
-			Dep::normalize_compound(d); 
+//		shared_ptr <const Dep> dep_normalized= 
+//			Dep::normalize_compound(d); 
 
-		concat_dep->get_deps()[i]= dep_normalized; 
-	}
+//		concat_dep->get_deps()[i]= dep_normalized; 
+//	}
 
-	dep= concat_dep; 
+//	dep= concat_dep; 
 
 	if (find_cycle(parent, this, dep_link)) {
 		parent->raise(ERROR_LOGICAL);

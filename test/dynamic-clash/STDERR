@@ -1,4 +1,4 @@
-B:1:2: declaration of persistent dependency with '-p'
-main.stu:3:6: clashes with declaration of optional dependency with '-o'
-B:1:4: in declaration of dependency 'C', needed by [B]
+B:1:2: declaration of persistent dependency using '-p'
+main.stu:3:6: clashes with declaration of optional dependency using '-o'
+B:1:4: in declaration of 'C', needed by [B]
 main.stu:3:9: [B] is needed by 'A'

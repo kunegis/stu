@@ -601,9 +601,9 @@ public:
 			this->place_name == that.place_name; 
 	}
 
-	string format(Style style, bool &need_quotes) const {
+	string format(Style style, bool &quotes) const {
 		Target target(flags, place_name.raw()); 
-		return target.format(style, need_quotes); 
+		return target.format(style, quotes); 
 	}
 	
 	string format_word() const {
@@ -638,19 +638,17 @@ public:
 
 string Target::format(Style style, bool &quotes) const
 {
-	quotes= false;
-
 	Style style2= 0;
 	if (! is_file()) {
 		style2 |= S_MARKERS;
 	} else {
 		style2 |= style; 
 	}
-	bool quotes2= false;
 	string ret; 
 	size_t i= 0;
 	while (get_word(i) & F_TARGET_DYNAMIC) {
 		assert((get_word(i) & F_TARGET_TRANSIENT) == 0); 
+		// TODO don't append flags when S_NOFLAGS is set
 		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)); 
 		++i;
 		ret += '[';
@@ -660,9 +658,13 @@ string Target::format(Style style, bool &quotes) const
 	if (get_word(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}
-	if (quotes)  ret += '\'';
-	ret += name_format(text.substr(sizeof(word_t) * (i + 1)), style2, quotes2); 
-	if (quotes)  ret += '\'';
+	bool quotes_inner= false;
+	if (! is_dynamic())
+		quotes_inner= quotes; 
+	string s= name_format(text.substr(sizeof(word_t) * (i + 1)), style2, quotes_inner); 
+	if (! is_dynamic())
+		quotes |= quotes_inner; 
+	ret += s; 
 	i= 0;
 	while (get_word(i) & F_TARGET_DYNAMIC) {
 		++i;

@@ -1,4 +1,4 @@
-main.stu:7:7: declaration of persistent dependency with '-p'
-main.stu:5:6: clashes with declaration of optional dependency with '-o'
-main.stu:7:9: in declaration of dependency 'B', needed by @x
+main.stu:7:7: declaration of persistent dependency using '-p'
+main.stu:5:6: clashes with declaration of optional dependency using '-o'
+main.stu:7:9: in declaration of 'B', needed by @x
 main.stu:5:8: @x is needed by 'A'

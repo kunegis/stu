@@ -53,6 +53,9 @@ enum
 	C_PLACED           	= 3,  /* Flags for which we store a place in Dep */
 	C_WORD			= 8,  /* Flags used for caching; they are stored in Target */
 #define C_WORD			  8 /* Used statically */
+	/* The last #define can be replaced with template trickery, yes,
+	 * but it makes it much longer.  Accept the duplicate constant
+	 * for now.  */
 
 	/* 
 	 * What follows are the actual flag bits to be ORed together 
@@ -104,9 +107,9 @@ enum
 	F_ATTRIBUTE	= F_NEWLINE_SEPARATED | F_NUL_SEPARATED,
 };
 
-const char *const FLAGS_CHARS= "pot[@$n0*%"; 
-/* Characters representing the individual flags -- used in verbose mode
- * output */ 
+const char *const FLAGS_CHARS= "pot[@$n0<*%"; 
+/* Characters representing the individual flags -- used in debug mode
+ * output, and in other cases  */ 
 
 int flag_get_index(char c)
 /* 

@@ -1164,7 +1164,6 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
 	assert(! b->place_param_target.place_name.is_parametrized());  // XXX allow 
 	assert(a->variable_name == "");  // XXX test
 	assert(b->variable_name == "");  // XXX test
-	assert((b->flags & F_TARGET_TRANSIENT) == 0); // XXX test
 	// XXX test all other flags 
 
 	/*
@@ -1195,6 +1194,13 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
 		a->get_place() << fmt("in concatenation to %s", a->format_word()); 
 		error |= ERROR_LOGICAL;
 		return nullptr; 
+	}
+
+	if (b->flags & F_TARGET_TRANSIENT) {
+		b->get_place() << fmt("transient target %s is invalid", b->format_word()); 
+		a->get_place() << fmt("in concatenation to %s", a->format_word()); 
+		error |= ERROR_LOGICAL;
+		return nullptr;
 	}
 
 	/*

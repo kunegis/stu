@@ -1,1 +1,2 @@
-A:  B@C;		# error, or not concatenation 
+# Error or not concatenation?
+A:  B@C;		

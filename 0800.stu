@@ -1,5 +1,3 @@
-# write Concatenated_Execution 
-
 A: list.[B] { cp list.D A ; }
 
 B = { [C] }

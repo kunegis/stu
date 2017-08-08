@@ -1,1 +1,6 @@
-A:  (<B)(C);    	# OK
+>A:  (<list.)(C)
+{
+	cat
+}
+
+list.C = {correct}

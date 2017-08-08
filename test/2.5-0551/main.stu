@@ -1,0 +1,4 @@
+# Parentheses in copy dependencies are not possible. 
+A = (B);
+B = {incorrect}
+

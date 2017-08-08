@@ -1,2 +1,0 @@
-# Parentheses in copy dependencies?  Error or possible?  Probably not allowed. 
-A = (B);

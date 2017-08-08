@@ -775,8 +775,11 @@ string Plain_Dep::format(Style style, bool &quotes) const
 			f += ' '; 
 		}
 	}
-	string t= place_param_target.format(style, quotes);
-	bool quotes_print= quotes && (flags & F_VARIABLE); 
+	bool quotes_inner= (flags & F_VARIABLE) ? false : quotes;
+	string t= place_param_target.format(style, quotes_inner);
+	if (!(flags & F_VARIABLE))
+		quotes= quotes_inner; 
+	bool quotes_print= (flags & F_VARIABLE) && quotes_inner;
 	string ret= fmt("%s%s%s%s%s%s",
 			f,
 			flags & F_VARIABLE ? "$[" : "",
@@ -1163,7 +1166,7 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
 	assert(! a->place_param_target.place_name.is_parametrized());  // XXX allow
 	assert(! b->place_param_target.place_name.is_parametrized());  // XXX allow 
 	assert(a->variable_name == "");  // XXX test
-	assert(b->variable_name == "");  // XXX test
+//	assert(b->variable_name == "");  // XXX test
 	// XXX test all other flags 
 
 	/*
@@ -1203,6 +1206,13 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
 		return nullptr;
 	}
 
+	if (b->flags & F_VARIABLE) {
+		b->get_place() << fmt("variable dependency %s is invalid", b->format_word());
+		a->get_place() << fmt("in concatenation to %s", a->format_word()); 
+		error |= ERROR_LOGICAL; 
+		return nullptr;
+	}
+	
 	/*
 	 * Combine 
 	 */ 
@@ -1219,10 +1229,7 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
 					 Place_Param_Target(flags_combined & F_TARGET_TRANSIENT,
 							    place_name_combined,
 							    a->place_param_target.place),
-					 a->place,
-					 ""); 
-	// XXX set Dep::places
-	
+					 a->place, ""); 
 	return ret; 
 }
 

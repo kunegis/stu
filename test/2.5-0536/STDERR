@@ -1,0 +1,4 @@
+main.stu:1:15: 'C' cannot be declared as persistent
+main.stu:1:13: using '-p'
+main.stu:1:9: in concatenation to 'B'
+main.stu:1:9: 'BC' is needed by 'A'

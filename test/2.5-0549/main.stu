@@ -1,0 +1,10 @@
+# This is not concatenation, but two dependencies. 
+
+>A:  B@C
+{
+	cat B D
+}
+
+B = {111}
+@C: D;
+D = {222}

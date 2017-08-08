@@ -225,8 +225,7 @@ protected:
 	 * suited in this case.  */
 
 	set <Execution *> children;
-	/* Currently running executions.  Allocated with operator new()
-	 * and never deleted.  */ 
+	/* Currently connected executions */
 
 	Timestamp timestamp; 
 	/* Latest timestamp of a (direct or indirect) dependency

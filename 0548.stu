@@ -1,1 +1,0 @@
-A:  (B)<C;              # OK, two distinct dependencies 'B' and 'C' (with input redirection)

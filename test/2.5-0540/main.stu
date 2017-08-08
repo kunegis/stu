@@ -1,0 +1,4 @@
+A:  -o B(C D) {
+	touch A
+}
+

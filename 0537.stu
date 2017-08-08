@@ -1,3 +1,6 @@
+# Error:  cannot concatenate an input, even when on the left.  (It would
+# make sense, but our current handling of inputs does not allow it.)
+
 >A:  (<list.)(C)
 {
 	cat

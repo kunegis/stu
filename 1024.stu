@@ -1,0 +1,8 @@
+# Should we allow this?  No, '@' needs to be followed by a non-empty
+# name. 
+A: @[C]
+{
+	touch A
+}
+C { touch C ; }
+

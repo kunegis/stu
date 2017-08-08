@@ -1,0 +1,10 @@
+# On execution, 'list.C' is already present.  This succeeds. 
+
+A:  (-p list.)(C)
+{
+	cp list.C A
+}
+
+list.C {
+	exit 1
+}

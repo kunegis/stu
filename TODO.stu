@@ -7,14 +7,9 @@ A:  [B]C;      	        # OK
 A:  B[C]D;     	        # OK
 A:  [B][C]; 	        # OK
 A:  [B][C];             # OK
-A:  ($[B])(C);    	# error
 A:  (B)($[C]);    	# error
 A:  <B[C];		# OK iff C contains exactly one dependency (otherwise an error)
 @A: @B[C];       	# OK
-A.$X.$Y:  ($X)($Y)      # OK (can be contiguous)
-A.$X.$Y:  ($X.a)(b.$X)  # OK (despite duplicate parameter) 
-A.$X.$Y:  ($X.)($Y)     # OK
-A.$X.$Y:  ($X)(.$Y)     # OK
 
 @plot.all:   @plot.[NETWORKS];
 
@@ -26,29 +21,18 @@ A.$X.$Y:  ($X)(.$Y)     # OK
 >FILES: { echo *.dat ; }
 backup/$file = $file;
 
-A:   -p ( X )( Y );
-
 # Other tests
-A:  B() { cp B A }  B = {correct}
-A:  ()B { cp B A }  B = {correct}
-... ()(A)  # Empty or just 'A' (empty would be logical, because () is an
-           # empty list
 A:  list.[B];
 A:  list.[[B]];
 A:  [[B]][[B]]; 
 A:  [[B][C]]; 
 A:  [[(B)(C)]]; 
-A:  ()();  # Empty or error?   Empty is logical; error may catch some Stu code bugs. 
 
 # Test a case in which the concatenated files are not readable, i.e. because of chmod(2). 
 
 A: [[X]](Y);  
 
 A:  A[-o B];  # When B does not exist:  empty dependency list. 
-
-A:  $[B(C D)];  # ??
-
-A:  B.${X}(${Y});  # Error because of contiguous parameters 
 
 # Two different meanings [assuming three strings in each of X/Y/Z):
 A:  list.[X Y Z];   # Same as list.( [X] [Y] [Z] ):  9 variants
@@ -65,7 +49,6 @@ A:  [X](Y); # OK
 A:  [X][[Y][Z]];
 A:  [[X][Y]][Z];
 
-A:  [ (X) (Y) (Z) ]; 
 A:  list.([X][Y]); 
 
 A:  [B];   B = { ([X])(([Y]([Z]))) }   X = { list. }   Y = { 1 2 }   Z = Y;
@@ -99,14 +82,6 @@ B = { sleep 1 ; echo D ; }
 A:   list.[B] { ... }
 B = { }
 
-# Should we allow this?  Yes.  Since 'C' is empty, this is an empty
-# dependency. 
-A: @[C]
-{
-	touch A
-}
-C { touch C ; }
-
 # Strong cycle in the context of concatenation 
 A:  list.[B];
 B = {C}
@@ -117,14 +92,12 @@ B = {bbb}
 C = {1 2 3}
 >list.$n { echo "$n$n$n" ; }
 
-A: @[X] { cp C A ; }
+A: @list.[X] { cp C A ; }
 X = { y }
-@y: C;
+@list.y: C;
 C = {correct}
 
 # * Update the man page for concatenation 
-
-# * error traces from concatenation 
 
 # * a concatenation dynamic file containing comments
 
@@ -548,3 +521,12 @@ dep.sources {
 	# Some complex mechanism for determining the source code files
 	# of the program
 }
+
+#
+# Allow concatenation of file dependencies with input redirection.  This
+# is not valid at the moment.  Should be only valid if a single
+# dependency results.  The current behavior is consistent with input
+# redirection being invalid within dynamic dependencies. 
+#
+
+A:  <list.(B) { ... }

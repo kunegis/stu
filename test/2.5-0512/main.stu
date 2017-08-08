@@ -1,0 +1,3 @@
+# Make sure 'xxx' is correctly handled as an optional target 
+A:  -o @B(C) { touch A ; }
+@BC:  xxx;   

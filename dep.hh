@@ -1075,11 +1075,31 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 				  vector <shared_ptr <const Dep> > &deps_,
 				  int &error) 
 {
+	size_t k_init= deps_.size(); 
+
 	normalize_concat(dep, deps_, 0, error); 
 
 	/* Unnecessary, but consistent with what we do everywhere */
 	if (error && ! option_keep_going)
 		return;
+
+	/* Add flags from DEP */ 	
+	if (dep->flags & F_PLACED) {
+		for (size_t k= k_init;  k < deps_.size();  ++k) {
+			shared_ptr <const Dep> d= deps_[k];
+			shared_ptr <Dep> d_new= Dep::clone(d); 
+			/* The innermost flag is kept */
+			d_new->add_flags(dep, false); 
+			// for (int i= 0; i < C_PLACED;  ++i) {
+			// 	if (dep->flags & (1 << i)) {
+			// 		if (!(d->flags & (1 << i))) {
+			// 			d_new->set_place_flag(i, dep->get_place_flag(i));
+			// 		}
+			// 	}
+			// }
+			deps_[k]= d_new;
+		}
+	}
 }
 
 void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep, 

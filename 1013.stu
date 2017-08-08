@@ -1,0 +1,1 @@
+A.$X.$Y:  ($X.a)(b.$X)  # OK (despite duplicate parameter) 

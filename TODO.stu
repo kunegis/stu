@@ -530,3 +530,21 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 # In -k mode, Start trivial dependencies immediately when it iss clear
 # they must be started, not just when everything else is done.
 #
+
+#
+# A flag with the meaning "never rebuild that dependency", but only use
+# it to determine whether we need to rebuilt the target.  It would mean
+# that we can prune dependencies with that flag as soon as we know that
+# the target must be built anyway.  
+#
+
+# In this example, when 'program' does not exist, Stu will *not* build
+# 'dep.sources', because the -s flag is used and Stu knows that
+# 'program' has to be rebuilt anyway. 
+program:  -s [dep.sources] {
+	cc ... -o program
+}
+dep.sources {
+	# Some complex mechanism for determining the source code files
+	# of the program
+}

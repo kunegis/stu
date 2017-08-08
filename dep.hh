@@ -1168,12 +1168,30 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
 	// XXX test all other flags 
 
 	/*
-	 * XXX Test
+	 * Check for invalid combinations
 	 */
+
 	if (b->flags & F_INPUT) {
+		/* We don't save the place for the '<', so we cannot
+		 * have "using '<'" on an extra line.  */
 		b->get_place() << fmt("%s cannot have input redirection using %s", 
 				      b->format_word(),
 				      char_format_word('<')); 
+		a->get_place() << fmt("in concatenation to %s", a->format_word()); 
+		error |= ERROR_LOGICAL;
+		return nullptr; 
+	}
+
+	if (b->flags & F_PLACED) {
+		assert(C_PLACED == 3); 
+		int i_flag= 
+			b->flags & F_PERSISTENT ? I_PERSISTENT :
+			b->flags & F_OPTIONAL   ? I_OPTIONAL   :
+			b->flags & F_TRIVIAL    ? I_TRIVIAL    : 
+			-1;
+		assert(i_flag >= 0); 
+		b->get_place() << fmt("%s cannot be declared as %s", b->format_word(), FLAGS_PHRASES[i_flag]); 
+		b->places[i_flag] << fmt("using %s", name_format_word(frmt("-%c", FLAGS_CHARS[i_flag]))); 
 		a->get_place() << fmt("in concatenation to %s", a->format_word()); 
 		error |= ERROR_LOGICAL;
 		return nullptr; 
@@ -1191,10 +1209,11 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
 
 	shared_ptr <Plain_Dep> ret= 
 		make_shared <Plain_Dep> (flags_combined,
-						Place_Param_Target(flags_combined & F_TARGET_TRANSIENT,
-								   place_name_combined,
-								   a->place_param_target.place),
-						a->place,
+					 a->places,
+					 Place_Param_Target(flags_combined & F_TARGET_TRANSIENT,
+							    place_name_combined,
+							    a->place_param_target.place),
+					 a->place,
 					 ""); 
 	// XXX set Dep::places
 	

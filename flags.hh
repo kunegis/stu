@@ -111,6 +111,8 @@ const char *const FLAGS_CHARS= "pot[@$n0<*%";
 /* Characters representing the individual flags -- used in debug mode
  * output, and in other cases  */ 
 
+const char *FLAGS_PHRASES[C_PLACED]= {"persistent", "optional", "trivial"};
+
 int flag_get_index(char c)
 /* 
  * Get the flag index corresponding to a character.

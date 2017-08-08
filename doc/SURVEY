@@ -3,8 +3,17 @@ often compared with very diverse systems.
 
 == List of Tools == 
 
-The following list gives competing system and explains their different
-from Stu. 
+The following list gives competing system and explains how the differ
+from Stu.  The main information that should be answered for each system: 
+  - Does it allow parametrized rules?  (Including multiple parameters)
+  - Does it allow dynamic dependencies?
+  - Does it allow concatenation-like features?  (e.g., injecting all
+    values from a list)
+  - Does it have builtin rules?
+  - Can it be used as a general-purpose build automation system?  (Not
+    only for compiling)
+  - Can it call any programs, or is it specific to rules in a certain
+    programming language?
 
 This list is currently a work in progress; items are added
 sporadically.  The list is far from being complete. 
@@ -16,20 +25,22 @@ Make and its many implementations and extensions
   - Standardized
   - Has single unnamed parameter with %
   - No dynamic dependencies, but dialects allow certain tricks to
-    emulate it, e.g. using 'include' with GNU Make
+    emulate it, e.g. using 'include' with GNU Make and others
 
 mk
 
 Cook 
   - Has numbered parameters %1 %2 %2 ...
-  - Sort-of has dynamic dependencies using:   NAME [cat NAME]
+  - Sort-of has dynamic dependencies using:   NAME [cat NAME]  (The
+    semantics are different because a change in NAME only does not lead
+    to a re-build in Stu, as it should logically, but does in Cook.)
 
 Ant
   - Java-specific 
   - No dynamic dependencies; Java plugins can be written instead 
 
 Maven 
-  - Java-specific
+  - Java-compilation-specific
 
 Jenkins
   - For software building/deploying/etc. 
@@ -43,6 +54,7 @@ Chef
 SCons
 
 Rake
+  - Ruby-based
 
 Ansible
   - Software building 
@@ -70,6 +82,9 @@ Ninja - https://ninja-build.org/
 
 == Type of Tools ==
 
+Stu can be interpreted as different types on tools, without fitting
+neatly in any.  
+
 * Build automation:  focused on software build 
 
 * Declarative programming:  uses variables, not files 
@@ -95,4 +110,6 @@ ________________________________________________________________________
 * A declarative extension of the shell
 * A build automation tool for data mining
 * A data mining automation tool 
+* An alternative to things like "Python notebook"
+
 

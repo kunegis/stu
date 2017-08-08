@@ -1,0 +1,4 @@
+main.stu:2:10: 'Y' cannot be declared as optional
+main.stu:2:8: using '-o'
+main.stu:2:5: in concatenation to 'X'
+main.stu:2:5: 'XY' is needed by 'A'

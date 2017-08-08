@@ -1,9 +1,8 @@
-This file catalogues the usage of individual characters in Stu source
-files.  
+This file catalogues the usage of individual characters in Stu programs.  
 
-Since Stu sources consist primarily of filenames, many characters that
-are used as operators in programming languages cannot be used in Stu as
-they are needed as part of filenames, such as '/', '~', etc.  
+Since Stu programs consist primarily of filenames, many characters that
+are used as operators in most languages cannot be used in Stu as they
+are needed as part of filenames, such as '/', '~', etc.
 
 == Allowed in unquoted names == 
 
@@ -58,7 +57,7 @@ $[	The sequence '$[' is analysed as a sequence of the two operators
 These characters are reserved for future extension.  They are not
 allowed outside quoted strings, except for '-', '+' and '~' which are
 only not allowed as the unquoted first character of a name.  The given
-uses are proposed and tentative.  
+uses are proposed and tentative.  (We don't add features lightly.)
 
 As a general rule, any new prefix operator can be defined as being a
 flag, so the only reasonable uses for these characters would be suffix,
@@ -68,18 +67,18 @@ would also require more complex (and harder to understand) precedence
 rules.  This leaves binary and ternary operators as possible uses, or as
 forms of non-operators, i.e., new tokens. 
 
-+	Inverted flag (likely)
-~	Home directory (maybe)
++	Inverted flag [as in the shell] (likely)
+~	Home directory [as in the shell] (maybe)
+\	Escape of characters outside of quotes [as in the shell] (maybe)
 \	Difference operator (maybe)
 \	Command interpreter (maybe)
-\	Escape of characters outside of quotes (maybe)
 & 	Intersection (maybe)
 |	Componentwise concatenation (maybe)
-|	Union (redundant to juxtaposition) 
+|	Union [redundant to juxtaposition]
 ! ?	Some form of dual operators
 !	Command interpreter
-* ?     For file globbing 
+* ?     For file globbing [We're against expensive operations not saved in a file]
 ,	Names are already whitespace-separated, and any other use than
 	as a list constructor would be unintuitive   
 ,	As higher-level file separator, allowing "lists of lists", for
-	whatever purpose 
+	whatever purpose [I can't think of one]

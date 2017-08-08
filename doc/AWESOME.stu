@@ -2,7 +2,7 @@
 # Cases where Stu code really shines, compared to other tools.
 #
 
-# How to calculate the size of the largest connected component 
+# How to calculate the size of the largest connected component in KONECT
 dat/statistic.coco.simple~$network = dat/statistic.size.lcc~$network; 
 dat/statistic.size.lcc~$network:  dat/statistic.size.$network { ... }
 

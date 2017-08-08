@@ -697,8 +697,8 @@ public:
 
 	Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 			 shared_ptr <const Dep> dep_link,
-			       Execution *parent,
-			       bool &found_cycle);
+			 Execution *parent,
+			 bool &found_cycle);
 	/* The given dependency must be normalized, and contain at least
 	 * one Concat_Dep.  */
 
@@ -1691,6 +1691,12 @@ Proceed Execution::execute_base_B(shared_ptr <const Dep> dep_link)
 
 Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 {
+	/* Dependencies that are not cached */
+	if (to <const Concat_Dep> (dep)) {
+		return new Concat_Execution(dep, this, error_additional); 
+		// XXX Also uncached dynamic executions
+	}
+
 	const Target target= dep->get_target(); 
 
 	/* Set to the returned Execution object when one is found or created */    
@@ -1788,8 +1794,7 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 				 error_additional);
 		}
 	} else {
-		shared_ptr <const Dynamic_Dep> dynamic_dep=
-			to <Dynamic_Dep> (dep); 
+		shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep); 
 		execution= new Dynamic_Execution(dynamic_dep, 
 						 this,
 						 error_additional); 

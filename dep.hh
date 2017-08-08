@@ -21,13 +21,14 @@
  *    - a plain dependency (file or transient);
  *    - a dynamic dependency containing a normalized dependency; 
  *    - a concatenated dependency, each of whose component is either a
- *      plain dependency, a dynamic dependency, or a compound dependency 
- * 	of plain and dynamic dependencies. 
+ *      plain dependency, a dynamic normalized dependency, or a compound
+ *      dependency of plain and normalized dynamic dependencies.  
  * In particular, compound dependencies are never normalized; they only
  * appear immediately within concatenated dependencies.  
  * Normalized dependencies are those used in practice.  A non-normalized
  * dependency can always be reduced to a normalized one. 
  */
+
 // TODO check that all format_word() functions everywhere do NOT output
 // the flags. 
 
@@ -495,12 +496,19 @@ public:
 
 	virtual Target get_target() const;
 
-	static shared_ptr <const Plain_Dep> concat(shared_ptr <const Plain_Dep> a,
-						   shared_ptr <const Plain_Dep> b,
-						   int &error); 
-	/* Concatenate two plain dependencies to a single plain
-	 * dependency.  On error, a message is printed, bits are set in
-	 * ERROR, and null is returned.  */
+	static shared_ptr <const Dep> concat(shared_ptr <const Dep> a,
+					     shared_ptr <const Dep> b,
+					     int &error); 
+	/* Concatenate two dependencies to a single dependency.  On
+	 * error, a message is printed, bits are set in ERROR, and null
+	 * is returned.  Only plain and dynamic dependencies can be passed.  */
+
+	static shared_ptr <const Plain_Dep> concat_plain(shared_ptr <const Plain_Dep> a,
+							 shared_ptr <const Plain_Dep> b,
+							 int &error); 
+	static shared_ptr <const Concat_Dep> concat_complex(shared_ptr <const Dep> a,
+							    shared_ptr <const Dep> b,
+							    int &error); 
 
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
 				     vector <shared_ptr <const Dep> > &deps,
@@ -541,6 +549,11 @@ class Compound_Dep
  * In terms of Stu source code, a compound dependency corresponds to
  *
  *         (X Y Z ...)
+ *
+ * Compound dependencies are themselves never normalized.  Within
+ * normalized dependencies, they appear only as immediate children of
+ * concatenated dependencies.  Otherwise, they also appear after parsing
+ * to denote syntactic groups of dependencies. 
  */
 	:  public Dep
 {
@@ -1055,18 +1068,34 @@ string Concat_Dep::format_src() const
 bool Concat_Dep::is_normalized() const
 {
 	for (auto &i:  deps) {
-		if (i->is_normalized())
-			continue;
-		shared_ptr <const Compound_Dep> i_compound= 
-			to <Compound_Dep> (i);			
-		if (i_compound != nullptr) {
-			for (auto &j:  i_compound->get_deps()) {
-				if (! j->is_normalized()) 
+		if (to <const Plain_Dep> (i)) {
+			/* OK */
+		} else if (to <const Dynamic_Dep> (i)) {
+			if (! i->is_normalized())
+				return false;
+		} else if (to <const Compound_Dep> (i)) {
+			for (auto &j:  to <const Compound_Dep> (i)->get_deps()) {
+				if (to <const Plain_Dep> (j)) {
+					/* OK */
+				} else if (to <const Dynamic_Dep> (j)) {
+					if (! j->is_normalized()) 
+						return false; 
+				} else {
 					return false;
+				}
 			}
 		} else {
-			return false;
+			return false; 
 		}
+//		if (i->is_normalized())
+//			continue;
+		// shared_ptr <const Compound_Dep> i_compound= to <Compound_Dep> (i);			
+		// if (! i_compound)
+		// 	return false;
+		// for (auto &j:  i_compound->get_deps()) {
+		// 	if (! j->is_normalized()) 
+		// 		return false;
+		// }
 	}
 	return true;
 }
@@ -1125,6 +1154,10 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			normalize_concat(to <Concat_Dep> (dd), deps_, error);
 			if (error && ! option_keep_going)
 				return;
+		} else if (to <Dynamic_Dep> (dd)) {
+			normalize(dd, deps_, error); 
+			if (error && ! option_keep_going)
+				return;
 		} else {
 			assert(false); 
 		}
@@ -1142,10 +1175,14 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 					return; 
 			}
 		} else if (to <Plain_Dep> (dd)) {
-			shared_ptr <const Plain_Dep> dd_plain= to <Plain_Dep> (dd); 
+//			shared_ptr <const Plain_Dep> dd_plain= to <Plain_Dep> (dd); 
 			vec1.push_back(dd); 
 		} else if (to <Dynamic_Dep> (dd)) {
-			assert(false); // XXX implement case
+			normalize(dd, vec1, error); 
+			if (error && ! option_keep_going)
+				return;
+//			vec1.push_back(dd); 
+//			assert(false); // XXX implement case
 		} else if (to <Concat_Dep> (dd)) {
 			normalize_concat(to <Concat_Dep> (dd), vec1, error); 
 			if (error && ! option_keep_going)
@@ -1156,12 +1193,8 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 
 		for (const auto &d1:  vec1) {
 			for (const auto &d2:  vec2) {
-				// XXX handle the case of D1 and D2
-				// being other things than plain
-				// dependencies (return a Concat_Dep of
-				// them, eventually with flattening if
-				// one if them is already a Concat_Dep)
-				shared_ptr <const Dep> d= concat(to <Plain_Dep> (d1), to <Plain_Dep> (d2), error);
+
+				shared_ptr <const Dep> d= concat(d1, d2, error);
 				if (error && ! option_keep_going) 
 					return; 
 				deps_.push_back(d); 
@@ -1176,12 +1209,25 @@ Target Concat_Dep::get_target() const
 	assert(false);
 }
 
-shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
-						shared_ptr <const Plain_Dep> b,
-						int &error)
+shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
+					  shared_ptr <const Dep> b,
+					  int &error)
 {
 	assert(a);
 	assert(b); 
+
+	if (to <const Plain_Dep> (a) && to <const Plain_Dep> (b))
+		return concat_plain(to <const Plain_Dep> (a), to <const Plain_Dep> (b), error); 
+	else
+		return concat_complex(a, b, error); 
+}
+
+shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_Dep> a,
+						      shared_ptr <const Plain_Dep> b,
+						      int &error)
+{
+	assert(a);
+	assert(b);
 
 	assert(! a->place_param_target.place_name.is_parametrized());  // XXX allow
 	assert(! b->place_param_target.place_name.is_parametrized());  // XXX allow 
@@ -1250,6 +1296,25 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat(shared_ptr <const Plain_Dep> a,
 							    place_name_combined,
 							    a->place_param_target.place),
 					 a->place, ""); 
+	return ret; 
+}
+
+shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> a,
+							 shared_ptr <const Dep> b,
+							 int &error)
+/* We don't have to make any checks here because any errors will be
+ * caught later when the resulting plain dependencies are concatenated.
+ * However, checking errors here is faster, since it avoids building
+ * dynamic dependencies unnecessarily.  */
+{
+	assert(! (to <const Plain_Dep> (a) && to <const Plain_Dep> (b))); 
+
+	// XXX check errors like in concat_plain(). [TEST 1026.stu]
+	(void) error; 
+
+	shared_ptr <Concat_Dep> ret= make_shared <Concat_Dep> (); 
+	ret->push_back(a);
+	ret->push_back(b); 
 	return ret; 
 }
 

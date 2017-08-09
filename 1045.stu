@@ -1,0 +1,2 @@
+@plot.all:   @plot.[NETWORKS];
+

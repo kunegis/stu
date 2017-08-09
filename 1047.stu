@@ -1,0 +1,6 @@
+# Copy all *.dat files to the backup/ directory, but only if they don't
+# exist yet, or if they have changed. 
+@all: backup/[FILES];
+>FILES: { echo *.dat ; }
+backup/$file = $file;
+

@@ -1,0 +1,5 @@
+A: @list.[X] { cp C A ; }
+X = { y }
+@list.y: C;
+C = {correct}
+

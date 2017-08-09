@@ -1,0 +1,6 @@
+# Order of parts
+A:  [B][C] { ... }
+>B { sleep 2 ; echo list. ; }
+C = { 1 2 3 }
+list.$n;
+

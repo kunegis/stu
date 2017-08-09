@@ -47,7 +47,7 @@ enum {
 	P_PENDING =  1 << 1,
 	/* The function execute() should be called again for this
 	 * execution (without waiting) at least, for various reasons,
-	 * mostly for randomization of exdecution order.  */
+	 * mostly for randomization of execution order.  */
 		
 	P_FINISHED = 1 << 2,
 	/* This Execution is finished */ 
@@ -117,10 +117,12 @@ public:
 
 	int get_error() const {  return error;  }
 
-	void read_dynamic(Flags flags_this,
-			  const Place_Param_Target &place_param_target,
+	void read_dynamic(//Flags flags_this,
+//			  const Place_Param_Target &place_param_target,
 			  shared_ptr <const Dep> dep_target,
-			  vector <shared_ptr <const Dep> > &deps);
+			  vector <shared_ptr <const Dep> > &deps,
+			  shared_ptr <const Dep> dep,
+			  Execution *dynamic_execution); 
 	/* Read dynamic dependencies from the content of
 	 * PLACE_PARAM_TARGET.  The only reason this is not static is
 	 * that errors can be raised and printed correctly.
@@ -907,20 +909,53 @@ void Execution::main(const vector <shared_ptr <const Dep> > &deps)
 		throw error; 
 }
 
-void Execution::read_dynamic(Flags flags_this, 
-			     const Place_Param_Target &place_param_target,
+void Execution::read_dynamic(//Flags flags_this, 
+//			     const Place_Param_Target &place_param_target,
+			     // TODO convert DEP_TARGET to type PLAIN_DEP
 			     shared_ptr <const Dep> dep_target,
-			     vector <shared_ptr <const Dep> > &deps)
+			     vector <shared_ptr <const Dep> > &deps,
+			     shared_ptr <const Dep> dep,
+			     Execution *dynamic_execution)
 {
+	try {
+//		vector <shared_ptr <const Dep> > deps;
+
+	const Place_Param_Target &place_param_target= to <Plain_Dep> (dep_target)->place_param_target; 
+
 	assert(place_param_target.place_name.get_n() == 0); 
-	assert((place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
+//	assert((place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
+
 	const Target target= place_param_target.unparametrized(); 
-	assert(target.is_file()); 
+//	assert(target.is_file()); 
 	assert(deps.empty()); 
 	
+	/* Check:  variable dependencies are not allowed in multiply
+	 * dynamic dependencies.  */
+	if (dep_target->flags & F_VARIABLE) {
+		bool quotes= false;
+		string s= dep_target->get_target().format(S_MARKERS | S_NOEMPTY, quotes);
+		dep_target->get_place() << fmt("variable dependency %s$[%s%s%s]%s must not appear", 
+					       Color::word,
+					       quotes ? "'" : "",
+					       s,
+					       quotes ? "'" : "",
+					       Color::end); 
+		this->print_traces
+			(fmt("within multiply-dynamic dependency %s", 
+			     dep->get_target().format_word()));
+		raise(ERROR_LOGICAL);
+	} 
+
+	if (place_param_target.flags & F_TARGET_TRANSIENT)
+		return;
+
+	assert(target.is_file()); 
 	string filename= target.get_name_nondynamic();
 
-	if (! (flags_this & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
+	if (! (
+	       dep_target->flags
+//	       flags_this
+	       & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
 
 		/* Parse dynamic dependency in full Stu syntax */ 
 
@@ -934,7 +969,9 @@ void Execution::read_dynamic(Flags flags_this,
 			 filename, 
 			 place_param_target.place,
 			 -1,
-			 flags_this & F_OPTIONAL); 
+			 dep_target->flags
+//			 flags_this
+			 & F_OPTIONAL); 
 
 		Place_Name input; /* remains empty */ 
 		Place place_input; /* remains empty */ 
@@ -956,8 +993,8 @@ void Execution::read_dynamic(Flags flags_this,
 				    prefix_format_word(input.raw(), "<")); 
 			Target target_file= target;
 			target_file.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT; 
-			print_traces(fmt("%s is declared here",
-					 target_file.format_word())); 
+			dynamic_execution->print_traces(fmt("%s is declared here",
+							    target_file.format_word())); 
 			raise(ERROR_LOGICAL);
 		}
 	end_normal:;
@@ -969,10 +1006,16 @@ void Execution::read_dynamic(Flags flags_this,
 		 * would be via mmap()+strchr(), but why the
 		 * complexity?  */ 
 			
-		const char c= (flags_this & F_NEWLINE_SEPARATED) ? '\n' : '\0';
+		const char c= (
+			       dep_target->flags
+//			       flags_this
+			       & F_NEWLINE_SEPARATED) ? '\n' : '\0';
 		/* The delimiter */ 
 
-		const char c_printed= (flags_this & F_NEWLINE_SEPARATED) ? 'n' : '0';
+		const char c_printed= (
+				       dep_target->flags
+//				       flags_this
+				       & F_NEWLINE_SEPARATED) ? 'n' : '0';
 		/* The character to print as the delimiter */
 		
 		char *lineptr= nullptr;
@@ -1016,11 +1059,12 @@ void Execution::read_dynamic(Flags flags_this,
 				free(lineptr); 
 				fclose(file); 
 				place << "filename must not be empty"; 
-				print_traces(fmt("in %s-separated dynamic dependency "
-						 "declared with flag %s",
-						 c == '\0' ? "zero" : "newline",
-						 multichar_format_word
-						 (frmt("-%c", c_printed))));
+				dynamic_execution->print_traces
+					(fmt("in %s-separated dynamic dependency "
+					     "declared with flag %s",
+					     c == '\0' ? "zero" : "newline",
+					     multichar_format_word
+					     (frmt("-%c", c_printed))));
 				throw ERROR_LOGICAL; 
 			}
 				
@@ -1090,6 +1134,24 @@ void Execution::read_dynamic(Flags flags_this,
 		}
 	}
 	swap(deps, deps_new); 
+
+		// for (auto &j:  deps) {
+		// 	shared_ptr <Dep> j_new= Dep::clone(j); 
+		// 	/* Add -% flag */
+		// 	j_new->flags |= F_RESULT_COPY;
+		// 	/* Add flags from self  */  
+		// 	j_new->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
+		// 	for (int i= 0;  i < C_PLACED;  ++i) {
+		// 		if (j_new->get_place_flag(i).empty() && 
+		// 		    ! dep->get_place_flag(i).empty())
+		// 			j_new->set_place_flag(i, dep->get_place_flag(i)); 
+		// 	}
+		// 	j= j_new; 
+		// 	dynamic_execution->push(j); 
+		// }
+	} catch (int e) {
+		dynamic_execution->raise(e); 
+	}
 }
 
 bool Execution::find_cycle(Execution *parent, 
@@ -1687,7 +1749,7 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 		return execution;
 	}
 
-	// XXX Also uncached dynamic executions
+	// XXX Also uncached dynamic executions (i.e., dynamic concatenations)
 
 	const Target target= dep->get_target(); 
 
@@ -3116,18 +3178,23 @@ Proceed Concat_Execution::execute(shared_ptr <const Dep> dep_this)
 // TODO Should we add checks for P_WAIT and P_PENDING like in
 // Root_Execution::execute() ?
 {
+ again:
 	assert(stage >= 0 && stage <= 2); 
 	if (stage == 2)
 		return P_FINISHED;
 	Proceed proceed= execute_base_A(dep_this); 
 	assert(proceed); 
-	if (proceed & P_FINISHED) {
-		++stage;
-		assert(stage <= 2); 
-		if (stage == 2)
-			return proceed;
+	if (proceed & (P_WAIT | P_PENDING)) {
+		assert((proceed & P_FINISHED) == 0); 
+		return proceed;
 	}
-	proceed |= execute_base_B(dep_this);
+	if (!(proceed & P_FINISHED)) {
+		proceed |= execute_base_B(dep_this);
+		if (proceed & (P_WAIT | P_PENDING)) {
+			assert((proceed & P_FINISHED) == 0); 
+			return proceed;
+		}
+	}
 	if (proceed & P_FINISHED) {
 		++stage;
 		assert(stage <= 2); 
@@ -3136,6 +3203,7 @@ Proceed Concat_Execution::execute(shared_ptr <const Dep> dep_this)
 		else {
 			assert(stage == 1); 
 			launch_stage_1(); 
+			goto again;
 		}
 	}
 
@@ -3203,8 +3271,11 @@ void Concat_Execution::notify_result(shared_ptr <const Dep> d,
 	assert((dep_source == nullptr) == (flags == F_RESULT_NOTIFY)); 
 
 	if (flags & F_RESULT_NOTIFY) {
-		// XXX implement this
-//		collected.at(d->index)->get_deps().push_back(... read_dynamic of D); 
+		vector <shared_ptr <const Dep> > deps; 
+		source->read_dynamic(to <const Plain_Dep> (d), deps, dep, this); 
+		for (auto &j:  deps) {
+			collected.at(d->index)->get_deps().push_back(j); 
+		}
 	} else {
 		assert(flags & F_RESULT_COPY);
 		push_result(d); 
@@ -3319,50 +3390,21 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dep> d,
 	assert((dep_source == nullptr) == (flags == F_RESULT_NOTIFY)); 
 
 	if (flags & F_RESULT_NOTIFY) {
-		try {
-			assert(to <Plain_Dep> (d));
-			const Place_Param_Target &place_param_target= 
-				to <Plain_Dep> (d)->place_param_target; 
-
-			/* Check:  variable dependencies are not allowed in multiply
-			 * dynamic dependencies.  */
-			if (d->flags & F_VARIABLE) {
-				bool quotes= false;
-				string s= d->get_target().format(S_MARKERS | S_NOEMPTY, quotes);
-				d->get_place() << fmt("variable dependency %s$[%s%s%s]%s must not appear", 
-						      Color::word,
-						      quotes ? "'" : "",
-						      s,
-						      quotes ? "'" : "",
-						      Color::end); 
-				source->print_traces
-					(fmt("within multiply-dynamic dependency %s", 
-					     dep->get_target().format_word()));
-				raise(ERROR_LOGICAL);
-			} 
-
-			if (!(place_param_target.flags & F_TARGET_TRANSIENT)) {
-				vector <shared_ptr <const Dep> > deps;
-				source->read_dynamic(d->flags, place_param_target, d, deps); 
-				for (auto &j:  deps) {
-					shared_ptr <Dep> j_new= Dep::clone(j); 
-					/* Add -% flag */
-					j_new->flags |= F_RESULT_COPY;
-					/* Add flags from self  */  
-					j_new->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
-					for (int i= 0;  i < C_PLACED;  ++i) {
-						if (j_new->get_place_flag(i).empty() && 
-						    ! dep->get_place_flag(i).empty())
-							j_new->set_place_flag(i, dep->get_place_flag(i)); 
-					}
-					j= j_new; 
-					push(j); 
-				}
+		vector <shared_ptr <const Dep> > deps; 
+		source->read_dynamic(to <const Plain_Dep> (d), deps, dep, this); 
+		for (auto &j:  deps) {
+			shared_ptr <Dep> j_new= Dep::clone(j); 
+			/* Add -% flag */
+			j_new->flags |= F_RESULT_COPY;
+			/* Add flags from self  */  
+			j_new->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
+			for (int i= 0;  i < C_PLACED;  ++i) {
+				if (j_new->get_place_flag(i).empty() && 
+				    ! dep->get_place_flag(i).empty())
+					j_new->set_place_flag(i, dep->get_place_flag(i)); 
 			}
-		} catch (int e) {
-			/* We catch not only the errors raised in this function,
-			 * but also the errors raised in read_dynamic().  */
-			raise(e); 
+			j= j_new; 
+			push(j); 
 		}
 	} else {
 		assert(flags & F_RESULT_COPY);

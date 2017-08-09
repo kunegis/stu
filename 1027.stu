@@ -1,0 +1,13 @@
+A:   ( list. dep. )( X [Y] ) 
+{
+	cat list.X list.D list.E dep.X dep.D dep.E >A
+}
+
+Y = { D E }
+
+list.X = {111}
+list.D = {222}
+list.E = {333}
+dep.X  = {444}
+dep.D  = {555}
+dep.E  = {666}

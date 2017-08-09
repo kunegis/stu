@@ -1,0 +1,22 @@
+A:  [list.[X].[Y]]
+{
+	cat B C D E F G H I >A
+}
+
+X = { a b }
+Y = { 1 2 }
+
+list.a.1 = { B C }
+list.a.2 = { D E }
+list.b.1 = { F G }
+list.b.2 = { H I }
+
+B = {bbb}
+C = {ccc}
+D = {ddd}
+E = {eee}
+F = {fff}
+G = {ggg}
+H = {hhh}
+I = {iii}
+

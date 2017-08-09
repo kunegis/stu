@@ -1,0 +1,7 @@
+# Execute with the -k option.  Check that both error messages are
+# correct, i.e., both concatenations of 'list.' with '-o X' are
+# flagged. 
+
+A: list.[X] { touch A ; }
+X = {  -o F  -o G  }
+list.$x = {incorrect}

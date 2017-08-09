@@ -5,7 +5,7 @@
  * Format-like functions: 
  *
  * - format(...) formats the content according to the exact
- *   specification, but never surrounds it by quotes or color.  It may
+ *   specification, but never surrounds it by quotes.  It may
  *   include more parameters to configure the output. 
  * - format_word() returns a string suitable for inclusion in a message
  *   on STDERR, including quotes and color, as appropriate.  It does not
@@ -24,13 +24,14 @@
  * boolean.  Such functions never output surrounding quotes themselves,
  * and the QUOTES parameter is used as both an input and output
  * parameter: as input parameter, it tells the functions whether we are
- * in a context where quotes are always needed.  As output parameter, it
- * is set to true when the function detects that quotes are needed.  It
- * is never set to false.  If the input parameter is true, it is never
- * changed.
- * // TODO Change this to always have the functions output their own
- * quotes, and make the QUOTES parameter be a bit in Style (since we
- * don't need it for output anymore). 
+ * in a context where quotes are needed in principle (because there is
+ * no color).  As output parameter, it is set to true when the function
+ * detects that quotes are needed.  If the
+ * input parameter is true, it is never changed.  
+ * // TODO Change this to
+ * always have the functions output their own quotes, and make the
+ * QUOTES parameter be a bit in Style (since we don't need it for output
+ * anymore).
  */
 
 #include "color.hh"

@@ -11,15 +11,15 @@
  * EXECUTION CLASS	CACHED?				WHEN USED
  * ---------------------------------------------------------------------------------------------------
  * Root_Execution	not cached (single object) 	The root of the dependency graph; 
- *       						uses the dummy Root_Dependency 
+ *       						uses the dummy Root_Dep
  * File_Execution	cached by Target (no flags)	Non-dynamic targets with at least one
  *							file target in rule OR a command in rule OR
  *							files without a rule
  * Transient_Execution	cached by Target (w/ flags)	Transients without commands nor file targets in
  * 							the same rule, i.e., transitive transient targets
  * "Plain execution"	cached by Target		Name for File_Execution or Transient_Execution
- * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Plain_Dependency w/o -* flag
- * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concat_Dependency w/o -* flag
+ * Dynamic_Ex.[nocat]	cached by Target (w/ flags)	Dynamic^+ targets of Plain_Dep w/o -* flag
+ * Dynamic_Ex.[w/cat]	not cached 			Dynamic^+ targets of Concat_Dep w/o -* flag
  * Concat_Ex.		not cached			Concatenated targets
  *
  * Caching with flags excludes flags that are not stored in Target
@@ -107,7 +107,7 @@ public:
 	void raise(int error_);
 	/* All errors by Execution objects call this function.  Set the
 	 * error code, and throw an error except with the keep-going
-	 * option.  */
+	 * option.  Does not print any error message.  */
 
 	Proceed execute_base_A(shared_ptr <const Dep> dep_link);
 	/* DEPENDENCY_LINK must not be null.  In the return value, at
@@ -137,6 +137,8 @@ public:
 
 	const map <Execution *, shared_ptr <const Dep> > &get_parents() const {  return parents;  }
 	
+	virtual bool want_delete() const= 0; 
+
 	virtual Proceed execute(shared_ptr <const Dep> dep_this)= 0;
 	/* 
 	 * Start the next job(s).  This will also terminate jobs when
@@ -238,7 +240,7 @@ protected:
 	vector <shared_ptr <const Dep> > result; 
 	/* The final list of dependencies represented by the target.
 	 * This does not include any dynamic dependencies, i.e., all
-	 * dependencies are flattened to Plain_Dependency's.  Not used
+	 * dependencies are flattened to Plain_Dep's.  Not used
 	 * for executions that have file targets, neither for
 	 * executions that have multiple targets.  This is not used for
 	 * file dependencies, as a file dependency's result can be each
@@ -316,8 +318,6 @@ protected:
 	 * dependency and if it is, return TRUE when the file does not
 	 * exist.  Return FALSE when children should be started.  Return
 	 * FALSE in execution types that are not affected.  */
-
-	virtual bool want_delete() const= 0; 
 
 	static Timestamp timestamp_last; 
 	/* The timepoint of the last time wait() returned.  No file in the
@@ -473,6 +473,7 @@ public:
 		return flags_format(flags_finished);
 	}
 
+	virtual bool want_delete() const {  return false;  }
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
@@ -497,7 +498,6 @@ public:
 protected:
 
 	virtual bool optional_finished(shared_ptr <const Dep> dep_link);
-	virtual bool want_delete() const {  return false;  }
 	virtual int get_depth() const {  return 0;  }
 
 private:
@@ -611,6 +611,7 @@ public:
 		return mapping_variable; 
 	}
 
+	virtual bool want_delete() const {  return false;  }
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
@@ -625,7 +626,6 @@ public:
 
 protected:
 
-	virtual bool want_delete() const {  return false;  }
 	virtual int get_depth() const {  return 0;  }
 	virtual bool optional_finished(shared_ptr <const Dep> dep_link) {  
 		(void) dep_link; 
@@ -663,6 +663,7 @@ public:
 
 	Root_Execution(const vector <shared_ptr <const Dep> > &dep); 
 
+	virtual bool want_delete() const {  return true;  }
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const; 
 	virtual bool finished(Flags flags) const;
@@ -672,7 +673,6 @@ protected:
 
 	virtual int get_depth() const {  return -1;  }
 	virtual bool optional_finished(shared_ptr <const Dep> ) {  return false;  }
-	virtual bool want_delete() const {  return true;  }
 
 private:
 
@@ -682,10 +682,11 @@ private:
 class Concat_Execution
 /* 
  * An execution representating a concatenation.  Its dependency is
- * always a compound dependency containing normalized dependencies, whose
- * results are concatenated as new targets added to the parent.
- *
- * Dynamic concatenations are handled by Dynamic_Execution, not by this class. 
+ * always a normalized concatenated dependency containing [compound
+ * dependencies of] normalized dependencies, whose results are
+ * concatenated as new targets added to the parent.  At least one of the
+ * contained dependencies is dynamic, as otherwise the dependencies
+ * would have been normalized to a non-concatenated dependency. 
  *
  * Concatenated executions always have exactly one parent.  They are not
  * cached, and they are deleted when done.  Thus, they also don't need
@@ -696,26 +697,27 @@ class Concat_Execution
 public:
 
 	Concat_Execution(shared_ptr <const Concat_Dep> dep_,
-			 shared_ptr <const Dep> dep_link,
 			 Execution *parent,
-			 bool &found_cycle);
-	/* The given dependency must be normalized, and contain at least
-	 * one Concat_Dep.  */
+			 int &error_additional); 
+	/* DEP_ is normalized.  See File_Execution::File_Execution() for
+	 * the semantics for ERROR_ADDITIONAL.  */
 
 	~Concat_Execution(); 
 
-	void add_part(shared_ptr <Plain_Dep> dep, 
-		      int concatenation_index);
-	/* Add a single part -- exclude the outer layer */
-
-	void assemble_parts(); 
-
-	virtual int get_depth() const { return -1; }
+	virtual int get_depth() const {  return -1;  }
+	virtual bool want_delete() const {  return true;  }
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
-	virtual string format_src() const {  return "CONCAT";  }
+	virtual string format_src() const {  return dep->format_src();  }
 
+	virtual void notify_variable(const map <string, string> &result_variable_child) {  
+		result_variable.insert(result_variable_child.begin(), result_variable_child.end()); 
+	}
+	virtual void notify_result(shared_ptr <const Dep> dep, 
+				   Execution *source, 
+				   Flags flags,
+				   shared_ptr <const Dep> dep_source);
 protected:
 
 	virtual bool optional_finished(shared_ptr <const Dep> ) {  return false;  }
@@ -723,36 +725,19 @@ protected:
 private:
 
 	shared_ptr <const Concat_Dep> dep;
-	/* Contains the concatenation. 
-	 * This is a Concat_Dep,
-	 * itself containing each a Compound_Dependency^{0,1} of
-	 * Dynamic_Dependency^* of a plain dependency. 
-	 * Is normalized.  */
+	/* Contains the concatenation.  This is a normalized. */
 
 	int stage;
-	/* 0:  Nothing done yet. 
-	 *  --> put dependencies into the queue
-	 * 1:  We're building the normal dependencies.
-	 *  --> read out the dependencies and construct the list of actual dependencies
-	 * 2:  Building actual dependencies.
-	 * 3:  Finished.  */
+	/* 
+	 * 0:  running dynamic children
+	 * 1:  running normal children
+	 * 2:  finished
+	 */
+//	bool is_finished; 
 
-	vector <vector <shared_ptr <const Plain_Dep> > > parts; 
-	/* The individual parts, inserted here during stage 1 by
-	 * disconnect().  Excludes the outer layer.  */
+	vector <shared_ptr <Compound_Dep> > collected; 
 
-	void add_stage0_dep(shared_ptr <const Dep> d, unsigned concat_index);
-	/* Add a dependency during Stage 0.  The given dependency can be
-	 * non-normalized, because it comes from within a concatenated
-	 * dependency.  */
-
-	virtual bool want_delete() const {  return true;  }
-
-	static shared_ptr <const Dep> concat_dep_one(shared_ptr <const Plain_Dep> dep_1,
-						     shared_ptr <const Plain_Dep> dep_2,
-						     Flags dep_flags);
-	/* Concatenate to two given dependencies, additionally
-	 * adding the given flags.  */
+	void launch_stage_1(); 
 };
 
 class Dynamic_Execution
@@ -783,6 +768,7 @@ public:
 
 	shared_ptr <const Dynamic_Dep> get_dep() const {  return dep;  }
 
+	virtual bool want_delete() const;
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const; 
@@ -796,10 +782,6 @@ public:
 				   Execution *source, 
 				   Flags flags,
 				   shared_ptr <const Dep> dep_source);
-
-protected:
-
-	virtual bool want_delete() const;
 
 private: 
 
@@ -1277,7 +1259,6 @@ void Execution::print_traces(string text) const
 			break; 
 		}
 
-
 		/* Increment */
 		shared_ptr <const Dep> depp_old= depp; 
 		if (! depp->top) {
@@ -1290,7 +1271,9 @@ void Execution::print_traces(string text) const
 
 		/* New text */
 		string text_child= text_parent; 
-		text_parent= depp->get_target().format_word();
+		text_parent= depp->
+//			get_target().
+			format_word();
 
 		/* Don't show left-branch edges of dynamic executions */
 		if (hide_link_from_message(depp_old->flags)) {
@@ -1590,9 +1573,7 @@ Proceed Execution::connect(shared_ptr <const Dep> dep_this,
 void Execution::raise(int error_)
 {
 	assert(error_ >= 1 && error_ <= 3); 
-
 	error |= error_;
-
 	if (! option_keep_going)
 		throw error;
 }
@@ -1692,10 +1673,21 @@ Proceed Execution::execute_base_B(shared_ptr <const Dep> dep_link)
 Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 {
 	/* Dependencies that are not cached */
-	if (to <const Concat_Dep> (dep)) {
-		return new Concat_Execution(dep, this, error_additional); 
-		// XXX Also uncached dynamic executions
+	if (shared_ptr <const Concat_Dep> concat_dep= to <const Concat_Dep> (dep)) {
+		int error_additional= 0; 
+		Concat_Execution *execution= new Concat_Execution(concat_dep, this, error_additional); 
+		assert(execution); 
+		if (error_additional) {
+			error |= error_additional; 
+			assert(execution->want_delete());
+			if (execution->want_delete())
+				delete execution; 
+			return nullptr; 
+		}
+		return execution;
 	}
+
+	// XXX Also uncached dynamic executions
 
 	const Target target= dep->get_target(); 
 
@@ -3065,193 +3057,104 @@ Proceed Root_Execution::execute(shared_ptr <const Dep> dep_this)
 }
 
 Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
-				   shared_ptr <const Dep> dep_link,
 				   Execution *parent,
-				   bool &found_cycle)
-	:  Execution(),
-	   dep(dep_),
+				   int &error_additional)
+	:  dep(dep_),
 	   stage(0)
+//	   is_finished(false)
 {
+	assert(dep_); 
 	assert(dep_->is_normalized()); 
+	assert(parent); 
+	dep->check(); 
 
-//	/* Check the structure of the dependency */
-//	shared_ptr <const Dep> depp= dep;
-//	depp= Dep::strip_dynamic(depp); 
-//	assert(to <Concat_Dep> (depp));
-//	shared_ptr <Concat_Dep> concat_dep= 
-//		dynamic_pointer_cast <Concat_Dep> (Dep::clone(depp));
-
-//	for (size_t i= 0;  i < concat_dep->get_deps().size();  ++i) {
-
-//		shared_ptr <const Dep> d= concat_dep->get_deps()[i]; 
-
-//		shared_ptr <const Dep> dep_normalized= 
-//			Dep::normalize_compound(d); 
-
-//		concat_dep->get_deps()[i]= dep_normalized; 
-//	}
-
-//	dep= concat_dep; 
-
-	if (find_cycle(parent, this, dep_link)) {
-		parent->raise(ERROR_LOGICAL);
-		found_cycle= true; 
+	parents[parent]= dep;
+	if (error_additional) {
+		print_traces();
+		stage= 2;
+//		is_finished= true;
+		parents.erase(parent); 
+		raise(error_additional);
 		return;
 	}
-	parents[parent]= dep_link; 
 
+	parents.erase(parent); 
+	if (find_cycle(parent, this, dep)) {
+		parent->raise(ERROR_LOGICAL);
+		error_additional |= ERROR_LOGICAL; 
+		return;
+	}
+	parents[parent]= dep; 
+
+	/* Initialize COLLECTED */
+	size_t k= dep_->get_deps().size(); 
+	collected.resize(k);
+	for (size_t i= 0;  i < k;  ++i) {
+		collected.at(i)= make_shared <Compound_Dep> (Place::place_empty); 
+	}
+
+	/* Push initial dependencies */ 
+	size_t i= 0;
+	for (auto d:  dep->get_deps()) {
+		if (auto plain_d= to <const Plain_Dep> (d)) {
+			collected.at(i)->get_deps().push_back(d); 
+		} else if (auto dynamic_d= to <const Dynamic_Dep> (d)) {
+			shared_ptr <Dep> dep_child= Dep::clone(dynamic_d->dep); 
+			dep_child->flags |= F_RESULT_NOTIFY;
+			dep_child->index= i; 
+			push(dep_child); 
+		} else {
+			/* Everything else would mean that the passed
+			 * dependency was not normalized  */
+			assert(false); 
+		}
+		++i; 
+	}
 }
 
 Proceed Concat_Execution::execute(shared_ptr <const Dep> dep_this)
+// TODO Should we add checks for P_WAIT and P_PENDING like in
+// Root_Execution::execute() ?
 {
-	assert(stage >= 0 && stage <= 3); 
-
-	if (stage == 0) {
-		/* Construct all initial dependencies */ 
-		/* Not all parts need to have something constructed.
-		 * Only those that are dynamic do:
-		 *
-		 *    list.(X Y Z)     # Nothing to build in stage 0
-		 *    list.[X Y Z]     # Build X, Y, Z in stage 0
-		 *
-		 * Add, as extra dependencies, all sub-dependencies of
-		 * the concatenated dependency, minus one dynamic level,
-		 * or not at all if they are not dynamic.  */
-
-		shared_ptr <const Dep> depp= Dep::strip_dynamic(dep); 
-		shared_ptr <const Concat_Dep> concat_depp= 
-			to <Concat_Dep> (depp);
-		assert(concat_depp != nullptr); 
-
-		const size_t n= concat_depp->get_deps().size(); 
-
-		for (size_t i= 0;  i < n;  ++i) {
-			shared_ptr <const Dep> d= concat_depp->get_deps()[i]; 
-			if (to <Compound_Dep> (d)) {
-				for (shared_ptr <const Dep> dd:  
-					     to <Compound_Dep> (d)->get_deps()) {
-					add_stage0_dep(dd, i); 
-				}
-			} else {
-				add_stage0_dep(d, i); 
-			}
-		}
-
-		/* Initialize parts */
-		parts.resize(n); 
-
-		stage= 1; 
-		/* Fall through to stage 1 */ 
-	} 
-
-	if (stage == 1) {
-		/* First phase:  we build all individual targets, if there are some */ 
-		Proceed proceed= execute_base_A(dep_this); 
-		assert(proceed); 
-		if (proceed & P_WAIT) {
+	assert(stage >= 0 && stage <= 2); 
+	if (stage == 2)
+		return P_FINISHED;
+	Proceed proceed= execute_base_A(dep_this); 
+	assert(proceed); 
+	if (proceed & P_FINISHED) {
+		++stage;
+		assert(stage <= 2); 
+		if (stage == 2)
 			return proceed;
-		}
-
-		proceed |= execute_base_B(dep_this); 
-		assert(proceed); 
-		if (proceed & P_WAIT) {
-			return proceed;
-		}
-
-		/* The parts are filled incrementally when the children
-		 * are unlinked  */
-
-		/* Put all the parts together */
-		assemble_parts(); 
-
-		stage= 2; 
-
-		/* Fall through to stage 2 */
-		
-	} 
-
-	if (stage == 2) {
-		/* Second phase:  normal child executions */
-		assert(! dep); 
-		Proceed proceed= execute_base_A(dep_this); 
-		assert(proceed); 
-		if (proceed & P_WAIT) {
-			return proceed;
-		}
-
-		proceed |= execute_base_B(dep_this); 
-		assert(proceed); 
-		if (proceed & P_WAIT) {
-			return proceed;
-		}
-
-		assert((proceed & P_WAIT) == 0); 
-
-		stage= 3; 
-
-		/* No need to set a DONE variable for concatenated
-		 * executions -- whether we are done is indicated by
-		 * STAGE == 3.  */
-		
-		return proceed; 
-
-	} else if (stage == 3) {
-		return 0; 
-	} else {
-		assert(false);  /* Invalid stage */ 
-		return 0; 
 	}
+	proceed |= execute_base_B(dep_this);
+	if (proceed & P_FINISHED) {
+		++stage;
+		assert(stage <= 2); 
+		if (stage == 2)
+			return proceed; 
+		else {
+			assert(stage == 1); 
+			launch_stage_1(); 
+		}
+	}
+
+	return proceed; 
 }
 
 bool Concat_Execution::finished() const
 {
-	/* We ignore DONE here */
-	return stage == 3;
+	assert(stage >= 0 && stage <= 2); 
+	return stage == 2;
+//	return is_finished; 
 }
 
-bool Concat_Execution::finished(Flags flags) const
+bool Concat_Execution::finished(Flags) const
 /* Since Concat_Execution objects are used just once, by a single
  * parent, this always returns the same as finished() itself.
  * Therefore, the FLAGS parameter is ignored.  */
 {
-	(void) flags; 
 	return finished(); 
-}
-
-void Concat_Execution::add_stage0_dep(shared_ptr <const Dep> d,
-				      unsigned concat_index)
-/* 
- * The given dependency can be non-normalized. 
- */
-{
-	assert(false);
-	(void) d;  (void) concat_index;  
-}
-
-shared_ptr <const Dep> Concat_Execution::
-concat_dep_one(shared_ptr <const Plain_Dep> dep_1,
-	       shared_ptr <const Plain_Dep> dep_2,
-	       Flags dep_flags)
-/* 
- * Rules for concatenation:
- *   - Flags are not allowed on the second component.
- *   - The second component must not be transient. 
- */
-{
-	assert(dep_2->flags == 0);
-	// XXX test:  replace by a proper error 
-
-	assert(! (dep_2->place_param_target.flags & F_TARGET_TRANSIENT)); 
-	// XXX proper test.  
-
-	Place_Param_Target target= dep_1->place_param_target; 
-	target.place_name.append(dep_2->place_param_target.place_name); 
-
-	return make_shared <Plain_Dep> 
-		(dep_flags & dep_1->flags,
-		 target,
-		 dep_1->place,
-		 "");
 }
 
 Concat_Execution::~Concat_Execution()
@@ -3259,50 +3162,52 @@ Concat_Execution::~Concat_Execution()
 	/* Nop */ 
 }
 
-void Concat_Execution::assemble_parts()
+void Concat_Execution::launch_stage_1()
 {
-	if (parts.size() == 0) {
-		/* This is theoretically and empty product and should
-		 * have a single element which is the empty string, but
-		 * that is not possible.  */
-		assert(false);
-		return; 
+	shared_ptr <Concat_Dep> c= make_shared <Concat_Dep> ();
+	c->get_deps().resize(collected.size());
+	for (size_t i= 0;  i < collected.size();  ++i) {
+		c->get_deps().at(i)= move(collected.at(i)); 
 	}
-
-	vector <shared_ptr <const Dep> > deps_read; 
-
-	for (size_t i= 0;  i < parts.size();  ++i) {
-
-		vector <shared_ptr <const Dep> > deps_read_new; 
-		
-		/* If a single index is empty, the whole result is
-		 * an empty set of dependencies.  */
-		if (parts[i].empty()) {
-			deps_read= vector <shared_ptr <const Dep> > (); 
-			return; 
-		}
-
-		if (i == 0) {
-			/* The leftmost components are special:  we
-			 * don't perform any checks on them, as they can
-			 * be transient and have flags, while subsequent
-			 * parts cannot.  */
-			for (size_t k= 0;  k < parts[i].size();  ++k) {
-				deps_read_new.push_back(parts[i][k]);
-			}
-		} else {
-			for (size_t j= 0;  j < deps_read.size();  ++j) {
-				for (size_t k= 0;  k < parts[i].size();  ++k) {
-					// XXX do something here ...
-				}
-			}
-		}
-		
-		swap(deps_read, deps_read_new); 
+	vector <shared_ptr <const Dep> > deps;
+	int e= 0; 
+	Dep::normalize(c, deps, e); 
+	if (e) {
+		print_traces();
+		raise(e); 
 	}
+			
+	for (auto f:  deps) {
+		shared_ptr <Dep> f2= Dep::clone(f); 
+		/* Add -% flag */
+		f2->flags |= F_RESULT_COPY;
+		/* Add flags from self  */  
+		f2->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
+		for (int i= 0;  i < C_PLACED;  ++i) {
+			if (f2->get_place_flag(i).empty() && ! dep->get_place_flag(i).empty())
+				f2->set_place_flag(i, dep->get_place_flag(i)); 
+		}
+		push(f2); 
+	}
+}
 
-	for (auto &i:  deps_read) {
-		push(i); 
+void Concat_Execution::notify_result(shared_ptr <const Dep> d, 
+				     Execution *source, 
+				     Flags flags,
+				     shared_ptr <const Dep> dep_source)
+{
+	(void) source; 
+
+	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))); 
+	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)) != (F_RESULT_NOTIFY | F_RESULT_COPY)); 
+	assert((dep_source == nullptr) == (flags == F_RESULT_NOTIFY)); 
+
+	if (flags & F_RESULT_NOTIFY) {
+		// XXX implement this
+//		collected.at(d->index)->get_deps().push_back(... read_dynamic of D); 
+	} else {
+		assert(flags & F_RESULT_COPY);
+		push_result(d); 
 	}
 }
 
@@ -3313,6 +3218,7 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dep> dep_,
 	   is_finished(false)
 {
 	assert(dep_); 
+	assert(dep_->is_normalized()); 
 	assert(parent); 
 	dep->check();
 	
@@ -3331,9 +3237,8 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dep> dep_,
 
 	/* Find the rule of the inner dependency */
 	shared_ptr <const Dep> inner_dep= Dep::strip_dynamic(dep);
-	if (to <Plain_Dep> (inner_dep)) {
-		shared_ptr <const Plain_Dep> inner_plain_dep
-			= to <Plain_Dep> (inner_dep); 
+	if (auto inner_plain_dep= to <const Plain_Dep> (inner_dep)) {
+//		shared_ptr <const Plain_Dep> inner_plain_dep= to <Plain_Dep> (inner_dep); 
 		Target target_base(inner_plain_dep->place_param_target.flags,
 				   inner_plain_dep->place_param_target.place_name.unparametrized());
 		Target target= dep->get_target(); 
@@ -3367,6 +3272,8 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dep> dep_,
 }
 
 Proceed Dynamic_Execution::execute(shared_ptr <const Dep> dep_this)
+// TODO Should we add checks for P_WAIT and P_PENDING like in
+// Root_Execution::execute() ?
 {
 	Proceed proceed= execute_base_A(dep_this); 
 	assert(proceed); 
@@ -3434,12 +3341,9 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dep> d,
 				raise(ERROR_LOGICAL);
 			} 
 
-			if ((place_param_target.flags & F_TARGET_TRANSIENT) == 0) {
+			if (!(place_param_target.flags & F_TARGET_TRANSIENT)) {
 				vector <shared_ptr <const Dep> > deps;
-				source->read_dynamic(d->flags,
-						     place_param_target,
-						     d,
-						     deps); 
+				source->read_dynamic(d->flags, place_param_target, d, deps); 
 				for (auto &j:  deps) {
 					shared_ptr <Dep> j_new= Dep::clone(j); 
 					/* Add -% flag */

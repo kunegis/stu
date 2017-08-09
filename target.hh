@@ -659,10 +659,11 @@ string Target::format(Style style, bool &quotes) const
 		ret += '@'; 
 	}
 	bool quotes_inner= false;
-	if (! is_dynamic())
+	bool detached= is_dynamic() || is_transient(); 
+	if (! detached)
 		quotes_inner= quotes; 
 	string s= name_format(text.substr(sizeof(word_t) * (i + 1)), style2, quotes_inner); 
-	if (! is_dynamic())
+	if (! detached)
 		quotes |= quotes_inner; 
 	ret += s; 
 	i= 0;

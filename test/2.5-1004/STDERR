@@ -1,0 +1,2 @@
+main.stu:3:6: expected a command, ':', ';', or '=', not '('
+main.stu:3:1: for target 'list.'

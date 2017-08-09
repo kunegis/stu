@@ -1,8 +1,8 @@
 # 'A' must contain eight lines with the texts "Line 1" to "Line 8"
 
->A:    list.[list.[X]]
+A:    list.[list.[X]]
 {
-	cat list.3 list.4 list.5 list.6
+	cat B C D E F G H I >A
 }
 
 X = { 1 2 }

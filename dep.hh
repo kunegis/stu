@@ -955,7 +955,7 @@ string Compound_Dep::format(Style style, bool &) const
 	bool quotes= false;
 	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
-			ret += ", ";
+			ret += " ";
 		ret += d->format(style, quotes); 
 	}
 	if (deps.size() != 1) 
@@ -965,41 +965,56 @@ string Compound_Dep::format(Style style, bool &) const
 
 string Compound_Dep::format_word() const
 {
-	string ret;
-	for (const shared_ptr <const Dep> &d:  deps) {
-		if (! ret.empty())
-			ret += ", ";
-		ret += d->format_word(); 
-	}
-	if (deps.size() != 1) 
-		ret= fmt("(%s)", ret); 
-	return ret;
+	bool quotes= Color::quotes;
+	string ret= format(S_WORD | S_NOFLAGS, quotes); 
+	if (quotes)
+		ret= '\'' + ret + '\''; 
+	return ret; 
+//	string ret;
+//	for (const shared_ptr <const Dep> &d:  deps) {
+//		if (! ret.empty())
+//			ret += ", ";
+//		ret += d->format_word(); 
+//	}
+//	if (deps.size() != 1) 
+//		ret= fmt("(%s)", ret); 
+//	return ret;
 }
 
 string Compound_Dep::format_out() const
 {
-	string ret;
-	for (const shared_ptr <const Dep> &d:  deps) {
-		if (! ret.empty())
-			ret += ", ";
-		ret += d->format_out(); 
-	}
-	if (deps.size() != 1) 
-		ret= fmt("(%s)", ret); 
-	return ret;
+	bool quotes= Color::quotes;
+	string ret= format(S_OUT | S_NOFLAGS, quotes);
+		if (quotes)
+		ret= '\'' + ret + '\''; 
+	return ret; 
+	// string ret;
+	// for (const shared_ptr <const Dep> &d:  deps) {
+	// 	if (! ret.empty())
+	// 		ret += ", ";
+	// 	ret += d->format_out(); 
+	// }
+	// if (deps.size() != 1) 
+	// 	ret= fmt("(%s)", ret); 
+	// return ret;
 }
 
 string Compound_Dep::format_src() const
 {
-	string ret;
-	for (const shared_ptr <const Dep> &d:  deps) {
-		if (! ret.empty())
-			ret += ", ";
-		ret += d->format_src(); 
-	}
-	if (deps.size() != 1) 
-		ret= fmt("(%s)", ret); 
-	return ret;
+	bool quotes= Color::quotes;
+	string ret= format(S_SRC, quotes); 
+	if (quotes)
+		ret= '\'' + ret + '\''; 
+	return ret; 
+	// string ret;
+	// for (const shared_ptr <const Dep> &d:  deps) {
+	// 	if (! ret.empty())
+	// 		ret += ", ";
+	// 	ret += d->format_src(); 
+	// }
+	// if (deps.size() != 1) 
+	// 	ret= fmt("(%s)", ret); 
+	// return ret;
 }
 
 shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mapping) const
@@ -1146,18 +1161,21 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 
 	if (start_index + 1 == dep->deps.size()) {
 		shared_ptr <const Dep> dd= dep->deps.at(start_index);
-		if (to <Compound_Dep> (dd)) {
-			shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dd);
-			for (const auto &d:  compound_dep->get_deps()) {
-				assert(to <Plain_Dep> (d));
+		if (auto compound_dd= to <Compound_Dep> (dd)) {
+//			shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dd);
+			for (const auto &d:  compound_dd->get_deps()) {
+//				assert(to <Plain_Dep> (d));
 				normalize(d, deps_, error); 
 				if (error && ! option_keep_going)
 					return;
 			}
 		} else if (to <Plain_Dep> (dd)) {
 			deps_.push_back(dd); 
-		} else if (to <Concat_Dep> (dd)) {
-			normalize_concat(to <Concat_Dep> (dd), deps_, error);
+		} else if (auto concat_dd= to <Concat_Dep> (dd)) {
+			normalize_concat(
+					 concat_dd
+//					 to <Concat_Dep> (dd)
+					 , deps_, error);
 			if (error && ! option_keep_going)
 				return;
 		} else if (to <Dynamic_Dep> (dd)) {
@@ -1173,9 +1191,9 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 		if (error && ! option_keep_going)
 			return; 
 		shared_ptr <const Dep> dd= dep->deps.at(start_index); 
-		if (to <Compound_Dep> (dd)) {
-			shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dd);
-			for (const auto &d:  compound_dep->get_deps()) {
+		if (auto compound_dd= to <Compound_Dep> (dd)) {
+//			shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dd);
+			for (const auto &d:  compound_dd->get_deps()) {
 				normalize(d, vec1, error); 
 				if (error && ! option_keep_going)
 					return; 
@@ -1186,8 +1204,11 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			normalize(dd, vec1, error); 
 			if (error && ! option_keep_going)
 				return;
-		} else if (to <Concat_Dep> (dd)) {
-			normalize_concat(to <Concat_Dep> (dd), vec1, error); 
+		} else if (auto concat_dd= to <Concat_Dep> (dd)) {
+			normalize_concat(
+					 concat_dd
+//					 to <Concat_Dep> (dd)
+					 , vec1, error); 
 			if (error && ! option_keep_going)
 				return; 
 		} else {
@@ -1233,12 +1254,25 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 
 	assert(! a->place_param_target.place_name.is_parametrized());  // XXX allow
 	assert(! b->place_param_target.place_name.is_parametrized());  // XXX allow 
-	assert(a->variable_name == "");  // XXX test
 	// XXX test all other flags 
 
 	/*
 	 * Check for invalid combinations
 	 */
+
+	if (a->flags & F_INPUT) {
+		/* It would in principle be possible to allow
+		 * concatenations in which the left component has an
+		 * input redirection, but the current data structures do
+		 * not allow that, and therefore we make that invalid.  */
+		a->get_place() << fmt("%s cannot have input redirection using %s",
+				      a->format_word(),
+				      char_format_word('<')); 
+		b->get_place() << fmt("because %s is concatenated to it",
+				      b->format_word()); 
+		error |= ERROR_LOGICAL;
+		return nullptr; 
+	}
 
 	if (b->flags & F_INPUT) {
 		/* We don't save the place for the '<', so we cannot

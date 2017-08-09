@@ -145,6 +145,10 @@ A.$X$Y;
 # fatal signal is sent.  Make it such that the job fails immediately. 
 #
 
+# Example that triggers it:
+$ stu -F 'A {cat $(cat ahjsahd);}'
+# (where the file 'ahjsahd' is not present) 
+
 #
 # At the moment, "stu -g" does not disable the flag -o in copy rules, i.e.
 #
@@ -229,6 +233,20 @@ X = {x}   Y = {y}  Z = {z}
 #
 # In -s -j mode, 'Successfully built' messages should not be output. 
 #
+
+#
+# Test all 'switch' cases, like this:
+#
+
+A:  -X <CCC>  -Y <CCC>  { ... }
+
+# where:
+#   -X and -Y are all possible combinations of transitive flags
+#   <CCC> is one of:
+#      (1) Direct dependency C
+#      (2) Transient to C
+#      (3) Dynamic dependency that contains C
+#      (4) Concatenation that results in C
 
 #=================== Further features =======================
 

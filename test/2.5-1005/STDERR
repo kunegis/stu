@@ -1,0 +1,5 @@
+main.stu:4:8: 'C' cannot have input redirection using '<'
+main.stu:4:5: in concatenation to 'B'
+main.stu:4:5: 'BC' is needed by 'G'
+main.stu:3:5: 'G' is needed by 'F'
+main.stu:2:5: 'F' is needed by 'A'

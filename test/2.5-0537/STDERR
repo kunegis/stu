@@ -1,0 +1,3 @@
+main.stu:4:8: 'list.' cannot have input redirection using '<'
+main.stu:4:15: because 'C' is concatenated to it
+main.stu:4:8: 'list.C' is needed by 'A'

@@ -3249,7 +3249,7 @@ void Concat_Execution::launch_stage_1()
 		shared_ptr <Dep> f2= Dep::clone(f); 
 		/* Add -% flag */
 		f2->flags |= F_RESULT_COPY;
-		/* Add flags from self  */  
+		/* Add flags from self */  
 		f2->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
 		for (int i= 0;  i < C_PLACED;  ++i) {
 			if (f2->get_place_flag(i).empty() && ! dep->get_place_flag(i).empty())
@@ -3396,7 +3396,7 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dep> d,
 			shared_ptr <Dep> j_new= Dep::clone(j); 
 			/* Add -% flag */
 			j_new->flags |= F_RESULT_COPY;
-			/* Add flags from self  */  
+			/* Add flags from self */  
 			j_new->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
 			for (int i= 0;  i < C_PLACED;  ++i) {
 				if (j_new->get_place_flag(i).empty() && 

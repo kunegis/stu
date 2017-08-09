@@ -1,6 +1,6 @@
 # 'A' must contain eight lines with the texts "Line 1" to "Line 8"
 
-A:    list.[list.[X]]
+A:   [list.[list.[X]]]
 {
 	cat B C D E F G H I >A
 }
@@ -15,11 +15,11 @@ list.4 = { D E }
 list.5 = { F G }
 list.6 = { H I }
 
-B = { Line 1 }
-C = { Line 2 }
-D = { Line 3 }
-E = { Line 4 }
-F = { Line 5 }
-G = { Line 6 }
-H = { Line 7 }
-I = { Line 8 }
+B = {bbb}
+C = {ccc}
+D = {ddd}
+E = {eee}
+F = {fff}
+G = {ggg}
+H = {hhh}
+I = {iii}

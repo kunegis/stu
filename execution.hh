@@ -117,9 +117,7 @@ public:
 
 	int get_error() const {  return error;  }
 
-	void read_dynamic(//Flags flags_this,
-//			  const Place_Param_Target &place_param_target,
-			  shared_ptr <const Dep> dep_target,
+	void read_dynamic(shared_ptr <const Dep> dep_target,
 			  vector <shared_ptr <const Dep> > &deps,
 			  shared_ptr <const Dep> dep,
 			  Execution *dynamic_execution); 
@@ -179,8 +177,8 @@ public:
 	/* The child execution SOURCE notifies THIS about a new result.
 	 * Only called when the dependency linking the two had one of the
 	 * F_RESULT_* flag.  The given flag contains only one of the two
-	 * F_RESULT_* flags.  DEPENDENCY_SOURCE is the dependency
-	 * leading from THIS to SOURCE (for F_RESULT_COPY), otherwise null.  */ 
+	 * F_RESULT_* flags.  DEP_SOURCE is the dependency
+	 * leading from THIS to SOURCE (for F_RESULT_COPY).  */ 
 	{
 		/* Execution classes that use F_RESULT_* override this function */
 		(void) dep;
@@ -730,12 +728,9 @@ private:
 	/* Contains the concatenation.  This is a normalized. */
 
 	int stage;
-	/* 
-	 * 0:  running dynamic children
+	/* 0:  running dynamic children
 	 * 1:  running normal children
-	 * 2:  finished
-	 */
-//	bool is_finished; 
+	 * 2:  finished  */
 
 	vector <shared_ptr <Compound_Dep> > collected; 
 
@@ -909,8 +904,7 @@ void Execution::main(const vector <shared_ptr <const Dep> > &deps)
 		throw error; 
 }
 
-void Execution::read_dynamic(//Flags flags_this, 
-//			     const Place_Param_Target &place_param_target,
+void Execution::read_dynamic(			     
 			     // TODO convert DEP_TARGET to type PLAIN_DEP
 			     shared_ptr <const Dep> dep_target,
 			     vector <shared_ptr <const Dep> > &deps,
@@ -1616,7 +1610,7 @@ Proceed Execution::connect(shared_ptr <const Dep> dep_this,
 
 	if (dep_child->flags & F_RESULT_NOTIFY) {
 		for (const auto &dependency:  child->result) {
-			this->notify_result(dependency, this, F_RESULT_NOTIFY, nullptr); 
+			this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child); 
 		}
 	}
 
@@ -1651,10 +1645,12 @@ void Execution::disconnect(Execution *const child,
 	assert(option_keep_going || child->error == 0); 
 	dep_child->check(); 
 
-	if (dep_child->flags & F_RESULT_NOTIFY && dynamic_cast <File_Execution *> (child)) {
+	if (dep_child->flags & F_RESULT_NOTIFY
+	    && dynamic_cast <File_Execution *> (child)
+	    ) {
 		shared_ptr <Dep> d= Dep::clone(dep_child);
 		d->flags &= ~F_RESULT_NOTIFY; 
-		notify_result(d, child, F_RESULT_NOTIFY, nullptr); 
+		notify_result(d, child, F_RESULT_NOTIFY, dep_child); 
 	}
 
 	if (dep_child->flags & F_RESULT_COPY && dynamic_cast <File_Execution *> (child)) {
@@ -1897,9 +1893,9 @@ void Execution::push_result(shared_ptr <const Dep> dd)
 		Flags flags= i.second->flags & (F_RESULT_NOTIFY | F_RESULT_COPY); 
 		if (flags) {
 			i.first->notify_result(dd, this, flags,
-					       (flags == F_RESULT_NOTIFY)
-					       ? nullptr
-					       : i.second); 
+//					       (flags == F_RESULT_NOTIFY)
+//					       ? nullptr : 
+					       i.second); 
 		}
 	}
 }
@@ -3123,7 +3119,6 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 				   int &error_additional)
 	:  dep(dep_),
 	   stage(0)
-//	   is_finished(false)
 {
 	assert(dep_); 
 	assert(dep_->is_normalized()); 
@@ -3134,7 +3129,6 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 	if (error_additional) {
 		print_traces();
 		stage= 2;
-//		is_finished= true;
 		parents.erase(parent); 
 		raise(error_additional);
 		return;
@@ -3268,13 +3262,19 @@ void Concat_Execution::notify_result(shared_ptr <const Dep> d,
 
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))); 
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)) != (F_RESULT_NOTIFY | F_RESULT_COPY)); 
-	assert((dep_source == nullptr) == (flags == F_RESULT_NOTIFY)); 
+	assert(dep_source); 
+
+	// RM
+	Debug::print(this, fmt("notify_result(flags = %s, d = %s)",
+			       flags_format(flags),
+			       d->format_src())); 
 
 	if (flags & F_RESULT_NOTIFY) {
 		vector <shared_ptr <const Dep> > deps; 
 		source->read_dynamic(to <const Plain_Dep> (d), deps, dep, this); 
 		for (auto &j:  deps) {
-			collected.at(d->index)->get_deps().push_back(j); 
+			size_t i= dep_source->index;
+			collected.at(i)->get_deps().push_back(j); 
 		}
 	} else {
 		assert(flags & F_RESULT_COPY);
@@ -3309,7 +3309,6 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dep> dep_,
 	/* Find the rule of the inner dependency */
 	shared_ptr <const Dep> inner_dep= Dep::strip_dynamic(dep);
 	if (auto inner_plain_dep= to <const Plain_Dep> (inner_dep)) {
-//		shared_ptr <const Plain_Dep> inner_plain_dep= to <Plain_Dep> (inner_dep); 
 		Target target_base(inner_plain_dep->place_param_target.flags,
 				   inner_plain_dep->place_param_target.place_name.unparametrized());
 		Target target= dep->get_target(); 
@@ -3387,7 +3386,8 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dep> d,
 {
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))); 
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)) != (F_RESULT_NOTIFY | F_RESULT_COPY)); 
-	assert((dep_source == nullptr) == (flags == F_RESULT_NOTIFY)); 
+	assert(dep_source);
+//	assert((dep_source == nullptr) == (flags == F_RESULT_NOTIFY)); 
 
 	if (flags & F_RESULT_NOTIFY) {
 		vector <shared_ptr <const Dep> > deps; 

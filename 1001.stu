@@ -1,2 +1,7 @@
-# An example where "top places" are shown in an error message, in the
-# context of concatenation.  
+A:  [list.[list.[list.[B]]]]  { touch A ; }
+B = {C}
+list.C = {D}
+list.D = {E}
+list.E = {F}
+F: X { touch F ; }
+

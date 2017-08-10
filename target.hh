@@ -521,21 +521,21 @@ public:
 	/* Length = N (number of parameters). 
 	 * The places of the individual parameters.  */
 
-	/* Empty parametrized name, and empty place */
 	Place_Name() 
+		/* Empty parametrized name, and empty place */
 		:  Name(),
 		   place()
 	{ }
 
-	/* Unparametrized, with empty place */ 
 	Place_Name(string name)
+		/* Unparametrized, with empty place */ 
 		:  Name(name)
 	{ 
 		/* PLACES remains empty */ 
 	}
 	
-	/* Unparametrized, with explicit place */
 	Place_Name(string name, const Place &_place) 
+		/* Unparametrized, with explicit place */
 		:  Name(name), place(_place)
 	{
 		assert(! place.empty()); 
@@ -545,17 +545,19 @@ public:
 		return places;
 	}
 
-	/* Append the given PARAMETER and an empty text */ 
 	void append_parameter(string parameter,
-			      const Place &place_parameter) {
+			      const Place &place_parameter) 
+	/* Append the given PARAMETER and an empty text */ 
+	{
 		Name::append_parameter(parameter); 
 		places.push_back(place_parameter);
 	}
 
-	shared_ptr <Place_Name> instantiate(const map <string, string> &mapping) const {
-		/* In the returned object, the PLACES vector is empty */ 
+	shared_ptr <Place_Name> instantiate(const map <string, string> &mapping) const 
+	/* In the returned object, the PLACES vector is empty */ 
+	{
 		string name= Name::instantiate(mapping);
-		return make_shared <Place_Name> (name);
+		return make_shared <Place_Name> (name, place);
 	}
 };
 
@@ -594,6 +596,12 @@ public:
 	{ 
 		assert((flags_ & ~F_TARGET_TRANSIENT) == 0); 
 	}
+
+	Place_Param_Target(const Place_Param_Target &that)
+		:  flags(that.flags),
+		   place_name(that.place_name),
+		   place(that.place)
+	{  }
 
 	/* Compares only the content, not the place. */ 
 	bool operator == (const Place_Param_Target &that) const {

@@ -126,6 +126,16 @@ public:
 			places[i]= places_[i]; 
 	}
 
+	Dep(const Dep &that)
+		:  flags(that.flags),
+		   top(that.top),
+		   index(that.index)
+	{
+		assert(places != that.places);
+		for (int i= 0;  i < C_PLACED;  ++i)
+			places[i]= that.places[i]; 
+	}
+
 	virtual ~Dep(); 
 
 	const Place &get_place_flag(int i) const {
@@ -489,6 +499,7 @@ private:
 	 * that is not allowed in Stu code.  Otherwise, there is at
 	 * least one element, which is either a Compound_Dep, or
 	 * a normalized dependency.  */
+	// TODO make this public and remove accessor functions
 };
 
 class Compound_Dep
@@ -569,6 +580,7 @@ private:
 
 	vector <shared_ptr <const Dep> > deps;
 	/* The contained dependencies, in given order */ 
+	// TODO make this public and remove accessor functions
 };
 
 class Root_Dep

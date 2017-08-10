@@ -1,0 +1,12 @@
+A:  @plot
+{
+	cat list.plot-1.eps list.plot-22.eps list.plot-333.eps list.plot-4444.eps >A
+}
+
+@plot:    list.plot-[list.NETWORKS].eps;
+
+list.NETWORKS = { 1 22 333 4444 }
+
+>list.plot-$name.eps {
+	echo "PLOT $name"
+}

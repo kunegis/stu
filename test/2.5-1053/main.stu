@@ -1,0 +1,12 @@
+# A case in which the concatenated files are not readable, i.e. because of chmod(2). 
+
+A:  list.[X]
+{
+	touch A
+}
+
+X 
+{
+	echo 1 2 3 >X
+	chmod a-rwx X
+}

@@ -1,2 +1,0 @@
-# Test a case in which the concatenated files are not readable, i.e. because of chmod(2). 
-

@@ -1,0 +1,8 @@
+A: @A { cp X A ; }
+@A: @B[C];
+C = {2}       	
+@B2:  X;
+X = {correct}
+
+
+

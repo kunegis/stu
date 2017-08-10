@@ -1,0 +1,9 @@
+# Juxtaposition
+A:  list.[C]
+{
+	cp list.1 A
+}
+
+C = {1}
+
+list.1 = {correct}

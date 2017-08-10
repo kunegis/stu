@@ -367,8 +367,9 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		if (filename != "") {
 			assert(fd >= 3); 
 			close(fd);
-		} else
+		} else {
 			assert(fd == 0); 
+		}
 	error:
 		const char *filename_diagnostic= filename != ""
 			? filename.c_str() : "<stdin>";
@@ -389,7 +390,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			else
 				print_error(system_format(name_format_word(filename_diagnostic))); 
 		}
-		throw ERROR_LOGICAL; 
+		throw ERROR_BUILD; 
 
 	} catch (int error) {
 

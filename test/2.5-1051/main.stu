@@ -1,0 +1,19 @@
+A:  [[B][C]]
+{
+	cat D E F G H I J K >A
+}
+
+B = { list. A. }
+C = { 1 2 }
+list.1 = { D E }
+list.2 = { F G }
+A.1    = { H I }
+A.2    = { J K }
+D = {ddd}
+E = {eee}
+F = {fff}
+G = {ggg}
+H = {hhh}
+I = {iii}
+J = {jjj}
+K = {kkk}

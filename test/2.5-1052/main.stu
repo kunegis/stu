@@ -1,0 +1,12 @@
+A:  [[(list.)(C)]]
+{
+	cat F G H I >A
+}
+
+list.C = { D E }
+D = { F G }
+E = { H I }
+F = {fff}
+G = {ggg}
+H = {hhh}
+I = {iii}

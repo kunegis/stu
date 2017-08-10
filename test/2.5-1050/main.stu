@@ -1,0 +1,14 @@
+>A:  [[B]][[B]]
+{
+	for x in 1 2 3 4 ; do
+		for y in 1 2 3 4 ; do
+			cat list."${x}"list."${y}"
+		done
+	done
+}
+
+B = { C D }
+C = { list.1 list.2 }
+D = { list.3 list.4 }
+
+>list.${x}list.${y} { echo "$((x * y))" ; }

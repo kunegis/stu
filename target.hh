@@ -652,13 +652,16 @@ string Target::format(Style style, bool &quotes) const
 	size_t i= 0;
 	while (get_word(i) & F_TARGET_DYNAMIC) {
 		assert((get_word(i) & F_TARGET_TRANSIENT) == 0); 
-		// TODO don't append flags when S_NOFLAGS is set
-		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)); 
+		if (!(style & S_NOFLAGS)) {
+			ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)); 
+		}
 		++i;
 		ret += '[';
 	}
 	assert(text.size() > sizeof(word_t) * (i + 1));
-	ret += flags_format(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE)); 
+	if (!(style & S_NOFLAGS)) {
+		ret += flags_format(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE)); 
+	}
 	if (get_word(i) & F_TARGET_TRANSIENT) {
 		ret += '@'; 
 	}

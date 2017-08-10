@@ -3148,8 +3148,6 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 }
 
 Proceed Concat_Execution::execute(shared_ptr <const Dep> dep_this)
-// TODO Should we add checks for P_WAIT and P_PENDING like in
-// Root_Execution::execute() ?
 {
  again:
 	assert(stage >= 0 && stage <= 2); 
@@ -3319,16 +3317,23 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dep> dep_,
 }
 
 Proceed Dynamic_Execution::execute(shared_ptr <const Dep> dep_this)
-// TODO Should we add checks for P_WAIT and P_PENDING like in
-// Root_Execution::execute() ?
 {
 	Proceed proceed= execute_base_A(dep_this); 
 	assert(proceed); 
+	if (proceed & (P_WAIT | P_PENDING)) {
+		assert((proceed & P_FINISHED) == 0); 
+		return proceed;
+	}
 	if (proceed & P_FINISHED) {
 		is_finished= true; 
 		return proceed;
 	}
+
 	proceed |= execute_base_B(dep_this);
+	if (proceed & (P_WAIT | P_PENDING)) {
+		assert((proceed & P_FINISHED) == 0); 
+		return proceed;
+	}
 	if (proceed & P_FINISHED) {
 		is_finished= true; 
 	}

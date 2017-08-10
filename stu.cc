@@ -465,16 +465,13 @@ int main(int argc, char **argv, char **envp)
 		Job::print_statistics();
 	}
 
-	// TODO why do we need to close these two streams by hand?  Does
-	// exit() not do the same?  
 	if (fclose(stdout)) {
 		perror("stdout");
 		exit(ERROR_FATAL);
 	}
-	if (fclose(stderr)) {
-		perror("stderr");
-		exit(ERROR_FATAL); 
-	}
+	/* No need to flush stderr, because it is line buffered, and if
+	 * we used it, it means there was an error anyway, so we're not
+	 * losing any information  */
 
 	exit(error); 
 }

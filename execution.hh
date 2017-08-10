@@ -1411,6 +1411,7 @@ void Execution::push(shared_ptr <const Dep> dep)
 	
 	for (const auto &d:  deps) {
 		d->check(); 
+		assert(d->is_normalized()); 
 		buffer_A.push(d);
 	}
 }
@@ -3110,6 +3111,7 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 {
 	assert(dep_); 
 	assert(dep_->is_normalized()); 
+	assert(dep->is_normalized()); 
 	assert(parent); 
 	dep->check(); 
 
@@ -3148,8 +3150,8 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 			dep_child->index= i; 
 			push(dep_child); 
 		} else {
-			/* Everything else would mean that the passed
-			 * dependency was not normalized  */
+			/* Everything else would mean that DEP
+			 * was not normalized  */
 			assert(false); 
 		}
 		++i; 

@@ -23,6 +23,9 @@
  *    - a concatenated dependency of only normalized plain and dynamic dependencies.
  * In particular, compound dependencies are never normalized; 
  * they do not appear at all in normalized dependencies. 
+ * Also, concatenated never contain other concatenated dependencies
+ * directly -- such constructs are always "flattened" in a normalized
+ * dependency. 
  * Normalized dependencies are those used in practice.  A non-normalized
  * dependency can always be reduced to a normalized one. 
  */
@@ -472,8 +475,8 @@ public:
 	static shared_ptr <const Plain_Dep> concat_plain(shared_ptr <const Plain_Dep> a,
 							 shared_ptr <const Plain_Dep> b);
 	static shared_ptr <const Concat_Dep> concat_complex(shared_ptr <const Dep> a,
-							    shared_ptr <const Dep> b,
-							    int &error); 
+							    shared_ptr <const Dep> b);
+//							    int &error); 
 
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
 				     vector <shared_ptr <const Dep> > &deps,
@@ -500,10 +503,10 @@ public:
 private:
 
 	vector <shared_ptr <const Dep> > deps;
-	/* The dependencies for each part.  No entry is null.  May be empty in code, which is something
-	 * that is not allowed in Stu code.  Otherwise, there is at
-	 * least one element, which is either a Compound_Dep, or
-	 * a normalized dependency.  */
+	/* The dependencies for each part.  No entry is null.  
+	 * May be empty in code, which is something
+	 * that is not allowed in Stu code.  Otherwise, there are at
+	 * least two elements  */
 	// TODO make this public and remove accessor functions
 };
 
@@ -726,6 +729,7 @@ void Dep::check() const
 	}
 
 	if (auto concat_this= dynamic_cast <const Concat_Dep *> (this)) {
+		assert(concat_this->get_deps().size() >= 2); 
 		for (auto i:  concat_this->get_deps()) {
 			assert(i); 
 		}
@@ -1047,6 +1051,8 @@ string Concat_Dep::format_src() const
 bool Concat_Dep::is_normalized() const
 {
 	for (auto &i:  deps) {
+		if (to <const Concat_Dep> (i)) 
+			return false; 
 		if (! i->is_normalized())
 			return false;
 	}
@@ -1228,7 +1234,9 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 	if (to <const Plain_Dep> (a) && to <const Plain_Dep> (b))
 		return concat_plain(to <const Plain_Dep> (a), to <const Plain_Dep> (b)); 
 	else
-		return concat_complex(a, b, error); 
+		return concat_complex(a, b
+//, error
+                                     ); 
 }
 
 shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_Dep> a,
@@ -1241,73 +1249,6 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 	 * are concatenated  */
 	assert(! a->place_param_target.place_name.is_parametrized());  
 	assert(! b->place_param_target.place_name.is_parametrized());  
-
-	// /*
-	//  * Check for invalid combinations
-	//  */
-
-	// if (a->flags & F_INPUT) {
-	// 	/* It would in principle be possible to allow
-	// 	 * concatenations in which the left component has an
-	// 	 * input redirection, but the current data structures do
-	// 	 * not allow that, and therefore we make that invalid.  */
-	// 	a->get_place() << fmt("%s cannot have input redirection using %s",
-	// 			      a->format_word(),
-	// 			      char_format_word('<')); 
-	// 	b->get_place() << fmt("because %s is concatenated to it",
-	// 			      b->format_word()); 
-	// 	error |= ERROR_LOGICAL;
-	// 	return nullptr; 
-	// }
-
-	// if (b->flags & F_INPUT) {
-	// 	/* We don't save the place for the '<', so we cannot
-	// 	 * have "using '<'" on an extra line.  */
-	// 	b->get_place() << fmt("%s cannot have input redirection using %s", 
-	// 			      b->format_word(),
-	// 			      char_format_word('<')); 
-	// 	a->get_place() << fmt("in concatenation to %s", a->format_word()); 
-	// 	error |= ERROR_LOGICAL;
-	// 	return nullptr; 
-	// }
-
-	// if (b->flags & F_PLACED) {
-	// 	assert(C_PLACED == 3); 
-	// 	int i_flag= 
-	// 		b->flags & F_PERSISTENT ? I_PERSISTENT :
-	// 		b->flags & F_OPTIONAL   ? I_OPTIONAL   :
-	// 		b->flags & F_TRIVIAL    ? I_TRIVIAL    : 
-	// 		-1;
-	// 	assert(i_flag >= 0); 
-	// 	b->get_place() << fmt("%s cannot be declared as %s", b->format_word(), FLAGS_PHRASES[i_flag]); 
-	// 	b->places[i_flag] << fmt("using %s", name_format_word(frmt("-%c", FLAGS_CHARS[i_flag]))); 
-	// 	a->get_place() << fmt("in concatenation to %s", a->format_word()); 
-	// 	error |= ERROR_LOGICAL;
-	// 	return nullptr; 
-	// }
-
-	// if (b->flags & F_TARGET_TRANSIENT) {
-	// 	b->get_place() << fmt("transient target %s is invalid", b->format_word()); 
-	// 	a->get_place() << fmt("in concatenation to %s", a->format_word()); 
-	// 	error |= ERROR_LOGICAL;
-	// 	return nullptr;
-	// }
-
-	// if (a->flags & F_VARIABLE) {
-	// 	a->get_place() << fmt("the variable dependency %s cannot be used", 
-	// 			      a->format_word());
-	// 	b->get_place() << fmt("in concatenation with %s", 
-	// 			      b->format_word());
-	// 	error |= ERROR_LOGICAL;
-	// 	return nullptr; 
-	// }
-
-	// if (b->flags & F_VARIABLE) {
-	// 	b->get_place() << fmt("variable dependency %s is invalid", b->format_word());
-	// 	a->get_place() << fmt("in concatenation to %s", a->format_word()); 
-	// 	error |= ERROR_LOGICAL; 
-	// 	return nullptr;
-	// }
 	
 	/*
 	 * Combine 
@@ -1333,8 +1274,8 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 }
 
 shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> a,
-							 shared_ptr <const Dep> b,
-							 int &error)
+							 shared_ptr <const Dep> b)
+//							 int &error)
 /* We don't have to make any checks here because any errors will be
  * caught later when the resulting plain dependencies are concatenated.
  * However, checking errors here is faster, since it avoids building
@@ -1342,12 +1283,24 @@ shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> 
 {
 	assert(! (to <const Plain_Dep> (a) && to <const Plain_Dep> (b))); 
 
-	// XXX check errors like in concat_plain(). [TEST 1026.stu]
-	(void) error; 
+//	(void) error; 
 
 	shared_ptr <Concat_Dep> ret= make_shared <Concat_Dep> (); 
-	ret->push_back(a);
-	ret->push_back(b); 
+
+	if (auto concat_a= to <const Concat_Dep> (a)) {
+		for (auto d:  concat_a->deps) 
+			ret->push_back(d); 
+	} else {
+		ret->push_back(a);
+	}
+
+	if (auto concat_b= to <const Concat_Dep> (b)) {
+		for (auto d:  concat_b->deps) 
+			ret->push_back(d); 
+	} else {
+		ret->push_back(b); 
+	}
+
 	return ret; 
 }
 

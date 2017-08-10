@@ -3430,7 +3430,8 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dep> dep_link,
 					 map <string, string> &mapping_parameter_,
 					 int &error_additional)
 	:  Execution(param_rule_),
-	   rule(rule_)
+	   rule(rule_),
+	   is_finished(false)
 {
 	swap(mapping_parameter, mapping_parameter_); 
 

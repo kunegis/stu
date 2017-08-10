@@ -1,0 +1,5 @@
+A = list.list.yes;
+list.$X.$Y:  ($X)(.$Y)     { cp -- "$X"."$Y" list."$X"."$Y" ; }
+list.yes = {correct}
+
+

@@ -1,0 +1,10 @@
+# Empty dependency list:  () is an empty list, and when concatenated
+# ("multiplied") with anything else, the result is an empty list. 
+
+A:  B()
+{
+	[ -e B ] && exit 1
+	touch A
+}
+
+B { exit 1 ; }

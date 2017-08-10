@@ -94,8 +94,8 @@ public:
 
 	void check_unparametrized(shared_ptr <const Dep> dep,
 				  const set <string> &parameters);
-	/* Print error message and throw a logical error when the
-	 * dependency contains parameters */
+	/* Print error message and throw a logical error when DEP
+	 * contains parameters  */
 
 	const vector <string> &get_parameters() const
 	{
@@ -205,6 +205,7 @@ Rule::Rule(vector <shared_ptr <Place_Param_Target> > &&place_param_targets_,
 
 	/* Check that only valid parameters are used */ 
 	for (const auto &d:  deps) {
+		d->check(); 
 		check_unparametrized(d, parameters);
 	}
 }
@@ -298,30 +299,27 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 {
 	assert(dep != nullptr); 
 
-	if (to <Dynamic_Dep> (dep)) {
-		shared_ptr <const Dynamic_Dep> dynamic_dep=
-			to <Dynamic_Dep> (dep); 
+	if (auto dynamic_dep= to <const Dynamic_Dep> (dep)) {
+//		shared_ptr <const Dynamic_Dep> dynamic_dep=
+//			to <Dynamic_Dep> (dep); 
 		check_unparametrized(dynamic_dep->dep, parameters); 
-	} else if (to <Compound_Dep> (dep)) {
-		shared_ptr <const Compound_Dep> compound_dep=
-			to <Compound_Dep> (dep);
+	} else if (auto compound_dep= to <const Compound_Dep> (dep)) {
+//		shared_ptr <const Compound_Dep> compound_dep=
+//			to <Compound_Dep> (dep);
 		for (const auto &d:  compound_dep->get_deps()) {
 			check_unparametrized(d, parameters); 
 		}
-	} else if (to <Concat_Dep> (dep)) {
-		shared_ptr <const Concat_Dep> concat_dep=
-			to <Concat_Dep> (dep);
+	} else if (auto concat_dep= to <const Concat_Dep> (dep)) {
+//		shared_ptr <const Concat_Dep> concat_dep=
+//			to <Concat_Dep> (dep);
 		for (const auto &d:  concat_dep->get_deps()) {
 			check_unparametrized(d, parameters); 
 		}
-	} else if (to <Plain_Dep> (dep)) {
-		shared_ptr <const Plain_Dep> plain_dep=
-			to <Plain_Dep> (dep);
-		for (size_t jj= 0;  
-		     jj < plain_dep->place_param_target.place_name.get_n();
-		     ++jj) {
-			string parameter= plain_dep->place_param_target
-				.place_name.get_parameters()[jj]; 
+	} else if (auto plain_dep= to <const Plain_Dep> (dep)) {
+//		shared_ptr <const Plain_Dep> plain_dep=
+//			to <Plain_Dep> (dep);
+		for (size_t jj= 0;  jj < plain_dep->place_param_target.place_name.get_n();  ++jj) {
+			string parameter= plain_dep->place_param_target.place_name.get_parameters()[jj]; 
 			if (parameters.count(parameter) == 0) {
 				plain_dep->place_param_target
 					.place_name.get_places()[jj] <<
@@ -341,7 +339,6 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 		}
 	} else {
 		assert(false); 
-		throw ERROR_LOGICAL;
 	}
 }
 

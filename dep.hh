@@ -495,7 +495,7 @@ public:
 private:
 
 	vector <shared_ptr <const Dep> > deps;
-	/* The dependencies for each part.  May be empty in code, which is something
+	/* The dependencies for each part.  No entry is null.  May be empty in code, which is something
 	 * that is not allowed in Stu code.  Otherwise, there is at
 	 * least one element, which is either a Compound_Dep, or
 	 * a normalized dependency.  */
@@ -697,10 +697,10 @@ void Dep::check() const
 		assert(((flags & (1 << i)) == 0) == get_place_flag(i).empty()); 
 	}
 
-	const Plain_Dep *plain_this= dynamic_cast <const Plain_Dep *> (this);
-	const Dynamic_Dep *dynamic_this= dynamic_cast <const Dynamic_Dep *> (this); 
+//	const Plain_Dep *plain_this= dynamic_cast <const Plain_Dep *> (this);
+//	const Dynamic_Dep *dynamic_this= dynamic_cast <const Dynamic_Dep *> (this); 
 
-	if (plain_this) {
+	if (auto plain_this= dynamic_cast <const Plain_Dep *> (this)) {
 		/* The F_TARGET_TRANSIENT flag is always set in the
 		 * dependency flags, even though that is redundant.  */
 		assert((plain_this->flags & F_TARGET_TRANSIENT) == (plain_this->place_param_target.flags)); 
@@ -711,13 +711,19 @@ void Dep::check() const
 		}
 	}
 
-	if (dynamic_this) {
+	if (auto dynamic_this= dynamic_cast <const Dynamic_Dep *> (this)) {
 		assert(flags & F_TARGET_DYNAMIC); 
 		dynamic_this->dep->check(); 
 	} else {
 		assert(!(flags & F_TARGET_DYNAMIC)); 
 	}
 
+	if (auto concat_this= dynamic_cast <const Concat_Dep *> (this)) {
+		for (auto i:  concat_this->get_deps()) {
+			assert(i); 
+		}
+	}
+	
 	assert(index >= -1); 
 }
 #endif

@@ -686,8 +686,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		if (parse_expression_list(r, place_name_input, place_input, targets)) {
 			assert(r.size() >= 1); 
 			if (r.size() > 1) {
-				ret= make_shared <Compound_Dep> 
-					(move(r), place_paren); 
+				ret= make_shared <Compound_Dep> (move(r), place_paren); 
 			} else {
 				ret= move(r.at(0)); 
 			}
@@ -710,25 +709,24 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		}
 		++ iter; 
 
+		/* If RET is null, it means we had empty parentheses.
+		 * Return an empty Compound_Dependency in that case  */ 
+		if (ret == nullptr) {
+			ret= make_shared <Compound_Dep> (place_paren); 
+		}
+
 		if (next_concatenates()) {
 			shared_ptr <const Dep> next;
 			bool rr= parse_expression(next, place_name_input, place_input, targets);
 			/* It can be that an empty list was parsed, in
 			 * which case RR is true but the list is empty */
 			if (rr && next != nullptr) {
-				shared_ptr <Concat_Dep> ret_new=
-					make_shared <Concat_Dep> ();
+				shared_ptr <Concat_Dep> ret_new= make_shared <Concat_Dep> ();
 				ret_new->push_back(ret);
 				ret_new->push_back(next);
 				ret.reset();
 				ret= move(ret_new); 
 			}
-		}
-
-		/* If RET is null, it means we had empty parentheses.
-		 * Return an empty Compound_Dependency in that case  */ 
-		if (ret == nullptr) {
-			ret= make_shared <Compound_Dep> (place_paren); 
 		}
 
 		return true; 

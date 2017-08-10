@@ -1,0 +1,9 @@
+# Empty dependency list
+
+A:  ()B
+{
+	[ -e B ] && exit 1
+	touch A
+}
+
+B { exit 1 ; }

@@ -145,6 +145,12 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 #      (3) Dynamic dependency that contains C
 #      (4) Concatenation that results in C
 
+#
+# delete_tmps:  don't remove ?? and dep.*, as these patterns appear in
+# stu/.  Change tests that use these patterns.  Remove the script to
+# remove_*. 
+#
+
 #=================== Further features =======================
 
 #

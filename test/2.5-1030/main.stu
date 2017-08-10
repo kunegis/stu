@@ -1,6 +1,6 @@
 A:   [X][Y] 
 {
-	cat list.a.x list.a.y list.a.z list.b.x list.b.y list.b.z list.c.x list.c.y list.x.z >A
+	cat list.a.x list.a.y list.a.z list.b.x list.b.y list.b.z list.c.x list.c.y list.c.z >A
 }
 
 X = { list.a. list.b. list.c. }

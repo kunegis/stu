@@ -654,6 +654,8 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 
 shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 {
+	assert(dep); 
+
 	if (to <Plain_Dep> (dep)) {
 		return make_shared <Plain_Dep> (* to <Plain_Dep> (dep)); 
 	} else if (to <Dynamic_Dep> (dep)) {
@@ -1136,7 +1138,8 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 				shared_ptr <const Dep> d= concat(d1, d2, error);
 				if (error && ! option_keep_going) 
 					return; 
-				deps_.push_back(d); 
+				if (d) 
+					deps_.push_back(d); 
 			}
 		}
 	}

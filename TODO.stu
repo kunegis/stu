@@ -134,6 +134,11 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 # remove_*. 
 #
 
+#
+# Traces:  show only the first line with the most information message in
+# red, and other traces in another color. 
+#
+
 #=================== Further features =======================
 
 #
@@ -459,3 +464,7 @@ A:  <list.(B) { ... }
 A:  list.( '' ); # Equivalent to just 'list.'
 
 A:  @[X]; 
+
+#
+# The Dep::top mechanism is not clean.  Do something better.
+#

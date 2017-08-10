@@ -1268,7 +1268,9 @@ void Execution::print_traces(string text) const
 	const Execution *execution= this->parents.begin()->first;
 	shared_ptr <const Dep> depp= this->parents.begin()->second; 
 
-	string text_parent= depp->get_target().format_word(); 
+	string text_parent= depp->
+//		get_target().
+		format_word(); 
 
 	while (true) {
 		if (dynamic_cast <const Root_Execution *> (execution)) {

@@ -1,6 +1,8 @@
 #ifndef EXECUTION_HH
 #define EXECUTION_HH
 
+// TODO all instances of DEP->get_target().format_*() :  transform to DEP->format_*(). 
+
 /* 
  * Code for executing the building process itself.  
  *
@@ -1174,10 +1176,14 @@ void Execution::cycle_print(const vector <Execution *> &path,
 	
 	for (size_t i= 0;  i + 1 < path.size();  ++i) {
 		names[i]= path[i]->parents.at((Execution *) path[i+1])
-			->get_target().format_word();
+			->
+//			get_target().
+			format_word();
 	}
 	names.back()= path.back()->parents.begin()->second
-		->get_target().format_word();
+		->
+//		get_target().
+		format_word();
 		
 	for (ssize_t i= path.size() - 1;  i >= 0;  --i) {
 
@@ -1199,7 +1205,9 @@ void Execution::cycle_print(const vector <Execution *> &path,
 				  : "cyclic dependency: ") 
 			       : "",
 			       names[i],
-			       i == 0 ? dep->get_target().format_word() : names[i - 1]);
+			       i == 0 ? dep->
+//			       get_target().
+			       format_word() : names[i - 1]);
 	}
 
 	/* If the two targets are different (but have the same rule

@@ -1,2 +1,0 @@
-A: [list.[X]]; X = {[Y]} Y = {Z} list.Z = {Q}  # Equivalent to    A: Q;
-

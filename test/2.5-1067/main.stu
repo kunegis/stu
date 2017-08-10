@@ -1,0 +1,14 @@
+A:  [B]
+{
+	cat list.11 list.12 list.21 list.22 >A
+}
+
+B = { ([X])(([Y]([Z]))) }   
+
+X = { list. }   
+
+Y = { 1 2 }   
+
+Z = Y;
+
+>list.$x  { echo "$x" ; }

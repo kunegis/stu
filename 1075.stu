@@ -1,5 +1,0 @@
-# Strong cycle in the context of concatenation 
-A:  list.[B];
-B = {C}
-list.C:  A; 
-

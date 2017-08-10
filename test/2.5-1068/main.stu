@@ -1,0 +1,8 @@
+A:  list.[X][X][X][X][X][X][X][X]
+{
+	touch A
+}
+
+X = { 1 2 }   
+
+>list.$n { echo Number "$n" ; }

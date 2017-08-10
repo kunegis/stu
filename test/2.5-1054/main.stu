@@ -1,0 +1,13 @@
+A: [[X]](Y)
+{
+	cat list.1.Y list.2.Y list.3.Y list.4.Y >A
+}
+
+X = { B C }
+B = { list.1. list.2. }
+C = { list.3. list.4. }
+list.1.Y = {aaa}
+list.2.Y = {bbb}
+list.3.Y = {ccc}
+list.4.Y = {ddd}
+

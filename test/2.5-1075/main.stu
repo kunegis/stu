@@ -1,0 +1,6 @@
+# Strong cycle in the context of concatenation 
+A:  list.[B] { touch A ; }
+B = {C}
+list.C:  A { touch list.C ; }
+
+

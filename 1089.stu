@@ -1,0 +1,18 @@
+A:   @x.[@1][@2]
+{
+	cat \
+		list.15 list.16 list.17 list.18 \
+		list.25 list.26 list.27 list.28 \
+		list.35 list.36 list.37 list.38 \
+		list.45 list.46 list.47 list.48 \
+		>A
+}
+
+@1: B C;
+@2: D E;
+B = {1 2}
+C = {3 4}
+D = {5 6}
+E = {7 8}
+@x.$x12 : list.$x12;
+>list.$x12 { echo "$x12" ; }

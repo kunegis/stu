@@ -1,8 +1,0 @@
-# All six list.* files are built. 
-@all:  A B;
-A:  list.a[[M]];
-B:  list.b[[M]];
-M = { N }
-N = { 1 2 3 }
-list.$x = { xxx }
-

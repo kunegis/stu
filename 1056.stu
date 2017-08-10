@@ -1,2 +1,0 @@
-# Assuming three strings in each of X/Y/Z:
-A:  list.[X Y Z];   # Same as list.( [X] [Y] [Z] ):  9 variants

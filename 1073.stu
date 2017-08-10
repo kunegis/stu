@@ -1,5 +1,0 @@
-# Start building 'list.C' immediately, and 'list.D' later. 
-A:  list.([B] C) { ... ; }
-B = { sleep 1 ; echo D ; }
->list.$n { echo "$n" ; }
-

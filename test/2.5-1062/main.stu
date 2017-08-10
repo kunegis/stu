@@ -1,0 +1,8 @@
+A:  (list.)[Y]
+{
+	cat list.1 list.2 list.3 >A
+}
+
+Y = { 1 2 3 }
+
+>list.$n { echo "$n$n" ; }

@@ -1,5 +1,0 @@
-# Should this mean 'list.', or an empty list as dependencies of 'A'?  It
-# should mean an empty list. 
-A:   list.[B] { ... }
-B = { }
-

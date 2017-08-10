@@ -1,0 +1,11 @@
+#
+# A collection of short snippets of Stu to demonstrate what is possible.  
+#
+
+% version 2.5
+
+@headers:   (list config main).h;
+
+@plots:  @plot.[NETWORKS]; 
+@plot.$network:  plot/plot.$network.eps;
+

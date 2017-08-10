@@ -3131,7 +3131,7 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 	parents[parent]= dep; 
 
 	/* Initialize COLLECTED */
-	size_t k= dep_->get_deps().size(); 
+	size_t k= dep_->deps.size(); 
 	collected.resize(k);
 	for (size_t i= 0;  i < k;  ++i) {
 		collected.at(i)= make_shared <Compound_Dep> (Place::place_empty); 
@@ -3139,9 +3139,9 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 
 	/* Push initial dependencies */ 
 	size_t i= 0;
-	for (auto d:  dep->get_deps()) {
+	for (auto d:  dep->deps) {
 		if (auto plain_d= to <const Plain_Dep> (d)) {
-			collected.at(i)->get_deps().push_back(d); 
+			collected.at(i)->deps.push_back(d); 
 		} else if (auto dynamic_d= to <const Dynamic_Dep> (d)) {
 			shared_ptr <Dep> dep_child= Dep::clone(dynamic_d->dep); 
 			dep_child->flags |= F_RESULT_NOTIFY;
@@ -3214,9 +3214,9 @@ Concat_Execution::~Concat_Execution()
 void Concat_Execution::launch_stage_1()
 {
 	shared_ptr <Concat_Dep> c= make_shared <Concat_Dep> ();
-	c->get_deps().resize(collected.size());
+	c->deps.resize(collected.size());
 	for (size_t i= 0;  i < collected.size();  ++i) {
-		c->get_deps().at(i)= move(collected.at(i)); 
+		c->deps.at(i)= move(collected.at(i)); 
 	}
 	vector <shared_ptr <const Dep> > deps;
 	int e= 0; 
@@ -3261,7 +3261,7 @@ void Concat_Execution::notify_result(shared_ptr <const Dep> d,
 		source->read_dynamic(to <const Plain_Dep> (d), deps, dep, this); 
 		for (auto &j:  deps) {
 			size_t i= dep_source->index;
-			collected.at(i)->get_deps().push_back(j); 
+			collected.at(i)->deps.push_back(j); 
 		}
 	} else {
 		assert(flags & F_RESULT_COPY);

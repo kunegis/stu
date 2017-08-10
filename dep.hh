@@ -30,9 +30,6 @@
  * dependency can always be reduced to a normalized one. 
  */
 
-// TODO check that all format_word() functions everywhere do NOT output
-// the flags. 
-
 /*
  * A plain dependency is a file or a transient. 
  *
@@ -421,6 +418,12 @@ class Concat_Dep
 {
 public:
 
+	vector <shared_ptr <const Dep> > deps;
+	/* The dependencies for each part.  No entry is null.  
+	 * May be empty in code, which is something
+	 * that is not allowed in Stu code.  Otherwise, there are at
+	 * least two elements  */
+
 	Concat_Dep()
 	/* An empty concatenation, i.e., a concatenation of zero dependencies */ 
 	{  }
@@ -430,13 +433,13 @@ public:
 		:  Dep(flags_, places_)
 	{  }
 
-	const vector <shared_ptr <const Dep> > &get_deps() const {
-		return deps; 
-	}
+	// const vector <shared_ptr <const Dep> > &get_deps() const {
+	// 	return deps; 
+	// }
 
-	vector <shared_ptr <const Dep> > &get_deps() {
-		return deps; 
-	}
+	// vector <shared_ptr <const Dep> > &get_deps() {
+	// 	return deps; 
+	// }
 
 	/* Append a dependency to the list */
 	void push_back(shared_ptr <const Dep> dep)
@@ -493,14 +496,7 @@ public:
 	 */
 
 
-private:
-
-	vector <shared_ptr <const Dep> > deps;
-	/* The dependencies for each part.  No entry is null.  
-	 * May be empty in code, which is something
-	 * that is not allowed in Stu code.  Otherwise, there are at
-	 * least two elements  */
-	// TODO make this public and remove accessor functions
+//private:
 };
 
 class Compound_Dep
@@ -521,11 +517,17 @@ class Compound_Dep
 {
 public:
 
+
+//private:
+
 	Place place; 
 	/* The place of the compound ; usually the opening parenthesis
 	 * or brace.  May be empty to denote no place, in particular if
 	 * this is a "logical" compound dependency not coming from a
 	 * parenthesised expression.  */
+
+	vector <shared_ptr <const Dep> > deps;
+	/* The contained dependencies, in given order */ 
 
 	Compound_Dep(const Place &place_) 
 		/* Empty, with zero dependencies */
@@ -545,13 +547,13 @@ public:
 		   deps(deps_)
 	{  }
 
-	const vector <shared_ptr <const Dep> > &get_deps() const {
-		return deps; 
-	}
+	// const vector <shared_ptr <const Dep> > &get_deps() const {
+	// 	return deps; 
+	// }
 
-	vector <shared_ptr <const Dep> > &get_deps() {
-		return deps; 
-	}
+	// vector <shared_ptr <const Dep> > &get_deps() {
+	// 	return deps; 
+	// }
 
 	void push_back(shared_ptr <const Dep> dep)
 	{
@@ -576,12 +578,6 @@ public:
 	/* A compound dependency is never normalized */
 
 	virtual Target get_target() const {  assert(false);  }
-
-private:
-
-	vector <shared_ptr <const Dep> > deps;
-	/* The contained dependencies, in given order */ 
-	// TODO make this public and remove accessor functions
 };
 
 class Root_Dep
@@ -629,7 +625,7 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 			deps.push_back(dep_new); 
 		}
 	} else if (shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dep)) {
-		for (auto &d:  compound_dep->get_deps()) {
+		for (auto &d:  compound_dep->deps) {
 			shared_ptr <Dep> dd= Dep::clone(d); 
 			dd->add_flags(compound_dep, false);  
 			if (compound_dep->index >= 0)
@@ -719,8 +715,8 @@ void Dep::check() const
 	}
 
 	if (auto concat_this= dynamic_cast <const Concat_Dep *> (this)) {
-		assert(concat_this->get_deps().size() >= 2); 
-		for (auto i:  concat_this->get_deps()) {
+		assert(concat_this->deps.size() >= 2); 
+		for (auto i:  concat_this->deps) {
 			assert(i); 
 		}
 	}
@@ -1085,7 +1081,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 	if (start_index + 1 == dep->deps.size()) {
 		shared_ptr <const Dep> dd= dep->deps.at(start_index);
 		if (auto compound_dd= to <Compound_Dep> (dd)) {
-			for (const auto &d:  compound_dd->get_deps()) {
+			for (const auto &d:  compound_dd->deps) {
 				normalize(d, deps_, error); 
 				if (error && ! option_keep_going)
 					return;
@@ -1110,7 +1106,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			return; 
 		shared_ptr <const Dep> dd= dep->deps.at(start_index); 
 		if (auto compound_dd= to <Compound_Dep> (dd)) {
-			for (const auto &d:  compound_dd->get_deps()) {
+			for (const auto &d:  compound_dd->deps) {
 				normalize(d, vec1, error); 
 				if (error && ! option_keep_going)
 					return; 

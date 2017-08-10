@@ -32,7 +32,7 @@
 // TODO Change formatting to always have the functions output their own
 // quotes, and make the QUOTES parameter be a bit in Style (since we
 // don't need it for output anymore).  
-// TODO Also have have the color code outputting as a bit in Style.  
+// TODO Also have have the color code outputting as a bit in Style, and make sure it is never called twice. 
 // TODO For Concat_Dep, don't just put quotes around the whole thing,
 // but around individual parts, avoid unnecessary double quote
 // characters between any two parts that are both quoted. 

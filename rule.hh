@@ -302,11 +302,11 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 	if (auto dynamic_dep= to <const Dynamic_Dep> (dep)) {
 		check_unparametrized(dynamic_dep->dep, parameters); 
 	} else if (auto compound_dep= to <const Compound_Dep> (dep)) {
-		for (const auto &d:  compound_dep->get_deps()) {
+		for (const auto &d:  compound_dep->deps) {
 			check_unparametrized(d, parameters); 
 		}
 	} else if (auto concat_dep= to <const Concat_Dep> (dep)) {
-		for (const auto &d:  concat_dep->get_deps()) {
+		for (const auto &d:  concat_dep->deps) {
 			check_unparametrized(d, parameters); 
 		}
 	} else if (auto plain_dep= to <const Plain_Dep> (dep)) {

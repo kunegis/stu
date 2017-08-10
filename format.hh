@@ -27,11 +27,15 @@
  * no color).  As output parameter, it is set to true when the function
  * detects that quotes are needed.  If the
  * input parameter is true, it is never changed.  
- * // TODO Change this to
- * always have the functions output their own quotes, and make the
- * QUOTES parameter be a bit in Style (since we don't need it for output
- * anymore).
  */
+
+// TODO Change formatting to always have the functions output their own
+// quotes, and make the QUOTES parameter be a bit in Style (since we
+// don't need it for output anymore).  
+// TODO Also have have the color code outputting as a bit in Style.  
+// TODO For Concat_Dep, don't just put quotes around the whole thing,
+// but around individual parts, avoid unnecessary double quote
+// characters between any two parts that are both quoted. 
 
 #include "color.hh"
 

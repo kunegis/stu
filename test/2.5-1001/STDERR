@@ -1,0 +1,7 @@
+main.stu:7:4: no rule to build 'X', needed by 'F'
+list.E:1:1: 'F' is needed by [list.E]
+main.stu:2:6: [list.E] is needed by [list.D]
+main.stu:2:12: [list.D] is needed by [list.C]
+main.stu:2:18: [list.C] is needed by [B]
+main.stu:2:24: [B] is needed by [list.[list.[list.[B]]]]
+main.stu:2:6: [list.[list.[list.[B]]]] is needed by 'A'

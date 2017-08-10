@@ -86,6 +86,9 @@ class Dep
  * be released twice, etc.).  As a result, we replace THIS by an
  * argument of type shared_ptr<>.  [Note:  there is also
  * std::enable_shared_from_this as a possibility.]
+ *
+ * The constructors of Dep and derived classes do not set the TOP and
+ * INDEX fields.  These are set manually when needed. 
  */ 
 {
 public:
@@ -97,11 +100,12 @@ public:
 	 * place if a flag is not set  */
 
 	shared_ptr <const Dep> top; 
-	/* Additional place.  Most of the properties (such as extra
-	 * flags) are ignored.  */
+	/* Additional place used for constructing traces.  Most of the
+	 * properties (such as extra flags) are ignored.  */
 
 	ssize_t index; 
-	/* Used by concatenated executions.  -1 when not used. */
+	/* Used by concatenated executions; the index of the dependency
+	 * within the array of concatenation.  -1 when not used. */
 
 	Dep()
 		:  flags(0),
@@ -301,7 +305,7 @@ public:
 		return place; 
 	}
 
-	shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
+	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
 
 	bool is_unparametrized() const {
 		return place_param_target.place_name.get_n() == 0; 
@@ -330,6 +334,7 @@ public:
 	/* The contained dependency.  Non-null. */ 
 
 	Dynamic_Dep(shared_ptr <const Dep> dep_)
+		/* Set the contained dependency.  NOT a copy constructor. */
 		:  Dep(F_TARGET_DYNAMIC),
 		   dep(dep_)
 	{
@@ -355,15 +360,8 @@ public:
 		assert(dep_ != nullptr); 
 	}
 
-	shared_ptr <const Dep>  instantiate(const map <string, string> &mapping) const
-	{
-		return make_shared <Dynamic_Dep> (flags, dep->instantiate(mapping));
-	}
-
-	bool is_unparametrized() const
-	{
-		return dep->is_unparametrized(); 
-	}
+	virtual shared_ptr <const Dep>  instantiate(const map <string, string> &mapping) const;
+	bool is_unparametrized() const {  return dep->is_unparametrized();  }
 
 	const Place &get_place() const 
 	/* In error message pointing to dynamic dependency such as
@@ -433,8 +431,7 @@ public:
 		deps.push_back(dep); 
 	}
 
-	virtual shared_ptr <const Dep> 
-	instantiate(const map <string, string> &mapping) const;
+	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
 
 	virtual bool is_unparametrized() const; 
 
@@ -575,6 +572,11 @@ private:
 };
 
 class Root_Dep
+/*
+ * Dependency to denote the root object of the dependency tree.  There
+ * is just one possible value of this, and it is never shown to the
+ * user, but used internally with the root execution object. 
+ */
 	:  public Dep
 {
 public:
@@ -610,6 +612,7 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 				(dynamic_dep->flags, dynamic_dep->places, d);
 			if (dynamic_dep->index >= 0)
 				dep_new->index= dynamic_dep->index;
+			dep_new->top= dynamic_dep->top;
 			deps.push_back(dep_new); 
 		}
 	} else if (shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dep)) {
@@ -618,6 +621,7 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 			dd->add_flags(compound_dep, false);  
 			if (compound_dep->index >= 0)
 				dd->index= compound_dep->index;
+			dd->top= compound_dep->top;
 			normalize(dd, deps, error); 
 			if (error && ! option_keep_going)
 				return; 
@@ -833,19 +837,26 @@ string Dynamic_Dep::format_word() const
 	return format(S_NOFLAGS | S_WORD, quotes);
 }
 
+shared_ptr <const Dep> Dynamic_Dep::instantiate(const map <string, string> &mapping) const
+{
+	shared_ptr <Dynamic_Dep> ret= make_shared <Dynamic_Dep> (flags, places, dep->instantiate(mapping));
+	ret->index= index;
+	ret->top= top; 
+	return ret;
+}
+
 shared_ptr <const Dep> Plain_Dep::instantiate(const map <string, string> &mapping) const
 {
 	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
 
-	shared_ptr <Dep> ret= make_shared <Plain_Dep> 
-		(flags, places, *ret_target, place, variable_name);
+	shared_ptr <Dep> ret= make_shared <Plain_Dep> (flags, places, *ret_target, place, variable_name);
+	ret->index= index;
+	ret->top= top; 
 
 	assert(ret_target->place_name.get_n() == 0); 
+
 	string this_name= ret_target->place_name.unparametrized(); 
-
-	if ((flags & F_VARIABLE) &&
-	    this_name.find('=') != string::npos) {
-
+	if ((flags & F_VARIABLE) && this_name.find('=') != string::npos) {
 		assert((ret_target->flags & F_TARGET_TRANSIENT) == 0); 
 		place << fmt("dynamic variable %s must not be instantiated with parameter value that contains %s", 
 			     dynamic_variable_format_word(this_name),
@@ -860,6 +871,8 @@ shared_ptr <const Dep>
 Compound_Dep::instantiate(const map <string, string> &mapping) const
 {
 	shared_ptr <Compound_Dep> ret= make_shared <Compound_Dep> (flags, places, place);
+	ret->index= index;
+	ret->top= top; 
 
 	for (const shared_ptr <const Dep> &d:  deps) {
 		ret->push_back(d->instantiate(mapping));
@@ -926,6 +939,8 @@ string Compound_Dep::format_src() const
 shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mapping) const
 {
 	shared_ptr <Concat_Dep> ret= make_shared <Concat_Dep> (flags, places);
+	ret->index= index;
+	ret->top= top; 
 
 	for (const shared_ptr <const Dep> &d:  deps) {
 		ret->push_back(d->instantiate(mapping)); 
@@ -1026,13 +1041,14 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 
 	/* Add attributes from DEP */ 	
 
-	if (dep->flags || dep->index >= 0) {
+	if (dep->flags || dep->index >= 0 || dep->top) {
 		for (size_t k= k_init;  k < deps_.size();  ++k) {
 			shared_ptr <Dep> d_new= Dep::clone(deps_[k]); 
 			/* The innermost flag is kept */
 			d_new->add_flags(dep, false); 
 			if (dep->index >= 0)
 				d_new->index= dep->index;
+			d_new->top= dep->top; 
 			deps_[k]= d_new;
 		}
 	}
@@ -1131,7 +1147,6 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 
 	assert(! a->place_param_target.place_name.is_parametrized());  // XXX allow
 	assert(! b->place_param_target.place_name.is_parametrized());  // XXX allow 
-	// XXX test all other flags 
 
 	/*
 	 * Check for invalid combinations
@@ -1184,6 +1199,15 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 		return nullptr;
 	}
 
+	if (a->flags & F_VARIABLE) {
+		a->get_place() << fmt("the variable dependency %s cannot be used", 
+				      a->format_word());
+		b->get_place() << fmt("in concatenation with %s", 
+				      b->format_word());
+		error |= ERROR_LOGICAL;
+		return nullptr; 
+	}
+
 	if (b->flags & F_VARIABLE) {
 		b->get_place() << fmt("variable dependency %s is invalid", b->format_word());
 		a->get_place() << fmt("in concatenation to %s", a->format_word()); 
@@ -1208,6 +1232,9 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 							    place_name_combined,
 							    a->place_param_target.place),
 					 a->place, ""); 
+	ret->top= a->top;
+	if (! ret->top)
+		ret->top= b->top; 
 	return ret; 
 }
 

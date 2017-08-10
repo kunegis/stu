@@ -1699,7 +1699,11 @@ Proceed Execution::execute_base_B(shared_ptr <const Dep> dep_link)
 
 Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 {
-	/* Dependencies that are not cached */
+	/*
+	 * Non-cached executions
+	 */
+
+	/* Concatenations */
 	if (shared_ptr <const Concat_Dep> concat_dep= to <const Concat_Dep> (dep)) {
 		int error_additional= 0; 
 		Concat_Execution *execution= new Concat_Execution(concat_dep, this, error_additional); 
@@ -1707,14 +1711,30 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 		if (error_additional) {
 			error |= error_additional; 
 			assert(execution->want_delete());
-			if (execution->want_delete())
-				delete execution; 
+			delete execution; 
 			return nullptr; 
 		}
 		return execution;
 	}
 
-	// XXX Also uncached dynamic executions (i.e., dynamic concatenations)
+	/* Dynamics that are not cached (with concatenations somewhere inside) */
+	if (to <const Dynamic_Dep> (dep) && ! to <const Plain_Dep> (Dep::strip_dynamic(dep))) {
+		int error_additional= 0;
+		Dynamic_Execution *execution= new Dynamic_Execution
+			(to <const Dynamic_Dep> (dep), this, error_additional);
+		assert(execution);
+		if (error_additional) {
+			error |= error_additional;
+			assert(execution->want_delete()); 
+			delete execution;
+			return nullptr; 
+		}
+		return execution; 
+	}
+
+	/*
+	 * Cached executions
+	 */
 
 	const Target target= dep->get_target(); 
 

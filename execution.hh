@@ -224,7 +224,9 @@ protected:
 	/* The parent executions.  This is a map rather than an
 	 * unsorted_map because typically, the number of elements is
 	 * always very small, i.e., mostly one, and a map is better
-	 * suited in this case.  */
+	 * suited in this case.  The map is sorted, but by the execution
+	 * pointer, i.e., the sorting is arbitrary as far as Stu is
+	 * concerned.  */
 
 	set <Execution *> children;
 	/* Currently connected executions */

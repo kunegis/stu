@@ -1,0 +1,30 @@
+#! /bin/sh
+
+rm -f ? list.* || exit 1
+
+../../stu.test -j4 >list.out 2>list.err
+exitstatus="$?"
+
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Expected exit status 0, got $exitstatus"
+	exit 1
+}
+
+if cmp -s list.out STDOUT.1 ; then
+	: # OK
+else 
+	if cmp -s list.out STDOUT.2 ; then
+		: # OK
+	else 
+		echo >&2 "*** Expected stdout to match one of the two possibilities"
+		echo >&2 "actual stdout:"
+		echo >&2 ===============
+		cat >&2 list.out
+		echo >&2 ===============
+		exit 1
+	fi
+fi
+
+rm -f ? list.* || exit 1
+
+exit 0

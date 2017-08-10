@@ -1,4 +1,6 @@
-# Test with -j4
+# Test with -j4.  The target list.XW and list.YW are built in an
+# unspecified order as soon as 'W' is finished.  Thus, the STDOUT of Stu
+# is one of two possibilities. 
 
 A:  list.[X Y].[Z W]
 {

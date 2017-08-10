@@ -117,7 +117,7 @@ public:
 
 	int get_error() const {  return error;  }
 
-	void read_dynamic(shared_ptr <const Dep> dep_target,
+	void read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			  vector <shared_ptr <const Dep> > &deps,
 			  shared_ptr <const Dep> dep,
 			  Execution *dynamic_execution); 
@@ -904,9 +904,7 @@ void Execution::main(const vector <shared_ptr <const Dep> > &deps)
 		throw error; 
 }
 
-void Execution::read_dynamic(			     
-			     // TODO convert DEP_TARGET to type PLAIN_DEP
-			     shared_ptr <const Dep> dep_target,
+void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			     vector <shared_ptr <const Dep> > &deps,
 			     shared_ptr <const Dep> dep,
 			     Execution *dynamic_execution)

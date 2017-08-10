@@ -592,6 +592,24 @@ Both parentheses and brackets may be nested:
     ((A)) # Equivalent to A
     [[A]] # Read out dependencies from all files given in the file 'A'. 
 
+.SH "CONCATENATION"
+
+In certain circumstances, two dependencies that are not separated by
+spaces are said to be concatenated.  Concatenation takes place in the
+following cases:
+
+  A( A[ )A )( )[ ]A ]( ][
+
+In this list, 'A' stands for any literal name, including one contain
+parameters.  
+
+If two dependencies are concatenated, their concatenation is taken as
+the dependency.  Effectively this considers each side of the
+concatenation to be a list of names (after processing of dynamic
+dependencies), and replaces the concatenation by the combination of all
+names in the left groups concatenated textually with items in the right
+group. 
+
 .SH "PARAMETERS"
 
 Any file or transient target may include parameters.  Parameters are
@@ -960,6 +978,16 @@ available for some developers, but not others:
     # updated from there by Stu.  For users who don't, the file
     # delivered with the project is always used. 
     config.h = -o /usr/share/project/;
+
+Parentheses can be used in a similar way to braces in the shell, to
+construct a list of filenames following a pattern:
+
+    @headers:   (config data list).h;
+
+This will make @headers depend on the files config.h, data.h, and
+list.h.  This can be combined with brackets in the following way:
+
+    @headers:   [NAMES].h;
 
 The
 .BR -C

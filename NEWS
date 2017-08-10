@@ -13,7 +13,7 @@ made, which are documented in the file 'MIGRATION', and summarized here.
 
 XXXXXXXXXX  Version 2.5
 
-* Concatenation is now supported
+* Concatenation is supported
 * The handling of dynamic dependencies was rewritten to allow
   concatenation.  The semantics of existing functionality was not
   changed, except in certain undocumented corner cases.  These include
@@ -26,6 +26,9 @@ XXXXXXXXXX  Version 2.5
 * Arguments to -j cannot be in octal anymore.  In previous versions, the
   -j option accepted numbers in octal when they started with a zero.
   This behavior was accidental, and has been removed. 
+* When a file read using the -f option or a file included using %include
+  does not exist, Stu now returns an exit code of 1 (build error),
+  rather than 2 (logical error) as done previously. 
 
 2016-09-13  Version 2.4.19
 

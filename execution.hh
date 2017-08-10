@@ -1175,15 +1175,9 @@ void Execution::cycle_print(const vector <Execution *> &path,
 	names.resize(path.size());
 	
 	for (size_t i= 0;  i + 1 < path.size();  ++i) {
-		names[i]= path[i]->parents.at((Execution *) path[i+1])
-			->
-//			get_target().
-			format_word();
+		names[i]= path[i]->parents.at((Execution *) path[i+1])->format_word();
 	}
-	names.back()= path.back()->parents.begin()->second
-		->
-//		get_target().
-		format_word();
+	names.back()= path.back()->parents.begin()->second->format_word();
 		
 	for (ssize_t i= path.size() - 1;  i >= 0;  --i) {
 
@@ -1205,9 +1199,7 @@ void Execution::cycle_print(const vector <Execution *> &path,
 				  : "cyclic dependency: ") 
 			       : "",
 			       names[i],
-			       i == 0 ? dep->
-//			       get_target().
-			       format_word() : names[i - 1]);
+			       i == 0 ? dep->format_word() : names[i - 1]);
 	}
 
 	/* If the two targets are different (but have the same rule
@@ -1276,9 +1268,7 @@ void Execution::print_traces(string text) const
 	const Execution *execution= this->parents.begin()->first;
 	shared_ptr <const Dep> depp= this->parents.begin()->second; 
 
-	string text_parent= depp->
-//		get_target().
-		format_word(); 
+	string text_parent= depp->format_word(); 
 
 	while (true) {
 		if (dynamic_cast <const Root_Execution *> (execution)) {

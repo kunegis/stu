@@ -1,8 +1,6 @@
 #
-# Concatenation [2.5]    test/2.5-*
+# Concatenation [2.5]    
 #
-
-# * Update the man page for concatenation 
 
 #
 # TODO document the -0 in the manpage.

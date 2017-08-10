@@ -300,24 +300,16 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 	assert(dep != nullptr); 
 
 	if (auto dynamic_dep= to <const Dynamic_Dep> (dep)) {
-//		shared_ptr <const Dynamic_Dep> dynamic_dep=
-//			to <Dynamic_Dep> (dep); 
 		check_unparametrized(dynamic_dep->dep, parameters); 
 	} else if (auto compound_dep= to <const Compound_Dep> (dep)) {
-//		shared_ptr <const Compound_Dep> compound_dep=
-//			to <Compound_Dep> (dep);
 		for (const auto &d:  compound_dep->get_deps()) {
 			check_unparametrized(d, parameters); 
 		}
 	} else if (auto concat_dep= to <const Concat_Dep> (dep)) {
-//		shared_ptr <const Concat_Dep> concat_dep=
-//			to <Concat_Dep> (dep);
 		for (const auto &d:  concat_dep->get_deps()) {
 			check_unparametrized(d, parameters); 
 		}
 	} else if (auto plain_dep= to <const Plain_Dep> (dep)) {
-//		shared_ptr <const Plain_Dep> plain_dep=
-//			to <Plain_Dep> (dep);
 		for (size_t jj= 0;  jj < plain_dep->place_param_target.place_name.get_n();  ++jj) {
 			string parameter= plain_dep->place_param_target.place_name.get_parameters()[jj]; 
 			if (parameters.count(parameter) == 0) {

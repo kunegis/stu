@@ -466,17 +466,10 @@ public:
 	 * error, a message is printed, bits are set in ERROR, and null
 	 * is returned.  Only plain and dynamic dependencies can be passed.  */
 
-//	static void check_concat(shared_ptr <const Dep> a,
-//				 shared_ptr <const Dep> b,
-//				 int &error);
-//	/* Check whether A and B can be concatenated.  When an error is
-//	 * found, set ERROR and print traces.  */
-
 	static shared_ptr <const Plain_Dep> concat_plain(shared_ptr <const Plain_Dep> a,
 							 shared_ptr <const Plain_Dep> b);
 	static shared_ptr <const Concat_Dep> concat_complex(shared_ptr <const Dep> a,
 							    shared_ptr <const Dep> b);
-//							    int &error); 
 
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
 				     vector <shared_ptr <const Dep> > &deps,
@@ -706,9 +699,6 @@ void Dep::check() const
 	for (int i= 0;  i < C_PLACED;  ++i) {
 		assert(((flags & (1 << i)) == 0) == get_place_flag(i).empty()); 
 	}
-
-//	const Plain_Dep *plain_this= dynamic_cast <const Plain_Dep *> (this);
-//	const Dynamic_Dep *dynamic_this= dynamic_cast <const Dynamic_Dep *> (this); 
 
 	if (auto plain_this= dynamic_cast <const Plain_Dep *> (this)) {
 		/* The F_TARGET_TRANSIENT flag is always set in the
@@ -1234,9 +1224,7 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 	if (to <const Plain_Dep> (a) && to <const Plain_Dep> (b))
 		return concat_plain(to <const Plain_Dep> (a), to <const Plain_Dep> (b)); 
 	else
-		return concat_complex(a, b
-//, error
-                                     ); 
+		return concat_complex(a, b); 
 }
 
 shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_Dep> a,
@@ -1275,15 +1263,12 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 
 shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> a,
 							 shared_ptr <const Dep> b)
-//							 int &error)
 /* We don't have to make any checks here because any errors will be
  * caught later when the resulting plain dependencies are concatenated.
  * However, checking errors here is faster, since it avoids building
  * dynamic dependencies unnecessarily.  */
 {
 	assert(! (to <const Plain_Dep> (a) && to <const Plain_Dep> (b))); 
-
-//	(void) error; 
 
 	shared_ptr <Concat_Dep> ret= make_shared <Concat_Dep> (); 
 

@@ -1,8 +1,6 @@
 #ifndef EXECUTION_HH
 #define EXECUTION_HH
 
-// TODO all instances of DEP->get_target().format_*() :  transform to DEP->format_*(). 
-
 /* 
  * Code for executing the building process itself.  
  *
@@ -924,17 +922,11 @@ void Execution::read_dynamic(
 		/* Check:  variable dependencies are not allowed in multiply
 		 * dynamic dependencies.  */
 		if (dep_target->flags & F_VARIABLE) {
-			bool quotes= false;
-			string s= dep_target->get_target().format(S_MARKERS | S_NOEMPTY, quotes);
-			dep_target->get_place() << fmt("variable dependency %s$[%s%s%s]%s must not appear", 
-						       Color::word,
-						       quotes ? "'" : "",
-						       s,
-						       quotes ? "'" : "",
-						       Color::end); 
+			dep_target->get_place() << fmt("variable dependency %s must not appear", 
+						       dep_target->format_word()); 
 			this->print_traces
 				(fmt("within multiply-dynamic dependency %s", 
-				     dep->get_target().format_word()));
+				     dep->format_word()));
 			raise(ERROR_LOGICAL);
 		} 
 
@@ -1402,7 +1394,7 @@ void Execution::push(shared_ptr <const Dep> dep)
 	if (e) {
 		dep->get_place() << fmt("%s is needed by %s",
 					dep->format_word(),
-					parents.begin()->second->get_target().format_word());
+					parents.begin()->second->format_word());
 		print_traces(); 
 		raise(e); 
 	}
@@ -1538,8 +1530,9 @@ Proceed Execution::connect(shared_ptr <const Dep> dep_this,
 			    multichar_format_word("-o")); 
 		dep_child->get_place() <<
 			fmt("in declaration of %s, needed by %s", 
-			    dep_child->get_target().format_word(),
-			    dep_this->get_target().format_word()); 
+			    dep_child->format_word(),
+			    dep_this->get_target().
+			    format_word()); 
 		print_traces();
 		explain_clash(); 
 		raise(ERROR_LOGICAL);
@@ -2216,7 +2209,7 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 					    target_.format_word());
 		}
 		dep->get_place() << fmt("when used as dynamic dependency of %s",
-					parent->get_parents().begin()->second->get_target().format_word());
+					parent->get_parents().begin()->second->format_word());
 		parent->get_parents().begin()->first->print_traces();
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;

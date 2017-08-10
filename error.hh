@@ -357,7 +357,6 @@ void Place::print(string message,
 		  const char *color_word) const
 {
 	assert(message != "");
-//	assert(! isupper(message[0])); 
 
 	switch (type) {
 	default:  

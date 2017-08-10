@@ -575,7 +575,6 @@ public:
 	virtual string format(Style, bool &) const {  return "ROOT";  }
 	virtual string format_word() const {  
 		assert(false); 
-//		return "ROOT";  
 	}
 	virtual string format_out() const {  return "ROOT";  }
 	virtual string format_src() const {  return "ROOT";  }

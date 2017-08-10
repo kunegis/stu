@@ -293,6 +293,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			while (true) {
 				if (len + BUFLEN < len) {
 					free(mem);
+					errno= ENOMEM; 
 					goto error_close; 
 				}
 				char *mem_new= (char *) realloc(mem, len + BUFLEN);

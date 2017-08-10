@@ -28,9 +28,6 @@
  * function detects that quotes are needed.
  */
 
-// TODO Make sure that in color output mode, no inner quotes are used
-// for concatenated dependencies. 
-
 #include "color.hh"
 
 typedef unsigned Style;

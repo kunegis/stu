@@ -1,0 +1,4 @@
+Creating B: C
+[1;31mmain.stu[0m:[31m2[0m:[31m5[0m: cyclic dependency: [1mA[0m depends on [1mlist.[0m[1m[B][0m
+[1;31mmain.stu[0m:[31m2[0m:[31m5[0m: [1mlist.[0m[1m[B][0m depends on [1mlist.C[0m
+[1;31mmain.stu[0m:[31m4[0m:[31m10[0m: [1mlist.C[0m depends on [1mA[0m

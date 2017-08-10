@@ -56,8 +56,6 @@ public:
 
 	Target(Flags flags, string name) 
 	/* A plain target */
-	// TODO optmize by constructing TEXT having the correct
-	// size directly
 		: text(string_from_word(flags) + name)
 	{
 		assert((flags & ~F_TARGET_TRANSIENT) == 0); 
@@ -68,8 +66,6 @@ public:
 	Target(Flags flags, Target target)
 	/* Makes the given target once more dynamic with the given
 	 * flags, which must *not* contain the 'dynamic' flag.  */
-	// TODO optmize by constructing TEXT having the correct
-	// size directly
 		:  text(string_from_word(flags | F_TARGET_DYNAMIC) + target.text)
 	{
 		assert((flags & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0);

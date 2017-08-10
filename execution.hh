@@ -3251,7 +3251,6 @@ void Concat_Execution::notify_result(shared_ptr <const Dep> d,
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)) != (F_RESULT_NOTIFY | F_RESULT_COPY)); 
 	assert(dep_source); 
 
-	// RM
 	Debug::print(this, fmt("notify_result(flags = %s, d = %s)",
 			       flags_format(flags),
 			       d->format_src())); 

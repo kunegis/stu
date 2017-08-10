@@ -433,14 +433,6 @@ public:
 		:  Dep(flags_, places_)
 	{  }
 
-	// const vector <shared_ptr <const Dep> > &get_deps() const {
-	// 	return deps; 
-	// }
-
-	// vector <shared_ptr <const Dep> > &get_deps() {
-	// 	return deps; 
-	// }
-
 	/* Append a dependency to the list */
 	void push_back(shared_ptr <const Dep> dep)
 	{
@@ -494,9 +486,6 @@ public:
 	 * On errors, a message is printed, bits are set in ERROR, and
 	 * if not in keep-going mode, the function returns immediately. 
 	 */
-
-
-//private:
 };
 
 class Compound_Dep
@@ -516,9 +505,6 @@ class Compound_Dep
 	:  public Dep
 {
 public:
-
-
-//private:
 
 	Place place; 
 	/* The place of the compound ; usually the opening parenthesis
@@ -546,14 +532,6 @@ public:
 		:  place(place_),
 		   deps(deps_)
 	{  }
-
-	// const vector <shared_ptr <const Dep> > &get_deps() const {
-	// 	return deps; 
-	// }
-
-	// vector <shared_ptr <const Dep> > &get_deps() {
-	// 	return deps; 
-	// }
 
 	void push_back(shared_ptr <const Dep> dep)
 	{

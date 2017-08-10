@@ -573,7 +573,10 @@ public:
 	virtual bool is_unparametrized() const {  return false;  }
 	virtual const Place &get_place() const {  return Place::place_empty;  }
 	virtual string format(Style, bool &) const {  return "ROOT";  }
-	virtual string format_word() const {  return "ROOT";  }
+	virtual string format_word() const {  
+		assert(false); 
+//		return "ROOT";  
+	}
 	virtual string format_out() const {  return "ROOT";  }
 	virtual string format_src() const {  return "ROOT";  }
 	virtual Target get_target() const {  return Target("");  }
@@ -723,7 +726,7 @@ string Plain_Dep::format(Style style, bool &quotes) const
 	}
 	bool detached= (flags & F_VARIABLE) || (flags & F_TARGET_TRANSIENT); 
 	bool quotes_inner= detached ? false : quotes;
-	string t= place_param_target.format(style, quotes_inner);
+	string t= place_param_target.format(style & ~S_COLOR_WORD, quotes_inner);
 	if (detached)
 		quotes= false;
 	else 
@@ -736,11 +739,8 @@ string Plain_Dep::format(Style style, bool &quotes) const
 			t,
 			quotes_print ? "'" : "",
 			flags & F_VARIABLE ? "]" : "");
-	if (style & S_WORD) {
-		ret= fmt("%s%s%s",
-			 Color::word, 
-			 ret.c_str(),
-			 Color::end); 
+	if (style & S_COLOR_WORD) {
+		ret= fmt("%s%s%s", Color::word, ret, Color::end); 
 	}
 	return ret;
 }
@@ -766,7 +766,7 @@ string Plain_Dep::format_src() const
 string Plain_Dep::format_word() const
 {
 	bool quotes= Color::quotes;
-	string ret= format(S_NOFLAGS | S_WORD, quotes);
+	string ret= format(S_NOFLAGS | S_WORD | S_COLOR_WORD, quotes);
 	if (quotes)
 		ret= fmt("\'%s\'", ret); 
 	return ret; 
@@ -804,11 +804,14 @@ string Dynamic_Dep::format(Style style, bool &quotes) const
 			text_flags += ' '; 
 		ret += text_flags; 
 	}
-	string text= dep->format(style | S_MARKERS, quotes_inner);
+	string text= dep->format((style | S_MARKERS) & ~S_COLOR_WORD, quotes_inner);
 	ret += fmt("[%s%s%s]",
 		   quotes_inner ? "'" : "",
 		   text,
 		   quotes_inner ? "'" : "");
+	if (style & S_COLOR_WORD) {
+		ret= fmt("%s%s%s", Color::word, ret, Color::end); 
+	}
 	return ret; 
 }
 
@@ -827,7 +830,7 @@ string Dynamic_Dep::format_src() const
 string Dynamic_Dep::format_word() const
 {
 	bool quotes= false;
-	return format(S_NOFLAGS | S_WORD, quotes);
+	return format(S_NOFLAGS | S_WORD | S_COLOR_WORD, quotes);
 }
 
 shared_ptr <const Dep> Dynamic_Dep::instantiate(const map <string, string> &mapping) const
@@ -905,7 +908,7 @@ string Compound_Dep::format(Style style, bool &) const
 string Compound_Dep::format_word() const
 {
 	bool quotes= Color::quotes;
-	string ret= format(S_WORD | S_NOFLAGS, quotes); 
+	string ret= format(S_WORD | S_NOFLAGS | S_COLOR_WORD, quotes); 
 	if (quotes)
 		ret= '\'' + ret + '\''; 
 	return ret; 
@@ -964,6 +967,7 @@ const Place &Concat_Dep::get_place() const
 }
 
 string Concat_Dep::format(Style style, bool &quotes) const
+/* We only need quotes when *all* components need quotes */	
 {
 	assert(bitset <sizeof(Style)> (style & S_CHANNEL).count() <= 1); 
 	string ret;
@@ -975,11 +979,12 @@ string Concat_Dep::format(Style style, bool &quotes) const
 		}
 		ret += f;
 	}
-	bool quotes_ret= false;
+	bool quotes_ret= true; 
 	for (const shared_ptr <const Dep> &d:  deps) {
 		bool quotes_d= quotes;
 		ret += d->format(style, quotes_d); 
-		quotes_ret |= quotes_d; 
+		if (! quotes_d)
+			quotes_ret= false; 
 	}
 	quotes= quotes_ret; 
 	return ret; 
@@ -988,7 +993,7 @@ string Concat_Dep::format(Style style, bool &quotes) const
 string Concat_Dep::format_word() const
 {
 	bool quotes= Color::quotes;
-	string ret= format(S_WORD | S_NOFLAGS, quotes); 
+	string ret= format(S_WORD | S_NOFLAGS | S_COLOR_WORD, quotes); 
 	if (quotes)
 		ret= '\'' + ret + '\''; 
 	return ret; 

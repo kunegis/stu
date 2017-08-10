@@ -19,23 +19,17 @@
  * Format functions are defined in the source files where their datatype
  * is defined.  In classes, they are member functions. 
  *
- * Some functions take a QUOTE parameter that is a reference to a
- * boolean.  Such functions never output surrounding quotes themselves,
- * and the QUOTES parameter is used as both an input and output
- * parameter: as input parameter, it tells the functions whether we are
- * in a context where quotes are needed in principle (because there is
- * no color).  As output parameter, it is set to true when the function
- * detects that quotes are needed.  If the
- * input parameter is true, it is never changed.  
+ * The format(...) functions take a QUOTE parameter that is a reference
+ * to a boolean.  This function never outputs surrounding quotes
+ * themself, and the QUOTES parameter is used as both an input and
+ * output parameter: as input parameter, it tells the functions whether
+ * we are in a context where quotes are needed in principle (because
+ * there is no color).  As output parameter, it is set to true when the
+ * function detects that quotes are needed.
  */
 
-// TODO Change formatting to always have the functions output their own
-// quotes, and make the QUOTES parameter be a bit in Style (since we
-// don't need it for output anymore).  
-// TODO Also have have the color code outputting as a bit in Style, and make sure it is never called twice. 
-// TODO For Concat_Dep, don't just put quotes around the whole thing,
-// but around individual parts, avoid unnecessary double quote
-// characters between any two parts that are both quoted. 
+// TODO Make sure that in color output mode, no inner quotes are used
+// for concatenated dependencies. 
 
 #include "color.hh"
 
@@ -62,6 +56,8 @@ enum
 	
 	S_RAW= 		1 << 6,
 	/* Output in raw form */
+
+	S_COLOR_WORD=   1 << 7,
 
 	S_CHANNEL=	S_OUT | S_WORD | S_SRC | S_RAW,
 	/* Only one of those is set */
@@ -121,11 +117,9 @@ string char_format_word(char c)
 	string s= char_format(c, 0, quotes); 
 
 	if (quotes) {
-		return fmt("%s'%s'%s",
-			   Color::word, s, Color::end); 
+		return fmt("%s'%s'%s", Color::word, s, Color::end); 
 	} else {
-		return fmt("%s%s%s", 
-			   Color::word, s, Color::end); 
+		return fmt("%s%s%s", Color::word, s, Color::end); 
 	}
 }
 
@@ -134,11 +128,9 @@ string multichar_format_word(string s)
 	bool quotes= Color::quotes;
 
 	if (quotes) {
-		return fmt("%s'%s'%s",
-			   Color::word, s, Color::end); 
+		return fmt("%s'%s'%s", Color::word, s, Color::end); 
 	} else {
-		return fmt("%s%s%s", 
-			   Color::word, s, Color::end); 
+		return fmt("%s%s%s", Color::word, s, Color::end); 
 	}
 }
 

@@ -1,0 +1,2 @@
+X:2:11: expected a version number of the form MAJOR.MINOR or MAJOR.MINOR.PATCH, not 'xyz'
+X:2:1: after %version

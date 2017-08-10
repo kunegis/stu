@@ -1,0 +1,7 @@
+>A:  B -t list.[C] { cat B list.1 list.2 list.3 ; }
+
+B = {bbb}
+
+C = {1 2 3}
+
+>list.$n { echo "$n$n$n" ; }

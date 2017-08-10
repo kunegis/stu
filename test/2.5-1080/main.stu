@@ -1,0 +1,17 @@
+# * a concatenation dynamic file containing '% version'
+
+A:  list.[X]
+{
+	touch A
+}
+
+# Note:  we include the syntax error 'xyz' on purpose in order to avoid
+# having to include the current Stu's version number in the expected
+# output.  
+X = {
+	1
+	% version xyz
+	2
+}
+
+$x { touch -- "$x" ; }

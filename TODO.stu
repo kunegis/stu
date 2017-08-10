@@ -9,9 +9,9 @@
 #
 
 #
-# BSD/Macos compatibility:
-# * Don`t use `;` in sed
-# * Don`t use \s, \S and \t in sed
+# BSD/Macos compatibility (only relevant for testing):
+# * Don't use ';' in sed
+# * Don't use \s, \S and \t in sed
 #
 
 #
@@ -83,13 +83,6 @@ X = {x}   Y = {y}  Z = {z}
 #
 
 #
-# Have a feature to indicate that a file contains only a single
-# filename.  To complement -n and -0.  Must produce a logical error when
-# the file contains the nul byte '\0'.  '\n' and other whitespaces
-# should work.  
-#
-
-#
 # Make sure we don't compile in any of the multi-threaded libraries.
 # (For curiosity)   
 #
@@ -110,16 +103,6 @@ X = {x}   Y = {y}  Z = {z}
 # the list of currently running PIDs, and maintain an atomic pid_count
 # to maintain the list, to avoid access a stdlib container from a signal
 # handler.
-#
-
-#
-# In File_Execution::wait(), use a non-blocking wait() function to
-# handle all finished jobs in a loop in that function.
-#
-
-#
-# Job::Signal::Signal: Execute the signal setup code only when needed,
-# i.e., when something is started. 
 #
 
 #
@@ -152,6 +135,23 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 #
 
 #=================== Further features =======================
+
+#
+# Have a feature to indicate that a file contains only a single
+# filename.  To complement -n and -0.  Must produce a logical error when
+# the file contains the nul byte '\0'.  '\n' and other whitespaces
+# should work.  
+#
+
+#
+# In File_Execution::wait(), use a non-blocking wait() function to
+# handle all finished jobs in a loop in that function.
+#
+
+#
+# Job::Signal::Signal: Execute the signal setup code only when needed,
+# i.e., when something is started. 
+#
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This
@@ -451,3 +451,11 @@ dep.sources {
 #
 
 A:  <list.(B) { ... }
+
+#
+# Allow empty names in concatenation.
+#
+
+A:  list.( '' ); # Equivalent to just 'list.'
+
+A:  @[X]; 

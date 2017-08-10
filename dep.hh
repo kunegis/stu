@@ -463,9 +463,14 @@ public:
 	 * error, a message is printed, bits are set in ERROR, and null
 	 * is returned.  Only plain and dynamic dependencies can be passed.  */
 
+//	static void check_concat(shared_ptr <const Dep> a,
+//				 shared_ptr <const Dep> b,
+//				 int &error);
+//	/* Check whether A and B can be concatenated.  When an error is
+//	 * found, set ERROR and print traces.  */
+
 	static shared_ptr <const Plain_Dep> concat_plain(shared_ptr <const Plain_Dep> a,
-							 shared_ptr <const Plain_Dep> b,
-							 int &error); 
+							 shared_ptr <const Plain_Dep> b);
 	static shared_ptr <const Concat_Dep> concat_complex(shared_ptr <const Dep> a,
 							    shared_ptr <const Dep> b,
 							    int &error); 
@@ -1150,22 +1155,6 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 	assert(a);
 	assert(b); 
 
-	if (to <const Plain_Dep> (a) && to <const Plain_Dep> (b))
-		return concat_plain(to <const Plain_Dep> (a), to <const Plain_Dep> (b), error); 
-	else
-		return concat_complex(a, b, error); 
-}
-
-shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_Dep> a,
-						      shared_ptr <const Plain_Dep> b,
-						      int &error)
-{
-	assert(a);
-	assert(b);
-
-	assert(! a->place_param_target.place_name.is_parametrized());  // XXX allow
-	assert(! b->place_param_target.place_name.is_parametrized());  // XXX allow 
-
 	/*
 	 * Check for invalid combinations
 	 */
@@ -1232,6 +1221,90 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 		error |= ERROR_LOGICAL; 
 		return nullptr;
 	}
+
+	if (to <const Plain_Dep> (a) && to <const Plain_Dep> (b))
+		return concat_plain(to <const Plain_Dep> (a), to <const Plain_Dep> (b)); 
+	else
+		return concat_complex(a, b, error); 
+}
+
+shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_Dep> a,
+						      shared_ptr <const Plain_Dep> b)
+{
+	assert(a);
+	assert(b);
+
+	/* Parametrized dependencies are instantiated first before they
+	 * are concatenated  */
+	assert(! a->place_param_target.place_name.is_parametrized());  
+	assert(! b->place_param_target.place_name.is_parametrized());  
+
+	// /*
+	//  * Check for invalid combinations
+	//  */
+
+	// if (a->flags & F_INPUT) {
+	// 	/* It would in principle be possible to allow
+	// 	 * concatenations in which the left component has an
+	// 	 * input redirection, but the current data structures do
+	// 	 * not allow that, and therefore we make that invalid.  */
+	// 	a->get_place() << fmt("%s cannot have input redirection using %s",
+	// 			      a->format_word(),
+	// 			      char_format_word('<')); 
+	// 	b->get_place() << fmt("because %s is concatenated to it",
+	// 			      b->format_word()); 
+	// 	error |= ERROR_LOGICAL;
+	// 	return nullptr; 
+	// }
+
+	// if (b->flags & F_INPUT) {
+	// 	/* We don't save the place for the '<', so we cannot
+	// 	 * have "using '<'" on an extra line.  */
+	// 	b->get_place() << fmt("%s cannot have input redirection using %s", 
+	// 			      b->format_word(),
+	// 			      char_format_word('<')); 
+	// 	a->get_place() << fmt("in concatenation to %s", a->format_word()); 
+	// 	error |= ERROR_LOGICAL;
+	// 	return nullptr; 
+	// }
+
+	// if (b->flags & F_PLACED) {
+	// 	assert(C_PLACED == 3); 
+	// 	int i_flag= 
+	// 		b->flags & F_PERSISTENT ? I_PERSISTENT :
+	// 		b->flags & F_OPTIONAL   ? I_OPTIONAL   :
+	// 		b->flags & F_TRIVIAL    ? I_TRIVIAL    : 
+	// 		-1;
+	// 	assert(i_flag >= 0); 
+	// 	b->get_place() << fmt("%s cannot be declared as %s", b->format_word(), FLAGS_PHRASES[i_flag]); 
+	// 	b->places[i_flag] << fmt("using %s", name_format_word(frmt("-%c", FLAGS_CHARS[i_flag]))); 
+	// 	a->get_place() << fmt("in concatenation to %s", a->format_word()); 
+	// 	error |= ERROR_LOGICAL;
+	// 	return nullptr; 
+	// }
+
+	// if (b->flags & F_TARGET_TRANSIENT) {
+	// 	b->get_place() << fmt("transient target %s is invalid", b->format_word()); 
+	// 	a->get_place() << fmt("in concatenation to %s", a->format_word()); 
+	// 	error |= ERROR_LOGICAL;
+	// 	return nullptr;
+	// }
+
+	// if (a->flags & F_VARIABLE) {
+	// 	a->get_place() << fmt("the variable dependency %s cannot be used", 
+	// 			      a->format_word());
+	// 	b->get_place() << fmt("in concatenation with %s", 
+	// 			      b->format_word());
+	// 	error |= ERROR_LOGICAL;
+	// 	return nullptr; 
+	// }
+
+	// if (b->flags & F_VARIABLE) {
+	// 	b->get_place() << fmt("variable dependency %s is invalid", b->format_word());
+	// 	a->get_place() << fmt("in concatenation to %s", a->format_word()); 
+	// 	error |= ERROR_LOGICAL; 
+	// 	return nullptr;
+	// }
 	
 	/*
 	 * Combine 

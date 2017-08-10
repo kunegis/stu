@@ -1,0 +1,8 @@
+# This is a syntax error, as '@' needs to be followed by a non-empty
+# name.
+
+A: @[C]
+{
+	touch A
+}
+C { touch C ; }

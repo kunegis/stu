@@ -15,7 +15,6 @@
  *   e.g., use quotes only if the name contains characters that need to
  *   be quoted.  It does include the flags. 
  * - raw() does not escape anything. 
- * // TODO deprecate all these functions in favor of format(S_*), etc. 
  *
  * Format functions are defined in the source files where their datatype
  * is defined.  In classes, they are member functions. 

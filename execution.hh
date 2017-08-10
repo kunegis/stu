@@ -912,237 +912,208 @@ void Execution::read_dynamic(
 			     Execution *dynamic_execution)
 {
 	try {
-//		vector <shared_ptr <const Dep> > deps;
+		const Place_Param_Target &place_param_target= to <Plain_Dep> (dep_target)->place_param_target; 
 
-	const Place_Param_Target &place_param_target= to <Plain_Dep> (dep_target)->place_param_target; 
+		assert(place_param_target.place_name.get_n() == 0); 
 
-	assert(place_param_target.place_name.get_n() == 0); 
-//	assert((place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
-
-	const Target target= place_param_target.unparametrized(); 
-//	assert(target.is_file()); 
-	assert(deps.empty()); 
+		const Target target= place_param_target.unparametrized(); 
+		assert(deps.empty()); 
 	
-	/* Check:  variable dependencies are not allowed in multiply
-	 * dynamic dependencies.  */
-	if (dep_target->flags & F_VARIABLE) {
-		bool quotes= false;
-		string s= dep_target->get_target().format(S_MARKERS | S_NOEMPTY, quotes);
-		dep_target->get_place() << fmt("variable dependency %s$[%s%s%s]%s must not appear", 
-					       Color::word,
-					       quotes ? "'" : "",
-					       s,
-					       quotes ? "'" : "",
-					       Color::end); 
-		this->print_traces
-			(fmt("within multiply-dynamic dependency %s", 
-			     dep->get_target().format_word()));
-		raise(ERROR_LOGICAL);
-	} 
-
-	if (place_param_target.flags & F_TARGET_TRANSIENT)
-		return;
-
-	assert(target.is_file()); 
-	string filename= target.get_name_nondynamic();
-
-	if (! (
-	       dep_target->flags
-//	       flags_this
-	       & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
-
-		/* Parse dynamic dependency in full Stu syntax */ 
-
-		vector <shared_ptr <Token> > tokens;
-		Place place_end; 
-
-		Tokenizer::parse_tokens_file
-			(tokens, 
-			 Tokenizer::DYNAMIC,
-			 place_end, 
-			 filename, 
-			 place_param_target.place,
-			 -1,
-			 dep_target->flags
-//			 flags_this
-			 & F_OPTIONAL); 
-
-		Place_Name input; /* remains empty */ 
-		Place place_input; /* remains empty */ 
-
-		try {
-			Parser::get_expression_list(deps, tokens, 
-						    place_end, input, place_input);
-		} catch (int e) {
-			raise(e); 
-			goto end_normal;
-		}
-
-		/* Check that there are no input dependencies */ 
-		if (! input.empty()) {
-			Target target_dynamic(0, target);
-			place_input <<
-				fmt("dynamic dependency %s must not contain input redirection %s", 
-				    target_dynamic.format_word(),
-				    prefix_format_word(input.raw(), "<")); 
-			Target target_file= target;
-			target_file.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT; 
-			dynamic_execution->print_traces(fmt("%s is declared here",
-							    target_file.format_word())); 
+		/* Check:  variable dependencies are not allowed in multiply
+		 * dynamic dependencies.  */
+		if (dep_target->flags & F_VARIABLE) {
+			bool quotes= false;
+			string s= dep_target->get_target().format(S_MARKERS | S_NOEMPTY, quotes);
+			dep_target->get_place() << fmt("variable dependency %s$[%s%s%s]%s must not appear", 
+						       Color::word,
+						       quotes ? "'" : "",
+						       s,
+						       quotes ? "'" : "",
+						       Color::end); 
+			this->print_traces
+				(fmt("within multiply-dynamic dependency %s", 
+				     dep->get_target().format_word()));
 			raise(ERROR_LOGICAL);
-		}
-	end_normal:;
+		} 
 
-	} else {
-		/* Delimiter-separated */
+		if (place_param_target.flags & F_TARGET_TRANSIENT)
+			return;
 
-		/* We use getdelim() for parsing.  A more optimized way
-		 * would be via mmap()+strchr(), but why the
-		 * complexity?  */ 
+		assert(target.is_file()); 
+		string filename= target.get_name_nondynamic();
+
+		if (! (dep_target->flags & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
+
+			/* Parse dynamic dependency in full Stu syntax */ 
+
+			vector <shared_ptr <Token> > tokens;
+			Place place_end; 
+
+			Tokenizer::parse_tokens_file
+				(tokens, 
+				 Tokenizer::DYNAMIC,
+				 place_end, 
+				 filename, 
+				 place_param_target.place,
+				 -1,
+				 dep_target->flags
+				 & F_OPTIONAL); 
+
+			Place_Name input; /* remains empty */ 
+			Place place_input; /* remains empty */ 
+
+			try {
+				Parser::get_expression_list(deps, tokens, 
+							    place_end, input, place_input);
+			} catch (int e) {
+				raise(e); 
+				goto end_normal;
+			}
+
+			/* Check that there are no input dependencies */ 
+			if (! input.empty()) {
+				Target target_dynamic(0, target);
+				place_input <<
+					fmt("dynamic dependency %s must not contain input redirection %s", 
+					    target_dynamic.format_word(),
+					    prefix_format_word(input.raw(), "<")); 
+				Target target_file= target;
+				target_file.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT; 
+				dynamic_execution->print_traces(fmt("%s is declared here",
+								    target_file.format_word())); 
+				raise(ERROR_LOGICAL);
+			}
+		end_normal:;
+
+		} else {
+			/* Delimiter-separated */
+
+			/* We use getdelim() for parsing.  A more optimized way
+			 * would be via mmap()+strchr(), but why the
+			 * complexity?  */ 
 			
-		const char c= (
-			       dep_target->flags
-//			       flags_this
-			       & F_NEWLINE_SEPARATED) ? '\n' : '\0';
-		/* The delimiter */ 
+			const char c= (dep_target->flags & F_NEWLINE_SEPARATED) ? '\n' : '\0';
+			/* The delimiter */ 
 
-		const char c_printed= (
-				       dep_target->flags
-//				       flags_this
-				       & F_NEWLINE_SEPARATED) ? 'n' : '0';
-		/* The character to print as the delimiter */
+			const char c_printed= (dep_target->flags & F_NEWLINE_SEPARATED) ? 'n' : '0';
+			/* The character to print as the delimiter */
 		
-		char *lineptr= nullptr;
-		size_t n= 0;
-		ssize_t len;
-		int line= 0; 
+			char *lineptr= nullptr;
+			size_t n= 0;
+			ssize_t len;
+			int line= 0; 
 			
-		FILE *file= fopen(filename.c_str(), "r"); 
-		if (file == nullptr) {
-			print_error_system(filename); 
-			raise(ERROR_BUILD); 
-			goto end;
-		}
+			FILE *file= fopen(filename.c_str(), "r"); 
+			if (file == nullptr) {
+				print_error_system(filename); 
+				raise(ERROR_BUILD); 
+				goto end;
+			}
 
-		while ((len= getdelim(&lineptr, &n, c, file)) >= 0) {
+			while ((len= getdelim(&lineptr, &n, c, file)) >= 0) {
 				
-			Place place(Place::Type::INPUT_FILE, filename, ++line, 0); 
+				Place place(Place::Type::INPUT_FILE, filename, ++line, 0); 
 
-			assert(lineptr[len] == '\0'); 
+				assert(lineptr[len] == '\0'); 
 
-			if (len == 0) {
-				/* Should not happen by the specification
-				 * of getdelim(), so abort parse.  */ 
-				assert(false); 
-				break;
-			} 
+				if (len == 0) {
+					/* Should not happen by the specification
+					 * of getdelim(), so abort parse.  */ 
+					assert(false); 
+					break;
+				} 
 
-			/* There may or may not be a terminating \n or \0.
-			 * getdelim(3) will include it if it is present,
-			 * but the file may not have one for the last entry.  */ 
+				/* There may or may not be a terminating \n or \0.
+				 * getdelim(3) will include it if it is present,
+				 * but the file may not have one for the last entry.  */ 
 
-			if (lineptr[len - 1] == c) {
-				--len; 
-			}
+				if (lineptr[len - 1] == c) {
+					--len; 
+				}
 
-			/* An empty line: This corresponds to an empty
-			 * filename, and thus we treat is as a syntax
-			 * error, because filenames can never be
-			 * empty.  */ 
-			if (len == 0) {
-				free(lineptr); 
-				fclose(file); 
-				place << "filename must not be empty"; 
-				dynamic_execution->print_traces
-					(fmt("in %s-separated dynamic dependency "
-					     "declared with flag %s",
-					     c == '\0' ? "zero" : "newline",
-					     multichar_format_word
-					     (frmt("-%c", c_printed))));
-				throw ERROR_LOGICAL; 
-			}
+				/* An empty line: This corresponds to an empty
+				 * filename, and thus we treat is as a syntax
+				 * error, because filenames can never be
+				 * empty.  */ 
+				if (len == 0) {
+					free(lineptr); 
+					fclose(file); 
+					place << "filename must not be empty"; 
+					dynamic_execution->print_traces
+						(fmt("in %s-separated dynamic dependency "
+						     "declared with flag %s",
+						     c == '\0' ? "zero" : "newline",
+						     multichar_format_word
+						     (frmt("-%c", c_printed))));
+					throw ERROR_LOGICAL; 
+				}
 				
-			string filename_dep= string(lineptr, len); 
+				string filename_dep= string(lineptr, len); 
 
-			deps.push_back
-				(make_shared <Plain_Dep>
-				 (0,
-				  Place_Param_Target
-				  (0, 
-				   Place_Name(filename_dep, place)))); 
-		}
-		free(lineptr); 
-		if (fclose(file)) {
-			print_error_system(filename); 
-			raise(ERROR_BUILD);
-		}
-	end:;
-	}
-
-	/* 
-	 * Perform checks on forbidden features in dynamic dependencies.
-	 * In keep-going mode (-k), we set the error, set the erroneous
-	 * dependency to null, and at the end prune the null entries. 
-	 */
-	bool found_error= false; 
-	for (auto &j:  deps) {
-
-		/* Check that it is unparametrized */ 
-		if (! j->is_unparametrized()) {
-			shared_ptr <const Dep> depp= j;
-			while (to <Dynamic_Dep> (depp)) {
-				shared_ptr <const Dynamic_Dep> depp2= 
-					to <Dynamic_Dep> (depp);
-				depp= depp2->dep; 
+				deps.push_back
+					(make_shared <Plain_Dep>
+					 (0,
+					  Place_Param_Target
+					  (0, 
+					   Place_Name(filename_dep, place)))); 
 			}
-			to <Plain_Dep> (depp)
-				->place_param_target.place_name.places[0] <<
-				fmt("dynamic dependency %s must not contain parametrized dependencies",
-				    Target(0, target).format_word());
-			Target target_base= target;
-			target_base.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT; 
-			target_base.get_front_word_nondynamic() |= (target.get_front_word_nondynamic() & F_TARGET_TRANSIENT); 
-			print_traces(fmt("%s is declared here", 
-					 target_base.format_word())); 
-			raise(ERROR_LOGICAL);
-			j= nullptr;
-			found_error= true; 
-			continue; 
+			free(lineptr); 
+			if (fclose(file)) {
+				print_error_system(filename); 
+				raise(ERROR_BUILD);
+			}
+		end:;
 		}
-	}
 
-	assert(! found_error || option_keep_going); 
-	vector <shared_ptr <const Dep> > deps_new;
+		/* 
+		 * Perform checks on forbidden features in dynamic dependencies.
+		 * In keep-going mode (-k), we set the error, set the erroneous
+		 * dependency to null, and at the end prune the null entries. 
+		 */
+		bool found_error= false; 
+		for (auto &j:  deps) {
 
-	shared_ptr <const Dep> top_top= dep_target->top;
-	shared_ptr <Dep> no_top= Dep::clone(dep_target);
-	no_top->top= nullptr; 
-	shared_ptr <Dep> top= make_shared <Dynamic_Dep> (no_top); 
-	top->top= top_top;
+			/* Check that it is unparametrized */ 
+			if (! j->is_unparametrized()) {
+				shared_ptr <const Dep> depp= j;
+				while (to <Dynamic_Dep> (depp)) {
+					shared_ptr <const Dynamic_Dep> depp2= 
+						to <Dynamic_Dep> (depp);
+					depp= depp2->dep; 
+				}
+				to <Plain_Dep> (depp)
+					->place_param_target.place_name.places[0] <<
+					fmt("dynamic dependency %s must not contain parametrized dependencies",
+					    Target(0, target).format_word());
+				Target target_base= target;
+				target_base.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT; 
+				target_base.get_front_word_nondynamic() |= (target.get_front_word_nondynamic() & F_TARGET_TRANSIENT); 
+				print_traces(fmt("%s is declared here", 
+						 target_base.format_word())); 
+				raise(ERROR_LOGICAL);
+				j= nullptr;
+				found_error= true; 
+				continue; 
+			}
+		}
+
+		assert(! found_error || option_keep_going); 
+		vector <shared_ptr <const Dep> > deps_new;
+
+		shared_ptr <const Dep> top_top= dep_target->top;
+		shared_ptr <Dep> no_top= Dep::clone(dep_target);
+		no_top->top= nullptr; 
+		shared_ptr <Dep> top= make_shared <Dynamic_Dep> (no_top); 
+		top->top= top_top;
 		
-	for (auto &j:  deps) {
-		if (j) {
-			shared_ptr <Dep> j_new= Dep::clone(j);
-			j_new->top= top; 
-			deps_new.push_back(j_new); 
+		for (auto &j:  deps) {
+			if (j) {
+				shared_ptr <Dep> j_new= Dep::clone(j);
+				j_new->top= top; 
+				deps_new.push_back(j_new); 
+			}
 		}
-	}
-	swap(deps, deps_new); 
-
-		// for (auto &j:  deps) {
-		// 	shared_ptr <Dep> j_new= Dep::clone(j); 
-		// 	/* Add -% flag */
-		// 	j_new->flags |= F_RESULT_COPY;
-		// 	/* Add flags from self  */  
-		// 	j_new->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
-		// 	for (int i= 0;  i < C_PLACED;  ++i) {
-		// 		if (j_new->get_place_flag(i).empty() && 
-		// 		    ! dep->get_place_flag(i).empty())
-		// 			j_new->set_place_flag(i, dep->get_place_flag(i)); 
-		// 	}
-		// 	j= j_new; 
-		// 	dynamic_execution->push(j); 
-		// }
+		swap(deps, deps_new); 
 	} catch (int e) {
 		dynamic_execution->raise(e); 
 	}
@@ -1327,9 +1298,7 @@ void Execution::print_traces(string text) const
 
 		/* New text */
 		string text_child= text_parent; 
-		text_parent= depp->
-//			get_target().
-			format_word();
+		text_parent= depp->format_word();
 
 		/* Don't show left-branch edges of dynamic executions */
 		if (hide_link_from_message(depp_old->flags)) {
@@ -1892,10 +1861,7 @@ void Execution::push_result(shared_ptr <const Dep> dd)
 	for (auto &i:  parents) {
 		Flags flags= i.second->flags & (F_RESULT_NOTIFY | F_RESULT_COPY); 
 		if (flags) {
-			i.first->notify_result(dd, this, flags,
-//					       (flags == F_RESULT_NOTIFY)
-//					       ? nullptr : 
-					       i.second); 
+			i.first->notify_result(dd, this, flags, i.second); 
 		}
 	}
 }
@@ -3208,7 +3174,6 @@ bool Concat_Execution::finished() const
 {
 	assert(stage >= 0 && stage <= 2); 
 	return stage == 2;
-//	return is_finished; 
 }
 
 bool Concat_Execution::finished(Flags) const
@@ -3387,7 +3352,6 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dep> d,
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))); 
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)) != (F_RESULT_NOTIFY | F_RESULT_COPY)); 
 	assert(dep_source);
-//	assert((dep_source == nullptr) == (flags == F_RESULT_NOTIFY)); 
 
 	if (flags & F_RESULT_NOTIFY) {
 		vector <shared_ptr <const Dep> > deps; 

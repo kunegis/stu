@@ -1,9 +1,4 @@
 #
-# BSD/Macos compatibility (only relevant for testing):
-# * Don't use \s, \S and \t in sed
-#
-
-#
 # Make sure that in -j2 -k mode, the "successfully built" message is
 # output just once, when the rule that was run has multiple targets.
 #

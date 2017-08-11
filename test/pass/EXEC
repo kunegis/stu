@@ -13,7 +13,7 @@ olden() {
 
 [ "$verbose" ] && exec 6>&2 || exec 6>/dev/null
 
-sed -E -e '/^\s*$/d;/^\s*#/d' LIST.stu |
+sed -E -e '/^[[:space:]]*$/d;/^[[:space:]]*#/d' LIST.stu |
 while read -r line ; do
 	rm -f list.file.stu ? list.*
 	echo "$line" >list.file.stu

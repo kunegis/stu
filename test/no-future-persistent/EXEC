@@ -1,6 +1,6 @@
 #! /bin/sh
 
-rm -f A B
+rm -f A B || exit 1
 
 # Create B
 echo $RANDOM >B
@@ -23,6 +23,6 @@ if cat list.out list.err | grep -i future ; then
     exit 1
 fi
 
-rm -f A B
+rm -f A B || exit 1
 
 exit 0

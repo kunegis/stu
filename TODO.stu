@@ -1,6 +1,5 @@
 #
 # BSD/Macos compatibility (only relevant for testing):
-# * Don't use ';' in sed
 # * Don't use \s, \S and \t in sed
 #
 

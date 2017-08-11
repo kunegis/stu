@@ -148,7 +148,9 @@ things to be said about portable shell scripting.
   \{1,\}.  There is no way to write alternatives, i.e., the
   '|' operator in extended regular regular expressions.  (Note:  there
   are rumors that -E is going to be in a future POSIX standard; we'll
-  switch to -E once it's standardized.)
+  switch to -E once it's standardized.)  Also, the 'b' and 't' commands
+  must not be followed by a semicolon; always use a newline after them
+  when there are more commands. 
 * Grep however has the -E option for extended regular expressions.  Grep
   is always invoked with the -E *or* the -F option.  (Using basic
   regular expressions with Grep is also portable, but we don't do it.)

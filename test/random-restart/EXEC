@@ -12,7 +12,8 @@ exitcode="$?"
 
 <list.out sed -e '
 	s,^.*X=\(.\).*$,\1,
-	t;d
+	t
+	d
 ' >list.exec
 
 # Now, make sure 'list.exec' does not contain the same letter twice in a

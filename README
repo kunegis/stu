@@ -72,13 +72,13 @@ The design considerations of Stu are:
   files are used.  Other Make replacements are even worse than Make in
   this regard, and allow any variable in whatever programming language
   they are using.  Stu is based on the Unix principle that any
-  persistent object should have a name in the file system -- "Everything
-  is a file."  
+  persistent object should have a name in the file system -- "everything
+  is a file."   
 * Scalability:  Assume that projects are so large that you can't just
   clean and rebuild everything if there are build inconsistencies.
   Files are sacred; never make the user delete files in order to rebuild
   things.   
-* Simplicity:  Do one thing well. We don't include features such as file
+* Simplicity:  Do one thing well.  We don't include features such as file
   compression that can be achieved by other tools from within shell
   commands.  List of files and dependencies are themselves targets that
   are built using shell commands, and therefore any external software
@@ -86,7 +86,7 @@ The design considerations of Stu are:
   Stu.  Too many Make replacements try to "avoid the shell" and include
   every transformation possible into the tool, effectively amassing
   dozens of unnecessary dependencies, and creating an ad-hoc language
-  much less well-defined, and let alone portable, than the shell. 
+  much less well-defined, and let alone portable, than the shell.
 * Portability:  Embrace POSIX as an underlying standard. Use the shell
   as the underlying command interpreter. Don't try to create a
   purportedly portable layer on top of it, as POSIX _already is_ a

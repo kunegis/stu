@@ -11,7 +11,7 @@ made, which are documented in the file 'MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
-XXXXXXXXXX  Version 2.5
+2017-08-11  Version 2.5
 
 * Concatenation is supported
 * The handling of dynamic dependencies was rewritten to allow

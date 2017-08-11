@@ -9,6 +9,11 @@
 
 #==== Normal features ====
 
+#
+# Make the %version mandatory in every file, to avoid parsing a file of
+# the wrong Stu version.  
+#
+
 # 
 # An option (-u) to consider all targets up to date.  I.e., execute only the
 # minimum to get the given files built. 

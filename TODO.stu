@@ -1,8 +1,4 @@
 #
-# TODO document the -0 in the manpage.
-#
-
-#
 # BSD/Macos compatibility (only relevant for testing):
 # * Don't use ';' in sed
 # * Don't use \s, \S and \t in sed
@@ -50,8 +46,12 @@ $ stu -F 'A {cat $(cat ahjsahd);}'
 
 #
 # sh/test:  log all tests and their runtime, version number, date, etc.
-# This is to detected regression such as "a new version of Stu is much
+# This is to detect regressions such as "a new version of Stu is much
 # slower than old versions."
+#
+
+#
+# This test
 #
 
 # 'A' will contain the three lines 'x', 'y' and 'z'

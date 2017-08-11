@@ -40,11 +40,6 @@ A: B { cp B A ; }
 #
 
 #
-# Make the %version mandatory in every file, to avoid parsing a file of
-# the wrong Stu version.  
-#
-
-#
 # The 'trivial' flag '-t' should "go up" when applied to the
 # dependencies of transient targets. 
 #
@@ -123,4 +118,3 @@ V = {xyz}
 # $STU_OPTIONS should be called $STUFLAGS (?), to be consistent with
 # $MAKEFLAGS, $CFLAGS, etc. 
 #
- 

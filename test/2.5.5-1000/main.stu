@@ -1,0 +1,17 @@
+# Test: Make sure that in -j2 -k mode, the "successfully built" message
+# is output just once, when the rule that was run has multiple targets.
+
+A:  B C X
+{
+	cat B C X >A
+}
+
+B C
+{
+	touch B C
+}
+
+X {
+	sleep 1
+	touch X
+}

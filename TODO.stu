@@ -1,9 +1,4 @@
 #
-# Make sure that in -j2 -k mode, the "successfully built" message is
-# output just once, when the rule that was run has multiple targets.
-#
-
-#
 # In the following case, there should be an explanation message that two
 # parameters cannot be continguous.
 #

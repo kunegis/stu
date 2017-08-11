@@ -1,6 +1,6 @@
 #
 # In the following case, there should be an explanation message that two
-# parameters cannot be continguous.
+# parameters cannot be contiguous.
 #
 
 A.$X$Y;
@@ -233,26 +233,8 @@ $ stu -- list.[FILE]
 A: [-d data/B];
 
 #
-# Use the '+' sign to invert flags. 
-#
-
-# E.g.: Dynamic dependencies are "persistent" by default.  Make it
-# possible to switch this off using '+e'.  This is useful when the
-# dynamic dependency file itself is used by the target, e.g. when
-# creating a tarball. 
-A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
-
-#
 # Trace (logging): an option to write log messages into a file.  In
 # particular, which commands failed. (option -T)
-#
-
-#
-# Recursive persistent dependency:  If the file exists, never
-# rebuild it, regardless whether its dependencies have to be rebuilt.
-# Actual persistent dependencies do not work like this, as they only
-# ignore the targets timestamp, but don't change anything about its
-# dependencies.  
 #
 
 #
@@ -265,58 +247,15 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 % include c++.stu
  
 #
-# Optimization:  when parsing rules, only save the "body" part of the
-# rule (everything except the target) as an unparsed string.  Parse it
-# properly only when needed.  This will not catch certain errors
-# anymore. 
-#
-
-#
-# Flag rules
-#
-
-# Allow flags on the target filenames.  Example with '-o':
-
-# If $NAME.svg is present, use it to build $NAME.pdf.  If $NAME.svg is
-# not present, allow $NAME.pdf to be present without any dependencies.
-# The big question is how can the rule distinguish when the rule is
-# activated.  When all dependencies exist?  When all dependencies
-# *could* be built? 
--o $NAME.pdf:  $NAME.svg
-{
-	inkscape ...
-}
-
-#
-# A "hard optional" option:  If a dependency is not present, don't even
-# try to rebuild the target if it's already present.  I.e., an
-# "up-percolating" 'optional' flag.
-#
-
-#
 # -m bfs (breadth-first order) and -m target (pseudorandom by target
-# name). 
+# name, i.e., same pseudorandom order for each target, as long as its
+# dependencies are the same). 
 #
 
 #
 # Have a mode or option to show only one message per error, omitting
 # all subsequent traces.
 #
-
-#
-# Correct parsing of shell syntax in commands:  { and } only have their
-# meaning when they are not attached to other words, and when they are
-# the first word in a command.
-#
-# However, do this everywhere except at the outer level.  At the outer
-# level, every } preceded by whitespace ends the command. 
-#
-
-# Unexpected ';'
-#     >A { echo } ; }
-
-# OK -- this does not work at the moment 
-#     >A { { echo } ; } ; echo aaa }
 
 #
 # Allow access to environment variables via e.g. $(HOME). 
@@ -344,38 +283,16 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 # * ...
 
 #
-# An option to ignore all timestamps:  Whenever a file already exists,
-# it is not rebuilt.  
-#
-
-#
 # Have an option for: For hardcoded rules, compare the content of the
 # file (if it exists) with the declared content, and regenerate the file
-# if necessary.
-#
-
-#
-# An option that make Stu rebuild everything, regardless of status. (-B,
-# like GNU Make)   
+# if necessary.  This would avoid the usual error that a hardcoded rule
+# is changed in a Stu file, but Stu doesn't notice that. 
 #
 
 #
 # Have an option to output the dependency graph, i.e., output each edge
 # on a single like, e.g. separated by tab.  (Use it then to perform a network
 # analysis of the KONECT-Analysis dependency graph.)
-#
-
-#
-# For output redirection:  Do what stu-utils/output-finally does,
-# integrated into Stu.  On the other hand, this is not totally good,
-# because users expect a > operator to write into the file immediately.
-# Maybe only enable it with a flag.  Alternatively, automatically make a
-# backup of the target file, and restore it if the command fails.
-# Again, this should only be done with a flag, because given the large
-# possible files, it would take lots of memory.  A smart way to do it
-# would be to open() the file, keeping only a reference in the Stu
-# process to it, and then linking it again if needed, but that is
-# probably not possible in POSIX. 
 #
 
 #
@@ -403,24 +320,3 @@ dep.sources {
 	# Some complex mechanism for determining the source code files
 	# of the program
 }
-
-#
-# Allow concatenation of file dependencies with input redirection.  This
-# is not valid at the moment.  Should be only valid if a single
-# dependency results.  The current behavior is consistent with input
-# redirection being invalid within dynamic dependencies. 
-#
-
-A:  <list.(B) { ... }
-
-#
-# Allow empty names in concatenation.
-#
-
-A:  list.( '' ); # Equivalent to just 'list.'
-
-A:  @[X]; 
-
-#
-# The Dep::top mechanism is not clean.  Do something better.  
-#

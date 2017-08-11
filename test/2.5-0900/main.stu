@@ -1,0 +1,12 @@
+A:  ( li )( st.x )
+{
+	cp list.x A
+}
+
+list.x:
+{
+	echo correct >list.x
+}
+
+li { exit 1 ; }
+st.x { exit 1 ; }

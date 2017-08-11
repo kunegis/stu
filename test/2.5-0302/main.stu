@@ -1,0 +1,4 @@
+# This results in an error because -p cannot be used with a transient target of a File_Execution
+A:  -p @x { echo correct >A ; }
+@x:  B  { echo Hello ; }
+B { touch B ; }

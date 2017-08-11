@@ -1,0 +1,12 @@
+# Make sure [B] is executed just once, and the -n is applied correctly. 
+
+>A:   [B]  [-n [B]] { 
+	cat C list.'D 1' list.'D 2'
+}
+
+B = {C}
+>C { echo list.'D 1' ; echo list.'D 2' ; }
+>list.$name { echo xxx"$name" ; }
+
+list.D { exit 1 ; }
+

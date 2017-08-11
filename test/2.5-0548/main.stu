@@ -1,0 +1,10 @@
+# OK, two distinct dependencies 'B' and 'C' (with input redirection)
+
+>A:  (B)<C
+{
+	cat B
+	cat
+}
+
+B = {111}
+C = {222}

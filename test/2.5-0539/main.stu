@@ -1,0 +1,8 @@
+# On execution, list.C and list.D already exist.
+
+A:  -p list.(C D) {
+	cat list.C list.D >A
+}
+
+list.C { exit 1 ; }
+list.D { exit 1 ; }

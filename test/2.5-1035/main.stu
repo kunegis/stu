@@ -1,0 +1,25 @@
+# 'A' must contain eight lines with the texts "bbb" to "iii"
+
+A:   [list.[list.[X]]]
+{
+	cat B C D E F G H I >A
+}
+
+X = { 1 2 }
+
+list.1 = { 3 4 }
+list.2 = { 5 6 }
+
+list.3 = { B C }
+list.4 = { D E }
+list.5 = { F G }
+list.6 = { H I }
+
+B = {bbb}
+C = {ccc}
+D = {ddd}
+E = {eee}
+F = {fff}
+G = {ggg}
+H = {hhh}
+I = {iii}

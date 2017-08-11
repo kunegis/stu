@@ -1,0 +1,2 @@
+main.stu:6:1: rule for transient target @x must not have a command
+main.stu:5:5: when used as dynamic dependency of [@x]

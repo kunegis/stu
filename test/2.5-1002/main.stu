@@ -1,0 +1,3 @@
+# Error:  cannot concatenate a variable 
+A:  B($[C]) { touch A ; }
+$x { touch "$x" ; }

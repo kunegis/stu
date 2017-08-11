@@ -1,0 +1,18 @@
+#! /bin/sh
+
+rm -f ? list.* || exit 2
+
+../../stu.test -j 010 >list.out 2>list.err &
+pid="$!"
+
+sleep 3 || exit 2
+
+[ -e A ] || {
+	kill -9 "$pid"
+	echo >&2 "*** Expected Stu to be done"
+	exit 2
+}
+
+wait "$pid"
+
+exit 0

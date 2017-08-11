@@ -1,0 +1,5 @@
+# Error:  no rule to build 'XYZ'.  The trace is on the 'X', not on the
+# opening parenthesis.  This is consistent with the trace on a single
+# '(X)' being on the 'X'. 
+
+A:  (X)((Y)(Z));

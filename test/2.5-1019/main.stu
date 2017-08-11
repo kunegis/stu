@@ -1,0 +1,5 @@
+# Concatenate two empty lists, giving the empty list
+A:  ()() { touch A ; }
+$x { exit 1 ; }
+
+

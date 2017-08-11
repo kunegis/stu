@@ -1,0 +1,16 @@
+# Concatenation
+
+A:  list.[list.names]
+{
+	cat list.1 list.2 list.3 >A
+	[ "$(echo $(wc -l <A))" = 3 ] || {
+		cat A
+		exit 1
+	}
+	grep -qF one A || exit 1
+	exit 0
+}
+
+list.names = { 1 2 3 }
+
+list.$n = { one }

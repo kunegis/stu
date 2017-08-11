@@ -1,3 +1,3 @@
-main.stu:4:6: declaration of persistent dependency with '-p'
-main.stu:4:15: clashes with declaration of optional dependency with '-o'
-main.stu:4:17: in declaration of dependency 'C'
+main.stu:4:6: declaration of persistent dependency using '-p'
+main.stu:4:15: clashes with declaration of optional dependency using '-o'
+main.stu:4:17: in declaration of 'C', needed by 'A'

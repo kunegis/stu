@@ -1,0 +1,8 @@
+X:1:4: 'F' cannot be declared as optional
+X:1:2: using '-o'
+main.stu:5:4: in concatenation to 'list.'
+X:1:10: 'G' cannot be declared as optional
+X:1:8: using '-o'
+main.stu:5:4: in concatenation to 'list.'
+main.stu:5:4: list.[X] is needed by 'A'
+../../stu.test: Targets not up to date because of errors

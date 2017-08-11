@@ -1,0 +1,4 @@
+A:  [-o [B]]  [[B]] { cp D A ; }
+B = {C}
+C = {D}
+D = {correct}

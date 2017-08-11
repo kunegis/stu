@@ -1,0 +1,4 @@
+# This works:  the -t option does not preclude @x being a non-transitive transient. 
+A:  -t @x { cp B A ; }
+@x C:  B  { touch C ; }
+B { touch B ; }

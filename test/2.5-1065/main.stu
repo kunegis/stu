@@ -1,0 +1,22 @@
+A:  [[X][Y]][Z]
+{
+	cat list.x1a3 list.x1a4 list.x1b3 list.x1b4 list.x2a3 list.x2a4 list.x2b3 list.x2b4 >A
+}
+
+X = { list.1 list.2 }
+Y = { a b }
+Z = { 3 4 }
+
+list.1a = { list.x1a }
+list.1b = { list.x1b }
+list.2a = { list.x2a }
+list.2b = { list.x2b }
+
+list.x1a3 = { zzz }
+list.x1a4 = { yyy }
+list.x1b3 = { xxx }
+list.x1b4 = { www }
+list.x2a3 = { vvv }
+list.x2a4 = { uuu }
+list.x2b3 = { ttt }
+list.x2b4 = { sss }

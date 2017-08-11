@@ -1,0 +1,10 @@
+A:   list.[X]
+{
+	cat list.aa list.bb list.cc >A
+}
+
+X = { aa bb cc }
+
+list.aa = {111}
+list.bb = {222}
+list.cc = {333}

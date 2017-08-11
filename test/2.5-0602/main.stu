@@ -1,0 +1,10 @@
+# Because @x is a "side-transient" and not a real transient, it does not
+# act transitively.  Instead, this is an error:  non-transitive
+# transients cannot be used in dynamic dependencies. 
+
+# Check that the error trace is OK
+
+A: [@x] { cp D A ; }
+B @x: C { echo bbb >B ; }
+C { echo D >C ; }
+D { echo correct >D ; }

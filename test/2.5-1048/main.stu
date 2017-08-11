@@ -1,0 +1,9 @@
+A:  list.[B]
+{
+	cat list.1 list.2 >A
+}
+
+B = {1 2}
+
+list.1 = {111}
+list.2 = {222}

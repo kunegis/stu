@@ -1,0 +1,16 @@
+A:  [B]  [-n B]
+{
+	cat list.W X list.Y Z list.'W X' list.'Y Z' >A
+}
+
+>B {
+	echo list.W X
+	echo list.Y Z
+}
+
+list.W = {www}
+X = {xxx}
+list.Y = {yyy}
+Z = {zzz}
+'list.W X' = {wxwxwx}
+'list.Y Z' = {yzyzyz}

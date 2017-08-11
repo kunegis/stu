@@ -1,0 +1,9 @@
+A:  list.[(((((((((X)))))))))]
+{
+	cat list.F list.G list.H >A
+}
+
+X = { F G H }
+
+>list.$x { echo "$x$x$x" ; }
+

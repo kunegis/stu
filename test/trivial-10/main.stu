@@ -1,7 +1,18 @@
+# Both C and D are built.  In particular, C is built even though
+# building D already builds A.  This is because the command for A is
+# executed, and therefore C must be built.  The fact that the file A is
+# not built by A's command but by D's command is irrelevant. 
 
-A:  -t B 
-{
-	cp B A
+A: -t C D {
+	[ -r A ] || exit 1
+	[ -r C ] || exit 1 
 }
 
->B { echo correct }
+D {
+	touch D
+	touch A
+}
+
+C { 
+	touch C
+}

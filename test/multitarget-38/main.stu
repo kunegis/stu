@@ -1,4 +1,4 @@
-# Dynamic multiple transient
+# Error 
 
 A: [@x] { cp D A }
 B @x: C { echo Building B ; touch B ; }

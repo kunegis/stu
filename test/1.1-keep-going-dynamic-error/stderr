@@ -1,0 +1,4 @@
+B:1:3: dynamic dependency [B] must not contain parametrized dependencies
+main.stu:8:1: 'B' is declared here
+main.stu:4:5: [B] is needed by 'A'
+../../stu.test: Targets not up to date because of errors

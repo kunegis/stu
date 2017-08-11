@@ -1,0 +1,21 @@
+#! /bin/sh
+
+rm -f ? list.* || exit 1
+
+../../stu.test
+exitstatus="$?"
+
+[ "$exitstatus" = 0 ] || exit 1
+
+sleep 2 || exit 1
+
+touch list.Y || exit 1
+
+../../stu.test >list.out
+exitstatus="$?"
+
+[ "$exitstatus" = 0 ] || exit 1
+
+grep -q -F 'Targets are up to date' list.out || exit 1
+
+exit 0

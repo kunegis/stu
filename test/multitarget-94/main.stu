@@ -1,8 +1,9 @@
-# Error:  the target 'V' existed when it was checked, but does not exist
-# anymore when $V is loaded. 
+# Not an error:  the content of 'V' is read immediately after 'V' is
+# built, and the fact the 'V' is remove by the command for 'C' is not
+# noticed by Stu. 
 
 A: B $[V] C { 
-	touch A
+	echo "$V" >A
 }
 
 B: V {
@@ -15,5 +16,6 @@ C {
 }
 
 X V {
-	touch X V
+	touch X 
+	echo correct >V
 }

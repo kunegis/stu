@@ -1,0 +1,7 @@
+>B: sleep 2 ; echo list. ;
+Creating C: ' 1 2 3 '
+>list.1 n=1: echo "$n" ;
+>list.2 n=2: echo "$n" ;
+>list.3 n=3: echo "$n" ;
+cat list.1 list.2 list.3 >A
+Build successful

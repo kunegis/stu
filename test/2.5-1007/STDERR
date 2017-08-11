@@ -1,0 +1,2 @@
+main.stu:3:5: no rule to build @list.XY, needed by 'B'
+main.stu:2:4: 'B' is needed by 'A'

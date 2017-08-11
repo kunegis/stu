@@ -1,0 +1,4 @@
+A: @x { cp B A ; }
+@x: B $[V]; 
+B = {correct}
+V = {vvv}

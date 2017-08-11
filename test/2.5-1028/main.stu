@@ -1,0 +1,10 @@
+A:   [X]Y 
+{
+	cat list.a.Y list.b.Y list.c.Y >A
+}
+
+X = { list.a. list.b. list.c. }
+
+list.a.Y = {111}
+list.b.Y = {222}
+list.c.Y = {333}

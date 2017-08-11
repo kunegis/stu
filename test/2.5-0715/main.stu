@@ -1,0 +1,4 @@
+# Check the exact debug output for missing flags or duplicate edges 
+A:   [B] { cp C A ; }
+B = { C }
+C = {correct}

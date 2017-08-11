@@ -1,0 +1,15 @@
+# Error: Ultimately equivalent to '$[-o X]', which is not allowed.
+# (Optional variables are not allowed.)  
+
+A: -o [B] { 
+	touch A
+}  
+
+>B { 
+	echo '$[X]' 
+}  
+
+X { 
+	# Not called 
+	exit 1
+}

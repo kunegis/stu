@@ -1,0 +1,15 @@
+#! /bin/sh
+
+rm -f ? list.* || exit 1
+
+touch list.C list.D || exit 1
+
+../../stu.test >list.out 2>list.err
+exitstatus="$?"
+
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Expected exit status 0, got $exitstatus"
+	exit 1
+}
+
+exit 0

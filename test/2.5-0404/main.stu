@@ -1,0 +1,8 @@
+# Check the traces 
+A:   [[[[B]]]] { cp F A ; }
+B = { C }
+C = { D }
+D = { E }
+E = { F }
+F: X { touch X ; }
+

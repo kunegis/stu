@@ -1,0 +1,6 @@
+# Error.  Make sure that the trace is on 'out/XXXsdhsd'. 
+
+A:  $[adj = out/XXXsdhsd]
+{
+	touch A
+}

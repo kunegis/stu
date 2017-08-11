@@ -1,0 +1,12 @@
+# Run with -j2:    Must start both B and C before waiting. 
+
+>A: B C { cat B C ; }
+
+B { 
+	touch B 
+}
+
+C { 
+	sleep 1
+	touch C 
+}

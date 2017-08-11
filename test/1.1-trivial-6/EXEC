@@ -1,0 +1,21 @@
+#! /bin/sh
+
+rm -f ? || exit 2
+touch A || exit 2
+
+../../stu.test 
+exitstatus="$?"
+
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Expected exit status 0, got $exitstatus"
+	exit 2
+}
+
+for file in B D I ; do
+	[ -e "$file" ] || {
+		echo >&2 "*** Expected file '$file' to exist"
+		exit 2
+	}
+done
+
+exit 0

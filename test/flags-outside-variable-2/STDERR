@@ -1,0 +1,2 @@
+main.stu:3:10: variable dependency $[B] must not be declared as optional dependency
+main.stu:3:6: using '-o'

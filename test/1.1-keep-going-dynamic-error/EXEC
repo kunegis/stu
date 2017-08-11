@@ -1,0 +1,31 @@
+#! /bin/sh
+
+rm -f ? list.* || exit 2
+
+../../stu.test -k >list.out 2>list.err
+statuscode="$?"
+
+[ "$statuscode" = 2 ] || {
+	echo >&2 '*** Status code'
+	exit 2
+}
+
+diff list.out stdout || {
+	echo >&2 '*** stdout'
+	exit 2
+}
+
+diff list.err stderr || {
+	echo >&2 '*** stderr'
+	exit 2
+}
+
+[ -r Y ] || {
+	echo >&2 "*** File 'Y' must exist after execution of Stu"
+	exit 2
+}
+
+
+rm -f ? list.* || exit 2
+
+exit 0

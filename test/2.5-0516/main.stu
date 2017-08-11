@@ -1,0 +1,4 @@
+A:  (list.)((Y)(Z)) { cp list.YZ A ; }
+list.YZ { echo correct >list.YZ ; }
+
+

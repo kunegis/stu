@@ -1,0 +1,9 @@
+# Copy source filename ends in slash, but only after expansion -- don't
+# interpret as directory.  The copy must thus fail because a directory
+# cannot be copied.
+
+A:  list.X/y { cp list.X/y ; }
+
+list.${x}y = list.${x};
+
+list.${x}:  { mkdir -p list."${x}" ; }

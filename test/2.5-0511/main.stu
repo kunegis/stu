@@ -1,0 +1,6 @@
+# Make sure -o is not ignored 
+A:  -o(B)(C)
+{
+	touch A ; 
+}
+

@@ -1,0 +1,11 @@
+A: [B] { touch A ; }
+B { printf '%s\n' '-o C' >B ; }
+C { exit 1 ; }
+
+#
+#       A
+#       |
+#      [B]
+#      / \
+#     B   C
+#

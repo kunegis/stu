@@ -1,5 +1,5 @@
 #
-# This is the input fiel to Automake. 
+# This is the input file to Automake. 
 #
 
 AUTOMAKE_OPTIONS = foreign
@@ -10,4 +10,3 @@ bin_PROGRAMS = stu
 stu_SOURCES = stu.cc
 
 man_MANS = stu.1
-

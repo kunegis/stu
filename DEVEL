@@ -9,11 +9,11 @@ This is information for working on Stu.
 Stu uses the GNU Auto* tools.  For development, use "make -f
 Makefile.devel".  Yes, the GNU Auto* tools lose on many grounds, and it
 would be *much* nicer to use Stu instead, but obviously Stu should be
-compilable without Stu. 
+compilable without Stu.
 
 Before pushing changes to Github:
 * Increment the version number in VERSION
-* Run make -f Makefile.devel successfully
+* Run 'make -f Makefile.devel' successfully
 
 Version logic (see 'NEWS' for an explanation of version numbers): 
 * Increment the patch version number for any changes
@@ -26,16 +26,17 @@ Version logic (see 'NEWS' for an explanation of version numbers):
 
 Unit testing is described in 'sh/mktest'. 
 
-To run the unit tests, do 'make -f Makefile.devel'.  It takes about five
-minutes in all.   
+To compile everything and run all unit tests, do 'make -f
+Makefile.devel'.  It takes about five minutes in all.   
 
-The unit tests have additional requirements on the system: 
+The unit tests have additional requirements on the system than just
+compiling Stu:   
 
 * The unit tests assume that the file system supports UTF-8 filenames.
   Stu will work without such a file system, but you can't run the unit
   tests unless you remove the one offending test (test/unicode/).  
-* You need to install "expect", "autoconf". 
+* You need to install the packages 'expect' and 'autoconf'.  On some
+  systems, also 'tclsh'.  (Exact packages vary by operating system.)
 
 If you run the tests and they fail, report that to Jérôme Kunegis
 <kunegis@gmail.com>.     
-

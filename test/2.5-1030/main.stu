@@ -1,0 +1,19 @@
+A:   [X][Y] 
+{
+	cat list.a.x list.a.y list.a.z list.b.x list.b.y list.b.z list.c.x list.c.y list.c.z >A
+}
+
+X = { list.a. list.b. list.c. }
+Y = { x y z }
+
+list.a.x = {111}
+list.a.y = {222}
+list.a.z = {333}
+
+list.b.x = {444}
+list.b.y = {555}
+list.b.z = {666}
+
+list.c.x = {777}
+list.c.y = {888}
+list.c.z = {999}

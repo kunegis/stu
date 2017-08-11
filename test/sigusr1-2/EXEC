@@ -1,0 +1,61 @@
+#! /bin/sh
+
+rm -f ? list.* || exit 1
+
+echo '../../stu.test -j1000 &'
+../../stu.test -j1000 >list.out 2>list.err &
+pid="$!"
+
+# Wait until a first line has been written
+begin="$(date +%s)"
+while [ \! -s list.out ] ; do 
+	now="$(date +%s)"
+	if [ "$now" -gt "$((begin + 2))" ] ; then
+		echo >&2 '*** No output written in first 2 seconds'
+		break
+	fi
+done 
+
+echo "kill -s USR1 $pid"
+kill -s USR1 "$pid" || {
+	echo >&2 '*** Kill'
+	exit 1
+}
+
+echo sleep 1
+sleep 1 || exit 1
+echo done sleeping
+
+count="$(echo $(ps -fA | grep 7463194 | grep -v grep | wc -l))"
+echo "count=$count"
+if [ "$count"  = 0 ]; then
+	echo >&2 "$0: *** Stu must still be running"
+	echo >&2 stdout:
+	echo >&2 ____
+	cat >&2 list.out
+	echo >&2 ___
+	echo >&2 stderr:
+	echo >&2 ____
+	cat >&2 list.err
+	echo >&2 ___
+	exit 1
+fi
+
+grep -qE '^STATISTICS  ' list.out || {
+	echo >&2 '*** STATISTICS'
+	exit 1
+}
+
+kill -INT "$pid" || {
+    echo >&2 "*** Error killing PID '$pid'"
+    exit 1
+}
+
+sleep 1 || exit 1
+
+if [ "$(echo $(ps -fA | grep 7463194 | grep -v grep | wc -l))" \!= 0 ]; then
+	echo >&2 "$0: *** Stu is still running"
+	exit 1
+fi
+
+exit 0

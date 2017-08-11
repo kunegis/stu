@@ -1,0 +1,11 @@
+A: -o [B] { touch A ; }
+B { echo C >B ; }
+C { exit 1 ; }
+
+#
+#          A
+#          |
+#         [B]
+#         / \
+#        B   C
+#

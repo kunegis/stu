@@ -1,0 +1,75 @@
+#! /bin/sh
+
+rm -f ? list.* || exit 1
+
+# Use the silent option (-s) to avoid false positives, i.e., that the
+# greps find the string '@x' erroneously. 
+../../stu.test -s -j6 >list.out 2>list.err &
+pid="$!"
+
+sleep 1
+
+kill -s USR1 "$pid" || {
+	echo >&2 '*** Kill'
+	exit 1
+}
+
+wait "$pid" || {
+	echo >&2 '*** Wait'
+	exit 1
+}
+
+grep -qE '^STATISTICS  ' list.out || {
+	echo >&2 '*** Output A'
+	exit 1
+}
+
+grep -qF '(2 succeeded, 0 failed, 6 running)' list.out || {
+	echo >&2 '*** Output B'
+	echo >&2 stdout:
+	echo >&2 ________________
+	cat  >&2 list.out
+	echo >&2 ________________
+	exit 1
+}
+
+grep -qF " list.M" list.out || {
+	echo >&2 '*** Output list.M (1)'
+	echo >&2 stdout:
+	echo >&2 ________________
+	cat  >&2 list.out
+	echo >&2 ________________
+	exit 1
+}
+
+grep -qF " 'list.File 123'" list.out || {
+	echo >&2 '*** Output list.File 123 (1)'
+	echo >&2 stdout:
+	echo >&2 ________________
+	cat  >&2 list.out
+	echo >&2 ________________
+	exit 1
+}
+
+grep -qF " @x" list.out || {
+	echo >&2 '*** Output @x (2)'
+	echo >&2 stdout:
+	echo >&2 ____
+	cat >&2 list.out
+	echo >&2 ____
+	exit 1
+}
+
+[ -r list.err ] && [ ! -s list.err ] || {
+	echo >&2 '*** Error output'
+	exit 1
+}
+
+echo list.out:
+echo __________
+cat list.out
+echo __________
+
+rm -f ? list.* || exit 1
+
+exit 0

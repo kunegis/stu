@@ -1,0 +1,12 @@
+A:  [X][Y]
+{
+	cat list.1 list.2 A.1 A.2 >A
+}
+
+X = { list. A. }
+Y = { 1 2 }
+
+list.1 = {aaa}
+list.2 = {bbb}
+A.1    = {ccc}
+A.2    = {ddd}

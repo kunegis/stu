@@ -1,0 +1,4 @@
+X:1:4: 'F' cannot be declared as optional
+X:1:2: using '-o'
+main.stu:2:4: in concatenation to 'list.'
+main.stu:2:4: list.[X] is needed by 'A'

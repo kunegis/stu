@@ -1,0 +1,6 @@
+# Check that the error message is correct
+A: [[[B]]] { touch A ; }
+>B { echo C }
+>C { echo D }
+>D { echo E }
+E: X { touch E }

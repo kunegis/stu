@@ -21,8 +21,8 @@ if ! grep -qF "B1:1:4: expected a dependency" list.err ; then
     exit 1
 fi
 
-if grep -qF "Targets not rebuilt because of errors" list.err ; then
-    echo >&2 "*** containing '*** Targets not rebuilt because of errors' in error output"
+if grep -qF "Targets not up to date because of errors" list.err ; then
+    echo >&2 "*** containing '*** Targets not up to date because of errors' in error output"
     exit 1
 fi
 
@@ -45,8 +45,8 @@ if ! grep -qF "B1:1:4: expected a dependency" list.err ; then
     exit 1
 fi
 
-if ! grep -qF "Targets not rebuilt because of errors" list.err ; then
-    echo >&2 "*** not containing '*** Targets not rebuilt because of errors' in error output"
+if ! grep -qF "Targets not up to date because of errors" list.err ; then
+    echo >&2 "*** not containing '*** Targets not up to date because of errors' in error output"
     exit 1
 fi
 

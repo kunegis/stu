@@ -1,10 +1,10 @@
 #
-# Each line in this file is one test. Empty lines and comment lines are
-# ignored. 
+# Each line in this file is one test.  Empty lines and comment lines are
+# ignored.
 #
 # Rule: B is an existence-only dependency; C is an optional dependency;
-# D/E are normal dependencies. Lines that include 'B', 'C', 'D' or 'E'
-# as dynamic dependencies must also provide a rule for 'X'. 
+# D/E are normal dependencies.  Lines that include 'B', 'C', 'D' or 'E'
+# as dynamic dependencies also provide a rule for 'X'.
 #
 
 A: -p B -o C D E {touch A} B{touch B} C{touch C} D{touch D} E{touch E}

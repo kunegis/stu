@@ -1,0 +1,7 @@
+# This fails because there is no rule for 'D', but with the -k option,
+# 'E' is still built. 
+A: [[B]] { touch A ; }
+B = { C D }
+C = { E }
+E = { echo eee >E ; }
+

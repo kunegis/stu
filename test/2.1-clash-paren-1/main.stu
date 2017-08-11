@@ -1,0 +1,3 @@
+A:  -p (-o ( -o (B)) ) { touch A ; }
+
+B { touch B ; }

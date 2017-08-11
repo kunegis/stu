@@ -1,0 +1,6 @@
+A:   [[[[B]]]] { cp F A ; }
+B = { C }
+C = { D }
+D = { E }
+E = { F }
+F = {correct}

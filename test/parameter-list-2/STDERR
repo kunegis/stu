@@ -1,0 +1,2 @@
+main.stu:3:11: parameter $name must not appear in dependency '${name}'
+main.stu:3:1: because it does not appear in target 'A'

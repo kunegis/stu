@@ -1,0 +1,13 @@
+# All six list.* files are built. 
+
+A: @all
+{
+	cat list.a1 list.a2 list.a3 list.b1 list.b2 list.b3 >A
+}
+
+@all:  X Y;
+X:  list.a[[M]] { touch X ; }
+Y:  list.b[[M]] { touch Y ; }
+M = { N }
+N = { 1 2 3 }
+list.$x = { xxx }

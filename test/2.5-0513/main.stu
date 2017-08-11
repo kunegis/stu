@@ -1,0 +1,1 @@
+A:  (A)(B);   # Error:  No rule for target 'AB'

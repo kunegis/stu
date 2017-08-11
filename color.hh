@@ -20,6 +20,7 @@
  *  0: reset
  *  1: bright/bold        (for names)
  * 31: red                (for errors)
+ * 32: green              (for success)
  * 35: magenta            (for warnings)
  *
  * Colors and styles look different in different terminals.  In
@@ -39,14 +40,15 @@
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
 class Color 
 {
 public:
 
+	static bool quotes, quotes_out; 
 	/* Whether single quotes have to be used.  Only set when color
 	 * is not used.  */   
-	static bool quotes, quotes_out; 
 
 	static const char *end;
 	static const char *error;
@@ -61,7 +63,7 @@ public:
 	static const char *out_print_word;
 
 	/* At least one of the following functions must be called before
-	 * any output.  */ 
+	 * any output is written.  */ 
 
 	static void set(); 
 	static void set(bool enable_color); 

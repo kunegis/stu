@@ -10,10 +10,10 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 
+void job_terminate_all(); 
 /* Called to terminate all running processes, and remove their target
  * files if present.  Implemented in execution.hh, and called from
  * here. */
-void job_terminate_all(); 
 
 void job_print_jobs(); 
 
@@ -29,19 +29,20 @@ void job_print_jobs();
 		(void)r_write_safe; \
 	} while(0)
 
+class Job
 /*
  * A job is a child process of Stu that executes the command for a given
  * rule.  An object of this type can execute a job only once.
  */ 
-class Job
 {
 public:
+
 	Job():  pid(-2) { }
 
-	/* Call after having returned this process from wait_do(). 
+	bool waited(int status, pid_t pid_check);
+	/* Called after having returned this process from wait_do().
 	 * Return TRUE if the child was successful.  The PID is passed
 	 * to verify that it is the correct one.  */
-	bool waited(int status, pid_t pid_check);
 
 	bool started() const {
 		return pid >= 0;
@@ -57,6 +58,11 @@ public:
 		return pid;
 	}
 
+	pid_t start(string command, 
+		    const map <string, string> &mapping,
+		    string filename_output,
+		    string filename_input,
+		    const Place &place_command); 
 	/* Start the process.  Don't output the command -- this is done
 	 * by callers of this functions.  FILENAME_OUTPUT and
 	 * FILENAME_INPUT are the files into which to redirect output
@@ -64,36 +70,33 @@ public:
 	 * error, output a message and return -1, otherwise return the
 	 * PID (>= 0).  MAPPING contains the environment variables to
 	 * set.  */
-	pid_t start(string command, 
-		    const map <string, string> &mapping,
-		    string filename_output,
-		    string filename_input,
-		    const Place &place_command); 
 
+	pid_t start_copy(string target, string source);
 	/* Start a copy job.  The return value has the same semantics as
 	 * in start().  */  
-	pid_t start_copy(string target, string source);
 
+	static pid_t wait(int *status);
 	/* Wait for the next process to terminate; provide the STATUS as
 	 * used in wait(2).  Return the PID of the waited-for process (>=0). */  
-	static pid_t wait(int *status);
 
+	static void print_statistics(bool allow_unterminated_jobs= false); 
 	/* Print the statistics about jobs, regardless of OPTION_STATISTICS.  If
 	 * the argument is set, there must not be unterminated jobs.  */ 
-	static void print_statistics(bool allow_unterminated_jobs= false); 
 
-	/* Kill this job */
 	static void kill(pid_t pid); 
+	/* Kill this job */
 
 	static void init_tty(); 
 
 	static pid_t get_tty()  {  return tty;  }
 	
-	/* Block interrupt signals for the lifetime of an object of this
+	class Signal_Blocker
+	/* 
+	 * Block interrupt signals for the lifetime of an object of this
 	 * type.  Note that the mask of blocked signals is inherited
 	 * over exec(), so we must unblock signals also when starting
-	 * child processes.  */
-	class Signal_Blocker
+	 * child processes.  
+	 */
 	{
 	private:
 #ifndef NDEBUG
@@ -106,6 +109,8 @@ public:
 	};
 
 private:
+
+	pid_t pid;
 	/*
 	 * -2:    process was not yet started.
 	 * >= 0:  process was started but not yet waited for (just called
@@ -113,11 +118,11 @@ private:
 	 * 	  i.e., a zombie.
 	 * -1:    process has been waited for. 
 	 */
-	pid_t pid;
 
 	static void handler_termination(int sig);
 	static void handler_productive(int sig, siginfo_t *, void *);
 
+	static unsigned count_jobs_exec, count_jobs_success, count_jobs_fail;
 	/* 
 	 * The number of jobs run.  Each job is/was of exactly one
 	 * type. 
@@ -126,23 +131,22 @@ private:
 	 * Success:  Finished, with success
 	 * Fail:     Finished, without success
 	 */
-	static unsigned count_jobs_exec, count_jobs_success, count_jobs_fail;
 
+	static sigset_t set_termination, set_productive;
 	/* All signals handled specially by Stu are either in the
 	 * "termination" or in the "productive" set. */ 
-	static sigset_t set_termination, set_productive;
 
+	static sig_atomic_t in_child; 
 	/* Set to 1 in the child process, before execve() is called.
 	 * Used to avoid doing too much in the terminating signal
 	 * handler.  Note: There is a race condition because the signal
 	 * handler may be called before the variable is set.  */
-	static sig_atomic_t in_child; 
 
-	/* The job that is in the foreground, or -1 when none is */ 
 	static pid_t foreground_pid;
+	/* The job that is in the foreground, or -1 when none is */ 
 	
-	/* The file descriptor of the TTY used by Stu.  -1 if there is none. */
 	static int tty;
+	/* The file descriptor of the TTY used by Stu.  -1 if there is none. */
 
 	/* Class with one static object whose contructor executes on
 	 * startup to setup signals. */ 
@@ -181,16 +185,17 @@ pid_t Job::start(string command,
 	assert(pid == -2); 
 
 	/* Like Make, we don't use the variable $SHELL, but use
-	 * "/bin/sh" as a shell instead.  Note that the variable $SHELL
-	 * is intended to denote the user's chosen interactive shell,
-	 * and may not be a POSIX-compatible shell.  Note also that
-	 * POSIX prescribes that Make use "/bin/sh" by default.  Other
-	 * note: Make allows to declare the Make variable $SHELL within
-	 * the Makefile or in Make's parameters to a value that *will*
-	 * be used by Make instead of /bin/sh.  This is not possible
-	 * with Stu, because Stu does not have its own set of variables.
-	 * Instead, there is the $STU_SHELL variable.  The proper way to
-	 * do it in Stu would be via a directive.  */
+	 * "/bin/sh" as a shell instead.  The reason is that the
+	 * variable $SHELL is intended to denote the user's chosen
+	 * interactive shell, and may not be a POSIX-compatible shell.
+	 * Note also that POSIX prescribes that Make use "/bin/sh" by
+	 * default.  Other note: Make allows to declare the Make
+	 * variable $SHELL within the Makefile or in Make's parameters
+	 * to a value that *will* be used by Make instead of /bin/sh.
+	 * This is not possible with Stu, because Stu does not have its
+	 * own set of variables.  Instead, there is the $STU_SHELL
+	 * variable.  The Stu-native way to do it without environment
+	 * variables would be via a directive.  */
 	static const char *shell= nullptr;
 	if (shell == nullptr) {
 		shell= getenv("STU_SHELL");
@@ -222,7 +227,7 @@ pid_t Job::start(string command,
 		/* This should only fail when we are the parent and the
 		 * child has already quit.  In that case we can ignore
 		 * the error, since the child is dead anyway, so there
-		 * is no need to kill it in the future */ 
+		 * is no need to kill it in the future.  */ 
 	}
 
 	if (pid == 0) {
@@ -248,8 +253,9 @@ pid_t Job::start(string command,
 		/* Set variables */ 
 		size_t v_old= 0;
 
-		/* Index of old variables */ 
 		map <string, int> old;
+		/* Index of old variables */ 
+
 		while (envp_global[v_old]) {
 			const char *p= envp_global[v_old];
 			const char *q= p;
@@ -259,8 +265,8 @@ pid_t Job::start(string command,
 			++v_old;
 		}
 
-		/* Maximal size of added variables.  The "+1" is for $STU_STATUS */ 
 		const size_t v_new= mapping.size() + 1; 
+		/* Maximal size of added variables.  The "+1" is for $STU_STATUS */ 
 
 		const char** envp= (const char **)
 			alloca(sizeof(char **) * (v_old + v_new + 1));
@@ -344,7 +350,7 @@ pid_t Job::start(string command,
 		if (filename_output != "") {
 			int fd_output= creat
 				(filename_output.c_str(), 
-				 /* all +rw, i.e. 0666 */
+				 /* All +rw, i.e. 0666 */
 				 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH); 
 			if (fd_output < 0) {
 				perror(filename_output.c_str());
@@ -406,8 +412,8 @@ pid_t Job::start(string command,
 	return pid; 
 }
 
-/* This function works analogously like start() with respect to
- * invocation of fork() and other system-related functions.  */
+/* This function works analogously to start() with respect to invocation
+ * of fork() and other system-related functions.  */
 pid_t Job::start_copy(string target,
 		      string source)
 {
@@ -454,7 +460,7 @@ pid_t Job::start_copy(string target,
 		int r= execv(cp_command, (char *const *) argv); 
 
 		assert(r == -1); 
-		perror("execve");
+		perror("execv");
 		_Exit(127); 
 	}
 
@@ -466,6 +472,7 @@ pid_t Job::start_copy(string target,
 }
 
 
+pid_t Job::wait(int *status)
 /* 
  * The main loop of Stu.  We wait for the two productive signals SIGCHLD
  * and SIGUSR1. 
@@ -473,7 +480,6 @@ pid_t Job::start_copy(string target,
  * When this function is called, there is always at least one child
  * process running. 
  */
-pid_t Job::wait(int *status)
 {
  begin: 	
 	/* First, try wait() without blocking.  WUNTRACED is used to
@@ -482,8 +488,9 @@ pid_t Job::wait(int *status)
 	pid_t pid= waitpid(-1, status, WNOHANG | WUNTRACED);
 	if (pid < 0) {
 		/* Should not happen as there is always something
-		 * running when this function is called.  However, this may be
-		 * common enough that we may want Stu to act correctly. */ 
+		 * running when this function is called.  However, this
+		 * may be common enough that we may want Stu to act
+		 * correctly.  */ 
 		assert(false); 
 		perror("waitpid"); 
 		abort(); 
@@ -525,11 +532,11 @@ pid_t Job::wait(int *status)
 		return pid;
 	}
 
-	/* Any SIGCHLD sent after the last call to sigwaitinfo() will be
+	/* Any SIGCHLD sent after the last call to sigwait() will be
 	 * ready for receiving, even those SIGCHLD signals received
 	 * between the last call to waitpid() and the following call to
-	 * sigwaitinfo().  This excludes a deadlock which would be
-	 * possible if we would only use sigwaitinfo(). */
+	 * sigwait().  This excludes a deadlock which would be
+	 * possible if we would only use sigwait(). */
 
 	int sig;
 	int r;
@@ -542,8 +549,7 @@ pid_t Job::wait(int *status)
 			/* This should not happen, but be prepared */
 			goto retry;
 		} else {
-			assert(false);
-			perror("sigwaitinfo");
+			perror("sigwait");
 			abort(); 
 		}
 	}
@@ -607,7 +613,7 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 	int r= getrusage(RUSAGE_CHILDREN, &usage);
 	if (r < 0) {
 		print_error_system("getrusage");
-		throw ERROR_FATAL; 
+		throw ERROR_BUILD; 
 	}
 
 	if (! allow_unterminated_jobs)
@@ -633,10 +639,10 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 	printf("STATISTICS  Note: children execution times exclude running jobs\n"); 
 }
 
+void Job::handler_termination(int sig)
 /* 
  * The termination signal handler -- terminate all processes and quit. 
  */
-void Job::handler_termination(int sig)
 {
 	/* We can use only async signal-safe functions here */
 
@@ -659,10 +665,10 @@ void Job::handler_termination(int sig)
 		assert(Job::in_child == 1);
 	}
 
-	/* We cannot call Job::Statsitics::print() here because
+	/* We cannot call Job::Statistics::print() here because
 	 * getrusage() is not async signal safe, and because the count_*
 	 * variables are not atomic.  Not even functions like fputs()
-	 * are async signal-safe, so don't even try. */
+	 * are async signal-safe, so don't even try.  */
 
 	/* Raise signal again */ 
 	int rr= raise(sig);
@@ -674,13 +680,13 @@ void Job::handler_termination(int sig)
 	 * delivered after this handler is done. */ 
 }
 
+void Job::handler_productive(int, siginfo_t *, void *)
 /* 
  * Do nothing -- the handler only exists because POSIX says that a
  * signal may be discarded by the kernel if doesn't have a signal
  * handler for it, and then it may not be possible to wait for that
  * signal.
  */  
-void Job::handler_productive(int, siginfo_t *, void *)
 {
 }
 
@@ -692,7 +698,7 @@ Job::Signal_Blocker::Signal_Blocker()
 #endif
 	if (0 != sigprocmask(SIG_BLOCK, &set_termination, nullptr)) {
 		perror("sigprocmask");
-		throw ERROR_FATAL;
+		exit(ERROR_FATAL); 
 	}
 }
 
@@ -704,10 +710,11 @@ Job::Signal_Blocker::~Signal_Blocker()
 #endif 
 	if (0 != sigprocmask(SIG_UNBLOCK, &set_termination, nullptr)) {
 		perror("sigprocmask");
-		throw ERROR_FATAL; 
+		exit(ERROR_FATAL); 
 	}
 }
 
+Job::Signal::Signal()
 /* 
  * This function is called once on Stu startup from a static
  * constructor, and sets up all signals.   
@@ -733,7 +740,6 @@ Job::Signal_Blocker::~Signal_Blocker()
  * no-op signal handler.  (Note that Linux does not discard such
  * signals, while FreeBSD does.)
  */  
-Job::Signal::Signal()
 {
 	/* 
 	 * Termination signals 
@@ -758,7 +764,7 @@ Job::Signal::Signal()
 		SIGILL, SIGHUP, 
 	};
 
-	for (unsigned i= 0;  
+	for (size_t i= 0;  
 	     i < sizeof(signals_termination) / sizeof(signals_termination[0]);  
 	     ++i) {
 		if (0 != sigaction(signals_termination[i], &act_termination, nullptr)) {
@@ -815,6 +821,7 @@ Job::Signal::Signal()
 		print_error_system("signal"); 
 }
 
+void Job::kill(pid_t pid)
 /* 
  * Passing (-pid) to kill() kills the whole process group with PGID
  * (pid).  Since we set each child process to have its PID as its
@@ -823,7 +830,6 @@ Job::Signal::Signal()
  * such as Stu and shells, which have to kill their children explicitly
  * in their signal handlers.
  */ 
-void Job::kill(pid_t pid)
 {
 	assert(pid > 1); 
 

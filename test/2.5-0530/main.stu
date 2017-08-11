@@ -1,0 +1,5 @@
+# Error, with place on the 'list.'.  
+A:  list.(C D)E { touch A ; }
+list.CE = {incorrect}
+# No rule for list.DE
+

@@ -1,0 +1,4 @@
+main.stu:1:12: 'C' cannot be declared as optional
+main.stu:1:10: using '-o'
+main.stu:1:6: in concatenation to 'B'
+main.stu:1:6: 'BC' is needed by 'A'

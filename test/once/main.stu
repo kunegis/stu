@@ -1,0 +1,15 @@
+# 'B' should be created only once, and not twice. 
+
+A:  B 
+{
+	# Executed just once
+	[ -e A ] && { exit 1 ; }
+	cp B A
+}
+
+B {
+	# Executed just once
+	[ -e B ] && { exit 1 ; }
+	echo correct >B
+}
+

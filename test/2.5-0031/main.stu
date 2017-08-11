@@ -1,0 +1,11 @@
+# Concatenation
+
+A:  ( li )( st.x )
+{
+	cp list.x A
+}
+
+list.x:
+{
+	echo correct >list.x
+}

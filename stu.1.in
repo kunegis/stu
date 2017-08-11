@@ -1,4 +1,4 @@
-.TH STU 1 "$DATE" "stu-$STU_VERSION" "University of Koblenz-Landau"
+.TH STU 1 "$DATE" "stu-$STU_VERSION" "University of Namur"
 .SH NAME
 stu \- Build automation
 .SH SYNOPSIS
@@ -13,25 +13,26 @@ stu \- Build automation
 .SH DESCRIPTION
 Stu is a tool for build automation.  Like Make, it is used to call other
 programs in 
-order to build files.  Stu has two features that set it apart from Make:
+order to build files.  Stu has three features that work in
+conjunction to allow contructs impossible to realize in Make: 
 (1) dynamic dependencies:  The dependencies of a target can be
 themselves computed by a command.  When '[FILENAME]' (a filename
 currounded by angle brackets) is used as a 
-dependency, Stu will build the file FILENAME and read dependencies from
-it.  (2) Parameters:  Names of files (and transient targets) can contain
+dependency, Stu will build the file FILENAME and read dependencies from it.  
+(2) Parameters:  Names of files (and transient targets) can contain
 parameters written using dollar syntax.  For example, a rule with a target
 filename 'list.$name' will be used to build any file matching the
 pattern 'list.*', and the parameter $name can be used in names of
 dependencies and in the build command.  Targets may contain any number
 of parameters. 
+(3) Concatenation:  Stu allows expressions such as list.[FILENAME] and
+list.(a b c) to construct a list of files following a certain patterns.
 
-In general, Stu is very much like Make:  Instead of a 'Makefile', one uses
-a file named 'main.stu', which is read by
-Stu. Also like Make, Stu will build the first target it finds, except if
-given an explicit target to built.   
-Stu is designed to follow the conventions of Make,
-of the shell, and of Unix and POSIX in general.  As an example,
-the options
+At its core, Stu is very much like Make: Instead of a 'Makefile', one
+uses a file named 'main.stu', which is read by Stu. Also like Make, Stu
+will build the first target it finds, except if given an explicit target
+to built.  Stu is designed to follow the conventions of Make, of the
+shell, and of Unix and POSIX in general.  As an example, the options
 .BR -f
 and
 .BR -k
@@ -56,7 +57,12 @@ without Stu syntax.
 .SH OPTIONS
 .IP "-0 FILENAME"
 Read targets from FILENAME, which must contain \\0-separated filenames.
-No Stu syntax is processed.   
+No Stu syntax is processed.  This option is also suitable in all cases
+where a file contains only the name of a single file, since filenames do
+not contain the \\0 character. 
+Using this option is equivalent to using the
+.BR "[-0 FILENAME]" 
+syntax.
 .IP -a
 Treat all trivial dependencies, which are declared with the
 .BR -t
@@ -76,7 +82,9 @@ supports full Stu syntax, while arguments supports only a reduced syntax
 .IP -d
 Debug mode.  Show internal information about the Stu algorithm on
 standard error output.  All printed output lines begin with the
-string 'DEBUG  ', i.e. the word DEBUG followed by two spaces. 
+string 'DEBUG  ', i.e. the word DEBUG followed by two spaces.  The
+output is otherwise not standardized and is subject to change, in
+particular with internal changes to the algorithms used. 
 .IP "-E"
 Explain error messages.  Only some error messages have explanations. 
 .IP "-f FILENAME"
@@ -98,7 +106,7 @@ Output a short help and exit.
 Interactive mode.  I.e., put the jobs run into the foreground.  Must not
 be used in conjunction with
 .B -j N
-when N > 1.  By default, jobs are run in the
+when N > 1.  Without this option, jobs are run in the
 background, meaning they can't read standard input, will not get any
 terminal signals, and pressing Ctrl-C will stop Stu as a whole.  Using
 this option, each job is run in the foreground, and therefore they can
@@ -115,8 +123,10 @@ suspend Stu itself.
 .BR -i
 does not work when Stu does not run in a terminal. 
 .IP "-j K"
-Run K jobs in parallel.  K must be a positive integer.  The default
-value is one, meaning that Stu does not start jobs in parallel.
+Run K jobs in parallel.  K must be a positive integer.  Without this
+option, jobs are not run in parallel, which is equivalent to using the 
+.BR "-j 1" 
+setting.
 When running jobs in parallel and the
 .BR -k
 option is not used, a single job that fails will make Stu abort all
@@ -150,13 +160,15 @@ partially built file being erroneously considered up to date.
 .IP "-m ORDER"
 Specify the order in which jobs are run.  When ORDER is 'dfs' (the default),
 Stu traverses the dependency graph in a depth-first fashion, in a way
-similar to Make. When ORDER is 'random', the order in which jobs are run
+similar to most Make implementations. When ORDER is 'random', the order in which jobs are run
 is randomized within each target.  
 .IP "-M STRING"
 Run jobs in pseudorandom order, seeded by the given string. 
 .IP "-n FILENAME"
 Read targets from FILENAME, which must contain newline-separated
-filenames.  No Stu syntax is processed. 
+filenames.  No Stu syntax is processed.  Using this option is equivalent to using the
+.BR "[-n FILENAME]" 
+syntax.
 .IP "-o FILENAME"
 Pass the given file as an optional dependency, i.e., build it only if it
 already exists and is out of date. 
@@ -172,8 +184,8 @@ format is not specified.
 .IP "-q"
 Question mode.  Do not execute any commands.  Instead, determine whether
 the given targets are up to date.  The exit status is 0 when all given
-targets (or the default target) are up to date, 1 when not, and 4 on
-errors. 
+targets (or the default target) are up to date, and 1 when not.  The
+exit code may still be 2 or 4 on encountering logical or fatal errors. 
 .IP "-s"
 Silent mode.  Suppress messages on standard output:  messages about
 which commands are run, a message when the build is successful, and a
@@ -319,7 +331,7 @@ dependencies.  Trivial dependencies are typically used for
 configuration, i.e., for the setting up configuration of application.
 Trivial dependencies are not allowed if the rule has no command. 
 
-    target:  -t input;
+    target:  -t input { ... }
 
 Variable dependency:  the content of variables can come from files.  
 In the following example, the C flags are stored in the file 'CFLAGS',
@@ -527,7 +539,8 @@ makes interpret the content of the file as a newline-separated
 list of filenames.  Analogously, the
 .BR -0
 flag can be used when the file
-contains \\0-separated filenames. 
+contains \\0-separated filenames, or when the file contains the name of
+exactly one file. 
 If no flag is used, the file is parsed in full Stu syntax. 
 
     '[' @NAME ']'  A dynamic transient target 
@@ -579,6 +592,24 @@ Both parentheses and brackets may be nested:
     ((A)) # Equivalent to A
     [[A]] # Read out dependencies from all files given in the file 'A'. 
 
+.SH "CONCATENATION"
+
+In certain circumstances, two dependencies that are not separated by
+spaces are said to be concatenated.  Concatenation takes place in the
+following cases:
+
+  A( A[ )A )( )[ ]A ]( ][
+
+In this list, 'A' stands for any literal name, including one contain
+parameters.  
+
+If two dependencies are concatenated, their concatenation is taken as
+the dependency.  Effectively this considers each side of the
+concatenation to be a list of names (after processing of dynamic
+dependencies), and replaces the concatenation by the combination of all
+names in the left groups concatenated textually with items in the right
+group. 
+
 .SH "PARAMETERS"
 
 Any file or transient target may include parameters.  Parameters are
@@ -598,15 +629,14 @@ character, as otherwise Stu
 would not be able to determine how to split up a chain of characters
 into two parameters.  Names of parameters cannot be empty.  
 
-A file or transient target name may match more than one rule.  If that
-is the case, then Stu will use the rule that dominates all other
-matching rules. 
-A rule A is defined to dominate another rule B if for
-every character in the target filename there is inside a parameter in 
-rule A, it is also inside a parameter in rule B, and at least one
-character is in a parameter is rule B but not in rule B.  It is an error
-when there is no single matching rule that dominates all other matching
-rules. 
+A target name may match more than one rule.  If that is the case, Stu
+will use the rule that dominates all other matching rules.  A rule (A)
+is defined to dominate another rule (B) for a given name if every
+character in the name that is part of a matched parameter in rule (A) is
+also inside a matched parameter in rule (B), and at least one character
+of the name is part of a matched parameter in rule (B) but not in rule
+(A).  It is an error when there is no single matching rule that
+dominates all other matching rules.
 
 In the following example, the first rule dominates the other rules for
 the file named 'a.b.c':  
@@ -675,16 +705,16 @@ unquoted filenames:
 
     #     Comment (until the end of the line)
     %     Directive (followed by directive name and arguments)
-    '     Quote; without escape sequences
-    "     Quote; with escape sequences
+    '     Quote, without escape sequences
+    "     Quote, with escape sequences
     :     Separator for rule definition
-    ;     For rules without command, end of variable declaration 
+    ;     In rules without command, end of dependency declaration 
     -     Prefix character for flag, followed by a single character 
     $     Parameter
     @     Transient target marker
     >     Output redirection
     <     Input redirection
-    =     Assignment rule, copy rule, named variable
+    =     Assignment rule; copy rule; named variable
     { }   Command
     ( )   List
     [ ]   Dynamic dependency
@@ -740,16 +770,20 @@ introduced with '%'.
     rule:             ('@' NAME | ['>'] NAME)+ [':' expression_list] ('{' COMMAND '}' | ';') 
                       NAME '=' '{' CONTENT '}'
                       NAME '=' ('-p' | '-o')* NAME ';'
-    expression_list:  expression*
-    expression:       '(' expression_list ')' 
-                      '[' expression_list ']' 
+    expression_list:  expression* {1}
+    expression:       unit_expression* {2}
                       flag expression 
-                      redirect_dep
                       variable_dep
+    unit_expression:  '(' expression_list ')' 
+                      '[' expression_list ']' 
+                      redirect_dep
     redirect_dep:     ['<'] bare_dep
     bare_dep:         ['@'] NAME
     variable_dep:     '$' '[' flag* ['<'] NAME ']'
-    flag:             '-p' | '-o' | '-t' | '-n'
+    flag:             '-p' | '-o' | '-t' | '-n' | '-0'
+
+{1} with intervening whitespace
+{2} without intervening whitespace
 
 Stu files read via the 
 .BR -f 
@@ -776,7 +810,7 @@ build the file 'a.gz.gz' from the file 'a', even though it would not
 result in a cycle, but since both files 'a.gz' and 'a.gz.gz' use the
 same parametrized rule, this is not allowed:
 
-    $name.gz:  $name { gzip -k $name }
+    $name.gz:  $name { gzip -k -- "$name" }
 
 Cycles are possible in dynamic dependencies, where they are allowed
 and ignored.  For instance, the following examples will correctly build
@@ -790,13 +824,23 @@ Symlinks are treated transparently by Stu.  In other words, Stu will
 always consider the timestamp of the linked-to file.  A symlink to a
 non-existing file will be treated as a non-existing file. 
 
-Stu uses jobs control:  Each job is put into its own process group.
+Stu uses job control:  Each job is put into its own process group.
 All jobs are put into the background, except when the option 
 .BR -i 
 is used.  When 
 .BR -i 
 is not used, the standard input of all jobs is redirected from
 /dev/null. 
+
+If a command fails, Stu will remove any of its target files, if they
+have been already touch by the command.  If the failing command did not
+touch a target file, that existing target file is not removed.  This
+behavior is necessary to avoid the case that a commands partially
+creates a target file, then fails, and then a subsequent invocation of
+Stu sees the new file and considers it as up to date, even though it was
+only partially created.  Thus, commands in Stu do not need to make sure
+they delete any output files when they fail.  This behavior is
+equivalent to that in Make. 
 
 .SH "EXIT STATUS"
 .IP 0
@@ -810,7 +854,8 @@ option, the exit status is 1 when the given targets are not up to
 date. 
 .IP 2
 Logical error.  These indicate errors in the usage of Stu.  Examples are
-syntax errors in Stu sources and cycles in the dependency graph. 
+syntax errors in Stu sources, cycles in the dependency graph and
+erroneous options on the command line. 
 .IP 3
 Both build and logical errors were encountered (when using the 
 .BR -k
@@ -840,7 +885,10 @@ must support the
 and 
 .BR -c 
 options.  This is mainly useful on systems
-where '/bin/sh' is not a POSIX shell. 
+where '/bin/sh' is not a POSIX shell.  Stu ignores the 
+.BR $SHELL
+variable, like Make does, as that variable is only intended to set the
+user's interactive shell. 
 .IP STU_STATUS
 Stu sets this variable to '1' in all child processes. In order to avoid
 recursive invocation of Stu, Stu will fail on startup when the variable
@@ -887,10 +935,10 @@ not found.
 
 Input and output redirection can be used to write commands that invoke
 a filter such as sed, awk or tr.  The following example will build
-the 'A' containing the string 'HELLO':
+the file 'A' containing the string 'HELLO':
 
-    >A: <B { tr a-z A-Z }
-    >B { echo hello }
+    >A: <B { tr a-z A-Z ; }
+    B = { hello }
 
 Variable dependencies may be included indirectly through transient targets
 without commands, and through dynamic dependencies.  In the
@@ -930,6 +978,16 @@ available for some developers, but not others:
     # updated from there by Stu.  For users who don't, the file
     # delivered with the project is always used. 
     config.h = -o /usr/share/project/;
+
+Parentheses can be used in a similar way to braces in the shell, to
+construct a list of filenames following a pattern:
+
+    @headers:   (config data list).h;
+
+This will make @headers depend on the files config.h, data.h, and
+list.h.  This can be combined with brackets in the following way:
+
+    @headers:   [NAMES].h;
 
 The
 .BR -C
@@ -990,7 +1048,8 @@ option (except for -j1).
 .SH "BUGS"
 
 Filenames in Stu are literal.  Stu does not recognize it when two
-different names refer to the same file. 
+different names refer to the same file.  For instance, Stu does not
+notice that "config.h" and "./config.h" refer to the same file.  
 
 The argument to the
 .BR -j
@@ -1003,7 +1062,7 @@ parsing of C-like dependencies.  Rule-level recursion would be easy to
 enable, but would open up problems related to infinite loops, which
 would require Stu to have a maximal recursion depth.  
 
-When the command fails and its target is a directory, Stu cannot remove
+When a command fails and its target is a directory, Stu cannot remove
 the directory as it does for regular files.  
 
 Changing a command within a Stu file will not make the target to be
@@ -1022,11 +1081,31 @@ Using optional dependencies may make a second invocation of Stu not
 output 'Targets are up to date', as the optional dependency may have been
 created by subsequent targets. 
 
+Commands enclosed in braces { ... } are parsed using shell syntax, up to
+one exception:  a closing brace is detected everywhere in unqoted
+environments, not only when standing alone as the first word of a
+command.  E.g., the command { echo Hello } is a valid command for Stu,
+while it would be an error for the shell, as the closing } would be
+interpreted as a second argument to 'echo'. 
+
+In error messages, the column numbers are based on the number of bytes,
+and do not take into account multibyte characters or combining
+characters, etc.  Thus, the placement of error messages may be wrong
+within the line in certain editors or GUIs. 
+
+When an error occurs with a concatenated file or transient name, Stu
+only outputs the location of the name as a whole, and does not point to
+the source of the individual components of the concatenation. 
+
 .SH AUTHOR
-Written by J\['e]r\[^o]me Kunegis <kunegis@uni-koblenz.de>, with contributions
-and help by Jun Sun, Aaron McDaid, Heinrich Hartmann, and Holger Heinz. 
+Written by J\['e]r\[^o]me Kunegis <kunegis@gmail.com> at the University
+of Namur, Belgium, as well as at the University of Koblenz-Landau,
+Germany, with contributions and help by Jun Sun, Aaron McDaid, Heinrich
+Hartmann, Holger Heinz, and others.
 
 .SH "SEE ALSO"
 .BR make (1)\
 ,
-.BR cook (1)
+.BR cook (1)\
+,
+.BR sh (1)

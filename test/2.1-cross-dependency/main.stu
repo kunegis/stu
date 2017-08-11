@@ -1,0 +1,28 @@
+#
+# A file is both dependency and dynamic dependency.
+#
+# For an actual test, call with -j2. 
+#
+
+A:  B C {
+    cat B C >A
+}
+
+B: [D] {
+   [ -r D ] || exit 1
+   cat `cat D` >B
+}
+
+C:  D {
+    cp D C
+}
+
+D: {
+   # This must be executed only once
+   ln -s notexistingfilename W || exit 1
+   sleep 1
+   echo X Y >D
+}
+
+X:  {  echo Xxx >X }
+Y:  {  echo Yyy >Y }

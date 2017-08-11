@@ -1,0 +1,7 @@
+# Inheriting multiple dynamic dependencies through a transient target. 
+A:  [@x] { cat B C >A ; }
+@x:  X Y;
+X = { B }
+Y = { C }
+B { echo bbb >B ; }
+C { echo ccc >C ; }

@@ -1,0 +1,6 @@
+# When a transient target rule has a command, flags are not passed
+# transitively.  This is an error. 
+
+A:  -o @x { cp B A ; }
+@x:  B  { echo building @x ; }
+B { echo correct >B ; }

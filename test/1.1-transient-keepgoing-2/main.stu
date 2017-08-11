@@ -1,0 +1,5 @@
+# There is no rule for @xyz -- the message is output twice because we
+# use the -k option.  
+A:  @b @c { touch A ; }
+@b:  @xyz;
+@c:  @xyz;

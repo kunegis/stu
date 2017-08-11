@@ -1,0 +1,3 @@
+# Error:  no rule for @list.XY
+A: B { touch A ; }
+B:  @list.(X)(Y);  

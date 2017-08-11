@@ -1,0 +1,9 @@
+A:  [B][C]
+{
+	cp list.1 A
+}
+
+B = { li }
+C = { st.1 }
+
+list.1 = {correct}

@@ -1,0 +1,9 @@
+A:  list.([X][Y])
+{
+	cat list.1a list.1b list.2a list.2b >A
+}
+
+X = { 1 2 }
+Y = { a b }
+
+>list.$o { echo "$o" ; }

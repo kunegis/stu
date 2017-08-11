@@ -1,0 +1,6 @@
+# Check whether the -0 flag is passed to 'B'.  It should not.  But it
+# should be passed to 'C'.
+>A: [-0 [B]] { cat E F ; }
+>B  { echo C ; }
+>C  { printf 'E\0F\0' ; }
+>$x { echo "$x$x$x" ; }

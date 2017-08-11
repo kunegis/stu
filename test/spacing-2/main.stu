@@ -1,7 +1,0 @@
-# Disallow the lack of whitespace in certain situations.
-
-# Raise an error because there is no space right of the parenthesis. 
-
-A:  (B)C
-{
-}

@@ -1,0 +1,7 @@
+# The error message placement is not ideal here, but that's all we do for now. 
+A:  [list.[list.[list.[B]]]]  { touch A ; }
+B = {C}
+list.C = {D}
+list.D = {E}
+list.E = {F}
+F: X { touch F ; }

@@ -1,0 +1,4 @@
+main.stu:10:5: command for 'X' failed with exit status 1
+main.stu:8:6: 'X' is needed by @b
+main.stu:3:4: @b is needed by 'A'
+../../stu.test: Targets not up to date because of errors

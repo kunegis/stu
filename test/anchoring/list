@@ -1,5 +1,5 @@
 #
-# This is the list of tests.  Each tests has three words on a line:
+# This is the list of tests.  Each test has three words on a line:
 #
 #    * 'yes' or 'no'
 #    * Expression (A)

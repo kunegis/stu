@@ -1,0 +1,7 @@
+A: [[B]] { cp E A ; }
+B = {[C]}
+C = {D}
+D = {@a E}
+@a: F;
+F: -o E { touch F ; }
+E = {correct}

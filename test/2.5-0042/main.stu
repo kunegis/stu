@@ -1,0 +1,4 @@
+A:  [B] { cp C A ; }
+B { echo '@x' >B ; }
+@x:  C;
+C { echo ccc > C ; }

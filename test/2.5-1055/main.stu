@@ -1,0 +1,3 @@
+# When B does not exist:  empty dependency list. 
+A:  X[-o B] { touch A ; }
+$x { exit 1 ; }

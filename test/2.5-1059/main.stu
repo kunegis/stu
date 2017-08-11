@@ -1,0 +1,11 @@
+# Not a concatenation error, but two separate dependencies [X] and @Y
+A:  [X]@Y 
+{ 
+	cat B C Z >A
+}
+
+X = {B C}
+B = {bbb}
+C = {ccc}
+@Y: Z;
+Z = {zzz}

@@ -1,62 +1,160 @@
 #
-# Concatenation.  Concatenation is to work both with the
-# binary operator '*' as well with juxtaposition.     [2.5]
+# Concatenation [2.5]    
 #
 
-# - implement compound dependencies
-# - implement compound execution objects, which are deleted when they are done
-#   (they don't have a Target object)
+#
+# TODO document the -0 in the manpage.
+#
 
-A:  B * C;    	        # Binary multiplication operator
-A:  B * (C D); 	        # Parentheses
-A:  B[C];      	        # Juxtaposition
-A:  [B]C;      	        # OK
-A:  B(C D);    	        # OK
-A:  B(C D)E;   	        # OK
-A:  B[C]D;     	        # OK
-A:  [B] * [C]; 	        # OK
-A:  (A B) * (C D); 	# OK
-A:  [B][C];             # OK
-A:  (A B)(C D);         # OK
-A:  (-p B) * (C);    	# OK
-A:  (-o B) * (C);    	# OK
-A:  (B) * (-p C);    	# error
-A:  (B) * (-o C);    	# error
-A:  (-o B) * (-p C);   	# error
-A:  (<B) * (C);    	# OK
-A:  (B) * (<C);    	# error
-A:  -p B(C D);       	# OK
-A:  -o B(C D);       	# OK
-A:  <B(C);         	# OK
-A:  <B(C D);       	# error
-A:  @B(C);         	# OK
-A:  @B(C D);     	# OK
-A:  B * @C;      	# error 
-A:  $[B] * C;    	# error
-A:  B * $[C];    	# error
-A:  <B * C;      	# OK (or maybe:  ambiguous)
-A:  B * <C;      	# error
-A:  <B[C];		# OK iff C contains exactly one dependency (or an error)
-@A: @B[C];       	# OK
-A:  B@C;		# error
-A.$X.$Y:  $X * $Y       # OK (can be contiguous)
-A.$X.$Y:  $X.a * b.$X   # OK (despite duplicate parameter) 
-A.$X.$Y:  $X. * $Y      # OK
-A.$X.$Y:  $X * .$Y      # OK
+#
+# BSD/Macos compatibility (only relevant for testing):
+# * Don't use ';' in sed
+# * Don't use \s, \S and \t in sed
+#
 
-# More examples
+#
+# Make sure that in -j2 -k mode, the "successfully built" message is
+# output just once, when the rule that was run has multiple targets.
+#
 
-@headers:  (config parse build).h
+#
+# In the following case, there should be an explanation message that two
+# parameters cannot be continguous.
+#
 
-@plot.all:   @plot.[NETWORKS];
+A.$X$Y;
 
-@plot:    plot/[NETWORKS].eps;
+#
+# When an unknown flag is encountered, have an explanation of all valid
+# flags.  
+#
 
-# Copy all *.dat files to the backup/ directory, but only if they don't
-# exist yet, or if they have changed. 
-@all: backup/[FILES];
->FILES: { echo *.dat }
-dest/$file = $file;
+#
+# When '*' is encountered in a file, show an explanation saying which
+# characters are not allowed. 
+#
+
+#
+# Semi-bug:  when a command read stdin but there is no input redirection, the
+# current behaviour of Stu is to go into "fake interactive" because a
+# fatal signal is sent.  Make it such that the job fails immediately. 
+#
+
+# Example that triggers it:
+$ stu -F 'A {cat $(cat ahjsahd);}'
+# (where the file 'ahjsahd' is not present) 
+
+#
+# At the moment, "stu -g" does not disable the flag -o in copy rules, i.e.
+#
+#   A = -o B;
+#
+# but it should.  
+#
+
+#
+# sh/test:  log all tests and their runtime, version number, date, etc.
+# This is to detected regression such as "a new version of Stu is much
+# slower than old versions."
+#
+
+# 'A' will contain the three lines 'x', 'y' and 'z'
+>A: [@x] { cat X Y Z ; }
+@x:  X Y Z; 
+X = {x}   Y = {y}  Z = {z}
+
+#
+# Check that random mode and -j2 work together when there is just a
+# single thing to run in parallel.  Same for higher -jK when there are
+# less than K things to run. 
+#
+
+#
+# Write a test with really long filenames and really long chains of
+# dependencies.  
+#
+
+#
+# Test what happens when a file passed with -n contains a \0 character.
+# It should be considered a syntax error and thus should should be a
+# logical error (exit status 2). 
+#
+
+#
+# Make sure we don't compile in any of the multi-threaded libraries.
+# (For curiosity)   
+#
+
+# 
+# Test that this fails as it should:
+# 
+
+@all:  @x.abc;
+@x.$name A.$name: { exit 0 ; }
+
+#
+# Actually use the PACKAGE_URL field from autoconf. 
+#
+
+#
+# Instead File_Execution::executions_by_pid, have a dedicated array for
+# the list of currently running PIDs, and maintain an atomic pid_count
+# to maintain the list, to avoid access a stdlib container from a signal
+# handler.
+#
+
+#
+# Can the options -k or -j be used in -q mode?  Yes; they should be a
+# no-op then. 
+#
+
+#
+# In -s -j mode, 'Successfully built' messages should not be output. 
+#
+
+#
+# Test all 'switch' cases, like this:
+#
+
+A:  -X <CCC>  -Y <CCC>  { ... }
+
+# where:
+#   -X and -Y are all possible combinations of transitive flags
+#   <CCC> is one of:
+#      (1) Direct dependency C
+#      (2) Transient to C
+#      (3) Dynamic dependency that contains C
+#      (4) Concatenation that results in C
+
+#
+# delete_tmps:  don't remove ?? and dep.*, as these patterns appear in
+# stu/.  Change tests that use these patterns.  Remove the script to
+# remove_*. 
+#
+
+#
+# Traces:  show only the first line with the most information message in
+# red, and other traces in another color. 
+#
+
+#=================== Further features =======================
+
+#
+# Have a feature to indicate that a file contains only a single
+# filename.  To complement -n and -0.  Must produce a logical error when
+# the file contains the nul byte '\0'.  '\n' and other whitespaces
+# should work.  
+#
+
+#
+# In File_Execution::wait(), use a non-blocking wait() function to
+# handle all finished jobs in a loop in that function.
+#
+
+#
+# Job::Signal::Signal: Execute the signal setup code only when needed,
+# i.e., when something is started. 
+#
 
 #
 # Allow a better integrated syntax on the command line after '--'.  This
@@ -78,84 +176,10 @@ $ stu -- [FILE]
 $ stu -- [-oFILE]
 
 #
-# The 'trivial' flag '-t' should "go up" when applied to the
-# dependencies of transient targets. 
-#
-
-# 'V' is built because 'A' does not exist. 
-A: @x {
-	[ -r V ] || {
-		exit 1
-	}
-
-	cat V >A
-}
-@x:  -t V; 
-V = {correct}
-
-# 'V' is built 'A' does not exist.  The '-t' has to "go up". 
-A: @x {
-	[ "x$V" = xcorrect ] || {
-		exit 1
-	}
-
-	echo "$V" >A
-}
-@x:  $[-t V];
-V = {correct}
-
-# The '-t' has to "go up".  Use this in KONECT. 
-@all:   list.out;
->list.$name:
-	@octave
-{
-	./list.octave Hello 
-}
-@octave:  -t ( list.octave $[P] );
-list.octave 
-{
-	cat >list.octave <<EOF
-#! /bin/sh
-[ "x$P" = x... ] || {
-	exit 1
-}
-echo "$@"
-echo correct >A
-EOF
-	chmod u+x list.octave
-}
-P = {...}
-
-# Even when a transient target has a command, the '-t' "goes up". 
-A: @x {
-	[ -r V ] && {
-		exit 1
-	}
-
-	echo correct >A
-}
-@x:  -t V {
-	echo Executing @x
-}
-V {
-	exit 1
-}
-
-#
-# Use the '+' sign to invert flags. 
-#
-
-# E.g.: Dynamic dependencies are "persistent" by default.  Make it
-# possible to switch this off using '+e'.  This is useful when the
-# dynamic dependency file itself is used by the target, e.g. when
-# creating a tarball. 
-A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
-
-#
 # Canonicalize names 
 #
 # - Fold multiple / to a single one, except exactly two at the beginning
-# - Remove ending /, except for single '/'
+# - Remove ending /, except in single '/'
 # - Fold ., except for a single .
 # - Fold */.. (.. at beginning stays)
 # 
@@ -164,7 +188,7 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 #
 # Questions
 #   - Should '/' match in parameters?  -> Yes
-#   - Does that also apply to transient targets? 
+#   - Does that also apply to transient targets?  -> Yes
 #
 
 #      - aaa/.. ->  .
@@ -193,25 +217,13 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 #      - / -> / 
 
 #
-# When a parametrized name contains a slash in a nonparametrized part,
-# any subsequent parameters cannot match a slash.  This is taken into
-# account for computation of dominance. 
-#
-
-# Given
-$name.bib;   # Rule (1)
-./$name.bib; # Rule (2)
-# The name dir/aaa.bib will match rule (1).
-# The name aaa.bib will match both rules. 
-
-#
 # File import
 #
 
 # Import all rules from subdirectory; will prepend the directory name to
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of
-
+ 
 # All these are equivalent 
 % import src/main.stu
 % import src/
@@ -235,13 +247,18 @@ $name.bib;   # Rule (1)
 A: [-d data/B];
 
 #
-# Logging:  an option to write log messages into a file.  In particular,
-# which commands failed.   
+# Use the '+' sign to invert flags. 
 #
 
+# E.g.: Dynamic dependencies are "persistent" by default.  Make it
+# possible to switch this off using '+e'.  This is useful when the
+# dynamic dependency file itself is used by the target, e.g. when
+# creating a tarball. 
+A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
+
 #
-# An option for automatic logging:  write all output (stdout/stderr) of
-# commands to a file (a different file per target).  Use the -l option. 
+# Trace (logging): an option to write log messages into a file.  In
+# particular, which commands failed. (option -T)
 #
 
 #
@@ -257,12 +274,15 @@ A: [-d data/B];
 # the -I option)
 #
 
+# This is included from the "Stu path", and could be installed in
+# e.g. /usr/share/stu/lib/ or ~/share/stu/lib/, etc. 
 % include c++.stu
  
 #
 # Optimization:  when parsing rules, only save the "body" part of the
 # rule (everything except the target) as an unparsed string.  Parse it
-# properly only when needed. 
+# properly only when needed.  This will not catch certain errors
+# anymore. 
 #
 
 #
@@ -282,30 +302,19 @@ A: [-d data/B];
 }
 
 #
-# Uppercase flag is recursive:
-#
-
-# Ignores timestamps recursively
-A: -P B;
-
-#
-# Have a flag to present echoing of the command. (Similar to '@' in
-# Make)
-#
-
-#
 # A "hard optional" option:  If a dependency is not present, don't even
-# try to rebuild the target if it's already present. 
+# try to rebuild the target if it's already present.  I.e., an
+# "up-percolating" 'optional' flag.
 #
 
 #
-# -m bfs (breadth-first order) and -m target (pseudotarget by target
-# name) 
+# -m bfs (breadth-first order) and -m target (pseudorandom by target
+# name). 
 #
 
 #
-# Have a mode to show only the first error message, not all subsequent
-# traces. 
+# Have a mode or option to show only one message per error, omitting
+# all subsequent traces.
 #
 
 #
@@ -318,18 +327,13 @@ A: -P B;
 #
 
 # Unexpected ';'
-### >A { echo } ; }
+#     >A { echo } ; }
 
-# OK
-### >A { { echo } ; } ; echo aaa }
+# OK -- this does not work at the moment 
+#     >A { { echo } ; } ; echo aaa }
 
 #
 # Allow access to environment variables via e.g. $(HOME). 
-#
-
-#
-# In parallel mode, don't show the full trace after and error, but only
-# a one-liner. 
 #
 
 #
@@ -349,14 +353,116 @@ A: -P B;
 #
 
 #
-# A 'why' option that shows why things are built.
+# Line number and file syntax:  A preprocessor-like construct that gives a new
+# filename and line number, such that error messages from Stu can point
+# to the original file, not the generated file.  Analogous to the
+# preprocessors #line directive.  Useful in dynamic dependencies. 
 #
 
-### 'abc' does not exist
-### 'abc' is older than its dependency 'xyz'
-### ...
+% file datasets.list
+% line 120
+
+# Use this in texdep and other stu-utils programs judiciously. 
+
+#
+# A 'why' option that shows why things are built.  Will look similar to
+# error traces, only containing explanations. 
+#
+
+# * 'abc' does not exist
+# * 'abc' is older than its dependency 'xyz'
+# * ...
 
 #
 # An option to ignore all timestamps:  Whenever a file already exists,
 # it is not rebuilt.  
+#
+
+#
+# Have an option for: For hardcoded rules, compare the content of the
+# file (if it exists) with the declared content, and regenerate the file
+# if necessary.
+#
+
+#
+# An option that make Stu rebuild everything, regardless of status. (-B,
+# like GNU Make)   
+#
+
+#
+# We may rewrite part of execution.hh to not use the flag bits, and
+# instead use classes such as 
+#
+#	Optional_Execution, Trivial_Execution, Persistent_Execution,
+# 	etc. 
+#
+
+#
+# Have an option to output the dependency graph, i.e., output each edge
+# on a single like, e.g. separated by tab.  (Use it then to perform a network
+# analysis of the KONECT-Analysis dependency graph.)
+#
+
+#
+# For output redirection:  Do what stu-utils/output-finally does,
+# integrated into Stu.  On the other hand, this is not totally good,
+# because users expect a > operator to write into the file immediately.
+# Maybe only enable it with a flag.  Alternatively, automatically make a
+# backup of the target file, and restore it if the command fails.
+# Again, this should only be done with a flag, because given the large
+# possible files, it would take lots of memory.  A smart way to do it
+# would be to open() the file, keeping only a reference in the Stu
+# process to it, and then linking it again if needed, but that is
+# probably not possible ini POSIX. 
+#
+
+#
+# Have an option defined on targets that will make a backup of the
+# target file before running the command, and restore the target on
+# error.  To be used with badly-behaving commands that overwrite the
+# target immediately.
+#
+
+#
+# In -k mode, Start trivial dependencies immediately when it iss clear
+# they must be started, not just when everything else is done.
+#
+
+#
+# A flag with the meaning "never rebuild that dependency", but only use
+# it to determine whether we need to rebuilt the target.  It would mean
+# that we can prune dependencies with that flag as soon as we know that
+# the target must be built anyway.  
+#
+
+# In this example, when 'program' does not exist, Stu will *not* build
+# 'dep.sources', because the -s flag is used and Stu knows that
+# 'program' has to be rebuilt anyway. 
+program:  -s [dep.sources] {
+	cc ... -o program
+}
+dep.sources {
+	# Some complex mechanism for determining the source code files
+	# of the program
+}
+
+#
+# Allow concatenation of file dependencies with input redirection.  This
+# is not valid at the moment.  Should be only valid if a single
+# dependency results.  The current behavior is consistent with input
+# redirection being invalid within dynamic dependencies. 
+#
+
+A:  <list.(B) { ... }
+
+#
+# Allow empty names in concatenation.
+#
+
+A:  list.( '' ); # Equivalent to just 'list.'
+
+A:  @[X]; 
+
+#
+# The Dep::top mechanism is not clean.  Do something better.
 #

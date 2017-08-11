@@ -1,0 +1,2 @@
+main.stu:7:19: no rule to build 'list.465', needed by 'list.list._465'
+main.stu:1:5: 'list.list._465' is needed by 'A'

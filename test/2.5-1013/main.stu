@@ -1,0 +1,10 @@
+# OK (despite duplicate parameter) 
+
+A = list.list.654;
+
+list.$X.$Y:  ($X.a)(b.$X)  
+{
+	cp "$X".ab."$X" list."$X"."$Y"
+}
+
+list.ab.list = {correct}

@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 #
-# This is the input fiel to Automake. 
+# This is the input file to Automake. 
 #
 
 VPATH = @srcdir@
@@ -84,9 +84,9 @@ bin_PROGRAMS = stu$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(top_srcdir)/build-aux/depcomp COPYING INSTALL NEWS \
-	build-aux/depcomp build-aux/install-sh build-aux/missing \
-	$(top_srcdir)/build-aux/install-sh \
+	$(top_srcdir)/build-aux/depcomp AUTHORS COPYING INSTALL NEWS \
+	README build-aux/depcomp build-aux/install-sh \
+	build-aux/missing $(top_srcdir)/build-aux/install-sh \
 	$(top_srcdir)/build-aux/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac

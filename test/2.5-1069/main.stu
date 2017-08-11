@@ -1,0 +1,11 @@
+# Equivalent to   A: list.Z;
+
+A: list.[X] {
+	cp list.Z A
+}
+
+X = {[Y]}   
+
+Y = {Z}
+
+list.Z = {correct}

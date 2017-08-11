@@ -1,0 +1,7 @@
+# Clash between -o and -p.  However, -p is not seen because B is not
+# checked, and therefore the build succeeds.  
+
+A:  -o B { touch A }
+B:  -p C { exit 1 }
+C:       { exit 1 }
+

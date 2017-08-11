@@ -1,0 +1,15 @@
+# When build with at least 9 parallel processes, this takes 2 seconds;
+# other wise at least 4.  We test it with -j 010 to make sure that the
+# argument to -j is not interpreted as octal, even if it starts with
+# zero. 
+
+A: [list.dep] {
+	cat $(cat list.dep) >A
+}
+
+list.dep = { list.1 list.2 list.3 list.4 list.5 list.6 list.7 list.8 list.9 }
+
+>list.$n { 
+	sleep 2
+	echo "$n" 
+}

@@ -1,0 +1,10 @@
+A:  B C { 
+	grep -qF correct B
+	grep -qF correct C
+	cat B C >A ; 
+}
+B:  @x { echo "$V" >B ; }
+C:  @y { echo "$V" >C ; }
+@x:  $[V];
+@y:  $[V];
+V = {correct}

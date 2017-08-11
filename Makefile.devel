@@ -33,17 +33,18 @@ CXXFLAGS_OTHER=-std=c++11 $(DEFS)
 # compilers and compiler versions than those used by the authors.  Just
 # remove the flags if you use such a compiler. 
 
-CXXFLAGS_DEBUG=  -ggdb -O0 \
-    -Wall -Wextra -Wunused -Wpedantic \
-    -Wundef -Wc++11-compat -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
+CXXFLAGS_DEBUG=  -ggdb -O0 -Werror \
+    -Wall -Wextra -Wpedantic \
+    -Wunused -Wundef -Wc++11-compat -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
     -Wnon-virtual-dtor -Wformat-nonliteral \
-    -Wsuggest-attribute=noreturn -Wsuggest-attribute=format  \
+    -Wsuggest-attribute=format             \
     -Wlogical-op -Wredundant-decls \
-    -Werror                 \
-    -fno-gnu-keywords       
+    -fno-gnu-keywords       \
+    -fsanitize=address      \
+    -Wno-unknown-warning-option -Wno-pessimizing-move
 
 # TODO using a newer G++ version, try out:
-#    -fsanitize=address -fsanitize=leak -fsanitize=undefined 
+#    -fsanitize=leak -fsanitize=undefined 
 
 CXXFLAGS_PROF=   -pg -O3 -DNDEBUG 
 

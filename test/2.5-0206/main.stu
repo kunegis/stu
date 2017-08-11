@@ -1,0 +1,6 @@
+# 'A' contains three lines with each containing 'correct'
+>A: D  B @x { cat D ; echo "$V" ; cat B ; }
+>D:  $[V] { echo "$V" ; }
+>B:  @x  { echo "$V" ; }
+@x:  $[V];
+V = {correct}

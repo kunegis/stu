@@ -1,0 +1,85 @@
+This file lists option letters used and proposed by Stu, and gives a
+comparison to those prescribed by POSIX for Make, and those used in GNU
+Make. 
+
+Legend
+======
+
+S   Implemented in Stu and considered stable with respect to version
+    numbers:  The behavior will not be change within the same major
+    version number of Stu
+s   Implemented in Stu and considered unstable:  May be subject to
+    change at any time
+M   Specified by POSIX Make
+G   Implemented in GNU Make
+F   Implemented in FreeBSD Make
+.   Could be implemented in Stu 
+-   Not applicable to Stu 
+x   Incompatible 
+
+List of options
+===============
+
+-0  S        Pass a \0-separated list of file targets 
+-a  s        Consider trivial dependencies to be non-trivial
+-b      G    Compatibility option
+-B  .   G    Re-build all
+-B        F  Execute each line in an individual shell
+-c  S        Explicit file target without syntax
+-C  S   x    Explicit target with syntax 
+-C  x   G F  Change directory
+-d  s   G F  Print debugging information 
+-D        F  Define variable
+-e  - M G F  Environment overrides Make macros
+-E  S        Explain errors
+-f  S M G F  Read file containing rules 
+-F  S        Pass rule on the command line
+-g  s        Consider optional dependencies to be non-optional 
+-h  S   G    Show help and exit 
+-i  S x x    Interactive mode
+-i  x M G F  Ignore all errors in commands
+-I  .   G F  Include path
+-j  S   G F  Parallel mode (1)
+-J  S        Don't parse Stu syntax in arguments outside of options
+-J        F  Used internally
+-k  S M G F  Keep going
+-K  S        Keep partially built files
+-l  .   G    Number of jobs depends on load average
+-L  .   G    Special handling of symlinks
+-m  S   x x  Set job ordering mode
+-m  x   G    Compatibility option
+-m  x     F  Directory in with to search for system makefiles
+-M  S        Set job ordering mode to random with seed
+-n  s x x x  Pass a \n-separated list of file targets
+-n  x M G F  Dry run 
+-N        F  Special dry run
+-o  s   x    Optional dependency (2)
+-o  x   G    Mark file as old
+-O  .   G    Output sync
+-p  s x x    Persistent dependency (2)
+-p  x M G    Print database 
+-P  S        Print database 
+-q  S M G F  Question mode / query mode
+-r  - M G F  No builtin rules
+-R  -   G    No builtin variables
+-s  S M G F  Silent
+-S  . M G    No keep going
+-t  s x x x  Trivial dependency (2)
+-t  x M G F  Touch instead of building
+-T        F  Trace mode (log into a file with a given name)
+-u
+-v  .   x    Verbose
+-v  x   G    Show version
+-V  S     x  Show version
+-V  x     F  Print variable
+-w      G F  Print directory
+-W  .   G x  What-if mode / assume new 
+-W      x F  Treat syntax warnings as errors
+-x  S        Enable /bin/sh -x instead of normal output
+-X        F  Don't export variables
+-y  S        Disable color output
+-Y  S        Enable color output
+-z  S        Output statistics
+
+(1) The argument is optional in GNU Make, but mandatory in Stu.
+(2) This Stu option has the same name as the corresponding Stu flag.

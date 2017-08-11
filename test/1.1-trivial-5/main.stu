@@ -1,0 +1,12 @@
+A: B { cp B A ; }
+
+B: -t C D;
+
+D {
+	touch D
+	touch B
+}
+
+C { 
+	touch C
+}

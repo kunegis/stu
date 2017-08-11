@@ -1,0 +1,4 @@
+# This results in an error because -o cannot be used with a transient target of a File_Execution
+A:  -o @x { echo correct >A ; }
+@x  { echo Hello ; }
+B { touch B ; }

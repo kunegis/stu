@@ -20,8 +20,8 @@ class Token
 {
 public:
 
-	/* Whether the token is preceded by whitespace */ 
 	const bool whitespace;
+	/* Whether the token is preceded by whitespace */ 
 
 	Token(bool whitespace_)
 		:  whitespace(whitespace_)
@@ -29,12 +29,12 @@ public:
 
 	virtual ~Token(); 
 
+	virtual const Place &get_place() const= 0; 
 	/* The place of the token.  May be in the middle of the token.
 	 * This is the case for commands. */
-	virtual const Place &get_place() const= 0; 
 
-	/* The starting place.  Always the first character. */ 
 	virtual const Place &get_place_start() const= 0;
+	/* The starting place.  Always the first character. */ 
 
 	virtual string format_start_word() const= 0;
 };
@@ -48,8 +48,8 @@ class Operator
 {
 public: 
 
-	/* The operator as a character, e.g. ':', '[', etc. */
 	const char op; 
+	/* The operator as a character, e.g. ':', '[', etc.  */
 
 	const Place place; 
 
@@ -82,12 +82,13 @@ class Flag_Token
 public:
 
 	const char flag;
+	/* The flag character */
 
-	/* The place of the letter */ 
 	const Place place;
+	/* The place of the letter */ 
 
-	/* The place of the '-' */ 
 	mutable Place place_start;
+	/* The place of the '-' */ 
 
 	/* PLACE is the place of the letter */
 	Flag_Token(char flag_, const Place place_, bool whitespace_)
@@ -155,22 +156,23 @@ class Command
 	:  public Token
 {
 private:
+
+	mutable unique_ptr <vector <string> > lines;
 	/* The individual lines of the command.  Empty lines and leading
 	 * spaces are not included.  These lines are only used for
 	 * output and writing content, not for execution.  May be null.
 	 * Generated on demand, and therefore declared as mutable.  */ 
-	mutable unique_ptr <vector <string> > lines;
 
 public:
 
-	/* The command as written in the input; contains newlines */ 
 	const string command;
+	/* The command as written in the input; contains newlines */ 
 
-	/* In general, the first non-whitespace character of the command */ 
 	const Place place; 
+	/* In general, the first non-whitespace character of the command */ 
 
-	/* The opening brace */ 
 	const Place place_start;
+	/* The opening brace */ 
 
 	Command(string command_, 
 		const Place &place_,
@@ -256,7 +258,7 @@ Command::get_lines() const
 			if (i[0] != begin)  equal= false;
 		}
 		if (! equal)  break;
-		for (unsigned i= 0; i < lines->size(); ) {
+		for (size_t i= 0; i < lines->size(); ) {
 			string &line= (*lines)[i]; 
 			assert(line.size()); 
 			line.erase(0, 1); 

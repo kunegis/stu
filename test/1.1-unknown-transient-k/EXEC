@@ -1,0 +1,10 @@
+#! /bin/sh
+
+../../stu.test -k @lakndlkwande >list.out 2>list.err
+exitcode="$?"
+
+if [ "$exitcode" != "1" ] ; then
+	exit 2
+fi
+
+exit 0

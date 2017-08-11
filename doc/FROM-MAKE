@@ -1,0 +1,31 @@
+Here are some things to keep in mind for migrating from Make to Stu:
+
+* Instead of Make variables, use files or transient targets 
+
+Instead of 
+
+   DATASETS = aaa bbb ccc
+
+use
+ 
+   DATASETS = { aaa bbb ccc }
+
+and then just access the file 'DATASETS'. 
+
+Instead of
+
+FILES = aaa.h bbb.h ccc.h
+
+Use 
+
+@files:  aaa.h bbb.h ccc.h;
+
+* Phony targets are called transient targets, and they have their own
+  namespace, using the '@' prefix. 
+
+* Use the options -o, -t and -p judiciously
+
+* Never generate Stu source code automatically.
+* Never call Stu recursively
+* Use the -E option to get explanations for error messages.  You can set
+  STU_OPTIONS in the environment to '-E' to set this persistently.

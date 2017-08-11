@@ -37,9 +37,9 @@ class Timestamp
 {
 private:
 
+	struct timespec t;
 	/* When undefined, .tv_sec is equal to (time_t) -1, and .tv_nsec
 	 * is uninitialized. */ 
-	struct timespec t;
 
 	Timestamp(time_t t_) 
 	{
@@ -106,8 +106,8 @@ Timestamp Timestamp::startup= Timestamp::now();
 class Timestamp
 {
 private:
-	/* (time_t)-1 when undefined */
 	time_t t;
+	/* (time_t)-1 when undefined */
 
 	Timestamp(time_t t_)
 		:  t(t_)
@@ -115,10 +115,10 @@ private:
 		assert(t != (time_t) -1); 
 	}
 
-	Timestamp(time_t t_, bool ignore) 
+	Timestamp(time_t t_, bool ignore_) 
 		:  t(t_)
 	{ 
-		(void) ignore; 
+		(void) ignore_; 
 	}
 
 public:
@@ -148,9 +148,9 @@ public:
 
 	static const Timestamp UNDEFINED;
 
+	static Timestamp startup;
 	/* The time at which Stu was started.  Used to check that no generated
 	 * file must be older than that.  */
-	static Timestamp startup;
 
 	static Timestamp now() {
 		return Timestamp(time(nullptr)); 

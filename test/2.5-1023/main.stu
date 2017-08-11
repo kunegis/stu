@@ -1,0 +1,15 @@
+A:  [ (X) (Y) (Z) ] 
+{
+	cat B C D E F G >A
+}
+
+X = { B C }
+Y = { D E }
+Z = { F G }
+
+B = {b}
+C = {c}
+D = {d}
+E = {e}
+F = {f}
+G = {g}

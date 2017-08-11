@@ -8,7 +8,7 @@ exitcode="$?"
 	exit 1
 }
 
-grep -qF "Option -i: parallel mode with '-j' cannot be used in interactive mode" list.err || {
+grep -qF "Option -i: parallel mode using '-j' cannot be used in interactive mode" list.err || {
 	echo >&2 "*** Expected the correct error message"
 	exit 1
 }

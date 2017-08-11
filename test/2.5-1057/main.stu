@@ -1,0 +1,22 @@
+# Assuming three strings in each of X/Y/Z:
+# Multiple all together:  27 variants 
+A:  list.[X][Y][Z]
+{
+	cat \
+		list.147 list.148 list.149 \
+		list.157 list.158 list.159 \
+		list.167 list.168 list.169 \
+		list.247 list.248 list.249 \
+		list.257 list.258 list.259 \
+		list.267 list.268 list.269 \
+		list.347 list.348 list.349 \
+		list.357 list.358 list.359 \
+		list.367 list.368 list.369 \
+		>A
+}
+
+X = { 1 2 3 }
+Y = { 4 5 6 }
+Z = { 7 8 9 }
+
+>list.$xyz { echo "$xyz" ; }

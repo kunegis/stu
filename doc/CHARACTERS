@@ -1,0 +1,84 @@
+This file catalogues the usage of individual characters in Stu programs.  
+
+Since Stu programs consist primarily of filenames, many characters that
+are used as operators in most languages cannot be used in Stu as they
+are needed as part of filenames, such as '/', '~', etc.
+
+== Allowed in unquoted names == 
+
+These characters don't have to be quoted in names.  
+
+[a-z] [A-Z] [0-9] 
+_ ^ ` + - . ~ / 
+<all non-ASCII characters>
+
+'-', '+' and '~' are not allowed as the unquoted first character of a
+name.   
+
+== Recognized as whitespace == 
+
+Everything for which isspace() returns true in the C locale is
+recognized as whitespace by Stu.  I.e., " \f\n\r\t\v". 
+
+== Not allowed outside quotes == 
+
+ASCII control characters (except those that are whitespace). 
+
+== Characters introducing longer sequences == 
+
+# 	Comment (until the end of the line) 
+%	Directives (followed by the directive name, and optionally followed
+	by arguments depending on the directive); comparable to preprocessor
+	directives.  The directive name and arguments followed regular
+	Stu quoting rules. 
+-	Flags (only as first character)
+'	Quote without escape sequences
+"       Quote with escape sequences
+{}	Command, content
+$	Parameter prefix (when not followed by '[')
+
+== Operators == 
+
+These characters are single-character tokens. 
+
+:	Introduces dependencies
+;	End of rule when no command or content is present
+@	Transient target prefix
+( )	List 
+[ ]	Dynamic list
+>	Output redirection (target only)
+<	Input redirection (dependency only)
+=	Assignment, copy, and named variable
+$[	The sequence '$[' is analysed as a sequence of the two operators
+        '$' and '['.  In other environments, '$' introduces parameters. 
+
+== As-yet unused characters ==
+
+These characters are reserved for future extension.  They are not
+allowed outside quoted strings, except for '-', '+' and '~' which are
+only not allowed as the unquoted first character of a name.  The given
+uses are proposed and tentative.  (We don't add features lightly.)
+
+As a general rule, any new prefix operator can be defined as being a
+flag, so the only reasonable uses for these characters would be suffix,
+infix or ternary operators.  Suffix operators would be counter-intuitive
+because everything else is implemented as prefix at the moment, and
+would also require more complex (and harder to understand) precedence
+rules.  This leaves binary and ternary operators as possible uses, or as
+forms of non-operators, i.e., new tokens. 
+
++	Inverted flag [as in the shell] (likely)
+~	Home directory [as in the shell] (maybe)
+\	Escape of characters outside of quotes [as in the shell] (maybe)
+\	Difference operator (maybe)
+\	Command interpreter (maybe)
+& 	Intersection (maybe)
+|	Componentwise concatenation (maybe)
+|	Union [redundant to juxtaposition]
+! ?	Some form of dual operators
+!	Command interpreter
+* ?     For file globbing [We're against expensive operations not saved in a file]
+,	Names are already whitespace-separated, and any other use than
+	as a list constructor would be unintuitive   
+,	As higher-level file separator, allowing "lists of lists", for
+	whatever purpose [I can't think of one]

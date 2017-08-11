@@ -1,0 +1,5 @@
+A:  [-0 @x] { cat C D >A ; }
+@x: B;
+>B { printf 'C\0D\0' ;  }
+C = {ccc}
+D = {ddd}

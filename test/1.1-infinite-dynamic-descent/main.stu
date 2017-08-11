@@ -1,0 +1,10 @@
+
+# This does not result in an endless loop.
+
+A: [list.0] { touch A }
+
+list.$I {
+	J="$(($I + 1))"
+	echo "[list.$J]" >list."$I"
+}
+

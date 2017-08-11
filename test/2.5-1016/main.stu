@@ -1,0 +1,12 @@
+# Call Stu twice while touching list.Y between the two calls. 
+
+A:   -p ( list. )( Y )
+{
+	cp list.Y A
+}
+
+list.Y
+{
+	[ -e list.Y ] && { exit 1 ; }
+	touch list.Y
+}

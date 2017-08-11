@@ -1,0 +1,3 @@
+main.stu:2:5: cyclic dependency: 'A' depends on list.[B]
+main.stu:2:5: list.[B] depends on 'list.C'
+main.stu:4:10: 'list.C' depends on 'A'

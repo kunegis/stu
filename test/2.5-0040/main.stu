@@ -1,0 +1,3 @@
+A:  -o [@x] { touch A ; }
+@x:  B;
+B { echo nonexistingfile >B ; }

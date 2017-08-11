@@ -1,0 +1,36 @@
+# This tests high-order nesting of dynamic targets.  Precisely, [A] will
+# resolve to the dependency
+#
+# [[[....[[[A]]]...]]]
+#
+# where the number of bracket pairs equals the number stored in the file
+# 'N'.  We chose a value larger than 64 to catch implementations that
+# may use bitfields to store information about dependencies.  And also
+# just to be testing a very high nesting, which may leading to slow
+# executions with bad algorithms. 
+#
+
+@all:  [A] $[N] {
+	[ -e list."$N" ]       || exit 1
+	[ -e list."$((N+1))" ] && exit 1
+	exit 0
+}
+
+N = {71}
+
+>A:  N
+{
+	for i in $(seq 1 $(cat N)) ; do
+		printf '%s' '['
+	done
+	printf list.0
+	for i in $(seq 1 $(cat N)) ; do
+		printf '%s' ']'
+	done
+	echo
+}
+
+>list.$n: 
+{
+	echo list."$((n + 1))"
+}

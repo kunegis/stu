@@ -1,13 +1,13 @@
 /*
  * This is the top-level source code file, which contains the main()
  * function.  See the manpage for a description of options, the exit
- * status, etc.   
+ * status, etc.
  */
 
 /*
  * Enable bounds checking when using GNU libc.  Must be defined before
  * including any of the standard headers.  (Only in non-debug mode).  A
- * no-op for non-GNU libc++ libraries. 
+ * no-op for non-GNU libc++ libraries.
  */ 
 #ifndef NDEBUG
 #    define _GLIBCXX_DEBUG
@@ -22,7 +22,7 @@
 /* Used for all of Stu */
 using namespace std; 
 
-#include "dependency.hh"
+#include "dep.hh"
 #include "execution.hh" 
 #include "rule.hh"
 #include "timestamp.hh"
@@ -73,45 +73,45 @@ const char HELP[]=
 	"  -p FILENAME      Build a persistent dependency, i.e., ignore its timestamp\n"
 	"  -P               Print the rules and exit\n"                               
 	"  -q               Question mode: check whether targets are up to date\n"    
-	"  -s               Silent mode: don't use standard output\n"
+	"  -s               Silent mode: don't use stdout\n"
 	"  -V               Output version and exit\n"				      
-	"  -x               Ouput each line in a command individually\n"              
+	"  -x               Output each line in a command individually\n"              
 	"  -y               Disable color in output\n"                                
 	"  -Y               Enable color in output\n"
 	"  -z               Output run-time statistics on stdout\n"                   
-	"Report bugs to: kunegis@gmail.com\n" 
+	"Report bugs to: " PACKAGE_BUGREPORT "\n" 
 	"Stu home page: <https://github.com/kunegis/stu>\n";
 
 const char VERSION_INFO[]=
 	"stu " STU_VERSION "\n"
-	"Copyright (C) 2014, 2015, 2016 Jerome Kunegis\n"
+	"Copyright (C) 2014, 2015, 2016, 2017 Jerome Kunegis\n"
 	"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 	"This is free software: you are free to change and redistribute it.\n"
 	"There is NO WARRANTY, to the extent permitted by law.\n";
 
-/* Initialize buffers; called once from main() */ 
 void init_buf(); 
+/* Initialize buffers; called once from main() */ 
 
+void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
+		       const char *string_);
 /* Parse a string of dependencies and add them to the vector. Used for
  * the -C option.  Support the full Stu syntax.  */
-void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
-			       const char *string_);
 
-/* Read in an input file and add the rules to the given rule set.  Used
- * for the -f option and the default input file.  If not yet non-null,
- * set RULE_FIRST to the first rule.  FILE_FD can be -1 or the FD or the
- * filename, if already opened.  If FILENAME is "-", use standard input.
- * If FILENAME is "", use the default file ('main.stu').  */
 void read_file(string filename,
 	       int file_fd,
 	       Rule_Set &rule_set, 
 	       shared_ptr <Rule> &rule_first,
 	       Place &place_first); 
+/* Read in an input file and add the rules to the given rule set.  Used
+ * for the -f option and the default input file.  If not yet non-null,
+ * set RULE_FIRST to the first rule.  FILE_FD can be -1 or the FD or the
+ * filename, if already opened.  If FILENAME is "-", use standard input.
+ * If FILENAME is "", use the default file ('main.stu').  */
 
-/* Read rules from the argument to the -F option */ 
 void read_option_F(const char *s,
 		   Rule_Set &rule_set, 
 		   shared_ptr <Rule> &rule_first);
+/* Read rules from the argument to the -F option */ 
 
 /* Set one of the "setting options", i.e., of of those that can appear
  * in $STU_OPTIONS.  Return whether this was a valid settings option.  */ 
@@ -151,24 +151,25 @@ int main(int argc, char **argv, char **envp)
 	}
 
 	try {
-		/* Filenames passed using the -f option.  Entries are
-		 * unique and sorted as they were given, except
-		 * duplicates. */   
 		vector <string> filenames;
+		/* Filenames passed using the -f option.  Entries are
+		 * unique and sorted as they were given, except for
+		 * duplicates. */   
 
+		vector <shared_ptr <const Dep> > deps; 
 		/* Assemble targets here */ 
-		vector <shared_ptr <Dependency> > dependencies; 
 
-		/* Set to the first rule when there is one */ 
 		shared_ptr <Rule> rule_first;
-		/* Place of first file when no rule is contained */ 
-		Place place_first;
+		/* Set to the first rule when there is one */ 
 
+		Place place_first;
+		/* Place of first file when no rule is contained */ 
+
+		bool had_option_target= false;   
 		/* Whether any target(s) was passed through one of the
 		 * options -c, -C, -o, -p, -n, -0.  Also set when zero
 		 * targets are passed through one of these, e.g., when
 		 * -n is used on an empty file.  */
-		bool had_option_target= false;   /* Both lower and upper case */
 
 		bool had_option_f= false; /* Both lower and upper case */
 
@@ -183,7 +184,7 @@ int main(int argc, char **argv, char **envp)
 					Place place(Place::Type::ENV_OPTIONS);
 					place << fmt("invalid option %s",
 						     multichar_format_word(frmt("-%c", c)));
-					throw ERROR_FATAL; 
+					exit(ERROR_FATAL); 
 				}
 			}
 		}
@@ -212,17 +213,16 @@ int main(int argc, char **argv, char **envp)
 					place << "expected a non-empty argument"; 
 					exit(ERROR_FATAL);
 				}
-				Type type= Type::FILE;
-				dependencies.push_back
-					(make_shared <Direct_Dependency>
+				deps.push_back
+					(make_shared <Plain_Dep>
 					 (0, Place_Param_Target
-					  (type, Place_Name(optarg, place))));
+					  (0, Place_Name(optarg, place))));
 				break;
 			}
 
 			case 'C':  {
 				had_option_target= true; 
-				add_dependencies_option_C(dependencies, optarg);
+				add_deps_option_C(deps, optarg);
 				break;
 			}
 
@@ -234,6 +234,7 @@ int main(int argc, char **argv, char **envp)
 				}
 
 				for (string &filename:  filenames) {
+					/* Silently ignore duplicate input file on command line */
 					if (filename == optarg)  goto end;
 				}
 				had_option_f= true;
@@ -258,7 +259,7 @@ int main(int argc, char **argv, char **envp)
 			case 'j':  {
 				errno= 0;
 				char *endptr;
-				Execution::jobs= strtol(optarg, &endptr, 0);
+				Execution::jobs= strtol(optarg, &endptr, 10);
 				Place place(Place::Type::OPTION, c); 
 				if (errno != 0 || *endptr != '\0') {
 					place << fmt("expected the number of jobs, not %s",
@@ -270,6 +271,7 @@ int main(int argc, char **argv, char **envp)
 						     name_format_word(optarg));
 					exit(ERROR_FATAL); 
 				}
+				option_parallel= Execution::jobs > 1; 
 				break;
 			}
 
@@ -310,13 +312,13 @@ int main(int argc, char **argv, char **envp)
 					place << "expected a non-empty argument";
 					exit(ERROR_FATAL);
 				}
-				dependencies.push_back
-					(make_shared <Dynamic_Dependency>
+				deps.push_back
+					(make_shared <Dynamic_Dep>
 					 (0,
-					  make_shared <Direct_Dependency>
+					  make_shared <Plain_Dep>
 					  (1 << flag_get_index(c), 
 					   Place_Param_Target
-					   (Type::FILE, Place_Name(optarg, place)))));
+					   (0, Place_Name(optarg, place)))));
 				break;
 			}
 
@@ -328,12 +330,12 @@ int main(int argc, char **argv, char **envp)
 					place << "expected a non-empty argument";
 					exit(ERROR_FATAL);
 				}
-				dependencies.push_back
-					(make_shared <Direct_Dependency>
-					 (c == 'p' ?
-					  F_PERSISTENT : F_OPTIONAL, 
-					  Place_Param_Target
-					  (Type::FILE, Place_Name(optarg, place))));
+				Place places[C_PLACED];
+				places[c == 'p' ? I_PERSISTENT : I_OPTIONAL]= place; 
+				deps.push_back
+					(make_shared <Plain_Dep>
+					 (c == 'p' ? F_PERSISTENT : F_OPTIONAL, places,
+					  Place_Param_Target(0, Place_Name(optarg, place))));
 				break; 
 			}
 
@@ -355,11 +357,9 @@ int main(int argc, char **argv, char **envp)
 
 		order_vec= (order == Order::RANDOM);
 
-		option_parallel= Execution::jobs > 1; 
-		
 		if (option_interactive && option_parallel) {
 			Place(Place::Type::OPTION, 'i')
-				<< fmt("parallel mode with %s cannot be used in interactive mode",
+				<< fmt("parallel mode using %s cannot be used in interactive mode",
 				       multichar_format_word("-j")); 
 			exit(ERROR_FATAL); 
 		}
@@ -380,14 +380,14 @@ int main(int argc, char **argv, char **envp)
 			}
 
 			if (! option_literal) {
-				shared_ptr <Dependency> dep= 
+				shared_ptr <const Dep> dep= 
 					Parser::get_target_dep(argv[i], place);
-				dependencies.push_back(dep); 
+				deps.push_back(dep); 
 			} else {
-				dependencies.push_back
-					(make_shared <Direct_Dependency>
+				deps.push_back
+					(make_shared <Plain_Dep>
 					 (0, Place_Param_Target
-					  (Type::FILE, Place_Name(argv[i], place))));
+					  (0, Place_Name(argv[i], place))));
 			}
 		}
 
@@ -402,7 +402,7 @@ int main(int argc, char **argv, char **envp)
 				if (errno == ENOENT) { 
 					/* The default file does not exist --
 					 * fail if no target is given */  
-					if (dependencies.empty() && ! had_option_target 
+					if (deps.empty() && ! had_option_target 
 					    && ! option_print) {
 						print_error(fmt("Expected a target or the default file %s",
 								name_format_word(FILENAME_INPUT_DEFAULT))); 
@@ -425,7 +425,7 @@ int main(int argc, char **argv, char **envp)
 
 		/* If no targets are given on the command line,
 		 * use the first non-variable target */ 
-		if (dependencies.empty() && ! had_option_target) {
+		if (deps.empty() && ! had_option_target) {
 
 			if (rule_first == nullptr) {
 				if (! place_first.empty()) {
@@ -444,13 +444,12 @@ int main(int argc, char **argv, char **envp)
 				exit(ERROR_FATAL);
 			}
 
-			dependencies.push_back
-				(make_shared <Direct_Dependency> (0, *(rule_first->place_param_targets[0])));  
+			deps.push_back
+				(make_shared <Plain_Dep> (*(rule_first->place_param_targets[0])));  
 		}
 
 		/* Execute */
-		Execution::main(dependencies);
-		
+		Execution::main(deps);
 
 	} catch (int e) {
 		assert(e >= 1 && e <= 3); 
@@ -470,9 +469,9 @@ int main(int argc, char **argv, char **envp)
 		perror("stdout");
 		exit(ERROR_FATAL);
 	}
-	if (fclose(stderr)) {
-		exit(ERROR_FATAL); 
-	}
+	/* No need to flush stderr, because it is line buffered, and if
+	 * we used it, it means there was an error anyway, so we're not
+	 * losing any information  */
 
 	exit(error); 
 }
@@ -504,8 +503,8 @@ void init_buf()
 	}
 }
 
-void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
-			       const char *string_)
+void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
+		       const char *string_)
 {
 	vector <shared_ptr <Token> > tokens;
 	Place place_end;
@@ -516,15 +515,15 @@ void add_dependencies_option_C(vector <shared_ptr <Dependency> > &dependencies,
 		 place_end, string_,
 		 Place(Place::Type::OPTION, 'C'));
 
-	vector <shared_ptr <Dependency> > dependencies_option;
+	vector <shared_ptr <const Dep> > deps_option;
 	Place_Name input; /* remains empty */ 
 	Place place_input; /* remains empty */ 
 
-	Parser::get_expression_list(dependencies_option, tokens, 
+	Parser::get_expression_list(deps_option, tokens, 
 				    place_end, input, place_input);
 
-	for (auto &j:  dependencies_option) {
-		dependencies.push_back(j); 
+	for (auto &j:  deps_option) {
+		deps.push_back(j); 
 	}
 }
 

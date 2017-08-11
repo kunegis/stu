@@ -1,0 +1,3 @@
+main.stu:2:8: the variable dependency $[B] cannot be used
+main.stu:2:12: in concatenation with 'C'
+main.stu:2:8: $[B]C is needed by 'A'

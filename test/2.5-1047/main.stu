@@ -1,0 +1,25 @@
+# Copy all *.dat files to the backup/ directory, but only if they don't
+# exist yet, or if they have changed. 
+
+A:  @all {
+	ls -1 list.backup >A
+}
+
+@all: list.backup/[list.FILES];
+
+>list.FILES: @dat { echo *.dat ; }
+
+list.backup/$file.dat:  $file.dat -p list.backup
+{
+	cp -- "$file".dat list.backup/"$file".dat
+}
+
+@dat:  list.[list.DAT].dat; 
+
+list.DAT = { 1 22 333 4444 5555 }
+
+>list.$name.dat {
+	echo "$name"
+}
+
+list.backup { mkdir -p list.backup ; }

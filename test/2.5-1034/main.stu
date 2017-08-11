@@ -1,0 +1,10 @@
+A:   list.[[X]]
+{
+	cat list.1 list.2 list.3 list.4 >A
+}
+
+X = { B C }
+B = { 1 2 }
+C = { 3 4 }
+
+>list.$n { echo "$n$n$n" ; }

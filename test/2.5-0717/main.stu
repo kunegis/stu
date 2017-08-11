@@ -1,0 +1,6 @@
+# Check the exact debug output for missing flags or duplicate edges 
+A:   [[[B]]] { cp E A ; }
+B = { C }
+C = { D }
+D = { E }
+E = {correct}

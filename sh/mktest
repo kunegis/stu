@@ -2,8 +2,8 @@
 #
 # Perform all unit tests.  Each unit test is in one subdirectory of the
 # directory test/.  By default, each test directory contains a file
-# 'main.stu' that performs one unit test.  Additional files may be 
-# present to configure how the test is performed, see below.  
+# 'main.stu' that performs one unit test.  Additional files may be
+# present to configure how the test is performed; see below.
 # 
 # INVOCATION
 #
@@ -11,22 +11,30 @@
 #
 # Without any arguments, perform all tests.  With one or more arguments,
 # perform the given tests.  The given test names are the names of the
-# subdirectories of test/, and may or may not include the 'test/' prefix. 
+# subdirectories of test/, and may or may not include the 'test/'
+# prefix.  The arguments may contain glob patterns.  (No test names
+# contain the glob characters *, ?, etc.) 
 #
 # PARAMETERS
-#
 #     $emptyok	Set to non-empty to *not* output an error for empty test
 #               directories; useful after doing "rm" in a version
 #		control system on one, since that leaves a directory
 #		containing only (e.g.) ".svn".  Ignores dotfiles. 
 #     $NDEBUG	Set to non-empty to test the nondebug version; by default
 #		the debug version is tested 
-#     $VARIANT  Other variant of the compiled file 
+#     $VARIANT  Other variant of the compiled file; the default is to
+#		take the file that matches the value of $NDEBUG
 #     $verbose  Set to non-empty for verbose output 
+#     $notall	If non-empty, exit on the first error, instead of
+#		running everything  
 #
 # OUTPUT FILES
-# 
 #     error.log		List of tests that failed
+#
+# EXIT STATUS 
+#	0	All tests succeeded
+#	1	At least one test failed
+#	2	Internal error 
 #
 # TEST SPECIFICATION 
 #
@@ -43,10 +51,25 @@
 # * There may be other files present used by the test; these are part of
 #   the Stu release, i.e., they are under version control. 
 #
+# The names of unit tests, i.e., the name of the directories under test/
+# follow a pattern:
+#
+# * test/VERSION-ID
+#	These are tests for features introduced in Stu version VERSION.
+#	This was introduced in Stu 2.5, and therefore the assignment of
+#	VERSION numbers for older versions is approximate.  The goal is
+#	to be able to run all tests in asciibetical order so as to test
+#	older features first.  Presumably, these are the features that
+#	should be fixed first when working on Stu.
+# * test/NAME-ID
+#	These are tests for the feature named NAME, with ID being an
+#	integer.  Ideally, these would be migrated to the VERSION-ID
+# 	scheme.  
+#
 # SPECIFICATION FILES
 #
 # Each of these files can be placed in the individual test directory to
-# enable additional checks or behaviours.  All of these files are optional. 
+# enable additional checks or behaviors.  All of these files are optional. 
 #
 # TARGET       The name of the target that is built in the test, instead
 #              of the default 'A'.  This does not change the invocation:
@@ -61,23 +84,23 @@
 # CMDPREFIX    Prefix before command.  Used to set environment variables
 # PARALLEL     Give the arguments of the -j option for which the test is
 #              to be executed 
-# EXITSTATUS   The prescribed exit code; default is zero
+# EXITSTATUS   The prescribed exit status; default is zero
 # NOSECOND     If file is present, do not check that second invocation
 #              results in "Targets are up to date"  
 # NOTTY	       Don't do the extra TTY test (e.g., when the -q option is
-#	       used and the exit code is expected to be one)
+#	       used and the exit status is expected to be one)
 # NOCOLOR      Don't test for color in stderr (e.g., with the -y option)
 # CONTENT      Prescribe the exact content of the built file
 # INCONTENT    Prescribe strings that must appear in the built file 
-# STDOUT       The exact output of the command
-# STDERR       The exact content of the error output
-# INSTDOUT     Prescribe strings that must appear on stdout 
-# INSTDERR     Prescribe strings that must appear in the error message
-# NOTINSTDERR  A text that must not be present in the error output
+# STDOUT       The exact output of Stu
+# STDERR       The exact error output of Stu
+# INSTDOUT     Prescribe strings that must appear in Stu's output
+# INSTDERR     Prescribe strings that must appear in Stu's error output
+# NOTINSTDERR  A text that must not be present in Stu's error output
 # TTYSTDOUTERR The output and error output (interleaved) when in TTY mode
 # EXEC         Can be an alternative test script; it can do anything and
-#              should return a sensible exit code (i.e., 0 on success,
-#              nonzero otherwise).  It should also behave like ./mktest,
+#              should return a sensible exit status (i.e., 0 on success,
+#              nonzero otherwise).  It should also behave like sh/mktest,
 #              e.g., output '***' only on error, etc.
 #
 # For the files beginning with 'IN', each line contains a string that
@@ -90,10 +113,18 @@
 #   Usually, these scripts use "sleep 2", i.e., sleep for two seconds to
 #   make sure that there is a difference in timestamps of at least one
 #   second on systems where file modification times have a precision of
-#   only one second. 
+#   only one second.  An alternative is to use sh/touch_old. 
 # * Tests output '***' only in case of error.  This is convenient for
 #   grepping while the tests are running.
 # * Tests use 'diff' to compare files, not 'cmp'. 
+#
+# TODO
+#
+# * First, execute all tests without 'EXEC', and then all tests with
+#   'EXEC'.  
+# * For each test, interrupt the test after a specified timeout, to
+#   avoid that the whole testing procedure hangs when a single test
+#   hangs. 
 #
 
 # Note:  we can't use "set -e" here (which is a good general practice in
@@ -102,6 +133,8 @@
 
 # Set to "1" on error 
 errors=0
+
+exec 6>error.log
 
 time_begin="$(date +%s)"
 
@@ -115,8 +148,6 @@ else
 		ln -s stu.debug stu.test
 	fi
 fi
-
-exec 6>error.log
 
 unset STU_OPTIONS
 
@@ -132,18 +163,23 @@ else
 	tests="$(echo *)"
 fi
 
+count_total=0
+
+# In the next line, '$tests' expands with glob replacement 
 for file in $tests
 do
+	# Whether there is an error in this test 
 	error=0
+	
+	count_total="$(( count_total + 1 ))"
 
 	# Remove optional 'test/' prefix
 	file="$(echo "$file" | sed -e 's,^test/,,')"
 
 	if [ ! -d "$file" ]; then
 		echo >&2 "$0: *** '$file' is not a directory"
-		error=1
-		echo "$file" >&6
 		errors=1
+		echo "$file" >&6
 		continue
 	fi
 
@@ -151,18 +187,17 @@ do
 	if [ "$(echo $(ls -1 "$file" | wc -l))" = 0 ] ; then
 		if [ "$emptyok" != 1 ] ; then
 			echo >&2 "$0: *** Test directory $file/ does not contain any files"
-			error=1
-			echo "$file" >&6
 			errors=1
+			echo "$file" >&6
+			continue;
 		fi
-		continue;
 	fi
 
 	echo '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 	echo cd "$file"
 	cd "$file"
 
-	../../sh/delete_tmps || exit 1
+	../../sh/delete_tmps || exit 2
 
 	# Check that all all-uppercase files are of one of the allowed files 
 	allowed=",EXITSTATUS,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,"
@@ -190,8 +225,10 @@ do
 			-o -r STDERR -o -r NOTINSTDERR -o -r CMD -o -r CMDPREFIX \
 			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
 			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR -o -r NOCOLOR ]; then
-			echo >&2 "$: *** EXEC does not allow any other file"
-			error=1
+			echo >&2 "$0: *** EXEC does not allow any other file"
+			errors=1
+			echo "$file" >&6
+			continue
 		fi
 
 		echo >&2 ./EXEC
@@ -218,7 +255,7 @@ do
 			echo _______
 		fi
 		
-		# Exit code
+		# Exit status
 		exitcode_correct=0
 		if [ -r EXITSTATUS ]; then
 			exitcode_correct="$(sed -e '/^[[:space:]]*$/d;s/[[:space:]]\{1,\}//g' <EXITSTATUS)"
@@ -324,7 +361,7 @@ do
 		# Check that at least one line of error message is generated 
 		if [ "$exitcode_correct" != 0 ] && [ \! -r STDERR ]; then
 			if [ \! \( "$(echo $(cat list.def.err | wc -l))" -gt 0 \) ]; then
-				echo >&2 "$0: *** Nothing written to stderr although exit code is >0"
+				echo >&2 "$0: *** Nothing written to stderr although exit status is >0"
 				error=1
 			fi
 		fi
@@ -454,7 +491,7 @@ do
 		if [ -r PARALLEL ]; then
 			ks="$(sed -e '/^[[:space:]]*$/d' <PARALLEL)"
 			for k in $ks; do
-				../../sh/delete_tmps || exit 1
+				../../sh/delete_tmps || exit 2
 				echo $CMDPREFIX ../../stu.test "$CMD" -j "$k"
 				eval $CMDPREFIX ../../stu.test $CMD -j $k \>list.def.out 2\>list.def.err
 				if [ $? != 0 ]
@@ -468,12 +505,16 @@ do
 		fi	
 	fi	
 
-	../../sh/delete_tmps || exit 1
+	../../sh/delete_tmps || exit 2
 	cd ..
 
 	if [ "$error" != 0 ] ; then
 		echo "$file" >&6
 		errors=1
+		[ -n "$notall" ] && { 
+			echo >&2 "[31m$0: *** Test '$file' failed [notall][m"
+			exit 1 
+		}
 	fi
 done
 
@@ -485,7 +526,9 @@ printf 'Runtime: %u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)"
 
 if [ "$errors" != 0 ]
 then
-	echo >&2 "[31m$0: *** The following $(echo $(<../error.log wc -l)) test(s) failed:"
+	count_failed="$(echo $(<../error.log wc -l))"
+	success_rate="$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')"
+	echo >&2 "[31m$0: *** ${success_rate}% success rate.  The following $count_failed test(s) failed (out of $count_total):"
 	cat ../error.log
 	printf "[m"
 	exit 1

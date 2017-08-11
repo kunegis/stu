@@ -1,0 +1,18 @@
+
+// TODO This list was just started and is incomplete. 
+
+Command - A command that is run for a target.  Enclosed by braces ({}) in
+	Stu source, and executed with the shell. 
+
+Job - A job is a child process started by Stu to build one or more files
+        or transient targets.  Jobs are run in the background by
+        default, but the -i option
+
+Parameter - A parameter in the name of a file or a transient; introduced
+	by the dollar sign ($).  In command, the corresponding
+	environment variable is set. 
+
+Transient - One of the two basic datatypes ("targets") of Stu.  They are
+	noted with the '@' symbol, e.g., '@all'.  A transient can be
+	built like a file, but will not result in a built file.  A
+	transient can also be used only for its dependency. 

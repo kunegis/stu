@@ -1,0 +1,3 @@
+A:  X[Y] { touch A ; }
+Y = {}
+XY { exit 1; }

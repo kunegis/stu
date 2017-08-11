@@ -1,0 +1,19 @@
+A:  @headers
+{
+	[ -e config.h ] || exit 1
+	[ -e parse.h ] || exit 1
+	[ -e build.h ] || exit 1
+	rm *.h 
+	touch A
+}
+
+@headers:  (config parse build).h;
+
+>$name.h
+{
+	echo 'Blablabla some header'
+}
+
+
+
+

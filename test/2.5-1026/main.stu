@@ -1,0 +1,16 @@
+# A case in which a concatenation is erroneous.  The dynamic dependency
+# is *not* built.  This fails because the -o flag is not valid for
+# concatenation.  
+
+A:  [X]( -o B )  { touch A ; }
+
+B { touch B ; }
+
+C { touch C ; }
+
+X { 
+	# Check in the test that this is not executed
+	touch X
+}
+
+XB { touch XB ; }

@@ -1,0 +1,3 @@
+# Error:  parenthesis cannot be used on the "target" side
+A = list.X;
+list.(X):  { touch list.X; }

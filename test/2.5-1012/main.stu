@@ -1,0 +1,12 @@
+A:  list.list._465
+{
+	cp list.list._456 A
+}
+
+
+list.${X}_${Y}:  ($X)($Y)      
+{
+	cp "$X$Y" list."$X"_"$Y"
+}
+
+list.456 = {456}

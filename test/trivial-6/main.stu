@@ -1,7 +1,0 @@
-# Error
-
-A:  @b;
-
-@b:  -t C;
-
-C { touch C ; touch A ; }

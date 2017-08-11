@@ -1,0 +1,5 @@
+A:  [B] { cp D A ; }
+B: C { cp C B ; }
+C = { D }
+D = {correct}
+

@@ -1,0 +1,34 @@
+# Ordering:  The dependencies are built in the order list.(XW XZ YW YZ). 
+
+A:  (list.X list.Y)(W Z) {
+	touch A ; 
+}
+
+list.XW {
+	[ -e list.XZ ] && exit 1
+	[ -e list.YW ] && exit 1
+	[ -e list.YZ ] && exit 1
+	touch list.XW
+}
+
+list.XZ {
+	[ -e list.XW ] || exit 1
+	[ -e list.YW ] && exit 1
+	[ -e list.YZ ] && exit 1
+	touch list.XZ
+}
+
+list.YW {
+	[ -e list.XW ] || exit 1
+	[ -e list.XZ ] || exit 1
+	[ -e list.YZ ] && exit 1
+	touch list.YW
+}
+
+list.YZ {
+	[ -e list.XW ] || exit 1
+	[ -e list.XZ ] || exit 1
+	[ -e list.YW ] || exit 1
+	touch list.YZ
+}
+

@@ -1,0 +1,5 @@
+# This results in an error because -o cannot be used with a transient target of a File_Execution
+A: X { touch A ; }
+X:  -o @x { touch X ; }
+@x C:  B  { touch C ; }
+B { touch B ; }

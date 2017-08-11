@@ -2,13 +2,11 @@
 #
 # Generate the manpage from the template.
 # 
-# INPUT FILES
-#	
+# INPUT FILES 
 #	stu.1.in	The Stu manpage template
 #	VERSION
 #
-# OUTPUT FILES
-#
+# OUTPUT FILES 
 #	stu.1		The Stu manpage
 #
 

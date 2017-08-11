@@ -1,0 +1,15 @@
+# * a concatenation dynamic file containing comments
+
+A:  list.[X]
+{
+	cat list.1 list.2 >A
+}
+
+X = {
+	1 
+	# xxxxxxxxxxxx
+	2
+}
+
+list.1 = {111}
+list.2 = {222}

@@ -1,0 +1,12 @@
+A:  list.[[B]]
+{
+	cat list.E list.F list.G list.H >A
+}
+
+B = { C D }
+C = { E F }
+D = { G H }
+list.E = {eee}
+list.F = {fff}
+list.G = {ggg}
+list.H = {hhh}

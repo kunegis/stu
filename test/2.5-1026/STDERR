@@ -1,0 +1,4 @@
+main.stu:5:13: 'B' cannot be declared as optional
+main.stu:5:11: using '-o'
+main.stu:5:6: in concatenation to [X]
+main.stu:5:5: [X]B is needed by 'A'

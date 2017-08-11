@@ -1,0 +1,4 @@
+A:  @B(C) { cp X A ; }
+@BC:  X;
+X = {correct}
+

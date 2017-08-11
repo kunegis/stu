@@ -1,0 +1,11 @@
+# Order of parts
+
+A:  [B][C] { 
+	cat list.1 list.2 list.3 >A
+}
+
+>B { sleep 2 ; echo list. ; }
+
+C = { 1 2 3 }
+
+>list.$n { echo "$n" ; }

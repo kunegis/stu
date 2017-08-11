@@ -2,29 +2,31 @@ From each major version to the next, changes in Stu are
 backward-incompatible.  This file lists required changes in Stu files
 needed to migrate to a new major version. 
 
-See the file 'NEWS' for more information about Stu versioning. 
+See the file 'NEWS' for more information about Stu versioning, and for
+details of other (non-major) version changes. 
 
 == Version 1 -> Version 2 ==
 
-(1) Quotes were changed to work like in the shell.  This makes it easier
-for shell programmers, and also makes it easier for people using shell
-syntax highlighted on Stu sources.
+(1) Quotes (" and ') were changed to work like in the shell.  This makes
+it easier for shell programmers to use Stu, and also makes it easier for
+people using shell syntax highlighting on Stu sources.
 
-Single quotes cannot contain escape sequences anymore.  Single quotes
-now work like single quotes in the shell:  they can contain any
-unescaped character, except single quotes.  Also, unescaped newlines are
-now allowed in single quotes. 
+Single quotes (') cannot contain escape sequences anymore.  Single
+quotes now work like single quotes in the shell: they can contain any
+unescaped character, except single quotes, which end the quote.  Also,
+unescaped newlines are now allowed in single quotes, and represent
+themselves.
 
-Double quotes are now the only quotes that allow backslash escape
+Double quotes (") are now the only quotes that allow backslash escape
 sequences.  They now also allow unescaped single quotes, and newline
 characters.  Also, they may now contain parameters starting with the
 dollar character, and therefore they now also support the \$ escape
-sequence. 
+sequence to represent a dollar sign.
 
 Code containing quoted strings may now have to be changed.  Dynamic
 dependencies automatically generating quoted strings may also have to be
 changed.  (Although in Stu 2, it is recommended to use newline- or
-NUL-delimited dynamic dependencies instead.)
+NUL-delimited dynamic dependencies instead, using the options -n or -o.)
 
 (2) Unquoted names must not begin with any of the characters '-', '+' or
 '~'.  When files begin with any of these characters, they must be quoted
@@ -61,8 +63,8 @@ the database.
 ?  is now written as  -o   (optional dependencies)
 &  is now written as  -t   (trivial dependencies)
 
-'p', 'o' and 't' must not be followed by whitespace if the next token is
-a name or '@'. 
+'p', 'o' and 't' must be followed by whitespace if the next token is a
+name or '@'.
 
 Code must be changed accordingly. 
 

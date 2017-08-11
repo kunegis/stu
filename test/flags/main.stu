@@ -1,8 +1,8 @@
 #
-# Test the $CFLAGS idiom, i.e. using a existence-only dependency to make
-# sure programs are *not* recompiled just because the flags change.
-# Also, test that variable dependencies are transitive through phonies
-# without commands. 
+# Test the $CFLAGS idiom, i.e. using a persistent dependency (using the
+# flag -p) to make sure programs are *not* recompiled just because the
+# flags change.  Also, test that variable dependencies are transitive
+# through transient targets without commands. 
 #
 # Note:  this is an old version of the CFLAGS idiom.  In newer version
 # of Stu, this is better achieved using trivial dependencies. 
@@ -10,12 +10,12 @@
 
 @all: a b;
 
-a: a.c @flags { echo Compiling ; echo $CFLAGS $LDFLAGS >a }
-b: b.c @flags { echo Compiling ; echo $CFLAGS $LDFLAGS >b }
+a: a.c @flags { echo Compiling ; echo $CFLAGS $LDFLAGS >a ; }
+b: b.c @flags { echo Compiling ; echo $CFLAGS $LDFLAGS >b ; }
 
 @flags:  $[-p CFLAGS] $[-p LDFLAGS];
 
-CFLAGS: { echo -g -Wall >CFLAGS }
-LDFLAGS: { echo -L >LDFLAGS }
+CFLAGS  = { -g -Wall }
+LDFLAGS = { -L }
 
-$NAME.c: { echo ballsdlakjds >$NAME.c }
+$NAME.c: { echo ballsdlakjds >"$NAME".c ; }

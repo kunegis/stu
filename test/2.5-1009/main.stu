@@ -1,0 +1,3 @@
+A:  list.(C D)E { cat list.CE list.DE >A ; }
+list.CE = {ccc}
+list.DE = {ddd}

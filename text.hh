@@ -40,7 +40,7 @@ string frmt(const char *format, ...)
 	string ret(n, '\0');
 
 	va_start(ap, format); 
-	n= vsnprintf((char *) ret.c_str(), n+1, format, ap); 
+	n= vsnprintf(&ret[0], n+1, format, ap); 
 	va_end(ap); 
 
 	if (n < 0) { 
@@ -73,7 +73,7 @@ string fmt(const char *s)
 		ret += string(s, q - s); 
 		s= q + 1;
 		if (*s != '%') {
-			/* Missing argument */ 
+			/* Missing argument, or one too many %s */ 
 			assert(false);
 			break;
 		}
@@ -110,30 +110,5 @@ string fmt(const char *s, T value, Args... args)
 
 	return ret + value + fmt(s, args...); 
 }
-
-/* Padding for verbose output (option -v).  During the lifetime of an
- * object, padding is increased by one.  */
-class Verbose
-{
-private:
-	static string padding_current;
-
-public:
-	Verbose() 
-	{
-		padding_current += "   ";
-	}
-
-	~Verbose() 
-	{
-		padding_current.resize(padding_current.size() - 3);
-	}
-
-	static const char *padding() {
-		return padding_current.c_str(); 
-	}
-};
-
-string Verbose::padding_current= "";
 
 #endif /* ! TEXT_HH */

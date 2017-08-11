@@ -1,0 +1,7 @@
+A: [[B]] { cp E A ; }
+B = {@a}
+@a: C;
+C = {[@b]}
+@b: D;
+D = {E}
+E = {correct}

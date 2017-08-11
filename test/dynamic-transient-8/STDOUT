@@ -1,11 +1,11 @@
 Creating x: 'B C D'
 Creating B: 'E F'
+Creating C: 'G H'
+Creating D: 'I J'
 Creating E: oneline
 Creating F: oneline
-Creating C: 'G H'
 Creating G: oneline
 Creating H: oneline
-Creating D: 'I J'
 Creating I: oneline
 Creating J: oneline
 >A: cat $(cat $(cat x))

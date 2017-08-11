@@ -1,0 +1,11 @@
+A:  list.(((([(((((X)))))]))))
+{
+	cat list.C list.D >A
+}
+
+X {
+	echo C D >X
+}
+
+>list.C { echo ccc ; }
+>list.D { echo ddd ; }

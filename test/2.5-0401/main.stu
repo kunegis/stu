@@ -1,0 +1,7 @@
+# Error because 'X' cannot be built. 
+# Check that the error message includes 'D'
+A:  [[@x]] { touch A ; }
+@x:  B;
+B= {C}
+C= {D}
+D: X { touch D ; }

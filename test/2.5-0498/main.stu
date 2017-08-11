@@ -1,0 +1,14 @@
+A:  (B (C D))E  {
+	[ -e BE ] || exit 1
+	[ -e CE ] || exit 1
+	[ -e DE ] || exit 1
+	[ -e B ] && exit 1
+	[ -e C ] && exit 1
+	[ -e D ] && exit 1
+	[ -e E ] && exit 1
+	touch A
+}
+
+BE = {be}
+CE = {ce}
+DE = {de}

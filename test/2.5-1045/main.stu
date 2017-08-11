@@ -1,0 +1,13 @@
+A: @plot.all {
+	cat list.plot-a list.plot-bb list.plot-ccc >A
+}
+
+@plot.all:   @plot.[list.NETWORKS];
+
+list.NETWORKS = { a bb ccc }
+
+@plot.$network:  list.plot-$network;
+
+>list.plot-$network {
+	echo Network "$network"
+}

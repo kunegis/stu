@@ -10,6 +10,34 @@
 #==== Normal features ====
 
 #
+# Have a feature to indicate that a file contains only a single
+# filename.  To complement -n and -0.  Must produce a logical error when
+# the file contains the nul byte '\0' or is empty.  '\n' and other
+# whitespaces should work.  Not needed because -0 can be used for it,
+# except that this option would catch the error of an empty file, or a
+# file accidentally containing \0.
+#
+
+#
+# More ways to specify how many/which commands to run, apart from -j.
+# These can be based on:
+#  - Memory consumption
+#  - CPU usage / load average
+#  - etc.
+#
+# It's hard to define which of such rules would be universal enough to
+# be included in Stu. 
+#
+
+#
+# Have an option defined on targets that will make a backup of the
+# target file before running the command, and restore the target on
+# error.  To be used with badly-behaving commands that overwrite the
+# target immediately.  On the other hand, this can be implemented as a
+# separate program to be called in the command. 
+#
+
+#
 # Make the %version mandatory in every file, to avoid parsing a file of
 # the wrong Stu version.  
 #

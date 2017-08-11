@@ -122,18 +122,16 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 # red, and other traces in another color. 
 #
 
+#
+# Have proper Autoconf support for C++11, and not just using -std=c++11
+# directly.  
+#
+
 #=================== Further features =======================
 
 #
-# Have a feature to indicate that a file contains only a single
-# filename.  To complement -n and -0.  Must produce a logical error when
-# the file contains the nul byte '\0'.  '\n' and other whitespaces
-# should work.  
-#
-
-#
 # In File_Execution::wait(), use a non-blocking wait() function to
-# handle all finished jobs in a loop in that function.
+# handle all finished jobs in a loop in that function.  
 #
 
 #
@@ -152,6 +150,8 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 #      consider the separation between arguments to be whitespace
 #    - don't support '$'
 #    - don't need space after flags 
+#    - recognize '[' and ']' in the middle of the string, to denote
+#      concatenation 
 #
 
 $ stu -- [ -n FILES ]
@@ -159,6 +159,7 @@ $ stu -- -o FILE
 $ stu -- -oFILE
 $ stu -- [FILE]
 $ stu -- [-oFILE]
+$ stu -- list.[FILE]
 
 #
 # Canonicalize names 
@@ -322,22 +323,6 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 #
 
 #
-# More ways to specify how many/which commands to run, apart from -j.
-# These can be based on:
-#  - Memory consumption
-#  - CPU usage / load average
-#  - etc.
-#
-# It's hard to define which of such rules would be universal enough to
-# be included in Stu. 
-#
-
-#
-# Have proper Autoconf support for C++11, and not just using -std=c++11
-# directly.  
-#
-
-#
 # Line number and file syntax:  A preprocessor-like construct that gives a new
 # filename and line number, such that error messages from Stu can point
 # to the original file, not the generated file.  Analogous to the
@@ -347,7 +332,7 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 % file datasets.list
 % line 120
 
-# Use this in texdep and other stu-utils programs judiciously. 
+# Use this in stu-utils/texdep and other stu-utils programs judiciously. 
 
 #
 # A 'why' option that shows why things are built.  Will look similar to
@@ -375,14 +360,6 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 #
 
 #
-# We may rewrite part of execution.hh to not use the flag bits, and
-# instead use classes such as 
-#
-#	Optional_Execution, Trivial_Execution, Persistent_Execution,
-# 	etc. 
-#
-
-#
 # Have an option to output the dependency graph, i.e., output each edge
 # on a single like, e.g. separated by tab.  (Use it then to perform a network
 # analysis of the KONECT-Analysis dependency graph.)
@@ -398,18 +375,11 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 # possible files, it would take lots of memory.  A smart way to do it
 # would be to open() the file, keeping only a reference in the Stu
 # process to it, and then linking it again if needed, but that is
-# probably not possible ini POSIX. 
+# probably not possible in POSIX. 
 #
 
 #
-# Have an option defined on targets that will make a backup of the
-# target file before running the command, and restore the target on
-# error.  To be used with badly-behaving commands that overwrite the
-# target immediately.
-#
-
-#
-# In -k mode, Start trivial dependencies immediately when it iss clear
+# In -j>1 mode, Start trivial dependencies immediately when it is clear
 # they must be started, not just when everything else is done.
 #
 
@@ -422,7 +392,10 @@ A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
 
 # In this example, when 'program' does not exist, Stu will *not* build
 # 'dep.sources', because the -s flag is used and Stu knows that
-# 'program' has to be rebuilt anyway. 
+# 'program' has to be rebuilt anyway.  '-s' could stand for
+# "secondary", and mean "we don't want this to be built, we only need it
+# to determine whether we have to be rebuilt."
+
 program:  -s [dep.sources] {
 	cc ... -o program
 }
@@ -449,5 +422,5 @@ A:  list.( '' ); # Equivalent to just 'list.'
 A:  @[X]; 
 
 #
-# The Dep::top mechanism is not clean.  Do something better.
+# The Dep::top mechanism is not clean.  Do something better.  
 #

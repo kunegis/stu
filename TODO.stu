@@ -1,9 +1,4 @@
 #
-# Write a test with really long filenames and really long chains of
-# dependencies.  
-#
-
-#
 # Test what happens when a file passed with -n contains a \0 character.
 # It should be considered a syntax error and thus should should be a
 # logical error (exit status 2). 

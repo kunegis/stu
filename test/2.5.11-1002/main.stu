@@ -1,0 +1,2 @@
+A:  [-n B] { touch A ; }
+>B { printf 'x\0' ; }

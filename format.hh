@@ -145,8 +145,8 @@ string name_format(string name, Style style, bool &quotes)
 	string ret(4 * name.size(), '\0');
 	char *const q_begin= &ret[0], *q= q_begin; 
 
-	for (const char *p= name.c_str();  *p;  ++p) {
-		char c= *p;
+	for (size_t i= 0;  i < name.size();  ++i) {
+		char c= name[i]; 
 		unsigned char cu= (unsigned char) c;
 		if (c == ' ') {
 			*q++= ' '; 
@@ -169,7 +169,7 @@ string name_format(string name, Style style, bool &quotes)
 				*q++= '\'';
 			}
 		} else if (cu >= 0x21 && cu != 0xFF) {
-			*q++= *p;
+			*q++= c;
 		} else {
 			*q++= '\\';
 			*q++= '0' + (cu >> 6);

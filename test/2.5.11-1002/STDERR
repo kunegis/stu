@@ -1,0 +1,3 @@
+B:1:1: filename 'x\0' must not contain '\0'
+main.stu:2:2: in newline-separated dynamic dependency 'B' declared with flag '-n'
+main.stu:1:9: [B] is needed by 'A'

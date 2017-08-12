@@ -990,7 +990,7 @@ void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			/* The delimiter */ 
 
 			const char c_printed= (dep_target->flags & F_NEWLINE_SEPARATED) ? 'n' : '0';
-			/* The character to print as the delimiter */
+			/* The character to print as the delimiter in output */
 		
 			char *lineptr= nullptr;
 			size_t n= 0;
@@ -1008,15 +1008,12 @@ void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 				
 				Place place(Place::Type::INPUT_FILE, filename, ++line, 0); 
 
+				/* LEN is at least one by the specification
+				 * of getdelim().  */ 
+				assert(len >= 1); 
+
 				assert(lineptr[len] == '\0'); 
-
-				if (len == 0) {
-					/* Should not happen by the specification
-					 * of getdelim(), so abort parse.  */ 
-					assert(false); 
-					break;
-				} 
-
+				
 				/* There may or may not be a terminating \n or \0.
 				 * getdelim(3) will include it if it is present,
 				 * but the file may not have one for the last entry.  */ 
@@ -1034,15 +1031,35 @@ void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 					fclose(file); 
 					place << "filename must not be empty"; 
 					dynamic_execution->print_traces
-						(fmt("in %s-separated dynamic dependency "
+						(fmt("in %s-separated dynamic dependency %s "
 						     "declared with flag %s",
 						     c == '\0' ? "zero" : "newline",
+						     name_format_word(filename),
 						     multichar_format_word
 						     (frmt("-%c", c_printed))));
 					throw ERROR_LOGICAL; 
 				}
 				
 				string filename_dep= string(lineptr, len); 
+
+				if (c != '\0' && filename_dep.find('\0') != string::npos) {
+					free(lineptr); 
+					fclose(file);
+					place << fmt("filename %s must not contain %s",
+						     name_format_word(filename_dep),
+						     char_format_word('\0')); 
+					dynamic_execution->print_traces
+						(fmt("in %s-separated dynamic dependency %s "
+						     "declared with flag %s",
+						     c == '\0' ? "zero" : "newline",
+						     name_format_word(filename),
+						     multichar_format_word
+						     (frmt("-%c", c_printed))));
+					throw ERROR_LOGICAL; 
+				}
+				if (c == '\0') {
+					assert(filename_dep.find('\0') == string::npos); 
+				}
 
 				deps.push_back
 					(make_shared <Plain_Dep>

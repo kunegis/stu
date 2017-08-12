@@ -1,10 +1,4 @@
 #
-# Test what happens when a file passed with -n contains a \0 character.
-# It should be considered a syntax error and thus should should be a
-# logical error (exit status 2). 
-#
-
-#
 # Make sure we don't compile in any of the multi-threaded libraries.
 # (For curiosity)   
 #

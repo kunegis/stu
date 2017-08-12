@@ -1,0 +1,3 @@
+A:  [-n B] { touch A ; }
+>B { printf 'C\n\0\n' ; }
+$x { touch -- "$x" ; }

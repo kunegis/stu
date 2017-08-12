@@ -1,0 +1,3 @@
+# What happens when a file included with -n contains a \0 character?
+A:  [-n B] { touch A ; }
+>B { printf '\0' ; }

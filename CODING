@@ -151,6 +151,8 @@ things to be said about portable shell scripting.
   switch to -E once it's standardized.)  Also, the 'b' and 't' commands
   must not be followed by a semicolon; always use a newline after them
   when there are more commands. 
+* 'date +%s' is not mandated by POSIX, even though it works on all
+  operating systems we tried it on.  It outputs the currect Unix time. 
 * Grep however has the -E option for extended regular expressions.  Grep
   is always invoked with the -E *or* the -F option.  (Using basic
   regular expressions with Grep is also portable, but we don't do it.)

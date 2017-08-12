@@ -254,14 +254,14 @@ protected:
 	/* Same semantics as RESULT, but for variable values, stored as
 	 * KEY-VALUE pairs.  */
 
-	shared_ptr <Rule> param_rule;
+	shared_ptr <const Rule> param_rule;
 	/* The (possibly parametrized) rule from which this execution
 	 * was derived.  This is only used to detect strong cycles.  To
 	 * manage the dependencies, the instantiated general rule is
 	 * used.  Null by default, and set by individual implementations
 	 * in their constructor if necessary.  */ 
 
-	Execution(shared_ptr <Rule> param_rule_= nullptr)
+	Execution(shared_ptr <const Rule> param_rule_= nullptr)
 		:  bits(0),
 		   error(0),
 		   timestamp(Timestamp::UNDEFINED),
@@ -450,8 +450,8 @@ public:
 
 	File_Execution(shared_ptr <const Dep> dep_link,
 		       Execution *parent,
-		       shared_ptr <Rule> rule,
-		       shared_ptr <Rule> param_rule,
+		       shared_ptr <const Rule> rule,
+		       shared_ptr <const Rule> param_rule,
 		       map <string, string> &mapping_parameter_,
 		       int &error_additional);
 	/* ERROR_ADDITIONAL indicates whether an error will be thrown
@@ -515,7 +515,7 @@ private:
 	 * transients are included.   
 	 * Does not include flags (except F_TRANSIENT).  */
 
-	shared_ptr <Rule> rule;
+	shared_ptr <const Rule> rule;
 	/* The instantiated file rule for this execution.  Null when
 	 * there is no rule for this file (this happens for instance
 	 * when a source code file is given as a dependency).
@@ -602,8 +602,8 @@ public:
 
 	Transient_Execution(shared_ptr <const Dep> dep_link,
 			    Execution *parent,
-			    shared_ptr <Rule> rule,
-			    shared_ptr <Rule> param_rule,
+			    shared_ptr <const Rule> rule,
+			    shared_ptr <const Rule> param_rule,
 			    map <string, string> &mapping_parameter,
 			    int &error_additional);
 
@@ -640,7 +640,7 @@ private:
 	/* The targets to which this execution object corresponds.  All
 	 * are transients.  Contains at least one element.  */
 
-	shared_ptr <Rule> rule;
+	shared_ptr <const Rule> rule;
 	/* The instantiated file rule for this execution.  Never null. */ 
 
 	Timestamp timestamp_old;
@@ -1774,7 +1774,7 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 	if (! target.is_dynamic()) {
 		/* Plain execution */ 
 
-		shared_ptr <Rule> rule_child, param_rule_child; 
+		shared_ptr <const Rule> rule_child, param_rule_child; 
 		map <string, string> mapping_parameter;
 		bool use_file_execution= false;
 		try {
@@ -1811,7 +1811,6 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 		}
 		
 		if (use_file_execution) {
-
 			execution= new File_Execution
 				(dep, 
 				 this,
@@ -2092,8 +2091,8 @@ void File_Execution::waited(pid_t pid, int status)
 
 File_Execution::File_Execution(shared_ptr <const Dep> dep,
 			       Execution *parent, 
-			       shared_ptr <Rule> rule_,
-			       shared_ptr <Rule> param_rule_,
+			       shared_ptr <const Rule> rule_,
+			       shared_ptr <const Rule> param_rule_,
 			       map <string, string> &mapping_parameter_,
 			       int &error_additional)
 	:  Execution(param_rule_),
@@ -3291,7 +3290,7 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dep> dep_,
 		Target target= dep->get_target(); 
 		try {
 			map <string, string> mapping_parameter; 
-			shared_ptr <Rule> rule= 
+			shared_ptr <const Rule> rule= 
 				rule_set.get(target_base, param_rule, mapping_parameter, 
 					     dep->get_place()); 
 		} catch (int e) {
@@ -3427,8 +3426,8 @@ bool Transient_Execution::finished(Flags) const
 
 Transient_Execution::Transient_Execution(shared_ptr <const Dep> dep_link,
 					 Execution *parent,
-					 shared_ptr <Rule> rule_,
-					 shared_ptr <Rule> param_rule_,
+					 shared_ptr <const Rule> rule_,
+					 shared_ptr <const Rule> param_rule_,
 					 map <string, string> &mapping_parameter_,
 					 int &error_additional)
 	:  Execution(param_rule_),

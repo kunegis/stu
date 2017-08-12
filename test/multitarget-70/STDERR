@@ -1,4 +1,4 @@
-main.stu:3:4: multiple minimal rules for target 'X.Y'
+main.stu:3:4: multiple minimal matching rules for target 'X.Y'
 main.stu:5:1: rule with target 'X.${name}'
 main.stu:5:9: rule with target '${name}.Y'
 main.stu:3:4: 'X.Y' is needed by 'A'

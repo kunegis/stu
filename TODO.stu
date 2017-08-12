@@ -1,18 +1,7 @@
 #
-# In the following case, there should be an explanation message that two
-# parameters cannot be contiguous.
-#
-
-A.$X$Y;
-
-#
-# When an unknown flag is encountered, have an explanation of all valid
-# flags.  
-#
-
-#
-# When '*' is encountered in a file, show an explanation saying which
-# characters are not allowed. 
+# sh/test:  log all tests and their runtime, version number, date, etc.
+# This is to detect regressions such as "a new version of Stu is much
+# slower than old versions."
 #
 
 #
@@ -32,21 +21,6 @@ $ stu -F 'A {cat $(cat ahjsahd);}'
 #
 # but it should.  
 #
-
-#
-# sh/test:  log all tests and their runtime, version number, date, etc.
-# This is to detect regressions such as "a new version of Stu is much
-# slower than old versions."
-#
-
-#
-# This test
-#
-
-# 'A' will contain the three lines 'x', 'y' and 'z'
->A: [@x] { cat X Y Z ; }
-@x:  X Y Z; 
-X = {x}   Y = {y}  Z = {z}
 
 #
 # Check that random mode and -j2 work together when there is just a
@@ -69,13 +43,6 @@ X = {x}   Y = {y}  Z = {z}
 # Make sure we don't compile in any of the multi-threaded libraries.
 # (For curiosity)   
 #
-
-# 
-# Test that this fails as it should:
-# 
-
-@all:  @x.abc;
-@x.$name A.$name: { exit 0 ; }
 
 #
 # Actually use the PACKAGE_URL field from autoconf. 
@@ -113,7 +80,7 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 
 #
 # delete_tmps:  don't remove ?? and dep.*, as these patterns appear in
-# stu/.  Change tests that use these patterns.  Remove the script to
+# stu/.  Change tests that use these patterns.  Rename the script to
 # remove_*. 
 #
 
@@ -125,6 +92,13 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 #
 # Have proper Autoconf support for C++11, and not just using -std=c++11
 # directly.  
+#
+
+#
+# Find a replacement for 'date +%s', as %s is not POSIX.  I've seen this
+# being proposed:
+#
+#	PATH=`getconf PATH` awk 'BEGIN{srand();print srand()}'
 #
 
 #=================== Further features =======================
@@ -320,3 +294,28 @@ dep.sources {
 	# Some complex mechanism for determining the source code files
 	# of the program
 }
+
+#
+# Have an extended safety mode, in which Stu checks that node of the
+# dependencies themselves where touched by a command. 
+#
+
+#
+# Have a way to set $STU_SHELL and $STU_CP from within a Stu file.
+# E.g., using directives. 
+#
+
+# Some Stu scripts may want to use Bash throughout
+% STU_SHELL /bin/bash
+
+# Should it be valid for the whole Stu invocation, or only for the
+# source file in which it appears?
+
+#
+# Does it make sense to have a way to set environment variables for all
+# commands?  It would open us up to many additional questions, and
+# potentially some Make-like anti-patterns.  In general, Stu directives
+# are prone to implement anti-patterns, as what they do is global. 
+#
+
+% set PATH /usr/local/bin

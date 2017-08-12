@@ -49,7 +49,7 @@ do_test()
 
 		# The actual output depends on whether the rules are
 		# parametrized 
-		grep -qE "(multiple minimal rules)|(there must not be a second rule) for target 'abcdefghijklmno'" list.err || {
+		grep -qE "(multiple minimal matching rules)|(there must not be a second rule) for target 'abcdefghijklmno'" list.err || {
 			echo >&2 "*** Invalid error output"
 			echo >&2 stderr:
 			echo >&2 ______

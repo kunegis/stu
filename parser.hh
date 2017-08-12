@@ -69,7 +69,7 @@ public:
 	 * PLACE_INPUT is the place of the '<' input redirection
 	 * operator.  */ 
 
-	static void get_rule_list(vector <shared_ptr <Rule> > &rules,
+	static void get_rule_list(vector <shared_ptr <const Rule> > &rules,
 				  vector <shared_ptr <Token> > &tokens,
 				  const Place &place_end);
 
@@ -101,22 +101,22 @@ private:
 		   place_end(place_end_)
 	{ }
 	
-	void parse_rule_list(vector <shared_ptr <Rule> > &ret);
+	void parse_rule_list(vector <shared_ptr <const Rule> > &ret);
 	/* The returned rules may not be unique -- this is checked later */ 
 
 	bool parse_expression_list(vector <shared_ptr <const Dep> > &ret, 
 				   Place_Name &place_name_input,
 				   Place &place_input,
-				   const vector <shared_ptr <Place_Param_Target> > &targets);
+				   const vector <shared_ptr <const Place_Param_Target> > &targets);
 	/* RET is filled.  RET is empty when called. */
 
-	shared_ptr <Rule> parse_rule(); 
+	shared_ptr <const Rule> parse_rule(); 
 	/* Return null when nothing was parsed */ 
 
 	bool parse_expression(shared_ptr <const Dep> &ret,
 			      Place_Name &place_name_input,
 			      Place &place_input,
-			      const vector <shared_ptr <Place_Param_Target> > &targets);
+			      const vector <shared_ptr <const Place_Param_Target> > &targets);
 	/* Parse an expression.  Write the parsed expression into RET.
 	 * RET must be empty when called.  Return whether an expression
 	 * was parsed.  TARGETS is passed to construct error
@@ -125,13 +125,13 @@ private:
 	shared_ptr <const Dep> parse_variable_dep
 	(Place_Name &place_name_input,
 	 Place &place_input,
-	 const vector <shared_ptr <Place_Param_Target> > &targets);
+	 const vector <shared_ptr <const Place_Param_Target> > &targets);
 	/* A variable dependency */ 
 
 	shared_ptr <const Dep> parse_redirect_dep
 	(Place_Name &place_name_input,
 	 Place &place_input,
-	 const vector <shared_ptr <Place_Param_Target> > &targets);
+	 const vector <shared_ptr <const Place_Param_Target> > &targets);
 
 	/* If the next token is of type T, return it, otherwise return
 	 * null.  Also return null when at the end of the token list.  */
@@ -168,7 +168,7 @@ private:
 	 * slashes */
 };
 
-void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret)
+void Parser::parse_rule_list(vector <shared_ptr <const Rule> > &ret)
 {
 	assert(ret.size() == 0); 
 	
@@ -178,7 +178,7 @@ void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret)
 		const auto iter_begin= iter; 
 #endif /* ! NDEBUG */ 
 
-		shared_ptr <Rule> rule= parse_rule(); 
+		shared_ptr <const Rule> rule= parse_rule(); 
 
 		if (rule == nullptr) {
 			assert(iter == iter_begin); 
@@ -189,7 +189,7 @@ void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret)
 	}
 }
 
-shared_ptr <Rule> Parser::parse_rule()
+shared_ptr <const Rule> Parser::parse_rule()
 {
 	const auto iter_begin= iter;
 	/* Used to check that when this function fails (i.e., returns
@@ -201,7 +201,7 @@ shared_ptr <Rule> Parser::parse_rule()
 	int redirect_index= -1; 
 	/* Index of the target that has the output, or -1 */ 
 
-	vector <shared_ptr <Place_Param_Target> > place_param_targets; 
+	vector <shared_ptr <const Place_Param_Target> > place_param_targets; 
 
 	while (iter != tokens.end()) {
 
@@ -304,7 +304,7 @@ shared_ptr <Rule> Parser::parse_rule()
 				    name_format_word('$' + param_1),
 				    name_format_word('$' + param_2),
 				    target_name->format_word()); 
-				    
+			explain_separated_parameters(); 
 			throw ERROR_LOGICAL;
 		}
 
@@ -317,7 +317,7 @@ shared_ptr <Rule> Parser::parse_rule()
 			throw ERROR_LOGICAL;
 		}
 
-		shared_ptr <Place_Param_Target> place_param_target= make_shared <Place_Param_Target>
+		shared_ptr <const Place_Param_Target> place_param_target= make_shared <Place_Param_Target>
 			(flags_type, *target_name, place_target);
 
 		place_param_targets.push_back(place_param_target); 
@@ -573,9 +573,9 @@ shared_ptr <Rule> Parser::parse_rule()
 			 * in slash */
 			append_copy(*name_copy, place_param_targets[0]->place_name); 
 
-			return make_shared <Rule> (place_param_targets[0], name_copy,
-						   place_flag_persistent,
-						   place_flag_optional);
+			return make_shared <const Rule> (place_param_targets[0], name_copy,
+							 place_flag_persistent,
+							 place_flag_optional);
 		}
 		
 	} else if (is_operator(';')) {
@@ -640,7 +640,7 @@ shared_ptr <Rule> Parser::parse_rule()
 		}
 	}
 
-	return make_shared <Rule> 
+	return make_shared <const Rule> 
 		(move(place_param_targets), 
 		 deps, 
 		 command, is_hardcode, 
@@ -651,7 +651,7 @@ shared_ptr <Rule> Parser::parse_rule()
 bool Parser::parse_expression_list(vector <shared_ptr <const Dep> > &ret, 
 				   Place_Name &place_name_input,
 				   Place &place_input,
-				   const vector <shared_ptr <Place_Param_Target> > &targets)
+				   const vector <shared_ptr <const Place_Param_Target> > &targets)
 {
 	assert(ret.size() == 0);
 
@@ -674,7 +674,7 @@ bool Parser::parse_expression_list(vector <shared_ptr <const Dep> > &ret,
 bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 			      Place_Name &place_name_input,
 			      Place &place_input,
-			      const vector <shared_ptr <Place_Param_Target> > &targets)
+			      const vector <shared_ptr <const Place_Param_Target> > &targets)
 {
 	assert(ret == nullptr); 
 
@@ -868,7 +868,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 shared_ptr <const Dep> Parser
 ::parse_variable_dep(Place_Name &place_name_input, 
 		     Place &place_input,
-		     const vector <shared_ptr <Place_Param_Target> > &targets)
+		     const vector <shared_ptr <const Place_Param_Target> > &targets)
 {
 	bool has_input= false;
 
@@ -1061,7 +1061,7 @@ shared_ptr <const Dep> Parser
 shared_ptr <const Dep> Parser::parse_redirect_dep
 (Place_Name &place_name_input,
  Place &place_input,
- const vector <shared_ptr <Place_Param_Target> > &targets)
+ const vector <shared_ptr <const Place_Param_Target> > &targets)
 {
 	(void) targets;
 
@@ -1213,7 +1213,7 @@ void Parser::append_copy(      Name &to,
 	to.append(from);
 }
 
-void Parser::get_rule_list(vector <shared_ptr <Rule> > &rules,
+void Parser::get_rule_list(vector <shared_ptr <const Rule> > &rules,
 			  vector <shared_ptr <Token> > &tokens,
 			  const Place &place_end)
 {
@@ -1239,7 +1239,7 @@ void Parser::get_expression_list(vector <shared_ptr <const Dep> > &deps,
 {
 	auto iter= tokens.begin(); 
 	Parser parser(tokens, iter, place_end); 
-	vector <shared_ptr <Place_Param_Target>> targets;
+	vector <shared_ptr <const Place_Param_Target>> targets;
 	parser.parse_expression_list(deps, input, place_input, targets); 
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start() 

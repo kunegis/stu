@@ -745,6 +745,13 @@ julia-command;
 # programming languages use unusual quoting mechanisms and ways of
 # pairing parenthesis-like characters. 
 
+# An alternative is to use '#!', as in the following example: 
+A.data:  B.data C.data julia-wrapper
+{#! julia-wrapper
+	A = B * C
+}
+
+
 #
 # Nested rules.  Good for dependencies that are used only once. 
 # This is quite hard to read, honestly, and mostly fulfills the fantasy

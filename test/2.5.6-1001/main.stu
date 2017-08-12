@@ -1,0 +1,12 @@
+# Explanation for this error ($Y and $Y cannot be contiguous)
+
+A:  list.1234
+{
+	touch A 
+}
+
+list.$X$Y
+{
+	touch "list.$X$Y"
+}
+

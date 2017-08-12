@@ -100,7 +100,7 @@ void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
 void read_file(string filename,
 	       int file_fd,
 	       Rule_Set &rule_set, 
-	       shared_ptr <Rule> &rule_first,
+	       shared_ptr <const Rule> &rule_first,
 	       Place &place_first); 
 /* Read in an input file and add the rules to the given rule set.  Used
  * for the -f option and the default input file.  If not yet non-null,
@@ -110,7 +110,7 @@ void read_file(string filename,
 
 void read_option_F(const char *s,
 		   Rule_Set &rule_set, 
-		   shared_ptr <Rule> &rule_first);
+		   shared_ptr <const Rule> &rule_first);
 /* Read rules from the argument to the -F option */ 
 
 /* Set one of the "setting options", i.e., of of those that can appear
@@ -159,7 +159,7 @@ int main(int argc, char **argv, char **envp)
 		vector <shared_ptr <const Dep> > deps; 
 		/* Assemble targets here */ 
 
-		shared_ptr <Rule> rule_first;
+		shared_ptr <const Rule> rule_first;
 		/* Set to the first rule when there is one */ 
 
 		Place place_first;
@@ -530,7 +530,7 @@ void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
 void read_file(string filename,
 	       int file_fd,
 	       Rule_Set &rule_set, 
-	       shared_ptr <Rule> &rule_first,
+	       shared_ptr <const Rule> &rule_first,
 	       Place &place_first)
 {
 	assert(file_fd == -1 || file_fd > 1); 
@@ -556,7 +556,7 @@ void read_file(string filename,
 		 file_fd); 
 
 	/* Build rules */
-	vector <shared_ptr <Rule> > rules;
+	vector <shared_ptr <const Rule> > rules;
 	Parser::get_rule_list(rules, tokens, place_end); 
 
 	/* Add to set */
@@ -577,7 +577,7 @@ void read_file(string filename,
 
 void read_option_F(const char *s,
 		   Rule_Set &rule_set, 
-		   shared_ptr <Rule> &rule_first)
+		   shared_ptr <const Rule> &rule_first)
 {
 	/* Tokenize */ 
 	vector <shared_ptr <Token> > tokens;
@@ -589,7 +589,7 @@ void read_option_F(const char *s,
 		 Place(Place::Type::OPTION, 'F'));
 
 	/* Build rules */
-	vector <shared_ptr <Rule> > rules;
+	vector <shared_ptr <const Rule> > rules;
 	Parser::get_rule_list(rules, tokens, place_end);
 
 	/* Add to set */

@@ -519,10 +519,12 @@ do
 done
 
 echo '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+cd ..
 
 time_end="$(date +%s)"
 time_diff="$(expr $time_end - $time_begin)"
-printf 'Runtime: %u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)"
+runtime="$(printf '%u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)")"
+echo "Runtime:  $runtime"
 
 if [ "$errors" != 0 ]
 then
@@ -534,5 +536,16 @@ then
 	exit 1
 else
 	echo "[32mTests successful[m"
+	
+	echo >&2 "1=$1"
+	echo >&2 "VARIANT=$VARIANT"
+	echo >&2 "NDEBUG=$NDEBUG"
+
+	if [ -z "$1" ] && [ -z "$VARIANT" ] && [ "$NDEBUG" ] ; then
+
+		echo >&2 "ECHO"
+
+		echo >>test.runtime "$(date +%Y-%m-%dT%H:%M:%S) $(printf %s "$(cat VERSION)") $runtime" 
+	fi
 	exit 0
 fi

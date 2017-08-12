@@ -1,0 +1,7 @@
+# Explanation for multiple minimal matching rules. 
+
+A:   list.b.c { touch A ; }
+
+list.$x.c { touch list."$x".c ; }
+list.b.$x { touch list.b."$x" ; }
+

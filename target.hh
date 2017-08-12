@@ -330,7 +330,7 @@ public:
 
 	bool match(string name, 
 		   map <string, string> &mapping,
-		   vector <size_t> &anchoring);
+		   vector <size_t> &anchoring) const;
 	/* Check whether NAME matches this name.  If it does, return
 	 * TRUE and set MAPPING and ANCHORING accordingly. 
 	 * MAPPING must be empty.  */
@@ -827,7 +827,7 @@ string Name::instantiate(const map <string, string> &mapping) const
 
 bool Name::match(const string name, 
 		 map <string, string> &mapping,
-		 vector <size_t> &anchoring)
+		 vector <size_t> &anchoring) const
 {
 	/* 
 	 * Rules:
@@ -836,8 +836,9 @@ bool Name::match(const string name,
 
 	/* This algorithm uses one pass without backtracking or
 	 * recursion.  Therefore, there are no "deadly" patterns that
-	 * can make it hang, as is the case for a trivial implementation
-	 * or regular expression matching.  */
+	 * can make it hang, which is a common source of errors for
+	 * naive trivial implementations of regular expression
+	 * matching.  */
 
 	assert(mapping.size() == 0); 
 

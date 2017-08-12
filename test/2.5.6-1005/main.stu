@@ -1,0 +1,7 @@
+# 'A' will contain the three lines 'x', 'y' and 'z'
+A: [@x] { cat x y z >A ; }
+@x:  X Y Z; 
+X = {x}   Y = {y}  Z = {z}
+x = {x}
+y = {y}
+z = {z}

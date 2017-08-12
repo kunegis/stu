@@ -1,0 +1,8 @@
+# Explanation for the non-existing flag -x, stating which flags are valid. 
+
+A: -x B 
+{
+	touch A ;
+}
+
+$x { touch -- "$x" ; }

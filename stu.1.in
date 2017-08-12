@@ -86,7 +86,8 @@ string 'DEBUG  ', i.e. the word DEBUG followed by two spaces.  The
 output is otherwise not standardized and is subject to change, in
 particular with internal changes to the algorithms used. 
 .IP "-E"
-Explain error messages.  Only some error messages have explanations. 
+Explain error messages.  For certain errors, an additional explanation is
+written on standard error output.  Only some error messages have explanations. 
 .IP "-f FILENAME"
 Read the given file instead of the default 'main.stu'.  If the name of a
 directory is passed, the file 'main.stu' in the given directory is
@@ -185,7 +186,7 @@ format is not specified.
 Question mode.  Do not execute any commands.  Instead, determine whether
 the given targets are up to date.  The exit status is 0 when all given
 targets (or the default target) are up to date, and 1 when not.  The
-exit code may still be 2 or 4 on encountering logical or fatal errors. 
+exit status may still be 2 or 4 on encountering logical or fatal errors. 
 .IP "-s"
 Silent mode.  Suppress messages on standard output:  messages about
 which commands are run, a message when the build is successful, and a
@@ -461,7 +462,7 @@ target, this effectively creates an alias for the file targets.
 
 The operator '>' can be used in front of the target name to indicate
 that the output of the command should be redirected into the target
-file.  As an example, the following code creates the file 'HEADERS'
+file.  As an example, the following rule creates the file 'HEADERS'
 containing the output of the given 'echo' command:
 
     >HEADERS { echo *.h }
@@ -630,12 +631,12 @@ would not be able to determine how to split up a chain of characters
 into two parameters.  Names of parameters cannot be empty.  
 
 A target name may match more than one rule.  If that is the case, Stu
-will use the rule that dominates all other matching rules.  A rule (A)
-is defined to dominate another rule (B) for a given name if every
-character in the name that is part of a matched parameter in rule (A) is
-also inside a matched parameter in rule (B), and at least one character
-of the name is part of a matched parameter in rule (B) but not in rule
-(A).  It is an error when there is no single matching rule that
+will use the rule that dominates all other matching rules.  A rule (x)
+is defined to dominate another rule (y) for a given name if every
+character in the name that is part of a matched parameter in rule (x) is
+also inside a matched parameter in rule (y), and at least one character
+of the name is part of a matched parameter in rule (y) but not in rule
+(x).  It is an error when there is no single matching rule that
 dominates all other matching rules.
 
 In the following example, the first rule dominates the other rules for
@@ -655,7 +656,8 @@ filename 'a.b.c', so Stu will report an error:
 .SH "DIRECTIVES"
 
 Directives in Stu are introduced by '%' and serve a similar purpose to
-the C preprocessor.  The token '%' must be followed by the directive
+the C preprocessor, i.e., they are processed before the actual Stu
+script is parsed and interpreted.  The token '%' must be followed by the directive
 name. There may be any amount of whitespace (including none) between '%'
 and the name of the directive. 
 
@@ -1053,6 +1055,11 @@ option (except for -j1).
     }
 
 .SH "BUGS"
+
+There is no way to change the used shell from within a Stu script.  The
+only way to do it is with the 
+.BR $STU_SHELL
+environment variable. 
 
 Filenames in Stu are literal.  Stu does not recognize it when two
 different names refer to the same file.  For instance, Stu does not

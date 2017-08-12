@@ -886,6 +886,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 							fmt("after dash %s",
 							    char_format_word('-')); 
 					}
+					explain_flags(); 
 					throw ERROR_LOGICAL; 
 				}
 				assert(isalnum(op)); 
@@ -924,9 +925,10 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 						    char_format_word('&'),
 						    multichar_format_word("-t")); 
 				} else {
-					current_place() <<
-						fmt("invalid character %s", 
-						    char_format_word(*p));
+					current_place() << fmt("invalid character %s", char_format_word(*p));
+					if (strchr("#%\'\":;-$@<>={}()[]*\\&|!?,", *p)) {
+						explain_quoted_characters(); 
+					}
 				}
 				throw ERROR_LOGICAL;
 			}
@@ -1028,8 +1030,7 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 			++p;
 		} else if (*p == '\0') {
 			current_place() << 
-				fmt("invalid character %s",
-				    char_format_word('\0'));
+				fmt("invalid character %s", char_format_word('\0'));
 			place_begin_quote <<
 				fmt("in quote started by %s",
 				    char_format_word('"')); 
@@ -1062,9 +1063,7 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 			++p;
 			goto end_of_single_quote; 
 		} else if (*p == '\0') {
-			current_place() << 
-				fmt("invalid character %s",
-				    char_format_word(*p));
+			current_place() << fmt("invalid character %s", char_format_word(*p));
 			place_begin_quote <<
 				fmt("in quote started by %s",
 				    char_format_word('\'')); 

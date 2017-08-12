@@ -1,0 +1,7 @@
+# 
+# Test that this fails as it should, as 'A.abc' is not built by the
+# command.  
+# 
+
+@all:  @x.abc;
+@x.$name A.$name: { exit 0 ; }

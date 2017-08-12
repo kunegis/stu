@@ -1,13 +1,4 @@
 #
-# Make sure we don't compile in any of the multi-threaded libraries.
-# (For curiosity)   
-#
-
-#
-# Actually use the PACKAGE_URL field from autoconf. 
-#
-
-#
 # Instead File_Execution::executions_by_pid, have a dedicated array for
 # the list of currently running PIDs, and maintain an atomic pid_count
 # to maintain the list, to avoid access a stdlib container from a signal

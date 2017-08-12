@@ -1,4 +1,4 @@
-/*
+/* 
  * This is the top-level source code file, which contains the main()
  * function.  See the manpage for a description of options, the exit
  * status, etc.
@@ -80,7 +80,7 @@ const char HELP[]=
 	"  -Y               Enable color in output\n"
 	"  -z               Output run-time statistics on stdout\n"                   
 	"Report bugs to: " PACKAGE_BUGREPORT "\n" 
-	"Stu home page: <https://github.com/kunegis/stu>\n";
+	"Stu home page: <" PACKAGE_URL ">\n";
 
 const char VERSION_INFO[]=
 	"stu " STU_VERSION "\n"

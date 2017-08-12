@@ -1,0 +1,3 @@
+# Run with -j2 -m random
+
+A { touch A ; }

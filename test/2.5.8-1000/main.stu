@@ -1,0 +1,7 @@
+# Executed with the -g option, that disables all -o flags.
+# Note:  The -p flag can also be used with copy rules, but there is no
+# option to disable it globally. 
+
+A = -o B;
+
+B = {correct}

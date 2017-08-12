@@ -1,18 +1,4 @@
 #
-# At the moment, "stu -g" does not disable the flag -o in copy rules, i.e.
-#
-#   A = -o B;
-#
-# but it should.  
-#
-
-#
-# Check that random mode and -j2 work together when there is just a
-# single thing to run in parallel.  Same for higher -jK when there are
-# less than K things to run. 
-#
-
-#
 # Write a test with really long filenames and really long chains of
 # dependencies.  
 #
@@ -49,7 +35,8 @@
 #
 
 #
-# Test all 'switch' cases, like this:
+# Test all 'switch' cases, like in the following.  This is really
+# tedious (4*4*4*4 = 256 cases in total)
 #
 
 A:  -X <CCC>  -Y <CCC>  { ... }
@@ -98,6 +85,12 @@ A = list.10;
 	echo $1
 	echo ${10}
 }
+
+#
+# Shell syntax corner case 
+#
+
+>A {echo $(case x in x) echo hello;; esac)}
 
 #=================== Further features =======================
 

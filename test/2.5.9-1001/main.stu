@@ -1,0 +1,5 @@
+# Run with -j3 -m random 
+
+A:  X Y { cat X Y >A ; }
+X { echo xxx >X ; }
+Y { echo yyy >Y ; }

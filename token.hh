@@ -37,6 +37,7 @@ public:
 	/* The starting place.  Always the first character. */ 
 
 	virtual string format_start_word() const= 0;
+	/* Formatting of the starting character of character sequence */
 };
 
 /* 

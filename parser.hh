@@ -417,7 +417,7 @@ shared_ptr <const Rule> Parser::parse_rule()
 		++iter;
 
 		if (iter == tokens.end()) {
-			place_end << fmt("expected a filename or %s",
+			place_end << fmt("expected a filename, a flag, or %s",
 					 char_format_word('{')); 
 			place_equal << fmt("after %s", 
 					    char_format_word('=')); 
@@ -459,7 +459,8 @@ shared_ptr <const Rule> Parser::parse_rule()
 					place_flag_persistent= flag->get_place();
 					++iter;
 				} else if (flag->flag == 'o') {
-					place_flag_optional= flag->get_place(); 
+					if (! option_nonoptional) 
+						place_flag_optional= flag->get_place(); 
 					++iter;
 				} else {
 					flag->get_place()
@@ -477,11 +478,11 @@ shared_ptr <const Rule> Parser::parse_rule()
 			if (! is <Name_Token> ()) {
 				if (iter == tokens.end()) {
 					(*iter)->get_place_start() << 
-						fmt("expected a filename or %s", 
+						fmt("expected a filename, a flag, or %s", 
 						    char_format_word('{')); 
 				} else {
 					(*iter)->get_place_start() << 
-						fmt("expected a filename or %s, not %s", 
+						fmt("expected a filename, a flag, or %s, not %s", 
 						    char_format_word('{'),
 						    (*iter)->format_start_word()); 
 				}

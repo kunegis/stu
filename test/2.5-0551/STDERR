@@ -1,2 +1,2 @@
-main.stu:2:5: expected a filename or '{', not '('
+main.stu:2:5: expected a filename, a flag, or '{', not '('
 main.stu:2:3: after '='

@@ -1,14 +1,4 @@
 #
-# Semi-bug:  when a command read stdin but there is no input redirection, the
-# current behaviour of Stu is to go into "fake interactive" because a
-# fatal signal is sent.  Make it such that the job fails immediately. 
-#
-
-# Example that triggers it:
-$ stu -F 'A {cat $(cat ahjsahd);}'
-# (where the file 'ahjsahd' is not present) 
-
-#
 # At the moment, "stu -g" does not disable the flag -o in copy rules, i.e.
 #
 #   A = -o B;
@@ -94,6 +84,19 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 #
 #	PATH=`getconf PATH` awk 'BEGIN{srand();print srand()}'
 #
+
+#
+# What happens here?
+#    * Can $1 or $10 be set?
+#    * Is '$10' parses at '${10}' or '${1}0'?
+#
+
+A = list.10; 
+>list.$10
+{
+	echo $1
+	echo ${10}
+}
 
 #=================== Further features =======================
 

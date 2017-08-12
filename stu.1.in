@@ -108,7 +108,7 @@ Interactive mode.  I.e., put the jobs run into the foreground.  Must not
 be used in conjunction with
 .B -j N
 when N > 1.  Without this option, jobs are run in the
-background, meaning they can't read standard input, will not get any
+background, meaning they can't read standard input (they get /dev/null instead), will not get any
 terminal signals, and pressing Ctrl-C will stop Stu as a whole.  Using
 this option, each job is run in the foreground, and therefore they can
 read standard input, will get terminal signals such as SIGINT (after

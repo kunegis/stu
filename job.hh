@@ -367,9 +367,8 @@ pid_t Job::start(string command,
 		}
 
 		/* Input redirection:  from the given file, or from
-		 * /dev/zero (when BACKGROUND is set)  */
-		if (filename_input != "" ||
-		    (! option_interactive && tty < 0)) {
+		 * /dev/null (in non-interactive mode)  */
+		if (filename_input != "" || ! option_interactive) {
 			const char *name= filename_input == ""
 				? "/dev/null"
 				: filename_input.c_str(); 
@@ -381,11 +380,14 @@ pid_t Job::start(string command,
 			assert(fd_input >= 3); 
 			int r= dup2(fd_input, 0); /* 0 = file descriptor of STDIN */  
 			if (r < 0) {
-				perror(filename_input.c_str());
+				perror(name);
 				_Exit(127); 
 			}
 			assert(r == 0); 
-			close(fd_input); 
+			if (close(fd_input) < 0) {
+				perror(name); 
+				_Exit(127); 
+			}
 		}
 
 		int r= execve(shell, (char *const *) argv, (char *const *) envp); 
@@ -485,7 +487,12 @@ pid_t Job::wait(int *status)
 	/* First, try wait() without blocking.  WUNTRACED is used to
 	 * also get notified when a job is suspended (e.g. with
 	 * Ctrl-Z).  */ 
-	pid_t pid= waitpid(-1, status, WNOHANG | WUNTRACED);
+	pid_t pid= waitpid(-1, status, WNOHANG | 
+			   (option_interactive
+			    ? WUNTRACED
+			    : 0
+			    )
+			   );
 	if (pid < 0) {
 		/* Should not happen as there is always something
 		 * running when this function is called.  However, this
@@ -498,16 +505,19 @@ pid_t Job::wait(int *status)
 
 	if (pid > 0) {
 		if (WIFSTOPPED(*status)) {
+			/* The process was suspended. This can have
+			 * several reasons, include someone just using
+			 * kill -STOP on the process.  */
+			assert(option_interactive);
 			/* 
-			 * The job was suspended.  This is the simplest
-			 * thing possible we can do: put ourselves in
-			 * the foreground, ask the user to press ENTER,
-			 * and then put the job back into the foreground
-			 * and continue it.  In principle, we could do
-			 * much more: allow the user to enter commands,
+			 * This is the simplest thing possible we can do
+			 * in interactive mode: put ourselves in the
+			 * foreground, ask the user to press ENTER, and
+			 * then put the job back into the foreground and
+			 * continue it.  In principle, we could do much
+			 * more: allow the user to enter commands,
 			 * having an own command language, etc.
 			 */
-
 			if (tcsetpgrp(tty, getpid()) < 0)
 				print_error_system("tcsetpgrp");
 			fprintf(stderr,
@@ -520,11 +530,10 @@ pid_t Job::wait(int *status)
 				perror("getline");
 				/* On error, continue anyway */ 
 			}
-			
-			/* Continue job */
 			fprintf(stderr, "stu: continuing\n"); 
 			if (tcsetpgrp(tty, pid) < 0)
 				print_error_system("tcsetpgrp");
+			/* Continue job */
 			::kill(-pid, SIGCONT); 
 			goto begin;
 		}
@@ -560,7 +569,7 @@ pid_t Job::wait(int *status)
 		/* Don't act on the signal here.  We could get the PID
 		 * and STATUS from siginfo, but then the process would
 		 * stay a zombie.  Therefore, we have to call waitpid().
-		 * The call to waitpid() will now return the proper
+		 * The call to waitpid() will then return the proper
 		 * signal.  */
 		goto begin; 
 
@@ -863,8 +872,10 @@ void Job::init_tty()
 		return;
 
 	tty= open("/dev/tty", O_RDWR | O_NONBLOCK | O_CLOEXEC);
-	if (tty < 0)
+	if (tty < 0) {
+		assert(tty == -1); 
 		return;
+	}
 }
 	
 #endif /* ! JOB_HH */

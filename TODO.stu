@@ -1,10 +1,4 @@
 #
-# sh/test:  log all tests and their runtime, version number, date, etc.
-# This is to detect regressions such as "a new version of Stu is much
-# slower than old versions."
-#
-
-#
 # Semi-bug:  when a command read stdin but there is no input redirection, the
 # current behaviour of Stu is to go into "fake interactive" because a
 # fatal signal is sent.  Make it such that the job fails immediately. 

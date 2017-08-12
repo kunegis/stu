@@ -49,8 +49,7 @@ Credits for the package go to Holger Heinz (hheinz).
 * ANSI color code-compatible terminal (terminfo or termcap are not used)
 * Stu calls /bin/sh and /bin/cp at runtime.  They should behave as
   prescribed by POSIX.
-* Stu needs a working /dev/null when the -j option is used with a value
-  larger than one. 
+* Stu needs a working /dev/null  
 
 ==== COMPILATION OPTIONS ====
 

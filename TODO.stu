@@ -88,7 +88,8 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 #
 # What happens here?
 #    * Can $1 or $10 be set?
-#    * Is '$10' parses at '${10}' or '${1}0'?
+#    * Is '$10' parses at '${10}' or '${1}0'?   (The POSIX thing to do
+#      is '${1}0'.
 #
 
 A = list.10; 

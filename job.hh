@@ -581,8 +581,7 @@ pid_t Job::wait(int *status)
 	default:
 		/* We didn't wait for this signal */ 
 		assert(false);
-		fprintf(stderr, "*** sigwaitinfo: Received signal %d\n",
-			sig);
+		fprintf(stderr, "*** sigwait: Received signal %d\n", sig);
 		goto begin; 
 	}
 }

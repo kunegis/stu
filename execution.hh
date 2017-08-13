@@ -1962,6 +1962,11 @@ File_Execution::~File_Execution()
 }
 
 void File_Execution::wait() 
+/* We wait for a single job to finish, and then return so that the next
+ * job can be started.  It would also be possible to process as many
+ * finished jobs as possible, and then return, but the current
+ * implementation prefers to first start the next job before waiting for
+ * the next finished job.  */
 {
 	Debug::print(nullptr, "wait...");
 

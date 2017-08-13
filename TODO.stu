@@ -21,15 +21,6 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 #
 
 #
-# In File_Execution::wait(), use a non-blocking wait() function to
-# handle all finished jobs in a loop in that function.  This may not
-# even be a good idea; it's probably better to keep waiting for one
-# process and immediately starting another one, than to wait for K
-# processes and then start K, as it would mean things are started
-# later. 
-#
-
-#
 # Job::Signal::Signal: Execute the signal setup code only when needed,
 # i.e., when something is started. 
 #
@@ -153,10 +144,6 @@ A: [-d data/B];
 #
 
 #
-# Allow access to environment variables via e.g. $(HOME). 
-#
-
-#
 # Line number and file syntax:  A preprocessor-like construct that gives a new
 # filename and line number, such that error messages from Stu can point
 # to the original file, not the generated file.  Analogous to the
@@ -181,7 +168,8 @@ A: [-d data/B];
 # Have an option for: For hardcoded rules, compare the content of the
 # file (if it exists) with the declared content, and regenerate the file
 # if necessary.  This would avoid the usual error that a hardcoded rule
-# is changed in a Stu file, but Stu doesn't notice that. 
+# is changed in a Stu file, but Stu doesn't notice that.  This would
+# have add open/read/close() calls to the stat() we do at the moment. 
 #
 
 #
@@ -218,7 +206,8 @@ dep.sources {
 
 #
 # Have an extended safety mode, in which Stu checks that node of the
-# dependencies themselves where touched by a command. 
+# dependencies themselves where touched by a command.  How deep should
+# this go?  Should it also check dependency included dynamically?
 #
 
 #

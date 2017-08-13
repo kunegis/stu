@@ -25,6 +25,13 @@
 #==== Normal features ====
 
 #
+# Allow access to environment variables via e.g. $(HOME).  Using this is
+# likely to be an antipattern -- the idiomatic thing to do is set a
+# symlink to the directory in question.  Other cases are even worse,
+# e.g., having environment variables with lists of things in them. 
+#
+
+#
 # Have a feature to indicate that a file contains only a single
 # filename.  To complement -n and -0.  Must produce a logical error when
 # the file contains the nul byte '\0' or is empty.  '\n' and other

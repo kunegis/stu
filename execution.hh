@@ -487,11 +487,17 @@ public:
 		mapping_variable.insert(result_variable_child.begin(), result_variable_child.end()); 
 	}
 
-	static unordered_map <pid_t, File_Execution *> executions_by_pid;
-	/*
-	 * The currently running executions by process IDs.  Write
-	 * access to this is enclosed in a Signal_Blocker.
-	 */ 
+	static size_t executions_by_pid_size;
+	static pid_t *executions_by_pid_key;
+	static File_Execution **executions_by_pid_value; 
+	/* The currently running executions by process IDs.  Write
+	 * access to this is enclosed in a Signal_Blocker.  */
+	/* Both arrays are malloc'ed, have the same length, and are both
+	 * sorted by PID.  malloc() is only called once for each array,
+	 * giving the allocated memory a length that will be enough for
+	 * all jobs we will ever run, based on the value passed via the
+	 * -j option, so we avoid excessive calling of realloc(), and
+	 * race conditions while accessing this.  */
 
 	static void wait();
 	/* Wait for next job to finish and finish it.  Do not start anything
@@ -505,8 +511,15 @@ protected:
 private:
 
 	friend class Execution; 
+
+	/* The following two functions are called from signal handlers,
+	 * and are set up and declared in job.hh.  */
 	friend void job_terminate_all(); 
+	/* Termination signal - we must send a termination signal to all
+	 * running jobs */
 	friend void job_print_jobs(); 
+	/* The print-all-jobs signal was received - we must print all
+	 * jobs */
 
 	vector <Target> targets; 
 	/* The targets to which this execution object corresponds.
@@ -556,9 +569,10 @@ private:
 	 * Return whether the file was removed.  If OUTPUT is false,
 	 * only do async signal-safe things.  */  
 
-	void waited(pid_t pid, int status); 
+	void waited(pid_t pid, size_t index, int status); 
 	/* Called after the job was waited for.  The PID is only passed
-	 * for checking that it is correct.  */
+	 * for checking that it is correct.  INDEX is the index within
+	 * EXECUTIONS_BY_PID_*.  */
 
 	void warn_future_file(struct stat *buf, 
 			      const char *filename,
@@ -832,7 +846,9 @@ bool Execution::hide_out_message= false;
 bool Execution::out_message_done= false;
 unordered_map <Target, Execution *> Execution::executions_by_target;
 
-unordered_map <pid_t, File_Execution *> File_Execution::executions_by_pid;
+size_t File_Execution::executions_by_pid_size= 0;
+pid_t *File_Execution::executions_by_pid_key= nullptr;
+File_Execution **File_Execution::executions_by_pid_value= nullptr; 
 unordered_map <string, Timestamp> File_Execution::transients;
 
 string Debug::padding_current= "";
@@ -866,7 +882,7 @@ void Execution::main(const vector <shared_ptr <const Dep> > &deps)
 		}
 
 		assert(root_execution->finished()); 
-		assert(File_Execution::executions_by_pid.size() == 0);
+		assert(File_Execution::executions_by_pid_size == 0); 
 
 		bool success= (root_execution->error == 0);
 		assert(option_keep_going || success); 
@@ -894,7 +910,7 @@ void Execution::main(const vector <shared_ptr <const Dep> > &deps)
 		assert(! option_keep_going); 
 		assert(e >= 1 && e <= 4); 
 		/* Terminate all jobs */ 
-		if (File_Execution::executions_by_pid.size()) {
+		if (File_Execution::executions_by_pid_size) {
 			print_error_reminder("Terminating all jobs"); 
 			job_terminate_all();
 		}
@@ -1949,30 +1965,52 @@ void File_Execution::wait()
 {
 	Debug::print(nullptr, "wait...");
 
-	assert(File_Execution::executions_by_pid.size() != 0); 
+	assert(File_Execution::executions_by_pid_size); 
 
 	int status;
-	pid_t pid= Job::wait(&status); 
+	const pid_t pid= Job::wait(&status); 
 
 	Debug::print(nullptr, frmt("pid = %ld", (long) pid)); 
 
 	timestamp_last= Timestamp::now(); 
 
-	if (executions_by_pid.count(pid) == 0) {
+	size_t mi= 0, ma= executions_by_pid_size - 1;
+	/* Both are inclusive */
+	assert(mi <= ma); 
+	while (mi < ma) {
+		size_t ne= mi + (ma - mi + 1) / 2;
+		assert(ne <= ma); 
+		if (executions_by_pid_key[ne] == pid) {
+			mi= ma= ne; 
+			break;
+		}
+		if (executions_by_pid_key[ne] < pid) {
+			mi= ne + 1;
+		} else {
+			ma= ne - 1;
+		}
+	}
+	if (mi > ma || mi == SIZE_MAX) {
 		/* No File_Execution is registered for the PID that
 		 * just finished.  Should not happen, but since the PID
 		 * value came from outside this process, we better
 		 * handle this case gracefully, i.e., do nothing.  */
-		print_warning(Place(), frmt("The function waitpid(2) returned the invalid process ID %jd", (intmax_t)pid)); 
+		print_warning(Place(), 
+			      frmt("The function waitpid(2) returned the invalid process ID %jd", 
+				   (intmax_t)pid)); 
 		return; 
 	}
-
-	File_Execution *const execution= executions_by_pid.at(pid); 
-	execution->waited(pid, status); 
+	assert(mi == ma); 
+	const size_t index= mi; 
+	assert(index < executions_by_pid_size); 
+	assert(executions_by_pid_key[index] == pid); 
+	
+	File_Execution *const execution= executions_by_pid_value[index]; 
+	execution->waited(pid, index, status); 
 	++jobs; 
 }
 
-void File_Execution::waited(pid_t pid, int status) 
+void File_Execution::waited(pid_t pid, size_t index, int status) 
 {
 	assert(job.started()); 
 	assert(job.get_pid() == pid); 
@@ -1983,7 +2021,16 @@ void File_Execution::waited(pid_t pid, int status)
 
 	{
 		Job::Signal_Blocker sb;
-		executions_by_pid.erase(pid); 
+		/* Remove entry from EXECUTIONS_BY_PID_* */
+		assert(executions_by_pid_size > 0); 
+		assert(executions_by_pid_size >= index + 1); 
+		memmove(executions_by_pid_key + index,
+			executions_by_pid_key + index + 1,
+			sizeof(*executions_by_pid_key) * (executions_by_pid_size - index - 1)); 
+		memmove(executions_by_pid_value + index,
+			executions_by_pid_value + index + 1,
+			sizeof(*executions_by_pid_value) * (executions_by_pid_size - index - 1)); 
+		-- executions_by_pid_size; 
 	}
 
 	/* The file(s) may have been built, so forget that it was known
@@ -2281,48 +2328,46 @@ bool File_Execution::finished(Flags flags) const
 }
 
 void job_terminate_all() 
-/* 
- * The declaration of this function is in job.hh 
- */ 
 {
-	/* Strictly speaking, there is a bug here because the C++
-	 * containers are not async signal-safe.  But we block the
-	 * relevant signals while we update the containers, so it
-	 * *should* be OK.  */ 
-
 	write_safe(2, "stu: Terminating all jobs\n"); 
-	
-	for (auto i= File_Execution::executions_by_pid.begin();
-	     i != File_Execution::executions_by_pid.end();  ++i) {
 
-		const pid_t pid= i->first;
+	/* We have two separate loops, one for killing all jobs, and one
+	 * for removing all target files.  This could also be merged
+	 * into a single loop.  */
+
+	for (size_t i= 0;
+	     i < File_Execution::executions_by_pid_size;
+	     ++i) {
+		const pid_t pid= File_Execution::executions_by_pid_key[i];
 
 		Job::kill(pid); 
 	}
 
-	int count_terminated= 0;
+	size_t count_terminated= 0;
 
-	for (auto i= File_Execution::executions_by_pid.begin();
-	     i != File_Execution::executions_by_pid.end();  ++i) {
-
-		if (i->second->remove_if_existing(false))
+	for (size_t i= 0;
+	     i < File_Execution::executions_by_pid_size;
+	     ++i) {
+		if (
+		    File_Execution::executions_by_pid_value[i]->remove_if_existing(false))
 			++count_terminated;
 	}
 
 	if (count_terminated) {
 		write_safe(2, "stu: Removing partially built files (");
-		constexpr int len= sizeof(int) / 3 + 3;
+		constexpr int len= sizeof(size_t) / 3 + 3;
 		char out[len];
 		out[len - 1]= '\n';
 		out[len - 2]= ')';
 		int i= len - 3;
-		int n= count_terminated;
+		size_t n= count_terminated;
 		do {
 			assert(i >= 0); 
 			out[i]= '0' + n % 10;
 			n /= 10;
 		} while (n > 0 && --i >= 0);
-		int r= write(2, out + i, len - i);
+		ssize_t r= write(2, out + i, len - i);
+		/* There's not much we can do if that last write() fails */
 		(void) r;
 	}
 
@@ -2345,10 +2390,11 @@ void job_terminate_all()
 }
 
 void job_print_jobs()
-/* The definition of this function is in job.hh */ 
 {
-	for (auto &i:  File_Execution::executions_by_pid) {
-		i.second->print_as_job(); 
+	for (size_t i= 0;  
+	     i < File_Execution::executions_by_pid_size;
+	     ++i) {
+		File_Execution::executions_by_pid_value[i]->print_as_job(); 
 	}
 }
 
@@ -2788,9 +2834,14 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 	mapping_variable.clear(); 
 
 	pid_t pid; 
+	size_t index; /* In EXECUTIONS_BY_PID_* */
 	{
+
 		/* Block signals from the time the process is started,
-		 * to after we have entered it in the map */
+		 * to after we have entered it in the map.  Note:  if we
+		 * only blocked signals during the time we update
+		 * EXECUTIONS_BY_PID_*, there would be a race condition
+		 * in which the job would failed to be clean up.  */
 		Job::Signal_Blocker sb;
 
 		if (rule->is_copy) {
@@ -2856,11 +2907,61 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 			return proceed;
 		}
 
-		executions_by_pid[pid]= this;
+		assert(!executions_by_pid_key == !executions_by_pid_value);
+
+		if (!executions_by_pid_key) {
+			/* This is executed just once, before we have
+			 * executed any job, and therefore JOBS is the
+			 * value passed via -j (or its default value 1),
+			 * and thus we can allocate arrays of that size
+			 * once and for all.  */
+			if (SIZE_MAX / sizeof(*executions_by_pid_key) < (size_t)jobs ||
+			    SIZE_MAX / sizeof(*executions_by_pid_value) < (size_t)jobs) {
+				errno= ENOMEM;
+				perror("malloc"); 
+				exit(ERROR_FATAL); 
+			}
+			executions_by_pid_key  = (pid_t *)          malloc(jobs * sizeof(*executions_by_pid_key));
+			executions_by_pid_value= (File_Execution **)malloc(jobs * sizeof(*executions_by_pid_value)); 
+			if (!executions_by_pid_key || !executions_by_pid_value) {
+				perror("malloc"); 
+				exit(ERROR_FATAL); 
+			}
+		}
+
+		size_t mi= 0, ma= executions_by_pid_size;
+		/* Both are exclusive */
+		assert(mi <= ma); 
+		while (mi < ma) {
+			size_t ne= mi + (ma - mi) / 2;
+			assert(ne < ma); 
+			assert(ne < executions_by_pid_size); 
+			assert(executions_by_pid_key[ne] != pid); 
+			if (executions_by_pid_key[ne] < pid) {
+				mi= ne + 1;
+			} else {
+				ma= ne;
+			}
+		}
+		assert(mi == ma); 
+		assert(mi <= executions_by_pid_size); 
+		assert(mi == 0 || executions_by_pid_key[mi - 1] < pid); 
+		assert(mi == executions_by_pid_size || executions_by_pid_key[mi] > pid); 
+		index= mi; 
+
+		memmove(executions_by_pid_key + index + 1,
+			executions_by_pid_key + index,
+			sizeof(*executions_by_pid_key) * (executions_by_pid_size - index));
+		memmove(executions_by_pid_value + index + 1,
+			executions_by_pid_value + index,
+			sizeof(*executions_by_pid_value) * (executions_by_pid_size - index)); 
+		++ executions_by_pid_size; 
+		executions_by_pid_key[index]= pid;
+		executions_by_pid_value[index]= this;
 	}
 
-	assert(executions_by_pid.at(pid)->job.started()); 
-	assert(pid == executions_by_pid.at(pid)->job.get_pid()); 
+	assert(executions_by_pid_value[index]->job.started()); 
+	assert(pid == executions_by_pid_value[index]->job.get_pid()); 
 	--jobs;
 	assert(jobs >= 0);
 

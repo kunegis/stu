@@ -1,13 +1,12 @@
 #
-# Instead File_Execution::executions_by_pid, have a dedicated array for
-# the list of currently running PIDs, and maintain an atomic pid_count
-# to maintain the list, to avoid access a stdlib container from a signal
-# handler.
+# Can the options -k or -j be used in -q mode?  Yes; they should be a
+# no-op then. 
 #
 
 #
-# Can the options -k or -j be used in -q mode?  Yes; they should be a
-# no-op then. 
+# delete_tmps:  don't remove ?? and dep.*, as these patterns appear in
+# stu/.  Change tests that use these patterns.  Rename the script to
+# remove_*. 
 #
 
 #
@@ -30,17 +29,6 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 #      (4) Concatenation that results in C
 
 #
-# delete_tmps:  don't remove ?? and dep.*, as these patterns appear in
-# stu/.  Change tests that use these patterns.  Rename the script to
-# remove_*. 
-#
-
-#
-# Traces:  show only the first line with the most information message in
-# red, and other traces in another color. 
-#
-
-#
 # Have proper Autoconf support for C++11, and not just using -std=c++11
 # directly.  
 #
@@ -50,6 +38,8 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 # being proposed:
 #
 #	PATH=`getconf PATH` awk 'BEGIN{srand();print srand()}'
+#
+# Or document the limitation. 
 #
 
 #
@@ -75,6 +65,11 @@ A = list.10;
 #=================== Further features =======================
 
 #
+# Traces:  show only the first line with the most information message in
+# red, and other traces in another color. 
+#
+
+#
 # In File_Execution::wait(), use a non-blocking wait() function to
 # handle all finished jobs in a loop in that function.  
 #
@@ -82,6 +77,11 @@ A = list.10;
 #
 # Job::Signal::Signal: Execute the signal setup code only when needed,
 # i.e., when something is started. 
+#
+
+#
+# Trace (logging): an option to write log messages into a file.  In
+# particular, which commands failed. (option -T)
 #
 
 #
@@ -176,11 +176,6 @@ $ stu -- list.[FILE]
 #
 
 A: [-d data/B];
-
-#
-# Trace (logging): an option to write log messages into a file.  In
-# particular, which commands failed. (option -T)
-#
 
 #
 # Search within predefined paths for %include ($STU_PATH or $STUPATH;

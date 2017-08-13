@@ -1,10 +1,4 @@
 #
-# delete_tmps:  don't remove ?? and dep.*, as these patterns appear in
-# stu/.  Change tests that use these patterns.  Rename the script to
-# remove_*. 
-#
-
-#
 # In -s -j mode, 'Successfully built' messages should not be output. 
 #
 

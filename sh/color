@@ -44,7 +44,7 @@ do
 
 	if [ -r EXITSTATUS ] && ! [ -r NOTTY ]; then
 
-		../../sh/delete_tmps || exit 1
+		../../sh/rm_tmps || exit 1
 
 		CMD=
 		if [ -r CMD ]; then
@@ -62,7 +62,7 @@ do
 
 		echo 
 
-		../../sh/delete_tmps || exit 1
+		../../sh/rm_tmps || exit 1
 	fi
 
 	cd ..

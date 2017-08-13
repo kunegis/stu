@@ -13,7 +13,7 @@ exitcode="$?"
 }
 
 ../../sh/touch_old A 2 || exit 1
-../../sh/touch_old dep.A 2 || exit 1
+../../sh/touch_old list.A 2 || exit 1
 echo "Hello CORRECT World" >B
 
 ../../stu.test

@@ -1,13 +1,13 @@
-# There will be 2^11 = 2048 files of the form 'list.*' generated
+# There will be 2^11 = 2048 files of the form 'x.*' generated
 
-A:  dep.(0 1)(0 1)(0 1)(0 1)(0 1)(0 1)(0 1)(0 1)(0 1)(0 1)(0 1)
+A:  x.(0 1)(0 1)(0 1)(0 1)(0 1)(0 1)(0 1)(0 1)(0 1)(0 1)(0 1)
 {
-	n="$(echo $(ls -1U . | grep -E '^dep\..*$' | wc -l))"
+	n="$(echo $(ls -1U . | grep -E '^x\..*$' | wc -l))"
 	[ "$n" = 2048 ] || {
 		echo >&2 "*** Expected 2048 files, got n = $n"
 		exit 1
 	}
-	cat dep.* >A
+	cat x.* >A
 }
 
->dep.$x { echo "$x" ; }
+>x.$x { echo "$x" ; }

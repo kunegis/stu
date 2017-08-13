@@ -45,7 +45,7 @@
 # * It must build the file 'A' by default (i.e., that should be the
 #   first target)
 # * All built files must have names that correspond to the pattern given
-#   in sh/delete_tmps, such that they are removed automatically
+#   in sh/rm_tmps, such that they are removed automatically
 #   after the test.  Most generated files' names just consist of a
 #   single uppercase letter (but they don't have to).
 # * There may be other files present used by the test; these are part of
@@ -197,7 +197,7 @@ do
 	echo cd "$file"
 	cd "$file"
 
-	../../sh/delete_tmps || exit 2
+	../../sh/rm_tmps || exit 2
 
 	# Check that all all-uppercase files are of one of the allowed files 
 	allowed=",EXITSTATUS,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,"
@@ -412,7 +412,7 @@ do
 
 		# TTYSTDOUTERR
 		if { [ -r TTYSTDOUTERR ] || [ -r EXITSTATUS ]; } && ! [ -r NOTTY ]; then
-			../../sh/delete_tmps || exit 1
+			../../sh/rm_tmps || exit 1
 			echo $CMDPREFIX ../../stu.test "$CMD" '[TTY]'
 			eval $CMDPREFIX ../../sh/tty ../../stu.test $CMD \>list.def.out 
 			exitcode_actual="$?"
@@ -491,7 +491,7 @@ do
 		if [ -r PARALLEL ]; then
 			ks="$(sed -e '/^[[:space:]]*$/d' <PARALLEL)"
 			for k in $ks; do
-				../../sh/delete_tmps || exit 2
+				../../sh/rm_tmps || exit 2
 				echo $CMDPREFIX ../../stu.test "$CMD" -j "$k"
 				eval $CMDPREFIX ../../stu.test $CMD -j $k \>list.def.out 2\>list.def.err
 				if [ $? != 0 ]
@@ -505,7 +505,7 @@ do
 		fi	
 	fi	
 
-	../../sh/delete_tmps || exit 2
+	../../sh/rm_tmps || exit 2
 	cd ..
 
 	if [ "$error" != 0 ] ; then

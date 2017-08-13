@@ -1,13 +1,13 @@
-A:   ( list. dep. )( X [Y] ) 
+A:   ( list.a. list.b. )( X [Y] ) 
 {
-	cat list.X list.D list.E dep.X dep.D dep.E >A
+	cat list.a.X list.a.D list.a.E list.b.X list.b.D list.b.E >A
 }
 
 Y = { D E }
 
-list.X = {111}
-list.D = {222}
-list.E = {333}
-dep.X  = {444}
-dep.D  = {555}
-dep.E  = {666}
+list.a.X = {111}
+list.a.D = {222}
+list.a.E = {333}
+list.b.X  = {444}
+list.b.D  = {555}
+list.b.E  = {666}

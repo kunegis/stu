@@ -1,0 +1,18 @@
+#! /bin/sh
+#
+# Remove temporary files created by tests.  The tests only create
+# temporary files of these patterns.  Executed within each test
+# directory.  Any of such named files may be directories. 
+#
+# None of the patterns matches any file that we would create within the
+# main stu/ directory, so wwe can safely call this to remove junk files
+# created while debugging.  In particular, as two-letter files are good
+# for testing, except 'sh'. 
+#
+
+rm -Rf -- ? list.* A.* ./*.data x.* .+-~_ 
+
+for file in ?? ; do
+	if [ "$file" = sh ] ; then continue ; fi
+	rm -f -- "$file"
+done

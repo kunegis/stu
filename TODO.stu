@@ -66,7 +66,11 @@ A = list.10;
 
 #
 # In File_Execution::wait(), use a non-blocking wait() function to
-# handle all finished jobs in a loop in that function.  
+# handle all finished jobs in a loop in that function.  This may not
+# even be a good idea; it's probably better to keep waiting for one
+# process and immediately starting another one, than to wait for K
+# processes and then start K, as it would mean things are started
+# later. 
 #
 
 #

@@ -1,0 +1,39 @@
+#
+# Start many parallel jobs.  Test with -j50.
+#
+# We also tested it with N=1000 and -j1000, but that takes a while and
+# makes our machine very slow.
+#
+
+@all: A;
+
+N = {100}
+
+A: list.[B] $[N]
+{
+	rm -f A
+	while IFS= read -r i ; do
+		cat list."$i" >>A
+	done <B
+}
+
+>B:  $[N]
+{ 
+	i=1
+	while [ "$i" -le "$N" ] ; do
+		echo $i
+		i=$((i+1))
+	done
+}
+
+list.$i
+{
+	# Wait a random amount of time
+	k=$(awk 'BEGIN {srand();printf("%d\n", 70000*rand());}')
+	j=0
+	while [ "$j" -lt "$k" ] ; do
+		true
+		j=$((j+1))
+	done
+	printf '%s\n' "$i" >list."$i"
+}

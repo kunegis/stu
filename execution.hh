@@ -2355,7 +2355,7 @@ void job_terminate_all()
 
 	if (count_terminated) {
 		write_safe(2, "stu: Removing partially built files (");
-		constexpr int len= sizeof(size_t) / 3 + 3;
+		constexpr int len= sizeof(size_t) * CHAR_BIT / 3 + 3;
 		char out[len];
 		out[len - 1]= '\n';
 		out[len - 2]= ')';

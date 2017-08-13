@@ -1,0 +1,13 @@
+#
+# Parameters cannot start with a digit.  It would clash both with the
+# fact that $1, etc. are used as positional parameters, and with the
+# fact that they have special parsing rules.
+#
+
+A = list.10; 
+
+>list.$10
+{
+	echo $1
+	echo ${10}
+}

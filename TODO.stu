@@ -1,3 +1,5 @@
+#=================== Further features =======================
+
 #
 # Test all 'switch' cases, like in the following.  This is really
 # tedious (4*4*4*4 = 256 cases in total)
@@ -12,28 +14,6 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 #      (2) Transient to C
 #      (3) Dynamic dependency that contains C
 #      (4) Concatenation that results in C
-
-#
-# What happens here?
-#    * Can $1 or $10 be set?
-#    * Is '$10' parses at '${10}' or '${1}0'?   (The POSIX thing to do
-#      is '${1}0'.
-#
-
-A = list.10; 
->list.$10
-{
-	echo $1
-	echo ${10}
-}
-
-#
-# Shell syntax corner case 
-#
-
->A {echo $(case x in x) echo hello;; esac)}
-
-#=================== Further features =======================
 
 #
 # Traces:  show only the first line with the most information message in

@@ -7,9 +7,9 @@ echo '../../stu.test -j1000 &'
 pid="$!"
 
 # Wait until a first line has been written
-begin="$(date +%s)"
+begin=$(../../sh/now)
 while [ \! -s list.out ] ; do 
-	now="$(date +%s)"
+	now=$(../../sh/now)
 	if [ "$now" -gt "$((begin + 2))" ] ; then
 		echo >&2 '*** No output written in first 2 seconds'
 		break

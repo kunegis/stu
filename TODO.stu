@@ -1,9 +1,4 @@
 #
-# Have proper Autoconf support for C++11, and not just using -std=c++11
-# directly.  
-#
-
-#
 # Test all 'switch' cases, like in the following.  This is really
 # tedious (4*4*4*4 = 256 cases in total)
 #
@@ -17,15 +12,6 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 #      (2) Transient to C
 #      (3) Dynamic dependency that contains C
 #      (4) Concatenation that results in C
-
-#
-# Find a replacement for 'date +%s', as %s is not POSIX.  I've seen this
-# being proposed:
-#
-#	PATH=`getconf PATH` awk 'BEGIN{srand();print srand()}'
-#
-# Or document the limitation. 
-#
 
 #
 # What happens here?

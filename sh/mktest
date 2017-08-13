@@ -136,7 +136,7 @@ errors=0
 
 exec 6>error.log
 
-time_begin="$(date +%s)"
+time_begin=$(sh/now)
 
 rm -f stu.test
 if [ "$VARIANT" ] ; then
@@ -521,7 +521,7 @@ done
 echo '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 cd ..
 
-time_end="$(date +%s)"
+time_end=$(sh/now)
 time_diff="$(expr $time_end - $time_begin)"
 runtime="$(printf '%u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)")"
 echo "Runtime:  $runtime"

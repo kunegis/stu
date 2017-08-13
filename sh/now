@@ -1,0 +1,7 @@
+#! /bin/sh
+#
+# This does the same as 'date +%s', i.e., output the current Unix time,
+# but is POSIX-compatible.  'date +%s' is not mandated by POSIX. 
+#
+
+awk 'BEGIN{srand();print srand()}'

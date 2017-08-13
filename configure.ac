@@ -5,7 +5,7 @@
 # installed. 
 #
 # The main purpose of using Autoconf (as opposed to having a simple
-# POSIX-compliant makefile), is to recognize capabilities of the system
+# POSIX-compliant Makefile), is to recognize capabilities of the system
 # to enable and disable certain features.
 #
 # In principle, Stu should use only POSIX features, and Autoconf would
@@ -27,7 +27,7 @@
 #
 
 AC_PREREQ([2.69])
-AC_INIT(stu, m4_esyscmd([tr -d '\n' <VERSION]), kunegis@gmail.com, stu, https://github.com/kunegis/stu)
+AC_INIT(stu, m4_esyscmd([tr -d ' \n' <VERSION]), kunegis@gmail.com, stu, https://github.com/kunegis/stu)
 
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.9 foreign])
@@ -36,7 +36,6 @@ AM_MAINTAINER_MODE([disable])
 
 AC_PROG_CXX
 AC_LANG(C++)
-## ax_cxx_compile_stdcxx_11(noext, optional)
 
 #
 # Checks for specific features.  None of these is enabled at the moment,
@@ -70,4 +69,3 @@ AC_COMPILE_IFELSE( [AC_LANG_PROGRAM([[#include <time.h>]],
 # Output
 #
 AC_OUTPUT(Makefile)
-

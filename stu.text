@@ -165,10 +165,10 @@ OPTIONS
               output format is not specified.
 
        -q     Question mode.  Do not execute any commands.  Instead, determine
-              whether  the given targets are up to date.  The exit status is 0
-              when all given targets (or the default target) are up  to  date,
-              and  1 when not.  The exit status may still be 2 or 4 on encoun‐
-              tering logical or fatal errors.
+              whether  the  targets are up to date.  The exit status is 0 when
+              all given targets (or the default target) are up to date, and  1
+              when  not.   The exit status may still be 2 or 4 on encountering
+              logical or fatal errors.  The options -k and -j are ignored.
 
        -s     Silent mode.  Suppress messages on  standard  output:   messages
               about  which  commands are run, a message when the build is suc‐
@@ -1036,4 +1036,4 @@ SEE ALSO
 
 
 
-stu-2.5.13                         août 2017                            STU(1)
+stu-2.5.14                         août 2017                            STU(1)

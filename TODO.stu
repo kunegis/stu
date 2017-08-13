@@ -1,9 +1,4 @@
 #
-# Can the options -k or -j be used in -q mode?  Yes; they should be a
-# no-op then. 
-#
-
-#
 # delete_tmps:  don't remove ?? and dep.*, as these patterns appear in
 # stu/.  Change tests that use these patterns.  Rename the script to
 # remove_*. 

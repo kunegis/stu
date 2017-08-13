@@ -2106,7 +2106,7 @@ void File_Execution::waited(pid_t pid, size_t index, int status)
 			}
 		}
 		/* In parallel mode, print "done" message */
-		if (option_parallel) {
+		if (option_parallel && !option_silent) {
 			string text= targets[0].format_src();
 			printf("Successfully built %s\n", text.c_str()); 
 		}

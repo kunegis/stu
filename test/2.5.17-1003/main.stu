@@ -1,0 +1,3 @@
+A: B C { cat B C >A ; }
+B { echo bbb >B ; }
+C { echo ccc >C ; }

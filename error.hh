@@ -175,12 +175,13 @@ string system_format(string text)
 }
 
 void print_out(string text)
-/* Print a message to standard output.  This is used in only very few
- * cases, in defiance of the principle that a program should by default
- * only output something when there is an error.  We do it mostly
- * because Make does it, and users expect it, and because not doing it
- * would be very strange for most users.  These messages are suppressed
- * by the -s option (silent).  */
+/* Print a message to standard output in "print" colors.  This is used
+ * in only very few cases, in defiance of the principle that a program
+ * should by default only output something when there is an error.  We
+ * do it mostly because Make does it, and users expect it, and because
+ * not doing it would be very strange for most users.  These messages
+ * are suppressed by the -s option (silent).  Messages that do not have
+ * colored output are printed directly using printf() etc.  */
 {
 	assert(text != "");
 	assert(isupper(text[0]));

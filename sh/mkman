@@ -10,6 +10,11 @@
 #	stu.1		The Stu manpage
 #
 
+export LC_ALL=C
+export LC_TIME=C
+export LANG=
+export LANGUAGE=
+
 VERSION="$(cat VERSION)" 
 DATE="$(date '+%B %Y')" 
 

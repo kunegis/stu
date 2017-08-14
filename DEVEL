@@ -22,6 +22,14 @@ Version logic (see 'NEWS' for an explanation of version numbers):
 * Increment the major version number when backward-incompatible new
   syntax is introduced 
 
+==== DEBUG VERSION ====
+
+The file 'stu.debug' is the Stu executable with all debugging turned on,
+i.e., with debugging symbols, all warnings enabled, etc.  The exact
+flags for compiling this as set in 'Makefile.devel', and you will
+probably have to tweak these flags if you are developing Stu on another
+setup than the authors.
+
 ==== UNIT TESTS ====
 
 Unit testing is described in 'sh/mktest'. 

@@ -1,3 +1,10 @@
+#
+# Make the argument parsing (outside of options) support concatenation
+# of brackets.
+#
+
+$ stu @bidd.[dat/NETWORKS_family.edit]
+
 #=================== Further features =======================
 
 #
@@ -92,6 +99,9 @@ $ stu -- list.[FILE]
 #      - aaa -> aaa
 #      - aaa/bbb -> aaa/bbb
 #      - / -> / 
+
+# Test this:
+dat/STATISTICS = ./; 
 
 #
 # File import

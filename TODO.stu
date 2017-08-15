@@ -21,6 +21,20 @@ $ stu -- [-oFILE]
 $ stu -- list.[FILE]
 $ stu @bidd.[dat/NETWORKS_family.edit]
 
+# 
+# Make functions be ASYNC SIGNAL SAFE.
+#
+# Everywhere:
+#   	assert:  replace by something async-signal-safe
+#   	errno: needs saving and restoring 
+# In remove_if_existing():
+#   	getting filename from Target
+#   	name_format_src!
+#   	print_error_reminder!
+#   	system_format! and writing into a Place
+#   	Debug::print() 
+#
+
 #=================== Further features =======================
 
 #
@@ -91,6 +105,7 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 
 # Test this:
 dat/STATISTICS = ./; 
+STATISTICS { ... }
 
 #
 # File import

@@ -2334,6 +2334,8 @@ bool File_Execution::finished(Flags flags) const
 
 void job_terminate_all() 
 {
+	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
+
 	write_safe(2, "stu: Terminating all jobs\n"); 
 
 	/* We have two separate loops, one for killing all jobs, and one
@@ -2405,6 +2407,9 @@ void job_print_jobs()
 
 bool File_Execution::remove_if_existing(bool output) 
 {
+	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
+	/* In fact we don't -- see the item in TODO.stu */
+
 	if (option_no_delete)
 		return false;
 
@@ -2445,8 +2450,7 @@ bool File_Execution::remove_if_existing(bool output)
 
 		if (0 > unlink(filename)) {
 			if (output) {
-				rule->place
-					<< system_format(target.format_word()); 
+				rule->place << system_format(target.format_word()); 
 			} else {
 				write_safe(2, "*** Error: unlink\n");
 			}

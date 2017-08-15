@@ -18,6 +18,8 @@ void job_terminate_all();
 void job_print_jobs(); 
 
 /* 
+ * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here 
+ *
  * Macro to write in an async signal-safe manner. 
  *   - FD must be '1' or '2'.
  *   - MESSAGE must be a string literal. 
@@ -652,7 +654,7 @@ void Job::handler_termination(int sig)
  * The termination signal handler -- terminate all processes and quit. 
  */
 {
-	/* We can use only async signal-safe functions here */
+	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 
 	/* Reset the signal to its default action */ 
 	struct sigaction act;
@@ -696,6 +698,7 @@ void Job::handler_productive(int, siginfo_t *, void *)
  * signal.
  */  
 {
+	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 }
 
 Job::Signal_Blocker::Signal_Blocker() 
@@ -839,6 +842,8 @@ void Job::kill(pid_t pid)
  * in their signal handlers.
  */ 
 {
+	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
+
 	assert(pid > 1); 
 
 	/* We send first SIGTERM, then SIGCONT */ 

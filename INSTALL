@@ -1,7 +1,5 @@
 ========= INSTALLING STU =========
 
---------- Generic Installation Instructions ---------
-
 To install Stu, run this:
 
 $ ./configure

@@ -25,6 +25,16 @@
 #==== Normal features ====
 
 #
+# Traces:  show only the first line with the most information message in
+# red, and other traces in another color. 
+#
+
+#
+# Have a mode or option to show only one message per error, omitting
+# all subsequent traces.
+#
+
+#
 # Allow access to environment variables via e.g. $(HOME).  Using this is
 # likely to be an antipattern -- the idiomatic thing to do is set a
 # symlink to the directory in question.  Other cases are even worse,

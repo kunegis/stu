@@ -1,11 +1,32 @@
 #
-# Make the argument parsing (outside of options) support concatenation
-# of brackets.
+# Allow a better integrated syntax on the command line after '--'.  This
+# will complement the options -o/-p/-n/-0.
+#
+# Write a tokenizer for it and use the usual parser.  The tokenizer
+# should:
+#    - recognize only the operators @[], and @ only at the beginning of arguments, or after [ or ], etc. 
+#    - treat whitespace within arguments as part of the name, and only
+#      consider the separation between arguments to be whitespace
+#    - don't support '$' or other syntax
+#    - don't need space after flags 
+#    - recognize '[' and ']' in the middle of the string, to denote
+#      concatenation 
 #
 
+$ stu -- [ -n FILES ]
+$ stu -- -o FILE
+$ stu -- -oFILE
+$ stu -- [FILE]
+$ stu -- [-oFILE]
+$ stu -- list.[FILE]
 $ stu @bidd.[dat/NETWORKS_family.edit]
 
 #=================== Further features =======================
+
+#
+# Job::Signal::Signal: Execute the signal setup code only when needed,
+# i.e., when something is started. 
+#
 
 #
 # Test all 'switch' cases, like in the following.  This is really
@@ -23,41 +44,9 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 #      (4) Concatenation that results in C
 
 #
-# Traces:  show only the first line with the most information message in
-# red, and other traces in another color. 
-#
-
-#
-# Job::Signal::Signal: Execute the signal setup code only when needed,
-# i.e., when something is started. 
-#
-
-#
 # Trace (logging): an option to write log messages into a file.  In
 # particular, which commands failed. (option -T)
 #
-
-#
-# Allow a better integrated syntax on the command line after '--'.  This
-# will complement the options -o/-p/-n/-0.
-#
-# Write a tokenizer for it and use the usual parser.  The tokenizer
-# should:
-#    - recognize operators only at the beginning and end of arguments
-#    - treat whitespace within arguments as part of the name, and only
-#      consider the separation between arguments to be whitespace
-#    - don't support '$'
-#    - don't need space after flags 
-#    - recognize '[' and ']' in the middle of the string, to denote
-#      concatenation 
-#
-
-$ stu -- [ -n FILES ]
-$ stu -- -o FILE
-$ stu -- -oFILE
-$ stu -- [FILE]
-$ stu -- [-oFILE]
-$ stu -- list.[FILE]
 
 #
 # Canonicalize names 
@@ -146,11 +135,6 @@ A: [-d data/B];
 # -m bfs (breadth-first order) and -m target (pseudorandom by target
 # name, i.e., same pseudorandom order for each target, as long as its
 # dependencies are the same). 
-#
-
-#
-# Have a mode or option to show only one message per error, omitting
-# all subsequent traces.
 #
 
 #

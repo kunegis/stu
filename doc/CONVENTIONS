@@ -1,0 +1,9 @@
+Here are some conventions for using Stu.  These are used by the authors,
+but they are not enforced by Stu.
+
+* Directory names end in '/'
+* If there is a setting that will be changed occasionally by hand (such
+  as enabling/disabling assertions), it may be easier to compile two
+  versions of the programs, with the value of that setting encoded in
+  the filename. 
+* Separate names of parameters in filenames by dots ('.')

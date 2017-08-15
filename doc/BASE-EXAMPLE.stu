@@ -7,7 +7,7 @@
 
 DATASETS = { alpha beta gamma }
 
-plots/$dataset.eps:   data/$dataset.txt mkplots
+plots/$dataset.eps:   data/$dataset.txt mkplot 
 {
 	./mkplot 
 }

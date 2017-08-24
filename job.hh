@@ -18,18 +18,33 @@ void job_terminate_all();
 void job_print_jobs(); 
 
 /* 
- * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here 
- *
  * Macro to write in an async signal-safe manner. 
  *   - FD must be '1' or '2'.
  *   - MESSAGE must be a string literal. 
  * Ignore errors, as this is called from the terminating signal handler. 
+ *
+ * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this
+ * macro. 
  */
-#define write_safe(FD, MESSAGE) \
+#define write_async(FD, MESSAGE) \
 	do { \
 		int r_write_safe= write(FD, MESSAGE, sizeof(MESSAGE) - 1); \
 		(void)r_write_safe; \
 	} while(0)
+
+/* 
+ * The same as assert(), but in an async-signal safe way.  In all
+ * likelyhood, implementations of assert() are already async-signal
+ * safe, but we shouldn't rely on this. 
+ *
+ * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this
+ * macro. 
+ */
+#ifdef NDEBUG
+#	define assert_async(X)  ((void) 0 )
+#else /* ! NDEBUG */
+#	define assert_async(X)  ((void)( (X) || (write(2, "assert_async failed\n", 20), abort(), 0)))
+#endif /* ! NDEBUG */
 
 class Job
 /*
@@ -660,11 +675,11 @@ void Job::handler_termination(int sig)
 	struct sigaction act;
 	act.sa_handler= SIG_DFL;
 	if (0 != sigemptyset(&act.sa_mask))  {
-		write_safe(2, "*** error: sigemptyset\n"); 
+		write_async(2, "*** error: sigemptyset\n"); 
 	}
 	act.sa_flags= SA_NODEFER;
 	int r= sigaction(sig, &act, nullptr);
-	assert(r == 0); 
+	assert_async(r == 0); 
 
 	/* If in the child process (the short time between fork() and
 	 * exec()), just quit */ 
@@ -672,7 +687,7 @@ void Job::handler_termination(int sig)
 		/* Terminate all processes */ 
 		job_terminate_all();
 	} else {
-		assert(Job::in_child == 1);
+		assert_async(Job::in_child == 1);
 	}
 
 	/* We cannot call Job::Statistics::print() here because
@@ -683,7 +698,7 @@ void Job::handler_termination(int sig)
 	/* Raise signal again */ 
 	int rr= raise(sig);
 	if (rr != 0) {
-		write_safe(2, "*** error: raise\n"); 
+		write_async(2, "*** error: raise\n"); 
 	}
 	
 	/* Don't abort here -- the reraising of this signal may only be
@@ -691,12 +706,10 @@ void Job::handler_termination(int sig)
 }
 
 void Job::handler_productive(int, siginfo_t *, void *)
-/* 
- * Do nothing -- the handler only exists because POSIX says that a
+/* Do nothing -- the handler only exists because POSIX says that a
  * signal may be discarded by the kernel if doesn't have a signal
  * handler for it, and then it may not be possible to wait for that
- * signal.
- */  
+ * signal.  */
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 }
@@ -844,7 +857,7 @@ void Job::kill(pid_t pid)
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 
-	assert(pid > 1); 
+	assert_async(pid > 1); 
 
 	/* We send first SIGTERM, then SIGCONT */ 
 	
@@ -855,7 +868,7 @@ void Job::kill(pid_t pid)
 			 * terminated but we haven't wait()ed
 			 * for it yet. */ 
 		} else {
-			write_safe(2, "*** Error: Kill\n"); 
+			write_async(2, "*** Error: Kill\n"); 
 			/* Note:  Don't call exit() yet; we want all
 			 * children to be killed. */ 
 		}
@@ -863,7 +876,7 @@ void Job::kill(pid_t pid)
 
 	if (0 > ::kill(-pid, SIGCONT)) {
 		if (errno != ESRCH) {
-			write_safe(2, "*** Error: Kill\n"); 
+			write_async(2, "*** Error: Kill\n"); 
 		}
 	}
 }

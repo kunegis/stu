@@ -2336,7 +2336,7 @@ void job_terminate_all()
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 
-	write_safe(2, "stu: Terminating all jobs\n"); 
+	write_async(2, "stu: Terminating all jobs\n"); 
 
 	/* We have two separate loops, one for killing all jobs, and one
 	 * for removing all target files.  This could also be merged
@@ -2361,7 +2361,7 @@ void job_terminate_all()
 	}
 
 	if (count_terminated) {
-		write_safe(2, "stu: Removing partially built files (");
+		write_async(2, "stu: Removing partially built files (");
 		constexpr int len= sizeof(size_t) * CHAR_BIT / 3 + 3;
 		char out[len];
 		out[len - 1]= '\n';
@@ -2369,7 +2369,7 @@ void job_terminate_all()
 		int i= len - 3;
 		size_t n= count_terminated;
 		do {
-			assert(i >= 0); 
+			assert_async(i >= 0); 
 			out[i]= '0' + n % 10;
 			n /= 10;
 		} while (n > 0 && --i >= 0);
@@ -2387,12 +2387,12 @@ void job_terminate_all()
 			/* wait() sets errno to ECHILD when there was no
 			 * child to wait for */ 
 			if (errno != ECHILD) {
-				write_safe(2, "*** Error: wait\n"); 
+				write_async(2, "*** Error: wait\n"); 
 			}
 
 			return; 
 		}
-		assert(ret > 0); 
+		assert_async(ret > 0); 
 	}
 }
 
@@ -2452,7 +2452,7 @@ bool File_Execution::remove_if_existing(bool output)
 			if (output) {
 				rule->place << system_format(target.format_word()); 
 			} else {
-				write_safe(2, "*** Error: unlink\n");
+				write_async(2, "*** Error: unlink\n");
 			}
 		}
 	}

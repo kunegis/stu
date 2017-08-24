@@ -2,7 +2,6 @@
 # Make functions be ASYNC SIGNAL SAFE.
 #
 # Everywhere:
-#   	assert:  replace by something async-signal-safe
 #   	errno: needs saving and restoring 
 # In remove_if_existing():
 #   	getting filename from Target

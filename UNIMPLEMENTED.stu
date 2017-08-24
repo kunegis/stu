@@ -1,7 +1,7 @@
 #
 # These are features that were decided not to be implemented.  Many of
 # these ideas are actually good, in particular the first category, and
-# we may revive them in the future.  When in doubt, we prefer to *not*
+# we may revive them in the future.  When in doubt, we prefer to not
 # support a feature, as adding a feature in the future can always be
 # done without breaking compatibility, whereas removing one is always
 # backward-incompatible.
@@ -16,10 +16,19 @@
 #
 
 #
-# Optimization:  when parsing rules, only save the "body" part of the
+# When parsing rules, only save the "body" part of the
 # rule (everything except the target) as an unparsed string.  Parse it
 # properly only when needed.  This will not catch certain errors
 # anymore. 
+#
+
+#
+# Matching parametrized rules:  use a form of prefix and suffix tree. 
+#
+
+# 
+# Cache the content of files that are used as dynamic dependencies or
+# dynamic variables.  
 #
 
 #==== Normal features ====
@@ -56,7 +65,6 @@
 #  - Memory consumption
 #  - CPU usage / load average
 #  - etc.
-#
 # It's hard to define which of such rules would be universal enough to
 # be included in Stu. 
 #
@@ -150,7 +158,9 @@ A:  list.( '' ); # Equivalent to just 'list.'
 A:  @[X]; 
 
 #
-# The Dep::top mechanism is not clean.  Do something better.  
+# The Dep::top mechanism is not clean.  Do something better.  The
+# current error message inside concatenations can also be confusion,
+# even though they are correct. 
 #
 
 #
@@ -310,7 +320,7 @@ A:  -po B { ... }
 @x:  AX BY;
 
 # This corresponds to the paste(1) command.  It is rarely useful,
-# though.  
+# though.  Also, it can be achieved without Stu support. 
 
 #
 # Set difference, e.g. with '\'.  That's nice, but can easily be
@@ -338,7 +348,7 @@ A:  -po B { ... }
 # Example 1:  Recursion at the rule level is needed to implement correct
 # C source dependency. 
 
-# Example 2:  building A.gz.gz does not work. 
+# Example 2:  building A.gz.gz does not work without this feature. 
 $NAME.gz:  $NAME {
 	gzip -c $NAME >$NAME.gz
 }
@@ -370,7 +380,7 @@ A:  {
 # and on top of that a lot of confusion. 
 #
 
-@bidd:  [>dep.bidd]:  <NETWORKS { sed -e 's,^,bidd.,' }
+@bidd:  [>dep.bidd]:  <NETWORKS {  sed -e 's,^,bidd.,' ;  }
 
 #
 # Input redirection for a dynamic dependency or list is catenation. 
@@ -505,7 +515,8 @@ A: B;
 
 # Counterargument:  The syntax for parameters in Stu rules and in the
 # shell commands should be identical.  Also, the path case can be
-# realized via symlinks. 
+# realized via symlinks, which is the idiomatic way to do this at the
+# moment. 
 
 #
 # Option -A:  build all (non-parametrized) targets.
@@ -522,7 +533,11 @@ A:  -x B { cp B A ; }
 B: X Y Z { cat X Y Z >B ; }
 
 #
-# Implement '*' as alternative for concatenation. 
+# Implement '*' as alternative for juxtaposition as a syntax for
+# concatenation.  Not done because juxtaposition looks so much more
+# beautiful, and '*' would essentially only be needed for extremely long
+# filenames.  Also, we may want to keep the '*' character for the
+# future. 
 #
 
 #
@@ -531,6 +546,8 @@ B: X Y Z { cat X Y Z >B ; }
 
 # Ignores timestamps recursively
 A: -P B;
+
+# We're not 100% sure about the semantics of this. 
 
 #
 # When a parametrized name contains a slash in a nonparametrized part,
@@ -545,7 +562,7 @@ $name.bib;   # Rule (1)
 # The name aaa.bib will match both rules. 
 
 # This is not nice because it starts doing the "allow regexp for
-# parameter thing". 
+# parameter" thing. 
 
 #
 # An option for automatic logging:  write all output (stdout/stderr) of
@@ -568,11 +585,17 @@ $name.bib;   # Rule (1)
 # Switch the verbose option from -V to -v.  That would make it
 # compatible with GNU Make of FreeBSD Make, but then different Stu
 # versions would have different ways to print the version number, and
-# that's not good since the verbose-number-outputting function is
-# exactly what should work regardless of the version number. 
+# that's not good since the version-number-outputting function is
+# exactly the one thing that should work regardless of the version
+# number.  
 # 
 
 #==== New features that change/extend Stu drastically ====
+
+#
+# Implementing these things is not only very time-consuming, but will
+# also change the nature of Stu scripts drastically. 
+#
 
 #
 # Glob patterns.  This only makes sense when the files found by globbing
@@ -606,7 +629,8 @@ example:  [FILES]
 # be highly specific to a single use-case.  Instead of implementing this
 # in Stu, a better implementation would be via mounting, or virtual
 # filesystems, but that seems not to be a thing at the moment.  Make
-# traditionally supports "ar" archives.
+# traditionally supports "ar" archives.  This feature of Make also seems
+# to be very seldomly used nowadays. 
 #
 
 #
@@ -625,6 +649,11 @@ example:  [FILES]
 # Remember:  Even GCC is written in C++ nowadays, so we are not in bad
 # company.    
 #
+# Also:  If I'm not mistaken, POSIX prescribes a C89 compiler, and
+# nothing more.  Thus, switching to C will only let us claim "we're 100%
+# POSIX" if we're ready to use C89, which is also not nice.  Maybe, if
+# POSIX prescribes a C99 compiler one day. 
+#
 
 #
 # Removeable files:  when a file carries the removeable flag, it does
@@ -634,7 +663,6 @@ example:  [FILES]
 #
 
 A: -R B;  B: C;  A: D;
-
 # * When A is old, B does not exist, and C is new:  rebuild B and A.
 # * When A is new, B does not exist, and C is old:  don't rebuild A.
 # * When A is new, B does not exist, C is old, and D is very new:  rebuild
@@ -654,16 +682,17 @@ A: -R B;  B: C;  A: D;
 # syntax.  Currently, most cases can be programmed with the current
 # facilities, but a few use cases exist that are not possible now, such
 # as distinguishing lowercase from uppercase parameters, but then again
-# such cases can be argued to be bad design in themselves. 
+# such cases can be argued to be bad design in themselves.  (Which of
+# course is only a weak argument for not supporting them.)
 #
 
-# Allow contiguous parameters
+# Both parameters $X and $Y can consist only of a single character.  
 list.${X:.}${Y:.} {
 	compute -x $X -y $Y >list.${X}${Y}
 }
 
-# Exclude certain characters from parameter names 
-web.${NETWORK:[^.]+}
+# The parameter $NETWORK must not contain a dot
+web.${NETWORK:[^.]+} :  ... ;
 
 # Specify a list of values
 ${NAME:ref|ukob|tuberlin}.bib:  bibs-A/${NAME}.bib
@@ -688,7 +717,7 @@ ${NAME:[^/]+}.bib: ...;
 # is to compute a fingerprint when before executing the command, and
 # then again after the command succeeds, and when the result is
 # identical, then reset the timestamp of the file back to its old
-# value. 
+# value.  (This could be a script for stu-utils/.)
 #
 
 #
@@ -738,11 +767,12 @@ ${NAME:[^/]+}.bib: ...;
 A.data:  B.data C.data 
 \julia{
 	% This command will be executed by the Julia wrapper, and
-	% read/write the three matrices automatically. 
+	% read/write the three matrices from the corresponding files
+	% automatically.  
 	A = B * C;
 }
 
-julia:  julia-command {
+\julia:  julia-command {
 	# This will be executed whenever A.data is built, and the three
 	# variables used below will be filled by Stu with the dependencies,
 	# the target and the command, which are worked on by the script
@@ -768,14 +798,14 @@ A.data:  B.data C.data julia-wrapper
 	A = B * C
 }
 
-
 #
-# Nested rules.  Good for dependencies that are used only once. 
-# This is quite hard to read, honestly, and mostly fulfills the fantasy
-# of people who like deeply nested constructs.  
+# Nested rules.  Good for dependencies that are used only once.  This is
+# quite hard to read, honestly, and mostly fulfills the fantasy of
+# people who like deeply nested constructs :)  But implementation-wise,
+# it's not that difficult. 
 #
 
-A: (B: C { cp C B}) (D: E {cp E D}) { cat B D >A }
+A: (B: C { cp C B ; }) (D: E {cp E D ; }) { cat B D >A ; }
 
 #
 # Alternative dependencies.  Would not be used often, and where it would
@@ -847,7 +877,7 @@ A:  <B { ./command-A --output A ; }
 #
 # These features can be implemented outside of Stu using constructs
 # supported by Stu.  Thus, there is no need to integrate them into Stu,
-# and in fact supporting them would bloat Stu and and unnecessary
+# and in fact supporting them would bloat Stu and unnecessary
 # dependencies to it.
 #
 # If anything, the question we should ask for each of these features is

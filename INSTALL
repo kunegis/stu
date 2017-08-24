@@ -41,13 +41,14 @@ Credits for the package go to Holger Heinz (hheinz).
 
 ==== REQUIREMENTS ====
 
-* A C++11 compiler 
+Stu requires:
 * POSIX
-* ASCII or an ASCII-compatible 8-bit encoding such as UTF-8 or ISO-8859-1. 
+* A C++11 compiler 
+
+In addition, Stu uses the following features, about which we are not
+100% sure that they are prescribed by POSIX: 
+* ASCII or an ASCII-compatible 8-bit encoding such as UTF-8 or ISO-8859-1
 * ANSI color code-compatible terminal (terminfo or termcap are not used)
-* Stu calls /bin/sh and /bin/cp at runtime.  They should behave as
-  prescribed by POSIX.
-* Stu needs a working /dev/null  
 
 ==== COMPILATION OPTIONS ====
 

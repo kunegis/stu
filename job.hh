@@ -25,6 +25,7 @@ void job_print_jobs();
  *
  * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this
  * macro. 
+ * Note:  This macro may change ERRNO. 
  */
 #define write_async(FD, MESSAGE) \
 	do { \
@@ -39,6 +40,7 @@ void job_print_jobs();
  *
  * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this
  * macro. 
+ * Note:  This macro may change ERRNO. 
  */
 #ifdef NDEBUG
 #	define assert_async(X)  ((void) 0 )
@@ -671,6 +673,8 @@ void Job::handler_termination(int sig)
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 
+	int errno_save= errno; 
+
 	/* Reset the signal to its default action */ 
 	struct sigaction act;
 	act.sa_handler= SIG_DFL;
@@ -703,6 +707,8 @@ void Job::handler_termination(int sig)
 	
 	/* Don't abort here -- the reraising of this signal may only be
 	 * delivered after this handler is done. */ 
+
+	errno= errno_save; 
 }
 
 void Job::handler_productive(int, siginfo_t *, void *)
@@ -751,8 +757,7 @@ Job::Signal::Signal()
  *      something:   
  *         + SIGCHLD (to know when child processes are done) 
  *         + SIGUSR1 (to output statistics)
- *      These signals are processed asynchronously, i.e., they are
- *      blocked, and then waited for specifically.   
+ *      These signals are blocked, and then waited for specifically.       
  *    - The job control signals SIGTTIN and SIGTTOU.  They are both
  *      produced by certain job control events that Stu triggers, and
  *      ignored by Stu. 

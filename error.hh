@@ -35,13 +35,13 @@
  *
  * Typical forms of error messages are:
  *
- *    Location 2: expected an XXX, not YYY
- *    Location 1: in ZZZ
+ *    Location 2: expected an AAA, not BBB
+ *    Location 1: in CCC
  *
- *    Location 2: XXX must not be used
- *    Location 1: in YYY 
+ *    Location 2: AAA must not be used
+ *    Location 1: in BBB
  *
- *    Location 2: XXX must not be used
+ *    Location 2: AAA must not be used
  *    Location 1: in FEATURE_NAME using OPERATOR
  *
  * Use "expected TOKEN" instead of "missing TOKEN".  That is because
@@ -50,7 +50,7 @@
  * Include definite or indefinite articles after "expected" to avoid
  * interpreting "expected" as an adjective.
  *
- * "not YYY" mentions the invalid token.  If end-of-file is encountered,
+ * "not BBB" mentions the invalid token.  If end-of-file is encountered,
  * the "not ..." part is not used. 
  * 
  * Use "must not" rather than "cannot" or "shall" in error messages when

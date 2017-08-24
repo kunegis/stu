@@ -2336,6 +2336,8 @@ void job_terminate_all()
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 
+	int errno_save= errno; 
+
 	write_async(2, "stu: Terminating all jobs\n"); 
 
 	/* We have two separate loops, one for killing all jobs, and one
@@ -2362,6 +2364,7 @@ void job_terminate_all()
 
 	if (count_terminated) {
 		write_async(2, "stu: Removing partially built files (");
+		/* Maximum characters in decimal representation of SIZE_T */
 		constexpr int len= sizeof(size_t) * CHAR_BIT / 3 + 3;
 		char out[len];
 		out[len - 1]= '\n';
@@ -2389,11 +2392,12 @@ void job_terminate_all()
 			if (errno != ECHILD) {
 				write_async(2, "*** Error: wait\n"); 
 			}
-
-			return; 
+			break; 
 		}
 		assert_async(ret > 0); 
 	}
+
+	errno= errno_save; 
 }
 
 void job_print_jobs()

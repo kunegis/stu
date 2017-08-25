@@ -13,11 +13,11 @@ grep -lE '(^|[^:])//' *.cc *.hh && {
 }
 
 # Check for double # in script files 
-find . -type f -a \( -name '*.stu' -o -perm -u+x \) -a \! -name '*~' \
+find . -type f -a \( -name '*.stu' -o -perm -u+x -o -name Makefile.devel \) -a \! -name '*~' \
 	-a \! -path './.git*' -a \! -path './stu.*' -a \! -path './stu' \
 	-a \! -path './config*' -a \! -path './build-aux/*' -a \! -path ./TODO.stu | 
 xargs grep -lF '#''#' && {
-	echo >&2 "*** Shell scripts and Stu files must not contain #""#"
+	echo >&2 "*** Shell scripts, makefiles and Stu scripts must not contain #""#"
 	ret=1
 }
 

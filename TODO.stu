@@ -1,8 +1,3 @@
-#
-# - Make AutoConf always have an up to date version number 
-# - Use the VERSION macro from AutoConf in code instead of out version.hh one
-#
-
 # 
 # Async-signal safety in remove_if_existing():
 #    	- timestamps_old:  make it a malloc()'ed array 
@@ -164,7 +159,9 @@ A: [-d data/B];
 
 #
 # A 'why' option that shows why things are built.  Will look similar to
-# error traces, only containing explanations. 
+# error traces, only containing explanations.  In essence, output a line
+# everytime one of the 'need_build' variables is updated.  Also, we need
+# to do something smart with timestamps. 
 #
 
 # * 'abc' does not exist

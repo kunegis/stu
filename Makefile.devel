@@ -13,7 +13,7 @@ all-devel: \
     test_unit.ndebug \
     all-auto
 
-.PHONY:  all-test all-auto clean
+.PHONY:  all-test clean
 
 include Makefile
 
@@ -51,10 +51,10 @@ CXXFLAGS_PROF=   -pg -O3 -DNDEBUG
 CXXFLAGS_ALL_DEBUG=  $(CXXFLAGS_DEBUG)  $(CXXFLAGS_OTHER)
 CXXFLAGS_ALL_PROF=   $(CXXFLAGS_PROF)   $(CXXFLAGS_OTHER)
 
-stu.debug:  *.cc *.hh version.hh
+stu.debug:  *.cc *.hh version.hh all-auto
 	$(CXX) $(CXXFLAGS_ALL_DEBUG)  stu.cc -o stu.debug
 
-stu.prof: *.cc *.hh version.hh
+stu.prof: *.cc *.hh version.hh all-auto 
 	$(CXX) $(CXXFLAGS_ALL_PROF)   stu.cc -o stu.prof
 
 version.hh:  VERSION sh/mkversion
@@ -70,10 +70,10 @@ analysis.prof:  gmon.out
 test_options:  sh/testoptions stu.cc stu.1.in
 	sh/testoptions && touch $@
 
-test_sed: sh/testsed . test test/* test/*/* 
+test_sed: sh/testsed test test/* test/*/* sh 
 	sh/testsed && touch $@
 
-test_comments:  *.cc *.hh sh/testcomments . test test/* test/*/* 
+test_comments:  *.cc *.hh sh/testcomments Makefile.devel sh sh/* test test/* test/*/* 
 	sh/testcomments && touch $@
 
 #
@@ -110,9 +110,12 @@ clean:
 #
 
 all-auto:  configure.ac VERSION Makefile.am
-	rm -Rf build-aux configure config.log autom4te.cache
-	mkdir build-aux
+	echo BUILDING all-auto 
+	rm -Rf Makefile configure config.log config.status autom4te.cache
+	mkdir -p build-aux
 	aclocal
 	automake --add-missing
 	autoconf
 	sh/replacelinks build-aux/*
+	./configure
+	touch all-auto

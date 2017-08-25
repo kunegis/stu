@@ -12,3 +12,4 @@ autom4te.cache
 config.status
 configure.ac.old
 Makefile
+all-auto

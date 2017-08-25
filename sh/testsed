@@ -1,6 +1,11 @@
 #! /bin/sh
 #
-# Check that we don't use 'sed -r'. 
+# Check that we don't use 'sed -r'.  
+#
+# Background:  'sed -r' is a GNU extension that enabled extended regular
+# expressions.  POSIX does not prescribe a "extended regexp" mode for
+# sed.  In many implementations, '-E' does the same.  '-E' is more
+# portable than '-r', but still not POSIX. 
 #
 
 find_sed() {

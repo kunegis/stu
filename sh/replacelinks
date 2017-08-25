@@ -17,7 +17,7 @@ do
 			error=1
 		}
 	else
-		echo >&2 "*** Warning: '$file' is not a symlink"
+		: # The file has already been replaced 
 	fi
 done
 

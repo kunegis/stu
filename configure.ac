@@ -12,7 +12,8 @@
 # be unnecessary, as a single POSIX-compliant codebase would compile on
 # all platforms.  In practice, this fails in two ways:
 #
-#  - Some systems don't follow POSIX, but working around that is easy.  
+#  - Some systems don't follow POSIX, but working around that is easy,
+#    so missing out on these systems is not worth it. 
 #  - Some nonstandard features are too useful to not use, but not having
 #    them still allows a very useful version of Stu.
 #

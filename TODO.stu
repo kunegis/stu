@@ -1,12 +1,12 @@
 # 
-# Make functions be ASYNC SIGNAL SAFE.
+# Async-signal safety in remove_if_existing():
+#    	- timestamps_old:  make it a malloc()'ed array 
+#   	- have a targets_filenames malloc()'ed array with const char *'s of filenames (and NULL for non-file targets) 
+#       - update comment for executions_by_pid_value
 #
-# In remove_if_existing():
-#   	getting filename from Target
-#   	name_format_src!
-#   	print_error_reminder!
-#   	system_format! and writing into a Place
-#   	Debug::print() 
+
+#
+# Use the PACKAGE macro in stu.cc 
 #
 
 #

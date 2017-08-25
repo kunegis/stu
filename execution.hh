@@ -498,6 +498,12 @@ public:
 	 * all jobs we will ever run, based on the value passed via the
 	 * -j option, so we avoid excessive calling of realloc(), and
 	 * race conditions while accessing this.  */
+	/* For all file executions stored here, the following variables
+	 * are never changed as long as the File_Execution objects are
+	 * stored there, such that they can be accessed from
+	 * async-signal safe functions:
+	 * 	TARGETS, TIMESTAMPS_OLD
+	 */
 
 	static void wait();
 	/* Wait for next job to finish and finish it.  Do not start anything
@@ -2354,11 +2360,8 @@ void job_terminate_all()
 
 	size_t count_terminated= 0;
 
-	for (size_t i= 0;
-	     i < File_Execution::executions_by_pid_size;
-	     ++i) {
-		if (
-		    File_Execution::executions_by_pid_value[i]->remove_if_existing(false))
+	for (size_t i= 0;  i < File_Execution::executions_by_pid_size;  ++i) {
+		if (File_Execution::executions_by_pid_value[i]->remove_if_existing(false))
 			++count_terminated;
 	}
 
@@ -2411,8 +2414,7 @@ void job_print_jobs()
 
 bool File_Execution::remove_if_existing(bool output) 
 {
-	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
-	/* In fact we don't -- see the item in TODO.stu */
+	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here, if OUTPUT is false */
 
 	if (option_no_delete)
 		return false;
@@ -2442,10 +2444,9 @@ bool File_Execution::remove_if_existing(bool output)
 		       timestamps_old[i] < Timestamp(&buf)))
 			continue;
 
-		string text_filename= name_format_src(filename); 
-		Debug::print(this, fmt("remove %s", text_filename)); 
-		
 		if (output) {
+			string text_filename= name_format_src(filename); 
+			Debug::print(this, fmt("remove %s", text_filename)); 
 			print_error_reminder(fmt("Removing file %s because command failed",
 						 name_format_word(filename))); 
 		}

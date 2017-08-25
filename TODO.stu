@@ -1,7 +1,3 @@
-#
-# Use the PACKAGE macro in stu.cc 
-#
-
 # 
 # Async-signal safety in remove_if_existing():
 #    	- timestamps_old:  make it a malloc()'ed array 

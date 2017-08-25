@@ -2344,7 +2344,7 @@ void job_terminate_all()
 
 	int errno_save= errno; 
 
-	write_async(2, "stu: Terminating all jobs\n"); 
+	write_async(2, PACKAGE ": Terminating all jobs\n"); 
 
 	/* We have two separate loops, one for killing all jobs, and one
 	 * for removing all target files.  This could also be merged
@@ -2366,7 +2366,7 @@ void job_terminate_all()
 	}
 
 	if (count_terminated) {
-		write_async(2, "stu: Removing partially built files (");
+		write_async(2, PACKAGE ": Removing partially built files (");
 		/* Maximum characters in decimal representation of SIZE_T */
 		constexpr int len= sizeof(size_t) * CHAR_BIT / 3 + 3;
 		char out[len];

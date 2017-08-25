@@ -1,12 +1,12 @@
+#
+# Use the PACKAGE macro in stu.cc 
+#
+
 # 
 # Async-signal safety in remove_if_existing():
 #    	- timestamps_old:  make it a malloc()'ed array 
 #   	- have a targets_filenames malloc()'ed array with const char *'s of filenames (and NULL for non-file targets) 
 #       - update comment for executions_by_pid_value
-#
-
-#
-# Use the PACKAGE macro in stu.cc 
 #
 
 #
@@ -31,6 +31,10 @@ $ stu -- [FILE]
 $ stu -- [-oFILE]
 $ stu -- list.[FILE]
 $ stu @bidd.[dat/NETWORKS_family.edit]
+
+#
+# Use the VERSION macro from AutoConf in code instead of out version.hh one
+#
 
 #=================== Further features =======================
 

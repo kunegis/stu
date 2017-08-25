@@ -44,7 +44,7 @@ const char OPTIONS[]= "0:ac:C:dEf:F:ghij:JkKm:M:n:o:p:PqsVxyYz";
 /* The output of the help (-h) option.  The following strings do not
  * contain tabs, but only space characters.  */   
 const char HELP[]= 
-	"Usage: stu [-f FILENAME] [OPTION]... [TARGET]...\n"           
+	"Usage: " PACKAGE " [-f FILENAME] [OPTION]... [TARGET]...\n"           
 	"By default, build the first target in the file 'main.stu'.\n" 
 	"TARGET may include the special characters '@[]'.\n"     
 	"Options:\n"						       
@@ -83,7 +83,7 @@ const char HELP[]=
 	"Stu home page: <" PACKAGE_URL ">\n";
 
 const char VERSION_INFO[]=
-	"stu " STU_VERSION "\n"
+	PACKAGE " " STU_VERSION "\n"
 	"Copyright (C) 2014, 2015, 2016, 2017 Jerome Kunegis\n"
 	"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 	"This is free software: you are free to change and redistribute it.\n"

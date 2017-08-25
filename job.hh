@@ -540,7 +540,7 @@ pid_t Job::wait(int *status)
 			if (tcsetpgrp(tty, getpid()) < 0)
 				print_error_system("tcsetpgrp");
 			fprintf(stderr,
-				"stu: job stopped.  "
+				PACKAGE ": job stopped.  "
 				"Press ENTER to continue, Ctrl-C to terminate Stu, Ctrl-Z to suspend Stu\n");
 			char *lineptr= nullptr;
 			size_t n= 0;
@@ -549,7 +549,7 @@ pid_t Job::wait(int *status)
 				perror("getline");
 				/* On error, continue anyway */ 
 			}
-			fprintf(stderr, "stu: continuing\n"); 
+			fprintf(stderr, PACKAGE ": continuing\n"); 
 			if (tcsetpgrp(tty, pid) < 0)
 				print_error_system("tcsetpgrp");
 			/* Continue job */

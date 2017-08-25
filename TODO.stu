@@ -1,3 +1,8 @@
+#
+# - Make AutoConf always have an up to date version number 
+# - Use the VERSION macro from AutoConf in code instead of out version.hh one
+#
+
 # 
 # Async-signal safety in remove_if_existing():
 #    	- timestamps_old:  make it a malloc()'ed array 
@@ -27,10 +32,6 @@ $ stu -- [FILE]
 $ stu -- [-oFILE]
 $ stu -- list.[FILE]
 $ stu @bidd.[dat/NETWORKS_family.edit]
-
-#
-# Use the VERSION macro from AutoConf in code instead of out version.hh one
-#
 
 #=================== Further features =======================
 

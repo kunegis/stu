@@ -466,7 +466,7 @@ int main(int argc, char **argv, char **envp)
 	}
 
 	if (fclose(stdout)) {
-		perror("stdout");
+		perror("fclose(stdout)");
 		exit(ERROR_FATAL);
 	}
 	/* No need to flush stderr, because it is line buffered, and if

@@ -863,7 +863,7 @@ date.
 .IP 2
 Logical error.  These indicate errors in the usage of Stu.  Examples are
 syntax errors in Stu sources, cycles in the dependency graph and
-erroneous options on the command line. 
+certain erroneous options on the command line. 
 .IP 3
 Both build and logical errors were encountered (when using the 
 .BR -k
@@ -872,7 +872,9 @@ option).
 An error occurred that made Stu abort execution immediately, regardless of
 whether the 
 .BR -k 
-option was used.  
+option was used.  This includes system error from which Stu cannot
+recover (such as out-of-memory conditions), as well as errors on the Stu
+command line that make Stu fail immediately. 
 
 .SH "ENVIRONMENT"
 
@@ -899,7 +901,7 @@ variable, like Make does, as that variable is only intended to set the
 user's interactive shell. 
 .IP STU_STATUS
 Stu sets this variable to '1' in all child processes. In order to avoid
-recursive invocation of Stu, Stu will fail on startup when the variable
+recursive invocation of Stu, Stu will fail with a fatal error (exit status 4) on startup when the variable
 is set. To circumvent this, unset the variable.  Recursive Stu is as
 harmful as recursive Make.
 .IP TERM

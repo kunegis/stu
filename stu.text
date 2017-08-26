@@ -793,37 +793,41 @@ EXIT STATUS
 
        2      Logical error.  These indicate  errors  in  the  usage  of  Stu.
               Examples  are syntax errors in Stu sources, cycles in the depen‐
-              dency graph and erroneous options on the command line.
+              dency graph and certain erroneous options on the command line.
 
        3      Both build and logical errors were encountered (when  using  the
               -k option).
 
        4      An  error  occurred  that  made Stu abort execution immediately,
-              regardless of whether the -k option was used.
+              regardless of whether the -k option  was  used.   This  includes
+              system  error from which Stu cannot recover (such as out-of-mem‐
+              ory conditions), as well as errors on the Stu command line  that
+              make Stu fail immediately.
 
 
 ENVIRONMENT
-       STU_CP If set, Stu calls the  'cp'  program  from  the  given  location
-              instead  of  '/bin/cp'.   The given version of 'cp' must support
+       STU_CP If  set,  Stu  calls  the  'cp'  program from the given location
+              instead of '/bin/cp'.  The given version of  'cp'  must  support
               the syntax 'cp -- "$fileA" "$fileB"'.
 
        STU_OPTIONS
-              Contains options to be set on every run  of  Stu.   All  letters
+              Contains  options  to  be  set on every run of Stu.  All letters
               except for those in EQswxyYz are ignored.  Options passed on the
               command line apply after those passed using this variable.
 
        STU_SHELL
-              If set, Stu calls the shell from the given location  instead  of
-              '/bin/sh'.   The given shell must support the -e and -c options.
-              This is mainly useful on systems where '/bin/sh' is not a  POSIX
+              If  set,  Stu calls the shell from the given location instead of
+              '/bin/sh'.  The given shell must support the -e and -c  options.
+              This  is mainly useful on systems where '/bin/sh' is not a POSIX
               shell.  Stu ignores the $SHELL variable, like Make does, as that
               variable is only intended to set the user's interactive shell.
 
        STU_STATUS
-              Stu sets this variable to '1' in all child processes.  In  order
-              to  avoid  recursive invocation of Stu, Stu will fail on startup
-              when the variable is set. To circumvent this,  unset  the  vari‐
-              able.  Recursive Stu is as harmful as recursive Make.
+              Stu  sets  this variable to '1' in all child processes. In order
+              to avoid recursive invocation of Stu, Stu will fail with a fatal
+              error  (exit  status  4) on startup when the variable is set. To
+              circumvent this, unset the variable.  Recursive Stu is as  harm‐
+              ful as recursive Make.
 
        TERM   Used  to  determine  whether to use color output.  This variable
               must be set to a value different from 'dumb', and isatty(3) must
@@ -1037,4 +1041,4 @@ SEE ALSO
 
 
 
-stu-2.5.27                        August 2017                           STU(1)
+stu-2.5.28                        August 2017                           STU(1)

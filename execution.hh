@@ -545,7 +545,7 @@ private:
 	Job job;
 	/* The job used to execute this rule's command */ 
 
-	vector <Timestamp> timestamps_old; 
+	Timestamp *timestamps_old;
 	/* Timestamp of each file target, before the command is
 	 * executed.  Only valid once the job was started.  The indexes
 	 * correspond to those in TARGETS.  Non-file indexes are
@@ -553,6 +553,7 @@ private:
 	 * to decide whether to remove it after a command failed or was
 	 * interrupted.  This is UNDEFINED when the file did not exist,
 	 * or no target is a file.  */ 
+	/* Allocated with malloc().  Length equals that of TARGETS */
 
 	map <string, string> mapping_parameter; 
 	/* Variable assignments from parameters for when the command is run */
@@ -1965,6 +1966,9 @@ File_Execution::~File_Execution()
 /* Objects of this type are never deleted */ 
 {
 	assert(false);
+
+	/* We write this here as a reminder if this is ever activated */
+	free(timestamps_old); 
 }
 
 void File_Execution::wait() 
@@ -2172,6 +2176,7 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 			       int &error_additional)
 	:  Execution(param_rule_),
 	   rule(rule_),
+	   timestamps_old(nullptr),
 	   flags_finished(0)
 {
 	assert((param_rule_ == nullptr) == (rule_ == nullptr)); 
@@ -2440,8 +2445,7 @@ bool File_Execution::remove_if_existing(bool output)
 		/* If the file existed before building, remove it only if it now
 		 * has a newer timestamp.  */
 
-		if (! (! timestamps_old[i].defined() ||
-		       timestamps_old[i] < Timestamp(&buf)))
+		if (! (! timestamps_old[i].defined() || timestamps_old[i] < Timestamp(&buf)))
 			continue;
 
 		if (output) {
@@ -2623,7 +2627,14 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 	 */
 
 	/* Check existence of file */
-	timestamps_old.assign(targets.size(), Timestamp::UNDEFINED); 
+	Timestamp *timestamps_old_new= (Timestamp *)realloc(timestamps_old, sizeof(timestamps_old[0]) * targets.size()); 
+	if (!timestamps_old_new) {
+		perror("realloc"); 
+		abort(); 
+	}
+	timestamps_old= timestamps_old_new; 
+	for (size_t i= 0;  i < targets.size();  ++i)
+		timestamps_old[i]= Timestamp::UNDEFINED; 
 
 	/* A target for which no execution has to be done */ 
 	const bool no_execution= 
@@ -2738,10 +2749,10 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 		/* We cannot update TIMESTAMP within the loop above
 		 * because we need to compare each TIMESTAMP_OLD with
 		 * the previous value of TIMESTAMP. */
-		for (Timestamp timestamp_old_i:  timestamps_old) {
-			if (timestamp_old_i.defined() &&
-			    (! timestamp.defined() || timestamp < timestamp_old_i)) {
-				timestamp= timestamp_old_i; 
+		for (size_t i= 0;  i < targets.size();  ++i) {
+			if (timestamps_old[i].defined() &&
+			    (! timestamp.defined() || timestamp < timestamps_old[i])) {
+				timestamp= timestamps_old[i]; 
 			}
 		}
 	}

@@ -1,6 +1,5 @@
 # 
 # Async-signal safety in remove_if_existing():
-#    	- timestamps_old:  make it a malloc()'ed array 
 #   	- have a targets_filenames malloc()'ed array with const char *'s of filenames (and NULL for non-file targets) 
 #       - update comment for executions_by_pid_value
 #
@@ -11,7 +10,7 @@
 #
 # Write a tokenizer for it and use the usual parser.  The tokenizer
 # should:
-#    - recognize only the operators @[], and @ only at the beginning of arguments, or after [ or ], etc. 
+#    - recognize only the special characters -@[], and @ only at the beginning of arguments, or after [ or ], etc. 
 #    - treat whitespace within arguments as part of the name, and only
 #      consider the separation between arguments to be whitespace
 #    - don't support '$' or other syntax

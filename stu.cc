@@ -391,7 +391,7 @@ int main(int argc, char **argv, char **envp)
 			}
 		}
 
-		/* Use the default Stu file if -f/-F are not used */ 
+		/* Use the default Stu script if -f/-F are not used */ 
 		if (! had_option_f) {
 			filenames.push_back(FILENAME_INPUT_DEFAULT); 
 			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY); 

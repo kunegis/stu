@@ -4,7 +4,7 @@
 /*
  * Data types for representing dependencies.  Dependencies are the
  * central data structures in Stu, as all dependencies in the syntax of
- * a Stu file get mapped to Dep objects.  
+ * a Stu script get mapped to Dep objects.  
  *
  * Dependencies are polymorphous objects, and all dependencies derive
  * from the class Dep, and are used via shared_ptr<>, except in

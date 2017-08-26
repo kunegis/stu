@@ -17,7 +17,7 @@ These are the relevant coding conventions we use.
   using '*.o' files though.  
 * Names of targets in the Makefile follow the GNU Coding Standards. 
 * Use SemVer.org for version number semantics.  We consider only changes
-  on the Stu file specification and options marked as stable in
+  on the Stu language specification and options marked as stable in
   'OPTIONS'.  See the file 'NEWS' for details.  
 
 == Style == 

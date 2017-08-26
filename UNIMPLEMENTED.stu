@@ -191,7 +191,7 @@ A:  @[X];
 
 #
 # Have a "clean" option that removes all files that can be rebuilt,
-# based on the given Stu file.  Ironically, this may need to build
+# based on the given Stu script.  Ironically, this may need to build
 # dynamic dependency files first.  We may also just have a command line
 # option to output a list of files that can be rebuilt, for instance to
 # initialize a .gitignore file or similar.
@@ -216,8 +216,8 @@ A:  @[X];
 #
 
 #
-# When reporting an error, always report how the .stu file was included
-# by another .stu file.  Use "light" traces in green, like GCC does.
+# When reporting an error, always report how the .stu script was included
+# by another .stu script.  Use "light" traces in green, like GCC does.
 # (Maybe only do this in a special mode.)  (Also, this will become
 # important later when import is implemented.)
 #
@@ -279,7 +279,7 @@ a.bib:  extra dependencies ... ;
 # Reason for rejecting:  This would break the pattern where a file can
 # be executed as-is or included by another one.  It would also be
 # different from Make.  It would also introduce a needlessly hardcoded
-# name for the default target.  Many Stu files use @all or @main, etc.  
+# name for the default target.  Many Stu scripts use @all or @main, etc.  
 #
 
 @main:  A B C;
@@ -707,7 +707,7 @@ ${NAME:[^/]+}.bib: ...;
 # Fingerprinting instead of timestamps is a feature that is implemented
 # by quite a few Make replacements.  This could also be combined with
 # preprocessors which ignore whitespace, etc.  Can also be used for the
-# commands embedded in Stu files, but then again we don't want to
+# commands embedded in Stu scripts, but then again we don't want to
 # rebuild everything just because a command changed.  Another downside
 # is that it needs Stu to go through every file in full, making Stu's
 # runtime be linear in the file size.  At the moment, the runtime of Stu
@@ -838,7 +838,7 @@ file:  <@NAME { sed -e '...' >file }
 result.eps:  $[@NAME] { ./compute --name "$NAME" }
 
 #
-# An option of Stu that generates a shell script from a Stu file that
+# An option of Stu that generates a shell script from a Stu script that
 # executes the content.  This can be done to any degree of fidelity to
 # the Stu specification, i.e., always build everything, or actually
 # check timestamps. 

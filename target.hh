@@ -246,8 +246,7 @@ class Name
 private:
 
 	vector <string> texts; 
-	/* Length = N + 1.
-	 * Only the first and last elements may be empty.  */ 
+	/* Length = N + 1 */
 
 	vector <string> parameters;
 	/* Length = N */ 
@@ -408,7 +407,7 @@ public:
 
 	string get_duplicate_parameter() const;
 	/* Check whether there are duplicate parameters.  Return the
-	 * name of the found duplicate parameter, or "" none is found.  */
+	 * name of the found duplicate parameter, or "" if none is found.  */
 
 	bool valid(string &param_1, string &param_2) const;
 	/* Whether this is a valid name.  If it is not, fill the given

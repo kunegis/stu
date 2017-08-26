@@ -113,8 +113,8 @@ The design considerations of Stu are:
   tests.  All published versions pass 100% of these tests.  All language
   features and error paths are unit tested.   
 * Stability:  We follow Semantic Versioning (semver.org) in order to
-  provide syntax and semantics that are stable over time.  Stu files
-  written now will still work in the future.  
+  provide syntax and semantics that are stable over time.  Stu scripts
+  written now will still work in the future.    
 * Familiarity:  Stu follows the conventions of Make and of the shell as
   much as possible, to make it easier to make the switch from Make to
   Stu.  For instance, the options -j and -k work like in Make.  Also,
@@ -130,7 +130,7 @@ Make are:
 
 * Error messages are much better (Make has the dreaded "missing
   separator"); Stu gives full traces like a good compiler.  If you get
-  an error, you know which part of the Stu file to fix.  
+  an error, you know which part of the Stu script to fix.  
 * Stu has a proper tokenization pass, instead of Make's variable
   substitution syntax.  This makes the whole language much more
   predictable. 

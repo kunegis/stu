@@ -85,7 +85,7 @@ void explain_variable_equal()
 void explain_version()
 {
 	if (! option_explain)  return;
-	fputs("Explanation: Each Stu file can declare a version to which it is compatible\n"
+	fputs("Explanation: Each Stu script can declare a version to which it is compatible\n"
 	      "using the syntax '% version X.Y' or '% version X.Y.Z'.  Stu will then fail at\n"
 	      "runtime if (a) 'X' does not equal the major version number of Stu,\n"
 	      "(b) 'Y' is larger than Stu's minor version number, or (c) 'X' equals Stu's\n"

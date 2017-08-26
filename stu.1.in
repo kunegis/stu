@@ -72,7 +72,7 @@ Pass a target filename, without Stu syntax.  This option only allows
 file targets to be specified, not transient targets. 
 .IP "-C EXPRESSION"
 Pass a target using full Stu syntax.  The given expression is parsed as
-if it was given as one or more dependencies in a Stu file.  As a result,
+if it was given as one or more dependencies in a Stu script.  As a result,
 flags -p, -o and -t, brackets, parentheses and other Stu syntax elements
 can be used, and spaces separate filenames.  This is not equivalent to
 passing a string as an argument to Stu outside of options, because
@@ -291,15 +291,6 @@ When building 'X.txt' in this example, only the second rule is called:
     $name.txt: {  echo "$name" is the best >"$name.txt" }
     X.txt:  { echo X sucks >X.txt }
 
-All commands are echoed by Stu.  Thus, you can output debugging
-information (or any type of information) using shell comments.  There
-is no need for the @echo construct of Make. 
-
-    A:  {
-        # This may take a while...
-        compute-stuff >A
-    }
-
 Persistent dependencies:  In the following example, the
 directory 'data' is a persistent dependency, i.e. 'data' is only
 built when it does not exist, but it is never re-built.  A
@@ -390,7 +381,7 @@ can depend on it, to effectively depend on the individual files:
 
 .SH FEATURES
 
-Like a makefile, a Stu file consists of rules.  In Stu, the order of
+Like a makefile, a Stu script consists of rules.  In Stu, the order of
 rules is not important, except for the fact that the first rule is
 used by default if no rule is given explicitly.  Comments are written
 with '#' like in Make or in the shell.  
@@ -770,7 +761,7 @@ The following characters are reserved for future extension:
 
 .SH "SYNTAX"
 
-The syntax of a Stu file is given in the following Yacc-like
+The syntax of a Stu script is given in the following Yacc-like
 notation.  This is the syntax after processing of directives, which are
 introduced with '%'. 
 
@@ -793,9 +784,9 @@ introduced with '%'.
 {1} with intervening whitespace
 {2} without intervening whitespace
 
-Stu files read via the 
+Stu scripts read via the 
 .BR -f 
-option or as the default Stu file, as well as
+option or as the default Stu script, as well as
 the argument to the 
 .BR -F 
 option must contain a 'rule_list'. 
@@ -1087,7 +1078,7 @@ would require Stu to have a maximal recursion depth.
 When a command fails and its target is a directory, Stu cannot remove
 the directory as it does for regular files.  
 
-Changing a command within a Stu file will not make the target to be
+Changing a command within a Stu script will not make the target to be
 rebuilt.  This can be seen as both a feature or a bug. 
 Also, all changes in a file will lead to rebuilds of other files, even if the
 changes are trivial, e.g., when only whitespace was changed in C source

@@ -1,5 +1,5 @@
 From each major version to the next, changes in Stu are
-backward-incompatible.  This file lists required changes in Stu files
+backward-incompatible.  This file lists required changes in Stu scripts
 needed to migrate to a new major version. 
 
 See the file 'NEWS' for more information about Stu versioning, and for

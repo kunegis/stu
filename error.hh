@@ -97,13 +97,6 @@ const int ERROR_LOGICAL=   2;
 const int ERROR_FATAL=     4;
 
 /*
- * Errors 1 and 2 are recoverable.  If the -k option is given, Stu notes
- * these errors and continues.  If the -k option is not given, they
- * cause Stu to abort.  When the -k option is used, the final exit
- * status may combine errors 1 and 2, giving exit status 3.  Error 4 is
- * unrecoverable, and leads to Stu aborting immediately.  Error 4 is
- * never combined.
- *
  * Build errors (code 1) are errors encountered during the normal
  * operation of Stu.  They indicate failures of the executed commands or
  * errors with files.  Exit status 1 is also used for the -q option
@@ -117,9 +110,28 @@ const int ERROR_FATAL=     4;
  * even when the -k option is used.  They are avoided as much as
  * possible.
  *
- * Build and logical errors can be combined to give error code 3.  Fatal
- * errors are never combined with other errors as they make Stu abort
- * immediately.
+ * Errors 1 and 2 are recoverable.  If the -k option ("keep going") is
+ * given, Stu notes these errors and continues.  If the -k option is not
+ * given, they cause Stu to abort.  When the -k option is used, the
+ * final exit status may combine errors 1 and 2, giving exit status 3.
+ * Error 4 is unrecoverable, and leads to Stu aborting immediately.
+ * Error 4 is never combined with other errors. 
+ *
+ * Fatal errors are rare and are only used in cases where it is OK to
+ * abort the whole Stu process:
+ *    - When there are errors in the usage of Stu on the command line,
+ *      e.g. non-existing options.  In these cases, we don't lose
+ *      anything because nothing was yet started.
+ *    - Errors that happend just before Stu exits anyway.
+ *    - Errors that should not happen, such as failure to set up a
+ *      signal handler. 
+ *
+ * We have to be careful with calling exit(ERROR_FATAL):  We cannot do
+ * it when child processes could still be running.  For errors that
+ * happen in the middle of a Stu run, it makes more sense to generate a
+ * build error.  In the very few cases that absolutely need to be fatal
+ * (such as malloc() returning null), we call abort() instead, since
+ * that will take care of terminating the child processes. 
  */
 
 /*

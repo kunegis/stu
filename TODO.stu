@@ -1,9 +1,3 @@
-# 
-# Async-signal safety in remove_if_existing():
-#   	- have a targets_filenames malloc()'ed array with const char *'s of filenames (and NULL for non-file targets) 
-#       - update comment for executions_by_pid_value
-#
-
 #
 # Allow a better integrated syntax on the command line after '--'.  This
 # will complement the options -o/-p/-n/-0.

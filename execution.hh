@@ -502,8 +502,7 @@ public:
 	 * are never changed as long as the File_Execution objects are
 	 * stored there, such that they can be accessed from
 	 * async-signal safe functions:
-	 * 	TARGETS, TIMESTAMPS_OLD
-	 */
+	 * 	FILENAMES, TIMESTAMPS_OLD    */
 
 	static void wait();
 	/* Wait for next job to finish and finish it.  Do not start anything
@@ -534,6 +533,24 @@ private:
 	 * transients are included.   
 	 * Does not include flags (except F_TRANSIENT).  */
 
+	Timestamp *timestamps_old;
+	/* Timestamp of each file target, before the command is
+	 * executed.  Only valid once the job was started.  The indexes
+	 * correspond to those in TARGETS.  Non-file indexes are
+	 * uninitialized.  Used for checking whether a file was rebuild
+	 * to decide whether to remove it after a command failed or was
+	 * interrupted.  This is UNDEFINED when the file did not exist,
+	 * or no target is a file.  */ 
+	/* Allocated with malloc().  Length equals that of TARGETS */
+
+	char **filenames;
+	/* The actual filename for every file target.  Null for
+	 * transients.  Both the array and each filename is allocated
+	 * with malloc().  If used, it has the same length as TARGETS.
+	 * Only set when we are actually starting the jobs.  Cannot be a
+	 * C++ container because we access it from async-signal safe
+	 * functions.  Used to delete partially-built files.  */
+
 	shared_ptr <const Rule> rule;
 	/* The instantiated file rule for this execution.  Null when
 	 * there is no rule for this file (this happens for instance
@@ -544,16 +561,6 @@ private:
 
 	Job job;
 	/* The job used to execute this rule's command */ 
-
-	Timestamp *timestamps_old;
-	/* Timestamp of each file target, before the command is
-	 * executed.  Only valid once the job was started.  The indexes
-	 * correspond to those in TARGETS.  Non-file indexes are
-	 * uninitialized.  Used for checking whether a file was rebuild
-	 * to decide whether to remove it after a command failed or was
-	 * interrupted.  This is UNDEFINED when the file did not exist,
-	 * or no target is a file.  */ 
-	/* Allocated with malloc().  Length equals that of TARGETS */
 
 	map <string, string> mapping_parameter; 
 	/* Variable assignments from parameters for when the command is run */
@@ -1968,7 +1975,16 @@ File_Execution::~File_Execution()
 	assert(false);
 
 	/* We write this here as a reminder if this is ever activated */
+
 	free(timestamps_old); 
+	if (filenames) {
+		for (size_t i= 0;  i < targets.size();  ++i) {
+			if (filenames[i]) {
+				free(filenames[i]); 
+			}
+		}
+		free(filenames); 
+	}
 }
 
 void File_Execution::wait() 
@@ -2175,8 +2191,9 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 			       map <string, string> &mapping_parameter_,
 			       int &error_additional)
 	:  Execution(param_rule_),
-	   rule(rule_),
 	   timestamps_old(nullptr),
+	   filenames(nullptr),
+	   rule(rule_),
 	   flags_finished(0)
 {
 	assert((param_rule_ == nullptr) == (rule_ == nullptr)); 
@@ -2419,7 +2436,8 @@ void job_print_jobs()
 
 bool File_Execution::remove_if_existing(bool output) 
 {
-	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here, if OUTPUT is false */
+	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions
+	 * here, if OUTPUT is false  */
 
 	if (option_no_delete)
 		return false;
@@ -2428,12 +2446,10 @@ bool File_Execution::remove_if_existing(bool output)
 	bool removed= false;
 
 	for (size_t i= 0;  i < targets.size();  ++i) {
-		const Target &target= targets[i]; 
-
-		if (! target.is_file())  
+		const char *filename= filenames[i];
+		if (!filename) 
 			continue;
-
-		const char *filename= target.get_name_c_str_nondynamic(); 
+		assert_async(filename[0] != '\0'); 
 
 		/* Remove the file if it exists.  If it is a symlink, only the
 		 * symlink itself is removed, not the file it links to.  */ 
@@ -2459,7 +2475,7 @@ bool File_Execution::remove_if_existing(bool output)
 
 		if (0 > unlink(filename)) {
 			if (output) {
-				rule->place << system_format(target.format_word()); 
+				rule->place << system_format(name_format_word(filename)); 
 			} else {
 				write_async(2, "*** Error: unlink\n");
 			}
@@ -2626,7 +2642,6 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 	 * Check whether execution has to be built
 	 */
 
-	/* Check existence of file */
 	Timestamp *timestamps_old_new= (Timestamp *)realloc(timestamps_old, sizeof(timestamps_old[0]) * targets.size()); 
 	if (!timestamps_old_new) {
 		perror("realloc"); 
@@ -2635,6 +2650,23 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 	timestamps_old= timestamps_old_new; 
 	for (size_t i= 0;  i < targets.size();  ++i)
 		timestamps_old[i]= Timestamp::UNDEFINED; 
+	char **filenames_new= (char **)realloc(filenames, sizeof(filenames[0]) * targets.size()); 
+	if (!filenames_new) {
+		perror("realloc");
+		abort();
+	}
+	filenames= filenames_new; 
+	for (size_t i= 0;  i < targets.size();  ++i) {
+		if (targets[i].is_file()) {
+			filenames[i]= strdup(targets[i].get_name_c_str_nondynamic());
+			if (!filenames[i]) {
+				perror("strdup");
+				abort(); 
+			}
+		} else {
+			filenames[i]= nullptr; 
+		}
+	}
 
 	/* A target for which no execution has to be done */ 
 	const bool no_execution= 

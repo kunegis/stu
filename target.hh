@@ -114,7 +114,7 @@ public:
 	string format_src() const;
 
 	string get_name_nondynamic() const 
-	/* Get the name of the target, given that the target is not dynamic */
+	/* Get the name of the target, knowing that the target is not dynamic */
 	{
 		check(); 
 		assert((get_word(0) & F_TARGET_DYNAMIC) == 0); 
@@ -206,6 +206,9 @@ private:
 	 */
 
 	void check() const {
+		/* The minimum length of TEXT is sizeof(word_t)+1:  One
+		 * word indicating a non-dynamic target, and a text of
+		 * length one.  (The text cannot be empty.)  */
 #ifndef NDEBUG
 		assert(text.size() > sizeof(word_t)); 
 #endif /* ! NDEBUG */

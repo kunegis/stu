@@ -1251,14 +1251,13 @@ void Parser::get_expression_list(vector <shared_ptr <const Dep> > &deps,
 }
 
 shared_ptr <const Dep> Parser::get_target_dep(string text, const Place &place)
+/*
+ * This syntax supports only the characters '@' and '[]', and a single
+ * name, without whitespace.  Thus, the syntax is:
+ *
+ *         '['^n [@] NAME ']'^n
+ */
 {
-	/*
-	 * This syntax supports only the characters '@' and '[]', and a
-	 * single name, without whitespace.  Thus, the syntax is:
-	 *
-	 *         '['^n [@] NAME ']'^n
-	 */
-
 	assert(text != ""); 
 
 	const char *begin= text.c_str();

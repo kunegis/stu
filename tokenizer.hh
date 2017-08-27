@@ -22,6 +22,13 @@ public:
 	
 	enum Context { SOURCE, DYNAMIC, OPTION_C, OPTION_F };
 
+	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
+				      Context context,
+				      Place &place_end,
+				      string filename, 
+				      const Place &place_diagnostic,
+				      int fd= -1,
+				      bool allow_enoent= false)
 	/* 
 	 * Parse the tokens from the file FILENAME.  
 	 *
@@ -38,13 +45,6 @@ public:
 	 * If ALLOW_ENOENT, an ENOENT error on this first open() is not
 	 * reported as an error, and the function just returns. 
 	 */
-	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
-				      Context context,
-				      Place &place_end,
-				      string filename, 
-				      const Place &place_diagnostic,
-				      int fd= -1,
-				      bool allow_enoent= false)
 	{
 		vector <Trace> traces;
 		vector <string> filenames; 
@@ -146,15 +146,6 @@ private:
 		return Place(place_type, filename, line, p - p_line); 
 	}
 
-	/*
-	 * TRACES can include traces that lead to this inclusion.  TRACES must
-	 * not be modified when returning, but is declared as non-const
-	 * because it is used as a stack.  
-	 *
-	 * FILENAMES is the list of filenames parsed up to here. I.e., it has
-	 * length zero for the main read file.  FILENAME should *not* be
-	 * included in FILENAMES. 
-	 */
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
 				      Context context,
 				      Place &place_end,
@@ -165,7 +156,17 @@ private:
 				      const Place &place_diagnostic,
 				      int fd= -1,
 				      bool allow_enoent= false);
+	/*
+	 * TRACES can include traces that lead to this inclusion.  TRACES must
+	 * not be modified when returning, but is declared as non-const
+	 * because it is used as a stack.  
+	 *
+	 * FILENAMES is the list of filenames parsed up to here. I.e., it has
+	 * length zero for the main read file.  FILENAME should *not* be
+	 * included in FILENAMES. 
+	 */
 
+	static bool is_name_char(char);
 	/* Whether the given character can be used as part of a bare
 	 * filename in Stu.  Note that all non-ASCII characters are
 	 * allowed, and thus we don't have to distinguish UTF-8 from
@@ -173,7 +174,6 @@ private:
 	 * set will make this return TRUE.  See the file CHARACTERS for
 	 * more information.  This returns TRUE for the mid-name
 	 * characters '-', '+' and '~'.  */
-	static bool is_name_char(char);
 
 	static bool is_operator_char(char);
 	/* Whether the character can be an operator */ 
@@ -411,6 +411,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 }
 
 
+shared_ptr <Command> Tokenizer::parse_command()
 /* 
  * To determine the place of the command:  These rules are intended to
  * make the editor go to the correct place to enter a command into the
@@ -426,7 +427,6 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
  *    - If the command contains only whitespace and at least two
  *      newlines, the place is the first character of the second line.   
  */
-shared_ptr <Command> Tokenizer::parse_command()
 {
 	assert(p < p_end && *p == '{');
 
@@ -1164,12 +1164,11 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 		filenames.push_back(filename); 
 
 		if (includes.count(filename_include)) {
-			/* Do nothing -- file was
-			 * already parsed, or is being
-			 * parsed.  
-			 * It is an error if a file includes
-			 * itself directly or indirectly.
-			 * It it ignored if a file is included a second time non-recursively.  */ 
+			/* Do nothing -- file was already parsed, or is
+			 * being parsed.  It is an error if a file
+			 * includes itself directly or indirectly.  It
+			 * it ignored if a file is included a second
+			 * time non-recursively.  */ 
 			for (auto &i:  filenames) {
 				if (filename_include != i)
 					continue;

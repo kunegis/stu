@@ -140,6 +140,8 @@ private:
 
 	static void handler_termination(int sig);
 	static void handler_productive(int sig, siginfo_t *, void *);
+	
+	static void init_signals(); 
 
 	static unsigned count_jobs_exec, count_jobs_success, count_jobs_fail;
 	/* 
@@ -167,29 +169,18 @@ private:
 	static int tty;
 	/* The file descriptor of the TTY used by Stu.  -1 if there is none. */
 
-	/* Class with one static object whose contructor executes on
-	 * startup to setup signals. */ 
-	static class Signal
-	{
-	public:
-		Signal(); 
-	} signal;
+	static bool signals_initialized; 
 };
 
 unsigned Job::count_jobs_exec=    0;
 unsigned Job::count_jobs_success= 0;
 unsigned Job::count_jobs_fail=    0;
-
 sigset_t Job::set_productive;
 sigset_t Job::set_termination;
-
-Job::Signal     Job::signal;
-
 sig_atomic_t Job::in_child= 0; 
-
 pid_t Job::foreground_pid= -1;
-
 int Job::tty= -1;
+bool Job::signals_initialized; 
 
 #ifndef NDEBUG
 bool Job::Signal_Blocker::blocked= false; 
@@ -202,6 +193,8 @@ pid_t Job::start(string command,
 		 const Place &place_command)
 {
 	assert(pid == -2); 
+
+	init_signals(); 
 
 	/* Like Make, we don't use the variable $SHELL, but use
 	 * "/bin/sh" as a shell instead.  The reason is that the
@@ -251,11 +244,11 @@ pid_t Job::start(string command,
 
 	if (pid == 0) {
 		/* We are the child process */ 
+		in_child= 1; 
 
 		/* Instead of throwing exceptions, use perror() and
-		 * _Exit().  We return 127, as done e.g. by posix_spawn().  */ 
-
-		in_child= 1; 
+		 * _Exit().  We return 127, as done e.g. by
+		 * posix_spawn() and the shell.  */ 
 
 		/* Unblock/reset all signals */ 
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_termination, nullptr)) {
@@ -441,6 +434,8 @@ pid_t Job::start_copy(string target,
 	assert(target != "");
 	assert(source != ""); 
 	assert(pid == -2); 
+
+	init_signals(); 
 
 	pid= fork();
 
@@ -744,32 +739,38 @@ Job::Signal_Blocker::~Signal_Blocker()
 	}
 }
 
-Job::Signal::Signal()
+void Job::init_signals() 
 /* 
  * This function is called once on Stu startup from a static
  * constructor, and sets up all signals.   
  *
  * There are three types of signals handled by Stu:
- *    - Termination signals which make programs abort.  Stu must catch
- *      them in order to stop its child processes, and will then raise
- *      them again.  
+ *    - Termination signals which make programs abort.  Stu catches
+ *      them in order to stop its child processes and remove temporary
+ *      file, and will then raise them again.  The handlers for these
+ *      are async-signal safe. 
  *    - Productive signals that actually inform the Stu process of
  *      something:   
  *         + SIGCHLD (to know when child processes are done) 
  *         + SIGUSR1 (to output statistics)
- *      These signals are blocked, and then waited for specifically.       
+ *      These signals are blocked, and then waited for specifically.
+ *      There handlers thus do not have to  be async-signal safe. 
  *    - The job control signals SIGTTIN and SIGTTOU.  They are both
  *      produced by certain job control events that Stu triggers, and
  *      ignored by Stu. 
  * 
  * The signals SIGCHLD and SIGUSR1 are the signals that we wait for in
- * the main loop. They are blocked.  At the same time, the blocked
+ * the main loop.  They are blocked.  At the same time, each blocked
  * signal must have a signal handler (which can do nothing), as
  * otherwise POSIX allows the signal to be discarded.  Thus, we setup a
  * no-op signal handler.  (Note that Linux does not discard such
  * signals, while FreeBSD does.)
  */  
 {
+	if (signals_initialized)
+		return;
+	signals_initialized= true; 
+
 	/* 
 	 * Termination signals 
 	 */
@@ -793,9 +794,7 @@ Job::Signal::Signal()
 		SIGILL, SIGHUP, 
 	};
 
-	for (size_t i= 0;  
-	     i < sizeof(signals_termination) / sizeof(signals_termination[0]);  
-	     ++i) {
+	for (size_t i= 0;  i < sizeof(signals_termination) / sizeof(signals_termination[0]);  ++i) {
 		if (0 != sigaction(signals_termination[i], &act_termination, nullptr)) {
 			perror("sigaction");
 			exit(ERROR_FATAL); 

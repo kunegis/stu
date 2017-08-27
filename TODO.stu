@@ -24,11 +24,6 @@ $ stu @bidd.[dat/NETWORKS_family.edit]
 #=================== Further features =======================
 
 #
-# Job::Signal::Signal: Execute the signal setup code only when needed,
-# i.e., when something is started. 
-#
-
-#
 # Test all 'switch' cases, like in the following.  This is really
 # tedious (4*4*4*4 = 256 cases in total)
 #

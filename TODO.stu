@@ -19,7 +19,10 @@ $ stu -- -oFILE
 $ stu -- [FILE]
 $ stu -- [-oFILE]
 $ stu -- list.[FILE]
-$ stu @bidd.[dat/NETWORKS_family.edit]
+$ stu -- @bidd.[dat/NETWORKS_family.edit]
+$ stu -- '[ list.x ]'   # refers to file 'list.x'
+$ stu -- '[ list.x]'   # refers to file 'list.x'
+$ stu -- '[list.x ]'   # refers to file 'list.x'
 
 #=================== Further features =======================
 

@@ -272,7 +272,7 @@ Command::get_lines() const
 
 	/* Remove whitespace at end of lines */
 	for (string &line:  *lines) {
-		int l= line.size();
+		size_t l= line.size();
 		while (l != 0 && isspace(line[l - 1]))  --l;
 		line.resize(l);
 	}

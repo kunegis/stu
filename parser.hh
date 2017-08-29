@@ -804,7 +804,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 	if (is <Flag_Token> ()) {
 		const Flag_Token &flag_token= *is <Flag_Token> (); 
  		const Place place_flag= (*iter)->get_place();
-		const int i_flag= flag_get_index(flag_token.flag); 
+		const unsigned i_flag= flag_get_index(flag_token.flag); 
  		++iter; 
 
 		if (! parse_expression(ret, place_name_input, place_input, targets)) {
@@ -901,7 +901,7 @@ shared_ptr <const Dep> Parser
 	/* Flags */ 
 	Flags flags= F_VARIABLE;
 	Place places_flags[C_PLACED]; 
-	for (int i= 0;  i < C_PLACED;  ++i)
+	for (unsigned i= 0;  i < C_PLACED;  ++i)
 		places_flags[i].clear(); 
 	Place place_flag_last;
 	char flag_last= '\0';
@@ -1191,8 +1191,8 @@ void Parser::append_copy(      Name &to,
 		return;
 	}
 
-	for (int i= from.get_n();  i >= 0;  --i) {
-		for (int j= from.get_texts()[i].size() - 1;
+	for (ssize_t i= from.get_n();  i >= 0;  --i) {
+		for (ssize_t j= from.get_texts()[i].size() - 1;
 		     j >= 0;  --j) {
 			if (from.get_texts()[i][j] == '/') {
 

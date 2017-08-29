@@ -757,7 +757,7 @@ private:
 	shared_ptr <const Concat_Dep> dep;
 	/* Contains the concatenation.  This is a normalized. */
 
-	int stage;
+	unsigned stage;
 	/* 0:  running dynamic children
 	 * 1:  running normal children
 	 * 2:  finished  */
@@ -1025,7 +1025,7 @@ void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			char *lineptr= nullptr;
 			size_t n= 0;
 			ssize_t len;
-			int line= 0; 
+			unsigned line= 0; 
 			
 			FILE *file= fopen(filename.c_str(), "r"); 
 			if (file == nullptr) {
@@ -2324,7 +2324,7 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 			}
 		}
 		assert(! place_target.empty());
-		int ind= dep->flags & F_OPTIONAL ? I_OPTIONAL : I_PERSISTENT; 
+		unsigned ind= dep->flags & F_OPTIONAL ? I_OPTIONAL : I_PERSISTENT; 
 		dep->get_place() << fmt((dep->flags & F_OPTIONAL)
 					? "dependency %s must not be declared as optional"
 					: "dependency %s must not be declared as persistent",
@@ -2390,14 +2390,13 @@ void job_terminate_all()
 	if (count_terminated) {
 		write_async(2, PACKAGE ": Removing partially built files (");
 		/* Maximum characters in decimal representation of SIZE_T */
-		constexpr int len= sizeof(size_t) * CHAR_BIT / 3 + 3;
+		constexpr size_t len= sizeof(size_t) * CHAR_BIT / 3 + 3;
 		char out[len];
 		out[len - 1]= '\n';
 		out[len - 2]= ')';
-		int i= len - 3;
+		ssize_t i= len - 3;
 		size_t n= count_terminated;
 		do {
-			assert_async(i >= 0); 
 			out[i]= '0' + n % 10;
 			n /= 10;
 		} while (n > 0 && --i >= 0);
@@ -2504,7 +2503,7 @@ void File_Execution::warn_future_file(struct stat *buf,
 
 void File_Execution::print_command() const
 {
-	static const int SIZE_MAX_PRINT_CONTENT= 20;
+	static const size_t SIZE_MAX_PRINT_CONTENT= 20;
 	
 	if (option_silent)
 		return; 
@@ -3326,7 +3325,7 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 Proceed Concat_Execution::execute(shared_ptr <const Dep> dep_this)
 {
  again:
-	assert(stage >= 0 && stage <= 2); 
+	assert(stage <= 2); 
 	if (stage == 2)
 		return P_FINISHED;
 	Proceed proceed= execute_base_A(dep_this); 
@@ -3359,7 +3358,7 @@ Proceed Concat_Execution::execute(shared_ptr <const Dep> dep_this)
 
 bool Concat_Execution::finished() const
 {
-	assert(stage >= 0 && stage <= 2); 
+	assert(stage <= 2); 
 	return stage == 2;
 }
 
@@ -3397,7 +3396,7 @@ void Concat_Execution::launch_stage_1()
 		f2->flags |= F_RESULT_COPY;
 		/* Add flags from self */  
 		f2->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
-		for (int i= 0;  i < C_PLACED;  ++i) {
+		for (unsigned i= 0;  i < C_PLACED;  ++i) {
 			if (f2->get_place_flag(i).empty() && ! dep->get_place_flag(i).empty())
 				f2->set_place_flag(i, dep->get_place_flag(i)); 
 		}
@@ -3555,7 +3554,7 @@ void Dynamic_Execution::notify_result(shared_ptr <const Dep> d,
 			j_new->flags |= F_RESULT_COPY;
 			/* Add flags from self */  
 			j_new->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC); 
-			for (int i= 0;  i < C_PLACED;  ++i) {
+			for (unsigned i= 0;  i < C_PLACED;  ++i) {
 				if (j_new->get_place_flag(i).empty() && 
 				    ! dep->get_place_flag(i).empty())
 					j_new->set_place_flag(i, dep->get_place_flag(i)); 
@@ -3663,7 +3662,7 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dep> dep_link,
 			shared_ptr <Dep> depp_new= Dep::clone(depp); 
 			depp_new->flags |= dep_link->flags & (F_PLACED | F_ATTRIBUTE);
 			depp_new->flags |= F_RESULT_COPY; 
-			for (int i= 0;  i < C_PLACED;  ++i) {
+			for (unsigned i= 0;  i < C_PLACED;  ++i) {
 				assert(!(dep_link->flags & (1 << i)) ==
 				       dep_link->get_place_flag(i).empty());
 				if (depp_new->get_place_flag(i).empty() && ! dep_link->get_place_flag(i).empty())

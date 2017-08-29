@@ -265,7 +265,7 @@ pid_t Job::start(string command,
 		/* Set variables */ 
 		size_t v_old= 0;
 
-		map <string, int> old;
+		map <string, size_t> old;
 		/* Index of old variables */ 
 
 		while (envp_global[v_old]) {

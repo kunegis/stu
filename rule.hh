@@ -451,7 +451,7 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 			assert(k == mappings_best.size()); 
 
 			/* Check whether the rule is dominated by at least one other rule */
-			for (int j= 0;  j < (ssize_t) k;  ++j) {
+			for (size_t j= 0;  j < k;  ++j) {
 				if (Name::anchoring_dominates
 				    (anchorings_best[j], anchoring)) {
 					goto dont_add;

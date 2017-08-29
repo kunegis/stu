@@ -113,7 +113,7 @@ const char *const FLAGS_CHARS= "pot[@$n0<*%";
 
 const char *FLAGS_PHRASES[C_PLACED]= {"persistent", "optional", "trivial"};
 
-int flag_get_index(char c)
+unsigned flag_get_index(char c)
 /* 
  * Get the flag index corresponding to a character.
  * Not all cases are implemented 
@@ -141,7 +141,7 @@ string flags_format(Flags flags)
  */
 {
 	string ret;
-	for (int i= 0;  i < C_ALL;  ++i)
+	for (unsigned i= 0;  i < C_ALL;  ++i)
 		if (flags & (1 << i)) {
 			ret += FLAGS_CHARS[i]; 
 		}

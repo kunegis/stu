@@ -814,11 +814,11 @@ string Name::instantiate(const map <string, string> &mapping) const
 {
 	assert(texts.size() == 1 + parameters.size()); 
 
-	const int n= get_n(); 
+	const size_t n= get_n(); 
 
 	string ret= texts[0];
 
-	for (int i= 0;  i < n;  ++i) {
+	for (size_t i= 0;  i < n;  ++i) {
 		assert(parameters[i].size() > 0); 
 		ret += mapping.at(parameters[i]);
 		ret += texts[i + 1];
@@ -858,9 +858,9 @@ bool Name::match(const string name,
 	const char *p= p_begin;
 	const char *const p_end= name.c_str() + name.size(); 
 
-	int k= texts[0].size(); 
+	size_t k= texts[0].size(); 
 
-	if (p_end - p <= k) {
+	if ((size_t)(p_end - p) <= k) {
 		return false;
 	}
 

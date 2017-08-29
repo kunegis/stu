@@ -122,7 +122,7 @@ public:
 		   index(-1)
 	{
 		assert(places != places_);
-		for (int i= 0;  i < C_PLACED;  ++i)
+		for (unsigned i= 0;  i < C_PLACED;  ++i)
 			places[i]= places_[i]; 
 	}
 
@@ -132,24 +132,24 @@ public:
 		   index(that.index)
 	{
 		assert(places != that.places);
-		for (int i= 0;  i < C_PLACED;  ++i)
+		for (unsigned i= 0;  i < C_PLACED;  ++i)
 			places[i]= that.places[i]; 
 	}
 
 	virtual ~Dep(); 
 
-	const Place &get_place_flag(int i) const {
-		assert(i >= 0 && i < C_PLACED);
+	const Place &get_place_flag(unsigned i) const {
+		assert(i < C_PLACED);
 		return places[i];
 	}
 
-	Place &get_place_flag(int i) {
-		assert(i >= 0 && i < C_PLACED);
+	Place &get_place_flag(unsigned i) {
+		assert(i < C_PLACED);
 		return places[i];
 	}
 
-	void set_place_flag(int i, const Place &place) {
-		assert(i >= 0 && i < C_PLACED);
+	void set_place_flag(unsigned i, const Place &place) {
+		assert(i < C_PLACED);
 		places[i]= place; 
 	}
 
@@ -647,7 +647,7 @@ shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 void Dep::add_flags(shared_ptr <const Dep> dep, 
 		    bool overwrite_places)
 {
-	for (int i= 0;  i < C_PLACED;  ++i) {
+	for (unsigned i= 0;  i < C_PLACED;  ++i) {
 		if (dep->flags & (1 << i)) {
 			if (overwrite_places || ! (this->flags & (1 << i))) {
 				this->set_place_flag(i, dep->get_place_flag(i)); 
@@ -672,7 +672,7 @@ void Dep::check() const
 {
 	assert(top.get() != this); 
 
-	for (int i= 0;  i < C_PLACED;  ++i) {
+	for (unsigned i= 0;  i < C_PLACED;  ++i) {
 		assert(((flags & (1 << i)) == 0) == get_place_flag(i).empty()); 
 	}
 
@@ -1163,12 +1163,12 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 
 	if (b->flags & F_PLACED) {
 		assert(C_PLACED == 3); 
-		int i_flag= 
+		unsigned i_flag= 
 			b->flags & F_PERSISTENT ? I_PERSISTENT :
 			b->flags & F_OPTIONAL   ? I_OPTIONAL   :
 			b->flags & F_TRIVIAL    ? I_TRIVIAL    : 
-			-1;
-		assert(i_flag >= 0); 
+			UINT_MAX;
+		assert(i_flag != UINT_MAX); 
 		b->get_place() << fmt("%s cannot be declared as %s", b->format_word(), FLAGS_PHRASES[i_flag]); 
 		b->places[i_flag] << fmt("using %s", name_format_word(frmt("-%c", FLAGS_CHARS[i_flag]))); 
 		a->get_place() << fmt("in concatenation to %s", a->format_word()); 

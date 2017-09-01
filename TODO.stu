@@ -1,4 +1,10 @@
 #
+# Bug:  in a target with two file targets, if the second is not updated
+# but already exists, check that the error message does not erroneously
+# mention the first filename. 
+# 
+
+#
 # Allow a better integrated syntax on the command line after '--'.  This
 # will complement the options -o/-p/-n/-0.
 #

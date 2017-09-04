@@ -674,7 +674,7 @@ void Job::handler_termination(int sig)
 	struct sigaction act;
 	act.sa_handler= SIG_DFL;
 	if (0 != sigemptyset(&act.sa_mask))  {
-		write_async(2, "*** error: sigemptyset\n"); 
+		write_async(2, "*** Error: sigemptyset\n"); 
 	}
 	act.sa_flags= SA_NODEFER;
 	int r= sigaction(sig, &act, nullptr);
@@ -697,7 +697,7 @@ void Job::handler_termination(int sig)
 	/* Raise signal again */ 
 	int rr= raise(sig);
 	if (rr != 0) {
-		write_async(2, "*** error: raise\n"); 
+		write_async(2, "*** Error: raise\n"); 
 	}
 	
 	/* Don't abort here -- the reraising of this signal may only be

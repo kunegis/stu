@@ -783,7 +783,7 @@ EXIT STATUS
               targets are not up to date.
 
        2      Logical error.  These indicate  errors  in  the  usage  of  Stu.
-              Examples  are syntax errors in Stu sources, cycles in the depen‐
+              Examples  are syntax errors in Stu scripts, cycles in the depen‐
               dency graph and certain erroneous options on the command line.
 
        3      Both build and logical errors were encountered (when  using  the
@@ -791,7 +791,7 @@ EXIT STATUS
 
        4      An  error  occurred  that  made Stu abort execution immediately,
               regardless of whether the -k option  was  used.   This  includes
-              system  error from which Stu cannot recover (such as out-of-mem‐
+              system errors from which Stu cannot recover (such as out-of-mem‐
               ory conditions), as well as errors on the Stu command line  that
               make Stu fail immediately.
 
@@ -1017,7 +1017,7 @@ BUGS
        When  an  error  occurs with a concatenated file or transient name, Stu
        only outputs the location of the name as a whole, and does not point to
        the source of the individual components of the concatenation.  This can
-       lead to confusion error traces.
+       lead to confusing error traces.
 
 
 AUTHOR
@@ -1032,4 +1032,4 @@ SEE ALSO
 
 
 
-stu-2.5.33                        August 2017                           STU(1)
+stu-2.5.34                      September 2017                          STU(1)

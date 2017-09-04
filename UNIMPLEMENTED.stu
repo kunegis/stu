@@ -636,23 +636,19 @@ example:  [FILES]
 #
 # Use C instead of C++.  This is tempting for simplicity and also out of
 # principle.  What would be necessary:
-#  - Write container classed indexed with strings, targets, and maybe
-#    PIDs.
+#  - Write container classes indexed with strings and targets.
 #  - Convert certain containers to arrays/linked lists. 
 #  - More complex and error-prone memory management, in particular for
 #    strings 
 #  - A replacement for exceptions
-#  - For Dependency objects, keep track of the type in the FLAGS, and
+#  - For Dep objects, keep track of the type in the FLAGS, and
 #    have our own pointer conversion functions.  Also, have our own
 #    reference counting. 
 #
 # Remember:  Even GCC is written in C++ nowadays, so we are not in bad
 # company.    
 #
-# Also:  If I'm not mistaken, POSIX prescribes a C89 compiler, and
-# nothing more.  Thus, switching to C will only let us claim "we're 100%
-# POSIX" if we're ready to use C89, which is also not nice.  Maybe, if
-# POSIX prescribes a C99 compiler one day. 
+# If we then use 'c99', we could claim full POSIX compliance. 
 #
 
 #

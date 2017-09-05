@@ -1,10 +1,4 @@
 #
-# Bug:  in a target with two file targets, if the second is not updated
-# but already exists, check that the error message does not erroneously
-# mention the first filename. 
-# 
-
-#
 # Allow a better integrated syntax on the command line after '--'.  This
 # will complement the options -o/-p/-n/-0.
 #
@@ -23,12 +17,13 @@ $ stu -- [ -n FILES ]
 $ stu -- -o FILE
 $ stu -- -oFILE
 $ stu -- [FILE]
+$ stu [ FILE ]
 $ stu -- [-oFILE]
 $ stu -- list.[FILE]
 $ stu -- @bidd.[dat/NETWORKS_family.edit]
-$ stu -- '[ list.x ]'   # refers to file 'list.x'
-$ stu -- '[ list.x]'   # refers to file 'list.x'
-$ stu -- '[list.x ]'   # refers to file 'list.x'
+$ stu -- '[ list.x ]'   # refers to file ' list.x '
+$ stu -- '[ list.x]'   # refers to file ' list.x'
+$ stu -- '[list.x ]'   # refers to file 'list.x '
 
 #=================== Further features =======================
 

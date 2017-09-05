@@ -1,0 +1,2 @@
+main.stu:3:3: file 'B' was not built by command
+main.stu:1:8: 'X' is needed by @all

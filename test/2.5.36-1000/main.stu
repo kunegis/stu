@@ -1,0 +1,7 @@
+@all:  X;
+
+X B:  {
+  touch X
+}
+
+

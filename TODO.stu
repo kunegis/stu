@@ -11,6 +11,7 @@
 #    - don't need space after flags 
 #    - recognize '[' and ']' in the middle of the string, to denote
 #      concatenation 
+#    - Maybe even recognize ',' as a separator?  (because ' ' is not available here)
 #
 
 $ stu -- [ -n FILES ]

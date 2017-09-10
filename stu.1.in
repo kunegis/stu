@@ -41,25 +41,32 @@ have the same meaning in Stu as they do in Make.
 Rules for building files are read from the file 'main.stu', 
 from a file passed by the
 .BR -f
-option, or using the
-.BR -F
-option. 
+option, or using 
+.BR -F . 
 
 Names of targets to build passed on the command line follow a simplified Stu syntax,
 in which the only special characters are the
-transient target marker '@', and brackets '[]'.  All other characters
-are interpreted as part of filenames.  When the
-.BR -J
-option is used,
+transient target marker 
+.BR '@' , 
+and brackets 
+.BR '[]' .  
+All other characters
+are interpreted as part of filenames.  When 
+.BR -J 
+is used,
 arguments passed on the command line are interpreted as filenames
 without Stu syntax. 
 
 .SH OPTIONS
 .IP "-0 FILENAME"
-Read targets from FILENAME, which must contain \\0-separated filenames.
+Read targets from FILENAME, which must contain 
+.BR \\0\
+-separated filenames.
 No Stu syntax is processed.  This option is also suitable in all cases
 where a file contains only the name of a single file, since filenames do
-not contain the \\0 character. 
+not contain the 
+.BR \\0\
+character. 
 Using this option is equivalent to using the
 .BR "[-0 FILENAME]" 
 syntax.
@@ -73,7 +80,12 @@ file targets to be specified, not transient targets.
 .IP "-C EXPRESSION"
 Pass a target using full Stu syntax.  The given expression is parsed as
 if it was given as one or more dependencies in a Stu script.  As a result,
-flags -p, -o and -t, brackets, parentheses and other Stu syntax elements
+flags 
+.BR -p , 
+.BR -o 
+and 
+.BR -t , 
+brackets, parentheses and other Stu syntax elements
 can be used, and spaces separate filenames.  This is not equivalent to
 passing a string as an argument to Stu outside of options, because
 .BR -C 
@@ -143,7 +155,7 @@ that in GNU Make, the argument is optional.
 Parse all arguments to Stu as filenames, disabling all Stu syntax that
 is otherwise used.  Intended when Stu is used with tools such
 as
-.BR xargs(1)
+.BR xargs (1)
 or similar.  The
 .BR -J
 option itself does not take an argument; it only
@@ -420,7 +432,9 @@ Stu cannot read from standard input, except when the
 option is used. 
 Stu starts each job in its own process group, whose process group ID is
 equal to its process ID.  This allows Stu to kill all (direct and
-indirect) child processes of jobs, by using kill(2) to terminate all
+indirect) child processes of jobs, by using 
+.BR kill (2) 
+to terminate all
 processes in the corresponding process group.
 
 When the command of a file is replaced by a semicolon, this means that the file is
@@ -874,7 +888,7 @@ If set, Stu calls the 'cp' program from the given location instead
 of '/bin/cp'.  The given version of 'cp' must support the syntax 'cp --
 "$fileA" "$fileB"'. 
 .IP STU_OPTIONS
-Contains options to be set on every run of Stu.  All letters except for
+Contains options to be set on every run of Stu.  All characters except for
 those in
 .BR EQswxyYz
 are ignored.  Options passed on the command line apply after those passed
@@ -898,7 +912,7 @@ harmful as recursive Make.
 .IP TERM
 Used to determine whether to use color output.  This variable must be
 set to a value different from 'dumb', and
-.B isatty(3)
+.BR isatty (3)
 must return 1 for color to be enabled.   
 
 .SH "SIGNALS"
@@ -1045,7 +1059,8 @@ For instance, the following will read a
 line from the user and use it.  This cannot be used in conjunction with
 the
 .BR -j
-option (except for -j1).
+option (except for 
+.BR -j1 ).
 
     >config.h: {
         echo >&2 "Please enter the value of COUNT"
@@ -1115,7 +1130,9 @@ lead to confusing error traces.
 Written by J\['e]r\[^o]me Kunegis <kunegis@gmail.com> at the University
 of Namur, Belgium, as well as at the University of Koblenz-Landau,
 Germany, with contributions and help by Jun Sun, Aaron McDaid, Heinrich
-Hartmann, Holger Heinz, and others.
+Hartmann, Holger Heinz, and others.  Our thanks go to the many early
+testers and users of Stu, who have helped us fix many bugs, and identify
+many different use cases and usage patterns. 
 
 .SH "SEE ALSO"
 .BR make (1)\

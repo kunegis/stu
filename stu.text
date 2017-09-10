@@ -32,24 +32,22 @@ DESCRIPTION
        options -f and -k have the same meaning in Stu as they do in Make.
 
        Rules for building files are read from the file 'main.stu', from a file
-       passed by the -f option, or using the -F option.
+       passed by the -f option, or using -F.
 
        Names of targets to build passed on the command line follow  a  simpli‐
        fied Stu syntax, in which the only special characters are the transient
        target marker '@', and brackets '[]'.  All other characters are  inter‐
-       preted  as  part  of  filenames.  When the -J option is used, arguments
-       passed on the command line are interpreted  as  filenames  without  Stu
-       syntax.
+       preted  as part of filenames.  When -J is used, arguments passed on the
+       command line are interpreted as filenames without Stu syntax.
 
 
 OPTIONS
        -0 FILENAME
-              Read  targets  from  FILENAME,  which  must contain \0-separated
-              filenames.  No Stu syntax is processed.   This  option  is  also
-              suitable  in  all cases where a file contains only the name of a
-              single file, since filenames do not contain  the  \0  character.
-              Using  this option is equivalent to using the [-0 FILENAME] syn‐
-              tax.
+              Read targets from FILENAME, which must contain   -separatedfile‐
+              names.   No  Stu syntax is processed.  This option is also suit‐
+              able in all cases where a file contains only the name of a  sin‐
+              gle  file, since filenames do not contain the  character.  Using
+              this option is equivalent to using the [-0 FILENAME] syntax.
 
        -a     Treat all trivial dependencies, which are declared with  the  -t
               flag or option, as non-trivial.
@@ -802,7 +800,7 @@ ENVIRONMENT
               the syntax 'cp -- "$fileA" "$fileB"'.
 
        STU_OPTIONS
-              Contains  options  to  be  set on every run of Stu.  All letters
+              Contains  options to be set on every run of Stu.  All characters
               except for those in EQswxyYz are ignored.  Options passed on the
               command line apply after those passed using this variable.
 
@@ -1024,7 +1022,9 @@ AUTHOR
        Written by Jérôme Kunegis  <kunegis@gmail.com>  at  the  University  of
        Namur,  Belgium,  as  well as at the University of Koblenz-Landau, Ger‐
        many, with contributions and help by Jun Sun,  Aaron  McDaid,  Heinrich
-       Hartmann, Holger Heinz, and others.
+       Hartmann,  Holger  Heinz,  and others.  Our thanks go to the many early
+       testers and users of Stu, who have helped us fix many bugs,  and  iden‐
+       tify many different use cases and usage patterns.
 
 
 SEE ALSO
@@ -1032,4 +1032,4 @@ SEE ALSO
 
 
 
-stu-2.5.36                      September 2017                          STU(1)
+stu-2.5.37                      September 2017                          STU(1)

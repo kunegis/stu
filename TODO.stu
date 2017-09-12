@@ -226,3 +226,13 @@ dep.sources {
 #
 
 % set PATH /usr/local/bin
+
+#
+# A "block" option, i.e., that block certain filename or transient
+# patterns from being executed.  E.g., 
+#
+#   $ stu -B  @statistic.diam.$network
+#
+# Will make all names matching that patterns be considered as build
+# failures immediately, without trying to build them. 
+#

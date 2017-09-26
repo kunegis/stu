@@ -26,7 +26,7 @@ This is my preferred style.  --Jérôme Kunegis
 
 === Layout ===
 
-* All the following rules are broken when necessary. 
+* All of the following rules are broken when necessary. 
 * Tabs for indentation.  Set your editor to show them at the width you
   prefer.  I use the default 8-char tabs.   
 * Spaces for alignment in the middle of lines.
@@ -125,7 +125,7 @@ of the expected 'old_filename'.  You can think of this convention as
 being influenced by the French language, which by default places
 adjectives after the noun, or as being compatible with names such as
 'filename_1', etc.  This convention is not used for type names, e.g., we
-have Dynamic_Dependency.
+have 'Dynamic_Dependency' and similar.
 
 == Shell scripts ==
 
@@ -151,14 +151,16 @@ things to be said about portable shell scripting.
   switch to -E once it's standardized.)  Also, the 'b' and 't' commands
   must not be followed by a semicolon; always use a newline after them
   when there are more commands. 
-* 'date +%s' is not mandated by POSIX, even though it works on all
-  operating systems we tried it on.  It outputs the currect Unix time. 
 * Grep however has the -E option for extended regular expressions.  Grep
   is always invoked with the -E *or* the -F option.  (Using basic
   regular expressions with Grep is also portable, but we don't do it.)
+* 'date +%s' is not mandated by POSIX, even though it works on all
+  operating systems we tried it on.  It outputs the correct Unix time.
+  There is a hackish but portable workaround using the random number
+  generator of awk(1). 
 * Shell scripts don't have a filename suffix.  Use '#! /bin/sh' and set
-  the executable bit.  The space after '!' is not necessary, but has a
-  certain tradition and we think it looks good, so we always use it. 
+  the executable bit.  The space after '!' is not necessary, but is
+  traditional and we think it looks good, so we always use it.  
 * 'test' does not support the -a option.  Use && in the shell instead.
   POSIX has deprecated 'test -a'.
 * The "recursive" option to programs such as 'ls' and 'cp' is -R and not
@@ -166,8 +168,8 @@ things to be said about portable shell scripting.
   for *some* commands such as 'rm', but it's easier to always use '-R'.
   Mnemonic:  Output will be *big*, hence a big letter.  The idiomatic
   'rm -rf' is thus not recommended, and 'rm -Rf' is used instead. 
-* We use 'set -e'.  We don't rely on it for "normal" paths, but as an
-  additional fail-safe.  It does not work with $() commands that are
+* We use 'set -e'.  We don't rely on it for "normal" code paths, but as
+  an additional fail-safe.  It does not work with $() commands that are
   used within other commands, and it also does not work with pipelines,
   except for the last command. 
 * Use $(...) instead of `...`.  It avoids many quoting pitfalls.  In
@@ -182,11 +184,11 @@ things to be said about portable shell scripting.
   result from that variable.  Using $() directly embedded in other
   commands will make the shell ignore failure of the inner shell. 
 * Double-quote all variables, except if they should expand to multiple
-  words in a command line.  Also, use -- when passing variables as
-  non-option arguments to programs.  E.g., write 'cp -- "$filename_from"
-  "$filename_to"'.  All other invocation styles are unsafe under *some*
-  values of the variables.  Some programs such as printf don't have
-  options and thus don't support '--'.  
+  words in a command line, or when assigning to a variable.  Also, use
+  -- when passing variables as non-option arguments to programs.  E.g.,
+  write 'cp -- "$filename_from" "$filename_to"'.  All other invocation
+  styles are unsafe under *some* values of the variables.  Some programs
+  such as printf don't have options and thus don't support '--'.  
 * Always use 'IFS= read -r' instead of 'read'.  It's the safe way to
   read anything that's \n-delimited.
 * To omit the trailing newline with 'echo', both '-n' and \c are

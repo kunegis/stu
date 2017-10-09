@@ -16,10 +16,10 @@
 
 $ stu -- [ -n FILES ]
 $ stu -- -o FILE
-$ stu -- -oFILE
+$ stu -- -oFILE    # Optional file 'FILE' 
 $ stu -- [FILE]
 $ stu [ FILE ]
-$ stu -- [-oFILE]
+$ stu -- [-oFILE]  # Optional dynamic file 'FILE'
 $ stu -- list.[FILE]
 $ stu -- @bidd.[dat/NETWORKS_family.edit]
 $ stu -- '[ list.x ]'   # refers to file ' list.x '

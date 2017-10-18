@@ -2,16 +2,20 @@
 # Allow a better integrated syntax on the command line after '--'.  This
 # will complement the options -o/-p/-n/-0.
 #
+# Update Parser::get_target_dep(). 
+#
 # Write a tokenizer for it and use the usual parser.  The tokenizer
 # should:
-#    - recognize only the special characters -@[], and @ only at the beginning of arguments, or after [ or ], etc. 
+#    - recognize only the special characters -@[], and @ only at the
+#      beginning of arguments, or after [ or ], etc.   
 #    - treat whitespace within arguments as part of the name, and only
 #      consider the separation between arguments to be whitespace
 #    - don't support '$' or other syntax
 #    - don't need space after flags 
 #    - recognize '[' and ']' in the middle of the string, to denote
 #      concatenation 
-#    - Maybe even recognize ',' as a separator?  (because ' ' is not available here)
+#    - Maybe even recognize ',' as a separator?  (because ' ' is not
+#      available here) 
 #
 
 $ stu -- [ -n FILES ]

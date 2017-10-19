@@ -2945,7 +2945,8 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 				 rule->place_param_targets[rule->redirect_index]
 				 ->place_name.unparametrized(),
 				 rule->filename.unparametrized(),
-				 rule->command->place); 
+				 rule->command->place,
+				 targets);
 		}
 
 		assert(pid != 0 && pid != 1); 

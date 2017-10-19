@@ -81,7 +81,8 @@ public:
 		    const map <string, string> &mapping,
 		    string filename_output,
 		    string filename_input,
-		    const Place &place_command); 
+		    const Place &place_command,
+		    const vector<Target> &targets);
 	/* Start the process.  Don't output the command -- this is done
 	 * by callers of this functions.  FILENAME_OUTPUT and
 	 * FILENAME_INPUT are the files into which to redirect output
@@ -190,7 +191,8 @@ pid_t Job::start(string command,
 		 const map <string, string> &mapping,
 		 string filename_output,
 		 string filename_input,
-		 const Place &place_command)
+		 const Place &place_command,
+		 const vector<Target> &targets)
 {
 	assert(pid == -2); 
 
@@ -277,7 +279,7 @@ pid_t Job::start(string command,
 			++v_old;
 		}
 
-		const size_t v_new= mapping.size() + 1; 
+		const size_t v_new= mapping.size() + 2;
 		/* Maximal size of added variables.  The "+1" is for $STU_STATUS */ 
 
 		const char** envp= (const char **)
@@ -307,7 +309,24 @@ pid_t Job::start(string command,
 				envp[i++]= combined;
 			}
 		}
+
 		envp[i++]= "STU_STATUS=1";
+
+		// Add a STU_TARGETS variable to the environment, one for each target, separated by newline
+		string stu_targets;
+		stu_targets.append("STU_TARGETS");
+		for(auto & one_target : targets) {
+			stu_targets.append("\n");
+			stu_targets.append(one_target.format_src());
+		}
+		// The first element of stu_targets will now have a '\n', due
+		// to the above loop. We change it to an '=' and then add it
+		// to envp
+		assert(stu_targets.at(11)=='\n');
+		stu_targets.at(11)='=';
+		envp[i++]= stu_targets.c_str();
+
+		// envp is now complete. Close it off with a null
 		assert(i <= v_old + v_new);
 		envp[i]= nullptr;
 

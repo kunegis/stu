@@ -1,4 +1,8 @@
 #
+# Test this error:  an output redirection to a file in a directory that does not exist. 
+#
+
+#
 # Allow a better integrated syntax on the command line after '--'.  This
 # will complement the options -o/-p/-n/-0.
 #

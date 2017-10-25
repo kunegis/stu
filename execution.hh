@@ -2489,15 +2489,22 @@ void File_Execution::warn_future_file(struct stat *buf,
 				      const Place &place,
 				      const char *message_extra)
 {
-  	if (timestamp_last < Timestamp(buf)) {
-		string suffix=
-			message_extra == nullptr 
-			? ""
-			: string(" ") + message_extra;
-		print_warning(place,
-			      fmt("File %s has modification time in the future%s",
-				  name_format_word(filename),
-				  suffix)); 
+	Timestamp timestamp_buf= Timestamp(buf); 
+
+  	if (timestamp_last < timestamp_buf) { 
+		/* Update TIMESTAMP_LAST and check again, to be
+		 * really-really sure  */ 
+		timestamp_last= Timestamp::now(); 
+
+		if (timestamp_last < timestamp_buf) {
+			string suffix=
+				message_extra == nullptr ? ""
+				: string(" ") + message_extra;
+			print_warning(place,
+				      fmt("File %s has modification time in the future%s",
+					  name_format_word(filename),
+					  suffix)); 
+		}
 	}
 }
 

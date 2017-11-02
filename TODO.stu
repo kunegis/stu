@@ -1,8 +1,4 @@
 #
-# Test this error:  an output redirection to a file in a directory that does not exist. 
-#
-
-#
 # Test this:    >A {}  # Error or empty file?
 #
 

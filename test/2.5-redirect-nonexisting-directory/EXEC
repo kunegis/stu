@@ -1,0 +1,21 @@
+#! /bin/sh
+
+rm -f NOTEXECUTED nonexisting list.* || exit 1
+
+../../stu.test >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** Expected exit status 1, got $exitstatus"
+	exit 1
+}
+
+[ ! -e NOTEXECUTED ] || exit 1
+
+[ ! -e nonexisting ] || exit 1
+
+grep -q -v NOTEXECUTED list.* || exit 1
+
+rm -f list.* || exit 1
+
+exit 0

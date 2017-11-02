@@ -1,8 +1,4 @@
 #
-# Test this:    >A {}  # Error or empty file?
-#
-
-#
 # Allow a better integrated syntax on the command line after '--'.  This
 # will complement the options -o/-p/-n/-0.
 #

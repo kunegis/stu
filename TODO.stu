@@ -1,4 +1,8 @@
 #
+# Replace touch -d by touch -t 
+#
+
+#
 # Allow a better integrated syntax on the command line after '--'.  This
 # will complement the options -o/-p/-n/-0.
 #

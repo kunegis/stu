@@ -309,7 +309,7 @@ OVERVIEW
            CFLAGS: { echo -Wall -Werror >CFLAGS }
 
        Variable  dependencies  may be declared as persistent as in $[-p X] and
-       as trivial as in $[-t X] but not as  optional  using  the  -oflag.   By
+       as trivial as in $[-t X] but not as optional using  the  -o  flag.   By
        default,  the  name  of  the  variable set is the same as the filename.
        Another variable name can be used in the following way:
 
@@ -829,8 +829,8 @@ SIGNALS
               on standard output, and statistics about runtime, in  a  similar
               way  to  the -z option.  The reported runtimes include only jobs
               that have already  terminated,  and  exclude  currently  running
-              jobs.  Multiple SIGUSR1 signals sent in succession may result in
-              output only printed once.
+              jobs.   Multiple  SIGUSR1  signals  sent in rapid succession may
+              result in output only printed once.
 
 
 CONFORMING TO
@@ -1032,4 +1032,4 @@ SEE ALSO
 
 
 
-stu-2.5.40                       November 2017                          STU(1)
+stu-2.5.41                       November 2017                          STU(1)

@@ -9,14 +9,14 @@
 # timestamp in the past. 
 
 # Compute a date definitely in the past 
-now="$(LC_ALL=C date)"
-year="$(echo $now | sed -e 's/^.* \([0-9]\{1,\}\)$/\1/')"
-year_past="$(expr $year - 2)"
-date="$year_past-01-01T07:00:00"
+now=$(LC_ALL=C date)
+year=$(echo $now | sed -e 's/^.* \([0-9]\{1,\}\)$/\1/')
+year_past=$(expr $year - 2)
+date="$year_past"01010700
 
 rm -f A X
 
-touch -d "$date" X
+touch -t "$date" X
 
 ../../stu.test 
 exitcode="$?"

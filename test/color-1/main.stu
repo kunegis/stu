@@ -5,7 +5,7 @@
 @all:  @init A;
 
 @init {
-	touch -d "$(expr 2 + "$(date +%Y)")-01-01T07:00:00" B
+	touch -t "$(expr 2 + "$(date +%Y)")"01010700 B
 }
 
 A B { touch B }

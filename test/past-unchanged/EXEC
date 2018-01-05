@@ -1,13 +1,13 @@
 #! /bin/sh
 
-now="$(LC_ALL=C date)"
-year="$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')"
-year_past="$(expr $year - 2)"
-date="$year_past-01-01T07:01:01"
+now=$(LC_ALL=C date)
+year=$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')
+year_past=$(expr $year - 2)
+date="$year_past"01010701
 
 rm -f A B C
 
-touch -d "$date" B
+touch -t "$date" B
 
 echo ls -l B
 ls -l B

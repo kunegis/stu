@@ -8,7 +8,7 @@ now="$(LC_ALL=C date)"
 year="$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')"
 year_future="$(expr 2 + $year)"
 date="$year_future"01010700
-touch -d "$date" B
+touch -t "$date" B
 
 ../../stu.test >list.out 2>list.err
 exitcode="$?"

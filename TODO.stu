@@ -1,25 +1,4 @@
 #
-# Replace touch -d by touch -t.   (See sh/touch_old for usage)
-#
-
-./test/multitarget-35/main.stu
-./test/no-future-persistent/EXEC
-./test/multitarget-75/main.stu
-./test/future-existing/EXEC
-./test/too-old/main.stu
-./test/future-created/main.stu
-
-./test/symlink-not-created/EXEC
-./test/no-command-older/EXEC
-./test/past-unchanged/EXEC
-./test/color-1/TTYSTDOUTERR
-./test/color-1/main.stu
-./test/multitarget-72/main.stu
-./test/multitarget-92/main.stu
-
-find . -type f -print0 | xargs -0 grep -l -E 'touch\s+-d'
-
-#
 # Allow a better integrated syntax on the command line after '--'.  This
 # will complement the options -o/-p/-n/-0.
 #

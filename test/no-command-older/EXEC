@@ -1,16 +1,16 @@
 #! /bin/sh
 
-now="$(LC_ALL=C date)"
-year="$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')"
-year_a="$(expr $year - 3)"
-year_b="$(expr $year - 2)"
-date_a="$year_a-01-01T07:00:00"
-date_b="$year_b-01-01T07:00:00"
+now=$(LC_ALL=C date)
+year=$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')
+year_a=$(expr $year - 3)
+year_b=$(expr $year - 2)
+date_a="$year_a"01010700
+date_b="$year_b"01010700
 
 rm -f A B || exit 1
 
-touch -d "$date_a" A || exit 1
-touch -d "$date_b" B || exit 1
+touch -t "$date_a" A || exit 1
+touch -t "$date_b" B || exit 1
 
 ../../stu.test 2>list.err
 exitcode="$?"
@@ -28,3 +28,4 @@ grep -qF "warning: File target 'A' which has no command is older than its depend
 rm -f A B || exit 1
 
 exit 0
+

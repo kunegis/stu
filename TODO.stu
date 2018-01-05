@@ -2,9 +2,6 @@
 # Replace touch -d by touch -t.   (See sh/touch_old for usage)
 #
 
-./test/multitarget-63/main.stu
-./test/pass/EXEC
-
 ./test/multitarget-35/main.stu
 ./test/no-future-persistent/EXEC
 ./test/multitarget-75/main.stu

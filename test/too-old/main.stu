@@ -6,5 +6,5 @@ C: D { cp D C }
 D: {
 	year="$(date +%Y)"
 	year="$(expr $year - 2)"
-	touch -d "$year-01-01T07:00:00" D
+	touch -t "$year"01010700 D
 }

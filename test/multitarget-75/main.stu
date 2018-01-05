@@ -12,6 +12,6 @@ Q R {
 
 @init {
 	rm -f ?
-	touch -d "$(expr "$(date +%Y)" - 2)"-01-01T07:00:00 Q
+	touch -t "$(expr "$(date +%Y)" - 2)"01010700 Q
 	touch P
 }

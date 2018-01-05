@@ -5,9 +5,9 @@ rm -f A B || exit 1
 now="$(LC_ALL=C date)"
 year="$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')"
 year_future="$(expr 2 + $year)"
-date="$year_future-01-01T07:00:00"
+date="$year_future"01010700
 
-touch -d "$date" B || exit 1
+touch -t "$date" B || exit 1
 
 ../../stu.test 2>list.err
 exitcode="$?"

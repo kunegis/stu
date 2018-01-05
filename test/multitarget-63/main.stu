@@ -7,5 +7,5 @@ A B {
 	# Create 'B' such that it has a timestamp in the future. 
 	year="$(date +%Y)"
 	year_future="$(expr $year + 2)"
-	touch -d $year_future-01-01T07:00:00 B
+	touch -t "$year_future"01010700 B
 }

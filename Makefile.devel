@@ -7,13 +7,16 @@ all-devel: \
     stu.debug \
     stu.1 stu.text version.hh \
     stu \
+    all-auto \
+    all-test
+
+all-test: \
     test_options test_sed \
     test_unit.debug \
     test_comments \
-    test_unit.ndebug \
-    all-auto
+    test_unit.ndebug 
 
-.PHONY:  all-test clean
+.PHONY:  all-devel all-test clean
 
 include Makefile
 

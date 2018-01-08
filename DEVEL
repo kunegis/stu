@@ -34,8 +34,11 @@ setup than the authors.
 
 Unit testing is described in 'sh/mktest'. 
 
-To compile everything and run all unit tests, do 'make -f
-Makefile.devel'.  It takes about ten minutes.   
+To compile everything and run all unit tests, do this:
+
+	make -f Makefile.devel all-test
+
+It takes about ten minutes.   
 
 The unit tests have additional requirements on the system than just
 compiling Stu:   

@@ -14,8 +14,8 @@
 #\
 export TERM=xterm
 
-# The next line is executed by sh, not by tcl \
-exec tclsh8.6 "$0" ${1+"$@"}
+# The next line is executed by sh, but not by tclsh \
+exec tclsh "$0" ${1+"$@"}
 
 package require Expect
 

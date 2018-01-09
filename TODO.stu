@@ -247,3 +247,9 @@ dep.sources {
 # Will make all names matching that patterns be considered as build
 # failures immediately, without trying to build them. 
 #
+
+#
+# Have a signal to stop Stu, but without interrupting currently running
+# jobs.  I.e., let all currently running jobs finish, and then quit
+# (with appropriate exit status).
+#

@@ -60,13 +60,10 @@ without Stu syntax.
 .SH OPTIONS
 .IP "-0 FILENAME"
 Read targets from FILENAME, which must contain 
-.BR \\0\
--separated filenames.
+\\0-separated filenames.
 No Stu syntax is processed.  This option is also suitable in all cases
 where a file contains only the name of a single file, since filenames do
-not contain the 
-.BR \\0\
-character. 
+not contain the \\0 character. 
 Using this option is equivalent to using the
 .BR "[-0 FILENAME]" 
 syntax.
@@ -552,7 +549,8 @@ makes interpret the content of the file as a newline-separated
 list of filenames.  Analogously, the
 .BR -0
 flag can be used when the file
-contains \\0-separated filenames, or when the file contains the name of
+contains \\0-separated
+filenames, or when the file contains the name of
 exactly one file. 
 If no flag is used, the file is parsed in full Stu syntax. 
 
@@ -1141,3 +1139,4 @@ many different use cases and usage patterns.
 .BR cook (1)\
 ,
 .BR sh (1)
+

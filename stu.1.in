@@ -494,7 +494,7 @@ changed by setting the variable $STU_CP.  If source ends in a slash
 (outside of any parameter value), then Stu will look for a file with the
 same basename as TARGET in the directory SOURCE.  If the persistent flag
 .BR -p
-is used, the timestamp of the source file is not verifying, only
+is used, the timestamp of the source file is not verified, only
 its existence.  If the optional flag
 .BR -o
 is used, it is not an error if
@@ -1021,7 +1021,7 @@ can be used in some advanced use cases:
 To check whether Stu is compatible with a particular version of the Stu syntax:
 
     # Make sure Stu is compatible with the given version
-    if stu -C '%version 2.7' ; then
+    if stu -s -C '%version 2.7' ; then
         echo "Your Stu is compatible with version 2.7"
     fi
 
@@ -1047,9 +1047,9 @@ to use Stu as a replacement for 'test':
 
 You can use Stu to just execute something, like a poor man's shell:
 
-    stu -F '@all{ echo Hello World }'
+    stu -F '@main{ echo Hello World }'
 
-(of course, you can also type that directly or use 'sh -c', etc.)
+of course, you can also type that directly or use 'sh -c', etc.   
 
 Using the
 .BR -i

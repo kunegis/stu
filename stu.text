@@ -440,10 +440,10 @@ FEATURES
        changed by setting the variable $STU_CP.  If source  ends  in  a  slash
        (outside  of  any  parameter value), then Stu will look for a file with
        the same basename as TARGET in the directory SOURCE.  If the persistent
-       flag  -p  is  used,  the timestamp of the source file is not verifying,
-       only its existence.  If the optional flag -o is  used,  it  is  not  an
-       error if the target exists and not the source:  in that case the target
-       is considered up to date.  Both flags must not be used simultaenously.
+       flag -p is used, the timestamp of the source file is not verified, only
+       its existence.  If the optional flag -o is used, it is not an error  if
+       the  target exists and not the source:  in that case the target is con‐
+       sidered up to date.  Both flags must not be used simultaenously.
 
        A dependency can be one of the following:
 
@@ -928,7 +928,7 @@ EXAMPLES
        syntax:
 
            # Make sure Stu is compatible with the given version
-           if stu -C '%version 2.7' ; then
+           if stu -s -C '%version 2.7' ; then
                echo "Your Stu is compatible with version 2.7"
            fi
 
@@ -950,9 +950,9 @@ EXAMPLES
 
        You can use Stu to just execute something, like a poor man's shell:
 
-           stu -F '@all{ echo Hello World }'
+           stu -F '@main{ echo Hello World }'
 
-       (of course, you can also type that directly or use 'sh -c', etc.)
+       of course, you can also type that directly or use 'sh -c', etc.
 
        Using  the  -i option, Stu commands can read from their standard input.
        For instance, the following will read a line from the user and use  it.
@@ -1034,4 +1034,4 @@ SEE ALSO
 
 
 
-stu-2.5.48                       January 2018                           STU(1)
+stu-2.5.49                       January 2018                           STU(1)

@@ -4,7 +4,7 @@
 /* 
  * Tokenization.  I.e., parsing Stu source code into an array of tokens.    
  *
- * On errors, these functions print a message and throw integers error
+ * On errors, these functions print a message and throw integer error
  * codes.   
  */
 

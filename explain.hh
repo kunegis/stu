@@ -2,13 +2,14 @@
 #define EXPLAIN_HH
 
 /* 
- * Explanation functions:  they output an explanation of a feature of
- * Stu on standard output.  This is used after certain non-trivial error
- * messages, and is enabled by the -E option. 
+ * Explanation functions: they output an explanation of a feature of Stu
+ * on standard error output.  This is used after certain non-trivial
+ * error messages, and is enabled by the -E option.
  *
  * Many of these texts echo parts of the manpage. 
  *
- * The line lengths are set by hand and are approximate. 
+ * The line lengths in the printed output are set by hand and are
+ * approximate.   
  */
 
 void explain_clash() 
@@ -132,6 +133,16 @@ void explain_quoted_characters()
 	fputs("Explanation: The following characters must always be quoted when appearing in names:\n"
 	      "\t#%\'\":;-$@<>={}()[]*\\&|!?,\n",
 	      stderr); 
+}
+
+void explain_missing_optional_copy_source()
+{
+	if (! option_explain)  return;
+	 fputs("Explanation: In copy rules whose source file is declared as optional\n"
+	       "using the -o option, the source file may be missing only if the target file\n"
+	       "is present.  It is an error if both the source and the target files\n"
+	       "are missing.\n",
+	       stderr); 
 }
 
 #endif /* ! EXPLAIN_HH */

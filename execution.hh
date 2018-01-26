@@ -2929,11 +2929,11 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 					 * the target file exist:  an
 					 * error  */
 					rule->deps.at(0)->get_place()
-						<< fmt("source file %s in optional copy rule "
-						       "must exist",
+						<< fmt("source file %s in optional copy rule must exist",
 						       name_format_word(source));
 					print_traces(fmt("when target file %s does not exist",
 							 targets.at(0).format_word())); 
+					explain_missing_optional_copy_source();
 					raise(ERROR_BUILD);
 					flags_finished |= ~ dep_this->flags; 
 					assert(proceed == 0); 

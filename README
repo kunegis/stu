@@ -19,9 +19,10 @@ In many scenarios, these three features interact judiciously to give
 very concise and easy to understand constructs that are nearly
 impossible to realize with Make. 
 
-See this blog article for a motivation:
+See these blog articles for motivation:
 
 https://networkscience.wordpress.com/2017/08/15/an-update-on-the-stu-build-system-stu-2-5/
+https://networkscience.wordpress.com/2018/01/15/the-build-system-stu-in-practice/
 
 For documentation, compile and read the manpage, or go directly to: 
 

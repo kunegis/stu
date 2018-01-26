@@ -16,10 +16,6 @@
 # contain the glob characters *, ?, etc.) 
 #
 # PARAMETERS
-#     $emptyok	Set to non-empty to *not* output an error for empty test
-#               directories; useful after doing "rm" in a version
-#		control system on one, since that leaves a directory
-#		containing only (e.g.) ".svn".  Ignores dotfiles. 
 #     $NDEBUG	Set to non-empty to test the nondebug version; by default
 #		the debug version is tested 
 #     $VARIANT  Other variant of the compiled file; the default is to
@@ -27,6 +23,10 @@
 #     $verbose  Set to non-empty for verbose output 
 #     $notall	If non-empty, exit on the first error, instead of
 #		running everything  
+#     $emptyok	Set to non-empty to *not* output an error for empty test
+#               directories; useful after doing "rm" in a version
+#		control system on one, since that leaves a directory
+#		containing only (e.g.) ".svn".  Ignores dotfiles. 
 #
 # OUTPUT FILES
 #     error.log		List of tests that failed
@@ -50,21 +50,6 @@
 #   single uppercase letter (but they don't have to).
 # * There may be other files present used by the test; these are part of
 #   the Stu release, i.e., they are under version control. 
-#
-# The names of unit tests, i.e., the name of the directories under test/
-# follow a pattern:
-#
-# * test/VERSION-ID
-#	These are tests for features introduced in Stu version VERSION.
-#	This was introduced in Stu 2.5, and therefore the assignment of
-#	VERSION numbers for older versions is approximate.  The goal is
-#	to be able to run all tests in asciibetical order so as to test
-#	older features first.  Presumably, these are the features that
-#	should be fixed first when working on Stu.
-# * test/NAME-ID
-#	These are tests for the feature named NAME, with ID being an
-#	integer.  Ideally, these would be migrated to the VERSION-ID
-# 	scheme.  
 #
 # SPECIFICATION FILES
 #
@@ -105,6 +90,23 @@
 #
 # For the files beginning with 'IN', each line contains a string that
 # must be present, in any order. 
+#
+# NAMES OF TESTS
+#
+# The names of unit tests, i.e., the name of the directories under test/
+# follow a pattern:
+#
+# * test/VERSION-ID
+#	These are tests for features introduced in Stu version VERSION.
+#	This was introduced in Stu 2.5, and therefore the assignment of
+#	VERSION numbers for older versions is approximate.  The goal is
+#	to be able to run all tests in asciibetical order so as to test
+#	older features first.  Presumably, these are the features that
+#	should be fixed first when working on Stu.
+# * test/NAME-ID
+#	These are tests for the feature named NAME, with ID being an
+#	integer.  Ideally, these would be migrated to the VERSION-ID
+# 	scheme.  
 #
 # NOTES
 #

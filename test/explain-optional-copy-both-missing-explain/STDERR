@@ -1,0 +1,6 @@
+main.stu:1:8: source file 'B' in optional copy rule must exist
+main.stu:1:1: when target file 'A' does not exist
+Explanation: In copy rules whose source file is declared as optional
+using the -o option, the source file may be missing only if the target file
+is present.  It is an error if both the source and the target files
+are missing.

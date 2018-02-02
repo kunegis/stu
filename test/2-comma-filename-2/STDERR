@@ -1,0 +1,2 @@
+main.stu:3:8: expected a dependency, a command, or ';', not ','
+main.stu:3:1: for target 'A'

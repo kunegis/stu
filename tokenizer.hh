@@ -606,7 +606,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name()
 
 	shared_ptr <Place_Name> ret= make_shared <Place_Name> ("", place_begin);
 
-	/* Don't allow '-', '+' and '~' at beginning of name. */
+	/* Don't allow '-', '+' and '~' at beginning of a name */
 	if (p < p_end) {
 		if (*p == '-' || *p == '+' || *p == '~') {
 			return nullptr;
@@ -718,8 +718,12 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 
 bool Tokenizer::is_name_char(char c) 
 {
+	/* The characters in the string constant are those characters
+	 * that have special meaning (as defined in the manpage), and
+	 * those reserved for future extension (also defined in the
+	 * manpage)  */
 	return (c > 0x20 && c < 0x7F /* ASCII printable character except space */ 
-		&& nullptr == strchr("[]\"\':={}#<>@$;()%*\\!?|&", c))
+		&& nullptr == strchr("[]\"\':={}#<>@$;()%*\\!?|&,", c))
 		|| ((unsigned char) c) >= 0x80;
 }
 

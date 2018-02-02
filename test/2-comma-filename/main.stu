@@ -1,0 +1,5 @@
+# Must report invalid character ','
+
+A:   B,C   { touch A ; }
+B,C        { touch B,C ; }
+

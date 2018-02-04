@@ -30,13 +30,6 @@ $ stu -- '[ list.x ]'   # refers to file ' list.x '
 $ stu -- '[ list.x]'   # refers to file ' list.x'
 $ stu -- '[list.x ]'   # refers to file 'list.x '
 
-#
-# Bug observed with -m random:      many targets must be built, all
-# depending on a single given target.   Using stu -m random, the target
-# that all others need is built, and then Stu exists successfully,
-# instead of building the rest. 
-#
-
 #=================== Further features =======================
 
 #

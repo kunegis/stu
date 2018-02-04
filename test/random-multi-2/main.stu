@@ -1,0 +1,19 @@
+#
+# Bug previously observed with -m random: many targets must be built,
+# all depending on a single given target.  Using stu -m random, the
+# target that all others need is built, and then Stu exists
+# successfully, instead of building the rest.
+#
+
+# Variant:  overall target is a transient. 
+
+@all:     B C D E F G; 
+
+B : X { cp X B ; }
+C : X { cp X C ; }
+D : X { cp X D ; }
+E : X { cp X E ; }
+F : X { cp X F ; }
+G : X { cp X G ; }
+
+X { echo xxx >X ; }

@@ -1,0 +1,3 @@
+>A:  list.abc-(1 2)-C { cat list.abc-1-C list.abc-2-C }
+
+>list.abc-$x-C { echo $x ; }

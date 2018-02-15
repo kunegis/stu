@@ -61,19 +61,24 @@ enum {
 
 class Execution
 /*
- * Base class of all executions.
+ * Base class of all executions.  At runtime, execution objects are used
+ * to manage the running of Stu itself.  All execution objects are
+ * linked to each other in an acyclic directed graph rooted at a
+ * Root_Execution. 
  *
  * Executions are allocated with new(), are used via ordinary pointers,
- * and deleted (if nercessary), via delete().  
+ * and deleted (if necessary, depending on caching policy), via
+ * delete().   
  *
  * The set of active Execution objects forms a directed acyclic graph,
- * rooted at a single Root_Execution object.  Edges in this graph are
+ * rooted at the single Root_Execution object.  Edges in this graph are
  * represented by dependencies.  An edge is said to go from a parent to
  * a child.  Each Execution object corresponds to one or more unique
  * dependencies.  Two Execution objects are connected if there is a
  * dependency between them.  If there is an edge A ---> B, A is said to
- * be the parent of B, and B the child of A.  Also, B is a dependency of
- * A.  
+ * be the parent of B, and B the child of A.  Also, we say that B is a
+ * dependency of A, even though properly speaking, the edge connecting
+ * them is the dependency.
  */
 {
 public: 
@@ -140,21 +145,17 @@ public:
 	virtual bool want_delete() const= 0; 
 
 	virtual Proceed execute(shared_ptr <const Dep> dep_this)= 0;
-	/* 
-	 * Start the next job(s).  This will also terminate jobs when
+	/* Start the next job(s).  This will also terminate jobs when
 	 * they don't need to be run anymore, and thus it can be called
 	 * when K = 0 just to terminate jobs that need to be terminated.
-	 * Can only return LATER in random mode. 
-	 * When returning LATER, not all possible child jobs where started.  
-	 * Child implementations call this implementation.  
-	 * Never returns P_CONTINUE:  When everything is finished, the
-	 * FINISHED bit is set.  
-	 * In DONE, set those bits that have been done. 
-	 * When the call is over, clear the PENDING bit. 
-	 * DEPENDENCY_LINK is only null when called on the root
-	 * execution, because it is the only execution that is not
-	 * linked from another execution.
-	 */
+	 * Can only return LATER in random mode.  When returning LATER,
+	 * not all possible child jobs where started.  Child
+	 * implementations call this implementation.  Never returns
+	 * P_CONTINUE: When everything is finished, the FINISHED bit is
+	 * set.  In DONE, set those bits that have been done.  When the
+	 * call is over, clear the PENDING bit.  DEPENDENCY_LINK is only
+	 * null when called on the root execution, because it is the
+	 * only execution that is not linked from another execution.  */
 
 	virtual bool finished() const= 0;
 	/* Whether the execution is completely finished */ 
@@ -246,7 +247,7 @@ protected:
 	 * for executions that have file targets, neither for
 	 * executions that have multiple targets.  This is not used for
 	 * file dependencies, as a file dependency's result can be each
-	 * of its files, depending in the parent -- for file
+	 * of its files, depending on the parent -- for file
 	 * dependencies, parents are notified directly, bypassing
 	 * push_result().  */ 
 
@@ -711,7 +712,7 @@ private:
 
 class Concat_Execution
 /* 
- * An execution representating a concatenation.  Its dependency is
+ * An execution representing a concatenation.  Its dependency is
  * always a normalized concatenated dependency containing [compound
  * dependencies of] normalized dependencies, whose results are
  * concatenated as new targets added to the parent.  At least one of the
@@ -1848,7 +1849,7 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 		} else if (rule_child == nullptr) {
 			use_file_execution= target.is_file(); /* Always FALSE */
 			assert(! use_file_execution); 
-		} else if (rule_child->command) {
+ 		} else if (rule_child->command) {
 			use_file_execution= true; 
 		} else {
 			for (auto &i:  rule_child->place_param_targets) {

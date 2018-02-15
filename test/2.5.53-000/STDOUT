@@ -1,0 +1,5 @@
+Creating list.FILE: ' 1 3 5 '
+>list.1 x=1: echo "$x$x$x" ;
+>list.3 x=3: echo "$x$x$x" ;
+>list.5 x=5: echo "$x$x$x" ;
+Build successful

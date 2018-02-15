@@ -24,8 +24,7 @@ void job_print_jobs();
  * Ignore errors, as this is called from the terminating signal handler. 
  *
  * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this
- * macro. 
- * Note:  This macro may change ERRNO. 
+ * macro.  This macro may change ERRNO. 
  */
 #define write_async(FD, MESSAGE) \
 	do { \
@@ -35,7 +34,7 @@ void job_print_jobs();
 
 /* 
  * The same as assert(), but in an async-signal safe way.  In all
- * likelyhood, implementations of assert() are already async-signal
+ * likelihood, implementations of assert() are already async-signal
  * safe, but we shouldn't rely on this. 
  *
  * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this
@@ -248,7 +247,7 @@ pid_t Job::start(string command,
 
 		/* Instead of throwing exceptions, use perror() and
 		 * _Exit().  We return 127, as done e.g. by
-		 * posix_spawn() and the shell.  */ 
+		 * system(), posix_spawn() and the shell.  */ 
 
 		/* Unblock/reset all signals */ 
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_termination, nullptr)) {
@@ -520,7 +519,7 @@ pid_t Job::wait(int *status)
 	if (pid > 0) {
 		if (WIFSTOPPED(*status)) {
 			/* The process was suspended. This can have
-			 * several reasons, include someone just using
+			 * several reasons, including someone just using
 			 * kill -STOP on the process.  */
 			assert(option_interactive);
 			/* 
@@ -754,7 +753,7 @@ void Job::init_signals()
  *         + SIGCHLD (to know when child processes are done) 
  *         + SIGUSR1 (to output statistics)
  *      These signals are blocked, and then waited for specifically.
- *      There handlers thus do not have to  be async-signal safe. 
+ *      There handlers thus do not have to be async-signal safe. 
  *    - The job control signals SIGTTIN and SIGTTOU.  They are both
  *      produced by certain job control events that Stu triggers, and
  *      ignored by Stu. 

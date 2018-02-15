@@ -1,1 +1,2 @@
-Command line argument: '[A': unbalanced brackets []
+Command line argument: expected ']'
+Command line argument: after opening '['

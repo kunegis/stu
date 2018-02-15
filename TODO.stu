@@ -1,34 +1,4 @@
-#
-# Allow a better integrated syntax on the command line after '--'.  This
-# will complement the options -o/-p/-n/-0.
-#
-# Update Parser::get_target_dep(). 
-#
-# Write a tokenizer for it and use the usual parser.  The tokenizer
-# should:
-#    - recognize only the special characters -@[], and @ only at the
-#      beginning of arguments, or after [ or ], etc.   
-#    - treat whitespace within arguments as part of the name, and only
-#      consider the separation between arguments to be whitespace
-#    - don't support '$' or other syntax
-#    - don't need space after flags 
-#    - recognize '[' and ']' in the middle of the string, to denote
-#      concatenation 
-#    - Maybe even recognize ',' as a separator?  (because ' ' is not
-#      available here) 
-#
-
-$ stu -- [ -n FILES ]
-$ stu -- -o FILE
-$ stu -- -oFILE    # Optional file 'FILE' 
-$ stu -- [FILE]
-$ stu [ FILE ]
-$ stu -- [-oFILE]  # Optional dynamic file 'FILE'
-$ stu -- list.[FILE]
-$ stu -- @bidd.[dat/NETWORKS_family.edit]
-$ stu -- '[ list.x ]'   # refers to file ' list.x '
-$ stu -- '[ list.x]'   # refers to file ' list.x'
-$ stu -- '[list.x ]'   # refers to file 'list.x '
+# We currently don't have known bugs or small features to implement. 
 
 #=================== Further features =======================
 
@@ -230,16 +200,6 @@ dep.sources {
 #
 
 % set PATH /usr/local/bin
-
-#
-# A "block" option, i.e., that block certain filename or transient
-# patterns from being executed.  E.g., 
-#
-#   $ stu -B  @statistic.diam.$network
-#
-# Will make all names matching that patterns be considered as build
-# failures immediately, without trying to build them. 
-#
 
 #
 # Have a signal to stop Stu, but without interrupting currently running

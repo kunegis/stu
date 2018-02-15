@@ -235,12 +235,12 @@ signal.)
 A simple rule looks as follows:
 
     results.txt:  data.txt compute {
-        ./compute <data.txt >results.txt 
+        ./compute --input data.txt --output results.txt 
     }
 
 The colon may be omitted when there are no dependencies:
 
-    A { echo la la la >A }
+    data.csv { ./generate --output data.csv }
 
 Here is an example of a rule containing three parameters.  Stu will use
 pattern matching to match the target pattern to a given filename: 
@@ -278,7 +278,7 @@ backslashes are needed at line ends:
         a.data b.data c.data d.data e.data f.data g.data h.data i.data
         j.data k.data l.data m.data
     {
-        do-stuff  >output.txt; 
+        do-stuff >output.txt; 
     }
 
 A rule may be entirely given on a single line: 
@@ -806,6 +806,11 @@ option must contain a 'rule_list'.
 A file included by brackets (a dynamic dependency) and arguments to the
 .BR -C 
 option must contain an 'expression_list'.   
+Arguments passed outside of options on the command line outside of
+options must contain an 'expression_list', but a simplified syntax is
+used in which only the charaters '[]-@' are recognized, and that only in
+positions where they make sense; in all other cases, characters are
+interpreted as part of filenames -- this is also valid for whitespace. 
 
 .SH "SEMANTICS"
 

@@ -9,6 +9,7 @@
  */
 
 #include <sys/mman.h>
+#include <fcntl.h>
 
 #include "token.hh"
 #include "version.hh"
@@ -57,6 +58,9 @@ public:
 				  fd,
 				  allow_enoent);
 	}
+
+	static bool is_flag_char(char); 
+	/* Whether the character is a valid flag */ 
 
 	static void parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
 					Context context,
@@ -116,9 +120,10 @@ private:
 
 	shared_ptr <Command> parse_command();
 	
-	shared_ptr <Place_Name> parse_name();
+	shared_ptr <Place_Name> parse_name(bool allow_special);
 	/* Returns null when no name could be parsed.  Prints and throws
-	 * on other errors, including on empty names.  */ 
+	 * on other errors, including on empty names.  
+	 * ALLOW_SPECIAL:  whether the name is allowed to start with one of '-+~'.  */ 
 
 	bool parse_parameter(string &parameter, Place &place_dollar); 
 	/* Parse a parameter starting with '$'.  Return whether a
@@ -177,9 +182,6 @@ private:
 
 	static bool is_operator_char(char);
 	/* Whether the character can be an operator */ 
-
-	static bool is_flag_char(char); 
-	/* Whether the character is a valid flag */ 
 
 	static void parse_version(string version_req, 
 				  const Place &place_version,
@@ -599,7 +601,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 	throw ERROR_LOGICAL;
 }
 
-shared_ptr <Place_Name> Tokenizer::parse_name()
+shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 {
 	const char *const p_begin= p; 
 	Place place_begin= current_place(); 
@@ -607,7 +609,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name()
 	shared_ptr <Place_Name> ret= make_shared <Place_Name> ("", place_begin);
 
 	/* Don't allow '-', '+' and '~' at beginning of a name */
-	if (p < p_end) {
+	if (p < p_end && ! allow_special) {
 		if (*p == '-' || *p == '+' || *p == '~') {
 			return nullptr;
 		}
@@ -628,8 +630,9 @@ shared_ptr <Place_Name> Tokenizer::parse_name()
 			}
 		} else if (is_name_char(*p)) {
 			/* An ordinary character */ 
-			assert(p != p_begin ||
-			       (*p != '-' && *p != '+' && *p != '~'));
+			assert(p != p_begin 
+			       || (*p != '-' && *p != '+' && *p != '~')
+			       || allow_special);
 			ret->last_text() += *p++;
 		}
 		else {
@@ -735,8 +738,8 @@ bool Tokenizer::is_operator_char(char c)
 bool Tokenizer::is_flag_char(char c)
 {
 	/* These correspond to persistent, optional and trivial
-	 * dependencies, respectively.  They were '!', '?' and '&'
-	 * formerly.  'n' is new.  */
+	 * dependencies, respectively.  'p'/'o'/'t' were '!', '?' and '&'
+	 * formerly.  The others are new.  */
 	return c == 'p' || c == 'o' || c == 't' || c == 'n' || c == '0';
 }
 
@@ -857,8 +860,15 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		/* Flag, name, or invalid character */ 		
 		else {
 			/* Flag */ 
+			bool allow_special= ! whitespace 
+				&& !tokens.empty()
+				&& to <Operator> (tokens.back())
+				&& (to <Operator> (tokens.back())->op == ']' ||
+				    to <Operator> (tokens.back())->op == ')'); 
+
 			if (p < p_end &&
-			    (*p == '-' || *p == '+' || *p == '~')) {
+			    (*p == '-' || *p == '+' || *p == '~') &&
+			    ! allow_special) {
 				if (*p == '+' || *p == '~') {
 					current_place() <<
 						fmt("an unquoted name must not begin with the character %s",
@@ -911,7 +921,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				}
 			} else {
 
-			shared_ptr <Place_Name> place_name= parse_name();
+			shared_ptr <Place_Name> place_name= parse_name(allow_special);
 			if (place_name == nullptr) {
 				if (*p == '!') {
 					current_place() <<
@@ -1136,7 +1146,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 			throw ERROR_LOGICAL;
 		}
 
-		shared_ptr <Place_Name> place_name= parse_name(); 
+		shared_ptr <Place_Name> place_name= parse_name(false); 
 
 		if (place_name == nullptr) {
 			current_place() <<

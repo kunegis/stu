@@ -5,12 +5,13 @@
 # directory.  Any of such named files may be directories. 
 #
 # None of the patterns matches any file that we would create within the
-# main stu/ directory, so wwe can safely call this to remove junk files
+# main stu/ directory, so we can safely call this to remove junk files
 # created while debugging.  In particular, as two-letter files are good
-# for testing, except 'sh'. 
+# for testing, except 'sh'.  Also, all files containing 'SCHTROUMPF' are
+# deleted.
 #
 
-rm -Rf -- ? list.* A.* ./*.data x.* .+-~_ 
+rm -Rf -- ? list.* A.* ./*.data x.* *SCHTROUMPF* .+-~_ 
 
 for file in ?? ; do
 	if [ "$file" = sh ] ; then continue ; fi

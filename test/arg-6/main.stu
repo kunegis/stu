@@ -1,7 +1,7 @@
-A: B {
-	touch A
+A {
+	exit 1
 }
 
-B {
-	touch B
-}
+"?A" { touch -- '?A' ; }
+
+'?' { exit 1 ; }

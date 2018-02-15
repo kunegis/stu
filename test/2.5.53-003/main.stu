@@ -1,0 +1,9 @@
+# $ stu -- [ -n list.FILES ]  # Four parameters after '--', reads the file 'FILES' in newline mode 
+
+>list.FILES {
+	printf '%s\n%s\n%s\n' 'list.  ' X '.+-~_'
+}
+
+list.'  ' = {1}
+X = {2}
+'.+-~_' = {3}

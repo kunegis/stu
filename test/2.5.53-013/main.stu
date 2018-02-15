@@ -1,0 +1,4 @@
+# $ stu @bidd.[list.X]
+list.X = {Y}
+@bidd.Y:  A;
+A = {correct}

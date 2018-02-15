@@ -11,6 +11,14 @@ made, which are documented in the file 'MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2018-02-15  Version 2.5.53
+
+* The parsing of arguments on the command line was made consistent with
+  the new features introduced in Version 2.5.  As before, the
+  characters @[] are recognized, and now also the '-' character for
+  flags.  Empty arguments now result in logical error (exit status 2)
+  rather than fatal errors (exit status 4). 
+
 2017-08-11  Version 2.5
 
 * Concatenation is supported

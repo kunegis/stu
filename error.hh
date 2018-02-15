@@ -5,8 +5,9 @@
  * Code for managing errors in Stu.  Errors codes in Stu are represented
  * by integers between 0 and 4, as defined in the ERROR_* constants
  * below.  Zero represents no error.  These codes are used for both
- * Stu's exit status and as values that are thrown and caught.   Variables
- * containing error codes are ints and are named "error". 
+ * Stu's exit status and as values that are stored in ints, as well as
+ * thrown and caught.  Variables containing error codes are ints and are
+ * named "error".
  */ 
 
 /*
@@ -31,7 +32,7 @@
  * Error messages begin with uppercase letters; trace messages with
  * lowercase letters, as per the GNU Coding Standards.  Filenames and
  * operator names are quoted in messages using single quotes.  Messages
- * for both types of error output lines are not terminated by periods.
+ * for neither type of error output lines are terminated by periods.
  *
  * Typical forms of error messages are:
  *
@@ -51,7 +52,7 @@
  * interpreting "expected" as an adjective.
  *
  * "not BBB" mentions the invalid token.  If end-of-file is encountered,
- * the "not ..." part is not used. 
+ * the "not BBB" part is not used. 
  * 
  * Use "must not" rather than "cannot" or "shall" in error messages when
  * something must be present, but is erroneous, e.g., "filename must not
@@ -103,8 +104,8 @@ const int ERROR_FATAL=     4;
  * (question mode), when the targets are not up to date.
  *
  * Logical errors (code 2) are errors with the usage of Stu.  These are
- * for instance syntax errors in the source code, cycles in the
- * dependency graph, or multiple matching rules.
+ * for instance syntax errors in Stu scripts, cycles in the dependency
+ * graph, or multiple matching rules.  
  * 
  * Fatal errors (code 4) are errors that lead Stu to abort immediately,
  * even when the -k option is used.  They are avoided as much as
@@ -122,7 +123,7 @@ const int ERROR_FATAL=     4;
  *    - When there are errors in the usage of Stu on the command line,
  *      e.g. non-existing options.  In these cases, we don't lose
  *      anything because nothing was yet started.
- *    - Errors that happend just before Stu exits anyway.
+ *    - Errors that happen just before Stu exits anyway.
  *    - Errors that should not happen, such as failure to set up a
  *      signal handler. 
  *

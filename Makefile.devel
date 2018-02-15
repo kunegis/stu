@@ -32,9 +32,9 @@ CXXFLAGS_OTHER=-std=c++11 $(DEFS)
 #     -DUSE_MTIM=1		Enable nanosecond-precision timestamps
 #
 
-# Some of the specialized flags may not be present in other
-# compilers and compiler versions than those used by the authors.  Just
-# remove the flags if you use such a compiler. 
+# Some of the specialized flags may not be present in other compilers
+# and compiler versions than those used by the authors.  Just remove the
+# flags if you use such a compiler.
 
 CXXFLAGS_DEBUG=  -ggdb -O0 -Werror \
     -Wall -Wextra -Wpedantic \

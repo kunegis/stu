@@ -12,6 +12,8 @@
 #include "rule.hh"
 #include "token.hh"
 #include "dep.hh"
+#include "tokenizer.hh"
+#include "target.hh"
 
 /*
  * Stu has only prefix and circumfix operators, and therefore its syntax
@@ -78,14 +80,15 @@ public:
 					const Place &place_end,
 					Place_Name &input,
 					Place &place_input);
-	/* DEPENDENCIES is filled.  DEPENDENCIES is empty when called.
-	 * TARGET is used for error messages.  Empty when in a dynamic
-	 * dependency.  */
+	/* Parse tokens that represent an 'expression_list' (as given in
+	 * the manpage).  DEPS is filled.  DEPS is empty when called.  */
 
-	static shared_ptr <const Dep> get_target_dep(string text, const Place &place); 
+	static void get_target_arg(vector <shared_ptr <const Dep> > &deps, 
+				   int argc, const char *const *argv); 
 	/* Parse a dependency as given on the command line outside of
-	 * options.  This supports only the characters '@' and '[]', as
-	 * well as names.  TEXT must not be "".  */
+	 * options.  Strings in ARGV may be empty; those are ignored.
+	 * Parsed dependency are appended to DEPS, which is not
+	 * necessarily empty on invocation.  */
 
 private:
 
@@ -1250,88 +1253,102 @@ void Parser::get_expression_list(vector <shared_ptr <const Dep> > &deps,
 	}
 }
 
-shared_ptr <const Dep> Parser::get_target_dep(string text, const Place &place)
+void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps, 
+			    int argc, const char *const *argv)
 /*
- * This syntax supports only the characters '@' and '[]', and a single
- * name, without whitespace.  Thus, the syntax is:
- *
- *         '['^n [@] NAME ']'^n
+ *    - recognize only the special characters "-@[]".  And "-@" only at the
+ *      beginning of arguments, or after [ or ], etc.   
+ *    - treat whitespace within arguments as part of the name, and only
+ *      consider the separation between arguments to be whitespace
+ *    - don't support '$' or other syntax
+ *    - don't need space after flags 
+ *    - recognize '[' and ']' in the middle of the string, to denote
+ *      concatenation 
  */
 {
-	assert(text != ""); 
+	/* All tokens get the same place, because we don't distinguish
+	 * the location within command line arguments  */
+	Place place(Place::Type::ARGUMENT); 
+			
+	vector <shared_ptr <Token> > tokens;
 
-	const char *begin= text.c_str();
-	const char *p= text.c_str() + text.size();
-	int closing= 0;
-	while (p != begin && p[-1] == ']') {
-		++closing;
-		--p;
-	}
-	const char *end_name= p;
+	for (int j= 0;  j < argc;  ++j) {
+		const char *p= argv[j]; 
 
-	const char *q= begin;
-	while (q != end_name && *q == '[') {
-		++q;
-	}
+		bool allow_dash= true; 
+		bool allow_at= true; 
+		bool beginning_of_arg= true; 
 
-	assert(q <= end_name); 
-
-	/* For catching porting errors, flag this error separately */ 
-	if (q != end_name && (*q == '!' || *q == '?')) {
-		if (*q == '!') {
-			place <<
-				fmt("character %s cannot be used to denote persistent dependencies",
-				    char_format_word('!')); 
-		} else if (*q == '?') {
-			place <<
-				fmt("character %s cannot be used to denote optional dependencies",
-				    char_format_word('?')); 
-		} else  
-			assert(false);
-		throw ERROR_LOGICAL; 
-	}
-
-	Flags flags_type= 0; 
-	const char *begin_name= q;
-	if (begin_name != end_name && *q == '@') {
-		flags_type= F_TARGET_TRANSIENT; 
-		++ begin_name;
-	}
-
-	if (begin_name == end_name) {
-		place << fmt("%s: name must not be empty",
-			     name_format_word(text));
-		throw ERROR_LOGICAL; 
-	}
-
-	shared_ptr <const Dep> ret= make_shared <Plain_Dep> 
-		(flags_type, Place_Param_Target
-		 (flags_type, 
-		  Place_Name
-		  (string(begin_name, end_name - begin_name), 
-		   place)));
-
-	while (q != begin) {
-		if (q[-1] == '[') {
-			ret= make_shared <Dynamic_Dep> (0, ret);
-			-- closing;
-		} else {
-			assert(false); 
-			/* Ignore the character */ 
+		while (*p) {
+			if (allow_at && *p == '@') {
+				tokens.push_back(make_shared <Operator> (*p, place, beginning_of_arg));
+				++p;
+				allow_dash= false; 
+				allow_at= false; 
+				beginning_of_arg= false; 
+			} 
+			else if (*p == '[') {
+				tokens.push_back(make_shared <Operator> (*p, place, beginning_of_arg));
+				++p;
+				allow_dash= true;
+				allow_at= true;
+				beginning_of_arg= false;
+			}
+			else if (*p == ']') {
+				tokens.push_back(make_shared <Operator> (*p, place, beginning_of_arg));
+				++p;
+				allow_dash= false;
+				allow_at= false;
+				beginning_of_arg= false; 
+			}
+			else if (allow_dash && *p == '-') {
+				++p;
+				if (*p == '\0') {
+					place << fmt("expected a flag character after %s", 
+						     char_format_word('-')); 
+					throw ERROR_LOGICAL; 
+				}
+				if (! Tokenizer::is_flag_char(*p)) {
+					if (isalnum(*p)) {
+						place << fmt("invalid flag %s", 
+							     multichar_format_word(frmt("-%c", *p))); 
+					} else {
+						place << fmt("expected a flag character after dash %s, not %s",
+							     char_format_word('-'),
+							     char_format_word(*p)); 
+					}
+					throw ERROR_LOGICAL; 
+				}
+				tokens.push_back(make_shared <Flag_Token> (*p, place, beginning_of_arg)); 
+				++p;
+				allow_dash= true;
+				allow_at= true; 
+				beginning_of_arg= false; 
+			} 
+			else {
+				const char *q= p;
+				while (*p 
+				       && (*p != '@' || ! allow_at) 
+				       && (*p != '-' || ! allow_dash)
+				       && *p != '[' && *p != ']') {
+					++p;
+				}
+				assert(p > q); 
+				Place_Name place_name(string(q, p-q), place); 
+				tokens.push_back(make_shared <Name_Token> (place_name, beginning_of_arg)); 
+				allow_dash= false;
+				allow_at= false; 
+				beginning_of_arg= false;
+			}
 		}
-		--q;
 	}
 
-	assert(q == begin);
-	
-	if (closing != 0) {
-		place << fmt("%s: unbalanced brackets %s[]%s", 
-			     name_format_word(text),
-			     Color::word, Color::end);
-		throw ERROR_LOGICAL;
-	}
-
-	return ret; 
+	Place_Name input;  /* Remains empty */
+	Place place_input;  /* Remains empty */
+	vector <shared_ptr <const Dep> > deps_new; 	
+	get_expression_list(deps_new, tokens, place, input, place_input); 
+	for (const auto &i:  deps_new)
+		deps.push_back(i); 
 }
 
 void Parser::print_separation_message(shared_ptr <const Token> token)

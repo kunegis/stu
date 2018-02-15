@@ -1,0 +1,4 @@
+# $ stu -k '' A 
+# Build 'A' and return error 2 because of ''.
+
+A = {correct}

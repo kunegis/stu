@@ -1,0 +1,5 @@
+# Filename begins and ends in space
+# $ stu -- '[ SCHTROUMPF ]'   
+
+' 'SCHTROUMPF' ' = {A}
+A = {correct}

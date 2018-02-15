@@ -1,0 +1,6 @@
+>A:  list.abc-[list.X]-C { cat list.abc-1-C list.abc-2-C }
+
+>list.abc-$x-C { echo $x ; }
+
+list.X = { 1 2 }
+

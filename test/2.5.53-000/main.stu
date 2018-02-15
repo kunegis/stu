@@ -1,0 +1,5 @@
+# $ stu -- list.[list.FILE]
+
+>list.$x { echo "$x$x$x" ; }
+
+list.FILE = { 1 3 5 }

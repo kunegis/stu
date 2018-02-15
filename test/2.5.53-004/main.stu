@@ -1,0 +1,10 @@
+# $ stu -n list.A list.B
+
+list.B = { Hello }
+list.C = { World }
+
+>list.A {
+	printf '%s\n%s\n' list.C 'list.  X  '
+}
+
+list.'  X  ' = {correct}

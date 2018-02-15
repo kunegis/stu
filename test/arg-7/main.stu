@@ -1,1 +1,2 @@
-A { touch A }
+A { exit 1; }
+"!A" = {correct}

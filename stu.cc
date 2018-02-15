@@ -366,30 +366,28 @@ int main(int argc, char **argv, char **envp)
 
 		/* Targets passed on the command line, outside of options */ 
 		for (int i= optind;  i < argc;  ++i) {
-
-			/* I may not be the index that the argument had
-			 * originally, because getopt() may reorder its
-			 * arguments. (I.e., using GNU getopt.)
-			 * This is why we can't put I into the trace. */ 
+			/* The number I may not be the index that the
+			 * argument had originally, because getopt() may
+			 * reorder its arguments. (I.e., using GNU
+			 * getopt.)  This is why we can't put I into the
+			 * trace.  */ 
 
 			Place place(Place::Type::ARGUMENT); 
 			if (*argv[i] == '\0') {
 				place << fmt("%s: name must not be empty",
 					     name_format_word(argv[i])); 
-				exit(ERROR_FATAL);
-			}
-
-			if (! option_literal) {
-				shared_ptr <const Dep> dep= 
-					Parser::get_target_dep(argv[i], place);
-				deps.push_back(dep); 
-			} else {
-				deps.push_back
-					(make_shared <Plain_Dep>
-					 (0, Place_Param_Target
-					  (0, Place_Name(argv[i], place))));
-			}
+				if (! option_keep_going) 
+					throw ERROR_LOGICAL;
+				error |= ERROR_LOGICAL; 
+			} else if (option_literal)
+				deps.push_back(make_shared <Plain_Dep> 
+					       (0, Place_Param_Target
+						(0, Place_Name(argv[i], place))));
 		}
+
+		if (! option_literal) {
+			Parser::get_target_arg(deps, argc - optind, argv + optind); 
+		} 
 
 		/* Use the default Stu script if -f/-F are not used */ 
 		if (! had_option_f) {

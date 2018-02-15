@@ -1,0 +1,25 @@
+#! /bin/sh
+
+rm -f A || exit 1
+
+../../stu.test -k -- '' A >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 2 ] || {
+	echo >&2 "*** Expected exit status 2, got $exitstatus"
+	exit 1
+}
+
+[ -e A ] || {
+	echo >&2 "*** Expected file 'A' to exist"
+	exit 1
+}
+
+grep -q -E '^correct$' A || {
+	echo >&2 "*** Expected file 'A' to contain 'correct'"
+	exit 1
+}
+
+rm -f A || exit 1
+
+exit 0

@@ -15,8 +15,8 @@
 void explain_clash() 
 {
 	if (! option_explain)  return;
-	fputs("Explanation: A dependency cannot be declared as persistent (with '!') and\n"
-	      "optional (with '?') at the same time, as that would mean that its command\n"
+	fputs("Explanation: A dependency cannot be declared as persistent (with '-p') and\n"
+	      "optional (with '-o') at the same time, as that would mean that its command\n"
 	      "is never executed.\n",
 	      stderr); 
 }

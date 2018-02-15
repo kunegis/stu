@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Run all programs that fail, and show their output.  Used to visually
+# Run all tests that fail, and show their output.  Used to visually
 # inspect color ouput, to see whether it looks nice.  This is in
 # addition to unit tests that check whether output is correct.
 #

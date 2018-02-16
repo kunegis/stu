@@ -1,7 +1,7 @@
 #
 # These are features that were decided not to be implemented.  Many of
-# these ideas are actually good, in particular the first category, and
-# we may revive them in the future.  When in doubt, we prefer to not
+# these ideas are actually good, in particular the "normal" category,
+# and we may revive them in the future.  When in doubt, we prefer to not
 # support a feature, as adding a feature in the future can always be
 # done without breaking compatibility, whereas removing one is always
 # backward-incompatible.
@@ -66,7 +66,7 @@
 # the file contains the nul byte '\0' or is empty.  '\n' and other
 # whitespaces should work.  Not needed because -0 can be used for it,
 # except that this option would catch the error of an empty file, or a
-# file accidentally containing \0.
+# file accidentally containing '\0'.
 #
 
 #
@@ -84,7 +84,8 @@
 # target file before running the command, and restore the target on
 # error.  To be used with badly-behaving commands that overwrite the
 # target immediately.  On the other hand, this can be implemented as a
-# separate program to be called in the command. 
+# separate program to be called in the command.  (We may have this in
+# stu-utils/)  
 #
 
 #
@@ -95,7 +96,7 @@
 # possible to switch this off using '+e'.  This is useful when the
 # dynamic dependency file itself is used by the target, e.g. when
 # creating a tarball. 
-A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) }
+A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) ; }
 
 #
 # Flag rules
@@ -163,13 +164,16 @@ A:  <list.(B) { ... }
 # Allow empty names in concatenation.
 #
 
-A:  list.( '' ); # Equivalent to just 'list.'
+# Equivalent to just 'list.'
+A:  list.( '' ); 
 
-A:  @[X]; 
+# Equivalent to @b
+A:  @[X];   
+X = {b}
 
 #
 # The Dep::top mechanism is not clean.  Do something better.  The
-# current error message inside concatenations can also be confusion,
+# current error message inside concatenations can also be confusing,
 # even though they are correct. 
 #
 
@@ -194,7 +198,7 @@ A:  @[X];
 # * when stat() succeeds and the file is a directory, use creation time
 #   instead of modification time
 # * this will make it impossible to build directories that are more than
-#   just { mkdir -p }
+#   just { mkdir -p ; }
 #
 # Maybe:  introduce flags to use other timestamps than mtime. 
 #
@@ -263,7 +267,7 @@ a.bib:  extra dependencies ... ;
 # Mark this target to always be a persistent dependency 
 #
 
--p data: { mkdir data }
+-p data: { mkdir data ; }
 
 # Alternatively, we may introduce the rule that for directories, the
 # modification date is not used.  (Not a good idea because the date may
@@ -309,7 +313,7 @@ A:  -p $[B] { ... }
 # corner case, so we may allow it in the future. 
 #
 
-A:  -po B { ... }
+A:  -p -o B { ... ; }
 
 #
 # Set intersection with '&'.  Can be implemented indepently of Stu.  We
@@ -334,7 +338,8 @@ A:  -po B { ... }
 
 #
 # Set difference, e.g. with '\'.  That's nice, but can easily be
-# realized with sed(1)/grep(1), etc. 
+# realized with e.g. "grep -F -v -f FILE-A FILE-B", which is equivalent
+# to [FILE-B] \ [FILE-A]. 
 #
 
 @plots:  dat/plot.([dat/NETWORKS] \ enron).eps;
@@ -345,7 +350,9 @@ A:  -po B { ... }
 # to be at character 13.  This was implemented, but was decided to be
 # too slow.  Also, first find a standard that prescribes how such output
 # is to be made.  It actually makes more sense to report bytes, not
-# characters, so that's what we'll do as long as there is no standard. 
+# characters, so that's what we'll do as long as there is no standard
+# specifying exactly how compiler error messages are supposed to mean.
+# (And support by Emacs, gcc, etc.)
 #
 
 éäçöôüœß柏林: {
@@ -386,8 +393,8 @@ A:  {
 
 #
 # Chain of commands are useful for dynamic dependencies.  Looks cool,
-# would would lead to enormous complications for only a small benefit,
-# and on top of that a lot of confusion. 
+# would lead to enormous complications for only a small benefit, and on
+# top of that a lot of confusion.
 #
 
 @bidd:  [>dep.bidd]:  <NETWORKS {  sed -e 's,^,bidd.,' ;  }

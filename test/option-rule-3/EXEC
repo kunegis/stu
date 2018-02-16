@@ -19,7 +19,7 @@ grep -qF "expected the file without command and without dependencies 'A' to exis
 	exit 1
 }
 
-grep -qF 'Command line argument' list.err || {
+grep -qF 'Option -F:' list.err || {
 	echo >&2 "*** (1) stderr B"
 	exit 1
 }

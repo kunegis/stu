@@ -26,7 +26,7 @@ sequence to represent a dollar sign.
 Code containing quoted strings may now have to be changed.  Dynamic
 dependencies automatically generating quoted strings may also have to be
 changed.  (Although in Stu 2, it is recommended to use newline- or
-NUL-delimited dynamic dependencies instead, using the options -n or -o.)
+NUL-delimited dynamic dependencies instead, using the options -n or -0.)
 
 (2) Unquoted names must not begin with any of the characters '-', '+' or
 '~'.  When files begin with any of these characters, they must be quoted

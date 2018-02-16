@@ -430,6 +430,9 @@ string Place::as_argv0() const
 	case Type::ARGUMENT:
 		return ""; 
 
+	case Type::OPTION:
+		return fmt("Option -%s", text); 
+
 	case Type::INPUT_FILE: {
 		/* The given argv[0] should not begin with a dash,
 		 * because some shells enable special behaviour

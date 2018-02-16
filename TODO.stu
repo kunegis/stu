@@ -1,6 +1,17 @@
-# We currently don't have known bugs or small features to implement. 
+# We don't have known bugs or small todos at the moment 
 
 #=================== Further features =======================
+
+#
+# Make it an error when a parameter has the same name as a variable
+# dependency. 
+#
+
+# In the command in the second line, what should $V contain, 'abc' or
+# 'xyz'?  Or should this be an error? 
+A: list.abc { cp list.abc A ; }
+>list.$V: $[V] { echo "$V" ; }
+V = {xyz}
 
 #
 # Test all 'switch' cases, like in the following.  This is really

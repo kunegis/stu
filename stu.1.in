@@ -44,18 +44,31 @@ from a file passed by the
 option, or using 
 .BR -F . 
 
-Names of targets to build passed on the command line follow a simplified Stu syntax,
-in which the only special characters are the
-transient target marker 
+Names of targets to build passed on the command line outside of options follow a simplified Stu syntax,
+in which the only special characters are the transient target marker 
 .BR '@' , 
-and brackets 
-.BR '[]' .  
+brackets 
+.BR '[]' ,
+and flags starting with a dash
+.BR '-' .
 All other characters
-are interpreted as part of filenames.  When 
+are interpreted as part of filenames; this includes all spaces.  
+When 
 .BR -J 
 is used,
 arguments passed on the command line are interpreted as filenames
 without Stu syntax. 
+The syntax of arguments outside of options and without using the 
+.BR -J
+is subject to change with new features in Stu -- to pass filenames portably, use the 
+.BR -c
+option when passing individual filenames, or 
+.BR -J
+when passing multiple filenames, e.g. via 
+.BR xargs(1) . 
+To pass targets in full stu syntax portably, use the 
+.BR -C
+option. 
 
 .SH OPTIONS
 .IP "-0 FILENAME"
@@ -87,7 +100,7 @@ can be used, and spaces separate filenames.  This is not equivalent to
 passing a string as an argument to Stu outside of options, because
 .BR -C 
 supports full Stu syntax, while arguments supports only a reduced syntax
-(see below). 
+(see above). 
 .IP -d
 Debug mode.  Show internal information about the Stu algorithm on
 standard error output.  All printed output lines begin with the
@@ -1144,4 +1157,3 @@ many different use cases and usage patterns.
 .BR cook (1)\
 ,
 .BR sh (1)
-

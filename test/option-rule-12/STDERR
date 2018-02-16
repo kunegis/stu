@@ -1,2 +1,2 @@
-Command line argument: expected a command, ':', ';', or '='
-Command line argument: after target 'A'
+Option -F: expected a command, ':', ';', or '='
+Option -F: after target 'A'

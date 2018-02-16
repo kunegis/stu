@@ -65,8 +65,8 @@ public:
 	static void parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
 					Context context,
 					Place &place_end,
-					string text,
-					const Place &place_diagnostic);
+					string string_,
+					const Place &place_string);
 	/* Parse tokens from the given TEXT.  Other arguments are
 	 * identical to parse_tokens_file().  */
 
@@ -78,8 +78,10 @@ private:
 
 	set <string> &includes;
 
-	const Place::Type place_type;
-	const string filename;
+	/* The place where the tokenizer is tokenizing.  The line and
+	 * column numbers are modified accordingly -- only the type and
+	 * text is used.  */
+	Place place_base;
 
 	size_t line;
 	/* Line number */
@@ -99,15 +101,13 @@ private:
 	Tokenizer(vector <Trace> &traces_,
 		  vector <string> &filenames_,
 		  set <string> &includes_,
-		  const Place::Type place_type_,
-		  const string filename_,
+		  const Place &place_base_,
 		  const char *p_,
 		  size_t length)
 		:  traces(traces_),
 		   filenames(filenames_),
 		   includes(includes_),
-		   place_type(place_type_),
-		   filename(filename_),
+		   place_base(place_base_),
 		   line(1),
 		   p_line(p_),
 		   p(p_),
@@ -148,7 +148,9 @@ private:
 	void skip_space(); 
 
 	Place current_place() const {
-		return Place(place_type, filename, line, p - p_line); 
+		return Place(place_base.type,
+			     place_base.text,
+			     line, p - p_line); 
 	}
 
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
@@ -343,7 +345,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 
 		{
 			Tokenizer tokenizer(traces, filenames, includes,
-					    Place::Type::INPUT_FILE, filename, 
+					    Place(Place::Type::INPUT_FILE, filename, 1, 0), 
 					    in, in_size); 
 
 			tokenizer.parse_tokens(tokens, context, place_diagnostic); 
@@ -480,7 +482,8 @@ shared_ptr <Command> Tokenizer::parse_command()
 					const string command= string(p_beg, p - p_beg);
 					++p;
 					const Place place_command
-						(place_type, filename, line_command, column_command); 
+						(place_base.type, place_base.text,
+						 line_command, column_command); 
 					return make_shared <Command> 
 						(command, place_command, place_open, whitespace); 
 				} else {
@@ -821,7 +824,8 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		/* Variable dependency */ 
 		else if (*p == '$' && p + 1 < p_end && p[1] == '[') {
 			Place place_dollar= current_place(); 
-			Place place_langle(place_type, filename, line, p + 1 - p_line);
+			Place place_langle(place_base.type, place_base.text,
+					   line, p + 1 - p_line);
 			tokens.push_back(make_shared <Operator> ('$', place_dollar, whitespace));
 			tokens.push_back(make_shared <Operator> ('[', place_langle, whitespace)); 
 			p += 2;
@@ -962,19 +966,17 @@ void Tokenizer::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 				    Context context,
 				    Place &place_end,
 				    string string_,
-				    const Place &place_diagnostic)
+				    const Place &place_string)
 {
 	vector <Trace> traces;
 	vector <string> filenames;
 	set <string> includes;
 
 	Tokenizer parse(traces, filenames, includes, 
-			Place::Type::ARGUMENT, string_,
+			place_string, 
 			string_.c_str(), string_.size());
 
-	parse.parse_tokens(tokens, 
-			   context,
-			   place_diagnostic);
+	parse.parse_tokens(tokens, context, place_string);
 
 	place_end= parse.current_place(); 
 }
@@ -1139,10 +1141,8 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 		}
 		if (context == OPTION_C || context == OPTION_F) {
 			place_percent 
-				<< frmt("%s%%include%s must not appear "
-					"in the argument to the %s-%c%s option",
-					Color::word, Color::end,
-					Color::word, context == OPTION_C ? 'C' : 'F', Color::end); 
+				<< frmt("%s%%include%s must not be used",
+					Color::word, Color::end);
 			throw ERROR_LOGICAL;
 		}
 
@@ -1175,7 +1175,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 			     name_format_word(filename_include))); 
 
 		traces.push_back(trace_stack);
-		filenames.push_back(filename); 
+		filenames.push_back(place_base.text); 
 
 		if (includes.count(filename_include)) {
 			/* Do nothing -- file was already parsed, or is
@@ -1230,7 +1230,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 			++p;
 		}
 		const string version_required(p_version, p - p_version); 
-		Place place_version(place_type, filename, 
+		Place place_version(place_base.type, place_base.text,
 				    line, p_version - p_line); 
 
 		parse_version(version_required, place_version, place_percent); 

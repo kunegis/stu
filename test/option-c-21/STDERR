@@ -1,1 +1,1 @@
-Command line argument: character '!' is invalid for persistent dependencies; use '-p' instead
+Option -C: character '!' is invalid for persistent dependencies; use '-p' instead

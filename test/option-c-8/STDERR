@@ -1,2 +1,2 @@
-Command line argument: expected ']'
-Command line argument: after opening '['
+Option -C: expected ']'
+Option -C: after opening '['

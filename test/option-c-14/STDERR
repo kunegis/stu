@@ -1,1 +1,1 @@
-Command line argument: %include must not appear in the argument to the -C option
+Option -C: %include must not be used

@@ -502,10 +502,7 @@ pid_t Job::wait(int *status)
 	 * Ctrl-Z).  */ 
 	pid_t pid= waitpid(-1, status, WNOHANG | 
 			   (option_interactive
-			    ? WUNTRACED
-			    : 0
-			    )
-			   );
+			    ? WUNTRACED : 0));
 	if (pid < 0) {
 		/* Should not happen as there is always something
 		 * running when this function is called.  However, this
@@ -753,7 +750,7 @@ void Job::init_signals()
  *         + SIGCHLD (to know when child processes are done) 
  *         + SIGUSR1 (to output statistics)
  *      These signals are blocked, and then waited for specifically.
- *      There handlers thus do not have to be async-signal safe. 
+ *      The handlers thus do not have to be async-signal safe. 
  *    - The job control signals SIGTTIN and SIGTTOU.  They are both
  *      produced by certain job control events that Stu triggers, and
  *      ignored by Stu. 

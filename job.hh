@@ -704,9 +704,8 @@ void Job::handler_termination(int sig)
 
 void Job::handler_productive(int, siginfo_t *, void *)
 /* Do nothing -- the handler only exists because POSIX says that a
- * signal may be discarded by the kernel if doesn't have a signal
- * handler for it, and then it may not be possible to wait for that
- * signal.  */
+ * signal may be discarded by the kernel if there is no signal handler
+ * for it, and then it may not be possible to wait for that signal.  */
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 }

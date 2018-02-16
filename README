@@ -172,7 +172,7 @@ Make are:
 To use Stu, replace your 'Makefile' with a 'main.stu' file, and instead
 of calling 'make', call 'stu'. 
 
-The see an example of Stu used in a large data mining project, see the
+To see an example of Stu used in a large data mining project, see the
 file 'main.stu' in the KONECT-Analysis project:
 
 https://github.com/kunegis/konect-analysis/blob/master/main.stu

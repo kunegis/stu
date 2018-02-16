@@ -1,6 +1,6 @@
 This file lists option letters used and proposed by Stu, and gives a
-comparison to those prescribed by POSIX for Make, and those used in GNU
-Make. 
+comparison to those prescribed by POSIX for Make, and those used in
+other implementations of Make.
 
 Legend
 ======

@@ -2,7 +2,7 @@ This file catalogues the usage of individual characters in Stu programs.
 
 Since Stu programs consist primarily of filenames, many characters that
 are used as operators in most languages cannot be used in Stu as they
-are needed as part of filenames, such as '/', '~', etc.
+are needed as part of filenames, such as '/', '.', etc.
 
 == Allowed in unquoted names == 
 

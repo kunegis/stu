@@ -1,12 +1,18 @@
-
 // TODO This list was just started and is incomplete. 
 
 Command - A command that is run for a target.  Enclosed by braces ({}) in
 	Stu source, and executed with the shell. 
 
+Flag - A flag is a syntax and semantic element of Stu scripts.  They
+	start with a dash.  An example is '-p' for persistent
+	dependencies. 
+
 Job - A job is a child process started by Stu to build one or more files
         or transient targets.  Jobs are run in the background by
         default, but the -i option
+
+Option - An option is passed on the Stu command line and starts with a
+	dash.  Some have arguments. 
 
 Parameter - A parameter in the name of a file or a transient; introduced
 	by the dollar sign ($).  In command, the corresponding

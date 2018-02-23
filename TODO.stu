@@ -1,7 +1,3 @@
-# We don't have known bugs or small todos at the moment 
-
-#=================== Further features =======================
-
 #
 # Make it an error when a parameter has the same name as a variable
 # dependency. 
@@ -12,6 +8,37 @@
 A: list.abc { cp list.abc A ; }
 >list.$V: $[V] { echo "$V" ; }
 V = {xyz}
+
+# Indirect
+A = list.B;
+list.$V:  @x { touch list."$V" ; }
+@x:  $[V];
+V = {Hello}
+
+# Variable overrides variable
+A:  $[V = X] $[V = Y] { ... }
+
+# Variable overrides variable (2)
+A:  $[V] $[V = Y] { ... }
+
+# Variable overrides variable (3)
+A:  $[V = X] $[V] { ... }
+
+# Variable overrides variable, same value
+A:  $[V] $[V] { ... }
+
+# Variable overrides variable, indirect
+A:  @x @y { ... }
+@x: $[V = X];
+@y: $[V = Y];
+
+# Variable overrides variable, indirect (1) 
+A: @x $[V = X]
+@x: $[V = Y]
+
+# Variable overrides variable, indirect (2) 
+A: $[V = X] @x
+@x: $[V = Y]
 
 #
 # Test all 'switch' cases, like in the following.  This is really
@@ -27,6 +54,8 @@ A:  -X <CCC>  -Y <CCC>  { ... }
 #      (2) Transient to C
 #      (3) Dynamic dependency that contains C
 #      (4) Concatenation that results in C
+
+#=================== Further features =======================
 
 #
 # Trace (logging): an option to write log messages into a file.  In
@@ -147,14 +176,6 @@ A: [-d data/B];
 # * ...
 
 #
-# Have an option for: For hardcoded rules, compare the content of the
-# file (if it exists) with the declared content, and regenerate the file
-# if necessary.  This would avoid the usual error that a hardcoded rule
-# is changed in a Stu script, but Stu doesn't notice that.  This would
-# have add open/read/close() calls to the stat() we do at the moment. 
-#
-
-#
 # Have an option to output the dependency graph, i.e., output each edge
 # on a single like, e.g. separated by tab.  (Use it then to perform a network
 # analysis of the KONECT-Analysis dependency graph.)
@@ -187,7 +208,7 @@ dep.sources {
 }
 
 #
-# Have an extended safety mode, in which Stu checks that node of the
+# Have an extended safety mode, in which Stu checks that none of the
 # dependencies themselves where touched by a command.  How deep should
 # this go?  Should it also check dependency included dynamically?
 #

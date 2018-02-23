@@ -1,5 +1,5 @@
-Here are some conventions for using Stu.  These are used by the authors,
-but they are not enforced by Stu.
+Here are some conventions to use when writing Stu scripts.  These are
+used by the authors, but they are not enforced by Stu.
 
 * Directory names end in '/'
 * If there is a setting that will be changed occasionally by hand (such

@@ -468,10 +468,6 @@ public:
 
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
-	const map <string, string> &get_mapping_variable() const {
-		return mapping_variable; 
-	}
-
 	virtual string debug_done_text() const {
 		return flags_format(flags_finished);
 	}
@@ -637,10 +633,6 @@ public:
 			    int &error_additional);
 
 	shared_ptr <const Rule> get_rule() const { return rule; }
-
-	const map <string, string> &get_mapping_variable() const {
-		return mapping_variable; 
-	}
 
 	virtual bool want_delete() const {  return false;  }
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);

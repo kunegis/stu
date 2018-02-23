@@ -34,6 +34,14 @@
 #==== Normal features ====
 
 #
+# Have an option for: For hardcoded rules, compare the content of the
+# file (if it exists) with the declared content, and regenerate the file
+# if necessary.  This would avoid the usual error that a hardcoded rule
+# is changed in a Stu script, but Stu doesn't notice that.  This would
+# have add open/read/close() calls to the stat() we do at the moment. 
+#
+
+#
 # A "block" option, i.e., that block certain filename or transient
 # patterns from being executed.  E.g., 
 #

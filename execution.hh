@@ -2882,10 +2882,15 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 		assert(! (rule->place_param_targets[rule->redirect_index]->flags & F_TARGET_TRANSIENT)); 
 
 	assert(jobs >= 1); 
-
+	
+	/* Key/value pairs for all environment variables of the job.
+	 * Variables override parameters.  
+	 * Note about C++ map::insert():  The insert function is a no-op
+	 * if a key is already present.  Thus, we insert variables first
+	 * (because they have priority).  */
 	map <string, string> mapping;
-	mapping.insert(mapping_parameter.begin(), mapping_parameter.end());
 	mapping.insert(mapping_variable.begin(), mapping_variable.end());
+	mapping.insert(mapping_parameter.begin(), mapping_parameter.end());
 	mapping_parameter.clear();
 	mapping_variable.clear(); 
 

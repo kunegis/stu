@@ -375,6 +375,10 @@ Another variable name can be used in the following way:
 
     $[NAME = FILENAME]
 
+If multiple variable dependencies have the same name, it is unspecified
+which one is used.  If a variable dependencies has the same name as a
+parameter, it overrides the parameter. 
+
 Transient targets are marked with '@'.  They are used for targets such
 as '@clean' that do an action without building a file, and for lists of
 files that depend on other targets, but don't have a command associated

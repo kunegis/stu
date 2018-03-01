@@ -1,0 +1,5 @@
+# A variable dependency overrides a parameter 
+
+A: list.abc { cp list.abc A ; }
+>list.$V: $[V] { echo "$V" ; }
+V = {correct}

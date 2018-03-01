@@ -23,7 +23,7 @@
  *    - a concatenated dependency of only normalized plain and dynamic dependencies.
  * In particular, compound dependencies are never normalized; 
  * they do not appear at all in normalized dependencies. 
- * Also, concatenated never contain other concatenated dependencies
+ * Also, concatenated dependencies never contain other concatenated dependencies
  * directly -- such constructs are always "flattened" in a normalized
  * dependency. 
  * Normalized dependencies are those used in practice.  A non-normalized

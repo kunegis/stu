@@ -1,0 +1,4 @@
+A: $[V = X] @x { echo "$V" >A ; }
+@x: $[V = Y];
+X = {xxxcorrectxxx}
+Y = {yyycorrectyyy}

@@ -1,46 +1,4 @@
 #
-# Make it an error when a parameter has the same name as a variable
-# dependency. 
-#
-
-# In the command in the second line, what should $V contain, 'abc' or
-# 'xyz'?  Or should this be an error? 
-A: list.abc { cp list.abc A ; }
->list.$V: $[V] { echo "$V" ; }
-V = {xyz}
-
-# Indirect
-A = list.B;
-list.$V:  @x { touch list."$V" ; }
-@x:  $[V];
-V = {Hello}
-
-# Variable overrides variable
-A:  $[V = X] $[V = Y] { ... }
-
-# Variable overrides variable (2)
-A:  $[V] $[V = Y] { ... }
-
-# Variable overrides variable (3)
-A:  $[V = X] $[V] { ... }
-
-# Variable overrides variable, same value
-A:  $[V] $[V] { ... }
-
-# Variable overrides variable, indirect
-A:  @x @y { ... }
-@x: $[V = X];
-@y: $[V = Y];
-
-# Variable overrides variable, indirect (1) 
-A: @x $[V = X]
-@x: $[V = Y]
-
-# Variable overrides variable, indirect (2) 
-A: $[V = X] @x
-@x: $[V = Y]
-
-#
 # Test all 'switch' cases, like in the following.  This is really
 # tedious (4*4*4*4 = 256 cases in total)
 #

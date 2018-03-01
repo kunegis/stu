@@ -11,6 +11,17 @@ made, which are documented in the file 'MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2018-02-28  Version 2.5.59
+
+* We clarified what happens when multiple environment variables that Stu
+  sets have identical names:  
+  (1) Two parameter cannot have the same name; they would be interpreted
+  as the same parameter.
+  (2) Two variable dependencies may have the same name.  This is
+  allowed, and it is unspecified which gets used.  
+  (3) If a variable dependency and a parameter have the same name, the
+  variable overrides the parameter. 
+
 2018-02-15  Version 2.5.53
 
 * The parsing of arguments on the command line was made consistent with

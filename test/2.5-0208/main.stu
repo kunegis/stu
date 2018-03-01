@@ -1,4 +1,4 @@
-# The parameter has priority over the variable dependency. 
+# The variable dependency has priority over the parameter. 
 A: list.abc { cp list.abc A ; }
 >list.$V: $[V] { echo "$V" ; }
 V = {xyz}

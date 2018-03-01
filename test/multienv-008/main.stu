@@ -1,0 +1,3 @@
+A:  $[V = X] $[V] { echo "$V" >A ; }
+X = {aaacorrectbbb}
+V = {ccccorrectddd}

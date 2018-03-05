@@ -1106,6 +1106,15 @@ option (number of jobs to run in parallel) is
 mandatory, as opposed to the behavior of GNU Make, where no argument
 means to run as many jobs in parallel as possible. 
 
+For arguments passed on the command line outside of options, brackets 
+.BR []
+can be used for dynamic dependencies, but parentheses
+.BR ()
+cannot.  Instead, the shell's braces
+.BR {}
+must be used, or the option
+.BR -C .
+
 Rule-level recursion is not allowed.  This excludes a recursive
 parsing of C-like dependencies.  Rule-level recursion would be easy to
 enable, but would open up problems related to infinite loops, which

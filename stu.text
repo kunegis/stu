@@ -992,6 +992,10 @@ BUGS
        mandatory, as opposed to the behavior of GNU Make,  where  no  argument
        means to run as many jobs in parallel as possible.
 
+       For  arguments  passed on the command line outside of options, brackets
+       [] can be used for dynamic dependencies,  but  parentheses  ()  cannot.
+       Instead, the shell's braces {} must be used, or the option -C.
+
        Rule-level recursion is not allowed.  This excludes a recursive parsing
        of C-like dependencies.  Rule-level recursion would be easy to  enable,
        but  would  open  up  problems  related  to infinite loops, which would
@@ -1048,4 +1052,4 @@ SEE ALSO
 
 
 
-stu-2.5.59                        March 2018                            STU(1)
+stu-2.5.60                        March 2018                            STU(1)

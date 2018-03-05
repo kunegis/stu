@@ -6,7 +6,7 @@
 #
 # None of the patterns matches any file that we would create within the
 # main stu/ directory, so we can safely call this to remove junk files
-# created while debugging.  In particular, as two-letter files are good
+# created while debugging.  In particular, all two-letter files are good
 # for testing, except 'sh'.  Also, all files containing 'SCHTROUMPF' are
 # deleted.
 #

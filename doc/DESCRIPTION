@@ -1,0 +1,51 @@
+== Descriptions of Stu ==
+
+The following are attempts to describe what Stu is.
+
+________________________________________________________________________
+
+* A build tool like Make, but with better support for sets of files. 
+  -> This goes without saying, and is usually the easiest way to explain
+  Stu to people. 
+
+* A declarative programming language in which all objects are files. 
+  -> Files are basic object of Stu, and thus Stu can be described as a
+  programming language in which all variables are files.  Of course, Stu
+  can never be used _alone_, because it needs to call other programs to
+  actually do something in each command.  But when a shell and a basic
+  Unix programming environment is assumed, this is actually a very apt
+  description of Stu. 
+
+* A declarative extension of the shell. 
+  -> This is a similar argument to the previous.  Only that it doesn't
+  claim to make Stu a programming language, since it always needs to
+  call other programs to do anything.  Which is exactly what a shell
+  is. 
+
+* A build automation tool for data mining. 
+  -> This is how Stu is used in practice, but in general we don't want
+  to limit Stu to one particular area, so we haven't emphasised the
+  "data mining" aspect.  Also, we don't want Stu to have specific
+  functions for a particular applications, so we're not adding any data
+  mining functions to Stu.  But it remains the case that Stu is
+  extremely convenient here. 
+
+* An alternative to things like "Python notebook" and Excel. 
+  -> Both allow the user to enter formulas to be entered, which are then
+  updated (i.e., reexecuted) automatically.  Both are graphical user
+  interfaces, and neither can be integrated into other build processes,
+  and neither can easily call external programs.  This harks back to an
+  antipattern common in many build systems:  The fact that many external
+  programs are hard or impossible to call means that systems need to
+  reinvent the wheel, i.e., reimplement many functions that would be
+  available easily otherwise. 
+
+* The ultimate dynamic programming language.
+  -> This is to be understood in the sense of dynamic programming.
+  Here, the assumption is that individual results (very often,
+  individual numbers) are stored in individual files.  This appears
+  inefficient at first, but a more precise analysis reveals that it
+  makes sense if the individual numbers are the result of an expensive
+  calcultation.  Thus, this interpretation makes most sense when many
+  long calculations are needed, each resulting in a single number (or an
+  equally small datum.)

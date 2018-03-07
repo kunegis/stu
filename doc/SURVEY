@@ -99,17 +99,3 @@ neatly in any.
   be programs, too; i.e., the different between variable and function is
   eliminated 
 
-== Descriptions of Stu ==
-
-The following are attempts to describe what Stu is.
-
-________________________________________________________________________
-
-* A build tool like Make, but with better support for sets of files
-* A declarative programming language in which all objects are files
-* A declarative extension of the shell
-* A build automation tool for data mining
-* A data mining automation tool 
-* An alternative to things like "Python notebook"
-
-

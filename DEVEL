@@ -51,3 +51,10 @@ compiling Stu:
 
 If you run the tests and they fail, report that to Jérôme Kunegis
 <kunegis@gmail.com>.     
+
+Additionally, you can run 
+
+	make -f Makefile.devel
+
+to execute everything that the developers do, including rebuilding the
+AutoConf files. 

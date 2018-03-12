@@ -46,7 +46,7 @@ const char OPTIONS[]= "0:ac:C:dEf:F:ghij:JkKm:M:n:o:p:PqsVxyYz";
 const char HELP[]= 
 	"Usage: " PACKAGE " [-f FILENAME] [OPTION]... [TARGET]...\n"           
 	"By default, build the first target in the file 'main.stu'.\n" 
-	"TARGET may include the special characters '@[]'.\n"     
+	"TARGET may include the special characters '@[]-'.\n"     
 	"Options:\n"						       
 	"  -0 FILENAME      Read \\0-separated file targets from the given file\n"
 	"  -a               Treat all trivial dependencies as non-trivial\n"          

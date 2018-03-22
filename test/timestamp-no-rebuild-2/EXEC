@@ -1,0 +1,25 @@
+#! /bin/sh
+
+rm -f ? list.* || exit 1
+
+../../sh/touch_old A 2
+
+../../stu.test >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** (1) Expected exit status 0, got $exitstatus"
+	exit 1
+}
+
+[ -e B ] || {
+	echo >&2 "*** (2) Expected 'B' to be built"
+	exit 1
+}
+
+grep -q -E '^correct$' A || {
+	echo >&2 "*** (3) Expected 'A' to contain 'correct'"
+	exit 1
+}
+
+exit 0

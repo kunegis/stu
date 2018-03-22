@@ -91,8 +91,7 @@ public:
 	enum {
 		B_NEED_BUILD	= 1 << 0,
 		/* Whether this target needs to be built.  When a target is
-		 * finished, this value is propagated to the parent executions,
-		 * except when the F_PERSISTENT flag is set.  */ 
+		 * finished, this value is propagated to the parent executions */
 
 		B_CHECKED  	= 1 << 1,
 		/* Whether a certain check has been performed.  Only
@@ -389,12 +388,10 @@ private:
 	 * dependencies, the target must be rebuilt anyway.  Does not
 	 * contain compound dependencies.  */
 
-	Proceed connect(shared_ptr <const Dep> dep_link_parent,
+	Proceed connect(shared_ptr <const Dep> dep_this,
 			shared_ptr <const Dep> dep_child);
 	/* Add an edge to the dependency graph.  Deploy a new child
-	 * execution.  LINK is the link from the THIS's parent to THIS.
-	 * Note: the top-level flags of LINK.DEPENDENCY may be modified.
-	 * DEPENDENCY_CHILD must be normalized.  */
+	 * execution.  DEP_CHILD must be normalized.  */
 
 	Execution *get_execution(shared_ptr <const Dep> dep);
 	/* Get an existing Execution or create a new one for the
@@ -469,7 +466,7 @@ public:
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
 	virtual string debug_done_text() const {
-		return flags_format(flags_finished);
+		return done_format(done);
 	}
 
 	virtual bool want_delete() const {  return false;  }
@@ -565,12 +562,13 @@ private:
 	map <string, string> mapping_variable; 
 	/* Variable assignments from variables dependencies */
 
-	Flags flags_finished; 
+	Done done; 
 	/* What parts of this target have been done.  Each bit that is
 	 * set represents one aspect that was done.  When an execution
 	 * is invoked with a certain set of flags, all flags *not*
 	 * passed will be set when the execution is finished.  Only the
-	 * first C_FINISHABLE flags are used.  */
+	 * first C_PLACED flags are used; the other bits have an
+	 * unspecified value.  */
 
 	~File_Execution(); 
 
@@ -650,10 +648,7 @@ public:
 protected:
 
 	virtual int get_depth() const {  return 0;  }
-	virtual bool optional_finished(shared_ptr <const Dep> dep_link) {  
-		(void) dep_link; 
-		return false;  
-	}
+	virtual bool optional_finished(shared_ptr <const Dep> ) {  return false;  }
 
 private:
 
@@ -812,10 +807,11 @@ private:
 };
 
 class Debug
-/* 
- * Padding for debug output (option -d).  During the lifetime of an
- * object, padding is increased by one step.  
- */
+/* Helper class for debug output (option -d).  Provides indentation and
+ * During the lifetime of an object, padding is increased by one step.  
+ * This class is declared within blocks in functions such as execute(),
+ * etc.  The passed Execution is valid until the end of the object's
+ * lifetime.  */
 {
 public:
 	Debug(const Execution *e) 
@@ -1453,16 +1449,15 @@ Proceed Execution::execute_base_A(shared_ptr <const Dep> dep_this)
 	assert(jobs >= 0); 
 	assert(dep_this); 
 
-	shared_ptr <Dep> dep_this2= Dep::clone(dep_this); 
 	Proceed proceed= 0; 
 
-	if (finished(dep_this2->flags)) {
+	if (finished(dep_this->flags)) { 
 		Debug::print(this, "finished"); 
 		return proceed |= P_FINISHED; 
 	}
 
-	if (optional_finished(dep_this2)) {
-		Debug::print(this, "finished"); 
+	if (optional_finished(dep_this)) { 
+		Debug::print(this, "optional finished"); 
 		return proceed |= P_FINISHED; 
 	}
 
@@ -1476,14 +1471,14 @@ Proceed Execution::execute_base_A(shared_ptr <const Dep> dep_this)
 		if (proceed & P_WAIT) {
 			if (jobs == 0) 
 				return proceed; 
-		} else if (finished(dep_this2->flags) && ! option_keep_going) {
+		} else if (finished(dep_this->flags) && ! option_keep_going) { 
 			Debug::print(this, "finished"); 
 			return proceed |= P_FINISHED;
 		}
 	} 
 
 	/* Is this a trivial run?  Then skip the dependency. */
-	if (dep_this2->flags & F_TRIVIAL) {
+	if (dep_this->flags & F_TRIVIAL) { 
 		return proceed |= P_ABORT | P_FINISHED; 
 	}
 
@@ -1506,7 +1501,7 @@ Proceed Execution::execute_base_A(shared_ptr <const Dep> dep_this)
 			dep_child_2->get_place_flag(I_TRIVIAL)= Place::place_empty; 
 			buffer_B.push(dep_child_2); 
 		}
-		Proceed proceed_2= connect(dep_this2, dep_child);
+		Proceed proceed_2= connect(dep_this, dep_child); 
 		proceed |= proceed_2;
 		if (jobs == 0) {
 			return proceed |= P_WAIT; 
@@ -1698,7 +1693,6 @@ void Execution::disconnect(Execution *const child,
 	 * It just means the list of depenencies have changed, not the
 	 * dependencies themselves.  */
 	if (child->bits & B_NEED_BUILD
-	    && ! (dep_child->flags & F_PERSISTENT)
 	    && ! (dep_child->flags & F_RESULT_NOTIFY)) {
 		bits |= B_NEED_BUILD; 
 	}
@@ -2041,7 +2035,7 @@ void File_Execution::waited(pid_t pid, size_t index, int status)
 
 	Execution::check_waited(); 
 
-	flags_finished= ~0; 
+	done= ~0;
 
 	{
 		Job::Signal_Blocker sb;
@@ -2187,7 +2181,7 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 	   timestamps_old(nullptr),
 	   filenames(nullptr),
 	   rule(rule_),
-	   flags_finished(0)
+	   done(0)
 {
 	assert((param_rule_ == nullptr) == (rule_ == nullptr)); 
 
@@ -2203,7 +2197,7 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 	parents[parent]= dep; 
 	if (error_additional) {
 		print_traces(); 
-		flags_finished= ~0; 
+		done= ~0;
 		parents.erase(parent); 
 		raise(error_additional); 
 		return;
@@ -2237,7 +2231,7 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 		/* Whether to produce the "no rule to build target" error */ 
 
 		if (target_.is_file()) {
-			if (! (dep->flags & F_OPTIONAL)) {
+			if (! (dep->flags & (F_OPTIONAL | F_TRIVIAL))) {
 				/* Check that the file is present,
 				 * or make it an error */ 
 				struct stat buf;
@@ -2345,12 +2339,12 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 
 bool File_Execution::finished() const 
 {
-	return ((~ flags_finished) & ((1 << C_PLACED) - 1)) == 0; 
+	return (~done & D_ALL) == 0; 
 }
 
 bool File_Execution::finished(Flags flags) const
-{
-	return ((~ flags_finished & ~ flags) & ((1 << C_PLACED) - 1)) == 0; 
+{  
+	return (~done & (done_from_flags(flags))) == 0;
 }
 
 void job_terminate_all() 
@@ -2606,7 +2600,7 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 	assert(proceed); 
 	if (proceed & P_ABORT) {
 		assert(proceed & P_FINISHED); 
-		flags_finished |= ~dep_this->flags;
+		done |= done_from_flags(dep_this->flags); 
 		return proceed; 
 	}
 	if (proceed & (P_WAIT | P_PENDING)) {
@@ -2737,7 +2731,7 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 					/* Optional dependency:  don't create the file;
 					 * it will then not exist when the parent is
 					 * called. */ 
-					flags_finished |= ~F_OPTIONAL; 
+					done |= D_ALL_OPTIONAL; 
 					return proceed |= P_FINISHED; 
 				}
 			}
@@ -2749,7 +2743,7 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 				rule->place_param_targets[i]->place
 					<< system_format(target.format_word()); 
 				raise(ERROR_BUILD);
-				flags_finished |= ~ dep_this->flags; 
+				done |= done_from_flags(dep_this->flags); 
 				return proceed |= P_ABORT | P_FINISHED; 
 			}
 
@@ -2771,7 +2765,7 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 					print_traces();
 					explain_file_without_command_without_dependencies(); 
 				}
-				flags_finished |= ~ dep_this->flags; 
+				done |= done_from_flags(dep_this->flags); 
 				raise(ERROR_BUILD);
 				return proceed |= P_ABORT | P_FINISHED; 
 			}		
@@ -2811,7 +2805,7 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 
 	if (! (bits & B_NEED_BUILD)) {
 		/* The file does not have to be built */ 
-		flags_finished |= ~ dep_this->flags; 
+		done |= done_from_flags(dep_this->flags); 
 		return proceed |= P_FINISHED; 
 	}
 
@@ -2828,7 +2822,7 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */ 
-		flags_finished |= ~ dep_this->flags; 
+		done |= done_from_flags(dep_this->flags); 
 		return proceed |= P_FINISHED; 
 	}
 
@@ -2854,7 +2848,7 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 
 		print_command();
 		write_content(targets.front().get_name_c_str_nondynamic(), *(rule->command)); 
-		flags_finished= ~0;
+		done= ~0;
 		assert(proceed == 0); 
 		return proceed |= P_FINISHED; 
 	}
@@ -2933,7 +2927,7 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 							 targets.at(0).format_word())); 
 					explain_missing_optional_copy_source();
 					raise(ERROR_BUILD);
-					flags_finished |= ~ dep_this->flags; 
+					done |= done_from_flags(dep_this->flags); 
 					assert(proceed == 0); 
 					return proceed |= P_ABORT | P_FINISHED; 
 				}
@@ -2962,7 +2956,7 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 			print_traces(fmt("error executing command for %s", 
 					 targets.front().format_word())); 
 			raise(ERROR_BUILD);
-			flags_finished |= ~ dep_this->flags; 
+			done |= done_from_flags(dep_this->flags); 
 			assert(proceed == 0); 
 			proceed |= P_ABORT | P_FINISHED; 
 			return proceed;
@@ -3192,7 +3186,7 @@ bool File_Execution::optional_finished(shared_ptr <const Dep> dep_link)
 
 		/* We already know a file to be missing */ 
 		if (bits & B_MISSING) {
-			flags_finished |= ~dep_link->flags; 
+			done |= done_from_flags(dep_link->flags); 
 			return true; 
 		}
 		
@@ -3209,10 +3203,10 @@ bool File_Execution::optional_finished(shared_ptr <const Dep> dep_link)
 					->place_param_target.place <<
 					system_format(name_format_word(name)); 
 				raise(ERROR_BUILD);
-				flags_finished |= ~dep_link->flags; 
+				done |= done_from_flags(dep_link->flags); 
 				return true;
 			}
-			flags_finished |= ~dep_link->flags; 
+			done |= done_from_flags(dep_link->flags); 
 			return true;
 		} else {
 			assert(ret_stat == 0);

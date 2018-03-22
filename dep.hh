@@ -1162,7 +1162,7 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 	}
 
 	if (b->flags & F_PLACED) {
-		assert(C_PLACED == 3); 
+		static_assert(C_PLACED == 3, "Expected C_PLACED == 3"); 
 		unsigned i_flag= 
 			b->flags & F_PERSISTENT ? I_PERSISTENT :
 			b->flags & F_OPTIONAL   ? I_OPTIONAL   :

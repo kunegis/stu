@@ -1,0 +1,117 @@
+#! /bin/sh
+#
+# Test all 'switch' cases, like in the following.  What we call a
+# 'switch' case is when a dependency is given twice with different
+# flags.  A common bug in these cases would be to ignore some of the
+# flags, or to misinterpret them in some other way.  We test all cases
+# of the form: 
+#
+#    A:  -X <CCC>  -Y <DDD>  { ... }
+#
+# in which 'A' is always existing, and 'list.C' (the dependency
+# ultimately connected by <CCC> and <DDD>) may or may not be present. 
+#
+# where:
+#   -X and -Y are all possible combinations of transitive flags (no flag, -o, -p, -t):
+#      (1) -o -> ''      # Not present:  is built         
+#      (2) -p -> ''      # Present and new:  is built   
+#      (3) -t -> ''      # Present and new:  is built   
+#      (4) -t -> -p      # Not present: is built                        XXX ??? 
+#      (5) -o -> -t      # Not present: is built			XXX fails
+#      (6) -o -> -p      # Not present: is built                        XXX fails
+#   <CCC> and <DDD> are each one of:
+#      (1) Direct dependency list.C
+#      (2) Transient to list.C
+#      (3) Dynamic dependency that contains list.C
+#      (4) Concatenation that results in list.C
+#
+# This gives 6 * 4 * 4 = 96 cases.
+#
+
+err() {
+	echo >&2 _____ list.stu ____
+	cat >&2 list.stu
+	echo >&2 ___________________
+	echo >&2 _____ ls -l A list.C [before Stu execution] ____
+	cat  >&2 list.ls
+	echo >&2 ___________________
+	echo >&2 _____ list.out ____
+	cat >&2 list.out
+	echo >&2 ___________________
+	echo >&2 _____ list.err ____
+	cat >&2 list.err
+	echo >&2 ___________________
+	echo >&2 _____ A ___________
+	cat >&2 A
+	echo >&2 ___________________
+}
+
+for XY in 1 2 3 4 5 6 ; do  for CC in 1 2 3 4 ; do  for DD in 1 2 3 4 ; do
+
+    rm -f ? list.* || exit 1
+
+    ../../sh/touch_old A 3 || exit 1
+			
+    case "$XY" in
+	    1)  X='-o' ; Y=''   ;;
+	    2)  X='-p' ; Y=''   ; echo correct >list.C || exit 1 ;  ../../sh/touch_old list.C 2 || exit 1 ;;
+	    3)  X='-t' ; Y=''   ; echo correct >list.C || exit 1 ;  ../../sh/touch_old list.C 2 || exit 1 ;;
+	    4)  X='-t' ; Y='-p' ;;
+	    5)  X='-o' ; Y='-t' ; Z='I' ; I='I{echo >I;}' ;;  
+	    6)  X='-o' ; Y='-p' ;;
+	    *) exit 1 ;;
+    esac
+
+    case "$CC" in
+	    1)  C1='list.C'     ; C2=''              ;;
+	    2)  C1='@c'         ; C2='@c : list.C;'  ;;
+	    3)  C1='[X]'        ; C2='X = {list.C}'  ;;
+	    4)  C1='(lis)(t.C)' ; C2=''              ;;
+	    *)  exit 1 ;;
+    esac
+    case "$DD" in
+	    1)  D1='list.C'     ; D2=''              ;;
+	    2)  D1='@d'         ; D2='@d : list.C;'  ;;
+	    3)  D1='[Y]'        ; D2='Y = {list.C}'  ;;
+	    4)  D1='(lis)(t.C)' ; D2=''              ;;
+	    *)  exit 1 ;;
+    esac
+
+    ls -l A list.C >list.ls 2>&1 
+
+    cat >list.stu <<EOF || exit 1
+A:   $X $C1  $Z  $Y $D1 { cp list.C A && touch W ; }
+$C2
+$D2			
+list.C = {correct}
+$I
+EOF
+
+    ../../stu.test -f list.stu >list.out 2>list.err
+    exitstatus=$?
+			
+    [ "$?" = 0 ] || { 
+	    echo >&2 "*** (exit status must be 0) exitstatus=$exitstatus XY=$XY CC=$CC DD=$DD"
+	    err ; exit 1
+    }
+    [ -r list.err ] || {
+	    echo >&2 "*** (list.err must exist) XY=$XY CC=$CC DD=$DD"
+	    err ; exit 1
+    }
+    [ -s list.err ] && {
+    	    echo >&2 "*** (list.err must be empty) XY=$XY CC=$CC DD=$DD"
+    	    err ; exit 1
+    }
+    [ -r W ] || {
+	    echo >&2 "*** (W must exist) XY=$XY CC=$CC DD=$DD"
+	    err ; exit 1
+    }
+    grep -q -E '^correct$' A || {
+	    echo >&2 "*** (A must contain correct) XY=$XY CC=$CC DD=$DD"
+	    err ; exit 1
+    }
+done ;  done ;  done
+
+rm -f ? list.* || exit 1
+
+exit 0

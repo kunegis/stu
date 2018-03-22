@@ -1,0 +1,3 @@
+A:   -o list.C  -p list.C { cp list.C A && touch W ; }
+			
+list.C = {correct}

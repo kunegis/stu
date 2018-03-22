@@ -1,6 +1,0 @@
-
-# * rm -f ? ; touch A
-# * stu:  B is built; A is not rebuilt
-
-A:  -p B { exit 1 }
-B        { touch B }

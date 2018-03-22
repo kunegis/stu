@@ -1,17 +1,4 @@
-#
-# Test all 'switch' cases, like in the following.  This is really
-# tedious (4*4*4*4 = 256 cases in total)
-#
-
-A:  -X <CCC>  -Y <CCC>  { ... }
-
-# where:
-#   -X and -Y are all possible combinations of transitive flags
-#   <CCC> is one of:
-#      (1) Direct dependency C
-#      (2) Transient to C
-#      (3) Dynamic dependency that contains C
-#      (4) Concatenation that results in C
+# (There are no known bugs)
 
 #=================== Further features =======================
 

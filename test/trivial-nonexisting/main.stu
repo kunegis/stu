@@ -1,0 +1,7 @@
+#
+# 'A' is present, 'B' is not.  There is no rule for 'B' but that is not
+# a problem as 'B' does not need to be built.  Nothing needs to be
+# done. 
+#
+
+A:  -t B { exit 1 ; }

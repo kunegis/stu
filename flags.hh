@@ -2,8 +2,8 @@
 #define FLAGS_HH
 
 /*
- * Flags are bit fields that to dependencies and represents things like
- * "optional dependency" or "\0-separated file".  Flags are binary
+ * Flags are bit fields that apply to dependencies and represents things
+ * like "optional dependency" or "\0-separated file".  Flags are binary
  * option-like, and apply at multiple levels in Stu, from Stu source
  * code where they are represented by a syntax ressembling that of
  * command line flags, to attributes of edges in the dependency graph.
@@ -15,7 +15,7 @@
  * defined in such a way that the simplest dependency is represented by
  * zero, and each flag enables a specific feature.
  *
- * The transitive bits effectively are set for tasks not to do.
+ * The transitive bits are effectively set for tasks not to do.
  * Therefore, inverting them gives the bits for the tasks to do.  In
  * particular, the flag fields that store the information which part of
  * a task has been done has inverse semantics: They have a bit set when
@@ -107,6 +107,27 @@ enum
 	F_ATTRIBUTE	= F_NEWLINE_SEPARATED | F_NUL_SEPARATED,
 };
 
+/* 
+ * A done variable denotes which "aspects" of an execution have been
+ * done.  Every Execution has one called "done".  This is a different
+ * way to encode the three placed flags.  
+ *
+ * The first two flags correspond to the first two flags (persistent and
+ * optional).  These two are duplicated in order to accommodate trivial
+ * dependencies. 
+ */
+typedef unsigned Done;
+enum 
+{
+	D_NONPERSISTENT_TRANSIENT 	= 1 << 0,
+	D_NONOPTIONAL_TRANSIENT		= 1 << 1,
+	D_NONPERSISTENT_NONTRANSIENT	= 1 << 2,
+	D_NONOPTIONAL_NONTRANSIENT	= 1 << 3,
+
+	D_ALL                     	= (1 << 4) - 1,
+	D_ALL_OPTIONAL		  	= D_NONPERSISTENT_TRANSIENT | D_NONPERSISTENT_NONTRANSIENT,
+};
+
 const char *const FLAGS_CHARS= "pot[@$n0<*%"; 
 /* Characters representing the individual flags -- used in debug mode
  * output, and in other cases  */ 
@@ -148,6 +169,20 @@ string flags_format(Flags flags)
 	if (! ret.empty())
 		ret= '-' + ret; 
 	return ret;
+}
+
+string done_format(Done done) 
+{
+	char ret[7]= "[0000]";
+	for (int i= 0;  i < 4;  ++i) 
+		ret[1+i] |= 1 & done << i;
+	return ret; 
+}
+
+Done done_from_flags(Flags flags) 
+/* Only placed flags are kept */
+{
+	return (~flags & (F_PERSISTENT | F_OPTIONAL)) * (1 | (~flags & F_TRIVIAL));
 }
 
 #endif /* ! FLAGS_HH */

@@ -347,7 +347,9 @@ Trivial dependencies are denoted with the
 flag.  They denote a
 dependency that should never cause a target to be rebuilt, but if the
 target is rebuilt for another reason, then they are treated like normal
-dependencies.  Trivial dependencies are typically used for
+dependencies.  Trivial dependencies don't even cause a target to be
+rebuilt if they don't exist.  
+Trivial dependencies are typically used for
 configuration, i.e., for the setting up configuration of application.
 Trivial dependencies are not allowed if the rule has no command. 
 

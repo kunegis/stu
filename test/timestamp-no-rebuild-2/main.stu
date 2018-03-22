@@ -1,0 +1,5 @@
+# * rm -f ? ; touch A
+# * stu:  B is built; A is also built 
+
+A:  -p B { echo correct >A ; }
+B        { touch B }

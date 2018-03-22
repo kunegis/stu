@@ -1,0 +1,27 @@
+#! /bin/sh
+
+rm -f ? || exit 1
+
+touch A || exit 1
+
+../../stu.test -d >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || {
+
+	echo >&2 "*** Exit status must be zero, found exitstatus=$exitstatus"
+
+	echo >&2 _____ list.err _____
+	cat  >&2 list.err
+	echo >&2 ____________________
+	
+	echo >&2 _____ list.out _____
+	cat  >&2 list.out
+	echo >&2 ____________________
+	
+	exit 1
+}
+
+rm -f ? || exit 1
+
+exit 0

@@ -550,7 +550,7 @@ CONCATENATION
        spaces  are  said to be concatenated.  Concatenation takes place in the
        following cases:
 
-         A( A[ )A )( )[ ]A ]( ][
+           A( A[ )A )( )[ ]A ]( ][
 
        In this list, 'A' stands for any literal name,  including  one  contain
        parameters.
@@ -564,21 +564,36 @@ CONCATENATION
 
 PARAMETERS
        Any  file  or  transient target may include parameters.  Parameters are
-       noted using the '$' character and are given a name.  Stu will match the
-       pattern  to any file or transient target it needs to build.  Parameters
-       can appear  in  dependencies  and  in  commands  any  number  of  times
-       (included  not  appearing  in them).  In a target name, a parameter can
-       only appear once.  The following example contains the parameter $name:
+       noted using the '$' character and are given a  name.   The  syntax  for
+       parameters  is similar to that for variables in the shell.  If the sign
+       '$' is followed by '{', then everything up to the corresponding '}'  is
+       the  parameter name.  Otherwise, all alphanumeric characters and under‐
+       scores '_' following will be taken as the parameter name:
 
-           list.$name:    data.$name $name.in
+           data/$name.png
+           data/${name}_2.png
+
+       Parameter cannot be contiguous.  I.e., there must always be at least  a
+       single character between two parameters.  (The reason is that otherwise
+       it would be ambiguous how to  match  the  two  parameters.)   Names  of
+       parameters cannot be empty.  Thus,
+
+           data/${part1}${part2}.png
+           data/${}.png
+           data/$
+
+       are errors.
+
+       Stu  will match the pattern to any file or transient target it needs to
+       build.  Parameters can appear in dependencies and in commands any  num‐
+       ber  of  times  (included  not appearing in them).  In a target name, a
+       parameter can only appear once.  The following  rule  uses  the  single
+       parameter $name:
+
+           list.$name:    data.$name ${name}.in
            {
                ./compute-list -n "$name"
            }
-
-       Parameters within a single target name must be separated  by  at  least
-       one  character,  as otherwise Stu would not be able to determine how to
-       split up a chain of characters into two parameters.  Names  of  parame‐
-       ters cannot be empty.
 
        A  target  name may match more than one rule.  If that is the case, Stu
        will use the rule that dominates all other matching rules.  A rule  (x)
@@ -1053,4 +1068,4 @@ SEE ALSO
 
 
 
-stu-2.5.63                        March 2018                            STU(1)
+stu-2.5.64                        March 2018                            STU(1)

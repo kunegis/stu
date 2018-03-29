@@ -652,7 +652,7 @@ underscores '_' following will be taken as the parameter name:
     data/$name.png
     data/${name}_2.png
 
-Parameter cannot be contiguous.  I.e., there must always be at least a
+Parameters cannot be contiguous.  I.e., there must always be at least a
 single character between two parameters.  (The reason is that otherwise
 it would be ambiguous how to match the two parameters.)  
 Names of parameters cannot be empty.  

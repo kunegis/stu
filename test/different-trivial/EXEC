@@ -17,7 +17,7 @@ echo _____
 cat A
 echo _____
 
-diff A content || {
+diff A content-correct || {
 	echo >&2 '*** different content'
 	exit 1
 }

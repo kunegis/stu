@@ -23,7 +23,7 @@ V = W;
 W = X;
 X = Y;
 Y = Z;
-Z = a;
-a=b;b=c;c=d;d=e;e=f;f=g;g=h;h=i;i=j;j=k;k=l;l=m;m=n;n=o;o=p;p=q;q=r;r=s;s=t;t=u;u=v;v=w;w=x;x=y;y=z;
+Z = x.a;
+x.a=x.b;x.b=x.c;x.c=x.d;x.d=x.e;x.e=x.f;x.f=x.g;x.g=x.h;x.h=x.i;x.i=x.j;x.j=x.k;x.k=x.l;x.l=x.m;x.m=x.n;x.n=x.o;x.o=x.p;x.p=x.q;x.q=x.r;x.r=x.s;x.s=x.t;x.t=x.u;x.u=x.v;x.v=x.w;x.w=x.x;x.x=x.y;x.y=x.z;
 
-z = {correct}
+x.z = {correct}

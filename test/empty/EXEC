@@ -14,7 +14,7 @@ exitcode="$?"
 	exit 1
 }
 
-diff list.out stdout || {
+diff list.out stdout-correct || {
 	echo >&2 '*** error:  stdout'
 	echo >&2 actual stdout:
 	echo >&2 ____________
@@ -22,7 +22,7 @@ diff list.out stdout || {
 	echo >&2 ____________
 	echo >&2 expected stdout:
 	echo >&2 ____________
-	cat  >&2 stdout
+	cat  >&2 stdout-correct
 	echo >&2 ____________
 	exit 1
 }

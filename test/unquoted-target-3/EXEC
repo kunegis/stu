@@ -13,7 +13,7 @@ exitcode="$?"
 	exit 1
 }
 
-diff list.err stderr || {
+diff list.err stderr-correct || {
 	echo >&2 '*** stderr'
 	echo >&2 list.err:
 	echo >&2 ______

@@ -555,7 +555,7 @@ public:
 	virtual bool is_normalized() const {  return false;  }
 	/* A compound dependency is never normalized */
 
-	virtual Target get_target() const {  assert(false);  }
+	virtual Target get_target() const {  assert(false);  return Target("");  }
 };
 
 class Root_Dep
@@ -573,9 +573,7 @@ public:
 	virtual bool is_unparametrized() const {  return false;  }
 	virtual const Place &get_place() const {  return Place::place_empty;  }
 	virtual string format(Style, bool &) const {  return "ROOT";  }
-	virtual string format_word() const {  
-		assert(false); 
-	}
+	virtual string format_word() const {  assert(false);  return "";  }
 	virtual string format_out() const {  return "ROOT";  }
 	virtual string format_src() const {  return "ROOT";  }
 	virtual Target get_target() const {  return Target("");  }
@@ -639,8 +637,9 @@ shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 	} else if (to <Root_Dep> (dep)) {
 		return make_shared <Root_Dep> (* to <Root_Dep> (dep)); 
 	} else {
-		assert(false); 
 		/* Bug:  Unhandled dependency type */ 
+		assert(false);
+		return nullptr; 
 	}
 }
 
@@ -1123,6 +1122,7 @@ Target Concat_Dep::get_target() const
 {
 	/* Dep::get_target() is not used for complex dependencies */
 	assert(false);
+	return Target(""); 
 }
 
 shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,

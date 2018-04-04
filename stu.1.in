@@ -244,6 +244,11 @@ Does not include the runtime of children or grandchildren that have not
 been waited for (which only happens when Stu is interrupted by a
 signal.) 
 
+Stu options are parsed with
+.BR getopt(3)
+and therefore options must preceded arguments.  Options following
+arguments may be supported on some platforms.  
+
 .SH OVERVIEW
 A simple rule looks as follows:
 

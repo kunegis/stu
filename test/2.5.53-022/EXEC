@@ -2,7 +2,7 @@
 
 rm -f A || exit 1
 
-../../stu.test '' A -k >list.out 2>list.err
+../../stu.test -k '' A >list.out 2>list.err
 exitstatus=$?
 
 [ "$exitstatus" = 2 ] || {

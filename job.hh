@@ -109,18 +109,15 @@ public:
 	static pid_t get_tty()  {  return tty;  }
 	
 	class Signal_Blocker
-	/* 
-	 * Block interrupt signals for the lifetime of an object of this
+	/* Block termination signals for the lifetime of an object of this
 	 * type.  Note that the mask of blocked signals is inherited
 	 * over exec(), so we must unblock signals also when starting
-	 * child processes.  
-	 */
+	 * child processes.  */
 	{
 	private:
 #ifndef NDEBUG
 		static bool blocked; 
 #endif	
-
 	public:
 		Signal_Blocker();
 		~Signal_Blocker();
@@ -152,9 +149,10 @@ private:
 	 * Fail:     Finished, without success
 	 */
 
-	static sigset_t set_termination, set_productive;
+	static sigset_t set_termination, set_productive, set_termination_productive;
 	/* All signals handled specially by Stu are either in the
-	 * "termination" or in the "productive" set. */ 
+	 * "termination" or in the "productive" set.  The third variable
+	 * holds both.  */ 
 
 	static sig_atomic_t in_child; 
 	/* Set to 1 in the child process, before execve() is called.
@@ -174,8 +172,9 @@ private:
 unsigned Job::count_jobs_exec=    0;
 unsigned Job::count_jobs_success= 0;
 unsigned Job::count_jobs_fail=    0;
-sigset_t Job::set_productive;
 sigset_t Job::set_termination;
+sigset_t Job::set_productive;
+sigset_t Job::set_termination_productive;
 sig_atomic_t Job::in_child= 0; 
 pid_t Job::foreground_pid= -1;
 int Job::tty= -1;
@@ -247,14 +246,12 @@ pid_t Job::start(string command,
 
 		/* Instead of throwing exceptions, use perror() and
 		 * _Exit().  We return 127, as done e.g. by
-		 * system(), posix_spawn() and the shell.  */ 
+		 * system(), posix_spawn(), and the shell.  */ 
 
-		/* Unblock/reset all signals */ 
-		if (0 != sigprocmask(SIG_UNBLOCK, &set_termination, nullptr)) {
-			perror("sigprocmask");
-			_Exit(127); 
-		}
-		if (0 != sigprocmask(SIG_UNBLOCK, &set_productive, nullptr)) {
+		/* Unblock/reset all signals.  As a general rule,
+		 * signals that are blocked before exec() will remain
+		 * blocked after exec().  Thus, unblock them here.  */ 
+		if (0 != sigprocmask(SIG_UNBLOCK, &set_termination_productive, nullptr)) {
 			perror("sigprocmask");
 			_Exit(127); 
 		}
@@ -559,9 +556,22 @@ pid_t Job::wait(int *status)
 
 	int sig;
 	int r;
+
  retry:
-	errno= 0;
-	r= sigwait(&set_productive, &sig);
+	{
+		/* We block the termination signals and wait for them
+		 * using sigwait(), because the signal handlers for them
+		 * may not be called while sigwait() is pending.
+		 * Depending on the system, sigwait() may allow handlers
+		 * for non-blocked signals to be executed while
+		 * sigwait() waits, or have them executed only once
+		 * sigwait() returns.  Note that sigwaitinfo() should
+		 * (in principle) not have this problem, but it is less
+		 * portable.  */
+		Signal_Blocker signal_blocker; 
+		errno= 0;
+		r= sigwait(&set_termination_productive, &sig);
+	}
 
 	if (r != 0) {
 		if (errno == EINTR) {
@@ -573,6 +583,19 @@ pid_t Job::wait(int *status)
 		}
 	}
 
+	int is_termination= sigismember(&set_termination, sig);
+	if (is_termination == 1) {
+		/* Should not happen, because the handler will 
+		 * called as soon as the termination
+		 * signal is unblocked.  But be safe.  */
+		raise(sig);
+		perror("raise");
+		exit(ERROR_FATAL);
+	} else if (is_termination != 0) {
+		perror("sigismember");
+		exit(ERROR_FATAL);
+	}
+	
 	switch (sig) {
 
 	case SIGCHLD:
@@ -659,7 +682,7 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 
 void Job::handler_termination(int sig)
 /* 
- * The termination signal handler -- terminate all processes and quit. 
+ * The termination signal handler -- terminate all jobs and quit. 
  */
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
@@ -705,7 +728,7 @@ void Job::handler_termination(int sig)
 void Job::handler_productive(int, siginfo_t *, void *)
 /* Do nothing -- the handler only exists because POSIX says that a
  * signal may be discarded by the kernel if there is no signal handler
- * for it, and then it may not be possible to wait for that signal.  */
+ * for it, and then it may not be possible to sigwait() for that signal.  */
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 }
@@ -742,7 +765,7 @@ void Job::init_signals()
  * There are three types of signals handled by Stu:
  *    - Termination signals which make programs abort.  Stu catches
  *      them in order to stop its child processes and remove temporary
- *      file, and will then raise them again.  The handlers for these
+ *      files, and will then raise them again.  The handlers for these
  *      are async-signal safe. 
  *    - Productive signals that actually inform the Stu process of
  *      something:   
@@ -766,6 +789,11 @@ void Job::init_signals()
 		return;
 	signals_initialized= true; 
 
+	if (0 != sigemptyset(&set_termination_productive))  {
+		perror("sigemptyset");
+		exit(ERROR_FATAL); 
+	}
+
 	/* 
 	 * Termination signals 
 	 */
@@ -781,7 +809,6 @@ void Job::init_signals()
 		perror("sigemptyset");
 		exit(ERROR_FATAL); 
 	}
-
 	/* These are all signals that by default would terminate the
 	 * process.  */   
 	const static int signals_termination[]= { 
@@ -795,6 +822,10 @@ void Job::init_signals()
 			exit(ERROR_FATAL); 
 		}
 		if (0 != sigaddset(&set_termination, signals_termination[i])) {
+ 			perror("sigaddset");
+			exit(ERROR_FATAL); 
+		}
+		if (0 != sigaddset(&set_termination_productive, signals_termination[i])) {
  			perror("sigaddset");
 			exit(ERROR_FATAL); 
 		}
@@ -826,6 +857,14 @@ void Job::init_signals()
 		exit(ERROR_FATAL);
 	}
 	if (0 != sigaddset(&set_productive, SIGUSR1)) {
+		perror("sigaddset");
+		exit(ERROR_FATAL); 
+	}
+	if (0 != sigaddset(&set_termination_productive, SIGCHLD)) {
+		perror("sigaddset");
+		exit(ERROR_FATAL);
+	}
+	if (0 != sigaddset(&set_termination_productive, SIGUSR1)) {
 		perror("sigaddset");
 		exit(ERROR_FATAL); 
 	}

@@ -12,7 +12,7 @@ exitcode="$?"
 	exit 1
 }
 
-diff list.out stdout || {
+diff list.out stdout-correct || {
 	echo >&2 '*** stdout'
 	exit 1
 }

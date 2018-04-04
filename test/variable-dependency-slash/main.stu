@@ -1,7 +1,0 @@
-A:  $[x/y]
-{
-	echo ${x/y} >A
-}
-
->x/y: -p x { echo correct }
-x { mkdir -p x }

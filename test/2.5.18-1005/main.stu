@@ -2,7 +2,8 @@
 # Shell syntax corner case 
 #
 
->A: B {echo $(case x in x) echo hello;; esac)}
+>A: B {echo $({ echo hello } ; })}
+
 B { touch B ; }
 
 

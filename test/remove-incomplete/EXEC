@@ -1,11 +1,12 @@
 #! /bin/sh
 
-rmm() { rm -f ? list.* data.* || exit 1 ; }
+rmm() { echo >&2 RMM ; rm -f ? list.* data.* || exit 1 ; }
 
 #
 # (A) On error:  File is not removed because it was not changed 
 #
 
+echo >&2 '== (A) =='
 rmm
 ../../sh/touch_old list.A || exit 1
 
@@ -34,6 +35,7 @@ exitcode="$?"
 # (B) On error:  File is removed because it was changed
 #
 
+echo >&2 '== (B) =='
 rmm
 ../../sh/touch_old list.B || exit 1
 
@@ -64,18 +66,19 @@ grep -qF "Removing file 'list.B' because command failed" list.err || {
 # (C) On abort:  File is not removed because it was not changed
 #
 
+echo >&2 '== (C) =='
 rmm
 ../../sh/touch_old list.C || exit 1
 
 ../../stu.test 2>list.err data.C &
-pid="$!"
+pid=$!
 
 sleep 1 || exit 1
 
 kill -TERM $pid || exit 1
 
 wait "$pid" 
-exitcode="$?"
+exitcode=$?
 
 [ -r list.err ] || {
 	echo >&2 '*** stderr'
@@ -92,6 +95,7 @@ grep -qFi "removing file" list.err
 # (D) On abort:  File is removed because it was changed
 #
 
+echo >&2 '== (D) =='
 rmm
 ../../sh/touch_old list.D || exit 1
 

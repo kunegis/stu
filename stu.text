@@ -823,9 +823,11 @@ ENVIRONMENT
               the syntax 'cp -- "$fileA" "$fileB"'.
 
        STU_OPTIONS
-              Contains options to be set on every run of Stu.  All  characters
-              except for those in EQswxyYz are ignored.  Options passed on the
-              command line apply after those passed using this variable.
+              Contains options to be set  on  every  run  of  Stu.   Only  the
+              options  EQswxyYz can be set this way.  The variable should con‐
+              tain only these characters, dashes, and whitespace; other  char‐
+              acters  produce  an  error.   Options passed on the command line
+              apply after those passed using this variable.
 
        STU_SHELL
               If set, Stu calls the shell from the given location  instead  of
@@ -1051,4 +1053,4 @@ AUTHOR
 SEE ALSO
        make(1), cook(1), sh(1)
 
-stu-2.5.66                        April 2018                            STU(1)
+stu-2.5.67                        April 2018                            STU(1)

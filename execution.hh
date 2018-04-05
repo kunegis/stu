@@ -250,7 +250,7 @@ protected:
 	 * dependencies, parents are notified directly, bypassing
 	 * push_result().  */ 
 
-	map <string, string > result_variable; 
+	map <string, string> result_variable; 
 	/* Same semantics as RESULT, but for variable values, stored as
 	 * KEY-VALUE pairs.  */
 
@@ -1190,7 +1190,7 @@ void Execution::cycle_print(const vector <Execution *> &path,
  *      d depends on c        | printed from PATH
  *      c depends on b        |
  *      b depends on a        /
- *      a depends on x        > printed from DEPENDENCY
+ *      a depends on x        > printed from DEP
  *      x is needed by ...    \ 
  *      ...                   | printed by print_traces() 
  *      ...                   /

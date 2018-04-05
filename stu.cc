@@ -459,8 +459,8 @@ int main(int argc, char **argv, char **envp)
 	}
 
 	/*
-	 * Code executed before exiting:  This must be executed even of
-	 * Stu fails.  
+	 * Code executed before exiting:  This must be executed even if
+	 * Stu fails (but not for fatal errors).
 	 */
 	
 	if (option_statistics) {
@@ -490,8 +490,8 @@ void init_buf()
 		exit(ERROR_FATAL); 
 	}
 		
+	/* Set STDOUT to append mode; this is also done by GNU Make */ 
 	{
-		/* Set STDOUT to append mode; this is also done by GNU Make */ 
 		int flags= fcntl(fileno(stdout), F_GETFL, 0);
 		if (flags >= 0)
 			fcntl(fileno(stdout), F_SETFL, flags | O_APPEND);

@@ -448,7 +448,54 @@ shared_ptr <Command> Tokenizer::parse_command()
 
 	string stack= "{"; 
 	/* Stack of opened parenthesis-like symbols to parse shell
-	 * syntax.  May contain:  {'"`( */ 
+	 * syntax.  May contain:  {'"`( */
+
+	/* 
+	 * The parsing of commands in Stu only approximates shell
+	 * syntax.  In actual shell syntax, the characters {} are only
+	 * recognized as block-opening and -closing in certain
+	 * circumstances.  For instance:
+	 *
+	 *             echo }
+	 *             echo {
+	 *
+	 * In each of these lines, the character '{' or '}' is an
+	 * argument to 'echo' for the shell, but is interpreted as
+	 * opening and closing a {} block by Stu.  This is a known
+	 * limitation in Stu, but fixing it would be backward
+	 * incompatible, because it would break Stu scripts such as
+	 *
+	 *             >A { echo Hello World }
+	 *
+	 * because Stu would then interpret the '}' as an argument to
+	 * 'echo' -- this would be consistent with how the shell parses
+	 * things, and the solution is to write
+	 *	 
+	 *             >A { echo Hello World ; }
+	 *
+	 * This ';' is obligatory in the shell, but not in Stu.  We
+	 * would like to make the ';' mandatory in Stu too, but this
+	 * would break existing Stu scripts, and we don't do
+	 * backward-incompatible changes without increasing the major
+	 * version number.  (And even then, it should be
+	 * well-motivated.)  Thus, this change will come, if at all,
+	 * only in Version 3 of Stu.
+	 *
+	 * Also, the case that Stu script actually try do something like
+	 *
+	 *             >A { echo } ; }
+	 *
+	 * is much much much rarer.  (As an aside, if a Stu command does
+	 * complex shell stuff with weird characters etc., it's probably
+	 * better to put it in a separate script.)  
+	 *
+	 * Note also that this does *not* apply to (), which behave as
+	 * expected in both the shell and Stu.  The three quote-like
+	 * characters '"` cannot be used recursively, so the problem
+	 * does not arise.  There may also be other syntax corner-cases
+	 * of the shell that Stu does not parse identically as the
+	 * shell.  
+	 */
 
 	while (p < p_end) {
 		

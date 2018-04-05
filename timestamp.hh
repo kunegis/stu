@@ -18,10 +18,10 @@
 #if USE_MTIM
 
 /* 
- * This variant works only on Linux.  Using CLOCK_REALTIME it does not work, as:
+ * This variant works only on Linux.  Using CLOCK_REALTIME does not work, as:
  *  (1) Two files created in a row have timestamps in the wrong order 
  *  (2) Files create during Stu runtime have a timestamp before the Stu
- *      startu timestamps. 
+ *      startup timestamps. 
  * Both errors are on the order of a few milliseconds.  Tested on a
  * system on which the clock resolution as reported by clock_getres() is
  * one nanosecond. 

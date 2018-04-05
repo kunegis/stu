@@ -43,11 +43,11 @@ CXXFLAGS_DEBUG=  -ggdb -O0 -Werror \
     -Wsuggest-attribute=format             \
     -Wlogical-op -Wredundant-decls \
     -fno-gnu-keywords       \
-    -fsanitize=address      \
     -Wno-unknown-warning-option -Wno-pessimizing-move
 
 # TODO using a newer G++ version, try out:
 #    -fsanitize=leak -fsanitize=undefined 
+#    -fsanitize=address      // not used because of false positives (due to Execution caching)
 
 CXXFLAGS_PROF=   -pg -O3 -DNDEBUG 
 

@@ -1167,8 +1167,8 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 			b->flags & F_PERSISTENT ? I_PERSISTENT :
 			b->flags & F_OPTIONAL   ? I_OPTIONAL   :
 			b->flags & F_TRIVIAL    ? I_TRIVIAL    : 
-			UINT_MAX;
-		assert(i_flag != UINT_MAX); 
+			C_ALL;
+		assert(i_flag != C_ALL); 
 		b->get_place() << fmt("%s cannot be declared as %s", b->format_word(), FLAGS_PHRASES[i_flag]); 
 		b->places[i_flag] << fmt("using %s", name_format_word(frmt("-%c", FLAGS_CHARS[i_flag]))); 
 		a->get_place() << fmt("in concatenation to %s", a->format_word()); 

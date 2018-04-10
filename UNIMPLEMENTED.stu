@@ -1,10 +1,10 @@
 #
-# These are features that were decided not to be implemented.  Many of
-# these ideas are actually good, in particular the "normal" category,
-# and we may revive them in the future.  When in doubt, we prefer to not
-# support a feature, as adding a feature in the future can always be
-# done without breaking compatibility, whereas removing one is always
-# backward-incompatible.
+# This file lists features that were decided not to be implemented.
+# Many of these ideas are actually good, in particular the "normal"
+# category, and we may revive them in the future.  When in doubt, we
+# prefer to not support a feature, as adding a feature in the future can
+# always be done without breaking compatibility, whereas removing one is
+# always backward-incompatible.
 #
 
 #==== Optimizations ====
@@ -31,7 +31,54 @@
 # dynamic variables.  
 #
 
+#
+# Use C instead of C++.  This is tempting for simplicity and also out of
+# principle.  What would be necessary:
+#  - Write container classes indexed with strings and targets.
+#  - Convert certain containers to arrays/linked lists. 
+#  - More complex and error-prone memory management, in particular for
+#    strings 
+#  - A replacement for exceptions
+#  - For Dep objects, keep track of the type in the FLAGS, and
+#    have our own pointer conversion functions.  Also, have our own
+#    reference counting. 
+#
+# Remember:  Even GCC is written in C++ nowadays, so we are not in bad
+# company.    
+#
+# If we then use 'c99', we could claim full POSIX compliance. 
+#
+
 #==== Normal features ====
+
+#
+# -m bfs (breadth-first order) and -m target (pseudorandom by target
+# name, i.e., same pseudorandom order for each target, as long as its
+# dependencies are the same). 
+#
+
+#
+# A 'why' option that shows why things are built.  Will look similar to
+# error traces, only containing explanations.  In essence, output a line
+# everytime one of the 'need_build' variables is updated.  Also, we need
+# to do something smart with timestamps. 
+#
+
+# * 'abc' does not exist
+# * 'abc' is older than its dependency 'xyz'
+# * ...
+
+#
+# Have an extended safety mode, in which Stu checks that none of the
+# dependencies themselves where touched by a command.  How deep should
+# this go?  Should it also check dependency included dynamically?
+#
+
+#
+# Have a signal to stop Stu, but without interrupting currently running
+# jobs.  I.e., let all currently running jobs finish, and then quit
+# (with appropriate exit status).
+#
 
 #
 # Have an option for: For hardcoded rules, compare the content of the
@@ -590,6 +637,11 @@ $name.bib;   # Rule (1)
 # parameter" thing. 
 
 #
+# Trace (logging): an option to write log messages into a file.  In
+# particular, which commands failed. (option -T)
+#
+
+#
 # An option for automatic logging:  write all output (stdout/stderr) of
 # commands to a file (a different file per target).  
 # To do this, we need to generate a logfile name for each file and
@@ -676,17 +728,17 @@ plot.${dataset = aaa bbb ccc}.eps: { ... }
 # as can already be done. 
 #
 
-example:  *.c *.h
+example:  *.c *.h  data-??.h
 {
 	cc example.c -o example 
 }
 
-# better:
+# Better:
 example:  [FILES]
 {
-	cc example.c -o example
+	cc src/example.c -o example
 }
->FILES { echo *.c *.h ; }
+>FILES: src { echo src/*.c src/*.h ; }
 
 #
 # Allow non-file targets.  E.g., files within archives, or remote files.
@@ -696,24 +748,6 @@ example:  [FILES]
 # filesystems, but that seems not to be a thing at the moment.  Make
 # traditionally supports "ar" archives.  This feature of Make also seems
 # to be very seldomly used nowadays. 
-#
-
-#
-# Use C instead of C++.  This is tempting for simplicity and also out of
-# principle.  What would be necessary:
-#  - Write container classes indexed with strings and targets.
-#  - Convert certain containers to arrays/linked lists. 
-#  - More complex and error-prone memory management, in particular for
-#    strings 
-#  - A replacement for exceptions
-#  - For Dep objects, keep track of the type in the FLAGS, and
-#    have our own pointer conversion functions.  Also, have our own
-#    reference counting. 
-#
-# Remember:  Even GCC is written in C++ nowadays, so we are not in bad
-# company.    
-#
-# If we then use 'c99', we could claim full POSIX compliance. 
 #
 
 #
@@ -730,10 +764,9 @@ A: -R B;  B: C;  A: D;
 #   B and A. 
 
 #
-# Allow regular expressions in parameters, e.g. for single-character
-# parameters.  This will also make it possible to allow contiguous
-# parameters, and giving a list of possible values for a parametrized
-# rule.
+# Allow regular expressions in parameters.  This will also make it
+# possible to allow contiguous parameters, and giving a list of possible
+# values for a parametrized rule.
 #
 # The reason we don't implement it is that it opens a gigantic can of
 # worms, with many follow-up questions, and the danger that people will
@@ -747,10 +780,17 @@ A: -R B;  B: C;  A: D;
 # course is only a weak argument for not supporting them.)
 #
 
-# Both parameters $X and $Y can consist only of a single character.  
+# Both parameters $X and $Y can consist only of a single character.
+# I.e., apply this to all file of the pattern 'list.??'. 
 list.${X:.}${Y:.} {
 	compute -x $X -y $Y >list.${X}${Y}
 }
+
+# When the date is saved as contiguous digits, e.g. 'log-analysis.20180413.txt'
+# for April 13, 2018, but as ISO dat in 'log-*.txt'. 
+log-analysis.${year:[0-9]{4}}${month:[0-9]{2}}${day:[0-9]{2}}.txt:
+	log.$year-$month-$dat.txt
+{ ... }
 
 # The parameter $NETWORK must not contain a dot
 web.${NETWORK:[^.]+} :  ... ;

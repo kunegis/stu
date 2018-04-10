@@ -1,6 +1,6 @@
-This file catalogues the usage of individual characters in Stu programs.  
+This file catalogues the usage of individual characters in Stu scripts.   
 
-Since Stu programs consist primarily of filenames, many characters that
+Since Stu scipts consist primarily of filenames, many characters that
 are used as operators in most languages cannot be used in Stu as they
 are needed as part of filenames, such as '/', '.', etc.
 
@@ -19,6 +19,9 @@ name.
 
 Everything for which isspace() returns true in the C locale is
 recognized as whitespace by Stu.  I.e., " \f\n\r\t\v". 
+
+Unicode whitespace characters are not recognized, except for those that
+correspond to ASCII. 
 
 == Not allowed outside quotes == 
 
@@ -51,6 +54,11 @@ These characters are single-character tokens.
 =	Assignment, copy, and named variable
 $[	The sequence '$[' is analysed as a sequence of the two operators
         '$' and '['.  In other environments, '$' introduces parameters. 
+
+These characters always stand for themselves when unquoted, and don't
+have to be separated from other characters by whitespace.  The
+exceptions are $[, which must be contiguous and not preceded by a name,
+and [](), for which concatenation rules apply. 
 
 == As-yet unused characters ==
 

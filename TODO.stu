@@ -1,28 +1,28 @@
 # (There are no known bugs)
 
-#=================== Further features =======================
-
-#
-# Trace (logging): an option to write log messages into a file.  In
-# particular, which commands failed. (option -T)
-#
+#=================== New features =======================
 
 #
 # Canonicalize names 
 #
-# - Fold multiple / to a single one, except exactly two at the beginning
-# - Remove ending /, except in single '/'
-# - Fold ., except for a single .
-# - Fold */.. (.. at beginning stays)
+# Algorithm:
+#  - Fold multiple / to a single one, except exactly two at the beginning
+#  - Remove ending /, except when the name contains only '/' characters
+#  - Fold ., except for a single '.'  (repeatedly)
+#      - ^./ -> ''
+#      - /.$ -> ''
+#      - /./ -> /
+#  - Fold .. that is not at the beginning (repeatedly)
+#      - [^/]+/.. -> '' or '.' when otherwise empty
 # 
-# (Don't do anything special with symlinks/hardlinks/etc.; they need
-# syscalls to detect anyway.)
-#
-# Questions
-#   - Should '/' match in parameters?  -> Yes
-#   - Does that also apply to transient targets?  -> Yes
+# Rules:
+#   - Don't do anything special with symlinks/hardlinks/etc.; they need
+#     syscalls to detect anyway.
+#   - '/' also matches in parameters
+#   - The rules also apply to transient targets
 #
 
+#      - aaa -> aaa
 #      - aaa/.. ->  .
 #      - aaa/../bbb -> bbb
 #      - .. -> ..
@@ -31,22 +31,23 @@
 #      - aaa/bbb/../../ccc -> ccc
 #      - . -> .
 #      - ./ -> .
+#      - /. -> /
 #      - aaa/. -> aaa
 #      - aaa/ -> aaa
 #      - ./aaa -> aaa
 #      - .//aaa -> aaa
 #      - ./. -> .
 #      - aaa//bbb -> aaa/bbb
+#      - aaa///bbb -> aaa/bbb
+#      - aaa////bbb -> aaa/bbb
+#      - /aaa -> /aaa
 #      - //aaa -> //aaa
 #      - ///aaa -> /aaa
 #      - ////aaa -> /aaa
-#      - // -> /
+#      - / -> /
+#      - // -> //
 #      - /// -> /
-#      - ./ -> .
-#      - /. -> /
-#      - aaa -> aaa
 #      - aaa/bbb -> aaa/bbb
-#      - / -> / 
 
 # Test this:
 dat/STATISTICS = ./; 
@@ -92,12 +93,6 @@ A: [-d data/B];
 % include c++.stu
  
 #
-# -m bfs (breadth-first order) and -m target (pseudorandom by target
-# name, i.e., same pseudorandom order for each target, as long as its
-# dependencies are the same). 
-#
-
-#
 # Line number and file syntax:  A preprocessor-like construct that gives a new
 # filename and line number, such that error messages from Stu can point
 # to the original file, not the generated file.  Analogous to the
@@ -108,17 +103,6 @@ A: [-d data/B];
 % line 120
 
 # Use this in stu-utils/texdep and other stu-utils programs judiciously. 
-
-#
-# A 'why' option that shows why things are built.  Will look similar to
-# error traces, only containing explanations.  In essence, output a line
-# everytime one of the 'need_build' variables is updated.  Also, we need
-# to do something smart with timestamps. 
-#
-
-# * 'abc' does not exist
-# * 'abc' is older than its dependency 'xyz'
-# * ...
 
 #
 # Have an option to output the dependency graph, i.e., output each edge
@@ -153,12 +137,6 @@ dep.sources {
 }
 
 #
-# Have an extended safety mode, in which Stu checks that none of the
-# dependencies themselves where touched by a command.  How deep should
-# this go?  Should it also check dependency included dynamically?
-#
-
-#
 # Have a way to set $STU_SHELL and $STU_CP from within a Stu script.
 # E.g., using directives. 
 #
@@ -177,9 +155,3 @@ dep.sources {
 #
 
 % set PATH /usr/local/bin
-
-#
-# Have a signal to stop Stu, but without interrupting currently running
-# jobs.  I.e., let all currently running jobs finish, and then quit
-# (with appropriate exit status).
-#

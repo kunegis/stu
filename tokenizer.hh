@@ -752,6 +752,7 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 			place_parameter_name <<
 				"expected a parameter name";
 		place_dollar << fmt("after %s", char_format_word('$')); 
+		explain_parameter_syntax(); 
 		throw ERROR_LOGICAL;
 	}
 

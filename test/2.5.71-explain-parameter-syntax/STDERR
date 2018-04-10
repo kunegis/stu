@@ -1,0 +1,6 @@
+main.stu:4:6: expected a parameter name, not '('
+main.stu:4:5: after '$'
+Explanation: Parameters are introduced by the dollar sign, followed by the
+parameter name, optionally surrounded by braces, and optionally enclosed in
+double quotes.  Thus, valid ways to write a parameter are:
+	$name    ${name}    "...$name..."    "...${name}..."

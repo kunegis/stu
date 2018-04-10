@@ -145,4 +145,14 @@ void explain_missing_optional_copy_source()
 	       stderr); 
 }
 
+void explain_parameter_syntax()
+{
+	if (! option_explain)  return;
+	fputs("Explanation: Parameters are introduced by the dollar sign, followed by the\n"
+	      "parameter name, optionally surrounded by braces, and optionally enclosed in\n"
+	      "double quotes.  Thus, valid ways to write a parameter are:\n"
+	      "\t$name    ${name}    \"...$name...\"    \"...${name}...\"\n", 
+	      stderr); 
+}
+
 #endif /* ! EXPLAIN_HH */

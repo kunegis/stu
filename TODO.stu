@@ -1,4 +1,4 @@
-# sigwait():  is not guaranteed to have handler_termination called while run (Macos-only problem)
+# (There are no known bugs)
 
 #=================== Further features =======================
 

@@ -615,6 +615,46 @@ $name.bib;   # Rule (1)
 # number.  
 # 
 
+#
+# Allow parentheses in the targets of a rule
+#
+
+# ./command generates data.1.eps, data.2.eps, and data.3.eps
+data.(1 2 3).eps: command { ./command ; }
+
+#
+# Allow brackets in the targets of a rule.  This needs Stu to do pattern
+# matching, and once it finds a pattern that matches, it needs to expand
+# [VARIANTS], i.e., rule matching must be implemented asynchronously. 
+#
+
+# The command will generate *all* files at once.
+data.[VARIANTS].eps:  { ... }
+
+#
+# Allow pattern matching to use string from a given file.  This requires
+# Stu to build SMALL_DATASETS and LARGE_DATASETS only when a file
+# matches either of the targets.  Thus, target matching must be
+# implemented asynchronously. 
+#
+
+# ./plot_{small,large} do getenv('dataset')
+plot.${dataset = [SMALL_DATASETS]}.eps: plot_small { ./plot_small ; }
+plot.${dataset = [LARGE_DATASETS]}.eps: plot_large { ./plot_large ; }
+
+# Note the relationship with regexp notation, which would be something
+# like this when $dataset must begin with 'wiki_':
+plot.${dataset = wiki_.*}.eps: {...}
+
+# Or when specifying a list by hand, only for the datasets 'aaa', 'bbb'
+# and 'ccc':
+plot.${dataset = aaa bbb ccc}.eps: { ... }
+
+
+#
+# Allow 
+#
+
 #==== New features that change/extend Stu drastically ====
 
 #

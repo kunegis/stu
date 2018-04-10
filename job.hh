@@ -138,6 +138,8 @@ private:
 	static void handler_productive(int sig, siginfo_t *, void *);
 	
 	static void init_signals(); 
+	/* Set up all signals.   May be called multiple times, and will
+	 * do the setup only the first time  */
 
 	static unsigned count_jobs_exec, count_jobs_success, count_jobs_fail;
 	/* 
@@ -277,11 +279,10 @@ pid_t Job::start(string command,
 		/* Maximal size of added variables.  The "+1" is for $STU_STATUS */ 
 
 		const char** envp= (const char **)
-			alloca(sizeof(char **) * (v_old + v_new + 1));
+			malloc(sizeof(char **) * (v_old + v_new + 1));
 		if (!envp) {
-			/* alloca() never returns null */ 
 			assert(false);
-			perror("alloca");
+			perror("malloc");
 			_Exit(127); 
 		}
 		memcpy(envp, envp_global, v_old * sizeof(char **)); 
@@ -290,9 +291,15 @@ pid_t Job::start(string command,
 			string key= j->first;
 			string value= j->second;
 			assert(key.find('=') == string::npos); 
-			char *combined;
-			if (0 > asprintf(&combined, "%s=%s", key.c_str(), value.c_str())) {
-				perror("asprintf");
+			size_t len_combined= key.size() + 1 + value.size() + 1;
+			char *combined= (char *)malloc(len_combined);
+			if (! combined) {
+				assert(false);
+				perror("malloc");
+				_Exit(127); 
+			}
+			if ((ssize_t)(len_combined - 1) != snprintf(combined, len_combined, "%s=%s", key.c_str(), value.c_str())) {
+				perror("snprintf");
 				_Exit(127); 
 			}
 			if (old.count(key)) {
@@ -759,9 +766,6 @@ Job::Signal_Blocker::~Signal_Blocker()
 
 void Job::init_signals() 
 /* 
- * This function is called once on Stu startup from a static
- * constructor, and sets up all signals.   
- *
  * There are three types of signals handled by Stu:
  *    - Termination signals which make programs abort.  Stu catches
  *      them in order to stop its child processes and remove temporary

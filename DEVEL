@@ -1,6 +1,7 @@
-This is information for working on Stu.
+This is information for hacking Stu itself.
 
-'TODO.stu' lists the next features to be implemented. 
+'TODO.stu' lists the next features to be implemented.
+'UNIMPLEMENTED.stu' lists things we're inlikely to implement. 
 
 'CODING' gives the coding standards used in Stu. 
 
@@ -20,41 +21,39 @@ Version logic (see 'NEWS' for an explanation of version numbers):
 * Increment the minor version number when backward-compatible new syntax
   is introduced   
 * Increment the major version number when backward-incompatible new
-  syntax is introduced 
+  syntax is introduced (which we try to avoid)
 
 ==== DEBUG VERSION ====
 
 The file 'stu.debug' is the Stu executable with all debugging turned on,
 i.e., with debugging symbols, all warnings enabled, etc.  The exact
-flags for compiling this as set in 'Makefile.devel', and you will
-probably have to tweak these flags if you are developing Stu on another
-setup than the authors.
+flags for compiling this are set in 'Makefile.devel', and you might have
+to tweak these flags if you are developing Stu on another setup than the
+authors'.
 
 ==== UNIT TESTS ====
 
 Unit testing is described in 'sh/mktest'. 
 
-To compile everything and run all unit tests, do this:
+The command
 
-	make -f Makefile.devel all-test
+	make -f Makefile.devel 
 
-It takes about ten minutes.   
+will also execute all unit tests.  This takes about ten minutes.   
 
-The unit tests have additional requirements on the system than just
-compiling Stu:   
+When we add new functionality, we always add unit tests for it, covering
+both success and failure.  
+
+If you run the tests and they fail, report that to Jérôme Kunegis
+<kunegis@gmail.com>.  
+
+==== REQUIREMENTS ====
+
+Running 'make -f Makefile.devel' has more requirements than just
+compiling Stu:
 
 * The unit tests assume that the file system supports UTF-8 filenames.
   Stu will work without such a file system, but you can't run the unit
   tests unless you remove the one offending test (test/unicode/).  
 * You need to install the packages 'expect' and 'autoconf'.  On some
   systems, also 'tclsh'.  (Exact packages vary by operating system.)
-
-If you run the tests and they fail, report that to Jérôme Kunegis
-<kunegis@gmail.com>.     
-
-Additionally, you can run 
-
-	make -f Makefile.devel
-
-to execute everything that the developers do, including rebuilding the
-AutoConf files. 

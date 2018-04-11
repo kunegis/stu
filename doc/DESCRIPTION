@@ -1,6 +1,10 @@
 == Descriptions of Stu ==
 
-The following are attempts to describe what Stu is.
+What is Stu?  
+
+This is a difficult question, since Stu can be interpreted as different
+things.  This list tries to catalogue the different ways in which Stu
+can be described. 
 
 ________________________________________________________________________
 
@@ -40,7 +44,7 @@ ________________________________________________________________________
   reinvent the wheel, i.e., reimplement many functions that would be
   available easily otherwise. 
 
-* The ultimate dynamic programming language.
+* A dynamic programming language
   -> This is to be understood in the sense of dynamic programming.
   Here, the assumption is that individual results (very often,
   individual numbers) are stored in individual files.  This appears

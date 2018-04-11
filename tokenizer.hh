@@ -431,13 +431,52 @@ shared_ptr <Command> Tokenizer::parse_command()
  *    - If the command contains only whitespace and at least two
  *      newlines, the place is the first character of the second line.   
  */
+/* 
+ * The parsing of commands in Stu only approximates shell syntax.  In
+ * actual shell syntax, the characters {} are only recognized as
+ * block-opening and -closing in certain circumstances.  For instance:
+ *
+ *             echo }
+ *             echo {
+ *
+ * In each of these lines, the character '{' or '}' is an argument to
+ * 'echo' for the shell, but is interpreted as opening and closing a {}
+ * block by Stu.  This is a known limitation in Stu, but fixing it would
+ * be backward incompatible, because it would break Stu scripts such as
+ *
+ *             >A { echo Hello World }
+ *
+ * because Stu would then interpret the '}' as an argument to 'echo' --
+ * this would be consistent with how the shell parses things, and the
+ * solution is to write
+ *	 
+ *             >A { echo Hello World ; }
+ *
+ * This ';' is obligatory in the shell, but not in Stu.  We would like
+ * to make the ';' mandatory in Stu too, but this would break existing
+ * Stu scripts, and we don't do backward-incompatible changes without
+ * increasing the major version number.  (And even then, it should be
+ * well-motivated.)  Thus, this change will come, if at all, only in
+ * Version 3 of Stu.
+ *
+ * Also, the case that Stu script actually try do something like
+ *
+ *             >A { echo } ; }
+ *
+ * is much much much rarer.  (As an aside, if a Stu command does complex
+ * shell stuff with weird characters etc., it's probably better to put
+ * it in a separate script.)
+ *
+ * Note also that this does *not* apply to (), which behave as expected
+ * in both the shell and Stu.  The three quote-like characters '"`
+ * cannot be used recursively, so the problem does not arise.  There may
+ * also be other syntax corner-cases of the shell that Stu does not
+ * parse identically as the shell.
+ */
 {
 	assert(p < p_end && *p == '{');
-
 	const Place place_open= current_place();
-
 	++p;
-
 	const char *const p_beg= p;
 
 	size_t line_command= line; /* The line of the place of the command */
@@ -449,53 +488,6 @@ shared_ptr <Command> Tokenizer::parse_command()
 	string stack= "{"; 
 	/* Stack of opened parenthesis-like symbols to parse shell
 	 * syntax.  May contain:  {'"`( */
-
-	/* 
-	 * The parsing of commands in Stu only approximates shell
-	 * syntax.  In actual shell syntax, the characters {} are only
-	 * recognized as block-opening and -closing in certain
-	 * circumstances.  For instance:
-	 *
-	 *             echo }
-	 *             echo {
-	 *
-	 * In each of these lines, the character '{' or '}' is an
-	 * argument to 'echo' for the shell, but is interpreted as
-	 * opening and closing a {} block by Stu.  This is a known
-	 * limitation in Stu, but fixing it would be backward
-	 * incompatible, because it would break Stu scripts such as
-	 *
-	 *             >A { echo Hello World }
-	 *
-	 * because Stu would then interpret the '}' as an argument to
-	 * 'echo' -- this would be consistent with how the shell parses
-	 * things, and the solution is to write
-	 *	 
-	 *             >A { echo Hello World ; }
-	 *
-	 * This ';' is obligatory in the shell, but not in Stu.  We
-	 * would like to make the ';' mandatory in Stu too, but this
-	 * would break existing Stu scripts, and we don't do
-	 * backward-incompatible changes without increasing the major
-	 * version number.  (And even then, it should be
-	 * well-motivated.)  Thus, this change will come, if at all,
-	 * only in Version 3 of Stu.
-	 *
-	 * Also, the case that Stu script actually try do something like
-	 *
-	 *             >A { echo } ; }
-	 *
-	 * is much much much rarer.  (As an aside, if a Stu command does
-	 * complex shell stuff with weird characters etc., it's probably
-	 * better to put it in a separate script.)  
-	 *
-	 * Note also that this does *not* apply to (), which behave as
-	 * expected in both the shell and Stu.  The three quote-like
-	 * characters '"` cannot be used recursively, so the problem
-	 * does not arise.  There may also be other syntax corner-cases
-	 * of the shell that Stu does not parse identically as the
-	 * shell.  
-	 */
 
 	while (p < p_end) {
 		
@@ -771,11 +763,10 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 }
 
 bool Tokenizer::is_name_char(char c) 
+/* The characters in the string constant are those characters that have
+ * special meaning (as defined in the manpage), and those reserved for
+ * future extension (also defined in the manpage)  */
 {
-	/* The characters in the string constant are those characters
-	 * that have special meaning (as defined in the manpage), and
-	 * those reserved for future extension (also defined in the
-	 * manpage)  */
 	return (c > 0x20 && c < 0x7F /* ASCII printable character except space */ 
 		&& nullptr == strchr("[]\"\':={}#<>@$;()%*\\!?|&,", c))
 		|| ((unsigned char) c) >= 0x80;
@@ -787,21 +778,21 @@ bool Tokenizer::is_operator_char(char c)
 }
 
 bool Tokenizer::is_flag_char(char c)
+/* These correspond to persistent, optional and trivial dependencies,
+ * respectively.  'p'/'o'/'t' were '!', '?' and '&' formerly.  The
+ * others are new.  */
 {
-	/* These correspond to persistent, optional and trivial
-	 * dependencies, respectively.  'p'/'o'/'t' were '!', '?' and '&'
-	 * formerly.  The others are new.  */
-	return c == 'p' || c == 'o' || c == 't' || c == 'n' || c == '0';
+	return c == 'p' || c == 'o' || c == 't' || 
+		c == 'n' || c == '0';
 }
 
 void Tokenizer::parse_version(string version_req, 
 			      const Place &place_version,
 			      const Place &place_percent) 
+/* Note: there may be any number of version directives in Stu (in
+ * particular from multiple source files), so we don't keep track
+ * whether one has already been provided.  */ 
 {
-	/* Note:  there may be any number of version directives in Stu
-	 * (in particular from multiple source files), so we don't keep
-	 * track whether one has already been provided.  */ 
-
 	unsigned major_req, minor_req, patch_req;
 	int chars= -1;
 	int n= sscanf(version_req.c_str(), "%u.%u.%u%n",

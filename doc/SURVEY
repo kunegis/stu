@@ -28,12 +28,21 @@ Make and its many implementations and extensions
     emulate it, e.g. using 'include' with GNU Make and others
 
 mk
+  - The Make replacement of Plan 9
+  - Similar to Make in general
+  - No builtin rules.  Instead, allows to include files that define
+    rules. 
+  - Has parametrized rules with single parameter called '%' like
+    Make (called metarules). 
 
 Cook 
   - Has numbered parameters %1 %2 %2 ...
   - Sort-of has dynamic dependencies using:   NAME [cat NAME]  (The
     semantics are different because a change in NAME only does not lead
     to a re-build in Stu, as it should logically, but does in Cook.)
+  - Like Stu, it uses the obvious syntax of enclosing commands in
+    braces.  Unlike Stu, it uses a C-like syntax (rather than a
+    shell-like syntax like Stu).
 
 Ant
   - Java-specific 
@@ -80,22 +89,10 @@ Buck
 
 Ninja - https://ninja-build.org/
 
-== Type of Tools ==
+______________________________________________
 
-Stu can be interpreted as different types on tools, without fitting
-neatly in any.  
+Other tools that may be perceived to be similar to Stu:
 
-* Build automation:  focused on software build 
-
-* Declarative programming:  uses variables, not files 
-
-* Shell:  Is imperative, not declarative 
-
-* Configuration management
-
-* Logic programming 
-
-* Functional programming:  Cf. the fact that individual files in Stu can
-  be programs, too; i.e., the different between variable and function is
-  eliminated 
-
+* Countless build tools for specific languages.  Almost all modern
+  programming languages come with specific build systems (some are
+  listed above).

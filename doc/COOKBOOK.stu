@@ -60,3 +60,15 @@ dat/statistic.size.lcc~$network:  dat/statistic.size.$network { ... }
 
 # What I do after adding a new extractor to KONECT; in this case from the konect-extr/extr/edit/ code 
 $ stu @basic.[dat/NETWORKS_FAMILY_edit]
+
+#
+# Directory are files too, and can be built by Stu.  ("Normal" files are
+# properly called regular files.)  The timestamp (mtime) of a directory
+# is updated when files are added/removed in the directory, and as a
+# result, the -p flag is often used with them.  As a convention,
+# filenames that refer to directories can end with a slash. 
+#
+
+output/data: -p output/ { ... -o output/data ; }
+
+output/ { mkdir -p output ; }

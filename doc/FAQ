@@ -1,5 +1,11 @@
 // This FAQ should be longer.
 
+==== Which Stu version am I using
+
+Do this:
+
+$ stu -V
+
 ==== When I change the content of a hardcoded rule, Stu does not rebuild
      the file
 

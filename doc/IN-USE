@@ -1,0 +1,49 @@
+Stu in Use
+==========
+
+Here are links to large projects using Stu.  They are all by the authors
+of Stu.
+
+
+KONECT Analysis
+---------------
+
+These are extensive data mining operations being performed on a very
+large collection of network datasets, as part of the KONECT project.
+This is probably the largest Stu script in usage by the authors. 
+
+https://github.com/kunegis/konect-analysis/blob/master/main.stu
+
+
+KONECT Extraction
+-----------------
+
+These are individual Stu scripts for generating the different network
+datasets in the KONECT projects.  Most Stu scripts are short and handle
+various oddities of the datasets.  Each subdirectory of extr/ has its
+own Stu script ('main.stu'), but not that some directories still use a
+Makefile, or no build automation at all. 
+
+https://github.com/kunegis/konect-extr/tree/master/extr
+
+
+Handbook of Network Analysis
+----------------------------
+
+This is the handbook of the KONECT project, and essentially a large and
+complex Latex document compiled to PDF using Stu.  Stu handles
+everything from assembling the plots from the KONECT project, to
+generating the tarball that is regularly uploaded to arXiv. 
+
+https://github.com/kunegis/konect-handbook/blob/master/main.stu
+
+
+KONECT World Wide Web Site
+--------------------------
+
+The World Wide Web site of the KONECT project (http://KONECT.cc/) is
+generated automatically using Stu.  This project uses many very small
+files -- a good test for Stu, and in particular for the parallel mode of
+Stu. 
+
+https://github.com/kunegis/konect-www/blob/master/main.stu

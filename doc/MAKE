@@ -1,0 +1,41 @@
+--------------------
+ Comparison to Make
+--------------------
+
+Advantages of Stu over Make are: 
+
+* Error messages are much better (Make has the dreaded "missing
+  separator"); Stu gives full traces like a good compiler.  If you get
+  an error, you know which part of the Stu script to fix.  
+* Stu has a proper tokenization pass, instead of Make's variable
+  substitution syntax.  This makes the whole language much more
+  predictable. 
+* Variables are not used; instead Stu encourages to put everything in
+  files.  This makes builds much faster: In a typical Makefile, a lot of
+  program logic must be implemented used Make functions (because of a
+  lack of dynamic dependencies), making a large piece of code being
+  executed on each Make invocation, even if the variables have not
+  changed.  
+* Stu catches typical Makefile errors such as dependencies that where
+  not built.  Make cannot do this because the namespace for files is
+  intermixed with namespace for phony targets.  In Stu, both namespaces
+  are separate (phony targets are called "transient targets" in Stu),
+  and thus Stu can perform all checks properly. 
+* Stu has better support for interrupting large builds.  Make will often
+  hang or leave processes running. 
+* Stu avoids the "inner platform" antipattern present in Make, in which
+  a lot of shell functionality is duplicated in Make functions.  For
+  instance, why are there text filtering functions in Make when the
+  shell already has grep and other tools?  That's because in Make, you
+  cannot use shell commands to define dynamic dependencies, so Make
+  evolved to have its own mini text filtering language.  Instead, Stu
+  allows and encourages all program logic to be implemented in ordinary
+  rules, i.e. using a proper shell.  
+* Stu supports additional types of dependencies which are essential in
+  large, complex projects, such as persistent dependencies with the
+  prefix -p (whose timestamps are always ignored), optional dependencies
+  with -o (instead of writing custom code that check whether a file is
+  present and making it impossible to let that file have dependencies of
+  its own), and trivial dependencies with -t (used e.g. for generating
+  compile-time options, or even a custom compiler).  These can only be
+  emulated partially with Make by using unwieldy constructs.

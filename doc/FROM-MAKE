@@ -1,4 +1,9 @@
-Here are some things to keep in mind for migrating from Make to Stu:
+Migrating from Make to Stu
+==========================
+
+A common pattern is to have a Makefile, and converting it to a Stu
+script.  Here are some things to keep in mind for migrating from Make to
+Stu. 
 
 * Instead of Make variables, use files or transient targets 
 

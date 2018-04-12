@@ -1,6 +1,6 @@
 // This FAQ should be longer.
 
-==== Which Stu version am I using
+==== Which Stu version am I using?
 
 Do this:
 
@@ -36,5 +36,3 @@ Solution:
 
 When the flags need to change, just edit 'CFLAGS' and Stu will do the
 right thing. 
-
-

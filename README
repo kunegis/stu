@@ -80,8 +80,8 @@ large data mining projects, where it manages everything from acquiring
 data from the web, preprocessing data in various ways, to performing
 data mining experiments, to generating plots and compiling the resulting
 Latex papers.  It is also used for compiling C/C++ code, for generating
-tarballs, for generating websites, and by students associated with
-Jérôme Kunegis.
+tarballs, for generating websites, and by data scientists and students
+associated with Jérôme Kunegis.
 
 The name "Stu" follows the precedents of Make replacements such as Cook,
 Bake, and Brew in referring to kitchen-related verbs, and also honors

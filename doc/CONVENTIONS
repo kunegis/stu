@@ -1,9 +1,37 @@
 Here are some conventions to use when writing Stu scripts.  These are
-used by the authors, but they are not enforced by Stu.
+used by the authors, but they are not enforced by Stu, and you may have
+very good reasons to not do things this way.  By the way, these are very
+good tips also if you don't use Stu.
 
-* Directory names end in '/'
+* Use lowercase for parameter names.  It's less likely to clash with
+  existing environment variables, and makes code read more like a
+  "normal programming language". 
+* Directory names end in '/' when used as Stu target/dependency names.
+  Ending directory filenames in '/' is always a good idea, except in
+  path lists delimited by ':', where ending '/' should be omitted. 
 * If there is a setting that will be changed occasionally by hand (such
   as enabling/disabling assertions), it may be easier to compile two
   versions of the programs, with the value of that setting encoded in
   the filename. 
-* Separate names of parameters in filenames by dots ('.')
+* Separate names of parameters in filenames by dots ('.'), and avoid
+  dots within individual parameter values.  That will avoid certain
+  filename matching errors. 
+* Avoid "cd".  In a single project that uses Stu, have a base directory
+  in which 'main.stu' is located, and do everything from there.  Inside
+  each program that is run, assume the currently directory is that base
+  directory. 
+* Prefer symlinks over configuration files.  Often, a project needs to
+  access files outside its own directory.  To do this, prefer to have a
+  symlink to the external directory and access the files through that,
+  rather than having the path stored in a configuration file or
+  environment variable. 
+* Don't use system-wide configurations.  Some systems (e.g. databases)
+  rely on configuration files that are outside the current directory,
+  for instance by placing their configuration in /etc/.  Avoid this as
+  much as possible.  Configuration files should be part of the project
+  like any other file, and should be put where other files are.  (Of
+  course, for things like user options, system- and user-wide
+  configuration files are 100% OK.)
+* Don't use environment variables for configuration, as Stu will not
+  notice when they change.  Instead, put their content in a single file,
+  and use Stu's $[FILENAME] syntax to access it. 

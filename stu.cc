@@ -101,22 +101,6 @@ void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
 /* Parse a string of dependencies and add them to the vector. Used for
  * the -C option.  Support the full Stu syntax.  */
 
-void read_file(string filename,
-	       int file_fd,
-	       Rule_Set &rule_set, 
-	       shared_ptr <const Rule> &rule_first,
-	       Place &place_first); 
-/* Read in an input file and add the rules to the given rule set.  Used
- * for the -f option and the default input file.  If not yet non-null,
- * set RULE_FIRST to the first rule.  FILE_FD can be -1 or the FD or the
- * filename, if already opened.  If FILENAME is "-", use standard input.
- * If FILENAME is "", use the default file ('main.stu').  */
-
-void read_option_F(const char *s,
-		   Rule_Set &rule_set, 
-		   shared_ptr <const Rule> &rule_first);
-/* Read rules from the argument to the -F option */ 
-
 /* Set one of the "setting options", i.e., of of those that can appear
  * in $STU_OPTIONS.  Return whether this was a valid settings option.  */ 
 bool stu_setting(char c)
@@ -243,13 +227,13 @@ int main(int argc, char **argv, char **envp)
 				}
 				had_option_f= true;
 				filenames.push_back(optarg); 
-				read_file(optarg, -1, Execution::rule_set, rule_first, place_first);
+				Parser::get_file(optarg, -1, Execution::rule_set, rule_first, place_first);
 			end:
 				break;
 
 			case 'F':
 				had_option_f= true;
-				read_option_F(optarg, Execution::rule_set, rule_first);
+				Parser::get_string(optarg, Execution::rule_set, rule_first);
 				break;
 
 			case 'i':
@@ -398,8 +382,8 @@ int main(int argc, char **argv, char **envp)
 			filenames.push_back(FILENAME_INPUT_DEFAULT); 
 			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY); 
 			if (file_fd >= 0) {
-				read_file("", file_fd, 
-					  Execution::rule_set, rule_first, place_first); 
+				Parser::get_file("", file_fd, 
+						 Execution::rule_set, rule_first, place_first); 
 			} else {
 				if (errno == ENOENT) { 
 					/* The default file does not exist --
@@ -526,82 +510,5 @@ void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
 
 	for (auto &j:  deps_option) {
 		deps.push_back(j); 
-	}
-}
-
-void read_file(string filename,
-	       int file_fd,
-	       Rule_Set &rule_set, 
-	       shared_ptr <const Rule> &rule_first,
-	       Place &place_first)
-{
-	assert(file_fd == -1 || file_fd > 1); 
-
-	Place place_diagnostic= filename == "" 
-		? Place()
-		: Place(Place::Type::OPTION, 'f');
-
-	if (filename == "")
-		filename= FILENAME_INPUT_DEFAULT;
-
-	string filename_passed= filename;
-	if (filename_passed == "-")  filename_passed= ""; 
-
-	/* Tokenize */ 
-	vector <shared_ptr <Token> > tokens;
-	Place place_end;
-	Tokenizer::parse_tokens_file
-		(tokens, 
-		 Tokenizer::SOURCE,
-		 place_end, filename_passed, 
-		 place_diagnostic, 
-		 file_fd); 
-
-	/* Build rules */
-	vector <shared_ptr <const Rule> > rules;
-	Parser::get_rule_list(rules, tokens, place_end); 
-
-	/* Add to set */
-	rule_set.add(rules);
-
-	/* Set the first one */
-	if (rule_first == nullptr) {
-		auto i= rules.begin();
-		if (i != rules.end()) {
-			rule_first= *i; 
-		}
-	}
-
-	if (rules.empty() && place_first.empty()) {
-		place_first= place_end;
-	}
-}
-
-void read_option_F(const char *s,
-		   Rule_Set &rule_set, 
-		   shared_ptr <const Rule> &rule_first)
-{
-	/* Tokenize */ 
-	vector <shared_ptr <Token> > tokens;
-	Place place_end;
-	Tokenizer::parse_tokens_string
-		(tokens, 
-		 Tokenizer::OPTION_F,
-		 place_end, s,
-		 Place(Place::Type::OPTION, 'F'));
-
-	/* Build rules */
-	vector <shared_ptr <const Rule> > rules;
-	Parser::get_rule_list(rules, tokens, place_end);
-
-	/* Add to set */
-	rule_set.add(rules);
-
-	/* Set the first one */
-	if (rule_first == nullptr) {
-		auto i= rules.begin();
-		if (i != rules.end()) {
-			rule_first= *i; 
-		}
 	}
 }

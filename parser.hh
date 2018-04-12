@@ -90,6 +90,22 @@ public:
 	 * Parsed dependency are appended to DEPS, which is not
 	 * necessarily empty on invocation.  */
 
+	static void get_file(string filename,
+			     int file_fd,
+			     Rule_Set &rule_set, 
+			     shared_ptr <const Rule> &rule_first,
+			     Place &place_first); 
+	/* Read in an input file and add the rules to the given rule set.  Used
+	 * for the -f option and the default input file.  If not yet non-null,
+	 * set RULE_FIRST to the first rule.  FILE_FD can be -1 or the FD or the
+	 * filename, if already opened.  If FILENAME is "-", use standard input.
+	 * If FILENAME is "", use the default file ('main.stu').  */
+
+	static void get_string(const char *s,
+			       Rule_Set &rule_set, 
+			       shared_ptr <const Rule> &rule_first);
+	/* Read rules from a string */ 
+
 private:
 
 	vector <shared_ptr <Token> > &tokens;
@@ -1385,6 +1401,83 @@ bool Parser::next_concatenates() const
 	char op= is <Operator> ()->op;
 
 	return op == '(' || op == '['; 
+}
+
+void Parser::get_file(string filename,
+		      int file_fd,
+		      Rule_Set &rule_set, 
+		      shared_ptr <const Rule> &rule_first,
+		      Place &place_first)
+{
+	assert(file_fd == -1 || file_fd > 1); 
+
+	Place place_diagnostic= filename == "" 
+		? Place()
+		: Place(Place::Type::OPTION, 'f');
+
+	if (filename == "")
+		filename= FILENAME_INPUT_DEFAULT;
+
+	string filename_passed= filename;
+	if (filename_passed == "-")  filename_passed= ""; 
+
+	/* Tokenize */ 
+	vector <shared_ptr <Token> > tokens;
+	Place place_end;
+	Tokenizer::parse_tokens_file
+		(tokens, 
+		 Tokenizer::SOURCE,
+		 place_end, filename_passed, 
+		 place_diagnostic, 
+		 file_fd); 
+
+	/* Build rules */
+	vector <shared_ptr <const Rule> > rules;
+	Parser::get_rule_list(rules, tokens, place_end); 
+
+	/* Add to set */
+	rule_set.add(rules);
+
+	/* Set the first one */
+	if (rule_first == nullptr) {
+		auto i= rules.begin();
+		if (i != rules.end()) {
+			rule_first= *i; 
+		}
+	}
+
+	if (rules.empty() && place_first.empty()) {
+		place_first= place_end;
+	}
+}
+
+void Parser::get_string(const char *s,
+			Rule_Set &rule_set, 
+			shared_ptr <const Rule> &rule_first)
+{
+	/* Tokenize */ 
+	vector <shared_ptr <Token> > tokens;
+	Place place_end;
+	Tokenizer::parse_tokens_string
+		(tokens, 
+		 Tokenizer::OPTION_F,
+		 place_end, s,
+		 Place(Place::Type::OPTION, 'F'));
+
+	/* Build rules */
+	vector <shared_ptr <const Rule> > rules;
+	Parser::get_rule_list(rules, tokens, place_end);
+
+	/* Add to set */
+	rule_set.add(rules);
+
+	/* Set the first one */
+	if (rule_first == nullptr) {
+		auto i= rules.begin();
+		if (i != rules.end()) {
+			rule_first= *i; 
+		}
+	}
 }
 
 #endif /* ! PARSER_HH */

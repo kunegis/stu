@@ -614,11 +614,9 @@ private:
 };
 
 class Transient_Execution
-/* 
- * Used for non-dynamic transients that appear in rules that have only
+/* Used for non-dynamic transients that appear in rules that have only
  * transients as targets, and have no command.  If at least one file
- * target or a command is present in the rule, File_Execution is used.
- */
+ * target or a command is present in the rule, File_Execution is used.  */
 	:  public Execution 
 {
 public:
@@ -1095,11 +1093,9 @@ void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		end:;
 		}
 
-		/* 
-		 * Perform checks on forbidden features in dynamic dependencies.
+		/* Perform checks on forbidden features in dynamic dependencies.
 		 * In keep-going mode (-k), we set the error, set the erroneous
-		 * dependency to null, and at the end prune the null entries. 
-		 */
+		 * dependency to null, and at the end prune the null entries.  */
 		bool found_error= false; 
 		for (auto &j:  deps) {
 
@@ -1258,11 +1254,9 @@ void Execution::cycle_print(const vector <Execution *> &path,
 
 bool Execution::same_rule(const Execution *execution_a,
 			  const Execution *execution_b)
-/* 
- * This must also take into account that two execution could use the
+/* This must also take into account that two execution could use the
  * same rule but parametrized differently, thus the two executions could
- * have different targets, but the same rule. 
- */ 
+ * have different targets, but the same rule.  */ 
 {
 	return 
 		execution_a->param_rule != nullptr &&
@@ -2439,14 +2433,12 @@ bool File_Execution::remove_if_existing(bool output)
 
 		/* Remove the file if it exists.  If it is a symlink, only the
 		 * symlink itself is removed, not the file it links to.  */ 
-
 		struct stat buf;
 		if (0 > stat(filename, &buf))
 			continue;
 
 		/* If the file existed before building, remove it only if it now
 		 * has a newer timestamp.  */
-
 		if (! (! timestamps_old[i].defined() || timestamps_old[i] < Timestamp(&buf)))
 			continue;
 
@@ -2891,12 +2883,11 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 	pid_t pid; 
 	size_t index; /* In EXECUTIONS_BY_PID_* */
 	{
-
 		/* Block signals from the time the process is started,
 		 * to after we have entered it in the map.  Note:  if we
 		 * only blocked signals during the time we update
 		 * EXECUTIONS_BY_PID_*, there would be a race condition
-		 * in which the job would failed to be clean up.  */
+		 * in which the job would fail to be clean up.  */
 		Job::Signal_Blocker sb;
 
 		if (rule->is_copy) {
@@ -3029,10 +3020,8 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 void File_Execution::print_as_job() const
 {
 	pid_t pid= job.get_pid();
-
 	string text_target= targets.front().format_src(); 
-
-	printf("%7ld %s\n", (long) pid, text_target.c_str());
+	printf("%9ld %s\n", (long) pid, text_target.c_str());
 }
 
 void File_Execution::write_content(const char *filename, 

@@ -29,11 +29,9 @@
 
 /* Using CLOCK_REALTIME_COARSE (Linux only) works. */ 
 
-/* 
- * Note also that this implementation has such high precision, that bugs
- * in Stu scripts may emerge which normally would have been hidden.  
- */
 class Timestamp
+/* Note also that this implementation has such high precision, that bugs
+ * in Stu scripts may emerge which otherwise would have been hidden.  */
 {
 private:
 

@@ -13,10 +13,8 @@
 
 #include <memory>
 
-/* 
- * A token.  This class is mainly used through unique_ptr/shared_ptr. 
- */
 class Token
+/* A token.  This class is mainly used through unique_ptr/shared_ptr.  */
 {
 public:
 
@@ -40,11 +38,9 @@ public:
 	/* Formatting of the starting character of character sequence */
 };
 
-/* 
- * An operator, e.g. ':', '[', etc.  Operators are all single
- * characters.  
- */  
 class Operator
+/* An operator, e.g. ':', '[', etc.  Operators are all single
+ * characters.  */  
 	:  public Token
 {
 public: 
@@ -123,10 +119,10 @@ public:
 	}
 };
 
+class Name_Token
 /* This contains two types of places:  the places for the individual
  * parameters in Place_Param_Name, and the place of the complete token
  * from Token.  */
-class Name_Token
 	:  public Token, public Place_Name
 {
 public:
@@ -149,11 +145,9 @@ public:
 	}
 };
 
-/* 
- * A command delimited by braces, or the content of a file, also
- * delimited by braces.  
- */
 class Command
+/* A command delimited by braces, or the content of a file, also
+ * delimited by braces.  */
 	:  public Token
 {
 private:
@@ -209,6 +203,14 @@ Command::Command(string command_,
 
 const vector <string> &
 Command::get_lines() const
+/* 
+ * This code parses the command string into lines ready for output.
+ * Most of the code is for making the output pretty.
+ *
+ * We only output a command when it has a single line, but the following
+ * code also handles the case of multiline commands.  We keep it because
+ * we may need it in the future.
+ */
 {
 	if (lines != nullptr) {
 		return *lines; 
@@ -216,13 +218,6 @@ Command::get_lines() const
 	
 	lines= unique_ptr <vector <string> > (new vector <string> ()); 
 
-	/* The following code parses the command string into lines ready for
-	 * output.  Most of the code is for making the output pretty. */   
-
-	/* We only output a command when it has a single line, but the
-	 * following code also handles the case of multiline commands.
-	 * We keep it because we may need it in the future.  */
-	
 	const char *p= command.c_str();
 	const char *p_end= p + command.size(); 
 

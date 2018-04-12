@@ -25,10 +25,9 @@ string frmt(const char *format, ...)
 #endif
 
 string frmt(const char *format, ...) 
+/* Call snprintf() twice: once to compute the needed size, then once to
+ * actually print everything.  */ 
 {
-	/* Call snprintf() twice:  once to compute the needed size, then
-	 * once to actually print everything */ 
-
 	va_list ap;
 	char buf[2];
 	int n;

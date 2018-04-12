@@ -414,7 +414,6 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 	}
 }
 
-
 shared_ptr <Command> Tokenizer::parse_command()
 /* 
  * To determine the place of the command:  These rules are intended to

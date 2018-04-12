@@ -38,14 +38,12 @@ typedef uint16_t word_t;
 #	error "Invalid word size" 
 #endif
 
-/* 
- * A representation of a simple dependency, mainly used as the key in
+class Target
+/* A representation of a simple dependency, mainly used as the key in
  * the caching of Execution objects.  The difference to the Dependency
  * class is that Target objects don't store the Place objects, and don't
  * support parametrization.  Thus, Target objects are used as keys in
- * maps, etc.  Flags are included however. 
- */
-class Target
+ * maps, etc.  Flags are included however.  */
 {
 public:
 	
@@ -225,6 +223,7 @@ namespace std {
 	};
 }
 
+class Name
 /* 
  * A parametrized name.  Each name has N >= 0 parameters.  When N > 0,
  * the name is parametrized, otherwise it is unparametrized.   
@@ -241,7 +240,6 @@ namespace std {
  *
  * A parametrized name is empty if N = 0 and the single text is empty. 
  */
-class Name
 {
 private:
 
@@ -433,10 +431,9 @@ public:
 	 * not need to have the same number of parameters.  */
 };
 
-/* 
- * A parametrized name for which it is saved what type it represents.  Non-dynamic. 
- */ 
 class Param_Target
+/* A parametrized name for which it is saved what type it represents.
+ * Non-dynamic.  */ 
 {
 public:
 
@@ -504,10 +501,8 @@ public:
 	}
 };
 
-/*
- * A parametrized name annotated with places. 
- */
 class Place_Name
+/* A parametrized name annotated with places */
 	:  public Name
 {
 public:
@@ -559,10 +554,8 @@ public:
 	}
 };
 
-/* 
- * A target that is parametrized and contains places.  Non-dynamic. 
- */
 class Place_Param_Target
+/* A target that is parametrized and contains places.  Non-dynamic. */
 {
 public:
 
@@ -830,18 +823,15 @@ string Name::instantiate(const map <string, string> &mapping) const
 bool Name::match(const string name, 
 		 map <string, string> &mapping,
 		 vector <size_t> &anchoring) const
+/* 
+ * Rule:  Each parameter must match at least one character. 
+ *
+ * This algorithm uses one pass without backtracking or recursion.
+ * Therefore, there are no "deadly" patterns that can make it hang,
+ * which is a common source of errors for naive trivial implementations
+ * of regular expression matching.
+ */
 {
-	/* 
-	 * Rules:
-	 *  - Each parameter must match at least one character. 
-	 */
-
-	/* This algorithm uses one pass without backtracking or
-	 * recursion.  Therefore, there are no "deadly" patterns that
-	 * can make it hang, which is a common source of errors for
-	 * naive trivial implementations of regular expression
-	 * matching.  */
-
 	assert(mapping.size() == 0); 
 
 	map <string, string> ret;
@@ -877,7 +867,6 @@ bool Name::match(const string name,
 		if (i == n - 1) {
 			/* For the last segment, the texts[n-1] must
 			 * match the end of the input string */ 
-
 			size_t size_last= texts[n].size();
 
 			if (p_end - p < 1 + (ssize_t) size_last) 
@@ -953,13 +942,11 @@ bool Name::valid(string &param_1, string &param_2) const
 
 bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 			       vector <size_t> &anchoring_b)
+/* (A) dominates (B) when every character in a parameter in (A) is also
+ * in a parameter in (B) and at least one character is not parametrized
+ * in (A) but in (B). */
+/* CORRESPONDING TEST: anchoring */ 
 {
- 	/* (A) dominates (B) when every character in a parameter in (A)
-	 * is also in a parameter in (B) and at least one character is
-	 * not parametrized in (A) but in (B). */
-
-	/* CORRESPONDING TEST: anchoring */ 
-
 	assert(anchoring_a.size() % 2 == 0);
 	assert(anchoring_b.size() % 2 == 0);
 

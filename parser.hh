@@ -1256,13 +1256,13 @@ void Parser::get_expression_list(vector <shared_ptr <const Dep> > &deps,
 void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps, 
 			    int argc, const char *const *argv)
 /*
- *    - recognize only the special characters "-@[]".  And "-@" only at the
+ *    - Recognize only the special characters "-@[]".  And "-@" only at the
  *      beginning of arguments, or after [ or ], etc.   
- *    - treat whitespace within arguments as part of the name, and only
+ *    - Treat whitespace within arguments as part of the name, and only
  *      consider the separation between arguments to be whitespace
- *    - don't support '$' or other syntax
- *    - don't need space after flags 
- *    - recognize '[' and ']' in the middle of the string, to denote
+ *    - Don't support '$' or other syntax
+ *    - Don't need space after flags 
+ *    - Recognize '[' and ']' in the middle of the string, to denote
  *      concatenation 
  */
 {

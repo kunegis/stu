@@ -492,21 +492,16 @@ pid_t Job::start_copy(string target,
 
 
 pid_t Job::wait(int *status)
-/* 
- * The main loop of Stu.  We wait for the two productive signals SIGCHLD
- * and SIGUSR1. 
- * 	
- * When this function is called, there is always at least one child
- * process running. 
- */
+/* The main loop of Stu.  We wait for the two productive signals SIGCHLD
+ * and SIGUSR1.  When this function is called, there is always at least
+ * one child process running.  */
 {
  begin: 	
 	/* First, try wait() without blocking.  WUNTRACED is used to
 	 * also get notified when a job is suspended (e.g. with
 	 * Ctrl-Z).  */ 
-	pid_t pid= waitpid(-1, status, WNOHANG | 
-			   (option_interactive
-			    ? WUNTRACED : 0));
+	pid_t pid= waitpid(-1, status, 
+			   WNOHANG | (option_interactive ? WUNTRACED : 0));
 	if (pid < 0) {
 		/* Should not happen as there is always something
 		 * running when this function is called.  However, this
@@ -519,19 +514,19 @@ pid_t Job::wait(int *status)
 
 	if (pid > 0) {
 		if (WIFSTOPPED(*status)) {
+
 			/* The process was suspended. This can have
 			 * several reasons, including someone just using
 			 * kill -STOP on the process.  */
 			assert(option_interactive);
-			/* 
-			 * This is the simplest thing possible we can do
+
+			/* This is the simplest thing possible we can do
 			 * in interactive mode: put ourselves in the
 			 * foreground, ask the user to press ENTER, and
 			 * then put the job back into the foreground and
 			 * continue it.  In principle, we could do much
 			 * more: allow the user to enter commands,
-			 * having an own command language, etc.
-			 */
+			 * having an own command language, etc.  */
 			if (tcsetpgrp(tty, getpid()) < 0)
 				print_error_system("tcsetpgrp");
 			fprintf(stderr,
@@ -540,10 +535,9 @@ pid_t Job::wait(int *status)
 			char *lineptr= nullptr;
 			size_t n= 0;
 			ssize_t r= getline(&lineptr, &n, stdin);
-			if (r < 0) {
-				perror("getline");
-				/* On error, continue anyway */ 
-			}
+			/* On error, printf error message and continue */ 
+			if (r < 0) 
+				print_error_system("getline");
 			fprintf(stderr, PACKAGE ": continuing\n"); 
 			if (tcsetpgrp(tty, pid) < 0)
 				print_error_system("tcsetpgrp");
@@ -647,7 +641,6 @@ bool Job::waited(int status, pid_t pid_check)
 	}
 	
 	pid= -1;
-
 	return success; 
 }
 
@@ -888,14 +881,12 @@ void Job::init_signals()
 }
 
 void Job::kill(pid_t pid)
-/* 
- * Passing (-pid) to kill() kills the whole process group with PGID
+/* Passing (-pid) to kill() kills the whole process group with PGID
  * (pid).  Since we set each child process to have its PID as its
  * process group ID, this kills the child and all its children
  * (recursively), up to programs that change this PGID of processes,
  * such as Stu and shells, which have to kill their children explicitly
- * in their signal handlers.
- */ 
+ * in their signal handlers.  */ 
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 

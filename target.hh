@@ -43,7 +43,7 @@ class Target
  * the caching of Execution objects.  The difference to the Dependency
  * class is that Target objects don't store the Place objects, and don't
  * support parametrization.  Thus, Target objects are used as keys in
- * maps, etc.  Flags are included however.  */
+ * maps, etc.  Flags are included.  */
 {
 public:
 	
@@ -120,10 +120,8 @@ public:
 	}
 	
 	const char *get_name_c_str_nondynamic() const 
-	/*
-	 * Return a C pointer to the name of the file or transient.  The
-	 * object must be non-dynamic. 
-	 */
+	/* Return a C pointer to the name of the file or transient.  The
+	 * object must be non-dynamic.  */
 	{
 		check(); 
 		assert((get_word(0) & F_TARGET_DYNAMIC) == 0); 
@@ -225,24 +223,21 @@ namespace std {
 
 class Name
 /* 
- * A parametrized name.  Each name has N >= 0 parameters.  When N > 0,
- * the name is parametrized, otherwise it is unparametrized.   
- * 
- * A name consists of (N+1) static text elements (in the variable TEXTS)
- * and N parameters, which are interleaved.  For instance when N = 2,
- * then the name is given by
+ * The name of a file or transient, which can be parametrized.  A name
+ * has N >= 0 parameters.  When N > 0, the name is parametrized,
+ * otherwise it is unparametrized.  A name consists of (N+1) static text
+ * elements (in the variable TEXTS) and N parameters (in PARAMETERS),
+ * which are interleaved.  For instance when N = 2, the name is given by
  *
  *		texts[0] parameters[0] texts[1] parameters[1] texts[2].
  *
- * Parametrized names may be valid or invalid.  A parametrized name is
- * valid when all internal texts (between two parameters) are non-empty,
- * and, if N = 0, the single text is not empty. 
- *
- * A parametrized name is empty if N = 0 and the single text is empty. 
+ * Names can be valid or invalid.  A name is valid when all internal
+ * texts (between two parameters) are non-empty, and, if N = 0, the
+ * single text is not empty.  A name is empty if N = 0 and the single
+ * text is empty (empty names are invalid).
  */
 {
 private:
-
 	vector <string> texts; 
 	/* Length = N + 1 */
 
@@ -250,7 +245,6 @@ private:
 	/* Length = N */ 
 
 public:
-
 	/* A name with zero parameters */ 
 	Name(string name_)
 		:  texts({name_})
@@ -314,16 +308,18 @@ public:
 	string &last_text() {
 		return texts[texts.size() - 1];
 	}
-
 	const string &last_text() const {
 		return texts[texts.size() - 1];
 	}
 
 	string instantiate(const map <string, string> &mapping) const;
-	/* The name may be empty, resulting in an empty string */ 
+	/* Instantiate the name with the given mapping.  The name may be
+	 * empty, resulting in an empty string.  */ 
 
-	/* Return the unparametrized name.  The name must be unparametrized. */
-	const string &unparametrized() const {
+	const string &unparametrized() const 
+	/* Return the name as a string, assuming it is unparametrized.
+	 * The name must be unparametrized.  */
+	{
 		assert(get_n() == 0);
 		return texts[0]; 
 	}
@@ -335,8 +331,9 @@ public:
 	 * TRUE and set MAPPING and ANCHORING accordingly. 
 	 * MAPPING must be empty.  */
 	
-	/* No escape characters */
-	string raw() const {
+	string raw() const 
+	/* Raw formatting of the name, without doing any escaping */
+	{
 		assert(texts.size() == 1 + parameters.size()); 
 		string ret= texts[0];
 		for (size_t i= 0;  i < get_n();  ++i) {
@@ -573,8 +570,9 @@ public:
 		   place(that.place)
 	{  }
 
+	bool operator == (const Place_Param_Target &that) const 
 	/* Compares only the content, not the place. */ 
-	bool operator == (const Place_Param_Target &that) const {
+	{
 		return this->flags == that.flags && 
 			this->place_name == that.place_name; 
 	}

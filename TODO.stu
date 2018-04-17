@@ -16,12 +16,20 @@
 #      - [^/]+/.. -> '' or '.' when otherwise empty
 #
 # At which points to apply:
-#   - Rule_Set::add()
-#   - target parameters passed to Rule_Set::get(), when necessary 
+#   - at parsing files [Parser::parse_name()]
+#   - at parsing dynamic dependencies [same]
+#   - at parsing dynamic dependencies with -n/-0 (same) [code is in
+#     execution.hh; refactor to parser.hh]
+#   - at parsing command line options / arguments [in stu.cc; migrate to
+#     parser.hh]
 # Or:
-#   - at parsing files 
-#   - at parsing dynamic dependencies
-#   - at parsing command line options / arguments 
+#   - Rule_Set::add()
+#   - target parameters passed to Rule_Set::get(), when necessary
+#     (makes it difficult to tell when, because they come from internal
+#     and external)
+# Or:
+#   - In constructors of Name (but not Target) (does not work because we
+#     assemble these character by character)
 # 
 # Rules:
 #   - Don't do anything special with symlinks/hardlinks/etc.; they need
@@ -30,6 +38,8 @@
 #   - The rules do not apply within parameters or across parameters and
 #     non-parameter text
 #   - The rules also apply to transient targets
+#   - Canonicalization does not apply to %include files, -f files, and
+#     other "non-targets". 
 #
 
 # Test by checking the output of the "file not found" message of Stu:

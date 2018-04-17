@@ -10,27 +10,23 @@
 #include "token.hh"
 #include "explain.hh"
 
-/* 
- * A rule.  The class Rule allows parameters; there is no
- * "unparametrized rule" class. 
- */ 
 class Rule
+/* A rule.  The class Rule allows parameters; there is no
+ * "unparametrized rule" class.  */ 
 {
 public:
-
 	const vector <shared_ptr <const Place_Param_Target> > place_param_targets; 
-	/* The targets of the rule, in the order specified in the rule.  
-	 * Contains at least one element. 
-	 * Each element contains all parameters of the rule,
-	 * and therefore should be used for iterating of all parameters.
-	 * The place in each target is used when referring to a target
-	 * specifically.  */ 
+	/* The targets of the rule, in the order specified in the rule.
+	 * Contains at least one element.  Each element contains all
+	 * parameters of the rule, and therefore should be used for
+	 * iterating of all parameters.  The place in each target is
+	 * used when referring to a target specifically.  */ 
 
 	vector <shared_ptr <const Dep> > deps;
 	/* The dependencies in order of declaration.  Dependencies are
 	 * included multiple times if they appear multiple times in the
-	 * source.  Any parameter occuring any dependency also
-	 * occurs in every target. */ 
+	 * source.  Any parameter occuring in any dependency also occurs
+	 * in every target. */ 
 
 	const Place place;
 	/* The place of the rule as a whole.  Taken from the place of
@@ -68,7 +64,8 @@ public:
 	     bool is_hardcode_,
 	     int redirect_index_,
 	     bool is_copy_); 
-	/* Direct constructor that specifies everything */
+	/* Direct constructor that specifies everything; no checks or
+	 * initialization is performed.  */
 
 	Rule(vector <shared_ptr <const Place_Param_Target> > &&place_param_targets_,
 	     const vector <shared_ptr <const Dep> > &deps_,
@@ -112,13 +109,10 @@ public:
 	 * itself when it is unparametrized.  */ 
 };
 
-/* 
- * A set of parametrized rules. 
- */
 class Rule_Set
+/* A set of parametrized rules */
 {
 private:
-
 	unordered_map <Target, shared_ptr <const Rule> > rules_unparametrized;
 	/* All unparametrized rules by their target.  Rules
 	 * with multiple targets are included multiple times, for each
@@ -129,11 +123,9 @@ private:
 	/* All parametrized rules. */ 
 
 public:
-
 	void add(vector <shared_ptr <const Rule> > &rules_);
-	/* Add rules to this rule set.  
-	 * While adding rules, check for duplicates, and print and throw
-	 * a logical error if there is. 
+	/* Add rules to this rule set.  While adding rules, check for
+	 * duplicates, and print and throw a logical error if there is.
 	 * If the given rule has duplicate targets, print and throw a
 	 * logical error.  */ 
 
@@ -144,13 +136,12 @@ public:
 	/* Match TARGET to a rule, and return the instantiated
 	 * (non-parametrized) corresponding rule.  TARGET must be
 	 * non-dynamic and not have flags (except F_TARGET_TRANSIENT).
-	 * MAPPING_PARAMETER must be empty.  Return null when no 
-	 * match is found.  When a match is found, write the original
-	 * (possibly parametrized) rule into PARAM_RULE and the
-	 * matched parameters into MAPPING_PARAMETER.  Throws errors, in
-	 * which case PARAM_RULE is never set.  PLACE  
-	 * is the place of the dependency; used in error messages.  
-	 */ 
+	 * MAPPING_PARAMETER must be empty.  Return null when no match
+	 * is found.  When a match is found, write the original
+	 * (possibly parametrized) rule into PARAM_RULE and the matched
+	 * parameters into MAPPING_PARAMETER.  Throws errors, in which
+	 * case PARAM_RULE is never set.  PLACE is the place of the
+	 * dependency; used in error messages.  */ 
 
 	void print() const;
 	/* Print the rule set to standard output, as used by the -P and
@@ -222,8 +213,8 @@ Rule::Rule(shared_ptr <const Place_Param_Target> place_param_target_,
 	   is_hardcode(false),
 	   is_copy(true)
 {
-	auto dep= 
-		make_shared <Plain_Dep> (Place_Param_Target(0, *place_name_source_));
+	auto dep= make_shared <Plain_Dep> 
+		(Place_Param_Target(0, *place_name_source_));
 
 	if (! place_persistent.empty()) {
 		dep->flags |= F_PERSISTENT;

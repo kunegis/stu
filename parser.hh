@@ -1412,14 +1412,14 @@ void Parser::get_file(string filename,
 	assert(file_fd == -1 || file_fd > 1); 
 
 	Place place_diagnostic= filename == "" 
-		? Place()
-		: Place(Place::Type::OPTION, 'f');
+		? Place() : Place(Place::Type::OPTION, 'f');
 
 	if (filename == "")
 		filename= FILENAME_INPUT_DEFAULT;
 
 	string filename_passed= filename;
-	if (filename_passed == "-")  filename_passed= ""; 
+	if (filename_passed == "-")  
+		filename_passed= ""; 
 
 	/* Tokenize */ 
 	vector <shared_ptr <Token> > tokens;

@@ -4,11 +4,9 @@
  * status, etc.
  */
 
-/*
- * Enable bounds checking when using GNU libc.  Must be defined before
+/* Enable bounds checking when using GNU libc.  Must be defined before
  * including any of the standard headers.  (Only in non-debug mode).  A
- * no-op for non-GNU libc++ libraries.
- */ 
+ * no-op for non-GNU libc++ libraries.  */ 
 #ifndef NDEBUG
 #    define _GLIBCXX_DEBUG
 #endif 

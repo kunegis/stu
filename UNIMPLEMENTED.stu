@@ -52,6 +52,25 @@
 #==== Normal features ====
 
 #
+# Have a way to set $STU_SHELL and $STU_CP from within a Stu script.
+# E.g., using directives. 
+#
+
+# Some Stu scripts may want to use Bash throughout
+% STU_SHELL /bin/bash
+
+# Should it be valid for the whole Stu invocation, or only for the
+# source file in which it appears?
+
+#
+# Does it make sense to have a way to set environment variables for all
+# commands?  It would open us up to many additional questions, and
+# potentially some Make-like anti-patterns.  In general, Stu directives
+# are prone to implement anti-patterns, as what they do is global. 
+#
+
+% set PATH /usr/local/bin
+#
 # A flag with the meaning "never rebuild that dependency", but only use
 # it to determine whether we need to rebuilt the target.  It would mean
 # that we can prune dependencies with that flag as soon as we know that

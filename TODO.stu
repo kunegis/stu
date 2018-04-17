@@ -16,15 +16,23 @@
 #      - [^/]+/.. -> '' or '.' when otherwise empty
 #
 # At which points to apply:
-#   - In all functions of Rule_Set
+#   - Rule_Set::add()
+#   - target parameters passed to Rule_Set::get(), when necessary 
+# Or:
+#   - at parsing files 
+#   - at parsing dynamic dependencies
+#   - at parsing command line options / arguments 
 # 
 # Rules:
 #   - Don't do anything special with symlinks/hardlinks/etc.; they need
 #     syscalls to detect anyway.
 #   - '/' also matches in parameters
+#   - The rules do not apply within parameters or across parameters and
+#     non-parameter text
 #   - The rules also apply to transient targets
 #
 
+# Test by checking the output of the "file not found" message of Stu:
 #      - aaa -> aaa
 #      - aaa/.. ->  .
 #      - aaa/../bbb -> bbb
@@ -55,6 +63,49 @@
 # Test this:
 dat/STATISTICS = ./; 
 STATISTICS { ... }
+
+# This is a duplicate target and not allowed
+A = {111}
+./A = {222}
+
+A/B = {111}
+A//B = {222}
+
+# This is not an error; there is no duplicate rule
+A: / { touch A ; }
+/ { exit 0 ; }
+// { exit 1; }
+
+# Duplicate rule
+A: / { touch A ; }
+/ { exit 0 ; }
+/// { exit 0 ; }
+
+$ stu ///
+/ { exit 0 ; }
+
+# Parametrized case: .${x}st.a does not match  ./list.a 
+A: ./list.a { cp list.a A ; }
+.${x}st.a { exit 1 ; }
+>list.a { echo CORRECT ; }
+
+# Matches
+A: list.a { cp list.a A ; }
+./list.$x { echo "$x" >./list."$x" ; }
+
+# Does not match
+A:  // { touch A ; }
+/$x    { exit 1  ; }
+//     { exit 0  ; }
+
+# Normalized to the same thing, none is normalized
+A: /// { touch A ; }
+////   { exit 0  ; }
+
+# Don't normalize '%include' parameters (check error message)
+% include ksdhfk//shfkshfd
+% include ksdksd/./jhdjshdjshd
+% include jshdshd/../jhjshd
 
 #
 # File import

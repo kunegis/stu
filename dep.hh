@@ -26,8 +26,6 @@
  * Also, concatenated dependencies never contain other concatenated dependencies
  * directly -- such constructs are always "flattened" in a normalized
  * dependency. 
- * Normalized dependencies are those used in practice.  A non-normalized
- * dependency can always be reduced to a normalized one. 
  */
 
 /*
@@ -65,8 +63,7 @@ shared_ptr <const T> to(shared_ptr <U> d)
 
 class Dep
 /* 
- * The abstract base class for all dependencies.  Objects of this type
- * are used via shared_ptr<>.
+ * The abstract base class for all dependencies.  
  *
  * The flags only represent immediate flags.  Compound dependencies for
  * instance may contain additional inner flags. 

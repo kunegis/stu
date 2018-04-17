@@ -348,28 +348,7 @@ public:
 		return ret; 
 	}
 
-	string format(Style style, bool &quotes) const {
-		assert(texts.size() == 1 + parameters.size()); 
-
-		string ret= name_format(texts[0], 
-					style | S_MARKERS | S_NOEMPTY,
-					quotes);
-
-		for (size_t i= 0;  i < get_n();  ++i) {
-			ret += "${";
-			ret += name_format(parameters[i],
-					   style | S_MARKERS | S_NOEMPTY,
-					   quotes);
-			ret += '}';
-			ret += name_format
-				(
-				 texts[1+i],
-				 style | S_MARKERS | S_NOEMPTY,
-				 quotes); 
-		}
-
-		return ret; 
-	}
+	string format(Style style, bool &quotes) const;
 
 	string format_word() const {
 		bool quotes= Color::quotes;
@@ -983,6 +962,29 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 		else if (i < k_a && j < k_b) 
 			p= min(anchoring_a[i], anchoring_b[j]); 
 	}
+}
+
+string Name::format(Style style, bool &quotes) const 
+{
+	assert(texts.size() == 1 + parameters.size()); 
+
+	string ret= name_format(texts[0], 
+				style | S_MARKERS | S_NOEMPTY,
+				quotes);
+
+	for (size_t i= 0;  i < get_n();  ++i) {
+		ret += "${";
+		ret += name_format(parameters[i],
+				   style | S_MARKERS | S_NOEMPTY,
+				   quotes);
+		ret += '}';
+		ret += name_format
+			(texts[1+i],
+			 style | S_MARKERS | S_NOEMPTY,
+			 quotes); 
+	}
+	
+	return ret; 
 }
 
 #endif /* ! TARGET_HH */

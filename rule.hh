@@ -26,7 +26,7 @@ public:
 	/* The dependencies in order of declaration.  Dependencies are
 	 * included multiple times if they appear multiple times in the
 	 * source.  Any parameter occuring in any dependency also occurs
-	 * in every target. */ 
+	 * in every target.  */ 
 
 	const Place place;
 	/* The place of the rule as a whole.  Taken from the place of
@@ -345,6 +345,7 @@ void Rule_Set::add(vector <shared_ptr <const Rule> > &rules_)
 			}
 		}
 
+		/* Add the rule */ 
 		if (! rule->is_parametrized()) {
 			for (auto place_param_target:  rule->place_param_targets) {
 				Target target= place_param_target->unparametrized(); 

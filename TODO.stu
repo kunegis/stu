@@ -9,9 +9,11 @@
 #  - Fold multiple / to a single one, except exactly two at the beginning
 #  - Remove ending /, except when the name contains only '/' characters
 #  - Fold ., except for a single '.'  (repeatedly)
-#      - ^./ -> ''
-#      - /.$ -> ''
-#      - /./ -> /
+#      - ^/.$ -> /
+#      - ^./$ -> .
+#      - ^./ -> ''  [multiple times]
+#      - /.$ -> ''  [multiple times]
+#      - /./ -> /   [multiple times]
 #  - Fold .. that is not at the beginning (repeatedly)
 #      - [^/]+/.. -> '' or '.' when otherwise empty
 #
@@ -22,16 +24,8 @@
 #     execution.hh; refactor to parser.hh]
 #   - at parsing command line options / arguments [in stu.cc; migrate to
 #     parser.hh]
-# Or:
-#   - Rule_Set::add()
-#   - target parameters passed to Rule_Set::get(), when necessary
-#     (makes it difficult to tell when, because they come from internal
-#     and external)
-# Or:
-#   - In constructors of Name (but not Target) (does not work because we
-#     assemble these character by character)
 # 
-# Rules:
+# Manpage:
 #   - Don't do anything special with symlinks/hardlinks/etc.; they need
 #     syscalls to detect anyway.
 #   - '/' also matches in parameters
@@ -50,13 +44,30 @@
 #      - ../aaa -> ../aaa
 #      - /../aaa -> /aaa
 #      - aaa/bbb/../../ccc -> ccc
+#      - aaa/bbb/ddd/../../../ccc -> ccc
+#      - aaa/bbb/ddd/eee/../../../../ccc -> ccc
+#      - aaa//bbb//ddd//eee//..//..//..//..//ccc -> ccc
+#      - aaa//bbb/ddd//eee/..//../..//../ccc -> ccc
+#      - aaa/../bbb/../ccc -> ccc
+#      - aaa//..//bbb//..//ccc -> ccc
+#      - aaa//../bbb//../ccc -> ccc
 #      - . -> .
 #      - ./ -> .
 #      - /. -> /
 #      - aaa/. -> aaa
+#      - aaa/./. -> aaa
+#      - aaa/././. -> aaa
+#      - aaa/./././. -> aaa
 #      - aaa/ -> aaa
+#      - aaa// -> aaa
+#      - aaa/// -> aaa
+#      - aaa//// -> aaa
 #      - ./aaa -> aaa
+#      - ././aaa -> aaa
+#      - ./././aaa -> aaa
+#      - ././././aaa -> aaa
 #      - .//aaa -> aaa
+#      - .//.//.//.//aaa -> aaa
 #      - ./. -> .
 #      - aaa//bbb -> aaa/bbb
 #      - aaa///bbb -> aaa/bbb
@@ -68,7 +79,16 @@
 #      - / -> /
 #      - // -> //
 #      - /// -> /
+#      - //// -> /
 #      - aaa/bbb -> aaa/bbb
+#      - aaa/./bbb -> aaa/bbb
+#      - aaa/././bbb -> aaa/bbb
+#      - aaa/./././bbb -> aaa/bbb
+#      - aaa/./././bbb -> aaa/bbb
+#      - aaa/./../bbb -> bbb
+#      - aaa/.././bbb -> bbb
+#      - aaa/./.././bbb -> bbb
+#      - aaa//.//..//.//bbb -> bbb
 
 # Test this:
 dat/STATISTICS = ./; 
@@ -91,6 +111,7 @@ A: / { touch A ; }
 / { exit 0 ; }
 /// { exit 0 ; }
 
+# Canonicalization is applied to command line arguments
 $ stu ///
 / { exit 0 ; }
 
@@ -116,6 +137,137 @@ A: /// { touch A ; }
 % include ksdhfk//shfkshfd
 % include ksdksd/./jhdjshdjshd
 % include jshdshd/../jhjshd
+
+# In dynamic dependencies
+A: [B] { cp list.X A ; }
+B = {./list.X}
+list.X = {CORRECT}
+
+A: [-n B] { cat list.X list.Y list.Z >A ; }
+>B { printf '%s\n%s\n%s\n' ./list.X .//list.Y xxx/../list.Z ; }
+list.X = {xxx}
+list.Y = {yyy}
+list.Z = {zzz}
+
+A: [-0 B] { cat list.X list.Y list.Z >A ; }
+>B { printf '%s\0%s\0%s\0' ./list.X .//list.Y xxx/../list.Z ; }
+list.X = {xxx}
+list.Y = {yyy}
+list.Z = {zzz}
+
+# In the -F option
+$ stu -F 'A=./list.X;list.X={CORRECT}'
+
+# Remove ending /
+>A:  list.X/ { ls -l list.X ; }
+list.X { mkdir list.X ; touch list.X/www ; }
+
+# Remove ending /'s
+>A:  list.X// { ls -l list.X ; }
+list.X { mkdir list.X ; touch list.X/www ; }
+
+# Remove ending /'s
+>A:  list.X/// { ls -l list.X ; }
+list.X { mkdir list.X ; touch list.X/www ; }
+
+# Remove ending /'s
+>A:  list.X//// { ls -l list.X ; }
+list.X { mkdir list.X ; touch list.X/www ; }
+
+A: /. { cp X A ; }
+/ { echo CORRECT >X ; }
+
+A: ./ { touch A ; }
+
+A: ./list.X { cp list.X A ; }
+list.X = {CORRECT}
+
+A: list.X/. { cp list.X/X A ; }
+list.X { mkdir list.X ; touch list.X/X ; }
+
+# 'B' is not a directory, but this works
+A: B/. { cp B A ; }
+B = {CORRECT}
+
+A:  list.B/./X { cp list.B/./X A ; }
+list.B/X { list.B ; touch list.B/X ; }
+
+A:  ././B { cp B A ; }
+B = {CORRECT}
+
+A:  ./././B { cp B A ; }
+B = {CORRECT}
+
+A:  ././././B { cp B A ; }
+B = {CORRECT}
+
+A: B/./. { cp B A ; }
+B = {CORRECT}
+
+A: B/././. { cp B A ; }
+B = {CORRECT}
+
+A: B/./././. { cp B A ; }
+B = {CORRECT}
+
+A:  list.B/./. { cp list.B/X A ; }
+list.B { mkdir list.B ; touch list.B/X ; }
+
+A:  list.B/././. { cp list.B/X A ; }
+list.B { mkdir list.B ; touch list.B/X ; }
+
+A:  list.B/./././. { cp list.B/X A ; }
+list.B { mkdir list.B ; touch list.B/X ; }
+
+A:  list.B/././X { cp list.B/././X A ; }
+list.B/X { mkdir list.B ; echo CORRECT >list.B.X ; }
+
+A:  list.B/./././X { cp list.B/./././X A ; }
+list.B/X { mkdir list.B ; echo CORRECT >list.B.X ; }
+
+A:  list.B/././././X { cp list.B/././././X A ; }
+list.B/X { mkdir list.B ; echo CORRECT >list.B.X ; }
+
+A:  .. { touch A ; }
+
+A: ../ { touch A ; }
+
+A: ..// { touch A ; }
+
+A:  jhdjshd/.. { touch A ; }
+
+A:  jshdjshd/../B { cp B A ; }
+B = {CORRECT}
+
+A:  jshdjshd/sdsjd/../../B { cp B A ; }
+B = {CORRECT}
+
+A:  jshdjshd/sdsjd/iewsjdh/../../../B { cp B A ; }
+B = {CORRECT}
+
+A:  jshdjshd/../skdksjd/../B { cp B A ; }
+B = {CORRECT}
+
+A:  jshdjshd/../skdksjd/../bceycbee/../B { cp B A ; }
+B = {CORRECT}
+
+A:  jshdjshd//../B { cp B A ; }
+B = {CORRECT}
+
+A:  jshdjshd///../B { cp B A ; }
+B = {CORRECT}
+
+A:  jshdjshd////../B { cp B A ; }
+B = {CORRECT}
+
+A:  jshdjshd/./../B { cp B A ; }
+B = {CORRECT}
+
+A:  jshdjshd/././../B { cp B A ; }
+B = {CORRECT}
+
+A:  jshdjshd//.//.//../B { cp B A ; }
+B = {CORRECT}
 
 #
 # File import

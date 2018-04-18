@@ -74,6 +74,7 @@ This is my preferred style.  --Jérôme Kunegis
   irrelevant to the meaning of the code; this is just a style issue. 
 * When overriding a virtual function, we do use the 'virtual' keyword,
   even if it is redundant. 
+* For IO, we use C-style IO only; no C++ IO. 
 
 == Dynamic variables ==
 

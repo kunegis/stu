@@ -80,6 +80,7 @@ class Execution
  * dependency of A, even though properly speaking, the edge connecting
  * them is the dependency.
  */
+	:  private Printer
 {
 public: 
 	typedef unsigned Bits;
@@ -133,7 +134,7 @@ public:
 	 * whether the -n/-0/etc. flag was used, and may also contain
 	 * the -o flag to ignore a non-existing file.  */
 
-	void print_traces(string text= "") const;
+	void operator<<(string text) const;
 	/* Print full trace for the execution.  First the message is
 	 * Printed, then all traces for it starting at this execution,
 	 * up to the root execution. 
@@ -941,9 +942,8 @@ void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		if (dep_target->flags & F_VARIABLE) {
 			dep_target->get_place() << fmt("variable dependency %s must not appear", 
 						       dep_target->format_word()); 
-			this->print_traces
-				(fmt("within multiply-dynamic dependency %s", 
-				     dep->format_word()));
+			*this << fmt("within multiply-dynamic dependency %s", 
+				     dep->format_word());
 			raise(ERROR_LOGICAL);
 		} 
 
@@ -953,9 +953,12 @@ void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		assert(target.is_file()); 
 		string filename= target.get_name_nondynamic();
 
-		if (! (dep_target->flags & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED))) {
+		bool delim= (dep_target->flags & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED));
+		/* Whether the dynamic dependency is delimiter-separated */
 
-			/* Parse dynamic dependency in full Stu syntax */ 
+		if (! delim) {
+
+			/* Dynamic dependency in full Stu syntax */ 
 
 			vector <shared_ptr <Token> > tokens;
 			Place place_end; 
@@ -990,115 +993,33 @@ void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 					    prefix_format_word(input.raw(), "<")); 
 				Target target_file= target;
 				target_file.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT; 
-				dynamic_execution->print_traces(fmt("%s is declared here",
-								    target_file.format_word())); 
+				(*dynamic_execution) << fmt("%s is declared here",
+							    target_file.format_word()); 
 				raise(ERROR_LOGICAL);
 			}
 		end_normal:;
 
 		} else {
-			/* Delimiter-separated */
+			/* Delimiter-separated dynamic dependency (-n/-0) */
 
-			/* We use getdelim() for parsing.  A more optimized way
-			 * would be via mmap()+strchr(), but why the
-			 * complexity?  */ 
-			
 			const char c= (dep_target->flags & F_NEWLINE_SEPARATED) ? '\n' : '\0';
 			/* The delimiter */ 
 
 			const char c_printed= (dep_target->flags & F_NEWLINE_SEPARATED) ? 'n' : '0';
 			/* The character to print as the delimiter in output */
-		
-			char *lineptr= nullptr;
-			size_t n= 0;
-			ssize_t len;
-			unsigned line= 0; 
-			
-			FILE *file= fopen(filename.c_str(), "r"); 
-			if (file == nullptr) {
-				print_error_system(filename); 
-				raise(ERROR_BUILD); 
-				goto end;
+
+			try {
+				Parser::get_expression_list_delim(deps, filename.c_str(), c, c_printed, *dynamic_execution);
+			} catch (int e) {
+				raise(e);
 			}
-
-			while ((len= getdelim(&lineptr, &n, c, file)) >= 0) {
-				
-				Place place(Place::Type::INPUT_FILE, filename, ++line, 0); 
-
-				/* LEN is at least one by the specification
-				 * of getdelim().  */ 
-				assert(len >= 1); 
-
-				assert(lineptr[len] == '\0'); 
-				
-				/* There may or may not be a terminating \n or \0.
-				 * getdelim(3) will include it if it is present,
-				 * but the file may not have one for the last entry.  */ 
-
-				if (lineptr[len - 1] == c) {
-					--len; 
-				}
-
-				/* An empty line: This corresponds to an empty
-				 * filename, and thus we treat is as a syntax
-				 * error, because filenames can never be
-				 * empty.  */ 
-				if (len == 0) {
-					free(lineptr); 
-					fclose(file); 
-					place << "filename must not be empty"; 
-					dynamic_execution->print_traces
-						(fmt("in %s-separated dynamic dependency %s "
-						     "declared with flag %s",
-						     c == '\0' ? "zero" : "newline",
-						     name_format_word(filename),
-						     multichar_format_word
-						     (frmt("-%c", c_printed))));
-					throw ERROR_LOGICAL; 
-				}
-				
-				string filename_dep= string(lineptr, len); 
-
-				if (c != '\0' && filename_dep.find('\0') != string::npos) {
-					free(lineptr); 
-					fclose(file);
-					place << fmt("filename %s must not contain %s",
-						     name_format_word(filename_dep),
-						     char_format_word('\0')); 
-					dynamic_execution->print_traces
-						(fmt("in %s-separated dynamic dependency %s "
-						     "declared with flag %s",
-						     c == '\0' ? "zero" : "newline",
-						     name_format_word(filename),
-						     multichar_format_word
-						     (frmt("-%c", c_printed))));
-					throw ERROR_LOGICAL; 
-				}
-				if (c == '\0') {
-					assert(filename_dep.find('\0') == string::npos); 
-				}
-
-				deps.push_back
-					(make_shared <Plain_Dep>
-					 (0,
-					  Place_Param_Target
-					  (0, 
-					   Place_Name(filename_dep, place)))); 
-			}
-			free(lineptr); 
-			if (fclose(file)) {
-				print_error_system(filename); 
-				raise(ERROR_BUILD);
-			}
-		end:;
 		}
 
 		/* Perform checks on forbidden features in dynamic dependencies.
 		 * In keep-going mode (-k), we set the error, set the erroneous
 		 * dependency to null, and at the end prune the null entries.  */
 		bool found_error= false; 
-		for (auto &j:  deps) {
-
+		if (! delim)  for (auto &j:  deps) {
 			/* Check that it is unparametrized */ 
 			if (! j->is_unparametrized()) {
 				shared_ptr <const Dep> depp= j;
@@ -1114,8 +1035,8 @@ void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 				Target target_base= target;
 				target_base.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT; 
 				target_base.get_front_word_nondynamic() |= (target.get_front_word_nondynamic() & F_TARGET_TRANSIENT); 
-				print_traces(fmt("%s is declared here", 
-						 target_base.format_word())); 
+				*this << fmt("%s is declared here", 
+					     target_base.format_word()); 
 				raise(ERROR_LOGICAL);
 				j= nullptr;
 				found_error= true; 
@@ -1247,7 +1168,7 @@ void Execution::cycle_print(const vector <Execution *> &path,
 	path.back()->parents.erase(path.at(0)); 
 	path.at(0)->children.erase(path.back()); 
 
-	path.back()->print_traces();
+	(*path.back()) << "";
 
 	explain_cycle(); 
 }
@@ -1265,7 +1186,7 @@ bool Execution::same_rule(const Execution *execution_a,
 		execution_a->param_rule == execution_b->param_rule;
 }
 
-void Execution::print_traces(string text) const
+void Execution::operator<<(string text) const
 /* The following traverses the execution graph backwards until it finds
  * the root.  We always take the first found parent, which is an
  * arbitrary choice, but it doesn't matter here which dependency path
@@ -1425,7 +1346,7 @@ void Execution::push(shared_ptr <const Dep> dep)
 		dep->get_place() << fmt("%s is needed by %s",
 					dep->format_word(),
 					parents.begin()->second->format_word());
-		print_traces(); 
+		*this << ""; 
 		raise(e); 
 	}
 	
@@ -1562,7 +1483,7 @@ Proceed Execution::connect(shared_ptr <const Dep> dep_this,
 			    dep_child->format_word(),
 			    dep_this->get_target().
 			    format_word()); 
-		print_traces();
+		*this << "";
 		explain_clash(); 
 		raise(ERROR_LOGICAL);
 		return 0;
@@ -1583,7 +1504,7 @@ Proceed Execution::connect(shared_ptr <const Dep> dep_this,
 			    (plain_dep_child->place_param_target.place_name.unparametrized())); 
 		place_flag << fmt("using %s",
 				  multichar_format_word("-o")); 
-		print_traces();
+		*this << "";
 		raise(ERROR_LOGICAL);
 		return 0;
 	}
@@ -2102,7 +2023,7 @@ void File_Execution::waited(pid_t pid, size_t index, int status)
 						       target.format_word(), timestamp_file.format())
 						<< fmt("startup timestamp is %s", 
 						       Timestamp::startup.format()); 
-					print_traces();
+					*this << ""; 
 					explain_startup_time();
 					raise(ERROR_BUILD);
 				}
@@ -2112,8 +2033,7 @@ void File_Execution::waited(pid_t pid, size_t index, int status)
 				rule->place_param_targets[i]->place <<
 					fmt("file %s was not built by command", 
 					    target.format_word()); 
-				print_traces(); 
-
+				*this << ""; 
 				raise(ERROR_BUILD);
 			}
 		}
@@ -2159,7 +2079,7 @@ void File_Execution::waited(pid_t pid, size_t index, int status)
 				fmt("cp to %s %s", targets.front().format_word(), reason); 
 		}
 
-		print_traces(); 
+		*this << ""; 
 		remove_if_existing(true); 
 		raise(ERROR_BUILD);
 	}
@@ -2190,7 +2110,7 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 
 	parents[parent]= dep; 
 	if (error_additional) {
-		print_traces(); 
+		*this << ""; 
 		done= ~0;
 		parents.erase(parent); 
 		raise(error_additional); 
@@ -2258,7 +2178,7 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 		
 		if (rule_not_found) {
 			assert(rule == nullptr); 
-			print_traces(fmt("no rule to build %s", target_.format_word()));
+			*this << fmt("no rule to build %s", target_.format_word());
 			error_additional |= error |= ERROR_BUILD;
 			raise(ERROR_BUILD);
 			return; 
@@ -2287,7 +2207,7 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 		}
 		dep->get_place() << fmt("when used as dynamic dependency of %s",
 					parent->get_parents().begin()->second->format_word());
-		parent->get_parents().begin()->first->print_traces();
+		*(parent->get_parents().begin()->first) << "";
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
 		return;
@@ -2316,7 +2236,7 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 			place_target << fmt("because rule for transient target %s has a command", target_.format_word());
 		else 
 			place_target << fmt("because rule for transient target %s has file targets", target_.format_word()); 
-		print_traces();
+		*this << "";
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
 		return;
@@ -2746,15 +2666,15 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 				assert(errno == ENOENT); 
 
 				if (rule->deps.size()) {
-					print_traces
-						(fmt("expected the file without command %s to exist because all its dependencies are up to date, but it does not", 
-						     target.format_word())); 
+					*this <<
+						fmt("expected the file without command %s to exist because all its dependencies are up to date, but it does not", 
+						     target.format_word()); 
 					explain_file_without_command_with_dependencies(); 
 				} else {
 					rule->place_param_targets[i]->place
 						<< fmt("expected the file without command and without dependencies %s to exist, but it does not",
 						       target.format_word()); 
-					print_traces();
+					*this << "";
 					explain_file_without_command_without_dependencies(); 
 				}
 				done |= done_from_flags(dep_this->flags); 
@@ -2914,8 +2834,8 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 					rule->deps.at(0)->get_place()
 						<< fmt("source file %s in optional copy rule must exist",
 						       name_format_word(source));
-					print_traces(fmt("when target file %s does not exist",
-							 targets.at(0).format_word())); 
+					*this << fmt("when target file %s does not exist",
+						     targets.at(0).format_word()); 
 					explain_missing_optional_copy_source();
 					raise(ERROR_BUILD);
 					done |= done_from_flags(dep_this->flags); 
@@ -2944,8 +2864,8 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 
 		if (pid < 0) {
 			/* Starting the job failed */ 
-			print_traces(fmt("error executing command for %s", 
-					 targets.front().format_word())); 
+			*this << fmt("error executing command for %s", 
+				     targets.front().format_word()); 
 			raise(ERROR_BUILD);
 			done |= done_from_flags(dep_this->flags); 
 			assert(proceed == 0); 
@@ -3161,8 +3081,7 @@ void File_Execution::read_variable(shared_ptr <const Dep> dep)
 			}
 		}
 	}
-	print_traces();
-
+	*this << "";
 	raise(ERROR_BUILD); 
 }
 
@@ -3269,7 +3188,7 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 
 	parents[parent]= dep;
 	if (error_additional) {
-		print_traces();
+		*this << "";
 		stage= 2;
 		parents.erase(parent); 
 		raise(error_additional);
@@ -3374,7 +3293,7 @@ void Concat_Execution::launch_stage_1()
 	int e= 0; 
 	Dep::normalize(c, deps, e); 
 	if (e) {
-		print_traces();
+		*this << ""; 
 		raise(e); 
 	}
 			
@@ -3437,7 +3356,7 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dep> dep_,
 
 	parents[parent]= dep;
 	if (error_additional) {
-		print_traces(); 
+		*this << ""; 
 		is_finished= true; 
 		parents.erase(parent); 
 		raise(error_additional); 
@@ -3457,7 +3376,7 @@ Dynamic_Execution::Dynamic_Execution(shared_ptr <const Dynamic_Dep> dep_,
 					     dep->get_place()); 
 		} catch (int e) {
 			assert(e); 
-			print_traces(); 
+			*this << ""; 
 			error_additional |= e;
 			raise(e); 
 			return; 
@@ -3611,7 +3530,7 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dep> dep_link,
 
 	parents[parent]= dep_link; 
 	if (error_additional) {
-		print_traces();
+		*this << "";
 		is_finished= true;
 		parents.erase(parent); 
 		raise(error_additional); 
@@ -3622,7 +3541,7 @@ Transient_Execution::Transient_Execution(shared_ptr <const Dep> dep_link,
 		/* There must be a rule for transient targets (as
 		 * opposed to file targets), so this is an error.  */
 		is_finished= true; 
-		print_traces(fmt("no rule to build %s", target.format_word()));
+		*this << fmt("no rule to build %s", target.format_word());
 		parents.erase(parent); 
 		error_additional |= ERROR_BUILD; 
 		raise(ERROR_BUILD);

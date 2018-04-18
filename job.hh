@@ -141,7 +141,7 @@ private:
 	/* Set up all signals.   May be called multiple times, and will
 	 * do the setup only the first time  */
 
-	static unsigned count_jobs_exec, count_jobs_success, count_jobs_fail;
+	static size_t count_jobs_exec, count_jobs_success, count_jobs_fail;
 	/* 
 	 * The number of jobs run.  Each job is/was of exactly one
 	 * type. 
@@ -171,9 +171,9 @@ private:
 	static bool signals_initialized; 
 };
 
-unsigned Job::count_jobs_exec=    0;
-unsigned Job::count_jobs_success= 0;
-unsigned Job::count_jobs_fail=    0;
+size_t Job::count_jobs_exec=    0;
+size_t Job::count_jobs_success= 0;
+size_t Job::count_jobs_fail=    0;
 sigset_t Job::set_termination;
 sigset_t Job::set_productive;
 sigset_t Job::set_termination_productive;

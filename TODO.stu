@@ -3,7 +3,7 @@
 #=================== New features =======================
 
 #
-# Canonicalize names 
+# Canonicalize names [2.6]
 #
 # Algorithm:
 #  - Fold multiple / to a single one, except exactly two at the beginning
@@ -18,12 +18,12 @@
 #      - [^/]+/.. -> '' or '.' when otherwise empty
 #
 # At which points to apply:
-#   - at parsing files [Parser::parse_name()]
-#   - at parsing dynamic dependencies [same]
-#   - at parsing dynamic dependencies with -n/-0 (same) [code is in
-#     execution.hh; refactor to parser.hh]
-#   - at parsing command line options / arguments [in stu.cc; migrate to
-#     parser.hh]
+#   - at parsing files and dynamic dependencies [Parser::parse_name()]
+#   - at parsing dynamic dependencies with -n/-0 (same) [Parser::get_expression_list_delim()]
+#   - at parsing command line options / arguments [stu.cc: 'c' 'n' '0'
+#     'o' 'p', stu.cc: plain arguments, 
+#     add_deps_option_C(), Parser::get_string() {uses
+#     Parser::parse_name()?}, Parser::get_target_arg()]
 # 
 # Manpage:
 #   - Don't do anything special with symlinks/hardlinks/etc.; they need
@@ -269,6 +269,16 @@ B = {CORRECT}
 A:  jshdjshd//.//.//../B { cp B A ; }
 B = {CORRECT}
 
+# Test with -k.  C must be built, and Stu then fail with a logical error
+# (input redirection in [B]). 
+A:  [B] C { ... }
+B = { <X }
+C = {CORRECT}
+
+# Error in building target of first rule.  Check that the error message
+# uses the correctly canonicalized name.
+/// { exit 1 ; }
+
 #
 # File import
 #
@@ -285,7 +295,7 @@ B = {CORRECT}
 % include -d src/
 % include -d src
 
-# - What about transient transient targets imported in that way.  Do we
+# - What about transient targets imported in that way.  Do we
 #   prepend a directory to them?
 %import dir   # contains:   @all:  ...;
 # gets converted to:       @dir/all:  ...;

@@ -252,11 +252,14 @@ public:
 	 * OPTION:  Name of the option (a single character)
 	 * Others:  Unused  */ 
 
-	unsigned line; 
+	size_t line; 
 	/* INPUT_FILE:  Line number, one-based.  
-	 * Others:  unused.  */ 
+	 * Others:  unused.  
+	 * The line number is one-based, but is allowed to be set to
+	 * zero temporarily.  It should be >0 however when operator<<()
+	 * is called.  */ 
 
-	unsigned column; 
+	size_t column; 
 	/* INPUT_FILE:  Column number, zero-based.  In output, column
 	 * numbers are one-based, but they are saved here as zero-based
 	 * numbers as these are easier to generate. 
@@ -265,20 +268,18 @@ public:
 	Place() 
 	/* Empty */ 
 		:  type(Type::EMPTY) 
-	{ }
+	{  }
 
 	Place(Type type_,
 	      string filename_, 
-	      unsigned line_, 
-	      unsigned column_)
+	      size_t line_, 
+	      size_t column_)
 	/* Generic constructor */ 
 		:  type(type_),
 		   text(filename_),
 		   line(line_),
 		   column(column_)
-	{ 
-		assert(line >= 1);
-	}
+	{  }
 
 	Place(Type type_)
 	/* In command line argument (ARGV) */ 
@@ -358,6 +359,16 @@ public:
 	}
 };
 
+class Printer
+/* Interface that has the << operator like Place.  Only used at one
+ * place for now.  The parameter MESSAGE may be "" to print a generic
+ * error message (i.e., only the traces).  */
+{
+public:
+	virtual void operator<<(string message) const= 0; 
+	virtual ~Printer();
+};
+
 const Place Place::place_empty;
 
 const Place &Place::operator<<(string message) const
@@ -371,6 +382,7 @@ void Place::print(string message,
 		  const char *color_word) const
 {
 	assert(message != "");
+	assert(line >= 1); 
 
 	switch (type) {
 	default:  
@@ -463,5 +475,7 @@ void print_warning(const Place &place, string message)
 	place.print(fmt("warning: %s", message),
 		    Color::warning, Color::warning_word); 
 }
+
+Printer::~Printer() { }
 
 #endif /* ! ERROR_HH */ 

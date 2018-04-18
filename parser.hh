@@ -83,6 +83,13 @@ public:
 	/* Parse tokens that represent an 'expression_list' (as given in
 	 * the manpage).  DEPS is filled.  DEPS is empty when called.  */
 
+	static void get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
+					      const char *filename, 
+					      char c, char c_printed,
+					      const Printer &printer);
+	/* Read delimiter-separated dynamic dependency from FILENAME,
+	 * delimited by C.  Write result into DEPS.  Throws errors.  */
+
 	static void get_target_arg(vector <shared_ptr <const Dep> > &deps, 
 				   int argc, const char *const *argv); 
 	/* Parse a dependency as given on the command line outside of
@@ -916,7 +923,6 @@ shared_ptr <const Dep> Parser
 
 	++iter;
 
-
 	/* Flags */ 
 	Flags flags= F_VARIABLE;
 	Place places_flags[C_PLACED]; 
@@ -1266,6 +1272,95 @@ void Parser::get_expression_list(vector <shared_ptr <const Dep> > &deps,
 			<< fmt("expected a dependency, not %s",
 			       (*iter)->format_start_word());
 		throw ERROR_LOGICAL;
+	}
+}
+
+void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
+				       const char *filename, 
+				       char c, char c_printed,
+				       const Printer &printer)
+/* We use getdelim() for parsing.  A more optimized way would be via
+ * mmap()+strchr(), but why the complexity?  */ 
+{
+	char *lineptr= nullptr;
+	size_t n= 0;
+	ssize_t len;
+			
+	FILE *file= fopen(filename, "r"); 
+	if (file == nullptr) {
+		print_error_system(filename); 
+		throw ERROR_BUILD; 
+	}
+
+	Place place(Place::Type::INPUT_FILE, filename, 0, 0); 
+
+	while ((len= getdelim(&lineptr, &n, c, file)) >= 0) {
+
+		++place.line;
+				
+		/* LEN is at least one by the specification of
+		 * getdelim().  */ 
+		assert(len >= 1); 
+
+		assert(lineptr[len] == '\0'); 
+				
+		/* There may or may not be a terminating \n or \0.
+		 * getdelim(3) will include it if it is present, but the
+		 * file may not have one for the last entry.  */ 
+
+		if (lineptr[len - 1] == c) {
+			--len; 
+		}
+
+		/* An empty line: This corresponds to an empty filename,
+		 * and thus we treat is as a syntax error, because
+		 * filenames can never be empty.  */ 
+		if (len == 0) {
+			free(lineptr); 
+			fclose(file); 
+			place << "filename must not be empty"; 
+			printer <<
+				fmt("in %s-separated dynamic dependency %s "
+				    "declared with flag %s",
+				    c == '\0' ? "zero" : "newline",
+				    name_format_word(filename),
+				    multichar_format_word
+				    (frmt("-%c", c_printed)));
+			throw ERROR_LOGICAL; 
+		}
+				
+		string filename_dep= string(lineptr, len); 
+
+		if (c != '\0' && filename_dep.find('\0') != string::npos) {
+			free(lineptr); 
+			fclose(file);
+			place << fmt("filename %s must not contain %s",
+				     name_format_word(filename_dep),
+				     char_format_word('\0')); 
+			printer <<
+				fmt("in %s-separated dynamic dependency %s "
+				    "declared with flag %s",
+				    c == '\0' ? "zero" : "newline",
+				    name_format_word(filename),
+				    multichar_format_word
+				    (frmt("-%c", c_printed)));
+			throw ERROR_LOGICAL; 
+		}
+		if (c == '\0') {
+			assert(filename_dep.find('\0') == string::npos); 
+		}
+
+		deps.push_back
+			(make_shared <Plain_Dep>
+			 (0,
+			  Place_Param_Target
+			  (0, 
+			   Place_Name(filename_dep, place)))); 
+	}
+	free(lineptr); 
+	if (fclose(file)) {
+		print_error_system(filename); 
+		throw ERROR_BUILD; 
 	}
 }
 

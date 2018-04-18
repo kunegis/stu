@@ -2067,8 +2067,7 @@ void File_Execution::waited(pid_t pid, size_t index, int status)
 		}
 
 		if (! param_rule->is_copy) {
-			Target target= parents.begin()->second
-				->get_target(); 
+			Target target= parents.begin()->second->get_target(); 
 			param_rule->command->place <<
 				fmt("command for %s %s", 
 				    target.format_word(), 

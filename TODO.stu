@@ -8,33 +8,42 @@
 # Algorithm:
 #  - Fold multiple / to a single one, except exactly two at the beginning
 #  - Remove ending /, except when the name contains only '/' characters
-#  - Fold ., except for a single '.'  (repeatedly)
+#  - Fold .
 #      - ^/.$ -> /
 #      - ^./$ -> .
 #      - ^./ -> ''  [multiple times]
 #      - /.$ -> ''  [multiple times]
 #      - /./ -> /   [multiple times]
-#  - Fold .. that is not at the beginning (repeatedly)
-#      - [^/]+/.. -> '' or '.' when otherwise empty
+#  - Fold .. 
+#      - [^/]+/.. -> '' or '.' when otherwise empty [multiple times]
+#      - /.. -> '' or '/' when otherwise empty [multiple times]
 #
 # At which points to apply:
-#   - at parsing files and dynamic dependencies [Parser::parse_name()]
-#   - at parsing dynamic dependencies with -n/-0 (same) [Parser::get_expression_list_delim()]
-#   - at parsing command line options / arguments [stu.cc: 'c' 'n' '0'
-#     'o' 'p', stu.cc: plain arguments, 
-#     add_deps_option_C(), Parser::get_string() {uses
-#     Parser::parse_name()?}, Parser::get_target_arg()]
+#   - at Parser::parse_name()
+#   - at Parser::get_expression_list_delim()
+#   - in stu.cc: 'c' 'n' '0' 'o' 'p'
+#   - in stu.cc: plain arguments
+#   - in stu.cc: add_deps_option_C()
+#   - at Parser::get_target_arg()
 # 
 # Manpage:
 #   - Don't do anything special with symlinks/hardlinks/etc.; they need
 #     syscalls to detect anyway.
-#   - '/' also matches in parameters
+#   - Nonexisting XXX/.. components are removed without a check
+#   - '/' matches in parameters 
 #   - The rules do not apply within parameters or across parameters and
 #     non-parameter text
 #   - The rules also apply to transient targets
-#   - Canonicalization does not apply to %include files, -f files, and
-#     other "non-targets". 
+#   - Canonicalization also applies to names of included files via -f
+#     and %include  
 #
+
+# Solve the issue with copy rules whose dependency ends in '/'.  See the
+# place in parser.hh where append_copy() is called.  Probably:  have a
+# field in Name_Token saying whether the name ended in a slash or not.
+# Or add a flag next to the whitespace flag in Token. 
+# (PS, We don't want to do things like having the presence of a trailing
+# '/' add an automatic -p flag or similar.)  
 
 # Test by checking the output of the "file not found" message of Stu:
 #      - aaa -> aaa
@@ -89,6 +98,23 @@
 #      - aaa/.././bbb -> bbb
 #      - aaa/./.././bbb -> bbb
 #      - aaa//.//..//.//bbb -> bbb
+#      - //usr//bin/ -> //usr/bin
+#      - /.. -> /
+#      - /../ -> /
+#      - /..// -> /
+#      - /../aaa -> /aaa
+#      - /./../aaa -> /aaa
+#      - /././../aaa -> /aaa
+#      - /../../aaa -> /aaa
+#      - /./.././../aaa -> /aaa
+#      - /././../././../aaa -> /aaa
+#      - /../../../aaa -> /aaa
+#      - /./.././.././../aaa -> /aaa
+#      - /././../././../././../aaa -> /aaa
+#      - //.. -> //
+#      - //../ -> //
+#      - //..// -> //
+#      - //././../././../././../aaa -> //aaa
 
 # Test this:
 dat/STATISTICS = ./; 
@@ -278,6 +304,13 @@ C = {CORRECT}
 # Error in building target of first rule.  Check that the error message
 # uses the correctly canonicalized name.
 /// { exit 1 ; }
+
+# Canonicalization in each of 'c' 'n' '0' 'o' 'p' '-C' '-J' on the command line
+
+# The parametrized rule is not called
+A:  X///Y { cp X/Y A ; }
+X/Y { mkdir X ; echo CORRECT >X/Y ; }
+X/${i}/Y { exit 1 ; }
 
 #
 # File import

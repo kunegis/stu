@@ -44,16 +44,15 @@ class Operator
 	:  public Token
 {
 public: 
+	const Place place; 
 
 	const char op; 
 	/* The operator as a character, e.g. ':', '[', etc.  */
 
-	const Place place; 
-
 	Operator(char op_, Place place_, bool whitespace_)
 		:  Token(whitespace_),
-		   op(op_),
-		   place(place_)
+		   place(place_),
+		   op(op_)
 	{ 
 		assert(! isalnum(op_)); 
 	}
@@ -78,20 +77,20 @@ class Flag_Token
 {
 public:
 
-	const char flag;
-	/* The flag character */
-
 	const Place place;
 	/* The place of the letter */ 
 
 	mutable Place place_start;
 	/* The place of the '-' */ 
 
+	const char flag;
+	/* The flag character */
+
 	/* PLACE is the place of the letter */
 	Flag_Token(char flag_, const Place place_, bool whitespace_)
 		:  Token(whitespace_),
-		   flag(flag_),
-		   place(place_)
+		   place(place_),
+		   flag(flag_)
 	{
 		assert(isalnum(flag)); 
 

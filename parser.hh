@@ -222,7 +222,7 @@ shared_ptr <const Rule> Parser::parse_rule()
 	 * null), is has not read any tokens. */ 
 
 	Place place_output; 
-	/* T_EMPTY when output is not redirected */
+	/* An empty place when output is not redirected */
 
 	int redirect_index= -1; 
 	/* Index of the target that has the output, or -1 */ 
@@ -232,7 +232,7 @@ shared_ptr <const Rule> Parser::parse_rule()
 	while (iter != tokens.end()) {
 
 		Place place_output_new; 
-		/* Remains EMPTY when '>' is not present */ 
+		/* Remains an empty place when '>' is not present */ 
 		
 		if (is_operator('>')) {
 			place_output_new= (*iter)->get_place();
@@ -1388,29 +1388,34 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 
 		bool allow_dash= true; 
 		bool allow_at= true; 
-		bool beginning_of_arg= true; 
+
+		Environment environment= E_WHITESPACE;  
+		/* Whether the token is preceded by whitespace */
 
 		while (*p) {
 			if (allow_at && *p == '@') {
-				tokens.push_back(make_shared <Operator> (*p, place, beginning_of_arg));
+				tokens.push_back(make_shared <Operator> 
+						 (*p, place, environment));
 				++p;
 				allow_dash= false; 
 				allow_at= false; 
-				beginning_of_arg= false; 
+				environment= 0;
 			} 
 			else if (*p == '[') {
-				tokens.push_back(make_shared <Operator> (*p, place, beginning_of_arg));
+				tokens.push_back(make_shared <Operator> 
+						 (*p, place, environment));
 				++p;
 				allow_dash= true;
 				allow_at= true;
-				beginning_of_arg= false;
+				environment= 0;
 			}
 			else if (*p == ']') {
-				tokens.push_back(make_shared <Operator> (*p, place, beginning_of_arg));
+				tokens.push_back(make_shared <Operator> 
+						 (*p, place, environment));
 				++p;
 				allow_dash= false;
 				allow_at= false;
-				beginning_of_arg= false; 
+				environment= 0;
 			}
 			else if (allow_dash && *p == '-') {
 				++p;
@@ -1430,11 +1435,12 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 					}
 					throw ERROR_LOGICAL; 
 				}
-				tokens.push_back(make_shared <Flag_Token> (*p, place, beginning_of_arg)); 
+				tokens.push_back(make_shared <Flag_Token> 
+						 (*p, place, environment)); 
 				++p;
 				allow_dash= true;
 				allow_at= true; 
-				beginning_of_arg= false; 
+				environment= 0; 
 			} 
 			else {
 				const char *q= p;
@@ -1446,10 +1452,11 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 				}
 				assert(p > q); 
 				Place_Name place_name(string(q, p-q), place); 
-				tokens.push_back(make_shared <Name_Token> (place_name, beginning_of_arg)); 
+				tokens.push_back(make_shared <Name_Token> 
+						 (place_name, environment)); 
 				allow_dash= false;
 				allow_at= false; 
-				beginning_of_arg= false;
+				environment= 0;
 			}
 		}
 	}
@@ -1484,7 +1491,7 @@ bool Parser::next_concatenates() const
 	if (iter == tokens.end())
 		return false;
 
-	if ((*iter)->whitespace)
+	if ((*iter)->environment & E_WHITESPACE)
 		return false;
 
 	if (is <Name_Token> ())

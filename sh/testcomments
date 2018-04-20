@@ -1,18 +1,26 @@
 #! /bin/sh
 #
-# Test that no source contains '//' (for C++ code) or '#''#' (for shell
-# scripts or Stu files).  Also test other similar constraints.
+# Check that source files do not contain certain patterns used for
+# temporary comments used during development of Stu.  These include:
+# '//' (for C++ code), '#''#' (for shell scripts or Stu files), 'XXX'
+# (for some source files), tabs in the manpage.
 #
 
 ret=0
 
-# Check for // in C++ files
-grep -lE '(^|[^:])//' *.cc *.hh && {
+#
+# // in C++ files
+#
+
+grep -E '(^|[^:])//' *.cc *.hh && {
 	echo >&2 "*** C++ source files must not contain //"
 	ret=1
 }
 
-# Check for double # in script files 
+#
+# Double # in script files 
+#
+
 find . -type f -a \( -name '*.stu' -o -perm -u+x -o -name Makefile.devel \) -a \! -name '*~' \
 	-a \! -path './.git*' -a \! -path './stu.*' -a \! -path './stu' \
 	-a \! -path './config*' -a \! -path './build-aux/*' -a \! -path ./TODO.stu | 
@@ -21,8 +29,20 @@ xargs grep -lF '#''#' && {
 	ret=1
 }
 
-# Check for tab in manpage source
-grep -qF "$(printf '\t')" stu.1.in && {
+#
+# 'XXX'
+#
+
+grep -F XXX NEWS && {
+	echo >&2 "*** 'NEWS' must not contain 'XXX'"
+	ret=1
+}
+
+#
+# Tab in manpage source
+#
+
+grep -F "$(printf '\t')" stu.1.in && {
 	echo >&2 "*** 'stu.1.in' must not contain tabs"
 	ret=1
 }

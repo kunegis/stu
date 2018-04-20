@@ -13,16 +13,26 @@
 
 #include <memory>
 
+typedef unsigned Environment;
+/* Information about a token, as flags */
+
+enum {
+	E_WHITESPACE    = 1 << 0,
+	/* The token is preceded by whitespace */
+
+	E_SLASH         = 1 << 1,
+	/* The token ends in a slash (only for Name_Token) */
+};
+
 class Token
 /* A token.  This class is mainly used through unique_ptr/shared_ptr.  */
 {
 public:
 
-	const bool whitespace;
-	/* Whether the token is preceded by whitespace */ 
+	Environment environment; 
 
-	Token(bool whitespace_)
-		:  whitespace(whitespace_)
+	Token(Environment environment_)
+		:  environment(environment_)
 	{  }
 
 	virtual ~Token(); 
@@ -49,8 +59,8 @@ public:
 	const char op; 
 	/* The operator as a character, e.g. ':', '[', etc.  */
 
-	Operator(char op_, Place place_, bool whitespace_)
-		:  Token(whitespace_),
+	Operator(char op_, Place place_, Environment environment_)
+		:  Token(environment_),
 		   place(place_),
 		   op(op_)
 	{ 
@@ -87,8 +97,8 @@ public:
 	/* The flag character */
 
 	/* PLACE is the place of the letter */
-	Flag_Token(char flag_, const Place place_, bool whitespace_)
-		:  Token(whitespace_),
+	Flag_Token(char flag_, const Place place_, Environment environment_)
+		:  Token(environment_),
 		   place(place_),
 		   flag(flag_)
 	{
@@ -126,8 +136,8 @@ class Name_Token
 {
 public:
 	Name_Token(const Place_Name &place_name_, 
-		   bool whitespace_) 
-		:  Token(whitespace_),
+		   bool environment_) 
+		:  Token(environment_),
 		   Place_Name(place_name_)
 	{  }
 
@@ -171,7 +181,7 @@ public:
 	Command(string command_, 
 		const Place &place_,
 		const Place &place_start_,
-		bool whitespace_); 
+		Environment environment_); 
 
 	const Place &get_place() const {
 		return place; 
@@ -193,8 +203,8 @@ Token::~Token() { }
 Command::Command(string command_, 
 		 const Place &place_,
 		 const Place &place_start_,
-		 bool whitespace_)
-	:  Token(whitespace_),
+		 Environment environment_)
+	:  Token(environment_),
 	   command(command_),
 	   place(place_),
 	   place_start(place_start_)

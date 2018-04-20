@@ -95,8 +95,8 @@ private:
 	const char *const p_end;
 	/* End of input */ 
 
-	bool whitespace= true;
-	/* Whether there was whitespace previously */ 
+	Environment environment= E_WHITESPACE; 
+	/* For the next token */
 
 	Tokenizer(vector <Trace> &traces_,
 		  vector <string> &filenames_,
@@ -523,7 +523,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 						(place_base.type, place_base.text,
 						 line_command, column_command); 
 					return make_shared <Command> 
-						(command, place_command, place_open, whitespace); 
+						(command, place_command, place_open, environment); 
 				} else {
 					++p; 
 				}
@@ -855,7 +855,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		/* Operators except '$' */ 
 		if (is_operator_char(*p)) {
 			Place place= current_place(); 
-			tokens.push_back(make_shared <Operator> (*p, place, whitespace));
+			tokens.push_back(make_shared <Operator> (*p, place, environment));
 			++p;
 		}
 
@@ -864,8 +864,8 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			Place place_dollar= current_place(); 
 			Place place_langle(place_base.type, place_base.text,
 					   line, p + 1 - p_line);
-			tokens.push_back(make_shared <Operator> ('$', place_dollar, whitespace));
-			tokens.push_back(make_shared <Operator> ('[', place_langle, whitespace)); 
+			tokens.push_back(make_shared <Operator> ('$', place_dollar, environment));
+			tokens.push_back(make_shared <Operator> ('[', place_langle, environment)); 
 			p += 2;
 		}
 
@@ -890,7 +890,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				}
 				++p; 
 			} while (p < p_end && isspace(*p));
-			whitespace= true;
+			environment |= E_WHITESPACE; 
 			goto had_whitespace; 
 		} 
 
@@ -902,7 +902,8 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		/* Flag, name, or invalid character */ 		
 		else {
 			/* Flag */ 
-			bool allow_special= ! whitespace 
+			bool allow_special= 
+				!(environment & E_WHITESPACE)
 				&& !tokens.empty()
 				&& to <Operator> (tokens.back())
 				&& (to <Operator> (tokens.back())->op == ']' ||
@@ -947,7 +948,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				}
 				assert(isalnum(op)); 
 				shared_ptr <Flag_Token> token= make_shared <Flag_Token> 
-					(op, current_place(), whitespace); 
+					(op, current_place(), environment); 
 				tokens.push_back(token); 
 				++p;
 				if (p < p_end && 
@@ -990,11 +991,11 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			}
 			assert(! place_name->empty());
 			tokens.push_back(make_shared <Name_Token>
-					 (*place_name, whitespace)); 
+					 (*place_name, environment)); 
 			}
 		}
 		
-		whitespace= false;
+		environment &= ~E_WHITESPACE; 
 		
 	had_whitespace:;
 	}

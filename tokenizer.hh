@@ -123,7 +123,8 @@ private:
 	shared_ptr <Place_Name> parse_name(bool allow_special);
 	/* Returns null when no name could be parsed.  Prints and throws
 	 * on other errors, including on empty names.  
-	 * ALLOW_SPECIAL:  whether the name is allowed to start with one of '-+~'.  */ 
+	 * ALLOW_SPECIAL:  whether the name is allowed to start with one of '-+~'.  
+	 * E_SLASH set in ENVIRONMENT as appropriate.  */ 
 
 	bool parse_parameter(string &parameter, Place &place_dollar); 
 	/* Parse a parameter starting with '$'.  Return whether a
@@ -683,6 +684,12 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 		}	
 	}
 
+	if (! ret->last_text().empty() && ret->last_text()[ret->last_text().size() - 1] == '/') {
+		environment |= E_SLASH;
+	} else {
+		environment &= ~E_SLASH; 
+	}
+
 	if (ret->empty()) {
 		if (p == p_begin)
 			return nullptr; 
@@ -964,34 +971,34 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				}
 			} else {
 
-			shared_ptr <Place_Name> place_name= parse_name(allow_special);
-			if (place_name == nullptr) {
-				if (*p == '!') {
-					current_place() <<
-						fmt("character %s is invalid for persistent dependencies; use %s instead",
-						    char_format_word('!'),
-						    multichar_format_word("-p")); 
-				} else if (*p == '?') {
-					current_place() <<
-						fmt("character %s is invalid for optional dependencies; use %s instead",
-						    char_format_word('?'),
-						    multichar_format_word("-o")); 
-				} else if (*p == '&') {
-					current_place() <<
-						fmt("character %s is invalid for trivial dependencies; use %s instead",
-						    char_format_word('&'),
-						    multichar_format_word("-t")); 
-				} else {
-					current_place() << fmt("invalid character %s", char_format_word(*p));
-					if (strchr("#%\'\":;-$@<>={}()[]*\\&|!?,", *p)) {
-						explain_quoted_characters(); 
+				shared_ptr <Place_Name> place_name= parse_name(allow_special);
+				if (place_name == nullptr) {
+					if (*p == '!') {
+						current_place() <<
+							fmt("character %s is invalid for persistent dependencies; use %s instead",
+							    char_format_word('!'),
+							    multichar_format_word("-p")); 
+					} else if (*p == '?') {
+						current_place() <<
+							fmt("character %s is invalid for optional dependencies; use %s instead",
+							    char_format_word('?'),
+							    multichar_format_word("-o")); 
+					} else if (*p == '&') {
+						current_place() <<
+							fmt("character %s is invalid for trivial dependencies; use %s instead",
+							    char_format_word('&'),
+							    multichar_format_word("-t")); 
+					} else {
+						current_place() << fmt("invalid character %s", char_format_word(*p));
+						if (strchr("#%\'\":;-$@<>={}()[]*\\&|!?,", *p)) {
+							explain_quoted_characters(); 
+						}
 					}
+					throw ERROR_LOGICAL;
 				}
-				throw ERROR_LOGICAL;
-			}
-			assert(! place_name->empty());
-			tokens.push_back(make_shared <Name_Token>
-					 (*place_name, environment)); 
+				assert(! place_name->empty());
+				tokens.push_back(make_shared <Name_Token>
+						 (*place_name, environment)); 
 			}
 		}
 		

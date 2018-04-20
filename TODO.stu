@@ -38,12 +38,8 @@
 #     and %include  
 #
 
-# Solve the issue with copy rules whose dependency ends in '/'.  See the
-# place in parser.hh where append_copy() is called.  Probably:  have a
-# field in Name_Token saying whether the name ended in a slash or not.
-# Or add a flag next to the whitespace flag in Token. 
-# (PS, We don't want to do things like having the presence of a trailing
-# '/' add an automatic -p flag or similar.)  
+# For copy rules whose dependency ends in '/':  See the
+# place in parser.hh where append_copy() is called, and use E_SLASH. 
 
 # Test by checking the output of the "file not found" message of Stu:
 #      - aaa -> aaa

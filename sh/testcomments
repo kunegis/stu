@@ -33,8 +33,8 @@ xargs grep -lF '#''#' && {
 # 'XXX'
 #
 
-grep -F XXX NEWS && {
-	echo >&2 "*** 'NEWS' must not contain 'XXX'"
+grep -F XXX NEWS stu.1.in && {
+	echo >&2 "*** Certain files must not contain 'XXX'"
 	ret=1
 }
 

@@ -1,0 +1,2 @@
+A:  B//C { cp B/C A; }
+B///C { mkdir -p B; touch B/C; }

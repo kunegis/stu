@@ -20,7 +20,7 @@ public:
 	 * Contains at least one element.  Each element contains all
 	 * parameters of the rule, and therefore should be used for
 	 * iterating of all parameters.  The place in each target is
-	 * used when referring to a target specifically.  */ 
+	 * used when referring to a target specifically.  */
 
 	vector <shared_ptr <const Dep> > deps;
 	/* The dependencies in order of declaration.  Dependencies are
@@ -64,8 +64,8 @@ public:
 	     bool is_hardcode_,
 	     int redirect_index_,
 	     bool is_copy_); 
-	/* Direct constructor that specifies everything; no checks or
-	 * initialization is performed.  */
+	/* Direct constructor that specifies everything; no checks,
+	 * initialization or canonicalization is performed.  */
 
 	Rule(vector <shared_ptr <const Place_Param_Target> > &&place_param_targets_,
 	     const vector <shared_ptr <const Dep> > &deps_,
@@ -117,7 +117,8 @@ private:
 	/* All unparametrized rules by their target.  Rules
 	 * with multiple targets are included multiple times, for each
 	 * of their targets.  None of the targets has flags set (except
-	 * F_TARGET_TARNSIENT of course.)  */ 
+	 * F_TARGET_TARNSIENT of course.)  The targets are
+	 * canonicalized.  */ 
 
 	vector <shared_ptr <const Rule> > rules_parametrized;
 	/* All parametrized rules. */ 
@@ -349,6 +350,7 @@ void Rule_Set::add(vector <shared_ptr <const Rule> > &rules_)
 		if (! rule->is_parametrized()) {
 			for (auto place_param_target:  rule->place_param_targets) {
 				Target target= place_param_target->unparametrized(); 
+				target.canonicalize(); 
 				if (rules_unparametrized.count(target)) {
 					place_param_target->place <<
 						fmt("there must not be a second rule for target %s", 
@@ -382,6 +384,8 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 	assert((target.get_front_word() & ~F_TARGET_TRANSIENT) == 0); 
 	assert(mapping_parameter.size() == 0); 
 
+	target.canonicalize(); 
+
 	/* Check for an unparametrized rule.  Since we keep them in a
 	 * map by target filename(s), there can only be a single matching rule to
 	 * begin with.  (I.e., if multiple unparametrized rules for the same
@@ -397,7 +401,9 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 		 * rule */
 		bool found= false;
 		for (auto place_param_target:  rule->place_param_targets) {
-			if (place_param_target->unparametrized() == target)
+			Target t= place_param_target->unparametrized();
+			t.canonicalize(); 
+			if (t == target)
 				found= true;
 		}
 		assert(found); 

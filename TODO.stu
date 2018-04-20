@@ -5,43 +5,14 @@
 #
 # Canonicalize names [2.6]
 #
-# Algorithm:
-#  - Fold multiple / to a single one, except exactly two at the beginning
-#  - Remove ending /, except when the name contains only '/' characters
-#  - Fold .
-#      - ^/.$ -> /
-#      - ^./$ -> .
-#      - ^./ -> ''  [multiple times]
-#      - /.$ -> ''  [multiple times]
-#      - /./ -> /   [multiple times]
-#  - Fold .. 
-#      - [^/]+/.. -> '' or '.' when otherwise empty [multiple times]
-#      - /.. -> '' or '/' when otherwise empty [multiple times]
-#
-# At which points to apply:
-#   - at Parser::parse_name()
-#   - at Parser::get_expression_list_delim()
-#   - in stu.cc: 'c' 'n' '0' 'o' 'p'
-#   - in stu.cc: plain arguments
-#   - in stu.cc: add_deps_option_C()
-#   - at Parser::get_target_arg()
-# 
-# Manpage:
-#   - Don't do anything special with symlinks/hardlinks/etc.; they need
-#     syscalls to detect anyway.
-#   - Nonexisting XXX/.. components are removed without a check
-#   - '/' matches in parameters 
-#   - The rules do not apply within parameters or across parameters and
-#     non-parameter text
-#   - The rules also apply to transient targets
-#   - Canonicalization also applies to names of included files via -f
-#     and %include  
+# Todo:
+#       -- In add(), when adding parametrized rules, canonicalize all
+#          targets
+#       -- The check for multiple identical targets must use canonicalization
+#       -- remove E_SLASH 
 #
 
-# For copy rules whose dependency ends in '/':  See the
-# place in parser.hh where append_copy() is called, and use E_SLASH. 
-
-# Test by checking the output of the "file not found" message of Stu:
+# Test automatically
 #      - aaa -> aaa
 #      - aaa/.. ->  .
 #      - aaa/../bbb -> bbb
@@ -123,15 +94,42 @@ A = {111}
 A/B = {111}
 A//B = {222}
 
+# This must continue to work
+A:  ./list.B { cp B A ; }
+./$base.$name = {CORRECT}
+$path.$name { exit 1; }
+
+# Test './X'
+A:  ./B { cp B A ; }
+B={CORRECT}
+
+A = ./B;
+B = {CORRECT}
+
 # This is not an error; there is no duplicate rule
 A: / { touch A ; }
 / { exit 0 ; }
 // { exit 1; }
 
+# Error:  Duplicate target
+A:  list.B { touch A; }
+list.B xxx/../list.B { touch list.B; }
+
+# Error:  Duplicate target
+A:  list.B { touch A; }
+list.B ./list.B { touch list.B; }
+
 # Duplicate rule
 A: / { touch A ; }
 / { exit 0 ; }
 /// { exit 0 ; }
+
+# Make sure the error message "no rule for file and file does not exist"
+# shows the non-canonicalized filename as given on the command line or
+# as a dependency.
+$ stu xxx//yyy
+
+A:  xxx//yyy { touch A; }
 
 # Canonicalization is applied to command line arguments
 $ stu ///
@@ -142,9 +140,23 @@ A: ./list.a { cp list.a A ; }
 .${x}st.a { exit 1 ; }
 >list.a { echo CORRECT ; }
 
+# Error:  list.$path is not allowed as $path starts with a slash 
+A:  /bin/sh { touch A; }
+$path/sh:  list.$path { touch -- "$path"/sh; }
+
 # Matches
 A: list.a { cp list.a A ; }
 ./list.$x { echo "$x" >./list."$x" ; }
+
+# .//X is the same as ./X
+A:  .//list.B { cp list.B A; }
+$path/list.B { exit 1; }
+./list.$name = {CORRECT}
+
+# .//X is the same as ./X
+A:  ./list.B { cp list.B A; }
+$path/list.B { exit 1; }
+.//list.$name = {CORRECT}
 
 # Does not match
 A:  // { touch A ; }

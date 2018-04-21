@@ -684,12 +684,6 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 		}	
 	}
 
-	if (! ret->last_text().empty() && ret->last_text()[ret->last_text().size() - 1] == '/') {
-		environment |= E_SLASH;
-	} else {
-		environment &= ~E_SLASH; 
-	}
-
 	if (ret->empty()) {
 		if (p == p_begin)
 			return nullptr; 

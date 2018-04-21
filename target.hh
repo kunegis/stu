@@ -2,6 +2,7 @@
 #define TARGET_HH
 
 #include "flags.hh"
+#include "canonicalize.hh"
 
 /* 
  * Targets are the individual "objects" of Stu.  They can be thought of
@@ -37,12 +38,6 @@ typedef uint16_t word_t;
 #else
 #	error "Invalid word size" 
 #endif
-
-char *canonicalize_string(char *dst, const char *src);
-/* Canonicalize the string starting at SRC, writining output to DEST,
- * which may be equal to SRC.  Return the end of the new string.  The
- * operation never increases the size of the string.  SRC is
- * \0-terminated, but no \0 is written to DST.  */
 
 class Target
 /* A representation of a simple dependency, mainly used as the key in
@@ -1000,41 +995,6 @@ string Name::format(Style style, bool &quotes) const
 	}
 	
 	return ret; 
-}
-
-char *canonicalize_string(char *dest, const char *src) 
-/*
- * Algorithm:
- *  - Fold /
- *      - Multiple / -> single /, except for // at start not followed by /
- *      - Remove ending /, except when the name contains only '/' characters
- *  - Fold .
- *      - ^/.$ -> /
- *      - ^./$ -> .
- *      - ^./ -> ''  [multiple times] [not when followed by parameter]
- *      - /.$ -> ''  [multiple times]
- *      - /./ -> /   [multiple times]
- *  - Fold .. 
- *      - [^/]+/.. -> '' or '.' when otherwise empty [multiple times]
- *      - /.. -> '' or '/' when otherwise empty [multiple times]
- */
-{
-	// TODO implement all rules 
-
-	bool last_slash= false;
-	while (*src) {
-		if (*src == '/' && last_slash) {
-			++src;
-			continue;
-		}
-		last_slash= *src == '/';
-		*dest++= *src++; 
-	}
-	return dest; 
-
-	// size_t n= strlen(src);
-	// memmove(dest, src, n); 
-	// return dest + n; 
 }
 
 #endif /* ! TARGET_HH */

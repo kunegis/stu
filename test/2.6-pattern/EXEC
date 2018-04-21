@@ -1,0 +1,43 @@
+#! /bin/sh
+
+cat patterns | while IFS= read -r line ; do
+	printf '.' 
+	printf '%s\n' "$line" | grep -q -E '^\s*$' && continue
+	norm=$(printf '%s\n' "$line" | sed -e 's|^[[:space:]]*#[[:space:]]*-[[:space:]]*\([^[:space:]]\{1,\}\)[[:space:]]*->[[:space:]]*\([^[:space:]]\{1,\}\)[[:space:]]*$|\1 \2|')
+	uncanonicalized=$(printf '%s\n' "$norm" | sed -e 's|^\([^[:space:]]\{1,\}\) [^[:space:]]\{1,\}$|\1|')
+	canonicalized=$(printf '%s\n' "$norm" | sed -e 's|^[^[:space:]]\{1,\} \([^[:space:]]\{1,\}\)$|\1|')
+
+	rm -f main.stu list.* ? || exit 1
+
+	cat <<EOF >main.stu
+A:  $uncanonicalized { touch A; }
+$canonicalized:  nonexistingfile { exit 0; }
+EOF
+
+	../../stu.test >list.out 2>list.err
+	exitstatus=$?
+
+	[ "$exitstatus" = 1 ] || {
+		echo
+		echo >&2 "*** Expected exit status to be 1, not $exitstatus"
+		echo >&2 "line='$line'"
+		echo >&2 "norm='$norm'"
+		echo >&2 "uncanonicalized='$uncanonicalized'"
+		echo >&2 "canonicalized='$canonicalized'"
+		echo >&2 "___ main.stu: ___"
+		cat  >&2 main.stu
+		echo >&2 "_________________"
+		echo >&2 "___ list.out: ___"
+		cat  >&2 list.out
+		echo >&2 "_________________"
+		echo >&2 "___ list.err: ___"
+		cat  >&2 list.err
+		echo >&2 "_________________"
+		exit 1
+	}
+done 
+ret=$?
+
+echo
+rm -f main.stu list.* 
+exit "$ret"

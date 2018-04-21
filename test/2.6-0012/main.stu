@@ -1,0 +1,3 @@
+# Make sure the error message shows the name with the double slash
+A:  xxx//yyy { touch A; }
+

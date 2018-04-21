@@ -5,111 +5,16 @@
 #
 # Canonicalize names [2.6]
 #
+
 # Todo:
 #       -- In add(), when adding parametrized rules, canonicalize all
-#          targets
+#          targets, and the matching must take that into account 
 #       -- The check for multiple identical targets must use canonicalization
-#       -- remove E_SLASH 
-#
-
-# Test automatically
-#      - aaa -> aaa
-#      - aaa/.. ->  .
-#      - aaa/../bbb -> bbb
-#      - .. -> ..
-#      - ../aaa -> ../aaa
-#      - /../aaa -> /aaa
-#      - aaa/bbb/../../ccc -> ccc
-#      - aaa/bbb/ddd/../../../ccc -> ccc
-#      - aaa/bbb/ddd/eee/../../../../ccc -> ccc
-#      - aaa//bbb//ddd//eee//..//..//..//..//ccc -> ccc
-#      - aaa//bbb/ddd//eee/..//../..//../ccc -> ccc
-#      - aaa/../bbb/../ccc -> ccc
-#      - aaa//..//bbb//..//ccc -> ccc
-#      - aaa//../bbb//../ccc -> ccc
-#      - . -> .
-#      - ./ -> .
-#      - /. -> /
-#      - aaa/. -> aaa
-#      - aaa/./. -> aaa
-#      - aaa/././. -> aaa
-#      - aaa/./././. -> aaa
-#      - aaa/ -> aaa
-#      - aaa// -> aaa
-#      - aaa/// -> aaa
-#      - aaa//// -> aaa
-#      - ./aaa -> aaa
-#      - ././aaa -> aaa
-#      - ./././aaa -> aaa
-#      - ././././aaa -> aaa
-#      - .//aaa -> aaa
-#      - .//.//.//.//aaa -> aaa
-#      - ./. -> .
-#      - aaa//bbb -> aaa/bbb
-#      - aaa///bbb -> aaa/bbb
-#      - aaa////bbb -> aaa/bbb
-#      - /aaa -> /aaa
-#      - //aaa -> //aaa
-#      - ///aaa -> /aaa
-#      - ////aaa -> /aaa
-#      - / -> /
-#      - // -> //
-#      - /// -> /
-#      - //// -> /
-#      - aaa/bbb -> aaa/bbb
-#      - aaa/./bbb -> aaa/bbb
-#      - aaa/././bbb -> aaa/bbb
-#      - aaa/./././bbb -> aaa/bbb
-#      - aaa/./././bbb -> aaa/bbb
-#      - aaa/./../bbb -> bbb
-#      - aaa/.././bbb -> bbb
-#      - aaa/./.././bbb -> bbb
-#      - aaa//.//..//.//bbb -> bbb
-#      - //usr//bin/ -> //usr/bin
-#      - /.. -> /
-#      - /../ -> /
-#      - /..// -> /
-#      - /../aaa -> /aaa
-#      - /./../aaa -> /aaa
-#      - /././../aaa -> /aaa
-#      - /../../aaa -> /aaa
-#      - /./.././../aaa -> /aaa
-#      - /././../././../aaa -> /aaa
-#      - /../../../aaa -> /aaa
-#      - /./.././.././../aaa -> /aaa
-#      - /././../././../././../aaa -> /aaa
-#      - //.. -> //
-#      - //../ -> //
-#      - //..// -> //
-#      - //././../././../././../aaa -> //aaa
-
-# Test this:
-dat/STATISTICS = ./; 
-STATISTICS { ... }
-
-# This is a duplicate target and not allowed
-A = {111}
-./A = {222}
-
-A/B = {111}
-A//B = {222}
 
 # This must continue to work
 A:  ./list.B { cp B A ; }
 ./$base.$name = {CORRECT}
 $path.$name { exit 1; }
-
-# Test './X'
-A:  ./B { cp B A ; }
-B={CORRECT}
-
-A = ./B;
-B = {CORRECT}
-
-# This is not an error; there is no duplicate rule
-A: / { touch A ; }
-/ { exit 0 ; }
-// { exit 1; }
 
 # Error:  Duplicate target
 A:  list.B { touch A; }
@@ -119,28 +24,21 @@ list.B xxx/../list.B { touch list.B; }
 A:  list.B { touch A; }
 list.B ./list.B { touch list.B; }
 
-# Duplicate rule
-A: / { touch A ; }
-/ { exit 0 ; }
-/// { exit 0 ; }
-
-# Make sure the error message "no rule for file and file does not exist"
-# shows the non-canonicalized filename as given on the command line or
-# as a dependency.
-$ stu xxx//yyy
-
-A:  xxx//yyy { touch A; }
-
 # Canonicalization is applied to command line arguments
 $ stu ///
 / { exit 0 ; }
+
+# The special ./${} exception
+A: ./list.B { ... }
+$path.B      { ... }
+./$file      { ... }
 
 # Parametrized case: .${x}st.a does not match  ./list.a 
 A: ./list.a { cp list.a A ; }
 .${x}st.a { exit 1 ; }
 >list.a { echo CORRECT ; }
 
-# Error:  list.$path is not allowed as $path starts with a slash 
+# Error:  list.$path is not allowed as $path starts with a slash (?)
 A:  /bin/sh { touch A; }
 $path/sh:  list.$path { touch -- "$path"/sh; }
 
@@ -163,13 +61,11 @@ A:  // { touch A ; }
 /$x    { exit 1  ; }
 //     { exit 0  ; }
 
-# Normalized to the same thing, none is normalized
-A: /// { touch A ; }
-////   { exit 0  ; }
-
 # Don't normalize '%include' parameters (check error message)
 % include ksdhfk//shfkshfd
+
 % include ksdksd/./jhdjshdjshd
+
 % include jshdshd/../jhjshd
 
 # In dynamic dependencies
@@ -270,9 +166,6 @@ A: ..// { touch A ; }
 
 A:  jhdjshd/.. { touch A ; }
 
-A:  jshdjshd/../B { cp B A ; }
-B = {CORRECT}
-
 A:  jshdjshd/sdsjd/../../B { cp B A ; }
 B = {CORRECT}
 
@@ -319,6 +212,24 @@ C = {CORRECT}
 A:  X///Y { cp X/Y A ; }
 X/Y { mkdir X ; echo CORRECT >X/Y ; }
 X/${i}/Y { exit 1 ; }
+
+# With parameters
+A:  list.B { cp list.B A; }
+./list.$name = {CORRECT}
+
+# Other tests with parameters.  Use each pattern as the target of a
+# rule, with the given dependency
+#   $x//$y		B/C
+#   $x///$y     	B/C
+#   ///$x		/usr
+#   //$x		//usr
+#   $x/			B
+#   ./$x		B
+#   $x/.		B
+#   $x/./$y     	B/C
+#   $x/././$y   	B/C
+#   $x/../$y    	C
+#   $x/$y/../../$z    	D
 
 #
 # File import

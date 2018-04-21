@@ -749,9 +749,11 @@ canonicalized in targets.
 to the dependency name.  At this stage, names do not contain parameters
 and canonicalization is performed on the final file or transient name. 
 
-There is a special rule concerning './':  When a target starts with './'
-followed immediately by a parameter, the './' is not removed by
-canonicalization.  This makes it possible to distinguish files with
+There is a special rule concerning './':  When a target to be
+canonicalized in phase (1) as described above starts with './'
+followed immediately by a parameter, then this parameter will only match
+strings that do not start with a slash.  The './' is still removed. 
+This makes it possible to distinguish files with
 relatve paths from files with absolute paths.  For instance, consider
 the following example:
 

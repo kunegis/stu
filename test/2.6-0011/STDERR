@@ -1,0 +1,2 @@
+main.stu:3:5: no rule to build 'nonexistingfile', needed by '/..'
+main.stu:2:5: '/..' is needed by 'A'

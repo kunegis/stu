@@ -1,0 +1,4 @@
+# Normalized to the same thing, none is normalized
+A: /// { touch A ; }
+////   { exit 0  ; }
+

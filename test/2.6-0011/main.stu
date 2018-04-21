@@ -1,0 +1,3 @@
+# Error:  'nonexistingfile' cannot be built.  
+A:  /.. { touch A; }
+/:  nonexistingfile { exit 0; }

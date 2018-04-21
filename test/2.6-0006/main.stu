@@ -1,0 +1,5 @@
+# This is not an error; there is no duplicate rule
+A: / { touch A ; }
+/ { exit 0 ; }
+// { exit 1; }
+

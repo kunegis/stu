@@ -19,9 +19,6 @@ typedef unsigned Environment;
 enum {
 	E_WHITESPACE    = 1 << 0,
 	/* The token is preceded by whitespace */
-
-	E_SLASH         = 1 << 1,
-	/* The token ends in a slash (only for Name_Token) */
 };
 
 class Token

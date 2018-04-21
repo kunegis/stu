@@ -1,0 +1,2 @@
+main.stu:4:1: there must not be a second rule for target '/'
+main.stu:3:1: shadowing previous rule '/'

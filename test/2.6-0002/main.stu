@@ -1,0 +1,5 @@
+A:  list.dat  list.dat/list.STATISTICS  { cp list.dat/list.STATISTICS A; }
+list.dat/list.STATISTICS = ./; 
+list.STATISTICS = {CORRECT}
+list.dat { mkdir list.dat; }
+

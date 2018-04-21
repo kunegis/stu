@@ -7,13 +7,16 @@
 # 
 # INVOCATION
 #
-#	$0 [TEST...] 
+#	$0 [TEST]...
 #
 # Without any arguments, perform all tests.  With one or more arguments,
 # perform the given tests.  The given test names are the names of the
 # subdirectories of test/, and may or may not include the 'test/'
 # prefix.  The arguments may contain glob patterns.  (No test names
 # contain the glob characters *, ?, etc.) 
+#
+# OUTPUT FILES
+#     error.log		List of tests that failed
 #
 # PARAMETERS
 #     $NDEBUG	Set to non-empty to test the nondebug version; by default
@@ -27,9 +30,6 @@
 #               directories; useful after doing "rm" in a version
 #		control system on one, since that leaves a directory
 #		containing only (e.g.) ".svn".  Ignores dotfiles. 
-#
-# OUTPUT FILES
-#     error.log		List of tests that failed
 #
 # EXIT STATUS 
 #	0	All tests succeeded
@@ -107,6 +107,11 @@
 #	These are tests for the feature named NAME, with ID being an
 #	integer.  Ideally, these would be migrated to the VERSION-ID
 # 	scheme.  
+# * test/long-NAME
+#	These are tests that take a long time to run.  I.e., at least
+#       one second, due to sleep being used.  We try to avoid this as
+#  	much as possible, but sometimes sleeping is the only way to test
+# 	something. 
 #
 # NOTES
 #
@@ -162,7 +167,7 @@ else
 	# want to use ls -1 | { ... } because that would make it impossible
 	# to do "error=1", as setting the variable $error in a subshell
 	# would have no effect. 
-	tests="$(echo *)"
+	tests=$(echo *)
 fi
 
 count_total=0
@@ -173,10 +178,10 @@ do
 	# Whether there is an error in this test 
 	error=0
 	
-	count_total="$(( count_total + 1 ))"
+	count_total=$(( count_total + 1 ))
 
 	# Remove optional 'test/' prefix
-	file="$(echo "$file" | sed -e 's,^test/,,')"
+	file=$(echo "$file" | sed -e 's,^test/,,')
 
 	if [ ! -d "$file" ]; then
 		echo >&2 "$0: *** '$file' is not a directory"
@@ -212,11 +217,11 @@ do
 
 	CMD=
 	if [ -r CMD ]; then
-    		CMD="$(sed -e '/^[[:space:]]*$/d' <CMD)"
+    		CMD=$(sed -e '/^[[:space:]]*$/d' <CMD)
 	fi
 	CMDPREFIX=
 	if [ -r CMDPREFIX ]; then
-    		CMDPREFIX="$(sed -e '/^[[:space:]]*$/d' <CMDPREFIX)"
+    		CMDPREFIX=$(sed -e '/^[[:space:]]*$/d' <CMDPREFIX)
 	fi
 
 	# The following will save:  list.def.out and list.def.err 
@@ -244,7 +249,7 @@ do
 		# Execute command
 		echo $CMDPREFIX ../../stu.test "$CMD"
 		eval $CMDPREFIX ../../stu.test $CMD \>list.def.out 2\>list.def.err
-		exitcode_actual="$?"
+		exitstatus_actual=$?
 
 		if [ "$verbose" ] ; then
 			echo stdout:
@@ -258,16 +263,28 @@ do
 		fi
 		
 		# Exit status
-		exitcode_correct=0
+		exitstatus_correct=0
 		if [ -r EXITSTATUS ]; then
-			exitcode_correct="$(sed -e '/^[[:space:]]*$/d;s/[[:space:]]\{1,\}//g' <EXITSTATUS)"
-			if [ "$exitcode_correct" = 0 ]; then
+			[ 1 = "$(echo $(grep -E '[^[:space:]]' EXITSTATUS | wc -l))" ] || {
+				echo >&2 "*** Expected EXITSTATUS to contain a single non-empty line, not:"
+				cat  >&2 EXITSTATUS
+				echo >&2 __________
+				exit 2
+			}
+			grep -v -E '^(\s*|\s*[0-9]+\s*)$' EXITSTATUS && {
+				echo >&2 "*** Expected EXITSTATUS to contain a number, not:"
+				cat  >&2 EXITSTATUS
+				echo >&2 __________
+				exit 2
+			}
+			exitstatus_correct=$(sed -e '/^[[:space:]]*$/d;s/[[:space:]]\{1,\}//g' <EXITSTATUS)
+			if [ "$exitstatus_correct" = 0 ]; then
 				echo >&2 "$0: *** Content of EXITSTATUS should not be zero"
 				error=1
 			fi
 		fi
-		if [ "$exitcode_actual" != "$exitcode_correct" ]; then
-			echo >&2 "$0: *** Test '$file' should have returned $exitcode_correct, but returned $exitcode_actual"
+		if [ "$exitstatus_actual" != "$exitstatus_correct" ]; then
+			echo >&2 "$0: *** Test '$file' should have returned $exitstatus_correct, but returned $exitstatus_actual"
 			echo >&2 list.def.out:
 			echo >&2 ______________
 			cat >&2 list.def.out
@@ -278,14 +295,14 @@ do
 			echo >&2 ______________
 			error=1
 		else
-			echo "EXITSTATUS...$exitcode_correct correct"
+			echo "EXITSTATUS...$exitstatus_correct correct"
 		fi
 
 		# Target was built or not generate in case of error
-		if [ "$exitcode_correct" = 0 ]; then
+		if [ "$exitstatus_correct" = 0 ]; then
 			target=A
 			if [ -r TARGET ]; then
-				target="$(sed -e '/^[[:space:]]*$/d' <TARGET)"
+				target=$(sed -e '/^[[:space:]]*$/d' <TARGET)
 			fi
 			if [ -n "$target" ] ; then
 				if [ ! -r "$target" ]; then  # The main target must have been built
@@ -333,8 +350,8 @@ do
 		# Check that standard output is correct
 		if [ -r STDOUT ] ; then
 			diff list.def.out STDOUT
-			exitcode="$?"
-			if [ "$exitcode" != 0 ] ; then
+			exitstatus=$?
+			if [ "$exitstatus" != 0 ] ; then
 				echo >&2 "$0: *** output does not match 'STDOUT'"
 				echo >&2 '_____ actual output:'
 				cat list.def.out
@@ -361,7 +378,7 @@ do
 		fi
 
 		# Check that at least one line of error message is generated 
-		if [ "$exitcode_correct" != 0 ] && [ \! -r STDERR ]; then
+		if [ "$exitstatus_correct" != 0 ] && [ \! -r STDERR ]; then
 			if [ \! \( "$(echo $(cat list.def.err | wc -l))" -gt 0 \) ]; then
 				echo >&2 "$0: *** Nothing written to stderr although exit status is >0"
 				error=1
@@ -371,7 +388,7 @@ do
 		# Check that INSTDERR is found in the error output
 		if [ -r INSTDERR ]; then
 			for lineno in $(seq 1 $(awk '{x++}END{ print x}' <INSTDERR)) ; do
-			   	line="$(<INSTDERR sed -e "$lineno"'!d')"
+			   	line=$(<INSTDERR sed -e "$lineno"'!d')
 				if grep <list.def.err -qF -- "$line" ; then
 					echo "INSTDERR...correct"
 				else
@@ -388,8 +405,8 @@ do
 		# Check that STDERR matches the error output exactly 
 		if [ -r STDERR ]; then
 			diff list.def.err STDERR
-			exitcode="$?"
-			if [ "$exitcode" != 0 ]; then
+			exitstatus=$?
+			if [ "$exitstatus" != 0 ]; then
 				echo >&2 "$0: *** error output does not match 'STDERR'"
 				echo >&2 '_____ actual error output:'
 				cat list.def.err
@@ -417,21 +434,21 @@ do
 			../../sh/rm_tmps || exit 1
 			echo $CMDPREFIX ../../stu.test "$CMD" '[TTY]'
 			eval $CMDPREFIX ../../sh/tty ../../stu.test $CMD \>list.def.out 
-			exitcode_actual="$?"
+			exitstatus_actual=$?
 
 			# Exit code
-			if [ "$exitcode_actual" != "$exitcode_correct" ]; then
-				echo >&2 "$0: *** Test '$file' should have returned $exitcode_correct, but returned $exitcode_actual [TTY]"
+			if [ "$exitstatus_actual" != "$exitstatus_correct" ]; then
+				echo >&2 "$0: *** Test '$file' should have returned $exitstatus_correct, but returned $exitstatus_actual [TTY]"
 				error=1
 			else
-				echo "EXITSTATUS:TTY...$exitcode_correct correct"
+				echo "EXITSTATUS:TTY...$exitstatus_correct correct"
 			fi
 
 			# correct output
 			if [ -r TTYSTDOUTERR ]; then
 				diff list.def.out TTYSTDOUTERR
-				exitcode="$?"
-				if [ "$exitcode" != 0 ]; then
+				exitstatus=$?
+				if [ "$exitstatus" != 0 ]; then
 					echo >&2 "$0: *** TTY error output does not match 'TTYSTDOUTERR'"
 					echo >&2 '_____ actual output:'
 					cat list.def.out
@@ -473,7 +490,7 @@ do
 		fi
 
 		# Second invocation does nothing 
-		if [ "$exitcode_correct" = 0 ] && [ ! -e NOSECOND ]; then
+		if [ "$exitstatus_correct" = 0 ] && [ ! -e NOSECOND ]; then
 			echo $CMDPREFIX ../../stu.test "$CMD"
 			eval $CMDPREFIX ../../stu.test $CMD \>list.def.out 2\>list.def.err 
 			grep -qF 'Targets are up to date' list.def.out 
@@ -491,7 +508,7 @@ do
 
 		# Run in parallel 
 		if [ -r PARALLEL ]; then
-			ks="$(sed -e '/^[[:space:]]*$/d' <PARALLEL)"
+			ks=$(sed -e '/^[[:space:]]*$/d' <PARALLEL)
 			for k in $ks; do
 				../../sh/rm_tmps || exit 2
 				echo $CMDPREFIX ../../stu.test "$CMD" -j "$k"
@@ -524,14 +541,14 @@ echo '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 cd ..
 
 time_end=$(sh/now)
-time_diff="$(expr $time_end - $time_begin)"
-runtime="$(printf '%u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)")"
+time_diff=$(expr $time_end - $time_begin)
+runtime=$(printf '%u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)")
 echo "Runtime:  $runtime"
 
 if [ "$errors" != 0 ]
 then
-	count_failed="$(echo $(<error.log wc -l))"
-	success_rate="$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')"
+	count_failed=$(echo $(<error.log wc -l))
+	success_rate=$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')
 	echo >&2 "[31m$0: *** ${success_rate}% success rate.  The following $count_failed test(s) failed (out of $count_total):"
 	cat error.log
 	printf "[m"

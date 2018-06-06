@@ -1,0 +1,4 @@
+# 'B' is not a directory, but this works
+A: B/. { cp B A ; }
+B = {CORRECT}
+

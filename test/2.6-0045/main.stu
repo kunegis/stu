@@ -1,0 +1,4 @@
+# This does *not* work; '..' is not simplified
+A:  jshdjshd/sdsjd/../../B { cp B A ; }
+B = {CORRECT}
+

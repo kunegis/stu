@@ -1,3 +1,4 @@
-# Error:  'nonexistingfile' cannot be built.  
+# '/..' does not get simplified.  Since 'nonexistingfile' does not
+# exist, there is an error message, which must include the name '/..'. 
 A:  /.. { touch A; }
-/:  nonexistingfile { exit 0; }
+/.. : nonexistingfile; 

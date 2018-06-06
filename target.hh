@@ -399,7 +399,7 @@ public:
 	/* Whether this is a valid name.  If it is not, fill the given
 	 * parameters with the two unseparated parameters.  */ 
 
-	bool operator == (const Name &that) const {
+	bool operator== (const Name &that) const {
 		if (this->get_n() != that.get_n())
 			return false;
 		for (size_t i= 0;  i < get_n();  ++i) {
@@ -479,12 +479,12 @@ public:
 		return Target(flags, name.unparametrized());
 	}
 
-	bool operator == (const Param_Target &that) const {
+	bool operator== (const Param_Target &that) const {
 		return this->flags == that.flags &&
 			this->name == that.name; 
 	}
 
-	bool operator != (const Param_Target &that) const {
+	bool operator!= (const Param_Target &that) const {
 		return ! (*this == that);
 	}
 };
@@ -582,7 +582,7 @@ public:
 		   place(that.place)
 	{  }
 
-	bool operator == (const Place_Param_Target &that) const 
+	bool operator== (const Place_Param_Target &that) const 
 	/* Compares only the content, not the place. */ 
 	{
 		return this->flags == that.flags && 
@@ -623,6 +623,8 @@ public:
 		return Param_Target(flags, place_name); 
 	}
 };
+
+weak_ptr <const Place_Param_Target> canonicalize(weak_ptr <const Place_Param_Target> ); 
 
 string Target::format(Style style, bool &quotes) const
 {
@@ -995,6 +997,18 @@ string Name::format(Style style, bool &quotes) const
 	}
 	
 	return ret; 
+}
+
+weak_ptr <const Place_Param_Target> 
+canonicalize(weak_ptr <const Place_Param_Target> place_param_target)
+{
+	// TODO
+	// weak_ptr <const Place_Param_Target> ret= place_param_target;
+	// if (! ret.unique()) {
+	// 	ret= clone(ret); 
+	// }
+	// ret->canonicalize(); 
+	return place_param_target; 
 }
 
 #endif /* ! TARGET_HH */

@@ -1,0 +1,5 @@
+# Canonicalization in a \0-separated dynamic dependency 
+A: [-0 B] { cat list.X list.Y >A ; }
+>B { printf '%s\0%s\0' ./list.X .//list.Y ; }
+list.X = {xxx}
+list.Y = {yyy}

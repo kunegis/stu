@@ -1,0 +1,5 @@
+# Canonicalization of names inside a dynamic dependency
+A: [B] { cp list.X A ; }
+B = {./list.X}
+list.X = {CORRECT}
+

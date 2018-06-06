@@ -1,0 +1,4 @@
+# Remove ending /'s
+>A:  list.X/// { ls -l list.X ; }
+list.X { mkdir list.X ; touch list.X/www ; }
+

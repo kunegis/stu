@@ -3,8 +3,8 @@
 
 /* 
  * Canonicalization refers to the mapping of filenames and transient
- * names to unique names in which the elements '/', '.' and '..' are
- * reduced to their simplest form. 
+ * names to unique names in their simplest form with respect to the
+ * filename components the elements '/' and '.'.
  *
  * ALGORITHM
  *
@@ -19,24 +19,21 @@
  *      - ^./ -> ''  [multiple times] [not when followed by parameter]
  *      - /./ -> /   [multiple times]
  *      - /.$ -> ''  [multiple times]
- *  - Fold .. 
- *      - ^/.. -> '' or '/' when otherwise empty [multiple times]
- *      - [^/]+/.. -> '' or '.' when otherwise empty [multiple times]
  *
- * Symlinks are not handled by Stu.  Also, no stat(2) is performed, to
- * check whether name components exist.   
+ * Symlinks and '..' are not handled by Stu.  As a general rule, no
+ * stat(2) is performed, to check whether name components exist.
  */
 
-char *canonicalize_string(char *dst, const char *src);
+char *canonicalize_string(char *dest, const char *src);
 /* Canonicalize the string starting at SRC, writing output to DEST.
  * Return the end (\0) of the new string.  The operation never increases
  * the size of the string.  SRC and DEST may be equal.  SRC is
  * \0-terminated, and a terminating \0 is written to DST.  */
 
 char *canonicalize_string(char *const dest, const char *const src) 
-/* Three passes are made, for '/', '.' and '.., in that order. 
- * In the first pass, we copy SRC to DEST.  The two subsequent passes
- * operate within DEST.  */
+/* Two passes are made, for '/' and '.', in that order. 
+ * In the first pass, we copy SRC to DEST.  The second pass
+ * operates within DEST.  */
 // TODO change to always work in-place, if not needed otherwise
 {
 	/*
@@ -62,8 +59,7 @@ char *canonicalize_string(char *const dest, const char *const src)
 
 	const char *d_head= d; /* After the leading slashes */
 	
-	/* Main loop: 
-	 * collapse multiple slashes */
+	/* Main loop:  collapse multiple slashes */
 	bool last_slash= false;
 	while (*s) { // TODO use strchr here
 		if (*s == '/' && last_slash) {
@@ -74,7 +70,7 @@ char *canonicalize_string(char *const dest, const char *const src)
 		*d++= *s++; 
 	}
 
-	/* Remove trailing slash */
+	/* Remove trailing slashes */
 	while (d > d_head && d[-1] == '/') 
 		--d;
 
@@ -91,20 +87,24 @@ char *canonicalize_string(char *const dest, const char *const src)
 	s= dest;
 	d= dest; 
 
+
 	if (s[0] == '/' && s[1] == '.' && s[2] == '\0') {
 		*++d= '\0'; 
+		s += 2; 
 	} else if (s[0] == '.' && s[1] == '/' && s[2] == '\0') {
 		*++d= '\0'; 
+		s += 2; 
 	} else {
 		while (s[0] == '.' && s[1] == '/') {
 			s += 2; 
 		}
 		const char *m;
 		while ((m= strstr(s, "/./"))) {
-			memmove(d, s, m - s);
-			d += m - s;
-			*d++ = '/'; 
-			s += m - s + 3; 
+			memmove(d, s, m - s + 1);
+			d += m - s + 1;
+			s= m + 3;
+			while (s[0] == '.' && s[1] == '/')
+				s += 2; 
 		}
 		size_t l= strlen(s);
 		memmove(d, s, l + 1); 
@@ -116,8 +116,9 @@ char *canonicalize_string(char *const dest, const char *const src)
 		}
 	}
 
+#if 0
 	/*
-	 * Fold '..'
+	 * Fold '..' -- The code is kept here but not used. 
 	 */
 
 	s= dest;
@@ -143,7 +144,7 @@ char *canonicalize_string(char *const dest, const char *const src)
 				while (d > dest && d[-1] != '/'); 
 			}
 			s= m + 3; 
-			if (*s == '/')
+			if (*s == '/' && d == dest)
 				++s;
 		} else {
 			memmove(d, s, m + 3 - s); 
@@ -155,9 +156,17 @@ char *canonicalize_string(char *const dest, const char *const src)
 	memmove(d, s, l + 1); 
 	s += l;
 	d += l;
+	if (d == dest) {
+		*d++= '.'; 
+		*d= '\0'; 
+		assert(d <= s); 
+	}
+
+#endif /* 0 */
 
 	assert(*s == '\0'); 
 	assert(*d == '\0'); 
+	assert(*dest != '\0'); 
 
 	return d; 
 }

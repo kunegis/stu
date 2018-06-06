@@ -107,6 +107,9 @@ public:
 	 * replaced by the given MAPPING.  
 	 * We pass THIS as PARAM_RULE explicitly so we can return it
 	 * itself when it is unparametrized.  */ 
+
+	void canonicalize(); 
+	/* In-place */
 };
 
 class Rule_Set
@@ -326,6 +329,14 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 	}
 }
 
+void Rule::canonicalize()
+{
+	for (auto i:  place_param_targets) {
+		// TODO
+//		*i= canonicalize(*i); 
+	}
+}
+
 void Rule_Set::add(vector <shared_ptr <const Rule> > &rules_) 
 {
 	for (auto &rule:  rules_) {
@@ -370,6 +381,8 @@ void Rule_Set::add(vector <shared_ptr <const Rule> > &rules_)
 				rules_unparametrized[target]= rule;
 			}
 		} else {
+			// TODO
+//			rule->canonicalize(); 
 			rules_parametrized.push_back(rule); 
 		}
 	}

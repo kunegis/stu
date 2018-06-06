@@ -1,0 +1,4 @@
+A: [-n B] { cat list.X list.Y >A ; }
+>B { printf '%s\n%s\n' ./list.X .//list.Y ; }
+list.X = {xxx}
+list.Y = {yyy}

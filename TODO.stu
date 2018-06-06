@@ -7,7 +7,7 @@
 #
 
 # Todo:
-#       -- In add(), when adding parametrized rules, canonicalize all
+#       -- In Rule_Set::add(), when adding parametrized rules, canonicalize all
 #          targets, and the matching must take that into account 
 #       -- The check for multiple identical targets must use canonicalization
 
@@ -16,7 +16,7 @@ A:  ./list.B { cp B A ; }
 ./$base.$name = {CORRECT}
 $path.$name { exit 1; }
 
-# Error:  Duplicate target
+# Error:  (not a) Duplicate target
 A:  list.B { touch A; }
 list.B xxx/../list.B { touch list.B; }
 
@@ -24,7 +24,8 @@ list.B xxx/../list.B { touch list.B; }
 A:  list.B { touch A; }
 list.B ./list.B { touch list.B; }
 
-# Canonicalization is applied to command line arguments
+# Canonicalization is applied to command line arguments (not an example
+# as the command will not be called)
 $ stu ///
 / { exit 0 ; }
 
@@ -60,141 +61,6 @@ $path/list.B { exit 1; }
 A:  // { touch A ; }
 /$x    { exit 1  ; }
 //     { exit 0  ; }
-
-# Don't normalize '%include' parameters (check error message)
-% include ksdhfk//shfkshfd
-
-% include ksdksd/./jhdjshdjshd
-
-% include jshdshd/../jhjshd
-
-# In dynamic dependencies
-A: [B] { cp list.X A ; }
-B = {./list.X}
-list.X = {CORRECT}
-
-A: [-n B] { cat list.X list.Y list.Z >A ; }
->B { printf '%s\n%s\n%s\n' ./list.X .//list.Y xxx/../list.Z ; }
-list.X = {xxx}
-list.Y = {yyy}
-list.Z = {zzz}
-
-A: [-0 B] { cat list.X list.Y list.Z >A ; }
->B { printf '%s\0%s\0%s\0' ./list.X .//list.Y xxx/../list.Z ; }
-list.X = {xxx}
-list.Y = {yyy}
-list.Z = {zzz}
-
-# In the -F option
-$ stu -F 'A=./list.X;list.X={CORRECT}'
-
-# Remove ending /
->A:  list.X/ { ls -l list.X ; }
-list.X { mkdir list.X ; touch list.X/www ; }
-
-# Remove ending /'s
->A:  list.X// { ls -l list.X ; }
-list.X { mkdir list.X ; touch list.X/www ; }
-
-# Remove ending /'s
->A:  list.X/// { ls -l list.X ; }
-list.X { mkdir list.X ; touch list.X/www ; }
-
-# Remove ending /'s
->A:  list.X//// { ls -l list.X ; }
-list.X { mkdir list.X ; touch list.X/www ; }
-
-A: /. { cp X A ; }
-/ { echo CORRECT >X ; }
-
-A: ./ { touch A ; }
-
-A: ./list.X { cp list.X A ; }
-list.X = {CORRECT}
-
-A: list.X/. { cp list.X/X A ; }
-list.X { mkdir list.X ; touch list.X/X ; }
-
-# 'B' is not a directory, but this works
-A: B/. { cp B A ; }
-B = {CORRECT}
-
-A:  list.B/./X { cp list.B/./X A ; }
-list.B/X { list.B ; touch list.B/X ; }
-
-A:  ././B { cp B A ; }
-B = {CORRECT}
-
-A:  ./././B { cp B A ; }
-B = {CORRECT}
-
-A:  ././././B { cp B A ; }
-B = {CORRECT}
-
-A: B/./. { cp B A ; }
-B = {CORRECT}
-
-A: B/././. { cp B A ; }
-B = {CORRECT}
-
-A: B/./././. { cp B A ; }
-B = {CORRECT}
-
-A:  list.B/./. { cp list.B/X A ; }
-list.B { mkdir list.B ; touch list.B/X ; }
-
-A:  list.B/././. { cp list.B/X A ; }
-list.B { mkdir list.B ; touch list.B/X ; }
-
-A:  list.B/./././. { cp list.B/X A ; }
-list.B { mkdir list.B ; touch list.B/X ; }
-
-A:  list.B/././X { cp list.B/././X A ; }
-list.B/X { mkdir list.B ; echo CORRECT >list.B.X ; }
-
-A:  list.B/./././X { cp list.B/./././X A ; }
-list.B/X { mkdir list.B ; echo CORRECT >list.B.X ; }
-
-A:  list.B/././././X { cp list.B/././././X A ; }
-list.B/X { mkdir list.B ; echo CORRECT >list.B.X ; }
-
-A:  .. { touch A ; }
-
-A: ../ { touch A ; }
-
-A: ..// { touch A ; }
-
-A:  jhdjshd/.. { touch A ; }
-
-A:  jshdjshd/sdsjd/../../B { cp B A ; }
-B = {CORRECT}
-
-A:  jshdjshd/sdsjd/iewsjdh/../../../B { cp B A ; }
-B = {CORRECT}
-
-A:  jshdjshd/../skdksjd/../B { cp B A ; }
-B = {CORRECT}
-
-A:  jshdjshd/../skdksjd/../bceycbee/../B { cp B A ; }
-B = {CORRECT}
-
-A:  jshdjshd//../B { cp B A ; }
-B = {CORRECT}
-
-A:  jshdjshd///../B { cp B A ; }
-B = {CORRECT}
-
-A:  jshdjshd////../B { cp B A ; }
-B = {CORRECT}
-
-A:  jshdjshd/./../B { cp B A ; }
-B = {CORRECT}
-
-A:  jshdjshd/././../B { cp B A ; }
-B = {CORRECT}
-
-A:  jshdjshd//.//.//../B { cp B A ; }
-B = {CORRECT}
 
 # Test with -k.  C must be built, and Stu then fail with a logical error
 # (input redirection in [B]). 

@@ -143,8 +143,9 @@ option is used, Stu will continue with the next job.  When Ctrl-Z
 is pressed, Stu will interrupt the currently running job, and ask the
 user to press ENTER to continue, or press Ctrl-C/Ctrl-Z to interrupt or
 suspend Stu itself. 
+When 
 .BR -i
-does not work when Stu does not run in a terminal. 
+is used, Stu must be run in a terminal. 
 .IP "-j K"
 Run K jobs in parallel.  K must be a positive integer.  Without this
 option, jobs are not run in parallel, which is equivalent to using the 
@@ -246,7 +247,7 @@ signal.)
 
 Stu options are parsed with
 .BR getopt(3)
-and therefore options must preceded arguments.  Options following
+and therefore options must precede arguments.  Options following
 arguments may be supported on some platforms.  
 
 .SH OVERVIEW
@@ -846,7 +847,9 @@ precise, the following escape sequences are possible:  \\" \\\\ \\$ \\a \\b
 \\f \\n \\r \\t \\v.  Dollars in double quotes introduce parameter names
 in the same way as outside quotes. 
 Double quotes may also contain unescaped newline characters. 
-The NUL character '\\0' is not allowed inside double quotes. 
+The NUL character '\\0' is not allowed inside double quotes.  There is
+no \\0 escape sequence, as names of files and transients cannot contain
+the NUL byte. 
 
 Spacing rules:   The lack of whitespace between tokens represents concatenation
 under certain conditions.  Specifically:  To separate dependencies, whitespace must appear before opening
@@ -900,8 +903,8 @@ option must contain a 'rule_list'.
 A file included by brackets (a dynamic dependency) and arguments to the
 .BR -C 
 option must contain an 'expression_list'.   
-Arguments passed outside of options on the command line outside of
-options must contain an 'expression_list', but a simplified syntax is
+Arguments passed outside of options on the command line 
+must contain an 'expression_list', but a simplified syntax is
 used in which only the charaters '[]-@' are recognized, and that only in
 positions where they make sense; in all other cases, characters are
 interpreted as part of filenames -- this is also valid for whitespace. 

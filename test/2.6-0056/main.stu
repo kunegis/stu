@@ -1,0 +1,4 @@
+# Error in building target of first rule.  The error message shows the
+# non-canonicalized name. 
+/// : X { exit 1 ; }
+X { touch X ; }

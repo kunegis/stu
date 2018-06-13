@@ -9,7 +9,16 @@
 # Todo:
 #       -- In Rule_Set::add(), when adding parametrized rules, canonicalize all
 #          targets, and the matching must take that into account 
-#       -- The check for multiple identical targets must use canonicalization
+#       -- The check for multiple identical targets (in the parametrized
+#          case) must use canonicalization 
+
+# Test with -k.  C must be built, and Stu then fail with a logical error
+# (input redirection in [B]). 
+A:  [B] C { ... }
+B = { <X }
+C = {CORRECT}
+
+#-----
 
 # This must continue to work
 A:  ./list.B { cp B A ; }
@@ -23,11 +32,6 @@ list.B xxx/../list.B { touch list.B; }
 # Error:  Duplicate target
 A:  list.B { touch A; }
 list.B ./list.B { touch list.B; }
-
-# Canonicalization is applied to command line arguments (not an example
-# as the command will not be called)
-$ stu ///
-/ { exit 0 ; }
 
 # The special ./${} exception
 A: ./list.B { ... }
@@ -61,16 +65,6 @@ $path/list.B { exit 1; }
 A:  // { touch A ; }
 /$x    { exit 1  ; }
 //     { exit 0  ; }
-
-# Test with -k.  C must be built, and Stu then fail with a logical error
-# (input redirection in [B]). 
-A:  [B] C { ... }
-B = { <X }
-C = {CORRECT}
-
-# Error in building target of first rule.  Check that the error message
-# uses the correctly canonicalized name.
-/// { exit 1 ; }
 
 # Canonicalization in each of 'c' 'n' '0' 'o' 'p' '-C' '-J' on the command line
 

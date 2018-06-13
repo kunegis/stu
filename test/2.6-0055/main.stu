@@ -1,0 +1,5 @@
+# Error:  multiple unparametrized rule for the same target, up to
+# canonicalization 
+A:   list.B/list.C { touch A ; }
+list.B/list.C  { exit 0 ; }
+list.B//list.C { exit 0 ; }

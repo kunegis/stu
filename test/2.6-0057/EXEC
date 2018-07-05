@@ -1,0 +1,25 @@
+#! /bin/sh
+
+rm -f ? || exit 1
+
+../../stu.test -k >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 2 ] || {
+	echo >&2 "*** Invalid exit status:  expected 2, got $exitstatus"
+	exit 1
+}
+
+grep -q -F 'Creating C: CORRECT' list.out || {
+	echo >&2 '*** stdout'
+	exit 1
+}
+
+grep -q -F 'B:1:1: dynamic dependency [B] must not contain input redirection <X' list.err || {
+	echo >&2 '*** stderr'
+	exit 1
+}
+
+rm -f ? || exit 1
+
+exit 0

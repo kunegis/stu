@@ -12,19 +12,6 @@
 #       -- The check for multiple identical targets (in the parametrized
 #          case) must use canonicalization 
 
-# Test with -k.  C must be built, and Stu then fail with a logical error
-# (input redirection in [B]). 
-A:  [B] C { ... }
-B = { <X }
-C = {CORRECT}
-
-#-----
-
-# This must continue to work
-A:  ./list.B { cp B A ; }
-./$base.$name = {CORRECT}
-$path.$name { exit 1; }
-
 # Error:  (not a) Duplicate target
 A:  list.B { touch A; }
 list.B xxx/../list.B { touch list.B; }
@@ -90,6 +77,14 @@ A:  list.B { cp list.B A; }
 #   $x/././$y   	B/C
 #   $x/../$y    	C
 #   $x/$y/../../$z    	D
+
+# Other patterns with parameters:
+#   xxx/.$x
+#   $x./xxx
+#   $x./
+#   /.$x
+
+# (?) Should "$dir/name" match "/name", with $dir set to "/"?
 
 #
 # File import

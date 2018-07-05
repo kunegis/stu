@@ -399,6 +399,9 @@ public:
 	/* Whether this is a valid name.  If it is not, fill the given
 	 * parameters with the two unseparated parameters.  */ 
 
+	void canonicalize();
+	/* In-place canonicalizarion */ 
+
 	bool operator== (const Name &that) const {
 		if (this->get_n() != that.get_n())
 			return false;
@@ -622,9 +625,17 @@ public:
 	Param_Target get_param_target() const {
 		return Param_Target(flags, place_name); 
 	}
+
+	void canonicalize(); 
+	/* In-place canonicalization */ 
+
+	static shared_ptr <Place_Param_Target> clone(shared_ptr <const Place_Param_Target> place_param_target) {
+		shared_ptr <Place_Param_Target> ret= make_shared <Place_Param_Target> (place_param_target); 
+		return ret; 
+	}
 };
 
-weak_ptr <const Place_Param_Target> canonicalize(weak_ptr <const Place_Param_Target> ); 
+shared_ptr <const Place_Param_Target> canonicalize(shared_ptr <const Place_Param_Target> ); 
 
 string Target::format(Style style, bool &quotes) const
 {
@@ -999,16 +1010,32 @@ string Name::format(Style style, bool &quotes) const
 	return ret; 
 }
 
-weak_ptr <const Place_Param_Target> 
-canonicalize(weak_ptr <const Place_Param_Target> place_param_target)
+void Name::canonicalize()
 {
-	// TODO
-	// weak_ptr <const Place_Param_Target> ret= place_param_target;
-	// if (! ret.unique()) {
-	// 	ret= clone(ret); 
-	// }
-	// ret->canonicalize(); 
-	return place_param_target; 
+	...;
+}
+
+void Place_Param_Target::canonicalize()
+{
+	place_name.canonicalize(); 
+}
+
+shared_ptr <const Place_Param_Target> 
+canonicalize(shared_ptr <const Place_Param_Target> place_param_target)
+// TODO use shared_ptr 
+{
+	// TODO solve the const/clone issue 
+	shared_ptr <Place_Param_Target> ret= //place_param_target;
+//	if (! ret.unique()) {
+//		ret= 
+		Place_Param_Target::clone(
+					  place_param_target
+//					  ret
+					  ); 
+//	}
+	ret->canonicalize(); 
+	return ret; 
+//	return place_param_target; 
 }
 
 #endif /* ! TARGET_HH */

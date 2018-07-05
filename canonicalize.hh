@@ -2,17 +2,22 @@
 #define CANONICALIZE_HH
 
 /* 
- * Canonicalization refers to the mapping of filenames and transient
- * names to unique names in their simplest form with respect to the
- * filename components the elements '/' and '.'.
+ * Canonicalization is the mapping of filenames and transient names to
+ * unique names in their simplest form with respect to the filename
+ * components the elements '/' and '.'.
+ * 
+ * This function canonicalizes a string, and is used by higher-level
+ * code to canonicalize actual names.  The function is called both on
+ * entire names (when they are non-parametrized), as well as on parts of
+ * names (when they are parametrized). 
  *
- * ALGORITHM
+ * METHOD
  *
  *  - Fold /
- *      - Multiple / -> single /, except for double slash at the start
- *        not followed by /  
- *      - Remove ending /, except when the name contains only '/'
- *        characters 
+ *      - Multiple / -> single /
+ *	    - except for double slash at the start not followed by /  
+ *      - Remove ending /
+ * 	    - except when the name contains only '/' characters 
  *  - Fold .
  *      - ^/.$ -> /
  *      - ^./$ -> .
@@ -20,17 +25,30 @@
  *      - /./ -> /   [multiple times]
  *      - /.$ -> ''  [multiple times]
  *
- * Symlinks and '..' are not handled by Stu.  As a general rule, no
- * stat(2) is performed, to check whether name components exist.
+ * Symlinks and '..' are not canonicalized by Stu.  As a general rule,
+ * no stat(2) is performed to check whether name components exist.
  */
 
-char *canonicalize_string(char *dest, const char *src);
+typedef unsigned Canon_Flags;
+/* Declared as integer so arithmetic can be performed on it */
+
+enum
+/* Each flags means:  The begin/end of the string is adjacent to a
+ * parameter, rather than to the actual begin/end of the name. 
+ */
+{
+	A_BEGIN 	= 1 << 0,
+	A_END 		= 1 << 1,
+};
+
+
+char *canonicalize_string(Canon_Flags canon_flags, char *dest, const char *src);
 /* Canonicalize the string starting at SRC, writing output to DEST.
  * Return the end (\0) of the new string.  The operation never increases
  * the size of the string.  SRC and DEST may be equal.  SRC is
  * \0-terminated, and a terminating \0 is written to DST.  */
 
-char *canonicalize_string(char *const dest, const char *const src) 
+char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char *const src) 
 /* Two passes are made, for '/' and '.', in that order. 
  * In the first pass, we copy SRC to DEST.  The second pass
  * operates within DEST.  */
@@ -119,6 +137,10 @@ char *canonicalize_string(char *const dest, const char *const src)
 #if 0
 	/*
 	 * Fold '..' -- The code is kept here but not used. 
+	 * In general, what is done here is wrong because XXX/.. is not
+	 * equivalent to '.' when XXX is a symlink.  Thus, a system call
+	 * would be needed to resolve such cases, and systems calls are
+	 * not used in Stu for canonicalization. 
 	 */
 
 	s= dest;

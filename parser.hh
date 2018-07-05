@@ -77,7 +77,7 @@ public:
 
 	static void get_expression_list(vector <shared_ptr <const Dep> > &deps,
 					vector <shared_ptr <Token> > &tokens,
-					const Place &place_end,
+				const Place &place_end,
 					Place_Name &input,
 					Place &place_input);
 	/* Parse tokens that represent an 'expression_list' (as given in

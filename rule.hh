@@ -109,7 +109,8 @@ public:
 	 * itself when it is unparametrized.  */ 
 
 	void canonicalize(); 
-	/* In-place */
+	/* In-place canonicalization of the rule.  This applies to the
+	 * targets of the rule.  */
 };
 
 class Rule_Set
@@ -332,8 +333,10 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 void Rule::canonicalize()
 {
 	for (auto i:  place_param_targets) {
-		// TODO
-//		*i= canonicalize(*i); 
+		// the function exists, but is not called -- see
+		// target.hh
+		// -- because of weak_ptr or const 
+		i= ::canonicalize(i); 
 	}
 }
 
@@ -361,7 +364,13 @@ void Rule_Set::add(vector <shared_ptr <const Rule> > &rules_)
 		if (! rule->is_parametrized()) {
 			for (auto place_param_target:  rule->place_param_targets) {
 				Target target= place_param_target->unparametrized(); 
+
+				// TODO maybe:  call
+				// rule->canonicalize() before, so
+				// target.canonicalize() becomes
+				// unnecessary 
 				target.canonicalize(); 
+
 				if (rules_unparametrized.count(target)) {
 					place_param_target->place <<
 						fmt("there must not be a second rule for target %s", 
@@ -381,8 +390,7 @@ void Rule_Set::add(vector <shared_ptr <const Rule> > &rules_)
 				rules_unparametrized[target]= rule;
 			}
 		} else {
-			// TODO
-//			rule->canonicalize(); 
+			rule->canonicalize(); 
 			rules_parametrized.push_back(rule); 
 		}
 	}

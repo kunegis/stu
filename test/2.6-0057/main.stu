@@ -1,0 +1,6 @@
+# Test with -k.  C must be built, and Stu then fail with an error
+# (input redirection in [B]). 
+A:  [B] C { ... }
+B = { <X }
+C = {CORRECT}
+X { touch X ; }

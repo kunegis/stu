@@ -397,7 +397,7 @@ void Place::print(string message,
 
 	case Type::INPUT_FILE:
 		fprintf(stderr,
-			"%s%s%s:%s%u%s:%s%u%s: %s\n", 
+			"%s%s%s:%s%zu%s:%s%zu%s: %s\n", 
 			color_word, get_filename_str(), Color::end,
 			color, line, Color::end,
 			color, 1 + column, Color::end,
@@ -451,7 +451,7 @@ string Place::as_argv0() const
 		 * (restricted/login mode and similar) when argv[0]
 		 * begins with a dash. */ 
 		const char *s= get_filename_str();
-		return frmt("%s%s:%u", 
+		return frmt("%s%s:%zu", 
 			    s[0] == '-' ? "file " : "",
 			    s,
 			    line);  

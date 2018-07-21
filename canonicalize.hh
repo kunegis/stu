@@ -48,7 +48,7 @@ char *canonicalize_string(Canon_Flags canon_flags, char *dest, const char *src);
  * the size of the string.  SRC and DEST may be equal.  SRC is
  * \0-terminated, and a terminating \0 is written to DST.  */
 
-char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char *const src) 
+char *canonicalize_string(Canon_Flags ocanon_flags, char *const dest, const char *const src) 
 /* Two passes are made, for '/' and '.', in that order. 
  * In the first pass, we copy SRC to DEST.  The second pass
  * operates within DEST.  */

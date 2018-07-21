@@ -48,7 +48,7 @@ char *canonicalize_string(Canon_Flags canon_flags, char *dest, const char *src);
  * the size of the string.  SRC and DEST may be equal.  SRC is
  * \0-terminated, and a terminating \0 is written to DST.  */
 
-char *canonicalize_string(Canon_Flags ocanon_flags, char *const dest, const char *const src) 
+char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char *const src) 
 /* Two passes are made, for '/' and '.', in that order. 
  * In the first pass, we copy SRC to DEST.  The second pass
  * operates within DEST.  */
@@ -68,7 +68,7 @@ char *canonicalize_string(Canon_Flags ocanon_flags, char *const dest, const char
 	const char *s= src;
 	while (*s == '/') 
 		++s;
-	if (s - src == 2) {
+	if (s - src == 2 && canon_flags & A_BEGIN) {
 		*d++= '/';
 		*d++= '/';
 	} else if (s != src) {
@@ -89,8 +89,9 @@ char *canonicalize_string(Canon_Flags ocanon_flags, char *const dest, const char
 	}
 
 	/* Remove trailing slashes */
-	while (d > d_head && d[-1] == '/') 
-		--d;
+	if (canon_flags & A_END) 
+		while (d > d_head && d[-1] == '/') 
+			--d;
 
 #ifndef NDEBUG
 	assert(dest <= limit); 
@@ -142,6 +143,8 @@ char *canonicalize_string(Canon_Flags ocanon_flags, char *const dest, const char
 	 * would be needed to resolve such cases, and systems calls are
 	 * not used in Stu for canonicalization. 
 	 */
+	/* Note: This code does not take into account CANON_FLAGS -- it
+	 * works as if both were set */
 
 	s= dest;
 	d= dest;
@@ -188,7 +191,7 @@ char *canonicalize_string(Canon_Flags ocanon_flags, char *const dest, const char
 
 	assert(*s == '\0'); 
 	assert(*d == '\0'); 
-	assert(*dest != '\0'); 
+	assert(*dest != '\0' || *src == '\0'); 
 
 	return d; 
 }

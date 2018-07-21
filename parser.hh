@@ -71,7 +71,7 @@ public:
 	 * PLACE_INPUT is the place of the '<' input redirection
 	 * operator.  */ 
 
-	static void get_rule_list(vector <shared_ptr <const Rule> > &rules,
+	static void get_rule_list(vector <shared_ptr <Rule> > &rules,
 				  vector <shared_ptr <Token> > &tokens,
 				  const Place &place_end);
 
@@ -127,7 +127,7 @@ private:
 		   place_end(place_end_)
 	{ }
 	
-	void parse_rule_list(vector <shared_ptr <const Rule> > &ret);
+	void parse_rule_list(vector <shared_ptr <Rule> > &ret);
 	/* The returned rules may not be unique -- this is checked later */ 
 
 	bool parse_expression_list(vector <shared_ptr <const Dep> > &ret, 
@@ -136,7 +136,7 @@ private:
 				   const vector <shared_ptr <const Place_Param_Target> > &targets);
 	/* RET is filled.  RET is empty when called. */
 
-	shared_ptr <const Rule> parse_rule(); 
+	shared_ptr <Rule> parse_rule(); 
 	/* Return null when nothing was parsed */ 
 
 	bool parse_expression(shared_ptr <const Dep> &ret,
@@ -194,7 +194,7 @@ private:
 	 * slashes */
 };
 
-void Parser::parse_rule_list(vector <shared_ptr <const Rule> > &ret)
+void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret)
 {
 	assert(ret.size() == 0); 
 	
@@ -204,7 +204,7 @@ void Parser::parse_rule_list(vector <shared_ptr <const Rule> > &ret)
 		const auto iter_begin= iter; 
 #endif /* ! NDEBUG */ 
 
-		shared_ptr <const Rule> rule= parse_rule(); 
+		shared_ptr <Rule> rule= parse_rule(); 
 
 		if (rule == nullptr) {
 			assert(iter == iter_begin); 
@@ -215,7 +215,7 @@ void Parser::parse_rule_list(vector <shared_ptr <const Rule> > &ret)
 	}
 }
 
-shared_ptr <const Rule> Parser::parse_rule()
+shared_ptr <Rule> Parser::parse_rule()
 {
 	const auto iter_begin= iter;
 	/* Used to check that when this function fails (i.e., returns
@@ -600,9 +600,9 @@ shared_ptr <const Rule> Parser::parse_rule()
 			 * in slash */
 			append_copy(*name_copy, place_param_targets[0]->place_name); 
 
-			return make_shared <const Rule> (place_param_targets[0], name_copy,
-							 place_flag_persistent,
-							 place_flag_optional);
+			return make_shared <Rule> (place_param_targets[0], name_copy,
+						   place_flag_persistent,
+						   place_flag_optional);
 		}
 		
 	} else if (is_operator(';')) {
@@ -667,7 +667,7 @@ shared_ptr <const Rule> Parser::parse_rule()
 		}
 	}
 
-	return make_shared <const Rule> 
+	return make_shared <Rule> 
 		(move(place_param_targets), 
 		 deps, 
 		 command, is_hardcode, 
@@ -1239,7 +1239,7 @@ void Parser::append_copy(      Name &to,
 	to.append(from);
 }
 
-void Parser::get_rule_list(vector <shared_ptr <const Rule> > &rules,
+void Parser::get_rule_list(vector <shared_ptr <Rule> > &rules,
 			  vector <shared_ptr <Token> > &tokens,
 			  const Place &place_end)
 {
@@ -1534,7 +1534,7 @@ void Parser::get_file(string filename,
 		 file_fd); 
 
 	/* Build rules */
-	vector <shared_ptr <const Rule> > rules;
+	vector <shared_ptr <Rule> > rules;
 	Parser::get_rule_list(rules, tokens, place_end); 
 
 	/* Add to set */
@@ -1567,7 +1567,7 @@ void Parser::get_string(const char *s,
 		 Place(Place::Type::OPTION, 'F'));
 
 	/* Build rules */
-	vector <shared_ptr <const Rule> > rules;
+	vector <shared_ptr <Rule> > rules;
 	Parser::get_rule_list(rules, tokens, place_end);
 
 	/* Add to set */

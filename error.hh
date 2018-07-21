@@ -382,7 +382,6 @@ void Place::print(string message,
 		  const char *color_word) const
 {
 	assert(message != "");
-	assert(line >= 1); 
 
 	switch (type) {
 	default:  
@@ -396,6 +395,7 @@ void Place::print(string message,
 		break; 
 
 	case Type::INPUT_FILE:
+		assert(line >= 1); 
 		fprintf(stderr,
 			"%s%s%s:%s%zu%s:%s%zu%s: %s\n", 
 			color_word, get_filename_str(), Color::end,

@@ -128,7 +128,7 @@ private:
 	/* All parametrized rules. */ 
 
 public:
-	void add(vector <shared_ptr <const Rule> > &rules_);
+	void add(vector <shared_ptr <Rule> > &rules_);
 	/* Add rules to this rule set.  While adding rules, check for
 	 * duplicates, and print and throw a logical error if there is.
 	 * If the given rule has duplicate targets, print and throw a
@@ -340,7 +340,7 @@ void Rule::canonicalize()
 	}
 }
 
-void Rule_Set::add(vector <shared_ptr <const Rule> > &rules_) 
+void Rule_Set::add(vector <shared_ptr <Rule> > &rules_) // XXX
 {
 	for (auto &rule:  rules_) {
 

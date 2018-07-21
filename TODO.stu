@@ -6,31 +6,7 @@
 # Canonicalize names [2.6]
 #
 
-# .//X is the same as ./X
-A:  .//list.B { cp list.B A; }
-$path/list.B { exit 1; }
-./list.$name = {CORRECT}
-
-# .//X is the same as ./X
-A:  ./list.B { cp list.B A; }
-$path/list.B { exit 1; }
-.//list.$name = {CORRECT}
-
-# Does not match
-A:  // { touch A ; }
-/$x    { exit 1  ; }
-//     { exit 0  ; }
-
 # Canonicalization in each of 'c' 'n' '0' 'o' 'p' '-C' '-J' on the command line
-
-# The parametrized rule is not called
-A:  X///Y { cp X/Y A ; }
-X/Y { mkdir X ; echo CORRECT >X/Y ; }
-X/${i}/Y { exit 1 ; }
-
-# With parameters
-A:  list.B { cp list.B A; }
-./list.$name = {CORRECT}
 
 # Other tests with parameters.  Use each pattern as the target of a
 # rule, with the given dependency

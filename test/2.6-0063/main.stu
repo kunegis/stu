@@ -1,0 +1,5 @@
+# The parametrized rule does not match
+A:  // { touch A ; }
+/$x    { exit 1  ; }
+//     { exit 0  ; }
+

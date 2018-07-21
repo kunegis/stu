@@ -1,0 +1,4 @@
+# .//X is the same as ./X
+A:  .//list.B { cp list.B A; }
+$path/list.B { exit 1; }
+./list.$name = {CORRECT}

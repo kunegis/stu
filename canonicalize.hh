@@ -110,11 +110,12 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 	if (s[0] == '/' && s[1] == '.' && s[2] == '\0') {
 		*++d= '\0'; 
 		s += 2; 
-	} else if (s[0] == '.' && s[1] == '/' && s[2] == '\0') {
+	} else if (canon_flags & A_BEGIN && canon_flags & A_END
+		   && s[0] == '.' && s[1] == '/' && s[2] == '\0') {
 		*++d= '\0'; 
 		s += 2; 
 	} else {
-		while (s[0] == '.' && s[1] == '/') {
+		while (canon_flags & A_BEGIN && s[0] == '.' && s[1] == '/') {
 			s += 2; 
 		}
 		const char *m;

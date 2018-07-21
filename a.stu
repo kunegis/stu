@@ -1,4 +1,23 @@
+#
+# Collection of special cases
+#
+
+# Works; the content rule is used
 A:  ./list.B { cp list.B A ; }
 ./$base.$name = {CORRECT}
 $path.$name { exit 1; }
+
+# The special ./${} exception
+A: ./list.B { ... }
+$path.B      { ... }
+./$file      { ... }
+
+# Parametrized case: .${x}st.a does not match  ./list.a 
+A: ./list.a { cp list.a A ; }
+.${x}st.a { exit 1 ; }
+>list.a { echo CORRECT ; }
+
+# Error:  list.$path is not allowed as $path starts with a slash (?)
+A:  /bin/sh { touch A; }
+$path/sh:  list.$path { touch -- "$path"/sh; }
 

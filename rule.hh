@@ -15,7 +15,7 @@ class Rule
  * "unparametrized rule" class.  */ 
 {
 public:
-	const vector <shared_ptr <const Place_Param_Target> > place_param_targets; 
+	vector <shared_ptr <const Place_Param_Target> > place_param_targets; 
 	/* The targets of the rule, in the order specified in the rule.
 	 * Contains at least one element.  Each element contains all
 	 * parameters of the rule, and therefore should be used for
@@ -332,15 +332,16 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 
 void Rule::canonicalize()
 {
-	for (auto i:  place_param_targets) {
-		// the function exists, but is not called -- see
-		// target.hh
-		// -- because of weak_ptr or const 
-		i= ::canonicalize(i); 
+	for (size_t i= 0;  i < place_param_targets.size();  ++i) {
+		place_param_targets[i]= ::canonicalize(place_param_targets[i]); 
 	}
+	//	for (auto i:  place_param_targets) {
+//		pl
+		//		i= ::canonicalize(i); 
+//	}
 }
 
-void Rule_Set::add(vector <shared_ptr <Rule> > &rules_) // XXX
+void Rule_Set::add(vector <shared_ptr <Rule> > &rules_) 
 {
 	for (auto &rule:  rules_) {
 

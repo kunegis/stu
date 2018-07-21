@@ -1,0 +1,2 @@
+main.stu:3:8: there must not be a second rule for target 'list.B'
+main.stu:3:1: shadowing previous rule 'list.B'

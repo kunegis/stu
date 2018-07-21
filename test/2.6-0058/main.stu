@@ -1,0 +1,10 @@
+# Not an error; works (not a duplicate target)
+
+A:  list.B { touch A; }
+
+list.B xxx/../list.B {
+	touch list.B
+	rm -Rf xxx 
+	mkdir xxx
+	touch xxx/../list.B
+}

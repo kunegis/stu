@@ -34,8 +34,7 @@ typedef unsigned Canon_Flags;
 
 enum
 /* Each flags means:  The begin/end of the string is adjacent to a
- * parameter, rather than to the actual begin/end of the name. 
- */
+ * parameter, rather than to the actual begin/end of the name.  */
 {
 	A_BEGIN 	= 1 << 0,
 	A_END 		= 1 << 1,

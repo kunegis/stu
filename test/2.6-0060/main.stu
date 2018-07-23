@@ -1,0 +1,3 @@
+# Matches
+A: list.a { cp list.a A ; }
+./list.$x { echo "$x" >./list."$x" ; }

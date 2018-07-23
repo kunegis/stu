@@ -1,0 +1,4 @@
+# With parameters
+A:  list.B { cp list.B A; }
+./list.$name = {CORRECT}
+

@@ -182,7 +182,7 @@ public:
 		while ((*(word_t *)p) & F_TARGET_DYNAMIC)
 			p += sizeof(word_t);
 		p += sizeof(word_t); 
-		p= canonicalize_string(p, p); 
+		p= canonicalize_string(A_BEGIN | A_END, p, p); 
 		text.resize(p - b); 
 	}
 
@@ -630,7 +630,10 @@ public:
 	/* In-place canonicalization */ 
 
 	static shared_ptr <Place_Param_Target> clone(shared_ptr <const Place_Param_Target> place_param_target) {
-		shared_ptr <Place_Param_Target> ret= make_shared <Place_Param_Target> (place_param_target); 
+		shared_ptr <Place_Param_Target> ret= make_shared <Place_Param_Target>
+			(place_param_target->flags,
+			 place_param_target->place_name,
+			 place_param_target->place); 
 		return ret; 
 	}
 };
@@ -1012,7 +1015,16 @@ string Name::format(Style style, bool &quotes) const
 
 void Name::canonicalize()
 {
-	...;
+	for (size_t i= 0;  i <= get_n();  ++i) {
+                char *const p= (char *) texts[i].c_str();
+		Canon_Flags canon_flags= 0;
+		if (i == 0)
+			canon_flags |= A_BEGIN;
+		if (i == get_n())
+			canon_flags |= A_END;
+		const char *q= canonicalize_string(canon_flags, p, p);
+		texts[i].resize(q - p);
+	}
 }
 
 void Place_Param_Target::canonicalize()

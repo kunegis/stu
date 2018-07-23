@@ -6,63 +6,7 @@
 # Canonicalize names [2.6]
 #
 
-# Todo:
-#       -- In Rule_Set::add(), when adding parametrized rules, canonicalize all
-#          targets, and the matching must take that into account 
-#       -- The check for multiple identical targets (in the parametrized
-#          case) must use canonicalization 
-
-# Error:  (not a) Duplicate target
-A:  list.B { touch A; }
-list.B xxx/../list.B { touch list.B; }
-
-# Error:  Duplicate target
-A:  list.B { touch A; }
-list.B ./list.B { touch list.B; }
-
-# The special ./${} exception
-A: ./list.B { ... }
-$path.B      { ... }
-./$file      { ... }
-
-# Parametrized case: .${x}st.a does not match  ./list.a 
-A: ./list.a { cp list.a A ; }
-.${x}st.a { exit 1 ; }
->list.a { echo CORRECT ; }
-
-# Error:  list.$path is not allowed as $path starts with a slash (?)
-A:  /bin/sh { touch A; }
-$path/sh:  list.$path { touch -- "$path"/sh; }
-
-# Matches
-A: list.a { cp list.a A ; }
-./list.$x { echo "$x" >./list."$x" ; }
-
-# .//X is the same as ./X
-A:  .//list.B { cp list.B A; }
-$path/list.B { exit 1; }
-./list.$name = {CORRECT}
-
-# .//X is the same as ./X
-A:  ./list.B { cp list.B A; }
-$path/list.B { exit 1; }
-.//list.$name = {CORRECT}
-
-# Does not match
-A:  // { touch A ; }
-/$x    { exit 1  ; }
-//     { exit 0  ; }
-
 # Canonicalization in each of 'c' 'n' '0' 'o' 'p' '-C' '-J' on the command line
-
-# The parametrized rule is not called
-A:  X///Y { cp X/Y A ; }
-X/Y { mkdir X ; echo CORRECT >X/Y ; }
-X/${i}/Y { exit 1 ; }
-
-# With parameters
-A:  list.B { cp list.B A; }
-./list.$name = {CORRECT}
 
 # Other tests with parameters.  Use each pattern as the target of a
 # rule, with the given dependency

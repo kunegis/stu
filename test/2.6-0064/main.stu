@@ -1,0 +1,4 @@
+# The parametrized rule is not called
+A:  X///Y { cp X/Y A ; }
+X/Y { mkdir X ; echo CORRECT >X/Y ; }
+X/${i}/Y { exit 1 ; }

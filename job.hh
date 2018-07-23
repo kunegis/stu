@@ -662,12 +662,12 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 	assert(count_jobs_exec >= count_jobs_success + count_jobs_fail); 
 
 	if (! allow_unterminated_jobs) 
-		printf("STATISTICS  number of jobs started = %u "
-		       "(%u succeeded, %u failed)\n", 
+		printf("STATISTICS  number of jobs started = %zu "
+		       "(%zu succeeded, %zu failed)\n", 
 		       count_jobs_exec, count_jobs_success, count_jobs_fail); 
 	else 
-		printf("STATISTICS  number of jobs started = %u "
-		       "(%u succeeded, %u failed, %u running)\n", 
+		printf("STATISTICS  number of jobs started = %zu "
+		       "(%zu succeeded, %zu failed, %zu running)\n", 
 		       count_jobs_exec, count_jobs_success, count_jobs_fail, 
 		       count_jobs_exec - count_jobs_success - count_jobs_fail); 
 

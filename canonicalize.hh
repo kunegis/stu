@@ -67,7 +67,7 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 	const char *s= src;
 	while (*s == '/') 
 		++s;
-	if (s - src == 2) {
+	if (s - src == 2 && canon_flags & A_BEGIN) {
 		*d++= '/';
 		*d++= '/';
 	} else if (s != src) {
@@ -88,8 +88,9 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 	}
 
 	/* Remove trailing slashes */
-	while (d > d_head && d[-1] == '/') 
-		--d;
+	if (canon_flags & A_END) 
+		while (d > d_head && d[-1] == '/') 
+			--d;
 
 #ifndef NDEBUG
 	assert(dest <= limit); 
@@ -108,11 +109,12 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 	if (s[0] == '/' && s[1] == '.' && s[2] == '\0') {
 		*++d= '\0'; 
 		s += 2; 
-	} else if (s[0] == '.' && s[1] == '/' && s[2] == '\0') {
+	} else if (canon_flags & A_BEGIN && canon_flags & A_END
+		   && s[0] == '.' && s[1] == '/' && s[2] == '\0') {
 		*++d= '\0'; 
 		s += 2; 
 	} else {
-		while (s[0] == '.' && s[1] == '/') {
+		while (canon_flags & A_BEGIN && s[0] == '.' && s[1] == '/') {
 			s += 2; 
 		}
 		const char *m;
@@ -141,6 +143,8 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 	 * would be needed to resolve such cases, and systems calls are
 	 * not used in Stu for canonicalization. 
 	 */
+	/* Note: This code does not take into account CANON_FLAGS -- it
+	 * works as if both were set */
 
 	s= dest;
 	d= dest;
@@ -187,7 +191,7 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 
 	assert(*s == '\0'); 
 	assert(*d == '\0'); 
-	assert(*dest != '\0'); 
+	assert(*dest != '\0' || *src == '\0'); 
 
 	return d; 
 }

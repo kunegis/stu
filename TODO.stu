@@ -6,7 +6,7 @@
 # Canonicalize names [2.6]
 #
 
-# Canonicalization in each of 'c' 'n' '0' 'o' 'p' '-C' '-J' on the command line
+# Canonicalization in argument to -o on the command line
 
 # Other tests with parameters.  Use each pattern as the target of a
 # rule, with the given dependency

@@ -335,10 +335,6 @@ void Rule::canonicalize()
 	for (size_t i= 0;  i < place_param_targets.size();  ++i) {
 		place_param_targets[i]= ::canonicalize(place_param_targets[i]); 
 	}
-	//	for (auto i:  place_param_targets) {
-//		pl
-		//		i= ::canonicalize(i); 
-//	}
 }
 
 void Rule_Set::add(vector <shared_ptr <Rule> > &rules_) 

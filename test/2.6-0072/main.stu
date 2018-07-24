@@ -1,0 +1,6 @@
+list.A/list.B: list.C {
+	mkdir -p list.A 
+	cp list.C list.A/list.B
+}
+
+list.C = {CORRECT}

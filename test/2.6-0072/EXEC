@@ -1,0 +1,33 @@
+#! /bin/sh
+
+rm -Rf list.* || exit 1
+
+mkdir -p list.A || exit 1
+
+touch list.A/list.B || exit 1
+
+../../stu.test -o list.A//list.B >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Expected exit status 0, got $exitstatus"
+	echo >&2 __________ list.err ___________
+	cat  >&2 list.err
+	echo >&2 _______________________________
+	exit 1
+}
+
+grep -q -E '^CORRECT$' list.A/list.B || {
+	echo >&2 "*** Expected 'CORRECT'"
+	echo >&2 __________ list.A/list.B ______
+	cat  >&2 list.A/list.B
+	echo >&2 _______________________________
+	exit 1
+}
+
+[ -s list.err ] && {
+	echo >&2 "*** Expected 'list.err' to be empty"
+	exit 1
+}
+
+rm -Rf list.* || exit 1

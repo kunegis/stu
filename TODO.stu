@@ -8,8 +8,6 @@
 
 # Other tests with parameters.  Use each pattern as the target of a
 # rule, with the given dependency
-#   $x//$y		B/C
-#   $x///$y     	B/C
 #   ///$x		/usr
 #   //$x		//usr
 #   $x/			B
@@ -25,8 +23,6 @@
 #   $x./xxx
 #   $x./
 #   /.$x
-
-# (?) Should "$dir/name" match "/name", with $dir set to "/"?
 
 #
 # File import

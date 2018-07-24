@@ -1,0 +1,11 @@
+A:  B/C
+{
+	cp B/C A
+}
+
+$x///$y
+{
+	mkdir -p -- "$x"
+	echo CORRECT >"$x/$y"
+}
+

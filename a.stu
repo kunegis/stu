@@ -21,3 +21,4 @@ A: ./list.a { cp list.a A ; }
 A:  /bin/sh { touch A; }
 $path/sh:  list.$path { touch -- "$path"/sh; }
 
+# (?) Should "$dir/name" match "/name", with $dir set to "/"?

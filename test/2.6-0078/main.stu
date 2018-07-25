@@ -1,0 +1,4 @@
+A:   B { cp B A ; }
+./$x { echo CORRECT >"$x" ; }
+
+

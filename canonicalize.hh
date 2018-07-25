@@ -59,6 +59,9 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 
 	char *d= dest; 
 
+	/* After the leading slashes when A_BEGIN, otherwise D */
+	const char *d_head= d; 
+
 #ifndef NDEBUG
 	const char *const limit= dest + strlen(src); 
 #endif
@@ -73,8 +76,9 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 	} else if (s != src) {
 		*d++= '/';
 	}
-
-	const char *d_head= d; /* After the leading slashes */
+	
+	if (canon_flags & A_BEGIN) 
+		d_head= d; 
 	
 	/* Main loop:  collapse multiple slashes */
 	bool last_slash= false;
@@ -105,9 +109,12 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 	s= dest;
 	d= dest; 
 
-
-	if (s[0] == '/' && s[1] == '.' && s[2] == '\0') {
-		*++d= '\0'; 
+	if (canon_flags & A_END && s[0] == '/' && s[1] == '.' && s[2] == '\0') {
+		if (canon_flags & A_BEGIN)
+			*++d= '\0'; 
+		else {
+			*d= '\0'; 
+		}
 		s += 2; 
 	} else if (canon_flags & A_BEGIN && canon_flags & A_END
 		   && s[0] == '.' && s[1] == '/' && s[2] == '\0') {

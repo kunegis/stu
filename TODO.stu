@@ -6,12 +6,26 @@
 # Canonicalize names [2.6]
 #
 
-# Other tests with parameters.  Use each pattern as the target of a
-# rule, with the given dependency
-#   xxx/.$x             xxx/.X
-#   $x./xxx             X./xxx
-#   $x./		X./
-#   /.$x		/.X
+# Works; the content rule is used
+A:  ./list.B { cp list.B A ; }
+./$base.$name = {CORRECT}
+$path.$name { exit 1; }
+
+# The special ./${} exception
+A: ./list.B { ... }
+$path.B      { ... }
+./$file      { ... }
+
+# Parametrized case: .${x}st.a does not match  ./list.a 
+A: ./list.a { cp list.a A ; }
+.${x}st.a { exit 1 ; }
+>list.a { echo CORRECT ; }
+
+# Error:  list.$path is not allowed as $path starts with a slash (?)
+A:  /bin/sh { touch A; }
+$path/sh:  list.$path { touch -- "$path"/sh; }
+
+# (?) Should "$dir/name" match "/name", with $dir set to "/"?
 
 #
 # File import

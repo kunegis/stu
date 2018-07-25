@@ -1,0 +1,6 @@
+A:   list.xxx/.X { cp list.xxx/.X A ; }
+
+list.xxx/.$x { 
+	mkdir -p list.xxx
+	echo CORRECT >list.xxx/."$x"
+}

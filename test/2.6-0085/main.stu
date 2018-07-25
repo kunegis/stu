@@ -1,0 +1,3 @@
+A:  /.nonexistingfile { touch A ; }
+/.$x { exit 77 ; }
+

@@ -1,0 +1,6 @@
+# Parameter may match a parenthesis
+A:  B/C/D/E { cp B/C/D/E A ; }
+B/$x/E {
+	mkdir -p B/"$x"
+	touch B/"$x"/E
+}

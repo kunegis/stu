@@ -1,0 +1,4 @@
+# .${x}st.a does not match ./list.a 
+A: ./list.a { cp list.a A ; }
+.${x}st.a { exit 1 ; }
+>list.a { echo CORRECT ; }

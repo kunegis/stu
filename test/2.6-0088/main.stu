@@ -1,0 +1,14 @@
+# list.x$path is allowed, even though $path starts with a slash
+
+A:  /bin/sh { 
+	cp list.x/bin A
+}
+
+$path/sh:  list.x$path { 
+	# Always exists -- do nothing 
+}
+
+list.x/bin {
+	mkdir -p list.x
+	echo CORRECT >list.x/bin
+}

@@ -6,11 +6,9 @@
 # Canonicalize names [2.6]
 #
 
-# Error:  list.$path is not allowed as $path starts with a slash (?)
-A:  /bin/sh { touch A; }
-$path/sh:  list.$path { touch -- "$path"/sh; }
-
 # (?) Should "$dir/name" match "/name", with $dir set to "/"?
+
+# (?) Should "$dir/name" match "name", with $dir set to "."?
 
 # Works; the content rule is used
 A:  ./list.B { cp list.B A ; }

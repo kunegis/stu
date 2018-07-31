@@ -6,14 +6,14 @@
 # Canonicalize names [2.6]
 #
 
-# (?) Should "$dir/name" match "/name", with $dir set to "/"?
-
-# (?) Should "$dir/name" match "name", with $dir set to "."?
-
 # Works; the content rule is used
 A:  ./list.B { cp list.B A ; }
 ./$base.$name = {CORRECT}
 $path.$name { exit 1; }
+
+# (?) Should "$dir/name" match "/name", with $dir set to "/"?
+
+# (?) Should "$dir/name" match "name", with $dir set to "."?
 
 # The special ./${} exception
 A: ./list.B { ... }

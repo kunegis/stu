@@ -1,0 +1,5 @@
+# This must work for backward compatibility 
+
+A: ./list.B { cp list.B A ; }
+./$base.$name = {CORRECT}
+$path.$name { exit 1; }

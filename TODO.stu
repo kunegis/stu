@@ -6,19 +6,18 @@
 # Canonicalize names [2.6]
 #
 
-# Works; the content rule is used
-A:  ./list.B { cp list.B A ; }
-./$base.$name = {CORRECT}
-$path.$name { exit 1; }
+# (?) Should "/name" match "$dir/name", with $dir set to "/"?
 
-# (?) Should "$dir/name" match "/name", with $dir set to "/"?
-
-# (?) Should "$dir/name" match "name", with $dir set to "."?
+# (?) Should "name" match "$dir/name", with $dir set to "."?
 
 # The special ./${} exception
 A: ./list.B { ... }
 $path.B      { ... }
 ./$file      { ... }
+
+# Match the actual name of the current directory
+A:  B { ... }
+currentdirectory/B { ... }
 
 #
 # File import

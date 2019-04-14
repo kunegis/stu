@@ -22,7 +22,7 @@ DESCRIPTION
        parameter  $name  can be used in names of dependencies and in the build
        command.  Targets may contain any number of parameters.  (3) Concatena‐
        tion:   Stu allows expressions such as list.[FILENAME] and list.(a b c)
-       to construct a list of files following a certain patterns.
+       to construct a list of files following a certain pattern.
 
        At its core, Stu is very much like Make: Instead of a  'Makefile',  one
        uses a file named 'main.stu', which is read by Stu. Also like Make, Stu
@@ -262,9 +262,9 @@ OVERVIEW
            system-info: { uname -a >system-info }
 
        The following rule uses single quotes to declare filenames that include
-       parentheses and quotes:
+       parentheses and a colon:
 
-           '((':  'aaa\"bbb' {
+           '((':  'aaa:bbb' {
                ./bla -f
            }
 
@@ -1128,4 +1128,4 @@ SEE ALSO
 
 
 
-stu-2.6.0                          June 2018                            STU(1)
+stu-2.6.0                        January 2019                           STU(1)

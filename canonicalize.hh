@@ -15,7 +15,9 @@
  *
  *  - Fold /
  *      - Multiple / -> single /
- *	    - except for double slash at the start not followed by /  
+ *	    - except for double slash at the start not followed by /
+ *            (This is because POSIX mandates that a name starting with
+ *            exactly two slashes is special.)
  *      - Remove ending /
  * 	    - except when the name contains only '/' characters 
  *  - Fold .
@@ -151,7 +153,7 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 	 * not used in Stu for canonicalization. 
 	 */
 	/* Note: This code does not take into account CANON_FLAGS -- it
-	 * works as if both were set */
+	 * behaves as if both were set */
 
 	s= dest;
 	d= dest;

@@ -6,14 +6,16 @@
 # Canonicalize names [2.6]
 #
 
-# (?) Should "/name" match "$dir/name", with $dir set to "/"?
-
-# (?) Should "name" match "$dir/name", with $dir set to "."?
-
 # The special ./${} exception
 A: ./list.B { ... }
 $path.B      { ... }
 ./$file      { ... }
+# Related test:  2.6-0089 
+# Where and how to implement this?
+
+# (?) Should "/name" match "$dir/name", with $dir set to "/"?
+
+# (?) Should "name" match "$dir/name", with $dir set to "."?
 
 # Match the actual name of the current directory
 A:  B { ... }

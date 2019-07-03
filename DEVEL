@@ -1,7 +1,11 @@
+Developing Stu
+==============
+
 This is information for hacking Stu itself.
 
 'TODO.stu' lists the next features to be implemented.
-'UNIMPLEMENTED.stu' lists things we're inlikely to implement. 
+
+'UNIMPLEMENTED.stu' lists things we're unlikely to implement. 
 
 'CODING' gives the coding standards used in Stu. 
 
@@ -29,7 +33,7 @@ The file 'stu.debug' is the Stu executable with all debugging turned on,
 i.e., with debugging symbols, all warnings enabled, etc.  The exact
 flags for compiling this are set in 'Makefile.devel', and you might have
 to tweak these flags if you are developing Stu on another setup than the
-authors'.
+authors.
 
 ==== UNIT TESTS ====
 

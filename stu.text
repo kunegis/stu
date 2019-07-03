@@ -1,7 +1,5 @@
 STU(1)                        University of Namur                       STU(1)
 
-
-
 NAME
        stu - Build automation
 
@@ -45,7 +43,6 @@ DESCRIPTION
        use the -c option when passing individual filenames, or -J when passing
        multiple  filenames,  e.g.  via  xargs(1).  To pass targets in full stu
        syntax portably, use the -C option.
-
 
 OPTIONS
        -0 FILENAME
@@ -206,7 +203,6 @@ OPTIONS
               precede arguments.  Options following arguments may be supported
               on some platforms.
 
-
 OVERVIEW
        A simple rule looks as follows:
 
@@ -357,7 +353,6 @@ OVERVIEW
            y:  y.c @headers {
                cc y.c -o y
            }
-
 
 FEATURES
        Like  a makefile, a Stu script consists of rules.  In Stu, the order of
@@ -548,7 +543,6 @@ FEATURES
            ((A)) # Equivalent to A
            [[A]] # Read out dependencies from all files given in the file 'A'.
 
-
 CONCATENATION
        In certain circumstances, two dependencies that are  not  separated  by
        spaces  are  said to be concatenated.  Concatenation takes place in the
@@ -564,7 +558,6 @@ CONCATENATION
        tion  to be a list of names (after processing of dynamic dependencies),
        and replaces the concatenation by the combination of all names  in  the
        left groups concatenated textually with items in the right group.
-
 
 PARAMETERS
        Any  file  or  transient target may include parameters.  Parameters are
@@ -622,7 +615,6 @@ PARAMETERS
            a.$x.c: ... { ... }
            a.b.$x: ... { ... }
 
-
 CANONICALIZATION
        Stu canonicalizes names of files and transients.  As  an  example,  the
        filenames  'aaa//bbb'  and  'aaa/bbb'  are considered to be the same by
@@ -674,7 +666,6 @@ CANONICALIZATION
        third  rule,  and  produce  an  error, or none of the two dominates the
        other.
 
-
 DIRECTIVES
        Directives in Stu are introduced by '%' and serve a similar purpose  to
        the  C  preprocessor,  i.e.,  they  are processed before the actual Stu
@@ -708,7 +699,6 @@ DIRECTIVES
        in  each source file.  This treatment of version numbers follows seman‐
        tic versionning (semver.org).  The version directive will  not  prevent
        usage of Stu features that were not present in the specified version.
-
 
 TOKENIZATION
        Unquoted filenames in Stu may contain the following ASCII characters:
@@ -780,7 +770,6 @@ TOKENIZATION
 
            * \ & | ! ? ,
 
-
 SYNTAX
        The syntax of a Stu script is given in the  following  Yacc-like  nota‐
        tion.   This  is  the  syntax after processing of directives, which are
@@ -814,7 +803,6 @@ SYNTAX
        nized,  and  that only in positions where they make sense; in all other
        cases, characters are interpreted as part of filenames -- this is  also
        valid for whitespace.
-
 
 SEMANTICS
        Cycles in the dependency graph are not allowed. As an example, the fol‐
@@ -859,7 +847,6 @@ SEMANTICS
        they  delete any output files when they fail.  This behavior is equiva‐
        lent to that in Make.
 
-
 EXIT STATUS
        0      Success.  Everything was built successfully, or was  already  up
               to date.
@@ -882,7 +869,6 @@ EXIT STATUS
               includes system errors from which Stu cannot  recover  (such  as
               out-of-memory  conditions), as well as errors on the Stu command
               line that make Stu fail immediately.
-
 
 ENVIRONMENT
        STU_CP If set, Stu calls the  'cp'  program  from  the  given  location
@@ -914,7 +900,6 @@ ENVIRONMENT
               must be set to a value different from 'dumb', and isatty(3) must
               return 1 for color to be enabled.
 
-
 SIGNALS
        SIGUSR1
               When received, Stu will output a list of currently running  jobs
@@ -924,7 +909,6 @@ SIGNALS
               jobs.  Multiple SIGUSR1 signals sent  in  rapid  succession  may
               result in output only printed once.
 
-
 CONFORMING TO
        The  Stu  language  is  unique to this implementation, and the man page
        serves as the reference for its syntax.
@@ -933,7 +917,6 @@ CONFORMING TO
        is  increased  when  backward-incompatible changes are made.  The minor
        version number is increased when features are added. The patch level is
        increased for other changes.
-
 
 EXAMPLES
        This section contains more examples of Stu usage.
@@ -1055,7 +1038,6 @@ EXAMPLES
                echo "#define COUNT $count"
            }
 
-
 BUGS
        There is no way to change the used shell from within a Stu script.  The
        only way to do it is with the $STU_SHELL environment variable.
@@ -1113,7 +1095,6 @@ BUGS
        the source of the individual components of the concatenation.  This can
        lead to confusing error traces.
 
-
 AUTHOR
        Written  by  Jérôme  Kunegis  <kunegis@gmail.com>  at the University of
        Namur, Belgium, as well as at the University  of  Koblenz-Landau,  Ger‐
@@ -1122,10 +1103,7 @@ AUTHOR
        testers  and  users of Stu, who have helped us fix many bugs, and iden‐
        tify many different use cases and usage patterns.
 
-
 SEE ALSO
        make(1), cook(1), sh(1)
 
-
-
-stu-2.6.0                        January 2019                           STU(1)
+stu-2.6.0                          July 2019                            STU(1)

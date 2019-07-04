@@ -4,7 +4,7 @@
 /* 
  * Canonicalization is the mapping of filenames and transient names to
  * unique names in their simplest form with respect to the filename
- * components the elements '/' and '.'.
+ * components '/' and '.'.
  * 
  * This function canonicalizes a string, and is used by higher-level
  * code to canonicalize actual names.  The function is called both on
@@ -19,7 +19,8 @@
  *            (This is because POSIX mandates that a name starting with
  *            exactly two slashes is special.)
  *      - Remove ending /
- * 	    - except when the name contains only '/' characters 
+ * 	    - except when the name contains only '/' characters, i.e.,
+ *            when the name is '/' or '//'.
  *  - Fold .
  *      - ^/.$ -> /
  *      - ^./$ -> .

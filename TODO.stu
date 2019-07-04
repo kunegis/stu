@@ -1,4 +1,15 @@
-# (There are no known bugs)
+#
+# test/2.6-0086:
+#
+# - Allow './' to be the first name component (i.e.,
+#   don't remove it during canonicalization)
+#     - This will then need special code in Name::match() to take a
+#       leading './' into account.
+# - Alternatively:  canonicalize_string():  Store whether './' was removed from before a
+#   parameter, as a flag of the parameter.
+#
+
+# Fix all the TODOs
 
 #=================== New features =======================
 

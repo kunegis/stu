@@ -416,7 +416,7 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 		assert(rule->place_param_targets.front()->place_name.get_n() == 0);
 #ifndef NDEBUG		
 		/* Check that the target is a target of the found
-		 * rule */
+		 * rule, as it should be */
 		bool found= false;
 		for (auto place_param_target:  rule->place_param_targets) {
 			Target t= place_param_target->unparametrized();
@@ -456,7 +456,8 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 				continue;
 
 			/* The parametrized rule does not match */ 
-			if (! place_param_target->place_name.match(target.get_name_nondynamic(), mapping, anchoring))
+			if (! place_param_target->place_name.match(target.get_name_nondynamic(),
+								   mapping, anchoring))
 				continue; 
 
 			assert(anchoring.size() == 

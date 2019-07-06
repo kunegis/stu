@@ -439,7 +439,8 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 	/* Element [0] corresponds to the best rule. */ 
 	vector <shared_ptr <const Rule> > rules_best;
 	vector <map <string, string> > mappings_best; 
-	vector <vector <size_t> > anchorings_best; 
+	vector <vector <size_t> > anchorings_best;
+	vector <bool> specials_best;
 	vector <shared_ptr <const Place_Param_Target> > place_param_targets_best; 
 
 	for (auto &rule:  rules_parametrized) {
@@ -450,6 +451,7 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 		
 			map <string, string> mapping;
 			vector <size_t> anchoring;
+			bool special;
 
 			/* The parametrized rule is of another type */ 
 			if (target.get_front_word() != (place_param_target->flags & F_TARGET_TRANSIENT))
@@ -457,7 +459,7 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 
 			/* The parametrized rule does not match */ 
 			if (! place_param_target->place_name.match(target.get_name_nondynamic(),
-								   mapping, anchoring))
+								   mapping, anchoring, special))
 				continue; 
 
 			assert(anchoring.size() == 
@@ -465,12 +467,14 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 
 			size_t k= rules_best.size(); 
 			assert(k == anchorings_best.size()); 
-			assert(k == mappings_best.size()); 
+			assert(k == specials_best.size());
+			assert(k == mappings_best.size());
 
 			/* Check whether the rule is dominated by at least one other rule */
 			for (size_t j= 0;  j < k;  ++j) {
 				if (Name::anchoring_dominates
-				    (anchorings_best[j], anchoring)) {
+				    (anchorings_best[j], anchoring,
+				     specials_best[j], special)) {
 					goto dont_add;
 				}
 			}
@@ -479,7 +483,9 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 			{
 				bool is_best= true;
 				for (ssize_t j= 0;  is_best && j < (ssize_t) k;  ++j) {
-					if (! Name::anchoring_dominates(anchoring, anchorings_best[j]))
+					if (! Name::anchoring_dominates
+					    (anchoring, anchorings_best[j],
+					     special, specials_best[j]))
 						is_best= false;
 				}
 				if (is_best) {
@@ -488,11 +494,13 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 			} 
 			rules_best.resize(k+1); 
 			mappings_best.resize(k+1);
-			anchorings_best.resize(k+1); 
+			anchorings_best.resize(k+1);
+			specials_best.resize(k+1); 
 			place_param_targets_best.resize(k+1); 
 			rules_best[k]= rule;
 			swap(mapping, mappings_best[k]);
-			swap(anchoring, anchorings_best[k]); 
+			swap(anchoring, anchorings_best[k]);
+			specials_best[k]= special; 
 			place_param_targets_best[k]= place_param_target;
 		dont_add:;
 		}

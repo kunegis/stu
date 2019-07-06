@@ -725,9 +725,9 @@ TOKENIZATION
            >     Output redirection
            <     Input redirection
            =     Assignment rule; copy rule; named variable
-           { }   Command
            ( )   List
            [ ]   Dynamic dependency
+           { }   Command
 
        Comments  introduced  by  '#'  go  until the end of the line.  Commands
        starting with '{' go until the matching '}', taking into account  shell
@@ -1041,10 +1041,6 @@ EXAMPLES
 BUGS
        There is no way to change the used shell from within a Stu script.  The
        only way to do it is with the $STU_SHELL environment variable.
-
-       Filenames in Stu are literal.  Stu does not recognize it when two  dif‐
-       ferent names refer to the same file.  For instance, Stu does not notice
-       that "config.h" and "./config.h" refer to the same file.
 
        The argument to the -j option (number of jobs to run  in  parallel)  is
        mandatory,  as  opposed  to the behavior of GNU Make, where no argument

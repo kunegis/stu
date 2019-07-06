@@ -36,8 +36,8 @@ typedef unsigned Canon_Flags;
 /* Declared as integer so arithmetic can be performed on it */
 
 enum
-/* Each flags means:  The begin/end of the string is adjacent to a
- * parameter, rather than to the actual begin/end of the name.  */
+/* Each flags means:  The begin/end of the string is adjacent to the
+ * very beginning/end of the name, rather than to a parameter.  */
 {
 	A_BEGIN 	= 1 << 0,
 	A_END 		= 1 << 1,
@@ -123,6 +123,14 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 		   && s[0] == '.' && s[1] == '/' && s[2] == '\0') {
 		*++d= '\0'; 
 		s += 2; 
+	} else if (canon_flags & A_BEGIN && ! (canon_flags & A_END)
+		   && s[0] == '.' && s[1] == '/' && s[2] == '\0') {
+		/* Keep a lone './' in the first component of followed
+		 * by a parameter.  The meaning is that the following
+		 * parameter can only be matched by a value not
+		 * beginning by a slash.  */
+		s += 2;
+		d += 2;
 	} else {
 		while (canon_flags & A_BEGIN && s[0] == '.' && s[1] == '/') {
 			s += 2; 

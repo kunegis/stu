@@ -338,10 +338,12 @@ public:
 
 	bool match(string name, 
 		   map <string, string> &mapping,
-		   vector <size_t> &anchoring) const;
+		   vector <size_t> &anchoring,
+		   bool &special) const;
 	/* Check whether NAME matches this name.  If it does, return
 	 * TRUE and set MAPPING and ANCHORING accordingly. 
-	 * MAPPING must be empty.  */
+	 * MAPPING must be empty.  SPECIAL to set to wether a special
+	 * rule was used.  */
 	
 	string raw() const 
 	/* Raw formatting of the name, without doing any escaping */
@@ -417,7 +419,8 @@ public:
 	}
 
 	static bool anchoring_dominates(vector <size_t> &anchoring_a,
-					vector <size_t> &anchoring_b);
+					vector <size_t> &anchoring_b,
+					bool special_a, bool special_b);
 	/* Whether anchoring A dominates anchoring B.  The anchorings do
 	 * not need to have the same number of parameters.  */
 };
@@ -827,7 +830,8 @@ string Name::instantiate(const map <string, string> &mapping) const
 
 bool Name::match(const string name, 
 		 map <string, string> &mapping,
-		 vector <size_t> &anchoring) const
+		 vector <size_t> &anchoring,
+		 bool &special) const
 /* 
  * Rule:  Each parameter must match at least one character. 
  *
@@ -838,9 +842,8 @@ bool Name::match(const string name,
  */
 {
 	assert(mapping.size() == 0); 
-
+	special= false;
 	map <string, string> ret;
-
 	const size_t n= get_n(); 
 
 	if (name == "") {
@@ -853,19 +856,29 @@ bool Name::match(const string name,
 	const char *p= p_begin;
 	const char *const p_end= name.c_str() + name.size(); 
 
-	size_t k= texts[0].size(); 
+	/* ./$A... is equvalent to $A... where $A must not begin in a
+	 * slash */
+	bool special_a= n > 0 && texts[0] == "./";
+	special= special_a; 
 
-	if ((size_t)(p_end - p) <= k) {
-		return false;
+	/* Match first text */
+	if (! special_a) {
+		size_t k= texts[0].size(); 
+		if ((size_t)(p_end - p) <= k) {
+			return false;
+		}
+		/* Note:  k can be zero here, in which case memcmp()
+		 * always returns zero, i.e., a match.  */
+		if (memcmp(p, texts[0].c_str(), k)) {
+			return false;
+		}
+		p += k; 
+		anchoring[0]= k;
+	} else {
+		/* In this case, the text contains './', but should be
+		 * treated as the empty string */
+		anchoring[0]= 0; 
 	}
-
-	if (memcmp(p, texts[0].c_str(), k)) {
-		return false;
-	}
-
-	p += k; 
-
-	anchoring[0]= k;
 
 	for (size_t i= 0;  i < n;  ++i) {
 
@@ -899,7 +912,13 @@ bool Name::match(const string name,
 			
 			anchoring[i * 2 + 1]= q - p_begin; 
 
-			ret[parameters[i]]= string(p, q-p);
+			string matched= string(p, q-p); 
+			assert(matched.size() > 0); 
+			if (special_a) {
+				if (i == 0 && matched[0] == '/')
+					return false;
+			}
+			ret[parameters[i]]= matched;
 			p= q + texts[i+1].size();
 
 			anchoring[i * 2 + 2]= p - p_begin; 
@@ -946,10 +965,16 @@ bool Name::valid(string &param_1, string &param_2) const
 }
 
 bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
-			       vector <size_t> &anchoring_b)
-/* (A) dominates (B) when every character in a parameter in (A) is also
+			       vector <size_t> &anchoring_b,
+			       bool special_a, bool special_b)
+/* 
+ * (A) dominates (B) when every character in a parameter in (A) is also
  * in a parameter in (B) and at least one character is not parametrized
- * in (A) but in (B). */
+ * in (A) but in (B). 
+ *  
+ * If the anchorings are equal, the special bit dominates no special
+ * bit. 
+ */
 /* CORRESPONDING TEST: anchoring */ 
 {
 	assert(anchoring_a.size() % 2 == 0);
@@ -979,8 +1004,18 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 			return false; 
 		
 		/* End or increment */ 
-		if (i == k_a && j == k_b)
-			return dominate; 
+		if (i == k_a && j == k_b) {
+			if (dominate) {
+				return true; 
+			} else {
+				/* The anchorings are equal (up to
+				 * SPECIAL) */
+				assert(anchoring_a == anchoring_b); 
+				return special_a && ! special_b; 
+			}
+			//return dominate;
+		}
+
 		else if (i < k_a && j == k_b)
 			p= anchoring_a[i];
 		else if (j < k_b && i == k_a)

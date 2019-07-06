@@ -1,36 +1,20 @@
-#
-# test/2.6-0086:
-#
-# - Allow './' to be the first name component (i.e.,
-#   don't remove it during canonicalization)
-#     - This will then need special code in Name::match() to take a
-#       leading './' into account.
-# - Alternatively:  canonicalize_string():  Store whether './' was removed from before a
-#   parameter, as a flag of the parameter.
-#
-
-# Fix all the TODOs
-
 #=================== New features =======================
 
 #
 # Canonicalize names [2.6]
 #
 
-# The special ./${} exception
-A: ./list.B { ... }
-$path.B      { ... }
-./$file      { ... }
-# Related test:  2.6-0089 
-# Where and how to implement this?
-
 # (?) Should "/name" match "$dir/name", with $dir set to "/"?
 
 # (?) Should "name" match "$dir/name", with $dir set to "."?
 
 # Match the actual name of the current directory
+#  --> No, because it needs a syscall
 A:  B { ... }
 currentdirectory/B { ... }
+
+# $X/$Y vs ./$X for aaa/bbb:   $X/$Y dominates
+# Name '/A/B' when $X and ./$X/$Y are available:  $X matches alone
 
 #
 # File import

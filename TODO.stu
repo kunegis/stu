@@ -1,12 +1,13 @@
-#=================== New features =======================
-
 #
 # Canonicalize names [2.6]
 #
 
-# (?) Should "/name" match "$dir/name", with $dir set to "/"?
+# Match $dir/bin/$B to /bin/aaa/bin/bbb
 
-# (?) Should "name" match "$dir/name", with $dir set to "."?
+# Make sure aaa$X/bbb does NOT match aaa/bbb (i.e., special rule B
+# should not set $X to '/' in that case)
+
+# (?) Should "name" match "$dir/name", with $dir set to "."? --> yes, if "name" does not start with "/"
 
 # Match the actual name of the current directory
 #  --> No, because it needs a syscall
@@ -14,7 +15,16 @@ A:  B { ... }
 currentdirectory/B { ... }
 
 # $X/$Y vs ./$X for aaa/bbb:   $X/$Y dominates
+
 # Name '/A/B' when $X and ./$X/$Y are available:  $X matches alone
+
+# Are these special rules used for transients?
+
+#
+# $STU_TARGETS (see Pull request)
+#
+
+#=================== New features =======================
 
 #
 # File import

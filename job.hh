@@ -129,7 +129,7 @@ private:
 	/*
 	 * -2:    process was not yet started.
 	 * >= 0:  process was started but not yet waited for (just called
-	 *        "started" for short.  It may already be finished,
+	 *        "started" for short).  It may already be finished,
 	 * 	  i.e., a zombie.
 	 * -1:    process has been waited for. 
 	 */
@@ -489,7 +489,6 @@ pid_t Job::start_copy(string target,
 	assert(pid >= 1); 
 	return pid; 
 }
-
 
 pid_t Job::wait(int *status)
 /* The main loop of Stu.  We wait for the two productive signals SIGCHLD

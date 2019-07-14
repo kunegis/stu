@@ -1,0 +1,13 @@
+# '$dir/na$B' matches '/name' with $dir set to '/' and $B to 'me'.
+
+A:  /bin  {
+	[ -e X ] || exit 1
+	touch A 
+}
+
+$dir/bi$B {
+	touch X
+	[ / = "$dir" ] || exit 1
+	[ -e /bi"$B" ] || exit 1
+	exit 0
+}

@@ -86,7 +86,7 @@ const char HELP[]=
 
 const char VERSION_INFO[]=
 	PACKAGE " " STU_VERSION "\n"
-	"Copyright (C) 2014-2018 Jerome Kunegis, University of Namur\n"
+	"Copyright (C) 2014-2019 Jerome Kunegis, University of Namur\n"
 	"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 	"This is free software: you are free to change and redistribute it.\n"
 	"There is NO WARRANTY, to the extent permitted by law.\n";

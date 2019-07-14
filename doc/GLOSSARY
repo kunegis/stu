@@ -1,7 +1,25 @@
 // TODO This list was just started and is incomplete. 
 
+Anchoring - Represents the position of a parameter in a matched
+	filename.  Each anchoring is represented by two numbers,
+	representing the start and end position of the match.
+	Anchorings are represented as arrays of integers of length 2*N,
+	where N is the number of parameters.  For instance, when
+	"/usr/bin" is matched to "/$DIR/$NAME", the anchorings are goven
+	by the array [1 4 5 8]. 
+
 Command - A command that is run for a target.  Enclosed by braces ({}) in
 	Stu source, and executed with the shell. 
+
+Directive - A construct introduced with the '%' in Stu source code.
+	Directives are processed before the source code is otherwise
+	parsed.  They are comparable to C preprocessor directives, but
+	do not implement a macro system.
+
+File - An object in the file system.  We use the term in the broad
+     	sense, which includes directories and other "special files."
+     	The "normal" files which store a sequence of bytes are called
+     	regular files. 
 
 Flag - A flag is a syntax and semantic element of Stu scripts.  They
 	start with a dash.  An example is '-p' for persistent
@@ -11,6 +29,10 @@ Job - A job is a child process started by Stu to build one or more files
         or transient targets.  Jobs are run in the background by
         default, but the -i option
 
+Name - The name of a file or of a transient.  Names are strings of
+	bytes, must have length at least one, and cannot contain the NUL
+	(\0) character. 
+
 Option - An option is passed on the Stu command line and starts with a
 	dash.  Some have arguments. 
 
@@ -18,7 +40,14 @@ Parameter - A parameter in the name of a file or a transient; introduced
 	by the dollar sign ($).  In command, the corresponding
 	environment variable is set. 
 
-Transient - One of the two basic datatypes ("targets") of Stu.  They are
-	noted with the '@' symbol, e.g., '@all'.  A transient can be
-	built like a file, but will not result in a built file.  A
-	transient can also be used only for its dependency. 
+Special rule - Special rules are used when matching parametrized targets
+	to names of files and transients.  They are described in the
+	manpage. 
+
+Target - A file or a transient, possibly (multiply) dynamic
+
+Transient - One of the two basic datatypes ("targets") of Stu, the other
+	being files.  They are noted with the '@' symbol, e.g., '@all'.
+	A transient can be built like a file, but will not result in a
+	built file.  A transient can also be used only for its
+	dependency.

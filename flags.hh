@@ -96,7 +96,7 @@ enum
 
 	F_RESULT_COPY		= 1 << I_RESULT_COPY,
 	/* The link A ---> B between two executions annotated with this
-	 * flags means that the results B will be copied into A's result  */
+	 * flags means that the results of B will be copied into A's result  */
 
 	/*
 	 * Aggregates
@@ -109,8 +109,8 @@ enum
 
 /* 
  * A done variable denotes which "aspects" of an execution have been
- * done.  Every Execution has one called "done".  This is a different
- * way to encode the three placed flags.  
+ * done.  Every Execution has one variable called "done".  This is a
+ * different way to encode the three placed flags.  
  *
  * The first two flags correspond to the first two flags (persistent and
  * optional).  These two are duplicated in order to accommodate trivial

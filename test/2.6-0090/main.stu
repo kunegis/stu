@@ -1,0 +1,18 @@
+# '$dir/name' matches '/name' with $dir set to '/'.
+
+A: Y /tmp/list.SCHTROUMPF.8237674236  {
+	touch A 
+}
+
+$dir/tmp/list.SCHTROUMPF.8237674236 {
+	[ / = "$dir" ] || exit 1
+	[ -e /tmp/list.SCHTROUMPF.8237674236 ] && exit 1
+	touch /tmp/list.SCHTROUMPF.8237674236
+	[ -e /tmp/list.SCHTROUMPF.8237674236 ] || exit 1
+	exit 0
+}
+
+Y {
+	rm -f /tmp/list.SCHTROUMPF.8237674236
+	touch Y
+}

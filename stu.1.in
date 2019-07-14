@@ -742,7 +742,9 @@ canonicalized in targets.
 to the dependency name.  At this stage, names do not contain parameters
 and canonicalization is performed on the final file or transient name. 
 
-There is a special rule concerning './':  When a target to be
+There are two special rules for canonicalization:
+
+(a) There is a special rule concerning './':  When a target to be
 canonicalized in phase (1) as described above starts with './'
 followed immediately by a parameter, then this parameter will only match
 strings that do not start with a slash.  The './' is still removed. 
@@ -758,13 +760,21 @@ Here, the dependency './list.B' will match the third rule only.  Without the
 special rule, the dependency would match both the second and third rule,
 and produce an error, or none of the two dominates the other. 
 
+(b) Another special rules concerns the root directory '/':  A pattern of
+the form $A/xxx where $A is a parameter and xxx any string (which may
+contain more parameters) will match the name '/xxx' by setting the
+parameter $A to the value '/'.  This special rule corresponds to the
+fact that while the root directory is called '/', a file within it is
+called '/xxx' rather than '//xxx'. 
+
 .SH "DIRECTIVES"
 
 Directives in Stu are introduced by '%' and serve a similar purpose to
 the C preprocessor, i.e., they are processed before the actual Stu
-script is parsed and interpreted.  The token '%' must be followed by the directive
-name. There may be any amount of whitespace (including none) between '%'
-and the name of the directive. 
+script is parsed and interpreted.  (However, they are not used to
+implement a macro system.)  The token '%' must be followed by the
+directive name. There may be any amount of whitespace (including none)
+between '%' and the name of the directive.
 
 File inclusion is done using the '%include' directive. 
 This can be put at any place in the input file, and will temporarily continue

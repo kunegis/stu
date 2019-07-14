@@ -190,7 +190,7 @@ private:
 
 	string text; 
 	/*
-	 * Linear representation of the dependency.
+	 * Linear representation of the target.
 	 *
 	 * This begins with a certain number of words (word_t, at least
 	 * one), followed by the name of the target as a string.  A
@@ -206,7 +206,8 @@ private:
 	 * Any of the front words may contain additional flag bits.
 	 * There may be nul ('\0') bytes in the front words, but the
 	 * name does not contain nul, as that is invalid in names.  The
-	 * name proper (excluding front words) is non-empty. 
+	 * name proper (excluding front words) is non-empty, i.e., is at
+	 * least one byte long.  
 	 *
 	 * The empty string denotes a "null" value for the type Target,
 	 * or equivalently the target of the root dependency, in which
@@ -245,7 +246,7 @@ class Name
  *
  * Names can be valid or invalid.  A name is valid when all internal
  * texts (between two parameters) are non-empty, and, if N = 0, the
- * single text is not empty.  A name is empty if N = 0 and the single
+ * single text is non-empty.  A name is empty if N = 0 and the single
  * text is empty (empty names are invalid).
  */
 {
@@ -812,6 +813,11 @@ string Target::format_src() const
 }
 
 string Name::instantiate(const map <string, string> &mapping) const
+/* 
+ * This function must take into account the special rules 
+ *
+ * Special rule (a) does not need to be handled, (i.e., we keep the starting './')
+ */
 {
 	assert(texts.size() == 1 + parameters.size()); 
 
@@ -821,7 +827,16 @@ string Name::instantiate(const map <string, string> &mapping) const
 
 	for (size_t i= 0;  i < n;  ++i) {
 		assert(parameters[i].size() > 0); 
-		ret += mapping.at(parameters[i]);
+
+		/* Special rule (b) */
+		if (i == 0 && texts[0] == ""
+		    && mapping.at(parameters[0]) == "/"
+		    && texts[1].size() != 0 && texts[1][0] == '/') {
+			/* Do nothing */ 
+		}
+		else 
+			ret += mapping.at(parameters[i]);
+
 		ret += texts[i + 1];
 	}
 
@@ -859,7 +874,7 @@ bool Name::match(const string name,
 	/* ./$A... is equvalent to $A... where $A must not begin in a
 	 * slash */
 	bool special_a= n > 0 && texts[0] == "./";
-	special= special_a; 
+	special |= special_a; 
 
 	/* Match first text */
 	if (! special_a) {
@@ -867,7 +882,7 @@ bool Name::match(const string name,
 		if ((size_t)(p_end - p) <= k) {
 			return false;
 		}
-		/* Note:  k can be zero here, in which case memcmp()
+		/* Note:  K can be zero here, in which case memcmp()
 		 * always returns zero, i.e., a match.  */
 		if (memcmp(p, texts[0].c_str(), k)) {
 			return false;
@@ -880,9 +895,45 @@ bool Name::match(const string name,
 		anchoring[0]= 0; 
 	}
 
+	/* I goes over all parameters */
 	for (size_t i= 0;  i < n;  ++i) {
 
-		if (i == n - 1) {
+		if (i == 0 && texts[0] == "" && texts[1].size() != 0 && texts[1][0] == '/') {
+			/* Allow a zero-length parameter 0, for special rule B */
+			if (i == n - 1) {
+				/* A single parameter */
+				size_t size_last= texts[n].size();
+				if (p_end - p < (ssize_t) size_last)
+					return false;
+				if (memcmp(p_end - size_last, texts[n].c_str(), size_last))
+					return false;
+				string matched= string(p, p_end - p - size_last);
+				if (matched == "") {
+					special= true; 
+					matched= "/";
+				}
+				ret[parameters[0]]= matched;
+				anchoring[1]= p_end - size_last - p_begin;
+				assert(ret.at(parameters[i]).size() > 0);
+			} else {
+				assert(texts[1].size() != 0); 
+				const char *q= strstr(p, texts[i+1].c_str());
+				if (q == nullptr) 
+					return false;
+				assert(q >= p);
+				anchoring[i * 2 + 1]= q - p_begin; 
+				string matched= string(p, q-p); 
+				if (matched == "") {
+					special= true;
+					matched= "/";
+				}
+				assert (! special_a);
+				ret[parameters[i]]= matched;
+				p= q + texts[i+1].size();
+				anchoring[i * 2 + 2]= p - p_begin; 
+			}
+		}
+		else if (i == n - 1) {
 			/* For the last segment, the texts[n-1] must
 			 * match the end of the input string */ 
 			size_t size_last= texts[n].size();
@@ -1013,7 +1064,6 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 				assert(anchoring_a == anchoring_b); 
 				return special_a && ! special_b; 
 			}
-			//return dominate;
 		}
 
 		else if (i < k_a && j == k_b)

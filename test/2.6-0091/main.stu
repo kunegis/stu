@@ -1,0 +1,25 @@
+# '$dir/$name' matches '/name' with $dir set to '/'.
+
+A: @Y /tmp/[N]  {
+	[ -e Z ] || exit 1
+	touch A 
+}
+
+$dir/tmp/$name:  
+{
+	[ -e N ] || exit 1
+	[ / = "$dir" ] || exit 1
+	[ "$(cat N)" = "$name" ] || exit 1
+	touch /tmp/"$(cat N)"
+	touch Z
+	exit 0
+}
+
+@Y:  N
+{
+	rm -f /tmp/"$(cat N)"
+}
+
+>N {
+	echo list.2.6-0091."$$"
+}

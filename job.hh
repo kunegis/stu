@@ -151,7 +151,8 @@ private:
 	 * Fail:     Finished, without success
 	 */
 
-	static sigset_t set_termination, set_productive, set_termination_productive;
+	static sigset_t set_termination, set_productive,
+		set_termination_productive;
 	/* All signals handled specially by Stu are either in the
 	 * "termination" or in the "productive" set.  The third variable
 	 * holds both.  */ 

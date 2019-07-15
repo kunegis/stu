@@ -1,0 +1,12 @@
+# Special rule (A).  Make sure the filename is reconstructed correctly
+# in -doutput.  
+
+A:  /slkdfjweicowceumwceiu
+{
+	touch A
+}
+
+$dir/slkdfjweicowceumwceiu
+{
+	exit 1
+}

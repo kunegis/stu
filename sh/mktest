@@ -66,12 +66,13 @@
 #  	       use shell quoting and escaping.  For instance, the file
 #	       may contain -C ' A ' to pass an argument beginning and ending
 #              in space to Stu. 
-# CMDPREFIX    Prefix before command.  Used to set environment variables
+# CMDPREFIX    Prefix before command.  Used to set environment variables. 
 # PARALLEL     Give the arguments of the -j option for which the test is
 #              to be executed 
 # EXITSTATUS   The prescribed exit status; default is zero
 # NOSECOND     If file is present, do not check that second invocation
-#              results in "Targets are up to date"  
+#              results in "Targets are up to date" (A second run is only
+#	       made if the prescribed exit status is not zero.)
 # NOTTY	       Don't do the extra TTY test (e.g., when the -q option is
 #	       used and the exit status is expected to be one)
 # NOCOLOR      Don't test for color in stderr (e.g., with the -y option)

@@ -1,0 +1,12 @@
+A:  /tmp/list.[N]/tmp/bbb
+{
+	cp /tmp/list."$(cat N)"/tmp/bbb A
+}
+
+$dir/tmp/$B
+{
+	mkdir -p "$(dirname "$dir"/tmp/"$B")"
+	echo CORRECT >"$dir"/tmp/"$B"
+}
+
+>N { echo $$ ; }

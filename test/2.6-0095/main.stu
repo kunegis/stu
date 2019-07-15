@@ -1,0 +1,12 @@
+# Special rule (A).  Make sure the filename is reconstructed correctly
+# in -doutput.  
+
+A:  list.8923rc83c387
+{
+	cp list.8923rc83c387 A
+}
+
+./list.8923rc83c387
+{
+	echo CORRECT >list.8923r""c83c387
+}

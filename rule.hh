@@ -19,8 +19,9 @@ public:
 	/* The targets of the rule, in the order specified in the rule.
 	 * Contains at least one element.  Each element contains all
 	 * parameters of the rule, and therefore should be used for
-	 * iterating of all parameters.  The place in each target is
-	 * used when referring to a target specifically.  */
+	 * iterating over all parameters.  The place in each target is
+	 * used when referring to a target specifically.  The targets
+	 * may or may not be canonicalized.  */
 
 	vector <shared_ptr <const Dep> > deps;
 	/* The dependencies in order of declaration.  Dependencies are
@@ -73,7 +74,7 @@ public:
 	     bool is_hardcode_,
 	     int redirect_index_,
 	     const Name &filename_input_);
-	/* Regular rule:  all cases execpt copy rules */
+	/* Regular rule:  all cases except copy rules */
 
 	Rule(shared_ptr <const Place_Param_Target> place_param_target_,
 	     shared_ptr <const Place_Name> place_name_source_,
@@ -110,7 +111,7 @@ public:
 
 	void canonicalize(); 
 	/* In-place canonicalization of the rule.  This applies to the
-	 * targets of the rule.  */
+	 * targets of the rule.  Called by Rule_Set::add(). */
 };
 
 class Rule_Set
@@ -122,7 +123,8 @@ private:
 	 * with multiple targets are included multiple times, for each
 	 * of their targets.  None of the targets has flags set (except
 	 * F_TARGET_TARNSIENT of course.)  The targets are
-	 * canonicalized.  */ 
+	 * canonicalized, bas as keys in this map, as well as in each
+	 * Rule.  */ 
 
 	vector <shared_ptr <const Rule> > rules_parametrized;
 	/* All parametrized rules. */ 
@@ -341,6 +343,9 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 {
 	for (auto &rule:  rules_) {
 
+		// ADDED
+		rule->canonicalize(); 
+		
 		/* Check that the rule doesn't have a duplicate target */ 
 		for (size_t i= 0;  i < rule->place_param_targets.size();  ++i) {
 			for (size_t j= 0;  j < i;  ++j) {
@@ -366,7 +371,7 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 				// rule->canonicalize() before, so
 				// target.canonicalize() becomes
 				// unnecessary 
-				target.canonicalize(); 
+				//				target.canonicalize(); 
 
 				if (rules_unparametrized.count(target)) {
 					place_param_target->place <<

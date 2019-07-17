@@ -2,8 +2,6 @@
 # Canonicalize names [2.6]
 #
 
-# test 2.6-0095
-
 # Make sure aaa$X/bbb does NOT match aaa/bbb (i.e., special rule B
 # should not set $X to '/' in that case)
 

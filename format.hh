@@ -10,6 +10,7 @@
  * - format_word() returns a string suitable for inclusion in a message
  *   on STDERR, including quotes and color, as appropriate.  It does not
  *   show flags. 
+   // TODO rename "word" to "err".
  * - format_out() returns the same as format_word(), but for STDOUT. 
  * - format_src() formats an expression as if it was part of the source,
  *   e.g., use quotes only if the name contains characters that need to

@@ -1,0 +1,2 @@
+main.stu:3:3: there must not be a target 'A'
+main.stu:3:1: shadowing target 'A' of the same rule

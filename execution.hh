@@ -8,7 +8,7 @@
  * 
  * OVERVIEW OF TYPES
  *
- * EXECUTION CLASS	CACHED?				WHEN USED
+ * EXECUTION CLASS	CACHING STRATEGY		WHEN USED
  * ---------------------------------------------------------------------------------------------------
  * Root_Execution	not cached (single object) 	The root of the dependency graph; 
  *       						uses the dummy Root_Dep
@@ -806,7 +806,7 @@ private:
 };
 
 class Debug
-/* Helper class for debug output (option -d).  Provides indentation and
+/* Helper class for debug output (option -d).  Provides indentation. 
  * During the lifetime of an object, padding is increased by one step.  
  * This class is declared within blocks in functions such as execute(),
  * etc.  The passed Execution is valid until the end of the object's
@@ -2101,7 +2101,7 @@ File_Execution::File_Execution(shared_ptr <const Dep> dep,
 	swap(mapping_parameter, mapping_parameter_); 
 	Target target_= dep->get_target(); 
 
-	/* Later replaced with all targets from the rule, when a rule exists */ 
+	/* Later replaced with all targets from the rule, if a rule exists */ 
 	Target target_no_flags= target_;
 	target_no_flags.get_front_word_nondynamic() &= F_TARGET_TRANSIENT; 
 	targets.push_back(target_no_flags); 

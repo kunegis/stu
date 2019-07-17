@@ -1,0 +1,3 @@
+# Error, because duplicate target in differently non-canonicalized form 
+
+A ./A { ... ; }

@@ -1,0 +1,6 @@
+# Error:  both rules have the same target.
+
+A { touch A ; }
+
+./config.h { touch ./config.h ; }
+  config.h { touch   config.h ; }

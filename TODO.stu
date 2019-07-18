@@ -2,9 +2,6 @@
 # Canonicalize names [2.6]
 #
 
-# Make sure aaa$X/bbb does NOT match aaa/bbb (i.e., special rule B
-# should not set $X to '/' in that case)
-
 # (?) Should "name" match "$dir/name", with $dir set to "."? --> yes, if "name" does not start with "/"
 
 # Match the actual name of the current directory

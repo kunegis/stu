@@ -1,0 +1,15 @@
+# The dependency of A must *not* match the second rule.  This test
+# checks that the special rule for $X/... matching '/' does not get
+# triggered in the middle of the name. 
+
+A:  list.aaa/bbb
+{
+	touch A
+}
+
+list.aaa$X/bbb
+{
+	mkdir -p list.aaa"$X"/bbb
+	list.aaa$X/bbb
+}
+

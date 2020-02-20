@@ -86,7 +86,7 @@ const char HELP[]=
 
 const char VERSION_INFO[]=
 	PACKAGE " " STU_VERSION "\n"
-	"Copyright (C) 2014-2019 Jerome Kunegis, University of Namur\n"
+	"Copyright (C) 2014-2020 Jerome Kunegis, University of Namur\n"
 	"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 	"This is free software: you are free to change and redistribute it.\n"
 	"There is NO WARRANTY, to the extent permitted by law.\n";
@@ -106,12 +106,12 @@ bool stu_setting(char c)
 	switch (c) {
 	default:  return false;
 
-	case 'E': option_explain= true;        break;
-	case 's': option_silent= true;         break;
-	case 'x': option_individual= true;     break;
-	case 'y': Color::set(false);           break;
-	case 'Y': Color::set(true);            break;
-	case 'z': option_statistics= true;     break;
+	case 'E':  option_explain= true;        break;
+	case 's':  option_silent= true;         break;
+	case 'x':  option_individual= true;     break;
+	case 'y':  Color::set(false);           break;
+	case 'Y':  Color::set(true);            break;
+	case 'z':  option_statistics= true;     break;
 	}
 
 	return true; 
@@ -145,6 +145,7 @@ int main(int argc, char **argv, char **envp)
 		vector <shared_ptr <const Dep> > deps; 
 		/* Assemble targets here */ 
 
+		// XXX change to only record the (non-canonicalized) first target name of the first rule, because that's all we need
 		shared_ptr <const Rule> rule_first;
 		/* Set to the first rule when there is one */ 
 
@@ -225,7 +226,8 @@ int main(int argc, char **argv, char **envp)
 				}
 				had_option_f= true;
 				filenames.push_back(optarg); 
-				Parser::get_file(optarg, -1, Execution::rule_set, rule_first, place_first);
+				Parser::get_file(optarg, -1, Execution::rule_set,
+						 rule_first, place_first);
 			end:
 				break;
 
@@ -381,7 +383,8 @@ int main(int argc, char **argv, char **envp)
 			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY); 
 			if (file_fd >= 0) {
 				Parser::get_file("", file_fd, 
-						 Execution::rule_set, rule_first, place_first); 
+						 Execution::rule_set, rule_first,
+						 place_first); 
 			} else {
 				if (errno == ENOENT) { 
 					/* The default file does not exist --

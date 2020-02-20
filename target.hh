@@ -854,6 +854,10 @@ bool Name::match(const string name,
  * Therefore, there are no "deadly" patterns that can make it hang,
  * which is a common source of errors for naive trivial implementations
  * of regular expression matching.
+ * 
+ * This implementation takes into account the special rules described in
+ * the manpage.  Each special rule is referred to by a letter (a, b, c,
+ * etc.) 
  */
 {
 	assert(mapping.size() == 0); 
@@ -871,11 +875,25 @@ bool Name::match(const string name,
 	const char *p= p_begin;
 	const char *const p_end= name.c_str() + name.size(); 
 
-	/* ./$A... is equvalent to $A... where $A must not begin in a
+	/* 
+	 * Special rules
+	 */ 
+	
+	/* ./$A... is equivalent to $A... where $A must not begin in a
 	 * slash */
-	bool special_a= n > 0 && texts[0] == "./";
+	bool special_a= n != 0 && texts[0] == "./";
 	special |= special_a; 
 
+	/* $A/bbb matches /bbb with $A set to / */
+	bool special_b=	texts[0] == "" && texts[1].size() != 0 && texts[1][0] == '/'; 
+//	special |= special_b; 
+
+	/* $A/bbb matches bbb with $A set to . */
+	bool special_c= n != 0
+		&& texts[0] == ""
+		&& texts[1].size() != 0 && texts[1][0] != '/';
+	special |= special_c; 
+	
 	/* Match first text */
 	if (! special_a) {
 		size_t k= texts[0].size(); 
@@ -892,86 +910,92 @@ bool Name::match(const string name,
 	} else {
 		/* In this case, the text contains './', but should be
 		 * treated as the empty string */
+		assert(texts[0] == "./"); 
 		anchoring[0]= 0; 
 	}
 
 	/* I goes over all parameters */
 	for (size_t i= 0;  i < n;  ++i) {
 
-		if (i == 0 && texts[0] == "" && texts[1].size() != 0 && texts[1][0] == '/') {
-			/* Allow a zero-length parameter 0, for special rule B */
-			if (i == n - 1) {
-				/* A single parameter */
-				size_t size_last= texts[n].size();
-				if (p_end - p < (ssize_t) size_last)
-					return false;
-				if (memcmp(p_end - size_last, texts[n].c_str(), size_last))
-					return false;
-				string matched= string(p, p_end - p - size_last);
-				if (matched == "") {
-					special= true; 
-					matched= "/";
-				}
-				ret[parameters[0]]= matched;
-				anchoring[1]= p_end - size_last - p_begin;
-				assert(ret.at(parameters[i]).size() > 0);
-			} else {
-				assert(texts[1].size() != 0); 
-				const char *q= strstr(p, texts[i+1].c_str());
-				if (q == nullptr) 
-					return false;
-				assert(q >= p);
-				anchoring[i * 2 + 1]= q - p_begin; 
-				string matched= string(p, q-p); 
-				if (matched == "") {
-					special= true;
-					matched= "/";
-				}
-				assert (! special_a);
-				ret[parameters[i]]= matched;
-				p= q + texts[i+1].size();
-				anchoring[i * 2 + 2]= p - p_begin; 
-			}
-		}
-		else if (i == n - 1) {
+		// if (i == 0 && special_b) {
+		// 	/* Allow a zero-length parameter 0, for special rule B */
+		// 	if (i == n - 1) {
+		// 		/* A single parameter */
+		// 		size_t size_last= texts[n].size();
+		// 		if (p_end - p < (ssize_t) size_last)
+		// 			return false;
+		// 		if (memcmp(p_end - size_last,
+		// 			   texts[n].c_str(), size_last))
+		// 			return false;
+		// 		string matched= string(p, p_end - p - size_last);
+		// 		if (matched == "") {
+		// 			special= true; 
+		// 			matched= "/";
+		// 		}
+		// 		ret[parameters[0]]= matched;
+		// 		anchoring[1]= p_end - size_last - p_begin;
+		// 		assert(ret.at(parameters[i]).size() > 0);
+		// 	} else {
+		// 		assert(texts[1].size() != 0); 
+		// 		const char *q= strstr(p, texts[i+1].c_str());
+		// 		if (q == nullptr) 
+		// 			return false;
+		// 		assert(q >= p);
+		// 		anchoring[i * 2 + 1]= q - p_begin; 
+		// 		string matched= string(p, q-p); 
+		// 		if (matched == "") {
+		// 			special= true;
+		// 			matched= "/";
+		// 		}
+		// 		assert (! special_a);
+		// 		ret[parameters[i]]= matched;
+		// 		p= q + texts[i+1].size();
+		// 		anchoring[i * 2 + 2]= p - p_begin; 
+		// 	}
+		// }
+		//		else
+		size_t length_min= special_b && i == 0 ? 0 : 1;
+		if (i == n - 1) {
 			/* For the last segment, the texts[n-1] must
 			 * match the end of the input string */ 
 			size_t size_last= texts[n].size();
-
-			if (p_end - p < 1 + (ssize_t) size_last) 
+			/* Minimal length of matched text */
+			if (p_end - p < (ssize_t) length_min + (ssize_t) size_last) 
 				return false;
-
 			if (memcmp(p_end - size_last, texts[n].c_str(), size_last))
 				return false;
-
-			ret[parameters[i]]= string(p, p_end - p - size_last); 
+			string matched= string(p, p_end - p - size_last); 
+			if (matched == "") {
+				assert(special_b);
+				special= true;
+				matched= "/";
+			}
+			ret[parameters[i]]= matched;
 			anchoring[2*i + 1]= p_end - size_last - p_begin;
-
-			assert(ret.at(parameters[i]).size() > 0); 
-
+			assert(ret.at(parameters[i]).size() >= length_min); 
 		} else {
 			/* Intermediate texts must not be empty, i.e.,
 			 * two parameters cannot be unseparated */ 
 			assert(texts[i+1].size() != 0); 
-
-			const char *q= strstr(p+1, texts[i+1].c_str());
-
+			const char *q= strstr(p+length_min, texts[i+1].c_str());
 			if (q == nullptr) 
 				return false;
-
-			assert(q > p);
-			
+			assert(q >= p + length_min);
 			anchoring[i * 2 + 1]= q - p_begin; 
-
 			string matched= string(p, q-p); 
-			assert(matched.size() > 0); 
+			assert(matched.size() >= length_min); 
 			if (special_a) {
+				assert(matched.size() > 0); 
 				if (i == 0 && matched[0] == '/')
 					return false;
 			}
+			if (matched == "") {
+				assert(special_b);
+				special= true;
+				matched= "/";
+			}
 			ret[parameters[i]]= matched;
 			p= q + texts[i+1].size();
-
 			anchoring[i * 2 + 2]= p - p_begin; 
 		}
 	}

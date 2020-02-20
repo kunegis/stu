@@ -16,7 +16,7 @@
 # contain the glob characters *, ?, etc.) 
 #
 # OUTPUT FILES
-#     error.log		List of tests that failed
+#     error.log		List of tests that failed, one name per line
 #
 # PARAMETERS
 #     $NDEBUG	Set to non-empty to test the nondebug version; by default

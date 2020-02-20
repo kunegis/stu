@@ -1,0 +1,11 @@
+# 'name' matches '$dir/name' with $dir set to '.'.
+
+A:  list.aaa
+{
+	cp list.aaa A
+}
+
+$dir/list.aaa
+{
+	echo CORRECT >"$dir"/list.aaa
+}

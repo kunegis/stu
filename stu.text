@@ -634,12 +634,12 @@ CANONICALIZATION
 
        Canonicalization does not involve any procedure  that  requires  system
        calls  to  be performed.  Thus, symlinks are not resolved, and 'AAA/..'
-       is not simplified.  '/..' is not simplified to '/'.
+       is not simplified.  Likewise, '/..' is not simplified to '/'.
 
-       The rules apply not only to file targets, but also  to  transient  tar‐
-       gets.   Thus,  @aaa//bbb  and @aaa/bbb refer to the same target.  It is
-       thus strongly suggested to use transient targets in a fashion  that  is
-       consistent with the file system semantics of '/' and '.'.
+       The canonicalization rules apply not only to file targets, but also  to
+       transient targets.  Thus, @aaa//bbb and @aaa/bbb refer to the same tar‐
+       get.  It is thus strongly suggested to use transient targets in a fash‐
+       ion that is consistent with the file system semantics of '/' and '.'.
 
        Canonicalization  is  applied  in the following fashion: (1) When rules
        are parsed, canonicalization is applied to all target names.   At  this
@@ -650,9 +650,11 @@ CANONICALIZATION
        parameters and canonicalization is performed on the final file or tran‐
        sient name.
 
-       There is a special rule concerning './':  When a target to  be  canoni‐
-       calized in phase (1) as described above starts with './' followed imme‐
-       diately by a parameter, then this parameter  will  only  match  strings
+       Additionally, there are three special rules for canonicalization:
+
+       (a) There is a special rule concerning  './':   When  a  target  to  be
+       canonicalized in phase (1) as described above starts with './' followed
+       immediately by a parameter, then this parameter will only match strings
        that do not start with a slash.  The './' is still removed.  This makes
        it possible to distinguish files with relative paths  from  files  with
        absolute paths.  For instance, consider the following example:
@@ -666,12 +668,24 @@ CANONICALIZATION
        third  rule,  and  produce  an  error, or none of the two dominates the
        other.
 
+       (b) Another special rules concerns the root directory '/':   A  pattern
+       of  the  form  $A/xxx where $A is a parameter and xxx any string (which
+       may contain more parameters) will match the name '/xxx' by setting  the
+       parameter  $A  to  the value '/'.  This special rule corresponds to the
+       fact that while the root directory is called '/', a file within  it  is
+       called '/xxx' rather than '//xxx'.
+
+       (c) If the target for a rule is '$x/AAA', where 'AAA' may contain other
+       parameters, then a dependency of 'AAA' will match that rule with $x set
+       to '.', as long as 'AAA' does not start with a slash.
+
 DIRECTIVES
-       Directives in Stu are introduced by '%' and serve a similar purpose  to
-       the  C  preprocessor,  i.e.,  they  are processed before the actual Stu
-       script is parsed and interpreted.  The token '%' must  be  followed  by
-       the  directive  name.  There may be any amount of whitespace (including
-       none) between '%' and the name of the directive.
+       Directives  in Stu are introduced by '%' and serve a similar purpose to
+       the C preprocessor, i.e., they are  processed  before  the  actual  Stu
+       script  is  parsed  and  interpreted.   (However,  they are not used to
+       implement a macro system.)  The token  '%'  must  be  followed  by  the
+       directive  name. There may be any amount of whitespace (including none)
+       between '%' and the name of the directive.
 
        File inclusion is done using the '%include' directive.  This can be put
        at any place in the input file, and will temporarily continue tokeniza‐
@@ -1102,4 +1116,4 @@ AUTHOR
 SEE ALSO
        make(1), cook(1), sh(1)
 
-stu-2.6.0                          July 2019                            STU(1)
+stu-2.6.0                        December 2019                          STU(1)

@@ -2,7 +2,7 @@
 # Canonicalize names [2.6]
 #
 
-# (?) Should "name" match "$dir/name", with $dir set to "."? --> yes, if "name" does not start with "/"
+# test/2.6-0099 :   Special rule C
 
 # Match the actual name of the current directory
 #  --> No, because it needs a syscall
@@ -12,6 +12,8 @@ currentdirectory/B { ... }
 # $X/$Y vs ./$X for aaa/bbb:   $X/$Y dominates
 
 # Name '/A/B' when $X and ./$X/$Y are available:  $X matches alone
+
+# Name aaa/bbb when ./$X/$Y is available:  match.
 
 # Are these special rules used for transients?
 

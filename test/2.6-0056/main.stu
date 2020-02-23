@@ -1,10 +1,5 @@
 #
-# Error in building target of first rule.  The error message shows the
-# non-canonicalized name.  Related to the fact that a default target is
-# used in the test.
-#
-# SOLUTION:  Use the non-canonicalized name as the default target.  (See
-# XXX in stu.cc)
+# The error message shows the non-canonicalized name, because the first target is used by default.   
 #
 /// : X { exit 1 ; }
 X { touch X ; }

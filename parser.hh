@@ -2,9 +2,8 @@
 #define PARSER_HH
 
 /* 
- * Code for generating rules from a vector of tokens, i.e, for
- * performing the parsing of Stu syntax beyond tokenization.  This is a
- * recursive descent parser written by hand.
+ * Code for generating rules from a vector of tokens, i.e, for performing the parsing of Stu syntax
+ * beyond tokenization.  This is a recursive descent parser written by hand. 
  */ 
 
 #include <set>
@@ -73,7 +72,8 @@ public:
 
 	static void get_rule_list(vector <shared_ptr <Rule> > &rules,
 				  vector <shared_ptr <Token> > &tokens,
-				  const Place &place_end);
+				  const Place &place_end,
+				  shared_ptr <const Place_Param_Target> &target_first);
 
 	static void get_expression_list(vector <shared_ptr <const Dep> > &deps,
 					vector <shared_ptr <Token> > &tokens,
@@ -100,18 +100,18 @@ public:
 	static void get_file(string filename,
 			     int file_fd,
 			     Rule_Set &rule_set, 
-			     shared_ptr <const Rule> &rule_first,
+			     shared_ptr <const Place_Param_Target> &target_first,
 			     Place &place_first); 
 	/* Read in an input file and add the rules to the given rule set.  Used
 	 * for the -f option and the default input file.  If not yet non-null,
-	 * set RULE_FIRST to the first rule.  FILE_FD can be -1 or the FD or the
-	 * filename, if already opened.  If FILENAME is "-", use standard input.
-	 * If FILENAME is "", use the default file ('main.stu').  */
+	 * set TARGET_FIRST to the first target of the first rule.  FILE_FD can be -1 or the FD or
+	 * the filename, if already opened.  If FILENAME is "-", use standard input.  If FILENAME is
+	 * "", use the default file ('main.stu').   */ 
 
 	static void get_string(const char *s,
 			       Rule_Set &rule_set, 
-			       shared_ptr <const Rule> &rule_first);
-	/* Read rules from a string */ 
+			       shared_ptr <const Place_Param_Target> &target_first);
+	/* Read rules from a string; same argument semantics as the other get_*() functions.  */ 
 
 private:
 
@@ -127,7 +127,8 @@ private:
 		   place_end(place_end_)
 	{ }
 	
-	void parse_rule_list(vector <shared_ptr <Rule> > &ret);
+	void parse_rule_list(vector <shared_ptr <Rule> > &ret,
+			     shared_ptr <const Place_Param_Target> &target_first);
 	/* The returned rules may not be unique -- this is checked later */ 
 
 	bool parse_expression_list(vector <shared_ptr <const Dep> > &ret, 
@@ -136,7 +137,7 @@ private:
 				   const vector <shared_ptr <const Place_Param_Target> > &targets);
 	/* RET is filled.  RET is empty when called. */
 
-	shared_ptr <Rule> parse_rule(); 
+	shared_ptr <Rule> parse_rule(shared_ptr <const Place_Param_Target> &target_first); 
 	/* Return null when nothing was parsed */ 
 
 	bool parse_expression(shared_ptr <const Dep> &ret,
@@ -194,7 +195,8 @@ private:
 	 * slashes */
 };
 
-void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret)
+void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret,
+			     shared_ptr <const Place_Param_Target> &target_first)
 {
 	assert(ret.size() == 0); 
 	
@@ -204,18 +206,18 @@ void Parser::parse_rule_list(vector <shared_ptr <Rule> > &ret)
 		const auto iter_begin= iter; 
 #endif /* ! NDEBUG */ 
 
-		shared_ptr <Rule> rule= parse_rule(); 
+		shared_ptr <Rule> rule= parse_rule(target_first); 
 
 		if (rule == nullptr) {
 			assert(iter == iter_begin); 
 			break;
 		}
-
+		
 		ret.push_back(rule); 
 	}
 }
 
-shared_ptr <Rule> Parser::parse_rule()
+shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &target_first)
 {
 	const auto iter_begin= iter;
 	/* Used to check that when this function fails (i.e., returns
@@ -309,7 +311,8 @@ shared_ptr <Rule> Parser::parse_rule()
 					    prefix_format_word(target_name->raw(), ">")); 
 				assert(place_param_targets[redirect_index]
 				       ->place_name.get_n() == 0);
-				assert((place_param_targets[redirect_index]->flags & F_TARGET_TRANSIENT) == 0); 
+				assert((place_param_targets[redirect_index]->flags
+					& F_TARGET_TRANSIENT) == 0); 
 				place_output <<
 					fmt("shadowing previous output redirection %s",
 					    prefix_format_word
@@ -343,8 +346,12 @@ shared_ptr <Rule> Parser::parse_rule()
 			throw ERROR_LOGICAL;
 		}
 
-		shared_ptr <const Place_Param_Target> place_param_target= make_shared <Place_Param_Target>
+		shared_ptr <const Place_Param_Target> place_param_target=
+			make_shared <Place_Param_Target>
 			(flags_type, *target_name, place_target);
+		if (target_first == nullptr) {
+			target_first= place_param_target; 
+		}
 
 		place_param_targets.push_back(place_param_target); 
 	}
@@ -1240,19 +1247,19 @@ void Parser::append_copy(      Name &to,
 }
 
 void Parser::get_rule_list(vector <shared_ptr <Rule> > &rules,
-			  vector <shared_ptr <Token> > &tokens,
-			  const Place &place_end)
+			   vector <shared_ptr <Token> > &tokens,
+			   const Place &place_end,
+			   shared_ptr <const Place_Param_Target> &target_first)
 {
 	auto iter= tokens.begin(); 
 
 	Parser parser(tokens, iter, place_end);
 
-	parser.parse_rule_list(rules); 
+	parser.parse_rule_list(rules, target_first); 
 
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start() 
-			<< fmt("expected a rule, not %s", 
-			       (*iter)->format_start_word()); 
+			<< fmt("expected a rule, not %s", (*iter)->format_start_word());  
 		throw ERROR_LOGICAL;
 	}
 }
@@ -1508,7 +1515,7 @@ bool Parser::next_concatenates() const
 void Parser::get_file(string filename,
 		      int file_fd,
 		      Rule_Set &rule_set, 
-		      shared_ptr <const Rule> &rule_first,
+		      shared_ptr <const Place_Param_Target> &target_first,
 		      Place &place_first)
 {
 	assert(file_fd == -1 || file_fd > 1); 
@@ -1535,18 +1542,18 @@ void Parser::get_file(string filename,
 
 	/* Build rules */
 	vector <shared_ptr <Rule> > rules;
-	Parser::get_rule_list(rules, tokens, place_end); 
+	Parser::get_rule_list(rules, tokens, place_end, target_first); 
 
 	/* Add to set */
 	rule_set.add(rules);
 
-	/* Set the first one */
-	if (rule_first == nullptr) {
-		auto i= rules.begin();
-		if (i != rules.end()) {
-			rule_first= *i; 
-		}
-	}
+//	/* Set the first target */
+//	if (target_first == nullptr) {
+//		auto i= rules.begin();
+//		if (i != rules.end()) {
+//			target_first= (*i)->place_param_targets[0]; 
+//		}
+//	}
 
 	if (rules.empty() && place_first.empty()) {
 		place_first= place_end;
@@ -1555,7 +1562,7 @@ void Parser::get_file(string filename,
 
 void Parser::get_string(const char *s,
 			Rule_Set &rule_set, 
-			shared_ptr <const Rule> &rule_first)
+			shared_ptr <const Place_Param_Target> &target_first)
 {
 	/* Tokenize */ 
 	vector <shared_ptr <Token> > tokens;
@@ -1568,18 +1575,18 @@ void Parser::get_string(const char *s,
 
 	/* Build rules */
 	vector <shared_ptr <Rule> > rules;
-	Parser::get_rule_list(rules, tokens, place_end);
+	Parser::get_rule_list(rules, tokens, place_end, target_first);
 
 	/* Add to set */
 	rule_set.add(rules);
 
-	/* Set the first one */
-	if (rule_first == nullptr) {
-		auto i= rules.begin();
-		if (i != rules.end()) {
-			rule_first= *i; 
-		}
-	}
+//	/* Set the first one */
+//	if (target_first == nullptr) {
+//		auto i= rules.begin();
+//		if (i != rules.end()) {
+//			target_first= (*i)->place_param_targets[0]; 
+//		}
+//	}
 }
 
 #endif /* ! PARSER_HH */

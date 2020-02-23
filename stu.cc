@@ -145,8 +145,8 @@ int main(int argc, char **argv, char **envp)
 		vector <shared_ptr <const Dep> > deps; 
 		/* Assemble targets here */ 
 
-		// XXX change to only record the (non-canonicalized) first target name of the first rule, because that's all we need
-		shared_ptr <const Rule> rule_first;
+		shared_ptr <const Place_Param_Target> target_first; 
+//		shared_ptr <const Rule> rule_first;
 		/* Set to the first rule when there is one */ 
 
 		Place place_first;
@@ -227,13 +227,13 @@ int main(int argc, char **argv, char **envp)
 				had_option_f= true;
 				filenames.push_back(optarg); 
 				Parser::get_file(optarg, -1, Execution::rule_set,
-						 rule_first, place_first);
+						 target_first, place_first);
 			end:
 				break;
 
 			case 'F':
 				had_option_f= true;
-				Parser::get_string(optarg, Execution::rule_set, rule_first);
+				Parser::get_string(optarg, Execution::rule_set, target_first);
 				break;
 
 			case 'i':
@@ -383,7 +383,7 @@ int main(int argc, char **argv, char **envp)
 			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY); 
 			if (file_fd >= 0) {
 				Parser::get_file("", file_fd, 
-						 Execution::rule_set, rule_first,
+						 Execution::rule_set, target_first,
 						 place_first); 
 			} else {
 				if (errno == ENOENT) { 
@@ -414,7 +414,7 @@ int main(int argc, char **argv, char **envp)
 		 * use the first non-variable target */ 
 		if (deps.empty() && ! had_option_target) {
 
-			if (rule_first == nullptr) {
+			if (target_first == nullptr) {
 				if (! place_first.empty()) {
 					place_first
 						<< "expected a rule, because no target is given";
@@ -424,15 +424,14 @@ int main(int argc, char **argv, char **envp)
 				exit(ERROR_FATAL);
 			}
 
-			if (rule_first->is_parametrized()) {
-				rule_first->place <<
+			if (target_first->place_name.is_parametrized()) {
+				target_first->place <<
 					fmt("the first target %s must not be parametrized if no target is given",
-					    rule_first->place_param_targets[0]->format_word());
+					    target_first->format_word());
 				exit(ERROR_FATAL);
 			}
 
-			deps.push_back
-				(make_shared <Plain_Dep> (*(rule_first->place_param_targets[0])));  
+			deps.push_back(make_shared <Plain_Dep> (*target_first));  
 		}
 
 		/* Execute */

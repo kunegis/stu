@@ -724,7 +724,7 @@ Any number of ending '/.' components are removed.
 Any number of '/./' is simplified to '/'.
 
 Canonicalization does not involve any procedure that requires system
-calls to be performed.  Thus, symlinks are not resolved, and 'AAA/..'
+calls to be performed.  Thus, symlinks are not resolved, and 'aaa/..'
 is not simplified.  Likewise, '/..' is not simplified to '/'.  
 
 The canonicalization rules apply not only to file targets, but also to
@@ -758,7 +758,7 @@ the following example:
 
 Here, the dependency './list.B' will match the third rule only.  Without the
 special rule, the dependency would match both the second and third rule,
-and produce an error, or none of the two dominates the other. 
+and produce an error, because none of the two dominates the other. 
 
 (b) Another special rules concerns the root directory '/':  A pattern of
 the form $A/xxx where $A is a parameter and xxx any string (which may
@@ -910,7 +910,7 @@ introduced with '%'.
 
 Stu scripts read via the 
 .BR -f 
-option or as the default Stu script, as well as
+option or as the default Stu script (main.stu), as well as
 the argument to the 
 .BR -F 
 option must contain a 'rule_list'. 
@@ -944,9 +944,9 @@ Cycles are possible in dynamic dependencies, where they are allowed
 and ignored.  For instance, the following examples will correctly build
 the file 'A', after having built 'B' and 'C':
 
-    A:  [B] { echo CORRECT >A }
-    B:  { echo [C] >B }
-    C:  { echo [B] >C }
+    A:  [B] { echo CORRECT >A ; }
+    B:  { echo [C] >B ; }
+    C:  { echo [B] >C ; }
 
 Symlinks are treated transparently by Stu.  In other words, Stu will
 always consider the timestamp of the linked-to file.  A symlink to a

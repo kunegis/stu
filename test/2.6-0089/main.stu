@@ -1,4 +1,4 @@
-# This must work for backward compatibility 
+# The rule starting with './' takes precedence (special rule (a), as described in the manpage)
 
 A: ./list.B { cp list.B A ; }
 ./$base.$name = {CORRECT}

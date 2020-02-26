@@ -633,7 +633,7 @@ CANONICALIZATION
        Any number of '/./' is simplified to '/'.
 
        Canonicalization does not involve any procedure  that  requires  system
-       calls  to  be performed.  Thus, symlinks are not resolved, and 'AAA/..'
+       calls  to  be performed.  Thus, symlinks are not resolved, and 'aaa/..'
        is not simplified.  Likewise, '/..' is not simplified to '/'.
 
        The canonicalization rules apply not only to file targets, but also  to
@@ -665,7 +665,7 @@ CANONICALIZATION
 
        Here,  the dependency './list.B' will match the third rule only.  With‐
        out the special rule, the dependency would match both  the  second  and
-       third  rule,  and  produce  an  error, or none of the two dominates the
+       third rule, and produce an error, because none of the two dominates the
        other.
 
        (b) Another special rules concerns the root directory '/':   A  pattern
@@ -808,15 +808,15 @@ SYNTAX
 
        {1} with intervening whitespace {2} without intervening whitespace
 
-       Stu  scripts  read  via  the -f option or as the default Stu script, as
-       well as the argument to the -F option must contain  a  'rule_list'.   A
-       file  included  by brackets (a dynamic dependency) and arguments to the
-       -C option must contain an 'expression_list'.  Arguments passed  outside
-       of options on the command line must contain an 'expression_list', but a
-       simplified syntax is used in which only the charaters '[]-@' are recog‐
-       nized,  and  that only in positions where they make sense; in all other
-       cases, characters are interpreted as part of filenames -- this is  also
-       valid for whitespace.
+       Stu  scripts  read  via  the  -f  option  or  as the default Stu script
+       (main.stu), as well as the argument to the -F  option  must  contain  a
+       'rule_list'.   A  file  included by brackets (a dynamic dependency) and
+       arguments to the -C option must contain  an  'expression_list'.   Argu‐
+       ments  passed  outside  of  options on the command line must contain an
+       'expression_list', but a simplified syntax is used in  which  only  the
+       charaters  '[]-@' are recognized, and that only in positions where they
+       make sense; in all other cases, characters are interpreted as  part  of
+       filenames -- this is also valid for whitespace.
 
 SEMANTICS
        Cycles in the dependency graph are not allowed. As an example, the fol‐
@@ -838,9 +838,9 @@ SEMANTICS
        ignored.  For instance, the following examples will correctly build the
        file 'A', after having built 'B' and 'C':
 
-           A:  [B] { echo CORRECT >A }
-           B:  { echo [C] >B }
-           C:  { echo [B] >C }
+           A:  [B] { echo CORRECT >A ; }
+           B:  { echo [C] >B ; }
+           C:  { echo [B] >C ; }
 
        Symlinks  are  treated  transparently by Stu.  In other words, Stu will
        always consider the timestamp of the linked-to file.  A  symlink  to  a
@@ -1116,4 +1116,4 @@ AUTHOR
 SEE ALSO
        make(1), cook(1), sh(1)
 
-stu-2.6.0                        December 2019                          STU(1)
+stu-2.6.0                        February 2020                          STU(1)

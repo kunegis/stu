@@ -30,7 +30,7 @@ This is my preferred style.  --Jérôme Kunegis
 * Tabs for indentation.  Set your editor to show them at the width you
   prefer.  I use the default 8-char tabs.   
 * Spaces for alignment in the middle of lines.
-* Use 72-character lines in general, but allow more where reasonable,
+* Line length vary between 72, 80, and 100.  We allow more where reasonable,
   e.g., to avoid breaking message string literals or to make table-like
   code evident.  Since tabs may be interpreted as different widths, this
   is an approximate rule; authors use 8-char tabs. 

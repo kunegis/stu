@@ -30,6 +30,9 @@
  *
  * Symlinks and '..' are not canonicalized by Stu.  As a general rule,
  * no stat(2) is performed to check whether name components exist.
+ *
+ * For further rules about canonicalization (which are outside the scope of this function), see the
+ * manpage.  Some of the special rules are handled in this file. 
  */
 
 typedef unsigned Canon_Flags;
@@ -125,7 +128,7 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 		s += 2; 
 	} else if (canon_flags & A_BEGIN && ! (canon_flags & A_END)
 		   && s[0] == '.' && s[1] == '/' && s[2] == '\0') {
-		/* Keep a lone './' in the first component of followed
+		/* Keep a lone './' in the first component followed
 		 * by a parameter.  The meaning is that the following
 		 * parameter can only be matched by a value not
 		 * beginning by a slash.  */

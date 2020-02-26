@@ -344,7 +344,7 @@ public:
 	/* Check whether NAME matches this name.  If it does, return
 	 * TRUE and set MAPPING and ANCHORING accordingly. 
 	 * MAPPING must be empty.  SPECIAL to set to wether a special
-	 * rule was used.  */
+	 * rule (in the sense of canonicalization) was used.  */
 	
 	string raw() const 
 	/* Raw formatting of the name, without doing any escaping */
@@ -891,7 +891,7 @@ bool Name::match(const string name,
 	/* $A/bbb matches bbb with $A set to . */
 	bool special_c= n != 0
 		&& texts[0] == ""
-		&& texts[1].size() != 0 && texts[1][0] != '/';
+		&& texts[1].size() != 0 && texts[1][0] == '/';
 	special |= special_c; 
 	
 	/* Match first text */

@@ -459,7 +459,8 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 			bool special;
 
 			/* The parametrized rule is of another type */ 
-			if (target.get_front_word() != (place_param_target->flags & F_TARGET_TRANSIENT))
+			if (target.get_front_word() !=
+			    (place_param_target->flags & F_TARGET_TRANSIENT))
 				continue;
 
 			/* The parametrized rule does not match */ 

@@ -2,7 +2,7 @@
 # Canonicalize names [2.6]
 #
 
-# Tests before 2.6-0099 
+# tests failing before 2.6-0089
 
 # test/2.6-0099 :   Special rule C
 

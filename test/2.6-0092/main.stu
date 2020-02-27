@@ -1,13 +1,11 @@
-# '$dir/na$B' matches '/name' with $dir set to '/' and $B to 'me'.
+# '$dir/8w$B' matches '/8w[...]' with $dir set to '/' and $B to [...].
+# This is special canonicalization rule (b). 
 
-A:  /bin  {
-	[ -e X ] || exit 1
-	touch A 
+A:  /8w792387r9287v3r23vb8r239vbr  {
+	echo ERROR
 }
 
-$dir/bi$B {
-	touch X
-	[ / = "$dir" ] || exit 1
-	[ -e /bi"$B" ] || exit 1
-	exit 0
+$dir/8w$B {
+	echo CORRECT
+	exit 1
 }

@@ -2,8 +2,6 @@
 # Canonicalize names [2.6]
 #
 
-# tests failing before 2.6-0099
-
 # test/2.6-0099 :   Special rule C
 
 # Match the actual name of the current directory

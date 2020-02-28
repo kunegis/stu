@@ -1,1 +1,2 @@
 main.stu:6:3: there must not be a second rule for target 'config.h'
+main.stu:5:1: shadowing previous rule 'config.h'

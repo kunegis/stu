@@ -1,0 +1,17 @@
+# An example where two rules match a name, one with rule (c) and one without.  The example
+# without rule (c) must be chosen. 
+
+A:  list.bbb/ccc {
+	cp list.bbb/ccc A
+}
+
+list.bbb/$Y {
+	# No special rule (c), chosen
+	mkdir -p list.bbb
+	echo CORRECT >list.bbb/"$Y"
+}
+
+$dirt/list.bbb/ccc {
+	# Special rule (c), not chosen
+	exit 1
+}

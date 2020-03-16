@@ -1,0 +1,10 @@
+# Special rule (c):  Does $X/bbb/$Y/ccc match bbb/bbb/ccc ?   Yes, via Special Rule (c)
+
+A:  list.bbb/list.bbb/ccc {
+	cp list.bbb/list.bbb/ccc A
+}
+
+$X/list.bbb/$Y/ccc {
+	mkdir -p "$X"/list.bbb/"$Y"
+	echo CORRECT >"$X"/list.bbb/"$Y"/ccc
+}

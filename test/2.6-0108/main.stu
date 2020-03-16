@@ -1,0 +1,8 @@
+# Special rule (c):  Does a match $dir/aa ?   (no)
+
+A:  a {
+}
+
+$dir/aa {
+	echo >&2 ERROR
+}

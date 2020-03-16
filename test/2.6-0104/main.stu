@@ -1,0 +1,10 @@
+# Special rule (c):  Does $X/bbb match aaa/bbb/aaa/bbb ?  Yes, but it does not invoke Special Rule (c)
+
+A:  list.aaa/bbb/aaa/bbb {
+	cp list.aaa/bbb/aaa/bbb A
+}
+
+$X/bbb {
+	mkdir -p "$X"
+	echo CORRECT >"$X"/bbb
+}

@@ -1,0 +1,15 @@
+# Does $X/bbb/$Y match bbb/bbb/bbb as
+# 	 *   (1) $X = . and $Y = bbb/bbb , or
+#	 *   (2) $X = bbb and $Y = bbb ?
+#	 * Answer:  It's (2), because that's not special rule (c).
+
+A:  list.bbb/list.bbb/list.bbb {
+	cp list.bbb/list.bbb/list.bbb A
+}
+
+$X/list.bbb/$Y {
+	[ "x$X" = xlist.bbb ] || exit 1
+	[ "x$Y" = xlist.bbb ] || exit 1
+	mkdir -p "$X"/list.bbb
+	echo CORRECT >"$X"/list.bbb/"$Y"
+}

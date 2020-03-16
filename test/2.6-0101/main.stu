@@ -1,0 +1,16 @@
+# A match by special rule (c) has a lower priority than a match without special rule (c). 
+# $X/$Y vs ./$X for aaa/bbb:   $X/$Y dominates    (Special rule (c))
+
+A:  B/C {
+	
+	cp B/C A
+}
+
+$X/$Y {
+	mkdir -p "$X"
+	echo CORRECT >"$X"/"$Y"
+}
+
+./$X {
+	exit 1
+}

@@ -2,8 +2,6 @@
 # Canonicalize names [2.6]
 #
 
-# $X/$Y vs ./$X for aaa/bbb:   $X/$Y dominates
-
 # Name '/A/B' when $X and ./$X/$Y are available:  $X matches alone
 
 # Name aaa/bbb when ./$X/$Y is available:  match.

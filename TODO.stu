@@ -2,12 +2,6 @@
 # Canonicalize names [2.6]
 #
 
-# Match the actual name of the current directory
-#  --> No, because it needs a syscall
-# Test that this is not done.
-A:  B { ... }
-currentdirectory/B { ... }
-
 # $X/$Y vs ./$X for aaa/bbb:   $X/$Y dominates
 
 # Name '/A/B' when $X and ./$X/$Y are available:  $X matches alone

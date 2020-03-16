@@ -1,0 +1,51 @@
+#! /bin/sh
+#
+# A dependency of ./X does not match a rule target of C/X, where C is the actual name of the current
+# directory. 
+#
+
+set -e
+
+rm -f ? list.* 
+
+dir=$(pwd)
+
+cat >list.stu <<EOF
+A:  ./B    { touch A ; }
+'$dir'/B:  { touch '$dir'/B ; touch A ; }
+EOF
+
+echo list.stu:
+echo _____________
+cat list.stu
+echo _____________
+
+set +e
+../../stu.test -f list.stu >list.out 2>list.err
+exitstatus=$?
+set -e
+
+echo exitstatus="$exitstatus"
+
+echo list.out:
+echo _____________
+cat list.out
+echo _____________
+echo list.err:
+echo _____________
+cat list.err
+echo _____________
+
+[ "$exitstatus" = 1 ] || {
+	echo >&2 '*** Expected exit status 1'
+	exit 1
+}
+
+grep -F "list.stu:1:5: no rule to build './B', needed by 'A'" list.err || {
+	echo >&2 '*** Expect error message'
+	exit 1
+}
+
+rm -f ? list.* 
+
+exit 0

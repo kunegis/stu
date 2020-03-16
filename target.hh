@@ -340,11 +340,16 @@ public:
 	bool match(string name, 
 		   map <string, string> &mapping,
 		   vector <size_t> &anchoring,
-		   bool &special) const;
+		   int &priority) const;
 	/* Check whether NAME matches this name.  If it does, return
 	 * TRUE and set MAPPING and ANCHORING accordingly. 
-	 * MAPPING must be empty.  SPECIAL to set to wether a special
-	 * rule (in the sense of canonicalization) was used.  */
+	 * MAPPING must be empty.  PRIORITY determines whether a special rule was used:
+	 *    0:   no special rule was used
+	 *    +1:  a special rule was used, having priority of matches without special rule
+	 *    -1:  a special rule was used, having less priority than matches without special rule
+	 * PRIORITY has an unspecified value after returing FALSE.
+	 * The range of PRIORITY can be easily extended to other integers if necessary. 
+	 */
 	
 	string raw() const 
 	/* Raw formatting of the name, without doing any escaping */
@@ -421,7 +426,7 @@ public:
 
 	static bool anchoring_dominates(vector <size_t> &anchoring_a,
 					vector <size_t> &anchoring_b,
-					bool special_a, bool special_b);
+					int priority_a, int priority_b);
 	/* Whether anchoring A dominates anchoring B.  The anchorings do
 	 * not need to have the same number of parameters.  */
 };
@@ -846,7 +851,7 @@ string Name::instantiate(const map <string, string> &mapping) const
 bool Name::match(const string name, 
 		 map <string, string> &mapping,
 		 vector <size_t> &anchoring,
-		 bool &special) const
+		 int &priority) const
 /* 
  * Rule:  Each parameter must match at least one character. 
  *
@@ -861,7 +866,7 @@ bool Name::match(const string name,
  */
 {
 	assert(mapping.size() == 0); 
-	special= false;
+	priority= 0;
 	map <string, string> ret;
 	const size_t n= get_n(); 
 
@@ -882,28 +887,27 @@ bool Name::match(const string name,
 	/* ./$A... is equivalent to $A... where $A must not begin in a
 	 * slash */
 	bool special_a= n != 0 && texts[0] == "./";
-	special |= special_a; 
+	if (special_a)
+		priority= 1; 
 
 	/* $A/bbb matches /bbb with $A set to / */
-	bool special_b=	texts[0] == "" && texts[1].size() != 0 && texts[1][0] == '/'; 
-//	special |= special_b; 
+	bool special_b_potential= n != 0 
+		&& texts[0] == "" && texts[1].size() != 0 && texts[1][0] == '/'; 
 
-	/* $A/bbb matches bbb with $A set to . */
-	bool special_c= n != 0
-		&& texts[0] == ""
-		&& texts[1].size() != 0 && texts[1][0] == '/';
-	special |= special_c; 
+	bool special_c= false;  /* We are in the second pass for Special Rule (c) */
+	
+ restart:
 	
 	/* Match first text */
 	if (! special_a) {
 		size_t k= texts[0].size(); 
 		if ((size_t)(p_end - p) <= k) {
-			return false;
+			goto failed;
 		}
 		/* Note:  K can be zero here, in which case memcmp()
 		 * always returns zero, i.e., a match.  */
 		if (memcmp(p, texts[0].c_str(), k)) {
-			return false;
+			goto failed;
 		}
 		p += k; 
 		anchoring[0]= k;
@@ -917,69 +921,50 @@ bool Name::match(const string name,
 	/* I goes over all parameters */
 	for (size_t i= 0;  i < n;  ++i) {
 
-		// if (i == 0 && special_b) {
-		// 	/* Allow a zero-length parameter 0, for special rule B */
-		// 	if (i == n - 1) {
-		// 		/* A single parameter */
-		// 		size_t size_last= texts[n].size();
-		// 		if (p_end - p < (ssize_t) size_last)
-		// 			return false;
-		// 		if (memcmp(p_end - size_last,
-		// 			   texts[n].c_str(), size_last))
-		// 			return false;
-		// 		string matched= string(p, p_end - p - size_last);
-		// 		if (matched == "") {
-		// 			special= true; 
-		// 			matched= "/";
-		// 		}
-		// 		ret[parameters[0]]= matched;
-		// 		anchoring[1]= p_end - size_last - p_begin;
-		// 		assert(ret.at(parameters[i]).size() > 0);
-		// 	} else {
-		// 		assert(texts[1].size() != 0); 
-		// 		const char *q= strstr(p, texts[i+1].c_str());
-		// 		if (q == nullptr) 
-		// 			return false;
-		// 		assert(q >= p);
-		// 		anchoring[i * 2 + 1]= q - p_begin; 
-		// 		string matched= string(p, q-p); 
-		// 		if (matched == "") {
-		// 			special= true;
-		// 			matched= "/";
-		// 		}
-		// 		assert (! special_a);
-		// 		ret[parameters[i]]= matched;
-		// 		p= q + texts[i+1].size();
-		// 		anchoring[i * 2 + 2]= p - p_begin; 
-		// 	}
-		// }
-		//		else
-		size_t length_min= special_b && i == 0 ? 0 : 1;
+		size_t length_min= 1;
+		/* Minimal length of the matching parameter */ 
+
+		if (special_b_potential && i == 0)
+			length_min= 0;
+
+		if (special_c && i == 0) {
+			ret[parameters[i]]= ".";
+			anchoring[2*i + 1]= p_end - p_begin; /* The anchoring has zero length */
+			if (p + (texts.at(i+1).size() - 1) > p_end)
+				goto failed;
+			if (memcmp(p, texts.at(i+1).c_str() + 1, texts.at(i+1).size() - 1))
+				goto failed;
+			p += texts.at(i+1).size() - 1; 
+			continue;
+		}
+		
 		if (i == n - 1) {
-			/* For the last segment, the texts[n-1] must
-			 * match the end of the input string */ 
+			/* For the last segment, texts[n-1] must match the end of the input string */ 
 			size_t size_last= texts[n].size();
+			const char *last= texts[n].c_str(); 
 			/* Minimal length of matched text */
 			if (p_end - p < (ssize_t) length_min + (ssize_t) size_last) 
-				return false;
-			if (memcmp(p_end - size_last, texts[n].c_str(), size_last))
-				return false;
+				goto failed;
+			if (memcmp(p_end - size_last, last, size_last)) 
+				goto failed;
 			string matched= string(p, p_end - p - size_last); 
 			if (matched == "") {
-				assert(special_b);
-				special= true;
+				assert(special_b_potential);
+				priority= 1; 
 				matched= "/";
 			}
 			ret[parameters[i]]= matched;
 			anchoring[2*i + 1]= p_end - size_last - p_begin;
 			assert(ret.at(parameters[i]).size() >= length_min); 
 		} else {
+			// TODO do the same special handling for Special Case (b) as for the last
+			// parameter. 
 			/* Intermediate texts must not be empty, i.e.,
 			 * two parameters cannot be unseparated */ 
 			assert(texts[i+1].size() != 0); 
 			const char *q= strstr(p+length_min, texts[i+1].c_str());
 			if (q == nullptr) 
-				return false;
+				goto failed;
 			assert(q >= p + length_min);
 			anchoring[i * 2 + 1]= q - p_begin; 
 			string matched= string(p, q-p); 
@@ -987,11 +972,11 @@ bool Name::match(const string name,
 			if (special_a) {
 				assert(matched.size() > 0); 
 				if (i == 0 && matched[0] == '/')
-					return false;
+					goto failed;
 			}
 			if (matched == "") {
-				assert(special_b);
-				special= true;
+				assert(special_b_potential);
+				priority= 1; 
 				matched= "/";
 			}
 			ret[parameters[i]]= matched;
@@ -1000,11 +985,38 @@ bool Name::match(const string name,
 		}
 	}
 
+	/* There is a match */
+	
 	swap(mapping, ret); 
-
 	assert(anchoring.size() == 2 * n); 
-
 	return true;
+
+ failed:
+	if (special_c)
+		return false;
+
+	/* 
+	 * Special rule (c):  $A/bbb matches bbb with $A set to . 
+	 *
+	 * for special rule (c), we must do two passes: 
+	 *   (1) Normal pass, matching the given pattern
+	 *   (2) Special (c) pass
+	 *
+	 * We can't just test wether the pattern matches as rule (c), because there are pattern that
+	 * match both with and without rule (c).  
+	 * 	 
+	 * Example:  Does $X/bbb/$Y match bbb/bbb/bbb as
+	 *   (1) $X = . and $Y = bbb/bbb , or
+	 *   (2) $X = bbb and $Y = bbb ?
+	 * Answer:  It's (2), because that's not the special rule. 
+	 */
+
+	if (n != 0 && texts[0] == "" && texts[1].size() != 0 && texts[1][0] == '/') {
+		special_c= true;
+		priority= -1; 
+		goto restart;
+	} else
+		return false;
 }
 
 string Name::get_duplicate_parameter() const
@@ -1041,7 +1053,7 @@ bool Name::valid(string &param_1, string &param_2) const
 
 bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 			       vector <size_t> &anchoring_b,
-			       bool special_a, bool special_b)
+			       int priority_a, int priority_b)
 /* 
  * (A) dominates (B) when every character in a parameter in (A) is also
  * in a parameter in (B) and at least one character is not parametrized
@@ -1084,9 +1096,10 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 				return true; 
 			} else {
 				/* The anchorings are equal (up to
-				 * SPECIAL) */
+				 * PRIORITY) */
 				assert(anchoring_a == anchoring_b); 
-				return special_a && ! special_b; 
+				return priority_a > priority_b; 
+//				return special_a && ! special_b; 
 			}
 		}
 

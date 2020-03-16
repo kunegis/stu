@@ -1,5 +1,5 @@
 # The dependency of A must *not* match the second rule.  This test
-# checks that the special rule for $X/... matching '/' does not get
+# checks that Special Rule (b) for $X/... matching '/' does not get
 # triggered in the middle of the name. 
 
 A:  list.aaa/bbb

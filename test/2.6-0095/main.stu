@@ -1,5 +1,5 @@
 # Special rule (A).  Make sure the filename is reconstructed correctly
-# in -doutput.  
+# in -d output.  
 
 A:  list.8923rc83c387
 {

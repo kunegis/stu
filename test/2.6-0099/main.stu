@@ -1,4 +1,4 @@
-# 'name' matches '$dir/name' with $dir set to '.'.
+# 'list.aaa' matches '$dir/list.aaa' with $dir set to '.'.  (Special rule (c))
 
 A:  list.aaa
 {
@@ -7,5 +7,6 @@ A:  list.aaa
 
 $dir/list.aaa
 {
+	[ "x$dir" = x. ] || exit 1
 	echo CORRECT >"$dir"/list.aaa
 }

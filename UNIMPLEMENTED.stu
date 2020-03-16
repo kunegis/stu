@@ -70,6 +70,7 @@
 #
 
 % set PATH /usr/local/bin
+
 #
 # A flag with the meaning "never rebuild that dependency", but only use
 # it to determine whether we need to rebuilt the target.  It would mean

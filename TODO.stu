@@ -2,7 +2,7 @@
 # Canonicalize names [2.6]
 #
 
-# test/2.6-0099 :   Special rule C
+# test/2.6-0100 :   Special rule (c)
 
 # Match the actual name of the current directory
 #  --> No, because it needs a syscall
@@ -16,6 +16,20 @@ currentdirectory/B { ... }
 # Name aaa/bbb when ./$X/$Y is available:  match.
 
 # Are these special rules used for transients?
+
+# Special rule (c):  Does $X/bbb match aaa/bbb/aaa/bbb ?  Yes, but it does not invoke Special Rule (c)
+
+# Special rule (c):  Does $X/bbb/$Y/ccc match bbb/bbb/ccc ?   Yes, via Special Rule (c)
+
+# Does $X/bbb/$Y match bbb/bbb/bbb as
+# 	 *   (1) $X = . and $Y = bbb/bbb , or
+#	 *   (2) $X = bbb and $Y = bbb ?
+#	 * Answer:  It's (2), because that's not the special rule.
+
+# Find an example where two rules match a name, one with rule (c) and one without.  The example
+# without rule (c) must be chosen. 
+
+# Rule (c):  Does a match $dir/aa ?   (no)
 
 #
 # $STU_TARGETS (see Pull request)

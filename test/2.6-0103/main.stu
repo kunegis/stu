@@ -1,0 +1,10 @@
+# Name aaa/bbb when ./$X/$Y is available:  match.
+
+A:   list.aaa/bbb {
+	cp list.aaa/bbb A
+}
+
+./$X/$Y {
+	mkdir -p ./"$X"
+	echo CORRECT >./"$X"/"$Y"
+}

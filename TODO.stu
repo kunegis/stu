@@ -2,11 +2,6 @@
 # Canonicalize names [2.6]
 #
 
-
-# Name aaa/bbb when ./$X/$Y is available:  match.
-
-# Are these special rules used for transients?
-
 # Special rule (c):  Does $X/bbb match aaa/bbb/aaa/bbb ?  Yes, but it does not invoke Special Rule (c)
 
 # Special rule (c):  Does $X/bbb/$Y/ccc match bbb/bbb/ccc ?   Yes, via Special Rule (c)
@@ -20,6 +15,8 @@
 # without rule (c) must be chosen. 
 
 # Rule (c):  Does a match $dir/aa ?   (no)
+
+# Are the special rules used for transients?  
 
 #
 # $STU_TARGETS (see Pull request)

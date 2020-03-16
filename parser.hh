@@ -1547,14 +1547,6 @@ void Parser::get_file(string filename,
 	/* Add to set */
 	rule_set.add(rules);
 
-//	/* Set the first target */
-//	if (target_first == nullptr) {
-//		auto i= rules.begin();
-//		if (i != rules.end()) {
-//			target_first= (*i)->place_param_targets[0]; 
-//		}
-//	}
-
 	if (rules.empty() && place_first.empty()) {
 		place_first= place_end;
 	}
@@ -1579,14 +1571,6 @@ void Parser::get_string(const char *s,
 
 	/* Add to set */
 	rule_set.add(rules);
-
-//	/* Set the first one */
-//	if (target_first == nullptr) {
-//		auto i= rules.begin();
-//		if (i != rules.end()) {
-//			target_first= (*i)->place_param_targets[0]; 
-//		}
-//	}
 }
 
 #endif /* ! PARSER_HH */

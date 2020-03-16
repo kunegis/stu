@@ -343,7 +343,6 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 {
 	for (auto &rule:  rules_) {
 
-		// ADDED
 		rule->canonicalize(); 
 		
 		/* Check that the rule doesn't have a duplicate target */ 
@@ -366,12 +365,6 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 		if (! rule->is_parametrized()) {
 			for (auto place_param_target:  rule->place_param_targets) {
 				Target target= place_param_target->unparametrized(); 
-
-				// TODO maybe:  call
-				// rule->canonicalize() before, so
-				// target.canonicalize() becomes
-				// unnecessary 
-				//				target.canonicalize(); 
 
 				if (rules_unparametrized.count(target)) {
 					place_param_target->place <<

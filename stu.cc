@@ -146,7 +146,6 @@ int main(int argc, char **argv, char **envp)
 		/* Assemble targets here */ 
 
 		shared_ptr <const Place_Param_Target> target_first; 
-//		shared_ptr <const Rule> rule_first;
 		/* Set to the first rule when there is one */ 
 
 		Place place_first;

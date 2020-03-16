@@ -2,10 +2,9 @@
 # Canonicalize names [2.6]
 #
 
-# test/2.6-0100 :   Special rule (c)
-
 # Match the actual name of the current directory
 #  --> No, because it needs a syscall
+# Test that this is not done.
 A:  B { ... }
 currentdirectory/B { ... }
 

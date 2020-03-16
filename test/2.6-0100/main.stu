@@ -2,10 +2,11 @@
 
 A:  list.aaa.bbb
 {
-	cp list.aaa A
+	cp list.aaa.bbb A
 }
 
 $dir/list.$x.bbb
 {
+	[ "x$dir" = x. ] || exit 1
 	echo CORRECT >"$dir"/list."$x".bbb
 }

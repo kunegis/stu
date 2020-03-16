@@ -1099,7 +1099,6 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 				 * PRIORITY) */
 				assert(anchoring_a == anchoring_b); 
 				return priority_a > priority_b; 
-//				return special_a && ! special_b; 
 			}
 		}
 

@@ -1,0 +1,13 @@
+# Name '/A/B' when $X and ./$X/$Y are available:  $X matches alone
+
+A:  /B/C {
+}
+
+$X {
+	echo >&2 CORRECT
+}
+
+./$X/$Y {
+	echo >&2 ERROR
+}
+

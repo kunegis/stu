@@ -876,10 +876,6 @@ bool Name::match(const string name,
 
 	anchoring.resize(2 * n);
 
-	const char *const p_begin= name.c_str();
-	const char *p= p_begin;
-	const char *const p_end= name.c_str() + name.size(); 
-
 	/* 
 	 * Special rules
 	 */ 
@@ -898,6 +894,10 @@ bool Name::match(const string name,
 	
  restart:
 	
+	const char *const p_begin= name.c_str();
+	const char *p= p_begin;
+	const char *const p_end= name.c_str() + name.size(); 
+
 	/* Match first text */
 	if (! special_a) {
 		size_t k= texts[0].size(); 

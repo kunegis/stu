@@ -2,9 +2,7 @@
 # Canonicalize names [2.6]
 #
 
-# Fix 2.6-0105
-
-# Are the special rules used for transients?  
+# Are the special rules used for transients? Yes, write one test for each special rule. 
 
 #
 # $STU_TARGETS (see Pull request)

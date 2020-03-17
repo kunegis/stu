@@ -1,0 +1,10 @@
+# Special rule (a) with transients
+
+A:  @x {
+	cp B A
+}
+
+@./x:  B;
+
+B = {CORRECT}
+

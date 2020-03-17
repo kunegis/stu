@@ -1,0 +1,10 @@
+# Special rule (b) with transients
+
+A:  @/x {
+	cp B A
+}
+
+@$dir/x {
+	[ "x$dir" = x/ ] || exit 1
+	echo CORRECT >B
+}

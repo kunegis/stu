@@ -20,7 +20,7 @@
  *            exactly two slashes is special.)
  *      - Remove ending /
  * 	    - except when the name contains only '/' characters, i.e.,
- *            when the name is '/' or '//'.
+ *            when the name is '/' or or double slash. 
  *  - Fold .
  *      - ^/.$ -> /
  *      - ^./$ -> .

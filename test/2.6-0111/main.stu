@@ -1,0 +1,9 @@
+# Special rule (c) with transients
+
+A:  @x {
+	cp B A
+}
+
+@$dir/x:  B;
+
+B = {CORRECT}

@@ -2,8 +2,6 @@
 # Canonicalize names [2.6]
 #
 
-# Are the special rules used for transients? Yes, write one test for each special rule. 
-
 #
 # $STU_TARGETS (see Pull request)
 #

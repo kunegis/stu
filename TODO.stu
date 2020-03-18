@@ -6,6 +6,10 @@
 # $STU_TARGETS (see Pull request)
 #
 
+#
+# Rename tests to put them into $VERSION-* or long-*
+#
+
 #=================== New features =======================
 
 #
@@ -69,5 +73,3 @@ A: [-d data/B];
 # In -j>1 mode, Start trivial dependencies immediately when it is clear
 # they must be started, not just when everything else is done.
 #
-
-(set-frame-font "-PfEd-DejaVu Sans Mono-normal-normal-normal-*-13-*-*-*-m-0-iso10646-1" nil t)

@@ -47,39 +47,35 @@ enum
 };
 
 
-char *canonicalize_string(Canon_Flags canon_flags, char *dest, const char *src);
-/* Canonicalize the string starting at SRC, writing output to DEST.
+char *canonicalize_string(Canon_Flags canon_flags, char *p);
+/* Canonicalize the string starting at P in-place.
  * Return the end (\0) of the new string.  The operation never increases
- * the size of the string.  SRC and DEST may be equal.  SRC is
- * \0-terminated, and a terminating \0 is written to DST.  */
+ * the size of the string.  P is \0-terminated, on input and output. */ 
 
-char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char *const src) 
-/* Two passes are made, for '/' and '.', in that order. 
- * In the first pass, we copy SRC to DEST.  The second pass
- * operates within DEST.  */
-// TODO change to always work in-place, if not needed otherwise
+char *canonicalize_string(Canon_Flags canon_flags, char *p) 
+/* Two passes are made, for '/' and '.', in that order. */
 {
 	/*
 	 * Fold '/'
 	 */
 
-	char *d= dest; 
+	char *d= p; 
 
 	/* After the leading slashes when A_BEGIN, otherwise D */
 	const char *d_head= d; 
 
 #ifndef NDEBUG
-	const char *const limit= dest + strlen(src); 
+	const char *const limit= d + strlen(d); 
 #endif
 
 	/* Slashes at the start */
-	const char *s= src;
+	const char *s= p;
 	while (*s == '/') 
 		++s;
-	if (s - src == 2 && canon_flags & A_BEGIN) {
+	if (s - p == 2 && canon_flags & A_BEGIN) {
 		*d++= '/';
 		*d++= '/';
-	} else if (s != src) {
+	} else if (s != p) {
 		*d++= '/';
 	}
 	
@@ -112,7 +108,7 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 			--d;
 
 #ifndef NDEBUG
-	assert(dest <= limit); 
+	assert(p <= limit); 
 #endif
 
 	*d= '\0'; 
@@ -121,8 +117,8 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 	 * Fold '.'
 	 */
 
-	s= dest;
-	d= dest; 
+	s= p;
+	d= p; 
 
 	if (canon_flags & A_END && s[0] == '/' && s[1] == '.' && s[2] == '\0') {
 		if (canon_flags & A_BEGIN)
@@ -159,7 +155,7 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 		memmove(d, s, l + 1); 
 		s += l;
 		d += l;
-		while (d - 2 >= dest && d[-2] == '/' && d[-1] == '.') {
+		while (d - 2 >= p && d[-2] == '/' && d[-1] == '.') {
 			d -= 2;
 			*d= '\0';
 		}
@@ -221,7 +217,6 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 
 	assert(*s == '\0'); 
 	assert(*d == '\0'); 
-	assert(*dest != '\0' || *src == '\0'); 
 
 	return d; 
 }

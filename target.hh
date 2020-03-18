@@ -182,7 +182,7 @@ public:
 		while ((*(word_t *)p) & F_TARGET_DYNAMIC)
 			p += sizeof(word_t);
 		p += sizeof(word_t); 
-		p= canonicalize_string(A_BEGIN | A_END, p, p); 
+		p= canonicalize_string(A_BEGIN | A_END, p); 
 		text.resize(p - b); 
 	}
 
@@ -1143,7 +1143,7 @@ void Name::canonicalize()
 			canon_flags |= A_BEGIN;
 		if (i == get_n())
 			canon_flags |= A_END;
-		const char *q= canonicalize_string(canon_flags, p, p);
+		const char *q= canonicalize_string(canon_flags, p);
 		texts[i].resize(q - p);
 	}
 }

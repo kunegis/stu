@@ -72,6 +72,10 @@
 % set PATH /usr/local/bin
 
 #
+# $STU_TARGETS (see Pull request)
+#
+
+#
 # A flag with the meaning "never rebuild that dependency", but only use
 # it to determine whether we need to rebuilt the target.  It would mean
 # that we can prune dependencies with that flag as soon as we know that

@@ -957,8 +957,6 @@ bool Name::match(const string name,
 			anchoring[2*i + 1]= p_end - size_last - p_begin;
 			assert(ret.at(parameters[i]).size() >= length_min); 
 		} else {
-			// TODO do the same special handling for Special Case (b) as for the last
-			// parameter. 
 			/* Intermediate texts must not be empty, i.e.,
 			 * two parameters cannot be unseparated */ 
 			assert(texts[i+1].size() != 0); 
@@ -1155,20 +1153,11 @@ void Place_Param_Target::canonicalize()
 
 shared_ptr <const Place_Param_Target> 
 canonicalize(shared_ptr <const Place_Param_Target> place_param_target)
-// TODO use shared_ptr 
 {
-	// TODO solve the const/clone issue 
-	shared_ptr <Place_Param_Target> ret= //place_param_target;
-//	if (! ret.unique()) {
-//		ret= 
-		Place_Param_Target::clone(
-					  place_param_target
-//					  ret
-					  ); 
-//	}
+	shared_ptr <Place_Param_Target> ret= 
+		Place_Param_Target::clone(place_param_target); 
 	ret->canonicalize(); 
 	return ret; 
-//	return place_param_target; 
 }
 
 #endif /* ! TARGET_HH */

@@ -11,13 +11,15 @@ made, which are documented in the file 'MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
-XXXXXXXXXX  Version 2.6
+2020-03-18  Version 2.6
 
 * Canonicalization is implemented.  This means that Stu will now
   canonicalize all names of files and transient before further
   processing.  For instance, 'data' and './data' will refer to the same
-  file.  This takes into account uses of '/', '.' and '..'.  Symlinks
-  are not resolved by canonicalization. 
+  file.  This takes into account uses of '/' and '.'.  Symlinks and '..'
+  are not resolved by canonicalization.  The exact semantics are described in
+  the manpage. 
+  
 
 2018-02-28  Version 2.5.59
 

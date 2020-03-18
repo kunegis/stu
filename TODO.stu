@@ -2,15 +2,11 @@
 # Canonicalize names [2.6]
 #
 
-#
-# $STU_TARGETS (see Pull request)
-#
-
-#
-# Rename tests to put them into $VERSION-* or long-*
-#
-
 #=================== New features =======================
+
+#
+# Cloning:  Don't clone things unnecessarily
+#
 
 #
 # File import

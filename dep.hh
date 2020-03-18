@@ -620,8 +620,6 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 }
 
 shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
-// TODO Use weak_ptr here, as well as unique to check whether we can't
-// just return the thing itself.  Same for all other clone() functions. 
 {
 	assert(dep); 
 

@@ -87,14 +87,23 @@ char *canonicalize_string(Canon_Flags canon_flags, char *const dest, const char 
 		d_head= d; 
 	
 	/* Main loop:  collapse multiple slashes */
-	bool last_slash= false;
-	while (*s) { // TODO use strchr here
-		if (*s == '/' && last_slash) {
-			++s;
-			continue;
+
+	while (*s) {
+		const char *s_next= strchr(s, '/');
+		if (! s_next) {
+			s_next= strchr(s, '\0'); 
+			memmove(d, s, s_next - s);
+			d += s_next - s; 
+			s= s_next;
+			break;
 		}
-		last_slash= *s == '/';
-		*d++= *s++; 
+		assert(*s_next == '/'); 
+		memmove(d, s, s_next - s);
+		d += s_next - s; 
+		s= s_next;
+		while (*s == '/')
+			++s;
+		*d++= '/'; 
 	}
 
 	/* Remove trailing slashes */

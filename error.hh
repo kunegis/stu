@@ -157,7 +157,7 @@ void print_error_system(string message)
 /* Like perror(), but use color.  MESSAGE must not contain color codes. */ 
 {
 	assert(message.size() > 0 && message[0] != '') ;
-	string t= name_format_word(message); 
+	string t= name_format_err(message); 
 	fprintf(stderr, "%s: %s\n",
 		t.c_str(),
 		strerror(errno));

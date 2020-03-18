@@ -175,7 +175,7 @@ public:
 	/* Where the dependency as a whole is declared */ 
 
 	virtual string format(Style, bool &quotes) const= 0; 
-	virtual string format_word() const= 0; 
+	virtual string format_err() const= 0; 
 	virtual string format_out() const= 0; 
 	virtual string format_src() const= 0; 
 
@@ -319,7 +319,7 @@ public:
 	}
 
 	virtual string format(Style style, bool &quotes) const;
-	virtual string format_word() const;
+	virtual string format_err() const;
 	virtual string format_out() const;
 	virtual string format_src() const;
 
@@ -379,7 +379,7 @@ public:
 	}
 
 	virtual string format(Style, bool &quotes) const;
-	virtual string format_word() const;
+	virtual string format_err() const;
 	virtual string format_out() const;
 	virtual string format_src() const;
 
@@ -443,7 +443,7 @@ public:
 	virtual const Place &get_place() const;
 
 	virtual string format(Style, bool &quotes) const; 
-	virtual string format_word() const; 
+	virtual string format_err() const; 
 	virtual string format_out() const; 
 	virtual string format_src() const; 
 
@@ -545,7 +545,7 @@ public:
 	}
 
 	virtual string format(Style, bool &quotes) const; 
-	virtual string format_word() const; 
+	virtual string format_err() const; 
 	virtual string format_out() const; 
 	virtual string format_src() const; 
 
@@ -570,7 +570,7 @@ public:
 	virtual bool is_unparametrized() const {  return false;  }
 	virtual const Place &get_place() const {  return Place::place_empty;  }
 	virtual string format(Style, bool &) const {  return "ROOT";  }
-	virtual string format_word() const {  assert(false);  return "";  }
+	virtual string format_err() const {  assert(false);  return "";  }
 	virtual string format_out() const {  return "ROOT";  }
 	virtual string format_src() const {  return "ROOT";  }
 	virtual Target get_target() const {  return Target("");  }
@@ -760,10 +760,10 @@ string Plain_Dep::format_src() const
 	return ret; 
 }
 
-string Plain_Dep::format_word() const
+string Plain_Dep::format_err() const
 {
 	bool quotes= Color::quotes;
-	string ret= format(S_NOFLAGS | S_WORD | S_COLOR_WORD, quotes);
+	string ret= format(S_NOFLAGS | S_ERR | S_COLOR_WORD, quotes);
 	if (quotes)
 		ret= fmt("\'%s\'", ret); 
 	return ret; 
@@ -824,10 +824,10 @@ string Dynamic_Dep::format_src() const
 	return format(S_SRC, quotes);
 }
 
-string Dynamic_Dep::format_word() const
+string Dynamic_Dep::format_err() const
 {
 	bool quotes= false;
-	return format(S_NOFLAGS | S_WORD | S_COLOR_WORD, quotes);
+	return format(S_NOFLAGS | S_ERR | S_COLOR_WORD, quotes);
 }
 
 shared_ptr <const Dep> Dynamic_Dep::instantiate(const map <string, string> &mapping) const
@@ -852,8 +852,8 @@ shared_ptr <const Dep> Plain_Dep::instantiate(const map <string, string> &mappin
 	if ((flags & F_VARIABLE) && this_name.find('=') != string::npos) {
 		assert((ret_target->flags & F_TARGET_TRANSIENT) == 0); 
 		place << fmt("dynamic variable %s must not be instantiated with parameter value that contains %s", 
-			     dynamic_variable_format_word(this_name),
-			     char_format_word('='));
+			     dynamic_variable_format_err(this_name),
+			     char_format_err('='));
 		throw ERROR_LOGICAL; 
 	}
 
@@ -902,10 +902,10 @@ string Compound_Dep::format(Style style, bool &) const
 	return ret;
 }
 
-string Compound_Dep::format_word() const
+string Compound_Dep::format_err() const
 {
 	bool quotes= Color::quotes;
-	string ret= format(S_WORD | S_NOFLAGS | S_COLOR_WORD, quotes); 
+	string ret= format(S_ERR | S_NOFLAGS | S_COLOR_WORD, quotes); 
 	if (quotes)
 		ret= '\'' + ret + '\''; 
 	return ret; 
@@ -987,10 +987,10 @@ string Concat_Dep::format(Style style, bool &quotes) const
 	return ret; 
 }
 
-string Concat_Dep::format_word() const
+string Concat_Dep::format_err() const
 {
 	bool quotes= Color::quotes;
-	string ret= format(S_WORD | S_NOFLAGS | S_COLOR_WORD, quotes); 
+	string ret= format(S_ERR | S_NOFLAGS | S_COLOR_WORD, quotes); 
 	if (quotes)
 		ret= '\'' + ret + '\''; 
 	return ret; 
@@ -1141,10 +1141,10 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		 * input redirection, but the current data structures do
 		 * not allow that, and therefore we make that invalid.  */
 		a->get_place() << fmt("%s cannot have input redirection using %s",
-				      a->format_word(),
-				      char_format_word('<')); 
+				      a->format_err(),
+				      char_format_err('<')); 
 		b->get_place() << fmt("because %s is concatenated to it",
-				      b->format_word()); 
+				      b->format_err()); 
 		error |= ERROR_LOGICAL;
 		return nullptr; 
 	}
@@ -1153,9 +1153,9 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		/* We don't save the place for the '<', so we cannot
 		 * have "using '<'" on an extra line.  */
 		b->get_place() << fmt("%s cannot have input redirection using %s", 
-				      b->format_word(),
-				      char_format_word('<')); 
-		a->get_place() << fmt("in concatenation to %s", a->format_word()); 
+				      b->format_err(),
+				      char_format_err('<')); 
+		a->get_place() << fmt("in concatenation to %s", a->format_err()); 
 		error |= ERROR_LOGICAL;
 		return nullptr; 
 	}
@@ -1169,33 +1169,33 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 			C_ALL;
 		assert(i_flag != C_ALL); 
 		b->get_place() << fmt("%s cannot be declared as %s",
-				      b->format_word(), FLAGS_PHRASES[i_flag]); 
+				      b->format_err(), FLAGS_PHRASES[i_flag]); 
 		b->places[i_flag] << fmt("using %s",
-					 name_format_word(frmt("-%c", FLAGS_CHARS[i_flag]))); 
-		a->get_place() << fmt("in concatenation to %s", a->format_word()); 
+					 name_format_err(frmt("-%c", FLAGS_CHARS[i_flag]))); 
+		a->get_place() << fmt("in concatenation to %s", a->format_err()); 
 		error |= ERROR_LOGICAL;
 		return nullptr; 
 	}
 
 	if (b->flags & F_TARGET_TRANSIENT) {
-		b->get_place() << fmt("transient target %s is invalid", b->format_word()); 
-		a->get_place() << fmt("in concatenation to %s", a->format_word()); 
+		b->get_place() << fmt("transient target %s is invalid", b->format_err()); 
+		a->get_place() << fmt("in concatenation to %s", a->format_err()); 
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (a->flags & F_VARIABLE) {
 		a->get_place() << fmt("the variable dependency %s cannot be used", 
-				      a->format_word());
+				      a->format_err());
 		b->get_place() << fmt("in concatenation with %s", 
-				      b->format_word());
+				      b->format_err());
 		error |= ERROR_LOGICAL;
 		return nullptr; 
 	}
 
 	if (b->flags & F_VARIABLE) {
-		b->get_place() << fmt("variable dependency %s is invalid", b->format_word());
-		a->get_place() << fmt("in concatenation to %s", a->format_word()); 
+		b->get_place() << fmt("variable dependency %s is invalid", b->format_err());
+		a->get_place() << fmt("in concatenation to %s", a->format_err()); 
 		error |= ERROR_LOGICAL; 
 		return nullptr;
 	}

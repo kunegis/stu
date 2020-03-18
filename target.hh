@@ -109,7 +109,7 @@ public:
 	string format(Style style, bool &quotes) const;
 	string format_out() const;
 	string format_out_print_word() const;
-	string format_word() const;
+	string format_err() const;
 	string format_src() const;
 
 	string get_name_nondynamic() const 
@@ -367,7 +367,7 @@ public:
 
 	string format(Style style, bool &quotes) const;
 
-	string format_word() const {
+	string format_err() const {
 		bool quotes= Color::quotes;
 		string s= format(0, quotes); 
 		return fmt("%s%s%s%s%s",
@@ -462,7 +462,7 @@ public:
 		return Target(flags, name.instantiate(mapping)); 
 	}
 
-	string format_word() const {
+	string format_err() const {
 
 		Style style= 0;
 		if (flags & F_TARGET_TRANSIENT)
@@ -606,9 +606,9 @@ public:
 		return target.format(style, quotes); 
 	}
 	
-	string format_word() const {
+	string format_err() const {
 		Target target(flags, place_name.raw());
-		return target.format_word(); 
+		return target.format_err(); 
 	}
 	
 	string format_out() const {
@@ -754,7 +754,7 @@ string Target::format_out_print_word() const
 	return ret; 
 }
 
-string Target::format_word() const
+string Target::format_err() const
 {
 	Style style= 0;
 	if (! is_file()) {

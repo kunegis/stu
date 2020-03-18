@@ -7,11 +7,10 @@
  * - format(...) formats the content according to the exact
  *   specification, but never surrounds it by quotes.  It may
  *   include more parameters to configure the output. 
- * - format_word() returns a string suitable for inclusion in a message
+ * - format_err() returns a string suitable for inclusion in a message
  *   on STDERR, including quotes and color, as appropriate.  It does not
  *   show flags. 
-   // TODO rename "word" to "err".
- * - format_out() returns the same as format_word(), but for STDOUT. 
+ * - format_out() returns the same as format_err(), but for STDOUT. 
  * - format_src() formats an expression as if it was part of the source,
  *   e.g., use quotes only if the name contains characters that need to
  *   be quoted.  It does include the flags. 
@@ -41,12 +40,12 @@ enum
 	/* Don't need quote around empty content */ 
 
 	S_NOFLAGS=	1 << 2,
-	/* Do not output flags; normally used with S_OUT and S_WORD */ 
+	/* Do not output flags; normally used with S_OUT and S_ERR */ 
 
 	S_OUT=		1 << 3,
 	/* Output for standard output words */
 
-	S_WORD= 	1 << 4,
+	S_ERR= 	        1 << 4,
 	/* Output for standard error output words */
 	
 	S_SRC=		1 << 5,
@@ -57,7 +56,7 @@ enum
 
 	S_COLOR_WORD=   1 << 7,
 
-	S_CHANNEL=	S_OUT | S_WORD | S_SRC | S_RAW,
+	S_CHANNEL=	S_OUT | S_ERR | S_SRC | S_RAW,
 	/* Only one of those is set */
 };
 
@@ -109,7 +108,7 @@ string char_format(char c, Style style, bool &quotes)
 	}
 }
 
-string char_format_word(char c) 
+string char_format_err(char c) 
 {
 	bool quotes= Color::quotes;
 	string s= char_format(c, 0, quotes); 
@@ -121,7 +120,7 @@ string char_format_word(char c)
 	}
 }
 
-string multichar_format_word(string s)
+string multichar_format_err(string s)
 {
 	bool quotes= Color::quotes;
 
@@ -182,7 +181,7 @@ string name_format(string name, Style style, bool &quotes)
 	return ret; 
 }
 
-string name_format_word(string name)
+string name_format_err(string name)
 {
 	bool quotes= Color::quotes;
 	string s= name_format(name, 0, quotes); 
@@ -209,7 +208,7 @@ string name_format_src(string name)
 		   quotes ? "'" : ""); 
 }
 
-string dynamic_variable_format_word(string name)
+string dynamic_variable_format_err(string name)
 {
 	bool quotes= false;
 	string s= name_format(name, S_MARKERS, quotes); 
@@ -221,7 +220,7 @@ string dynamic_variable_format_word(string name)
 		   Color::end); 
 }
 
-string prefix_format_word(string name, string prefix)
+string prefix_format_err(string name, string prefix)
 {
 	assert(prefix != ""); 
 	bool quotes= false;

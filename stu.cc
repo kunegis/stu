@@ -169,7 +169,7 @@ int main(int argc, char **argv, char **envp)
 				if (! stu_setting(c)) {
 					Place place(Place::Type::ENV_OPTIONS);
 					place << fmt("invalid option %s",
-						     multichar_format_word(frmt("-%c", c)));
+						     multichar_format_err(frmt("-%c", c)));
 					exit(ERROR_FATAL); 
 				}
 			}
@@ -250,12 +250,12 @@ int main(int argc, char **argv, char **envp)
 				Place place(Place::Type::OPTION, c); 
 				if (errno != 0 || *endptr != '\0') {
 					place << fmt("expected the number of jobs, not %s",
-						     name_format_word(optarg)); 
+						     name_format_err(optarg)); 
 					exit(ERROR_FATAL); 
 				}
 				if (Execution::jobs < 1) {
 					place << fmt("expected a positive number of jobs, not %s",
-						     name_format_word(optarg));
+						     name_format_err(optarg));
 					exit(ERROR_FATAL); 
 				}
 				option_parallel= Execution::jobs > 1; 
@@ -278,10 +278,10 @@ int main(int argc, char **argv, char **envp)
 				else if (!strcmp(optarg, "dfs"))     /* Default */ ;
 				else {
 					print_error(fmt("Invalid argument %s for option %s-m%s; valid values are %s and %s", 
-							name_format_word(optarg),
+							name_format_err(optarg),
 							Color::word, Color::end,
-							name_format_word("random"),
-							name_format_word("dfs"))); 
+							name_format_err("random"),
+							name_format_err("dfs"))); 
 					exit(ERROR_FATAL); 
 				}
 				break;
@@ -334,7 +334,7 @@ int main(int argc, char **argv, char **envp)
 			default:  
 				/* Invalid option -- an error message was
 				 * already printed by getopt() */   
-				string text= name_format_word(frmt("%s -h", dollar_zero));
+				string text= name_format_err(frmt("%s -h", dollar_zero));
 				fprintf(stderr, 
 					"To get a list of all options, use %s\n", 
 					text.c_str()); 
@@ -347,7 +347,7 @@ int main(int argc, char **argv, char **envp)
 		if (option_interactive && option_parallel) {
 			Place(Place::Type::OPTION, 'i')
 				<< fmt("parallel mode using %s cannot be used in interactive mode",
-				       multichar_format_word("-j")); 
+				       multichar_format_err("-j")); 
 			exit(ERROR_FATAL); 
 		}
 
@@ -362,7 +362,7 @@ int main(int argc, char **argv, char **envp)
 			Place place(Place::Type::ARGUMENT); 
 			if (*argv[i] == '\0') {
 				place << fmt("%s: name must not be empty",
-					     name_format_word(argv[i])); 
+					     name_format_err(argv[i])); 
 				if (! option_keep_going) 
 					throw ERROR_LOGICAL;
 				error |= ERROR_LOGICAL; 
@@ -391,7 +391,7 @@ int main(int argc, char **argv, char **envp)
 					if (deps.empty() && ! had_option_target 
 					    && ! option_print) {
 						print_error(fmt("Expected a target or the default file %s",
-								name_format_word(FILENAME_INPUT_DEFAULT))); 
+								name_format_err(FILENAME_INPUT_DEFAULT))); 
 
 						explain_no_target(); 
 						throw ERROR_LOGICAL; 
@@ -426,7 +426,7 @@ int main(int argc, char **argv, char **envp)
 			if (target_first->place_name.is_parametrized()) {
 				target_first->place <<
 					fmt("the first target %s must not be parametrized if no target is given",
-					    target_first->format_word());
+					    target_first->format_err());
 				exit(ERROR_FATAL);
 			}
 

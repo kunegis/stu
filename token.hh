@@ -41,7 +41,7 @@ public:
 	virtual const Place &get_place_start() const= 0;
 	/* The starting place.  Always the first character. */ 
 
-	virtual string format_start_word() const= 0;
+	virtual string format_start_err() const= 0;
 	/* Formatting of the starting character of character sequence */
 };
 
@@ -72,11 +72,11 @@ public:
 		return place; 
 	}
 
-	string format_start_word() const {
-		return char_format_word(op); 
+	string format_start_err() const {
+		return char_format_err(op); 
 	}
 
-	string format_long_word() const;
+	string format_long_err() const;
 };
 
 class Flag_Token
@@ -120,8 +120,8 @@ public:
 		return place_start;
 	}
 
-	string format_start_word() const {
-		return char_format_word('-'); 
+	string format_start_err() const {
+		return char_format_err('-'); 
 	}
 };
 
@@ -146,8 +146,8 @@ public:
 		return Place_Name::place; 
 	}
 
-	string format_start_word() const {
-		return Place_Name::format_word(); 
+	string format_start_err() const {
+		return Place_Name::format_err(); 
 	}
 };
 
@@ -188,8 +188,8 @@ public:
 		return place_start; 
 	}
 
-	string format_start_word() const {
-		return char_format_word('{'); 
+	string format_start_err() const {
+		return char_format_err('{'); 
 	}
 
 	const vector <string> &get_lines() const;
@@ -281,7 +281,7 @@ Command::get_lines() const
 	return *lines; 
 }
 
-string Operator::format_long_word() const
+string Operator::format_long_err() const
 {
 	string t;
 	switch (op) {
@@ -293,7 +293,7 @@ string Operator::format_long_word() const
 	case '@':  t= "operator";             break;
 	}
 
-	return fmt("%s %s", t, char_format_word(op)); 
+	return fmt("%s %s", t, char_format_err(op)); 
 }
 
 #endif /* ! TOKEN_HH */

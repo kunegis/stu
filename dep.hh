@@ -133,7 +133,7 @@ public:
 			places[i]= that.places[i]; 
 	}
 
-	virtual ~Dep(); 
+	virtual ~Dep() = default; 
 
 	const Place &get_place_flag(unsigned i) const {
 		assert(i < C_PLACED);
@@ -576,8 +576,6 @@ public:
 	virtual Target get_target() const {  return Target("");  }
 	virtual bool is_normalized() const {  return true;  }
 };
-
-Dep::~Dep() { }
 
 void Dep::normalize(shared_ptr <const Dep> dep,
 		    vector <shared_ptr <const Dep> > &deps,

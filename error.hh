@@ -366,7 +366,7 @@ class Printer
 {
 public:
 	virtual void operator<<(string message) const= 0; 
-	virtual ~Printer();
+	virtual ~Printer() = default;
 };
 
 const Place Place::place_empty;
@@ -475,7 +475,5 @@ void print_warning(const Place &place, string message)
 	place.print(fmt("warning: %s", message),
 		    Color::warning, Color::warning_word); 
 }
-
-Printer::~Printer() { }
 
 #endif /* ! ERROR_HH */ 

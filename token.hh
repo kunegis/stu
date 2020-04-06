@@ -32,7 +32,7 @@ public:
 		:  environment(environment_)
 	{  }
 
-	virtual ~Token(); 
+	virtual ~Token() = default; 
 
 	virtual const Place &get_place() const= 0; 
 	/* The place of the token.  May be in the middle of the token.
@@ -194,8 +194,6 @@ public:
 
 	const vector <string> &get_lines() const;
 };
-
-Token::~Token() { }
 
 Command::Command(string command_, 
 		 const Place &place_,

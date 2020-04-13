@@ -11,6 +11,10 @@ made, which are documented in the file 'MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2020-04-13  Version 2.6.4
+
+* Switched to C++14 (from C++11). 
+
 2020-03-18  Version 2.6
 
 * Canonicalization is implemented.  This means that Stu will now

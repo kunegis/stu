@@ -4,7 +4,7 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-CXXFLAGS = -O2 -DNDEBUG -s -std=c++11 
+CXXFLAGS = -O2 -DNDEBUG -s -std=c++14
 
 bin_PROGRAMS = stu
 stu_SOURCES = stu.cc

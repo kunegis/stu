@@ -8,7 +8,7 @@ These are the relevant coding conventions we use.
   is '/'.   
 * Follow the GNU Coding Standards, except for coding style, but don't
   use GNU extensions.  For coding style, see below. 
-* Use the C++11 version of C++; don't use GCC extensions.  Or any other
+* Use the C++14 version of C++; don't use GCC extensions.  Or any other
   extensions for that matter.  Source files are named '*.hh' and '*.cc'.  
 * Compilation is done in a single step by compiling the file 'stu.cc'.
   All other source files are actually '*.hh' files which are included.
@@ -55,7 +55,7 @@ This is my preferred style.  --Jérôme Kunegis
 === Code ===
 
 * Use 'nullptr' as the null pointer constant instead of 'NULL', as per
-  C++11.  It allows certain bugs to be caught by the compiler.  In
+  C++14.  It allows certain bugs to be caught by the compiler.  In
   documentation, call it "null" (in lowercase, like you would write
   "zero" or "five").  
 * We enable many GCC warnings in debug mode, and write the code so as to

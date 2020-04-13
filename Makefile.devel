@@ -24,7 +24,7 @@ include Makefile
 # Flags
 #
 
-CXXFLAGS_OTHER=-std=c++11 $(DEFS)
+CXXFLAGS_OTHER=-std=c++14 $(DEFS)
 
 #
 # Possible flags to add to CXXFLAGS_OTHER:
@@ -38,7 +38,7 @@ CXXFLAGS_OTHER=-std=c++11 $(DEFS)
 
 CXXFLAGS_DEBUG=  -ggdb -O0 -Werror \
     -Wall -Wextra -Wpedantic \
-    -Wunused -Wundef -Wc++11-compat -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
+    -Wunused -Wundef -Wc++14-compat -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
     -Wnon-virtual-dtor -Wformat-nonliteral \
     -Wsuggest-attribute=format             \
     -Wlogical-op -Wredundant-decls \

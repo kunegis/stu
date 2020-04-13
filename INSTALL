@@ -17,8 +17,8 @@ If 'make' fails, you can go into the 'Makefile' and tweak some
 variables:
 * If compilation fails, you may need to add or remove options
   from CXXFLAGS.
-* If your compiler does not support -std=c++11, try replacing it with
-  -std=c++0x, or whatever flags makes your compiler use C++11. 
+* If your compiler does not support -std=c++14, try replacing it with
+  -std=c++0x, or whatever flags makes your compiler use C++14. 
 * If linking fails, you may need to add libraries to the LIBS variable
   (e.g., -lrt).  
 
@@ -43,7 +43,7 @@ Credits for the package go to Holger Heinz (hheinz).
 
 Stu requires:
 * POSIX
-* A C++11 compiler 
+* A C++14 compiler 
 
 In addition, Stu uses the following features, about which we are not
 100% sure that they are prescribed by POSIX: 

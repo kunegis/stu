@@ -1735,10 +1735,9 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 
 		/* RULE_CHILD may be null here; this is handled in the constructors */ 
 		
-		/* We use a File_Execution if:  there is at
-		 * least one file target in the rule OR there is
-		 * a command in the rule.  When there is no
-		 * rule, we consult the type of TARGET.  */
+		/* We use a File_Execution if:  there is at least one file
+		 * target in the rule OR there is a command in the rule.  When
+		 * there is no rule, we consult the type of TARGET.  */
 
 		if (target.is_file()) {
 			use_file_execution= true;

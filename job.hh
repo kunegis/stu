@@ -134,6 +134,7 @@ private:
 	 * -1:    process has been waited for. 
 	 */
 
+	/* The signal handlers */
 	static void handler_termination(int sig);
 	static void handler_productive(int sig, siginfo_t *, void *);
 	
@@ -143,8 +144,7 @@ private:
 
 	static size_t count_jobs_exec, count_jobs_success, count_jobs_fail;
 	/* 
-	 * The number of jobs run.  Each job is/was of exactly one
-	 * type. 
+	 * The number of jobs run.  Each job is of exactly one type. 
 	 *	 
 	 * Exec:     Currently being executed
 	 * Success:  Finished, with success
@@ -163,7 +163,7 @@ private:
 	 * handler.  Note: There is a race condition because the signal
 	 * handler may be called before the variable is set.  */
 
-	static pid_t foreground_pid;
+	static pid_t pid_foreground;
 	/* The job that is in the foreground, or -1 when none is */ 
 	
 	static int tty;
@@ -179,7 +179,7 @@ sigset_t Job::set_termination;
 sigset_t Job::set_productive;
 sigset_t Job::set_termination_productive;
 sig_atomic_t Job::in_child= 0; 
-pid_t Job::foreground_pid= -1;
+pid_t Job::pid_foreground= -1;
 int Job::tty= -1;
 bool Job::signals_initialized; 
 
@@ -197,18 +197,17 @@ pid_t Job::start(string command,
 
 	init_signals(); 
 
-	/* Like Make, we don't use the variable $SHELL, but use
-	 * "/bin/sh" as a shell instead.  The reason is that the
-	 * variable $SHELL is intended to denote the user's chosen
-	 * interactive shell, and may not be a POSIX-compatible shell.
-	 * Note also that POSIX prescribes that Make use "/bin/sh" by
-	 * default.  Other note: Make allows to declare the Make
-	 * variable $SHELL within the Makefile or in Make's parameters
-	 * to a value that *will* be used by Make instead of /bin/sh.
-	 * This is not possible with Stu, because Stu does not have its
-	 * own set of variables.  Instead, there is the $STU_SHELL
-	 * variable.  The Stu-native way to do it without environment
-	 * variables would be via a directive.  */
+	/* Like Make, we don't use the variable $SHELL, but use "/bin/sh" as a
+	 * shell instead.  The reason is that the variable $SHELL is intended to
+	 * denote the user's chosen interactive shell, and may not be a
+	 * POSIX-compatible shell.  Note also that POSIX prescribes that Make
+	 * use "/bin/sh" by default.  Other note: Make allows to declare the
+	 * Make variable $SHELL within the Makefile or in Make's parameters to a
+	 * value that *will* be used by Make instead of /bin/sh.  This is not
+	 * possible with Stu, because Stu does not have its own set of
+	 * variables.  Instead, there is the $STU_SHELL variable.  The
+	 * Stu-native way to do it without environment variables would be via a
+	 * directive (but that is not implemented).  */ 
 	static const char *shell= nullptr;
 	if (shell == nullptr) {
 		shell= getenv("STU_SHELL");
@@ -419,10 +418,10 @@ pid_t Job::start(string command,
 	assert(pid >= 1); 
 
 	if (option_interactive && tty >= 0) {
-		assert(foreground_pid < 0); 
+		assert(pid_foreground < 0); 
 		if (tcsetpgrp(tty, pid) < 0)
 			print_error_system("tcsetpgrp");
-		foreground_pid= pid; 
+		pid_foreground= pid; 
 	}
 		
 	++ count_jobs_exec;
@@ -633,7 +632,7 @@ bool Job::waited(int status, pid_t pid_check)
 	else
 		++ count_jobs_fail; 
 
-	if (pid == foreground_pid) {
+	if (pid == pid_foreground) {
 		assert(tty >= 0);
 		assert(option_interactive); 
 		if (tcsetpgrp(tty, getpid()) < 0)

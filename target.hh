@@ -29,6 +29,11 @@
  *     * A _parametrized_ target or name additionally can have
  *       parameters. 
  *     * Dedicated classes exist to represent these with _places_. 
+ *     * An _anchoring_ is the information about which part of a string
+ *       matches the parameters of a target.  An anchoring is represented as a
+ *       vector of integers, the length of which is twice the number of
+ *       parameters.  Example:  When name.$a.$b is matched to the name
+ *       'name.xxx.7', then the anchoring is [5, 8, 9, 10]. 
  */
 
 #if   C_WORD <= 8
@@ -47,6 +52,11 @@ class Target
  * maps, etc.  Flags are included.  */
 {
 public:
+
+	Target()
+		/* The "null " target */ 
+		:  Target("")
+	{  }
 	
 	explicit Target(string text_)
 		/* TEXT_ is the full text field of this Target */
@@ -164,17 +174,6 @@ public:
 	bool operator== (const Target &target) const {  return text == target.text;  }
 	bool operator!= (const Target &target) const {  return text != target.text;  }
 
-	static string string_from_word(Flags flags)
-	/* Return a string of length sizeof(word_t) containing the given
-	 * flags  */
-	{
-		assert(flags <= 1 << C_WORD); 
-		char ret[sizeof(word_t) + 1];
-		ret[sizeof(word_t)] = '\0';
-		*(word_t *)ret= (word_t)flags;
-		return string(ret, sizeof(word_t)); 
-	}
-
 	void canonicalize() 
 	/* In-place canonicalization */
 	{
@@ -184,6 +183,17 @@ public:
 		p += sizeof(word_t); 
 		p= canonicalize_string(A_BEGIN | A_END, p); 
 		text.resize(p - b); 
+	}
+
+	static string string_from_word(Flags flags)
+	/* Return a string of length sizeof(word_t) containing the given
+	 * flags  */
+	{
+		assert(flags <= 1 << C_WORD); 
+		char ret[sizeof(word_t) + 1];
+		ret[sizeof(word_t)] = '\0';
+		*(word_t *)ret= (word_t)flags;
+		return string(ret, sizeof(word_t)); 
 	}
 
 private:
@@ -1003,7 +1013,7 @@ bool Name::match(const string name,
 	 * We can't just test wether the pattern matches as rule (c), because there are pattern that
 	 * match both with and without rule (c).  
 	 * 	 
-	 * Example:  Does $X/bbb/$Y match bbb/bbb/bbb as
+	 * Example:  Does $X/bbb/$Y match 'bbb/bbb/bbb' as
 	 *   (1) $X = . and $Y = bbb/bbb , or
 	 *   (2) $X = bbb and $Y = bbb ?
 	 * Answer:  It's (2), because that's not the special rule. 

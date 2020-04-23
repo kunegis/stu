@@ -86,11 +86,9 @@ const char *Color::out_print_word;
 
 void Color::set() 
 {
-	/* 
-	 * Logic:  Only use color when $TERM is defined, is not
+	/* Logic:  Only use color when $TERM is defined, is not
 	 * equal to "dumb", and stderr/stdout is a TYY.  This is
-	 * the same logic as used by GCC. 
-	 */
+	 * the same logic as used by GCC.  */
 
 	bool is_tty_out= false, is_tty_err= false;
 

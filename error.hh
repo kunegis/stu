@@ -23,7 +23,7 @@
  * Traces are used when it is possible to refer to a specific location
  * in the input files (or command line, etc.).  Error messages are
  * avoided: all errors should be traced back to a place in the source if
- * possible.  But sometimes they must be used. 
+ * possible, but sometimes they must be used. 
  */
 
 /*

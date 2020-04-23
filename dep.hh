@@ -89,7 +89,6 @@ class Dep
  */ 
 {
 public:
-
 	Flags flags;
 
 	Place places[C_PLACED]; 
@@ -552,7 +551,7 @@ public:
 	virtual bool is_normalized() const {  return false;  }
 	/* A compound dependency is never normalized */
 
-	virtual Target get_target() const {  assert(false);  return Target("");  }
+	virtual Target get_target() const {  assert(false);  return Target();  }
 };
 
 class Root_Dep
@@ -573,7 +572,7 @@ public:
 	virtual string format_err() const {  assert(false);  return "";  }
 	virtual string format_out() const {  return "ROOT";  }
 	virtual string format_src() const {  return "ROOT";  }
-	virtual Target get_target() const {  return Target("");  }
+	virtual Target get_target() const {  return Target();  }
 	virtual bool is_normalized() const {  return true;  }
 };
 
@@ -1117,7 +1116,7 @@ Target Concat_Dep::get_target() const
 {
 	/* Dep::get_target() is not used for complex dependencies */
 	assert(false);
-	return Target(""); 
+	return Target(); 
 }
 
 shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,

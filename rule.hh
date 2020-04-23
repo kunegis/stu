@@ -123,7 +123,7 @@ private:
 	 * with multiple targets are included multiple times, for each
 	 * of their targets.  None of the targets has flags set (except
 	 * F_TARGET_TARNSIENT of course.)  The targets are
-	 * canonicalized, bas as keys in this map, as well as in each
+	 * canonicalized, both as keys in this map, as well as in each
 	 * Rule.  */ 
 
 	vector <shared_ptr <const Rule> > rules_parametrized;
@@ -507,10 +507,8 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 
 	/* No rule matches */ 
 	if (rules_best.size() == 0) {
-		assert(rules_best.size() == 0); 
 		return nullptr; 
 	}
-	assert(rules_best.size() >= 1);
 
 	/* More than one rule matches:  error */ 
 	if (rules_best.size() > 1) {

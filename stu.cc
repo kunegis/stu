@@ -301,8 +301,7 @@ int main(int argc, char **argv, char **envp)
 				}
 				deps.push_back
 					(make_shared <Dynamic_Dep>
-					 (0,
-					  make_shared <Plain_Dep>
+					 (0, make_shared <Plain_Dep>
 					  (1 << flag_get_index(c), 
 					   Place_Param_Target
 					   (0, Place_Name(optarg, place)))));

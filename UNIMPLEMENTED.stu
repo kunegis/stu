@@ -52,6 +52,62 @@
 #==== Normal features ====
 
 #
+# Line number and file syntax:  A preprocessor-like construct that gives a new
+# filename and line number, such that error messages from Stu can point
+# to the original file, not the generated file.  Analogous to the
+# preprocessors #line directive.  Useful in dynamic dependencies. 
+#
+
+% file datasets.list
+% line 120
+
+# Use this in stu-utils/texdep and other stu-utils programs judiciously. 
+
+#
+# In -j>1 mode, Start trivial dependencies immediately when it is clear
+# they must be started, not just when everything else is done.
+#
+
+#
+# File import
+#
+
+# Import all rules from subdirectory; will prepend the directory name to
+# all targets.  Rules from there will be executed from within the
+# directory as current directory.  If using 'import', the meaning of
+ 
+# All these are equivalent 
+% import src/main.stu
+% import src/
+% import src
+% include -d src/main.stu
+% include -d src/
+% include -d src
+
+# - What about transient targets imported in that way.  Do we
+#   prepend a directory to them?
+%import dir   # contains:   @all:  ...;
+# gets converted to:       @dir/all:  ...;
+# or to:                   dir/@all:  ...;  # ???
+
+#
+# When including files using dynamic dependencies, make a
+# difference between inclusion and import, as is done for %include and
+# %import. 
+#
+
+A: [-d data/B];
+
+#
+# Search within predefined paths for %include ($STU_PATH or $STUPATH;
+# the -I option)
+#
+
+# This is included from the "Stu path", and could be installed in
+# e.g. /usr/share/stu/lib/ or ~/share/stu/lib/, etc. 
+% include c++.stu
+ 
+#
 # Have a way to set $STU_SHELL and $STU_CP from within a Stu script.
 # E.g., using directives. 
 #
@@ -275,11 +331,6 @@ X = {b}
 # The Dep::top mechanism is not clean.  Do something better.  The
 # current error message inside concatenations can also be confusing,
 # even though they are correct. 
-#
-
-#
-# Make the %version mandatory in every file, to avoid parsing a file of
-# the wrong Stu version.  
 #
 
 # 
@@ -594,7 +645,7 @@ A = [X];
 #
 
 #
-# Variables of the flags that apply to all children, not just immediate
+# Variants of the flags that apply to all children, not just immediate
 # ones.  
 #
 

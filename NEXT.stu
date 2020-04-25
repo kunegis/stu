@@ -107,3 +107,8 @@ V {
 # $STU_OPTIONS should be called $STUFLAGS (?), to be consistent with
 # $MAKEFLAGS, $CFLAGS, etc. 
 #
+
+#
+# Make the %version mandatory in every file, to avoid parsing a file of
+# the wrong Stu version.  
+#

@@ -79,6 +79,9 @@ test_sed: sh/testsed test test/* test/*/* sh
 test_comments:  *.cc *.hh sh/testcomments Makefile.devel sh sh/* test test/* test/*/* 
 	sh/testcomments && touch $@
 
+test_fuzz.debug:  stu.debug sh/fuzz
+	sh/fuzz
+
 #
 # Unit tests
 # 

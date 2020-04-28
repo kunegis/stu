@@ -1,0 +1,42 @@
+#! /bin/sh
+#
+# Fuzz testing (experimental).
+#
+# Not integrated into the main build process.
+#
+# PARAMETERS
+#	$NDEBUG		Set to 1 for testing the ndebug version
+#
+
+set -e
+
+rm -f stu.test 
+if [ "$VARIANT" ] ; then
+	ln -s stu."$VARIANT" stu.test
+else 
+	if [ "$NDEBUG" ] ; then
+		ln -s stu stu.test
+	else
+		ln -s stu.debug stu.test
+	fi
+fi
+
+unset STU_OPTIONS
+
+seq 1000 |
+while read line ; do
+	rm -f list.*
+	dd if=/dev/urandom bs=1 count=3  >list.stu 2>/dev/null
+	set +e
+	./stu.test -f list.stu >list.out 2>list.err
+	status=$?
+	set -e
+	if [ "$status" -gt 4 ] ; then
+		echo >&2 '*** Error'
+		hexdump -C list.stu
+		echo "$status"
+		exit 1
+	fi
+done
+
+rm -f list.*

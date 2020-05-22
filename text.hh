@@ -2,7 +2,9 @@
 #define TEXT_HH
 
 /* 
- * Text functions. 
+ * Text formatting functions. 
+ *
+ * These will become obsolete once we use C++20, around 2025. 
  */
 
 #include <stdarg.h>

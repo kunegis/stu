@@ -35,7 +35,7 @@ files in the doc/ directory.
  News
 ------
 
-- Version 2.5 is out:  concatenation is now implemented
+- Version 2.6 is out:  canonicalization of filenames is implemented
 
 - Tip:  Set "export STU_OPTIONS=-E" in your .bashrc file to get
   explanations of common error messages in Stu. 

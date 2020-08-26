@@ -4,9 +4,9 @@
 /* 
  * Data structures for representing tokens.  
  *
- * There are three types of tokens:  
- *   - operators (all single characters operators)
- *   - flags
+ * There are four types of tokens:  
+ *   - operators (all are represented by single characters)
+ *   - flags (e.g. "-o")
  *   - names (including all their quoting mechanisms)
  *   - commands (delimited by { }) 
  */

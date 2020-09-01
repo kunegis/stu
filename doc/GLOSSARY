@@ -5,7 +5,7 @@ Anchoring - Represents the position of a parameter in a matched
 	representing the start and end position of the match.
 	Anchorings are represented as arrays of integers of length 2*N,
 	where N is the number of parameters.  For instance, when
-	"/usr/bin" is matched to "/$DIR/$NAME", the anchorings are goven
+	"/usr/bin" is matched to "/$DIR/$NAME", the anchorings are given
 	by the array [1 4 5 8]. 
 
 Command - A command that is run for a target.  Enclosed by braces ({}) in
@@ -27,7 +27,7 @@ Flag - A flag is a syntax and semantic element of Stu scripts.  They
 
 Job - A job is a child process started by Stu to build one or more files
         or transient targets.  Jobs are run in the background by
-        default, but the -i option
+        default, but the -i option changes that.
 
 Name - The name of a file or of a transient.  Names are strings of
 	bytes, must have length at least one, and cannot contain the NUL
@@ -37,7 +37,7 @@ Option - An option is passed on the Stu command line and starts with a
 	dash.  Some have arguments. 
 
 Parameter - A parameter in the name of a file or a transient; introduced
-	by the dollar sign ($).  In command, the corresponding
+	by the dollar sign ($).  In the command, the corresponding
 	environment variable is set. 
 
 Special rule - Special rules are used when matching parametrized targets

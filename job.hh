@@ -157,11 +157,13 @@ private:
 	 * "termination" or in the "productive" set.  The third variable
 	 * holds both.  */ 
 
-	static sig_atomic_t in_child; 
+	static volatile sig_atomic_t in_child; 
 	/* Set to 1 in the child process, before execve() is called.
 	 * Used to avoid doing too much in the terminating signal
 	 * handler.  Note: There is a race condition because the signal
-	 * handler may be called before the variable is set.  */
+	 * handler may be called before the variable is set.   
+	 * This is the only variable in Stu that is "volatile sig_atomic_t".   
+	 */
 
 	static pid_t pid_foreground;
 	/* The job that is in the foreground, or -1 when none is */ 
@@ -178,7 +180,7 @@ size_t Job::count_jobs_fail=    0;
 sigset_t Job::set_termination;
 sigset_t Job::set_productive;
 sigset_t Job::set_termination_productive;
-sig_atomic_t Job::in_child= 0; 
+volatile sig_atomic_t Job::in_child= 0; 
 pid_t Job::pid_foreground= -1;
 int Job::tty= -1;
 bool Job::signals_initialized; 

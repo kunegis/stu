@@ -77,16 +77,16 @@ would also require more complex (and harder to understand) precedence
 rules.  This leaves binary and ternary operators as possible uses, or as
 forms of non-operators, i.e., new tokens. 
 
-    +	Inverted flag [as in the shell] (likely)
+    +	Inverted flag [as in the shell] (maybe)
     ~	Home directory [as in the shell] (maybe)
     \	Escape of characters outside of quotes [as in the shell] (maybe)
-    \	Difference operator (maybe)
-    \	Command interpreter (maybe)
+    \	Difference operator  
+    \	Command interpreter 
     & 	Intersection (maybe)
     |	Componentwise concatenation (maybe)
     |	Union [redundant to juxtaposition]
     !?	Some form of dual operators
-    !	Command interpreter
+    !	Command interpreter (maybe) 
     *?	For file globbing [We're against expensive operations not saved in a file]
     ,	Names are already whitespace-separated, and any other use than
  	as a list constructor would be unintuitive   

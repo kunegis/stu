@@ -1,2 +1,13 @@
+#
+# Use backslash for quoting.  I.e., allow \X where X is any character
+# outside of quotes to represent X.  
+#
+# Rules:
+#   \ before newline:  nothing
+#   \ before any other character:  that character
+#        - normal characters that don't need quotes
+#             - UTF-8 encoded characters?
+#        - characters that need quotes 
+#   \ at end of file:  error 
+#
 
-# (empty)

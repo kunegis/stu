@@ -609,12 +609,6 @@ A = [X];
 #
 
 #
-# Use backslash for quoting.  I.e., allow \X where X is any character
-# outside of quotes to represent X.  We're not doing it because there
-# may be other uses for \.  On the other hand, the shell does it. 
-#
-
-#
 # Features of interactive mode:
 #  - Allow job control with any number of jobs, not just one.
 #  - When a job is put into the background, have a command line that

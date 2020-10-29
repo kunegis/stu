@@ -49,7 +49,6 @@ static bool option_statistics= false;
 enum class Order {
 	DFS   = 0,
 	RANDOM= 1,
-	
 	/* -M mode is coded as Order::RANDOM */ 
 };
 static Order order= Order::DFS; 

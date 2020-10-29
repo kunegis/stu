@@ -14,7 +14,7 @@
 #include "token.hh"
 #include "version.hh"
 
-const char *const FILENAME_INPUT_DEFAULT= "main.stu"; 
+constexpr const char *FILENAME_INPUT_DEFAULT= "main.stu"; 
 /* The default filename read  */
 
 class Tokenizer

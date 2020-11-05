@@ -1,0 +1,9 @@
+A:  list.[X]\
+(cd)
+{
+	cp list.abcd A
+}
+
+X = {ab}
+
+>list.abcd { echo CORRECT ; }

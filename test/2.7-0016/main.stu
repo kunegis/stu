@@ -1,0 +1,14 @@
+# Backslash before characters in names:  # % : ; - $ @ > < = { } ( ) [ ] ' " SPACE a b n t y z _ \
+
+A: list.a\#b\%c\:d\;e\-f\$g\@h\>i\<j\=k\{l\}m\(n\)o\[p\]q\'r\"s\ t\au\bv\nw\tx\yy\zz\_0\\1
+{
+	cp \
+		list.'a#b%c:d;e-f$g@h>i<j=k{l}m(n)o[p]q'\''r"s taubvnwtxyyzz_0'\\1 \
+		A
+}
+
+>list.'a#b%c:d;e-f$g@h>i<j=k{l}m(n)o[p]q'\''r"s taubvnwtxyyzz_0'\\1
+{
+	echo CORRECT
+}
+

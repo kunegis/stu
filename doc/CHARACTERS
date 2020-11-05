@@ -37,6 +37,7 @@ ASCII control characters (except those that are whitespace).
 	directives.  The directive name and arguments followed regular
 	Stu quoting rules. 
     -	Flags (only as first character)
+    \	Escape character 
     '	Quote without escape sequences
     "	Quote with escape sequences
     {}	Command, content
@@ -79,9 +80,6 @@ forms of non-operators, i.e., new tokens.
 
     +	Inverted flag [as in the shell] (maybe)
     ~	Home directory [as in the shell] (maybe)
-    \	Escape of characters outside of quotes [as in the shell] (maybe)
-    \	Difference operator  
-    \	Command interpreter 
     & 	Intersection (maybe)
     |	Componentwise concatenation (maybe)
     |	Union [redundant to juxtaposition]

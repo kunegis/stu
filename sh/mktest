@@ -32,9 +32,9 @@
 #		containing only (e.g.) ".svn".  Ignores dotfiles. 
 #
 # EXIT STATUS 
-#	0	All tests succeeded
-#	1	At least one test failed
-#	2	Internal error 
+#     0		All tests succeeded
+#     1		At least one test failed
+#     2		Internal error 
 #
 # TEST SPECIFICATION 
 #
@@ -303,6 +303,7 @@ do
 		if [ "$exitstatus_correct" = 0 ]; then
 			target=A
 			if [ -r TARGET ]; then
+				# Remove empty lines but do not alter non-empty lines
 				target=$(sed -e '/^[[:space:]]*$/d' <TARGET)
 			fi
 			if [ -n "$target" ] ; then

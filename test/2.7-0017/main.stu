@@ -1,0 +1,10 @@
+# Backslash before multibyte UTF-8 character.
+# This contains some far-out characters that are not likely to be rendered in
+# all editors. 
+
+A:  list.\é\¥\Ç\â\ÿ\č\œ\ƕ\ǂ\ǉ\ǖ\ǡ\ȁ\ș\ṁ\Ξ\Ж\𐀂\𠀤\𰀀\🨁\😀\😼\🦒
+{
+	cp list.é¥ÇâÿčœƕǂǉǖǡȁșṁΞЖ𐀂𠀤𰀀🨁😀😼🦒 A
+}
+
+>list."é¥ÇâÿčœƕǂǉǖǡȁșṁΞЖ𐀂𠀤𰀀🨁😀😼🦒" { echo CORRECT ; }

@@ -1,0 +1,3 @@
+# * Double backslash
+A:  list.a\\b { cp list.a\\b A ; }
+>'list.a\b' { echo CORRECT ; }

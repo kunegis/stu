@@ -11,6 +11,14 @@ made, which are documented in the file 'MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2020-10-30  Version 2.7
+
+* Backslashes are now allowed outside of quotes and act as the escape character: 
+  * In front of newline, the newline is ignored
+  * At end of file:  An error
+  * Before any other character:  Represents the character as part of a unquoted
+    filename. 
+
 2020-04-13  Version 2.6.4
 
 * Switched to C++14 (from C++11). 

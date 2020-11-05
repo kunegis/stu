@@ -1,0 +1,7 @@
+# Backslash-escapes are not applied inside a command by Stu.  (But of course, by
+# the shell.) 
+
+A: {
+	echo 'COR\
+RECT' >A
+}

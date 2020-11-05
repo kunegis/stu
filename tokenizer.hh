@@ -20,7 +20,6 @@ constexpr const char *FILENAME_INPUT_DEFAULT= "main.stu";
 class Tokenizer
 {
 public:
-	
 	enum Context { SOURCE, DYNAMIC, OPTION_C, OPTION_F };
 
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
@@ -133,20 +132,26 @@ private:
 	 * '$' character, not after it.  If a parameter is found, write
 	 * it into the parameters.  */
 
-	/* The following two functions parse the two types of quotes.
-	 * The pointer must be on a " or ' character respectively.  A
-	 * single such quote is appended to RET, or a logical error is
-	 * thrown.  */ 
+	/* The following three functions parse the two types of quotes, and
+	 * escapes.  The pointer must be on a ", ', or \ character respectively.
+	 * The read string is appended to RET, or a logical error is thrown.  
+	 * parse_escape() consumes only the backslash, not what follows; it
+	 * returns true if what follows must be escaped.  */
 	void parse_double_quote(Place_Name &ret);
-	void parse_single_quote(Place_Name &ret); 
+	void parse_single_quote(Place_Name &ret);
+	bool parse_escape(); 
 
 	void parse_directive(vector <shared_ptr <Token> > &tokens,
 			     Context context,
 			     const Place &place_diagnostic);
 	/* Parse a directive.  The pointer must be on the '%'
 	 * character.  Throw a logical error when encountered.  */
-	
-	void skip_space(); 
+
+	bool skip_space(bool &skipped_actual_space);
+	/* Skip any whitespace (including backslash-newline combinations).
+	 * The return value tells whether anything was skipped.  The return
+	 * parameter tells whether anything other than backslash-newline was
+	 * skipped.  */
 
 	Place current_place() const {
 		return Place(place_base.type,
@@ -658,12 +663,13 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 		}
 	}
 
+	bool has_escape= false; 
 	while (p < p_end) {
-		if (*p == '"') {
-			parse_double_quote(*ret); 
-		} else if (*p == '\'') {
-			parse_single_quote(*ret); 
-		} else if (*p == '$') {
+		if (!has_escape && *p == '"') {
+			parse_double_quote(*ret);
+		} else if (!has_escape && *p == '\'') {
+			parse_single_quote(*ret); 	
+		} else if (!has_escape && *p == '$') {
 			string parameter;
 			Place place_dollar;
 			if (parse_parameter(parameter, place_dollar)) {
@@ -671,11 +677,15 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 			} else {
 				assert(false); 
 			}
-		} else if (is_name_char(*p)) {
+		} else if (!has_escape && *p == '\\') {
+			has_escape= parse_escape();
+		} else if (has_escape || is_name_char(*p)) {
 			/* An ordinary character */ 
 			assert(p != p_begin 
 			       || (*p != '-' && *p != '+' && *p != '~')
-			       || allow_special);
+			       || allow_special
+			       || has_escape);
+			has_escape= false; 
 			ret->last_text() += *p++;
 		}
 		else {
@@ -687,7 +697,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 
 	if (ret->empty()) {
 		if (p == p_begin)
-			return nullptr; 
+			return nullptr;
 		place_begin << "name must not be empty";
 		throw ERROR_LOGICAL;
 	}
@@ -775,7 +785,7 @@ bool Tokenizer::is_name_char(char c)
 
 bool Tokenizer::is_operator_char(char c) 
 {
-	return c != '\0' && nullptr != strchr(":<>=@;()[],\\|", c);
+	return c != '\0' && nullptr != strchr(":<>=@;()[],|", c);
 }
 
 bool Tokenizer::is_flag_char(char c)
@@ -852,6 +862,9 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			     Context context,
 			     const Place &place_diagnostic)
 {
+	bool skipped_actual_space;
+	/* Output parameter for skip_space(); will become better in C++17. */
+
 	while (p < p_end) {
 
 		/* Operators except '$' */ 
@@ -884,16 +897,11 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		} 
 
 		/* Whitespace */
-		else if (isspace(*p)) { 
-			do {
-				if (*p == '\n') {
-					++line;  
-					p_line= p + 1; 
-				}
-				++p; 
-			} while (p < p_end && isspace(*p));
-			environment |= E_WHITESPACE; 
-			goto had_whitespace; 
+		else if (skip_space(skipped_actual_space)) {
+			if (skipped_actual_space) {
+				environment |= E_WHITESPACE; 
+				goto had_whitespace;
+			}
 		} 
 
 		/* Directive */ 
@@ -965,7 +973,6 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					throw ERROR_LOGICAL; 
 				}
 			} else {
-
 				shared_ptr <Place_Name> place_name= parse_name(allow_special);
 				if (place_name == nullptr) {
 					if (*p == '!') {
@@ -1023,16 +1030,43 @@ void Tokenizer::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 	place_end= parse.current_place(); 
 }
 
-void Tokenizer::skip_space()
+bool Tokenizer::skip_space(bool &skipped_actual_space)
 {
-	while (p < p_end && isspace(*p)) {
-		if (*p == '\n') {
+	bool ret= false;
+	skipped_actual_space= false;
+	while (p < p_end && (isspace(*p) || *p == '\\')) {
+		if (*p == '\\') {
+			if (p+1 < p_end) {
+				++p;
+				if (*p == '\n') {
+					++line;
+					p_line= p+1;
+					ret= true;
+				} else {
+					/* A backslash followed by something
+					else--this is a normal name character
+					and not a space */ 
+					--p;
+					return ret; 
+				}
+			} else {
+				current_place() << "backslash must be followed by a character";
+				throw ERROR_LOGICAL; 
+			}
+		}
+		else if (*p == '\n') {
 			++line;  
-			p_line= p + 1; 
+			p_line= p + 1;
+			ret= true;
+			skipped_actual_space= true; 
+		} else {
+			ret= true;
+			skipped_actual_space= true; 
 		}
 		++p; 
 	}
-	assert(p <= p_end); 
+	assert(p <= p_end);
+	return ret; 
 }
 
 void Tokenizer::parse_double_quote(Place_Name &ret)
@@ -1143,13 +1177,41 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
  end_of_single_quote:;
 }
 
+bool Tokenizer::parse_escape()
+{
+	assert(p < p_end && *p == '\\'); 
+	Place place_escape= current_place();
+	++p;
+	if (p == p_end) {
+		/* Error:  expected a character after \ */
+		place_escape << fmt("expected a character after %s", char_format_err('\\'));
+		throw ERROR_LOGICAL; 
+	}
+
+	/* \ followed by newline */
+	if (*p == '\n') {
+		/* Ignore the two */
+		++p;
+		return false; 
+	}
+
+	if (*p == '\0') {
+		place_escape << fmt("expected a non-nul character after %s", char_format_err('\\'));
+		throw ERROR_LOGICAL; 
+	}
+
+	return true;
+}
+
 void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens, 
 				Context context,
 				const Place &place_diagnostic)
 {
 	Place place_percent= current_place(); 
+	assert(*p == '%'); 
 	++p;
-	skip_space(); 
+	bool skipped_actual_space;
+	skip_space(skipped_actual_space); 
 	const char *const p_name= p;
 	Place place_directive= current_place(); 
 
@@ -1171,7 +1233,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 
 	const string name(p_name, p - p_name); 
 
-	skip_space(); 
+	skip_space(skipped_actual_space); 
 
 	if (name == "include") {
 

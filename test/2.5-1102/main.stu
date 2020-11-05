@@ -1,0 +1,2 @@
+# Error (empty name), despite concatenation
+A: ""(B) { touch A ; }

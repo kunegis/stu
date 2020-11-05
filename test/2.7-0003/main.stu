@@ -1,0 +1,6 @@
+# A single \" does not start a quote
+
+A:  list.x\"z { cp 'list.x"z' A ; }
+
+>list.'x"z' { echo CORRECT ; }
+

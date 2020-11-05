@@ -1,0 +1,18 @@
+\
+\
+\
+
+# Multiple instances of backslash-newline in a row (start of file /
+# mid-file / mid-name):  Line numbers are reported correctly. 
+
+\
+\
+\
+
+A:  list.ab\
+\
+\
+cd
+{
+	cp list.abcd A
+}

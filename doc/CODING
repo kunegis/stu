@@ -9,7 +9,9 @@ These are the relevant coding conventions we use.
 * Follow the GNU Coding Standards, except for coding style, but don't
   use GNU extensions.  For coding style, see below. 
 * Use the C++14 version of C++; don't use GCC extensions.  Or any other
-  extensions for that matter.  Source files are named '*.hh' and '*.cc'.  
+  extensions for that matter.  Source files are named '*.hh' and '*.cc'.  (In
+  principle, we use the latest C++ version, but only adapt a new version five
+  years after it is released.)
 * Compilation is done in a single step by compiling the file 'stu.cc'.
   All other source files are actually '*.hh' files which are included.
   Therefore, we don't strictly separate declarations and definitions.

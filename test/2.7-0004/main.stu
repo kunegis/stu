@@ -1,0 +1,3 @@
+# * A single \' does not start a quote
+A: list.1\'3 { cp "list.1'3" A ; }
+>"list.1'3" { echo CORRECT ; }

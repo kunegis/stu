@@ -1,0 +1,6 @@
+# Backslash before newline:  the combination is ignored.
+
+A:  list.abc { cp list.abc A ; }
+
+>list.ab\
+c { echo CORRECT ; }

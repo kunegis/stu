@@ -828,6 +828,7 @@ unquoted filenames:
 
     #     Comment (until the end of the line)
     %     Directive (followed by directive name and arguments)
+    \\    Escape for characters and to ignore newlines 
     '     Quote, without escape sequences
     "     Quote, with escape sequences
     :     Separator for rule definition
@@ -848,9 +849,11 @@ syntax, i.e., the command itself may contain more braces.  All other
 characters are individual tokens and may or may not be separated from
 other tokens by whitespace. 
 
-Quoting in Stu is similar to quoting in the shell. 
-Quoted or unquoted names which 
-are not separated by whitespace are interpreted as a single name. 
+Quoting in Stu is similar to quoting in the shell.  Quoted or unquoted names
+which are not separated by whitespace are interpreted as a single name.
+Outside of quotes, the backslash can be used to escape any character.
+Backslash-newline sequences are ignored.  All other characters can be preceded
+by a backslash to retain their literal meaning as part of a name. 
 
 Single quotes may contain any character except single
 quotes and the NUL character '\\0'.
@@ -883,7 +886,7 @@ case for name tokens.
 
 The following characters are reserved for future extension: 
 
-    * \\ & | ! ? ,
+    * & | ! ? ,
 
 .SH "SYNTAX"
 

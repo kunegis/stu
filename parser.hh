@@ -2,8 +2,9 @@
 #define PARSER_HH
 
 /* 
- * Code for generating rules from a vector of tokens, i.e, for performing the parsing of Stu syntax
- * beyond tokenization.  This is a recursive descent parser written by hand. 
+ * Code for generating rules from a vector of tokens, i.e, for performing the
+ * parsing of Stu syntax beyond tokenization.  This is a recursive descent
+ * parser written by hand.  
  */ 
 
 #include <set>
@@ -23,7 +24,7 @@
  *
  * In principle, the following gives operator precedences.  Higher in
  * the list means higher precedence.  This list is to be understood as
- * specifying in what order operators can be nested, not to disambguate
+ * specifying in what order operators can be nested, not to disambiguate
  * expressions.
  *
  * @...	     (prefix) Transient dependency; argument can only contain name

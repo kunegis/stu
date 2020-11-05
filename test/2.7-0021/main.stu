@@ -1,0 +1,17 @@
+\
+\
+# Two backslashes in a row, at various places in the file.
+
+A:  list.ab\
+\
+cd {
+   cp list.abcd A
+}
+
+\
+\
+
+>list.abcd { echo CORRECT ; }
+
+\
+\

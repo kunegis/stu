@@ -1,0 +1,3 @@
+\
+# Backslash-newline as first in file
+>A { echo CORRECT ; }

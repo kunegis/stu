@@ -1,0 +1,10 @@
+A:  [X]\
+[Y]
+{
+	cp list.abcd A
+}
+
+X = {list}
+Y = {.abcd}
+
+>list.abcd { echo CORRECT ; }

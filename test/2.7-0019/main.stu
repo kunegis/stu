@@ -1,0 +1,6 @@
+# Backslash-escaping is not performed on the command line by Stu. 
+
+XXX { exit 1 ; }
+
+>'list.ab\cd' { echo CORRECT ; }
+

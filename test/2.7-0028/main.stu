@@ -1,0 +1,4 @@
+A:  list.(ab)\
+(cd) { cp list.abcd A ; }
+
+>list.abcd { echo CORRECT ; }

@@ -1,0 +1,6 @@
+# Backslash before misformed UTF-8 character: nothing special happens, because Stu does
+# not depend on encoding details.
+# There is a 0xFF character (invalid UTF-8) between 'ab' and 'cd' in the last line. 
+
+>A: { echo CORRECT ; }
+list.abÿcd {}

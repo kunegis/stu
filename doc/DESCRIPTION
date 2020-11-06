@@ -35,14 +35,14 @@ ________________________________________________________________________
   extremely convenient here. 
 
 * An alternative to things like "Python notebook" and Excel. 
-  -> Both allow the user to enter formulas to be entered, which are then
-  updated (i.e., reexecuted) automatically.  Both are graphical user
-  interfaces, and neither can be integrated into other build processes,
-  and neither can easily call external programs.  This harks back to an
-  antipattern common in many build systems:  The fact that many external
-  programs are hard or impossible to call means that systems need to
-  reinvent the wheel, i.e., reimplement many functions that would be
-  available easily otherwise. 
+  -> Both allow the user to enter formulas, which are then updated (i.e.,
+  reexecuted) automatically.  Both are graphical user interfaces, and neither
+  can be integrated into other build processes, and neither can easily call
+  external programs.  This harks back to an antipattern common in many build
+  systems:  The fact that many external programs are hard or impossible to call
+  means that systems need to reinvent the wheel, i.e., reimplement many
+  functions that would be available easily otherwise. ("Inner-platform effect"
+  as Wikipedia calls it.)
 
 * A dynamic programming language
   -> This is to be understood in the sense of dynamic programming.

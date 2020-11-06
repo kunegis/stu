@@ -86,7 +86,7 @@ using shared_ptr:
 * all parametrized names and targets (declared in target.hh)
 * Rule (even though it is not polymorphic) 
 * Token
-* Dependency
+* Dep
 
 I.e., we always assume an object of one of these types may be of a
 subtype.  

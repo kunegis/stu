@@ -63,12 +63,17 @@ find these conventions very useful.
   should output nothing and stdout, except for what is the purpose of
   the program.  Output of extra info can be enabled by
   verbose/debug/help options if necessary.  Likewise, stderr should only
-  output error messages.
+  output error messages.  (Yes, we know that Stu violates this--the reason is
+  that Make violates it, and having a user interface similar to Make is more
+  important here.)
 * The exit status should be zero on success, and nonzero on error.  On
-  error, values in the range 1-127 should be used.  It is a common error
+  error, values in the range 1-126 should be used.  It is a common error
   for badly-written programs to output an error message on error, but
-  then exiting with status 0.  This breaks Stu.
-* Programs shouldn't generate logfiles when not asked too.  There are
-  too many programs that clutter the current directory or the home
-  directory with unasked for logfiles.  Have a proper opt-in "log"
-  option that let's the user chose a logfile name.
+  then exiting with status 0.  This breaks Stu.  The exit status 127 should only
+  be used when a program fails between fork() and exec(); this is whan /bin/sh
+  and Stu do.  Larger exit codes are used when processed are interupted by
+  signals, etc. 
+* Programs shouldn't generate logfiles when not asked to.  There are too many
+  programs that clutter the current directory or the home directory with
+  unasked-for logfiles.  Have a proper opt-in "log" option that lets the user
+  chose a logfile name. 

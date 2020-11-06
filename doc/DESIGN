@@ -17,7 +17,7 @@ The design considerations of Stu are:
   compilation or other specific applications.  Instead, allow use
   case-specific rules to be written in the Stu language itself.  Most
   Make replacement tools instead focus on one specific use-case (almost
-  always compilation), making them unsuitable for general use. 
+  always compilation), making them ill-suited for general use. 
 * Files are the central datatype.  Everything is a file.  You can think
   of Stu as "a declarative programming language in which all variables
   are files."  For instance, Stu has no variables like Make; instead,
@@ -70,4 +70,3 @@ The design considerations of Stu are:
   Stu.  For instance, the options -j and -k work like in Make.  Also,
   Stu source can be edited with syntax highlighting for the shell, as
   the syntaxes are very similar.  
-

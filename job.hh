@@ -15,7 +15,8 @@ void job_terminate_all();
  * files if present.  Implemented in execution.hh, and called from
  * here. */
 
-void job_print_jobs(); 
+void job_print_jobs();
+/* Print jobs.  Called from here; implemented in execution.hh */
 
 /* 
  * Macro to write in an async signal-safe manner. 
@@ -35,7 +36,7 @@ void job_print_jobs();
 /* 
  * The same as assert(), but in an async-signal safe way.  In all
  * likelihood, implementations of assert() are already async-signal
- * safe, but we shouldn't rely on this. 
+ * safe, but we shouldn't rely on that. 
  *
  * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this
  * macro. 
@@ -158,12 +159,11 @@ private:
 	 * holds both.  */ 
 
 	static volatile sig_atomic_t in_child; 
-	/* Set to 1 in the child process, before execve() is called.
-	 * Used to avoid doing too much in the terminating signal
-	 * handler.  Note: There is a race condition because the signal
-	 * handler may be called before the variable is set.   
-	 * This is the only variable in Stu that is "volatile sig_atomic_t".   
-	 */
+	/* Set to 1 in the child process, before execve() is called; 0 in the
+	 * parent process.  Used to avoid doing too much in the terminating
+	 * signal handler.  Note: There is a race condition because the signal
+	 * handler may be called before the variable is set.  This is the only
+	 * variable in Stu that is "volatile sig_atomic_t".  */
 
 	static pid_t pid_foreground;
 	/* The job that is in the foreground, or -1 when none is */ 
@@ -203,13 +203,13 @@ pid_t Job::start(string command,
 	 * shell instead.  The reason is that the variable $SHELL is intended to
 	 * denote the user's chosen interactive shell, and may not be a
 	 * POSIX-compatible shell.  Note also that POSIX prescribes that Make
-	 * use "/bin/sh" by default.  Other note: Make allows to declare the
+	 * use "/bin/sh" by default.  Other note:  Make allows to declare the
 	 * Make variable $SHELL within the Makefile or in Make's parameters to a
 	 * value that *will* be used by Make instead of /bin/sh.  This is not
 	 * possible with Stu, because Stu does not have its own set of
 	 * variables.  Instead, there is the $STU_SHELL variable.  The
 	 * Stu-native way to do it without environment variables would be via a
-	 * directive (but that is not implemented).  */ 
+	 * directive (but such a directive is not implemented).  */ 
 	static const char *shell= nullptr;
 	if (shell == nullptr) {
 		shell= getenv("STU_SHELL");
@@ -231,12 +231,19 @@ pid_t Job::start(string command,
 
 	/* Each child process is given, as process group ID, its process
 	 * ID.  This ensures that we can kill each child by killing its
-	 * corresponding process group ID.  */
+	 * corresponding process group ID.  How process groups work:  Each
+	 * process has not only a process ID (PID), but also a process group ID
+	 * (PGID).  The PGID is inherited by child processes, without being
+	 * changed automatically.  This means that if the PGID is never changed
+	 * by a process, a process and all its child processes will have the
+	 * same PGID.  This makes it possible to kill a process and all its
+	 * children (directly and indirectly) by passing the negated PGID as the
+	 * first parameter to kill(2).  Thus, we set the child process to havae
+	 * as its PGID the same value as its PID. 
+	 */
 
 	/* Execute this in both the child and parent */ 
-	int pid_child= pid;
-	if (pid_child == 0)
-		pid_child= getpid();
+	const int pid_child= pid == 0 ? getpid() : pid;
 	if (0 > setpgid(pid_child, pid_child)) {
 		/* This should only fail when we are the parent and the
 		 * child has already quit.  In that case we can ignore
@@ -249,15 +256,14 @@ pid_t Job::start(string command,
 		in_child= 1; 
 
 		/* Instead of throwing exceptions, use perror() and
-		 * _Exit().  We return 127, as done e.g. by
-		 * system(), posix_spawn(), and the shell.  */ 
+		 * _Exit(ERROR_FORK_CHILD).  */ 
 
 		/* Unblock/reset all signals.  As a general rule,
 		 * signals that are blocked before exec() will remain
 		 * blocked after exec().  Thus, unblock them here.  */ 
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_termination_productive, nullptr)) {
 			perror("sigprocmask");
-			_Exit(127); 
+			_Exit(ERROR_FORK_CHILD); 
 		}
 		::signal(SIGTTIN, SIG_DFL);
 		::signal(SIGTTOU, SIG_DFL); 
@@ -285,7 +291,7 @@ pid_t Job::start(string command,
 		if (!envp) {
 			assert(false);
 			perror("malloc");
-			_Exit(127); 
+			_Exit(ERROR_FORK_CHILD); 
 		}
 		memcpy(envp, envp_global, v_old * sizeof(char **)); 
 		size_t i= v_old;
@@ -298,11 +304,11 @@ pid_t Job::start(string command,
 			if (! combined) {
 				assert(false);
 				perror("malloc");
-				_Exit(127); 
+				_Exit(ERROR_FORK_CHILD); 
 			}
 			if ((ssize_t)(len_combined - 1) != snprintf(combined, len_combined, "%s=%s", key.c_str(), value.c_str())) {
 				perror("snprintf");
-				_Exit(127); 
+				_Exit(ERROR_FORK_CHILD); 
 			}
 			if (old.count(key)) {
 				size_t v_index= old.at(key);
@@ -321,7 +327,7 @@ pid_t Job::start(string command,
 		 * and the column number.  This makes the shell if it
 		 * reports an error make the most useful output.  */
 		string argv0= place_command.as_argv0();
-		if (argv0 == "")
+		if (argv0.empty())
 			argv0= shell; 
 
 		/* The one-character options to the shell */
@@ -364,20 +370,20 @@ pid_t Job::start(string command,
 		}
 
 		/* Output redirection */
-		if (filename_output != "") {
+		if (!filename_output.empty()) {
 			int fd_output= creat
 				(filename_output.c_str(), 
 				 /* All +rw, i.e. 0666 */
 				 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH); 
 			if (fd_output < 0) {
 				perror(filename_output.c_str());
-				_Exit(127); 
+				_Exit(ERROR_FORK_CHILD); 
 			}
 			assert(fd_output != 1); 
 			int r= dup2(fd_output, 1); /* 1 = file descriptor of STDOUT */ 
 			if (r < 0) {
 				perror(filename_output.c_str());
-				_Exit(127); 
+				_Exit(ERROR_FORK_CHILD); 
 			}
 			assert(r == 1);
 			close(fd_output); 
@@ -385,25 +391,25 @@ pid_t Job::start(string command,
 
 		/* Input redirection:  from the given file, or from
 		 * /dev/null (in non-interactive mode)  */
-		if (filename_input != "" || ! option_interactive) {
-			const char *name= filename_input == ""
+		if (!filename_input.empty() || ! option_interactive) {
+			const char *name= filename_input.empty()
 				? "/dev/null"
 				: filename_input.c_str(); 
 			int fd_input= open(name, O_RDONLY); 
 			if (fd_input < 0) {
 				perror(name);
-				_Exit(127); 
+				_Exit(ERROR_FORK_CHILD); 
 			}
 			assert(fd_input >= 3); 
 			int r= dup2(fd_input, 0); /* 0 = file descriptor of STDIN */  
 			if (r < 0) {
 				perror(name);
-				_Exit(127); 
+				_Exit(ERROR_FORK_CHILD); 
 			}
 			assert(r == 0); 
 			if (close(fd_input) < 0) {
 				perror(name); 
-				_Exit(127); 
+				_Exit(ERROR_FORK_CHILD); 
 			}
 		}
 
@@ -412,7 +418,7 @@ pid_t Job::start(string command,
 		/* If execve() returns, there is an error, and its return value is -1 */
 		assert(r == -1); 
 		perror("execve");
-		_Exit(127); 
+		_Exit(ERROR_FORK_CHILD); 
 	} 
 
 	/* Here, we are the parent process */
@@ -436,8 +442,8 @@ pid_t Job::start(string command,
 pid_t Job::start_copy(string target,
 		      string source)
 {
-	assert(target != "");
-	assert(source != ""); 
+	assert(! target.empty());
+	assert(! source.empty()); 
 	assert(pid == -2); 
 
 	init_signals(); 
@@ -482,7 +488,7 @@ pid_t Job::start_copy(string target,
 
 		assert(r == -1); 
 		perror("execv");
-		_Exit(127); 
+		_Exit(ERROR_FORK_CHILD); 
 	}
 
 	/* Parent execution */

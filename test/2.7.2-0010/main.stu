@@ -1,0 +1,47 @@
+# staircase of common prefixes (half matching)
+
+A: list.aaaaaaaaaaaaaaaaaXY { cp list.aaaaaaaaaaaaaaaaaXY A ; }
+
+list.a${x}Y { exit 1 ; }
+list.aa${x}Y { exit 1 ; }
+list.aaa${x}Y { exit 1 ; }
+list.aaaa${x}Y { exit 1 ; }
+list.aaaaa${x}Y { exit 1 ; }
+list.aaaaaa${x}Y { exit 1 ; }
+list.aaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaa${x}Y = {CORRECT}
+list.aaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa${x}Y { exit 1 ; }

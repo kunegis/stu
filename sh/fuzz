@@ -23,7 +23,7 @@ fi
 
 unset STU_OPTIONS
 
-seq 1000 |
+sh/seq 1000 |
 while read line ; do
 	rm -f list.*
 	dd if=/dev/urandom bs=1 count=3  >list.stu 2>/dev/null

@@ -1,4 +1,4 @@
-// TODO This list was just started and is incomplete. 
+// TODO This list is incomplete. 
 
 Anchoring - Represents the position of a parameter in a matched
 	filename.  Each anchoring is represented by two numbers,

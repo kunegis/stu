@@ -1,0 +1,10 @@
+# Different suffix with UTF-8 characters that have a common last byte.  This is
+# based on UTF-8.  (This file is in UTF-8.)
+
+# ö : 0xC3 0xB6
+# Ķ : 0xC4 0xB6
+
+A: list.pöpö { cp list.pöpö A ; }
+
+$x.pöpö = {CORRECT}
+$x.pĶpĶ { exit 1 ; }

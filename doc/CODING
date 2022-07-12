@@ -19,7 +19,7 @@ These are the relevant coding conventions we use.
   using '*.o' files though.  
 * Names of targets in the Makefile follow the GNU Coding Standards. 
 * Use SemVer.org for version number semantics.  We consider only changes
-  on the Stu language specification and options marked as stable in
+  in the Stu language specification and options marked as stable in
   'OPTIONS'.  See the file 'NEWS' for details.  
 
 == Style == 
@@ -91,10 +91,9 @@ using shared_ptr:
 I.e., we always assume an object of one of these types may be of a
 subtype.  
 
-For Dependency and its subclasses, we also assume that a single object
-has many persistent pointers to it, so they are considered final, i.e.,
-immutable, except if we just created the object in which case we know
-that it is not shared. 
+For Dep and its subclasses, we also assume that a single object has many
+persistent pointers to it, so they are considered final, i.e., immutable, except
+if we just created the object in which case we know that it is not shared.  
 
 Objects of these types are created using make_shared<>.  We handle the
 polymorphism of these classes via dynamic_pointer_cast<>.  
@@ -128,7 +127,7 @@ of the expected 'old_filename'.  You can think of this convention as
 being influenced by the French language, which by default places
 adjectives after the noun, or as being compatible with names such as
 'filename_1', etc.  This convention is not used for type names, e.g., we
-have 'Dynamic_Dependency' and similar.
+have 'Dynamic_Dep' and similar.
 
 == Shell scripts ==
 

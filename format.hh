@@ -133,7 +133,7 @@ string multichar_format_err(string s)
 
 string name_format(string name, Style style, bool &quotes) 
 {
-	if (name == "") {
+	if (name.empty()) {
 		if (! (style & S_NOEMPTY))  
 			quotes= true; 
 		return ""; 
@@ -222,7 +222,7 @@ string dynamic_variable_format_err(string name)
 
 string prefix_format_err(string name, string prefix)
 {
-	assert(prefix != ""); 
+	assert(! prefix.empty()); 
 	bool quotes= false;
 	string s= name_format(name, S_MARKERS, quotes); 
 	return fmt("%s%s%s%s%s%s",

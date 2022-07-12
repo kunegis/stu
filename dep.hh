@@ -674,7 +674,7 @@ void Dep::check() const
 		 * dependency flags, even though that is redundant.  */
 		assert((plain_this->flags & F_TARGET_TRANSIENT) == (plain_this->place_param_target.flags)); 
 
-		if (plain_this->variable_name != "") {
+		if (! plain_this->variable_name.empty()) {
 			assert((plain_this->place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
 			assert(plain_this->flags & F_VARIABLE); 
 		}
@@ -711,7 +711,7 @@ string Plain_Dep::format(Style style, bool &quotes) const
 	string f;
 	if (!(style & S_NOFLAGS)) {
 		f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT)); 
-		if (f != "") {
+		if (! f.empty()) {
 			style |= S_MARKERS;
 			f += ' '; 
 		}
@@ -792,7 +792,7 @@ string Dynamic_Dep::format(Style style, bool &quotes) const
 	string ret;
 	if (! (style & S_NOFLAGS)) {
 		string text_flags= flags_format(flags & ~F_TARGET_DYNAMIC);
-		if (text_flags != "")
+		if (! text_flags.empty())
 			text_flags += ' '; 
 		ret += text_flags; 
 	}
@@ -965,7 +965,7 @@ string Concat_Dep::format(Style style, bool &quotes) const
 	string ret;
 	if (!(style & S_NOFLAGS)) {
 		string f= flags_format(flags); 
-		if (f != "") {
+		if (! f.empty()) {
 			style |= S_MARKERS;
 			f += ' '; 
 		}

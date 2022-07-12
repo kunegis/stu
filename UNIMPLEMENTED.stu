@@ -1,5 +1,5 @@
 #
-# This file lists features that were decided not to be implemented.
+# This file lists features that we decided not to implement yet.
 # Many of these ideas are actually good, in particular the "normal"
 # category, and we may revive them in the future.  When in doubt, we
 # prefer to not support a feature, as adding a feature in the future can
@@ -7,23 +7,25 @@
 # always backward-incompatible.
 #
 
+#==== Next versions of C++ ====
+
+#
+# Use standard formatting functions instead of our own.  (C++20)  We can also
+# use custom formatters for the colors, etc.
+#
+
 #==== Optimizations ====
+
+#
+# When parsing rules, only save the "body" part of the rule (everything except
+# the target) as an unparsed string.  Parse it properly only when needed.  This
+# will not catch certain errors anymore. 
+#
 
 #
 # Dep hierarchy:  instead of using shared_ptr<> and
 # dynamic_pointer_cast<>, roll our own code, storing the type inside
 # Dep. 
-#
-
-#
-# When parsing rules, only save the "body" part of the
-# rule (everything except the target) as an unparsed string.  Parse it
-# properly only when needed.  This will not catch certain errors
-# anymore. 
-#
-
-#
-# Matching parametrized rules:  use a form of prefix and suffix tree. 
 #
 
 # 
@@ -50,6 +52,11 @@
 #
 
 #==== Normal features ====
+
+#
+# Have an option to block certain targets from ever being rebuilt.  (Resulting
+# in a failure when they should.)
+#
 
 #
 # Have an option to output the dependency graph, i.e., output each edge
@@ -228,7 +235,7 @@ dep.sources {
 # the file contains the nul byte '\0' or is empty.  '\n' and other
 # whitespaces should work.  Not needed because -0 can be used for it,
 # except that this option would catch the error of an empty file, or a
-# file accidentally containing '\0'.
+# file accidentally containing '\0'.  A possible name would be -1.
 #
 
 #
@@ -365,7 +372,8 @@ X = {b}
 # based on the given Stu script.  Ironically, this may need to build
 # dynamic dependency files first.  We may also just have a command line
 # option to output a list of files that can be rebuilt, for instance to
-# initialize a .gitignore file or similar.
+# initialize a .gitignore file or similar.  Generating dynamic dependency files
+# may be avoided by outputting glob patterns.
 #
 
 #
@@ -473,7 +481,7 @@ A:  -p $[B] { ... }
 A:  -p -o B { ... ; }
 
 #
-# Set intersection with '&'.  Can be implemented indepently of Stu.  We
+# Set intersection with '&'.  Can be implemented independently of Stu.  We
 # may implement it if there is demand for using this often in a sensible
 # use-case. 
 #
@@ -798,10 +806,6 @@ plot.${dataset = wiki_.*}.eps: {...}
 # and 'ccc':
 plot.${dataset = aaa bbb ccc}.eps: { ... }
 
-
-#
-# Allow 
-#
 
 #==== New features that change/extend Stu drastically ====
 

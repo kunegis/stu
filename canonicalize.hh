@@ -31,8 +31,9 @@
  * Symlinks and '..' are not canonicalized by Stu.  As a general rule,
  * no stat(2) is performed to check whether name components exist.
  *
- * For further rules about canonicalization (which are outside the scope of this function), see the
- * manpage.  Some of the special rules are handled in this file. 
+ * For further rules about canonicalization (which are outside the scope of this
+ * function), see the manpage.  Some of the special rules are handled in this
+ * file.  
  */
 
 typedef unsigned Canon_Flags;

@@ -1,4 +1,4 @@
-STU(1)                        University of Namur                       STU(1)
+STU(1)                                STU                               STU(1)
 
 NAME
        stu - Build automation
@@ -10,7 +10,7 @@ DESCRIPTION
        Stu  is  a  tool  for  build automation.  Like Make, it is used to call
        other programs in order to build files.  Stu has  three  features  that
        work  in  conjunction to allow contructs impossible to realize in Make:
-       (1) dynamic dependencies:  The dependencies of a target  can  be  them‐
+       (1) Dynamic dependencies:  The dependencies of a target  can  be  them‐
        selves computed by a command.  When '[FILENAME]' (a filename currounded
        by angle brackets) is used as a dependency, Stu  will  build  the  file
        FILENAME  and  read  dependencies  from  it.  (2) Parameters:  Names of
@@ -36,13 +36,15 @@ DESCRIPTION
        follow  a  simplified  Stu syntax, in which the only special characters
        are the transient target marker '@', brackets '[]', and flags  starting
        with a dash '-'.  All other characters are interpreted as part of file‐
-       names; this includes all spaces.  When -J is used, arguments passed  on
-       the  command line are interpreted as filenames without Stu syntax.  The
-       syntax of arguments outside of options and without using the -J is sub‐
-       ject  to change with new features in Stu -- to pass filenames portably,
-       use the -c option when passing individual filenames, or -J when passing
-       multiple  filenames,  e.g.  via  xargs(1).  To pass targets in full stu
-       syntax portably, use the -C option.
+       names; this includes all spaces.  The parentheses '()' are  not  parsed
+       as  Stu  syntax,  because  the shell's braces '{}' can be used instead.
+       When -J is used, arguments passed on the command line  are  interpreted
+       as  filenames  without  Stu syntax.  The syntax of arguments outside of
+       options and without using the -J is subject to change with new features
+       in  Stu  --  to pass filenames portably, use the -c option when passing
+       individual filenames, or -J when passing multiple filenames,  e.g.  via
+       xargs(1).   To  pass  targets  in  full stu syntax portably, use the -C
+       option.
 
 OPTIONS
        -0 FILENAME
@@ -624,11 +626,11 @@ CANONICALIZATION
 
        (1) All instances of multiple slashes ('/') are collapsed to  a  single
        one,  except  when the name begins with exactly two slashes.  Then, any
-       ending slash is removed.
+       ending slash is removed, except if the name is '/' or '//'.
 
-       (2) If the name is '/.', it changed to '/'.  If the name is './', it is
-       changed  to  '.'.  If the name begins with './' followed by a character
-       that is not part of a parameter, the  './'  is  removed  (the  rule  is
+       (2) If the name is '/.', it is changed to '/'.  If the name is './', it
+       is  changed to '.'.  If the name begins with './' followed by a charac‐
+       ter that is not part of a parameter, the './' is removed (the  rule  is
        applied repeatedly).  Any number of ending '/.' components are removed.
        Any number of '/./' is simplified to '/'.
 
@@ -732,7 +734,7 @@ TOKENIZATION
 
            #     Comment (until the end of the line)
            %     Directive (followed by directive name and arguments)
-           \    Escape for characters and to ignore newlines
+           \     Escape for characters and to ignore newlines
            '     Quote, without escape sequences
            "     Quote, with escape sequences
            :     Separator for rule definition
@@ -783,9 +785,9 @@ TOKENIZATION
 
            )(  )[  ](  ][  )A  ]A  A(  A[
 
-       In these examples, 'A' stands for  any  name,  including  quoted  names
-       using  whitespace,  except when this would create a new token, which is
-       only the case for name tokens.
+       In this list, 'A' stands for any name,  including  quoted  names  using
+       whitespace,  except  when  this would create a new token, which is only
+       the case for name tokens.
 
        The following characters are reserved for future extension:
 
@@ -1123,4 +1125,4 @@ AUTHOR
 SEE ALSO
        make(1), cook(1), sh(1)
 
-stu-2.7.1                        October 2020                           STU(1)
+stu-2.7.2                          June 2022                            STU(1)

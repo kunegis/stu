@@ -1,9 +1,9 @@
 #! /bin/sh
 #
-# Perform all unit tests.  Each unit test is in one subdirectory of the
-# directory test/.  By default, each test directory contains a file
-# 'main.stu' that performs one unit test.  Additional files may be
-# present to configure how the test is performed; see below.
+# Perform unit tests.  Each unit test is in one subdirectory of the directory
+# test/.  By default, each test directory contains a file 'main.stu' that
+# performs one unit test.  Additional files may be present to configure how the
+# test is performed; see below. 
 # 
 # INVOCATION
 #
@@ -128,8 +128,6 @@
 #
 # TODO
 #
-# * First, execute all tests without 'EXEC', and then all tests with
-#   'EXEC'.  
 # * For each test, interrupt the test after a specified timeout, to
 #   avoid that the whole testing procedure hangs when a single test
 #   hangs. 
@@ -389,7 +387,7 @@ do
 
 		# Check that INSTDERR is found in the error output
 		if [ -r INSTDERR ]; then
-			for lineno in $(seq 1 $(awk '{x++}END{ print x}' <INSTDERR)) ; do
+			for lineno in $(../../sh/seq $(awk '{x++} END{ print x; }' <INSTDERR)) ; do
 			   	line=$(<INSTDERR sed -e "$lineno"'!d')
 				if grep <list.def.err -qF -- "$line" ; then
 					echo "INSTDERR...correct"

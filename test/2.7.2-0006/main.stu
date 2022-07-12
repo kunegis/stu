@@ -1,0 +1,34 @@
+# staircase of common suffixes (one match only)
+
+A:  list.aaaaaaaaaaaaa.b { cp list.aaaaaaaaaaaaa.b A ; }
+
+$x.a.b { exit 1 ; }
+$x.aa.b { exit 1 ; }
+$x.aaa.b { exit 1 ; }
+$x.aaaa.b { exit 1 ; }
+$x.aaaaa.b { exit 1 ; }
+$x.aaaaaa.b { exit 1 ; }
+$x.aaaaaaa.b { exit 1 ; }
+$x.aaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaa.b = {CORRECT}
+$x.aaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaaaaaaaaaaaaa.b { exit 1 ; }
+$x.aaaaaaaaaaaaaaaaaaaaaaaaaaaa.b { exit 1 ; }
+
+

@@ -48,8 +48,7 @@ ________________________________________________________________________
   -> This is to be understood in the sense of dynamic programming.
   Here, the assumption is that individual results (very often,
   individual numbers) are stored in individual files.  This appears
-  inefficient at first, but a more precise analysis reveals that it
-  makes sense if the individual numbers are the result of an expensive
-  calcultation.  Thus, this interpretation makes most sense when many
-  long calculations are needed, each resulting in a single number (or an
-  equally small datum.)
+  inefficient at first, but it makes sense if the individual numbers are the
+  result of an expensive  calcultation.  Thus, this interpretation makes most
+  sense when many long calculations are needed, each resulting in a single
+  number (or an equally small datum.)

@@ -93,9 +93,10 @@
 
 /* The error constants.  Not declared as an enum because they are thrown
  * and thus need to be integers.  */
-const int ERROR_BUILD=     1;
-const int ERROR_LOGICAL=   2;
-const int ERROR_FATAL=     4;
+const int ERROR_BUILD=        1;
+const int ERROR_LOGICAL=      2;
+const int ERROR_FATAL=        4;
+const int ERROR_FORK_CHILD= 127;
 
 /*
  * Build errors (code 1) are errors encountered during the normal
@@ -110,6 +111,9 @@ const int ERROR_FATAL=     4;
  * Fatal errors (code 4) are errors that lead Stu to abort immediately,
  * even when the -k option is used.  They are avoided as much as
  * possible.
+ *
+ * The value 127 is only used from a child process between fork() and exec(), as
+ * done e.g. by system(), posix_spawn(), and the shell.  
  *
  * Errors 1 and 2 are recoverable.  If the -k option ("keep going") is
  * given, Stu notes these errors and continues.  If the -k option is not
@@ -145,7 +149,7 @@ const int ERROR_FATAL=     4;
 void print_error(string message)
 /* Print an error without a place */
 {
-	assert(message != "");
+	assert(! message.empty());
 	assert(isupper(message[0]) || message[0] == '\''); 
 	assert(message[message.size() - 1] != '\n'); 
 	fprintf(stderr, "%s%s%s: *** %s\n", 
@@ -169,7 +173,7 @@ void print_error_reminder(string message)
  * the user of the error.  Since the error as already been output, use
  * the color of warnings.  */
 {
-	assert(message != "");
+	assert(! message.empty());
 	assert(isupper(message[0]) || message[0] == '\''); 
 	assert(message[message.size() - 1] != '\n'); 
 	fprintf(stderr, "%s%s%s: %s\n", 
@@ -196,7 +200,7 @@ void print_out(string text)
  * are suppressed by the -s option (silent).  Messages that do not have
  * colored output are printed directly using printf() etc.  */
 {
-	assert(text != "");
+	assert(! text.empty());
 	assert(isupper(text[0]));
 	assert(text[text.size() - 1] != '\n');
 
@@ -212,7 +216,7 @@ void print_out(string text)
 void print_error_silenceable(string text)
 /* A message on STDERR that is made silent by the silent option (-s) */ 
 {
-	assert(text != "");
+	assert(! text.empty());
 	assert(isupper(text[0]));
 	assert(text[text.size() - 1] != '\n');
 
@@ -325,6 +329,10 @@ public:
 		type= Type::EMPTY; 
 	}
 
+	/* Places are comparable, and are used as keys in maps */
+	bool operator==(const Place &place) const; 
+	bool operator<(const Place &place) const;
+	
 	static const Place place_empty;
 	/* A static empty place object, used in various places when a
 	 * reference to an empty place object is needed.  Otherwise,
@@ -381,7 +389,7 @@ void Place::print(string message,
 		  const char *color,
 		  const char *color_word) const
 {
-	assert(message != "");
+	assert(! message.empty());
 
 	switch (type) {
 	default:  
@@ -462,18 +470,68 @@ string Place::as_argv0() const
 const char *Place::get_filename_str() const
 {
 	assert(type == Type::INPUT_FILE);
-	return text == ""
+	return text.empty()
 		? "<stdin>"
 		: text.c_str();
 }
 
 void print_warning(const Place &place, string message)
 {
-	assert(message != "");
+	assert(! message.empty());
 	assert(isupper(message[0]) || message[0] == '\''); 
 	assert(message[message.size() - 1] != '\n'); 
 	place.print(fmt("warning: %s", message),
 		    Color::warning, Color::warning_word); 
+}
+
+bool Place::operator==(const Place &place) const
+{
+	if (this->type != place.type)
+		return false;
+
+	switch (this->type) {
+	default:  assert(0);
+
+	case Type::EMPTY:
+	case Type::ARGUMENT:
+	case Type::ENV_OPTIONS:
+		return true;
+
+	case Type::INPUT_FILE:
+		return
+			this->text == place.text
+			&& this->line == place.line
+			&& this->column == place.column;
+
+	case Type::OPTION:
+		return this->text == place.text;
+	}
+}
+
+bool Place::operator<(const Place &place) const
+{
+	if (this->type != place.type) {
+		return this->type < place.type;
+	}
+
+	switch (this->type) {
+	default:  assert(0);
+
+	case Type::EMPTY:
+	case Type::ARGUMENT:
+	case Type::ENV_OPTIONS:
+		return false;
+
+	case Type::INPUT_FILE:
+		if (this->text != place.text)
+			return this->text < place.text;
+		if (this->line != place.line)
+			return this->line < place.line;
+		return this->column < place.column; 
+
+	case Type::OPTION:
+		return this->text < place.text;
+	}
 }
 
 #endif /* ! ERROR_HH */ 

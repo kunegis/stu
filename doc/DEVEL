@@ -7,7 +7,7 @@ This is information for hacking Stu itself.
 
 'UNIMPLEMENTED.stu' lists things we're unlikely to implement. 
 
-'CODING' gives the coding standards used in Stu. 
+'doc/CODING' gives the coding standards used in Stu. 
 
 ==== SETUP ====
 
@@ -33,7 +33,7 @@ The file 'stu.debug' is the Stu executable with all debugging turned on,
 i.e., with debugging symbols, all warnings enabled, etc.  The exact
 flags for compiling this are set in 'Makefile.devel', and you might have
 to tweak these flags if you are developing Stu on another setup than the
-authors.
+authors'.
 
 ==== UNIT TESTS ====
 

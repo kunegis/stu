@@ -262,7 +262,7 @@ protected:
 	 * used.  Null by default, and set by individual implementations
 	 * in their constructor if necessary.  */ 
 
-	Execution(shared_ptr <const Rule> param_rule_= nullptr)
+	explicit Execution(shared_ptr <const Rule> param_rule_= nullptr)
 		:  bits(0),
 		   error(0),
 		   timestamp(Timestamp::UNDEFINED),
@@ -678,7 +678,7 @@ class Root_Execution
 {
 public:
 
-	Root_Execution(const vector <shared_ptr <const Dep> > &dep); 
+	explicit Root_Execution(const vector <shared_ptr <const Dep> > &dep); 
 
 	virtual bool want_delete() const {  return true;  }
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
@@ -1198,7 +1198,7 @@ void Execution::operator<<(string text) const
 	/* If there is a rule for this target, show the message with the
 	 * rule's trace, otherwise show the message with the first
 	 * dependency trace */ 
-	if (this->get_place().type != Place::Type::EMPTY && text != "") {
+	if (this->get_place().type != Place::Type::EMPTY && ! text.empty()) {
 		this->get_place() << text;
 		first= false;
 	}
@@ -1212,7 +1212,7 @@ void Execution::operator<<(string text) const
 		if (dynamic_cast <const Root_Execution *> (execution)) {
 			/* We are in a child of the root execution */ 
 			assert(! depp->top); 
-			if (first && text != "") {
+			if (first && ! text.empty()) {
 				/* No text was printed yet, but there
 				 * was a TEXT passed:  Print it with the
 				 * place available.  */ 
@@ -1249,7 +1249,7 @@ void Execution::operator<<(string text) const
 
 		/* Print */
 		string msg;
-		if (first && text != "") {
+		if (first && ! text.empty()) {
 			msg= fmt("%s, needed by %s", text, text_parent); 
 			first= false;
 		} else {	
@@ -2462,13 +2462,13 @@ void File_Execution::print_command() const
 	string filename_input= rule->filename.unparametrized(); 
 
 	/* Redirections */
-	if (filename_output != "") {
+	if (! filename_output.empty()) {
 		if (! begin)
 			putchar(' '); 
 		begin= false;
 		printf(">%s", filename_output.c_str()); 
 	}
-	if (filename_input != "") {
+	if (! filename_input.empty()) {
 		if (! begin)
 			putchar(' '); 
 		begin= false;
@@ -3047,7 +3047,7 @@ void File_Execution::read_variable(shared_ptr <const Dep> dep)
 
 	{
 		string variable_name= 
-			dependency_variable_name == "" ?
+			dependency_variable_name.empty() ?
 			target.get_name_nondynamic() : dependency_variable_name;
 
 		result_variable[variable_name]= content; 
@@ -3614,14 +3614,14 @@ void Debug::print(const Execution *e, string text)
 void Debug::print(string text_target,
 		  string text)
 {
-	assert(text != "");
+	assert(! text.empty());
 	assert(text[0] >= 'a' && text[0] <= 'z'); 
 	assert(text[text.size() - 1] != '\n');
 
 	if (! option_debug) 
 		return;
 
-	if (text_target != "")
+	if (! text_target.empty())
 		text_target += ' ';
 
 	fprintf(stderr, "DEBUG  %s%s%s\n",

@@ -26,7 +26,7 @@ List of options
 -B  .   G    Re-build all
 -B        F  Execute each line in an individual shell
 -c  S        Explicit file target without syntax
--C  S   x    Explicit target with syntax 
+-C  S   x x  Explicit target with syntax 
 -C  x   G F  Change directory
 -d  s   G F  Print debugging information 
 -D        F  Define variable
@@ -36,7 +36,7 @@ List of options
 -F  S        Pass rule on the command line
 -g  s        Consider optional dependencies to be non-optional 
 -h  S   G    Show help and exit 
--i  S x x    Interactive mode
+-i  S x x x  Interactive mode
 -i  x M G F  Ignore all errors in commands
 -I  .   G F  Include path
 -j  S   G F  Parallel mode (1)
@@ -65,7 +65,7 @@ List of options
 -s  S M G F  Silent
 -S  . M G    No keep going
 -t  s x x x  Trivial dependency (2)
--t  x M G F  Touch instead of building
+-t  x M G F  Touch instead of build
 -T        F  Trace mode (log into a file with a given name)
 -u
 -v  .   x    Verbose

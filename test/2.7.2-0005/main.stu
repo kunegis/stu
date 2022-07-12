@@ -1,0 +1,25 @@
+# staircase of common prefixes (one match only)
+
+A:  list.aaaaaaa.b { cp list.aaaaaaa.b A ; }
+
+list.a.$x { exit 1 ; }
+list.aa.$x { exit 1 ; }
+list.aaa.$x { exit 1 ; }
+list.aaaa.$x { exit 1 ; }
+list.aaaaa.$x { exit 1 ; }
+list.aaaaaa.$x { exit 1 ; }
+list.aaaaaaa.$x = {CORRECT}
+list.aaaaaaaa.$x { exit 1 ; }
+list.aaaaaaaaa.$x { exit 1 ; }
+list.aaaaaaaaaa.$x { exit 1 ; }
+list.aaaaaaaaaaa.$x { exit 1 ; }
+list.aaaaaaaaaaaa.$x { exit 1 ; }
+list.aaaaaaaaaaaaa.$x { exit 1 ; }
+list.aaaaaaaaaaaaaa.$x { exit 1 ; }
+list.aaaaaaaaaaaaaaa.$x { exit 1 ; }
+list.aaaaaaaaaaaaaaaa.$x { exit 1 ; }
+list.aaaaaaaaaaaaaaaaa.$x { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaa.$x { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaa.$x { exit 1 ; }
+list.aaaaaaaaaaaaaaaaaaaa.$x { exit 1 ; }
+

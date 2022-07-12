@@ -1,1 +1,21 @@
-# <empty>
+#
+# Use -fwhole-program .
+#
+# Maybe also, -flto .
+#
+
+#
+# Run the various sanitizers (see Makefile.devel). 
+#
+
+#
+# Play around with __builtin_unreachable() for assert.  (Will later be some form of assume, C++23)
+#
+
+#
+# Use string_view where appropriate. (needs C++17)
+#
+
+#
+# preset.h:  Use to_address(v.end()) instead of v.data() + v.size()
+#

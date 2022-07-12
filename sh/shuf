@@ -1,0 +1,10 @@
+#! /bin/sh
+#
+# Randomly permute a text file, line by line.  Works via stdin and stdout. 
+#
+# There is shuf(1), but that's not POSIX.
+#
+
+awk 'BEGIN {srand(); OFMT="%.17f"} {print rand(), $0}' |
+sort -k1,1n |
+cut -d ' ' -f2-

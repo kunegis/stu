@@ -1,14 +1,12 @@
 #! /bin/sh
 #
-# Remove temporary files created by tests.  The tests only create
-# temporary files of these patterns.  Executed within each test
-# directory.  Any of such named files may be directories. 
+# Remove temporary files created by tests.  The tests only create temporary
+# files of these patterns.  Executed within each test directory.  Any of such
+# named files may be directories.  
 #
-# None of the patterns matches any file that we would create within the
-# main stu/ directory, so we can safely call this to remove junk files
-# created while debugging.  In particular, all two-letter files are good
-# for testing, except 'sh'.  Also, all files containing 'SCHTROUMPF' are
-# deleted.
+# None of the patterns matches any file that we would create within the main
+# stu/ directory, so we can safely call this to remove junk files created while
+# debugging.  In particular, all two-letter files are deleted except 'sh'.  
 #
 
 rm -Rf -- ? list.* A.* ./*.data x.* *SCHTROUMPF* .+-~_ 

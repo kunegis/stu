@@ -1,0 +1,33 @@
+#! /bin/sh
+#
+# Since seq(1) is not POSIX, we use this cheap replacement.  Only a parameter $n
+# is supported, to output $n lines with numbers from 1 to $n on it.  (This is
+# not the same as seq(1), but it's enough for what we do.)
+#
+# INVOCATION
+# 	$0 $n
+#
+# STDOUT
+#       $n lines, each containing "1"
+#
+
+n=$1
+
+[ "$n" ] || {
+	echo >&2 "*** $0: Expected argument"
+	exit 1
+}
+
+expr "X$n" : '^X[1-9][0-9]*$' >/dev/null || {
+	echo >&2 "*** $0: Argument must be a number: $n"
+	exit 1
+}
+
+i=1
+
+{
+	while : ; do
+		echo "$i"
+		i=$(( i + 1 ))
+	done
+} | sed -e "$n"q

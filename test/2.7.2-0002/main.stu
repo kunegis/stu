@@ -1,0 +1,5 @@
+# Test matching endings that contain UTF-8 encoded multibyte sequences
+
+A:  list.CORRECT.côté { cp list.CORRECT.côté A ; }
+>$text.côté { echo "$text" ; }
+$text.xxxcôté { exit 1 ; }

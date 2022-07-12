@@ -1519,10 +1519,10 @@ void Parser::get_file(string filename,
 {
 	assert(file_fd == -1 || file_fd > 1); 
 
-	Place place_diagnostic= filename == "" 
+	Place place_diagnostic= filename.empty() 
 		? Place() : Place(Place::Type::OPTION, 'f');
 
-	if (filename == "")
+	if (filename.empty())
 		filename= FILENAME_INPUT_DEFAULT;
 
 	string filename_passed= filename;

@@ -1,9 +1,6 @@
 #ifndef TARGET_HH
 #define TARGET_HH
 
-#include "flags.hh"
-#include "canonicalize.hh"
-
 /* 
  * Targets are the individual "objects" of Stu.  They can be thought of
  * as the "native types" of Stu.  
@@ -36,6 +33,9 @@
  *       'name.xxx.7', then the anchoring is [5, 8, 9, 10]. 
  */
 
+#include "flags.hh"
+#include "canonicalize.hh"
+
 #if   C_WORD <= 8
 typedef uint8_t  word_t;
 #elif C_WORD <= 16
@@ -54,7 +54,7 @@ class Target
 public:
 
 	Target()
-		/* The "null " target */ 
+		/* The "null" target */ 
 		:  Target("")
 	{  }
 	
@@ -69,7 +69,7 @@ public:
 	{
 		assert((flags & ~F_TARGET_TRANSIENT) == 0); 
 		assert(name.find('\0') == string::npos); /* Names do not contain \0 */
-		assert(name != ""); 
+		assert(! name.empty()); 
 	}
 
 	Target(Flags flags, Target target)
@@ -260,13 +260,6 @@ class Name
  * text is empty (empty names are invalid).
  */
 {
-private:
-	vector <string> texts; 
-	/* Length = N + 1 */
-
-	vector <string> parameters;
-	/* Length = N */ 
-
 public:
 	/* A name with zero parameters */ 
 	Name(string name_)
@@ -280,7 +273,7 @@ public:
 
 	bool empty() const {
 		assert(texts.size() == 1 + parameters.size()); 
-		return parameters.empty() && texts[0] == "";
+		return parameters.empty() && texts[0].empty();
 	}
 
 	/* Number of parameters; zero when the name is unparametrized. */ 
@@ -420,7 +413,7 @@ public:
 	void canonicalize();
 	/* In-place canonicalizarion */ 
 
-	bool operator== (const Name &that) const {
+	bool operator==(const Name &that) const {
 		if (this->get_n() != that.get_n())
 			return false;
 		for (size_t i= 0;  i < get_n();  ++i) {
@@ -439,6 +432,13 @@ public:
 					int priority_a, int priority_b);
 	/* Whether anchoring A dominates anchoring B.  The anchorings do
 	 * not need to have the same number of parameters.  */
+
+private:
+	vector <string> texts; 
+	/* Length = N + 1 */
+
+	vector <string> parameters;
+	/* Length = N */ 
 };
 
 class Param_Target
@@ -844,7 +844,7 @@ string Name::instantiate(const map <string, string> &mapping) const
 		assert(parameters[i].size() > 0); 
 
 		/* Special rule (b) */
-		if (i == 0 && texts[0] == ""
+		if (i == 0 && texts[0].empty()
 		    && mapping.at(parameters[0]) == "/"
 		    && texts[1].size() != 0 && texts[1][0] == '/') {
 			/* Do nothing */ 
@@ -880,8 +880,8 @@ bool Name::match(const string name,
 	map <string, string> ret;
 	const size_t n= get_n(); 
 
-	if (name == "") {
-		return n == 0 && texts[0] == ""; 
+	if (name.empty()) {
+		return n == 0 && texts[0].empty(); 
 	}
 
 	anchoring.resize(2 * n);
@@ -898,7 +898,7 @@ bool Name::match(const string name,
 
 	/* $A/bbb matches /bbb with $A set to / */
 	bool special_b_potential= n != 0 
-		&& texts[0] == "" && texts[1].size() != 0 && texts[1][0] == '/'; 
+		&& texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/'; 
 
 	bool special_c= false;  /* We are in the second pass for Special Rule (c) */
 	
@@ -958,7 +958,7 @@ bool Name::match(const string name,
 			if (memcmp(p_end - size_last, last, size_last)) 
 				goto failed;
 			string matched= string(p, p_end - p - size_last); 
-			if (matched == "") {
+			if (matched.empty()) {
 				assert(special_b_potential);
 				priority= 1; 
 				matched= "/";
@@ -982,7 +982,7 @@ bool Name::match(const string name,
 				if (i == 0 && matched[0] == '/')
 					goto failed;
 			}
-			if (matched == "") {
+			if (matched.empty()) {
 				assert(special_b_potential);
 				priority= 1; 
 				matched= "/";
@@ -1010,8 +1010,8 @@ bool Name::match(const string name,
 	 *   (1) Normal pass, matching the given pattern
 	 *   (2) Special (c) pass
 	 *
-	 * We can't just test wether the pattern matches as rule (c), because there are pattern that
-	 * match both with and without rule (c).  
+	 * We can't just test wether the pattern matches as rule (c), because
+	 * there are pattern that match both with and without rule (c).  
 	 * 	 
 	 * Example:  Does $X/bbb/$Y match 'bbb/bbb/bbb' as
 	 *   (1) $X = . and $Y = bbb/bbb , or
@@ -1019,7 +1019,7 @@ bool Name::match(const string name,
 	 * Answer:  It's (2), because that's not the special rule. 
 	 */
 
-	if (n != 0 && texts[0] == "" && texts[1].size() != 0 && texts[1][0] == '/') {
+	if (n != 0 && texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/') {
 		special_c= true;
 		priority= -1; 
 		goto restart;
@@ -1049,7 +1049,7 @@ bool Name::valid(string &param_1, string &param_2) const
 		return false;
 
 	for (size_t i= 1;  i + 1 < get_n() + 1;  ++i) {
-		if (texts[i] == "") {
+		if (texts[i].empty()) {
 			param_1= parameters[i-1];
 			param_2= parameters[i];
 			return false;

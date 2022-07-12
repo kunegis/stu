@@ -25,9 +25,9 @@ when 'main.stu' is changed.  This is on purpose, as we expect Stu script
 to be edited frequently, and we don't want to rebuilt all files with
 hardcoded content on each pass.  
 
-Solution:  
+Solutions:  
 
-(1) Remove the file 'CFLAGS' by hand and re-run Stu. 
+(1) Remove the file 'CFLAGS' and re-run Stu. 
 
 (2) Write the content of the file 'CFLAGS' by hand, add the file
 'CFLAGS' to version control, and declare the following in Stu:

@@ -1,0 +1,10 @@
+# Different prefix with UTF-8 characters that have a common first byte.  This is
+# based on UTF-8.  (This file is in UTF-8.)
+
+# é : 0xC3 0xA9
+# ê : 0xC3 0xAA
+
+A: list.pépéX { cp list.pépéX A ; }
+
+list.pépé${x} = {CORRECT}
+list.pêpê${x} { exit 1 ; }

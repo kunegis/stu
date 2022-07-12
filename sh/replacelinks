@@ -1,4 +1,11 @@
 #! /bin/sh
+#
+# Replace symbolic links by regular files with the same content.
+#
+# INVOCATION
+#
+#	$0 FILE...
+#
 
 [ "$1" ] || {
 	echo >&2 "*** Invocation: $0 FILE..."
@@ -11,7 +18,7 @@ for file in "$@"
 do
 	if [ -h "$file" ] ; then
 		echo "Replacing '$file'"
-		source="$(readlink "$file")"
+		source=$(readlink "$file")
 		rm -- "$file" && cp -- "$source" "$file" || {
 			echo >&2 "*** Error replacing '$file'"
 			error=1

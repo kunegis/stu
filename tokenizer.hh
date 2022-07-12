@@ -230,7 +230,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		}
 
 		/* Map empty string to stdin */ 
-		if (filename == "") {
+		if (filename.empty()) {
 			assert(fd == -1); 
 			fd= 0; 
 			file= stdin;
@@ -316,7 +316,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				assert(r <= BUFLEN); 
 				if (r == 0) {
 					if (ferror(file)) {
-						if (filename != "") {
+						if (! filename.empty()) {
 							int errno_save= errno;
 							fclose(file);
 							errno= errno_save;
@@ -330,7 +330,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			}
 
 			/* Close the input file, but not if it is STDIN */ 
-			if (filename != "") {
+			if (! filename.empty()) {
 				if (fclose(file) != 0) {
 					goto error_close;
 				}
@@ -343,7 +343,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			in_size= len;
 		}
 
-		if (filename != "") {
+		if (! filename.empty()) {
 			assert(fd >= 3); 
 			if (0 > close(fd)) 
 				goto error;
@@ -369,7 +369,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		}
 
 	return_close:
-		if (filename != "") {
+		if (! filename.empty()) {
 			assert(fd >= 3); 
 			if (0 > close(fd)) 
 				goto error;
@@ -378,14 +378,14 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		return;
 
 	error_close:
-		if (filename != "") {
+		if (! filename.empty()) {
 			assert(fd >= 3); 
 			close(fd);
 		} else {
 			assert(fd == 0); 
 		}
 	error:
-		const char *filename_diagnostic= filename != ""
+		const char *filename_diagnostic= !filename.empty()
 			? filename.c_str() : "<stdin>";
 		if (traces.size() > 0) {
 			for (auto j= traces.begin();  j != traces.end();  ++j) {

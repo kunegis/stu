@@ -1,0 +1,7 @@
+# Test for 'list.aaaxbbbyccc' (should give an error):
+
+A:  list.aaaxbbbyccc { touch A ; }
+
+>list.aaa${x}b${y}ccc { echo X ; }
+>list.a${x}bbb${y}ccc { echo X ; }
+

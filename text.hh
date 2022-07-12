@@ -2,9 +2,11 @@
 #define TEXT_HH
 
 /* 
- * Text formatting functions. 
+ * Various text manipulation functions. 
  *
- * These will become obsolete once we use C++20, around 2025. 
+ * The formatting functions will become obsolete once we use C++20, around 2025. 
+ *
+ * The reverse function will become obsolete once we switch to C++17, around 2022.
  */
 
 #include <stdarg.h>
@@ -25,6 +27,9 @@
 string frmt(const char *format, ...) 
 	__attribute__ ((format(printf, 1, 2)));
 #endif
+
+void reverse_string(string &s);
+/* Reverse the given string in-place */
 
 string frmt(const char *format, ...) 
 /* Call snprintf() twice: once to compute the needed size, then once to
@@ -110,6 +115,14 @@ string fmt(const char *s, T value, Args... args)
 	++s;
 
 	return ret + value + fmt(s, args...); 
+}
+
+void reverse_string(string &s)
+{
+	const auto size= s.size(); 
+	for (size_t i= 0;  i < size / 2; ++i) {
+		swap(*(s.begin() + i), *(s.begin() + size - 1 - i)); 
+	}
 }
 
 #endif /* ! TEXT_HH */

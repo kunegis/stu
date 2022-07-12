@@ -37,12 +37,12 @@ CXXFLAGS_OTHER=-std=c++14 $(DEFS)
 # flags if you use such a compiler.
 
 CXXFLAGS_DEBUG=  -ggdb -O0 -Werror \
-    -Wall -Wextra -Wpedantic \
+    -Wall -Wextra -Wpedantic       \
     -Wunused -Wundef -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
     -Wnon-virtual-dtor -Wformat-nonliteral \
     -Wsuggest-attribute=format             \
     -Wlogical-op -Wredundant-decls \
-    -fno-gnu-keywords       \
+    -fno-gnu-keywords              \
     -Wno-unknown-warning-option -Wno-pessimizing-move
 
 # TODO using a newer G++ version, try out:

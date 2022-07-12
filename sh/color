@@ -24,13 +24,13 @@ cd test
 if [ "$1" ] ; then
 	tests="$@"
 else
-	tests="$(echo *)"
+	tests=$(echo *)
 fi
 
 for file in $tests
 do
 	# Remove optional 'test/' prefix
-	file="$(echo "$file" | sed -e 's,^test/,,')"
+	file=$(echo "$file" | sed -e 's,^test/,,')
 
 	if [ ! -d "$file" ]; then
 		echo >&2 "$0: *** '$file' is not a directory"
@@ -48,7 +48,7 @@ do
 
 		CMD=
 		if [ -r CMD ]; then
-    			CMD="$(sed -e '/^[[:space:]]*$/d' <CMD)"
+    			CMD=$(sed -e '/^[[:space:]]*$/d' <CMD)
 		fi
 
 		echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"

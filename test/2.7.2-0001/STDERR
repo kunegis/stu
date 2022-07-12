@@ -1,0 +1,4 @@
+main.stu:1:5: multiple minimal matching rules for target @abcde
+main.stu:3:1: rule with target @a${X}cde
+main.stu:5:1: rule with target @abc${Y}e
+main.stu:1:5: @abcde is needed by 'A'

@@ -13,7 +13,8 @@ error=0
 #   $1	 Correct exit code
 #   $2   Version in %version statement of file 1
 #   $3   Version in %version statement of file 2
-do_test() {
+do_test()
+{
 	exitcode_correct="$1"
 	version1="$2"
 	version2="$3"
@@ -34,7 +35,7 @@ B { echo CORRECT >B }
 EOF
 
 	../../stu.test -f $STUFILE1 2>list.err
-	exitcode_actual="$?"
+	exitcode_actual=$?
 	echo >&2 "	exitcode=$exitcode_actual"
 	if [ "$exitcode_actual" != "$exitcode_correct" ] ; then
 		echo >&2 "*** $0:  Error in case $1 $2"
@@ -55,7 +56,7 @@ EOF
 }
 
 # This code is identical to what ./mkversion does
-VERSION="$(echo $(cat ../../VERSION))"
+VERSION=$(echo $(cat ../../VERSION))
 echo "VERSION='$VERSION'" 
 
 if echo "$VERSION" | grep -qEv '[0-9]+\.[0-9]+\.[0-9]+' ; then
@@ -63,9 +64,9 @@ if echo "$VERSION" | grep -qEv '[0-9]+\.[0-9]+\.[0-9]+' ; then
 	exit 1
 fi
 
-MAJOR="$(echo "$VERSION" | sed -e 's/^\([0-9]\{1,\}\)\.[0-9]\{1,\}\.[0-9]\{1,\}$/\1/')"
-MINOR="$(echo "$VERSION" | sed -e 's/^[0-9]\{1,\}\.\([0-9]\{1,\}\)\.[0-9]\{1,\}$/\1/')"
-PATCH="$(echo "$VERSION" | sed -e 's/^[0-9]\{1,\}\.[0-9]\{1,\}\.\([0-9]\{1,\}\)$/\1/')"
+MAJOR=$(echo "$VERSION" | sed -e 's/^\([0-9]\{1,\}\)\.[0-9]\{1,\}\.[0-9]\{1,\}$/\1/')
+MINOR=$(echo "$VERSION" | sed -e 's/^[0-9]\{1,\}\.\([0-9]\{1,\}\)\.[0-9]\{1,\}$/\1/')
+PATCH=$(echo "$VERSION" | sed -e 's/^[0-9]\{1,\}\.[0-9]\{1,\}\.\([0-9]\{1,\}\)$/\1/')
 
 echo "MAJOR='$MAJOR'" 
 echo "MINOR='$MINOR'" 
@@ -96,15 +97,16 @@ if [ $(( PATCH > 0 )) = 1 ] ; then
 	list_error="$list_error 0"
 fi
 
-n="$(echo $list | wc -w)"
+n=$(echo $list | wc -w)
 
-for i in $(seq $n) ; do
-	for j in $(seq $n) ; do
-		v1="$(echo $list | cut -d ' ' -f $i)"
-		v2="$(echo $list | cut -d ' ' -f $j)"
-		ret1="$(echo $list_error | cut -d ' ' -f $i)"
-		ret2="$(echo $list_error | cut -d ' ' -f $j)"
-		ret="$(expr $ret1 '|' $ret2)"
+
+for i in $(../../sh/seq $n) ; do
+	for j in $(../../sh/seq $n) ; do
+		v1=$(echo $list | cut -d ' ' -f $i)
+		v2=$(echo $list | cut -d ' ' -f $j)
+		ret1=$(echo $list_error | cut -d ' ' -f $i)
+		ret2=$(echo $list_error | cut -d ' ' -f $j)
+		ret=$(expr $ret1 '|' $ret2)
 		do_test $ret $v1 $v2
 	done
 done

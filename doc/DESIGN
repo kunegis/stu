@@ -47,13 +47,13 @@ The design considerations of Stu are:
   error messages, showing not only what went wrong, but how Stu got
   there.  Anyone who has ever wondered why a certain Make rule was
   executed (or not) will know the value of this. 
-* Portability:  Embrace POSIX as an underlying standard. Use the shell
-  as the underlying command interpreter. Don't try to create a
+* Portability:  Embrace POSIX as an underlying standard.  Use the shell
+  as the underlying command interpreter.  Don't try to create a
   purportedly portable layer on top of it, as POSIX _already is_ a
   portability layer.  Also, don't try to create a new portable language
   for executing commands, as /bin/sh _already is_ one.  Furthermore,
   don't use fancy libraries or hip programming languages.  Stu is
-  written in plain C++14 with only standard libraries.  Many other Make
+  written in plain C++ with only standard libraries.  Many other Make
   replacements are based on specific programming languages as their
   "base standard", effectively limiting their use to that language, and
   thus preventing projects to use multiple programming languages.

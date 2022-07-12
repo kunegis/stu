@@ -70,9 +70,9 @@ find these conventions very useful.
   error, values in the range 1-126 should be used.  It is a common error
   for badly-written programs to output an error message on error, but
   then exiting with status 0.  This breaks Stu.  The exit status 127 should only
-  be used when a program fails between fork() and exec(); this is whan /bin/sh
-  and Stu do.  Larger exit codes are used when processed are interupted by
-  signals, etc. 
+  be used when a program fails between fork() and exec(); this is what /bin/sh
+  and Stu do.  Larger exit codes are used automatically when processes are
+  interupted by signals, etc. 
 * Programs shouldn't generate logfiles when not asked to.  There are too many
   programs that clutter the current directory or the home directory with
   unasked-for logfiles.  Have a proper opt-in "log" option that lets the user

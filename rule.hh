@@ -6,13 +6,15 @@
  */
 
 #include <unordered_map>
+#include <unordered_set>
 
-#include "token.hh"
 #include "explain.hh"
+#include "preset.hh"
+#include "token.hh"
 
 class Rule
-/* A rule.  The class Rule allows parameters; there is no
- * "unparametrized rule" class.  */ 
+/* A rule.  The class Rule allows parameters; there is no "unparametrized rule"
+ * class.  */  
 {
 public:
 	vector <shared_ptr <const Place_Param_Target> > place_param_targets; 
@@ -115,44 +117,93 @@ public:
 };
 
 class Rule_Set
-/* A set of parametrized rules */
+/* A set of rules.  They can be both parametrized and unparametrized. */
 {
-private:
-	unordered_map <Target, shared_ptr <const Rule> > rules_unparametrized;
-	/* All unparametrized rules by their target.  Rules
-	 * with multiple targets are included multiple times, for each
-	 * of their targets.  None of the targets has flags set (except
-	 * F_TARGET_TARNSIENT of course.)  The targets are
-	 * canonicalized, both as keys in this map, as well as in each
-	 * Rule.  */ 
-
-	vector <shared_ptr <const Rule> > rules_parametrized;
-	/* All parametrized rules. */ 
-
 public:
-	void add(vector <shared_ptr <Rule> > &rules_);
+	void add(vector <shared_ptr <Rule> > &);
 	/* Add rules to this rule set.  While adding rules, check for
-	 * duplicates, and print and throw a logical error if there is.
-	 * If the given rule has duplicate targets, print and throw a
-	 * logical error.  */ 
+	 * duplicates, and print and throw a logical error if there is.  If a
+	 * given rule has duplicate targets, print and throw a logical error.  */  
 
 	shared_ptr <const Rule> get(Target target, 
 				    shared_ptr <const Rule> &param_rule,
 				    map <string, string> &mapping_parameter,
 				    const Place &place);
 	/* Match TARGET to a rule, and return the instantiated
-	 * (non-parametrized) corresponding rule.  TARGET must be
-	 * non-dynamic and not have flags (except F_TARGET_TRANSIENT).
-	 * MAPPING_PARAMETER must be empty.  Return null when no match
-	 * is found.  When a match is found, write the original
-	 * (possibly parametrized) rule into PARAM_RULE and the matched
-	 * parameters into MAPPING_PARAMETER.  Throws errors, in which
-	 * case PARAM_RULE is never set.  PLACE is the place of the
-	 * dependency; used in error messages.  */ 
+	 * (non-parametrized) corresponding rule.  TARGET must be non-dynamic
+	 * and not have flags (except F_TARGET_TRANSIENT).  MAPPING_PARAMETER
+	 * must be empty.  Return null when no match is found.  When a match is
+	 * found, write the original (possibly parametrized) rule into
+	 * PARAM_RULE and the matched parameters into MAPPING_PARAMETER.  Throws
+	 * errors, in which case PARAM_RULE is never set.  PLACE is the place of
+	 * the dependency; used in error messages.  */ 
 
 	void print() const;
 	/* Print the rule set to standard output, as used by the -P and
 	 * -d options */   
+
+private:
+
+	unordered_map <Target, shared_ptr <const Rule> > rules_unparam;
+	/* All unparametrized rules by their target.  Rules with multiple
+	 * targets are included multiple times, for each of their targets.  None
+	 * of the targets has flags set (except F_TARGET_TARNSIENT.)  The
+	 * targets are canonicalized, both as keys in this map, as well as in
+	 * each Rule.  */ 
+
+	unordered_set <shared_ptr <const Rule> > rules_param;
+	/* All parametrized rules.  Each parametrized rule is here, and in one
+	 * more of the containers below.  */
+	
+	Preset <shared_ptr <const Rule> > rules_param_prefix, rules_param_suffix;
+	/* All parametrized rules that have a target with a prefix/suffix,
+	 * stored by each of their affixes.  In SUFFIX, everything is reversed,
+	 * so access must use reversed strings.  */
+	
+	vector <shared_ptr <const Rule> > rules_param_bare;
+	/* All parametrized rules where at least one target is affixless, or in
+	 * which there is an affix which, due to special canonicalization rules
+	 * (see manpage), is not present in a matched string.  */ 
+};
+
+/* 
+ * Helper class to find the best matching rule. 
+ */
+class Best_Rule_Finder
+{
+public:
+	void add(const Target &, shared_ptr <const Rule> );
+	size_t count() const {
+		assert(rules_best.size() == place_param_targets_best.size()); 
+		return rules_best.size();
+	}	
+
+	/* Return all equally best targets.  They are returned as a map by
+	 * place, so iterating over them will give a consistent order, for
+	 * consistent error messages.  */
+	const map <Place, shared_ptr <const Place_Param_Target> > &targets_best() const; 
+
+	/* Access the best rule.  The best rule must be unique.  */
+	const shared_ptr <const Rule> &rule_best() const {
+		assert(rules_best.size() == 1);
+		return rules_best[0];
+	}
+	map <string, string> &mapping_best() {
+		assert(rules_best.size() == 1);
+		return mappings_best[0];
+	}
+	
+private:
+	/* Element [0] corresponds to the best rule. */ 
+	vector <shared_ptr <const Rule> > rules_best;
+	vector <map <string, string> > mappings_best; 
+	vector <vector <size_t> > anchorings_best;
+	vector <int> priorities_best;
+	vector <shared_ptr <const Place_Param_Target> > place_param_targets_best;
+
+	/* The same as PLACE_PARAM_TARGETS_BEST, but sorted by place.  Filled on
+	 * demand.  */ 
+	mutable map <Place, shared_ptr <const Place_Param_Target> > best_sorted;
 };
 
 Rule::Rule(vector <shared_ptr <const Place_Param_Target> > &&place_param_targets_,
@@ -244,7 +295,8 @@ Rule::instantiate(shared_ptr <const Rule> rule,
 		return rule;
 	}
 
-	vector <shared_ptr <const Place_Param_Target> > place_param_targets(rule->place_param_targets.size());
+	vector <shared_ptr <const Place_Param_Target> >
+		place_param_targets(rule->place_param_targets.size());
 	for (size_t i= 0;  i < rule->place_param_targets.size();  ++i) 
 		place_param_targets[i]= rule->place_param_targets[i]->instantiate(mapping);
 
@@ -366,11 +418,11 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 			for (auto place_param_target:  rule->place_param_targets) {
 				Target target= place_param_target->unparametrized(); 
 
-				if (rules_unparametrized.count(target)) {
+				if (rules_unparam.count(target)) {
 					place_param_target->place <<
 						fmt("there must not be a second rule for target %s", 
 						    target.format_err());
-					auto rule_2= rules_unparametrized.at(target); 
+					auto rule_2= rules_unparam.at(target); 
 					for (auto place_param_target_2: rule_2->place_param_targets) {
 						assert(place_param_target_2->place_name.get_n() == 0);
 						if (place_param_target_2->unparametrized() == target) {
@@ -382,11 +434,45 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 					}
 					throw ERROR_LOGICAL; 
 				}
-				rules_unparametrized[target]= rule;
+				rules_unparam[target]= rule;
 			}
 		} else {
-			rule->canonicalize(); 
-			rules_parametrized.push_back(rule); 
+			rules_param.insert(rule); 
+
+			bool found_bare= false;
+			for (auto target: rule->place_param_targets) {
+				const Name &name= target->place_name;
+				assert(name.is_parametrized()); 
+				const string prefix= name.get_texts()[0];
+				const string suffix= name.get_texts()[name.get_n()]; 
+				if (prefix.empty() && suffix.empty()) {
+					found_bare= true;
+				}
+				if (!prefix.empty()) {
+					rules_param_prefix.insert(prefix, rule);
+				}
+				if (!suffix.empty()) {
+					string suffix_inv= suffix;
+					reverse_string(suffix_inv); 
+					rules_param_suffix.insert(suffix_inv, rule); 
+				}
+
+				/* Set FOUND_BARE when the target starts/end with a
+				 * special canonicalization string */
+
+				/* Special rule (a):  Target starts with './' follwed by
+				 * a parameter */
+				if (prefix == "./") 
+					found_bare= true;
+				/* Special rules (b) and (c):  Target starts
+				 * with a parameter, followed by a slash */
+				if (prefix.empty() && name.get_texts()[1][0] == '/') 
+					found_bare= true;
+			}
+
+			if (found_bare) {
+				rules_param_bare.push_back(rule); 
+			}
 		}
 	}
 }
@@ -407,8 +493,8 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 	 * begin with.  (I.e., if multiple unparametrized rules for the same
 	 * filename exist, then that error is caught earlier when the
 	 * Rule_Set is built.)  */ 
-	auto i= rules_unparametrized.find(target);
-	if (i != rules_unparametrized.end()) {
+	auto i= rules_unparam.find(target);
+	if (i != rules_unparam.end()) {
 		shared_ptr <const Rule> rule= i->second;
 		assert(rule != nullptr); 
 		assert(rule->place_param_targets.front()->place_name.get_n() == 0);
@@ -424,124 +510,163 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 		}
 		assert(found); 
 #endif 
-
 		param_rule= rule; 
 		return rule;
 	}
 
-	/* Search the best parametrized rule.  Since this implementation
-	 * does not have an index for parametrized rules, we simply
-	 * check all rules, and choose the best-fitting one.  This can
-	 * be optimized, but the optimization is not trivial.  */ 
+	/*
+	 * Parametrized rules
+	 */
+	
+	Best_Rule_Finder best_rule_finder;
 
-	/* Element [0] corresponds to the best rule. */ 
-	vector <shared_ptr <const Rule> > rules_best;
-	vector <map <string, string> > mappings_best; 
-	vector <vector <size_t> > anchorings_best;
-	vector <int> priorities_best;
-	vector <shared_ptr <const Place_Param_Target> > place_param_targets_best; 
-
-	for (auto &rule:  rules_parametrized) {
-
-		for (auto &place_param_target:  rule->place_param_targets) {
-
-			assert(place_param_target->place_name.get_n() > 0);
-		
-			map <string, string> mapping;
-			vector <size_t> anchoring;
-			int priority;
-
-			/* The parametrized rule is of another type */ 
-			if (target.get_front_word() !=
-			    (place_param_target->flags & F_TARGET_TRANSIENT))
-				continue;
-
-			/* The parametrized rule does not match */ 
-			if (! place_param_target->place_name.match(target.get_name_nondynamic(),
-								   mapping, anchoring, priority))
-				continue; 
-
-			assert(anchoring.size() == 
-			       (2 * place_param_target->place_name.get_n())); 
-
-			size_t k= rules_best.size(); 
-			assert(k == anchorings_best.size()); 
-			assert(k == priorities_best.size());
-			assert(k == mappings_best.size());
-
-			/* Check whether the rule is dominated by at least one other rule */
-			for (size_t j= 0;  j < k;  ++j) {
-				if (Name::anchoring_dominates
-				    (anchorings_best[j], anchoring,
-				     priorities_best[j], priority)) {
-					goto dont_add;
-				}
-			}
-
-			/* Check whether the rule dominates all other rules */ 
-			{
-				bool is_best= true;
-				for (ssize_t j= 0;  is_best && j < (ssize_t) k;  ++j) {
-					if (! Name::anchoring_dominates
-					    (anchoring, anchorings_best[j],
-					     priority, priorities_best[j]))
-						is_best= false;
-				}
-				if (is_best) {
-					k= 0;
-				}
-			} 
-			rules_best.resize(k+1); 
-			mappings_best.resize(k+1);
-			anchorings_best.resize(k+1);
-			priorities_best.resize(k+1); 
-			place_param_targets_best.resize(k+1); 
-			rules_best[k]= rule;
-			swap(mapping, mappings_best[k]);
-			swap(anchoring, anchorings_best[k]);
-			priorities_best[k]= priority; 
-			place_param_targets_best[k]= place_param_target;
-		dont_add:;
-		}
+	/* Search the best parametrized rule, if there is an affix in the rule */
+	for (auto it= rules_param_prefix.find(target.get_name_nondynamic());
+	     it != rules_param_prefix.end();  ++it) {
+		best_rule_finder.add(target, *it); 
+	}
+	string target_reversed= target.get_name_nondynamic();
+	reverse_string(target_reversed); 
+	for (auto it= rules_param_suffix.find(target_reversed);
+	     it != rules_param_suffix.end();  ++it) {
+		best_rule_finder.add(target, *it); 
+	}
+	
+	/* Search the best parametrized rule, if the rules are affixless */
+	for (auto &rule:  rules_param_bare) {
+		best_rule_finder.add(target, rule); 
 	}
 
 	/* No rule matches */ 
-	if (rules_best.size() == 0) {
+	if (best_rule_finder.count() == 0) {
 		return nullptr; 
 	}
 
-	/* More than one rule matches:  error */ 
-	if (rules_best.size() > 1) {
+	/* More than one rule matches:  error */
+	if (best_rule_finder.count() != 1 ) {
 		place << fmt("multiple minimal matching rules for target %s", target.format_err());
-		for (auto &place_param_target:  place_param_targets_best) {
-			place_param_target->place <<
+		for (auto &place_param_target:
+			     best_rule_finder.targets_best()) {
+			place_param_target.second->place <<
 				fmt("rule with target %s", 
-				    place_param_target->format_err()); 
+				    place_param_target.second->format_err()); 
 		}
 		explain_minimal_matching_rule(); 
 		throw ERROR_LOGICAL; 
 	}
-	assert(rules_best.size() == 1); 
 
 	/* Instantiate the rule */ 
-	shared_ptr <const Rule> rule_best= rules_best[0];
-	swap(mapping_parameter, mappings_best[0]); 
-	shared_ptr <const Rule> ret(Rule::instantiate(rule_best, mapping_parameter));
+	shared_ptr <const Rule> rule_best=
+		best_rule_finder.rule_best();
+	swap(mapping_parameter,
+	     best_rule_finder.mapping_best()); 
+	shared_ptr <const Rule> ret
+		(Rule::instantiate(best_rule_finder.rule_best(), mapping_parameter));
 	param_rule= rule_best; 
 	return ret;
 }
 
 void Rule_Set::print() const
 {
-	for (auto i:  rules_unparametrized)  {
+	for (auto i:  rules_unparam)  {
 		string text= i.second->format_out(); 
 		puts(text.c_str()); 
 	}
 
-	for (auto i:  rules_parametrized)  {
+	for (auto i:  rules_param)  {
 		string text= i->format_out(); 
 		puts(text.c_str()); 
 	}
+}
+
+void Best_Rule_Finder::add(const Target &target, shared_ptr <const Rule> rule)
+{
+	best_sorted.clear(); 
+
+	for (auto &place_param_target:  rule->place_param_targets) {
+
+		assert(place_param_target->place_name.get_n() > 0);
+		
+		map <string, string> mapping;
+		vector <size_t> anchoring;
+		int priority;
+
+		/* The parametrized rule is of another type */ 
+		if (target.get_front_word() !=
+		    (place_param_target->flags & F_TARGET_TRANSIENT))
+			continue;
+
+		/* The parametrized rule does not match */ 
+		if (! place_param_target->place_name.match(target.get_name_nondynamic(),
+							   mapping, anchoring, priority))
+			continue; 
+
+		assert(anchoring.size() == 2 * place_param_target->place_name.get_n()); 
+
+		size_t k= rules_best.size(); 
+		assert(k == anchorings_best.size()); 
+		assert(k == priorities_best.size());
+		assert(k == mappings_best.size());
+
+		/* Check whether the rule is dominated by at least one other
+		 * rule; also, avoid inserting the same rule twice (which
+		 * happens if the rule was found from both a prefix and a
+		 * suffix.)  But note that there can be two parametrized
+		 * targets in one rule which both match the target, in which
+		 * case we do want to throw a "duplicate rule" error (because
+		 * Stu wouldn't know how to chose the parameter), and therefore
+		 * we also need to compare anchorings.  */
+		for (size_t j= 0;  j < k;  ++j) {
+			if (rule == rules_best[j] 
+			    && anchoring == anchorings_best[j])
+				return;
+			if (Name::anchoring_dominates
+			    (anchorings_best[j], anchoring,
+			     priorities_best[j], priority)) 
+				return;
+		}
+
+		/* Check whether the rule dominates all other rules */ 
+		{
+			bool is_best= true;
+			for (ssize_t j= 0;  is_best && j < (ssize_t) k;  ++j) {
+				if (! Name::anchoring_dominates
+				    (anchoring, anchorings_best[j],
+				     priority, priorities_best[j]))
+					is_best= false;
+			}
+			if (is_best) {
+				k= 0;
+			}
+		} 
+		rules_best.resize(k+1); 
+		mappings_best.resize(k+1);
+		anchorings_best.resize(k+1);
+		priorities_best.resize(k+1); 
+		place_param_targets_best.resize(k+1); 
+		rules_best[k]= rule;
+		swap(mapping, mappings_best[k]);
+		swap(anchoring, anchorings_best[k]);
+		priorities_best[k]= priority; 
+		place_param_targets_best[k]= place_param_target;
+	}
+}
+
+const map <Place, shared_ptr <const Place_Param_Target> > &Best_Rule_Finder::targets_best() const
+{
+	assert(! place_param_targets_best.empty());
+
+	if (best_sorted.empty()) {
+
+		for (auto &place_param_target:
+			     place_param_targets_best) {
+			best_sorted[place_param_target->place]= place_param_target; 
+		}
+
+		assert(place_param_targets_best.size() == best_sorted.size()); 
+	}
+
+	return best_sorted; 
 }
 
 #endif /* ! RULE_HH */

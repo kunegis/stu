@@ -1,0 +1,37 @@
+# staircase of common suffixes (all matching)
+
+A:  list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa { cp list.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa A ; }
+
+${x}a { exit 1 ; }
+${x}aa { exit 1 ; }
+${x}aaa { exit 1 ; }
+${x}aaaa { exit 1 ; }
+${x}aaaaa { exit 1 ; }
+${x}aaaaaa { exit 1 ; }
+${x}aaaaaaa { exit 1 ; }
+${x}aaaaaaaa { exit 1 ; }
+${x}aaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa { exit 1 ; }
+${x}aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa = {CORRECT}

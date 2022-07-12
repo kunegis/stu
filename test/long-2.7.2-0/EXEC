@@ -1,0 +1,99 @@
+#! /bin/sh
+#
+# In a loop, create a random list of names, and then run a test with those
+# names.
+#
+
+set -e
+
+output_case()
+{
+	echo >&2 ls -l list.stu list.A
+
+	echo >&2 'Content of list.stu:'
+	echo >&2 '------------------'
+	cat  >&2 list.stu
+	echo >&2 '------------------'
+
+	echo >&2 'Content of list.A:'
+	echo >&2 '------------------'
+	cat  >&2 list.A
+	echo >&2 '------------------'
+}
+
+n=0
+t=$(../../sh/now)
+
+for i in $(../../sh/seq 100) ; do
+
+	../../sh/rm_tmps
+
+	n=$(( n + 1 ))
+	
+	echo CORRECT >list.correct
+	
+	# 'list.list' is the list of names, one on each line.   They do not
+	# contain '.'.
+	{
+		awk -v n="$n" -v t="$t" '
+		BEGIN { 
+		        srand(t + n); 
+		        for (j = 0 ; j < 50; ++j) { 
+		      	        text= ""; 
+			        len= 1 + int((1 - (1 - rand()) ^ 2) * 15); 
+				for (i = 0 ; i < len ; ++i) { 
+				        c = sprintf("%c", 97 + int(rand() * 26)); 
+					text = text c; 
+				} 
+				print(text); 
+			}
+		}
+		'
+	} | sort -u | ../../sh/shuf >list.list
+
+	if [ -f list.list ] && ! [ -s list.list ] ; then
+		echo >&2 '*** Warning: skipped case because it is empty'
+		continue
+	fi
+
+	mkdir list.dir 
+	{
+		first=$(head -n 1 <list.list)
+		echo "list.A:  $first { cp \"$first\" list.A ; }"
+
+		<list.list ../../sh/shuf | while read name ; do
+			if [ "$name" = "$first" ] ; then
+				echo "$name = {CORRECT}"
+			else
+				echo "$name { exit 1 ; }"
+			fi
+		done
+	}>list.dir/list.stu
+
+	cd list.dir
+
+	set +e
+	../../../stu.test -f list.stu
+	exitstatus=$?
+	set -e
+
+	[ "$exitstatus" = 0 ] || {
+		echo >&2 "*** Error:  exitstatus must be 0, is $exitstatus"
+		output_case
+		exit 1
+	}
+
+	test -f list.A || {
+		echo >&2 '*** Error:  list.A must be created'
+		output_case
+		exit 1
+	}
+	
+	cmp ../list.correct list.A || {
+		echo >&2 '*** Error:  list.A must contain CORRECT'
+		output_case
+		exit 1
+	}
+
+	cd ..
+done

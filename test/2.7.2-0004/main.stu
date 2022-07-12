@@ -1,0 +1,5 @@
+# different prefix with UTF-8 characters
+
+A:  list.äœü.A   { cp list.äœü.A A ; }
+>list.äœü.$a     { echo CORRECT ; }
+>list.äœü.abc.$a { echo CORRECT ; }

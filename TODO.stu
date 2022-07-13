@@ -1,8 +1,4 @@
 #
-# Run the various sanitizers (see Makefile.devel). 
-#
-
-#
 # Play around with __builtin_unreachable() for assert.  (Will later be some form of assume, C++23)
 #
 
@@ -19,7 +15,9 @@
 #
 
 #
-# Using a newer G++ version, try out:
-#    -fsanitize=leak -fsanitize=undefined 
+# Try out various sanitizers (some may need a newer GCC)
+#    -fsanitize=leak
+#    -fsanitize=undefined 
 #    -fsanitize=address      // not used because of false positives (due to Execution caching)
+#    <others>
 #

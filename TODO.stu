@@ -1,8 +1,6 @@
 #
 # Use -fwhole-program :  make config use it
 #
-# Maybe also, -flto .
-#
 
 #
 # Run the various sanitizers (see Makefile.devel). 

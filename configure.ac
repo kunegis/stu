@@ -38,6 +38,8 @@ AM_MAINTAINER_MODE([disable])
 AC_PROG_CXX
 AC_LANG(C++)
 
+m4_pattern_forbid([AX_CHECK_COMPILE_FLAG])dnl
+
 #
 # Checks for specific features.  None of these is enabled at the moment,
 # as all work on the platforms we used Stu on.  Also, they are all
@@ -65,6 +67,11 @@ AC_COMPILE_IFELSE( [AC_LANG_PROGRAM([[#include <time.h>]],
                       AC_DEFINE_UNQUOTED([HAVE_CLOCK_REALTIME_COARSE], 0, [Define to 1 if you have CLOCK_REALTIME_COARSE.])
                     ]
                  )
+
+#
+# -fwhole-program
+#
+AX_CHECK_COMPILE_FLAG(-fwhole-program, [[CXXFLAGS="$CXXFLAGS -fwhole-program"]])
 
 #
 # Output

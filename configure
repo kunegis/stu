@@ -3145,6 +3145,7 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
+
 #
 # Checks for specific features.  None of these is enabled at the moment,
 # as all work on the platforms we used Stu on.  Also, they are all
@@ -3396,6 +3397,45 @@ _ACEOF
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+#
+# -fwhole-program
+#
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -fwhole-program" >&5
+$as_echo_n "checking whether C++ compiler accepts -fwhole-program... " >&6; }
+if ${ax_cv_check_cxxflags___fwhole_program+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  ax_check_save_flags=$CXXFLAGS
+  CXXFLAGS="$CXXFLAGS  -fwhole-program"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ax_cv_check_cxxflags___fwhole_program=yes
+else
+  ax_cv_check_cxxflags___fwhole_program=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CXXFLAGS=$ax_check_save_flags
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___fwhole_program" >&5
+$as_echo "$ax_cv_check_cxxflags___fwhole_program" >&6; }
+if test "x$ax_cv_check_cxxflags___fwhole_program" = xyes; then :
+  CXXFLAGS="$CXXFLAGS -fwhole-program"
+else
+  :
+fi
+
 
 #
 # Output

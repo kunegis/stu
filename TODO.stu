@@ -1,5 +1,5 @@
 #
-# Use -fwhole-program .
+# Use -fwhole-program :  make config use it
 #
 # Maybe also, -flto .
 #
@@ -18,4 +18,14 @@
 
 #
 # preset.h:  Use to_address(v.end()) instead of v.data() + v.size()
+#
+
+#
+# Fuzzing:  move it to be a test
+#
+
+#
+# Using a newer G++ version, try out:
+#    -fsanitize=leak -fsanitize=undefined 
+#    -fsanitize=address      // not used because of false positives (due to Execution caching)
 #

@@ -41,15 +41,11 @@ CXXFLAGS_DEBUG=  -ggdb -O0 -Werror \
     -Wunused -Wundef -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
     -Wnon-virtual-dtor -Wformat-nonliteral \
     -Wsuggest-attribute=format             \
-    -Wlogical-op -Wredundant-decls \
-    -fno-gnu-keywords              \
+    -Wlogical-op -Wredundant-decls         \
+    -fno-gnu-keywords                      \
     -Wno-unknown-warning-option -Wno-pessimizing-move
 
-# TODO using a newer G++ version, try out:
-#    -fsanitize=leak -fsanitize=undefined 
-#    -fsanitize=address      // not used because of false positives (due to Execution caching)
-
-CXXFLAGS_PROF=   -pg -O3 -DNDEBUG 
+CXXFLAGS_PROF= -pg -O2 -DNDEBUG 
 
 CXXFLAGS_ALL_DEBUG=  $(CXXFLAGS_DEBUG)  $(CXXFLAGS_OTHER)
 CXXFLAGS_ALL_PROF=   $(CXXFLAGS_PROF)   $(CXXFLAGS_OTHER)
@@ -116,12 +112,11 @@ clean:
 #
 
 all-auto:  configure.ac VERSION Makefile.am
-	echo BUILDING all-auto 
-	rm -Rf Makefile configure config.log config.status autom4te.cache
+	rm -Rf Makefile Makefile.in configure config.log config.status autom4te.cache
 	mkdir -p build-aux
 	aclocal
 	automake --add-missing
-	autoconf
+	autoconf -Im4
 	sh/replacelinks build-aux/*
 	./configure
 	touch all-auto

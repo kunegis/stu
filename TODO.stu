@@ -1,8 +1,4 @@
 #
-# Use -fwhole-program :  make config use it
-#
-
-#
 # Run the various sanitizers (see Makefile.devel). 
 #
 

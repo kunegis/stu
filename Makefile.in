@@ -305,7 +305,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
-AM_CXXFLAGS = -DNDEBUG -s -std=c++14 
+AM_CXXFLAGS = -O2 -DNDEBUG -s -std=c++14
 stu_SOURCES = stu.cc
 man_MANS = stu.1
 ACLOCAL_AMFLAGS = -I m4

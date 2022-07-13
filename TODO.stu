@@ -1,4 +1,8 @@
 #
+# Rerun the whole thing because of -O2
+#
+
+#
 # Run the various sanitizers (see Makefile.devel). 
 #
 

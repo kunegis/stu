@@ -2,7 +2,7 @@
 #
 # Check that source files do not contain certain patterns used for
 # temporary comments used during development of Stu.  These include:
-# '//' (for C++ code), '#''#' (for shell scripts or Stu files), 'XXX'
+# '//' (for C++ code), '#''#' (for shell scripts or Stu files), 'XX''X'
 # (for some source files), tabs in the manpage.
 #
 
@@ -30,11 +30,11 @@ xargs grep -lF '#''#' && {
 }
 
 #
-# 'XXX'
+# 'XX''X'
 #
 
-grep -F XXX NEWS stu.1.in && {
-	echo >&2 "*** Certain files must not contain 'XXX'"
+grep -F XX''X NEWS stu.1.in stu.cc *.hh sh/* && {
+	echo >&2 "*** Certain files must not contain 'XX""X'"
 	ret=1
 }
 

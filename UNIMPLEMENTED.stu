@@ -10,8 +10,17 @@
 #==== Next versions of C++ ====
 
 #
+# preset.h:  Use to_address(v.end()) instead of v.data() + v.size()  (needs C++20)
+#
+
+#
 # Use standard formatting functions instead of our own.  (C++20)  We can also
 # use custom formatters for the colors, etc.
+#
+
+#
+# Play around with __builtin_unreachable() for assert.  (Will later be some form
+# of assume, C++23)  
 #
 
 #==== Optimizations ====

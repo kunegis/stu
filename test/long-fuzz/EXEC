@@ -1,0 +1,24 @@
+#! /bin/sh
+#
+# Rudimentary fuzz testing.  Run Stu on an input file with random bytes.  If
+# something goes wrong (i.e., an assertion fails), the exit status is
+# 128+SIGABRT. 
+#
+
+set -e
+
+../../sh/seq 1000 |
+while read line ; do
+	rm -f list.*
+	dd if=/dev/urandom bs=1 count=3  >list.stu 2>/dev/null
+	set +e
+	../../stu.test -f list.stu >list.out 2>list.err
+	status=$?
+	set -e
+	if [ "$status" -gt 4 ] ; then
+		echo >&2 '*** Error'
+		echo "status=$status"
+		hexdump -C list.stu
+		exit 1
+	fi
+done

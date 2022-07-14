@@ -1,23 +1,13 @@
 #
-# Play around with __builtin_unreachable() for assert.  (Will later be some form of assume, C++23)
-#
-
-#
-# Use string_view where appropriate. (needs C++17)
-#
-
-#
-# preset.h:  Use to_address(v.end()) instead of v.data() + v.size()
-#
-
-#
-# Fuzzing:  move it to be a test
-#
-
-#
 # Try out various sanitizers (some may need a newer GCC)
 #    -fsanitize=leak
 #    -fsanitize=undefined 
 #    -fsanitize=address      // not used because of false positives (due to Execution caching)
 #    <others>
+#
+
+#
+# Use string_view where appropriate. (needs C++17).
+#
+# Switch to C++17.
 #

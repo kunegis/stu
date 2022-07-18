@@ -4,6 +4,7 @@ stu
 stu.debug
 stu.prof
 stu.test
+stu.sani_*
 gmon.out
 analysis.prof
 stu.o

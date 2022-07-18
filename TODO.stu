@@ -1,13 +1,12 @@
 #
-# Try out various sanitizers (some may need a newer GCC)
-#    -fsanitize=leak
-#    -fsanitize=undefined 
-#    -fsanitize=address      // not used because of false positives (due to Execution caching)
-#    <others>
-#
-
-#
 # Use string_view where appropriate. (needs C++17).
 #
 # Switch to C++17.
+#
+
+#
+# Try out various sanitizers (some may need a newer GCC)
+#    -fsanitize=address      // not used because of false positives (due to Execution caching)
+#    -fsanitize=leak         // (Execution caching)
+#    <others>
 #

@@ -16,6 +16,9 @@ all-test: \
     test_comments \
     test_unit.ndebug 
 
+all-sani: \
+	test_unit.sani_undefined
+
 .PHONY:  all-devel all-test clean
 
 include Makefile
@@ -45,16 +48,21 @@ CXXFLAGS_DEBUG=  -ggdb -O0 -Werror \
     -fno-gnu-keywords                      \
     -Wno-unknown-warning-option -Wno-pessimizing-move
 
-CXXFLAGS_PROF= -pg -O2 -DNDEBUG 
+CXXFLAGS_PROF= -pg -O2 -DNDEBUG
+CXXFLAGS_SANI= -pg -O2 -Werror -Wno-unused-result
 
 CXXFLAGS_ALL_DEBUG=  $(CXXFLAGS_DEBUG)  $(CXXFLAGS_OTHER)
 CXXFLAGS_ALL_PROF=   $(CXXFLAGS_PROF)   $(CXXFLAGS_OTHER)
+CXXFLAGS_ALL_SANI=   $(CXXFLAGS_SANI)   $(CXXFLAGS_OTHER)
 
 stu.debug:  *.cc *.hh version.hh all-auto
 	$(CXX) $(CXXFLAGS_ALL_DEBUG)  stu.cc -o stu.debug
 
-stu.prof: *.cc *.hh version.hh all-auto 
+stu.prof:   *.cc *.hh version.hh all-auto 
 	$(CXX) $(CXXFLAGS_ALL_PROF)   stu.cc -o stu.prof
+
+stu.sani_undefined: *.cc *.hh version.hh all-auto
+	$(CXX) $(CXXFLAGS_ALL_SANI) -fsanitize=undefined -fsanitize-undefined-trap-on-error stu.cc -o stu.sani_undefined
 
 version.hh:  VERSION sh/mkversion
 	sh/mkversion >version.hh
@@ -75,18 +83,18 @@ test_sed: sh/testsed test test/* test/*/* sh
 test_comments:  *.cc *.hh sh/testcomments Makefile.devel sh sh/* test test/* test/*/* 
 	sh/testcomments && touch $@
 
-test_fuzz.debug:  stu.debug sh/fuzz
-	sh/fuzz
-
 #
 # Unit tests
 # 
 
-test_unit.debug: stu.debug sh/mktest test 
+test_unit.debug:  stu.debug sh/mktest test test/* test/*/* 
 	sh/mktest && touch $@
 
-test_unit.ndebug: stu sh/mktest test test/* test/*/* 
+test_unit.ndebug: stu       sh/mktest test test/* test/*/* 
 	NDEBUG=1 sh/mktest && touch $@
+
+test_unit.sani_undefined:   stu.sani_undefined sh/mktest test test/* test/*/*
+	VARIANT=sani_undefined sh/mktest && touch $@
 
 #
 # Manpage

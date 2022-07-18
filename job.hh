@@ -925,9 +925,6 @@ void Job::init_tty()
 {
 	assert(tty == -1); 
 
-	if (! isatty(2)) 
-		return;
-
 	tty= open("/dev/tty", O_RDWR | O_NONBLOCK | O_CLOEXEC);
 	if (tty < 0) {
 		assert(tty == -1); 

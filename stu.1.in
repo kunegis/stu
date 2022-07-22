@@ -1038,7 +1038,11 @@ harmful as recursive Make.
 Used to determine whether to use color output.  This variable must be
 set to a value different from 'dumb', and
 .BR isatty (3)
-must return 1 for color to be enabled.   
+must return 1 for color to be enabled.  (Alternatively, color can be controlled by the
+.BR -y
+and 
+.BR -Y
+options.)
 
 .SH "SIGNALS"
 

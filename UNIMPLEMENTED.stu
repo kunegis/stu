@@ -10,6 +10,19 @@
 #==== Next versions of C++ ====
 
 #
+# Use string_view where appropriate. (needs C++17).
+#
+# Switch to C++17.
+#
+
+#
+# Try out various sanitizers (some may need a newer GCC)
+#    -fsanitize=address      // not used because of false positives (due to Execution caching)
+#    -fsanitize=leak         // (Execution caching)
+#    <others>
+#
+
+#
 # preset.h:  Use to_address(v.end()) instead of v.data() + v.size()  (needs C++20)
 #
 
@@ -21,6 +34,10 @@
 #
 # Play around with __builtin_unreachable() for assert.  (Will later be some form
 # of assume, C++23)  
+#
+
+#
+# Use flat_map where appropriate (C++23).
 #
 
 #==== Optimizations ====

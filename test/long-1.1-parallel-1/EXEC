@@ -1,4 +1,7 @@
 #! /bin/sh
+#
+# This test also used by "make prof". 
+#
 
 rm -f ? list.* || exit 2
 

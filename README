@@ -88,8 +88,9 @@ Bake, and Brew in referring to kitchen-related verbs, and also honors
 the author of the original Unix Make, Stuart Feldman.
 
 Stu was initiated by Jérôme Kunegis at the University of Koblenz-Landau
-(Germany), and is currently maintained at the University of Namur
-(Belgium), with help from other contributors; see the file AUTHORS.
+(Germany), was then maintained at the University of Namur (Belgium), and is now
+maintained by Jérôme Kunegis privately, with help from other contributors; see
+the file AUTHORS.  
 
 Stu is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free
@@ -105,6 +106,6 @@ For support, write to Jérôme Kunegis <kunegis@gmail.com>, or go to
 
 https://github.com/kunegis/stu
 
-Stu is a voluntary effort.  To support Stu, you may donate here:
+Stu is a voluntary effort.  If Stu is useful to you, please donate:
 
 https://www.paypal.com/donate?hosted_button_id=Q9JY2FB3AFHR6

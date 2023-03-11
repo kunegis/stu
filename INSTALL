@@ -50,6 +50,9 @@ In addition, Stu uses the following features, about which we are not
 * ASCII or an ASCII-compatible 8-bit encoding such as UTF-8 or ISO-8859-1
 * ANSI color code-compatible terminal (terminfo or termcap are not used)
 
+If you want to develop Stu (or run the tests), there are more dependencies, see
+doc/DEVEL. 
+
 ==== COMPILATION OPTIONS ====
 
 These are detected automatically by ./configure, but you may change them

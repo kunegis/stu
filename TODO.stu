@@ -1,0 +1,8 @@
+#
+# Move TODO.stu, UNIMPLEMENTED.stu and NEXT.stu to doc/. 
+#
+
+#
+# Have dedicated src/, bin/ and man/ directories.
+#
+

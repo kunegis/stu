@@ -20,7 +20,7 @@
  *            exactly two slashes is special.)
  *      - Remove ending /
  * 	    - except when the name contains only '/' characters, i.e.,
- *            when the name is '/' or or double slash. 
+ *            when the name is '/' or double slash. 
  *  - Fold .
  *      - ^/.$ -> /
  *      - ^./$ -> .
@@ -46,7 +46,6 @@ enum
 	A_BEGIN 	= 1 << 0,
 	A_END 		= 1 << 1,
 };
-
 
 char *canonicalize_string(Canon_Flags canon_flags, char *p);
 /* Canonicalize the string starting at P in-place.
@@ -83,8 +82,7 @@ char *canonicalize_string(Canon_Flags canon_flags, char *p)
 	if (canon_flags & A_BEGIN) 
 		d_head= d; 
 	
-	/* Main loop:  collapse multiple slashes */
-
+	/* Collapse multiple slashes */
 	while (*s) {
 		const char *s_next= strchr(s, '/');
 		if (! s_next) {
@@ -122,9 +120,9 @@ char *canonicalize_string(Canon_Flags canon_flags, char *p)
 	d= p; 
 
 	if (canon_flags & A_END && s[0] == '/' && s[1] == '.' && s[2] == '\0') {
-		if (canon_flags & A_BEGIN)
+		if (canon_flags & A_BEGIN) {
 			*++d= '\0'; 
-		else {
+		} else {
 			*d= '\0'; 
 		}
 		s += 2; 

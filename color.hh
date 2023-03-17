@@ -45,7 +45,6 @@
 class Color 
 {
 public:
-
 	static bool quotes, quotes_out; 
 	/* Whether single quotes have to be used.  Only set when color
 	 * is not used.  */   
@@ -86,16 +85,14 @@ const char *Color::out_print_word;
 
 void Color::set() 
 {
-	/* Logic:  Only use color when $TERM is defined, is not
-	 * equal to "dumb", and stderr/stdout is a TYY.  This is
-	 * the same logic as used by GCC.  */
+	/* Logic:  Only use color when $TERM is defined, is not equal to "dumb",
+	 * and stderr/stdout is a TYY.  This is  the same logic as used by GCC.  */ 
 
 	bool is_tty_out= false, is_tty_err= false;
 
 	const char *t= getenv("TERM");
 
 	if (t && strcmp(t, "dumb")) {
-
 		errno= 0;
 		is_tty_out= isatty(fileno(stdout)); 
 		if (! is_tty_out && errno != 0 && errno != ENOTTY) {
@@ -116,14 +113,10 @@ void Color::set(bool enable_color)
 	set(enable_color, enable_color); 
 }
 
+/* Note:  GCC additionally inserts "\33[K" sequences after each color code, to
+ * avoid a bug in some terminals.  This is not done here.  */
 void Color::set(bool enable_color_out, bool enable_color_err)
 {
-	/*
-	 * Note:  GCC additionally inserts "\33[K" sequences after each
-	 * color code, to avoid a bug in some terminals.  This is not
-	 * done here. 
-	 */
-
 	if (enable_color_out) {
 		quotes_out= false;
 		out_end=            "\33[0m";
@@ -140,20 +133,20 @@ void Color::set(bool enable_color_out, bool enable_color_err)
 
 	if (enable_color_err) {
 		quotes= false;
-		error=             "\33[31m";
-		warning=           "\33[35m";
-		word=              "\33[1m";
-		error_word=        "\33[1;31m"; 
-		warning_word=      "\33[1;35m"; 
-		end=               "\33[0m";
+		error=              "\33[31m";
+		warning=            "\33[35m";
+		word=               "\33[1m";
+		error_word=         "\33[1;31m"; 
+		warning_word=       "\33[1;35m"; 
+		end=                "\33[0m";
 	} else {
 		quotes= true;
-		error=        "";
-		warning=      "";
-		word=         ""; 
-		error_word=   ""; 
-		warning_word= ""; 
-		end=          "";
+		error=              "";
+		warning=            "";
+		word=               ""; 
+		error_word=         ""; 
+		warning_word=       ""; 
+		end=                "";
 	}
 }
 

@@ -25,10 +25,13 @@
 #
 
 #
-# Play around with __builtin_unreachable() for assert.  (Will later be some form
-# of assume, C++23)  
+# Use Assume (C++23).
 #
 
 #
 # Use flat_map where appropriate (C++23).
+#
+
+#
+# Check out new warnings and sanitizers.
 #

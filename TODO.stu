@@ -5,3 +5,15 @@
 #
 # Have dedicated src/, bin/ and man/ directories.
 #
+
+#
+# See whether source files can be split into smaller files.
+#
+
+#
+# Have a linter or similar.
+#
+
+#
+# Check out coverage tools.
+#

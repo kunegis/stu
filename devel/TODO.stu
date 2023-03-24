@@ -1,8 +1,4 @@
 #
-# Move TODO.stu, UNIMPLEMENTED.stu, NEXT.stu, etc. to doc/. 
-#
-
-#
 # Have dedicated src/, bin/ and man/ directories.
 #
 
@@ -16,4 +12,8 @@
 
 #
 # Check out coverage tools.
+#
+
+#
+# Have a test that tests whether ./configure && make && make install works
 #

@@ -7,8 +7,7 @@ all-devel: \
     stu.debug \
     stu.1 stu.text version.hh \
     stu \
-    all-auto \
-    all-test
+    all-auto all-test
 
 all-test: \
     test_options test_sed \
@@ -108,8 +107,7 @@ test_unit.sani_undefined:   stu.sani_undefined sh/mktest test test/* test/*/*
 stu.text:  stu.1
 	MANWIDTH=80 man ./stu.1 >stu.text
 
-# Note:  the ending ".1" indicates that the manpage is in Section 1
-# (commands).  It has nothing to do with the version number of Stu. 
+# Note:  the ending ".1" indicates that the manpage is in Section 1 (commands).
 stu.1:  stu.1.in VERSION sh/mkman
 	sh/mkman
 

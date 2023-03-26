@@ -17,3 +17,7 @@
 #
 # Have a test that tests whether ./configure && make && make install works
 #
+
+#
+# In stu-utils, have a script to auto-generate and auto-update a .gitignore file.
+#

@@ -307,7 +307,7 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
 AM_CXXFLAGS = -O2 -DNDEBUG -s -std=c++14
 stu_SOURCES = stu.cc
-man_MANS = stu.1
+man_MANS = man/stu.1
 ACLOCAL_AMFLAGS = -I m4
 all: all-am
 

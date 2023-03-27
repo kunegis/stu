@@ -11,13 +11,13 @@ ret=0
 
 <stu.cc sed -e '/^[[:space:]]*" *-[0-9a-zA-Z]/!d;s,^[^-]*-\(.\).*$,\1,' >testoptions.a
 
-<stu.1.in sed -e '/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-./!d;s/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-\(.\).*$/\1/' >testoptions.b
+<man/stu.1.in sed -e '/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-./!d;s/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-\(.\).*$/\1/' >testoptions.b
 
 if ! cmp testoptions.a testoptions.b ; then
-	echo >&2 "$0: *** The options given and 'stu.cc' are different from those given in 'stu.1.in'"
+	echo >&2 "$0: *** The options given and 'stu.cc' are different from those given in 'man/stu.1.in'"
 	echo >&2 "Options from 'stu.cc':"
 	cat >&2 testoptions.a
-	echo >&2 "Options from 'stu.1.in':"
+	echo >&2 "Options from 'man/stu.1.in':"
 	cat >&2 testoptions.b
 	echo >&2 "Diff:"
 	diff testoptions.a testoptions.b

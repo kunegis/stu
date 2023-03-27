@@ -9,6 +9,6 @@ AM_CXXFLAGS = -O2 -DNDEBUG -s -std=c++14
 bin_PROGRAMS = stu
 stu_SOURCES = stu.cc
 
-man_MANS = stu.1
+man_MANS = man/stu.1
 
 ACLOCAL_AMFLAGS = -I m4

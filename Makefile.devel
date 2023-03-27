@@ -5,7 +5,7 @@
 
 all-devel: \
     stu.debug \
-    stu.1 stu.text version.hh \
+    man/stu.1 MANPAGE version.hh \
     stu \
     all-auto all-test
 
@@ -78,7 +78,7 @@ tmp-prof/gmon.out:   stu.prof test/long-1.1-parallel-1/main.stu
 # Test
 #
 
-test_options:  sh/testoptions stu.cc stu.1.in
+test_options:  sh/testoptions stu.cc man/stu.1.in
 	sh/testoptions && touch $@
 
 test_sed: sh/testsed test test/* test/*/* sh 
@@ -104,11 +104,10 @@ test_unit.sani_undefined:   stu.sani_undefined sh/mktest test test/* test/*/*
 # Manpage
 #
 
-stu.text:  stu.1
-	MANWIDTH=80 man ./stu.1 >stu.text
+MANPAGE:  man/stu.1
+	MANWIDTH=80 man man/stu.1 >MANPAGE
 
-# Note:  the ending ".1" indicates that the manpage is in Section 1 (commands).
-stu.1:  stu.1.in VERSION sh/mkman
+man/stu.1:  man/stu.1.in VERSION sh/mkman
 	sh/mkman
 
 #

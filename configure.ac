@@ -31,7 +31,8 @@ AC_PREREQ([2.69])
 AC_INIT(stu, m4_esyscmd([tr -d ' \n' <VERSION]), kunegis@gmail.com, stu, https://github.com/kunegis/stu)
 
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([1.9 foreign])
+AC_CONFIG_SRCDIR([src/]) ## TODO added
+AM_INIT_AUTOMAKE([1.9 foreign subdir-objects])
 
 AM_MAINTAINER_MODE([disable])
 

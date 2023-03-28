@@ -1,9 +1,9 @@
 #
-# Have dedicated src/ and bin/ directories.
+# Have dedicated src/ and bin/ directories.  Also gmon.out. 
 #
 
 #
-# See whether source files can be split into smaller files.
+# See whether source files can be split into smaller files.  (execution.hh, etc.)
 #
 
 #

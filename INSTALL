@@ -51,7 +51,7 @@ In addition, Stu uses the following features, about which we are not
 * ANSI color code-compatible terminal (terminfo or termcap are not used)
 
 If you want to develop Stu (or run the tests), there are more dependencies, see
-doc/DEVEL. 
+devel/DEVEL. 
 
 ==== COMPILATION OPTIONS ====
 
@@ -63,7 +63,7 @@ by hand if necessary.
   supports nanosecond timestamps in principle. In practice, most systems
   are likely to support only a precision on the order of a millisecond.
   Works only on Linux, as it uses CLOCK_REALTIME_COARSE.  See the
-  comments in 'timestamp.hh'.  
+  comments in 'src/timestamp.hh'.
 
 ==== UNIT TESTS ====
 

@@ -12,11 +12,11 @@
 # 	codes.  Can for instance be piped into less -R to see all. 
 #
 
-rm -f stu.test
+rm -f bin/stu.test
 if [ "$NDEBUG" ] ; then
-	ln -s stu stu.test
+	ln -s stu bin/stu.test
 else
-	ln -s stu.debug stu.test
+	ln -s stu.debug bin/stu.test
 fi
 
 cd test
@@ -58,7 +58,7 @@ do
 
 		# 'sh/tty' makes sure that Stu sees stderr as a TTY,
 		# and outputs both stdout and stderr of Stu to stdout. 
-		eval ../../sh/tty ../../stu.test $CMD 
+		eval ../../sh/tty ../../bin/stu.test $CMD 
 
 		echo 
 

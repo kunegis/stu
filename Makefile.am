@@ -6,8 +6,8 @@ AUTOMAKE_OPTIONS = foreign
 
 AM_CXXFLAGS = -O2 -DNDEBUG -s -std=c++14
 
-bin_PROGRAMS = stu
-stu_SOURCES = stu.cc
+bin_PROGRAMS = stu 
+stu_SOURCES = src/stu.cc
 
 man_MANS = man/stu.1
 

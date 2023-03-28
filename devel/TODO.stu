@@ -1,5 +1,5 @@
 #
-# Have dedicated src/ and bin/ directories.  Also gmon.out. 
+# [subdirs] Have dedicated src/ and bin/ directories.  Also gmon.out. 
 #
 
 #

@@ -121,16 +121,5 @@ clean:
 # Autoconf
 #
 
-## TODO:  make the sed script longer.  Let it remove the rules for bin/stu and bin/stu.o, and replace by a single rule for bin/stu that compiles it directly. 
-all-auto:  configure.ac VERSION Makefile.am
-	rm -Rf Makefile Makefile.in Makefile.in.bak configure config.log config.status autom4te.cache 
-	mkdir -p build-aux
-	aclocal
-	automake --add-missing
-	cp Makefile.in Makefile.in.bak
-	sed -E <Makefile.in.bak >Makefile.in -e 's,stu\.cc,src/stu.cc,g;s,stu.\$$\(OBJEXT\),bin/stu.$$(OBJEXT),g;s,stu\$$\(EXEEXT\),bin/stu$$(EXEEXT),g'
-	rm Makefile.in.bak
-	autoconf -Im4
-	sh/replacelinks build-aux/*
-	./configure
-	touch all-auto
+all-auto:  configure.ac VERSION Makefile.am sh/setup_auto
+	sh/setup_auto

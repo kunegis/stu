@@ -1,20 +1,20 @@
 #! /bin/sh
 
-rm -f A
+rm -f A || exit 2
 
-../../stu.test -K & >list.out 2>list.err
-pid="$!"
+../../bin/stu.test -K & >list.out 2>list.err
+pid=$!
 
-sleep 1
+sleep 1 || exit 2
 
 kill -TERM "$pid"
 wait "$pid"
-exitcode="$?"
+exitstatus=$?
 
-# 143 = 128 + 15.  15 is the POSIX-mandate value of SIGTERM. 
-[ "$exitcode" = 143 ] || {
-	echo >&2 '*** Exit code must be larger than 128, but is not'
-	echo >&2 "exitcode='$exitcode'"
+# 143 = 128 + 15.  15 is the POSIX-mandated value of SIGTERM. 
+[ "$exitstatus" = 143 ] || {
+	echo >&2 '*** Exit status must be 143, but is not'
+	echo >&2 "exitcode='$exitstatus'"
 	exit 1
 }
 
@@ -23,9 +23,11 @@ exitcode="$?"
 	exit 1
 }
 
-lines="$(echo $(cat A | wc -l))"
+lines=$(echo $(cat A | wc -l))
 
 [ "$lines" = 2 ] || {
 	echo >&2 "*** File 'A' must contain exactly two lines"
 	exit 2
 }
+
+exit 0

@@ -1,9 +1,9 @@
 #! /bin/sh
 
-../../stu.test -P -f a.stu -f b.stu >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -P -f a.stu -f b.stu >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
+[ "$exitstatus" = 0 ] || {
 	echo >&2 "*** Exit code"
 	exit 1
 }

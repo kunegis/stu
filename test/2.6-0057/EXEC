@@ -2,7 +2,7 @@
 
 rm -f ? || exit 1
 
-../../stu.test -k >list.out 2>list.err
+../../bin/stu.test -k >list.out 2>list.err
 exitstatus=$?
 
 [ "$exitstatus" = 2 ] || {
@@ -20,6 +20,6 @@ grep -q -F 'B:1:1: dynamic dependency [B] must not contain input redirection <X'
 	exit 1
 }
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
 exit 0

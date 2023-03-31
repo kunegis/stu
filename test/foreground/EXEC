@@ -8,7 +8,7 @@ set -e
 
 rm -f ?
 
-echo correct | ../../stu.test -i -F '>A{cat;}'
+echo correct | ../../bin/stu.test -i -F '>A{cat;}'
 
 grep -qF correct A || {
 	echo >&2 "*** Expected 'correct' in file 'A'"

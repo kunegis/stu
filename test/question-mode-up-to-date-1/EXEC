@@ -4,13 +4,13 @@
 # (1) 'A' is up to date
 #
 
-touch A
+touch A || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** (1) Exit code"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** (1) Exit status"
 	exit 1
 }
 
@@ -28,13 +28,13 @@ grep -qF 'Targets are up to date' list.out || {
 # (2) 'A' does not exist
 #
 
-rm -f A 
+rm -f A || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
-	echo >&2 "*** (2) Exit code"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** (2) Exit status"
 	exit 1
 }
 

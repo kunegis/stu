@@ -1,10 +1,10 @@
 #! /bin/sh
 
-../../stu.test -m random -j 100 >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -m random -j 100 >list.out 2>list.err
+exitstatus=$?
 
-[ $exitcode = 0 ] || {
-	echo >&2 '*** Exitcode'
+[ $exitstatus = 0 ] || {
+	echo >&2 '*** Exitstatus'
 	cat list.err
 	cat list.out
 	exit 1
@@ -28,9 +28,9 @@ for line in $(cat list.exec) ; do
 	echo >&2 "LINE='$line'"
 	if [ "$last" = "$line" ] ; then
 		echo >&2 "Duplicate letter '$line'"
-		count="$(expr "$count" + 1)"
+		count=$(expr "$count" + 1)
 	fi
-	last="$line"
+	last=$line
 done
 
 echo "COUNT='$count'"

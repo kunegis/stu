@@ -1,28 +1,28 @@
 #! /bin/sh
 
-rm -f A B || exit 1
+rm -f A B || exit 2
 
 # Create B
 echo $RANDOM >B
-now="$(LC_ALL=C date)"
-year="$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')"
-year_future="$(expr 2 + $year)"
+now=$(LC_ALL=C date)
+year=$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')
+year_future=$(expr 2 + $year)
 date="$year_future"01010700
-touch -t "$date" B
+touch -t "$date" B || exit 2
 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-if [ "$exitcode" != "0" ]; then
-    echo >&2 "*** wrong exit code"
-    exit 1
+if [ "$exitstatus" != "0" ]; then
+	echo >&2 "*** Exit status incorrect"
+	exit 1
 fi
 
 if cat list.out list.err | grep -i future ; then
-    echo >&2 "*** invalid error message"
-    exit 1
+	echo >&2 "*** Error message incorrect"
+	exit 1
 fi
 
-rm -f A B || exit 1
+rm -f A B || exit 2
 
 exit 0

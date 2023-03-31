@@ -12,11 +12,11 @@ ln -s nonexisting B || {
     exit 1
 }
 
-echo ../../stu.test
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+echo ../../bin/stu.test
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-if [ "$exitcode" != 1 ] ; then
+if [ "$exitstatus" != 1 ] ; then
     echo >&2 "Wrong exit code"
     exit 1
 fi
@@ -36,6 +36,6 @@ if [ -e A ] ; then
     exit 1
 fi
 
-rm -f A B
+rm -f A B || exit 2
 
 exit 0

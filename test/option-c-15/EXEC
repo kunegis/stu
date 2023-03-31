@@ -1,17 +1,17 @@
 #! /bin/sh
 
-rm -f stderr || exit 1
+rm -f stderr || exit 2
 
-../../stu.test -C '%version 0.9' >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -C '%version 0.9' >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 2 ] || {
-	echo >&2 '*** exit code'
+[ "$exitstatus" = 2 ] || {
+	echo >&2 '*** Exit status incorrect'
 	rm -f stderr
 	exit 1
 }
 
-VERSION="$(cat ../../VERSION)"
+VERSION=$(cat ../../VERSION)
 <stderr-in >stderr sed -e 's,\$VERSION,'"$VERSION"',g'
 
 diff list.err stderr || {
@@ -31,6 +31,6 @@ diff list.err stderr || {
 	exit 1
 }
 
-rm -f stderr || exit 1
+rm -f stderr || exit 2
 
 exit 0

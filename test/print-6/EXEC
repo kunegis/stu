@@ -1,10 +1,10 @@
 #! /bin/sh
 
-../../stu.test -P >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -P >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 '*** Exit code'
+[ "$exitstatus" = 0 ] || {
+	echo >&2 '*** Exit status'
 	exit 1
 }
 

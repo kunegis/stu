@@ -22,7 +22,7 @@ grep -E '(^|[^:])//' src/*.cc src/*.hh && {
 #
 
 find . -type f -a \( -name '*.stu' -o -perm -u+x -o -name Makefile.devel \) -a \! -name '*~' \
-	-a \! -path './.git*' -a \! -path 'bin/stu.*' -a \! -path 'bin/stu' \
+	-a \! -path './.git*' -a \! -path './bin/stu.*' -a \! -path './bin/stu' \
 	-a \! -path './config*' -a \! -path './build-aux/*' -a \! -path devel/TODO.stu | 
 xargs grep -lF '#''#' && {
 	echo >&2 "*** Shell scripts, makefiles and Stu scripts must not contain #""#"

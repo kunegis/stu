@@ -3,13 +3,13 @@
 # Empty argument to -c
 #
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-../../stu.test -c '' >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -c '' >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 4 ] || {
-	echo >&2 '*** exit code'
+[ "$exitstatus" = 4 ] || {
+	echo >&2 '*** Exit status incorrect'
 	exit 1
 }
 

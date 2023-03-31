@@ -7,12 +7,11 @@ touch B
 
 set +e
 
-../../stu.test
-exitcode="$?"
-echo "exitcode=$exitcode"
+../../bin/stu.test
+exitstatus=$?
 set -e
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** Invalid exit code"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Exit status incorrect"
 	exit 1
 }
 

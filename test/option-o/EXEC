@@ -17,7 +17,7 @@ cat >main.stu <<EOF
 A = {correct}
 EOF
 
-../../stu.test -o A >list.out 2>list.err
+../../bin/stu.test -o A >list.out 2>list.err
 
 [ ! -e A ] || {
 	echo >&2 "*** (1) 'A' must not be built"
@@ -38,7 +38,7 @@ EOF
 
 ../../sh/touch_old A
 
-../../stu.test -o A >list.out 2>list.err
+../../bin/stu.test -o A >list.out 2>list.err
 
 [ -e A ] || {
 	echo >&2 "*** (2) 'A' must not be removed"
@@ -64,7 +64,7 @@ EOF
 ../../sh/touch_old A
 touch B
 
-../../stu.test -o A >list.out 2>list.err
+../../bin/stu.test -o A >list.out 2>list.err
 
 [ -r X ] || {
 	echo >&2 "*** (3) 'X' must be built"

@@ -5,19 +5,15 @@ year=$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')
 year_past=$(expr $year - 2)
 date="$year_past"01010701
 
-rm -f A B C
+rm -f A B C || exit 2
+touch -t "$date" B || exit 2
 
-touch -t "$date" B
+../../bin/stu.test 2>list.err
+exitstatus=$?
 
-echo ls -l B
-ls -l B
-
-../../stu.test 2>list.err
-exitcode="$?"
-
-[ "$exitcode" = 1 ] || {
-	echo >&2 "*** Exit code"
-	echo >&2 "exitcode=$exitcode"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** Exit status"
+	echo >&2 "exitstatus=$exitstatus"
 	echo >&2 'actual stderr:'
 	echo >&2 __________________
 	cat >&2 list.err
@@ -25,7 +21,7 @@ exitcode="$?"
 	exit 1
 }
 
-if [ "$(fgrep -c "main.stu:11:1: timestamp of file 'B' after execution of its command is older than ../../stu.test startup" list.err)" != 1 ]; then
+if [ "$(fgrep -c "main.stu:11:1: timestamp of file 'B' after execution of its command is older than ../../bin/stu.test startup" list.err)" != 1 ]; then
 	echo >&2 "*** Missing error message"
 	echo >&2 'actual stderr:'
 	echo >&2 __________________

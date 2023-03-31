@@ -26,7 +26,7 @@ do_rm
 	printf -- '-\n'
 } >FILES
 
-../../stu.test -n FILES -F '$name = {correct}' >list.out 2>list.err
+../../bin/stu.test -n FILES -F '$name = {correct}' >list.out 2>list.err
 
 IFS=
 cat FILES | while read -r file ; do

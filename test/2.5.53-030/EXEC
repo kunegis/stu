@@ -2,7 +2,7 @@
 
 rm -f A || exit 1
 
-../../stu.test -k '' A >list.out 2>list.err
+../../bin/stu.test -k '' A >list.out 2>list.err
 exitstatus=$?
 
 [ "$exitstatus" = 2 ] || {
@@ -20,6 +20,6 @@ grep -q -E '^correct$' A || {
 	exit 1
 }
 
-rm -f A || exit 1
+rm -f A || exit 2
 
 exit 0

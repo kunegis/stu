@@ -6,12 +6,12 @@
 
 echo >&2 RUN '(1)'
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
+[ "$exitstatus" = 1 ] || {
 	echo >&2 "$: *** Variant without options failed (1)"
 	exit 1
 }
@@ -22,17 +22,17 @@ exitcode="$?"
 
 echo >&2 RUN '(2)'
 
-rm -f ? || exit 1
+rm -f ? || exit 2
  
 if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" != 0 ]; then
 	echo >&2 "$0: *** There are still processes running from previously (2b)"
 	exit 1
 fi
 
-../../stu.test -k >list.out 2>list.err &
-pid="$!"
+../../bin/stu.test -k >list.out 2>list.err &
+pid=$!
 
-sleep 2 || exit 1
+sleep 2 || exit 2
 
 if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" = 0 ]; then
 	echo >&2 "$0: *** Stu is not running (2a)"
@@ -45,7 +45,7 @@ kill -TERM "$pid"  || {
 	exit 1
 }
 
-sleep 1 || exit 1
+sleep 1 || exit 2
 
 ps -fA | grep  74634275
 ps -fA | grep  stu
@@ -58,7 +58,7 @@ if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" != 0 ]; then
 fi
 
 wait "$pid"
-exitcode="$?"
+exitstatus=$?
 
 #
 # (3) With -j2
@@ -66,12 +66,12 @@ exitcode="$?"
 
 echo >&2 RUN '(3)'
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-../../stu.test -j2 >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -j2 >list.out 2>list.err
+exitstatus=$?
 
-if [ "$exitcode" != 1 ]; then
+if [ "$exitstatus" != 1 ]; then
 	echo >&2 "$: *** Variant without options failed (3)"
 	exit 1
 fi
@@ -82,12 +82,12 @@ fi
 
 echo >&2 RUN '(4)'
 
-rm -f ? || exit 1
+rm -f ? || exit 2
  
-../../stu.test -j2 -k >list.out 2>list.err &
-pid="$!"
+../../bin/stu.test -j2 -k >list.out 2>list.err &
+pid=$!
 
-sleep 2 || exit 1
+sleep 2 || exit 2
 
 if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" = 0 ]; then
 	echo >&2 "*** Stu is not running (4a)"
@@ -99,7 +99,7 @@ kill -TERM "$pid" || {
 	exit 1
 }
 
-sleep 1 || exit 1
+sleep 1 || exit 2
 
 if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" != 0 ]; then
 	echo >&2 "$0: *** Stu is still running (4b)"

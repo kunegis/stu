@@ -1,18 +1,17 @@
 #! /bin/sh
 
-rm -f ? list.* || exit 1
+rm -f ? list.* || exit 2
 
-../../stu.test
-exitstatus="$?"
+../../bin/stu.test
+exitstatus=$?
 
 [ "$exitstatus" = 0 ] || exit 1
 
-sleep 2 || exit 1
+sleep 2 || exit 2
+touch list.Y || exit 2
 
-touch list.Y || exit 1
-
-../../stu.test >list.out
-exitstatus="$?"
+../../bin/stu.test >list.out
+exitstatus=$?
 
 [ "$exitstatus" = 0 ] || exit 1
 

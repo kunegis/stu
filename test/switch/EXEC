@@ -48,9 +48,9 @@ err() {
 
 for XY in 1 2 3 4 5 6 ; do  for CC in 1 2 3 4 ; do  for DD in 1 2 3 4 ; do
 
-    rm -f ? list.* || exit 1
+    rm -f ? list.* || exit 2
 
-    ../../sh/touch_old A 3 || exit 1
+    ../../sh/touch_old A 3 || exit 2
 			
     case "$XY" in
 	    1)  X='-o' ; Y=''   ;;
@@ -87,7 +87,7 @@ list.C = {correct}
 $I
 EOF
 
-    ../../stu.test -f list.stu >list.out 2>list.err
+    ../../bin/stu.test -f list.stu >list.out 2>list.err
     exitstatus=$?
 			
     [ "$?" = 0 ] || { 
@@ -112,6 +112,6 @@ EOF
     }
 done ;  done ;  done
 
-rm -f ? list.* || exit 1
+rm -f ? list.* || exit 2
 
 exit 0

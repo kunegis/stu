@@ -3,8 +3,8 @@
 rm -f ? || exit 2
 touch A || exit 2
 
-../../stu.test 
-exitstatus="$?"
+../../bin/stu.test 
+exitstatus=$?
 
 [ "$exitstatus" = 0 ] || {
 	echo >&2 "*** Expected exit status 0, got $exitstatus"

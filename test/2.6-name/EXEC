@@ -15,26 +15,10 @@ A:  ./B    { touch A ; }
 '$dir'/B:  { touch '$dir'/B ; touch A ; }
 EOF
 
-echo list.stu:
-echo _____________
-cat list.stu
-echo _____________
-
 set +e
-../../stu.test -f list.stu >list.out 2>list.err
+../../bin/stu.test -f list.stu >list.out 2>list.err
 exitstatus=$?
 set -e
-
-echo exitstatus="$exitstatus"
-
-echo list.out:
-echo _____________
-cat list.out
-echo _____________
-echo list.err:
-echo _____________
-cat list.err
-echo _____________
 
 [ "$exitstatus" = 1 ] || {
 	echo >&2 '*** Expected exit status 1'

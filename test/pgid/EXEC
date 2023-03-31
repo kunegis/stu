@@ -4,9 +4,10 @@ set -e
 
 rm -f X Y Z
 
-../../stu.test -j2 >list.out 2>list.err &
-pid="$!"
+../../bin/stu.test -j2 >list.out 2>list.err &
+pid=$!
 
+echo sleep 2
 sleep 2
 
 if [ "$(echo $(ps -fA | grep 2837415 | grep -v grep | wc -l))" = 0 ]; then
@@ -14,8 +15,9 @@ if [ "$(echo $(ps -fA | grep 2837415 | grep -v grep | wc -l))" = 0 ]; then
 	exit 1
 fi
 
-kill -TERM $pid 
+kill -TERM "$pid"
 
+echo sleep 1
 sleep 1
 
 if [ "$(echo $(ps -fA | grep 2837415 | grep -v grep | wc -l))" != 0 ]; then

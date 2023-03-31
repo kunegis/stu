@@ -1,15 +1,15 @@
 #! /bin/sh
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-../../stu.test >stdout-correct
+../../bin/stu.test >stdout-correct
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-../../stu.test -m random >list.out
-exitcode="$?"
+../../bin/stu.test -m random >list.out
+exitstatus=$?
 
-if [ "$exitcode" != 0 ] ; then
+if [ "$exitstatus" != 0 ] ; then
 	echo '*** (A)'
 	exit 1
 fi
@@ -28,10 +28,10 @@ diff out output-correct || {
 
 rm -f ? || exit 1
 
-../../stu.test -m random >list.out2
-exitcode="$?"
+../../bin/stu.test -m random >list.out2
+exitstatus=$?
 
-if [ "$exitcode" != 0 ] ; then
+if [ "$exitstatus" != 0 ] ; then
 	echo '*** (A2)'
 	exit 1
 fi

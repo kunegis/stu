@@ -4,7 +4,6 @@ autom4te.cache
 bin
 config.status
 configure.ac.old
-gmon.out
 test_*
 tmp-prof
 Makefile

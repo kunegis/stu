@@ -65,7 +65,7 @@ for type in a b c ; do
 
 	echo type=$type
 
-	cp $type.stu main.stu || exit 1
+	cp $type.stu main.stu || exit 2
 
 	#
 	# Each case contains three file lists (as characters), separated
@@ -81,16 +81,15 @@ for type in a b c ; do
 		AD-BIJ-AD ABD-IJ-ABD AID-BJ-AD AJ-BID-A ABJ-ID-AB \
 		AIJ-BD-A
 	do
-		
-		list_old="$(echo "$cas" | sed -e 's,^\([^-]*\)-\([^-]*\)-\([^-]*\)$,\1,')"
-		list_new="$(echo "$cas" | sed -e 's,^\([^-]*\)-\([^-]*\)-\([^-]*\)$,\2,')"
-		list_res="$(echo "$cas" | sed -e 's,^\([^-]*\)-\([^-]*\)-\([^-]*\)$,\3,')"
+		list_old=$(echo "$cas" | sed -e 's,^\([^-]*\)-\([^-]*\)-\([^-]*\)$,\1,')
+		list_new=$(echo "$cas" | sed -e 's,^\([^-]*\)-\([^-]*\)-\([^-]*\)$,\2,')
+		list_res=$(echo "$cas" | sed -e 's,^\([^-]*\)-\([^-]*\)-\([^-]*\)$,\3,')
 
-		rm -f A B D I J X Y || exit 1
+		rm -f A B D I J X Y || exit 2
 
 		for file in $(sort_inv $list_old) ; do
 			echo xxx >$file
-			../../sh/touch_old "$file" 2 || exit 1
+			../../sh/touch_old "$file" 2 || exit 2
 		done
 		for file in $(sort_inv $list_new) ; do
 			echo xxx >$file
@@ -98,11 +97,11 @@ for type in a b c ; do
 
 		ls -l ? >list.ls
 
-		../../stu.test -f main.stu >list.out 2>list.err
-		exitcode="$?"
+		../../bin/stu.test -f main.stu >list.out 2>list.err
+		exitstatus=$?
 
-		[ "$exitcode" = 0 ] || {
-			echo >&2 "*** ($type $cas) expected exit code 0, got $exitcode"
+		[ "$exitstatus" = 0 ] || {
+			echo >&2 "*** ($type $cas) expected exit status 0, got $exitstatus"
 			echo >&2 _____
 			echo >&2 main.stu
 			echo >&2 _____
@@ -124,16 +123,16 @@ for type in a b c ; do
 		}
 		for file in A B C ; do
 			grep -qF BUILDING_$file list.out
-			exitcode_grep="$?"
+			exitstatus_grep=$?
 			expr "$list_res" : '.*'$file'.*' >list.expr.out 2>list.expr.err
-			exitcode_expr="$?"
-			if [ "$exitcode_grep" \!= "$exitcode_expr" ] ; then
+			exitstatus_expr=$?
+			if [ "$exitstatus_grep" \!= "$exitstatus_expr" ] ; then
 				echo >&2 "*** ($type $cas) building '$file'"
 				echo >&2 list_old=$list_old
 				echo >&2 list_new=$list_new
 				echo >&2 list_res=$list_res
-				echo >&2 "exitcode_grep=$exitcode_grep"
-				echo >&2 "exitcode_expr=$exitcode_expr"
+				echo >&2 "exitstatus_grep=$exitstatus_grep"
+				echo >&2 "exitstatus_expr=$exitstatus_expr"
 				echo >&2 list.out:
 				echo >&2 ------------
 				cat >&2 list.out

@@ -4,14 +4,14 @@
 # single dash with the '-f' options means to read standard input. 
 #
 
-rm -f A ./-
+rm -f A ./- || exit 2
 
 echo '>A { echo xyz }' >./-
 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
+[ "$exitstatus" = 0 ] || {
 	echo >&2 "*** Exit code"
 	rm -f A ./-
 	exit 1
@@ -35,6 +35,6 @@ grep -qF xyz A || {
 	exit 1
 }
 
-rm -f A ./-
+rm -f A ./- || exit 2
 
 exit 0

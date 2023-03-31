@@ -1,18 +1,18 @@
 #! /bin/sh
 
-rm -f A B || exit 1
+rm -f A B || exit 2
 
-now="$(LC_ALL=C date)"
-year="$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')"
-year_future="$(expr 2 + $year)"
+now=$(LC_ALL=C date)
+year=$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')
+year_future=$(expr 2 + $year)
 date="$year_future"01010700
 
-touch -t "$date" B || exit 1
+touch -t "$date" B || exit 2
 
-../../stu.test 2>list.err
-exitcode="$?"
+../../bin/stu.test 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
+[ "$exitstatus" = 0 ] || {
 	echo >&2 "*** Stu failed"
 	exit 1
 }
@@ -28,6 +28,6 @@ grep -qF "warning: File 'B' has modification time in the future" list.err || {
 	exit 1
 }
 
-rm -f A B || exit 1
+rm -f A B || exit 2
 
 exit 0

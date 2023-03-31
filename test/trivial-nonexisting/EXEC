@@ -1,10 +1,10 @@
 #! /bin/sh
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-touch A || exit 1
+touch A || exit 2
 
-../../stu.test -d >list.out 2>list.err
+../../bin/stu.test -d >list.out 2>list.err
 exitstatus=$?
 
 [ "$exitstatus" = 0 ] || {
@@ -22,6 +22,6 @@ exitstatus=$?
 	exit 1
 }
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
 exit 0

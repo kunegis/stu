@@ -18,14 +18,14 @@ cat patterns | while IFS= read -r line ; do
 	uncanonicalized=$(printf '%s\n' "$norm" | sed -e 's|^\([^[:space:]]\{1,\}\) [^[:space:]]\{1,\}$|\1|')
 	canonicalized=$(printf '%s\n' "$norm" | sed -e 's|^[^[:space:]]\{1,\} \([^[:space:]]\{1,\}\)$|\1|')
 
-	rm -f main.stu list.* ? || exit 1
+	rm -f main.stu list.* ? || exit 2
 
 	cat <<EOF >main.stu
 A:  $uncanonicalized { touch A; }
 $canonicalized:  nonexistingfile { exit 0; }
 EOF
 
-	../../stu.test >list.out 2>list.err
+	../../bin/stu.test >list.out 2>list.err
 	exitstatus=$?
 
 	[ "$exitstatus" = 1 ] || {
@@ -66,5 +66,5 @@ done
 ret=$?
 
 echo
-rm -f main.stu list.* 
+rm -f main.stu list.* || exit 2
 exit "$ret"

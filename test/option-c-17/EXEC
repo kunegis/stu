@@ -1,19 +1,19 @@
 #! /bin/sh
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-../../stu.test -C '' >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -C '' >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || { echo >&2 '*** (1) exit code' ; exit 1 ; }
+[ "$exitstatus" = 0 ] || { echo >&2 '*** (1) Exit status' ; exit 1 ; }
 diff list.out stdout-correct || { echo >&2 '*** (1) stdout'    ; exit 1 ; }
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-../../stu.test -C '#' >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -C '#' >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || { echo >&2 '*** (3) exit code' ; exit 1 ; }
+[ "$exitstatus" = 0 ] || { echo >&2 '*** (3) exit code' ; exit 1 ; }
 diff list.out stdout-correct || { echo >&2 '*** (3) stdout'    ; exit 1 ; }
 
 exit 0

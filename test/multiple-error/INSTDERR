@@ -1,4 +1,4 @@
 D: Permission denied
 main.stu:14:10: command for 'B' failed with exit status 1
 main.stu:22:2: command for 'C' failed with exit status 1
-../../stu.test: Targets not up to date because of errors
+../../bin/stu.test: Targets not up to date because of errors

@@ -1,12 +1,12 @@
 #! /bin/sh
 
-rm -f ? list.* || exit 1
+rm -f ? list.* || exit 2
 
 #
 # stu A:  B and A are built.
 #
 
-../../stu.test A 
+../../bin/stu.test A 
 exitstatus=$?
 
 if [ "$exitstatus" != 0 ] ; then
@@ -23,13 +23,13 @@ fi
 # rm B
 #
 
-rm B || exit 1
+rm B || exit 2
 
 #
 # stu A:  B is rebuilt, but not A
 #
 
-../../stu.test A >list.out 2>list.err
+../../bin/stu.test A >list.out 2>list.err
 exitstatus=$?
 
 if [ "$exitstatus" != 0 ] ; then
@@ -47,6 +47,6 @@ grep -q -E '^ls -l B >A$' list.out || {
 	exit 1
 }
 
-rm -f ? list.* || exit 1 
+rm -f ? list.* || exit 2
 
 exit 0

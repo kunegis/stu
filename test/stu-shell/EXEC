@@ -2,16 +2,16 @@
 
 rm -f ?
 
-STU_SHELL=./shell ../../stu.test >list.out 2>list.err
-exitcode="$?"
+STU_SHELL=./shell ../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 '*** exit code'
+[ "$exitstatus" = 0 ] || {
+	echo >&2 '*** exitstatus incorrect'
 	exit 1
 }
 
 diff list.out stdout-correct || {
-	echo >&2 '*** stdout'
+	echo >&2 '*** stdout incorrect'
 	echo list.out:
 	echo _____
 	cat list.out

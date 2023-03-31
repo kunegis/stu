@@ -1,16 +1,15 @@
 #! /bin/sh
 
-doo() { echo "$@" ; "$@" ; }
+rm -f ? || exit 2
 
-doo rm -f ?
+ln -s W B || exit 2
 
-doo ln -s W B
+echo ../../bin/stu.test 
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-echo ../../stu.test 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** invalid exit code"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** invalid exit status"
 	exit 1
 }
 
@@ -26,6 +25,6 @@ grep -qF 'Executing B' list.out || {
 	exit 1
 }
 
-doo rm -f ?
+rm -f ? || exit 2
 
 exit 0

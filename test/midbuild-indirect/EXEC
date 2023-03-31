@@ -1,15 +1,15 @@
 #! /bin/sh
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
 #
 # Step 1:  build A:  everything is built
 #
 
-../../stu.test 
-exitcode="$?"
+../../bin/stu.test 
+exitstatus=$?
 
-if [ "$exitcode" != 0 ] ; then
+if [ "$exitstatus" != 0 ] ; then
 	echo >&2 "*** wrong exit code"
 	exit 1
 fi
@@ -23,15 +23,14 @@ fi
 # Step 2:  rm B; stu B:  B is re-built
 #
 
-../../sh/touch_old A 1 || exit 1
-../../sh/touch_old C 1 || exit 1
+../../sh/touch_old A 1 || exit 2
+../../sh/touch_old C 1 || exit 2
+rm -f B || exit 2
 
-rm -f B
+../../bin/stu.test B
+exitstatus=$?
 
-../../stu.test B
-exitcode="$?"
-
-if [ "$exitcode" != 0 ] ; then
+if [ "$exitstatus" != 0 ] ; then
 	echo >&2 "*** wrong exit code"
 	exit 1
 fi
@@ -45,14 +44,14 @@ fi
 # Step 3:  stu A:  A is rebuilt.
 #
 
-../../sh/touch_old A 2 || exit 1
-../../sh/touch_old B 1 || exit 1
-../../sh/touch_old C 2 || exit 1
+../../sh/touch_old A 2 || exit 2
+../../sh/touch_old B 1 || exit 2
+../../sh/touch_old C 2 || exit 2
 
-../../stu.test A >list.out
-exitcode="$?"
+../../bin/stu.test A >list.out
+exitstatus=$?
 
-if [ "$exitcode" != 0 ] ; then
+if [ "$exitstatus" != 0 ] ; then
 	echo >&2 "*** wrong exit code"
 	exit 1
 fi

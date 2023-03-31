@@ -4,14 +4,13 @@
 # no rule' message. 
 #
 
-rm -f ?
+rm -f ? || exit 2
+touch A || exit 2
 
-touch A
+../../bin/stu.test -s A >list.out 2>list.err
+exitstatus=$?
 
-../../stu.test -s A >list.out 2>list.err
-exitcode="$?"
-
-[ "$exitcode" = 0 ] || {
+[ "$exitstatus" = 0 ] || {
 	echo >&2 "*** Exit code"
 	exit 1
 }

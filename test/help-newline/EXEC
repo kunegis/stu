@@ -3,10 +3,13 @@
 # The output of 'stu -h' ends in a newline.
 #
 
-../../stu.test -h >list.out
+../../bin/stu.test -h >list.out || {
+	echo >&2 '*** Stu failed'
+	exit 1
+}
 
 # The last byte of the file.  Gets 
-c="$(tail -c 1 list.out)"
+c=$(tail -c 1 list.out)
 
 [ "$c" != '' ] && {
 	echo >&2 '*** stu -h does not end in newline'

@@ -12,13 +12,15 @@ while read line ; do
 	rm -f list.*
 	dd if=/dev/urandom bs=1 count=3  >list.stu 2>/dev/null
 	set +e
-	../../stu.test -f list.stu >list.out 2>list.err
-	status=$?
+	../../bin/stu.test -f list.stu >list.out 2>list.err
+	exitstatus=$?
 	set -e
-	if [ "$status" -gt 4 ] ; then
+	if [ "$exitstatus" -gt 4 ] ; then
 		echo >&2 '*** Error'
-		echo "status=$status"
+		echo "exitstatus=$exitstatus"
 		hexdump -C list.stu
 		exit 1
 	fi
 done
+
+exit 0

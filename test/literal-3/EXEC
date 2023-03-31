@@ -4,7 +4,7 @@ set -e
 
 rm -f -- ? '[?!@A]' ']A@!?['
 
-../../stu.test -J -a -- '[?!@A]' ']A@!?['
+../../bin/stu.test -J -a -- '[?!@A]' ']A@!?['
 
 [ -r '[?!@A]' ] || { echo >&2 "*** First file" ; exit 1 ; }
 [ -r ']A@!?[' ] || { echo >&2 "*** Second file" ; exit 1 ; }
@@ -12,4 +12,3 @@ rm -f -- ? '[?!@A]' ']A@!?['
 rm -f -- ? '[?!@A]' ']A@!?['
 
 exit 0
-

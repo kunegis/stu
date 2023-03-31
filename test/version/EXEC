@@ -1,11 +1,10 @@
 #! /bin/sh
 
 STUFILE=tmp.stu
-
 error=0
 
 # Arguments:
-#   $1	 Correct exit code
+#   $1	 Correct exit status
 #   $2   Version in %version statement
 do_test() {
 	exitstatus_correct=$1
@@ -13,7 +12,7 @@ do_test() {
 
 	echo >&2 "$0:  TESTING $1 $2"
 
-	rm -f $STUFILE A list.err
+	rm -f $STUFILE A list.err || exit 2
 
 	cat >$STUFILE <<EOF
 %version $version
@@ -21,7 +20,7 @@ A { echo CORRECT >A }
 EOF
 
 	../../bin/stu.test -f $STUFILE 2>list.err
-	exitstatus_actual="$?"
+	exitstatus_actual=$?
 	echo >&2 "	exitstatus=$exitstatus_actual"
 	if [ "$exitstatus_actual" != "$exitstatus_correct" ] ; then
 		echo >&2 "*** $0:  Error in case $1 $2"
@@ -29,12 +28,12 @@ EOF
 	fi
 
 	if [ "$exitstatus_correct" = 0 ] ; then
-		if ! fgrep CORRECT A ; then
+		if ! grep -qF CORRECT A ; then
 			echo >&2 "*** $0:  Incorrect content of file 'A'"
 			error=1
 		fi
 	else 
-		if ! fgrep 'is incompatible with' list.err ; then
+		if ! grep -qF 'is incompatible with' list.err ; then
 			echo >&2 "*** $0:  Invalid error output"
 			error=1
 		fi
@@ -76,6 +75,6 @@ if [ $(( VERSION_PATCH > 0 )) = 1 ] ; then
 fi
 do_test 0 "$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH"
 
-rm -f $STUFILE A list.err
+rm -f $STUFILE A list.err || exit 2
 
 exit $error

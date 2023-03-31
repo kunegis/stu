@@ -7,16 +7,15 @@ mkdir xxx || exit 2
 exitstatus=$?
 
 if [ "$exitstatus" != 2 ] ; then
-   echo >&2 "*** Wrong exit status"
-   exit 1
+	echo >&2 "*** Exit status incorrect"
+	exit 1
 fi
 
-if ! fgrep "xxx/../main.stu:5:10: recursive inclusion of 'xxx/../main.stu'" list.err ; then
-   echo >&2 "*** Missing error message"
-   exit 1   
+if ! grep -qF "xxx/../main.stu:5:10: recursive inclusion of 'xxx/../main.stu'" list.err ; then
+	echo >&2 "*** Missing error message"
+	exit 1   
 fi
 
 rm -Rf xxx list.* || exit 2
 
 exit 0
-

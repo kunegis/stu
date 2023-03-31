@@ -1,7 +1,6 @@
 #
 # [subdirs] Have dedicated src/ and bin/ directories.
 #
-# * scroll through the error output to see if there are "red errors"
 # * check that ../../stu does not appear anywhere
 # * make sure stu.debug is never used in test/ (use stu.test instead)
 # * get rid of the Autotools altogether (maybe)
@@ -33,4 +32,9 @@
 
 #
 # Write a test that no file end in an empty line. 
+#
+
+#
+# Rename tests to begin with the version number in which the feature that they
+# are testing was introduced. 
 #

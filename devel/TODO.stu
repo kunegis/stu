@@ -1,7 +1,6 @@
 #
 # [subdirs] Have dedicated src/ and bin/ directories.
 #
-# * check that ../../stu does not appear anywhere
 # * make sure stu.debug is never used in test/ (use stu.test instead)
 # * get rid of the Autotools altogether (maybe)
 #

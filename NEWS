@@ -7,7 +7,7 @@ changes in terminology, changes in the installation procedure, or
 changes in invocation. 
 
 When the major version is increased, backward-incompatible changes are
-made, which are documented in the file 'MIGRATION', and summarized here. 
+made, which are documented in the file 'doc/MIGRATION', and summarized here. 
 
 ------------------------------------------------------------------------
 
@@ -181,7 +181,7 @@ contained in 'B' as a dependency of 'A'.
 
 2016-08-25  Version 2.1
 
-See 'MIGRATION'.
+See 'doc/MIGRATION'.
 
 * "Timestamp-ignoring dependencies" are now called "persistent dependencies". 
 * Quoting rules were changed.

@@ -1,0 +1,111 @@
+#! /bin/sh
+#
+# OUTPUT FILES
+#	conf/CXX		Compile
+#	conf/CXXFLAGS		Flags used for all compilations
+#	conf/CXXFLAGS_NDEBUG	Flags for bin/stu
+#
+
+[ "$verbose" ] && exec 6>&2 || exec 6>/dev/null
+
+check()
+{
+	rm -f "$target" || return 1
+	[ "$CXX" ] || return 1
+	printf "Checking $(echo $CXX $CXXFLAGS ${*})..."
+	$CXX $CXXFLAGS "$@" "$source" -o "$target" 2>&6 || {
+		echo >&2 "compiler failed"
+		return 1
+	}
+	"$target" || {
+		echo >&2 "test program failed"
+		return 1
+	}
+	echo "ok"
+	return 0
+}
+
+check_code()
+{
+	rm -f "$target" "$source2" || return 1
+	{ cat "$source" ; printf '%s' "$2" ; } >"$source2"
+	printf "Checking $1..."
+	$CXX $CXXFLAGS "$source2" -o "$target" 2>&6 || {
+		echo >&2 "compiler failed"
+		return 1
+	}
+	"$target" || {
+		echo >&2 "test program failed"
+		return 1
+	}
+	echo "ok"
+	return 0
+}
+
+clean()
+{
+	[ "$source" ] && rm -f -- "$filename".*
+}
+
+trap clean EXIT
+
+filename=${TMPDIR:-/tmp}/stu.conf.$$
+source=$filename.cc
+source2=$filename.2.cc
+target=$filename.out
+cat >"$source" <<EOF || exit 1
+struct Alpha
+{
+	int x;
+	Alpha(int a):  x(2 - a) { }
+};
+int main()
+{
+	Alpha alpha(2);
+	return alpha.x;
+}
+EOF
+
+if [ -n "$CXX" ] ; then
+	if ! check ; then
+		echo >&2 "*** $0: \$CXX does not work"
+		exit 1
+	fi
+else
+	found=
+	for CXX in g++ c++ clang++ gpp cxx ; do
+		if check ; then
+			found=1
+			break
+		fi
+	done
+
+	if [ -z "$found" ] ; then
+		echo >&2 "*** $0: No compiler found"
+		exit 1
+	fi
+fi
+
+for option in -std=c++14 ; do
+	if check $option ; then
+		CXXFLAGS="$CXXFLAGS $option"
+	fi
+done
+
+check_code CLOCK_REALTIME_COARSE '
+#include <time.h>
+void x() { struct timespec t; int r= clock_gettime(CLOCK_REALTIME_COARSE, &t); }
+' 
+CXXFLAGS="$CXXFLAGS -DHAVE_CLOCK_REALTIME_COARSE=$(echo $? | tr 01 10)"
+
+CXXFLAGS_NDEBUG=-DNDEBUG
+for option in -O2 -fwhole-program -s ; do
+	if check $option ; then
+		CXXFLAGS_NDEBUG="$CXXFLAGS_NDEBUG $option"
+	fi
+done
+
+mkdir -p conf || exit 1
+printf '%s\n' "$CXX"             >conf/CXX             || exit 1
+printf '%s\n' "$CXXFLAGS"        >conf/CXXFLAGS        || exit 1
+printf '%s\n' "$CXXFLAGS_NDEBUG" >conf/CXXFLAGS_NDEBUG || exit 1

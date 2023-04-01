@@ -1,14 +1,19 @@
 #
 # [subdirs] Have dedicated src/ and bin/ directories.
 #
-# * Write a test to make sure that fgrep is never used (use grep -F instead). 
 # * get rid of the Autotools altogether
-# ** find a compiler
-# ** determine options
-# ** flags like CTIM
-# ** do install portably
+# ** do install portably:  It's not POSIX.  Just use it. 
 # ** documentation
+# *** new dependencies:  install
 #
+
+#
+# Move the test* files somewhere else, as well as "error.log". 
+#
+
+#
+# Rename "tmp-prof" to "prof", or just move those files to bin/. 
+# 
 
 #
 # See whether source files can be split into smaller files.  (execution.hh, etc.)

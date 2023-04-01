@@ -4,6 +4,10 @@
  * status, etc.
  */
 
+#define PACKAGE           "stu"
+#define PACKAGE_URL       "https://github.com/kunegis/stu"
+#define PACKAGE_BUGREPORT "kunegis@gmail.com"
+
 /* Enable bounds checking when using GNU libc.  Must be defined before
  * including any of the standard headers.  (Only in non-debug mode).  A
  * no-op for non-GNU libc++ libraries.  */ 
@@ -510,5 +514,3 @@ void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
 		deps.push_back(j); 
 	}
 }
-
-

@@ -1,6 +1,0 @@
-These are M4 macros from Autoconf Archive.  They were copied by hand from
-Autoconf Archive. 
-
-They are called inside configure.ac.
-
-We include this directory using -Im4 when calling autoconf in Makefile.devel.

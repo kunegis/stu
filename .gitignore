@@ -1,10 +1,5 @@
-.deps
-all-auto
-autom4te.cache
 bin
-config.status
-configure.ac.old
+conf
+error.log
 test_*
 tmp-prof
-Makefile
-*.log

@@ -12,11 +12,11 @@
 # 	codes.  Can for instance be piped into less -R to see all. 
 #
 
-rm -f bin/stu.test
+rm -f bin/stu.test || exit 2
 if [ "$NDEBUG" ] ; then
-	ln -s stu bin/stu.test
+	ln -s stu bin/stu.test || exit 2
 else
-	ln -s stu.debug bin/stu.test
+	ln -s stu.debug bin/stu.test || exit 2
 fi
 
 cd test
@@ -44,7 +44,7 @@ do
 
 	if [ -r EXITSTATUS ] && ! [ -r NOTTY ]; then
 
-		../../sh/rm_tmps || exit 1
+		../../sh/rm_tmps || exit 2
 
 		CMD=
 		if [ -r CMD ]; then
@@ -62,7 +62,7 @@ do
 
 		echo 
 
-		../../sh/rm_tmps || exit 1
+		../../sh/rm_tmps || exit 2
 	fi
 
 	cd ..

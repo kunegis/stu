@@ -144,14 +144,14 @@ exec 6>error.log
 
 time_begin=$(sh/now)
 
-rm -f bin/stu.test
+rm -f bin/stu.test || exit 2
 if [ "$VARIANT" ] ; then
-	ln -s stu."$VARIANT" bin/stu.test
+	ln -s stu."$VARIANT" bin/stu.test || exit 2
 else 
 	if [ "$NDEBUG" ] ; then
-		ln -s stu bin/stu.test
+		ln -s stu bin/stu.test || exit 2
 	else
-		ln -s stu.debug bin/stu.test
+		ln -s stu.debug bin/stu.test || exit 2
 	fi
 fi
 

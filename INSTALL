@@ -2,28 +2,21 @@
 
 To install Stu, run this:
 
-$ ./configure
 $ make
 $ sudo make install
 
 This will compile and install Stu as well as its manpage on your
 system. 
 
-If ./configure fails, then you are probably out of luck.  This is the
-Autoconf-produced configure script and should not fail.  You may go on
-compiling Stu by hand though, if you know what you are doing. 
+To install in a specific directory, set $prefix when doing "make install".  The
+default is "/usr/local".
 
-If 'make' fails, you can go into the 'Makefile' and tweak some
-variables:
-* If compilation fails, you may need to add or remove options
-  from CXXFLAGS.
-* If your compiler does not support -std=c++14, try replacing it with
-  -std=c++0x, or whatever flags makes your compiler use C++14. 
-* If linking fails, you may need to add libraries to the LIBS variable
-  (e.g., -lrt).  
+If 'make' fails, you may need to change the compiler or the compiler flags.
+They are stored in conf, or you can "make clean" and run make again with $CXX
+and $CXXFLAGS set.
 
 Stu is still a quite small program, and has not been tested on many
-systems.  
+systems.
 
 Stu is developed primarily on Linux, and has been used on FreeBSD, OS X
 10.11, macOS 10.12, and Microsoft Windows 10.  It has been compiled with
@@ -43,19 +36,21 @@ Credits for the package go to Holger Heinz (hheinz).
 
 Stu requires:
 * POSIX
-* A C++14 compiler 
+* A C++ 14 compiler
 
 In addition, Stu uses the following features, about which we are not
 100% sure that they are prescribed by POSIX: 
 * ASCII or an ASCII-compatible 8-bit encoding such as UTF-8 or ISO-8859-1
 * ANSI color code-compatible terminal (terminfo or termcap are not used)
+* "make install" uses the "install" tool, which is portable but not
+  standardized. 
 
 If you want to develop Stu (or run the tests), there are more dependencies, see
 devel/DEVEL. 
 
 ==== COMPILATION OPTIONS ====
 
-These are detected automatically by ./configure, but you may change them
+These are detected automatically by sh/conf, but you may change them
 by hand if necessary. 
 
 * USE_MTIM (default: enabled if CLOCK_REALTIME_COARSE is present):  Use
@@ -70,6 +65,6 @@ by hand if necessary.
 This is optional, but will give you confidence that your compiled Stu
 works correctly. 
 
-Execute all unit tests using 'make -f Makefile.devel all-test'.  If an
-error is reported, report it to <kunegis@gmail.com>.  It takes about
-five minutes (running the tests, not reporting to the developers).
+Execute all unit tests using 'make all-test'.  If an error is reported, report
+it to <kunegis@gmail.com>.  It takes about five minutes (running the tests, not
+reporting to the developers).

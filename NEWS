@@ -11,6 +11,10 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2023-04-02  Version 2.7.16
+
+* We switched from Autotools to a custom Makefile. 
+
 2020-10-30  Version 2.7
 
 * Backslashes are now allowed outside of quotes and act as the escape character: 

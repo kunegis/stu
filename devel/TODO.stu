@@ -1,13 +1,4 @@
 #
-# [subdirs] Have dedicated src/ and bin/ directories.
-#
-# * get rid of the Autotools altogether
-# ** documentation
-# *** new dependencies:  install
-# *** specify $prefix to change the installation directory
-#
-
-#
 # Move the test* files somewhere else, as well as "error.log". 
 #
 
@@ -28,7 +19,7 @@
 #
 
 #
-# Have a test that tests whether ./configure && make && make install works
+# Have a test that tests whether make clean && make install works
 #
 
 #

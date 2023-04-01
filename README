@@ -46,11 +46,10 @@ See the file 'NEWS' for more news.
  Installation Guide
 --------------------
 
-Stu is not yet in the main package repositories of common operating
-systems.  See the file INSTALL for compiling Stu yourself, which is
-easy: We use the classical configure-make-install trio.  Stu is written
-in C++14 for POSIX platforms.  You should have no problem getting it to
-run on vanilla Linux and other POSIX-compliant platforms.
+Stu is not yet in the main package repositories of common operating systems.
+See the file INSTALL for compiling Stu yourself, which is easy: We use make and
+make install.  Stu is written in C++14 for POSIX platforms.  You should have no
+problem getting it to run on vanilla Linux and other POSIX-compliant platforms.
 
 * See the file 'INSTALL' for compiling Stu
 * Package for Arch Linux:  https://aur.archlinux.org/packages/stu-git/

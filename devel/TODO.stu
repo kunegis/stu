@@ -2,9 +2,9 @@
 # [subdirs] Have dedicated src/ and bin/ directories.
 #
 # * get rid of the Autotools altogether
-# ** do install portably:  It's not POSIX.  Just use it. 
 # ** documentation
 # *** new dependencies:  install
+# *** specify $prefix to change the installation directory
 #
 
 #

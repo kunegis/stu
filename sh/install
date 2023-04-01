@@ -1,0 +1,8 @@
+#! /bin/sh
+
+set -e
+
+prefix=${prefix:-/usr/local}
+
+install bin/stu   "$prefix"/bin/stu
+install man/stu.1 "$prefix"/man/man1/stu.1

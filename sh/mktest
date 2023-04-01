@@ -311,7 +311,7 @@ do
 				else
 					# Check that INCONTENT is found in the built file
 					if [ -r INCONTENT ]; then
-						if fgrep -q -- "$(cat INCONTENT)" "$target" ; then
+						if grep -q -F -e "$(cat INCONTENT)" "$target" ; then
 							echo "INCONTENT...correct"
 						else
 							echo >&2 "$0: *** '$(cat INCONTENT)' must appear in generated file"
@@ -421,7 +421,7 @@ do
 
 		# Check that NOTINSTDERR is not found in the error output
 		if [ -r NOTINSTDERR ]; then
-			if fgrep <list.def.err -q -- "$(cat NOTINSTDERR)" ; then
+			if grep -q -F -e "$(cat NOTINSTDERR)" list.def.err ; then
 				echo >&2 "$0: *** '$(cat NOTINSTDERR)' was found in error output, but should not be there"
 				error=1
 			else

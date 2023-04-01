@@ -21,7 +21,7 @@ exitstatus=$?
 	exit 1
 }
 
-if [ "$(fgrep -c "main.stu:11:1: timestamp of file 'B' after execution of its command is older than ../../bin/stu.test startup" list.err)" != 1 ]; then
+if [ "$(grep -c -F "main.stu:11:1: timestamp of file 'B' after execution of its command is older than ../../bin/stu.test startup" list.err)" != 1 ]; then
 	echo >&2 "*** Missing error message"
 	echo >&2 'actual stderr:'
 	echo >&2 __________________

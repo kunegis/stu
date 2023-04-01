@@ -1,7 +1,13 @@
 #
 # [subdirs] Have dedicated src/ and bin/ directories.
 #
-# * get rid of the Autotools altogether (maybe)
+# * Write a test to make sure that fgrep is never used (use grep -F instead). 
+# * get rid of the Autotools altogether
+# ** find a compiler
+# ** determine options
+# ** flags like CTIM
+# ** do install portably
+# ** documentation
 #
 
 #
@@ -22,10 +28,6 @@
 
 #
 # In stu-utils, have a script to auto-generate and auto-update a .gitignore file.
-#
-
-#
-# Write a test to make sure that fgrep is never used (use grep -F instead). 
 #
 
 #

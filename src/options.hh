@@ -59,6 +59,11 @@ bool option_parallel= false;
 static bool order_vec; 
 /* Whether to use vectors for randomization */ 
 
+static long options_jobs= 1;
+/* Number of free slots for jobs.  This is a long because strtol() gives a long.
+ * Set before calling main() from the -j option, and then changed internally by
+ * Execution.  Always nonnegative.  */
+
 const char **envp_global;
 /* The envp variable.  Set in main().  */
 

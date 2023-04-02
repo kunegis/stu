@@ -25,10 +25,11 @@
 using namespace std; 
 
 #include "dep.hh"
-#include "execution.hh" 
+#include "execution.hh"
+#include "main_loop.hh"
+#include "options_init.hh"
 #include "rule.hh"
 #include "timestamp.hh"
-#include "color.hh"
 
 /*
  * Note:  Stu does not call setlocale(), and therefore can make use of
@@ -88,13 +89,6 @@ const char HELP[]=
 	"Report bugs to: " PACKAGE_BUGREPORT "\n" 
 	"Stu home page: <" PACKAGE_URL ">\n";
 
-const char VERSION_INFO[]=
-	PACKAGE " " STU_VERSION "\n"
-	"Copyright (C) 2014-2023 Jerome Kunegis\n"
-	"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
-	"This is free software: you are free to change and redistribute it.\n"
-	"There is NO WARRANTY, to the extent permitted by law.\n";
-
 void init_buf(); 
 /* Initialize buffers; called once from main() */ 
 
@@ -102,24 +96,6 @@ void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
 		       const char *string_);
 /* Parse a string of dependencies and add them to the vector. Used for
  * the -C option.  Support the full Stu syntax.  */
-
-/* Set one of the "setting options", i.e., of of those that can appear
- * in $STU_OPTIONS.  Return whether this was a valid settings option.  */ 
-bool stu_setting(char c)
-{
-	switch (c) {
-	default:  return false;
-
-	case 'E':  option_explain= true;        break;
-	case 's':  option_silent= true;         break;
-	case 'x':  option_individual= true;     break;
-	case 'y':  Color::set(false);           break;
-	case 'Y':  Color::set(true);            break;
-	case 'z':  option_statistics= true;     break;
-	}
-
-	return true; 
-}
 
 int main(int argc, char **argv, char **envp)
 {
@@ -170,7 +146,7 @@ int main(int argc, char **argv, char **envp)
 				char c= *stu_options++;
 				if (c == '-' || isspace(c))
 					continue; 
-				if (! stu_setting(c)) {
+				if (! option_setting(c)) {
 					Place place(Place::Type::ENV_OPTIONS);
 					place << fmt("invalid option %s",
 						     multichar_format_err(frmt("-%c", c)));
@@ -180,21 +156,25 @@ int main(int argc, char **argv, char **envp)
 		}
 		
 		for (int c; (c= getopt(argc, argv, OPTIONS)) != -1;) {
-
-			if (stu_setting(c))
+			if (option_setting(c))
 				continue;
 
 			switch (c) {
+			case 'a':  option_nontrivial= true;     break;
+			case 'd':  option_debug= true;          break;
+			case 'g':  option_nonoptional= true;    break;
+			case 'h':  fputs(HELP, stdout);         exit(0);
+			case 'i':  option_i();                  break;
+			case 'j':  option_j();                  break;
+			case 'J':  option_literal= true;        break;
+			case 'k':  option_keep_going= true;     break;
+			case 'K':  option_no_delete= true;      break;
+			case 'm':  option_m();                  break;
+			case 'M':  option_M();                  break;
+			case 'P':  option_print= true;          break;  
+			case 'q':  option_question= true;       break;
+			case 'V':  option_V();  		exit(0);
 
-			case 'a': option_nontrivial= true;     break;
-			case 'd': option_debug= true;          break;
-			case 'g': option_nonoptional= true;    break;
-			case 'h': fputs(HELP, stdout);         exit(0);
-			case 'J': option_literal= true;        break;
-			case 'k': option_keep_going= true;     break;
-			case 'K': option_no_delete= true;      break;
-			case 'P': option_print= true;          break;  
-			case 'q': option_question= true;       break;
 
 			case 'c':  {
 				had_option_target= true; 
@@ -239,62 +219,6 @@ int main(int argc, char **argv, char **envp)
 				Parser::get_string(optarg, Execution::rule_set, target_first);
 				break;
 
-			case 'i':
-				option_interactive= true;
-				if (Job::get_tty() < 0) {
-					Place place(Place::Type::OPTION, 'i');
-					print_warning(place, "Interactive mode cannot be used because no TTY is available"); 
-				}
-				break;
-		
-			case 'j':  {
-				errno= 0;
-				char *endptr;
-				Execution::jobs= strtol(optarg, &endptr, 10);
-				Place place(Place::Type::OPTION, c); 
-				if (errno != 0 || *endptr != '\0') {
-					place << fmt("expected the number of jobs, not %s",
-						     name_format_err(optarg)); 
-					exit(ERROR_FATAL); 
-				}
-				if (Execution::jobs < 1) {
-					place << fmt("expected a positive number of jobs, not %s",
-						     name_format_err(optarg));
-					exit(ERROR_FATAL); 
-				}
-				option_parallel= Execution::jobs > 1; 
-				break;
-			}
-
-			case 'm':
-				if (!strcmp(optarg, "random"))  {
-					order= Order::RANDOM;
-					/* Use gettimeofday() instead of time()
-					 * to get millisecond instead of second
-					 * precision */ 
-					struct timeval tv;
-					if (gettimeofday(&tv, nullptr) != 0) {
-						print_error_system("gettimeofday");
-						exit(ERROR_FATAL); 
-					}
-					buffer_generator.seed(tv.tv_sec + tv.tv_usec); 
-				}
-				else if (!strcmp(optarg, "dfs"))     /* Default */ ;
-				else {
-					print_error(fmt("Invalid argument %s for option %s-m%s; valid values are %s and %s", 
-							name_format_err(optarg),
-							Color::word, Color::end,
-							name_format_err("random"),
-							name_format_err("dfs"))); 
-					exit(ERROR_FATAL); 
-				}
-				break;
-
-			case 'M':
-				order= Order::RANDOM;
-				buffer_generator.seed(hash <string> ()(string(optarg)));
-				break;
-
 			case 'n':
 			case '0':  {
 				had_option_target= true; 
@@ -328,11 +252,6 @@ int main(int argc, char **argv, char **envp)
 					  Place_Param_Target(0, Place_Name(optarg, place))));
 				break; 
 			}
-
-			case 'V': 
-				fputs(VERSION_INFO, stdout); 
-				printf("USE_MTIM = %u\n", USE_MTIM); 
-				exit(0);
 
 			default:  
 				/* Invalid option -- an error message was
@@ -437,7 +356,7 @@ int main(int argc, char **argv, char **envp)
 		}
 
 		/* Execute */
-		Execution::main(deps);
+		main_loop(deps);
 
 	} catch (int e) {
 		assert(e >= 1 && e <= 3); 

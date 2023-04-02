@@ -192,26 +192,21 @@ public:
 		(void) result_variable_child; 
 	}
 
-	static long jobs;
-	/* Number of free slots for jobs.  This is a long because
-	 * strtol() gives a long.  Set before calling main() from the -j
-	 * option, and then changed internally by this class.  Always
-	 * nonnegative.  */ 
+	static bool hide_out_message;
+	/* Whether to show a STDOUT message at the end */
+
+	static bool out_message_done;
+	/* Whether the STDOUT message is not "Targets are up to date" */
 
 	static Rule_Set rule_set; 
-	/* Set once before calling Execution::main().  Unchanging during
-	 * the whole call to Execution::main().  */ 
-
-	static void main(const vector <shared_ptr <const Dep> > &deps);
-	/* Main execution loop.  This throws ERROR_BUILD and
-	 * ERROR_LOGICAL.  */
+	/* Set once before calling main_loop().  Unchanging during
+	 * the whole call to main_loop().  */ 
 
 	static Target get_target_for_cache(Target target); 
 	/* Get the target value used for caching.  I.e, return TARGET
 	 * with certain flags removed.  */
 
 protected: 
-
 	Bits bits;
 
 	int error;
@@ -276,6 +271,12 @@ protected:
 	 * that the target must be built.  Arguments and return value
 	 * have the same semantics as execute_base_B().  */
 
+	Execution *get_execution(shared_ptr <const Dep> dep);
+	/* Get an existing Execution or create a new one for the given
+	 * DEPENDENCY.  Return null when a strong cycle was found; return the
+	 * execution otherwise.  PLACE is the place of where the dependency was
+	 * declared.  */
+
 	void check_waited() const {
 		assert(buffer_A.empty()); 
 		assert(buffer_B.empty()); 
@@ -291,6 +292,8 @@ protected:
 	 * have to be normalized.  */
 
 	void push_result(shared_ptr <const Dep> dd); 
+	Proceed connect(shared_ptr <const Dep> dep_this,
+			shared_ptr <const Dep> dep_child);
 	void disconnect(Execution *const child,
 			shared_ptr <const Dep> dep_child);
 	/* Remove an edge from the dependency graph.  Propagate
@@ -324,12 +327,6 @@ protected:
 	static Timestamp timestamp_last; 
 	/* The timepoint of the last time wait() returned.  No file in the
 	 * file system should be newer than this.  */ 
-
-	static bool hide_out_message;
-	/* Whether to show a STDOUT message at the end */
-
-	static bool out_message_done;
-	/* Whether the STDOUT message is not "Targets are up to date" */
 
 	static unordered_map <Target, Execution *> executions_by_target;
 	/* All cached Execution objects by each of their Target.  Such
@@ -387,17 +384,6 @@ private:
 	 * only started if, after (potentially) starting all non-trivial
 	 * dependencies, the target must be rebuilt anyway.  Does not
 	 * contain compound dependencies.  */
-
-	Proceed connect(shared_ptr <const Dep> dep_this,
-			shared_ptr <const Dep> dep_child);
-	/* Add an edge to the dependency graph.  Deploy a new child
-	 * execution.  DEP_CHILD must be normalized.  */
-
-	Execution *get_execution(shared_ptr <const Dep> dep);
-	/* Get an existing Execution or create a new one for the
-	 * given DEPENDENCY.  Return null when a strong cycle was found;
-	 * return the execution otherwise.  PLACE is the place of where
-	 * the dependency was declared.  */
 
 	static void copy_result(Execution *parent, Execution *child); 
 	/* Copy the result list from CHILD to PARENT */
@@ -804,9 +790,8 @@ private:
 	bool is_finished; 
 };
 
-long Execution::jobs= 1;
 Rule_Set Execution::rule_set; 
-Timestamp Execution::timestamp_last;
+Timestamp Execution::timestamp_last; /* Initialized to zero, i.e., older than the current date */
 bool Execution::hide_out_message= false;
 bool Execution::out_message_done= false;
 unordered_map <Target, Execution *> Execution::executions_by_target;
@@ -815,69 +800,6 @@ size_t File_Execution::executions_by_pid_size= 0;
 pid_t *File_Execution::executions_by_pid_key= nullptr;
 File_Execution **File_Execution::executions_by_pid_value= nullptr; 
 unordered_map <string, Timestamp> File_Execution::transients;
-
-void Execution::main(const vector <shared_ptr <const Dep> > &deps)
-{
-	assert(jobs >= 0);
-	timestamp_last= Timestamp::now(); 
-	Root_Execution *root_execution= new Root_Execution(deps); 
-	int error= 0; 
-	shared_ptr <const Root_Dep> dep_root= make_shared <Root_Dep> (); 
-
-	try {
-		while (! root_execution->finished()) {
-			Proceed proceed;
-			do {
-				Debug::print(nullptr, "loop"); 
-				proceed= root_execution->execute(dep_root);
-				assert(proceed); 
-			} while (proceed & P_PENDING); 
-
-			if (proceed & P_WAIT) {
-				File_Execution::wait();
-			}
-		}
-
-		assert(root_execution->finished()); 
-		assert(File_Execution::executions_by_pid_size == 0); 
-
-		bool success= (root_execution->error == 0);
-		assert(option_keep_going || success); 
-
-		error= root_execution->error; 
-		assert(error >= 0 && error <= 3); 
-
-		if (success) {
-			if (! hide_out_message) {
-				if (out_message_done)
-					print_out("Build successful");
-				else 
-					print_out("Targets are up to date");
-			}
-		} else {
-			if (option_keep_going) {
-				print_error_reminder("Targets not up to date because of errors");
-			}
-		}
-	} 
-
-	/* A build error is only thrown when option_keep_going is
-	 * not set */ 
-	catch (int e) {
-		assert(! option_keep_going); 
-		assert(e >= 1 && e <= 4); 
-		/* Terminate all jobs */ 
-		if (File_Execution::executions_by_pid_size) {
-			print_error_reminder("Terminating all jobs"); 
-			job_terminate_all();
-		}
-		assert(e > 0 && e < ERROR_FATAL); 
-		error= e; 
-	}
-
-	if (error)
-		throw error; 
-}
 
 void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			     vector <shared_ptr <const Dep> > &deps,
@@ -1128,473 +1050,6 @@ void Execution::cycle_print(const vector <Execution *> &path,
 	explain_cycle(); 
 }
 
-bool Execution::same_rule(const Execution *execution_a,
-			  const Execution *execution_b)
-/* This must also take into account that two execution could use the
- * same rule but parametrized differently, thus the two executions could
- * have different targets, but the same rule.  */ 
-{
-	return 
-		execution_a->param_rule != nullptr &&
-		execution_b->param_rule != nullptr &&
-		execution_a->get_depth() == execution_b->get_depth() &&
-		execution_a->param_rule == execution_b->param_rule;
-}
-
-void Execution::operator<<(string text) const
-/* The following traverses the execution graph backwards until it finds
- * the root.  We always take the first found parent, which is an
- * arbitrary choice, but it doesn't matter here which dependency path
- * we point out as an error, so the first one it is.  */
-{	
-	/* If the error happens directly for the root execution, it was
-	 * an error on the command line; don't output anything beyond
-	 * the error message itself, which was already output.  */
-	if (dynamic_cast <const Root_Execution *> (this)) 
-		return;
-
-	bool first= true; 
-
-	/* If there is a rule for this target, show the message with the
-	 * rule's trace, otherwise show the message with the first
-	 * dependency trace */ 
-	if (this->get_place().type != Place::Type::EMPTY && ! text.empty()) {
-		this->get_place() << text;
-		first= false;
-	}
-
-	const Execution *execution= this->parents.begin()->first;
-	shared_ptr <const Dep> depp= this->parents.begin()->second; 
-
-	string text_parent= depp->format_err(); 
-
-	while (true) {
-		if (dynamic_cast <const Root_Execution *> (execution)) {
-			/* We are in a child of the root execution */ 
-			assert(! depp->top); 
-			if (first && ! text.empty()) {
-				/* No text was printed yet, but there
-				 * was a TEXT passed:  Print it with the
-				 * place available.  */ 
-				/* This is a top-level target, i.e.,
-				 * passed on the command line via an
- 				 * argument or an option  */
-				depp->get_place() << text;
-			}
-			break; 
-		}
-
-		/* Increment */
-		shared_ptr <const Dep> depp_old= depp; 
-		if (! depp->top) {
-			/* Assign DEPP first, because we change EXECUTION */
-			depp= execution->parents.begin()->second; 
-			execution= execution->parents.begin()->first;
-		} else {
-			depp= depp->top; 
-		}
-
-		/* New text */
-		string text_child= text_parent; 
-		text_parent= depp->format_err();
-
-		/* Don't show left-branch edges of dynamic executions */
-		if (hide_link_from_message(depp_old->flags)) {
-			continue;
-		}
-
-		if (same_dependency_for_print(depp, depp_old)) {
-			continue; 
-		}
-
-		/* Print */
-		string msg;
-		if (first && ! text.empty()) {
-			msg= fmt("%s, needed by %s", text, text_parent); 
-			first= false;
-		} else {	
-			msg= fmt("%s is needed by %s",
-				 text_child, text_parent);
-		}
-		depp_old->get_place() << msg;
-	}
-}
-
-Proceed Execution::execute_children()
-{
-	/* Since disconnect() may change execution->children, we must first
-	 * copy it over locally, and then iterate through it */ 
-
-	vector <Execution *> executions_children_vector
-		(children.begin(), children.end()); 
-
-	Proceed proceed_all= 0;
-
-	while (! executions_children_vector.empty()) {
-
-		assert(jobs >= 0);
-
-		if (order_vec) {
-			/* Exchange a random position with last position */ 
-			size_t p_last= executions_children_vector.size() - 1;
-			size_t p_random= random_number(executions_children_vector.size());
-			if (p_last != p_random) {
-				swap(executions_children_vector[p_last],
-				     executions_children_vector[p_random]); 
-			}
-		}
-
-		Execution *child= executions_children_vector.at
-			(executions_children_vector.size() - 1);
-		executions_children_vector.resize(executions_children_vector.size() - 1); 
-		
-		assert(child != nullptr);
-
-		shared_ptr <const Dep> dep_child= child->parents.at(this);
-
-		Proceed proceed_child= child->execute(dep_child);
-		assert(proceed_child); 
-
-		proceed_all |= (proceed_child & ~(P_FINISHED | P_ABORT));
-		/* The finished and abort flags of the child only apply to the
-		 * child, not to us  */
-
-		assert(((proceed_child & P_FINISHED) == 0) == 
-		       ((child->finished(dep_child->flags)) == 0));
-
-		if (proceed_child & P_FINISHED) {
-			disconnect(child, dep_child); 
-		} else {
-			assert((proceed_child & ~P_FINISHED) != 0); 
-			/* If the child execution is not finished, it
-			 * must have returned either the P_WAIT or
-			 * P_PENDING bit.  */
-		}
-	}
-
-	if (error) {
-		assert(option_keep_going); 
-		/* Otherwise, Stu would have aborted */ 
-	}
-
-	if (proceed_all == 0) {
-		/* If there are still children, they must have returned
-		 * WAIT or PENDING */ 
-		assert(children.empty()); 
-		if (error) {
-			assert(option_keep_going); 
-		}
-	}
-
-	return proceed_all; 
-}
-
-void Execution::push(shared_ptr <const Dep> dep)
-{
-	assert(dep); 
-	dep->check();
-	
-	vector <shared_ptr <const Dep> > deps;
-	int e= 0;
-	Dep::normalize(dep, deps, e); 
-	if (e) {
-		dep->get_place() << fmt("%s is needed by %s",
-					dep->format_err(),
-					parents.begin()->second->format_err());
-		*this << ""; 
-		raise(e); 
-	}
-	
-	for (const auto &d:  deps) {
-		d->check(); 
-		assert(d->is_normalized()); 
-		buffer_A.push(d);
-	}
-}
-
-Proceed Execution::execute_base_A(shared_ptr <const Dep> dep_this)
-{
-	Debug debug(this);
-
-	assert(jobs >= 0); 
-	assert(dep_this); 
-
-	Proceed proceed= 0; 
-
-	if (finished(dep_this->flags)) { 
-		Debug::print(this, "finished"); 
-		return proceed |= P_FINISHED; 
-	}
-
-	if (optional_finished(dep_this)) { 
-		Debug::print(this, "optional finished"); 
-		return proceed |= P_FINISHED; 
-	}
-
-	/* In DFS mode, first continue the already-open children, then
-	 * open new children.  In random mode, start new children first
-	 * and continue already-open children second */ 
-	/* Continue the already-active child executions */  
-	if (order != Order::RANDOM) {
-		Proceed proceed_2= execute_children();
-		proceed |= proceed_2;
-		if (proceed & P_WAIT) {
-			if (jobs == 0) 
-				return proceed; 
-		} else if (finished(dep_this->flags) && ! option_keep_going) { 
-			Debug::print(this, "finished"); 
-			return proceed |= P_FINISHED;
-		}
-	} 
-
-	/* Is this a trivial run?  Then skip the dependency. */
-	if (dep_this->flags & F_TRIVIAL) { 
-		return proceed |= P_ABORT | P_FINISHED; 
-	}
-
-	assert(error == 0 || option_keep_going); 
-
-	/* 
-	 * Deploy dependencies (first pass), with the F_NOTRIVIAL flag
-	 */ 
-
-	if (jobs == 0) {
-		return proceed |= P_WAIT;
-	}
-
-	while (! buffer_A.empty()) {
-		shared_ptr <const Dep> dep_child= buffer_A.next(); 
-		if ((dep_child->flags & (F_RESULT_NOTIFY | F_TRIVIAL)) == F_TRIVIAL) {
-			shared_ptr <Dep> dep_child_2= 
-				Dep::clone(dep_child);
-			dep_child_2->flags &= ~F_TRIVIAL; 
-			dep_child_2->get_place_flag(I_TRIVIAL)= Place::place_empty; 
-			buffer_B.push(dep_child_2); 
-		}
-		Proceed proceed_2= connect(dep_this, dep_child); 
-		proceed |= proceed_2;
-		if (jobs == 0) {
-			return proceed |= P_WAIT; 
-		}
-	} 
-	assert(buffer_A.empty()); 
-
-	if (order == Order::RANDOM) {
-		Proceed proceed_2= execute_children();
-		proceed |= proceed_2; 
-		if (proceed & P_WAIT)
-			return proceed;
-	}
-
-	/* Some dependencies are still running */ 
-	if (! children.empty()) {
-		assert(proceed != 0); 
-		return proceed;
-	}
-
-	/* There was an error in a child */ 
-	if (error) {
-		assert(option_keep_going == true); 
-		return proceed |= P_ABORT | P_FINISHED; 
-	}
-
-	if (proceed)
-		return proceed; 
-
-	return proceed |= P_FINISHED; 
-}
-
-Proceed Execution::connect(shared_ptr <const Dep> dep_this,
-			   shared_ptr <const Dep> dep_child)
-{
-	Debug::print(this, fmt("connect %s",  dep_child->format_src())); 
-
-	assert(dep_child->is_normalized()); 
-	assert(! to <Root_Dep> (dep_child)); 
-
-	shared_ptr <const Plain_Dep> plain_dep_this=
-		to <Plain_Dep> (dep_this);
-
-	/*
-	 * Check for various invalid types of connections 
-	 */
-
-	/* '-p' and '-o' do not mix */ 
-	if (dep_child->flags & F_PERSISTENT && dep_child->flags & F_OPTIONAL) {
-
-		/* '-p' and '-o' encountered for the same target */ 
-		const Place &place_persistent= 
-			dep_child->get_place_flag(I_PERSISTENT);
-		const Place &place_optional= 
-			dep_child->get_place_flag(I_OPTIONAL);
-		place_persistent <<
-			fmt("declaration of persistent dependency using %s",
-			    multichar_format_err("-p")); 
-		place_optional <<
-			fmt("clashes with declaration of optional dependency using %s",
-			    multichar_format_err("-o")); 
-		dep_child->get_place() <<
-			fmt("in declaration of %s, needed by %s", 
-			    dep_child->format_err(),
-			    dep_this->get_target().
-			    format_err()); 
-		*this << "";
-		explain_clash(); 
-		raise(ERROR_LOGICAL);
-		return 0;
-	}
-
-	/* '-o' does not mix with '$[' */
-	if (dep_child->flags & F_VARIABLE && dep_child->flags & F_OPTIONAL) {
-		shared_ptr <const Plain_Dep> plain_dep_child=
-			to <Plain_Dep> (dep_child); 
-		assert(plain_dep_child); 
-		assert(!(dep_child->flags & F_TARGET_TRANSIENT)); 
-		const Place &place_variable= dep_child->get_place();
-		const Place &place_flag= dep_child->get_place_flag(I_OPTIONAL); 
-		place_variable << 
-			fmt("variable dependency %s must not be declared "
-			    "as optional dependency",
-			    dynamic_variable_format_err
-			    (plain_dep_child->place_param_target.place_name.unparametrized())); 
-		place_flag << fmt("using %s",
-				  multichar_format_err("-o")); 
-		*this << "";
-		raise(ERROR_LOGICAL);
-		return 0;
-	}
-
-	/*
-	 * Actually do the connection 
-	 */
-
-	Execution *child= get_execution(dep_child);  
-	if (child == nullptr) {
-		/* Strong cycle was found */ 
-		return 0;
-	}
-
-	children.insert(child);
-
-	if (dep_child->flags & F_RESULT_NOTIFY) {
-		for (const auto &dependency:  child->result) {
-			this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child); 
-		}
-	}
-
-	Proceed proceed_child= child->execute(dep_child);
-	assert(proceed_child); 
-	if (proceed_child & (P_WAIT | P_PENDING))
-		return proceed_child; 
-			
-	if (child->finished(dep_child->flags)) {
-		disconnect(child, dep_child);
-	}
-	
-	return 0;
-}
-
-void Execution::raise(int error_)
-{
-	assert(error_ >= 1 && error_ <= 3); 
-	error |= error_;
-	if (! option_keep_going)
-		throw error;
-}
-
-void Execution::disconnect(Execution *const child,
-			   shared_ptr <const Dep> dep_child)
-{
-	Debug::print(this, fmt("disconnect %s", dep_child->format_src())); 
-
-	assert(child != nullptr); 
-	assert(child != this); 
-	assert(child->finished(dep_child->flags)); 
-	assert(option_keep_going || child->error == 0); 
-	dep_child->check(); 
-
-	if (dep_child->flags & F_RESULT_NOTIFY
-	    && dynamic_cast <File_Execution *> (child)
-	    ) {
-		shared_ptr <Dep> d= Dep::clone(dep_child);
-		d->flags &= ~F_RESULT_NOTIFY; 
-		notify_result(d, child, F_RESULT_NOTIFY, dep_child); 
-	}
-
-	if (dep_child->flags & F_RESULT_COPY && dynamic_cast <File_Execution *> (child)) {
-		shared_ptr <Dep> d= Dep::clone(dep_child);
-		d->flags &= ~F_RESULT_COPY; 
-		notify_result(d, child, F_RESULT_COPY, dep_child); 
-	}
-
-	/* Propagate timestamp */
-	/* Don't propagate the timestamp of the dynamic dependency itself */ 
-	if (! (dep_child->flags & F_PERSISTENT) && 
-	    ! (dep_child->flags & F_RESULT_NOTIFY)) {
-		if (child->timestamp.defined()) {
-			if (! timestamp.defined()) {
-				timestamp= child->timestamp;
-			} else if (timestamp < child->timestamp) {
-				timestamp= child->timestamp; 
-			}
-		}
-	}
-
-	/* Propagate variables */
-	if ((dep_child->flags & F_VARIABLE)) { 
-		assert(dynamic_cast <File_Execution *> (child)); 
-		dynamic_cast <File_Execution *> (child)->read_variable(dep_child);
-	}
-	if (! child->result_variable.empty()) {
-		notify_variable(child->result_variable); 
-	}
-
-	/* 
-	 * Propagate attributes
-	 */ 
-
-	/* Note: propagate the flags after propagating other things,
-	 * since flags can be changed by the propagations done
-	 * before.  */ 
-
-	error |= child->error; 
-
-	/* Don't propagate the NEED_BUILD flag via DYNAMIC_LEFT links:
-	 * It just means the list of depenencies have changed, not the
-	 * dependencies themselves.  */
-	if (child->bits & B_NEED_BUILD
-	    && ! (dep_child->flags & F_RESULT_NOTIFY)) {
-		bits |= B_NEED_BUILD; 
-	}
-
-	/* Remove the links between them */ 
-	assert(children.count(child) == 1); 
-	assert(child->parents.count(this) == 1);
-	children.erase(child);
-	child->parents.erase(this);
-
-	/* Delete the Execution object */
-	if (child->want_delete())
-		delete child; 
-}
-
-Proceed Execution::execute_base_B(shared_ptr <const Dep> dep_link)
-{
-	Proceed proceed= 0;
-	while (! buffer_B.empty()) {
-		shared_ptr <const Dep> dep_child= buffer_B.next(); 
-		Proceed proceed_2= connect(dep_link, dep_child);
-		proceed |= proceed_2; 
-		assert(jobs >= 0);
-		if (jobs == 0) {
-			return proceed |= P_WAIT; 
-		}
-	} 
-	assert(buffer_B.empty()); 
-
-	return proceed; 
-}
-
 Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 {
 	/*
@@ -1747,6 +1202,381 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 	return execution;
 }
 
+bool Execution::same_rule(const Execution *execution_a,
+			  const Execution *execution_b)
+/* This must also take into account that two execution could use the
+ * same rule but parametrized differently, thus the two executions could
+ * have different targets, but the same rule.  */ 
+{
+	return 
+		execution_a->param_rule != nullptr &&
+		execution_b->param_rule != nullptr &&
+		execution_a->get_depth() == execution_b->get_depth() &&
+		execution_a->param_rule == execution_b->param_rule;
+}
+
+void Execution::operator<<(string text) const
+/* The following traverses the execution graph backwards until it finds
+ * the root.  We always take the first found parent, which is an
+ * arbitrary choice, but it doesn't matter here which dependency path
+ * we point out as an error, so the first one it is.  */
+{	
+	/* If the error happens directly for the root execution, it was
+	 * an error on the command line; don't output anything beyond
+	 * the error message itself, which was already output.  */
+	if (dynamic_cast <const Root_Execution *> (this)) 
+		return;
+
+	bool first= true; 
+
+	/* If there is a rule for this target, show the message with the
+	 * rule's trace, otherwise show the message with the first
+	 * dependency trace */ 
+	if (this->get_place().type != Place::Type::EMPTY && ! text.empty()) {
+		this->get_place() << text;
+		first= false;
+	}
+
+	const Execution *execution= this->parents.begin()->first;
+	shared_ptr <const Dep> depp= this->parents.begin()->second; 
+
+	string text_parent= depp->format_err(); 
+
+	while (true) {
+		if (dynamic_cast <const Root_Execution *> (execution)) {
+			/* We are in a child of the root execution */ 
+			assert(! depp->top); 
+			if (first && ! text.empty()) {
+				/* No text was printed yet, but there
+				 * was a TEXT passed:  Print it with the
+				 * place available.  */ 
+				/* This is a top-level target, i.e.,
+				 * passed on the command line via an
+ 				 * argument or an option  */
+				depp->get_place() << text;
+			}
+			break; 
+		}
+
+		/* Increment */
+		shared_ptr <const Dep> depp_old= depp; 
+		if (! depp->top) {
+			/* Assign DEPP first, because we change EXECUTION */
+			depp= execution->parents.begin()->second; 
+			execution= execution->parents.begin()->first;
+		} else {
+			depp= depp->top; 
+		}
+
+		/* New text */
+		string text_child= text_parent; 
+		text_parent= depp->format_err();
+
+		/* Don't show left-branch edges of dynamic executions */
+		if (hide_link_from_message(depp_old->flags)) {
+			continue;
+		}
+
+		if (same_dependency_for_print(depp, depp_old)) {
+			continue; 
+		}
+
+		/* Print */
+		string msg;
+		if (first && ! text.empty()) {
+			msg= fmt("%s, needed by %s", text, text_parent); 
+			first= false;
+		} else {	
+			msg= fmt("%s is needed by %s",
+				 text_child, text_parent);
+		}
+		depp_old->get_place() << msg;
+	}
+}
+
+Proceed Execution::execute_children()
+{
+	/* Since disconnect() may change execution->children, we must first
+	 * copy it over locally, and then iterate through it */ 
+
+	vector <Execution *> executions_children_vector
+		(children.begin(), children.end()); 
+
+	Proceed proceed_all= 0;
+
+	while (! executions_children_vector.empty()) {
+
+		assert(options_jobs >= 0);
+
+		if (order_vec) {
+			/* Exchange a random position with last position */ 
+			size_t p_last= executions_children_vector.size() - 1;
+			size_t p_random= random_number(executions_children_vector.size());
+			if (p_last != p_random) {
+				swap(executions_children_vector[p_last],
+				     executions_children_vector[p_random]); 
+			}
+		}
+
+		Execution *child= executions_children_vector.at
+			(executions_children_vector.size() - 1);
+		executions_children_vector.resize(executions_children_vector.size() - 1); 
+		
+		assert(child != nullptr);
+
+		shared_ptr <const Dep> dep_child= child->parents.at(this);
+
+		Proceed proceed_child= child->execute(dep_child);
+		assert(proceed_child); 
+
+		proceed_all |= (proceed_child & ~(P_FINISHED | P_ABORT));
+		/* The finished and abort flags of the child only apply to the
+		 * child, not to us  */
+
+		assert(((proceed_child & P_FINISHED) == 0) == 
+		       ((child->finished(dep_child->flags)) == 0));
+
+		if (proceed_child & P_FINISHED) {
+			disconnect(child, dep_child); 
+		} else {
+			assert((proceed_child & ~P_FINISHED) != 0); 
+			/* If the child execution is not finished, it
+			 * must have returned either the P_WAIT or
+			 * P_PENDING bit.  */
+		}
+	}
+
+	if (error) {
+		assert(option_keep_going); 
+		/* Otherwise, Stu would have aborted */ 
+	}
+
+	if (proceed_all == 0) {
+		/* If there are still children, they must have returned
+		 * WAIT or PENDING */ 
+		assert(children.empty()); 
+		if (error) {
+			assert(option_keep_going); 
+		}
+	}
+
+	return proceed_all; 
+}
+
+void Execution::push(shared_ptr <const Dep> dep)
+{
+	assert(dep); 
+	dep->check();
+	
+	vector <shared_ptr <const Dep> > deps;
+	int e= 0;
+	Dep::normalize(dep, deps, e); 
+	if (e) {
+		dep->get_place() << fmt("%s is needed by %s",
+					dep->format_err(),
+					parents.begin()->second->format_err());
+		*this << ""; 
+		raise(e); 
+	}
+	
+	for (const auto &d:  deps) {
+		d->check(); 
+		assert(d->is_normalized()); 
+		buffer_A.push(d);
+	}
+}
+
+Proceed Execution::execute_base_A(shared_ptr <const Dep> dep_this)
+{
+	Debug debug(this);
+
+	assert(options_jobs >= 0); 
+	assert(dep_this); 
+
+	Proceed proceed= 0; 
+
+	if (finished(dep_this->flags)) { 
+		Debug::print(this, "finished"); 
+		return proceed |= P_FINISHED; 
+	}
+
+	if (optional_finished(dep_this)) { 
+		Debug::print(this, "optional finished"); 
+		return proceed |= P_FINISHED; 
+	}
+
+	/* In DFS mode, first continue the already-open children, then
+	 * open new children.  In random mode, start new children first
+	 * and continue already-open children second */ 
+	/* Continue the already-active child executions */  
+	if (order != Order::RANDOM) {
+		Proceed proceed_2= execute_children();
+		proceed |= proceed_2;
+		if (proceed & P_WAIT) {
+			if (options_jobs == 0) 
+				return proceed; 
+		} else if (finished(dep_this->flags) && ! option_keep_going) { 
+			Debug::print(this, "finished"); 
+			return proceed |= P_FINISHED;
+		}
+	} 
+
+	/* Is this a trivial run?  Then skip the dependency. */
+	if (dep_this->flags & F_TRIVIAL) { 
+		return proceed |= P_ABORT | P_FINISHED; 
+	}
+
+	assert(error == 0 || option_keep_going); 
+
+	/* 
+	 * Deploy dependencies (first pass), with the F_NOTRIVIAL flag
+	 */ 
+
+	if (options_jobs == 0) {
+		return proceed |= P_WAIT;
+	}
+
+	while (! buffer_A.empty()) {
+		shared_ptr <const Dep> dep_child= buffer_A.next(); 
+		if ((dep_child->flags & (F_RESULT_NOTIFY | F_TRIVIAL)) == F_TRIVIAL) {
+			shared_ptr <Dep> dep_child_2= 
+				Dep::clone(dep_child);
+			dep_child_2->flags &= ~F_TRIVIAL; 
+			dep_child_2->get_place_flag(I_TRIVIAL)= Place::place_empty; 
+			buffer_B.push(dep_child_2); 
+		}
+		Proceed proceed_2= connect(dep_this, dep_child); 
+		proceed |= proceed_2;
+		if (options_jobs == 0) {
+			return proceed |= P_WAIT; 
+		}
+	} 
+	assert(buffer_A.empty()); 
+
+	if (order == Order::RANDOM) {
+		Proceed proceed_2= execute_children();
+		proceed |= proceed_2; 
+		if (proceed & P_WAIT)
+			return proceed;
+	}
+
+	/* Some dependencies are still running */ 
+	if (! children.empty()) {
+		assert(proceed != 0); 
+		return proceed;
+	}
+
+	/* There was an error in a child */ 
+	if (error) {
+		assert(option_keep_going == true); 
+		return proceed |= P_ABORT | P_FINISHED; 
+	}
+
+	if (proceed)
+		return proceed; 
+
+	return proceed |= P_FINISHED; 
+}
+
+void Execution::raise(int error_)
+{
+	assert(error_ >= 1 && error_ <= 3); 
+	error |= error_;
+	if (! option_keep_going)
+		throw error;
+}
+
+void Execution::disconnect(Execution *const child,
+			   shared_ptr <const Dep> dep_child)
+{
+	Debug::print(this, fmt("disconnect %s", dep_child->format_src())); 
+
+	assert(child != nullptr); 
+	assert(child != this); 
+	assert(child->finished(dep_child->flags)); 
+	assert(option_keep_going || child->error == 0); 
+	dep_child->check(); 
+
+	if (dep_child->flags & F_RESULT_NOTIFY && dynamic_cast <File_Execution *> (child)) {
+		shared_ptr <Dep> d= Dep::clone(dep_child);
+		d->flags &= ~F_RESULT_NOTIFY; 
+		notify_result(d, child, F_RESULT_NOTIFY, dep_child); 
+	}
+
+	if (dep_child->flags & F_RESULT_COPY && dynamic_cast <File_Execution *> (child)) {
+		shared_ptr <Dep> d= Dep::clone(dep_child);
+		d->flags &= ~F_RESULT_COPY; 
+		notify_result(d, child, F_RESULT_COPY, dep_child); 
+	}
+
+	/* Propagate timestamp */
+	/* Don't propagate the timestamp of the dynamic dependency itself */ 
+	if (! (dep_child->flags & F_PERSISTENT) && 
+	    ! (dep_child->flags & F_RESULT_NOTIFY)) {
+		if (child->timestamp.defined()) {
+			if (! timestamp.defined()) {
+				timestamp= child->timestamp;
+			} else if (timestamp < child->timestamp) {
+				timestamp= child->timestamp; 
+			}
+		}
+	}
+
+	/* Propagate variables */
+	if ((dep_child->flags & F_VARIABLE)) { 
+		assert(dynamic_cast <File_Execution *> (child)); 
+		dynamic_cast <File_Execution *> (child)->read_variable(dep_child);
+	}
+	if (! child->result_variable.empty()) {
+		notify_variable(child->result_variable); 
+	}
+
+	/* 
+	 * Propagate attributes
+	 */ 
+
+	/* Note: propagate the flags after propagating other things,
+	 * since flags can be changed by the propagations done
+	 * before.  */ 
+
+	error |= child->error; 
+
+	/* Don't propagate the NEED_BUILD flag via DYNAMIC_LEFT links:
+	 * It just means the list of depenencies have changed, not the
+	 * dependencies themselves.  */
+	if (child->bits & B_NEED_BUILD
+	    && ! (dep_child->flags & F_RESULT_NOTIFY)) {
+		bits |= B_NEED_BUILD; 
+	}
+
+	/* Remove the links between them */ 
+	assert(children.count(child) == 1); 
+	assert(child->parents.count(this) == 1);
+	children.erase(child);
+	child->parents.erase(this);
+
+	/* Delete the Execution object */
+	if (child->want_delete())
+		delete child; 
+}
+
+Proceed Execution::execute_base_B(shared_ptr <const Dep> dep_link)
+{
+	Proceed proceed= 0;
+	while (! buffer_B.empty()) {
+		shared_ptr <const Dep> dep_child= buffer_B.next(); 
+		Proceed proceed_2= connect(dep_link, dep_child);
+		proceed |= proceed_2; 
+		assert(options_jobs >= 0);
+		if (options_jobs == 0) {
+			return proceed |= P_WAIT; 
+		}
+	} 
+	assert(buffer_B.empty()); 
+
+	return proceed; 
+}
+
 void Execution::copy_result(Execution *parent, Execution *child)
 {
 	/* Check that the child is not of a type for which RESULT is not
@@ -1825,6 +1655,96 @@ shared_ptr <const Dep> Execution::set_top(shared_ptr <const Dep> dep,
 	return ret; 
 }
 
+Proceed Execution::connect(shared_ptr <const Dep> dep_this,
+			   shared_ptr <const Dep> dep_child)
+{
+	Debug::print(this, fmt("connect %s",  dep_child->format_src())); 
+
+	assert(dep_child->is_normalized()); 
+	assert(! to <Root_Dep> (dep_child)); 
+
+	shared_ptr <const Plain_Dep> plain_dep_this=
+		to <Plain_Dep> (dep_this);
+
+	/*
+	 * Check for various invalid types of connections 
+	 */
+
+	/* '-p' and '-o' do not mix */ 
+	if (dep_child->flags & F_PERSISTENT && dep_child->flags & F_OPTIONAL) {
+
+		/* '-p' and '-o' encountered for the same target */ 
+		const Place &place_persistent= 
+			dep_child->get_place_flag(I_PERSISTENT);
+		const Place &place_optional= 
+			dep_child->get_place_flag(I_OPTIONAL);
+		place_persistent <<
+			fmt("declaration of persistent dependency using %s",
+			    multichar_format_err("-p")); 
+		place_optional <<
+			fmt("clashes with declaration of optional dependency using %s",
+			    multichar_format_err("-o")); 
+		dep_child->get_place() <<
+			fmt("in declaration of %s, needed by %s", 
+			    dep_child->format_err(),
+			    dep_this->get_target().
+			    format_err()); 
+		*this << "";
+		explain_clash(); 
+		raise(ERROR_LOGICAL);
+		return 0;
+	}
+
+	/* '-o' does not mix with '$[' */
+	if (dep_child->flags & F_VARIABLE && dep_child->flags & F_OPTIONAL) {
+		shared_ptr <const Plain_Dep> plain_dep_child=
+			to <Plain_Dep> (dep_child); 
+		assert(plain_dep_child); 
+		assert(!(dep_child->flags & F_TARGET_TRANSIENT)); 
+		const Place &place_variable= dep_child->get_place();
+		const Place &place_flag= dep_child->get_place_flag(I_OPTIONAL); 
+		place_variable << 
+			fmt("variable dependency %s must not be declared "
+			    "as optional dependency",
+			    dynamic_variable_format_err
+			    (plain_dep_child->place_param_target.place_name.unparametrized())); 
+		place_flag << fmt("using %s",
+				  multichar_format_err("-o")); 
+		*this << "";
+		raise(ERROR_LOGICAL);
+		return 0;
+	}
+
+	/*
+	 * Actually do the connection 
+	 */
+
+	Execution *child= get_execution(dep_child);  
+	if (child == nullptr) {
+		/* Strong cycle was found */ 
+		return 0;
+	}
+
+	children.insert(child);
+
+	if (dep_child->flags & F_RESULT_NOTIFY) {
+		for (const auto &dependency:  child->result) {
+			this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child); 
+		}
+	}
+
+	Proceed proceed_child= child->execute(dep_child);
+	assert(proceed_child); 
+	if (proceed_child & (P_WAIT | P_PENDING))
+		return proceed_child; 
+			
+	if (child->finished(dep_child->flags)) {
+		disconnect(child, dep_child);
+	}
+	
+	return 0;
+}
+
 File_Execution::~File_Execution()
 /* Objects of this type are never deleted */ 
 {
@@ -1894,7 +1814,7 @@ void File_Execution::wait()
 	
 	File_Execution *const execution= executions_by_pid_value[index]; 
 	execution->waited(pid, index, status); 
-	++jobs; 
+	++ options_jobs; 
 }
 
 void File_Execution::waited(pid_t pid, size_t index, int status) 
@@ -2351,9 +2271,7 @@ void File_Execution::warn_future_file(struct stat *buf,
 		timestamp_last= Timestamp::now(); 
 
 		if (timestamp_last < timestamp_buf) {
-			string suffix=
-				message_extra == nullptr ? ""
-				: string(" ") + message_extra;
+			string suffix= message_extra ? string(" ") + message_extra : "";
 			print_warning(place,
 				      fmt("File %s has modification time in the future%s",
 					  name_format_err(filename),
@@ -2702,7 +2620,7 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 
 	out_message_done= true;
 
-	assert(jobs >= 0); 
+	assert(options_jobs >= 0); 
 
 	/* For hardcoded rules (i.e., static content), we don't need to
 	 * start a job, and therefore this is executed even if JOBS is
@@ -2722,7 +2640,7 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 
 	/* We know that a job has to be started now */
 
-	if (jobs == 0) {
+	if (options_jobs == 0) {
 		return proceed |= P_WAIT;
 	}
        
@@ -2742,7 +2660,7 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 	if (rule->redirect_index >= 0)
 		assert(! (rule->place_param_targets[rule->redirect_index]->flags & F_TARGET_TRANSIENT)); 
 
-	assert(jobs >= 1); 
+	assert(options_jobs >= 1); 
 	
 	/* Key/value pairs for all environment variables of the job.
 	 * Variables override parameters.  
@@ -2836,14 +2754,14 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 			 * value passed via -j (or its default value 1),
 			 * and thus we can allocate arrays of that size
 			 * once and for all.  */
-			if (SIZE_MAX / sizeof(*executions_by_pid_key) < (size_t)jobs ||
-			    SIZE_MAX / sizeof(*executions_by_pid_value) < (size_t)jobs) {
+			if (SIZE_MAX / sizeof(*executions_by_pid_key) < (size_t)options_jobs ||
+			    SIZE_MAX / sizeof(*executions_by_pid_value) < (size_t)options_jobs) {
 				errno= ENOMEM;
 				perror("malloc"); 
 				exit(ERROR_FATAL); 
 			}
-			executions_by_pid_key  = (pid_t *)          malloc(jobs * sizeof(*executions_by_pid_key));
-			executions_by_pid_value= (File_Execution **)malloc(jobs * sizeof(*executions_by_pid_value)); 
+			executions_by_pid_key  = (pid_t *)          malloc(options_jobs * sizeof(*executions_by_pid_key));
+			executions_by_pid_value= (File_Execution **)malloc(options_jobs * sizeof(*executions_by_pid_value)); 
 			if (!executions_by_pid_key || !executions_by_pid_value) {
 				perror("malloc"); 
 				exit(ERROR_FATAL); 
@@ -2883,11 +2801,11 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 
 	assert(executions_by_pid_value[index]->job.started()); 
 	assert(pid == executions_by_pid_value[index]->job.get_pid()); 
-	--jobs;
-	assert(jobs >= 0);
+	-- options_jobs;
+	assert(options_jobs >= 0);
 
 	proceed |= P_WAIT; 
-	if (order == Order::RANDOM && jobs > 0)
+	if (order == Order::RANDOM && options_jobs > 0)
 		proceed |= P_PENDING; 
 	return proceed;
 }

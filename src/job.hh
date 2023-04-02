@@ -10,6 +10,8 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 
+#include "error.hh"
+
 void job_terminate_all(); 
 /* Called to terminate all running processes, and remove their target
  * files if present.  Implemented in execution.hh, and called from

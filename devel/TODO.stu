@@ -3,11 +3,20 @@
 #
 
 #
+# Rename tests to begin with the version number in which the feature that they
+# are testing was introduced. 
+#
+
+#
 # Have a linter or similar.
 #
 
 #
 # Check out coverage tools.
+#
+
+#
+# Try out a GUI.
 #
 
 #
@@ -20,9 +29,4 @@
 
 #
 # Write a test that no file end in an empty line. 
-#
-
-#
-# Rename tests to begin with the version number in which the feature that they
-# are testing was introduced. 
 #

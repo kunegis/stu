@@ -28,37 +28,15 @@
 
 #include <sys/stat.h>
 
+#include "bits.hh"
 #include "buffer.hh"
 #include "debug.hh"
 #include "job.hh"
 #include "parser.hh"
+#include "proceed.hh"
 #include "rule.hh"
 #include "timestamp.hh"
 #include "tokenizer.hh"
-
-typedef unsigned Proceed;
-/* This is used as the return value of the functions execute*() Defined
- * as typedef to make arithmetic with it.  */
-enum {
-	P_WAIT =     1 << 0,
-	/* There's more to do, but it can only be started after having
-	 * waited for other jobs to finish.  I.e., the wait function
-	 * will have to be called.  */
-
-	P_PENDING =  1 << 1,
-	/* The function execute() should be called again for this
-	 * execution (without waiting) at least, for various reasons,
-	 * mostly for randomization of execution order.  */
-		
-	P_FINISHED = 1 << 2,
-	/* This Execution is finished */ 
-		
-	P_ABORT    = 1 << 3,
-	/* This Execution should be finished immediately.  When set,
-	 * P_FINISHED is also set.  This does not imply that there was
-	 * an error -- for instance, the trivial flag -t may mean that
-	 * nothing more should be done.  */
-};
 
 class Execution
 /*
@@ -84,32 +62,6 @@ class Execution
 	:  private Printer, protected Debuggable
 {
 public: 
-	typedef unsigned Bits;
-	/* These are bits set for individual execution objects.  The
-	 * semantics of each is chosen such that in a new execution
-	 * object, the value is zero.  The semantics of the different
-	 * bits are distinct and could just as well be realized as
-	 * individual "bool" variables.  */ 
-	enum {
-		B_NEED_BUILD	= 1 << 0,
-		/* Whether this target needs to be built.  When a target is
-		 * finished, this value is propagated to the parent executions */
-
-		B_CHECKED  	= 1 << 1,
-		/* Whether a certain check has been performed.  Only
-		 * used by File_Execution.  */
-
-		B_EXISTING	= 1 << 2, 
-		/* All file targets are known to exist (only in
-		 * File_Execution; may be set when there are no file
-		 * targets).  */
-
-		B_MISSING	= 1 << 3,
-		/* At least one file target is known not to exist (only
-		 * possible if there is at least one file target in
-		 * File_Execution).  */
-	};
-
 	void raise(int error_);
 	/* All errors by Execution objects call this function.  Set the
 	 * error code, and throw an error except with the keep-going
@@ -1059,7 +1011,8 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 	/* Concatenations */
 	if (shared_ptr <const Concat_Dep> concat_dep= to <const Concat_Dep> (dep)) {
 		int error_additional= 0; 
-		Concat_Execution *execution= new Concat_Execution(concat_dep, this, error_additional); 
+		Concat_Execution *execution= new Concat_Execution
+			(concat_dep, this, error_additional); 
 		assert(execution); 
 		if (error_additional) {
 			error |= error_additional; 
@@ -1178,16 +1131,13 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 				 error_additional); 
 		} else if (target.is_transient()) {
 			execution= new Transient_Execution
-				(dep, 
-				 this,
+				(dep, this,
 				 rule_child, param_rule_child, mapping_parameter,
 				 error_additional);
 		}
 	} else {
 		shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep); 
-		execution= new Dynamic_Execution(dynamic_dep, 
-						 this,
-						 error_additional); 
+		execution= new Dynamic_Execution(dynamic_dep, this, error_additional); 
 	}
 
 	if (error_additional) {
@@ -1198,7 +1148,6 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 	}
 	
 	assert(execution->parents.size() == 1); 
-
 	return execution;
 }
 
@@ -1389,10 +1338,8 @@ void Execution::push(shared_ptr <const Dep> dep)
 Proceed Execution::execute_base_A(shared_ptr <const Dep> dep_this)
 {
 	Debug debug(this);
-
 	assert(options_jobs >= 0); 
 	assert(dep_this); 
-
 	Proceed proceed= 0; 
 
 	if (finished(dep_this->flags)) { 
@@ -2282,7 +2229,7 @@ void File_Execution::warn_future_file(struct stat *buf,
 
 void File_Execution::print_command() const
 {
-	static const size_t SIZE_MAX_PRINT_CONTENT= 20;
+	constexpr size_t size_max_print_content= 20;
 	
 	if (option_silent)
 		return; 
@@ -2291,7 +2238,7 @@ void File_Execution::print_command() const
 		assert(targets.size() == 1); 
 		string content= rule->command->command;
 		bool is_printable= false;
-		if (content.size() < SIZE_MAX_PRINT_CONTENT) {
+		if (content.size() < size_max_print_content) {
 			is_printable= true;
 			for (const char c:  content) {
 				int cc= c;
@@ -2420,7 +2367,8 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 	 * Check whether execution has to be built
 	 */
 
-	Timestamp *timestamps_old_new= (Timestamp *)realloc(timestamps_old, sizeof(timestamps_old[0]) * targets.size()); 
+	Timestamp *timestamps_old_new= (Timestamp *)
+		realloc(timestamps_old, sizeof(timestamps_old[0]) * targets.size()); 
 	if (!timestamps_old_new) {
 		perror("realloc"); 
 		abort(); 
@@ -2452,14 +2400,12 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 
 	if (! (bits & B_CHECKED)) {
 		bits |= B_CHECKED; 
-
 		bits |= B_EXISTING;
 		bits &= ~B_MISSING;
 		/* Now, set to B_MISSING when a file is found not to exist */ 
 
 		for (size_t i= 0;  i < targets.size();  ++i) {
 			const Target &target= targets[i]; 
-
 			if (! target.is_file()) 
 				continue;
 
@@ -2639,15 +2585,11 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 	}
 
 	/* We know that a job has to be started now */
-
-	if (options_jobs == 0) {
+	if (options_jobs == 0) 
 		return proceed |= P_WAIT;
-	}
        
 	/* We have to start a job now */ 
-
 	print_command();
-
 	for (const Target &target:  targets) {
 		if (! target.is_transient())  
 			continue; 
@@ -2656,10 +2598,8 @@ Proceed File_Execution::execute(shared_ptr <const Dep> dep_this)
 		assert(transients.count(target.get_name_nondynamic()) == 0); 
 		transients[target.get_name_nondynamic()]= timestamp_now; 
 	}
-
 	if (rule->redirect_index >= 0)
 		assert(! (rule->place_param_targets[rule->redirect_index]->flags & F_TARGET_TRANSIENT)); 
-
 	assert(options_jobs >= 1); 
 	
 	/* Key/value pairs for all environment variables of the job.
@@ -2832,14 +2772,12 @@ void File_Execution::write_content(const char *filename,
 		if (fwrite(line.c_str(), 1, line.size(), file) != line.size()) {
 			assert(ferror(file));
 			fclose(file); 
-			rule->place <<
-				system_format(name_format_err(filename)); 
+			rule->place << system_format(name_format_err(filename)); 
 			raise(ERROR_BUILD); 
 		}
 		if (EOF == putc('\n', file)) {
 			fclose(file); 
-			rule->place <<
-				system_format(name_format_err(filename)); 
+			rule->place << system_format(name_format_err(filename)); 
 			raise(ERROR_BUILD); 
 		}
 	}
@@ -2860,7 +2798,6 @@ void File_Execution::write_content(const char *filename,
 void File_Execution::read_variable(shared_ptr <const Dep> dep)
 {
 	Debug::print(this, fmt("read_variable %s", dep->format_src())); 
-	
 	assert(to <Plain_Dep> (dep)); 
 
 	if (! result_variable.empty()) {
@@ -2877,9 +2814,8 @@ void File_Execution::read_variable(shared_ptr <const Dep> dep)
 		return;
 	}
 
-	if (error) {
+	if (error) 
 		return; 
-	}
 
 	Target target= dep->get_target(); 
 	assert(! target.is_dynamic()); 
@@ -3007,16 +2943,14 @@ bool Root_Execution::finished() const
 bool Root_Execution::finished(Flags flags) const
 {
 	(void) flags; 
-
 	return is_finished; 
 }
 
 Root_Execution::Root_Execution(const vector <shared_ptr <const Dep> > &deps)
 	:  is_finished(false)
 {
-	for (auto &d:  deps) {
+	for (auto &d:  deps) 
 		push(d); 
-	}
 }
 
 Proceed Root_Execution::execute(shared_ptr <const Dep> dep_this)

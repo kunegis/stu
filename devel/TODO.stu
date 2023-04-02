@@ -1,5 +1,6 @@
 #
 # See whether source files can be split into smaller files.  (execution.hh, etc.)
+# * Execution:  to split into multiple files, we'd have to introduce .cc files. 
 #
 
 #

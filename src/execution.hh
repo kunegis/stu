@@ -29,11 +29,12 @@
 #include <sys/stat.h>
 
 #include "buffer.hh"
-#include "parser.hh"
+#include "debug.hh"
 #include "job.hh"
-#include "tokenizer.hh"
+#include "parser.hh"
 #include "rule.hh"
 #include "timestamp.hh"
+#include "tokenizer.hh"
 
 typedef unsigned Proceed;
 /* This is used as the return value of the functions execute*() Defined
@@ -80,7 +81,7 @@ class Execution
  * dependency of A, even though properly speaking, the edge connecting
  * them is the dependency.
  */
-	:  private Printer
+	:  private Printer, protected Debuggable
 {
 public: 
 	typedef unsigned Bits;
@@ -168,8 +169,6 @@ public:
 	{ 
 		return ""; 
 	}
-
-	virtual string format_src() const= 0;
 
 	virtual void notify_result(shared_ptr <const Dep> dep,
 				   Execution *source,
@@ -805,42 +804,6 @@ private:
 	bool is_finished; 
 };
 
-class Debug
-/* Helper class for debug output (option -d).  Provides indentation. 
- * During the lifetime of an object, padding is increased by one step.  
- * This class is declared within blocks in functions such as execute(),
- * etc.  The passed Execution is valid until the end of the object's
- * lifetime.  */
-{
-public:
-	Debug(const Execution *e) 
-	{
-		padding_current += "   ";
-		executions.push_back(e); 
-	}
-
-	~Debug() 
-	{
-		padding_current.resize(padding_current.size() - 3);
-		executions.pop_back(); 
-	}
-
-	static const char *padding() {
-		return padding_current.c_str(); 
-	}
-
-	static void print(const Execution *, string text);
-	/* Print a line for debug mode.  The given TEXT starts with the
-	 * lower-case name of the operation being performed, followed by
-	 * parameters, and not ending in a newline or period.  */
-
-private:
-	static string padding_current;
-	static vector <const Execution *> executions; 
-
-	static void print(string text_target, string text);
-};
-
 long Execution::jobs= 1;
 Rule_Set Execution::rule_set; 
 Timestamp Execution::timestamp_last;
@@ -852,9 +815,6 @@ size_t File_Execution::executions_by_pid_size= 0;
 pid_t *File_Execution::executions_by_pid_key= nullptr;
 File_Execution **File_Execution::executions_by_pid_value= nullptr; 
 unordered_map <string, Timestamp> File_Execution::transients;
-
-string Debug::padding_current= "";
-vector <const Execution *> Debug::executions; 
 
 void Execution::main(const vector <shared_ptr <const Dep> > &deps)
 {
@@ -3594,40 +3554,6 @@ void Transient_Execution::notify_result(shared_ptr <const Dep> dep,
 	assert(dep_source);
 	dep= append_top(dep, dep_source); 
 	push_result(dep); 
-}
-
-void Debug::print(const Execution *e, string text) 
-{
-	if (e == nullptr) {
-		print("", text);
-	} else {
-		if (executions.size() > 0 &&
-		    executions[executions.size() - 1] == e) {
-			print(e->format_src(), text); 
-		} else {
-			Debug debug(e);
-			print(e->format_src(), text); 
-		}
-	}
-}
-
-void Debug::print(string text_target,
-		  string text)
-{
-	assert(! text.empty());
-	assert(text[0] >= 'a' && text[0] <= 'z'); 
-	assert(text[text.size() - 1] != '\n');
-
-	if (! option_debug) 
-		return;
-
-	if (! text_target.empty())
-		text_target += ' ';
-
-	fprintf(stderr, "DEBUG  %s%s%s\n",
-		padding(),
-		text_target.c_str(),
-		text.c_str()); 
 }
 
 #endif /* ! EXECUTION_HH */

@@ -1,0 +1,23 @@
+#! /bin/sh
+#
+# Test that both lists of options are the same.
+#
+
+ret=0
+
+<src/stu.cc sed -e '/^[[:space:]]*" *-[0-9a-zA-Z]/!d;s,^[^-]*-\(.\).*$,\1,' >test_options.a || exit 2
+<man/stu.1.in sed -e '/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-./!d;s/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-\(.\).*$/\1/' >test_options.b || exit 2
+
+if ! cmp test_options.a test_options.b ; then
+	echo >&2 "$0: *** The options given and 'src/stu.cc' are different from those given in 'man/stu.1.in'"
+	echo >&2 "Options from 'src/stu.cc':"
+	cat >&2 test_options.a
+	echo >&2 "Options from 'man/stu.1.in':"
+	cat >&2 test_options.b
+	echo >&2 "Diff:"
+	diff test_options.a test_options.b
+	ret=1
+fi
+
+rm -f test_options.a test_options.b || exit 2
+exit $ret

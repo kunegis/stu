@@ -1,9 +1,4 @@
 #
-# See whether source files can be split into smaller files.  (execution.hh, etc.)
-# * Execution:  to split into multiple files, we'd have to introduce .cc files. 
-#
-
-#
 # Rename tests to begin with the version number in which the feature that they
 # are testing was introduced. 
 #

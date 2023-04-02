@@ -2,11 +2,10 @@
 #define ERROR_HH
 
 /*
- * Code for managing errors in Stu.  Errors codes in Stu are represented
- * by integers between 0 and 4, as defined in the ERROR_* constants
- * below.  Zero represents no error.  These codes are used for both
- * Stu's exit status and as values that are stored in ints, as well as
- * thrown and caught.  Variables containing error codes are ints and are
+ * Errors codes in Stu are represented by integers between 0 and 4, as defined
+ * in the ERROR_* constants below.  Zero represents no error.  These codes are
+ * used for both Stu's exit status and as values that are stored in ints, as
+ * well as thrown and caught.  Variables containing error codes are ints and are
  * named "error".
  */ 
 
@@ -22,8 +21,8 @@
  *
  * Traces are used when it is possible to refer to a specific location
  * in the input files (or command line, etc.).  Error messages are
- * avoided: all errors should be traced back to a place in the source if
- * possible, but sometimes they must be used. 
+ * avoided:  all errors should be traced back to a place in the source if
+ * possible.  But sometimes they must be used. 
  */
 
 /*
@@ -43,9 +42,9 @@
  *    Location 1: in BBB
  *
  *    Location 2: AAA must not be used
- *    Location 1: in FEATURE_NAME using OPERATOR
+ *    Location 1: in FEATURE using OPERATOR
  *
- * Use "expected TOKEN" instead of "missing TOKEN".  That is because
+ * Use "expected TOKEN" instead of "missing TOKEN".  That's because
  * some tokens in the given list may be optional, making the "missing"
  * phrasing confusing, as it would imply that the token is mandatory.
  * Include definite or indefinite articles after "expected" to avoid
@@ -93,10 +92,10 @@
 
 /* The error constants.  Not declared as an enum because they are thrown
  * and thus need to be integers.  */
-const int ERROR_BUILD=        1;
-const int ERROR_LOGICAL=      2;
-const int ERROR_FATAL=        4;
-const int ERROR_FORK_CHILD= 127;
+constexpr int ERROR_BUILD=        1;
+constexpr int ERROR_LOGICAL=      2;
+constexpr int ERROR_FATAL=        4;
+constexpr int ERROR_FORK_CHILD= 127;
 
 /*
  * Build errors (code 1) are errors encountered during the normal
@@ -162,9 +161,7 @@ void print_error_system(string message)
 {
 	assert(message.size() > 0 && message[0] != '') ;
 	string t= name_format_err(message); 
-	fprintf(stderr, "%s: %s\n",
-		t.c_str(),
-		strerror(errno));
+	fprintf(stderr, "%s: %s\n", t.c_str(), strerror(errno));
 }
 
 void print_error_reminder(string message)
@@ -186,9 +183,7 @@ string system_format(string text)
  * ERRNO-based text.  Cf. perror().  Color is not added.  The output of
  * this function is used as input to one of the print_*() functions.  */
 {
-	return fmt("%s: %s",
-		   text,
-		   strerror(errno)); 
+	return fmt("%s: %s", text, strerror(errno)); 
 }
 
 void print_out(string text)
@@ -347,7 +342,6 @@ class Trace
  */
 {
 public:
-
 	Place place;
 
 	string message; 
@@ -470,9 +464,7 @@ string Place::as_argv0() const
 const char *Place::get_filename_str() const
 {
 	assert(type == Type::INPUT_FILE);
-	return text.empty()
-		? "<stdin>"
-		: text.c_str();
+	return text.empty() ? "<stdin>" : text.c_str();
 }
 
 void print_warning(const Place &place, string message)
@@ -491,7 +483,6 @@ bool Place::operator==(const Place &place) const
 
 	switch (this->type) {
 	default:  assert(0);
-
 	case Type::EMPTY:
 	case Type::ARGUMENT:
 	case Type::ENV_OPTIONS:

@@ -2,15 +2,14 @@
 #define DEP_HH
 
 /*
- * Data types for representing dependencies.  Dependencies are the
- * central data structures in Stu, as all dependencies in the syntax of
- * a Stu script get mapped to Dep objects.  
+ * Data types for representing dependencies.  Dependencies are the central data
+ * structures in Stu, as all dependencies in the syntax of a Stu script get
+ * mapped to Dep objects.
  *
- * Dependencies are polymorphous objects, and all dependencies derive
- * from the class Dep, and are used via shared_ptr<>, except in
- * cases where access is read-only.  This is necessary in cases where a
- * member function has to access its own THIS pointer, because we can't
- * put THIS into a shared pointer. 
+ * Dependencies are polymorphous objects, and all dependencies derive from the
+ * class Dep, and are used via shared_ptr<>, except in cases where access is
+ * read-only.  This is necessary in cases where a member function has to access
+ * its own THIS pointer, because we can't put THIS into a shared pointer.
  *
  * All dependency classes allow parametrized targets.  
  */
@@ -31,12 +30,12 @@
 /*
  * A plain dependency is a file or a transient. 
  *
- * A dependency is simple when is does not involve concatenation or
- * compound dependencies, i.e., when it is a possible multiply dynamic
- * dependency of a plain dependency.
+ * A dependency is simple when is does not involve concatenation or compound
+ * dependencies, i.e., when it is a possible multiply dynamic dependency of a
+ * plain dependency. 
  *
- * A dependency that is not simple is complex.  I.e., a complex
- * dependency involves concatenation and/or compound dependencies. 
+ * A dependency that is not simple is complex.  I.e., a complex dependency
+ * involves concatenation and/or compound dependencies.
  */
 
 #include <map>
@@ -132,7 +131,7 @@ public:
 			places[i]= that.places[i]; 
 	}
 
-	virtual ~Dep() = default; 
+	virtual ~Dep()= default; 
 
 	const Place &get_place_flag(unsigned i) const {
 		assert(i < C_PLACED);
@@ -187,13 +186,11 @@ public:
 	static void normalize(shared_ptr <const Dep> dep,
 			      vector <shared_ptr <const Dep> > &deps,
 			      int &error);
-	/* Split DEP into multiple DEPS that are each
-	 * normalized.  The resulting dependencies are appended to
-	 * DEPS, which does not have to be empty on entering the
-	 * function.  
+	/* Split DEP into multiple DEPS that are each normalized.  The resulting
+	 * dependencies are appended to DEPS, which does not have to be empty on
+	 * entering the function.  
 	 * On errors, a message is printed, bits are set in ERROR, and
-	 * if not in keep-going mode, the function returns immediately. 
-	 */
+	 * if not in keep-going mode, the function returns immediately.  */
 
 	static shared_ptr <Dep> clone(shared_ptr <const Dep> dep);
 	/* A shallow clone */
@@ -470,8 +467,7 @@ public:
 	 * DEPS which does not need to be empty on entry into
 	 * this function.  
 	 * On errors, a message is printed, bits are set in ERROR, and
-	 * if not in keep-going mode, the function returns immediately. 
-	 */
+	 * if not in keep-going mode, the function returns immediately.  */
 
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
 				     vector <shared_ptr <const Dep> > &deps,
@@ -480,8 +476,7 @@ public:
 	/* Helper function.  Write result into DEPS,
 	 * concatenating all starting at the given index.  
 	 * On errors, a message is printed, bits are set in ERROR, and
-	 * if not in keep-going mode, the function returns immediately. 
-	 */
+	 * if not in keep-going mode, the function returns immediately.  */
 };
 
 class Compound_Dep
@@ -535,7 +530,6 @@ public:
 	}
 
 	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
-
 	virtual bool is_unparametrized() const; 
 
 	virtual const Place &get_place() const
@@ -631,7 +625,6 @@ shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 	} else if (to <Root_Dep> (dep)) {
 		return make_shared <Root_Dep> (* to <Root_Dep> (dep)); 
 	} else {
-		/* Bug:  Unhandled dependency type */ 
 		assert(false);
 		return nullptr; 
 	}
@@ -672,7 +665,8 @@ void Dep::check() const
 	if (auto plain_this= dynamic_cast <const Plain_Dep *> (this)) {
 		/* The F_TARGET_TRANSIENT flag is always set in the
 		 * dependency flags, even though that is redundant.  */
-		assert((plain_this->flags & F_TARGET_TRANSIENT) == (plain_this->place_param_target.flags)); 
+		assert((plain_this->flags & F_TARGET_TRANSIENT)
+		       == (plain_this->place_param_target.flags)); 
 
 		if (! plain_this->variable_name.empty()) {
 			assert((plain_this->place_param_target.flags & F_TARGET_TRANSIENT) == 0); 
@@ -827,7 +821,8 @@ string Dynamic_Dep::format_err() const
 
 shared_ptr <const Dep> Dynamic_Dep::instantiate(const map <string, string> &mapping) const
 {
-	shared_ptr <Dynamic_Dep> ret= make_shared <Dynamic_Dep> (flags, places, dep->instantiate(mapping));
+	shared_ptr <Dynamic_Dep> ret= make_shared <Dynamic_Dep>
+		(flags, places, dep->instantiate(mapping));
 	ret->index= index;
 	ret->top= top; 
 	return ret;
@@ -837,7 +832,8 @@ shared_ptr <const Dep> Plain_Dep::instantiate(const map <string, string> &mappin
 {
 	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
 
-	shared_ptr <Dep> ret= make_shared <Plain_Dep> (flags, places, *ret_target, place, variable_name);
+	shared_ptr <Dep> ret= make_shared <Plain_Dep>
+		(flags, places, *ret_target, place, variable_name);
 	ret->index= index;
 	ret->top= top; 
 
@@ -877,7 +873,6 @@ bool Compound_Dep::is_unparametrized() const
 		if (! d->is_unparametrized())
 			return false;
 	}
-
 	return true;
 }
 
@@ -945,7 +940,6 @@ bool Concat_Dep::is_unparametrized() const
 		if (! d->is_unparametrized())
 			return false;
 	}
-
 	return true;
 }
 
@@ -1025,14 +1019,11 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 				  int &error) 
 {
 	size_t k_init= deps_.size(); 
-
 	normalize_concat(dep, deps_, 0, error); 
-
 	if (error && ! option_keep_going)
 		return;
 
 	/* Add attributes from DEP */ 	
-
 	if (dep->flags || dep->index >= 0 || dep->top) {
 		for (size_t k= k_init;  k < deps_.size();  ++k) {
 			shared_ptr <Dep> d_new= Dep::clone(deps_[k]); 

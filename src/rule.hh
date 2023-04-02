@@ -1,10 +1,6 @@
 #ifndef RULE_HH
 #define RULE_HH
 
-/* 
- * Data structures for representing rules. 
- */
-
 #include <unordered_map>
 #include <unordered_set>
 
@@ -143,7 +139,6 @@ public:
 	 * -d options */   
 
 private:
-
 	unordered_map <Target, shared_ptr <const Rule> > rules_unparam;
 	/* All unparametrized rules by their target.  Rules with multiple
 	 * targets are included multiple times, for each of their targets.  None
@@ -166,9 +161,6 @@ private:
 	 * (see manpage), is not present in a matched string.  */ 
 };
 
-/* 
- * Helper class to find the best matching rule. 
- */
 class Best_Rule_Finder
 {
 public:
@@ -318,9 +310,7 @@ Rule::instantiate(shared_ptr <const Rule> rule,
 
 string Rule::format_out() const
 {
-	string ret;
-
-	ret += "Rule(";
+	string ret= "Rule(";
 	
 	bool first= true;
 	for (auto place_param_target:  place_param_targets) {
@@ -340,7 +330,6 @@ string Rule::format_out() const
 	}
 
 	ret += ")";
-
 	return ret; 
 }
 
@@ -394,7 +383,6 @@ void Rule::canonicalize()
 void Rule_Set::add(vector <shared_ptr <Rule> > &rules_) 
 {
 	for (auto &rule:  rules_) {
-
 		rule->canonicalize(); 
 		
 		/* Check that the rule doesn't have a duplicate target */ 
@@ -499,8 +487,7 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 		assert(rule != nullptr); 
 		assert(rule->place_param_targets.front()->place_name.get_n() == 0);
 #ifndef NDEBUG		
-		/* Check that the target is a target of the found
-		 * rule, as it should be */
+		/* Check that the target is a target of the found rule */
 		bool found= false;
 		for (auto place_param_target:  rule->place_param_targets) {
 			Target t= place_param_target->unparametrized();
@@ -538,9 +525,8 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 	}
 
 	/* No rule matches */ 
-	if (best_rule_finder.count() == 0) {
+	if (best_rule_finder.count() == 0) 
 		return nullptr; 
-	}
 
 	/* More than one rule matches:  error */
 	if (best_rule_finder.count() != 1 ) {
@@ -584,9 +570,7 @@ void Best_Rule_Finder::add(const Target &target, shared_ptr <const Rule> rule)
 	best_sorted.clear(); 
 
 	for (auto &place_param_target:  rule->place_param_targets) {
-
 		assert(place_param_target->place_name.get_n() > 0);
-		
 		map <string, string> mapping;
 		vector <size_t> anchoring;
 		int priority;
@@ -657,12 +641,10 @@ const map <Place, shared_ptr <const Place_Param_Target> > &Best_Rule_Finder::tar
 	assert(! place_param_targets_best.empty());
 
 	if (best_sorted.empty()) {
-
 		for (auto &place_param_target:
 			     place_param_targets_best) {
 			best_sorted[place_param_target->place]= place_param_target; 
 		}
-
 		assert(place_param_targets_best.size() == best_sorted.size()); 
 	}
 

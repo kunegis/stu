@@ -473,16 +473,10 @@ public:
 	}
 
 	string format_err() const {
-
 		Style style= 0;
 		if (flags & F_TARGET_TRANSIENT)
 			style |= S_MARKERS;
-
-		bool quotes2= 
-			(flags == 0
-			 ? Color::quotes
-			 : 0);
-
+		bool quotes2= (flags == 0 ? Color::quotes : 0);
 		string text= name.format(style, quotes2); 
 		
 		return fmt("%s%s%s%s%s%s", 
@@ -516,7 +510,6 @@ class Place_Name
 	:  public Name
 {
 public:
-
 	Place place;
 	/* Place of the name as a whole */ 
 
@@ -648,7 +641,8 @@ public:
 	void canonicalize(); 
 	/* In-place canonicalization */ 
 
-	static shared_ptr <Place_Param_Target> clone(shared_ptr <const Place_Param_Target> place_param_target) {
+	static shared_ptr <Place_Param_Target> clone
+	(shared_ptr <const Place_Param_Target> place_param_target) {
 		shared_ptr <Place_Param_Target> ret= make_shared <Place_Param_Target>
 			(place_param_target->flags,
 			 place_param_target->place_name,
@@ -829,15 +823,13 @@ string Target::format_src() const
 
 string Name::instantiate(const map <string, string> &mapping) const
 /* 
- * This function must take into account the special rules 
+ * This function must take into account the special rules.  
  *
  * Special rule (a) does not need to be handled, (i.e., we keep the starting './')
  */
 {
 	assert(texts.size() == 1 + parameters.size()); 
-
 	const size_t n= get_n(); 
-
 	string ret= texts[0];
 
 	for (size_t i= 0;  i < n;  ++i) {
@@ -930,7 +922,6 @@ bool Name::match(const string name,
 
 	/* I goes over all parameters */
 	for (size_t i= 0;  i < n;  ++i) {
-
 		size_t length_min= 1;
 		/* Minimal length of the matching parameter */ 
 
@@ -994,7 +985,6 @@ bool Name::match(const string name,
 	}
 
 	/* There is a match */
-	
 	swap(mapping, ret); 
 	assert(anchoring.size() == 2 * n); 
 	return true;
@@ -1006,12 +996,12 @@ bool Name::match(const string name,
 	/* 
 	 * Special rule (c):  $A/bbb matches bbb with $A set to . 
 	 *
-	 * for special rule (c), we must do two passes: 
+	 * For special rule (c), we must do two passes: 
 	 *   (1) Normal pass, matching the given pattern
 	 *   (2) Special (c) pass
 	 *
 	 * We can't just test wether the pattern matches as rule (c), because
-	 * there are pattern that match both with and without rule (c).  
+	 * there are patterns that match both with and without rule (c).  
 	 * 	 
 	 * Example:  Does $X/bbb/$Y match 'bbb/bbb/bbb' as
 	 *   (1) $X = . and $Y = bbb/bbb , or
@@ -1023,14 +1013,14 @@ bool Name::match(const string name,
 		special_c= true;
 		priority= -1; 
 		goto restart;
-	} else
+	} else {
 		return false;
+	}
 }
 
 string Name::get_duplicate_parameter() const
 {
 	vector <string> seen;
-
 	for (auto &parameter:  parameters) {
 		for (const auto &parameter_seen:  seen) {
 			if (parameter_seen == parameter) {
@@ -1039,7 +1029,6 @@ string Name::get_duplicate_parameter() const
 		}
 		seen.push_back(parameter); 
 	}
-	
 	return "";
 }
 
@@ -1077,13 +1066,12 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 
 	const size_t k_a= anchoring_a.size();
 	const size_t k_b= anchoring_b.size();
-
 	bool dominate= false;
 	size_t p= 0; /* Position in the string */ 
 	size_t i= 0; /* Index in (A) */ 
 	size_t j= 0; /* Index in (B) */ 
 
-	for (;;) {
+	while (true) {
 		if (i < k_a && p == anchoring_a[i])  ++i;
 		if (j < k_b && p == anchoring_b[j])  ++j;
 
@@ -1123,10 +1111,7 @@ string Name::format(Style style, bool &quotes) const
 {
 	assert(texts.size() == 1 + parameters.size()); 
 
-	string ret= name_format(texts[0], 
-				style | S_MARKERS | S_NOEMPTY,
-				quotes);
-
+	string ret= name_format(texts[0], style | S_MARKERS | S_NOEMPTY, quotes);
 	for (size_t i= 0;  i < get_n();  ++i) {
 		ret += "${";
 		ret += name_format(parameters[i],
@@ -1138,7 +1123,6 @@ string Name::format(Style style, bool &quotes) const
 			 style | S_MARKERS | S_NOEMPTY,
 			 quotes); 
 	}
-	
 	return ret; 
 }
 

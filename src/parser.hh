@@ -2,9 +2,7 @@
 #define PARSER_HH
 
 /* 
- * Code for generating rules from a vector of tokens, i.e, for performing the
- * parsing of Stu syntax beyond tokenization.  This is a recursive descent
- * parser written by hand.  
+ * This is a recursive descent parser written by hand.
  */ 
 
 #include <set>
@@ -55,21 +53,18 @@ class Parser
  */ 
 {
 public:
-
 	/*
-	 * Methods for building the syntax tree:  Each has a name
-	 * corresponding to the symbol given by the Yacc syntax in the
-	 * manpage.  The argument RET (if it is used) is where the
-	 * result is written. 
-	 * If the return value is BOOL, it denotes whether something was
-	 * read or not.  On syntax errors, ERROR_LOGICAL is thrown. 
+	 * Methods for building the syntax tree:  Each has a name corresponding
+	 * to the symbol given by the Yacc syntax in the manpage.  The argument
+	 * RET (if it is used) is where the result is written.  If the return
+	 * value is BOOL, it denotes whether something was read or not.  On
+	 * syntax errors, ERROR_LOGICAL is thrown.
 	 */
 
 	/* In some of the following functions, write the input filename into
-	 * PLACE_NAME_INPUT.  If PLACE_NAME_INPUT is already non-empty,
-	 * throw an error if a second input filename is specified.
-	 * PLACE_INPUT is the place of the '<' input redirection
-	 * operator.  */ 
+	 * PLACE_NAME_INPUT.  If PLACE_NAME_INPUT is already non-empty, throw an
+	 * error if a second input filename is specified. PLACE_INPUT is the
+	 * place of the '<' input redirection operator.  */ 
 
 	static void get_rule_list(vector <shared_ptr <Rule> > &rules,
 				  vector <shared_ptr <Token> > &tokens,
@@ -115,7 +110,6 @@ public:
 	/* Read rules from a string; same argument semantics as the other get_*() functions.  */ 
 
 private:
-
 	vector <shared_ptr <Token> > &tokens;
 	vector <shared_ptr <Token> > ::iterator &iter;
 	const Place place_end; 
@@ -396,7 +390,6 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 	}
 
 	vector <shared_ptr <const Dep> > deps;
-
 	bool had_colon= false;
 
 	/* Empty at first */ 
@@ -438,7 +431,6 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 	/* Place of ';' */ 
 
 	Place place_equal;
-	/* Place of '=' */
 
 	shared_ptr <Name_Token> name_copy;
 	/* Name of the copy-from file */ 
@@ -676,11 +668,8 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 	}
 
 	return make_shared <Rule> 
-		(move(place_param_targets), 
-		 deps, 
-		 command, is_hardcode, 
-		 redirect_index,
-		 filename_input);
+		(move(place_param_targets), deps, command, is_hardcode, 
+		 redirect_index, filename_input);
 }
 
 bool Parser::parse_expression_list(vector <shared_ptr <const Dep> > &ret, 
@@ -692,8 +681,7 @@ bool Parser::parse_expression_list(vector <shared_ptr <const Dep> > &ret,
 
 	while (iter != tokens.end()) {
 		shared_ptr <const Dep> ret_new; 
-		bool r= parse_expression(ret_new, 
-					 place_name_input, 
+		bool r= parse_expression(ret_new, place_name_input, 
 					 place_input, targets);
 		if (!r) {
 			assert(ret_new == nullptr); 
@@ -729,26 +717,22 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		}
 		if (iter == tokens.end()) {
 			place_end << fmt("expected %s", char_format_err(')'));
-			place_paren << fmt("after opening %s", 
-					    char_format_err('(')); 
+			place_paren << fmt("after opening %s", char_format_err('(')); 
 			throw ERROR_LOGICAL;
 		}
 		if (! is_operator(')')) {
 			(*iter)->get_place_start() << 
 				fmt("expected %s, not %s", 
-				    char_format_err(')'),
-				    (*iter)->format_start_err());
-			place_paren << fmt("after opening %s",
-					    char_format_err('(')); 
+				    char_format_err(')'), (*iter)->format_start_err());
+			place_paren << fmt("after opening %s", char_format_err('(')); 
 			throw ERROR_LOGICAL;
 		}
 		++ iter; 
 
 		/* If RET is null, it means we had empty parentheses.
 		 * Return an empty Compound_Dependency in that case  */ 
-		if (ret == nullptr) {
+		if (ret == nullptr)
 			ret= make_shared <Compound_Dep> (place_paren); 
-		}
 
 		if (next_concatenates()) {
 			shared_ptr <const Dep> next;
@@ -776,24 +760,20 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 
 		if (iter == tokens.end()) {
 			place_end << fmt("expected %s", char_format_err(']'));
-			place_bracket << fmt("after opening %s", 
-					      char_format_err('[')); 
+			place_bracket << fmt("after opening %s", char_format_err('[')); 
 			throw ERROR_LOGICAL;
 		}
 		if (! is_operator(']')) {
 			(*iter)->get_place_start() << 
 				fmt("expected %s, not %s", 
-				    char_format_err(']'),
-				    (*iter)->format_start_err());
-			place_bracket << fmt("after opening %s",
-					      char_format_err('[')); 
+				    char_format_err(']'), (*iter)->format_start_err());
+			place_bracket << fmt("after opening %s", char_format_err('[')); 
 			throw ERROR_LOGICAL;
 		}
 		++ iter; 
 		shared_ptr <Compound_Dep> ret_nondynamic= 
 			make_shared <Compound_Dep> (place_bracket); 
 		for (auto &j:  r2) {
-			
 			/* Variable dependency cannot appear within
 			 * dynamic dependency */ 
 			if (j->flags & F_VARIABLE) {
@@ -816,8 +796,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 			/* It can be that an empty list was parsed, in
 			 * which case RR is true but the list is empty */
 			if (rr && next != nullptr) {
-				shared_ptr <Concat_Dep> ret_new=
-					make_shared <Concat_Dep> ();
+				shared_ptr <Concat_Dep> ret_new= make_shared <Concat_Dep> ();
 				ret_new->push_back(ret);
 				ret_new->push_back(next);
 				ret.reset();
@@ -827,9 +806,8 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 
 		/* If RET is null, it means we had empty parentheses.
 		 * Return an empty Compound_Dependency in that case  */ 
-		if (ret == nullptr) {
+		if (ret == nullptr) 
 			ret= make_shared <Compound_Dep> (place_bracket); 
-		}
 
 		return true; 
 	} 
@@ -906,7 +884,6 @@ shared_ptr <const Dep> Parser
 		     const vector <shared_ptr <const Place_Param_Target> > &targets)
 {
 	bool has_input= false;
-
 	shared_ptr <const Dep> ret;
 
 	if (! is_operator('$')) 
@@ -974,18 +951,15 @@ shared_ptr <const Dep> Parser
 	/* Name of variable dependency */ 
 	if (! is <Name_Token> ()) {
 		(*iter)->get_place_start() <<
-			fmt("expected a filename, not %s",
-			    (*iter)->format_start_err()); 
+			fmt("expected a filename, not %s", (*iter)->format_start_err()); 
 		if (has_input)
-			place_input << fmt("after %s", 
-					    char_format_err('<')); 
+			place_input << fmt("after %s", char_format_err('<')); 
 		else if (! place_flag_last.empty()) {
 			assert(flag_last != '\0');
-			place_flag_last << fmt("after %s", 
-					       char_format_err(flag_last)); 
-		} else
-			place_dollar << fmt("after %s",
-					    multichar_format_err("$[")); 
+			place_flag_last << fmt("after %s", char_format_err(flag_last)); 
+		} else {
+			place_dollar << fmt("after %s", multichar_format_err("$["));
+		}
 
 		throw ERROR_LOGICAL;
 	}
@@ -1014,8 +988,7 @@ shared_ptr <const Dep> Parser
 		if (j.find('=') != string::npos) {
 			place_name->place <<
 				fmt("name of variable dependency %s must not contain %s",
-				    place_name->format_err(),
-				    char_format_err('=')); 
+				    place_name->format_err(), char_format_err('=')); 
 			explain_variable_equal(); 
 			throw ERROR_LOGICAL;
 		}
@@ -1024,8 +997,7 @@ shared_ptr <const Dep> Parser
 
 	if (iter == tokens.end()) {
 		place_end << fmt("expected %s", char_format_err(']'));
-		place_dollar << fmt("after opening %s",
-				    multichar_format_err("$[")); 
+		place_dollar << fmt("after opening %s", multichar_format_err("$[")); 
 		throw ERROR_LOGICAL;
 	}
 
@@ -1038,8 +1010,7 @@ shared_ptr <const Dep> Parser
 			place_end << "expected a filename";
 			place_equal << 
 				fmt("after %s in variable dependency %s",
-				    char_format_err('='),
-				    place_name->format_err()); 
+				    char_format_err('='), place_name->format_err()); 
 			throw ERROR_LOGICAL;
 		}
 		if (! is <Name_Token> ()) {
@@ -1047,8 +1018,7 @@ shared_ptr <const Dep> Parser
 				fmt("expected a filename, not %s",
 				    (*iter)->format_start_err());
 			place_equal << fmt("after %s in variable dependency %s",
-					   char_format_err('='),
-					   place_name->format_err()); 
+					   char_format_err('='), place_name->format_err()); 
 			throw ERROR_LOGICAL;
 		}
 
@@ -1060,7 +1030,6 @@ shared_ptr <const Dep> Parser
 		}
 
 		variable_name= place_name->unparametrized();
-
 		place_name= is <Name_Token> ();
 		++iter; 
 	}
@@ -1069,26 +1038,21 @@ shared_ptr <const Dep> Parser
 	if (! is_operator(']')) {
 		(*iter)->get_place_start() << 
 			fmt("expected %s, not %s", 
-			    char_format_err(']'),
-			    (*iter)->format_start_err());
-		place_dollar << fmt("after opening %s",
-				    multichar_format_err("$[")); 
+			    char_format_err(']'), (*iter)->format_start_err());
+		place_dollar << fmt("after opening %s", multichar_format_err("$[")); 
 		throw ERROR_LOGICAL;
 	}
 	++iter;
 
-	if (has_input) {
+	if (has_input)
 		place_name_input= *place_name;
-	}
 
 	/* The place of the variable dependency as a whole is set on the
 	 * name contained in it.  It would be conceivable to also set it
 	 * on the dollar sign.  */
 	return make_shared <Plain_Dep> 
-		(flags, 
-		 places_flags,
-		 Place_Param_Target(0, *place_name, 
-				    place_name->place), 
+		(flags, places_flags,
+		 Place_Param_Target(0, *place_name, place_name->place), 
 		 variable_name);
 }
 
@@ -1098,7 +1062,6 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
  const vector <shared_ptr <const Place_Param_Target> > &targets)
 {
 	(void) targets;
-
 	bool has_input= false;
 
 	if (is_operator('<')) {
@@ -1113,8 +1076,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 	if (is_operator('@')) {
 		place_at= (*iter)->get_place();
 		if (has_input) {
-			place_at << fmt("expected a filename, not %s",
-					char_format_err('@')); 
+			place_at << fmt("expected a filename, not %s", char_format_err('@')); 
 			place_input << fmt("after input redirection using %s",
 					    char_format_err('<')); 
 			throw ERROR_LOGICAL;
@@ -1131,8 +1093,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 			throw ERROR_LOGICAL;
 		} else if (has_transient) {
 			place_end << "expected the name of a transient target";
-			place_at << fmt("after %s",
-					 char_format_err('@')); 
+			place_at << fmt("after %s", char_format_err('@')); 
 			throw ERROR_LOGICAL; 
 		} else {
 			return nullptr;
@@ -1142,8 +1103,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 	if (! is <Name_Token> ()) {
 		if (has_input) {
 			(*iter)->get_place_start() << 
-				fmt("expected a filename, not %s",
-				    (*iter)->format_start_err());
+				fmt("expected a filename, not %s", (*iter)->format_start_err());
 			place_input << fmt("after input redirection using %s",
 					    char_format_err('<')); 
 			throw ERROR_LOGICAL;
@@ -1186,15 +1146,13 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 		flags |= F_INPUT;
 	}
 
-	if (! place_name_input.empty()) {
+	if (! place_name_input.empty()) 
 		assert(! place_input.empty()); 
-	}
 
 	Flags transient_bit= has_transient ? F_TARGET_TRANSIENT : 0;
 	shared_ptr <const Dep> ret= make_shared <Plain_Dep>
 		(flags | transient_bit,
-		 Place_Param_Target(transient_bit,
-				    *name_token,
+		 Place_Param_Target(transient_bit, *name_token,
 				    has_transient ? place_at : name_token->place)); 
 
 	if (next_concatenates()) {
@@ -1203,8 +1161,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 		/* It can be that an empty list was parsed, in
 		 * which case RR is true but the list is empty */
 		if (rr && next != nullptr) {
-			shared_ptr <Concat_Dep> ret_new=
-				make_shared <Concat_Dep> ();
+			shared_ptr <Concat_Dep> ret_new= make_shared <Concat_Dep> ();
 			ret_new->push_back(ret);
 			ret_new->push_back(next);
 			ret.reset();
@@ -1225,12 +1182,10 @@ void Parser::append_copy(      Name &to,
 	}
 
 	for (ssize_t i= from.get_n();  i >= 0;  --i) {
-		for (ssize_t j= from.get_texts()[i].size() - 1;
-		     j >= 0;  --j) {
+		for (ssize_t j= from.get_texts()[i].size() - 1; j >= 0;  --j) {
 			if (from.get_texts()[i][j] == '/') {
-
-				/* Don't append the found slash, as TO
-				 * already ends in a slash */ 
+				/* Don't append the found slash, as TO already
+				 * ends in a slash  */ 
 				to.append_text(from.get_texts()[i].substr(j + 1));
 
 				for (size_t k= i;  k < from.get_n();  ++k) {
@@ -1242,8 +1197,7 @@ void Parser::append_copy(      Name &to,
 		}
 	} 
 
-	/* FROM does not contain slashes;
-	 * prepend the whole FROM to TO */
+	/* FROM does not contain slashes; prepend the whole FROM to TO */
 	to.append(from);
 }
 
@@ -1253,9 +1207,7 @@ void Parser::get_rule_list(vector <shared_ptr <Rule> > &rules,
 			   shared_ptr <const Place_Param_Target> &target_first)
 {
 	auto iter= tokens.begin(); 
-
 	Parser parser(tokens, iter, place_end);
-
 	parser.parse_rule_list(rules, target_first); 
 
 	if (iter != tokens.end()) {
@@ -1316,9 +1268,8 @@ void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
 		 * getdelim(3) will include it if it is present, but the
 		 * file may not have one for the last entry.  */ 
 
-		if (lineptr[len - 1] == c) {
+		if (lineptr[len - 1] == c)
 			--len; 
-		}
 
 		/* An empty line: This corresponds to an empty filename,
 		 * and thus we treat is as a syntax error, because
@@ -1356,12 +1307,9 @@ void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
 			assert(filename_dep.find('\0') == string::npos); 
 		}
 
-		deps.push_back
-			(make_shared <Plain_Dep>
-			 (0,
-			  Place_Param_Target
-			  (0, 
-			   Place_Name(filename_dep, place)))); 
+		deps.push_back(make_shared <Plain_Dep>
+			       (0, Place_Param_Target
+				(0, Place_Name(filename_dep, place)))); 
 	}
 	free(lineptr); 
 	if (fclose(file)) {
@@ -1488,8 +1436,7 @@ void Parser::print_separation_message(shared_ptr <const Token> token)
 		assert(false);
 	}
 
-	token->get_place() << 
-		fmt("to separate it from %s", text);
+	token->get_place() << fmt("to separate it from %s", text);
 }
 
 bool Parser::next_concatenates() const
@@ -1507,7 +1454,6 @@ bool Parser::next_concatenates() const
 		return false;
 
 	char op= is <Operator> ()->op;
-
 	return op == '(' || op == '['; 
 }
 

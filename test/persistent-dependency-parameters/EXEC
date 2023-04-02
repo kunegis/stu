@@ -1,9 +1,9 @@
 #! /bin/sh
 
-rm -Rf data-X-dir || exit 1
+rm -Rf data-X-dir || exit 2
 
-echo >&2 ../../stu.test 
-../../stu.test 
+echo >&2 ../../bin/stu.test 
+../../bin/stu.test 
 if [ "$?" != 0 ]; then
 	echo "$0:  *** first stu failed"
 	exit 1
@@ -14,8 +14,8 @@ touch data-X-dir/unrelatedfile || {
 	exit 1
 }
 
-echo >&2 ../../stu.test
-../../stu.test >list.output
+echo >&2 ../../bin/stu.test
+../../bin/stu.test >list.output
 if [ "$?" != 0 ]; then
 	exit 1
 fi
@@ -25,6 +25,6 @@ grep -qFx 'Targets are up to date' list.output || {
 	exit 1
 }
 
-rm -Rf data-X-dir list.output A list.* || exit 1
+rm -Rf data-X-dir list.output A list.* || exit 2
 
 exit 0

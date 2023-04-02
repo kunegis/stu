@@ -2,10 +2,10 @@
 
 rm -f ? || exit 1 
 
-../../stu.test -k >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -k >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || exit 1
+[ "$exitstatus" = 1 ] || exit 1
 
 [ -e E ] || exit 1
 

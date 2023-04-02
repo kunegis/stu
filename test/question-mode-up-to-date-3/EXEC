@@ -4,14 +4,14 @@
 # (1) 'A' and 'B' are both up to date; nothing to be done
 #
 
-touch A || exit 1
-../../sh/touch_old B 1 || exit 1
+touch A || exit 2
+../../sh/touch_old B 1 || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** (1) Exit code"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** (1) Exit status"
 	exit 1
 }
 
@@ -29,13 +29,13 @@ grep -qFx 'Targets are up to date' list.out || {
 # (2) Neither 'A' nor 'B' exist
 #
 
-rm -f A B || exit 1
+rm -f A B || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
-	echo >&2 "*** (2) Exit code"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** (2) Exit status"
 	exit 1
 }
 
@@ -53,14 +53,14 @@ grep -qFx 'Targets are not up to date' list.err || {
 # (3) 'A' exists, but 'B' is newer
 #
 
-../../sh/touch_old A 1 || exit 1
-touch B || exit 1
+../../sh/touch_old A 1 || exit 2
+touch B || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** (3) Exit code"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** (3) Exit status"
 	exit 1
 }
 
@@ -78,14 +78,14 @@ grep -qFx 'Targets are up to date' list.out || {
 # (4) Only 'A' exists
 #
 
-touch A || exit 1
-rm -f B || exit 1
+touch A || exit 2
+rm -f B || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
-	echo >&2 "*** (4) Exit code"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** (4) Exit status"
 	exit 1
 }
 
@@ -103,14 +103,14 @@ grep -qFx 'Targets are not up to date' list.err || {
 # (5) Only 'B' exists
 #
 
-rm -f A || exit 1
-touch B || exit 1
+rm -f A || exit 2
+touch B || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
-	echo >&2 "*** (5) Exit code"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** (5) Exit status"
 	exit 1
 }
 

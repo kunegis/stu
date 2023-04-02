@@ -1,10 +1,10 @@
 #! /bin/sh
 
-../../stu.test -i -j2 >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -i -j2 >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 4 ] || {
-	echo >&2 "*** Expected exit code 4, not $exitcode"
+[ "$exitstatus" = 4 ] || {
+	echo >&2 "*** Expected exit status 4, not $exitstatus"
 	exit 1
 }
 

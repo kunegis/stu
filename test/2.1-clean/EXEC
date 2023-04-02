@@ -6,41 +6,40 @@ doo rm -f A
 
 # By calling stu
 
-echo ../../stu.test
-../../stu.test || exit 1
+echo ../../bin/stu.test
+../../bin/stu.test || exit 1
 
 [ -r A ] || exit 1
 
-echo ../../stu.test 
-../../stu.test >list.output || exit 1
+echo ../../bin/stu.test 
+../../bin/stu.test >list.output || exit 1
 
 grep -Fq 'Targets are up to date' list.output || {
 	exit 1
 }
 
-echo ../../stu.test @clean
-../../stu.test @clean || exit 1
+echo ../../bin/stu.test @clean
+../../bin/stu.test @clean || exit 1
 
 [ \! -r A ] || exit 1
 
 # By calling stu A
 
-echo ../../stu.test A
-../../stu.test A || exit 1
+echo ../../bin/stu.test A
+../../bin/stu.test A || exit 1
 
 [ -r A ] || exit 1
 
-echo ../../stu.test A
-../../stu.test A >list.output || exit 1
+echo ../../bin/stu.test A
+../../bin/stu.test A >list.output || exit 1
 
 grep -Fq 'Targets are up to date' list.output || {
 	exit 1
 }
 
-echo ../../stu.test @clean
-../../stu.test @clean || exit 1
+echo ../../bin/stu.test @clean
+../../bin/stu.test @clean || exit 1
 
 [ \! -r A ] || exit 1
 
 rm list.output
-

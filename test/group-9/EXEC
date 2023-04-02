@@ -1,9 +1,15 @@
 #! /bin/sh
 
 set -e
+
 rm -f ?
-../../stu.test A 
+
+../../bin/stu.test A 
+
 [ -e A ] 
+
 grep -qF CORRECT A
+
 touch B
-FAIL=1 ../../stu.test A | grep -qFx 'Targets are up to date'
+
+FAIL=1 ../../bin/stu.test A | grep -qFx 'Targets are up to date'

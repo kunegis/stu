@@ -2,7 +2,7 @@
 
 doo() { echo "$@" ; $@ ; }
 
-echo 0 >list.exitcode
+echo 0 >list.exitstatus
 
 <LIST.stu cat | 
 sed -e '/^[[:space:]]*$/d;/^[[:space:]]*#/d' |
@@ -18,13 +18,13 @@ while read -r line ; do
 
 	doo rm -f ? list.err
 
-	echo ../../stu.test -f tmp.stu
-	../../stu.test -f tmp.stu 2>list.err
-	exitcode="$?"
-	[ "$exitcode" = 2 ] || {
+	echo ../../bin/stu.test -f tmp.stu
+	../../bin/stu.test -f tmp.stu 2>list.err
+	exitstatus=$?
+	[ "$exitstatus" = 2 ] || {
 		echo >&2 "*** error (a) Exit code should be 2 (logical error), but is not"
-		echo "exitcode=$exitcode"
-		echo 1 >list.exitcode
+		echo "exitstatus=$exitstatus"
+		echo 1 >list.exitstatus
 		exit 1
 	}
 
@@ -34,12 +34,12 @@ while read -r line ; do
 		echo ________
 		cat list.err
 		echo ________
-		echo 1 >list.exitcode || exit 1
+		echo 1 >list.exitstatus || exit 1
 		exit 1
 	}
 
 done
 
-rm -f tmp.stu || exit 1
+rm -f tmp.stu || exit 2
 
-exit $(cat list.exitcode)
+exit $(cat list.exitstatus)

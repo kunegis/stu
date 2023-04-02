@@ -1,10 +1,11 @@
 #! /bin/sh
 
-rm -f ? list.* || exit 1
+rm -f ? list.* || exit 2
 
-../../stu.test >list.out
-exitcode="$?"
-[ "$exitcode" = 0 ] || {
+../../bin/stu.test >list.out
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || {
 	echo >&2 '*** error (A)'
 	exit 1
 }
@@ -27,6 +28,6 @@ diff list.out stdout-correct || {
 	exit 1
 }
 
-rm -f ? list.* || exit 1
+rm -f ? list.* || exit 2
 
 exit 0

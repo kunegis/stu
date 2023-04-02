@@ -1,24 +1,24 @@
 #! /bin/sh
 
-rm -f ./@* ?
+rm -f ./@* ? || exit 2
 
-../../stu.test -c '@:[({' >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -c '@:[({' >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 '*** exit code'
+[ "$exitstatus" = 0 ] || {
+	echo >&2 '*** Exit status incorrect'
 	rm -f ./@* ?
 	exit 1
 }
 
 [ -r '@:[({' ] || {
-	echo >&2 '*** created file'
+	echo >&2 '*** Created file'
 	rm -f ./@* ?
 	exit 1
 }
 
 grep -Fq correct <'@:[({' || {
-	echo >&2 '*** content'
+	echo >&2 '*** Content'
 	rm -f ./@* ?
 	exit 1
 }
@@ -29,6 +29,6 @@ grep -Fq correct <'@:[({' || {
 	exit 1
 }
 
-rm -f ./@* ?
+rm -f ./@* ? || exit 2
 
 exit 0

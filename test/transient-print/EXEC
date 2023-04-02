@@ -1,8 +1,8 @@
 #! /bin/sh
 
-echo ../../stu.test
-../../stu.test >list.output || exit 1
+echo ../../bin/stu.test
+../../bin/stu.test >list.output || exit 1
 
-fgrep HELLO list.output || exit 1
+grep -F HELLO list.output || exit 1
 
 exit 0

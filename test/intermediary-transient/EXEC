@@ -4,33 +4,32 @@
 # Run A
 # 
 
-rm -f ?
+rm -f ? || exit 2
 
-../../stu.test >list.out || exit 1
+../../bin/stu.test >list.out || exit 1
 
-if ! fgrep CORRECT A ; then
-    echo >&2 "$0:  *** invalid output (run A)"
-    exit 1
+if ! grep -F CORRECT A ; then
+	echo >&2 "$0:  *** invalid output (run A)"
+	exit 1
 fi
 
-if ! fgrep 'ALL HEADERS BUILT' list.out ; then
-    echo >&2 "$0:  *** did not output 'ALL HEADERS BUILT' (run A)"
-    exit 1
+if ! grep -F 'ALL HEADERS BUILT' list.out ; then
+	echo >&2 "$0:  *** did not output 'ALL HEADERS BUILT' (run A)"
+	exit 1
 fi
 
 #
 # Run B
 #
 
-../../stu.test >list.out || exit 1
+../../bin/stu.test >list.out || exit 1
 
-if ! fgrep 'ALL HEADERS BUILT' list.out ; then
-    echo >&2 "$0:  *** did not output 'ALL HEADERS BUILT' (run B)"
-    exit 1
+if ! grep -F 'ALL HEADERS BUILT' list.out ; then
+	echo >&2 "$0:  *** did not output 'ALL HEADERS BUILT' (run B)"
+	exit 1
 fi
 
-if fgrep 'Nothing to be done' list.out ; then
-    echo >&2 "$0:  *** did output 'Nothing to be done' (run B)"
-    exit 1
+if grep -F 'Nothing to be done' list.out ; then
+	echo >&2 "$0:  *** did output 'Nothing to be done' (run B)"
+	exit 1
 fi
-

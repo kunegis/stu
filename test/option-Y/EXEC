@@ -2,12 +2,12 @@
 
 unset TERM
 
-../../stu.test -Y >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -Y >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 2 ] || {
-	echo >&2 "*** Expected exit code 2"
-	echo >&2 "exitcode='$exitcode'"
+[ "$exitstatus" = 2 ] || {
+	echo >&2 "*** Expected exit status 2"
+	echo >&2 "exitstatus='$exitstatus'"
 	exit 1
 }
 

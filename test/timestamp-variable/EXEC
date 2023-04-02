@@ -4,16 +4,15 @@ set -e
 
 rm -f ? list.*
 
-../../stu.test 
+../../bin/stu.test 
 
 grep -qF CORRECT A || { echo >&2 "*** (1) A" ; exit 1 ; }
 
 ../../sh/touch_old A 2
 touch B
 
-../../stu.test >list.out
+../../bin/stu.test >list.out
 
 grep -qFx 'Targets are up to date' list.out || { echo >&2 "*** (2) Stdout" ; exit 1 ; }
 
 rm -f ? list.*
-

@@ -1,10 +1,10 @@
 #! /bin/sh
 
-rm -f ? list.* || exit 1
+rm -f ? list.* || exit 2
 
-echo '../../stu.test -j1000 &'
-../../stu.test -j1000 >list.out 2>list.err &
-pid="$!"
+echo '../../bin/stu.test -j1000 &'
+../../bin/stu.test -j1000 >list.out 2>list.err &
+pid=$!
 
 # Wait until a first line has been written
 begin=$(../../sh/now)
@@ -23,10 +23,10 @@ kill -s USR1 "$pid" || {
 }
 
 echo sleep 1
-sleep 1 || exit 1
+sleep 1 || exit 2
 echo done sleeping
 
-count="$(echo $(ps -fA | grep 7463194 | grep -v grep | wc -l))"
+count=$(echo $(ps -fA | grep 7463194 | grep -v grep | wc -l))
 echo "count=$count"
 if [ "$count"  = 0 ]; then
 	echo >&2 "$0: *** Stu must still be running"
@@ -51,7 +51,7 @@ kill -INT "$pid" || {
     exit 1
 }
 
-sleep 1 || exit 1
+sleep 1 || exit 2
 
 if [ "$(echo $(ps -fA | grep 7463194 | grep -v grep | wc -l))" \!= 0 ]; then
 	echo >&2 "$0: *** Stu is still running"

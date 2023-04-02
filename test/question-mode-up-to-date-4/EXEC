@@ -4,15 +4,15 @@
 # (1) All files exist
 #
 
-touch P || exit 1
-touch Q || exit 1
-touch R || exit 1
+touch P || exit 2
+touch Q || exit 2
+touch R || exit 2
 
-../../stu.test -q P Q R >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q P Q R >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** (1) Exit code"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** (1) Exit status"
 	exit 1
 }
 
@@ -30,13 +30,13 @@ grep -qFx 'Targets are up to date' list.out || {
 # (2) No file exists
 #
 
-rm -f P Q R || exit 1
+rm -f P Q R || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
-	echo >&2 "*** (2) Exit code"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** (2) Exit status"
 	exit 1
 }
 
@@ -54,14 +54,14 @@ grep -qFx 'Targets are not up to date' list.err || {
 # (3) Only P exists
 #
 
-rm -f Q R || exit 1
-touch P || exit 1
+rm -f Q R || exit 2
+touch P || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
-	echo >&2 "*** (3) Exit code"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** (3) Exit status"
 	exit 1
 }
 
@@ -79,14 +79,14 @@ grep -qFx 'Targets are not up to date' list.err || {
 # (4) Only Q exists
 #
 
-rm -f P R || exit 1
-touch Q || exit 1
+rm -f P R || exit 2
+touch Q || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
-	echo >&2 "*** (4) Exit code"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** (4) Exit status"
 	exit 1
 }
 
@@ -104,14 +104,14 @@ grep -qFx 'Targets are not up to date' list.err || {
 # (5) Only R exists
 #
 
-rm -f P Q || exit 1
-touch R || exit 1
+rm -f P Q || exit 2
+touch R || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
-	echo >&2 "*** (5) Exit code"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** (5) Exit status"
 	exit 1
 }
 
@@ -129,15 +129,15 @@ grep -qFx 'Targets are not up to date' list.err || {
 # (6) Only P and Q exist
 #
 
-rm -f R || exit 1
-touch P || exit 1
-touch Q || exit 1
+rm -f R || exit 2
+touch P || exit 2
+touch Q || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
-	echo >&2 "*** (6) Exit code"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** (6) Exit status"
 	exit 1
 }
 
@@ -155,15 +155,15 @@ grep -qFx 'Targets are not up to date' list.err || {
 # (7) Only P and R exist
 #
 
-rm -f Q || exit 1
-touch P || exit 1
-touch R || exit 1
+rm -f Q || exit 2
+touch P || exit 2
+touch R || exit 2
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
-	echo >&2 "*** (7) Exit code"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** (7) Exit status"
 	exit 1
 }
 
@@ -181,15 +181,15 @@ grep -qFx 'Targets are not up to date' list.err || {
 # (8) Only Q and R exist
 #
 
-rm -f P || exit 1
-touch Q || exit 1
-touch R || exit 1 
+rm -f P || exit 2
+touch Q || exit 2
+touch R || exit 2 
 
-../../stu.test -q >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
-	echo >&2 "*** (8) Exit code"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** (8) Exit status"
 	exit 1
 }
 

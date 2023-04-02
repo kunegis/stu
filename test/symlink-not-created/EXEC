@@ -18,12 +18,12 @@ rm -f A X
 
 touch -t "$date" X
 
-../../stu.test 
-exitcode="$?"
+../../bin/stu.test 
+exitstatus=$?
 
-if [ "$exitcode" != 0 ] ; then
-    echo >&2 "*** Failed, but should not"
-    exit 1
+if [ "$exitstatus" != 0 ] ; then
+	echo >&2 "*** Failed, but should not"
+	exit 1
 fi
 
 exit 0

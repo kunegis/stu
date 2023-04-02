@@ -6,10 +6,10 @@ rm -f ?
 
 touch A 
 
-../../stu.test &
-pid="$!"
+../../bin/stu.test &
+pid=$!
 
-kill "$pid"
+kill "$pid" 
 
 [ -e A ] || {
 	echo >&2 "*** error (a) 'A' must be present"

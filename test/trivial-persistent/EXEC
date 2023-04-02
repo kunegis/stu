@@ -13,7 +13,7 @@ set -e
 
 rm -f ?
 
-../../stu.test >list.out 2>list.err
+../../bin/stu.test >list.out 2>list.err
 
 diff list.out stdout-1 || {
 	echo >&2 '*** (1out)' 
@@ -28,7 +28,7 @@ diff list.out stdout-1 || {
 ../../sh/touch_old A 2
 touch B
 
-../../stu.test >list.out 2>list.err
+../../bin/stu.test >list.out 2>list.err
 
 diff list.out stdout-2 || {
 	echo >&2 '*** (2out)' 

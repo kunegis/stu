@@ -18,17 +18,17 @@
 #	* A is rebuilt
 # 
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
 #
 # (1) 
 #
 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** Exitcode (1)"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Exitstatus (1)"
 	exit 1
 }
 
@@ -41,16 +41,16 @@ exitcode="$?"
 # (2)
 #
 
-../../sh/touch_old A 2
-../../sh/touch_old B 2
-../../sh/touch_old C 2
-touch D
+../../sh/touch_old A 2 || exit 2
+../../sh/touch_old B 2 || exit 2
+../../sh/touch_old C 2 || exit 2
+touch D || exit 2
 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** Exitcode (2)"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Exitstatus (2)"
 	exit 1
 }
 
@@ -68,13 +68,13 @@ diff list.out stdout-2 || {
 # (3)
 #
 
-rm D
+rm D || exit 2
 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** Exitcode (3)"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Exitstatus (3)"
 	exit 1
 }
 
@@ -92,15 +92,15 @@ diff list.out stdout-3 || {
 # (4)
 #
 
-../../sh/touch_old A 2
-../../sh/touch_old C 2
-touch B
+../../sh/touch_old A 2 || exit 2
+../../sh/touch_old C 2 || exit 2
+touch B || exit 2
 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** Exitcode (4)"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Exitstatus (4)"
 	exit 1
 }
 
@@ -118,16 +118,16 @@ diff list.out stdout-4 || {
 # (5)
 #
 
-../../sh/touch_old A 2
-../../sh/touch_old C 2
-../../sh/touch_old D 2
-touch B
+../../sh/touch_old A 2 || exit 2
+../../sh/touch_old C 2 || exit 2
+../../sh/touch_old D 2 || exit 2
+touch B || exit 2
 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** Exitcode (5)"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Exitstatus (5)"
 	exit 1
 }
 

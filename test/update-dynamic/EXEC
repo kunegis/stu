@@ -1,14 +1,14 @@
 #! /bin/sh
 
-rm -Rf ? || exit 1
+rm -Rf ? || exit 2
 
-echo Hello >B || exit 1
+echo Hello >B || exit 2
 
-../../stu.test
-exitcode="$?"
+../../bin/stu.test
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 "$0:  *** Exitcode (1)"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "$0:  *** Exit status (1)"
 	exit 1
 }
 
@@ -16,11 +16,11 @@ exitcode="$?"
 ../../sh/touch_old list.A 2 || exit 1
 echo "Hello CORRECT World" >B
 
-../../stu.test
-exitcode="$?"
+../../bin/stu.test
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 "$0:  *** Exitcode (2)"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "$0:  *** Exit status (2)"
 	exit 1
 }
 
@@ -29,6 +29,6 @@ grep -qF CORRECT A || {
 	exit 1
 }
 
-rm -Rf ? || exit 1
+rm -Rf ? || exit 2
 
 exit 0

@@ -12,7 +12,7 @@ ret=0
 # // in C++ files
 #
 
-grep -E '(^|[^:])//' *.cc *.hh && {
+grep -E '(^|[^:])//' src/*.cc src/*.hh && {
 	echo >&2 "*** C++ source files must not contain //"
 	ret=1
 }
@@ -22,8 +22,8 @@ grep -E '(^|[^:])//' *.cc *.hh && {
 #
 
 find . -type f -a \( -name '*.stu' -o -perm -u+x -o -name Makefile.devel \) -a \! -name '*~' \
-	-a \! -path './.git*' -a \! -path './stu.*' -a \! -path './stu' \
-	-a \! -path './config*' -a \! -path './build-aux/*' -a \! -path ./TODO.stu | 
+	-a \! -path './.git*' -a \! -path './bin/stu.*' -a \! -path './bin/stu' \
+	-a \! -path './config*' -a \! -path './build-aux/*' -a \! -path devel/TODO.stu | 
 xargs grep -lF '#''#' && {
 	echo >&2 "*** Shell scripts, makefiles and Stu scripts must not contain #""#"
 	ret=1
@@ -33,7 +33,7 @@ xargs grep -lF '#''#' && {
 # 'XX''X'
 #
 
-grep -F XX''X NEWS stu.1.in stu.cc *.hh sh/* && {
+grep -F XX''X NEWS man/stu.1.in src/*.cc src/*.hh sh/* && {
 	echo >&2 "*** Certain files must not contain 'XX""X'"
 	ret=1
 }
@@ -42,8 +42,8 @@ grep -F XX''X NEWS stu.1.in stu.cc *.hh sh/* && {
 # Tab in manpage source
 #
 
-grep -F "$(printf '\t')" stu.1.in && {
-	echo >&2 "*** 'stu.1.in' must not contain tabs"
+grep -F "$(printf '\t')" man/stu.1.in && {
+	echo >&2 "*** 'man/stu.1.in' must not contain tabs"
 	ret=1
 }
 

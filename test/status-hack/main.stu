@@ -2,7 +2,7 @@
 
 A: {
 	unset -v STU_STATUS
-	../../stu.test B
+	../../bin/stu.test B
 	cp B A
 }
 

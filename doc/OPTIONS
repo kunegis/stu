@@ -6,7 +6,7 @@ Legend
 ======
 
 S   Implemented in Stu and considered stable with respect to version
-    numbers:  The behavior will not be change within the same major
+    numbers:  The behavior will not be changed within the same major
     version number of Stu
 s   Implemented in Stu and considered unstable:  May be subject to
     change at any time

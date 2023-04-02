@@ -5,8 +5,8 @@ doo() { echo "$@" ; "$@" ; }
 # Make all one-character files very old
 olden() {
 	for file in ? ; do
-		year="$(date +%Y)"
-		year_old="$(expr $year - 2)"
+		year=$(date +%Y)
+		year_old=$(expr $year - 2)
 		touch -t "$year_old"01010700 "$file"
 	done
 }
@@ -24,13 +24,12 @@ while read -r line ; do
 	# Build 
 	#
 
-	echo ../../stu.test -f list.file.stu
-	../../stu.test -f list.file.stu >list.out 2>list.err
-	exitcode="$?"
-	echo >&6 "exitcode='$exitcode'"
+	echo ../../bin/stu.test -f list.file.stu
+	../../bin/stu.test -f list.file.stu >list.out 2>list.err
+	exitstatus=$?
+	echo >&6 "exitstatus='$exitstatus'"
 
-	# Check exit code
-	[ "$exitcode" = 0 ] || {
+	[ "$exitstatus" = 0 ] || {
 		echo >&2 "*** (1) Error in build"
 		echo >&2 "STDOUT:"
 		cat list.out
@@ -41,7 +40,6 @@ while read -r line ; do
 		exit 1
 	}
 
-	# Check that C was not built
 	[ -e C ] && {
 		echo >&2 "*** (2) 'C' must not exist"
 		exit 1
@@ -52,13 +50,12 @@ while read -r line ; do
 	#
 	doo olden
 	doo touch B 
-	echo ../../stu.test -f list.file.stu
-	../../stu.test -f list.file.stu >list.out 2>list.err
-	exitcode="$?"
-	echo >&6 "exitcode='$exitcode'"
+	echo ../../bin/stu.test -f list.file.stu
+	../../bin/stu.test -f list.file.stu >list.out 2>list.err
+	exitstatus=$?
+	echo >&6 "exitstatus='$exitstatus'"
 
-	# Check exit code
-	[ "$exitcode" != 0 ] && {
+	[ "$exitstatus" != 0 ] && {
 		echo >&2 "*** (3) Error in rebuild"
 		echo >&2 "STDOUT:"
 		cat list.out
@@ -69,7 +66,6 @@ while read -r line ; do
 		exit 1
 	}
 
-	# Check that nothing is done
 	grep -qxF 'Targets are up to date' list.out || {
 		echo >&2 "*** (4) Missing 'Targets are up to date'"
 		exit 1
@@ -82,13 +78,12 @@ while read -r line ; do
 	doo olden
 	echo 'echo X >C'
 	echo X >C
-	echo ../../stu.test -f list.file.stu
-	../../stu.test -f list.file.stu >list.out 2>list.err
-	exitcode="$?"
-	echo >&6 "exitcode=«$exitcode»"
+	echo ../../bin/stu.test -f list.file.stu
+	../../bin/stu.test -f list.file.stu >list.out 2>list.err
+	exitstatus=$?
+	echo >&6 "exitstatus=«$exitstatus»"
 
-	# Check exit code
-	[ "$exitcode" != 0 ] && {
+	[ "$exitstatus" != 0 ] && {
 		echo >&2 "*** (5) Error in rebuild"
 		echo >&2 "STDOUT:"
 		cat list.out
@@ -99,13 +94,11 @@ while read -r line ; do
 		exit 1
 	}
 
-	# Check that something is done
 	grep -qFx 'Targets are up to date' list.out && {
 		echo >&2 "*** (6) Erroneous 'Targets are up to date'"
 		exit 1
 	}
 
-	# Check that D and E exist
 	[ -r D ] && [ -r E ] || {
 		echo >&2 "*** (7) Missing files 'D' or 'E'"
 		exit 1
@@ -118,13 +111,12 @@ while read -r line ; do
 	doo olden
 	echo 'echo X >D'
 	echo X >D
-	echo ../../stu.test -f list.file.stu
-	../../stu.test -f list.file.stu >list.out 2>list.err
-	exitcode="$?"
-	echo >&6 "exitcode=«$exitcode»"
+	echo ../../bin/stu.test -f list.file.stu
+	../../bin/stu.test -f list.file.stu >list.out 2>list.err
+	exitstatus=$?
+	echo >&6 "exitstatus=«$exitstatus»"
 
-	# Check exit code
-	[ "$exitcode" != 0 ] && {
+	[ "$exitstatus" != 0 ] && {
 		echo >&2 "*** (8) Error in rebuild"
 		echo >&2 "STDOUT:"
 		cat list.out
@@ -135,7 +127,6 @@ while read -r line ; do
 		exit 1
 	}
 
-	# Check that something is done
 	grep -qFx 'Targets are up to date' list.out && {
 		echo >&2 "*** (9) Erroneous 'Targets are up to date'"
 		exit 1
@@ -144,10 +135,10 @@ while read -r line ; do
 	true
 done
 
-exitcode="$?"
-echo >&6 "exitcode=«$exitcode»"
+exitstatus=$?
+echo >&6 "exitstatus=«$exitstatus»"
 
-[ "$exitcode" = 0 ] &&
+[ "$exitstatus" = 0 ] &&
     rm -f list.*
 
-exit "$exitcode"
+exit "$exitstatus"

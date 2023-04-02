@@ -86,8 +86,8 @@
 # TTYSTDOUTERR The output and error output (interleaved) when in TTY mode
 # EXEC         Can be an alternative test script; it can do anything and
 #              should return a sensible exit status (i.e., 0 on success,
-#              nonzero otherwise).  It should also behave like sh/mktest,
-#              e.g., output '***' only on error, etc.
+#              1 on test failed, 2 on internal error).  It also otherwise
+#	       behaves like sh/mktest, e.g., output '***' only on error.
 #
 # For the files beginning with 'IN', each line contains a string that
 # must be present, in any order. 
@@ -144,14 +144,14 @@ exec 6>error.log
 
 time_begin=$(sh/now)
 
-rm -f stu.test
+rm -f bin/stu.test || exit 2
 if [ "$VARIANT" ] ; then
-	ln -s stu."$VARIANT" stu.test
+	ln -s stu."$VARIANT" bin/stu.test || exit 2
 else 
 	if [ "$NDEBUG" ] ; then
-		ln -s stu stu.test
+		ln -s stu bin/stu.test || exit 2
 	else
-		ln -s stu.debug stu.test
+		ln -s stu.debug bin/stu.test || exit 2
 	fi
 fi
 
@@ -246,8 +246,8 @@ do
 
 	else
 		# Execute command
-		echo $CMDPREFIX ../../stu.test "$CMD"
-		eval $CMDPREFIX ../../stu.test $CMD \>list.def.out 2\>list.def.err
+		echo $CMDPREFIX ../../bin/stu.test "$CMD"
+		eval $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err
 		exitstatus_actual=$?
 
 		if [ "$verbose" ] ; then
@@ -311,7 +311,7 @@ do
 				else
 					# Check that INCONTENT is found in the built file
 					if [ -r INCONTENT ]; then
-						if fgrep -q -- "$(cat INCONTENT)" "$target" ; then
+						if grep -q -F -e "$(cat INCONTENT)" "$target" ; then
 							echo "INCONTENT...correct"
 						else
 							echo >&2 "$0: *** '$(cat INCONTENT)' must appear in generated file"
@@ -421,7 +421,7 @@ do
 
 		# Check that NOTINSTDERR is not found in the error output
 		if [ -r NOTINSTDERR ]; then
-			if fgrep <list.def.err -q -- "$(cat NOTINSTDERR)" ; then
+			if grep -q -F -e "$(cat NOTINSTDERR)" list.def.err ; then
 				echo >&2 "$0: *** '$(cat NOTINSTDERR)' was found in error output, but should not be there"
 				error=1
 			else
@@ -432,8 +432,8 @@ do
 		# TTYSTDOUTERR
 		if { [ -r TTYSTDOUTERR ] || [ -r EXITSTATUS ]; } && ! [ -r NOTTY ]; then
 			../../sh/rm_tmps || exit 1
-			echo $CMDPREFIX ../../stu.test "$CMD" '[TTY]'
-			eval $CMDPREFIX ../../sh/tty ../../stu.test $CMD \>list.def.out 
+			echo $CMDPREFIX ../../bin/stu.test "$CMD" '[TTY]'
+			eval $CMDPREFIX ../../sh/tty ../../bin/stu.test $CMD \>list.def.out 
 			exitstatus_actual=$?
 
 			# Exit code
@@ -491,8 +491,8 @@ do
 
 		# Second invocation does nothing 
 		if [ "$exitstatus_correct" = 0 ] && [ ! -e NOSECOND ]; then
-			echo $CMDPREFIX ../../stu.test "$CMD"
-			eval $CMDPREFIX ../../stu.test $CMD \>list.def.out 2\>list.def.err 
+			echo $CMDPREFIX ../../bin/stu.test "$CMD"
+			eval $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err 
 			grep -qF 'Targets are up to date' list.def.out 
 			if [ "$?" = 0 ] ; then
 				echo "Second invocation...correct"
@@ -511,8 +511,8 @@ do
 			ks=$(sed -e '/^[[:space:]]*$/d' <PARALLEL)
 			for k in $ks; do
 				../../sh/rm_tmps || exit 2
-				echo $CMDPREFIX ../../stu.test "$CMD" -j "$k"
-				eval $CMDPREFIX ../../stu.test $CMD -j $k \>list.def.out 2\>list.def.err
+				echo $CMDPREFIX ../../bin/stu.test "$CMD" -j "$k"
+				eval $CMDPREFIX ../../bin/stu.test $CMD -j $k \>list.def.out 2\>list.def.err
 				if [ $? != 0 ]
 				then
 					echo >&2 "$0: *** Parallel stu failed for '$file' with k = $k"

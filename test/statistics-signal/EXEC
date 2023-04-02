@@ -1,7 +1,5 @@
 #! /bin/sh
 
-doo() { echo "$@" ; "$@" ; }
-
 kill_sleeps() 
 {
 	for pid in $(ps -fA | grep 31415926535 | grep -v grep | sed -e 's/^[^[:space:]]\{1,\}[[:space:]]\{1,\}\([0-9]\{1,\}\)[[:space:]].*$/\1/') ; do
@@ -9,8 +7,7 @@ kill_sleeps()
 		kill "$pid"
 	done
 
-	# The extra echo in the next line is to get rid of whitespace
-	count="$(echo $(ps -fA | grep 31415926535 | grep -v grep | wc -l))"
+	count=$(echo $(ps -fA | grep 31415926535 | grep -v grep | wc -l))
 	[ "$count" = 0 ] || {
 		echo >&2 '*** Could not kill all processes'
 		echo >&2 "count='$count'"
@@ -20,21 +17,23 @@ kill_sleeps()
 	}
 }
 
-doo rm -f ?
+rm -f ? || exit 2
 
-doo kill_sleeps
+kill_sleeps
 
-echo '../../stu.test -z >list.out 2>list.err &'
-../../stu.test -z >list.out 2>list.err &
-pid="$!"
+echo '../../bin/stu.test -z >list.out 2>list.err &'
+../../bin/stu.test -z >list.out 2>list.err &
+pid=$!
 
-# Make sure the target 'X' is finished 
-doo sleep 1
+# Make sure the target 'X' is finished
+echo sleep 1
+sleep 1 || exit 2
 
-doo kill -TERM "$pid"
+kill -TERM "$pid" || exit 2
 
 # Give Stu time to kill all processes
-doo sleep 1
+echo sleep 1
+sleep 1 || exit 2
 
 # Make sure no process is still running
 if [ "$(echo $(ps -fA | grep 31415926535 | grep -v grep | wc -l))" != 0 ]; then
@@ -59,10 +58,10 @@ grep -qF 'STATISTICS' list.err && {
 	echo >&2 stderr:
 	echo >&2 ____
 	cat >&2 list.err
-X	echo >&2 ____
+	echo >&2 ____
 	exit 1
 }
 
-doo kill_sleeps
+kill_sleeps
 
 exit 0

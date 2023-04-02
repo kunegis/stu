@@ -2,8 +2,8 @@
 
 rm -f ? list.* || exit 2
 
-../../stu.test -k >list.out 2>list.err
-statuscode="$?"
+../../bin/stu.test -k >list.out 2>list.err
+statuscode=$?
 
 [ "$statuscode" = 2 ] || {
 	echo >&2 '*** Status code'
@@ -24,7 +24,6 @@ diff list.err stderr-correct || {
 	echo >&2 "*** File 'Y' must exist after execution of Stu"
 	exit 2
 }
-
 
 rm -f ? list.* || exit 2
 

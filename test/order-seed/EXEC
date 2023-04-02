@@ -1,17 +1,17 @@
 #! /bin/sh
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-echo ../../stu.test 
-../../stu.test >stdout-correct
+echo ../../bin/stu.test 
+../../bin/stu.test >stdout-correct
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-echo ../../stu.test -M Hello
-../../stu.test -M Hello >list.out
-exitcode="$?"
+echo ../../bin/stu.test -M Hello
+../../bin/stu.test -M Hello >list.out
+exitstatus=$?
 
-if [ "$exitcode" != 0 ] ; then
+if [ "$exitstatus" != 0 ] ; then
 	echo '*** (A)'
 	exit 1
 fi
@@ -28,13 +28,13 @@ diff out output-correct || {
 
 # Check that two invocations do not give the same order
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-echo ../../stu.test -M Hello
-../../stu.test -M Hello >list.out2
-exitcode="$?"
+echo ../../bin/stu.test -M Hello
+../../bin/stu.test -M Hello >list.out2
+exitstatus=$?
 
-if [ "$exitcode" != 0 ] ; then
+if [ "$exitstatus" != 0 ] ; then
 	echo '*** (A2)'
 	exit 1
 fi
@@ -50,7 +50,6 @@ diff out output-correct || {
 	exit 1
 }
 
-
-rm -f out list.* stdout-correct || exit 1
+rm -f out list.* stdout-correct || exit 2
 
 exit 0

@@ -6,7 +6,7 @@ mkdir -p list.A || exit 1
 
 touch list.A/list.B || exit 1
 
-../../stu.test -o list.A//list.B >list.out 2>list.err
+../../bin/stu.test -o list.A//list.B >list.out 2>list.err
 exitstatus=$?
 
 [ "$exitstatus" = 0 ] || {
@@ -30,4 +30,6 @@ grep -q -E '^CORRECT$' list.A/list.B || {
 	exit 1
 }
 
-rm -Rf list.* || exit 1
+rm -Rf list.* || exit 2
+
+exit 0

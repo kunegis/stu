@@ -1,12 +1,12 @@
 #! /bin/sh
 #
-# Generate the content of the file 'version.hh'.
+# Generate the content of the file 'src/version.hh'.
 # 
 # INPUT FILES 
-#	VERSION	- file containing the version number
+#	VERSION		File containing the version number
 #
 # STDOUT
-#	The content to be put in the file 'version.hh'
+#	The content to be put in the file 'src/version.hh'
 #
 
 set -e

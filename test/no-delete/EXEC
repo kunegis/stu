@@ -1,13 +1,13 @@
 #! /bin/sh
 
-rm -f A
+rm -f A || exit 2
 
-../../stu.test -K >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -K >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 1 ] || {
-	echo >&2 '*** Exit code must be 1, but is not'
-	echo >&2 "exitcode='$exitcode'"
+[ "$exitstatus" = 1 ] || {
+	echo >&2 '*** Exit status must be 1, but is not'
+	echo >&2 "exitstatus='$exitstatus'"
 	exit 1
 }
 
@@ -16,7 +16,7 @@ exitcode="$?"
 	exit 1
 }
 
-lines="$(echo $(cat A | wc -l))"
+lines=$(echo $(cat A | wc -l))
 
 [ "$lines" = 2 ] || {
 	echo >&2 "*** File 'A' must contain exactly two lines"

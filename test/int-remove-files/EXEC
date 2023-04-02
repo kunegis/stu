@@ -1,12 +1,10 @@
 #! /bin/sh
 
-doo() { echo "$@" ; "$@" ; }
-
 kill_sleeps() 
 {
 	for pid in $(ps -fA | grep 31415926535 | grep -v grep | sed -e 's/^[^[:space:]]\{1,\}[[:space:]]\{1,\}\([0-9]\{1,\}\)[[:space:]].*$/\1/') ; do
 		echo "$0:  Killing PID '$pid'"
-		kill "$pid"
+		kill "$pid" || exit 2
 	done
 
 	count="$(echo $(ps -fA | grep 31415926535 | grep -v grep | wc -l))"
@@ -19,7 +17,7 @@ kill_sleeps()
 	}
 }
 
-doo rm -f ?
+rm -f ? || exit 2
 
 kill_sleeps
 
@@ -31,17 +29,19 @@ if [ "$(echo $(ps -fA | grep 31415926535 | grep -v grep | wc -l))" != 0 ]; then
 fi
 
 # Start Stu 
-../../stu.test -k -j99 >list.out 2>list.err &
+../../bin/stu.test -k -j99 >list.out 2>list.err &
 PID=$!
 
 # Sleep so that there is time for Stu to start all processes  
-doo sleep 1
+echo sleep 1
+sleep 1 || exit 2
 
 # Terminate Stu
-doo kill -TERM $PID
+kill -TERM $PID || exit 2
 
 # Give Stu time to kill all processes
-doo sleep 1
+echo sleep 1
+sleep 1 || exit 2
 
 # Make sure no process is still running
 if [ "$(echo $(ps -fA | grep 31415926535 | grep -v grep | wc -l))" != 0 ]; then
@@ -59,6 +59,8 @@ do
 	fi
 done
 
-doo rm -f ?
+rm -f ? || exit 2
 
 kill_sleeps
+
+exit 0

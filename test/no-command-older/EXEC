@@ -7,16 +7,15 @@ year_b=$(expr $year - 2)
 date_a="$year_a"01010700
 date_b="$year_b"01010700
 
-rm -f A B || exit 1
+rm -f A B || exit 2
+touch -t "$date_a" A || exit 2
+touch -t "$date_b" B || exit 2
 
-touch -t "$date_a" A || exit 1
-touch -t "$date_b" B || exit 1
+../../bin/stu.test 2>list.err
+exitstatus=$?
 
-../../stu.test 2>list.err
-exitcode="$?"
-
-[ "$exitcode" = 0 ] || {
-	echo >&2 "*** Wrong exit code:  $exitcode"
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Exit status incorrect:  $exitstatus"
 	exit 1
 }
 
@@ -25,7 +24,6 @@ grep -qF "warning: File target 'A' which has no command is older than its depend
 	exit 1
 }
 
-rm -f A B || exit 1
+rm -f A B || exit 2
 
 exit 0
-

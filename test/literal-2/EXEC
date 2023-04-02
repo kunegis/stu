@@ -4,7 +4,7 @@ set -e
 
 rm -f ? @*
 
-../../stu.test -J -a '@[?!A]' >list.out 2>list.err
+../../bin/stu.test -J -a '@[?!A]' >list.out 2>list.err
 
 [ -r '@[?!A]' ] || {
 	echo >&2 "*** File must be created"

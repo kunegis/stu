@@ -73,7 +73,7 @@ for i in $(../../sh/seq 100) ; do
 	cd list.dir
 
 	set +e
-	../../../stu.test -f list.stu
+	../../../bin/stu.test -f list.stu
 	exitstatus=$?
 	set -e
 

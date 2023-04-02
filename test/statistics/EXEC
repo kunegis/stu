@@ -1,14 +1,14 @@
 #! /bin/sh
 
-rm -f ?
+rm -f ? || exit 2
 
-../../stu.test -z >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test -z >list.out 2>list.err
+exitstatus=$?
 
 cat list.out
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 '*** Exit code'
+[ "$exitstatus" = 0 ] || {
+	echo >&2 '*** Exit status'
 	exit 1
 }
 
@@ -27,3 +27,5 @@ grep -qE '^4999950000$' A || {
 	echo >&2 "*** Content of 'A'"
 	exit 1
 }
+
+exit 0

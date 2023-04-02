@@ -2,11 +2,11 @@
 
 export STU_OPTIONS=-Ey
 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 2 ] || {
-	echo >&2 "*** Expected exit code 2, not $exitcode"
+[ "$exitstatus" = 2 ] || {
+	echo >&2 "*** Expected exit status 2, not $exitstatus"
 	exit 1
 }
 

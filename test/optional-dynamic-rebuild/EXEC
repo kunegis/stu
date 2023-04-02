@@ -1,12 +1,12 @@
 #! /bin/sh
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-../../stu.test
-exitcode="$?"
+../../bin/stu.test
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 '*** (a) exit code error'
+[ "$exitstatus" = 0 ] || {
+	echo >&2 '*** (a) exit status error'
 	exit 1
 }
 
@@ -15,15 +15,15 @@ exitcode="$?"
 	exit 1
 }
 
-../../sh/touch_old A 2 || exit 1
-echo X >C || exit 1
-../../sh/touch_old C 1 || exit 1
+../../sh/touch_old A 2 || exit 2
+echo X >C || exit 2
+../../sh/touch_old C 1 || exit 2
 
-../../stu.test
-exitcode="$?"
+../../bin/stu.test
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 '*** (c) exit code error'
+[ "$exitstatus" = 0 ] || {
+	echo >&2 '*** (c) exit status error'
 	exit 1
 }
 

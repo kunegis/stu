@@ -1,19 +1,17 @@
 #! /bin/sh
 
-echo rm -f A
-rm -f A
+rm -f A || exit 2
 
-echo ../../stu.test
-../../stu.test >list.out 2>list.err || {
-    echo >&2 "$0:  *** Stu failed"
-    exit 1
+echo ../../bin/stu.test
+../../bin/stu.test >list.out 2>list.err || {
+	echo >&2 "$0:  *** Stu failed"
+	exit 1
 }
 
 [ -r list.out ] || exit 1
 [ -r list.err ] || exit 1
 
-fgrep 'file exists' list.out && exit 1
-fgrep 'file exists' list.err && exit 1
-
+grep -F 'file exists' list.out && exit 1
+grep -F 'file exists' list.err && exit 1
 
 exit 0

@@ -65,7 +65,7 @@ check_one()
 
 rm -f ?
 
-../../stu.test >list.out 2>list.err
+../../bin/stu.test >list.out 2>list.err
 
 [ -r list.err ] && [ \! -s list.err ] || {
 	echo >&2 "*** Expected empty error output"
@@ -80,4 +80,3 @@ check_one D
 rm -f ?
 
 exit 0
-

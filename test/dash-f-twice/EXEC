@@ -6,14 +6,14 @@
 # we filter multiple input files.   
 #
 
-rm -f A
+rm -f A || exit 2
 
-cat <<EOF | ../../stu.test -f - -f - 
+cat <<EOF | ../../bin/stu.test -f - -f - 
 A = { correct }
 EOF
-exitcode="$?"
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
+[ "$exitstatus" = 0 ] || {
 	echo >&2 "*** Exit code"
 	exit 1
 }

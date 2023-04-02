@@ -12,13 +12,13 @@ do_test()
 {
 	rm -f abcdefghijklmno || exit 2
 
-	../../stu.test abcdefghijklmno >list.out 2>list.err
-	exitcode="$?"
+	../../bin/stu.test abcdefghijklmno >list.out 2>list.err
+	exitstatus=$?
 
 	if [ "$result" = yes ] ; then
 
-		[ "$exitcode" = 0 ] || {
-			echo >&2 "*** Expected exit code 0, got $exitcode"
+		[ "$exitstatus" = 0 ] || {
+			echo >&2 "*** Expected exit code 0, got $exitstatus"
 			exit 2
 		}
 
@@ -30,8 +30,8 @@ do_test()
 	
 	elif [ "$result" = no ] ; then
 
-		[ "$exitcode" = 2 ] || {
-			echo >&2 "*** Expected exit code 2, got $exitcode"
+		[ "$exitstatus" = 2 ] || {
+			echo >&2 "*** Expected exit code 2, got $exitstatus"
 			echo >&2 main.stu:
 			echo >&2 ______
 			cat  >&2 main.stu
@@ -64,7 +64,7 @@ do_test()
 	fi
 }
 
-date="$(date)"
+date=$(date)
 
 while IFS= read -r line ; do
 
@@ -76,13 +76,13 @@ while IFS= read -r line ; do
 		continue;
 	fi
 
-	result="$(echo "$line" | sed -e 's,^\([a-z][a-z]*\)[[:space:]].*$,\1,')"
-	left="$(echo "$line" | sed -e 's,^[a-z][a-z]*[[:space:]][[:space:]]*\([^[:space:]][^[:space:]]*\)[[:space:]].*$,\1,')"
-	right="$(echo "$line" | sed -e 's,^.*[[:space:]]\([a-o${XY}][a-o${XY}]*\)[[:space:]]*$,\1,')"
+	result=$(echo "$line" | sed -e 's,^\([a-z][a-z]*\)[[:space:]].*$,\1,')
+	left=$(echo "$line" | sed -e 's,^[a-z][a-z]*[[:space:]][[:space:]]*\([^[:space:]][^[:space:]]*\)[[:space:]].*$,\1,')
+	right=$(echo "$line" | sed -e 's,^.*[[:space:]]\([a-o${XY}][a-o${XY}]*\)[[:space:]]*$,\1,')
 
 	# Check validity of expressions
-	left_regexp="$(echo "$left" | sed -e 's,\${[XY]},.+,g')"
-	right_regexp="$(echo "$right" | sed -e 's,\${[XY]},.+,g')"
+	left_regexp=$(echo "$left" | sed -e 's,\${[XY]},.+,g')
+	right_regexp=$(echo "$right" | sed -e 's,\${[XY]},.+,g')
 	echo abcdefghijklmno | grep -qE "$left_regexp" || {
 		echo >&2 "*** Invalid left regexp '$left_regexp'"
 		exit 2
@@ -112,7 +112,7 @@ EOF
 
 done <list
 
-rm -f abcdefghijklmno || exit 1
-rm -f main.stu || exit 1
+rm -f abcdefghijklmno || exit 2
+rm -f main.stu || exit 2
 
 exit 0 

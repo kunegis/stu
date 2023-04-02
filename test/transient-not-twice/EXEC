@@ -1,10 +1,10 @@
 #! /bin/sh
 
-rm -f L
+rm -f L || exit 2
 
-echo ../../stu.test
-../../stu.test || exit 1
+echo ../../bin/stu.test
+../../bin/stu.test || exit 1
 
-rm -f L
+rm -f L || exit 2
 
 exit 0

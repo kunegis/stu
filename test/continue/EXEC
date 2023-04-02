@@ -6,11 +6,11 @@ for CMD in "" "-j2" "-j 3" ; do
 
 	doo rm -f ?
 
-	../../stu.test $CMD -k >list.out 2>list.err
-	exitcode="$?"
+	../../bin/stu.test $CMD -k >list.out 2>list.err
+	exitstatus=$?
 
-	[ "$exitcode" = 1 ] || {
-		echo >&2 "$0:  *** Exit code was $exitcode instead of 1"
+	[ "$exitstatus" = 1 ] || {
+		echo >&2 "$0:  *** Exit status was $exitstatus instead of 1"
 		exit 1
 	}
 
@@ -20,5 +20,6 @@ for CMD in "" "-j2" "-j 3" ; do
 	fi
 done
 
-rm -f ?
+rm -f ? || exit 2
 
+exit 0

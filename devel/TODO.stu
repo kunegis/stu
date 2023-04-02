@@ -1,9 +1,13 @@
 #
-# Have dedicated src/ and bin/ directories.
+# Move the test* files somewhere else, as well as "error.log". 
 #
 
 #
-# See whether source files can be split into smaller files.
+# Rename "tmp-prof" to "prof", or just move those files to bin/. 
+# 
+
+#
+# See whether source files can be split into smaller files.  (execution.hh, etc.)
 #
 
 #
@@ -15,9 +19,18 @@
 #
 
 #
-# Have a test that tests whether ./configure && make && make install works
+# Have a test that tests whether make clean && make install works
 #
 
 #
 # In stu-utils, have a script to auto-generate and auto-update a .gitignore file.
+#
+
+#
+# Write a test that no file end in an empty line. 
+#
+
+#
+# Rename tests to begin with the version number in which the feature that they
+# are testing was introduced. 
 #

@@ -7,12 +7,12 @@
 # (except if we wait until B's timestamp has passed.)
 #
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
+[ "$exitstatus" = 0 ] || {
 	echo >&2 "*** Exit code must be zero (1)"
 	exit 1
 }
@@ -32,10 +32,10 @@ diff list.err stderr-correct || {
 
 # Execute again:  The warning must still be output.
 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
+[ "$exitstatus" = 0 ] || {
 	echo >&2 "*** Exit code must be zero (2)"
 	exit 1
 }
@@ -49,6 +49,6 @@ diff list.err stderr-correct.2 || {
 	exit 1
 }
 
-rm -f ? || exit 1
+rm -f ? || exit 2
 
 exit 0

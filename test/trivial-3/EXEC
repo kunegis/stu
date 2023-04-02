@@ -29,7 +29,7 @@ rm -f ?
 # (0) 
 #
 
-../../stu.test >list.out 2>list.err
+../../bin/stu.test >list.out 2>list.err
 
 diff list.out stdout-0 || { echo >&2 '*** (0) Stdout' ; exit 1 ; }
 [ -r list.err ] && [ ! -s list.err ] || { echo >&2 '*** (0) Stderr' ; exit 1 ; }
@@ -44,7 +44,7 @@ diff list.out stdout-0 || { echo >&2 '*** (0) Stdout' ; exit 1 ; }
 ../../sh/touch_old B 2
 touch C
 
-../../stu.test >list.out 2>list.err
+../../bin/stu.test >list.out 2>list.err
 
 diff list.out stdout-1 || { echo >&2 '*** (1) Stdout' ; exit 1 ; }
 [ -r list.err ] && [ ! -s list.err ] || { echo >&2 '*** (1) Stderr' ; exit 1 ; }
@@ -58,7 +58,7 @@ diff list.out stdout-1 || { echo >&2 '*** (1) Stdout' ; exit 1 ; }
 ../../sh/touch_old C 2
 touch D
 
-../../stu.test >list.out 2>list.err
+../../bin/stu.test >list.out 2>list.err
 
 diff list.out stdout-2 || { echo >&2 '*** (2) Stdout' ; exit 1 ; }
 [ -r list.err ] && [ ! -s list.err ] || { echo >&2 '*** (2) Stderr' ; exit 1 ; }
@@ -72,7 +72,7 @@ diff list.out stdout-2 || { echo >&2 '*** (2) Stdout' ; exit 1 ; }
 ../../sh/touch_old C 2
 rm D
 
-../../stu.test >list.out 2>list.err
+../../bin/stu.test >list.out 2>list.err
 
 diff list.out stdout-3 || { echo >&2 '*** (3) Stdout' ; exit 1 ; }
 [ -r list.err ] && [ ! -s list.err ] || { echo >&2 '*** (3) Stderr' ; exit 1 ; }
@@ -85,7 +85,7 @@ diff list.out stdout-3 || { echo >&2 '*** (3) Stdout' ; exit 1 ; }
 ../../sh/touch_old C 2
 touch B
 
-../../stu.test >list.out 2>list.err
+../../bin/stu.test >list.out 2>list.err
 
 diff list.out stdout-4 || {
 	echo >&2 "*** (4) Stdout"
@@ -111,7 +111,7 @@ diff list.out stdout-4 || {
 ../../sh/touch_old D 2
 touch B
 
-../../stu.test >list.out 2>list.err
+../../bin/stu.test >list.out 2>list.err
 
 diff list.out stdout-5 || { echo >&2 '*** (5) Stdout' ; exit 1 ; }
 [ -r list.err ] && [ ! -s list.err ] || { echo >&2 '*** (5) Stderr' ; exit 1 ; }

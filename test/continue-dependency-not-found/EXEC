@@ -1,13 +1,11 @@
 #! /bin/sh
 
-doo() { echo "$@" ; "$@" ; }
+rm -f ? || exit 2
 
-doo rm -f ?
-
-echo ../../stu.test
-../../stu.test -k >list.out 2>list.err
-exitcode="$?"
-if [ "$exitcode" != 1 ] ; then
+echo ../../bin/stu.test
+../../bin/stu.test -k >list.out 2>list.err
+exitstatus=$?
+if [ "$exitstatus" != 1 ] ; then
 	echo >&2 "$0:  *** Stu did not fail (run A)"
 	exit 1
 fi
@@ -17,12 +15,12 @@ grep -qF 'not exist' list.err && {
 	exit 1
 }
 
-doo rm -f ?
+rm -f ? || exit 2
 
-echo ../../stu.test -k
-../../stu.test -k >list.out 2>list.err
-exitcode="$?"
-if [ "$exitcode" != 1 ] ; then
+echo ../../bin/stu.test -k
+../../bin/stu.test -k >list.out 2>list.err
+exitstatus=$?
+if [ "$exitstatus" != 1 ] ; then
 	echo >&2 "$0:  *** Stu did not have exit code 1 (run B)"
 	exit 1
 fi

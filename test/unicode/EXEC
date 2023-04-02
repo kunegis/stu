@@ -2,23 +2,25 @@
 #
 # Test that Unicode file names are supported.  All filenames and the
 # content of this file contain UTF-8, which Stu should handle
-# transparently.  
+# transparently.
+#
+# This test needs a file systems that allows UTF-8 filenames.
 #
 
-rm -f *.data list.* 
+rm -f *.data list.* || exit 2
 
 touch list.世界 || {
 	echo >&2 '*** Failed to create a file with a UTF-8 filename'
-	exit 1
+	exit 2
 }
 
-echo CORRECT >list.世界
+echo CORRECT >list.世界 || exit 2
 
-../../stu.test >list.out 2>list.err
-exitcode="$?"
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
 
-[ "$exitcode" = 0 ] || {
-	echo >&2 '*** Exit code'
+[ "$exitstatus" = 0 ] || {
+	echo >&2 '*** Exit status incorrect'
 	exit 1
 }
 
@@ -28,6 +30,6 @@ grep -qF CORRECT A || {
 }
 
 [ -r list.err ] && [ ! -s list.err ] || {
-	echo >&2 "*** Stderr should be empty"
+	echo >&2 "*** stderr should be empty"
 	exit 1
 }

@@ -16,7 +16,7 @@
 # contain the glob characters *, ?, etc.) 
 #
 # OUTPUT FILES
-#     error.log		List of tests that failed, one name per line
+#     log/error.log		List of tests that failed, one name per line
 #
 # PARAMETERS
 #     $NDEBUG	Set to non-empty to test the nondebug version; by default
@@ -140,7 +140,8 @@
 # Set to "1" on error 
 errors=0
 
-exec 6>error.log
+mkdir -p log
+exec 6>log/error.log
 
 time_begin=$(sh/now)
 
@@ -547,10 +548,10 @@ echo "Runtime:  $runtime"
 
 if [ "$errors" != 0 ]
 then
-	count_failed=$(echo $(<error.log wc -l))
+	count_failed=$(echo $(<log/error.log wc -l))
 	success_rate=$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')
 	echo >&2 "[31m$0: *** ${success_rate}% success rate.  The following $count_failed test(s) failed (out of $count_total):"
-	cat error.log
+	cat log/error.log
 	printf "[m"
 	exit 1
 else

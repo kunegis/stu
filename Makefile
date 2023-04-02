@@ -6,12 +6,12 @@ all-devel: \
     bin/stu \
     all-test
 all-test: \
-    test_options test_sed \
-    test_unit.debug \
-    test_comments \
-    test_unit.ndebug 
+    log/test_options log/test_sed \
+    log/test_unit.debug \
+    log/test_comments \
+    log/test_unit.ndebug 
 all-sani: \
-    test_unit.sani_undefined
+    log/test_unit.sani_undefined
 prof:  tmp-prof/analysis.prof
 .PHONY:  all all-devel all-test all-sani clean prof install
 
@@ -51,19 +51,19 @@ tmp-prof/analysis.prof:  tmp-prof/gmon.out
 tmp-prof/gmon.out:   bin/stu.prof test/long-1.1-parallel-1/main.stu
 	mkdir -p tmp-prof && cd tmp-prof && ../bin/stu.prof -j10 -f ../test/long-1.1-parallel-1/main.stu 
 
-test_options:   sh/testoptions src/stu.cc man/stu.1.in
-	sh/testoptions && touch $@
-test_sed:       sh/testsed test test/* test/*/* sh 
-	sh/testsed && touch $@
-test_comments:  src/stu.cc src/*.hh sh/testcomments sh sh/* test test/* test/*/* 
-	sh/testcomments && touch $@
+log/test_options:   sh/testoptions src/stu.cc man/stu.1.in
+	sh/testoptions && mkdir -p log && touch $@
+log/test_sed:       sh/testsed test test/* test/*/* sh 
+	sh/testsed && mkdir -p log && touch $@
+log/test_comments:  src/stu.cc src/*.hh sh/testcomments sh sh/* test test/* test/*/* 
+	sh/testcomments && mkdir -p log && touch $@
 
-test_unit.debug:           bin/stu.debug          sh/mktest test test/* test/*/* 
-	sh/mktest && touch $@
-test_unit.ndebug:          bin/stu                sh/mktest test test/* test/*/* 
-	NDEBUG=1 sh/mktest && touch $@
-test_unit.sani_undefined:  bin/stu.sani_undefined sh/mktest test test/* test/*/*
-	VARIANT=sani_undefined sh/mktest && touch $@
+log/test_unit.debug:           bin/stu.debug          sh/mktest test test/* test/*/* 
+	sh/mktest && mkdir -p log && touch $@
+log/test_unit.ndebug:          bin/stu                sh/mktest test test/* test/*/* 
+	NDEBUG=1 sh/mktest && mkdir -p log && touch $@
+log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/mktest test test/* test/*/*
+	VARIANT=sani_undefined sh/mktest && mkdir -p log && touch $@
 
 MANPAGE:  man/stu.1
 	MANWIDTH=80 man man/stu.1 >MANPAGE

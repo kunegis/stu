@@ -1,5 +1,4 @@
 bin
 conf
-error.log
-test_*
+log
 tmp-prof

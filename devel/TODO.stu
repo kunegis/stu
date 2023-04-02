@@ -1,8 +1,4 @@
 #
-# Move the test* files somewhere else, as well as "error.log". 
-#
-
-#
 # Rename "tmp-prof" to "prof", or just move those files to bin/. 
 # 
 

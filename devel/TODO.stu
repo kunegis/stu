@@ -1,8 +1,4 @@
 #
-# Rename "tmp-prof" to "prof", or just move those files to bin/. 
-# 
-
-#
 # See whether source files can be split into smaller files.  (execution.hh, etc.)
 #
 

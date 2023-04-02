@@ -9,9 +9,9 @@
 # debugging.  In particular, all two-letter files are deleted except 'sh'.  
 #
 
-rm -Rf -- ? list.* A.* ./*.data x.* *SCHTROUMPF* .+-~_ 
+rm -Rf -- ? list.* A.* ./*.data x.* *SCHTROUMPF* .+-~_ || exit 1
 
 for file in ?? ; do
 	if [ "$file" = sh ] ; then continue ; fi
-	rm -f -- "$file"
+	rm -f -- "$file" || exit 1
 done

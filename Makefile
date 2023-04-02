@@ -12,7 +12,7 @@ all-test: \
     log/test_unit.ndebug 
 all-sani: \
     log/test_unit.sani_undefined
-prof:  tmp-prof/analysis.prof
+prof:  bin/analysis.prof
 .PHONY:  all all-devel all-test all-sani clean prof install
 
 src/version.hh:  VERSION sh/mkversion
@@ -45,11 +45,11 @@ bin/stu.sani_undefined: conf/CXX src/stu.cc src/*.hh src/version.hh
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_SANI)             src/stu.cc -o bin/stu.sani_undefined
 	@$$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_SANI)             src/stu.cc -o bin/stu.sani_undefined
 
-tmp-prof/analysis.prof:  tmp-prof/gmon.out
-	gprof bin/stu.prof tmp-prof/gmon.out >tmp-prof/analysis.prof
+bin/analysis.prof:  bin/gmon.out
+	gprof bin/stu.prof bin/gmon.out >bin/analysis.prof
 
-tmp-prof/gmon.out:   bin/stu.prof test/long-1.1-parallel-1/main.stu
-	mkdir -p tmp-prof && cd tmp-prof && ../bin/stu.prof -j10 -f ../test/long-1.1-parallel-1/main.stu 
+bin/gmon.out:   bin/stu.prof test/long-1.1-parallel-1/main.stu
+	cd bin && ./stu.prof -j10 -f ../test/long-1.1-parallel-1/main.stu && ../sh/rm_tmps
 
 log/test_options:   sh/testoptions src/stu.cc man/stu.1.in
 	sh/testoptions && mkdir -p log && touch $@

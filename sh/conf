@@ -9,6 +9,7 @@
 [ "$verbose" ] && exec 6>&2 || exec 6>/dev/null
 
 check()
+# $1...		Options to test
 {
 	rm -f "$target" || return 1
 	[ "$CXX" ] || return 1
@@ -26,6 +27,8 @@ check()
 }
 
 check_code()
+# $1	Name
+# $2	Code
 {
 	rm -f "$target" "$source2" || return 1
 	{ cat "$source" ; printf '%s' "$2" ; } >"$source2"
@@ -54,16 +57,8 @@ source=$filename.cc
 source2=$filename.2.cc
 target=$filename.out
 cat >"$source" <<EOF || exit 1
-struct Alpha
-{
-	int x;
-	Alpha(int a):  x(2 - a) { }
-};
-int main()
-{
-	Alpha alpha(2);
-	return alpha.x;
-}
+struct Alpha { int x; Alpha(int a):  x(2 - a) { } };
+int main() { Alpha alpha(2); return alpha.x; }
 EOF
 
 if [ -n "$CXX" ] ; then
@@ -74,10 +69,7 @@ if [ -n "$CXX" ] ; then
 else
 	found=
 	for CXX in g++ c++ clang++ gpp cxx ; do
-		if check ; then
-			found=1
-			break
-		fi
+		if check ; then found=1 ; break ; fi
 	done
 
 	if [ -z "$found" ] ; then

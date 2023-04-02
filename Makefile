@@ -1,3 +1,4 @@
+.POSIX:
 all: bin/stu 
 all-devel: \
     bin/stu.debug \

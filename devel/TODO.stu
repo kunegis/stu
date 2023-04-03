@@ -1,6 +1,10 @@
 #
-# Rename tests to begin with the version number in which the feature that they
-# are testing was introduced. 
+# Rename tests
+# * Begin with the version number in which the feature that they
+#   are testing was introduced.
+# * Rename tests so that version numbers are zero-padded to make execution order
+#   consistent
+# * Find all tests that use sleep(1) and rename them to long-*.
 #
 
 #
@@ -25,4 +29,9 @@
 
 #
 # Write a test that no file end in an empty line. 
+#
+
+#
+# Split execution.hh into multiple files.  Will need to have separate .cc and
+# .hh files for others that stu.cc.
 #

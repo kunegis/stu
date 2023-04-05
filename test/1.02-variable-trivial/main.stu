@@ -1,5 +1,3 @@
-# Now allowed
-
 A: -t [B] { 
 	echo "$C" >A
 }

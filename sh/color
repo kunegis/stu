@@ -5,7 +5,7 @@
 # addition to unit tests that check whether output is correct.
 #
 # PARAMETERS
-#	(optional) Names of tests, like for sh/mktest
+#	(optional) Names of tests, like for sh/test
 #
 # STDOUT
 #	The output and error output of the tests, including color

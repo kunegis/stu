@@ -54,12 +54,12 @@ log/test_options:   sh/test_options src/stu.cc man/stu.1.in
 log/test_clean:  src/stu.cc src/*.hh sh/test_clean sh sh/* tests tests/*/* 
 	sh/test_clean && mkdir -p log && touch $@
 
-log/test_unit.debug:           bin/stu.debug          sh/mktest tests tests/*/* 
-	sh/mktest && mkdir -p log && touch $@
-log/test_unit.ndebug:          bin/stu                sh/mktest tests tests/*/* 
-	NDEBUG=1 sh/mktest && mkdir -p log && touch $@
-log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/mktest tests tests/*/*
-	VARIANT=sani_undefined sh/mktest && mkdir -p log && touch $@
+log/test_unit.debug:           bin/stu.debug          sh/test tests tests/*/* 
+	sh/test && mkdir -p log && touch $@
+log/test_unit.ndebug:          bin/stu                sh/test tests tests/*/* 
+	NDEBUG=1 sh/test && mkdir -p log && touch $@
+log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/test tests tests/*/*
+	VARIANT=sani_undefined sh/test && mkdir -p log && touch $@
 
 MANPAGE:  man/stu.1
 	MANWIDTH=80 man man/stu.1 >MANPAGE

@@ -34,7 +34,7 @@ authors'.
 
 ==== UNIT TESTS ====
 
-Unit testing is described in 'sh/mktest'. 
+Unit testing is described in 'sh/test'. 
 
 The command 'make test' will also execute all unit tests.  This takes about
 ten minutes.

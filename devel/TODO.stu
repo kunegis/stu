@@ -1,8 +1,6 @@
 #
 # Rename tests
-# * sh/mktest:  by default, output only a progress bar.  Make the current output
-#   be verbose mode.
-# ** make sure no test uses $verbose
+# * sh/test
 # ** add "testing"
 # ** add test variant (ndebug, etc.)
 # ** Check what happens when a test fails
@@ -21,8 +19,7 @@
 # * Avoid a bare "1" or "2" (rename to 1.00 and 2.00)
 # * Some tests are slow even though they don't contain "sleep".  Move them also
 #   to long-*.
-# * in the terminal, mktest is not interruptable with Ctrl-C.
-# * mktest should be renamed, maybe to just "test". 
+# * in the terminal, sh/test is not interruptable with Ctrl-C.
 #
 
 #

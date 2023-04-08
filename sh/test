@@ -87,7 +87,7 @@
 # EXEC         Can be an alternative test script; it can do anything and
 #              should return a sensible exit status (i.e., 0 on success,
 #              1 on test failed, 2 on internal error).  It also otherwise
-#	       behaves like sh/mktest, e.g., output '***' only on error.
+#	       behaves like sh/test, e.g., output '***' only on error.
 #
 # For the files beginning with 'IN', each line contains a string that
 # must be present, in any order. 

@@ -9,25 +9,24 @@ set -e
 #
 check_one() 
 {
-	file="$1"
+	file=$1
 
 	[ -e "$file" ] || {
 		echo >&2 "*** Expected '$file' to exist"
 		exit 1
 	}
 
-	umask_current="$(echo $(umask) | sed -e 's,^0\(...\)$,\1,')"
-	spec_created="$(ls -l "$file" | sed -e 's,^.\(..\).\(..\).\(..\)..*$,\1\2\3,;1q')"
-
-	spec_current="$(echo "$umask_current" | sed -e 's,0,--,g;s,1,--,g;s,2,-w,g;s,3,-w,g;s,4,r-,g;s,5,r-,g;s,6,rw,g;s,7,rw,g')"
+	umask_current=$(echo $(umask) | sed -e 's,^0\(...\)$,\1,')
+	spec_created=$(ls -l "$file" | sed -e 's,^.\(..\).\(..\).\(..\)..*$,\1\2\3,;1q')
+	spec_current=$(echo "$umask_current" | sed -e 's,0,--,g;s,1,--,g;s,2,-w,g;s,3,-w,g;s,4,r-,g;s,5,r-,g;s,6,rw,g;s,7,rw,g')
 
 	echo "$spec_created" | grep -qEv x || {
 		echo >&2 "*** Created file '$file' must not have execute flag"
 		exit 1
 	}
 
-	n_current="$(echo $(echo "$spec_current" | wc -c))"
-	n_created="$(echo $(echo "$spec_created" | wc -c))"
+	n_current=$(echo $(echo "$spec_current" | wc -c))
+	n_created=$(echo $(echo "$spec_created" | wc -c))
 
 	[ "$n_created" = "$n_current" ] || {
 		echo >&2 "*** Invalid spec lengths"
@@ -39,11 +38,11 @@ check_one()
 	}
 
 	for mult in a+w a+r g+w g+r u+w u+r ; do
-		c_current="$(echo "$spec_current" | sed -e 's,^.*\(.\)$,\1,')"
-		c_created="$(echo "$spec_created" | sed -e 's,^.*\(.\)$,\1,')"
+		c_current=$(echo "$spec_current" | sed -e 's,^.*\(.\)$,\1,')
+		c_created=$(echo "$spec_created" | sed -e 's,^.*\(.\)$,\1,')
 
-		spec_current="$(echo "$spec_current" | sed -e 's,^\(.*\).$,\1,')"
-		spec_created="$(echo "$spec_created" | sed -e 's,^\(.*\).$,\1,')"
+		spec_current=$(echo "$spec_current" | sed -e 's,^\(.*\).$,\1,')
+		spec_created=$(echo "$spec_created" | sed -e 's,^\(.*\).$,\1,')
 
 		if [ "$c_current" = "-" ] ; then
 			if [ "$c_created" = "r" ] || [ "$c_created" = "w" ] ; then

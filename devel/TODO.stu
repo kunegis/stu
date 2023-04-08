@@ -13,6 +13,7 @@
 # ** add progress %
 # ** add success % and color
 # ** Make sure test names are not too long
+# ** devel/README:  make sure the unicode test has the correct name
 # * Begin with the version number in which the feature that they
 #   are testing was introduced.
 # * Rename tests so that version numbers are zero-padded to make execution order

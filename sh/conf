@@ -15,11 +15,11 @@ check()
 	[ "$CXX" ] || return 1
 	printf "Checking $(echo $CXX $CXXFLAGS ${*})..."
 	$CXX $CXXFLAGS "$@" "$source" -o "$target" 2>&6 || {
-		echo >&2 "compiler failed"
+		echo >&2 "*** Compiler failed"
 		return 1
 	}
 	"$target" || {
-		echo >&2 "test program failed"
+		echo >&2 "*** Test program failed"
 		return 1
 	}
 	echo "ok"
@@ -38,7 +38,7 @@ check_code()
 		return 1
 	}
 	"$target" || {
-		echo >&2 "test program failed"
+		echo >&2 "*** Test program failed"
 		return 1
 	}
 	echo "ok"

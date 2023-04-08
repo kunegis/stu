@@ -51,7 +51,6 @@ Running "make all-devel" has more requirements than just compiling Stu:
 
 * The unit tests assume that the file system supports UTF-8 filenames.
   Stu will work without such a file system, but you can't run the unit
-  tests unless you remove the one offending test (test/unicode/).  
+  tests unless you remove the one offending test (tests/1-unicode-1/).  
 * You need to install the package 'expect'.  On some systems, also 'tclsh'.
   (Exact packages vary by operating system.) 
-

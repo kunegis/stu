@@ -1,7 +1,7 @@
 #! /bin/sh
 #
 # Perform unit tests.  Each unit test is in one subdirectory of the directory
-# test/.  By default, each test directory contains a file 'main.stu' that
+# tests/.  By default, each test directory contains a file 'main.stu' that
 # performs one unit test.  Additional files may be present to configure how the
 # test is performed; see below. 
 # 
@@ -11,7 +11,7 @@
 #
 # Without any arguments, perform all tests.  With one or more arguments,
 # perform the given tests.  The given test names are the names of the
-# subdirectories of test/, and may or may not include the 'test/'
+# subdirectories of tests/, and may or may not include the 'tests/'
 # prefix.  The arguments may contain glob patterns.  (No test names
 # contain the glob characters *, ?, etc.) 
 #
@@ -38,7 +38,7 @@
 #
 # TEST SPECIFICATION 
 #
-# Each subdirectory of test/ contains one unit test, which follows the
+# Each subdirectory of tests/ contains one unit test, which follows the
 # following rules: 
 #
 # * Each test contains a Stu file 'main.stu' that is to be tested
@@ -94,20 +94,20 @@
 #
 # NAMES OF TESTS
 #
-# The names of unit tests, i.e., the name of the directories under test/
+# The names of unit tests, i.e., the name of the directories under tests/
 # follow a pattern:
 #
-# * test/VERSION-ID
+# * tests/VERSION-ID
 #	These are tests for features introduced in Stu version VERSION.
 #	This was introduced in Stu 2.5, and therefore the assignment of
 #	VERSION numbers for older versions is approximate.  The goal is
 #	to be able to run all tests in asciibetical order so as to test
 #	older features first.  Presumably, these are the features that
 #	should be fixed first when working on Stu.
-# * test/NAME-ID (deprecated)
+# * tests/NAME-ID (deprecated)
 #	These are tests for the feature named NAME, with ID being an
 #	integer.  These are being migrated to the VERSION-ID scheme.
-# * test/long-NAME
+# * tests/long-NAME
 #	These are tests that take a long time to run.  I.e., at least
 #       one second, due to sleep being used.  We try to avoid this as
 #  	much as possible, but sometimes sleeping is the only way to test
@@ -179,7 +179,7 @@ fi
 
 unset STU_OPTIONS
 
-cd test
+cd tests
 
 if [ "$1" ] ; then
 	tests="$@"
@@ -201,8 +201,8 @@ do
 	
 	count_total=$(( count_total + 1 ))
 
-	# Remove optional 'test/' prefix
-	file=$(echo "$file" | sed -e 's,^test/,,')
+	# Remove optional 'tests/' prefix
+	file=$(echo "$file" | sed -e 's,^tests/,,')
 
 	if [ ! -d "$file" ]; then
 		echo >&2 "$0: *** '$file' is not a directory"

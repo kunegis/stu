@@ -19,7 +19,7 @@ else
 	ln -s stu.debug bin/stu.test || exit 2
 fi
 
-cd test
+cd tests
 
 if [ "$1" ] ; then
 	tests="$@"
@@ -29,8 +29,8 @@ fi
 
 for file in $tests
 do
-	# Remove optional 'test/' prefix
-	file=$(echo "$file" | sed -e 's,^test/,,')
+	# Remove optional 'tests/' prefix
+	file=$(echo "$file" | sed -e 's,^tests/,,')
 
 	if [ ! -d "$file" ]; then
 		echo >&2 "$0: *** '$file' is not a directory"

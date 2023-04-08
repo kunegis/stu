@@ -48,21 +48,21 @@ bin/stu.sani_undefined: conf/CXX src/stu.cc src/*.hh src/version.hh
 bin/analysis.prof:  bin/gmon.out
 	gprof bin/stu.prof bin/gmon.out >bin/analysis.prof
 
-bin/gmon.out:   bin/stu.prof test/long-1.1-parallel-1/main.stu
-	cd bin && ./stu.prof -j10 -f ../test/long-1.1-parallel-1/main.stu && ../sh/rm_tmps
+bin/gmon.out:   bin/stu.prof tests/long-1.1-parallel-1/main.stu
+	cd bin && ./stu.prof -j10 -f ../tests/long-1.1-parallel-1/main.stu && ../sh/rm_tmps
 
 log/test_options:   sh/test_options src/stu.cc man/stu.1.in
 	sh/test_options && mkdir -p log && touch $@
-log/test_sed:       sh/test_sed test test/* test/*/* sh 
+log/test_sed:       sh/test_sed tests tests/* tests/*/* sh 
 	sh/test_sed && mkdir -p log && touch $@
-log/test_comments:  src/stu.cc src/*.hh sh/test_comments sh sh/* test test/* test/*/* 
+log/test_comments:  src/stu.cc src/*.hh sh/test_comments sh sh/* tests tests/* tests/*/* 
 	sh/test_comments && mkdir -p log && touch $@
 
-log/test_unit.debug:           bin/stu.debug          sh/mktest test test/* test/*/* 
+log/test_unit.debug:           bin/stu.debug          sh/mktest tests tests/* tests/*/* 
 	sh/mktest && mkdir -p log && touch $@
-log/test_unit.ndebug:          bin/stu                sh/mktest test test/* test/*/* 
+log/test_unit.ndebug:          bin/stu                sh/mktest tests tests/* tests/*/* 
 	NDEBUG=1 sh/mktest && mkdir -p log && touch $@
-log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/mktest test test/* test/*/*
+log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/mktest tests tests/* tests/*/*
 	VARIANT=sani_undefined sh/mktest && mkdir -p log && touch $@
 
 MANPAGE:  man/stu.1

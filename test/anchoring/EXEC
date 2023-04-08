@@ -16,7 +16,6 @@ do_test()
 	exitstatus=$?
 
 	if [ "$result" = yes ] ; then
-
 		[ "$exitstatus" = 0 ] || {
 			echo >&2 "*** Expected exit code 0, got $exitstatus"
 			exit 2
@@ -26,10 +25,7 @@ do_test()
 			echo >&2 "*** Expected target to exist, it does not"
 			exit 2
 		}
-		
-	
 	elif [ "$result" = no ] ; then
-
 		[ "$exitstatus" = 2 ] || {
 			echo >&2 "*** Expected exit code 2, got $exitstatus"
 			echo >&2 main.stu:
@@ -53,7 +49,7 @@ do_test()
 			echo >&2 "*** Invalid error output"
 			echo >&2 stderr:
 			echo >&2 ______
-			cat >&2 list.err
+			cat  >&2 list.err
 			echo >&2 ______
 			exit 2
 		}
@@ -69,11 +65,11 @@ date=$(date)
 while IFS= read -r line ; do
 
 	if echo "$line" | grep -qE '^[[:space:]]*#' ; then
-		continue;
+		continue
 	fi
 
 	if echo "$line" | grep -qE '^[[:space:]]*$' ; then
-		continue;
+		continue
 	fi
 
 	result=$(echo "$line" | sed -e 's,^\([a-z][a-z]*\)[[:space:]].*$,\1,')

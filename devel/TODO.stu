@@ -1,7 +1,18 @@
 #
 # Rename tests
+# * the testing target should be "make test", so rename test/ to tests/.
+# * Rename all all-X makefile targets to X
 # * sh/mktest:  by default, output only a progress bar.  Make the current output
-#   be verbose mode. 
+#   be verbose mode.
+# ** make sure no test uses $verbose
+# ** add "testing"
+# ** add test variant (ndebug, etc.)
+# ** Check what happens when a test fails
+# ** Output runtime as part of the last line ("tests successful", etc.).  There
+#    should be just a single line output in verbose=0 mode.
+# ** add progress %
+# ** add success % and color
+# ** Make sure test names are not too long
 # * Begin with the version number in which the feature that they
 #   are testing was introduced.
 # * Rename tests so that version numbers are zero-padded to make execution order

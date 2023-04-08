@@ -13,15 +13,15 @@ exitstatus=$?
 	exit 1
 }
 
-echo >&2 STDOUT:
-cat >&2 list.out
-echo >&2 _______
-echo >&2 STDERR:
-cat >&2 list.err
-echo >&2 _______
+echo STDOUT:
+cat  list.out
+echo _______
+echo STDERR:
+cat  list.err
+echo _______
 
 grep -qF 'Executing B' list.out || {
-	echo >&2 "*** invalid output"
+	echo >&2 "*** Invalid output"
 	exit 1
 }
 

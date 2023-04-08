@@ -9,7 +9,7 @@ set -e
 # (1) When A does not exist, don't build it
 #
 
-echo >&2 "Case (1)"
+echo "Case (1)"
 
 rm -f ? main.stu
 
@@ -28,7 +28,7 @@ EOF
 # (2) When A exists and has no dependency, do nothing
 #
 
-echo >&2 "Case (2)"
+echo "Case (2)"
 
 rm -f ? main.stu
 
@@ -49,7 +49,7 @@ EOF
 # (3) When A exists and has a newer dependency, rebuild it
 #
 
-echo >&2 "Case (3)"
+echo "Case (3)"
 
 rm -f ? main.stu
 

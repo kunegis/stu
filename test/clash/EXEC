@@ -23,17 +23,17 @@ while read -r line ; do
 	exitstatus=$?
 	[ "$exitstatus" = 2 ] || {
 		echo >&2 "*** error (a) Exit code should be 2 (logical error), but is not"
-		echo "exitstatus=$exitstatus"
+		echo >&2 "exitstatus=$exitstatus"
 		echo 1 >list.exitstatus
 		exit 1
 	}
 
 	grep -qF "'-o'" list.err || {
 		echo >&2 "*** error (b) String \"'-o'\" not found in error output"
-		echo "Content of error output:"
-		echo ________
-		cat list.err
-		echo ________
+		echo >&2 "Content of error output:"
+		echo >&2 ________
+		cat  >&2 list.err
+		echo >&2  ________
 		echo 1 >list.exitstatus || exit 1
 		exit 1
 	}

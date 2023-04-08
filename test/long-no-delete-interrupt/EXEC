@@ -2,7 +2,7 @@
 
 rm -f A || exit 2
 
-../../bin/stu.test -K & >list.out 2>list.err
+../../bin/stu.test -K >list.out 2>list.err &
 pid=$!
 
 sleep 1 || exit 2
@@ -14,7 +14,7 @@ exitstatus=$?
 # 143 = 128 + 15.  15 is the POSIX-mandated value of SIGTERM. 
 [ "$exitstatus" = 143 ] || {
 	echo >&2 '*** Exit status must be 143, but is not'
-	echo >&2 "exitcode='$exitstatus'"
+	echo >&2 "exitstatus='$exitstatus'"
 	exit 1
 }
 

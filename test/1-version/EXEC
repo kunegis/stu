@@ -9,9 +9,7 @@ error=0
 do_test() {
 	exitstatus_correct=$1
 	version=$2
-
-	echo >&2 "$0:  TESTING $1 $2"
-
+	echo "$0:  TESTING $1 $2"
 	rm -f $STUFILE A list.err || exit 2
 
 	cat >$STUFILE <<EOF
@@ -21,7 +19,7 @@ EOF
 
 	../../bin/stu.test -f $STUFILE 2>list.err
 	exitstatus_actual=$?
-	echo >&2 "	exitstatus=$exitstatus_actual"
+	echo "	exitstatus=$exitstatus_actual"
 	if [ "$exitstatus_actual" != "$exitstatus_correct" ] ; then
 		echo >&2 "*** $0:  Error in case $1 $2"
 		error=1

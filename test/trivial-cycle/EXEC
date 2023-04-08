@@ -135,7 +135,7 @@ for type in a b c ; do
 				echo >&2 "exitstatus_expr=$exitstatus_expr"
 				echo >&2 list.out:
 				echo >&2 ------------
-				cat >&2 list.out
+				cat  >&2 list.out
 				echo >&2 ------------
 				exit 1
 			fi

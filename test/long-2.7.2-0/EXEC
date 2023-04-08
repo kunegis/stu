@@ -8,17 +8,17 @@ set -e
 
 output_case()
 {
-	echo >&2 ls -l list.stu list.A
+	echo ls -l list.stu list.A
 
-	echo >&2 'Content of list.stu:'
-	echo >&2 '------------------'
-	cat  >&2 list.stu
-	echo >&2 '------------------'
+	echo 'Content of list.stu:'
+	echo '------------------'
+	cat  list.stu
+	echo '------------------'
 
-	echo >&2 'Content of list.A:'
-	echo >&2 '------------------'
-	cat  >&2 list.A
-	echo >&2 '------------------'
+	echo 'Content of list.A:'
+	echo '------------------'
+	cat  list.A
+	echo '------------------'
 }
 
 n=0
@@ -79,19 +79,19 @@ for i in $(../../sh/seq 100) ; do
 
 	[ "$exitstatus" = 0 ] || {
 		echo >&2 "*** Error:  exitstatus must be 0, is $exitstatus"
-		output_case
+		output_case >&2
 		exit 1
 	}
 
 	test -f list.A || {
 		echo >&2 '*** Error:  list.A must be created'
-		output_case
+		output_case >&2
 		exit 1
 	}
 	
 	cmp ../list.correct list.A || {
 		echo >&2 '*** Error:  list.A must contain CORRECT'
-		output_case
+		output_case >&2
 		exit 1
 	}
 

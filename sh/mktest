@@ -23,7 +23,7 @@
 #		the debug version is tested 
 #     $VARIANT  Other variant of the compiled file; the default is to
 #		take the file that matches the value of $NDEBUG
-#     $verbose  Set to non-empty for verbose output 
+#     $verbose  Set to {0,1,2} for verbose levels; default is 0
 #     $notall	If non-empty, exit on the first error, instead of
 #		running everything  
 #     $emptyok	Set to non-empty to *not* output an error for empty test
@@ -136,13 +136,35 @@
 # shell scripts), because otherwise we can't use $? to check the exit
 # code of Stu.  
 
-# Set to "1" on error 
-errors=0
+output_next()
+{
+	echo >&7 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	echo >&7 cd "$file"
+	if [ "$verbose" = 0 ] ; then
+		printf '[2K%s' "$file"
+	fi
+}
+
+output_end()
+{
+	echo >&7 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	if [ "$verbose" = 0 ] ; then
+		printf '[2K'
+	fi
+}
+
+ret=0
+time_begin=$(sh/now)
 
 mkdir -p log
 exec 6>log/error.log
 
-time_begin=$(sh/now)
+verbose=${verbose:-0}
+printf '%s\n' "$verbose" | grep -q -E '^[012]$' || {
+	echo >&2 "$0: *** Invalid verbosity level '$verbose'"
+	exit 2
+}
+[ "$verbose" -ge 1 ] && exec 7>&1 || exec 7>/dev/null
 
 rm -f bin/stu.test || exit 2
 if [ "$VARIANT" ] ; then
@@ -184,7 +206,7 @@ do
 
 	if [ ! -d "$file" ]; then
 		echo >&2 "$0: *** '$file' is not a directory"
-		errors=1
+		ret=1
 		echo "$file" >&6
 		continue
 	fi
@@ -193,14 +215,13 @@ do
 	if [ "$(echo $(ls -1 "$file" | wc -l))" = 0 ] ; then
 		if [ "$emptyok" != 1 ] ; then
 			echo >&2 "$0: *** Test directory $file/ does not contain any files"
-			errors=1
+			ret=1
 			echo "$file" >&6
-			continue;
+			continue
 		fi
 	fi
 
-	echo '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-	echo cd "$file"
+	output_next
 	cd "$file"
 
 	../../sh/rm_tmps || exit 2
@@ -226,31 +247,29 @@ do
 	# The following will save:  list.def.out and list.def.err 
 
 	if [ -r EXEC ]; then
-
 		if [ -r EXITSTATUS -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
 			-o -r STDERR -o -r NOTINSTDERR -o -r CMD -o -r CMDPREFIX \
 			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
 			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR -o -r NOCOLOR ]; then
 			echo >&2 "$0: *** EXEC does not allow any other file"
-			errors=1
+			ret=1
 			echo "$file" >&6
 			continue
 		fi
 
-		echo >&2 ./EXEC
-		./EXEC
+		echo >&7 ./EXEC
+		./EXEC 1>&7
 		if [ "$?" != 0 ]; then
 			echo >&2 "$0: *** EXEC failed"
 			error=1
 		fi
-
 	else
 		# Execute command
-		echo $CMDPREFIX ../../bin/stu.test "$CMD"
+		echo >&7 $CMDPREFIX ../../bin/stu.test "$CMD"
 		eval $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err
 		exitstatus_actual=$?
 
-		if [ "$verbose" ] ; then
+		if [ "$verbose" -ge 2 ] ; then
 			echo stdout:
 			echo _______
 			cat list.def.out
@@ -294,7 +313,7 @@ do
 			echo >&2 ______________
 			error=1
 		else
-			echo "EXITSTATUS...$exitstatus_correct correct"
+			echo >&7 "EXITSTATUS...$exitstatus_correct correct"
 		fi
 
 		# Target was built or not generate in case of error
@@ -312,7 +331,7 @@ do
 					# Check that INCONTENT is found in the built file
 					if [ -r INCONTENT ]; then
 						if grep -q -F -e "$(cat INCONTENT)" "$target" ; then
-							echo "INCONTENT...correct"
+							echo >&7 "INCONTENT...correct"
 						else
 							echo >&2 "$0: *** '$(cat INCONTENT)' must appear in generated file"
 							echo >&2 "$target:"
@@ -326,7 +345,7 @@ do
 					# Check exact content of the target file
 					if [ -r CONTENT ] ; then
 						if diff "$target" CONTENT ; then
-							echo "CONTENT...correct"
+							echo >&7 "CONTENT...correct"
 						else	
 							echo >&2 "$0: *** CONTENT error"
 							error=1
@@ -360,14 +379,14 @@ do
 				ls -l list.def.out STDOUT
 				error=1
 			else
-				echo "STDOUT...correct"
+				echo >&7 "STDOUT...correct"
 			fi
 		fi
 
 		# Check that INSTDOUT is found in the output
 		if [ -r INSTDOUT ]; then
 			if  grep <list.def.out -qF -- "$(cat INSTDOUT)" ; then
-				echo "INSTDOUT...correct"
+				echo >&7 "INSTDOUT...correct"
 			else
 				echo >&2 "$0: *** '$(cat INSTDOUT)' was not found in output"
 				echo >&2 ____ stdout:
@@ -390,7 +409,7 @@ do
 			for lineno in $(../../sh/seq $(awk '{x++} END{ print x; }' <INSTDERR)) ; do
 			   	line=$(<INSTDERR sed -e "$lineno"'!d')
 				if grep <list.def.err -qF -- "$line" ; then
-					echo "INSTDERR...correct"
+					echo >&7 "INSTDERR...correct"
 				else
 					echo >&2 "$0: *** '$line' was not found in error output"
 					echo >&2 "stderr:"
@@ -415,7 +434,7 @@ do
 				ls -l list.def.err STDERR
 				error=1
 			else
-				echo "STDERR...correct"
+				echo >&7 "STDERR...correct"
 			fi
 		fi
 
@@ -425,15 +444,15 @@ do
 				echo >&2 "$0: *** '$(cat NOTINSTDERR)' was found in error output, but should not be there"
 				error=1
 			else
-				echo "NOTINSTDERR...correct"
+				echo >&7 "NOTINSTDERR...correct"
 			fi
 		fi
 
 		# TTYSTDOUTERR
 		if { [ -r TTYSTDOUTERR ] || [ -r EXITSTATUS ]; } && ! [ -r NOTTY ]; then
 			../../sh/rm_tmps || exit 1
-			echo $CMDPREFIX ../../bin/stu.test "$CMD" '[TTY]'
-			eval $CMDPREFIX ../../sh/tty ../../bin/stu.test $CMD \>list.def.out 
+			echo >&7 $CMDPREFIX ../../bin/stu.test "$CMD" '[TTY]'
+			eval $CMDPREFIX ../../sh/tty ../../bin/stu.test $CMD \>list.def.out
 			exitstatus_actual=$?
 
 			# Exit code
@@ -441,7 +460,7 @@ do
 				echo >&2 "$0: *** Test '$file' should have returned $exitstatus_correct, but returned $exitstatus_actual [TTY]"
 				error=1
 			else
-				echo "EXITSTATUS:TTY...$exitstatus_correct correct"
+				echo >&7 "EXITSTATUS:TTY...$exitstatus_correct correct"
 			fi
 
 			# correct output
@@ -457,7 +476,7 @@ do
 					ls -l list.def.out TTYSTDOUTERR
 					error=1
 				else
-					echo "TTYSTDOUTERR...correct"
+					echo >&7 "TTYSTDOUTERR...correct"
 				fi
 			fi
 
@@ -471,7 +490,7 @@ do
 					echo >&2 _________
 					error=1
 				else
-					echo "TTY:COLOR...correct"
+					echo >&7 "TTY:COLOR...correct"
 				fi
 				
 			fi
@@ -485,17 +504,17 @@ do
 				echo >&2 "$0: *** Expected closing color code"
 				error=1
 			else
-				echo "TTY:BALANCED...correct"
+				echo >&7 "TTY:BALANCED...correct"
 			fi
 		fi
 
 		# Second invocation does nothing 
 		if [ "$exitstatus_correct" = 0 ] && [ ! -e NOSECOND ]; then
-			echo $CMDPREFIX ../../bin/stu.test "$CMD"
+			echo >&7 $CMDPREFIX ../../bin/stu.test "$CMD"
 			eval $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err 
 			grep -qF 'Targets are up to date' list.def.out 
 			if [ "$?" = 0 ] ; then
-				echo "Second invocation...correct"
+				echo >&7 "Second invocation...correct"
 			else
 				echo >&2 "$0: *** Second invocation did no result in 'Targets are up to date'"
 				echo >&2 STDOUT:
@@ -511,14 +530,14 @@ do
 			ks=$(sed -e '/^[[:space:]]*$/d' <PARALLEL)
 			for k in $ks; do
 				../../sh/rm_tmps || exit 2
-				echo $CMDPREFIX ../../bin/stu.test "$CMD" -j "$k"
+				echo >&7 $CMDPREFIX ../../bin/stu.test "$CMD" -j "$k"
 				eval $CMDPREFIX ../../bin/stu.test $CMD -j $k \>list.def.out 2\>list.def.err
 				if [ $? != 0 ]
 				then
 					echo >&2 "$0: *** Parallel stu failed for '$file' with k = $k"
 					error=1
 				else
-					echo "PARALLEL...correct"
+					echo >&7 "PARALLEL...correct"
 				fi
 			done
 		fi	
@@ -529,7 +548,7 @@ do
 
 	if [ "$error" != 0 ] ; then
 		echo "$file" >&6
-		errors=1
+		ret=1
 		[ -n "$notall" ] && { 
 			echo >&2 "[31m$0: *** Test '$file' failed [notall][m"
 			exit 1 
@@ -537,7 +556,7 @@ do
 	fi
 done
 
-echo '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+output_end
 cd ..
 
 time_end=$(sh/now)
@@ -545,7 +564,7 @@ time_diff=$(expr $time_end - $time_begin)
 runtime=$(printf '%u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)")
 echo "Runtime:  $runtime"
 
-if [ "$errors" != 0 ]
+if [ "$ret" != 0 ]
 then
 	count_failed=$(echo $(<log/error.log wc -l))
 	success_rate=$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')

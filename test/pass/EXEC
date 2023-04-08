@@ -11,8 +11,6 @@ olden() {
 	done
 }
 
-[ "$verbose" ] && exec 6>&2 || exec 6>/dev/null
-
 sed -E -e '/^[[:space:]]*$/d;/^[[:space:]]*#/d' LIST.stu |
 while read -r line ; do
 	rm -f list.file.stu ? list.*
@@ -27,7 +25,7 @@ while read -r line ; do
 	echo ../../bin/stu.test -f list.file.stu
 	../../bin/stu.test -f list.file.stu >list.out 2>list.err
 	exitstatus=$?
-	echo >&6 "exitstatus='$exitstatus'"
+	echo "exitstatus='$exitstatus'"
 
 	[ "$exitstatus" = 0 ] || {
 		echo >&2 "*** (1) Error in build"
@@ -53,7 +51,7 @@ while read -r line ; do
 	echo ../../bin/stu.test -f list.file.stu
 	../../bin/stu.test -f list.file.stu >list.out 2>list.err
 	exitstatus=$?
-	echo >&6 "exitstatus='$exitstatus'"
+	echo "exitstatus='$exitstatus'"
 
 	[ "$exitstatus" != 0 ] && {
 		echo >&2 "*** (3) Error in rebuild"
@@ -81,7 +79,7 @@ while read -r line ; do
 	echo ../../bin/stu.test -f list.file.stu
 	../../bin/stu.test -f list.file.stu >list.out 2>list.err
 	exitstatus=$?
-	echo >&6 "exitstatus=«$exitstatus»"
+	echo "exitstatus=«$exitstatus»"
 
 	[ "$exitstatus" != 0 ] && {
 		echo >&2 "*** (5) Error in rebuild"
@@ -114,7 +112,7 @@ while read -r line ; do
 	echo ../../bin/stu.test -f list.file.stu
 	../../bin/stu.test -f list.file.stu >list.out 2>list.err
 	exitstatus=$?
-	echo >&6 "exitstatus=«$exitstatus»"
+	echo "exitstatus=«$exitstatus»"
 
 	[ "$exitstatus" != 0 ] && {
 		echo >&2 "*** (8) Error in rebuild"
@@ -136,7 +134,7 @@ while read -r line ; do
 done
 
 exitstatus=$?
-echo >&6 "exitstatus=«$exitstatus»"
+echo "exitstatus=«$exitstatus»"
 
 [ "$exitstatus" = 0 ] &&
     rm -f list.*

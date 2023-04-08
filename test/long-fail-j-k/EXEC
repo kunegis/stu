@@ -4,7 +4,7 @@
 # (1) No options
 #
 
-echo >&2 RUN '(1)'
+echo RUN '(1)'
 
 rm -f ? || exit 2
 
@@ -12,7 +12,7 @@ rm -f ? || exit 2
 exitstatus=$?
 
 [ "$exitstatus" = 1 ] || {
-	echo >&2 "$: *** Variant without options failed (1)"
+	echo >&2 "*** Variant without options failed (1)"
 	exit 1
 }
 
@@ -20,12 +20,12 @@ exitstatus=$?
 # (2) With -k 
 #
 
-echo >&2 RUN '(2)'
+echo RUN '(2)'
 
 rm -f ? || exit 2
  
 if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" != 0 ]; then
-	echo >&2 "$0: *** There are still processes running from previously (2b)"
+	echo >&2 "*** There are still processes running from previously (2b)"
 	exit 1
 fi
 
@@ -35,25 +35,24 @@ pid=$!
 sleep 2 || exit 2
 
 if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" = 0 ]; then
-	echo >&2 "$0: *** Stu is not running (2a)"
+	echo >&2 "*** Stu is not running (2a)"
 	exit 1
 fi
 
 ps -fA | grep "$pid"
 kill -TERM "$pid"  || {
-	echo >&2 "$0: *** Kill (2)"
+	echo >&2 "*** Kill (2)"
 	exit 1
 }
 
 sleep 1 || exit 2
-
 ps -fA | grep  74634275
 ps -fA | grep  stu
 
 if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" != 0 ]; then
-	echo >&2 "$0: *** Stu is still running (2b)"
-	ps -fA | grep 74634275 | grep -v grep
-	echo _______________
+	echo >&2 "*** Stu is still running (2b)"
+	ps -fA | grep 74634275 | grep -v grep >&2
+	echo >&2 _______________
 	exit 1
 fi
 
@@ -64,15 +63,14 @@ exitstatus=$?
 # (3) With -j2
 #
 
-echo >&2 RUN '(3)'
-
+echo RUN '(3)'
 rm -f ? || exit 2
 
 ../../bin/stu.test -j2 >list.out 2>list.err
 exitstatus=$?
 
 if [ "$exitstatus" != 1 ]; then
-	echo >&2 "$: *** Variant without options failed (3)"
+	echo >&2 "*** Variant without options failed (3)"
 	exit 1
 fi
 
@@ -80,7 +78,7 @@ fi
 # (4) With -j2 -k 
 #
 
-echo >&2 RUN '(4)'
+echo RUN '(4)'
 
 rm -f ? || exit 2
  
@@ -102,7 +100,7 @@ kill -TERM "$pid" || {
 sleep 1 || exit 2
 
 if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" != 0 ]; then
-	echo >&2 "$0: *** Stu is still running (4b)"
+	echo >&2 "*** Stu is still running (4b)"
 	exit 1
 fi
 

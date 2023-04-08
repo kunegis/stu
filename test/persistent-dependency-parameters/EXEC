@@ -2,26 +2,24 @@
 
 rm -Rf data-X-dir || exit 2
 
-echo >&2 ../../bin/stu.test 
+echo ../../bin/stu.test 
 ../../bin/stu.test 
 if [ "$?" != 0 ]; then
-	echo "$0:  *** first stu failed"
+	echo >&2 "*** (1)"
 	exit 1
 fi
 
-echo >&2 touch data-X-dir/unrelatedfile
-touch data-X-dir/unrelatedfile || {
-	exit 1
-}
+touch data-X-dir/unrelatedfile || exit 2
 
-echo >&2 ../../bin/stu.test
+echo ../../bin/stu.test
 ../../bin/stu.test >list.output
 if [ "$?" != 0 ]; then
+	echo >&2 "*** (2)"
 	exit 1
 fi
 
 grep -qFx 'Targets are up to date' list.output || {
-	echo >&2 "$0:  *** stu did not output 'Targets are up to date'"
+	echo >&2 "*** Stu did not output 'Targets are up to date'"
 	exit 1
 }
 

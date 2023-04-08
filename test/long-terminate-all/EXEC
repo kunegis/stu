@@ -2,8 +2,11 @@
 
 rm -f ? list.* || exit 2
 
+echo ../../bin/stu.test -j50
 ../../bin/stu.test -j50 >list.out 2>list.err &
 pid=$!
+
+echo sleep 3
 sleep 3 || exit 2
 kill "$pid" || exit 2
 wait "$!"

@@ -1,6 +1,5 @@
 #
 # Rename tests
-# * Find all tests that use sleep(1) and rename them to long-*.
 # * Begin with the version number in which the feature that they
 #   are testing was introduced.
 # * Rename tests so that version numbers are zero-padded to make execution order
@@ -34,4 +33,9 @@
 #
 # Split execution.hh into multiple files.  Will need to have separate .cc and
 # .hh files for others that stu.cc.
+#
+
+#
+# sh/mktest:  by default, output only a progress bar.  Make the current output
+# be verbose mode. 
 #

@@ -104,10 +104,9 @@
 #	to be able to run all tests in asciibetical order so as to test
 #	older features first.  Presumably, these are the features that
 #	should be fixed first when working on Stu.
-# * test/NAME-ID
+# * test/NAME-ID (deprecated)
 #	These are tests for the feature named NAME, with ID being an
-#	integer.  Ideally, these would be migrated to the VERSION-ID
-# 	scheme.  
+#	integer.  These are being migrated to the VERSION-ID scheme.
 # * test/long-NAME
 #	These are tests that take a long time to run.  I.e., at least
 #       one second, due to sleep being used.  We try to avoid this as

@@ -11,11 +11,11 @@ This is information for hacking Stu itself.
 
 ==== SETUP ====
 
-For development, use "make all-devel".  
+For development, use 'make test'.
 
 Before pushing changes:
 * Increment the version number in VERSION
-* Run 'make all-devel' successfully
+* Run 'make test' successfully
 
 Version logic (see 'NEWS' for an explanation of version numbers): 
 * Increment the patch version number for any changes
@@ -36,7 +36,7 @@ authors'.
 
 Unit testing is described in 'sh/mktest'. 
 
-The command "make all-devel" will also execute all unit tests.  This takes about
+The command 'make test' will also execute all unit tests.  This takes about
 ten minutes.
 
 When we add new functionality, we always add unit tests for it, covering
@@ -47,7 +47,7 @@ If you run the tests and they fail, report that to Jérôme Kunegis
 
 ==== REQUIREMENTS ====
 
-Running "make all-devel" has more requirements than just compiling Stu:
+Running 'make test' has more requirements than just compiling Stu:
 
 * The unit tests assume that the file system supports UTF-8 filenames.
   Stu will work without such a file system, but you can't run the unit

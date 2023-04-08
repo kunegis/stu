@@ -179,7 +179,7 @@ string done_format(Done done)
 	return ret; 
 }
 
-Done done_from_flags(Flags flags) 
+Done done_from_flags(Flags flags)
 /* Only placed flags are kept */
 {
 	return (~flags & (F_PERSISTENT | F_OPTIONAL)) * (1 | (~flags & F_TRIVIAL));

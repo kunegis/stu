@@ -2,9 +2,9 @@
 
 A:  list.B { touch A; }
 
-list.B xxx/../list.B {
+list.B list.xxx/../list.B {
 	touch list.B
-	rm -Rf xxx 
-	mkdir xxx
-	touch xxx/../list.B
+	rm -Rf list.xxx 
+	mkdir list.xxx
+	touch list.xxx/../list.B
 }

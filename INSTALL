@@ -65,6 +65,6 @@ by hand if necessary.
 This is optional, but will give you confidence that your compiled Stu
 works correctly. 
 
-Execute all unit tests using 'make all-test'.  If an error is reported, report
+Execute all unit tests using 'make test'.  If an error is reported, report
 it to <kunegis@gmail.com>.  It takes about five minutes (running the tests, not
 reporting to the developers).

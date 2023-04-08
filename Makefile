@@ -1,11 +1,9 @@
 .POSIX:
 all: bin/stu 
-all-devel: \
+test: \
     bin/stu.debug \
     man/stu.1 MANPAGE src/version.hh \
     bin/stu \
-    all-test
-all-test: \
     log/test_options log/test_sed \
     log/test_unit.debug \
     log/test_comments \
@@ -13,7 +11,7 @@ all-test: \
 all-sani: \
     log/test_unit.sani_undefined
 prof:  bin/analysis.prof
-.PHONY:  all all-devel all-test all-sani clean prof install
+.PHONY:  all test all-sani clean prof install 
 
 src/version.hh:  VERSION sh/mkversion
 	sh/mkversion >src/version.hh
@@ -53,16 +51,16 @@ bin/gmon.out:   bin/stu.prof tests/long-1.1-parallel-1/main.stu
 
 log/test_options:   sh/test_options src/stu.cc man/stu.1.in
 	sh/test_options && mkdir -p log && touch $@
-log/test_sed:       sh/test_sed tests tests/* tests/*/* sh 
+log/test_sed:       sh/test_sed tests tests/*/* sh 
 	sh/test_sed && mkdir -p log && touch $@
-log/test_comments:  src/stu.cc src/*.hh sh/test_comments sh sh/* tests tests/* tests/*/* 
+log/test_comments:  src/stu.cc src/*.hh sh/test_comments sh sh/* tests tests/*/* 
 	sh/test_comments && mkdir -p log && touch $@
 
-log/test_unit.debug:           bin/stu.debug          sh/mktest tests tests/* tests/*/* 
+log/test_unit.debug:           bin/stu.debug          sh/mktest tests tests/*/* 
 	sh/mktest && mkdir -p log && touch $@
-log/test_unit.ndebug:          bin/stu                sh/mktest tests tests/* tests/*/* 
+log/test_unit.ndebug:          bin/stu                sh/mktest tests tests/*/* 
 	NDEBUG=1 sh/mktest && mkdir -p log && touch $@
-log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/mktest tests tests/* tests/*/*
+log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/mktest tests tests/*/*
 	VARIANT=sani_undefined sh/mktest && mkdir -p log && touch $@
 
 MANPAGE:  man/stu.1

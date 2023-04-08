@@ -141,7 +141,7 @@ output_next()
 	echo >&7 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 	echo >&7 cd "$file"
 	if [ "$verbose" = 0 ] ; then
-		printf '[2K%s' "$file"
+		printf '[2KTesting [%s] %s' "$VARIANT" "$file"
 	fi
 }
 
@@ -151,6 +151,11 @@ output_end()
 	if [ "$verbose" = 0 ] ; then
 		printf '[2K'
 	fi
+}
+
+output_success()
+{
+	echo "[32mTesting [$VARIANT] successful[m"
 }
 
 ret=0
@@ -171,8 +176,10 @@ if [ "$VARIANT" ] ; then
 	ln -s stu."$VARIANT" bin/stu.test || exit 2
 else 
 	if [ "$NDEBUG" ] ; then
+		VARIANT=ndebug
 		ln -s stu bin/stu.test || exit 2
 	else
+		VARIANT=debug
 		ln -s stu.debug bin/stu.test || exit 2
 	fi
 fi
@@ -572,10 +579,10 @@ then
 	cat log/error.log
 	printf "[m"
 	exit 1
-else
-	echo "[32mTests successful[m"
-	if [ -z "$1" ] && [ -z "$VARIANT" ] && [ "$NDEBUG" ] ; then
-		echo >>test.runtime "$(date +%Y-%m-%dT%H:%M:%S) $(printf %s "$(cat VERSION)") $runtime" 
-	fi
-	exit 0
 fi
+
+output_success
+if [ -z "$1" ] && [ -z "$VARIANT" ] && [ "$NDEBUG" ] ; then
+	echo >>test.runtime "$(date +%Y-%m-%dT%H:%M:%S) $(printf %s "$(cat VERSION)") $runtime" 
+fi
+exit 0

@@ -1,7 +1,5 @@
 #
 # Rename tests
-# * create a test that no tests have committed subdirectories
-# * Rename all all-X makefile targets to X
 # * sh/mktest:  by default, output only a progress bar.  Make the current output
 #   be verbose mode.
 # ** make sure no test uses $verbose
@@ -14,6 +12,8 @@
 # ** add success % and color
 # ** Make sure test names are not too long
 # ** devel/README:  make sure the unicode test has the correct name
+# * create a test that no tests have committed subdirectories
+# * Rename all all-X makefile targets to X
 # * Begin with the version number in which the feature that they
 #   are testing was introduced.
 # * Rename tests so that version numbers are zero-padded to make execution order

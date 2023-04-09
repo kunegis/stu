@@ -1,13 +1,12 @@
 #
 # Rename tests
+# * test sorting:  write a smarter sorting method
 # * Begin with the version number in which the feature that they
 #   are testing was introduced.
-# * Avoid a bare "1" or "2" (rename to 1.00 and 2.00)
-# * Rename tests so that version numbers are zero-padded to make execution order
-#   consistent
+# * move 1.00 to 1, and the same for 2.00
+# * Rename tests so that version numbers are not zero-padded 
 # * Some tests are slow even though they don't contain "sleep".  Move them also
 #   to long-*.
-# ** pass.
 # * devel/README:  make sure the unicode test has the correct name
 # * mv 1.00 to 1.01 and the same for version 2.
 #

@@ -1,9 +1,6 @@
 #
 # Rename tests
 # * sh/test
-# ** Output runtime as part of the last line ("tests successful", etc.).  There
-#    should be just a single line output in verbose=0 mode.
-# ** add progress/success % and color
 # ** Make sure test names are not too long
 # ** devel/README:  make sure the unicode test has the correct name
 # * create a test that no tests have committed subdirectories

@@ -140,8 +140,18 @@ output_next()
 {
 	echo >&7 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 	echo >&7 cd "$file"
+	if [ "$count_failed" = 0 ] ; then
+		count_failed_text=0
+	else
+		count_failed_text="[41;30m$count_failed[m"
+	fi
 	if [ "$verbose" = 0 ] ; then
-		printf '[2KTesting [%s] %s' "$VARIANT" "$file"
+		printf '[2KTesting [%s] (%s/%s/%s) %s' \
+		       "$VARIANT" \
+		       "[42;30m$count_succeed[m" \
+		       "$count_failed_text" \
+		       "[43;30m$((count_total - count_succeed - count_failed))[m" \
+		       "$file"
 	fi
 }
 
@@ -158,8 +168,18 @@ output_success()
 	echo "[32mTesting [$VARIANT] Success[m"
 }
 
-ret=0
+test_fail_stop()
+{
+	echo >&2 "$0: ($file) *** $1"
+	ret=1
+	count_failed=$(( count_failed + 1 ))
+	echo "$file" >&6
+}
+
 time_begin=$(sh/now)
+ret=0
+count_succeed=0
+count_failed=0
 
 mkdir -p log
 exec 6>log/error.log
@@ -198,32 +218,24 @@ else
 	tests=$(echo *)
 fi
 
-count_total=0
+count_total=$(echo $(echo $tests | sed 's, ,\
+,g' | wc -l))
 
 # In the next line, '$tests' expands with glob replacement 
 for file in $tests
 do
-	# Whether there is an error in this test 
-	error=0
-	
-	count_total=$(( count_total + 1 ))
-
-	# Remove optional 'tests/' prefix
 	file=$(echo "$file" | sed -e 's,^tests/,,')
+	error=0
 
 	if [ ! -d "$file" ]; then
-		echo >&2 "$0: ($file) *** '$file' is not a directory"
-		ret=1
-		echo "$file" >&6
+		test_fail_stop "'$file' is not a directory"
 		continue
 	fi
 
 	# There are no files in the test directory (ignoring dotfiles) 
 	if [ "$(echo $(ls -1 "$file" | wc -l))" = 0 ] ; then
 		if [ "$emptyok" != 1 ] ; then
-			echo >&2 "$0: ($file) *** Test directory $file/ does not contain any files"
-			ret=1
-			echo "$file" >&6
+			test_failed_stop "Directory $file/ does not contain any files"
 			continue
 		fi
 	fi
@@ -257,10 +269,9 @@ do
 		if [ -r EXITSTATUS -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
 			-o -r STDERR -o -r NOTINSTDERR -o -r CMD -o -r CMDPREFIX \
 			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
-			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR -o -r NOCOLOR ]; then
-			echo >&2 "$0: ($file) *** EXEC does not allow any other file"
-			ret=1
-			echo "$file" >&6
+			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR \
+			-o -r NOCOLOR ]; then
+			test_fail_stop "EXEC does not allow any other file"
 			continue
 		fi
 
@@ -555,12 +566,15 @@ do
 
 	if [ "$error" != 0 ] ; then
 		echo "$file" >&6
-		ret=1
-		[ -n "$notall" ] && { 
+		[ "$notall" ] && { 
 			echo >&2 "[31m$0: ($file) *** Test '$file' failed [notall][m"
 			exit 1 
 		}
+		ret=1
+		count_failed=$(( count_failed + 1 ))
+		continue
 	fi
+	count_succeed=$(( count_succeed + 1 ))
 done
 
 output_end

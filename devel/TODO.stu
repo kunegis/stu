@@ -1,6 +1,5 @@
 #
 # Rename tests
-# * Rename all all-X makefile targets to X
 # * The word "phony"/"phonies" should not appear anywhere
 # * in the terminal, sh/test is not interruptable with Ctrl-C.
 # * create a test that no tests have committed subdirectories

@@ -9,7 +9,7 @@
 #
 
 #
-# Try out various sanitizers (some may need a newer GCC)
+# Try out further sanitizers (some may need a newer GCC)
 #    -fsanitize=address      // not used because of false positives (due to Execution caching)
 #    -fsanitize=leak         // (Execution caching)
 #    <others>
@@ -33,9 +33,9 @@
 #
 
 #
-# Check out new warnings and sanitizers.
+# Check out new warnings.
 #
 
 #
-# Use custom formatting for formatting (errors, etc.). 
+# Use custom formatting function for errors, etc. 
 #

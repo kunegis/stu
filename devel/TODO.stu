@@ -2,11 +2,9 @@
 # Rename tests
 # * Begin with the version number in which the feature that they
 #   are testing was introduced.
+# * Avoid a bare "1" or "2" (rename to 1.00 and 2.00)
 # * Rename tests so that version numbers are zero-padded to make execution order
 #   consistent
-# ** or use a more elaborate method to sort tests by correct version number
-#    (better solution)
-# * Avoid a bare "1" or "2" (rename to 1.00 and 2.00)
 # * Some tests are slow even though they don't contain "sleep".  Move them also
 #   to long-*.
 # ** pass.

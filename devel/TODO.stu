@@ -1,7 +1,5 @@
 #
 # Rename tests
-# * in the terminal, sh/test is not interruptable with Ctrl-C.
-# * create a test that no tests have committed subdirectories
 # * rename test.runtime to tests.runtime
 # * Begin with the version number in which the feature that they
 #   are testing was introduced.

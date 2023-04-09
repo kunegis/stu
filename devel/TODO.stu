@@ -1,6 +1,5 @@
 #
 # Rename tests
-# * rename test.runtime to tests.runtime
 # * Begin with the version number in which the feature that they
 #   are testing was introduced.
 # * Rename tests so that version numbers are zero-padded to make execution order

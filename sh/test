@@ -597,6 +597,6 @@ fi
 
 output_success
 if [ -z "$1" ] && [ "$VARIANT" = ndebug ] ; then
-	echo >>test.runtime "$(date +%Y-%m-%dT%H:%M:%S) $(printf %s "$(cat VERSION)") $runtime" 
+	echo >>tests.runtime "$(date +%Y-%m-%dT%H:%M:%S) $(printf %s "$(cat VERSION)") $runtime" 
 fi
 exit 0

@@ -1,24 +1,26 @@
 #
 # Rename tests
 # * sh/test
-# ** Check what happens when a test fails
 # ** Output runtime as part of the last line ("tests successful", etc.).  There
 #    should be just a single line output in verbose=0 mode.
-# ** add progress %
-# ** add success % and color
+# ** add progress/success % and color
 # ** Make sure test names are not too long
 # ** devel/README:  make sure the unicode test has the correct name
 # * create a test that no tests have committed subdirectories
 # * Rename all all-X makefile targets to X
+# * in the terminal, sh/test is not interruptable with Ctrl-C.
+# * The word "phony"/"phonies" should not appear anywhere
+# * rename test.runtime to tests.runtime
 # * Begin with the version number in which the feature that they
 #   are testing was introduced.
 # * Rename tests so that version numbers are zero-padded to make execution order
 #   consistent
+# ** or use a more elaborate method to sort tests by correct version number
+#    (better solution)
 # * Avoid a bare "1" or "2" (rename to 1.00 and 2.00)
 # * Some tests are slow even though they don't contain "sleep".  Move them also
 #   to long-*.
-# * in the terminal, sh/test is not interruptable with Ctrl-C.
-# * The word "phony"/"phonies" should not appear anywhere
+# ** pass.
 #
 
 #

@@ -1,6 +1,6 @@
 
 #
-# A typical combination of phonies, dynamics and parallelism
+# A typical combination of transients, dynamics and parallelism
 #
 
 @all:  [All];

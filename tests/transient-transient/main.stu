@@ -1,5 +1,5 @@
 
-# Transient phony dependency
+# Transient transient dependency
 
 A:  @XY
 {

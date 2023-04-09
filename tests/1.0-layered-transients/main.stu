@@ -1,6 +1,6 @@
 
 #
-# Dependency through multiple layers of phonies.
+# Dependency through multiple layers of transients.
 #
 
 A:  @B 

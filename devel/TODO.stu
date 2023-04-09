@@ -1,6 +1,5 @@
 #
 # Rename tests
-# * The word "phony"/"phonies" should not appear anywhere
 # * in the terminal, sh/test is not interruptable with Ctrl-C.
 # * create a test that no tests have committed subdirectories
 # * rename test.runtime to tests.runtime
@@ -38,7 +37,8 @@
 #
 
 #
-# Write a test that no file end in an empty line. 
+# Write a test that no file start or end in an empty line.  Also look for double
+# empty lines.
 #
 
 #

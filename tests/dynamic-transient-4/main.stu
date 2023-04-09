@@ -1,5 +1,5 @@
 #
-# Dynamic phony.
+# Dynamic transient.
 #
 # Make sure that 'A' is not rebuilt a second time. 
 #

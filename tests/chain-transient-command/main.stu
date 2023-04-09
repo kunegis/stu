@@ -1,6 +1,6 @@
 
 #
-# A phony target with command down a chain of phonies.
+# A transient target with command down a chain of transients.
 #
 
 @A:  @B;

@@ -38,7 +38,7 @@
 #	
 # Using three types ways of declaring a trivial dependency:
 #	(a.stu) Direct
-#	(b.stu) Via a phony
+#	(b.stu) Via a transient
 #	(c.stu) Via a dynamic dependency
 #
 # Files:

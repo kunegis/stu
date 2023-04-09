@@ -1,5 +1,5 @@
 
-# Error:  phonies cannot be used as input
+# Error:  transients cannot be used as input
 
 A:  <@B { touch A }
 @B { echo Hello }

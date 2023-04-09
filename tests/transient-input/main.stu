@@ -1,5 +1,5 @@
 
-# Error:  can't use a phony target as input. 
+# Error:  can't use a transient target as input. 
 
 A:  <@B   { touch A }
 @B {}

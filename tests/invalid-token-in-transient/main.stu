@@ -1,4 +1,4 @@
 
-# invalid token after '@' in phony declaration. 
+# Invalid token after '@' in transient declaration. 
 
 @:

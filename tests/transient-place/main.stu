@@ -1,8 +1,8 @@
 
 #
-# When a phony target given as a dependency does not exist, the trace in
+# When a transient target given as a dependency does not exist, the trace in
 # the error message should point to the "@" sign and not to the
-# beginning of the phony target name. 
+# beginning of the transient target name. 
 #
 
 A: @B {

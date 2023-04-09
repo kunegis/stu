@@ -1,5 +1,5 @@
 
-# A phony target that does nothing.
+# A transient target that does nothing.
 
 @main;
 

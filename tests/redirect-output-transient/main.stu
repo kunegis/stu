@@ -1,4 +1,4 @@
-# Output redirection cannot be used on phony targets.
+# Output redirection cannot be used on transient targets.
 # This must result in a syntax error.  (Note:  there must be an error
 # even though @B is not invoked.)
 

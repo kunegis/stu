@@ -1,7 +1,7 @@
 
 
 
-# Variables get carried over phonies without command.
+# Variables get carried over transients without command.
 
 A:  @b @c {
 

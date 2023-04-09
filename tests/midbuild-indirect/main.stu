@@ -1,5 +1,5 @@
 #
-# This is the same test as "midbuild", but with intermediary phony
+# This is the same test as "midbuild", but with intermediary transient
 # targets, to test that timestamps are correctly carried over these. 
 #
 

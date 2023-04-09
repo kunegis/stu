@@ -1,6 +1,6 @@
 
 #
-# A phony that only prints out something. 
+# A transient that only prints out something. 
 #
 
 @hello { : HELLO }

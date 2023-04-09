@@ -30,6 +30,6 @@ if [ "$(grep -c -F "main.stu:11:1: timestamp of file 'B' after execution of its 
 	exit 1
 fi
 
-rm -f A B C
+rm -f A B C || exit 2
 
 exit 0

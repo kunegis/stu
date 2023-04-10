@@ -1,7 +1,5 @@
 #
 # Rename tests
-# * Begin with the version number in which the feature that they
-#   are testing was introduced.
 # * move 1.00 to 1, and the same for 2.00
 # * Rename tests so that version numbers are not zero-padded 
 # * Some tests are slow even though they don't contain "sleep".  Move them also

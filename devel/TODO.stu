@@ -1,11 +1,4 @@
 #
-# Rename tests
-# * Long tests should not contain a version number
-# * devel/README:  make sure the unicode test has the correct name
-# * write a test that checks the test naming
-#
-
-#
 # Have a linter or similar.
 #
 

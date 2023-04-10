@@ -32,7 +32,8 @@
 
 #
 # Write a test that no file start or end in an empty line.  Also look for double
-# empty lines.  Maybe also for spaces at end of line.
+# empty lines.  Maybe also for spaces at end of line.  Also for the VERSION
+# file.
 #
 
 #

@@ -165,7 +165,7 @@ output_end()
 
 output_success()
 {
-	echo "[32mTesting [$VARIANT] Success[m"
+	echo "[32mTesting [$VARIANT] Success (runtime $runtime)[m"
 }
 
 test_fail_stop()
@@ -599,11 +599,6 @@ done
 output_end
 cd ..
 
-time_end=$(sh/now)
-time_diff=$(expr $time_end - $time_begin)
-runtime=$(printf '%u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)")
-echo "Runtime:  $runtime"
-
 if [ "$ret" != 0 ]
 then
 	count_failed=$(echo $(<log/error.log wc -l))
@@ -614,8 +609,12 @@ then
 	exit 1
 fi
 
-output_success
+time_end=$(sh/now)
+time_diff=$(( time_end - time_begin ))
+runtime=$(printf '%u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)")
 if [ -z "$1" ] && [ "$VARIANT" = ndebug ] ; then
-	echo >>tests.runtime "$(date +%Y-%m-%dT%H:%M:%S) $(printf %s "$(cat VERSION)") $runtime" 
+	echo >>tests.runtime \
+	     "$(date +%Y-%m-%dT%H:%M:%S) $(printf %s "$(cat VERSION)") $runtime" 
 fi
+output_success
 exit 0

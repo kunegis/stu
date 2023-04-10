@@ -126,7 +126,7 @@ public:
 		   top(that.top),
 		   index(that.index)
 	{
-		assert(places != that.places);
+		assert(this != &that);
 		for (unsigned i= 0;  i < C_PLACED;  ++i)
 			places[i]= that.places[i]; 
 	}

@@ -144,7 +144,7 @@ void Preset <T> ::insert(string key, T value)
 				     return a.prefix[0] < b[0];
 			     });
 	const size_t i= lb - chars.begin(); 
-	assert(i >= 0 && i <= chars.size()); 
+	assert(i <= chars.size()); 
 	if (i < chars.size() && chars[i].prefix[0] == k) {
 		/* Add to existing character */
 
@@ -209,7 +209,7 @@ typename Preset <T> ::Input_Iterator Preset <T> ::find(string x)
 				     return a.prefix[0] < b[0];
 			     });
 	const size_t i= lb - chars.begin(); 
-	assert(i >= 0 && i <= chars.size()); 
+	assert(i <= chars.size()); 
 
 	if (i < chars.size() && chars[i].prefix[0] == k) {
 		Entry &entry= chars[i];
@@ -254,7 +254,7 @@ void Preset <T> ::insert(string key, unique_ptr <Preset <T> > preset)
 				     return a.prefix[0] < b[0];
 			     });
 	const size_t i= lb - chars.begin(); 
-	assert(i >= 0 && i <= chars.size()); 
+	assert(i <= chars.size()); 
 	if (i < chars.size() && chars[i].prefix[0] == k) {
 		/* Add to existing character */
 

@@ -1,5 +1,6 @@
 #
-# These are changes that will need newer versions of C++ than what we use now.  
+# These are changes that will need newer versions of the C++ standard and/or
+# compilers than what we use now.
 #
 
 #
@@ -33,7 +34,7 @@
 #
 
 #
-# Check out new warnings.
+# Check out warnings in new compiler versions.
 #
 
 #

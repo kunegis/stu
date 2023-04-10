@@ -1,8 +1,4 @@
 #
-# Have a linter or similar.
-#
-
-#
 # Check out coverage tools.
 #
 
@@ -40,3 +36,8 @@
 # be useful for directories in some cases.)
 
 # This can also work with other flags. 
+
+#
+# Have an option to block certain targets from ever being rebuilt.  (Resulting
+# in a failure when they should, or always considering them up to date.)
+#

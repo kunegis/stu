@@ -89,7 +89,7 @@ int main(int argc, char **argv, char **envp)
 
 		/* Parse $STU_OPTIONS */ 
 		const char *stu_options= getenv("STU_OPTIONS");
-		if (stu_options != NULL) {
+		if (stu_options != nullptr) {
 			while (*stu_options) {
 				char c= *stu_options++;
 				if (c == '-' || isspace(c))

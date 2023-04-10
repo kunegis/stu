@@ -22,7 +22,7 @@
  * objects.  
  */
 
-/* This declaration should be replaced by an Autoconf macro. */
+/* This declaration should be replaced by a sh/conf check */
 #ifdef __GNUC__
 string frmt(const char *format, ...) 
 	__attribute__ ((format(printf, 1, 2)));

@@ -1,5 +1,5 @@
 .POSIX:
-all: bin/stu 
+all: bin/stu
 test: \
     bin/stu.debug \
     man/stu.1 MANPAGE src/version.hh \

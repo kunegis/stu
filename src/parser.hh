@@ -885,27 +885,22 @@ shared_ptr <const Dep> Parser
 {
 	bool has_input= false;
 	shared_ptr <const Dep> ret;
-
 	if (! is_operator('$')) 
 		return nullptr;
-
 	const Place place_dollar= (*iter)->get_place();
 	++iter;
 
 	if (iter == tokens.end()) {
 		place_end << fmt("expected %s", char_format_err('['));
-		place_dollar << fmt("after %s", 
-				    char_format_err('$')); 
+		place_dollar << fmt("after %s", char_format_err('$')); 
 		throw ERROR_LOGICAL;
 	}
-	
 	if (! is_operator('[')) {
 		/* The '$' and '[' operators are only generated when
 		 * they both appear in conjunction. */ 
 		assert(false);
 		return nullptr;
 	}
-
 	++iter;
 
 	/* Flags */ 
@@ -916,7 +911,6 @@ shared_ptr <const Dep> Parser
 	Place place_flag_last;
 	char flag_last= '\0';
 	while (is_flag('p') || is_flag('o') || is_flag('t')) {
-
 		flag_last= is <Flag_Token> ()->flag; 
 		place_flag_last= (*iter)->get_place();
 		if (is_flag('p')) {
@@ -952,15 +946,14 @@ shared_ptr <const Dep> Parser
 	if (! is <Name_Token> ()) {
 		(*iter)->get_place_start() <<
 			fmt("expected a filename, not %s", (*iter)->format_start_err()); 
-		if (has_input)
+		if (has_input) {
 			place_input << fmt("after %s", char_format_err('<')); 
-		else if (! place_flag_last.empty()) {
+		} else if (! place_flag_last.empty()) {
 			assert(flag_last != '\0');
 			place_flag_last << fmt("after %s", char_format_err(flag_last)); 
 		} else {
 			place_dollar << fmt("after %s", multichar_format_err("$["));
 		}
-
 		throw ERROR_LOGICAL;
 	}
 	shared_ptr <Place_Name> place_name= is <Name_Token> ();
@@ -992,13 +985,6 @@ shared_ptr <const Dep> Parser
 			explain_variable_equal(); 
 			throw ERROR_LOGICAL;
 		}
-	}
-
-
-	if (iter == tokens.end()) {
-		place_end << fmt("expected %s", char_format_err(']'));
-		place_dollar << fmt("after opening %s", multichar_format_err("$[")); 
-		throw ERROR_LOGICAL;
 	}
 
 	/* Explicit variable name */ 
@@ -1036,10 +1022,15 @@ shared_ptr <const Dep> Parser
 
 	/* Closing ']' */ 
 	if (! is_operator(']')) {
-		(*iter)->get_place_start() << 
-			fmt("expected %s, not %s", 
-			    char_format_err(']'), (*iter)->format_start_err());
-		place_dollar << fmt("after opening %s", multichar_format_err("$[")); 
+		if (iter == tokens.end()) {
+			place_end << fmt("expected %s", char_format_err(']'));
+			place_dollar << fmt("after opening %s", multichar_format_err("$[")); 
+		} else {
+			(*iter)->get_place_start() << 
+				fmt("expected %s, not %s", 
+				    char_format_err(']'), (*iter)->format_start_err());
+			place_dollar << fmt("after opening %s", multichar_format_err("$[")); 
+		}
 		throw ERROR_LOGICAL;
 	}
 	++iter;
@@ -1218,10 +1209,10 @@ void Parser::get_rule_list(vector <shared_ptr <Rule> > &rules,
 }
 
 void Parser::get_expression_list(vector <shared_ptr <const Dep> > &deps,
-				vector <shared_ptr <Token> > &tokens,
-				const Place &place_end,
-				Place_Name &input,
-				Place &place_input)
+				 vector <shared_ptr <Token> > &tokens,
+				 const Place &place_end,
+				 Place_Name &input,
+				 Place &place_input)
 {
 	auto iter= tokens.begin(); 
 	Parser parser(tokens, iter, place_end); 

@@ -6,6 +6,7 @@
 # * Rename tests so that version numbers are not zero-padded 
 # * Some tests are slow even though they don't contain "sleep".  Move them also
 #   to long-*.
+# * Long tests should not contain a version number
 # * devel/README:  make sure the unicode test has the correct name
 #
 

@@ -1268,6 +1268,7 @@ testers and users of Stu, who have helped us fix many bugs, and identify
 many different use cases and usage patterns. 
 
 .SH "SEE ALSO"
-.BR make (1),
 .BR cook (1),
+.BR gpl (7),
+.BR make (1),
 .BR sh (1)

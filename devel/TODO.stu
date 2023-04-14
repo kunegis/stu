@@ -1,8 +1,4 @@
 #
-# Check out coverage tools.
-#
-
-#
 # Try out a GUI.
 #
 
@@ -11,7 +7,8 @@
 #
 
 #
-# In stu-utils, have a script to auto-generate and auto-update a .gitignore file.
+# In stu-utils, have a script to auto-generate and auto-update a .gitignore
+# file.  Or have this as a Stu option. 
 #
 
 #
@@ -40,4 +37,12 @@
 #
 # Have an option to block certain targets from ever being rebuilt.  (Resulting
 # in a failure when they should, or always considering them up to date.)
+#
+
+#
+# Try out linters for sh and make.
+#
+
+#
+# Check out coverage tools:  gcov.
 #

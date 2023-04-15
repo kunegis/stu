@@ -1,6 +1,6 @@
 #
-# In stu-utils, have a script to auto-generate and auto-update a .gitignore
-# file.  Or have this as a Stu option. 
+# Have an option to list patterns for all targets that can be regenerated,
+# useful for .gitignore and similar lists.
 #
 
 #

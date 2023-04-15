@@ -1,0 +1,9 @@
+#! /bin/sh
+
+set -e
+
+make clean
+make test
+make clean
+make
+sudo make install

@@ -1,12 +1,4 @@
 #
-# Try out a GUI.
-#
-
-#
-# Have a test that tests whether make clean && make install works
-#
-
-#
 # In stu-utils, have a script to auto-generate and auto-update a .gitignore
 # file.  Or have this as a Stu option. 
 #
@@ -45,4 +37,9 @@
 
 #
 # Check out coverage tools:  gcov.
+#
+
+#
+# When executing "stu skjdhfksjdfh", don't show "Command line argument" in the
+# output.
 #

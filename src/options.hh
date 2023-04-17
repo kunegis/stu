@@ -1,6 +1,8 @@
 #ifndef OPTIONS_HH
 #define OPTIONS_HH
 
+#include "package.hh"
+
 /* 
  * Global variables of the process.  
  *
@@ -56,7 +58,7 @@ const char HELP[]=
 	"  -y               Disable color in output\n"                                
 	"  -Y               Enable color in output\n"
 	"  -z               Output run-time statistics on stdout\n"
-	"Report bugs to: " PACKAGE_BUGREPORT "\n" 
+	"Report bugs to: " PACKAGE_EMAIL "\n" 
 	"Stu home page: <" PACKAGE_URL ">\n";
 
 static bool option_nontrivial= false;

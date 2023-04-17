@@ -1,6 +1,9 @@
 #
-# Have an option to list patterns for all targets that can be regenerated,
+# Have an option (-I) to list patterns for all targets that can be regenerated,
 # useful for .gitignore and similar lists.
+# * Add it to option list.
+# * What to do:  read rules like always.  For all file targets that have a
+# command or are copy or content commands, output a line. 
 #
 
 #

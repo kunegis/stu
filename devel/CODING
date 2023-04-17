@@ -76,7 +76,10 @@ This is my preferred style.  --Jérôme Kunegis
   irrelevant to the meaning of the code; this is just a style issue. 
 * When overriding a virtual function, we do use the 'virtual' keyword,
   even if it is redundant. 
-* For IO, we use C-style IO only; no C++ IO. 
+* For IO, we use C-style IO only; no C++ IO.
+* Stu does not call setlocale(), and therefore can make use of isspace()
+  detecting spaces as defined in the C locale.  The same is true for isalnum(),
+  which is used to get ASCII results.
 
 == Dynamic variables ==
 

@@ -21,8 +21,8 @@ CXXFLAGS_DEBUG=  -ggdb -O0 -Werror -Wall -Wextra -Wpedantic \
     -Wunused -Wundef -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
     -Wnon-virtual-dtor -Wformat-nonliteral -Wsuggest-attribute=format \
     -Wlogical-op -Wredundant-decls -fno-gnu-keywords \
-    -Wno-unknown-warning-option -Wno-pessimizing-move
-CXXFLAGS_PROF= -pg -O2 -DNDEBUG
+    -Wno-unknown-warning-option -Wno-pessimizing-move -D_GLIBCXX_DEBUG
+CXXFLAGS_PROF= -pg -O2 -DNDEBUG -D_GLIBCXX_DEBUG
 CXXFLAGS_SANI= -pg -O2 -Werror -Wno-unused-result -fsanitize=undefined \
     -fsanitize-undefined-trap-on-error 
 

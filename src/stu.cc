@@ -1,44 +1,17 @@
-/* 
- * This is the top-level source code file, which contains the main()
- * function.  See the manpage for a description of options, the exit
- * status, etc.
- */
-
-#define PACKAGE           "stu"
-#define PACKAGE_URL       "https://github.com/kunegis/stu"
-#define PACKAGE_BUGREPORT "kunegis@gmail.com"
-
-/* Enable bounds checking when using GNU libc.  Must be defined before
- * including any of the standard headers.  (Only in non-debug mode).  A
- * no-op for non-GNU libc++ libraries.  */ 
-#ifndef NDEBUG
-#    define _GLIBCXX_DEBUGa
-#endif 
-
-#include <unistd.h>
 #include <sys/time.h>
 
 #include <memory>
 #include <vector>
 
-/* Used for all of Stu */
 using namespace std; 
 
+#include "buffering.hh"
 #include "dep.hh"
 #include "execution.hh"
 #include "main_loop.hh"
 #include "options_init.hh"
 #include "rule.hh"
 #include "timestamp.hh"
-
-/*
- * Note:  Stu does not call setlocale(), and therefore can make use of
- * isspace() detecting spaces as defined in the C locale.  The same is
- * true for isalnum(), which is used to get ASCII results. 
- */
-
-void init_buf(); 
-/* Initialize buffers; called once from main() */ 
 
 void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
 		       const char *string_);
@@ -47,10 +20,9 @@ void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
 
 int main(int argc, char **argv, char **envp)
 {
-	/* Initialization */
 	dollar_zero= argv[0]; 
 	envp_global= (const char **) envp; 
-	init_buf();
+	init_buffering();
 	Job::init_tty();
 	Color::set();
 	int error= 0;
@@ -122,7 +94,6 @@ int main(int argc, char **argv, char **envp)
 			case 'P':  option_print= true;          break;  
 			case 'q':  option_question= true;       break;
 			case 'V':  option_V();  		exit(0);
-
 
 			case 'c':  {
 				had_option_target= true; 
@@ -322,44 +293,16 @@ int main(int argc, char **argv, char **envp)
 	exit(error); 
 }
 
-void init_buf()
-{
-	/* Set STDOUT to line buffered, so that the
-	 * output of command lines always happens before the output of
-	 * commands themselves */ 
-	/* Note:  Setting the buffering like this is only possible if we
-	 * have not written anything yet.  */  
-	if (0 != setvbuf(stdout, nullptr, _IOLBF, 0)) {
-		print_error_system("setvbuf"); 
-		exit(ERROR_FATAL); 
-	}
-		
-	/* Set STDOUT to append mode; this is also done by GNU Make */ 
-	{
-		int flags= fcntl(fileno(stdout), F_GETFL, 0);
-		if (flags >= 0)
-			fcntl(fileno(stdout), F_SETFL, flags | O_APPEND);
-	}
-
-	/* Set STDERR to append mode; this is also done by GNU Make */ 
-	{
-		int flags= fcntl(fileno(stderr), F_GETFL, 0);
-		if (flags >= 0)
-			fcntl(fileno(stderr), F_SETFL, flags | O_APPEND);
-	}
-}
-
 void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
 		       const char *string_)
 {
 	vector <shared_ptr <Token> > tokens;
 	Place place_end;
 				
-	Tokenizer::parse_tokens_string
-		(tokens, 
-		 Tokenizer::OPTION_C,
-		 place_end, string_,
-		 Place(Place::Type::OPTION, 'C'));
+	Tokenizer::parse_tokens_string(tokens, 
+				       Tokenizer::OPTION_C,
+				       place_end, string_,
+				       Place(Place::Type::OPTION, 'C'));
 
 	vector <shared_ptr <const Dep> > deps_option;
 	Place_Name input; /* remains empty */ 
@@ -368,7 +311,6 @@ void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
 	Parser::get_expression_list(deps_option, tokens, 
 				    place_end, input, place_input);
 
-	for (auto &j:  deps_option) {
+	for (auto &j:  deps_option) 
 		deps.push_back(j); 
-	}
 }

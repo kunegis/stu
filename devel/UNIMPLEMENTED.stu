@@ -129,10 +129,6 @@ A: [-d data/B];
 % set PATH /usr/local/bin
 
 #
-# $STU_TARGETS (see Pull request)
-#
-
-#
 # A flag with the meaning "never rebuild that dependency", but only use
 # it to determine whether we need to rebuilt the target.  It would mean
 # that we can prune dependencies with that flag as soon as we know that
@@ -208,13 +204,6 @@ dep.sources {
 #
 # Have a mode or option to show only one message per error, omitting
 # all subsequent traces.
-#
-
-#
-# Allow access to environment variables via e.g. $(HOME).  Using this is
-# likely to be an antipattern -- the idiomatic thing to do is set a
-# symlink to the directory in question.  Other cases are even worse,
-# e.g., having environment variables with lists of things in them. 
 #
 
 #
@@ -574,13 +563,6 @@ A = @x;
 # Combine with dynamic target
 A = [X];
 <X { echo B C D }
-
-#
-# Allow to handle symlinks as files in themselves, i.e., check for their
-# own existence and their own timestamp.  This should not be the default
-# as the current behaviour is more often useful, but should be available
-# as a possibility, probably using a new flag (-L). 
-#
 
 #
 # Internationalization:  It would be possible to translate the

@@ -43,3 +43,22 @@
 # When executing "stu skjdhfksjdfh", don't show "Command line argument" in the
 # output.
 #
+
+#
+# Allow access to environment variables via e.g. $(HOME).  Using this is
+# likely to be an antipattern -- the idiomatic thing to do is set a
+# symlink to the directory in question.  Other cases are even worse,
+# e.g., having environment variables with lists of things in them. 
+#
+
+#
+# Make '~' work as the home directory.  Also for ~user/.  '~' is already
+# forbidden as the first character in unquoted names.
+#
+
+#
+# Allow to handle symlinks as files in themselves, i.e., check for their
+# own existence and their own timestamp.  This should not be the default
+# as the current behaviour is more often useful, but should be available
+# as a possibility, probably using a new flag (-L). 
+#

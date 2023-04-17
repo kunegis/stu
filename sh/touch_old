@@ -24,6 +24,6 @@ y=$((2 * $age))
 
 year=$(date +%Y)
 year_old=$(expr $year - $y)
-touch -t "$year_old"01010700 "$filename" || exit 1
+touch -t "$year_old"01010700 "$filename" || exit 2
 
 exit 0

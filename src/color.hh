@@ -1,19 +1,19 @@
 #ifndef COLOR_HH
 #define COLOR_HH
 
-/* 
- * Handling of color output.  
+/*
+ * Handling of color output.
  *
- * Colors:  
+ * Colors:
  *
  *   error:          The place of an error
  *   warning:        The place of a warning
- *   word:           Names quoting the input 
+ *   word:           Names quoting the input
  *   error word:     Name inside an error place
  *   warning word:   Name inside a warning place
  */
 
-/* 
+/*
  * We use ANSI escape codes to display color.  ANSI escape codes are
  * explained in the man page console_codes(4) on Linux.  What we use:
  *
@@ -24,7 +24,7 @@
  * 35: magenta            (for warnings)
  *
  * Colors and styles look different in different terminals.  In
- * particular in black-on-white vs white-on-black terminals. 
+ * particular in black-on-white vs white-on-black terminals.
  */
 
 /*
@@ -34,7 +34,7 @@
  *      program linked against ncurses or the like, so it will not detect
  *      terminfo(5) capabilities."
  *
- * Stu takes the same approach. 
+ * Stu takes the same approach.
  */
 
 #include <errno.h>
@@ -42,12 +42,12 @@
 #include <unistd.h>
 #include <string.h>
 
-class Color 
+class Color
 {
 public:
-	static bool quotes, quotes_out; 
+	static bool quotes, quotes_out;
 	/* Whether single quotes have to be used.  Only set when color
-	 * is not used.  */   
+	 * is not used.  */
 
 	static const char *end;
 	static const char *error;
@@ -56,16 +56,16 @@ public:
 	static const char *error_word;
 	static const char *warning_word;
 
-	static const char *out_end; 
+	static const char *out_end;
 	static const char *out_print_word_end;
 	static const char *out_print;
 	static const char *out_print_word;
 
 	/* At least one of the following functions must be called before
-	 * any output is written.  */ 
+	 * any output is written.  */
 
-	static void set(); 
-	static void set(bool enable_color); 
+	static void set();
+	static void set(bool enable_color);
 	static void set(bool enable_color_out, bool enable_color_err);
 };
 
@@ -83,10 +83,10 @@ const char *Color::out_print_word_end;
 const char *Color::out_print;
 const char *Color::out_print_word;
 
-void Color::set() 
+void Color::set()
 {
 	/* Logic:  Only use color when $TERM is defined, is not equal to "dumb",
-	 * and stderr/stdout is a TYY.  This is  the same logic as used by GCC.  */ 
+	 * and stderr/stdout is a TYY.  This is  the same logic as used by GCC.  */
 
 	bool is_tty_out= false, is_tty_err= false;
 
@@ -94,23 +94,23 @@ void Color::set()
 
 	if (t && strcmp(t, "dumb")) {
 		errno= 0;
-		is_tty_out= isatty(fileno(stdout)); 
+		is_tty_out= isatty(fileno(stdout));
 		if (! is_tty_out && errno != 0 && errno != ENOTTY) {
-			perror("isatty"); 
+			perror("isatty");
 		}
 		errno= 0;
-		is_tty_err= isatty(fileno(stderr)); 
+		is_tty_err= isatty(fileno(stderr));
 		if (! is_tty_err && errno != 0 && errno != ENOTTY) {
 			perror("isatty");
 		}
-	} 
-	
-	set(is_tty_out, is_tty_err); 
-}	
+	}
+
+	set(is_tty_out, is_tty_err);
+}
 
 void Color::set(bool enable_color)
 {
-	set(enable_color, enable_color); 
+	set(enable_color, enable_color);
 }
 
 /* Note:  GCC additionally inserts "\33[K" sequences after each color code, to
@@ -120,12 +120,12 @@ void Color::set(bool enable_color_out, bool enable_color_err)
 	if (enable_color_out) {
 		quotes_out= false;
 		out_end=            "\33[0m";
-		out_print_word_end= "\33[0;32m"; 
+		out_print_word_end= "\33[0;32m";
 		out_print=          "\33[32m";
-		out_print_word=     "\33[32;1m"; 
+		out_print_word=     "\33[32;1m";
 	} else {
 		quotes_out= true;
-		out_end=            ""; 
+		out_end=            "";
 		out_print_word_end= "";
 		out_print=          "";
 		out_print_word=     "";
@@ -136,16 +136,16 @@ void Color::set(bool enable_color_out, bool enable_color_err)
 		error=              "\33[31m";
 		warning=            "\33[35m";
 		word=               "\33[1m";
-		error_word=         "\33[1;31m"; 
-		warning_word=       "\33[1;35m"; 
+		error_word=         "\33[1;31m";
+		warning_word=       "\33[1;35m";
 		end=                "\33[0m";
 	} else {
 		quotes= true;
 		error=              "";
 		warning=            "";
-		word=               ""; 
-		error_word=         ""; 
-		warning_word=       ""; 
+		word=               "";
+		error_word=         "";
+		warning_word=       "";
 		end=                "";
 	}
 }

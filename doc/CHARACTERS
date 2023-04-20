@@ -1,67 +1,67 @@
-This file catalogues the usage of individual characters in Stu scripts.   
+This file catalogues the usage of individual characters in Stu scripts.
 
 Since Stu scripts consist primarily of filenames, many characters that
 are used as operators in most languages cannot be used in Stu as they
 are needed as part of filenames, such as '/', '.', etc.
 
-== Allowed in unquoted names == 
+== Allowed in unquoted names ==
 
 These characters don't have to be quoted in names:
 
-    [a-z] [A-Z] [0-9] 
+    [a-z] [A-Z] [0-9]
     ^ ` _ . /
     <all non-ASCII characters>
 
 The following characters don't have to be quoted in names, expect in
-first position of a name: 
+first position of a name:
 
     - + ~
 
-== Recognized as whitespace == 
+== Recognized as whitespace ==
 
 Everything for which isspace() returns true in the C locale is
-recognized as whitespace by Stu.  I.e., " \f\n\r\t\v". 
+recognized as whitespace by Stu.  I.e., " \f\n\r\t\v".
 
 Unicode whitespace characters are not recognized, except for those that
-correspond to ASCII. 
+correspond to ASCII.
 
-== Not allowed outside quotes == 
+== Not allowed outside quotes ==
 
-ASCII control characters (except those that are whitespace). 
+ASCII control characters (except those that are whitespace).
 
-== Characters introducing longer sequences == 
+== Characters introducing longer sequences ==
 
-    # 	Comment (until the end of the line) 
+    # 	Comment (until the end of the line)
     %	Directives (followed by the directive name, and optionally followed
 	by arguments depending on the directive); comparable to preprocessor
 	directives.  The directive name and arguments followed regular
-	Stu quoting rules. 
+	Stu quoting rules.
     -	Flags (only as first character)
-    \	Escape character 
+    \	Escape character
     '	Quote without escape sequences
     "	Quote with escape sequences
     {}	Command, content
     $	Parameter prefix (when not followed by '[')
 
-== Operators == 
+== Operators ==
 
-These characters are single-character tokens. 
+These characters are single-character tokens.
 
     :	Introduces dependencies
     ;	End of rule when no command or content is present
     @	Transient target prefix
-    ()	List 
+    ()	List
     []	Dynamic list
     >	Output redirection (target only)
     <	Input redirection (dependency only)
     =	Assignment, copy, and named variable
     $[	The sequence '$[' is analysed as a sequence of the two operators
-        '$' and '['.  In other environments, '$' introduces parameters. 
+        '$' and '['.  In other environments, '$' introduces parameters.
 
 These characters always stand for themselves when unquoted, and don't
 have to be separated from other characters by whitespace.  The
 exceptions are $[, which must be contiguous and not preceded by a name,
-and [](), for which concatenation rules apply. 
+and [](), for which concatenation rules apply.
 
 == As-yet unused characters ==
 
@@ -76,7 +76,7 @@ infix or ternary operators.  Suffix operators would be counter-intuitive
 because everything else is implemented as prefix at the moment, and
 would also require more complex (and harder to understand) precedence
 rules.  This leaves binary and ternary operators as possible uses, or as
-forms of non-operators, i.e., new tokens. 
+forms of non-operators, i.e., new tokens.
 
     +	Inverted flag [as in the shell] (maybe)
     ~	Home directory [as in the shell] (maybe)
@@ -84,9 +84,9 @@ forms of non-operators, i.e., new tokens.
     |	Componentwise concatenation (maybe)
     |	Union [redundant to juxtaposition]
     !?	Some form of dual operators
-    !	Command interpreter (maybe) 
+    !	Command interpreter (maybe)
     *?	For file globbing [We're against expensive operations not saved in a file]
     ,	Names are already whitespace-separated, and any other use than
- 	as a list constructor would be unintuitive   
+ 	as a list constructor would be unintuitive
     ,	As higher-level file separator, allowing "lists of lists", for
 	whatever purpose [I can't think of one]

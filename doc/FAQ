@@ -10,7 +10,7 @@ $ stu -V
      the file
 
 That is correct.  To get the desired behaviour, create the file by hand
-and edit it directly. 
+and edit it directly.
 
 Example:  The file 'main.stu' contains
 
@@ -18,16 +18,16 @@ Example:  The file 'main.stu' contains
     program: program.c $[CFLAGS] { cc $CFLAGS -c program.c -o program ; }
 
 When more flags are added after '-O2', Stu does not recompile
-'program'. 
+'program'.
 
 Explanation:  Stu only looks at timestamps of files, and does not notice
 when 'main.stu' is changed.  This is on purpose, as we expect Stu script
 to be edited frequently, and we don't want to rebuilt all files with
-hardcoded content on each pass.  
+hardcoded content on each pass.
 
-Solutions:  
+Solutions:
 
-(1) Remove the file 'CFLAGS' and re-run Stu. 
+(1) Remove the file 'CFLAGS' and re-run Stu.
 
 (2) Write the content of the file 'CFLAGS' by hand, add the file
 'CFLAGS' to version control, and declare the following in Stu:
@@ -35,4 +35,4 @@ Solutions:
     CFLAGS;
 
 When the flags need to change, just edit 'CFLAGS' and Stu will do the
-right thing. 
+right thing.

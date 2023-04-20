@@ -1,6 +1,6 @@
 #ifndef PACKAGE
 #define PACKAGE           "stu"
-#endif 
+#endif
 
 #ifndef PACKAGE_URL
 #define PACKAGE_URL       "https://github.com/kunegis/stu"

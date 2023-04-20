@@ -12,36 +12,36 @@
 #
 # When parsing rules, only save the "body" part of the rule (everything except
 # the target) as an unparsed string.  Parse it properly only when needed.  This
-# will not catch certain errors anymore. 
+# will not catch certain errors anymore.
 #
 
 #
 # Dep hierarchy:  instead of using shared_ptr<> and
 # dynamic_pointer_cast<>, roll our own code, storing the type inside
-# Dep. 
+# Dep.
 #
 
-# 
+#
 # Cache the content of files that are used as dynamic dependencies or
-# dynamic variables.  
+# dynamic variables.
 #
 
 #
 # Use C instead of C++.  This is tempting for simplicity and also out of
 # principle.  What would be necessary:
 #  - Write container classes indexed with strings and targets.
-#  - Convert certain containers to arrays/linked lists. 
+#  - Convert certain containers to arrays/linked lists.
 #  - More complex and error-prone memory management, in particular for
-#    strings 
+#    strings
 #  - A replacement for exceptions
 #  - For Dep objects, keep track of the type in the FLAGS, and
 #    have our own pointer conversion functions.  Also, have our own
-#    reference counting. 
+#    reference counting.
 #
 # Remember:  Even GCC is written in C++ nowadays, so we are not in bad
-# company.    
+# company.
 #
-# If we then use 'c99', we could claim full POSIX compliance. 
+# If we then use 'c99', we could claim full POSIX compliance.
 #
 
 #==== Normal features ====
@@ -56,13 +56,13 @@
 # Line number and file syntax:  A preprocessor-like construct that gives a new
 # filename and line number, such that error messages from Stu can point
 # to the original file, not the generated file.  Analogous to the
-# preprocessors #line directive.  Useful in dynamic dependencies. 
+# preprocessors #line directive.  Useful in dynamic dependencies.
 #
 
 % file datasets.list
 % line 120
 
-# Use this in stu-utils/texdep and other stu-utils programs judiciously. 
+# Use this in stu-utils/texdep and other stu-utils programs judiciously.
 
 #
 # In -j>1 mode, Start trivial dependencies immediately when it is clear
@@ -76,8 +76,8 @@
 # Import all rules from subdirectory; will prepend the directory name to
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of
- 
-# All these are equivalent 
+
+# All these are equivalent
 % import src/main.stu
 % import src/
 % import src
@@ -94,7 +94,7 @@
 #
 # When including files using dynamic dependencies, make a
 # difference between inclusion and import, as is done for %include and
-# %import. 
+# %import.
 #
 
 A: [-d data/B];
@@ -105,12 +105,12 @@ A: [-d data/B];
 #
 
 # This is included from the "Stu path", and could be installed in
-# e.g. /usr/share/stu/lib/ or ~/share/stu/lib/, etc. 
+# e.g. /usr/share/stu/lib/ or ~/share/stu/lib/, etc.
 % include c++.stu
- 
+
 #
 # Have a way to set $STU_SHELL and $STU_CP from within a Stu script.
-# E.g., using directives. 
+# E.g., using directives.
 #
 
 # Some Stu scripts may want to use Bash throughout
@@ -123,7 +123,7 @@ A: [-d data/B];
 # Does it make sense to have a way to set environment variables for all
 # commands?  It would open us up to many additional questions, and
 # potentially some Make-like anti-patterns.  In general, Stu directives
-# are prone to implement anti-patterns, as what they do is global. 
+# are prone to implement anti-patterns, as what they do is global.
 #
 
 % set PATH /usr/local/bin
@@ -132,7 +132,7 @@ A: [-d data/B];
 # A flag with the meaning "never rebuild that dependency", but only use
 # it to determine whether we need to rebuilt the target.  It would mean
 # that we can prune dependencies with that flag as soon as we know that
-# the target must be built anyway.  
+# the target must be built anyway.
 #
 
 # In this example, when 'program' does not exist, Stu will *not* build
@@ -152,14 +152,14 @@ dep.sources {
 #
 # -m bfs (breadth-first order) and -m target (pseudorandom by target
 # name, i.e., same pseudorandom order for each target, as long as its
-# dependencies are the same). 
+# dependencies are the same).
 #
 
 #
 # A 'why' option that shows why things are built.  Will look similar to
 # error traces, only containing explanations.  In essence, output a line
 # everytime one of the 'need_build' variables is updated.  Also, we need
-# to do something smart with timestamps. 
+# to do something smart with timestamps.
 #
 
 # * 'abc' does not exist
@@ -180,672 +180,13 @@ dep.sources {
 
 #
 # Have an option for: For hardcoded rules, compare the content of the
-# file (if it exists) with the declared content, and regenerate the file
-# if necessary.  This would avoid the usual error that a hardcoded rule
-# is changed in a Stu script, but Stu doesn't notice that.  This would
-# have add open/read/close() calls to the stat() we do at the moment. 
-#
 
-#
-# A "block" option, i.e., that block certain filename or transient
-# patterns from being executed.  E.g., 
-#
-#   $ stu -B  @statistic.diam.$network
-#
-# Will make all names matching that patterns be considered as build
-# failures immediately, without trying to build them. 
-#
-
-#
-# Traces:  show only the first line with the most information message in
-# red, and other traces in another color. 
-#
-
-#
-# Have a mode or option to show only one message per error, omitting
-# all subsequent traces.
-#
-
-#
-# Have a feature to indicate that a file contains only a single
-# filename.  To complement -n and -0.  Must produce a logical error when
-# the file contains the nul byte '\0' or is empty.  '\n' and other
-# whitespaces should work.  Not needed because -0 can be used for it,
-# except that this option would catch the error of an empty file, or a
-# file accidentally containing '\0'.  A possible name would be -1.
-#
-
-#
-# More ways to specify how many/which commands to run, apart from -j.
-# These can be based on:
-#  - Memory consumption
-#  - CPU usage / load average
-#  - etc.
-# It's hard to define which of such rules would be universal enough to
-# be included in Stu. 
-#
-
-#
-# Have an option defined on targets that will make a backup of the
-# target file before running the command, and restore the target on
-# error.  To be used with badly-behaving commands that overwrite the
-# target immediately.  On the other hand, this can be implemented as a
-# separate program to be called in the command.  (We may have this in
-# stu-utils/)  
-#
-
-#
-# Use the '+' sign to invert flags. 
-#
-
-# E.g.: Dynamic dependencies are "persistent" by default.  Make it
-# possible to switch this off using '+e'.  This is useful when the
-# dynamic dependency file itself is used by the target, e.g. when
-# creating a tarball. 
-A.tar: [ +p FILES ] { tar cfvv A.tar $(cat FILES) ; }
-
-#
-# Flag rules
-#
-
-# Allow flags on the target filenames.  Example with '-o':
-
-# If $NAME.svg is present, use it to build $NAME.pdf.  If $NAME.svg is
-# not present, allow $NAME.pdf to be present without any dependencies.
-# The big question is how can the rule distinguish when the rule is
-# activated.  When all dependencies exist?  When all dependencies
-# *could* be built? 
--o $NAME.pdf:  $NAME.svg
-{
-	inkscape ...
-}
-
-#
-# A "hard optional" option:  If a dependency is not present, don't even
-# try to rebuild the target if it's already present.  I.e., an
-# "up-percolating" 'optional' flag.
-#
-
-#
-# An option to ignore all timestamps:  Whenever a file already exists,
-# it is not rebuilt.  
-#
-
-#
-# An option that make Stu rebuild everything, regardless of status. (-B,
-# like GNU Make)   
-#
-
-#
-# For output redirection:  Do what stu-utils/output-finally does,
-# integrated into Stu.  On the other hand, this is not totally good,
-# because users expect a > operator to write into the file immediately.
-# Maybe only enable it with a flag.  Alternatively, automatically make a
-# backup of the target file, and restore it if the command fails.
-# Again, this should only be done with a flag, because given the large
-# possible files, it would take lots of memory.  A smart way to do it
-# would be to open() the file, keeping only a reference in the Stu
-# process to it, and then linking it again if needed, but that is
-# probably not possible in POSIX. 
-#
-
-#
-# Recursive persistent dependency:  If the file exists, never
-# rebuild it, regardless whether its dependencies have to be rebuilt.
-# Actual persistent dependencies do not work like this, as they only
-# ignore the targets timestamp, but don't change anything about its
-# dependencies.  
-#
-
-#
-# Allow concatenation of file dependencies with input redirection.  This
-# is not valid at the moment.  Should be only valid if a single
-# dependency results.  The current behavior is consistent with input
-# redirection being invalid within dynamic dependencies. 
-#
-
-A:  <list.(B) { ... }
-
-#
-# Allow empty names in concatenation.
-#
-
-# Equivalent to just 'list.'
-A:  list.( '' ); 
-
-# Equivalent to @b
-A:  @[X];   
-X = {b}
-
-#
-# The Dep::top mechanism is not clean.  Do something better.  The
-# current error message inside concatenations can also be confusing,
-# even though they are correct. 
-#
-
-# 
-# An option (-u) to consider all targets up to date.  I.e., execute only the
-# minimum to get the given files built. 
-#
-
-#
-# Option -N:  dry run, but build dynamic dependencies.  Not clearcut
-# because dynamic dependencies can also take long to build. 
-#
-
-#
-# When accessing directories, maybe use not mtime, but something else?
-#
-# * when stat() succeeds and the file is a directory, use creation time
-#   instead of modification time
-# * this will make it impossible to build directories that are more than
-#   just { mkdir -p ; }
-#
-# Maybe:  introduce flags to use other timestamps than mtime. 
-#
-
-#
-# Have a "clean" option that removes all files that can be rebuilt,
-# based on the given Stu script.  Ironically, this may need to build
-# dynamic dependency files first.  We may also just have a command line
-# option to output a list of files that can be rebuilt, for instance to
-# initialize a .gitignore file or similar.  Generating dynamic dependency files
-# may be avoided by outputting glob patterns.
-#
-
-#
-# Option -W FILENAME:   What-if mode.  Pretend that file FILENAME has
-# just been modified. 
-#
-
-#
-# An option to make backups of otherwise deleted files.  (We would need
-# to decide on a backup filename scheme.)
-#
-
-#
-# An option to ignore all errors, like POSIX Make's -i.  That is a really
-# far-reaching feature.  Wait until someones tells us their use-case for
-# it.  My impression is that the corresponding feature of Make is used
-# mainly to execute broken Makefile.  One could instead insert "exit 0"
-# appropriately. 
-#
-
-#
-# When reporting an error, always report how the .stu script was included
-# by another .stu script.  Use "light" traces in green, like GCC does.
-# (Maybe only do this in a special mode.)  (Also, this will become
-# important later when import is implemented.)
-#
-
-#
-# Make the argument to the -j option optional, to parallel GNU Make.
-# Reason for not being implemented: not possible with standard getopt().
-# Will be possible when/if Stu switches to something else than plain
-# getopt().
-#
-
-#
-# Rules are cumulative:  you can add additional dependencies, like in
-# Make.  
-#
-
-data-$NAME.txt:  build {
-	./build $NAME >data-$NAME.txt
-}
-
-data-$NAME.txt:  some-other-dependency; 
-
-# We cannot have this feature, because the following will then not work:
-$NAME.bib:  { ... }
-a.bib:  extra dependencies ... ;
-# The intention is to add dependencies to only certain files, but the
-# result would be to let the second rule override the first.  
-
-# On the other hand, this may be achieved by using a special flag for
-# it, in which case it would be easy to implement. 
-
-#
-# Pass name of target and dependencies as $0 and $1, $2, etc. (?).  All
-# of these can be passed to the shell after the -c option, but the
-# problem is that $0 is used in error messages of the shell as the
-# filename, which would give weird error messages.  It would thus be
-# better to pass the place of the command in $0, if the -c option would
-# support something similar to the #line proprocessor directive. 
-#
-
-#
-# By default, the target @main is built, regardless of position in file.
-# If @main does not exist, the first target is made (must be
-# unparametrized)  We can also make it an error to build the first
-# target automatically and always require @main.  
-#
-# Reason for rejecting:  This would break the pattern where a file can
-# be executed as-is or included by another one.  It would also be
-# different from Make.  It would also introduce a needlessly hardcoded
-# name for the default target.  Many Stu scripts use @all or @main, etc.  
-#
-
-@main:  A B C;
-
-#
-# Allow flags outside of variable dependencies.  They are only allowed
-# inside at the moment.  The semantics would be the same. 
-#
-
-A:  -p $[B] { ... }
-
-#
-# Allow to combine -o and -p.  Reason for rejection:  This is not
-# needed as it would mean the command for 'B' would never be executed,
-# and 'B's existence or timestamp would also never be verified, making
-# '-po B' a no-op, and likely a bug.  It may of course be useful as a
-# corner case, so we may allow it in the future. 
-#
-
-A:  -p -o B { ... ; }
-
-#
-# Set intersection with '&'.  Can be implemented independently of Stu.  We
-# may implement it if there is demand for using this often in a sensible
-# use-case. 
-#
-
-@x:  (A B C) & (B C D);
-# is the same as
-@x:  B C;
-
-#
-# Index-wise concatenation with '|'. 
-#
-
-@x:  (A B) | (X Y);
-# is the same as
-@x:  AX BY;
-
-# This corresponds to the paste(1) command.  It is rarely useful,
-# though.  Also, it can be achieved without Stu support. 
-
-#
-# Set difference, e.g. with '\'.  That's nice, but can easily be
-# realized with e.g. "grep -F -v -f FILE-A FILE-B", which is equivalent
-# to [FILE-B] \ [FILE-A]. 
-#
-
-@plots:  dat/plot.([dat/NETWORKS] \ enron).eps;
-
-#
-# When an error is output, the column number must take into account
-# unicode characters.  In this example, the opening { must be reported
-# to be at character 13.  This was implemented, but was decided to be
-# too slow.  Also, first find a standard that prescribes how such output
-# is to be made.  It actually makes more sense to report bytes, not
-# characters, so that's what we'll do as long as there is no standard
-# specifying exactly how compiler error messages are supposed to mean.
-# (And support by Emacs, gcc, etc.)
-#
-
-éäçöôüœß柏林: {
-
-#
-# Recursion at the rule level is not allowed at the moment, but could
-# be.  The problem is how to recognize infinite recursion. 
-#
-
-# Example 1:  Recursion at the rule level is needed to implement correct
-# C source dependency. 
-
-# Example 2:  building A.gz.gz does not work without this feature. 
-$NAME.gz:  $NAME {
-	gzip -c $NAME >$NAME.gz
-}
-A:  {
-    echo 'Hello, World!' >A
-}
-
-#
-# An option to remove the target before each execution.  Not needed. 
-#
-
-#
-# Option -t:  touch instead of building, like POSIX Make
-#
-
-#
-# Option -o FILENAME:    Never rebuild that file ("old").  Clashes with
-# the "optional" flag. 
-#
-
-#
-# Option: -n: Dry run:  Don't run anything, but show the commands that
-# would be run.  Problematic because of dynamic dependencies. 
-#
-
-#
-# Chain of commands are useful for dynamic dependencies.  Looks cool,
-# would lead to enormous complications for only a small benefit, and on
-# top of that a lot of confusion.
-#
-
-@bidd:  [>dep.bidd]:  <NETWORKS {  sed -e 's,^,bidd.,' ;  }
-
-#
-# Input redirection for a dynamic dependency or list is catenation. 
-#
-
->all.gz:  <[files] { gz ; }
-
-# Can be emulated very simply using xargs/cat:
->all.gz:  [<files] { xargs cat | gz ; }
-
->A: <(B C) { sed -e '...' ; }
-
-# With transient targets
->A: <@x { sed -e '...' ; }
-@x:  D E F;
-
-# With dynamic dependencies
->A:  <[deps] { sed -e '...' }
->deps { ... }
-
-#
-# Multiple assignment.  Needs to invoke the "cat" command.  That's not
-# really problematic, as we already invoke the "cp" command. 
-#
-
-# Multiple names result in catenation
-A = B C D;
-
-# Combine with transient target
-A = @x;
-@x:  B C D;
-
-# Combine with dynamic target
-A = [X];
-<X { echo B C D }
-
-#
-# Internationalization:  It would be possible to translate the
-# user-facing text messages into many languages using gettext, etc.
-# There is however no plan to do so at the moment.  However:  Use
-# setlocale() would also mean that we can't use isspace() anymore, and
-# we would have to roll our own space-detecting function.  Since Stu is
-# used by developers, the demand for this would be minimal.  (I've
-# always wondered by things like Make are even internationalized.)
-#
-
-#
-# Features of interactive mode:
-#  - Allow job control with any number of jobs, not just one.
-#  - When a job is put into the background, have a command line that
-#    allows things to be done:
-#      - continue
-#      - abort
-#      - adding new jobs
-#      - cancelling jobs
-#      - getting info about a particular task
-#      - load/remove rules
-#      - garbage collection / update file system info
-#      - show running jobs
-#      - show statistics
-#  - Allow to start directly into the command line, without targets to
-#    build.
-#  - Allow this language to be scripted, i.e., input a script that does
-#    these things  
-# This would actually not be that hard to implement, and would be really
-# cool.  It could then also be used to implement a GUI on top of Stu, to
-# inspect running jobs, etc. 
-#
-
-#
-# Maybe enable explanations by default?  No.  Output should be terse by
-# default. 
-#
-
-#
-# Have an option to suppress warnings.  
-#
-
-#
-# Option to ALWAYS build a target. 
-#
-
-#
-# Variants of the flags that apply to all children, not just immediate
-# ones.  
-#
-
-$ stu '+p A'
-
-# will completely ignore timestamps in all files.  
-
-# This will also cover cases that are implemented as options at the
-# moment, e.g. -g: 
-
-$ stu '+o A'
-
-# is equivalent to
-
-$ stu -g A
-
-#
-# Disable flags with '+' options
-#
-
-A: -o @x;
-@x: +o B;
-
-# Equivalent to
-A: B;
-
-#
-# Some form of embedding the value of environment variables into names.
-# The ${VAR} syntax is already taken by parameters, so maybe use $().
-# We could also let parameters use $(VAR) and then have ${VAR} for
-# environment variables, but that would be backward-incompatible. 
-#
-
-/home/$(USER)/.emacs = lib/ ; 
-
-# Counterargument:  The syntax for parameters in Stu rules and in the
-# shell commands should be identical.  Also, the path case can be
-# realized via symlinks, which is the idiomatic way to do this at the
-# moment. 
-
-#
-# Option -A:  build all (non-parametrized) targets.
-#
-
-#
-# A flag to ignore errors when a file already exists.  E.g. in the
-# example below, when Stu is called and 'B' already exists and
-# 'X'/'Y'/'Z' don't and cannot be generated, still consider 'B' up to
-# date, and call the command for 'A'. 
-#
-
-A:  -x B { cp B A ; }
-B: X Y Z { cat X Y Z >B ; }
-
-#
-# Implement '*' as alternative for juxtaposition as a syntax for
-# concatenation.  Not done because juxtaposition looks so much more
-# beautiful, and '*' would essentially only be needed for extremely long
-# filenames.  Also, we may want to keep the '*' character for the
-# future. 
-#
-
-#
-# Uppercase flag is recursive:
-#
-
-# Ignores timestamps recursively
-A: -P B;
-
-# We're not 100% sure about the semantics of this. 
-
-#
-# When a parametrized name contains a slash in a nonparametrized part,
-# any subsequent parameters cannot match a slash.  This is taken into
-# account for computation of dominance. 
-#
-
-# Given
-$name.bib;   # Rule (1)
-./$name.bib; # Rule (2)
-# The name dir/aaa.bib will match rule (1).
-# The name aaa.bib will match both rules. 
-
-# This is not nice because it starts doing the "allow regexp for
-# parameter" thing. 
-
-#
-# Trace (logging): an option to write log messages into a file.  In
-# particular, which commands failed. (option -T)
-#
-
-#
-# An option for automatic logging:  write all output (stdout/stderr) of
-# commands to a file (a different file per target).  
-# To do this, we need to generate a logfile name for each file and
-# transient target in a systematic manner.  This opens many questions. 
-#
-
-#
-# Have a flag to prevent echoing of the command. (Similar to '@' in
-# Make)
-#
-
-#
-# In parallel mode, don't show the full trace after and error, but only
-# a one-liner. 
-#
-
-# 
-# Switch the verbose option from -V to -v.  That would make it
-# compatible with GNU Make of FreeBSD Make, but then different Stu
-# versions would have different ways to print the version number, and
-# that's not good since the version-number-outputting function is
-# exactly the one thing that should work regardless of the version
-# number.  
-# 
-
-#
-# Allow parentheses in the targets of a rule
-#
-
-# ./command generates data.1.eps, data.2.eps, and data.3.eps
-data.(1 2 3).eps: command { ./command ; }
-
-#
-# Allow brackets in the targets of a rule.  This needs Stu to do pattern
-# matching, and once it finds a pattern that matches, it needs to expand
-# [VARIANTS], i.e., rule matching must be implemented asynchronously. 
-#
-
-# The command will generate *all* files at once.
-data.[VARIANTS].eps:  { ... }
-
-#
-# Allow pattern matching to use string from a given file.  This requires
-# Stu to build SMALL_DATASETS and LARGE_DATASETS only when a file
-# matches either of the targets.  Thus, target matching must be
-# implemented asynchronously. 
-#
-
-# ./plot_{small,large} do getenv('dataset')
-plot.${dataset = [SMALL_DATASETS]}.eps: plot_small { ./plot_small ; }
-plot.${dataset = [LARGE_DATASETS]}.eps: plot_large { ./plot_large ; }
-
-# Note the relationship with regexp notation, which would be something
-# like this when $dataset must begin with 'wiki_':
-plot.${dataset = wiki_.*}.eps: {...}
-
-# Or when specifying a list by hand, only for the datasets 'aaa', 'bbb'
-# and 'ccc':
-plot.${dataset = aaa bbb ccc}.eps: { ... }
-
-
-#==== New features that change/extend Stu drastically ====
-
-#
-# Implementing these things is not only very time-consuming, but will
-# also change the nature of Stu scripts drastically. 
-#
-
-#
-# Glob patterns.  This only makes sense when the files found by globbing
-# don't have rules for themselves, as then they would never be able to
-# be built in the first place.  Thus, it can only be used for checking
-# the files' timestamps.
-#
-# Only * and ? are needed, since both [] and {} can be replaced by ().
-#
-# Also, a glob executed at each invocation of Stu is not good.  It's
-# slow and this is one of the Make antipatterns that Stu was created to
-# avoid.  Better execute the glob once and place the result in a file,
-# as can already be done. 
-#
-
-example:  *.c *.h  data-??.h
-{
-	cc example.c -o example 
-}
-
-# Better:
-example:  [FILES]
-{
-	cc src/example.c -o example
-}
->FILES: src { echo src/*.c src/*.h ; }
-
-#
-# Allow non-file targets.  E.g., files within archives, or remote files.
-# Would almost always need to incorporate some unwanted dependency, and
-# be highly specific to a single use-case.  Instead of implementing this
-# in Stu, a better implementation would be via mounting, or virtual
-# filesystems, but that seems not to be a thing at the moment.  Make
-# traditionally supports "ar" archives.  This feature of Make also seems
-# to be very seldomly used nowadays. 
-#
-
-#
-# Removeable files:  when a file carries the removeable flag, it does
-# not need to be present.  Similar to the ".SECONDARY" flag in GNU
-# Make.  We could also remove these automatically when they are not
-# needed anymore. 
-#
-
-A: -R B;  B: C;  A: D;
-# * When A is old, B does not exist, and C is new:  rebuild B and A.
-# * When A is new, B does not exist, and C is old:  don't rebuild A.
-# * When A is new, B does not exist, C is old, and D is very new:  rebuild
-#   B and A. 
-
-#
-# Allow regular expressions in parameters.  This will also make it
-# possible to allow contiguous parameters, and giving a list of possible
-# values for a parametrized rule.
-#
-# The reason we don't implement it is that it opens a gigantic can of
-# worms, with many follow-up questions, and the danger that people will
-# use the regexps to embed a list of filenames in it (using the |
-# operator), giving essentially the same anti-pattern of listing all
-# possible filenames statically like in Make, only with a much worse
-# syntax.  Currently, most cases can be programmed with the current
-# facilities, but a few use cases exist that are not possible now, such
-# as distinguishing lowercase from uppercase parameters, but then again
-# such cases can be argued to be bad design in themselves.  (Which of
-# course is only a weak argument for not supporting them.)
-#
-
-# Both parameters $X and $Y can consist only of a single character.
-# I.e., apply this to all file of the pattern 'list.??'. 
 list.${X:.}${Y:.} {
 	compute -x $X -y $Y >list.${X}${Y}
 }
 
 # When the date is saved as contiguous digits, e.g. 'log-analysis.20180413.txt'
-# for April 13, 2018, but as ISO dat in 'log-*.txt'. 
+# for April 13, 2018, but as ISO dat in 'log-*.txt'.
 log-analysis.${year:[0-9]{4}}${month:[0-9]{2}}${day:[0-9]{2}}.txt:
 	log.$year-$month-$dat.txt
 { ... }
@@ -920,14 +261,14 @@ ${NAME:[^/]+}.bib: ...;
 # programming language in Stu, which we don't want.
 #
 # Here's a random example using Julia, assuming that "everything is a
-# matrix". 
+# matrix".
 #
 
-A.data:  B.data C.data 
+A.data:  B.data C.data
 \julia{
 	% This command will be executed by the Julia wrapper, and
 	% read/write the three matrices from the corresponding files
-	% automatically.  
+	% automatically.
 	A = B * C;
 }
 
@@ -935,7 +276,7 @@ A.data:  B.data C.data
 	# This will be executed whenever A.data is built, and the three
 	# variables used below will be filled by Stu with the dependencies,
 	# the target and the command, which are worked on by the script
-	# ./julia-command to invoke Julia accordingly. 
+	# ./julia-command to invoke Julia accordingly.
 	./julia-command "$STU_DEPENDENCIES" "$STU_TARGET" "$STU_COMMAND"
 }
 
@@ -949,9 +290,9 @@ julia-command;
 
 # This may get problematic with finding the end of a command when
 # programming languages use unusual quoting mechanisms and ways of
-# pairing parenthesis-like characters. 
+# pairing parenthesis-like characters.
 
-# An alternative is to use '#!', as in the following example: 
+# An alternative is to use '#!', as in the following example:
 A.data:  B.data C.data julia-wrapper
 {#! julia-wrapper
 	A = B * C
@@ -961,7 +302,7 @@ A.data:  B.data C.data julia-wrapper
 # Nested rules.  Good for dependencies that are used only once.  This is
 # quite hard to read, honestly, and mostly fulfills the fantasy of
 # people who like deeply nested constructs :)  But implementation-wise,
-# it's not that difficult. 
+# it's not that difficult.
 #
 
 A: (B: C { cp C B ; }) (D: E {cp E D ; }) { cat B D >A ; }
@@ -969,7 +310,7 @@ A: (B: C { cp C B ; }) (D: E {cp E D ; }) { cat B D >A ; }
 #
 # Alternative dependencies.  Would not be used often, and where it would
 # be needed, it can be implemented using dynamic dependency.  On the
-# other hand, the '|' operator is free... 
+# other hand, the '|' operator is free...
 #
 
 A:  B | C { ... }
@@ -977,14 +318,14 @@ A:  (B C) | (D E) { ... }
 
 #
 # Transient targets can have content.  This will be executed at every Stu
-# invocation.  This is similar to the way variables worked in Stu 0. 
+# invocation.  This is similar to the way variables worked in Stu 0.
 #
 # This might be used like variables in Make, but the result will be that
 # targets depending on them will always be rebuilt.  It would thus only
-# make sense together with fingerprinting. 
+# make sense together with fingerprinting.
 #
 # No very useful, since files can be used in exactly the same way, and
-# without the problem of not remembering what was already done.  
+# without the problem of not remembering what was already done.
 #
 
 # Their definition:
@@ -1000,28 +341,28 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 # An option of Stu that generates a shell script from a Stu script that
 # executes the content.  This can be done to any degree of fidelity to
 # the Stu specification, i.e., always build everything, or actually
-# check timestamps. 
+# check timestamps.
 #
 
 #
 # libstu:  have the functionality available as a library for C, or for
 # any other programming language.  I would rather have a Stu server and
-# any programming language can then communicate with the Stu server. 
+# any programming language can then communicate with the Stu server.
 #
 
 #
 # Input and output to transients as a way to implement pipe-like
-# constructs.  
+# constructs.
 #
 
 >@data.filtered:  <data
 {
-	sed -e '...' 
+	sed -e '...'
 }
 
 plot.eps:  <@data.filtered
 {
-	... -o plot.eps 
+	... -o plot.eps
 }
 
 # We could also have Stu use pipes using current syntax, in order to
@@ -1046,14 +387,14 @@ A:  <B { ./command-A --output A ; }
 # possible, and easy.
 #
 
-# 
+#
 # Things that can be implemented by simply using the appropriate
-# commands: 
+# commands:
 #
 # * Compression, archiving, and encryption
-# * Converting encodings, line endings, and processing escape sequences 
+# * Converting encodings, line endings, and processing escape sequences
 # * Limitations on runtime, memory usages and other resources by jobs
-# * Calling interpreters or compilers for specific programming languages 
+# * Calling interpreters or compilers for specific programming languages
 #
 
 #
@@ -1068,5 +409,5 @@ A:  <B { ./command-A --output A ; }
 # for each Stu job.  This would slightly interfere with what Stu itself
 # is doing, since a distributed job management system also has to decide
 # when a job is executed.  Most also have dependency management
-# capabilities. 
+# capabilities.
 #

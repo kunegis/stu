@@ -7,11 +7,11 @@ test: \
     log/test_options \
     log/test_unit.debug \
     log/test_clean \
-    log/test_unit.ndebug 
+    log/test_unit.ndebug
 sani: \
     log/test_unit.sani_undefined
 prof:  bin/analysis.prof
-.PHONY:  all test sani clean prof install 
+.PHONY:  all test sani clean prof install
 
 src/version.hh:  VERSION sh/mkversion
 	sh/mkversion >src/version.hh
@@ -24,21 +24,21 @@ CXXFLAGS_DEBUG=  -ggdb -O0 -Werror -Wall -Wextra -Wpedantic \
     -Wno-unknown-warning-option -Wno-pessimizing-move -D_GLIBCXX_DEBUG
 CXXFLAGS_PROF= -pg -O2 -DNDEBUG -D_GLIBCXX_DEBUG
 CXXFLAGS_SANI= -pg -O2 -Werror -Wno-unused-result -fsanitize=undefined \
-    -fsanitize-undefined-trap-on-error 
+    -fsanitize-undefined-trap-on-error
 
 bin/stu:                conf/CXX src/stu.cc src/*.hh src/version.hh
 	@mkdir -p bin
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $$(cat conf/CXXFLAGS_NDEBUG) src/stu.cc -o bin/stu
 	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $$(cat conf/CXXFLAGS_NDEBUG) src/stu.cc -o bin/stu
-bin/stu.debug:          conf/CXX src/stu.cc src/*.hh src/version.hh 
+bin/stu.debug:          conf/CXX src/stu.cc src/*.hh src/version.hh
 	@mkdir -p bin
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_DEBUG)            src/stu.cc -o bin/stu.debug
 	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_DEBUG)            src/stu.cc -o bin/stu.debug
-bin/stu.prof:           conf/CXX src/stu.cc src/*.hh src/version.hh 
+bin/stu.prof:           conf/CXX src/stu.cc src/*.hh src/version.hh
 	@mkdir -p bin
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_PROF)             src/stu.cc -o bin/stu.prof
 	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_PROF)             src/stu.cc -o bin/stu.prof
-bin/stu.sani_undefined: conf/CXX src/stu.cc src/*.hh src/version.hh 
+bin/stu.sani_undefined: conf/CXX src/stu.cc src/*.hh src/version.hh
 	@mkdir -p bin
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_SANI)             src/stu.cc -o bin/stu.sani_undefined
 	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_SANI)             src/stu.cc -o bin/stu.sani_undefined
@@ -59,7 +59,7 @@ log/test_clean:  src/stu.cc src/*.hh sh/test_clean sh sh/* tests tests/*/*
 log/test_unit.debug:           bin/stu.debug          sh/test tests tests/*/*
 	@echo sh/test
 	@     sh/test && mkdir -p log && touch $@
-log/test_unit.ndebug:          bin/stu                sh/test tests tests/*/* 
+log/test_unit.ndebug:          bin/stu                sh/test tests tests/*/*
 	@echo NDEBUG=1 sh/test
 	@     NDEBUG=1 sh/test && mkdir -p log && touch $@
 log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/test tests tests/*/*

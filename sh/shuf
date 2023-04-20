@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Randomly permute a text file, line by line.  Works via stdin and stdout. 
+# Randomly permute a text file, line by line.  Works via stdin and stdout.
 #
 # There is shuf(1), but that's not POSIX.
 #

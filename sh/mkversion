@@ -1,8 +1,8 @@
 #! /bin/sh
 #
 # Generate the content of the file 'src/version.hh'.
-# 
-# INPUT FILES 
+#
+# INPUT FILES
 #	VERSION		File containing the version number
 #
 # STDOUT

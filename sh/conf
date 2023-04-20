@@ -49,8 +49,7 @@ clean()
 {
 	[ "$source" ] && rm -f -- "$filename".*
 }
-
-trap clean EXIT
+trap clean EXIT INT QUIT TERM ABRT HUP
 
 filename=${TMPDIR:-/tmp}/stu.conf.$$
 source=$filename.cc
@@ -87,7 +86,7 @@ done
 check_code CLOCK_REALTIME_COARSE '
 #include <time.h>
 void x() { struct timespec t; int r= clock_gettime(CLOCK_REALTIME_COARSE, &t); }
-' 
+'
 CXXFLAGS="$CXXFLAGS -DHAVE_CLOCK_REALTIME_COARSE=$(echo $? | tr 01 10)"
 
 CXXFLAGS_NDEBUG=-DNDEBUG

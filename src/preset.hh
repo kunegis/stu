@@ -1,11 +1,11 @@
 #ifndef PRESET_HH
 #define PRESET_HH
 
-/* 
+/*
  * A pre-set is a container data structure with the following properties:
- *   - It contains a multimap of strings to type T. 
+ *   - It contains a multimap of strings to type T.
  *   - It allows to check, given a string x, which of the key strings in the map
- *     is the longest prefix of x.   
+ *     is the longest prefix of x.
  */
 
 #include <vector>
@@ -18,15 +18,15 @@ class Preset
 public:
 
 	class End_Iterator{};
-	
-	class Input_Iterator 
+
+	class Input_Iterator
 	{
 		friend class Preset;
 
 	public:
 		void operator++() {
 			/* We need only prefix ++ */
-			advance(); 
+			advance();
 			if (preset && begin1 < end1)
 				++begin1;
 			/* Do nothing when the iterator is at the end */
@@ -34,18 +34,18 @@ public:
 
 		const T &operator*() {
 			advance();
-			assert(preset && begin1 < end1); 
-			return *begin1; 
+			assert(preset && begin1 < end1);
+			return *begin1;
 		}
 
 		bool operator==(const End_Iterator &) {
 			advance();
-			return preset == nullptr; 
+			return preset == nullptr;
 		}
 
 		bool operator!=(const End_Iterator &) {
 			advance();
-			return preset != nullptr; 
+			return preset != nullptr;
 		}
 
 	private:
@@ -67,12 +67,12 @@ public:
 		{
 			if (p->chars.size() && p->chars[0].prefix[0] == '\0') {
 				assert(p->chars[0].prefix == "");
-				assert(p->chars[0].preset == nullptr); 
+				assert(p->chars[0].preset == nullptr);
 				begin2= p->chars[0].values.data();
 				end2  = p->chars[0].values.data() + p->chars[0].values.size();
 			} else {
 				begin2= nullptr;
-				end2  = nullptr; 
+				end2  = nullptr;
 			}
 		}
 
@@ -84,14 +84,14 @@ public:
 	Preset()
 		:  parent(nullptr)
 	{ }
-	
+
 	Preset(const Preset <T> *_parent, char _index)
 		:  parent(_parent), index(_index)
 	{ }
-	
+
 	void insert(string key, T value);
 	/* Insert the key-value pair */
-	
+
 	Input_Iterator find(string x);
 	/* Find values matching the given string X, i.e., find all values for
 	 * which the key is a prefix of X.  Returned from longest to shortest
@@ -102,7 +102,7 @@ public:
 private:
 
 	struct Entry {
-		string prefix; 
+		string prefix;
 		unique_ptr <Preset <T> > preset;
 		vector <T> values;
 	};
@@ -111,12 +111,12 @@ private:
 	/* The parent object, or null if this is the root object */
 
 	char index;
-	/* In PARENT.  Unspecified when PARENT is null. */ 
-	
+	/* In PARENT.  Unspecified when PARENT is null. */
+
 	vector <Entry> chars;
-	/* For each tuple, exactly one of {VALUES, PRESET} is nonempty/nonnull. 
+	/* For each tuple, exactly one of {VALUES, PRESET} is nonempty/nonnull.
 	 * If PRESET is null, this object contains at least one value.  Otherwise,
-	 * the object contains a child.  
+	 * the object contains a child.
 	 * Sorted by the first character of each PREFIX, which are unique.
 	 * Also, there can be a single prefix that is the empty string, which
 	 * is sorted as the character '\0', i.e., always in first position.
@@ -127,7 +127,7 @@ private:
 
 	void insert(string key, vector <T> &&values);
 	/* There must not be an entry there yet starting with KEY[0].  KEY may be empty. */
-	
+
 	void develop(Entry &);
 	/* Transform a VALUES-containing entry to a PRESET-containing entry */
 };
@@ -143,18 +143,18 @@ void Preset <T> ::insert(string key, T value)
 			     [](const Entry &a, const string &b) -> bool {
 				     return a.prefix[0] < b[0];
 			     });
-	const size_t i= lb - chars.begin(); 
-	assert(i <= chars.size()); 
+	const size_t i= lb - chars.begin();
+	assert(i <= chars.size());
 	if (i < chars.size() && chars[i].prefix[0] == k) {
 		/* Add to existing character */
 
-		Entry &e= chars[i]; 
+		Entry &e= chars[i];
 
 		/* Find longest common prefix of both */
 		auto mm= mismatch(e.prefix.begin(), e.prefix.end(),
 				  key.begin(), key.end());
 		auto mm_prefix= mm.first;
-		auto mm_key=    mm.second; 
+		auto mm_key=    mm.second;
 
 		if (*mm_prefix == '\0' && *mm_key != '\0') {
 			/* KEY starts with E.PREFIX:  The element can be
@@ -172,7 +172,7 @@ void Preset <T> ::insert(string key, T value)
 			assert(mm_prefix >= e.prefix.begin());
 
 			if (! e.preset) {
-				develop(e); 
+				develop(e);
 			}
 			unique_ptr <Preset <T> > p= make_unique <Preset <T> >
 				(this, e.prefix[0]);
@@ -181,26 +181,26 @@ void Preset <T> ::insert(string key, T value)
 			e.prefix= string(e.prefix.begin(), mm_prefix);
 			e.preset= move(p);
 		} else {
-			assert(*mm_key == '\0' && *mm_prefix == '\0'); 
+			assert(*mm_key == '\0' && *mm_prefix == '\0');
 			/* KEY == E.PREFIX:  The element can be inserted
 			 * directly as a value, or inserted into the
 			 * sub-preset.  */
 			if (! e.preset) {
 				e.values.push_back(value);
 			} else {
-				e.preset->insert("", value); 
+				e.preset->insert("", value);
 			}
 		}
 	} else {
 		/* Insert a new character */
-		chars.insert(chars.begin() + i, Entry{key, nullptr, {value}}); 
+		chars.insert(chars.begin() + i, Entry{key, nullptr, {value}});
 	}
 }
 
 template <typename T>
 typename Preset <T> ::Input_Iterator Preset <T> ::find(string x)
 {
-	assert(x[0] != '\0'); 
+	assert(x[0] != '\0');
 	const char k= x[0];
 	auto lb= lower_bound(chars.begin(),
 			     chars.end(),
@@ -208,22 +208,22 @@ typename Preset <T> ::Input_Iterator Preset <T> ::find(string x)
 			     [](const Entry &a, const string &b) -> bool {
 				     return a.prefix[0] < b[0];
 			     });
-	const size_t i= lb - chars.begin(); 
-	assert(i <= chars.size()); 
+	const size_t i= lb - chars.begin();
+	assert(i <= chars.size());
 
 	if (i < chars.size() && chars[i].prefix[0] == k) {
 		Entry &entry= chars[i];
-		assert(entry.prefix[0] == k); 
+		assert(entry.prefix[0] == k);
 		if (equal(entry.prefix.begin(), entry.prefix.end(), x.begin())) {
 			if (entry.preset) {
 				return entry.preset->find(x.substr(entry.prefix.length()));
 			} else {
 				return Input_Iterator(this,
 						      entry.values.data(),
-						      entry.values.data() + entry.values.size()); 
+						      entry.values.data() + entry.values.size());
 			}
 		} else {
-			return Input_Iterator(this, nullptr, nullptr); 
+			return Input_Iterator(this, nullptr, nullptr);
 		}
 	} else {
 		if (k != '\0' && i == chars.size()
@@ -231,11 +231,11 @@ typename Preset <T> ::Input_Iterator Preset <T> ::find(string x)
 			/* There is a ""-prefixed entry that we didn't find, but
 			 * we must return */
 			assert(chars[0].values.size() != 0);
-			assert(chars[0].preset == nullptr); 
+			assert(chars[0].preset == nullptr);
 			return Input_Iterator(this,
 					      chars[0].values.data(),
-					      chars[0].values.data() + chars[0].values.size()); 
-		} else 
+					      chars[0].values.data() + chars[0].values.size());
+		} else
 			return Input_Iterator(this, nullptr, nullptr);
 	}
 }
@@ -243,7 +243,7 @@ typename Preset <T> ::Input_Iterator Preset <T> ::find(string x)
 template <typename T>
 void Preset <T> ::insert(string key, unique_ptr <Preset <T> > preset)
 {
-	/* This implementation follows that of the insert() function for individual values */  
+	/* This implementation follows that of the insert() function for individual values */
 
 	assert(! key.empty());
 	const char k= key[0];
@@ -253,18 +253,18 @@ void Preset <T> ::insert(string key, unique_ptr <Preset <T> > preset)
 			     [](const Entry &a, const string &b) -> bool {
 				     return a.prefix[0] < b[0];
 			     });
-	const size_t i= lb - chars.begin(); 
-	assert(i <= chars.size()); 
+	const size_t i= lb - chars.begin();
+	assert(i <= chars.size());
 	if (i < chars.size() && chars[i].prefix[0] == k) {
 		/* Add to existing character */
 
-		Entry &e= chars[i]; 
+		Entry &e= chars[i];
 
 		/* Find longest common prefix of both */
 		auto mm= mismatch(e.prefix.begin(), e.prefix.end(),
 				  key.begin(), key.end());
 		auto mm_prefix= mm.first;
-		auto mm_key=    mm.second; 
+		auto mm_key=    mm.second;
 
 		if (*mm_prefix == '\0' && *mm_key != '\0') {
 			/* KEY starts with E.PREFIX */
@@ -274,22 +274,22 @@ void Preset <T> ::insert(string key, unique_ptr <Preset <T> > preset)
 			e.preset->insert(key.substr(e.prefix.length()), move(preset));
 		} else if (*mm_prefix != '\0') {
 			if (! e.preset) {
-				develop(e); 
+				develop(e);
 			}
 			e.preset= move(preset);
 			preset->parent= this;
 			preset->index= k;
 		} else /* *mm_key == '\0' && *mm_prefix == '\0' */ {
-			assert(*mm_key == '\0' && *mm_prefix == '\0'); 
+			assert(*mm_key == '\0' && *mm_prefix == '\0');
 			/* KEY == E.PREFIX */
 			if (! e.preset) {
 				preset->insert("", move(e.values));
 				e.preset= move(preset);
-				assert(e.values.empty()); 
+				assert(e.values.empty());
 				preset->parent= this;
 				preset->index= k;
 			} else {
-				assert(false); 
+				assert(false);
 			}
 		}
 	} else {
@@ -310,13 +310,13 @@ void Preset <T> ::insert(string key, vector <T> &&values)
 			     [](const Entry &a, const string &b) -> bool {
 				     return a.prefix[0] < b[0];
 			     });
-	const size_t i= lb - chars.begin(); 
+	const size_t i= lb - chars.begin();
 
 	/* There is no entry yet starting with the same character or \0 */
 	assert(i == chars.size() || chars[i].prefix[0] != key[0]);
 
 	Entry e{key, nullptr, move(values)};
-	chars.insert(chars.begin() + i, move(e)); 
+	chars.insert(chars.begin() + i, move(e));
 }
 
 template <typename T>
@@ -325,9 +325,9 @@ void Preset <T> ::develop(Entry &entry)
 	assert(entry.preset == nullptr);
 
 	entry.preset= make_unique <Preset <T> > (this, entry.prefix[0]);
-	entry.preset->chars.resize(1); 
+	entry.preset->chars.resize(1);
 	entry.preset->chars[0].prefix= "";
-	entry.preset->chars[0].values= move(entry.values); 
+	entry.preset->chars[0].values= move(entry.values);
 }
 
 template <typename T>
@@ -342,7 +342,7 @@ void Preset <T> ::Input_Iterator::advance()
 			end2  = nullptr;
 			return;
 		}
-		
+
 		const Preset <T> *preset_new= preset->parent;
 
 		if (! preset_new) {
@@ -356,18 +356,18 @@ void Preset <T> ::Input_Iterator::advance()
 				     [](const Entry &a, const string &b) -> bool {
 					     return a.prefix[0] < b[0];
 				     });
-		const size_t i= lb - preset_new->chars.begin(); 
+		const size_t i= lb - preset_new->chars.begin();
 		assert(i >= 0 && i < preset_new->chars.size());
 		assert(preset_new->chars[i].preset.get() == preset);
 
 		preset= preset_new;
 
-		begin1= preset_new->chars[i].values.data(); 
+		begin1= preset_new->chars[i].values.data();
 		end1  = preset_new->chars[i].values.data()
-			+ preset_new->chars[i].values.size(); 
+			+ preset_new->chars[i].values.size();
 
 		if (preset_new->chars[0].prefix[0] == '\0') {
-			assert(i > 0); 
+			assert(i > 0);
 			begin2= preset_new->chars[0].values.data();
 			end2  = preset_new->chars[0].values.data()
 				+ preset_new->chars[0].values.size();

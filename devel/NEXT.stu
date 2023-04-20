@@ -1,6 +1,6 @@
 #
 # These features are backward-incompatible and can therefore only be
-# implemented in the next major version, i.e., in Stu 3. 
+# implemented in the next major version, i.e., in Stu 3.
 #
 
 #
@@ -8,12 +8,12 @@
 #
 
 # The semicolon is required
-A { touch A ; }  
+A { touch A ; }
 
 # Write a closing brace character into 'A'
 >A { echo } ; }
 
-# Error: The command started by '{' is not closed 
+# Error: The command started by '{' is not closed
 A { touch A }
 
 #
@@ -25,13 +25,13 @@ A { touch A }
 
 # It can be rewritten as
 A: B { cp B A ; }
-@x: A; 
+@x: A;
 
 # The reason is that in these cases, we currently interpret -o @x as
 # equivalent to -o A, rather than -o B.  This is inconsistent with the
 # case where '@x' is not used as a target.  The way to rewrite this
 # shown above lets people use -o @x as intended, without the need for
-# the extra rules for mixed targets that we have at the moment. 
+# the extra rules for mixed targets that we have at the moment.
 
 #
 # Don't allow both transients and files as targets in the same
@@ -41,10 +41,10 @@ A: B { cp B A ; }
 
 #
 # The 'trivial' flag '-t' should "go up" when applied to the
-# dependencies of transient targets. 
+# dependencies of transient targets.
 #
 
-# 'V' is built because 'A' does not exist. 
+# 'V' is built because 'A' does not exist.
 A: @x {
 	[ -r V ] || {
 		exit 1
@@ -52,10 +52,10 @@ A: @x {
 
 	cat V >A
 }
-@x:  -t V; 
+@x:  -t V;
 V = {correct}
 
-# 'V' is built 'A' does not exist.  The '-t' has to "go up". 
+# 'V' is built 'A' does not exist.  The '-t' has to "go up".
 A: @x {
 	[ "x$V" = xcorrect ] || {
 		exit 1
@@ -66,15 +66,15 @@ A: @x {
 @x:  $[-t V];
 V = {correct}
 
-# The '-t' has to "go up".  Use this in KONECT. 
+# The '-t' has to "go up".  Use this in KONECT.
 @all:   list.out;
 >list.$name:
 	@octave
 {
-	./list.octave Hello 
+	./list.octave Hello
 }
 @octave:  -t ( list.octave $[P] );
-list.octave 
+list.octave
 {
 	cat >list.octave <<EOF
 #! /bin/sh
@@ -88,7 +88,7 @@ EOF
 }
 P = {...}
 
-# Even when a transient target has a command, the '-t' "goes up". 
+# Even when a transient target has a command, the '-t' "goes up".
 A: @x {
 	[ -r V ] && {
 		exit 1
@@ -105,10 +105,10 @@ V {
 
 #
 # $STU_OPTIONS should be called $STUFLAGS (?), to be consistent with
-# $MAKEFLAGS, $CFLAGS, etc. 
+# $MAKEFLAGS, $CFLAGS, etc.
 #
 
 #
 # Make the %version mandatory in every file, to avoid parsing a file of
-# the wrong Stu version.  
+# the wrong Stu version.
 #

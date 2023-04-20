@@ -1,24 +1,18 @@
 #
-# Have an option (-I) to list patterns for all targets that can be regenerated,
-# useful for .gitignore and similar lists.
-# * Add it to option list.
-# * What to do:  read rules like always.  For all file targets that have a
-# command or are copy or content commands, output a line. 
-#
-
-#
-# Write a test that no file start or end in an empty line.  Also look for double
-# empty lines.  Maybe also for spaces at end of line.  Also for the VERSION
-# file.
-#
-
-#
 # Split execution.hh into multiple files.  Will need to have separate .cc and
 # .hh files for others that stu.cc.
 #
 
 #
-# Mark this target to always be a persistent dependency 
+# Have an option (-I) to list patterns for all targets that can be regenerated,
+# useful for .gitignore and similar lists.
+# * Add it to option list.
+# * What to do:  read rules like always.  For all file targets that have a
+# command or are copy or content commands, output a line.
+#
+
+#
+# Mark this target to always be a persistent dependency
 #
 
 -p data: { mkdir data ; }
@@ -27,7 +21,7 @@
 # modification date is not used.  (Not a good idea because the date may
 # be useful for directories in some cases.)
 
-# This can also work with other flags. 
+# This can also work with other flags.
 
 #
 # Have an option to block certain targets from ever being rebuilt.  (Resulting
@@ -51,7 +45,7 @@
 # Allow access to environment variables via e.g. $(HOME).  Using this is
 # likely to be an antipattern -- the idiomatic thing to do is set a
 # symlink to the directory in question.  Other cases are even worse,
-# e.g., having environment variables with lists of things in them. 
+# e.g., having environment variables with lists of things in them.
 #
 
 #
@@ -63,5 +57,5 @@
 # Allow to handle symlinks as files in themselves, i.e., check for their
 # own existence and their own timestamp.  This should not be the default
 # as the current behaviour is more often useful, but should be available
-# as a possibility, probably using a new flag (-L). 
+# as a possibility, probably using a new flag (-L).
 #

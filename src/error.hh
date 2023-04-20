@@ -7,26 +7,26 @@
  * used for both Stu's exit status and as values that are stored in ints, as
  * well as thrown and caught.  Variables containing error codes are ints and are
  * named "error".
- */ 
+ */
 
 /*
  * Format of error output:  There are two types of error output lines:
- * error messages and traces.  Error messages are of the form 
+ * error messages and traces.  Error messages are of the form
  *
  *         $0: *** $MESSAGE
- * 
- * and traces are of the form 
+ *
+ * and traces are of the form
  *
  *         $FILENAME:$LINE:$COLUMN: $MESSAGE
  *
  * Traces are used when it is possible to refer to a specific location
  * in the input files (or command line, etc.).  Error messages are
  * avoided:  all errors should be traced back to a place in the source if
- * possible.  But sometimes they must be used. 
+ * possible.  But sometimes they must be used.
  */
 
 /*
- * Wording of messages:  
+ * Wording of messages:
  *
  * Error messages begin with uppercase letters; trace messages with
  * lowercase letters, as per the GNU Coding Standards.  Filenames and
@@ -51,8 +51,8 @@
  * interpreting "expected" as an adjective.
  *
  * "not BBB" mentions the invalid token.  If end-of-file is encountered,
- * the "not BBB" part is not used. 
- * 
+ * the "not BBB" part is not used.
+ *
  * Use "must not" rather than "cannot" or "shall" in error messages when
  * something must be present, but is erroneous, e.g., "filename must not
  * be empty".  On the other hand, use "cannot" when something completely
@@ -69,13 +69,13 @@
  * 'A'" instead of "dependency 'X' is needed by 'A'".  The exception is
  * when the word "dependency" is qualified, e.g. "dynamic dependency [X]
  * must not have input redirection using '<'", or when referring
- * specifically to a dependency with respect to a target. 
- * 
+ * specifically to a dependency with respect to a target.
+ *
  * But remember that in general it is better to state what what expected
  * in the syntax than to say that what was encountered cannot be used.
  * For instance, say "expected a filename" instead of "filename must not
  * be empty".  This cannot always be done, so "must not" is sometimes
- * used.  
+ * used.
  *
  * Even though error messages should contain all the information
  * mentioned above, they should still be terse.  More information is
@@ -105,21 +105,21 @@ constexpr int ERROR_FORK_CHILD= 127;
  *
  * Logical errors (code 2) are errors with the usage of Stu.  These are
  * for instance syntax errors in Stu scripts, cycles in the dependency
- * graph, or multiple matching rules.  
- * 
+ * graph, or multiple matching rules.
+ *
  * Fatal errors (code 4) are errors that lead Stu to abort immediately,
  * even when the -k option is used.  They are avoided as much as
  * possible.
  *
  * The value 127 is only used from a child process between fork() and exec(), as
- * done e.g. by system(), posix_spawn(), and the shell.  
+ * done e.g. by system(), posix_spawn(), and the shell.
  *
  * Errors 1 and 2 are recoverable.  If the -k option ("keep going") is
  * given, Stu notes these errors and continues.  If the -k option is not
  * given, they cause Stu to abort.  When the -k option is used, the
  * final exit status may combine errors 1 and 2, giving exit status 3.
  * Error 4 is unrecoverable, and leads to Stu aborting immediately.
- * Error 4 is never combined with other errors. 
+ * Error 4 is never combined with other errors.
  *
  * Fatal errors are rare and are only used in cases where it is OK to
  * abort the whole Stu process:
@@ -128,39 +128,39 @@ constexpr int ERROR_FORK_CHILD= 127;
  *      anything because nothing was yet started.
  *    - Errors that happen just before Stu exits anyway.
  *    - Errors that should not happen, such as failure to set up a
- *      signal handler. 
+ *      signal handler.
  *
  * We have to be careful with calling exit(ERROR_FATAL):  We cannot do
  * it when child processes could still be running.  For errors that
  * happen in the middle of a Stu run, it makes more sense to generate a
  * build error.  In the very few cases that absolutely need to be fatal
  * (such as malloc() returning null), we call abort() instead, since
- * that will take care of terminating the child processes. 
+ * that will take care of terminating the child processes.
  */
 
 /*
  * The following functions print messages that do not include a place.
  * The text must begin with an uppercase letter, not end in a period
  * and also not end in a newline character.  All are printed to standard
- * error output. 
- */ 
+ * error output.
+ */
 
 void print_error(string message)
 /* Print an error without a place */
 {
 	assert(! message.empty());
-	assert(isupper(message[0]) || message[0] == '\''); 
-	assert(message[message.size() - 1] != '\n'); 
-	fprintf(stderr, "%s%s%s: *** %s\n", 
+	assert(isupper(message[0]) || message[0] == '\'');
+	assert(message[message.size() - 1] != '\n');
+	fprintf(stderr, "%s%s%s: *** %s\n",
 		Color::error_word, dollar_zero, Color::end,
-		message.c_str()); 
+		message.c_str());
 }
 
 void print_error_system(string message)
-/* Like perror(), but use color.  MESSAGE must not contain color codes. */ 
+/* Like perror(), but use color.  MESSAGE must not contain color codes. */
 {
 	assert(message.size() > 0 && message[0] != '') ;
-	string t= name_format_err(message); 
+	string t= name_format_err(message);
 	fprintf(stderr, "%s: %s\n", t.c_str(), strerror(errno));
 }
 
@@ -171,11 +171,11 @@ void print_error_reminder(string message)
  * the color of warnings.  */
 {
 	assert(! message.empty());
-	assert(isupper(message[0]) || message[0] == '\''); 
-	assert(message[message.size() - 1] != '\n'); 
-	fprintf(stderr, "%s%s%s: %s\n", 
+	assert(isupper(message[0]) || message[0] == '\'');
+	assert(message[message.size() - 1] != '\n');
+	fprintf(stderr, "%s%s%s: %s\n",
 		Color::warning, dollar_zero, Color::end,
-		message.c_str()); 
+		message.c_str());
 }
 
 string system_format(string text)
@@ -183,7 +183,7 @@ string system_format(string text)
  * ERRNO-based text.  Cf. perror().  Color is not added.  The output of
  * this function is used as input to one of the print_*() functions.  */
 {
-	return fmt("%s: %s", text, strerror(errno)); 
+	return fmt("%s: %s", text, strerror(errno));
 }
 
 void print_out(string text)
@@ -200,16 +200,16 @@ void print_out(string text)
 	assert(text[text.size() - 1] != '\n');
 
 	if (option_silent)
-		return; 
+		return;
 
 	printf("%s%s%s\n",
 	       Color::out_print,
 	       text.c_str(),
-	       Color::out_end); 
+	       Color::out_end);
 }
 
 void print_error_silenceable(string text)
-/* A message on STDERR that is made silent by the silent option (-s) */ 
+/* A message on STDERR that is made silent by the silent option (-s) */
 {
 	assert(! text.empty());
 	assert(isupper(text[0]));
@@ -226,54 +226,54 @@ void print_error_silenceable(string text)
 }
 
 class Place
-/* 
+/*
  * Denotes a position in Stu source code.  This is either in a file or
  * in arguments/options to Stu.  A Place object can also be empty, which
  * is used as the "uninitialized" value.
  *
  * Places are used to show the location of an error on standard error
  * output.
- */ 
+ */
 {
 public:
 
 	enum class Type {
 		EMPTY,        /* Empty "Place" object */
 		INPUT_FILE,   /* In a file, with line/column numbers */
-		ARGUMENT,     /* Command line argument (outside options) */ 
+		ARGUMENT,     /* Command line argument (outside options) */
 		OPTION,       /* In an option */
 		ENV_OPTIONS   /* In $STU_OPTIONS */
 	} type;
 
 	string text;
 	/* INPUT_FILE:  Name of the file in which the error occurred.
-	 *              Empty string for standard input.  
+	 *              Empty string for standard input.
 	 * OPTION:  Name of the option (a single character)
-	 * Others:  Unused  */ 
+	 * Others:  Unused  */
 
-	size_t line; 
-	/* INPUT_FILE:  Line number, one-based.  
-	 * Others:  unused.  
+	size_t line;
+	/* INPUT_FILE:  Line number, one-based.
+	 * Others:  unused.
 	 * The line number is one-based, but is allowed to be set to
 	 * zero temporarily.  It should be >0 however when operator<<()
-	 * is called.  */ 
+	 * is called.  */
 
-	size_t column; 
+	size_t column;
 	/* INPUT_FILE:  Column number, zero-based.  In output, column
 	 * numbers are one-based, but they are saved here as zero-based
-	 * numbers as these are easier to generate. 
-	 * Others: Unused.  */ 
+	 * numbers as these are easier to generate.
+	 * Others: Unused.  */
 
-	Place() 
-	/* Empty */ 
-		:  type(Type::EMPTY) 
+	Place()
+	/* Empty */
+		:  type(Type::EMPTY)
 	{  }
 
 	Place(Type type_,
-	      string filename_, 
-	      size_t line_, 
+	      string filename_,
+	      size_t line_,
 	      size_t column_)
-	/* Generic constructor */ 
+	/* Generic constructor */
 		:  type(type_),
 		   text(filename_),
 		   line(line_),
@@ -281,26 +281,25 @@ public:
 	{  }
 
 	Place(Type type_)
-	/* In command line argument (ARGV) */ 
+	/* In command line argument (ARGV) */
 		:  type(type_)
 	{
-		assert(type == Type::ARGUMENT); 
+		assert(type == Type::ARGUMENT);
 	}
 
 	Place(Type type_, char option)
 	/* In an option (OPTION) */
 		:  type(type_),
 		   text(string(&option, 1))
-	{ 
-		assert(type == Type::OPTION); 
+	{
+		assert(type == Type::OPTION);
 	}
-	
 
 	Type get_type() const { return type; }
 	const char *get_filename_str() const;
 
-	const Place &operator<<(string message) const; 
-	/* Print the trace to STDERR as part of an error message.  The 
+	const Place &operator<<(string message) const;
+	/* Print the trace to STDERR as part of an error message.  The
 	 * trace is printed as a single line, which can be parsed by
 	 * tools, e.g. the compile mode of Emacs.  Line and column
 	 * numbers are output as 1-based values.  Return THIS.  */
@@ -309,25 +308,25 @@ public:
 		   const char *color,
 		   const char *color_word) const;
 	/* Print a message.  The COLOR arguments determine whether this
-	 * is an error or a warning.  */ 
+	 * is an error or a warning.  */
 
 	string as_argv0() const;
 	/* The string used for the argv[0] parameter of child processes.
 	 * Does not include color codes.  Returns "" when no special
 	 * string should be used.  */
 
-	bool empty() const { 
+	bool empty() const {
 		return type == Type::EMPTY;
 	}
-	
+
 	void clear() {
-		type= Type::EMPTY; 
+		type= Type::EMPTY;
 	}
 
 	/* Places are comparable, and are used as keys in maps */
-	bool operator==(const Place &place) const; 
+	bool operator==(const Place &place) const;
 	bool operator<(const Place &place) const;
-	
+
 	static const Place place_empty;
 	/* A static empty place object, used in various places when a
 	 * reference to an empty place object is needed.  Otherwise,
@@ -335,29 +334,29 @@ public:
 };
 
 class Trace
-/* 
+/*
  * A place along with a message.  This class is only used when traces
  * cannot be printed immediately.  Otherwise, Place::operator<<() is
- * called directly.  
+ * called directly.
  */
 {
 public:
 	Place place;
 
-	string message; 
-	/* The message associated with it.  This may be "". 
+	string message;
+	/* The message associated with it.  This may be "".
 	 * When the trace is printed, it must not be empty, and not begin
 	 * with an upper-case letter.  */
 
-	Trace(const Place &place_, string message_) 
-		:  place(place_), message(message_) 
+	Trace(const Place &place_, string message_)
+		:  place(place_), message(message_)
 	{  }
 
-	void print() const 
+	void print() const
 	/* Print the trace to STDERR as part of an error message; see
 	 * Place::operator<< for format information.  */
 	{
-		place << message; 
+		place << message;
 	}
 };
 
@@ -367,7 +366,7 @@ class Printer
  * error message (i.e., only the traces).  */
 {
 public:
-	virtual void operator<<(string message) const= 0; 
+	virtual void operator<<(string message) const= 0;
 	virtual ~Printer() = default;
 };
 
@@ -375,35 +374,35 @@ const Place Place::place_empty;
 
 const Place &Place::operator<<(string message) const
 {
-	print(message, Color::error, Color::error_word); 
+	print(message, Color::error, Color::error_word);
 	return *this;
 }
 
-void Place::print(string message, 
+void Place::print(string message,
 		  const char *color,
 		  const char *color_word) const
 {
 	assert(! message.empty());
 
 	switch (type) {
-	default:  
+	default:
 	case Type::EMPTY:
 		/* It's a common bug in Stu to have empty places, so
-		 * better provide sensible behavior in NDEBUG builds.  */ 
-		assert(false); 
-		fprintf(stderr, 
+		 * better provide sensible behavior in NDEBUG builds.  */
+		assert(false);
+		fprintf(stderr,
 			"%s\n",
-			message.c_str()); 
-		break; 
+			message.c_str());
+		break;
 
 	case Type::INPUT_FILE:
-		assert(line >= 1); 
+		assert(line >= 1);
 		fprintf(stderr,
-			"%s%s%s:%s%zu%s:%s%zu%s: %s\n", 
+			"%s%s%s:%s%zu%s:%s%zu%s: %s\n",
 			color_word, get_filename_str(), Color::end,
 			color, line, Color::end,
 			color, 1 + column, Color::end,
-			message.c_str());  
+			message.c_str());
 		break;
 
 	case Type::ARGUMENT:
@@ -416,7 +415,7 @@ void Place::print(string message,
 		break;
 
 	case Type::OPTION:
-		assert(text.size() == 1); 
+		assert(text.size() == 1);
 		fprintf(stderr,
 			"%sOption %s-%c%s: %s\n",
 			color,
@@ -430,7 +429,7 @@ void Place::print(string message,
 		fprintf(stderr,
 			"In %s$STU_OPTIONS%s: %s\n",
 			color_word, Color::end,
-			message.c_str()); 
+			message.c_str());
 		break;
 	}
 }
@@ -438,25 +437,25 @@ void Place::print(string message,
 string Place::as_argv0() const
 {
 	switch (type) {
-	default:  
+	default:
 	case Type::EMPTY:
-		assert(false); 
+		assert(false);
 	case Type::ARGUMENT:
-		return ""; 
+		return "";
 
 	case Type::OPTION:
-		return fmt("Option -%s", text); 
+		return fmt("Option -%s", text);
 
 	case Type::INPUT_FILE: {
 		/* The given argv[0] should not begin with a dash,
 		 * because some shells enable special behaviour
 		 * (restricted/login mode and similar) when argv[0]
-		 * begins with a dash. */ 
+		 * begins with a dash. */
 		const char *s= get_filename_str();
-		return frmt("%s%s:%zu", 
+		return frmt("%s%s:%zu",
 			    s[0] == '-' ? "file " : "",
 			    s,
-			    line);  
+			    line);
 	}
 	}
 }
@@ -470,10 +469,10 @@ const char *Place::get_filename_str() const
 void print_warning(const Place &place, string message)
 {
 	assert(! message.empty());
-	assert(isupper(message[0]) || message[0] == '\''); 
-	assert(message[message.size() - 1] != '\n'); 
+	assert(isupper(message[0]) || message[0] == '\'');
+	assert(message[message.size() - 1] != '\n');
 	place.print(fmt("warning: %s", message),
-		    Color::warning, Color::warning_word); 
+		    Color::warning, Color::warning_word);
 }
 
 bool Place::operator==(const Place &place) const
@@ -518,11 +517,11 @@ bool Place::operator<(const Place &place) const
 			return this->text < place.text;
 		if (this->line != place.line)
 			return this->line < place.line;
-		return this->column < place.column; 
+		return this->column < place.column;
 
 	case Type::OPTION:
 		return this->text < place.text;
 	}
 }
 
-#endif /* ! ERROR_HH */ 
+#endif /* ! ERROR_HH */

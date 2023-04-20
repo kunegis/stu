@@ -1,10 +1,10 @@
 Stu does not fit any existing software category neatly.  As such, it is
-often compared with very diverse systems. 
+often compared with very diverse systems.
 
-== List of Tools == 
+== List of Tools ==
 
 The following list gives competing system and explains how the differ
-from Stu.  The main information that should be answered for each system: 
+from Stu.  The main information that should be answered for each system:
   - Does it allow parametrized rules?  (Including multiple parameters)
   - Does it allow dynamic dependencies?
   - Does it allow concatenation-like features?  (e.g., injecting all
@@ -16,12 +16,12 @@ from Stu.  The main information that should be answered for each system:
     programming language?
 
 This list is currently a work in progress; items are added
-sporadically.  The list is far from being complete. 
+sporadically.  The list is far from being complete.
 
-The list should be converted to a table with feature comparisons. 
+The list should be converted to a table with feature comparisons.
 ________________________________________________________________________
 
-Make and its many implementations and extensions 
+Make and its many implementations and extensions
   - Standardized
   - Has single unnamed parameter with %
   - No dynamic dependencies, but dialects allow certain tricks to
@@ -31,11 +31,11 @@ mk
   - The Make replacement of Plan 9
   - Similar to Make in general
   - No builtin rules.  Instead, allows to include files that define
-    rules. 
+    rules.
   - Has parametrized rules with single parameter called '%' like
-    Make (called metarules). 
+    Make (called metarules).
 
-Cook 
+Cook
   - Has numbered parameters %1 %2 %2 ...
   - Sort-of has dynamic dependencies using:   NAME [cat NAME]  (The
     semantics are different because a change in NAME only does not lead
@@ -45,20 +45,20 @@ Cook
     shell-like syntax like Stu).
 
 Ant
-  - Java-specific 
-  - No dynamic dependencies; Java plugins can be written instead 
+  - Java-specific
+  - No dynamic dependencies; Java plugins can be written instead
 
-Maven 
+Maven
   - Java-compilation-specific
 
 Jenkins
-  - For software building/deploying/etc. 
+  - For software building/deploying/etc.
 
 https://github.com/threatgrid/declarative.bash
 
 Chef
   - Software building
-  - Proprietary 
+  - Proprietary
 
 SCons
 
@@ -66,10 +66,10 @@ Rake
   - Ruby-based
 
 Ansible
-  - Software building 
+  - Software building
 
-Puppet 
-  - Configuration management 
+Puppet
+  - Configuration management
 
 Fabric
 
@@ -79,13 +79,13 @@ Gradle
 
 A-A-P
 
-BitBake 
+BitBake
 
 Perforce Jam
 
-Waf 
+Waf
 
-Buck 
+Buck
 
 Ninja - https://ninja-build.org/
 

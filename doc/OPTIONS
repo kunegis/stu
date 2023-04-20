@@ -13,29 +13,29 @@ s   Implemented in Stu and considered unstable:  May be subject to
 M   Specified by POSIX Make
 G   Implemented in GNU Make
 F   Implemented in FreeBSD Make
-.   Could be implemented in Stu 
--   Not applicable to Stu 
-x   Incompatible 
+.   Could be implemented in Stu
+-   Not applicable to Stu
+x   Incompatible
 
 List of options
 ===============
 
--0  S        Pass a \0-separated list of file targets 
+-0  S        Pass a \0-separated list of file targets
 -a  s        Consider trivial dependencies to be non-trivial
 -b      G    Compatibility option
 -B  .   G    Re-build all
 -B        F  Execute each line in an individual shell
 -c  S        Explicit file target without syntax
--C  S   x x  Explicit target with syntax 
+-C  S   x x  Explicit target with syntax
 -C  x   G F  Change directory
--d  s   G F  Print debugging information 
+-d  s   G F  Print debugging information
 -D        F  Define variable
 -e  - M G F  Environment overrides Make macros
 -E  S        Explain errors
--f  S M G F  Read file containing rules 
+-f  S M G F  Read file containing rules
 -F  S        Pass rule on the command line
--g  s        Consider optional dependencies to be non-optional 
--h  S   G    Show help and exit 
+-g  s        Consider optional dependencies to be non-optional
+-h  S   G    Show help and exit
 -i  S x x x  Interactive mode
 -i  x M G F  Ignore all errors in commands
 -I  .   G F  Include path
@@ -51,14 +51,14 @@ List of options
 -m  x     F  Directory in with to search for system makefiles
 -M  S        Set job ordering mode to random with seed
 -n  s x x x  Pass a \n-separated list of file targets
--n  x M G F  Dry run 
+-n  x M G F  Dry run
 -N        F  Special dry run
 -o  s   x    Optional dependency (2)
 -o  x   G    Mark file as old
 -O  .   G    Output sync
 -p  s x x    Persistent dependency (2)
--p  x M G    Print database 
--P  S        Print database 
+-p  x M G    Print database
+-P  S        Print database
 -q  S M G F  Question mode / query mode
 -r  - M G F  No builtin rules
 -R  -   G    No builtin variables
@@ -73,7 +73,7 @@ List of options
 -V  S     x  Show version
 -V  x     F  Print variable
 -w      G F  Print directory
--W  .   G x  What-if mode / assume new 
+-W  .   G x  What-if mode / assume new
 -W      x F  Treat syntax warnings as errors
 -x  S        Enable /bin/sh -x instead of normal output
 -X        F  Don't export variables

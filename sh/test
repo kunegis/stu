@@ -3,8 +3,8 @@
 # Perform unit tests.  Each unit test is in one subdirectory of the directory
 # tests/.  By default, each test directory contains a file 'main.stu' that
 # performs one unit test.  Additional files may be present to configure how the
-# test is performed; see below. 
-# 
+# test is performed; see below.
+#
 # INVOCATION
 #
 #	$0 [TEST]...
@@ -13,33 +13,33 @@
 # perform the given tests.  The given test names are the names of the
 # subdirectories of tests/, and may or may not include the 'tests/'
 # prefix.  The arguments may contain glob patterns.  (No test names
-# contain the glob characters *, ?, etc.) 
+# contain the glob characters *, ?, etc.)
 #
 # OUTPUT FILES
 #     log/error.log		List of tests that failed, one name per line
 #
 # PARAMETERS
 #     $NDEBUG	Set to non-empty to test the nondebug version; by default
-#		the debug version is tested 
+#		the debug version is tested
 #     $VARIANT  Other variant of the compiled file; the default is to
 #		take the file that matches the value of $NDEBUG
 #     $verbose  Set to {0,1,2} for verbose levels; default is 0
 #     $notall	If non-empty, exit on the first error, instead of
-#		running everything  
+#		running everything
 #     $emptyok	Set to non-empty to *not* output an error for empty test
 #               directories; useful after doing "rm" in a version
 #		control system on one, since that leaves a directory
-#		containing only (e.g.) ".svn".  Ignores dotfiles. 
+#		containing only (e.g.) ".svn".  Ignores dotfiles.
 #
-# EXIT STATUS 
+# EXIT STATUS
 #     0		All tests succeeded
 #     1		At least one test failed
-#     2		Internal error 
+#     2		Internal error
 #
-# TEST SPECIFICATION 
+# TEST SPECIFICATION
 #
 # Each subdirectory of tests/ contains one unit test, which follows the
-# following rules: 
+# following rules:
 #
 # * Each test contains a Stu file 'main.stu' that is to be tested
 # * It must build the file 'A' by default (i.e., that should be the
@@ -49,26 +49,26 @@
 #   after the test.  Most generated files' names just consist of a
 #   single uppercase letter (but they don't have to).
 # * There may be other files present used by the test; these are part of
-#   the Stu release, i.e., they are under version control. 
+#   the Stu release, i.e., they are under version control.
 #
 # SPECIFICATION FILES
 #
 # Each of these files can be placed in the individual test directory to
-# enable additional checks or behaviors.  All of these files are optional. 
+# enable additional checks or behaviors.  All of these files are optional.
 #
 # TARGET       The name of the target that is built in the test, instead
 #              of the default 'A'.  This does not change the invocation:
 #              Stu is invoked without arguments by default.  It only
 #              changes the check that the file was built, and its
 #              content.   May be an empty file to omit testing for an
-#	       existing target.  
+#	       existing target.
 # CMD          Additional command arguments passed to Stu.  Content may
 #  	       use shell quoting and escaping.  For instance, the file
 #	       may contain -C ' A ' to pass an argument beginning and ending
-#              in space to Stu. 
-# CMDPREFIX    Prefix before command.  Used to set environment variables. 
+#              in space to Stu.
+# CMDPREFIX    Prefix before command.  Used to set environment variables.
 # PARALLEL     Give the arguments of the -j option for which the test is
-#              to be executed 
+#              to be executed
 # EXITSTATUS   The prescribed exit status; default is zero
 # NOSECOND     If file is present, do not check that second invocation
 #              results in "Targets are up to date" (A second run is only
@@ -77,7 +77,7 @@
 #	       used and the exit status is expected to be one)
 # NOCOLOR      Don't test for color in stderr (e.g., with the -y option)
 # CONTENT      Prescribe the exact content of the built file
-# INCONTENT    Prescribe strings that must appear in the built file 
+# INCONTENT    Prescribe strings that must appear in the built file
 # STDOUT       The exact output of Stu
 # STDERR       The exact error output of Stu
 # INSTDOUT     Prescribe strings that must appear in Stu's output
@@ -90,7 +90,7 @@
 #	       behaves like sh/test, e.g., output '***' only on error.
 #
 # For the files beginning with 'IN', each line contains a string that
-# must be present, in any order. 
+# must be present, in any order.
 #
 # NAMES OF TESTS
 #
@@ -111,7 +111,7 @@
 #	These are tests that take a long time to run.  I.e., at least
 #       one second, due to sleep being used.  We try to avoid this as
 #  	much as possible, but sometimes sleeping is the only way to test
-# 	something. 
+# 	something.
 #
 # NOTES
 #
@@ -120,21 +120,21 @@
 #   Usually, these scripts use "sleep 2", i.e., sleep for two seconds to
 #   make sure that there is a difference in timestamps of at least one
 #   second on systems where file modification times have a precision of
-#   only one second.  An alternative is to use sh/touch_old. 
+#   only one second.  An alternative is to use sh/touch_old.
 # * Tests output '***' only in case of error.  This is convenient for
 #   grepping while the tests are running.
-# * Tests use 'diff' to compare files, not 'cmp'. 
+# * Tests use 'diff' to compare files, not 'cmp'.
 #
 # TODO
 #
 # * For each test, interrupt the test after a specified timeout, to
 #   avoid that the whole testing procedure hangs when a single test
-#   hangs. 
+#   hangs.
 #
 
 # Note:  we can't use "set -e" here (which is a good general practice in
 # shell scripts), because otherwise we can't use $? to check the exit
-# code of Stu.  
+# code of Stu.
 
 output_next()
 {
@@ -213,7 +213,7 @@ printf '%s\n' "$verbose" | grep -q -E '^[012]$' || {
 rm -f bin/stu.test || exit 2
 if [ "$VARIANT" ] ; then
 	ln -s stu."$VARIANT" bin/stu.test || exit 2
-else 
+else
 	if [ "$NDEBUG" ] ; then
 		VARIANT=ndebug
 		ln -s stu bin/stu.test || exit 2
@@ -233,14 +233,14 @@ else
 	# Note:  At some point there might be too many tests, but we don't
 	# want to use ls -1 | { ... } because that would make it impossible
 	# to do "error=1", as setting the variable $error in a subshell
-	# would have no effect. 
+	# would have no effect.
 	tests=$(sort_tests)
 fi
 
 count_total=$(echo $(echo $tests | sed 's, ,\
 ,g' | wc -l))
 
-# In the next line, '$tests' expands with glob replacement 
+# In the next line, '$tests' expands with glob replacement
 for file in $tests
 do
 	file=$(echo "$file" | sed -e 's,^tests/,,')
@@ -251,7 +251,7 @@ do
 		continue
 	fi
 
-	# There are no files in the test directory (ignoring dotfiles) 
+	# There are no files in the test directory (ignoring dotfiles)
 	if [ "$(echo $(ls -1 "$file" | wc -l))" = 0 ] ; then
 		if [ "$emptyok" != 1 ] ; then
 			test_failed_stop "Directory $file/ does not contain any files"
@@ -264,7 +264,7 @@ do
 
 	../../sh/rm_tmps || exit 2
 
-	# Check that all all-uppercase files are of one of the allowed files 
+	# Check that all all-uppercase files are of one of the allowed files
 	allowed=",EXITSTATUS,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,"
 	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
 	do
@@ -282,7 +282,7 @@ do
     		CMDPREFIX=$(sed -e '/^[[:space:]]*$/d' <CMDPREFIX)
 	fi
 
-	# The following will save:  list.def.out and list.def.err 
+	# The following will save:  list.def.out and list.def.err
 
 	if [ -r EXEC ]; then
 		if [ -r EXITSTATUS -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
@@ -316,7 +316,7 @@ do
 			cat list.def.err
 			echo _______
 		fi
-		
+
 		# Exit status
 		exitstatus_correct=0
 		if [ -r EXITSTATUS ]; then
@@ -378,12 +378,12 @@ do
 							error=1
 						fi
 					fi
-				
+
 					# Check exact content of the target file
 					if [ -r CONTENT ] ; then
 						if diff "$target" CONTENT ; then
 							echo >&7 "CONTENT...correct"
-						else	
+						else
 							echo >&2 "$0: ($file) *** CONTENT error"
 							error=1
 						fi
@@ -433,7 +433,7 @@ do
 			fi
 		fi
 
-		# Check that at least one line of error message is generated 
+		# Check that at least one line of error message is generated
 		if [ "$exitstatus_correct" != 0 ] && [ \! -r STDERR ]; then
 			if [ \! \( "$(echo $(cat list.def.err | wc -l))" -gt 0 \) ]; then
 				echo >&2 "$0: ($file) *** Nothing written to stderr although exit status is >0"
@@ -458,7 +458,7 @@ do
 			done
 		fi
 
-		# Check that STDERR matches the error output exactly 
+		# Check that STDERR matches the error output exactly
 		if [ -r STDERR ]; then
 			diff list.def.err STDERR
 			exitstatus=$?
@@ -529,15 +529,15 @@ do
 				else
 					echo >&7 "TTY:COLOR...correct"
 				fi
-				
+
 			fi
 
 			# No unbalanced colors
 			if grep -qE '[^0]+m[^]*$' list.def.out ; then
 				# The following is disabled, as we now
 				# allow a color code to be replaced by
-				# another one directly: 
-				#      grep -qE '[^0]+m[^]*[^0]+m' list.def.out 
+				# another one directly:
+				#      grep -qE '[^0]+m[^]*[^0]+m' list.def.out
 				echo >&2 "$0: ($file) *** Expected closing color code"
 				error=1
 			else
@@ -545,11 +545,11 @@ do
 			fi
 		fi
 
-		# Second invocation does nothing 
+		# Second invocation does nothing
 		if [ "$exitstatus_correct" = 0 ] && [ ! -e NOSECOND ]; then
 			echo >&7 $CMDPREFIX ../../bin/stu.test "$CMD"
-			eval $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err 
-			grep -qF 'Targets are up to date' list.def.out 
+			eval $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err
+			grep -qF 'Targets are up to date' list.def.out
 			if [ "$?" = 0 ] ; then
 				echo >&7 "Second invocation...correct"
 			else
@@ -562,7 +562,7 @@ do
 			fi
 		fi
 
-		# Run in parallel 
+		# Run in parallel
 		if [ -r PARALLEL ]; then
 			ks=$(sed -e '/^[[:space:]]*$/d' <PARALLEL)
 			for k in $ks; do
@@ -577,17 +577,17 @@ do
 					echo >&7 "PARALLEL...correct"
 				fi
 			done
-		fi	
-	fi	
+		fi
+	fi
 
 	../../sh/rm_tmps || exit 2
 	cd ..
 
 	if [ "$error" != 0 ] ; then
 		echo "$file" >&6
-		[ "$notall" ] && { 
+		[ "$notall" ] && {
 			echo >&2 "[31m$0: ($file) *** Test '$file' failed [notall][m"
-			exit 1 
+			exit 1
 		}
 		ret=1
 		count_failed=$(( count_failed + 1 ))
@@ -614,7 +614,7 @@ time_diff=$(( time_end - time_begin ))
 runtime=$(printf '%u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)")
 if [ -z "$1" ] && [ "$VARIANT" = ndebug ] ; then
 	echo >>tests.runtime \
-	     "$(date +%Y-%m-%dT%H:%M:%S) $(printf %s "$(cat VERSION)") $runtime" 
+	     "$(date +%Y-%m-%dT%H:%M:%S) $(printf %s "$(cat VERSION)") $runtime"
 fi
 output_success
 exit 0

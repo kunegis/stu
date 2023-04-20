@@ -1,9 +1,9 @@
 From each major version to the next, changes in Stu are
 backward-incompatible.  This file lists required changes in Stu scripts
-needed to migrate to a new major version. 
+needed to migrate to a new major version.
 
 See the file 'NEWS' for more information about Stu versioning, and for
-details of other (non-major) version changes. 
+details of other (non-major) version changes.
 
 == Version 1 -> Version 2 ==
 
@@ -33,7 +33,7 @@ NUL-delimited dynamic dependencies instead, using the options -n or -0.)
 using either single or double quotes.  Note the difference to the shell:
 In the shell, a '-' that is interpreted as an option cannot be escaped
 by quoting.  In Stu, this is possible.  The characters '-' and '+' are
-now reserved for flags, and '~' is reserved for future extension. 
+now reserved for flags, and '~' is reserved for future extension.
 
 (3) The lack of whitespace between tokens is now an error under certain
 conditions.  Specifically:  Whitespace must appear before opening
@@ -45,17 +45,17 @@ outside".  I.e., the following combinations are now errors:
     )(  )[  ](  ][  )A  ]A  A(  A[
 
 In these examples, 'A' stands for any name, including quoted names using
-' and ". 
+' and ".
 
-To migrate existing code, insert whitespace where appropriate. 
+To migrate existing code, insert whitespace where appropriate.
 
 This change was made to prepare for the concatenation feature that will
-be implemented in Stu 2. 
+be implemented in Stu 2.
 
 (4) The -p option (print the rule database) is now written with the
 uppercase -P.  This is now different from Make's -p option, with which
 Stu's -p was not compatible anyway, because Stu exited after printing
-the database. 
+the database.
 
 (5) The syntax for flags was changed.
 
@@ -66,18 +66,18 @@ the database.
 'p', 'o' and 't' must be followed by whitespace if the next token is a
 name or '@'.
 
-Code must be changed accordingly. 
+Code must be changed accordingly.
 
 (6) Command line options passed outside of arguments as well as
 arguments to the -C option don't support persistent or optional
 dependencies anymore.  They could previously be specified using '!' and
 '?', but these characters are not supported anymore.  Instead, the
-command line options -p and -o now exist for the same purpose. 
+command line options -p and -o now exist for the same purpose.
 
-(7) Changes in terminology:  
+(7) Changes in terminology:
 
 - "Timestamp-ignoring" dependencies are now called "persistent"
-  dependencies.  This is now consistent with the flag -p used for them. 
+  dependencies.  This is now consistent with the flag -p used for them.
 
 == Version 0 -> Version 1 ==
 
@@ -85,7 +85,7 @@ command line options -p and -o now exist for the same purpose.
 goal of this change is to allow '*' to be used to target list
 multiplication later on, and to make the syntax of timestamp-ignoring
 dependencies be analogous to the notation for optional dependencies
-which will be noted with '?'. 
+which will be noted with '?'.
 
 Migration:  Change all '*'s to '!'s.
 
@@ -102,10 +102,10 @@ variables were almost never used, and their functionality could be
 easily created by using files.  Since the variable syntax was different
 and unflexible, actual Stu scripts ended up using files anyway, so it
 was decided to free the '$' symbol for parameters, which is the reason
-for the chain shift of symbols following this one. 
+for the chain shift of symbols following this one.
 
 Migration:  Instead, declare files that contain the required content,
-and include them using $[...] syntax.    
+and include them using $[...] syntax.
 
 Example:  Change
 
@@ -126,7 +126,7 @@ nearer to that of the shell itself, making Stu easier to learn and Stu
 files are now easier to edit using shell syntax highlighting.  Also, in
 most cases the syntax is shorter now, both because one can replace
 '[NAME]' by '$NAME', and because unnecessary cases of 'NAME=[NAME]' in
-the command can be omitted. 
+the command can be omitted.
 
 Migration:  Change [FILENAME] to $FILENAME everywhere.  Note that with
 dollar syntax, only alphanumeric characters and '_' are allowed; others
@@ -136,7 +136,7 @@ safest thing to do in Version 0 was to use single quotes (but that
 didn't work when the parameter values contained single quotes.)  In many
 cases, expressions such as NAME='[NAME]' can simply be omitted.
 Analogously, dynamic variables are now denoted by $[VARIABLE] instead
-of $<VARIABLE>. 
+of $<VARIABLE>.
 
 Example:  Change
 
@@ -161,6 +161,6 @@ braces.  The brackets syntax is similar to Cook's syntax for file
 inclusion, and the pair '[]' is actually a pair of brackets in Unicode,
 as opposed to '<>' which are the greater-than and less-than operators.
 Also, the operators '<' and '>' are now free and will be used for file
-redirection in the future.  
+redirection in the future.
 
 Migration:  Change <FILENAME> to [FILENAME].

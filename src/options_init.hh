@@ -3,7 +3,7 @@
 
 bool option_setting(char c)
 /* Set one of the "setting options", i.e., of of those that can appear
- * in $STU_OPTIONS.  Return whether this was a valid settings option.  */ 
+ * in $STU_OPTIONS.  Return whether this was a valid settings option.  */
 {
 	switch (c) {
 	default:  return false;
@@ -16,7 +16,7 @@ bool option_setting(char c)
 	case 'z':  option_statistics= true;     break;
 	}
 
-	return true; 
+	return true;
 }
 
 void option_i()
@@ -24,7 +24,7 @@ void option_i()
 	option_interactive= true;
 	if (Job::get_tty() < 0) {
 		Place place(Place::Type::OPTION, 'i');
-		print_warning(place, "Interactive mode cannot be used because no TTY is available"); 
+		print_warning(place, "Interactive mode cannot be used because no TTY is available");
 	}
 }
 
@@ -33,18 +33,18 @@ void option_j()
 	errno= 0;
 	char *endptr;
 	options_jobs= strtol(optarg, &endptr, 10);
-	Place place(Place::Type::OPTION, 'j'); 
+	Place place(Place::Type::OPTION, 'j');
 	if (errno != 0 || *endptr != '\0') {
 		place << fmt("expected the number of jobs, not %s",
-			     name_format_err(optarg)); 
-		exit(ERROR_FATAL); 
+			     name_format_err(optarg));
+		exit(ERROR_FATAL);
 	}
 	if (options_jobs < 1) {
 		place << fmt("expected a positive number of jobs, not %s",
 			     name_format_err(optarg));
-		exit(ERROR_FATAL); 
+		exit(ERROR_FATAL);
 	}
-	option_parallel= options_jobs > 1; 
+	option_parallel= options_jobs > 1;
 }
 
 void option_m()
@@ -52,22 +52,22 @@ void option_m()
 	if (!strcmp(optarg, "random"))  {
 		order= Order::RANDOM;
 		/* Use gettimeofday() instead of time() to get millisecond
-		 * instead of second precision  */ 
+		 * instead of second precision  */
 		struct timeval tv;
 		if (gettimeofday(&tv, nullptr) != 0) {
 			print_error_system("gettimeofday");
-			exit(ERROR_FATAL); 
+			exit(ERROR_FATAL);
 		}
-		buffer_generator.seed(tv.tv_sec + tv.tv_usec); 
+		buffer_generator.seed(tv.tv_sec + tv.tv_usec);
 	} else if (!strcmp(optarg, "dfs")) {
 		/* Default */ ;
 	} else {
-		print_error(fmt("Invalid argument %s for option %s-m%s; valid values are %s and %s", 
+		print_error(fmt("Invalid argument %s for option %s-m%s; valid values are %s and %s",
 				name_format_err(optarg),
 				Color::word, Color::end,
 				name_format_err("random"),
-				name_format_err("dfs"))); 
-		exit(ERROR_FATAL); 
+				name_format_err("dfs")));
+		exit(ERROR_FATAL);
 	}
 }
 
@@ -85,7 +85,7 @@ void option_V()
 	       "This is free software: you are free to change and redistribute it.\n"
 	       "There is NO WARRANTY, to the extent permitted by law.\n"
 	       "USE_MTIM = %u\n",
-	       USE_MTIM); 
+	       USE_MTIM);
 }
 
 #endif /* ! OPTIONS_INIT_HH */

@@ -15,29 +15,29 @@ find these conventions very useful.
   to pass from within Stu, and has the slight advantage of documenting
   the meaning of the passed value at the call site.  A disadvantage is
   that it may clash with existing environment variables -- see next
-  point. 
+  point.
 * Use lowercase for parameter names.  It's less likely to clash with
   existing environment variables, and makes code read more like a
-  "normal programming language". 
+  "normal programming language".
 * Directory names end in '/' when used as Stu target/dependency names.
   Ending directory filenames in '/' is always a good idea, except in
-  path lists delimited by ':', where ending '/' should be omitted. 
+  path lists delimited by ':', where ending '/' should be omitted.
 * If there is a setting that will be changed occasionally by hand (such
   as enabling/disabling assertions), it may be easier to compile two
   versions of the programs, with the value of that setting encoded in
-  the filename. 
+  the filename.
 * Separate names of parameters in filenames by dots ('.'), and avoid
   dots within individual parameter values.  That will avoid certain
-  filename matching errors. 
+  filename matching errors.
 * Avoid "cd".  In a single project that uses Stu, have a base directory
   in which 'main.stu' is located, and do everything from there.  Inside
   each program that is run, assume the currently directory is that base
-  directory. 
+  directory.
 * Prefer symlinks over configuration files.  Often, a project needs to
   access files outside its own directory.  To do this, prefer to have a
   symlink to the external directory and access the files through that,
   rather than having the path stored in a configuration file or
-  environment variable. 
+  environment variable.
 * Don't use system-wide configurations.  Some systems (e.g. databases)
   rely on configuration files that are outside the current directory,
   for instance by placing their configuration in /etc/.  Avoid this as
@@ -46,10 +46,10 @@ find these conventions very useful.
   course, for things like user options, system- and user-wide
   configuration files are 100% OK.)  An advantage of this is that you
   can use the configuration as a dependency, and even build it
-  automatically if necessary. 
+  automatically if necessary.
 * Don't use environment variables for configuration, as Stu will not
   notice when they change.  Instead, put their content in a single file,
-  and use Stu's $[FILENAME] syntax to access it. 
+  and use Stu's $[FILENAME] syntax to access it.
 * Avoid in-place changes.  If you generate a file and then change it in
   place (e.g. using sed -i), consider converting the code to using a
   pipe, or to using two separate commands and files in Stu.
@@ -72,8 +72,8 @@ find these conventions very useful.
   then exiting with status 0.  This breaks Stu.  The exit status 127 should only
   be used when a program fails between fork() and exec(); this is what /bin/sh
   and Stu do.  Larger exit codes are used automatically when processes are
-  interupted by signals, etc. 
+  interupted by signals, etc.
 * Programs shouldn't generate logfiles when not asked to.  There are too many
   programs that clutter the current directory or the home directory with
   unasked-for logfiles.  Have a proper opt-in "log" option that lets the user
-  chose a logfile name. 
+  chose a logfile name.

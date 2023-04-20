@@ -1,8 +1,8 @@
 #ifndef TOKENIZER_HH
 #define TOKENIZER_HH
 
-/* 
- * Parsing Stu source code into an array of tokens.    
+/*
+ * Parsing Stu source code into an array of tokens.
  *
  * On errors, these functions print a message and throw integer error codes.
  */
@@ -13,53 +13,53 @@
 #include "token.hh"
 #include "version.hh"
 
-constexpr const char *FILENAME_INPUT_DEFAULT= "main.stu"; 
+constexpr const char *FILENAME_INPUT_DEFAULT= "main.stu";
 
 class Tokenizer
 {
 public:
 	enum Context { SOURCE, DYNAMIC, OPTION_C, OPTION_F };
 
-	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
+	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				      Context context,
 				      Place &place_end,
-				      string filename, 
+				      string filename,
 				      const Place &place_diagnostic,
 				      int fd= -1,
 				      bool allow_enoent= false)
-	/* 
-	 * Parse the tokens from the file FILENAME.  
+	/*
+	 * Parse the tokens from the file FILENAME.
 	 *
 	 * The given file descriptor FD may optionally be that file
 	 * already opened.  If the file was not yet opened, FD is -1.
-	 * If FILENAME is "", use standard input, but FD must be -1. 
-	 * 
+	 * If FILENAME is "", use standard input, but FD must be -1.
+	 *
 	 * Append the read tokens to TOKENS, and set PLACE_END to the
-	 * end of the parsed file.  
+	 * end of the parsed file.
 	 *
 	 * PLACE_DIAGNOSTIC is the place where this file is included
-	 * from, e.g. the -f option. 
+	 * from, e.g. the -f option.
 	 *
 	 * If ALLOW_ENOENT, an ENOENT error on this first open() is not
-	 * reported as an error, and the function just returns. 
+	 * reported as an error, and the function just returns.
 	 */
 	{
 		vector <Trace> traces;
-		vector <string> filenames; 
+		vector <string> filenames;
 		set <string> includes;
-		parse_tokens_file(tokens, 
+		parse_tokens_file(tokens,
 				  context,
-				  place_end, filename, 
+				  place_end, filename,
 				  traces, filenames, includes,
 				  place_diagnostic,
 				  fd,
 				  allow_enoent);
 	}
 
-	static bool is_flag_char(char); 
-	/* Whether the character is a valid flag */ 
+	static bool is_flag_char(char);
+	/* Whether the character is a valid flag */
 
-	static void parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
+	static void parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 					Context context,
 					Place &place_end,
 					string string_,
@@ -69,7 +69,7 @@ public:
 
 private:
 
-	/* Stacks of included files */ 
+	/* Stacks of included files */
 	vector <Trace> &traces;
 	vector <string> &filenames;
 
@@ -84,15 +84,15 @@ private:
 	/* Line number */
 
 	const char *p_line;
-	/* Beginning of current line */ 
+	/* Beginning of current line */
 
 	const char *p;
 	/* Current position */
 
 	const char *const p_end;
-	/* End of input */ 
+	/* End of input */
 
-	Environment environment= E_WHITESPACE; 
+	Environment environment= E_WHITESPACE;
 	/* For the next token */
 
 	Tokenizer(vector <Trace> &traces_,
@@ -111,19 +111,19 @@ private:
 		   p_end(p_ + length)
 	{ }
 
-	void parse_tokens(vector <shared_ptr <Token> > &tokens, 
+	void parse_tokens(vector <shared_ptr <Token> > &tokens,
 			  Context context,
 			  const Place &place_diagnostic);
 
 	shared_ptr <Command> parse_command();
-	
+
 	shared_ptr <Place_Name> parse_name(bool allow_special);
 	/* Returns null when no name could be parsed.  Prints and throws
-	 * on other errors, including on empty names.  
-	 * ALLOW_SPECIAL:  whether the name is allowed to start with one of '-+~'.  
-	 * E_SLASH set in ENVIRONMENT as appropriate.  */ 
+	 * on other errors, including on empty names.
+	 * ALLOW_SPECIAL:  whether the name is allowed to start with one of '-+~'.
+	 * E_SLASH set in ENVIRONMENT as appropriate.  */
 
-	bool parse_parameter(string &parameter, Place &place_dollar); 
+	bool parse_parameter(string &parameter, Place &place_dollar);
 	/* Parse a parameter starting with '$'.  Return whether a parameter was
 	 * parsed (always TRUE).  The current position must be on the '$'
 	 * character, not after it.  If a parameter is found, write it into the
@@ -131,18 +131,18 @@ private:
 
 	/* The following three functions parse the two types of quotes, and
 	 * escapes.  The pointer must be on a ", ', or \ character respectively.
-	 * The read string is appended to RET, or a logical error is thrown.  
+	 * The read string is appended to RET, or a logical error is thrown.
 	 * parse_escape() consumes only the backslash, not what follows; it
 	 * returns true if what follows must be escaped.  */
 	void parse_double_quote(Place_Name &ret);
 	void parse_single_quote(Place_Name &ret);
-	bool parse_escape(); 
+	bool parse_escape();
 
 	void parse_directive(vector <shared_ptr <Token> > &tokens,
 			     Context context,
 			     const Place &place_diagnostic);
 	/* Parse a directive.  The pointer must be on the '%' character.  Throw
-	 * a logical error when encountered.  */ 
+	 * a logical error when encountered.  */
 
 	bool skip_space(bool &skipped_actual_space);
 	/* Skip any whitespace (including backslash-newline combinations).
@@ -151,13 +151,13 @@ private:
 	 * skipped.  */
 
 	Place current_place() const {
-		return Place(place_base.type, place_base.text, line, p - p_line); 
+		return Place(place_base.type, place_base.text, line, p - p_line);
 	}
 
-	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
+	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				      Context context,
 				      Place &place_end,
-				      string filename, 
+				      string filename,
 				      vector <Trace> &traces,
 				      vector <string> &filenames,
 				      set <string> &includes,
@@ -166,7 +166,7 @@ private:
 				      bool allow_enoent= false);
 	/* TRACES can include traces that lead to this inclusion.  TRACES must
 	 * not be modified when returning, but is declared as non-const
-	 * because it is used as a stack.  
+	 * because it is used as a stack.
 	 *
 	 * FILENAMES is the list of filenames parsed up to here. I.e., it has
 	 * length zero for the main read file.  FILENAME should *not* be
@@ -181,19 +181,19 @@ private:
 	 * mid-name characters '-', '+' and '~'.  */
 
 	static bool is_operator_char(char);
-	/* Whether the character can be an operator */ 
+	/* Whether the character can be an operator */
 
-	static void parse_version(string version_req, 
+	static void parse_version(string version_req,
 				  const Place &place_version,
-				  const Place &place_percent); 
+				  const Place &place_percent);
 	/* Parse a version directive.  VERSION_REQ is the version number
 	 * given after "%version", and PLACE its place.  */
 };
 
-void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens, 
+void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				  Context context,
 				  Place &place_end,
-				  string filename, 
+				  string filename,
 				  vector <Trace> &traces,
 				  vector <string> &filenames,
 				  set <string> &includes,
@@ -204,7 +204,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 	const char *in= nullptr;
 	size_t in_size;
 	struct stat buf;
-	FILE *file= nullptr; 
+	FILE *file= nullptr;
 
 	bool use_malloc;
 	/* False:  use mmap()
@@ -212,24 +212,24 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 
 	try {
 		if (context == SOURCE) {
-			assert(filenames.size() == 0 || 
-			       filenames[filenames.size() - 1] != filename); 
-			assert(includes.count(filename) == 0); 
-			includes.insert(filename); 
+			assert(filenames.size() == 0 ||
+			       filenames[filenames.size() - 1] != filename);
+			assert(includes.count(filename) == 0);
+			includes.insert(filename);
 		} else {
 			assert(filenames.size() == 0);
 			assert(traces.size() == 0);
 		}
 
-		/* Map empty string to stdin */ 
+		/* Map empty string to stdin */
 		if (filename.empty()) {
-			assert(fd == -1); 
-			fd= 0; 
+			assert(fd == -1);
+			fd= 0;
 			file= stdin;
 		}
 
 		if (fd < 0) {
-			fd= open(filename.c_str(), O_RDONLY); 
+			fd= open(filename.c_str(), O_RDONLY);
 			if (fd < 0) {
 				if (allow_enoent) {
 					if (errno == ENOENT) {
@@ -244,29 +244,29 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			goto error_close;
 		}
 
-		/* If the file is a directory, open the file "main.stu" within it */ 
+		/* If the file is a directory, open the file "main.stu" within it */
 		if (S_ISDIR(buf.st_mode)) {
 			if (filename[filename.size() - 1] != '/')
 				filename += '/';
 			filename += FILENAME_INPUT_DEFAULT;
 			int fd2= openat(fd, FILENAME_INPUT_DEFAULT, O_RDONLY);
-			if (fd2 < 0) 
+			if (fd2 < 0)
 				goto error_close;
 			if (close(fd) < 0) {
 				close(fd2);
 				goto error;
 			}
 			fd= fd2;
-			if (fstat(fd, &buf) < 0) 
+			if (fstat(fd, &buf) < 0)
 				goto error_close;
 		}
 
 		/* Handle a file of zero length separately because mmap() may fail
 		 * on it, i.e., return an error and refuse to create a memory
-		 * map of length zero. */  
+		 * map of length zero. */
 		if (S_ISREG(buf.st_mode) && buf.st_size == 0) {
-			place_end= Place(Place::Type::INPUT_FILE, filename, 1, 0); 
-			goto return_close; 
+			place_end= Place(Place::Type::INPUT_FILE, filename, 1, 0);
+			goto return_close;
 		}
 
 		if (! S_ISREG(buf.st_mode)) {
@@ -276,8 +276,8 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		use_malloc= false;
 
 		in_size= buf.st_size;
-		in= (char *) mmap(nullptr, in_size, 
-				  PROT_READ, MAP_SHARED, fd, 0); 
+		in= (char *) mmap(nullptr, in_size,
+				  PROT_READ, MAP_SHARED, fd, 0);
 		if (in == MAP_FAILED) {
 
 		try_read:
@@ -285,7 +285,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 
 			if (file == nullptr) {
 				file= fdopen(fd, "r");
-				if (file == nullptr) 
+				if (file == nullptr)
 					goto error_close;
 			}
 			const size_t BUFLEN= 0x1000;
@@ -295,8 +295,8 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			while (true) {
 				if (len + BUFLEN < len) {
 					free(mem);
-					errno= ENOMEM; 
-					goto error_close; 
+					errno= ENOMEM;
+					goto error_close;
 				}
 				char *mem_new= (char *) realloc(mem, len + BUFLEN);
 				if (mem_new == nullptr) {
@@ -305,7 +305,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				}
 				mem= mem_new;
 				size_t r= fread(mem + len, 1, BUFLEN, file);
-				assert(r <= BUFLEN); 
+				assert(r <= BUFLEN);
 				if (r == 0) {
 					if (ferror(file)) {
 						if (! filename.empty()) {
@@ -321,35 +321,35 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				len += r;
 			}
 
-			/* Close the input file, but not if it is STDIN */ 
+			/* Close the input file, but not if it is STDIN */
 			if (! filename.empty()) {
 				if (fclose(file) != 0) {
 					goto error_close;
 				}
 			} else {
 				if (ferror(file))
-					goto error_close; 
+					goto error_close;
 			}
 
-			in= mem; 
+			in= mem;
 			in_size= len;
 		}
 
 		if (! filename.empty()) {
-			assert(fd >= 3); 
-			if (0 > close(fd)) 
+			assert(fd >= 3);
+			if (0 > close(fd))
 				goto error;
 		}
 
 		{
 			Tokenizer tokenizer(traces, filenames, includes,
-					    Place(Place::Type::INPUT_FILE, filename, 1, 0), 
-					    in, in_size); 
-			tokenizer.parse_tokens(tokens, context, place_diagnostic); 
-			place_end= tokenizer.current_place(); 
+					    Place(Place::Type::INPUT_FILE, filename, 1, 0),
+					    in, in_size);
+			tokenizer.parse_tokens(tokens, context, place_diagnostic);
+			place_end= tokenizer.current_place();
 
 			if (use_malloc) {
-				free((void *) in); 
+				free((void *) in);
 			} else { /* mmap() */
 				if (0 > munmap((void *) in, in_size))
 					goto error;
@@ -360,8 +360,8 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 
 	return_close:
 		if (! filename.empty()) {
-			assert(fd >= 3); 
-			if (0 > close(fd)) 
+			assert(fd >= 3);
+			if (0 > close(fd))
 				goto error;
 		} else {
 			assert(fd == 0);
@@ -370,10 +370,10 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 
 	error_close:
 		if (! filename.empty()) {
-			assert(fd >= 3); 
+			assert(fd >= 3);
 			close(fd);
 		} else {
-			assert(fd == 0); 
+			assert(fd == 0);
 		}
 	error:
 		const char *filename_diagnostic= !filename.empty()
@@ -383,26 +383,26 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				if (j == traces.begin()) {
 					j->place <<
 						system_format
-						(fmt("%s%%include%s %s", 
+						(fmt("%s%%include%s %s",
 						     Color::word, Color::end,
 						     name_format_err(filename_diagnostic)));
 				} else
-					j->print(); 
+					j->print();
 			}
 		} else {
 			if (place_diagnostic.get_type() != Place::Type::EMPTY)
 				place_diagnostic << system_format
-					(name_format_err(filename_diagnostic)); 
+					(name_format_err(filename_diagnostic));
 			else
-				print_error(system_format(name_format_err(filename_diagnostic))); 
+				print_error(system_format(name_format_err(filename_diagnostic)));
 		}
-		throw ERROR_BUILD; 
+		throw ERROR_BUILD;
 
 	} catch (int error) {
 
 		if (in != nullptr) {
 			if (use_malloc) {
-				free((void *) in); 
+				free((void *) in);
 			} else { /* mmap() */
 				munmap((void *) in, in_size);
 			}
@@ -413,22 +413,22 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 }
 
 shared_ptr <Command> Tokenizer::parse_command()
-/* 
+/*
  * To determine the place of the command:  These rules are intended to
  * make the editor go to the correct place to enter a command into the
- * editor when the command is empty.  
+ * editor when the command is empty.
  *    - If there is non-whitespace in the command, the place is the
- *      first non-whitespace character  
+ *      first non-whitespace character
  *    - If the command is completely empty (i.e., {}), then the place is
- *      the closing bracket. 
+ *      the closing bracket.
  *    - If the command contains only whitespace, is on one line and is
- *      not empty, the place is on the first whitespace character. 
+ *      not empty, the place is on the first whitespace character.
  *    - If the command contains only whitespace and a single newline,
- *      then the place is the end of the first line. 
+ *      then the place is the end of the first line.
  *    - If the command contains only whitespace and at least two
- *      newlines, the place is the first character of the second line.   
+ *      newlines, the place is the first character of the second line.
  */
-/* 
+/*
  * The parsing of commands in Stu only approximates shell syntax.  In
  * actual shell syntax, the characters {} are only recognized as
  * block-opening and -closing in certain circumstances.  For instance:
@@ -446,7 +446,7 @@ shared_ptr <Command> Tokenizer::parse_command()
  * because Stu would then interpret the '}' as an argument to 'echo' --
  * this would be consistent with how the shell parses things, and the
  * solution is to write
- *	 
+ *
  *             >A { echo Hello World ; }
  *
  * This ';' is obligatory in the shell, but not in Stu.  We would like
@@ -479,31 +479,31 @@ shared_ptr <Command> Tokenizer::parse_command()
 	size_t line_command= line; /* The line of the place of the command */
 	size_t column_command= p - p_line; /* The column of the place of
 					    * the command */
-	const size_t line_first= line; /* Where the command started */ 
-	bool begin= true; /* We have not yet seen non-whitespace */ 
+	const size_t line_first= line; /* Where the command started */
+	bool begin= true; /* We have not yet seen non-whitespace */
 
-	string stack= "{"; 
+	string stack= "{";
 	/* Stack of opened parenthesis-like symbols to parse shell
 	 * syntax.  May contain:  {'"`( */
 
 	while (p < p_end) {
-		const char last= stack[stack.size() - 1]; 
+		const char last= stack[stack.size() - 1];
 
 		if (begin) {
 			if (*p == '\n') {
 				if (line == line_first) {
 					line_command= line;
-					column_command= p - p_line; 
+					column_command= p - p_line;
 				} else if (line == line_first + 1) {
-					assert(line_command == line - 1); 
-					line_command= line; 
-					column_command= 0; 
+					assert(line_command == line - 1);
+					line_command= line;
+					column_command= 0;
 				}
 			} else if (! isspace(*p)) {
 				if (*p != '}') {
 					begin= false;
-					line_command= line; 
-					column_command= p - p_line; 
+					line_command= line;
+					column_command= p - p_line;
 				}
 			}
 		}
@@ -517,11 +517,11 @@ shared_ptr <Command> Tokenizer::parse_command()
 					++p;
 					const Place place_command
 						(place_base.type, place_base.text,
-						 line_command, column_command); 
-					return make_shared <Command> 
-						(command, place_command, place_open, environment); 
+						 line_command, column_command);
+					return make_shared <Command>
+						(command, place_command, place_open, environment);
 				} else {
-					++p; 
+					++p;
 				}
 			} else {
 				++p;
@@ -539,18 +539,18 @@ shared_ptr <Command> Tokenizer::parse_command()
 
 		case '\'':
 			if (last == '\'') {
-				stack.resize(stack.size() - 1); 
+				stack.resize(stack.size() - 1);
 				++p;
-			} else if (last == '{' || last == '(') { 
+			} else if (last == '{' || last == '(') {
 				stack += '\'';
 				++p;
-			} else /* last == '"' || last == '`' */ 
+			} else /* last == '"' || last == '`' */
 				++p;
-			break; 
+			break;
 
 		case '"':
 			if (last == '"') {
-				stack.resize(stack.size() - 1); 
+				stack.resize(stack.size() - 1);
 				++p;
 			} else if (last == '\'' || last == '`') {
 				++p;
@@ -558,11 +558,11 @@ shared_ptr <Command> Tokenizer::parse_command()
 				stack += '"';
 				++p;
 			}
-			break; 
+			break;
 
 		case '`':
 			if (last == '`') {
-				stack.resize(stack.size() - 1); 
+				stack.resize(stack.size() - 1);
 				++p;
 			} else if (last == '\'') {
 				++p;
@@ -570,7 +570,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 				stack += *p;
 				++p;
 			}
-			break; 
+			break;
 
 		case '\\':
 			if (last == '\'') {
@@ -597,14 +597,14 @@ shared_ptr <Command> Tokenizer::parse_command()
 		case '(':
 			if (last == '{' || last == '(') {
 				++p;
-				stack += '('; 
+				stack += '(';
 			} else
 				++p;
 			break;
 
 		case ')':
 			if (last == '(') {
-				stack.resize(stack.size() - 1); 
+				stack.resize(stack.size() - 1);
 				++p;
 			} else
 				++p;
@@ -615,7 +615,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 			if (p < p_end && *p == '(') {
 				if (last == '{' || last == '(' || last == '"') {
 					++p;
-					stack += '('; 
+					stack += '(';
 				} else
 					++p;
 			}
@@ -624,7 +624,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 		default:
 			if (*p == '\n') {
 				++line;
-				p_line= p + 1; 
+				p_line= p + 1;
 			}
 			++p;
 		}
@@ -637,8 +637,8 @@ shared_ptr <Command> Tokenizer::parse_command()
 
 shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 {
-	const char *const p_begin= p; 
-	Place place_begin= current_place(); 
+	const char *const p_begin= p;
+	Place place_begin= current_place();
 
 	shared_ptr <Place_Name> ret= make_shared <Place_Name> ("", place_begin);
 
@@ -649,36 +649,36 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 		}
 	}
 
-	bool has_escape= false; 
+	bool has_escape= false;
 	while (p < p_end) {
 		if (!has_escape && *p == '"') {
 			parse_double_quote(*ret);
 		} else if (!has_escape && *p == '\'') {
-			parse_single_quote(*ret); 	
+			parse_single_quote(*ret);
 		} else if (!has_escape && *p == '$') {
 			string parameter;
 			Place place_dollar;
 			if (parse_parameter(parameter, place_dollar)) {
 				ret->append_parameter(parameter, place_dollar);
 			} else {
-				assert(false); 
+				assert(false);
 			}
 		} else if (!has_escape && *p == '\\') {
 			has_escape= parse_escape();
 		} else if (has_escape || is_name_char(*p)) {
-			/* An ordinary character */ 
-			assert(p != p_begin 
+			/* An ordinary character */
+			assert(p != p_begin
 			       || (*p != '-' && *p != '+' && *p != '~')
 			       || allow_special
 			       || has_escape);
-			has_escape= false; 
+			has_escape= false;
 			ret->last_text() += *p++;
 		}
 		else {
 			/* As soon as the name cannot be parsed
-			 * further, stop parsing */  
+			 * further, stop parsing */
 			break;
-		}	
+		}
 	}
 
 	if (ret->empty()) {
@@ -693,16 +693,16 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 
 bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 {
-	assert(p < p_end && *p == '$'); 
+	assert(p < p_end && *p == '$');
 
-	place_dollar= current_place(); 
+	place_dollar= current_place();
 	++p;
-	bool braces= false; 
+	bool braces= false;
 	if (p < p_end && *p == '{') {
 		++p;
-		braces= true; 
+		braces= true;
 	}
-	Place place_parameter_name= current_place(); 
+	Place place_parameter_name= current_place();
 
 	const char *const p_parameter_name= p;
 
@@ -713,63 +713,63 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 	if (braces) {
 		if (p == p_end) {
 			current_place() <<
-				fmt("expected a closing %s", 
+				fmt("expected a closing %s",
 				    char_format_err('}'));
 			place_dollar <<
 				fmt("for parameter started by %s",
-				    multichar_format_err("${")); 
-			explain_parameter_character(); 
+				    multichar_format_err("${"));
+			explain_parameter_character();
 			throw ERROR_LOGICAL;
 		} else if (*p != '}') {
 			current_place() <<
 				fmt("character %s must not appear",
-				    char_format_err(*p)); 
+				    char_format_err(*p));
 			place_dollar <<
 				fmt("in parameter started by %s",
-				    multichar_format_err("${")); 
-			explain_parameter_character(); 
+				    multichar_format_err("${"));
+			explain_parameter_character();
 			throw ERROR_LOGICAL;
-		} 
+		}
 	}
 
 	if (p == p_parameter_name) {
-		if (p < p_end) 
+		if (p < p_end)
 			place_parameter_name <<
 				fmt("expected a parameter name, not %s",
 				    char_format_err(*p));
 		else
 			place_parameter_name <<
 				"expected a parameter name";
-		place_dollar << fmt("after %s", char_format_err('$')); 
-		explain_parameter_syntax(); 
+		place_dollar << fmt("after %s", char_format_err('$'));
+		explain_parameter_syntax();
 		throw ERROR_LOGICAL;
 	}
 
 	parameter= string(p_parameter_name, p - p_parameter_name);
 
 	if (isdigit(parameter[0])) {
-		place_parameter_name << 
+		place_parameter_name <<
 			fmt("parameter name %s must not start with a digit",
-			    prefix_format_err(parameter, "$")); 
+			    prefix_format_err(parameter, "$"));
 		throw ERROR_LOGICAL;
 	}
 	if (braces)
-		++p; 
+		++p;
 
-	return true; 
+	return true;
 }
 
-bool Tokenizer::is_name_char(char c) 
+bool Tokenizer::is_name_char(char c)
 /* The characters in the string constant are those characters that have
  * special meaning (as defined in the manpage), and those reserved for
  * future extension (also defined in the manpage)  */
 {
-	return (c > 0x20 && c < 0x7F /* ASCII printable character except space */ 
+	return (c > 0x20 && c < 0x7F /* ASCII printable character except space */
 		&& nullptr == strchr("[]\"\':={}#<>@$;()%*\\!?|&,", c))
 		|| ((unsigned char) c) >= 0x80;
 }
 
-bool Tokenizer::is_operator_char(char c) 
+bool Tokenizer::is_operator_char(char c)
 {
 	return c != '\0' && nullptr != strchr(":<>=@;()[],|", c);
 }
@@ -779,44 +779,44 @@ bool Tokenizer::is_flag_char(char c)
  * respectively.  'p'/'o'/'t' were '!', '?' and '&' formerly.  The others are
  * new.  */
 {
-	return c == 'p' || c == 'o' || c == 't' || 
+	return c == 'p' || c == 'o' || c == 't' ||
 		c == 'n' || c == '0';
 }
 
-void Tokenizer::parse_version(string version_req, 
+void Tokenizer::parse_version(string version_req,
 			      const Place &place_version,
-			      const Place &place_percent) 
+			      const Place &place_percent)
 /* Note: there may be any number of version directives in Stu (in
  * particular from multiple source files), so we don't keep track
- * whether one has already been provided.  */ 
+ * whether one has already been provided.  */
 {
 	unsigned major_req, minor_req, patch_req;
 	int chars= -1;
 	int n= sscanf(version_req.c_str(), "%u.%u.%u%n",
 		      &major_req, &minor_req, &patch_req, &chars);
 	if (n != 3) {
-		chars= -1; 
+		chars= -1;
 		n= sscanf(version_req.c_str(), "%u.%u%n",
 			  &major_req, &minor_req, &chars);
-		if (n != 2) 
-			goto error; 
+		if (n != 2)
+			goto error;
 	}
-	assert(chars >= 0); 
+	assert(chars >= 0);
 	if ((size_t) chars != version_req.size())
-		goto error; 
+		goto error;
 
-	assert(n == 2 || n == 3); 
+	assert(n == 2 || n == 3);
 
 	if (n == 2) {
-		if (STU_VERSION_MAJOR != major_req || STU_VERSION_MINOR < minor_req) 
+		if (STU_VERSION_MAJOR != major_req || STU_VERSION_MINOR < minor_req)
 			goto wrong_version;
 	} else {
-		if (STU_VERSION_MAJOR != major_req || STU_VERSION_MINOR < minor_req || 
+		if (STU_VERSION_MAJOR != major_req || STU_VERSION_MINOR < minor_req ||
 		    (STU_VERSION_MINOR == minor_req && STU_VERSION_PATCH < patch_req))
-			goto wrong_version; 
+			goto wrong_version;
 	}
 
-	return; 
+	return;
 
  wrong_version: {
 		place_version <<
@@ -829,20 +829,20 @@ void Tokenizer::parse_version(string version_req,
 		throw ERROR_LOGICAL;
 	}
 
- error:	
+ error:
 	place_version <<
 		fmt("expected a version number of the form "
 		    "%sMAJOR.MINOR%s or %sMAJOR.MINOR.PATCH%s, "
 		    "not %s",
 		    Color::word, Color::end,
 		    Color::word, Color::end,
-		    name_format_err(version_req)); 
-	place_percent << fmt("after %s%%version%s", Color::word, Color::end); 
-		    
+		    name_format_err(version_req));
+	place_percent << fmt("after %s%%version%s", Color::word, Color::end);
+
 	throw ERROR_LOGICAL;
 }
 
-void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens, 
+void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			     Context context,
 			     const Place &place_diagnostic)
 {
@@ -850,57 +850,57 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 	/* Output parameter for skip_space(); will become better in C++17. */
 
 	while (p < p_end) {
-		/* Operators except '$' */ 
+		/* Operators except '$' */
 		if (is_operator_char(*p)) {
-			Place place= current_place(); 
+			Place place= current_place();
 			tokens.push_back(make_shared <Operator> (*p, place, environment));
 			++p;
 		}
 
-		/* Variable dependency */ 
+		/* Variable dependency */
 		else if (*p == '$' && p + 1 < p_end && p[1] == '[') {
-			Place place_dollar= current_place(); 
+			Place place_dollar= current_place();
 			Place place_langle(place_base.type, place_base.text,
 					   line, p + 1 - p_line);
 			tokens.push_back(make_shared <Operator> ('$', place_dollar, environment));
-			tokens.push_back(make_shared <Operator> ('[', place_langle, environment)); 
+			tokens.push_back(make_shared <Operator> ('[', place_langle, environment));
 			p += 2;
 		}
 
-		/* Command */ 
+		/* Command */
 		else if (*p == '{') {
 			shared_ptr <Command> token= parse_command();
-			tokens.push_back(token); 
+			tokens.push_back(token);
 		}
 
-		/* Comment */ 
+		/* Comment */
 		else if (*p == '#') {
-			/* Skip the comment without generating any token */ 
+			/* Skip the comment without generating any token */
 			do  ++p;  while (p < p_end && *p != '\n');
-		} 
+		}
 
 		/* Whitespace */
 		else if (skip_space(skipped_actual_space)) {
 			if (skipped_actual_space) {
-				environment |= E_WHITESPACE; 
+				environment |= E_WHITESPACE;
 				goto had_whitespace;
 			}
-		} 
-
-		/* Directive */ 
-		else if (*p == '%') {
-			parse_directive(tokens, context, place_diagnostic); 
 		}
 
-		/* Flag, name, or invalid character */ 		
+		/* Directive */
+		else if (*p == '%') {
+			parse_directive(tokens, context, place_diagnostic);
+		}
+
+		/* Flag, name, or invalid character */
 		else {
-			/* Flag */ 
-			bool allow_special= 
+			/* Flag */
+			bool allow_special=
 				!(environment & E_WHITESPACE)
 				&& !tokens.empty()
 				&& to <Operator> (tokens.back())
 				&& (to <Operator> (tokens.back())->op == ']' ||
-				    to <Operator> (tokens.back())->op == ')'); 
+				    to <Operator> (tokens.back())->op == ')');
 
 			if (p < p_end &&
 			    (*p == '-' || *p == '+' || *p == '~') &&
@@ -909,15 +909,15 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					current_place() <<
 						fmt("an unquoted name must not begin with the character %s",
 						    char_format_err(*p));
-					throw ERROR_LOGICAL; 
+					throw ERROR_LOGICAL;
 				}
-				Place place_dash= current_place(); 
+				Place place_dash= current_place();
 				++p;
-				assert(p <= p_end); 
+				assert(p <= p_end);
 				if (p == p_end) {
 					current_place() << "expected a flag character";
 					place_dash << fmt("after dash %s",
-							  char_format_err('-')); 
+							  char_format_err('-'));
 					throw ERROR_LOGICAL;
 				}
 				char op= *p;
@@ -925,32 +925,32 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					if (isalnum(op)) {
 						current_place() <<
 							fmt("invalid flag %s",
-							    multichar_format_err(frmt("-%c", op))); 
+							    multichar_format_err(frmt("-%c", op)));
 					} else {
 						current_place() <<
 							fmt("expected a flag character, not %s",
-							    char_format_err(op)); 
+							    char_format_err(op));
 						place_dash <<
 							fmt("after dash %s",
-							    char_format_err('-')); 
+							    char_format_err('-'));
 					}
-					explain_flags(); 
-					throw ERROR_LOGICAL; 
+					explain_flags();
+					throw ERROR_LOGICAL;
 				}
-				assert(isalnum(op)); 
-				shared_ptr <Flag_Token> token= make_shared <Flag_Token> 
-					(op, current_place(), environment); 
-				tokens.push_back(token); 
+				assert(isalnum(op));
+				shared_ptr <Flag_Token> token= make_shared <Flag_Token>
+					(op, current_place(), environment);
+				tokens.push_back(token);
 				++p;
-				if (p < p_end && 
+				if (p < p_end &&
 				    (is_name_char(*p) || *p == '"' || *p == '\'' || *p == '$' || *p == '@')) {
 					current_place() <<
 						fmt("expected whitespace before character %s",
 						    char_format_err(*p));
 					token->get_place() <<
 						fmt("after flag %s",
-						    multichar_format_err(frmt("-%c", op))); 
-					throw ERROR_LOGICAL; 
+						    multichar_format_err(frmt("-%c", op)));
+					throw ERROR_LOGICAL;
 				}
 			} else {
 				shared_ptr <Place_Name> place_name= parse_name(allow_special);
@@ -959,39 +959,37 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 						current_place() <<
 							fmt("character %s is invalid for persistent dependencies; use %s instead",
 							    char_format_err('!'),
-							    multichar_format_err("-p")); 
+							    multichar_format_err("-p"));
 					} else if (*p == '?') {
 						current_place() <<
 							fmt("character %s is invalid for optional dependencies; use %s instead",
 							    char_format_err('?'),
-							    multichar_format_err("-o")); 
+							    multichar_format_err("-o"));
 					} else if (*p == '&') {
 						current_place() <<
 							fmt("character %s is invalid for trivial dependencies; use %s instead",
 							    char_format_err('&'),
-							    multichar_format_err("-t")); 
+							    multichar_format_err("-t"));
 					} else {
 						current_place() << fmt("invalid character %s",
 								       char_format_err(*p));
 						if (strchr("#%\'\":;-$@<>={}()[]*\\&|!?,", *p)) {
-							explain_quoted_characters(); 
+							explain_quoted_characters();
 						}
 					}
 					throw ERROR_LOGICAL;
 				}
 				assert(! place_name->empty());
 				tokens.push_back(make_shared <Name_Token>
-						 (*place_name, environment)); 
+						 (*place_name, environment));
 			}
 		}
-		
-		environment &= ~E_WHITESPACE; 
-		
+		environment &= ~E_WHITESPACE;
 	had_whitespace:;
 	}
 }
 
-void Tokenizer::parse_tokens_string(vector <shared_ptr <Token> > &tokens, 
+void Tokenizer::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 				    Context context,
 				    Place &place_end,
 				    string string_,
@@ -1001,11 +999,11 @@ void Tokenizer::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
 	vector <string> filenames;
 	set <string> includes;
 
-	Tokenizer parse(traces, filenames, includes, 
-			place_string, 
+	Tokenizer parse(traces, filenames, includes,
+			place_string,
 			string_.c_str(), string_.size());
 	parse.parse_tokens(tokens, context, place_string);
-	place_end= parse.current_place(); 
+	place_end= parse.current_place();
 }
 
 bool Tokenizer::skip_space(bool &skipped_actual_space)
@@ -1023,49 +1021,49 @@ bool Tokenizer::skip_space(bool &skipped_actual_space)
 				} else {
 					/* A backslash followed by something
 					 * else--this is a normal name character
-					 * and not a space  */ 
+					 * and not a space  */
 					--p;
-					return ret; 
+					return ret;
 				}
 			} else {
 				current_place() << "backslash must be followed by a character";
-				throw ERROR_LOGICAL; 
+				throw ERROR_LOGICAL;
 			}
 		}
 		else if (*p == '\n') {
-			++line;  
+			++line;
 			p_line= p + 1;
 			ret= true;
-			skipped_actual_space= true; 
+			skipped_actual_space= true;
 		} else {
 			ret= true;
-			skipped_actual_space= true; 
+			skipped_actual_space= true;
 		}
-		++p; 
+		++p;
 	}
 	assert(p <= p_end);
-	return ret; 
+	return ret;
 }
 
 void Tokenizer::parse_double_quote(Place_Name &ret)
 {
-	Place place_begin_quote= current_place(); 
+	Place place_begin_quote= current_place();
 	++p;
 
 	while (p < p_end) {
 		if (*p == '"') {
 			++p;
-			goto end_of_double_quote; 
+			goto end_of_double_quote;
 		} else if (*p == '$') {
 			string parameter;
 			Place place_dollar;
 			if (parse_parameter(parameter, place_dollar)) {
 				ret.append_parameter(parameter, place_dollar);
 			} else {
-				assert(false); 
+				assert(false);
 			}
 		} else if (*p == '\\') {
-			Place place_backslash= current_place(); 
+			Place place_backslash= current_place();
 			++p;
 			char c;
 			switch (*p) {
@@ -1083,56 +1081,55 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 			default:
 				if (*p >= 33 && *p <= 126)
 					place_backslash
-						<< frmt("invalid escape sequence %s\\%c%s",  
+						<< frmt("invalid escape sequence %s\\%c%s",
 							Color::word, *p, Color::end);
-				else 
+				else
 					place_backslash
-						<< frmt("invalid escape sequence %s\\\\%03o%s",  
+						<< frmt("invalid escape sequence %s\\\\%03o%s",
 							Color::word,
 							(unsigned char) *p,
 							Color::end);
 				place_begin_quote <<
-					fmt("in quote started by %s", 
+					fmt("in quote started by %s",
 					    char_format_err('"'));
 				throw ERROR_LOGICAL;
 			}
-			ret.last_text() += c; 
+			ret.last_text() += c;
 			++p;
 		} else if (*p == '\0') {
-			current_place() << 
+			current_place() <<
 				fmt("invalid character %s", char_format_err('\0'));
 			place_begin_quote <<
 				fmt("in quote started by %s",
-				    char_format_err('"')); 
+				    char_format_err('"'));
 			throw ERROR_LOGICAL;
 		} else {
 			if (*p == '\n') {
 				++line;
 				p_line= p + 1;
 			}
-			ret.last_text() += *p++; 
+			ret.last_text() += *p++;
 		}
 	}
 	/* Reached end of file without closing the quote */
 	current_place() << fmt("expected a closing %s", char_format_err('"'));
-	place_begin_quote << fmt("for quote started by %s", char_format_err('"')); 
-	throw ERROR_LOGICAL; 
-	
+	place_begin_quote << fmt("for quote started by %s", char_format_err('"'));
+	throw ERROR_LOGICAL;
  end_of_double_quote:;
 }
 
 void Tokenizer::parse_single_quote(Place_Name &ret)
 {
-	Place place_begin_quote= current_place(); 
+	Place place_begin_quote= current_place();
 	++p;
 	while (p < p_end) {
 		if (*p == '\'') {
 			++p;
-			goto end_of_single_quote; 
+			goto end_of_single_quote;
 		} else if (*p == '\0') {
 			current_place() << fmt("invalid character %s", char_format_err(*p));
 			place_begin_quote <<
-				fmt("in quote started by %s", char_format_err('\'')); 
+				fmt("in quote started by %s", char_format_err('\''));
 			throw ERROR_LOGICAL;
 		} else {
 			if (*p == '\n') {
@@ -1144,48 +1141,50 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 	}
 	/* Reached end of file without closing the quote */
 	current_place() << fmt("expected a closing %s", char_format_err('\''));
-	place_begin_quote << fmt("for quote started by %s", char_format_err('\'')); 
-	throw ERROR_LOGICAL; 
+	place_begin_quote << fmt("for quote started by %s", char_format_err('\''));
+	throw ERROR_LOGICAL;
  end_of_single_quote:;
 }
 
 bool Tokenizer::parse_escape()
 {
-	assert(p < p_end && *p == '\\'); 
+	assert(p < p_end && *p == '\\');
 	Place place_escape= current_place();
 	++p;
 	if (p == p_end) {
 		/* Error:  expected a character after \ */
 		place_escape << fmt("expected a character after %s", char_format_err('\\'));
-		throw ERROR_LOGICAL; 
+		throw ERROR_LOGICAL;
 	}
 
 	/* \ followed by newline */
 	if (*p == '\n') {
 		/* Ignore the two */
 		++p;
-		return false; 
+		return false;
 	}
 
 	if (*p == '\0') {
-		place_escape << fmt("expected a non-nul character after %s", char_format_err('\\'));
-		throw ERROR_LOGICAL; 
+		place_escape << fmt
+			("expected a non-nul character after %s",
+			 char_format_err('\\'));
+		throw ERROR_LOGICAL;
 	}
 
 	return true;
 }
 
-void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens, 
+void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 				Context context,
 				const Place &place_diagnostic)
 {
-	Place place_percent= current_place(); 
-	assert(*p == '%'); 
+	Place place_percent= current_place();
+	assert(*p == '%');
 	++p;
 	bool skipped_actual_space;
-	skip_space(skipped_actual_space); 
+	skip_space(skipped_actual_space);
 	const char *const p_name= p;
-	Place place_directive= current_place(); 
+	Place place_directive= current_place();
 
 	while (p < p_end && isalnum(*p)) {
 		++p;
@@ -1199,28 +1198,28 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 		else
 			place_directive
 				<< "expected a directive name";
-		place_percent << fmt("after %s", char_format_err('%')); 
-		throw ERROR_LOGICAL; 
+		place_percent << fmt("after %s", char_format_err('%'));
+		throw ERROR_LOGICAL;
 	}
 
-	const string name(p_name, p - p_name); 
-	skip_space(skipped_actual_space); 
+	const string name(p_name, p - p_name);
+	skip_space(skipped_actual_space);
 
 	if (name == "include") {
 		if (context == DYNAMIC) {
-			place_percent 
+			place_percent
 				<< frmt("%s%%include%s must not appear in dynamic dependencies",
 					Color::word, Color::end);
 			throw ERROR_LOGICAL;
 		}
 		if (context == OPTION_C || context == OPTION_F) {
-			place_percent 
+			place_percent
 				<< frmt("%s%%include%s must not be used",
 					Color::word, Color::end);
 			throw ERROR_LOGICAL;
 		}
 
-		shared_ptr <Place_Name> place_name= parse_name(false); 
+		shared_ptr <Place_Name> place_name= parse_name(false);
 
 		if (place_name == nullptr) {
 			current_place() <<
@@ -1228,32 +1227,31 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 				 ? "expected a filename"
 				 : fmt("expected a filename, not %s", char_format_err(*p)));
 			place_percent << frmt("after %s%%include%s",
-					      Color::word, Color::end); 
+					      Color::word, Color::end);
 			throw ERROR_LOGICAL;
 		}
-				
 		if (place_name->get_n() != 0) {
 			place_name->place <<
 				fmt("name %s must not be parametrized",
 				    place_name->format_err());
 			place_percent << frmt("after %s%%include%s",
-					      Color::word, Color::end); 
+					      Color::word, Color::end);
 			throw ERROR_LOGICAL;
 		}
-			
+
 		const string filename_include= place_name->unparametrized();
 		Trace trace_stack
 			(place_name->place,
-			 fmt("%s is included from here", 
-			     name_format_err(filename_include))); 
+			 fmt("%s is included from here",
+			     name_format_err(filename_include)));
 		traces.push_back(trace_stack);
-		filenames.push_back(place_base.text); 
+		filenames.push_back(place_base.text);
 
 		if (includes.count(filename_include)) {
 			/* Do nothing -- file was already parsed, or is being
 			 * parsed.  It is an error if a file includes itself
 			 * directly or indirectly.  It it ignored if a file is
-			 * included a second time non-recursively.  */ 
+			 * included a second time non-recursively.  */
 			for (auto &i:  filenames) {
 				if (filename_include != i)
 					continue;
@@ -1261,56 +1259,53 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 				for (auto j= traces.rbegin();  j != traces.rend(); ++j) {
 					Trace trace(*j);
 					if (j == traces.rbegin()) {
-						trace.message= 
-							fmt("recursive inclusion of %s using %s%%include%s", 
+						trace.message=
+							fmt("recursive inclusion of %s using %s%%include%s",
 							    name_format_err(filename_include),
 							    Color::word, Color::end);
 					}
-					traces_backward.push_back(trace); 
+					traces_backward.push_back(trace);
 				}
 				for (auto &j:  traces_backward) {
-					j.print(); 
+					j.print();
 				}
 				throw ERROR_LOGICAL;
 			}
 		} else {
 			/* Ignore the end place; it is only used for the
-			 * top-level file  */   
-			Place place_end_sub; 
-			parse_tokens_file(tokens, 
+			 * top-level file  */
+			Place place_end_sub;
+			parse_tokens_file(tokens,
 					  Tokenizer::SOURCE,
-					  place_end_sub, 
-					  filename_include, 
-					  traces, filenames, includes, 
-					  place_diagnostic,
-					  -1);
+					  place_end_sub,
+					  filename_include,
+					  traces, filenames, includes,
+					  place_diagnostic, -1);
 		}
-		traces.pop_back(); 
-		filenames.pop_back(); 
+		traces.pop_back();
+		filenames.pop_back();
 
 	} else if (name == "version") {
 		while (p < p_end && isspace(*p)) {
 			if (*p == '\n') {
-				++line;  
-				p_line= p + 1; 
+				++line;
+				p_line= p + 1;
 			}
-			++p; 
+			++p;
 		}
 		const char *const p_version= p;
 		while (p < p_end && is_name_char(*p)) {
 			++p;
 		}
-		const string version_required(p_version, p - p_version); 
+		const string version_required(p_version, p - p_version);
 		Place place_version(place_base.type, place_base.text,
-				    line, p_version - p_line); 
-
-		parse_version(version_required, place_version, place_percent); 
-				
+				    line, p_version - p_line);
+		parse_version(version_required, place_version, place_percent);
 	} else {
-		/* Invalid directive */ 
-		place_percent << 
-			fmt("invalid directive %s", 
-			    prefix_format_err(name, "%")); 
+		/* Invalid directive */
+		place_percent <<
+			fmt("invalid directive %s",
+			    prefix_format_err(name, "%"));
 		throw ERROR_LOGICAL;
 	}
 }

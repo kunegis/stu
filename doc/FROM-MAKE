@@ -3,30 +3,30 @@ Migrating from Make to Stu
 
 A common pattern is to have a Makefile, and converting it to a Stu
 script.  Here are some things to keep in mind for migrating from Make to
-Stu. 
+Stu.
 
-* Instead of Make variables, use files or transient targets 
+* Instead of Make variables, use files or transient targets
 
-Instead of 
+Instead of
 
    DATASETS = aaa bbb ccc
 
 use
- 
+
    DATASETS = { aaa bbb ccc }
 
-and then just access the file 'DATASETS'. 
+and then just access the file 'DATASETS'.
 
 Instead of
 
 FILES = aaa.h bbb.h ccc.h
 
-Use 
+Use
 
 @files:  aaa.h bbb.h ccc.h;
 
 * Phony targets are called transient targets, and they have their own
-  namespace, using the '@' prefix. 
+  namespace, using the '@' prefix.
 
 * Use the options -o, -t and -p judiciously
 

@@ -2,34 +2,34 @@
 =========================
 
 This is Stu, a build tool in the spirit of Make, but with three features
-that set it apart:  
+that set it apart:
 
 * Parametrized rules:  Like GNU Make's '%' character, but there can be
   multiple parameters, and they have names.  The syntax is '$NAME',
   where NAME can be any string.  Parameters are injected transparently
-  into the commands. 
+  into the commands.
 * Dynamic dependencies:  The dependencies of a target can be generated
   dynamically.  When a dependency is enclosed in square brackets, it means
   that that file is built and dependencies are read from within that
-  file. 
+  file.
 * Parentheses and brackets support concatenation, allowing parametrized
-  filenames to be generated in the first place. 
+  filenames to be generated in the first place.
 
 In many scenarios, these three features interact judiciously to give
 very concise and easy to understand constructs that are nearly
-impossible to realize with Make. 
+impossible to realize with Make.
 
 See these blog articles for motivation:
 
 https://networkscience.wordpress.com/2018/01/15/the-build-system-stu-in-practice/
 https://networkscience.wordpress.com/2017/08/15/an-update-on-the-stu-build-system-stu-2-5/
 
-For documentation, compile and read the manpage, or go directly to: 
+For documentation, compile and read the manpage, or go directly to:
 
 https://raw.githubusercontent.com/kunegis/stu/master/MANPAGE
 
 For more specific documentation of particular aspects of Stu, see the
-files in the doc/ directory. 
+files in the doc/ directory.
 
 ------
  News
@@ -38,9 +38,9 @@ files in the doc/ directory.
 - Version 2.6 is out:  canonicalization of filenames is implemented
 
 - Tip:  Set "export STU_OPTIONS=-E" in your .bashrc file to get
-  explanations of common error messages in Stu. 
+  explanations of common error messages in Stu.
 
-See the file 'NEWS' for more news. 
+See the file 'NEWS' for more news.
 
 --------------------
  Installation Guide
@@ -55,14 +55,14 @@ problem getting it to run on vanilla Linux and other POSIX-compliant platforms.
 * Package for Arch Linux:  https://aur.archlinux.org/packages/stu-git/
 
 If you're interested in making Stu packages available for other
-operating systems and need help, please contact <kunegis@gmail.com>. 
+operating systems and need help, please contact <kunegis@gmail.com>.
 
 ---------
  Use Stu
 ---------
 
 To use Stu, replace your 'Makefile' with a 'main.stu' file, and instead
-of calling 'make', call 'stu'. 
+of calling 'make', call 'stu'.
 
 To see an example of Stu used in a large data mining project, see the
 file 'main.stu' in the KONECT-Analysis project:
@@ -70,7 +70,7 @@ file 'main.stu' in the KONECT-Analysis project:
 https://github.com/kunegis/konect-analysis/blob/master/main.stu
 
 -------
- About 
+ About
 -------
 
 Stu was originally written to accommodate the KONECT project (Koblenz
@@ -89,7 +89,7 @@ the author of the original Unix Make, Stuart Feldman.
 Stu was initiated by Jérôme Kunegis at the University of Koblenz-Landau
 (Germany), was then maintained at the University of Namur (Belgium), and is now
 maintained by Jérôme Kunegis privately, with help from other contributors; see
-the file AUTHORS.  
+the file AUTHORS.
 
 Stu is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free
@@ -101,7 +101,7 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
-For support, write to Jérôme Kunegis <kunegis@gmail.com>, or go to 
+For support, write to Jérôme Kunegis <kunegis@gmail.com>, or go to
 
 https://github.com/kunegis/stu
 

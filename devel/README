@@ -5,9 +5,9 @@ This is information for hacking Stu itself.
 
 'TODO.stu' lists the next features to be implemented.
 
-'UNIMPLEMENTED.stu' lists things we're unlikely to implement. 
+'UNIMPLEMENTED.stu' lists things we're unlikely to implement.
 
-'CODING' gives the coding standards used in Stu. 
+'CODING' gives the coding standards used in Stu.
 
 ==== SETUP ====
 
@@ -17,10 +17,10 @@ Before pushing changes:
 * Increment the version number in VERSION
 * Run 'make test' successfully
 
-Version logic (see 'NEWS' for an explanation of version numbers): 
+Version logic (see 'NEWS' for an explanation of version numbers):
 * Increment the patch version number for any changes
 * Increment the minor version number when backward-compatible new syntax
-  is introduced   
+  is introduced
 * Increment the major version number when backward-incompatible new
   syntax is introduced (which we try to avoid)
 
@@ -34,16 +34,16 @@ authors'.
 
 ==== UNIT TESTS ====
 
-Unit testing is described in 'sh/test'. 
+Unit testing is described in 'sh/test'.
 
 The command 'make test' will also execute all unit tests.  This takes about
 ten minutes.
 
 When we add new functionality, we always add unit tests for it, covering
-both success and failure.  
+both success and failure.
 
 If you run the tests and they fail, report that to Jérôme Kunegis
-<kunegis@gmail.com>.  
+<kunegis@gmail.com>.
 
 ==== REQUIREMENTS ====
 
@@ -51,6 +51,6 @@ Running 'make test' has more requirements than just compiling Stu:
 
 * The unit tests assume that the file system supports UTF-8 filenames.
   Stu will work without such a file system, but you can't run the unit
-  tests unless you remove the offending tests (tests/1-unicode-*/).  
+  tests unless you remove the offending tests (tests/1-unicode-*/).
 * You need to install the package 'expect'.  On some systems, also 'tclsh'.
-  (Exact packages vary by operating system.) 
+  (Exact packages vary by operating system.)

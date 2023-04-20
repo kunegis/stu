@@ -5,8 +5,8 @@
  * These are bits set for individual execution objects.  The semantics of each
  * is chosen such that in a new execution object, the value is zero.  The
  * semantics of the different bits are distinct and could just as well be
- * realized as individual "bool" variables.  
- */ 
+ * realized as individual "bool" variables.
+ */
 
 typedef unsigned Bits;
 
@@ -19,7 +19,7 @@ enum {
 	/* Whether a certain check has been performed.  Only used by
 	 * File_Execution.  */
 
-	B_EXISTING	= 1 << 2, 
+	B_EXISTING	= 1 << 2,
 	/* All file targets are known to exist (only in File_Execution; may be
 	 * set when there are no file targets).  */
 

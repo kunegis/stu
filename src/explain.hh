@@ -1,24 +1,24 @@
 #ifndef EXPLAIN_HH
 #define EXPLAIN_HH
 
-/* 
+/*
  * Explanation functions: they output an explanation of a feature of Stu
  * on standard error output.  This is used after certain non-trivial
  * error messages, and is enabled by the -E option.
  *
- * Many of these texts echo parts of the manpage. 
+ * Many of these texts echo parts of the manpage.
  *
  * The line lengths in the printed output are set by hand and are
- * approximate.   
+ * approximate.
  */
 
-void explain_clash() 
+void explain_clash()
 {
 	if (! option_explain)  return;
 	fputs("Explanation: A dependency cannot be declared as persistent (with '-p') and\n"
 	      "optional (with '-o') at the same time, as that would mean that its command\n"
 	      "is never executed.\n",
-	      stderr); 
+	      stderr);
 }
 
 void explain_file_without_command_with_dependencies()
@@ -27,7 +27,7 @@ void explain_file_without_command_with_dependencies()
 	fputs("Explanation: If a file rule has no command, this means that the file\n"
 	      "is always up-to-date whenever its dependencies are up to date.  In general,\n"
 	      "this means that the file is generated in conjunction with its dependencies.\n",
-	      stderr); 
+	      stderr);
 }
 
 void explain_file_without_command_without_dependencies()
@@ -35,7 +35,7 @@ void explain_file_without_command_without_dependencies()
 	if (! option_explain)  return;
 	fputs("Explanation: A filename followed by a semicolon declares a file that is\n"
 	      "always present.\n",
-	      stderr); 
+	      stderr);
 }
 
 void explain_no_target()
@@ -45,7 +45,7 @@ void explain_no_target()
 	      "invocation, one of the target-specifying options -c/-C/-p/-o/-n/-0,\n"
 	      "an -f option with a default target, a file 'main.stu' with a default\n"
 	      "target, or an -F option.\n",
-	      stderr); 
+	      stderr);
 }
 
 void explain_parameter_character()
@@ -53,14 +53,14 @@ void explain_parameter_character()
 	if (! option_explain)  return;
 	fputs("Explanation: Parameter names can only include alphanumeric characters\n"
 	      "and underscores.\n",
-	      stderr); 
+	      stderr);
 }
 
 void explain_cycle()
 {
 	if (! option_explain)  return;
 	fputs("Explanation: A cycle in the dependency graph is an error.  Cycles are \n"
-	      "verified on the rule level, not on the target level.\n", 
+	      "verified on the rule level, not on the target level.\n",
 	      stderr);
 }
 
@@ -69,7 +69,7 @@ void explain_startup_time()
 	if (! option_explain)  return;
 	fputs("Explanation: If a created file has a timestamp older than the startup of Stu,\n"
 	      "a clock skew is likely.\n",
-	      stderr); 
+	      stderr);
 }
 
 void explain_variable_equal()
@@ -80,7 +80,7 @@ void explain_variable_equal()
 	      "when passing environment variables to child processes.\n"
 	      "The syntax $[VARIABLENAME = FILENAME] can be used to use a different\n"
 	      "name for the variable.\n",
-	      stderr); 
+	      stderr);
 }
 
 void explain_version()
@@ -92,7 +92,7 @@ void explain_version()
 	      "(b) 'Y' is larger than Stu's minor version number, or (c) 'X' equals Stu's\n"
 	      "minor version number and 'Z' is larger than Stu's patch level.  These rules\n"
 	      "correspond to the SemVer.org version semantics.\n",
-	      stderr); 
+	      stderr);
 }
 
 void explain_minimal_matching_rule()
@@ -105,7 +105,7 @@ void explain_minimal_matching_rule()
 	      "inside a matched parameter in rule (y), and at least one character of the name\n"
 	      "is part of a matched parameter in rule (y) but not in rule (x).  It is an error when\n"
 	      "there is no single matching rule that dominates all other matching rules.\n",
-	      stderr); 
+	      stderr);
 }
 
 void explain_separated_parameters()
@@ -116,15 +116,15 @@ void explain_separated_parameters()
 	      "text matching the two parameters as a whole into two parts.  Therefore, there\n"
 	      "must always be at least one character between any two parameters in a target name.\n"
 	      "This restriction is not used with parameters in dependencies, as they are not matched.\n",
-	      stderr); 
+	      stderr);
 }
 
-void explain_flags() 
+void explain_flags()
 {
 	if (! option_explain)  return;
 	fputs("Explanation: The valid flags are -p (persistent dependency), -o (optional dependency),\n"
 	      "and -t (trivial dependency).\n",
-	      stderr); 
+	      stderr);
 }
 
 void explain_quoted_characters()
@@ -132,7 +132,7 @@ void explain_quoted_characters()
 	if (! option_explain)  return;
 	fputs("Explanation: The following characters must always be quoted when appearing in names:\n"
 	      "\t#%\'\":;-$@<>={}()[]*\\&|!?,\n",
-	      stderr); 
+	      stderr);
 }
 
 void explain_missing_optional_copy_source()
@@ -142,7 +142,7 @@ void explain_missing_optional_copy_source()
 	       "using the -o option, the source file may be missing only if the target file\n"
 	       "is present.  It is an error if both the source and the target files\n"
 	       "are missing.\n",
-	       stderr); 
+	       stderr);
 }
 
 void explain_parameter_syntax()
@@ -151,8 +151,8 @@ void explain_parameter_syntax()
 	fputs("Explanation: Parameters are introduced by the dollar sign, followed by the\n"
 	      "parameter name, optionally surrounded by braces, and optionally enclosed in\n"
 	      "double quotes.  Thus, valid ways to write a parameter are:\n"
-	      "\t$name    ${name}    \"...$name...\"    \"...${name}...\"\n", 
-	      stderr); 
+	      "\t$name    ${name}    \"...$name...\"    \"...${name}...\"\n",
+	      stderr);
 }
 
 #endif /* ! EXPLAIN_HH */

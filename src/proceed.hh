@@ -4,7 +4,7 @@
 /*
  * This is used as the return value of the functions Execution::execute*().
  * Defined as typedef to make arithmetic with it.
- */  
+ */
 
 typedef unsigned Proceed;
 
@@ -18,10 +18,10 @@ enum {
 	/* The function execute() should be called again for this
 	 * execution (without waiting) at least, for various reasons,
 	 * mostly for randomization of execution order.  */
-		
+
 	P_FINISHED = 1 << 2,
-	/* This Execution is finished */ 
-		
+	/* This Execution is finished */
+
 	P_ABORT    = 1 << 3,
 	/* This Execution should be finished immediately.  When set,
 	 * P_FINISHED is also set.  This does not imply that there was

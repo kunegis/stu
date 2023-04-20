@@ -6,7 +6,7 @@ $ make
 $ sudo make install
 
 This will compile and install Stu as well as its manpage on your
-system. 
+system.
 
 To install in a specific directory, set $prefix when doing "make install".  The
 default is "/usr/local".
@@ -29,8 +29,7 @@ fetch the current version from Github and compile it locally:
 
 https://aur.archlinux.org/packages/stu-git/
 
-Credits for the package go to Holger Heinz (hheinz). 
-
+Credits for the package go to Holger Heinz (hheinz).
 
 ==== REQUIREMENTS ====
 
@@ -39,19 +38,19 @@ Stu requires:
 * A C++ 14 compiler
 
 In addition, Stu uses the following features, about which we are not
-100% sure that they are prescribed by POSIX: 
+100% sure that they are prescribed by POSIX:
 * ASCII or an ASCII-compatible 8-bit encoding such as UTF-8 or ISO-8859-1
 * ANSI color code-compatible terminal (terminfo or termcap are not used)
 * "make install" uses the "install" tool, which is portable but not
-  standardized. 
+  standardized.
 
 If you want to develop Stu (or run the tests), there are more dependencies, see
-devel/DEVEL. 
+devel/DEVEL.
 
 ==== COMPILATION OPTIONS ====
 
 These are detected automatically by sh/conf, but you may change them
-by hand if necessary. 
+by hand if necessary.
 
 * USE_MTIM (default: enabled if CLOCK_REALTIME_COARSE is present):  Use
   struct timespec instead of time_t for timekeeping.  struct timespec
@@ -63,7 +62,7 @@ by hand if necessary.
 ==== UNIT TESTS ====
 
 This is optional, but will give you confidence that your compiled Stu
-works correctly. 
+works correctly.
 
 Execute all unit tests using 'make test'.  If an error is reported, report
 it to <kunegis@gmail.com>.  It takes about five minutes (running the tests, not

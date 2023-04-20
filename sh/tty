@@ -1,8 +1,8 @@
 #! /bin/sh
 #
-# Simulate a TTY:  Execute the given COMMAND as if in a TTY. 
+# Simulate a TTY:  Execute the given COMMAND as if in a TTY.
 #
-# INVOCATION 
+# INVOCATION
 #
 #	sh/tty COMMAND
 #

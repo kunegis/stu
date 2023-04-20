@@ -1,40 +1,40 @@
 == Descriptions of Stu ==
 
-What is Stu?  
+What is Stu?
 
 This is a difficult question, since Stu can be interpreted as different
 things.  This list tries to catalogue the different ways in which Stu
-can be described. 
+can be described.
 
 ________________________________________________________________________
 
-* A build tool like Make, but with better support for sets of files. 
+* A build tool like Make, but with better support for sets of files.
   -> This goes without saying, and is usually the easiest way to explain
-  Stu to people. 
+  Stu to people.
 
-* A declarative programming language in which all objects are files. 
+* A declarative programming language in which all objects are files.
   -> Files are basic object of Stu, and thus Stu can be described as a
   programming language in which all variables are files.  Of course, Stu
   can never be used _alone_, because it needs to call other programs to
   actually do something in each command.  But when a shell and a basic
   Unix programming environment is assumed, this is actually a very apt
-  description of Stu. 
+  description of Stu.
 
-* A declarative extension of the shell. 
+* A declarative extension of the shell.
   -> This is a similar argument to the previous.  Only that it doesn't
   claim to make Stu a programming language, since it always needs to
   call other programs to do anything.  Which is exactly what a shell
-  is. 
+  is.
 
-* A build automation tool for data mining. 
+* A build automation tool for data mining.
   -> This is how Stu is used in practice, but in general we don't want
   to limit Stu to one particular area, so we haven't emphasised the
   "data mining" aspect.  Also, we don't want Stu to have specific
   functions for a particular applications, so we're not adding any data
   mining functions to Stu.  But it remains the case that Stu is
-  extremely convenient here. 
+  extremely convenient here.
 
-* An alternative to things like "Python notebook" and Excel. 
+* An alternative to things like "Python notebook" and Excel.
   -> Both allow the user to enter formulas, which are then updated (i.e.,
   reexecuted) automatically.  Both are graphical user interfaces, and neither
   can be integrated into other build processes, and neither can easily call

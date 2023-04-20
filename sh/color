@@ -9,7 +9,7 @@
 #
 # STDOUT
 #	The output and error output of the tests, including color
-# 	codes.  Can for instance be piped into less -R to see all. 
+# 	codes.  Can for instance be piped into less -R to see all.
 #
 
 rm -f bin/stu.test || exit 2
@@ -54,13 +54,13 @@ do
 		echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 		echo "~~~~~~~~~~~ $file"
 		echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-		echo 
+		echo
 
 		# 'sh/tty' makes sure that Stu sees stderr as a TTY,
-		# and outputs both stdout and stderr of Stu to stdout. 
-		eval ../../sh/tty ../../bin/stu.test $CMD 
+		# and outputs both stdout and stderr of Stu to stdout.
+		eval ../../sh/tty ../../bin/stu.test $CMD
 
-		echo 
+		echo
 
 		../../sh/rm_tmps || exit 2
 	fi

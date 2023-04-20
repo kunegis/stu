@@ -1,11 +1,11 @@
 Flags in Stu apply to individual dependencies, and have a syntax
 reminiscent of shell options.  More precisely, they can be thought as
-applying to each edge in the dependency graph. 
+applying to each edge in the dependency graph.
 
-== List of flags == 
+== List of flags ==
 
 -o 	Optional dependency
 -p	Persistent dependency
 -t	Transient dependency
 
-The flags -o and -p are mutually exclusive. 
+The flags -o and -p are mutually exclusive.

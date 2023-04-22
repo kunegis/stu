@@ -163,28 +163,23 @@ protected:
 
 	int error;
 	/* Error value of this execution.  The value is propagated
-	 * (using '|') to the parent.  Values correspond to constants
-	 * defined in error.hh; zero denotes the absence of an
-	 * error.  */
+	 * (using '|') to the parent.  */
 
 	map <Execution *, shared_ptr <const Dep> > parents;
-	/* The parent executions.  This is a map rather than an
-	 * unsorted_map because typically, the number of elements is
-	 * always very small, i.e., mostly one, and a map is better
-	 * suited in this case.  The map is sorted, but by the execution
-	 * pointer, i.e., the sorting is arbitrary as far as Stu is
+	/* This is a map rather than an unsorted_map because typically, the
+	 * number of elements is always very small, i.e., mostly one, and a map
+	 * is better suited in this case.  The map is sorted, but by the
+	 * execution pointer, i.e., the sorting is arbitrary as far as Stu is
 	 * concerned.  */
 
 	set <Execution *> children;
-	/* Currently connected executions */
 
 	Timestamp timestamp;
-	/* Latest timestamp of a (direct or indirect) dependency
-	 * that was not rebuilt.  Files that were rebuilt are not
-	 * considered, since they make the target be rebuilt anyway.
-	 * Implementations also changes this to consider the file
-	 * itself, if any.  This final timestamp is then carried over to the
-	 * parent executions.  */
+	/* Latest timestamp of a (direct or indirect) dependency that was not
+	 * rebuilt.  Files that were rebuilt are not considered, since they make
+	 * the target be rebuilt anyway.  Implementations also changes this to
+	 * consider the file itself, if any.  This final timestamp is then
+	 * carried over to the parent executions.  */
 
 	vector <shared_ptr <const Dep> > result;
 	/* The final list of dependencies represented by the target.
@@ -248,9 +243,7 @@ protected:
 			shared_ptr <const Dep> dep_child);
 	void disconnect(Execution *const child,
 			shared_ptr <const Dep> dep_child);
-	/* Remove an edge from the dependency graph.  Propagate
-	 * information from CHILD to THIS, and then delete CHILD if
-	 * necessary.  */
+	/* Remove an edge from the dependency graph. */
 
 	const Place &get_place() const
 	/* The place for the execution; e.g. the rule; empty if there is no place */
@@ -343,23 +336,7 @@ private:
 		return flags & F_RESULT_NOTIFY;
 	}
 	static bool same_dependency_for_print(shared_ptr <const Dep> d1,
-					      shared_ptr <const Dep> d2)
-	{
-		shared_ptr <const Plain_Dep> p1=
-			to <Plain_Dep> (d1);
-		shared_ptr <const Plain_Dep> p2=
-			to <Plain_Dep> (d2);
-		if (!p1 && to <Dynamic_Dep> (d1))
-			p1= to <Plain_Dep>
-				(Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d1)));
-		if (!p2 && to <Dynamic_Dep> (d2))
-			p2= to <Plain_Dep>
-				(Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d2)));
-		if (! (p1 && p2))
-			return false;
-		return p1->place_param_target.unparametrized()
-			== p2->place_param_target.unparametrized();
-	}
+					      shared_ptr <const Dep> d2);
 };
 
 class File_Execution
@@ -411,7 +388,8 @@ public:
 		return targets.front().format_src();
 	}
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
-		mapping_variable.insert(result_variable_child.begin(), result_variable_child.end());
+		mapping_variable.insert(result_variable_child.begin(),
+					result_variable_child.end());
 	}
 
 	static size_t executions_by_pid_size;
@@ -436,12 +414,10 @@ public:
 	 * new.  */
 
 protected:
-
 	virtual bool optional_finished(shared_ptr <const Dep> dep_link);
 	virtual int get_depth() const {  return 0;  }
 
 private:
-
 	friend class Execution;
 
 	/* The following two functions are called from signal handlers,
@@ -479,15 +455,11 @@ private:
 	 * functions.  Used to delete partially-built files.  */
 
 	shared_ptr <const Rule> rule;
-	/* The instantiated file rule for this execution.  Null when
-	 * there is no rule for this file (this happens for instance
-	 * when a source code file is given as a dependency).
-	 * Individual dynamic dependencies do have rules, in order for
-	 * cycles to be detected.  Null if and only if PARAM_RULE is
-	 * null.  */
+	/* The instantiated file rule.  Null when there is no rule for this
+	 * file.  Individual dynamic dependencies do have rules, in order for
+	 * cycles to be detected.  Null if and only if PARAM_RULE is null.  */
 
 	Job job;
-	/* The job used to execute this rule's command */
 
 	map <string, string> mapping_parameter;
 	/* Variable assignments from parameters for when the command is run */
@@ -524,8 +496,6 @@ private:
 	 * MESSAGE_EXTRA may be null to not show an extra message.  */
 
 	void print_command() const;
-	/* Print the command and its associated variable assignments,
-	 * according to the selected verbosity level.  */
 
 	void print_as_job() const;
 	/* Print a line to stdout for a running job, as output of SIGUSR1.
@@ -553,7 +523,6 @@ class Transient_Execution
 	:  public Execution
 {
 public:
-
 	Transient_Execution(shared_ptr <const Dep> dep_link,
 			    Execution *parent,
 			    shared_ptr <const Rule> rule,
@@ -573,25 +542,25 @@ public:
 				   Flags flags,
 				   shared_ptr <const Dep> dep_source);
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
-		result_variable.insert(result_variable_child.begin(), result_variable_child.end());
+		result_variable.insert(result_variable_child.begin(),
+				       result_variable_child.end());
 	}
 
 protected:
-
 	virtual int get_depth() const {  return 0;  }
 	virtual bool optional_finished(shared_ptr <const Dep> ) {  return false;  }
 
 private:
+	~Transient_Execution();
 
 	vector <Target> targets;
 	/* The targets to which this execution object corresponds.  All
 	 * are transients.  Contains at least one element.  */
 
 	shared_ptr <const Rule> rule;
-	/* The instantiated file rule for this execution.  Never null. */
+	/* The instantiated file rule for this execution.  Not null. */
 
 	Timestamp timestamp_old;
-
 	bool is_finished;
 
 	map <string, string> mapping_parameter;
@@ -601,8 +570,6 @@ private:
 	/* Variable assignments from variables dependencies.  This is in
 	 * Transient_Execution because it may be percolated up to the
 	 * parent execution.  */
-
-	~Transient_Execution();
 };
 
 class Root_Execution
@@ -640,7 +607,6 @@ class Concat_Execution
 	:  public Execution
 {
 public:
-
 	Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 			 Execution *parent,
 			 int &error_additional);
@@ -657,26 +623,25 @@ public:
 	virtual string format_src() const {  return dep->format_src();  }
 
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
-		result_variable.insert(result_variable_child.begin(), result_variable_child.end());
+		result_variable.insert(result_variable_child.begin(),
+				       result_variable_child.end());
 	}
 	virtual void notify_result(shared_ptr <const Dep> dep,
 				   Execution *source,
 				   Flags flags,
 				   shared_ptr <const Dep> dep_source);
-protected:
 
+protected:
 	virtual bool optional_finished(shared_ptr <const Dep> ) {  return false;  }
 
 private:
+	typedef unsigned Stage;
+	enum { S_DYNAMIC, S_NORMAL, S_FINISHED };
 
 	shared_ptr <const Concat_Dep> dep;
-	/* Contains the concatenation.  This is a normalized. */
+	/* Contains the concatenation.  This is a normalized dependency. */
 
-	unsigned stage;
-	/* 0:  running dynamic children
-	 * 1:  running normal children
-	 * 2:  finished  */
-
+	Stage stage;
 	vector <shared_ptr <Compound_Dep> > collected;
 
 	void launch_stage_1();
@@ -717,7 +682,8 @@ public:
 	virtual bool optional_finished(shared_ptr <const Dep> ) {  return false;  }
 	virtual string format_src() const;
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
-		result_variable.insert(result_variable_child.begin(), result_variable_child.end());
+		result_variable.insert(result_variable_child.begin(),
+				       result_variable_child.end());
 	}
 	virtual void notify_result(shared_ptr <const Dep> dep,
 				   Execution *source,
@@ -732,7 +698,10 @@ private:
 };
 
 Rule_Set Execution::rule_set;
-Timestamp Execution::timestamp_last; /* Initialized to zero, i.e., older than the current date */
+
+Timestamp Execution::timestamp_last;
+/* Initialized to zero, i.e., older than the current date */
+
 bool Execution::hide_out_message= false;
 bool Execution::out_message_done= false;
 unordered_map <Target, Execution *> Execution::executions_by_target;
@@ -748,23 +717,22 @@ void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			     Execution *dynamic_execution)
 {
 	try {
-		const Place_Param_Target &place_param_target= to <Plain_Dep> (dep_target)->place_param_target;
-
+		const Place_Param_Target &place_param_target=
+			to <Plain_Dep> (dep_target)->place_param_target;
 		assert(place_param_target.place_name.get_n() == 0);
-
 		const Target target= place_param_target.unparametrized();
 		assert(deps.empty());
 
 		/* Check:  variable dependencies are not allowed in multiply
 		 * dynamic dependencies.  */
 		if (dep_target->flags & F_VARIABLE) {
-			dep_target->get_place() << fmt("variable dependency %s must not appear",
-						       dep_target->format_err());
+			dep_target->get_place() <<
+				fmt("variable dependency %s must not appear",
+				    dep_target->format_err());
 			*this << fmt("within multiply-dynamic dependency %s",
 				     dep->format_err());
 			raise(ERROR_LOGICAL);
 		}
-
 		if (place_param_target.flags & F_TARGET_TRANSIENT)
 			return;
 
@@ -813,10 +781,8 @@ void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 
 		} else {
 			/* Delimiter-separated dynamic dependency (-n/-0) */
-
 			const char c= (dep_target->flags & F_NEWLINE_SEPARATED) ? '\n' : '\0';
 			/* The delimiter */
-
 			const char c_printed= (dep_target->flags & F_NEWLINE_SEPARATED) ? 'n' : '0';
 			/* The character to print as the delimiter in output */
 
@@ -895,7 +861,6 @@ bool Execution::find_cycle(vector <Execution *> &path,
 		cycle_print(path, dep_link);
 		return true;
 	}
-
 	for (auto &i:  path.back()->parents) {
 		Execution *next= i.first;
 		assert(next != nullptr);
@@ -926,8 +891,8 @@ void Execution::cycle_print(const vector <Execution *> &path,
 {
 	assert(path.size() > 0);
 
-	/* Indexes are parallel to PATH */
 	vector <string> names;
+	/* Indexes are parallel to PATH */
 	names.resize(path.size());
 
 	for (size_t i= 0;  i + 1 < path.size();  ++i) {
@@ -936,15 +901,13 @@ void Execution::cycle_print(const vector <Execution *> &path,
 	names.back()= path.back()->parents.begin()->second->format_err();
 
 	for (ssize_t i= path.size() - 1;  i >= 0;  --i) {
-
 		shared_ptr <const Dep> d= i == 0
 			? dep
 			: path[i - 1]->parents.at(const_cast <Execution *> (path[i]));
 
 		/* Don't show a message for left-branch dynamic links */
-		if (hide_link_from_message(d->flags)) {
+		if (hide_link_from_message(d->flags))
 			continue;
-		}
 
 		d->get_place()
 			<< fmt("%s%s depends on %s",
@@ -979,8 +942,7 @@ void Execution::cycle_print(const vector <Execution *> &path,
 	path.back()->parents.erase(path.at(0));
 	path.at(0)->children.erase(path.back());
 
-	(*path.back()) << "";
-
+	*path.back() << "";
 	explain_cycle();
 }
 
@@ -1229,13 +1191,10 @@ Proceed Execution::execute_children()
 
 	vector <Execution *> executions_children_vector
 		(children.begin(), children.end());
-
 	Proceed proceed_all= 0;
 
 	while (! executions_children_vector.empty()) {
-
 		assert(options_jobs >= 0);
-
 		if (order_vec) {
 			/* Exchange a random position with last position */
 			size_t p_last= executions_children_vector.size() - 1;
@@ -1665,6 +1624,25 @@ Proceed Execution::connect(shared_ptr <const Dep> dep_this,
 		disconnect(child, dep_child);
 	}
 	return 0;
+}
+
+bool Execution::same_dependency_for_print(shared_ptr <const Dep> d1,
+					  shared_ptr <const Dep> d2)
+{
+	shared_ptr <const Plain_Dep> p1=
+		to <Plain_Dep> (d1);
+	shared_ptr <const Plain_Dep> p2=
+		to <Plain_Dep> (d2);
+	if (!p1 && to <Dynamic_Dep> (d1))
+		p1= to <Plain_Dep>
+			(Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d1)));
+	if (!p2 && to <Dynamic_Dep> (d2))
+		p2= to <Plain_Dep>
+			(Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d2)));
+	if (! (p1 && p2))
+		return false;
+	return p1->place_param_target.unparametrized()
+		== p2->place_param_target.unparametrized();
 }
 
 File_Execution::~File_Execution()
@@ -2950,7 +2928,7 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 				   Execution *parent,
 				   int &error_additional)
 	:  dep(dep_),
-	   stage(0)
+	   stage(S_DYNAMIC)
 {
 	assert(dep_);
 	assert(dep_->is_normalized());
@@ -2961,7 +2939,7 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 	parents[parent]= dep;
 	if (error_additional) {
 		*this << "";
-		stage= 2;
+		stage= S_FINISHED;
 		parents.erase(parent);
 		raise(error_additional);
 		return;
@@ -3004,8 +2982,8 @@ Concat_Execution::Concat_Execution(shared_ptr <const Concat_Dep> dep_,
 Proceed Concat_Execution::execute(shared_ptr <const Dep> dep_this)
 {
  again:
-	assert(stage <= 2);
-	if (stage == 2)
+	assert(stage <= S_FINISHED);
+	if (stage == S_FINISHED)
 		return P_FINISHED;
 	Proceed proceed= execute_base_A(dep_this);
 	assert(proceed);
@@ -3022,11 +3000,11 @@ Proceed Concat_Execution::execute(shared_ptr <const Dep> dep_this)
 	}
 	if (proceed & P_FINISHED) {
 		++stage;
-		assert(stage <= 2);
-		if (stage == 2)
+		assert(stage <= S_FINISHED);
+		if (stage == S_FINISHED) {
 			return proceed;
-		else {
-			assert(stage == 1);
+		} else {
+			assert(stage == S_NORMAL);
 			launch_stage_1();
 			goto again;
 		}
@@ -3037,8 +3015,8 @@ Proceed Concat_Execution::execute(shared_ptr <const Dep> dep_this)
 
 bool Concat_Execution::finished() const
 {
-	assert(stage <= 2);
-	return stage == 2;
+	assert(stage <= S_FINISHED);
+	return stage == S_FINISHED;
 }
 
 bool Concat_Execution::finished(Flags) const

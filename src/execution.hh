@@ -62,13 +62,12 @@ class Execution
 	:  private Printer, protected Debuggable
 {
 public:
-	void raise(int error_);
-	/* All errors by Execution objects call this function.  Set the
-	 * error code, and throw an error except with the keep-going
-	 * option.  Does not print any error message.  */
+	void raise(int error);
+	/* Set the error code, and throw an error except with the keep-going
+	 * option.  Does not print an error message.  */
 
 	Proceed execute_base_A(shared_ptr <const Dep> dep_link);
-	/* DEPENDENCY_LINK must not be null.  In the return value, at
+	/* DEP_LINK must not be null.  In the return value, at
 	 * least one bit is set.  The P_FINISHED bit indicates only that
 	 * tasks related to this function are done, not the whole
 	 * Execution.  */
@@ -257,17 +256,16 @@ protected:
 	virtual ~Execution() = default;
 
 	virtual int get_depth() const= 0;
-	/* The dynamic depth, or -1 when undefined as in concatenated
-	 * executions and the root execution, in which case PARAM_RULE
-	 * is always null.  Only used to check for cycles on the rule
-	 * level.  */
+	/* -1 when undefined as in concatenated executions and the root
+	 * execution, in which case PARAM_RULE is always null.  Only used to
+	 * check for cycles on the rule level.  */
 
 	virtual bool optional_finished(shared_ptr <const Dep> dep_link)= 0;
-	/* Whether the execution would be finished if this was an
-	 * optional dependency.  Check whether this is an optional
-	 * dependency and if it is, return TRUE when the file does not
-	 * exist.  Return FALSE when children should be started.  Return
-	 * FALSE in execution types that are not affected.  */
+	/* Whether the execution would be finished if this was an optional
+	 * dependency.  Check whether this is an optional dependency and if it
+	 * is, return TRUE when the file does not exist.  Return FALSE when
+	 * children should be started.  Return FALSE in execution types that are
+	 * not affected.  */
 
 	static Timestamp timestamp_last;
 	/* The timepoint of the last time wait() returned.  No file in the
@@ -280,7 +278,7 @@ protected:
 	static bool find_cycle(Execution *parent,
 			       Execution *child,
 			       shared_ptr <const Dep> dep_link);
-	/* Find a cycle.  Assuming that the edge parent->child will be
+	/* Find a cycle.  Assuming that the edge parent-->child will be
 	 * added, find a directed cycle that would be created.  Start at
 	 * PARENT and perform a depth-first search upwards in the
 	 * hierarchy to find CHILD.  DEPENDENCY_LINK is the link that
@@ -307,7 +305,7 @@ protected:
 	static bool same_rule(const Execution *execution_a,
 			      const Execution *execution_b);
 	/* Whether both executions have the same parametrized rule.
-	 * Only used for finding cycle.  */
+	 * Only used for finding cycles.  */
 
 	shared_ptr <const Dep> append_top(shared_ptr <const Dep> dep,
 					  shared_ptr <const Dep> top);
@@ -355,7 +353,6 @@ class File_Execution
 	:  public Execution
 {
 public:
-
 	File_Execution(shared_ptr <const Dep> dep_link,
 		       Execution *parent,
 		       shared_ptr <const Rule> rule,
@@ -530,16 +527,14 @@ public:
 			    map <string, string> &mapping_parameter,
 			    int &error_additional);
 
-	shared_ptr <const Rule> get_rule() const { return rule; }
-
+	shared_ptr <const Rule> get_rule() const {  return rule;  }
 	virtual bool want_delete() const {  return false;  }
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
 	virtual string format_src() const;
 	virtual void notify_result(shared_ptr <const Dep> dep,
-				   Execution *,
-				   Flags flags,
+				   Execution *, Flags flags,
 				   shared_ptr <const Dep> dep_source);
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
 		result_variable.insert(result_variable_child.begin(),
@@ -594,8 +589,8 @@ private:
 class Concat_Execution
 /*
  * An execution representing a concatenation.  Its dependency is
- * always a normalized concatenated dependency containing [compound
- * dependencies of] normalized dependencies, whose results are
+ * always a normalized concatenated dependency containing (compound
+ * dependencies of) normalized dependencies, whose results are
  * concatenated as new targets added to the parent.  At least one of the
  * contained dependencies is dynamic, as otherwise the dependencies
  * would have been normalized to a non-concatenated dependency.
@@ -782,12 +777,11 @@ void Execution::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		} else {
 			/* Delimiter-separated dynamic dependency (-n/-0) */
 			const char c= (dep_target->flags & F_NEWLINE_SEPARATED) ? '\n' : '\0';
-			/* The delimiter */
 			const char c_printed= (dep_target->flags & F_NEWLINE_SEPARATED) ? 'n' : '0';
-			/* The character to print as the delimiter in output */
-
 			try {
-				Parser::get_expression_list_delim(deps, filename.c_str(), c, c_printed, *dynamic_execution);
+				Parser::get_expression_list_delim
+					(deps, filename.c_str(), c, c_printed,
+					 *dynamic_execution);
 			} catch (int e) {
 				raise(e);
 			}
@@ -1052,8 +1046,7 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 		if (target.is_file()) {
 			use_file_execution= true;
 		} else if (rule_child == nullptr) {
-			use_file_execution= target.is_file(); /* Always FALSE */
-			assert(! use_file_execution);
+			use_file_execution= false;
  		} else if (rule_child->command) {
 			use_file_execution= true;
 		} else {
@@ -1065,11 +1058,8 @@ Execution *Execution::get_execution(shared_ptr <const Dep> dep)
 
 		if (use_file_execution) {
 			execution= new File_Execution
-				(dep,
-				 this,
-				 rule_child,
-				 param_rule_child,
-				 mapping_parameter,
+				(dep, this, rule_child,
+				 param_rule_child, mapping_parameter,
 				 error_additional);
 		} else if (target.is_transient()) {
 			execution= new Transient_Execution
@@ -3061,8 +3051,6 @@ void Concat_Execution::notify_result(shared_ptr <const Dep> d,
 				     Flags flags,
 				     shared_ptr <const Dep> dep_source)
 {
-	(void) source;
-
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)));
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)) != (F_RESULT_NOTIFY | F_RESULT_COPY));
 	assert(dep_source);

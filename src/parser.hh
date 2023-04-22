@@ -5,14 +5,6 @@
  * This is a recursive descent parser written by hand.
  */
 
-#include <set>
-
-#include "rule.hh"
-#include "token.hh"
-#include "dep.hh"
-#include "tokenizer.hh"
-#include "target.hh"
-
 /*
  * Stu has only prefix and circumfix operators, and therefore its syntax
  * is trivial, i.e., there are no ambiguities, and no need to consider
@@ -47,6 +39,14 @@
  * different sources, e.g., a file and a dynamic dependency.
  */
 
+#include <set>
+
+#include "rule.hh"
+#include "token.hh"
+#include "dep.hh"
+#include "tokenizer.hh"
+#include "target.hh"
+
 class Parser
 /*
  * An object of this type represents a location within a token list.
@@ -73,11 +73,10 @@ public:
 
 	static void get_expression_list(vector <shared_ptr <const Dep> > &deps,
 					vector <shared_ptr <Token> > &tokens,
-				const Place &place_end,
+					const Place &place_end,
 					Place_Name &input,
 					Place &place_input);
-	/* Parse tokens that represent an 'expression_list' (as given in
-	 * the manpage).  DEPS is filled.  DEPS is empty when called.  */
+	/* DEPS is filled.  DEPS is empty when called. */
 
 	static void get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
 					      const char *filename,
@@ -1225,12 +1224,8 @@ void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
 				       char c, char c_printed,
 				       const Printer &printer)
 /* We use getdelim() for parsing.  A more optimized way would be via
- * mmap()+strchr(), but why the complexity?  */
+ * mmap()+strchr().  */
 {
-	char *lineptr= nullptr;
-	size_t n= 0;
-	ssize_t len;
-
 	FILE *file= fopen(filename, "r");
 	if (file == nullptr) {
 		print_error_system(filename);
@@ -1239,13 +1234,14 @@ void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
 
 	Place place(Place::Type::INPUT_FILE, filename, 0, 0);
 
+	char *lineptr= nullptr;
+	size_t n= 0;
+	ssize_t len;
 	while ((len= getdelim(&lineptr, &n, c, file)) >= 0) {
 		++place.line;
-
 		/* LEN is at least one by the specification of
 		 * getdelim().  */
 		assert(len >= 1);
-
 		assert(lineptr[len] == '\0');
 
 		/* There may or may not be a terminating \n or \0.
@@ -1318,7 +1314,6 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 	/* All tokens get the same place, because we don't distinguish
 	 * the location within command line arguments  */
 	Place place(Place::Type::ARGUMENT);
-
 	vector <shared_ptr <Token> > tokens;
 
 	for (int j= 0;  j < argc;  ++j) {
@@ -1447,10 +1442,8 @@ void Parser::get_file(string filename,
 
 	Place place_diagnostic= filename.empty()
 		? Place() : Place(Place::Type::OPTION, 'f');
-
 	if (filename.empty())
 		filename= FILENAME_INPUT_DEFAULT;
-
 	string filename_passed= filename;
 	if (filename_passed == "-")
 		filename_passed= "";
@@ -1479,7 +1472,6 @@ void Parser::get_string(const char *s,
 			Rule_Set &rule_set,
 			shared_ptr <const Place_Param_Target> &target_first)
 {
-	/* Tokenize */
 	vector <shared_ptr <Token> > tokens;
 	Place place_end;
 	Tokenizer::parse_tokens_string
@@ -1488,11 +1480,9 @@ void Parser::get_string(const char *s,
 		 place_end, s,
 		 Place(Place::Type::OPTION, 'F'));
 
-	/* Build rules */
 	vector <shared_ptr <Rule> > rules;
 	Parser::get_rule_list(rules, tokens, place_end, target_first);
 
-	/* Add to set */
 	rule_set.add(rules);
 }
 

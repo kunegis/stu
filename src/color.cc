@@ -1,0 +1,84 @@
+#include "color.hh"
+
+#include <string.h>
+
+bool Color::quotes, Color::quotes_out;
+
+const char *Color::end;
+const char *Color::error;
+const char *Color::warning;
+const char *Color::word;
+const char *Color::error_word;
+const char *Color::warning_word;
+
+const char *Color::out_end;
+const char *Color::out_print_word_end;
+const char *Color::out_print;
+const char *Color::out_print_word;
+
+void Color::set()
+{
+	/* Logic:  Only use color when $TERM is defined, is not equal to "dumb",
+	 * and stderr/stdout is a TYY.  This is  the same logic as used by GCC.  */
+
+	bool is_tty_out= false, is_tty_err= false;
+
+	const char *t= getenv("TERM");
+
+	if (t && strcmp(t, "dumb")) {
+		errno= 0;
+		is_tty_out= isatty(fileno(stdout));
+		if (! is_tty_out && errno != 0 && errno != ENOTTY) {
+			perror("isatty");
+		}
+		errno= 0;
+		is_tty_err= isatty(fileno(stderr));
+		if (! is_tty_err && errno != 0 && errno != ENOTTY) {
+			perror("isatty");
+		}
+	}
+
+	set(is_tty_out, is_tty_err);
+}
+
+void Color::set(bool enable_color)
+{
+	set(enable_color, enable_color);
+}
+
+/* Note:  GCC additionally inserts "\33[K" sequences after each color code, to
+ * avoid a bug in some terminals.  This is not done here.  */
+void Color::set(bool enable_color_out, bool enable_color_err)
+{
+	if (enable_color_out) {
+		quotes_out= false;
+		out_end=            "\33[0m";
+		out_print_word_end= "\33[0;32m";
+		out_print=          "\33[32m";
+		out_print_word=     "\33[32;1m";
+	} else {
+		quotes_out= true;
+		out_end=            "";
+		out_print_word_end= "";
+		out_print=          "";
+		out_print_word=     "";
+	}
+
+	if (enable_color_err) {
+		quotes= false;
+		error=              "\33[31m";
+		warning=            "\33[35m";
+		word=               "\33[1m";
+		error_word=         "\33[1;31m";
+		warning_word=       "\33[1;35m";
+		end=                "\33[0m";
+	} else {
+		quotes= true;
+		error=              "";
+		warning=            "";
+		word=               "";
+		error_word=         "";
+		warning_word=       "";
+		end=                "";
+	}
+}

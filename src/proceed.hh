@@ -2,7 +2,7 @@
 #define PROCEED_HH
 
 /*
- * This is used as the return value of the functions Execution::execute*().
+ * This is used as the return value of the functions Executor::execute*().
  * Defined as typedef to make arithmetic with it.
  */
 
@@ -16,14 +16,14 @@ enum {
 
 	P_PENDING =  1 << 1,
 	/* The function execute() should be called again for this
-	 * execution (without waiting) at least, for various reasons,
+	 * executor (without waiting) at least, for various reasons,
 	 * mostly for randomization of execution order.  */
 
 	P_FINISHED = 1 << 2,
-	/* This Execution is finished */
+	/* This Executor is finished */
 
 	P_ABORT    = 1 << 3,
-	/* This Execution should be finished immediately.  When set,
+	/* This Executor should be finished immediately.  When set,
 	 * P_FINISHED is also set.  This does not imply that there was
 	 * an error -- for instance, the trivial flag -t may mean that
 	 * nothing more should be done.  */

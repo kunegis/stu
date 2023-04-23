@@ -8,8 +8,6 @@
  *     is the longest prefix of x.
  */
 
-#include <vector>
-#include <tuple>
 #include <algorithm>
 
 template <class T>

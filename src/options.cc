@@ -1,55 +1,62 @@
-#ifndef OPTIONS_INIT_HH
-#define OPTIONS_INIT_HH
+#include "options.hh"
+
+#include <sys/time.h>
+
+#include "buffer.hh"
+#include "color.hh"
+#include "format.hh"
+#include "job.hh"
+#include "package.hh"
+#include "text.hh"
+#include "timestamp.hh"
+#include "version.hh"
 
 bool option_setting(char c)
-/* Set one of the "setting options", i.e., of of those that can appear
- * in $STU_OPTIONS.  Return whether this was a valid settings option.  */
 {
 	switch (c) {
-	default:  return false;
-
-	case 'E':  option_explain= true;        break;
-	case 's':  option_silent= true;         break;
-	case 'x':  option_individual= true;     break;
-	case 'y':  Color::set(false);           break;
-	case 'Y':  Color::set(true);            break;
-	case 'z':  option_statistics= true;     break;
+	default:   return false;
+	case 'E':  option_E= true;     break;
+	case 's':  option_s= true;     break;
+	case 'x':  option_x= true;     break;
+	case 'y':  Color::set(false);  break;
+	case 'Y':  Color::set(true);   break;
+	case 'z':  option_z= true;     break;
 	}
-
 	return true;
 }
 
-void option_i()
+void set_option_i()
 {
-	option_interactive= true;
-	if (Job::get_tty() < 0) {
-		Place place(Place::Type::OPTION, 'i');
-		print_warning(place, "Interactive mode cannot be used because no TTY is available");
-	}
+	option_i= true;
+	if (Job::get_tty() >= 0)
+		return;
+	Place place(Place::Type::OPTION, 'i');
+	print_warning(place,
+		      "Interactive mode cannot be used because no TTY is available");
 }
 
-void option_j()
+void set_option_j(const char *value)
 {
 	errno= 0;
 	char *endptr;
-	options_jobs= strtol(optarg, &endptr, 10);
+	options_jobs= strtol(value, &endptr, 10);
 	Place place(Place::Type::OPTION, 'j');
 	if (errno != 0 || *endptr != '\0') {
 		place << fmt("expected the number of jobs, not %s",
-			     name_format_err(optarg));
+			     name_format_err(value));
 		exit(ERROR_FATAL);
 	}
 	if (options_jobs < 1) {
 		place << fmt("expected a positive number of jobs, not %s",
-			     name_format_err(optarg));
+			     name_format_err(value));
 		exit(ERROR_FATAL);
 	}
 	option_parallel= options_jobs > 1;
 }
 
-void option_m()
+void set_option_m(const char *value)
 {
-	if (!strcmp(optarg, "random"))  {
+	if (!strcmp(value, "random"))  {
 		order= Order::RANDOM;
 		/* Use gettimeofday() instead of time() to get millisecond
 		 * instead of second precision  */
@@ -59,11 +66,11 @@ void option_m()
 			exit(ERROR_FATAL);
 		}
 		buffer_generator.seed(tv.tv_sec + tv.tv_usec);
-	} else if (!strcmp(optarg, "dfs")) {
+	} else if (!strcmp(value, "dfs")) {
 		/* Default */ ;
 	} else {
 		print_error(fmt("Invalid argument %s for option %s-m%s; valid values are %s and %s",
-				name_format_err(optarg),
+				name_format_err(value),
 				Color::word, Color::end,
 				name_format_err("random"),
 				name_format_err("dfs")));
@@ -71,13 +78,13 @@ void option_m()
 	}
 }
 
-void option_M()
+void set_option_M(const char *value)
 {
 	order= Order::RANDOM;
-	buffer_generator.seed(hash <string> ()(string(optarg)));
+	buffer_generator.seed(hash <string> ()(string(value)));
 }
 
-void option_V()
+void set_option_V()
 {
 	printf(PACKAGE " " STU_VERSION "\n"
 	       "Copyright (C) 2014-2023 Jerome Kunegis\n"
@@ -87,5 +94,3 @@ void option_V()
 	       "USE_MTIM = %u\n",
 	       USE_MTIM);
 }
-
-#endif /* ! OPTIONS_INIT_HH */

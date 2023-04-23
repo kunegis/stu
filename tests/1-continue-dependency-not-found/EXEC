@@ -11,7 +11,7 @@ if [ "$exitstatus" != 1 ] ; then
 fi
 
 grep -qF 'not exist' list.err && {
-	echo "$0:  *** Error output not correct (run A)"
+	echo >&2 "$0:  *** Error output not correct (run A)"
 	exit 1
 }
 
@@ -31,12 +31,12 @@ grep -Fq CORRECT B || {
 }
 
 grep -qF "no rule to build 'nonexistingfile'" list.err || {
-	echo "$0:  *** Error output does not contain \"no rule to build 'nonexistingfile'\" (run B)"
+	echo >&2 "$0:  *** Error output does not contain \"no rule to build 'nonexistingfile'\" (run B)"
 	exit 1
 }
 
 grep -qF 'Targets not up to date because of errors' list.err || {
-	echo "$0:  *** error output does not contain 'Targets not up to date because of errors' (run B)"
+	echo >&2 "$0:  *** error output does not contain 'Targets not up to date because of errors' (run B)"
 	exit 1
 }
 

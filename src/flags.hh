@@ -22,11 +22,6 @@
  * that part has been done, i.e., when the flag initially was not set.
  */
 
-#include <limits.h>
-#include <assert.h>
-
-#include "text.hh"
-
 typedef unsigned Flags;
 /* Declared as integer so arithmetic can be performed on it */
 
@@ -51,8 +46,8 @@ enum
 
 	C_ALL,
 	C_PLACED           	= 3,  /* Flags for which we store a place in Dep */
-	C_WORD			= 8,  /* Flags used for caching; they are stored in Target */
-#define C_WORD			  8 /* Used statically */
+	C_WORD			= 8,  /* Flags used for caching; stored in Target */
+#define C_WORD			  8   /* Used statically */
 	/* The last #define can be replaced with template trickery, yes,
 	 * but it makes it much longer.  Accept the duplicate constant
 	 * for now.  */
@@ -91,11 +86,11 @@ enum
 	/* A dependency is annotated with the input redirection flag '<' */
 
 	F_RESULT_NOTIFY		= 1 << I_RESULT_NOTIFY,
-	/* The link A ---> B between two executions annotated with this
+	/* The link A ---> B between two executors annotated with this
 	 * flags means that A is notified of B's results.  */
 
 	F_RESULT_COPY		= 1 << I_RESULT_COPY,
-	/* The link A ---> B between two executions annotated with this
+	/* The link A ---> B between two executors annotated with this
 	 * flags means that the results of B will be copied into A's result  */
 
 	/*
@@ -107,16 +102,12 @@ enum
 	F_ATTRIBUTE	= F_NEWLINE_SEPARATED | F_NUL_SEPARATED,
 };
 
-/*
- * A done variable denotes which "aspects" of an execution have been
- * done.  Every Execution has one variable called "done".  This is a
- * different way to encode the three placed flags.
- *
+typedef unsigned Done;
+/* Denotes which "aspects" of an execution have been done.  This is a different
+ * way to encode the three placed flags.
  * The first two flags correspond to the first two flags (persistent and
  * optional).  These two are duplicated in order to accommodate trivial
- * dependencies.
- */
-typedef unsigned Done;
+ * dependencies.  */
 enum
 {
 	D_NONPERSISTENT_TRANSIENT 	= 1 << 0,
@@ -128,59 +119,23 @@ enum
 	D_ALL_OPTIONAL		  	= D_NONPERSISTENT_TRANSIENT | D_NONPERSISTENT_NONTRANSIENT,
 };
 
-const char *const FLAGS_CHARS= "pot[@$n0<*%";
+extern const char *const flags_chars;
 /* Characters representing the individual flags -- used in debug mode
  * output, and in other cases  */
 
-const char *FLAGS_PHRASES[C_PLACED]= {"persistent", "optional", "trivial"};
+extern const char *flags_phrases[C_PLACED];
 
-unsigned flag_get_index(char c)
-/*
- * Get the flag index corresponding to a character.
- * Not all cases are implemented
- */
-{
-	switch (c) {
-	case 'p':  return I_PERSISTENT;
-	case 'o':  return I_OPTIONAL;
-	case 't':  return I_TRIVIAL;
-	case 'n':  return I_NEWLINE_SEPARATED;
-	case '0':  return I_NUL_SEPARATED;
-	default:
-		assert(false);
-		return 0;
-	}
-}
+unsigned flag_get_index(char c);
+/* Get the flag index corresponding to a character.  Not all cases are
+ * implemented.  */
 
-string flags_format(Flags flags)
-/*
- * Textual representation of a flags value.  To be shown before the
- * argument.  Empty when flags are empty.  This is used only for debug
- * mode output, as of version 2.5.0.
- */
-{
-	string ret;
-	for (unsigned i= 0;  i < C_ALL;  ++i)
-		if (flags & (1 << i)) {
-			ret += FLAGS_CHARS[i];
-		}
-	if (! ret.empty())
-		ret= '-' + ret;
-	return ret;
-}
+string flags_format(Flags flags);
+/* Textual representation of a flags value.  To be shown before the argument.
+ * Empty when flags are empty.  This is used only for debug mode output.  */
 
-string done_format(Done done)
-{
-	char ret[7]= "[0000]";
-	for (int i= 0;  i < 4;  ++i)
-		ret[1+i] |= 1 & done << i;
-	return ret;
-}
+string done_format(Done done);
 
-Done done_from_flags(Flags flags)
+Done done_from_flags(Flags flags);
 /* Only placed flags are kept */
-{
-	return (~flags & (F_PERSISTENT | F_OPTIONAL)) * (1 | (~flags & F_TRIVIAL));
-}
 
 #endif /* ! FLAGS_HH */

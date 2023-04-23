@@ -1,22 +1,31 @@
-#include <sys/time.h>
-
-#include <memory>
-#include <vector>
-
 using namespace std;
 
-#include "buffering.hh"
-#include "dep.hh"
-#include "execution.hh"
-#include "main_loop.hh"
-#include "options_init.hh"
-#include "rule.hh"
-#include "timestamp.hh"
-
-void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
-		       const char *string_);
-/* Parse a string of dependencies and add them to the vector. Used for
- * the -C option.  Support the full Stu syntax.  */
+#include "buffer.cc"
+#include "buffering.cc"
+#include "canonicalize.cc"
+#include "color.cc"
+#include "concat_executor.cc"
+#include "debug.cc"
+#include "dep.cc"
+#include "dynamic_executor.cc"
+#include "error.cc"
+#include "executor.cc"
+#include "explain.cc"
+#include "file_executor.cc"
+#include "flags.cc"
+#include "format.cc"
+#include "job.cc"
+#include "main_loop.cc"
+#include "options.cc"
+#include "parser.cc"
+#include "root_executor.cc"
+#include "rule.cc"
+#include "target.cc"
+#include "text.cc"
+#include "timestamp.cc"
+#include "token.cc"
+#include "tokenizer.cc"
+#include "transient_executor.cc"
 
 int main(int argc, char **argv, char **envp)
 {
@@ -80,20 +89,20 @@ int main(int argc, char **argv, char **envp)
 				continue;
 
 			switch (c) {
-			case 'a':  option_nontrivial= true;     break;
-			case 'd':  option_debug= true;          break;
-			case 'g':  option_nonoptional= true;    break;
-			case 'h':  fputs(HELP, stdout);         exit(0);
-			case 'i':  option_i();                  break;
-			case 'j':  option_j();                  break;
-			case 'J':  option_literal= true;        break;
-			case 'k':  option_keep_going= true;     break;
-			case 'K':  option_no_delete= true;      break;
-			case 'm':  option_m();                  break;
-			case 'M':  option_M();                  break;
-			case 'P':  option_print= true;          break;
-			case 'q':  option_question= true;       break;
-			case 'V':  option_V();  		exit(0);
+			case 'a':  option_a= true;         break;
+			case 'd':  option_d= true;         break;
+			case 'g':  option_g= true;         break;
+			case 'h':  fputs(HELP, stdout);    exit(0);
+			case 'i':  set_option_i();         break;
+			case 'j':  set_option_j(optarg);   break;
+			case 'J':  option_J= true;         break;
+			case 'k':  option_k= true;         break;
+			case 'K':  option_K= true;         break;
+			case 'm':  set_option_m(optarg);   break;
+			case 'M':  set_option_M(optarg);   break;
+			case 'P':  option_P= true;         break;
+			case 'q':  option_q= true;         break;
+			case 'V':  set_option_V();  	   exit(0);
 
 			case 'c':  {
 				had_option_target= true;
@@ -111,7 +120,7 @@ int main(int argc, char **argv, char **envp)
 
 			case 'C':  {
 				had_option_target= true;
-				add_deps_option_C(deps, optarg);
+				Parser::add_deps_option_C(deps, optarg);
 				break;
 			}
 
@@ -128,14 +137,15 @@ int main(int argc, char **argv, char **envp)
 				}
 				had_option_f= true;
 				filenames.push_back(optarg);
-				Parser::get_file(optarg, -1, Execution::rule_set,
+				Parser::get_file(optarg, -1, Executor::rule_set,
 						 target_first, place_first);
 			end:
 				break;
 
 			case 'F':
 				had_option_f= true;
-				Parser::get_string(optarg, Execution::rule_set, target_first);
+				Parser::get_string(optarg, Executor::rule_set,
+						   target_first);
 				break;
 
 			case 'n':
@@ -185,7 +195,7 @@ int main(int argc, char **argv, char **envp)
 
 		order_vec= (order == Order::RANDOM);
 
-		if (option_interactive && option_parallel) {
+		if (option_i && option_parallel) {
 			Place(Place::Type::OPTION, 'i')
 				<< fmt("parallel mode using %s cannot be used in interactive mode",
 				       multichar_format_err("-j"));
@@ -203,16 +213,16 @@ int main(int argc, char **argv, char **envp)
 			if (*argv[i] == '\0') {
 				place << fmt("%s: name must not be empty",
 					     name_format_err(argv[i]));
-				if (! option_keep_going)
+				if (! option_k)
 					throw ERROR_LOGICAL;
 				error |= ERROR_LOGICAL;
-			} else if (option_literal)
+			} else if (option_J)
 				deps.push_back(make_shared <Plain_Dep>
 					       (0, Place_Param_Target
 						(0, Place_Name(argv[i], place))));
 		}
 
-		if (! option_literal)
+		if (! option_J)
 			Parser::get_target_arg(deps, argc - optind, argv + optind);
 
 		/* Use the default Stu script if -f/-F are not used */
@@ -221,14 +231,14 @@ int main(int argc, char **argv, char **envp)
 			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY);
 			if (file_fd >= 0) {
 				Parser::get_file("", file_fd,
-						 Execution::rule_set, target_first,
+						 Executor::rule_set, target_first,
 						 place_first);
 			} else {
 				if (errno == ENOENT) {
 					/* The default file does not exist --
 					 * fail if no target is given */
 					if (deps.empty() && ! had_option_target
-					    && ! option_print) {
+					    && ! option_P) {
 						print_error(fmt("Expected a target or the default file %s",
 								name_format_err(FILENAME_INPUT_DEFAULT)));
 
@@ -243,8 +253,8 @@ int main(int argc, char **argv, char **envp)
 			}
 		}
 
-		if (option_print) {
-			Execution::rule_set.print();
+		if (option_P) {
+			Executor::rule_set.print();
 			exit(0);
 		}
 
@@ -280,7 +290,7 @@ int main(int argc, char **argv, char **envp)
 	 * Stu fails (but not for fatal errors).
 	 */
 
-	if (option_statistics)
+	if (option_z)
 		Job::print_statistics();
 
 	if (fclose(stdout)) {
@@ -291,25 +301,4 @@ int main(int argc, char **argv, char **envp)
 	 * we used it, it means there was an error anyway, so we're not
 	 * losing any information  */
 	exit(error);
-}
-
-void add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
-		       const char *string_)
-{
-	vector <shared_ptr <Token> > tokens;
-	Place place_end;
-	Tokenizer::parse_tokens_string(tokens,
-				       Tokenizer::OPTION_C,
-				       place_end, string_,
-				       Place(Place::Type::OPTION, 'C'));
-
-	vector <shared_ptr <const Dep> > deps_option;
-	Place_Name input; /* remains empty */
-	Place place_input; /* remains empty */
-
-	Parser::get_expression_list(deps_option, tokens,
-				    place_end, input, place_input);
-
-	for (auto &j:  deps_option)
-		deps.push_back(j);
 }

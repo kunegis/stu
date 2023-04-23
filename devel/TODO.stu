@@ -1,9 +1,4 @@
 #
-# Split execution.hh into multiple files.  Will need to have separate .cc and
-# .hh files for others that stu.cc.
-#
-
-#
 # Have an option (-I) to list patterns for all targets that can be regenerated,
 # useful for .gitignore and similar lists.
 # * Add it to option list.

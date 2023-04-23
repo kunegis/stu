@@ -61,44 +61,19 @@ const char HELP[]=
 	"Report bugs to: " PACKAGE_EMAIL "\n"
 	"Stu home page: <" PACKAGE_URL ">\n";
 
-static bool option_nontrivial= false;
-/* The -a option (consider all trivial dependencies to be non-trivial) */
-
-static bool option_debug= false;
-/* The -d option (debug mode) */
-
-static bool option_explain= false;
-/* The -E option (explain error messages) */
-
-static bool option_nonoptional= false;
-/* The -g option (consider all optional dependencies to be non-optional) */
-
-static bool option_interactive= false;
-/* The -i option (interactive mode) */
-
-static bool option_literal= false;
-/* The -J option (literal interpretation of arguments) */
-
-static bool option_keep_going= false;
-/* The -k option (keep going) */
-
-static bool option_no_delete= false;
-/* The -K option (don't delete partially built files) */
-
-static bool option_print= false;
-/* The -P option (print rules) */
-
-static bool option_question= false;
-/* The -q option (question mode) */
-
-static bool option_silent= false;
-/* The -s option (silent) */
-
-static bool option_individual= false;
-/* The -x option (use sh -x) */
-
-static bool option_statistics= false;
-/* The -z option (output statistics) */
+static bool option_a= false;
+static bool option_d= false;
+static bool option_E= false;
+static bool option_g= false;
+static bool option_i= false;
+static bool option_J= false;
+static bool option_k= false;
+static bool option_K= false;
+static bool option_P= false;
+static bool option_q= false;
+static bool option_s= false;
+static bool option_x= false;
+static bool option_z= false;
 
 enum class Order {
 	DFS   = 0,
@@ -116,7 +91,7 @@ static bool order_vec;
 static long options_jobs= 1;
 /* Number of free slots for jobs.  This is a long because strtol() gives a long.
  * Set before calling main() from the -j option, and then changed internally by
- * Execution.  Always nonnegative.  */
+ * Executor.  Always nonnegative.  */
 
 const char **envp_global;
 /* The envp variable.  Set in main().  */
@@ -124,5 +99,15 @@ const char **envp_global;
 static const char *dollar_zero;
 /* Does the same as program_invocation_name (which is a GNU extension,
  * so we don't use it); the value of argv[0], set in main()  */
+
+bool option_setting(char c);
+/* Set one of the "setting options", i.e., of of those that can appear
+ * in $STU_OPTIONS.  Return whether this was a valid settings option.  */
+
+void set_option_i();
+void set_option_j(const char *value);
+void set_option_m(const char *value);
+void set_option_M(const char *value);
+void set_option_V();
 
 #endif /* ! OPTIONS_HH */

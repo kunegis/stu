@@ -10,20 +10,16 @@
  * created.
  */
 
+#include <memory>
 #include <queue>
 #include <random>
 
-static default_random_engine buffer_generator;
+#include "dep.hh"
 
-/*
- * A random number in [0...n-1].
- */
-size_t random_number(size_t n)
-{
-	uniform_int_distribution <size_t> distribution(0, n - 1);
+extern default_random_engine buffer_generator;
 
-	return distribution(buffer_generator);
-}
+size_t random_number(size_t n);
+/* Random number in [0...n-1] */
 
 class Buffer
 {
@@ -38,7 +34,6 @@ private:
 	vector <shared_ptr <const Dep> > v;
 
 public:
-
 	size_t size() const {
 		if (order_vec)
 			return v.size();

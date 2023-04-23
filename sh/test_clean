@@ -36,13 +36,38 @@ find_space_line()
 	return 0
 }
 
+find_double_space()
+{
+	find_files |
+	xargs awk '
+BEGIN {
+    previ= "x";
+}
+/^$/ {
+    if (previ == "") {
+     	print FILENAME ":" (FNR-1) ": Multiple empty lines should not be present";
+    };
+    previ= "";
+}
+/./ {
+    previ= "x";
+}
+' |
+	grep -E '.' >&2 && return 1
+	return 0
+}
+
+find_double_slash()
+{
+	grep -E -n '(^|[^:])//' src/*.cc src/*.hh |
+	sed -E -e 's,^([^:]*:[0-9]+:).*$,\1 C++ source file must not contain //,' |
+	grep -E '.' >&2 && return 1
+	return 0
+}
+
 ret=0
 
-# // in C++ files is forbidden (we use it for quickly commenting out things).
-grep -E -n '(^|[^:])//' src/*.cc src/*.hh && {
-	echo >&2 "*** C++ source files must not contain //"
-	ret=1
-}
+find_double_slash || ret=1
 
 # Double # in script files is forbidden (idem)
 find . -type f -a \( -name '*.stu' -o -perm -u+x -o -name Makefile \) -a \! -name '*~' \
@@ -86,22 +111,6 @@ count=$(echo $(find_sed | wc -l))
 
 find_space_file || ret=1
 find_space_line || ret=1
-
-find_files |
-xargs awk '
-BEGIN {
-    previ= "x";
-}
-/^$/ {
-    if (previ == "") {
-     	print FILENAME ":" (FNR-1) ": Multiple empty lines should not be present";
-    };
-    previ= "";
-}
-/./ {
-    previ= "x";
-}
-' |
-grep -E '.' >&2 && ret=1
+find_double_space || ret=1
 
 exit "$ret"

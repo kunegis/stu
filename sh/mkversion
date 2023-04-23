@@ -29,10 +29,9 @@ cat <<EOF
 #define VERSION_HH
 
 #define STU_VERSION "$(cat VERSION)"
-
 #define STU_VERSION_MAJOR $VERSION_MAJOR
 #define STU_VERSION_MINOR $VERSION_MINOR
 #define STU_VERSION_PATCH $VERSION_PATCH
 
-#endif /* ! VERSION_HH */
+#endif
 EOF

@@ -7,6 +7,10 @@
  *   - mtim:     nanosecond precision (in principle).  Works only on Linux; see below.
  */
 
+#include <sys/stat.h>
+
+#include "text.hh"
+
 #ifndef USE_MTIM
 #   if HAVE_CLOCK_REALTIME_COARSE
 #      define USE_MTIM 1
@@ -95,13 +99,10 @@ public:
 	}
 };
 
-const Timestamp Timestamp::UNDEFINED((time_t) -1);
-
-Timestamp Timestamp::startup= Timestamp::now();
-
-#else /* Default, 1-second-precision implementation */
+#else /* variant */
 
 class Timestamp
+/* Default, 1-second-precision implementation */
 {
 private:
 	time_t t;
@@ -154,10 +155,6 @@ public:
 		return Timestamp(time(nullptr));
 	}
 };
-
-const Timestamp Timestamp::UNDEFINED((time_t) -1, true);
-
-Timestamp Timestamp::startup= Timestamp::now();
 
 #endif /* variant */
 

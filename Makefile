@@ -26,19 +26,19 @@ CXXFLAGS_PROF= -pg -O2 -DNDEBUG -D_GLIBCXX_DEBUG
 CXXFLAGS_SANI= -pg -O2 -Werror -Wno-unused-result -fsanitize=undefined \
     -fsanitize-undefined-trap-on-error
 
-bin/stu:                conf/CXX src/stu.cc src/*.hh src/version.hh
+bin/stu:                conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $$(cat conf/CXXFLAGS_NDEBUG) src/stu.cc -o bin/stu
 	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $$(cat conf/CXXFLAGS_NDEBUG) src/stu.cc -o bin/stu
-bin/stu.debug:          conf/CXX src/stu.cc src/*.hh src/version.hh
+bin/stu.debug:          conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_DEBUG)            src/stu.cc -o bin/stu.debug
 	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_DEBUG)            src/stu.cc -o bin/stu.debug
-bin/stu.prof:           conf/CXX src/stu.cc src/*.hh src/version.hh
+bin/stu.prof:           conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_PROF)             src/stu.cc -o bin/stu.prof
 	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_PROF)             src/stu.cc -o bin/stu.prof
-bin/stu.sani_undefined: conf/CXX src/stu.cc src/*.hh src/version.hh
+bin/stu.sani_undefined: conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_SANI)             src/stu.cc -o bin/stu.sani_undefined
 	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_SANI)             src/stu.cc -o bin/stu.sani_undefined
@@ -49,10 +49,10 @@ bin/analysis.prof:  bin/gmon.out
 bin/gmon.out:   bin/stu.prof tests/long-1.1-parallel-1/main.stu
 	cd bin && ./stu.prof -j10 -f ../tests/long-1.1-parallel-1/main.stu && ../sh/rm_tmps
 
-log/test_options:   sh/test_options src/stu.cc man/stu.1.in
+log/test_options:   sh/test_options src/options.hh man/stu.1.in
 	@echo sh/test_options
 	@     sh/test_options && mkdir -p log && touch $@
-log/test_clean:  src/stu.cc src/*.hh sh/test_clean sh sh/* tests tests/*/*
+log/test_clean:  src/*.cc src/*.hh sh/test_clean sh sh/* tests tests/*/*
 	@echo sh/test_clean
 	@     sh/test_clean && mkdir -p log && touch $@
 

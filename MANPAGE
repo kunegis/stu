@@ -113,10 +113,10 @@ OPTIONS
               interrupt or suspend Stu itself.  When -i is used, Stu  must  be
               run in a terminal.
 
-       -I     Print  a list of file targets and exit.  Prints one file pattern
-              per line.  The patterns are glob pattern suitable for use in the
-              shell.   Use quoting for all characters that need quoting in the
-              shell.
+       -I     Print a list of all buildable file targets and exit.  Prints one
+              file pattern per line.  The patterns are glob  pattern  suitable
+              for  use in the shell.  Use quoting for all characters that need
+              quoting in the shell.
 
        -j K   Run K jobs in parallel.  K must be a positive integer.   Without
               this  option,  jobs are not run in parallel, which is equivalent
@@ -1131,4 +1131,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.7.68                        April 2023                            STU(1)
+stu-2.7.68                         May 2023                             STU(1)

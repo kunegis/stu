@@ -34,16 +34,8 @@ int main(int argc, char **argv, char **envp)
 	init_buffering();
 	Job::init_tty();
 	Color::set();
+	check_status();
 	int error= 0;
-
-	/* Refuse to run when $STU_STATUS is set */
-	const char *const stu_status= getenv("STU_STATUS");
-	if (stu_status != nullptr) {
-		print_error(frmt("Refusing to run recursive Stu; "
-				 "unset %s$STU_STATUS%s to circumvent",
-				 Color::word, Color::end));
-		exit(ERROR_FATAL);
-	}
 
 	try {
 		vector <string> filenames;
@@ -294,11 +286,6 @@ int main(int argc, char **argv, char **envp)
 		error= e;
 	}
 
-	/*
-	 * Code executed before exiting:  This must be executed even if
-	 * Stu fails (but not for fatal errors).
-	 */
-
 	if (option_z)
 		Job::print_statistics();
 
@@ -309,5 +296,6 @@ int main(int argc, char **argv, char **envp)
 	/* No need to flush stderr, because it is line buffered, and if
 	 * we used it, it means there was an error anyway, so we're not
 	 * losing any information  */
+
 	exit(error);
 }

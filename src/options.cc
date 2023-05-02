@@ -94,3 +94,14 @@ void set_option_V()
 	       "USE_MTIM = %u\n",
 	       (unsigned)USE_MTIM);
 }
+
+void check_status()
+{
+	const char *const stu_status= getenv("STU_STATUS");
+	if (stu_status != nullptr) {
+		print_error(frmt("Refusing to run recursive Stu; "
+				 "unset %s$STU_STATUS%s to circumvent",
+				 Color::word, Color::end));
+		exit(ERROR_FATAL);
+	}
+}

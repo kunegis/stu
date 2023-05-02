@@ -89,7 +89,7 @@ public:
 	bool must_exist() const {
 		return command == nullptr && !is_hardcode && !is_copy;
 	}
-	
+
 	string format_out() const;
 	/* Format the rule, as for the -P or -d options */
 

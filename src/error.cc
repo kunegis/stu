@@ -133,6 +133,7 @@ string Place::as_argv0() const
 	switch (type) {
 	default:
 	case Type::EMPTY:
+	case Type::ENV_OPTIONS:
 		assert(false);
 	case Type::ARGUMENT:
 		return "";

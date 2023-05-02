@@ -517,7 +517,8 @@ string Name::format_out() const
 		   quotes ? "'" : "");
 }
 
-string Name::format_src() const {
+string Name::format_src() const
+{
 	bool quotes= false;
 	for (const string &t:  texts)
 		if (src_need_quotes(t))
@@ -529,7 +530,8 @@ string Name::format_src() const {
 		   quotes ? "'" : "");
 }
 
-bool Name::operator==(const Name &that) const {
+bool Name::operator==(const Name &that) const
+{
 	if (this->get_n() != that.get_n())
 		return false;
 	for (size_t i= 0;  i < get_n();  ++i) {
@@ -543,7 +545,29 @@ bool Name::operator==(const Name &that) const {
 	return true;
 }
 
-string Param_Target::format_err() const {
+void Name::append(const Name &name)
+{
+	assert(this->texts.back() != "" ||
+	       name.texts.back() != "");
+	append_text(name.texts.front());
+	for (size_t i= 0;  i < name.get_n();  ++i) {
+		append_parameter(name.get_parameters()[i]);
+		append_text(name.get_texts()[1 + i]);
+	}
+}
+
+string Name::format_glob() const
+{
+	string ret= texts[0];
+	for (size_t i= 0;  i < get_n();  ++i) {
+		ret += "*";
+		ret += name_format_src(texts[i+1]);
+	}
+	return ret;
+}
+
+string Param_Target::format_err() const
+{
 	Style style= 0;
 	if (flags & F_TARGET_TRANSIENT)
 		style |= S_MARKERS;

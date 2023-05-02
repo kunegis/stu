@@ -94,6 +94,7 @@ int main(int argc, char **argv, char **envp)
 			case 'g':  option_g= true;         break;
 			case 'h':  fputs(HELP, stdout);    exit(0);
 			case 'i':  set_option_i();         break;
+			case 'I':  option_I= true;         break;
 			case 'j':  set_option_j(optarg);   break;
 			case 'J':  option_J= true;         break;
 			case 'k':  option_k= true;         break;
@@ -253,8 +254,16 @@ int main(int argc, char **argv, char **envp)
 			}
 		}
 
+		if (option_I + option_P + option_q >= 2) {
+			print_error("Options -I/-P/-q must not be used together");
+			exit(ERROR_FATAL);
+		}
 		if (option_P) {
 			Executor::rule_set.print();
+			exit(0);
+		}
+		if (option_I) {
+			Executor::rule_set.print_targets();
 			exit(0);
 		}
 

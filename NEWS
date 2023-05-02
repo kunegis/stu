@@ -11,6 +11,11 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+XXXX-XX-XX  Version 2.7.68
+
+* The option -I outputs all targets that can be rebuilt.  Useful for
+  ".gitignore" and similar.
+
 2023-04-02  Version 2.7.16
 
 * We switched from Autotools to a custom Makefile.
@@ -104,7 +109,7 @@ A = -o B;
 
 The semantics are:
 - When B is not present:
-   - Fail when both A is not present
+   - Fail when A is not present
    - Succeed when A is present
 - When B is present, apply the usual rules
 

@@ -17,12 +17,10 @@ const char *Color::out_print;
 const char *Color::out_print_word;
 
 void Color::set()
+/* Only use color when $TERM is defined, is not equal to "dumb", and
+ * stderr/stdout is a TYY.  This is  the same logic as used by GCC.  */
 {
-	/* Logic:  Only use color when $TERM is defined, is not equal to "dumb",
-	 * and stderr/stdout is a TYY.  This is  the same logic as used by GCC.  */
-
 	bool is_tty_out= false, is_tty_err= false;
-
 	const char *t= getenv("TERM");
 
 	if (t && strcmp(t, "dumb")) {
@@ -46,9 +44,9 @@ void Color::set(bool enable_color)
 	set(enable_color, enable_color);
 }
 
+void Color::set(bool enable_color_out, bool enable_color_err)
 /* Note:  GCC additionally inserts "\33[K" sequences after each color code, to
  * avoid a bug in some terminals.  This is not done here.  */
-void Color::set(bool enable_color_out, bool enable_color_err)
 {
 	if (enable_color_out) {
 		quotes_out= false;

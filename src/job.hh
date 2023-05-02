@@ -30,7 +30,7 @@ void job_print_jobs();
  */
 #define write_async(FD, MESSAGE) \
 	do { \
-		int r_write_safe= write(FD, MESSAGE, sizeof(MESSAGE) - 1); \
+		ssize_t r_write_safe= write(FD, MESSAGE, sizeof(MESSAGE) - 1); \
 		(void)r_write_safe; \
 	} while(0)
 

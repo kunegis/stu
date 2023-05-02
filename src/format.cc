@@ -1,23 +1,5 @@
 #include "format.hh"
 
-bool src_need_quotes(const string &name)
-{
-	if (name.size() == 0)
-		return true;
-
-	if (name[0] == '-' || name[0] == '~' || name[0] == '+')
-		return true;
-
-	bool ret= false;
-	for (char c:  name) {
-		if (! isalnum(c) &&
-		    ! strchr("+-./^`_~", c) &&
-		    ! (c & 0x80))
-			ret= true;
-	}
-	return ret;
-}
-
 string char_format(char c, Style style, bool &quotes)
 {
 	(void) style;
@@ -26,19 +8,17 @@ string char_format(char c, Style style, bool &quotes)
 		quotes= true;
 		return " ";
 	}
-	else if (c == '\\')      return "\\\\";
-	else if (c == '\0')      return "\\0";
-	else if (c == '\n')	 return "\\n";
+	else if (c == '\\')        return "\\\\";
+	else if (c == '\0')        return "\\0";
+	else if (c == '\n')	   return "\\n";
 	else if (c == '\'') {
 		if (quotes)
 			return "\\'";
 		else
 			return "\'";
-	}
-	else if (c >= 0x20 && c <= 0x7E) {
+	} else if (c >= 0x20 && c <= 0x7E) {
 		return string(1, c);
-	}
-	else {
+	} else {
 		return frmt("\\%03o", (unsigned char) c);
 	}
 }
@@ -134,11 +114,8 @@ string name_format_src(string name)
 	Style style= 0;
 	bool quotes= src_need_quotes(name);
 	string text= name_format(name, style, quotes);
-
 	return fmt("%s%s%s",
-		   quotes ? "'" : "",
-		   text,
-		   quotes ? "'" : "");
+		   quotes ? "'" : "", text, quotes ? "'" : "");
 }
 
 string dynamic_variable_format_err(string name)
@@ -165,4 +142,22 @@ string prefix_format_err(string name, string prefix)
 		   s,
 		   quotes ? "'" : "",
 		   Color::end);
+}
+
+bool src_need_quotes(const string &name)
+{
+	if (name.size() == 0)
+		return true;
+
+	if (name[0] == '-' || name[0] == '~' || name[0] == '+')
+		return true;
+
+	bool ret= false;
+	for (char c:  name) {
+		if (! isalnum(c) &&
+		    ! strchr("+-./^`_~", c) &&
+		    ! (c & 0x80))
+			ret= true;
+	}
+	return ret;
 }

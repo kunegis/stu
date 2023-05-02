@@ -366,6 +366,33 @@ void Rule_Set::print() const
 	}
 }
 
+void Rule_Set::print_targets() const
+{
+	set <string> filenames;
+	for (auto i:  rules_unparam)  {
+		const Rule &rule= *i.second;
+		if (rule.must_exist())
+			continue;
+		for (auto target: rule.place_param_targets) {
+			if (target->flags & F_TARGET_TRANSIENT)
+				continue;
+			filenames.insert(target->place_name.format_glob());
+		}
+	}
+
+	for (auto i:  rules_param)  {
+		for (auto target: i->place_param_targets) {
+			if (target->flags & F_TARGET_TRANSIENT)
+				continue;
+			filenames.insert(target->place_name.format_glob());
+		}
+	}
+
+	for (const string &filename:  filenames) {
+		puts(filename.c_str());
+	}
+}
+
 void Best_Rule_Finder::add(const Target &target, shared_ptr <const Rule> rule)
 {
 	best_sorted.clear();

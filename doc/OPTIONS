@@ -38,6 +38,7 @@ List of options
 -h  S   G    Show help and exit
 -i  S x x x  Interactive mode
 -i  x M G F  Ignore all errors in commands
+-I  s        Print list of targets
 -I  .   G F  Include path
 -j  S   G F  Parallel mode (1)
 -J  S        Don't parse Stu syntax in arguments outside of options

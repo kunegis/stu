@@ -1,9 +1,23 @@
 #
 # Have an option (-I) to list patterns for all targets that can be regenerated,
 # useful for .gitignore and similar lists.
-# * Add it to option list.
-# * What to do:  read rules like always.  For all file targets that have a
-# command or are copy or content commands, output a line.
+# *  -I + -P + -q together in all combinations
+# * empty list (no main.stu)
+# * empty list (empty main.stu)
+# * single target, unparametrized
+# * single target, parametrized
+# * single rule, multiple unparametrized targets
+# * single rule, multiple parametrized targets
+# * multiple rules
+# * targets containing * ? \ # SPACE NEWLINE ' "
+# * two identical unparametrized file targets in different rules: error.
+# * two identical unparametrized file targets in the same rule.
+# * one target whose pattern is a subset of another (both parametrized)
+# * one target whose pattern is a subset of another (one parametrized)
+# * list.A; list.$name { ... }
+# * A { exit 1 ; } # succeeds because the command is not executed
+# * Copy rule:  target is output
+# * Content rule:  target is output
 #
 
 #
@@ -53,4 +67,42 @@
 # own existence and their own timestamp.  This should not be the default
 # as the current behaviour is more often useful, but should be available
 # as a possibility, probably using a new flag (-L).
+#
+
+#
+# File import
+#
+
+# Import all rules from subdirectory; will prepend the directory name to
+# all targets.  Rules from there will be executed from within the
+# directory as current directory.  If using 'import', the meaning of
+# all these are equivalent:
+% import src/main.stu
+% import src/
+% import src
+% include -d src/main.stu
+% include -d src/
+% include -d src
+# The flag -d can be something else.
+
+# - What about transient targets imported in that way.  Do we
+#   prepend a directory to them?
+%import dir   # contains:   @all:  ...;
+# gets converted to:       @dir/all:  ...;
+# or to:                   dir/@all:  ...;  # ???
+
+#
+# Make install:  test local install in ~
+#
+
+#
+# Investigate -f options in GCC.
+#
+
+#
+# Check out that -Pq can work as a "lint mode"
+#
+
+#
+# Color in -P output
 #

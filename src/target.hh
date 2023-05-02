@@ -145,7 +145,7 @@ public:
 	const char *get_name_c_str_any() const
 	{
 		const char *ret= text.c_str();
-		while ((*(word_t *)ret) & F_TARGET_DYNAMIC)
+		while ((*(const word_t *)ret) & F_TARGET_DYNAMIC)
 			ret += sizeof(word_t);
 		return
 			ret += sizeof(word_t);
@@ -164,14 +164,14 @@ public:
 	Flags get_front_word_nondynamic() const {
 		check();
 		assert((get_word(0) & F_TARGET_DYNAMIC) == 0);
-		return *(word_t *)&text[0];
+		return *(const word_t *)&text[0];
 	}
 
 	Flags get_word(size_t i) const
 	/* For access to any front word */
 	{
 		assert(text.size() > sizeof(word_t) * (i + 1));
-		return ((word_t *)&text[0])[i];
+		return ((const word_t *)&text[0])[i];
 	}
 
 	bool operator== (const Target &target) const {  return text == target.text;  }
@@ -301,19 +301,8 @@ public:
 		texts[texts.size() - 1] += text;
 	}
 
-	/* Append another parametrized name.  This function checks that
-	 * the result is valid. */
-	void append(const Name &name) {
-		assert(this->texts.back() != "" ||
-		       name.texts.back() != "");
-
-		append_text(name.texts.front());
-
-		for (size_t i= 0;  i < name.get_n();  ++i) {
-			append_parameter(name.get_parameters()[i]);
-			append_text(name.get_texts()[1 + i]);
-		}
-	}
+	void append(const Name &name);
+	/* Append another parametrized name.  Check that the result is valid. */
 
 	string &last_text() {
 		return texts[texts.size() - 1];
@@ -343,7 +332,8 @@ public:
 	 * MAPPING must be empty.  PRIORITY determines whether a special rule was used:
 	 *    0:   no special rule was used
 	 *    +1:  a special rule was used, having priority of matches without special rule
-	 *    -1:  a special rule was used, having less priority than matches without special rule
+	 *    -1:  a special rule was used, having less priority than matches
+	 *         without special rule
 	 * PRIORITY has an unspecified value after returing FALSE.
 	 * The range of PRIORITY can be easily extended to other integers if necessary.
 	 */
@@ -366,6 +356,7 @@ public:
 	string format_err() const;
 	string format_out() const;
 	string format_src() const;
+	string format_glob() const;
 
 	string get_duplicate_parameter() const;
 	/* Check whether there are duplicate parameters.  Return the
@@ -500,7 +491,6 @@ class Place_Param_Target
 /* A target that is parametrized and contains places.  Non-dynamic. */
 {
 public:
-
 	Flags flags;
 	/* Only F_TARGET_TRANSIENT is used */
 

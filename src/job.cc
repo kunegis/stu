@@ -500,11 +500,11 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 		       count_jobs_exec - count_jobs_success - count_jobs_fail);
 
 	printf("STATISTICS  children user   execution time = %ju.%06lu s\n",
-	       (intmax_t) usage.ru_utime.tv_sec,
-	       (long)     usage.ru_utime.tv_usec);
+	       (uintmax_t)     usage.ru_utime.tv_sec,
+	       (unsigned long) usage.ru_utime.tv_usec);
 	printf("STATISTICS  children system execution time = %ju.%06lu s\n",
-	       (intmax_t) usage.ru_stime.tv_sec,
-	       (long)     usage.ru_stime.tv_usec);
+	       (uintmax_t)     usage.ru_stime.tv_sec,
+	       (unsigned long) usage.ru_stime.tv_usec);
 	printf("STATISTICS  Note: children execution times exclude running jobs\n");
 }
 

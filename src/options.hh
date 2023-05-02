@@ -18,7 +18,7 @@
  * the platform:  GNU getopt() will all options to follow arguments,
  * while BSD getopt() does not.
  */
-const char OPTIONS[]= "0:ac:C:dEf:F:ghij:JkKm:M:n:o:p:PqsVxyYz";
+const char OPTIONS[]= "0:ac:C:dEf:F:ghiIj:JkKm:M:n:o:p:PqsVxyYz";
 
 /* The output of the help (-h) option.  The following strings do not
  * contain tabs, but only space characters.  */
@@ -30,14 +30,15 @@ const char HELP[]=
 	"  -0 FILENAME      Read \\0-separated file targets from the given file\n"
 	"  -a               Treat all trivial dependencies as non-trivial\n"
 	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"
-	"  -C EXPRESSIONS   Pass a target in full Stu syntax\n"
+	"  -C EXPRESSION    Pass a target in full Stu syntax\n"
 	"  -d               Debug mode: show execution information on stderr\n"
 	"  -E               Explain error messages\n"
 	"  -f FILENAME      The input file to use instead of 'main.stu'\n"
 	"  -F RULES         Pass rules in Stu syntax\n"
 	"  -g               Treat all optional dependencies as non-optional\n"
-	"  -h               Output help and exit\n"
+	"  -h               Output help\n"
 	"  -i               Interactive mode (run jobs in foreground)\n"
+	"  -I               Print all buildable file targets as glob patterns\n"
 	"  -j K             Run K jobs in parallel\n"
 	"  -J               Disable Stu syntax in arguments\n"
 	"  -k               Keep on running after errors\n"
@@ -50,10 +51,10 @@ const char HELP[]=
 	"  -o FILENAME      Build an optional dependency, i.e., build it only if it\n"
 	"                   exists and is out of date\n"
 	"  -p FILENAME      Build a persistent dependency, i.e., ignore its timestamp\n"
-	"  -P               Print the rules and exit\n"
+	"  -P               Print the rules\n"
 	"  -q               Question mode: check whether targets are up to date\n"
 	"  -s               Silent mode: don't use stdout\n"
-	"  -V               Output version and exit\n"
+	"  -V               Output version\n"
 	"  -x               Output each line in a command individually\n"
 	"  -y               Disable color in output\n"
 	"  -Y               Enable color in output\n"
@@ -66,6 +67,7 @@ static bool option_d= false;
 static bool option_E= false;
 static bool option_g= false;
 static bool option_i= false;
+static bool option_I= false;
 static bool option_J= false;
 static bool option_k= false;
 static bool option_K= false;

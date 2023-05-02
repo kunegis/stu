@@ -5,7 +5,6 @@
  * Handling of color output.
  *
  * Colors:
- *
  *   error:          The place of an error
  *   warning:        The place of a warning
  *   word:           Names quoting the input
@@ -58,7 +57,6 @@ public:
 
 	/* At least one of the following functions must be called before
 	 * any output is written.  */
-
 	static void set();
 	static void set(bool enable_color);
 	static void set(bool enable_color_out, bool enable_color_err);

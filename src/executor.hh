@@ -147,8 +147,7 @@ public:
 	/* Whether the STDOUT message is not "Targets are up to date" */
 
 	static Rule_Set rule_set;
-	/* Set once before calling main_loop().  Unchanging during
-	 * the whole call to main_loop().  */
+	/* Set before calling main_loop() */
 
 	static Target get_target_for_cache(Target target);
 	/* Get the target value used for caching.  I.e, return TARGET

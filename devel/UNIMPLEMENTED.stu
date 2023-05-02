@@ -70,28 +70,6 @@
 #
 
 #
-# File import
-#
-
-# Import all rules from subdirectory; will prepend the directory name to
-# all targets.  Rules from there will be executed from within the
-# directory as current directory.  If using 'import', the meaning of
-
-# All these are equivalent
-% import src/main.stu
-% import src/
-% import src
-% include -d src/main.stu
-% include -d src/
-% include -d src
-
-# - What about transient targets imported in that way.  Do we
-#   prepend a directory to them?
-%import dir   # contains:   @all:  ...;
-# gets converted to:       @dir/all:  ...;
-# or to:                   dir/@all:  ...;  # ???
-
-#
 # When including files using dynamic dependencies, make a
 # difference between inclusion and import, as is done for %include and
 # %import.
@@ -118,6 +96,9 @@ A: [-d data/B];
 
 # Should it be valid for the whole Stu invocation, or only for the
 # source file in which it appears?
+
+# Could also be done as
+% set STU_SHELL /bin/bash
 
 #
 # Does it make sense to have a way to set environment variables for all

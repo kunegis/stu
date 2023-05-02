@@ -9,8 +9,7 @@
 #include "token.hh"
 
 class Rule
-/* A rule.  The class Rule allows parameters; there is no "unparametrized rule"
- * class.  */
+/* The class Rule allows parameters; there is no "unparametrized rule" class. */
 {
 public:
 	vector <shared_ptr <const Place_Param_Target> > place_param_targets;
@@ -86,6 +85,11 @@ public:
 		return place_param_targets.front()->place_name.get_n() != 0;
 	}
 
+	/* A rule in which the targets must exist */
+	bool must_exist() const {
+		return command == nullptr && !is_hardcode && !is_copy;
+	}
+	
 	string format_out() const;
 	/* Format the rule, as for the -P or -d options */
 
@@ -100,16 +104,16 @@ public:
 		return place_param_targets.front()->place_name.get_parameters();
 	}
 
+	void canonicalize();
+	/* In-place canonicalization of the rule.  This applies to the
+	 * targets of the rule.  Called by Rule_Set::add(). */
+
 	static shared_ptr <const Rule> instantiate(shared_ptr <const Rule> rule,
 						   const map <string, string> &mapping);
 	/* Return the same rule as RULE, but with parameters having been
 	 * replaced by the given MAPPING.
 	 * We pass THIS as PARAM_RULE explicitly so we can return it
 	 * itself when it is unparametrized.  */
-
-	void canonicalize();
-	/* In-place canonicalization of the rule.  This applies to the
-	 * targets of the rule.  Called by Rule_Set::add(). */
 };
 
 class Rule_Set
@@ -137,6 +141,9 @@ public:
 	void print() const;
 	/* Print the rule set to standard output, as used by the -P and
 	 * -d options.  */
+
+	void print_targets() const;
+	/* Option -I */
 
 private:
 	unordered_map <Target, shared_ptr <const Rule> > rules_unparam;

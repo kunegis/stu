@@ -220,8 +220,8 @@ int main(int argc, char **argv, char **envp)
 				if (errno == ENOENT) {
 					/* The default file does not exist --
 					 * fail if no target is given */
-					if (deps.empty() && ! had_option_target
-					    && ! option_P) {
+					if (deps.empty() && !had_option_target
+					    && !option_P && !option_I) {
 						print_error(fmt("Expected a target or the default file %s",
 								name_format_err(FILENAME_INPUT_DEFAULT)));
 

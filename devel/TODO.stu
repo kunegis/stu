@@ -1,7 +1,6 @@
 #
 # Have an option (-I) to list patterns for all targets that can be regenerated,
 # useful for .gitignore and similar lists.
-# * empty list (no main.stu)
 # * empty list (empty main.stu)
 # * single target, unparametrized
 # * single target, parametrized

@@ -95,6 +95,24 @@ void set_option_V()
 	       (unsigned)USE_MTIM);
 }
 
+void set_env_options()
+{
+	const char *stu_options= getenv("STU_OPTIONS");
+	if (stu_options != nullptr) {
+		while (*stu_options) {
+			char c= *stu_options++;
+			if (c == '-' || isspace(c))
+				continue;
+			if (! option_setting(c)) {
+				Place place(Place::Type::ENV_OPTIONS);
+				place << fmt("invalid option %s",
+					     multichar_format_err(frmt("-%c", c)));
+				exit(ERROR_FATAL);
+			}
+		}
+	}
+}
+
 void check_status()
 {
 	const char *const stu_status= getenv("STU_STATUS");

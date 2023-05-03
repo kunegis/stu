@@ -111,7 +111,7 @@ void set_option_j(const char *value);
 void set_option_m(const char *value);
 void set_option_M(const char *value);
 void set_option_V();
-
+void set_env_options();
 void check_status();
 
 #endif /* ! OPTIONS_HH */

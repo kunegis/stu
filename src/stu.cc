@@ -35,6 +35,7 @@ int main(int argc, char **argv, char **envp)
 	Job::init_tty();
 	Color::set();
 	check_status();
+	set_env_options();
 	int error= 0;
 
 	try {
@@ -59,22 +60,6 @@ int main(int argc, char **argv, char **envp)
 		 * -n is used on an empty file.  */
 
 		bool had_option_f= false; /* Both lower and upper case */
-
-		/* Parse $STU_OPTIONS */
-		const char *stu_options= getenv("STU_OPTIONS");
-		if (stu_options != nullptr) {
-			while (*stu_options) {
-				char c= *stu_options++;
-				if (c == '-' || isspace(c))
-					continue;
-				if (! option_setting(c)) {
-					Place place(Place::Type::ENV_OPTIONS);
-					place << fmt("invalid option %s",
-						     multichar_format_err(frmt("-%c", c)));
-					exit(ERROR_FATAL);
-				}
-			}
-		}
 
 		for (int c; (c= getopt(argc, argv, OPTIONS)) != -1;) {
 			if (option_setting(c))
@@ -218,6 +203,11 @@ int main(int argc, char **argv, char **envp)
 		if (! option_J)
 			Parser::get_target_arg(deps, argc - optind, argv + optind);
 
+		if (option_I + option_P + option_q >= 2) {
+			print_error("Options -I/-P/-q must not be used together");
+			exit(ERROR_FATAL);
+		}
+
 		/* Use the default Stu script if -f/-F are not used */
 		if (! had_option_f) {
 			filenames.push_back(FILENAME_INPUT_DEFAULT);
@@ -246,10 +236,6 @@ int main(int argc, char **argv, char **envp)
 			}
 		}
 
-		if (option_I + option_P + option_q >= 2) {
-			print_error("Options -I/-P/-q must not be used together");
-			exit(ERROR_FATAL);
-		}
 		if (option_P) {
 			Executor::rule_set.print();
 			exit(0);

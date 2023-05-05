@@ -1,6 +1,5 @@
 #
 # Option -I
-# * single target, unparametrized
 # * single target, parametrized
 # * single rule, multiple unparametrized targets
 # * single rule, multiple parametrized targets

@@ -165,7 +165,9 @@ output_end()
 
 output_success()
 {
-	echo "[32mTesting [$VARIANT] Success (runtime $runtime)[m"
+	extra=
+	[ "$coverage" ] && extra=" subset($coverage)"
+	echo "[32mTesting [$VARIANT$extra] Success (runtime $runtime)[m"
 }
 
 test_fail_stop()
@@ -229,12 +231,14 @@ cd tests
 
 if [ "$1" ] ; then
 	tests="$@"
+	coverage=$(echo $(echo $tests | tr ' ' '\n' | wc -l))
 else
 	# Note:  At some point there might be too many tests, but we don't
 	# want to use ls -1 | { ... } because that would make it impossible
 	# to do "error=1", as setting the variable $error in a subshell
 	# would have no effect.
 	tests=$(sort_tests)
+	coverage=
 fi
 
 count_total=$(echo $(echo $tests | sed 's, ,\

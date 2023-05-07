@@ -94,63 +94,59 @@ Target Plain_Dep::get_target() const
 	return ret;
 }
 
-string Plain_Dep::format(Style style, bool &quotes) const
+string Plain_Dep::format(Style style, Quotes &q) const
 {
 	string f;
-	if (!(style & S_NOFLAGS)) {
+	if (!(style & S_NO_FLAGS)) {
 		f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
 		if (! f.empty()) {
-			style |= S_MARKERS;
+//			style |= S_MARKERS;
 			f += ' ';
 		}
 	}
-	bool detached= (flags & F_VARIABLE) || (flags & F_TARGET_TRANSIENT);
-	bool quotes_inner= detached ? false : quotes;
-	string t= place_param_target.format(style & ~S_COLOR_WORD, quotes_inner);
-	if (detached)
-		quotes= false;
-	else
-		quotes= quotes_inner;
-	bool quotes_print=  detached && quotes_inner;
-	string ret= fmt("%s%s%s%s%s%s",
+//	bool detached= (flags & F_VARIABLE) || (flags & F_TARGET_TRANSIENT);
+//	style &= ~S_QUOTES;
+//	style |= S_QUOTES * !detached;
+//	style |= S_WANT_ESCAPE;
+//	if (!detached)
+//		quotes= true;
+	string t= place_param_target.format(style, q);
+	string ret= fmt("%s%s%s%s",
 			f,
 			flags & F_VARIABLE ? "$[" : "",
-			quotes_print ? "'" : "",
+//			quotes ? "'" : "",
 			t,
-			quotes_print ? "'" : "",
+//			quotes ? "'" : "",
 			flags & F_VARIABLE ? "]" : "");
-	if (style & S_COLOR_WORD) {
-		ret= fmt("%s%s%s", Color::word, ret, Color::end);
-	}
-	return ret;
+//	if (style & S_COLOR_WORD) {
+//		ret= fmt("%s%s%s", Color::word, ret, Color::end);
+//	}
+	return quote(ret, style, q);
 }
 
-string Plain_Dep::format_out() const
-{
-	bool quotes= false;
-	string ret= format(S_NOFLAGS | S_OUT, quotes);
-	if (quotes)
-		ret= fmt("\'%s\'", ret);
-	return ret;
-}
+//string Plain_Dep::format_out() const
+//{
+//	Style style= S_NO_FLAGS | S_OUT | S_WANT_ESCAPE;
+//	string ret= format(style);
+//	if (style & S_QUOTES)
+//		ret= fmt("\'%s\'", ret);
+//	return ret;
+//}
 
-string Plain_Dep::format_src() const
-{
-	bool quotes= false;
-	string ret= format(S_SRC, quotes);
-	if (quotes)
-		ret= fmt("\'%s\'", ret);
-	return ret;
-}
+//string Plain_Dep::format_src() const
+//{
+//	Style style= S_SRC;
+//	return format(style);
+//}
 
-string Plain_Dep::format_err() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_NOFLAGS | S_ERR | S_COLOR_WORD, quotes);
-	if (quotes)
-		ret= fmt("\'%s\'", ret);
-	return ret;
-}
+//string Plain_Dep::format_err() const
+//{
+//	Style style= S_NO_FLAGS | S_ERR | S_COLOR_WORD | S_WANT_ESCAPE | (Color::quotes * S_QUOTES); 
+//	string ret= format(style);
+//	if (style & S_QUOTES)
+//		ret= fmt("\'%s\'", ret);
+//	return ret;
+//}
 
 Target Dynamic_Dep::get_target() const
 {
@@ -173,45 +169,42 @@ Target Dynamic_Dep::get_target() const
 	return Target(text);
 }
 
-string Dynamic_Dep::format(Style style, bool &quotes) const
+string Dynamic_Dep::format(Style style, Quotes &q) const
 {
-	quotes= false;
-	bool quotes_inner= false;
+//	quotes= false;
+	Style style_inner= style;
+//	bool quotes_inner= false;
 	string ret;
-	if (! (style & S_NOFLAGS)) {
+	if (! (style & S_NO_FLAGS)) {
 		string text_flags= flags_format(flags & ~F_TARGET_DYNAMIC);
 		if (! text_flags.empty())
 			text_flags += ' ';
 		ret += text_flags;
 	}
-	string text= dep->format((style | S_MARKERS) & ~S_COLOR_WORD, quotes_inner);
-	ret += fmt("[%s%s%s]",
-		   quotes_inner ? "'" : "",
-		   text,
-		   quotes_inner ? "'" : "");
-	if (style & S_COLOR_WORD) {
-		ret= fmt("%s%s%s", Color::word, ret, Color::end);
-	}
+	string text= dep->format(style_inner, q);
+	ret += fmt("[%s]", text);
+//	if (style & S_COLOR_WORD) 
+//		ret= fmt("%s%s%s", Color::word, ret, Color::end);
 	return ret;
 }
 
-string Dynamic_Dep::format_out() const
-{
-	bool quotes= false;
-	return format(S_NOFLAGS | S_OUT, quotes);
-}
+// string Dynamic_Dep::format_out() const
+// {
+// 	Style style= S_NO_FLAGS | S_OUT;
+// 	return format(style);
+// }
 
-string Dynamic_Dep::format_src() const
-{
-	bool quotes= false;
-	return format(S_SRC, quotes);
-}
+// string Dynamic_Dep::format_src() const
+// {
+// 	Style style= S_SRC;
+// 	return format(style);
+// }
 
-string Dynamic_Dep::format_err() const
-{
-	bool quotes= false;
-	return format(S_NOFLAGS | S_ERR | S_COLOR_WORD, quotes);
-}
+// string Dynamic_Dep::format_err() const
+// {
+// 	Style style= S_NO_FLAGS | S_ERR | S_COLOR_WORD;
+// 	return format(style);
+// }
 
 shared_ptr <const Dep> Dynamic_Dep::instantiate(const map <string, string> &mapping) const
 {
@@ -270,48 +263,49 @@ bool Compound_Dep::is_unparametrized() const
 	return true;
 }
 
-string Compound_Dep::format(Style style, bool &) const
+string Compound_Dep::format(Style style, Quotes &q) const
 /* Ignore QUOTES, as everything inside the parentheses will not need
  * it.  */
 {
 	string ret;
-	bool quotes= false;
 	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
 			ret += " ";
-		ret += d->format(style, quotes);
+		ret += d->format(style, q);
 	}
 	if (deps.size() != 1)
 		ret= fmt("(%s)", ret);
 	return ret;
 }
 
-string Compound_Dep::format_err() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_ERR | S_NOFLAGS | S_COLOR_WORD, quotes);
-	if (quotes)
-		ret= '\'' + ret + '\'';
-	return ret;
-}
+// string Compound_Dep::format_err() const
+// {
+// 	Style style= S_ERR | S_NO_FLAGS | S_COLOR_WORD | S_WANT_ESCAPE | S_QUOTES * (Color::quotes);
+// 	string ret= format(style);
+// 	if (style & S_QUOTES)
+// 		ret= '\'' + ret + '\'';
+// 	return ret;
+// }
 
-string Compound_Dep::format_out() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_OUT | S_NOFLAGS, quotes);
-		if (quotes)
-		ret= '\'' + ret + '\'';
-	return ret;
-}
+// string Compound_Dep::format_out() const
+// {
+// 	Style style= S_OUT | S_NO_FLAGS | S_WANT_ESCAPE | S_QUOTES * Color::quotes;
+// //	bool quotes= Color::quotes;
+// 	string ret= format(style);
+// 	if (style & S_QUOTES)
+// 		ret= '\'' + ret + '\'';
+// 	return ret;
+// }
 
-string Compound_Dep::format_src() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_SRC, quotes);
-	if (quotes)
-		ret= '\'' + ret + '\'';
-	return ret;
-}
+// string Compound_Dep::format_src() const
+// {
+// 	Style style= S_SRC | S_WANT_ESCAPE | S_QUOTES * Color::quotes;
+// //	bool quotes= Color::quotes;
+// 	string ret= format(style);
+// 	if (style & S_QUOTES)
+// 		ret= '\'' + ret + '\'';
+// 	return ret;
+// }
 
 shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mapping) const
 {
@@ -346,56 +340,66 @@ const Place &Concat_Dep::get_place() const
 	return deps.front()->get_place();
 }
 
-string Concat_Dep::format(Style style, bool &quotes) const
+string Concat_Dep::format(Style style, Quotes &q) const
 /* We only need quotes when *all* components need quotes */
 {
 	assert(bitset <sizeof(Style)> (style & S_CHANNEL).count() <= 1);
 	string ret;
-	if (!(style & S_NOFLAGS)) {
+	if (!(style & S_NO_FLAGS)) {
 		string f= flags_format(flags);
 		if (! f.empty()) {
-			style |= S_MARKERS;
+//			style |= S_MARKERS;
 			f += ' ';
 		}
 		ret += f;
 	}
-	bool quotes_ret= true;
+//	Style style_ret= style | S_QUOTES;
+//	style |= S_QUOTES;
+//	bool quotes_ret= true;
 	for (const shared_ptr <const Dep> &d:  deps) {
-		bool quotes_d= quotes;
-		ret += d->format(style, quotes_d);
-		if (! quotes_d)
-			quotes_ret= false;
+//		Style style_d= style;
+//		bool quotes_d= quotes;
+		ret += d->format(style, q);
+		//		if (! (q.is()
+		//		       style_d & S_QUOTES
+		//		       ))
+		//			style_ret &= ~S_QUOTES;
+//			quotes_ret= false;
 	}
-	quotes= quotes_ret;
+//	quotes= quotes_ret;
+//	style= style_ret;
 	return ret;
 }
 
-string Concat_Dep::format_err() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_ERR | S_NOFLAGS | S_COLOR_WORD, quotes);
-	if (quotes)
-		ret= '\'' + ret + '\'';
-	return ret;
-}
+// string Concat_Dep::format_err() const
+// {
+// 	Style style= S_ERR | S_NO_FLAGS | S_COLOR_WORD | S_WANT_ESCAPE | S_QUOTES * Color::quotes;
+// //	bool quotes= Color::quotes;
+// 	string ret= format(style);
+// 	if (style & S_QUOTES)
+// 		ret= '\'' + ret + '\'';
+// 	return ret;
+// }
 
-string Concat_Dep::format_out() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_OUT | S_NOFLAGS, quotes);
-	if (quotes)
-		ret= '\'' + ret + '\'';
-	return ret;
-}
+// string Concat_Dep::format_out() const
+// {
+// 	Style style= S_OUT | S_NO_FLAGS | S_WANT_ESCAPE | S_QUOTES * Color::quotes;
+// //	bool quotes= Color::quotes;
+// 	string ret= format(style);
+// 	if (style & S_QUOTES)
+// 		ret= '\'' + ret + '\'';
+// 	return ret;
+// }
 
-string Concat_Dep::format_src() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_SRC, quotes);
-	if (quotes)
-		ret= '\'' + ret + '\'';
-	return ret;
-}
+// string Concat_Dep::format_src() const
+// {
+// 	Style style= S_SRC | S_WANT_ESCAPE | S_QUOTES * Color::quotes;
+// //	bool quotes= Color::quotes;
+// 	string ret= format(style);
+// 	if (style & S_QUOTES)
+// 		ret= '\'' + ret + '\'';
+// 	return ret;
+// }
 
 bool Concat_Dep::is_normalized() const
 {
@@ -521,10 +525,10 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		 * input redirection, but the current data structures do
 		 * not allow that, and therefore we make that invalid.  */
 		a->get_place() << fmt("%s cannot have input redirection using %s",
-				      a->format_err(),
+				      a->format(S_ERR),
 				      char_format_err('<'));
 		b->get_place() << fmt("because %s is concatenated to it",
-				      b->format_err());
+				      b->format(S_ERR));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
@@ -533,9 +537,9 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		/* We don't save the place for the '<', so we cannot
 		 * have "using '<'" on an extra line.  */
 		b->get_place() << fmt("%s cannot have input redirection using %s",
-				      b->format_err(),
+				      b->format(S_ERR),
 				      char_format_err('<'));
-		a->get_place() << fmt("in concatenation to %s", a->format_err());
+		a->get_place() << fmt("in concatenation to %s", a->format(S_ERR));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
@@ -549,33 +553,34 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 			C_ALL;
 		assert(i_flag != C_ALL);
 		b->get_place() << fmt("%s cannot be declared as %s",
-				      b->format_err(), flags_phrases[i_flag]);
+				      b->format(S_ERR), flags_phrases[i_flag]);
 		b->places[i_flag] << fmt("using %s",
 					 name_format_err(frmt("-%c", flags_chars[i_flag])));
-		a->get_place() << fmt("in concatenation to %s", a->format_err());
+		a->get_place() << fmt("in concatenation to %s", a->format(S_ERR));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (b->flags & F_TARGET_TRANSIENT) {
-		b->get_place() << fmt("transient target %s is invalid", b->format_err());
-		a->get_place() << fmt("in concatenation to %s", a->format_err());
+		b->get_place() << fmt("transient target %s is invalid", b->format(S_ERR));
+		a->get_place() << fmt("in concatenation to %s", a->format(S_ERR));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (a->flags & F_VARIABLE) {
 		a->get_place() << fmt("the variable dependency %s cannot be used",
-				      a->format_err());
+				      a->format(S_ERR));
 		b->get_place() << fmt("in concatenation with %s",
-				      b->format_err());
+				      b->format(S_ERR));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (b->flags & F_VARIABLE) {
-		b->get_place() << fmt("variable dependency %s is invalid", b->format_err());
-		a->get_place() << fmt("in concatenation to %s", a->format_err());
+		b->get_place() << fmt("variable dependency %s is invalid",
+				      b->format(S_ERR));
+		a->get_place() << fmt("in concatenation to %s", a->format(S_ERR));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}

@@ -59,8 +59,7 @@ shared_ptr <const T> to(shared_ptr <U> d)
 }
 
 class Dep
-/*
- * The abstract base class for all dependencies.
+/* The abstract base class for all dependencies.
  *
  * The flags only represent immediate flags.  Compound dependencies for
  * instance may contain additional inner flags.
@@ -82,8 +81,7 @@ class Dep
  * std::enable_shared_from_this as a possibility.]
  *
  * The constructors of Dep and derived classes do not set the TOP and
- * INDEX fields.  These are set manually when needed.
- */
+ * INDEX fields.  These are set manually when needed.  */
 {
 public:
 	Flags flags;
@@ -100,15 +98,8 @@ public:
 	/* Used by concatenated executors; the index of the dependency
 	 * within the array of concatenation.  -1 when not used. */
 
-	Dep()
-		:  flags(0),
-		   index(-1)
-	{  }
-
-	Dep(Flags flags_)
-		:  flags(flags_),
-		   index(-1)
-	{  }
+	Dep():  flags(0), index(-1)  {  }
+	Dep(Flags flags_):  flags(flags_), index(-1)  {  }
 
 	Dep(Flags flags_, const Place places_[C_PLACED])
 		:  flags(flags_),
@@ -170,11 +161,16 @@ public:
 	virtual const Place &get_place() const= 0;
 	/* Where the dependency as a whole is declared */
 
-	virtual string format(Style, bool &quotes) const= 0;
-	virtual string format_err() const= 0;
-	virtual string format_out() const= 0;
-	virtual string format_src() const= 0;
+	virtual string format(Style, Quotes &q) const= 0;
+//	virtual string format_err() const= 0;
+//	virtual string format_out() const= 0;
+//	virtual string format_src() const= 0;
 
+	string format(Style style) const {
+		Quotes q(style);
+		return format(style, q);
+	}
+	
 	virtual Target get_target() const= 0;
 	/* Get the corresponding Target object.  Only called for
 	 * non-compound and non-parametrized dependencies.  */
@@ -201,30 +197,24 @@ public:
 };
 
 class Plain_Dep
-/*
- * A dependency denoting an individual target name, which can be a file
+/* A dependency denoting an individual target name, which can be a file
  * or a transient.
  *
  * When the target is a transient, the dependency flags have the
  * F_TARGET_TRANSIENT bit set, which is redundant, because that
  * information is also contained in PLACE_PARAM_TARGET.  No other Dep
- * type has the F_TARGET_TRANSIENT flag set.
- */
+ * type has the F_TARGET_TRANSIENT flag set.  */
 	:  public Dep
 {
 public:
-
 	Place_Param_Target place_param_target;
 	/* The target of the dependency.  Has its own place, which may
-	 * differ from the dependency's place, e.g. in '@all'.  Is
-	 * non-dynamic.  */
+	 * differ from the dependency's place, e.g. in '@all'.  Non-dynamic.  */
 
 	Place place;
-	/* The place where the dependency is declared */
 
 	string variable_name;
-	/* With F_VARIABLE:  the name of the variable.
-	 * Otherwise:  empty.  */
+	/* With F_VARIABLE:  the name of the variable.  Otherwise:  empty.  */
 
 	explicit Plain_Dep(const Place_Param_Target &place_param_target_)
 		:  Dep(place_param_target_.flags),
@@ -299,34 +289,27 @@ public:
 		:  Dep(plain_dep),
 		   place_param_target(plain_dep.place_param_target),
 		   place(plain_dep.place),
-		   variable_name(plain_dep.variable_name)
-	{  }
+		   variable_name(plain_dep.variable_name)  {  }
 
-	const Place &get_place() const {
-		return place;
-	}
-
+	const Place &get_place() const {  return place;  }
 	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
 
 	bool is_unparametrized() const {
 		return place_param_target.place_name.get_n() == 0;
 	}
 
-	virtual string format(Style style, bool &quotes) const;
-	virtual string format_err() const;
-	virtual string format_out() const;
-	virtual string format_src() const;
-
-	virtual bool is_normalized() const { return true;  }
+	virtual string format(Style, Quotes &q) const;
+//	virtual string format_err() const;
+//	virtual string format_out() const;
+//	virtual string format_src() const;
+	virtual bool is_normalized() const {  return true;  }
 
 	virtual Target get_target() const;
 	/* Does not preserve the F_VARIABLE bit */
 };
 
 class Dynamic_Dep
-/*
- * The Dep::flags field has the F_TARGET_DYNAMIC set.
- */
+/* The Dep::flags field has the F_TARGET_DYNAMIC set. */
 	:  public Dep
 {
 public:
@@ -361,7 +344,8 @@ public:
 		assert(dep_ != nullptr);
 	}
 
-	virtual shared_ptr <const Dep>  instantiate(const map <string, string> &mapping) const;
+	virtual shared_ptr <const Dep>  instantiate
+		(const map <string, string> &mapping) const;
 	bool is_unparametrized() const {  return dep->is_unparametrized();  }
 
 	const Place &get_place() const
@@ -372,10 +356,10 @@ public:
 		return dep->get_place();
 	}
 
-	virtual string format(Style, bool &quotes) const;
-	virtual string format_err() const;
-	virtual string format_out() const;
-	virtual string format_src() const;
+	virtual string format(Style, Quotes &q) const;
+//	virtual string format_err() const;
+//	virtual string format_out() const;
+//	virtual string format_src() const;
 
 	virtual bool is_normalized() const {
 		return dep->is_normalized();
@@ -396,15 +380,13 @@ public:
 };
 
 class Concat_Dep
-/*
- * A dependency that is the concatenation of multiple dependencies.
+/* A dependency that is the concatenation of multiple dependencies.
  * The dependency as a whole does not have a place stored; the
  * place of the first sub-dependency is used.
  *
  * In terms of Stu code, a concatenated dependency corresponds to
  *
- *         ( X )( Y )( Z )...
- */
+ *         ( X )( Y )( Z )...       */
 	:  public Dep
 {
 public:
@@ -415,14 +397,12 @@ public:
 	 * that is not allowed in Stu code.  Otherwise, there are at
 	 * least two elements  */
 
-	Concat_Dep()
+	Concat_Dep()  {  }
 	/* An empty concatenation, i.e., a concatenation of zero dependencies */
-	{  }
 
 	Concat_Dep(Flags flags_, const Place places_[C_PLACED])
 		/* The list of dependencies is empty */
-		:  Dep(flags_, places_)
-	{  }
+		:  Dep(flags_, places_)  {  }
 
 	/* Append a dependency to the list */
 	void push_back(shared_ptr <const Dep> dep)
@@ -433,16 +413,12 @@ public:
 	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
 
 	virtual bool is_unparametrized() const;
-
 	virtual const Place &get_place() const;
-
-	virtual string format(Style, bool &quotes) const;
-	virtual string format_err() const;
-	virtual string format_out() const;
-	virtual string format_src() const;
-
+	virtual string format(Style, Quotes &q) const;
+//	virtual string format_err() const;
+//	virtual string format_out() const;
+//	virtual string format_src() const;
 	virtual bool is_normalized() const;
-
 	virtual Target get_target() const;
 
 	static shared_ptr <const Dep> concat(shared_ptr <const Dep> a,
@@ -478,23 +454,20 @@ public:
 };
 
 class Compound_Dep
-/*
- * A list of dependencies that act as a unit, corresponding
- * syntactically to a list of dependencies in parentheses.
+/* A list of dependencies that act as a unit, corresponding syntactically to a
+ * list of dependencies in parentheses.
  *
  * In terms of Stu source code, a compound dependency corresponds to
  *
  *         (X Y Z ...)
  *
- * Compound dependencies are themselves never normalized.  Within
- * normalized dependencies, they appear only as immediate children of
- * concatenated dependencies.  Otherwise, they also appear after parsing
- * to denote syntactic groups of dependencies.
- */
+ * Compound dependencies are themselves never normalized.  Within normalized
+ * dependencies, they appear only as immediate children of concatenated
+ * dependencies.  Otherwise, they also appear after parsing to denote syntactic
+ * groups of dependencies.  */
 	:  public Dep
 {
 public:
-
 	Place place;
 	/* The place of the compound ; usually the opening parenthesis
 	 * or brace.  May be empty to denote no place, in particular if
@@ -529,43 +502,33 @@ public:
 
 	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
 	virtual bool is_unparametrized() const;
-
-	virtual const Place &get_place() const
-	{
-		return place;
-	}
-
-	virtual string format(Style, bool &quotes) const;
-	virtual string format_err() const;
-	virtual string format_out() const;
-	virtual string format_src() const;
-
-	virtual bool is_normalized() const {  return false;  }
-	/* A compound dependency is never normalized */
-
-	virtual Target get_target() const {  assert(false);  return Target();  }
+	virtual const Place &get_place() const  {  return place;  }
+	virtual string format(Style, Quotes &q) const;
+//	virtual string format_err() const;
+//	virtual string format_out() const;
+//	virtual string format_src() const;
+	virtual bool is_normalized() const  {  return false;  }
+	virtual Target get_target() const  {  assert(false);  return Target();  }
 };
 
 class Root_Dep
-/*
- * Dependency to denote the root object of the dependency tree.  There
- * is just one possible value of this, and it is never shown to the
- * user, but used internally with the root executor object.
- */
+/* Dependency to denote the root object of the dependency tree.  There is just
+ * one possible value of this, and it is never shown to the user, but used
+ * internally with the root executor object.  */
 	:  public Dep
 {
 public:
 	virtual shared_ptr <const Dep> instantiate(const map <string, string> &) const {
 		return shared_ptr <const Dep> (make_shared <Root_Dep> ());
 	}
-	virtual bool is_unparametrized() const {  return false;  }
-	virtual const Place &get_place() const {  return Place::place_empty;  }
-	virtual string format(Style, bool &) const {  return "ROOT";  }
-	virtual string format_err() const {  assert(false);  return "";  }
-	virtual string format_out() const {  return "ROOT";  }
-	virtual string format_src() const {  return "ROOT";  }
-	virtual Target get_target() const {  return Target();  }
-	virtual bool is_normalized() const {  return true;  }
+	virtual bool is_unparametrized() const  {  return false;  }
+	virtual const Place &get_place() const  {  return Place::place_empty;  }
+	virtual string format(Style, bool &) const  {  return "ROOT";  }
+//	virtual string format_err() const  {  assert(false);  return "";  }
+//	virtual string format_out() const  {  return "ROOT";  }
+//	virtual string format_src() const  {  return "ROOT";  }
+	virtual Target get_target() const  {  return Target();  }
+	virtual bool is_normalized() const  {  return true;  }
 };
 
 void Dep::normalize(shared_ptr <const Dep> dep,

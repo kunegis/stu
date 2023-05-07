@@ -52,7 +52,8 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			}
 
 			if (! place_output_new.empty()) {
-				Target target(F_TARGET_TRANSIENT, is <Name_Token> ()->raw());
+				Target target(F_TARGET_TRANSIENT,
+					      is <Name_Token> ()->format_raw());
 				place_at <<
 					fmt("transient target %s is invalid",
 					    target.format_err());
@@ -94,7 +95,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			if (! place_output.empty()) {
 				place_output_new <<
 					fmt("there must not be a second output redirection %s",
-					    prefix_format_err(target_name->raw(), ">"));
+					    prefix_format_err(target_name->format_raw(), ">"));
 				assert(place_param_targets[redirect_index]
 				       ->place_name.get_n() == 0);
 				assert((place_param_targets[redirect_index]->flags
@@ -749,10 +750,10 @@ shared_ptr <const Dep> Parser
 	if (has_input && ! place_name_input.empty()) {
 		place_name->place <<
 			fmt("there must not be a second input redirection %s",
-			    prefix_format_err(place_name->raw(), "<"));
+			    prefix_format_err(place_name->format_raw(), "<"));
 		place_name_input.place <<
-			fmt("shadowing previous input redirection %s<%s%s",
-			    prefix_format_err(place_name_input.raw(), "<"));
+			fmt("shadowing previous input redirection %s<%s%s", // TODO why three %s?  Write a test for it
+			    prefix_format_err(place_name_input.format_raw(), "<"));
 		if (targets.size() == 1) {
 			targets.front()->place <<
 				fmt("for target %s", targets.front()->format_err());
@@ -903,10 +904,10 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 	if (has_input && ! place_name_input.empty()) {
 		name_token->place <<
 			fmt("there must not be a second input redirection %s",
-			    prefix_format_err(name_token->raw(), "<"));
+			    prefix_format_err(name_token->format_raw(), "<"));
 		place_name_input.place <<
 			fmt("shadowing previous input redirection %s",
-			    prefix_format_err(place_name_input.raw(), "<"));
+			    prefix_format_err(place_name_input.format_raw(), "<"));
 		if (targets.size() == 1) {
 			targets.front()->place <<
 				fmt("for target %s", targets.front()->format_err());

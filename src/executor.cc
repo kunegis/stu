@@ -81,7 +81,7 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 				place_input <<
 					fmt("dynamic dependency %s must not contain input redirection %s",
 					    target_dynamic.format_err(),
-					    prefix_format_err(input.raw(), "<"));
+					    prefix_format_err(input.format_raw(), "<"));
 				Target target_file= target;
 				target_file.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT;
 				(*dynamic_executor) << fmt("%s is declared here",

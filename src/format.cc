@@ -46,16 +46,22 @@ string multichar_format_err(string s)
 	}
 }
 
-string name_format(string name, Style style, bool &quotes)
+string name_format(string name, Style style, Quotes &q)
 {
-	if (name.empty()) {
-		if (! (style & S_NOEMPTY))
-			quotes= true;
-		return "";
-	}
+//	assert((style & S_WANT_ESCAPE) || !(style & S_QUOTES_SINGLE));
+	assert((style & S_OUT)!=0 + (style & S_ERR)!=0 + (style & S_SRC)!=0 == 1); 
 
-	if (!quotes && strchr(name.c_str(), ' '))
+	if (name.empty() && ! (style & S_NO_EMPTY))
 		quotes= true;
+
+	for (char c:  name) 
+		if (! isalnum(c) &&
+		    ! strchr("+-./^`_~", c) &&
+		    ! (c & 0x80))
+			quotes= true;
+			break;
+//	if (!quotes && strchr(name.c_str(), ' '))
+//		quotes= true;
 
 	string ret(4 * name.size(), '\0');
 	char *const q_begin= &ret[0], *q= q_begin;
@@ -92,72 +98,102 @@ string name_format(string name, Style style, bool &quotes)
 			*q++= '0' + (cu & 7);
 		}
 	}
-	ret.resize(q - q_begin);
-	return ret;
+        ret.resize(q - q_begin);
+	return quote(ret, style, quotes);
 }
 
 string name_format_err(string name)
 {
-	bool quotes= Color::quotes;
-	string s= name_format(name, 0, quotes);
+	bool quotes;
+	return name_format(name, S_ERR, quotes);
+	//	Style style= S_WANT_ESCAPE | S_QUOTES * Color::quotes;
+//	bool quotes= Color::quotes;
+//	string s= name_format(name, style);
 
-	return fmt("%s%s%s%s%s",
-		   Color::word,
-		   quotes ? "'" : "",
-		   s,
-		   quotes ? "'" : "",
-		   Color::end);
+//	return fmt("%s%s%s%s%s",
+//		   Color::word,
+//		   style & S_QUOTES ? "'" : "",
+//		   s,
+//		   style & S_QUOTES ? "'" : "",
+//		   Color::end);
 }
 
-string name_format_src(string name)
+string name_format_src(string name, Style style)
 {
-	Style style= 0;
-	bool quotes= src_need_quotes(name);
-	string text= name_format(name, style, quotes);
-	return fmt("%s%s%s",
-		   quotes ? "'" : "", text, quotes ? "'" : "");
+	bool quotes;
+	return name_format(name, style | S_SRC, quotes);
+//	bool quotes= src_need_quotes(name, style);
+//	style |= S_WANT_ESCAPE;
+//	string text= name_format(name, style);
+//	return fmt("%s%s%s",
+//		   style & S_QUOTES ? "'" : "",
+//		   text,
+//		   style & S_QUOTES ? "'" : "");
 }
 
 string dynamic_variable_format_err(string name)
 {
-	bool quotes= false;
-	string s= name_format(name, S_MARKERS, quotes);
+	Style style= S_MARKERS;
+//	bool quotes= false;
+	string s= name_format(name, style);
 	return fmt("%s$[%s%s%s]%s",
 		   Color::word,
-		   quotes ? "'" : "",
+		   style & S_QUOTES ? "'" : "",
 		   s,
-		   quotes ? "'" : "",
+		   style & S_QUOTES ? "'" : "",
 		   Color::end);
 }
 
 string prefix_format_err(string name, string prefix)
 {
 	assert(! prefix.empty());
-	bool quotes= false;
-	string s= name_format(name, S_MARKERS, quotes);
+//	bool quotes= false;
+	Style style= S_MARKERS | S_WANT_ESCAPE;
+	string s= name_format(name, style);
 	return fmt("%s%s%s%s%s%s",
 		   Color::word,
 		   prefix,
-		   quotes ? "'" : "",
+		   style & S_QUOTES ? "'" : "",
 		   s,
-		   quotes ? "'" : "",
+		   style & S_QUOTES ? "'" : "",
 		   Color::end);
 }
 
-bool src_need_quotes(const string &name)
+//bool src_need_quotes(const string &name, Style style)
+//{
+//	if (name.size() == 0)
+//		return !(style & S_NOEMPTY);
+//
+//	if (name[0] == '-' || name[0] == '~' || name[0] == '+')
+//		return true;
+//
+//	bool ret= false;
+//	for (char c:  name) {
+//		if (! isalnum(c) &&
+//		    ! strchr("+-./^`_~", c) &&
+//		    ! (c & 0x80)) {
+//			ret= true;
+//			break;
+//		}
+//	}
+//	return ret;
+//}
+
+string quote(string text, Style style, const Quotes &q)
 {
-	if (name.size() == 0)
-		return true;
-
-	if (name[0] == '-' || name[0] == '~' || name[0] == '+')
-		return true;
-
-	bool ret= false;
-	for (char c:  name) {
-		if (! isalnum(c) &&
-		    ! strchr("+-./^`_~", c) &&
-		    ! (c & 0x80))
-			ret= true;
+	if (q.is()) {
+		text= fmt("\"%s\"", text);
 	}
-	return ret;
+	if (style & S_OUT) {
+		return fmt("%s%s%s", Color::out_print_word,
+			   text, Color::out_print_word_end); 
+	}
+	if (style & S_ERR) {
+		return fmt("%s%s%s", Color::word, text, Color::end);
+	}
+	if (style & S_SRC) {
+		return text;
+	} 
+	assert(false); 
 }
+

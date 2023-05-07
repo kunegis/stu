@@ -47,7 +47,7 @@ public:
 	virtual bool finished(Flags flags) const;
 	virtual string format_src() const {
 		assert(targets.size());
-		return targets.front().format_src();
+		return targets.front().format(S_SRC);
 	}
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
 		mapping_variable.insert(result_variable_child.begin(),

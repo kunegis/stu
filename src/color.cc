@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-bool Color::quotes, Color::quotes_out;
+bool Color::err_quotes, Color::out_quotes;
 
 const char *Color::end;
 const char *Color::error;
@@ -39,23 +39,23 @@ void Color::set()
 	set(is_tty_out, is_tty_err);
 }
 
-void Color::set(bool enable_color)
-{
-	set(enable_color, enable_color);
-}
+//void Color::set(bool enable_color)
+//{
+//	set(enable_color, enable_color);
+//}
 
 void Color::set(bool enable_color_out, bool enable_color_err)
 /* Note:  GCC additionally inserts "\33[K" sequences after each color code, to
  * avoid a bug in some terminals.  This is not done here.  */
 {
 	if (enable_color_out) {
-		quotes_out= false;
+		out_quotes= false;
 		out_end=            "\33[0m";
 		out_print_word_end= "\33[0;32m";
 		out_print=          "\33[32m";
 		out_print_word=     "\33[32;1m";
 	} else {
-		quotes_out= true;
+		out_quotes= true;
 		out_end=            "";
 		out_print_word_end= "";
 		out_print=          "";
@@ -63,7 +63,7 @@ void Color::set(bool enable_color_out, bool enable_color_err)
 	}
 
 	if (enable_color_err) {
-		quotes= false;
+		err_quotes= false;
 		error=              "\33[31m";
 		warning=            "\33[35m";
 		word=               "\33[1m";
@@ -71,7 +71,7 @@ void Color::set(bool enable_color_out, bool enable_color_err)
 		warning_word=       "\33[1;35m";
 		end=                "\33[0m";
 	} else {
-		quotes= true;
+		err_quotes= true;
 		error=              "";
 		warning=            "";
 		word=               "";

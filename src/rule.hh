@@ -142,8 +142,7 @@ public:
 	/* Print the rule set to standard output, as used by the -P and
 	 * -d options.  */
 
-	void print_targets() const;
-	/* Option -I */
+	void print_targets() const;  /* Option -I */
 
 private:
 	unordered_map <Target, shared_ptr <const Rule> > rules_unparam;

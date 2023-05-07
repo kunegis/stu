@@ -101,7 +101,7 @@ bool Dynamic_Executor::want_delete() const
 
 string Dynamic_Executor::format_src() const
 {
-	return dep->format_src();
+	return dep->format(S_SRC);
 }
 
 void Dynamic_Executor::notify_result(shared_ptr <const Dep> d,

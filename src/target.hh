@@ -16,21 +16,19 @@
 
 /*
  * Glossary:
- *     * A _name_ is a filename or the name of a transient target.  They
- *       are just strings, so no special data type is used for them.
- *       There are two distinct namespaces for them (files and
- *       transients.)  They can contain any character except \0, and
- *       must not be the empty string.
- *     * A _target_ is either file, transient target, or a dynamic^*
- *       of them.  It is represented by a name (string) and a type.
- *     * A _parametrized_ target or name additionally can have
- *       parameters.
- *     * Dedicated classes exist to represent these with _places_.
- *     * An _anchoring_ is the information about which part of a string
- *       matches the parameters of a target.  An anchoring is represented as a
- *       vector of integers, the length of which is twice the number of
- *       parameters.  Example:  When name.$a.$b is matched to the name
- *       'name.xxx.7', then the anchoring is [5, 8, 9, 10].
+ * * A _name_ is a filename or the name of a transient target.  They are just
+ *   strings, so no special data type is used for them.  There are two distinct
+ *   namespaces for them (files and transients.)  They can contain any character
+ *   except \0, and must not be the empty string.
+ * * A _target_ is either file, transient target, or a dynamic^* of them.  It is
+ *   represented by a name (string) and a type.  A _parametrized_ target or name
+ *   additionally can have parameters.
+ * * Dedicated classes exist to represent these with _places_.
+ * * An _anchoring_ is the information about which part of a string matches the
+ *   parameters of a target.  An anchoring is represented as a vector of
+ *   integers, the length of which is twice the number of parameters.  Example:
+ *   When name.$a.$b is matched to the name 'name.xxx.7', then the anchoring is
+ *   [5, 8, 9, 10]. 
  */
 
 #include <assert.h>
@@ -53,18 +51,35 @@ class Target
  * the caching of Executor objects.  The difference to the Dependency
  * class is that Target objects don't store the Place objects, and don't
  * support parametrization.  Thus, Target objects are used as keys in
- * maps, etc.  Flags are included.  */
+ * maps, etc.  Flags are included.
+ *
+ * TEXT is a linear representation of the target.  It begins with a certain
+ * number of words (word_t, at least one), followed by the name of the target as
+ * a string.  A word_t is represented by a fixed number of characters.
+ *
+ * A non-dynamic dependency is represented as a Type word (F_TARGET_TRANSIENT or
+ * 0) followed by the name.  
+ *
+ * A dynamic is represented as a dynamic word (F_TARGET_DYNAMIC) followed by the
+ * string representation of the contained dependency.
+ *
+ * Any of the front words may contain additional flag bits.  There may be '\0'
+ * bytes in the front words, but the name does not contain nul, as that is
+ * invalid in names.  The name proper (excluding front words) is non-empty,
+ * i.e., is at least one byte long.
+ *
+ * The empty string denotes a "null" value for the type Target, or equivalently
+ * the target of the root dependency, in which case most functions should not be
+ * used.  */
 {
 public:
 	Target()
 		/* The "null" target */
-		:  Target("")
-	{  }
+		:  Target("")  {  }
 
 	explicit Target(string text_)
 		/* TEXT_ is the full text field of this Target */
-		:  text(text_)
-	{  }
+		:  text(text_)  {  }
 
 	Target(Flags flags, string name)
 	/* A plain target */
@@ -100,7 +115,8 @@ public:
 
 	bool is_transient() const {
 		check();
-		return (get_word(0) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == F_TARGET_TRANSIENT;
+		return (get_word(0) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT))
+			== F_TARGET_TRANSIENT;
 	}
 
 	bool is_any_file() const {
@@ -119,11 +135,11 @@ public:
 		return get_word(i) & F_TARGET_TRANSIENT;
 	}
 
-	string format(Style style, bool &quotes) const;
-	string format_out() const;
+	string format(Style &) const;
+// string format_out() const;
 	string format_out_print_word() const;
-	string format_err() const;
-	string format_src() const;
+//	string format_err() const;
+//	string format_src() const;
 
 	string get_name_nondynamic() const
 	/* Get the name of the target, knowing that the target is not dynamic */
@@ -174,11 +190,9 @@ public:
 		return ((const word_t *)&text[0])[i];
 	}
 
-	bool operator== (const Target &target) const {  return text == target.text;  }
-	bool operator!= (const Target &target) const {  return text != target.text;  }
-
-	void canonicalize();
-	/* In-place canonicalization */
+	bool operator==(const Target &target) const {  return text == target.text;  }
+	bool operator!=(const Target &target) const {  return text != target.text;  }
+	void canonicalize();  /* In-place */
 
 	static string string_from_word(Flags flags)
 	/* Return a string of length sizeof(word_t) containing the given
@@ -186,37 +200,13 @@ public:
 	{
 		assert(flags <= 1 << C_WORD);
 		char ret[sizeof(word_t) + 1];
-		ret[sizeof(word_t)] = '\0';
+		ret[sizeof(word_t)]= '\0';
 		*(word_t *)ret= (word_t)flags;
 		return string(ret, sizeof(word_t));
 	}
 
 private:
 	string text;
-	/*
-	 * Linear representation of the target.
-	 *
-	 * This begins with a certain number of words (word_t, at least
-	 * one), followed by the name of the target as a string.  A
-	 * word_t is represented by a fixed number of characters.
-	 *
-	 * A non-dynamic dependency is represented as a Type word
-	 * (F_TARGET_TRANSIENT or 0) followed by the name.
-	 *
-	 * A dynamic is represented as a dynamic word (F_TARGET_DYNAMIC)
-	 * followed by the string representation of the contained
-	 * dependency.
-	 *
-	 * Any of the front words may contain additional flag bits.
-	 * There may be nul ('\0') bytes in the front words, but the
-	 * name does not contain nul, as that is invalid in names.  The
-	 * name proper (excluding front words) is non-empty, i.e., is at
-	 * least one byte long.
-	 *
-	 * The empty string denotes a "null" value for the type Target,
-	 * or equivalently the target of the root dependency, in which
-	 * case most functions should not be used.
-	 */
 
 	void check() const {
 		/* The minimum length of TEXT is sizeof(word_t)+1:  One
@@ -229,8 +219,7 @@ private:
 };
 
 namespace std {
-	template <>
-	struct hash <Target>
+	template <> struct hash <Target>
 	{
 		size_t operator()(const Target &target) const {
 			return hash <string> ()(target.get_text());
@@ -239,8 +228,7 @@ namespace std {
 }
 
 class Name
-/*
- * The possibly parametrized name of a file or transient.  A name has
+/* The possibly parametrized name of a file or transient.  A name has
  * N >= 0 parameters.  When N > 0, the name is parametrized, otherwise
  * it is unparametrized.  A name consists of N+1 static text elements
  * (in the variable TEXTS) and N parameters (in PARAMETERS), which are
@@ -251,27 +239,23 @@ class Name
  * Names can be valid or invalid.  A name is valid when all internal
  * texts (between two parameters) are non-empty, and, if N = 0, the
  * single text is non-empty.  A name is empty if N = 0 and the single
- * text is empty (empty names are invalid).
- */
+ * text is empty (empty names are invalid).  */
 {
 public:
+	Name(string name_):  texts({name_})  { }
 	/* A name with zero parameters */
-	Name(string name_)
-		:  texts({name_})
-	{ }
 
+	Name():  texts({""})  { }
 	/* Empty name */
-	Name()
-		:  texts({""})
-	{ }
 
 	bool empty() const {
 		assert(texts.size() == 1 + parameters.size());
 		return parameters.empty() && texts[0].empty();
 	}
 
+	size_t get_n() const
 	/* Number of parameters; zero when the name is unparametrized. */
-	size_t get_n() const {
+	{
 		assert(texts.size() == 1 + parameters.size());
 		return parameters.size();
 	}
@@ -289,15 +273,17 @@ public:
 		return parameters;
 	}
 
+	void append_parameter(string parameter)
 	/* Append the given PARAMETER and an empty text.  This does not
 	 * check that the result is valid.  */
-	void append_parameter(string parameter) {
+	{
 		parameters.push_back(parameter);
 		texts.push_back("");
 	}
 
+	void append_text(string text)
 	/* Append the given text to the last text element */
-	void append_text(string text) {
+	{
 		texts[texts.size() - 1] += text;
 	}
 
@@ -323,10 +309,8 @@ public:
 		return texts[0];
 	}
 
-	bool match(string name,
-		   map <string, string> &mapping,
-		   vector <size_t> &anchoring,
-		   int &priority) const;
+	bool match(string name, map <string, string> &mapping,
+		   vector <size_t> &anchoring, int &priority) const;
 	/* Check whether NAME matches this name.  If it does, return
 	 * TRUE and set MAPPING and ANCHORING accordingly.
 	 * MAPPING must be empty.  PRIORITY determines whether a special rule was used:
@@ -338,24 +322,11 @@ public:
 	 * The range of PRIORITY can be easily extended to other integers if necessary.
 	 */
 
-	string raw() const
-	/* Raw formatting of the name, without doing any escaping */
-	{
-		assert(texts.size() == 1 + parameters.size());
-		string ret= texts[0];
-		for (size_t i= 0;  i < get_n();  ++i) {
-			ret += "${";
-			ret += parameters[i];
-			ret += '}';
-			ret += texts[1+i];
-		}
-		return ret;
-	}
-
-	string format(Style style, bool &quotes) const;
-	string format_err() const;
-	string format_out() const;
-	string format_src() const;
+	string format(Style, bool &quotes) const;
+//	string format_err() const;
+//	string format_out() const;
+//	string format_src() const;
+//	string format_raw() const;
 	string format_glob() const;
 
 	string get_duplicate_parameter() const;
@@ -390,10 +361,7 @@ class Param_Target
  * Non-dynamic.  */
 {
 public:
-
-	Flags flags;
-	/* Only file/transient target info */
-
+	Flags flags;  /* Only file/transient target info */
 	Name name;
 
 	Param_Target(Flags flags_,
@@ -491,9 +459,7 @@ class Place_Param_Target
 /* A target that is parametrized and contains places.  Non-dynamic. */
 {
 public:
-	Flags flags;
-	/* Only F_TARGET_TRANSIENT is used */
-
+	Flags flags;  /* Only F_TARGET_TRANSIENT is used */
 	Place_Name place_name;
 
 	Place place;
@@ -503,9 +469,7 @@ public:
 
 	Place_Param_Target(Flags flags_,
 			   const Place_Name &place_name_)
-		:  flags(flags_),
-		   place_name(place_name_),
-		   place(place_name_.place)
+		:  flags(flags_), place_name(place_name_), place(place_name_.place)
 	{
 		assert((flags_ & ~F_TARGET_TRANSIENT) == 0);
 	}
@@ -513,9 +477,7 @@ public:
 	Place_Param_Target(Flags flags_,
 			   const Place_Name &place_name_,
 			   const Place &place_)
-		:  flags(flags_),
-		   place_name(place_name_),
-		   place(place_)
+		:  flags(flags_), place_name(place_name_), place(place_)
 	{
 		assert((flags_ & ~F_TARGET_TRANSIENT) == 0);
 	}
@@ -523,35 +485,33 @@ public:
 	Place_Param_Target(const Place_Param_Target &that)
 		:  flags(that.flags),
 		   place_name(that.place_name),
-		   place(that.place)
-	{  }
+		   place(that.place)  {  }
 
-	bool operator== (const Place_Param_Target &that) const
+	bool operator==(const Place_Param_Target &that) const
 	/* Compares only the content, not the place. */
 	{
 		return this->flags == that.flags &&
 			this->place_name == that.place_name;
 	}
 
-	string format(Style style, bool &quotes) const {
-		Target target(flags, place_name.raw());
-		return target.format(style, quotes);
-	}
+	string format(Style, Quotes &q) const;
 
-	string format_err() const {
-		Target target(flags, place_name.raw());
-		return target.format_err();
-	}
+//	string format_err() const {
+//		Target target(flags, place_name.format_raw());
+//		return target.format_err();
+	// 	Style style= S_ERR;
+	// 	return format(style);
+	// }
 
-	string format_out() const {
-		Target target(flags, place_name.raw());
-		return target.format_out();
-	}
+	// string format_out() const {
+	// 	Target target(flags, place_name.format_raw());
+	// 	return target.format_out();
+	// }
 
-	string format_src() const {
-		Target target(flags, place_name.raw());
-		return target.format_src();
-	}
+	// string format_src() const {
+	// 	Target target(flags, place_name.format_raw());
+	// 	return target.format_src();
+	// }
 
 	shared_ptr <Place_Param_Target>
 	instantiate(const map <string, string> &mapping) const {
@@ -567,8 +527,7 @@ public:
 		return Param_Target(flags, place_name);
 	}
 
-	void canonicalize();
-	/* In-place canonicalization */
+	void canonicalize();  /* In-place */
 
 	static shared_ptr <Place_Param_Target> clone
 	(shared_ptr <const Place_Param_Target> place_param_target) {

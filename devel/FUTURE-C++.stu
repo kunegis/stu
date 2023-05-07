@@ -6,8 +6,6 @@
 #
 # Use string_view where appropriate. (needs C++17).
 #
-# Switch to C++17.
-#
 
 #
 # Try out further sanitizers (some may need a newer GCC)

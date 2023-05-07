@@ -161,11 +161,9 @@ char *canonicalize_string(Canon_Flags canon_flags, char *p)
 		*d= '\0';
 		assert(d <= s);
 	}
-
 #endif /* 0 */
 
 	assert(*s == '\0');
 	assert(*d == '\0');
-
 	return d;
 }

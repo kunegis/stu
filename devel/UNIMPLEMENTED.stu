@@ -101,15 +101,6 @@ A: [-d data/B];
 % set STU_SHELL /bin/bash
 
 #
-# Does it make sense to have a way to set environment variables for all
-# commands?  It would open us up to many additional questions, and
-# potentially some Make-like anti-patterns.  In general, Stu directives
-# are prone to implement anti-patterns, as what they do is global.
-#
-
-% set PATH /usr/local/bin
-
-#
 # A flag with the meaning "never rebuild that dependency", but only use
 # it to determine whether we need to rebuilt the target.  It would mean
 # that we can prune dependencies with that flag as soon as we know that

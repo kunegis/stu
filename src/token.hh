@@ -39,7 +39,7 @@ public:
 	virtual const Place &get_place_start() const= 0;
 	/* The starting place.  Always the first character. */
 
-	virtual string format_start_err() const= 0;
+	virtual string format_err_start() const= 0;
 	/* Formatting of the starting character of character sequence */
 };
 
@@ -70,7 +70,7 @@ public:
 		return place;
 	}
 
-	string format_start_err() const {
+	string format_err_start() const {
 		return char_format_err(op);
 	}
 
@@ -118,7 +118,7 @@ public:
 		return place_start;
 	}
 
-	string format_start_err() const {
+	string format_err_start() const {
 		return char_format_err('-');
 	}
 };
@@ -144,8 +144,9 @@ public:
 		return Place_Name::place;
 	}
 
-	string format_start_err() const {
-		return Place_Name::format_err();
+	string format_err_start() const {
+		bool quotes;
+		return Place_Name::format(S_ERR, quotes);
 	}
 };
 
@@ -186,7 +187,7 @@ public:
 		return place_start;
 	}
 
-	string format_start_err() const {
+	string format_err_start() const {
 		return char_format_err('{');
 	}
 

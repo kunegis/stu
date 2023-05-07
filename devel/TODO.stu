@@ -1,6 +1,22 @@
 #
 # Option -I
-# * single target, parametrized
+# * single target, parametrized: test is written; fails
+# ** Make Style input-only and non-reference.  Reintroduce the quote variable.
+# ** Make sure we use double quotes in all output
+# ** for all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
+# * list.*+X does not need quotes in -I output
+# * list.${a}+X does not need quotes in normal output
+# * list.${a}-X does not need quotes in normal output
+# * list.${a}~X does not need quotes in normal output
+# * normal output for A${X\Y}B  # variable name contains a backslash, but outside not quoted
+# * normal output for A'\'B${X}C
+# * normal output for A[B\C]D
+# * normal output for A\B[C]D
+# * A\B[C\D]E
+#
+# * target *
+# * target *.o
+# * target *.x.*
 # * single rule, multiple unparametrized targets
 # * single rule, multiple parametrized targets
 # * multiple rules
@@ -105,3 +121,22 @@
 #
 # Color in the usual output "Successfully built X" and the error equivalent
 #
+
+#
+# When doing %include or %import, allow to pass environment variables. 
+#
+
+#
+# Does it make sense to have a way to set environment variables for all
+# commands?  It would open us up to many additional questions, and
+# potentially some Make-like anti-patterns.  In general, Stu directives
+# are prone to implement anti-patterns, as what they do is global.
+#
+
+% set PATH /usr/local/bin
+
+#
+# Regex patterns in parameters.  Not sure about the '|' syntax. 
+#
+
+list.${name|[A-Z].*} # Matches uppercase names

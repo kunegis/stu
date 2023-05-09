@@ -18,7 +18,6 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 	vector <shared_ptr <const Place_Param_Target> > place_param_targets;
 
 	while (iter != tokens.end()) {
-
 		Place place_output_new;
 		/* Remains an empty place when '>' is not present */
 
@@ -40,27 +39,27 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 
 			if (iter == tokens.end()) {
 				place_end << "expected the name of transient target";
-				place_at << fmt("after %s", char_format_err('@'));
+				place_at << fmt("after %s", char_format('@'));
 				throw ERROR_LOGICAL;
 			}
 			if (! is <Name_Token> ()) {
 				(*iter)->get_place_start()
 					<< fmt("expected the name of transient target, not %s",
-					       (*iter)->format_start_err());
-				place_at << fmt("after %s", char_format_err('@'));
+					       (*iter)->format_err_start());
+				place_at << fmt("after %s", char_format('@'));
 				throw ERROR_LOGICAL;
 			}
 
-			if (! place_output_new.empty()) {
-				Target target(F_TARGET_TRANSIENT,
-					      is <Name_Token> ()->format_raw());
-				place_at <<
-					fmt("transient target %s is invalid",
-					    target.format_err());
-				place_output_new << fmt("after output redirection using %s",
-							char_format_err('>'));
-				throw ERROR_LOGICAL;
-			}
+			// if (! place_output_new.empty()) {
+			// 	Target target(F_TARGET_TRANSIENT,
+			// 		      is <Name_Token> ()->format_raw());
+			// 	place_at <<
+			// 		fmt("transient target %s is invalid",
+			// 		    target.format_err());
+			// 	place_output_new << fmt("after output redirection using %s",
+			// 				char_format_err('>'));
+			// 	throw ERROR_LOGICAL;
+			// }
 
 			flags_type= F_TARGET_TRANSIENT;
 		}
@@ -71,16 +70,16 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 					place_end << "expected a filename";
 					place_output_new <<
 						fmt("after output redirection using %s",
-						    char_format_err('>'));
+						    char_format('>'));
 					throw ERROR_LOGICAL;
 				}
 				else {
 					(*iter)->get_place_start() <<
 						fmt("expected a filename, not %s",
-						    (*iter)->format_start_err());
+						    (*iter)->format_err_start());
 					place_output_new <<
 						fmt("after output redirection using %s",
-						    char_format_err('>'));
+						    char_format('>'));
 					throw ERROR_LOGICAL;
 				}
 			}
@@ -91,18 +90,43 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 		shared_ptr <Name_Token> target_name= is <Name_Token> ();
 		++iter;
 
+		string param_1, param_2;
+		if (! target_name->valid(param_1, param_2)) {
+			place_target <<
+				fmt("the two parameters %s and %s in the name %s "
+				    "must be separated by at least one character",
+				    name_format('$' + param_1),
+				    name_format('$' + param_2),
+				    target_name->format());
+			explain_separated_parameters();
+			throw ERROR_LOGICAL;
+		}
+
+		string parameter_duplicate;
+		if ((parameter_duplicate= target_name->get_duplicate_parameter()) != "") {
+			place_target <<
+				fmt("target %s must not contain duplicate parameter %s",
+				    target_name->format(),
+				    prefix_format(parameter_duplicate, "$"));
+			throw ERROR_LOGICAL;
+		}
+
+		shared_ptr <const Place_Param_Target> place_param_target=
+			make_shared <Place_Param_Target>
+			(flags_type, *target_name, place_target);
+
 		if (! place_output_new.empty()) {
 			if (! place_output.empty()) {
 				place_output_new <<
 					fmt("there must not be a second output redirection %s",
-					    prefix_format_err(target_name->format_raw(), ">"));
+					    prefix_format(place_param_target->format(), ">"));
 				assert(place_param_targets[redirect_index]
 				       ->place_name.get_n() == 0);
 				assert((place_param_targets[redirect_index]->flags
 					& F_TARGET_TRANSIENT) == 0);
 				place_output <<
 					fmt("shadowing previous output redirection %s",
-					    prefix_format_err
+					    prefix_format
 					    (place_param_targets[redirect_index]
 					     ->unparametrized().get_name_nondynamic(), ">"));
 				throw ERROR_LOGICAL;
@@ -112,30 +136,18 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			redirect_index= place_param_targets.size();
 		}
 
-		string param_1, param_2;
-		if (! target_name->valid(param_1, param_2)) {
-			place_target <<
-				fmt("the two parameters %s and %s in the name %s "
-				    "must be separated by at least one character",
-				    name_format_err('$' + param_1),
-				    name_format_err('$' + param_2),
-				    target_name->format_err());
-			explain_separated_parameters();
-			throw ERROR_LOGICAL;
+		if (flags_type == F_TARGET_TRANSIENT) {
+			if (! place_output_new.empty()) {
+//				Target target(F_TARGET_TRANSIENT,
+//					      is <Name_Token> ()->format_raw());
+				place_param_target->place <<
+					fmt("transient target %s is invalid",
+					    place_param_target->format());
+				place_output_new << fmt("after output redirection using %s",
+							char_format('>'));
+				throw ERROR_LOGICAL;
+			}
 		}
-
-		string parameter_duplicate;
-		if ((parameter_duplicate= target_name->get_duplicate_parameter()) != "") {
-			place_target <<
-				fmt("target %s must not contain duplicate parameter %s",
-				    target_name->format_err(),
-				    prefix_format_err(parameter_duplicate, "$"));
-			throw ERROR_LOGICAL;
-		}
-
-		shared_ptr <const Place_Param_Target> place_param_target=
-			make_shared <Place_Param_Target>
-			(flags_type, *target_name, place_target);
 		if (target_first == nullptr) {
 			target_first= place_param_target;
 		}
@@ -163,10 +175,10 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 		if (parameters_i != parameters_0) {
 			place_param_targets[i]->place <<
 				fmt("parameters of target %s differ",
-				    place_param_targets[i]->format_err());
+				    place_param_targets[i]->format());
 			place_param_targets[0]->place <<
 				fmt("from parameters of target %s in rule with multiple targets",
-				    place_param_targets[0]->format_err());
+				    place_param_targets[0]->format());
 			throw ERROR_LOGICAL;
 		}
 	}
@@ -174,10 +186,10 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 	if (iter == tokens.end()) {
 		place_end <<
 			fmt("expected a command, %s, %s, or %s",
-			    char_format_err(':'), char_format_err(';'), char_format_err('='));
+			    char_format(':'), char_format(';'), char_format('='));
 		place_param_targets.back()->place
 			<< fmt("after target %s",
-			       place_param_targets.back()->format_err());
+			       place_param_targets.back()->format());
 		throw ERROR_LOGICAL;
 	}
 
@@ -199,14 +211,14 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 	if (iter == tokens.end()) {
 		if (had_colon)
 			place_end << fmt("expected a dependency, a command, or %s",
-					 char_format_err(';'));
+					 char_format(';'));
 		else
 			place_end << fmt("expected a command, %s, %s, or %s",
-					 char_format_err(';'),
-					 char_format_err(':'),
-					 char_format_err('='));
+					 char_format(';'),
+					 char_format(':'),
+					 char_format('='));
 		place_param_targets[0]->place
-			<< fmt("for target %s", place_param_targets[0]->format_err());
+			<< fmt("for target %s", place_param_targets[0]->format());
 		throw ERROR_LOGICAL;
 	}
 
@@ -234,9 +246,9 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 
 		if (iter == tokens.end()) {
 			place_end << fmt("expected a filename, a flag, or %s",
-					 char_format_err('{'));
+					 char_format('{'));
 			place_equal << fmt("after %s",
-					    char_format_err('='));
+					   char_format('='));
 			throw ERROR_LOGICAL;
 		}
 
@@ -247,19 +259,19 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			if (place_param_targets.size() != 1) {
 				place_equal <<
 					fmt("there must not be assigned content using %s",
-					    char_format_err('='));
+					    char_format('='));
 				place_param_targets[0]->place <<
 					fmt("in rule for %s... with multiple targets",
-					    place_param_targets[0]->format_err());
+					    place_param_targets[0]->format());
 				throw ERROR_LOGICAL;
 			}
 			if ((place_param_targets[0]->flags & F_TARGET_TRANSIENT)) {
 				place_equal <<
 					fmt("there must not be assigned content using %s",
-					    char_format_err('='));
+					    char_format('='));
 				place_param_targets[0]->place <<
 					fmt("for transient target %s",
-					    place_param_targets[0]->format_err());
+					    place_param_targets[0]->format());
 				throw ERROR_LOGICAL;
 			}
 			/* No redirected output is checked later */
@@ -280,12 +292,12 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 				} else {
 					flag->get_place()
 						<< fmt("flag %s must not be used",
-						       multichar_format_err
+						       name_format
 						       (frmt("-%c", flag->flag)));
 					place_equal <<
 						fmt("in copy rule using %s for target %s",
-						    char_format_err('='),
-						    place_param_targets[0]->format_err());
+						    char_format('='),
+						    place_param_targets[0]->format());
 					throw ERROR_LOGICAL;
 				}
 			}
@@ -294,14 +306,14 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 				if (iter == tokens.end()) {
 					(*iter)->get_place_start() <<
 						fmt("expected a filename, a flag, or %s",
-						    char_format_err('{'));
+						    char_format('{'));
 				} else {
 					(*iter)->get_place_start() <<
 						fmt("expected a filename, a flag, or %s, not %s",
-						    char_format_err('{'),
-						    (*iter)->format_start_err());
+						    char_format('{'),
+						    (*iter)->format_err_start());
 				}
-				place_equal << fmt("after %s", char_format_err('='));
+				place_equal << fmt("after %s", char_format('='));
 				throw ERROR_LOGICAL;
 			}
 
@@ -323,28 +335,28 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 				if (parameters.count(parameter) == 0) {
 					name_copy->places[jj] <<
 						fmt("parameter %s must not appear in copied file %s",
-						    prefix_format_err(parameter, "$"),
-						    name_copy->format_err());
+						    prefix_format(parameter, "$"),
+						    name_copy->format());
 					place_param_targets[0]->place <<
 						fmt("because it does not appear in target %s",
-						    place_param_targets[0]->format_err());
+						    place_param_targets[0]->format());
 					throw ERROR_LOGICAL;
 				}
 			}
 
 			if (iter == tokens.end()) {
-				place_end << fmt("expected %s", char_format_err(';'));
+				place_end << fmt("expected %s", char_format(';'));
 				name_copy->get_place() <<
 					fmt("after copy dependency %s",
-					    name_copy->format_err());
+					    name_copy->format());
 				throw ERROR_LOGICAL;
 			}
 			if (! is_operator(';')) {
 				(*iter)->get_place() <<
-					fmt("expected %s", char_format_err(';'));
+					fmt("expected %s", char_format(';'));
 				name_copy->place <<
 					fmt("after copy dependency %s",
-					    name_copy->format_err());
+					    name_copy->format());
 				throw ERROR_LOGICAL;
 			}
 			++iter;
@@ -352,11 +364,11 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			if (! place_output.empty()) {
 				place_output <<
 					fmt("output redirection using %s must not be used",
-					    char_format_err('>'));
+					    char_format('>'));
 				place_equal <<
 					fmt("in copy rule using %s for target %s",
-					    char_format_err('='),
-					    place_param_targets[0]->format_err());
+					    char_format('='),
+					    place_param_targets[0]->format());
 				throw ERROR_LOGICAL;
 			}
 
@@ -365,10 +377,10 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			if (place_param_targets.size() != 1) {
 				place_equal <<
 					fmt("there must not be a copy rule using %s",
-					    char_format_err('='));
+					    char_format('='));
 				place_param_targets[0]->place <<
 					fmt("for multiple targets %s...",
-					    place_param_targets[0]->format_err());
+					    place_param_targets[0]->format());
 				throw ERROR_LOGICAL;
 			}
 
@@ -376,10 +388,10 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			if (place_param_targets[0]->flags & F_TARGET_TRANSIENT) {
 				assert(place_param_targets[0]->flags & F_TARGET_TRANSIENT);
 				place_equal << fmt("copy rule using %s cannot be used",
-						   char_format_err('='));
+						   char_format('='));
 				place_param_targets[0]->place
 					<< fmt("with transient target %s",
-					       place_param_targets[0]->format_err());
+					       place_param_targets[0]->format());
 				throw ERROR_LOGICAL;
 			}
 
@@ -400,16 +412,16 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 		(*iter)->get_place() <<
 			(had_colon
 			 ? fmt("expected a dependency, a command, or %s, not %s",
-			       char_format_err(';'),
-			       (*iter)->format_start_err())
+			       char_format(';'),
+			       (*iter)->format_err_start())
 			 : fmt("expected a command, %s, %s, or %s, not %s",
-			       char_format_err(':'),
-			       char_format_err(';'),
-			       char_format_err('='),
-			       (*iter)->format_start_err()));
+			       char_format(':'),
+			       char_format(';'),
+			       char_format('='),
+			       (*iter)->format_err_start()));
 		place_param_targets[0]->place <<
 			fmt("for target %s",
-			    place_param_targets[0]->format_err());
+			    place_param_targets[0]->format());
 		throw ERROR_LOGICAL;
 	}
 
@@ -421,21 +433,21 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 		if (command == nullptr) {
 			place_output <<
 				fmt("output redirection using %s must not be used",
-				     char_format_err('>'));
+				     char_format('>'));
 			place_nocommand <<
 				fmt("in rule for %s without a command",
-				    place_param_targets[0]->format_err());
+				    place_param_targets[0]->format());
 			throw ERROR_LOGICAL;
 		}
 
 		if (command != nullptr && is_hardcode) {
 			place_output <<
 				fmt("output redirection using %s must not be used",
-				     char_format_err('>'));
+				     char_format('>'));
 			place_equal <<
 				fmt("in rule for %s with assigned content using %s",
-				    place_param_targets[0]->format_err(),
-				    char_format_err('='));
+				    place_param_targets[0]->format(),
+				    char_format('='));
 			throw ERROR_LOGICAL;
 		}
 	}
@@ -445,10 +457,10 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 		if (command == nullptr) {
 			place_input <<
 				fmt("input redirection using %s must not be used",
-				     char_format_err('<'));
+				     char_format('<'));
 			place_nocommand <<
 				fmt("in rule for %s without a command",
-				    place_param_targets[0]->format_err());
+				    place_param_targets[0]->format());
 			throw ERROR_LOGICAL;
 		} else {
 			assert(! is_hardcode);
@@ -504,15 +516,15 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 			r.clear();
 		}
 		if (iter == tokens.end()) {
-			place_end << fmt("expected %s", char_format_err(')'));
-			place_paren << fmt("after opening %s", char_format_err('('));
+			place_end << fmt("expected %s", char_format(')'));
+			place_paren << fmt("after opening %s", char_format('('));
 			throw ERROR_LOGICAL;
 		}
 		if (! is_operator(')')) {
 			(*iter)->get_place_start() <<
 				fmt("expected %s, not %s",
-				    char_format_err(')'), (*iter)->format_start_err());
-			place_paren << fmt("after opening %s", char_format_err('('));
+				    char_format(')'), (*iter)->format_err_start());
+			place_paren << fmt("after opening %s", char_format('('));
 			throw ERROR_LOGICAL;
 		}
 		++iter;
@@ -547,15 +559,15 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		parse_expression_list(r2, place_name_input, place_input, targets);
 
 		if (iter == tokens.end()) {
-			place_end << fmt("expected %s", char_format_err(']'));
-			place_bracket << fmt("after opening %s", char_format_err('['));
+			place_end << fmt("expected %s", char_format(']'));
+			place_bracket << fmt("after opening %s", char_format('['));
 			throw ERROR_LOGICAL;
 		}
 		if (! is_operator(']')) {
 			(*iter)->get_place_start() <<
 				fmt("expected %s, not %s",
-				    char_format_err(']'), (*iter)->format_start_err());
-			place_bracket << fmt("after opening %s", char_format_err('['));
+				    char_format(']'), (*iter)->format_err_start());
+			place_bracket << fmt("after opening %s", char_format('['));
 			throw ERROR_LOGICAL;
 		}
 		++iter;
@@ -567,10 +579,10 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 			if (j->flags & F_VARIABLE) {
 				j->get_place() <<
 					fmt("variable dependency %s must not appear",
-					    j->format_err());
+					    j->format());
 				place_bracket <<
 					fmt("within dynamic dependency started by %s",
-					     char_format_err('['));
+					     char_format('['));
 				throw ERROR_LOGICAL;
 			}
 
@@ -613,10 +625,10 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 			} else {
 				(*iter)->get_place_start() <<
 					fmt("expected a dependency, not %s",
-					    (*iter)->format_start_err());
+					    (*iter)->format_err_start());
 			}
 			place_flag << fmt("after flag %s",
-					  multichar_format_err(frmt("-%c", flag_token.flag)));
+					  name_format(frmt("-%c", flag_token.flag)));
 			throw ERROR_LOGICAL;
 		}
 
@@ -627,10 +639,10 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		if (! place_name_input.place.empty() && flag_token.flag == 'o') {
 			place_input <<
 				fmt("input redirection using %s must not be used",
-				    char_format_err('<'));
+				    char_format('<'));
 			place_flag <<
 				fmt("in conjunction with optional dependency flag %s",
-				    multichar_format_err("-o"));
+				    name_format("-o"));
 			throw ERROR_LOGICAL;
 		}
 
@@ -679,8 +691,8 @@ shared_ptr <const Dep> Parser
 	++iter;
 
 	if (iter == tokens.end()) {
-		place_end << fmt("expected %s", char_format_err('['));
-		place_dollar << fmt("after %s", char_format_err('$'));
+		place_end << fmt("expected %s", char_format('['));
+		place_dollar << fmt("after %s", char_format('$'));
 		throw ERROR_LOGICAL;
 	}
 	if (! is_operator('[')) {
@@ -709,7 +721,7 @@ shared_ptr <const Dep> Parser
 			if (! option_g) {
 				(*iter)->get_place() <<
 					fmt("optional dependency using %s must not appear",
-					     multichar_format_err("-o"));
+					     name_format("-o"));
 				place_dollar << "within dynamic variable declaration";
 				throw ERROR_LOGICAL;
 			}
@@ -733,43 +745,26 @@ shared_ptr <const Dep> Parser
 	/* Name of variable dependency */
 	if (! is <Name_Token> ()) {
 		(*iter)->get_place_start() <<
-			fmt("expected a filename, not %s", (*iter)->format_start_err());
+			fmt("expected a filename, not %s", (*iter)->format_err_start());
 		if (has_input) {
-			place_input << fmt("after %s", char_format_err('<'));
+			place_input << fmt("after %s", char_format('<'));
 		} else if (! place_flag_last.empty()) {
 			assert(flag_last != '\0');
-			place_flag_last << fmt("after %s", char_format_err(flag_last));
+			place_flag_last << fmt("after %s", char_format(flag_last));
 		} else {
-			place_dollar << fmt("after %s", multichar_format_err("$["));
+			place_dollar << fmt("after %s", name_format("$["));
 		}
 		throw ERROR_LOGICAL;
 	}
 	shared_ptr <Place_Name> place_name= is <Name_Token> ();
 	++iter;
 
-	if (has_input && ! place_name_input.empty()) {
-		place_name->place <<
-			fmt("there must not be a second input redirection %s",
-			    prefix_format_err(place_name->format_raw(), "<"));
-		place_name_input.place <<
-			fmt("shadowing previous input redirection %s<%s%s", // TODO why three %s?  Write a test for it
-			    prefix_format_err(place_name_input.format_raw(), "<"));
-		if (targets.size() == 1) {
-			targets.front()->place <<
-				fmt("for target %s", targets.front()->format_err());
-		} else if (targets.size() > 1) {
-			targets.front()->place <<
-				fmt("for targets %s...", targets.front()->format_err());
-		}
-		throw ERROR_LOGICAL;
-	}
-
 	/* Check that the name does not contain '=' */
 	for (auto &j:  place_name->get_texts()) {
 		if (j.find('=') != string::npos) {
 			place_name->place <<
 				fmt("name of variable dependency %s must not contain %s",
-				    place_name->format_err(), char_format_err('='));
+				    place_name->format(), char_format('='));
 			explain_variable_equal();
 			throw ERROR_LOGICAL;
 		}
@@ -784,22 +779,22 @@ shared_ptr <const Dep> Parser
 			place_end << "expected a filename";
 			place_equal <<
 				fmt("after %s in variable dependency %s",
-				    char_format_err('='), place_name->format_err());
+				    char_format('='), place_name->format());
 			throw ERROR_LOGICAL;
 		}
 		if (! is <Name_Token> ()) {
 			(*iter)->get_place_start() <<
 				fmt("expected a filename, not %s",
-				    (*iter)->format_start_err());
+				    (*iter)->format_err_start());
 			place_equal << fmt("after %s in variable dependency %s",
-					   char_format_err('='), place_name->format_err());
+					   char_format('='), place_name->format());
 			throw ERROR_LOGICAL;
 		}
 
 		if (place_name->get_n() != 0) {
 			place_name->place <<
 				fmt("variable name %s must be unparametrized",
-				    place_name->format_err());
+				    place_name->format());
 			throw ERROR_LOGICAL;
 		}
 
@@ -811,28 +806,47 @@ shared_ptr <const Dep> Parser
 	/* Closing ']' */
 	if (! is_operator(']')) {
 		if (iter == tokens.end()) {
-			place_end << fmt("expected %s", char_format_err(']'));
-			place_dollar << fmt("after opening %s", multichar_format_err("$["));
+			place_end << fmt("expected %s", char_format(']'));
+			place_dollar << fmt("after opening %s", name_format("$["));
 		} else {
 			(*iter)->get_place_start() <<
 				fmt("expected %s, not %s",
-				    char_format_err(']'), (*iter)->format_start_err());
-			place_dollar << fmt("after opening %s", multichar_format_err("$["));
+				    char_format(']'), (*iter)->format_err_start());
+			place_dollar << fmt("after opening %s", name_format("$["));
 		}
 		throw ERROR_LOGICAL;
 	}
 	++iter;
 
-	if (has_input)
-		place_name_input= *place_name;
-
 	/* The place of the variable dependency as a whole is set on the
 	 * name contained in it.  It would be conceivable to also set it
 	 * on the dollar sign.  */
-	return make_shared <Plain_Dep>
+	ret= make_shared <Plain_Dep>
 		(flags, places_flags,
 		 Place_Param_Target(0, *place_name, place_name->place),
 		 variable_name);
+
+	if (has_input && ! place_name_input.empty()) {
+		place_name->place <<
+			fmt("there must not be a second input redirection %s",
+			    prefix_format(ret->format(), "<"));
+		place_name_input.place <<
+			fmt("shadowing previous input redirection %s<%s%s", // TODO why three %s?  Write a test for it
+			    prefix_format(ret->format(), "<"));
+		if (targets.size() == 1) {
+			targets.front()->place <<
+				fmt("for target %s", targets.front()->format());
+		} else if (targets.size() > 1) {
+			targets.front()->place <<
+				fmt("for targets %s...", targets.front()->format());
+		}
+		throw ERROR_LOGICAL;
+	}
+
+	if (has_input)
+		place_name_input= *place_name;
+
+	return ret;
 }
 
 shared_ptr <const Dep> Parser::parse_redirect_dep
@@ -855,9 +869,9 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 	if (is_operator('@')) {
 		place_at= (*iter)->get_place();
 		if (has_input) {
-			place_at << fmt("expected a filename, not %s", char_format_err('@'));
+			place_at << fmt("expected a filename, not %s", char_format('@'));
 			place_input << fmt("after input redirection using %s",
-					    char_format_err('<'));
+					    char_format('<'));
 			throw ERROR_LOGICAL;
 		}
 		++iter;
@@ -868,11 +882,11 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 		if (has_input) {
 			place_end << "expected a filename";
 			place_input << fmt("after input redirection using %s",
-					    char_format_err('<'));
+					    char_format('<'));
 			throw ERROR_LOGICAL;
 		} else if (has_transient) {
 			place_end << "expected the name of a transient target";
-			place_at << fmt("after %s", char_format_err('@'));
+			place_at << fmt("after %s", char_format('@'));
 			throw ERROR_LOGICAL;
 		} else {
 			return nullptr;
@@ -882,16 +896,17 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 	if (! is <Name_Token> ()) {
 		if (has_input) {
 			(*iter)->get_place_start() <<
-				fmt("expected a filename, not %s", (*iter)->format_start_err());
+				fmt("expected a filename, not %s",
+				    (*iter)->format_err_start());
 			place_input << fmt("after input redirection using %s",
-					    char_format_err('<'));
+					   char_format('<'));
 			throw ERROR_LOGICAL;
 		} else if (has_transient) {
 			(*iter)->get_place_start()
 				<< fmt("expected the name of a transient target, not %s",
-				       (*iter)->format_start_err());
+				       (*iter)->format_err_start());
 			place_at << fmt("after %s",
-					 char_format_err('@'));
+					 char_format('@'));
 			throw ERROR_LOGICAL;
 		} else {
 			return nullptr;
@@ -901,27 +916,10 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 	shared_ptr <Name_Token> name_token= is <Name_Token> ();
 	++iter;
 
-	if (has_input && ! place_name_input.empty()) {
-		name_token->place <<
-			fmt("there must not be a second input redirection %s",
-			    prefix_format_err(name_token->format_raw(), "<"));
-		place_name_input.place <<
-			fmt("shadowing previous input redirection %s",
-			    prefix_format_err(place_name_input.format_raw(), "<"));
-		if (targets.size() == 1) {
-			targets.front()->place <<
-				fmt("for target %s", targets.front()->format_err());
-		} else if (targets.size() > 1) {
-			targets.front()->place <<
-				fmt("for targets %s...", targets.front()->format_err());
-		}
-		throw ERROR_LOGICAL;
-	}
-
 	Flags flags= 0;
 	if (has_input) {
 		assert(place_name_input.empty());
-		place_name_input= *name_token;
+//		place_name_input= *name_token;
 		flags |= F_INPUT;
 	}
 
@@ -933,6 +931,26 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 		(flags | transient_bit,
 		 Place_Param_Target(transient_bit, *name_token,
 				    has_transient ? place_at : name_token->place));
+
+	if (has_input && ! place_name_input.empty()) {
+		name_token->place <<
+			fmt("there must not be a second input redirection %s",
+			    prefix_format(ret->format(), "<"));
+		place_name_input.place <<
+			fmt("shadowing previous input redirection %s",
+			    prefix_format(ret->format(), "<"));
+		if (targets.size() == 1) {
+			targets.front()->place <<
+				fmt("for target %s", targets.front()->format());
+		} else if (targets.size() > 1) {
+			targets.front()->place <<
+				fmt("for targets %s...", targets.front()->format());
+		}
+		throw ERROR_LOGICAL;
+	}
+
+	if (has_input) 
+		place_name_input= *name_token;
 
 	if (next_concatenates()) {
 		shared_ptr <const Dep> next;
@@ -991,7 +1009,7 @@ void Parser::get_rule_list(vector <shared_ptr <Rule> > &rules,
 
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start()
-			<< fmt("expected a rule, not %s", (*iter)->format_start_err());
+			<< fmt("expected a rule, not %s", (*iter)->format_err_start());
 		throw ERROR_LOGICAL;
 	}
 }
@@ -1009,7 +1027,7 @@ void Parser::get_expression_list(vector <shared_ptr <const Dep> > &deps,
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start()
 			<< fmt("expected a dependency, not %s",
-			       (*iter)->format_start_err());
+			       (*iter)->format_err_start());
 		throw ERROR_LOGICAL;
 	}
 }
@@ -1057,8 +1075,8 @@ void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
 				fmt("in %s-separated dynamic dependency %s "
 				    "declared with flag %s",
 				    c == '\0' ? "zero" : "newline",
-				    name_format_err(filename),
-				    multichar_format_err(frmt("-%c", c_printed)));
+				    name_format(filename),
+				    name_format(frmt("-%c", c_printed)));
 			throw ERROR_LOGICAL;
 		}
 
@@ -1068,14 +1086,14 @@ void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
 			free(lineptr);
 			fclose(file);
 			place << fmt("filename %s must not contain %s",
-				     name_format_err(filename_dep),
-				     char_format_err('\0'));
+				     name_format(filename_dep),
+				     char_format('\0'));
 			printer <<
 				fmt("in %s-separated dynamic dependency %s "
 				    "declared with flag %s",
 				    c == '\0' ? "zero" : "newline",
-				    name_format_err(filename),
-				    multichar_format_err(frmt("-%c", c_printed)));
+				    name_format(filename),
+				    name_format(frmt("-%c", c_printed)));
 			throw ERROR_LOGICAL;
 		}
 		if (c == '\0') {
@@ -1146,17 +1164,17 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 				++p;
 				if (*p == '\0') {
 					place << fmt("expected a flag character after %s",
-						     char_format_err('-'));
+						     char_format('-'));
 					throw ERROR_LOGICAL;
 				}
 				if (! Tokenizer::is_flag_char(*p)) {
 					if (isalnum(*p)) {
 						place << fmt("invalid flag %s",
-							     multichar_format_err(frmt("-%c", *p)));
+							     name_format(frmt("-%c", *p)));
 					} else {
 						place << fmt("expected a flag character after dash %s, not %s",
-							     char_format_err('-'),
-							     char_format_err(*p));
+							     char_format('-'),
+							     char_format(*p));
 					}
 					throw ERROR_LOGICAL;
 				}
@@ -1199,7 +1217,7 @@ void Parser::print_separation_message(shared_ptr <const Token> token)
 
 	if (dynamic_pointer_cast <const Name_Token> (token)) {
 		text= fmt("token %s",
-			  dynamic_pointer_cast <const Name_Token> (token)->format_err());
+			  dynamic_pointer_cast <const Name_Token> (token)->format());
 	} else if (dynamic_pointer_cast <const Operator> (token)) {
 		text= dynamic_pointer_cast <const Operator> (token)->format_long_err();
 	} else {

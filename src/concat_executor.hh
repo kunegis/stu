@@ -33,7 +33,9 @@ public:
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
-//	virtual string format_src() const {  return dep->format_src();  }
+	virtual string format(Style style, Quotes *q) const {
+		return dep->format(style, q);
+	}
 
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
 		result_variable.insert(result_variable_child.begin(),

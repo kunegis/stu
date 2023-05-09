@@ -10,7 +10,7 @@ public:
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
-	virtual string format_src() const { return "ROOT"; }
+	virtual string format(Style= S_ERR, Quotes * = nullptr) const  {  return "ROOT";  }
 
 protected:
 	virtual int get_depth() const {  return -1;  }

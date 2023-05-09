@@ -94,7 +94,7 @@ Target Plain_Dep::get_target() const
 	return ret;
 }
 
-string Plain_Dep::format(Style style, Quotes &q) const
+string Plain_Dep::format(Style style, Quotes *q) const
 {
 	string f;
 	if (!(style & S_NO_FLAGS)) {
@@ -110,13 +110,11 @@ string Plain_Dep::format(Style style, Quotes &q) const
 //	style |= S_WANT_ESCAPE;
 //	if (!detached)
 //		quotes= true;
-	string t= place_param_target.format(style, q);
+	string t= place_param_target.format(style | S_INNER, q);
 	string ret= fmt("%s%s%s%s",
 			f,
 			flags & F_VARIABLE ? "$[" : "",
-//			quotes ? "'" : "",
 			t,
-//			quotes ? "'" : "",
 			flags & F_VARIABLE ? "]" : "");
 //	if (style & S_COLOR_WORD) {
 //		ret= fmt("%s%s%s", Color::word, ret, Color::end);
@@ -169,7 +167,7 @@ Target Dynamic_Dep::get_target() const
 	return Target(text);
 }
 
-string Dynamic_Dep::format(Style style, Quotes &q) const
+string Dynamic_Dep::format(Style style, Quotes *q) const
 {
 //	quotes= false;
 	Style style_inner= style;
@@ -230,8 +228,8 @@ shared_ptr <const Dep> Plain_Dep::instantiate(const map <string, string> &mappin
 	if ((flags & F_VARIABLE) && this_name.find('=') != string::npos) {
 		assert((ret_target->flags & F_TARGET_TRANSIENT) == 0);
 		place << fmt("dynamic variable %s must not be instantiated with parameter value that contains %s",
-			     dynamic_variable_format_err(this_name),
-			     char_format_err('='));
+			     dynamic_variable_format(this_name),
+			     char_format('='));
 		throw ERROR_LOGICAL;
 	}
 
@@ -263,7 +261,7 @@ bool Compound_Dep::is_unparametrized() const
 	return true;
 }
 
-string Compound_Dep::format(Style style, Quotes &q) const
+string Compound_Dep::format(Style style, Quotes *q) const
 /* Ignore QUOTES, as everything inside the parentheses will not need
  * it.  */
 {
@@ -340,7 +338,7 @@ const Place &Concat_Dep::get_place() const
 	return deps.front()->get_place();
 }
 
-string Concat_Dep::format(Style style, Quotes &q) const
+string Concat_Dep::format(Style style, Quotes *q) const
 /* We only need quotes when *all* components need quotes */
 {
 	assert(bitset <sizeof(Style)> (style & S_CHANNEL).count() <= 1);
@@ -525,10 +523,10 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		 * input redirection, but the current data structures do
 		 * not allow that, and therefore we make that invalid.  */
 		a->get_place() << fmt("%s cannot have input redirection using %s",
-				      a->format(S_ERR),
-				      char_format_err('<'));
+				      a->format(),
+				      char_format('<'));
 		b->get_place() << fmt("because %s is concatenated to it",
-				      b->format(S_ERR));
+				      b->format());
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
@@ -537,9 +535,9 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		/* We don't save the place for the '<', so we cannot
 		 * have "using '<'" on an extra line.  */
 		b->get_place() << fmt("%s cannot have input redirection using %s",
-				      b->format(S_ERR),
-				      char_format_err('<'));
-		a->get_place() << fmt("in concatenation to %s", a->format(S_ERR));
+				      b->format(),
+				      char_format('<'));
+		a->get_place() << fmt("in concatenation to %s", a->format());
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
@@ -553,34 +551,34 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 			C_ALL;
 		assert(i_flag != C_ALL);
 		b->get_place() << fmt("%s cannot be declared as %s",
-				      b->format(S_ERR), flags_phrases[i_flag]);
+				      b->format(), flags_phrases[i_flag]);
 		b->places[i_flag] << fmt("using %s",
-					 name_format_err(frmt("-%c", flags_chars[i_flag])));
-		a->get_place() << fmt("in concatenation to %s", a->format(S_ERR));
+					 name_format(frmt("-%c", flags_chars[i_flag])));
+		a->get_place() << fmt("in concatenation to %s", a->format());
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (b->flags & F_TARGET_TRANSIENT) {
-		b->get_place() << fmt("transient target %s is invalid", b->format(S_ERR));
-		a->get_place() << fmt("in concatenation to %s", a->format(S_ERR));
+		b->get_place() << fmt("transient target %s is invalid", b->format());
+		a->get_place() << fmt("in concatenation to %s", a->format());
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (a->flags & F_VARIABLE) {
 		a->get_place() << fmt("the variable dependency %s cannot be used",
-				      a->format(S_ERR));
+				      a->format());
 		b->get_place() << fmt("in concatenation with %s",
-				      b->format(S_ERR));
+				      b->format());
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (b->flags & F_VARIABLE) {
 		b->get_place() << fmt("variable dependency %s is invalid",
-				      b->format(S_ERR));
-		a->get_place() << fmt("in concatenation to %s", a->format(S_ERR));
+				      b->format());
+		a->get_place() << fmt("in concatenation to %s", a->format());
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}

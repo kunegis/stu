@@ -155,22 +155,23 @@ public:
 	void check() const {  }
 #endif
 
-	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const= 0;
+	virtual shared_ptr <const Dep> instantiate
+		(const map <string, string> &mapping) const= 0;
 	virtual bool is_unparametrized() const= 0;
 
 	virtual const Place &get_place() const= 0;
 	/* Where the dependency as a whole is declared */
 
-	virtual string format(Style, Quotes &q) const= 0;
+	virtual string format(Style= S_ERR, Quotes *q= nullptr) const= 0;
 //	virtual string format_err() const= 0;
 //	virtual string format_out() const= 0;
 //	virtual string format_src() const= 0;
 
-	string format(Style style) const {
-		Quotes q(style);
-		return format(style, q);
-	}
-	
+//	string format(Style style) const {
+//		Quotes q(style);
+//		return format(style, q);
+//	}
+
 	virtual Target get_target() const= 0;
 	/* Get the corresponding Target object.  Only called for
 	 * non-compound and non-parametrized dependencies.  */
@@ -298,7 +299,7 @@ public:
 		return place_param_target.place_name.get_n() == 0;
 	}
 
-	virtual string format(Style, Quotes &q) const;
+	virtual string format(Style= S_ERR, Quotes *q= nullptr) const;
 //	virtual string format_err() const;
 //	virtual string format_out() const;
 //	virtual string format_src() const;
@@ -356,7 +357,7 @@ public:
 		return dep->get_place();
 	}
 
-	virtual string format(Style, Quotes &q) const;
+	virtual string format(Style= S_ERR, Quotes *q= nullptr) const;
 //	virtual string format_err() const;
 //	virtual string format_out() const;
 //	virtual string format_src() const;
@@ -414,7 +415,7 @@ public:
 
 	virtual bool is_unparametrized() const;
 	virtual const Place &get_place() const;
-	virtual string format(Style, Quotes &q) const;
+	virtual string format(Style= S_ERR, Quotes *q= nullptr) const;
 //	virtual string format_err() const;
 //	virtual string format_out() const;
 //	virtual string format_src() const;
@@ -503,7 +504,7 @@ public:
 	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
 	virtual bool is_unparametrized() const;
 	virtual const Place &get_place() const  {  return place;  }
-	virtual string format(Style, Quotes &q) const;
+	virtual string format(Style= S_ERR, Quotes *q= nullptr) const;
 //	virtual string format_err() const;
 //	virtual string format_out() const;
 //	virtual string format_src() const;
@@ -523,7 +524,7 @@ public:
 	}
 	virtual bool is_unparametrized() const  {  return false;  }
 	virtual const Place &get_place() const  {  return Place::place_empty;  }
-	virtual string format(Style, bool &) const  {  return "ROOT";  }
+	virtual string format(Style= S_ERR, Quotes * = nullptr) const  {  return "ROOT";  }
 //	virtual string format_err() const  {  assert(false);  return "";  }
 //	virtual string format_out() const  {  return "ROOT";  }
 //	virtual string format_src() const  {  return "ROOT";  }

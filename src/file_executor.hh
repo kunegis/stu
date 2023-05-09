@@ -45,9 +45,9 @@ public:
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
-	virtual string format_src() const {
+	string format(Style style= S_ERR, Quotes *q= nullptr) const {
 		assert(targets.size());
-		return targets.front().format(S_SRC);
+		return targets.front().format(style, q);
 	}
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
 		mapping_variable.insert(result_variable_child.begin(),

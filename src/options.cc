@@ -15,12 +15,12 @@ bool option_setting(char c)
 {
 	switch (c) {
 	default:   return false;
-	case 'E':  option_E= true;     break;
-	case 's':  option_s= true;     break;
-	case 'x':  option_x= true;     break;
-	case 'y':  Color::set(false);  break;
-	case 'Y':  Color::set(true);   break;
-	case 'z':  option_z= true;     break;
+	case 'E':  option_E= true;            break;
+	case 's':  option_s= true;            break;
+	case 'x':  option_x= true;            break;
+	case 'y':  Color::set(false, false);  break;
+	case 'Y':  Color::set(true,  true);   break;
+	case 'z':  option_z= true;            break;
 	}
 	return true;
 }
@@ -43,12 +43,12 @@ void set_option_j(const char *value)
 	Place place(Place::Type::OPTION, 'j');
 	if (errno != 0 || *endptr != '\0') {
 		place << fmt("expected the number of jobs, not %s",
-			     name_format_err(value));
+			     name_format(value));
 		exit(ERROR_FATAL);
 	}
 	if (options_jobs < 1) {
 		place << fmt("expected a positive number of jobs, not %s",
-			     name_format_err(value));
+			     name_format(value));
 		exit(ERROR_FATAL);
 	}
 	option_parallel= options_jobs > 1;
@@ -70,10 +70,10 @@ void set_option_m(const char *value)
 		/* Default */ ;
 	} else {
 		print_error(fmt("Invalid argument %s for option %s-m%s; valid values are %s and %s",
-				name_format_err(value),
-				Color::word, Color::end,
-				name_format_err("random"),
-				name_format_err("dfs")));
+				name_format(value),
+				Color::stderr_highlight_on, Color::stderr_highlight_off,
+				name_format("random"),
+				name_format("dfs")));
 		exit(ERROR_FATAL);
 	}
 }
@@ -106,7 +106,7 @@ void set_env_options()
 			if (! option_setting(c)) {
 				Place place(Place::Type::ENV_OPTIONS);
 				place << fmt("invalid option %s",
-					     multichar_format_err(frmt("-%c", c)));
+					     name_format(frmt("-%c", c)));
 				exit(ERROR_FATAL);
 			}
 		}
@@ -119,7 +119,7 @@ void check_status()
 	if (stu_status != nullptr) {
 		print_error(frmt("Refusing to run recursive Stu; "
 				 "unset %s$STU_STATUS%s to circumvent",
-				 Color::word, Color::end));
+				 Color::stderr_highlight_on, Color::stderr_highlight_off));
 		exit(ERROR_FATAL);
 	}
 }

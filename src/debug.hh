@@ -11,7 +11,7 @@
 class Debuggable
 {
 public:
-	virtual string format_src() const= 0;
+	virtual string format(Style= S_ERR, Quotes * = nullptr) const= 0;
 	virtual ~Debuggable();
 };
 

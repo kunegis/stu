@@ -2,7 +2,7 @@
 
 #include "canonicalize.hh"
 
-string Target::format(Style &style) const
+string Target::format(Style style, Quotes *q) const
 {
 	string ret;
 	size_t i= 0;
@@ -22,159 +22,159 @@ string Target::format(Style &style) const
 	if (get_word(i) & F_TARGET_TRANSIENT) {
 		ret += '@';
 	}
-	Style style2= 0;
-	if (! is_file())
-		style2 |= S_MARKERS;
-	else
-		style2 |= style;
-	style2 &= ~S_QUOTES;
+	//	Style style2= 0;
+//	if (! is_file())
+//		style2 |= S_MARKERS;
+//	else
+//		style2 |= style;
+//	style2 &= ~S_QUOTES;
 //	bool quotes_inner= false;
-	bool detached= is_dynamic() || is_transient();
-	if (! detached)
-		style2 |= (style & S_QUOTES); 
+//	bool detached= is_dynamic() || is_transient();
+//	if (! detached)
+//		style2 |= (style & S_QUOTES); 
 //		quotes_inner= quotes;
-	string s= name_format(text.substr(sizeof(word_t) * (i + 1)), style2);
-	if (! detached)
-		style |= style2 & S_QUOTES;
+	string s= name_format(text.substr(sizeof(word_t) * (i + 1)), style | S_INNER, q);
+//	if (! detached)
+//		style |= style2 & S_QUOTES;
 //		quotes |= quotes_inner;
 	ret += s;
 	i= 0;
 	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i;
+		++i; // TODO fold into while
 		ret += ']';
 	}
-	return ret;
+	return quote(ret, style, q);
 }
 
-string Target::format_out() const
-{
-	Style style= S_WANT_ESCAPE;
-	if (! is_file()) {
-		style |= S_MARKERS;
-	}
-	style |= S_QUOTES * is_file();
-	string ret;
-	size_t i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
-		++i;
-		ret += '[';
-	}
-	assert(text.size() > sizeof(word_t) * (i + 1));
-	ret += flags_format(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE));
-	if (get_word(i) & F_TARGET_TRANSIENT) {
-		ret += '@';
-	}
-	string name_text = name_format(text.substr(sizeof(word_t) * (i + 1)), style);
-	if (style & S_QUOTES)  ret += '\'';
-	ret += name_text;
-	if (style & S_QUOTES)  ret += '\'';
-	i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i;
-		ret += ']';
-	}
-	return ret;
-}
+// string Target::format_out() const
+// {
+// 	Style style= S_WANT_ESCAPE;
+// 	if (! is_file()) {
+// 		style |= S_MARKERS;
+// 	}
+// 	style |= S_QUOTES * is_file();
+// 	string ret;
+// 	size_t i= 0;
+// 	while (get_word(i) & F_TARGET_DYNAMIC) {
+// 		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
+// 		++i;
+// 		ret += '[';
+// 	}
+// 	assert(text.size() > sizeof(word_t) * (i + 1));
+// 	ret += flags_format(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE));
+// 	if (get_word(i) & F_TARGET_TRANSIENT) {
+// 		ret += '@';
+// 	}
+// 	string name_text = name_format(text.substr(sizeof(word_t) * (i + 1)), style);
+// 	if (style & S_QUOTES)  ret += '\'';
+// 	ret += name_text;
+// 	if (style & S_QUOTES)  ret += '\'';
+// 	i= 0;
+// 	while (get_word(i) & F_TARGET_DYNAMIC) {
+// 		++i;
+// 		ret += ']';
+// 	}
+// 	return ret;
+// }
 
-string Target::format_out_print_word() const
-{
-	Style style= S_WANT_ESCAPE;
-	if (! is_file()) {
-		style |= S_MARKERS;
-	}
-	style |= S_QUOTES * is_file() * Color::quotes;
-//	bool quotes= is_file() ? Color::quotes : false;
-	string ret;
-	ret += Color::out_print_word;
-	size_t i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
-		++i;
-		ret += '[';
-	}
-	assert(text.size() > sizeof(word_t) * (i + 1));
-	ret += flags_format(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE));
-	if (get_word(i) & F_TARGET_TRANSIENT) {
-		ret += '@';
-	}
-	string name_text= name_format(text.substr(sizeof(word_t) * (i + 1)), style);
-	if (style & S_QUOTES)  ret += '\'';
-	ret += name_text;
-	if (style & S_QUOTES)  ret += '\'';
-	i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i;
-		ret += ']';
-	}
-	ret += Color::out_print_word_end;
-	return ret;
-}
+// string Target::format_out_print_word() const
+// {
+// 	Style style= S_WANT_ESCAPE;
+// 	if (! is_file()) {
+// 		style |= S_MARKERS;
+// 	}
+// 	style |= S_QUOTES * is_file() * Color::quotes;
+// //	bool quotes= is_file() ? Color::quotes : false;
+// 	string ret;
+// 	ret += Color::out_print_word;
+// 	size_t i= 0;
+// 	while (get_word(i) & F_TARGET_DYNAMIC) {
+// 		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
+// 		++i; // TODO fold into previous line
+// 		ret += '[';
+// 	}
+// 	assert(text.size() > sizeof(word_t) * (i + 1));
+// 	ret += flags_format(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE));
+// 	if (get_word(i) & F_TARGET_TRANSIENT) {
+// 		ret += '@';
+// 	}
+// 	string name_text= name_format(text.substr(sizeof(word_t) * (i + 1)), style);
+// 	if (style & S_QUOTES)  ret += '\'';
+// 	ret += name_text;
+// 	if (style & S_QUOTES)  ret += '\'';
+// 	i= 0;
+// 	while (get_word(i) & F_TARGET_DYNAMIC) {
+// 		++i; // TODO fold into previous line
+// 		ret += ']';
+// 	}
+// 	ret += Color::out_print_word_end;
+// 	return ret;
+// }
 
-string Target::format_err() const
-{
-	Style style= S_WANT_ESCAPE;
-	if (! is_file()) {
-		style |= S_MARKERS;
-	}
-	style |= S_QUOTES * is_file() * Color::quotes;
-//	bool quotes= is_file() ? Color::quotes : false;
-	string ret;
-	ret += Color::word;
-	size_t i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i;
-		ret += '[';
-	}
-	assert(text.size() > sizeof(word_t) * (i + 1));
-	if (get_word(i) & F_TARGET_TRANSIENT) {
-		ret += '@';
-	}
-	string name_text= name_format(text.substr(sizeof(word_t) * (i + 1)), style);
-	if (style & S_QUOTES)  ret += '\'';
-	ret += name_text;
-	if (style & S_QUOTES)  ret += '\'';
-	i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i;
-		ret += ']';
-	}
-	ret += Color::end;
-	return ret;
-}
+// string Target::format_err() const
+// {
+// 	Style style= S_WANT_ESCAPE;
+// 	if (! is_file()) {
+// 		style |= S_MARKERS;
+// 	}
+// 	style |= S_QUOTES * is_file() * Color::quotes;
+// //	bool quotes= is_file() ? Color::quotes : false;
+// 	string ret;
+// 	ret += Color::word;
+// 	size_t i= 0;
+// 	while (get_word(i) & F_TARGET_DYNAMIC) {
+// 		++i; // TODO fold into previous line
+// 		ret += '[';
+// 	}
+// 	assert(text.size() > sizeof(word_t) * (i + 1));
+// 	if (get_word(i) & F_TARGET_TRANSIENT) {
+// 		ret += '@';
+// 	}
+// 	string name_text= name_format(text.substr(sizeof(word_t) * (i + 1)), style);
+// 	if (style & S_QUOTES)  ret += '\'';
+// 	ret += name_text;
+// 	if (style & S_QUOTES)  ret += '\'';
+// 	i= 0;
+// 	while (get_word(i) & F_TARGET_DYNAMIC) {
+// 		++i; // TODO fold into previous line
+// 		ret += ']';
+// 	}
+// 	ret += Color::end;
+// 	return ret;
+// }
 
-string Target::format_src() const
-{
-	Style style= S_WANT_ESCAPE;
-	if (! is_file()) {
-		style |= S_MARKERS;
-	}
-	string ret;
-	size_t i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
-		++i;
-		ret += '[';
-	}
-	assert(text.size() > sizeof(word_t) * (i + 1));
-	ret += flags_format(get_word(i) & ~F_TARGET_TRANSIENT);
-	if (get_word(i) & F_TARGET_TRANSIENT) {
-		ret += '@';
-	}
-//	const char *const name= text.c_str() + sizeof(word_t) * (i + 1);
-//	bool quotes= src_need_quotes(name);
-	style |= S_WANT_ESCAPE;
-	string name_text= name_format(text.substr(sizeof(word_t) * (i + 1)), style);
-	if (style & S_QUOTES)  ret += '\'';
-	ret += name_text;
-	if (style & S_QUOTES)  ret += '\'';
-	i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i;
-		ret += ']';
-	}
-	return ret;
-}
+// string Target::format_src() const
+// {
+// 	Style style= S_WANT_ESCAPE;
+// 	if (! is_file()) {
+// 		style |= S_MARKERS;
+// 	}
+// 	string ret;
+// 	size_t i= 0;
+// 	while (get_word(i) & F_TARGET_DYNAMIC) {
+// 		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
+// 		++i;
+// 		ret += '[';
+// 	}
+// 	assert(text.size() > sizeof(word_t) * (i + 1));
+// 	ret += flags_format(get_word(i) & ~F_TARGET_TRANSIENT);
+// 	if (get_word(i) & F_TARGET_TRANSIENT) {
+// 		ret += '@';
+// 	}
+// //	const char *const name= text.c_str() + sizeof(word_t) * (i + 1);
+// //	bool quotes= src_need_quotes(name);
+// 	style |= S_WANT_ESCAPE;
+// 	string name_text= name_format(text.substr(sizeof(word_t) * (i + 1)), style);
+// 	if (style & S_QUOTES)  ret += '\'';
+// 	ret += name_text;
+// 	if (style & S_QUOTES)  ret += '\'';
+// 	i= 0;
+// 	while (get_word(i) & F_TARGET_DYNAMIC) {
+// 		++i;
+// 		ret += ']';
+// 	}
+// 	return ret;
+// }
 
 void Target::canonicalize()
 {
@@ -469,20 +469,20 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 	}
 }
 
-string Name::format(Style &style) const
+string Name::format(Style style, Quotes *q) const
 {
 	assert(texts.size() == 1 + parameters.size());
  restart:
-	Style quotes_initial= style & S_QUOTES;
-	Style style_this= style | S_MARKERS | S_NO_EMPTY;
-	string ret= name_format(texts[0], style_this);
+	bool quotes_initial= q && q->is();
+	string ret= name_format(texts[0], style | S_INNER, q);
 	for (size_t i= 0;  i < get_n();  ++i) {
-		style_this= style | S_MARKERS | S_NO_EMPTY;
+//		style_this= style | S_MARKERS | S_NO_EMPTY;
 		ret += "${";
-		ret += name_format(parameters[i], style_this);
+		ret += name_format(parameters[i], style | S_INNER, q);
 		ret += '}';
-		ret += name_format(texts[1+i], style_this);
-		if ((style_this & S_QUOTES) != quotes_initial)
+		ret += name_format(texts[1+i], style | S_INNER, q);
+		if (quotes_initial != (q && q->is()))
+//		if ((style_this & S_QUOTES) != quotes_initial)
 //		if (quotes != quotes_initial)
 			goto restart;
 	}
@@ -502,70 +502,73 @@ string Name::format(Style &style) const
 // 	return ret;
 // }
 
-string Name::format_err() const {
-	//	bool quotes= Color::quotes;
-	Style style= S_WANT_ESCAPE;
-	string s= format(style);
-	return fmt("%s%s%s%s%s",
-		   Color::word,
-		   style & S_QUOTES ? "'" : "",
-		   s,
-		   style & S_QUOTES ? "'" : "",
-		   Color::end);
-}
+// string Name::format_err() const
+// {
+// 	//	bool quotes= Color::quotes;
+// 	Style style= S_WANT_ESCAPE;
+// 	string s= format(style);
+// 	return fmt("%s%s%s%s%s",
+// 		   Color::word,
+// 		   style & S_QUOTES ? "'" : "",
+// 		   s,
+// 		   style & S_QUOTES ? "'" : "",
+// 		   Color::end);
+// }
 
-string Param_Target::format_err() const
-{
-	Style style= S_WANT_ESCAPE;
-	if (flags & F_TARGET_TRANSIENT)
-		style |= S_MARKERS;
-	style |= S_QUOTES * (flags == 0) * Color::quotes;
-//	bool quotes2= (flags == 0 ? Color::quotes : 0);
-	string text= name.format(style);
-	return fmt("%s%s%s%s%s%s",
-		   Color::word,
-		   flags ? "@" : "",
-		   style & S_QUOTES ? "'" : "",
-		   text,
-		   style & S_QUOTES ? "'" : "",
-		   Color::end);
-}
+// string Param_Target::format_err() const
+// {
+// 	Style style= S_WANT_ESCAPE;
+// 	if (flags & F_TARGET_TRANSIENT)
+// 		style |= S_MARKERS;
+// 	style |= S_QUOTES * (flags == 0) * Color::quotes;
+// //	bool quotes2= (flags == 0 ? Color::quotes : 0);
+// 	string text= name.format(style);
+// 	return fmt("%s%s%s%s%s%s",
+// 		   Color::word,
+// 		   flags ? "@" : "",
+// 		   style & S_QUOTES ? "'" : "",
+// 		   text,
+// 		   style & S_QUOTES ? "'" : "",
+// 		   Color::end);
+// }
 
-string Name::format_out() const
-{
-//	bool quotes= true;
-	Style style= S_WANT_ESCAPE;
-	string s= format(style);
-	return fmt("%s%s%s",
-		   style & S_QUOTES ? "'" : "",
-		   s,
-		   style & S_QUOTES ? "'" : "");
-}
+// string Name::format_out() const
+// {
+// //	bool quotes= true;
+// 	Style style= S_WANT_ESCAPE;
+// 	string s= format(style);
+// 	return fmt("%s%s%s",
+// 		   style & S_QUOTES ? "'" : "",
+// 		   s,
+// 		   style & S_QUOTES ? "'" : "");
+// }
 
 string Name::format_glob() const
 {
+	Style style= S_SRC;
+	Quotes q(style);
 	string ret= texts[0];
 	for (size_t i= 0;  i < get_n();  ++i) {
 		ret += "*";
-		Style style= S_NO_EMPTY * !empty(); 
-		ret += name_format_src(texts[i+1], style);
+		Style style_inner= S_INNER | S_NO_EMPTY * !empty(); 
+		ret += name_format(texts[i+1], style_inner, &q);
 	}
-	return ret;
+	return quote(ret, style, &q);
 }
 
-string Name::format_src() const
-{
-	Style style= S_WANT_ESCAPE;
-//	bool quotes= false;
-//	for (const string &t:  texts)
-//		if (src_need_quotes(t))
-//			quotes= true;
-	string s= format(style);
-	return fmt("%s%s%s",
-		   style & S_QUOTES ? "'" : "",
-		   s,
-		   style & S_QUOTES ? "'" : "");
-}
+// string Name::format_src() const
+// {
+// 	Style style= S_WANT_ESCAPE;
+// //	bool quotes= false;
+// //	for (const string &t:  texts)
+// //		if (src_need_quotes(t))
+// //			quotes= true;
+// 	string s= format(style);
+// 	return fmt("%s%s%s",
+// 		   style & S_QUOTES ? "'" : "",
+// 		   s,
+// 		   style & S_QUOTES ? "'" : "");
+// }
 
 void Name::canonicalize()
 {
@@ -607,9 +610,10 @@ void Name::append(const Name &name)
 	}
 }
 
-string Place_Param_Target::format(Style &) const {
-	Target target(flags, place_name.format_raw());
-	return target.format(style);
+string Place_Param_Target::format(Style style, Quotes *q) const {
+	...;
+//	Target target(flags, place_name.format_raw());
+//	return target.format(style, q);
 }
 
 void Place_Param_Target::canonicalize()

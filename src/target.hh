@@ -135,9 +135,9 @@ public:
 		return get_word(i) & F_TARGET_TRANSIENT;
 	}
 
-	string format(Style &) const;
+	string format(Style= S_ERR, Quotes *q= nullptr) const;
 // string format_out() const;
-	string format_out_print_word() const;
+//	string format_out_print_word() const; // replace
 //	string format_err() const;
 //	string format_src() const;
 
@@ -322,12 +322,12 @@ public:
 	 * The range of PRIORITY can be easily extended to other integers if necessary.
 	 */
 
-	string format(Style, bool &quotes) const;
+	string format(Style= S_ERR, Quotes *q= nullptr) const;
 //	string format_err() const;
 //	string format_out() const;
 //	string format_src() const;
 //	string format_raw() const;
-	string format_glob() const;
+	string format_glob() const; // TODO fold into format(). 
 
 	string get_duplicate_parameter() const;
 	/* Check whether there are duplicate parameters.  Return the
@@ -384,7 +384,7 @@ public:
 		return Target(flags, name.instantiate(mapping));
 	}
 
-	string format_err() const;
+//	string format_err() const;
 
 	Target unparametrized() const
 	/* The corresponding unparametrized target.  This target must
@@ -494,7 +494,7 @@ public:
 			this->place_name == that.place_name;
 	}
 
-	string format(Style, Quotes &q) const;
+	string format(Style= S_ERR, Quotes *q= nullptr) const;
 
 //	string format_err() const {
 //		Target target(flags, place_name.format_raw());

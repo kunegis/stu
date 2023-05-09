@@ -71,7 +71,7 @@ public:
 	}
 
 	string format_err_start() const {
-		return char_format_err(op);
+		return char_format(op);
 	}
 
 	string format_long_err() const;
@@ -119,7 +119,7 @@ public:
 	}
 
 	string format_err_start() const {
-		return char_format_err('-');
+		return char_format('-');
 	}
 };
 
@@ -145,8 +145,7 @@ public:
 	}
 
 	string format_err_start() const {
-		bool quotes;
-		return Place_Name::format(S_ERR, quotes);
+		return Place_Name::format();
 	}
 };
 
@@ -188,7 +187,7 @@ public:
 	}
 
 	string format_err_start() const {
-		return char_format_err('{');
+		return char_format('{');
 	}
 
 	const vector <string> &get_lines() const;

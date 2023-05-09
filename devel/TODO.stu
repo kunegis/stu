@@ -1,7 +1,8 @@
 #
 # Option -I
 # * single target, parametrized: test is written; fails
-# ** Make Style input-only and non-reference.  Reintroduce the quote variable.
+# ** create branch for ./configure
+# ** Go through color constants and streamline them
 # ** Make sure we use double quotes in all output
 # ** for all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
 # * list.*+X does not need quotes in -I output
@@ -13,6 +14,19 @@
 # * normal output for A[B\C]D
 # * normal output for A\B[C]D
 # * A\B[C\D]E
+# * Check that the output "Successfully built A" used the "out" word color around "A".
+# * check that the output "Creating X" for content targets uses the OUT colors
+# * >@list.$x.$x;
+# * >@list.$x$x;
+# * >A >@B;
+# * A:  <B $[<C;
+# * A:  <B $[<C.$x];
+# * A:  <B $[<a=:];
+# * A:  <B $[<a=   ###EOF
+# * A:  <B $[<'a=b'];
+# * A:  <B $[<     ###EOF
+# * A:  <B $[<:];
+# * case where stdout is a tty and stderr is not, and vice versa
 #
 # * target *
 # * target *.o
@@ -140,3 +154,7 @@
 #
 
 list.${name|[A-Z].*} # Matches uppercase names
+
+#
+# Test that make install using Docker.
+#

@@ -39,9 +39,9 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		if (dep_target->flags & F_VARIABLE) {
 			dep_target->get_place() <<
 				fmt("variable dependency %s must not appear",
-				    dep_target->format_err());
+				    dep_target->format());
 			*this << fmt("within multiply-dynamic dependency %s",
-				     dep->format_err());
+				     dep->format());
 			raise(ERROR_LOGICAL);
 		}
 		if (place_param_target.flags & F_TARGET_TRANSIENT)
@@ -80,12 +80,12 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 				Target target_dynamic(0, target);
 				place_input <<
 					fmt("dynamic dependency %s must not contain input redirection %s",
-					    target_dynamic.format_err(),
-					    prefix_format_err(input.format_raw(), "<"));
+					    target_dynamic.format(),
+					    prefix_format(input.format(S_INNER), "<"));
 				Target target_file= target;
 				target_file.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT;
 				(*dynamic_executor) << fmt("%s is declared here",
-							   target_file.format_err());
+							   target_file.format());
 				raise(ERROR_LOGICAL);
 			}
 		end_normal:;
@@ -119,12 +119,12 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 				to <Plain_Dep> (depp)
 					->place_param_target.place_name.places[0] <<
 					fmt("dynamic dependency %s must not contain parametrized dependencies",
-					    Target(0, target).format_err());
+					    Target(0, target).format());
 				Target target_base= target;
 				target_base.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT;
 				target_base.get_front_word_nondynamic() |= (target.get_front_word_nondynamic() & F_TARGET_TRANSIENT);
 				*this << fmt("%s is declared here",
-					     target_base.format_err());
+					     target_base.format());
 				raise(ERROR_LOGICAL);
 				j= nullptr;
 				found_error= true;
@@ -206,8 +206,8 @@ void Executor::cycle_print(const vector <Executor *> &path,
 	names.resize(path.size());
 
 	for (size_t i= 0;  i + 1 < path.size();  ++i)
-		names[i]= path[i]->parents.at(path[i+1])->format_err();
-	names.back()= path.back()->parents.begin()->second->format_err();
+		names[i]= path[i]->parents.at(path[i+1])->format();
+	names.back()= path.back()->parents.begin()->second->format();
 
 	for (ssize_t i= path.size() - 1;  i >= 0;  --i) {
 		shared_ptr <const Dep> d= i == 0
@@ -227,7 +227,7 @@ void Executor::cycle_print(const vector <Executor *> &path,
 				  : "cyclic dependency: ")
 			       : "",
 			       names[i],
-			       i == 0 ? dep->format_err() : names[i - 1]);
+			       i == 0 ? dep->format() : names[i - 1]);
 	}
 
 	/* If the two targets are different (but have the same rule
@@ -242,7 +242,7 @@ void Executor::cycle_print(const vector <Executor *> &path,
 		path.back()->get_place()
 			<<
 			fmt("both %s and %s match the same rule",
-			    name_format_err(c1), name_format_err(c2));
+			    name_format(c1), name_format(c2));
 	}
 
 	/* Remove the offending (cycle-generating) link between the
@@ -277,7 +277,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	}
 
 	/* Dynamics that are not cached (with concatenations somewhere inside) */
-	if (to <const Dynamic_Dep> (dep) && ! to <const Plain_Dep> (Dep::strip_dynamic(dep))) {
+	if (to <const Dynamic_Dep> (dep)
+	    && ! to <const Plain_Dep> (Dep::strip_dynamic(dep))) {
 		int error_additional= 0;
 		Dynamic_Executor *executor= new Dynamic_Executor
 			(to <const Dynamic_Dep> (dep), this, error_additional);
@@ -435,7 +436,7 @@ void Executor::operator<<(string text) const
 	const Executor *executor= this->parents.begin()->first;
 	shared_ptr <const Dep> depp= this->parents.begin()->second;
 
-	string text_parent= depp->format_err();
+	string text_parent= depp->format();
 
 	while (true) {
 		if (dynamic_cast <const Root_Executor *> (executor)) {
@@ -465,7 +466,7 @@ void Executor::operator<<(string text) const
 
 		/* New text */
 		string text_child= text_parent;
-		text_parent= depp->format_err();
+		text_parent= depp->format();
 
 		/* Don't show left-branch edges of dynamic executors */
 		if (hide_link_from_message(depp_old->flags)) {
@@ -563,8 +564,8 @@ void Executor::push(shared_ptr <const Dep> dep)
 	Dep::normalize(dep, deps, e);
 	if (e) {
 		dep->get_place() << fmt("%s is needed by %s",
-					dep->format_err(),
-					parents.begin()->second->format_err());
+					dep->format(),
+					parents.begin()->second->format());
 		*this << "";
 		raise(e);
 	}
@@ -676,7 +677,7 @@ void Executor::raise(int error_)
 void Executor::disconnect(Executor *const child,
 			  shared_ptr <const Dep> dep_child)
 {
-	Debug::print(this, fmt("disconnect %s", dep_child->format_src()));
+	Debug::print(this, fmt("disconnect %s", dep_child->format(S_SRC)));
 
 	assert(child != nullptr);
 	assert(child != this);
@@ -781,7 +782,7 @@ void Executor::copy_result(Executor *parent, Executor *child)
 
 void Executor::push_result(shared_ptr <const Dep> dd)
 {
-	Debug::print(this, fmt("push_result %s", dd->format_src()));
+	Debug::print(this, fmt("push_result %s", dd->format(S_SRC)));
 
 	assert(! dynamic_cast <File_Executor *> (this));
 	assert(! (dd->flags & F_RESULT_NOTIFY));
@@ -845,7 +846,7 @@ shared_ptr <const Dep> Executor::set_top(shared_ptr <const Dep> dep,
 Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 			  shared_ptr <const Dep> dep_child)
 {
-	Debug::print(this, fmt("connect %s",  dep_child->format_src()));
+	Debug::print(this, fmt("connect %s",  dep_child->format(S_SRC)));
 
 	assert(dep_child->is_normalized());
 	assert(! to <Root_Dep> (dep_child));
@@ -867,15 +868,15 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 			dep_child->get_place_flag(I_OPTIONAL);
 		place_persistent <<
 			fmt("declaration of persistent dependency using %s",
-			    multichar_format_err("-p"));
+			    name_format("-p"));
 		place_optional <<
 			fmt("clashes with declaration of optional dependency using %s",
-			    multichar_format_err("-o"));
+			    name_format("-o"));
 		dep_child->get_place() <<
 			fmt("in declaration of %s, needed by %s",
-			    dep_child->format_err(),
+			    dep_child->format(),
 			    dep_this->get_target().
-			    format_err());
+			    format());
 		*this << "";
 		explain_clash();
 		raise(ERROR_LOGICAL);
@@ -893,10 +894,10 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 		place_variable <<
 			fmt("variable dependency %s must not be declared "
 			    "as optional dependency",
-			    dynamic_variable_format_err
+			    dynamic_variable_format
 			    (plain_dep_child->place_param_target.place_name.unparametrized()));
 		place_flag << fmt("using %s",
-				  multichar_format_err("-o"));
+				  name_format("-o"));
 		*this << "";
 		raise(ERROR_LOGICAL);
 		return 0;

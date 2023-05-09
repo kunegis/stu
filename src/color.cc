@@ -4,17 +4,17 @@
 
 bool Color::err_quotes, Color::out_quotes;
 
-const char *Color::end;
-const char *Color::error;
-const char *Color::warning;
-const char *Color::word;
-const char *Color::error_word;
-const char *Color::warning_word;
+const char *Color::stdout_success_on;
+const char *Color::stdout_success_off;   
+const char *Color::stdout_highlight_on;    
+const char *Color::stdout_highlight_off;  
 
-const char *Color::out_end;
-const char *Color::out_print_word_end;
-const char *Color::out_print;
-const char *Color::out_print_word;
+const char *Color::stderr_warn_on;        
+const char *Color::stderr_warn_off;       
+const char *Color::stderr_err_on;         
+const char *Color::stderr_err_off;        
+const char *Color::stderr_highlight_on;    
+const char *Color::stderr_highlight_off;  
 
 void Color::set()
 /* Only use color when $TERM is defined, is not equal to "dumb", and
@@ -48,35 +48,36 @@ void Color::set(bool enable_color_out, bool enable_color_err)
 /* Note:  GCC additionally inserts "\33[K" sequences after each color code, to
  * avoid a bug in some terminals.  This is not done here.  */
 {
+	// TODO order should be the same as in declaration. 
 	if (enable_color_out) {
 		out_quotes= false;
-		out_end=            "\33[0m";
-		out_print_word_end= "\33[0;32m";
-		out_print=          "\33[32m";
-		out_print_word=     "\33[32;1m";
+		stdout_success_on=    "\33[32m";
+		stdout_success_off=   "\33[m";
+		stdout_highlight_on=  "\33[1m";
+		stdout_highlight_off= "\33[22m";
 	} else {
 		out_quotes= true;
-		out_end=            "";
-		out_print_word_end= "";
-		out_print=          "";
-		out_print_word=     "";
+		stdout_success_on=    "";
+		stdout_success_off=   "";
+		stdout_highlight_on=  "";
+		stdout_highlight_off= "";
 	}
 
 	if (enable_color_err) {
 		err_quotes= false;
-		error=              "\33[31m";
-		warning=            "\33[35m";
-		word=               "\33[1m";
-		error_word=         "\33[1;31m";
-		warning_word=       "\33[1;35m";
-		end=                "\33[0m";
+		stderr_warn_on=       "\33[35m";
+		stderr_warn_off=      "\33[m";
+		stderr_err_on=        "\33[32m";
+		stderr_err_off=       "\33[m";
+		stderr_highlight_on=  "\33[1m";
+		stderr_highlight_off= "\33[22";
 	} else {
 		err_quotes= true;
-		error=              "";
-		warning=            "";
-		word=               "";
-		error_word=         "";
-		warning_word=       "";
-		end=                "";
+		stderr_warn_on=       "";
+		stderr_warn_off=      "";
+		stderr_err_on=        "";
+		stderr_err_off=       "";
+		stderr_highlight_on=  "";
+		stderr_highlight_off= "";
 	}
 }

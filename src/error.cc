@@ -13,14 +13,14 @@ void print_error(string message)
 	assert(isupper(message[0]) || message[0] == '\'');
 	assert(message[message.size() - 1] != '\n');
 	fprintf(stderr, "%s%s%s: *** %s\n",
-		Color::error_word, dollar_zero, Color::end,
+		Color::stderr_err_on, dollar_zero, Color::stderr_err_off,
 		message.c_str());
 }
 
 void print_error_system(string message)
 {
 	assert(message.size() > 0 && message[0] != '') ;
-	string t= name_format_err(message);
+	string t= name_format(message);
 	fprintf(stderr, "%s: %s\n", t.c_str(), strerror(errno));
 }
 
@@ -30,7 +30,7 @@ void print_error_reminder(string message)
 	assert(isupper(message[0]) || message[0] == '\'');
 	assert(message[message.size() - 1] != '\n');
 	fprintf(stderr, "%s%s%s: %s\n",
-		Color::warning, dollar_zero, Color::end,
+		Color::stderr_warn_on, dollar_zero, Color::stderr_warn_off,
 		message.c_str());
 }
 
@@ -48,7 +48,7 @@ void print_out(string text)
 	if (option_s)
 		return;
 	printf("%s%s%s\n",
-	       Color::out_print, text.c_str(), Color::out_end);
+	       Color::stdout_success_on, text.c_str(), Color::stdout_success_off);
 }
 
 void print_error_silenceable(string text)
@@ -56,25 +56,23 @@ void print_error_silenceable(string text)
 	assert(! text.empty());
 	assert(isupper(text[0]));
 	assert(text[text.size() - 1] != '\n');
-
 	if (option_s)
 		return;
-	fprintf(stderr,
-		"%s%s%s\n",
-		Color::error, text.c_str(), Color::end);
+	fprintf(stderr, "%s%s%s\n",
+		Color::stderr_err_on, text.c_str(), Color::stderr_err_off);
 }
 
 const Place Place::place_empty;
 
 const Place &Place::operator<<(string message) const
 {
-	print(message, Color::error, Color::error_word);
+	print(message, Color::stderr_err_on, Color::stderr_err_off);
 	return *this;
 }
 
 void Place::print(string message,
-		  const char *color,
-		  const char *color_word) const
+		  const char *color_on,
+		  const char *color_off) const
 {
 	assert(! message.empty());
 
@@ -84,45 +82,44 @@ void Place::print(string message,
 		/* It's a common bug in Stu to have empty places, so
 		 * better provide sensible behavior in NDEBUG builds.  */
 		assert(false);
-		fprintf(stderr,
-			"%s\n",
-			message.c_str());
+		fprintf(stderr, "%s\n", message.c_str());
 		break;
 
 	case Type::INPUT_FILE:
 		assert(line >= 1);
 		fprintf(stderr,
-			"%s%s%s:%s%zu%s:%s%zu%s: %s\n",
-			color_word, get_filename_str(), Color::end,
-			color, line, Color::end,
-			color, 1 + column, Color::end,
+			"%s%s:%s%zu%s:%s%zu%s%s: %s\n",
+			color_on, get_filename_str(), 
+			Color::stderr_highlight_on, line, Color::stderr_highlight_off,
+			Color::stderr_highlight_on, 1 + column, Color::stderr_highlight_off,
+			color_off,
 			message.c_str());
 		break;
 
 	case Type::ARGUMENT:
 		fprintf(stderr,
 			"%s%s%s: %s\n",
-			color,
-			"Command line argument",
-			Color::end,
+			color_on, "Command line argument", color_off,
 			message.c_str());
 		break;
 
 	case Type::OPTION:
 		assert(text.size() == 1);
 		fprintf(stderr,
-			"%sOption %s-%c%s: %s\n",
-			color,
-			color_word,
+			"%sOption %s-%c%s%s: %s\n",
+			color_on,
+			Color::stderr_highlight_on,
 			text[0],
-			Color::end,
+			Color::stderr_highlight_off,
+			color_off,
 			message.c_str());
 		break;
 
 	case Type::ENV_OPTIONS:
 		fprintf(stderr,
-			"In %s$STU_OPTIONS%s: %s\n",
-			color_word, Color::end,
+			"%sIn %s$STU_OPTIONS%s%s: %s\n",
+			color_on, Color::stderr_highlight_on,
+			Color::stderr_highlight_off, color_off,
 			message.c_str());
 		break;
 	}
@@ -215,5 +212,5 @@ void print_warning(const Place &place, string message)
 	assert(isupper(message[0]) || message[0] == '\'');
 	assert(message[message.size() - 1] != '\n');
 	place.print(fmt("warning: %s", message),
-		    Color::warning, Color::warning_word);
+		    Color::stderr_warn_on, Color::stderr_warn_off);
 }

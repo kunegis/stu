@@ -241,19 +241,17 @@ public:
 	 * tools, e.g. the compile mode of Emacs.  Line and column
 	 * numbers are output as 1-based values.  Return THIS.  */
 
-	void print(string message,
-		   const char *color,
-		   const char *color_word) const;
-	/* Print a message.  The COLOR arguments determine whether this
-	 * is an error or a warning.  */
+	void print(string message, 
+		   const char *color_on,
+		   const char *color_off) const;
 
 	string as_argv0() const;
 	/* The string used for the argv[0] parameter of child processes.
 	 * Does not include color codes.  Returns "" when no special
 	 * string should be used.  */
 
-	bool empty() const {  return type == Type::EMPTY;  }
-	void clear() {  type= Type::EMPTY;  }
+	bool empty() const  {  return type == Type::EMPTY;  }
+	void clear()  {  type= Type::EMPTY;  }
 
 	/* Places are comparable, and are used as keys in maps */
 	bool operator==(const Place &place) const;
@@ -276,13 +274,11 @@ public:
 	Place place;
 
 	string message;
-	/* The message associated with it.  This may be "".
-	 * When the trace is printed, it must not be empty, and not begin
-	 * with an upper-case letter.  */
+	/* This may be "".  When the trace is printed, it must not be empty, and
+	 * not begin with an upper-case letter.  */
 
 	Trace(const Place &place_, string message_)
-		:  place(place_), message(message_)
-	{  }
+		:  place(place_), message(message_)  {  }
 
 	void print() const
 	/* Print the trace to STDERR as part of an error message; see
@@ -299,7 +295,7 @@ class Printer
 {
 public:
 	virtual void operator<<(string message) const= 0;
-	virtual ~Printer() = default;
+	virtual ~Printer()= default;
 };
 
 void print_warning(const Place &place, string message);

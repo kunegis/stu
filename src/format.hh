@@ -1,17 +1,20 @@
 #ifndef FORMAT_HH
 #define FORMAT_HH
 
+// TODO rename format to "highlight" to avoid clash with the format functions
+// in text.hh and also with the upcoming C++20 ones.
+
 /*
  * - format() formats the content according to the exact specification, but
  *   never surrounds it by quotes.  It may include more parameters to configure
  *   the output.
- * - format_err() returns a string suitable for inclusion in a message
- *   on STDERR, including quotes and color, as appropriate.  It does not
- *   show flags.
- * - format_out() returns the same as format_err(), but for STDOUT.
- * - format_src() formats an expression as if it was part of the source,
- *   e.g., use quotes only if the name contains characters that need to
- *   be quoted.  It does include the flags.
+// * - format_err() returns a string suitable for inclusion in a message
+// *   on STDERR, including quotes and color, as appropriate.  It does not
+// *   show flags.
+// * - format_out() returns the same as format_err(), but for STDOUT.
+// * - format_src() formats an expression as if it was part of the source,
+// *   e.g., use quotes only if the name contains characters that need to
+// *   be quoted.  It does include the flags.
  * //- format_raw() does not escape anything.
  *
  * Format functions are defined in the source files where their datatype
@@ -23,24 +26,24 @@
 #include "color.hh"
 
 typedef unsigned Style;
-enum
-{
-	S_OUT=	      1 << 0,
+//enum Style
+//{
+constexpr Style S_OUT=	      1 << 0;
 	/* Output for standard output words */
-	S_ERR= 	      1 << 1,
+constexpr Style S_ERR= 	      1 << 1;
 	/* Output for standard error output words */
-	S_SRC=	      1 << 2,
+constexpr Style S_SRC=	      1 << 2;
 	/* Output in Stu notation */
 //	S_RAW= 	      1 << 3,
 //	/* Output in raw form */
-	S_CHANNEL=    S_OUT | S_ERR | S_SRC,
+constexpr Style S_CHANNEL=    S_OUT | S_ERR | S_SRC;
 	/* Only one of those is set */
 
-	S_INNER=      1 << 3,
+constexpr Style S_INNER=      1 << 3;
 	/* Don't output quotes or color codes */
-	S_NO_EMPTY=   1 << 4,
+constexpr Style S_NO_EMPTY=   1 << 4;
 	/* Don't need quote around empty content */
-	S_NO_FLAGS=   1 << 5,
+constexpr Style S_NO_FLAGS=   1 << 5;
 	/* Do not output flags */
 //	S_COLOR_WORD= 1 << 8,
 //	S_WANT_ESCAPE=1 << 9, // rename S_ESCAPE
@@ -51,7 +54,7 @@ enum
 //	/* Out parameter.  Quotes are needed. */
 //	/* Used as in/out parameter.  Need quotes around.  Only set if S_ESCAPE
 //	 * is set.  */
-};
+//};
 
 class Quotes
 /* The format(...) functions take a Quotes parameter that is a boolean.  This
@@ -79,17 +82,22 @@ private:
 	bool q;
 };
 
-string char_format(char c, Style, bool &quotes);
-string char_format_err(char c);
-string multichar_format_err(string s);
-string name_format(string name, Style, Quotes &quotes);
-string name_format_err(string name);
-string name_format_src(string name, Style= 0);
-// XXX is the STYLE parameter really necessary?
-string dynamic_variable_format_err(string name);
-string prefix_format_err(string name, string prefix);
+string char_format(char c, Style= S_ERR, Quotes *q= nullptr);
+// TODO remove "char" from the name and use overloading. 
 
-string quote(string text, Style style, const Quotes &q);
+//string char_format_err(char c); // TODO remove function
+//string multichar_format_err(string s); // TODO remove "_err"
+
+string name_format(string name, Style= S_ERR, Quotes *quotes= nullptr);
+// TODO remove "name" from the name. 
+
+//string name_format_err(string name);
+//string name_format_src(string name, Style= 0);
+// XXX is the STYLE parameter really necessary?
+string dynamic_variable_format(string name, Style style= S_ERR, Quotes *q= nullptr);
+string prefix_format(string name, string prefix, Style= S_ERR, Quotes *q= nullptr);
+
+string quote(string text, Style style, const Quotes *q);
 /* Surround by quotes or color codes */
 
 //bool src_need_quotes(const string &name, Style style);

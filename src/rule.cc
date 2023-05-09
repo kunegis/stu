@@ -120,7 +120,7 @@ string Rule::format_out() const
 			first= false;
 		else
 			ret += ' ';
-		ret += place_param_target->format_out();
+		ret += place_param_target->format(S_OUT);
 	}
 
 	if (deps.size() != 0)
@@ -128,7 +128,7 @@ string Rule::format_out() const
 	for (auto i= deps.begin();  i != deps.end();  ++i) {
 		if (i != deps.begin())
 			ret += ", ";
-		ret += (*i)->format_out();
+		ret += (*i)->format(S_OUT);
 	}
 
 	ret += ")";
@@ -157,15 +157,15 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 				plain_dep->place_param_target
 					.place_name.get_places()[jj] <<
 					fmt("parameter %s must not appear in dependency %s",
-					    prefix_format_err(parameter, "$"),
-					    plain_dep->place_param_target.format_err());
+					    prefix_format(parameter, "$"),
+					    plain_dep->place_param_target.format());
 				if (place_param_targets.size() == 1) {
 					place_param_targets[0]->place <<
 						fmt("because it does not appear in target %s",
-						    place_param_targets[0]->format_err());
+						    place_param_targets[0]->format());
 				} else {
 					place << fmt("because it does not appear in any of the targets %s... of the rule",
-						     place_param_targets[0]->format_err());
+						     place_param_targets[0]->format());
 				}
 				throw ERROR_LOGICAL;
 			}
@@ -194,10 +194,10 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 				    *rule->place_param_targets[j]) {
 					rule->place_param_targets[i]->place <<
 						fmt("there must not be a target %s",
-						    rule->place_param_targets[i]->format_err());
+						    rule->place_param_targets[i]->format());
 					rule->place_param_targets[j]->place <<
 						fmt("shadowing target %s of the same rule",
-						    rule->place_param_targets[j]->format_err());
+						    rule->place_param_targets[j]->format());
 					throw ERROR_LOGICAL;
 				}
 			}
@@ -211,14 +211,14 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 				if (rules_unparam.count(target)) {
 					place_param_target->place <<
 						fmt("there must not be a second rule for target %s",
-						    target.format_err());
+						    target.format());
 					auto rule_2= rules_unparam.at(target);
 					for (auto place_param_target_2: rule_2->place_param_targets) {
 						assert(place_param_target_2->place_name.get_n() == 0);
 						if (place_param_target_2->unparametrized() == target) {
 							place_param_target_2->place <<
 								fmt("shadowing previous rule %s",
-								    target.format_err());
+								    target.format());
 							break;
 						}
 					}
@@ -331,12 +331,13 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 
 	/* More than one rule matches:  error */
 	if (best_rule_finder.count() != 1 ) {
-		place << fmt("multiple minimal matching rules for target %s", target.format_err());
+		place << fmt("multiple minimal matching rules for target %s",
+			     target.format());
 		for (auto &place_param_target:
 			     best_rule_finder.targets_best()) {
 			place_param_target.second->place <<
 				fmt("rule with target %s",
-				    place_param_target.second->format_err());
+				    place_param_target.second->format());
 		}
 		explain_minimal_matching_rule();
 		throw ERROR_LOGICAL;

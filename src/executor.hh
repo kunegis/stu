@@ -140,6 +140,8 @@ public:
 		(void) result_variable_child;
 	}
 
+	virtual string format(Style, Quotes * = nullptr) const= 0;
+	
 	static bool hide_out_message;
 	/* Whether to show a STDOUT message at the end */
 

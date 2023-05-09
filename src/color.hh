@@ -42,18 +42,30 @@ public:
 	static bool err_quotes, out_quotes;
 	/* Whether single quotes have to be used.  Set when color is not used. */
 
-	static const char *end;
-	static const char *error;
-	static const char *warning;
-	static const char *word;
-	static const char *error_word;
-	static const char *warning_word;
+	// static const char *out_print;          // error.hh:print_out()            LINE  ->stdout_success_begin
+	// static const char *out_end;            // END                                   ->stdout_success_end
+	// static const char *out_print_word;     // format.hh:quote()               WORD  ->XXX
+	// static const char *out_print_word_end; // END                                   ->XXX
 
-	static const char *out_end;
-	static const char *out_print_word_end;
-	static const char *out_print;
-	static const char *out_print_word;
+	// static const char *error;	       // error.cc -> end	          LINE  ->stderr_fail_begin
+	// static const char *warning;	       // error.cc -> end                 LINE  ->stderr_warn
+	// static const char *word;               // various  -> end		  WORD  ->highlight
+	// static const char *error_word;	       // argv[0]	                  WORD  
+	// static const char *warning_word;
+	// static const char *end;
 
+	static const char *stdout_success_on;
+	static const char *stdout_success_off;   
+	static const char *stdout_highlight_on;    
+	static const char *stdout_highlight_off;  
+
+	static const char *stderr_warn_on;        
+	static const char *stderr_warn_off;       
+	static const char *stderr_err_on;         
+	static const char *stderr_err_off;        
+	static const char *stderr_highlight_on;    
+	static const char *stderr_highlight_off;  
+	
 	/* At least one of the following functions must be called before
 	 * any output is written.  */
 	static void set();

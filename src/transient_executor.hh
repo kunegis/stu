@@ -23,7 +23,7 @@ public:
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
-	virtual string format_src() const;
+	virtual string format(Style= S_ERR, Quotes * = nullptr) const;
 	virtual void notify_result(shared_ptr <const Dep> dep,
 				   Executor *, Flags flags,
 				   shared_ptr <const Dep> dep_source);

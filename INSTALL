@@ -2,6 +2,7 @@
 
 To install Stu, run this:
 
+$ ./configure  # optional, accepts $CXX and $CXXFLAGS
 $ make
 $ sudo make install
 
@@ -12,8 +13,8 @@ To install in a specific directory, set $prefix when doing "make install".  The
 default is "/usr/local".
 
 If 'make' fails, you may need to change the compiler or the compiler flags.
-They are stored in conf, or you can "make clean" and run make again with $CXX
-and $CXXFLAGS set.
+They are stored in conf/, or you can "make clean" and run ./configure again with
+$CXX and $CXXFLAGS set.
 
 Stu is still a quite small program, and has not been tested on many
 systems.

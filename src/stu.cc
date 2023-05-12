@@ -33,9 +33,9 @@ int main(int argc, char **argv, char **envp)
 	envp_global= (const char **) envp;
 	init_buffering();
 	Job::init_tty();
-	Color::set();
-	check_status();
+	Color::set(); 
 	set_env_options();
+	check_status();
 	int error= 0;
 
 	try {
@@ -163,7 +163,7 @@ int main(int argc, char **argv, char **envp)
 			default:
 				/* Invalid option -- an error message was
 				 * already printed by getopt() */
-				string text= name_format_err(frmt("%s -h", dollar_zero));
+				string text= name_format(frmt("%s -h", dollar_zero));
 				fprintf(stderr,
 					"To get a list of all options, use %s\n",
 					text.c_str());
@@ -176,7 +176,7 @@ int main(int argc, char **argv, char **envp)
 		if (option_i && option_parallel) {
 			Place(Place::Type::OPTION, 'i')
 				<< fmt("parallel mode using %s cannot be used in interactive mode",
-				       multichar_format_err("-j"));
+				       name_format("-j"));
 			exit(ERROR_FATAL);
 		}
 
@@ -190,7 +190,7 @@ int main(int argc, char **argv, char **envp)
 			Place place(Place::Type::ARGUMENT);
 			if (*argv[i] == '\0') {
 				place << fmt("%s: name must not be empty",
-					     name_format_err(argv[i]));
+					     name_format(argv[i]));
 				if (! option_k)
 					throw ERROR_LOGICAL;
 				error |= ERROR_LOGICAL;
@@ -223,7 +223,7 @@ int main(int argc, char **argv, char **envp)
 					if (deps.empty() && !had_option_target
 					    && !option_P && !option_I) {
 						print_error(fmt("Expected a target or the default file %s",
-								name_format_err(FILENAME_INPUT_DEFAULT)));
+								name_format(FILENAME_INPUT_DEFAULT)));
 
 						explain_no_target();
 						throw ERROR_LOGICAL;
@@ -260,7 +260,7 @@ int main(int argc, char **argv, char **envp)
 			if (target_first->place_name.is_parametrized()) {
 				target_first->place <<
 					fmt("the first target %s must not be parametrized if no target is given",
-					    target_first->format_err());
+					    target_first->format());
 				exit(ERROR_FATAL);
 			}
 			deps.push_back(make_shared <Plain_Dep> (*target_first));

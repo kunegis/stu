@@ -62,19 +62,10 @@ public:
 		assert(! isalnum(op_));
 	}
 
-	const Place &get_place() const {
-		return place;
-	}
-
-	const Place &get_place_start() const {
-		return place;
-	}
-
-	string format_err_start() const {
-		return char_format(op);
-	}
-
-	string format_long_err() const;
+	const Place &get_place() const  {  return place;  }
+	const Place &get_place_start() const  {  return place;  }
+	string format_err_start() const  {  return char_format(op);  }
+	string format_long(Style style= S_ERR, Quotes *q= nullptr) const;
 };
 
 class Flag_Token

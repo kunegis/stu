@@ -193,20 +193,22 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		if (traces.size() > 0) {
 			for (auto j= traces.begin();  j != traces.end();  ++j) {
 				if (j == traces.begin()) {
-					j->place <<
-						system_format
+					j->place << system_format
 						(fmt("%s%%include%s %s",
-						     Color::word, Color::end,
-						     name_format_err(filename_diagnostic)));
-				} else
+						     Color::stderr_highlight_on,
+						     Color::stderr_highlight_off,
+						     name_format(filename_diagnostic)));
+				} else {
 					j->print();
+				}
 			}
 		} else {
 			if (place_diagnostic.get_type() != Place::Type::EMPTY)
 				place_diagnostic << system_format
-					(name_format_err(filename_diagnostic));
+					(name_format(filename_diagnostic));
 			else
-				print_error(system_format(name_format_err(filename_diagnostic)));
+				print_error(system_format
+					    (name_format(filename_diagnostic)));
 		}
 		throw ERROR_BUILD;
 
@@ -442,8 +444,8 @@ shared_ptr <Command> Tokenizer::parse_command()
 		}
 	}
 
-	current_place() << fmt("expected a closing %s", char_format_err('}'));
-	place_open << fmt("for command started by %s", char_format_err('{'));
+	current_place() << fmt("expected a closing %s", char_format('}'));
+	place_open << fmt("for command started by %s", char_format('{'));
 	throw ERROR_LOGICAL;
 }
 
@@ -525,20 +527,19 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 	if (braces) {
 		if (p == p_end) {
 			current_place() <<
-				fmt("expected a closing %s",
-				    char_format_err('}'));
+				fmt("expected a closing %s", char_format('}'));
 			place_dollar <<
 				fmt("for parameter started by %s",
-				    multichar_format_err("${"));
+				    name_format("${"));
 			explain_parameter_character();
 			throw ERROR_LOGICAL;
 		} else if (*p != '}') {
 			current_place() <<
 				fmt("character %s must not appear",
-				    char_format_err(*p));
+				    char_format(*p));
 			place_dollar <<
 				fmt("in parameter started by %s",
-				    multichar_format_err("${"));
+				    name_format("${"));
 			explain_parameter_character();
 			throw ERROR_LOGICAL;
 		}
@@ -548,11 +549,11 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 		if (p < p_end)
 			place_parameter_name <<
 				fmt("expected a parameter name, not %s",
-				    char_format_err(*p));
+				    char_format(*p));
 		else
 			place_parameter_name <<
 				"expected a parameter name";
-		place_dollar << fmt("after %s", char_format_err('$'));
+		place_dollar << fmt("after %s", char_format('$'));
 		explain_parameter_syntax();
 		throw ERROR_LOGICAL;
 	}
@@ -562,7 +563,7 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 	if (isdigit(parameter[0])) {
 		place_parameter_name <<
 			fmt("parameter name %s must not start with a digit",
-			    prefix_format_err(parameter, "$"));
+			    prefix_format(parameter, "$"));
 		throw ERROR_LOGICAL;
 	}
 	if (braces)
@@ -634,9 +635,9 @@ void Tokenizer::parse_version(string version_req,
 		place_version <<
 			fmt("requested version %s using %s%%version%s "
 			    "is incompatible with this Stu's version %s" STU_VERSION "%s",
-			    name_format_err(version_req),
-			    Color::word, Color::end,
-			    Color::word, Color::end);
+			    name_format(version_req),
+			    Color::stderr_highlight_on, Color::stderr_highlight_off,
+			    Color::stderr_highlight_on, Color::stderr_highlight_off);
 		explain_version();
 		throw ERROR_LOGICAL;
 	}
@@ -646,10 +647,11 @@ void Tokenizer::parse_version(string version_req,
 		fmt("expected a version number of the form "
 		    "%sMAJOR.MINOR%s or %sMAJOR.MINOR.PATCH%s, "
 		    "not %s",
-		    Color::word, Color::end,
-		    Color::word, Color::end,
-		    name_format_err(version_req));
-	place_percent << fmt("after %s%%version%s", Color::word, Color::end);
+		    Color::stderr_highlight_on, Color::stderr_highlight_off,
+		    Color::stderr_highlight_on, Color::stderr_highlight_off,
+		    name_format(version_req));
+	place_percent << fmt("after %s%%version%s",
+			     Color::stderr_highlight_on, Color::stderr_highlight_off);
 
 	throw ERROR_LOGICAL;
 }
@@ -720,7 +722,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				if (*p == '+' || *p == '~') {
 					current_place() <<
 						fmt("an unquoted name must not begin with the character %s",
-						    char_format_err(*p));
+						    char_format(*p));
 					throw ERROR_LOGICAL;
 				}
 				Place place_dash= current_place();
@@ -729,7 +731,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				if (p == p_end) {
 					current_place() << "expected a flag character";
 					place_dash << fmt("after dash %s",
-							  char_format_err('-'));
+							  char_format('-'));
 					throw ERROR_LOGICAL;
 				}
 				char op= *p;
@@ -737,14 +739,14 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					if (isalnum(op)) {
 						current_place() <<
 							fmt("invalid flag %s",
-							    multichar_format_err(frmt("-%c", op)));
+							    name_format(frmt("-%c", op)));
 					} else {
 						current_place() <<
 							fmt("expected a flag character, not %s",
-							    char_format_err(op));
+							    char_format(op));
 						place_dash <<
 							fmt("after dash %s",
-							    char_format_err('-'));
+							    char_format('-'));
 					}
 					explain_flags();
 					throw ERROR_LOGICAL;
@@ -758,10 +760,10 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				    (is_name_char(*p) || *p == '"' || *p == '\'' || *p == '$' || *p == '@')) {
 					current_place() <<
 						fmt("expected whitespace before character %s",
-						    char_format_err(*p));
+						    char_format(*p));
 					token->get_place() <<
 						fmt("after flag %s",
-						    multichar_format_err(frmt("-%c", op)));
+						    name_format(frmt("-%c", op)));
 					throw ERROR_LOGICAL;
 				}
 			} else {
@@ -770,21 +772,21 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					if (*p == '!') {
 						current_place() <<
 							fmt("character %s is invalid for persistent dependencies; use %s instead",
-							    char_format_err('!'),
-							    multichar_format_err("-p"));
+							    char_format('!'),
+							    name_format("-p"));
 					} else if (*p == '?') {
 						current_place() <<
 							fmt("character %s is invalid for optional dependencies; use %s instead",
-							    char_format_err('?'),
-							    multichar_format_err("-o"));
+							    char_format('?'),
+							    name_format("-o"));
 					} else if (*p == '&') {
 						current_place() <<
 							fmt("character %s is invalid for trivial dependencies; use %s instead",
-							    char_format_err('&'),
-							    multichar_format_err("-t"));
+							    char_format('&'),
+							    name_format("-t"));
 					} else {
 						current_place() << fmt("invalid character %s",
-								       char_format_err(*p));
+								       char_format(*p));
 						if (strchr("#%\'\":;-$@<>={}()[]*\\&|!?,", *p)) {
 							explain_quoted_characters();
 						}
@@ -894,26 +896,26 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 				if (*p >= 33 && *p <= 126)
 					place_backslash
 						<< frmt("invalid escape sequence %s\\%c%s",
-							Color::word, *p, Color::end);
+							Color::stderr_highlight_on, *p, Color::stderr_highlight_off);
 				else
 					place_backslash
 						<< frmt("invalid escape sequence %s\\\\%03o%s",
-							Color::word,
+							Color::stderr_highlight_on,
 							(unsigned char) *p,
-							Color::end);
+							Color::stderr_highlight_off);
 				place_begin_quote <<
 					fmt("in quote started by %s",
-					    char_format_err('"'));
+					    char_format('"'));
 				throw ERROR_LOGICAL;
 			}
 			ret.last_text() += c;
 			++p;
 		} else if (*p == '\0') {
 			current_place() <<
-				fmt("invalid character %s", char_format_err('\0'));
+				fmt("invalid character %s", char_format('\0'));
 			place_begin_quote <<
 				fmt("in quote started by %s",
-				    char_format_err('"'));
+				    char_format('"'));
 			throw ERROR_LOGICAL;
 		} else {
 			if (*p == '\n') {
@@ -924,8 +926,8 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 		}
 	}
 	/* Reached end of file without closing the quote */
-	current_place() << fmt("expected a closing %s", char_format_err('"'));
-	place_begin_quote << fmt("for quote started by %s", char_format_err('"'));
+	current_place() << fmt("expected a closing %s", char_format('"'));
+	place_begin_quote << fmt("for quote started by %s", char_format('"'));
 	throw ERROR_LOGICAL;
  end_of_double_quote:;
 }
@@ -939,9 +941,9 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 			++p;
 			goto end_of_single_quote;
 		} else if (*p == '\0') {
-			current_place() << fmt("invalid character %s", char_format_err(*p));
+			current_place() << fmt("invalid character %s", char_format(*p));
 			place_begin_quote <<
-				fmt("in quote started by %s", char_format_err('\''));
+				fmt("in quote started by %s", char_format('\''));
 			throw ERROR_LOGICAL;
 		} else {
 			if (*p == '\n') {
@@ -952,8 +954,8 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 		}
 	}
 	/* Reached end of file without closing the quote */
-	current_place() << fmt("expected a closing %s", char_format_err('\''));
-	place_begin_quote << fmt("for quote started by %s", char_format_err('\''));
+	current_place() << fmt("expected a closing %s", char_format('\''));
+	place_begin_quote << fmt("for quote started by %s", char_format('\''));
 	throw ERROR_LOGICAL;
  end_of_single_quote:;
 }
@@ -965,7 +967,7 @@ bool Tokenizer::parse_escape()
 	++p;
 	if (p == p_end) {
 		/* Error:  expected a character after \ */
-		place_escape << fmt("expected a character after %s", char_format_err('\\'));
+		place_escape << fmt("expected a character after %s", char_format('\\'));
 		throw ERROR_LOGICAL;
 	}
 
@@ -979,7 +981,7 @@ bool Tokenizer::parse_escape()
 	if (*p == '\0') {
 		place_escape << fmt
 			("expected a non-nul character after %s",
-			 char_format_err('\\'));
+			 char_format('\\'));
 		throw ERROR_LOGICAL;
 	}
 
@@ -1006,11 +1008,11 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 		if (p < p_end)
 			place_directive
 				<< fmt("expected a directive name, not %s",
-				       char_format_err(*p));
+				       char_format(*p));
 		else
 			place_directive
 				<< "expected a directive name";
-		place_percent << fmt("after %s", char_format_err('%'));
+		place_percent << fmt("after %s", char_format('%'));
 		throw ERROR_LOGICAL;
 	}
 
@@ -1021,13 +1023,13 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 		if (context == DYNAMIC) {
 			place_percent
 				<< frmt("%s%%include%s must not appear in dynamic dependencies",
-					Color::word, Color::end);
+					Color::stderr_highlight_on, Color::stderr_highlight_off);
 			throw ERROR_LOGICAL;
 		}
 		if (context == OPTION_C || context == OPTION_F) {
 			place_percent
 				<< frmt("%s%%include%s must not be used",
-					Color::word, Color::end);
+					Color::stderr_highlight_on, Color::stderr_highlight_off);
 			throw ERROR_LOGICAL;
 		}
 
@@ -1037,17 +1039,19 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 			current_place() <<
 				(p == p_end
 				 ? "expected a filename"
-				 : fmt("expected a filename, not %s", char_format_err(*p)));
+				 : fmt("expected a filename, not %s", char_format(*p)));
 			place_percent << frmt("after %s%%include%s",
-					      Color::word, Color::end);
+					      Color::stderr_highlight_on, Color::stderr_highlight_off);
 			throw ERROR_LOGICAL;
 		}
 		if (place_name->get_n() != 0) {
 			place_name->place <<
 				fmt("name %s must not be parametrized",
-				    place_name->format_err());
+				    place_name->format());
 			place_percent << frmt("after %s%%include%s",
-					      Color::word, Color::end);
+					      // TODO in this and other places
+					      // in this file, call highlight().
+					      Color::stderr_highlight_on, Color::stderr_highlight_off);
 			throw ERROR_LOGICAL;
 		}
 
@@ -1055,7 +1059,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 		Trace trace_stack
 			(place_name->place,
 			 fmt("%s is included from here",
-			     name_format_err(filename_include)));
+			     name_format(filename_include)));
 		traces.push_back(trace_stack);
 		filenames.push_back(place_base.text);
 
@@ -1073,8 +1077,8 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 					if (j == traces.rbegin()) {
 						trace.message=
 							fmt("recursive inclusion of %s using %s%%include%s",
-							    name_format_err(filename_include),
-							    Color::word, Color::end);
+							    name_format(filename_include),
+							    Color::stderr_highlight_on, Color::stderr_highlight_off);
 					}
 					traces_backward.push_back(trace);
 				}
@@ -1117,7 +1121,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 		/* Invalid directive */
 		place_percent <<
 			fmt("invalid directive %s",
-			    prefix_format_err(name, "%"));
+			    prefix_format(name, "%"));
 		throw ERROR_LOGICAL;
 	}
 }

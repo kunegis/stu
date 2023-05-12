@@ -611,7 +611,11 @@ void Name::append(const Name &name)
 }
 
 string Place_Param_Target::format(Style style, Quotes *q) const {
-	...;
+	string s= place_name.format(style | S_INNER, q);
+	if (flags & F_TARGET_TRANSIENT)
+		s= '@' + s;
+	return quote(s, style, q);
+//	...;
 //	Target target(flags, place_name.format_raw());
 //	return target.format(style, q);
 }

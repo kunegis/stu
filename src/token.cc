@@ -77,7 +77,7 @@ Command::get_lines() const
 	return *lines;
 }
 
-string Operator::format_long_err() const
+string Operator::format_long(Style style, Quotes *q) const
 {
 	string t;
 	switch (op) {
@@ -88,6 +88,5 @@ string Operator::format_long_err() const
 	case ']':  t= "closing bracket";      break;
 	case '@':  t= "operator";             break;
 	}
-
-	return fmt("%s %s", t, char_format_err(op));
+	return fmt("%s %s", t, char_format(op, style, q));
 }

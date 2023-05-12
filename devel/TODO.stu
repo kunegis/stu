@@ -1,10 +1,9 @@
 #
 # Option -I
-# * single target, parametrized: test is written; fails
-# ** create branch for ./configure
-# ** Go through color constants and streamline them
-# ** Make sure we use double quotes in all output
-# ** for all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
+#
+
+# For all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
+# * check whether/how GCC outputs quotes around operators in output
 # * list.*+X does not need quotes in -I output
 # * list.${a}+X does not need quotes in normal output
 # * list.${a}-X does not need quotes in normal output
@@ -27,7 +26,7 @@
 # * A:  <B $[<     ###EOF
 # * A:  <B $[<:];
 # * case where stdout is a tty and stderr is not, and vice versa
-#
+
 # * target *
 # * target *.o
 # * target *.x.*
@@ -43,6 +42,10 @@
 # * A { exit 1 ; } # succeeds because the command is not executed
 # * Copy rule:  target is output
 # * Content rule:  target is output
+
+#
+# Test that there are no carriage returns in the source.
+# Test that there are no backticks in shell scripts. 
 #
 
 #

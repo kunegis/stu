@@ -1219,7 +1219,7 @@ void Parser::print_separation_message(shared_ptr <const Token> token)
 		text= fmt("token %s",
 			  dynamic_pointer_cast <const Name_Token> (token)->format());
 	} else if (dynamic_pointer_cast <const Operator> (token)) {
-		text= dynamic_pointer_cast <const Operator> (token)->format_long_err();
+		text= dynamic_pointer_cast <const Operator> (token)->format_long();
 	} else {
 		assert(false);
 	}

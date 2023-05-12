@@ -1,6 +1,8 @@
 #ifndef TEXT_HH
 #define TEXT_HH
 
+// TODO rename file to format.hh
+
 /*
  * Various text manipulation functions.
  *

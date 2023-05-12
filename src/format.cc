@@ -186,7 +186,14 @@ string quote(string text, Style style, const Quotes *q)
 {
 	if (style & S_INNER)
 		return text;
-	if (q && q->is()) {
+	bool quotes;
+	if (q) {
+		quotes= q->is();
+	} else {
+		Quotes q_this(style);
+		quotes= q_this.is(); 
+	}
+	if (quotes) {
 		text= fmt("\"%s\"", text);
 	}
 	if (style & S_OUT) {

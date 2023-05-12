@@ -521,9 +521,8 @@ do
 				fi
 			fi
 
-			# There is color
 			if [ -r EXITSTATUS ] && ! [ -r NOCOLOR ] ; then
-				if ! grep -qE '' list.def.out ; then
+				if ! grep -qE -e '' list.def.out ; then
 					echo >&2 "$0: ($file) *** Expected ESC in TTY output because EXITSTATUS exists"
 					echo >&2 output:
 					echo >&2 _________
@@ -533,16 +532,17 @@ do
 				else
 					echo >&7 "TTY:COLOR...correct"
 				fi
-
 			fi
 
-			# No unbalanced colors
-			if grep -qE '[^0]+m[^]*$' list.def.out ; then
-				# The following is disabled, as we now
-				# allow a color code to be replaced by
-				# another one directly:
-				#      grep -qE '[^0]+m[^]*[^0]+m' list.def.out
-				echo >&2 "$0: ($file) *** Expected closing color code"
+			if grep -qE -e '[[](32|1|35|31)m[^]*$' list.def.out ; then
+				echo >&2 "$0: ($file) *** Expected closing escape sequence after opening escape sequence in stdout"
+				echo >&2 output:
+				echo >&2 _________
+				cat >&2 list.def.out
+				echo >&2 _________
+##				grep -E -n -b -e '[[][(32|1|35|31)m[^]*$' list.def.out main.stu >&2 ## rm
+##				recode utf8..html <list.def.out
+##				hexdump -C list.def.out
 				error=1
 			else
 				echo >&7 "TTY:BALANCED...correct"

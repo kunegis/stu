@@ -67,10 +67,10 @@ void Color::set(bool enable_color_out, bool enable_color_err)
 		err_quotes= false;
 		stderr_warn_on=       "\33[35m";
 		stderr_warn_off=      "\33[m";
-		stderr_err_on=        "\33[32m";
+		stderr_err_on=        "\33[31m";
 		stderr_err_off=       "\33[m";
 		stderr_highlight_on=  "\33[1m";
-		stderr_highlight_off= "\33[22";
+		stderr_highlight_off= "\33[22m";
 	} else {
 		err_quotes= true;
 		stderr_warn_on=       "";

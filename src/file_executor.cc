@@ -141,17 +141,17 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 					 * which case we ignore that error */
 					if (0 > lstat(filename, &buf)) {
 						rule->place_param_targets[i]->place <<
-							system_format(target.format());
+							format_errno(target.show());
 						raise(ERROR_BUILD);
 					}
 					if (S_ISLNK(buf.st_mode))
 						continue;
 					rule->place_param_targets[i]->place
 						<< fmt("timestamp of file %s after execution of its command is older than %s startup",
-						       target.format(),
+						       target.show(),
 						       dollar_zero)
 						<< fmt("timestamp of %s is %s",
-						       target.format(), timestamp_file.format())
+						       target.show(), timestamp_file.format())
 						<< fmt("startup timestamp is %s",
 						       Timestamp::startup.format());
 					*this << "";
@@ -163,14 +163,15 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 				bits &= ~B_EXISTING;
 				rule->place_param_targets[i]->place <<
 					fmt("file %s was not built by command",
-					    target.format());
+					    target.show());
 				*this << "";
 				raise(ERROR_BUILD);
 			}
 		}
 		/* In parallel mode, print "done" message */
 		if (option_parallel && !option_s) {
-			string text= targets[0].format(S_OUT);
+			Style style= S_STDOUT;
+			string text= targets[0].show(&style);
 			printf("Successfully built %s\n", text.c_str());
 		}
 	} else {
@@ -203,12 +204,11 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 			Target target= parents.begin()->second->get_target();
 			param_rule->command->place <<
 				fmt("command for %s %s",
-				    target.format(),
-				    reason);
+				    target.show(), reason);
 		} else {
 			/* Copy rule */
 			param_rule->place <<
-				fmt("cp to %s %s", targets.front().format(), reason);
+				fmt("cp to %s %s", targets.front().show(), reason);
 		}
 
 		*this << "";
@@ -284,7 +284,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 				int ret_stat= stat(target_.get_name_c_str_nondynamic(), &buf);
 				if (0 > ret_stat) {
 					if (errno != ENOENT) {
-						string text= target_.format();
+						string text= target_.show();
 						perror(text.c_str());
 						raise(ERROR_BUILD);
 					}
@@ -296,8 +296,9 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 					if (dynamic_cast <Root_Executor *> (parent)) {
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */
+						Style style= S_STDOUT;
 						print_out(fmt("No rule for building %s, but the file exists",
-							      target_.format(S_OUT)));
+							      target_.show(&style)));
 						hide_out_message= true;
 					}
 				}
@@ -310,7 +311,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 
 		if (rule_not_found) {
 			assert(rule == nullptr);
-			*this << fmt("no rule to build %s", target_.format());
+			*this << fmt("no rule to build %s", target_.show());
 			error_additional |= error |= ERROR_BUILD;
 			raise(ERROR_BUILD);
 			return;
@@ -333,14 +334,14 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 		if (rule->command) {
 			place_target <<
 				fmt("rule for transient target %s must not have a command",
-				    target_.format());
+				    target_.show());
 		} else {
 			place_target <<
 				fmt("rule for transient target %s must not have file targets",
-				    target_.format());
+				    target_.show());
 		}
 		dep->get_place() << fmt("when used as dynamic dependency of %s",
-					parent->get_parents().begin()->second->format());
+					parent->get_parents().begin()->second->show());
 		*(parent->get_parents().begin()->first) << "";
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
@@ -363,15 +364,17 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 		dep->get_place() << fmt((dep->flags & F_OPTIONAL)
 					? "dependency %s must not be declared as optional"
 					: "dependency %s must not be declared as persistent",
-					dep->format());
+					dep->show());
 		dep->places[ind] <<
-			fmt("using flag %s", name_format(frmt("-%c", flags_chars[ind])));
+			fmt("using flag %s", ::show(frmt("-%c", flags_chars[ind])));
 		if (rule->command)
-			place_target << fmt("because rule for transient target %s has a command",
-					    target_.format());
+			place_target <<
+				fmt("because rule for transient target %s has a command",
+				    target_.show());
 		else
-			place_target << fmt("because rule for transient target %s has file targets",
-					    target_.format());
+			place_target <<
+				fmt("because rule for transient target %s has file targets",
+				    target_.show());
 		*this << "";
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
@@ -499,16 +502,17 @@ bool File_Executor::remove_if_existing(bool output)
 			continue;
 
 		if (output) {
-			string text_filename= name_format(filename, S_SRC);
-			Debug::print(this, fmt("remove %s", text_filename));
+			Style style= S_DEBUG;
+			string text_filename= ::show(filename, &style);
+			DEBUG_PRINT(fmt("remove %s", text_filename));
 			print_error_reminder(fmt("Removing file %s because command failed",
-						 name_format(filename)));
+						 ::show(filename)));
 		}
 		removed= true;
 
 		if (0 > unlink(filename)) {
 			if (output) {
-				rule->place << system_format(name_format(filename));
+				rule->place << format_errno(filename);
 			} else {
 				write_async(2, "*** Error: unlink\n");
 			}
@@ -535,7 +539,7 @@ void File_Executor::warn_future_file(struct stat *buf,
 
 	string suffix= message_extra ? string(" ") + message_extra : "";
 	print_warning(place, fmt("File %s has modification time in the future%s",
-				 name_format(filename), suffix));
+				 ::show(filename), suffix));
 }
 
 void File_Executor::print_command() const
@@ -556,10 +560,12 @@ void File_Executor::print_command() const
 					is_printable= false;
 			}
 		}
-		string text= targets.front().format(S_OUT);
+		Style style= S_STDOUT;
+		string text= targets.front().show(&style);
 		if (is_printable) {
-			string content_src= name_format(content, S_OUT);
-			printf("Creating %s: %s\n", text.c_str(), content_src.c_str());
+			Style style_content= S_STDOUT;
+			string content_text= ::show(content, &style_content);
+			printf("Creating %s: %s\n", text.c_str(), content_text.c_str());
 		} else {
 			printf("Creating %s\n", text.c_str());
 		}
@@ -568,8 +574,10 @@ void File_Executor::print_command() const
 
 	if (rule->is_copy) {
 		assert(rule->place_param_targets.size() == 1);
-		string cp_target= rule->place_param_targets[0]->place_name.format(S_OUT);
-		string cp_source= rule->filename.format(S_OUT);
+		Style style_target= S_STDOUT;
+		string cp_target= rule->place_param_targets[0]->place_name.show(&style_target);
+		Style style_source= S_STDOUT;
+		string cp_source= rule->filename.show(&style_source);
 		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str());
 		return;
 	}
@@ -579,7 +587,8 @@ void File_Executor::print_command() const
 	bool single_line= rule->command->get_lines().size() == 1;
 
 	if (! single_line || option_parallel) {
-		string text= targets.front().format(S_SRC);
+		Style style= S_STDOUT;
+		string text= targets.front().show(&style);
 		printf("Building %s\n", text.c_str());
 		return;
 	}
@@ -758,7 +767,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 					print_warning
 						(rule->place_param_targets[i]->place,
 						 fmt("File target %s which has no command is older than its dependency",
-						     target.format()));
+						     target.show()));
 				}
 			}
 
@@ -783,7 +792,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 				 * e.g. permission denied.  This is a
 				 * build error.  */
 				rule->place_param_targets[i]->place
-					<< system_format(target.format());
+					<< format_errno(target.show());
 				raise(ERROR_BUILD);
 				done |= done_from_flags(dep_this->flags);
 				return proceed |= P_ABORT | P_FINISHED;
@@ -798,12 +807,12 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 				if (rule->deps.size()) {
 					*this <<
 						fmt("expected the file without command %s to exist because all its dependencies are up to date, but it does not",
-						     target.format());
+						     target.show());
 					explain_file_without_command_with_dependencies();
 				} else {
 					rule->place_param_targets[i]->place
 						<< fmt("expected the file without command and without dependencies %s to exist, but it does not",
-						       target.format());
+						       target.show());
 					*this << "";
 					explain_file_without_command_without_dependencies();
 				}
@@ -885,7 +894,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 		assert(targets.size() == 1);
 		assert(targets.front().is_file());
 
-		Debug::print(this, "create_content");
+		DEBUG_PRINT("create_content");
 
 		print_command();
 		write_content(targets.front().get_name_c_str_nondynamic(), *(rule->command));
@@ -956,9 +965,9 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 					 * error  */
 					rule->deps.at(0)->get_place()
 						<< fmt("source file %s in optional copy rule must exist",
-						       name_format(source));
+						       ::show(source));
 					*this << fmt("when target file %s does not exist",
-						     targets.at(0).format());
+						     targets.at(0).show());
 					explain_missing_optional_copy_source();
 					raise(ERROR_BUILD);
 					done |= done_from_flags(dep_this->flags);
@@ -983,12 +992,12 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 		assert(pid != 0 && pid != 1);
 
-		Debug::print(this, frmt("execute: pid = %ld", (long) pid));
+		DEBUG_PRINT(frmt("execute: pid = %ld", (long) pid));
 
 		if (pid < 0) {
 			/* Starting the job failed */
 			*this << fmt("error executing command for %s",
-				     targets.front().format());
+				     targets.front().show());
 			raise(ERROR_BUILD);
 			done |= done_from_flags(dep_this->flags);
 			assert(proceed == 0);
@@ -1063,7 +1072,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 void File_Executor::print_as_job() const
 {
 	pid_t pid= job.get_pid();
-	string text_target= targets.front().format(S_SRC);
+	Style style= S_STDOUT;
+	string text_target= targets.front().show(&style);
 	printf("%9ld %s\n", (long) pid, text_target.c_str());
 }
 
@@ -1073,7 +1083,7 @@ void File_Executor::write_content(const char *filename,
 	FILE *file= fopen(filename, "w");
 
 	if (file == nullptr) {
-		rule->place << system_format(name_format(filename));
+		rule->place << format_errno(::show(filename));
 		raise(ERROR_BUILD);
 		return;
 	}
@@ -1082,22 +1092,21 @@ void File_Executor::write_content(const char *filename,
 		if (fwrite(line.c_str(), 1, line.size(), file) != line.size()) {
 			assert(ferror(file));
 			fclose(file);
-			rule->place << system_format(name_format(filename));
+			rule->place << format_errno(::show(filename));
 			raise(ERROR_BUILD);
 		}
 		if (EOF == putc('\n', file)) {
 			fclose(file);
-			rule->place << system_format(name_format(filename));
+			rule->place << format_errno(::show(filename));
 			raise(ERROR_BUILD);
 		}
 	}
 
 	if (0 != fclose(file)) {
-		rule->place <<
-			system_format(name_format(filename));
+		rule->place << format_errno(::show(filename));
 		command.get_place() <<
 			fmt("error creating %s",
-			    name_format(filename));
+			    ::show(filename));
 		raise(ERROR_BUILD);
 	}
 
@@ -1107,7 +1116,8 @@ void File_Executor::write_content(const char *filename,
 
 void File_Executor::read_variable(shared_ptr <const Dep> dep)
 {
-	Debug::print(this, fmt("read_variable %s", dep->format(S_SRC)));
+	Style style= S_DEBUG;
+	DEBUG_PRINT(fmt("read_variable %s", dep->show(&style)));
 	assert(to <Plain_Dep> (dep));
 
 	if (! result_variable.empty()) {
@@ -1138,24 +1148,24 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	int fd= open(target.get_name_c_str_nondynamic(), O_RDONLY);
 	if (fd < 0) {
 		if (errno != ENOENT) {
-			dep->get_place() << target.format();
+			dep->get_place() << target.show();
 		}
 		goto error;
 	}
 	if (0 > fstat(fd, &buf)) {
-		dep->get_place() << target.format();
+		dep->get_place() << target.show();
 		goto error_fd;
 	}
 
 	filesize= buf.st_size;
 	content.resize(filesize);
 	if ((ssize_t) filesize != read(fd, (void *) content.c_str(), filesize)) {
-		dep->get_place() << target.format();
+		dep->get_place() << target.show();
 		goto error_fd;
 	}
 
 	if (0 > close(fd)) {
-		dep->get_place() << target.format();
+		dep->get_place() << target.show();
 		goto error;
 	}
 
@@ -1188,13 +1198,13 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	if (rule == nullptr) {
 		dep->get_place() <<
 			fmt("file %s was up to date but cannot be found now",
-			    target_variable.format());
+			    target_variable.show());
 	} else {
 		for (auto const &place_param_target: rule->place_param_targets) {
 			if (place_param_target->unparametrized() == target_variable) {
 				place_param_target->place <<
 					fmt("generated file %s was built but cannot be found now",
-					    place_param_target->format());
+					    place_param_target->show());
 				break;
 			}
 		}
@@ -1227,7 +1237,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 			if (errno != ENOENT) {
 				to <Plain_Dep> (dep_link)
 					->place_param_target.place <<
-					system_format(name_format(name));
+					format_errno(::show(name));
 				raise(ERROR_BUILD);
 				done |= done_from_flags(dep_link->flags);
 				return true;

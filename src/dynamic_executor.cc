@@ -99,9 +99,9 @@ bool Dynamic_Executor::want_delete() const
 	return to <Plain_Dep> (Dep::strip_dynamic(dep)) == nullptr;
 }
 
-string Dynamic_Executor::format(Style style, Quotes *q) const
+string Dynamic_Executor::show(Style *style) const
 {
-	return dep->format(style, q);
+	return dep->show(style);
 }
 
 void Dynamic_Executor::notify_result(shared_ptr <const Dep> d,

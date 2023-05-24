@@ -23,12 +23,10 @@ class Token
 /* A token.  This class is mainly used through unique_ptr/shared_ptr.  */
 {
 public:
-
 	Environment environment;
 
 	Token(Environment environment_)
-		:  environment(environment_)
-	{  }
+		:  environment(environment_)  {  }
 
 	virtual ~Token() = default;
 
@@ -39,7 +37,7 @@ public:
 	virtual const Place &get_place_start() const= 0;
 	/* The starting place.  Always the first character. */
 
-	virtual string format_err_start() const= 0;
+	virtual string show_start() const= 0;
 	/* Formatting of the starting character of character sequence */
 };
 
@@ -64,8 +62,8 @@ public:
 
 	const Place &get_place() const  {  return place;  }
 	const Place &get_place_start() const  {  return place;  }
-	string format_err_start() const  {  return char_format(op);  }
-	string format_long(Style style= S_ERR, Quotes *q= nullptr) const;
+	string show_start() const  {  return ::show(op);  }
+	string show_long(Style *style= nullptr) const;
 };
 
 class Flag_Token
@@ -109,8 +107,8 @@ public:
 		return place_start;
 	}
 
-	string format_err_start() const {
-		return char_format('-');
+	string show_start() const {
+		return show('-');
 	}
 };
 
@@ -135,8 +133,8 @@ public:
 		return Place_Name::place;
 	}
 
-	string format_err_start() const {
-		return Place_Name::format();
+	string show_start() const {
+		return Place_Name::show();
 	}
 };
 
@@ -154,7 +152,6 @@ private:
 	 * Generated on demand, and therefore declared as mutable.  */
 
 public:
-
 	const string command;
 	/* The command as written in the input; contains newlines */
 
@@ -177,8 +174,8 @@ public:
 		return place_start;
 	}
 
-	string format_err_start() const {
-		return char_format('{');
+	string show_start() const {
+		return show('{');
 	}
 
 	const vector <string> &get_lines() const;

@@ -64,7 +64,7 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 		/* There must be a rule for transient targets (as
 		 * opposed to file targets), so this is an error.  */
 		is_finished= true;
-		*this << fmt("no rule to build %s", target.format());
+		*this << fmt("no rule to build %s", target.show());
 		parents.erase(parent);
 		error_additional |= ERROR_BUILD;
 		raise(ERROR_BUILD);
@@ -112,9 +112,10 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 	parents[parent]= dep_link;
 }
 
-string Transient_Executor::format(Style style, Quotes *q) const {
+string Transient_Executor::show(Style *style) const
+{
 	assert(targets.size());
-	return targets.front().format(style, q);
+	return targets.front().show(style);
 }
 
 void Transient_Executor::notify_result(shared_ptr <const Dep> dep,

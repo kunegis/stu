@@ -1,22 +1,10 @@
 #ifndef FORMAT_HH
 #define FORMAT_HH
 
-// TODO rename format to "highlight" to avoid clash with the format functions
+// TODO rename format to "show" to avoid clash with the format functions
 // in text.hh and also with the upcoming C++20 ones.
 
 /*
- * - format() formats the content according to the exact specification, but
- *   never surrounds it by quotes.  It may include more parameters to configure
- *   the output.
-// * - format_err() returns a string suitable for inclusion in a message
-// *   on STDERR, including quotes and color, as appropriate.  It does not
-// *   show flags.
-// * - format_out() returns the same as format_err(), but for STDOUT.
-// * - format_src() formats an expression as if it was part of the source,
-// *   e.g., use quotes only if the name contains characters that need to
-// *   be quoted.  It does include the flags.
- * //- format_raw() does not escape anything.
- *
  * Format functions are defined in the source files where their datatype
  * is defined.  In classes, they are member functions.
  */
@@ -25,86 +13,64 @@
 
 #include "color.hh"
 
-typedef unsigned Style;
-//enum Style
-//{
-constexpr Style S_OUT=	      1 << 0;
-	/* Output for standard output words */
-constexpr Style S_ERR= 	      1 << 1;
-	/* Output for standard error output words */
-constexpr Style S_SRC=	      1 << 2;
-	/* Output in Stu notation */
-//	S_RAW= 	      1 << 3,
-//	/* Output in raw form */
-constexpr Style S_CHANNEL=    S_OUT | S_ERR | S_SRC;
-	/* Only one of those is set */
+typedef unsigned Show_Bits;
+constexpr Show_Bits S_STDOUT=	           1 << 0;
+constexpr Show_Bits S_STDERR= 	           1 << 1;
+constexpr Show_Bits S_DONT_SHOW_COLOR=     1 << 2;
+constexpr Show_Bits S_DONT_SHOW_QUOTES=    1 << 3;
+constexpr Show_Bits S_SHOW_FLAGS=          1 << 4;
+constexpr Show_Bits S_NEED_QUOTES=         1 << 5;
+constexpr Show_Bits S_DONT_FORMAT=         1 << 6;
+constexpr Show_Bits S_NO_EMPTY=            1 << 7;
+constexpr Show_Bits S_GLOB=                1 << 8;
+constexpr Show_Bits S_DEFAULT=             S_STDERR;
+constexpr Show_Bits S_DEBUG=               S_STDOUT | S_DONT_SHOW_COLOR;
 
-constexpr Style S_INNER=      1 << 3;
-	/* Don't output quotes or color codes */
-constexpr Style S_NO_EMPTY=   1 << 4;
-	/* Don't need quote around empty content */
-constexpr Style S_NO_FLAGS=   1 << 5;
-	/* Do not output flags */
-//	S_COLOR_WORD= 1 << 8,
-//	S_WANT_ESCAPE=1 << 9, // rename S_ESCAPE
-//	/* Characters need to be escaped */
-//	S_QUOTES_SINGLE= 1 << 10,
-//	S_QUOTES=     S_WANT_ESCAPE | S_QUOTES_SINGLE,
-//	S_NEED_QUOTES=1 << 6,
-//	/* Out parameter.  Quotes are needed. */
-//	/* Used as in/out parameter.  Need quotes around.  Only set if S_ESCAPE
-//	 * is set.  */
-//};
+/*
+// * If S_DONT_SHOW_QUOTES is set, caller must show quotes when S_NEED_QUOTES is
+// * set. 
+ *
+ * S_NEED_QUOTES is used as an in/out parameter.  The others only as in
+ * parameter. 
+ */
 
-class Quotes
-/* The format(...) functions take a Quotes parameter that is a boolean.  This
- * function never outputs surrounding quotes themself, and the parameter is used
- * as both an input and output parameter: as input parameter, it tells the
- * functions whether we are in a context where quotes are needed in principle
- * (because there is no color).  As output parameter, it is set to true when the
- * function detects that quotes are needed.  */
+class Style
 {
 public:
-	Quotes(Style style)  {
-		if (style & S_SRC)
-			q= true;
-		else if (style & S_OUT)
-			q= Color::out_quotes;
-		else if (style & S_ERR)
-			q= Color::err_quotes;
-		else
-			assert(false);
-	}
-	void set()  {  q= true;  }
-	bool is() const  {  return q;  }
+	// TODO replace the two constructors by functions returning a Style that
+	// can be assigned to another Style (which will need a copy constructor). 
+	
+	Style(Show_Bits bits_);
+	Style(Style *style, bool may_show_quotes);  /* Inner style */
+
+	Style(const Style *style, const Style *style_inner, int);
+	/* Outer style.  If STYLE_INNER is false, assume all inner parts were
+	 * shown with quotes. */
+	
+	Show_Bits operator&(Show_Bits b) const  {  return bits & b;  }
+	void operator|=(Show_Bits b)  {  bits |= b;  }
+	void set()  {  bits |= S_NEED_QUOTES;  }
+	bool is() const  {  return bits & S_NEED_QUOTES;  }
 	
 private:
-	bool q;
+	Show_Bits bits;
+	void init();
 };
 
-string char_format(char c, Style= S_ERR, Quotes *q= nullptr);
-// TODO remove "char" from the name and use overloading. 
+string show(string text, Style *style= nullptr); 
+string show_dynamic_variable(string name, Style *style= nullptr);
 
-//string char_format_err(char c); // TODO remove function
-//string multichar_format_err(string s); // TODO remove "_err"
+string show(char c, Style *style= nullptr) {
+	return show(string(1, c), style); 
+}
 
-string name_format(string name, Style= S_ERR, Quotes *quotes= nullptr);
-// TODO remove "name" from the name. 
-
-//string name_format_err(string name);
-//string name_format_src(string name, Style= 0);
-// XXX is the STYLE parameter really necessary?
-string dynamic_variable_format(string name, Style style= S_ERR, Quotes *q= nullptr);
-string prefix_format(string name, string prefix, Style= S_ERR, Quotes *q= nullptr);
-
-string quote(string text, Style style, const Quotes *q);
-/* Surround by quotes or color codes */
-
-//bool src_need_quotes(const string &name, Style style);
-///* Whether a string needs to be quoted in the shell or in Stu (which
-// * have the same quoting syntax.)  This is used so that Stu output looks
-// * like input to the shell.  Note that for strings beginning with ~ or
-// * -, quoting is not enough:  they have to be separated with '--'
-// * additionally in the shell.   */
+template <typename T>
+string show_prefix(string prefix, const T &object, Style *style= nullptr) {
+	Style style_inner(style, true);
+	string s= show(object, &style_inner);
+	string ret= prefix + s;
+	Style style_outer(style, &style_inner, 0);
+	return show(ret, &style_outer); 
+}
 
 #endif /* ! FORMAT_HH */

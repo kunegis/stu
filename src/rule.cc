@@ -110,7 +110,7 @@ Rule::instantiate(shared_ptr <const Rule> rule,
 		 rule->is_copy);
 }
 
-string Rule::format_out() const
+string Rule::show(Style *style) const
 {
 	string ret= "Rule(";
 
@@ -120,7 +120,7 @@ string Rule::format_out() const
 			first= false;
 		else
 			ret += ' ';
-		ret += place_param_target->format(S_OUT);
+		ret += place_param_target->show(style);
 	}
 
 	if (deps.size() != 0)
@@ -128,7 +128,7 @@ string Rule::format_out() const
 	for (auto i= deps.begin();  i != deps.end();  ++i) {
 		if (i != deps.begin())
 			ret += ", ";
-		ret += (*i)->format(S_OUT);
+		ret += (*i)->show(style);
 	}
 
 	ret += ")";
@@ -157,15 +157,15 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 				plain_dep->place_param_target
 					.place_name.get_places()[jj] <<
 					fmt("parameter %s must not appear in dependency %s",
-					    prefix_format(parameter, "$"),
-					    plain_dep->place_param_target.format());
+					    show_prefix("$", parameter),
+					    plain_dep->place_param_target.show());
 				if (place_param_targets.size() == 1) {
 					place_param_targets[0]->place <<
 						fmt("because it does not appear in target %s",
-						    place_param_targets[0]->format());
+						    place_param_targets[0]->show());
 				} else {
 					place << fmt("because it does not appear in any of the targets %s... of the rule",
-						     place_param_targets[0]->format());
+						     place_param_targets[0]->show());
 				}
 				throw ERROR_LOGICAL;
 			}
@@ -194,10 +194,10 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 				    *rule->place_param_targets[j]) {
 					rule->place_param_targets[i]->place <<
 						fmt("there must not be a target %s",
-						    rule->place_param_targets[i]->format());
+						    rule->place_param_targets[i]->show());
 					rule->place_param_targets[j]->place <<
 						fmt("shadowing target %s of the same rule",
-						    rule->place_param_targets[j]->format());
+						    rule->place_param_targets[j]->show());
 					throw ERROR_LOGICAL;
 				}
 			}
@@ -211,14 +211,14 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 				if (rules_unparam.count(target)) {
 					place_param_target->place <<
 						fmt("there must not be a second rule for target %s",
-						    target.format());
+						    target.show());
 					auto rule_2= rules_unparam.at(target);
 					for (auto place_param_target_2: rule_2->place_param_targets) {
 						assert(place_param_target_2->place_name.get_n() == 0);
 						if (place_param_target_2->unparametrized() == target) {
 							place_param_target_2->place <<
 								fmt("shadowing previous rule %s",
-								    target.format());
+								    target.show());
 							break;
 						}
 					}
@@ -332,12 +332,12 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 	/* More than one rule matches:  error */
 	if (best_rule_finder.count() != 1 ) {
 		place << fmt("multiple minimal matching rules for target %s",
-			     target.format());
+			     target.show());
 		for (auto &place_param_target:
 			     best_rule_finder.targets_best()) {
 			place_param_target.second->place <<
 				fmt("rule with target %s",
-				    place_param_target.second->format());
+				    place_param_target.second->show());
 		}
 		explain_minimal_matching_rule();
 		throw ERROR_LOGICAL;
@@ -357,12 +357,14 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 void Rule_Set::print() const
 {
 	for (auto i:  rules_unparam)  {
-		string text= i.second->format_out();
+		Style style= S_STDOUT;
+		string text= i.second->show(&style);
 		puts(text.c_str());
 	}
 
 	for (auto i:  rules_param)  {
-		string text= i->format_out();
+		Style style= S_STDOUT;
+		string text= i->show(&style);
 		puts(text.c_str());
 	}
 }
@@ -377,7 +379,8 @@ void Rule_Set::print_targets() const
 		for (auto target: rule.place_param_targets) {
 			if (target->flags & F_TARGET_TRANSIENT)
 				continue;
-			filenames.insert(target->place_name.format_glob());
+			Style style= S_STDOUT | S_GLOB | S_DONT_SHOW_COLOR;
+			filenames.insert(target->place_name.show(&style));
 		}
 	}
 
@@ -385,7 +388,8 @@ void Rule_Set::print_targets() const
 		for (auto target: i->place_param_targets) {
 			if (target->flags & F_TARGET_TRANSIENT)
 				continue;
-			filenames.insert(target->place_name.format_glob());
+			Style style= S_STDOUT | S_GLOB | S_DONT_SHOW_COLOR;
+			filenames.insert(target->place_name.show(&style));
 		}
 	}
 

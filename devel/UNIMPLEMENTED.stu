@@ -151,7 +151,8 @@ dep.sources {
 #
 
 #
-# Have an option for: For hardcoded rules, compare the content of the
+# Have an option for: For hardcoded rules, compare the content of the [...]
+#
 
 list.${X:.}${Y:.} {
 	compute -x $X -y $Y >list.${X}${Y}
@@ -174,6 +175,13 @@ $NAME.bib:  bibs-B/$NAME.bib
 
 # Exclude slashes
 ${NAME:[^/]+}.bib: ...;
+
+#
+# Add more dependencies to a target using a flag.
+#
+
+-a A : B;
+# There must already be a rule for A.  The dependency B is added.
 
 #
 # Fingerprinting instead of timestamps is a feature that is implemented

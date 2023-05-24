@@ -3,7 +3,9 @@
 #
 
 # For all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
-# * check whether/how GCC outputs quotes around operators in output
+# * Plain_Dep::format():  handle things like @" correctly
+# ** S_INNER_QUOTABLE, S_INNER_NONQUOTABLE, S_OUTER.
+# * @" as target name.  Make sure @ is not quoted, but " is.  
 # * list.*+X does not need quotes in -I output
 # * list.${a}+X does not need quotes in normal output
 # * list.${a}-X does not need quotes in normal output
@@ -13,7 +15,7 @@
 # * normal output for A[B\C]D
 # * normal output for A\B[C]D
 # * A\B[C\D]E
-# * Check that the output "Successfully built A" used the "out" word color around "A".
+# * Check that the output "Successfully built A" uses the "out" word color around "A".
 # * check that the output "Creating X" for content targets uses the OUT colors
 # * >@list.$x.$x;
 # * >@list.$x$x;
@@ -45,7 +47,9 @@
 
 #
 # Test that there are no carriage returns in the source.
-# Test that there are no backticks in shell scripts. 
+# Test that there are no backticks in shell scripts.
+# Test that all tabs are at the beginning of lines.
+# Add EXEC test scripts to the tested files.
 #
 
 #

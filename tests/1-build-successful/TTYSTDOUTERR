@@ -1,4 +1,4 @@
-Building C
+Building [1mC[22m
 cp C B
 cp B A
-[32mBuild successful[0m
+[32mBuild successful[m

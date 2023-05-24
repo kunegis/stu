@@ -15,7 +15,7 @@ unsigned flag_get_index(char c)
 	}
 }
 
-string flags_format(Flags flags)
+string show(Flags flags, Style *style)
 {
 	string ret;
 	for (unsigned i= 0;  i < C_ALL;  ++i)
@@ -24,7 +24,7 @@ string flags_format(Flags flags)
 		}
 	if (! ret.empty())
 		ret= '-' + ret;
-	return ret;
+	return show(ret, style);
 }
 
 string done_format(Done done)

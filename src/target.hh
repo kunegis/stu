@@ -135,11 +135,7 @@ public:
 		return get_word(i) & F_TARGET_TRANSIENT;
 	}
 
-	string format(Style= S_ERR, Quotes *q= nullptr) const;
-// string format_out() const;
-//	string format_out_print_word() const; // replace
-//	string format_err() const;
-//	string format_src() const;
+	string show(Style *style= nullptr) const;
 
 	string get_name_nondynamic() const
 	/* Get the name of the target, knowing that the target is not dynamic */
@@ -322,12 +318,8 @@ public:
 	 * The range of PRIORITY can be easily extended to other integers if necessary.
 	 */
 
-	string format(Style= S_ERR, Quotes *q= nullptr) const;
-//	string format_err() const;
-//	string format_out() const;
-//	string format_src() const;
-//	string format_raw() const;
-	string format_glob() const; // TODO fold into format(). 
+	string show(Style *style= nullptr) const;
+//	string show_glob() const; // TODO fold into format(). 
 
 	string get_duplicate_parameter() const;
 	/* Check whether there are duplicate parameters.  Return the
@@ -455,6 +447,8 @@ public:
 	}
 };
 
+string show(const Place_Name &place_name, Style *style= nullptr); 
+
 class Place_Param_Target
 /* A target that is parametrized and contains places.  Non-dynamic. */
 {
@@ -494,24 +488,7 @@ public:
 			this->place_name == that.place_name;
 	}
 
-	string format(Style= S_ERR, Quotes *q= nullptr) const;
-
-//	string format_err() const {
-//		Target target(flags, place_name.format_raw());
-//		return target.format_err();
-	// 	Style style= S_ERR;
-	// 	return format(style);
-	// }
-
-	// string format_out() const {
-	// 	Target target(flags, place_name.format_raw());
-	// 	return target.format_out();
-	// }
-
-	// string format_src() const {
-	// 	Target target(flags, place_name.format_raw());
-	// 	return target.format_src();
-	// }
+	string show(Style *style= nullptr) const;
 
 	shared_ptr <Place_Param_Target>
 	instantiate(const map <string, string> &mapping) const {

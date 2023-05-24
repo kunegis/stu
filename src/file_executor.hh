@@ -45,9 +45,9 @@ public:
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
-	string format(Style style= S_ERR, Quotes *q= nullptr) const {
+	string show(Style *style= nullptr) const {
 		assert(targets.size());
-		return targets.front().format(style, q);
+		return targets.front().show(style);
 	}
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
 		mapping_variable.insert(result_variable_child.begin(),
@@ -77,7 +77,7 @@ public:
 
 protected:
 	virtual bool optional_finished(shared_ptr <const Dep> dep_link);
-	virtual int get_depth() const {  return 0;  }
+	virtual int get_depth() const  {  return 0;  }
 
 private:
 	friend class Executor;

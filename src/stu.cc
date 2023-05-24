@@ -163,7 +163,7 @@ int main(int argc, char **argv, char **envp)
 			default:
 				/* Invalid option -- an error message was
 				 * already printed by getopt() */
-				string text= name_format(frmt("%s -h", dollar_zero));
+				string text= show(frmt("%s -h", dollar_zero));
 				fprintf(stderr,
 					"To get a list of all options, use %s\n",
 					text.c_str());
@@ -176,7 +176,7 @@ int main(int argc, char **argv, char **envp)
 		if (option_i && option_parallel) {
 			Place(Place::Type::OPTION, 'i')
 				<< fmt("parallel mode using %s cannot be used in interactive mode",
-				       name_format("-j"));
+				       show("-j"));
 			exit(ERROR_FATAL);
 		}
 
@@ -190,7 +190,7 @@ int main(int argc, char **argv, char **envp)
 			Place place(Place::Type::ARGUMENT);
 			if (*argv[i] == '\0') {
 				place << fmt("%s: name must not be empty",
-					     name_format(argv[i]));
+					     show(argv[i]));
 				if (! option_k)
 					throw ERROR_LOGICAL;
 				error |= ERROR_LOGICAL;
@@ -223,14 +223,14 @@ int main(int argc, char **argv, char **envp)
 					if (deps.empty() && !had_option_target
 					    && !option_P && !option_I) {
 						print_error(fmt("Expected a target or the default file %s",
-								name_format(FILENAME_INPUT_DEFAULT)));
+								show(FILENAME_INPUT_DEFAULT)));
 
 						explain_no_target();
 						throw ERROR_LOGICAL;
 					}
 				} else {
 					/* Other errors by open() are fatal */
-					print_error_system(FILENAME_INPUT_DEFAULT);
+					print_errno(show(FILENAME_INPUT_DEFAULT));
 					exit(ERROR_FATAL);
 				}
 			}
@@ -260,12 +260,11 @@ int main(int argc, char **argv, char **envp)
 			if (target_first->place_name.is_parametrized()) {
 				target_first->place <<
 					fmt("the first target %s must not be parametrized if no target is given",
-					    target_first->format());
+					    target_first->show());
 				exit(ERROR_FATAL);
 			}
 			deps.push_back(make_shared <Plain_Dep> (*target_first));
 		}
-
 		main_loop(deps);
 	} catch (int e) {
 		assert(e >= 1 && e <= 3);
@@ -274,7 +273,6 @@ int main(int argc, char **argv, char **envp)
 
 	if (option_z)
 		Job::print_statistics();
-
 	if (fclose(stdout)) {
 		perror("fclose(stdout)");
 		exit(ERROR_FATAL);
@@ -282,6 +280,5 @@ int main(int argc, char **argv, char **envp)
 	/* No need to flush stderr, because it is line buffered, and if
 	 * we used it, it means there was an error anyway, so we're not
 	 * losing any information  */
-
 	exit(error);
 }

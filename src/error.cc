@@ -17,11 +17,11 @@ void print_error(string message)
 		message.c_str());
 }
 
-void print_error_system(string message)
+void print_errno(string message)
 {
 	assert(message.size() > 0 && message[0] != '') ;
-	string t= name_format(message);
-	fprintf(stderr, "%s: %s\n", t.c_str(), strerror(errno));
+//	string t= show(message);
+	fprintf(stderr, "%s: %s\n", message.c_str(), strerror(errno));
 }
 
 void print_error_reminder(string message)
@@ -34,7 +34,7 @@ void print_error_reminder(string message)
 		message.c_str());
 }
 
-string system_format(string text)
+string format_errno(string text)
 {
 	return fmt("%s: %s", text, strerror(errno));
 }

@@ -28,13 +28,13 @@ public:
 
 	~Concat_Executor() = default;
 
-	virtual int get_depth() const {  return -1;  }
-	virtual bool want_delete() const {  return true;  }
+	virtual int get_depth() const  {  return -1;  }
+	virtual bool want_delete() const  {  return true;  }
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
-	virtual string format(Style style, Quotes *q) const {
-		return dep->format(style, q);
+	virtual string show(Style *style= nullptr) const {
+		return dep->show(style);
 	}
 
 	virtual void notify_variable(const map <string, string> &result_variable_child) {

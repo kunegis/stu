@@ -28,8 +28,8 @@ while read -r line ; do
 		exit 1
 	}
 
-	grep -qF "'-o'" list.err || {
-		echo >&2 "*** error (b) String \"'-o'\" not found in error output"
+	grep -qF '"-o"' list.err || {
+		echo >&2 "*** error (b) String \"\\\"-o\\\"\" not found in error output"
 		echo >&2 "Content of error output:"
 		echo >&2 ________
 		cat  >&2 list.err

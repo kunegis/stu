@@ -162,10 +162,7 @@ public:
 	virtual const Place &get_place() const= 0;
 	/* Where the dependency as a whole is declared */
 
-	virtual string format(Style= S_ERR, Quotes *q= nullptr) const= 0;
-//	virtual string format_err() const= 0;
-//	virtual string format_out() const= 0;
-//	virtual string format_src() const= 0;
+	virtual string show(Style *style= nullptr) const= 0;
 
 //	string format(Style style) const {
 //		Quotes q(style);
@@ -299,10 +296,7 @@ public:
 		return place_param_target.place_name.get_n() == 0;
 	}
 
-	virtual string format(Style= S_ERR, Quotes *q= nullptr) const;
-//	virtual string format_err() const;
-//	virtual string format_out() const;
-//	virtual string format_src() const;
+	virtual string show(Style *style= nullptr) const;
 	virtual bool is_normalized() const {  return true;  }
 
 	virtual Target get_target() const;
@@ -357,26 +351,15 @@ public:
 		return dep->get_place();
 	}
 
-	virtual string format(Style= S_ERR, Quotes *q= nullptr) const;
-//	virtual string format_err() const;
-//	virtual string format_out() const;
-//	virtual string format_src() const;
-
-	virtual bool is_normalized() const {
-		return dep->is_normalized();
-	}
-
+	virtual string show(Style *style= nullptr) const;
+	virtual bool is_normalized() const  {  return dep->is_normalized();  }
 	virtual Target get_target() const;
 
-	unsigned get_depth() const
-	/* The depth of the dependency, i.e., how many dynamic
-	 * dependencies are stacked in a row.  */
-	{
-		if (to <Dynamic_Dep> (dep)) {
+	unsigned get_depth() const {
+		if (to <Dynamic_Dep> (dep)) 
 			return 1 + to <Dynamic_Dep> (dep)->get_depth();
-		} else {
+		else
 			return 1;
-		}
 	}
 };
 
@@ -415,7 +398,7 @@ public:
 
 	virtual bool is_unparametrized() const;
 	virtual const Place &get_place() const;
-	virtual string format(Style= S_ERR, Quotes *q= nullptr) const;
+	virtual string show(Style *style= nullptr) const;
 //	virtual string format_err() const;
 //	virtual string format_out() const;
 //	virtual string format_src() const;
@@ -504,7 +487,7 @@ public:
 	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
 	virtual bool is_unparametrized() const;
 	virtual const Place &get_place() const  {  return place;  }
-	virtual string format(Style= S_ERR, Quotes *q= nullptr) const;
+	virtual string show(Style *style= nullptr) const;
 //	virtual string format_err() const;
 //	virtual string format_out() const;
 //	virtual string format_src() const;
@@ -524,10 +507,7 @@ public:
 	}
 	virtual bool is_unparametrized() const  {  return false;  }
 	virtual const Place &get_place() const  {  return Place::place_empty;  }
-	virtual string format(Style= S_ERR, Quotes * = nullptr) const  {  return "ROOT";  }
-//	virtual string format_err() const  {  assert(false);  return "";  }
-//	virtual string format_out() const  {  return "ROOT";  }
-//	virtual string format_src() const  {  return "ROOT";  }
+	virtual string show(Style *style= nullptr) const  {  return ::show("ROOT", style);  }
 	virtual Target get_target() const  {  return Target();  }
 	virtual bool is_normalized() const  {  return true;  }
 };

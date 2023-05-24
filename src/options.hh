@@ -44,7 +44,7 @@ const char HELP[]=
 	"  -k               Keep on running after errors\n"
 	"  -K               Don't delete target files on error or interruption\n"
 	"  -m ORDER         Order to run the targets:\n"
-	"     dfs           (default) Depth-first order, like in Make\n"
+	"     dfs           (default) Depth-first order, as in Make\n"
 	"     random        Random order\n"
 	"  -M STRING        Pseudorandom run order, seeded by given string\n"
 	"  -n FILENAME      Read \\n-separated file targets from the given file\n"

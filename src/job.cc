@@ -52,7 +52,7 @@ pid_t Job::start(string command,
 	pid= fork();
 
 	if (pid < 0) {
-		print_error_system("fork");
+		print_errno("fork");
 		assert(pid == -1);
 		return -1;
 	}
@@ -255,7 +255,7 @@ pid_t Job::start(string command,
 	if (option_i && tty >= 0) {
 		assert(pid_foreground < 0);
 		if (tcsetpgrp(tty, pid) < 0)
-			print_error_system("tcsetpgrp");
+			print_errno("tcsetpgrp");
 		pid_foreground= pid;
 	}
 
@@ -277,7 +277,7 @@ pid_t Job::start_copy(string target,
 	pid= fork();
 
 	if (pid < 0) {
-		print_error_system("fork");
+		print_errno("fork");
 		assert(pid == -1);
 		return -1;
 	}
@@ -358,7 +358,7 @@ pid_t Job::wait(int *status)
 			 * more: allow the user to enter commands,
 			 * having an own command language, etc.  */
 			if (tcsetpgrp(tty, getpid()) < 0)
-				print_error_system("tcsetpgrp");
+				print_errno("tcsetpgrp");
 			fprintf(stderr,
 				PACKAGE ": job stopped.  "
 				"Press ENTER to continue, Ctrl-C to terminate Stu, Ctrl-Z to suspend Stu\n");
@@ -367,10 +367,10 @@ pid_t Job::wait(int *status)
 			ssize_t r= getline(&lineptr, &n, stdin);
 			/* On error, printf error message and continue */
 			if (r < 0)
-				print_error_system("getline");
+				print_errno("getline");
 			fprintf(stderr, PACKAGE ": continuing\n");
 			if (tcsetpgrp(tty, pid) < 0)
-				print_error_system("tcsetpgrp");
+				print_errno("tcsetpgrp");
 			/* Continue job */
 			::kill(-pid, SIGCONT);
 			goto begin;
@@ -467,7 +467,7 @@ bool Job::waited(int status, pid_t pid_check)
 		assert(tty >= 0);
 		assert(option_i);
 		if (tcsetpgrp(tty, getpid()) < 0)
-			print_error_system("tcsetpgrp");
+			print_errno("tcsetpgrp");
 	}
 	pid= -1;
 	return success;
@@ -481,7 +481,7 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 
 	int r= getrusage(RUSAGE_CHILDREN, &usage);
 	if (r < 0) {
-		print_error_system("getrusage");
+		print_errno("getrusage");
 		throw ERROR_BUILD;
 	}
 
@@ -701,10 +701,10 @@ void Job::init_signals()
 	 * Job control signals
 	 */
 	if (::signal(SIGTTIN, SIG_IGN) == SIG_ERR)
-		print_error_system("signal");
+		print_errno("signal");
 
 	if (::signal(SIGTTOU, SIG_IGN) == SIG_ERR)
-		print_error_system("signal");
+		print_errno("signal");
 }
 
 void Job::kill(pid_t pid)

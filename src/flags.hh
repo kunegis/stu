@@ -22,6 +22,8 @@
  * that part has been done, i.e., when the flag initially was not set.
  */
 
+#include "format.hh"
+
 typedef unsigned Flags;
 /* Declared as integer so arithmetic can be performed on it */
 
@@ -129,7 +131,7 @@ unsigned flag_get_index(char c);
 /* Get the flag index corresponding to a character.  Not all cases are
  * implemented.  */
 
-string flags_format(Flags flags);
+string show(Flags flags, Style *style= nullptr);
 /* Textual representation of a flags value.  To be shown before the argument.
  * Empty when flags are empty.  This is used only for debug mode output.  */
 

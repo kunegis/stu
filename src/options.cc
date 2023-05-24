@@ -43,12 +43,12 @@ void set_option_j(const char *value)
 	Place place(Place::Type::OPTION, 'j');
 	if (errno != 0 || *endptr != '\0') {
 		place << fmt("expected the number of jobs, not %s",
-			     name_format(value));
+			     show(value));
 		exit(ERROR_FATAL);
 	}
 	if (options_jobs < 1) {
 		place << fmt("expected a positive number of jobs, not %s",
-			     name_format(value));
+			     show(value));
 		exit(ERROR_FATAL);
 	}
 	option_parallel= options_jobs > 1;
@@ -62,18 +62,19 @@ void set_option_m(const char *value)
 		 * instead of second precision  */
 		struct timeval tv;
 		if (gettimeofday(&tv, nullptr) != 0) {
-			print_error_system("gettimeofday");
+			print_errno("gettimeofday");
 			exit(ERROR_FATAL);
 		}
 		buffer_generator.seed(tv.tv_sec + tv.tv_usec);
 	} else if (!strcmp(value, "dfs")) {
 		/* Default */ ;
 	} else {
-		print_error(fmt("Invalid argument %s for option %s-m%s; valid values are %s and %s",
-				name_format(value),
-				Color::stderr_highlight_on, Color::stderr_highlight_off,
-				name_format("random"),
-				name_format("dfs")));
+		print_error(fmt("Invalid argument %s for option %s; valid values are %s and %s",
+				show(value),
+				show("-m"),
+//				Color::stderr_highlight_on, Color::stderr_highlight_off,
+				show("random"),
+				show("dfs")));
 		exit(ERROR_FATAL);
 	}
 }
@@ -106,7 +107,7 @@ void set_env_options()
 			if (! option_setting(c)) {
 				Place place(Place::Type::ENV_OPTIONS);
 				place << fmt("invalid option %s",
-					     name_format(frmt("-%c", c)));
+					     show(frmt("-%c", c)));
 				exit(ERROR_FATAL);
 			}
 		}

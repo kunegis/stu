@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-bool Color::err_quotes, Color::out_quotes;
+bool Color::out_quotes, Color::err_quotes;
 
 const char *Color::stdout_success_on;
 const char *Color::stdout_success_off;   
@@ -38,11 +38,6 @@ void Color::set()
 
 	set(is_tty_out, is_tty_err);
 }
-
-//void Color::set(bool enable_color)
-//{
-//	set(enable_color, enable_color);
-//}
 
 void Color::set(bool enable_color_out, bool enable_color_err)
 /* Note:  GCC additionally inserts "\33[K" sequences after each color code, to

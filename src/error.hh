@@ -144,7 +144,10 @@ constexpr int ERROR_FORK_CHILD= 127;
 void print_error(string message);
 /* Print an error without a place */
 
-void print_error_system(string message);
+void
+print_errno
+//print_error_system
+(string message);
 /* Like perror(), but use color.  MESSAGE must not contain color codes. */
 
 void print_error_reminder(string message);
@@ -153,10 +156,14 @@ void print_error_reminder(string message);
  * the user of the error.  Since the error as already been output, use
  * the color of warnings.  */
 
-string system_format(string text);
-/* System error message.  Includes the given message, and the
- * ERRNO-based text.  Cf. perror().  Color is not added.  The output of
- * this function is used as input to one of the print_*() functions.  */
+string
+format_errno
+//show_errno
+//system_format
+(string text);
+/* Includes the given message, and the ERRNO-based text.  Cf. perror().  Color            
+ * is not added.  The output of this function is used as input to one of the
+ * print_*() functions.  */ 
 
 void print_out(string text);
 /* Print a message to standard output in "print" colors.  This is used

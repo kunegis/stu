@@ -44,6 +44,12 @@
 # * A { exit 1 ; } # succeeds because the command is not executed
 # * Copy rule:  target is output
 # * Content rule:  target is output
+# * The filename " " (one space) is shown in quotes in error messages
+# * The filename consisting of one delete character is shown in quotes correctly in error messages
+# * The filename " aaa" is shown correctly in error messages
+# * The filename "aaa " shown correctly in error messages
+# * The filename "aaa BBB" is shown correctly in error messages
+# * The filename " a a a " is shown correctly in error messages
 
 #
 # Test that there are no carriage returns in the source.

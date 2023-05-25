@@ -36,12 +36,6 @@ Style::Style(const Style *style, const Style *style_inner, int)
 		bits |= S_DONT_SHOW_QUOTES;
 	}
 
-	// TODO rm the whole if
-	if (!(((bits & S_STDOUT)!=0) + ((bits & S_STDERR)!=0) == 1)) {
-		printf("x\n"); 
-		_Exit(99); 
-	}
-	
 	assert(((bits & S_STDOUT)!=0) + ((bits & S_STDERR)!=0) == 1);
 }
 
@@ -69,17 +63,24 @@ string show(string name, Style *style)
 		style->set();
 	}
 
-	for (char c:  name) 
-		if (! isalnum(c) &&
-		    ! strchr("+-./^`_~", c) &&
-		    ! (c & 0x80)) {
+	for (size_t i= 0;  !style->is() && i < name.size();  ++i) {
+//	for (char c:  name)
+		char c= name[i];
+		if (c >= 0 && c <= ' ' || c == 0x7F) {
+//		if (! isalnum(c) &&
+//		    ! strchr("+-./^`_~[]", c) &&
+//		    ! (c & 0x80)) {
 			style->set();
-			break;
 		}
+	}
 
 	string ret(4 * name.size(), '\0');
 	char *const p_begin= &ret[0], *p= p_begin;
 	bool escape= false;
+	if (*style & S_DONT_FORMAT)
+		ret= name;
+	else {
+		// TODO refactor to function 
 	for (size_t i= 0;  i < name.size();  ++i) {
 		char c= name[i];
 		unsigned char cu= (unsigned char) c;
@@ -117,6 +118,7 @@ string show(string name, Style *style)
 			escape= true;
 	}
         ret.resize(p - p_begin);
+	}
 
 	if (*style & S_DONT_SHOW_QUOTES)
 		return ret;

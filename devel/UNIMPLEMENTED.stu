@@ -151,7 +151,12 @@ dep.sources {
 #
 
 #
-# Have an option for: For hardcoded rules, compare the content of the [...]
+# Have an option for: For hardcoded rules, compare the content of the file with
+# the wanted content and don't update the file if identical. 
+#
+
+#
+# Regular expressions in target names. 
 #
 
 list.${X:.}${Y:.} {
@@ -198,6 +203,16 @@ ${NAME:[^/]+}.bib: ...;
 # then again after the command succeeds, and when the result is
 # identical, then reset the timestamp of the file back to its old
 # value.  (This could be a script for stu-utils/.)
+#
+
+#
+# Have a logfile.  Similar to debug mode, but into a file. 
+#
+
+#
+# Allow dir/@transient.  Will allow dir/(a b @c @d).
+#
+# a/@b is equivalent to @a/b. 
 #
 
 #

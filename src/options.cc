@@ -71,8 +71,7 @@ void set_option_m(const char *value)
 	} else {
 		print_error(fmt("Invalid argument %s for option %s; valid values are %s and %s",
 				show(value),
-				show("-m"),
-//				Color::stderr_highlight_on, Color::stderr_highlight_off,
+				show_prefix("-", "m"),
 				show("random"),
 				show("dfs")));
 		exit(ERROR_FATAL);
@@ -107,7 +106,7 @@ void set_env_options()
 			if (! option_setting(c)) {
 				Place place(Place::Type::ENV_OPTIONS);
 				place << fmt("invalid option %s",
-					     show(frmt("-%c", c)));
+					     show_prefix("-", frmt("%c", c)));
 				exit(ERROR_FATAL);
 			}
 		}

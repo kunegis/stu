@@ -292,8 +292,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 				} else {
 					flag->get_place()
 						<< fmt("flag %s must not be used",
-						       show
-						       (frmt("-%c", flag->flag)));
+						       show_prefix("-", frmt("%c", flag->flag)));
 					place_equal <<
 						fmt("in copy rule using %s for target %s",
 						    show('='),
@@ -628,7 +627,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 					    (*iter)->show_start());
 			}
 			place_flag << fmt("after flag %s",
-					  show(frmt("-%c", flag_token.flag)));
+					  show_prefix("-", frmt("%c", flag_token.flag)));
 			throw ERROR_LOGICAL;
 		}
 
@@ -642,7 +641,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 				    show('<'));
 			place_flag <<
 				fmt("in conjunction with optional dependency flag %s",
-				    show("-o"));
+				    show_prefix("-", "o"));
 			throw ERROR_LOGICAL;
 		}
 
@@ -721,7 +720,7 @@ shared_ptr <const Dep> Parser
 			if (! option_g) {
 				(*iter)->get_place() <<
 					fmt("optional dependency using %s must not appear",
-					    show("-o"));
+					    show_prefix("-", "o"));
 				place_dollar << "within dynamic variable declaration";
 				throw ERROR_LOGICAL;
 			}
@@ -1076,7 +1075,7 @@ void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
 				    "declared with flag %s",
 				    c == '\0' ? "zero" : "newline",
 				    show(filename),
-				    show(frmt("-%c", c_printed)));
+				    show_prefix("-", frmt("%c", c_printed)));
 			throw ERROR_LOGICAL;
 		}
 
@@ -1093,7 +1092,7 @@ void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
 				    "declared with flag %s",
 				    c == '\0' ? "zero" : "newline",
 				    show(filename),
-				    show(frmt("-%c", c_printed)));
+				    show_prefix("-", frmt("%c", c_printed)));
 			throw ERROR_LOGICAL;
 		}
 		if (c == '\0') {
@@ -1170,7 +1169,7 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 				if (! Tokenizer::is_flag_char(*p)) {
 					if (isalnum(*p)) {
 						place << fmt("invalid flag %s",
-							     show(frmt("-%c", *p)));
+							     show_prefix("-", frmt("%c", *p)));
 					} else {
 						place << fmt("expected a flag character after dash %s, not %s",
 							     show('-'),

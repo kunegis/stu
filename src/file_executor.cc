@@ -366,7 +366,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 					: "dependency %s must not be declared as persistent",
 					dep->show());
 		dep->places[ind] <<
-			fmt("using flag %s", ::show(frmt("-%c", flags_chars[ind])));
+			fmt("using flag %s", show_prefix("-", frmt("%c", flags_chars[ind])));
 		if (rule->command)
 			place_target <<
 				fmt("because rule for transient target %s has a command",

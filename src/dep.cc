@@ -97,52 +97,23 @@ Target Plain_Dep::get_target() const
 string Plain_Dep::show(Style *style) const
 {
 	string f;
-//	bool has_flags= false;
 	if (style && *style & S_SHOW_FLAGS) {
-		Style style_inner(style, false);
+		Style style_inner= Style::inner(style, false);
 		f= ::show(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT), &style_inner);
 		if (! f.empty()) {
 			f += ' ';
-//			has_flags= true;
 		}
 	}
-//	if (flags & F_VARIABLE)
-//		has_decoration= true;
-	Style style_inner(style, true);
-//	style_inner |= quotable ? S_INNER_QUOTABLE : S_INNER_NONQUOTABLE; 
+	Style style_inner= Style::inner(style, true);
 	string t= place_param_target.show(&style_inner);
 	string ret= fmt("%s%s%s%s",
 			f,
 			flags & F_VARIABLE ? "$[" : "",
 			t,
 			flags & F_VARIABLE ? "]" : "");
-	Style style_outer(style, &style_inner, 0);
+	Style style_outer= Style::outer(style, &style_inner);
 	return ::show(ret, &style_outer); 
 }
-
-//string Plain_Dep::format_out() const
-//{
-//	Style style= S_NO_FLAGS | S_OUT | S_WANT_ESCAPE;
-//	string ret= format(style);
-//	if (style & S_QUOTES)
-//		ret= fmt("\'%s\'", ret);
-//	return ret;
-//}
-
-//string Plain_Dep::format_src() const
-//{
-//	Style style= S_SRC;
-//	return format(style);
-//}
-
-//string Plain_Dep::format_err() const
-//{
-//	Style style= S_NO_FLAGS | S_ERR | S_COLOR_WORD | S_WANT_ESCAPE | (Color::quotes * S_QUOTES); 
-//	string ret= format(style);
-//	if (style & S_QUOTES)
-//		ret= fmt("\'%s\'", ret);
-//	return ret;
-//}
 
 Target Dynamic_Dep::get_target() const
 {
@@ -169,18 +140,18 @@ string Dynamic_Dep::show(Style *style) const
 {
 	string ret;
 	if (style && *style & S_SHOW_FLAGS) {
-		Style style_flags(style, false);
+		Style style_flags= Style::inner(style, false);
 		string text_flags= ::show(flags & ~F_TARGET_DYNAMIC, &style_flags);
 		if (! text_flags.empty())
 			text_flags += ' ';
 		ret += text_flags;
 	}
-	Style style_inner(style, true);
+	Style style_inner= Style::inner(style, true);
 	string text= dep->show(&style_inner);
 	ret += fmt("[%s]", text);
 //	if (style & S_COLOR_WORD) 
 //		ret= fmt("%s%s%s", Color::word, ret, Color::end);
-	Style style_outer(style, &style_inner, 0);
+	Style style_outer= Style::outer(style, &style_inner);
 	return ::show(ret, &style_outer);
 }
 
@@ -265,12 +236,12 @@ string Compound_Dep::show(Style *style) const
 	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
 			ret += " ";
-		Style style_inner(style, true);
+		Style style_inner= Style::inner(style, true);
 		ret += d->show(&style_inner);
 	}
 	if (deps.size() != 1)
 		ret= fmt("(%s)", ret);
-	Style style_outer(style, nullptr, 0);
+	Style style_outer= Style::outer(style, nullptr);
 	return ::show(ret, &style_outer);
 }
 
@@ -341,7 +312,7 @@ string Concat_Dep::show(Style *style) const
 //	assert(bitset <sizeof(Style)> (style & S_CHANNEL).count() <= 1);
 	string ret;
 	if (style && *style & S_SHOW_FLAGS) {
-		Style style_inner(style, false); 
+		Style style_inner= Style::inner(style, false); 
 		string f= ::show(flags, &style_inner);
 		if (! f.empty()) {
 			f += ' ';
@@ -349,7 +320,7 @@ string Concat_Dep::show(Style *style) const
 		ret += f;
 	}
 	for (const shared_ptr <const Dep> &d:  deps) {
-		Style style_inner(style, true); 
+		Style style_inner= Style::inner(style, true); 
 		ret += d->show(&style_inner);
 	}
 	return ret;
@@ -539,7 +510,7 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		b->get_place() << fmt("%s cannot be declared as %s",
 				      b->show(), flags_phrases[i_flag]);
 		b->places[i_flag] << fmt("using %s",
-					 ::show(frmt("-%c", flags_chars[i_flag])));
+					 show_prefix("-", frmt("%c", flags_chars[i_flag])));
 		a->get_place() << fmt("in concatenation to %s", a->show());
 		error |= ERROR_LOGICAL;
 		return nullptr;

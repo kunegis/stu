@@ -20,14 +20,14 @@ string Target::show(Style *style) const
 		string flags_text= ::show(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE), style);
 		if (! flags_text.empty()) {
 			ret += flags_text;
-//			style_outer |= S_DONT_SHOW_QUOTES;
 		}
 	}
+	Show_Bits bits_inner= 0;
 	if (get_word(i) & F_TARGET_TRANSIENT) {
 		ret += '@';
-//		style_outer |= S_DONT_SHOW_QUOTES;
+		bits_inner |= S_HAS_MARKER;
 	}
-	Style style_inner(style, true); 
+	Style style_inner= Style::inner(style, true, bits_inner); 
 	string s= ::show(text.substr(sizeof(word_t) * (i + 1)), &style_inner);
 	ret += s;
 	i= 0;
@@ -35,7 +35,7 @@ string Target::show(Style *style) const
 		++i; // TODO fold into while
 		ret += ']';
 	}
-	Style style_outer(style, &style_inner, 0);
+	Style style_outer= Style::outer(style, &style_inner);
 	return ::show(ret, &style_outer);
 }
 
@@ -330,7 +330,7 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 string Name::show(Style *style) const
 {
 	assert(texts.size() == 1 + parameters.size());
-	Style style_inner(style, false); 
+	Style style_inner= Style::inner(style, false); 
  restart:
 	bool quotes_initial= style_inner.is(); 
 	string ret= ::show(texts[0], &style_inner);
@@ -345,63 +345,9 @@ string Name::show(Style *style) const
 			goto restart;
 		}
 	}
-	Style style_outer(style, &style_inner, 0); 
+	Style style_outer= Style::outer(style, &style_inner); 
 	return ::show(ret, &style_outer);
 }
-
-// string Name::format_raw() const
-// {
-// 	assert(texts.size() == 1 + parameters.size());
-// 	string ret= texts[0];
-// 	for (size_t i= 0;  i < get_n();  ++i) {
-// 		ret += "${";
-// 		ret += parameters[i];
-// 		ret += '}';
-// 		ret += texts[1+i];
-// 	}
-// 	return ret;
-// }
-
-// string Name::format_err() const
-// {
-// 	//	bool quotes= Color::quotes;
-// 	Style style= S_WANT_ESCAPE;
-// 	string s= format(style);
-// 	return fmt("%s%s%s%s%s",
-// 		   Color::word,
-// 		   style & S_QUOTES ? "'" : "",
-// 		   s,
-// 		   style & S_QUOTES ? "'" : "",
-// 		   Color::end);
-// }
-
-// string Param_Target::format_err() const
-// {
-// 	Style style= S_WANT_ESCAPE;
-// 	if (flags & F_TARGET_TRANSIENT)
-// 		style |= S_MARKERS;
-// 	style |= S_QUOTES * (flags == 0) * Color::quotes;
-// //	bool quotes2= (flags == 0 ? Color::quotes : 0);
-// 	string text= name.format(style);
-// 	return fmt("%s%s%s%s%s%s",
-// 		   Color::word,
-// 		   flags ? "@" : "",
-// 		   style & S_QUOTES ? "'" : "",
-// 		   text,
-// 		   style & S_QUOTES ? "'" : "",
-// 		   Color::end);
-// }
-
-// string Name::format_out() const
-// {
-// //	bool quotes= true;
-// 	Style style= S_WANT_ESCAPE;
-// 	string s= format(style);
-// 	return fmt("%s%s%s",
-// 		   style & S_QUOTES ? "'" : "",
-// 		   s,
-// 		   style & S_QUOTES ? "'" : "");
-// }
 
 // string Name::format_glob() const
 // {
@@ -476,12 +422,16 @@ string show(const Place_Name &place_name, Style *style)
 }
 
 string Place_Param_Target::show(Style *style) const {
-	Style style_inner(style, true); 
-	string s= place_name.show(&style_inner);
-	if (flags & F_TARGET_TRANSIENT)
-		s= '@' + s;
-	Style style_outer(style, &style_inner, 0); 
-	return ::show(s, &style_outer);
+	string ret;
+	Show_Bits bits_inner= 0;
+	if (flags & F_TARGET_TRANSIENT) {
+		ret += '@';
+		bits_inner |= S_HAS_MARKER;
+	}
+	Style style_inner= Style::inner(style, true, bits_inner); 
+	ret += place_name.show(&style_inner);
+	Style style_outer= Style::outer(style, &style_inner); 
+	return ::show(ret, &style_outer);
 }
 
 void Place_Param_Target::canonicalize()

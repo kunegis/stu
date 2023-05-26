@@ -176,7 +176,7 @@ int main(int argc, char **argv, char **envp)
 		if (option_i && option_parallel) {
 			Place(Place::Type::OPTION, 'i')
 				<< fmt("parallel mode using %s cannot be used in interactive mode",
-				       show("-j"));
+				       show_prefix("-", "j"));
 			exit(ERROR_FATAL);
 		}
 

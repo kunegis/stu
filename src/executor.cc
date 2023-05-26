@@ -869,10 +869,10 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 			dep_child->get_place_flag(I_OPTIONAL);
 		place_persistent <<
 			fmt("declaration of persistent dependency using %s",
-			    ::show("-p"));
+			    show_prefix("-", "p"));
 		place_optional <<
 			fmt("clashes with declaration of optional dependency using %s",
-			    ::show("-o"));
+			    show_prefix("-", "o"));
 		dep_child->get_place() <<
 			fmt("in declaration of %s, needed by %s",
 			    dep_child->show(),
@@ -896,8 +896,7 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 			    show_dynamic_variable
 			    (plain_dep_child->place_param_target
 			     .place_name.unparametrized()));
-		place_flag << fmt("using %s",
-				  ::show("-o"));
+		place_flag << fmt("using %s", show_prefix("-", "o"));
 		*this << "";
 		raise(ERROR_LOGICAL);
 		return 0;

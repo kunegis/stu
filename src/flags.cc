@@ -22,9 +22,12 @@ string show(Flags flags, Style *style)
 		if (flags & (1 << i)) {
 			ret += flags_chars[i];
 		}
-	if (! ret.empty())
-		ret= '-' + ret;
-	return show(ret, style);
+	if (ret.empty())
+		return ret;
+	Style style_inner= Style::inner(style, false, S_HAS_MARKER);
+	ret= '-' + show(ret, &style_inner);
+	Style style_outer= Style::outer(style, &style_inner);
+	return show(ret, &style_outer);
 }
 
 string done_format(Done done)

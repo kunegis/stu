@@ -742,7 +742,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					if (isalnum(op)) {
 						current_place() <<
 							fmt("invalid flag %s",
-							    show(frmt("-%c", op)));
+							    show_prefix("-", frmt("%c", op)));
 					} else {
 						current_place() <<
 							fmt("expected a flag character, not %s",
@@ -766,7 +766,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 						    show(*p));
 					token->get_place() <<
 						fmt("after flag %s",
-						    show(frmt("-%c", op)));
+						    show_prefix("-", frmt("%c", op)));
 					throw ERROR_LOGICAL;
 				}
 			} else {
@@ -776,17 +776,17 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 						current_place() <<
 							fmt("character %s is invalid for persistent dependencies; use %s instead",
 							    show('!'),
-							    show("-p"));
+							    show_prefix("-", "p"));
 					} else if (*p == '?') {
 						current_place() <<
 							fmt("character %s is invalid for optional dependencies; use %s instead",
 							    show('?'),
-							    show("-o"));
+							    show_prefix("-", "o"));
 					} else if (*p == '&') {
 						current_place() <<
 							fmt("character %s is invalid for trivial dependencies; use %s instead",
 							    show('&'),
-							    show("-t"));
+							    show_prefix("-", "t"));
 					} else {
 						current_place() << fmt("invalid character %s",
 								       show(*p));

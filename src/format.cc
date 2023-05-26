@@ -4,72 +4,67 @@ Style::Style(Show_Bits bits_)
 	:  bits(bits_)
 {
 	init(); 
-	assert(((bits & S_STDOUT)!=0) + ((bits & S_STDERR)!=0) == 1);
 }
 
-Style::Style(Style *style, bool may_show_quotes)
+void Style::init()
 {
-	bits= S_DONT_SHOW_COLOR;
-	if (style) {
-		bits |= style->bits;
+	if (bits & S_STDOUT) {
+		if (Color::out_quotes && !(bits & S_HAS_MARKER))
+			bits |= S_NEED_QUOTES;
+	} else if (bits & S_STDERR) {
+		if (Color::err_quotes && !(bits & S_HAS_MARKER))
+			bits |= S_NEED_QUOTES;
+	} else {
+		assert(false);
+	}
+	check(); 
+}
+
+Style Style::inner(const Style *parent,
+		   bool may_show_quotes,
+		   Show_Bits other_bits)
+{
+	Show_Bits bits= S_DONT_SHOW_COLOR | other_bits;
+	if (parent) {
+		bits |= parent->bits;
 	} else {
 		bits |= S_DEFAULT;
-		init(); 
 	}
 	if (! may_show_quotes)
 		bits |= S_DONT_SHOW_QUOTES;
-	assert(((bits & S_STDOUT)!=0) + ((bits & S_STDERR)!=0) == 1);
+	return Style(bits);
 }
 
-Style::Style(const Style *style, const Style *style_inner, int)
+Style Style::outer(const Style *parent, const Style *style_inner)
 {
-	bits= S_DONT_FORMAT;
-	if (style) {
-		bits |= style->bits;
+	Show_Bits bits= S_DONT_FORMAT;
+	if (parent) {
+		bits |= parent->bits;
 	} else {
 		bits |= S_DEFAULT;
-		init(); 
 	}
 	if (style_inner && style_inner->bits & S_DONT_SHOW_QUOTES) {
 		bits |= *style_inner & S_NEED_QUOTES;
 	} else {
 		bits |= S_DONT_SHOW_QUOTES;
 	}
-
-	assert(((bits & S_STDOUT)!=0) + ((bits & S_STDERR)!=0) == 1);
-}
-
-void Style::init()
-{
-	if (bits & S_STDOUT) {
-		if (Color::out_quotes)
-			bits |= S_NEED_QUOTES;
-	} else if (bits & S_STDERR) {
-		if (Color::err_quotes)
-			bits |= S_NEED_QUOTES;
-	} else
-		assert(false);
+	return Style(bits); 
 }
 
 string show(string name, Style *style)
 {
-	assert(!style || ((*style & S_STDOUT)!=0) + ((*style & S_STDERR)!=0) == 1); 
-
 	Style a_style= S_DEFAULT;
 	if (!style)
-		style= & a_style; 
+		style= & a_style;
+	style->check(); 
 	
 	if (name.empty() && ! (*style & S_NO_EMPTY)) {
 		style->set();
 	}
 
 	for (size_t i= 0;  !style->is() && i < name.size();  ++i) {
-//	for (char c:  name)
 		char c= name[i];
 		if (c >= 0 && c <= ' ' || c == 0x7F) {
-//		if (! isalnum(c) &&
-//		    ! strchr("+-./^`_~[]", c) &&
-//		    ! (c & 0x80)) {
 			style->set();
 		}
 	}
@@ -171,10 +166,10 @@ string show(string name, Style *style)
 
 string show_dynamic_variable(string name, Style *style)
 {
-	Style style_inner(style, true);
+	Style style_inner= Style::inner(style, true);
 	string s= show(name, &style_inner);
 	string ret= fmt("$[%s]", s);
-	Style style_outer(style, &style_inner, 0); 
+	Style style_outer= Style::outer(style, &style_inner); 
 	return show(ret, &style_outer); 
 }
 

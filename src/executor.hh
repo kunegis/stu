@@ -250,7 +250,7 @@ protected:
 			return param_rule->place;
 	}
 
-	virtual ~Executor() = default;
+	virtual ~Executor()= default;
 
 	virtual int get_depth() const= 0;
 	/* -1 when undefined as in concatenated executors and the root

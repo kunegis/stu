@@ -26,7 +26,7 @@ public:
 	/* DEP_ is normalized.  See File_Executor::File_Executor() for
 	 * the semantics for ERROR_ADDITIONAL.  */
 
-	~Concat_Executor() = default;
+	~Concat_Executor()= default;
 
 	virtual int get_depth() const  {  return -1;  }
 	virtual bool want_delete() const  {  return true;  }

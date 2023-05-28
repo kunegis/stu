@@ -96,15 +96,20 @@ Target Plain_Dep::get_target() const
 
 string Plain_Dep::show(Style *style) const
 {
+	TRACE_FUNCTION(SHOW, Plain_Dep::show);
+//	string style_text= style_format(style); 
+//	fprintf(stderr, "%s %s\n", x.pad(), style_text.c_str());
+	TRACE("%s", style_format(style));
+	
 	string f;
 	if (style && *style & S_SHOW_FLAGS) {
-		Style style_inner= Style::inner(style, false);
+		Style style_inner= Style::inner(style);
 		f= ::show(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT), &style_inner);
 		if (! f.empty()) {
 			f += ' ';
 		}
 	}
-	Style style_inner= Style::inner(style, true);
+	Style style_inner= Style::inner(style);
 	string t= place_param_target.show(&style_inner);
 	string ret= fmt("%s%s%s%s",
 			f,
@@ -112,7 +117,9 @@ string Plain_Dep::show(Style *style) const
 			t,
 			flags & F_VARIABLE ? "]" : "");
 	Style style_outer= Style::outer(style, &style_inner);
-	return ::show(ret, &style_outer); 
+	ret= ::show(ret, &style_outer);
+	TRACE("ret= %s", ret); 
+	return ret;
 }
 
 Target Dynamic_Dep::get_target() const
@@ -138,40 +145,27 @@ Target Dynamic_Dep::get_target() const
 
 string Dynamic_Dep::show(Style *style) const
 {
+	TRACE_FUNCTION(SHOW, Dynamic_Dep::show);
+//	string style_text= style_format(style); 
+//	fprintf(stderr, "%s %s\n", x.pad(), style_text.c_str());
+	TRACE("%s", style_format(style));
+
 	string ret;
 	if (style && *style & S_SHOW_FLAGS) {
-		Style style_flags= Style::inner(style, false);
+		Style style_flags= Style::inner(style);
 		string text_flags= ::show(flags & ~F_TARGET_DYNAMIC, &style_flags);
 		if (! text_flags.empty())
 			text_flags += ' ';
 		ret += text_flags;
 	}
-	Style style_inner= Style::inner(style, true);
+	Style style_inner= Style::inner(style);
 	string text= dep->show(&style_inner);
 	ret += fmt("[%s]", text);
-//	if (style & S_COLOR_WORD) 
-//		ret= fmt("%s%s%s", Color::word, ret, Color::end);
 	Style style_outer= Style::outer(style, &style_inner);
-	return ::show(ret, &style_outer);
+	ret= ::show(ret, &style_outer);
+	TRACE("ret= %s", ret);
+	return ret;
 }
-
-// string Dynamic_Dep::format_out() const
-// {
-// 	Style style= S_NO_FLAGS | S_OUT;
-// 	return format(style);
-// }
-
-// string Dynamic_Dep::format_src() const
-// {
-// 	Style style= S_SRC;
-// 	return format(style);
-// }
-
-// string Dynamic_Dep::format_err() const
-// {
-// 	Style style= S_NO_FLAGS | S_ERR | S_COLOR_WORD;
-// 	return format(style);
-// }
 
 shared_ptr <const Dep> Dynamic_Dep::instantiate(const map <string, string> &mapping) const
 {
@@ -236,7 +230,7 @@ string Compound_Dep::show(Style *style) const
 	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
 			ret += " ";
-		Style style_inner= Style::inner(style, true);
+		Style style_inner= Style::inner(style);
 		ret += d->show(&style_inner);
 	}
 	if (deps.size() != 1)
@@ -312,7 +306,7 @@ string Concat_Dep::show(Style *style) const
 //	assert(bitset <sizeof(Style)> (style & S_CHANNEL).count() <= 1);
 	string ret;
 	if (style && *style & S_SHOW_FLAGS) {
-		Style style_inner= Style::inner(style, false); 
+		Style style_inner= Style::inner(style); 
 		string f= ::show(flags, &style_inner);
 		if (! f.empty()) {
 			f += ' ';
@@ -320,7 +314,7 @@ string Concat_Dep::show(Style *style) const
 		ret += f;
 	}
 	for (const shared_ptr <const Dep> &d:  deps) {
-		Style style_inner= Style::inner(style, true); 
+		Style style_inner= Style::inner(style); 
 		ret += d->show(&style_inner);
 	}
 	return ret;

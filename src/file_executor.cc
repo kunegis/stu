@@ -37,7 +37,7 @@ void File_Executor::wait()
 	int status;
 	const pid_t pid= Job::wait(&status);
 
-	Debug::print(nullptr, frmt("pid = %ld", (long) pid));
+	Debug::print(nullptr, frmt("pid= %ld", (long) pid));
 
 	timestamp_last= Timestamp::now();
 
@@ -992,7 +992,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 		assert(pid != 0 && pid != 1);
 
-		DEBUG_PRINT(frmt("execute: pid = %ld", (long) pid));
+		DEBUG_PRINT(frmt("execute: pid= %ld", (long) pid));
 
 		if (pid < 0) {
 			/* Starting the job failed */

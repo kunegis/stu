@@ -17,6 +17,9 @@ unsigned flag_get_index(char c)
 
 string show(Flags flags, Style *style)
 {
+	TRACE_FUNCTION(SHOW, show(Flags));
+	TRACE("%s\n", style_format(style));
+	
 	string ret;
 	for (unsigned i= 0;  i < C_ALL;  ++i)
 		if (flags & (1 << i)) {
@@ -24,10 +27,12 @@ string show(Flags flags, Style *style)
 		}
 	if (ret.empty())
 		return ret;
-	Style style_inner= Style::inner(style, false, S_HAS_MARKER);
+	Style style_inner= Style::inner(style, S_HAS_MARKER);
 	ret= '-' + show(ret, &style_inner);
 	Style style_outer= Style::outer(style, &style_inner);
-	return show(ret, &style_outer);
+	ret= show(ret, &style_outer);
+	TRACE("ret= %s", ret);
+	return ret; 
 }
 
 string done_format(Done done)

@@ -4,6 +4,13 @@
 
 string Target::show(Style *style) const
 {
+	// RM
+	TRACE_FUNCTION(SHOW, Target::show);
+//	Trace_Padding x("Target::show");
+	TRACE("%s", style_format(style));
+//	string style_text= style_format(style); 
+//	fprintf(stderr, "%s %s\n", x.pad(), style_text.c_str()); 
+
 	string ret;
 	size_t i= 0;
 	while (get_word(i) & F_TARGET_DYNAMIC) {
@@ -22,12 +29,12 @@ string Target::show(Style *style) const
 			ret += flags_text;
 		}
 	}
-	Show_Bits bits_inner= 0;
+	Style_Bits bits_marker= 0;
 	if (get_word(i) & F_TARGET_TRANSIENT) {
 		ret += '@';
-		bits_inner |= S_HAS_MARKER;
+		bits_marker |= S_HAS_MARKER;
 	}
-	Style style_inner= Style::inner(style, true, bits_inner); 
+	Style style_inner= Style::inner(style, bits_marker); 
 	string s= ::show(text.substr(sizeof(word_t) * (i + 1)), &style_inner);
 	ret += s;
 	i= 0;
@@ -35,8 +42,14 @@ string Target::show(Style *style) const
 		++i; // TODO fold into while
 		ret += ']';
 	}
-	Style style_outer= Style::outer(style, &style_inner);
-	return ::show(ret, &style_outer);
+	Style style_outer= Style::outer(style, &style_inner, bits_marker);
+	ret= ::show(ret, &style_outer);
+
+	// RM
+	TRACE("ret= %s", ret);
+//	fprintf(stderr, "%s ret = %s\n", x.pad(), ret.c_str()); 
+	
+	return ret;
 }
 
 void Target::canonicalize()
@@ -329,8 +342,15 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 
 string Name::show(Style *style) const
 {
+	// RM
+	TRACE_FUNCTION(SHOW, Name::show);
+//	Trace_Padding x("Name::show");
+	TRACE("%s", style_format(style));
+//	string style_text= style_format(style); 
+//	fprintf(stderr, "%s %s\n", x.pad(), style_text.c_str());
+	
 	assert(texts.size() == 1 + parameters.size());
-	Style style_inner= Style::inner(style, false); 
+	Style style_inner= Style::inner(style, S_QUOTES_MAY_INHERIT_UP); 
  restart:
 	bool quotes_initial= style_inner.is(); 
 	string ret= ::show(texts[0], &style_inner);
@@ -345,36 +365,21 @@ string Name::show(Style *style) const
 			goto restart;
 		}
 	}
-	Style style_outer= Style::outer(style, &style_inner); 
-	return ::show(ret, &style_outer);
+	Style style_outer= Style::outer(style, &style_inner);
+
+	// RM
+	TRACE("style_outer= %s", style_format(&style_outer));
+//	style_text= style_format(&style_outer); 
+//	fprintf(stderr, "%s style_outer: %s\n", x.pad(), style_text.c_str());  
+
+	ret= ::show(ret, &style_outer);
+
+	// RM
+	TRACE("ret= %s", ret);
+//	fprintf(stderr, "%s ret = %s\n", x.pad(), ret.c_str()); 
+	
+	return ret;
 }
-
-// string Name::format_glob() const
-// {
-// 	Style style= S_SRC;
-// 	Quotes q(style);
-// 	string ret= texts[0];
-// 	for (size_t i= 0;  i < get_n();  ++i) {
-// 		ret += "*";
-// 		Style style_inner= S_INNER | S_NO_EMPTY * !empty(); 
-// 		ret += name_format(texts[i+1], style_inner, &q);
-// 	}
-// 	return quote(ret, style, &q);
-// }
-
-// string Name::format_src() const
-// {
-// 	Style style= S_WANT_ESCAPE;
-// //	bool quotes= false;
-// //	for (const string &t:  texts)
-// //		if (src_need_quotes(t))
-// //			quotes= true;
-// 	string s= format(style);
-// 	return fmt("%s%s%s",
-// 		   style & S_QUOTES ? "'" : "",
-// 		   s,
-// 		   style & S_QUOTES ? "'" : "");
-// }
 
 void Name::canonicalize()
 {
@@ -421,17 +426,31 @@ string show(const Place_Name &place_name, Style *style)
 	return place_name.show(style); 
 }
 
-string Place_Param_Target::show(Style *style) const {
+string Place_Param_Target::show(Style *style) const
+{
+	// RM
+	TRACE_FUNCTION(SHOW, Place_Param_Target::show);
+//	Trace_Padding x("Place_Param_Target::show");
+	TRACE("%s", style_format(style));
+//	string style_text= style_format(style); 
+//	fprintf(stderr, "%s %s\n", x.pad(), style_text.c_str());
+
 	string ret;
-	Show_Bits bits_inner= 0;
+	Style_Bits bits_inner= 0;
 	if (flags & F_TARGET_TRANSIENT) {
 		ret += '@';
 		bits_inner |= S_HAS_MARKER;
 	}
-	Style style_inner= Style::inner(style, true, bits_inner); 
+	Style style_inner= Style::inner(style, bits_inner); 
 	ret += place_name.show(&style_inner);
 	Style style_outer= Style::outer(style, &style_inner); 
-	return ::show(ret, &style_outer);
+	ret= ::show(ret, &style_outer);
+
+	// RM
+	TRACE("ret= %s", ret);
+//	fprintf(stderr, "%s ret = %s\n", x.pad(), ret.c_str()); 
+	
+	return ret;
 }
 
 void Place_Param_Target::canonicalize()

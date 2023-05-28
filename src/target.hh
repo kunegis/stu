@@ -36,7 +36,7 @@
 
 #include "error.hh"
 #include "flags.hh"
-#include "format.hh"
+#include "show.hh"
 
 #if   C_WORD <= 8
 typedef uint8_t  word_t;

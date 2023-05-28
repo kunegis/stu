@@ -43,8 +43,8 @@
 
 #include "target.hh"
 #include "flags.hh"
-#include "format.hh"
 #include "options.hh"
+#include "show.hh"
 
 template <typename T, typename U>
 shared_ptr <const T> to(shared_ptr <const U> d)

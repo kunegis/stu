@@ -18,6 +18,7 @@ public:
 class Debug
 {
 public:
+	// TODO make "   " a constant and don't hardcode "3". 
 	Debug(const Debuggable *d) {
 		padding_current += "   ";
 		debuggables.push_back(d);

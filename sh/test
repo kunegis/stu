@@ -603,13 +603,12 @@ done
 output_end
 cd ..
 
-if [ "$ret" != 0 ]
-then
+if [ "$ret" != 0 ] ; then
 	count_failed=$(echo $(<log/error.log wc -l))
 	success_rate=$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')
-	echo >&2 "[31m$0: *** ${success_rate}% success rate.  The following $count_failed test(s) failed (out of $count_total):"
-	cat log/error.log
-	printf "[m"
+	echo >&2 Failed tests:
+	cat  >&2 log/error.log
+	echo >&2 "[31m$0: *** ${success_rate}% success rate.  $count_failed test(s) failed (out of $count_total).[m"
 	exit 1
 fi
 

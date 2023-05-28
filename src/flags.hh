@@ -22,7 +22,7 @@
  * that part has been done, i.e., when the flag initially was not set.
  */
 
-#include "format.hh"
+#include "show.hh"
 
 typedef unsigned Flags;
 /* Declared as integer so arithmetic can be performed on it */

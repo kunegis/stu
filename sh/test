@@ -123,7 +123,6 @@
 #   only one second.  An alternative is to use sh/touch_old.
 # * Tests output '***' only in case of error.  This is convenient for
 #   grepping while the tests are running.
-# * Tests use 'diff' to compare files, not 'cmp'.
 #
 # TODO
 #
@@ -170,8 +169,15 @@ output_success()
 	echo "[32mTesting [$VARIANT$extra] Success (runtime $runtime)[m"
 }
 
+test_fail()
+{
+	echo
+	echo >&2 "$0: ($file) *** $1"
+}
+
 test_fail_stop()
 {
+	echo
 	echo >&2 "$0: ($file) *** $1"
 	ret=1
 	count_failed=$(( count_failed + 1 ))
@@ -273,7 +279,7 @@ do
 	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
 	do
 		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi
-		echo >&2 "$0: ($file) *** Invalid file '$otherfile' in test directory"
+		test_fail "Invalid file '$otherfile' in test directory"
 		error=1
 	done
 
@@ -301,7 +307,7 @@ do
 		echo >&7 ./EXEC
 		./EXEC 1>&7
 		if [ "$?" != 0 ]; then
-			echo >&2 "$0: ($file) *** EXEC failed"
+			test_fail "EXEC failed"
 			error=1
 		fi
 	else
@@ -325,25 +331,25 @@ do
 		exitstatus_correct=0
 		if [ -r EXITSTATUS ]; then
 			[ 1 = "$(echo $(grep -E '[^[:space:]]' EXITSTATUS | wc -l))" ] || {
-				echo >&2 "*** Expected EXITSTATUS to contain a single non-empty line, not:"
+				test_fail "Expected EXITSTATUS to contain a single non-empty line, not:"
 				cat  >&2 EXITSTATUS
 				echo >&2 __________
 				exit 2
 			}
 			grep -v -E '^(\s*|\s*[0-9]+\s*)$' EXITSTATUS && {
-				echo >&2 "*** Expected EXITSTATUS to contain a number, not:"
+				test_fail "Expected EXITSTATUS to contain a number, not:"
 				cat  >&2 EXITSTATUS
 				echo >&2 __________
 				exit 2
 			}
 			exitstatus_correct=$(sed -e '/^[[:space:]]*$/d;s/[[:space:]]\{1,\}//g' <EXITSTATUS)
 			if [ "$exitstatus_correct" = 0 ]; then
-				echo >&2 "$0: ($file) *** Content of EXITSTATUS should not be zero"
+				test_fail "Content of EXITSTATUS should not be zero"
 				error=1
 			fi
 		fi
 		if [ "$exitstatus_actual" != "$exitstatus_correct" ]; then
-			echo >&2 "$0: ($file) *** Test '$file' should have returned $exitstatus_correct, but returned $exitstatus_actual"
+			test_fail "Test '$file' should have returned $exitstatus_correct, but returned $exitstatus_actual"
 			echo >&2 list.def.out:
 			echo >&2 ______________
 			cat >&2 list.def.out
@@ -366,7 +372,7 @@ do
 			fi
 			if [ -n "$target" ] ; then
 				if [ ! -r "$target" ]; then  # The main target must have been built
-					echo >&2 "$0: ($file) *** Target '$target' was not built"
+					test_fail "Target '$target' was not built"
 					error=1
 				else
 					# Check that INCONTENT is found in the built file
@@ -374,7 +380,7 @@ do
 						if grep -q -F -e "$(cat INCONTENT)" "$target" ; then
 							echo >&7 "INCONTENT...correct"
 						else
-							echo >&2 "$0: ($file) *** '$(cat INCONTENT)' must appear in generated file"
+							test_fail "'$(cat INCONTENT)' must appear in generated file"
 							echo >&2 "$target:"
 							echo >&2 ____
 							cat "$target"
@@ -385,42 +391,43 @@ do
 
 					# Check exact content of the target file
 					if [ -r CONTENT ] ; then
-						if diff "$target" CONTENT ; then
+						if cmp -s -- CONTENT "$target" ; then
 							echo >&7 "CONTENT...correct"
 						else
-							echo >&2 "$0: ($file) *** CONTENT error"
+							test_fail "CONTENT invalid"
+							diff >&2 -- CONTENT "$target"
 							error=1
 						fi
 					fi
 				fi
 			else
 				if [ -r INCONTENT ] || [ -r CONTENT ] ; then
-					echo >&2 "$0: ($file) *** CONTENT and INCONTENT must not appear in conjunction with an empty TARGET"
+					test_fail "CONTENT and INCONTENT must not appear in conjunction with an empty TARGET"
 					error=1
 				fi
 			fi
 		else
 			# Make sure the file "A" was not generated
 			if [ -r A ]; then
-				echo >&2 "$0: ($file) *** File 'A' was generated although the script failed"
+				test_fail "File 'A' was generated although the script failed"
 				error=1
 			fi
 		fi
 
 		# Check that standard output is correct
 		if [ -r STDOUT ] ; then
-			diff list.def.out STDOUT
-			exitstatus=$?
-			if [ "$exitstatus" != 0 ] ; then
-				echo >&2 "$0: ($file) *** output does not match 'STDOUT'"
-				echo >&2 '_____ actual output:'
-				cat  >&2 list.def.out
-				echo >&2 _____
-				>&2 wc -l list.def.out STDOUT
-				>&2 ls -l list.def.out STDOUT
-				error=1
-			else
+##			exitstatus=$?
+			if cmp -s STDOUT list.def.out ; then
 				echo >&7 "STDOUT...correct"
+			else
+				test_fail "Output does not match 'STDOUT'"
+				diff >&2 STDOUT list.def.out
+##				echo >&2 '_____ actual output:'
+##				cat  >&2 list.def.out
+##				echo >&2 _____
+##				>&2 wc -l list.def.out STDOUT
+##				>&2 ls -l list.def.out STDOUT
+				error=1
 			fi
 		fi
 
@@ -429,7 +436,7 @@ do
 			if  grep <list.def.out -qF -- "$(cat INSTDOUT)" ; then
 				echo >&7 "INSTDOUT...correct"
 			else
-				echo >&2 "$0: ($file) *** '$(cat INSTDOUT)' was not found in output"
+				test_fail "'$(cat INSTDOUT)' was not found in output"
 				echo >&2 ____ stdout:
 				cat  >&2 list.def.out
 				echo >&2 ____
@@ -440,7 +447,7 @@ do
 		# Check that at least one line of error message is generated
 		if [ "$exitstatus_correct" != 0 ] && [ \! -r STDERR ]; then
 			if [ \! \( "$(echo $(cat list.def.err | wc -l))" -gt 0 \) ]; then
-				echo >&2 "$0: ($file) *** Nothing written to stderr although exit status is >0"
+				test_fail "Nothing written to stderr although exit status is >0"
 				error=1
 			fi
 		fi
@@ -452,7 +459,7 @@ do
 				if grep <list.def.err -qF -- "$line" ; then
 					echo >&7 "INSTDERR...correct"
 				else
-					echo >&2 "$0: ($file) *** '$line' was not found in error output"
+					test_fail "'$line' was not found in error output"
 					echo >&2 "stderr:"
 					echo >&2 ______
 					cat  >&2 list.def.err
@@ -464,25 +471,28 @@ do
 
 		# Check that STDERR matches the error output exactly
 		if [ -r STDERR ]; then
-			diff list.def.err STDERR
-			exitstatus=$?
-			if [ "$exitstatus" != 0 ]; then
-				echo >&2 "$0: ($file) *** error output does not match 'STDERR'"
-				echo >&2 '_____ actual error output:'
-				cat list.def.err
-				echo >&2 _____
-				wc -l list.def.err STDERR
-				ls -l list.def.err STDERR
-				error=1
-			else
+##			exitstatus=$?
+			if cmp -s STDERR list.def.err ; then
 				echo >&7 "STDERR...correct"
+			else
+##			if [ "$exitstatus" != 0 ]; then
+				test_fail "Error output does not match 'STDERR'"
+##				echo >&2 "$0: ($file) *** error output does not match 'STDERR'"
+				diff >&2 STDERR list.def.err
+				## echo >&2 '_____ actual error output:'
+				## cat list.def.err
+				## echo >&2 _____
+				## wc -l list.def.err STDERR
+				## ls -l list.def.err STDERR
+				error=1
+##			else
 			fi
 		fi
 
 		# Check that NOTINSTDERR is not found in the error output
 		if [ -r NOTINSTDERR ]; then
 			if grep -q -F -e "$(cat NOTINSTDERR)" list.def.err ; then
-				echo >&2 "$0: ($file) *** '$(cat NOTINSTDERR)' was found in error output, but should not be there"
+				test_fail "'$(cat NOTINSTDERR)' was found in error output, but should not be there"
 				error=1
 			else
 				echo >&7 "NOTINSTDERR...correct"
@@ -498,7 +508,7 @@ do
 
 			# Exit code
 			if [ "$exitstatus_actual" != "$exitstatus_correct" ]; then
-				echo >&2 "$0: ($file) *** Test '$file' should have returned $exitstatus_correct, but returned $exitstatus_actual [TTY]"
+				test_fail "Test '$file' should have returned $exitstatus_correct, but returned $exitstatus_actual [TTY]"
 				error=1
 			else
 				echo >&7 "EXITSTATUS:TTY...$exitstatus_correct correct"
@@ -506,24 +516,26 @@ do
 
 			# correct output
 			if [ -r TTYSTDOUTERR ]; then
-				diff list.def.out TTYSTDOUTERR
-				exitstatus=$?
-				if [ "$exitstatus" != 0 ]; then
-					echo >&2 "$0: ($file) *** TTY error output does not match 'TTYSTDOUTERR'"
-					echo >&2 '_____ actual output:'
-					cat list.def.out
-					echo >&2 _____
-					wc -l list.def.out TTYSTDOUTERR
-					ls -l list.def.out TTYSTDOUTERR
-					error=1
-				else
+##				exitstatus=$?
+				if cmp -s TTYSTDOUTERR list.def.out ; then
 					echo >&7 "TTYSTDOUTERR...correct"
+				else
+##				if [ "$exitstatus" != 0 ]; then
+					test_fail "TTY error output does not match 'TTYSTDOUTERR'"
+					diff >&2 TTYSTDOUTERR list.def.out 
+					## echo >&2 '_____ actual output:'
+					## cat list.def.out
+					## echo >&2 _____
+					## wc -l list.def.out TTYSTDOUTERR
+					## ls -l list.def.out TTYSTDOUTERR
+					error=1
+##				else
 				fi
 			fi
 
 			if [ -r EXITSTATUS ] && ! [ -r NOCOLOR ] ; then
 				if ! grep -qE -e '' list.def.out ; then
-					echo >&2 "$0: ($file) *** Expected ESC in TTY output because EXITSTATUS exists"
+					test_fail "Expected ESC in TTY output because EXITSTATUS exists"
 					echo >&2 output:
 					echo >&2 _________
 					cat >&2 list.def.out
@@ -535,7 +547,7 @@ do
 			fi
 
 			if grep -qE -e '[[](32|1|35|31)m[^]*$' list.def.out ; then
-				echo >&2 "$0: ($file) *** Expected closing escape sequence after opening escape sequence in stdout"
+				test_fail "Expected closing escape sequence after opening escape sequence in stdout"
 				echo >&2 output:
 				echo >&2 _________
 				cat >&2 list.def.out
@@ -557,7 +569,7 @@ do
 			if [ "$?" = 0 ] ; then
 				echo >&7 "Second invocation...correct"
 			else
-				echo >&2 "$0: ($file) *** Second invocation did no result in 'Targets are up to date'"
+				test_fail "Second invocation did no result in 'Targets are up to date'"
 				echo >&2 STDOUT:
 				echo >&2 _____
 				cat >&2 list.def.out
@@ -575,7 +587,7 @@ do
 				eval $CMDPREFIX ../../bin/stu.test $CMD -j $k \>list.def.out 2\>list.def.err
 				if [ $? != 0 ]
 				then
-					echo >&2 "$0: ($file) *** Parallel stu failed for '$file' with k = $k"
+					test_fail "Parallel stu failed for '$file' with k = $k"
 					error=1
 				else
 					echo >&7 "PARALLEL...correct"

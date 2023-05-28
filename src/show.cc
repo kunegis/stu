@@ -112,6 +112,8 @@ string show(string name, Style *style)
 				*p++= c;
 				escape_this= false;
 			} else {
+				// TODO don't use octal.  Instead, use something
+				// that is also valid Stu input in double quotes.
 				*p++= '\\';
 				*p++= '0' + (cu >> 6);
 				*p++= '0' + ((cu >> 3) & 7);

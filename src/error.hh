@@ -273,6 +273,7 @@ class Trace
  * cannot be printed immediately.  Otherwise, Place::operator<<() is
  * called directly.
  */
+// TODO rename to Backtrace
 {
 public:
 	Place place;

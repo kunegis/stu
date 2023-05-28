@@ -30,8 +30,8 @@ grep -Fq CORRECT B || {
 	exit 1
 }
 
-grep -qF "no rule to build 'nonexistingfile'" list.err || {
-	echo >&2 "$0:  *** Error output does not contain \"no rule to build 'nonexistingfile'\" (run B)"
+grep -qF "no rule to build \"nonexistingfile\"" list.err || {
+	echo >&2 "$0:  *** Error output does not contain \"no rule to build \"nonexistingfile\"\" (run B)"
 	exit 1
 }
 

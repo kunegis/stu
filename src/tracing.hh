@@ -8,8 +8,7 @@
  *	"stderr Write on stderr  
  */
 
-// TODO Ideally, traces as in this file should not have the same name as traces
-// as in error.hh  
+// TODO rename trace.
 
 #ifndef NDEBUG
 
@@ -74,6 +73,8 @@ private:
 	static FILE *open_logfile(const char *filename);
 };
 
+// TODO the two following macros don't have to be macros.  Make them be
+// functions. 
 
 #define TRACE_FUNCTION(CLASS, NAME)  Tracing tracing_object(TRACING_ ## CLASS, #NAME)
 

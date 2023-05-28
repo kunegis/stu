@@ -95,8 +95,8 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			place_target <<
 				fmt("the two parameters %s and %s in the name %s "
 				    "must be separated by at least one character",
-				    show('$' + param_1),
-				    show('$' + param_2),
+				    show_prefix("$", param_1),
+				    show_prefix("$", param_2),
 				    target_name->show());
 			explain_separated_parameters();
 			throw ERROR_LOGICAL;

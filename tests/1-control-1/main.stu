@@ -1,5 +1,4 @@
-
-# '\001' is no a valid filename character.  If it was, the follwing
+# '\001' is no a valid filename character.  If it was, the following
 # would succeed.  
 
 A: BC { touch A }

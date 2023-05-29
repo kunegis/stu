@@ -168,7 +168,7 @@ string show(string name, Style *style)
 
 string show_dynamic_variable(string name, Style *style)
 {
-	Style style_inner= Style::inner(style, S_QUOTES_MAY_INHERIT_UP);
+	Style style_inner= Style::inner(style, S_HAS_MARKER);
 	string s= show(name, &style_inner);
 	string ret= fmt("$[%s]", s);
 	Style style_outer= Style::outer(style, &style_inner); 

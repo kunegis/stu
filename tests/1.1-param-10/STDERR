@@ -1,2 +1,2 @@
-main.stu:3:9: expected a parameter name, not ' '
-main.stu:3:8: after '$'
+main.stu:3:9: expected a parameter name, not " "
+main.stu:3:8: after $

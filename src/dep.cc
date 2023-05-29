@@ -107,7 +107,9 @@ string Plain_Dep::show(Style *style) const
 			f += ' ';
 		}
 	}
-	Style style_inner= Style::inner(style);
+	Style style_inner= Style::inner
+		(style,
+		 flags & F_VARIABLE ? S_HAS_MARKER : 0);
 	TRACE("style_inner= %s", style_format(&style_inner));
 	string t= place_param_target.show(&style_inner);
 	string ret= fmt("%s%s%s%s",
@@ -234,35 +236,6 @@ string Compound_Dep::show(Style *style) const
 	Style style_outer= Style::outer(style, nullptr);
 	return ::show(ret, &style_outer);
 }
-
-// string Compound_Dep::format_err() const
-// {
-// 	Style style= S_ERR | S_NO_FLAGS | S_COLOR_WORD | S_WANT_ESCAPE | S_QUOTES * (Color::quotes);
-// 	string ret= format(style);
-// 	if (style & S_QUOTES)
-// 		ret= '\'' + ret + '\'';
-// 	return ret;
-// }
-
-// string Compound_Dep::format_out() const
-// {
-// 	Style style= S_OUT | S_NO_FLAGS | S_WANT_ESCAPE | S_QUOTES * Color::quotes;
-// //	bool quotes= Color::quotes;
-// 	string ret= format(style);
-// 	if (style & S_QUOTES)
-// 		ret= '\'' + ret + '\'';
-// 	return ret;
-// }
-
-// string Compound_Dep::format_src() const
-// {
-// 	Style style= S_SRC | S_WANT_ESCAPE | S_QUOTES * Color::quotes;
-// //	bool quotes= Color::quotes;
-// 	string ret= format(style);
-// 	if (style & S_QUOTES)
-// 		ret= '\'' + ret + '\'';
-// 	return ret;
-// }
 
 shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mapping) const
 {

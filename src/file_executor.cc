@@ -170,7 +170,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		}
 		/* In parallel mode, print "done" message */
 		if (option_parallel && !option_s) {
-			Style style= S_STDOUT;
+			Style style= S_STDOUT | S_HAS_MARKER;
 			string text= targets[0].show(&style);
 			printf("Successfully built %s\n", text.c_str());
 		}
@@ -587,7 +587,7 @@ void File_Executor::print_command() const
 	bool single_line= rule->command->get_lines().size() == 1;
 
 	if (! single_line || option_parallel) {
-		Style style= S_STDOUT;
+		Style style= S_STDOUT | S_HAS_MARKER;
 		string text= targets.front().show(&style);
 		printf("Building %s\n", text.c_str());
 		return;

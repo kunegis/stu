@@ -1,2 +1,2 @@
-main.stu:4:10: expected a version number of the form MAJOR.MINOR or MAJOR.MINOR.PATCH, not 'wlekcnweckwecm'
+main.stu:4:10: expected a version number of the form "MAJOR.MINOR" or "MAJOR.MINOR.PATCH", not "wlekcnweckwecm"
 main.stu:4:1: after %version

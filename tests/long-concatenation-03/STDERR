@@ -1,4 +1,4 @@
-list.70:1:1: no rule to build 'X', needed by [list.70]
+list.70:1:1: no rule to build "X", needed by [list.70]
 list.69:1:1: [list.70] is needed by [list.69]
 list.68:1:1: [list.69] is needed by [list.68]
 list.67:1:1: [list.68] is needed by [list.67]
@@ -70,4 +70,4 @@ list.2:1:1: [list.3] is needed by [list.2]
 list.1:1:1: [list.2] is needed by [list.1]
 list.0:1:1: [list.1] is needed by [list.0]
 B:1:72: [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[list.0]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]] is needed by [B]
-main.stu:16:6: [B] is needed by 'A'
+main.stu:16:6: [B] is needed by "A"

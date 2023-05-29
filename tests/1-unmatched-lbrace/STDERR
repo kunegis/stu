@@ -1,2 +1,2 @@
-main.stu:4:1: expected a closing '}'
-main.stu:1:5: for command started by '{'
+main.stu:4:1: expected a closing }
+main.stu:1:5: for command started by {

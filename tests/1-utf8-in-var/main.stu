@@ -1,1 +1,1 @@
-A: list.x { touch A } list.${xxxéyyy\} { touch "list.${xxxéyyy\}" }
+A: list.x { touch A } list.${xxxéyyy} { touch "list.${xxxéyyy}" ; }

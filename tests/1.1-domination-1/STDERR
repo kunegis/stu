@@ -1,4 +1,4 @@
-main.stu:4:5: multiple minimal matching rules for target 'list.abc'
-main.stu:9:1: rule with target 'list.a${NAME}'
-main.stu:14:1: rule with target 'list.${NAME}c'
-main.stu:4:5: 'list.abc' is needed by 'A'
+main.stu:4:5: multiple minimal matching rules for target "list.abc"
+main.stu:9:1: rule with target "list.a${NAME}"
+main.stu:14:1: rule with target "list.${NAME}c"
+main.stu:4:5: "list.abc" is needed by "A"

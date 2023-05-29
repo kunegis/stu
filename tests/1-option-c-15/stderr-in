@@ -1,1 +1,1 @@
-Option -C: requested version '0.9' using %version is incompatible with this Stu's version $VERSION
+Option -C: requested version "0.9" using %version is incompatible with this Stu's version "$VERSION"

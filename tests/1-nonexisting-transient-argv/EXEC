@@ -8,7 +8,7 @@ exitstatus=$?
 	exit 1
 }
 
-grep -qF "no rule to build @'\" do\"'" list.err || {
+grep -qF "no rule to build @\" do\"" list.err || {
 	echo >&2 '*** stderr'
 	echo >&2 ___________________
 	cat >&2 list.err

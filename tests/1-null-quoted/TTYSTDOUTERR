@@ -1,2 +1,2 @@
-[31m[1mmain.stu[22m:6:6[m: invalid character [1m\0[22m
+[31m[1mmain.stu[22m:6:6[m: invalid character [1m"\0"[22m
 [31m[1mmain.stu[22m:6:4[m: in quote started by [1m'[22m

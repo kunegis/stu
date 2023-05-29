@@ -783,7 +783,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 							    show_prefix("-", "t"));
 					} else {
 						current_place() << fmt("invalid character %s",
-								       show_operator(*p));
+								       show(string(p, 1)));
 						if (strchr("#%\'\":;-$@<>={}()[]*\\&|!?,", *p)) {
 							explain_quoted_characters();
 						}
@@ -941,7 +941,7 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 			++p;
 			goto end_of_single_quote;
 		} else if (*p == '\0') {
-			current_place() << fmt("invalid character %s", show_operator(*p));
+			current_place() << fmt("invalid character %s", show(string(p, 1)));
 			place_begin_quote <<
 				fmt("in quote started by %s", show_operator('\''));
 			throw ERROR_LOGICAL;

@@ -119,7 +119,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			if (! place_output.empty()) {
 				place_output_new <<
 					fmt("there must not be a second output redirection %s",
-					    show_prefix(">", place_param_target->show()));
+					    show_prefix(">", *place_param_target));
 				assert(place_param_targets[redirect_index]
 				       ->place_name.get_n() == 0);
 				assert((place_param_targets[redirect_index]->flags
@@ -695,8 +695,8 @@ shared_ptr <const Dep> Parser
 		throw ERROR_LOGICAL;
 	}
 	if (! is_operator('[')) {
-		/* The '$' and '[' operators are only generated when
-		 * they both appear in conjunction. */
+		/* The '$' and '[' operators are only generated when they both
+		 * appear in conjunction.  */
 		assert(false);
 		return nullptr;
 	}
@@ -828,10 +828,10 @@ shared_ptr <const Dep> Parser
 	if (has_input && ! place_name_input.empty()) {
 		place_name->place <<
 			fmt("there must not be a second input redirection %s",
-			    show_prefix("<", ret->show()));
+			    show_prefix("<", ret));
 		place_name_input.place <<
-			fmt("shadowing previous input redirection %s", // TODO why three %s?  Write a test for it
-			    show_prefix("<", ret->show()));
+			fmt("shadowing previous input redirection %s",
+			    show_prefix("<", place_name_input));
 		if (targets.size() == 1) {
 			targets.front()->place <<
 				fmt("for target %s", targets.front()->show());
@@ -841,16 +841,13 @@ shared_ptr <const Dep> Parser
 		}
 		throw ERROR_LOGICAL;
 	}
-
 	if (has_input)
 		place_name_input= *place_name;
-
 	return ret;
 }
 
 shared_ptr <const Dep> Parser::parse_redirect_dep
-(Place_Name &place_name_input,
- Place &place_input,
+(Place_Name &place_name_input, Place &place_input,
  const vector <shared_ptr <const Place_Param_Target> > &targets)
 {
 	(void) targets;
@@ -917,8 +914,6 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 
 	Flags flags= 0;
 	if (has_input) {
-		assert(place_name_input.empty());
-//		place_name_input= *name_token;
 		flags |= F_INPUT;
 	}
 
@@ -934,10 +929,10 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 	if (has_input && ! place_name_input.empty()) {
 		name_token->place <<
 			fmt("there must not be a second input redirection %s",
-			    show_prefix("<", ret->show()));
+			    show_prefix("<", ret));
 		place_name_input.place <<
 			fmt("shadowing previous input redirection %s",
-			    show_prefix("<", ret->show()));
+			    show_prefix("<", place_name_input));
 		if (targets.size() == 1) {
 			targets.front()->place <<
 				fmt("for target %s", targets.front()->show());

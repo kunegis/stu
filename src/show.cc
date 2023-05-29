@@ -13,13 +13,14 @@ void Style::init(bool toplevel)
 			if (Color::out_quotes)
 				bits |= S_NEED_QUOTES_NOCOLOR;
 		} else if (bits & S_STDERR) {
-			if (Color::err_quotes)
+			if (Color::err_quotes) 
 				bits |= S_NEED_QUOTES_NOCOLOR;
 		} else {
 			assert(false);
 		}
-		if (bits & S_DONT_SHOW_COLOR)
-			bits |= S_NEED_QUOTES_NOCOLOR;
+		// XXX 1-marker-2 shows quotes around "A" in color mode becauase of this
+//		if (bits & S_DONT_SHOW_COLOR)
+//			bits |= S_NEED_QUOTES_NOCOLOR;
 	}
 	check(); 
 }

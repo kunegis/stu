@@ -164,14 +164,8 @@ public:
 
 	virtual string show(Style *style= nullptr) const= 0;
 
-//	string format(Style style) const {
-//		Quotes q(style);
-//		return format(style, q);
-//	}
-
 	virtual Target get_target() const= 0;
-	/* Get the corresponding Target object.  Only called for
-	 * non-compound and non-parametrized dependencies.  */
+	/* Only called for non-compound and non-parametrized dependencies.  */
 
 	virtual bool is_normalized() const= 0;
 
@@ -193,6 +187,11 @@ public:
 	 * its contained dependency, otherwise return D.  Thus, never
 	 * return null.  */
 };
+
+string show(shared_ptr <const Dep> dep, Style *style= nullptr)
+{
+	return dep->show(style); 
+}
 
 class Plain_Dep
 /* A dependency denoting an individual target name, which can be a file

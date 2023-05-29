@@ -108,6 +108,7 @@ string Plain_Dep::show(Style *style) const
 		}
 	}
 	Style style_inner= Style::inner(style);
+	TRACE("style_inner= %s", style_format(&style_inner));
 	string t= place_param_target.show(&style_inner);
 	string ret= fmt("%s%s%s%s",
 			f,

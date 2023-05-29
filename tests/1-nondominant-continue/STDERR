@@ -1,6 +1,6 @@
-main.stu:3:4: multiple minimal matching rules for target 'list.B'
-main.stu:9:1: rule with target 'list.${name}'
-main.stu:10:1: rule with target '${name}.B'
-main.stu:3:4: 'list.B' is needed by 'X'
-main.stu:1:4: 'X' is needed by 'A'
+main.stu:3:4: multiple minimal matching rules for target "list.B"
+main.stu:9:1: rule with target "list.${name}"
+main.stu:10:1: rule with target "${name}.B"
+main.stu:3:4: "list.B" is needed by "X"
+main.stu:1:4: "X" is needed by "A"
 ../../bin/stu.test: Targets not up to date because of errors

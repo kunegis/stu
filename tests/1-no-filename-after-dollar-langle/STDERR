@@ -1,2 +1,2 @@
-main.stu:4:7: expected a filename, not ':'
-main.stu:4:5: after '$['
+main.stu:4:7: expected a filename, not :
+main.stu:4:5: after $[

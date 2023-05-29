@@ -27,7 +27,7 @@ constexpr Style_Bits S_HAS_MARKER=          	1 << 10;
 constexpr Style_Bits S_GLOB=                	1 << 11;
 
 constexpr Style_Bits S_DEFAULT=             	S_STDERR;
-constexpr Style_Bits S_DEBUG=               	S_STDOUT | S_DONT_SHOW_COLOR;
+constexpr Style_Bits S_DEBUG=               	S_STDOUT | S_NEED_QUOTES_NOCOLOR;
 
 /*
  * S_NEED_QUOTES is used as an in/out parameter.  The others only as in

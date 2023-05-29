@@ -19,7 +19,7 @@ exitstatus=$?
 	exit 1
 }
 
-grep -qF "warning: File target 'A' which has no command is older than its dependency" list.err || {
+grep -qF "warning: File target \"A\" which has no command is older than its dependency" list.err || {
 	echo >&2 "*** Warning is missing"
 	exit 1
 }

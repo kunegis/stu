@@ -516,6 +516,11 @@ public:
 	}
 };
 
+string show(const Place_Param_Target &place_param_target, Style *style= nullptr) {
+	return place_param_target.show(style);
+}
+
+
 shared_ptr <const Place_Param_Target> canonicalize(shared_ptr <const Place_Param_Target> );
 
 #endif /* ! TARGET_HH */

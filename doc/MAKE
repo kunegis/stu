@@ -4,12 +4,11 @@
 
 Advantages of Stu over Make are:
 
-* Error messages are much better (Make has the dreaded "missing
-  separator"); Stu gives full traces like a good compiler.  If you get
-  an error, you know which part of the Stu script to fix.
-* Stu has a proper tokenization pass, instead of Make's variable
-  substitution syntax.  This makes the whole language much more
-  predictable.
+* Error messages are much better (Make has the dreaded "missing separator"); Stu
+  gives full backtraces like a good compiler.  If you get an error, you know
+  which part of the Stu script to fix.  Stu has a proper tokenization pass,
+  instead of Make's variable substitution syntax.  This makes the whole language
+  much more predictable.
 * Variables are not used; instead Stu encourages to put everything in
   files.  This makes builds much faster: In a typical Makefile, a lot of
   program logic must be implemented used Make functions (because of a

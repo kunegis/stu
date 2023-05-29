@@ -1260,7 +1260,7 @@ within the line in certain editors or GUIs.
 When an error occurs with a concatenated file or transient name, Stu
 only outputs the location of the name as a whole, and does not point to
 the source of the individual components of the concatenation.  This can
-lead to confusing error traces.
+lead to confusing error backtraces.
 
 .SH AUTHOR
 Written by J\['e]r\[^o]me Kunegis <kunegis@gmail.com> at the University

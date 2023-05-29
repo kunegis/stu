@@ -18,9 +18,6 @@ void Style::init(bool toplevel)
 		} else {
 			assert(false);
 		}
-		// XXX 1-marker-2 shows quotes around "A" in color mode becauase of this
-//		if (bits & S_DONT_SHOW_COLOR)
-//			bits |= S_NEED_QUOTES_NOCOLOR;
 	}
 	check(); 
 }
@@ -85,6 +82,7 @@ string show(string name, Style *style)
 
 	string ret(4 * name.size(), '\0');
 	char *const p_begin= &ret[0], *p= p_begin;
+	bool actually_need_quotes_nocolor= ((*style & S_NEED_QUOTES_NOCOLOR) && !(*style & S_HAS_MARKER) && !(*style & S_OUTER));
 	if (*style & S_OUTER) {
 		ret= name;
 	} else {
@@ -93,17 +91,17 @@ string show(string name, Style *style)
 			unsigned char cu= (unsigned char) c;
 			if (c == ' ') {
 				*p++= ' ';
+				// TODO contract the next three cases
 			} else if (c == '\\') {
-				if (style->is())
+				if (style->is() || actually_need_quotes_nocolor)
 					*p++= '\\';
 				*p++= '\\';
 			} else if (c == '\"') {
-				if (style->is())
+				if (style->is() || actually_need_quotes_nocolor)
 					*p++= '\\';
 				*p++= '\"';
 			} else if (c == '$') {
-//				TRACE("check for $ style_is= %s", frmt("%d", style->is()));
-				if (style->is())
+				if (style->is() || actually_need_quotes_nocolor)
 					*p++= '\\';
 				*p++= '$';
 			} else if (c == '\0') {
@@ -142,8 +140,7 @@ string show(string name, Style *style)
 		ret.resize(p - p_begin);
 	}
 
-	bool quotes= style->is() ||
-		((*style & S_NEED_QUOTES_NOCOLOR) && !(*style & S_HAS_MARKER) && !(*style & S_OUTER));
+	bool quotes= style->is() || actually_need_quotes_nocolor;
 	if (quotes && *style & S_QUOTES_MAY_INHERIT_UP) {
 		quotes= false;
 		*style |= S_QUOTES_INHERIT_UP;

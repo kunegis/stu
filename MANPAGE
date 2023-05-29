@@ -1118,7 +1118,7 @@ BUGS
        When an error occurs with a concatenated file or  transient  name,  Stu
        only outputs the location of the name as a whole, and does not point to
        the source of the individual components of the concatenation.  This can
-       lead to confusing error traces.
+       lead to confusing error backtraces.
 
 AUTHOR
        Written  by  Jérôme  Kunegis  <kunegis@gmail.com>  at the University of

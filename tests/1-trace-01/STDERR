@@ -1,3 +1,0 @@
-main.stu:12:4: no rule to build 'nonexistingfile', needed by 'C'
-B:1:1: 'C' is needed by [B]
-main.stu:4:6: [B] is needed by 'A'

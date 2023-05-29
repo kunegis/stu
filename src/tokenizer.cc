@@ -534,8 +534,7 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 			throw ERROR_LOGICAL;
 		} else if (*p != '}') {
 			current_place() <<
-				fmt("character %s must not appear",
-				    show_operator(*p));
+				fmt("character %s must not appear", show(string(p, 1)));
 			place_dollar <<
 				fmt("in parameter started by %s",
 				    show_operator("${"));

@@ -129,7 +129,7 @@ dep.sources {
 
 #
 # A 'why' option that shows why things are built.  Will look similar to
-# error traces, only containing explanations.  In essence, output a line
+# error backtraces, only containing explanations.  In essence, output a line
 # everytime one of the 'need_build' variables is updated.  Also, we need
 # to do something smart with timestamps.
 #

@@ -15,7 +15,7 @@ diff list.out stdout-correct || {
 	exit 1
 }
 
-grep -q -E '^main\.stu:4:6: command for '"'A'"' received signal 9 \(.*ill.*\)$' list.err || {
+grep -q -E '^main\.stu:4:6: command for "A" received signal 9 \(.*ill.*\)$' list.err || {
 	echo >&2 '*** stderr'
 	echo >&2 '___ list.err ___'
 	cat  >&2 list.err

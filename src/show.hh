@@ -46,28 +46,16 @@ public:
 
 	// TODO maybe deprecate, because it is an error to set certain bits
 	// after the constructor.  Instead, callers must pass the bits in the constructor.
-	void operator|=(Style_Bits b) {
-		bits |= b;
-		check(); 
-	}
+	void operator|=(Style_Bits b)  {  bits |= b;  check();  }
 
-	void set()  {
-		bits |= S_NEED_QUOTES_CHAR;
-		check(); 
-	}
-
-//	void set_used()  {  bits |= S_USED_QUOTES;  }
-
-	bool is() const {
-		return bits & S_NEED_QUOTES_CHAR;
-	}
+	void set()  {  bits |= S_NEED_QUOTES_CHAR;  check();  }
+	bool is() const   {  return bits & S_NEED_QUOTES_CHAR;  }
 	
 	void check() const {
 		assert(((bits & S_STDOUT)!=0) + ((bits & S_STDERR)!=0) == 1); 
 	}
 
-	static Style inner(const Style *parent,
-			   Style_Bits other_bits= 0); 
+	static Style inner(const Style *parent, Style_Bits other_bits= 0); 
 
 	static Style outer(const Style *style, const Style *style_inner,
 			   Style_Bits other_bits= 0);
@@ -81,15 +69,13 @@ private:
 
 string show(string text, Style *style= nullptr); 
 string show_dynamic_variable(string name, Style *style= nullptr);
-
-string show(char c, Style *style= nullptr) {
-	return show(string(1, c), style); 
-}
+string show_operator(char c);
+string show_operator(string s);
 
 template <typename T>
 string show_prefix(string prefix, const T &object, Style *style= nullptr);
 
-// RM
+// TODO put into .cc
 string style_format(const Style *style)
 {
 	if (style == nullptr)

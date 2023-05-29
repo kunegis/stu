@@ -15,11 +15,10 @@ unsigned flag_get_index(char c)
 	}
 }
 
-string show(Flags flags, Style *style)
+string show_flags(Flags flags, Style *style)
 {
-	TRACE_FUNCTION(SHOW, show(Flags));
-	TRACE("%s\n", style_format(style));
-	
+	TRACE_FUNCTION(SHOW, show_flags);
+	TRACE("%s", style_format(style));
 	string ret;
 	for (unsigned i= 0;  i < C_ALL;  ++i)
 		if (flags & (1 << i)) {

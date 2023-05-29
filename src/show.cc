@@ -18,6 +18,8 @@ void Style::init(bool toplevel)
 		} else {
 			assert(false);
 		}
+		if (bits & S_DONT_SHOW_COLOR)
+			bits |= S_NEED_QUOTES_NOCOLOR;
 	}
 	check(); 
 }
@@ -69,58 +71,72 @@ string show(string name, Style *style)
 	
 	if (name.empty() && ! (*style & S_NO_EMPTY)) {
 		style->set();
+		TRACE("%s", "set because name is empty");
 	}
 
-	for (size_t i= 0;  !style->is() && i < name.size();  ++i) {
+	for (size_t i= 0;  !(*style & S_OUTER) && !style->is() && i < name.size();  ++i) {
 		char c= name[i];
 		if (c >= 0 && c <= ' ' || c == 0x7F) {
 			style->set();
+			TRACE("set because name name contains character %s that needs escape", frmt("%d", c));
 		}
 	}
 
 	string ret(4 * name.size(), '\0');
 	char *const p_begin= &ret[0], *p= p_begin;
-	if (*style & S_OUTER)
+	if (*style & S_OUTER) {
 		ret= name;
-	else {
-		// TODO refactor to function 
+	} else {
 		for (size_t i= 0;  i < name.size();  ++i) {
 			char c= name[i];
 			unsigned char cu= (unsigned char) c;
-			bool escape_this= true;
 			if (c == ' ') {
 				*p++= ' ';
 			} else if (c == '\\') {
+				if (style->is())
+					*p++= '\\';
 				*p++= '\\';
-				*p++= '\\';
+			} else if (c == '\"') {
+				if (style->is())
+					*p++= '\\';
+				*p++= '\"';
+			} else if (c == '$') {
+//				TRACE("check for $ style_is= %s", frmt("%d", style->is()));
+				if (style->is())
+					*p++= '\\';
+				*p++= '$';
 			} else if (c == '\0') {
 				*p++= '\\';
 				*p++= '0';
+			} else if (c == '\a') {
+				*p++= '\\';
+				*p++= 'a';
+			} else if (c == '\b') {
+				*p++= '\\';
+				*p++= 'b';
+			} else if (c == '\f') {
+				*p++= '\\';
+				*p++= 'f';
 			} else if (c == '\n') {
 				*p++= '\\';
 				*p++= 'n';
-			} else if (c == '\'') {
-				if (style->is()) {
-					*p++= '\'';
-					*p++= '\\';
-					*p++= '\'';
-					*p++= '\'';
-				} else {
-					*p++= '\'';
-				}
-			} else if (cu >= 0x21 && cu != 0xFF) {
-				*p++= c;
-				escape_this= false;
-			} else {
-				// TODO don't use octal.  Instead, use something
-				// that is also valid Stu input in double quotes.
+			} else if (c == '\r') {
 				*p++= '\\';
-				*p++= '0' + (cu >> 6);
-				*p++= '0' + ((cu >> 3) & 7);
-				*p++= '0' + (cu & 7);
+				*p++= 'r';
+			} else if (c == '\t') {
+				*p++= '\\';
+				*p++= 't';
+			} else if (c == '\v') {
+				*p++= '\\';
+				*p++= 'v';
+			} else if (cu >= 0x21 && cu != 0x7F) {
+				*p++= c;
+			} else {
+				*p++= '\\';
+				*p++= 'x';
+				*p++= "0123456789ABCDEF"[cu/16];
+				*p++= "0123456789ABCDEF"[cu%16];
 			}
-			if (escape_this)
-				style->set();
 		}
 		ret.resize(p - p_begin);
 	}
@@ -159,6 +175,26 @@ string show_dynamic_variable(string name, Style *style)
 	string ret= fmt("$[%s]", s);
 	Style style_outer= Style::outer(style, &style_inner); 
 	return show(ret, &style_outer); 
+}
+
+string show_operator(char c)
+{
+	TRACE_FUNCTION(SHOW, show_operator(char));
+	TRACE("(%s)", frmt("%c", c));
+	Style style= S_STDERR | S_HAS_MARKER;
+        string ret= show(string(1, c), &style);
+	TRACE("ret= %s", ret);
+	return ret;
+}
+
+string show_operator(string s)
+{
+	TRACE_FUNCTION(SHOW, show_operator(string));
+	TRACE("(%s)", s);
+	Style style= S_STDERR | S_HAS_MARKER;
+        string ret= show(s, &style);
+	TRACE("ret= %s", ret);
+	return ret;
 }
 
 template <typename T>

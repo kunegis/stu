@@ -20,7 +20,6 @@ void print_error(string message)
 void print_errno(string message)
 {
 	assert(message.size() > 0 && message[0] != '') ;
-//	string t= show(message);
 	fprintf(stderr, "%s: %s\n", message.c_str(), strerror(errno));
 }
 
@@ -88,10 +87,13 @@ void Place::print(string message,
 	case Type::INPUT_FILE:
 		assert(line >= 1);
 		fprintf(stderr,
-			"%s%s:%s%zu%s:%s%zu%s%s: %s\n",
-			color_on, get_filename_str(), 
-			Color::stderr_highlight_on, line, Color::stderr_highlight_off,
-			Color::stderr_highlight_on, 1 + column, Color::stderr_highlight_off,
+			"%s%s%s%s:%zu:%zu%s: %s\n",
+			color_on,
+			Color::stderr_highlight_on,
+			get_filename_str(), 
+			Color::stderr_highlight_off,
+			line,
+			1 + column,
 			color_off,
 			message.c_str());
 		break;
@@ -134,10 +136,8 @@ string Place::as_argv0() const
 		assert(false);
 	case Type::ARGUMENT:
 		return "";
-
 	case Type::OPTION:
 		return fmt("Option -%s", text);
-
 	case Type::INPUT_FILE: {
 		/* The given argv[0] should not begin with a dash,
 		 * because some shells enable special behaviour
@@ -161,20 +161,17 @@ bool Place::operator==(const Place &place) const
 {
 	if (this->type != place.type)
 		return false;
-
 	switch (this->type) {
 	default:  assert(0);
 	case Type::EMPTY:
 	case Type::ARGUMENT:
 	case Type::ENV_OPTIONS:
 		return true;
-
 	case Type::INPUT_FILE:
 		return
 			this->text == place.text
 			&& this->line == place.line
 			&& this->column == place.column;
-
 	case Type::OPTION:
 		return this->text == place.text;
 	}
@@ -185,22 +182,18 @@ bool Place::operator<(const Place &place) const
 	if (this->type != place.type) {
 		return this->type < place.type;
 	}
-
 	switch (this->type) {
 	default:  assert(0);
-
 	case Type::EMPTY:
 	case Type::ARGUMENT:
 	case Type::ENV_OPTIONS:
 		return false;
-
 	case Type::INPUT_FILE:
 		if (this->text != place.text)
 			return this->text < place.text;
 		if (this->line != place.line)
 			return this->line < place.line;
 		return this->column < place.column;
-
 	case Type::OPTION:
 		return this->text < place.text;
 	}

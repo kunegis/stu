@@ -4,32 +4,29 @@
 
 string Target::show(Style *style) const
 {
-	// RM
 	TRACE_FUNCTION(SHOW, Target::show);
-//	Trace_Padding x("Target::show");
 	TRACE("%s", style_format(style));
-//	string style_text= style_format(style); 
-//	fprintf(stderr, "%s %s\n", x.pad(), style_text.c_str()); 
 
+	Style_Bits bits_marker= 0;
 	string ret;
 	size_t i= 0;
 	while (get_word(i) & F_TARGET_DYNAMIC) {
 		assert((get_word(i) & F_TARGET_TRANSIENT) == 0);
 		if (style && *style & S_SHOW_FLAGS) {
-			ret += ::show(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
-				    style);
+			ret += show_flags(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
+					  style);
 		}
 		++i;
 		ret += '[';
+		bits_marker |= S_HAS_MARKER;
 	}
 	assert(text.size() > sizeof(word_t) * (i + 1));
 	if (style && *style & S_SHOW_FLAGS) {
-		string flags_text= ::show(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE), style);
+		string flags_text= show_flags(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE), style);
 		if (! flags_text.empty()) {
 			ret += flags_text;
 		}
 	}
-	Style_Bits bits_marker= 0;
 	if (get_word(i) & F_TARGET_TRANSIENT) {
 		ret += '@';
 		bits_marker |= S_HAS_MARKER;
@@ -44,11 +41,7 @@ string Target::show(Style *style) const
 	}
 	Style style_outer= Style::outer(style, &style_inner, bits_marker);
 	ret= ::show(ret, &style_outer);
-
-	// RM
 	TRACE("ret= %s", ret);
-//	fprintf(stderr, "%s ret = %s\n", x.pad(), ret.c_str()); 
-	
 	return ret;
 }
 
@@ -342,12 +335,8 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 
 string Name::show(Style *style) const
 {
-	// RM
 	TRACE_FUNCTION(SHOW, Name::show);
-//	Trace_Padding x("Name::show");
 	TRACE("%s", style_format(style));
-//	string style_text= style_format(style); 
-//	fprintf(stderr, "%s %s\n", x.pad(), style_text.c_str());
 	
 	assert(texts.size() == 1 + parameters.size());
 	Style style_inner= Style::inner(style, S_QUOTES_MAY_INHERIT_UP); 
@@ -366,18 +355,9 @@ string Name::show(Style *style) const
 		}
 	}
 	Style style_outer= Style::outer(style, &style_inner);
-
-	// RM
 	TRACE("style_outer= %s", style_format(&style_outer));
-//	style_text= style_format(&style_outer); 
-//	fprintf(stderr, "%s style_outer: %s\n", x.pad(), style_text.c_str());  
-
 	ret= ::show(ret, &style_outer);
-
-	// RM
 	TRACE("ret= %s", ret);
-//	fprintf(stderr, "%s ret = %s\n", x.pad(), ret.c_str()); 
-	
 	return ret;
 }
 

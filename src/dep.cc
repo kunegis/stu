@@ -97,14 +97,12 @@ Target Plain_Dep::get_target() const
 string Plain_Dep::show(Style *style) const
 {
 	TRACE_FUNCTION(SHOW, Plain_Dep::show);
-//	string style_text= style_format(style); 
-//	fprintf(stderr, "%s %s\n", x.pad(), style_text.c_str());
 	TRACE("%s", style_format(style));
 	
 	string f;
 	if (style && *style & S_SHOW_FLAGS) {
 		Style style_inner= Style::inner(style);
-		f= ::show(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT), &style_inner);
+		f= show_flags(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT), &style_inner);
 		if (! f.empty()) {
 			f += ' ';
 		}
@@ -146,19 +144,16 @@ Target Dynamic_Dep::get_target() const
 string Dynamic_Dep::show(Style *style) const
 {
 	TRACE_FUNCTION(SHOW, Dynamic_Dep::show);
-//	string style_text= style_format(style); 
-//	fprintf(stderr, "%s %s\n", x.pad(), style_text.c_str());
 	TRACE("%s", style_format(style));
-
 	string ret;
 	if (style && *style & S_SHOW_FLAGS) {
 		Style style_flags= Style::inner(style);
-		string text_flags= ::show(flags & ~F_TARGET_DYNAMIC, &style_flags);
+		string text_flags= show_flags(flags & ~F_TARGET_DYNAMIC, &style_flags);
 		if (! text_flags.empty())
 			text_flags += ' ';
 		ret += text_flags;
 	}
-	Style style_inner= Style::inner(style);
+	Style style_inner= Style::inner(style, S_HAS_MARKER);
 	string text= dep->show(&style_inner);
 	ret += fmt("[%s]", text);
 	Style style_outer= Style::outer(style, &style_inner);
@@ -192,7 +187,7 @@ shared_ptr <const Dep> Plain_Dep::instantiate(const map <string, string> &mappin
 		assert((ret_target->flags & F_TARGET_TRANSIENT) == 0);
 		place << fmt("dynamic variable %s must not be instantiated with parameter value that contains %s",
 			     show_dynamic_variable(this_name),
-			     ::show('='));
+			     show_operator('='));
 		throw ERROR_LOGICAL;
 	}
 
@@ -307,7 +302,7 @@ string Concat_Dep::show(Style *style) const
 	string ret;
 	if (style && *style & S_SHOW_FLAGS) {
 		Style style_inner= Style::inner(style); 
-		string f= ::show(flags, &style_inner);
+		string f= show_flags(flags, &style_inner);
 		if (! f.empty()) {
 			f += ' ';
 		}
@@ -475,7 +470,7 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		 * not allow that, and therefore we make that invalid.  */
 		a->get_place() << fmt("%s cannot have input redirection using %s",
 				      a->show(),
-				      ::show('<'));
+				      show_operator('<'));
 		b->get_place() << fmt("because %s is concatenated to it",
 				      b->show());
 		error |= ERROR_LOGICAL;
@@ -487,7 +482,7 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		 * have "using '<'" on an extra line.  */
 		b->get_place() << fmt("%s cannot have input redirection using %s",
 				      b->show(),
-				      ::show('<'));
+				      show_operator('<'));
 		a->get_place() << fmt("in concatenation to %s", a->show());
 		error |= ERROR_LOGICAL;
 		return nullptr;

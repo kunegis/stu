@@ -131,7 +131,7 @@ unsigned flag_get_index(char c);
 /* Get the flag index corresponding to a character.  Not all cases are
  * implemented.  */
 
-string show(Flags flags, Style *style= nullptr);
+string show_flags(Flags flags, Style *style= nullptr);
 /* Textual representation of a flags value.  To be shown before the argument.
  * Empty when flags are empty.  This is used only for debug mode output.  */
 

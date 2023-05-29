@@ -1,14 +1,15 @@
 #ifndef TRACING_HH
 #define TRACING_HH
 
+// TODO rename to "trace".
+
 /*
  * To enable tracing for a trace class TRACE_ABC, set the environment variable
  * $STU_TRACE_ABC to:
- * 	"log" 	Write into trace logfile
- *	"stderr Write on stderr  
+ * 	"log" 	  Write into trace logfile
+ *	"stderr"  Write on stderr  
+ * 	"off"	  No tracing (same as not variable set)
  */
-
-// TODO rename trace.
 
 #ifndef NDEBUG
 
@@ -76,6 +77,8 @@ private:
 // TODO the two following macros don't have to be macros.  Make them be
 // functions. 
 
+// TODO the first argument should be the constant.
+// TODO the second argument should be the string.
 #define TRACE_FUNCTION(CLASS, NAME)  Tracing tracing_object(TRACING_ ## CLASS, #NAME)
 
 #define TRACE(format, ...)  { \
@@ -91,10 +94,8 @@ private:
 }
 
 #else /* NDEBUG */
-
 #define TRACE_FUNCTION(a, b)
 #define TRACE(a, ...)
-
 #endif /* NDEBUG */
 
 #endif /* ! TRACING_HH */

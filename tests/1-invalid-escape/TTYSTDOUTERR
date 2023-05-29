@@ -1,2 +1,2 @@
-[1;31mmain.stu[0m:[31m5[0m:[31m10[0m: invalid escape sequence [1m\x[0m
-[1;31mmain.stu[0m:[31m5[0m:[31m1[0m: in quote started by [1m"[0m
+[31m[1mmain.stu[22m:5:10[m: invalid escape sequence [1m\x[22m
+[31m[1mmain.stu[22m:5:1[m: in quote started by [1m"[22m

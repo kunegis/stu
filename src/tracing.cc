@@ -3,9 +3,7 @@
 #ifndef NDEBUG
 
 FILE *Tracing::trace_files[TRACING_COUNT];
-//FILE *Tracing::trace_file= nullptr;
 string Tracing::padding;
-//bool Tracing::enabled[TRACING_COUNT];
 Tracing::Init Tracing::init;
 vector <Tracing *> Tracing::stack;
 
@@ -28,6 +26,8 @@ Tracing::Init::Init()
 			trace_files[i]= file_log;
 		} else if (!strcmp(env, "stderr")) {
 			trace_files[i]= stderr;
+		} else if (!strcmp(env, "off")) {
+			trace_files[i]= nullptr;
 		} else {
 			fprintf(stderr, "*** Error: Invalid value for trace %s=%s\n",
 				name.c_str(), env);

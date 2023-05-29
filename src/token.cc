@@ -77,7 +77,7 @@ Command::get_lines() const
 	return *lines;
 }
 
-string Operator::show_long(Style *style) const
+string Operator::show_long() const
 {
 	string t;
 	switch (op) {
@@ -88,5 +88,5 @@ string Operator::show_long(Style *style) const
 	case ']':  t= "closing bracket";      break;
 	case '@':  t= "operator";             break;
 	}
-	return fmt("%s %s", t, ::show(op, style));
+	return fmt("%s %s", t, show_operator(op));
 }

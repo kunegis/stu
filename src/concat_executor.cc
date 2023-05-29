@@ -144,7 +144,7 @@ void Concat_Executor::notify_result(shared_ptr <const Dep> d,
 
 	Style style= S_DEBUG;
 	DEBUG_PRINT(fmt("notify_result(flags = %s, d = %s)",
-			       ::show(flags, &style),
+			show_flags(flags, &style),
 			       d->show(&style)));
 
 	if (flags & F_RESULT_NOTIFY) {

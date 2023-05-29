@@ -11,15 +11,15 @@
 
 /*
  * Format of error output:  There are two types of error output lines:
- * error messages and traces.  Error messages are of the form
+ * error messages and backtraces.  Error messages are of the form
  *
  *         $0: *** $MESSAGE
  *
- * and traces are of the form
+ * and backtraces are of the form
  *
  *         $FILENAME:$LINE:$COLUMN: $MESSAGE
  *
- * Traces are used when it is possible to refer to a specific location
+ * Backtraces are used when it is possible to refer to a specific location
  * in the input files (or command line, etc.).  Error messages are
  * avoided:  all errors should be traced back to a place in the source if
  * possible.  But sometimes they must be used.
@@ -28,7 +28,7 @@
 /*
  * Wording of messages:
  *
- * Error messages begin with uppercase letters; trace messages with
+ * Error messages begin with uppercase letters; backtrace messages with
  * lowercase letters, as per the GNU Coding Standards.  Filenames and
  * operator names are quoted in messages using single quotes.  Messages
  * for neither type of error output lines are terminated by periods.
@@ -153,11 +153,7 @@ void print_error_reminder(string message);
  * the user of the error.  Since the error as already been output, use
  * the color of warnings.  */
 
-string
-format_errno
-//show_errno
-//system_format
-(string text);
+string format_errno(string text);
 /* Includes the given message, and the ERRNO-based text.  Cf. perror().  Color            
  * is not added.  The output of this function is used as input to one of the
  * print_*() functions.  */ 
@@ -240,8 +236,8 @@ public:
 	const char *get_filename_str() const;
 
 	const Place &operator<<(string message) const;
-	/* Print the trace to STDERR as part of an error message.  The
-	 * trace is printed as a single line, which can be parsed by
+	/* Print the backtrace to STDERR as part of an error message.  The
+	 * backtrace is printed as a single line, which can be parsed by
 	 * tools, e.g. the compile mode of Emacs.  Line and column
 	 * numbers are output as 1-based values.  Return THIS.  */
 
@@ -267,26 +263,23 @@ public:
 	 * Place() is an empty place.  */
 };
 
-class Trace
-/*
- * A place along with a message.  This class is only used when traces
+class Backtrace
+/* A place along with a message.  This class is only used when backtraces
  * cannot be printed immediately.  Otherwise, Place::operator<<() is
- * called directly.
- */
-// TODO rename to Backtrace
+ * called directly.  */
 {
 public:
 	Place place;
 
 	string message;
-	/* This may be "".  When the trace is printed, it must not be empty, and
-	 * not begin with an upper-case letter.  */
+	/* May be "".  When the backtrace is printed, it must not be empty,
+	 * and must not begin with an upper-case letter.  */ 
 
-	Trace(const Place &place_, string message_)
+	Backtrace(const Place &place_, string message_)
 		:  place(place_), message(message_)  {  }
 
 	void print() const
-	/* Print the trace to STDERR as part of an error message; see
+	/* Print the backtrace to STDERR as part of an error message; see
 	 * Place::operator<< for format information.  */
 	{
 		place << message;
@@ -294,9 +287,9 @@ public:
 };
 
 class Printer
-/* Interface that has the << operator like Place.  Only used at one
- * place for now.  The parameter MESSAGE may be "" to print a generic
- * error message (i.e., only the traces).  */
+/* Interface that has the << operator like Place.  Only used at one place for
+ * now.  The parameter MESSAGE may be "" to print a generic error message (i.e.,
+ * only the backtraces).  */
 {
 public:
 	virtual void operator<<(string message) const= 0;

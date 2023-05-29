@@ -1,1 +1,1 @@
-main.stu:5:5: invalid character '\177'
+main.stu:5:5: invalid character "\x7F"

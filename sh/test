@@ -391,11 +391,11 @@ do
 
 					# Check exact content of the target file
 					if [ -r CONTENT ] ; then
-						if cmp -s -- CONTENT "$target" ; then
+						if cmp -s -- "$target" CONTENT ; then
 							echo >&7 "CONTENT...correct"
 						else
 							test_fail "CONTENT invalid"
-							diff >&2 -- CONTENT "$target"
+							diff >&2 -- "$target" CONTENT
 							error=1
 						fi
 					fi
@@ -417,16 +417,11 @@ do
 		# Check that standard output is correct
 		if [ -r STDOUT ] ; then
 ##			exitstatus=$?
-			if cmp -s STDOUT list.def.out ; then
+			if cmp -s list.def.out STDOUT ; then
 				echo >&7 "STDOUT...correct"
 			else
 				test_fail "Output does not match 'STDOUT'"
-				diff >&2 STDOUT list.def.out
-##				echo >&2 '_____ actual output:'
-##				cat  >&2 list.def.out
-##				echo >&2 _____
-##				>&2 wc -l list.def.out STDOUT
-##				>&2 ls -l list.def.out STDOUT
+				diff >&2 list.def.out STDOUT 
 				error=1
 			fi
 		fi
@@ -436,7 +431,7 @@ do
 			if  grep <list.def.out -qF -- "$(cat INSTDOUT)" ; then
 				echo >&7 "INSTDOUT...correct"
 			else
-				test_fail "'$(cat INSTDOUT)' was not found in output"
+				test_fail "'$(cat INSTDOUT)' was not found in stdout"
 				echo >&2 ____ stdout:
 				cat  >&2 list.def.out
 				echo >&2 ____
@@ -456,14 +451,14 @@ do
 		if [ -r INSTDERR ]; then
 			for lineno in $(../../sh/seq $(awk '{x++} END{ print x; }' <INSTDERR)) ; do
 			   	line=$(<INSTDERR sed -e "$lineno"'!d')
-				if grep <list.def.err -qF -- "$line" ; then
+				if grep <list.def.err -qF -e "$line" ; then
 					echo >&7 "INSTDERR...correct"
 				else
-					test_fail "'$line' was not found in error output"
-					echo >&2 "stderr:"
-					echo >&2 ______
-					cat  >&2 list.def.err
-					echo >&2 ______
+					test_fail "'$line' was not found in stderr"
+					## echo >&2 "stderr:"
+					## echo >&2 ______
+					## cat  >&2 list.def.err
+					## echo >&2 ______
 					error=1
 				fi
 			done
@@ -471,14 +466,11 @@ do
 
 		# Check that STDERR matches the error output exactly
 		if [ -r STDERR ]; then
-##			exitstatus=$?
-			if cmp -s STDERR list.def.err ; then
+			if cmp -s list.def.err STDERR ; then
 				echo >&7 "STDERR...correct"
 			else
-##			if [ "$exitstatus" != 0 ]; then
 				test_fail "Error output does not match 'STDERR'"
-##				echo >&2 "$0: ($file) *** error output does not match 'STDERR'"
-				diff >&2 STDERR list.def.err
+				diff >&2 list.def.err STDERR 
 				## echo >&2 '_____ actual error output:'
 				## cat list.def.err
 				## echo >&2 _____
@@ -517,12 +509,12 @@ do
 			# correct output
 			if [ -r TTYSTDOUTERR ]; then
 ##				exitstatus=$?
-				if cmp -s TTYSTDOUTERR list.def.out ; then
+				if cmp -s list.def.out TTYSTDOUTERR ; then
 					echo >&7 "TTYSTDOUTERR...correct"
 				else
 ##				if [ "$exitstatus" != 0 ]; then
 					test_fail "TTY error output does not match 'TTYSTDOUTERR'"
-					diff >&2 TTYSTDOUTERR list.def.out 
+					diff >&2 list.def.out TTYSTDOUTERR 
 					## echo >&2 '_____ actual output:'
 					## cat list.def.out
 					## echo >&2 _____

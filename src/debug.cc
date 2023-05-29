@@ -12,7 +12,7 @@ void Debug::print(const Debuggable *d, string text)
 	if (d == nullptr) {
 		print("", text);
 	} else {
-		Style style= S_STDOUT | S_DONT_SHOW_COLOR;
+		Style style= S_DEBUG;
 		if (debuggables.size() > 0 &&
 		    debuggables[debuggables.size() - 1] == d) {
 			print(d->show(&style), text);

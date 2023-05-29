@@ -1,2 +1,2 @@
 main.stu:12:15: target must not depend on itself: @list.X depends on @list.X
-main.stu:7:5: @list.X is needed by 'A'
+main.stu:7:5: @list.X is needed by "A"

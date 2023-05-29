@@ -1,4 +1,4 @@
-main.stu:8:5: command for 'B' failed with exit status 1
-main.stu:5:4: 'B' is needed by 'A'
-D:1:1: expected a dependency, not ':'
+main.stu:8:5: command for "B" failed with exit status 1
+main.stu:5:4: "B" is needed by "A"
+D:1:1: expected a dependency, not :
 ../../bin/stu.test: Targets not up to date because of errors

@@ -62,8 +62,8 @@ public:
 
 	const Place &get_place() const  {  return place;  }
 	const Place &get_place_start() const  {  return place;  }
-	string show_start() const  {  return ::show(op);  }
-	string show_long(Style *style= nullptr) const;
+	string show_start() const  {  return show_operator(op);  }
+	string show_long() const;
 };
 
 class Flag_Token
@@ -108,7 +108,7 @@ public:
 	}
 
 	string show_start() const {
-		return show('-');
+		return show_operator('-');
 	}
 };
 
@@ -175,7 +175,7 @@ public:
 	}
 
 	string show_start() const {
-		return show('{');
+		return show_operator('{');
 	}
 
 	const vector <string> &get_lines() const;

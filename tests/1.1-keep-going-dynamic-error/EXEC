@@ -10,13 +10,15 @@ statuscode=$?
 	exit 2
 }
 
-diff list.out stdout-correct || {
-	echo >&2 '*** stdout'
+cmp -s list.out stdout-correct || {
+	echo >&2 '*** stdout wrong'
+	diff >&2 list.out stdout-correct
 	exit 2
 }
 
-diff list.err stderr-correct || {
-	echo >&2 '*** stderr'
+cmp -s list.err stderr-correct || {
+	echo >&2 '*** stderr wrong'
+	diff >&2 list.err stderr-correct
 	exit 2
 }
 

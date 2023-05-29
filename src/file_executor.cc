@@ -560,7 +560,7 @@ void File_Executor::print_command() const
 					is_printable= false;
 			}
 		}
-		Style style= S_STDOUT;
+		Style style= S_STDOUT | S_HAS_MARKER;
 		string text= targets.front().show(&style);
 		if (is_printable) {
 			Style style_content= S_STDOUT;

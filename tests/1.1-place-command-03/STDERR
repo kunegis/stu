@@ -1,2 +1,2 @@
-main.stu:3:8: expected a dependency, not '{'
-main.stu:3:6: after flag '-p'
+main.stu:3:8: expected a dependency, not {
+main.stu:3:6: after flag -p

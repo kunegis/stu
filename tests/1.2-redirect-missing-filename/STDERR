@@ -1,2 +1,2 @@
-main.stu:4:2: expected a filename, not ':'
-main.stu:4:1: after output redirection using '>'
+main.stu:4:2: expected a filename, not ":"
+main.stu:4:1: after output redirection using ">"

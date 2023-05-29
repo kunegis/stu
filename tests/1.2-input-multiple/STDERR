@@ -1,3 +1,3 @@
 main.stu:4:8: there must not be a second input redirection <C
 main.stu:4:5: shadowing previous input redirection <B
-main.stu:4:1: for target 'A'
+main.stu:4:1: for target "A"

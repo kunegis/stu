@@ -1,2 +1,2 @@
-main.stu:1:7: expected a dependency, a command, or ';', not '='
-main.stu:1:1: for target 'A'
+main.stu:1:7: expected a dependency, a command, or ;, not =
+main.stu:1:1: for target "A"

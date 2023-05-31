@@ -1,4 +1,4 @@
 Building [1mC[22m
-cp C B
-cp B A
+cp [1mC[22m [1mB[22m
+cp [1mB[22m [1mA[22m
 [32mBuild successful[m

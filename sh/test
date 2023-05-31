@@ -145,7 +145,7 @@ output_next()
 		count_failed_text="[41;30m$count_failed[m"
 	fi
 	if [ "$verbose" = 0 ] ; then
-		printf '[2KTesting [%s] (%s/%s/%s) %s' \
+		printf '[2KTesting [%s] (%s/%s/%s) %s' \
 		       "$VARIANT" \
 		       "[42;30m$count_succeed[m" \
 		       "$count_failed_text" \
@@ -157,9 +157,9 @@ output_next()
 output_end()
 {
 	echo >&7 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-	if [ "$verbose" = 0 ] ; then
-		printf '[2K'
-	fi
+##	if [ "$verbose" = 0 ] ; then
+##		printf '[2K'
+##	fi
 }
 
 output_success()
@@ -177,7 +177,7 @@ test_fail()
 
 test_fail_stop()
 {
-	echo
+##	echo
 	echo >&2 "$0: ($file) *** $1"
 	ret=1
 	count_failed=$(( count_failed + 1 ))

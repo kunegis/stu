@@ -3,8 +3,6 @@
 #
 
 # For all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
-# * Plain_Dep::format():  handle things like @" correctly
-# ** S_INNER_QUOTABLE, S_INNER_NONQUOTABLE, S_OUTER.
 # * @" as target name.  Make sure @ is not quoted, but " is.  
 # * list.*+X does not need quotes in -I output
 # * list.${a}+X does not need quotes in normal output
@@ -28,7 +26,6 @@
 # * A:  <B $[<     ###EOF
 # * A:  <B $[<:];
 # * case where stdout is a tty and stderr is not, and vice versa
-
 # * target *
 # * target *.o
 # * target *.x.*
@@ -50,6 +47,7 @@
 # * The filename "aaa " shown correctly in error messages
 # * The filename "aaa BBB" is shown correctly in error messages
 # * The filename " a a a " is shown correctly in error messages
+# * ${aé}  :   show the é in the error message
 
 #
 # Test that there are no carriage returns in the source.
@@ -170,4 +168,8 @@ list.${name|[A-Z].*} # Matches uppercase names
 
 #
 # Test that make install using Docker.
+#
+
+#
+# gcc --fanalyzer
 #

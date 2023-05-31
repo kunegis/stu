@@ -574,9 +574,9 @@ void File_Executor::print_command() const
 
 	if (rule->is_copy) {
 		assert(rule->place_param_targets.size() == 1);
-		Style style_target= S_STDOUT;
+		Style style_target= S_STDOUT | S_HAS_MARKER;
 		string cp_target= rule->place_param_targets[0]->place_name.show(&style_target);
-		Style style_source= S_STDOUT;
+		Style style_source= S_STDOUT | S_HAS_MARKER;
 		string cp_source= rule->filename.show(&style_source);
 		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str());
 		return;

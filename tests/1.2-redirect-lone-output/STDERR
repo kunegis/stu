@@ -1,2 +1,2 @@
 main.stu:5:1: expected a filename
-main.stu:4:1: after output redirection using ">"
+main.stu:4:1: after output redirection using >

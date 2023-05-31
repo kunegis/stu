@@ -337,9 +337,8 @@ string Name::show(Style *style) const
 {
 	TRACE_FUNCTION(SHOW, Name::show);
 	TRACE("%s", style_format(style));
-	
 	assert(texts.size() == 1 + parameters.size());
-	Style style_inner= Style::inner(style, S_QUOTES_MAY_INHERIT_UP); 
+	Style style_inner= Style::inner(style, S_QUOTES_MAY_INHERIT_UP | S_NO_EMPTY); 
  restart:
 	bool quotes_initial= style_inner.is(); 
 	string ret= ::show(texts[0], &style_inner);
@@ -354,6 +353,7 @@ string Name::show(Style *style) const
 			goto restart;
 		}
 	}
+	if (empty())  style_inner.set();
 	Style style_outer= Style::outer(style, &style_inner);
 	TRACE("style_outer= %s", style_format(&style_outer));
 	ret= ::show(ret, &style_outer);
@@ -408,13 +408,8 @@ string show(const Place_Name &place_name, Style *style)
 
 string Place_Param_Target::show(Style *style) const
 {
-	// RM
 	TRACE_FUNCTION(SHOW, Place_Param_Target::show);
-//	Trace_Padding x("Place_Param_Target::show");
 	TRACE("%s", style_format(style));
-//	string style_text= style_format(style); 
-//	fprintf(stderr, "%s %s\n", x.pad(), style_text.c_str());
-
 	string ret;
 	Style_Bits bits_inner= 0;
 	if (flags & F_TARGET_TRANSIENT) {
@@ -425,11 +420,7 @@ string Place_Param_Target::show(Style *style) const
 	ret += place_name.show(&style_inner);
 	Style style_outer= Style::outer(style, &style_inner); 
 	ret= ::show(ret, &style_outer);
-
-	// RM
 	TRACE("ret= %s", ret);
-//	fprintf(stderr, "%s ret = %s\n", x.pad(), ret.c_str()); 
-	
 	return ret;
 }
 

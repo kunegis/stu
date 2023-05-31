@@ -82,7 +82,10 @@ string show(string name, Style *style)
 
 	string ret(4 * name.size(), '\0');
 	char *const p_begin= &ret[0], *p= p_begin;
-	bool actually_need_quotes_nocolor= ((*style & S_NEED_QUOTES_NOCOLOR) && !(*style & S_HAS_MARKER) && !(*style & S_OUTER));
+	bool actually_need_quotes_nocolor=
+		(*style & S_NEED_QUOTES_NOCOLOR)
+		&& !(*style & S_HAS_MARKER)
+		&& !(*style & S_OUTER);
 	if (*style & S_OUTER) {
 		ret= name;
 	} else {

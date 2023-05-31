@@ -1,2 +1,2 @@
-main.stu:3:3: file 'D' was not built by command
-main.stu:1:4: 'C' is needed by 'A'
+main.stu:3:3: file "D" was not built by command
+main.stu:1:4: "C" is needed by "A"

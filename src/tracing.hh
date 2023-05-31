@@ -15,36 +15,36 @@
 
 #include <string.h>
 
-#define TRACING_FILE "log/trace.log"
+#define TRACE_FILE "log/trace.log"
 
-enum Tracing_Class
+enum Trace_Class
 {
-	TRACING_SHOW,
-	TRACING_COUNT
+	TRACE_SHOW,
+	TRACE_COUNT
 };
 
-const char *trace_names[TRACING_COUNT]= {"SHOW"};
+const char *trace_names[TRACE_COUNT]= {"SHOW"};
 
-class Tracing
+class Trace
 {
 public:
-	Tracing_Class tracing_class;
-	static FILE *trace_files[TRACING_COUNT];
+	Trace_Class trace_class;
+	static FILE *trace_files[TRACE_COUNT];
 
-	Tracing(Tracing_Class tracing_class_, const char *name)
-		:  tracing_class(tracing_class_)
+	Trace(Trace_Class tracing_class_, const char *name)
+		:  trace_class(tracing_class_)
 	{
-		assert(tracing_class >= 0 && tracing_class < TRACING_COUNT); 
+		assert(trace_class >= 0 && trace_class < TRACE_COUNT); 
 		stack.push_back(this);
-		if (! (trace_files[tracing_class]))
+		if (! (trace_files[trace_class]))
 			return;
 		prefix= padding + name + ' ';
 		padding += padding_one;
 	}
 
-	~Tracing() {
+	~Trace() {
 		stack.pop_back();
-		if (! (trace_files[tracing_class]))
+		if (! (trace_files[trace_class]))
 			return;
 		padding.resize(padding.size() - strlen(padding_one));
 	}
@@ -54,10 +54,10 @@ public:
 	}
 
 	bool get_enabled() const {
-		return trace_files[tracing_class];
+		return trace_files[trace_class];
 	}
 
-	static Tracing *get_current() {
+	static Trace *get_current() {
 		assert(! stack.empty());
 		return stack[stack.size() - 1];
 	}
@@ -66,28 +66,29 @@ private:
 	string prefix;
 	static string padding;
 	static constexpr const char *padding_one= "   ";
-//	static bool enabled[TRACING_COUNT];
-	static vector <Tracing *> stack;
+	static vector <Trace *> stack;
 
 	static struct Init  {  Init();  }  init;
 
 	static FILE *open_logfile(const char *filename);
 };
 
-// TODO the two following macros don't have to be macros.  Make them be
-// functions. 
+const char *trace_strip_dir(const char *s);
 
 // TODO the first argument should be the constant.
 // TODO the second argument should be the string.
-#define TRACE_FUNCTION(CLASS, NAME)  Tracing tracing_object(TRACING_ ## CLASS, #NAME)
+#define TRACE_FUNCTION(CLASS, NAME)  Trace trace_object(TRACE_ ## CLASS, #NAME)
 
 #define TRACE(format, ...)  { \
-	if (Tracing::get_current()->get_enabled()) {	\
-		string trace_text= fmt("%s" format "\n", \
-			tracing_object.get_prefix(), \
+	if (Trace::get_current()->get_enabled()) {	\
+		string trace_text= fmt("%s" format, \
+			trace_object.get_prefix(), \
 			__VA_ARGS__); \
-		if (fputs(trace_text.c_str(), Tracing::trace_files[Tracing::get_current()->tracing_class]) == EOF) { \
-			perror("fputs(..., trace_file)");		\
+		if (fprintf(Trace::trace_files[Trace::get_current()->trace_class], \
+			    "%21s:%-4d  %s\n", \
+			    trace_strip_dir(__FILE__), __LINE__,  \
+			    trace_text.c_str()) == EOF) { \
+			perror("fprintf(trace_file)"); \
 			exit(ERROR_FATAL); \
 		} \
 	} \

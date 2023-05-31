@@ -1,4 +1,4 @@
-main.stu:7:5: command for 'E' failed with exit status 1
-main.stu:6:5: 'E' is needed by 'D'
-B:1:1: 'D' is needed by [B]
-main.stu:3:5: [B] is needed by 'A'
+main.stu:7:5: command for "E" failed with exit status 1
+main.stu:6:5: "E" is needed by "D"
+B:1:1: "D" is needed by [B]
+main.stu:3:5: [B] is needed by "A"

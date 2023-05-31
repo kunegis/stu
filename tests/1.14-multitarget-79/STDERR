@@ -1,2 +1,2 @@
-main.stu:5:3: there must not be a second rule for target 'A'
-main.stu:3:1: shadowing previous rule 'A'
+main.stu:5:3: there must not be a second rule for target "A"
+main.stu:3:1: shadowing previous rule "A"

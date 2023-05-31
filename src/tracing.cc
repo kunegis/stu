@@ -2,17 +2,17 @@
 
 #ifndef NDEBUG
 
-FILE *Tracing::trace_files[TRACING_COUNT];
-string Tracing::padding;
-Tracing::Init Tracing::init;
-vector <Tracing *> Tracing::stack;
+FILE *Trace::trace_files[TRACE_COUNT];
+string Trace::padding;
+Trace::Init Trace::init;
+vector <Trace *> Trace::stack;
 
-Tracing::Init::Init()
+Trace::Init::Init()
 {
 	FILE *file_log= nullptr;
 	FILE *file_devnull= nullptr;
 
-	for (int i= 0;  i < TRACING_COUNT;  ++i) {
+	for (int i= 0;  i < TRACE_COUNT;  ++i) {
 		string name= fmt("STU_TRACE_%s", trace_names[i]);
 		const char *env= getenv(name.c_str());
 		bool enabled= (env && env[0]);
@@ -22,7 +22,7 @@ Tracing::Init::Init()
 			trace_files[i]= file_devnull;
 		} else if (!strcmp(env, "log")) {
 			if (!file_log)
-				file_log= open_logfile(TRACING_FILE);
+				file_log= open_logfile(TRACE_FILE);
 			trace_files[i]= file_log;
 		} else if (!strcmp(env, "stderr")) {
 			trace_files[i]= stderr;
@@ -36,7 +36,7 @@ Tracing::Init::Init()
 	}
 }
 
-FILE *Tracing::open_logfile(const char *filename)
+FILE *Trace::open_logfile(const char *filename)
 {
 	FILE *ret= fopen(filename, "w");
 	if (!ret) {
@@ -49,6 +49,13 @@ FILE *Tracing::open_logfile(const char *filename)
 	assert(ret);
 	return ret;
 	
+}
+
+const char *trace_strip_dir(const char *s)
+{
+	const char *r= strchr(s, '/');
+	if (!r)  return s;
+	return r+1;
 }
 
 #endif /* ! NDEBUG */

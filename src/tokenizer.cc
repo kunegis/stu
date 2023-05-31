@@ -547,7 +547,7 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 		if (p < p_end)
 			place_parameter_name <<
 				fmt("expected a parameter name, not %s",
-				    show_operator(*p));
+				    show(string(p, 1)));
 		else
 			place_parameter_name <<
 				"expected a parameter name";
@@ -718,7 +718,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				if (*p == '+' || *p == '~') {
 					current_place() <<
 						fmt("an unquoted name must not begin with the character %s",
-						    show_operator(*p));
+						    show(string(p, 1)));
 					throw ERROR_LOGICAL;
 				}
 				Place place_dash= current_place();
@@ -739,7 +739,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					} else {
 						current_place() <<
 							fmt("expected a flag character, not %s",
-							    show_operator(op));
+							    show(string(1, op)));
 						place_dash <<
 							fmt("after dash %s",
 							    show_operator('-'));
@@ -756,7 +756,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				    (is_name_char(*p) || *p == '"' || *p == '\'' || *p == '$' || *p == '@')) {
 					current_place() <<
 						fmt("expected whitespace before character %s",
-						    show_operator(*p));
+						    show(string(p, 1)));
 					token->get_place() <<
 						fmt("after flag %s",
 						    show_prefix("-", frmt("%c", op)));
@@ -897,11 +897,8 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 				else 
 					// TODO generate a \x?? hexadecimal sequence instead
 					place_backslash
-						<< fmt("invalid escape sequence %s",//\\\\%03o%s",
-//						       Color::stderr_highlight_on,
+						<< fmt("invalid escape sequence %s",
 						       show_operator(string(p-1, 2)));
-//						       (unsigned char) *p,
-//							Color::stderr_highlight_off);
 				place_begin_quote <<
 					fmt("in quote started by %s",
 					    show_operator('"'));
@@ -1007,7 +1004,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 		if (p < p_end)
 			place_directive
 				<< fmt("expected a directive name, not %s",
-				       show_operator(*p));
+				       show(string(p, 1)));
 		else
 			place_directive
 				<< "expected a directive name";
@@ -1040,7 +1037,8 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 			current_place() <<
 				(p == p_end
 				 ? "expected a filename"
-				 : fmt("expected a filename, not %s", show_operator(*p)));
+				 : fmt("expected a filename, not %s",
+				       show(string(p, 1))));
 			place_percent << fmt("after %s",
 					     show_operator("%include"));
 //					      Color::stderr_highlight_on, Color::stderr_highlight_off);

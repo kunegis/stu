@@ -1,2 +1,2 @@
-main.stu:8:4: there must not be a second rule for target 'B'
-main.stu:6:4: shadowing previous rule 'B'
+main.stu:8:4: there must not be a second rule for target "B"
+main.stu:6:4: shadowing previous rule "B"

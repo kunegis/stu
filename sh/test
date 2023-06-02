@@ -157,9 +157,6 @@ output_next()
 output_end()
 {
 	echo >&7 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-##	if [ "$verbose" = 0 ] ; then
-##		printf '[2K'
-##	fi
 }
 
 output_success()
@@ -171,13 +168,11 @@ output_success()
 
 test_fail()
 {
-	echo
 	echo >&2 "$0: ($file) *** $1"
 }
 
 test_fail_stop()
 {
-##	echo
 	echo >&2 "$0: ($file) *** $1"
 	ret=1
 	count_failed=$(( count_failed + 1 ))
@@ -612,6 +607,8 @@ if [ "$ret" != 0 ] ; then
 	success_rate=$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')
 	echo >&2 Failed tests:
 	cat  >&2 log/error.log
+	## TODO the next line should use the same green/red count style as the
+	## running count 
 	echo >&2 "[31m$0: *** ${success_rate}% success rate.  $count_failed test(s) failed (out of $count_total).[m"
 	exit 1
 fi

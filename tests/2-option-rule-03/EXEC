@@ -14,7 +14,7 @@ exitstatus=$?
 	exit 1
 }
 
-grep -qF "expected the file without command and without dependencies 'A' to exist" list.err || {
+grep -qF "expected the file without command and without dependencies \"A\" to exist" list.err || {
 	echo >&2 "*** (1) stderr A"
 	exit 1
 }

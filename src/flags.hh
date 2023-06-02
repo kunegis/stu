@@ -2,12 +2,10 @@
 #define FLAGS_HH
 
 /*
- * Flags are bit fields that apply to dependencies and represents things
- * like "optional dependency" or "\0-separated file".  Flags are binary
- * option-like, and apply at multiple levels in Stu, from Stu source
- * code where they are represented by a syntax ressembling that of
- * command line flags, to attributes of edges in the dependency graph.
- * Internally, flags are defined as bit fields.
+ * Flags apply to dependencies.  Flags are binary option-like, and apply at
+ * multiple levels in Stu, from Stu source code where they are represented by a
+ * syntax ressembling that of command line flags, to attributes of edges in the
+ * dependency graph. Internally, flags are defined as bit fields. 
  *
  * Each edge in the dependency graph is annotated with one object of
  * this type.  This contains bits related to what should be done with
@@ -29,15 +27,12 @@ typedef unsigned Flags;
 
 enum
 {
-	/*
-	 * The index of the flags (I_*), used for array indexing.
-	 * Variables iterating over these values are usually called
-	 * I.
-	 */
+	/* The index of the flags (I_*), used for array indexing.  Variables
+	 * iterating over these values are usually called I.  */
 	I_PERSISTENT= 0,	/* -p  \                  \                     */
 	I_OPTIONAL,		/* -o   | placed flags     |                    */
-	I_TRIVIAL,		/* -t  /                   | target word flags  */
-	I_TARGET_DYNAMIC,	/* [ ] \ target flags      |                    */
+	I_TRIVIAL,		/* -t  /                   |                    */
+	I_TARGET_DYNAMIC,	/* [ ] \ target flags      | target word flags  */
 	I_TARGET_TRANSIENT,	/* @   /                   |                    */
 	I_VARIABLE,		/* $                       |                    */
 	I_NEWLINE_SEPARATED,	/* -n  \ attribute flags   |                    */
@@ -122,9 +117,6 @@ enum
 };
 
 extern const char *const flags_chars;
-/* Characters representing the individual flags -- used in debug mode
- * output, and in other cases  */
-
 extern const char *flags_phrases[C_PLACED];
 
 unsigned flag_get_index(char c);
@@ -132,9 +124,8 @@ unsigned flag_get_index(char c);
  * implemented.  */
 
 string show_flags(Flags flags, Style *style= nullptr);
-/* Textual representation of a flags value.  To be shown before the argument.
- * Empty when flags are empty.  This is used only for debug mode output.  */
 
+// TODO rename format_done
 string done_format(Done done);
 
 Done done_from_flags(Flags flags);

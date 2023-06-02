@@ -24,7 +24,6 @@ pid_t Job::start(string command,
 		 const Place &place_command)
 {
 	assert(pid == -2);
-
 	init_signals();
 
 	/* Like Make, we don't use the variable $SHELL, but use "/bin/sh" as a
@@ -66,7 +65,7 @@ pid_t Job::start(string command,
 	 * by a process, a process and all its child processes will have the
 	 * same PGID.  This makes it possible to kill a process and all its
 	 * children (directly and indirectly) by passing the negated PGID as the
-	 * first parameter to kill(2).  Thus, we set the child process to havae
+	 * first parameter to kill(2).  Thus, we set the child process to have
 	 * as its PGID the same value as its PID.  */
 
 	/* Execute this in both the child and parent */
@@ -241,24 +240,19 @@ pid_t Job::start(string command,
 		}
 
 		int r= execve(shell, (char *const *) argv, (char *const *) envp);
-
-		/* If execve() returns, there is an error, and its return value is -1 */
 		assert(r == -1);
 		perror("execve");
 		_Exit(ERROR_FORK_CHILD);
 	}
 
-	/* Here, we are the parent process */
-
+	/* We are the parent process */
 	assert(pid >= 1);
-
 	if (option_i && tty >= 0) {
 		assert(pid_foreground < 0);
 		if (tcsetpgrp(tty, pid) < 0)
 			print_errno("tcsetpgrp");
 		pid_foreground= pid;
 	}
-
 	++ count_jobs_exec;
 	return pid;
 }
@@ -327,16 +321,14 @@ pid_t Job::wait(int *status)
  * one child process running.  */
 {
  begin:
-	/* First, try wait() without blocking.  WUNTRACED is used to
-	 * also get notified when a job is suspended (e.g. with
-	 * Ctrl-Z).  */
+	/* First, try wait() without blocking.  WUNTRACED is used to also get
+	 * notified when a job is suspended (e.g. with Ctrl-Z).  */
 	pid_t pid= waitpid(-1, status,
 			   WNOHANG | (option_i ? WUNTRACED : 0));
 	if (pid < 0) {
-		/* Should not happen as there is always something
-		 * running when this function is called.  However, this
-		 * may be common enough that we may want Stu to act
-		 * correctly.  */
+		/* Should not happen as there is always something running when
+		 * this function is called.  However, this may be common enough
+		 * that we may want Stu to act correctly.  */
 		assert(false);
 		perror("waitpid");
 		abort();
@@ -344,7 +336,6 @@ pid_t Job::wait(int *status)
 
 	if (pid > 0) {
 		if (WIFSTOPPED(*status)) {
-
 			/* The process was suspended. This can have
 			 * several reasons, including someone just using
 			 * kill -STOP on the process.  */
@@ -375,7 +366,6 @@ pid_t Job::wait(int *status)
 			::kill(-pid, SIGCONT);
 			goto begin;
 		}
-
 		return pid;
 	}
 
@@ -387,7 +377,6 @@ pid_t Job::wait(int *status)
 
 	int sig;
 	int r;
-
  retry:
 	{
 		/* We block the termination signals and wait for them
@@ -416,9 +405,8 @@ pid_t Job::wait(int *status)
 
 	int is_termination= sigismember(&set_termination, sig);
 	if (is_termination == 1) {
-		/* Should not happen, because the handler will
-		 * called as soon as the termination
-		 * signal is unblocked.  But be safe.  */
+		/* Should not happen, because the handler will be called as soon
+		 * as the termination signal is unblocked.  But be safe.  */
 		raise(sig);
 		perror("raise");
 		exit(ERROR_FATAL);
@@ -428,20 +416,16 @@ pid_t Job::wait(int *status)
 	}
 
 	switch (sig) {
-
 	case SIGCHLD:
-		/* Don't act on the signal here.  We could get the PID
-		 * and STATUS from siginfo, but then the process would
-		 * stay a zombie.  Therefore, we have to call waitpid().
-		 * The call to waitpid() will then return the proper
-		 * signal.  */
+		/* Don't act on the signal here.  We could get the PID and
+		 * STATUS from siginfo, but then the process would stay a
+		 * zombie.  Therefore, we have to call waitpid().  The call to
+		 * waitpid() will then return the proper signal.  */
 		goto begin;
-
 	case SIGUSR1:
 		print_statistics(true);
 		job_print_jobs();
 		goto retry;
-
 	default:
 		/* We didn't wait for this signal */
 		assert(false);
@@ -510,7 +494,7 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 
 void Job::handler_termination(int sig)
 /*
- * The termination signal handler -- terminate all jobs and quit.
+ * Terminate all jobs and quit.
  */
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */

@@ -44,8 +44,7 @@ void main_loop(const vector <shared_ptr <const Dep> > &deps)
 		}
 	}
 
-	/* A build error is only thrown when option_keep_going is
-	 * not set */
+	/* A build error is only thrown when option_keep_going is not set */
 	catch (int e) {
 		assert(! option_k);
 		assert(e >= 1 && e <= 4);

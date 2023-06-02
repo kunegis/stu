@@ -1,2 +1,2 @@
-main.stu:3:8: optional dependency using '-o' must not appear
+main.stu:3:8: optional dependency using -o must not appear
 main.stu:3:5: within dynamic variable declaration

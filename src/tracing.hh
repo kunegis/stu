@@ -79,6 +79,7 @@ const char *trace_strip_dir(const char *s);
 // TODO the second argument should be the string.
 #define TRACE_FUNCTION(CLASS, NAME)  Trace trace_object(TRACE_ ## CLASS, #NAME)
 
+// TODO also output the date&time
 #define TRACE(format, ...)  { \
 	if (Trace::get_current()->get_enabled()) {	\
 		string trace_text= fmt("%s" format, \

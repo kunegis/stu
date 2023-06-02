@@ -38,6 +38,7 @@ Trace::Init::Init()
 
 FILE *Trace::open_logfile(const char *filename)
 {
+	// TODO make sure the close-on-exec flag is set.
 	FILE *ret= fopen(filename, "w");
 	if (!ret) {
 		print_errno(fmt("fopen(%s)", filename));

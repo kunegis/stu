@@ -29,9 +29,9 @@
  * Wording of messages:
  *
  * Error messages begin with uppercase letters; backtrace messages with
- * lowercase letters, as per the GNU Coding Standards.  Filenames and
- * operator names are quoted in messages using single quotes.  Messages
- * for neither type of error output lines are terminated by periods.
+ * lowercase letters, as per the GNU Coding Standards.  Filenames are quotes
+ * with double quotes.  Operators and flags are not quoted.   Messages for
+ * neither type of error output lines are terminated by periods. 
  *
  * Typical forms of error messages are:
  *
@@ -47,11 +47,11 @@
  * Use "expected TOKEN" instead of "missing TOKEN".  That's because
  * some tokens in the given list may be optional, making the "missing"
  * phrasing confusing, as it would imply that the token is mandatory.
- * Include definite or indefinite articles after "expected" to avoid
+ * Include a definite or indefinite article after "expected" to avoid
  * interpreting "expected" as an adjective.
  *
  * "not BBB" mentions the invalid token.  If end-of-file is encountered,
- * the "not BBB" part is not used.
+ * the "not BBB" part is omitted.
  *
  * Use "must not" rather than "cannot" or "shall" in error messages when
  * something must be present, but is erroneous, e.g., "filename must not
@@ -61,14 +61,14 @@
  *
  * Operators and other syntax elements are often introduced by the word
  * "using" rather than "with", etc., e.g., "expected a filename after
- * input redirection using '<'".  We always mention both the operator as
+ * input redirection using "<"".  We always mention both the operator as
  * well as its function.
  *
  * When referring to dependencies and targets, we don't use the words
- * "dependency" or "target".  For instance, just write "'X' is needed by
- * 'A'" instead of "dependency 'X' is needed by 'A'".  The exception is
+ * "dependency" or "target".  For instance, just write ""X" is needed by
+ * "A"" instead of "dependency "X" is needed by "A"".  The exception is
  * when the word "dependency" is qualified, e.g. "dynamic dependency [X]
- * must not have input redirection using '<'", or when referring
+ * must not have input redirection using "<"", or when referring
  * specifically to a dependency with respect to a target.
  *
  * But remember that in general it is better to state what what expected

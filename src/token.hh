@@ -70,7 +70,6 @@ class Flag_Token
 	:  public Token
 {
 public:
-
 	const Place place;
 	/* The place of the letter */
 
@@ -107,9 +106,8 @@ public:
 		return place_start;
 	}
 
-	string show_start() const {
-		return show_operator('-');
-	}
+	string show() const;
+	string show_start() const  {  return show_operator('-');  }
 };
 
 class Name_Token

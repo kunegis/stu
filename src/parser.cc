@@ -708,9 +708,9 @@ shared_ptr <const Dep> Parser
 	for (unsigned i= 0;  i < C_PLACED;  ++i)
 		places_flags[i].clear();
 	Place place_flag_last;
-	char flag_last= '\0';
+	shared_ptr <Flag_Token> flag_token_last;
 	while (is_flag('p') || is_flag('o') || is_flag('t')) {
-		flag_last= is <Flag_Token> ()->flag;
+		flag_token_last= is <Flag_Token> ();
 		place_flag_last= (*iter)->get_place();
 		if (is_flag('p')) {
 			flags |= F_PERSISTENT;
@@ -748,8 +748,8 @@ shared_ptr <const Dep> Parser
 		if (has_input) {
 			place_input << fmt("after %s", show_operator('<'));
 		} else if (! place_flag_last.empty()) {
-			assert(flag_last != '\0');
-			place_flag_last << fmt("after %s", show_flags(flag_last));
+			assert(flag_token_last);
+			place_flag_last << fmt("after %s", flag_token_last->show());
 		} else {
 			place_dollar << fmt("after %s", show_operator("$["));
 		}

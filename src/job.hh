@@ -11,13 +11,16 @@
 
 #include "error.hh"
 
+// TODO move the declaration of the following two functions to where they are
+// implemented. 
+
 void job_terminate_all();
 /* Called to terminate all running processes, and remove their target
- * files if present.  Implemented in file_executor.hh, and called from
+ * files if present.  Implemented in file_executor.cc, and called from
  * here. */
 
 void job_print_jobs();
-/* Print jobs.  Called from here; implemented in file_execution.hh */
+/* Called from here; implemented in file_execution.cc */
 
 /*
  * Macro to write in an async signal-safe manner.
@@ -26,7 +29,9 @@ void job_print_jobs();
  * Ignore errors, as this is called from the terminating signal handler.
  *
  * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this
- * macro.  This macro may change ERRNO.
+ * macro.  
+ *
+ * Note:  This macro may change ERRNO.
  */
 #define write_async(FD, MESSAGE) \
 	do { \
@@ -40,7 +45,7 @@ void job_print_jobs();
  * safe, but we shouldn't rely on that.
  *
  * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this
- * macro.
+ * macro.  
  * Note:  This macro may change ERRNO.
  */
 #ifdef NDEBUG
@@ -50,13 +55,10 @@ void job_print_jobs();
 #endif /* ! NDEBUG */
 
 class Job
-/*
- * A job is a child process of Stu that executes the command for a given
- * rule.  An object of this type can execute a job only once.
- */
+/* A child process of Stu that executes the command for a given rule.  An object
+ * of this type can execute a job only once.  */
 {
 public:
-
 	Job():  pid(-2) { }
 
 	bool waited(int status, pid_t pid_check);
@@ -64,13 +66,8 @@ public:
 	 * Return TRUE if the child was successful.  The PID is passed
 	 * to verify that it is the correct one.  */
 
-	bool started() const {
-		return pid >= 0;
-	}
-
-	bool started_or_waited() const {
-		return pid >= -1;
-	}
+	bool started() const  {  return pid >= 0;  }
+	bool started_or_waited() const  {  return pid >= -1;  }
 
 	/* Must be started */
 	pid_t get_pid() const {
@@ -110,10 +107,9 @@ public:
 	static pid_t get_tty()  {  return tty;  }
 
 	class Signal_Blocker
-	/* Block termination signals for the lifetime of an object of this
-	 * type.  Note that the mask of blocked signals is inherited
-	 * over exec(), so we must unblock signals also when starting
-	 * child processes.  */
+	/* Block termination signals for the lifetime of an object of this type.
+	 * Note that the mask of blocked signals is inherited over exec(), so we
+	 * must unblock signals also when starting child processes.  */
 	{
 	private:
 #ifndef NDEBUG
@@ -140,16 +136,14 @@ private:
 
 	static void init_signals();
 	/* Set up all signals.   May be called multiple times, and will
-	 * do the setup only the first time  */
+	 * do the setup only the first time.  */
 
 	static size_t count_jobs_exec, count_jobs_success, count_jobs_fail;
-	/*
-	 * The number of jobs run.  Each job is of exactly one type.
+	/* The number of jobs run.  Each job is of exactly one type.
 	 *
 	 * Exec:     Currently being executed
 	 * Success:  Finished, with success
-	 * Fail:     Finished, without success
-	 */
+	 * Fail:     Finished, without success  */
 
 	static sigset_t set_termination, set_productive,
 		set_termination_productive;

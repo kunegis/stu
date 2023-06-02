@@ -90,3 +90,8 @@ string Operator::show_long() const
 	}
 	return fmt("%s %s", t, show_operator(op));
 }
+
+string Flag_Token::show() const
+{
+	return show_operator(frmt("-%c", flag)); 
+}

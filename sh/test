@@ -148,8 +148,8 @@ output_next()
 		printf '[2KTesting [%s] (%s/%s/%s) %s' \
 		       "$VARIANT" \
 		       "[42;30m$count_succeed[m" \
-		       "$count_failed_text" \
 		       "[43;30m$((count_total - count_succeed - count_failed))[m" \
+		       "$count_failed_text" \
 		       "$file"
 	fi
 }

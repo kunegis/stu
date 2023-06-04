@@ -1,5 +1,5 @@
 touch -t "$(expr 2 + "$(date +%Y)")"01010700 B
 [35m[1mmain.stu[22m:11:3[m: warning: File [1mB[22m has modification time in the future
 touch B
-[31m1mmain.stu[22m:11:1[m: file [1mA[22m was not built by command
-[31m1mmain.stu[22m:5:14[m: [1mA[22m is needed by [1m@all[22m
+[31m[1mmain.stu[22m:11:1[m: file [1mA[22m was not built by command
+[31m[1mmain.stu[22m:5:14[m: [1mA[22m is needed by [1m@all[22m

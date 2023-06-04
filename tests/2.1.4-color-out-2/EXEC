@@ -6,11 +6,12 @@ rm -f ? || exit 2
 exitstatus=$?
 
 [ "$exitstatus" = 1 ] || {
-	echo >&2 "*** Exit code"
+	echo >&2 "*** Exit code wrong"
 	exit 1
 }
 
-diff list.all stdall || {
+cmp -s list.all stdall || {
+	diff list.all stdall
 	echo >&2 "*** Output"
 	echo >&2 stdout+stderr:
 	echo >&2 _____________

@@ -42,6 +42,7 @@ string Target::show(Style *style) const
 	Style style_outer= Style::outer(style, &style_inner, bits_marker);
 	ret= ::show(ret, &style_outer);
 	TRACE("ret= %s", ret);
+	Style::transfer(style, &style_outer);
 	return ret;
 }
 
@@ -358,6 +359,7 @@ string Name::show(Style *style) const
 	TRACE("style_outer= %s", style_format(&style_outer));
 	ret= ::show(ret, &style_outer);
 	TRACE("ret= %s", ret);
+	Style::transfer(style, &style_outer);
 	return ret;
 }
 
@@ -415,12 +417,17 @@ string Place_Param_Target::show(Style *style) const
 	if (flags & F_TARGET_TRANSIENT) {
 		ret += '@';
 		bits_inner |= S_HAS_MARKER;
+	} else {
+		bits_inner |= S_QUOTES_MAY_INHERIT_UP;
 	}
 	Style style_inner= Style::inner(style, bits_inner); 
+	TRACE("style_inner= %s", style_format(&style_inner));
 	ret += place_name.show(&style_inner);
+	TRACE("style_inner[out]= %s", style_format(&style_inner));
 	Style style_outer= Style::outer(style, &style_inner); 
 	ret= ::show(ret, &style_outer);
 	TRACE("ret= %s", ret);
+	Style::transfer(style, &style_outer);
 	return ret;
 }
 

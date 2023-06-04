@@ -398,9 +398,6 @@ public:
 	virtual bool is_unparametrized() const;
 	virtual const Place &get_place() const;
 	virtual string show(Style *style= nullptr) const;
-//	virtual string format_err() const;
-//	virtual string format_out() const;
-//	virtual string format_src() const;
 	virtual bool is_normalized() const;
 	virtual Target get_target() const;
 

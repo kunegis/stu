@@ -34,6 +34,16 @@ Style Style::inner(const Style *parent,
 	return Style(bits, !parent);
 }
 
+void Style::transfer(Style *style, const Style *style_outer)
+{
+	TRACE_FUNCTION(SHOW, Style::transfer);
+	if (!style)  return;
+	if (*style_outer & S_QUOTES_INHERIT_UP) {
+		TRACE("%s", "transfer up");
+	}
+	*style |= *style_outer & S_QUOTES_INHERIT_UP;
+}
+
 Style Style::outer(const Style *parent, const Style *style_inner,
 		   Style_Bits other_bits)
 {
@@ -46,7 +56,7 @@ Style Style::outer(const Style *parent, const Style *style_inner,
 	} else {
 		bits |= S_DEFAULT;
 	}
-	bits &= ~S_NEED_QUOTES_NOCOLOR;
+	bits &= ~(S_NEED_QUOTES_NOCOLOR | S_NEED_QUOTES_CHAR);
 	if (style_inner && style_inner->bits & S_QUOTES_INHERIT_UP) {
 		bits |= S_NEED_QUOTES_CHAR;
 	}
@@ -86,6 +96,7 @@ string show(string name, Style *style)
 		(*style & S_NEED_QUOTES_NOCOLOR)
 		&& !(*style & S_HAS_MARKER)
 		&& !(*style & S_OUTER);
+	TRACE("actually_need_quotes_nocolor= %s", frmt("%d", actually_need_quotes_nocolor)); 
 	if (*style & S_OUTER) {
 		ret= name;
 	} else {
@@ -175,7 +186,9 @@ string show_dynamic_variable(string name, Style *style)
 	string s= show(name, &style_inner);
 	string ret= fmt("$[%s]", s);
 	Style style_outer= Style::outer(style, &style_inner); 
-	return show(ret, &style_outer); 
+	ret= show(ret, &style_outer);
+	Style::transfer(style, &style_outer);
+	return ret;
 }
 
 string show_operator(char c)
@@ -209,5 +222,6 @@ string show_prefix(string prefix, const T &object, Style *style)
 	Style style_outer= Style::outer(style, &style_inner, S_HAS_MARKER);
 	ret= show(ret, &style_outer); 
 	TRACE("ret= %s", ret);
+	Style::transfer(style, &style_outer);
 	return ret;
 }

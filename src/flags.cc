@@ -31,6 +31,7 @@ string show_flags(Flags flags, Style *style)
 	Style style_outer= Style::outer(style, &style_inner);
 	ret= show(ret, &style_outer);
 	TRACE("ret= %s", ret);
+	Style::transfer(style, &style_outer);
 	return ret; 
 }
 

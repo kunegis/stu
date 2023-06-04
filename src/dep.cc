@@ -109,7 +109,8 @@ string Plain_Dep::show(Style *style) const
 	}
 	Style style_inner= Style::inner
 		(style,
-		 flags & F_VARIABLE ? S_HAS_MARKER : 0);
+		 (flags & F_VARIABLE ? S_HAS_MARKER : S_QUOTES_MAY_INHERIT_UP)
+		 );
 	TRACE("style_inner= %s", style_format(&style_inner));
 	string t= place_param_target.show(&style_inner);
 	string ret= fmt("%s%s%s%s",
@@ -117,9 +118,11 @@ string Plain_Dep::show(Style *style) const
 			flags & F_VARIABLE ? "$[" : "",
 			t,
 			flags & F_VARIABLE ? "]" : "");
+	TRACE("style_inner[out]= %s", style_format(&style_inner));
 	Style style_outer= Style::outer(style, &style_inner);
 	ret= ::show(ret, &style_outer);
 	TRACE("ret= %s", ret); 
+	Style::transfer(style, &style_outer);
 	return ret;
 }
 
@@ -162,6 +165,7 @@ string Dynamic_Dep::show(Style *style) const
 	Style style_outer= Style::outer(style, &style_inner);
 	ret= ::show(ret, &style_outer);
 	TRACE("ret= %s", ret);
+	Style::transfer(style, &style_outer);
 	return ret;
 }
 
@@ -203,11 +207,9 @@ Compound_Dep::instantiate(const map <string, string> &mapping) const
 	shared_ptr <Compound_Dep> ret= make_shared <Compound_Dep> (flags, places, place);
 	ret->index= index;
 	ret->top= top;
-
 	for (const shared_ptr <const Dep> &d:  deps) {
 		ret->push_back(d->instantiate(mapping));
 	}
-
 	return ret;
 }
 
@@ -224,6 +226,8 @@ bool Compound_Dep::is_unparametrized() const
 
 string Compound_Dep::show(Style *style) const
 {
+	TRACE_FUNCTION(SHOW, Compound_Dep::show);
+	TRACE("%s", style_format(style));
 	string ret;
 	for (const shared_ptr <const Dep> &d:  deps) {
 		if (! ret.empty())
@@ -234,7 +238,10 @@ string Compound_Dep::show(Style *style) const
 	if (deps.size() != 1)
 		ret= fmt("(%s)", ret);
 	Style style_outer= Style::outer(style, nullptr);
-	return ::show(ret, &style_outer);
+	ret= ::show(ret, &style_outer);
+	TRACE("ret= %s", ret);
+	Style::transfer(style, &style_outer);
+	return ret;
 }
 
 shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mapping) const
@@ -272,52 +279,35 @@ const Place &Concat_Dep::get_place() const
 
 string Concat_Dep::show(Style *style) const
 {
-//	assert(bitset <sizeof(Style)> (style & S_CHANNEL).count() <= 1);
+	TRACE_FUNCTION(SHOW, Concat_Dep::show);
+	TRACE("%s", style_format(style));
+	Style style_inner= Style::inner(style, S_QUOTES_MAY_INHERIT_UP | S_NO_EMPTY); 
+ restart:
+	bool quotes_initial= style_inner.is(); 
 	string ret;
 	if (style && *style & S_SHOW_FLAGS) {
-		Style style_inner= Style::inner(style); 
+//		Style style_inner= Style::inner(style); 
 		string f= show_flags(flags, &style_inner);
-		if (! f.empty()) {
+		if (! f.empty())
 			f += ' ';
-		}
 		ret += f;
 	}
 	for (const shared_ptr <const Dep> &d:  deps) {
-		Style style_inner= Style::inner(style); 
+//		Style style_inner= Style::inner(style); 
 		ret += d->show(&style_inner);
+		if (quotes_initial != (style_inner.is())) {
+			assert(!quotes_initial && style_inner.is());
+			style_inner.set(); 
+			goto restart;
+		}
 	}
+	if (ret.empty())  style_inner.set();
+	Style style_outer= Style::outer(style, &style_inner);
+	ret= ::show(ret, &style_outer);
+	TRACE("ret= %s", ret);
+	Style::transfer(style, &style_outer);
 	return ret;
 }
-
-// string Concat_Dep::format_err() const
-// {
-// 	Style style= S_ERR | S_NO_FLAGS | S_COLOR_WORD | S_WANT_ESCAPE | S_QUOTES * Color::quotes;
-// //	bool quotes= Color::quotes;
-// 	string ret= format(style);
-// 	if (style & S_QUOTES)
-// 		ret= '\'' + ret + '\'';
-// 	return ret;
-// }
-
-// string Concat_Dep::format_out() const
-// {
-// 	Style style= S_OUT | S_NO_FLAGS | S_WANT_ESCAPE | S_QUOTES * Color::quotes;
-// //	bool quotes= Color::quotes;
-// 	string ret= format(style);
-// 	if (style & S_QUOTES)
-// 		ret= '\'' + ret + '\'';
-// 	return ret;
-// }
-
-// string Concat_Dep::format_src() const
-// {
-// 	Style style= S_SRC | S_WANT_ESCAPE | S_QUOTES * Color::quotes;
-// //	bool quotes= Color::quotes;
-// 	string ret= format(style);
-// 	if (style & S_QUOTES)
-// 		ret= '\'' + ret + '\'';
-// 	return ret;
-// }
 
 bool Concat_Dep::is_normalized() const
 {

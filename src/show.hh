@@ -21,7 +21,7 @@ constexpr Style_Bits S_QUOTES_INHERIT_UP=       1 <<  4;
 constexpr Style_Bits S_SHOW_FLAGS=              1 <<  5;
 constexpr Style_Bits S_NEED_QUOTES_NOCOLOR= 	1 <<  6; /* Need quotes because color is not used */
 constexpr Style_Bits S_NEED_QUOTES_CHAR=    	1 <<  7; /* Need quotes because there is a special character */
-constexpr Style_Bits S_OUTER=	         	1 <<  8;
+constexpr Style_Bits S_OUTER=         		1 <<  8;
 constexpr Style_Bits S_NO_EMPTY=            	1 <<  9;
 constexpr Style_Bits S_HAS_MARKER=          	1 << 10;
 constexpr Style_Bits S_GLOB=                	1 << 11;
@@ -59,8 +59,8 @@ public:
 
 	static Style outer(const Style *style, const Style *style_inner,
 			   Style_Bits other_bits= 0);
-	/* If STYLE_INNER is false, assume all inner parts were shown with
-	 * quotes.  */
+
+	static void transfer(Style *style, const Style *style_outer);
 
 private:
 	Style_Bits bits;

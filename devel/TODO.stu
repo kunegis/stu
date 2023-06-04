@@ -2,6 +2,8 @@
 # Option -I
 #
 
+# * rewrite show() using an array of parts.
+
 # For all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
 # * @" as target name.  Make sure @ is not quoted, but " is.  
 # * list.*+X does not need quotes in -I output

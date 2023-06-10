@@ -162,7 +162,7 @@ public:
 	virtual const Place &get_place() const= 0;
 	/* Where the dependency as a whole is declared */
 
-	virtual string show(Style *style= nullptr) const= 0;
+	virtual void render(Parts &, Rendering= 0) const= 0;
 
 	virtual Target get_target() const= 0;
 	/* Only called for non-compound and non-parametrized dependencies.  */
@@ -188,9 +188,9 @@ public:
 	 * return null.  */
 };
 
-string show(shared_ptr <const Dep> dep, Style *style= nullptr)
+void render(Parts &parts, shared_ptr <const Dep> dep, Rendering rendering= 0)
 {
-	return dep->show(style); 
+	dep->render(parts, rendering); 
 }
 
 class Plain_Dep
@@ -295,7 +295,7 @@ public:
 		return place_param_target.place_name.get_n() == 0;
 	}
 
-	virtual string show(Style *style= nullptr) const;
+	virtual void render(Parts &, Rendering= 0) const;
 	virtual bool is_normalized() const {  return true;  }
 
 	virtual Target get_target() const;
@@ -350,7 +350,7 @@ public:
 		return dep->get_place();
 	}
 
-	virtual string show(Style *style= nullptr) const;
+	virtual void render(Parts &, Rendering= 0) const;
 	virtual bool is_normalized() const  {  return dep->is_normalized();  }
 	virtual Target get_target() const;
 
@@ -397,7 +397,7 @@ public:
 
 	virtual bool is_unparametrized() const;
 	virtual const Place &get_place() const;
-	virtual string show(Style *style= nullptr) const;
+	virtual void render(Parts &, Rendering= 0) const;
 	virtual bool is_normalized() const;
 	virtual Target get_target() const;
 
@@ -483,10 +483,7 @@ public:
 	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
 	virtual bool is_unparametrized() const;
 	virtual const Place &get_place() const  {  return place;  }
-	virtual string show(Style *style= nullptr) const;
-//	virtual string format_err() const;
-//	virtual string format_out() const;
-//	virtual string format_src() const;
+	virtual void render(Parts &, Rendering= 0) const;
 	virtual bool is_normalized() const  {  return false;  }
 	virtual Target get_target() const  {  assert(false);  return Target();  }
 };
@@ -503,11 +500,12 @@ public:
 	}
 	virtual bool is_unparametrized() const  {  return false;  }
 	virtual const Place &get_place() const  {  return Place::place_empty;  }
-	virtual string show(Style *style= nullptr) const  {  return ::show("ROOT", style);  }
+	virtual void render(Parts &parts, Rendering= 0) const;
 	virtual Target get_target() const  {  return Target();  }
 	virtual bool is_normalized() const  {  return true;  }
 };
 
+// TODO move to .cc file
 void Dep::normalize(shared_ptr <const Dep> dep,
 		    vector <shared_ptr <const Dep> > &deps,
 		    int &error)

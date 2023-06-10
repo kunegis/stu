@@ -15,24 +15,38 @@ unsigned flag_get_index(char c)
 	}
 }
 
-string show_flags(Flags flags, Style *style)
+bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 {
 	TRACE_FUNCTION(SHOW, show_flags);
-	TRACE("%s %s", frmt("%u", flags), style_format(style));
+//	TRACE("%s %s", frmt("%u", flags), style_format(style));
+	if (!(rendering & R_SHOW_FLAGS))
+		return false;
 	string ret;
 	for (unsigned i= 0;  i < C_ALL;  ++i)
 		if (flags & (1 << i)) {
 			ret += flags_chars[i];
 		}
 	if (ret.empty())
-		return ret;
-	Style style_inner= Style::inner(style, S_HAS_MARKER);
-	ret= '-' + show(ret, &style_inner);
-	Style style_outer= Style::outer(style, &style_inner);
-	ret= show(ret, &style_outer);
-	TRACE("ret= %s", ret);
-	Style::transfer(style, &style_outer);
-	return ret; 
+		return false;
+//	Style style_inner= Style::inner(style, S_HAS_MARKER);
+	ret= '-' + show(ret
+//			,
+//			&style_inner
+			);
+//	Style style_outer= Style::outer(style, &style_inner);
+//	ret= show(ret, &style_outer);
+//	TRACE("ret= %s", ret);
+//	Style::transfer(style, &style_outer);
+//	return ret;
+	parts.append_operator(ret);
+	return true;
+}
+
+string show_flags(Flags flags, Style style)
+{
+	Parts parts;
+	render_flags(flags, parts);
+	return show(parts, style);
 }
 
 string done_format(Done done)

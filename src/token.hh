@@ -37,8 +37,8 @@ public:
 	virtual const Place &get_place_start() const= 0;
 	/* The starting place.  Always the first character. */
 
-	virtual string show_start() const= 0;
-	/* Formatting of the starting character of character sequence */
+	virtual void render(Parts &, Rendering= 0) const= 0;
+	/* Render only the start of the token if it is very long */
 };
 
 class Operator
@@ -62,8 +62,8 @@ public:
 
 	const Place &get_place() const  {  return place;  }
 	const Place &get_place_start() const  {  return place;  }
-	string show_start() const  {  return show_operator(op);  }
-	string show_long() const;
+	void render(Parts &, Rendering= 0) const;
+	void render_long(Parts &, Rendering= 0) const;
 };
 
 class Flag_Token
@@ -106,8 +106,8 @@ public:
 		return place_start;
 	}
 
-	string show() const;
-	string show_start() const  {  return show_operator('-');  }
+	void render_full(Parts &, Rendering= 0) const;
+	void render(Parts &, Rendering= 0) const;
 };
 
 class Name_Token
@@ -131,8 +131,8 @@ public:
 		return Place_Name::place;
 	}
 
-	string show_start() const {
-		return Place_Name::show();
+	void render(Parts &parts, Rendering rendering= 0) const {
+		Place_Name::render(parts, rendering);
 	}
 };
 
@@ -172,8 +172,9 @@ public:
 		return place_start;
 	}
 
-	string show_start() const {
-		return show_operator('{');
+	void render(Parts &parts, Rendering= 0) const {
+		parts.append_operator('{');
+//		return render_operator(parts, '{');
 	}
 
 	const vector <string> &get_lines() const;

@@ -22,7 +22,7 @@ public:
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
-	virtual string show(Style *style= nullptr) const;
+	virtual void render(Parts &, Rendering= 0) const override;
 	virtual void notify_result(shared_ptr <const Dep> dep,
 				   Executor *, Flags flags,
 				   shared_ptr <const Dep> dep_source);

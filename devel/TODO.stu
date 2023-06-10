@@ -3,6 +3,9 @@
 #
 
 # * rewrite show() using an array of parts.
+# ** render:    object to Parts
+# ** show:  Parts to string
+# ** show:     object to string
 
 # For all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
 # * @" as target name.  Make sure @ is not quoted, but " is.  
@@ -50,6 +53,7 @@
 # * The filename "aaa BBB" is shown correctly in error messages
 # * The filename " a a a " is shown correctly in error messages
 # * ${aé}  :   show the é in the error message
+# * why is it linked to libm?
 
 #
 # Test that there are no carriage returns in the source.
@@ -174,4 +178,12 @@ list.${name|[A-Z].*} # Matches uppercase names
 
 #
 # gcc --fanalyzer
+#
+
+#
+# Compilation mode like ndebug but non-stripped.  Check output of nm and ldd. 
+#
+
+#
+# Make "override" mandatory after all overriding functions.
 #

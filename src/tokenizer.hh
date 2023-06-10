@@ -60,29 +60,21 @@ public:
 	 * identical to parse_tokens_file().  */
 
 private:
-
 	/* Stacks of included files */
 	vector <Backtrace> &backtraces;
 	vector <string> &filenames;
 
 	set <string> &includes;
 
+	Place place_base;
 	/* The place where the tokenizer is tokenizing.  The line and
 	 * column numbers are modified accordingly -- only the type and
 	 * text is used.  */
-	Place place_base;
 
-	size_t line;
-	/* Line number */
-
-	const char *p_line;
-	/* Beginning of current line */
-
-	const char *p;
-	/* Current position */
-
-	const char *const p_end;
-	/* End of input */
+	size_t line; /* Line number */
+	const char *p_line; /* Beginning of current line */
+	const char *p; /* Current position */
+	const char *const p_end; /* End of input */
 
 	Environment environment= E_WHITESPACE;
 	/* For the next token */
@@ -101,7 +93,7 @@ private:
 		   p_line(p_),
 		   p(p_),
 		   p_end(p_ + length)
-	{ }
+	{  }
 
 	void parse_tokens(vector <shared_ptr <Token> > &tokens,
 			  Context context,

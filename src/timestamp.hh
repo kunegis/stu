@@ -38,7 +38,6 @@ class Timestamp
  * in Stu scripts may emerge which otherwise would have been hidden.  */
 {
 private:
-
 	struct timespec t;
 	/* When undefined, .tv_sec is equal to (time_t) -1, and .tv_nsec
 	 * is uninitialized. */
@@ -50,12 +49,10 @@ private:
 	}
 
 public:
-
 	/* Uninitialized */
-	Timestamp() { }
+	Timestamp()  {  }
 
-	Timestamp(struct stat *buf)
-	{
+	Timestamp(struct stat *buf)  {
 		t.tv_sec= buf->st_mtim.tv_sec;
 		t.tv_nsec= buf->st_mtim.tv_nsec;
 	}
@@ -123,11 +120,9 @@ private:
 public:
 
 	/* Uninitialized */
-	Timestamp()
-	{ }
+	Timestamp()  {  }
 
-	Timestamp(const struct stat *buf)
-	{
+	Timestamp(const struct stat *buf) {
 		t= buf->st_mtime;
 	}
 

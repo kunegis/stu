@@ -36,6 +36,7 @@
  * file.
  */
 
+// TODO rename to Canonicalize_Flags
 typedef unsigned Canon_Flags;
 /* Declared as integer so arithmetic can be performed on it */
 

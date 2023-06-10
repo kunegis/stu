@@ -91,7 +91,17 @@ string Operator::show_long() const
 	return fmt("%s %s", t, show_operator(op));
 }
 
-string Flag_Token::show() const
+void Operator::render(Parts &parts, Rendering= 0) const
+{
+	parts.emplace_back(PROP_OPERATOR, op);
+}
+
+string Flag_Token::render_full() const
 {
 	return show_operator(frmt("-%c", flag)); 
+}
+
+void Flag_Token::render(Parts &parts) const
+{
+	return render_operator(parts, '-');
 }

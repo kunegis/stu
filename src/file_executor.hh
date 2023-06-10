@@ -45,10 +45,7 @@ public:
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
-	string show(Style *style= nullptr) const {
-		assert(targets.size());
-		return targets.front().show(style);
-	}
+	virtual void render(Parts &, Rendering= 0) const override;
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
 		mapping_variable.insert(result_variable_child.begin(),
 					result_variable_child.end());

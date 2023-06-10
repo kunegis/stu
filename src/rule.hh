@@ -90,7 +90,7 @@ public:
 		return command == nullptr && !is_hardcode && !is_copy;
 	}
 
-	string show(Style *style= nullptr) const;
+	void render(Parts &, Rendering= 0) const;
 	/* Format the rule, as for the -P or -d options */
 
 	void check_unparametrized(shared_ptr <const Dep> dep,

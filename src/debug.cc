@@ -15,10 +15,10 @@ void Debug::print(const Debuggable *d, string text)
 		Style style= S_DEBUG;
 		if (debuggables.size() > 0 &&
 		    debuggables[debuggables.size() - 1] == d) {
-			print(d->show(&style), text);
+			print(show(d, style), text);
 		} else {
 			Debug debug(d);
-			print(d->show(&style), text);
+			print(show(d, style), text);
 		}
 	}
 }

@@ -123,7 +123,8 @@ unsigned flag_get_index(char c);
 /* Get the flag index corresponding to a character.  Not all cases are
  * implemented.  */
 
-string show_flags(Flags flags, Style *style= nullptr);
+bool render_flags(Flags flags, Parts &, Rendering= 0);
+string show_flags(Flags, Style= S_DEFAULT);
 
 // TODO rename format_done
 string done_format(Done done);

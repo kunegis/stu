@@ -140,7 +140,7 @@ public:
 		(void) result_variable_child;
 	}
 
-	virtual string show(Style *style= nullptr) const= 0;
+	virtual void render(Parts &, Rendering= 0) const= 0;
 	
 	static bool hide_out_message;
 	/* Whether to show a STDOUT message at the end */

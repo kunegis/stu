@@ -403,9 +403,9 @@ void Name::append(const Name &name)
 	}
 }
 
-string show(const Place_Name &place_name, Style *style)
+void show(Parts &parts, const Place_Name &place_name)
 {
-	return place_name.show(style); 
+	return place_name.show(parts); 
 }
 
 string Place_Param_Target::show(Style *style) const

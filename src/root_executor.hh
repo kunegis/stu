@@ -11,8 +11,8 @@ public:
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
 
-	virtual string show(Style *style= nullptr) const {
-		return ::show("ROOT", style);
+	virtual void render(Parts &parts, Rendering= 0) const {
+		parts.append_operator("ROOT");
 	}
 
 protected:

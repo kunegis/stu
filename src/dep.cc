@@ -94,36 +94,50 @@ Target Plain_Dep::get_target() const
 	return ret;
 }
 
-string Plain_Dep::show(Style *style) const
+void Plain_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION(SHOW, Plain_Dep::show);
-	TRACE("%s", style_format(style));
+	TRACE_FUNCTION(SHOW, Plain_Dep::render);
 	
-	string f;
-	if (style && *style & S_SHOW_FLAGS) {
-		Style style_inner= Style::inner(style);
-		f= show_flags(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT), &style_inner);
-		if (! f.empty()) {
-			f += ' ';
-		}
-	}
-	Style style_inner= Style::inner
-		(style,
-		 (flags & F_VARIABLE ? S_HAS_MARKER : S_QUOTES_MAY_INHERIT_UP)
-		 );
-	TRACE("style_inner= %s", style_format(&style_inner));
-	string t= place_param_target.show(&style_inner);
-	string ret= fmt("%s%s%s%s",
-			f,
-			flags & F_VARIABLE ? "$[" : "",
-			t,
-			flags & F_VARIABLE ? "]" : "");
-	TRACE("style_inner[out]= %s", style_format(&style_inner));
-	Style style_outer= Style::outer(style, &style_inner);
-	ret= ::show(ret, &style_outer);
-	TRACE("ret= %s", ret); 
-	Style::transfer(style, &style_outer);
-	return ret;
+//	string f;
+//	if (rendering & R_SHOW_FLAGS) {
+//	if (style && *style & S_SHOW_FLAGS) {
+//		Style style_inner= Style::inner(style);
+		if (
+		render_flags
+//		f= show_flags
+			(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT),
+			 parts,
+			 rendering
+//			 , &style_inner
+			 ))
+//		if (! f.empty()) {
+			parts.append_space();
+//			f += ' ';
+//		}
+//	}
+//	Style style_inner= Style::inner
+//		(style,
+//		 (flags & F_VARIABLE ? S_HAS_MARKER : S_QUOTES_MAY_INHERIT_UP)
+//		 );
+//	TRACE("style_inner= %s", style_format(&style_inner));
+//	string t=
+	if (flags & F_VARIABLE)
+		parts.append_operator("$[");
+	place_param_target.render(parts, rendering);
+	if (flags & F_VARIABLE)
+		parts.append_operator(']');
+		
+	//	string ret= fmt("%s%s%s%s",
+	//			f,
+				//			flags & F_VARIABLE ? "$[" : "",
+	//			t,
+	//			flags & F_VARIABLE ? "]" : "");
+//	TRACE("style_inner[out]= %s", style_format(&style_inner));
+//	Style style_outer= Style::outer(style, &style_inner);
+//	ret= ::show(ret, &style_outer);
+//	TRACE("ret= %s", ret); 
+//	Style::transfer(style, &style_outer);
+//	return ret;
 }
 
 Target Dynamic_Dep::get_target() const
@@ -147,26 +161,33 @@ Target Dynamic_Dep::get_target() const
 	return Target(text);
 }
 
-string Dynamic_Dep::show(Style *style) const
+void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION(SHOW, Dynamic_Dep::show);
-	TRACE("%s", style_format(style));
-	string ret;
-	if (style && *style & S_SHOW_FLAGS) {
-		Style style_flags= Style::inner(style);
-		string text_flags= show_flags(flags & ~F_TARGET_DYNAMIC, &style_flags);
-		if (! text_flags.empty())
-			text_flags += ' ';
-		ret += text_flags;
-	}
-	Style style_inner= Style::inner(style, S_HAS_MARKER);
-	string text= dep->show(&style_inner);
-	ret += fmt("[%s]", text);
-	Style style_outer= Style::outer(style, &style_inner);
-	ret= ::show(ret, &style_outer);
-	TRACE("ret= %s", ret);
-	Style::transfer(style, &style_outer);
-	return ret;
+	TRACE_FUNCTION(SHOW, Dynamic_Dep::render);
+//	TRACE("%s", style_format(style));
+//	string ret;
+//	if (rendering & R_SHOW_FLAGS) {
+//	if (style && *style & S_SHOW_FLAGS) {
+//		Style style_flags= Style::inner(style);
+		if (render_flags(flags & ~F_TARGET_DYNAMIC,
+				 //, &style_flags);
+				 parts, rendering))
+			parts.append_space(); 
+//		if (! text_flags.empty())
+//			text_flags += ' ';
+//		ret += text_flags;
+//	}
+//	Style style_inner= Style::inner(style, S_HAS_MARKER);
+//	string text=
+	parts.append_operator('[');
+	dep->render(parts, rendering);
+	parts.append_operator(']');
+//	ret += fmt("[%s]", text);
+//	Style style_outer= Style::outer(style, &style_inner);
+//	ret= ::show(ret, &style_outer);
+//	TRACE("ret= %s", ret);
+//	Style::transfer(style, &style_outer);
+//	return ret;
 }
 
 shared_ptr <const Dep> Dynamic_Dep::instantiate(const map <string, string> &mapping) const
@@ -224,24 +245,32 @@ bool Compound_Dep::is_unparametrized() const
 	return true;
 }
 
-string Compound_Dep::show(Style *style) const
+void Compound_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION(SHOW, Compound_Dep::show);
-	TRACE("%s", style_format(style));
-	string ret;
+	TRACE_FUNCTION(SHOW, Compound_Dep::render);
+//	TRACE("%s", style_format(style));
+//	string ret;
+	if (deps.size() != 0)
+		parts.append_operator('(');
+	bool first= true;
 	for (const shared_ptr <const Dep> &d:  deps) {
-		if (! ret.empty())
-			ret += " ";
-		Style style_inner= Style::inner(style);
-		ret += d->show(&style_inner);
+		if (first) {
+//		if (! ret.empty())
+			parts.append_space();
+//			ret += " ";
+			first= false;
+		}
+		d->render(parts, rendering);
+//		Style style_inner= Style::inner(style);
+//		ret += d->show(&style_inner);
 	}
-	if (deps.size() != 1)
-		ret= fmt("(%s)", ret);
-	Style style_outer= Style::outer(style, nullptr);
-	ret= ::show(ret, &style_outer);
-	TRACE("ret= %s", ret);
-	Style::transfer(style, &style_outer);
-	return ret;
+	if (deps.size() != 0)
+		parts.append_operator(')');
+//	Style style_outer= Style::outer(style, nullptr);
+//	ret= ::show(ret, &style_outer);
+//	TRACE("ret= %s", ret);
+//	Style::transfer(style, &style_outer);
+//	return ret;
 }
 
 shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mapping) const
@@ -277,36 +306,39 @@ const Place &Concat_Dep::get_place() const
 	return deps.front()->get_place();
 }
 
-string Concat_Dep::show(Style *style) const
+void Concat_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Concat_Dep::show);
-	TRACE("%s", style_format(style));
-	Style style_inner= Style::inner(style, S_QUOTES_MAY_INHERIT_UP | S_NO_EMPTY); 
- restart:
-	bool quotes_initial= style_inner.is(); 
-	string ret;
-	if (style && *style & S_SHOW_FLAGS) {
-//		Style style_inner= Style::inner(style); 
-		string f= show_flags(flags, &style_inner);
-		if (! f.empty())
-			f += ' ';
-		ret += f;
-	}
-	for (const shared_ptr <const Dep> &d:  deps) {
-//		Style style_inner= Style::inner(style); 
-		ret += d->show(&style_inner);
-		if (quotes_initial != (style_inner.is())) {
-			assert(!quotes_initial && style_inner.is());
-			style_inner.set(); 
-			goto restart;
+//	TRACE("%s", style_format(style));
+//	Style style_inner= Style::inner(style, S_QUOTES_MAY_INHERIT_UP | S_NO_EMPTY); 
+// restart:
+//	bool quotes_initial= style_inner.is(); 
+//	string ret;
+	if (rendering & R_SHOW_FLAGS) {
+//		string f=
+		if (render_flags(flags, parts, rendering)) {
+//				 , &style_inner);
+//		if (! f.empty())
+			parts.append_space();
+//			f += ' ';
+//		ret += f;
 		}
 	}
-	if (ret.empty())  style_inner.set();
-	Style style_outer= Style::outer(style, &style_inner);
-	ret= ::show(ret, &style_outer);
-	TRACE("ret= %s", ret);
-	Style::transfer(style, &style_outer);
-	return ret;
+	for (const shared_ptr <const Dep> &d:  deps) {
+		d->render(parts, rendering);
+//		ret += d->show(&style_inner);
+//		if (quotes_initial != (style_inner.is())) {
+//			assert(!quotes_initial && style_inner.is());
+//			style_inner.set(); 
+//			goto restart;
+//		}
+	}
+//	if (ret.empty())  style_inner.set();
+//	Style style_outer= Style::outer(style, &style_inner);
+//	ret= ::show(ret, &style_outer);
+//	TRACE("ret= %s", ret);
+//	Style::transfer(style, &style_outer);
+//	return ret;
 }
 
 bool Concat_Dep::is_normalized() const
@@ -433,10 +465,10 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		 * input redirection, but the current data structures do
 		 * not allow that, and therefore we make that invalid.  */
 		a->get_place() << fmt("%s cannot have input redirection using %s",
-				      a->show(),
+				      show(a),
 				      show_operator('<'));
 		b->get_place() << fmt("because %s is concatenated to it",
-				      b->show());
+				      show(b));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
@@ -445,9 +477,9 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		/* We don't save the place for the '<', so we cannot
 		 * have "using '<'" on an extra line.  */
 		b->get_place() << fmt("%s cannot have input redirection using %s",
-				      b->show(),
+				      show(b),
 				      show_operator('<'));
-		a->get_place() << fmt("in concatenation to %s", a->show());
+		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
@@ -461,34 +493,34 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 			C_ALL;
 		assert(i_flag != C_ALL);
 		b->get_place() << fmt("%s cannot be declared as %s",
-				      b->show(), flags_phrases[i_flag]);
+				      show(b), flags_phrases[i_flag]);
 		b->places[i_flag] << fmt("using %s",
-					 show_prefix("-", frmt("%c", flags_chars[i_flag])));
-		a->get_place() << fmt("in concatenation to %s", a->show());
+					 show_operator(frmt("-%c", flags_chars[i_flag])));
+		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (b->flags & F_TARGET_TRANSIENT) {
-		b->get_place() << fmt("transient target %s is invalid", b->show());
-		a->get_place() << fmt("in concatenation to %s", a->show());
+		b->get_place() << fmt("transient target %s is invalid", show(b));
+		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (a->flags & F_VARIABLE) {
 		a->get_place() << fmt("the variable dependency %s cannot be used",
-				      a->show());
+				      show(a));
 		b->get_place() << fmt("in concatenation with %s",
-				      b->show());
+				      show(b));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (b->flags & F_VARIABLE) {
 		b->get_place() << fmt("variable dependency %s is invalid",
-				      b->show());
-		a->get_place() << fmt("in concatenation to %s", a->show());
+				      show(b));
+		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
@@ -559,4 +591,9 @@ shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> 
 	}
 
 	return ret;
+}
+
+void Root_Dep::render(Parts &parts, Rendering) const
+{
+	parts.append_operator("ROOT");
 }

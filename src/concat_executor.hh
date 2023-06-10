@@ -33,8 +33,8 @@ public:
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
-	virtual string show(Style *style= nullptr) const {
-		return dep->show(style);
+	virtual void render(Parts &parts, Rendering= 0) const {
+		return dep->render(parts);
 	}
 
 	virtual void notify_variable(const map <string, string> &result_variable_child) {

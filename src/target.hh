@@ -135,7 +135,7 @@ public:
 		return get_word(i) & F_TARGET_TRANSIENT;
 	}
 
-	string show(Style *style= nullptr) const;
+	void render(Parts &, Rendering= 0) const;
 
 	string get_name_nondynamic() const
 	/* Get the name of the target, knowing that the target is not dynamic */
@@ -318,7 +318,7 @@ public:
 	 * The range of PRIORITY can be easily extended to other integers if necessary.
 	 */
 
-	string show(Style *style= nullptr) const;
+	void render(Parts &, Rendering= 0) const;
 //	string show_glob() const; // TODO fold into format(). 
 
 	string get_duplicate_parameter() const;
@@ -447,7 +447,7 @@ public:
 	}
 };
 
-string show(const Place_Name &place_name, Style *style= nullptr); 
+void show(Parts &, const Place_Name &place_name); 
 
 class Place_Param_Target
 /* A target that is parametrized and contains places.  Non-dynamic. */
@@ -488,7 +488,7 @@ public:
 			this->place_name == that.place_name;
 	}
 
-	string show(Style *style= nullptr) const;
+	void render(Parts &, Rendering) const;
 
 	shared_ptr <Place_Param_Target>
 	instantiate(const map <string, string> &mapping) const {
@@ -516,8 +516,10 @@ public:
 	}
 };
 
-string show(const Place_Param_Target &place_param_target, Style *style= nullptr) {
-	return place_param_target.show(style);
+void render(const Place_Param_Target &place_param_target,
+	    Parts &parts, Rendering rendering= 0)
+{
+	return place_param_target.render(parts, rendering);
 }
 
 

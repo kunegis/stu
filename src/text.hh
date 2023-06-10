@@ -31,6 +31,7 @@ void reverse_string(string &s);
 
 string fmt(const char *s);
 
+// TODO put into .cc file
 template<typename T, typename... Args>
 string fmt(const char *s, T value, Args... args)
 {

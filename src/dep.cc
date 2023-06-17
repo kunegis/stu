@@ -134,7 +134,7 @@ void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 	if (render_flags(flags & ~F_TARGET_DYNAMIC, parts, rendering))
 		parts.append_space(); 
 	parts.append_operator_unquotable('[');
-	dep->render(parts, rendering);
+	dep->render(parts, rendering | R_NO_COMPOUND_PARENTHESES);
 	parts.append_operator_unquotable(']');
 }
 
@@ -196,17 +196,19 @@ bool Compound_Dep::is_unparametrized() const
 void Compound_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Compound_Dep::render);
-	if (deps.size() != 0)
+//	if (deps.size() != 0)
+	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
 		parts.append_operator_unquotable('(');
 	bool first= true;
 	for (const shared_ptr <const Dep> &d:  deps) {
-		if (first) {
-			parts.append_space();
+		if (first)
 			first= false;
-		}
-		d->render(parts, rendering);
+		else 
+			parts.append_space();
+		d->render(parts, rendering & ~R_NO_COMPOUND_PARENTHESES);
 	}
-	if (deps.size() != 0)
+//	if (deps.size() != 0)
+	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
 		parts.append_operator_unquotable(')');
 }
 

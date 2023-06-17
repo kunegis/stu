@@ -1,6 +1,6 @@
-Creating X: ' B C '
-Creating B: ' 1 2 '
-Creating C: ' 3 4 '
+Creating X: " B C "
+Creating B: " 1 2 "
+Creating C: " 3 4 "
 >list.1 n=1: echo "$n$n$n" ;
 >list.2 n=2: echo "$n$n$n" ;
 >list.3 n=3: echo "$n$n$n" ;

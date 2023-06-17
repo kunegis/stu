@@ -1,12 +1,6 @@
 #
 # Option -I
 #
-
-# * rewrite show() using an array of parts.
-# ** render:    object to Parts
-# ** show:  Parts to string
-# ** show:     object to string
-
 # For all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
 # * @" as target name.  Make sure @ is not quoted, but " is.  
 # * list.*+X does not need quotes in -I output
@@ -54,6 +48,7 @@
 # * The filename " a a a " is shown correctly in error messages
 # * ${aé}  :   show the é in the error message
 # * why is it linked to libm?
+# * check that "list.\t.${x}" is shown as such in error output, i.e., with quoted \t and quoted dollar sign.
 
 #
 # Test that there are no carriage returns in the source.

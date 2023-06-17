@@ -19,8 +19,9 @@ constexpr Style S_DEBUG=                CH_OUT | S_ALWAYS_QUOTE;
 constexpr Style S_NORMAL=		CH_OUT | S_QUOTE_MINIMUM;
 
 typedef unsigned Rendering;
-constexpr Rendering R_SHOW_FLAGS=	1 << 0;
-constexpr Rendering R_GLOB=             1 << 1;
+constexpr Rendering R_SHOW_FLAGS=		1 << 0;
+constexpr Rendering R_GLOB=             	1 << 1;
+constexpr Rendering R_NO_COMPOUND_PARENTHESES=	1 << 2;
 
 enum Quotable {
 	Q_NO, Q_NO_COLOR, Q_COLOR,

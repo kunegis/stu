@@ -2,14 +2,18 @@
 
 Quotable Part::need_quotes() const
 {
+	TRACE_FUNCTION(SHOW, Part::need_quotes());
 	assert(is_quotable());
 	if (properties == PROP_OPERATOR_QUOTABLE) {
 		return Q_NO;
 	} else if (properties == PROP_TEXT) {
+		TRACE("%s", "PROP_TEXT");
+		TRACE("text=%s", text);
 		Quotable ret= Q_MIN;
 		for (char c:  text) {
 			ret= max(ret, need_quotes(c));
 		}
+		TRACE("ret = %s", frmt("%d", ret));
 		return ret;
 	} else {
 		assert(false);
@@ -91,8 +95,8 @@ string show(const Parts &parts, Style style)
 			Quotable quotable= Q_MIN;
 			if (style == S_ALWAYS_QUOTE)
 				quotable= Q_COLOR;
-			bool empty= parts[i].text.empty();
-			for (j= i + 1;  j < parts.size() && parts[j].is_quotable();  ++j) {
+			bool empty= true;//parts[i].text.empty();
+			for (j= i;  j < parts.size() && parts[j].is_quotable();  ++j) {
 				if (quotable <= Q_MAX)
 					quotable= max(quotable, parts[j].need_quotes());
 				if (!parts[j].text.empty())

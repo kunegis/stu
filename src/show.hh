@@ -73,7 +73,6 @@ private:
 };
 
 string show(const Parts &, Style style);
-
 void render(string s, Parts &, Rendering= 0);
 string show_operator(char, Style= S_DEFAULT);
 string show_operator(string, Style= S_DEFAULT);

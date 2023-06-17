@@ -214,6 +214,11 @@ private:
 	}
 };
 
+void render(const Target &target, Parts &parts, Rendering rendering= 0)
+{
+	target.render(parts, rendering);
+}
+
 namespace std {
 	template <> struct hash <Target>
 	{
@@ -238,10 +243,10 @@ class Name
  * text is empty (empty names are invalid).  */
 {
 public:
-	Name(string name_):  texts({name_})  { }
+	Name(string name_):  texts({name_})  {  }
 	/* A name with zero parameters */
 
-	Name():  texts({""})  { }
+	Name():  texts({""})  {  }
 	/* Empty name */
 
 	bool empty() const {
@@ -319,7 +324,6 @@ public:
 	 */
 
 	void render(Parts &, Rendering= 0) const;
-//	string show_glob() const; // TODO fold into format(). 
 
 	string get_duplicate_parameter() const;
 	/* Check whether there are duplicate parameters.  Return the
@@ -341,12 +345,14 @@ public:
 	 * not need to have the same number of parameters.  */
 
 private:
-	vector <string> texts;
-	/* Length = N + 1 */
-
-	vector <string> parameters;
-	/* Length = N */
+	vector <string> texts; /* Length = N + 1 */
+	vector <string> parameters; /* Length = N */
 };
+
+void render(const Name &name, Parts &parts, Rendering rendering= 0)
+{
+	name.render(parts, rendering);
+}
 
 class Param_Target
 /* A parametrized name for which it is saved what type it represents.

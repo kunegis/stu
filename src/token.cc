@@ -77,7 +77,7 @@ Command::get_lines() const
 	return *lines;
 }
 
-string Operator::show_long() const
+void Operator::render_long(Parts &parts, Rendering) const
 {
 	string t;
 	switch (op) {
@@ -88,20 +88,29 @@ string Operator::show_long() const
 	case ']':  t= "closing bracket";      break;
 	case '@':  t= "operator";             break;
 	}
-	return fmt("%s %s", t, show_operator(op));
+	parts.append_text(t);
+//	return fmt("%s %s", t, show_operator(op));
 }
 
-void Operator::render(Parts &parts, Rendering= 0) const
+string Operator::show_long(Style style) const
 {
-	parts.emplace_back(PROP_OPERATOR, op);
+	Parts parts;
+	render_long(parts);
+	return show(parts, style);
 }
 
-string Flag_Token::render_full() const
+void Operator::render(Parts &parts, Rendering) const
 {
-	return show_operator(frmt("-%c", flag)); 
+	parts.append_operator_unquotable(op);
 }
 
-void Flag_Token::render(Parts &parts) const
+void Flag_Token::render(Parts &parts, Rendering) const
 {
-	return render_operator(parts, '-');
+	parts.append_operator_unquotable('-');
+//	return render_operator(parts, '-');
+}
+
+void Flag_Token::render_full(Parts &parts, Rendering) const
+{
+	parts.append_operator_unquotable(frmt("-%c", flag)); 
 }

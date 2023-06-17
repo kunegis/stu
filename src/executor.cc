@@ -207,7 +207,7 @@ void Executor::cycle_print(const vector <Executor *> &path,
 
 	for (size_t i= 0;  i + 1 < path.size();  ++i)
 		names[i]= ::show(path[i]->parents.at(path[i+1]));
-	names.back()= ::show(path.back()->parents.begin());
+	names.back()= ::show(path.back()->parents.begin()->second);
 
 	for (ssize_t i= path.size() - 1;  i >= 0;  --i) {
 		shared_ptr <const Dep> d= i == 0

@@ -1047,7 +1047,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 		if (place_name->get_n() != 0) {
 			place_name->place <<
 				fmt("name %s must not be parametrized",
-				    place_name->show());
+				    show(*place_name));
 			place_percent << fmt("after %s",
 					     show_operator("%include"));
 //					      Color::stderr_highlight_on, Color::stderr_highlight_off);

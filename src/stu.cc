@@ -261,7 +261,7 @@ int main(int argc, char **argv, char **envp)
 			if (target_first->place_name.is_parametrized()) {
 				target_first->place <<
 					fmt("the first target %s must not be parametrized if no target is given",
-					    target_first->show());
+					    show(*target_first));
 				exit(ERROR_FATAL);
 			}
 			deps.push_back(make_shared <Plain_Dep> (*target_first));

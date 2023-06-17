@@ -188,7 +188,7 @@ public:
 	 * return null.  */
 };
 
-void render(Parts &parts, shared_ptr <const Dep> dep, Rendering rendering= 0)
+void render(shared_ptr <const Dep> dep, Parts &parts, Rendering rendering= 0)
 {
 	dep->render(parts, rendering); 
 }

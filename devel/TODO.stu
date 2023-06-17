@@ -187,3 +187,7 @@ list.${name|[A-Z].*} # Matches uppercase names
 #
 # Make "override" mandatory after all overriding functions.
 #
+
+#
+# Install:  use mkdir -p for /usr/local/man/man1/ and other directories.
+#

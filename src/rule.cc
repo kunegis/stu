@@ -110,29 +110,40 @@ Rule::instantiate(shared_ptr <const Rule> rule,
 		 rule->is_copy);
 }
 
-string Rule::show(Style *style) const
+void Rule::render(Parts &parts, Rendering rendering) const
 {
-	string ret= "Rule(";
+	parts.append_operator_unquotable("Rule(");
+//	string ret= "Rule(";
 
 	bool first= true;
 	for (auto place_param_target:  place_param_targets) {
 		if (first)
 			first= false;
 		else
-			ret += ' ';
-		ret += place_param_target->show(style);
+			parts.append_space();
+//			ret += ' ';
+		place_param_target->render(parts, rendering);
+//		ret += place_param_target->show(style);
 	}
 
-	if (deps.size() != 0)
-		ret += ": ";
+	if (deps.size() != 0) {
+		parts.append_operator_unquotable(':');
+		parts.append_space();
+//		ret += ": ";
+	}
 	for (auto i= deps.begin();  i != deps.end();  ++i) {
-		if (i != deps.begin())
-			ret += ", ";
-		ret += (*i)->show(style);
+		if (i != deps.begin()) {
+//			parts.append_operator_unquotable(',');
+			parts.append_space();
+//			ret += ", ";
+		}
+		(*i)->render(parts, rendering);
+//		ret += (*i)->show(style);
 	}
 
-	ret += ")";
-	return ret;
+	parts.append_operator_unquotable(')');
+//	ret += ")";
+//	return ret;
 }
 
 void Rule::check_unparametrized(shared_ptr <const Dep> dep,
@@ -158,14 +169,14 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 					.place_name.get_places()[jj] <<
 					fmt("parameter %s must not appear in dependency %s",
 					    show_prefix("$", parameter),
-					    plain_dep->place_param_target.show());
+					    show(plain_dep->place_param_target));
 				if (place_param_targets.size() == 1) {
 					place_param_targets[0]->place <<
 						fmt("because it does not appear in target %s",
-						    place_param_targets[0]->show());
+						    show(*place_param_targets[0]));
 				} else {
 					place << fmt("because it does not appear in any of the targets %s... of the rule",
-						     place_param_targets[0]->show());
+						     show(*place_param_targets[0]));
 				}
 				throw ERROR_LOGICAL;
 			}
@@ -194,10 +205,10 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 				    *rule->place_param_targets[j]) {
 					rule->place_param_targets[i]->place <<
 						fmt("there must not be a target %s",
-						    rule->place_param_targets[i]->show());
+						    show(*rule->place_param_targets[i]));
 					rule->place_param_targets[j]->place <<
 						fmt("shadowing target %s of the same rule",
-						    rule->place_param_targets[j]->show());
+						    show(*rule->place_param_targets[j]));
 					throw ERROR_LOGICAL;
 				}
 			}
@@ -211,14 +222,14 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 				if (rules_unparam.count(target)) {
 					place_param_target->place <<
 						fmt("there must not be a second rule for target %s",
-						    target.show());
+						    show(target));
 					auto rule_2= rules_unparam.at(target);
 					for (auto place_param_target_2: rule_2->place_param_targets) {
 						assert(place_param_target_2->place_name.get_n() == 0);
 						if (place_param_target_2->unparametrized() == target) {
 							place_param_target_2->place <<
 								fmt("shadowing previous rule %s",
-								    target.show());
+								    show(target));
 							break;
 						}
 					}
@@ -332,12 +343,12 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 	/* More than one rule matches:  error */
 	if (best_rule_finder.count() != 1 ) {
 		place << fmt("multiple minimal matching rules for target %s",
-			     target.show());
+			     show(target));
 		for (auto &place_param_target:
 			     best_rule_finder.targets_best()) {
 			place_param_target.second->place <<
 				fmt("rule with target %s",
-				    place_param_target.second->show());
+				    show(*place_param_target.second));
 		}
 		explain_minimal_matching_rule();
 		throw ERROR_LOGICAL;
@@ -357,14 +368,13 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 void Rule_Set::print() const
 {
 	for (auto i:  rules_unparam)  {
-		Style style= S_STDOUT;
-		string text= i.second->show(&style);
+		string text= show(i.second, CH_OUT);
 		puts(text.c_str());
 	}
 
 	for (auto i:  rules_param)  {
-		Style style= S_STDOUT;
-		string text= i->show(&style);
+		//		Style style= S_STDOUT;
+		string text= show(i, CH_OUT);//->show(&style);
 		puts(text.c_str());
 	}
 }
@@ -379,8 +389,7 @@ void Rule_Set::print_targets() const
 		for (auto target: rule.place_param_targets) {
 			if (target->flags & F_TARGET_TRANSIENT)
 				continue;
-			Style style= S_STDOUT | S_GLOB | S_DONT_SHOW_COLOR;
-			filenames.insert(target->place_name.show(&style));
+			filenames.insert(show(target->place_name, S_NORMAL, R_GLOB));
 		}
 	}
 
@@ -388,8 +397,8 @@ void Rule_Set::print_targets() const
 		for (auto target: i->place_param_targets) {
 			if (target->flags & F_TARGET_TRANSIENT)
 				continue;
-			Style style= S_STDOUT | S_GLOB | S_DONT_SHOW_COLOR;
-			filenames.insert(target->place_name.show(&style));
+//			Style style= S_STDOUT | S_GLOB | S_DONT_SHOW_COLOR;
+			filenames.insert(show(target->place_name, S_NORMAL, R_GLOB));
 		}
 	}
 

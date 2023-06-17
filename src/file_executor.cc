@@ -181,23 +181,23 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
  			// TODO The whole phrase should be in error color (use
  			// specific function)  
 			reason= frmt("failed with exit status %s%d%s",
-				     Color::stderr_highlight_on,
+				     Color::highlight_on[CH_ERR],
 				     WEXITSTATUS(status),
-				     Color::stderr_highlight_off);
+				     Color::highlight_off[CH_ERR]);
 		} else if (WIFSIGNALED(status)) {
 			int sig= WTERMSIG(status);
 			reason= frmt("received signal %d (%s%s%s)",
 				     sig,
-				     Color::stderr_highlight_on,
+				     Color::highlight_on[CH_ERR],
 				     strsignal(sig),
-				     Color::stderr_highlight_off);
+				     Color::highlight_off[CH_ERR]);
 		} else {
 			/* This should not happen but the standard does not exclude
 			 * it  */
 			reason= frmt("failed with status %s%d%s",
-				     Color::stderr_highlight_on,
+				     Color::highlight_on[CH_ERR],
 				     status,
-				     Color::stderr_highlight_off);
+				     Color::highlight_off[CH_ERR]);
 		}
 
 		if (! param_rule->is_copy) {
@@ -296,7 +296,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 					if (dynamic_cast <Root_Executor *> (parent)) {
 						/* Output this only for top-level targets, and
 						 * therefore we don't need traces */
-						Style style= S_STDOUT;
+						Style style= CH_OUT;
 						print_out(fmt("No rule for building %s, but the file exists",
 							      show(target_, style)));
 						hide_out_message= true;
@@ -568,7 +568,7 @@ void File_Executor::print_command() const
 		}
 		string text= show(targets.front(), S_NORMAL);
 		if (is_printable) {
-			string content_text= ::show(content, S_STDOUT);
+			string content_text= ::show(content, CH_OUT);
 			printf("Creating %s: %s\n", text.c_str(), content_text.c_str());
 		} else {
 			printf("Creating %s\n", text.c_str());
@@ -1073,7 +1073,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 void File_Executor::print_as_job() const
 {
 	pid_t pid= job.get_pid();
-	string text_target= show(targets.front(), S_STDOUT);
+	string text_target= show(targets.front(), CH_OUT);
 	printf("%9ld %s\n", (long) pid, text_target.c_str());
 }
 
@@ -1202,7 +1202,7 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 			if (place_param_target->unparametrized() == target_variable) {
 				place_param_target->place <<
 					fmt("generated file %s was built but cannot be found now",
-					    show(place_param_target));
+					    show(*place_param_target));
 				break;
 			}
 		}

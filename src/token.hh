@@ -41,22 +41,20 @@ public:
 	/* Render only the start of the token if it is very long */
 };
 
+void render(shared_ptr <const Token> token, Parts &parts, Rendering rendering= 0)
+{
+	token->render(parts, rendering);
+}
+
 class Operator
-/* An operator, e.g. ':', '[', etc.  Operators are all single
- * characters.  */
 	:  public Token
 {
 public:
+	const char op;
 	const Place place;
 
-	const char op;
-	/* The operator as a character, e.g. ':', '[', etc.  */
-
 	Operator(char op_, Place place_, Environment environment_)
-		:  Token(environment_),
-		   place(place_),
-		   op(op_)
-	{
+		:  Token(environment_), op(op_), place(place_) {
 		assert(! isalnum(op_));
 	}
 
@@ -64,6 +62,7 @@ public:
 	const Place &get_place_start() const  {  return place;  }
 	void render(Parts &, Rendering= 0) const;
 	void render_long(Parts &, Rendering= 0) const;
+	string show_long(Style= S_DEFAULT) const;
 };
 
 class Flag_Token
@@ -106,8 +105,8 @@ public:
 		return place_start;
 	}
 
-	void render_full(Parts &, Rendering= 0) const;
 	void render(Parts &, Rendering= 0) const;
+	void render_full(Parts &, Rendering= 0) const;
 };
 
 class Name_Token
@@ -173,8 +172,7 @@ public:
 	}
 
 	void render(Parts &parts, Rendering= 0) const {
-		parts.append_operator('{');
-//		return render_operator(parts, '{');
+		parts.append_operator_unquotable('{');
 	}
 
 	const vector <string> &get_lines() const;

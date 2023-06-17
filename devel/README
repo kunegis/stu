@@ -53,4 +53,4 @@ Running 'make test' has more requirements than just compiling Stu:
   Stu will work without such a file system, but you can't run the unit
   tests unless you remove the offending tests (tests/1-unicode-*/).
 * You need to install the package 'expect'.  On some systems, also 'tclsh'.
-  (Exact packages vary by operating system.)
+  (Exact packages vary by operating system.)  (Only used by sh/tty.)

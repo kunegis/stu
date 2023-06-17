@@ -44,6 +44,11 @@ private:
 	static void print(string text_target, string text);
 };
 
+void render(const Debuggable *debuggable, Parts &parts, Rendering rendering= 0)
+{
+	debuggable->render(parts, rendering);
+}
+
 #define DEBUG_PRINT(text) if (option_d)  Debug::print(this, text)
 
 #endif /* ! DEBUG_HH */

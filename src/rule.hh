@@ -116,6 +116,11 @@ public:
 	 * itself when it is unparametrized.  */
 };
 
+void render(shared_ptr <const Rule> rule, Parts &parts, Rendering rendering= 0)
+{
+	rule->render(parts, rendering);
+}
+
 class Rule_Set
 /* A set of rules.  They can be both parametrized and unparametrized. */
 {

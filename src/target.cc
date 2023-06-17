@@ -2,48 +2,33 @@
 
 #include "canonicalize.hh"
 
-string Target::show(Style *style) const
+void Target::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Target::show);
-	TRACE("%s", style_format(style));
-
-	Style_Bits bits_marker= 0;
-	string ret;
-	size_t i= 0;
+	size_t i= 0; // TODO make a for loop
 	while (get_word(i) & F_TARGET_DYNAMIC) {
 		assert((get_word(i) & F_TARGET_TRANSIENT) == 0);
-		if (style && *style & S_SHOW_FLAGS) {
-			ret += show_flags(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
-					  style);
+		if (rendering & R_SHOW_FLAGS) {
+			render_flags
+				(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
+				 parts, rendering);
 		}
 		++i;
-		ret += '[';
-		bits_marker |= S_HAS_MARKER;
+		parts.append_operator_unquotable('[');
 	}
 	assert(text.size() > sizeof(word_t) * (i + 1));
-	if (style && *style & S_SHOW_FLAGS) {
-		string flags_text= show_flags(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE), style);
-		if (! flags_text.empty()) {
-			ret += flags_text;
-		}
+	if (rendering & R_SHOW_FLAGS) {
+		render_flags(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE), parts, rendering);
 	}
 	if (get_word(i) & F_TARGET_TRANSIENT) {
-		ret += '@';
-		bits_marker |= S_HAS_MARKER;
+		parts.append_operator_unquotable('@');
 	}
-	Style style_inner= Style::inner(style, bits_marker); 
-	string s= ::show(text.substr(sizeof(word_t) * (i + 1)), &style_inner);
-	ret += s;
+	parts.append_text(text.substr(sizeof(word_t) * (i + 1)));
 	i= 0;
 	while (get_word(i) & F_TARGET_DYNAMIC) {
 		++i; // TODO fold into while
-		ret += ']';
+		parts.append_operator_unquotable(']');
 	}
-	Style style_outer= Style::outer(style, &style_inner, bits_marker);
-	ret= ::show(ret, &style_outer);
-	TRACE("ret= %s", ret);
-	Style::transfer(style, &style_outer);
-	return ret;
 }
 
 void Target::canonicalize()
@@ -334,33 +319,17 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 	}
 }
 
-string Name::show(Style *style) const
+void Name::render(Parts &parts, Rendering) const
 {
 	TRACE_FUNCTION(SHOW, Name::show);
-	TRACE("%s", style_format(style));
 	assert(texts.size() == 1 + parameters.size());
-	Style style_inner= Style::inner(style, S_QUOTES_MAY_INHERIT_UP | S_NO_EMPTY); 
- restart:
-	bool quotes_initial= style_inner.is(); 
-	string ret= ::show(texts[0], &style_inner);
+	parts.append_text(texts[0]);
 	for (size_t i= 0;  i < get_n();  ++i) {
-		ret += "${";
-		ret += ::show(parameters[i], &style_inner);
-		ret += '}';
-		ret += ::show(texts[1+i], &style_inner);
-		if (quotes_initial != (style_inner.is())) {
-			assert(!quotes_initial && style_inner.is());
-			style_inner.set(); 
-			goto restart;
-		}
+		parts.append_operator_quotable("${");
+		parts.append_text(parameters[i]);
+		parts.append_operator_quotable('}');
+		parts.append_text(texts[1+i]);
 	}
-	if (empty())  style_inner.set();
-	Style style_outer= Style::outer(style, &style_inner);
-	TRACE("style_outer= %s", style_format(&style_outer));
-	ret= ::show(ret, &style_outer);
-	TRACE("ret= %s", ret);
-	Style::transfer(style, &style_outer);
-	return ret;
 }
 
 void Name::canonicalize()
@@ -403,32 +372,13 @@ void Name::append(const Name &name)
 	}
 }
 
-void show(Parts &parts, const Place_Name &place_name)
+void Place_Param_Target::render(Parts &parts, Rendering rendering) const
 {
-	return place_name.show(parts); 
-}
-
-string Place_Param_Target::show(Style *style) const
-{
-	TRACE_FUNCTION(SHOW, Place_Param_Target::show);
-	TRACE("%s", style_format(style));
-	string ret;
-	Style_Bits bits_inner= 0;
+	TRACE_FUNCTION(SHOW, Place_Param_Target::render);
 	if (flags & F_TARGET_TRANSIENT) {
-		ret += '@';
-		bits_inner |= S_HAS_MARKER;
-	} else {
-		bits_inner |= S_QUOTES_MAY_INHERIT_UP;
+		parts.append_operator_unquotable('@');
 	}
-	Style style_inner= Style::inner(style, bits_inner); 
-	TRACE("style_inner= %s", style_format(&style_inner));
-	ret += place_name.show(&style_inner);
-	TRACE("style_inner[out]= %s", style_format(&style_inner));
-	Style style_outer= Style::outer(style, &style_inner); 
-	ret= ::show(ret, &style_outer);
-	TRACE("ret= %s", ret);
-	Style::transfer(style, &style_outer);
-	return ret;
+	place_name.render(parts, rendering);
 }
 
 void Place_Param_Target::canonicalize()

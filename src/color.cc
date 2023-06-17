@@ -2,19 +2,16 @@
 
 #include <string.h>
 
-bool Color::out_quotes, Color::err_quotes;
+bool Color::quotes[CH_COUNT];
 
 const char *Color::stdout_success_on;
 const char *Color::stdout_success_off;   
-const char *Color::stdout_highlight_on;    
-const char *Color::stdout_highlight_off;  
-
 const char *Color::stderr_warn_on;        
 const char *Color::stderr_warn_off;       
 const char *Color::stderr_err_on;         
 const char *Color::stderr_err_off;        
-const char *Color::stderr_highlight_on;    
-const char *Color::stderr_highlight_off;  
+const char *Color::highlight_on[CH_COUNT];    
+const char *Color::highlight_off[CH_COUNT];  
 
 void Color::set()
 /* Only use color when $TERM is defined, is not equal to "dumb", and
@@ -45,34 +42,34 @@ void Color::set(bool enable_color_out, bool enable_color_err)
 {
 	// TODO order should be the same as in declaration. 
 	if (enable_color_out) {
-		out_quotes= false;
-		stdout_success_on=    "\33[32m";
-		stdout_success_off=   "\33[m";
-		stdout_highlight_on=  "\33[1m";
-		stdout_highlight_off= "\33[22m";
+		quotes[CH_OUT]= false;
+		stdout_success_on=    	"\33[32m";
+		stdout_success_off=   	"\33[m";
+		highlight_on[CH_OUT]= 	"\33[1m";
+		highlight_off[CH_OUT]=	"\33[22m";
 	} else {
-		out_quotes= true;
-		stdout_success_on=    "";
-		stdout_success_off=   "";
-		stdout_highlight_on=  "";
-		stdout_highlight_off= "";
+		quotes[CH_OUT]= true;
+		stdout_success_on=    	"";
+		stdout_success_off=   	"";
+		highlight_on[CH_OUT]=  	"";
+		highlight_off[CH_OUT]= 	"";
 	}
 
 	if (enable_color_err) {
-		err_quotes= false;
-		stderr_warn_on=       "\33[35m";
-		stderr_warn_off=      "\33[m";
-		stderr_err_on=        "\33[31m";
-		stderr_err_off=       "\33[m";
-		stderr_highlight_on=  "\33[1m";
-		stderr_highlight_off= "\33[22m";
+		quotes[CH_ERR]= false;
+		stderr_warn_on=		"\33[35m";
+		stderr_warn_off=	"\33[m";
+		stderr_err_on=		"\33[31m";
+		stderr_err_off=		"\33[m";
+		highlight_on[CH_ERR]=	"\33[1m";
+		highlight_off[CH_ERR]= 	"\33[22m";
 	} else {
-		err_quotes= true;
-		stderr_warn_on=       "";
-		stderr_warn_off=      "";
-		stderr_err_on=        "";
-		stderr_err_off=       "";
-		stderr_highlight_on=  "";
-		stderr_highlight_off= "";
+		quotes[CH_ERR]= true;
+		stderr_warn_on=       	"";
+		stderr_warn_off=      	"";
+		stderr_err_on=        	"";
+		stderr_err_off=       	"";
+		highlight_on[CH_ERR]=	"";
+		highlight_off[CH_ERR]=	"";
 	}
 }

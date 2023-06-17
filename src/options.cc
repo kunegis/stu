@@ -49,6 +49,7 @@ void set_option_j(const char *value)
 	if (options_jobs < 1) {
 		place << fmt("expected a positive number of jobs, not %s",
 			     show(value));
+
 		exit(ERROR_FATAL);
 	}
 	option_parallel= options_jobs > 1;
@@ -119,7 +120,8 @@ void check_status()
 	if (stu_status != nullptr) {
 		print_error(frmt("Refusing to run recursive Stu; "
 				 "unset %s$STU_STATUS%s to circumvent",
-				 Color::stderr_highlight_on, Color::stderr_highlight_off));
+				 Color::highlight_on[CH_ERR],
+				 Color::highlight_off[CH_ERR]));
 		exit(ERROR_FATAL);
 	}
 }

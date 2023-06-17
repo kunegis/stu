@@ -4,6 +4,7 @@
 
 #include "color.hh"
 #include "text.hh"
+#include "tracing.hh"
 
 shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 {
@@ -97,47 +98,13 @@ Target Plain_Dep::get_target() const
 void Plain_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Plain_Dep::render);
-	
-//	string f;
-//	if (rendering & R_SHOW_FLAGS) {
-//	if (style && *style & S_SHOW_FLAGS) {
-//		Style style_inner= Style::inner(style);
-		if (
-		render_flags
-//		f= show_flags
-			(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT),
-			 parts,
-			 rendering
-//			 , &style_inner
-			 ))
-//		if (! f.empty()) {
-			parts.append_space();
-//			f += ' ';
-//		}
-//	}
-//	Style style_inner= Style::inner
-//		(style,
-//		 (flags & F_VARIABLE ? S_HAS_MARKER : S_QUOTES_MAY_INHERIT_UP)
-//		 );
-//	TRACE("style_inner= %s", style_format(&style_inner));
-//	string t=
+	if (render_flags(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT), parts, rendering))
+		parts.append_space();
 	if (flags & F_VARIABLE)
-		parts.append_operator("$[");
+		parts.append_operator_unquotable("$[");
 	place_param_target.render(parts, rendering);
 	if (flags & F_VARIABLE)
-		parts.append_operator(']');
-		
-	//	string ret= fmt("%s%s%s%s",
-	//			f,
-				//			flags & F_VARIABLE ? "$[" : "",
-	//			t,
-	//			flags & F_VARIABLE ? "]" : "");
-//	TRACE("style_inner[out]= %s", style_format(&style_inner));
-//	Style style_outer= Style::outer(style, &style_inner);
-//	ret= ::show(ret, &style_outer);
-//	TRACE("ret= %s", ret); 
-//	Style::transfer(style, &style_outer);
-//	return ret;
+		parts.append_operator_unquotable(']');
 }
 
 Target Dynamic_Dep::get_target() const
@@ -164,30 +131,11 @@ Target Dynamic_Dep::get_target() const
 void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Dynamic_Dep::render);
-//	TRACE("%s", style_format(style));
-//	string ret;
-//	if (rendering & R_SHOW_FLAGS) {
-//	if (style && *style & S_SHOW_FLAGS) {
-//		Style style_flags= Style::inner(style);
-		if (render_flags(flags & ~F_TARGET_DYNAMIC,
-				 //, &style_flags);
-				 parts, rendering))
-			parts.append_space(); 
-//		if (! text_flags.empty())
-//			text_flags += ' ';
-//		ret += text_flags;
-//	}
-//	Style style_inner= Style::inner(style, S_HAS_MARKER);
-//	string text=
-	parts.append_operator('[');
+	if (render_flags(flags & ~F_TARGET_DYNAMIC, parts, rendering))
+		parts.append_space(); 
+	parts.append_operator_unquotable('[');
 	dep->render(parts, rendering);
-	parts.append_operator(']');
-//	ret += fmt("[%s]", text);
-//	Style style_outer= Style::outer(style, &style_inner);
-//	ret= ::show(ret, &style_outer);
-//	TRACE("ret= %s", ret);
-//	Style::transfer(style, &style_outer);
-//	return ret;
+	parts.append_operator_unquotable(']');
 }
 
 shared_ptr <const Dep> Dynamic_Dep::instantiate(const map <string, string> &mapping) const
@@ -248,29 +196,18 @@ bool Compound_Dep::is_unparametrized() const
 void Compound_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Compound_Dep::render);
-//	TRACE("%s", style_format(style));
-//	string ret;
 	if (deps.size() != 0)
-		parts.append_operator('(');
+		parts.append_operator_unquotable('(');
 	bool first= true;
 	for (const shared_ptr <const Dep> &d:  deps) {
 		if (first) {
-//		if (! ret.empty())
 			parts.append_space();
-//			ret += " ";
 			first= false;
 		}
 		d->render(parts, rendering);
-//		Style style_inner= Style::inner(style);
-//		ret += d->show(&style_inner);
 	}
 	if (deps.size() != 0)
-		parts.append_operator(')');
-//	Style style_outer= Style::outer(style, nullptr);
-//	ret= ::show(ret, &style_outer);
-//	TRACE("ret= %s", ret);
-//	Style::transfer(style, &style_outer);
-//	return ret;
+		parts.append_operator_unquotable(')');
 }
 
 shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mapping) const
@@ -309,36 +246,14 @@ const Place &Concat_Dep::get_place() const
 void Concat_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Concat_Dep::show);
-//	TRACE("%s", style_format(style));
-//	Style style_inner= Style::inner(style, S_QUOTES_MAY_INHERIT_UP | S_NO_EMPTY); 
-// restart:
-//	bool quotes_initial= style_inner.is(); 
-//	string ret;
 	if (rendering & R_SHOW_FLAGS) {
-//		string f=
 		if (render_flags(flags, parts, rendering)) {
-//				 , &style_inner);
-//		if (! f.empty())
 			parts.append_space();
-//			f += ' ';
-//		ret += f;
 		}
 	}
 	for (const shared_ptr <const Dep> &d:  deps) {
 		d->render(parts, rendering);
-//		ret += d->show(&style_inner);
-//		if (quotes_initial != (style_inner.is())) {
-//			assert(!quotes_initial && style_inner.is());
-//			style_inner.set(); 
-//			goto restart;
-//		}
 	}
-//	if (ret.empty())  style_inner.set();
-//	Style style_outer= Style::outer(style, &style_inner);
-//	ret= ::show(ret, &style_outer);
-//	TRACE("ret= %s", ret);
-//	Style::transfer(style, &style_outer);
-//	return ret;
 }
 
 bool Concat_Dep::is_normalized() const
@@ -595,5 +510,5 @@ shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> 
 
 void Root_Dep::render(Parts &parts, Rendering) const
 {
-	parts.append_operator("ROOT");
+	parts.append_operator_unquotable("ROOT");
 }

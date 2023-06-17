@@ -36,23 +36,23 @@
  * Stu takes the same approach.
  */
 
+enum Channel { CH_OUT, CH_ERR, CH_COUNT };
+
 class Color
 {
 public:
-	static bool out_quotes, err_quotes;
+	static bool quotes[CH_COUNT];
 	/* Whether single quotes have to be used.  Set when color is not used. */
 
 	static const char *stdout_success_on;
 	static const char *stdout_success_off;   
-	static const char *stdout_highlight_on;    
-	static const char *stdout_highlight_off;  
-
 	static const char *stderr_warn_on;        
 	static const char *stderr_warn_off;       
 	static const char *stderr_err_on;         
 	static const char *stderr_err_off;        
-	static const char *stderr_highlight_on;    
-	static const char *stderr_highlight_off;  
+
+	static const char *highlight_on[CH_COUNT];
+	static const char *highlight_off[CH_COUNT];  
 	
 	/* At least one of the following functions must be called before
 	 * any output is written.  */

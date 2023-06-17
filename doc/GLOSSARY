@@ -45,7 +45,7 @@ Special rule - Special rules are used when matching parametrized targets
 	to names of files and transients.  They are described in the
 	manpage.
 
-Target - A file or a transient, possibly (multiply) dynamic
+Target - A file or a transient, possibly (multiply) dynamic.
 
 Transient - One of the two basic datatypes ("targets") of Stu, the other
 	being files.  They are noted with the '@' symbol, e.g., '@all'.

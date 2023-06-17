@@ -38,7 +38,7 @@ bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 //	TRACE("ret= %s", ret);
 //	Style::transfer(style, &style_outer);
 //	return ret;
-	parts.append_operator(ret);
+	parts.append_operator_unquotable(ret);
 	return true;
 }
 

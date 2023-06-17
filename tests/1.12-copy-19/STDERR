@@ -1,2 +1,2 @@
-main.stu:3:7: parameter $name must not appear in copied file "B.${name}"
+main.stu:3:7: parameter $name must not appear in copied file B.${name}
 main.stu:3:1: because it does not appear in target "A"

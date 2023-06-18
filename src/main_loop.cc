@@ -51,7 +51,7 @@ void main_loop(const vector <shared_ptr <const Dep> > &deps)
 		/* Terminate all jobs */
 		if (File_Executor::executors_by_pid_size) {
 			print_error_reminder("Terminating all jobs");
-			job_terminate_all();
+			terminate_jobs();
 		}
 		assert(e > 0 && e < ERROR_FATAL);
 		error= e;

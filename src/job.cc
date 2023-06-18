@@ -2,6 +2,8 @@
 
 #include <sys/resource.h>
 
+#include "file_executor.hh"
+
 size_t Job::count_jobs_exec=    0;
 size_t Job::count_jobs_success= 0;
 size_t Job::count_jobs_fail=    0;
@@ -424,7 +426,7 @@ pid_t Job::wait(int *status)
 		goto begin;
 	case SIGUSR1:
 		print_statistics(true);
-		job_print_jobs();
+		print_jobs();
 		goto retry;
 	default:
 		/* We didn't wait for this signal */
@@ -515,7 +517,7 @@ void Job::handler_termination(int sig)
 	 * exec()), just quit */
 	if (Job::in_child == 0) {
 		/* Terminate all processes */
-		job_terminate_all();
+		terminate_jobs();
 	} else {
 		assert_async(Job::in_child == 1);
 	}

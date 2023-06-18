@@ -38,7 +38,7 @@ public:
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
 	virtual string debug_done_text() const {
-		return done_format(done);
+		return format_done(done);
 	}
 
 	virtual bool want_delete() const {  return false;  }
@@ -81,10 +81,10 @@ private:
 
 	/* The following two functions are called from signal handlers,
 	 * and are set up and declared in job.hh.  */
-	friend void job_terminate_all();
+	friend void terminate_jobs();
 	/* Termination signal - we must send a termination signal to all
 	 * running jobs */
-	friend void job_print_jobs();
+	friend void print_jobs();
 	/* The print-all-jobs signal was received - we must print all
 	 * jobs */
 
@@ -174,5 +174,8 @@ private:
 	 * executed in the current invocation of Stu. In that case, the
 	 * transient targets are never inserted in this map.  */
 };
+
+void terminate_jobs();
+void print_jobs();
 
 #endif /* ! FILE_EXECUTOR_HH */

@@ -39,7 +39,7 @@ string show_flags(Flags flags, Style style)
 	return show(parts, style);
 }
 
-string done_format(Done done)
+string format_done(Done done)
 {
 	char ret[7]= "[0000]";
 	for (int i= 0; i < 4; ++i)

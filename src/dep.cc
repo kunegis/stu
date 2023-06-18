@@ -3,7 +3,7 @@
 #include <bitset>
 
 #include "color.hh"
-#include "text.hh"
+#include "format.hh"
 #include "tracing.hh"
 
 shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)

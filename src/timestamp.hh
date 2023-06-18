@@ -9,7 +9,7 @@
 
 #include <sys/stat.h>
 
-#include "text.hh"
+#include "format.hh"
 
 #ifndef USE_MTIM
 #   if HAVE_CLOCK_REALTIME_COARSE

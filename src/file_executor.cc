@@ -401,7 +401,7 @@ void File_Executor::render(Parts &parts, Rendering rendering) const {
 	targets.front().render(parts, rendering);
 }
 
-void job_terminate_all()
+void terminate_jobs()
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 
@@ -462,7 +462,7 @@ void job_terminate_all()
 	errno= errno_save;
 }
 
-void job_print_jobs()
+void print_jobs()
 {
 	for (size_t i= 0; i < File_Executor::executors_by_pid_size; ++i)
 		File_Executor::executors_by_pid_value[i]->print_as_job();

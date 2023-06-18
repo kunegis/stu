@@ -382,8 +382,6 @@ public:
 		return Target(flags, name.instantiate(mapping));
 	}
 
-//	string format_err() const;
-
 	Target unparametrized() const
 	/* The corresponding unparametrized target.  This target must
 	 * have zero parameters.  */

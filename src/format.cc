@@ -1,4 +1,4 @@
-#include "text.hh"
+#include "format.hh"
 
 #include <stdarg.h>
 
@@ -32,6 +32,14 @@ string frmt(const char *format, ...)
 	return ret;
 }
 
+void reverse_string(string &s)
+{
+	const auto size= s.size();
+	for (size_t i= 0; i < size / 2; ++i) {
+		swap(*(s.begin() + i), *(s.begin() + size - 1 - i));
+	}
+}
+
 string fmt(const char *s)
 {
 	string ret;
@@ -55,10 +63,30 @@ string fmt(const char *s)
 	return ret;
 }
 
-void reverse_string(string &s)
+template<typename T, typename... Args>
+string fmt(const char *s, T value, Args... args)
 {
-	const auto size= s.size();
-	for (size_t i= 0; i < size / 2; ++i) {
-		swap(*(s.begin() + i), *(s.begin() + size - 1 - i));
+	const char *q= strchr(s, '%');
+	if (!q) {
+		/* Too many arguments; not enough '%s' */
+		assert(false);
+		return string(q);
 	}
+	assert(*q == '%');
+	string ret(s, q - s);
+	s= q + 1;
+	if (*s == '%') {
+		ret += '%';
+		++s;
+		return ret + fmt(s, value, args...);
+	}
+	if (*s != 's') {
+		/* Invalid format specifier */
+		assert(false);
+		return ret;
+	}
+	assert(*s == 's');
+	++s;
+
+	return ret + value + fmt(s, args...);
 }

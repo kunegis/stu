@@ -4,10 +4,10 @@
 
 #include "buffer.hh"
 #include "color.hh"
+#include "format.hh"
 #include "job.hh"
 #include "package.hh"
 #include "show.hh"
-#include "text.hh"
 #include "timestamp.hh"
 #include "version.hh"
 

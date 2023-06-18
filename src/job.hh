@@ -11,17 +11,6 @@
 
 #include "error.hh"
 
-// TODO move the declaration of the following two functions to where they are
-// implemented. 
-
-void job_terminate_all();
-/* Called to terminate all running processes, and remove their target
- * files if present.  Implemented in file_executor.cc, and called from
- * here. */
-
-void job_print_jobs();
-/* Called from here; implemented in file_execution.cc */
-
 /*
  * Macro to write in an async signal-safe manner.
  *   - FD must be '1' or '2'.

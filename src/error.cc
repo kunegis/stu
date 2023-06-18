@@ -3,9 +3,9 @@
 #include <string.h>
 
 #include "color.hh"
+#include "format.hh"
 #include "options.hh"
 #include "show.hh"
-#include "text.hh"
 
 void print_error(string message)
 {

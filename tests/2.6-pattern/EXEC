@@ -29,7 +29,6 @@ EOF
 	exitstatus=$?
 
 	[ "$exitstatus" = 1 ] || {
-##		echo >&2
 		echo >&2 "*** Expected exit status to be 1, not $exitstatus"
 		echo >&2 "uncanonicalized='$uncanonicalized'"
 		echo >&2 "canonicalized='$canonicalized'"
@@ -46,7 +45,6 @@ EOF
 	}
 	
 	grep -q -E "^main\.stu:2:[0-9]+: no rule to build \"nonexistingfile\", needed by \".*\"$" list.err || {
-##		echo >&2
 		echo >&2 "*** Invalid stderr"
 		echo >&2 "uncanonicalized='$uncanonicalized'"
 		echo >&2 "canonicalized='$canonicalized'"
@@ -65,6 +63,5 @@ EOF
 done 
 ret=$?
 
-##echo
 rm -f main.stu list.* || exit 2
 exit "$ret"

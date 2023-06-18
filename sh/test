@@ -411,7 +411,6 @@ do
 
 		# Check that standard output is correct
 		if [ -r STDOUT ] ; then
-##			exitstatus=$?
 			if cmp -s list.def.out STDOUT ; then
 				echo >&7 "STDOUT...correct"
 			else
@@ -450,10 +449,6 @@ do
 					echo >&7 "INSTDERR...correct"
 				else
 					test_fail "'$line' was not found in stderr"
-					## echo >&2 "stderr:"
-					## echo >&2 ______
-					## cat  >&2 list.def.err
-					## echo >&2 ______
 					error=1
 				fi
 			done
@@ -466,13 +461,7 @@ do
 			else
 				test_fail "Error output does not match 'STDERR'"
 				diff >&2 list.def.err STDERR 
-				## echo >&2 '_____ actual error output:'
-				## cat list.def.err
-				## echo >&2 _____
-				## wc -l list.def.err STDERR
-				## ls -l list.def.err STDERR
 				error=1
-##			else
 			fi
 		fi
 
@@ -503,20 +492,12 @@ do
 
 			# correct output
 			if [ -r TTYSTDOUTERR ]; then
-##				exitstatus=$?
 				if cmp -s list.def.out TTYSTDOUTERR ; then
 					echo >&7 "TTYSTDOUTERR...correct"
 				else
-##				if [ "$exitstatus" != 0 ]; then
 					test_fail "TTY error output does not match 'TTYSTDOUTERR'"
 					diff >&2 list.def.out TTYSTDOUTERR 
-					## echo >&2 '_____ actual output:'
-					## cat list.def.out
-					## echo >&2 _____
-					## wc -l list.def.out TTYSTDOUTERR
-					## ls -l list.def.out TTYSTDOUTERR
 					error=1
-##				else
 				fi
 			fi
 
@@ -539,9 +520,6 @@ do
 				echo >&2 _________
 				cat >&2 list.def.out
 				echo >&2 _________
-##				grep -E -n -b -e '[[][(32|1|35|31)m[^]*$' list.def.out main.stu >&2 ## rm
-##				recode utf8..html <list.def.out
-##				hexdump -C list.def.out
 				error=1
 			else
 				echo >&7 "TTY:BALANCED...correct"

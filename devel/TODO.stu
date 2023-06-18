@@ -20,9 +20,9 @@
 # * A:  <B $[<C;
 # * A:  <B $[<C.$x];
 # * A:  <B $[<a=:];
-# * A:  <B $[<a=   ###EOF
+# * A:  <B $[<a=   #EOF
 # * A:  <B $[<'a=b'];
-# * A:  <B $[<     ###EOF
+# * A:  <B $[<     #EOF
 # * A:  <B $[<:];
 # * case where stdout is a tty and stderr is not, and vice versa
 # * target *

@@ -24,10 +24,9 @@ constexpr Rendering R_GLOB=             	1 << 1;
 constexpr Rendering R_NO_COMPOUND_PARENTHESES=	1 << 2;
 
 enum Quotable {
-	// TODO rename the values to something sensible.
-	Q_NO, Q_NO_COLOR, Q_COLOR,
-	Q_MIN= Q_NO,
-	Q_MAX= Q_COLOR,
+	Q_DONT_QUOTE, Q_QUOTE_WHEN_NO_COLOR, Q_ALWAYS_QUOTE,
+	Q_MIN= Q_DONT_QUOTE,
+	Q_MAX= Q_ALWAYS_QUOTE,
 };
 
 enum Properties {

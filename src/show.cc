@@ -5,7 +5,7 @@ Quotable Part::need_quotes() const
 	TRACE_FUNCTION(SHOW, Part::need_quotes());
 	assert(is_quotable());
 	if (properties == PROP_OPERATOR_QUOTABLE) {
-		return Q_NO;
+		return Q_DONT_QUOTE;
 	} else if (properties == PROP_TEXT) {
 		TRACE("%s", "PROP_TEXT");
 		TRACE("text=%s", text);
@@ -26,12 +26,12 @@ Quotable Part::need_quotes(unsigned char c)
 	TRACE_FUNCTION(SHOW, Part::need_quotes(unsigned char));
 	TRACE("c=%s", frmt("%u", c));
 	if (c & 0x80)
-		return Q_NO;
+		return Q_DONT_QUOTE;
 	if (c <= 0x20 || c == 0x7F)
-		return Q_COLOR;
+		return Q_ALWAYS_QUOTE;
 	if (c == '\\' || c == '"' || c == '\'' || c == '$')
-		return Q_NO_COLOR;
-	return Q_NO;
+		return Q_QUOTE_WHEN_NO_COLOR;
+	return Q_DONT_QUOTE;
 }
 
 void Part::show(string &ret) const
@@ -98,7 +98,7 @@ string show(const Parts &parts, Style style)
 			size_t j;
 			Quotable quotable= Q_MIN;
 			if (style == S_ALWAYS_QUOTE)
-				quotable= Q_COLOR;
+				quotable= Q_ALWAYS_QUOTE;
 			bool empty= true;
 			for (j= i; j < parts.size() && parts[j].is_quotable(); ++j) {
 				if (quotable <= Q_MAX)
@@ -107,9 +107,9 @@ string show(const Parts &parts, Style style)
 					empty= false;
 			}
 			bool quotes= empty
-				|| quotable == Q_COLOR
+				|| quotable == Q_ALWAYS_QUOTE
 				|| (nocolor && !has_marker && !(style & S_QUOTE_MINIMUM))
-				|| (nocolor && has_marker && quotable == Q_NO_COLOR && !(style & S_QUOTE_MINIMUM));
+				|| (nocolor && has_marker && quotable == Q_QUOTE_WHEN_NO_COLOR && !(style & S_QUOTE_MINIMUM));
 			if (quotes)  ret += '"';
 			for (; i < j; ++i)
 				parts[i].show(ret, quotes);

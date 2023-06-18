@@ -505,45 +505,4 @@ public:
 	virtual bool is_normalized() const  {  return true;  }
 };
 
-// TODO move to .cc file
-void Dep::normalize(shared_ptr <const Dep> dep,
-		    vector <shared_ptr <const Dep> > &deps,
-		    int &error)
-{
-	if (to <Plain_Dep> (dep)) {
-		deps.push_back(dep);
-	} else if (shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep)) {
-		vector <shared_ptr <const Dep> > deps_child;
-		normalize(dynamic_dep->dep, deps_child, error);
-		if (error && ! option_k)
-			return;
-		for (auto &d:  deps_child) {
-			shared_ptr <Dep> dep_new=
-				make_shared <Dynamic_Dep>
-				(dynamic_dep->flags, dynamic_dep->places, d);
-			if (dynamic_dep->index >= 0)
-				dep_new->index= dynamic_dep->index;
-			dep_new->top= dynamic_dep->top;
-			deps.push_back(dep_new);
-		}
-	} else if (shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dep)) {
-		for (auto &d:  compound_dep->deps) {
-			shared_ptr <Dep> dd= Dep::clone(d);
-			dd->add_flags(compound_dep, false);
-			if (compound_dep->index >= 0)
-				dd->index= compound_dep->index;
-			dd->top= compound_dep->top;
-			normalize(dd, deps, error);
-			if (error && ! option_k)
-				return;
-		}
-	} else if (auto concat_dep= to <Concat_Dep> (dep)) {
-		Concat_Dep::normalize_concat(concat_dep, deps, error);
-		if (error && ! option_k)
-			return;
-	} else {
-		assert(false);
-	}
-}
-
 #endif /* ! DEP_HH */

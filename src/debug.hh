@@ -15,17 +15,18 @@ public:
 	virtual ~Debuggable();
 };
 
+#define DEBUG_PADDING_TEXT "   "
+
 class Debug
 {
 public:
-	// TODO make "   " a constant and don't hardcode "3". 
 	Debug(const Debuggable *d) {
-		padding_current += "   ";
+		padding_current += DEBUG_PADDING_TEXT;
 		debuggables.push_back(d);
 	}
 
 	~Debug() {
-		padding_current.resize(padding_current.size() - 3);
+		padding_current.resize(padding_current.size() - strlen(DEBUG_PADDING_TEXT));
 		debuggables.pop_back();
 	}
 

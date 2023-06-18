@@ -84,7 +84,7 @@ void Part::show(string &ret, bool quotes) const
 string show(const Parts &parts, Style style)
 {
 	Channel channel= (Channel)(style & S_CHANNEL);
-	bool quotes_outer= Color::quotes[channel];
+	bool nocolor= Color::nocolor[channel];
 	string ret= Color::highlight_on[channel];
 
 	bool has_marker= false;
@@ -108,8 +108,8 @@ string show(const Parts &parts, Style style)
 			}
 			bool quotes= empty
 				|| quotable == Q_COLOR
-				|| (quotes_outer && !has_marker && !(style & S_QUOTE_MINIMUM))
-				|| (quotes_outer && has_marker && quotable == Q_NO_COLOR && !(style & S_QUOTE_MINIMUM));
+				|| (nocolor && !has_marker && !(style & S_QUOTE_MINIMUM))
+				|| (nocolor && has_marker && quotable == Q_NO_COLOR && !(style & S_QUOTE_MINIMUM));
 			if (quotes)  ret += '"';
 			for (; i < j; ++i)
 				parts[i].show(ret, quotes);

@@ -45,9 +45,7 @@ enum Channel {
 class Color
 {
 public:
-	// TODO rename to "nocolor"
-	static bool quotes[CH_COUNT];
-	/* Whether single quotes have to be used.  Set when color is not used. */
+	static bool nocolor[CH_COUNT];
 
 	static const char *stdout_success_on;
 	static const char *stdout_success_off;   

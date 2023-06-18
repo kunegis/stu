@@ -1168,7 +1168,7 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 					} else {
 						place << fmt("expected a flag character after dash %s, not %s",
 							     show_operator('-'),
-							     show_operator(*p));
+							     show_text(string(1, *p)));
 					}
 					throw ERROR_LOGICAL;
 				}

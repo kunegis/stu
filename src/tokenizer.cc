@@ -718,7 +718,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				if (*p == '+' || *p == '~') {
 					current_place() <<
 						fmt("an unquoted name must not begin with the character %s",
-						    show_operator(*p));
+						    show_text(string(1, *p)));
 					throw ERROR_LOGICAL;
 				}
 				Place place_dash= current_place();

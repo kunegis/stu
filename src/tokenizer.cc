@@ -893,12 +893,11 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 					place_backslash
 						<< fmt("invalid escape sequence %s",
 						       show_operator(frmt("\\%c", *p)));
-//							Color::stderr_highlight_on, *p, Color::stderr_highlight_off);
 				else 
 					// TODO generate a \x?? hexadecimal sequence instead
 					place_backslash
 						<< fmt("invalid escape sequence %s",
-						       show_operator(string(p-1, 2)));
+						       show_text(string(p-1, 2)));
 				place_begin_quote <<
 					fmt("in quote started by %s",
 					    show_operator('"'));

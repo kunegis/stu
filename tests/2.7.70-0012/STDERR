@@ -1,0 +1,2 @@
+main.stu:3:10: invalid escape sequence "\\\x10"
+main.stu:3:9: in quote started by "

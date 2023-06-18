@@ -107,12 +107,3 @@ void Flag_Token::render(Parts &parts, Rendering) const
 {
 	parts.append_operator_unquotable(frmt("-%c", flag)); 
 }
-
-// // TODO remove function (it's unused)
-// void Flag_Token::render_full(Parts &parts, Rendering) const
-// {
-// 	parts.append_operator_unquotable(frmt("-%c", flag)); 
-// }
-
-
-

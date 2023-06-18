@@ -23,6 +23,8 @@ Quotable Part::need_quotes() const
 
 Quotable Part::need_quotes(unsigned char c)
 {
+	TRACE_FUNCTION(SHOW, Part::need_quotes(unsigned char));
+	TRACE("c=%s", frmt("%u", c));
 	if (c & 0x80)
 		return Q_NO;
 	if (c <= 0x20 || c == 0x7F)
@@ -40,6 +42,8 @@ void Part::show(string &ret) const
 
 void Part::show(string &ret, bool quotes) const
 {
+	TRACE_FUNCTION(SHOW, Part::show(string &, bool));
+	TRACE("quotes=%s", frmt("%u", (unsigned)quotes));
 	assert(is_quotable());
 	if (properties == PROP_OPERATOR_QUOTABLE) {
 		ret += text;
@@ -95,11 +99,11 @@ string show(const Parts &parts, Style style)
 			Quotable quotable= Q_MIN;
 			if (style == S_ALWAYS_QUOTE)
 				quotable= Q_COLOR;
-			bool empty= true;//parts[i].text.empty();
+			bool empty= true;
 			for (j= i;  j < parts.size() && parts[j].is_quotable();  ++j) {
 				if (quotable <= Q_MAX)
 					quotable= max(quotable, parts[j].need_quotes());
-				if (!parts[j].text.empty())
+				if (! parts[j].text.empty())
 					empty= false;
 			}
 			bool quotes= empty
@@ -131,6 +135,13 @@ string show_operator(string s, Style style)
 	Parts parts;
 	parts.append_operator_unquotable(s);
 	return show(parts, style); 
+}
+
+string show_text(string text, Style style)
+{
+	Parts parts;
+	parts.append_text(text);
+	return show(parts, style);
 }
 
 void render_dynamic_variable(string name, Parts &parts, Rendering)

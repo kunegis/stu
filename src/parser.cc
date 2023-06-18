@@ -1081,7 +1081,7 @@ void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
 			fclose(file);
 			place << fmt("filename %s must not contain %s",
 				     show(filename_dep),
-				     show_operator('\0'));
+				     show_text(string(1, '\0')));
 			printer <<
 				fmt("in %s-separated dynamic dependency %s "
 				    "declared with flag %s",

@@ -77,6 +77,7 @@ string show(const Parts &, Style style);
 void render(string s, Parts &, Rendering= 0);
 string show_operator(char, Style= S_DEFAULT);
 string show_operator(string, Style= S_DEFAULT);
+string show_text(string, Style= S_DEFAULT);
 void render_dynamic_variable(string name, Parts &, Rendering= 0);
 string show_dynamic_variable(string name, Style= S_DEFAULT);
 

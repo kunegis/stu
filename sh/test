@@ -581,12 +581,22 @@ output_end
 cd ..
 
 if [ "$ret" != 0 ] ; then
-	count_failed=$(echo $(<log/error.log wc -l))
-	success_rate=$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')
+##	count_failed=$(echo $(<log/error.log wc -l))
+	if [ "$count_failed" = 0 ] ; then
+		count_failed_text=0
+	else
+		count_failed_text="[41;30m$count_failed[m"
+	fi
+	if [ "$verbose" = 0 ] ; then
+		printf '[2KTesting done [%s] (%s/%s/%s)\n' \
+		       "$VARIANT" \
+		       "[42;30m$count_succeed[m" \
+		       "[43;30m$((count_total - count_succeed - count_failed))[m" \
+		       "$count_failed_text"
+	fi
 	echo >&2 Failed tests:
 	cat  >&2 log/error.log
-	## TODO the next line should use the same green/red count style as the
-	## running count 
+	success_rate=$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')
 	echo >&2 "[31m$0: *** ${success_rate}% success rate.  $count_failed test(s) failed (out of $count_total).[m"
 	exit 1
 fi

@@ -333,12 +333,12 @@ void Name::canonicalize()
 {
 	for (size_t i= 0; i <= get_n(); ++i) {
                 char *const p= (char *) texts[i].c_str();
-		Canon_Flags canon_flags= 0;
+		Canonicalize_Flags canonicalize_flags= 0;
 		if (i == 0)
-			canon_flags |= A_BEGIN;
+			canonicalize_flags |= A_BEGIN;
 		if (i == get_n())
-			canon_flags |= A_END;
-		const char *q= canonicalize_string(canon_flags, p);
+			canonicalize_flags |= A_END;
+		const char *q= canonicalize_string(canonicalize_flags, p);
 		texts[i].resize(q - p);
 	}
 }

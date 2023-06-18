@@ -38,7 +38,6 @@ Trace::Init::Init()
 
 FILE *Trace::open_logfile(const char *filename)
 {
-	// TODO make sure the close-on-exec flag is set.
 	FILE *ret= fopen(filename, "w");
 	if (!ret) {
 		print_errno(fmt("fopen(%s)", filename));
@@ -46,7 +45,7 @@ FILE *Trace::open_logfile(const char *filename)
 	}
 	int flags= fcntl(fileno(ret), F_GETFL, 0);
 	if (flags >= 0)
-		fcntl(fileno(ret), F_SETFL, flags | O_APPEND);
+		fcntl(fileno(ret), F_SETFL, flags | O_APPEND | FD_CLOEXEC);
 	assert(ret);
 	return ret;
 	

@@ -894,7 +894,6 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 						<< fmt("invalid escape sequence %s",
 						       show_operator(frmt("\\%c", *p)));
 				else 
-					// TODO generate a \x?? hexadecimal sequence instead
 					place_backslash
 						<< fmt("invalid escape sequence %s",
 						       show_text(string(p-1, 2)));
@@ -1019,14 +1018,12 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 			place_percent
 				<< fmt("%s must not appear in dynamic dependencies",
 				       show_operator("%include"));
-//					Color::stderr_highlight_on, Color::stderr_highlight_off);
 			throw ERROR_LOGICAL;
 		}
 		if (context == OPTION_C || context == OPTION_F) {
 			place_percent
 				<< fmt("%s must not be used",
 				       show_operator("%include"));
-//					Color::stderr_highlight_on, Color::stderr_highlight_off);
 			throw ERROR_LOGICAL;
 		}
 
@@ -1040,7 +1037,6 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 				       show(string(p, 1))));
 			place_percent << fmt("after %s",
 					     show_operator("%include"));
-//					      Color::stderr_highlight_on, Color::stderr_highlight_off);
 			throw ERROR_LOGICAL;
 		}
 		if (place_name->get_n() != 0) {
@@ -1049,7 +1045,6 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 				    show(*place_name));
 			place_percent << fmt("after %s",
 					     show_operator("%include"));
-//					      Color::stderr_highlight_on, Color::stderr_highlight_off);
 			throw ERROR_LOGICAL;
 		}
 
@@ -1076,7 +1071,6 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 							fmt("recursive inclusion of %s using %s",
 							    show(filename_include),
 							    show_operator("%include"));
-//							    Color::stderr_highlight_on, Color::stderr_highlight_off);
 					}
 					backtraces_backward.push_back(backtrace);
 				}

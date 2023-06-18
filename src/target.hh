@@ -28,7 +28,7 @@
  *   parameters of a target.  An anchoring is represented as a vector of
  *   integers, the length of which is twice the number of parameters.  Example:
  *   When name.$a.$b is matched to the name 'name.xxx.7', then the anchoring is
- *   [5, 8, 9, 10]. 
+ *   [5, 8, 9, 10].
  */
 
 #include <assert.h>
@@ -58,7 +58,7 @@ class Target
  * a string.  A word_t is represented by a fixed number of characters.
  *
  * A non-dynamic dependency is represented as a Type word (F_TARGET_TRANSIENT or
- * 0) followed by the name.  
+ * 0) followed by the name.
  *
  * A dynamic is represented as a dynamic word (F_TARGET_DYNAMIC) followed by the
  * string representation of the contained dependency.
@@ -451,7 +451,7 @@ public:
 	}
 };
 
-void show(Parts &, const Place_Name &place_name); 
+void show(Parts &, const Place_Name &place_name);
 
 class Place_Param_Target
 /* A target that is parametrized and contains places.  Non-dynamic. */
@@ -525,7 +525,6 @@ void render(const Place_Param_Target &place_param_target,
 {
 	return place_param_target.render(parts, rendering);
 }
-
 
 shared_ptr <const Place_Param_Target> canonicalize(shared_ptr <const Place_Param_Target> );
 

@@ -92,7 +92,7 @@ string show(const Parts &parts, Style style)
 	for (i= 0; i < parts.size(); ++i)
 		if (parts[i].is_operator())
 			has_marker= true;
-	
+
 	for (i= 0; i < parts.size();) {
 		if (parts[i].is_quotable()) {
 			size_t j;
@@ -118,7 +118,7 @@ string show(const Parts &parts, Style style)
 			parts[i++].show(ret);
 		}
 	}
-	
+
 	ret += Color::highlight_off[channel];
 	return ret;
 }
@@ -127,14 +127,14 @@ string show_operator(char c, Style style)
 {
 	Parts parts;
 	parts.append_operator_unquotable(c);
-	return show(parts, style); 
+	return show(parts, style);
 }
 
 string show_operator(string s, Style style)
 {
 	Parts parts;
 	parts.append_operator_unquotable(s);
-	return show(parts, style); 
+	return show(parts, style);
 }
 
 string show_text(string text, Style style)

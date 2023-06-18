@@ -81,7 +81,7 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 				place_input <<
 					fmt("dynamic dependency %s must not contain input redirection %s",
 					    show(target_dynamic),
-					    show_prefix("<", input)); 
+					    show_prefix("<", input));
 				Target target_file= target;
 				target_file.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT;
 				(*dynamic_executor) << fmt("%s is declared here",
@@ -675,7 +675,7 @@ void Executor::raise(int error_)
 void Executor::disconnect(Executor *const child,
 			  shared_ptr <const Dep> dep_child)
 {
-	Style style= S_DEBUG; 
+	Style style= S_DEBUG;
 	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, style)));
 
 	assert(child != nullptr);

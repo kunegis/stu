@@ -30,7 +30,7 @@ enum Quotable {
 };
 
 enum Properties {
-	PROP_TEXT, 
+	PROP_TEXT,
 	PROP_OPERATOR_QUOTABLE,
 	PROP_OPERATOR_UNQUOTABLE,
 	PROP_SPACE,
@@ -44,7 +44,6 @@ public:
 
 	Part(Properties properties_, string text_)
 		:  properties(properties_), text(text_)  {  }
-	
 	bool is_quotable() const {
 		return properties == PROP_TEXT || properties == PROP_OPERATOR_QUOTABLE;
 	}

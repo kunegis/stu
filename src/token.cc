@@ -105,5 +105,5 @@ void Operator::render(Parts &parts, Rendering) const
 
 void Flag_Token::render(Parts &parts, Rendering) const
 {
-	parts.append_operator_unquotable(frmt("-%c", flag)); 
+	parts.append_operator_unquotable(frmt("-%c", flag));
 }

@@ -5,13 +5,13 @@
 bool Color::nocolor[CH_COUNT];
 
 const char *Color::stdout_success_on;
-const char *Color::stdout_success_off;   
-const char *Color::stderr_warn_on;        
-const char *Color::stderr_warn_off;       
-const char *Color::stderr_err_on;         
-const char *Color::stderr_err_off;        
-const char *Color::highlight_on[CH_COUNT];    
-const char *Color::highlight_off[CH_COUNT];  
+const char *Color::stdout_success_off;
+const char *Color::stderr_warn_on;
+const char *Color::stderr_warn_off;
+const char *Color::stderr_err_on;
+const char *Color::stderr_err_off;
+const char *Color::highlight_on[CH_COUNT];
+const char *Color::highlight_off[CH_COUNT];
 
 void Color::set()
 /* Only use color when $TERM is defined, is not equal to "dumb", and

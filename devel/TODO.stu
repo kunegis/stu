@@ -2,7 +2,7 @@
 # Option -I
 #
 # For all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
-# * @" as target name.  Make sure @ is not quoted, but " is.  
+# * @" as target name.  Make sure @ is not quoted, but " is.
 # * list.*+X does not need quotes in -I output
 # * list.${a}+X does not need quotes in normal output
 # * list.${a}-X does not need quotes in normal output
@@ -150,7 +150,7 @@
 #
 
 #
-# When doing %include or %import, allow to pass environment variables. 
+# When doing %include or %import, allow to pass environment variables.
 #
 
 #
@@ -163,7 +163,7 @@
 % set PATH /usr/local/bin
 
 #
-# Regex patterns in parameters.  Not sure about the '|' syntax. 
+# Regex patterns in parameters.  Not sure about the '|' syntax.
 #
 
 list.${name|[A-Z].*} # Matches uppercase names
@@ -177,7 +177,7 @@ list.${name|[A-Z].*} # Matches uppercase names
 #
 
 #
-# Compilation mode like ndebug but non-stripped.  Check output of nm and ldd. 
+# Compilation mode like ndebug but non-stripped.  Check output of nm and ldd.
 #
 
 #

@@ -132,7 +132,7 @@ void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Dynamic_Dep::render);
 	if (render_flags(flags & ~F_TARGET_DYNAMIC, parts, rendering))
-		parts.append_space(); 
+		parts.append_space();
 	parts.append_operator_unquotable('[');
 	dep->render(parts, rendering | R_NO_COMPOUND_PARENTHESES);
 	parts.append_operator_unquotable(']');
@@ -202,7 +202,7 @@ void Compound_Dep::render(Parts &parts, Rendering rendering) const
 	for (const shared_ptr <const Dep> &d: deps) {
 		if (first)
 			first= false;
-		else 
+		else
 			parts.append_space();
 		d->render(parts, rendering & ~R_NO_COMPOUND_PARENTHESES);
 	}

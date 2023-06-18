@@ -415,7 +415,7 @@ do
 				echo >&7 "STDOUT...correct"
 			else
 				test_fail "Output does not match 'STDOUT'"
-				diff >&2 list.def.out STDOUT 
+				diff >&2 list.def.out STDOUT
 				error=1
 			fi
 		fi
@@ -460,7 +460,7 @@ do
 				echo >&7 "STDERR...correct"
 			else
 				test_fail "Error output does not match 'STDERR'"
-				diff >&2 list.def.err STDERR 
+				diff >&2 list.def.err STDERR
 				error=1
 			fi
 		fi
@@ -496,7 +496,7 @@ do
 					echo >&7 "TTYSTDOUTERR...correct"
 				else
 					test_fail "TTY error output does not match 'TTYSTDOUTERR'"
-					diff >&2 list.def.out TTYSTDOUTERR 
+					diff >&2 list.def.out TTYSTDOUTERR
 					error=1
 				fi
 			fi
@@ -581,7 +581,6 @@ output_end
 cd ..
 
 if [ "$ret" != 0 ] ; then
-##	count_failed=$(echo $(<log/error.log wc -l))
 	if [ "$count_failed" = 0 ] ; then
 		count_failed_text=0
 	else

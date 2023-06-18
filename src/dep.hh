@@ -190,7 +190,7 @@ public:
 
 void render(shared_ptr <const Dep> dep, Parts &parts, Rendering rendering= 0)
 {
-	dep->render(parts, rendering); 
+	dep->render(parts, rendering);
 }
 
 class Plain_Dep
@@ -355,7 +355,7 @@ public:
 	virtual Target get_target() const;
 
 	unsigned get_depth() const {
-		if (to <Dynamic_Dep> (dep)) 
+		if (to <Dynamic_Dep> (dep))
 			return 1 + to <Dynamic_Dep> (dep)->get_depth();
 		else
 			return 1;

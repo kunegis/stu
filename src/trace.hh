@@ -5,7 +5,7 @@
  * To enable tracing for a trace class TRACE_ABC, set the environment variable
  * $STU_TRACE_ABC to:
  * 	"log" 	  Write into trace logfile
- *	"stderr"  Write on stderr  
+ *	"stderr"  Write on stderr
  * 	"off"	  No tracing (same as not variable set)
  */
 
@@ -32,7 +32,7 @@ public:
 	Trace(Trace_Class trace_class_, const char *name)
 		:  trace_class(trace_class_)
 	{
-		assert(trace_class >= 0 && trace_class < TRACE_COUNT); 
+		assert(trace_class >= 0 && trace_class < TRACE_COUNT);
 		stack.push_back(this);
 		if (! (trace_files[trace_class]))
 			return;
@@ -59,7 +59,7 @@ public:
 		assert(! stack.empty());
 		return stack[stack.size() - 1];
 	}
-	
+
 private:
 	string prefix;
 	static string padding;

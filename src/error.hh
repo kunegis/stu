@@ -31,7 +31,7 @@
  * Error messages begin with uppercase letters; backtrace messages with
  * lowercase letters, as per the GNU Coding Standards.  Filenames are quotes
  * with double quotes.  Operators and flags are not quoted.   Messages for
- * neither type of error output lines are terminated by periods. 
+ * neither type of error output lines are terminated by periods.
  *
  * Typical forms of error messages are:
  *
@@ -154,9 +154,9 @@ void print_error_reminder(string message);
  * the color of warnings.  */
 
 string format_errno(string text);
-/* Includes the given message, and the ERRNO-based text.  Cf. perror().  Color            
+/* Includes the given message, and the ERRNO-based text.  Cf. perror().  Color
  * is not added.  The output of this function is used as input to one of the
- * print_*() functions.  */ 
+ * print_*() functions.  */
 
 void print_out(string text);
 /* Print a message to standard output in "print" colors.  This is used
@@ -241,7 +241,7 @@ public:
 	 * tools, e.g. the compile mode of Emacs.  Line and column
 	 * numbers are output as 1-based values.  Return THIS.  */
 
-	void print(string message, 
+	void print(string message,
 		   const char *color_on,
 		   const char *color_off) const;
 
@@ -273,7 +273,7 @@ public:
 
 	string message;
 	/* May be "".  When the backtrace is printed, it must not be empty,
-	 * and must not begin with an upper-case letter.  */ 
+	 * and must not begin with an upper-case letter.  */
 
 	Backtrace(const Place &place_, string message_)
 		:  place(place_), message(message_)  {  }

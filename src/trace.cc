@@ -31,7 +31,7 @@ Trace::Init::Init()
 		} else {
 			fprintf(stderr, "*** Error: Invalid value for trace %s=%s\n",
 				name.c_str(), env);
-			exit(ERROR_FATAL); 
+			exit(ERROR_FATAL);
 		}
 	}
 }
@@ -48,7 +48,6 @@ FILE *Trace::open_logfile(const char *filename)
 		fcntl(fileno(ret), F_SETFL, flags | O_APPEND | FD_CLOEXEC);
 	assert(ret);
 	return ret;
-	
 }
 
 const char *trace_strip_dir(const char *s)

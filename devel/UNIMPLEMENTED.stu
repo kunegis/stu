@@ -152,11 +152,11 @@ dep.sources {
 
 #
 # Have an option for: For hardcoded rules, compare the content of the file with
-# the wanted content and don't update the file if identical. 
+# the wanted content and don't update the file if identical.
 #
 
 #
-# Regular expressions in target names. 
+# Regular expressions in target names.
 #
 
 list.${X:.}${Y:.} {
@@ -206,13 +206,13 @@ ${NAME:[^/]+}.bib: ...;
 #
 
 #
-# Have a logfile.  Similar to debug mode, but into a file. 
+# Have a logfile.  Similar to debug mode, but into a file.
 #
 
 #
 # Allow dir/@transient.  Will allow dir/(a b @c @d).
 #
-# a/@b is equivalent to @a/b. 
+# a/@b is equivalent to @a/b.
 #
 
 #

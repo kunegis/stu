@@ -18,7 +18,7 @@
  * Ignore errors, as this is called from the terminating signal handler.
  *
  * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this
- * macro.  
+ * macro.
  *
  * Note:  This macro may change ERRNO.
  */
@@ -34,7 +34,7 @@
  * safe, but we shouldn't rely on that.
  *
  * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this
- * macro.  
+ * macro.
  * Note:  This macro may change ERRNO.
  */
 #ifdef NDEBUG

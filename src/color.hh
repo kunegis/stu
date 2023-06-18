@@ -48,15 +48,15 @@ public:
 	static bool nocolor[CH_COUNT];
 
 	static const char *stdout_success_on;
-	static const char *stdout_success_off;   
-	static const char *stderr_warn_on;        
-	static const char *stderr_warn_off;       
-	static const char *stderr_err_on;         
-	static const char *stderr_err_off;        
+	static const char *stdout_success_off;
+	static const char *stderr_warn_on;
+	static const char *stderr_warn_off;
+	static const char *stderr_err_on;
+	static const char *stderr_err_off;
 
 	static const char *highlight_on[CH_COUNT];
-	static const char *highlight_off[CH_COUNT];  
-	
+	static const char *highlight_off[CH_COUNT];
+
 	/* At least one of the following functions must be called before
 	 * any output is written.  */
 	static void set();

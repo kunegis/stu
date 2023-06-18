@@ -893,7 +893,7 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 					place_backslash
 						<< fmt("invalid escape sequence %s",
 						       show_operator(frmt("\\%c", *p)));
-				else 
+				else
 					place_backslash
 						<< fmt("invalid escape sequence %s",
 						       show_text(string(p-1, 2)));

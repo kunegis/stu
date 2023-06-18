@@ -929,7 +929,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 		throw ERROR_LOGICAL;
 	}
 
-	if (has_input) 
+	if (has_input)
 		place_name_input= *name_token;
 
 	if (next_concatenates()) {

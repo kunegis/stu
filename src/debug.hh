@@ -5,7 +5,7 @@
  * Debug output (option -d).  Provides indentation.  During the lifetime of an
  * object, padding is increased by one step.  This class is declared within
  * blocks in functions such as execute(), etc.  The passed Executor is valid
- * until the end of the object's lifetime. 
+ * until the end of the object's lifetime.
  */
 
 class Debuggable

@@ -106,7 +106,6 @@ public:
 	}
 
 	void render(Parts &, Rendering= 0) const;
-//	void render_full(Parts &, Rendering= 0) const;
 };
 
 class Name_Token

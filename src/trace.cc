@@ -1,4 +1,4 @@
-#include "tracing.hh"
+#include "trace.hh"
 
 #ifndef NDEBUG
 

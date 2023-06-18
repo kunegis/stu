@@ -1,7 +1,5 @@
-#ifndef TRACING_HH
-#define TRACING_HH
-
-// TODO rename to "trace".
+#ifndef TRACE_HH
+#define TRACE_HH
 
 /*
  * To enable tracing for a trace class TRACE_ABC, set the environment variable
@@ -31,8 +29,8 @@ public:
 	Trace_Class trace_class;
 	static FILE *trace_files[TRACE_COUNT];
 
-	Trace(Trace_Class tracing_class_, const char *name)
-		:  trace_class(tracing_class_)
+	Trace(Trace_Class trace_class_, const char *name)
+		:  trace_class(trace_class_)
 	{
 		assert(trace_class >= 0 && trace_class < TRACE_COUNT); 
 		stack.push_back(this);
@@ -100,4 +98,4 @@ const char *trace_strip_dir(const char *s);
 #define TRACE(a, ...)
 #endif /* NDEBUG */
 
-#endif /* ! TRACING_HH */
+#endif /* ! TRACE_HH */

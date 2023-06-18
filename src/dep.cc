@@ -4,7 +4,7 @@
 
 #include "color.hh"
 #include "format.hh"
-#include "tracing.hh"
+#include "trace.hh"
 
 shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 {

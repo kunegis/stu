@@ -25,7 +25,7 @@ using namespace std;
 #include "timestamp.cc"
 #include "token.cc"
 #include "tokenizer.cc"
-#include "tracing.cc"
+#include "trace.cc"
 #include "transient_executor.cc"
 
 int main(int argc, char **argv, char **envp)

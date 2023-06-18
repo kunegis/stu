@@ -196,7 +196,6 @@ bool Compound_Dep::is_unparametrized() const
 void Compound_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Compound_Dep::render);
-//	if (deps.size() != 0)
 	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
 		parts.append_operator_unquotable('(');
 	bool first= true;
@@ -207,7 +206,6 @@ void Compound_Dep::render(Parts &parts, Rendering rendering) const
 			parts.append_space();
 		d->render(parts, rendering & ~R_NO_COMPOUND_PARENTHESES);
 	}
-//	if (deps.size() != 0)
 	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
 		parts.append_operator_unquotable(')');
 }

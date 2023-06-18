@@ -1,1 +1,2 @@
-# Make sure -y is honored
+Option -F: expected a command, :, ;, or =, not [
+Option -F: for target "a"

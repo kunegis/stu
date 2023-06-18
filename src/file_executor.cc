@@ -178,12 +178,8 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		/* Command failed */
 		string reason;
 		if (WIFEXITED(status)) {
- 			// TODO The whole phrase should be in error color (use
- 			// specific function)  
-			reason= frmt("failed with exit status %s%d%s",
-				     Color::highlight_on[CH_ERR],
-				     WEXITSTATUS(status),
-				     Color::highlight_off[CH_ERR]);
+			reason= fmt("failed with exit status %s",
+				    show_operator(frmt("%d", WEXITSTATUS(status))));
 		} else if (WIFSIGNALED(status)) {
 			int sig= WTERMSIG(status);
 			reason= frmt("received signal %d (%s%s%s)",
@@ -403,7 +399,6 @@ bool File_Executor::finished(Flags flags) const
 void File_Executor::render(Parts &parts, Rendering rendering) const {
 	assert(targets.size());
 	targets.front().render(parts, rendering);
-//	return show(targets.front(), style);
 }
 
 void job_terminate_all()

@@ -40,7 +40,6 @@ void Color::set(bool enable_color_out, bool enable_color_err)
 /* Note:  GCC additionally inserts "\33[K" sequences after each color code, to
  * avoid a bug in some terminals.  This is not done here.  */
 {
-	// TODO order should be the same as in declaration. 
 	if (enable_color_out) {
 		quotes[CH_OUT]= false;
 		stdout_success_on=    	"\33[32m";

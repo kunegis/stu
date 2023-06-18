@@ -141,17 +141,9 @@ void Concat_Executor::notify_result(shared_ptr <const Dep> d,
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))
 	       != (F_RESULT_NOTIFY | F_RESULT_COPY));
 	assert(dep_source);
-
-//	Style style= S_DEBUG;
 	DEBUG_PRINT(fmt("notify_result(flags = %s, d = %s)",
-			show_flags(flags,
-				   S_DEBUG
-//				   &style
-				   ),
-			::show(d,
-				       S_DEBUG
-//				       &style
-				       )));
+			show_flags(flags, S_DEBUG),
+			::show(d, S_DEBUG)));
 
 	if (flags & F_RESULT_NOTIFY) {
 		vector <shared_ptr <const Dep> > deps;

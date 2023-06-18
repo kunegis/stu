@@ -49,18 +49,6 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 				place_at << fmt("after %s", show_operator('@'));
 				throw ERROR_LOGICAL;
 			}
-
-			// if (! place_output_new.empty()) {
-			// 	Target target(F_TARGET_TRANSIENT,
-			// 		      is <Name_Token> ()->format_raw());
-			// 	place_at <<
-			// 		fmt("transient target %s is invalid",
-			// 		    target.format_err());
-			// 	place_output_new << fmt("after output redirection using %s",
-			// 				char_format_err('>'));
-			// 	throw ERROR_LOGICAL;
-			// }
-
 			flags_type= F_TARGET_TRANSIENT;
 		}
 
@@ -138,8 +126,6 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 
 		if (flags_type == F_TARGET_TRANSIENT) {
 			if (! place_output_new.empty()) {
-//				Target target(F_TARGET_TRANSIENT,
-//					      is <Name_Token> ()->format_raw());
 				place_param_target->place <<
 					fmt("transient target %s is invalid",
 					    show(*place_param_target));

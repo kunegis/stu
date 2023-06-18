@@ -18,7 +18,6 @@ unsigned flag_get_index(char c)
 bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 {
 	TRACE_FUNCTION(SHOW, show_flags);
-//	TRACE("%s %s", frmt("%u", flags), style_format(style));
 	if (!(rendering & R_SHOW_FLAGS))
 		return false;
 	string ret;
@@ -28,16 +27,7 @@ bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 		}
 	if (ret.empty())
 		return false;
-//	Style style_inner= Style::inner(style, S_HAS_MARKER);
-	ret= '-' + show(ret
-//			,
-//			&style_inner
-			);
-//	Style style_outer= Style::outer(style, &style_inner);
-//	ret= show(ret, &style_outer);
-//	TRACE("ret= %s", ret);
-//	Style::transfer(style, &style_outer);
-//	return ret;
+	ret= '-' + show(ret);
 	parts.append_operator_unquotable(ret);
 	return true;
 }

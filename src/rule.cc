@@ -113,7 +113,6 @@ Rule::instantiate(shared_ptr <const Rule> rule,
 void Rule::render(Parts &parts, Rendering rendering) const
 {
 	parts.append_operator_unquotable("Rule(");
-//	string ret= "Rule(";
 
 	bool first= true;
 	for (auto place_param_target:  place_param_targets) {
@@ -121,29 +120,21 @@ void Rule::render(Parts &parts, Rendering rendering) const
 			first= false;
 		else
 			parts.append_space();
-//			ret += ' ';
 		place_param_target->render(parts, rendering);
-//		ret += place_param_target->show(style);
 	}
 
 	if (deps.size() != 0) {
 		parts.append_operator_unquotable(':');
 		parts.append_space();
-//		ret += ": ";
 	}
 	for (auto i= deps.begin();  i != deps.end();  ++i) {
 		if (i != deps.begin()) {
-//			parts.append_operator_unquotable(',');
 			parts.append_space();
-//			ret += ", ";
 		}
 		(*i)->render(parts, rendering);
-//		ret += (*i)->show(style);
 	}
 
 	parts.append_operator_unquotable(')');
-//	ret += ")";
-//	return ret;
 }
 
 void Rule::check_unparametrized(shared_ptr <const Dep> dep,
@@ -373,8 +364,7 @@ void Rule_Set::print() const
 	}
 
 	for (auto i:  rules_param)  {
-		//		Style style= S_STDOUT;
-		string text= show(i, CH_OUT);//->show(&style);
+		string text= show(i, CH_OUT);
 		puts(text.c_str());
 	}
 }
@@ -397,7 +387,6 @@ void Rule_Set::print_targets() const
 		for (auto target: i->place_param_targets) {
 			if (target->flags & F_TARGET_TRANSIENT)
 				continue;
-//			Style style= S_STDOUT | S_GLOB | S_DONT_SHOW_COLOR;
 			filenames.insert(show(target->place_name, S_NORMAL, R_GLOB));
 		}
 	}

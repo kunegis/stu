@@ -1,2 +1,2 @@
-main.stu:3:8: there must not be a target 'list.B'
-main.stu:3:1: shadowing target 'list.B' of the same rule
+main.stu:3:8: there must not be a target "list.B"
+main.stu:3:1: shadowing target "list.B" of the same rule

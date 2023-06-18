@@ -25,7 +25,7 @@ set -e
 	exit 1
 }
 
-grep -qF "list.stu:1:5: no rule to build './B', needed by 'A'" list.err || {
+grep -qF "list.stu:1:5: no rule to build \"./B\", needed by \"A\"" list.err || {
 	echo >&2 '*** Expect error message'
 	exit 1
 }

@@ -10,8 +10,9 @@ exitstatus=$?
 	exit 1
 }
 
-grep -q -F 'Creating C: CORRECT' list.out || {
+grep -q -F 'Creating C: "CORRECT"' list.out || {
 	echo >&2 '*** stdout'
+	cat  >&2 list.out
 	exit 1
 }
 

@@ -1,4 +1,4 @@
-main.stu:3:5: multiple minimal matching rules for target 'list.aaaxbbbyccc'
-main.stu:5:2: rule with target 'list.aaa${x}b${y}ccc'
-main.stu:6:2: rule with target 'list.a${x}bbb${y}ccc'
-main.stu:3:5: 'list.aaaxbbbyccc' is needed by 'A'
+main.stu:3:5: multiple minimal matching rules for target "list.aaaxbbbyccc"
+main.stu:5:2: rule with target list.aaa${x}b${y}ccc
+main.stu:6:2: rule with target list.a${x}bbb${y}ccc
+main.stu:3:5: "list.aaaxbbbyccc" is needed by "A"

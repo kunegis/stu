@@ -45,7 +45,7 @@ EOF
 		exit 1
 	}
 	
-	grep -q -E "^main\.stu:2:[0-9]+: no rule to build 'nonexistingfile', needed by '.*'$" list.err || {
+	grep -q -E "^main\.stu:2:[0-9]+: no rule to build \"nonexistingfile\", needed by \".*\"$" list.err || {
 ##		echo >&2
 		echo >&2 "*** Invalid stderr"
 		echo >&2 "uncanonicalized='$uncanonicalized'"

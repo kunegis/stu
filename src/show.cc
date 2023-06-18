@@ -88,10 +88,14 @@ string show(const Parts &parts, Style style)
 	string ret= Color::highlight_on[channel];
 
 	bool has_marker= false;
+	bool empty= true;
 	size_t i;
-	for (i= 0; i < parts.size(); ++i)
+	for (i= 0; i < parts.size(); ++i) {
 		if (parts[i].is_operator())
 			has_marker= true;
+		if (! parts[i].text.empty())
+			empty= false;
+	}
 
 	for (i= 0; i < parts.size();) {
 		if (parts[i].is_quotable()) {
@@ -99,12 +103,9 @@ string show(const Parts &parts, Style style)
 			Quotable quotable= Q_MIN;
 			if (style == S_ALWAYS_QUOTE)
 				quotable= Q_ALWAYS_QUOTE;
-			bool empty= true;
 			for (j= i; j < parts.size() && parts[j].is_quotable(); ++j) {
 				if (quotable <= Q_MAX)
 					quotable= max(quotable, parts[j].need_quotes());
-				if (! parts[j].text.empty())
-					empty= false;
 			}
 			bool quotes= empty
 				|| quotable == Q_ALWAYS_QUOTE

@@ -316,15 +316,19 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 	}
 }
 
-void Name::render(Parts &parts, Rendering) const
+void Name::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Name::show);
 	assert(texts.size() == 1 + parameters.size());
 	parts.append_text(texts[0]);
 	for (size_t i= 0; i < get_n(); ++i) {
-		parts.append_operator_quotable("${");
-		parts.append_text(parameters[i]);
-		parts.append_operator_quotable('}');
+		if (rendering & R_GLOB) {
+			parts.append_operator_unquotable('*');
+		} else {
+			parts.append_operator_quotable("${");
+			parts.append_text(parameters[i]);
+			parts.append_operator_quotable('}');
+		}
 		parts.append_text(texts[1+i]);
 	}
 }

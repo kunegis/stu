@@ -13,7 +13,6 @@ void Target::render(Parts &parts, Rendering rendering) const
 				(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
 				 parts, rendering);
 		}
-//		++i;
 		parts.append_operator_unquotable('[');
 	}
 	assert(text.size() > sizeof(word_t) * (i + 1));

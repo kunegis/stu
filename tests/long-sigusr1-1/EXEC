@@ -43,7 +43,7 @@ grep -qF " list.M" list.out || {
 	exit 1
 }
 
-grep -qF " 'list.File 123'" list.out || {
+grep -qF " \"list.File 123\"" list.out || {
 	echo >&2 '*** Output list.File 123 (1)'
 	echo >&2 stdout:
 	echo >&2 ________________

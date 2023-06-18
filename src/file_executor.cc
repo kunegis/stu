@@ -472,11 +472,8 @@ void job_terminate_all()
 
 void job_print_jobs()
 {
-	for (size_t i= 0;
-	     i < File_Executor::executors_by_pid_size;
-	     ++i) {
+	for (size_t i= 0;  i < File_Executor::executors_by_pid_size;  ++i)
 		File_Executor::executors_by_pid_value[i]->print_as_job();
-	}
 }
 
 bool File_Executor::remove_if_existing(bool output)
@@ -1073,7 +1070,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 void File_Executor::print_as_job() const
 {
 	pid_t pid= job.get_pid();
-	string text_target= show(targets.front(), CH_OUT);
+	string text_target= show(targets.front(), S_NORMAL);
 	printf("%9ld %s\n", (long) pid, text_target.c_str());
 }
 

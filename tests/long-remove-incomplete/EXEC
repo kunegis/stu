@@ -48,7 +48,7 @@ exitstatus=$?
 	exit 1
 }
 
-grep -qF "Removing file 'list.B' because command failed" list.err || {
+grep -qF "Removing file \"list.B\" because command failed" list.err || {
 	echo >&2 "*** Missing error message (B)"
 	echo >&2 stderr:
 	echo >&2 ___________

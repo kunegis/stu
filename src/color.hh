@@ -36,7 +36,11 @@
  * Stu takes the same approach.
  */
 
-enum Channel { CH_OUT, CH_ERR, CH_COUNT };
+enum Channel {
+	CH_OUT, CH_ERR,
+	CH_COUNT,
+	CH_BITS= 1,
+};
 
 class Color
 {

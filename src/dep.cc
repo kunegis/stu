@@ -29,7 +29,7 @@ shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 void Dep::add_flags(shared_ptr <const Dep> dep,
 		    bool overwrite_places)
 {
-	for (unsigned i= 0;  i < C_PLACED;  ++i) {
+	for (unsigned i= 0; i < C_PLACED; ++i) {
 		if (dep->flags & (1 << i)) {
 			if (overwrite_places || ! (this->flags & (1 << i))) {
 				this->set_place_flag(i, dep->get_place_flag(i));
@@ -54,7 +54,7 @@ void Dep::check() const
 {
 	assert(top.get() != this);
 
-	for (unsigned i= 0;  i < C_PLACED;  ++i) {
+	for (unsigned i= 0; i < C_PLACED; ++i) {
 		assert(((flags & (1 << i)) == 0) == get_place_flag(i).empty());
 	}
 
@@ -79,7 +79,7 @@ void Dep::check() const
 
 	if (auto concat_this= dynamic_cast <const Concat_Dep *> (this)) {
 		assert(concat_this->deps.size() >= 2);
-		for (auto i:  concat_this->deps) {
+		for (auto i: concat_this->deps) {
 			assert(i);
 		}
 	}
@@ -176,7 +176,7 @@ Compound_Dep::instantiate(const map <string, string> &mapping) const
 	shared_ptr <Compound_Dep> ret= make_shared <Compound_Dep> (flags, places, place);
 	ret->index= index;
 	ret->top= top;
-	for (const shared_ptr <const Dep> &d:  deps) {
+	for (const shared_ptr <const Dep> &d: deps) {
 		ret->push_back(d->instantiate(mapping));
 	}
 	return ret;
@@ -186,7 +186,7 @@ bool Compound_Dep::is_unparametrized() const
 /* A compound dependency is parametrized when any of its contained
  * dependency is parametrized.  */
 {
-	for (shared_ptr <const Dep> d:  deps) {
+	for (shared_ptr <const Dep> d: deps) {
 		if (! d->is_unparametrized())
 			return false;
 	}
@@ -199,7 +199,7 @@ void Compound_Dep::render(Parts &parts, Rendering rendering) const
 	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
 		parts.append_operator_unquotable('(');
 	bool first= true;
-	for (const shared_ptr <const Dep> &d:  deps) {
+	for (const shared_ptr <const Dep> &d: deps) {
 		if (first)
 			first= false;
 		else 
@@ -216,7 +216,7 @@ shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mappi
 	ret->index= index;
 	ret->top= top;
 
-	for (const shared_ptr <const Dep> &d:  deps) {
+	for (const shared_ptr <const Dep> &d: deps) {
 		ret->push_back(d->instantiate(mapping));
 	}
 
@@ -227,7 +227,7 @@ bool Concat_Dep::is_unparametrized() const
 /* A concatenated dependency is parametrized when any of its contained
  * dependency is parametrized.  */
 {
-	for (shared_ptr <const Dep> d:  deps) {
+	for (shared_ptr <const Dep> d: deps) {
 		if (! d->is_unparametrized())
 			return false;
 	}
@@ -251,14 +251,14 @@ void Concat_Dep::render(Parts &parts, Rendering rendering) const
 			parts.append_space();
 		}
 	}
-	for (const shared_ptr <const Dep> &d:  deps) {
+	for (const shared_ptr <const Dep> &d: deps) {
 		d->render(parts, rendering);
 	}
 }
 
 bool Concat_Dep::is_normalized() const
 {
-	for (auto &i:  deps) {
+	for (auto &i: deps) {
 		if (to <const Concat_Dep> (i))
 			return false;
 		if (! i->is_normalized())
@@ -278,7 +278,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 
 	/* Add attributes from DEP */
 	if (dep->flags || dep->index >= 0 || dep->top) {
-		for (size_t k= k_init;  k < deps_.size();  ++k) {
+		for (size_t k= k_init; k < deps_.size(); ++k) {
 			shared_ptr <Dep> d_new= Dep::clone(deps_[k]);
 			/* The innermost flag is kept */
 			d_new->add_flags(dep, false);
@@ -300,7 +300,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 	if (start_index + 1 == dep->deps.size()) {
 		shared_ptr <const Dep> dd= dep->deps.at(start_index);
 		if (auto compound_dd= to <Compound_Dep> (dd)) {
-			for (const auto &d:  compound_dd->deps) {
+			for (const auto &d: compound_dd->deps) {
 				normalize(d, deps_, error);
 				if (error && ! option_k)
 					return;
@@ -325,7 +325,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			return;
 		shared_ptr <const Dep> dd= dep->deps.at(start_index);
 		if (auto compound_dd= to <Compound_Dep> (dd)) {
-			for (const auto &d:  compound_dd->deps) {
+			for (const auto &d: compound_dd->deps) {
 				normalize(d, vec1, error);
 				if (error && ! option_k)
 					return;
@@ -344,8 +344,8 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			assert(false);
 		}
 
-		for (const auto &d1:  vec1) {
-			for (const auto &d2:  vec2) {
+		for (const auto &d1: vec1) {
+			for (const auto &d2: vec2) {
 				shared_ptr <const Dep> d= concat(d1, d2, error);
 				if (error && ! option_k)
 					return;
@@ -492,14 +492,14 @@ shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> 
 	shared_ptr <Concat_Dep> ret= make_shared <Concat_Dep> ();
 
 	if (auto concat_a= to <const Concat_Dep> (a)) {
-		for (auto d:  concat_a->deps)
+		for (auto d: concat_a->deps)
 			ret->push_back(d);
 	} else {
 		ret->push_back(a);
 	}
 
 	if (auto concat_b= to <const Concat_Dep> (b)) {
-		for (auto d:  concat_b->deps)
+		for (auto d: concat_b->deps)
 			ret->push_back(d);
 	} else {
 		ret->push_back(b);

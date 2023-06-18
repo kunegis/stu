@@ -58,7 +58,7 @@ string fmt(const char *s)
 void reverse_string(string &s)
 {
 	const auto size= s.size();
-	for (size_t i= 0;  i < size / 2; ++i) {
+	for (size_t i= 0; i < size / 2; ++i) {
 		swap(*(s.begin() + i), *(s.begin() + size - 1 - i));
 	}
 }

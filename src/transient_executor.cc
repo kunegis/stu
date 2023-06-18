@@ -71,7 +71,7 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 		return;
 	}
 
-	for (auto &place_param_target:  rule->place_param_targets) {
+	for (auto &place_param_target: rule->place_param_targets) {
 		targets.push_back(place_param_target->unparametrized());
 	}
 	assert(targets.size());
@@ -80,19 +80,19 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 
 	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not
 	 * just the one given in the dependency.  Also, add the flags.  */
-	for (Target t:  targets) {
+	for (Target t: targets) {
 		t.get_front_word_nondynamic() |= (word_t)
 			(dep_link->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC));
 		executors_by_target[t]= this;
 	}
 
-	for (auto &dependency:  rule->deps) {
+	for (auto &dependency: rule->deps) {
 		shared_ptr <const Dep> depp= dependency;
 		if (dep_link->flags) {
 			shared_ptr <Dep> depp_new= Dep::clone(depp);
 			depp_new->flags |= dep_link->flags & (F_PLACED | F_ATTRIBUTE);
 			depp_new->flags |= F_RESULT_COPY;
-			for (unsigned i= 0;  i < C_PLACED;  ++i) {
+			for (unsigned i= 0; i < C_PLACED; ++i) {
 				assert(!(dep_link->flags & (1 << i)) ==
 				       dep_link->get_place_flag(i).empty());
 				if (depp_new->get_place_flag(i).empty() && ! dep_link->get_place_flag(i).empty())

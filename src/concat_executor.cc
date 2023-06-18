@@ -32,13 +32,13 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 	/* Initialize COLLECTED */
 	size_t k= dep_->deps.size();
 	collected.resize(k);
-	for (size_t i= 0;  i < k;  ++i) {
+	for (size_t i= 0; i < k; ++i) {
 		collected.at(i)= make_shared <Compound_Dep> (Place::place_empty);
 	}
 
 	/* Push initial dependencies */
 	size_t i= 0;
-	for (auto d:  dep->deps) {
+	for (auto d: dep->deps) {
 		if (auto plain_d= to <const Plain_Dep> (d)) {
 			collected.at(i)->deps.push_back(d);
 		} else if (auto dynamic_d= to <const Dynamic_Dep> (d)) {
@@ -107,7 +107,7 @@ void Concat_Executor::launch_stage_1()
 {
 	shared_ptr <Concat_Dep> c= make_shared <Concat_Dep> ();
 	c->deps.resize(collected.size());
-	for (size_t i= 0;  i < collected.size();  ++i) {
+	for (size_t i= 0; i < collected.size(); ++i) {
 		c->deps.at(i)= move(collected.at(i));
 	}
 	vector <shared_ptr <const Dep> > deps;
@@ -118,13 +118,13 @@ void Concat_Executor::launch_stage_1()
 		raise(e);
 	}
 
-	for (auto f:  deps) {
+	for (auto f: deps) {
 		shared_ptr <Dep> f2= Dep::clone(f);
 		/* Add -% flag */
 		f2->flags |= F_RESULT_COPY;
 		/* Add flags from self */
 		f2->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC);
-		for (unsigned i= 0;  i < C_PLACED;  ++i) {
+		for (unsigned i= 0; i < C_PLACED; ++i) {
 			if (f2->get_place_flag(i).empty() && ! dep->get_place_flag(i).empty())
 				f2->set_place_flag(i, dep->get_place_flag(i));
 		}
@@ -148,7 +148,7 @@ void Concat_Executor::notify_result(shared_ptr <const Dep> d,
 	if (flags & F_RESULT_NOTIFY) {
 		vector <shared_ptr <const Dep> > deps;
 		source->read_dynamic(to <const Plain_Dep> (d), deps, dep, this);
-		for (auto &j:  deps) {
+		for (auto &j: deps) {
 			size_t i= dep_source->index;
 			collected.at(i)->deps.push_back(j);
 		}

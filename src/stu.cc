@@ -1,4 +1,3 @@
-// TODO only use string
 using namespace std;
 
 #include "buffer.cc"
@@ -63,8 +62,6 @@ int main(int argc, char **argv, char **envp)
 
 		bool had_option_f= false; /* Both lower and upper case */
 
-//		vector <const char *> args_F;
-		
 		for (int c; (c= getopt(argc, argv, OPTIONS)) != -1;) {
 			if (option_setting(c))
 				continue;
@@ -113,7 +110,7 @@ int main(int argc, char **argv, char **envp)
 					exit(ERROR_FATAL);
 				}
 
-				for (string &filename:  filenames) {
+				for (string &filename: filenames) {
 					/* Silently ignore duplicate input file on command line */
 					if (filename == optarg)  goto end;
 				}
@@ -126,7 +123,6 @@ int main(int argc, char **argv, char **envp)
 
 			case 'F':
 				had_option_f= true;
-//				args_F.push_back(optarg);
 				Parser::get_string(optarg, Executor::rule_set,
 						   target_first);
 				break;
@@ -185,11 +181,8 @@ int main(int argc, char **argv, char **envp)
 			exit(ERROR_FATAL);
 		}
 
-//		for (const char *arg:  args_F)
-//			Parser::get_string(arg, Executor::rule_set, target_first);
-
 		/* Targets passed on the command line, outside of options */
-		for (int i= optind;  i < argc;  ++i) {
+		for (int i= optind; i < argc; ++i) {
 			/* The number I may not be the index that the
 			 * argument had originally, because getopt() may
 			 * reorder its arguments. (I.e., using GNU

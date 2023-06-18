@@ -43,12 +43,12 @@ Rule::Rule(vector <shared_ptr <const Place_Param_Target> > &&place_param_targets
 	/* Check that all dependencies only include
 	 * parameters from the target */
 	set <string> parameters;
-	for (auto &parameter:  get_parameters()) {
+	for (auto &parameter: get_parameters()) {
 		parameters.insert(parameter);
 	}
 
 	/* Check that only valid parameters are used */
-	for (const auto &d:  deps) {
+	for (const auto &d: deps) {
 		d->check();
 		check_unparametrized(d, parameters);
 	}
@@ -91,11 +91,11 @@ Rule::instantiate(shared_ptr <const Rule> rule,
 
 	vector <shared_ptr <const Place_Param_Target> >
 		place_param_targets(rule->place_param_targets.size());
-	for (size_t i= 0;  i < rule->place_param_targets.size();  ++i)
+	for (size_t i= 0; i < rule->place_param_targets.size(); ++i)
 		place_param_targets[i]= rule->place_param_targets[i]->instantiate(mapping);
 
 	vector <shared_ptr <const Dep> > deps;
-	for (auto &dep:  rule->deps) {
+	for (auto &dep: rule->deps) {
 		deps.push_back(dep->instantiate(mapping));
 	}
 
@@ -115,7 +115,7 @@ void Rule::render(Parts &parts, Rendering rendering) const
 	parts.append_operator_unquotable("Rule(");
 
 	bool first= true;
-	for (auto place_param_target:  place_param_targets) {
+	for (auto place_param_target: place_param_targets) {
 		if (first)
 			first= false;
 		else
@@ -127,7 +127,7 @@ void Rule::render(Parts &parts, Rendering rendering) const
 		parts.append_operator_unquotable(':');
 		parts.append_space();
 	}
-	for (auto i= deps.begin();  i != deps.end();  ++i) {
+	for (auto i= deps.begin(); i != deps.end(); ++i) {
 		if (i != deps.begin()) {
 			parts.append_space();
 		}
@@ -145,15 +145,16 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 	if (auto dynamic_dep= to <const Dynamic_Dep> (dep)) {
 		check_unparametrized(dynamic_dep->dep, parameters);
 	} else if (auto compound_dep= to <const Compound_Dep> (dep)) {
-		for (const auto &d:  compound_dep->deps) {
+		for (const auto &d: compound_dep->deps) {
 			check_unparametrized(d, parameters);
 		}
 	} else if (auto concat_dep= to <const Concat_Dep> (dep)) {
-		for (const auto &d:  concat_dep->deps) {
+		for (const auto &d: concat_dep->deps) {
 			check_unparametrized(d, parameters);
 		}
 	} else if (auto plain_dep= to <const Plain_Dep> (dep)) {
-		for (size_t jj= 0;  jj < plain_dep->place_param_target.place_name.get_n();  ++jj) {
+		for (size_t jj= 0;
+		     jj < plain_dep->place_param_target.place_name.get_n(); ++jj) {
 			string parameter= plain_dep->place_param_target.place_name.get_parameters()[jj];
 			if (parameters.count(parameter) == 0) {
 				plain_dep->place_param_target
@@ -179,19 +180,19 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 
 void Rule::canonicalize()
 {
-	for (size_t i= 0;  i < place_param_targets.size();  ++i) {
+	for (size_t i= 0; i < place_param_targets.size(); ++i) {
 		place_param_targets[i]= ::canonicalize(place_param_targets[i]);
 	}
 }
 
 void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 {
-	for (auto &rule:  rules_) {
+	for (auto &rule: rules_) {
 		rule->canonicalize();
 
 		/* Check that the rule doesn't have a duplicate target */
-		for (size_t i= 0;  i < rule->place_param_targets.size();  ++i) {
-			for (size_t j= 0;  j < i;  ++j) {
+		for (size_t i= 0; i < rule->place_param_targets.size(); ++i) {
+			for (size_t j= 0; j < i; ++j) {
 				if (*rule->place_param_targets[i] ==
 				    *rule->place_param_targets[j]) {
 					rule->place_param_targets[i]->place <<
@@ -207,7 +208,7 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 
 		/* Add the rule */
 		if (! rule->is_parametrized()) {
-			for (auto place_param_target:  rule->place_param_targets) {
+			for (auto place_param_target: rule->place_param_targets) {
 				Target target= place_param_target->unparametrized();
 
 				if (rules_unparam.count(target)) {
@@ -293,7 +294,7 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 #ifndef NDEBUG
 		/* Check that the target is a target of the found rule */
 		bool found= false;
-		for (auto place_param_target:  rule->place_param_targets) {
+		for (auto place_param_target: rule->place_param_targets) {
 			Target t= place_param_target->unparametrized();
 			t.canonicalize();
 			if (t == target)
@@ -312,18 +313,18 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 
 	/* Search the best parametrized rule, if there is an affix in the rule */
 	for (auto it= rules_param_prefix.find(target.get_name_nondynamic());
-	     it != rules_param_prefix.end();  ++it) {
+	     it != rules_param_prefix.end(); ++it) {
 		best_rule_finder.add(target, *it);
 	}
 	string target_reversed= target.get_name_nondynamic();
 	reverse_string(target_reversed);
 	for (auto it= rules_param_suffix.find(target_reversed);
-	     it != rules_param_suffix.end();  ++it) {
+	     it != rules_param_suffix.end(); ++it) {
 		best_rule_finder.add(target, *it);
 	}
 
 	/* Search the best parametrized rule, if the rules are affixless */
-	for (auto &rule:  rules_param_bare) {
+	for (auto &rule: rules_param_bare) {
 		best_rule_finder.add(target, rule);
 	}
 
@@ -358,12 +359,12 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 
 void Rule_Set::print() const
 {
-	for (auto i:  rules_unparam)  {
+	for (auto i: rules_unparam)  {
 		string text= show(i.second, CH_OUT);
 		puts(text.c_str());
 	}
 
-	for (auto i:  rules_param)  {
+	for (auto i: rules_param)  {
 		string text= show(i, CH_OUT);
 		puts(text.c_str());
 	}
@@ -372,7 +373,7 @@ void Rule_Set::print() const
 void Rule_Set::print_targets() const
 {
 	set <string> filenames;
-	for (auto i:  rules_unparam)  {
+	for (auto i: rules_unparam)  {
 		const Rule &rule= *i.second;
 		if (rule.must_exist())
 			continue;
@@ -383,7 +384,7 @@ void Rule_Set::print_targets() const
 		}
 	}
 
-	for (auto i:  rules_param)  {
+	for (auto i: rules_param)  {
 		for (auto target: i->place_param_targets) {
 			if (target->flags & F_TARGET_TRANSIENT)
 				continue;
@@ -391,7 +392,7 @@ void Rule_Set::print_targets() const
 		}
 	}
 
-	for (const string &filename:  filenames) {
+	for (const string &filename: filenames) {
 		puts(filename.c_str());
 	}
 }
@@ -400,7 +401,7 @@ void Best_Rule_Finder::add(const Target &target, shared_ptr <const Rule> rule)
 {
 	best_sorted.clear();
 
-	for (auto &place_param_target:  rule->place_param_targets) {
+	for (auto &place_param_target: rule->place_param_targets) {
 		assert(place_param_target->place_name.get_n() > 0);
 		map <string, string> mapping;
 		vector <size_t> anchoring;
@@ -431,7 +432,7 @@ void Best_Rule_Finder::add(const Target &target, shared_ptr <const Rule> rule)
 		 * case we do want to throw a "duplicate rule" error (because
 		 * Stu wouldn't know how to chose the parameter), and therefore
 		 * we also need to compare anchorings.  */
-		for (size_t j= 0;  j < k;  ++j) {
+		for (size_t j= 0; j < k; ++j) {
 			if (rule == rules_best[j]
 			    && anchoring == anchorings_best[j])
 				return;
@@ -444,7 +445,7 @@ void Best_Rule_Finder::add(const Target &target, shared_ptr <const Rule> rule)
 		/* Check whether the rule dominates all other rules */
 		{
 			bool is_best= true;
-			for (ssize_t j= 0;  is_best && j < (ssize_t) k;  ++j) {
+			for (ssize_t j= 0; is_best && j < (ssize_t) k; ++j) {
 				if (! Name::anchoring_dominates
 				    (anchoring, anchorings_best[j],
 				     priority, priorities_best[j]))

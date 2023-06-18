@@ -5,15 +5,15 @@
 void Target::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Target::show);
-	size_t i= 0; // TODO make a for loop
-	while (get_word(i) & F_TARGET_DYNAMIC) {
+	size_t i;
+	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
 		assert((get_word(i) & F_TARGET_TRANSIENT) == 0);
 		if (rendering & R_SHOW_FLAGS) {
 			render_flags
 				(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
 				 parts, rendering);
 		}
-		++i;
+//		++i;
 		parts.append_operator_unquotable('[');
 	}
 	assert(text.size() > sizeof(word_t) * (i + 1));
@@ -24,9 +24,7 @@ void Target::render(Parts &parts, Rendering rendering) const
 		parts.append_operator_unquotable('@');
 	}
 	parts.append_text(text.substr(sizeof(word_t) * (i + 1)));
-	i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i; // TODO fold into while
+	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
 		parts.append_operator_unquotable(']');
 	}
 }
@@ -49,7 +47,7 @@ string Name::instantiate(const map <string, string> &mapping) const
 	const size_t n= get_n();
 	string ret= texts[0];
 
-	for (size_t i= 0;  i < n;  ++i) {
+	for (size_t i= 0; i < n; ++i) {
 		assert(parameters[i].size() > 0);
 		/* Special rule (b) */
 		if (i == 0 && texts[0].empty()
@@ -135,7 +133,7 @@ bool Name::match(const string name,
 	}
 
 	/* I goes over all parameters */
-	for (size_t i= 0;  i < n;  ++i) {
+	for (size_t i= 0; i < n; ++i) {
 		size_t length_min= 1;
 		/* Minimal length of the matching parameter */
 
@@ -234,8 +232,8 @@ bool Name::match(const string name,
 string Name::get_duplicate_parameter() const
 {
 	vector <string> seen;
-	for (auto &parameter:  parameters) {
-		for (const auto &parameter_seen:  seen) {
+	for (auto &parameter: parameters) {
+		for (const auto &parameter_seen: seen) {
 			if (parameter_seen == parameter) {
 				return parameter;
 			}
@@ -250,7 +248,7 @@ bool Name::valid(string &param_1, string &param_2) const
 	if (empty())
 		return false;
 
-	for (size_t i= 1;  i + 1 < get_n() + 1;  ++i) {
+	for (size_t i= 1; i + 1 < get_n() + 1; ++i) {
 		if (texts[i].empty()) {
 			param_1= parameters[i-1];
 			param_2= parameters[i];
@@ -324,7 +322,7 @@ void Name::render(Parts &parts, Rendering) const
 	TRACE_FUNCTION(SHOW, Name::show);
 	assert(texts.size() == 1 + parameters.size());
 	parts.append_text(texts[0]);
-	for (size_t i= 0;  i < get_n();  ++i) {
+	for (size_t i= 0; i < get_n(); ++i) {
 		parts.append_operator_quotable("${");
 		parts.append_text(parameters[i]);
 		parts.append_operator_quotable('}');
@@ -334,7 +332,7 @@ void Name::render(Parts &parts, Rendering) const
 
 void Name::canonicalize()
 {
-	for (size_t i= 0;  i <= get_n();  ++i) {
+	for (size_t i= 0; i <= get_n(); ++i) {
                 char *const p= (char *) texts[i].c_str();
 		Canon_Flags canon_flags= 0;
 		if (i == 0)
@@ -350,7 +348,7 @@ bool Name::operator==(const Name &that) const
 {
 	if (this->get_n() != that.get_n())
 		return false;
-	for (size_t i= 0;  i < get_n();  ++i) {
+	for (size_t i= 0; i < get_n(); ++i) {
 		if (this->parameters[i] != that.parameters[i])
 			return false;
 		if (this->texts[i] != that.texts[i])
@@ -366,7 +364,7 @@ void Name::append(const Name &name)
 	assert(this->texts.back() != "" ||
 	       name.texts.back() != "");
 	append_text(name.texts.front());
-	for (size_t i= 0;  i < name.get_n();  ++i) {
+	for (size_t i= 0; i < name.get_n(); ++i) {
 		append_parameter(name.get_parameters()[i]);
 		append_text(name.get_texts()[1 + i]);
 	}

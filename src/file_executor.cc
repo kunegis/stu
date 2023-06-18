@@ -14,7 +14,7 @@ File_Executor::~File_Executor()
 
 	free(timestamps_old);
 	if (filenames) {
-		for (size_t i= 0;  i < targets.size();  ++i) {
+		for (size_t i= 0; i < targets.size(); ++i) {
 			if (filenames[i]) {
 				free(filenames[i]);
 			}
@@ -111,7 +111,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		/* Subsequently set to B_MISSING if at least one target file is missing */
 
 		/* For file targets, check that the file was built */
-		for (size_t i= 0;  i < targets.size();  ++i) {
+		for (size_t i= 0; i < targets.size(); ++i) {
 			const Target target= targets[i];
 
 			if (! target.is_file()) {
@@ -249,7 +249,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 		/* TARGETS contains only DEPENDENCY->TARGET */
 	} else {
 		targets.clear();
-		for (auto &place_param_target:  rule->place_param_targets) {
+		for (auto &place_param_target: rule->place_param_targets) {
 			targets.push_back(place_param_target->unparametrized());
 		}
 		assert(targets.size());
@@ -257,13 +257,13 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 
 	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not
 	 * just the one given in the dependency.  */
-	for (const Target &target:  targets) {
+	for (const Target &target: targets) {
 		executors_by_target[target]= this;
 	}
 
 	if (rule != nullptr) {
 		/* There is a rule for this executor */
-		for (auto &d:  rule->deps) {
+		for (auto &d: rule->deps) {
 			push(d);
 		}
 	} else {
@@ -320,7 +320,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 	    dep->flags & F_TARGET_TRANSIENT) {
 
 		Place place_target;
-		for (auto &i:  rule->place_param_targets) {
+		for (auto &i: rule->place_param_targets) {
 			if (i->place_name.unparametrized() == target_.get_name_nondynamic()) {
 				place_target= i->place;
 				break;
@@ -349,7 +349,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 	    dep->flags & (F_OPTIONAL | F_PERSISTENT)) {
 
 		Place place_target;
-		for (auto &i:  rule->place_param_targets) {
+		for (auto &i: rule->place_param_targets) {
 			if (i->place_name.unparametrized() == target_.get_name_nondynamic()) {
 				place_target= i->place;
 				break;
@@ -413,17 +413,14 @@ void job_terminate_all()
 	 * for removing all target files.  This could also be merged
 	 * into a single loop.  */
 
-	for (size_t i= 0;
-	     i < File_Executor::executors_by_pid_size;
-	     ++i) {
+	for (size_t i= 0; i < File_Executor::executors_by_pid_size; ++i) {
 		const pid_t pid= File_Executor::executors_by_pid_key[i];
-
 		Job::kill(pid);
 	}
 
 	size_t count_terminated= 0;
 
-	for (size_t i= 0;  i < File_Executor::executors_by_pid_size;  ++i) {
+	for (size_t i= 0; i < File_Executor::executors_by_pid_size; ++i) {
 		if (File_Executor::executors_by_pid_value[i]->remove_if_existing(false))
 			++count_terminated;
 	}
@@ -467,7 +464,7 @@ void job_terminate_all()
 
 void job_print_jobs()
 {
-	for (size_t i= 0;  i < File_Executor::executors_by_pid_size;  ++i)
+	for (size_t i= 0; i < File_Executor::executors_by_pid_size; ++i)
 		File_Executor::executors_by_pid_value[i]->print_as_job();
 }
 
@@ -482,7 +479,7 @@ bool File_Executor::remove_if_existing(bool output)
 	/* Whether anything was removed */
 	bool removed= false;
 
-	for (size_t i= 0;  i < targets.size();  ++i) {
+	for (size_t i= 0; i < targets.size(); ++i) {
 		const char *filename= filenames[i];
 		if (!filename)
 			continue;
@@ -552,7 +549,7 @@ void File_Executor::print_command() const
 		bool is_printable= false;
 		if (content.size() < size_max_print_content) {
 			is_printable= true;
-			for (const char c:  content) {
+			for (const char c: content) {
 				int cc= c;
 				if (! (cc >= ' ' && c <= '~'))
 					is_printable= false;
@@ -613,7 +610,7 @@ void File_Executor::print_command() const
 	}
 
 	/* Print the parameter values (variable assignments are not printed) */
-	for (auto i= mapping_parameter.begin(); i != mapping_parameter.end();  ++i) {
+	for (auto i= mapping_parameter.begin(); i != mapping_parameter.end(); ++i) {
 		string name= i->first;
 		string value= i->second;
 		if (! begin)
@@ -631,7 +628,7 @@ void File_Executor::print_command() const
 	}
 
 	/* The command itself */
-	for (auto &i:  rule->command->get_lines()) {
+	for (auto &i: rule->command->get_lines()) {
 		puts(i.c_str());
 	}
 }
@@ -686,7 +683,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 		abort();
 	}
 	timestamps_old= timestamps_old_new;
-	for (size_t i= 0;  i < targets.size();  ++i)
+	for (size_t i= 0; i < targets.size(); ++i)
 		timestamps_old[i]= Timestamp::UNDEFINED;
 	char **filenames_new= (char **)realloc(filenames, sizeof(filenames[0]) * targets.size());
 	if (!filenames_new) {
@@ -694,7 +691,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 		abort();
 	}
 	filenames= filenames_new;
-	for (size_t i= 0;  i < targets.size();  ++i) {
+	for (size_t i= 0; i < targets.size(); ++i) {
 		if (targets[i].is_file()) {
 			filenames[i]= strdup(targets[i].get_name_c_str_nondynamic());
 			if (!filenames[i]) {
@@ -716,7 +713,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 		bits &= ~B_MISSING;
 		/* Now, set to B_MISSING when a file is found not to exist */
 
-		for (size_t i= 0;  i < targets.size();  ++i) {
+		for (size_t i= 0; i < targets.size(); ++i) {
 			const Target &target= targets[i];
 			if (! target.is_file())
 				continue;
@@ -817,7 +814,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 		/* We cannot update TIMESTAMP within the loop above
 		 * because we need to compare each TIMESTAMP_OLD with
 		 * the previous value of TIMESTAMP. */
-		for (size_t i= 0;  i < targets.size();  ++i) {
+		for (size_t i= 0; i < targets.size(); ++i) {
 			if (timestamps_old[i].defined() &&
 			    (! timestamp.defined() || timestamp < timestamps_old[i])) {
 				timestamp= timestamps_old[i];
@@ -827,13 +824,13 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 	if (! (bits & B_NEED_BUILD)) {
 		bool has_file= false; /* One of the targets is a file */
-		for (const Target &target:  targets) {
+		for (const Target &target: targets) {
 			if (target.is_file()) {
 				has_file= true;
 				break;
 			}
 		}
-		for (const Target &target:  targets) {
+		for (const Target &target: targets) {
 			if (! target.is_transient())
 				continue;
 			if (transients.count(target.get_name_nondynamic()) == 0) {
@@ -902,7 +899,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 	/* We have to start a job now */
 	print_command();
-	for (const Target &target:  targets) {
+	for (const Target &target: targets) {
 		if (! target.is_transient())
 			continue;
 		Timestamp timestamp_now= Timestamp::now();
@@ -1080,7 +1077,7 @@ void File_Executor::write_content(const char *filename,
 		return;
 	}
 
-	for (const string &line:  command.get_lines()) {
+	for (const string &line: command.get_lines()) {
 		if (fwrite(line.c_str(), 1, line.size(), file) != line.size()) {
 			assert(ferror(file));
 			fclose(file);

@@ -107,7 +107,7 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		 * In keep-going mode (-k), we set the error, set the erroneous
 		 * dependency to null, and at the end prune the null entries.  */
 		bool found_error= false;
-		if (! delim)  for (auto &j:  deps) {
+		if (! delim)  for (auto &j: deps) {
 			/* Check that it is unparametrized */
 			if (! j->is_unparametrized()) {
 				shared_ptr <const Dep> depp= j;
@@ -141,7 +141,7 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		shared_ptr <Dep> top= make_shared <Dynamic_Dep> (no_top);
 		top->top= top_top;
 
-		for (auto &j:  deps) {
+		for (auto &j: deps) {
 			if (j) {
 				shared_ptr <Dep> j_new= Dep::clone(j);
 				j_new->top= top;
@@ -171,7 +171,7 @@ bool Executor::find_cycle(vector <Executor *> &path,
 		cycle_print(path, dep_link);
 		return true;
 	}
-	for (auto &i:  path.back()->parents) {
+	for (auto &i: path.back()->parents) {
 		Executor *next= i.first;
 		assert(next != nullptr);
 		path.push_back(next);
@@ -205,11 +205,11 @@ void Executor::cycle_print(const vector <Executor *> &path,
 	/* Indexes are parallel to PATH */
 	names.resize(path.size());
 
-	for (size_t i= 0;  i + 1 < path.size();  ++i)
+	for (size_t i= 0; i + 1 < path.size(); ++i)
 		names[i]= ::show(path[i]->parents.at(path[i+1]));
 	names.back()= ::show(path.back()->parents.begin()->second);
 
-	for (ssize_t i= path.size() - 1;  i >= 0;  --i) {
+	for (ssize_t i= path.size() - 1; i >= 0; --i) {
 		shared_ptr <const Dep> d= i == 0
 			? dep
 			: path[i - 1]->parents.at(const_cast <Executor *> (path[i]));
@@ -365,7 +365,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
  		} else if (rule_child->command) {
 			use_file_executor= true;
 		} else {
-			for (auto &i:  rule_child->place_param_targets) {
+			for (auto &i: rule_child->place_param_targets) {
 				if ((i->flags & F_TARGET_TRANSIENT) == 0)
 					use_file_executor= true;
 			}
@@ -567,7 +567,7 @@ void Executor::push(shared_ptr <const Dep> dep)
 		*this << "";
 		raise(e);
 	}
-	for (const auto &d:  deps) {
+	for (const auto &d: deps) {
 		d->check();
 		assert(d->is_normalized());
 		buffer_A.push(d);
@@ -774,7 +774,7 @@ void Executor::copy_result(Executor *parent, Executor *child)
 		       file_child->targets.at(0).is_transient());
 	}
 
-	for (auto &i:  child->result) {
+	for (auto &i: child->result) {
 		parent->result.push_back(i);
 	}
 }
@@ -792,7 +792,7 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 	result.push_back(dd);
 
 	/* Notify parents */
-	for (auto &i:  parents) {
+	for (auto &i: parents) {
 		Flags flags= i.second->flags & (F_RESULT_NOTIFY | F_RESULT_COPY);
 		if (flags) {
 			i.first->notify_result(dd, this, flags, i.second);
@@ -915,7 +915,7 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 	children.insert(child);
 
 	if (dep_child->flags & F_RESULT_NOTIFY) {
-		for (const auto &dependency:  child->result) {
+		for (const auto &dependency: child->result) {
 			this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
 		}
 	}

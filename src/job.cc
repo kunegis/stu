@@ -121,7 +121,7 @@ pid_t Job::start(string command,
 		}
 		memcpy(envp, envp_global, v_old * sizeof(char **));
 		size_t i= v_old;
-		for (auto j= mapping.begin();  j != mapping.end();  ++j) {
+		for (auto j= mapping.begin(); j != mapping.end(); ++j) {
 			string key= j->first;
 			string value= j->second;
 			assert(key.find('=') == string::npos);
@@ -624,7 +624,8 @@ void Job::init_signals()
 		SIGILL, SIGHUP,
 	};
 
-	for (size_t i= 0;  i < sizeof(signals_termination) / sizeof(signals_termination[0]);  ++i) {
+	for (size_t i= 0;
+	     i < sizeof(signals_termination) / sizeof(signals_termination[0]); ++i) {
 		if (0 != sigaction(signals_termination[i], &act_termination, nullptr)) {
 			perror("sigaction");
 			exit(ERROR_FATAL);

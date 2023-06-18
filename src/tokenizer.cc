@@ -191,7 +191,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 		const char *filename_diagnostic= !filename.empty()
 			? filename.c_str() : "<stdin>";
 		if (backtraces.size() > 0) {
-			for (auto j= backtraces.begin();  j != backtraces.end();  ++j) {
+			for (auto j= backtraces.begin(); j != backtraces.end(); ++j) {
 				if (j == backtraces.begin()) {
 					j->place << format_errno
 						(fmt("%s %s",
@@ -1066,11 +1066,11 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 			 * parsed.  It is an error if a file includes itself
 			 * directly or indirectly.  It it ignored if a file is
 			 * included a second time non-recursively.  */
-			for (auto &i:  filenames) {
+			for (auto &i: filenames) {
 				if (filename_include != i)
 					continue;
 				vector <Backtrace> backtraces_backward;
-				for (auto j= backtraces.rbegin();  j != backtraces.rend(); ++j) {
+				for (auto j= backtraces.rbegin(); j != backtraces.rend(); ++j) {
 					Backtrace backtrace(*j);
 					if (j == backtraces.rbegin()) {
 						backtrace.message=
@@ -1081,7 +1081,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 					}
 					backtraces_backward.push_back(backtrace);
 				}
-				for (auto &j:  backtraces_backward) {
+				for (auto &j: backtraces_backward) {
 					j.print();
 				}
 				throw ERROR_LOGICAL;

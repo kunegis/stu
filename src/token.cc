@@ -33,7 +33,7 @@ Command::get_lines() const
 		if (line.size()) {
 			/* Discard lines consisting only of whitespace */
 			bool keep= false;
-			for (size_t i= 0;  i < line.size();  ++i) {
+			for (size_t i= 0; i < line.size(); ++i) {
 				if (! isspace(line[i]))
 					keep= true;
 			}
@@ -51,7 +51,7 @@ Command::get_lines() const
 		char begin= (*lines)[0][0];
 		if ((begin & 0x80) || ! isspace(begin))  break;
 		bool equal= true;
-		for (auto &i:  *lines) {
+		for (auto &i: *lines) {
 			assert(i.size());
 			if (i[0] != begin)  equal= false;
 		}
@@ -68,7 +68,7 @@ Command::get_lines() const
 	}
 
 	/* Remove whitespace at end of lines */
-	for (string &line:  *lines) {
+	for (string &line: *lines) {
 		size_t l= line.size();
 		while (l != 0 && isspace(line[l - 1]))  --l;
 		line.resize(l);

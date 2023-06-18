@@ -12,7 +12,7 @@ Trace::Init::Init()
 	FILE *file_log= nullptr;
 	FILE *file_devnull= nullptr;
 
-	for (int i= 0;  i < TRACE_COUNT;  ++i) {
+	for (int i= 0; i < TRACE_COUNT; ++i) {
 		string name= fmt("STU_TRACE_%s", trace_names[i]);
 		const char *env= getenv(name.c_str());
 		bool enabled= (env && env[0]);

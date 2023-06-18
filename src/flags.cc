@@ -21,7 +21,7 @@ bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 	if (!(rendering & R_SHOW_FLAGS))
 		return false;
 	string ret;
-	for (unsigned i= 0;  i < C_ALL;  ++i)
+	for (unsigned i= 0; i < C_ALL; ++i)
 		if (flags & (1 << i)) {
 			ret += flags_chars[i];
 		}
@@ -42,7 +42,7 @@ string show_flags(Flags flags, Style style)
 string done_format(Done done)
 {
 	char ret[7]= "[0000]";
-	for (int i= 0;  i < 4;  ++i)
+	for (int i= 0; i < 4; ++i)
 		ret[1+i] |= 1 & done << i;
 	return ret;
 }

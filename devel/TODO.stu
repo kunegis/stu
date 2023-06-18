@@ -187,3 +187,7 @@ list.${name|[A-Z].*} # Matches uppercase names
 #
 # Install:  use mkdir -p for /usr/local/man/man1/ and other directories.
 #
+
+#
+# Don't use "using namespace std".  Instead, only use "string.
+#

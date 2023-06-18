@@ -148,11 +148,11 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 
 	/* Check that all targets have the same set of parameters */
 	set <string> parameters_0;
-	for (const string &parameter:  place_param_targets[0]->place_name.get_parameters()) {
+	for (const string &parameter: place_param_targets[0]->place_name.get_parameters()) {
 		parameters_0.insert(parameter);
 	}
 	assert(place_param_targets.size() >= 1);
-	for (size_t i= 1;  i < place_param_targets.size();  ++i) {
+	for (size_t i= 1; i < place_param_targets.size(); ++i) {
 		set <string> parameters_i;
 		for (const string &parameter:
 			     place_param_targets[i]->place_name.get_parameters()) {
@@ -314,7 +314,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 				     place_param_targets[0]->place_name.get_parameters()) {
 				parameters.insert(parameter);
 			}
-			for (size_t jj= 0;  jj < name_copy->get_n();  ++jj) {
+			for (size_t jj= 0; jj < name_copy->get_n(); ++jj) {
 				string parameter=
 					name_copy->get_parameters()[jj];
 				if (parameters.count(parameter) == 0) {
@@ -558,7 +558,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		++iter;
 		shared_ptr <Compound_Dep> ret_nondynamic=
 			make_shared <Compound_Dep> (place_bracket);
-		for (auto &j:  r2) {
+		for (auto &j: r2) {
 			/* Variable dependency cannot appear within
 			 * dynamic dependency */
 			if (j->flags & F_VARIABLE) {
@@ -691,7 +691,7 @@ shared_ptr <const Dep> Parser
 	/* Flags */
 	Flags flags= F_VARIABLE;
 	Place places_flags[C_PLACED];
-	for (unsigned i= 0;  i < C_PLACED;  ++i)
+	for (unsigned i= 0; i < C_PLACED; ++i)
 		places_flags[i].clear();
 	Place place_flag_last;
 	shared_ptr <Flag_Token> flag_token_last;
@@ -745,7 +745,7 @@ shared_ptr <const Dep> Parser
 	++iter;
 
 	/* Check that the name does not contain '=' */
-	for (auto &j:  place_name->get_texts()) {
+	for (auto &j: place_name->get_texts()) {
 		if (j.find('=') != string::npos) {
 			place_name->place <<
 				fmt("name of variable dependency %s must not contain %s",
@@ -958,14 +958,14 @@ void Parser::append_copy(      Name &to,
 		return;
 	}
 
-	for (ssize_t i= from.get_n();  i >= 0;  --i) {
-		for (ssize_t j= from.get_texts()[i].size() - 1; j >= 0;  --j) {
+	for (ssize_t i= from.get_n(); i >= 0; --i) {
+		for (ssize_t j= from.get_texts()[i].size() - 1; j >= 0; --j) {
 			if (from.get_texts()[i][j] == '/') {
 				/* Don't append the found slash, as TO already
 				 * ends in a slash  */
 				to.append_text(from.get_texts()[i].substr(j + 1));
 
-				for (size_t k= i;  k < from.get_n();  ++k) {
+				for (size_t k= i; k < from.get_n(); ++k) {
 					to.append_parameter(from.get_parameters()[k]);
 					to.append_text(from.get_texts()[k + 1]);
 				}
@@ -1109,7 +1109,7 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 	Place place(Place::Type::ARGUMENT);
 	vector <shared_ptr <Token> > tokens;
 
-	for (int j= 0;  j < argc;  ++j) {
+	for (int j= 0; j < argc; ++j) {
 		const char *p= argv[j];
 
 		bool allow_dash= true;
@@ -1187,7 +1187,7 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 	Place place_input;  /* Remains empty */
 	vector <shared_ptr <const Dep> > deps_new;
 	get_expression_list(deps_new, tokens, place, input, place_input);
-	for (const auto &i:  deps_new)
+	for (const auto &i: deps_new)
 		deps.push_back(i);
 }
 
@@ -1296,6 +1296,6 @@ void Parser::add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
 	Parser::get_expression_list(deps_option, tokens,
 				    place_end, input, place_input);
 
-	for (auto &j:  deps_option)
+	for (auto &j: deps_option)
 		deps.push_back(j);
 }

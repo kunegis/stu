@@ -101,10 +101,10 @@ void Plain_Dep::render(Parts &parts, Rendering rendering) const
 	if (render_flags(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT), parts, rendering))
 		parts.append_space();
 	if (flags & F_VARIABLE)
-		parts.append_operator_unquotable("$[");
+		parts.append_operator("$[");
 	place_param_target.render(parts, rendering);
 	if (flags & F_VARIABLE)
-		parts.append_operator_unquotable(']');
+		parts.append_operator("]");
 }
 
 Target Dynamic_Dep::get_target() const
@@ -133,9 +133,9 @@ void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 	TRACE_FUNCTION(SHOW, Dynamic_Dep::render);
 	if (render_flags(flags & ~F_TARGET_DYNAMIC, parts, rendering))
 		parts.append_space();
-	parts.append_operator_unquotable('[');
+	parts.append_operator("[");
 	dep->render(parts, rendering | R_NO_COMPOUND_PARENTHESES);
-	parts.append_operator_unquotable(']');
+	parts.append_operator("]");
 }
 
 shared_ptr <const Dep> Dynamic_Dep::instantiate(const map <string, string> &mapping) const
@@ -197,7 +197,7 @@ void Compound_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Compound_Dep::render);
 	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
-		parts.append_operator_unquotable('(');
+		parts.append_operator("(");
 	bool first= true;
 	for (const shared_ptr <const Dep> &d: deps) {
 		if (first)
@@ -207,7 +207,7 @@ void Compound_Dep::render(Parts &parts, Rendering rendering) const
 		d->render(parts, rendering & ~R_NO_COMPOUND_PARENTHESES);
 	}
 	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
-		parts.append_operator_unquotable(')');
+		parts.append_operator(")");
 }
 
 shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mapping) const
@@ -510,7 +510,7 @@ shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> 
 
 void Root_Dep::render(Parts &parts, Rendering) const
 {
-	parts.append_operator_unquotable("ROOT");
+	parts.append_operator("ROOT");
 }
 
 void Dep::normalize(shared_ptr <const Dep> dep,

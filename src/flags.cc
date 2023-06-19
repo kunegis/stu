@@ -28,7 +28,7 @@ bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 	if (ret.empty())
 		return false;
 	ret= '-' + show(ret);
-	parts.append_operator_unquotable(ret);
+	parts.append_operator(ret);
 	return true;
 }
 

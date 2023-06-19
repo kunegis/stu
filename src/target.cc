@@ -13,18 +13,18 @@ void Target::render(Parts &parts, Rendering rendering) const
 				(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
 				 parts, rendering);
 		}
-		parts.append_operator_unquotable('[');
+		parts.append_operator("[");
 	}
 	assert(text.size() > sizeof(word_t) * (i + 1));
 	if (rendering & R_SHOW_FLAGS) {
 		render_flags(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE), parts, rendering);
 	}
 	if (get_word(i) & F_TARGET_TRANSIENT) {
-		parts.append_operator_unquotable('@');
+		parts.append_operator("@");
 	}
 	parts.append_text(text.substr(sizeof(word_t) * (i + 1)));
 	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
-		parts.append_operator_unquotable(']');
+		parts.append_operator("]");
 	}
 }
 
@@ -323,11 +323,11 @@ void Name::render(Parts &parts, Rendering rendering) const
 	parts.append_text(texts[0]);
 	for (size_t i= 0; i < get_n(); ++i) {
 		if (rendering & R_GLOB) {
-			parts.append_operator_unquotable('*');
+			parts.append_markup_unquotable('*');
 		} else {
-			parts.append_operator_quotable("${");
+			parts.append_markup_quotable("${");
 			parts.append_text(parameters[i]);
-			parts.append_operator_quotable('}');
+			parts.append_markup_quotable('}');
 		}
 		parts.append_text(texts[1+i]);
 	}
@@ -377,7 +377,7 @@ void Place_Param_Target::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Place_Param_Target::render);
 	if (flags & F_TARGET_TRANSIENT) {
-		parts.append_operator_unquotable('@');
+		parts.append_operator("@");
 	}
 	place_name.render(parts, rendering);
 }

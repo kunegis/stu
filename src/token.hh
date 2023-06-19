@@ -171,7 +171,7 @@ public:
 	}
 
 	void render(Parts &parts, Rendering= 0) const {
-		parts.append_operator_unquotable('{');
+		parts.append_operator("{");
 	}
 
 	const vector <string> &get_lines() const;

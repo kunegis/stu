@@ -2,6 +2,9 @@
 # Option -I
 #
 # For all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
+# * Separate PROP_SEPARATOR into space and non-space separators.  In
+#   show(Parts), determine has_marker on the presence of operators and non-space separators.
+
 # * list.${a}+X does not need quotes in normal output
 # * list.${a}-X does not need quotes in normal output
 # * list.${a}~X does not need quotes in normal output
@@ -48,6 +51,7 @@
 # * why is it linked to libm?
 # * check that "list.\t.${x}" is shown as such in error output, i.e., with quoted \t and quoted dollar sign.
 # * sh/test should not output "Terminated".  It's output four times at the moment.
+# * ./${name}.png  should result in *.png due to canonicalization
 
 #
 # Test that there are no carriage returns in the source.

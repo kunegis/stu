@@ -12,7 +12,7 @@ public:
 	virtual bool finished(Flags flags) const;
 
 	virtual void render(Parts &parts, Rendering= 0) const {
-		parts.append_operator_unquotable("ROOT");
+		parts.append_operator("ROOT");
 	}
 
 protected:

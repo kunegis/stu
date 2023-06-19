@@ -31,8 +31,9 @@ enum Quotable {
 
 enum Properties {
 	PROP_TEXT,
-	PROP_OPERATOR_QUOTABLE,
-	PROP_OPERATOR_UNQUOTABLE,
+	PROP_MARKUP_QUOTABLE,
+	PROP_MARKUP_UNQUOTABLE,
+	PROP_OPERATOR,
 	PROP_SPACE,
 };
 
@@ -43,13 +44,9 @@ public:
 	string text;
 
 	Part(Properties properties_, string text_)
-		:  properties(properties_), text(text_)  {  }
+		:  properties(properties_), text(text_) {  }
 	bool is_quotable() const {
-		return properties == PROP_TEXT || properties == PROP_OPERATOR_QUOTABLE;
-	}
-	bool is_operator() const {
-		return properties == PROP_OPERATOR_QUOTABLE
-			|| properties == PROP_OPERATOR_UNQUOTABLE;
+		return properties == PROP_TEXT || properties == PROP_MARKUP_QUOTABLE;
 	}
 	Quotable need_quotes() const;
 	static Quotable need_quotes(unsigned char);
@@ -60,14 +57,18 @@ public:
 class Parts
 {
 public:
-	size_t size() const  {  return parts.size();  }
+	size_t size() const { return parts.size(); }
 	const Part &operator[](size_t i) const  {  return parts[i];  }
 	void append_text(string text)  {  parts.emplace_back(PROP_TEXT, text);  }
-	void append_operator_quotable(string op)  {  parts.emplace_back(PROP_OPERATOR_QUOTABLE, op);  }
-	void append_operator_quotable(char c)  {  parts.emplace_back(PROP_OPERATOR_QUOTABLE, string(1, c));  }
-	void append_operator_unquotable(string op)  {  parts.emplace_back(PROP_OPERATOR_UNQUOTABLE, op);  }
-	void append_operator_unquotable(char c)  {  parts.emplace_back(PROP_OPERATOR_UNQUOTABLE, string(1, c));  }
-	void append_space()  {  parts.emplace_back(PROP_SPACE, " ");  }
+	void append_markup_quotable(string op)  {  parts.emplace_back(PROP_MARKUP_QUOTABLE, op);  }
+	void append_markup_quotable(char c) { parts.emplace_back(PROP_MARKUP_QUOTABLE, string(1, c)); }
+	void append_markup_unquotable(string op) { parts.emplace_back(PROP_MARKUP_UNQUOTABLE, op); }
+	void append_markup_unquotable(char c) { parts.emplace_back(PROP_MARKUP_UNQUOTABLE, string(1, c)); }
+	void append_operator(string s) {
+		assert(s.size() != 0 && s[0] != ' ');
+		parts.emplace_back(PROP_OPERATOR, s);
+	}
+	void append_space() { parts.emplace_back(PROP_SPACE, " "); }
 private:
 	vector <Part> parts;
 };

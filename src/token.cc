@@ -100,10 +100,10 @@ string Operator::show_long(Style style) const
 
 void Operator::render(Parts &parts, Rendering) const
 {
-	parts.append_operator_unquotable(op);
+	parts.append_operator(string(1, op));
 }
 
 void Flag_Token::render(Parts &parts, Rendering) const
 {
-	parts.append_operator_unquotable(frmt("-%c", flag));
+	parts.append_operator(frmt("-%c", flag));
 }

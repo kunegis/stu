@@ -112,7 +112,7 @@ Rule::instantiate(shared_ptr <const Rule> rule,
 
 void Rule::render(Parts &parts, Rendering rendering) const
 {
-	parts.append_operator_unquotable("Rule(");
+	parts.append_operator("Rule(");
 
 	bool first= true;
 	for (auto place_param_target: place_param_targets) {
@@ -124,7 +124,7 @@ void Rule::render(Parts &parts, Rendering rendering) const
 	}
 
 	if (deps.size() != 0) {
-		parts.append_operator_unquotable(':');
+		parts.append_operator(":");
 		parts.append_space();
 	}
 	for (auto i= deps.begin(); i != deps.end(); ++i) {
@@ -134,7 +134,7 @@ void Rule::render(Parts &parts, Rendering rendering) const
 		(*i)->render(parts, rendering);
 	}
 
-	parts.append_operator_unquotable(')');
+	parts.append_operator(")");
 }
 
 void Rule::check_unparametrized(shared_ptr <const Dep> dep,

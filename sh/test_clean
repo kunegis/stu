@@ -65,6 +65,17 @@ find_double_slash()
 	return 0
 }
 
+# Check that we don't use 'sed -r'.
+#
+# Background:  'sed -r' is a GNU extension that enabled extended regular
+# expressions.  POSIX does not prescribe a "extended regexp" mode for
+# sed.  In many implementations, '-E' does the same.  '-E' is more
+# portable than '-r', but still not POSIX.
+find_sed() {
+	find . -type f -a \! -path './.git*' -a \! -name '*~' |
+		xargs grep -lE -- 'sed[[:space:]]+-re'
+}
+
 ret=0
 
 find_double_slash || ret=1
@@ -78,28 +89,12 @@ find . -type f -a \( -name '*.stu' -o -perm -u+x -o -name Makefile \) -a \! -nam
 	ret=1
 }
 
-# Triple X
-grep -F -n XX''X NEWS man/stu.1.in src/*.cc src/*.hh sh/* && {
-	echo >&2 "*** Certain files must not contain 'XX""X'"
-	ret=1
-}
-
 # Tab in manpage source
 grep -F -n "$(printf '\t')" man/stu.1.in && {
 	echo >&2 "*** 'man/stu.1.in' must not contain tabs"
 	ret=1
 }
 
-# Check that we don't use 'sed -r'.
-#
-# Background:  'sed -r' is a GNU extension that enabled extended regular
-# expressions.  POSIX does not prescribe a "extended regexp" mode for
-# sed.  In many implementations, '-E' does the same.  '-E' is more
-# portable than '-r', but still not POSIX.
-find_sed() {
-	find . -type f -a \! -path './.git*' -a \! -name '*~' |
-		xargs grep -lE -- 'sed[[:space:]]+-re'
-}
 count=$(echo $(find_sed | wc -l))
 [ "$count" = 0 ] || {
 	echo >&2 "*** 'sed -r' must not be used:"
@@ -112,5 +107,11 @@ count=$(echo $(find_sed | wc -l))
 find_space_file || ret=1
 find_space_line || ret=1
 find_double_space || ret=1
+
+# Triple X
+grep -F -n XX''X NEWS man/stu.1.in src/*.cc src/*.hh sh/* && {
+	echo >&2 "*** Certain files must not contain 'XX""X'"
+	ret=1
+}
 
 exit "$ret"

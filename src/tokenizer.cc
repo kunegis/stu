@@ -906,7 +906,7 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 			++p;
 		} else if (*p == '\0') {
 			current_place() <<
-				fmt("invalid character %s", show_operator('\0'));
+				fmt("invalid character %s", show_text(string(1, '\0')));
 			place_begin_quote <<
 				fmt("in quote started by %s",
 				    show_operator('"'));

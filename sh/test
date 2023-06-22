@@ -169,14 +169,19 @@ output_success()
 test_fail()
 {
 	echo >&2 "$0: ($file) *** $1"
+	error=1
 }
 
-test_fail_stop()
+test_fail_fatal()
 {
 	echo >&2 "$0: ($file) *** $1"
+	echo "$file" >&6
+	[ "$notall" ] && {
+		echo >&2 "[31m$0: ($file) *** Test '$file' failed [notall][m"
+		exit 1
+	}
 	ret=1
 	count_failed=$(( count_failed + 1 ))
-	echo "$file" >&6
 }
 
 sort_tests()
@@ -252,14 +257,14 @@ do
 	error=0
 
 	if [ ! -d "$file" ]; then
-		test_fail_stop "'$file' is not a directory"
+		test_fail_fatal "'$file' is not a directory"
 		continue
 	fi
 
 	# There are no files in the test directory (ignoring dotfiles)
 	if [ "$(echo $(ls -1 "$file" | wc -l))" = 0 ] ; then
 		if [ "$emptyok" != 1 ] ; then
-			test_failed_stop "Directory $file/ does not contain any files"
+			test_fail_fatal "Directory $file/ does not contain any files"
 			continue
 		fi
 	fi
@@ -274,8 +279,8 @@ do
 	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
 	do
 		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi
-		test_fail "Invalid file '$otherfile' in test directory"
-		error=1
+		test_fail_fatal "Invalid file '$otherfile' in test directory"
+		continue
 	done
 
 	CMD=
@@ -295,7 +300,7 @@ do
 			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
 			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR \
 			-o -r NOCOLOR ]; then
-			test_fail_stop "EXEC does not allow any other file"
+			test_fail_fatal "EXEC does not allow any other file"
 			continue
 		fi
 
@@ -303,7 +308,6 @@ do
 		./EXEC 1>&7
 		if [ "$?" != 0 ]; then
 			test_fail "EXEC failed"
-			error=1
 		fi
 	else
 		# Execute command
@@ -326,21 +330,17 @@ do
 		exitstatus_correct=0
 		if [ -r EXITSTATUS ]; then
 			[ 1 = "$(echo $(grep -E '[^[:space:]]' EXITSTATUS | wc -l))" ] || {
-				test_fail "Expected EXITSTATUS to contain a single non-empty line, not:"
-				cat  >&2 EXITSTATUS
-				echo >&2 __________
-				exit 2
+				test_fail_fatal "Expected EXITSTATUS to contain a single non-empty line"
+				continue
 			}
 			grep -v -E '^(\s*|\s*[0-9]+\s*)$' EXITSTATUS && {
-				test_fail "Expected EXITSTATUS to contain a number, not:"
-				cat  >&2 EXITSTATUS
-				echo >&2 __________
-				exit 2
+				test_fail_fatal "Expected EXITSTATUS to contain a number"
+				continue
 			}
 			exitstatus_correct=$(sed -e '/^[[:space:]]*$/d;s/[[:space:]]\{1,\}//g' <EXITSTATUS)
 			if [ "$exitstatus_correct" = 0 ]; then
-				test_fail "Content of EXITSTATUS should not be zero"
-				error=1
+				test_fail_fatal "Content of EXITSTATUS should not be zero"
+				continue
 			fi
 		fi
 		if [ "$exitstatus_actual" != "$exitstatus_correct" ]; then
@@ -353,7 +353,6 @@ do
 			echo >&2 ______________
 			cat >&2 list.def.err
 			echo >&2 ______________
-			error=1
 		else
 			echo >&7 "EXITSTATUS...$exitstatus_correct correct"
 		fi
@@ -368,7 +367,6 @@ do
 			if [ -n "$target" ] ; then
 				if [ ! -r "$target" ]; then  # The main target must have been built
 					test_fail "Target '$target' was not built"
-					error=1
 				else
 					# Check that INCONTENT is found in the built file
 					if [ -r INCONTENT ]; then
@@ -380,7 +378,6 @@ do
 							echo >&2 ____
 							cat "$target"
 							echo >&2 ____
-							error=1
 						fi
 					fi
 
@@ -391,21 +388,19 @@ do
 						else
 							test_fail "CONTENT invalid"
 							diff >&2 -- "$target" CONTENT
-							error=1
 						fi
 					fi
 				fi
 			else
 				if [ -r INCONTENT ] || [ -r CONTENT ] ; then
-					test_fail "CONTENT and INCONTENT must not appear in conjunction with an empty TARGET"
-					error=1
+					test_fail_fatal "CONTENT and INCONTENT must not appear in conjunction with an empty TARGET"
+					continue
 				fi
 			fi
 		else
 			# Make sure the file "A" was not generated
 			if [ -r A ]; then
 				test_fail "File 'A' was generated although the script failed"
-				error=1
 			fi
 		fi
 
@@ -416,7 +411,6 @@ do
 			else
 				test_fail "Output does not match 'STDOUT'"
 				diff >&2 list.def.out STDOUT
-				error=1
 			fi
 		fi
 
@@ -429,7 +423,6 @@ do
 				echo >&2 ____ stdout:
 				cat  >&2 list.def.out
 				echo >&2 ____
-				error=1
 			fi
 		fi
 
@@ -437,7 +430,6 @@ do
 		if [ "$exitstatus_correct" != 0 ] && [ \! -r STDERR ]; then
 			if [ \! \( "$(echo $(cat list.def.err | wc -l))" -gt 0 \) ]; then
 				test_fail "Nothing written to stderr although exit status is >0"
-				error=1
 			fi
 		fi
 
@@ -449,7 +441,6 @@ do
 					echo >&7 "INSTDERR...correct"
 				else
 					test_fail "'$line' was not found in stderr"
-					error=1
 				fi
 			done
 		fi
@@ -461,7 +452,6 @@ do
 			else
 				test_fail "Error output does not match 'STDERR'"
 				diff >&2 list.def.err STDERR
-				error=1
 			fi
 		fi
 
@@ -469,7 +459,6 @@ do
 		if [ -r NOTINSTDERR ]; then
 			if grep -q -F -e "$(cat NOTINSTDERR)" list.def.err ; then
 				test_fail "'$(cat NOTINSTDERR)' was found in error output, but should not be there"
-				error=1
 			else
 				echo >&7 "NOTINSTDERR...correct"
 			fi
@@ -485,7 +474,6 @@ do
 			# Exit code
 			if [ "$exitstatus_actual" != "$exitstatus_correct" ]; then
 				test_fail "Test '$file' should have returned $exitstatus_correct, but returned $exitstatus_actual [TTY]"
-				error=1
 			else
 				echo >&7 "EXITSTATUS:TTY...$exitstatus_correct correct"
 			fi
@@ -497,7 +485,6 @@ do
 				else
 					test_fail "TTY error output does not match 'TTYSTDOUTERR'"
 					diff >&2 list.def.out TTYSTDOUTERR
-					error=1
 				fi
 			fi
 
@@ -508,7 +495,6 @@ do
 					echo >&2 _________
 					cat >&2 list.def.out
 					echo >&2 _________
-					error=1
 				else
 					echo >&7 "TTY:COLOR...correct"
 				fi
@@ -520,7 +506,6 @@ do
 				echo >&2 _________
 				cat >&2 list.def.out
 				echo >&2 _________
-				error=1
 			else
 				echo >&7 "TTY:BALANCED...correct"
 			fi
@@ -539,7 +524,6 @@ do
 				echo >&2 _____
 				cat >&2 list.def.out
 				echo >&2 _____
-				error=1
 			fi
 		fi
 
@@ -553,7 +537,6 @@ do
 				if [ $? != 0 ]
 				then
 					test_fail "Parallel stu failed for '$file' with k = $k"
-					error=1
 				else
 					echo >&7 "PARALLEL...correct"
 				fi
@@ -565,13 +548,7 @@ do
 	cd ..
 
 	if [ "$error" != 0 ] ; then
-		echo "$file" >&6
-		[ "$notall" ] && {
-			echo >&2 "[31m$0: ($file) *** Test '$file' failed [notall][m"
-			exit 1
-		}
-		ret=1
-		count_failed=$(( count_failed + 1 ))
+		test_fail_fatal
 		continue
 	fi
 	count_succeed=$(( count_succeed + 1 ))

@@ -2,16 +2,9 @@
 # Option -I
 #
 # For all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
-# * Separate PROP_SEPARATOR into space and non-space separators.  In
-#   show(Parts), determine has_marker on the presence of operators and non-space separators.
-
-# * list.${a}+X does not need quotes in normal output
-# * list.${a}-X does not need quotes in normal output
-# * list.${a}~X does not need quotes in normal output
-# * normal output for A${X\Y}B  # variable name contains a backslash, but outside not quoted
 # * normal output for A'\'B${X}C
-# * normal output for A[B\C]D
-# * normal output for A\B[C]D
+# * normal output for A[B'\'C]D
+# * normal output for A'\'B[C]D
 # * A\B[C\D]E
 # * Check that the output "Successfully built A" uses the "out" word color around "A".
 # * check that the output "Creating X" for content targets uses the OUT colors
@@ -52,6 +45,7 @@
 # * check that "list.\t.${x}" is shown as such in error output, i.e., with quoted \t and quoted dollar sign.
 # * sh/test should not output "Terminated".  It's output four times at the moment.
 # * ./${name}.png  should result in *.png due to canonicalization
+# * The filenames +xxx, -xxx and ~xxx need quotes in error output, even with color
 
 #
 # Test that there are no carriage returns in the source.

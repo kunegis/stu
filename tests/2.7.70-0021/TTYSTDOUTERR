@@ -1,0 +1,4 @@
+Creating [1mlist.B\C[22m: [1mx[22m
+[31m[1mmain.stu[22m:1:4[m: no rule to build [1mAxD[22m, needed by [1m[list.B\C][22m
+[31m[1mmain.stu[22m:1:6[m: [1m[list.B\C][22m is needed by [1mA[list.B\C]D[22m
+[31m[1mmain.stu[22m:1:4[m: [1mA[list.B\C]D[22m is needed by [1mA[22m

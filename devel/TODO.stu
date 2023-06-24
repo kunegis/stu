@@ -1,9 +1,6 @@
 #
 # Option -I
 #
-# For all tests below, test (1) color output, color error output, no-color (forced quotes) output, -I.
-# * Check that the output "Successfully built A" uses the "out" word color around "A".
-# * check that the output "Creating X" for content targets uses the OUT colors
 # * >@list.$x.$x;
 # * >@list.$x$x;
 # * >A >@B;

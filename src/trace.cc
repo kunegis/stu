@@ -53,7 +53,7 @@ FILE *Trace::open_logfile(const char *filename)
 const char *trace_strip_dir(const char *s)
 {
 	const char *r= strchr(s, '/');
-	if (!r)  return s;
+	if (!r) return s;
 	return r+1;
 }
 

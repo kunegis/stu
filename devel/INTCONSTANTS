@@ -1,7 +1,7 @@
 Bitfields and enums used in stu:
 
 FILE	        TYPE	        	NAME
-================================================
+=======================================================
 bits.hh		Bits			B_*
 canonicalize.hh	Canonicalize_Flags	A_*
 color.hh	Channel			CH_*
@@ -14,4 +14,4 @@ show.hh		Rendering		R_*
 show.hh		Quotable		Q_*
 show.hh		Properties		PROP_*
 token.hh	Environment		E_*
-tracing.hh	Trace_Class 		TRACE_*
+trace.hh	Trace_Class 		TRACE_*

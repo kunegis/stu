@@ -18,6 +18,7 @@
 enum Trace_Class
 {
 	TRACE_SHOW,
+
 	TRACE_COUNT
 };
 
@@ -47,13 +48,8 @@ public:
 		padding.resize(padding.size() - strlen(padding_one));
 	}
 
-	const char *get_prefix() const {
-		return prefix.c_str();
-	}
-
-	bool get_enabled() const {
-		return trace_files[trace_class];
-	}
+	const char *get_prefix() const { return prefix.c_str(); }
+	bool get_enabled() const { return trace_files[trace_class]; }
 
 	static Trace *get_current() {
 		assert(! stack.empty());
@@ -66,7 +62,7 @@ private:
 	static constexpr const char *padding_one= "   ";
 	static vector <Trace *> stack;
 
-	static struct Init  {  Init();  }  init;
+	static struct Init { Init(); } init;
 
 	static FILE *open_logfile(const char *filename);
 };

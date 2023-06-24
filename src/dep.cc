@@ -102,6 +102,8 @@ void Plain_Dep::render(Parts &parts, Rendering rendering) const
 		parts.append_space();
 	if (flags & F_VARIABLE)
 		parts.append_operator("$[");
+	if (flags & F_INPUT && rendering & R_SHOW_INPUT)
+		parts.append_operator("<");
 	place_param_target.render(parts, rendering);
 	if (flags & F_VARIABLE)
 		parts.append_operator("]");

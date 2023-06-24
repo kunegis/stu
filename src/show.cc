@@ -179,6 +179,14 @@ void render(string s, Parts &parts, Rendering)
 }
 
 template <typename T>
+string show(const T &object, Style style, Rendering rendering)
+{
+	Parts parts;
+	render(object, parts, rendering);
+	return show(parts, style);
+}
+
+template <typename T>
 void render_prefix(string prefix, const T &object, Parts &parts, Rendering rendering)
 {
 	TRACE_FUNCTION(SHOW, render_prefix);
@@ -191,13 +199,5 @@ string show_prefix(string prefix, const T &object, Style style)
 {
 	Parts parts;
 	render_prefix(prefix, object, parts);
-	return show(parts, style);
-}
-
-template <typename T>
-string show(const T &object, Style style, Rendering rendering)
-{
-	Parts parts;
-	render(object, parts, rendering);
 	return show(parts, style);
 }

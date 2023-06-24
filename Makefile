@@ -8,14 +8,13 @@ test: \
     log/test_unit.debug \
     log/test_clean \
     log/test_unit.ndebug
-sani: \
-    log/test_unit.sani_undefined
-prof:  bin/analysis.prof
-.PHONY:  all test sani clean prof install
+sani: log/test_unit.sani_undefined
+prof: bin/analysis.prof
+.PHONY: all test sani clean prof install
 
-src/version.hh:  VERSION sh/mkversion
+src/version.hh: VERSION sh/mkversion
 	sh/mkversion >src/version.hh
-conf/CXX:  sh/conf
+conf/CXX: sh/conf
 	sh/conf
 CXXFLAGS_DEBUG= \
     -ggdb -O0 -Werror \

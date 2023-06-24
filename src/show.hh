@@ -21,7 +21,8 @@ constexpr Style S_NORMAL=		CH_OUT | S_QUOTE_MINIMUM;
 typedef unsigned Rendering;
 constexpr Rendering R_SHOW_FLAGS=		1 << 0;
 constexpr Rendering R_GLOB=             	1 << 1;
-constexpr Rendering R_NO_COMPOUND_PARENTHESES=	1 << 2;
+constexpr Rendering R_SHOW_INPUT=		1 << 2;
+constexpr Rendering R_NO_COMPOUND_PARENTHESES=	1 << 3;
 
 enum Quotable {
 	Q_DONT_QUOTE, Q_QUOTE_WHEN_NO_COLOR, Q_ALWAYS_QUOTE,
@@ -82,10 +83,10 @@ void render_dynamic_variable(string name, Parts &, Rendering= 0);
 string show_dynamic_variable(string name, Style= S_DEFAULT);
 
 template <typename T>
+string show(const T &, Style= S_DEFAULT, Rendering= 0);
+template <typename T>
 void render_prefix(string prefix, const T &object, Parts &, Rendering= 0);
 template <typename T>
 string show_prefix(string prefix, const T &object, Style= S_DEFAULT);
-template <typename T>
-string show(const T &, Style= S_DEFAULT, Rendering= 0);
 
 #endif /* ! SHOW_HH */

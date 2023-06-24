@@ -376,9 +376,8 @@ void Name::append(const Name &name)
 void Place_Param_Target::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Place_Param_Target::render);
-	if (flags & F_TARGET_TRANSIENT) {
+	if (flags & F_TARGET_TRANSIENT)
 		parts.append_operator("@");
-	}
 	place_name.render(parts, rendering);
 }
 

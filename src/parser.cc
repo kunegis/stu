@@ -54,22 +54,16 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 
 		if (! is <Name_Token> ()) {
 			if (! place_output_new.empty()) {
-				if (iter == tokens.end()) {
+				if (iter == tokens.end())
 					place_end << "expected a filename";
-					place_output_new <<
-						fmt("after output redirection using %s",
-						    show_operator('>'));
-					throw ERROR_LOGICAL;
-				}
-				else {
+				else
 					(*iter)->get_place_start() <<
 						fmt("expected a filename, not %s",
 						    show((*iter)));
-					place_output_new <<
-						fmt("after output redirection using %s",
-						    show_operator('>'));
-					throw ERROR_LOGICAL;
-				}
+				place_output_new <<
+					fmt("after output redirection using %s",
+					    show_operator('>'));
+				throw ERROR_LOGICAL;
 			}
 			break;
 		}
@@ -729,8 +723,11 @@ shared_ptr <const Dep> Parser
 
 	/* Name of variable dependency */
 	if (! is <Name_Token> ()) {
-		(*iter)->get_place_start() <<
-			fmt("expected a filename, not %s", show(*iter));
+		if (iter == tokens.end())
+			place_end << "expected a filename";
+		else
+			(*iter)->get_place_start() <<
+				fmt("expected a filename, not %s", show(*iter));
 		if (has_input) {
 			place_input << fmt("after %s", show_operator('<'));
 		} else if (! place_flag_last.empty()) {
@@ -814,7 +811,7 @@ shared_ptr <const Dep> Parser
 	if (has_input && ! place_name_input.empty()) {
 		place_name->place <<
 			fmt("there must not be a second input redirection %s",
-			    show_prefix("<", ret));
+			    show(ret, S_DEFAULT, R_SHOW_INPUT));
 		place_name_input.place <<
 			fmt("shadowing previous input redirection %s",
 			    show_prefix("<", place_name_input));
@@ -915,7 +912,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 	if (has_input && ! place_name_input.empty()) {
 		name_token->place <<
 			fmt("there must not be a second input redirection %s",
-			    show_prefix("<", ret));
+			    show(ret, S_DEFAULT, R_SHOW_INPUT));
 		place_name_input.place <<
 			fmt("shadowing previous input redirection %s",
 			    show_prefix("<", place_name_input));

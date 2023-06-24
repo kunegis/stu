@@ -7,17 +7,17 @@
  * syntax ressembling that of command line flags, to attributes of edges in the
  * dependency graph. Internally, flags are defined as bit fields.
  *
- * Each edge in the dependency graph is annotated with one object of
- * this type.  This contains bits related to what should be done with
- * the dependency, whether time is considered, etc.  The flags are
- * defined in such a way that the simplest dependency is represented by
- * zero, and each flag enables a specific feature.
+ * Each edge in the dependency graph is annotated with one object of this type.
+ * This contains bits related to what should be done with the dependency,
+ * whether time is considered, etc.  The flags are defined in such a way that
+ * the simplest dependency is represented by zero, and each flag enables a
+ * specific feature.
  *
- * The transitive bits are effectively set for tasks not to do.
- * Therefore, inverting them gives the bits for the tasks to do.  In
- * particular, the flag fields that store the information which part of
- * a task has been done has inverse semantics: They have a bit set when
- * that part has been done, i.e., when the flag initially was not set.
+ * The transitive bits are effectively set for tasks not to do.  Therefore,
+ * inverting them gives the bits for the tasks to do.  In particular, the flag
+ * fields that store the information which part of a task has been done has
+ * inverse semantics: They have a bit set when that part has been done, i.e.,
+ * when the flag initially was not set.
  */
 
 #include "show.hh"
@@ -45,9 +45,6 @@ enum
 	C_PLACED           	= 3,  /* Flags for which we store a place in Dep */
 	C_WORD			= 8,  /* Flags used for caching; stored in Target */
 #define C_WORD			  8   /* Used statically */
-	/* The last #define can be replaced with template trickery, yes,
-	 * but it makes it much longer.  Accept the duplicate constant
-	 * for now.  */
 
 	/*
 	 * What follows are the actual flag bits to be ORed together

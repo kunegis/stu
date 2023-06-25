@@ -575,8 +575,9 @@ programs.
 Stu will ensure the file named NAME exists, and then parse it as
 containing further dependencies of the target.  The fact that NAME needs
 to be rebuild does not imply that the target has to be rebuilt.  The
-flag .BR -n
-makes interpret the content of the file as a newline-separated
+flag
+.BR -n
+makes Stu interpret the content of the file as a newline-separated
 list of filenames.  Analogously, the
 .BR -0
 flag can be used when the file
@@ -604,7 +605,7 @@ command.
 
     ( ... )
 
-Groups of dependencies can be enclosed on parentheses.
+Groups of dependencies can be enclosed in parentheses.
 Parentheses may not contain variable dependencies (i.e., something like
 '$[NAME]').
 The flags
@@ -949,7 +950,7 @@ build the file 'a.gz.gz' from the file 'a', even though it would not
 result in a cycle, but since both files 'a.gz' and 'a.gz.gz' use the
 same parametrized rule, this is not allowed:
 
-    $name.gz:  $name { gzip -k -- "$name" }
+    $name.gz:  $name { gzip -k -- "$name" ; }
 
 Cycles are possible in dynamic dependencies, where they are allowed
 and ignored.  For instance, the following examples will correctly build
@@ -972,7 +973,7 @@ is not used, the standard input of all jobs is redirected from
 /dev/null.
 
 If a command fails, Stu will remove any of its target files, if they
-have been already touch by the command.  If the failing command did not
+have been already touched by the command.  If the failing command did not
 touch a target file, that existing target file is not removed.  This
 behavior is necessary to avoid the case that a commands partially
 creates a target file, then fails, and then a subsequent invocation of
@@ -1071,8 +1072,6 @@ increased for other changes.
 
 .SH "EXAMPLES"
 
-This section contains more examples of Stu usage.
-
 The basic example of a rule in Stu is:
 
     program:    program.c config.h
@@ -1098,11 +1097,11 @@ without commands, and through dynamic dependencies.  In the
 following example, the variable $V will be passed through to the
 commands for the targets A and B:
 
-    V: { echo Hello >V }
+    V: { echo Hello >V ; }
     @x: $[V];
-    y: { echo '$[V]' >y }
-    A: @x { echo $V >A }
-    B: [y] { echo $V >B }
+    y: { echo '$[V]' >y ; }
+    A: @x { echo $V >A ; }
+    B: [y] { echo $V >B ; }
 
 Trivial dependencies are often combined with variable dependencies to
 implement flags, for instance to a compiler, as in the following
@@ -1111,8 +1110,8 @@ lead to a recompilation of the program, but if 'program.c' is modified
 and 'program' is rebuilt, then 'CFLAGS' will also be rebuilt.
 
     VERSION; # Contains the version number; updated by hand
-    >CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=$VERSION }
-    program:  program.c $[-t CFLAGS] { gcc $CFLAGS program.c -o program }
+    >CFLAGS: $[VERSION] { echo -g -Wall -D VERSION=$VERSION ; }
+    program:  program.c $[-t CFLAGS] { gcc $CFLAGS program.c -o program ; }
 
 Copy rules are often used to copy a file from another directory into the
 current directory.  If both files have the same name, the name of the
@@ -1246,7 +1245,7 @@ output 'Targets are up to date', as the optional dependency may have been
 created by subsequent targets.
 
 Commands enclosed in braces { ... } are parsed using shell syntax, up to
-one exception:  a closing brace is detected everywhere in unqoted
+one exception:  a closing brace is detected everywhere in unqotued
 environments, not only when standing alone as the first word of a
 command.  E.g., the command { echo Hello } is a valid command for Stu,
 while it would be an error for the shell, as the closing } would be

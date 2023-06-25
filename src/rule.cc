@@ -357,20 +357,19 @@ shared_ptr <const Rule> Rule_Set::get(Target target,
 	return ret;
 }
 
-void Rule_Set::print() const
+void Rule_Set::print_for_option_dP() const
 {
 	for (auto i: rules_unparam)  {
 		string text= show(i.second, CH_OUT);
 		puts(text.c_str());
 	}
-
 	for (auto i: rules_param)  {
 		string text= show(i, CH_OUT);
 		puts(text.c_str());
 	}
 }
 
-void Rule_Set::print_targets() const
+void Rule_Set::print_for_option_I() const
 {
 	set <string> filenames;
 	for (auto i: rules_unparam)  {
@@ -380,18 +379,16 @@ void Rule_Set::print_targets() const
 		for (auto target: rule.place_param_targets) {
 			if (target->flags & F_TARGET_TRANSIENT)
 				continue;
-			filenames.insert(show(target->place_name, S_NORMAL, R_GLOB));
+			filenames.insert(show(target->place_name, S_OPTION_I, R_GLOB));
 		}
 	}
-
 	for (auto i: rules_param)  {
 		for (auto target: i->place_param_targets) {
 			if (target->flags & F_TARGET_TRANSIENT)
 				continue;
-			filenames.insert(show(target->place_name, S_NORMAL, R_GLOB));
+			filenames.insert(show(target->place_name, S_OPTION_I, R_GLOB));
 		}
 	}
-
 	for (const string &filename: filenames) {
 		puts(filename.c_str());
 	}

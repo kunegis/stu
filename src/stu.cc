@@ -238,11 +238,11 @@ int main(int argc, char **argv, char **envp)
 		}
 
 		if (option_P) {
-			Executor::rule_set.print();
+			Executor::rule_set.print_for_option_dP();
 			exit(0);
 		}
 		if (option_I) {
-			Executor::rule_set.print_targets();
+			Executor::rule_set.print_for_option_I();
 			exit(0);
 		}
 

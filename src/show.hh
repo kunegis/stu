@@ -14,9 +14,13 @@ typedef unsigned Style;
 constexpr Style S_CHANNEL=		(1 << CH_BITS) - 1;
 constexpr Style S_ALWAYS_QUOTE=		1 << (CH_BITS + 0);
 constexpr Style S_QUOTE_MINIMUM=     	1 << (CH_BITS + 1);
+constexpr Style S_QUOTE_SOURCE=		1 << (CH_BITS + 2);
+constexpr Style S_NO_COLOR=		1 << (CH_BITS + 3);
 constexpr Style S_DEFAULT=              CH_ERR;
+// TODO rename the following two based on the options used
 constexpr Style S_DEBUG=                CH_OUT | S_ALWAYS_QUOTE;
 constexpr Style S_NORMAL=		CH_OUT | S_QUOTE_MINIMUM;
+constexpr Style S_OPTION_I=		CH_OUT | S_NO_COLOR | S_QUOTE_SOURCE;
 
 typedef unsigned Rendering;
 constexpr Rendering R_SHOW_FLAGS=		1 << 0;
@@ -25,7 +29,8 @@ constexpr Rendering R_SHOW_INPUT=		1 << 2;
 constexpr Rendering R_NO_COMPOUND_PARENTHESES=	1 << 3;
 
 enum Quotable {
-	Q_DONT_QUOTE, Q_QUOTE_WHEN_NO_COLOR, Q_ALWAYS_QUOTE,
+	// TODO rename to not have "QUOTE" in the name
+	Q_DONT_QUOTE, Q_QUOTE_GLOB, Q_QUOTE_WHEN_NO_COLOR, Q_ALWAYS_QUOTE,
 	Q_MIN= Q_DONT_QUOTE,
 	Q_MAX= Q_ALWAYS_QUOTE,
 };

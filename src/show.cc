@@ -31,6 +31,8 @@ Quotable Part::need_quotes(unsigned char c)
 		return Q_ALWAYS_QUOTE;
 	if (c == '\\' || c == '"' || c == '\'' || c == '$')
 		return Q_QUOTE_WHEN_NO_COLOR;
+	if (c == '*' || c == '?' || c == '#')
+		return Q_QUOTE_GLOB;
 	return Q_DONT_QUOTE;
 }
 
@@ -84,8 +86,10 @@ void Part::show(string &ret, bool quotes) const
 string show(const Parts &parts, Style style)
 {
 	Channel channel= (Channel)(style & S_CHANNEL);
-	bool nocolor= Color::nocolor[channel];
-	string ret= Color::highlight_on[channel];
+	bool nocolor= Color::nocolor[channel] || style & S_NO_COLOR;
+	string ret;
+	if (! nocolor)
+		ret += Color::highlight_on[channel];
 
 	for (size_t i= 0; i < parts.size();) {
 		if (parts[i].properties == PROP_SPACE) {
@@ -121,8 +125,9 @@ string show(const Parts &parts, Style style)
 							}
 							bool quotes= empty
 								|| quotable == Q_ALWAYS_QUOTE
-								|| (nocolor && !has_marker && !(style & S_QUOTE_MINIMUM))
-								|| (nocolor && has_marker && quotable == Q_QUOTE_WHEN_NO_COLOR && !(style & S_QUOTE_MINIMUM));
+								|| style & S_QUOTE_SOURCE && quotable >= Q_QUOTE_GLOB
+								|| !(style & S_QUOTE_SOURCE) && nocolor && !has_marker && !(style & S_QUOTE_MINIMUM)
+								|| !(style & S_QUOTE_SOURCE) && nocolor && has_marker && quotable >= Q_QUOTE_WHEN_NO_COLOR && !(style & S_QUOTE_MINIMUM);
 							if (quotes)  ret += '"';
 							for (; i < l; ++i)
 								parts[i].show(ret, quotes);
@@ -134,7 +139,8 @@ string show(const Parts &parts, Style style)
 		}
 	}
 
-	ret += Color::highlight_off[channel];
+	if (! nocolor)
+		ret += Color::highlight_off[channel];
 	return ret;
 }
 

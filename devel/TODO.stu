@@ -1,21 +1,19 @@
 #
 # Option -I
 #
-# * target *
-# * target *.o
-# * target *.x.*
+
+# * 2.7.70-0037:  done
+# * same but with -y
+# * same but with -Y
+
 # * single rule, multiple unparametrized targets
 # * single rule, multiple parametrized targets
-# * multiple rules
-# * targets containing * ? \ # SPACE NEWLINE ' "
 # * two identical unparametrized file targets in different rules: error.
 # * two identical unparametrized file targets in the same rule.
 # * one target whose pattern is a subset of another (both parametrized)
 # * one target whose pattern is a subset of another (one parametrized)
 # * list.A; list.$name { ... }
 # * A { exit 1 ; } # succeeds because the command is not executed
-# * Copy rule:  target is output
-# * Content rule:  target is output
 # * The filename " " (one space) is shown in quotes in error messages
 # * The filename consisting of one delete character is shown in quotes correctly in error messages
 # * The filename " aaa" is shown correctly in error messages
@@ -27,7 +25,13 @@
 # * check that "list.\t.${x}" is shown as such in error output, i.e., with quoted \t and quoted dollar sign.
 # * sh/test should not output "Terminated".  It's output four times at the moment.
 # * ./${name}.png  should result in *.png due to canonicalization
-# * The filenames +xxx, -xxx and ~xxx need quotes in error output, even with color
+# * The filenames +xxx, -xxx and ~xxx need quotes in error output, even with
+#   color
+# * For a file rule without command, should -I output something?  Probably not.
+#   Test it.
+# * -I:  lost of nonparametrized rules in arbitrary order:  Check that the
+#   output is sorted alphabetically.
+# * -I:  A; list.$x;   Noting must be output because there is no command. 
 
 #
 # Test that there are no carriage returns in the source.  (and other control codes)

@@ -143,11 +143,8 @@ public:
 	 * errors, in which case PARAM_RULE is never set.  PLACE is the place of
 	 * the dependency; used in error messages.  */
 
-	void print() const;
-	/* Print the rule set to standard output, as used by the -P and
-	 * -d options.  */
-
-	void print_targets() const;  /* Option -I */
+	void print_for_option_dP() const;
+	void print_for_option_I() const;  
 
 private:
 	unordered_map <Target, shared_ptr <const Rule> > rules_unparam;

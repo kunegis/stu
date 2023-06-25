@@ -38,8 +38,7 @@ Stu requires:
 * POSIX
 * A C++ 14 compiler
 
-In addition, Stu uses the following features, about which we are not
-100% sure that they are prescribed by POSIX:
+In addition, Stu uses the following features:
 * ASCII or an ASCII-compatible 8-bit encoding such as UTF-8 or ISO-8859-1
 * ANSI color code-compatible terminal (terminfo or termcap are not used)
 * "make install" uses the "install" tool, which is portable but not

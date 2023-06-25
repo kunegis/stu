@@ -1,7 +1,6 @@
 #
 # Option -I
 #
-# * case where stdout is a tty and stderr is not, and vice versa
 # * target *
 # * target *.o
 # * target *.x.*
@@ -31,7 +30,7 @@
 # * The filenames +xxx, -xxx and ~xxx need quotes in error output, even with color
 
 #
-# Test that there are no carriage returns in the source.
+# Test that there are no carriage returns in the source.  (and other control codes)
 # Test that there are no backticks in shell scripts.
 # Test that all tabs are at the beginning of lines.
 # Add EXEC test scripts to the tested files.
@@ -169,4 +168,9 @@ list.${name|[A-Z].*} # Matches uppercase names
 
 #
 # Don't use "using namespace std".  Instead, only use "string.
+#
+
+#
+# sh/tty:  Also test the case where stdout is a tty and stderr is not, and vice
+# versa.
 #

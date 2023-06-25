@@ -3,10 +3,9 @@
 # Perform unit tests.  Each unit test is in one subdirectory of the directory
 # tests/.  By default, each test directory contains a file 'main.stu' that
 # performs one unit test.  Additional files may be present to configure how the
-# test is performed; see below.
+# test is performed.
 #
 # INVOCATION
-#
 #	$0 [TEST]...
 #
 # Without any arguments, perform all tests.  With one or more arguments,
@@ -546,7 +545,6 @@ do
 
 	../../sh/rm_tmps || exit 2
 	cd ..
-
 	if [ "$error" != 0 ] ; then
 		test_fail_fatal
 		continue

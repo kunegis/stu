@@ -675,8 +675,7 @@ void Executor::raise(int error_)
 void Executor::disconnect(Executor *const child,
 			  shared_ptr <const Dep> dep_child)
 {
-	Style style= S_DEBUG;
-	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, style)));
+	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, S_DEBUG)));
 
 	assert(child != nullptr);
 	assert(child != this);
@@ -781,8 +780,7 @@ void Executor::copy_result(Executor *parent, Executor *child)
 
 void Executor::push_result(shared_ptr <const Dep> dd)
 {
-	Style style= S_DEBUG;
-	DEBUG_PRINT(fmt("push_result %s", show(dd, style)));
+	DEBUG_PRINT(fmt("push_result %s", show(dd, S_DEBUG)));
 
 	assert(! dynamic_cast <File_Executor *> (this));
 	assert(! (dd->flags & F_RESULT_NOTIFY));
@@ -846,8 +844,7 @@ shared_ptr <const Dep> Executor::set_top(shared_ptr <const Dep> dep,
 Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 			  shared_ptr <const Dep> dep_child)
 {
-	Style style= S_DEBUG;
-	DEBUG_PRINT(fmt("connect %s",  show(dep_child, style)));
+	DEBUG_PRINT(fmt("connect %s",  show(dep_child, S_DEBUG)));
 
 	assert(dep_child->is_normalized());
 	assert(! to <Root_Dep> (dep_child));

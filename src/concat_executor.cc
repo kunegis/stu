@@ -4,7 +4,7 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 				 Executor *parent,
 				 int &error_additional)
 	:  dep(dep_),
-	   stage(S_DYNAMIC)
+	   stage(ST_DYNAMIC)
 {
 	assert(dep_);
 	assert(dep_->is_normalized());
@@ -15,7 +15,7 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 	parents[parent]= dep;
 	if (error_additional) {
 		*this << "";
-		stage= S_FINISHED;
+		stage= ST_FINISHED;
 		parents.erase(parent);
 		raise(error_additional);
 		return;
@@ -58,8 +58,8 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_this)
 {
  again:
-	assert(stage <= S_FINISHED);
-	if (stage == S_FINISHED)
+	assert(stage <= ST_FINISHED);
+	if (stage == ST_FINISHED)
 		return P_FINISHED;
 	Proceed proceed= execute_base_A(dep_this);
 	assert(proceed);
@@ -76,11 +76,11 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_this)
 	}
 	if (proceed & P_FINISHED) {
 		++stage;
-		assert(stage <= S_FINISHED);
-		if (stage == S_FINISHED) {
+		assert(stage <= ST_FINISHED);
+		if (stage == ST_FINISHED) {
 			return proceed;
 		} else {
-			assert(stage == S_NORMAL);
+			assert(stage == ST_NORMAL);
 			launch_stage_1();
 			goto again;
 		}
@@ -91,8 +91,8 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_this)
 
 bool Concat_Executor::finished() const
 {
-	assert(stage <= S_FINISHED);
-	return stage == S_FINISHED;
+	assert(stage <= ST_FINISHED);
+	return stage == ST_FINISHED;
 }
 
 bool Concat_Executor::finished(Flags) const

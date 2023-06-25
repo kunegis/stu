@@ -497,8 +497,7 @@ bool File_Executor::remove_if_existing(bool output)
 			continue;
 
 		if (output) {
-			Style style= S_DEBUG;
-			string text_filename= ::show(filename, style);
+			string text_filename= ::show(filename, S_DEBUG);
 			DEBUG_PRINT(fmt("remove %s", text_filename));
 			print_error_reminder(fmt("Removing file %s because command failed",
 						 ::show(filename)));

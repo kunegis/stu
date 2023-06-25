@@ -144,7 +144,7 @@ public:
 	 * the dependency; used in error messages.  */
 
 	void print_for_option_dP() const;
-	void print_for_option_I() const;  
+	void print_for_option_I() const;
 
 private:
 	unordered_map <Target, shared_ptr <const Rule> > rules_unparam;

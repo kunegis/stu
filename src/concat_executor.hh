@@ -51,7 +51,7 @@ protected:
 
 private:
 	typedef unsigned Stage;
-	enum { S_DYNAMIC, S_NORMAL, S_FINISHED };
+	enum { ST_DYNAMIC, ST_NORMAL, ST_FINISHED };
 
 	shared_ptr <const Concat_Dep> dep;
 	/* Contains the concatenation.  This is a normalized dependency. */

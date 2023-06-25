@@ -2,12 +2,8 @@
 # Option -I
 #
 
-# * 2.7.70-0037:  done
-# * same but with -y
-# * same but with -Y
-
-# * single rule, multiple unparametrized targets
-# * single rule, multiple parametrized targets
+# * -I: single rule, multiple unparametrized targets
+# * -I: single rule, multiple parametrized targets
 # * two identical unparametrized file targets in different rules: error.
 # * two identical unparametrized file targets in the same rule.
 # * one target whose pattern is a subset of another (both parametrized)
@@ -31,7 +27,7 @@
 #   Test it.
 # * -I:  lost of nonparametrized rules in arbitrary order:  Check that the
 #   output is sorted alphabetically.
-# * -I:  A; list.$x;   Noting must be output because there is no command. 
+# * -I:  A; list.$x;   Noting must be output because there is no command.
 
 #
 # Test that there are no carriage returns in the source.  (and other control codes)

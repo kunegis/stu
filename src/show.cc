@@ -1,15 +1,15 @@
 #include "show.hh"
 
-Quotable Part::need_quotes() const
+Quote_Safeness Part::need_quotes() const
 {
 	TRACE_FUNCTION(SHOW, Part::need_quotes());
 	assert(is_quotable());
 	if (properties == PROP_MARKUP_QUOTABLE) {
-		return Q_DONT_QUOTE;
+		return QS_SAFE;
 	} else if (properties == PROP_TEXT) {
 		TRACE("%s", "PROP_TEXT");
 		TRACE("text=%s", text);
-		Quotable ret= Q_MIN;
+		Quote_Safeness ret= QS_MIN;
 		for (char c: text) {
 			ret= max(ret, need_quotes(c));
 		}
@@ -17,23 +17,23 @@ Quotable Part::need_quotes() const
 		return ret;
 	} else {
 		assert(false);
-		return Q_MIN;
+		return QS_MIN;
 	}
 }
 
-Quotable Part::need_quotes(unsigned char c)
+Quote_Safeness Part::need_quotes(unsigned char c)
 {
 	TRACE_FUNCTION(SHOW, Part::need_quotes(unsigned char));
 	TRACE("c=%s", frmt("%u", c));
 	if (c & 0x80)
-		return Q_DONT_QUOTE;
+		return QS_SAFE;
 	if (c <= 0x20 || c == 0x7F)
-		return Q_ALWAYS_QUOTE;
+		return QS_ALWAYS;
 	if (c == '\\' || c == '"' || c == '\'' || c == '$')
-		return Q_QUOTE_WHEN_NO_COLOR;
+		return QS_QUOTING;
 	if (c == '*' || c == '?' || c == '#')
-		return Q_QUOTE_GLOB;
-	return Q_DONT_QUOTE;
+		return QS_GLOB;
+	return QS_SAFE;
 }
 
 void Part::show(string &ret) const
@@ -116,18 +116,18 @@ string show(const Parts &parts, Style style)
 							parts[i++].show(ret);
 						} else {
 							size_t l;
-							Quotable quotable= Q_MIN;
+							Quote_Safeness quotable= QS_MIN;
 							if (style == S_ALWAYS_QUOTE)
-								quotable= Q_ALWAYS_QUOTE;
+								quotable= QS_ALWAYS;
 							for (l= i; l < k && parts[l].is_quotable(); ++l) {
-								if (quotable <= Q_MAX)
+								if (quotable <= QS_MAX)
 									quotable= max(quotable, parts[l].need_quotes());
 							}
 							bool quotes= empty
-								|| quotable == Q_ALWAYS_QUOTE
-								|| style & S_QUOTE_SOURCE && quotable >= Q_QUOTE_GLOB
+								|| quotable == QS_ALWAYS
+								|| style & S_QUOTE_SOURCE && quotable >= QS_GLOB
 								|| !(style & S_QUOTE_SOURCE) && nocolor && !has_marker && !(style & S_QUOTE_MINIMUM)
-								|| !(style & S_QUOTE_SOURCE) && nocolor && has_marker && quotable >= Q_QUOTE_WHEN_NO_COLOR && !(style & S_QUOTE_MINIMUM);
+								|| !(style & S_QUOTE_SOURCE) && nocolor && has_marker && quotable >= QS_QUOTING && !(style & S_QUOTE_MINIMUM);
 							if (quotes)  ret += '"';
 							for (; i < l; ++i)
 								parts[i].show(ret, quotes);

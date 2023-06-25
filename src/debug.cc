@@ -12,13 +12,12 @@ void Debug::print(const Debuggable *d, string text)
 	if (d == nullptr) {
 		print("", text);
 	} else {
-		Style style= S_DEBUG;
 		if (debuggables.size() > 0 &&
 		    debuggables[debuggables.size() - 1] == d) {
-			print(show(d, style), text);
+			print(show(d, S_DEBUG), text);
 		} else {
 			Debug debug(d);
-			print(show(d, style), text);
+			print(show(d, S_DEBUG), text);
 		}
 	}
 }

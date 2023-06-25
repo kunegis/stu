@@ -17,7 +17,6 @@ constexpr Style S_QUOTE_MINIMUM=     	1 << (CH_BITS + 1);
 constexpr Style S_QUOTE_SOURCE=		1 << (CH_BITS + 2);
 constexpr Style S_NO_COLOR=		1 << (CH_BITS + 3);
 constexpr Style S_DEFAULT=              CH_ERR;
-// TODO rename the following two based on the options used
 constexpr Style S_DEBUG=                CH_OUT | S_ALWAYS_QUOTE;
 constexpr Style S_NORMAL=		CH_OUT | S_QUOTE_MINIMUM;
 constexpr Style S_OPTION_I=		CH_OUT | S_NO_COLOR | S_QUOTE_SOURCE;
@@ -28,11 +27,10 @@ constexpr Rendering R_GLOB=             	1 << 1;
 constexpr Rendering R_SHOW_INPUT=		1 << 2;
 constexpr Rendering R_NO_COMPOUND_PARENTHESES=	1 << 3;
 
-enum Quotable {
-	// TODO rename to not have "QUOTE" in the name
-	Q_DONT_QUOTE, Q_QUOTE_GLOB, Q_QUOTE_WHEN_NO_COLOR, Q_ALWAYS_QUOTE,
-	Q_MIN= Q_DONT_QUOTE,
-	Q_MAX= Q_ALWAYS_QUOTE,
+enum Quote_Safeness {
+	QS_SAFE, QS_GLOB, QS_QUOTING, QS_ALWAYS,
+	QS_MIN= QS_SAFE,
+	QS_MAX= QS_ALWAYS,
 };
 
 enum Properties {
@@ -54,8 +52,8 @@ public:
 	bool is_quotable() const {
 		return properties == PROP_TEXT || properties == PROP_MARKUP_QUOTABLE;
 	}
-	Quotable need_quotes() const;
-	static Quotable need_quotes(unsigned char);
+	Quote_Safeness need_quotes() const;
+	static Quote_Safeness need_quotes(unsigned char);
 	void show(string &) const;
 	void show(string &, bool quotes) const;
 };

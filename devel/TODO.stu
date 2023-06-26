@@ -2,8 +2,6 @@
 # Option -I
 #
 
-# * -I: single rule, multiple unparametrized targets
-# * -I: single rule, multiple parametrized targets
 # * two identical unparametrized file targets in different rules: error.
 # * two identical unparametrized file targets in the same rule.
 # * one target whose pattern is a subset of another (both parametrized)

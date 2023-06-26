@@ -382,8 +382,10 @@ void Rule_Set::print_for_option_I() const
 			filenames.insert(show(target->place_name, S_OPTION_I, R_GLOB));
 		}
 	}
-	for (auto i: rules_param)  {
-		for (auto target: i->place_param_targets) {
+	for (auto rule: rules_param)  {
+		if (rule->must_exist())
+			continue;
+		for (auto target: rule->place_param_targets) {
 			if (target->flags & F_TARGET_TRANSIENT)
 				continue;
 			filenames.insert(show(target->place_name, S_OPTION_I, R_GLOB));

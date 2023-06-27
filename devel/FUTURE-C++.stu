@@ -4,17 +4,6 @@
 #
 
 #
-# Use string_view where appropriate. (needs C++17).
-#
-
-#
-# Try out further sanitizers (some may need a newer GCC)
-#    -fsanitize=address      // not used because of false positives (due to Execution caching)
-#    -fsanitize=leak         // (Execution caching)
-#    <others>
-#
-
-#
 # preset.h:  Use to_address(v.end()) instead of v.data() + v.size()  (needs C++20)
 #
 

@@ -2,12 +2,6 @@
 # Option -I
 #
 
-# * The filename " " (one space) is shown in quotes in error messages
-# * The filename consisting of one delete character is shown in quotes correctly in error messages
-# * The filename " aaa" is shown correctly in error messages
-# * The filename "aaa " shown correctly in error messages
-# * The filename "aaa BBB" is shown correctly in error messages
-# * The filename " a a a " is shown correctly in error messages
 # * ${aé}  :   show the é in the error message
 # * why is it linked to libm?
 # * check that "list.\t.${x}" is shown as such in error output, i.e., with quoted \t and quoted dollar sign.
@@ -19,6 +13,7 @@
 # * -I:  lots of nonparametrized rules in arbitrary order:  Check that the
 #   output is sorted alphabetically.
 # * -I:  A; list.$x;   Noting must be output because there is no command.
+# * -I:  A= B; C={ddd}   Both files are in the output.
 
 #
 # Test that there are no carriage returns in the source.  (and other control codes)
@@ -164,4 +159,21 @@ list.${name|[A-Z].*} # Matches uppercase names
 #
 # sh/tty:  Also test the case where stdout is a tty and stderr is not, and vice
 # versa.
+#
+
+#
+# A new flag for dynamic dependencies, next to -n and -0.  It represents the
+# default behavior (full Stu syntax), and may become useful in the next major
+# version of Stu when -n becomes the default.
+#
+
+#
+# Use string_view where appropriate. (needs C++17).
+#
+
+#
+# Try out further sanitizers (some may need a newer GCC)
+#    -fsanitize=address      // not used because of false positives (due to Execution caching)
+#    -fsanitize=leak         // (Execution caching)
+#    <others>
 #

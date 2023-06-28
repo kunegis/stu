@@ -17,12 +17,12 @@
 
 enum Trace_Class
 {
-	TRACE_SHOW,
+	TRACE_SHOW, TRACE_TOKENIZER,
 
 	TRACE_COUNT
 };
 
-const char *trace_names[TRACE_COUNT]= {"SHOW"};
+const char *trace_names[TRACE_COUNT]= {"SHOW", "TOKENIZER"};
 
 class Trace
 {

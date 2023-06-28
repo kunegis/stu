@@ -16,3 +16,5 @@ show.hh			Quote_Safeness		QS_*
 show.hh			Properties		PROP_*
 token.hh		Environment		E_*
 trace.hh		Trace_Class 		TRACE_*
+
+(This list excludes constants only used in one .cc file)

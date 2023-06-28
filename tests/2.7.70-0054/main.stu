@@ -1,0 +1,3 @@
+# Parameters cannot contain 'é'.
+
+A:  list.${aé};

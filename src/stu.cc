@@ -32,6 +32,7 @@ int main(int argc, char **argv, char **envp)
 {
 	dollar_zero= argv[0];
 	envp_global= (const char **) envp;
+	setlocale(LC_CTYPE, ""); /* Only needed by Tokenizer::current_mbchar() */
 	init_buffering();
 	Job::init_tty();
 	Color::set();

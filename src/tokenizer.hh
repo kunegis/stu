@@ -138,6 +138,8 @@ private:
 		return Place(place_base.type, place_base.text, line, p - p_line);
 	}
 
+	string current_mbchar() const;
+
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				      Context context,
 				      Place &place_end,

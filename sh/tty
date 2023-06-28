@@ -8,6 +8,10 @@
 # REQUIREMENTS
 #	expect
 #
+# BUGS
+# * When stderr contains malformed UTF-8, this script seems to "correct" it by
+#   adding characters.
+#
 
 #\
 export TERM=xterm

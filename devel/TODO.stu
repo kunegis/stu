@@ -2,8 +2,9 @@
 # Option -I
 #
 
-# * ${aé}  :   show the é in the error message
-# * why is it linked to libm?
+# A: -fé     // Error message includes full UTF-8 "é"
+# %é         // Error message includes full UTF-8 "é"
+
 # * check that "list.\t.${x}" is shown as such in error output, i.e., with quoted \t and quoted dollar sign.
 # * sh/test should not output "Terminated".  It's output four times at the moment.
 # * ./${name}.png  should result in *.png due to canonicalization

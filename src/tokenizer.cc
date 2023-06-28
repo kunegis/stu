@@ -17,10 +17,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 	size_t in_size;
 	struct stat buf;
 	FILE *file= nullptr;
-
-	bool use_malloc;
-	/* False:  use mmap()
-	 * True:   use malloc()  */
+	enum {TC_MMAP, TC_MALLOC} technique;
 
 	try {
 		if (context == SOURCE) {
@@ -85,16 +82,13 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			goto try_read;
 		}
 
-		use_malloc= false;
-
+		technique= TC_MMAP;
 		in_size= buf.st_size;
-		in= (char *) mmap(nullptr, in_size,
-				  PROT_READ, MAP_SHARED, fd, 0);
+		in= (char *) mmap(nullptr, in_size, PROT_READ, MAP_SHARED, fd, 0);
 		if (in == MAP_FAILED) {
 
 		try_read:
-			use_malloc= true;
-
+			technique= TC_MALLOC;
 			if (file == nullptr) {
 				file= fdopen(fd, "r");
 				if (file == nullptr)
@@ -160,11 +154,16 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			tokenizer.parse_tokens(tokens, context, place_diagnostic);
 			place_end= tokenizer.current_place();
 
-			if (use_malloc) {
+			switch (technique) {
+			case TC_MALLOC:
 				free((void *) in);
-			} else { /* mmap() */
+				break;
+			case TC_MMAP:
 				if (0 > munmap((void *) in, in_size))
 					goto error;
+				break;
+			default:
+				assert(false);
 			}
 
 			return;
@@ -210,14 +209,17 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 					    (show(filename_diagnostic)));
 		}
 		throw ERROR_BUILD;
-
 	} catch (int error) {
-
 		if (in != nullptr) {
-			if (use_malloc) {
+			switch (technique) {
+			case TC_MALLOC:
 				free((void *) in);
-			} else { /* mmap() */
+				break;
+			case TC_MMAP:
 				munmap((void *) in, in_size);
+				break;
+			default:
+				assert(false);
 			}
 		}
 
@@ -534,7 +536,8 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 			throw ERROR_LOGICAL;
 		} else if (*p != '}') {
 			current_place() <<
-				fmt("character %s must not appear", show(string(p, 1)));
+				fmt("character %s must not appear",
+				    show(current_mbchar()));
 			place_dollar <<
 				fmt("in parameter started by %s",
 				    show_operator("${"));
@@ -547,7 +550,7 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 		if (p < p_end)
 			place_parameter_name <<
 				fmt("expected a parameter name, not %s",
-				    show(string(p, 1)));
+				    show(current_mbchar()));
 		else
 			place_parameter_name <<
 				"expected a parameter name";
@@ -712,9 +715,9 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				&& (to <Operator> (tokens.back())->op == ']' ||
 				    to <Operator> (tokens.back())->op == ')');
 
-			if (p < p_end &&
-			    (*p == '-' || *p == '+' || *p == '~') &&
-			    ! allow_special) {
+			if (p < p_end
+			    && (*p == '-' || *p == '+' || *p == '~')
+			    && ! allow_special) {
 				if (*p == '+' || *p == '~') {
 					current_place() <<
 						fmt("an unquoted name must not begin with the character %s",
@@ -756,7 +759,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 				    (is_name_char(*p) || *p == '"' || *p == '\'' || *p == '$' || *p == '@')) {
 					current_place() <<
 						fmt("expected whitespace before character %s",
-						    show(string(p, 1)));
+						    show(current_mbchar()));
 					token->get_place() <<
 						fmt("after flag %s",
 						    show_prefix("-", frmt("%c", op)));
@@ -782,7 +785,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 							    show_prefix("-", "t"));
 					} else {
 						current_place() << fmt("invalid character %s",
-								       show(string(p, 1)));
+								       show(current_mbchar()));
 						if (strchr("#%\'\":;-$@<>={}()[]*\\&|!?,", *p)) {
 							explain_quoted_characters();
 						}
@@ -853,6 +856,22 @@ bool Tokenizer::skip_space(bool &skipped_actual_space)
 	}
 	assert(p <= p_end);
 	return ret;
+}
+
+string Tokenizer::current_mbchar() const
+{
+	TRACE_FUNCTION(TOKENIZER, Tokenizer::current_mbchar());
+	assert(p < p_end);
+	mbstate_t mbstate;
+	TRACE("next:%s", frmt("%02x %02x", (unsigned char)p[0], (unsigned char)p[1]));
+	memset(&mbstate, 0, sizeof(mbstate));
+	size_t l= mbrlen(p, p_end - p, &mbstate);
+	TRACE("l=%s", frmt("%zd", (ssize_t)l));
+	if (l == 0 || l == (size_t)-1 || l == (size_t)-2) {
+		return string(p, 1);
+	} else {
+		return string(p, l);
+	}
 }
 
 void Tokenizer::parse_double_quote(Place_Name &ret)
@@ -1002,7 +1021,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 		if (p < p_end)
 			place_directive
 				<< fmt("expected a directive name, not %s",
-				       show(string(p, 1)));
+				       show(current_mbchar()));
 		else
 			place_directive
 				<< "expected a directive name";
@@ -1034,7 +1053,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 				(p == p_end
 				 ? "expected a filename"
 				 : fmt("expected a filename, not %s",
-				       show(string(p, 1))));
+				       show(current_mbchar())));
 			place_percent << fmt("after %s",
 					     show_operator("%include"));
 			throw ERROR_LOGICAL;

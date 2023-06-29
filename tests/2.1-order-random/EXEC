@@ -36,7 +36,7 @@ if [ "$exitstatus" != 0 ] ; then
 	exit 1
 fi
 
-# The two runs must *not* have identical order 
+# The two runs must *not* have identical order
 diff list.out list.out2 && {
 	echo '*** (B2)'
 	exit 1
@@ -46,7 +46,6 @@ diff out output-correct || {
 	echo '*** (C2)'
 	exit 1
 }
-
 
 rm -f out list.* stdout-correct || exit 1
 

@@ -4,7 +4,7 @@
 #
 #    rm -- FILE
 #
-# to remove files with ANY possible name. 
+# to remove files with ANY possible name.
 #
 
 rm -f -- A -r -s || exit 2

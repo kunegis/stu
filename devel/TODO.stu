@@ -2,7 +2,6 @@
 # Option -I
 #
 
-# * sh/test should not output "Terminated".  It's output four times at the moment.
 # * ./${name}.png  should result in *.png due to canonicalization
 # * The filenames +xxx, -xxx and ~xxx need quotes in error output, even with
 #   color

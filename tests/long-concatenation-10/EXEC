@@ -12,10 +12,10 @@ exitstatus=$?
 
 if cmp -s list.out STDOUT.1 ; then
 	: # OK
-else 
+else
 	if cmp -s list.out STDOUT.2 ; then
 		: # OK
-	else 
+	else
 		echo >&2 "*** Expected stdout to match one of the two possibilities"
 		echo >&2 "actual stdout:"
 		echo >&2 ===============

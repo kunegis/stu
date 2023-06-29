@@ -7,7 +7,7 @@ set -e
 #
 # $1:  file to check
 #
-check_one() 
+check_one()
 {
 	file=$1
 
@@ -52,7 +52,7 @@ check_one()
 				exit 1
 			fi
 		else
-			if [ "$c_created" = "-" ] ; then 
+			if [ "$c_created" = "-" ] ; then
 				: # OK
 			else
 				echo >&2 "*** Error for $mult: umask set, but file has the mode"

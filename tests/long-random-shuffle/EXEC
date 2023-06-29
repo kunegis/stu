@@ -29,23 +29,23 @@ for i in $(../../sh/seq 100) ; do
 	../../sh/rm_tmps
 
 	n=$(( n + 1 ))
-	
+
 	echo CORRECT >list.correct
-	
+
 	# 'list.list' is the list of names, one on each line.   They do not
 	# contain '.'.
 	{
 		awk -v n="$n" -v t="$t" '
-		BEGIN { 
-		        srand(t + n); 
-		        for (j = 0 ; j < 50; ++j) { 
-		      	        text= ""; 
-			        len= 1 + int((1 - (1 - rand()) ^ 2) * 15); 
-				for (i = 0 ; i < len ; ++i) { 
-				        c = sprintf("%c", 97 + int(rand() * 26)); 
-					text = text c; 
-				} 
-				print(text); 
+		BEGIN {
+		        srand(t + n);
+		        for (j = 0 ; j < 50; ++j) {
+		      	        text= "";
+			        len= 1 + int((1 - (1 - rand()) ^ 2) * 15);
+				for (i = 0 ; i < len ; ++i) {
+				        c = sprintf("%c", 97 + int(rand() * 26));
+					text = text c;
+				}
+				print(text);
 			}
 		}
 		'
@@ -56,7 +56,7 @@ for i in $(../../sh/seq 100) ; do
 		continue
 	fi
 
-	mkdir list.dir 
+	mkdir list.dir
 	{
 		first=$(head -n 1 <list.list)
 		echo "list.A:  $first { cp \"$first\" list.A ; }"
@@ -88,7 +88,7 @@ for i in $(../../sh/seq 100) ; do
 		output_case >&2
 		exit 1
 	}
-	
+
 	cmp ../list.correct list.A || {
 		echo >&2 '*** Error:  list.A must contain CORRECT'
 		output_case >&2

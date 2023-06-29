@@ -20,12 +20,12 @@ grep -qF aaa A || { echo >&2 "*** invalid content in 'A' (1)" ; exit 1 ; }
 ../../sh/touch_old B
 echo bbb >W
 
-# * stu is called: 'A' should be rebuilt 
+# * stu is called: 'A' should be rebuilt
 ../../bin/stu.test >list.out 2>list.err
 
 grep -qF bbb A || { echo >&2 "*** invalid content in 'A' (2)" ; exit 1 ; }
 set +e
-grep -qF 'Nothing to be done' list.out 
+grep -qF 'Nothing to be done' list.out
 exitstatus=$?
 [ "$exitstatus" = 1 ] || {
 	echo >&2 "*** Stu must do something (2)"

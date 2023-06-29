@@ -6,7 +6,8 @@
 find_files()
 {
 	find . -type f |
-	grep -v -E -e '^\./(bin|tests)/' -e '~$' -e '^\./.git/' -e '^\./man/stu\.1$'
+		grep -v -E -e '^\./(bin|tests)/' -e '~$' -e '^\./.git/' -e '^\./man/stu\.1$'
+	find tests -name EXEC
 }
 
 find_space_file()
@@ -36,7 +37,7 @@ find_space_line()
 	return 0
 }
 
-find_double_space()
+find_double_empty_line()
 {
 	find_files |
 	xargs awk '
@@ -106,7 +107,7 @@ count=$(echo $(find_sed | wc -l))
 
 find_space_file || ret=1
 find_space_line || ret=1
-find_double_space || ret=1
+find_double_empty_line || ret=1
 
 # Triple X
 grep -F -n XX''X NEWS man/stu.1.in src/*.cc src/*.hh sh/* && {

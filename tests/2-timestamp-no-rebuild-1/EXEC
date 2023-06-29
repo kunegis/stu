@@ -6,7 +6,7 @@ rm -f ? list.* || exit 2
 # stu A:  B and A are built.
 #
 
-../../bin/stu.test A 
+../../bin/stu.test A
 exitstatus=$?
 
 if [ "$exitstatus" != 0 ] ; then

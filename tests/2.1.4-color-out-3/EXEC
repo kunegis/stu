@@ -2,7 +2,7 @@
 
 set -e
 
-touch A 
+touch A
 
 ../../sh/tty ../../bin/stu.test A >list.all
 

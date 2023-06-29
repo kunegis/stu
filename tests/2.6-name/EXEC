@@ -1,12 +1,12 @@
 #! /bin/sh
 #
-# A dependency of ./X does not match a rule target of C/X, where C is the actual name of the current
-# directory. 
+# A dependency of ./X does not match a rule target of C/X, where C is the actual
+# name of the current directory.
 #
 
 set -e
 
-rm -f ? list.* 
+rm -f ? list.*
 
 dir=$(pwd)
 
@@ -30,6 +30,6 @@ grep -qF "list.stu:1:5: no rule to build \"./B\", needed by \"A\"" list.err || {
 	exit 1
 }
 
-rm -f ? list.* 
+rm -f ? list.*
 
 exit 0

@@ -19,4 +19,4 @@ diff list.out stdout-correct || {
 	exit 1
 }
 
-exit 0 
+exit 0

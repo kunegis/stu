@@ -1,18 +1,18 @@
 #! /bin/sh
 #
 # Test individual canonicalization patterns.  The file 'patterns'
-# contains the patterns that are tested, one per line. 
+# contains the patterns that are tested, one per line.
 #
 # Patterns involving '..' are included, to test that '..' is not
 # canonicalized.  (Originally, '*/..' was simplified to '/', and the
 # tests were originally written to reflect that.  They should be
 # complete if that simplification was done.)
 #
-# Empty lines and lines beginning with '%' are ignored. 
+# Empty lines and lines beginning with '%' are ignored.
 #
 
 cat patterns | while IFS= read -r line ; do
-	printf '.' 
+	printf '.'
 	printf '%s\n' "$line" | grep -q -E '^\s*(|%)$' && continue
 	norm=$(printf '%s\n' "$line" | sed -e 's|^[[:space:]]*#[[:space:]]*-[[:space:]]*\([^[:space:]]\{1,\}\)[[:space:]]*->[[:space:]]*\([^[:space:]]\{1,\}\)[[:space:]]*$|\1 \2|')
 	uncanonicalized=$(printf '%s\n' "$norm" | sed -e 's|^\([^[:space:]]\{1,\}\) [^[:space:]]\{1,\}$|\1|')
@@ -43,7 +43,7 @@ EOF
 		echo >&2 "_________________"
 		exit 1
 	}
-	
+
 	grep -q -E "^main\.stu:2:[0-9]+: no rule to build \"nonexistingfile\", needed by \".*\"$" list.err || {
 		echo >&2 "*** Invalid stderr"
 		echo >&2 "uncanonicalized='$uncanonicalized'"
@@ -60,7 +60,7 @@ EOF
 		exit 1
 	}
 
-done 
+done
 ret=$?
 
 rm -f main.stu list.* || exit 2

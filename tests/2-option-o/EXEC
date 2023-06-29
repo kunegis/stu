@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Test the -o option. 
+# Test the -o option.
 #
 
 set -e
@@ -54,8 +54,8 @@ echo "Case (3)"
 rm -f ? main.stu
 
 cat >main.stu <<EOF
-A : B { 
-   cp B A 
+A : B {
+   cp B A
    touch X
 }
 B = {correct}

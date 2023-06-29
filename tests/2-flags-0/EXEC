@@ -4,15 +4,15 @@ set -e
 
 dorm() { rm -f a b a.c b.c CFLAGS LDFLAGS list.* ; }
 
-dorm 
+dorm
 
 echo "== run A"
-../../bin/stu.test 
+../../bin/stu.test
 
 [ -r a ]
-[ -r b ] 
+[ -r b ]
 
-rm CFLAGS 
+rm CFLAGS
 
 echo "== run B"
 ../../bin/stu.test >list.out
@@ -21,7 +21,7 @@ cat list.out
 echo ___
 
 echo "== grep"
-! grep -qF Compiling list.out 
+! grep -qF Compiling list.out
 grep -qF CFLAGS list.out
 
 dorm

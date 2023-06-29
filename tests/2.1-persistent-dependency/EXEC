@@ -2,8 +2,8 @@
 
 rm -Rf data || exit 2
 
-echo ../../bin/stu.test 
-../../bin/stu.test 
+echo ../../bin/stu.test
+../../bin/stu.test
 if [ "$?" != 0 ]; then
 	echo >&2 "*** First invocation failed"
 	exit 1

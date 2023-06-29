@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Test the -p option. 
+# Test the -p option.
 #
 
 set -e

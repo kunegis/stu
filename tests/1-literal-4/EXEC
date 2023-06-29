@@ -1,6 +1,6 @@
 #! /bin/sh
 
-set -e 
+set -e
 
 rm -f -- -a -b -c
 
@@ -12,7 +12,7 @@ rm -f -- -a -b -c
 }
 
 for name in a b c ; do
-	[ -r "-$name" ] || { 
+	[ -r "-$name" ] || {
 		echo >&2 "*** File '-$name'"
 		exit 1
 	}

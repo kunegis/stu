@@ -11,7 +11,7 @@ echo ../../bin/stu.test
 
 [ -r A ] || exit 1
 
-echo ../../bin/stu.test 
+echo ../../bin/stu.test
 ../../bin/stu.test >list.output || exit 1
 
 grep -Fq 'Targets are up to date' list.output || {

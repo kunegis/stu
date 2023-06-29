@@ -4,9 +4,9 @@ set -e
 
 rm -f ?
 
-../../bin/stu.test A 
+../../bin/stu.test A
 
-[ -e A ] 
+[ -e A ]
 
 grep -qF CORRECT A
 

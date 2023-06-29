@@ -2,7 +2,7 @@
 
 rm -f ? || exit 2
 
-echo ../../bin/stu.test 
+echo ../../bin/stu.test
 ../../bin/stu.test >stdout-correct
 
 rm -f ? || exit 2
@@ -39,7 +39,7 @@ if [ "$exitstatus" != 0 ] ; then
 	exit 1
 fi
 
-# The two runs *must* have identical order 
+# The two runs *must* have identical order
 diff list.out list.out2 || {
 	echo '*** (B2)'
 	exit 1

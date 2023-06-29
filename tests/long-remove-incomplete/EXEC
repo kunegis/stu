@@ -3,14 +3,14 @@
 rmm() { echo RMM ; rm -f ? list.* data.* || exit 2 ; }
 
 #
-# (A) On error:  File is not removed because it was not changed 
+# (A) On error:  File is not removed because it was not changed
 #
 
 echo '== (A) =='
 rmm
 ../../sh/touch_old list.A || exit 1
 
-../../bin/stu.test data.A 2>list.err 
+../../bin/stu.test data.A 2>list.err
 exitstatus=$?
 
 [ "$exitstatus" = 1 ] || {
@@ -24,7 +24,7 @@ exitstatus=$?
 	exit 1
 }
 
-grep -qFi "removing file" list.err 
+grep -qFi "removing file" list.err
 exitstatus=$?
 [ "$exitstatus" = 1 ] || {
 	echo >&2 "*** Wrong error message (A)"
@@ -39,7 +39,7 @@ echo '== (B) =='
 rmm
 ../../sh/touch_old list.B || exit 1
 
-../../bin/stu.test data.B >list.out 2>list.err 
+../../bin/stu.test data.B >list.out 2>list.err
 exitstatus=$?
 
 [ "$exitstatus" = 1 ] || {
@@ -58,7 +58,7 @@ grep -qF "Removing file \"list.B\" because command failed" list.err || {
 	echo >&2 ___________
 	cat >&2 list.out
 	echo >&2 ___________
-	ls -l 
+	ls -l
 	exit 1
 }
 
@@ -77,7 +77,7 @@ echo sleep 1
 sleep 1 || exit 2
 kill -TERM $pid || exit 2
 
-wait "$pid" 
+wait "$pid" 2>/dev/null
 exitstatus=$?
 
 [ -r list.err ] || {
@@ -85,7 +85,7 @@ exitstatus=$?
 	exit 1
 }
 
-grep -qFi "removing file" list.err 
+grep -qFi "removing file" list.err
 [ "$?" = 1 ] || {
 	echo >&2 "*** Wrong error message (C)"
 	exit 1
@@ -106,7 +106,7 @@ echo sleep 1
 sleep 1 || exit 2
 kill -TERM "$pid" || exit 2
 
-wait "$pid"
+wait "$pid" 2>/dev/null
 exitstatus=$?
 
 grep -qF "Removing partially built files" list.err || {

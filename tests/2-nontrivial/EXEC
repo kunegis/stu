@@ -16,13 +16,13 @@ rm -f ?
 ../../bin/stu.test -a >list.out 2>list.err
 
 diff list.out stdout-1 || {
-	echo >&2 '*** (1out)' 
-	exit 1 
+	echo >&2 '*** (1out)'
+	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || { 
-	echo >&2 '*** (1err) stderr must be empty' 
-	exit 1 
+[ -r list.err ] && [ ! -s list.err ] || {
+	echo >&2 '*** (1err) stderr must be empty'
+	exit 1
 }
 
 ../../sh/touch_old A 2
@@ -31,13 +31,13 @@ touch B C
 ../../bin/stu.test -a >list.out 2>list.err
 
 diff list.out stdout-2 || {
-	echo >&2 '*** (2out)' 
-	exit 1 
+	echo >&2 '*** (2out)'
+	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || { 
-	echo >&2 '*** (2err)' 
-	exit 1 
+[ -r list.err ] && [ ! -s list.err ] || {
+	echo >&2 '*** (2err)'
+	exit 1
 }
 
 exit 0

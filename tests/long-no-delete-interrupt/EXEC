@@ -8,10 +8,10 @@ pid=$!
 sleep 1 || exit 2
 
 kill -TERM "$pid"
-wait "$pid"
+wait "$pid" 2>/dev/null
 exitstatus=$?
 
-# 143 = 128 + 15.  15 is the POSIX-mandated value of SIGTERM. 
+# 143 = 128 + 15.  15 is the POSIX-mandated value of SIGTERM.
 [ "$exitstatus" = 143 ] || {
 	echo >&2 '*** Exit status must be 143, but is not'
 	echo >&2 "exitstatus='$exitstatus'"

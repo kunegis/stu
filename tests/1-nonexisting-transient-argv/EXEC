@@ -1,6 +1,6 @@
 #! /bin/sh
 
-../../bin/stu.test '@" do"' >list.out 2>list.err 
+../../bin/stu.test '@" do"' >list.out 2>list.err
 exitstatus=$?
 
 [ "$exitstatus" = 1 ] || {

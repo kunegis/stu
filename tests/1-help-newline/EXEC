@@ -8,7 +8,7 @@
 	exit 1
 }
 
-# The last byte of the file.  Gets 
+# The last byte of the file.  Gets
 c=$(tail -c 1 list.out)
 
 [ "$c" != '' ] && {

@@ -52,6 +52,6 @@ fi
 # End
 #
 
-rm -f ? ?? 
+rm -f ? ??
 
 exit 0

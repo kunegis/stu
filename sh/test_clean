@@ -1,7 +1,4 @@
 #! /bin/sh
-#
-# Various tests of cleanliness of the code base.
-#
 
 find_files()
 {
@@ -13,18 +10,18 @@ find_files()
 find_space_file()
 {
 	find_files | {
-		ret=0
+		my_ret=0
 		while read file ; do
 			head -n 1 -- "$file" | grep -q -E '^\s*$' && {
 				echo >&2 "$file:1: File must not begin with empty line"
-				ret=1
+				my_ret=1
 			}
 			tail -n 1 -- "$file" | grep -q -E '^\s*$' && {
 				echo >&2 "$file:$(echo $(wc -l <"$file")): File must not end with empty line"
-				ret=1
+				my_ret=1
 			}
 		done
-		return "$ret"
+		return "$my_ret"
 	}
 }
 
@@ -108,11 +105,5 @@ count=$(echo $(find_sed | wc -l))
 find_space_file || ret=1
 find_space_line || ret=1
 find_double_empty_line || ret=1
-
-# Triple X
-grep -F -n XX''X NEWS man/stu.1.in src/*.cc src/*.hh sh/* && {
-	echo >&2 "*** Certain files must not contain 'XX""X'"
-	ret=1
-}
 
 exit "$ret"

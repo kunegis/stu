@@ -7,7 +7,8 @@ test: \
     log/test_options \
     log/test_unit.debug \
     log/test_clean \
-    log/test_unit.ndebug
+    log/test_unit.ndebug \
+    log/test_clean_last
 sani: log/test_unit.sani_undefined
 prof: bin/analysis.prof
 .PHONY: all test sani clean prof install
@@ -58,6 +59,9 @@ log/test_options:   sh/test_options src/options.hh man/stu.1.in
 log/test_clean:  src/*.cc src/*.hh sh/test_clean sh sh/* tests tests/*/*
 	@echo sh/test_clean
 	@     sh/test_clean && mkdir -p log && touch $@
+log/test_clean_last:  src/*.cc src/*.hh sh/test_clean_last sh sh/* tests tests/*/*
+	@echo sh/test_clean_last
+	@     sh/test_clean_last && mkdir -p log && touch $@
 
 log/test_unit.debug:           bin/stu.debug          sh/test tests tests/*/*
 	@echo sh/test

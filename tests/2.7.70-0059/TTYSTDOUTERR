@@ -1,0 +1,2 @@
+[31m[1mmain.stu[22m:1:14[m: parameter [1m$x[22m must not appear in dependency [1m"list.\t.${x}"[22m
+[31m[1mmain.stu[22m:1:1[m: because it does not appear in target [1mA[22m

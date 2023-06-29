@@ -188,7 +188,7 @@ int main(int argc, char **argv, char **envp)
 			 * argument had originally, because getopt() may
 			 * reorder its arguments. (I.e., using GNU
 			 * getopt.)  This is why we can't put I into the
-			 * trace.  */
+			 * backtrace.  */
 			Place place(Place::Type::ARGUMENT);
 			if (*argv[i] == '\0') {
 				place << fmt("%s: name must not be empty",
@@ -281,6 +281,6 @@ int main(int argc, char **argv, char **envp)
 	}
 	/* No need to flush stderr, because it is line buffered, and if
 	 * we used it, it means there was an error anyway, so we're not
-	 * losing any information  */
+	 * losing any information.  */
 	exit(error);
 }

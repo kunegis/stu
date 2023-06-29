@@ -1,0 +1,2 @@
+main.stu:1:14: parameter $x must not appear in dependency "list.\t.${x}"
+main.stu:1:1: because it does not appear in target "A"

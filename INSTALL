@@ -52,12 +52,11 @@ devel/DEVEL.
 These are detected automatically by sh/conf, but you may change them
 by hand if necessary.
 
-* USE_MTIM (default: enabled if CLOCK_REALTIME_COARSE is present):  Use
-  struct timespec instead of time_t for timekeeping.  struct timespec
-  supports nanosecond timestamps in principle. In practice, most systems
-  are likely to support only a precision on the order of a millisecond.
-  Works only on Linux, as it uses CLOCK_REALTIME_COARSE.  See the
-  comments in 'src/timestamp.hh'.
+* USE_MTIM (default: enabled if CLOCK_REALTIME_COARSE is present):  Use struct
+  timespec instead of time_t for timekeeping.  struct timespec supports
+  nanosecond timestamps in principle. In practice, most systems are likely to
+  support only a precision on the order of a millisecond.  Works only on Linux,
+  as it uses CLOCK_REALTIME_COARSE.  See the comments in 'src/timestamp.hh'.
 
 ==== UNIT TESTS ====
 

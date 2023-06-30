@@ -11,11 +11,11 @@ exitstatus=$?
 }
 
 [ -e C ] || {
-	echo >2 "*** Expected 'C' to be built"
+	echo >2 "*** Expected \"C\" to be built"
 	exit 1
 }
 
-grep -qF "cp to '/abcdef/ghi' failed" list.err || {
+grep -qF "cp to \"/abcdef/ghi\" failed" list.err || {
 	echo >&2 "*** Expected error message"
 	exit 1
 }

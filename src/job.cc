@@ -2,6 +2,8 @@
 
 #include <sys/resource.h>
 
+#include "file_executor.hh"
+
 size_t Job::count_jobs_exec=    0;
 size_t Job::count_jobs_success= 0;
 size_t Job::count_jobs_fail=    0;
@@ -24,7 +26,6 @@ pid_t Job::start(string command,
 		 const Place &place_command)
 {
 	assert(pid == -2);
-
 	init_signals();
 
 	/* Like Make, we don't use the variable $SHELL, but use "/bin/sh" as a
@@ -52,7 +53,7 @@ pid_t Job::start(string command,
 	pid= fork();
 
 	if (pid < 0) {
-		print_error_system("fork");
+		print_errno("fork");
 		assert(pid == -1);
 		return -1;
 	}
@@ -66,7 +67,7 @@ pid_t Job::start(string command,
 	 * by a process, a process and all its child processes will have the
 	 * same PGID.  This makes it possible to kill a process and all its
 	 * children (directly and indirectly) by passing the negated PGID as the
-	 * first parameter to kill(2).  Thus, we set the child process to havae
+	 * first parameter to kill(2).  Thus, we set the child process to have
 	 * as its PGID the same value as its PID.  */
 
 	/* Execute this in both the child and parent */
@@ -122,7 +123,7 @@ pid_t Job::start(string command,
 		}
 		memcpy(envp, envp_global, v_old * sizeof(char **));
 		size_t i= v_old;
-		for (auto j= mapping.begin();  j != mapping.end();  ++j) {
+		for (auto j= mapping.begin(); j != mapping.end(); ++j) {
 			string key= j->first;
 			string value= j->second;
 			assert(key.find('=') == string::npos);
@@ -241,24 +242,19 @@ pid_t Job::start(string command,
 		}
 
 		int r= execve(shell, (char *const *) argv, (char *const *) envp);
-
-		/* If execve() returns, there is an error, and its return value is -1 */
 		assert(r == -1);
 		perror("execve");
 		_Exit(ERROR_FORK_CHILD);
 	}
 
-	/* Here, we are the parent process */
-
+	/* We are the parent process */
 	assert(pid >= 1);
-
 	if (option_i && tty >= 0) {
 		assert(pid_foreground < 0);
 		if (tcsetpgrp(tty, pid) < 0)
-			print_error_system("tcsetpgrp");
+			print_errno("tcsetpgrp");
 		pid_foreground= pid;
 	}
-
 	++ count_jobs_exec;
 	return pid;
 }
@@ -277,7 +273,7 @@ pid_t Job::start_copy(string target,
 	pid= fork();
 
 	if (pid < 0) {
-		print_error_system("fork");
+		print_errno("fork");
 		assert(pid == -1);
 		return -1;
 	}
@@ -327,16 +323,14 @@ pid_t Job::wait(int *status)
  * one child process running.  */
 {
  begin:
-	/* First, try wait() without blocking.  WUNTRACED is used to
-	 * also get notified when a job is suspended (e.g. with
-	 * Ctrl-Z).  */
+	/* First, try wait() without blocking.  WUNTRACED is used to also get
+	 * notified when a job is suspended (e.g. with Ctrl-Z).  */
 	pid_t pid= waitpid(-1, status,
 			   WNOHANG | (option_i ? WUNTRACED : 0));
 	if (pid < 0) {
-		/* Should not happen as there is always something
-		 * running when this function is called.  However, this
-		 * may be common enough that we may want Stu to act
-		 * correctly.  */
+		/* Should not happen as there is always something running when
+		 * this function is called.  However, this may be common enough
+		 * that we may want Stu to act correctly.  */
 		assert(false);
 		perror("waitpid");
 		abort();
@@ -344,7 +338,6 @@ pid_t Job::wait(int *status)
 
 	if (pid > 0) {
 		if (WIFSTOPPED(*status)) {
-
 			/* The process was suspended. This can have
 			 * several reasons, including someone just using
 			 * kill -STOP on the process.  */
@@ -358,7 +351,7 @@ pid_t Job::wait(int *status)
 			 * more: allow the user to enter commands,
 			 * having an own command language, etc.  */
 			if (tcsetpgrp(tty, getpid()) < 0)
-				print_error_system("tcsetpgrp");
+				print_errno("tcsetpgrp");
 			fprintf(stderr,
 				PACKAGE ": job stopped.  "
 				"Press ENTER to continue, Ctrl-C to terminate Stu, Ctrl-Z to suspend Stu\n");
@@ -367,15 +360,14 @@ pid_t Job::wait(int *status)
 			ssize_t r= getline(&lineptr, &n, stdin);
 			/* On error, printf error message and continue */
 			if (r < 0)
-				print_error_system("getline");
+				print_errno("getline");
 			fprintf(stderr, PACKAGE ": continuing\n");
 			if (tcsetpgrp(tty, pid) < 0)
-				print_error_system("tcsetpgrp");
+				print_errno("tcsetpgrp");
 			/* Continue job */
 			::kill(-pid, SIGCONT);
 			goto begin;
 		}
-
 		return pid;
 	}
 
@@ -387,7 +379,6 @@ pid_t Job::wait(int *status)
 
 	int sig;
 	int r;
-
  retry:
 	{
 		/* We block the termination signals and wait for them
@@ -416,9 +407,8 @@ pid_t Job::wait(int *status)
 
 	int is_termination= sigismember(&set_termination, sig);
 	if (is_termination == 1) {
-		/* Should not happen, because the handler will
-		 * called as soon as the termination
-		 * signal is unblocked.  But be safe.  */
+		/* Should not happen, because the handler will be called as soon
+		 * as the termination signal is unblocked.  But be safe.  */
 		raise(sig);
 		perror("raise");
 		exit(ERROR_FATAL);
@@ -428,20 +418,16 @@ pid_t Job::wait(int *status)
 	}
 
 	switch (sig) {
-
 	case SIGCHLD:
-		/* Don't act on the signal here.  We could get the PID
-		 * and STATUS from siginfo, but then the process would
-		 * stay a zombie.  Therefore, we have to call waitpid().
-		 * The call to waitpid() will then return the proper
-		 * signal.  */
+		/* Don't act on the signal here.  We could get the PID and
+		 * STATUS from siginfo, but then the process would stay a
+		 * zombie.  Therefore, we have to call waitpid().  The call to
+		 * waitpid() will then return the proper signal.  */
 		goto begin;
-
 	case SIGUSR1:
 		print_statistics(true);
-		job_print_jobs();
+		print_jobs();
 		goto retry;
-
 	default:
 		/* We didn't wait for this signal */
 		assert(false);
@@ -467,7 +453,7 @@ bool Job::waited(int status, pid_t pid_check)
 		assert(tty >= 0);
 		assert(option_i);
 		if (tcsetpgrp(tty, getpid()) < 0)
-			print_error_system("tcsetpgrp");
+			print_errno("tcsetpgrp");
 	}
 	pid= -1;
 	return success;
@@ -481,7 +467,7 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 
 	int r= getrusage(RUSAGE_CHILDREN, &usage);
 	if (r < 0) {
-		print_error_system("getrusage");
+		print_errno("getrusage");
 		throw ERROR_BUILD;
 	}
 
@@ -500,17 +486,17 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 		       count_jobs_exec - count_jobs_success - count_jobs_fail);
 
 	printf("STATISTICS  children user   execution time = %ju.%06lu s\n",
-	       (intmax_t) usage.ru_utime.tv_sec,
-	       (long)     usage.ru_utime.tv_usec);
+	       (uintmax_t)     usage.ru_utime.tv_sec,
+	       (unsigned long) usage.ru_utime.tv_usec);
 	printf("STATISTICS  children system execution time = %ju.%06lu s\n",
-	       (intmax_t) usage.ru_stime.tv_sec,
-	       (long)     usage.ru_stime.tv_usec);
+	       (uintmax_t)     usage.ru_stime.tv_sec,
+	       (unsigned long) usage.ru_stime.tv_usec);
 	printf("STATISTICS  Note: children execution times exclude running jobs\n");
 }
 
 void Job::handler_termination(int sig)
 /*
- * The termination signal handler -- terminate all jobs and quit.
+ * Terminate all jobs and quit.
  */
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
@@ -531,7 +517,7 @@ void Job::handler_termination(int sig)
 	 * exec()), just quit */
 	if (Job::in_child == 0) {
 		/* Terminate all processes */
-		job_terminate_all();
+		terminate_jobs();
 	} else {
 		assert_async(Job::in_child == 1);
 	}
@@ -640,7 +626,8 @@ void Job::init_signals()
 		SIGILL, SIGHUP,
 	};
 
-	for (size_t i= 0;  i < sizeof(signals_termination) / sizeof(signals_termination[0]);  ++i) {
+	for (size_t i= 0;
+	     i < sizeof(signals_termination) / sizeof(signals_termination[0]); ++i) {
 		if (0 != sigaction(signals_termination[i], &act_termination, nullptr)) {
 			perror("sigaction");
 			exit(ERROR_FATAL);
@@ -701,10 +688,10 @@ void Job::init_signals()
 	 * Job control signals
 	 */
 	if (::signal(SIGTTIN, SIG_IGN) == SIG_ERR)
-		print_error_system("signal");
+		print_errno("signal");
 
 	if (::signal(SIGTTOU, SIG_IGN) == SIG_ERR)
-		print_error_system("signal");
+		print_errno("signal");
 }
 
 void Job::kill(pid_t pid)

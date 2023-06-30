@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-char *canonicalize_string(Canon_Flags canon_flags, char *p)
+char *canonicalize_string(Canonicalize_Flags canonicalize_flags, char *p)
 /* Two passes are made, for '/' and '.', in that order. */
 {
 	/*
@@ -22,14 +22,14 @@ char *canonicalize_string(Canon_Flags canon_flags, char *p)
 	const char *s= p;
 	while (*s == '/')
 		++s;
-	if (s - p == 2 && canon_flags & A_BEGIN) {
+	if (s - p == 2 && canonicalize_flags & A_BEGIN) {
 		*d++= '/';
 		*d++= '/';
 	} else if (s != p) {
 		*d++= '/';
 	}
 
-	if (canon_flags & A_BEGIN)
+	if (canonicalize_flags & A_BEGIN)
 		d_head= d;
 
 	/* Collapse multiple slashes */
@@ -52,7 +52,7 @@ char *canonicalize_string(Canon_Flags canon_flags, char *p)
 	}
 
 	/* Remove trailing slashes */
-	if (canon_flags & A_END)
+	if (canonicalize_flags & A_END)
 		while (d > d_head && d[-1] == '/')
 			--d;
 
@@ -69,18 +69,18 @@ char *canonicalize_string(Canon_Flags canon_flags, char *p)
 	s= p;
 	d= p;
 
-	if (canon_flags & A_END && s[0] == '/' && s[1] == '.' && s[2] == '\0') {
-		if (canon_flags & A_BEGIN) {
+	if (canonicalize_flags & A_END && s[0] == '/' && s[1] == '.' && s[2] == '\0') {
+		if (canonicalize_flags & A_BEGIN) {
 			*++d= '\0';
 		} else {
 			*d= '\0';
 		}
 		s += 2;
-	} else if (canon_flags & A_BEGIN && canon_flags & A_END
+	} else if (canonicalize_flags & A_BEGIN && canonicalize_flags & A_END
 		   && s[0] == '.' && s[1] == '/' && s[2] == '\0') {
 		*++d= '\0';
 		s += 2;
-	} else if (canon_flags & A_BEGIN && ! (canon_flags & A_END)
+	} else if (canonicalize_flags & A_BEGIN && ! (canonicalize_flags & A_END)
 		   && s[0] == '.' && s[1] == '/' && s[2] == '\0') {
 		/* Keep a lone './' in the first component followed
 		 * by a parameter.  The meaning is that the following
@@ -89,7 +89,7 @@ char *canonicalize_string(Canon_Flags canon_flags, char *p)
 		s += 2;
 		d += 2;
 	} else {
-		while (canon_flags & A_BEGIN && s[0] == '.' && s[1] == '/') {
+		while (canonicalize_flags & A_BEGIN && s[0] == '.' && s[1] == '/') {
 			s += 2;
 		}
 		const char *m;
@@ -118,7 +118,7 @@ char *canonicalize_string(Canon_Flags canon_flags, char *p)
 	 * would be needed to resolve such cases, and systems calls are
 	 * not used in Stu for canonicalization.
 	 */
-	/* Note: This code does not take into account CANON_FLAGS -- it
+	/* Note: This code does not take into account CANONICALIZE_FLAGS -- it
 	 * behaves as if both were set */
 
 	s= dest;
@@ -161,11 +161,9 @@ char *canonicalize_string(Canon_Flags canon_flags, char *p)
 		*d= '\0';
 		assert(d <= s);
 	}
-
 #endif /* 0 */
 
 	assert(*s == '\0');
 	assert(*d == '\0');
-
 	return d;
 }

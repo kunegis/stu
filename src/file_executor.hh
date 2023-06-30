@@ -38,17 +38,14 @@ public:
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
 	virtual string debug_done_text() const {
-		return done_format(done);
+		return format_done(done);
 	}
 
 	virtual bool want_delete() const {  return false;  }
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
-	virtual string format_src() const {
-		assert(targets.size());
-		return targets.front().format_src();
-	}
+	virtual void render(Parts &, Rendering= 0) const override;
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
 		mapping_variable.insert(result_variable_child.begin(),
 					result_variable_child.end());
@@ -77,17 +74,17 @@ public:
 
 protected:
 	virtual bool optional_finished(shared_ptr <const Dep> dep_link);
-	virtual int get_depth() const {  return 0;  }
+	virtual int get_depth() const  {  return 0;  }
 
 private:
 	friend class Executor;
 
 	/* The following two functions are called from signal handlers,
 	 * and are set up and declared in job.hh.  */
-	friend void job_terminate_all();
+	friend void terminate_jobs();
 	/* Termination signal - we must send a termination signal to all
 	 * running jobs */
-	friend void job_print_jobs();
+	friend void print_jobs();
 	/* The print-all-jobs signal was received - we must print all
 	 * jobs */
 
@@ -177,5 +174,8 @@ private:
 	 * executed in the current invocation of Stu. In that case, the
 	 * transient targets are never inserted in this map.  */
 };
+
+void terminate_jobs();
+void print_jobs();
 
 #endif /* ! FILE_EXECUTOR_HH */

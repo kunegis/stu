@@ -18,7 +18,7 @@ if [ "$exitstatus" != 1 ]; then
 	exit 1
 fi
 
-if ! grep -qF "main.stu:29:5: command for 'list.2' failed" list.err ; then
+if ! grep -qF "main.stu:29:5: command for \"list.2\" failed" list.err ; then
 	echo >&2 "*** Wrong error output (A)"
 	exit 1
 fi
@@ -42,7 +42,7 @@ if [ "$exitstatus" != 1 ]; then
 	exit 1
 fi
 
-if ! grep -qF "main.stu:29:5: command for 'list.2' failed" list.err ; then
+if ! grep -qF "main.stu:29:5: command for \"list.2\" failed" list.err ; then
 	echo >&2 "*** Wrong error output (B1)"
 	exit 1
 fi
@@ -71,7 +71,7 @@ if [ "$exitstatus" != 1 ]; then
 	exit 1
 fi
 
-if ! grep -qF "main.stu:29:5: command for 'list.2' failed" list.err ; then
+if ! grep -qF "main.stu:29:5: command for \"list.2\" failed" list.err ; then
 	echo >&2 "*** Wrong error output (C1)"
 	exit 1
 fi
@@ -101,7 +101,7 @@ if [ "$exitstatus" != 1 ]; then
 	exit 1
 fi
 
-if ! grep -qF "main.stu:29:5: command for 'list.2' failed" list.err ; then
+if ! grep -qF "main.stu:29:5: command for \"list.2\" failed" list.err ; then
 	echo >&2 "*** Wrong error output (D1)"
 	exit 1
 fi

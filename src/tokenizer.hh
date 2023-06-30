@@ -2,8 +2,6 @@
 #define TOKENIZER_HH
 
 /*
- * Parsing Stu source code into an array of tokens.
- *
  * On errors, these functions print a message and throw integer error codes.
  */
 
@@ -38,13 +36,13 @@ public:
 	 * reported as an error, and the function just returns.
 	 */
 	{
-		vector <Trace> traces;
+		vector <Backtrace> backtraces;
 		vector <string> filenames;
 		set <string> includes;
 		parse_tokens_file(tokens,
 				  context,
 				  place_end, filename,
-				  traces, filenames, includes,
+				  backtraces, filenames, includes,
 				  place_diagnostic,
 				  fd,
 				  allow_enoent);
@@ -62,40 +60,32 @@ public:
 	 * identical to parse_tokens_file().  */
 
 private:
-
 	/* Stacks of included files */
-	vector <Trace> &traces;
+	vector <Backtrace> &backtraces;
 	vector <string> &filenames;
 
 	set <string> &includes;
 
+	Place place_base;
 	/* The place where the tokenizer is tokenizing.  The line and
 	 * column numbers are modified accordingly -- only the type and
 	 * text is used.  */
-	Place place_base;
 
-	size_t line;
-	/* Line number */
-
-	const char *p_line;
-	/* Beginning of current line */
-
-	const char *p;
-	/* Current position */
-
-	const char *const p_end;
-	/* End of input */
+	size_t line; /* Line number */
+	const char *p_line; /* Beginning of current line */
+	const char *p; /* Current position */
+	const char *const p_end; /* End of input */
 
 	Environment environment= E_WHITESPACE;
 	/* For the next token */
 
-	Tokenizer(vector <Trace> &traces_,
+	Tokenizer(vector <Backtrace> &backtraces_,
 		  vector <string> &filenames_,
 		  set <string> &includes_,
 		  const Place &place_base_,
 		  const char *p_,
 		  size_t length)
-		:  traces(traces_),
+		:  backtraces(backtraces_),
 		   filenames(filenames_),
 		   includes(includes_),
 		   place_base(place_base_),
@@ -103,7 +93,7 @@ private:
 		   p_line(p_),
 		   p(p_),
 		   p_end(p_ + length)
-	{ }
+	{  }
 
 	void parse_tokens(vector <shared_ptr <Token> > &tokens,
 			  Context context,
@@ -148,11 +138,13 @@ private:
 		return Place(place_base.type, place_base.text, line, p - p_line);
 	}
 
+	string current_mbchar() const;
+
 	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				      Context context,
 				      Place &place_end,
 				      string filename,
-				      vector <Trace> &traces,
+				      vector <Backtrace> &backtraces,
 				      vector <string> &filenames,
 				      set <string> &includes,
 				      const Place &place_diagnostic,

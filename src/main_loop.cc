@@ -44,15 +44,14 @@ void main_loop(const vector <shared_ptr <const Dep> > &deps)
 		}
 	}
 
-	/* A build error is only thrown when option_keep_going is
-	 * not set */
+	/* A build error is only thrown when option_keep_going is not set */
 	catch (int e) {
 		assert(! option_k);
 		assert(e >= 1 && e <= 4);
 		/* Terminate all jobs */
 		if (File_Executor::executors_by_pid_size) {
 			print_error_reminder("Terminating all jobs");
-			job_terminate_all();
+			terminate_jobs();
 		}
 		assert(e > 0 && e < ERROR_FATAL);
 		error= e;

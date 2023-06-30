@@ -1,2 +1,2 @@
-main.stu:4:4: cyclic dependency: 'A' depends on 'B'
-main.stu:5:5: 'B' depends on [A]
+main.stu:4:4: cyclic dependency: "A" depends on "B"
+main.stu:5:5: "B" depends on [A]

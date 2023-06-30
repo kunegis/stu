@@ -15,22 +15,34 @@ unsigned flag_get_index(char c)
 	}
 }
 
-string flags_format(Flags flags)
+bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 {
+	TRACE_FUNCTION(SHOW, show_flags);
+	if (!(rendering & R_SHOW_FLAGS))
+		return false;
 	string ret;
-	for (unsigned i= 0;  i < C_ALL;  ++i)
+	for (unsigned i= 0; i < C_ALL; ++i)
 		if (flags & (1 << i)) {
 			ret += flags_chars[i];
 		}
-	if (! ret.empty())
-		ret= '-' + ret;
-	return ret;
+	if (ret.empty())
+		return false;
+	ret= '-' + show(ret);
+	parts.append_operator(ret);
+	return true;
 }
 
-string done_format(Done done)
+string show_flags(Flags flags, Style style)
+{
+	Parts parts;
+	render_flags(flags, parts);
+	return show(parts, style);
+}
+
+string format_done(Done done)
 {
 	char ret[7]= "[0000]";
-	for (int i= 0;  i < 4;  ++i)
+	for (int i= 0; i < 4; ++i)
 		ret[1+i] |= 1 & done << i;
 	return ret;
 }

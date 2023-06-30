@@ -1,1 +1,1 @@
-main.stu:5:5: invalid character '\001'
+main.stu:4:5: invalid character "\x01"

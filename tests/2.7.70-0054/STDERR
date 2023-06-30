@@ -1,0 +1,2 @@
+main.stu:3:13: character "é" must not appear
+main.stu:3:10: in parameter started by ${

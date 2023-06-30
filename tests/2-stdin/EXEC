@@ -1,16 +1,16 @@
 #! /bin/sh
 #
-# Test that '-f -' makes Stu read standard input as an input file. 
+# Test that '-f -' makes Stu read standard input as an input file.
 #
 
-../../bin/stu.test -f - >list.out 2>list.err <<EOF 
+../../bin/stu.test -f - >list.out 2>list.err <<EOF
 A: B { cp B A }
 >B { echo correct }
 EOF
 exitstatus=$?
 
 [ "$exitstatus" = 0 ] || {
-	echo >&2 "*** Expected exit status 0, not '$exitstatus'" 
+	echo >&2 "*** Expected exit status 0, not '$exitstatus'"
 	exit 1
 }
 

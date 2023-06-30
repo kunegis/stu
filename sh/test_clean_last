@@ -1,0 +1,10 @@
+#! /bin/sh
+
+ret=0
+
+grep -F -n XX''X NEWS man/stu.1.in src/*.cc src/*.hh sh/* && {
+	echo >&2 "*** Certain files must not contain 'XX""X'"
+	ret=1
+}
+
+exit "$ret"

@@ -1,3 +1,3 @@
-main.stu:5:2: command for 'A' failed with exit status 1
-../../bin/stu.test: Removing file 'A' because command failed
-../../bin/stu.test: Removing file 'B' because command failed
+main.stu:5:2: command for "A" failed with exit status 1
+../../bin/stu.test: Removing file "A" because command failed
+../../bin/stu.test: Removing file "B" because command failed

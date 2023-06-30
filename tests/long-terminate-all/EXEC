@@ -9,7 +9,7 @@ pid=$!
 echo sleep 3
 sleep 3 || exit 2
 kill "$pid" || exit 2
-wait "$!"
+wait "$!" 2>/dev/null
 exitstatus=$?
 
 [ "$exitstatus" != 0 ] || {

@@ -1,0 +1,2 @@
+main.stu:1:4: there must not be a second output redirection >@B
+main.stu:1:1: shadowing previous output redirection >A

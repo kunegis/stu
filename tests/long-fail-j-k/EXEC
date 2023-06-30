@@ -17,13 +17,13 @@ exitstatus=$?
 }
 
 #
-# (2) With -k 
+# (2) With -k
 #
 
 echo RUN '(2)'
 
 rm -f ? || exit 2
- 
+
 if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" != 0 ]; then
 	echo >&2 "*** There are still processes running from previously (2b)"
 	exit 1
@@ -56,7 +56,7 @@ if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" != 0 ]; then
 	exit 1
 fi
 
-wait "$pid"
+wait "$pid" 2>/dev/null
 exitstatus=$?
 
 #
@@ -75,13 +75,13 @@ if [ "$exitstatus" != 1 ]; then
 fi
 
 #
-# (4) With -j2 -k 
+# (4) With -j2 -k
 #
 
 echo RUN '(4)'
 
 rm -f ? || exit 2
- 
+
 ../../bin/stu.test -j2 -k >list.out 2>list.err &
 pid=$!
 

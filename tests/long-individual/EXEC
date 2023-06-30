@@ -21,7 +21,7 @@ grep -qF 'echo bbb' list.err && {
 	exit 1
 }
 
-wait "$pid"
+wait "$pid" 2>/dev/null
 exitstatus=$?
 
 [ "$exitstatus" = 0 ] || {

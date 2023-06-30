@@ -8,7 +8,7 @@ rm -f ?
 # Build for the first time
 #
 
-../../bin/stu.test 
+../../bin/stu.test
 
 [ -h W ] || {
 	echo >&2 "*** 'W' must be a symbolic link"
@@ -28,6 +28,6 @@ touch D
 # Build for a second time
 #
 
-../../bin/stu.test 
+../../bin/stu.test
 
 exit 0

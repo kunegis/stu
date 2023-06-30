@@ -1,2 +1,2 @@
-main.stu:7:3: expected the file without command and without dependencies 'C' to exist, but it does not
-main.stu:3:6: 'B' is needed by 'A'
+main.stu:7:3: expected the file without command and without dependencies "C" to exist, but it does not
+main.stu:3:6: "B" is needed by "A"

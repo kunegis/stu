@@ -1,3 +1,3 @@
-Command line argument: multiple minimal matching rules for target 'list.xyz'
-main.stu:7:1: rule with target 'list.${name}'
-main.stu:12:1: rule with target 'list.${arg}'
+Command line argument: multiple minimal matching rules for target "list.xyz"
+main.stu:7:1: rule with target list.${name}
+main.stu:12:1: rule with target list.${arg}

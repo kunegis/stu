@@ -1,6 +1,6 @@
 #! /bin/sh
 
-kill_sleeps() 
+kill_sleeps()
 {
 	for pid in $(ps -fA | grep 31415926535 | grep -v grep | sed -e 's/^[^[:space:]]\{1,\}[[:space:]]\{1,\}\([0-9]\{1,\}\)[[:space:]].*$/\1/') ; do
 		echo "$0:  Killing PID '$pid'"
@@ -23,16 +23,16 @@ kill_sleeps
 
 # Make sure no process is running
 if [ "$(echo $(ps -fA | grep 31415926535 | grep -v grep | wc -l))" != 0 ]; then
-	echo >&2 "$0:  *** There is already a process running:" 
+	echo >&2 "$0:  *** There is already a process running:"
 	ps -fA | grep 31415926535 | grep -v grep >&2
 	exit 1
 fi
 
-# Start Stu 
+# Start Stu
 ../../bin/stu.test -k -j99 >list.out 2>list.err &
 PID=$!
 
-# Sleep so that there is time for Stu to start all processes  
+# Sleep so that there is time for Stu to start all processes
 echo sleep 1
 sleep 1 || exit 2
 
@@ -45,13 +45,13 @@ sleep 1 || exit 2
 
 # Make sure no process is still running
 if [ "$(echo $(ps -fA | grep 31415926535 | grep -v grep | wc -l))" != 0 ]; then
-	echo >&2 "$0:  *** There is still a process running:" 
+	echo >&2 "$0:  *** There is still a process running:"
 	ps -fA | grep 31415926535 | grep -v grep >&2
 	exit 1
 fi
 
 # Make sure all files were deleted
-for file in A B C D E F G H I J K L M N O P Q R S T U V W X Y Z ; 
+for file in A B C D E F G H I J K L M N O P Q R S T U V W X Y Z ;
 do
 	if [ -r $file ]; then
 		echo >&2 "$0:  *** File '$file' should not have been created"

@@ -183,7 +183,7 @@ grep -qFx 'Targets are not up to date' list.err || {
 
 rm -f P || exit 2
 touch Q || exit 2
-touch R || exit 2 
+touch R || exit 2
 
 ../../bin/stu.test -q >list.out 2>list.err
 exitstatus=$?

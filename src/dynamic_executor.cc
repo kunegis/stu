@@ -99,9 +99,9 @@ bool Dynamic_Executor::want_delete() const
 	return to <Plain_Dep> (Dep::strip_dynamic(dep)) == nullptr;
 }
 
-string Dynamic_Executor::format_src() const
+void Dynamic_Executor::render(Parts &parts, Rendering rendering) const
 {
-	return dep->format_src();
+	dep->render(parts, rendering);
 }
 
 void Dynamic_Executor::notify_result(shared_ptr <const Dep> d,
@@ -116,13 +116,13 @@ void Dynamic_Executor::notify_result(shared_ptr <const Dep> d,
 	if (flags & F_RESULT_NOTIFY) {
 		vector <shared_ptr <const Dep> > deps;
 		source->read_dynamic(to <const Plain_Dep> (d), deps, dep, this);
-		for (auto &j:  deps) {
+		for (auto &j: deps) {
 			shared_ptr <Dep> j_new= Dep::clone(j);
 			/* Add -% flag */
 			j_new->flags |= F_RESULT_COPY;
 			/* Add flags from self */
 			j_new->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC);
-			for (unsigned i= 0;  i < C_PLACED;  ++i) {
+			for (unsigned i= 0; i < C_PLACED; ++i) {
 				if (j_new->get_place_flag(i).empty() &&
 				    ! dep->get_place_flag(i).empty())
 					j_new->set_place_flag(i, dep->get_place_flag(i));

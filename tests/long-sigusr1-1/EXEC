@@ -3,7 +3,7 @@
 rm -f ? list.* || exit 2
 
 # Use the silent option (-s) to avoid false positives, i.e., that the
-# greps find the string '@x' erroneously. 
+# greps find the string '@x' erroneously.
 ../../bin/stu.test -s -j6 >list.out 2>list.err &
 pid="$!"
 
@@ -15,7 +15,7 @@ kill -s USR1 "$pid" || {
 	exit 1
 }
 
-wait "$pid" || {
+wait "$pid" 2>/dev/null || {
 	echo >&2 '*** Wait'
 	exit 1
 }
@@ -43,7 +43,7 @@ grep -qF " list.M" list.out || {
 	exit 1
 }
 
-grep -qF " 'list.File 123'" list.out || {
+grep -qF " \"list.File 123\"" list.out || {
 	echo >&2 '*** Output list.File 123 (1)'
 	echo >&2 stdout:
 	echo >&2 ________________

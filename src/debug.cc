@@ -7,15 +7,17 @@ Debuggable::~Debuggable()  {  }
 
 void Debug::print(const Debuggable *d, string text)
 {
+	if (! option_d)
+		return;
 	if (d == nullptr) {
 		print("", text);
 	} else {
 		if (debuggables.size() > 0 &&
 		    debuggables[debuggables.size() - 1] == d) {
-			print(d->format_src(), text);
+			print(show(d, S_DEBUG), text);
 		} else {
 			Debug debug(d);
-			print(d->format_src(), text);
+			print(show(d, S_DEBUG), text);
 		}
 	}
 }

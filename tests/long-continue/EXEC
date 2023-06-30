@@ -2,7 +2,7 @@
 
 doo() { echo "$@" ; "$@" ; }
 
-for CMD in "" "-j2" "-j 3" ; do 
+for CMD in "" "-j2" "-j 3" ; do
 
 	doo rm -f ?
 

@@ -134,8 +134,7 @@ private:
 	/* Return null when nothing was parsed */
 
 	bool parse_expression(shared_ptr <const Dep> &ret,
-			      Place_Name &place_name_input,
-			      Place &place_input,
+			      Place_Name &place_name_input, Place &place_input,
 			      const vector <shared_ptr <const Place_Param_Target> > &targets);
 	/* Parse an expression.  Write the parsed expression into RET.
 	 * RET must be empty when called.  Return whether an expression
@@ -143,14 +142,12 @@ private:
 	 * messages.  */
 
 	shared_ptr <const Dep> parse_variable_dep
-	(Place_Name &place_name_input,
-	 Place &place_input,
+	(Place_Name &place_name_input, Place &place_input,
 	 const vector <shared_ptr <const Place_Param_Target> > &targets);
 	/* A variable dependency */
 
 	shared_ptr <const Dep> parse_redirect_dep
-	(Place_Name &place_name_input,
-	 Place &place_input,
+	(Place_Name &place_name_input, Place &place_input,
 	 const vector <shared_ptr <const Place_Param_Target> > &targets);
 
 	/* If the next token is of type T, return it, otherwise return

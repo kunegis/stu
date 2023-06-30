@@ -16,14 +16,14 @@
 # * (5) touch B
 # * stu
 #	* A is rebuilt
-# 
+#
 
 set -e
 
 rm -f ?
 
 #
-# (1) 
+# (1)
 #
 
 ../../bin/stu.test 2>list.err

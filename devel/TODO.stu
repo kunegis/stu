@@ -1,9 +1,7 @@
 #
-# Have an option (-I) to list patterns for all targets that can be regenerated,
-# useful for .gitignore and similar lists.
-# * Add it to option list.
-# * What to do:  read rules like always.  For all file targets that have a
-# command or are copy or content commands, output a line.
+# Test that there are no carriage returns in the source.  (and other control codes)
+# Test that there are no backticks in shell scripts.
+# Test that all tabs are at the beginning of lines.
 #
 
 #
@@ -42,6 +40,9 @@
 # symlink to the directory in question.  Other cases are even worse,
 # e.g., having environment variables with lists of things in them.
 #
+# On the other hand, this will be useful after extended inclusion is
+# implemented, to pass paths to Stu libraries.
+#
 
 #
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
@@ -53,4 +54,111 @@
 # own existence and their own timestamp.  This should not be the default
 # as the current behaviour is more often useful, but should be available
 # as a possibility, probably using a new flag (-L).
+#
+
+#
+# File import
+#
+
+# Import all rules from subdirectory; will prepend the directory name to
+# all targets.  Rules from there will be executed from within the
+# directory as current directory.  If using 'import', the meaning of
+# all these are equivalent:
+% import src/main.stu
+% import src/
+% import src
+% include -d src/main.stu
+% include -d src/
+% include -d src
+# The flag -d can be something else.
+
+# - What about transient targets imported in that way.  Do we
+#   prepend a directory to them?
+%import dir   # contains:   @all:  ...;
+# gets converted to:       @dir/all:  ...;
+# or to:                   dir/@all:  ...;  # ???
+
+#
+# Make install:  test local install in ~
+#
+
+#
+# Investigate -f options in GCC.
+#
+
+#
+# Check out that -Pq can work as a "lint mode"
+#
+
+#
+# Color in -P output
+#
+
+#
+# Color in the usual output "Successfully built X" and the error equivalent
+#
+
+#
+# When doing %include or %import, allow to pass environment variables.
+#
+
+#
+# Does it make sense to have a way to set environment variables for all
+# commands?  It would open us up to many additional questions, and
+# potentially some Make-like anti-patterns.  In general, Stu directives
+# are prone to implement anti-patterns, as what they do is global.
+#
+
+% set PATH /usr/local/bin
+
+#
+# Regex patterns in parameters.  Not sure about the '|' syntax.
+#
+
+list.${name|[A-Z].*} # Matches uppercase names
+
+#
+# Test make install using Docker.
+#
+
+#
+# gcc -fanalyzer
+#
+
+#
+# Compilation mode like ndebug but non-stripped.  Check output of nm.
+#
+
+#
+# Make "override" mandatory after all overriding functions.
+#
+
+#
+# Install:  use mkdir -p for /usr/local/man/man1/ and other directories.
+#
+
+#
+# Don't use "using namespace std".  Instead, only use string.
+#
+
+#
+# sh/tty:  Also test the case where stdout is a tty and stderr is not, and vice
+# versa.
+#
+
+#
+# A new flag for dynamic dependencies, next to -n and -0.  It represents the
+# default behavior (full Stu syntax), and may become useful in the next major
+# version of Stu when -n becomes the default.
+#
+
+#
+# Use string_view where appropriate. (needs C++17).
+#
+
+#
+# Try out further sanitizers (some may need a newer GCC)
+#    -fsanitize=address      // not used because of false positives (due to Execution caching)
+#    -fsanitize=leak         // (Execution caching)
+#    <others>
 #

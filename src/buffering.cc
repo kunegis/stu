@@ -14,7 +14,7 @@ void init_buffering()
 	/* Note:  Setting the buffering like this is only possible if we
 	 * have not written anything yet.  */
 	if (0 != setvbuf(stdout, nullptr, _IOLBF, 0)) {
-		print_error_system("setvbuf");
+		print_errno("setvbuf");
 		exit(ERROR_FATAL);
 	}
 

@@ -140,6 +140,8 @@ public:
 		(void) result_variable_child;
 	}
 
+	virtual void render(Parts &, Rendering= 0) const= 0;
+
 	static bool hide_out_message;
 	/* Whether to show a STDOUT message at the end */
 
@@ -147,8 +149,7 @@ public:
 	/* Whether the STDOUT message is not "Targets are up to date" */
 
 	static Rule_Set rule_set;
-	/* Set once before calling main_loop().  Unchanging during
-	 * the whole call to main_loop().  */
+	/* Set before calling main_loop() */
 
 	static Target get_target_for_cache(Target target);
 	/* Get the target value used for caching.  I.e, return TARGET
@@ -249,7 +250,7 @@ protected:
 			return param_rule->place;
 	}
 
-	virtual ~Executor() = default;
+	virtual ~Executor()= default;
 
 	virtual int get_depth() const= 0;
 	/* -1 when undefined as in concatenated executors and the root

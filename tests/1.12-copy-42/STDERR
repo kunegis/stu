@@ -1,2 +1,2 @@
-main.stu:4:1: expected a filename, a flag, or '{'
-main.stu:3:3: after '='
+main.stu:4:1: expected a filename, a flag, or {
+main.stu:3:3: after =

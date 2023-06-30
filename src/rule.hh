@@ -9,8 +9,7 @@
 #include "token.hh"
 
 class Rule
-/* A rule.  The class Rule allows parameters; there is no "unparametrized rule"
- * class.  */
+/* The class Rule allows parameters; there is no "unparametrized rule" class. */
 {
 public:
 	vector <shared_ptr <const Place_Param_Target> > place_param_targets;
@@ -86,7 +85,12 @@ public:
 		return place_param_targets.front()->place_name.get_n() != 0;
 	}
 
-	string format_out() const;
+	/* A rule in which the targets must exist */
+	bool must_exist() const {
+		return command == nullptr && !is_hardcode && !is_copy;
+	}
+
+	void render(Parts &, Rendering= 0) const;
 	/* Format the rule, as for the -P or -d options */
 
 	void check_unparametrized(shared_ptr <const Dep> dep,
@@ -100,17 +104,22 @@ public:
 		return place_param_targets.front()->place_name.get_parameters();
 	}
 
+	void canonicalize();
+	/* In-place canonicalization of the rule.  This applies to the
+	 * targets of the rule.  Called by Rule_Set::add(). */
+
 	static shared_ptr <const Rule> instantiate(shared_ptr <const Rule> rule,
 						   const map <string, string> &mapping);
 	/* Return the same rule as RULE, but with parameters having been
 	 * replaced by the given MAPPING.
 	 * We pass THIS as PARAM_RULE explicitly so we can return it
 	 * itself when it is unparametrized.  */
-
-	void canonicalize();
-	/* In-place canonicalization of the rule.  This applies to the
-	 * targets of the rule.  Called by Rule_Set::add(). */
 };
+
+void render(shared_ptr <const Rule> rule, Parts &parts, Rendering rendering= 0)
+{
+	rule->render(parts, rendering);
+}
 
 class Rule_Set
 /* A set of rules.  They can be both parametrized and unparametrized. */
@@ -134,9 +143,8 @@ public:
 	 * errors, in which case PARAM_RULE is never set.  PLACE is the place of
 	 * the dependency; used in error messages.  */
 
-	void print() const;
-	/* Print the rule set to standard output, as used by the -P and
-	 * -d options.  */
+	void print_for_option_dP() const;
+	void print_for_option_I() const;
 
 private:
 	unordered_map <Target, shared_ptr <const Rule> > rules_unparam;

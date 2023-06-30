@@ -1,8 +1,6 @@
-Flags in Stu apply to individual dependencies, and have a syntax
-reminiscent of shell options.  More precisely, they can be thought as
-applying to each edge in the dependency graph.
-
-== List of flags ==
+Flags are an element syntax in Stu script that look like options in the shell.
+They apply to individual dependencies. They can be thought as applying to each
+edge in the dependency graph.
 
 -o 	Optional dependency
 -p	Persistent dependency

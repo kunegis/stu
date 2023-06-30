@@ -1,1 +1,1 @@
-main.stu:2:5: no rule to build 'jshdjshd//.//.//../B', needed by 'A'
+main.stu:2:5: no rule to build "jshdjshd//.//.//../B", needed by "A"

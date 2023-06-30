@@ -23,12 +23,10 @@ class Token
 /* A token.  This class is mainly used through unique_ptr/shared_ptr.  */
 {
 public:
-
 	Environment environment;
 
 	Token(Environment environment_)
-		:  environment(environment_)
-	{  }
+		:  environment(environment_)  {  }
 
 	virtual ~Token() = default;
 
@@ -39,49 +37,38 @@ public:
 	virtual const Place &get_place_start() const= 0;
 	/* The starting place.  Always the first character. */
 
-	virtual string format_start_err() const= 0;
-	/* Formatting of the starting character of character sequence */
+	virtual void render(Parts &, Rendering= 0) const= 0;
+	/* Render only the start of the token if it is very long */
 };
 
+void render(shared_ptr <const Token> token, Parts &parts, Rendering rendering= 0)
+{
+	token->render(parts, rendering);
+}
+
 class Operator
-/* An operator, e.g. ':', '[', etc.  Operators are all single
- * characters.  */
 	:  public Token
 {
 public:
+	const char op;
 	const Place place;
 
-	const char op;
-	/* The operator as a character, e.g. ':', '[', etc.  */
-
 	Operator(char op_, Place place_, Environment environment_)
-		:  Token(environment_),
-		   place(place_),
-		   op(op_)
-	{
+		:  Token(environment_), op(op_), place(place_) {
 		assert(! isalnum(op_));
 	}
 
-	const Place &get_place() const {
-		return place;
-	}
-
-	const Place &get_place_start() const {
-		return place;
-	}
-
-	string format_start_err() const {
-		return char_format_err(op);
-	}
-
-	string format_long_err() const;
+	const Place &get_place() const  {  return place;  }
+	const Place &get_place_start() const  {  return place;  }
+	void render(Parts &, Rendering= 0) const;
+	void render_long(Parts &, Rendering= 0) const;
+	string show_long(Style= S_DEFAULT) const;
 };
 
 class Flag_Token
 	:  public Token
 {
 public:
-
 	const Place place;
 	/* The place of the letter */
 
@@ -118,9 +105,7 @@ public:
 		return place_start;
 	}
 
-	string format_start_err() const {
-		return char_format_err('-');
-	}
+	void render(Parts &, Rendering= 0) const;
 };
 
 class Name_Token
@@ -144,8 +129,8 @@ public:
 		return Place_Name::place;
 	}
 
-	string format_start_err() const {
-		return Place_Name::format_err();
+	void render(Parts &parts, Rendering rendering= 0) const {
+		Place_Name::render(parts, rendering);
 	}
 };
 
@@ -163,7 +148,6 @@ private:
 	 * Generated on demand, and therefore declared as mutable.  */
 
 public:
-
 	const string command;
 	/* The command as written in the input; contains newlines */
 
@@ -186,8 +170,8 @@ public:
 		return place_start;
 	}
 
-	string format_start_err() const {
-		return char_format_err('{');
+	void render(Parts &parts, Rendering= 0) const {
+		parts.append_operator("{");
 	}
 
 	const vector <string> &get_lines() const;

@@ -30,7 +30,7 @@ EOF
 			echo >&2 "*** $0:  Incorrect content of file 'A'"
 			error=1
 		fi
-	else 
+	else
 		if ! grep -qF 'is incompatible with' list.err ; then
 			echo >&2 "*** $0:  Invalid error output"
 			error=1

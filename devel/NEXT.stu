@@ -112,3 +112,8 @@ V {
 # Make the %version mandatory in every file, to avoid parsing a file of
 # the wrong Stu version.
 #
+
+#
+# For dynamic dependencies, the flag -n should be the default, rather than allowing any
+# Stu syntax.
+#

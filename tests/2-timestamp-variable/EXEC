@@ -1,10 +1,10 @@
 #! /bin/sh
 
-set -e 
+set -e
 
 rm -f ? list.*
 
-../../bin/stu.test 
+../../bin/stu.test
 
 grep -qF CORRECT A || { echo >&2 "*** (1) A" ; exit 1 ; }
 

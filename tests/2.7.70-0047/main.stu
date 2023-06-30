@@ -1,0 +1,2 @@
+# succeeds because the command is not executed
+A { exit 1 ; }

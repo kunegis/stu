@@ -1,6 +1,6 @@
 #! /bin/sh
 
-rm -f ? || exit 1 
+rm -f ? || exit 1
 
 ../../bin/stu.test -k >list.out 2>list.err
 exitstatus=$?

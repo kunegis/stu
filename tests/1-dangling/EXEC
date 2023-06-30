@@ -3,7 +3,7 @@
 rm -f ? || exit 2
 ln -s W B || exit 2
 
-echo ../../bin/stu.test 
+echo ../../bin/stu.test
 ../../bin/stu.test >list.out 2>list.err
 exitstatus=$?
 

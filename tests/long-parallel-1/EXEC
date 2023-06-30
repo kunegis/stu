@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# This test is also used by "make prof". 
+# This test is also used by "make prof".
 #
 
 rm -f ? list.* || exit 2
@@ -16,6 +16,6 @@ sleep 3 || exit 2
 	exit 1
 }
 
-wait "$pid"
+wait "$pid" 2>/dev/null
 
 exit 0

@@ -1,1 +1,1 @@
-main.stu:1:6: no rule to build 'XYZ', needed by 'A'
+main.stu:1:6: no rule to build "XYZ", needed by "A"

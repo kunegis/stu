@@ -11,15 +11,15 @@
 
 /*
  * Format of error output:  There are two types of error output lines:
- * error messages and traces.  Error messages are of the form
+ * error messages and backtraces.  Error messages are of the form
  *
  *         $0: *** $MESSAGE
  *
- * and traces are of the form
+ * and backtraces are of the form
  *
  *         $FILENAME:$LINE:$COLUMN: $MESSAGE
  *
- * Traces are used when it is possible to refer to a specific location
+ * Backtraces are used when it is possible to refer to a specific location
  * in the input files (or command line, etc.).  Error messages are
  * avoided:  all errors should be traced back to a place in the source if
  * possible.  But sometimes they must be used.
@@ -28,10 +28,10 @@
 /*
  * Wording of messages:
  *
- * Error messages begin with uppercase letters; trace messages with
- * lowercase letters, as per the GNU Coding Standards.  Filenames and
- * operator names are quoted in messages using single quotes.  Messages
- * for neither type of error output lines are terminated by periods.
+ * Error messages begin with uppercase letters; backtrace messages with
+ * lowercase letters, as per the GNU Coding Standards.  Filenames are quotes
+ * with double quotes.  Operators and flags are not quoted.   Messages for
+ * neither type of error output lines are terminated by periods.
  *
  * Typical forms of error messages are:
  *
@@ -47,11 +47,11 @@
  * Use "expected TOKEN" instead of "missing TOKEN".  That's because
  * some tokens in the given list may be optional, making the "missing"
  * phrasing confusing, as it would imply that the token is mandatory.
- * Include definite or indefinite articles after "expected" to avoid
+ * Include a definite or indefinite article after "expected" to avoid
  * interpreting "expected" as an adjective.
  *
  * "not BBB" mentions the invalid token.  If end-of-file is encountered,
- * the "not BBB" part is not used.
+ * the "not BBB" part is omitted.
  *
  * Use "must not" rather than "cannot" or "shall" in error messages when
  * something must be present, but is erroneous, e.g., "filename must not
@@ -61,14 +61,14 @@
  *
  * Operators and other syntax elements are often introduced by the word
  * "using" rather than "with", etc., e.g., "expected a filename after
- * input redirection using '<'".  We always mention both the operator as
+ * input redirection using "<"".  We always mention both the operator as
  * well as its function.
  *
  * When referring to dependencies and targets, we don't use the words
- * "dependency" or "target".  For instance, just write "'X' is needed by
- * 'A'" instead of "dependency 'X' is needed by 'A'".  The exception is
+ * "dependency" or "target".  For instance, just write ""X" is needed by
+ * "A"" instead of "dependency "X" is needed by "A"".  The exception is
  * when the word "dependency" is qualified, e.g. "dynamic dependency [X]
- * must not have input redirection using '<'", or when referring
+ * must not have input redirection using "<"", or when referring
  * specifically to a dependency with respect to a target.
  *
  * But remember that in general it is better to state what what expected
@@ -144,7 +144,7 @@ constexpr int ERROR_FORK_CHILD= 127;
 void print_error(string message);
 /* Print an error without a place */
 
-void print_error_system(string message);
+void print_errno(string message);
 /* Like perror(), but use color.  MESSAGE must not contain color codes. */
 
 void print_error_reminder(string message);
@@ -153,10 +153,10 @@ void print_error_reminder(string message);
  * the user of the error.  Since the error as already been output, use
  * the color of warnings.  */
 
-string system_format(string text);
-/* System error message.  Includes the given message, and the
- * ERRNO-based text.  Cf. perror().  Color is not added.  The output of
- * this function is used as input to one of the print_*() functions.  */
+string format_errno(string text);
+/* Includes the given message, and the ERRNO-based text.  Cf. perror().  Color
+ * is not added.  The output of this function is used as input to one of the
+ * print_*() functions.  */
 
 void print_out(string text);
 /* Print a message to standard output in "print" colors.  This is used
@@ -236,24 +236,22 @@ public:
 	const char *get_filename_str() const;
 
 	const Place &operator<<(string message) const;
-	/* Print the trace to STDERR as part of an error message.  The
-	 * trace is printed as a single line, which can be parsed by
+	/* Print the backtrace to STDERR as part of an error message.  The
+	 * backtrace is printed as a single line, which can be parsed by
 	 * tools, e.g. the compile mode of Emacs.  Line and column
 	 * numbers are output as 1-based values.  Return THIS.  */
 
 	void print(string message,
-		   const char *color,
-		   const char *color_word) const;
-	/* Print a message.  The COLOR arguments determine whether this
-	 * is an error or a warning.  */
+		   const char *color_on,
+		   const char *color_off) const;
 
 	string as_argv0() const;
 	/* The string used for the argv[0] parameter of child processes.
 	 * Does not include color codes.  Returns "" when no special
 	 * string should be used.  */
 
-	bool empty() const {  return type == Type::EMPTY;  }
-	void clear() {  type= Type::EMPTY;  }
+	bool empty() const  {  return type == Type::EMPTY;  }
+	void clear()  {  type= Type::EMPTY;  }
 
 	/* Places are comparable, and are used as keys in maps */
 	bool operator==(const Place &place) const;
@@ -265,27 +263,23 @@ public:
 	 * Place() is an empty place.  */
 };
 
-class Trace
-/*
- * A place along with a message.  This class is only used when traces
+class Backtrace
+/* A place along with a message.  This class is only used when backtraces
  * cannot be printed immediately.  Otherwise, Place::operator<<() is
- * called directly.
- */
+ * called directly.  */
 {
 public:
 	Place place;
 
 	string message;
-	/* The message associated with it.  This may be "".
-	 * When the trace is printed, it must not be empty, and not begin
-	 * with an upper-case letter.  */
+	/* May be "".  When the backtrace is printed, it must not be empty,
+	 * and must not begin with an upper-case letter.  */
 
-	Trace(const Place &place_, string message_)
-		:  place(place_), message(message_)
-	{  }
+	Backtrace(const Place &place_, string message_)
+		:  place(place_), message(message_)  {  }
 
 	void print() const
-	/* Print the trace to STDERR as part of an error message; see
+	/* Print the backtrace to STDERR as part of an error message; see
 	 * Place::operator<< for format information.  */
 	{
 		place << message;
@@ -293,13 +287,13 @@ public:
 };
 
 class Printer
-/* Interface that has the << operator like Place.  Only used at one
- * place for now.  The parameter MESSAGE may be "" to print a generic
- * error message (i.e., only the traces).  */
+/* Interface that has the << operator like Place.  Only used at one place for
+ * now.  The parameter MESSAGE may be "" to print a generic error message (i.e.,
+ * only the backtraces).  */
 {
 public:
 	virtual void operator<<(string message) const= 0;
-	virtual ~Printer() = default;
+	virtual ~Printer()= default;
 };
 
 void print_warning(const Place &place, string message);

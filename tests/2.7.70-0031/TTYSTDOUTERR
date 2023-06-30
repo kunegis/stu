@@ -1,0 +1,3 @@
+[31m[1mmain.stu[22m:1:11[m: there must not be a second input redirection [1m$[<C.${x}][22m
+[31m[1mmain.stu[22m:1:6[m: shadowing previous input redirection [1m<B[22m
+[31m[1mmain.stu[22m:1:1[m: for target [1mA[22m

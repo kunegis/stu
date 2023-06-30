@@ -6,7 +6,7 @@ rm -f ? || exit 2
 # Step 1:  build A:  everything is built
 #
 
-../../bin/stu.test 
+../../bin/stu.test
 exitstatus=$?
 
 if [ "$exitstatus" != 0 ] ; then

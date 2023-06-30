@@ -1,1 +1,1 @@
-main.stu:14:5: no rule to build 'list.abcd', needed by 'A'
+main.stu:14:5: no rule to build "list.abcd", needed by "A"

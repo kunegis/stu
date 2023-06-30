@@ -1,0 +1,3 @@
+>A { echo CORRECT ; }
+
+B: list."\";

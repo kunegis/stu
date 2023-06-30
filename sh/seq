@@ -8,7 +8,7 @@
 # 	$0 $n
 #
 # STDOUT
-#       $n lines, each containing "1"
+#       $n lines, containing increasing integers starting at "1"
 #
 
 n=$1

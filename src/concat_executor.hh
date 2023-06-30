@@ -26,14 +26,16 @@ public:
 	/* DEP_ is normalized.  See File_Executor::File_Executor() for
 	 * the semantics for ERROR_ADDITIONAL.  */
 
-	~Concat_Executor() = default;
+	~Concat_Executor()= default;
 
-	virtual int get_depth() const {  return -1;  }
-	virtual bool want_delete() const {  return true;  }
+	virtual int get_depth() const  {  return -1;  }
+	virtual bool want_delete() const  {  return true;  }
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
-	virtual string format_src() const {  return dep->format_src();  }
+	virtual void render(Parts &parts, Rendering= 0) const {
+		return dep->render(parts);
+	}
 
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
 		result_variable.insert(result_variable_child.begin(),
@@ -49,7 +51,7 @@ protected:
 
 private:
 	typedef unsigned Stage;
-	enum { S_DYNAMIC, S_NORMAL, S_FINISHED };
+	enum { ST_DYNAMIC, ST_NORMAL, ST_FINISHED };
 
 	shared_ptr <const Concat_Dep> dep;
 	/* Contains the concatenation.  This is a normalized dependency. */

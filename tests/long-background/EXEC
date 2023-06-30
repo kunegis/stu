@@ -46,7 +46,7 @@ echo "(2) '$arg'"
 rm -f X || exit 1
 
 # This must return immediately, because stdin is set to /dev/null, and
-# nothing is written to 'X'. 
+# nothing is written to 'X'.
 
 echo Bla | ../../bin/stu.test $arg -F '@all{sleep 1 ; cat >X}' >list.out 2>list.err &
 pid=$!
@@ -54,10 +54,10 @@ echo "pid='$pid'"
 
 ps -fe | grep stu
 
-wait "$pid"
+wait "$pid" 2>/dev/null
 exitstatus=$?
 
-# 'cat' returned without error 
+# 'cat' returned without error
 [ "$exitstatus" = 0 ] || {
 	echo >&2 "*** (2) Expected exit 0, not $exitstatus"
 	exit 1

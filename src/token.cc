@@ -33,7 +33,7 @@ Command::get_lines() const
 		if (line.size()) {
 			/* Discard lines consisting only of whitespace */
 			bool keep= false;
-			for (size_t i= 0;  i < line.size();  ++i) {
+			for (size_t i= 0; i < line.size(); ++i) {
 				if (! isspace(line[i]))
 					keep= true;
 			}
@@ -51,7 +51,7 @@ Command::get_lines() const
 		char begin= (*lines)[0][0];
 		if ((begin & 0x80) || ! isspace(begin))  break;
 		bool equal= true;
-		for (auto &i:  *lines) {
+		for (auto &i: *lines) {
 			assert(i.size());
 			if (i[0] != begin)  equal= false;
 		}
@@ -68,7 +68,7 @@ Command::get_lines() const
 	}
 
 	/* Remove whitespace at end of lines */
-	for (string &line:  *lines) {
+	for (string &line: *lines) {
 		size_t l= line.size();
 		while (l != 0 && isspace(line[l - 1]))  --l;
 		line.resize(l);
@@ -77,7 +77,7 @@ Command::get_lines() const
 	return *lines;
 }
 
-string Operator::format_long_err() const
+void Operator::render_long(Parts &parts, Rendering) const
 {
 	string t;
 	switch (op) {
@@ -88,6 +88,22 @@ string Operator::format_long_err() const
 	case ']':  t= "closing bracket";      break;
 	case '@':  t= "operator";             break;
 	}
+	parts.append_text(t);
+}
 
-	return fmt("%s %s", t, char_format_err(op));
+string Operator::show_long(Style style) const
+{
+	Parts parts;
+	render_long(parts);
+	return show(parts, style);
+}
+
+void Operator::render(Parts &parts, Rendering) const
+{
+	parts.append_operator(string(1, op));
+}
+
+void Flag_Token::render(Parts &parts, Rendering) const
+{
+	parts.append_operator(frmt("-%c", flag));
 }

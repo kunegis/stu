@@ -1,3 +1,0 @@
-main.stu:4:27: command for 'C' failed with exit status 1
-main.stu:3:14: 'C' is needed by 'list.BBB'
-main.stu:2:14: 'list.BBB' is needed by 'A'

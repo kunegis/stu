@@ -1,3 +1,0 @@
-C:1:1: no rule to build 'X', needed by [C]
-B:1:2: [C] is needed by [B]
-main.stu:2:5: [B] is needed by 'A'

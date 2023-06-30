@@ -33,9 +33,9 @@ public:
 	virtual Proceed execute(shared_ptr <const Dep> dep_this);
 	virtual bool finished() const;
 	virtual bool finished(Flags flags) const;
-	virtual int get_depth() const {  return dep->get_depth();  }
-	virtual bool optional_finished(shared_ptr <const Dep> ) {  return false;  }
-	virtual string format_src() const;
+	virtual int get_depth() const  {  return dep->get_depth();  }
+	virtual bool optional_finished(shared_ptr <const Dep> )  {  return false;  }
+	virtual void render(Parts &, Rendering= 0) const;
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
 		result_variable.insert(result_variable_child.begin(),
 				       result_variable_child.end());

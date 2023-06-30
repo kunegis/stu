@@ -1,2 +1,2 @@
 main.stu:6:2: transient target @B is invalid
-main.stu:6:1: after output redirection using '>'
+main.stu:6:1: after output redirection using >

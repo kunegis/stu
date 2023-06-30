@@ -14,7 +14,7 @@ bool Root_Executor::finished(Flags flags) const
 Root_Executor::Root_Executor(const vector <shared_ptr <const Dep> > &deps)
 	:  is_finished(false)
 {
-	for (auto &d:  deps)
+	for (auto &d: deps)
 		push(d);
 }
 

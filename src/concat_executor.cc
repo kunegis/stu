@@ -4,7 +4,7 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 				 Executor *parent,
 				 int &error_additional)
 	:  dep(dep_),
-	   stage(S_DYNAMIC)
+	   stage(ST_DYNAMIC)
 {
 	assert(dep_);
 	assert(dep_->is_normalized());
@@ -15,7 +15,7 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 	parents[parent]= dep;
 	if (error_additional) {
 		*this << "";
-		stage= S_FINISHED;
+		stage= ST_FINISHED;
 		parents.erase(parent);
 		raise(error_additional);
 		return;
@@ -32,13 +32,13 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 	/* Initialize COLLECTED */
 	size_t k= dep_->deps.size();
 	collected.resize(k);
-	for (size_t i= 0;  i < k;  ++i) {
+	for (size_t i= 0; i < k; ++i) {
 		collected.at(i)= make_shared <Compound_Dep> (Place::place_empty);
 	}
 
 	/* Push initial dependencies */
 	size_t i= 0;
-	for (auto d:  dep->deps) {
+	for (auto d: dep->deps) {
 		if (auto plain_d= to <const Plain_Dep> (d)) {
 			collected.at(i)->deps.push_back(d);
 		} else if (auto dynamic_d= to <const Dynamic_Dep> (d)) {
@@ -58,8 +58,8 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_this)
 {
  again:
-	assert(stage <= S_FINISHED);
-	if (stage == S_FINISHED)
+	assert(stage <= ST_FINISHED);
+	if (stage == ST_FINISHED)
 		return P_FINISHED;
 	Proceed proceed= execute_base_A(dep_this);
 	assert(proceed);
@@ -76,11 +76,11 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_this)
 	}
 	if (proceed & P_FINISHED) {
 		++stage;
-		assert(stage <= S_FINISHED);
-		if (stage == S_FINISHED) {
+		assert(stage <= ST_FINISHED);
+		if (stage == ST_FINISHED) {
 			return proceed;
 		} else {
-			assert(stage == S_NORMAL);
+			assert(stage == ST_NORMAL);
 			launch_stage_1();
 			goto again;
 		}
@@ -91,8 +91,8 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_this)
 
 bool Concat_Executor::finished() const
 {
-	assert(stage <= S_FINISHED);
-	return stage == S_FINISHED;
+	assert(stage <= ST_FINISHED);
+	return stage == ST_FINISHED;
 }
 
 bool Concat_Executor::finished(Flags) const
@@ -107,7 +107,7 @@ void Concat_Executor::launch_stage_1()
 {
 	shared_ptr <Concat_Dep> c= make_shared <Concat_Dep> ();
 	c->deps.resize(collected.size());
-	for (size_t i= 0;  i < collected.size();  ++i) {
+	for (size_t i= 0; i < collected.size(); ++i) {
 		c->deps.at(i)= move(collected.at(i));
 	}
 	vector <shared_ptr <const Dep> > deps;
@@ -118,13 +118,13 @@ void Concat_Executor::launch_stage_1()
 		raise(e);
 	}
 
-	for (auto f:  deps) {
+	for (auto f: deps) {
 		shared_ptr <Dep> f2= Dep::clone(f);
 		/* Add -% flag */
 		f2->flags |= F_RESULT_COPY;
 		/* Add flags from self */
 		f2->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC);
-		for (unsigned i= 0;  i < C_PLACED;  ++i) {
+		for (unsigned i= 0; i < C_PLACED; ++i) {
 			if (f2->get_place_flag(i).empty() && ! dep->get_place_flag(i).empty())
 				f2->set_place_flag(i, dep->get_place_flag(i));
 		}
@@ -138,17 +138,17 @@ void Concat_Executor::notify_result(shared_ptr <const Dep> d,
 				    shared_ptr <const Dep> dep_source)
 {
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)));
-	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)) != (F_RESULT_NOTIFY | F_RESULT_COPY));
+	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))
+	       != (F_RESULT_NOTIFY | F_RESULT_COPY));
 	assert(dep_source);
-
-	Debug::print(this, fmt("notify_result(flags = %s, d = %s)",
-			       flags_format(flags),
-			       d->format_src()));
+	DEBUG_PRINT(fmt("notify_result(flags = %s, d = %s)",
+			show_flags(flags, S_DEBUG),
+			::show(d, S_DEBUG)));
 
 	if (flags & F_RESULT_NOTIFY) {
 		vector <shared_ptr <const Dep> > deps;
 		source->read_dynamic(to <const Plain_Dep> (d), deps, dep, this);
-		for (auto &j:  deps) {
+		for (auto &j: deps) {
 			size_t i= dep_source->index;
 			collected.at(i)->deps.push_back(j);
 		}

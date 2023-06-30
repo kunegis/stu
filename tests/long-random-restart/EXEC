@@ -17,12 +17,12 @@ exitstatus=$?
 ' >list.exec
 
 # Now, make sure 'list.exec' does not contain the same letter twice in a
-# row. 
+# row.
 
 last=0
 
 # Number of contiguous letters
-count=0 
+count=0
 
 for line in $(cat list.exec) ; do
 	echo >&2 "LINE='$line'"

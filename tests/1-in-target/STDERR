@@ -1,2 +1,2 @@
-main.stu:3:6: parameter $NAME must not appear in dependency 'B${NAME}C'
-main.stu:3:1: because it does not appear in target 'A'
+main.stu:3:6: parameter $NAME must not appear in dependency B${NAME}C
+main.stu:3:1: because it does not appear in target "A"

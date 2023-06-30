@@ -1,2 +1,2 @@
-main.stu:3:1: expected a command, ':', ';', or '='
-main.stu:1:1: after target 'A'
+main.stu:3:1: expected a command, :, ;, or =
+main.stu:1:1: after target "A"

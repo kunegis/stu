@@ -17,31 +17,30 @@ test_one()
 	exitstatus=$?
 
 	[ "$exitstatus" = 2 ] || {
-		echo >&2 "*** Exit status is not 2"
+		echo >&2 "*** [$output] Exit status is not 2"
 		exit 1
 	}
 
 	[ -r list.out ] && [ ! -s list.out ] || {
-		echo >&2 "*** Output"
+		echo >&2 "*** [$output] Wrong output"
 		exit 1
 	}
 
-	grep -qF 'character '\'"$output"\'' must not appear' list.err || {
-		echo >&2 "*** Error output"
+	grep -qF "character \"$output\" must not appear" list.err || {
+		echo >&2 "*** [$output] Wrong error output"
 		exit 1
 	}
 }
 
 test_one ' ' " "
-test_one '!' "!" 
-test_one "$(printf '\037')" '\037' 
-test_one "$(printf '\001')" '\001'
+test_one '!' "!"
+test_one "$(printf '\037')" '\x1F'
+test_one "$(printf '\001')" '\x01'
 test_one '[' '['
-test_one \\ \\\\ 
+test_one '\' '\\'
 test_one ']' ']'
 test_one '~' '~'
-test_one "$(printf '\177')" '\177'
-test_one é '\303'  
+test_one "$(printf '\177')" '\x7F'
 
 rm -f ? list.* main.stu || exit 2
 

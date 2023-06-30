@@ -4,16 +4,16 @@ set -e
 
 rm -f ?
 
-echo Hello >B 
+echo Hello >B
 
-../../bin/stu.test 
+../../bin/stu.test
 
 echo "Hello CORRECT World" >B
 ../../sh/touch_old A
 
 ls -l A B
 
-../../bin/stu.test 
+../../bin/stu.test
 
 grep -qF CORRECT A || {
 	echo >&2 "$0:  *** 'A' was not updated"

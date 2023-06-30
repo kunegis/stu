@@ -1,0 +1,2 @@
+main.stu:2:11: no rule to build "list.x+X", needed by "A.x"
+main.stu:1:4: "A.x" is needed by "A"

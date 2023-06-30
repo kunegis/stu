@@ -1,2 +1,2 @@
-main.stu:1:12: expected a parameter name, not '}'
-main.stu:1:10: after '$'
+main.stu:1:12: expected a parameter name, not "}"
+main.stu:1:10: after $

@@ -1,0 +1,3 @@
+[31m[1mmain.stu[22m:3:8[m: no rule to build [1m~xxx[22m, needed by [1m-xxx[22m
+[31m[1mmain.stu[22m:2:8[m: [1m-xxx[22m is needed by [1m+xxx[22m
+[31m[1mmain.stu[22m:1:5[m: [1m+xxx[22m is needed by [1mA[22m

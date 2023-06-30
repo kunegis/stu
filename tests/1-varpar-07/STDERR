@@ -1,2 +1,2 @@
 B:1:4: variable dependency $[X] must not appear
-B:1:1: within dynamic dependency started by '['
+B:1:1: within dynamic dependency started by [

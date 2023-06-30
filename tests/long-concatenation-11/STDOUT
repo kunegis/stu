@@ -1,4 +1,4 @@
-Creating X: ' 1 2 '
+Creating X: " 1 2 "
 >list.11111111 n=11111111: echo Number "$n" ;
 >list.11111112 n=11111112: echo Number "$n" ;
 >list.11111121 n=11111121: echo Number "$n" ;

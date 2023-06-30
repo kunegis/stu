@@ -1,0 +1,2 @@
+A { exit 1 ; }
+list.${name}"+X" { exit 1 ; }

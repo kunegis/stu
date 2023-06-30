@@ -2,172 +2,30 @@
 
 #include "canonicalize.hh"
 
-string Target::format(Style style, bool &quotes) const
+void Target::render(Parts &parts, Rendering rendering) const
 {
-	Style style2= 0;
-	if (! is_file()) {
-		style2 |= S_MARKERS;
-	} else {
-		style2 |= style;
-	}
-	string ret;
-	size_t i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
+	TRACE_FUNCTION(SHOW, Target::show);
+	size_t i;
+	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
 		assert((get_word(i) & F_TARGET_TRANSIENT) == 0);
-		if (!(style & S_NOFLAGS)) {
-			ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
+		if (rendering & R_SHOW_FLAGS) {
+			render_flags
+				(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
+				 parts, rendering);
 		}
-		++i;
-		ret += '[';
+		parts.append_operator("[");
 	}
 	assert(text.size() > sizeof(word_t) * (i + 1));
-	if (!(style & S_NOFLAGS)) {
-		ret += flags_format(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE));
+	if (rendering & R_SHOW_FLAGS) {
+		render_flags(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE), parts, rendering);
 	}
 	if (get_word(i) & F_TARGET_TRANSIENT) {
-		ret += '@';
+		parts.append_operator("@");
 	}
-	bool quotes_inner= false;
-	bool detached= is_dynamic() || is_transient();
-	if (! detached)
-		quotes_inner= quotes;
-	string s= name_format(text.substr(sizeof(word_t) * (i + 1)), style2, quotes_inner);
-	if (! detached)
-		quotes |= quotes_inner;
-	ret += s;
-	i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i;
-		ret += ']';
+	parts.append_text(text.substr(sizeof(word_t) * (i + 1)));
+	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
+		parts.append_operator("]");
 	}
-	return ret;
-}
-
-string Target::format_out() const
-{
-	Style style= 0;
-	if (! is_file()) {
-		style |= S_MARKERS;
-	}
-	bool quotes= is_file();
-	string ret;
-	size_t i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
-		++i;
-		ret += '[';
-	}
-	assert(text.size() > sizeof(word_t) * (i + 1));
-	ret += flags_format(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE));
-	if (get_word(i) & F_TARGET_TRANSIENT) {
-		ret += '@';
-	}
-	string name_text = name_format(text.substr(sizeof(word_t) * (i + 1)), style, quotes);
-	if (quotes)  ret += '\'';
-	ret += name_text;
-	if (quotes)  ret += '\'';
-	i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i;
-		ret += ']';
-	}
-	return ret;
-}
-
-string Target::format_out_print_word() const
-{
-	Style style= 0;
-	if (! is_file()) {
-		style |= S_MARKERS;
-	}
-	bool quotes= is_file() ? Color::quotes : false;
-	string ret;
-	ret += Color::out_print_word;
-	size_t i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
-		++i;
-		ret += '[';
-	}
-	assert(text.size() > sizeof(word_t) * (i + 1));
-	ret += flags_format(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE));
-	if (get_word(i) & F_TARGET_TRANSIENT) {
-		ret += '@';
-	}
-	string name_text= name_format(text.substr(sizeof(word_t) * (i + 1)), style, quotes);
-	if (quotes)  ret += '\'';
-	ret += name_text;
-	if (quotes)  ret += '\'';
-	i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i;
-		ret += ']';
-	}
-	ret += Color::out_print_word_end;
-	return ret;
-}
-
-string Target::format_err() const
-{
-	Style style= 0;
-	if (! is_file()) {
-		style |= S_MARKERS;
-	}
-	bool quotes= is_file() ? Color::quotes : false;
-	string ret;
-	ret += Color::word;
-	size_t i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i;
-		ret += '[';
-	}
-	assert(text.size() > sizeof(word_t) * (i + 1));
-	if (get_word(i) & F_TARGET_TRANSIENT) {
-		ret += '@';
-	}
-	string name_text= name_format(text.substr(sizeof(word_t) * (i + 1)), style, quotes);
-	if (quotes)  ret += '\'';
-	ret += name_text;
-	if (quotes)  ret += '\'';
-	i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i;
-		ret += ']';
-	}
-	ret += Color::end;
-	return ret;
-}
-
-string Target::format_src() const
-{
-	Style style= 0;
-	if (! is_file()) {
-		style |= S_MARKERS;
-	}
-	string ret;
-	size_t i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		ret += flags_format(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT));
-		++i;
-		ret += '[';
-	}
-	assert(text.size() > sizeof(word_t) * (i + 1));
-	ret += flags_format(get_word(i) & ~F_TARGET_TRANSIENT);
-	if (get_word(i) & F_TARGET_TRANSIENT) {
-		ret += '@';
-	}
-	const char *const name= text.c_str() + sizeof(word_t) * (i + 1);
-	bool quotes= src_need_quotes(name);
-	string name_text= name_format(text.substr(sizeof(word_t) * (i + 1)), style, quotes);
-	if (quotes)  ret += '\'';
-	ret += name_text;
-	if (quotes)  ret += '\'';
-	i= 0;
-	while (get_word(i) & F_TARGET_DYNAMIC) {
-		++i;
-		ret += ']';
-	}
-	return ret;
 }
 
 void Target::canonicalize()
@@ -181,28 +39,23 @@ void Target::canonicalize()
 }
 
 string Name::instantiate(const map <string, string> &mapping) const
-/*
- * This function must take into account the special rules.
- *
- * Special rule (a) does not need to be handled, (i.e., we keep the starting './')
- */
+/* This function must take into account the special rules.  Special rule (a)
+ * does not need to be handled, (i.e., we keep the starting './')  */
 {
 	assert(texts.size() == 1 + parameters.size());
 	const size_t n= get_n();
 	string ret= texts[0];
 
-	for (size_t i= 0;  i < n;  ++i) {
+	for (size_t i= 0; i < n; ++i) {
 		assert(parameters[i].size() > 0);
-
 		/* Special rule (b) */
 		if (i == 0 && texts[0].empty()
 		    && mapping.at(parameters[0]) == "/"
 		    && texts[1].size() != 0 && texts[1][0] == '/') {
 			/* Do nothing */
-		}
-		else
+		} else {
 			ret += mapping.at(parameters[i]);
-
+		}
 		ret += texts[i + 1];
 	}
 
@@ -279,7 +132,7 @@ bool Name::match(const string name,
 	}
 
 	/* I goes over all parameters */
-	for (size_t i= 0;  i < n;  ++i) {
+	for (size_t i= 0; i < n; ++i) {
 		size_t length_min= 1;
 		/* Minimal length of the matching parameter */
 
@@ -378,8 +231,8 @@ bool Name::match(const string name,
 string Name::get_duplicate_parameter() const
 {
 	vector <string> seen;
-	for (auto &parameter:  parameters) {
-		for (const auto &parameter_seen:  seen) {
+	for (auto &parameter: parameters) {
+		for (const auto &parameter_seen: seen) {
 			if (parameter_seen == parameter) {
 				return parameter;
 			}
@@ -394,7 +247,7 @@ bool Name::valid(string &param_1, string &param_2) const
 	if (empty())
 		return false;
 
-	for (size_t i= 1;  i + 1 < get_n() + 1;  ++i) {
+	for (size_t i= 1; i + 1 < get_n() + 1; ++i) {
 		if (texts[i].empty()) {
 			param_1= parameters[i-1];
 			param_2= parameters[i];
@@ -463,76 +316,42 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 	}
 }
 
-string Name::format(Style style, bool &quotes) const
+void Name::render(Parts &parts, Rendering rendering) const
 {
+	TRACE_FUNCTION(SHOW, Name::show);
 	assert(texts.size() == 1 + parameters.size());
-
-	string ret= name_format(texts[0], style | S_MARKERS | S_NOEMPTY, quotes);
-	for (size_t i= 0;  i < get_n();  ++i) {
-		ret += "${";
-		ret += name_format(parameters[i],
-				   style | S_MARKERS | S_NOEMPTY,
-				   quotes);
-		ret += '}';
-		ret += name_format
-			(texts[1+i],
-			 style | S_MARKERS | S_NOEMPTY,
-			 quotes);
+	parts.append_text(texts[0]);
+	for (size_t i= 0; i < get_n(); ++i) {
+		if (rendering & R_GLOB) {
+			parts.append_markup_unquotable('*');
+		} else {
+			parts.append_markup_quotable("${");
+			parts.append_text(parameters[i]);
+			parts.append_markup_quotable('}');
+		}
+		parts.append_text(texts[1+i]);
 	}
-	return ret;
 }
 
 void Name::canonicalize()
 {
-	for (size_t i= 0;  i <= get_n();  ++i) {
+	for (size_t i= 0; i <= get_n(); ++i) {
                 char *const p= (char *) texts[i].c_str();
-		Canon_Flags canon_flags= 0;
+		Canonicalize_Flags canonicalize_flags= 0;
 		if (i == 0)
-			canon_flags |= A_BEGIN;
+			canonicalize_flags |= A_BEGIN;
 		if (i == get_n())
-			canon_flags |= A_END;
-		const char *q= canonicalize_string(canon_flags, p);
+			canonicalize_flags |= A_END;
+		const char *q= canonicalize_string(canonicalize_flags, p);
 		texts[i].resize(q - p);
 	}
 }
 
-string Name::format_err() const {
-	bool quotes= Color::quotes;
-	string s= format(0, quotes);
-	return fmt("%s%s%s%s%s",
-		   Color::word,
-		   quotes ? "'" : "",
-		   s,
-		   quotes ? "'" : "",
-		   Color::end);
-}
-
-string Name::format_out() const
+bool Name::operator==(const Name &that) const
 {
-	bool quotes= true;
-	string s= format(0, quotes);
-	return fmt("%s%s%s",
-		   quotes ? "'" : "",
-		   s,
-		   quotes ? "'" : "");
-}
-
-string Name::format_src() const {
-	bool quotes= false;
-	for (const string &t:  texts)
-		if (src_need_quotes(t))
-			quotes= true;
-	string s= format(0, quotes);
-	return fmt("%s%s%s",
-		   quotes ? "'" : "",
-		   s,
-		   quotes ? "'" : "");
-}
-
-bool Name::operator==(const Name &that) const {
 	if (this->get_n() != that.get_n())
 		return false;
-	for (size_t i= 0;  i < get_n();  ++i) {
+	for (size_t i= 0; i < get_n(); ++i) {
 		if (this->parameters[i] != that.parameters[i])
 			return false;
 		if (this->texts[i] != that.texts[i])
@@ -543,19 +362,23 @@ bool Name::operator==(const Name &that) const {
 	return true;
 }
 
-string Param_Target::format_err() const {
-	Style style= 0;
+void Name::append(const Name &name)
+{
+	assert(this->texts.back() != "" ||
+	       name.texts.back() != "");
+	append_text(name.texts.front());
+	for (size_t i= 0; i < name.get_n(); ++i) {
+		append_parameter(name.get_parameters()[i]);
+		append_text(name.get_texts()[1 + i]);
+	}
+}
+
+void Place_Param_Target::render(Parts &parts, Rendering rendering) const
+{
+	TRACE_FUNCTION(SHOW, Place_Param_Target::render);
 	if (flags & F_TARGET_TRANSIENT)
-		style |= S_MARKERS;
-	bool quotes2= (flags == 0 ? Color::quotes : 0);
-	string text= name.format(style, quotes2);
-	return fmt("%s%s%s%s%s%s",
-		   Color::word,
-		   flags ? "@" : "",
-		   quotes2 ? "'" : "",
-		   text,
-		   quotes2 ? "'" : "",
-		   Color::end);
+		parts.append_operator("@");
+	place_name.render(parts, rendering);
 }
 
 void Place_Param_Target::canonicalize()

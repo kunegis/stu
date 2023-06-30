@@ -16,12 +16,12 @@
 # * (5) touch B
 # * stu
 #	* A is rebuilt
-# 
+#
 
 rm -f ? || exit 2
 
 #
-# (1) 
+# (1)
 #
 
 ../../bin/stu.test >list.out 2>list.err
@@ -55,13 +55,13 @@ exitstatus=$?
 }
 
 diff list.out stdout-2 || {
-	echo >&2 '*** (2out)' 
-	exit 1 
+	echo >&2 '*** (2out)'
+	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || { 
-	echo >&2 '*** (2err)' 
-	exit 1 
+[ -r list.err ] && [ ! -s list.err ] || {
+	echo >&2 '*** (2err)'
+	exit 1
 }
 
 #
@@ -79,13 +79,13 @@ exitstatus=$?
 }
 
 diff list.out stdout-3 || {
-	echo >&2 '*** (3out)' 
-	exit 1 
+	echo >&2 '*** (3out)'
+	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || { 
-	echo >&2 '*** (3err)' 
-	exit 1 
+[ -r list.err ] && [ ! -s list.err ] || {
+	echo >&2 '*** (3err)'
+	exit 1
 }
 
 #
@@ -105,13 +105,13 @@ exitstatus=$?
 }
 
 diff list.out stdout-4 || {
-	echo >&2 '*** (4out)' 
-	exit 1 
+	echo >&2 '*** (4out)'
+	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || { 
-	echo >&2 '*** (4err)' 
-	exit 1 
+[ -r list.err ] && [ ! -s list.err ] || {
+	echo >&2 '*** (4err)'
+	exit 1
 }
 
 #
@@ -132,13 +132,13 @@ exitstatus=$?
 }
 
 diff list.out stdout-5 || {
-	echo >&2 '*** (5out)' 
-	exit 1 
+	echo >&2 '*** (5out)'
+	exit 1
 }
 
-[ -r list.err ] && [ ! -s list.err ] || { 
-	echo >&2 '*** (5err)' 
-	exit 1 
+[ -r list.err ] && [ ! -s list.err ] || {
+	echo >&2 '*** (5err)'
+	exit 1
 }
 
 exit 0

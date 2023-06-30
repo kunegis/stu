@@ -36,7 +36,7 @@
  * file.
  */
 
-typedef unsigned Canon_Flags;
+typedef unsigned Canonicalize_Flags;
 /* Declared as integer so arithmetic can be performed on it */
 
 enum
@@ -47,7 +47,7 @@ enum
 	A_END 		= 1 << 1,
 };
 
-char *canonicalize_string(Canon_Flags canon_flags, char *p);
+char *canonicalize_string(Canonicalize_Flags canonicalize_flags, char *p);
 /* Canonicalize the string starting at P in-place.
  * Return the end (\0) of the new string.  The operation never increases
  * the size of the string.  P is \0-terminated, on input and output. */

@@ -14,7 +14,6 @@ template <class T>
 class Preset
 {
 public:
-
 	class End_Iterator{};
 
 	class Input_Iterator
@@ -67,7 +66,8 @@ public:
 				assert(p->chars[0].prefix == "");
 				assert(p->chars[0].preset == nullptr);
 				begin2= p->chars[0].values.data();
-				end2  = p->chars[0].values.data() + p->chars[0].values.size();
+				end2  = p->chars[0].values.data()
+					+ p->chars[0].values.size();
 			} else {
 				begin2= nullptr;
 				end2  = nullptr;
@@ -79,13 +79,10 @@ public:
 		void advance();
 	};
 
-	Preset()
-		:  parent(nullptr)
-	{ }
+	Preset():  parent(nullptr)  {  }
 
 	Preset(const Preset <T> *_parent, char _index)
-		:  parent(_parent), index(_index)
-	{ }
+		:  parent(_parent), index(_index)  {  }
 
 	void insert(string key, T value);
 	/* Insert the key-value pair */
@@ -95,10 +92,9 @@ public:
 	 * which the key is a prefix of X.  Returned from longest to shortest
 	 * match.  X must not be the empty string.  */
 
-	End_Iterator end() const { return End_Iterator(); }
+	End_Iterator end() const  {  return End_Iterator();  }
 
 private:
-
 	struct Entry {
 		string prefix;
 		unique_ptr <Preset <T> > preset;
@@ -118,8 +114,7 @@ private:
 	 * Sorted by the first character of each PREFIX, which are unique.
 	 * Also, there can be a single prefix that is the empty string, which
 	 * is sorted as the character '\0', i.e., always in first position.
-	 * (string[0] returns '\0' when string is "".)
-	 */
+	 * (string[0] returns '\0' when string is "".)  */
 
 	void insert(string key, unique_ptr <Preset <T> > preset);
 

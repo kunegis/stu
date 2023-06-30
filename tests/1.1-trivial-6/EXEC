@@ -3,7 +3,7 @@
 rm -f ? || exit 2
 touch A || exit 2
 
-../../bin/stu.test 
+../../bin/stu.test
 exitstatus=$?
 
 [ "$exitstatus" = 0 ] || {

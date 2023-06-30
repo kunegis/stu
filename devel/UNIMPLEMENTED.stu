@@ -70,28 +70,6 @@
 #
 
 #
-# File import
-#
-
-# Import all rules from subdirectory; will prepend the directory name to
-# all targets.  Rules from there will be executed from within the
-# directory as current directory.  If using 'import', the meaning of
-
-# All these are equivalent
-% import src/main.stu
-% import src/
-% import src
-% include -d src/main.stu
-% include -d src/
-% include -d src
-
-# - What about transient targets imported in that way.  Do we
-#   prepend a directory to them?
-%import dir   # contains:   @all:  ...;
-# gets converted to:       @dir/all:  ...;
-# or to:                   dir/@all:  ...;  # ???
-
-#
 # When including files using dynamic dependencies, make a
 # difference between inclusion and import, as is done for %include and
 # %import.
@@ -119,14 +97,8 @@ A: [-d data/B];
 # Should it be valid for the whole Stu invocation, or only for the
 # source file in which it appears?
 
-#
-# Does it make sense to have a way to set environment variables for all
-# commands?  It would open us up to many additional questions, and
-# potentially some Make-like anti-patterns.  In general, Stu directives
-# are prone to implement anti-patterns, as what they do is global.
-#
-
-% set PATH /usr/local/bin
+# Could also be done as
+% set STU_SHELL /bin/bash
 
 #
 # A flag with the meaning "never rebuild that dependency", but only use
@@ -157,7 +129,7 @@ dep.sources {
 
 #
 # A 'why' option that shows why things are built.  Will look similar to
-# error traces, only containing explanations.  In essence, output a line
+# error backtraces, only containing explanations.  In essence, output a line
 # everytime one of the 'need_build' variables is updated.  Also, we need
 # to do something smart with timestamps.
 #
@@ -179,7 +151,13 @@ dep.sources {
 #
 
 #
-# Have an option for: For hardcoded rules, compare the content of the
+# Have an option for: For hardcoded rules, compare the content of the file with
+# the wanted content and don't update the file if identical.
+#
+
+#
+# Regular expressions in target names.
+#
 
 list.${X:.}${Y:.} {
 	compute -x $X -y $Y >list.${X}${Y}
@@ -204,6 +182,13 @@ $NAME.bib:  bibs-B/$NAME.bib
 ${NAME:[^/]+}.bib: ...;
 
 #
+# Add more dependencies to a target using a flag.
+#
+
+-a A : B;
+# There must already be a rule for A.  The dependency B is added.
+
+#
 # Fingerprinting instead of timestamps is a feature that is implemented
 # by quite a few Make replacements.  This could also be combined with
 # preprocessors which ignore whitespace, etc.  Can also be used for the
@@ -218,6 +203,16 @@ ${NAME:[^/]+}.bib: ...;
 # then again after the command succeeds, and when the result is
 # identical, then reset the timestamp of the file back to its old
 # value.  (This could be a script for stu-utils/.)
+#
+
+#
+# Have a logfile.  Similar to debug mode, but into a file.
+#
+
+#
+# Allow dir/@transient.  Will allow dir/(a b @c @d).
+#
+# a/@b is equivalent to @a/b.
 #
 
 #

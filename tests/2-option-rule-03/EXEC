@@ -1,0 +1,56 @@
+#! /bin/sh
+
+#
+# (1) File does not exist
+#
+
+rm -f A || exit 2
+
+../../bin/stu.test -F 'A;' >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 1 ] || {
+	echo >&2 "*** (1) Exit status"
+	exit 1
+}
+
+grep -qF "expected the file without command and without dependencies \"A\" to exist" list.err || {
+	echo >&2 "*** (1) stderr A"
+	exit 1
+}
+
+grep -qF 'Option -F:' list.err || {
+	echo >&2 "*** (1) stderr B"
+	exit 1
+}
+
+[ -r list.out ] && [ ! -s list.out ] || {
+	echo >&2 "*** (1) stdout"
+	exit 1
+}
+
+#
+# (2) File exists
+#
+
+touch A || exit 1
+
+../../bin/stu.test -F 'A;' >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** (2) Exit status"
+	exit 1
+}
+
+grep -qFx 'Targets are up to date' list.out || {
+	echo >&2 "*** (2) stdout"
+	exit 1
+}
+
+[ -r list.err ] && [ \! -s list.err ] || {
+	echo >&2 "*** (2) stderr"
+	exit 1
+}
+
+exit 0

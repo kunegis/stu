@@ -1,2 +1,2 @@
-main.stu:5:7: input redirection using '<' must not be used
-main.stu:5:5: in conjunction with optional dependency flag '-o'
+main.stu:5:7: input redirection using < must not be used
+main.stu:5:5: in conjunction with optional dependency flag -o

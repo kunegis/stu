@@ -17,9 +17,9 @@ while read -r line ; do
 	echo "$line" >list.file.stu
 	printf 'list.file.stu: '
 	cat list.file.stu
-	
+
 	#
-	# Build 
+	# Build
 	#
 
 	echo ../../bin/stu.test -f list.file.stu
@@ -44,10 +44,10 @@ while read -r line ; do
 	}
 
 	#
-	# Touch B - A will not be rebuilt 
+	# Touch B - A will not be rebuilt
 	#
 	doo olden
-	doo touch B 
+	doo touch B
 	echo ../../bin/stu.test -f list.file.stu
 	../../bin/stu.test -f list.file.stu >list.out 2>list.err
 	exitstatus=$?
@@ -101,7 +101,7 @@ while read -r line ; do
 		echo >&2 "*** (7) Missing files 'D' or 'E'"
 		exit 1
 	}
-	
+
 	#
 	# Touch D - A will be rebuilt
 	#

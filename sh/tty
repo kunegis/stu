@@ -3,18 +3,20 @@
 # Simulate a TTY:  Execute the given COMMAND as if in a TTY.
 #
 # INVOCATION
-#
 #	sh/tty COMMAND
 #
 # REQUIREMENTS
-#
 #	expect
+#
+# BUGS
+# * When stderr contains malformed UTF-8, this script seems to "correct" it by
+#   adding characters.
 #
 
 #\
 export TERM=xterm
 
-# The next line is executed by sh, but not by tclsh \
+# Executed by sh, but not by tclsh \
 exec tclsh "$0" ${1+"$@"}
 
 package require Expect

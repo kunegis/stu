@@ -11,8 +11,9 @@ exitstatus=$?
 	exit 1
 }
 
-diff list.err stderr-correct || {
+cmp -s list.err stderr-correct || {
 	echo >&2 "*** Standard error output"
+	diff list.err stderr-correct
 	exit 1
 }
 

@@ -19,4 +19,3 @@ grep -q -v NOTEXECUTED list.* || exit 1
 rm -f list.* || exit 2
 
 exit 0
-

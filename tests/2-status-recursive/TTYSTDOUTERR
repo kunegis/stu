@@ -1,3 +1,3 @@
-Building A
-[1;31m../../bin/stu.test[0m: *** Refusing to run recursive Stu; unset [1m$STU_STATUS[0m to circumvent
-[1;31mmain.stu[0m:[31m5[0m:[31m2[0m: command for [1mA[0m failed with exit status [1m4[0m
+Building [1mA[22m
+[31m../../bin/stu.test[m: *** Refusing to run recursive Stu; unset [1m$STU_STATUS[22m to circumvent
+[31m[1mmain.stu[22m:5:2[m: command for [1mA[22m failed with exit status [1m4[22m

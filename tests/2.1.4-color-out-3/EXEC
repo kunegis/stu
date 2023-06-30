@@ -2,13 +2,13 @@
 
 set -e
 
-touch A 
+touch A
 
 ../../sh/tty ../../bin/stu.test A >list.all
 
-diff list.all stdall || {
+cmp -s list.all stdall || {
 	echo >&2 "*** Output"
-	cat list.all
+	diff list.all stdall
 	exit 1
 }
 

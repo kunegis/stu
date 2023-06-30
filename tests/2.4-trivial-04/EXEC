@@ -19,14 +19,14 @@
 # * (5) touch B
 # * stu
 #	* A is rebuilt
-# 
+#
 
 set -e
 
 rm -f ?
 
 #
-# (0) 
+# (0)
 #
 
 ../../bin/stu.test >list.out 2>list.err
@@ -40,7 +40,7 @@ diff list.out stdout-0 || { echo >&2 '*** (0out)' ; exit 1 ; }
 
 ../../sh/touch_old D
 ../../sh/touch_old B
-../../sh/touch_old A 
+../../sh/touch_old A
 touch C
 
 ../../bin/stu.test >list.out 2>list.err

@@ -16,20 +16,20 @@ rm -f ? list.*
 }
 
 #
-# Change 'B' 
+# Change 'B'
 #
 
 ../../sh/touch_old A 2
 touch B
 
 #
-# Run 'B' -- 'B' is rebuilt 
+# Run 'B' -- 'B' is rebuilt
 #
 
 ../../bin/stu.test -d >list.out 2>list.err
 
 set +e
-grep -qF 'Nothing to be done' list.out 
+grep -qF 'Nothing to be done' list.out
 [ "$?" = 1 ] || {
 	echo >&2 "*** 'Nothing to be done' must not be found in output"
 	exit 1

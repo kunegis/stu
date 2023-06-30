@@ -1,14 +1,14 @@
 #! /bin/sh
-# 
-# What happens when standard input is read twice from the command line.  
+#
+# What happens when standard input is read twice from the command line.
 #
 # This is not an error.  Standard input will be read just once, because
-# we filter multiple input files.   
+# we filter multiple input files.
 #
 
 rm -f A || exit 2
 
-cat <<EOF | ../../bin/stu.test -f - -f - 
+cat <<EOF | ../../bin/stu.test -f - -f -
 A = { correct }
 EOF
 exitstatus=$?

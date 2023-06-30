@@ -5,7 +5,6 @@
  * Handling of color output.
  *
  * Colors:
- *
  *   error:          The place of an error
  *   warning:        The place of a warning
  *   word:           Names quoting the input
@@ -37,30 +36,30 @@
  * Stu takes the same approach.
  */
 
+enum Channel {
+	CH_OUT, CH_ERR,
+	CH_COUNT,
+	CH_BITS= 1,
+};
+
 class Color
 {
 public:
-	static bool quotes, quotes_out;
-	/* Whether single quotes have to be used.  Only set when color
-	 * is not used.  */
+	static bool nocolor[CH_COUNT];
 
-	static const char *end;
-	static const char *error;
-	static const char *warning;
-	static const char *word;
-	static const char *error_word;
-	static const char *warning_word;
+	static const char *stdout_success_on;
+	static const char *stdout_success_off;
+	static const char *stderr_warn_on;
+	static const char *stderr_warn_off;
+	static const char *stderr_err_on;
+	static const char *stderr_err_off;
 
-	static const char *out_end;
-	static const char *out_print_word_end;
-	static const char *out_print;
-	static const char *out_print_word;
+	static const char *highlight_on[CH_COUNT];
+	static const char *highlight_off[CH_COUNT];
 
 	/* At least one of the following functions must be called before
 	 * any output is written.  */
-
 	static void set();
-	static void set(bool enable_color);
 	static void set(bool enable_color_out, bool enable_color_err);
 };
 

@@ -1,0 +1,3 @@
+A { exit 1; }
+list.$name { exit 1; }
+@list.x;

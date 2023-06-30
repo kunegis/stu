@@ -8,5 +8,3 @@ exitstatus=$?
 head -1 list.out | grep -qE '^stu [0-9]' || { echo >&2 '*** stdout' ; exit 1 ; }
 
 exit 0
-
-

@@ -1,0 +1,8 @@
+# Test canonicalization with the -I option
+
+./${name}.png {}
+aaa//bbb {}
+./ccc {}
+ddd/ {}
+eee/. {}
+fff/./ggg {}

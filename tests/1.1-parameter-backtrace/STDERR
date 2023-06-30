@@ -1,0 +1,2 @@
+main.stu:15:11: parameter $XYZ must not appear in dependency C.${XYZ}
+main.stu:15:1: because it does not appear in target B.${ID}

@@ -1,2 +1,2 @@
-main.stu:3:9: parameter $name must not appear in dependency 'x.${name}'
-main.stu:3:1: because it does not appear in any of the targets 'A'... of the rule
+main.stu:3:9: parameter $name must not appear in dependency x.${name}
+main.stu:3:1: because it does not appear in any of the targets "A"... of the rule

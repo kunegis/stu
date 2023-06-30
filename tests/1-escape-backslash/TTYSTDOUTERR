@@ -1,1 +1,1 @@
-[1;31mmain.stu[0m:[31m2[0m:[31m5[0m: no rule to build [1maaa'bbb"ccc\011ddd[0m, needed by [1mA[0m
+[31m[1mmain.stu[22m:1:5[m: no rule to build [1m"aaa'bbb\"ccc\tddd"[22m, needed by [1mA[22m

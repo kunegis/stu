@@ -11,9 +11,9 @@ if [ "$exitstatus" != 2 ] ; then
 	exit 1
 fi
 
-if ! grep -qF "xxx/../main.stu:5:10: recursive inclusion of 'xxx/../main.stu'" list.err ; then
+if ! grep -qF "xxx/../main.stu:5:10: recursive inclusion of \"xxx/../main.stu\"" list.err ; then
 	echo >&2 "*** Missing error message"
-	exit 1   
+	exit 1
 fi
 
 rm -Rf xxx list.* || exit 2

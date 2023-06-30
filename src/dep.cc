@@ -3,7 +3,8 @@
 #include <bitset>
 
 #include "color.hh"
-#include "text.hh"
+#include "format.hh"
+#include "trace.hh"
 
 shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 {
@@ -28,7 +29,7 @@ shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 void Dep::add_flags(shared_ptr <const Dep> dep,
 		    bool overwrite_places)
 {
-	for (unsigned i= 0;  i < C_PLACED;  ++i) {
+	for (unsigned i= 0; i < C_PLACED; ++i) {
 		if (dep->flags & (1 << i)) {
 			if (overwrite_places || ! (this->flags & (1 << i))) {
 				this->set_place_flag(i, dep->get_place_flag(i));
@@ -53,7 +54,7 @@ void Dep::check() const
 {
 	assert(top.get() != this);
 
-	for (unsigned i= 0;  i < C_PLACED;  ++i) {
+	for (unsigned i= 0; i < C_PLACED; ++i) {
 		assert(((flags & (1 << i)) == 0) == get_place_flag(i).empty());
 	}
 
@@ -78,7 +79,7 @@ void Dep::check() const
 
 	if (auto concat_this= dynamic_cast <const Concat_Dep *> (this)) {
 		assert(concat_this->deps.size() >= 2);
-		for (auto i:  concat_this->deps) {
+		for (auto i: concat_this->deps) {
 			assert(i);
 		}
 	}
@@ -94,62 +95,18 @@ Target Plain_Dep::get_target() const
 	return ret;
 }
 
-string Plain_Dep::format(Style style, bool &quotes) const
+void Plain_Dep::render(Parts &parts, Rendering rendering) const
 {
-	string f;
-	if (!(style & S_NOFLAGS)) {
-		f= flags_format(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT));
-		if (! f.empty()) {
-			style |= S_MARKERS;
-			f += ' ';
-		}
-	}
-	bool detached= (flags & F_VARIABLE) || (flags & F_TARGET_TRANSIENT);
-	bool quotes_inner= detached ? false : quotes;
-	string t= place_param_target.format(style & ~S_COLOR_WORD, quotes_inner);
-	if (detached)
-		quotes= false;
-	else
-		quotes= quotes_inner;
-	bool quotes_print=  detached && quotes_inner;
-	string ret= fmt("%s%s%s%s%s%s",
-			f,
-			flags & F_VARIABLE ? "$[" : "",
-			quotes_print ? "'" : "",
-			t,
-			quotes_print ? "'" : "",
-			flags & F_VARIABLE ? "]" : "");
-	if (style & S_COLOR_WORD) {
-		ret= fmt("%s%s%s", Color::word, ret, Color::end);
-	}
-	return ret;
-}
-
-string Plain_Dep::format_out() const
-{
-	bool quotes= false;
-	string ret= format(S_NOFLAGS | S_OUT, quotes);
-	if (quotes)
-		ret= fmt("\'%s\'", ret);
-	return ret;
-}
-
-string Plain_Dep::format_src() const
-{
-	bool quotes= false;
-	string ret= format(S_SRC, quotes);
-	if (quotes)
-		ret= fmt("\'%s\'", ret);
-	return ret;
-}
-
-string Plain_Dep::format_err() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_NOFLAGS | S_ERR | S_COLOR_WORD, quotes);
-	if (quotes)
-		ret= fmt("\'%s\'", ret);
-	return ret;
+	TRACE_FUNCTION(SHOW, Plain_Dep::render);
+	if (render_flags(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT), parts, rendering))
+		parts.append_space();
+	if (flags & F_VARIABLE)
+		parts.append_operator("$[");
+	if (flags & F_INPUT && rendering & R_SHOW_INPUT)
+		parts.append_operator("<");
+	place_param_target.render(parts, rendering);
+	if (flags & F_VARIABLE)
+		parts.append_operator("]");
 }
 
 Target Dynamic_Dep::get_target() const
@@ -173,44 +130,14 @@ Target Dynamic_Dep::get_target() const
 	return Target(text);
 }
 
-string Dynamic_Dep::format(Style style, bool &quotes) const
+void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 {
-	quotes= false;
-	bool quotes_inner= false;
-	string ret;
-	if (! (style & S_NOFLAGS)) {
-		string text_flags= flags_format(flags & ~F_TARGET_DYNAMIC);
-		if (! text_flags.empty())
-			text_flags += ' ';
-		ret += text_flags;
-	}
-	string text= dep->format((style | S_MARKERS) & ~S_COLOR_WORD, quotes_inner);
-	ret += fmt("[%s%s%s]",
-		   quotes_inner ? "'" : "",
-		   text,
-		   quotes_inner ? "'" : "");
-	if (style & S_COLOR_WORD) {
-		ret= fmt("%s%s%s", Color::word, ret, Color::end);
-	}
-	return ret;
-}
-
-string Dynamic_Dep::format_out() const
-{
-	bool quotes= false;
-	return format(S_NOFLAGS | S_OUT, quotes);
-}
-
-string Dynamic_Dep::format_src() const
-{
-	bool quotes= false;
-	return format(S_SRC, quotes);
-}
-
-string Dynamic_Dep::format_err() const
-{
-	bool quotes= false;
-	return format(S_NOFLAGS | S_ERR | S_COLOR_WORD, quotes);
+	TRACE_FUNCTION(SHOW, Dynamic_Dep::render);
+	if (render_flags(flags & ~F_TARGET_DYNAMIC, parts, rendering))
+		parts.append_space();
+	parts.append_operator("[");
+	dep->render(parts, rendering | R_NO_COMPOUND_PARENTHESES);
+	parts.append_operator("]");
 }
 
 shared_ptr <const Dep> Dynamic_Dep::instantiate(const map <string, string> &mapping) const
@@ -237,8 +164,8 @@ shared_ptr <const Dep> Plain_Dep::instantiate(const map <string, string> &mappin
 	if ((flags & F_VARIABLE) && this_name.find('=') != string::npos) {
 		assert((ret_target->flags & F_TARGET_TRANSIENT) == 0);
 		place << fmt("dynamic variable %s must not be instantiated with parameter value that contains %s",
-			     dynamic_variable_format_err(this_name),
-			     char_format_err('='));
+			     show_dynamic_variable(this_name),
+			     show_operator('='));
 		throw ERROR_LOGICAL;
 	}
 
@@ -251,11 +178,9 @@ Compound_Dep::instantiate(const map <string, string> &mapping) const
 	shared_ptr <Compound_Dep> ret= make_shared <Compound_Dep> (flags, places, place);
 	ret->index= index;
 	ret->top= top;
-
-	for (const shared_ptr <const Dep> &d:  deps) {
+	for (const shared_ptr <const Dep> &d: deps) {
 		ret->push_back(d->instantiate(mapping));
 	}
-
 	return ret;
 }
 
@@ -263,54 +188,28 @@ bool Compound_Dep::is_unparametrized() const
 /* A compound dependency is parametrized when any of its contained
  * dependency is parametrized.  */
 {
-	for (shared_ptr <const Dep> d:  deps) {
+	for (shared_ptr <const Dep> d: deps) {
 		if (! d->is_unparametrized())
 			return false;
 	}
 	return true;
 }
 
-string Compound_Dep::format(Style style, bool &) const
-/* Ignore QUOTES, as everything inside the parentheses will not need
- * it.  */
+void Compound_Dep::render(Parts &parts, Rendering rendering) const
 {
-	string ret;
-	bool quotes= false;
-	for (const shared_ptr <const Dep> &d:  deps) {
-		if (! ret.empty())
-			ret += " ";
-		ret += d->format(style, quotes);
+	TRACE_FUNCTION(SHOW, Compound_Dep::render);
+	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
+		parts.append_operator("(");
+	bool first= true;
+	for (const shared_ptr <const Dep> &d: deps) {
+		if (first)
+			first= false;
+		else
+			parts.append_space();
+		d->render(parts, rendering & ~R_NO_COMPOUND_PARENTHESES);
 	}
-	if (deps.size() != 1)
-		ret= fmt("(%s)", ret);
-	return ret;
-}
-
-string Compound_Dep::format_err() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_ERR | S_NOFLAGS | S_COLOR_WORD, quotes);
-	if (quotes)
-		ret= '\'' + ret + '\'';
-	return ret;
-}
-
-string Compound_Dep::format_out() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_OUT | S_NOFLAGS, quotes);
-		if (quotes)
-		ret= '\'' + ret + '\'';
-	return ret;
-}
-
-string Compound_Dep::format_src() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_SRC, quotes);
-	if (quotes)
-		ret= '\'' + ret + '\'';
-	return ret;
+	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
+		parts.append_operator(")");
 }
 
 shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mapping) const
@@ -319,7 +218,7 @@ shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mappi
 	ret->index= index;
 	ret->top= top;
 
-	for (const shared_ptr <const Dep> &d:  deps) {
+	for (const shared_ptr <const Dep> &d: deps) {
 		ret->push_back(d->instantiate(mapping));
 	}
 
@@ -330,7 +229,7 @@ bool Concat_Dep::is_unparametrized() const
 /* A concatenated dependency is parametrized when any of its contained
  * dependency is parametrized.  */
 {
-	for (shared_ptr <const Dep> d:  deps) {
+	for (shared_ptr <const Dep> d: deps) {
 		if (! d->is_unparametrized())
 			return false;
 	}
@@ -346,60 +245,22 @@ const Place &Concat_Dep::get_place() const
 	return deps.front()->get_place();
 }
 
-string Concat_Dep::format(Style style, bool &quotes) const
-/* We only need quotes when *all* components need quotes */
+void Concat_Dep::render(Parts &parts, Rendering rendering) const
 {
-	assert(bitset <sizeof(Style)> (style & S_CHANNEL).count() <= 1);
-	string ret;
-	if (!(style & S_NOFLAGS)) {
-		string f= flags_format(flags);
-		if (! f.empty()) {
-			style |= S_MARKERS;
-			f += ' ';
+	TRACE_FUNCTION(SHOW, Concat_Dep::show);
+	if (rendering & R_SHOW_FLAGS) {
+		if (render_flags(flags, parts, rendering)) {
+			parts.append_space();
 		}
-		ret += f;
 	}
-	bool quotes_ret= true;
-	for (const shared_ptr <const Dep> &d:  deps) {
-		bool quotes_d= quotes;
-		ret += d->format(style, quotes_d);
-		if (! quotes_d)
-			quotes_ret= false;
+	for (const shared_ptr <const Dep> &d: deps) {
+		d->render(parts, rendering);
 	}
-	quotes= quotes_ret;
-	return ret;
-}
-
-string Concat_Dep::format_err() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_ERR | S_NOFLAGS | S_COLOR_WORD, quotes);
-	if (quotes)
-		ret= '\'' + ret + '\'';
-	return ret;
-}
-
-string Concat_Dep::format_out() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_OUT | S_NOFLAGS, quotes);
-	if (quotes)
-		ret= '\'' + ret + '\'';
-	return ret;
-}
-
-string Concat_Dep::format_src() const
-{
-	bool quotes= Color::quotes;
-	string ret= format(S_SRC, quotes);
-	if (quotes)
-		ret= '\'' + ret + '\'';
-	return ret;
 }
 
 bool Concat_Dep::is_normalized() const
 {
-	for (auto &i:  deps) {
+	for (auto &i: deps) {
 		if (to <const Concat_Dep> (i))
 			return false;
 		if (! i->is_normalized())
@@ -419,7 +280,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 
 	/* Add attributes from DEP */
 	if (dep->flags || dep->index >= 0 || dep->top) {
-		for (size_t k= k_init;  k < deps_.size();  ++k) {
+		for (size_t k= k_init; k < deps_.size(); ++k) {
 			shared_ptr <Dep> d_new= Dep::clone(deps_[k]);
 			/* The innermost flag is kept */
 			d_new->add_flags(dep, false);
@@ -441,7 +302,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 	if (start_index + 1 == dep->deps.size()) {
 		shared_ptr <const Dep> dd= dep->deps.at(start_index);
 		if (auto compound_dd= to <Compound_Dep> (dd)) {
-			for (const auto &d:  compound_dd->deps) {
+			for (const auto &d: compound_dd->deps) {
 				normalize(d, deps_, error);
 				if (error && ! option_k)
 					return;
@@ -466,7 +327,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			return;
 		shared_ptr <const Dep> dd= dep->deps.at(start_index);
 		if (auto compound_dd= to <Compound_Dep> (dd)) {
-			for (const auto &d:  compound_dd->deps) {
+			for (const auto &d: compound_dd->deps) {
 				normalize(d, vec1, error);
 				if (error && ! option_k)
 					return;
@@ -485,8 +346,8 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			assert(false);
 		}
 
-		for (const auto &d1:  vec1) {
-			for (const auto &d2:  vec2) {
+		for (const auto &d1: vec1) {
+			for (const auto &d2: vec2) {
 				shared_ptr <const Dep> d= concat(d1, d2, error);
 				if (error && ! option_k)
 					return;
@@ -521,10 +382,10 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		 * input redirection, but the current data structures do
 		 * not allow that, and therefore we make that invalid.  */
 		a->get_place() << fmt("%s cannot have input redirection using %s",
-				      a->format_err(),
-				      char_format_err('<'));
+				      show(a),
+				      show_operator('<'));
 		b->get_place() << fmt("because %s is concatenated to it",
-				      b->format_err());
+				      show(b));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
@@ -533,9 +394,9 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		/* We don't save the place for the '<', so we cannot
 		 * have "using '<'" on an extra line.  */
 		b->get_place() << fmt("%s cannot have input redirection using %s",
-				      b->format_err(),
-				      char_format_err('<'));
-		a->get_place() << fmt("in concatenation to %s", a->format_err());
+				      show(b),
+				      show_operator('<'));
+		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
@@ -549,33 +410,34 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 			C_ALL;
 		assert(i_flag != C_ALL);
 		b->get_place() << fmt("%s cannot be declared as %s",
-				      b->format_err(), flags_phrases[i_flag]);
+				      show(b), flags_phrases[i_flag]);
 		b->places[i_flag] << fmt("using %s",
-					 name_format_err(frmt("-%c", flags_chars[i_flag])));
-		a->get_place() << fmt("in concatenation to %s", a->format_err());
+					 show_operator(frmt("-%c", flags_chars[i_flag])));
+		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (b->flags & F_TARGET_TRANSIENT) {
-		b->get_place() << fmt("transient target %s is invalid", b->format_err());
-		a->get_place() << fmt("in concatenation to %s", a->format_err());
+		b->get_place() << fmt("transient target %s is invalid", show(b));
+		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (a->flags & F_VARIABLE) {
 		a->get_place() << fmt("the variable dependency %s cannot be used",
-				      a->format_err());
+				      show(a));
 		b->get_place() << fmt("in concatenation with %s",
-				      b->format_err());
+				      show(b));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (b->flags & F_VARIABLE) {
-		b->get_place() << fmt("variable dependency %s is invalid", b->format_err());
-		a->get_place() << fmt("in concatenation to %s", a->format_err());
+		b->get_place() << fmt("variable dependency %s is invalid",
+				      show(b));
+		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
@@ -632,18 +494,63 @@ shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> 
 	shared_ptr <Concat_Dep> ret= make_shared <Concat_Dep> ();
 
 	if (auto concat_a= to <const Concat_Dep> (a)) {
-		for (auto d:  concat_a->deps)
+		for (auto d: concat_a->deps)
 			ret->push_back(d);
 	} else {
 		ret->push_back(a);
 	}
 
 	if (auto concat_b= to <const Concat_Dep> (b)) {
-		for (auto d:  concat_b->deps)
+		for (auto d: concat_b->deps)
 			ret->push_back(d);
 	} else {
 		ret->push_back(b);
 	}
 
 	return ret;
+}
+
+void Root_Dep::render(Parts &parts, Rendering) const
+{
+	parts.append_operator("ROOT");
+}
+
+void Dep::normalize(shared_ptr <const Dep> dep,
+		    vector <shared_ptr <const Dep> > &deps,
+		    int &error)
+{
+	if (to <Plain_Dep> (dep)) {
+		deps.push_back(dep);
+	} else if (shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep)) {
+		vector <shared_ptr <const Dep> > deps_child;
+		normalize(dynamic_dep->dep, deps_child, error);
+		if (error && ! option_k)
+			return;
+		for (auto &d:  deps_child) {
+			shared_ptr <Dep> dep_new=
+				make_shared <Dynamic_Dep>
+				(dynamic_dep->flags, dynamic_dep->places, d);
+			if (dynamic_dep->index >= 0)
+				dep_new->index= dynamic_dep->index;
+			dep_new->top= dynamic_dep->top;
+			deps.push_back(dep_new);
+		}
+	} else if (shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dep)) {
+		for (auto &d:  compound_dep->deps) {
+			shared_ptr <Dep> dd= Dep::clone(d);
+			dd->add_flags(compound_dep, false);
+			if (compound_dep->index >= 0)
+				dd->index= compound_dep->index;
+			dd->top= compound_dep->top;
+			normalize(dd, deps, error);
+			if (error && ! option_k)
+				return;
+		}
+	} else if (auto concat_dep= to <Concat_Dep> (dep)) {
+		Concat_Dep::normalize_concat(concat_dep, deps, error);
+		if (error && ! option_k)
+			return;
+	} else {
+		assert(false);
+	}
 }

@@ -1,1 +1,1 @@
-main.stu:2:10: recursive inclusion of 'main.stu' using %include
+main.stu:2:10: recursive inclusion of "main.stu" using %include

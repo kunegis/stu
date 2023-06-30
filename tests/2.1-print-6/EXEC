@@ -13,7 +13,6 @@ exitstatus=$?
 	exit 1
 }
 
-
 [ -r list.out ] && [ ! -s list.out ] || {
 	echo >&2 '*** Stdout'
 	exit 1

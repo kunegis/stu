@@ -2,18 +2,13 @@
 
 Quote_Safeness Part::need_quotes() const
 {
-	TRACE_FUNCTION(SHOW, Part::need_quotes());
 	assert(is_quotable());
 	if (properties == PROP_MARKUP_QUOTABLE) {
 		return QS_SAFE;
 	} else if (properties == PROP_TEXT) {
-		TRACE("%s", "PROP_TEXT");
-		TRACE("text=%s", text);
 		Quote_Safeness ret= QS_MIN;
-		for (char c: text) {
+		for (char c: text)
 			ret= max(ret, need_quotes(c));
-		}
-		TRACE("ret = %s", frmt("%d", ret));
 		return ret;
 	} else {
 		assert(false);
@@ -23,8 +18,6 @@ Quote_Safeness Part::need_quotes() const
 
 Quote_Safeness Part::need_quotes(unsigned char c)
 {
-	TRACE_FUNCTION(SHOW, Part::need_quotes(unsigned char));
-	TRACE("c=%s", frmt("%u", c));
 	if (c & 0x80)
 		return QS_SAFE;
 	if (c <= 0x20 || c == 0x7F)

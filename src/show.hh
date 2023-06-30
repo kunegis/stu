@@ -4,6 +4,9 @@
 /*
  * Format functions are defined in the source files where their datatype
  * is defined.  In classes, they are member functions.
+ *
+ * Even with S_QUOTE_SOURCE, the resulting strings are not in proper Stu
+ * syntax.
  */
 
 #include <string>

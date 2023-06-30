@@ -1,20 +1,7 @@
 #
-# Option -I
-#
-
-# * The filenames +xxx, -xxx and ~xxx need quotes in error output, even with
-#   color
-# * -I:  A;  No output.
-# * -I:  lots of nonparametrized rules in arbitrary order:  Check that the
-#   output is sorted alphabetically.
-# * -I:  A; list.$x;   Noting must be output because there is no command.
-# * -I:  A= B; C={ddd}   Both files are in the output.
-
-#
 # Test that there are no carriage returns in the source.  (and other control codes)
 # Test that there are no backticks in shell scripts.
 # Test that all tabs are at the beginning of lines.
-# Add EXEC test scripts to the tested files.
 #
 
 #
@@ -52,6 +39,9 @@
 # likely to be an antipattern -- the idiomatic thing to do is set a
 # symlink to the directory in question.  Other cases are even worse,
 # e.g., having environment variables with lists of things in them.
+#
+# On the other hand, this will be useful after extended inclusion is
+# implemented, to pass paths to Stu libraries.
 #
 
 #
@@ -128,15 +118,15 @@
 list.${name|[A-Z].*} # Matches uppercase names
 
 #
-# Test that make install using Docker.
+# Test make install using Docker.
 #
 
 #
-# gcc --fanalyzer
+# gcc -fanalyzer
 #
 
 #
-# Compilation mode like ndebug but non-stripped.  Check output of nm and ldd.
+# Compilation mode like ndebug but non-stripped.  Check output of nm.
 #
 
 #
@@ -148,7 +138,7 @@ list.${name|[A-Z].*} # Matches uppercase names
 #
 
 #
-# Don't use "using namespace std".  Instead, only use "string.
+# Don't use "using namespace std".  Instead, only use string.
 #
 
 #

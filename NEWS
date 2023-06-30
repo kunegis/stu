@@ -11,13 +11,13 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
-XXXX-XX-XX  Version 2.7.70
+2023-06-30  Version 2.7.70
 
 * The option -I outputs all targets that can be rebuilt.  Useful for
   ".gitignore" and similar.
 * Traces are now called backtraces.
 * Stu can now output traces.  This is only possible in debug mode (NDEBUG not
-  set), and for the show() family of functions.  See src/trace.hh.
+  set).  See src/trace.hh.
 
 2023-04-02  Version 2.7.16
 

@@ -11,7 +11,7 @@ olden() {
 	done
 }
 
-sed -E -e '/^[[:space:]]*$/d;/^[[:space:]]*#/d' LIST.stu |
+sed -e '/^[[:space:]]*$/d;/^[[:space:]]*#/d' LIST.stu |
 while read -r line ; do
 	rm -f list.file.stu ? list.*
 	echo "$line" >list.file.stu

@@ -29,7 +29,7 @@ find_space_line()
 {
 	find_files |
 	xargs grep -E -n '\s$' |
-	sed -E -e 's,^([^:]*:[0-9]+:).*$,\1 Line must not end in space,' |
+	sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Line must not end in space,' |
 	grep -E '.' >&2 && return 1
 	return 0
 }
@@ -58,20 +58,21 @@ BEGIN {
 find_double_slash()
 {
 	grep -E -n '(^|[^:])//' src/*.cc src/*.hh |
-	sed -E -e 's,^([^:]*:[0-9]+:).*$,\1 C++ source file must not contain //,' |
+	sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 C++ source must not contain //,' |
 	grep -E '.' >&2 && return 1
 	return 0
 }
 
-# Check that we don't use 'sed -r'.
-#
-# Background:  'sed -r' is a GNU extension that enabled extended regular
-# expressions.  POSIX does not prescribe a "extended regexp" mode for
-# sed.  In many implementations, '-E' does the same.  '-E' is more
-# portable than '-r', but still not POSIX.
+# Check that we don't use sed with the -E or -r option.  '-r' is a GNU extension
+# that enabled extended regular expressions.  POSIX does not prescribe an
+# "extended regexp" mode for sed.  In many implementations, '-E' does the same.
+# '-E' is more portable than '-r', but still not POSIX.
 find_sed() {
 	find . -type f -a \! -path './.git*' -a \! -name '*~' |
-		xargs grep -lE -- 'sed[[:space:]]+-re'
+		xargs grep -n -E -e 'sed[[:space:]]+-[Er]' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 '"'sed ""-E' and 'sed ""-r' must not be used"',' |
+	grep -E '.' >&2 && return 1
+	return 0
 }
 
 ret=0
@@ -88,22 +89,14 @@ find . -type f -a \( -name '*.stu' -o -perm -u+x -o -name Makefile \) -a \! -nam
 }
 
 # Tab in manpage source
-grep -F -n "$(printf '\t')" man/stu.1.in && {
+grep -F -n -e "$(printf '\t')" man/stu.1.in && {
 	echo >&2 "*** 'man/stu.1.in' must not contain tabs"
 	ret=1
-}
-
-count=$(echo $(find_sed | wc -l))
-[ "$count" = 0 ] || {
-	echo >&2 "*** 'sed -r' must not be used:"
-	echo >&2 === BEGIN
-	find_sed
-	echo >&2 === END
-	ret
 }
 
 find_space_file || ret=1
 find_space_line || ret=1
 find_double_empty_line || ret=1
+find_sed || ret=1
 
 exit "$ret"

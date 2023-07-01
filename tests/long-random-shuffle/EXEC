@@ -39,7 +39,7 @@ for i in $(../../sh/seq 100) ; do
 		BEGIN {
 		        srand(t + n);
 		        for (j = 0 ; j < 50; ++j) {
-		      	        text= "";
+				text= "";
 			        len= 1 + int((1 - (1 - rand()) ^ 2) * 15);
 				for (i = 0 ; i < len ; ++i) {
 				        c = sprintf("%c", 97 + int(rand() * 26));

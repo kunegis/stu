@@ -82,7 +82,7 @@ int main(int argc, char **argv, char **envp)
 			case 'M':  set_option_M(optarg);   break;
 			case 'P':  option_P= true;         break;
 			case 'q':  option_q= true;         break;
-			case 'V':  print_option_V();  	   exit(0);
+			case 'V':  print_option_V();       exit(0);
 
 			case 'c':  {
 				had_option_target= true;

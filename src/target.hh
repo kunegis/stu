@@ -235,7 +235,7 @@ class Name
  * (in the variable TEXTS) and N parameters (in PARAMETERS), which are
  * interleaved.  For instance when N = 2, the name is given by
  *
- * 	texts[0] parameters[0] texts[1] parameters[1] texts[2].
+ *	texts[0] parameters[0] texts[1] parameters[1] texts[2].
  *
  * Names can be valid or invalid.  A name is valid when all internal
  * texts (between two parameters) are non-empty, and, if N = 0, the

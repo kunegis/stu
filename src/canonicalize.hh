@@ -15,11 +15,11 @@
  *
  *  - Fold /
  *      - Multiple / -> single /
- *	    - except for double slash at the start not followed by /
+ *          - except for double slash at the start not followed by /
  *            (This is because POSIX mandates that a name starting with
  *            exactly two slashes is special.)
  *      - Remove ending /
- * 	    - except when the name contains only '/' characters, i.e.,
+ *          - except when the name contains only '/' characters, i.e.,
  *            when the name is '/' or double slash.
  *  - Fold .
  *      - ^/.$ -> /
@@ -43,8 +43,8 @@ enum
 /* Each flags means:  The begin/end of the string is adjacent to the
  * very beginning/end of the name, rather than to a parameter.  */
 {
-	A_BEGIN 	= 1 << 0,
-	A_END 		= 1 << 1,
+	A_BEGIN  = 1 << 0,
+	A_END    = 1 << 1,
 };
 
 char *canonicalize_string(Canonicalize_Flags canonicalize_flags, char *p);

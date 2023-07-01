@@ -26,7 +26,7 @@ Rule::Rule(vector <shared_ptr <const Place_Param_Target> > &&place_param_targets
 	   const Name &filename_)
 	:  place_param_targets(place_param_targets_),
 	   deps(deps_),
-  	   place(place_param_targets_[0]->place),
+	   place(place_param_targets_[0]->place),
 	   command(command_),
 	   filename(filename_),
 	   redirect_index(redirect_index_),

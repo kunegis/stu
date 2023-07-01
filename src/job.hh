@@ -115,7 +115,7 @@ private:
 	 * -2:    process was not yet started.
 	 * >= 0:  process was started but not yet waited for (just called
 	 *        "started" for short).  It may already be finished,
-	 * 	  i.e., a zombie.
+	 *        i.e., a zombie.
 	 * -1:    process has been waited for.
 	 */
 

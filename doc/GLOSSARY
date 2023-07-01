@@ -20,8 +20,8 @@ Directive - A construct introduced with the '%' in Stu source code.
 	do not implement a macro system.
 
 File - An object in the file system.  We use the term in the broad
-     	sense, which includes directories and other special files.  The "normal"
-     	files which store a sequence of bytes are called regular files.
+	sense, which includes directories and other special files.  The "normal"
+	files which store a sequence of bytes are called regular files.
 
 Flag - A flag is a syntax and semantic element of Stu scripts.  They start with
 	a dash.  An example is '-p' for persistent dependencies.

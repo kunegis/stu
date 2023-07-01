@@ -29,71 +29,71 @@ enum
 {
 	/* The index of the flags (I_*), used for array indexing.  Variables
 	 * iterating over these values are usually called I.  */
-	I_PERSISTENT= 0,	/* -p  \                  \                     */
-	I_OPTIONAL,		/* -o   | placed flags     |                    */
-	I_TRIVIAL,		/* -t  /                   |                    */
-	I_TARGET_DYNAMIC,	/* [ ] \ target flags      | target word flags  */
-	I_TARGET_TRANSIENT,	/* @   /                   |                    */
-	I_VARIABLE,		/* $                       |                    */
-	I_NEWLINE_SEPARATED,	/* -n  \ attribute flags   |                    */
-	I_NUL_SEPARATED,	/* -0  /                  /                     */
-	I_INPUT,		/* <                                            */
-	I_RESULT_NOTIFY,        /* -*                                           */
-	I_RESULT_COPY,          /* -%                                           */
+	I_PERSISTENT= 0,      /* -p  \                  \                     */
+	I_OPTIONAL,           /* -o   | placed flags     |                    */
+	I_TRIVIAL,            /* -t  /                   |                    */
+	I_TARGET_DYNAMIC,     /* [ ] \ target flags      | target word flags  */
+	I_TARGET_TRANSIENT,   /* @   /                   |                    */
+	I_VARIABLE,           /* $                       |                    */
+	I_NEWLINE_SEPARATED,  /* -n  \ attribute flags   |                    */
+	I_NUL_SEPARATED,      /* -0  /                  /                     */
+	I_INPUT,              /* <                                            */
+	I_RESULT_NOTIFY,      /* -*                                           */
+	I_RESULT_COPY,        /* -%                                           */
 
 	C_ALL,
-	C_PLACED           	= 3,  /* Flags for which we store a place in Dep */
-	C_WORD			= 8,  /* Flags used for caching; stored in Target */
-#define C_WORD			  8   /* Used statically */
+	C_PLACED                = 3,  /* Flags for which we store a place in Dep */
+	C_WORD                  = 8,  /* Flags used for caching; stored in Target */
+#define C_WORD                    8   /* Used statically */
 
 	/*
 	 * What follows are the actual flag bits to be ORed together
 	 */
 
-	F_PERSISTENT		= 1 << I_PERSISTENT,
+	F_PERSISTENT            = 1 << I_PERSISTENT,
 	/* (-p) When the dependency is newer than the target, don't rebuild */
 
-	F_OPTIONAL		= 1 << I_OPTIONAL,
+	F_OPTIONAL              = 1 << I_OPTIONAL,
 	/* (-o) Don't create the dependency if it doesn't exist */
 
-	F_TRIVIAL		= 1 << I_TRIVIAL,
+	F_TRIVIAL               = 1 << I_TRIVIAL,
 	/* (-t) Trivial dependency */
 
-	F_TARGET_DYNAMIC	= 1 << I_TARGET_DYNAMIC,
+	F_TARGET_DYNAMIC        = 1 << I_TARGET_DYNAMIC,
 	/* A dynamic target */
 
-	F_TARGET_TRANSIENT	= 1 << I_TARGET_TRANSIENT,
+	F_TARGET_TRANSIENT      = 1 << I_TARGET_TRANSIENT,
 	/* A transient target */
 
-	F_VARIABLE		= 1 << I_VARIABLE,
+	F_VARIABLE              = 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */
 
-	F_NEWLINE_SEPARATED	= 1 << I_NEWLINE_SEPARATED,
+	F_NEWLINE_SEPARATED     = 1 << I_NEWLINE_SEPARATED,
 	/* For dynamic dependencies, the file contains newline-separated
 	 * filenames, without any markup  */
 
-	F_NUL_SEPARATED		= 1 << I_NUL_SEPARATED,
+	F_NUL_SEPARATED         = 1 << I_NUL_SEPARATED,
 	/* For dynamic dependencies, the file contains NUL-separated
 	 * filenames, without any markup  */
 
-	F_INPUT 		= 1 << I_INPUT,
+	F_INPUT                 = 1 << I_INPUT,
 	/* A dependency is annotated with the input redirection flag '<' */
 
-	F_RESULT_NOTIFY		= 1 << I_RESULT_NOTIFY,
+	F_RESULT_NOTIFY         = 1 << I_RESULT_NOTIFY,
 	/* The link A ---> B between two executors annotated with this
 	 * flags means that A is notified of B's results.  */
 
-	F_RESULT_COPY		= 1 << I_RESULT_COPY,
+	F_RESULT_COPY           = 1 << I_RESULT_COPY,
 	/* The link A ---> B between two executors annotated with this
 	 * flags means that the results of B will be copied into A's result  */
 
 	/*
 	 * Aggregates
 	 */
-	F_PLACED	= (1 << C_PLACED) - 1,
-	F_TARGET_BYTE	= (1 << C_WORD) - 1,
-	F_TARGET	= F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
-	F_ATTRIBUTE	= F_NEWLINE_SEPARATED | F_NUL_SEPARATED,
+	F_PLACED        = (1 << C_PLACED) - 1,
+	F_TARGET_BYTE   = (1 << C_WORD) - 1,
+	F_TARGET        = F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
+	F_ATTRIBUTE     = F_NEWLINE_SEPARATED | F_NUL_SEPARATED,
 };
 
 typedef unsigned Done;
@@ -104,13 +104,13 @@ typedef unsigned Done;
  * dependencies.  */
 enum
 {
-	D_NONPERSISTENT_TRANSIENT 	= 1 << 0,
-	D_NONOPTIONAL_TRANSIENT		= 1 << 1,
-	D_NONPERSISTENT_NONTRANSIENT	= 1 << 2,
-	D_NONOPTIONAL_NONTRANSIENT	= 1 << 3,
+	D_NONPERSISTENT_TRANSIENT       = 1 << 0,
+	D_NONOPTIONAL_TRANSIENT         = 1 << 1,
+	D_NONPERSISTENT_NONTRANSIENT    = 1 << 2,
+	D_NONOPTIONAL_NONTRANSIENT      = 1 << 3,
 
-	D_ALL                     	= (1 << 4) - 1,
-	D_ALL_OPTIONAL		  	= D_NONPERSISTENT_TRANSIENT | D_NONPERSISTENT_NONTRANSIENT,
+	D_ALL                           = (1 << 4) - 1,
+	D_ALL_OPTIONAL                  = D_NONPERSISTENT_TRANSIENT | D_NONPERSISTENT_NONTRANSIENT,
 };
 
 extern const char *const flags_chars;

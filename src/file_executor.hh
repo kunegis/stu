@@ -66,7 +66,7 @@ public:
 	 * are never changed as long as the File_Executor objects are
 	 * stored there, such that they can be accessed from
 	 * async-signal safe functions:
-	 * 	FILENAMES, TIMESTAMPS_OLD    */
+	 *      FILENAMES, TIMESTAMPS_OLD    */
 
 	static void wait();
 	/* Wait for next job to finish and finish it.  Do not start anything

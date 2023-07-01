@@ -1,9 +1,4 @@
 #
-# * Test that there are no carriage returns in the source.  (and other control codes)
-# * Test that all tabs are at the beginning of lines.
-#
-
-#
 # Mark this target to always be a persistent dependency
 #
 

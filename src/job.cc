@@ -633,11 +633,11 @@ void Job::init_signals()
 			exit(ERROR_FATAL);
 		}
 		if (0 != sigaddset(&set_termination, signals_termination[i])) {
- 			perror("sigaddset");
+			perror("sigaddset");
 			exit(ERROR_FATAL);
 		}
 		if (0 != sigaddset(&set_termination_productive, signals_termination[i])) {
- 			perror("sigaddset");
+			perror("sigaddset");
 			exit(ERROR_FATAL);
 		}
 	}

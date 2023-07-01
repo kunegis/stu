@@ -523,7 +523,7 @@ void File_Executor::warn_future_file(struct stat *buf,
 {
 	Timestamp timestamp_buf= Timestamp(buf);
 
-  	if (! (timestamp_last < timestamp_buf))
+	if (! (timestamp_last < timestamp_buf))
 		return;
 
 	/* Update TIMESTAMP_LAST and check again, to be really-really sure */
@@ -726,7 +726,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 				/* File exists */
 				Timestamp timestamp_file= Timestamp(&buf);
 				timestamps_old[i]= timestamp_file;
- 				if (! (dep_this->flags & F_PERSISTENT))
+				if (! (dep_this->flags & F_PERSISTENT))
 					warn_future_file
 						(&buf,
 						 target.get_name_c_str_nondynamic(),

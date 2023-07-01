@@ -1,4 +1,13 @@
 #
+# Check out coverage tools:  gcov.
+#
+
+#
+# When executing "stu skjdhfksjdfh", don't show "Command line argument" in the
+# output.
+#
+
+#
 # Mark this target to always be a persistent dependency
 #
 
@@ -13,19 +22,6 @@
 #
 # Have an option to block certain targets from ever being rebuilt.  (Resulting
 # in a failure when they should, or always considering them up to date.)
-#
-
-#
-# Try out linters for sh and make.
-#
-
-#
-# Check out coverage tools:  gcov.
-#
-
-#
-# When executing "stu skjdhfksjdfh", don't show "Command line argument" in the
-# output.
 #
 
 #

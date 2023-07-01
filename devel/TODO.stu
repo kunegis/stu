@@ -1,5 +1,4 @@
 #
-# * Sed usage:  fix
 # * Test that there are no backticks in shell scripts.
 # * Test that there are no carriage returns in the source.  (and other control codes)
 # * Test that all tabs are at the beginning of lines.

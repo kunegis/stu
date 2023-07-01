@@ -1,6 +1,7 @@
 #! /bin/sh
 
 export STU_STATUS=1
+export STU_OPTIONS=y
 
 ../../bin/stu.test 2>list.err >list.out
 exitstatus=$?

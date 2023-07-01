@@ -85,13 +85,16 @@ void set_option_M(const char *value)
 	buffer_generator.seed(hash <string> ()(string(value)));
 }
 
-void set_option_V()
+void print_option_V()
 {
 	printf(PACKAGE " " STU_VERSION "\n"
-	       "Copyright (C) 2014-2023 Jerome Kunegis\n"
+	       "Copyright (C) Jerome Kunegis\n"
 	       "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 	       "This is free software: you are free to change and redistribute it.\n"
 	       "There is NO WARRANTY, to the extent permitted by law.\n"
+#ifdef NDEBUG
+	       "NDEBUG is defined\n"
+#endif
 	       "USE_MTIM = %u\n",
 	       (unsigned)USE_MTIM);
 }
@@ -99,17 +102,17 @@ void set_option_V()
 void set_env_options()
 {
 	const char *stu_options= getenv("STU_OPTIONS");
-	if (stu_options != nullptr) {
-		while (*stu_options) {
-			char c= *stu_options++;
-			if (c == '-' || isspace(c))
-				continue;
-			if (! option_setting(c)) {
-				Place place(Place::Type::ENV_OPTIONS);
-				place << fmt("invalid option %s",
-					     show_prefix("-", frmt("%c", c)));
-				exit(ERROR_FATAL);
-			}
+	if (!stu_options)
+		return;
+	while (*stu_options) {
+		char c= *stu_options++;
+		if (c == '-' || isspace(c))
+			continue;
+		if (! option_setting(c)) {
+			Place place(Place::Type::ENV_OPTIONS);
+			place << fmt("invalid option %s",
+				     show_prefix("-", frmt("%c", c)));
+			exit(ERROR_FATAL);
 		}
 	}
 }
@@ -117,11 +120,9 @@ void set_env_options()
 void check_status()
 {
 	const char *const stu_status= getenv("STU_STATUS");
-	if (stu_status != nullptr) {
-		print_error(frmt("Refusing to run recursive Stu; "
-				 "unset %s$STU_STATUS%s to circumvent",
-				 Color::highlight_on[CH_ERR],
-				 Color::highlight_off[CH_ERR]));
-		exit(ERROR_FATAL);
-	}
+	if (!stu_status)
+		return;
+	print_error(fmt("Refusing to run recursive Stu; unset %s to circumvent",
+			show_operator("$STU_STATUS")));
+	exit(ERROR_FATAL);
 }

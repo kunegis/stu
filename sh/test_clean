@@ -63,6 +63,16 @@ find_double_slash()
 	return 0
 }
 
+find_backtick()
+{
+	find_files |
+		grep -v -E -e '/(stu\.1\.in|CODING|COPYING|CHARACTERS|test_clean|MANPAGE|.*\.cc)$' |
+		xargs grep -E -n -e '`' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain backtick "`",' |
+		grep -E '.' >&2 && return 1
+	return 0
+}
+
 # Check that we don't use sed with the -E or -r option.  '-r' is a GNU extension
 # that enabled extended regular expressions.  POSIX does not prescribe an
 # "extended regexp" mode for sed.  In many implementations, '-E' does the same.
@@ -98,5 +108,6 @@ find_space_file || ret=1
 find_space_line || ret=1
 find_double_empty_line || ret=1
 find_sed || ret=1
+find_backtick || ret=1
 
 exit "$ret"

@@ -1,7 +1,10 @@
 #
-# Test that there are no carriage returns in the source.  (and other control codes)
-# Test that there are no backticks in shell scripts.
-# Test that all tabs are at the beginning of lines.
+# Check out coverage tools:  gcov.
+#
+
+#
+# When executing "stu skjdhfksjdfh", don't show "Command line argument" in the
+# output.
 #
 
 #
@@ -19,19 +22,6 @@
 #
 # Have an option to block certain targets from ever being rebuilt.  (Resulting
 # in a failure when they should, or always considering them up to date.)
-#
-
-#
-# Try out linters for sh and make.
-#
-
-#
-# Check out coverage tools:  gcov.
-#
-
-#
-# When executing "stu skjdhfksjdfh", don't show "Command line argument" in the
-# output.
 #
 
 #

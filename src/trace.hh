@@ -4,9 +4,9 @@
 /*
  * To enable tracing for a trace class TRACE_ABC, set the environment variable
  * $STU_TRACE_ABC to:
- * 	"log" 	  Write into trace logfile
+ *	"log"     Write into trace logfile
  *	"stderr"  Write on stderr
- * 	"off"	  No tracing (same as not variable set)
+ *	"off"     No tracing (same as not variable set)
  */
 
 #ifndef NDEBUG
@@ -72,13 +72,13 @@ const char *trace_strip_dir(const char *s);
 #define TRACE_FUNCTION(CLASS, NAME)  Trace trace_object(TRACE_ ## CLASS, #NAME)
 
 #define TRACE(format, ...)  { \
-	if (Trace::get_current()->get_enabled()) {	\
+	if (Trace::get_current()->get_enabled()) { \
 		string trace_text= fmt("%s" format, \
 			trace_object.get_prefix(), \
 			__VA_ARGS__); \
 		if (fprintf(Trace::trace_files[Trace::get_current()->trace_class], \
 			    "%21s:%-4d  %s\n", \
-			    trace_strip_dir(__FILE__), __LINE__,  \
+			    trace_strip_dir(__FILE__), __LINE__, \
 			    trace_text.c_str()) == EOF) { \
 			perror("fprintf(trace_file)"); \
 			exit(ERROR_FATAL); \

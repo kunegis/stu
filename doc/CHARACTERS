@@ -31,31 +31,31 @@ ASCII control characters (except those that are whitespace).
 
 == Characters introducing longer sequences ==
 
-    # 	Comment (until the end of the line)
-    %	Directives (followed by the directive name, and optionally followed
-	by arguments depending on the directive); comparable to preprocessor
-	directives.  The directive name and arguments followed regular
-	Stu quoting rules.
-    -	Flags (only as first character)
-    \	Escape character
-    '	Quote without escape sequences
-    "	Quote with escape sequences
-    {}	Command, content
-    $	Parameter prefix (when not followed by '[')
+    #   Comment (until the end of the line)
+    %   Directives (followed by the directive name, and optionally followed
+        by arguments depending on the directive); comparable to preprocessor
+        directives.  The directive name and arguments followed regular
+        Stu quoting rules.
+    -   Flags (only as first character)
+    \   Escape character
+    '   Quote without escape sequences
+    "   Quote with escape sequences
+    {}  Command, content
+    $   Parameter prefix (when not followed by '[')
 
 == Operators ==
 
 These characters are single-character tokens.
 
-    :	Introduces dependencies
-    ;	End of rule when no command or content is present
-    @	Transient target prefix
-    ()	List
-    []	Dynamic list
-    >	Output redirection (target only)
-    <	Input redirection (dependency only)
-    =	Assignment, copy, and named variable
-    $[	The sequence '$[' is analysed as a sequence of the two operators
+    :   Introduces dependencies
+    ;   End of rule when no command or content is present
+    @   Transient target prefix
+    ()  List
+    []  Dynamic list
+    >   Output redirection (target only)
+    <   Input redirection (dependency only)
+    =   Assignment, copy, and named variable
+    $[  The sequence '$[' is analysed as a sequence of the two operators
         '$' and '['.  In other environments, '$' introduces parameters.
 
 These characters always stand for themselves when unquoted, and don't
@@ -78,15 +78,15 @@ would also require more complex (and harder to understand) precedence
 rules.  This leaves binary and ternary operators as possible uses, or as
 forms of non-operators, i.e., new tokens.
 
-    +	Inverted flag [as in the shell] (maybe)
-    ~	Home directory [as in the shell] (maybe)
-    & 	Intersection (maybe)
-    |	Componentwise concatenation (maybe)
-    |	Union [redundant to juxtaposition]
-    !?	Some form of dual operators
-    !	Command interpreter (maybe)
-    *?	For file globbing [We're against expensive operations not saved in a file]
-    ,	Names are already whitespace-separated, and any other use than
- 	as a list constructor would be unintuitive
-    ,	As higher-level file separator, allowing "lists of lists", for
-	whatever purpose [I can't think of one]
+    +   Inverted flag [as in the shell] (maybe)
+    ~   Home directory [as in the shell] (maybe)
+    &   Intersection (maybe)
+    |   Componentwise concatenation (maybe)
+    |   Union [redundant to juxtaposition]
+    !?  Some form of dual operators
+    !   Command interpreter (maybe)
+    *?  For file globbing [We're against expensive operations not saved in a file]
+    ,   Names are already whitespace-separated, and any other use than
+        as a list constructor would be unintuitive
+    ,   As higher-level file separator, allowing "lists of lists", for
+        whatever purpose [I can't think of one]

@@ -17,13 +17,13 @@
  * specifying in what order operators can be nested, not to disambiguate
  * expressions.
  *
- * @...	     (prefix) Transient dependency; argument can only contain name
+ * @...      (prefix) Transient dependency; argument can only contain name
  * ---------------
- * <...	     (prefix) Input redirection; argument must not contain '()',
+ * <...      (prefix) Input redirection; argument must not contain '()',
  *           '[]', '$[]' or '@'
  * ---------------
- * !...	     (prefix) Persistent dependency; argument must not contain '$[]'
- * ?...	     (prefix) Optional dependency; argument must not contain '$[]'
+ * !...      (prefix) Persistent dependency; argument must not contain '$[]'
+ * ?...      (prefix) Optional dependency; argument must not contain '$[]'
  * &...      (prefix) Trivial dependency
  * ---------------
  * [...]     (circumfix) Dynamic dependency; must not contain '$[]' or '@'

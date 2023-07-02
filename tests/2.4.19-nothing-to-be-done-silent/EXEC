@@ -30,7 +30,7 @@ grep -qFx "No rule for building 'A', but the file exists" list.out && {
 }
 
 [ -r list.err ] &&  [ \! -s list.err ] || {
- 	echo >&2 "*** stderr"
+	echo >&2 "*** stderr"
 	exit 1
 }
 

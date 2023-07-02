@@ -15,25 +15,25 @@
 # contain the glob characters *, ?, etc.)
 #
 # OUTPUT FILES
-#     log/error.log		List of tests that failed, one name per line
+#	log/error.log     List of tests that failed, one name per line
 #
 # PARAMETERS
-#     $NDEBUG	Set to non-empty to test the nondebug version; by default
-#		the debug version is tested
-#     $VARIANT  Other variant of the compiled file; the default is to
-#		take the file that matches the value of $NDEBUG
-#     $verbose  Set to {0,1,2} for verbose levels; default is 0
-#     $notall	If non-empty, exit on the first error, instead of
-#		running everything
-#     $emptyok	Set to non-empty to *not* output an error for empty test
-#               directories; useful after doing "rm" in a version
-#		control system on one, since that leaves a directory
-#		containing only (e.g.) ".svn".  Ignores dotfiles.
+#	$NDEBUG   Set to non-empty to test the nondebug version; by default
+#	          the debug version is tested
+#	$VARIANT  Other variant of the compiled file; the default is to
+#	          take the file that matches the value of $NDEBUG
+#	$verbose  Set to {0,1,2} for verbose levels; default is 0
+#	$notall   If non-empty, exit on the first error, instead of
+#	          running everything
+#	$emptyok  Set to non-empty to *not* output an error for empty test
+#	          directories; useful after doing "rm" in a version
+#	          control system on one, since that leaves a directory
+#	          containing only (e.g.) ".svn".  Ignores dotfiles.
 #
 # EXIT STATUS
-#     0		All tests succeeded
-#     1		At least one test failed
-#     2		Internal error
+#	0         All tests succeeded
+#	1         At least one test failed
+#	2         Internal error
 #
 # TEST SPECIFICATION
 #
@@ -60,10 +60,10 @@
 #              Stu is invoked without arguments by default.  It only
 #              changes the check that the file was built, and its
 #              content.   May be an empty file to omit testing for an
-#	       existing target.
+#              existing target.
 # CMD          Additional command arguments passed to Stu.  Content may
-#  	       use shell quoting and escaping.  For instance, the file
-#	       may contain -C ' A ' to pass an argument beginning and ending
+#              use shell quoting and escaping.  For instance, the file
+#              may contain -C ' A ' to pass an argument beginning and ending
 #              in space to Stu.
 # CMDPREFIX    Prefix before command.  Used to set environment variables.
 # PARALLEL     Give the arguments of the -j option for which the test is
@@ -71,9 +71,9 @@
 # EXITSTATUS   The prescribed exit status; default is zero
 # NOSECOND     If file is present, do not check that second invocation
 #              results in "Targets are up to date" (A second run is only
-#	       made if the prescribed exit status is not zero.)
-# NOTTY	       Don't do the extra TTY test (e.g., when the -q option is
-#	       used and the exit status is expected to be one)
+#              made if the prescribed exit status is not zero.)
+# NOTTY        Don't do the extra TTY test (e.g., when the -q option is
+#              used and the exit status is expected to be one)
 # NOCOLOR      Don't test for color in stderr (e.g., with the -y option)
 # CONTENT      Prescribe the exact content of the built file
 # INCONTENT    Prescribe strings that must appear in the built file
@@ -86,7 +86,7 @@
 # EXEC         Can be an alternative test script; it can do anything and
 #              should return a sensible exit status (i.e., 0 on success,
 #              1 on test failed, 2 on internal error).  It also otherwise
-#	       behaves like sh/test, e.g., output '***' only on error.
+#              behaves like sh/test, e.g., output '***' only on error.
 #
 # For the files beginning with 'IN', each line contains a string that
 # must be present, in any order.
@@ -108,9 +108,9 @@
 #	integer.  These are being migrated to the VERSION-ID scheme.
 # * tests/long-NAME
 #	These are tests that take a long time to run.  I.e., at least
-#       one second, due to sleep being used.  We try to avoid this as
-#  	much as possible, but sometimes sleeping is the only way to test
-# 	something.
+#	one second, due to sleep being used.  We try to avoid this as
+#	much as possible, but sometimes sleeping is the only way to test
+#	something.
 #
 # NOTES
 #
@@ -144,7 +144,7 @@ output_next()
 		count_failed_text="[41;30m$count_failed[m"
 	fi
 	if [ "$verbose" = 0 ] ; then
-		printf '[2KTesting [%s] (%s/%s/%s) %s' \
+		printf '[2KTesting [%s] (%s/%s/%s) %s\r' \
 		       "$VARIANT" \
 		       "[42;30m$count_succeed[m" \
 		       "[43;30m$((count_total - count_succeed - count_failed))[m" \
@@ -185,21 +185,21 @@ test_fail_fatal()
 
 sort_tests()
 {
-	ls -1U | tr ' ' '\n' | sed -E -e '
-s,^(.*)$,\1 \1,
-s,^([a-z].*)$,9999-\1,
-s,^([0-9])([-.].+)$,000\1\2,
-s,^([0-9][0-9])([-.].+)$,00\1\2,
-s,^([0-9][0-9][0-9])([-.].+)$,0\1\2,
-s,^([0-9][0-9][0-9][0-9])(-.*)$,\1.0000\2,
-s,^([0-9][0-9][0-9][0-9])\.([0-9])([-.].+)$,\1.000\2\3,
-s,^([0-9][0-9][0-9][0-9])\.([0-9][0-9])([-.].+)$,\1.00\2\3,
-s,^([0-9][0-9][0-9][0-9])\.([0-9][0-9][0-9])([-.].+)$,\1.0\2\3,
-s,^([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9])(-.*)$,\1.0000\2,
-s,^([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9])\.([0-9])([-.].+)$,\1.000\2\3,
-s,^([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9])\.([0-9][0-9])([-.].+)$,\1.00\2\3,
-s,^([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9])\.([0-9][0-9][0-9])([-.].+)$,\1.0\2\3,
-	' | sort | sed -E -e 's,^[^ ]+ (.+)$,\1,'
+	ls -1U | sed -e '
+s,^\(.*\)$,\1 \1,
+s,^\([a-z].*\)$,9999-\1,
+s,^\([0-9]\)\([-.]..*\)$,000\1\2,
+s,^\([0-9][0-9]\)\([-.]..*\)$,00\1\2,
+s,^\([0-9][0-9][0-9]\)\([-.]..*\)$,0\1\2,
+s,^\([0-9][0-9][0-9][0-9]\)\(-.*\)$,\1.0000\2,
+s,^\([0-9][0-9][0-9][0-9]\)\.\([0-9]\)\([-.]..*\)$,\1.000\2\3,
+s,^\([0-9][0-9][0-9][0-9]\)\.\([0-9][0-9]\)\([-.]..*\)$,\1.00\2\3,
+s,^\([0-9][0-9][0-9][0-9]\)\.\([0-9][0-9][0-9]\)\([-.]..*\)$,\1.0\2\3,
+s,^\([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9]\)\(-.*\)$,\1.0000\2,
+s,^\([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9]\)\.\([0-9]\)\([-.]..*\)$,\1.000\2\3,
+s,^\([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9]\)\.\([0-9][0-9]\)\([-.]..*\)$,\1.00\2\3,
+s,^\([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9]\)\.\([0-9][0-9][0-9]\)\([-.]..*\)$,\1.0\2\3,
+	' | sort | sed -e 's,^[^ ][^ ]* \(..*\)$,\1,'
 }
 
 time_begin=$(sh/now)
@@ -284,11 +284,11 @@ do
 
 	CMD=
 	if [ -r CMD ]; then
-    		CMD=$(sed -e '/^[[:space:]]*$/d' <CMD)
+		CMD=$(sed -e '/^[[:space:]]*$/d' <CMD)
 	fi
 	CMDPREFIX=
 	if [ -r CMDPREFIX ]; then
-    		CMDPREFIX=$(sed -e '/^[[:space:]]*$/d' <CMDPREFIX)
+		CMDPREFIX=$(sed -e '/^[[:space:]]*$/d' <CMDPREFIX)
 	fi
 
 	# The following will save:  list.def.out and list.def.err
@@ -427,7 +427,7 @@ do
 
 		# Check that at least one line of error message is generated
 		if [ "$exitstatus_correct" != 0 ] && [ \! -r STDERR ]; then
-			if [ \! \( "$(echo $(cat list.def.err | wc -l))" -gt 0 \) ]; then
+			if ! [ -s list.def.err ] ; then
 				test_fail "Nothing written to stderr although exit status is >0"
 			fi
 		fi
@@ -435,7 +435,7 @@ do
 		# Check that INSTDERR is found in the error output
 		if [ -r INSTDERR ]; then
 			for lineno in $(../../sh/seq $(awk '{x++} END{ print x; }' <INSTDERR)) ; do
-			   	line=$(<INSTDERR sed -e "$lineno"'!d')
+				line=$(<INSTDERR sed -e "$lineno"'!d')
 				if grep <list.def.err -qF -e "$line" ; then
 					echo >&7 "INSTDERR...correct"
 				else

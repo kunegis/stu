@@ -594,9 +594,9 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 	/* flag expression */
 	if (is <Flag_Token> ()) {
 		const Flag_Token &flag_token= *is <Flag_Token> ();
- 		const Place place_flag= (*iter)->get_place();
+		const Place place_flag= (*iter)->get_place();
 		const unsigned i_flag= flag_get_index(flag_token.flag);
- 		++iter;
+		++iter;
 
 		if (! parse_expression(ret, place_name_input, place_input, targets)) {
 			if (iter == tokens.end()) {

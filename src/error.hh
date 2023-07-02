@@ -208,7 +208,7 @@ public:
 	 * numbers as these are easier to generate.
 	 * Others: Unused.  */
 
-	Place()	:  type(Type::EMPTY)  {  }
+	Place() :  type(Type::EMPTY)  {  }
 
 	Place(Type type_, string filename_,
 	      size_t line_, size_t column_)

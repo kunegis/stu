@@ -188,7 +188,7 @@ void Executor::cycle_print(const vector <Executor *> &path,
 /*
  * Given PATH = [a, b, c, d, ..., x], we print:
  *
- * 	x depends on ...      \
+ *	x depends on ...      \
  *      ... depends on d      |
  *      d depends on c        | printed from PATH
  *      c depends on b        |
@@ -362,7 +362,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			use_file_executor= true;
 		} else if (rule_child == nullptr) {
 			use_file_executor= false;
- 		} else if (rule_child->command) {
+		} else if (rule_child->command) {
 			use_file_executor= true;
 		} else {
 			for (auto &i: rule_child->place_param_targets) {
@@ -446,7 +446,7 @@ void Executor::operator<<(string text) const
 				 * place available.  */
 				/* This is a top-level target, i.e.,
 				 * passed on the command line via an
- 				 * argument or an option  */
+				 * argument or an option  */
 				depp->get_place() << text;
 			}
 			break;

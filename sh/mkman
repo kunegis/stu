@@ -3,11 +3,11 @@
 # Generate the manpage from the template.
 #
 # INPUT FILES
-#	man/stu.1.in	The Stu manpage template
+#	man/stu.1.in    The Stu manpage template
 #	VERSION
 #
 # OUTPUT FILES
-#	man/stu.1	The Stu manpage
+#	man/stu.1       The Stu manpage
 #
 
 export LC_ALL=C

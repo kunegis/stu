@@ -9,7 +9,7 @@
 #
 # STDOUT
 #	The output and error output of the tests, including color
-# 	codes.  Can for instance be piped into less -R to see all.
+#	codes.  Can for instance be piped into less -R to see all.
 #
 
 rm -f bin/stu.test || exit 2
@@ -48,7 +48,7 @@ do
 
 		CMD=
 		if [ -r CMD ]; then
-    			CMD=$(sed -e '/^[[:space:]]*$/d' <CMD)
+			CMD=$(sed -e '/^[[:space:]]*$/d' <CMD)
 		fi
 
 		echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"

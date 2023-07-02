@@ -14,21 +14,21 @@
 #include "color.hh"
 
 typedef unsigned Style;
-constexpr Style S_CHANNEL=		(1 << CH_BITS) - 1;
-constexpr Style S_ALWAYS_QUOTE=		1 << (CH_BITS + 0);
-constexpr Style S_QUOTE_MINIMUM=     	1 << (CH_BITS + 1);
-constexpr Style S_QUOTE_SOURCE=		1 << (CH_BITS + 2);
-constexpr Style S_NO_COLOR=		1 << (CH_BITS + 3);
-constexpr Style S_DEFAULT=              CH_ERR;
-constexpr Style S_DEBUG=                CH_OUT | S_ALWAYS_QUOTE;
-constexpr Style S_NORMAL=		CH_OUT | S_QUOTE_MINIMUM;
-constexpr Style S_OPTION_I=		CH_OUT | S_NO_COLOR | S_QUOTE_SOURCE;
+constexpr Style S_CHANNEL=         (1 << CH_BITS) - 1;
+constexpr Style S_ALWAYS_QUOTE=    1 << (CH_BITS + 0);
+constexpr Style S_QUOTE_MINIMUM=   1 << (CH_BITS + 1);
+constexpr Style S_QUOTE_SOURCE=    1 << (CH_BITS + 2);
+constexpr Style S_NO_COLOR=        1 << (CH_BITS + 3);
+constexpr Style S_DEFAULT=         CH_ERR;
+constexpr Style S_DEBUG=           CH_OUT | S_ALWAYS_QUOTE;
+constexpr Style S_NORMAL=          CH_OUT | S_QUOTE_MINIMUM;
+constexpr Style S_OPTION_I=        CH_OUT | S_NO_COLOR | S_QUOTE_SOURCE;
 
 typedef unsigned Rendering;
-constexpr Rendering R_SHOW_FLAGS=		1 << 0;
-constexpr Rendering R_GLOB=             	1 << 1;
-constexpr Rendering R_SHOW_INPUT=		1 << 2;
-constexpr Rendering R_NO_COMPOUND_PARENTHESES=	1 << 3;
+constexpr Rendering R_SHOW_FLAGS=               1 << 0;
+constexpr Rendering R_GLOB=                     1 << 1;
+constexpr Rendering R_SHOW_INPUT=               1 << 2;
+constexpr Rendering R_NO_COMPOUND_PARENTHESES=  1 << 3;
 
 enum Quote_Safeness {
 	QS_SAFE, QS_GLOB, QS_QUOTING, QS_ALWAYS,

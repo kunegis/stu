@@ -2,8 +2,8 @@ Flags are an element syntax in Stu script that look like options in the shell.
 They apply to individual dependencies. They can be thought as applying to each
 edge in the dependency graph.
 
--o 	Optional dependency
--p	Persistent dependency
--t	Transient dependency
+-o   Optional dependency
+-p   Persistent dependency
+-t   Transient dependency
 
 The flags -o and -p are mutually exclusive.

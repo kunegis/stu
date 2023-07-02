@@ -7,6 +7,26 @@ find_files()
 	find tests -name EXEC
 }
 
+find_double_slash()
+{
+	grep -E -n '(^|[^:])//' src/*.cc src/*.hh |
+	sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 C++ source must not contain //,' |
+	grep -E '.' >&2 && return 1
+	return 0
+}
+
+find_double_hash()
+{
+	find . -type f -a \( -name '*.stu' -o -perm -u+x -o -name Makefile \) -a \! -name '*~' \
+	     -a \! -path './.git*' -a \! -path './bin/stu.*' -a \! -path './bin/stu' \
+	     -a \! -path './config*' -a \! -path './build-aux/*' -a \! -path devel/TODO.stu |
+		xargs grep -F -n '#''#' && {
+		echo >&2 "*** Shell scripts, makefiles and Stu scripts must not contain #""#"
+		return 1
+	}
+	return 0
+}
+
 find_space_file()
 {
 	find_files | {
@@ -29,7 +49,7 @@ find_space_line()
 {
 	find_files |
 	xargs grep -E -n '\s$' |
-	sed -E -e 's,^([^:]*:[0-9]+:).*$,\1 Line must not end in space,' |
+	sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Line must not end in space,' |
 	grep -E '.' >&2 && return 1
 	return 0
 }
@@ -39,71 +59,83 @@ find_double_empty_line()
 	find_files |
 	xargs awk '
 BEGIN {
-    previ= "x";
+	previ= "x";
 }
 /^$/ {
-    if (previ == "") {
-     	print FILENAME ":" (FNR-1) ": Multiple empty lines should not be present";
-    };
-    previ= "";
+	if (previ == "") {
+		print FILENAME ":" (FNR-1) ": Multiple empty lines should not be present";
+	};
+	previ= "";
 }
 /./ {
-    previ= "x";
+	previ= "x";
 }
 ' |
 	grep -E '.' >&2 && return 1
 	return 0
 }
 
-find_double_slash()
+find_noninitial_tab()
 {
-	grep -E -n '(^|[^:])//' src/*.cc src/*.hh |
-	sed -E -e 's,^([^:]*:[0-9]+:).*$,\1 C++ source file must not contain //,' |
+	find_files |
+		xargs grep -E -n -e '[^'"$(printf '\t')"'#*]'"$(printf '\t')" |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Tabs can only be present at beginning of line,' |
+		grep -E '.' >&2 && return 1
+	return 0
+}
+
+find_backtick()
+{
+	find_files |
+		grep -v -E -e '/(stu\.1\.in|CODING|COPYING|CHARACTERS|test_clean|MANPAGE|.*\.cc)$' |
+		xargs grep -E -n -e '`' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain backtick "`",' |
+		grep -E '.' >&2 && return 1
+	return 0
+}
+
+find_control()
+{
+	find_files |
+		xargs grep -E -n -e '['"$(printf '\r')"']' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain control character,' |
+		grep -E '.' >&2 && return 1
+	return 0
+}
+
+# Check that we don't use sed with the -E or -r option.  '-r' is a GNU extension
+# that enabled extended regular expressions.  POSIX does not prescribe an
+# "extended regexp" mode for sed.  In many implementations, '-E' does the same.
+# '-E' is more portable than '-r', but still not POSIX.
+find_sed()
+{
+	find . -type f -a \! -path './.git*' -a \! -name '*~' |
+		xargs grep -n -E -e 'sed[[:space:]]+-[Er]' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 '"'sed ""-E' and 'sed ""-r' must not be used"',' |
 	grep -E '.' >&2 && return 1
 	return 0
 }
 
-# Check that we don't use 'sed -r'.
-#
-# Background:  'sed -r' is a GNU extension that enabled extended regular
-# expressions.  POSIX does not prescribe a "extended regexp" mode for
-# sed.  In many implementations, '-E' does the same.  '-E' is more
-# portable than '-r', but still not POSIX.
-find_sed() {
-	find . -type f -a \! -path './.git*' -a \! -name '*~' |
-		xargs grep -lE -- 'sed[[:space:]]+-re'
+find_manpage_tab()
+{
+	grep -F -n -e "$(printf '\t')" man/stu.1.in && {
+		echo >&2 "*** 'man/stu.1.in' must not contain tabs"
+		return 1
+	}
+	return 0
 }
 
 ret=0
 
 find_double_slash || ret=1
-
-# Double # in script files is forbidden (idem)
-find . -type f -a \( -name '*.stu' -o -perm -u+x -o -name Makefile \) -a \! -name '*~' \
-	-a \! -path './.git*' -a \! -path './bin/stu.*' -a \! -path './bin/stu' \
-	-a \! -path './config*' -a \! -path './build-aux/*' -a \! -path devel/TODO.stu |
-	xargs grep -F -n '#''#' && {
-	echo >&2 "*** Shell scripts, makefiles and Stu scripts must not contain #""#"
-	ret=1
-}
-
-# Tab in manpage source
-grep -F -n "$(printf '\t')" man/stu.1.in && {
-	echo >&2 "*** 'man/stu.1.in' must not contain tabs"
-	ret=1
-}
-
-count=$(echo $(find_sed | wc -l))
-[ "$count" = 0 ] || {
-	echo >&2 "*** 'sed -r' must not be used:"
-	echo >&2 === BEGIN
-	find_sed
-	echo >&2 === END
-	ret
-}
-
+find_double_hash || ret=1
 find_space_file || ret=1
 find_space_line || ret=1
 find_double_empty_line || ret=1
+find_noninitial_tab || ret=1
+find_backtick || ret=1
+find_control || ret=1
+find_sed || ret=1
+find_manpage_tab || ret=1
 
 exit "$ret"

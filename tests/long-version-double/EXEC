@@ -10,7 +10,7 @@ STUFILE2=tmp2.stu
 error=0
 
 # Arguments:
-#   $1	 Correct exit status
+#   $1   Correct exit status
 #   $2   Version in %version statement of file 1
 #   $3   Version in %version statement of file 2
 do_test()
@@ -36,7 +36,7 @@ EOF
 
 	../../bin/stu.test -f $STUFILE1 2>list.err
 	exitstatus_actual=$?
-	echo "	exitstatus=$exitstatus_actual"
+	echo "   exitstatus=$exitstatus_actual"
 	if [ "$exitstatus_actual" != "$exitstatus_correct" ] ; then
 		echo >&2 "*** $0:  Error in case $1 $2"
 		error=1

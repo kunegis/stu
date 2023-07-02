@@ -26,7 +26,7 @@ CXXFLAGS_DEBUG= \
     -Wlogical-op -Wredundant-decls -fno-gnu-keywords \
     -Wno-unknown-warning-option -Wno-pessimizing-move \
     -D_GLIBCXX_DEBUG
-CXXFLAGS_PROF= -pg -O2 -DNDEBUG -D_GLIBCXX_DEBUG
+CXXFLAGS_PROF= -pg -O2 -DNDEBUG
 CXXFLAGS_SANI= -pg -O2 -Werror -Wno-unused-result -fsanitize=undefined \
     -fsanitize-undefined-trap-on-error
 
@@ -50,8 +50,8 @@ bin/stu.sani_undefined: conf/CXX src/*.cc src/*.hh src/version.hh
 bin/analysis.prof:  bin/gmon.out
 	gprof bin/stu.prof bin/gmon.out >bin/analysis.prof
 
-bin/gmon.out:   bin/stu.prof tests/long-1.1-parallel-1/main.stu
-	cd bin && ./stu.prof -j10 -f ../tests/long-1.1-parallel-1/main.stu && ../sh/rm_tmps
+bin/gmon.out:   bin/stu.prof tests/long-parallel-1/main.stu
+	cd bin && ./stu.prof -j10 -f ../tests/long-parallel-1/main.stu && ../sh/rm_tmps
 
 log/test_options:   sh/test_options src/options.hh man/stu.1.in
 	@echo sh/test_options
@@ -82,4 +82,4 @@ install:  sh/install bin/stu man/stu.1
 	sh/install
 
 clean:
-	rm -Rf $$(cat .gitignore)
+	rm -Rf bin conf log

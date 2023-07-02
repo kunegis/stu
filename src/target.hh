@@ -2,16 +2,16 @@
 #define TARGET_HH
 
 /*
- * Targets are the individual "objects" of Stu.  They can be thought of
- * as the "native types" of Stu.
+ * Targets are the individual "objects" of Stu.  They can be thought of as the
+ * native types of Stu.
  *
  * Targets can be either files or transients, and can have any level of
  * dynamicity.
  *
- * Targets are to be distinguished from the more general dependencies,
- * which can represent any nested expression, including concatenations,
- * flags, compound expressions, etc., while targets only represent
- * individual files or transients.
+ * Targets are to be distinguished from the more general dependencies, which can
+ * represent any nested expression, including concatenations, flags, compound
+ * expressions, etc., while targets only represent individual files or
+ * transients.
  */
 
 /*
@@ -47,11 +47,11 @@ typedef uint16_t word_t;
 #endif
 
 class Target
-/* A representation of a simple dependency, mainly used as the key in
- * the caching of Executor objects.  The difference to the Dependency
- * class is that Target objects don't store the Place objects, and don't
- * support parametrization.  Thus, Target objects are used as keys in
- * maps, etc.  Flags are included.
+/* A representation of a simple dependency, mainly used as the key in the
+ * caching of Executor objects.  The difference to the Dependency class is that
+ * Target objects don't store the Place objects, and don't support
+ * parametrization.  Thus, Target objects are used as keys in maps, etc.  Flags
+ * are included.
  *
  * TEXT is a linear representation of the target.  It begins with a certain
  * number of words (word_t, at least one), followed by the name of the target as

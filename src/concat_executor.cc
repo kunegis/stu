@@ -96,9 +96,8 @@ bool Concat_Executor::finished() const
 }
 
 bool Concat_Executor::finished(Flags) const
-/* Since Concat_Executor objects are used just once, by a single
- * parent, this always returns the same as finished() itself.
- * Therefore, the FLAGS parameter is ignored.  */
+/* Since Concat_Executor objects are used just once, by a single parent, this
+ * always returns the same as finished() itself.  */
 {
 	return finished();
 }

@@ -426,6 +426,7 @@ void terminate_jobs()
 	}
 
 	if (count_terminated) {
+		// TODO coverage?
 		write_async(2, PACKAGE ": Removing partially built files (");
 		/* Maximum characters in decimal representation of SIZE_T */
 		constexpr size_t len= sizeof(size_t) * CHAR_BIT / 3 + 3;

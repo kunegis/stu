@@ -193,6 +193,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			place_end << fmt("expected a dependency, a command, or %s",
 					 show_operator(';'));
 		else
+			// TODO coverage
 			place_end << fmt("expected a command, %s, %s, or %s",
 					 show_operator(';'),
 					 show_operator(':'),
@@ -283,6 +284,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 
 			if (! is <Name_Token> ()) {
 				if (iter == tokens.end()) {
+					// TODO coverage?
 					(*iter)->get_place_start() <<
 						fmt("expected a filename, a flag, or %s",
 						    show_operator('{'));
@@ -586,6 +588,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		/* If RET is null, it means we had empty parentheses.
 		 * Return an empty Compound_Dependency in that case  */
 		if (ret == nullptr)
+			// TODO coverage?
 			ret= make_shared <Compound_Dep> (place_bracket);
 
 		return true;
@@ -670,6 +673,7 @@ shared_ptr <const Dep> Parser
 	++iter;
 
 	if (iter == tokens.end()) {
+		// TODO coverage?
 		place_end << fmt("expected %s", show_operator('['));
 		place_dollar << fmt("after %s", show_operator('$'));
 		throw ERROR_LOGICAL;
@@ -819,6 +823,7 @@ shared_ptr <const Dep> Parser
 			targets.front()->place <<
 				fmt("for target %s", show(*targets.front()));
 		} else if (targets.size() > 1) {
+			// TODO coverage?
 			targets.front()->place <<
 				fmt("for targets %s...", show(*targets.front()));
 		}
@@ -859,6 +864,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 
 	if (iter == tokens.end()) {
 		if (has_input) {
+			// TODO coverage?
 			place_end << "expected a filename";
 			place_input << fmt("after input redirection using %s",
 					   show_operator('<'));
@@ -1188,6 +1194,7 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 		deps.push_back(i);
 }
 
+// TODO coverage?
 void Parser::print_separation_message(shared_ptr <const Token> token)
 {
 	string text;

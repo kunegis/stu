@@ -78,6 +78,7 @@ char *canonicalize_string(Canonicalize_Flags canonicalize_flags, char *p)
 		s += 2;
 	} else if (canonicalize_flags & A_BEGIN && canonicalize_flags & A_END
 		   && s[0] == '.' && s[1] == '/' && s[2] == '\0') {
+		// TODO coverage missing
 		*++d= '\0';
 		s += 2;
 	} else if (canonicalize_flags & A_BEGIN && ! (canonicalize_flags & A_END)

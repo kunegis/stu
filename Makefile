@@ -11,7 +11,7 @@ test: \
     log/test_clean_last
 sani: log/test_unit.sani_undefined
 prof: bin/analysis.prof
-.PHONY: all test sani clean prof install
+.PHONY: all test sani clean prof cov install
 
 src/version.hh: VERSION sh/mkversion
 	sh/mkversion >src/version.hh
@@ -27,6 +27,7 @@ CXXFLAGS_DEBUG= \
     -Wno-unknown-warning-option -Wno-pessimizing-move \
     -D_GLIBCXX_DEBUG
 CXXFLAGS_PROF= -pg -O2 -DNDEBUG
+CXXFLAGS_COV=  -O0 --coverage
 CXXFLAGS_SANI= -pg -O2 -Werror -Wno-unused-result -fsanitize=undefined \
     -fsanitize-undefined-trap-on-error
 
@@ -42,6 +43,10 @@ bin/stu.prof:           conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_PROF)             src/stu.cc -o bin/stu.prof
 	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_PROF)             src/stu.cc -o bin/stu.prof
+bin/stu.cov:           conf/CXX src/*.cc src/*.hh src/version.hh
+	@mkdir -p bin
+	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_COV)              src/stu.cc -o bin/stu.cov
+	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_COV)              src/stu.cc -o bin/stu.cov
 bin/stu.sani_undefined: conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_SANI)             src/stu.cc -o bin/stu.sani_undefined
@@ -82,4 +87,7 @@ install:  sh/install bin/stu man/stu.1
 	sh/install
 
 clean:
-	rm -Rf bin conf log
+	rm -Rf bin conf log cov
+
+cov:  bin/stu.cov sh/cov
+	sh/cov

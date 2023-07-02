@@ -763,6 +763,7 @@ Proceed Executor::execute_base_B(shared_ptr <const Dep> dep_link)
 	return proceed;
 }
 
+// TODO coverage?
 void Executor::copy_result(Executor *parent, Executor *child)
 {
 	/* Check that the child is not of a type for which RESULT is not

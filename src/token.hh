@@ -61,6 +61,7 @@ public:
 	const Place &get_place() const  {  return place;  }
 	const Place &get_place_start() const  {  return place;  }
 	void render(Parts &, Rendering= 0) const;
+	// TODO are the "long" functions used?
 	void render_long(Parts &, Rendering= 0) const;
 	string show_long(Style= S_DEFAULT) const;
 };
@@ -162,6 +163,7 @@ public:
 		const Place &place_start_,
 		Environment environment_);
 
+	// TODO unused?
 	const Place &get_place() const {
 		return place;
 	}

@@ -460,6 +460,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 	/* Don't allow '-', '+' and '~' at beginning of a name */
 	if (p < p_end && ! allow_special) {
 		if (*p == '-' || *p == '+' || *p == '~') {
+			// TODO cannot happen?  maybe use assert().
 			return nullptr;
 		}
 	}

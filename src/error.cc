@@ -17,6 +17,7 @@ void print_error(string message)
 		message.c_str());
 }
 
+// TODO coverage?
 void print_errno(string message)
 {
 	assert(message.size() > 0 && message[0] != '') ;
@@ -127,6 +128,7 @@ void Place::print(string message,
 	}
 }
 
+// TODO coverage?
 string Place::as_argv0() const
 {
 	switch (type) {
@@ -157,6 +159,7 @@ const char *Place::get_filename_str() const
 	return text.empty() ? "<stdin>" : text.c_str();
 }
 
+// TODO coverage?
 bool Place::operator==(const Place &place) const
 {
 	if (this->type != place.type)

@@ -3,7 +3,7 @@
 find_files()
 {
 	find . -type f |
-		grep -v -E -e '^\./(bin|tests)/' -e '~$' -e '^\./.git/' -e '^\./man/stu\.1$'
+		grep -v -E -e '~$' -e '^\./(bin|tests|cov|.git)/' -e '^\./man/stu\.1$'
 	find tests -name EXEC
 }
 

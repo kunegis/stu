@@ -73,6 +73,7 @@ class Target
  * used.  */
 {
 public:
+	// TODO never used?  Remove it.
 	Target()
 		/* The "null" target */
 		:  Target("")  {  }

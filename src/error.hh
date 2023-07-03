@@ -145,7 +145,7 @@ void print_error(string message);
 /* Print an error without a place */
 
 void print_errno(string message);
-/* Like perror(), but use color.  MESSAGE must not contain color codes. */
+/* Like perror(), but use color. */
 
 void print_error_reminder(string message);
 /* Print a reminder of an error on STDERR.  This is used in situations

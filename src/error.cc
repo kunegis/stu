@@ -17,9 +17,9 @@ void print_error(string message)
 		message.c_str());
 }
 
-// TODO coverage?
 void print_errno(string message)
 {
+	// TODO use color
 	assert(message.size() > 0 && message[0] != '') ;
 	fprintf(stderr, "%s: %s\n", message.c_str(), strerror(errno));
 }

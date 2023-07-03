@@ -10,8 +10,7 @@ test: \
     log/test_unit.ndebug \
     log/test_clean_last
 sani: log/test_unit.sani_undefined
-prof: bin/analysis.prof
-.PHONY: all test sani clean prof cov install
+.PHONY: all clean install test cov prof sani
 
 src/version.hh: VERSION sh/mkversion
 	sh/mkversion >src/version.hh
@@ -22,7 +21,11 @@ CXXFLAGS_DEBUG= \
     -Wall -Wextra -Wpedantic \
     -Wunused -Wundef -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
     -Wnon-virtual-dtor -Wformat-nonliteral -Wsuggest-attribute=format \
-    -Wformat-overflow=2 -Wformat=2 -Wformat-signedness -Wformat-truncation=2 -fdelete-null-pointer-checks -Wnull-dereference -Wimplicit-fallthrough -Wignored-attributes -Wswitch-default -Wswitch-enum -Wunused-const-variable=2 -Wuninitialized -Walloc-zero -Wduplicated-branches -Wduplicated-cond -Wunused-macros -Wcast-align -Wrestrict -Wno-parentheses \
+    -Wformat-overflow=2 -Wformat=2 -Wformat-signedness -Wformat-truncation=2 \
+    -fdelete-null-pointer-checks -Wnull-dereference -Wimplicit-fallthrough \
+    -Wignored-attributes -Wswitch-default -Wswitch-enum -Wunused-const-variable=2 \
+    -Wuninitialized -Walloc-zero -Wduplicated-branches -Wduplicated-cond -Wunused-macros \
+    -Wcast-align -Wrestrict -Wno-parentheses \
     -Wlogical-op -Wredundant-decls -fno-gnu-keywords \
     -Wno-unknown-warning-option -Wno-pessimizing-move \
     -D_GLIBCXX_DEBUG
@@ -52,12 +55,6 @@ bin/stu.sani_undefined: conf/CXX src/*.cc src/*.hh src/version.hh
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_SANI)             src/stu.cc -o bin/stu.sani_undefined
 	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_SANI)             src/stu.cc -o bin/stu.sani_undefined
 
-bin/analysis.prof:  bin/gmon.out
-	gprof bin/stu.prof bin/gmon.out >bin/analysis.prof
-
-bin/gmon.out:   bin/stu.prof tests/long-parallel-1/main.stu
-	cd bin && ./stu.prof -j10 -f ../tests/long-parallel-1/main.stu && ../sh/rm_tmps
-
 log/test_options:   sh/test_options src/options.hh man/stu.1.in
 	@echo sh/test_options
 	@     sh/test_options && mkdir -p log && touch $@
@@ -78,16 +75,24 @@ log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/test tests tests/*/*
 	@echo VARIANT=sani_undefined sh/test
 	@     VARIANT=sani_undefined sh/test && mkdir -p log && touch $@
 
+install:  sh/install bin/stu man/stu.1
+	sh/install
+clean:
+	rm -Rf bin conf log cov
+
 MANPAGE:  man/stu.1
 	MANWIDTH=80 man man/stu.1 >MANPAGE
 man/stu.1:  man/stu.1.in VERSION sh/mkman
 	sh/mkman
 
-install:  sh/install bin/stu man/stu.1
-	sh/install
-
-clean:
-	rm -Rf bin conf log cov
-
-cov:  bin/stu.cov sh/cov
+cov:  bin/stu.cov sh/cov bin/stu.cov-stu.gcda
 	sh/cov
+bin/stu.cov-stu.gcda:
+	rm -f bin/stu.cov-stu.gcda
+	VARIANT=cov sh/test
+
+prof: bin/analysis.prof
+bin/analysis.prof:  bin/gmon.out
+	gprof bin/stu.prof bin/gmon.out >bin/analysis.prof
+bin/gmon.out:   bin/stu.prof tests/long-parallel-1/main.stu
+	cd bin && ./stu.prof -j10 -f ../tests/long-parallel-1/main.stu && ../sh/rm_tmps

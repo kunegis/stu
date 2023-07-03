@@ -586,7 +586,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		}
 
 		/* If RET is null, it means we had empty parentheses.
-		 * Return an empty Compound_Dependency in that case  */
+		 * Return an empty Compound_Dependency in that case. */
 		if (ret == nullptr)
 			// TODO coverage?
 			ret= make_shared <Compound_Dep> (place_bracket);

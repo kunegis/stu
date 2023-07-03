@@ -128,7 +128,6 @@ void Place::print(string message,
 	}
 }
 
-// TODO coverage?
 string Place::as_argv0() const
 {
 	switch (type) {
@@ -157,27 +156,6 @@ const char *Place::get_filename_str() const
 {
 	assert(type == Type::INPUT_FILE);
 	return text.empty() ? "<stdin>" : text.c_str();
-}
-
-// TODO coverage?
-bool Place::operator==(const Place &place) const
-{
-	if (this->type != place.type)
-		return false;
-	switch (this->type) {
-	default:  assert(0);
-	case Type::EMPTY:
-	case Type::ARGUMENT:
-	case Type::ENV_OPTIONS:
-		return true;
-	case Type::INPUT_FILE:
-		return
-			this->text == place.text
-			&& this->line == place.line
-			&& this->column == place.column;
-	case Type::OPTION:
-		return this->text == place.text;
-	}
 }
 
 bool Place::operator<(const Place &place) const

@@ -291,9 +291,8 @@ shared_ptr <Command> Tokenizer::parse_command()
 	++p;
 	const char *const p_beg= p;
 
-	size_t line_command= line; /* The line of the place of the command */
-	size_t column_command= p - p_line; /* The column of the place of
-					    * the command */
+	size_t line_command= line;
+	size_t column_command= p - p_line;
 	const size_t line_first= line; /* Where the command started */
 	bool begin= true; /* We have not yet seen non-whitespace */
 

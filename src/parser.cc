@@ -1194,23 +1194,6 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 		deps.push_back(i);
 }
 
-// TODO coverage?
-void Parser::print_separation_message(shared_ptr <const Token> token)
-{
-	string text;
-
-	if (dynamic_pointer_cast <const Name_Token> (token)) {
-		text= fmt("token %s",
-			  show(dynamic_pointer_cast <const Name_Token> (token)));
-	} else if (dynamic_pointer_cast <const Operator> (token)) {
-		text= dynamic_pointer_cast <const Operator> (token)->show_long();
-	} else {
-		assert(false);
-	}
-
-	token->get_place() << fmt("to separate it from %s", text);
-}
-
 bool Parser::next_concatenates() const
 {
 	if (iter == tokens.end())

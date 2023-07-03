@@ -77,27 +77,6 @@ Command::get_lines() const
 	return *lines;
 }
 
-void Operator::render_long(Parts &parts, Rendering) const
-{
-	string t;
-	switch (op) {
-	default: assert(false); break;
-	case '(':  t= "opening parenthesis";  break;
-	case ')':  t= "closing parenthesis";  break;
-	case '[':  t= "opening bracket";      break;
-	case ']':  t= "closing bracket";      break;
-	case '@':  t= "operator";             break;
-	}
-	parts.append_text(t);
-}
-
-string Operator::show_long(Style style) const
-{
-	Parts parts;
-	render_long(parts);
-	return show(parts, style);
-}
-
 void Operator::render(Parts &parts, Rendering) const
 {
 	parts.append_operator(string(1, op));

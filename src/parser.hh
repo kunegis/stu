@@ -175,8 +175,6 @@ private:
 	 * current token.  The current token is assumed to be a
 	 * candidate for concatenation.  */
 
-	static void print_separation_message(shared_ptr <const Token> token);
-
 	static void append_copy(      Name &to,
 				const Name &from);
 	/* If TO ends in '/', append to it the part of FROM that

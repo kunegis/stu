@@ -2,8 +2,7 @@
 # gcov.
 #
 
-# * Make gcov silent
-# * Extract all non-covered lines into a single file, with proper error syntax, and exclude trivial things like assert(false)
+# * fix all issues marked // TODO
 
 # * 'main.stu' exists but cannot be read
 # * Canonicalization in a dynamic dependency
@@ -16,6 +15,9 @@
 # * [FILE] where FILE does not exist
 # * -I:  transient target with a command.
 # * Error message with filename containing \f\r\v (both TTY and non-TTY)
+
+# * Make gcov silent
+# * Extract all non-covered lines into a single file, with proper error syntax, and exclude trivial things like assert(false)
 
 #
 # When executing "stu skjdhfksjdfh", don't show "Command line argument" in the

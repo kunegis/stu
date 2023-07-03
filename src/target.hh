@@ -73,10 +73,8 @@ class Target
  * used.  */
 {
 public:
-	// TODO never used?  Remove it.
-	Target()
-		/* The "null" target */
-		:  Target("")  {  }
+	Target(): Target("") { assert(false); }
+	/* The "null" target */
 
 	explicit Target(string text_)
 		/* TEXT_ is the full text field of this Target */

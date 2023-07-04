@@ -19,9 +19,10 @@ void print_error(string message)
 
 void print_errno(string message)
 {
-	// TODO use color
 	assert(message.size() > 0 && message[0] != '') ;
-	fprintf(stderr, "%s: %s\n", message.c_str(), strerror(errno));
+	fprintf(stderr, "%s%s%s: %s\n",
+		Color::stderr_err_on, message.c_str(), Color::stderr_err_off,
+		strerror(errno));
 }
 
 void print_error_reminder(string message)
@@ -133,12 +134,7 @@ string Place::as_argv0() const
 	switch (type) {
 	default:
 	case Type::EMPTY:
-	case Type::ENV_OPTIONS:
 		assert(false);
-	case Type::ARGUMENT:
-		return "";
-	case Type::OPTION:
-		return fmt("Option -%s", text);
 	case Type::INPUT_FILE: {
 		/* The given argv[0] should not begin with a dash,
 		 * because some shells enable special behaviour
@@ -149,6 +145,12 @@ string Place::as_argv0() const
 			    s[0] == '-' ? "file " : "",
 			    s, line);
 	}
+	case Type::ARGUMENT:
+		return "";
+	case Type::OPTION:
+		return fmt("Option -%s", text);
+	case Type::ENV_OPTIONS:
+		return "$STU_OPTIONS";
 	}
 }
 

@@ -117,3 +117,10 @@ V {
 # For dynamic dependencies, the flag -n should be the default, rather than allowing any
 # Stu syntax.
 #
+
+#
+# Outside of quotes, backslash sequences should have mostly the same meaning as
+# inside double quotes.  E.g.:
+#
+#	\x13    same as "\x13", rather than "x13"
+#

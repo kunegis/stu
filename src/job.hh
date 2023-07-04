@@ -90,10 +90,8 @@ public:
 	 * the argument is set, there must not be unterminated jobs.  */
 
 	static void kill(pid_t pid);
-	/* Kill this job */
-
 	static void init_tty();
-	static pid_t get_tty()  {  return tty;  }
+	static pid_t get_tty() { return tty; }
 
 	class Signal_Blocker
 	/* Block termination signals for the lifetime of an object of this type.

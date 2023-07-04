@@ -217,11 +217,8 @@ public:
 		   line(line_), column(column_)
 	{  }
 
-	Place(Type type_)
-	/* In command line argument (ARGV) */
-		:  type(type_)
-	{
-		assert(type == Type::ARGUMENT);
+	Place(Type type_): type(type_) {
+		assert(type == Type::ARGUMENT || type == Type::ENV_OPTIONS);
 	}
 
 	Place(Type type_, char option)

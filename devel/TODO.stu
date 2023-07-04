@@ -24,6 +24,10 @@
 #
 
 #
+# Compile with clang++ and enable options for unused menber functions and variables.
+#
+
+#
 # Mark this target to always be a persistent dependency
 #
 
@@ -168,3 +172,10 @@ list.${name|[A-Z].*} # Matches uppercase names
 #    -fsanitize=leak         // (Execution caching)
 #    <others>
 #
+
+#
+# Add more dependencies to a target using a flag.
+#
+
+-a A : B;
+# There must already be a rule for A.  The dependency B is added.

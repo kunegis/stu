@@ -426,7 +426,6 @@ void terminate_jobs()
 	}
 
 	if (count_terminated) {
-		// TODO coverage?
 		write_async(2, PACKAGE ": Removing partially built files (");
 		/* Maximum characters in decimal representation of SIZE_T */
 		constexpr size_t len= sizeof(size_t) * CHAR_BIT / 3 + 3;
@@ -440,7 +439,7 @@ void terminate_jobs()
 			n /= 10;
 		} while (n > 0 && --i >= 0);
 		ssize_t r= write(2, out + i, len - i);
-		/* There's not much we can do if that last write() fails */
+		/* There's not much we can do if write() fails */
 		(void) r;
 	}
 
@@ -452,9 +451,8 @@ void terminate_jobs()
 		if (ret < 0) {
 			/* wait() sets errno to ECHILD when there was no
 			 * child to wait for */
-			if (errno != ECHILD) {
+			if (errno != ECHILD)
 				write_async(2, "*** Error: wait\n");
-			}
 			break;
 		}
 		assert_async(ret > 0);

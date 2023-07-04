@@ -30,7 +30,6 @@ void set_option_i()
 	option_i= true;
 	if (Job::get_tty() >= 0)
 		return;
-	// TODO coverage?
 	Place place(Place::Type::OPTION, 'i');
 	print_warning(place,
 		      "Interactive mode cannot be used because no TTY is available");
@@ -110,7 +109,6 @@ void set_env_options()
 		if (c == '-' || isspace(c))
 			continue;
 		if (! option_setting(c)) {
-			// TODO coverage?
 			Place place(Place::Type::ENV_OPTIONS);
 			place << fmt("invalid option %s",
 				     show_prefix("-", frmt("%c", c)));

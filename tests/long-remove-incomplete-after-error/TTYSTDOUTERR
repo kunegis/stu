@@ -1,0 +1,8 @@
+Building [1mA[22m
+Building [1mB[22m
+Building [1mC[22m
+[31m[1mmain.stu[22m:16:2[m: command for [1mC[22m failed with exit status [1m1[22m
+[31m[1mmain.stu[22m:1:12[m: [1mC[22m is needed by [1m@all[22m
+[35m../../bin/stu.test[m: Terminating all jobs
+stu: Terminating all jobs
+stu: Removing partially built files (2)

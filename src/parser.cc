@@ -666,13 +666,7 @@ shared_ptr <const Dep> Parser
 	++iter;
 
 	if (iter == tokens.end()) {
-		// TODO coverage?
-		// maybe tokens $ and [ are only emitted when they appear
-		// together, in which case this branch should be assert(false),
-		// or subsumed in the next branch.
-		place_end << fmt("expected %s", show_operator('['));
-		place_dollar << fmt("after %s", show_operator('$'));
-		throw ERROR_LOGICAL;
+		assert(false);
 	}
 	if (! is_operator('[')) {
 		/* The '$' and '[' operators are only generated when they both
@@ -860,7 +854,6 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 
 	if (iter == tokens.end()) {
 		if (has_input) {
-			// TODO coverage?
 			place_end << "expected a filename";
 			place_input << fmt("after input redirection using %s",
 					   show_operator('<'));

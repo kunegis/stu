@@ -473,11 +473,10 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 		} else if (!has_escape && *p == '$') {
 			string parameter;
 			Place place_dollar;
-			if (parse_parameter(parameter, place_dollar)) {
+			if (parse_parameter(parameter, place_dollar))
 				ret->append_parameter(parameter, place_dollar);
-			} else {
+			else
 				assert(false);
-			}
 		} else if (!has_escape && *p == '\\') {
 			has_escape= parse_escape();
 		} else if (has_escape || is_name_char(*p)) {
@@ -576,7 +575,11 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 bool Tokenizer::is_name_char(char c)
 /* The characters in the string constant are those characters that have
  * special meaning (as defined in the manpage), and those reserved for
- * future extension (also defined in the manpage)  */
+ * future extension (also defined in the manpage).  All non-ASCII characters are
+ * allowed, and thus we don't have to distinguish UTF-8 from 8-bit encodings:
+ * all characters with the most significant bit set will make this return TRUE.
+ * See the file CHARACTERS for more information.  This returns TRUE for the
+ * mid-name characters '-', '+' and '~'.  */
 {
 	return (c > 0x20 && c < 0x7F /* ASCII printable character except space */
 		&& nullptr == strchr("[]\"\':={}#<>@$;()%*\\!?|&,", c))
@@ -675,8 +678,10 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			Place place_dollar= current_place();
 			Place place_langle(place_base.type, place_base.text,
 					   line, p + 1 - p_line);
-			tokens.push_back(make_shared <Operator> ('$', place_dollar, environment));
-			tokens.push_back(make_shared <Operator> ('[', place_langle, environment));
+			tokens.push_back(make_shared <Operator>
+					 ('$', place_dollar, environment));
+			tokens.push_back(make_shared <Operator>
+					 ('[', place_langle, environment));
 			p += 2;
 		}
 

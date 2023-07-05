@@ -159,21 +159,9 @@ private:
 	 * included in FILENAMES.  */
 
 	static bool is_name_char(char);
-	/* Whether the given character can be used as part of a bare filename in
-	 * Stu.  Note that all non-ASCII characters are allowed, and thus we
-	 * don't have to distinguish UTF-8 from 8-bit encodings: all characters
-	 * with the most significant bit set will make this return TRUE.  See
-	 * the file CHARACTERS for more information.  This returns TRUE for the
-	 * mid-name characters '-', '+' and '~'.  */
-
 	static bool is_operator_char(char);
-	/* Whether the character can be an operator */
-
 	static void parse_version(string version_req,
-				  const Place &place_version,
-				  const Place &place_percent);
-	/* Parse a version directive.  VERSION_REQ is the version number
-	 * given after "%version", and PLACE its place.  */
+				  const Place &place_version, const Place &place_percent);
 };
 
 #endif /* ! TOKENIZER_HH */

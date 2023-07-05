@@ -179,3 +179,8 @@ list.${name|[A-Z].*} # Matches uppercase names
 
 -a A : B;
 # There must already be a rule for A.  The dependency B is added.
+
+#
+# Test automatically that only tests whose name start with 'long-' can use
+# 'sleep'.
+#

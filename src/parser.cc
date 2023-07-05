@@ -193,7 +193,6 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			place_end << fmt("expected a dependency, a command, or %s",
 					 show_operator(';'));
 		else
-			// TODO coverage
 			place_end << fmt("expected a command, %s, %s, or %s",
 					 show_operator(';'),
 					 show_operator(':'),
@@ -210,13 +209,9 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 	/* When command is not null, whether the command is a command or
 	 * hardcoded content */
 
-	Place place_nocommand;
-	/* Place of ';' */
-
+	Place place_nocommand; /* Place of ';' */
 	Place place_equal;
-
-	shared_ptr <Name_Token> name_copy;
-	/* Name of the copy-from file */
+	shared_ptr <Name_Token> name_copy; /* Name of the copy-from file */
 
 	if ((command= is <Command> ())) {
 		++iter;
@@ -284,7 +279,6 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 
 			if (! is <Name_Token> ()) {
 				if (iter == tokens.end()) {
-					// TODO coverage?
 					(*iter)->get_place_start() <<
 						fmt("expected a filename, a flag, or %s",
 						    show_operator('{'));
@@ -588,7 +582,6 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		/* If RET is null, it means we had empty parentheses.
 		 * Return an empty Compound_Dependency in that case. */
 		if (ret == nullptr)
-			// TODO coverage?
 			ret= make_shared <Compound_Dep> (place_bracket);
 
 		return true;
@@ -674,6 +667,9 @@ shared_ptr <const Dep> Parser
 
 	if (iter == tokens.end()) {
 		// TODO coverage?
+		// maybe tokens $ and [ are only emitted when they appear
+		// together, in which case this branch should be assert(false),
+		// or subsumed in the next branch.
 		place_end << fmt("expected %s", show_operator('['));
 		place_dollar << fmt("after %s", show_operator('$'));
 		throw ERROR_LOGICAL;

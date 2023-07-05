@@ -87,7 +87,7 @@ man/stu.1:  man/stu.1.in VERSION sh/mkman
 
 cov:  bin/stu.cov sh/cov bin/stu.cov-stu.gcda
 	sh/cov
-bin/stu.cov-stu.gcda:
+bin/stu.cov-stu.gcda:  bin/stu.cov sh/test tests tests/*/*
 	rm -f bin/stu.cov-stu.gcda
 	VARIANT=cov sh/test
 

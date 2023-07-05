@@ -813,7 +813,6 @@ shared_ptr <const Dep> Parser
 			targets.front()->place <<
 				fmt("for target %s", show(*targets.front()));
 		} else if (targets.size() > 1) {
-			// TODO coverage?
 			targets.front()->place <<
 				fmt("for targets %s...", show(*targets.front()));
 		}

@@ -5,7 +5,7 @@ rm -f ? list.* || exit 2
 # Use the silent option (-s) to avoid false positives, i.e., that the
 # greps find the string '@x' erroneously.
 ../../bin/stu.test -s -j6 >list.out 2>list.err &
-pid="$!"
+pid=$!
 
 echo sleep 1
 sleep 1 || exit 2

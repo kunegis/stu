@@ -1,0 +1,6 @@
+>A:  list.(a b)~3 {
+	cat list.a~3 list.b~3
+}
+
+list.a~3 = {111}
+list.b~3 = {222}

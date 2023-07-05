@@ -1,0 +1,10 @@
+>A:  [-n X]
+{
+	cat x.*
+}
+
+x."\a\b\f\r\t\v" = {CORRECT}
+
+>X {
+	printf 'x.\a\b\f\r\t\v\n'
+}

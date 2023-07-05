@@ -41,9 +41,8 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			fd= open(filename.c_str(), O_RDONLY);
 			if (fd < 0) {
 				if (allow_enoent) {
-					if (errno == ENOENT) {
+					if (errno == ENOENT)
 						return;
-					}
 				}
 				goto error;
 			}

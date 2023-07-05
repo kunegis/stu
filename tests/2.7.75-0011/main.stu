@@ -1,0 +1,11 @@
+A:  [B//C] {
+	cp D A
+}
+
+>B/C:  -p B {
+	echo D
+}
+
+B { mkdir B ; }
+
+D = {CORRECT}

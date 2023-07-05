@@ -2,11 +2,6 @@
 # gcov.
 #
 
-# * 'main.stu' exists but cannot be read
-# * Canonicalization in a dynamic dependency
-# * Command with multiple lines, every line starting with tab, and one of the lines has only that tab.
-# * Double quote containing:  \a\b\f\r\t\v
-# * Double quote containing \0
 # * Several newlines between %version and the number
 # * Cycle in the dependency graph with -k
 # * Cycle in the dependency graph involving a concatenation

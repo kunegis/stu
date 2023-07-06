@@ -43,6 +43,7 @@
 
 #include "target.hh"
 #include "flags.hh"
+#include "hints.hh"
 #include "options.hh"
 #include "show.hh"
 
@@ -468,7 +469,7 @@ public:
 	virtual const Place &get_place() const { return place; }
 	virtual void render(Parts &, Rendering= 0) const;
 	virtual bool is_normalized() const { return false; }
-	virtual Target get_target() const { assert(false); return Target(); }
+	virtual Target get_target() const { unreachable(); }
 };
 
 class Root_Dep
@@ -484,7 +485,7 @@ public:
 	virtual bool is_unparametrized() const { return false; }
 	virtual const Place &get_place() const { return Place::place_empty; }
 	virtual void render(Parts &parts, Rendering= 0) const;
-	virtual Target get_target() const { assert(false); return Target(); }
+	virtual Target get_target() const { unreachable(); }
 	virtual bool is_normalized() const { return true; }
 };
 

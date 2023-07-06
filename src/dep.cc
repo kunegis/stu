@@ -21,8 +21,7 @@ shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 	} else if (to <Root_Dep> (dep)) {
 		return make_shared <Root_Dep> (* to <Root_Dep> (dep));
 	} else {
-		assert(false);
-		return nullptr;
+		unreachable();
 	}
 }
 
@@ -318,7 +317,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			if (error && ! option_k)
 				return;
 		} else {
-			assert(false);
+			unreachable();
 		}
 	} else {
 		vector <shared_ptr <const Dep> > vec1, vec2;
@@ -343,7 +342,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			if (error && ! option_k)
 				return;
 		} else {
-			assert(false);
+			unreachable();
 		}
 
 		for (const auto &d1: vec1) {
@@ -361,8 +360,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 Target Concat_Dep::get_target() const
 {
 	/* Dep::get_target() is not used for complex dependencies */
-	assert(false);
-	return Target();
+	unreachable();
 }
 
 shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
@@ -551,6 +549,6 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 		if (error && ! option_k)
 			return;
 	} else {
-		assert(false);
+		unreachable();
 	}
 }

@@ -3,7 +3,7 @@
 Transient_Executor::~Transient_Executor()
 /* Objects of this type are never deleted */
 {
-	assert(false);
+	unreachable();
 }
 
 Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_this)

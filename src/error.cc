@@ -80,9 +80,7 @@ void Place::print(string message,
 	switch (type) {
 	default:
 	case Type::EMPTY:
-		/* It's a common bug in Stu to have empty places, so
-		 * better provide sensible behavior in NDEBUG builds.  */
-		assert(false);
+		should_not_happen();
 		fprintf(stderr, "%s\n", message.c_str());
 		break;
 
@@ -134,7 +132,8 @@ string Place::as_argv0() const
 	switch (type) {
 	default:
 	case Type::EMPTY:
-		assert(false);
+		should_not_happen();
+		/* Fall through */
 	case Type::INPUT_FILE: {
 		/* The given argv[0] should not begin with a dash,
 		 * because some shells enable special behaviour

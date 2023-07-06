@@ -18,6 +18,7 @@ using namespace std;
 #include "main_loop.cc"
 #include "options.cc"
 #include "parser.cc"
+#include "preset.cc"
 #include "root_executor.cc"
 #include "rule.cc"
 #include "show.cc"

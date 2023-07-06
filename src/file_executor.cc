@@ -8,7 +8,8 @@ unordered_map <string, Timestamp> File_Executor::transients;
 File_Executor::~File_Executor()
 /* Objects of this type are never deleted */
 {
-	assert(false);
+	unreachable();
+#if 0
 	/* We write this here as a reminder if this is ever activated */
 	free(timestamps_old);
 	if (filenames) {
@@ -17,6 +18,7 @@ File_Executor::~File_Executor()
 				free(filenames[i]);
 		free(filenames);
 	}
+#endif /* 0 */
 }
 
 void File_Executor::wait()
@@ -298,7 +300,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 		} else if (target_.is_transient()) {
 			rule_not_found= true;
 		} else {
-			assert(false);
+			unreachable();
 		}
 
 		if (rule_not_found) {

@@ -75,10 +75,11 @@ BEGIN {
 	return 0
 }
 
-find_noninitial_tab()
+find_forbidden_tab()
 {
 	find_files |
 		xargs grep -E -n -e '[^'"$(printf '\t')"'#*]'"$(printf '\t')" |
+		grep -v -F -e "$(printf '\t')"'\' |
 		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Tabs can only be present at beginning of line,' |
 		grep -E '.' >&2 && return 1
 	return 0
@@ -100,6 +101,14 @@ find_control()
 		xargs grep -E -n -e '['"$(printf '\r')"']' |
 		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain control character,' |
 		grep -E '.' >&2 && return 1
+	return 0
+}
+
+find_assert_false()
+{
+	grep -F -n 'assert(false)' src/*.cc src/*.hh |
+	sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 C++ source must use hints.hh instead of assert(false),' |
+	grep -E '.' >&2 && return 1
 	return 0
 }
 
@@ -132,9 +141,10 @@ find_double_hash || ret=1
 find_space_file || ret=1
 find_space_line || ret=1
 find_double_empty_line || ret=1
-find_noninitial_tab || ret=1
+find_forbidden_tab || ret=1
 find_backtick || ret=1
 find_control || ret=1
+find_assert_false || ret=1
 find_sed || ret=1
 find_manpage_tab || ret=1
 

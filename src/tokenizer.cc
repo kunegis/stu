@@ -162,7 +162,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 					goto error;
 				break;
 			default:
-				assert(false);
+				unreachable();
 			}
 
 			return;
@@ -218,7 +218,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				munmap((void *) in, in_size);
 				break;
 			default:
-				assert(false);
+				unreachable();
 			}
 		}
 
@@ -474,7 +474,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 			if (parse_parameter(parameter, place_dollar))
 				ret->append_parameter(parameter, place_dollar);
 			else
-				assert(false);
+				unreachable();
 		} else if (!has_escape && *p == '\\') {
 			has_escape= parse_escape();
 		} else if (has_escape || is_name_char(*p)) {
@@ -892,7 +892,7 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 			if (parse_parameter(parameter, place_dollar)) {
 				ret.append_parameter(parameter, place_dollar);
 			} else {
-				assert(false);
+				unreachable();
 			}
 		} else if (*p == '\\') {
 			Place place_backslash= current_place();

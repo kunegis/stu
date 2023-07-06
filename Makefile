@@ -17,17 +17,15 @@ src/version.hh: VERSION sh/mkversion
 conf/CXX: sh/conf
 	sh/conf
 CXXFLAGS_DEBUG= \
-    -ggdb -O0 -Werror \
-    -Wall -Wextra -Wpedantic \
+    -ggdb -O0 -Werror -Wall -Wextra -Wpedantic \
     -Wunused -Wundef -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
     -Wnon-virtual-dtor -Wformat-nonliteral -Wsuggest-attribute=format \
     -Wformat-overflow=2 -Wformat=2 -Wformat-signedness -Wformat-truncation=2 \
     -fdelete-null-pointer-checks -Wnull-dereference -Wimplicit-fallthrough \
     -Wignored-attributes -Wswitch-default -Wswitch-enum -Wunused-const-variable=2 \
     -Wuninitialized -Walloc-zero -Wduplicated-branches -Wduplicated-cond -Wunused-macros \
-    -Wcast-align -Wrestrict -Wno-parentheses \
-    -Wlogical-op -Wredundant-decls -fno-gnu-keywords \
-    -Wno-unknown-warning-option -Wno-pessimizing-move \
+    -Wcast-align -Wrestrict -Wno-parentheses -Wlogical-op -Wredundant-decls \
+    -fno-gnu-keywords -Wno-pessimizing-move \
     -D_GLIBCXX_DEBUG
 CXXFLAGS_PROF= -pg -O2 -DNDEBUG
 CXXFLAGS_COV=  --coverage -lgcov -O0 -DNDEBUG -DSTU_COV

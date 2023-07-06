@@ -133,7 +133,7 @@ public:
 		(void) source;
 		(void) flags;
 		(void) dep_source;
-		assert(false);
+		unreachable();
 	}
 
 	virtual void notify_variable(const map <string, string> &result_variable_child) {

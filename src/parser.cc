@@ -660,13 +660,11 @@ shared_ptr <const Dep> Parser
 	const Place place_dollar= (*iter)->get_place();
 	++iter;
 
-	if (iter == tokens.end()) {
-		assert(false);
-	}
+	assert(iter != tokens.end());
 	if (! is_operator('[')) {
 		/* The '$' and '[' operators are only generated when they both
 		 * appear in conjunction.  */
-		assert(false);
+		should_not_happen();
 		return nullptr;
 	}
 	++iter;
@@ -698,7 +696,7 @@ shared_ptr <const Dep> Parser
 				flags |= F_TRIVIAL;
 				places_flags[I_TRIVIAL]= place_flag_last;
 			}
-		} else assert(false);
+		} else unreachable();
 		++iter;
 	}
 

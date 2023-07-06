@@ -11,7 +11,7 @@ Quote_Safeness Part::need_quotes() const
 			ret= max(ret, need_quotes(c));
 		return ret;
 	} else {
-		assert(false);
+		should_not_happen();
 		return QS_MIN;
 	}
 }

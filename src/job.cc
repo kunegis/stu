@@ -350,7 +350,7 @@ pid_t Job::wait(int *status)
 		/* Should not happen as there is always something running when
 		 * this function is called.  However, this may be common enough
 		 * that we may want Stu to act correctly.  */
-		assert(false);
+		should_not_happen();
 		perror("waitpid");
 		abort();
 	}
@@ -415,7 +415,7 @@ pid_t Job::wait(int *status)
 	if (r != 0) {
 		if (errno == EINTR) {
 			/* This should not happen, but be prepared */
-			assert(false);
+			should_not_happen();
 			goto retry;
 		} else {
 			perror("sigwait");
@@ -449,7 +449,7 @@ pid_t Job::wait(int *status)
 		goto retry;
 	default:
 		/* We didn't wait for this signal */
-		assert(false);
+		should_not_happen();
 		fprintf(stderr, "*** sigwait: Received signal %d\n", sig);
 		goto begin;
 	}

@@ -2,12 +2,6 @@
 # gcov.
 #
 
-# * Maybe use NDEBUG in coverage mode
-
-# * Cycle in the dependency graph with -k
-# * Cycle in the dependency graph involving a concatenation
-# * [FILE] where FILE is not readable
-# * -I:  transient target with a command.
 # * Error message with filename containing \f\r\v (both TTY and non-TTY)
 # * use "stu -f -" with content piped in by echo (not by input redirection)
 

@@ -9,16 +9,12 @@ File_Executor::~File_Executor()
 /* Objects of this type are never deleted */
 {
 	assert(false);
-
 	/* We write this here as a reminder if this is ever activated */
-
 	free(timestamps_old);
 	if (filenames) {
-		for (size_t i= 0; i < targets.size(); ++i) {
-			if (filenames[i]) {
+		for (size_t i= 0; i < targets.size(); ++i)
+			if (filenames[i])
 				free(filenames[i]);
-			}
-		}
 		free(filenames);
 	}
 }

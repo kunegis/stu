@@ -1,0 +1,4 @@
+A:  list.xyz;
+list.xyz:  list.(a b);
+list.a = A;
+list.b = {ERROR}

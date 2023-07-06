@@ -30,7 +30,7 @@ CXXFLAGS_DEBUG= \
     -Wno-unknown-warning-option -Wno-pessimizing-move \
     -D_GLIBCXX_DEBUG
 CXXFLAGS_PROF= -pg -O2 -DNDEBUG
-CXXFLAGS_COV=  -O0 --coverage
+CXXFLAGS_COV=  --coverage -O0 -DNDEBUG
 CXXFLAGS_SANI= -pg -O2 -Werror -Wno-unused-result -fsanitize=undefined \
     -fsanitize-undefined-trap-on-error
 

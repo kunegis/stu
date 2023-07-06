@@ -4,6 +4,14 @@
 
 #include "file_executor.hh"
 
+#ifdef STU_COV
+extern "C" {
+#include "gcov.h"
+}
+#else
+#define __gcov_dump()
+#endif
+
 size_t Job::count_jobs_exec=    0;
 size_t Job::count_jobs_success= 0;
 size_t Job::count_jobs_fail=    0;
@@ -91,6 +99,7 @@ pid_t Job::start(string command,
 		 * blocked after exec().  Thus, unblock them here.  */
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_termination_productive, nullptr)) {
 			perror("sigprocmask");
+			__gcov_dump();
 			_Exit(ERROR_FORK_CHILD);
 		}
 		::signal(SIGTTIN, SIG_DFL);
@@ -117,8 +126,8 @@ pid_t Job::start(string command,
 		const char** envp= (const char **)
 			malloc(sizeof(char **) * (v_old + v_new + 1));
 		if (!envp) {
-			assert(false);
 			perror("malloc");
+			__gcov_dump();
 			_Exit(ERROR_FORK_CHILD);
 		}
 		memcpy(envp, envp_global, v_old * sizeof(char **));
@@ -130,12 +139,13 @@ pid_t Job::start(string command,
 			size_t len_combined= key.size() + 1 + value.size() + 1;
 			char *combined= (char *)malloc(len_combined);
 			if (! combined) {
-				assert(false);
 				perror("malloc");
+				__gcov_dump();
 				_Exit(ERROR_FORK_CHILD);
 			}
 			if ((ssize_t)(len_combined - 1) != snprintf(combined, len_combined, "%s=%s", key.c_str(), value.c_str())) {
 				perror("snprintf");
+				__gcov_dump();
 				_Exit(ERROR_FORK_CHILD);
 			}
 			if (old.count(key)) {
@@ -205,12 +215,14 @@ pid_t Job::start(string command,
 				 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 			if (fd_output < 0) {
 				perror(filename_output.c_str());
+				__gcov_dump();
 				_Exit(ERROR_FORK_CHILD);
 			}
 			assert(fd_output != 1);
 			int r= dup2(fd_output, 1); /* 1 = file descriptor of STDOUT */
 			if (r < 0) {
 				perror(filename_output.c_str());
+				__gcov_dump();
 				_Exit(ERROR_FORK_CHILD);
 			}
 			assert(r == 1);
@@ -226,24 +238,29 @@ pid_t Job::start(string command,
 			int fd_input= open(name, O_RDONLY);
 			if (fd_input < 0) {
 				perror(name);
+				__gcov_dump();
 				_Exit(ERROR_FORK_CHILD);
 			}
 			assert(fd_input >= 3);
 			int r= dup2(fd_input, 0); /* 0 = file descriptor of STDIN */
 			if (r < 0) {
 				perror(name);
+				__gcov_dump();
 				_Exit(ERROR_FORK_CHILD);
 			}
 			assert(r == 0);
 			if (close(fd_input) < 0) {
 				perror(name);
+				__gcov_dump();
 				_Exit(ERROR_FORK_CHILD);
 			}
 		}
 
+		__gcov_dump();
 		int r= execve(shell, (char *const *) argv, (char *const *) envp);
 		assert(r == -1);
 		perror("execve");
+		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
 
@@ -305,9 +322,11 @@ pid_t Job::start_copy(string target,
 				     source.c_str(),
 				     target.c_str(),
 				     nullptr};
+		__gcov_dump();
 		int r= execv(cp_command, (char *const *) argv);
 		assert(r == -1);
 		perror("execv");
+		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
 
@@ -380,16 +399,14 @@ pid_t Job::wait(int *status)
 	int sig;
 	int r;
  retry:
+	/* We block the termination signals and wait for them using sigwait(),
+	 * because the signal handlers for them may not be called while
+	 * sigwait() is pending.  Depending on the system, sigwait() may allow
+	 * handlers for non-blocked signals to be executed while sigwait()
+	 * waits, or have them executed only once sigwait() returns.  Note that
+	 * sigwaitinfo() should (in principle) not have this problem, but it is
+	 * less portable. */
 	{
-		/* We block the termination signals and wait for them
-		 * using sigwait(), because the signal handlers for them
-		 * may not be called while sigwait() is pending.
-		 * Depending on the system, sigwait() may allow handlers
-		 * for non-blocked signals to be executed while
-		 * sigwait() waits, or have them executed only once
-		 * sigwait() returns.  Note that sigwaitinfo() should
-		 * (in principle) not have this problem, but it is less
-		 * portable.  */
 		Signal_Blocker signal_blocker;
 		errno= 0;
 		r= sigwait(&set_termination_productive, &sig);
@@ -398,6 +415,7 @@ pid_t Job::wait(int *status)
 	if (r != 0) {
 		if (errno == EINTR) {
 			/* This should not happen, but be prepared */
+			assert(false);
 			goto retry;
 		} else {
 			perror("sigwait");
@@ -407,8 +425,9 @@ pid_t Job::wait(int *status)
 
 	int is_termination= sigismember(&set_termination, sig);
 	if (is_termination == 1) {
-		/* Should not happen, because the handler will be called as soon
-		 * as the termination signal is unblocked.  But be safe.  */
+		/* If a termination signal arrives while we were waiting, the
+		 * signal handler may be called immediately after sigwait()
+		 * ends, or it may not. */
 		raise(sig);
 		perror("raise");
 		exit(ERROR_FATAL);
@@ -422,7 +441,7 @@ pid_t Job::wait(int *status)
 		/* Don't act on the signal here.  We could get the PID and
 		 * STATUS from siginfo, but then the process would stay a
 		 * zombie.  Therefore, we have to call waitpid().  The call to
-		 * waitpid() will then return the proper signal.  */
+		 * waitpid() will then return the proper signal. */
 		goto begin;
 	case SIGUSR1:
 		print_statistics(true);

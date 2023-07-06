@@ -189,14 +189,9 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 
 	/* Command */
 	if (iter == tokens.end()) {
-		if (had_colon)
-			place_end << fmt("expected a dependency, a command, or %s",
-					 show_operator(';'));
-		else
-			place_end << fmt("expected a command, %s, %s, or %s",
-					 show_operator(';'),
-					 show_operator(':'),
-					 show_operator('='));
+		assert(had_colon);
+		place_end << fmt("expected a dependency, a command, or %s",
+				 show_operator(';'));
 		place_param_targets[0]->place
 			<< fmt("for target %s", show(*place_param_targets[0]));
 		throw ERROR_LOGICAL;

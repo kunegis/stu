@@ -1,15 +1,4 @@
 #
-# gcov.
-#
-# * Switch to lcov
-# * Add in readme that lcov is a dependency
-# * Exclude system headers
-# * Exclude unreachable()
-# * Exclude should_not_happen()
-# * Mark and exclude hard-to-test parts (errors from system calls or library functions)
-# * Later: test syscall and libc function failure using mock implementations of them.
-
-#
 # When executing "stu skjdhfksjdfh", don't show "Command line argument" in the
 # output.
 #

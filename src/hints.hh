@@ -11,9 +11,9 @@
 #define should_not_happen()
 
 #ifdef __GNUC__
-#define unreachable() __builtin_unreachable();
+#	define unreachable() __builtin_unreachable();
 #else
-#define unreachable()
+#	define unreachable()
 #endif
 
 #else /* ! NDEBUG */

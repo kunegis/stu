@@ -1,0 +1,9 @@
+A: ./ {
+	cp B A
+}
+
+.: B {
+	touch C
+}
+
+B = {CORRECT}

@@ -1,26 +1,9 @@
-#
 # This file lists features that we decided not to implement yet.
 # Many of these ideas are actually good, in particular the "normal"
 # category, and we may revive them in the future.  When in doubt, we
 # prefer to not support a feature, as adding a feature in the future can
 # always be done without breaking compatibility, whereas removing one is
 # always backward-incompatible.
-#
-
-#==== Optimizations ====
-
-#
-# When parsing rules, only save the "body" part of the rule (everything except
-# the target) as an unparsed string.  Parse it properly only when needed.  This
-# will not catch certain errors anymore.
-#
-
-#
-# Cache the content of files that are used as dynamic dependencies or
-# dynamic variables.
-#
-
-#==== Normal features ====
 
 #
 # Have an option to output the dependency graph, i.e., output each edge
@@ -344,36 +327,10 @@ A:  <B { ./command-A --output A ; }
 # Both commands may be executed in parallel by Stu, using pipes and
 # tee-like behaviour
 
-#==== External features ====
-
 #
-# These features can be implemented outside of Stu using constructs
-# supported by Stu.  Thus, there is no need to integrate them into Stu,
-# and in fact supporting them would bloat Stu and unnecessary
-# dependencies to it.
+# Achieve full coverage.
 #
-# If anything, the question we should ask for each of these features is
-# not whether we should hardcode it into Stu, but how easily these
-# things can be implemented using the Stu language.  If necessary, we
-# may then extend the Stu language to make such implementations
-# possible, and easy.
-#
-
-#
-# Things that can be implemented by simply using the appropriate
-# commands:
-#
-# * Compression, archiving, and encryption
-# * Converting encodings, line endings, and processing escape sequences
-# * Limitations on runtime, memory usages and other resources by jobs
-# * Calling interpreters or compilers for specific programming languages
-#
-
-#
-# Run jobs in a distributed fashion, i.e., on different hosts.  The idea
-# here would be to use any software for distributing jobs and call it
-# for each Stu job.  This would slightly interfere with what Stu itself
-# is doing, since a distributed job management system also has to decide
-# when a job is executed.  Most also have dependency management
-# capabilities.
+# * Exclude unreachable() blocks from counting
+# * Exclude should_not_happen() blocks count
+# * Test syscall and libc function failure using mock implementations of them
 #

@@ -4,5 +4,6 @@ set -e
 
 rm -Rf cov
 mkdir cov
-lcov -c -d bin -o cov/lcov.info
-genhtml cov/lcov.info -o cov
+gcov -r bin/stu.cov-stu.gc >overview.gcov
+mv ./*.gcov cov/
+tail -1 cov/overview.gcov

@@ -1,7 +1,5 @@
-#
 # These features are backward-incompatible and can therefore only be
 # implemented in the next major version, i.e., in Stu 3.
-#
 
 #
 # Have the same brace syntax as in the shell.  In particular:

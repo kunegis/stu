@@ -1,7 +1,5 @@
-#
 # These are changes that will need newer versions of the C++ standard and/or
 # compilers than what we use now.
-#
 
 #
 # preset.h:  Use to_address(v.end()) instead of v.data() + v.size()  (needs C++20)
@@ -18,14 +16,6 @@
 
 #
 # Use flat_map where appropriate (C++23).
-#
-
-#
-# Check out warnings in new compiler versions.
-#
-
-#
-# Use custom formatting function for errors, etc.
 #
 
 #

@@ -40,8 +40,8 @@ typedef unsigned Canonicalize_Flags;
 /* Declared as integer so arithmetic can be performed on it */
 
 enum
-/* Each flags means:  The begin/end of the string is adjacent to the
- * very beginning/end of the name, rather than to a parameter.  */
+/* Each flags means:  The begin/end of the string is adjacent to beginning/end
+ * of the name, rather than to a parameter. */
 {
 	A_BEGIN  = 1 << 0,
 	A_END    = 1 << 1,

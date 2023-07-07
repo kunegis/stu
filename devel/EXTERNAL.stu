@@ -1,0 +1,29 @@
+# These features can be implemented outside of Stu using constructs
+# supported by Stu.  Thus, there is no need to integrate them into Stu,
+# and in fact supporting them would bloat Stu and unnecessary
+# dependencies to it.
+#
+# If anything, the question we should ask for each of these features is
+# not whether we should hardcode it into Stu, but how easily these
+# things can be implemented using the Stu language.  If necessary, we
+# may then extend the Stu language to make such implementations
+# possible, and easy.
+
+#
+# Things that can be implemented by simply using the appropriate
+# commands:
+#
+# * Compression, archiving, and encryption
+# * Converting encodings, line endings, and processing escape sequences
+# * Limitations on runtime, memory usages and other resources by jobs
+# * Calling interpreters or compilers for specific programming languages
+#
+
+#
+# Run jobs in a distributed fashion, i.e., on different hosts.  The idea
+# here would be to use any software for distributing jobs and call it
+# for each Stu job.  This would slightly interfere with what Stu itself
+# is doing, since a distributed job management system also has to decide
+# when a job is executed.  Most also have dependency management
+# capabilities.
+#

@@ -696,7 +696,9 @@ shared_ptr <const Dep> Parser
 				flags |= F_TRIVIAL;
 				places_flags[I_TRIVIAL]= place_flag_last;
 			}
-		} else unreachable();
+		} else {
+			unreachable();
+		}
 		++iter;
 	}
 

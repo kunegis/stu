@@ -60,6 +60,7 @@ void File_Executor::wait()
 		 * just finished.  Should not happen, but since the PID
 		 * value came from outside this process, we better
 		 * handle this case gracefully, i.e., do nothing.  */
+		should_not_happen();
 		print_warning(Place(),
 			      frmt("The function waitpid(2) returned the invalid process ID %jd",
 				   (intmax_t)pid));
@@ -188,6 +189,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		} else {
 			/* This should not happen but the standard does not exclude
 			 * it  */
+			should_not_happen();
 			reason= frmt("failed with status %s%d%s",
 				     Color::highlight_on[CH_ERR],
 				     status,

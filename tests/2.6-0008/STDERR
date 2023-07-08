@@ -1,1 +1,1 @@
-Command line argument: no rule to build "xxx//yyy"
+../../bin/stu.test: no rule to build "xxx//yyy"

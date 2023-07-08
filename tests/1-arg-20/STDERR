@@ -1,2 +1,2 @@
-Command line argument: expected the name of a transient target
-Command line argument: after @
+../../bin/stu.test: expected the name of a transient target
+../../bin/stu.test: after @

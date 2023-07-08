@@ -1,1 +1,1 @@
-Command line argument: expected a flag character after dash -, not "\x01"
+../../bin/stu.test: expected a flag character after dash -, not "\x01"

@@ -1,11 +1,19 @@
 #
-# When executing "stu skjdhfksjdfh", don't show "Command line argument" in the
-# output.
+# Compile with clang++ and enable options for unused member functions and variables.
 #
 
 #
-# Compile with clang++ and enable options for unused menber functions and variables.
+# Make the following consistent:
 #
+
+$ stu -k
+stu: *** Expected a target or the default file main.stu
+$ stu -k ksdjalskdj
+stu: no rule to build ksdjalskdj
+stu: Targets not up to date because of errors
+
+# * Use '***' everywhere or nowhere (better nowhere)
+# * Use capitalization consistently (make everything uppercase)
 
 #
 # Mark this target to always be a persistent dependency
@@ -167,4 +175,9 @@ list.${name|[A-Z].*} # Matches uppercase names
 
 #
 # Use [[fallthrough]].  (C++17)
+#
+
+#
+# Have flags +p +o +t that negative -p -o -t (useful when flags can be put on
+# the target side of rules).
 #

@@ -65,4 +65,4 @@ works correctly.
 
 Execute all unit tests using 'make test'.  If an error is reported, report
 it to <kunegis@gmail.com>.  It takes about five minutes (running the tests, not
-reporting to the developers).  Unit tests need "expect" to be install.
+reporting to the developers).  Unit tests need "expect" to be installed.

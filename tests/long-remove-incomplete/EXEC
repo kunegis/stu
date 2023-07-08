@@ -48,7 +48,7 @@ exitstatus=$?
 	exit 1
 }
 
-grep -qF "Removing file \"list.B\" because command failed" list.err || {
+grep -qF "removing file \"list.B\" because command failed" list.err || {
 	echo >&2 "*** Missing error message (B)"
 	echo >&2 stderr:
 	echo >&2 ___________
@@ -109,8 +109,10 @@ kill -TERM "$pid" || exit 2
 wait "$pid" 2>/dev/null
 exitstatus=$?
 
-grep -q -F -e "Removing partially built files" list.err || {
+grep -q -F -e "removing partially built files" list.err || {
 	echo >&2 "*** Missing error message (D)"
+	echo >&2 list.err:
+	cat  >&2 list.err
 	exit 1
 }
 

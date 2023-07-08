@@ -17,7 +17,7 @@ exitstatus=$?
 	exit 1
 }
 
-grep -qF 'Removing partially built files (30)' list.err || {
+grep -qF 'removing partially built files (30)' list.err || {
 	echo >&2 "*** Expecting number of removed files"
 	echo >&2 '___ list.err ___'
 	cat  >&2 list.err

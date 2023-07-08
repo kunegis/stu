@@ -1,2 +1,2 @@
 ../../bin/stu.test: no rule to build "12345"
-../../bin/stu.test: Targets not up to date because of errors
+../../bin/stu.test: targets not up to date because of errors

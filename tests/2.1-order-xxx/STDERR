@@ -1,1 +1,1 @@
-../../bin/stu.test: *** Invalid argument "ksjhfckwuhef" for option -m; valid values are "random" and "dfs"
+../../bin/stu.test: invalid argument "ksjhfckwuhef" for option -m; valid values are "random" and "dfs"

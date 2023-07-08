@@ -9,13 +9,13 @@ test: \
     log/test_clean \
     log/test_unit.ndebug \
     log/test_clean_last
-sani: log/test_unit.sani_undefined
 .PHONY: all clean install test cov prof sani
 
-src/version.hh: VERSION sh/mkversion
-	sh/mkversion >src/version.hh
 conf/CXX: sh/conf
 	sh/conf
+src/version.hh: VERSION sh/mkversion
+	sh/mkversion >src/version.hh
+
 CXXFLAGS_DEBUG= \
     -ggdb -O0 -Werror -Wall -Wextra -Wpedantic \
     -Wunused -Wundef -Wwrite-strings -Wzero-as-null-pointer-constant -Wshadow \
@@ -94,3 +94,5 @@ bin/analysis.prof:  bin/gmon.out
 	gprof bin/stu.prof bin/gmon.out >bin/analysis.prof
 bin/gmon.out:   bin/stu.prof tests/long-parallel-1/main.stu
 	cd bin && ./stu.prof -j10 -f ../tests/long-parallel-1/main.stu && ../sh/rm_tmps
+
+sani: log/test_unit.sani_undefined

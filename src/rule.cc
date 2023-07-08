@@ -84,10 +84,8 @@ shared_ptr <const Rule>
 Rule::instantiate(shared_ptr <const Rule> rule,
 		  const map <string, string> &mapping)
 {
-	/* The rule is unparametrized -- return it */
-	if (rule->get_parameters().size() == 0) {
+	if (rule->get_parameters().size() == 0)
 		return rule;
-	}
 
 	vector <shared_ptr <const Place_Param_Target> >
 		place_param_targets(rule->place_param_targets.size());
@@ -95,18 +93,14 @@ Rule::instantiate(shared_ptr <const Rule> rule,
 		place_param_targets[i]= rule->place_param_targets[i]->instantiate(mapping);
 
 	vector <shared_ptr <const Dep> > deps;
-	for (auto &dep: rule->deps) {
+	for (auto &dep: rule->deps)
 		deps.push_back(dep->instantiate(mapping));
-	}
 
 	return make_shared <Rule>
 		(move(place_param_targets),
-		 move(deps),
-		 rule->place,
-		 rule->command,
+		 move(deps), rule->place, rule->command,
 		 move(rule->filename.instantiate(mapping)),
-		 rule->is_hardcode,
-		 rule->redirect_index,
+		 rule->is_hardcode, rule->redirect_index,
 		 rule->is_copy);
 }
 

@@ -29,7 +29,7 @@ Trace::Init::Init()
 		} else if (!strcmp(env, "off")) {
 			trace_files[i]= nullptr;
 		} else {
-			fprintf(stderr, "*** Error: Invalid value for trace %s=%s\n",
+			fprintf(stderr, "stu: error: invalid value for trace %s=%s\n",
 				name.c_str(), env);
 			exit(ERROR_FATAL);
 		}

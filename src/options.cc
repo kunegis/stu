@@ -32,7 +32,7 @@ void set_option_i()
 		return;
 	Place place(Place::Type::OPTION, 'i');
 	print_warning(place,
-		      "Interactive mode cannot be used because no TTY is available");
+		      "interactive mode cannot be used because no TTY is available");
 }
 
 void set_option_j(const char *value)
@@ -70,7 +70,7 @@ void set_option_m(const char *value)
 	} else if (!strcmp(value, "dfs")) {
 		/* Default */ ;
 	} else {
-		print_error(fmt("Invalid argument %s for option %s; valid values are %s and %s",
+		print_error(fmt("invalid argument %s for option %s; valid values are %s and %s",
 				show(value),
 				show_prefix("-", "m"),
 				show("random"),
@@ -125,7 +125,7 @@ void check_status()
 	const char *const stu_status= getenv("STU_STATUS");
 	if (!stu_status)
 		return;
-	print_error(fmt("Refusing to run recursive Stu; unset %s to circumvent",
+	print_error(fmt("refusing to run recursive Stu; unset %s to circumvent",
 			show_operator("$STU_STATUS")));
 	exit(ERROR_FATAL);
 }

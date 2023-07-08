@@ -1,1 +1,1 @@
-main.stu:6:3: warning: File target "C" which has no command is older than its dependency
+main.stu:6:3: warning: file target "C" which has no command is older than its dependency

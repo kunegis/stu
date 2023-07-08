@@ -62,7 +62,7 @@ void File_Executor::wait()
 		 * handle this case gracefully, i.e., do nothing.  */
 		should_not_happen();
 		print_warning(Place(),
-			      frmt("The function waitpid(2) returned the invalid process ID %jd",
+			      frmt("the function waitpid(2) returned the invalid process ID %jd",
 				   (intmax_t)pid));
 		return;
 	}
@@ -407,7 +407,7 @@ void terminate_jobs()
 
 	int errno_save= errno;
 
-	write_async(2, PACKAGE ": Terminating all jobs\n");
+	write_async(2, PACKAGE ": terminating all jobs\n");
 
 	/* We have two separate loops, one for killing all jobs, and one
 	 * for removing all target files.  This could also be merged
@@ -426,7 +426,7 @@ void terminate_jobs()
 	}
 
 	if (count_terminated) {
-		write_async(2, PACKAGE ": Removing partially built files (");
+		write_async(2, PACKAGE ": removing partially built files (");
 		/* Maximum characters in decimal representation of SIZE_T */
 		constexpr size_t len= sizeof(size_t) * CHAR_BIT / 3 + 3;
 		char out[len];
@@ -452,7 +452,7 @@ void terminate_jobs()
 			/* wait() sets errno to ECHILD when there was no
 			 * child to wait for */
 			if (errno != ECHILD)
-				write_async(2, "*** Error: wait\n");
+				write_async(2, "stu: error: wait\n");
 			break;
 		}
 		assert_async(ret > 0);
@@ -498,7 +498,7 @@ bool File_Executor::remove_if_existing(bool output)
 		if (output) {
 			string text_filename= ::show(filename, S_DEBUG);
 			DEBUG_PRINT(fmt("remove %s", text_filename));
-			print_error_reminder(fmt("Removing file %s because command failed",
+			print_error_reminder(fmt("removing file %s because command failed",
 						 ::show(filename)));
 		}
 		removed= true;
@@ -507,7 +507,7 @@ bool File_Executor::remove_if_existing(bool output)
 			if (output) {
 				rule->place << format_errno(filename);
 			} else {
-				write_async(2, "*** Error: unlink\n");
+				write_async(2, "stu: error: unlink\n");
 			}
 		}
 	}
@@ -531,7 +531,7 @@ void File_Executor::warn_future_file(struct stat *buf,
 		return;
 
 	string suffix= message_extra ? string(" ") + message_extra : "";
-	print_warning(place, fmt("File %s has modification time in the future%s",
+	print_warning(place, fmt("file %s has modification time in the future%s",
 				 ::show(filename), suffix));
 }
 
@@ -754,7 +754,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 				    no_execution) {
 					print_warning
 						(rule->place_param_targets[i]->place,
-						 fmt("File target %s which has no command is older than its dependency",
+						 fmt("file target %s which has no command is older than its dependency",
 						     show(target)));
 				}
 			}

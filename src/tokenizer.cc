@@ -200,12 +200,12 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				}
 			}
 		} else {
-			if (place_diagnostic.get_type() != Place::Type::EMPTY)
+			if (place_diagnostic.get_type() != Place::Type::EMPTY) {
 				place_diagnostic << format_errno
 					(show(filename_diagnostic));
-			else
-				print_error(format_errno
-					    (show(filename_diagnostic)));
+			} else {
+				print_errno(filename_diagnostic);
+			}
 		}
 		throw ERROR_BUILD;
 	} catch (int error) {

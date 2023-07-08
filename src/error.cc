@@ -10,9 +10,9 @@
 void print_error(string message)
 {
 	assert(! message.empty());
-	assert(isupper(message[0]) || message[0] == '\'');
+	assert(islower(message[0]) || message[0] == '\'');
 	assert(message[message.size() - 1] != '\n');
-	fprintf(stderr, "%s%s%s: *** %s\n",
+	fprintf(stderr, "%s%s%s: %s\n",
 		Color::stderr_err_on, dollar_zero, Color::stderr_err_off,
 		message.c_str());
 }
@@ -28,7 +28,7 @@ void print_errno(string message)
 void print_error_reminder(string message)
 {
 	assert(! message.empty());
-	assert(isupper(message[0]) || message[0] == '\'');
+	assert(islower(message[0]) || message[0] == '\'');
 	assert(message[message.size() - 1] != '\n');
 	fprintf(stderr, "%s%s%s: %s\n",
 		Color::stderr_warn_on, dollar_zero, Color::stderr_warn_off,
@@ -186,7 +186,7 @@ bool Place::operator<(const Place &place) const
 void print_warning(const Place &place, string message)
 {
 	assert(! message.empty());
-	assert(isupper(message[0]) || message[0] == '\'');
+	assert(islower(message[0]) || message[0] == '\'');
 	assert(message[message.size() - 1] != '\n');
 	place.print(fmt("warning: %s", message),
 		    Color::stderr_warn_on, Color::stderr_warn_off);

@@ -11,7 +11,7 @@ exitstatus=$?
 	exit 1
 }
 
-grep -qF '../../bin/stu.test: *** Refusing to run recursive Stu; unset $STU_STATUS to circumvent' list.err || {
+grep -qF '../../bin/stu.test: refusing to run recursive Stu; unset $STU_STATUS to circumvent' list.err || {
 	echo >&2 '*** Error message'
 	exit 1
 }

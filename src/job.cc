@@ -450,7 +450,7 @@ pid_t Job::wait(int *status)
 	default:
 		/* We didn't wait for this signal */
 		should_not_happen();
-		fprintf(stderr, "*** sigwait: Received signal %d\n", sig);
+		print_error(frmt("sigwait: received signal %d", sig));
 		goto begin;
 	}
 }
@@ -526,7 +526,7 @@ void Job::handler_termination(int sig)
 	struct sigaction act;
 	act.sa_handler= SIG_DFL;
 	if (0 != sigemptyset(&act.sa_mask))  {
-		write_async(2, "*** Error: sigemptyset\n");
+		write_async(2, "stu: error: sigemptyset\n");
 	}
 	act.sa_flags= SA_NODEFER;
 	int r= sigaction(sig, &act, nullptr);
@@ -549,7 +549,7 @@ void Job::handler_termination(int sig)
 	/* Raise signal again */
 	int rr= raise(sig);
 	if (rr != 0) {
-		write_async(2, "*** Error: raise\n");
+		write_async(2, "stu: error: raise\n");
 	}
 
 	/* Don't abort here -- the reraising of this signal may only be
@@ -733,7 +733,7 @@ void Job::kill(pid_t pid)
 			 * terminated but we haven't wait()ed
 			 * for it yet.  */
 		} else {
-			write_async(2, "*** Error: Kill\n");
+			write_async(2, "stu: error: kill\n");
 			/* Note:  Don't call exit() yet; we want all
 			 * children to be killed.  */
 		}
@@ -741,7 +741,7 @@ void Job::kill(pid_t pid)
 
 	if (0 > ::kill(-pid, SIGCONT)) {
 		if (errno != ESRCH) {
-			write_async(2, "*** Error: Kill\n");
+			write_async(2, "stu: error: kill\n");
 		}
 	}
 }

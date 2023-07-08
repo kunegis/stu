@@ -1,1 +1,1 @@
-main.stu:4:3: warning: File "B" has modification time in the future after execution of command
+main.stu:4:3: warning: file "B" has modification time in the future after execution of command

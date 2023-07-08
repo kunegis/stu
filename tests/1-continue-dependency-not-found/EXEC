@@ -35,7 +35,7 @@ grep -qF "no rule to build \"nonexistingfile\"" list.err || {
 	exit 1
 }
 
-grep -qF 'Targets not up to date because of errors' list.err || {
+grep -qF 'targets not up to date because of errors' list.err || {
 	echo >&2 "$0:  *** error output does not contain 'Targets not up to date because of errors' (run B)"
 	exit 1
 }

@@ -3,19 +3,6 @@
 #
 
 #
-# Make the following consistent:
-#
-
-$ stu -k
-stu: *** Expected a target or the default file main.stu
-$ stu -k ksdjalskdj
-stu: no rule to build ksdjalskdj
-stu: Targets not up to date because of errors
-
-# * Use '***' everywhere or nowhere (better nowhere)
-# * Use capitalization consistently (make everything uppercase)
-
-#
 # Mark this target to always be a persistent dependency
 #
 

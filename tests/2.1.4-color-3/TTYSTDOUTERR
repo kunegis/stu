@@ -1,3 +1,3 @@
 Building [1mA[22m
 [31m[1mmain.stu[22m:4:2[m: command for [1mA[22m failed with exit status [1m1[22m
-[35m../../bin/stu.test[m: Removing file [1mA[22m because command failed
+[35m../../bin/stu.test[m: removing file [1mA[22m because command failed

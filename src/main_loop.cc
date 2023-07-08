@@ -39,7 +39,7 @@ void main_loop(const vector <shared_ptr <const Dep> > &deps)
 			}
 		} else {
 			if (option_k) {
-				print_error_reminder("Targets not up to date because of errors");
+				print_error_reminder("targets not up to date because of errors");
 			}
 		}
 	}
@@ -50,7 +50,7 @@ void main_loop(const vector <shared_ptr <const Dep> > &deps)
 		assert(e >= 1 && e <= 4);
 		/* Terminate all jobs */
 		if (File_Executor::executors_by_pid_size) {
-			print_error_reminder("Terminating all jobs");
+			print_error_reminder("terminating all jobs");
 			terminate_jobs();
 		}
 		assert(e > 0 && e < ERROR_FATAL);

@@ -1,5 +1,0 @@
-Sanitizers can be used, but are not integrated in the main testing target in
-Makefile.  Instead, the target "sani" is used separately.
-
-We configure the sanitizers in a way that they trap on error, this will give a
-Stu exit status of 128+SIGILL, at least on the system we tested it on.

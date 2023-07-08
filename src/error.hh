@@ -13,7 +13,7 @@
  * Format of error output:  There are two types of error output lines:
  * error messages and backtraces.  Error messages are of the form
  *
- *         $0: *** $MESSAGE
+ *         $0: $MESSAGE
  *
  * and backtraces are of the form
  *
@@ -26,12 +26,10 @@
  */
 
 /*
- * Wording of messages:
- *
- * Error messages begin with uppercase letters; backtrace messages with
- * lowercase letters, as per the GNU Coding Standards.  Filenames are quotes
- * with double quotes.  Operators and flags are not quoted.   Messages for
- * neither type of error output lines are terminated by periods.
+ * Wording of messages:  Both error messages and backtraces begin with lowercase
+ * letters. Filenames are quotes with double quotes.  Operators and flags are
+ * not quoted.  Messages for neither type of error output lines are terminated
+ * by periods.
  *
  * Typical forms of error messages are:
  *
@@ -269,7 +267,7 @@ public:
 
 	string message;
 	/* May be "".  When the backtrace is printed, it must not be empty,
-	 * and must not begin with an upper-case letter.  */
+	 * and must not begin with an uppercase letter. */
 
 	Backtrace(const Place &place_, string message_)
 		:  place(place_), message(message_)  {  }

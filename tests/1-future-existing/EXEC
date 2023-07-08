@@ -17,13 +17,13 @@ exitstatus=$?
 	exit 1
 }
 
-grep -qF "warning: File \"B\" has modification time in the future" list.err || {
+grep -qF "warning: file \"B\" has modification time in the future" list.err || {
 	echo >&2 "*** Missing error message"
 	exit 1
 }
 
 # Check that the warning is given just once
-[ "$(grep -cF "warning: File \"B\" has modification time in the future" list.err)" = 1 ] || {
+[ "$(grep -cF "warning: file \"B\" has modification time in the future" list.err)" = 1 ] || {
 	echo >&2 "*** Warning must not be output multiple times"
 	exit 1
 }

@@ -204,7 +204,7 @@ int main(int argc, char **argv, char **envp)
 			Parser::get_target_arg(deps, argc - optind, argv + optind);
 
 		if (option_I + option_P + option_q >= 2) {
-			print_error("Options -I/-P/-q must not be used together");
+			print_error("options -I/-P/-q must not be used together");
 			exit(ERROR_FATAL);
 		}
 
@@ -222,7 +222,7 @@ int main(int argc, char **argv, char **envp)
 					 * fail if no target is given */
 					if (deps.empty() && !had_option_target
 					    && !option_P && !option_I) {
-						print_error(fmt("Expected a target or the default file %s",
+						print_error(fmt("expected a target or the default file %s",
 								show(FILENAME_INPUT_DEFAULT)));
 
 						explain_no_target();
@@ -253,7 +253,7 @@ int main(int argc, char **argv, char **envp)
 					place_first
 						<< "expected a rule, because no target is given";
 				} else {
-					print_error("No rules and no targets given");
+					print_error("no rules and no targets given");
 				}
 				exit(ERROR_FATAL);
 			}

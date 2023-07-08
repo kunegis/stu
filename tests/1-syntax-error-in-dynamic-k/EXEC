@@ -43,7 +43,7 @@ if ! grep -qF "B1:1:4: expected a dependency" list.err ; then
 	exit 1
 fi
 
-if ! grep -qF "Targets not up to date because of errors" list.err ; then
+if ! grep -qF "targets not up to date because of errors" list.err ; then
 	echo >&2 "*** not containing '*** Targets not up to date because of errors' in error output"
 	exit 1
 fi

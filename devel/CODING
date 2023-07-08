@@ -2,25 +2,23 @@ These are the relevant coding conventions we use.
 
 == Standards ==
 
-* Follow the POSIX standard.  It is safe to assume a POSIX environment;
-  there is no need to cater for "special" operating systems that lack
-  core POSIX features.  E.g., we always assume the directory separator
-  is '/'.
-* Follow the GNU Coding Standards, except for coding style, but don't
-  use GNU extensions.  For coding style, see below.
+* Follow the POSIX standard.  It is safe to assume a POSIX environment; there is
+  no need to cater for "special" operating systems that lack core POSIX
+  features.  E.g., we always assume the directory separator is '/'.
+* Follow the GNU Coding Standards, except for coding style, but don't use GNU
+  extensions.  For coding style, see below.
 * Use the C++14 version of C++; don't use GCC extensions.  Or any other
   extensions for that matter.  Source files are named '*.hh' and '*.cc'.  (In
-  principle, we use the latest C++ version, but only adapt a new version five
-  years after it is released.)
-* Compilation is done in a single step by compiling the file 'stu.cc'.
-  All other source files are actually '*.hh' files which are included.
-  Therefore, we don't strictly separate declarations and definitions.
-  If one day we think the compilation has become too slow, we'll start
-  using '*.o' files though.
+  principle, we use the latest C++ version, but only adopt a new version five
+  years or so after it is released.)
+* Compilation is done in a single step by compiling the file 'stu.cc'.  All
+  other source files are actually '*.hh' files which are included.  Therefore,
+  we don't strictly separate declarations and definitions.  If one day we think
+  the compilation has become too slow, we'll start using '*.o' files though.
 * Names of targets in the Makefile follow the GNU Coding Standards.
-* Use SemVer.org for version number semantics.  We consider only changes
-  in the Stu language specification and options marked as stable in
-  'OPTIONS'.  See the file 'NEWS' for details.
+* Use SemVer.org for version number semantics.  We consider only changes in the
+  Stu language specification and options marked as stable in 'OPTIONS'.  See the
+  file 'NEWS' for details.
 
 == Style ==
 
@@ -29,53 +27,49 @@ This is my preferred style.  --Jérôme Kunegis
 === Layout ===
 
 * All of the following rules are broken when necessary.
-* Tabs for indentation.  Set your editor to show them at the width you
-  prefer.  I use the default 8-char tabs.
+* Tabs for indentation.  Set your editor to show them at the width you prefer.
+  I use the default 8-char tabs.
 * Spaces for alignment in the middle of lines.
 * Line length vary between 72, 80, and 100.  We allow more where reasonable,
-  e.g., to avoid breaking message string literals or to make table-like
-  code evident.  Since tabs may be interpreted as different widths, this
-  is an approximate rule; authors use 8-char tabs.
+  e.g., to avoid breaking message string literals or to make table-like code
+  evident.  Since tabs may be interpreted as different widths, this is an
+  approximate rule; authors use 8-char tabs.
 * Use C-style comments (/* ... */) for regular comments.
-* Use C++-style comments on column zero (// ...) for quickly commenting
-  out code and for writing TODO items; this allows us to search all
-  source files for the string '//' to find areas that are currently
-  worked on.  Code pushed to Git on the master branch does not contain
-  '//'.  When used, we put '//' at the beginning of the line, not
-  preceded by whitespace, in order to not break the alignment of
-  commented code with uncommented code.  This is possible because we use
-  tabs for indentation.
+* Use C++-style comments on column zero (// ...) for quickly commenting out code
+  and for writing TODO items; this allows us to search all source files for the
+  string '//' to find areas that are currently worked on.  Code pushed to Git on
+  the master branch does not contain '//'.  When used, we put '//' at the
+  beginning of the line, not preceded by whitespace, in order to not break the
+  alignment of commented code with uncommented code.  This is possible because
+  we use tabs for indentation.
 * In comments, names of variables are in all uppercase.
 * K&R brace placement.
-* No space before the assignment operator and around parentheses.  Also,
-  no space between 'operator' and the operator symbol.  Otherwise,
-  spaces around most operators.
-* Pointer and reference characters (* and &) attach to the variable name
-  in declarations.  This is compatible to C usage, and in defiance of
-  common C++ wisdom.
+* No space before the assignment operator and around parentheses.  Also, no
+  space between 'operator' and the operator symbol.  Otherwise, spaces around
+  most operators.
+* Pointer and reference characters (* and &) attach to the variable name in
+  declarations.  This is compatible to C usage, and in defiance of common C++
+  wisdom.
 
 === Code ===
 
-* Use 'nullptr' as the null pointer constant instead of 'NULL', as per
-  C++14.  It allows certain bugs to be caught by the compiler.  In
-  documentation, call it "null" (in lowercase, like you would write
-  "zero" or "five").
+* Use 'nullptr' as the null pointer constant instead of 'NULL', as per C++14.
+  It allows certain bugs to be caught by the compiler.  In documentation, call
+  it "null" (in lowercase, like you would write "zero" or "five").
 * We enable many GCC warnings in debug mode, and write the code so as to
-  suppress them if necessary.  See the Makefile.  (Stu is developed
-  using GCC.)
-* For vectors and strings, use operator[] for access, keeping in mind
-  that this function has undefined behavior when the argument is out of
-  range.  In debug mode with glibc++, these functions include range
-  checking, and therefore bugs relating to their usage may be caught in
-  unit testing in that way.
-* For maps, we mostly use .at() for access, which terminates
-  when the value is not contained, to avoid inserting values
-  accidentally, which is what operator[] does.
+  suppress them if necessary.  See the Makefile.  (Stu is developed using GCC.)
+* For vectors and strings, use operator[] for access, keeping in mind that this
+  function has undefined behavior when the argument is out of range.  In debug
+  mode with glibc++, these functions include range checking, and therefore bugs
+  relating to their usage may be caught in unit testing in that way.
+* For maps, we mostly use .at() for access, which terminates when the value is
+  not contained, to avoid inserting values accidentally, which is what
+  operator[] does.
 * Inside class declarations, the order is public->protected->private.
 * We put friend declarations in the "private" block.  The placement is
   irrelevant to the meaning of the code; this is just a style issue.
-* When overriding a virtual function, we do use the 'virtual' keyword,
-  even if it is redundant.
+* When overriding a virtual function, we do use the 'virtual' keyword, even if
+  it is redundant.
 * For IO, we use C-style IO only; no C++ IO.
 * Stu does not call setlocale(), and therefore can make use of isspace()
   detecting spaces as defined in the C locale.  The same is true for isalnum(),
@@ -83,16 +77,15 @@ This is my preferred style.  --Jérôme Kunegis
 
 == Dynamic variables ==
 
-(1) Variables derived from the following classes are managed dynamically
-using shared_ptr:
+(1) Variables derived from the following classes are managed dynamically using
+shared_ptr:
 
 * all parametrized names and targets (declared in target.hh)
 * Rule (even though it is not polymorphic)
 * Token
 * Dep
 
-I.e., we always assume an object of one of these types may be of a
-subtype.
+I.e., we always assume an object of one of these types may be of a subtype.
 
 For Dep and its subclasses, we also assume that a single object has many
 persistent pointers to it, so they are considered final, i.e., immutable, except
@@ -101,11 +94,10 @@ if we just created the object in which case we know that it is not shared.
 Objects of these types are created using make_shared<>.  We handle the
 polymorphism of these classes via dynamic_pointer_cast<>.
 
-(2) Objects of type Execution and subclasses are allocated using new()
-and only some are released, see Execution::want_delete(); this
-implements caching within a single process.  These objects are always
-accessed through ordinary pointers, and we handle their polymorphism via
-dynamic_cast<>.
+(2) Objects of type Execution and subclasses are allocated using new() and only
+some are released, see Execution::want_delete(); this implements caching within
+a single process.  These objects are always accessed through ordinary pointers,
+and we handle their polymorphism via dynamic_cast<>.
 
 (3) Other types can be used as pass-by-value, or pass-by-reference if
 necessary.
@@ -117,89 +109,82 @@ Variable names use underscore for word separation.  No camel case.
 The following names are used systematically:
 * 'error':  an integer error code or exit status (they are the same in Stu)
 * 'filename':  a filename
-* 'format[_*]':  a function that formats an object for display
 * 'ret':  the return value of a function
 * 'text':  a string used for display
 
-Many variable names are written in a "big endian" fashion in defiance of
-English noun phrase syntax.  In such names, the first part indicates the
-type (to a higher precision than the C++ type), and the second part
-indicates the meaning of the variable.  For instance, a variable
-denoting a filename used previously may be named 'filename_old' instead
-of the expected 'old_filename'.  You can think of this convention as
-being influenced by the French language, which by default places
-adjectives after the noun, or as being compatible with names such as
-'filename_1', etc.  This convention is not used for type names, e.g., we
-have 'Dynamic_Dep' and similar.
+Many variable names are written in a "big endian" fashion in defiance of English
+noun phrase syntax.  In such names, the first part indicates the type (to a
+higher precision than the C++ type), and the second part indicates the meaning
+of the variable.  For instance, a variable denoting a filename used previously
+may be named 'filename_old' instead of the expected 'old_filename'.  You can
+think of this convention as being influenced by the French language, which by
+default places adjectives after the noun, or as being compatible with names such
+as 'filename_1', etc.  This convention is not used for type names, e.g., we have
+'Dynamic_Dep' and similar.
 
 == Shell scripts ==
 
-When writing shell scripts, make sure to follow POSIX.  Writing portable
-and safe shell scripts is hard, and the authors follow many more rules
-than those given here, mostly based on experience.  There are many more
-things to be said about portable shell scripting.
+When writing shell scripts, make sure to follow POSIX.  Writing portable and
+safe shell scripts is hard, and the authors follow many more rules than those
+given here, mostly based on experience.  There are many more things to be said
+about portable shell scripting.
 
-* Only use POSIX features of the shell and of standard tools.  Read the
-  manpage of a tool on the POSIX website
-  (http://pubs.opengroup.org/onlinepubs/9699919799/), rather than your
-  locally installed manpage, which is likely to describe extensions to
-  the tool without documenting them as such.
-* Use '##' for quickly commenting out lines, analogously to '//' in C++
-  code.  Code pushed to Github does not contain such lines.
-* Sed has *only* basic regular expressions.  In particular, no '|', '+',
-  and no escape sequences like '\s'/'\S'/'\b'/'\w'.  The -r and -E
-  options are not POSIX; they are GNU and/or BSD extensions.
-  A space can be written as [[:space:]].  '+' can be emulated with
-  \{1,\}.  There is no way to write alternatives, i.e., the
-  '|' operator in extended regular regular expressions.  (Note:  there
-  are rumors that -E is going to be in a future POSIX standard; we'll
-  switch to -E once it's standardized.)  Also, the 'b' and 't' commands
-  must not be followed by a semicolon; always use a newline after them
-  when there are more commands.
-* Grep does have the -E option for extended regular expressions.  Grep
-  is always invoked with the -E *or* the -F option.  (Using basic
-  regular expressions with Grep is also portable, but we don't do it.)
-* 'date +%s' is not mandated by POSIX, even though it works on all
-  operating systems we tried it on.  It outputs the correct Unix time.
-  There is a hackish but portable workaround using the random number
-  generator of awk(1).
-* Shell scripts don't have a filename suffix.  Use '#! /bin/sh' and set
-  the executable bit.  The space after '!' is not necessary, but is
-  traditional and we think it looks good, so we always use it.
-* 'test' does not support the -a option.  Use && in the shell instead.
-  POSIX has deprecated 'test -a'.
-* The "recursive" option to programs such as 'ls' and 'cp' is -R and not
-  -r.   '-r' for recursive behavior is available and prescribed by POSIX
-  for *some* commands such as 'rm', but it's easier to always use '-R'.
-  Mnemonic:  Output will be *big*, hence a big letter.  The idiomatic
-  'rm -rf' is thus not recommended, and 'rm -Rf' is used instead.
-* We use 'set -e'.  We don't rely on it for "normal" code paths, but as
-  an additional fail-safe.  It does not work with $() commands that are
-  used within other commands, and it also does not work with pipelines,
-  except for the last command.  When you use $(), assign its result to a
-  variable, and then use its result from that variable.  Using $()
-  directly embedded in other commands will make the shell ignore failure
-  of the inner shell.  There is no good solution to the "first part of
-  pipeline fails silently" problem.
-* Use $(...) instead of `...`.  It avoids many quoting pitfalls.  In
-  shell syntax, backticks are a form of quote which also executes its
-  content.  Thus, characters such as other backticks and backslashes
-  inside it must be quoted by a backslash, leading to ugly code.  $(...)
-  does not have this problem.  Also, in Unicode ` is a standalone grave
-  accent character, and thus a letter-like character.  This is also the
-  reason why ` doesn't need to be quoted in Stu, like any other letter.
-  The same goes for ^ and the non-ASCII ´.
-* Double-quote all variables, except if they should expand to multiple
-  words in a command line, or when assigning to a variable.  Also, use
-  -- when passing variables as non-option arguments to programs.  E.g.,
-  write 'cp -- "$filename_from" "$filename_to"'.  All other invocation
-  styles are unsafe under *some* values of the variables.  Some programs
-  such as printf don't have options and thus don't support or need '--'.
-* Always use 'IFS= read -r' instead of 'read'.  It's the safe way to
-  read anything that's \n-delimited.
-* To omit the trailing newline with 'echo', both '-n' and \c are
-  non-portable.  Instead, use printf.  In general, printf is an
-  underused command.  It can often be used judiciously instead of
-  'echo'.  Note that the format string of printf should not start with a
-  dash.  In such cases, use %s and a subsequent string, which can start
-  with a dash.
+* Only use POSIX features of the shell and of standard tools.  Read the manpage
+  of a tool on the POSIX website
+  (http://pubs.opengroup.org/onlinepubs/9699919799/), rather than your locally
+  installed manpage, which is likely to describe extensions to the tool without
+  documenting them as such.
+* Use '##' for quickly commenting out lines, analogously to '//' in C++ code.
+  Code pushed to Github does not contain such lines.
+* Sed has *only* basic regular expressions.  In particular, no '|', '+', and no
+  escape sequences like '\s'/'\S'/'\b'/'\w'.  The -r and -E options are not
+  POSIX; they are GNU and/or BSD extensions.  A space can be written as
+  [[:space:]].  '+' can be emulated with \{1,\}.  There is no way to write
+  alternatives, i.e., the '|' operator in extended regular regular expressions.
+  (Note:  there are rumors that -E is going to be in a future POSIX standard;
+  we'll switch to -E once it's standardized.)  Also, the 'b' and 't' commands
+  must not be followed by a semicolon; always use a newline after them when
+  there are more commands.
+* Grep does have the -E option for extended regular expressions.  Grep is always
+  invoked with the -E *or* the -F option.  (Using basic regular expressions with
+  Grep is also portable, but we don't do it.)  'date +%s' is not mandated by
+  POSIX, even though it works on all operating systems we tried it on.  It
+  outputs the correct Unix time.  There is a hackish but portable workaround
+  using the random number generator of awk(1).
+* Shell scripts don't have a filename suffix.  Use '#! /bin/sh' and set the
+  executable bit.  The space after '!' is not necessary, but is traditional and
+  we think it looks good, so we always use it.
+* 'test' does not support the -a option.  Use && in the shell instead.  POSIX
+  has deprecated 'test -a'.
+* The "recursive" option to programs such as 'ls' and 'cp' is -R and not -r.
+  '-r' for recursive behavior is available and prescribed by POSIX for *some*
+  commands such as 'rm', but it's easier to always use '-R'.  Mnemonic:  Output
+  will be *big*, hence a big letter.  The idiomatic 'rm -rf' is thus not
+  recommended, and 'rm -Rf' is used instead.
+* We use 'set -e'.  We don't rely on it for "normal" code paths, but as an
+  additional fail-safe.  It does not work with $() commands that are used within
+  other commands, and it also does not work with pipelines, except for the last
+  command.  When you use $(), assign its result to a variable, and then use its
+  result from that variable.  Using $() directly embedded in other commands will
+  make the shell ignore failure of the inner shell.  There is no good solution
+  to the "first part of pipeline fails silently" problem.
+* Use $(...) instead of `...`.  It avoids many quoting pitfalls.  In shell
+  syntax, backticks are a form of quote which also executes its content.  Thus,
+  characters such as other backticks and backslashes inside it must be quoted by
+  a backslash, leading to ugly code.  $(...) does not have this problem.  Also,
+  in Unicode ` is a standalone grave accent character, and thus a letter-like
+  character.  This is also the reason why ` doesn't need to be quoted in Stu,
+  like any other letter.  The same goes for ^ and the non-ASCII ´.
+* Double-quote all variables, except if they should expand to multiple words in
+  a command line, or when assigning to a variable.  Also, use -- when passing
+  variables as non-option arguments to programs.  E.g., write 'cp --
+  "$filename_from" "$filename_to"'.  All other invocation styles are unsafe
+  under *some* values of the variables.  Some programs such as printf don't have
+  options and thus don't support or need '--'.
+* Always use 'IFS= read -r' instead of 'read'.  It's the safe way to read
+  anything that's \n-delimited.
+* To omit the trailing newline with 'echo', both '-n' and \c are non-portable.
+  Instead, use printf.  In general, printf is an underused command.  It can
+  often be used judiciously instead of 'echo'.  Note that the format string of
+  printf should not start with a dash.  In such cases, use %s and a subsequent
+  string, which can start with a dash.

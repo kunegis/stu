@@ -1,0 +1,28 @@
+#! /bin/sh
+#
+# 'main.stu' exists but cannot be read.
+#
+
+cleanup()
+{
+	rm main.stu || exit 2
+}
+
+echo 'A = {ERROR}' >main.stu
+chmod a-r main.stu || exit 2
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 4 ] || {
+	echo >&2 "*** Expected exit status 1, got $exitstatus"
+	cleanup
+	exit 1
+}
+
+grep -q -F -e main.stu list.err || {
+	echo >&2 "*** Expected 'main.stu' in stderr"
+	cleanup
+	exit 1
+}
+
+cleanup

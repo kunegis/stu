@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 
 #include "format.hh"
+#include "hints.hh"
 
 #ifndef USE_MTIM
 #   if HAVE_CLOCK_REALTIME_COARSE
@@ -83,7 +84,7 @@ public:
 		int r= clock_gettime(CLOCK_REALTIME_COARSE, & ret.t);
 		if (r != 0) {
 			/* If this happens, it is a bug in Stu */
-			assert(false);
+			should_not_happen();
 			print_errno("clock_gettime(CLOCK_REALTIME_COARSE, ...)");
 
 			/* Do the next best thing:  use time(2).

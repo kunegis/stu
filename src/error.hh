@@ -145,7 +145,7 @@ void print_error(string message);
 /* Print an error without a place */
 
 void print_errno(string message);
-/* Like perror(), but use color.  MESSAGE must not contain color codes. */
+/* Like perror(), but use color. */
 
 void print_error_reminder(string message);
 /* Print a reminder of an error on STDERR.  This is used in situations
@@ -217,11 +217,8 @@ public:
 		   line(line_), column(column_)
 	{  }
 
-	Place(Type type_)
-	/* In command line argument (ARGV) */
-		:  type(type_)
-	{
-		assert(type == Type::ARGUMENT);
+	Place(Type type_): type(type_) {
+		assert(type == Type::ARGUMENT || type == Type::ENV_OPTIONS);
 	}
 
 	Place(Type type_, char option)
@@ -253,9 +250,8 @@ public:
 	bool empty() const  {  return type == Type::EMPTY;  }
 	void clear()  {  type= Type::EMPTY;  }
 
-	/* Places are comparable, and are used as keys in maps */
-	bool operator==(const Place &place) const;
 	bool operator<(const Place &place) const;
+	/* Places are used as keys in maps */
 
 	static const Place place_empty;
 	/* A static empty place object, used in various places when a

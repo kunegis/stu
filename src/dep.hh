@@ -43,6 +43,7 @@
 
 #include "target.hh"
 #include "flags.hh"
+#include "hints.hh"
 #include "options.hh"
 #include "show.hh"
 
@@ -73,11 +74,11 @@ class Dep
  * make_shared<>.
  *
  * The use of shared_ptr<> also means that certain functions cannot be
- * member functions but must be static functions instead:  clone(),
+ * member functions but must be static functions instead: clone(),
  * normalize(), etc.  This is because we cannot use a construct like
  * shared_ptr <Dep> (this), which is erroneous (the object would
  * be released twice, etc.).  As a result, we replace THIS by an
- * argument of type shared_ptr<>.  [Note:  there is also
+ * argument of type shared_ptr<>.  [Note: there is also
  * std::enable_shared_from_this as a possibility.]
  *
  * The constructors of Dep and derived classes do not set the TOP and
@@ -98,12 +99,11 @@ public:
 	/* Used by concatenated executors; the index of the dependency
 	 * within the array of concatenation.  -1 when not used. */
 
-	Dep():  flags(0), index(-1)  {  }
-	Dep(Flags flags_):  flags(flags_), index(-1)  {  }
+	Dep(): flags(0), index(-1) { }
+	Dep(Flags flags_): flags(flags_), index(-1) { }
 
 	Dep(Flags flags_, const Place places_[C_PLACED])
-		:  flags(flags_),
-		   index(-1)
+		: flags(flags_), index(-1)
 	{
 		assert(places != places_);
 		for (unsigned i= 0;  i < C_PLACED;  ++i)
@@ -111,9 +111,7 @@ public:
 	}
 
 	Dep(const Dep &that)
-		:  flags(that.flags),
-		   top(that.top),
-		   index(that.index)
+		: flags(that.flags), top(that.top), index(that.index)
 	{
 		assert(this != &that);
 		for (unsigned i= 0;  i < C_PLACED;  ++i)
@@ -304,7 +302,7 @@ public:
 
 class Dynamic_Dep
 /* The Dep::flags field has the F_TARGET_DYNAMIC set. */
-	:  public Dep
+	: public Dep
 {
 public:
 
@@ -313,16 +311,12 @@ public:
 
 	Dynamic_Dep(shared_ptr <const Dep> dep_)
 		/* Set the contained dependency.  NOT a copy constructor. */
-		:  Dep(F_TARGET_DYNAMIC),
-		   dep(dep_)
-	{
-		assert(dep_ != nullptr);
-	}
+		: Dep(F_TARGET_DYNAMIC), dep(dep_)
+	{ assert(dep_ != nullptr); }
 
 	Dynamic_Dep(Flags flags_,
 		    shared_ptr <const Dep> dep_)
-		:  Dep(flags_ | F_TARGET_DYNAMIC),
-		   dep(dep_)
+		: Dep(flags_ | F_TARGET_DYNAMIC), dep(dep_)
 	{
 		assert((flags & F_VARIABLE) == 0);
 		assert(dep_ != nullptr);
@@ -331,8 +325,7 @@ public:
 	Dynamic_Dep(Flags flags_,
 		    const Place places_[C_PLACED],
 		    shared_ptr <const Dep> dep_)
-		:  Dep(flags_ | F_TARGET_DYNAMIC, places_),
-		   dep(dep_)
+		: Dep(flags_ | F_TARGET_DYNAMIC, places_), dep(dep_)
 	{
 		assert((flags & F_VARIABLE) == 0); /* Variables cannot be dynamic */
 		assert(dep_ != nullptr);
@@ -370,7 +363,7 @@ class Concat_Dep
  * In terms of Stu code, a concatenated dependency corresponds to
  *
  *         ( X )( Y )( Z )...       */
-	:  public Dep
+	: public Dep
 {
 public:
 
@@ -380,18 +373,16 @@ public:
 	 * that is not allowed in Stu code.  Otherwise, there are at
 	 * least two elements  */
 
-	Concat_Dep()  {  }
+	Concat_Dep() { }
 	/* An empty concatenation, i.e., a concatenation of zero dependencies */
 
 	Concat_Dep(Flags flags_, const Place places_[C_PLACED])
 		/* The list of dependencies is empty */
-		:  Dep(flags_, places_)  {  }
+		: Dep(flags_, places_) { }
 
 	/* Append a dependency to the list */
 	void push_back(shared_ptr <const Dep> dep)
-	{
-		deps.push_back(dep);
-	}
+	{ deps.push_back(dep); }
 
 	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
 
@@ -459,33 +450,26 @@ public:
 
 	Compound_Dep(const Place &place_)
 		/* Empty, with zero dependencies */
-		:  place(place_)
-	{  }
+		: place(place_) { }
 
 	Compound_Dep(Flags flags_, const Place places_[C_PLACED], const Place &place_)
-		:  Dep(flags_, places_),
-		   place(place_)
-	{
-		/* The list of dependencies is empty */
-	}
+		: Dep(flags_, places_),
+		  place(place_)
+	{ /* The list of dependencies is empty */ }
 
 	Compound_Dep(vector <shared_ptr <const Dep> > &&deps_,
 		     const Place &place_)
-		:  place(place_),
-		   deps(deps_)
-	{  }
+		: place(place_),
+		  deps(deps_) { }
 
-	void push_back(shared_ptr <const Dep> dep)
-	{
-		deps.push_back(dep);
-	}
+	void push_back(shared_ptr <const Dep> dep) { deps.push_back(dep); }
 
 	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
 	virtual bool is_unparametrized() const;
-	virtual const Place &get_place() const  {  return place;  }
+	virtual const Place &get_place() const { return place; }
 	virtual void render(Parts &, Rendering= 0) const;
-	virtual bool is_normalized() const  {  return false;  }
-	virtual Target get_target() const  {  assert(false);  return Target();  }
+	virtual bool is_normalized() const { return false; }
+	virtual Target get_target() const { unreachable(); }
 };
 
 class Root_Dep
@@ -498,11 +482,11 @@ public:
 	virtual shared_ptr <const Dep> instantiate(const map <string, string> &) const {
 		return shared_ptr <const Dep> (make_shared <Root_Dep> ());
 	}
-	virtual bool is_unparametrized() const  {  return false;  }
-	virtual const Place &get_place() const  {  return Place::place_empty;  }
+	virtual bool is_unparametrized() const { return false; }
+	virtual const Place &get_place() const { return Place::place_empty; }
 	virtual void render(Parts &parts, Rendering= 0) const;
-	virtual Target get_target() const  {  return Target();  }
-	virtual bool is_normalized() const  {  return true;  }
+	virtual Target get_target() const { unreachable(); }
+	virtual bool is_normalized() const { return true; }
 };
 
 #endif /* ! DEP_HH */

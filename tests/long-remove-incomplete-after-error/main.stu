@@ -1,0 +1,18 @@
+@all:  A B C;
+
+A {
+	echo aaa >A
+	sleep 9999
+	echo aaa >A
+}
+
+B {
+	echo bbb >B
+	sleep 9999
+	echo bbb >B
+}
+
+C {
+	sleep 1
+	exit 1
+}

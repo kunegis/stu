@@ -1,0 +1,19 @@
+#! /bin/sh
+
+{
+	printf 'A = B;\n'
+	printf 'B: C { cp C B ; }\n'
+	printf 'C={CORRECT}'
+} |
+	../../bin/stu.test -f - >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Expected exit status 0, not $exitstatus"
+	exit 1
+}
+
+grep -q -F -e CORRECT A || {
+	echo >&2 '*** Expected "A" to contain "CORRECT"'
+	exit 1
+}

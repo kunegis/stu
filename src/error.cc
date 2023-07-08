@@ -20,7 +20,9 @@ void print_error(string message)
 void print_errno(string message)
 {
 	assert(message.size() > 0 && message[0] != '') ;
-	fprintf(stderr, "%s: %s\n", message.c_str(), strerror(errno));
+	fprintf(stderr, "%s%s%s: %s\n",
+		Color::stderr_err_on, message.c_str(), Color::stderr_err_off,
+		strerror(errno));
 }
 
 void print_error_reminder(string message)
@@ -78,9 +80,7 @@ void Place::print(string message,
 	switch (type) {
 	default:
 	case Type::EMPTY:
-		/* It's a common bug in Stu to have empty places, so
-		 * better provide sensible behavior in NDEBUG builds.  */
-		assert(false);
+		should_not_happen();
 		fprintf(stderr, "%s\n", message.c_str());
 		break;
 
@@ -101,7 +101,9 @@ void Place::print(string message,
 	case Type::ARGUMENT:
 		fprintf(stderr,
 			"%s%s%s: %s\n",
-			color_on, "Command line argument", color_off,
+			color_on,
+			dollar_zero,
+			color_off,
 			message.c_str());
 		break;
 
@@ -132,12 +134,8 @@ string Place::as_argv0() const
 	switch (type) {
 	default:
 	case Type::EMPTY:
-	case Type::ENV_OPTIONS:
-		assert(false);
-	case Type::ARGUMENT:
-		return "";
-	case Type::OPTION:
-		return fmt("Option -%s", text);
+		should_not_happen();
+		/* Fall through */
 	case Type::INPUT_FILE: {
 		/* The given argv[0] should not begin with a dash,
 		 * because some shells enable special behaviour
@@ -148,6 +146,12 @@ string Place::as_argv0() const
 			    s[0] == '-' ? "file " : "",
 			    s, line);
 	}
+	case Type::ARGUMENT:
+		return "";
+	case Type::OPTION:
+		return fmt("Option -%s", text);
+	case Type::ENV_OPTIONS:
+		return "$STU_OPTIONS";
 	}
 }
 
@@ -155,26 +159,6 @@ const char *Place::get_filename_str() const
 {
 	assert(type == Type::INPUT_FILE);
 	return text.empty() ? "<stdin>" : text.c_str();
-}
-
-bool Place::operator==(const Place &place) const
-{
-	if (this->type != place.type)
-		return false;
-	switch (this->type) {
-	default:  assert(0);
-	case Type::EMPTY:
-	case Type::ARGUMENT:
-	case Type::ENV_OPTIONS:
-		return true;
-	case Type::INPUT_FILE:
-		return
-			this->text == place.text
-			&& this->line == place.line
-			&& this->column == place.column;
-	case Type::OPTION:
-		return this->text == place.text;
-	}
 }
 
 bool Place::operator<(const Place &place) const

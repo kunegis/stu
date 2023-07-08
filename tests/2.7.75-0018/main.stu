@@ -1,0 +1,9 @@
+A:  B [C];
+
+B {
+	echo X >C
+	chmod a-r C
+	touch B
+}
+
+X = {ERROR}

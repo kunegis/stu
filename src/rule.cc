@@ -174,7 +174,7 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 			}
 		}
 	} else {
-		assert(false);
+		unreachable();
 	}
 }
 

@@ -22,9 +22,7 @@ string frmt(const char *format, ...)
 
 	if (n < 0) {
 		/* Encoding error in the format string */
-		assert(false);
-		perror("snprintf");
-		abort();
+		unreachable();
 	}
 
 	assert(n == (int) ret.size());
@@ -54,7 +52,7 @@ string fmt(const char *s)
 		s= q + 1;
 		if (*s != '%') {
 			/* Missing argument, or one too many %s */
-			assert(false);
+			should_not_happen();
 			break;
 		}
 		ret += '%';
@@ -69,7 +67,7 @@ string fmt(const char *s, T value, Args... args)
 	const char *q= strchr(s, '%');
 	if (!q) {
 		/* Too many arguments; not enough '%s' */
-		assert(false);
+		should_not_happen();
 		return string(q);
 	}
 	assert(*q == '%');
@@ -82,7 +80,7 @@ string fmt(const char *s, T value, Args... args)
 	}
 	if (*s != 's') {
 		/* Invalid format specifier */
-		assert(false);
+		should_not_happen();
 		return ret;
 	}
 	assert(*s == 's');

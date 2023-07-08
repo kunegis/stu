@@ -8,11 +8,10 @@
 # INVOCATION
 #	$0 [TEST]...
 #
-# Without any arguments, perform all tests.  With one or more arguments,
-# perform the given tests.  The given test names are the names of the
-# subdirectories of tests/, and may or may not include the 'tests/'
-# prefix.  The arguments may contain glob patterns.  (No test names
-# contain the glob characters *, ?, etc.)
+# Without any arguments, perform all tests.  With one or more arguments, perform
+#the given tests.  The given test names are the names of the subdirectories of
+#tests/, and may or may not include the 'tests/' prefix.  The arguments may
+#contain glob patterns.  (No test names contain the glob characters *, ?, etc.)
 #
 # OUTPUT FILES
 #	log/error.log     List of tests that failed, one name per line
@@ -181,6 +180,7 @@ test_fail_fatal()
 	}
 	ret=1
 	count_failed=$(( count_failed + 1 ))
+	cd ..
 }
 
 sort_tests()
@@ -544,11 +544,11 @@ do
 	fi
 
 	../../sh/rm_tmps || exit 2
-	cd ..
 	if [ "$error" != 0 ] ; then
 		test_fail_fatal
 		continue
 	fi
+	cd ..
 	count_succeed=$(( count_succeed + 1 ))
 done
 

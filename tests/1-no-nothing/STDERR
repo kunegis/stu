@@ -1,1 +1,1 @@
-Command line argument: no rule to build "this-file-does-not-exist"
+../../bin/stu.test: no rule to build "this-file-does-not-exist"

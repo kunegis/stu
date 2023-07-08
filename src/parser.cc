@@ -189,14 +189,9 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 
 	/* Command */
 	if (iter == tokens.end()) {
-		if (had_colon)
-			place_end << fmt("expected a dependency, a command, or %s",
-					 show_operator(';'));
-		else
-			place_end << fmt("expected a command, %s, %s, or %s",
-					 show_operator(';'),
-					 show_operator(':'),
-					 show_operator('='));
+		assert(had_colon);
+		place_end << fmt("expected a dependency, a command, or %s",
+				 show_operator(';'));
 		place_param_targets[0]->place
 			<< fmt("for target %s", show(*place_param_targets[0]));
 		throw ERROR_LOGICAL;
@@ -209,13 +204,9 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 	/* When command is not null, whether the command is a command or
 	 * hardcoded content */
 
-	Place place_nocommand;
-	/* Place of ';' */
-
+	Place place_nocommand; /* Place of ';' */
 	Place place_equal;
-
-	shared_ptr <Name_Token> name_copy;
-	/* Name of the copy-from file */
+	shared_ptr <Name_Token> name_copy; /* Name of the copy-from file */
 
 	if ((command= is <Command> ())) {
 		++iter;
@@ -584,7 +575,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		}
 
 		/* If RET is null, it means we had empty parentheses.
-		 * Return an empty Compound_Dependency in that case  */
+		 * Return an empty Compound_Dependency in that case. */
 		if (ret == nullptr)
 			ret= make_shared <Compound_Dep> (place_bracket);
 
@@ -669,15 +660,11 @@ shared_ptr <const Dep> Parser
 	const Place place_dollar= (*iter)->get_place();
 	++iter;
 
-	if (iter == tokens.end()) {
-		place_end << fmt("expected %s", show_operator('['));
-		place_dollar << fmt("after %s", show_operator('$'));
-		throw ERROR_LOGICAL;
-	}
+	assert(iter != tokens.end());
 	if (! is_operator('[')) {
 		/* The '$' and '[' operators are only generated when they both
 		 * appear in conjunction.  */
-		assert(false);
+		should_not_happen();
 		return nullptr;
 	}
 	++iter;
@@ -709,7 +696,9 @@ shared_ptr <const Dep> Parser
 				flags |= F_TRIVIAL;
 				places_flags[I_TRIVIAL]= place_flag_last;
 			}
-		} else assert(false);
+		} else {
+			unreachable();
+		}
 		++iter;
 	}
 
@@ -1186,22 +1175,6 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 	get_expression_list(deps_new, tokens, place, input, place_input);
 	for (const auto &i: deps_new)
 		deps.push_back(i);
-}
-
-void Parser::print_separation_message(shared_ptr <const Token> token)
-{
-	string text;
-
-	if (dynamic_pointer_cast <const Name_Token> (token)) {
-		text= fmt("token %s",
-			  show(dynamic_pointer_cast <const Name_Token> (token)));
-	} else if (dynamic_pointer_cast <const Operator> (token)) {
-		text= dynamic_pointer_cast <const Operator> (token)->show_long();
-	} else {
-		assert(false);
-	}
-
-	token->get_place() << fmt("to separate it from %s", text);
 }
 
 bool Parser::next_concatenates() const

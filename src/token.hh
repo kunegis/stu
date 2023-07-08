@@ -61,8 +61,6 @@ public:
 	const Place &get_place() const  {  return place;  }
 	const Place &get_place_start() const  {  return place;  }
 	void render(Parts &, Rendering= 0) const;
-	void render_long(Parts &, Rendering= 0) const;
-	string show_long(Style= S_DEFAULT) const;
 };
 
 class Flag_Token
@@ -140,7 +138,6 @@ class Command
 	:  public Token
 {
 private:
-
 	mutable unique_ptr <vector <string> > lines;
 	/* The individual lines of the command.  Empty lines and leading
 	 * spaces are not included.  These lines are only used for
@@ -157,23 +154,11 @@ public:
 	const Place place_start;
 	/* The opening brace */
 
-	Command(string command_,
-		const Place &place_,
-		const Place &place_start_,
+	Command(string command_, const Place &place_, const Place &place_start_,
 		Environment environment_);
-
-	const Place &get_place() const {
-		return place;
-	}
-
-	const Place &get_place_start() const {
-		return place_start;
-	}
-
-	void render(Parts &parts, Rendering= 0) const {
-		parts.append_operator("{");
-	}
-
+	const Place &get_place() const { return place; }
+	const Place &get_place_start() const { return place_start; }
+	void render(Parts &parts, Rendering= 0) const { parts.append_operator("{"); }
 	const vector <string> &get_lines() const;
 };
 

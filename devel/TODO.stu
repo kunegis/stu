@@ -1,11 +1,19 @@
 #
-# Check out coverage tools:  gcov.
+# Compile with clang++ and enable options for unused member functions and variables.
 #
 
 #
-# When executing "stu skjdhfksjdfh", don't show "Command line argument" in the
-# output.
+# Make the following consistent:
 #
+
+$ stu -k
+stu: *** Expected a target or the default file main.stu
+$ stu -k ksdjalskdj
+stu: no rule to build ksdjalskdj
+stu: Targets not up to date because of errors
+
+# * Use '***' everywhere or nowhere (better nowhere)
+# * Use capitalization consistently (make everything uppercase)
 
 #
 # Mark this target to always be a persistent dependency
@@ -151,4 +159,25 @@ list.${name|[A-Z].*} # Matches uppercase names
 #    -fsanitize=address      // not used because of false positives (due to Execution caching)
 #    -fsanitize=leak         // (Execution caching)
 #    <others>
+#
+
+#
+# Add more dependencies to a target using a flag.
+#
+
+-a A : B;
+# There must already be a rule for A.  The dependency B is added.
+
+#
+# Test automatically that only tests whose name start with 'long-' can use
+# 'sleep'.
+#
+
+#
+# Use [[fallthrough]].  (C++17)
+#
+
+#
+# Have flags +p +o +t that negative -p -o -t (useful when flags can be put on
+# the target side of rules).
 #

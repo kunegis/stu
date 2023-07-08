@@ -8,19 +8,17 @@ unordered_map <string, Timestamp> File_Executor::transients;
 File_Executor::~File_Executor()
 /* Objects of this type are never deleted */
 {
-	assert(false);
-
+	unreachable();
+#if 0
 	/* We write this here as a reminder if this is ever activated */
-
 	free(timestamps_old);
 	if (filenames) {
-		for (size_t i= 0; i < targets.size(); ++i) {
-			if (filenames[i]) {
+		for (size_t i= 0; i < targets.size(); ++i)
+			if (filenames[i])
 				free(filenames[i]);
-			}
-		}
 		free(filenames);
 	}
+#endif /* 0 */
 }
 
 void File_Executor::wait()
@@ -62,6 +60,7 @@ void File_Executor::wait()
 		 * just finished.  Should not happen, but since the PID
 		 * value came from outside this process, we better
 		 * handle this case gracefully, i.e., do nothing.  */
+		should_not_happen();
 		print_warning(Place(),
 			      frmt("The function waitpid(2) returned the invalid process ID %jd",
 				   (intmax_t)pid));
@@ -190,6 +189,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		} else {
 			/* This should not happen but the standard does not exclude
 			 * it  */
+			should_not_happen();
 			reason= frmt("failed with status %s%d%s",
 				     Color::highlight_on[CH_ERR],
 				     status,
@@ -302,7 +302,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 		} else if (target_.is_transient()) {
 			rule_not_found= true;
 		} else {
-			assert(false);
+			unreachable();
 		}
 
 		if (rule_not_found) {
@@ -439,7 +439,7 @@ void terminate_jobs()
 			n /= 10;
 		} while (n > 0 && --i >= 0);
 		ssize_t r= write(2, out + i, len - i);
-		/* There's not much we can do if that last write() fails */
+		/* There's not much we can do if write() fails */
 		(void) r;
 	}
 
@@ -451,9 +451,8 @@ void terminate_jobs()
 		if (ret < 0) {
 			/* wait() sets errno to ECHILD when there was no
 			 * child to wait for */
-			if (errno != ECHILD) {
+			if (errno != ECHILD)
 				write_async(2, "*** Error: wait\n");
-			}
 			break;
 		}
 		assert_async(ret > 0);

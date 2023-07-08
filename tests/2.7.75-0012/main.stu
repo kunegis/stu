@@ -1,0 +1,7 @@
+# Command with multiple lines, every line starting with tab, and one of the
+# lines has only that tab.
+
+>A
+{	echo 111
+	
+	echo 222}

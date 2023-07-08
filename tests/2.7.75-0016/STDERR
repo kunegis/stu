@@ -1,0 +1,4 @@
+main.stu:1:5: cyclic dependency: "A" depends on "B"
+main.stu:2:5: "B" depends on "C"
+main.stu:3:5: "C" depends on "A"
+../../bin/stu.test: Targets not up to date because of errors

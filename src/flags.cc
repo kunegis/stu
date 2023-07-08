@@ -11,7 +11,9 @@ unsigned flag_get_index(char c)
 	case 't':  return I_TRIVIAL;
 	case 'n':  return I_NEWLINE_SEPARATED;
 	case '0':  return I_NUL_SEPARATED;
-	default:   assert(false);  return 0;
+	default:
+		should_not_happen();
+		return 0;
 	}
 }
 

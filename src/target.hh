@@ -73,10 +73,6 @@ class Target
  * used.  */
 {
 public:
-	Target()
-		/* The "null" target */
-		:  Target("")  {  }
-
 	explicit Target(string text_)
 		/* TEXT_ is the full text field of this Target */
 		:  text(text_)  {  }

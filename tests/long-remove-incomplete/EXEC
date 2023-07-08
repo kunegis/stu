@@ -109,7 +109,7 @@ kill -TERM "$pid" || exit 2
 wait "$pid" 2>/dev/null
 exitstatus=$?
 
-grep -qF "Removing partially built files" list.err || {
+grep -q -F -e "Removing partially built files" list.err || {
 	echo >&2 "*** Missing error message (D)"
 	exit 1
 }

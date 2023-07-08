@@ -48,9 +48,11 @@ If you run the tests and they fail, report that to Jérôme Kunegis
 ==== REQUIREMENTS ====
 
 Running 'make test' has more requirements than just compiling Stu:
-
 * The unit tests assume that the file system supports UTF-8 filenames.
   Stu will work without such a file system, but you can't run the unit
   tests unless you remove the offending tests (tests/1-unicode-*/).
 * You need to install the package 'expect'.  On some systems, also 'tclsh'.
   (Exact packages vary by operating system.)  (Only used by sh/tty.)
+
+Running 'make cov' has the following requirements:
+* lcov

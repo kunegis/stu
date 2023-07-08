@@ -3,7 +3,7 @@
 Transient_Executor::~Transient_Executor()
 /* Objects of this type are never deleted */
 {
-	assert(false);
+	unreachable();
 }
 
 Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_this)
@@ -47,9 +47,8 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 	Target target= plain_dep->place_param_target.unparametrized();
 	assert(target.is_transient());
 
-	if (rule == nullptr) {
+	if (rule == nullptr)
 		targets.push_back(dep_link->get_target());
-	}
 
 	parents[parent]= dep_link;
 	if (error_additional) {

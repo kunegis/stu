@@ -133,7 +133,7 @@ public:
 		(void) source;
 		(void) flags;
 		(void) dep_source;
-		assert(false);
+		unreachable();
 	}
 
 	virtual void notify_variable(const map <string, string> &result_variable_child) {
@@ -323,9 +323,6 @@ private:
 	 * only started if, after (potentially) starting all non-trivial
 	 * dependencies, the target must be rebuilt anyway.  Does not
 	 * contain compound dependencies.  */
-
-	static void copy_result(Executor *parent, Executor *child);
-	/* Copy the result list from CHILD to PARENT */
 
 	static bool hide_link_from_message(Flags flags) {
 		return flags & F_RESULT_NOTIFY;

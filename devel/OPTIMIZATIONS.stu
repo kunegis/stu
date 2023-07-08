@@ -1,0 +1,12 @@
+# We don't do these for now.
+
+#
+# When parsing rules, only save the "body" part of the rule (everything except
+# the target) as an unparsed string.  Parse it properly only when needed.  This
+# will not catch certain errors anymore.
+#
+
+#
+# Cache the content of files that are used as dynamic dependencies or
+# dynamic variables.
+#

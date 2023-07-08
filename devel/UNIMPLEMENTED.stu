@@ -1,50 +1,9 @@
-#
 # This file lists features that we decided not to implement yet.
 # Many of these ideas are actually good, in particular the "normal"
 # category, and we may revive them in the future.  When in doubt, we
 # prefer to not support a feature, as adding a feature in the future can
 # always be done without breaking compatibility, whereas removing one is
 # always backward-incompatible.
-#
-
-#==== Optimizations ====
-
-#
-# When parsing rules, only save the "body" part of the rule (everything except
-# the target) as an unparsed string.  Parse it properly only when needed.  This
-# will not catch certain errors anymore.
-#
-
-#
-# Dep hierarchy:  instead of using shared_ptr<> and
-# dynamic_pointer_cast<>, roll our own code, storing the type inside
-# Dep.
-#
-
-#
-# Cache the content of files that are used as dynamic dependencies or
-# dynamic variables.
-#
-
-#
-# Use C instead of C++.  This is tempting for simplicity and also out of
-# principle.  What would be necessary:
-#  - Write container classes indexed with strings and targets.
-#  - Convert certain containers to arrays/linked lists.
-#  - More complex and error-prone memory management, in particular for
-#    strings
-#  - A replacement for exceptions
-#  - For Dep objects, keep track of the type in the FLAGS, and
-#    have our own pointer conversion functions.  Also, have our own
-#    reference counting.
-#
-# Remember:  Even GCC is written in C++ nowadays, so we are not in bad
-# company.
-#
-# If we then use 'c99', we could claim full POSIX compliance.
-#
-
-#==== Normal features ====
 
 #
 # Have an option to output the dependency graph, i.e., output each edge
@@ -182,13 +141,6 @@ $NAME.bib:  bibs-B/$NAME.bib
 ${NAME:[^/]+}.bib: ...;
 
 #
-# Add more dependencies to a target using a flag.
-#
-
--a A : B;
-# There must already be a rule for A.  The dependency B is added.
-
-#
 # Fingerprinting instead of timestamps is a feature that is implemented
 # by quite a few Make replacements.  This could also be combined with
 # preprocessors which ignore whitespace, etc.  Can also be used for the
@@ -293,6 +245,14 @@ A.data:  B.data C.data julia-wrapper
 	A = B * C
 }
 
+# Alternative syntax use a flag:
+
+A: B -c julia
+{
+	# Executed by ./julia
+	A = B^2;
+}
+
 #
 # Nested rules.  Good for dependencies that are used only once.  This is
 # quite hard to read, honestly, and mostly fulfills the fantasy of
@@ -367,42 +327,10 @@ A:  <B { ./command-A --output A ; }
 # Both commands may be executed in parallel by Stu, using pipes and
 # tee-like behaviour
 
-#==== External features ====
-
 #
-# These features can be implemented outside of Stu using constructs
-# supported by Stu.  Thus, there is no need to integrate them into Stu,
-# and in fact supporting them would bloat Stu and unnecessary
-# dependencies to it.
+# Achieve full coverage.
 #
-# If anything, the question we should ask for each of these features is
-# not whether we should hardcode it into Stu, but how easily these
-# things can be implemented using the Stu language.  If necessary, we
-# may then extend the Stu language to make such implementations
-# possible, and easy.
-#
-
-#
-# Things that can be implemented by simply using the appropriate
-# commands:
-#
-# * Compression, archiving, and encryption
-# * Converting encodings, line endings, and processing escape sequences
-# * Limitations on runtime, memory usages and other resources by jobs
-# * Calling interpreters or compilers for specific programming languages
-#
-
-#
-# Things that can be implemented by rules in Stu:
-#
-# * Rules for configuring and compiling code
-#
-
-#
-# Run jobs in a distributed fashion, i.e., on different hosts.  The idea
-# here would be to use any software for distributing jobs and call it
-# for each Stu job.  This would slightly interfere with what Stu itself
-# is doing, since a distributed job management system also has to decide
-# when a job is executed.  Most also have dependency management
-# capabilities.
+# * Exclude unreachable() blocks from counting
+# * Exclude should_not_happen() blocks count
+# * Test syscall and libc function failure using mock implementations of them
 #

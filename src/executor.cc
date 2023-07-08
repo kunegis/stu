@@ -763,21 +763,6 @@ Proceed Executor::execute_base_B(shared_ptr <const Dep> dep_link)
 	return proceed;
 }
 
-void Executor::copy_result(Executor *parent, Executor *child)
-{
-	/* Check that the child is not of a type for which RESULT is not
-	 * used */
-	if (dynamic_cast <File_Executor *> (child)) {
-		File_Executor *file_child= dynamic_cast <File_Executor *> (child);
-		assert(file_child->targets.size() == 1 &&
-		       file_child->targets.at(0).is_transient());
-	}
-
-	for (auto &i: child->result) {
-		parent->result.push_back(i);
-	}
-}
-
 void Executor::push_result(shared_ptr <const Dep> dd)
 {
 	DEBUG_PRINT(fmt("push_result %s", show(dd, S_DEBUG)));

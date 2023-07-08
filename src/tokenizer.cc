@@ -41,9 +41,8 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 			fd= open(filename.c_str(), O_RDONLY);
 			if (fd < 0) {
 				if (allow_enoent) {
-					if (errno == ENOENT) {
+					if (errno == ENOENT)
 						return;
-					}
 				}
 				goto error;
 			}
@@ -163,7 +162,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 					goto error;
 				break;
 			default:
-				assert(false);
+				unreachable();
 			}
 
 			return;
@@ -219,7 +218,7 @@ void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
 				munmap((void *) in, in_size);
 				break;
 			default:
-				assert(false);
+				unreachable();
 			}
 		}
 
@@ -291,9 +290,8 @@ shared_ptr <Command> Tokenizer::parse_command()
 	++p;
 	const char *const p_beg= p;
 
-	size_t line_command= line; /* The line of the place of the command */
-	size_t column_command= p - p_line; /* The column of the place of
-					    * the command */
+	size_t line_command= line;
+	size_t column_command= p - p_line;
 	const size_t line_first= line; /* Where the command started */
 	bool begin= true; /* We have not yet seen non-whitespace */
 
@@ -473,11 +471,10 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 		} else if (!has_escape && *p == '$') {
 			string parameter;
 			Place place_dollar;
-			if (parse_parameter(parameter, place_dollar)) {
+			if (parse_parameter(parameter, place_dollar))
 				ret->append_parameter(parameter, place_dollar);
-			} else {
-				assert(false);
-			}
+			else
+				unreachable();
 		} else if (!has_escape && *p == '\\') {
 			has_escape= parse_escape();
 		} else if (has_escape || is_name_char(*p)) {
@@ -576,7 +573,11 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 bool Tokenizer::is_name_char(char c)
 /* The characters in the string constant are those characters that have
  * special meaning (as defined in the manpage), and those reserved for
- * future extension (also defined in the manpage)  */
+ * future extension (also defined in the manpage).  All non-ASCII characters are
+ * allowed, and thus we don't have to distinguish UTF-8 from 8-bit encodings:
+ * all characters with the most significant bit set will make this return TRUE.
+ * See the file CHARACTERS for more information.  This returns TRUE for the
+ * mid-name characters '-', '+' and '~'.  */
 {
 	return (c > 0x20 && c < 0x7F /* ASCII printable character except space */
 		&& nullptr == strchr("[]\"\':={}#<>@$;()%*\\!?|&,", c))
@@ -675,8 +676,10 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			Place place_dollar= current_place();
 			Place place_langle(place_base.type, place_base.text,
 					   line, p + 1 - p_line);
-			tokens.push_back(make_shared <Operator> ('$', place_dollar, environment));
-			tokens.push_back(make_shared <Operator> ('[', place_langle, environment));
+			tokens.push_back(make_shared <Operator>
+					 ('$', place_dollar, environment));
+			tokens.push_back(make_shared <Operator>
+					 ('[', place_langle, environment));
 			p += 2;
 		}
 
@@ -889,7 +892,7 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 			if (parse_parameter(parameter, place_dollar)) {
 				ret.append_parameter(parameter, place_dollar);
 			} else {
-				assert(false);
+				unreachable();
 			}
 		} else if (*p == '\\') {
 			Place place_backslash= current_place();

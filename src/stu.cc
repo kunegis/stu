@@ -18,6 +18,7 @@ using namespace std;
 #include "main_loop.cc"
 #include "options.cc"
 #include "parser.cc"
+#include "preset.cc"
 #include "root_executor.cc"
 #include "rule.cc"
 #include "show.cc"
@@ -42,24 +43,21 @@ int main(int argc, char **argv, char **envp)
 
 	try {
 		vector <string> filenames;
-		/* Filenames passed using the -f option.  Entries are
-		 * unique and sorted as they were given, except for
-		 * duplicates. */
+		/* Filenames passed using the -f option.  Entries are unique and
+		 * sorted as they were given, except for duplicates.  */
 
-		vector <shared_ptr <const Dep> > deps;
-		/* Assemble targets here */
+		vector <shared_ptr <const Dep> > deps; /* Assemble targets here */
 
 		shared_ptr <const Place_Param_Target> target_first;
 		/* Set to the first rule when there is one */
 
-		Place place_first;
-		/* Place of first file when no rule is contained */
+		Place place_first; /* Place of first file when no rule is contained */
 
 		bool had_option_target= false;
-		/* Whether any target(s) was passed through one of the
-		 * options -c, -C, -o, -p, -n, -0.  Also set when zero
-		 * targets are passed through one of these, e.g., when
-		 * -n is used on an empty file.  */
+		/* Whether any target(s) was passed through one of the options
+		 * -c, -C, -o, -p, -n, -0.  Also set when zero targets are
+		 * passed through one of these, e.g., when -n is used on an
+		 * empty file.  */
 
 		bool had_option_f= false; /* Both lower and upper case */
 

@@ -49,7 +49,7 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 		} else {
 			/* Everything else would mean that DEP
 			 * was not normalized  */
-			assert(false);
+			unreachable();
 		}
 		++i;
 	}

@@ -1,7 +1,7 @@
 #include "rule.hh"
 
-Rule::Rule(vector <shared_ptr <const Place_Param_Target> > &&place_param_targets_,
-	   vector <shared_ptr <const Dep> > &&deps_,
+Rule::Rule(std::vector <shared_ptr <const Place_Param_Target> > &&place_param_targets_,
+	   std::vector <shared_ptr <const Dep> > &&deps_,
 	   const Place &place_,
 	   const shared_ptr <const Command> &command_,
 	   Name &&filename_,
@@ -18,8 +18,8 @@ Rule::Rule(vector <shared_ptr <const Place_Param_Target> > &&place_param_targets
 	   is_copy(is_copy_)
 {  }
 
-Rule::Rule(vector <shared_ptr <const Place_Param_Target> > &&place_param_targets_,
-	   const vector <shared_ptr <const Dep> > &deps_,
+Rule::Rule(std::vector <shared_ptr <const Place_Param_Target> > &&place_param_targets_,
+	   const std::vector <shared_ptr <const Dep> > &deps_,
 	   shared_ptr <const Command> command_,
 	   bool is_hardcode_,
 	   int redirect_index_,
@@ -42,7 +42,7 @@ Rule::Rule(vector <shared_ptr <const Place_Param_Target> > &&place_param_targets
 
 	/* Check that all dependencies only include
 	 * parameters from the target */
-	set <string> parameters;
+	std::set <string> parameters;
 	for (auto &parameter: get_parameters()) {
 		parameters.insert(parameter);
 	}
@@ -65,7 +65,7 @@ Rule::Rule(shared_ptr <const Place_Param_Target> place_param_target_,
 	   is_hardcode(false),
 	   is_copy(true)
 {
-	auto dep= make_shared <Plain_Dep>
+	auto dep= std::make_shared <Plain_Dep>
 		(Place_Param_Target(0, *place_name_source_));
 
 	if (! place_persistent.empty()) {
@@ -82,23 +82,23 @@ Rule::Rule(shared_ptr <const Place_Param_Target> place_param_target_,
 
 shared_ptr <const Rule>
 Rule::instantiate(shared_ptr <const Rule> rule,
-		  const map <string, string> &mapping)
+		  const std::map <string, string> &mapping)
 {
 	if (rule->get_parameters().size() == 0)
 		return rule;
 
-	vector <shared_ptr <const Place_Param_Target> >
+	std::vector <shared_ptr <const Place_Param_Target> >
 		place_param_targets(rule->place_param_targets.size());
 	for (size_t i= 0; i < rule->place_param_targets.size(); ++i)
 		place_param_targets[i]= rule->place_param_targets[i]->instantiate(mapping);
 
-	vector <shared_ptr <const Dep> > deps;
+	std::vector <shared_ptr <const Dep> > deps;
 	for (auto &dep: rule->deps)
 		deps.push_back(dep->instantiate(mapping));
 
-	return make_shared <Rule>
+	return std::make_shared <Rule>
 		(move(place_param_targets),
-		 move(deps), rule->place, rule->command,
+		 std::move(deps), rule->place, rule->command,
 		 move(rule->filename.instantiate(mapping)),
 		 rule->is_hardcode, rule->redirect_index,
 		 rule->is_copy);
@@ -132,7 +132,7 @@ void Rule::render(Parts &parts, Rendering rendering) const
 }
 
 void Rule::check_unparametrized(shared_ptr <const Dep> dep,
-				const set <string> &parameters)
+				const std::set <string> &parameters)
 {
 	assert(dep != nullptr);
 
@@ -179,7 +179,7 @@ void Rule::canonicalize()
 	}
 }
 
-void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
+void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 {
 	for (auto &rule: rules_) {
 		rule->canonicalize();
@@ -266,7 +266,7 @@ void Rule_Set::add(vector <shared_ptr <Rule> > &rules_)
 
 shared_ptr <const Rule> Rule_Set::get(Target target,
 				      shared_ptr <const Rule> &param_rule,
-				      map <string, string> &mapping_parameter,
+				      std::map <string, string> &mapping_parameter,
 				      const Place &place)
 {
 	assert(target.is_file() || target.is_transient());
@@ -365,7 +365,7 @@ void Rule_Set::print_for_option_dP() const
 
 void Rule_Set::print_for_option_I() const
 {
-	set <string> filenames;
+	std::set <string> filenames;
 	for (auto i: rules_unparam)  {
 		const Rule &rule= *i.second;
 		if (rule.must_exist())
@@ -396,8 +396,8 @@ void Best_Rule_Finder::add(const Target &target, shared_ptr <const Rule> rule)
 
 	for (auto &place_param_target: rule->place_param_targets) {
 		assert(place_param_target->place_name.get_n() > 0);
-		map <string, string> mapping;
-		vector <size_t> anchoring;
+		std::map <string, string> mapping;
+		std::vector <size_t> anchoring;
 		int priority;
 
 		/* The parametrized rule is of another type */
@@ -461,7 +461,7 @@ void Best_Rule_Finder::add(const Target &target, shared_ptr <const Rule> rule)
 	}
 }
 
-const map <Place, shared_ptr <const Place_Param_Target> > &Best_Rule_Finder::targets_best() const
+const std::map <Place, shared_ptr <const Place_Param_Target> > &Best_Rule_Finder::targets_best() const
 {
 	assert(! place_param_targets_best.empty());
 

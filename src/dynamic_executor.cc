@@ -31,7 +31,7 @@ Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 				   inner_plain_dep->place_param_target.place_name.unparametrized());
 		Target target= dep->get_target();
 		try {
-			map <string, string> mapping_parameter;
+			std::map <string, string> mapping_parameter;
 			shared_ptr <const Rule> rule=
 				rule_set.get(target_base, param_rule, mapping_parameter,
 					     dep->get_place());
@@ -114,7 +114,7 @@ void Dynamic_Executor::notify_result(shared_ptr <const Dep> d,
 	assert(dep_source);
 
 	if (flags & F_RESULT_NOTIFY) {
-		vector <shared_ptr <const Dep> > deps;
+		std::vector <shared_ptr <const Dep> > deps;
 		source->read_dynamic(to <const Plain_Dep> (d), deps, dep, this);
 		for (auto &j: deps) {
 			shared_ptr <Dep> j_new= Dep::clone(j);

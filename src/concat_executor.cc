@@ -33,7 +33,7 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 	size_t k= dep_->deps.size();
 	collected.resize(k);
 	for (size_t i= 0; i < k; ++i) {
-		collected.at(i)= make_shared <Compound_Dep> (Place::place_empty);
+		collected.at(i)= std::make_shared <Compound_Dep> (Place::place_empty);
 	}
 
 	/* Push initial dependencies */
@@ -104,12 +104,12 @@ bool Concat_Executor::finished(Flags) const
 
 void Concat_Executor::launch_stage_1()
 {
-	shared_ptr <Concat_Dep> c= make_shared <Concat_Dep> ();
+	shared_ptr <Concat_Dep> c= std::make_shared <Concat_Dep> ();
 	c->deps.resize(collected.size());
 	for (size_t i= 0; i < collected.size(); ++i) {
 		c->deps.at(i)= move(collected.at(i));
 	}
-	vector <shared_ptr <const Dep> > deps;
+	std::vector <shared_ptr <const Dep> > deps;
 	int e= 0;
 	Dep::normalize(c, deps, e);
 	if (e) {
@@ -145,7 +145,7 @@ void Concat_Executor::notify_result(shared_ptr <const Dep> d,
 			::show(d, S_DEBUG)));
 
 	if (flags & F_RESULT_NOTIFY) {
-		vector <shared_ptr <const Dep> > deps;
+		std::vector <shared_ptr <const Dep> > deps;
 		source->read_dynamic(to <const Plain_Dep> (d), deps, dep, this);
 		for (auto &j: deps) {
 			size_t i= dep_source->index;

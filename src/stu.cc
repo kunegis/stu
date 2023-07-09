@@ -1,5 +1,7 @@
-namespace std {}
-using namespace std;
+#include <string>
+#include <memory>
+using std::string;
+using std::shared_ptr;
 
 #include "buffer.cc"
 #include "buffering.cc"
@@ -43,11 +45,11 @@ int main(int argc, char **argv, char **envp)
 	int error= 0;
 
 	try {
-		vector <string> filenames;
+		std::vector <string> filenames;
 		/* Filenames passed using the -f option.  Entries are unique and
 		 * sorted as they were given, except for duplicates.  */
 
-		vector <shared_ptr <const Dep> > deps; /* Assemble targets here */
+		std::vector <shared_ptr <const Dep> > deps; /* Assemble targets here */
 
 		shared_ptr <const Place_Param_Target> target_first;
 		/* Set to the first rule when there is one */
@@ -91,7 +93,7 @@ int main(int argc, char **argv, char **envp)
 					exit(ERROR_FATAL);
 				}
 				deps.push_back
-					(make_shared <Plain_Dep>
+					(std::make_shared <Plain_Dep>
 					 (0, Place_Param_Target
 					  (0, Place_Name(optarg, place))));
 				break;
@@ -136,8 +138,8 @@ int main(int argc, char **argv, char **envp)
 					exit(ERROR_FATAL);
 				}
 				deps.push_back
-					(make_shared <Dynamic_Dep>
-					 (0, make_shared <Plain_Dep>
+					(std::make_shared <Dynamic_Dep>
+					 (0, std::make_shared <Plain_Dep>
 					  (1 << flag_get_index(c),
 					   Place_Param_Target
 					   (0, Place_Name(optarg, place)))));
@@ -155,7 +157,7 @@ int main(int argc, char **argv, char **envp)
 				Place places[C_PLACED];
 				places[c == 'p' ? I_PERSISTENT : I_OPTIONAL]= place;
 				deps.push_back
-					(make_shared <Plain_Dep>
+					(std::make_shared <Plain_Dep>
 					 (c == 'p' ? F_PERSISTENT : F_OPTIONAL, places,
 					  Place_Param_Target(0, Place_Name(optarg, place))));
 				break;
@@ -196,7 +198,7 @@ int main(int argc, char **argv, char **envp)
 					throw ERROR_LOGICAL;
 				error |= ERROR_LOGICAL;
 			} else if (option_J)
-				deps.push_back(make_shared <Plain_Dep>
+				deps.push_back(std::make_shared <Plain_Dep>
 					       (0, Place_Param_Target
 						(0, Place_Name(argv[i], place))));
 		}
@@ -264,7 +266,7 @@ int main(int argc, char **argv, char **envp)
 					    show(*target_first));
 				exit(ERROR_FATAL);
 			}
-			deps.push_back(make_shared <Plain_Dep> (*target_first));
+			deps.push_back(std::make_shared <Plain_Dep> (*target_first));
 		}
 		main_loop(deps);
 	} catch (int e) {

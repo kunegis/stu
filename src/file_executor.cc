@@ -3,7 +3,7 @@
 size_t File_Executor::executors_by_pid_size= 0;
 pid_t *File_Executor::executors_by_pid_key= nullptr;
 File_Executor **File_Executor::executors_by_pid_value= nullptr;
-unordered_map <string, Timestamp> File_Executor::transients;
+std::unordered_map <string, Timestamp> File_Executor::transients;
 
 File_Executor::~File_Executor()
 /* Objects of this type are never deleted */
@@ -217,7 +217,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 			     Executor *parent,
 			     shared_ptr <const Rule> rule_,
 			     shared_ptr <const Rule> param_rule_,
-			     map <string, string> &mapping_parameter_,
+			     std::map <string, string> &mapping_parameter_,
 			     int &error_additional)
 	:  Executor(param_rule_),
 	   timestamps_old(nullptr),
@@ -914,7 +914,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 	 * Note about C++ map::insert():  The insert function is a no-op
 	 * if a key is already present.  Thus, we insert variables first
 	 * (because they have priority).  */
-	map <string, string> mapping;
+	std::map <string, string> mapping;
 	mapping.insert(mapping_variable.begin(), mapping_variable.end());
 	mapping.insert(mapping_parameter.begin(), mapping_parameter.end());
 	mapping_parameter.clear();

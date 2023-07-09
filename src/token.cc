@@ -10,7 +10,7 @@ Command::Command(string command_,
 	   place_start(place_start_)
 {  }
 
-const vector <string> &
+const std::vector <string> &
 Command::get_lines() const
 /* This code parses the command string into lines ready for output.
  * Most of the code is for making the output pretty.
@@ -21,7 +21,7 @@ Command::get_lines() const
 {
 	if (lines != nullptr)
 		return *lines;
-	lines= unique_ptr <vector <string> > (new vector <string> ());
+	lines= std::unique_ptr <std::vector <string> > (new std::vector <string> ());
 	const char *p= command.c_str();
 	const char *p_end= p + command.size();
 

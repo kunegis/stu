@@ -14,7 +14,7 @@ public:
 			   Executor *parent,
 			   shared_ptr <const Rule> rule,
 			   shared_ptr <const Rule> param_rule,
-			   map <string, string> &mapping_parameter,
+			   std::map <string, string> &mapping_parameter,
 			   int &error_additional);
 
 	shared_ptr <const Rule> get_rule() const {  return rule;  }
@@ -26,7 +26,7 @@ public:
 	virtual void notify_result(shared_ptr <const Dep> dep,
 				   Executor *, Flags flags,
 				   shared_ptr <const Dep> dep_source) override;
-	virtual void notify_variable(const map <string, string> &result_variable_child) override {
+	virtual void notify_variable(const std::map <string, string> &result_variable_child) override {
 		result_variable.insert(result_variable_child.begin(),
 				       result_variable_child.end());
 	}
@@ -38,7 +38,7 @@ protected:
 private:
 	~Transient_Executor();
 
-	vector <Target> targets;
+	std::vector <Target> targets;
 	/* The targets to which this executor object corresponds.  All
 	 * are transients.  Contains at least one element.  */
 
@@ -48,10 +48,10 @@ private:
 	Timestamp timestamp_old;
 	bool is_finished;
 
-	map <string, string> mapping_parameter;
+	std::map <string, string> mapping_parameter;
 	/* Contains the parameters; is not used */
 
-	map <string, string> mapping_variable;
+	std::map <string, string> mapping_variable;
 	/* Variable assignments from variables dependencies.  This is in
 	 * Transient_Executor because it may be percolated up to the
 	 * parent executor.  */

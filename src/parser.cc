@@ -15,7 +15,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 	int redirect_index= -1;
 	/* Index of the target that has the output, or -1 */
 
-	vector <shared_ptr <const Place_Param_Target> > place_param_targets;
+	std::vector <shared_ptr <const Place_Param_Target> > place_param_targets;
 
 	while (iter != tokens.end()) {
 		Place place_output_new;
@@ -94,7 +94,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 		}
 
 		shared_ptr <const Place_Param_Target> place_param_target=
-			make_shared <Place_Param_Target>
+			std::make_shared <Place_Param_Target>
 			(flags_type, *target_name, place_target);
 
 		if (! place_output_new.empty()) {
@@ -141,13 +141,13 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 	}
 
 	/* Check that all targets have the same set of parameters */
-	set <string> parameters_0;
+	std::set <string> parameters_0;
 	for (const string &parameter: place_param_targets[0]->place_name.get_parameters()) {
 		parameters_0.insert(parameter);
 	}
 	assert(place_param_targets.size() >= 1);
 	for (size_t i= 1; i < place_param_targets.size(); ++i) {
-		set <string> parameters_i;
+		std::set <string> parameters_i;
 		for (const string &parameter:
 			     place_param_targets[i]->place_name.get_parameters()) {
 			parameters_i.insert(parameter);
@@ -173,7 +173,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 		throw ERROR_LOGICAL;
 	}
 
-	vector <shared_ptr <const Dep> > deps;
+	std::vector <shared_ptr <const Dep> > deps;
 	bool had_colon= false;
 
 	/* Empty at first */
@@ -294,7 +294,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			/* Check that the source file contains
 			 * only parameters that also appear in
 			 * the target  */
-			set <string> parameters;
+			std::set <string> parameters;
 			for (auto &parameter:
 				     place_param_targets[0]->place_name.get_parameters()) {
 				parameters.insert(parameter);
@@ -371,7 +371,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 			 * in slash */
 			append_copy(*name_copy, place_param_targets[0]->place_name);
 
-			return make_shared <Rule> (place_param_targets[0], name_copy,
+			return std::make_shared <Rule> (place_param_targets[0], name_copy,
 						   place_flag_persistent,
 						   place_flag_optional);
 		}
@@ -437,15 +437,15 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Param_Target> &targ
 		}
 	}
 
-	return make_shared <Rule>
+	return std::make_shared <Rule>
 		(move(place_param_targets), deps, command, is_hardcode,
 		 redirect_index, filename_input);
 }
 
-bool Parser::parse_expression_list(vector <shared_ptr <const Dep> > &ret,
+bool Parser::parse_expression_list(std::vector <shared_ptr <const Dep> > &ret,
 				   Place_Name &place_name_input,
 				   Place &place_input,
-				   const vector <shared_ptr <const Place_Param_Target> > &targets)
+				   const std::vector <shared_ptr <const Place_Param_Target> > &targets)
 {
 	assert(ret.size() == 0);
 
@@ -467,7 +467,7 @@ bool Parser::parse_expression_list(vector <shared_ptr <const Dep> > &ret,
 bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 			      Place_Name &place_name_input,
 			      Place &place_input,
-			      const vector <shared_ptr <const Place_Param_Target> > &targets)
+			      const std::vector <shared_ptr <const Place_Param_Target> > &targets)
 {
 	assert(ret == nullptr);
 
@@ -475,13 +475,13 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 	if (is_operator('(')) {
 		Place place_paren= (*iter)->get_place();
 		++iter;
-		vector <shared_ptr <const Dep> > r;
+		std::vector <shared_ptr <const Dep> > r;
 		if (parse_expression_list(r, place_name_input, place_input, targets)) {
 			assert(r.size() >= 1);
 			if (r.size() > 1) {
-				ret= make_shared <Compound_Dep> (move(r), place_paren);
+				ret= std::make_shared <Compound_Dep> (std::move(r), place_paren);
 			} else {
-				ret= move(r.at(0));
+				ret= std::move(r.at(0));
 			}
 			r.clear();
 		}
@@ -502,7 +502,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		/* If RET is null, it means we had empty parentheses.
 		 * Return an empty Compound_Dependency in that case  */
 		if (ret == nullptr)
-			ret= make_shared <Compound_Dep> (place_paren);
+			ret= std::make_shared <Compound_Dep> (place_paren);
 
 		if (next_concatenates()) {
 			shared_ptr <const Dep> next;
@@ -510,7 +510,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 			/* It can be that an empty list was parsed, in
 			 * which case RR is true but the list is empty */
 			if (rr && next != nullptr) {
-				shared_ptr <Concat_Dep> ret_new= make_shared <Concat_Dep> ();
+				shared_ptr <Concat_Dep> ret_new= std::make_shared <Concat_Dep> ();
 				ret_new->push_back(ret);
 				ret_new->push_back(next);
 				ret.reset();
@@ -525,7 +525,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 	if (is_operator('[')) {
 		Place place_bracket= (*iter)->get_place();
 		++iter;
-		vector <shared_ptr <const Dep> > r2;
+		std::vector <shared_ptr <const Dep> > r2;
 		parse_expression_list(r2, place_name_input, place_input, targets);
 
 		if (iter == tokens.end()) {
@@ -542,7 +542,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		}
 		++iter;
 		shared_ptr <Compound_Dep> ret_nondynamic=
-			make_shared <Compound_Dep> (place_bracket);
+			std::make_shared <Compound_Dep> (place_bracket);
 		for (auto &j: r2) {
 			/* Variable dependency cannot appear within
 			 * dynamic dependency */
@@ -558,7 +558,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 
 			ret_nondynamic->push_back(j);
 		}
-		ret= make_shared <Dynamic_Dep> (0, ret_nondynamic);
+		ret= std::make_shared <Dynamic_Dep> (0, ret_nondynamic);
 
 		if (next_concatenates()) {
 			shared_ptr <const Dep> next;
@@ -566,7 +566,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 			/* It can be that an empty list was parsed, in
 			 * which case RR is true but the list is empty */
 			if (rr && next != nullptr) {
-				shared_ptr <Concat_Dep> ret_new= make_shared <Concat_Dep> ();
+				shared_ptr <Concat_Dep> ret_new= std::make_shared <Concat_Dep> ();
 				ret_new->push_back(ret);
 				ret_new->push_back(next);
 				ret.reset();
@@ -577,7 +577,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 		/* If RET is null, it means we had empty parentheses.
 		 * Return an empty Compound_Dependency in that case. */
 		if (ret == nullptr)
-			ret= make_shared <Compound_Dep> (place_bracket);
+			ret= std::make_shared <Compound_Dep> (place_bracket);
 
 		return true;
 	}
@@ -651,7 +651,7 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 shared_ptr <const Dep> Parser
 ::parse_variable_dep(Place_Name &place_name_input,
 		     Place &place_input,
-		     const vector <shared_ptr <const Place_Param_Target> > &targets)
+		     const std::vector <shared_ptr <const Place_Param_Target> > &targets)
 {
 	bool has_input= false;
 	shared_ptr <const Dep> ret;
@@ -792,7 +792,7 @@ shared_ptr <const Dep> Parser
 	/* The place of the variable dependency as a whole is set on the
 	 * name contained in it.  It would be conceivable to also set it
 	 * on the dollar sign.  */
-	ret= make_shared <Plain_Dep>
+	ret= std::make_shared <Plain_Dep>
 		(flags, places_flags,
 		 Place_Param_Target(0, *place_name, place_name->place),
 		 variable_name);
@@ -820,7 +820,7 @@ shared_ptr <const Dep> Parser
 
 shared_ptr <const Dep> Parser::parse_redirect_dep
 (Place_Name &place_name_input, Place &place_input,
- const vector <shared_ptr <const Place_Param_Target> > &targets)
+ const std::vector <shared_ptr <const Place_Param_Target> > &targets)
 {
 	(void) targets;
 	bool has_input= false;
@@ -893,7 +893,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 		assert(! place_input.empty());
 
 	Flags transient_bit= has_transient ? F_TARGET_TRANSIENT : 0;
-	shared_ptr <const Dep> ret= make_shared <Plain_Dep>
+	shared_ptr <const Dep> ret= std::make_shared <Plain_Dep>
 		(flags | transient_bit,
 		 Place_Param_Target(transient_bit, *name_token,
 				    has_transient ? place_at : name_token->place));
@@ -924,7 +924,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep
 		/* It can be that an empty list was parsed, in
 		 * which case RR is true but the list is empty */
 		if (rr && next != nullptr) {
-			shared_ptr <Concat_Dep> ret_new= make_shared <Concat_Dep> ();
+			shared_ptr <Concat_Dep> ret_new= std::make_shared <Concat_Dep> ();
 			ret_new->push_back(ret);
 			ret_new->push_back(next);
 			ret.reset();
@@ -964,8 +964,8 @@ void Parser::append_copy(      Name &to,
 	to.append(from);
 }
 
-void Parser::get_rule_list(vector <shared_ptr <Rule> > &rules,
-			   vector <shared_ptr <Token> > &tokens,
+void Parser::get_rule_list(std::vector <shared_ptr <Rule> > &rules,
+			   std::vector <shared_ptr <Token> > &tokens,
 			   const Place &place_end,
 			   shared_ptr <const Place_Param_Target> &target_first)
 {
@@ -980,15 +980,15 @@ void Parser::get_rule_list(vector <shared_ptr <Rule> > &rules,
 	}
 }
 
-void Parser::get_expression_list(vector <shared_ptr <const Dep> > &deps,
-				 vector <shared_ptr <Token> > &tokens,
+void Parser::get_expression_list(std::vector <shared_ptr <const Dep> > &deps,
+				 std::vector <shared_ptr <Token> > &tokens,
 				 const Place &place_end,
 				 Place_Name &input,
 				 Place &place_input)
 {
 	auto iter= tokens.begin();
 	Parser parser(tokens, iter, place_end);
-	vector <shared_ptr <const Place_Param_Target>> targets;
+	std::vector <shared_ptr <const Place_Param_Target>> targets;
 	parser.parse_expression_list(deps, input, place_input, targets);
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start()
@@ -998,7 +998,7 @@ void Parser::get_expression_list(vector <shared_ptr <const Dep> > &deps,
 	}
 }
 
-void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
+void Parser::get_expression_list_delim(std::vector <shared_ptr <const Dep> > &deps,
 				       const char *filename,
 				       char c, char c_printed,
 				       const Printer &printer)
@@ -1066,7 +1066,7 @@ void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
 			assert(filename_dep.find('\0') == string::npos);
 		}
 
-		deps.push_back(make_shared <Plain_Dep>
+		deps.push_back(std::make_shared <Plain_Dep>
 			       (0, Place_Param_Target
 				(0, Place_Name(filename_dep, place))));
 	}
@@ -1077,7 +1077,7 @@ void Parser::get_expression_list_delim(vector <shared_ptr <const Dep> > &deps,
 	}
 }
 
-void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
+void Parser::get_target_arg(std::vector <shared_ptr <const Dep> > &deps,
 			    int argc, const char *const *argv)
 /*
  *    - Recognize only the special characters "-@[]".  And "-@" only at the
@@ -1093,7 +1093,7 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 	/* All tokens get the same place, because we don't distinguish
 	 * the location within command line arguments  */
 	Place place(Place::Type::ARGUMENT);
-	vector <shared_ptr <Token> > tokens;
+	std::vector <shared_ptr <Token> > tokens;
 
 	for (int j= 0; j < argc; ++j) {
 		const char *p= argv[j];
@@ -1106,21 +1106,21 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 
 		while (*p) {
 			if (allow_at && *p == '@') {
-				tokens.push_back(make_shared <Operator>
+				tokens.push_back(std::make_shared <Operator>
 						 (*p, place, environment));
 				++p;
 				allow_dash= false;
 				allow_at= false;
 				environment= 0;
 			} else if (*p == '[') {
-				tokens.push_back(make_shared <Operator>
+				tokens.push_back(std::make_shared <Operator>
 						 (*p, place, environment));
 				++p;
 				allow_dash= true;
 				allow_at= true;
 				environment= 0;
 			} else if (*p == ']') {
-				tokens.push_back(make_shared <Operator>
+				tokens.push_back(std::make_shared <Operator>
 						 (*p, place, environment));
 				++p;
 				allow_dash= false;
@@ -1144,7 +1144,7 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 					}
 					throw ERROR_LOGICAL;
 				}
-				tokens.push_back(make_shared <Flag_Token>
+				tokens.push_back(std::make_shared <Flag_Token>
 						 (*p, place, environment));
 				++p;
 				allow_dash= true;
@@ -1160,7 +1160,7 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 				}
 				assert(p > q);
 				Place_Name place_name(string(q, p-q), place);
-				tokens.push_back(make_shared <Name_Token>
+				tokens.push_back(std::make_shared <Name_Token>
 						 (place_name, environment));
 				allow_dash= false;
 				allow_at= false;
@@ -1171,7 +1171,7 @@ void Parser::get_target_arg(vector <shared_ptr <const Dep> > &deps,
 
 	Place_Name input;  /* Remains empty */
 	Place place_input;  /* Remains empty */
-	vector <shared_ptr <const Dep> > deps_new;
+	std::vector <shared_ptr <const Dep> > deps_new;
 	get_expression_list(deps_new, tokens, place, input, place_input);
 	for (const auto &i: deps_new)
 		deps.push_back(i);
@@ -1212,7 +1212,7 @@ void Parser::get_file(string filename,
 		filename_passed= "";
 
 	/* Tokenize */
-	vector <shared_ptr <Token> > tokens;
+	std::vector <shared_ptr <Token> > tokens;
 	Place place_end;
 	Tokenizer::parse_tokens_file
 		(tokens, Tokenizer::SOURCE,
@@ -1220,7 +1220,7 @@ void Parser::get_file(string filename,
 		 place_diagnostic, file_fd);
 
 	/* Build rules */
-	vector <shared_ptr <Rule> > rules;
+	std::vector <shared_ptr <Rule> > rules;
 	Parser::get_rule_list(rules, tokens, place_end, target_first);
 
 	/* Add to set */
@@ -1235,7 +1235,7 @@ void Parser::get_string(const char *s,
 			Rule_Set &rule_set,
 			shared_ptr <const Place_Param_Target> &target_first)
 {
-	vector <shared_ptr <Token> > tokens;
+	std::vector <shared_ptr <Token> > tokens;
 	Place place_end;
 	Tokenizer::parse_tokens_string
 		(tokens,
@@ -1243,23 +1243,23 @@ void Parser::get_string(const char *s,
 		 place_end, s,
 		 Place(Place::Type::OPTION, 'F'));
 
-	vector <shared_ptr <Rule> > rules;
+	std::vector <shared_ptr <Rule> > rules;
 	Parser::get_rule_list(rules, tokens, place_end, target_first);
 
 	rule_set.add(rules);
 }
 
-void Parser::add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
+void Parser::add_deps_option_C(std::vector <shared_ptr <const Dep> > &deps,
 			       const char *string_)
 {
-	vector <shared_ptr <Token> > tokens;
+	std::vector <shared_ptr <Token> > tokens;
 	Place place_end;
 	Tokenizer::parse_tokens_string(tokens,
 				       Tokenizer::OPTION_C,
 				       place_end, string_,
 				       Place(Place::Type::OPTION, 'C'));
 
-	vector <shared_ptr <const Dep> > deps_option;
+	std::vector <shared_ptr <const Dep> > deps_option;
 	Place_Name input; /* remains empty */
 	Place place_input; /* remains empty */
 
@@ -1268,4 +1268,24 @@ void Parser::add_deps_option_C(vector <shared_ptr <const Dep> > &deps,
 
 	for (auto &j: deps_option)
 		deps.push_back(j);
+}
+
+void Parser::parse_rule_list(std::vector <shared_ptr <Rule> > &ret,
+			     shared_ptr <const Place_Param_Target> &target_first)
+{
+	assert(ret.size() == 0);
+	while (iter != tokens.end()) {
+
+#ifndef NDEBUG
+		const auto iter_begin= iter;
+#endif /* ! NDEBUG */
+
+		shared_ptr <Rule> rule= parse_rule(target_first);
+
+		if (rule == nullptr) {
+			assert(iter == iter_begin);
+			break;
+		}
+		ret.push_back(rule);
+	}
 }

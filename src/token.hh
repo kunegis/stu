@@ -131,7 +131,7 @@ class Command
 	:  public Token
 {
 private:
-	mutable unique_ptr <vector <string> > lines;
+	mutable std::unique_ptr <std::vector <string> > lines;
 	/* The individual lines of the command.  Empty lines and leading
 	 * spaces are not included.  These lines are only used for
 	 * output and writing content, not for execution.  May be null.
@@ -152,7 +152,7 @@ public:
 	const Place &get_place() const override { return place; }
 	const Place &get_place_start() const override { return place_start; }
 	void render(Parts &parts, Rendering= 0) const override { parts.append_operator("{"); }
-	const vector <string> &get_lines() const;
+	const std::vector <string> &get_lines() const;
 };
 
 #endif /* ! TOKEN_HH */

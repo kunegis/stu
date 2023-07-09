@@ -20,10 +20,10 @@ Timestamp Executor::timestamp_last;
 
 bool Executor::hide_out_message= false;
 bool Executor::out_message_done= false;
-unordered_map <Target, Executor *> Executor::executors_by_target;
+std::unordered_map <Target, Executor *> Executor::executors_by_target;
 
 void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
-			    vector <shared_ptr <const Dep> > &deps,
+			    std::vector <shared_ptr <const Dep> > &deps,
 			    shared_ptr <const Dep> dep,
 			    Executor *dynamic_executor)
 {
@@ -55,7 +55,7 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 
 		if (! delim) {
 			/* Dynamic dependency in full Stu syntax */
-			vector <shared_ptr <Token> > tokens;
+			std::vector <shared_ptr <Token> > tokens;
 			Place place_end;
 
 			Tokenizer::parse_tokens_file
@@ -133,12 +133,12 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		}
 
 		assert(! found_error || option_k);
-		vector <shared_ptr <const Dep> > deps_new;
+		std::vector <shared_ptr <const Dep> > deps_new;
 
 		shared_ptr <const Dep> top_top= dep_target->top;
 		shared_ptr <Dep> no_top= Dep::clone(dep_target);
 		no_top->top= nullptr;
-		shared_ptr <Dep> top= make_shared <Dynamic_Dep> (no_top);
+		shared_ptr <Dep> top= std::make_shared <Dynamic_Dep> (no_top);
 		top->top= top_top;
 
 		for (auto &j: deps) {
@@ -158,12 +158,12 @@ bool Executor::find_cycle(Executor *parent,
 			  Executor *child,
 			  shared_ptr <const Dep> dep_link)
 {
-	vector <Executor *> path;
+	std::vector <Executor *> path;
 	path.push_back(parent);
 	return find_cycle(path, child, dep_link);
 }
 
-bool Executor::find_cycle(vector <Executor *> &path,
+bool Executor::find_cycle(std::vector <Executor *> &path,
 			  Executor *child,
 			  shared_ptr <const Dep> dep_link)
 {
@@ -183,7 +183,7 @@ bool Executor::find_cycle(vector <Executor *> &path,
 	return false;
 }
 
-void Executor::cycle_print(const vector <Executor *> &path,
+void Executor::cycle_print(const std::vector <Executor *> &path,
 			   shared_ptr <const Dep> dep)
 /*
  * Given PATH = [a, b, c, d, ..., x], we print:
@@ -201,7 +201,7 @@ void Executor::cycle_print(const vector <Executor *> &path,
 {
 	assert(path.size() > 0);
 
-	vector <string> names;
+	std::vector <string> names;
 	/* Indexes are parallel to PATH */
 	names.resize(path.size());
 
@@ -339,7 +339,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	if (! target.is_dynamic()) {
 		/* Plain executor */
 		shared_ptr <const Rule> rule_child, param_rule_child;
-		map <string, string> mapping_parameter;
+		std::map <string, string> mapping_parameter;
 		bool use_file_executor= false;
 		try {
 			Target target_without_flags= target;
@@ -493,7 +493,7 @@ Proceed Executor::execute_children()
 	/* Since disconnect() may change executor->children, we must first
 	 * copy it over locally, and then iterate through it */
 
-	vector <Executor *> executors_children_vector
+	std::vector <Executor *> executors_children_vector
 		(children.begin(), children.end());
 	Proceed proceed_all= 0;
 
@@ -504,8 +504,8 @@ Proceed Executor::execute_children()
 			size_t p_last= executors_children_vector.size() - 1;
 			size_t p_random= random_number(executors_children_vector.size());
 			if (p_last != p_random) {
-				swap(executors_children_vector[p_last],
-				     executors_children_vector[p_random]);
+				std::swap(executors_children_vector[p_last],
+					  executors_children_vector[p_random]);
 			}
 		}
 
@@ -557,7 +557,7 @@ void Executor::push(shared_ptr <const Dep> dep)
 	assert(dep);
 	dep->check();
 
-	vector <shared_ptr <const Dep> > deps;
+	std::vector <shared_ptr <const Dep> > deps;
 	int e= 0;
 	Dep::normalize(dep, deps, e);
 	if (e) {

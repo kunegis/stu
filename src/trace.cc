@@ -5,7 +5,7 @@
 FILE *Trace::trace_files[TRACE_COUNT];
 string Trace::padding;
 Trace::Init Trace::init;
-vector <Trace *> Trace::stack;
+std::vector <Trace *> Trace::stack;
 
 Trace::Init::Init()
 {

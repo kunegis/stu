@@ -16,7 +16,7 @@
 
 #include "dep.hh"
 
-extern default_random_engine buffer_generator;
+extern std::default_random_engine buffer_generator;
 
 size_t random_number(size_t n);
 /* Random number in [0...n-1] */
@@ -30,8 +30,8 @@ private:
 
 	/* All contained dependencies are normalized */
 
-	queue <shared_ptr <const Dep> > q;
-	vector <shared_ptr <const Dep> > v;
+	std::queue <shared_ptr <const Dep> > q;
+	std::vector <shared_ptr <const Dep> > v;
 
 public:
 	size_t size() const {

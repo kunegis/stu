@@ -60,7 +60,7 @@ private:
 	string prefix;
 	static string padding;
 	static constexpr const char *padding_one= "   ";
-	static vector <Trace *> stack;
+	static std::vector <Trace *> stack;
 
 	static struct Init { Init(); } init;
 

@@ -239,10 +239,10 @@ class Name
  * text is empty (empty names are invalid).  */
 {
 public:
-	Name(string name_):  texts({name_})  {  }
+	Name(string name_): texts({name_}) { }
 	/* A name with zero parameters */
 
-	Name():  texts({""})  {  }
+	Name(): texts({""}) { }
 	/* Empty name */
 
 	bool empty() const {
@@ -262,11 +262,11 @@ public:
 		return !parameters.empty();
 	}
 
-	const vector <string> &get_texts() const {
+	const std::vector <string> &get_texts() const {
 		return texts;
 	}
 
-	const vector <string> &get_parameters() const {
+	const std::vector <string> &get_parameters() const {
 		return parameters;
 	}
 
@@ -294,7 +294,7 @@ public:
 		return texts[texts.size() - 1];
 	}
 
-	string instantiate(const map <string, string> &mapping) const;
+	string instantiate(const std::map <string, string> &mapping) const;
 	/* Instantiate the name with the given mapping.  The name may be
 	 * empty, resulting in an empty string.  */
 
@@ -306,8 +306,8 @@ public:
 		return texts[0];
 	}
 
-	bool match(string name, map <string, string> &mapping,
-		   vector <size_t> &anchoring, int &priority) const;
+	bool match(string name, std::map <string, string> &mapping,
+		   std::vector <size_t> &anchoring, int &priority) const;
 	/* Check whether NAME matches this name.  If it does, return
 	 * TRUE and set MAPPING and ANCHORING accordingly.
 	 * MAPPING must be empty.  PRIORITY determines whether a special rule was used:
@@ -334,15 +334,15 @@ public:
 
 	bool operator==(const Name &that) const;
 
-	static bool anchoring_dominates(vector <size_t> &anchoring_a,
-					vector <size_t> &anchoring_b,
+	static bool anchoring_dominates(std::vector <size_t> &anchoring_a,
+					std::vector <size_t> &anchoring_b,
 					int priority_a, int priority_b);
 	/* Whether anchoring A dominates anchoring B.  The anchorings do
 	 * not need to have the same number of parameters.  */
 
 private:
-	vector <string> texts; /* Length = N + 1 */
-	vector <string> parameters; /* Length = N */
+	std::vector <string> texts; /* Length = N + 1 */
+	std::vector <string> parameters; /* Length = N */
 };
 
 void render(const Name &name, Parts &parts, Rendering rendering= 0)
@@ -374,7 +374,7 @@ public:
 		assert(! target.is_dynamic());
 	}
 
-	Target instantiate(const map <string, string> &mapping) const {
+	Target instantiate(const std::map <string, string> &mapping) const {
 		return Target(flags, name.instantiate(mapping));
 	}
 
@@ -403,7 +403,7 @@ public:
 	Place place;
 	/* Place of the name as a whole */
 
-	vector <Place> places;
+	std::vector <Place> places;
 	/* Length = N (number of parameters).
 	 * The places of the individual parameters.  */
 
@@ -427,7 +427,7 @@ public:
 		assert(! place.empty());
 	}
 
-	const vector <Place> &get_places() const {
+	const std::vector <Place> &get_places() const {
 		return places;
 	}
 
@@ -439,11 +439,11 @@ public:
 		places.push_back(place_parameter);
 	}
 
-	shared_ptr <Place_Name> instantiate(const map <string, string> &mapping) const
+	shared_ptr <Place_Name> instantiate(const std::map <string, string> &mapping) const
 	/* In the returned object, the PLACES vector is empty */
 	{
 		string name= Name::instantiate(mapping);
-		return make_shared <Place_Name> (name, place);
+		return std::make_shared <Place_Name> (name, place);
 	}
 };
 
@@ -491,8 +491,8 @@ public:
 	void render(Parts &, Rendering) const;
 
 	shared_ptr <Place_Param_Target>
-	instantiate(const map <string, string> &mapping) const {
-		return make_shared <Place_Param_Target>
+	instantiate(const std::map <string, string> &mapping) const {
+		return std::make_shared <Place_Param_Target>
 			(flags, *place_name.instantiate(mapping), place);
 	}
 
@@ -508,7 +508,7 @@ public:
 
 	static shared_ptr <Place_Param_Target> clone
 	(shared_ptr <const Place_Param_Target> place_param_target) {
-		shared_ptr <Place_Param_Target> ret= make_shared <Place_Param_Target>
+		shared_ptr <Place_Param_Target> ret= std::make_shared <Place_Param_Target>
 			(place_param_target->flags,
 			 place_param_target->place_name,
 			 place_param_target->place);

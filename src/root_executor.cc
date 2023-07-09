@@ -11,7 +11,7 @@ bool Root_Executor::finished(Flags flags) const
 	return is_finished;
 }
 
-Root_Executor::Root_Executor(const vector <shared_ptr <const Dep> > &deps)
+Root_Executor::Root_Executor(const std::vector <shared_ptr <const Dep> > &deps)
 	:  is_finished(false)
 {
 	for (auto &d: deps)

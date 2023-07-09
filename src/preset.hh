@@ -97,8 +97,8 @@ public:
 private:
 	struct Entry {
 		string prefix;
-		unique_ptr <Preset <T> > preset;
-		vector <T> values;
+		std::unique_ptr <Preset <T> > preset;
+		std::vector <T> values;
 	};
 
 	const Preset <T> *parent;
@@ -107,7 +107,7 @@ private:
 	char index;
 	/* In PARENT.  Unspecified when PARENT is null. */
 
-	vector <Entry> chars;
+	std::vector <Entry> chars;
 	/* For each tuple, exactly one of {VALUES, PRESET} is nonempty/nonnull.
 	 * If PRESET is null, this object contains at least one value.  Otherwise,
 	 * the object contains a child.
@@ -116,9 +116,9 @@ private:
 	 * is sorted as the character '\0', i.e., always in first position.
 	 * (string[0] returns '\0' when string is "".)  */
 
-	void insert(string key, unique_ptr <Preset <T> > preset);
+	void insert(string key, std::unique_ptr <Preset <T> > preset);
 
-	void insert(string key, vector <T> &&values);
+	void insert(string key, std::vector <T> &&values);
 	/* There must not be an entry there yet starting with KEY[0].  KEY may be empty. */
 
 	void develop(Entry &);

@@ -1,11 +1,11 @@
 #include "main_loop.hh"
 
-void main_loop(const vector <shared_ptr <const Dep> > &deps)
+void main_loop(const std::vector <shared_ptr <const Dep> > &deps)
 {
 	assert(options_jobs >= 0);
 	Root_Executor *root_executor= new Root_Executor(deps);
 	int error= 0;
-	shared_ptr <const Root_Dep> dep_root= make_shared <Root_Dep> ();
+	shared_ptr <const Root_Dep> dep_root= std::make_shared <Root_Dep> ();
 
 	try {
 		while (! root_executor->finished()) {

@@ -82,7 +82,7 @@ void set_option_m(const char *value)
 void set_option_M(const char *value)
 {
 	order= Order::RANDOM;
-	buffer_generator.seed(hash <string> ()(string(value)));
+	buffer_generator.seed(std::hash <string> ()(string(value)));
 }
 
 void print_option_V()

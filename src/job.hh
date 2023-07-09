@@ -65,7 +65,7 @@ public:
 	}
 
 	pid_t start(string command,
-		    const map <string, string> &mapping,
+		    const std::map <string, string> &mapping,
 		    string filename_output,
 		    string filename_input,
 		    const Place &place_command);

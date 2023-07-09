@@ -28,7 +28,7 @@ bool Job::Signal_Blocker::blocked= false;
 #endif
 
 pid_t Job::start(string command,
-		 const map <string, string> &mapping,
+		 const std::map <string, string> &mapping,
 		 string filename_output,
 		 string filename_input,
 		 const Place &place_command)
@@ -108,7 +108,7 @@ pid_t Job::start(string command,
 		/* Set variables */
 		size_t v_old= 0;
 
-		map <string, size_t> old;
+		std::map <string, size_t> old;
 		/* Index of old variables */
 
 		while (envp_global[v_old]) {

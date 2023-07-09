@@ -12,7 +12,7 @@ class Tokenizer
 public:
 	enum Context { SOURCE, DYNAMIC, OPTION_C, OPTION_F };
 
-	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens,
+	static void parse_tokens_file(std::vector <shared_ptr <Token> > &tokens,
 				      Context context,
 				      Place &place_end,
 				      string filename,
@@ -36,9 +36,9 @@ public:
 	 * reported as an error, and the function just returns.
 	 */
 	{
-		vector <Backtrace> backtraces;
-		vector <string> filenames;
-		set <string> includes;
+		std::vector <Backtrace> backtraces;
+		std::vector <string> filenames;
+		std::set <string> includes;
 		parse_tokens_file(tokens,
 				  context,
 				  place_end, filename,
@@ -51,7 +51,7 @@ public:
 	static bool is_flag_char(char);
 	/* Whether the character is a valid flag */
 
-	static void parse_tokens_string(vector <shared_ptr <Token> > &tokens,
+	static void parse_tokens_string(std::vector <shared_ptr <Token> > &tokens,
 					Context context,
 					Place &place_end,
 					string string_,
@@ -61,10 +61,10 @@ public:
 
 private:
 	/* Stacks of included files */
-	vector <Backtrace> &backtraces;
-	vector <string> &filenames;
+	std::vector <Backtrace> &backtraces;
+	std::vector <string> &filenames;
 
-	set <string> &includes;
+	std::set <string> &includes;
 
 	Place place_base;
 	/* The place where the tokenizer is tokenizing.  The line and
@@ -79,9 +79,9 @@ private:
 	Environment environment= E_WHITESPACE;
 	/* For the next token */
 
-	Tokenizer(vector <Backtrace> &backtraces_,
-		  vector <string> &filenames_,
-		  set <string> &includes_,
+	Tokenizer(std::vector <Backtrace> &backtraces_,
+		  std::vector <string> &filenames_,
+		  std::set <string> &includes_,
 		  const Place &place_base_,
 		  const char *p_,
 		  size_t length)
@@ -95,7 +95,7 @@ private:
 		   p_end(p_ + length)
 	{  }
 
-	void parse_tokens(vector <shared_ptr <Token> > &tokens,
+	void parse_tokens(std::vector <shared_ptr <Token> > &tokens,
 			  Context context,
 			  const Place &place_diagnostic);
 
@@ -122,7 +122,7 @@ private:
 	void parse_single_quote(Place_Name &ret);
 	bool parse_escape();
 
-	void parse_directive(vector <shared_ptr <Token> > &tokens,
+	void parse_directive(std::vector <shared_ptr <Token> > &tokens,
 			     Context context,
 			     const Place &place_diagnostic);
 	/* Parse a directive.  The pointer must be on the '%' character.  Throw
@@ -140,13 +140,13 @@ private:
 
 	string current_mbchar() const;
 
-	static void parse_tokens_file(vector <shared_ptr <Token> > &tokens,
+	static void parse_tokens_file(std::vector <shared_ptr <Token> > &tokens,
 				      Context context,
 				      Place &place_end,
 				      string filename,
-				      vector <Backtrace> &backtraces,
-				      vector <string> &filenames,
-				      set <string> &includes,
+				      std::vector <Backtrace> &backtraces,
+				      std::vector <string> &filenames,
+				      std::set <string> &includes,
 				      const Place &place_diagnostic,
 				      int fd= -1,
 				      bool allow_enoent= false);

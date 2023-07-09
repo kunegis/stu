@@ -50,13 +50,13 @@
 template <typename T, typename U>
 shared_ptr <const T> to(shared_ptr <const U> d)
 {
-	return dynamic_pointer_cast <const T> (d);
+	return std::dynamic_pointer_cast <const T> (d);
 }
 
 template <typename T, typename U>
 shared_ptr <const T> to(shared_ptr <U> d)
 {
-	return dynamic_pointer_cast <const T> (d);
+	return std::dynamic_pointer_cast <const T> (d);
 }
 
 class Dep
@@ -154,7 +154,7 @@ public:
 #endif
 
 	virtual shared_ptr <const Dep> instantiate
-		(const map <string, string> &mapping) const= 0;
+	(const std::map <string, string> &mapping) const= 0;
 	virtual bool is_unparametrized() const= 0;
 
 	virtual const Place &get_place() const= 0;
@@ -168,7 +168,7 @@ public:
 	virtual bool is_normalized() const= 0;
 
 	static void normalize(shared_ptr <const Dep> dep,
-			      vector <shared_ptr <const Dep> > &deps,
+			      std::vector <shared_ptr <const Dep> > &deps,
 			      int &error);
 	/* Split DEP into multiple DEPS that are each normalized.  The resulting
 	 * dependencies are appended to DEPS, which does not have to be empty on
@@ -287,7 +287,7 @@ public:
 		   variable_name(plain_dep.variable_name) { }
 
 	const Place &get_place() const override { return place; }
-	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const override;
+	virtual shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
 
 	bool is_unparametrized() const override {
 		return place_param_target.place_name.get_n() == 0;
@@ -332,7 +332,7 @@ public:
 	}
 
 	virtual shared_ptr <const Dep> instantiate
-		(const map <string, string> &mapping) const override;
+	(const std::map <string, string> &mapping) const override;
 	bool is_unparametrized() const override { return dep->is_unparametrized(); }
 
 	const Place &get_place() const override
@@ -367,7 +367,7 @@ class Concat_Dep
 {
 public:
 
-	vector <shared_ptr <const Dep> > deps;
+	std::vector <shared_ptr <const Dep> > deps;
 	/* The dependencies for each part.  No entry is null.
 	 * May be empty in code, which is something
 	 * that is not allowed in Stu code.  Otherwise, there are at
@@ -384,7 +384,7 @@ public:
 	void push_back(shared_ptr <const Dep> dep)
 	{ deps.push_back(dep); }
 
-	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const override;
+	virtual shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
 
 	virtual bool is_unparametrized() const override;
 	virtual const Place &get_place() const override;
@@ -405,7 +405,7 @@ public:
 							    shared_ptr <const Dep> b);
 
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
-				     vector <shared_ptr <const Dep> > &deps,
+				     std::vector <shared_ptr <const Dep> > &deps,
 				     int &error);
 	/* Normalize this object's dependencies into a list of individual
 	 * dependencies.  The generated dependencies are appended to
@@ -415,7 +415,7 @@ public:
 	 * if not in keep-going mode, the function returns immediately.  */
 
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
-				     vector <shared_ptr <const Dep> > &deps,
+				     std::vector <shared_ptr <const Dep> > &deps,
 				     size_t start_index,
 				     int &error);
 	/* Helper function.  Write result into DEPS,
@@ -445,7 +445,7 @@ public:
 	 * this is a "logical" compound dependency not coming from a
 	 * parenthesised expression.  */
 
-	vector <shared_ptr <const Dep> > deps;
+	std::vector <shared_ptr <const Dep> > deps;
 	/* The contained dependencies, in given order */
 
 	Compound_Dep(const Place &place_)
@@ -457,14 +457,14 @@ public:
 		  place(place_)
 	{ /* The list of dependencies is empty */ }
 
-	Compound_Dep(vector <shared_ptr <const Dep> > &&deps_,
+	Compound_Dep(std::vector <shared_ptr <const Dep> > &&deps_,
 		     const Place &place_)
 		: place(place_),
 		  deps(deps_) { }
 
 	void push_back(shared_ptr <const Dep> dep) { deps.push_back(dep); }
 
-	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const override;
+	virtual shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
 	virtual bool is_unparametrized() const override;
 	virtual const Place &get_place() const override { return place; }
 	virtual void render(Parts &, Rendering= 0) const override;
@@ -479,8 +479,8 @@ class Root_Dep
 	:  public Dep
 {
 public:
-	virtual shared_ptr <const Dep> instantiate(const map <string, string> &) const override {
-		return shared_ptr <const Dep> (make_shared <Root_Dep> ());
+	virtual shared_ptr <const Dep> instantiate(const std::map <string, string> &) const override {
+		return shared_ptr <const Dep> (std::make_shared <Root_Dep> ());
 	}
 	virtual bool is_unparametrized() const override { return false; }
 	virtual const Place &get_place() const override { return Place::place_empty; }

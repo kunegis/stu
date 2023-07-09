@@ -68,9 +68,9 @@ class Parts
 {
 public:
 	size_t size() const { return parts.size(); }
-	const Part &operator[](size_t i) const  {  return parts[i];  }
-	void append_text(string text)  {  parts.emplace_back(PROP_TEXT, text);  }
-	void append_markup_quotable(string op)  {  parts.emplace_back(PROP_MARKUP_QUOTABLE, op);  }
+	const Part &operator[](size_t i) const { return parts[i]; }
+	void append_text(string text) { parts.emplace_back(PROP_TEXT, text); }
+	void append_markup_quotable(string op) { parts.emplace_back(PROP_MARKUP_QUOTABLE, op); }
 	void append_markup_quotable(char c) { parts.emplace_back(PROP_MARKUP_QUOTABLE, string(1, c)); }
 	void append_markup_unquotable(string op) { parts.emplace_back(PROP_MARKUP_UNQUOTABLE, op); }
 	void append_markup_unquotable(char c) { parts.emplace_back(PROP_MARKUP_UNQUOTABLE, string(1, c)); }
@@ -80,7 +80,7 @@ public:
 	}
 	void append_space() { parts.emplace_back(PROP_SPACE, " "); }
 private:
-	vector <Part> parts;
+	std::vector <Part> parts;
 };
 
 string show(const Parts &, Style style);

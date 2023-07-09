@@ -42,12 +42,12 @@ void Preset <T> ::insert(string key, T value)
 			if (! e.preset) {
 				develop(e);
 			}
-			unique_ptr <Preset <T> > p= make_unique <Preset <T> >
+			std::unique_ptr <Preset <T> > p= std::make_unique <Preset <T> >
 				(this, e.prefix[0]);
 			p->insert(&*mm_prefix, move(e.preset));
 			p->insert("", value);
 			e.prefix= string(e.prefix.begin(), mm_prefix);
-			e.preset= move(p);
+			e.preset= std::move(p);
 		} else {
 			assert(*mm_key == '\0' && *mm_prefix == '\0');
 			/* KEY == E.PREFIX:  The element can be inserted
@@ -109,7 +109,7 @@ typename Preset <T> ::Input_Iterator Preset <T> ::find(string x)
 }
 
 template <typename T>
-void Preset <T> ::insert(string key, unique_ptr <Preset <T> > preset)
+void Preset <T> ::insert(string key, std::unique_ptr <Preset <T> > preset)
 {
 	/* This implementation follows that of the insert() function for individual values */
 
@@ -169,7 +169,7 @@ void Preset <T> ::insert(string key, unique_ptr <Preset <T> > preset)
 }
 
 template <typename T>
-void Preset <T> ::insert(string key, vector <T> &&values)
+void Preset <T> ::insert(string key, std::vector <T> &&values)
 {
 	const char k= key[0];
 	auto lb= lower_bound(chars.begin(),
@@ -184,7 +184,7 @@ void Preset <T> ::insert(string key, vector <T> &&values)
 	assert(i == chars.size() || chars[i].prefix[0] != key[0]);
 
 	Entry e{key, nullptr, move(values)};
-	chars.insert(chars.begin() + i, move(e));
+	chars.insert(chars.begin() + i, std::move(e));
 }
 
 template <typename T>
@@ -192,7 +192,7 @@ void Preset <T> ::develop(Entry &entry)
 {
 	assert(entry.preset == nullptr);
 
-	entry.preset= make_unique <Preset <T> > (this, entry.prefix[0]);
+	entry.preset= std::make_unique <Preset <T> > (this, entry.prefix[0]);
 	entry.preset->chars.resize(1);
 	entry.preset->chars[0].prefix= "";
 	entry.preset->chars[0].values= move(entry.values);

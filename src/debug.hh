@@ -41,7 +41,7 @@ public:
 
 private:
 	static string padding_current;
-	static vector <const Debuggable *> debuggables;
+	static std::vector <const Debuggable *> debuggables;
 	static void print(string text_target, string text);
 };
 

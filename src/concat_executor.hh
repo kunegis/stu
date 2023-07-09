@@ -37,7 +37,7 @@ public:
 		return dep->render(parts);
 	}
 
-	virtual void notify_variable(const map <string, string> &result_variable_child) override {
+	virtual void notify_variable(const std::map <string, string> &result_variable_child) override {
 		result_variable.insert(result_variable_child.begin(),
 				       result_variable_child.end());
 	}
@@ -57,7 +57,7 @@ private:
 	/* Contains the concatenation.  This is a normalized dependency. */
 
 	Stage stage;
-	vector <shared_ptr <Compound_Dep> > collected;
+	std::vector <shared_ptr <Compound_Dep> > collected;
 
 	void launch_stage_1();
 };

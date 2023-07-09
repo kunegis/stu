@@ -38,7 +38,7 @@ void Target::canonicalize()
 	text.resize(p - b);
 }
 
-string Name::instantiate(const map <string, string> &mapping) const
+string Name::instantiate(const std::map <string, string> &mapping) const
 /* This function must take into account the special rules.  Special rule (a)
  * does not need to be handled, (i.e., we keep the starting './')  */
 {
@@ -63,8 +63,8 @@ string Name::instantiate(const map <string, string> &mapping) const
 }
 
 bool Name::match(const string name,
-		 map <string, string> &mapping,
-		 vector <size_t> &anchoring,
+		 std::map <string, string> &mapping,
+		 std::vector <size_t> &anchoring,
 		 int &priority) const
 /*
  * Rule:  Each parameter must match at least one character.
@@ -81,7 +81,7 @@ bool Name::match(const string name,
 {
 	assert(mapping.size() == 0);
 	priority= 0;
-	map <string, string> ret;
+	std::map <string, string> ret;
 	const size_t n= get_n();
 
 	if (name.empty()) {
@@ -230,7 +230,7 @@ bool Name::match(const string name,
 
 string Name::get_duplicate_parameter() const
 {
-	vector <string> seen;
+	std::vector <string> seen;
 	for (auto &parameter: parameters) {
 		for (const auto &parameter_seen: seen) {
 			if (parameter_seen == parameter) {
@@ -258,8 +258,8 @@ bool Name::valid(string &param_1, string &param_2) const
 	return true;
 }
 
-bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
-			       vector <size_t> &anchoring_b,
+bool Name::anchoring_dominates(std::vector <size_t> &anchoring_a,
+			       std::vector <size_t> &anchoring_b,
 			       int priority_a, int priority_b)
 /*
  * (A) dominates (B) when every character in a parameter in (A) is also
@@ -312,7 +312,7 @@ bool Name::anchoring_dominates(vector <size_t> &anchoring_a,
 		else if (j < k_b && i == k_a)
 			p= anchoring_b[j];
 		else if (i < k_a && j < k_b)
-			p= min(anchoring_a[i], anchoring_b[j]);
+			p= std::min(anchoring_a[i], anchoring_b[j]);
 	}
 }
 

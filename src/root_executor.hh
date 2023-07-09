@@ -5,7 +5,7 @@ class Root_Executor
 	:  public Executor
 {
 public:
-	explicit Root_Executor(const vector <shared_ptr <const Dep> > &dep);
+	explicit Root_Executor(const std::vector <shared_ptr <const Dep> > &dep);
 	virtual bool want_delete() const override { return true; }
 	virtual Proceed execute(shared_ptr <const Dep> dep_this) override;
 	virtual bool finished() const override;

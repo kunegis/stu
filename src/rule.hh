@@ -12,7 +12,7 @@ class Rule
 /* The class Rule allows parameters; there is no "unparametrized rule" class. */
 {
 public:
-	vector <shared_ptr <const Place_Param_Target> > place_param_targets;
+	std::vector <shared_ptr <const Place_Param_Target> > place_param_targets;
 	/* The targets of the rule, in the order specified in the rule.
 	 * Contains at least one element.  Each element contains all
 	 * parameters of the rule, and therefore should be used for
@@ -20,7 +20,7 @@ public:
 	 * used when referring to a target specifically.  The targets
 	 * may or may not be canonicalized.  */
 
-	vector <shared_ptr <const Dep> > deps;
+	std::vector <shared_ptr <const Dep> > deps;
 	/* The dependencies in order of declaration.  Dependencies are
 	 * included multiple times if they appear multiple times in the
 	 * source.  Any parameter occuring in any dependency also occurs
@@ -54,8 +54,8 @@ public:
 	/* Whether the rule is a copy rule, i.e., declared with '='
 	 * followed by a filename.  */
 
-	Rule(vector <shared_ptr <const Place_Param_Target> > &&place_param_targets,
-	     vector <shared_ptr <const Dep> > &&deps_,
+	Rule(std::vector <shared_ptr <const Place_Param_Target> > &&place_param_targets,
+	     std::vector <shared_ptr <const Dep> > &&deps_,
 	     const Place &place_,
 	     const shared_ptr <const Command> &command_,
 	     Name &&filename_,
@@ -65,8 +65,8 @@ public:
 	/* Direct constructor that specifies everything; no checks,
 	 * initialization or canonicalization is performed.  */
 
-	Rule(vector <shared_ptr <const Place_Param_Target> > &&place_param_targets_,
-	     const vector <shared_ptr <const Dep> > &deps_,
+	Rule(std::vector <shared_ptr <const Place_Param_Target> > &&place_param_targets_,
+	     const std::vector <shared_ptr <const Dep> > &deps_,
 	     shared_ptr <const Command> command_,
 	     bool is_hardcode_,
 	     int redirect_index_,
@@ -94,11 +94,11 @@ public:
 	/* Format the rule, as for the -P or -d options */
 
 	void check_unparametrized(shared_ptr <const Dep> dep,
-				  const set <string> &parameters);
+				  const std::set <string> &parameters);
 	/* Print error message and throw a logical error when DEP
 	 * contains parameters  */
 
-	const vector <string> &get_parameters() const
+	const std::vector <string> &get_parameters() const
 	{
 		assert(place_param_targets.size() != 0);
 		return place_param_targets.front()->place_name.get_parameters();
@@ -109,7 +109,7 @@ public:
 	 * targets of the rule.  Called by Rule_Set::add(). */
 
 	static shared_ptr <const Rule> instantiate(shared_ptr <const Rule> rule,
-						   const map <string, string> &mapping);
+						   const std::map <string, string> &mapping);
 	/* Return the same rule as RULE, but with parameters having been
 	 * replaced by the given MAPPING.
 	 * We pass THIS as PARAM_RULE explicitly so we can return it
@@ -125,14 +125,14 @@ class Rule_Set
 /* A set of rules.  They can be both parametrized and unparametrized. */
 {
 public:
-	void add(vector <shared_ptr <Rule> > &);
+	void add(std::vector <shared_ptr <Rule> > &);
 	/* Add rules to this rule set.  While adding rules, check for
 	 * duplicates, and print and throw a logical error if there is.  If a
 	 * given rule has duplicate targets, print and throw a logical error.  */
 
 	shared_ptr <const Rule> get(Target target,
 				    shared_ptr <const Rule> &param_rule,
-				    map <string, string> &mapping_parameter,
+				    std::map <string, string> &mapping_parameter,
 				    const Place &place);
 	/* Match TARGET to a rule, and return the instantiated
 	 * (non-parametrized) corresponding rule.  TARGET must be non-dynamic
@@ -147,14 +147,14 @@ public:
 	void print_for_option_I() const;
 
 private:
-	unordered_map <Target, shared_ptr <const Rule> > rules_unparam;
+	std::unordered_map <Target, shared_ptr <const Rule> > rules_unparam;
 	/* All unparametrized rules by their target.  Rules with multiple
 	 * targets are included multiple times, for each of their targets.  None
 	 * of the targets has flags set (except F_TARGET_TARNSIENT.)  The
 	 * targets are canonicalized, both as keys in this map, as well as in
 	 * each Rule.  */
 
-	unordered_set <shared_ptr <const Rule> > rules_param;
+	std::unordered_set <shared_ptr <const Rule> > rules_param;
 	/* All parametrized rules.  Each parametrized rule is here, and in one
 	 * more of the containers below.  */
 
@@ -163,7 +163,7 @@ private:
 	 * stored by each of their affixes.  In SUFFIX, everything is reversed,
 	 * so access must use reversed strings.  */
 
-	vector <shared_ptr <const Rule> > rules_param_bare;
+	std::vector <shared_ptr <const Rule> > rules_param_bare;
 	/* All parametrized rules where at least one target is affixless, or in
 	 * which there is an affix which, due to special canonicalization rules
 	 * (see manpage), is not present in a matched string.  */
@@ -181,29 +181,29 @@ public:
 	/* Return all equally best targets.  They are returned as a map by
 	 * place, so iterating over them will give a consistent order, for
 	 * consistent error messages.  */
-	const map <Place, shared_ptr <const Place_Param_Target> > &targets_best() const;
+	const std::map <Place, shared_ptr <const Place_Param_Target> > &targets_best() const;
 
 	/* Access the best rule.  The best rule must be unique.  */
 	const shared_ptr <const Rule> &rule_best() const {
 		assert(rules_best.size() == 1);
 		return rules_best[0];
 	}
-	map <string, string> &mapping_best() {
+	std::map <string, string> &mapping_best() {
 		assert(rules_best.size() == 1);
 		return mappings_best[0];
 	}
 
 private:
 	/* Element [0] corresponds to the best rule. */
-	vector <shared_ptr <const Rule> > rules_best;
-	vector <map <string, string> > mappings_best;
-	vector <vector <size_t> > anchorings_best;
-	vector <int> priorities_best;
-	vector <shared_ptr <const Place_Param_Target> > place_param_targets_best;
+	std::vector <shared_ptr <const Rule> > rules_best;
+	std::vector <std::map <string, string> > mappings_best;
+	std::vector <std::vector <size_t> > anchorings_best;
+	std::vector <int> priorities_best;
+	std::vector <shared_ptr <const Place_Param_Target> > place_param_targets_best;
 
 	/* The same as PLACE_PARAM_TARGETS_BEST, but sorted by place.  Filled on
 	 * demand.  */
-	mutable map <Place, shared_ptr <const Place_Param_Target> > best_sorted;
+	mutable std::map <Place, shared_ptr <const Place_Param_Target> > best_sorted;
 };
 
 #endif /* ! RULE_HH */

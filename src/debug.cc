@@ -1,7 +1,7 @@
 #include "debug.hh"
 
 string Debug::padding_current= "";
-vector <const Debuggable *> Debug::debuggables;
+std::vector <const Debuggable *> Debug::debuggables;
 
 Debuggable::~Debuggable()  {  }
 

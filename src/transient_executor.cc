@@ -34,7 +34,7 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 				       Executor *parent,
 				       shared_ptr <const Rule> rule_,
 				       shared_ptr <const Rule> param_rule_,
-				       map <string, string> &mapping_parameter_,
+				       std::map <string, string> &mapping_parameter_,
 				       int &error_additional)
 	:  Executor(param_rule_), rule(rule_), is_finished(false)
 {

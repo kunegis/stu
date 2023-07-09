@@ -70,7 +70,7 @@ public:
 	int get_error() const {  return error;  }
 
 	void read_dynamic(shared_ptr <const Plain_Dep> dep_target,
-			  vector <shared_ptr <const Dep> > &deps,
+			  std::vector <shared_ptr <const Dep> > &deps,
 			  shared_ptr <const Dep> dep,
 			  Executor *dynamic_executor);
 	/* Read dynamic dependencies from the content of
@@ -87,7 +87,7 @@ public:
 	 * up to the root executor.
 	 * TEXT may be "" to not print the first message.  */
 
-	const map <Executor *, shared_ptr <const Dep> > &get_parents() const {
+	const std::map <Executor *, shared_ptr <const Dep> > &get_parents() const {
 		return parents;
 	}
 
@@ -136,7 +136,7 @@ public:
 		unreachable();
 	}
 
-	virtual void notify_variable(const map <string, string> &result_variable_child) {
+	virtual void notify_variable(const std::map <string, string> &result_variable_child) {
 		(void) result_variable_child;
 	}
 
@@ -161,14 +161,14 @@ protected:
 	int error;
 	/* The value is propagated (using '|') to the parent. */
 
-	map <Executor *, shared_ptr <const Dep> > parents;
+	std::map <Executor *, shared_ptr <const Dep> > parents;
 	/* This is a map rather than an unsorted_map because typically, the
 	 * number of elements is always very small, i.e., mostly one, and a map
 	 * is better suited in this case.  The map is sorted, but by the
 	 * executor pointer, i.e., the sorting is arbitrary as far as Stu is
 	 * concerned.  */
 
-	set <Executor *> children;
+	std::set <Executor *> children;
 
 	Timestamp timestamp;
 	/* Latest timestamp of a (direct or indirect) dependency that was not
@@ -177,7 +177,7 @@ protected:
 	 * consider the file itself, if any.  This final timestamp is then
 	 * carried over to the parent executors.  */
 
-	vector <shared_ptr <const Dep> > result;
+	std::vector <shared_ptr <const Dep> > result;
 	/* The final list of dependencies represented by the target.
 	 * This does not include any dynamic dependencies, i.e., all
 	 * dependencies are flattened to Plain_Dep's.  Not used
@@ -188,7 +188,7 @@ protected:
 	 * dependencies, parents are notified directly, bypassing
 	 * push_result().  */
 
-	map <string, string> result_variable;
+	std::map <string, string> result_variable;
 	/* Same semantics as RESULT, but for variable values, stored as
 	 * KEY-VALUE pairs.  */
 
@@ -268,7 +268,7 @@ protected:
 	/* The timepoint of the last time wait() returned.  No file in the
 	 * file system should be newer than this.  */
 
-	static unordered_map <Target, Executor *> executors_by_target;
+	static std::unordered_map <Target, Executor *> executors_by_target;
 	/* All cached Executor objects by each of their Target.  Such
 	 * Executor objects are never deleted.  */
 
@@ -282,14 +282,14 @@ protected:
 	 * would be added between child and parent, and would create a
 	 * cycle.  */
 
-	static bool find_cycle(vector <Executor *> &path,
+	static bool find_cycle(std::vector <Executor *> &path,
 			       Executor *child,
 			       shared_ptr <const Dep> dep_link);
 	/* Helper function.  PATH is the currently explored path.
 	 * PATH[0] is the original PARENT; PATH[end] is the oldest
 	 * grandparent found yet.  */
 
-	static void cycle_print(const vector <Executor *> &path,
+	static void cycle_print(const std::vector <Executor *> &path,
 				shared_ptr <const Dep> dep);
 	/* Print the error message of a cycle on rule level.
 	 * Given PATH = [a, b, c, d, ..., x], the found cycle is

@@ -1,8 +1,4 @@
 #
-# Don't use "using namespace std".  Instead, only use string.
-#
-
-#
 # Make a table of target-like classes.
 #
 

@@ -22,7 +22,7 @@ public:
 		      Executor *parent,
 		      shared_ptr <const Rule> rule,
 		      shared_ptr <const Rule> param_rule,
-		      map <string, string> &mapping_parameter_,
+		      std::map <string, string> &mapping_parameter_,
 		      int &error_additional);
 	/* ERROR_ADDITIONAL indicates whether an error will be thrown
 	 * after the call.  (Because an error can only be thrown after
@@ -46,7 +46,7 @@ public:
 	virtual bool finished() const override;
 	virtual bool finished(Flags flags) const override;
 	virtual void render(Parts &, Rendering= 0) const override;
-	virtual void notify_variable(const map <string, string> &result_variable_child) override {
+	virtual void notify_variable(const std::map <string, string> &result_variable_child) override {
 		mapping_variable.insert(result_variable_child.begin(),
 					result_variable_child.end());
 	}
@@ -88,7 +88,7 @@ private:
 	/* The print-all-jobs signal was received - we must print all
 	 * jobs */
 
-	vector <Target> targets;
+	std::vector <Target> targets;
 	/* The targets to which this executor object corresponds.
 	 * Never empty.
 	 * All targets are non-dynamic, i.e., only plain files and
@@ -120,10 +120,10 @@ private:
 
 	Job job;
 
-	map <string, string> mapping_parameter;
+	std::map <string, string> mapping_parameter;
 	/* Variable assignments from parameters for when the command is run */
 
-	map <string, string> mapping_variable;
+	std::map <string, string> mapping_variable;
 	/* Variable assignments from variables dependencies */
 
 	Done done;
@@ -163,7 +163,7 @@ private:
 	void write_content(const char *filename, const Command &command);
 	/* Create the file FILENAME with content from COMMAND */
 
-	static unordered_map <string, Timestamp> transients;
+	static std::unordered_map <string, Timestamp> transients;
 	/* The timestamps for transient targets.  This container plays
 	 * the role of the file system for transient targets, holding
 	 * their timestamps, and remembering whether they have been

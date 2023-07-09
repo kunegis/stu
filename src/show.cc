@@ -8,7 +8,7 @@ Quote_Safeness Part::need_quotes() const
 	} else if (properties == PROP_TEXT) {
 		Quote_Safeness ret= QS_MAX;
 		for (char c: text)
-			ret= min(ret, need_quotes(c));
+			ret= std::min(ret, need_quotes(c));
 		return ret;
 	} else {
 		should_not_happen();
@@ -114,7 +114,7 @@ string show(const Parts &parts, Style style)
 								quotable= QS_ALWAYS_QUOTE;
 							for (l= i; l < k && parts[l].is_quotable(); ++l) {
 								if (quotable > QS_MIN)
-									quotable= min(quotable, parts[l].need_quotes());
+									quotable= std::min(quotable, parts[l].need_quotes());
 							}
 							bool quotes= empty
 								|| quotable == QS_ALWAYS_QUOTE

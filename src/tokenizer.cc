@@ -2,13 +2,13 @@
 
 #include <sys/mman.h>
 
-void Tokenizer::parse_tokens_file(vector <shared_ptr <Token> > &tokens,
+void Tokenizer::parse_tokens_file(std::vector <shared_ptr <Token> > &tokens,
 				  Context context,
 				  Place &place_end,
 				  string filename,
-				  vector <Backtrace> &backtraces,
-				  vector <string> &filenames,
-				  set <string> &includes,
+				  std::vector <Backtrace> &backtraces,
+				  std::vector <string> &filenames,
+				  std::set <string> &includes,
 				  const Place &place_diagnostic,
 				  int fd,
 				  bool allow_enoent)
@@ -331,7 +331,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 					const Place place_command
 						(place_base.type, place_base.text,
 						 line_command, column_command);
-					return make_shared <Command>
+					return std::make_shared <Command>
 						(command, place_command, place_open, environment);
 				} else {
 					++p;
@@ -453,7 +453,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 	const char *const p_begin= p;
 	Place place_begin= current_place();
 
-	shared_ptr <Place_Name> ret= make_shared <Place_Name> ("", place_begin);
+	shared_ptr <Place_Name> ret= std::make_shared <Place_Name> ("", place_begin);
 
 	/* Don't allow '-', '+' and '~' at beginning of a name */
 	if (p < p_end && ! allow_special) {
@@ -656,7 +656,7 @@ void Tokenizer::parse_version(string version_req,
 	throw ERROR_LOGICAL;
 }
 
-void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
+void Tokenizer::parse_tokens(std::vector <shared_ptr <Token> > &tokens,
 			     Context context,
 			     const Place &place_diagnostic)
 {
@@ -667,7 +667,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 		/* Operators except '$' */
 		if (is_operator_char(*p)) {
 			Place place= current_place();
-			tokens.push_back(make_shared <Operator> (*p, place, environment));
+			tokens.push_back(std::make_shared <Operator> (*p, place, environment));
 			++p;
 		}
 
@@ -676,9 +676,9 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 			Place place_dollar= current_place();
 			Place place_langle(place_base.type, place_base.text,
 					   line, p + 1 - p_line);
-			tokens.push_back(make_shared <Operator>
+			tokens.push_back(std::make_shared <Operator>
 					 ('$', place_dollar, environment));
-			tokens.push_back(make_shared <Operator>
+			tokens.push_back(std::make_shared <Operator>
 					 ('[', place_langle, environment));
 			p += 2;
 		}
@@ -754,7 +754,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					throw ERROR_LOGICAL;
 				}
 				assert(isalnum(op));
-				shared_ptr <Flag_Token> token= make_shared <Flag_Token>
+				shared_ptr <Flag_Token> token= std::make_shared <Flag_Token>
 					(op, current_place(), environment);
 				tokens.push_back(token);
 				++p;
@@ -796,7 +796,7 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 					throw ERROR_LOGICAL;
 				}
 				assert(! place_name->empty());
-				tokens.push_back(make_shared <Name_Token>
+				tokens.push_back(std::make_shared <Name_Token>
 						 (*place_name, environment));
 			}
 		}
@@ -805,15 +805,15 @@ void Tokenizer::parse_tokens(vector <shared_ptr <Token> > &tokens,
 	}
 }
 
-void Tokenizer::parse_tokens_string(vector <shared_ptr <Token> > &tokens,
+void Tokenizer::parse_tokens_string(std::vector <shared_ptr <Token> > &tokens,
 				    Context context,
 				    Place &place_end,
 				    string string_,
 				    const Place &place_string)
 {
-	vector <Backtrace> backtraces;
-	vector <string> filenames;
-	set <string> includes;
+	std::vector <Backtrace> backtraces;
+	std::vector <string> filenames;
+	std::set <string> includes;
 
 	Tokenizer parse(backtraces, filenames, includes,
 			place_string,
@@ -1004,7 +1004,7 @@ bool Tokenizer::parse_escape()
 	return true;
 }
 
-void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
+void Tokenizer::parse_directive(std::vector <shared_ptr <Token> > &tokens,
 				Context context,
 				const Place &place_diagnostic)
 {
@@ -1085,7 +1085,7 @@ void Tokenizer::parse_directive(vector <shared_ptr <Token> > &tokens,
 			for (auto &i: filenames) {
 				if (filename_include != i)
 					continue;
-				vector <Backtrace> backtraces_backward;
+				std::vector <Backtrace> backtraces_backward;
 				for (auto j= backtraces.rbegin(); j != backtraces.rend(); ++j) {
 					Backtrace backtrace(*j);
 					if (j == backtraces.rbegin()) {

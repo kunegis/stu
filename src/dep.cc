@@ -11,15 +11,15 @@ shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 	assert(dep);
 
 	if (to <Plain_Dep> (dep)) {
-		return make_shared <Plain_Dep> (* to <Plain_Dep> (dep));
+		return std::make_shared <Plain_Dep> (* to <Plain_Dep> (dep));
 	} else if (to <Dynamic_Dep> (dep)) {
-		return make_shared <Dynamic_Dep> (* to <Dynamic_Dep> (dep));
+		return std::make_shared <Dynamic_Dep> (* to <Dynamic_Dep> (dep));
 	} else if (to <Compound_Dep> (dep)) {
-		return make_shared <Compound_Dep> (* to <Compound_Dep> (dep));
+		return std::make_shared <Compound_Dep> (* to <Compound_Dep> (dep));
 	} else if (to <Concat_Dep> (dep)) {
-		return make_shared <Concat_Dep> (* to <Concat_Dep> (dep));
+		return std::make_shared <Concat_Dep> (* to <Concat_Dep> (dep));
 	} else if (to <Root_Dep> (dep)) {
-		return make_shared <Root_Dep> (* to <Root_Dep> (dep));
+		return std::make_shared <Root_Dep> (* to <Root_Dep> (dep));
 	} else {
 		unreachable();
 	}
@@ -139,20 +139,20 @@ void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 	parts.append_operator("]");
 }
 
-shared_ptr <const Dep> Dynamic_Dep::instantiate(const map <string, string> &mapping) const
+shared_ptr <const Dep> Dynamic_Dep::instantiate(const std::map <string, string> &mapping) const
 {
-	shared_ptr <Dynamic_Dep> ret= make_shared <Dynamic_Dep>
+	shared_ptr <Dynamic_Dep> ret= std::make_shared <Dynamic_Dep>
 		(flags, places, dep->instantiate(mapping));
 	ret->index= index;
 	ret->top= top;
 	return ret;
 }
 
-shared_ptr <const Dep> Plain_Dep::instantiate(const map <string, string> &mapping) const
+shared_ptr <const Dep> Plain_Dep::instantiate(const std::map <string, string> &mapping) const
 {
 	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
 
-	shared_ptr <Dep> ret= make_shared <Plain_Dep>
+	shared_ptr <Dep> ret= std::make_shared <Plain_Dep>
 		(flags, places, *ret_target, place, variable_name);
 	ret->index= index;
 	ret->top= top;
@@ -172,9 +172,9 @@ shared_ptr <const Dep> Plain_Dep::instantiate(const map <string, string> &mappin
 }
 
 shared_ptr <const Dep>
-Compound_Dep::instantiate(const map <string, string> &mapping) const
+Compound_Dep::instantiate(const std::map <string, string> &mapping) const
 {
-	shared_ptr <Compound_Dep> ret= make_shared <Compound_Dep> (flags, places, place);
+	shared_ptr <Compound_Dep> ret= std::make_shared <Compound_Dep> (flags, places, place);
 	ret->index= index;
 	ret->top= top;
 	for (const shared_ptr <const Dep> &d: deps) {
@@ -211,9 +211,9 @@ void Compound_Dep::render(Parts &parts, Rendering rendering) const
 		parts.append_operator(")");
 }
 
-shared_ptr <const Dep> Concat_Dep::instantiate(const map <string, string> &mapping) const
+shared_ptr <const Dep> Concat_Dep::instantiate(const std::map <string, string> &mapping) const
 {
-	shared_ptr <Concat_Dep> ret= make_shared <Concat_Dep> (flags, places);
+	shared_ptr <Concat_Dep> ret= std::make_shared <Concat_Dep> (flags, places);
 	ret->index= index;
 	ret->top= top;
 
@@ -269,7 +269,7 @@ bool Concat_Dep::is_normalized() const
 }
 
 void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
-				  vector <shared_ptr <const Dep> > &deps_,
+				  std::vector <shared_ptr <const Dep> > &deps_,
 				  int &error)
 {
 	size_t k_init= deps_.size();
@@ -292,7 +292,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 }
 
 void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
-				  vector <shared_ptr <const Dep> > &deps_,
+				  std::vector <shared_ptr <const Dep> > &deps_,
 				  size_t start_index,
 				  int &error)
 {
@@ -320,7 +320,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			unreachable();
 		}
 	} else {
-		vector <shared_ptr <const Dep> > vec1, vec2;
+		std::vector <shared_ptr <const Dep> > vec1, vec2;
 		normalize_concat(dep, vec2, start_index + 1, error);
 		if (error && ! option_k)
 			return;
@@ -468,12 +468,13 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 				       a->place_param_target.place_name.place);
 
 	shared_ptr <Plain_Dep> ret=
-		make_shared <Plain_Dep> (flags_combined,
-					 a->places,
-					 Place_Param_Target(flags_combined & F_TARGET_TRANSIENT,
-							    place_name_combined,
-							    a->place_param_target.place),
-					 a->place, "");
+		std::make_shared <Plain_Dep>
+		(flags_combined,
+		 a->places,
+		 Place_Param_Target(flags_combined & F_TARGET_TRANSIENT,
+				    place_name_combined,
+				    a->place_param_target.place),
+		 a->place, "");
 	ret->top= a->top;
 	if (! ret->top)
 		ret->top= b->top;
@@ -489,7 +490,7 @@ shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> 
 {
 	assert(! (to <const Plain_Dep> (a) && to <const Plain_Dep> (b)));
 
-	shared_ptr <Concat_Dep> ret= make_shared <Concat_Dep> ();
+	shared_ptr <Concat_Dep> ret= std::make_shared <Concat_Dep> ();
 
 	if (auto concat_a= to <const Concat_Dep> (a)) {
 		for (auto d: concat_a->deps)
@@ -514,19 +515,19 @@ void Root_Dep::render(Parts &parts, Rendering) const
 }
 
 void Dep::normalize(shared_ptr <const Dep> dep,
-		    vector <shared_ptr <const Dep> > &deps,
+		    std::vector <shared_ptr <const Dep> > &deps,
 		    int &error)
 {
 	if (to <Plain_Dep> (dep)) {
 		deps.push_back(dep);
 	} else if (shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep)) {
-		vector <shared_ptr <const Dep> > deps_child;
+		std::vector <shared_ptr <const Dep> > deps_child;
 		normalize(dynamic_dep->dep, deps_child, error);
 		if (error && ! option_k)
 			return;
 		for (auto &d:  deps_child) {
 			shared_ptr <Dep> dep_new=
-				make_shared <Dynamic_Dep>
+				std::make_shared <Dynamic_Dep>
 				(dynamic_dep->flags, dynamic_dep->places, d);
 			if (dynamic_dep->index >= 0)
 				dep_new->index= dynamic_dep->index;

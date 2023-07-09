@@ -284,19 +284,19 @@ public:
 		:  Dep(plain_dep),
 		   place_param_target(plain_dep.place_param_target),
 		   place(plain_dep.place),
-		   variable_name(plain_dep.variable_name)  {  }
+		   variable_name(plain_dep.variable_name) { }
 
-	const Place &get_place() const {  return place;  }
-	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
+	const Place &get_place() const override { return place; }
+	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const override;
 
-	bool is_unparametrized() const {
+	bool is_unparametrized() const override {
 		return place_param_target.place_name.get_n() == 0;
 	}
 
-	virtual void render(Parts &, Rendering= 0) const;
-	virtual bool is_normalized() const {  return true;  }
+	virtual void render(Parts &, Rendering= 0) const override;
+	virtual bool is_normalized() const override { return true; }
 
-	virtual Target get_target() const;
+	virtual Target get_target() const override;
 	/* Does not preserve the F_VARIABLE bit */
 };
 
@@ -331,11 +331,11 @@ public:
 		assert(dep_ != nullptr);
 	}
 
-	virtual shared_ptr <const Dep>  instantiate
-		(const map <string, string> &mapping) const;
-	bool is_unparametrized() const {  return dep->is_unparametrized();  }
+	virtual shared_ptr <const Dep> instantiate
+		(const map <string, string> &mapping) const override;
+	bool is_unparametrized() const override { return dep->is_unparametrized(); }
 
-	const Place &get_place() const
+	const Place &get_place() const override
 	/* In error message pointing to dynamic dependency such as
 	 * '[B]', it is more useful to the user to point to the 'B' than
 	 * to the '['.  */
@@ -343,9 +343,9 @@ public:
 		return dep->get_place();
 	}
 
-	virtual void render(Parts &, Rendering= 0) const;
-	virtual bool is_normalized() const  {  return dep->is_normalized();  }
-	virtual Target get_target() const;
+	virtual void render(Parts &, Rendering= 0) const override;
+	virtual bool is_normalized() const override { return dep->is_normalized(); }
+	virtual Target get_target() const override;
 
 	unsigned get_depth() const {
 		if (to <Dynamic_Dep> (dep))
@@ -384,13 +384,13 @@ public:
 	void push_back(shared_ptr <const Dep> dep)
 	{ deps.push_back(dep); }
 
-	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
+	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const override;
 
-	virtual bool is_unparametrized() const;
-	virtual const Place &get_place() const;
-	virtual void render(Parts &, Rendering= 0) const;
-	virtual bool is_normalized() const;
-	virtual Target get_target() const;
+	virtual bool is_unparametrized() const override;
+	virtual const Place &get_place() const override;
+	virtual void render(Parts &, Rendering= 0) const override;
+	virtual bool is_normalized() const override;
+	virtual Target get_target() const override;
 
 	static shared_ptr <const Dep> concat(shared_ptr <const Dep> a,
 					     shared_ptr <const Dep> b,
@@ -464,12 +464,12 @@ public:
 
 	void push_back(shared_ptr <const Dep> dep) { deps.push_back(dep); }
 
-	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const;
-	virtual bool is_unparametrized() const;
-	virtual const Place &get_place() const { return place; }
-	virtual void render(Parts &, Rendering= 0) const;
-	virtual bool is_normalized() const { return false; }
-	virtual Target get_target() const { unreachable(); }
+	virtual shared_ptr <const Dep> instantiate(const map <string, string> &mapping) const override;
+	virtual bool is_unparametrized() const override;
+	virtual const Place &get_place() const override { return place; }
+	virtual void render(Parts &, Rendering= 0) const override;
+	virtual bool is_normalized() const override { return false; }
+	virtual Target get_target() const override { unreachable(); }
 };
 
 class Root_Dep
@@ -479,14 +479,14 @@ class Root_Dep
 	:  public Dep
 {
 public:
-	virtual shared_ptr <const Dep> instantiate(const map <string, string> &) const {
+	virtual shared_ptr <const Dep> instantiate(const map <string, string> &) const override {
 		return shared_ptr <const Dep> (make_shared <Root_Dep> ());
 	}
-	virtual bool is_unparametrized() const { return false; }
-	virtual const Place &get_place() const { return Place::place_empty; }
-	virtual void render(Parts &parts, Rendering= 0) const;
-	virtual Target get_target() const { unreachable(); }
-	virtual bool is_normalized() const { return true; }
+	virtual bool is_unparametrized() const override { return false; }
+	virtual const Place &get_place() const override { return Place::place_empty; }
+	virtual void render(Parts &parts, Rendering= 0) const override;
+	virtual Target get_target() const override { unreachable(); }
+	virtual bool is_normalized() const override { return true; }
 };
 
 #endif /* ! DEP_HH */

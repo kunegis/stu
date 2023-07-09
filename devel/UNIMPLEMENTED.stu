@@ -6,35 +6,9 @@
 # always backward-incompatible.
 
 #
-# Have an option to output the dependency graph, i.e., output each edge
-# on a single line, e.g. separated by tab.  (Use it then to perform a network
-# analysis of the KONECT-Analysis dependency graph.)
-#
-
-#
-# Line number and file syntax:  A preprocessor-like construct that gives a new
-# filename and line number, such that error messages from Stu can point
-# to the original file, not the generated file.  Analogous to the
-# preprocessors #line directive.  Useful in dynamic dependencies.
-#
-
-% file datasets.list
-% line 120
-
-# Use this in stu-utils/texdep and other stu-utils programs judiciously.
-
-#
 # In -j>1 mode, Start trivial dependencies immediately when it is clear
 # they must be started, not just when everything else is done.
 #
-
-#
-# When including files using dynamic dependencies, make a
-# difference between inclusion and import, as is done for %include and
-# %import.
-#
-
-A: [-d data/B];
 
 #
 # Search within predefined paths for %include ($STU_PATH or $STUPATH;
@@ -334,3 +308,28 @@ A:  <B { ./command-A --output A ; }
 # * Exclude should_not_happen() blocks count
 # * Test syscall and libc function failure using mock implementations of them
 #
+
+#
+# Allow a dynamic dependency to provide a command.  Bad because we don't want to
+# generate Stu source.
+#
+
+A: [B];
+
+B = {
+	{ touch ... ; }
+}
+
+#
+# An %include that takes arguments.
+#
+
+# File A
+%include B(x, y, z)
+
+# File B
+X= list.$(x).$(y).$(z) {...} # Arguments are available as environment variables.
+
+# The more stuish alternative would be
+%include B
+X= [B-dep.x.y.z] {}

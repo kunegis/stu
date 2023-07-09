@@ -29,21 +29,21 @@ public:
 
 	shared_ptr <const Dynamic_Dep> get_dep() const {  return dep;  }
 
-	virtual bool want_delete() const;
-	virtual Proceed execute(shared_ptr <const Dep> dep_this);
-	virtual bool finished() const;
-	virtual bool finished(Flags flags) const;
-	virtual int get_depth() const  {  return dep->get_depth();  }
-	virtual bool optional_finished(shared_ptr <const Dep> )  {  return false;  }
-	virtual void render(Parts &, Rendering= 0) const;
-	virtual void notify_variable(const map <string, string> &result_variable_child) {
+	virtual bool want_delete() const override;
+	virtual Proceed execute(shared_ptr <const Dep> dep_this) override;
+	virtual bool finished() const override;
+	virtual bool finished(Flags flags) const override;
+	virtual int get_depth() const override { return dep->get_depth(); }
+	virtual bool optional_finished(shared_ptr <const Dep> ) override { return false; }
+	virtual void render(Parts &, Rendering= 0) const override;
+	virtual void notify_variable(const map <string, string> &result_variable_child) override {
 		result_variable.insert(result_variable_child.begin(),
 				       result_variable_child.end());
 	}
 	virtual void notify_result(shared_ptr <const Dep> dep,
 				   Executor *source,
 				   Flags flags,
-				   shared_ptr <const Dep> dep_source);
+				   shared_ptr <const Dep> dep_source) override;
 
 private:
 	const shared_ptr <const Dynamic_Dep> dep;

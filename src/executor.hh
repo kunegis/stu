@@ -81,7 +81,7 @@ public:
 	 * whether the -n/-0/etc. flag was used, and may also contain
 	 * the -o flag to ignore a non-existing file.  */
 
-	void operator<<(string text) const;
+	void operator<<(string text) const override;
 	/* Print full trace for the executor.  First the message is
 	 * Printed, then all traces for it starting at this executor,
 	 * up to the root executor.
@@ -140,7 +140,7 @@ public:
 		(void) result_variable_child;
 	}
 
-	virtual void render(Parts &, Rendering= 0) const= 0;
+	virtual void render(Parts &, Rendering= 0) const override= 0;
 
 	static bool hide_out_message;
 	/* Whether to show a STDOUT message at the end */

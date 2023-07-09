@@ -1,3 +1,4 @@
+namespace std {}
 using namespace std;
 
 #include "buffer.cc"

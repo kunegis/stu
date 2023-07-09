@@ -58,9 +58,9 @@ public:
 		assert(! isalnum(op_));
 	}
 
-	const Place &get_place() const  {  return place;  }
-	const Place &get_place_start() const  {  return place;  }
-	void render(Parts &, Rendering= 0) const;
+	const Place &get_place() const override { return place; }
+	const Place &get_place_start() const override { return place; }
+	void render(Parts &, Rendering= 0) const override;
 };
 
 class Flag_Token
@@ -90,11 +90,9 @@ public:
 			assert(place.column > 0);
 	}
 
-	const Place &get_place() const {
-		return place;
-	}
+	const Place &get_place() const override { return place; }
 
-	const Place &get_place_start() const {
+	const Place &get_place_start() const override {
 		if (place_start.type == Place::Type::EMPTY) {
 			place_start= place;
 			if (place_start.type == Place::Type::INPUT_FILE)
@@ -103,7 +101,7 @@ public:
 		return place_start;
 	}
 
-	void render(Parts &, Rendering= 0) const;
+	void render(Parts &, Rendering= 0) const override;
 };
 
 class Name_Token
@@ -119,15 +117,10 @@ public:
 		   Place_Name(place_name_)
 	{  }
 
-	const Place &get_place() const {
-		return Place_Name::place;
-	}
+	const Place &get_place() const override { return Place_Name::place; }
+	const Place &get_place_start() const override { return Place_Name::place; }
 
-	const Place &get_place_start() const {
-		return Place_Name::place;
-	}
-
-	void render(Parts &parts, Rendering rendering= 0) const {
+	void render(Parts &parts, Rendering rendering= 0) const override {
 		Place_Name::render(parts, rendering);
 	}
 };
@@ -156,9 +149,9 @@ public:
 
 	Command(string command_, const Place &place_, const Place &place_start_,
 		Environment environment_);
-	const Place &get_place() const { return place; }
-	const Place &get_place_start() const { return place_start; }
-	void render(Parts &parts, Rendering= 0) const { parts.append_operator("{"); }
+	const Place &get_place() const override { return place; }
+	const Place &get_place_start() const override { return place_start; }
+	void render(Parts &parts, Rendering= 0) const override { parts.append_operator("{"); }
 	const vector <string> &get_lines() const;
 };
 

@@ -25,7 +25,7 @@ CXXFLAGS_DEBUG= \
     -Wignored-attributes -Wswitch-default -Wswitch-enum -Wunused-const-variable=2 \
     -Wuninitialized -Walloc-zero -Wduplicated-branches -Wduplicated-cond -Wunused-macros \
     -Wcast-align -Wrestrict -Wno-parentheses -Wlogical-op -Wredundant-decls \
-    -fno-gnu-keywords -Wno-pessimizing-move \
+    -fno-gnu-keywords -Wno-pessimizing-move -Wsuggest-override \
     -D_GLIBCXX_DEBUG
 CXXFLAGS_PROF= -pg -O2 -DNDEBUG
 CXXFLAGS_COV=  --coverage -lgcov -O0 -DNDEBUG -DSTU_COV
@@ -34,24 +34,24 @@ CXXFLAGS_SANI= -pg -O2 -Werror -Wno-unused-result -fsanitize=undefined \
 
 bin/stu:                conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
-	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $$(cat conf/CXXFLAGS_NDEBUG) src/stu.cc -o bin/stu
-	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $$(cat conf/CXXFLAGS_NDEBUG) src/stu.cc -o bin/stu
+	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
+	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
 bin/stu.debug:          conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
-	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_DEBUG)            src/stu.cc -o bin/stu.debug
-	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_DEBUG)            src/stu.cc -o bin/stu.debug
+	@echo $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
+	@     $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
 bin/stu.prof:           conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
-	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_PROF)             src/stu.cc -o bin/stu.prof
-	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_PROF)             src/stu.cc -o bin/stu.prof
+	@echo $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
+	@     $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
 bin/stu.cov:           conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
-	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_COV)              src/stu.cc -o bin/stu.cov
-	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_COV)              src/stu.cc -o bin/stu.cov
+	@echo $$(cat conf/CXX) $(CXXFLAGS_COV)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov
+	@     $$(cat conf/CXX) $(CXXFLAGS_COV)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov
 bin/stu.sani_undefined: conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
-	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_SANI)             src/stu.cc -o bin/stu.sani_undefined
-	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS) $(CXXFLAGS_SANI)             src/stu.cc -o bin/stu.sani_undefined
+	@echo $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani_undefined
+	@     $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani_undefined
 
 log/test_options:   sh/test_options src/options.hh man/stu.1.in
 	@echo sh/test_options

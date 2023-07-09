@@ -28,26 +28,26 @@ public:
 
 	~Concat_Executor()= default;
 
-	virtual int get_depth() const  {  return -1;  }
-	virtual bool want_delete() const  {  return true;  }
-	virtual Proceed execute(shared_ptr <const Dep> dep_this);
-	virtual bool finished() const;
-	virtual bool finished(Flags flags) const;
-	virtual void render(Parts &parts, Rendering= 0) const {
+	virtual int get_depth() const override { return -1; }
+	virtual bool want_delete() const override { return true; }
+	virtual Proceed execute(shared_ptr <const Dep> dep_this) override;
+	virtual bool finished() const override;
+	virtual bool finished(Flags flags) const override;
+	virtual void render(Parts &parts, Rendering= 0) const override {
 		return dep->render(parts);
 	}
 
-	virtual void notify_variable(const map <string, string> &result_variable_child) {
+	virtual void notify_variable(const map <string, string> &result_variable_child) override {
 		result_variable.insert(result_variable_child.begin(),
 				       result_variable_child.end());
 	}
 	virtual void notify_result(shared_ptr <const Dep> dep,
 				   Executor *source,
 				   Flags flags,
-				   shared_ptr <const Dep> dep_source);
+				   shared_ptr <const Dep> dep_source) override;
 
 protected:
-	virtual bool optional_finished(shared_ptr <const Dep> ) {  return false;  }
+	virtual bool optional_finished(shared_ptr <const Dep> ) override { return false; }
 
 private:
 	typedef unsigned Stage;

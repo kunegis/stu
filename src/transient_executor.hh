@@ -18,22 +18,22 @@ public:
 			   int &error_additional);
 
 	shared_ptr <const Rule> get_rule() const {  return rule;  }
-	virtual bool want_delete() const {  return false;  }
-	virtual Proceed execute(shared_ptr <const Dep> dep_this);
-	virtual bool finished() const;
-	virtual bool finished(Flags flags) const;
+	virtual bool want_delete() const override { return false; }
+	virtual Proceed execute(shared_ptr <const Dep> dep_this) override;
+	virtual bool finished() const override;
+	virtual bool finished(Flags flags) const override;
 	virtual void render(Parts &, Rendering= 0) const override;
 	virtual void notify_result(shared_ptr <const Dep> dep,
 				   Executor *, Flags flags,
-				   shared_ptr <const Dep> dep_source);
-	virtual void notify_variable(const map <string, string> &result_variable_child) {
+				   shared_ptr <const Dep> dep_source) override;
+	virtual void notify_variable(const map <string, string> &result_variable_child) override {
 		result_variable.insert(result_variable_child.begin(),
 				       result_variable_child.end());
 	}
 
 protected:
-	virtual int get_depth() const  {  return 0;  }
-	virtual bool optional_finished(shared_ptr <const Dep> )  {  return false;  }
+	virtual int get_depth() const override { return 0; }
+	virtual bool optional_finished(shared_ptr <const Dep> ) override { return false; }
 
 private:
 	~Transient_Executor();

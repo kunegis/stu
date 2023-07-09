@@ -125,6 +125,15 @@ find_sed()
 	return 0
 }
 
+find_test_nolong_sleep()
+{
+	find tests -type f | xargs grep -F -n -e sleep |
+		grep -v -E -e '^tests/long-' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Only tests whose name starts with "long-" may use "sleep",' |
+		grep -E '.' >&2 && return 1
+	return 0
+}
+
 find_manpage_tab()
 {
 	grep -F -n -e "$(printf '\t')" man/stu.1.in && {
@@ -146,6 +155,7 @@ find_backtick || ret=1
 find_control || ret=1
 find_assert_false || ret=1
 find_sed || ret=1
+find_test_nolong_sleep || ret=1
 find_manpage_tab || ret=1
 
 exit "$ret"

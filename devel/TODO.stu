@@ -1,13 +1,4 @@
 #
-# Investigate -f options in GCC.
-#
-
-#
-# Test automatically that only tests whose name start with 'long-' can use
-# 'sleep'.
-#
-
-#
 # Don't use "using namespace std".  Instead, only use string.
 #
 

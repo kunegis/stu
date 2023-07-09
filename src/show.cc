@@ -6,13 +6,13 @@ Quote_Safeness Part::need_quotes() const
 	if (properties == PROP_MARKUP_QUOTABLE) {
 		return QS_SAFE;
 	} else if (properties == PROP_TEXT) {
-		Quote_Safeness ret= QS_MIN;
+		Quote_Safeness ret= QS_MAX;
 		for (char c: text)
-			ret= max(ret, need_quotes(c));
+			ret= min(ret, need_quotes(c));
 		return ret;
 	} else {
 		should_not_happen();
-		return QS_MIN;
+		return QS_MAX;
 	}
 }
 
@@ -21,11 +21,11 @@ Quote_Safeness Part::need_quotes(unsigned char c)
 	if (c & 0x80)
 		return QS_SAFE;
 	if (c <= 0x20 || c == 0x7F)
-		return QS_ALWAYS;
+		return QS_ALWAYS_QUOTE;
 	if (c == '\\' || c == '"' || c == '\'' || c == '$')
-		return QS_QUOTING;
+		return QS_QUOTE_WHEN_QUOTES_ARE_USED;
 	if (c == '*' || c == '?' || c == '#')
-		return QS_GLOB;
+		return QS_QUOTE_IN_GLOB_PATTERN;
 	return QS_SAFE;
 }
 
@@ -109,18 +109,18 @@ string show(const Parts &parts, Style style)
 							parts[i++].show(ret);
 						} else {
 							size_t l;
-							Quote_Safeness quotable= QS_MIN;
+							Quote_Safeness quotable= QS_MAX;
 							if (style == S_ALWAYS_QUOTE)
-								quotable= QS_ALWAYS;
+								quotable= QS_ALWAYS_QUOTE;
 							for (l= i; l < k && parts[l].is_quotable(); ++l) {
-								if (quotable <= QS_MAX)
-									quotable= max(quotable, parts[l].need_quotes());
+								if (quotable > QS_MIN)
+									quotable= min(quotable, parts[l].need_quotes());
 							}
 							bool quotes= empty
-								|| quotable == QS_ALWAYS
-								|| style & S_QUOTE_SOURCE && quotable >= QS_GLOB
+								|| quotable == QS_ALWAYS_QUOTE
+								|| style & S_QUOTE_SOURCE && quotable <= QS_QUOTE_IN_GLOB_PATTERN
 								|| !(style & S_QUOTE_SOURCE) && nocolor && !has_marker && !(style & S_QUOTE_MINIMUM)
-								|| !(style & S_QUOTE_SOURCE) && nocolor && has_marker && quotable >= QS_QUOTING && !(style & S_QUOTE_MINIMUM);
+								|| !(style & S_QUOTE_SOURCE) && nocolor && has_marker && quotable <= QS_QUOTE_WHEN_QUOTES_ARE_USED && !(style & S_QUOTE_MINIMUM);
 							if (quotes)  ret += '"';
 							for (; i < l; ++i)
 								parts[i].show(ret, quotes);

@@ -2,7 +2,12 @@
 
 set -e
 
-prefix=${prefix:-/usr/local}
+[ "$verbose" ] && exec 6>&2 || exec 6>/dev/null
 
+prefix=${prefix:-/usr/local}
+echo >&6 "Installing in $prefix"
+
+mkdir -p "$prefix"/bin
+mkdir -p "$prefix"/man/man1
 install bin/stu   "$prefix"/bin/stu
 install man/stu.1 "$prefix"/man/man1/stu.1

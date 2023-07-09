@@ -1,4 +1,21 @@
 #
+# Investigate -f options in GCC.
+#
+
+#
+# Test automatically that only tests whose name start with 'long-' can use
+# 'sleep'.
+#
+
+#
+# Don't use "using namespace std".  Instead, only use string.
+#
+
+#
+# Make a table of target-like classes.
+#
+
+#
 # Mark this target to always be a persistent dependency
 #
 
@@ -13,7 +30,7 @@
 #
 # Have an option to block certain targets from ever being rebuilt.  (Resulting
 # in a failure when they should, or always considering them up to date.)  May
-# also be implemented in Stu syntax, i.e. somthing like:
+# also be implemented in Stu syntax, i.e. something like:
 #
 
 -n FILENAME;
@@ -65,14 +82,6 @@
 # or to:                   dir/@all:  ...;  # ???
 
 #
-# Make install:  test local install in ~
-#
-
-#
-# Investigate -f options in GCC.
-#
-
-#
 # Check out that -Pq can work as a "lint mode"
 #
 
@@ -96,6 +105,7 @@
 #
 
 % set PATH /usr/local/bin
+% unset PATH
 
 #
 # Regex patterns in parameters.  Not sure about the '|' syntax.
@@ -121,10 +131,6 @@ list.${name|[A-Z].*} # Matches uppercase names
 
 #
 # Install:  use mkdir -p for /usr/local/man/man1/ and other directories.
-#
-
-#
-# Don't use "using namespace std".  Instead, only use string.
 #
 
 #
@@ -155,11 +161,6 @@ list.${name|[A-Z].*} # Matches uppercase names
 
 -a A : B;
 # There must already be a rule for A.  The dependency B is added.
-
-#
-# Test automatically that only tests whose name start with 'long-' can use
-# 'sleep'.
-#
 
 #
 # Use [[fallthrough]].  (C++17)

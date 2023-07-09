@@ -2,8 +2,8 @@
 #define SHOW_HH
 
 /*
- * Format functions are defined in the source files where their datatype
- * is defined.  In classes, they are member functions.
+ * Show functions are defined in the source files where their datatype is
+ * defined.  In classes, they are member functions.
  *
  * Even with S_QUOTE_SOURCE, the resulting strings are not in proper Stu
  * syntax.
@@ -30,18 +30,21 @@ constexpr Rendering R_GLOB=                     1 << 1;
 constexpr Rendering R_SHOW_INPUT=               1 << 2;
 constexpr Rendering R_NO_COMPOUND_PARENTHESES=  1 << 3;
 
-enum Quote_Safeness {
-	QS_SAFE, QS_GLOB, QS_QUOTING, QS_ALWAYS,
-	QS_MIN= QS_SAFE,
-	QS_MAX= QS_ALWAYS,
-};
-
 enum Properties {
 	PROP_TEXT,
 	PROP_MARKUP_QUOTABLE,
 	PROP_MARKUP_UNQUOTABLE,
 	PROP_OPERATOR,
 	PROP_SPACE,
+};
+
+enum Quote_Safeness {
+	QS_ALWAYS_QUOTE,
+	QS_QUOTE_WHEN_QUOTES_ARE_USED,
+	QS_QUOTE_IN_GLOB_PATTERN,
+	QS_SAFE,
+	QS_MIN= QS_ALWAYS_QUOTE,
+	QS_MAX= QS_SAFE,
 };
 
 class Part

@@ -10,11 +10,11 @@ error.hh                int                     ERROR_*
 flags.hh                Flags                   F_*, I_*, C_*
 flags.hh                Done                    D_*
 proceed.hh              Proceed                 P_*
-show.hh                 Style                   S_*
-show.hh                 Rendering               R_*
 show.hh                 Quote_Safeness          QS_*
+show.hh                 Rendering               R_*
+show.hh                 Style                   S_*
 show.hh                 Properties              PROP_*
 token.hh                Environment             E_*
 trace.hh                Trace_Class             TRACE_*
 
-(This list excludes constants only used in one .cc file)
+(This list excludes constants only used in one .cc/.hh file.)

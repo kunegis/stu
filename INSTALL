@@ -10,11 +10,17 @@ This will compile and install Stu as well as its manpage on your
 system.
 
 To install in a specific directory, set $prefix when doing "make install".  The
-default is "/usr/local".
+default is "/usr/local".  For instance, to install in the home directory, do
+
+$ prefix=$HOME make install
+
+(Be aware that "sudo" may not pass through environment variables.)
 
 If 'make' fails, you may need to change the compiler or the compiler flags.
 They are stored in conf/, or you can "make clean" and run ./configure again with
-$CXX and $CXXFLAGS set.
+$CXX and $CXXFLAGS set.  For instance, to compile with Clang, do
+
+$ CXX=clang++ ./configure
 
 Stu is still a quite small program, and has not been tested on many
 systems.

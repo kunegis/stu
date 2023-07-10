@@ -61,10 +61,10 @@ void Dep::check() const
 		/* The F_TARGET_TRANSIENT flag is always set in the
 		 * dependency flags, even though that is redundant.  */
 		assert((plain_this->flags & F_TARGET_TRANSIENT)
-		       == (plain_this->place_param_target.flags));
+		       == (plain_this->place_target.flags));
 
 		if (! plain_this->variable_name.empty()) {
-			assert((plain_this->place_param_target.flags & F_TARGET_TRANSIENT) == 0);
+			assert((plain_this->place_target.flags & F_TARGET_TRANSIENT) == 0);
 			assert(plain_this->flags & F_VARIABLE);
 		}
 	}
@@ -87,9 +87,9 @@ void Dep::check() const
 }
 #endif
 
-Target Plain_Dep::get_target() const
+Hash_Dep Plain_Dep::get_target() const
 {
-	Target ret= place_param_target.unparametrized();
+	Hash_Dep ret= place_target.unparametrized();
 	ret.get_front_word_nondynamic() |= (word_t)(flags & F_TARGET_BYTE);
 	return ret;
 }
@@ -103,12 +103,12 @@ void Plain_Dep::render(Parts &parts, Rendering rendering) const
 		parts.append_operator("$[");
 	if (flags & F_INPUT && rendering & R_SHOW_INPUT)
 		parts.append_operator("<");
-	place_param_target.render(parts, rendering);
+	place_target.render(parts, rendering);
 	if (flags & F_VARIABLE)
 		parts.append_operator("]");
 }
 
-Target Dynamic_Dep::get_target() const
+Hash_Dep Dynamic_Dep::get_target() const
 {
 	string text;
 	const Dep *d= this;
@@ -116,17 +116,17 @@ Target Dynamic_Dep::get_target() const
 		Flags f= F_TARGET_DYNAMIC;
 		assert(d->flags & F_TARGET_DYNAMIC);
 		f |= d->flags & F_TARGET_BYTE;
-		text += Target::string_from_word(f);
+		text += Hash_Dep::string_from_word(f);
 		d= dynamic_cast <const Dynamic_Dep *> (d)->dep.get();
 	}
 	assert(dynamic_cast <const Plain_Dep *> (d));
 	const Plain_Dep *sin= dynamic_cast <const Plain_Dep *> (d);
 	assert(!(sin->flags & F_TARGET_DYNAMIC));
 	Flags f= sin->flags & F_TARGET_BYTE;
-	text += Target::string_from_word(f);
-	text += sin->place_param_target.unparametrized().get_name_nondynamic();
+	text += Hash_Dep::string_from_word(f);
+	text += sin->place_target.unparametrized().get_name_nondynamic();
 
-	return Target(text);
+	return Hash_Dep(text);
 }
 
 void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
@@ -150,7 +150,7 @@ shared_ptr <const Dep> Dynamic_Dep::instantiate(const std::map <string, string> 
 
 shared_ptr <const Dep> Plain_Dep::instantiate(const std::map <string, string> &mapping) const
 {
-	shared_ptr <Place_Param_Target> ret_target= place_param_target.instantiate(mapping);
+	shared_ptr <Place_Target> ret_target= place_target.instantiate(mapping);
 
 	shared_ptr <Dep> ret= std::make_shared <Plain_Dep>
 		(flags, places, *ret_target, place, variable_name);
@@ -357,7 +357,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 	}
 }
 
-Target Concat_Dep::get_target() const
+Hash_Dep Concat_Dep::get_target() const
 {
 	/* Dep::get_target() is not used for complex dependencies */
 	unreachable();
@@ -454,8 +454,8 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 
 	/* Parametrized dependencies are instantiated first before they
 	 * are concatenated  */
-	assert(! a->place_param_target.place_name.is_parametrized());
-	assert(! b->place_param_target.place_name.is_parametrized());
+	assert(! a->place_target.place_name.is_parametrized());
+	assert(! b->place_target.place_name.is_parametrized());
 
 	/*
 	 * Combine
@@ -463,17 +463,17 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 
 	Flags flags_combined= a->flags | b->flags;
 
-	Place_Name place_name_combined(a->place_param_target.place_name.unparametrized() +
-				       b->place_param_target.place_name.unparametrized(),
-				       a->place_param_target.place_name.place);
+	Place_Name place_name_combined(a->place_target.place_name.unparametrized() +
+				       b->place_target.place_name.unparametrized(),
+				       a->place_target.place_name.place);
 
 	shared_ptr <Plain_Dep> ret=
 		std::make_shared <Plain_Dep>
 		(flags_combined,
 		 a->places,
-		 Place_Param_Target(flags_combined & F_TARGET_TRANSIENT,
-				    place_name_combined,
-				    a->place_param_target.place),
+		 Place_Target(flags_combined & F_TARGET_TRANSIENT,
+			      place_name_combined,
+			      a->place_target.place),
 		 a->place, "");
 	ret->top= a->top;
 	if (! ret->top)

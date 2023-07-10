@@ -1,43 +1,5 @@
 #include "target.hh"
 
-#include "canonicalize.hh"
-
-void Target::render(Parts &parts, Rendering rendering) const
-{
-	TRACE_FUNCTION(SHOW, Target::show);
-	size_t i;
-	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
-		assert((get_word(i) & F_TARGET_TRANSIENT) == 0);
-		if (rendering & R_SHOW_FLAGS) {
-			render_flags
-				(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
-				 parts, rendering);
-		}
-		parts.append_operator("[");
-	}
-	assert(text.size() > sizeof(word_t) * (i + 1));
-	if (rendering & R_SHOW_FLAGS) {
-		render_flags(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE), parts, rendering);
-	}
-	if (get_word(i) & F_TARGET_TRANSIENT) {
-		parts.append_operator("@");
-	}
-	parts.append_text(text.substr(sizeof(word_t) * (i + 1)));
-	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
-		parts.append_operator("]");
-	}
-}
-
-void Target::canonicalize()
-{
-	char *b= (char *)text.c_str(), *p= b;
-	while ((*(word_t *)p) & F_TARGET_DYNAMIC)
-		p += sizeof(word_t);
-	p += sizeof(word_t);
-	p= canonicalize_string(A_BEGIN | A_END, p);
-	text.resize(p - b);
-}
-
 string Name::instantiate(const std::map <string, string> &mapping) const
 /* This function must take into account the special rules.  Special rule (a)
  * does not need to be handled, (i.e., we keep the starting './')  */
@@ -373,24 +335,24 @@ void Name::append(const Name &name)
 	}
 }
 
-void Place_Param_Target::render(Parts &parts, Rendering rendering) const
+void Place_Target::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION(SHOW, Place_Param_Target::render);
+	TRACE_FUNCTION(SHOW, Place_Target::render);
 	if (flags & F_TARGET_TRANSIENT)
 		parts.append_operator("@");
 	place_name.render(parts, rendering);
 }
 
-void Place_Param_Target::canonicalize()
+void Place_Target::canonicalize()
 {
 	place_name.canonicalize();
 }
 
-shared_ptr <const Place_Param_Target>
-canonicalize(shared_ptr <const Place_Param_Target> place_param_target)
+shared_ptr <const Place_Target>
+canonicalize(shared_ptr <const Place_Target> place_target)
 {
-	shared_ptr <Place_Param_Target> ret=
-		Place_Param_Target::clone(place_param_target);
+	shared_ptr <Place_Target> ret=
+		Place_Target::clone(place_target);
 	ret->canonicalize();
 	return ret;
 }

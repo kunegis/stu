@@ -9,6 +9,8 @@
  * syntax.
  */
 
+#include <assert.h>
+
 #include <string>
 
 #include "color.hh"

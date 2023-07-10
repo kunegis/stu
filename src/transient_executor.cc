@@ -44,11 +44,11 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 	shared_ptr <const Plain_Dep> plain_dep=
 		to <Plain_Dep> (dep_link);
 
-	Target target= plain_dep->place_param_target.unparametrized();
-	assert(target.is_transient());
+	Hash_Dep hash_dep= plain_dep->place_target.unparametrized();
+	assert(hash_dep.is_transient());
 
 	if (rule == nullptr)
-		targets.push_back(dep_link->get_target());
+		hash_deps.push_back(dep_link->get_target());
 
 	parents[parent]= dep_link;
 	if (error_additional) {
@@ -63,23 +63,23 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 		/* There must be a rule for transient targets (as
 		 * opposed to file targets), so this is an error.  */
 		is_finished= true;
-		*this << fmt("no rule to build %s", show(target));
+		*this << fmt("no rule to build %s", show(hash_dep));
 		parents.erase(parent);
 		error_additional |= ERROR_BUILD;
 		raise(ERROR_BUILD);
 		return;
 	}
 
-	for (auto &place_param_target: rule->place_param_targets) {
-		targets.push_back(place_param_target->unparametrized());
+	for (auto &place_param_target: rule->place_targets) {
+		hash_deps.push_back(place_param_target->unparametrized());
 	}
-	assert(targets.size());
+	assert(hash_deps.size());
 
 	assert((param_rule == nullptr) == (rule == nullptr));
 
 	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not
 	 * just the one given in the dependency.  Also, add the flags.  */
-	for (Target t: targets) {
+	for (Hash_Dep t: hash_deps) {
 		t.get_front_word_nondynamic() |= (word_t)
 			(dep_link->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC));
 		executors_by_target[t]= this;
@@ -113,8 +113,8 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 
 void Transient_Executor::render(Parts &parts, Rendering rendering) const
 {
-	assert(targets.size());
-	return targets.front().render(parts, rendering);
+	assert(hash_deps.size());
+	return hash_deps.front().render(parts, rendering);
 }
 
 void Transient_Executor::notify_result(shared_ptr <const Dep> dep,

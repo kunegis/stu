@@ -20,7 +20,7 @@ Timestamp Executor::timestamp_last;
 
 bool Executor::hide_out_message= false;
 bool Executor::out_message_done= false;
-std::unordered_map <Target, Executor *> Executor::executors_by_target;
+std::unordered_map <Hash_Dep, Executor *> Executor::executors_by_target;
 
 void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			    std::vector <shared_ptr <const Dep> > &deps,
@@ -28,10 +28,10 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			    Executor *dynamic_executor)
 {
 	try {
-		const Place_Param_Target &place_param_target=
-			to <Plain_Dep> (dep_target)->place_param_target;
-		assert(place_param_target.place_name.get_n() == 0);
-		const Target target= place_param_target.unparametrized();
+		const Place_Target &place_target=
+			to <Plain_Dep> (dep_target)->place_target;
+		assert(place_target.place_name.get_n() == 0);
+		const Hash_Dep hash_dep= place_target.unparametrized();
 		assert(deps.empty());
 
 		/* Check:  variable dependencies are not allowed in multiply
@@ -44,11 +44,11 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 				     ::show(dep));
 			raise(ERROR_LOGICAL);
 		}
-		if (place_param_target.flags & F_TARGET_TRANSIENT)
+		if (place_target.flags & F_TARGET_TRANSIENT)
 			return;
 
-		assert(target.is_file());
-		string filename= target.get_name_nondynamic();
+		assert(hash_dep.is_file());
+		string filename= hash_dep.get_name_nondynamic();
 
 		bool delim= (dep_target->flags & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED));
 		/* Whether the dynamic dependency is delimiter-separated */
@@ -61,7 +61,7 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			Tokenizer::parse_tokens_file
 				(tokens, Tokenizer::DYNAMIC,
 				 place_end, filename,
-				 place_param_target.place, -1,
+				 place_target.place, -1,
 				 dep_target->flags & F_OPTIONAL);
 
 			Place_Name input; /* remains empty */
@@ -77,15 +77,15 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 
 			/* Check that there are no input dependencies */
 			if (! input.empty()) {
-				Target target_dynamic(0, target);
+				Hash_Dep hash_dep_dynamic(0, hash_dep);
 				place_input <<
 					fmt("dynamic dependency %s must not contain input redirection %s",
-					    show(target_dynamic),
+					    show(hash_dep_dynamic),
 					    show_prefix("<", input));
-				Target target_file= target;
-				target_file.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT;
+				Hash_Dep hash_dep_file= hash_dep;
+				hash_dep_file.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT;
 				(*dynamic_executor) << fmt("%s is declared here",
-							   show(target_file));
+							   show(hash_dep_file));
 				raise(ERROR_LOGICAL);
 			}
 		end_normal:;
@@ -117,14 +117,16 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 					depp= depp2->dep;
 				}
 				to <Plain_Dep> (depp)
-					->place_param_target.place_name.places[0] <<
+					->place_target.place_name.places[0] <<
 					fmt("dynamic dependency %s must not contain parametrized dependencies",
-					    show(Target(0, target)));
-				Target target_base= target;
-				target_base.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT;
-				target_base.get_front_word_nondynamic() |= (target.get_front_word_nondynamic() & F_TARGET_TRANSIENT);
+					    show(Hash_Dep(0, hash_dep)));
+				Hash_Dep hash_dep_base= hash_dep;
+				hash_dep_base.get_front_word_nondynamic()
+					&= ~F_TARGET_TRANSIENT;
+				hash_dep_base.get_front_word_nondynamic()
+					|= (hash_dep.get_front_word_nondynamic() & F_TARGET_TRANSIENT);
 				*this << fmt("%s is declared here",
-					     show(target_base));
+					     show(hash_dep_base));
 				raise(ERROR_LOGICAL);
 				j= nullptr;
 				found_error= true;
@@ -234,8 +236,8 @@ void Executor::cycle_print(const std::vector <Executor *> &path,
 	 * because they match the same pattern and/or because they are
 	 * two different targets of a multitarget rule), then output a
 	 * notice to that effect */
-	Target t1= path.back()->parents.begin()->second->get_target();
-	Target t2= dep->get_target();
+	Hash_Dep t1= path.back()->parents.begin()->second->get_target();
+	Hash_Dep t2= dep->get_target();
 	const char *c1= t1.get_name_c_str_any();
 	const char *c2= t2.get_name_c_str_any();
 	if (strcmp(c1, c2)) {
@@ -295,12 +297,12 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	 * Cached executors
 	 */
 
-	const Target target= dep->get_target();
+	const Hash_Dep hash_dep= dep->get_target();
 
 	/* Set to the returned Executor object when one is found or created */
 	Executor *executor= nullptr;
 
-	const Target target_for_cache= get_target_for_cache(target);
+	const Hash_Dep target_for_cache= get_target_for_cache(hash_dep);
 	auto it= executors_by_target.find(target_for_cache);
 
 	if (it != executors_by_target.end()) {
@@ -336,15 +338,15 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 
 	int error_additional= 0; /* Passed to the executor */
 
-	if (! target.is_dynamic()) {
+	if (! hash_dep.is_dynamic()) {
 		/* Plain executor */
 		shared_ptr <const Rule> rule_child, param_rule_child;
 		std::map <string, string> mapping_parameter;
 		bool use_file_executor= false;
 		try {
-			Target target_without_flags= target;
-			target_without_flags.get_front_word_nondynamic() &= F_TARGET_TRANSIENT;
-			rule_child= rule_set.get(target_without_flags,
+			Hash_Dep hash_dep_without_flags= hash_dep;
+			hash_dep_without_flags.get_front_word_nondynamic() &= F_TARGET_TRANSIENT;
+			rule_child= rule_set.get(hash_dep_without_flags,
 						 param_rule_child, mapping_parameter,
 						 dep->get_place());
 		} catch (int e) {
@@ -358,14 +360,14 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		 * target in the rule OR there is a command in the rule.  When
 		 * there is no rule, we consult the type of TARGET.  */
 
-		if (target.is_file()) {
+		if (hash_dep.is_file()) {
 			use_file_executor= true;
 		} else if (rule_child == nullptr) {
 			use_file_executor= false;
 		} else if (rule_child->command) {
 			use_file_executor= true;
 		} else {
-			for (auto &i: rule_child->place_param_targets) {
+			for (auto &i: rule_child->place_targets) {
 				if ((i->flags & F_TARGET_TRANSIENT) == 0)
 					use_file_executor= true;
 			}
@@ -376,7 +378,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 				(dep, this, rule_child,
 				 param_rule_child, mapping_parameter,
 				 error_additional);
-		} else if (target.is_transient()) {
+		} else if (hash_dep.is_transient()) {
 			executor= new Transient_Executor
 				(dep, this,
 				 rule_child, param_rule_child, mapping_parameter,
@@ -783,15 +785,15 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 	}
 }
 
-Target Executor::get_target_for_cache(Target target)
+Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep)
 {
-	if (target.is_file()) {
+	if (hash_dep.is_file()) {
 		/* For file targets, we don't use flags for hashing.
 		 * Zero is the word for file targets.  */
-		target.get_front_word_nondynamic()= (word_t)0;
+		hash_dep.get_front_word_nondynamic()= (word_t)0;
 	}
 
-	return target;
+	return hash_dep;
 }
 
 shared_ptr <const Dep> Executor::append_top(shared_ptr <const Dep> dep,
@@ -876,7 +878,7 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 		place_variable <<
 			fmt("variable dependency %s must not be declared as optional dependency",
 			    show_dynamic_variable
-			    (plain_dep_child->place_param_target
+			    (plain_dep_child->place_target
 			     .place_name.unparametrized()));
 		place_flag << fmt("using %s", show_prefix("-", "o"));
 		*this << "";
@@ -927,6 +929,6 @@ bool Executor::same_dependency_for_print(shared_ptr <const Dep> d1,
 			(Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d2)));
 	if (! (p1 && p2))
 		return false;
-	return p1->place_param_target.unparametrized()
-		== p2->place_param_target.unparametrized();
+	return p1->place_target.unparametrized()
+		== p2->place_target.unparametrized();
 }

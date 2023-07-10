@@ -1,8 +1,4 @@
 #
-# Make a table of target-like classes.
-#
-
-#
 # Mark this target to always be a persistent dependency
 #
 
@@ -183,3 +179,127 @@ list.${name|[A-Z].*} # Matches uppercase names
 #
 
 A: [-d data/B];
+
+#
+# In -j>1 mode, Start trivial dependencies immediately when it is clear
+# they must be started, not just when everything else is done.
+#
+
+#
+# Search within predefined paths for %include ($STU_PATH or $STUPATH;
+# the -I option)
+#
+
+# This is included from the "Stu path", and could be installed in
+# e.g. /usr/share/stu/lib/ or ~/share/stu/lib/, etc.
+% include c++.stu
+
+#
+# Have a way to set $STU_SHELL and $STU_CP from within a Stu script.
+# E.g., using directives.
+#
+
+# Some Stu scripts may want to use Bash throughout
+% STU_SHELL /bin/bash
+
+# Should it be valid for the whole Stu invocation, or only for the
+# source file in which it appears?
+
+# Could also be done as
+% set STU_SHELL /bin/bash
+
+#
+# A flag with the meaning "never rebuild that dependency", but only use
+# it to determine whether we need to rebuilt the target.  It would mean
+# that we can prune dependencies with that flag as soon as we know that
+# the target must be built anyway.
+#
+
+# In this example, when 'program' does not exist, Stu will *not* build
+# 'dep.sources', because the -s flag is used and Stu knows that
+# 'program' has to be rebuilt anyway.  '-s' could stand for
+# "secondary", and mean "we don't want this to be built, we only need it
+# to determine whether we have to be rebuilt."
+
+program:  -s [dep.sources] {
+	cc ... -o program
+}
+dep.sources {
+	# Some complex mechanism for determining the source code files
+	# of the program
+}
+
+#
+# Have an option for: For hardcoded rules, compare the content of the file with
+# the wanted content and don't update the file if identical.
+#
+
+#
+# Regular expressions in target names.
+#
+
+list.${X:.}${Y:.} {
+	compute -x $X -y $Y >list.${X}${Y}
+}
+
+# When the date is saved as contiguous digits, e.g. 'log-analysis.20180413.txt'
+# for April 13, 2018, but as ISO dat in 'log-*.txt'.
+log-analysis.${year:[0-9]{4}}${month:[0-9]{2}}${day:[0-9]{2}}.txt:
+	log.$year-$month-$dat.txt
+{ ... }
+
+# The parameter $NETWORK must not contain a dot
+web.${NETWORK:[^.]+} :  ... ;
+
+# Specify a list of values
+${NAME:ref|ukob|tuberlin}.bib:  bibs-A/${NAME}.bib
+{ cp bibs-A/$NAME.bib $NAME.bib }
+$NAME.bib:  bibs-B/$NAME.bib
+{ cp bibs-B/$NAME.bib $NAME.bib }
+
+# Exclude slashes
+${NAME:[^/]+}.bib: ...;
+
+#
+# Allow dir/@transient.  Will allow dir/(a b @c @d).
+#
+# a/@b is equivalent to @a/b.
+#
+
+#
+# Nested rules.  Good for dependencies that are used only once.  This is
+# quite hard to read, honestly, and mostly fulfills the fantasy of
+# people who like deeply nested constructs :)  But implementation-wise,
+# it's not that difficult.
+#
+
+A: (B: C { cp C B ; }) (D: E {cp E D ; }) { cat B D >A ; }
+
+#
+# Transient targets can have content.  This will be executed at every Stu
+# invocation.  This is similar to the way variables worked in Stu 0.
+#
+# This might be used like variables in Make, but the result will be that
+# targets depending on them will always be rebuilt.  It would thus only
+# make sense together with fingerprinting.
+#
+# No very useful, since files can be used in exactly the same way, and
+# without the problem of not remembering what was already done.
+#
+
+# Their definition:
+@NAME = { linux }
+@NAME2 = @NAME;
+>@NAME { ./printname }
+
+# Their use:
+file:  <@NAME { sed -e '...' >file }
+result.eps:  $[@NAME] { ./compute --name "$NAME" }
+
+#
+# Achieve full coverage.
+#
+# * Exclude unreachable() blocks from counting
+# * Exclude should_not_happen() blocks count
+# * Test syscall and libc function failure using mock implementations of them
+#

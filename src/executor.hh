@@ -151,7 +151,7 @@ public:
 	static Rule_Set rule_set;
 	/* Set before calling main_loop() */
 
-	static Target get_target_for_cache(Target target);
+	static Hash_Dep get_target_for_cache(Hash_Dep hash_dep);
 	/* Get the target value used for caching.  I.e, return TARGET
 	 * with certain flags removed.  */
 
@@ -268,7 +268,7 @@ protected:
 	/* The timepoint of the last time wait() returned.  No file in the
 	 * file system should be newer than this.  */
 
-	static std::unordered_map <Target, Executor *> executors_by_target;
+	static std::unordered_map <Hash_Dep, Executor *> executors_by_target;
 	/* All cached Executor objects by each of their Target.  Such
 	 * Executor objects are never deleted.  */
 

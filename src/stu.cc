@@ -17,6 +17,7 @@ using std::shared_ptr;
 #include "file_executor.cc"
 #include "flags.cc"
 #include "format.cc"
+#include "hash_dep.cc"
 #include "job.cc"
 #include "main_loop.cc"
 #include "options.cc"
@@ -51,7 +52,7 @@ int main(int argc, char **argv, char **envp)
 
 		std::vector <shared_ptr <const Dep> > deps; /* Assemble targets here */
 
-		shared_ptr <const Place_Param_Target> target_first;
+		shared_ptr <const Place_Target> target_first;
 		/* Set to the first rule when there is one */
 
 		Place place_first; /* Place of first file when no rule is contained */
@@ -94,7 +95,7 @@ int main(int argc, char **argv, char **envp)
 				}
 				deps.push_back
 					(std::make_shared <Plain_Dep>
-					 (0, Place_Param_Target
+					 (0, Place_Target
 					  (0, Place_Name(optarg, place))));
 				break;
 			}
@@ -141,7 +142,7 @@ int main(int argc, char **argv, char **envp)
 					(std::make_shared <Dynamic_Dep>
 					 (0, std::make_shared <Plain_Dep>
 					  (1 << flag_get_index(c),
-					   Place_Param_Target
+					   Place_Target
 					   (0, Place_Name(optarg, place)))));
 				break;
 			}
@@ -159,7 +160,7 @@ int main(int argc, char **argv, char **envp)
 				deps.push_back
 					(std::make_shared <Plain_Dep>
 					 (c == 'p' ? F_PERSISTENT : F_OPTIONAL, places,
-					  Place_Param_Target(0, Place_Name(optarg, place))));
+					  Place_Target(0, Place_Name(optarg, place))));
 				break;
 			}
 
@@ -199,7 +200,7 @@ int main(int argc, char **argv, char **envp)
 				error |= ERROR_LOGICAL;
 			} else if (option_J)
 				deps.push_back(std::make_shared <Plain_Dep>
-					       (0, Place_Param_Target
+					       (0, Place_Target
 						(0, Place_Name(argv[i], place))));
 		}
 

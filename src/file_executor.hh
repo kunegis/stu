@@ -88,7 +88,7 @@ private:
 	/* The print-all-jobs signal was received - we must print all
 	 * jobs */
 
-	std::vector <Target> targets;
+	std::vector <Hash_Dep> hash_deps;
 	/* The targets to which this executor object corresponds.
 	 * Never empty.
 	 * All targets are non-dynamic, i.e., only plain files and

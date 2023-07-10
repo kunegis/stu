@@ -2,10 +2,6 @@
 #define DEP_HH
 
 /*
- * Data types for representing dependencies.  Dependencies are the central data
- * structures in Stu, as all dependencies in the syntax of a Stu script get
- * mapped to Dep objects.
- *
  * Dependencies are polymorphous objects, and all dependencies derive from the
  * class Dep, and are used via shared_ptr<>, except in cases where access is
  * read-only.  This is necessary in cases where a member function has to access
@@ -162,7 +158,7 @@ public:
 
 	virtual void render(Parts &, Rendering= 0) const= 0;
 
-	virtual Target get_target() const= 0;
+	virtual Hash_Dep get_target() const= 0;
 	/* Only called for non-compound and non-parametrized dependencies.  */
 
 	virtual bool is_normalized() const= 0;
@@ -202,7 +198,7 @@ class Plain_Dep
 	:  public Dep
 {
 public:
-	Place_Param_Target place_param_target;
+	Place_Target place_target;
 	/* The target of the dependency.  Has its own place, which may
 	 * differ from the dependency's place, e.g. in '@all'.  Non-dynamic.  */
 
@@ -211,42 +207,42 @@ public:
 	string variable_name;
 	/* With F_VARIABLE:  the name of the variable.  Otherwise:  empty.  */
 
-	explicit Plain_Dep(const Place_Param_Target &place_param_target_)
-		:  Dep(place_param_target_.flags),
-		   place_param_target(place_param_target_),
-		   place(place_param_target_.place)
+	explicit Plain_Dep(const Place_Target &place_target_)
+		:  Dep(place_target_.flags),
+		   place_target(place_target_),
+		   place(place_target_.place)
 	{
 		check();
 	}
 
 	Plain_Dep(Flags flags_,
-		  const Place_Param_Target &place_param_target_)
+		  const Place_Target &place_target_)
 		/* Take the dependency place from the target place */
 		:  Dep(flags_),
-		   place_param_target(place_param_target_),
-		   place(place_param_target_.place)
+		   place_target(place_target_),
+		   place(place_target_.place)
 	{
 		check();
 	}
 
 	Plain_Dep(Flags flags_,
 		  const Place places_[C_PLACED],
-		  const Place_Param_Target &place_param_target_)
+		  const Place_Target &place_target_)
 		/* Take the dependency place from the target place */
 		:  Dep(flags_, places_),
-		   place_param_target(place_param_target_),
-		   place(place_param_target_.place)
+		   place_target(place_target_),
+		   place(place_target_.place)
 	{
 		check();
 	}
 
 	Plain_Dep(Flags flags_,
-		  const Place_Param_Target &place_param_target_,
+		  const Place_Target &place_target_,
 		  const Place &place_,
 		  const string &variable_name_)
 		/* Use an explicit dependency place */
 		:  Dep(flags_),
-		   place_param_target(place_param_target_),
+		   place_target(place_target_),
 		   place(place_),
 		   variable_name(variable_name_)
 	{
@@ -255,12 +251,12 @@ public:
 
 	Plain_Dep(Flags flags_,
 		  const Place places_[C_PLACED],
-		  const Place_Param_Target &place_param_target_,
+		  const Place_Target &place_target_,
 		  const Place &place_,
 		  const string &variable_name_)
 		/* Use an explicit dependency place */
 		:  Dep(flags_, places_),
-		   place_param_target(place_param_target_),
+		   place_target(place_target_),
 		   place(place_),
 		   variable_name(variable_name_)
 	{
@@ -269,12 +265,12 @@ public:
 
 	Plain_Dep(Flags flags_,
 		  const Place places_[C_PLACED],
-		  const Place_Param_Target &place_param_target_,
+		  const Place_Target &place_target_,
 		  const string &variable_name_)
 		/* Use an explicit dependency place */
 		:  Dep(flags_, places_),
-		   place_param_target(place_param_target_),
-		   place(place_param_target_.place),
+		   place_target(place_target_),
+		   place(place_target_.place),
 		   variable_name(variable_name_)
 	{
 		check();
@@ -282,7 +278,7 @@ public:
 
 	Plain_Dep(const Plain_Dep &plain_dep)
 		:  Dep(plain_dep),
-		   place_param_target(plain_dep.place_param_target),
+		   place_target(plain_dep.place_target),
 		   place(plain_dep.place),
 		   variable_name(plain_dep.variable_name) { }
 
@@ -290,13 +286,13 @@ public:
 	virtual shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
 
 	bool is_unparametrized() const override {
-		return place_param_target.place_name.get_n() == 0;
+		return place_target.place_name.get_n() == 0;
 	}
 
 	virtual void render(Parts &, Rendering= 0) const override;
 	virtual bool is_normalized() const override { return true; }
 
-	virtual Target get_target() const override;
+	virtual Hash_Dep get_target() const override;
 	/* Does not preserve the F_VARIABLE bit */
 };
 
@@ -345,7 +341,7 @@ public:
 
 	virtual void render(Parts &, Rendering= 0) const override;
 	virtual bool is_normalized() const override { return dep->is_normalized(); }
-	virtual Target get_target() const override;
+	virtual Hash_Dep get_target() const override;
 
 	unsigned get_depth() const {
 		if (to <Dynamic_Dep> (dep))
@@ -390,7 +386,7 @@ public:
 	virtual const Place &get_place() const override;
 	virtual void render(Parts &, Rendering= 0) const override;
 	virtual bool is_normalized() const override;
-	virtual Target get_target() const override;
+	virtual Hash_Dep get_target() const override;
 
 	static shared_ptr <const Dep> concat(shared_ptr <const Dep> a,
 					     shared_ptr <const Dep> b,
@@ -469,7 +465,7 @@ public:
 	virtual const Place &get_place() const override { return place; }
 	virtual void render(Parts &, Rendering= 0) const override;
 	virtual bool is_normalized() const override { return false; }
-	virtual Target get_target() const override { unreachable(); }
+	virtual Hash_Dep get_target() const override { unreachable(); }
 };
 
 class Root_Dep
@@ -485,7 +481,7 @@ public:
 	virtual bool is_unparametrized() const override { return false; }
 	virtual const Place &get_place() const override { return Place::place_empty; }
 	virtual void render(Parts &parts, Rendering= 0) const override;
-	virtual Target get_target() const override { unreachable(); }
+	virtual Hash_Dep get_target() const override { unreachable(); }
 	virtual bool is_normalized() const override { return true; }
 };
 

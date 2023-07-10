@@ -38,7 +38,7 @@ protected:
 private:
 	~Transient_Executor();
 
-	std::vector <Target> targets;
+	std::vector <Hash_Dep> hash_deps;
 	/* The targets to which this executor object corresponds.  All
 	 * are transients.  Contains at least one element.  */
 

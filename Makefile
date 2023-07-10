@@ -25,7 +25,7 @@ CXXFLAGS_DEBUG= \
     -Wignored-attributes -Wswitch-default -Wswitch-enum -Wunused-const-variable=2 \
     -Wuninitialized -Walloc-zero -Wduplicated-branches -Wduplicated-cond -Wunused-macros \
     -Wcast-align -Wrestrict -Wno-parentheses -Wlogical-op -Wredundant-decls \
-    -fno-gnu-keywords -Wno-pessimizing-move -Wsuggest-override \
+    -Wno-pessimizing-move -Wsuggest-override \
     -D_GLIBCXX_DEBUG
 CXXFLAGS_PROF= -pg -O2 -DNDEBUG
 CXXFLAGS_COV=  --coverage -lgcov -O0 -DNDEBUG -DSTU_COV

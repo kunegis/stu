@@ -27,13 +27,13 @@ Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 	/* Find the rule of the inner dependency */
 	shared_ptr <const Dep> inner_dep= Dep::strip_dynamic(dep);
 	if (auto inner_plain_dep= to <const Plain_Dep> (inner_dep)) {
-		Target target_base(inner_plain_dep->place_param_target.flags,
-				   inner_plain_dep->place_param_target.place_name.unparametrized());
-		Target target= dep->get_target();
+		Hash_Dep hash_dep_base(inner_plain_dep->place_target.flags,
+				       inner_plain_dep->place_target.place_name.unparametrized());
+		Hash_Dep hash_dep= dep->get_target();
 		try {
 			std::map <string, string> mapping_parameter;
 			shared_ptr <const Rule> rule=
-				rule_set.get(target_base, param_rule, mapping_parameter,
+				rule_set.get(hash_dep_base, param_rule, mapping_parameter,
 					     dep->get_place());
 		} catch (int e) {
 			assert(e);
@@ -42,7 +42,7 @@ Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 			raise(e);
 			return;
 		}
-		executors_by_target[target]= this;
+		executors_by_target[hash_dep]= this;
 	}
 
 	parents.erase(parent);

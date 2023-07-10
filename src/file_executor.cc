@@ -110,21 +110,21 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		/* Subsequently set to B_MISSING if at least one target file is missing */
 
 		/* For file targets, check that the file was built */
-		for (size_t i= 0; i < targets.size(); ++i) {
-			const Target target= targets[i];
+		for (size_t i= 0; i < hash_deps.size(); ++i) {
+			const Hash_Dep hash_dep= hash_deps[i];
 
-			if (! target.is_file()) {
+			if (! hash_dep.is_file()) {
 				continue;
 			}
 
-			const char *const filename= target.get_name_c_str_nondynamic();
+			const char *const filename= hash_dep.get_name_c_str_nondynamic();
 			struct stat buf;
 
 			if (0 == stat(filename, &buf)) {
 				/* The file exists */
 				warn_future_file(&buf,
 						 filename,
-						 rule->place_param_targets[i]->place,
+						 rule->place_targets[i]->place,
 						 "after execution of command");
 
 				/* Check that file is not older that Stu
@@ -139,18 +139,18 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 					/* Check whether the file is actually a symlink, in
 					 * which case we ignore that error */
 					if (0 > lstat(filename, &buf)) {
-						rule->place_param_targets[i]->place <<
-							format_errno(show(target));
+						rule->place_targets[i]->place <<
+							format_errno(show(hash_dep));
 						raise(ERROR_BUILD);
 					}
 					if (S_ISLNK(buf.st_mode))
 						continue;
-					rule->place_param_targets[i]->place
+					rule->place_targets[i]->place
 						<< fmt("timestamp of file %s after execution of its command is older than %s startup",
-						       show(target),
+						       show(hash_dep),
 						       dollar_zero)
 						<< fmt("timestamp of %s is %s",
-						       show(target),
+						       show(hash_dep),
 						       timestamp_file.format())
 						<< fmt("startup timestamp is %s",
 						       Timestamp::startup.format());
@@ -161,16 +161,16 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 			} else {
 				bits |= B_MISSING;
 				bits &= ~B_EXISTING;
-				rule->place_param_targets[i]->place <<
+				rule->place_targets[i]->place <<
 					fmt("file %s was not built by command",
-					    show(target));
+					    show(hash_dep));
 				*this << "";
 				raise(ERROR_BUILD);
 			}
 		}
 		/* In parallel mode, print "done" message */
 		if (option_parallel && !option_s) {
-			string text= show(targets[0], S_NORMAL);
+			string text= show(hash_deps[0], S_NORMAL);
 			printf("Successfully built %s\n", text.c_str());
 		}
 	} else {
@@ -197,14 +197,14 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		}
 
 		if (! param_rule->is_copy) {
-			Target target= parents.begin()->second->get_target();
+			Hash_Dep hash_dep= parents.begin()->second->get_target();
 			param_rule->command->place <<
 				fmt("command for %s %s",
-				    show(target), reason);
+				    show(hash_dep), reason);
 		} else {
 			/* Copy rule */
 			param_rule->place <<
-				fmt("cp to %s %s", show(targets.front()), reason);
+				fmt("cp to %s %s", show(hash_deps.front()), reason);
 		}
 
 		*this << "";
@@ -228,13 +228,13 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 	assert((param_rule_ == nullptr) == (rule_ == nullptr));
 
 	swap(mapping_parameter, mapping_parameter_);
-	Target target_= dep->get_target();
+	Hash_Dep hash_dep_= dep->get_target();
 
 	/* Later replaced with all targets from the rule, if a rule exists */
-	Target target_no_flags= target_;
-	target_no_flags.get_front_word_nondynamic() &= F_TARGET_TRANSIENT;
-	targets.push_back(target_no_flags);
-	executors_by_target[target_no_flags]= this;
+	Hash_Dep hash_dep_no_flags= hash_dep_;
+	hash_dep_no_flags.get_front_word_nondynamic() &= F_TARGET_TRANSIENT;
+	hash_deps.push_back(hash_dep_no_flags);
+	executors_by_target[hash_dep_no_flags]= this;
 
 	parents[parent]= dep;
 	if (error_additional) {
@@ -248,17 +248,17 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 	if (rule == nullptr) {
 		/* TARGETS contains only DEPENDENCY->TARGET */
 	} else {
-		targets.clear();
-		for (auto &place_param_target: rule->place_param_targets) {
-			targets.push_back(place_param_target->unparametrized());
+		hash_deps.clear();
+		for (auto &place_param_target: rule->place_targets) {
+			hash_deps.push_back(place_param_target->unparametrized());
 		}
-		assert(targets.size());
+		assert(hash_deps.size());
 	}
 
 	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not
 	 * just the one given in the dependency.  */
-	for (const Target &target: targets) {
-		executors_by_target[target]= this;
+	for (const Hash_Dep &hash_dep: hash_deps) {
+		executors_by_target[hash_dep]= this;
 	}
 
 	if (rule != nullptr) {
@@ -272,15 +272,15 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 		bool rule_not_found= false;
 		/* Whether to produce the "no rule to build target" error */
 
-		if (target_.is_file()) {
+		if (hash_dep_.is_file()) {
 			if (! (dep->flags & (F_OPTIONAL | F_TRIVIAL))) {
 				/* Check that the file is present,
 				 * or make it an error */
 				struct stat buf;
-				int ret_stat= stat(target_.get_name_c_str_nondynamic(), &buf);
+				int ret_stat= stat(hash_dep_.get_name_c_str_nondynamic(), &buf);
 				if (0 > ret_stat) {
 					if (errno != ENOENT) {
-						string text= show(target_);
+						string text= show(hash_dep_);
 						perror(text.c_str());
 						raise(ERROR_BUILD);
 					}
@@ -294,12 +294,12 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 						 * therefore we don't need traces */
 						Style style= CH_OUT;
 						print_out(fmt("No rule for building %s, but the file exists",
-							      show(target_, style)));
+							      show(hash_dep_, style)));
 						hide_out_message= true;
 					}
 				}
 			}
-		} else if (target_.is_transient()) {
+		} else if (hash_dep_.is_transient()) {
 			rule_not_found= true;
 		} else {
 			unreachable();
@@ -307,7 +307,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 
 		if (rule_not_found) {
 			assert(rule == nullptr);
-			*this << fmt("no rule to build %s", show(target_));
+			*this << fmt("no rule to build %s", show(hash_dep_));
 			error_additional |= error |= ERROR_BUILD;
 			raise(ERROR_BUILD);
 			return;
@@ -320,8 +320,8 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 	    dep->flags & F_TARGET_TRANSIENT) {
 
 		Place place_target;
-		for (auto &i: rule->place_param_targets) {
-			if (i->place_name.unparametrized() == target_.get_name_nondynamic()) {
+		for (auto &i: rule->place_targets) {
+			if (i->place_name.unparametrized() == hash_dep_.get_name_nondynamic()) {
 				place_target= i->place;
 				break;
 			}
@@ -330,11 +330,11 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 		if (rule->command) {
 			place_target <<
 				fmt("rule for transient target %s must not have a command",
-				    show(target_));
+				    show(hash_dep_));
 		} else {
 			place_target <<
 				fmt("rule for transient target %s must not have file targets",
-				    show(target_));
+				    show(hash_dep_));
 		}
 		dep->get_place() << fmt("when used as dynamic dependency of %s",
 					show(parent->get_parents().begin()->second));
@@ -349,8 +349,8 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 	    dep->flags & (F_OPTIONAL | F_PERSISTENT)) {
 
 		Place place_target;
-		for (auto &i: rule->place_param_targets) {
-			if (i->place_name.unparametrized() == target_.get_name_nondynamic()) {
+		for (auto &i: rule->place_targets) {
+			if (i->place_name.unparametrized() == hash_dep_.get_name_nondynamic()) {
 				place_target= i->place;
 				break;
 			}
@@ -366,11 +366,11 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 		if (rule->command)
 			place_target <<
 				fmt("because rule for transient target %s has a command",
-				    show(target_));
+				    show(hash_dep_));
 		else
 			place_target <<
 				fmt("because rule for transient target %s has file targets",
-				    show(target_));
+				    show(hash_dep_));
 		*this << "";
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
@@ -397,8 +397,8 @@ bool File_Executor::finished(Flags flags) const
 }
 
 void File_Executor::render(Parts &parts, Rendering rendering) const {
-	assert(targets.size());
-	targets.front().render(parts, rendering);
+	assert(hash_deps.size());
+	hash_deps.front().render(parts, rendering);
 }
 
 void terminate_jobs()
@@ -478,7 +478,7 @@ bool File_Executor::remove_if_existing(bool output)
 	/* Whether anything was removed */
 	bool removed= false;
 
-	for (size_t i= 0; i < targets.size(); ++i) {
+	for (size_t i= 0; i < hash_deps.size(); ++i) {
 		const char *filename= filenames[i];
 		if (!filename)
 			continue;
@@ -542,7 +542,7 @@ void File_Executor::print_command() const
 		return;
 
 	if (rule->is_hardcode) {
-		assert(targets.size() == 1);
+		assert(hash_deps.size() == 1);
 		string content= rule->command->command;
 		bool is_printable= false;
 		if (content.size() < size_max_print_content) {
@@ -553,7 +553,7 @@ void File_Executor::print_command() const
 					is_printable= false;
 			}
 		}
-		string text= show(targets.front(), S_NORMAL);
+		string text= show(hash_deps.front(), S_NORMAL);
 		if (is_printable) {
 			string content_text= ::show(content, CH_OUT);
 			printf("Creating %s: %s\n", text.c_str(), content_text.c_str());
@@ -564,8 +564,8 @@ void File_Executor::print_command() const
 	}
 
 	if (rule->is_copy) {
-		assert(rule->place_param_targets.size() == 1);
-		string cp_target= show(rule->place_param_targets[0]->place_name, S_NORMAL);
+		assert(rule->place_targets.size() == 1);
+		string cp_target= show(rule->place_targets[0]->place_name, S_NORMAL);
 		string cp_source= show(rule->filename, S_NORMAL);
 		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str());
 		return;
@@ -576,7 +576,7 @@ void File_Executor::print_command() const
 	bool single_line= rule->command->get_lines().size() == 1;
 
 	if (! single_line || option_parallel) {
-		string text= show(targets.front(), S_NORMAL);
+		string text= show(hash_deps.front(), S_NORMAL);
 		printf("Building %s\n", text.c_str());
 		return;
 	}
@@ -589,7 +589,7 @@ void File_Executor::print_command() const
 	 * For multi-line commands, show them on a separate line. */
 
 	string filename_output= rule->redirect_index < 0 ? "" :
-		rule->place_param_targets[rule->redirect_index]
+		rule->place_targets[rule->redirect_index]
 		->place_name.unparametrized();
 	string filename_input= rule->filename.unparametrized();
 
@@ -663,9 +663,9 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 	/* The file must now be built */
 
-	assert(! targets.empty());
-	assert(! targets.front().is_dynamic());
-	assert(! targets.back().is_dynamic());
+	assert(! hash_deps.empty());
+	assert(! hash_deps.front().is_dynamic());
+	assert(! hash_deps.back().is_dynamic());
 	assert(get_buffer_A().empty());
 	assert(children.empty());
 	assert(error == 0);
@@ -675,23 +675,23 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 	 */
 
 	Timestamp *timestamps_old_new= (Timestamp *)
-		realloc(timestamps_old, sizeof(timestamps_old[0]) * targets.size());
+		realloc(timestamps_old, sizeof(timestamps_old[0]) * hash_deps.size());
 	if (!timestamps_old_new) {
 		perror("realloc");
 		abort();
 	}
 	timestamps_old= timestamps_old_new;
-	for (size_t i= 0; i < targets.size(); ++i)
+	for (size_t i= 0; i < hash_deps.size(); ++i)
 		timestamps_old[i]= Timestamp::UNDEFINED;
-	char **filenames_new= (char **)realloc(filenames, sizeof(filenames[0]) * targets.size());
+	char **filenames_new= (char **)realloc(filenames, sizeof(filenames[0]) * hash_deps.size());
 	if (!filenames_new) {
 		perror("realloc");
 		abort();
 	}
 	filenames= filenames_new;
-	for (size_t i= 0; i < targets.size(); ++i) {
-		if (targets[i].is_file()) {
-			filenames[i]= strdup(targets[i].get_name_c_str_nondynamic());
+	for (size_t i= 0; i < hash_deps.size(); ++i) {
+		if (hash_deps[i].is_file()) {
+			filenames[i]= strdup(hash_deps[i].get_name_c_str_nondynamic());
 			if (!filenames[i]) {
 				perror("strdup");
 				abort();
@@ -711,14 +711,14 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 		bits &= ~B_MISSING;
 		/* Now, set to B_MISSING when a file is found not to exist */
 
-		for (size_t i= 0; i < targets.size(); ++i) {
-			const Target &target= targets[i];
-			if (! target.is_file())
+		for (size_t i= 0; i < hash_deps.size(); ++i) {
+			const Hash_Dep &hash_dep= hash_deps[i];
+			if (! hash_dep.is_file())
 				continue;
 
 			/* We save the return value of stat() and handle errors later */
 			struct stat buf;
-			int ret_stat= stat(target.get_name_c_str_nondynamic(), &buf);
+			int ret_stat= stat(hash_dep.get_name_c_str_nondynamic(), &buf);
 
 			/* Warn when file has timestamp in the future */
 			if (ret_stat == 0) {
@@ -728,10 +728,10 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 				if (! (dep_this->flags & F_PERSISTENT))
 					warn_future_file
 						(&buf,
-						 target.get_name_c_str_nondynamic(),
+						 hash_dep.get_name_c_str_nondynamic(),
 						 rule == nullptr
 						 ? parents.begin()->second->get_place()
-						 : rule->place_param_targets[i]->place);
+						 : rule->place_targets[i]->place);
 				/* EXISTS is not changed */
 			} else {
 				bits |= B_MISSING;
@@ -753,9 +753,9 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 				    timestamps_old[i] < timestamp &&
 				    no_execution) {
 					print_warning
-						(rule->place_param_targets[i]->place,
+						(rule->place_targets[i]->place,
 						 fmt("file target %s which has no command is older than its dependency",
-						     show(target)));
+						     show(hash_dep)));
 				}
 			}
 
@@ -779,8 +779,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 				/* stat() returned an actual error,
 				 * e.g. permission denied.  This is a
 				 * build error.  */
-				rule->place_param_targets[i]->place
-					<< format_errno(show(target));
+				rule->place_targets[i]->place
+					<< format_errno(show(hash_dep));
 				raise(ERROR_BUILD);
 				done |= done_from_flags(dep_this->flags);
 				return proceed |= P_ABORT | P_FINISHED;
@@ -795,12 +795,12 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 				if (rule->deps.size()) {
 					*this <<
 						fmt("expected the file without command %s to exist because all its dependencies are up to date, but it does not",
-						    show(target));
+						    show(hash_dep));
 					explain_file_without_command_with_dependencies();
 				} else {
-					rule->place_param_targets[i]->place
+					rule->place_targets[i]->place
 						<< fmt("expected the file without command and without dependencies %s to exist, but it does not",
-						       show(target));
+						       show(hash_dep));
 					*this << "";
 					explain_file_without_command_without_dependencies();
 				}
@@ -812,7 +812,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 		/* We cannot update TIMESTAMP within the loop above
 		 * because we need to compare each TIMESTAMP_OLD with
 		 * the previous value of TIMESTAMP. */
-		for (size_t i= 0; i < targets.size(); ++i) {
+		for (size_t i= 0; i < hash_deps.size(); ++i) {
 			if (timestamps_old[i].defined() &&
 			    (! timestamp.defined() || timestamp < timestamps_old[i])) {
 				timestamp= timestamps_old[i];
@@ -822,16 +822,16 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 	if (! (bits & B_NEED_BUILD)) {
 		bool has_file= false; /* One of the targets is a file */
-		for (const Target &target: targets) {
-			if (target.is_file()) {
+		for (const Hash_Dep &hash_dep: hash_deps) {
+			if (hash_dep.is_file()) {
 				has_file= true;
 				break;
 			}
 		}
-		for (const Target &target: targets) {
-			if (! target.is_transient())
+		for (const Hash_Dep &hash_dep: hash_deps) {
+			if (! hash_dep.is_transient())
 				continue;
-			if (transients.count(target.get_name_nondynamic()) == 0) {
+			if (transients.count(hash_dep.get_name_nondynamic()) == 0) {
 				/* Transient was not yet executed */
 				if (! no_execution && ! has_file) {
 					bits |= B_NEED_BUILD;
@@ -879,13 +879,13 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 	 * start a job, and therefore this is executed even if JOBS is
 	 * zero.  */
 	if (rule->is_hardcode) {
-		assert(targets.size() == 1);
-		assert(targets.front().is_file());
+		assert(hash_deps.size() == 1);
+		assert(hash_deps.front().is_file());
 
 		DEBUG_PRINT("create_content");
 
 		print_command();
-		write_content(targets.front().get_name_c_str_nondynamic(), *(rule->command));
+		write_content(hash_deps.front().get_name_c_str_nondynamic(), *(rule->command));
 		done= ~0;
 		assert(proceed == 0);
 		return proceed |= P_FINISHED;
@@ -897,16 +897,16 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 	/* We have to start a job now */
 	print_command();
-	for (const Target &target: targets) {
-		if (! target.is_transient())
+	for (const Hash_Dep &hash_dep: hash_deps) {
+		if (! hash_dep.is_transient())
 			continue;
 		Timestamp timestamp_now= Timestamp::now();
 		assert(timestamp_now.defined());
-		assert(transients.count(target.get_name_nondynamic()) == 0);
-		transients[target.get_name_nondynamic()]= timestamp_now;
+		assert(transients.count(hash_dep.get_name_nondynamic()) == 0);
+		transients[hash_dep.get_name_nondynamic()]= timestamp_now;
 	}
 	if (rule->redirect_index >= 0)
-		assert(! (rule->place_param_targets[rule->redirect_index]->flags & F_TARGET_TRANSIENT));
+		assert(! (rule->place_targets[rule->redirect_index]->flags & F_TARGET_TRANSIENT));
 	assert(options_jobs >= 1);
 
 	/* Key/value pairs for all environment variables of the job.
@@ -932,8 +932,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 		if (rule->is_copy) {
 
-			assert(rule->place_param_targets.size() == 1);
-			assert(! (rule->place_param_targets.front()->flags & F_TARGET_TRANSIENT));
+			assert(rule->place_targets.size() == 1);
+			assert(! (rule->place_targets.front()->flags & F_TARGET_TRANSIENT));
 
 			string source= rule->filename.unparametrized();
 
@@ -942,7 +942,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 			 * exists in the cache */
 			if (rule->deps.at(0)->flags & F_OPTIONAL) {
 				Executor *executor_source_base=
-					executors_by_target.at(Target(0, source));
+					executors_by_target.at(Hash_Dep(0, source));
 				assert(executor_source_base);
 				File_Executor *executor_source
 					= dynamic_cast <File_Executor *> (executor_source_base);
@@ -955,7 +955,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 						<< fmt("source file %s in optional copy rule must exist",
 						       ::show(source));
 					*this << fmt("when target file %s does not exist",
-						     show(targets.at(0)));
+						     show(hash_deps.at(0)));
 					explain_missing_optional_copy_source();
 					raise(ERROR_BUILD);
 					done |= done_from_flags(dep_this->flags);
@@ -965,14 +965,14 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 			}
 
 			pid= job.start_copy
-				(rule->place_param_targets[0]->place_name.unparametrized(),
+				(rule->place_targets[0]->place_name.unparametrized(),
 				 source);
 		} else {
 			pid= job.start
 				(rule->command->command,
 				 mapping,
 				 rule->redirect_index < 0 ? "" :
-				 rule->place_param_targets[rule->redirect_index]
+				 rule->place_targets[rule->redirect_index]
 				 ->place_name.unparametrized(),
 				 rule->filename.unparametrized(),
 				 rule->command->place);
@@ -985,7 +985,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 		if (pid < 0) {
 			/* Starting the job failed */
 			*this << fmt("error executing command for %s",
-				     show(targets.front()));
+				     show(hash_deps.front()));
 			raise(ERROR_BUILD);
 			done |= done_from_flags(dep_this->flags);
 			assert(proceed == 0);
@@ -1060,7 +1060,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 void File_Executor::print_as_job() const
 {
 	pid_t pid= job.get_pid();
-	string text_target= show(targets.front(), S_NORMAL);
+	string text_target= show(hash_deps.front(), S_NORMAL);
 	printf("%9ld %s\n", (long) pid, text_target.c_str());
 }
 
@@ -1123,35 +1123,35 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	if (error)
 		return;
 
-	Target target= dep->get_target();
-	assert(! target.is_dynamic());
+	Hash_Dep hash_dep= dep->get_target();
+	assert(! hash_dep.is_dynamic());
 
 	size_t filesize;
 	struct stat buf;
 	string dependency_variable_name;
 	string content;
 
-	int fd= open(target.get_name_c_str_nondynamic(), O_RDONLY);
+	int fd= open(hash_dep.get_name_c_str_nondynamic(), O_RDONLY);
 	if (fd < 0) {
 		if (errno != ENOENT) {
-			dep->get_place() << show(target);
+			dep->get_place() << show(hash_dep);
 		}
 		goto error;
 	}
 	if (0 > fstat(fd, &buf)) {
-		dep->get_place() << show(target);
+		dep->get_place() << show(hash_dep);
 		goto error_fd;
 	}
 
 	filesize= buf.st_size;
 	content.resize(filesize);
 	if ((ssize_t) filesize != read(fd, (void *) content.c_str(), filesize)) {
-		dep->get_place() << show(target);
+		dep->get_place() << show(hash_dep);
 		goto error_fd;
 	}
 
 	if (0 > close(fd)) {
-		dep->get_place() << show(target);
+		dep->get_place() << show(hash_dep);
 		goto error;
 	}
 
@@ -1167,7 +1167,7 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	{
 		string variable_name=
 			dependency_variable_name.empty() ?
-			target.get_name_nondynamic() : dependency_variable_name;
+			hash_dep.get_name_nondynamic() : dependency_variable_name;
 
 		result_variable[variable_name]= content;
 	}
@@ -1177,16 +1177,16 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
  error_fd:
 	close(fd);
  error:
-	Target target_variable=
-		to <Plain_Dep> (dep)->place_param_target.unparametrized();
+	Hash_Dep hash_dep_variable=
+		to <Plain_Dep> (dep)->place_target.unparametrized();
 
 	if (rule == nullptr) {
 		dep->get_place() <<
 			fmt("file %s was up to date but cannot be found now",
-			    show(target_variable));
+			    show(hash_dep_variable));
 	} else {
-		for (auto const &place_param_target: rule->place_param_targets) {
-			if (place_param_target->unparametrized() == target_variable) {
+		for (auto const &place_param_target: rule->place_targets) {
+			if (place_param_target->unparametrized() == hash_dep_variable) {
 				place_param_target->place <<
 					fmt("generated file %s was built but cannot be found now",
 					    show(*place_param_target));
@@ -1203,7 +1203,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 	if ((dep_link->flags & F_OPTIONAL)
 	    && to <Plain_Dep> (dep_link)
 	    && ! (to <Plain_Dep> (dep_link)
-		  ->place_param_target.flags & F_TARGET_TRANSIENT)) {
+		  ->place_target.flags & F_TARGET_TRANSIENT)) {
 
 		/* We already know a file to be missing */
 		if (bits & B_MISSING) {
@@ -1212,7 +1212,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 		}
 
 		const char *name= to <Plain_Dep> (dep_link)
-			->place_param_target.place_name.unparametrized().c_str();
+			->place_target.place_name.unparametrized().c_str();
 
 		struct stat buf;
 		int ret_stat= stat(name, &buf);
@@ -1221,7 +1221,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 			bits &= ~B_EXISTING;
 			if (errno != ENOENT) {
 				to <Plain_Dep> (dep_link)
-					->place_param_target.place <<
+					->place_target.place <<
 					format_errno(::show(name));
 				raise(ERROR_BUILD);
 				done |= done_from_flags(dep_link->flags);

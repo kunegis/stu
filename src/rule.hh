@@ -12,7 +12,7 @@ class Rule
 /* The class Rule allows parameters; there is no "unparametrized rule" class. */
 {
 public:
-	std::vector <shared_ptr <const Place_Param_Target> > place_param_targets;
+	std::vector <shared_ptr <const Place_Target> > place_targets;
 	/* The targets of the rule, in the order specified in the rule.
 	 * Contains at least one element.  Each element contains all
 	 * parameters of the rule, and therefore should be used for
@@ -54,7 +54,7 @@ public:
 	/* Whether the rule is a copy rule, i.e., declared with '='
 	 * followed by a filename.  */
 
-	Rule(std::vector <shared_ptr <const Place_Param_Target> > &&place_param_targets,
+	Rule(std::vector <shared_ptr <const Place_Target> > &&place_targets,
 	     std::vector <shared_ptr <const Dep> > &&deps_,
 	     const Place &place_,
 	     const shared_ptr <const Command> &command_,
@@ -65,7 +65,7 @@ public:
 	/* Direct constructor that specifies everything; no checks,
 	 * initialization or canonicalization is performed.  */
 
-	Rule(std::vector <shared_ptr <const Place_Param_Target> > &&place_param_targets_,
+	Rule(std::vector <shared_ptr <const Place_Target> > &&place_targets_,
 	     const std::vector <shared_ptr <const Dep> > &deps_,
 	     shared_ptr <const Command> command_,
 	     bool is_hardcode_,
@@ -73,7 +73,7 @@ public:
 	     const Name &filename_input_);
 	/* Regular rule:  all cases except copy rules */
 
-	Rule(shared_ptr <const Place_Param_Target> place_param_target_,
+	Rule(shared_ptr <const Place_Target> place_target_,
 	     shared_ptr <const Place_Name> place_name_source_,
 	     const Place &place_persistent,
 	     const Place &place_optional);
@@ -82,7 +82,7 @@ public:
 
 	/* Whether the rule is parametrized */
 	bool is_parametrized() const {
-		return place_param_targets.front()->place_name.get_n() != 0;
+		return place_targets.front()->place_name.get_n() != 0;
 	}
 
 	/* A rule in which the targets must exist */
@@ -100,8 +100,8 @@ public:
 
 	const std::vector <string> &get_parameters() const
 	{
-		assert(place_param_targets.size() != 0);
-		return place_param_targets.front()->place_name.get_parameters();
+		assert(place_targets.size() != 0);
+		return place_targets.front()->place_name.get_parameters();
 	}
 
 	void canonicalize();
@@ -130,7 +130,7 @@ public:
 	 * duplicates, and print and throw a logical error if there is.  If a
 	 * given rule has duplicate targets, print and throw a logical error.  */
 
-	shared_ptr <const Rule> get(Target target,
+	shared_ptr <const Rule> get(Hash_Dep hash_dep,
 				    shared_ptr <const Rule> &param_rule,
 				    std::map <string, string> &mapping_parameter,
 				    const Place &place);
@@ -147,7 +147,7 @@ public:
 	void print_for_option_I() const;
 
 private:
-	std::unordered_map <Target, shared_ptr <const Rule> > rules_unparam;
+	std::unordered_map <Hash_Dep, shared_ptr <const Rule> > rules_unparam;
 	/* All unparametrized rules by their target.  Rules with multiple
 	 * targets are included multiple times, for each of their targets.  None
 	 * of the targets has flags set (except F_TARGET_TARNSIENT.)  The
@@ -172,16 +172,16 @@ private:
 class Best_Rule_Finder
 {
 public:
-	void add(const Target &, shared_ptr <const Rule> );
+	void add(const Hash_Dep &, shared_ptr <const Rule> );
 	size_t count() const {
-		assert(rules_best.size() == place_param_targets_best.size());
+		assert(rules_best.size() == place_targets_best.size());
 		return rules_best.size();
 	}
 
 	/* Return all equally best targets.  They are returned as a map by
 	 * place, so iterating over them will give a consistent order, for
 	 * consistent error messages.  */
-	const std::map <Place, shared_ptr <const Place_Param_Target> > &targets_best() const;
+	const std::map <Place, shared_ptr <const Place_Target> > &targets_best() const;
 
 	/* Access the best rule.  The best rule must be unique.  */
 	const shared_ptr <const Rule> &rule_best() const {
@@ -199,11 +199,11 @@ private:
 	std::vector <std::map <string, string> > mappings_best;
 	std::vector <std::vector <size_t> > anchorings_best;
 	std::vector <int> priorities_best;
-	std::vector <shared_ptr <const Place_Param_Target> > place_param_targets_best;
+	std::vector <shared_ptr <const Place_Target> > place_targets_best;
 
 	/* The same as PLACE_PARAM_TARGETS_BEST, but sorted by place.  Filled on
 	 * demand.  */
-	mutable std::map <Place, shared_ptr <const Place_Param_Target> > best_sorted;
+	mutable std::map <Place, shared_ptr <const Place_Target> > best_sorted;
 };
 
 #endif /* ! RULE_HH */

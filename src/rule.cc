@@ -97,8 +97,8 @@ Rule::instantiate(shared_ptr <const Rule> rule,
 		deps.push_back(dep->instantiate(mapping));
 
 	return std::make_shared <Rule>
-		(std::move(place_targets),
-		 std::move(deps), rule->place, rule->command,
+		(move(place_targets),
+		 move(deps), rule->place, rule->command,
 		 move(rule->filename.instantiate(mapping)),
 		 rule->is_hardcode, rule->redirect_index,
 		 rule->is_copy);

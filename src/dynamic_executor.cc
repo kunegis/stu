@@ -42,7 +42,7 @@ Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 			raise(e);
 			return;
 		}
-		executors_by_target[hash_dep]= this;
+		executors_by_hash_dep[hash_dep]= this;
 	}
 
 	parents.erase(parent);

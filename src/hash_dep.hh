@@ -12,8 +12,8 @@ typedef uint16_t word_t;
 class Hash_Dep
 /* A representation of a simple dependency, mainly used as the key in the
  * caching of Executor objects.  The difference to the Dependency class is that
- * Target objects don't store the Place objects, and don't support
- * parametrization.  Thus, Target objects are used as keys in maps, etc.  Flags
+ * Hash_Dep objects don't store the Place objects, and don't support
+ * parametrization.  Thus, Hash_Dep objects are used as keys in maps, etc.  Flags
  * are included.
  *
  * TEXT is a linear representation of the target.  It begins with a certain
@@ -31,13 +31,13 @@ class Hash_Dep
  * invalid in names.  The name proper (excluding front words) is non-empty,
  * i.e., is at least one byte long.
  *
- * The empty string denotes a "null" value for the type Target, or equivalently
+ * The empty string denotes a "null" value for the type Hash_Dep, or equivalently
  * the target of the root dependency, in which case most functions should not be
  * used.  */
 {
 public:
 	explicit Hash_Dep(string text_)
-		/* TEXT_ is the full text field of this Target */
+		/* TEXT_ is the full text field of this Hash_Dep */
 		:  text(text_) { }
 
 	Hash_Dep(Flags flags, string name)
@@ -166,7 +166,7 @@ private:
 	}
 };
 
-void render(const Hash_Dep &target, Parts &parts, Rendering rendering= 0);
+void render(const Hash_Dep &hash_dep, Parts &parts, Rendering rendering= 0);
 
 namespace std {
 	template <> struct hash <Hash_Dep>

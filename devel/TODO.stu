@@ -1,4 +1,54 @@
 #
+# "-C":  A new flag for dynamic dependencies, next to -n and -0.  It represents the
+# default behavior (full Stu syntax), and may become useful in the next major
+# version of Stu when -n becomes the default.
+#
+
+# Two flags (not supported anyway by the parser)
+A: [ -n -p B ] { ... }
+A: [ -p -n B ] { ... }
+A: [ -n -t B ] { ... }
+A: [ -t -n B ] { ... }
+A: [ -n -o B ] { ... }
+A: [ -t -o B ] { ... }
+
+# Test -C (should do nothing)
+A: [-C B] { ... }
+A: -C B { ... } # error, not allowed here (?); or maybe no-op
+A: [-C -n B] { ... } # error, no mixing
+A: [-n -C B] { ... } # error, no mixing
+A: -n (-C X); #??
+
+# * Put -C into the manpage.
+
+#
+# Check out that -Pq can work as a "lint mode"
+#
+
+#
+# Color in -P output
+#
+
+#
+# Color in the usual output "Successfully built X" and the error equivalent
+#
+
+#
+# Use [[fallthrough]].  (C++17)
+#
+
+#
+# Have flags +p +o +t that negative -p -o -t (useful when flags can be put on
+# the target side of rules).
+#
+
+#
+# Have an option to output the dependency graph, i.e., output each edge
+# on a single line, e.g. separated by tab.  (Use it then to perform a network
+# analysis of the KONECT-Analysis dependency graph.)
+#
+
+#
 # Mark this target to always be a persistent dependency
 #
 
@@ -6,7 +56,8 @@
 
 # Alternatively, we may introduce the rule that for directories, the
 # modification date is not used.  (Not a good idea because the date may
-# be useful for directories in some cases.)
+# be useful for directories in some cases.)  (Would also not be
+# backward-compatible.)
 
 # This can also work with other flags.
 
@@ -32,7 +83,8 @@
 
 #
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
-# forbidden as the first character in unquoted names.
+# forbidden as the first character in unquoted names.  Needs a new type for
+# unparsed targets.
 #
 
 #
@@ -41,6 +93,11 @@
 # as the current behaviour is more often useful, but should be available
 # as a possibility, probably using a new flag (-L).
 #
+
+# What happens if the same target is used with and without "-L"?
+A: B C {...}
+B { ln -s ... B ; }
+C:  -L { ln -s ... B ; }
 
 #
 # File import
@@ -65,18 +122,6 @@
 # or to:                   dir/@all:  ...;  # ???
 
 #
-# Check out that -Pq can work as a "lint mode"
-#
-
-#
-# Color in -P output
-#
-
-#
-# Color in the usual output "Successfully built X" and the error equivalent
-#
-
-#
 # When doing %include or %import, allow to pass environment variables.
 #
 
@@ -96,6 +141,8 @@
 
 list.${name|[A-Z].*} # Matches uppercase names
 
+# Find a good syntax based on Bash/KSH.
+
 #
 # Test make install using Docker.
 #
@@ -109,22 +156,8 @@ list.${name|[A-Z].*} # Matches uppercase names
 #
 
 #
-# Make "override" mandatory after all overriding functions.
-#
-
-#
-# Install:  use mkdir -p for /usr/local/man/man1/ and other directories.
-#
-
-#
 # sh/tty:  Also test the case where stdout is a tty and stderr is not, and vice
 # versa.
-#
-
-#
-# A new flag for dynamic dependencies, next to -n and -0.  It represents the
-# default behavior (full Stu syntax), and may become useful in the next major
-# version of Stu when -n becomes the default.
 #
 
 #
@@ -144,21 +177,6 @@ list.${name|[A-Z].*} # Matches uppercase names
 
 -a A : B;
 # There must already be a rule for A.  The dependency B is added.
-
-#
-# Use [[fallthrough]].  (C++17)
-#
-
-#
-# Have flags +p +o +t that negative -p -o -t (useful when flags can be put on
-# the target side of rules).
-#
-
-#
-# Have an option to output the dependency graph, i.e., output each edge
-# on a single line, e.g. separated by tab.  (Use it then to perform a network
-# analysis of the KONECT-Analysis dependency graph.)
-#
 
 #
 # Line number and file syntax:  A preprocessor-like construct that gives a new

@@ -595,7 +595,7 @@ bool Tokenizer::is_flag_char(char c)
  * new.  */
 {
 	return c == 'p' || c == 'o' || c == 't' ||
-		c == 'n' || c == '0';
+		c == 'n' || c == '0' || c == 'C';
 }
 
 void Tokenizer::parse_version(string version_req,

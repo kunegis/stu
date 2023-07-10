@@ -372,8 +372,8 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 			append_copy(*name_copy, place_targets[0]->place_name);
 
 			return std::make_shared <Rule> (place_targets[0], name_copy,
-						   place_flag_persistent,
-						   place_flag_optional);
+							place_flag_persistent,
+							place_flag_optional);
 		}
 	} else if (is_operator(';')) {
 		place_nocommand= (*iter)->get_place();
@@ -473,115 +473,12 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 	assert(ret == nullptr);
 
 	/* '(' expression* ')' */
-	if (is_operator('(')) {
-		Place place_paren= (*iter)->get_place();
-		++iter;
-		std::vector <shared_ptr <const Dep> > r;
-		if (parse_expression_list(r, place_name_input, place_input, targets)) {
-			assert(r.size() >= 1);
-			if (r.size() > 1) {
-				ret= std::make_shared <Compound_Dep> (std::move(r), place_paren);
-			} else {
-				ret= std::move(r.at(0));
-			}
-			r.clear();
-		}
-		if (iter == tokens.end()) {
-			place_end << fmt("expected %s", show_operator(')'));
-			place_paren << fmt("after opening %s", show_operator('('));
-			throw ERROR_LOGICAL;
-		}
-		if (! is_operator(')')) {
-			(*iter)->get_place_start() <<
-				fmt("expected %s, not %s",
-				    show_operator(')'), show(*iter));
-			place_paren << fmt("after opening %s", show_operator('('));
-			throw ERROR_LOGICAL;
-		}
-		++iter;
-
-		/* If RET is null, it means we had empty parentheses.
-		 * Return an empty Compound_Dependency in that case  */
-		if (ret == nullptr)
-			ret= std::make_shared <Compound_Dep> (place_paren);
-
-		if (next_concatenates()) {
-			shared_ptr <const Dep> next;
-			bool rr= parse_expression(next, place_name_input, place_input, targets);
-			/* It can be that an empty list was parsed, in
-			 * which case RR is true but the list is empty */
-			if (rr && next != nullptr) {
-				shared_ptr <Concat_Dep> ret_new= std::make_shared <Concat_Dep> ();
-				ret_new->push_back(ret);
-				ret_new->push_back(next);
-				ret.reset();
-				ret= move(ret_new);
-			}
-		}
-
+	if (ret= parse_compound_dep(place_name_input, place_input, targets))
 		return true;
-	}
 
 	/* '[' expression* ']' */
-	if (is_operator('[')) {
-		Place place_bracket= (*iter)->get_place();
-		++iter;
-		std::vector <shared_ptr <const Dep> > r2;
-		parse_expression_list(r2, place_name_input, place_input, targets);
-
-		if (iter == tokens.end()) {
-			place_end << fmt("expected %s", show_operator(']'));
-			place_bracket << fmt("after opening %s", show_operator('['));
-			throw ERROR_LOGICAL;
-		}
-		if (! is_operator(']')) {
-			(*iter)->get_place_start() <<
-				fmt("expected %s, not %s",
-				    show_operator(']'), show(*iter));
-			place_bracket << fmt("after opening %s", show_operator('['));
-			throw ERROR_LOGICAL;
-		}
-		++iter;
-		shared_ptr <Compound_Dep> ret_nondynamic=
-			std::make_shared <Compound_Dep> (place_bracket);
-		for (auto &j: r2) {
-			/* Variable dependency cannot appear within
-			 * dynamic dependency */
-			if (j->flags & F_VARIABLE) {
-				j->get_place() <<
-					fmt("variable dependency %s must not appear",
-					    show(j));
-				place_bracket <<
-					fmt("within dynamic dependency started by %s",
-					    show_operator('['));
-				throw ERROR_LOGICAL;
-			}
-
-			ret_nondynamic->push_back(j);
-		}
-		ret= std::make_shared <Dynamic_Dep> (0, ret_nondynamic);
-
-		if (next_concatenates()) {
-			shared_ptr <const Dep> next;
-			bool rr= parse_expression(next, place_name_input, place_input, targets);
-			/* It can be that an empty list was parsed, in
-			 * which case RR is true but the list is empty */
-			if (rr && next != nullptr) {
-				shared_ptr <Concat_Dep> ret_new= std::make_shared <Concat_Dep> ();
-				ret_new->push_back(ret);
-				ret_new->push_back(next);
-				ret.reset();
-				ret= move(ret_new);
-			}
-		}
-
-		/* If RET is null, it means we had empty parentheses.
-		 * Return an empty Compound_Dependency in that case. */
-		if (ret == nullptr)
-			ret= std::make_shared <Compound_Dep> (place_bracket);
-
+	if (ret= parse_dynamic_dep(place_name_input, place_input, targets))
 		return true;
-	}
 
 	/* flag expression */
 	if (is <Flag_Token> ()) {
@@ -603,10 +500,10 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 			throw ERROR_LOGICAL;
 		}
 
-		/* A dependency cannot be an input dependency and
-		 * optional at the same time.  Note: Input redirection
-		 * must not appear in dynamic dependencies, and
-		 * therefore it is sufficient to check this here.  */
+		/* A dependency cannot be an input dependency and optional at
+		 * the same time.  Note: Input redirection must not appear in
+		 * dynamic dependencies, and therefore it is sufficient to check
+		 * this here. */
 		if (! place_name_input.place.empty() && flag_token.flag == 'o') {
 			place_input <<
 				fmt("input redirection using %s must not be used",
@@ -632,27 +529,145 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 	}
 
 	/* '$' ; variable dependency */
-	shared_ptr <const Dep> dep=
-		parse_variable_dep(place_name_input, place_input, targets);
-	if (dep != nullptr) {
-		ret= dep;
+	if (ret= parse_variable_dep(place_name_input, place_input, targets))
 		return true;
-	}
 
 	/* Redirect dependency */
-	dep= parse_redirect_dep(place_name_input, place_input, targets);
-	if (dep != nullptr) {
-		ret= dep;
+	if (ret= parse_redirect_dep(place_name_input, place_input, targets))
 		return true;
-	}
 
 	return false;
 }
 
-shared_ptr <const Dep> Parser
-::parse_variable_dep(Place_Name &place_name_input,
-		     Place &place_input,
-		     const std::vector <shared_ptr <const Place_Target> > &targets)
+shared_ptr <const Dep> Parser::
+parse_compound_dep(Place_Name &place_name_input,
+		   Place &place_input,
+		   const std::vector <shared_ptr <const Place_Target> > &targets)
+{
+	if (! is_operator('('))
+		return nullptr;
+
+	shared_ptr <const Dep> ret;
+
+	Place place_paren= (*iter)->get_place();
+	++iter;
+	std::vector <shared_ptr <const Dep> > r;
+	if (parse_expression_list(r, place_name_input, place_input, targets)) {
+		assert(r.size() >= 1);
+		if (r.size() > 1) {
+			ret= std::make_shared <Compound_Dep> (move(r), place_paren);
+		} else {
+			ret= move(r.at(0));
+		}
+		r.clear();
+	}
+	if (iter == tokens.end()) {
+		place_end << fmt("expected %s", show_operator(')'));
+		place_paren << fmt("after opening %s", show_operator('('));
+		throw ERROR_LOGICAL;
+	}
+	if (! is_operator(')')) {
+		(*iter)->get_place_start() <<
+			fmt("expected %s, not %s",
+			    show_operator(')'), show(*iter));
+		place_paren << fmt("after opening %s", show_operator('('));
+		throw ERROR_LOGICAL;
+	}
+	++iter;
+
+	/* If RET is null, it means we had empty parentheses.
+	 * Return an empty Compound_Dependency in that case  */
+	if (ret == nullptr)
+		ret= std::make_shared <Compound_Dep> (place_paren);
+
+	if (next_concatenates()) {
+		shared_ptr <const Dep> next;
+		bool rr= parse_expression(next, place_name_input, place_input, targets);
+		/* It can be that an empty list was parsed, in
+		 * which case RR is true but the list is empty */
+		if (rr && next != nullptr) {
+			shared_ptr <Concat_Dep> ret_new= std::make_shared <Concat_Dep> ();
+			ret_new->push_back(ret);
+			ret_new->push_back(next);
+			ret.reset();
+			ret= move(ret_new);
+		}
+	}
+
+	return ret;
+}
+
+shared_ptr <const Dep> Parser::
+parse_dynamic_dep(Place_Name &place_name_input,
+		  Place &place_input,
+		  const std::vector <shared_ptr <const Place_Target> > &targets)
+{
+	if (! is_operator('['))
+		return nullptr;
+	shared_ptr <const Dep> ret;
+	Place place_bracket= (*iter)->get_place();
+	++iter;
+	std::vector <shared_ptr <const Dep> > r2;
+	parse_expression_list(r2, place_name_input, place_input, targets);
+
+	if (iter == tokens.end()) {
+		place_end << fmt("expected dependency or %s", show_operator(']'));
+		place_bracket << fmt("after opening %s", show_operator('['));
+		throw ERROR_LOGICAL;
+	}
+	if (! is_operator(']')) {
+		(*iter)->get_place_start() <<
+			fmt("expected dependency or %s, not %s",
+			    show_operator(']'), show(*iter));
+		place_bracket << fmt("after opening %s", show_operator('['));
+		throw ERROR_LOGICAL;
+	}
+	++iter;
+	shared_ptr <Compound_Dep> ret_nondynamic=
+		std::make_shared <Compound_Dep> (place_bracket);
+	for (auto &j: r2) {
+		/* Variable dependency cannot appear within
+		 * dynamic dependency */
+		if (j->flags & F_VARIABLE) {
+			j->get_place() <<
+				fmt("variable dependency %s must not appear",
+				    show(j));
+			place_bracket <<
+				fmt("within dynamic dependency started by %s",
+				    show_operator('['));
+			throw ERROR_LOGICAL;
+		}
+
+		ret_nondynamic->push_back(j);
+	}
+	ret= std::make_shared <Dynamic_Dep> (0, ret_nondynamic);
+
+	if (next_concatenates()) {
+		shared_ptr <const Dep> next;
+		bool rr= parse_expression(next, place_name_input, place_input, targets);
+		/* It can be that an empty list was parsed, in
+		 * which case RR is true but the list is empty */
+		if (rr && next != nullptr) {
+			shared_ptr <Concat_Dep> ret_new= std::make_shared <Concat_Dep> ();
+			ret_new->push_back(ret);
+			ret_new->push_back(next);
+			ret.reset();
+			ret= move(ret_new);
+		}
+	}
+
+	/* If RET is null, it means we had empty parentheses.
+	 * Return an empty Compound_Dependency in that case. */
+	if (ret == nullptr)
+		ret= std::make_shared <Compound_Dep> (place_bracket);
+
+	return ret;
+}
+
+shared_ptr <const Dep> Parser::
+parse_variable_dep(Place_Name &place_name_input,
+		   Place &place_input,
+		   const std::vector <shared_ptr <const Place_Target> > &targets)
 {
 	bool has_input= false;
 	shared_ptr <const Dep> ret;

@@ -7,3 +7,15 @@ edge in the dependency graph.
 -t   Transient dependency
 
 The flags -o and -p are mutually exclusive.
+
+Dynamic dependency flags:
+-0   \0 separated
+-n   \n separated
+-C   Use Stu syntax (default)
+
+Possible future flags:
+-L   Follow symlinks
+-d   Change directory
+-a   Additional dependencies
+-s   Secondary
+-c   Command

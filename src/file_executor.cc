@@ -234,7 +234,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 	Hash_Dep hash_dep_no_flags= hash_dep_;
 	hash_dep_no_flags.get_front_word_nondynamic() &= F_TARGET_TRANSIENT;
 	hash_deps.push_back(hash_dep_no_flags);
-	executors_by_target[hash_dep_no_flags]= this;
+	executors_by_hash_dep[hash_dep_no_flags]= this;
 
 	parents[parent]= dep;
 	if (error_additional) {
@@ -258,7 +258,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not
 	 * just the one given in the dependency.  */
 	for (const Hash_Dep &hash_dep: hash_deps) {
-		executors_by_target[hash_dep]= this;
+		executors_by_hash_dep[hash_dep]= this;
 	}
 
 	if (rule != nullptr) {
@@ -942,7 +942,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 			 * exists in the cache */
 			if (rule->deps.at(0)->flags & F_OPTIONAL) {
 				Executor *executor_source_base=
-					executors_by_target.at(Hash_Dep(0, source));
+					executors_by_hash_dep.at(Hash_Dep(0, source));
 				assert(executor_source_base);
 				File_Executor *executor_source
 					= dynamic_cast <File_Executor *> (executor_source_base);

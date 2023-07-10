@@ -142,6 +142,16 @@ private:
 	 * was parsed.  TARGETS is passed to construct error
 	 * messages.  */
 
+	shared_ptr <const Dep> parse_compound_dep
+	(Place_Name &place_name_input,
+	 Place &place_input,
+	 const std::vector <shared_ptr <const Place_Target> > &targets);
+
+	shared_ptr <const Dep> parse_dynamic_dep
+	(Place_Name &place_name_input,
+	 Place &place_input,
+	 const std::vector <shared_ptr <const Place_Target> > &targets);
+
 	shared_ptr <const Dep> parse_variable_dep
 	(Place_Name &place_name_input, Place &place_input,
 	 const std::vector <shared_ptr <const Place_Target> > &targets);

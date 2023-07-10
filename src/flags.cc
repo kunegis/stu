@@ -11,6 +11,7 @@ unsigned flag_get_index(char c)
 	case 't':  return I_TRIVIAL;
 	case 'n':  return I_NEWLINE_SEPARATED;
 	case '0':  return I_NUL_SEPARATED;
+	case 'C':  return I_CODE;
 	default:
 		should_not_happen();
 		return 0;
@@ -24,9 +25,8 @@ bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 		return false;
 	string ret;
 	for (unsigned i= 0; i < C_ALL; ++i)
-		if (flags & (1 << i)) {
+		if (flags & (1 << i))
 			ret += flags_chars[i];
-		}
 	if (ret.empty())
 		return false;
 	ret= '-' + show(ret);

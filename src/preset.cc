@@ -47,7 +47,7 @@ void Preset <T> ::insert(string key, T value)
 			p->insert(&*mm_prefix, move(e.preset));
 			p->insert("", value);
 			e.prefix= string(e.prefix.begin(), mm_prefix);
-			e.preset= std::move(p);
+			e.preset= move(p);
 		} else {
 			assert(*mm_key == '\0' && *mm_prefix == '\0');
 			/* KEY == E.PREFIX:  The element can be inserted

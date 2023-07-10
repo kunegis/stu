@@ -82,7 +82,7 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 	for (Hash_Dep t: hash_deps) {
 		t.get_front_word_nondynamic() |= (word_t)
 			(dep_link->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC));
-		executors_by_target[t]= this;
+		executors_by_hash_dep[t]= this;
 	}
 
 	for (auto &dependency: rule->deps) {

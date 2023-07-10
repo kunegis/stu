@@ -186,11 +186,10 @@ int main(int argc, char **argv, char **envp)
 
 		/* Targets passed on the command line, outside of options */
 		for (int i= optind; i < argc; ++i) {
-			/* The number I may not be the index that the
-			 * argument had originally, because getopt() may
-			 * reorder its arguments. (I.e., using GNU
-			 * getopt.)  This is why we can't put I into the
-			 * backtrace.  */
+			/* The number I may not be the index that the argument
+			 * had originally, because getopt() may reorder its
+			 * arguments. (I.e., using GNU getopt.)  This is why we
+			 * can't put I into the backtrace. */
 			Place place(Place::Type::ARGUMENT);
 			if (*argv[i] == '\0') {
 				place << fmt("%s: name must not be empty",
@@ -198,10 +197,11 @@ int main(int argc, char **argv, char **envp)
 				if (! option_k)
 					throw ERROR_LOGICAL;
 				error |= ERROR_LOGICAL;
-			} else if (option_J)
+			} else if (option_J) {
 				deps.push_back(std::make_shared <Plain_Dep>
 					       (0, Place_Target
 						(0, Place_Name(argv[i], place))));
+			}
 		}
 
 		if (! option_J)

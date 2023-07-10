@@ -268,7 +268,7 @@ protected:
 	/* The timepoint of the last time wait() returned.  No file in the
 	 * file system should be newer than this.  */
 
-	static std::unordered_map <Hash_Dep, Executor *> executors_by_target;
+	static std::unordered_map <Hash_Dep, Executor *> executors_by_hash_dep;
 	/* All cached Executor objects by each of their Target.  Such
 	 * Executor objects are never deleted.  */
 

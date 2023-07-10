@@ -80,6 +80,7 @@ find_forbidden_tab()
 	find_files |
 		xargs grep -E -n -e '[^'"$(printf '\t')"'#*]'"$(printf '\t')" |
 		grep -v -F -e "$(printf '\t')"'\' |
+		grep -v -E -e '://' |
 		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Tabs can only be present at beginning of line,' |
 		grep -E '.' >&2 && return 1
 	return 0

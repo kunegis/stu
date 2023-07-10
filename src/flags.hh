@@ -32,22 +32,23 @@ enum
 	I_PERSISTENT= 0,      /* -p  \                  \                     */
 	I_OPTIONAL,           /* -o   | placed flags     |                    */
 	I_TRIVIAL,            /* -t  /                   |                    */
-	I_TARGET_DYNAMIC,     /* [ ] \ target flags      | target word flags  */
-	I_TARGET_TRANSIENT,   /* @   /                   |                    */
+	I_TARGET_DYNAMIC,     /* [ ] \  target flags     |                    */
+	I_TARGET_TRANSIENT,   /* @   /                   | target word flags  */
 	I_VARIABLE,           /* $                       |                    */
-	I_NEWLINE_SEPARATED,  /* -n  \ attribute flags   |                    */
-	I_NUL_SEPARATED,      /* -0  /                  /                     */
+	I_NEWLINE_SEPARATED,  /* -n  \                   |                    */
+	I_NUL_SEPARATED,      /* -0   | attribute flags  |                    */
+	I_CODE,               /* -C  /                  /                     */
 	I_INPUT,              /* <                                            */
 	I_RESULT_NOTIFY,      /* -*                                           */
 	I_RESULT_COPY,        /* -%                                           */
 
 	C_ALL,
 	C_PLACED                = 3,  /* Flags for which we store a place in Dep */
-	C_WORD                  = 8,  /* Flags used for caching; stored in Target */
-#define C_WORD                    8   /* Used statically */
+	C_WORD                  = 9,  /* Flags used for caching; stored in Target */
+#define C_WORD                    9   /* Used statically */
 
 	/*
-	 * What follows are the actual flag bits to be ORed together
+	 * Flag bits to be ORed together
 	 */
 
 	F_PERSISTENT            = 1 << I_PERSISTENT,
@@ -76,6 +77,9 @@ enum
 	/* For dynamic dependencies, the file contains NUL-separated
 	 * filenames, without any markup  */
 
+	F_CODE                  = 1 << I_CODE,
+	/* For dynamic dependencies, the file contains Stu codde */
+
 	F_INPUT                 = 1 << I_INPUT,
 	/* A dependency is annotated with the input redirection flag '<' */
 
@@ -93,7 +97,7 @@ enum
 	F_PLACED        = (1 << C_PLACED) - 1,
 	F_TARGET_BYTE   = (1 << C_WORD) - 1,
 	F_TARGET        = F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
-	F_ATTRIBUTE     = F_NEWLINE_SEPARATED | F_NUL_SEPARATED,
+	F_ATTRIBUTE     = F_NEWLINE_SEPARATED | F_NUL_SEPARATED | F_CODE,
 };
 
 typedef unsigned Done;

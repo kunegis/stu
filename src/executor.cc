@@ -20,7 +20,7 @@ Timestamp Executor::timestamp_last;
 
 bool Executor::hide_out_message= false;
 bool Executor::out_message_done= false;
-std::unordered_map <Hash_Dep, Executor *> Executor::executors_by_target;
+std::unordered_map <Hash_Dep, Executor *> Executor::executors_by_hash_dep;
 
 void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			    std::vector <shared_ptr <const Dep> > &deps,
@@ -303,9 +303,9 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	Executor *executor= nullptr;
 
 	const Hash_Dep target_for_cache= get_target_for_cache(hash_dep);
-	auto it= executors_by_target.find(target_for_cache);
+	auto it= executors_by_hash_dep.find(target_for_cache);
 
-	if (it != executors_by_target.end()) {
+	if (it != executors_by_hash_dep.end()) {
 		/* An Executor object already exists for the target */
 		executor= it->second;
 		if (executor->parents.count(this)) {

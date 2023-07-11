@@ -29,28 +29,29 @@ enum
 {
 	/* The index of the flags (I_*), used for array indexing.  Variables
 	 * iterating over these values are usually called I.  */
-	I_PERSISTENT= 0,      /* -p  \                  \                     */
-	I_OPTIONAL,           /* -o   | placed flags     |                    */
-	I_TRIVIAL,            /* -t  /                   |                    */
-	I_TARGET_DYNAMIC,     /* [ ] \  target flags     |                    */
-	I_TARGET_TRANSIENT,   /* @   /                   | target word flags  */
-	I_VARIABLE,           /* $                       |                    */
-	I_NEWLINE_SEPARATED,  /* -n  \                   |                    */
-	I_NUL_SEPARATED,      /* -0   | attribute flags  |                    */
-	I_CODE,               /* -C  /                  /                     */
-	I_INPUT,              /* <                                            */
-	I_RESULT_NOTIFY,      /* -*                                           */
-	I_RESULT_COPY,        /* -%                                           */
+	I_PERSISTENT= 0,      /* -p  \                  \                    */
+	I_OPTIONAL,           /* -o   | placed flags     |                   */
+	I_TRIVIAL,            /* -t  /                   |                   */
+	I_TARGET_DYNAMIC,     /* [ ] \  target flags     |                   */
+	I_TARGET_TRANSIENT,   /* @   /                   | target word flags */
+	I_VARIABLE,           /* $                       |                   */
+	I_NEWLINE_SEPARATED,  /* -n  \                   |                   */
+	I_NUL_SEPARATED,      /* -0   | attribute flags  |                   */
+	I_CODE,               /* -C  /                  /                    */
+	I_INPUT,              /* <                                           */
+	I_RESULT_NOTIFY,      /* -*                                          */
+	I_RESULT_COPY,        /* -%                                          */
 
 	C_ALL,
-	C_PLACED                = 3,  /* Flags for which we store a place in Dep */
-	C_WORD                  = 9,  /* Flags used for caching; stored in Target */
-#define C_WORD                    9   /* Used statically */
+	C_PLACED    = 3,  /* Flags for which we store a place in Dep */
+	C_WORD      = 9,  /* Flags used for caching; stored in Hash_Dep */
+#define C_WORD        9   /* Used statically */
 
 	/*
 	 * Flag bits to be ORed together
 	 */
 
+	// TODO remove the comments */
 	F_PERSISTENT            = 1 << I_PERSISTENT,
 	/* (-p) When the dependency is newer than the target, don't rebuild */
 

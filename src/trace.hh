@@ -4,9 +4,9 @@
 /*
  * To enable tracing for a trace class TRACE_ABC, set the environment variable
  * $STU_TRACE_ABC to:
- *	"log"     Write into trace logfile
+ *	"log"     Write into the trace logfile (see name below)
  *	"stderr"  Write on stderr
- *	"off"     No tracing (same as not variable set)
+ *	"off"     No tracing (same as variable not set)
  */
 
 #ifndef NDEBUG
@@ -15,10 +15,8 @@
 
 #define TRACE_FILE "log/trace.log"
 
-enum Trace_Class
-{
+enum Trace_Class {
 	TRACE_SHOW, TRACE_TOKENIZER,
-
 	TRACE_COUNT
 };
 
@@ -30,24 +28,8 @@ public:
 	Trace_Class trace_class;
 	static FILE *trace_files[TRACE_COUNT];
 
-	Trace(Trace_Class trace_class_, const char *name)
-		:  trace_class(trace_class_)
-	{
-		assert(trace_class >= 0 && trace_class < TRACE_COUNT);
-		stack.push_back(this);
-		if (! (trace_files[trace_class]))
-			return;
-		prefix= padding + name + ' ';
-		padding += padding_one;
-	}
-
-	~Trace() {
-		stack.pop_back();
-		if (! (trace_files[trace_class]))
-			return;
-		padding.resize(padding.size() - strlen(padding_one));
-	}
-
+	Trace(Trace_Class trace_class_, const char *name);
+	~Trace();
 	const char *get_prefix() const { return prefix.c_str(); }
 	bool get_enabled() const { return trace_files[trace_class]; }
 
@@ -87,8 +69,8 @@ const char *trace_strip_dir(const char *s);
 }
 
 #else /* NDEBUG */
-#define TRACE_FUNCTION(a, b)
-#define TRACE(a, ...)
+#	define TRACE_FUNCTION(a, b)
+#	define TRACE(a, ...)
 #endif /* NDEBUG */
 
 #endif /* ! TRACE_HH */

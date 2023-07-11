@@ -35,7 +35,7 @@ void File_Executor::wait()
 	int status;
 	const pid_t pid= Job::wait(&status);
 
-	Debug::print(nullptr, frmt("pid= %ld", (long) pid));
+	Debug::print(nullptr, frmt("waited for pid= %ld", (long) pid));
 
 	timestamp_last= Timestamp::now();
 
@@ -1103,7 +1103,7 @@ void File_Executor::write_content(const char *filename,
 
 void File_Executor::read_variable(shared_ptr <const Dep> dep)
 {
-	DEBUG_PRINT(fmt("read_variable %s", show(dep, S_DEBUG)));
+	DEBUG_PRINT(fmt("read_variable %s", show(dep, S_DEBUG, R_SHOW_FLAGS)));
 	assert(to <Plain_Dep> (dep));
 
 	if (! result_variable.empty()) {

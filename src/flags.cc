@@ -20,16 +20,19 @@ unsigned flag_get_index(char c)
 
 bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 {
-	TRACE_FUNCTION(SHOW, show_flags);
+	TRACE_FUNCTION(SHOW, render_flags);
 	if (!(rendering & R_SHOW_FLAGS))
 		return false;
 	string ret;
-	for (unsigned i= 0; i < C_ALL; ++i)
-		if (flags & (1 << i))
+	for (unsigned i= 0; i < C_ALL; ++i) {
+		unsigned test= flags & (1u << i);
+		if (test) {
 			ret += flags_chars[i];
+		}
+	}
 	if (ret.empty())
 		return false;
-	ret= '-' + show(ret);
+	ret= '-' + ret;
 	parts.append_operator(ret);
 	return true;
 }
@@ -37,7 +40,7 @@ bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 string show_flags(Flags flags, Style style)
 {
 	Parts parts;
-	render_flags(flags, parts);
+	render_flags(flags, parts, R_SHOW_FLAGS);
 	return show(parts, style);
 }
 

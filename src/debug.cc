@@ -14,10 +14,10 @@ void Debug::print(const Debuggable *d, string text)
 	} else {
 		if (debuggables.size() > 0 &&
 		    debuggables[debuggables.size() - 1] == d) {
-			print(show(d, S_DEBUG), text);
+			print(show(d, S_DEBUG, R_SHOW_FLAGS), text);
 		} else {
 			Debug debug(d);
-			print(show(d, S_DEBUG), text);
+			print(show(d, S_DEBUG, R_SHOW_FLAGS), text);
 		}
 	}
 }

@@ -23,7 +23,7 @@ Quote_Safeness Part::need_quotes(unsigned char c)
 	if (c <= 0x20 || c == 0x7F)
 		return QS_ALWAYS_QUOTE;
 	if (c == '\\' || c == '"' || c == '\'' || c == '$')
-		return QS_QUOTE_WHEN_QUOTES_ARE_USED;
+		return QS_QUOTE_IN_STU_CODE;
 	if (c == '*' || c == '?' || c == '#')
 		return QS_QUOTE_IN_GLOB_PATTERN;
 	return QS_SAFE;
@@ -120,7 +120,7 @@ string show(const Parts &parts, Style style)
 								|| quotable == QS_ALWAYS_QUOTE
 								|| style & S_QUOTE_SOURCE && quotable <= QS_QUOTE_IN_GLOB_PATTERN
 								|| !(style & S_QUOTE_SOURCE) && nocolor && !has_marker && !(style & S_QUOTE_MINIMUM)
-								|| !(style & S_QUOTE_SOURCE) && nocolor && has_marker && quotable <= QS_QUOTE_WHEN_QUOTES_ARE_USED && !(style & S_QUOTE_MINIMUM);
+								|| !(style & S_QUOTE_SOURCE) && nocolor && has_marker && quotable <= QS_QUOTE_IN_STU_CODE && !(style & S_QUOTE_MINIMUM);
 							if (quotes)  ret += '"';
 							for (; i < l; ++i)
 								parts[i].show(ret, quotes);

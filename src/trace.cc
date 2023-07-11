@@ -7,6 +7,39 @@ string Trace::padding;
 Trace::Init Trace::init;
 std::vector <Trace *> Trace::stack;
 
+Trace::Trace(Trace_Class trace_class_, const char *name)
+	: trace_class(trace_class_)
+{
+	assert(trace_class >= 0 && trace_class < TRACE_COUNT);
+	stack.push_back(this);
+	if (! (trace_files[trace_class]))
+		return;
+	prefix= padding + name + ' ';
+	padding += padding_one;
+}
+
+Trace::~Trace()
+{
+	stack.pop_back();
+	if (! (trace_files[trace_class]))
+		return;
+	padding.resize(padding.size() - strlen(padding_one));
+}
+
+FILE *Trace::open_logfile(const char *filename)
+{
+	FILE *ret= fopen(filename, "w");
+	if (!ret) {
+		print_errno(fmt("fopen(%s)", filename));
+		exit(ERROR_FATAL);
+	}
+	int flags= fcntl(fileno(ret), F_GETFL, 0);
+	if (flags >= 0)
+		fcntl(fileno(ret), F_SETFL, flags | O_APPEND | FD_CLOEXEC);
+	assert(ret);
+	return ret;
+}
+
 Trace::Init::Init()
 {
 	FILE *file_log= nullptr;
@@ -34,20 +67,6 @@ Trace::Init::Init()
 			exit(ERROR_FATAL);
 		}
 	}
-}
-
-FILE *Trace::open_logfile(const char *filename)
-{
-	FILE *ret= fopen(filename, "w");
-	if (!ret) {
-		print_errno(fmt("fopen(%s)", filename));
-		exit(ERROR_FATAL);
-	}
-	int flags= fcntl(fileno(ret), F_GETFL, 0);
-	if (flags >= 0)
-		fcntl(fileno(ret), F_SETFL, flags | O_APPEND | FD_CLOEXEC);
-	assert(ret);
-	return ret;
 }
 
 const char *trace_strip_dir(const char *s)

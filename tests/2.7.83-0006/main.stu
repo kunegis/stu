@@ -1,0 +1,6 @@
+A: [-t B] {
+	cp C A
+}
+
+B = {C}
+C = {CORRECT}

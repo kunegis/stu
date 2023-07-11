@@ -677,7 +677,7 @@ void Executor::raise(int error_)
 void Executor::disconnect(Executor *const child,
 			  shared_ptr <const Dep> dep_child)
 {
-	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, S_DEBUG)));
+	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
 
 	assert(child != nullptr);
 	assert(child != this);
@@ -767,7 +767,7 @@ Proceed Executor::execute_base_B(shared_ptr <const Dep> dep_link)
 
 void Executor::push_result(shared_ptr <const Dep> dd)
 {
-	DEBUG_PRINT(fmt("push_result %s", show(dd, S_DEBUG)));
+	DEBUG_PRINT(fmt("push_result %s", show(dd, S_DEBUG, R_SHOW_FLAGS)));
 
 	assert(! dynamic_cast <File_Executor *> (this));
 	assert(! (dd->flags & F_RESULT_NOTIFY));
@@ -831,7 +831,7 @@ shared_ptr <const Dep> Executor::set_top(shared_ptr <const Dep> dep,
 Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 			  shared_ptr <const Dep> dep_child)
 {
-	DEBUG_PRINT(fmt("connect %s",  show(dep_child, S_DEBUG)));
+	DEBUG_PRINT(fmt("connect %s",  show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
 
 	assert(dep_child->is_normalized());
 	assert(! to <Root_Dep> (dep_child));
@@ -886,10 +886,6 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 		return 0;
 	}
 
-	/*
-	 * Actually do the connection
-	 */
-
 	Executor *child= get_executor(dep_child);
 	if (child == nullptr) {
 		/* Strong cycle was found */
@@ -898,35 +894,28 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 
 	children.insert(child);
 
-	if (dep_child->flags & F_RESULT_NOTIFY) {
-		for (const auto &dependency: child->result) {
+	if (dep_child->flags & F_RESULT_NOTIFY)
+		for (const auto &dependency: child->result)
 			this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
-		}
-	}
 
 	Proceed proceed_child= child->execute(dep_child);
 	assert(proceed_child);
 	if (proceed_child & (P_WAIT | P_PENDING))
 		return proceed_child;
-	if (child->finished(dep_child->flags)) {
+	if (child->finished(dep_child->flags))
 		disconnect(child, dep_child);
-	}
 	return 0;
 }
 
 bool Executor::same_dependency_for_print(shared_ptr <const Dep> d1,
 					 shared_ptr <const Dep> d2)
 {
-	shared_ptr <const Plain_Dep> p1=
-		to <Plain_Dep> (d1);
-	shared_ptr <const Plain_Dep> p2=
-		to <Plain_Dep> (d2);
+	shared_ptr <const Plain_Dep> p1= to <Plain_Dep> (d1);
+	shared_ptr <const Plain_Dep> p2= to <Plain_Dep> (d2);
 	if (!p1 && to <Dynamic_Dep> (d1))
-		p1= to <Plain_Dep>
-			(Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d1)));
+		p1= to <Plain_Dep> (Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d1)));
 	if (!p2 && to <Dynamic_Dep> (d2))
-		p2= to <Plain_Dep>
-			(Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d2)));
+		p2= to <Plain_Dep> (Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d2)));
 	if (! (p1 && p2))
 		return false;
 	return p1->place_target.unparametrized()

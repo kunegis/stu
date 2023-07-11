@@ -4,9 +4,8 @@
 # version of Stu when -n becomes the default.
 #
 
-# Two flags (not supported anyway by the parser)
-A: [ -n -p B ] { ... }
-A: [ -p -n B ] { ... }
+# * 2.7.83-0006:  Wrong behavior
+
 A: [ -n -t B ] { ... }
 A: [ -t -n B ] { ... }
 A: [ -n -o B ] { ... }
@@ -20,9 +19,15 @@ A: [-n -C B] { ... } # error, no mixing
 A: -n (-C X); #??
 
 # * Put -C into the manpage.
+# * go to 2.8, and update NEWS.
 
 #
 # Check out that -Pq can work as a "lint mode"
+#
+
+#
+# Investigate what -fwhole-program does precisely.
+# * Make building with clang++ be warning-free
 #
 
 #
@@ -35,6 +40,10 @@ A: -n (-C X); #??
 
 #
 # Use [[fallthrough]].  (C++17)
+#
+
+#
+# Use string_view where appropriate. (needs C++17).
 #
 
 #
@@ -158,10 +167,6 @@ list.${name|[A-Z].*} # Matches uppercase names
 #
 # sh/tty:  Also test the case where stdout is a tty and stderr is not, and vice
 # versa.
-#
-
-#
-# Use string_view where appropriate. (needs C++17).
 #
 
 #
@@ -321,3 +326,12 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 # * Exclude should_not_happen() blocks count
 # * Test syscall and libc function failure using mock implementations of them
 #
+
+#
+# Priority levels for rules.
+#
+
+# The second rule matches because the priority is higher.  Without the
+# priorities, it would be an error because no rule dominates the other.
+$x.bbb -p1:  ... { ... }
+aaa.$x -p2:  ... { ... }

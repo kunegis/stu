@@ -97,7 +97,16 @@ Hash_Dep Plain_Dep::get_target() const
 void Plain_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Plain_Dep::render);
-	if (render_flags(flags & ~(F_VARIABLE | F_TARGET_TRANSIENT), parts, rendering))
+
+	// rm
+	TRACE("%s flags=%s",
+	      place_target.place_name.unparametrized().c_str(),
+	      frmt("%u", flags)
+	      );
+
+	if (render_flags(flags
+//			 & ~(F_VARIABLE | F_TARGET_TRANSIENT)
+			 , parts, rendering))
 		parts.append_space();
 	if (flags & F_VARIABLE)
 		parts.append_operator("$[");

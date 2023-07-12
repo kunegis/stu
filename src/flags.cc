@@ -1,6 +1,7 @@
 #include "flags.hh"
 
-const char *const flags_chars= "pot[@$n0<*%";
+constexpr const char *flags_chars= "pot[@$n0C<*%";
+static_assert(strlen(flags_chars) == C_ALL, "flags_char");
 const char *flags_phrases[C_PLACED]= {"persistent", "optional", "trivial"};
 
 unsigned flag_get_index(char c)

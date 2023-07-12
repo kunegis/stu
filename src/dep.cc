@@ -98,15 +98,7 @@ void Plain_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION(SHOW, Plain_Dep::render);
 
-	// rm
-	TRACE("%s flags=%s",
-	      place_target.place_name.unparametrized().c_str(),
-	      frmt("%u", flags)
-	      );
-
-	if (render_flags(flags
-//			 & ~(F_VARIABLE | F_TARGET_TRANSIENT)
-			 , parts, rendering))
+	if (render_flags(flags, parts, rendering))
 		parts.append_space();
 	if (flags & F_VARIABLE)
 		parts.append_operator("$[");

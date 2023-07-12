@@ -59,27 +59,21 @@ class Executor
 public:
 	void raise(int error);
 	/* Set the error code, and throw an error except with the keep-going
-	 * option.  Does not print an error message.  */
+	 * option.  Does not print an error message. */
 
 	Proceed execute_base_A(shared_ptr <const Dep> dep_link);
-	/* DEP_LINK must not be null.  In the return value, at
-	 * least one bit is set.  The P_FINISHED bit indicates only that
-	 * tasks related to this function are done, not the whole
-	 * Executor.  */
+	/* DEP_LINK must not be null.  In the return value, at least one bit is
+	 * set.  The P_FINISHED bit indicates only that tasks related to this
+	 * function are done, not the whole Executor. */
 
 	int get_error() const {  return error;  }
 
 	void read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			  std::vector <shared_ptr <const Dep> > &deps,
-			  shared_ptr <const Dep> dep,
-			  Executor *dynamic_executor);
-	/* Read dynamic dependencies from the content of
-	 * PLACE_PARAM_TARGET.  The only reason this is not static is
-	 * that errors can be raised and printed correctly.
-	 * Dependencies that are read are written into DEPENDENCIES,
-	 * which is empty on calling.  FLAGS_THIS determines
-	 * whether the -n/-0/etc. flag was used, and may also contain
-	 * the -o flag to ignore a non-existing file.  */
+			  shared_ptr <const Dep> dep, Executor *dynamic_executor);
+	/* Read dynamic dependencies.  The only reason this is not static is
+	 * that errors can be raised and printed correctly.  Dependencies that
+	 * are read are written into DEPS, which is empty on calling. */
 
 	void operator<<(string text) const override;
 	/* Print full trace for the executor.  First the message is
@@ -122,21 +116,18 @@ public:
 				   Executor *source,
 				   Flags flags,
 				   shared_ptr <const Dep> dep_source)
-	/* The child executor SOURCE notifies THIS about a new result.
-	 * Only called when the dependency linking the two had one of the
-	 * F_RESULT_* flag.  The given flag contains only one of the two
-	 * F_RESULT_* flags.  DEP_SOURCE is the dependency
-	 * leading from THIS to SOURCE (for F_RESULT_COPY).  */
+	/* The child executor SOURCE notifies THIS about a new result.  Only
+	 * called when the dependency linking the two had one of the F_RESULT_*
+	 * flag.  The given flag contains only one of the two F_RESULT_* flags.
+	 * DEP_SOURCE is the dependency leading from THIS to SOURCE (for
+	 * F_RESULT_COPY). */ 
 	{
-		/* Executor classes that use F_RESULT_* override this function */
-		(void) dep;
-		(void) source;
-		(void) flags;
-		(void) dep_source;
 		unreachable();
+		(void) dep; (void) source; (void) flags; (void) dep_source;
 	}
 
-	virtual void notify_variable(const std::map <string, string> &result_variable_child) {
+	virtual void notify_variable
+	(const std::map <string, string> &result_variable_child) {
 		(void) result_variable_child;
 	}
 
@@ -193,11 +184,11 @@ protected:
 	 * KEY-VALUE pairs.  */
 
 	shared_ptr <const Rule> param_rule;
-	/* The (possibly parametrized) rule from which this executor
-	 * was derived.  This is only used to detect strong cycles.  To
-	 * manage the dependencies, the instantiated general rule is
-	 * used.  Null by default, and set by individual implementations
-	 * in their constructor if necessary.  */
+	/* The (possibly parametrized) rule from which this executor was
+	 * derived.  This is only used to detect cycles.  To manage the
+	 * dependencies, the instantiated general rule is used.  Null by
+	 * default, and set by individual implementations in their constructor
+	 * if necessary. */ 
 
 	explicit Executor(shared_ptr <const Rule> param_rule_= nullptr)
 		:  bits(0),
@@ -216,9 +207,7 @@ protected:
 
 	Executor *get_executor(shared_ptr <const Dep> dep);
 	/* Get an existing Executor or create a new one for the given
-	 * DEPENDENCY.  Return null when a strong cycle was found; return the
-	 * executor otherwise.  PLACE is the place of where the dependency was
-	 * declared.  */
+	 * DEPENDENCY.  Return null on errors. */
 
 	void check_waited() const {
 		assert(buffer_A.empty());

@@ -27,6 +27,7 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			    shared_ptr <const Dep> dep,
 			    Executor *dynamic_executor)
 {
+	DEBUG_PRINT(fmt("read_dynamic %s", show(dep_target, S_DEBUG, R_SHOW_FLAGS)));
 	try {
 		const Place_Target &place_target=
 			to <Plain_Dep> (dep_target)->place_target;
@@ -59,10 +60,8 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			Place place_end;
 
 			Tokenizer::parse_tokens_file
-				(tokens, Tokenizer::DYNAMIC,
-				 place_end, filename,
-				 place_target.place, -1,
-				 dep_target->flags & F_OPTIONAL);
+				(tokens, Tokenizer::DYNAMIC, place_end, filename,
+				 place_target.place, -1, dep_target->flags & F_OPTIONAL);
 
 			Place_Name input; /* remains empty */
 			Place place_input; /* remains empty */
@@ -298,13 +297,10 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	 */
 
 	const Hash_Dep hash_dep= dep->get_target();
-
-	/* Set to the returned Executor object when one is found or created */
 	Executor *executor= nullptr;
-
 	const Hash_Dep target_for_cache= get_target_for_cache(hash_dep);
 	auto it= executors_by_hash_dep.find(target_for_cache);
-
+	
 	if (it != executors_by_hash_dep.end()) {
 		/* An Executor object already exists for the target */
 		executor= it->second;
@@ -336,8 +332,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 
 	/* Create a new Executor object */
 
+//	Executor *executor= nullptr;
 	int error_additional= 0; /* Passed to the executor */
-
 	if (! hash_dep.is_dynamic()) {
 		/* Plain executor */
 		shared_ptr <const Rule> rule_child, param_rule_child;
@@ -832,25 +828,16 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 			  shared_ptr <const Dep> dep_child)
 {
 	DEBUG_PRINT(fmt("connect %s",  show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
-
 	assert(dep_child->is_normalized());
 	assert(! to <Root_Dep> (dep_child));
-
-	shared_ptr <const Plain_Dep> plain_dep_this=
-		to <Plain_Dep> (dep_this);
-
-	/*
-	 * Check for various invalid types of connections
-	 */
+	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);
 
 	/* '-p' and '-o' do not mix */
 	if (dep_child->flags & F_PERSISTENT && dep_child->flags & F_OPTIONAL) {
 
 		/* '-p' and '-o' encountered for the same target */
-		const Place &place_persistent=
-			dep_child->get_place_flag(I_PERSISTENT);
-		const Place &place_optional=
-			dep_child->get_place_flag(I_OPTIONAL);
+		const Place &place_persistent= dep_child->get_place_flag(I_PERSISTENT);
+		const Place &place_optional= dep_child->get_place_flag(I_OPTIONAL);
 		place_persistent <<
 			fmt("declaration of persistent dependency using %s",
 			    show_prefix("-", "p"));
@@ -859,8 +846,7 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 			    show_prefix("-", "o"));
 		dep_child->get_place() <<
 			fmt("in declaration of %s, needed by %s",
-			    show(dep_child),
-			    show(dep_this->get_target()));
+			    show(dep_child), show(dep_this->get_target()));
 		*this << "";
 		explain_clash();
 		raise(ERROR_LOGICAL);
@@ -869,8 +855,7 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 
 	/* '-o' does not mix with '$[' */
 	if (dep_child->flags & F_VARIABLE && dep_child->flags & F_OPTIONAL) {
-		shared_ptr <const Plain_Dep> plain_dep_child=
-			to <Plain_Dep> (dep_child);
+		shared_ptr <const Plain_Dep> plain_dep_child= to <Plain_Dep> (dep_child);
 		assert(plain_dep_child);
 		assert(!(dep_child->flags & F_TARGET_TRANSIENT));
 		const Place &place_variable= dep_child->get_place();
@@ -878,8 +863,7 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 		place_variable <<
 			fmt("variable dependency %s must not be declared as optional dependency",
 			    show_dynamic_variable
-			    (plain_dep_child->place_target
-			     .place_name.unparametrized()));
+			    (plain_dep_child->place_target.place_name.unparametrized()));
 		place_flag << fmt("using %s", show_prefix("-", "o"));
 		*this << "";
 		raise(ERROR_LOGICAL);
@@ -887,17 +871,12 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 	}
 
 	Executor *child= get_executor(dep_child);
-	if (child == nullptr) {
-		/* Strong cycle was found */
+	if (!child)
 		return 0;
-	}
-
 	children.insert(child);
-
 	if (dep_child->flags & F_RESULT_NOTIFY)
 		for (const auto &dependency: child->result)
 			this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
-
 	Proceed proceed_child= child->execute(dep_child);
 	assert(proceed_child);
 	if (proceed_child & (P_WAIT | P_PENDING))

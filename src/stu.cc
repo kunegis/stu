@@ -10,6 +10,7 @@ using std::shared_ptr;
 #include "concat_executor.cc"
 #include "debug.cc"
 #include "dep.cc"
+#include "done.cc"
 #include "dynamic_executor.cc"
 #include "error.cc"
 #include "executor.cc"

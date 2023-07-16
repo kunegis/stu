@@ -76,9 +76,4 @@ const char *trace_strip_dir(const char *s)
 	return r+1;
 }
 
-void print_dep(const shared_ptr <const Dep> &dep)
-{
-	std::cerr << show(dep, 0, R_SHOW_FLAGS) << std::endl;
-}
-
 #endif /* ! NDEBUG */

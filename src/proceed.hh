@@ -14,11 +14,10 @@ enum {
 	 * for other jobs to finish.  I.e., the wait function will have to be
 	 * called. */
 
-	// TODO rename P_CALL_AGAIN
-	P_PENDING =  1 << 1,
+	P_CALL_AGAIN =  1 << 1,
 	/* The function execute() should be called again for this executor
 	 * (without waiting) at least, for various reasons, mostly for
-	 * randomization of execution order. */ 
+	 * randomization of execution order. */
 
 	P_FINISHED = 1 << 2,
 	/* This Executor is finished */

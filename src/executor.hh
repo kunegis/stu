@@ -61,8 +61,7 @@ public:
 	/* Set the error code, and throw an error except with the keep-going
 	 * option.  Does not print an error message. */
 
-	// TODO rename phase<-base
-	Proceed execute_base_A(shared_ptr <const Dep> dep_link);
+	Proceed execute_phase_A(shared_ptr <const Dep> dep_link);
 	/* DEP_LINK must not be null.  In the return value, at least one bit is
 	 * set.  The P_FINISHED bit indicates only that tasks related to this
 	 * function are done, not the whole Executor. */
@@ -120,7 +119,7 @@ public:
 	 * called when the dependency linking the two had one of the F_RESULT_*
 	 * flag.  The given flag contains only one of the two F_RESULT_* flags.
 	 * DEP_SOURCE is the dependency leading from THIS to SOURCE (for
-	 * F_RESULT_COPY). */ 
+	 * F_RESULT_COPY). */
 	{
 		unreachable();
 		(void) dep; (void) source; (void) flags; (void) dep_source;
@@ -186,7 +185,7 @@ protected:
 	 * derived.  This is only used to detect cycles.  To manage the
 	 * dependencies, the instantiated general rule is used.  Null by
 	 * default, and set by individual implementations in their constructor
-	 * if necessary. */ 
+	 * if necessary. */
 
 	explicit Executor(shared_ptr <const Rule> param_rule_= nullptr)
 		:  bits(0),
@@ -198,8 +197,7 @@ protected:
 	Proceed execute_children();
 	/* Execute already-active children */
 
-	// TODO rename phase<-base
-	Proceed execute_base_B(shared_ptr <const Dep> dep_link);
+	Proceed execute_phase_B(shared_ptr <const Dep> dep_link);
 	/* Second pass (trivial dependencies).  Called once we are sure
 	 * that the target must be built.  Arguments and return value
 	 * have the same semantics as execute_base_B(). */

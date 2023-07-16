@@ -14,7 +14,7 @@ void main_loop(const std::vector <shared_ptr <const Dep> > &deps)
 				Debug::print(nullptr, "loop");
 				proceed= root_executor->execute(dep_root);
 				assert(proceed);
-			} while (proceed & P_PENDING);
+			} while (proceed & P_CALL_AGAIN);
 
 			if (proceed & P_WAIT) {
 				File_Executor::wait();

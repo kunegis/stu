@@ -50,7 +50,6 @@ private:
 	const shared_ptr <const Dynamic_Dep> dep;
 
 	Done done;
-//	bool is_finished;
 };
 
 #endif /* ! DYNAMIC_EXECUTOR_HH */

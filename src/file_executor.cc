@@ -82,7 +82,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 	assert(job.get_pid() == pid);
 
 	Executor::check_waited();
-	done= ~0;
+	done.set_all();
 
 	{
 		Job::Signal_Blocker sb;
@@ -220,7 +220,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 			     std::map <string, string> &mapping_parameter_,
 			     int &error_additional)
 	:  Executor(param_rule_), timestamps_old(nullptr), filenames(nullptr),
-	   rule(rule_), done(0)
+	   rule(rule_)
 {
 	assert((param_rule_ == nullptr) == (rule_ == nullptr));
 
@@ -236,7 +236,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 	parents[parent]= dep;
 	if (error_additional) {
 		*this << "";
-		done= ~0;
+		done.set_all();
 		parents.erase(parent);
 		raise(error_additional);
 		return;
@@ -385,12 +385,12 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 
 bool File_Executor::finished() const
 {
-	return (~done & D_ALL) == 0;
+	return done.is_all();
 }
 
 bool File_Executor::finished(Flags flags) const
 {
-	return (~done & (done_from_flags(flags))) == 0;
+	return done.is_done_from_flags(flags);
 }
 
 void File_Executor::render(Parts &parts, Rendering rendering) const {
@@ -630,24 +630,23 @@ void File_Executor::print_command() const
 
 Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 {
+	Debug debug(this);
+
 	assert(! job.started() || children.empty());
 
-	Proceed proceed= execute_base_A(dep_this);
+	Proceed proceed= execute_phase_A(dep_this);
 	assert(proceed);
 	if (proceed & P_ABORT) {
 		assert(proceed & P_FINISHED);
-		done |= done_from_flags(dep_this->flags);
+		done |= Done::from_flags(dep_this->flags);
 		return proceed;
 	}
-	if (proceed & (P_WAIT | P_PENDING)) {
+	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		return proceed;
 	}
 
 	assert(proceed & P_FINISHED);
 	proceed &= ~P_FINISHED;
-
-	// TODO why is this so low, put it at the beginning of the function.
-	Debug debug(this);
 
 	if (finished(dep_this->flags)) {
 		assert(! (proceed & P_WAIT));
@@ -768,7 +767,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 					/* Optional dependency:  don't create the file;
 					 * it will then not exist when the parent is
 					 * called. */
-					done |= D_ALL_OPTIONAL;
+					done |= Done::D_ALL_OPTIONAL;
 					return proceed |= P_FINISHED;
 				}
 			}
@@ -780,7 +779,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 				rule->place_targets[i]->place
 					<< format_errno(show(hash_dep));
 				raise(ERROR_BUILD);
-				done |= done_from_flags(dep_this->flags);
+				done |= Done::from_flags(dep_this->flags);
 				return proceed |= P_ABORT | P_FINISHED;
 			}
 
@@ -802,7 +801,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 					*this << "";
 					explain_file_without_command_without_dependencies();
 				}
-				done |= done_from_flags(dep_this->flags);
+				done |= Done::from_flags(dep_this->flags);
 				raise(ERROR_BUILD);
 				return proceed |= P_ABORT | P_FINISHED;
 			}
@@ -841,7 +840,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 	if (! (bits & B_NEED_BUILD)) {
 		/* The file does not have to be built */
-		done |= done_from_flags(dep_this->flags);
+		done |= Done::from_flags(dep_this->flags);
 		return proceed |= P_FINISHED;
 	}
 
@@ -849,9 +848,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 	 * command. */
 
 	/* Second pass to execute also all trivial targets */
-	Proceed proceed_2=
-//		Executor::
-		execute_base_B(dep_this);
+	Proceed proceed_2= execute_phase_B(dep_this);
 	if (proceed_2 & P_WAIT) {
 		return proceed_2;
 	}
@@ -859,7 +856,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */
-		done |= done_from_flags(dep_this->flags);
+		done |= Done::from_flags(dep_this->flags);
 		return proceed |= P_FINISHED;
 	}
 
@@ -883,7 +880,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 		print_command();
 		write_content(hash_deps.front().get_name_c_str_nondynamic(),
 			      *(rule->command));
-		done= ~0;
+		done.set_all();
 		assert(proceed == 0);
 		return proceed |= P_FINISHED;
 	}
@@ -955,7 +952,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 						     show(hash_deps.at(0)));
 					explain_missing_optional_copy_source();
 					raise(ERROR_BUILD);
-					done |= done_from_flags(dep_this->flags);
+					done |= Done::from_flags(dep_this->flags);
 					assert(proceed == 0);
 					return proceed |= P_ABORT | P_FINISHED;
 				}
@@ -984,7 +981,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 			*this << fmt("error executing command for %s",
 				     show(hash_deps.front()));
 			raise(ERROR_BUILD);
-			done |= done_from_flags(dep_this->flags);
+			done |= Done::from_flags(dep_this->flags);
 			assert(proceed == 0);
 			proceed |= P_ABORT | P_FINISHED;
 			return proceed;
@@ -1050,7 +1047,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 	proceed |= P_WAIT;
 	if (order == Order::RANDOM && options_jobs > 0)
-		proceed |= P_PENDING;
+		proceed |= P_CALL_AGAIN;
 	return proceed;
 }
 
@@ -1204,7 +1201,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 
 		/* We already know a file to be missing */
 		if (bits & B_MISSING) {
-			done |= done_from_flags(dep_link->flags);
+			done |= Done::from_flags(dep_link->flags);
 			return true;
 		}
 
@@ -1221,10 +1218,10 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 					->place_target.place <<
 					format_errno(::show(name));
 				raise(ERROR_BUILD);
-				done |= done_from_flags(dep_link->flags);
+				done |= Done::from_flags(dep_link->flags);
 				return true;
 			}
-			done |= done_from_flags(dep_link->flags);
+			done |= Done::from_flags(dep_link->flags);
 			return true;
 		} else {
 			assert(ret_stat == 0);

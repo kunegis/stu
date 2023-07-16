@@ -4,10 +4,6 @@
 # version of Stu when -n becomes the default.
 #
 
-# * test errors:  fix 2.4-trivial-11 and others
-# ** When setting Done bits:  even when F_PHASE_A is set, set the nontrivial
-#    done bits if buffer_B is empty.
-
 A: -t [ -t B] { ...}
 A: [ -t B ] {...}  B={-t C}  ...  # Try with/without presence of X
 A: -t [ -t [ -t B ]] ...  # With/without X
@@ -36,7 +32,7 @@ A: @x {...}  @x: -t [B]; ...
 A: @x {...}  @x: [B]; B = {-t C} ...
 
 # * Put -C into the manpage.
-# * go to 2.8, and update NEWS.
+# * update NEWS.
 
 #
 # Test installing the .deb from Github/releases

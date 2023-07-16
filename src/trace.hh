@@ -68,9 +68,6 @@ const char *trace_strip_dir(const char *s);
 	} \
 }
 
-// TODO decide whether to keep
-void print_dep(const shared_ptr <const Dep> &dep);
-
 #else /* NDEBUG */
 #	define TRACE_FUNCTION(a, b)
 #	define TRACE(a, ...)

@@ -6,9 +6,9 @@ bits.hh                 Bits                    B_*
 canonicalize.hh         Canonicalize_Flags      A_*
 color.hh                Channel                 CH_*
 concat_executor.hh      Concat_Executor::Stage  ST_*
+done.hh                 Done                    D_*
 error.hh                int                     ERROR_*
 flags.hh                Flags                   F_*, I_*, C_*
-flags.hh                Done                    D_*
 proceed.hh              Proceed                 P_*
 show.hh                 Quote_Safeness          QS_*
 show.hh                 Rendering               R_*

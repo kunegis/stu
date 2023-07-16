@@ -4,8 +4,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-#include <iostream> // rm
-
 #include "concat_executor.hh"
 #include "dynamic_executor.hh"
 #include "explain.hh"
@@ -58,7 +56,7 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		/* Whether the dynamic dependency is delimiter-separated */
 
 		bool allow_enoent= dep_target->flags & (F_OPTIONAL | F_TRIVIAL);
-		
+
 		if (! delim) {
 			/* Dynamic dependency in full Stu syntax */
 			std::vector <shared_ptr <Token> > tokens;
@@ -151,7 +149,6 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			if (j) {
 				shared_ptr <Dep> j_new= Dep::clone(j);
 				j_new->top= top;
-//				std::cerr << show(j_new, 0, R_SHOW_FLAGS) << std::endl;//rm
 				deps_new.push_back(j_new);
 			}
 		}
@@ -306,7 +303,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	Executor *executor= nullptr;
 	const Hash_Dep target_for_cache= get_target_for_cache(hash_dep);
 	auto it= executors_by_hash_dep.find(target_for_cache);
-	
+
 	if (it != executors_by_hash_dep.end()) {
 		/* An Executor object already exists for the target */
 		executor= it->second;
@@ -560,9 +557,6 @@ void Executor::push(shared_ptr <const Dep> dep)
 	assert(dep);
 	dep->check();
 
-//	// rm
-//	std::cerr << "push " << show(dep, 0, R_SHOW_FLAGS) << std::endl;//rm
-	
 	std::vector <shared_ptr <const Dep> > deps;
 	int e= 0;
 	Dep::normalize(dep, deps, e);
@@ -586,7 +580,7 @@ void Executor::push(shared_ptr <const Dep> dep)
 	}
 }
 
-Proceed Executor::execute_base_A(shared_ptr <const Dep> dep_this)
+Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_this)
 {
 	Debug debug(this);
 	assert(options_jobs >= 0);
@@ -619,12 +613,6 @@ Proceed Executor::execute_base_A(shared_ptr <const Dep> dep_this)
 		}
 	}
 
-	// TODO replace with check for F_PHASE_A, but later
-//	/* Is this a trivial run?  Then skip the dependency. */
-//	if (dep_this->flags & F_TRIVIAL) {
-//		return proceed |= P_ABORT | P_FINISHED;
-//	}
-
 	assert(error == 0 || option_k);
 
 	/*
@@ -636,13 +624,6 @@ Proceed Executor::execute_base_A(shared_ptr <const Dep> dep_this)
 
 	while (! buffer_A.empty()) {
 		shared_ptr <const Dep> dep_child= buffer_A.pop();
-
-		// if ((dep_child->flags & (F_RESULT_NOTIFY | F_TRIVIAL)) == F_TRIVIAL) {
-		// 	shared_ptr <Dep> dep_child_2= Dep::clone(dep_child);
-		// 	dep_child_2->flags &= ~F_TRIVIAL;
-		// 	dep_child_2->get_place_flag(I_TRIVIAL)= Place::place_empty;
-		// 	buffer_B.push(dep_child_2);
-		// }
 
 		Proceed proceed_2= connect(dep_this, dep_child);
 		proceed |= proceed_2;
@@ -758,7 +739,7 @@ void Executor::disconnect(Executor *const child,
 		delete child;
 }
 
-Proceed Executor::execute_base_B(shared_ptr <const Dep> dep_link)
+Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 {
 	Proceed proceed= 0;
 	while (! buffer_B.empty()) {
@@ -893,7 +874,7 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 			this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
 	Proceed proceed_child= child->execute(dep_child);
 	assert(proceed_child);
-	if (proceed_child & (P_WAIT | P_PENDING))
+	if (proceed_child & (P_WAIT | P_CALL_AGAIN))
 		return proceed_child;
 	if (child->finished(dep_child->flags))
 		disconnect(child, dep_child);

@@ -38,7 +38,7 @@ public:
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
 	virtual string debug_done_text() const override {
-		return format_done(done);
+		return done.format();
 	}
 
 	virtual bool want_delete() const override { return false; }

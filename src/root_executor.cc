@@ -23,9 +23,9 @@ Proceed Root_Executor::execute(shared_ptr <const Dep> dep_this)
 	/* This is an example of a "plain" execute() function,
 	 * containing the minimal wrapper around execute_base_?()  */
 
-	Proceed proceed= execute_base_A(dep_this);
+	Proceed proceed= execute_phase_A(dep_this);
 	assert(proceed);
-	if (proceed & (P_WAIT | P_PENDING)) {
+	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		assert((proceed & P_FINISHED) == 0);
 		return proceed;
 	}
@@ -34,8 +34,8 @@ Proceed Root_Executor::execute(shared_ptr <const Dep> dep_this)
 		return proceed;
 	}
 
-	proceed |= execute_base_B(dep_this);
-	if (proceed & (P_WAIT | P_PENDING)) {
+	proceed |= execute_phase_B(dep_this);
+	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		assert((proceed & P_FINISHED) == 0);
 		return proceed;
 	}

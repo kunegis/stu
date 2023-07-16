@@ -174,7 +174,7 @@ public:
 	static shared_ptr <const Dep> untrivialize(shared_ptr <const Dep> dep);
 	/* Remove all trivial flags, recursively.  Return null if already
 	 * trivialized. */
-	
+
 	static shared_ptr <Dep> clone(shared_ptr <const Dep> dep);
 	/* A shallow clone */
 
@@ -316,7 +316,7 @@ public:
 	Dynamic_Dep(shared_ptr <const Dynamic_Dep> base_dep,
 		    shared_ptr <const Dep> inner)
 		: Dep(*base_dep), dep(inner) { }
-	
+
 	Dynamic_Dep(Flags flags_,
 		    shared_ptr <const Dep> dep_)
 		: Dep(flags_ | F_TARGET_DYNAMIC), dep(dep_)
@@ -383,7 +383,7 @@ public:
 
 	Concat_Dep(shared_ptr <const Dep> dep)
 		: Dep(*dep) { }
-	
+
 	/* Append a dependency to the list */
 	void push_back(shared_ptr <const Dep> dep)
 	{ deps.push_back(dep); }

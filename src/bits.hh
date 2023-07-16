@@ -13,7 +13,7 @@ typedef unsigned Bits;
 enum {
 	B_NEED_BUILD  = 1 << 0,
 	/* Whether this target needs to be built.  When a target is finished,
-	 * this value is propagated to the parent executors. */ 
+	 * this value is propagated to the parent executors. */
 
 	B_CHECKED     = 1 << 1,
 	/* Whether a certain check has been performed.  Only used by

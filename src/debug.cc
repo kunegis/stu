@@ -2,7 +2,6 @@
 
 string Debug::padding_current= "";
 std::vector <const Debuggable *> Debug::debuggables;
-//constexpr const char *padding_text= "   ";
 
 Debuggable::~Debuggable()  {  }
 

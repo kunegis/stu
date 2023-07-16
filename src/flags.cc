@@ -44,16 +44,3 @@ string show_flags(Flags flags, Style style)
 	render_flags(flags, parts, R_SHOW_FLAGS);
 	return show(parts, style);
 }
-
-string format_done(Done done)
-{
-	char ret[7]= "[0000]";
-	for (int i= 0; i < 4; ++i)
-		ret[1+i] |= 1 & done << i;
-	return ret;
-}
-
-Done done_from_flags(Flags flags)
-{
-	return (~flags & (F_PERSISTENT | F_OPTIONAL)) * (1 | ((~flags & F_PHASE_A) != 0));
-}

@@ -604,4 +604,3 @@ void Root_Dep::render(Parts &parts, Rendering) const
 {
 	parts.append_operator("ROOT");
 }
-

@@ -105,7 +105,7 @@ constexpr int ERROR_FORK_CHILD= 127;
  * when the -k option is used.  They are avoided as much as possible.
  *
  * The value 127 is only used from a child process between fork() and exec(), as
- * done e.g. by system(), posix_spawn(), and the shell.  
+ * done e.g. by system(), posix_spawn(), and the shell.
  *
  * Errors 1 and 2 are recoverable.  If the -k option ("keep going") is given,
  * Stu notes these errors and continues.  If the -k option is not given, they

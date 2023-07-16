@@ -1,13 +1,11 @@
 #ifndef HASH_DEP_HH
 #define HASH_DEP_HH
 
-#if   C_WORD <= 8
-typedef uint8_t  word_t;
-#elif C_WORD <= 16
 typedef uint16_t word_t;
-#else
-#	error "Invalid word size"
-#endif
+
+static_assert(sizeof(word_t) == sizeof(uint8_t) && C_WORD <= 8
+	      || sizeof(word_t) == sizeof(uint16_t) && C_WORD > 8 && C_WORD <= 16,
+	      "sizeof(word_t)");
 
 class Hash_Dep
 /* A representation of a simple dependency, mainly used as the key in the

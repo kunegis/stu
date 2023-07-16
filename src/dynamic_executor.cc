@@ -3,7 +3,7 @@
 Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 				   Executor *parent,
 				   int &error_additional)
-	:  dep(dep_), done(0)
+	:  dep(dep_)
 {
 	assert(dep_);
 	assert(dep_->is_normalized());
@@ -17,8 +17,7 @@ Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 	parents[parent]= dep;
 	if (error_additional) {
 		*this << "";
-//		is_finished= true;
-		done= ~0;
+		done.set_all();
 		parents.erase(parent);
 		raise(error_additional);
 		return;
@@ -61,21 +60,17 @@ Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 
 Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_this)
 {
-	Proceed proceed= execute_base_A(dep_this);
+	Proceed proceed= execute_phase_A(dep_this);
 	assert(proceed);
 	if (proceed & P_ABORT) {
 		assert(proceed & P_FINISHED);
-		done |= done_from_flags(dep_this->flags);
+		done |= Done::from_flags(dep_this->flags);
 		return proceed;
 	}
-	if (proceed & (P_WAIT | P_PENDING)) {
+	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		assert((proceed & P_FINISHED) == 0);
 		return proceed;
 	}
-	// if (proceed & P_FINISHED) {
-	// 	is_finished= true;
-	// 	return proceed;
-	// }
 
 	assert(proceed & P_FINISHED);
 	proceed &= ~P_FINISHED;
@@ -85,15 +80,15 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_this)
 		return proceed |= P_FINISHED;
 	}
 
-	Proceed proceed_B= execute_base_B(dep_this);
+	Proceed proceed_B= execute_phase_B(dep_this);
 	assert(proceed_B);
 	proceed |= proceed_B;
-	if (proceed & (P_WAIT | P_PENDING)) {
+	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		assert((proceed & P_FINISHED) == 0);
 		return proceed;
 	}
 	if (proceed & P_FINISHED) {
-		done |= done_from_flags(dep_this->flags);
+		done |= Done::from_flags(dep_this->flags);
 		return proceed;
 	}
 
@@ -108,13 +103,12 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_this)
 
 bool Dynamic_Executor::finished() const
 {
-	return (~done & D_ALL) == 0;
+	return done.is_all();
 }
 
 bool Dynamic_Executor::finished(Flags flags) const
 {
-	return (~done & (done_from_flags(flags))) == 0;
-//	return is_finished;
+	return done.is_done_from_flags(flags);
 }
 
 bool Dynamic_Executor::want_delete() const
@@ -136,8 +130,6 @@ void Dynamic_Executor::notify_result(shared_ptr <const Dep> d, Executor *source,
 	assert(dep_source);
 
 	if (flags & F_RESULT_NOTIFY) {
-//		if (d->flags & F_TRVIAL)
-//			return;
 		std::vector <shared_ptr <const Dep> > deps;
 		source->read_dynamic(to <const Plain_Dep> (d), deps, dep, this);
 		for (auto &j: deps) {
@@ -155,7 +147,6 @@ void Dynamic_Executor::notify_result(shared_ptr <const Dep> d, Executor *source,
 			push(j);
 		}
 	} else if (flags & F_RESULT_COPY) {
-//		assert(flags & F_RESULT_COPY);
 		push_result(d);
 	} else {
 		unreachable();

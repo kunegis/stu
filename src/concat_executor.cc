@@ -61,15 +61,15 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_this)
 	assert(stage <= ST_FINISHED);
 	if (stage == ST_FINISHED)
 		return P_FINISHED;
-	Proceed proceed= execute_base_A(dep_this);
+	Proceed proceed= execute_phase_A(dep_this);
 	assert(proceed);
-	if (proceed & (P_WAIT | P_PENDING)) {
+	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		assert((proceed & P_FINISHED) == 0);
 		return proceed;
 	}
 	if (!(proceed & P_FINISHED)) {
-		proceed |= execute_base_B(dep_this);
-		if (proceed & (P_WAIT | P_PENDING)) {
+		proceed |= execute_phase_B(dep_this);
+		if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 			assert((proceed & P_FINISHED) == 0);
 			return proceed;
 		}
@@ -151,9 +151,10 @@ void Concat_Executor::notify_result(shared_ptr <const Dep> d,
 			size_t i= dep_source->index;
 			collected.at(i)->deps.push_back(j);
 		}
-	} else {
-		// TODOhave else if instead and unreachable().
+	} else if (flags & F_RESULT_COPY) {
 		assert(flags & F_RESULT_COPY);
 		push_result(d);
+	} else {
+		unreachable();
 	}
 }

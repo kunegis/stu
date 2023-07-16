@@ -58,7 +58,7 @@ public:
 	/* In some of the following functions, write the input filename into
 	 * PLACE_NAME_INPUT.  If PLACE_NAME_INPUT is already non-empty, throw an
 	 * error if a second input filename is specified. PLACE_INPUT is the
-	 * place of the '<' input redirection operator.  */
+	 * place of the '<' input redirection operator. */
 
 	static void get_rule_list(std::vector <shared_ptr <Rule> > &rules,
 				  std::vector <shared_ptr <Token> > &tokens,
@@ -75,16 +75,18 @@ public:
 	static void get_expression_list_delim(std::vector <shared_ptr <const Dep> > &deps,
 					      const char *filename,
 					      char c, char c_printed,
-					      const Printer &printer);
+					      const Printer &printer,
+					      bool allow_enoent);
 	/* Read delimiter-separated dynamic dependency from FILENAME,
-	 * delimited by C.  Write result into DEPS.  Throws errors.  */
+	 * delimited by C.  Write result into DEPS.  Throws errors.  When
+	 * ALLOW_ENOENT, just return on ENOENT. */
 
 	static void get_target_arg(std::vector <shared_ptr <const Dep> > &deps,
 				   int argc, const char *const *argv);
 	/* Parse a dependency as given on the command line outside of
 	 * options.  Strings in ARGV may be empty; those are ignored.
 	 * Parsed dependency are appended to DEPS, which is not
-	 * necessarily empty on invocation.  */
+	 * necessarily empty on invocation. */
 
 	static void get_file(string filename,
 			     int file_fd,

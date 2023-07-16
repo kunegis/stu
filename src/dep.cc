@@ -6,10 +6,100 @@
 #include "format.hh"
 #include "trace.hh"
 
+void Dep::normalize(shared_ptr <const Dep> dep,
+		    std::vector <shared_ptr <const Dep> > &deps,
+		    int &error)
+{
+	if (to <Plain_Dep> (dep)) {
+		deps.push_back(dep);
+	} else if (shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep)) {
+		std::vector <shared_ptr <const Dep> > deps_child;
+		normalize(dynamic_dep->dep, deps_child, error);
+		if (error && ! option_k)
+			return;
+		for (auto &d:  deps_child) {
+			shared_ptr <Dep> dep_new=
+				std::make_shared <Dynamic_Dep>
+				(dynamic_dep->flags, dynamic_dep->places, d);
+			if (dynamic_dep->index >= 0)
+				dep_new->index= dynamic_dep->index;
+			dep_new->top= dynamic_dep->top;
+			deps.push_back(dep_new);
+		}
+	} else if (shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dep)) {
+		for (auto &d:  compound_dep->deps) {
+			shared_ptr <Dep> dd= Dep::clone(d);
+			dd->add_flags(compound_dep, false);
+			if (compound_dep->index >= 0)
+				dd->index= compound_dep->index;
+			dd->top= compound_dep->top;
+			normalize(dd, deps, error);
+			if (error && ! option_k)
+				return;
+		}
+	} else if (auto concat_dep= to <Concat_Dep> (dep)) {
+		Concat_Dep::normalize_concat(concat_dep, deps, error);
+		if (error && ! option_k)
+			return;
+	} else {
+		unreachable();
+	}
+}
+
+shared_ptr <const Dep> Dep::untrivialize(shared_ptr <const Dep> dep)
+{
+	assert(dep);
+	assert(dep->is_normalized());
+	if (to <Plain_Dep> (dep)) {
+		if (! (dep->flags & F_TRIVIAL))
+			return nullptr;
+		shared_ptr <Dep> ret= Dep::clone(dep);
+		ret->flags &= ~F_TRIVIAL;
+		ret->places[I_TRIVIAL]= Place();
+		return ret;
+	} else if (to <Dynamic_Dep> (dep)) {
+		shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep);
+		shared_ptr <const Dep> ret_dep= untrivialize(to <Dynamic_Dep> (dep)->dep);
+		if (ret_dep) {
+			shared_ptr <Dynamic_Dep> ret= std::make_shared <Dynamic_Dep> (dynamic_dep, ret_dep);
+			ret->flags &= ~F_TRIVIAL;
+			ret->places[I_TRIVIAL]= Place();
+			return ret;
+		} else if (dep->flags & F_TRIVIAL) {
+			shared_ptr <Dep> ret= Dep::clone(dep);
+			ret->flags &= ~F_TRIVIAL;
+			ret->places[I_TRIVIAL]= Place();
+			return ret;
+		} else {
+			return nullptr;
+		}
+	} else if (to <Concat_Dep> (dep)) {
+		shared_ptr <const Concat_Dep> concat_dep= to <Concat_Dep> (dep);
+		shared_ptr <Concat_Dep> ret= std::make_shared <Concat_Dep> (dep);
+		ret->deps.resize(concat_dep->deps.size());
+		bool found= false;
+		for (size_t i= 0; i < concat_dep->deps.size(); ++i) {
+			shared_ptr <const Dep> dep_i= untrivialize(concat_dep->deps[i]);
+			if (dep_i) {
+				found= true;
+				ret->deps[i]= dep_i;
+			} else {
+				ret->deps[i]= concat_dep->deps[i];
+			}
+		}
+		if (! found && !(dep->flags & F_TRIVIAL))
+			return nullptr;
+		ret->flags &= ~F_TRIVIAL;
+		ret->places[I_TRIVIAL]= Place();
+		return ret;
+	} else {
+		unreachable();
+	}
+}
+
 shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
 {
 	assert(dep);
-
 	if (to <Plain_Dep> (dep)) {
 		return std::make_shared <Plain_Dep> (* to <Plain_Dep> (dep));
 	} else if (to <Dynamic_Dep> (dep)) {
@@ -515,42 +605,3 @@ void Root_Dep::render(Parts &parts, Rendering) const
 	parts.append_operator("ROOT");
 }
 
-void Dep::normalize(shared_ptr <const Dep> dep,
-		    std::vector <shared_ptr <const Dep> > &deps,
-		    int &error)
-{
-	if (to <Plain_Dep> (dep)) {
-		deps.push_back(dep);
-	} else if (shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep)) {
-		std::vector <shared_ptr <const Dep> > deps_child;
-		normalize(dynamic_dep->dep, deps_child, error);
-		if (error && ! option_k)
-			return;
-		for (auto &d:  deps_child) {
-			shared_ptr <Dep> dep_new=
-				std::make_shared <Dynamic_Dep>
-				(dynamic_dep->flags, dynamic_dep->places, d);
-			if (dynamic_dep->index >= 0)
-				dep_new->index= dynamic_dep->index;
-			dep_new->top= dynamic_dep->top;
-			deps.push_back(dep_new);
-		}
-	} else if (shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dep)) {
-		for (auto &d:  compound_dep->deps) {
-			shared_ptr <Dep> dd= Dep::clone(d);
-			dd->add_flags(compound_dep, false);
-			if (compound_dep->index >= 0)
-				dd->index= compound_dep->index;
-			dd->top= compound_dep->top;
-			normalize(dd, deps, error);
-			if (error && ! option_k)
-				return;
-		}
-	} else if (auto concat_dep= to <Concat_Dep> (dep)) {
-		Concat_Dep::normalize_concat(concat_dep, deps, error);
-		if (error && ! option_k)
-			return;
-	} else {
-		unreachable();
-	}
-}

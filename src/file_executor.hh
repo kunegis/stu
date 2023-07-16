@@ -127,12 +127,6 @@ private:
 	/* Variable assignments from variables dependencies */
 
 	Done done;
-	/* What parts of this target have been done.  Each bit that is
-	 * set represents one aspect that was done.  When an executor
-	 * is invoked with a certain set of flags, all flags *not*
-	 * passed will be set when the execution is finished.  Only the
-	 * first C_PLACED flags are used; the other bits have an
-	 * unspecified value.  */
 
 	~File_Executor();
 

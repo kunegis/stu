@@ -92,64 +92,61 @@ constexpr int ERROR_FATAL=        4;
 constexpr int ERROR_FORK_CHILD= 127;
 
 /*
- * Build errors (code 1) are errors encountered during the normal
- * operation of Stu.  They indicate failures of the executed commands or
- * errors with files.  Exit status 1 is also used for the -q option
- * (question mode), when the targets are not up to date.
+ * Build errors (code 1) are errors encountered during the normal operation of
+ * Stu.  They indicate failures of the executed commands or errors with files.
+ * Exit status 1 is also used for the -q option (question mode), when the
+ * targets are not up to date.
  *
- * Logical errors (code 2) are errors with the usage of Stu.  These are
- * for instance syntax errors in Stu scripts, cycles in the dependency
- * graph, or multiple matching rules.
+ * Logical errors (code 2) are errors with the usage of Stu.  These are for
+ * instance syntax errors in Stu scripts, cycles in the dependency graph, or
+ * multiple matching rules.
  *
- * Fatal errors (code 4) are errors that lead Stu to abort immediately,
- * even when the -k option is used.  They are avoided as much as
- * possible.
+ * Fatal errors (code 4) are errors that lead Stu to abort immediately, even
+ * when the -k option is used.  They are avoided as much as possible.
  *
  * The value 127 is only used from a child process between fork() and exec(), as
- * done e.g. by system(), posix_spawn(), and the shell.
+ * done e.g. by system(), posix_spawn(), and the shell.  
  *
- * Errors 1 and 2 are recoverable.  If the -k option ("keep going") is
- * given, Stu notes these errors and continues.  If the -k option is not
- * given, they cause Stu to abort.  When the -k option is used, the
- * final exit status may combine errors 1 and 2, giving exit status 3.
- * Error 4 is unrecoverable, and leads to Stu aborting immediately.
- * Error 4 is never combined with other errors.
+ * Errors 1 and 2 are recoverable.  If the -k option ("keep going") is given,
+ * Stu notes these errors and continues.  If the -k option is not given, they
+ * cause Stu to abort.  When the -k option is used, the final exit status may
+ * combine errors 1 and 2, giving exit status 3.  Error 4 is unrecoverable, and
+ * leads to Stu aborting immediately.  Error 4 is never combined with other
+ * errors.
  *
- * Fatal errors are rare and are only used in cases where it is OK to
- * abort the whole Stu process:
+ * Fatal errors are rare and are only used in cases where it is OK to abort the
+ * whole Stu process:
  *    - When there are errors in the usage of Stu on the command line,
- *      e.g. non-existing options.  In these cases, we don't lose
- *      anything because nothing was yet started.
+ *      e.g. non-existing options.  In these cases, we don't lose anything
+ *      because nothing was yet started.
  *    - Errors that happen just before Stu exits anyway.
- *    - Errors that should not happen, such as failure to set up a
- *      signal handler.
+ *    - Errors that should not happen, such as failure to set up a signal
+ *      handler.
  *
- * We have to be careful with calling exit(ERROR_FATAL):  We cannot do
- * it when child processes could still be running.  For errors that
- * happen in the middle of a Stu run, it makes more sense to generate a
- * build error.  In the very few cases that absolutely need to be fatal
- * (such as malloc() returning null), we call abort() instead, since
- * that will take care of terminating the child processes.
+ * We have to be careful with calling exit(ERROR_FATAL):  We cannot do it when
+ * child processes could still be running.  For errors that happen in the middle
+ * of a Stu run, it makes more sense to generate a build error.  In the very few
+ * cases that absolutely need to be fatal (such as malloc() returning null), we
+ * call abort() instead, since that will take care of terminating the child
+ * processes.
  */
 
 /*
- * The following functions print messages that do not include a place.
- * The text must begin with an uppercase letter, not end in a period
- * and also not end in a newline character.  All are printed to standard
- * error output.
+ * The following functions print messages that do not include a place.  The text must
+ * begin with an uppercase letter, not end in a period and also not end in a newline
+ * character.  All are printed to standard error output.
  */
 
 void print_error(string message);
 /* Print an error without a place */
 
 void print_errno(string message);
-/* Like perror(), but use color. */
+/* Like perror(), but add color.  MESSAGE must not contain color. */
 
 void print_error_reminder(string message);
-/* Print a reminder of an error on STDERR.  This is used in situations
- * where an error has already been output, but it is better to remind
- * the user of the error.  Since the error as already been output, use
- * the color of warnings.  */
+/* Print a reminder of an error on STDERR.  This is used in situations where an
+ * error has already been output, but it is better to remind the user of the
+ * error.  Since the error as already been output, use the color of warnings. */
 
 string format_errno(string text);
 /* Includes the given message, and the ERRNO-based text.  Cf. perror().  Color
@@ -157,25 +154,24 @@ string format_errno(string text);
  * print_*() functions.  */
 
 void print_out(string text);
-/* Print a message to standard output in "print" colors.  This is used
- * in only very few cases, in defiance of the principle that a program
- * should by default only output something when there is an error.  We
- * do it mostly because Make does it, and users expect it, and because
- * not doing it would be very strange for most users.  These messages
- * are suppressed by the -s option (silent).  Messages that do not have
- * colored output are printed directly using printf() etc.  */
+/* Print a message to standard output in "print" colors.  This is used in only
+ * very few cases, in defiance of the principle that a program should by default
+ * only output something when there is an error.  We do it mostly because Make
+ * does it, and users expect it, and because not doing it would be very strange
+ * for most users.  These messages are suppressed by the -s option (silent).
+ * Messages that do not have colored output are printed directly using printf()
+ * etc. */
 
 void print_error_silenceable(string text);
 /* A message on STDERR that is made silent by the silent option (-s) */
 
 class Place
 /*
- * Denotes a position in Stu source code.  This is either in a file or
- * in arguments/options to Stu.  A Place object can also be empty, which
- * is used as the "uninitialized" value.
+ * Denotes a position in Stu source code.  This is either in a file or in
+ * arguments/options to Stu.  A Place object can also be empty, which is used as
+ * the "uninitialized" value.
  *
- * Places are used to show the location of an error on standard error
- * output.
+ * Places are used to show the location of an error on standard error output.
  */
 {
 public:
@@ -206,7 +202,7 @@ public:
 	 * numbers as these are easier to generate.
 	 * Others: Unused.  */
 
-	Place() :  type(Type::EMPTY)  {  }
+	Place(): type(Type::EMPTY) { }
 
 	Place(Type type_, string filename_,
 	      size_t line_, size_t column_)

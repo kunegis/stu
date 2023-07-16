@@ -1017,13 +1017,15 @@ void Parser::get_expression_list(std::vector <shared_ptr <const Dep> > &deps,
 void Parser::get_expression_list_delim(std::vector <shared_ptr <const Dep> > &deps,
 				       const char *filename,
 				       char c, char c_printed,
-				       const Printer &printer)
+				       const Printer &printer, bool allow_enoent)
 /* We use getdelim() for parsing.  A more optimized way would be via
  * mmap()+strchr().  */
 {
 	FILE *file= fopen(filename, "r");
 	if (file == nullptr) {
-		print_errno(show(filename));
+		if (allow_enoent && errno == ENOENT)
+			return;
+		print_errno(filename);
 		throw ERROR_BUILD;
 	}
 

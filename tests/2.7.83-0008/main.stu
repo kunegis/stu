@@ -1,0 +1,17 @@
+A: [ -o B ]
+{
+	[ -e B ] && {
+		echo >&2 'B must not exist'
+		exit 1
+	}
+
+	[ -e ERROR ] && {
+		echo >&2 'ERROR must not exist'
+		exit 1
+	}
+
+	echo CORRECT >A
+}
+
+B = {ERROR}
+ERROR = {ERROR}

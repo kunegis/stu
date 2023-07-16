@@ -2,6 +2,7 @@
 
 string Debug::padding_current= "";
 std::vector <const Debuggable *> Debug::debuggables;
+//constexpr const char *padding_text= "   ";
 
 Debuggable::~Debuggable()  {  }
 
@@ -39,4 +40,9 @@ void Debug::print(string text_target,
 		padding(),
 		text_target.c_str(),
 		text.c_str());
+}
+
+void render(const Debuggable *debuggable, Parts &parts, Rendering rendering)
+{
+	debuggable->render(parts, rendering);
 }

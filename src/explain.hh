@@ -2,14 +2,13 @@
 #define EXPLAIN_HH
 
 /*
- * Explanation functions: they output an explanation of a feature of Stu
- * on standard error output.  This is used after certain non-trivial
- * error messages, and is enabled by the -E option.
+ * Explanation functions: they output an explanation of a feature of Stu on
+ * standard error output.  This is used after certain non-trivial error
+ * messages, and is enabled by the -E option.
  *
  * Many of these texts echo parts of the manpage.
  *
- * The line lengths in the printed output are set by hand and are
- * approximate.
+ * The line lengths in the printed output are set by hand and are approximate.
  */
 
 void explain_clash();

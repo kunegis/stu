@@ -1,0 +1,9 @@
+A: [ -o -n B ]
+{
+	[ -e B ] && {
+		echo >&2 '*** B must not exist'
+		exit 1
+	}
+
+	echo CORRECT >A
+}

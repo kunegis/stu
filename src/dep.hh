@@ -16,11 +16,10 @@
  *    - a plain dependency (file or transient);
  *    - a dynamic dependency containing a normalized dependency;
  *    - a concatenated dependency of only normalized plain and dynamic dependencies.
- * In particular, compound dependencies are never normalized;
- * they do not appear at all in normalized dependencies.
- * Also, concatenated dependencies never contain other concatenated dependencies
- * directly -- such constructs are always "flattened" in a normalized
- * dependency.
+ * In particular, compound dependencies are never normalized; they do not appear
+ * at all in normalized dependencies.  Also, concatenated dependencies never
+ * contain other concatenated dependencies directly -- such constructs are
+ * always "flattened" in a normalized dependency.
  */
 
 /*
@@ -30,8 +29,8 @@
  * dependencies, i.e., when it is a possible multiply dynamic dependency of a
  * plain dependency.
  *
- * A dependency that is not simple is complex.  I.e., a complex dependency
- * involves concatenation and/or compound dependencies.
+ * A dependency that is not simple is complex.  I.e., a complex dependency involves
+ * concatenation and/or compound dependencies.
  */
 
 #include <map>
@@ -172,6 +171,10 @@ public:
 	 * On errors, a message is printed, bits are set in ERROR, and
 	 * if not in keep-going mode, the function returns immediately.  */
 
+	static shared_ptr <const Dep> untrivialize(shared_ptr <const Dep> dep);
+	/* Remove all trivial flags, recursively.  Return null if already
+	 * trivialized. */
+	
 	static shared_ptr <Dep> clone(shared_ptr <const Dep> dep);
 	/* A shallow clone */
 
@@ -301,15 +304,19 @@ class Dynamic_Dep
 	: public Dep
 {
 public:
-
+	/* TODO rename to "dep_inner". */
 	shared_ptr <const Dep> dep;
 	/* The contained dependency.  Non-null. */
 
 	Dynamic_Dep(shared_ptr <const Dep> dep_)
-		/* Set the contained dependency.  NOT a copy constructor. */
+		/* Set the contained dependency.  Not a copy constructor. */
 		: Dep(F_TARGET_DYNAMIC), dep(dep_)
 	{ assert(dep_ != nullptr); }
 
+	Dynamic_Dep(shared_ptr <const Dynamic_Dep> base_dep,
+		    shared_ptr <const Dep> inner)
+		: Dep(*base_dep), dep(inner) { }
+	
 	Dynamic_Dep(Flags flags_,
 		    shared_ptr <const Dep> dep_)
 		: Dep(flags_ | F_TARGET_DYNAMIC), dep(dep_)
@@ -362,12 +369,10 @@ class Concat_Dep
 	: public Dep
 {
 public:
-
 	std::vector <shared_ptr <const Dep> > deps;
-	/* The dependencies for each part.  No entry is null.
-	 * May be empty in code, which is something
-	 * that is not allowed in Stu code.  Otherwise, there are at
-	 * least two elements  */
+	/* The dependencies for each part.  No entry is null.  May be empty in
+	 * code, which is something that is not allowed in Stu code.  Otherwise,
+	 * there are at least two elements. */
 
 	Concat_Dep() { }
 	/* An empty concatenation, i.e., a concatenation of zero dependencies */
@@ -376,11 +381,15 @@ public:
 		/* The list of dependencies is empty */
 		: Dep(flags_, places_) { }
 
+	Concat_Dep(shared_ptr <const Dep> dep)
+		: Dep(*dep) { }
+	
 	/* Append a dependency to the list */
 	void push_back(shared_ptr <const Dep> dep)
 	{ deps.push_back(dep); }
 
-	virtual shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
+	virtual shared_ptr <const Dep> instantiate
+	(const std::map <string, string> &mapping) const override;
 
 	virtual bool is_unparametrized() const override;
 	virtual const Place &get_place() const override;
@@ -449,8 +458,7 @@ public:
 		: place(place_) { }
 
 	Compound_Dep(Flags flags_, const Place places_[C_PLACED], const Place &place_)
-		: Dep(flags_, places_),
-		  place(place_)
+		: Dep(flags_, places_), place(place_)
 	{ /* The list of dependencies is empty */ }
 
 	Compound_Dep(std::vector <shared_ptr <const Dep> > &&deps_,

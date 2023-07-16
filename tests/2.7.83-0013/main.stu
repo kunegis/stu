@@ -1,0 +1,13 @@
+A: X [ -t B ]
+{
+	[ -r X ] || {
+		echo >&2 '*** X must exist'
+		exit 1
+	}
+
+	cp C A
+}
+
+B = {C}
+C = {CORRECT}
+X = {whatever}

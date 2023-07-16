@@ -1,7 +1,7 @@
 #include "flags.hh"
 
-constexpr const char *flags_chars= "pot[@$n0C<*%";
-static_assert(strlen(flags_chars) == C_ALL, "flags_char");
+constexpr const char *flags_chars= "pot[@$n0C<*%&";
+static_assert(strlen(flags_chars) == C_ALL, "Keep in sync with Flags");
 const char *flags_phrases[C_PLACED]= {"persistent", "optional", "trivial"};
 
 unsigned flag_get_index(char c)
@@ -55,5 +55,5 @@ string format_done(Done done)
 
 Done done_from_flags(Flags flags)
 {
-	return (~flags & (F_PERSISTENT | F_OPTIONAL)) * (1 | (~flags & F_TRIVIAL));
+	return (~flags & (F_PERSISTENT | F_OPTIONAL)) * (1 | ((~flags & F_PHASE_A) != 0));
 }

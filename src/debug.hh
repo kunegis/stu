@@ -2,11 +2,15 @@
 #define DEBUG_HH
 
 /*
- * Debug output (option -d).  Provides indentation.  During the lifetime of an
- * object, padding is increased by one step.  This class is declared within
- * blocks in functions such as execute(), etc.  The passed Executor is valid
- * until the end of the object's lifetime.
+ * Debug output (option -d).  This class is declared within blocks in functions
+ * such as execute(), etc.  The passed Executor is valid until the end of the
+ * object's lifetime.
  */
+
+#include <vector>
+
+#include "options.hh"
+#include "show.hh"
 
 class Debuggable
 {
@@ -15,18 +19,16 @@ public:
 	virtual ~Debuggable();
 };
 
-#define DEBUG_PADDING_TEXT "   "
-
 class Debug
 {
 public:
 	Debug(const Debuggable *d) {
-		padding_current += DEBUG_PADDING_TEXT;
+		padding_current += padding_text;
 		debuggables.push_back(d);
 	}
 
 	~Debug() {
-		padding_current.resize(padding_current.size() - strlen(DEBUG_PADDING_TEXT));
+		padding_current.resize(padding_current.size() - strlen(padding_text));
 		debuggables.pop_back();
 	}
 
@@ -43,12 +45,10 @@ private:
 	static string padding_current;
 	static std::vector <const Debuggable *> debuggables;
 	static void print(string text_target, string text);
+	static constexpr const char *padding_text= "   ";
 };
 
-void render(const Debuggable *debuggable, Parts &parts, Rendering rendering= 0)
-{
-	debuggable->render(parts, rendering);
-}
+void render(const Debuggable *debuggable, Parts &parts, Rendering rendering= 0);
 
 #define DEBUG_PRINT(text) if (option_d)  Debug::print(this, text)
 

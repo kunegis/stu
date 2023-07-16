@@ -590,12 +590,8 @@ bool Tokenizer::is_operator_char(char c)
 }
 
 bool Tokenizer::is_flag_char(char c)
-/* These correspond to persistent, optional and trivial dependencies,
- * respectively.  'p'/'o'/'t' were '!', '?' and '&' formerly.  The others are
- * new.  */
 {
-	return c == 'p' || c == 'o' || c == 't' ||
-		c == 'n' || c == '0' || c == 'C';
+	return c == 'p' || c == 'o' || c == 't' || c == 'n' || c == '0' || c == 'C';
 }
 
 void Tokenizer::parse_version(string version_req,

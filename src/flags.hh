@@ -41,17 +41,18 @@ enum
 	I_INPUT,              /* <                                           */
 	I_RESULT_NOTIFY,      /* -*                                          */
 	I_RESULT_COPY,        /* -%                                          */
+	I_PHASE_A,            /* -&                                          */
 
+	/* Counts */
 	C_ALL,
 	C_PLACED    = 3,  /* Flags for which we store a place in Dep */
 	C_WORD      = 9,  /* Flags used for caching; stored in Hash_Dep */
-#define C_WORD        9   /* Used statically */
+#define C_WORD        9   /* Used statically */ // TODO avoid a macro
 
 	/*
 	 * Flag bits to be ORed together
 	 */
 
-	// TODO remove the comments */
 	F_PERSISTENT            = 1 << I_PERSISTENT,
 	/* (-p) When the dependency is newer than the target, don't rebuild */
 
@@ -72,11 +73,11 @@ enum
 
 	F_NEWLINE_SEPARATED     = 1 << I_NEWLINE_SEPARATED,
 	/* For dynamic dependencies, the file contains newline-separated
-	 * filenames, without any markup  */
+	 * filenames, without any markup. */
 
 	F_NUL_SEPARATED         = 1 << I_NUL_SEPARATED,
-	/* For dynamic dependencies, the file contains NUL-separated
-	 * filenames, without any markup  */
+	/* For dynamic dependencies, the file contains NUL-separated filenames,
+	 * without any markup. */
 
 	F_CODE                  = 1 << I_CODE,
 	/* For dynamic dependencies, the file contains Stu codde */
@@ -85,13 +86,18 @@ enum
 	/* A dependency is annotated with the input redirection flag '<' */
 
 	F_RESULT_NOTIFY         = 1 << I_RESULT_NOTIFY,
-	/* The link A ---> B between two executors annotated with this
-	 * flags means that A is notified of B's results.  */
+	/* The link A ---> B between two executors annotated with this flag
+	 * means that A is notified of B's results. */
 
 	F_RESULT_COPY           = 1 << I_RESULT_COPY,
 	/* The link A ---> B between two executors annotated with this
-	 * flags means that the results of B will be copied into A's result  */
+	 * flags means that the results of B will be copied into A's result. */
 
+	F_PHASE_A               = 1 << I_PHASE_A,
+	/* A parent (direct or indirect) is only in phase A.  As a result,
+	 * trivial dependencies should not be built.  Only the trivial Done
+	 * bits are set when done. */
+	
 	/*
 	 * Aggregates
 	 */
@@ -101,21 +107,25 @@ enum
 	F_ATTRIBUTE     = F_NEWLINE_SEPARATED | F_NUL_SEPARATED | F_CODE,
 };
 
+// TODO should be a class with constructor setting value to zero.
 typedef unsigned Done;
-/* Denotes which "aspects" of an execution have been done.  This is a different
- * way to encode the three placed flags.
- * The first two flags correspond to the first two flags (persistent and
- * optional).  These two are duplicated in order to accommodate trivial
- * dependencies.  */
+/* Denotes which "aspects" of an execution have been done.  Each bit that is set
+ * represents one aspect that was done.  When an executor is invoked with a
+ * certain set of flags, all flags *not* passed will be set when the execution
+ * is finished.  This is a different way to encode the three placed flags.  The
+ * first two flags correspond to the first two flags (persistent and optional).
+ * These two are duplicated in order to accommodate trivial dependencies.
+ * Only the first C_PLACED flags are used; the other bits have an unspecified
+ * value. */
 enum
 {
-	D_NONPERSISTENT_TRANSIENT       = 1 << 0,
-	D_NONOPTIONAL_TRANSIENT         = 1 << 1,
-	D_NONPERSISTENT_NONTRANSIENT    = 1 << 2,
-	D_NONOPTIONAL_NONTRANSIENT      = 1 << 3,
+	D_NONPERSISTENT_TRIVIAL         = 1 << 0,
+	D_NONOPTIONAL_TRIVIAL           = 1 << 1,
+	D_NONPERSISTENT_NONTRIVIAL      = 1 << 2,
+	D_NONOPTIONAL_NONTRIVIAL        = 1 << 3,
 
 	D_ALL                           = (1 << 4) - 1,
-	D_ALL_OPTIONAL                  = D_NONPERSISTENT_TRANSIENT | D_NONPERSISTENT_NONTRANSIENT,
+	D_ALL_OPTIONAL    = D_NONPERSISTENT_TRIVIAL | D_NONPERSISTENT_NONTRIVIAL,
 };
 
 extern const char *const flags_chars;

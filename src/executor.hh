@@ -61,6 +61,7 @@ public:
 	/* Set the error code, and throw an error except with the keep-going
 	 * option.  Does not print an error message. */
 
+	// TODO rename phase<-base
 	Proceed execute_base_A(shared_ptr <const Dep> dep_link);
 	/* DEP_LINK must not be null.  In the return value, at least one bit is
 	 * set.  The P_FINISHED bit indicates only that tasks related to this
@@ -76,10 +77,9 @@ public:
 	 * are read are written into DEPS, which is empty on calling. */
 
 	void operator<<(string text) const override;
-	/* Print full trace for the executor.  First the message is
-	 * Printed, then all traces for it starting at this executor,
-	 * up to the root executor.
-	 * TEXT may be "" to not print the first message.  */
+	/* Print full trace for the executor.  First the message is printed,
+	 * then all traces for it starting at this executor, up to the root
+	 * executor.  TEXT may be "" to not print the first message. */
 
 	const std::map <Executor *, shared_ptr <const Dep> > &get_parents() const {
 		return parents;
@@ -98,7 +98,7 @@ public:
 	 * set.  In DONE, set those bits that have been done.  When the
 	 * call is over, clear the PENDING bit.  DEPENDENCY_LINK is only
 	 * null when called on the root executor, because it is the
-	 * only executor that is not linked from another executor.  */
+	 * only executor that is not linked from another executor. */
 
 	virtual bool finished() const= 0;
 	/* Whether the executor is completely finished */
@@ -107,7 +107,7 @@ public:
 	/* Whether the executor is finished working for the given tasks */
 
 	virtual string debug_done_text() const
-	/* Extra string for the "done" information; may be empty.  */
+	/* Extra string for the "done" information; may be empty. */
 	{
 		return "";
 	}
@@ -144,7 +144,7 @@ public:
 
 	static Hash_Dep get_target_for_cache(Hash_Dep hash_dep);
 	/* Get the target value used for caching.  I.e, return TARGET
-	 * with certain flags removed.  */
+	 * with certain flags removed. */
 
 protected:
 	Bits bits;
@@ -157,7 +157,7 @@ protected:
 	 * number of elements is always very small, i.e., mostly one, and a map
 	 * is better suited in this case.  The map is sorted, but by the
 	 * executor pointer, i.e., the sorting is arbitrary as far as Stu is
-	 * concerned.  */
+	 * concerned. */
 
 	std::set <Executor *> children;
 
@@ -166,22 +166,20 @@ protected:
 	 * rebuilt.  Files that were rebuilt are not considered, since they make
 	 * the target be rebuilt anyway.  Implementations also changes this to
 	 * consider the file itself, if any.  This final timestamp is then
-	 * carried over to the parent executors.  */
+	 * carried over to the parent executors. */
 
 	std::vector <shared_ptr <const Dep> > result;
-	/* The final list of dependencies represented by the target.
-	 * This does not include any dynamic dependencies, i.e., all
-	 * dependencies are flattened to Plain_Dep's.  Not used
-	 * for executors that have file targets, neither for
-	 * executors that have multiple targets.  This is not used for
-	 * file dependencies, as a file dependency's result can be each
-	 * of its files, depending on the parent -- for file
-	 * dependencies, parents are notified directly, bypassing
-	 * push_result().  */
+	/* The final list of dependencies represented by the target.  This does
+	 * not include any dynamic dependencies, i.e., all dependencies are
+	 * flattened to Plain_Dep's.  Not used for executors that have file
+	 * targets, neither for executors that have multiple targets.  This is
+	 * not used for file dependencies, as a file dependency's result can be
+	 * each of its files, depending on the parent -- for file dependencies,
+	 * parents are notified directly, bypassing push_result(). */
 
 	std::map <string, string> result_variable;
 	/* Same semantics as RESULT, but for variable values, stored as
-	 * KEY-VALUE pairs.  */
+	 * KEY-VALUE pairs. */
 
 	shared_ptr <const Rule> param_rule;
 	/* The (possibly parametrized) rule from which this executor was
@@ -200,10 +198,11 @@ protected:
 	Proceed execute_children();
 	/* Execute already-active children */
 
+	// TODO rename phase<-base
 	Proceed execute_base_B(shared_ptr <const Dep> dep_link);
 	/* Second pass (trivial dependencies).  Called once we are sure
 	 * that the target must be built.  Arguments and return value
-	 * have the same semantics as execute_base_B().  */
+	 * have the same semantics as execute_base_B(). */
 
 	Executor *get_executor(shared_ptr <const Dep> dep);
 	/* Get an existing Executor or create a new one for the given
@@ -215,13 +214,12 @@ protected:
 		assert(children.empty());
 	}
 
-	const Buffer &get_buffer_A() const {  return buffer_A;  }
-	const Buffer &get_buffer_B() const {  return buffer_B;  }
+	const Buffer &get_buffer_A() const { return buffer_A; }
+	const Buffer &get_buffer_B() const { return buffer_B; }
 
 	void push(shared_ptr <const Dep> dep);
-	/* Push a dependency to the default buffer, breaking down
-	 * non-normalized dependencies while doing so.  DEP does not
-	 * have to be normalized.  */
+	/* Push a dependency to the default buffer, breaking down non-normalized
+	 * dependencies while doing so.  DEP does not have to be normalized. */
 
 	void push_result(shared_ptr <const Dep> dd);
 	Proceed connect(shared_ptr <const Dep> dep_this,
@@ -244,22 +242,22 @@ protected:
 	virtual int get_depth() const= 0;
 	/* -1 when undefined as in concatenated executors and the root
 	 * executor, in which case PARAM_RULE is always null.  Only used to
-	 * check for cycles on the rule level.  */
+	 * check for cycles on the rule level. */
 
 	virtual bool optional_finished(shared_ptr <const Dep> dep_link)= 0;
 	/* Whether the executor would be finished if this was an optional
 	 * dependency.  Check whether this is an optional dependency and if it
 	 * is, return TRUE when the file does not exist.  Return FALSE when
 	 * children should be started.  Return FALSE in executor types that are
-	 * not affected.  */
+	 * not affected. */
 
 	static Timestamp timestamp_last;
 	/* The timepoint of the last time wait() returned.  No file in the
-	 * file system should be newer than this.  */
+	 * file system should be newer than this. */
 
 	static std::unordered_map <Hash_Dep, Executor *> executors_by_hash_dep;
 	/* All cached Executor objects by each of their Target.  Such
-	 * Executor objects are never deleted.  */
+	 * Executor objects are never deleted. */
 
 	static bool find_cycle(Executor *parent,
 			       Executor *child,
@@ -269,14 +267,14 @@ protected:
 	 * PARENT and perform a depth-first search upwards in the
 	 * hierarchy to find CHILD.  DEPENDENCY_LINK is the link that
 	 * would be added between child and parent, and would create a
-	 * cycle.  */
+	 * cycle. */
 
 	static bool find_cycle(std::vector <Executor *> &path,
 			       Executor *child,
 			       shared_ptr <const Dep> dep_link);
 	/* Helper function.  PATH is the currently explored path.
 	 * PATH[0] is the original PARENT; PATH[end] is the oldest
-	 * grandparent found yet.  */
+	 * grandparent found yet. */
 
 	static void cycle_print(const std::vector <Executor *> &path,
 				shared_ptr <const Dep> dep);
@@ -286,12 +284,12 @@ protected:
 	 * that A is a dependency of B.  For each edge in this cycle,
 	 * output one line.  DEPENDENCY is the link (x <- a), which is not yet
 	 * created in the executor objects.  All other link
-	 * dependencies are read from the executor objects.  */
+	 * dependencies are read from the executor objects. */
 
 	static bool same_rule(const Executor *executor_a,
 			      const Executor *executor_b);
 	/* Whether both executors have the same parametrized rule.
-	 * Only used for finding cycles.  */
+	 * Only used for finding cycles. */
 
 	shared_ptr <const Dep> append_top(shared_ptr <const Dep> dep,
 					  shared_ptr <const Dep> top);
@@ -300,18 +298,16 @@ protected:
 
 private:
 	Buffer buffer_A;
-	/* Dependencies that have not yet begun to be built.
-	 * Initialized with all dependencies, and emptied over time when
-	 * things are built, and filled over time when dynamic
-	 * dependencies are worked on.  Entries are not necessarily
-	 * unique.  Does not contain compound dependencies, except under
-	 * concatenating ones.  */
+	/* Dependencies that have not yet begun to be built.  Initialized with
+	 * all dependencies, and emptied over time when things are built, and
+	 * filled over time when dynamic dependencies are worked on.  Entries
+	 * are not necessarily unique.  Dependencies are normalized. */
 
 	Buffer buffer_B;
-	/* The buffer for dependencies in the second pass.  They are
-	 * only started if, after (potentially) starting all non-trivial
-	 * dependencies, the target must be rebuilt anyway.  Does not
-	 * contain compound dependencies.  */
+	/* The buffer for dependencies in the second pass.  They are only
+	 * started if, after (potentially) starting all non-trivial
+	 * dependencies, the target must be rebuilt anyway.  Dependencies are
+	 * normalized. */
 
 	static bool hide_link_from_message(Flags flags) {
 		return flags & F_RESULT_NOTIFY;

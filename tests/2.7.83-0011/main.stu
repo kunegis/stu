@@ -1,7 +1,8 @@
-A: [ -t B ]
+A: [ -t -n B ]
 {
 	echo CORRECT >A
 }
 
 B = {C}
 C = {c}
+

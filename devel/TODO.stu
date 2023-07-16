@@ -4,7 +4,19 @@
 # version of Stu when -n becomes the default.
 #
 
-# * 2.7.83-0006:  How should a trivial dynamic dependency work?
+# * test errors:  fix 2.4-trivial-11 and others
+# ** When setting Done bits:  even when F_PHASE_A is set, set the nontrivial
+#    done bits if buffer_B is empty.
+
+A: -t [ -t B] { ...}
+A: [ -t B ] {...}  B={-t C}  ...  # Try with/without presence of X
+A: -t [ -t [ -t B ]] ...  # With/without X
+A: [ -t [ B ]] ...  # With/without X
+A: -t [ [ B ]] ...  # With/without X
+A: [ [ -t B ]] ...  # With/without X
+A: [ -t B ] {}  B={[-t C]}  C={-t D} ... # With/without X
+A: [ -t B ] {}  B={list.[-t C]} ... # With/without X
+A: [[B]] X {...} B={-t C} C={D} D={CORRECT}... # Buld order: B, X, C, D, A.
 
 A: [ -n -t B ] { ... }
 A: [ -t -n B ] { ... }
@@ -18,8 +30,17 @@ A: [-C -n B] { ... } # error, no mixing
 A: [-n -C B] { ... } # error, no mixing
 A: -n (-C X); #??
 
+A: @x {...}  @x: -t B; ...
+A: @x {...}  @x: [-t B]; ...
+A: @x {...}  @x: -t [B]; ...
+A: @x {...}  @x: [B]; B = {-t C} ...
+
 # * Put -C into the manpage.
 # * go to 2.8, and update NEWS.
+
+#
+# Test installing the .deb from Github/releases
+#
 
 #
 # gcov:  Check whether making unreachable() empty in cov mode removes those
@@ -349,3 +370,12 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" }
 # priorities, it would be an error because no rule dominates the other.
 $x.bbb -p1:  ... { ... }
 aaa.$x -p2:  ... { ... }
+
+#
+# Get Stu into Debian.
+# * https://www.debian.org/devel/wnpp/
+# * https://wiki.debian.org/DebianMentorsFaq#How_do_I_make_my_first_package.3F
+# * https://www.debian.org/doc/manuals/developers-reference/pkgs.html#newpackage
+# * https://wiki.debian.org/Teams/DebianCliAppsTeam
+# * https://wiki.debian.org/Teams/DebianMonoGroup/NewPackage
+#

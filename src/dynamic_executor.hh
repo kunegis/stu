@@ -36,7 +36,8 @@ public:
 	virtual int get_depth() const override { return dep->get_depth(); }
 	virtual bool optional_finished(shared_ptr <const Dep> ) override { return false; }
 	virtual void render(Parts &, Rendering= 0) const override;
-	virtual void notify_variable(const std::map <string, string> &result_variable_child) override {
+	virtual void notify_variable
+	(const std::map <string, string> &result_variable_child) override {
 		result_variable.insert(result_variable_child.begin(),
 				       result_variable_child.end());
 	}
@@ -47,9 +48,9 @@ public:
 
 private:
 	const shared_ptr <const Dynamic_Dep> dep;
-	/* A dynamic of anything */
 
-	bool is_finished;
+	Done done;
+//	bool is_finished;
 };
 
 #endif /* ! DYNAMIC_EXECUTOR_HH */

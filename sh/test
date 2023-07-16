@@ -440,6 +440,8 @@ do
 					echo >&7 "INSTDERR...correct"
 				else
 					test_fail "'$line' was not found in stderr"
+					echo >&2 stderr:
+					cat  >&2 list.def.err
 				fi
 			done
 		fi

@@ -219,11 +219,8 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 			     shared_ptr <const Rule> param_rule_,
 			     std::map <string, string> &mapping_parameter_,
 			     int &error_additional)
-	:  Executor(param_rule_),
-	   timestamps_old(nullptr),
-	   filenames(nullptr),
-	   rule(rule_),
-	   done(0)
+	:  Executor(param_rule_), timestamps_old(nullptr), filenames(nullptr),
+	   rule(rule_), done(0)
 {
 	assert((param_rule_ == nullptr) == (rule_ == nullptr));
 
@@ -649,6 +646,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 	assert(proceed & P_FINISHED);
 	proceed &= ~P_FINISHED;
 
+	// TODO why is this so low, put it at the beginning of the function.
 	Debug debug(this);
 
 	if (finished(dep_this->flags)) {
@@ -848,11 +846,12 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 	}
 
 	/* We now know that the command must be run, or that there is no
-	 * command.  */
+	 * command. */
 
-	/* Re-deploy all dependencies (second pass to execute also all
-	 * transient targets) */
-	Proceed proceed_2= Executor::execute_base_B(dep_this);
+	/* Second pass to execute also all trivial targets */
+	Proceed proceed_2=
+//		Executor::
+		execute_base_B(dep_this);
 	if (proceed_2 & P_WAIT) {
 		return proceed_2;
 	}
@@ -875,17 +874,15 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 	assert(options_jobs >= 0);
 
-	/* For hardcoded rules (i.e., static content), we don't need to
-	 * start a job, and therefore this is executed even if JOBS is
-	 * zero.  */
+	/* For hardcoded rules (i.e., static content), we don't need to start a
+	 * job, and therefore this is executed even if JOBS is zero. */
 	if (rule->is_hardcode) {
 		assert(hash_deps.size() == 1);
 		assert(hash_deps.front().is_file());
-
 		DEBUG_PRINT("create_content");
-
 		print_command();
-		write_content(hash_deps.front().get_name_c_str_nondynamic(), *(rule->command));
+		write_content(hash_deps.front().get_name_c_str_nondynamic(),
+			      *(rule->command));
 		done= ~0;
 		assert(proceed == 0);
 		return proceed |= P_FINISHED;

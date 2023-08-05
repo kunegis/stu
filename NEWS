@@ -11,6 +11,12 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+XXXXXXXXXX  version 2.7.83
+
+* The flag -C was added.  It can be used inside dynamic dependencies (like [-C
+  filename]) to denote that "filename" will be parsed in full Stu syntax.  This
+  is the default behavior and thus -C and can always be omitted.
+
 2023-06-30  Version 2.7.70
 
 * The option -I outputs all targets that can be rebuilt.  Useful for

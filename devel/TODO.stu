@@ -2,9 +2,6 @@
 # Flag -C.
 #
 
-# * Put -C into the manpage.
-# * update NEWS.
-
 # Test -C (should do nothing)
 A: [-C B] { ... }
 A: -C B { ... } # error, not allowed here (?); or maybe no-op
@@ -411,4 +408,9 @@ A: -e B
 #
 # File_Executor::executor() and Dynamic_Executor::execute() are very similar.
 # Refactor to only have the common bits in the subclasses of Executor.
+#
+
+#
+# Manpage:  the synopsis should show all "top-level" options, i.e., options that
+# change the overall behavior of Stu, such as -q/-P/-I.
 #

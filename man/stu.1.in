@@ -573,7 +573,7 @@ configuration files that are generated automatically, including the case
 of files containing the flags used to invoke compilers and other
 programs.
 
-    '[' ['-n' | '-0'] NAME ']'  A dynamic dependency
+    '[' ['-n' | '-0' | '-C'] NAME ']'  A dynamic dependency
 
 Stu will ensure the file named NAME exists, and then parse it as
 containing further dependencies of the target.  The fact that NAME needs
@@ -586,8 +586,9 @@ list of filenames.  Analogously, the
 flag can be used when the file
 contains \\0-separated
 filenames, or when the file contains the name of
-exactly one file.
-If no flag is used, the file is parsed in full Stu syntax.
+exactly one file.  If
+.BR -C
+or no flag is used, the file is parsed in full Stu syntax.
 
     '[' @NAME ']'  A dynamic transient target
 

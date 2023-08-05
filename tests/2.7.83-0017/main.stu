@@ -1,0 +1,7 @@
+# Unecessary -C is allowed.
+
+A: -C B {
+	cp B A
+}
+
+B = {CORRECT}

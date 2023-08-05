@@ -1,0 +1,5 @@
+A: -n (-C B) {
+	cp B A
+}
+
+B = {CORRECT}

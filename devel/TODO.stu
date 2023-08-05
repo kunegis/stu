@@ -2,14 +2,7 @@
 # Flag -C.
 #
 
-# Test -C (should do nothing)
-A: [-C B] { ... }
-A: -C B { ... } # error, not allowed here (?); or maybe no-op
-A: [-C -n B] { ... } # error, no mixing
-A: [-n -C B] { ... } # error, no mixing
-A: -n (-C X); #??
-
-# Make a big automatced EXEC with the following:
+# Make a big automated EXEC with the following:
 # * Vary dependencies of A
 # * Vary whether X is given, before or after.
 # * Vary whether A exists.

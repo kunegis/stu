@@ -1,7 +1,7 @@
 STU(1)                                STU                               STU(1)
 
 NAME
-       stu - Build automation
+       stu - build automation
 
 SYNOPSIS
        stu [ -f FILENAME ] [ OPTION ]... [ TARGET ]...
@@ -200,7 +200,7 @@ OPTIONS
               defined and not 'dumb' and if they are,  uses  ANSI  escape  se‐
               quences to color code messages.
 
-       -Y     Enable color output unconditionally.
+       -Y     Enable color output.
 
        -z     Output runtime statistics about child processes on standard out‐
               put when finished.  Does not include  the  runtime  of  the  Stu
@@ -1131,4 +1131,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.7.83                         July 2023                            STU(1)
+stu-2.7.83                        August 2023                           STU(1)

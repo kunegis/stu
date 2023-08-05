@@ -1,23 +1,9 @@
 #
-# "-C":  A new flag for dynamic dependencies, next to -n and -0.  It represents the
-# default behavior (full Stu syntax), and may become useful in the next major
-# version of Stu when -n becomes the default.
+# Flag -C.
 #
 
-A: -t [ -t B] { ...}
-A: [ -t B ] {...}  B={-t C}  ...  # Try with/without presence of X
-A: -t [ -t [ -t B ]] ...  # With/without X
-A: [ -t [ B ]] ...  # With/without X
-A: -t [ [ B ]] ...  # With/without X
-A: [ [ -t B ]] ...  # With/without X
-A: [ -t B ] {}  B={[-t C]}  C={-t D} ... # With/without X
-A: [ -t B ] {}  B={list.[-t C]} ... # With/without X
-A: [[B]] X {...} B={-t C} C={D} D={CORRECT}... # Buld order: B, X, C, D, A.
-
-A: [ -n -t B ] { ... }
-A: [ -t -n B ] { ... }
-A: [ -n -o B ] { ... }
-A: [ -t -o B ] { ... }
+# * Put -C into the manpage.
+# * update NEWS.
 
 # Test -C (should do nothing)
 A: [-C B] { ... }
@@ -26,16 +12,32 @@ A: [-C -n B] { ... } # error, no mixing
 A: [-n -C B] { ... } # error, no mixing
 A: -n (-C X); #??
 
+# Make a big automatced EXEC with the following:
+# * Vary dependencies of A
+# * Vary whether X is given, before or after.
+# * Vary whether A exists.
+A: -t [ -t B] { ...}
+A: [ -t B ] {...}  B={-t C}  ...  # Try with/without presence of X
+A: -t [ -t [ -t B ]] ...  # With/without X
+A: [ -t [ B ]] ...  # With/without X
+A: -t [ [ B ]] ...  # With/without X
+A: [ [ -t B ]] ...  # With/without X
+A: [ -t B ] {}  B={[-t C]}  C={-t D} ... # With/without X
+A: [ -t B ] {}  B={list.[-t C]} ... # With/without X
+A: [[B]] X {...} B={-t C} C={D} D={CORRECT}... # Build order: B, X, C, D, A.
 A: @x {...}  @x: -t B; ...
 A: @x {...}  @x: [-t B]; ...
 A: @x {...}  @x: -t [B]; ...
 A: @x {...}  @x: [B]; B = {-t C} ...
-
-# * Put -C into the manpage.
-# * update NEWS.
+A: [ -n -t B ] { ... }
+A: [ -t -n B ] { ... }
+A: [ -n -o B ] { ... }
+A: [ -t -o B ] { ... }
 
 #
 # Test installing the .deb from Github/releases
+#
+# * Also, mention them in INSTALL.
 #
 
 #
@@ -374,4 +376,34 @@ aaa.$x -p2:  ... { ... }
 # * https://www.debian.org/doc/manuals/developers-reference/pkgs.html#newpackage
 # * https://wiki.debian.org/Teams/DebianCliAppsTeam
 # * https://wiki.debian.org/Teams/DebianMonoGroup/NewPackage
+#
+
+#
+# Check if we can provide a Flathub package.
+#
+
+#
+# A flag:  A dependency may fail.
+#
+
+A: -e B
+{
+	# B has been built, but the building may have failed. 
+}
+
+#
+# Test very long line length; very large number of dependencies; very large
+# number of dependencies in a dynamic dependency.
+#
+
+#
+# Check for files that don't end in newline (except for empty files).
+#
+
+#
+# Consider renaming "transient" to "phony".
+#
+
+#
+# Flag to suppress output for a rule.  (-s presumably).
 #

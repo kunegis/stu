@@ -36,7 +36,7 @@ public:
 
 	void set_all() { bits= ~0; }
 	string format() const;
-	static Done from_flags(Flags flags); /* Only placed flags are kept */
+	static Done from_flags(Flags flags);
 
 private:
 	unsigned bits;

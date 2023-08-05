@@ -1,0 +1,18 @@
+# When A already exists.  Does A get rebuilt?  No.
+
+@all: @x A @y;
+
+@x { touch A ; }
+
+A: [B] {
+	exit 1
+}
+
+B={}   
+
+@y {
+	[ -r B ] || {
+		echo >&2 '*** B must exist'
+		exit 1
+	}
+}

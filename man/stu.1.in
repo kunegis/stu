@@ -1,6 +1,6 @@
 .TH STU 1 "$DATE" "stu-$STU_VERSION" "STU"
 .SH NAME
-stu \- Build automation
+stu \- build automation
 .SH SYNOPSIS
 .B stu
 [ -f
@@ -245,7 +245,7 @@ and standard error output are TTYs and whether $TERM is defined and
 not 'dumb' and if they are, uses ANSI escape sequences to color code
 messages.
 .IP -Y
-Enable color output unconditionally.
+Enable color output.
 .IP -z
 Output runtime statistics about child processes on standard output when
 finished.  Does not include the runtime of the Stu process itself.

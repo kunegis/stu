@@ -642,6 +642,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 		return proceed;
 	}
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
+		//assert((proceed & P_FINISHED) == 0);   // TODO add this in.
 		return proceed;
 	}
 
@@ -737,8 +738,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 
 			if (! (bits & B_NEED_BUILD)
 			    && ret_stat == 0
-			    && timestamp.defined()
-			    && timestamps_old[i] < timestamp
+			    && timestamp.defined() && timestamps_old[i] < timestamp
 			    && ! no_execution) {
 				bits |= B_NEED_BUILD;
 			}
@@ -838,8 +838,9 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 		}
 	}
 
+	DEBUG_PRINT("aaa");//rm
 	if (! (bits & B_NEED_BUILD)) {
-		/* The file does not have to be built */
+		DEBUG_PRINT("bbb");//rm
 		done |= Done::from_flags(dep_this->flags);
 		return proceed |= P_FINISHED;
 	}
@@ -848,7 +849,9 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_this)
 	 * command. */
 
 	/* Second pass to execute also all trivial targets */
+	// TODO rename proceed_B.
 	Proceed proceed_2= execute_phase_B(dep_this);
+	// TODO missing P_CALL_AGAIN
 	if (proceed_2 & P_WAIT) {
 		return proceed_2;
 	}

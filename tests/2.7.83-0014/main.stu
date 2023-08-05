@@ -1,0 +1,28 @@
+# Make sure C/D are not built when A is not rebuilt
+
+@all: @x A @y;
+
+@x {
+	rm -f ?
+	touch A
+}
+
+A: [B]
+{
+	exit 1
+}
+
+B={-t C}
+C={D}
+
+@y {
+	[ -e C ] && {
+		echo >&2 '*** C must not exist'
+		exit 1
+	}
+	[ -e D ] && {
+		echo >&2 '*** D must not exist'
+		exit 1
+	}
+	exit 0
+}

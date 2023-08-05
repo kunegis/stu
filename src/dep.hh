@@ -145,7 +145,7 @@ public:
 #ifndef NDEBUG
 	void check() const;
 #else
-	void check() const {  }
+	void check() const { }
 #endif
 
 	virtual shared_ptr <const Dep> instantiate

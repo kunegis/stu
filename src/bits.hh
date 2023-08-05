@@ -2,10 +2,10 @@
 #define BITS_HH
 
 /*
- * These are bits set for individual executor objects.  The semantics of each
- * is chosen such that in a new executor object, the value is zero.  The
- * semantics of the different bits are distinct and could just as well be
- * realized as individual "bool" variables.
+ * These are set for individual executor objects.  The semantics of each is
+ * chosen such that in a new executor object, the value is zero.  The semantics
+ * of the different bits are distinct and could just as well be realized as
+ * individual "bool" variables.
  */
 
 typedef unsigned Bits;

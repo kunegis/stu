@@ -105,7 +105,7 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			}
 		}
 
-		/* Perform checks on forbidden features in dynamic dependencies.
+		/* Forbidden features in dynamic dependencies.
 		 * In keep-going mode (-k), we set the error, set the erroneous
 		 * dependency to null, and at the end prune the null entries.  */
 		bool found_error= false;
@@ -137,7 +137,6 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		}
 
 		assert(! found_error || option_k);
-		std::vector <shared_ptr <const Dep> > deps_new;
 
 		shared_ptr <const Dep> top_top= dep_target->top;
 		shared_ptr <Dep> no_top= Dep::clone(dep_target);
@@ -145,6 +144,7 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		shared_ptr <Dep> top= std::make_shared <Dynamic_Dep> (no_top);
 		top->top= top_top;
 
+		std::vector <shared_ptr <const Dep> > deps_new;
 		for (auto &j: deps) {
 			if (j) {
 				shared_ptr <Dep> j_new= Dep::clone(j);
@@ -582,6 +582,7 @@ void Executor::push(shared_ptr <const Dep> dep)
 
 Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_this)
 {
+	DEBUG_PRINT(fmt("execute_phase_A dep_this=%s", show(dep_this, S_DEBUG, R_SHOW_FLAGS)));//rm
 	Debug debug(this);
 	assert(options_jobs >= 0);
 	assert(dep_this);
@@ -589,6 +590,8 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_this)
 
 	if (finished(dep_this->flags)) {
 		DEBUG_PRINT("finished");
+		// TODO here and everywhere else, replace "return proceed |= X" 
+		// by "return proceed | X".
 		return proceed |= P_FINISHED;
 	}
 
@@ -597,10 +600,10 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_this)
 		return proceed |= P_FINISHED;
 	}
 
-	/* In DFS mode, first continue the already-open children, then
-	 * open new children.  In random mode, start new children first
-	 * and continue already-open children second */
-	/* Continue the already-active child executors */
+	/* Continue the already-active child executors.  In DFS mode, first
+	 * continue the already-open children, then open new children.  In
+	 * random mode, start new children first and continue already-open
+	 * children second. */
 	if (order != Order::RANDOM) {
 		Proceed proceed_2= execute_children();
 		proceed |= proceed_2;
@@ -614,10 +617,6 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_this)
 	}
 
 	assert(error == 0 || option_k);
-
-	/*
-	 * Deploy dependencies (first pass)
-	 */
 
 	if (options_jobs == 0)
 		return proceed |= P_WAIT;
@@ -645,7 +644,6 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_this)
 		return proceed;
 	}
 
-	/* There was an error in a child */
 	if (error) {
 		assert(option_k);
 		return proceed |= P_ABORT | P_FINISHED;
@@ -739,8 +737,11 @@ void Executor::disconnect(Executor *const child,
 		delete child;
 }
 
+// TODO the arguments of execute_phase_A and execute_phase_B should have the
+// same name.
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 {
+	DEBUG_PRINT(fmt("execute_phase_B dep_link=%s", show(dep_link, S_DEBUG, R_SHOW_FLAGS)));//rm
 	Proceed proceed= 0;
 	while (! buffer_B.empty()) {
 		shared_ptr <const Dep> dep_child= buffer_B.pop();

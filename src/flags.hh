@@ -101,7 +101,7 @@ enum
 	 * Aggregates
 	 */
 	F_PLACED        = (1 << C_PLACED) - 1,
-	F_TARGET_BYTE   = (1 << C_WORD) - 1,
+	F_TARGET_BYTE   = (1 << C_WORD) - 1, // TODO rename F_TARGET_WORD
 	F_TARGET        = F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
 	F_ATTRIBUTE     = F_NEWLINE_SEPARATED | F_NUL_SEPARATED | F_CODE,
 };

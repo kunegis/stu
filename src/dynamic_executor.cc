@@ -58,15 +58,15 @@ Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 	push(dep_child);
 }
 
-Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_this)
+Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 {
 	Debug debug(this);
 
-	Proceed proceed= execute_phase_A(dep_this);
+	Proceed proceed= execute_phase_A(dep_link);
 	assert(proceed);
 	if (proceed & P_ABORT) {
 		assert(proceed & P_FINISHED);
-		done |= Done::from_flags(dep_this->flags);
+		done |= Done::from_flags(dep_link->flags);
 		return proceed;
 	}
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
@@ -77,18 +77,17 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_this)
 	assert(proceed & P_FINISHED);
 	proceed &= ~P_FINISHED;
 
-	if (finished(dep_this->flags)) {
+	if (finished(dep_link->flags)) {
 		assert(! (proceed & P_WAIT));
 		return proceed |= P_FINISHED;
 	}
 
-	// XXX added
 	if (! (bits & B_NEED_BUILD)) {
-		done |= Done::from_flags(dep_this->flags);
+		done |= Done::from_flags(dep_link->flags);
 		return proceed |= P_FINISHED;
 	}
 
-	Proceed proceed_B= execute_phase_B(dep_this);
+	Proceed proceed_B= execute_phase_B(dep_link);
 	assert(proceed_B);
 	proceed |= proceed_B;
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
@@ -96,11 +95,11 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_this)
 		return proceed;
 	}
 	if (proceed & P_FINISHED) {
-		done |= Done::from_flags(dep_this->flags);
+		done |= Done::from_flags(dep_link->flags);
 		return proceed;
 	}
 
-	if (finished(dep_this->flags)) {
+	if (finished(dep_link->flags)) {
 		assert(! (proceed & P_WAIT));
 		return proceed |= P_FINISHED;
 	}
@@ -132,9 +131,6 @@ void Dynamic_Executor::render(Parts &parts, Rendering rendering) const
 void Dynamic_Executor::notify_result(shared_ptr <const Dep> d, Executor *source,
 				     Flags flags, shared_ptr <const Dep> dep_source)
 {
-	DEBUG_PRINT(fmt("notify_result d=%s dep_source=%s",
-			show(d, S_DEBUG, R_SHOW_FLAGS),
-			show(dep_source, S_DEBUG, R_SHOW_FLAGS))); // rm
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)));
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))
 	       != (F_RESULT_NOTIFY | F_RESULT_COPY));
@@ -148,14 +144,13 @@ void Dynamic_Executor::notify_result(shared_ptr <const Dep> d, Executor *source,
 			/* Add -% flag */
 			j_new->flags |= F_RESULT_COPY;
 			/* Add flags from self */
-			j_new->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC);
+			j_new->flags |= dep->flags & (F_TARGET_WORD & ~F_TARGET_DYNAMIC);
 			for (unsigned i= 0; i < C_PLACED; ++i) {
 				if (j_new->get_place_flag(i).empty() &&
 				    ! dep->get_place_flag(i).empty())
 					j_new->set_place_flag(i, dep->get_place_flag(i));
 			}
 			j= j_new;
-			DEBUG_PRINT(fmt("notify j=%s", show(j, S_DEBUG, R_SHOW_FLAGS)));//rm
 			push(j);
 		}
 	} else if (flags & F_RESULT_COPY) {

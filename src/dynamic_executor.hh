@@ -30,7 +30,7 @@ public:
 	shared_ptr <const Dynamic_Dep> get_dep() const {  return dep;  }
 
 	virtual bool want_delete() const override;
-	virtual Proceed execute(shared_ptr <const Dep> dep_this) override;
+	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
 	virtual bool finished() const override;
 	virtual bool finished(Flags flags) const override;
 	virtual int get_depth() const override { return dep->get_depth(); }

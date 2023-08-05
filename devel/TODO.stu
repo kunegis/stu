@@ -388,7 +388,7 @@ aaa.$x -p2:  ... { ... }
 
 A: -e B
 {
-	# B has been built, but the building may have failed. 
+	# B has been built, but the building may have failed.
 }
 
 #
@@ -406,4 +406,9 @@ A: -e B
 
 #
 # Flag to suppress output for a rule.  (-s presumably).
+#
+
+#
+# File_Executor::executor() and Dynamic_Executor::execute() are very similar.
+# Refactor to only have the common bits in the subclasses of Executor.
 #

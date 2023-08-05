@@ -86,7 +86,7 @@ public:
 
 	virtual bool want_delete() const= 0;
 
-	virtual Proceed execute(shared_ptr <const Dep> dep_this)= 0;
+	virtual Proceed execute(shared_ptr <const Dep> dep_link)= 0;
 	/* Start the next job(s).  This will also terminate jobs when
 	 * they don't need to be run anymore, and thus it can be called
 	 * when K = 0 just to terminate jobs that need to be terminated.

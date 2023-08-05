@@ -6,9 +6,9 @@ Transient_Executor::~Transient_Executor()
 	unreachable();
 }
 
-Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_this)
+Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 {
-	Proceed proceed= execute_phase_A(dep_this);
+	Proceed proceed= execute_phase_A(dep_link);
 	assert(proceed);
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		return proceed;
@@ -81,7 +81,7 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 	 * just the one given in the dependency.  Also, add the flags.  */
 	for (Hash_Dep t: hash_deps) {
 		t.get_front_word_nondynamic() |= (word_t)
-			(dep_link->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC));
+			(dep_link->flags & (F_TARGET_WORD & ~F_TARGET_DYNAMIC));
 		executors_by_hash_dep[t]= this;
 	}
 

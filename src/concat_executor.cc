@@ -55,20 +55,20 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 	}
 }
 
-Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_this)
+Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 {
  again:
 	assert(stage <= ST_FINISHED);
 	if (stage == ST_FINISHED)
 		return P_FINISHED;
-	Proceed proceed= execute_phase_A(dep_this);
+	Proceed proceed= execute_phase_A(dep_link);
 	assert(proceed);
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		assert((proceed & P_FINISHED) == 0);
 		return proceed;
 	}
 	if (!(proceed & P_FINISHED)) {
-		proceed |= execute_phase_B(dep_this);
+		proceed |= execute_phase_B(dep_link);
 		if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 			assert((proceed & P_FINISHED) == 0);
 			return proceed;
@@ -122,7 +122,7 @@ void Concat_Executor::launch_stage_1()
 		/* Add -% flag */
 		f2->flags |= F_RESULT_COPY;
 		/* Add flags from self */
-		f2->flags |= dep->flags & (F_TARGET_BYTE & ~F_TARGET_DYNAMIC);
+		f2->flags |= dep->flags & (F_TARGET_WORD & ~F_TARGET_DYNAMIC);
 		for (unsigned i= 0; i < C_PLACED; ++i) {
 			if (f2->get_place_flag(i).empty() && ! dep->get_place_flag(i).empty())
 				f2->set_place_flag(i, dep->get_place_flag(i));

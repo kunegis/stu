@@ -580,22 +580,21 @@ void Executor::push(shared_ptr <const Dep> dep)
 	}
 }
 
-Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_this)
+Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
-	DEBUG_PRINT(fmt("execute_phase_A dep_this=%s", show(dep_this, S_DEBUG, R_SHOW_FLAGS)));//rm
 	Debug debug(this);
 	assert(options_jobs >= 0);
-	assert(dep_this);
+	assert(dep_link);
 	Proceed proceed= 0;
 
-	if (finished(dep_this->flags)) {
+	if (finished(dep_link->flags)) {
 		DEBUG_PRINT("finished");
-		// TODO here and everywhere else, replace "return proceed |= X" 
+		// TODO here and everywhere else, replace "return proceed |= X"
 		// by "return proceed | X".
 		return proceed |= P_FINISHED;
 	}
 
-	if (optional_finished(dep_this)) {
+	if (optional_finished(dep_link)) {
 		DEBUG_PRINT("optional finished");
 		return proceed |= P_FINISHED;
 	}
@@ -610,7 +609,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_this)
 		if (proceed & P_WAIT) {
 			if (options_jobs == 0)
 				return proceed;
-		} else if (finished(dep_this->flags) && ! option_k) {
+		} else if (finished(dep_link->flags) && ! option_k) {
 			DEBUG_PRINT("finished");
 			return proceed |= P_FINISHED;
 		}
@@ -624,7 +623,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_this)
 	while (! buffer_A.empty()) {
 		shared_ptr <const Dep> dep_child= buffer_A.pop();
 
-		Proceed proceed_2= connect(dep_this, dep_child);
+		Proceed proceed_2= connect(dep_link, dep_child);
 		proceed |= proceed_2;
 		if (options_jobs == 0)
 			return proceed |= P_WAIT;
@@ -737,11 +736,8 @@ void Executor::disconnect(Executor *const child,
 		delete child;
 }
 
-// TODO the arguments of execute_phase_A and execute_phase_B should have the
-// same name.
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 {
-	DEBUG_PRINT(fmt("execute_phase_B dep_link=%s", show(dep_link, S_DEBUG, R_SHOW_FLAGS)));//rm
 	Proceed proceed= 0;
 	while (! buffer_B.empty()) {
 		shared_ptr <const Dep> dep_child= buffer_B.pop();

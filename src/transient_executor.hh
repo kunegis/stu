@@ -19,7 +19,7 @@ public:
 
 	shared_ptr <const Rule> get_rule() const {  return rule;  }
 	virtual bool want_delete() const override { return false; }
-	virtual Proceed execute(shared_ptr <const Dep> dep_this) override;
+	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
 	virtual bool finished() const override;
 	virtual bool finished(Flags flags) const override;
 	virtual void render(Parts &, Rendering= 0) const override;

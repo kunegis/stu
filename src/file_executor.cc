@@ -849,16 +849,17 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	/* Second pass to execute also all trivial targets */
 	Proceed proceed_B= execute_phase_B(dep_link);
 	assert(proceed_B);
-	// TODO from here on, do proceed |= proceed_B and then don't use proceed_B anymore.
-	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
-		return proceed_B;
+	proceed |= proceed_B;
+	proceed &= ~P_FINISHED;
+	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
+		return proceed;
 	}
 	assert(children.empty());
 
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */
 		done |= Done::from_flags(dep_link->flags);
-		return proceed |= P_FINISHED; // TODO should be _B
+		return proceed |= P_FINISHED;
 	}
 
 	/* The command must be run (or the file created, etc.) now */
@@ -882,15 +883,12 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		write_content(hash_deps.front().get_name_c_str_nondynamic(),
 			      *(rule->command));
 		done.set_all();
-		// TODO should be _B
 		assert(proceed == 0);
-		// TODO should be _B
 		return proceed |= P_FINISHED;
 	}
 
 	/* We know that a job has to be started now */
 	if (options_jobs == 0)
-		// TODO should be _B
 		return proceed |= P_WAIT;
 
 	/* We have to start a job now */
@@ -957,9 +955,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 					explain_missing_optional_copy_source();
 					raise(ERROR_BUILD);
 					done |= Done::from_flags(dep_link->flags);
-					// TODO should be _B
 					assert(proceed == 0);
-					// TODO should be _B
 					return proceed |= P_ABORT | P_FINISHED;
 				}
 			}
@@ -988,11 +984,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				     show(hash_deps.front()));
 			raise(ERROR_BUILD);
 			done |= Done::from_flags(dep_link->flags);
-			// TODO should be _B
 			assert(proceed == 0);
-			// TODO should be _B
 			proceed |= P_ABORT | P_FINISHED;
-			// TODO should be _B
 			return proceed;
 		}
 
@@ -1054,12 +1047,9 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	-- options_jobs;
 	assert(options_jobs >= 0);
 
-	// TODO should be _B
 	proceed |= P_WAIT;
 	if (order == Order::RANDOM && options_jobs > 0)
-		// TODO should be _B
 		proceed |= P_CALL_AGAIN;
-	// TODO should be _B
 	return proceed;
 }
 

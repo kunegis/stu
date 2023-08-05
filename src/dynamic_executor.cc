@@ -79,12 +79,12 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	if (finished(dep_link->flags)) {
 		assert(! (proceed & P_WAIT));
-		return proceed |= P_FINISHED;
+		return proceed | P_FINISHED;
 	}
 
 	if (! (bits & B_NEED_BUILD)) {
 		done |= Done::from_flags(dep_link->flags);
-		return proceed |= P_FINISHED;
+		return proceed | P_FINISHED;
 	}
 
 	Proceed proceed_B= execute_phase_B(dep_link);
@@ -101,7 +101,7 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	if (finished(dep_link->flags)) {
 		assert(! (proceed & P_WAIT));
-		return proceed |= P_FINISHED;
+		return proceed | P_FINISHED;
 	}
 
 	assert(proceed);

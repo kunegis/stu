@@ -589,14 +589,12 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 
 	if (finished(dep_link->flags)) {
 		DEBUG_PRINT("finished");
-		// TODO here and everywhere else, replace "return proceed |= X"
-		// by "return proceed | X".
-		return proceed |= P_FINISHED;
+		return proceed | P_FINISHED;
 	}
 
 	if (optional_finished(dep_link)) {
 		DEBUG_PRINT("optional finished");
-		return proceed |= P_FINISHED;
+		return proceed | P_FINISHED;
 	}
 
 	/* Continue the already-active child executors.  In DFS mode, first
@@ -611,14 +609,14 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 				return proceed;
 		} else if (finished(dep_link->flags) && ! option_k) {
 			DEBUG_PRINT("finished");
-			return proceed |= P_FINISHED;
+			return proceed | P_FINISHED;
 		}
 	}
 
 	assert(error == 0 || option_k);
 
 	if (options_jobs == 0)
-		return proceed |= P_WAIT;
+		return proceed | P_WAIT;
 
 	while (! buffer_A.empty()) {
 		shared_ptr <const Dep> dep_child= buffer_A.pop();
@@ -626,7 +624,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 		Proceed proceed_2= connect(dep_link, dep_child);
 		proceed |= proceed_2;
 		if (options_jobs == 0)
-			return proceed |= P_WAIT;
+			return proceed | P_WAIT;
 	}
 	assert(buffer_A.empty());
 
@@ -645,13 +643,13 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 
 	if (error) {
 		assert(option_k);
-		return proceed |= P_ABORT | P_FINISHED;
+		return proceed | P_ABORT | P_FINISHED;
 	}
 
 	if (proceed)
 		return proceed;
 
-	return proceed |= P_FINISHED;
+	return proceed | P_FINISHED;
 }
 
 void Executor::raise(int error_)
@@ -745,7 +743,7 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 		proceed |= proceed_2;
 		assert(options_jobs >= 0);
 		if (options_jobs == 0) {
-			return proceed |= P_WAIT;
+			return proceed | P_WAIT;
 		}
 	}
 	assert(buffer_B.empty());

@@ -651,12 +651,12 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	if (finished(dep_link->flags)) {
 		assert(! (proceed & P_WAIT));
-		return proceed |= P_FINISHED;
+		return proceed | P_FINISHED;
 	}
 
 	/* Job has already been started */
 	if (job.started_or_waited()) {
-		return proceed |= P_WAIT;
+		return proceed | P_WAIT;
 	}
 
 	/* The file must now be built */
@@ -768,7 +768,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 					 * it will then not exist when the parent is
 					 * called. */
 					done |= Done::D_ALL_OPTIONAL;
-					return proceed |= P_FINISHED;
+					return proceed | P_FINISHED;
 				}
 			}
 
@@ -780,7 +780,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 					<< format_errno(show(hash_dep));
 				raise(ERROR_BUILD);
 				done |= Done::from_flags(dep_link->flags);
-				return proceed |= P_ABORT | P_FINISHED;
+				return proceed | P_ABORT | P_FINISHED;
 			}
 
 			/* File does not exist, all its dependencies are up to
@@ -803,7 +803,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				}
 				done |= Done::from_flags(dep_link->flags);
 				raise(ERROR_BUILD);
-				return proceed |= P_ABORT | P_FINISHED;
+				return proceed | P_ABORT | P_FINISHED;
 			}
 		}
 		/* We cannot update TIMESTAMP within the loop above
@@ -840,7 +840,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	if (! (bits & B_NEED_BUILD)) {
 		done |= Done::from_flags(dep_link->flags);
-		return proceed |= P_FINISHED;
+		return proceed | P_FINISHED;
 	}
 
 	/* We now know that the command must be run, or that there is no
@@ -859,7 +859,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */
 		done |= Done::from_flags(dep_link->flags);
-		return proceed |= P_FINISHED;
+		return proceed | P_FINISHED;
 	}
 
 	/* The command must be run (or the file created, etc.) now */
@@ -884,12 +884,12 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			      *(rule->command));
 		done.set_all();
 		assert(proceed == 0);
-		return proceed |= P_FINISHED;
+		return proceed | P_FINISHED;
 	}
 
 	/* We know that a job has to be started now */
 	if (options_jobs == 0)
-		return proceed |= P_WAIT;
+		return proceed | P_WAIT;
 
 	/* We have to start a job now */
 	print_command();
@@ -956,7 +956,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 					raise(ERROR_BUILD);
 					done |= Done::from_flags(dep_link->flags);
 					assert(proceed == 0);
-					return proceed |= P_ABORT | P_FINISHED;
+					return proceed | P_ABORT | P_FINISHED;
 				}
 			}
 
@@ -985,8 +985,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			raise(ERROR_BUILD);
 			done |= Done::from_flags(dep_link->flags);
 			assert(proceed == 0);
-			proceed |= P_ABORT | P_FINISHED;
-			return proceed;
+			return proceed | P_ABORT | P_FINISHED;
 		}
 
 		assert(!executors_by_pid_key == !executors_by_pid_value);

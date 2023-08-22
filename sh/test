@@ -255,11 +255,6 @@ do
 	file=$(echo "$file" | sed -e 's,^tests/,,')
 	error=0
 
-	if [ ! -d "$file" ]; then
-		test_fail_fatal "'$file' is not a directory"
-		continue
-	fi
-
 	# There are no files in the test directory (ignoring dotfiles)
 	if [ "$(echo $(ls -1 "$file" | wc -l))" = 0 ] ; then
 		if [ "$emptyok" != 1 ] ; then
@@ -269,7 +264,10 @@ do
 	fi
 
 	output_next
-	cd "$file"
+	cd "$file" || {
+		echo >&2 "*** Error changing directory to $file"
+		continue
+	}
 
 	../../sh/rm_tmps || exit 2
 

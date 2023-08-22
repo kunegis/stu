@@ -1,0 +1,67 @@
+#! /bin/sh
+
+err() {
+	echo >&2 "l=⟨$l⟩ a_exists=$a_exists x=$x"
+	echo >&2 "*** $1"
+	echo >&2 stdout:
+	cat  >&2 list.out
+	echo >&2 _______
+	echo >&2 stderr:
+	cat  >&2 list.err
+	echo >&2 _______
+	echo 1 >"$error_file"
+}
+
+error_file=${TMP:-/tmp}/stu-long-trivial.$$
+echo 0 >"$error_file"
+
+clean()
+{
+	rm -f -- "$error_file"
+}
+trap clean EXIT INT QUIT TERM ABRT HUP
+
+cat list | while read -r line ; do
+	for a_exists in yes no ; do
+		for x in before after absent ; do
+			l=$line
+			[ $x = before ] && {
+				l=$(echo "$l" | sed -e 's,:,: X ,;s,$, X={x},')
+				[ $? = 0 ] || exit 1
+			}
+			[ $x = after ] && {
+				l=$(echo "$l" | sed -e 's,{, X {,;s,$, X={x},')
+				[ $? = 0 ] || exit 1
+			}
+			rm -f ? || exit 2
+			if [ $a_exists = yes ] ; then
+				echo aaa >A || exit 2
+				[ "$x" != absent ] && { echo xxx >X || exit 2 ; }
+			else
+				l="$l C={CORRECT}"
+			fi
+			echo "CASE: a_exists=$a_exists x=$x: $l"
+			printf '%s\n' "$l" >list.stu || exit 2
+			../../bin/stu.test -f list.stu >list.out 2>list.err
+			exitstatus=$?
+			[ $exitstatus = 0 ] ||
+				err "Expected exit status 0, not $exitstatus"
+			if [ $a_exists = yes ] ; then
+				[ -e C ] &&
+					err "C must not exist"
+			else
+				[ -r C ] ||
+					err "C must be created"
+				grep -q -F -e CORRECT C ||
+					err "C must contain 'CORRECT'"
+			fi
+		done
+	done
+done
+
+rm -f ? list.stu
+
+echo >&2 error: ## rm
+cat >&2 $error_file ## rm
+
+exit $(cat $error_file)

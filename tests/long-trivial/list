@@ -1,0 +1,15 @@
+A: -t [ -t B] { touch A ; } B={C}
+A: [ -t B ] { touch A ; }  B={-t C}
+A: -t [ -t [ -t B ]] { touch A ; } B={B2} B2={C}
+A: [ -t [ B ]] { touch A ; } B={B2} B2={C}
+A: -t [ [ B ]] { touch A ; } B={B2} B2={C}
+A: [ [ -t B ]] { touch A ; } B={B2} B2={C}
+A: [ -t B ] { touch A ; }  B={[-t B2]}  B2={-t C}
+A: [ -t B ] { touch A ; }  B={list.[-t B2]} B2={B3} list.B3=C;
+A: [[B]] { touch A ; } B={-t B2} B2={C} 
+A: @x { touch A ; }  @x: -t C;
+A: @x { touch A ; }  @x: [-t B]; B={C}
+A: @x { touch A ; }  @x: -t [B]; B={C}
+A: @x { touch A ; }  @x: [B]; B = {-t C} 
+A: [ -n -t B ] { touch A ; }  B={C}
+A: [ -t -n B ] { touch A ; }  B={C}

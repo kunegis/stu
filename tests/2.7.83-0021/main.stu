@@ -1,0 +1,8 @@
+A: X  [ -t B ]
+{
+	cp C A
+}
+
+B={-t C}
+X={x}
+C={CORRECT}

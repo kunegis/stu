@@ -2,27 +2,11 @@
 # Flag -C.
 #
 
-# Make a big automated EXEC with the following:
-# * Vary dependencies of A
-# * Vary whether X is given, before or after.
-# * Vary whether A exists.
-A: -t [ -t B] { ...}
-A: [ -t B ] {...}  B={-t C}  ...  # Try with/without presence of X
-A: -t [ -t [ -t B ]] ...  # With/without X
-A: [ -t [ B ]] ...  # With/without X
-A: -t [ [ B ]] ...  # With/without X
-A: [ [ -t B ]] ...  # With/without X
-A: [ -t B ] {}  B={[-t C]}  C={-t D} ... # With/without X
-A: [ -t B ] {}  B={list.[-t C]} ... # With/without X
-A: [[B]] X {...} B={-t C} C={D} D={CORRECT}... # Build order: B, X, C, D, A.
-A: @x {...}  @x: -t B; ...
-A: @x {...}  @x: [-t B]; ...
-A: @x {...}  @x: -t [B]; ...
-A: @x {...}  @x: [B]; B = {-t C} ...
-A: [ -n -t B ] { ... }
-A: [ -t -n B ] { ... }
-A: [ -n -o B ] { ... }
-A: [ -t -o B ] { ... }
+# * 2.7.83-0021
+# * long-trivial
+
+A: [ -n -o B ] { touch A ; }  B={C}
+A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # Test installing the .deb from Github/releases

@@ -1,0 +1,40 @@
+name: On-publish
+
+on:
+  release:
+    branches: [ "master" ]
+    types: [ "published" ]
+
+jobs:
+  build-deb-package:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: configure
+      run: ./configure
+    - name: make
+      run: make
+    - name: Create deb file
+      run: |
+        mkdir -p .debpkg/usr/local/bin
+        mkdir -p .debpkg/usr/local/man/man1
+        cp bin/stu .debpkg/usr/local/bin/
+        cp man/stu.1 .debpkg/usr/local/man/man1/
+    - uses: jiro4989/build-deb-action@v3
+      with:
+        package: stu
+        package_root: .debpkg
+        maintainer: Jérôme Kunegis
+        version: ${{ github.ref }} # refs/tags/v*.*.*
+        arch: 'amd64'
+        desc: 'stu - Build automation'
+    - name: Upload deb file to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: stu_${{ github.ref_name }}_amd64.deb
+        asset_name: stu_amd64.deb
+        tag: ${{ github.ref }}
+        overwrite: true

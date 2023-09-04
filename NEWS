@@ -11,7 +11,7 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
-XXXXXXXXXX  version 2.7.83
+XXXXXXXXXX  version 2.7.84
 
 * The flag -C was added.  It can be used inside dynamic dependencies (like [-C
   filename]) to denote that "filename" will be parsed in full Stu syntax.  This

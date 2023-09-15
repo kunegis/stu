@@ -50,12 +50,15 @@ Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 		error_additional |= ERROR_LOGICAL;
 		return;
 	}
+	// TODO can this be removed? (same assignment as above)
 	parents[parent]= dep;
 
 	/* Push single initial dependency */
 	shared_ptr <Dep> dep_child= Dep::clone(dep->dep);
 	dep_child->flags |= F_RESULT_NOTIFY;
 	push(dep_child);
+
+	if (! (dep->flags & F_PHASE_A)) bits |= B_NEED_BUILD;
 }
 
 Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)

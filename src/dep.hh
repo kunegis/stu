@@ -136,12 +136,11 @@ public:
 	 * corresponding places.  If a place is already given in THIS,
 	 * only copy a place over if OVERWRITE_PLACES is set.  */
 
-	/* The check function checks the internal consistency of a
-	 * Dep object.  This is purely an assertion, and not a
-	 * programmatic check.  It is possible for Dep objects to
-	 * be temporarily inconsistent while they are changed --
-	 * therefore, consistency is not enforced by the accessor
-	 * functions, but only by this function.  */
+	/* The check function checks the internal consistency of a Dep object.
+	 * This is purely an assertion, and not a programmatic check.  It is
+	 * possible for Dep objects to be temporarily inconsistent while they
+	 * are changed -- therefore, consistency is not enforced by the accessor
+	 * functions, but only by this function. */
 #ifndef NDEBUG
 	void check() const;
 #else
@@ -167,9 +166,9 @@ public:
 			      int &error);
 	/* Split DEP into multiple DEPS that are each normalized.  The resulting
 	 * dependencies are appended to DEPS, which does not have to be empty on
-	 * entering the function.
-	 * On errors, a message is printed, bits are set in ERROR, and
-	 * if not in keep-going mode, the function returns immediately.  */
+	 * entering the function. On errors, a message is printed, bits are set
+	 * in ERROR, and if not in keep-going mode, the function returns
+	 * immediately. */
 
 	static shared_ptr <const Dep> untrivialize(shared_ptr <const Dep> dep);
 	/* Remove all trivial flags, recursively.  Return null if already
@@ -179,10 +178,9 @@ public:
 	/* A shallow clone */
 
 	static shared_ptr <const Dep> strip_dynamic(shared_ptr <const Dep> d);
-	/* Strip dynamic dependencies from the given dependency.
-	 * Perform recursively:  If D is a dynamic dependency, return
-	 * its contained dependency, otherwise return D.  Thus, never
-	 * return null.  */
+	/* Strip dynamic dependencies from the given dependency.  Perform
+	 * recursively:  If D is a dynamic dependency, return its contained
+	 * dependency, otherwise return D.  Thus, never return null. */
 };
 
 void render(shared_ptr <const Dep> dep, Parts &parts, Rendering rendering= 0)

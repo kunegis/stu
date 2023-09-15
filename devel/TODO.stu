@@ -3,6 +3,11 @@
 #
 
 # * 2.7.83-0021
+# ** make bin/stu.debug && rm -f ? && bin/stu.debug -d -f tests/2.7.84-0021
+# ** [B] puts C into its buffer_B, but never gets to phase_B
+# ** Dynamic_Executor never sets B_NEED_BUILD in bits, and never goes to phase B.
+# ** Dynamic_Executor:  When we get called without the F_PHASE_A flag, we always need to set B_NEED_BUILD
+
 # * long-trivial
 
 A: [ -n -o B ] { touch A ; }  B={C}

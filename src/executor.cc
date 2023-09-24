@@ -582,10 +582,9 @@ void Executor::push(shared_ptr <const Dep> dep)
 
 Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
-	Debug debug(this);
 	assert(options_jobs >= 0);
 	assert(dep_link);
-	DEBUG_PRINT("phase A");
+	DEBUG_PRINT("phase_A");
 	Proceed proceed= 0;
 
 	if (finished(dep_link->flags)) {
@@ -737,7 +736,7 @@ void Executor::disconnect(Executor *const child,
 
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 {
-	DEBUG_PRINT("phase B");
+	DEBUG_PRINT("phase_B");
 	Proceed proceed= 0;
 	while (! buffer_B.empty()) {
 		shared_ptr <const Dep> dep_child= buffer_B.pop();

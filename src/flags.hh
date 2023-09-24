@@ -2,7 +2,7 @@
 #define FLAGS_HH
 
 /*
- * Flags apply to dependencies.  Flags are binary option-like, and apply at
+ * Flags apply to dependencies.  Flags are binary and option-like, and apply at
  * multiple levels in Stu, from Stu source code where they are represented by a
  * syntax ressembling that of command line flags, to attributes of edges in the
  * dependency graph. Internally, flags are defined as bit fields.
@@ -41,7 +41,7 @@ enum
 	I_INPUT,              /* <                                           */
 	I_RESULT_NOTIFY,      /* -*                                          */
 	I_RESULT_COPY,        /* -%                                          */
-	I_PHASE_A,            /* -&                                          */
+	I_PHASE_A,            /* -A                                          */
 
 	/* Counts */
 	C_ALL,

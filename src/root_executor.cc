@@ -21,8 +21,9 @@ Root_Executor::Root_Executor(const std::vector <shared_ptr <const Dep> > &deps)
 Proceed Root_Executor::execute(shared_ptr <const Dep> dep_link)
 {
 	/* This is an example of a "plain" execute() function,
-	 * containing the minimal wrapper around execute_base_?()  */
+	 * containing the minimal wrapper around execute_phase_?()  */
 
+	Debug debug(this);
 	Proceed proceed= execute_phase_A(dep_link);
 	assert(proceed);
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {

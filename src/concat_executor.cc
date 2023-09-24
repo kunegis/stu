@@ -57,6 +57,7 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 
 Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 {
+	Debug debug(this);
  again:
 	assert(stage <= ST_FINISHED);
 	if (stage == ST_FINISHED)

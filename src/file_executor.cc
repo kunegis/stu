@@ -35,7 +35,8 @@ void File_Executor::wait()
 	int status;
 	const pid_t pid= Job::wait(&status);
 
-	Debug::print(nullptr, frmt("waited for pid= %ld", (long) pid));
+	// TODO use intmax_t instead.  Also in other places.
+	Debug::print(nullptr, frmt("waited for pid = %ld", (long) pid));
 
 	timestamp_last= Timestamp::now();
 
@@ -976,7 +977,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 		assert(pid != 0 && pid != 1);
 
-		DEBUG_PRINT(frmt("execute: pid= %ld", (long) pid));
+		DEBUG_PRINT(frmt("execute: pid = %ld", (long) pid));
 
 		if (pid < 0) {
 			/* Starting the job failed */

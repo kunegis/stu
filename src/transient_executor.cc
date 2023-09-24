@@ -8,6 +8,7 @@ Transient_Executor::~Transient_Executor()
 
 Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 {
+	Debug debug(this);
 	Proceed proceed= execute_phase_A(dep_link);
 	assert(proceed);
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {

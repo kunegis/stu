@@ -1,6 +1,6 @@
 #include "flags.hh"
 
-constexpr const char *flags_chars= "pot[@$n0C<*%&";
+constexpr const char *flags_chars= "pot[@$n0C<*%A";
 static_assert(strlen(flags_chars) == C_ALL, "Keep in sync with Flags");
 const char *flags_phrases[C_PLACED]= {"persistent", "optional", "trivial"};
 

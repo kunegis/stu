@@ -664,7 +664,6 @@ void Executor::disconnect(Executor *const child,
 			  shared_ptr <const Dep> dep_child)
 {
 	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
-
 	assert(child != nullptr);
 	assert(child != this);
 	assert(child->finished(dep_child->flags));
@@ -683,6 +682,19 @@ void Executor::disconnect(Executor *const child,
 		notify_result(d, child, F_RESULT_COPY, dep_child);
 	}
 
+	/* Child is done for phase A, but not for phase B */
+	if (dep_child->flags & F_PHASE_A) {
+		DEBUG_PRINT("disconnect phase_A");
+		bool f= child->finished(dep_child->flags & ~F_PHASE_A);
+		DEBUG_PRINT(frmt("disconnect f = %d", f));
+		if (! f) {
+			shared_ptr <Dep> d= Dep::clone(dep_child);
+			DEBUG_PRINT(fmt("disconnect A_to_B %s", show(d, S_DEBUG, R_SHOW_FLAGS)));
+			d->flags &= ~F_PHASE_A;
+			buffer_B.push(d);
+		}
+	}
+	
 	/* Propagate timestamp */
 	/* Don't propagate the timestamp of the dynamic dependency itself */
 	if (! (dep_child->flags & F_PERSISTENT) &&

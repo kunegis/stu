@@ -28,19 +28,16 @@ public:
 
 	Done &operator|=(Done d) { bits |= d.bits; return *this; }
 	Done &operator|=(unsigned b) { bits |= b; return *this; }
+
 	bool is_all() const { return (~bits & D_ALL) == 0; }
-
-	bool is_done_from_flags(Flags flags) const {
-		return (~bits & (from_flags(flags).bits)) == 0;
-	}
-
+	bool is_done_from_flags(Flags flags) const;
 	void set_all() { bits= ~0; }
 	string format() const;
+
 	static Done from_flags(Flags flags);
 
 private:
 	unsigned bits;
-
 	Done(unsigned b): bits(b) { }
 };
 

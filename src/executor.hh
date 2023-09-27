@@ -226,7 +226,8 @@ protected:
 			shared_ptr <const Dep> dep_child);
 
 	const Place &get_place() const
-	/* The place for the executor; e.g. the rule; empty if there is no place */
+	/* The place for the executor; e.g. the rule; empty if there is no
+	 * place */
 	{
 		if (param_rule == nullptr)
 			return Place::place_empty;

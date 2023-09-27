@@ -4,9 +4,6 @@
 
 # * 2.7.83-0023
 # ** make bin/stu.debug && rm -f ? list.* B2 && bin/stu.debug -d -f tests/2.7.84-0023
-# ** why is "[B] push -% list.[-t B2" not followed by connecting list.[B2], etc.
-# ** [[B]] disconnects -*A [B], but then does not put [B] into its B-buffer.
-# ** Execute::disconnect():  if a child is not done for phase B, move it to buffer_B instead of disconnecting it.
 # * Other failing tests
 
 A: [ -n -o B ] { touch A ; }  B={C}

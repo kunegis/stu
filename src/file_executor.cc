@@ -22,11 +22,10 @@ File_Executor::~File_Executor()
 }
 
 void File_Executor::wait()
-/* We wait for a single job to finish, and then return so that the next
- * job can be started.  It would also be possible to process as many
- * finished jobs as possible, and then return, but the current
- * implementation prefers to first start the next job before waiting for
- * the next finished job.  */
+/* We wait for a single job to finish, and then return so that the next job can be
+ * started.  It would also be possible to process as many finished jobs as possible, and
+ * then return, but the current implementation prefers to first start the next job before
+ * waiting for the next finished job. */
 {
 	Debug::print(nullptr, "wait...");
 
@@ -57,10 +56,9 @@ void File_Executor::wait()
 		}
 	}
 	if (mi > ma || mi == SIZE_MAX) {
-		/* No File_Executor is registered for the PID that
-		 * just finished.  Should not happen, but since the PID
-		 * value came from outside this process, we better
-		 * handle this case gracefully, i.e., do nothing.  */
+		/* No File_Executor is registered for the PID that just finished.  Should
+		 * not happen, but since the PID value came from outside this process, we
+		 * better handle this case gracefully, i.e., do nothing. */
 		should_not_happen();
 		print_warning(Place(),
 			      frmt("the function waitpid(2) returned the invalid process ID %jd",

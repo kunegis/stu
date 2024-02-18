@@ -1,6 +1,32 @@
 #ifndef HASH_DEP_HH
 #define HASH_DEP_HH
 
+/*
+ * A representation of a simple dependency, mainly used as the key in the caching of
+ * Executor objects.  The difference to the Dependency class is that Hash_Dep objects
+ * don't store the Place objects, and don't support parametrization.  Thus, Hash_Dep
+ * objects are used as keys in maps, etc.  Flags are included.
+ *
+ * TEXT is a linear representation of the target.  It begins with a certain number of
+ * words (word_t, at least one), followed by the name of the target as a string.  A word_t
+ * is represented by a fixed number of characters.
+ *
+ * A non-dynamic dependency is represented as a Type word (F_TARGET_TRANSIENT or 0)
+ * followed by the name.
+ *
+ * A dynamic is represented as a dynamic word (F_TARGET_DYNAMIC) followed by the string
+ * representation of the contained dependency.
+ *
+ * Any of the front words may contain additional flag bits.  There may be '\0' bytes in
+ * the front words, but the name does not contain nul, as that is invalid in names.  The
+ * name proper (excluding front words) is non-empty, i.e., is at least one byte long.
+ *
+ * The empty string denotes a "null" value for the type Hash_Dep, or equivalently the
+ * target of the root dependency, in which case most functions should not be used.
+ */
+
+#include <stdint.h>
+
 typedef uint16_t word_t;
 
 static_assert(sizeof(word_t) == sizeof(uint8_t) && C_WORD <= 8
@@ -8,29 +34,6 @@ static_assert(sizeof(word_t) == sizeof(uint8_t) && C_WORD <= 8
 	      "sizeof(word_t)");
 
 class Hash_Dep
-/* A representation of a simple dependency, mainly used as the key in the caching of
- * Executor objects.  The difference to the Dependency class is that Hash_Dep objects
- * don't store the Place objects, and don't support parametrization.  Thus, Hash_Dep
- * objects are used as keys in maps, etc.  Flags are included.
- *
- * TEXT is a linear representation of the target.  It begins with a certain
- * number of words (word_t, at least one), followed by the name of the target as
- * a string.  A word_t is represented by a fixed number of characters.
- *
- * A non-dynamic dependency is represented as a Type word (F_TARGET_TRANSIENT or
- * 0) followed by the name.
- *
- * A dynamic is represented as a dynamic word (F_TARGET_DYNAMIC) followed by the
- * string representation of the contained dependency.
- *
- * Any of the front words may contain additional flag bits.  There may be '\0'
- * bytes in the front words, but the name does not contain nul, as that is
- * invalid in names.  The name proper (excluding front words) is non-empty,
- * i.e., is at least one byte long.
- *
- * The empty string denotes a "null" value for the type Hash_Dep, or equivalently
- * the target of the root dependency, in which case most functions should not be
- * used.  */
 {
 public:
 	explicit Hash_Dep(string text_)
@@ -52,17 +55,14 @@ public:
 		: text(string_from_word(flags | F_TARGET_DYNAMIC) + target.text)
 	{
 		assert((flags & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0);
-		assert(flags <= (unsigned)(1 << C_WORD));
+		assert(flags <= (unsigned)(1 << C_WORD)); // TODO should be '<', or use
+							  // F_TARGET_WORD for check
 	}
 
-	const string &get_text() const {  return text;  }
-	string &get_text() {  return text;  }
-	const char *get_text_c_str() const {  return text.c_str();  }
-
-	bool is_dynamic() const {
-		check();
-		return get_word(0) & F_TARGET_DYNAMIC;
-	}
+	const string &get_text() const { return text; }
+	string &get_text() { return text; }
+	const char *get_text_c_str() const { return text.c_str(); }
+	bool is_dynamic() const { check(); return get_word(0) & F_TARGET_DYNAMIC; }
 
 	bool is_file() const {
 		check();
@@ -146,8 +146,7 @@ public:
 	void canonicalize(); /* In-place */
 
 	static string string_from_word(Flags flags);
-	/* Return a string of length sizeof(word_t) containing the given
-	 * flags */
+	/* Return a string of length sizeof(word_t) containing the given flags */
 
 private:
 	string text;

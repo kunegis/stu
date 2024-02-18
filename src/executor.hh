@@ -294,16 +294,15 @@ protected:
 
 private:
 	Buffer buffer_A;
-	/* Dependencies that have not yet begun to be built.  Initialized with
-	 * all dependencies, and emptied over time when things are built, and
-	 * filled over time when dynamic dependencies are worked on.  Entries
-	 * are not necessarily unique.  Dependencies are normalized. */
+	/* Dependencies that have not yet begun to be built.  Initialized with all
+	 * dependencies, and emptied over time when things are built, and filled over time
+	 * when dynamic dependencies are worked on.  Entries are not necessarily unique.
+	 * Dependencies are normalized. */
 
 	Buffer buffer_B;
-	/* The buffer for dependencies in the second pass.  They are only
-	 * started if, after (potentially) starting all non-trivial
-	 * dependencies, the target must be rebuilt anyway.  Dependencies are
-	 * normalized. */
+	/* The buffer for dependencies in the second pass.  They are only started if,
+	 * after (potentially) starting all non-trivial dependencies, the target must be
+	 * rebuilt anyway.  Dependencies are normalized. */
 
 	static bool hide_link_from_message(Flags flags) {
 		return flags & F_RESULT_NOTIFY;

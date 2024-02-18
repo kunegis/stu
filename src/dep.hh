@@ -55,29 +55,27 @@ shared_ptr <const T> to(shared_ptr <U> d)
 }
 
 class Dep
-/* The abstract base class for all dependencies.
+/* 
+ * The abstract base class for all dependencies.
  *
- * The flags only represent immediate flags.  Compound dependencies for
- * instance may contain additional inner flags.
+ * The flags only represent immediate flags.  Compound dependencies for instance may
+ * contain additional inner flags.
  *
- * Objects of type Dep and subclasses are always handled through
- * shared_ptr<>.  All objects may have many persistent pointers to it,
- * so they are considered final, i.e., immutable, except if we just
- * created the object in which case we know that it is not shared.
- * Therefore, we always use shared_ptr <const ...>, except when we just
- * created the dependency.  All dependencies are created via
- * make_shared<>.
+ * Objects of type Dep and subclasses are always handled through shared_ptr<>.  All
+ * objects may have many persistent pointers to it, so they are considered final, i.e.,
+ * immutable, except if we just created the object in which case we know that it is not
+ * shared.  Therefore, we always use shared_ptr <const ...>, except when we just created
+ * the dependency.  All dependencies are created via make_shared<>.
  *
- * The use of shared_ptr<> also means that certain functions cannot be
- * member functions but must be static functions instead: clone(),
- * normalize(), etc.  This is because we cannot use a construct like
- * shared_ptr <Dep> (this), which is erroneous (the object would
- * be released twice, etc.).  As a result, we replace THIS by an
- * argument of type shared_ptr<>.  [Note: there is also
- * std::enable_shared_from_this as a possibility.]
+ * The use of shared_ptr<> also means that certain functions cannot be member functions
+ * but must be static functions instead: clone(), normalize(), etc.  This is because we
+ * cannot use a construct like shared_ptr <Dep> (this), which is erroneous (the object
+ * would be released twice, etc.).  As a result, we replace THIS by an argument of type
+ * shared_ptr<>.  [Note: there is also std::enable_shared_from_this as a possibility.]
  *
- * The constructors of Dep and derived classes do not set the TOP and
- * INDEX fields.  These are set manually when needed.  */
+ * The constructors of Dep and derived classes do not set the TOP and INDEX fields.  These
+ * are set manually when needed.
+ */ 
 {
 public:
 	Flags flags;
@@ -475,9 +473,9 @@ public:
 };
 
 class Root_Dep
-/* Dependency to denote the root object of the dependency tree.  There is just
- * one possible value of this, and it is never shown to the user, but used
- * internally with the root executor object.  */
+/* Dependency to denote the root object of the dependency tree.  There is just one
+ * possible value of this, and it is never shown to the user, but used internally with the
+ * root executor object. */
 	:  public Dep
 {
 public:

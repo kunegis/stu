@@ -31,9 +31,8 @@ public:
 	 * after the call. */
 
 	void read_variable(shared_ptr <const Dep> dep);
-	/* Read the content of the file into a string as the
-	 * variable value.  THIS is the variable executor.  Write the
-	 * result into THIS's RESULT_VARIABLE.  */
+	/* Read the content of the file into a string as the variable value.  THIS is the
+	 * variable executor.  Write the result into THIS's RESULT_VARIABLE. */
 
 	shared_ptr <const Rule> get_rule() const { return rule; }
 

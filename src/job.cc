@@ -36,17 +36,16 @@ pid_t Job::start(string command,
 	assert(pid == -2);
 	init_signals();
 
-	/* Like Make, we don't use the variable $SHELL, but use "/bin/sh" as a
-	 * shell instead.  The reason is that the variable $SHELL is intended to
-	 * denote the user's chosen interactive shell, and may not be a
-	 * POSIX-compatible shell.  Note also that POSIX prescribes that Make
-	 * use "/bin/sh" by default.  Other note:  Make allows to declare the
-	 * Make variable $SHELL within the Makefile or in Make's parameters to a
-	 * value that *will* be used by Make instead of /bin/sh.  This is not
-	 * possible with Stu, because Stu does not have its own set of
-	 * variables.  Instead, there is the $STU_SHELL variable.  The
-	 * Stu-native way to do it without environment variables would be via a
-	 * directive (but such a directive is not implemented).  */
+	/* Like Make, we don't use the variable $SHELL, but use "/bin/sh" as a shell
+	 * instead.  The reason is that the variable $SHELL is intended to denote the
+	 * user's chosen interactive shell, and may not be a POSIX-compatible shell.  Note
+	 * also that POSIX prescribes that Make use "/bin/sh" by default.  Other note:
+	 * Make allows to declare the Make variable $SHELL within the Makefile or in
+	 * Make's parameters to a value that *will* be used by Make instead of /bin/sh.
+	 * This is not possible with Stu, because Stu does not have its own set of
+	 * variables.  Instead, there is the $STU_SHELL variable.  The Stu-native way to
+	 * do it without environment variables would be via a directive (but such a
+	 * directive is not implemented). */
 	static const char *shell= nullptr;
 	if (shell == nullptr) {
 		shell= getenv("STU_SHELL");
@@ -66,25 +65,22 @@ pid_t Job::start(string command,
 		return -1;
 	}
 
-	/* Each child process is given, as process group ID, its process
-	 * ID.  This ensures that we can kill each child by killing its
-	 * corresponding process group ID.  How process groups work:  Each
-	 * process has not only a process ID (PID), but also a process group ID
-	 * (PGID).  The PGID is inherited by child processes, without being
-	 * changed automatically.  This means that if the PGID is never changed
-	 * by a process, a process and all its child processes will have the
-	 * same PGID.  This makes it possible to kill a process and all its
-	 * children (directly and indirectly) by passing the negated PGID as the
-	 * first parameter to kill(2).  Thus, we set the child process to have
-	 * as its PGID the same value as its PID.  */
+	/* Each child process is given, as process group ID, its process ID.  This ensures
+	 * that we can kill each child by killing its corresponding process group ID.  How
+	 * process groups work:  Each process has not only a process ID (PID), but also a
+	 * process group ID (PGID).  The PGID is inherited by child processes, without
+	 * being changed automatically.  This means that if the PGID is never changed by a
+	 * process, a process and all its child processes will have the same PGID.  This
+	 * makes it possible to kill a process and all its children (directly and
+	 * indirectly) by passing the negated PGID as the first parameter to kill(2).
+	 * Thus, we set the child process to have as its PGID the same value as its PID. */
 
 	/* Execute this in both the child and parent */
 	const int pid_child= pid == 0 ? getpid() : pid;
 	if (0 > setpgid(pid_child, pid_child)) {
-		/* This should only fail when we are the parent and the
-		 * child has already quit.  In that case we can ignore
-		 * the error, since the child is dead anyway, so there
-		 * is no need to kill it in the future.  */
+		/* This should only fail when we are the parent and the child has already
+		 * quit.  In that case we can ignore the error, since the child is dead
+		 * anyway, so there is no need to kill it in the future. */
 	}
 
 	if (pid == 0) {
@@ -92,11 +88,11 @@ pid_t Job::start(string command,
 		in_child= 1;
 
 		/* Instead of throwing exceptions, use perror() and
-		 * _Exit(ERROR_FORK_CHILD).  */
+		 * _Exit(ERROR_FORK_CHILD). */
 
-		/* Unblock/reset all signals.  As a general rule,
-		 * signals that are blocked before exec() will remain
-		 * blocked after exec().  Thus, unblock them here.  */
+		/* Unblock/reset all signals.  As a general rule, signals that are blocked
+		 * before exec() will remain blocked after exec().  Thus, unblock them
+		 * here. */
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_termination_productive, nullptr)) {
 			perror("sigprocmask");
 			__gcov_dump();
@@ -160,30 +156,27 @@ pid_t Job::start(string command,
 		assert(i <= v_old + v_new);
 		envp[i]= nullptr;
 
-		/* As $0 of the process, we pass the filename of the command
-		 * followed by a colon, the line number, a colon and the column
-		 * number.  This makes the shell if it reports an error make the
-		 * most useful output. */ 
+		/* As $0 of the process, we pass the filename of the command followed by a
+		 * colon, the line number, a colon and the column number.  This makes the
+		 * shell if it reports an error make the most useful output. */ 
 		string argv0= place_command.as_argv0();
 		if (argv0.empty())
 			argv0= shell;
 
-		/* The one-character options to the shell */
-		/* We use the -e option ('error'), which makes the shell abort
-		 * on a command that fails.  This is also what POSIX prescribes
-		 * for Make.  It is particularly important for Stu, as Stu
-		 * invokes the whole (possibly multiline) command in one step. */
+		/* The one-character options to the shell.  We use the -e option
+		 * ('error'), which makes the shell abort on a command that fails.  This
+		 * is also what POSIX prescribes for Make.  It is particularly important
+		 * for Stu, as Stu invokes the whole (possibly multiline) command in one
+		 * step. */
 		const char *shell_options= option_x ? "-ex" : "-e";
 
 		const char *argv[]= {argv0.c_str(),
 				     shell_options, "-c", arg, nullptr};
 
 		/*
-		 * Special handling of the case when the command
-		 * starts with '-' or '+'.  In that case, we prepend
-		 * a space to the command.  We cannot use '--' as
-		 * prescribed by POSIX because Linux and FreeBSD handle
-		 * '--' differently:
+		 * Special handling of the case when the command starts with '-' or '+'.
+		 * In that case, we prepend a space to the command.  We cannot use '--' as
+		 * prescribed by POSIX because Linux and FreeBSD handle '--' differently:
 		 *
 		 *      /bin/sh -c -- '+x'
 		 *      on Linux: Execute the command '+x'
@@ -229,8 +222,8 @@ pid_t Job::start(string command,
 			close(fd_output);
 		}
 
-		/* Input redirection:  from the given file, or from
-		 * /dev/null (in non-interactive mode)  */
+		/* Input redirection:  from the given file, or from /dev/null (in
+		 * non-interactive mode) */
 		if (!filename_input.empty() || ! option_i) {
 			const char *name= filename_input.empty()
 				? "/dev/null"

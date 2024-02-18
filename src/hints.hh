@@ -2,8 +2,8 @@
 #define HINTS_HH
 
 /*
- * Used in branches that we expect not to never happen, but could happen when
- * Stu has a bug, and we want to handle that case even in non-debug mode.
+ * "Should not happen":  Used in branches that we expect not to never happen, but could
+ * happen when Stu has a bug, and we want to handle that case even in non-debug mode.
  */
 
 #ifdef NDEBUG
@@ -22,7 +22,7 @@
 
 #define should_not_happen()						\
 	do {								\
-		fprintf(stderr, "%s:%d: should not happen\n",	\
+		fprintf(stderr, "%s:%d: should not happen\n",	        \
 			__FILE__, __LINE__);				\
 	} while (0)
 

@@ -38,7 +38,7 @@ void Hash_Dep::canonicalize()
 
 string Hash_Dep::string_from_word(Flags flags)
 {
-	assert(flags <= 1 << C_WORD);
+	assert(flags <= 1 << C_WORD); // TODO should be '<', or use F_TARGET_WORD
 	char ret[sizeof(word_t) + 1];
 	ret[sizeof(word_t)]= '\0';
 	*(word_t *)ret= (word_t)flags;

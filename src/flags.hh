@@ -79,7 +79,7 @@ enum
 	 * without any markup. */
 
 	F_CODE                  = 1 << I_CODE,
-	/* For dynamic dependencies, the file contains Stu codde */
+	/* For dynamic dependencies, the file contains Stu code */
 
 	F_INPUT                 = 1 << I_INPUT,
 	/* A dependency is annotated with the input redirection flag '<' */

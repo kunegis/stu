@@ -315,7 +315,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			 * flags */
 			Flags flags= dep->flags;
 			if (flags & ~executor->parents.at(this)->flags) {
-				shared_ptr <Dep> dep_new= Dep::clone(executor->parents.at(this));
+				shared_ptr <Dep> dep_new=
+					Dep::clone(executor->parents.at(this));
 				dep_new->flags |= flags;
 				dep= dep_new;
 				/* No need to check for cycles here, because a link

@@ -2,28 +2,23 @@
 #define FLAGS_HH
 
 /*
- * Flags apply to dependencies.  Flags are binary and option-like, and apply at
- * multiple levels in Stu, from Stu source code where they are represented by a
- * syntax ressembling that of command line flags, to attributes of edges in the
- * dependency graph. Internally, flags are defined as bit fields.
+ * Flags apply to dependencies.  Flags are binary and option-like, and apply at multiple
+ * levels in Stu, from Stu source code where they are represented by a syntax ressembling
+ * that of command line flags, to attributes of edges in the dependency graph. Internally,
+ * flags are defined as bit fields.
  *
- * Each edge in the dependency graph is annotated with one object of this type.
- * This contains bits related to what should be done with the dependency,
- * whether time is considered, etc.  The flags are defined in such a way that
- * the simplest dependency is represented by zero, and each flag enables a
- * specific feature.
+ * Each edge in the dependency graph is annotated with one object of this type.  This
+ * contains bits related to what should be done with the dependency, whether time is
+ * considered, etc.  The flags are defined in such a way that the simplest dependency is
+ * represented by zero, and each flag enables a specific feature.
  *
- * The transitive bits are effectively set for tasks not to do.  Therefore,
- * inverting them gives the bits for the tasks to do.  In particular, the flag
- * fields that store the information which part of a task has been done has
- * inverse semantics: They have a bit set when that part has been done, i.e.,
- * when the flag initially was not set.
+ * The placed bits are effectively set for tasks not to do.  Therefore, inverting them
+ * gives the bits for the tasks to do.  Other flags have the semantics of "more to do".
  */
 
 #include "show.hh"
 
 typedef unsigned Flags;
-/* Declared as integer so arithmetic can be performed on it */
 
 enum
 {
@@ -106,13 +101,10 @@ enum
 	F_ATTRIBUTE     = F_NEWLINE_SEPARATED | F_NUL_SEPARATED | F_CODE,
 };
 
-extern const char *const flags_chars;
+extern const char *const flags_chars; // TODO make it an array (rather than a pointer)
 extern const char *flags_phrases[C_PLACED];
 
 unsigned flag_get_index(char c);
-/* Get the flag index corresponding to a character.  Not all cases are
- * implemented.  */
-
 bool render_flags(Flags flags, Parts &, Rendering= 0);
 string show_flags(Flags, Style= S_DEFAULT);
 

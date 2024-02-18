@@ -12,6 +12,8 @@
  * value.
  */
 
+#include "flags.hh"
+
 class Done
 {
 public:

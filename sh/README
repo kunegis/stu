@@ -1,3 +1,2 @@
-This directory contains scripts to assist in the development of Stu.  They are
-not needed to simply compile Stu, but can be useful for instance to run unit
-tests.  Most scripts are called from Makefile.devel.
+Scripts to assist in the development of Stu.  They are not needed to simply compile Stu,
+but can be useful for instance to run unit tests.  Most scripts are called from Makefile.

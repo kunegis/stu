@@ -48,9 +48,9 @@ find_space_file()
 find_space_line()
 {
 	find_files |
-	xargs grep -E -n '\s$' |
-	sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Line must not end in space,' |
-	grep -E '.' >&2 && return 1
+		xargs grep -E -n '\s$' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Line must not end in space,' |
+		grep -E '.' >&2 && return 1
 	return 0
 }
 
@@ -113,10 +113,10 @@ find_assert_false()
 	return 0
 }
 
-# Check that we don't use sed with the -E or -r option.  '-r' is a GNU extension
-# that enabled extended regular expressions.  POSIX does not prescribe an
-# "extended regexp" mode for sed.  In many implementations, '-E' does the same.
-# '-E' is more portable than '-r', but still not POSIX.
+# Check that we don't use sed with the -E or -r option.  '-r' is a GNU extension that
+# enabled extended regular expressions.  POSIX does not prescribe an "extended regexp"
+# mode for sed.  In many implementations, '-E' does the same.  '-E' is more portable than
+# '-r', but still not POSIX.
 find_sed()
 {
 	find . -type f -a \! -path './.git*' -a \! -name '*~' |

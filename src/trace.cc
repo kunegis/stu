@@ -69,7 +69,7 @@ Trace::Init::Init()
 	}
 }
 
-const char *trace_strip_dir(const char *s)
+const char *Trace::strip_dir(const char *s)
 {
 	const char *r= strchr(s, '/');
 	if (!r) return s;

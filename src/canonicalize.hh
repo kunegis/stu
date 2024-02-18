@@ -2,14 +2,12 @@
 #define CANONICALIZE_HH
 
 /*
- * Canonicalization is the mapping of filenames and transient names to
- * unique names in their simplest form with respect to the filename
- * components '/' and '.'.
+ * Canonicalization is the mapping of filenames and transient names to unique names in
+ * their simplest form with respect to the filename components '/' and '.'.
  *
- * This function canonicalizes a string, and is used by higher-level
- * code to canonicalize actual names.  The function is called both on
- * entire names (when they are non-parametrized), as well as on parts of
- * names (when they are parametrized).
+ * This function canonicalizes a string, and is used by higher-level code to canonicalize
+ * actual names.  The function is called both on entire names (when they are
+ * non-parametrized), as well as on parts of names (when they are parametrized).
  *
  * METHOD
  *
@@ -28,12 +26,11 @@
  *      - /./ -> /   [multiple times]
  *      - /.$ -> ''  [multiple times]
  *
- * Symlinks and '..' are not canonicalized by Stu.  As a general rule,
- * no stat(2) is performed to check whether name components exist.
+ * Symlinks and '..' are not canonicalized by Stu.  As a general rule, no stat(2) is
+ * performed to check whether name components exist.
  *
  * For further rules about canonicalization (which are outside the scope of this
- * function), see the manpage.  Some of the special rules are handled in this
- * file.
+ * function), see the manpage.  Some of the special rules are handled in this file.
  */
 
 typedef unsigned Canonicalize_Flags;
@@ -48,8 +45,8 @@ enum
 };
 
 char *canonicalize_string(Canonicalize_Flags canonicalize_flags, char *p);
-/* Canonicalize the string starting at P in-place.
- * Return the end (\0) of the new string.  The operation never increases
- * the size of the string.  P is \0-terminated, on input and output. */
+/* Canonicalize the string starting at P in-place.  Return the end (\0) of the new string.
+ * The operation never increases the size of the string.  P is \0-terminated, on input and
+ * output. */  
 
 #endif /* ! CANONICALIZE_HH */

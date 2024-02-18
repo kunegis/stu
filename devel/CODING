@@ -30,7 +30,7 @@ This is my preferred style.  --Jérôme Kunegis
 * Tabs for indentation.  Set your editor to show them at the width you prefer.
   I use the default 8-char tabs.
 * Spaces for alignment in the middle of lines.
-* Line length vary between 72, 80, and 100.  We allow more where reasonable,
+* Line length vary between 72/80/90/100.  We allow more where reasonable,
   e.g., to avoid breaking message string literals or to make table-like code
   evident.  Since tabs may be interpreted as different widths, this is an
   approximate rule; authors use 8-char tabs.
@@ -107,20 +107,24 @@ necessary.
 Variable names use underscore for word separation.  No camel case.
 
 The following names are used systematically:
-* 'error':  an integer error code or exit status (they are the same in Stu)
+* 'error':     an integer error code or exit status (they are the same in Stu)
 * 'filename':  a filename
-* 'ret':  the return value of a function
-* 'text':  a string used for display
+* 'ret':       the return value of a function
+* 'text':      a string used for display
 
-Many variable names are written in a "big endian" fashion in defiance of English
-noun phrase syntax.  In such names, the first part indicates the type (to a
-higher precision than the C++ type), and the second part indicates the meaning
-of the variable.  For instance, a variable denoting a filename used previously
-may be named 'filename_old' instead of the expected 'old_filename'.  You can
-think of this convention as being influenced by the French language, which by
-default places adjectives after the noun, or as being compatible with names such
-as 'filename_1', etc.  This convention is not used for type names, e.g., we have
-'Dynamic_Dep' and similar.
+One-letter variable names:
+* e:        error
+* i,j,k,l:  iterators
+* d:        dependency
+
+Many variable names are written in a "big endian" fashion in defiance of English noun
+phrase syntax.  In such names, the first part indicates the type (to a higher precision
+than the C++ type), and the second part indicates the meaning of the variable.  For
+instance, a variable denoting a filename used previously may be named 'filename_old'
+instead of the expected 'old_filename'.  You can think of this convention as being
+influenced by the French language, which by default places adjectives after the noun, or
+as being compatible with names such as 'filename_1', etc.  This convention is not used for
+type names, e.g., we have 'Dynamic_Dep' and similar.
 
 == Shell scripts ==
 

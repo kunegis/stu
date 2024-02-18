@@ -82,10 +82,9 @@ char *canonicalize_string(Canonicalize_Flags canonicalize_flags, char *p)
 		s += 2;
 	} else if (canonicalize_flags & A_BEGIN && ! (canonicalize_flags & A_END)
 		   && s[0] == '.' && s[1] == '/' && s[2] == '\0') {
-		/* Keep a lone './' in the first component followed
-		 * by a parameter.  The meaning is that the following
-		 * parameter can only be matched by a value not
-		 * beginning by a slash.  */
+		/* Keep a lone './' in the first component followed by a parameter.  The
+		 * meaning is that the following parameter can only be matched by a value
+		 * not beginning by a slash. */
 		s += 2;
 		d += 2;
 	} else {

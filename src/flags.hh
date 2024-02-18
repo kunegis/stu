@@ -93,9 +93,9 @@ enum
 	 * flags means that the results of B will be copied into A's result. */
 
 	F_PHASE_A               = 1 << I_PHASE_A,
-	/* A parent (direct or indirect) is only in phase A.  As a result,
-	 * trivial dependencies should not be built.  Only the trivial Done
-	 * bits are set when done. */
+	/* A parent (direct or indirect) is only in phase A.  As a result, trivial
+	 * dependencies should not be built.  Only the trivial Done bits are set when
+	 * done. */
 
 	/*
 	 * Aggregates

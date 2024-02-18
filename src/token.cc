@@ -1,14 +1,10 @@
 #include "token.hh"
 
-Command::Command(string command_,
-		 const Place &place_,
-		 const Place &place_start_,
-		 Environment environment_)
-	:  Token(environment_),
-	   command(command_),
-	   place(place_),
-	   place_start(place_start_)
-{  }
+Command::Command(string command_, const Place &place_,
+		 const Place &place_start_, Environment environment_)
+	: Token(environment_), command(command_),
+	  place(place_), place_start(place_start_)
+{ }
 
 const std::vector <string> &
 Command::get_lines() const
@@ -17,7 +13,7 @@ Command::get_lines() const
  *
  * We only output a command when it has a single line, but the following
  * code also handles the case of multiline commands.  We keep it because
- * we may need it in the future.  */
+ * we may need it in the future. */
 {
 	if (lines != nullptr)
 		return *lines;
@@ -49,13 +45,13 @@ Command::get_lines() const
 	/* Remove initial whitespace common to all lines */
 	while (lines->size()) {
 		char begin= (*lines)[0][0];
-		if ((begin & 0x80) || ! isspace(begin))  break;
+		if ((begin & 0x80) || ! isspace(begin)) break;
 		bool equal= true;
 		for (auto &i: *lines) {
 			assert(i.size());
-			if (i[0] != begin)  equal= false;
+			if (i[0] != begin) equal= false;
 		}
-		if (! equal)  break;
+		if (! equal) break;
 		for (size_t i= 0; i < lines->size(); ) {
 			string &line= (*lines)[i];
 			assert(line.size());
@@ -70,7 +66,7 @@ Command::get_lines() const
 	/* Remove whitespace at end of lines */
 	for (string &line: *lines) {
 		size_t l= line.size();
-		while (l != 0 && isspace(line[l - 1]))  --l;
+		while (l != 0 && isspace(line[l - 1])) --l;
 		line.resize(l);
 	}
 

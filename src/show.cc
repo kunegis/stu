@@ -84,11 +84,11 @@ string show(const Parts &parts, Style style)
 	if (! nocolor)
 		ret += Color::highlight_on[channel];
 
+	// TODO make this less indented
 	for (size_t i= 0; i < parts.size();) {
 		if (parts[i].properties == PROP_SPACE) {
 			parts[i++].show(ret);
-		}
-		else {
+		} else {
 			bool has_marker= false;
 			size_t j;
 			for (j= i; j < parts.size() && parts[j].properties != PROP_SPACE; ++j)

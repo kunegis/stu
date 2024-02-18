@@ -160,10 +160,10 @@ pid_t Job::start(string command,
 		assert(i <= v_old + v_new);
 		envp[i]= nullptr;
 
-		/* As $0 of the process, we pass the filename of the
-		 * command followed by a colon, the line number, a colon
-		 * and the column number.  This makes the shell if it
-		 * reports an error make the most useful output.  */
+		/* As $0 of the process, we pass the filename of the command
+		 * followed by a colon, the line number, a colon and the column
+		 * number.  This makes the shell if it reports an error make the
+		 * most useful output. */ 
 		string argv0= place_command.as_argv0();
 		if (argv0.empty())
 			argv0= shell;
@@ -343,13 +343,13 @@ pid_t Job::wait(int *status)
 {
  begin:
 	/* First, try wait() without blocking.  WUNTRACED is used to also get
-	 * notified when a job is suspended (e.g. with Ctrl-Z).  */
+	 * notified when a job is suspended (e.g. with Ctrl-Z). */
 	pid_t pid= waitpid(-1, status,
 			   WNOHANG | (option_i ? WUNTRACED : 0));
 	if (pid < 0) {
 		/* Should not happen as there is always something running when
 		 * this function is called.  However, this may be common enough
-		 * that we may want Stu to act correctly.  */
+		 * that we may want Stu to act correctly. */
 		should_not_happen();
 		perror("waitpid");
 		abort();
@@ -357,9 +357,10 @@ pid_t Job::wait(int *status)
 
 	if (pid > 0) {
 		if (WIFSTOPPED(*status)) {
+			// TODO put into its own function
 			/* The process was suspended. This can have
 			 * several reasons, including someone just using
-			 * kill -STOP on the process.  */
+			 * kill -STOP on the process. */
 			assert(option_i);
 
 			/* This is the simplest thing possible we can do
@@ -368,7 +369,7 @@ pid_t Job::wait(int *status)
 			 * then put the job back into the foreground and
 			 * continue it.  In principle, we could do much
 			 * more: allow the user to enter commands,
-			 * having an own command language, etc.  */
+			 * having an own command language, etc. */
 			if (tcsetpgrp(tty, getpid()) < 0)
 				print_errno("tcsetpgrp");
 			fprintf(stderr,

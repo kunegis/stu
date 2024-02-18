@@ -8,11 +8,10 @@ static_assert(sizeof(word_t) == sizeof(uint8_t) && C_WORD <= 8
 	      "sizeof(word_t)");
 
 class Hash_Dep
-/* A representation of a simple dependency, mainly used as the key in the
- * caching of Executor objects.  The difference to the Dependency class is that
- * Hash_Dep objects don't store the Place objects, and don't support
- * parametrization.  Thus, Hash_Dep objects are used as keys in maps, etc.  Flags
- * are included.
+/* A representation of a simple dependency, mainly used as the key in the caching of
+ * Executor objects.  The difference to the Dependency class is that Hash_Dep objects
+ * don't store the Place objects, and don't support parametrization.  Thus, Hash_Dep
+ * objects are used as keys in maps, etc.  Flags are included.
  *
  * TEXT is a linear representation of the target.  It begins with a certain
  * number of words (word_t, at least one), followed by the name of the target as
@@ -36,7 +35,7 @@ class Hash_Dep
 public:
 	explicit Hash_Dep(string text_)
 		/* TEXT_ is the full text field of this Hash_Dep */
-		:  text(text_) { }
+		: text(text_) { }
 
 	Hash_Dep(Flags flags, string name)
 	/* A plain target */
@@ -49,8 +48,8 @@ public:
 
 	Hash_Dep(Flags flags, const Hash_Dep &target)
 	/* Makes the given target once more dynamic with the given
-	 * flags, which must *not* contain the 'dynamic' flag.  */
-		:  text(string_from_word(flags | F_TARGET_DYNAMIC) + target.text)
+	 * flags, which must *not* contain the 'dynamic' flag. */
+		: text(string_from_word(flags | F_TARGET_DYNAMIC) + target.text)
 	{
 		assert((flags & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0);
 		assert(flags <= (unsigned)(1 << C_WORD));
@@ -116,11 +115,10 @@ public:
 		const char *ret= text.c_str();
 		while ((*(const word_t *)ret) & F_TARGET_DYNAMIC)
 			ret += sizeof(word_t);
-		return
-			ret += sizeof(word_t);
+		return ret += sizeof(word_t);
 	}
 
-	Flags get_front_word() const {  return get_word(0);  }
+	Flags get_front_word() const { return get_word(0); }
 
 	word_t &get_front_word_nondynamic()
 	/* Get the front byte, given that the target is not dynamic */
@@ -143,21 +141,21 @@ public:
 		return ((const word_t *)&text[0])[i];
 	}
 
-	bool operator==(const Hash_Dep &target) const {  return text == target.text;  }
-	bool operator!=(const Hash_Dep &target) const {  return text != target.text;  }
-	void canonicalize();  /* In-place */
+	bool operator==(const Hash_Dep &target) const { return text == target.text; }
+	bool operator!=(const Hash_Dep &target) const { return text != target.text; }
+	void canonicalize(); /* In-place */
 
 	static string string_from_word(Flags flags);
 	/* Return a string of length sizeof(word_t) containing the given
-	 * flags  */
+	 * flags */
 
 private:
 	string text;
 
 	void check() const {
-		/* The minimum length of TEXT is sizeof(word_t)+1:  One
-		 * word indicating a non-dynamic target, and a text of
-		 * length one.  (The text cannot be empty.)  */
+		/* The minimum length of TEXT is sizeof(word_t)+1:  One word indicating a
+		 * non-dynamic target, and a text of length one.  (The text cannot be
+		 * empty.) */
 #ifndef NDEBUG
 		assert(text.size() > sizeof(word_t));
 #endif /* ! NDEBUG */

@@ -3,7 +3,7 @@
 string Debug::padding_current= "";
 std::vector <const Debuggable *> Debug::debuggables;
 
-Debuggable::~Debuggable()  {  }
+Debuggable::~Debuggable() { }
 
 void Debug::print(const Debuggable *d, string text)
 {
@@ -22,8 +22,7 @@ void Debug::print(const Debuggable *d, string text)
 	}
 }
 
-void Debug::print(string text_target,
-		  string text)
+void Debug::print(string text_target, string text)
 {
 	assert(! text.empty());
 	assert(text[0] >= 'a' && text[0] <= 'z');

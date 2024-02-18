@@ -25,7 +25,7 @@
 /*
  * This variant works only on Linux.  Using CLOCK_REALTIME does not work, as:
  *  (1) Two files created in a row have timestamps in the wrong order
- *  (2) Files create during Stu runtime have a timestamp before the Stu
+ *  (2) Files created during Stu runtime have a timestamp before the Stu
  *      startup timestamps.
  * Both errors are on the order of a few milliseconds.  Tested on a
  * system on which the clock resolution as reported by clock_getres() is
@@ -36,7 +36,7 @@
 
 class Timestamp
 /* Note also that this implementation has such high precision, that bugs
- * in Stu scripts may emerge which otherwise would have been hidden.  */
+ * in Stu scripts may emerge which otherwise would have been hidden. */
 {
 private:
 	struct timespec t;
@@ -62,7 +62,7 @@ public:
 		return t.tv_sec != (time_t) -1;
 	}
 
-	bool operator < (const Timestamp &that) const {
+	bool operator<(const Timestamp &that) const {
 		assert(this->defined());
 		assert(that.defined());
 
@@ -127,29 +127,20 @@ public:
 		t= buf->st_mtime;
 	}
 
-	bool defined() const {
-		return t != (time_t) -1;
-	}
+	bool defined() const { return t != (time_t) -1; }
 
-	bool operator < (const Timestamp &that) const {
+	bool operator<(const Timestamp &that) const {
 		assert(this->defined());
 		assert(that.defined());
 		return this->t < that.t;
 	}
 
-	string format() const {
-		return frmt("%ld", (long) t);
-	}
+	string format() const { return frmt("%ld", (long) t); }
 
 	static const Timestamp UNDEFINED;
-
 	static Timestamp startup;
-	/* The time at which Stu was started.  Used to check that no generated
-	 * file must be older than that.  */
 
-	static Timestamp now() {
-		return Timestamp(time(nullptr));
-	}
+	static Timestamp now() { return Timestamp(time(nullptr)); }
 };
 
 #endif /* variant */

@@ -51,9 +51,9 @@ int main(int argc, char **argv, char **envp)
 	try {
 		std::vector <string> filenames;
 		/* Filenames passed using the -f option.  Entries are unique and
-		 * sorted as they were given, except for duplicates.  */
+		 * sorted as they were given, except for duplicates. */
 
-		std::vector <shared_ptr <const Dep> > deps; /* Assemble targets here */
+		std::vector <shared_ptr <const Dep> > deps;
 
 		shared_ptr <const Place_Target> target_first;
 		/* Set to the first rule when there is one */
@@ -64,9 +64,9 @@ int main(int argc, char **argv, char **envp)
 		/* Whether any target(s) was passed through one of the options
 		 * -c, -C, -o, -p, -n, -0.  Also set when zero targets are
 		 * passed through one of these, e.g., when -n is used on an
-		 * empty file.  */
+		 * empty file. */
 
-		bool had_option_f= false; /* Both lower and upper case */
+		bool had_option_f= false; /* Both -f and -F */
 
 		for (int c; (c= getopt(argc, argv, OPTIONS)) != -1;) {
 			if (option_setting(c))
@@ -201,9 +201,9 @@ int main(int argc, char **argv, char **envp)
 					throw ERROR_LOGICAL;
 				error |= ERROR_LOGICAL;
 			} else if (option_J) {
-				deps.push_back(std::make_shared <Plain_Dep>
-					       (0, Place_Target
-						(0, Place_Name(argv[i], place))));
+				deps.push_back
+					(std::make_shared <Plain_Dep>
+					       (0, Place_Target(0, Place_Name(argv[i], place))));
 			}
 		}
 

@@ -62,11 +62,11 @@ public:
 	 * option.  Does not print an error message. */
 
 	Proceed execute_phase_A(shared_ptr <const Dep> dep_link);
-	/* DEP_LINK must not be null.  In the return value, at least one bit is
-	 * set.  The P_FINISHED bit indicates only that tasks related to this
-	 * function are done, not the whole Executor. */
+	/* DEP_LINK must not be null.  In the return value, at least one bit is set.  The
+	 * P_FINISHED bit indicates only that tasks related to this function are done, not
+	 * the whole Executor. */
 
-	int get_error() const {  return error;  }
+	int get_error() const { return error; }
 
 	void read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			  std::vector <shared_ptr <const Dep> > &deps,
@@ -87,17 +87,15 @@ public:
 	virtual bool want_delete() const= 0;
 
 	virtual Proceed execute(shared_ptr <const Dep> dep_link)= 0;
-	/* Start the next job(s).  This will also terminate jobs when
-	 * they don't need to be run anymore, and thus it can be called
-	 * when K = 0 just to terminate jobs that need to be terminated.
-	 * Can only return LATER in random mode.  When returning LATER,
-	 * not all possible child jobs where started.  Child
-	 * implementations call this implementation.  Never returns
-	 * P_CONTINUE: When everything is finished, the FINISHED bit is
-	 * set.  In DONE, set those bits that have been done.  When the
-	 * call is over, clear the PENDING bit.  DEPENDENCY_LINK is only
-	 * null when called on the root executor, because it is the
-	 * only executor that is not linked from another executor. */
+	/* Start the next job(s).  This will also terminate jobs when they don't need to
+	 * be run anymore, and thus it can be called when K = 0 just to terminate jobs
+	 * that need to be terminated.  Can only return LATER in random mode.  When
+	 * returning LATER, not all possible child jobs where started.  Child
+	 * implementations call this implementation.  Never returns P_CONTINUE: When
+	 * everything is finished, the FINISHED bit is set.  In DONE, set those bits that
+	 * have been done.  When the call is over, clear the PENDING bit.  DEPENDENCY_LINK
+	 * is only null when called on the root executor, because it is the only executor
+	 * that is not linked from another executor. */
 
 	virtual bool finished() const= 0;
 	/* Whether the executor is completely finished */

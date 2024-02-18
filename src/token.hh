@@ -20,15 +20,15 @@ enum {
 };
 
 class Token
-/* A token.  This class is mainly used through unique_ptr/shared_ptr.  */
+/* Mainly used through unique_ptr/shared_ptr */
 {
 public:
 	Environment environment;
 
 	Token(Environment environment_)
-		:  environment(environment_)  {  }
+		: environment(environment_)  {  }
 
-	virtual ~Token() = default;
+	virtual ~Token()= default;
 
 	virtual const Place &get_place() const= 0;
 	/* The place of the token.  May be in the middle of the token.
@@ -41,20 +41,21 @@ public:
 	/* Render only the start of the token if it is very long */
 };
 
+// TODO put into .cc file
 void render(shared_ptr <const Token> token, Parts &parts, Rendering rendering= 0)
 {
 	token->render(parts, rendering);
 }
 
 class Operator
-	:  public Token
+	: public Token
 {
 public:
 	const char op;
 	const Place place;
 
 	Operator(char op_, Place place_, Environment environment_)
-		:  Token(environment_), op(op_), place(place_) {
+		: Token(environment_), op(op_), place(place_) {
 		assert(! isalnum(op_));
 	}
 
@@ -64,7 +65,7 @@ public:
 };
 
 class Flag_Token
-	:  public Token
+	: public Token
 {
 public:
 	const Place place;
@@ -78,9 +79,9 @@ public:
 
 	/* PLACE is the place of the letter */
 	Flag_Token(char flag_, const Place place_, Environment environment_)
-		:  Token(environment_),
-		   place(place_),
-		   flag(flag_)
+		: Token(environment_),
+		  place(place_),
+		  flag(flag_)
 	{
 		assert(isalnum(flag));
 
@@ -108,13 +109,13 @@ class Name_Token
 /* This contains two types of places:  the places for the individual
  * parameters in Place_Param_Name, and the place of the complete token
  * from Token.  */
-	:  public Token, public Place_Name
+	: public Token, public Place_Name
 {
 public:
 	Name_Token(const Place_Name &place_name_,
 		   bool environment_)
-		:  Token(environment_),
-		   Place_Name(place_name_)
+		: Token(environment_),
+		  Place_Name(place_name_)
 	{  }
 
 	const Place &get_place() const override { return Place_Name::place; }
@@ -128,7 +129,7 @@ public:
 class Command
 /* A command delimited by braces, or the content of a file, also
  * delimited by braces.  */
-	:  public Token
+	: public Token
 {
 private:
 	mutable std::unique_ptr <std::vector <string> > lines;

@@ -61,7 +61,7 @@ public:
 
 	void append_parameter(string parameter)
 	/* Append the given PARAMETER and an empty text.  This does not
-	 * check that the result is valid.  */
+	 * check that the result is valid. */
 	{
 		parameters.push_back(parameter);
 		texts.push_back("");
@@ -89,7 +89,7 @@ public:
 
 	const string &unparametrized() const
 	/* Return the name as a string, assuming it is unparametrized.
-	 * The name must be unparametrized.  */
+	 * The name must be unparametrized. */
 	{
 		assert(get_n() == 0);
 		return texts[0];
@@ -105,18 +105,17 @@ public:
 	 *    -1:  a special rule was used, having less priority than matches
 	 *         without special rule
 	 * PRIORITY has an unspecified value after returing FALSE.
-	 * The range of PRIORITY can be easily extended to other integers if necessary.
-	 */
+	 * The range of PRIORITY can be easily extended to other integers if necessary. */
 
 	void render(Parts &, Rendering= 0) const;
 
 	string get_duplicate_parameter() const;
 	/* Check whether there are duplicate parameters.  Return the
-	 * name of the found duplicate parameter, or "" if none is found.  */
+	 * name of the found duplicate parameter, or "" if none is found. */
 
 	bool valid(string &param_1, string &param_2) const;
 	/* Whether this is a valid name.  If it is not, fill the given
-	 * parameters with the two unseparated parameters.  */
+	 * parameters with the two unseparated parameters. */
 
 	void canonicalize();
 	/* In-place canonicalizarion */
@@ -127,7 +126,7 @@ public:
 					std::vector <size_t> &anchoring_b,
 					int priority_a, int priority_b);
 	/* Whether anchoring A dominates anchoring B.  The anchorings do
-	 * not need to have the same number of parameters.  */
+	 * not need to have the same number of parameters. */
 
 private:
 	std::vector <string> texts; /* Length = N + 1 */

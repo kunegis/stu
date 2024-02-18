@@ -27,7 +27,7 @@
 
 /*
  * Wording of messages:  Both error messages and backtraces begin with lowercase
- * letters. Filenames are quotes with double quotes.  Operators and flags are
+ * letters. Filenames are quoted with double quotes.  Operators and flags are
  * not quoted.  Messages for neither type of error output lines are terminated
  * by periods.
  *

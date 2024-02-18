@@ -248,9 +248,8 @@ void Executor::cycle_print(const std::vector <Executor *> &path,
 			       ::show(c1), ::show(c2));
 	}
 
-	/* Remove the offending (cycle-generating) link between the
-	 * two.  The offending link is from path[0] as a parent to
-	 * path[end] (as a child).  */
+	/* Remove the offending (cycle-generating) link between the two.  The offending
+	 * link is from path[0] as a parent to path[end] (as a child). */
 	path.back()->parents.erase(path.at(0));
 	path.at(0)->children.erase(path.back());
 
@@ -260,6 +259,9 @@ void Executor::cycle_print(const std::vector <Executor *> &path,
 
 Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 {
+	TRACE_FUNCTION(EXECUTOR, Executor::get_executor);
+	TRACE("dep = %s", show(dep, S_DEBUG, R_SHOW_FLAGS));
+	
 	/*
 	 * Non-cached executors
 	 */
@@ -306,19 +308,19 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 
 	if (it != executors_by_hash_dep.end()) {
 		/* An Executor object already exists for the target */
+		TRACE("%s", "already exists");
 		executor= it->second;
 		if (executor->parents.count(this)) {
-			/* THIS and CHILD are already connected -- add the
-			 * necessary flags  */
+			/* THIS and CHILD are already connected -- add the necessary
+			 * flags */
 			Flags flags= dep->flags;
 			if (flags & ~executor->parents.at(this)->flags) {
 				shared_ptr <Dep> dep_new= Dep::clone(executor->parents.at(this));
 				dep_new->flags |= flags;
 				dep= dep_new;
-				/* No need to check for cycles here,
-				 * because a link between the two
-				 * already exists and therefore a cycle
-				 * cannot be present.  */
+				/* No need to check for cycles here, because a link
+				 * between the two already exists and therefore a cycle
+				 * cannot be present. */
 				executor->parents[this]= dep;
 			}
 		} else {
@@ -326,8 +328,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 				raise(ERROR_LOGICAL);
 				return nullptr;
 			}
-			/* The parent and child are not connected -- add the
-			 * connection */
+			/* The parent and child are not connected -- add the connection */
 			executor->parents[this]= dep;
 		}
 		return executor;
@@ -401,7 +402,7 @@ bool Executor::same_rule(const Executor *executor_a,
 			 const Executor *executor_b)
 /* This must also take into account that two executors could use the
  * same rule but parametrized differently, thus the two executors could
- * have different targets, but the same rule.  */
+ * have different targets, but the same rule. */
 {
 	return
 		executor_a->param_rule != nullptr &&
@@ -411,10 +412,9 @@ bool Executor::same_rule(const Executor *executor_a,
 }
 
 void Executor::operator<<(string text) const
-/* The following traverses the executor graph backwards until it finds
- * the root.  We always take the first found parent, which is an
- * arbitrary choice, but it doesn't matter here which dependency path
- * we point out as an error, so the first one it is.  */
+/* The following traverses the executor graph backwards until it finds the root.  We
+ * always take the first found parent, which is an arbitrary choice, but it doesn't matter
+ * here which dependency path we point out as an error, so the first one it is. */
 {
 	/* If the error happens directly for the root executor, it was
 	 * an error on the command line; don't output anything beyond
@@ -441,12 +441,10 @@ void Executor::operator<<(string text) const
 			/* We are in a child of the root executor */
 			assert(! depp->top);
 			if (first && ! text.empty()) {
-				/* No text was printed yet, but there
-				 * was a TEXT passed:  Print it with the
-				 * place available.  */
-				/* This is a top-level target, i.e.,
-				 * passed on the command line via an
-				 * argument or an option  */
+				/* No text was printed yet, but there was a TEXT passed:
+				 * Print it with the place available. */
+				/* This is a top-level target, i.e., passed on the command
+				 * line via an argument or an option */
 				depp->get_place() << text;
 			}
 			break;
@@ -521,7 +519,7 @@ Proceed Executor::execute_children()
 
 		proceed_all |= (proceed_child & ~(P_FINISHED | P_ABORT));
 		/* The finished and abort flags of the child only apply to the
-		 * child, not to us  */
+		 * child, not to us */
 
 		assert(((proceed_child & P_FINISHED) == 0) ==
 		       ((child->finished(dep_child->flags)) == 0));
@@ -530,9 +528,8 @@ Proceed Executor::execute_children()
 			disconnect(child, dep_child);
 		} else {
 			assert((proceed_child & ~P_FINISHED) != 0);
-			/* If the child executor is not finished, it
-			 * must have returned either the P_WAIT or
-			 * P_PENDING bit.  */
+			/* If the child executor is not finished, it must have returned
+			 * either the P_WAIT or P_PENDING bit. */
 		}
 	}
 
@@ -652,10 +649,10 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	return proceed | P_FINISHED;
 }
 
-void Executor::raise(int error_)
+void Executor::raise(int e)
 {
-	assert(error_ >= 1 && error_ <= 3);
-	error |= error_;
+	assert(e >= 1 && e <= 3);
+	error |= e;
 	if (! option_k)
 		throw error;
 }
@@ -663,8 +660,9 @@ void Executor::raise(int error_)
 void Executor::disconnect(Executor *const child,
 			  shared_ptr <const Dep> dep_child)
 {
+	TRACE_FUNCTION(EXECUTOR, Executor::disconnect);
 	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
-	assert(child != nullptr);
+	assert(child);
 	assert(child != this);
 	assert(child->finished(dep_child->flags));
 	assert(option_k || child->error == 0);
@@ -684,13 +682,14 @@ void Executor::disconnect(Executor *const child,
 
 	/* Child is done for phase A, but not for phase B */
 	if (dep_child->flags & F_PHASE_A) {
-		DEBUG_PRINT("disconnect phase_A");
 		bool f= child->finished(dep_child->flags & ~F_PHASE_A);
-		DEBUG_PRINT(frmt("disconnect f = %d", f));
+		TRACE("child->finished = %s", frmt("%d", f));
 		if (! f) {
 			shared_ptr <Dep> d= Dep::clone(dep_child);
-			DEBUG_PRINT(fmt("disconnect A_to_B %s", show(d, S_DEBUG, R_SHOW_FLAGS)));
+			TRACE("%s", show(d, S_DEBUG, R_SHOW_FLAGS));
 			d->flags &= ~F_PHASE_A;
+			DEBUG_PRINT(fmt("disconnect A_to_B %s",
+					show(d, S_DEBUG, R_SHOW_FLAGS)));
 			buffer_B.push(d);
 		}
 	}
@@ -755,9 +754,7 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 		Proceed proceed_2= connect(dep_link, dep_child);
 		proceed |= proceed_2;
 		assert(options_jobs >= 0);
-		if (options_jobs == 0) {
-			return proceed | P_WAIT;
-		}
+		if (options_jobs == 0) return proceed | P_WAIT;
 	}
 	assert(buffer_B.empty());
 	return proceed | P_FINISHED;
@@ -836,8 +833,6 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 
 	/* '-p' and '-o' do not mix */
 	if (dep_child->flags & F_PERSISTENT && dep_child->flags & F_OPTIONAL) {
-
-		/* '-p' and '-o' encountered for the same target */
 		const Place &place_persistent= dep_child->get_place_flag(I_PERSISTENT);
 		const Place &place_optional= dep_child->get_place_flag(I_OPTIONAL);
 		place_persistent <<

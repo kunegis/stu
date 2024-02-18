@@ -25,7 +25,7 @@ enum {
 
 	B_MISSING     = 1 << 3,
 	/* At least one file target is known not to exist (only possible if
-	 * there is at least one file target in File_Executor).  */
+	 * there is at least one file target in File_Executor). */
 };
 
 #endif /* ! BITS_HH */

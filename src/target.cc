@@ -93,7 +93,6 @@ bool Name::match(const string name,
 		anchoring[0]= 0;
 	}
 
-	/* I goes over all parameters */
 	for (size_t i= 0; i < n; ++i) {
 		size_t length_min= 1;
 		/* Minimal length of the matching parameter */
@@ -243,8 +242,8 @@ bool Name::anchoring_dominates(std::vector <size_t> &anchoring_a,
 	size_t j= 0; /* Index in (B) */
 
 	while (true) {
-		if (i < k_a && p == anchoring_a[i])  ++i;
-		if (j < k_b && p == anchoring_b[j])  ++j;
+		if (i < k_a && p == anchoring_a[i]) ++i;
+		if (j < k_b && p == anchoring_b[j]) ++j;
 
 		assert(i == k_a || p <= anchoring_a[i]);
 		assert(j == k_b || p <= anchoring_b[j]);

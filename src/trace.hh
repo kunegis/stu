@@ -2,6 +2,11 @@
 #define TRACE_HH
 
 /*
+ * Tracing is a debugging tool that consist in outputting log line from certain
+ * functions.  Tracing is only available in debug mode.  Tracing is used to develop Stu
+ * and therefore, the choice of which functions have tracing depends on which parts have
+ * needed it in the past.
+ *
  * To enable tracing for a trace class TRACE_ABC, set the environment variable
  * $STU_TRACE_ABC to:
  *	"log"     Write into the trace logfile (see name below)
@@ -16,11 +21,16 @@
 #define TRACE_FILE "log/trace.log"
 
 enum Trace_Class {
-	TRACE_SHOW, TRACE_TOKENIZER,
+	TRACE_EXECUTOR, TRACE_SHOW, TRACE_TOKENIZER,
 	TRACE_COUNT
 };
 
-const char *trace_names[TRACE_COUNT]= {"SHOW", "TOKENIZER"};
+// TODO this should be in the .cc file.
+const char *trace_names[TRACE_COUNT]= {
+	"EXECUTOR", "SHOW", "TOKENIZER"
+};
+static_assert(sizeof(trace_names) / sizeof(trace_names[0]) == TRACE_COUNT,
+	      "sizeof(trace_names)");
 
 class Trace
 {
@@ -38,6 +48,8 @@ public:
 		return stack[stack.size() - 1];
 	}
 
+	static const char *strip_dir(const char *s);
+
 private:
 	string prefix;
 	static string padding;
@@ -49,8 +61,6 @@ private:
 	static FILE *open_logfile(const char *filename);
 };
 
-const char *trace_strip_dir(const char *s);
-
 #define TRACE_FUNCTION(CLASS, NAME)  Trace trace_object(TRACE_ ## CLASS, #NAME)
 
 #define TRACE(format, ...)  { \
@@ -60,7 +70,7 @@ const char *trace_strip_dir(const char *s);
 			__VA_ARGS__); \
 		if (fprintf(Trace::trace_files[Trace::get_current()->trace_class], \
 			    "%21s:%-4d  %s\n", \
-			    trace_strip_dir(__FILE__), __LINE__, \
+			    Trace::strip_dir(__FILE__), __LINE__,	\
 			    trace_text.c_str()) == EOF) { \
 			perror("fprintf(trace_file)"); \
 			exit(ERROR_FATAL); \

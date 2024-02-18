@@ -394,7 +394,8 @@ bool File_Executor::finished(Flags flags) const
 	return done.is_done_from_flags(flags);
 }
 
-void File_Executor::render(Parts &parts, Rendering rendering) const {
+void File_Executor::render(Parts &parts, Rendering rendering) const
+{
 	assert(hash_deps.size());
 	hash_deps.front().render(parts, rendering);
 }
@@ -409,7 +410,7 @@ void terminate_jobs()
 
 	/* We have two separate loops, one for killing all jobs, and one
 	 * for removing all target files.  This could also be merged
-	 * into a single loop.  */
+	 * into a single loop. */
 
 	for (size_t i= 0; i < File_Executor::executors_by_pid_size; ++i) {
 		const pid_t pid= File_Executor::executors_by_pid_key[i];
@@ -437,8 +438,7 @@ void terminate_jobs()
 			n /= 10;
 		} while (n > 0 && --i >= 0);
 		ssize_t r= write(2, out + i, len - i);
-		/* There's not much we can do if write() fails */
-		(void) r;
+		(void) r; /* There's not much we can do if write() fails */
 	}
 
 	/* Check that all children are terminated */

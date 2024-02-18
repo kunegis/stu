@@ -2,6 +2,24 @@
 #define SHOW_HH
 
 /*
+ * Functions for transforming various objects into string representations.
+ * This is a two-step process:
+ *
+ *              render()                     show()
+ *   Objects --------------> Parts -------------------------> string
+ *  (any Stu               (array of                      (to be output)
+ *   object)              Part objects)
+ *
+ * render*() functions takes a Rendering parameter, and a "Parts &"
+ * parameter to which they append the rendered parts.
+ *
+ * show*() functions take a Parts object and a Style parameter.
+ *
+ * There are also show*() functions that take Stu objects and perform both steps
+ * at once.
+ */
+
+/*
  * Show functions are defined in the source files where their datatype is
  * defined.  In classes, they are member functions.
  *
@@ -10,7 +28,6 @@
  */
 
 #include <assert.h>
-
 #include <string>
 
 #include "color.hh"

@@ -50,6 +50,6 @@ private:
 
 void render(const Debuggable *debuggable, Parts &parts, Rendering rendering= 0);
 
-#define DEBUG_PRINT(text) if (option_d)  Debug::print(this, text)
+#define DEBUG_PRINT(text) if (option_d) Debug::print(this, text)
 
 #endif /* ! DEBUG_HH */

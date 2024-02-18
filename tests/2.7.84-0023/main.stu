@@ -1,10 +1,10 @@
-A: X [ [ -t B ] ] {
-	cp D A
+A: X [ [ -t B ] ]
+{
+	cp E A
 }
 
-B={list.[-t B2]}
-B2={B3}
-list.B3=C;
-X={x}
-C={D}
-D={CORRECT}
+X	= {content}
+B	= {list.[-t C]}
+C	= {D}
+list.D	= E;
+E	= {CORRECT}

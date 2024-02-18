@@ -2,8 +2,13 @@
 # Flag -C.
 #
 
-# * 2.7.83-0023
-# ** make bin/stu.debug && rm -f ? list.* B2 && bin/stu.debug -d -f tests/2.7.84-0023
+# * 2.7.84-0023
+# ** make bin/stu.debug && rm -f ? list.* B2 && STU_TRACE_EXECUTOR=stderr bin/stu.debug -d -f tests/2.7.84-0023
+# *** E must be built, but is not
+# *** when creating the link [[B]]->[B], why is an -A flag kept even though we are in phase B?
+# **** That's because the Dynamic_Dep object already exists, with the -A flag
+# ***** Maybe replace -A by not -B
+# ***** Can there be a case where two parallel cases of -o and not -o clash in the same way?
 # * Other failing tests
 
 A: [ -n -o B ] { touch A ; }  B={C}
@@ -18,6 +23,7 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 # gcov:  Check whether making unreachable() empty in cov mode removes those
 # branches from the report.
+# Bring the coverage to 100%.
 #
 
 #
@@ -391,4 +397,8 @@ A: -e B
 #
 # Manpage:  the synopsis should show all "top-level" options, i.e., options that
 # change the overall behavior of Stu, such as -q/-P/-I.
+#
+
+#
+# Try -fhardened.
 #

@@ -96,7 +96,7 @@ void print_option_V()
 	       "NDEBUG is not defined\n"
 #endif
 #ifdef STU_COV
-	       "This is versio built for coverage analysis.\n"
+	       "This version is built for coverage analysis.\n"
 #endif
 	       "USE_MTIM = %u\n",
 	       (unsigned)USE_MTIM);

@@ -10,18 +10,17 @@
  */
 
 /*
- * We use getopt(), which means that Stu does only support short
- * options, and not long options.  We avoid getopt_long() as it is a GNU
- * extension, and the short options are sufficient for now.
+ * We use getopt(), which means that Stu does only support short options, and
+ * not long options.  We avoid getopt_long() as it is a GNU extension, and the
+ * short options are sufficient for now.
  *
- * Also, using getopt() means that the exact synytax of Stu depends on
- * the platform:  GNU getopt() will all options to follow arguments,
- * while BSD getopt() does not.
+ * Also, using getopt() means that the exact synytax of Stu depends on the
+ * platform:  GNU getopt() will all options to follow arguments, while BSD
+ * getopt() does not.
  */
 const char OPTIONS[]= "0:ac:C:dEf:F:ghiIj:JkKm:M:n:o:p:PqsVxyYz";
 
-/* The output of the help (-h) option.  The following strings do not
- * contain tabs, but only space characters.  */
+/* The following strings do not contain tabs, but only space characters. */
 const char HELP[]=
 	"Usage: " PACKAGE " [-f FILENAME] [OPTION]... [TARGET]...\n"
 	"By default, build the first target in the file 'main.stu'.\n"
@@ -91,16 +90,15 @@ static bool order_vec;
 /* Whether to use vectors for randomization */
 
 static long options_jobs= 1;
-/* Number of free slots for jobs.  This is a long because strtol() gives a long.
- * Set before calling main() from the -j option, and then changed internally by
- * Executor.  Always nonnegative.  */
+/* Number of free slots for jobs.  This is a long because strtol() gives a
+ * long.  Set before calling main() from the -j option, and then changed
+ * internally by Executor.  Always nonnegative. */
 
 const char **envp_global;
-/* The envp variable.  Set in main().  */
 
 static const char *dollar_zero;
 /* Does the same as program_invocation_name (which is a GNU extension,
- * so we don't use it); the value of argv[0], set in main()  */
+ * so we don't use it); the value of argv[0], set in main() */
 
 bool option_setting(char c);
 /* Set one of the "setting options", i.e., of of those that can appear

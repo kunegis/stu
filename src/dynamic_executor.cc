@@ -58,7 +58,7 @@ Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 	dep_child->flags |= F_RESULT_NOTIFY;
 	push(dep_child);
 
-	if (! (dep->flags & F_PHASE_A)) bits |= B_NEED_BUILD;
+	if (dep->flags & F_PHASE_B) bits |= B_NEED_BUILD;
 }
 
 Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)

@@ -199,7 +199,7 @@ void Executor::cycle_print(const std::vector <Executor *> &path,
  *      b depends on a        /
  *      a depends on x        > printed from DEP
  *      x is needed by ...    \
- *      ...                   | printed by print_traces()
+ *      ...                   | printed by Backtrace
  *      ...                   /
  */
 {
@@ -260,7 +260,8 @@ void Executor::cycle_print(const std::vector <Executor *> &path,
 Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 {
 	TRACE_FUNCTION(EXECUTOR, Executor::get_executor);
-	TRACE("dep = %s", show(dep, S_DEBUG, R_SHOW_FLAGS));
+	TRACE("{%s} dep=%s", show(*this, S_DEBUG, R_SHOW_FLAGS),
+	      show(dep, S_DEBUG, R_SHOW_FLAGS));
 	
 	/*
 	 * Non-cached executors
@@ -489,9 +490,11 @@ void Executor::operator<<(string text) const
 
 Proceed Executor::execute_children()
 {
+	TRACE_FUNCTION(EXECUTOR, Executor::execute_children);
+	TRACE("{%s}", show(*this, S_DEBUG, R_SHOW_FLAGS));
+
 	/* Since disconnect() may change executor->children, we must first
 	 * copy it over locally, and then iterate through it */
-
 	std::vector <Executor *> executors_children_vector
 		(children.begin(), children.end());
 	Proceed proceed_all= 0;
@@ -520,7 +523,7 @@ Proceed Executor::execute_children()
 
 		proceed_all |= (proceed_child & ~(P_FINISHED | P_ABORT));
 		/* The finished and abort flags of the child only apply to the
-		 * child, not to us */
+		 * child, not to us. */
 
 		assert(((proceed_child & P_FINISHED) == 0) ==
 		       ((child->finished(dep_child->flags)) == 0));
@@ -539,8 +542,7 @@ Proceed Executor::execute_children()
 	}
 
 	if (proceed_all == 0) {
-		/* If there are still children, they must have returned
-		 * WAIT or PENDING */
+		/* If there are still children, they must have returned WAIT or PENDING. */
 		assert(children.empty());
 		if (error) {
 			assert(option_k);
@@ -552,6 +554,9 @@ Proceed Executor::execute_children()
 
 void Executor::push(shared_ptr <const Dep> dep)
 {
+	TRACE_FUNCTION(EXECUTOR, Executor::push);
+	TRACE("{%s} dep=%s", show(*this, S_DEBUG, R_SHOW_FLAGS),
+	      show(dep, S_DEBUG, R_SHOW_FLAGS));
 	dep->check();
 	DEBUG_PRINT(fmt("push %s", show(dep, S_DEBUG, R_SHOW_FLAGS)));
 
@@ -565,15 +570,19 @@ void Executor::push(shared_ptr <const Dep> dep)
 		raise(e);
 	}
 	for (const auto &d: deps) {
+		TRACE("d=%s", show(d, S_DEBUG, R_SHOW_FLAGS));
 		d->check();
 		assert(d->is_normalized());
 		shared_ptr <const Dep> untrivialized= Dep::untrivialize(d);
+		TRACE("untrivialized=%s", untrivialized ? show(untrivialized, S_DEBUG, R_SHOW_FLAGS) : "<null>");
 		if (untrivialized) {
-			buffer_B.push(untrivialized);
+			shared_ptr <Dep> d2= Dep::clone(untrivialized);
+			d2->flags |= F_PHASE_B;
+			TRACE("buffer_B push %s", show(d2, S_DEBUG, R_SHOW_FLAGS));
+			buffer_B.push(d2);
 		} else {
-			shared_ptr <Dep> d_phase_A= Dep::clone(d);
-			d_phase_A->flags |= F_PHASE_A;
-			buffer_A.push(d_phase_A);
+			TRACE("buffer_A push %s", show(d, S_DEBUG, R_SHOW_FLAGS));
+			buffer_A.push(d);
 		}
 	}
 }
@@ -662,6 +671,8 @@ void Executor::disconnect(Executor *const child,
 			  shared_ptr <const Dep> dep_child)
 {
 	TRACE_FUNCTION(EXECUTOR, Executor::disconnect);
+	TRACE("{%s} dep_child=%s", show(*this, S_DEBUG, R_SHOW_FLAGS),
+	      show(dep_child, S_DEBUG, R_SHOW_FLAGS));
 	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
 	assert(child);
 	assert(child != this);
@@ -682,13 +693,14 @@ void Executor::disconnect(Executor *const child,
 	}
 
 	/* Child is done for phase A, but not for phase B */
-	if (dep_child->flags & F_PHASE_A) {
-		bool f= child->finished(dep_child->flags & ~F_PHASE_A);
+	if (! (dep_child->flags & F_PHASE_B)) {
+		// TODO Why is F not always true?  (It is asserted earlier).
+		bool f= child->finished(dep_child->flags);
 		TRACE("child->finished = %s", frmt("%d", f));
 		if (! f) {
 			shared_ptr <Dep> d= Dep::clone(dep_child);
 			TRACE("%s", show(d, S_DEBUG, R_SHOW_FLAGS));
-			d->flags &= ~F_PHASE_A;
+			d->flags |= F_PHASE_B;
 			DEBUG_PRINT(fmt("disconnect A_to_B %s",
 					show(d, S_DEBUG, R_SHOW_FLAGS)));
 			buffer_B.push(d);
@@ -721,17 +733,14 @@ void Executor::disconnect(Executor *const child,
 	 * Propagate attributes
 	 */
 
-	/* Note: propagate the flags after propagating other things,
-	 * since flags can be changed by the propagations done
-	 * before.  */
+	/* Note: propagate the flags after propagating other things, since flags can be
+	 * changed by the propagations done before. */
 
 	error |= child->error;
 
-	/* Don't propagate the NEED_BUILD flag via DYNAMIC_LEFT links:
-	 * It just means the list of depenencies have changed, not the
-	 * dependencies themselves.  */
-	if (child->bits & B_NEED_BUILD
-	    && ! (dep_child->flags & F_RESULT_NOTIFY)) {
+	/* Don't propagate the NEED_BUILD flag via DYNAMIC_LEFT links: It just means the
+	 * list of depenencies have changed, not the dependencies themselves. */
+	if (child->bits & B_NEED_BUILD && ! (dep_child->flags & F_RESULT_NOTIFY)) {
 		bits |= B_NEED_BUILD;
 	}
 
@@ -827,6 +836,9 @@ shared_ptr <const Dep> Executor::set_top(shared_ptr <const Dep> dep,
 Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 			  shared_ptr <const Dep> dep_child)
 {
+	TRACE_FUNCTION(EXECUTOR, Executor::connect);
+	TRACE("{%s} dep_child=%s", show(dep_this, S_DEBUG, R_SHOW_FLAGS),
+	      show(dep_child, S_DEBUG, R_SHOW_FLAGS));
 	DEBUG_PRINT(fmt("connect %s",  show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
 	assert(dep_child->is_normalized());
 	assert(! to <Root_Dep> (dep_child));
@@ -879,8 +891,11 @@ Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 	assert(proceed_child);
 	if (proceed_child & (P_WAIT | P_CALL_AGAIN))
 		return proceed_child;
-	if (child->finished(dep_child->flags))
+	bool f = child->finished(dep_child->flags);
+	TRACE("f=%s", frmt("%d", f));
+	if (f) {
 		disconnect(child, dep_child);
+	}
 	return 0;
 }
 
@@ -897,4 +912,9 @@ bool Executor::same_dependency_for_print(shared_ptr <const Dep> d1,
 		return false;
 	return p1->place_target.unparametrized()
 		== p2->place_target.unparametrized();
+}
+
+void render(const Executor &executor, Parts &parts, Rendering rendering)
+{
+	executor.render(parts, rendering);
 }

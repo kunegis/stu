@@ -26,23 +26,20 @@
  */
 
 /*
- * Executor is the base class of all executors.  At runtime, executor objects
- * are used to manage the running of Stu itself.  All executor objects are
- * linked to each other in an acyclic directed graph rooted at a Root_Executor.
+ * Executor is the base class of all executors.  At runtime, executor objects are used to
+ * manage the running of Stu itself.  All executor objects are linked to each other in an
+ * acyclic directed graph rooted at a Root_Executor.
  *
- * Executors are allocated with new(), are used via ordinary pointers,
- * and deleted (if necessary, depending on caching policy), via
- * delete().
+ * Executors are allocated with new(), are used via ordinary pointers, and deleted (if
+ * necessary, depending on caching policy), via delete().
  *
- * The set of active Executor objects forms a directed acyclic graph,
- * rooted at the single Root_Executor object.  Edges in this graph are
- * represented by dependencies.  An edge is said to go from a parent to
- * a child.  Each Executor object corresponds to one or more unique
- * dependencies.  Two Executor objects are connected if there is a
- * dependency between them.  If there is an edge A ---> B, A is said to
- * be the parent of B, and B the child of A.  Also, we say that B is a
- * dependency of A, even though properly speaking, the edge connecting
- * them is the dependency.
+ * The set of active Executor objects forms a directed acyclic graph, rooted at the single
+ * Root_Executor object.  Edges in this graph are represented by dependencies.  An edge is
+ * said to go from a parent to a child.  Each Executor object corresponds to one or more
+ * unique dependencies.  Two Executor objects are connected if there is a dependency
+ * between them.  If there is an edge A ---> B, A is said to be the parent of B, and B the
+ * child of A.  Also, we say that B is a dependency of A, even though properly speaking,
+ * the edge connecting them is the dependency.
  */
 
 #include "bits.hh"
@@ -54,7 +51,7 @@
 #include "timestamp.hh"
 
 class Executor
-	:  private Printer, protected Debuggable
+	: private Printer, protected Debuggable
 {
 public:
 	void raise(int error);
@@ -140,8 +137,8 @@ public:
 	/* Set before calling main_loop() */
 
 	static Hash_Dep get_target_for_cache(Hash_Dep hash_dep);
-	/* Get the target value used for caching.  I.e, return TARGET
-	 * with certain flags removed. */
+	/* Get the target value used for caching.  I.e, return TARGET with certain flags
+	 * removed. */
 
 protected:
 	Bits bits;
@@ -150,47 +147,41 @@ protected:
 	/* The value is propagated (using '|') to the parent. */
 
 	std::map <Executor *, shared_ptr <const Dep> > parents;
-	/* This is a map rather than an unsorted_map because typically, the
-	 * number of elements is always very small, i.e., mostly one, and a map
-	 * is better suited in this case.  The map is sorted, but by the
-	 * executor pointer, i.e., the sorting is arbitrary as far as Stu is
-	 * concerned. */
+	/* This is a map rather than an unsorted_map because typically, the number of
+	 * elements is always very small, i.e., mostly one, and a map is better suited in
+	 * this case.  The map is sorted, but by the executor pointer, i.e., the sorting
+	 * is arbitrary as far as Stu is concerned. */
 
 	std::set <Executor *> children;
 
 	Timestamp timestamp;
-	/* Latest timestamp of a (direct or indirect) dependency that was not
-	 * rebuilt.  Files that were rebuilt are not considered, since they make
-	 * the target be rebuilt anyway.  Implementations also changes this to
-	 * consider the file itself, if any.  This final timestamp is then
-	 * carried over to the parent executors. */
+	/* Latest timestamp of a (direct or indirect) dependency that was not rebuilt.
+	 * Files that were rebuilt are not considered, since they make the target be
+	 * rebuilt anyway.  Implementations also change this to consider the file itself,
+	 * if any.  This final timestamp is then carried over to the parent executors. */
 
 	std::vector <shared_ptr <const Dep> > result;
-	/* The final list of dependencies represented by the target.  This does
-	 * not include any dynamic dependencies, i.e., all dependencies are
-	 * flattened to Plain_Dep's.  Not used for executors that have file
-	 * targets, neither for executors that have multiple targets.  This is
-	 * not used for file dependencies, as a file dependency's result can be
-	 * each of its files, depending on the parent -- for file dependencies,
-	 * parents are notified directly, bypassing push_result(). */
+	/* The final list of dependencies represented by the target.  This does not
+	 * include any dynamic dependencies, i.e., all dependencies are flattened to
+	 * Plain_Dep's.  Not used for executors that have file targets, neither for
+	 * executors that have multiple targets.  This is not used for file dependencies,
+	 * as a file dependency's result can be each of its files, depending on the parent
+	 * -- for file dependencies, parents are notified directly, bypassing
+	 * push_result(). */ 
 
 	std::map <string, string> result_variable;
-	/* Same semantics as RESULT, but for variable values, stored as
-	 * KEY-VALUE pairs. */
+	/* Same semantics as RESULT, but for variable values, stored as KEY-VALUE pairs. */
 
 	shared_ptr <const Rule> param_rule;
-	/* The (possibly parametrized) rule from which this executor was
-	 * derived.  This is only used to detect cycles.  To manage the
-	 * dependencies, the instantiated general rule is used.  Null by
-	 * default, and set by individual implementations in their constructor
-	 * if necessary. */
+	/* The (possibly parametrized) rule from which this executor was derived.  This is
+	 * only used to detect cycles.  To manage the dependencies, the instantiated
+	 * general rule is used.  Null by default, and set by individual implementations
+	 * in their constructor if necessary. */
 
 	explicit Executor(shared_ptr <const Rule> param_rule_= nullptr)
-		:  bits(0),
-		   error(0),
+		: bits(0), error(0),
 		   timestamp(Timestamp::UNDEFINED),
-		   param_rule(param_rule_)
-	{  }
+		   param_rule(param_rule_) { }
 
 	Proceed execute_children();
 	/* Execute already-active children */
@@ -224,8 +215,7 @@ protected:
 			shared_ptr <const Dep> dep_child);
 
 	const Place &get_place() const
-	/* The place for the executor; e.g. the rule; empty if there is no
-	 * place */
+	/* The place for the executor; e.g. the rule; empty if there is no place */
 	{
 		if (param_rule == nullptr)
 			return Place::place_empty;
@@ -255,22 +245,19 @@ protected:
 	/* All cached Executor objects by each of their Target.  Such
 	 * Executor objects are never deleted. */
 
-	static bool find_cycle(Executor *parent,
-			       Executor *child,
+	static bool find_cycle(Executor *parent, Executor *child,
 			       shared_ptr <const Dep> dep_link);
-	/* Find a cycle.  Assuming that the edge parent-->child will be
-	 * added, find a directed cycle that would be created.  Start at
-	 * PARENT and perform a depth-first search upwards in the
-	 * hierarchy to find CHILD.  DEPENDENCY_LINK is the link that
-	 * would be added between child and parent, and would create a
+	/* Find a cycle.  Assuming that the edge parent-->child will be added, find a
+	 * directed cycle that would be created.  Start at PARENT and perform a
+	 * depth-first search upwards in the hierarchy to find CHILD.  DEPENDENCY_LINK is
+	 * the link that would be added between child and parent, and would create a
 	 * cycle. */
 
 	static bool find_cycle(std::vector <Executor *> &path,
 			       Executor *child,
 			       shared_ptr <const Dep> dep_link);
-	/* Helper function.  PATH is the currently explored path.
-	 * PATH[0] is the original PARENT; PATH[end] is the oldest
-	 * grandparent found yet. */
+	/* Helper function.  PATH is the currently explored path.  PATH[0] is the original
+	 * PARENT; PATH[end] is the oldest grandparent found yet. */
 
 	static void cycle_print(const std::vector <Executor *> &path,
 				shared_ptr <const Dep> dep);
@@ -310,5 +297,7 @@ private:
 	static bool same_dependency_for_print(shared_ptr <const Dep> d1,
 					      shared_ptr <const Dep> d2);
 };
+
+void render(const Executor &, Parts &, Rendering= 0);
 
 #endif /* ! EXECUTOR_HH */

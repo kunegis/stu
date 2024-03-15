@@ -32,6 +32,8 @@
 
 #include "color.hh"
 
+// TODO maybe:  merge Style and Rendering into a single bitmask
+
 typedef unsigned Style;
 constexpr Style S_CHANNEL=         (1 << CH_BITS) - 1;
 constexpr Style S_ALWAYS_QUOTE=    1 << (CH_BITS + 0);
@@ -112,6 +114,8 @@ string show_dynamic_variable(string name, Style= S_DEFAULT);
 
 template <typename T>
 string show(const T &, Style= S_DEFAULT, Rendering= 0);
+template <typename T>
+void render(const T &, Style= S_DEFAULT, Rendering= 0);
 template <typename T>
 void render_prefix(string prefix, const T &object, Parts &, Rendering= 0);
 template <typename T>

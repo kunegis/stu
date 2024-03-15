@@ -21,11 +21,10 @@ string frmt(const char *format, ...)
 void reverse_string(string &s);
 /* Reverse the given string in-place */
 
-/* fmt() allows only the unqualified '%s' format specifier with string
- * and const char * arguments, and '%%'.  Precisely, this allows any
- * argument that can be concatenated to a string with the '+' operator.  */
-
 string fmt(const char *s);
 template<typename T, typename... Args> string fmt(const char *s, T value, Args... args);
+/* fmt() allows only the unqualified '%s' format specifier with string and const char *
+ * arguments, and '%%'.  Precisely, this allows any argument that can be concatenated to a
+ * string with the '+' operator. */
 
 #endif /* ! FORMAT_HH */

@@ -12,25 +12,19 @@
  *	"log"     Write into the trace logfile (see name below)
  *	"stderr"  Write on stderr
  *	"off"     No tracing (same as variable not set)
+ *
+ * There are no trace levels, and it is not possible to output traces in an arbitrary
+ * file.
  */
 
 #ifndef NDEBUG
 
 #include <string.h>
 
-#define TRACE_FILE "log/trace.log"
-
 enum Trace_Class {
-	TRACE_EXECUTOR, TRACE_SHOW, TRACE_TOKENIZER,
+	TRACE_EXECUTOR, TRACE_SHOW, TRACE_TOKENIZER, TRACE_DEP,
 	TRACE_COUNT
 };
-
-// TODO this should be in the .cc file.
-const char *trace_names[TRACE_COUNT]= {
-	"EXECUTOR", "SHOW", "TOKENIZER"
-};
-static_assert(sizeof(trace_names) / sizeof(trace_names[0]) == TRACE_COUNT,
-	      "sizeof(trace_names)");
 
 class Trace
 {
@@ -53,8 +47,10 @@ public:
 private:
 	string prefix;
 	static string padding;
-	static constexpr const char *padding_one= "   ";
 	static std::vector <Trace *> stack;
+
+	static constexpr const char *padding_one= "   ";
+	static constexpr const char *trace_filename= "log/trace.log";
 
 	static struct Init { Init(); } init;
 
@@ -66,7 +62,7 @@ private:
 #define TRACE(format, ...)  { \
 	if (Trace::get_current()->get_enabled()) { \
 		string trace_text= fmt("%s" format, \
-			trace_object.get_prefix(), \
+n			trace_object.get_prefix(), \
 			__VA_ARGS__); \
 		if (fprintf(Trace::trace_files[Trace::get_current()->trace_class], \
 			    "%21s:%-4d  %s\n", \

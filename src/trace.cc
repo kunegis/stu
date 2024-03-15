@@ -2,6 +2,12 @@
 
 #ifndef NDEBUG
 
+const char *const trace_names[]= {
+	"EXECUTOR", "SHOW", "TOKENIZER", "DEP"
+};
+static_assert(sizeof(trace_names) / sizeof(trace_names[0]) == TRACE_COUNT,
+	      "sizeof(trace_names)");
+
 FILE *Trace::trace_files[TRACE_COUNT];
 string Trace::padding;
 Trace::Init Trace::init;
@@ -55,7 +61,7 @@ Trace::Init::Init()
 			trace_files[i]= file_devnull;
 		} else if (!strcmp(env, "log")) {
 			if (!file_log)
-				file_log= open_logfile(TRACE_FILE);
+				file_log= open_logfile(trace_filename);
 			trace_files[i]= file_log;
 		} else if (!strcmp(env, "stderr")) {
 			trace_files[i]= stderr;

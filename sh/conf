@@ -6,6 +6,8 @@
 #	conf/CXXFLAGS_NDEBUG   Flags for bin/stu
 #
 
+## TODO rename this script to "configure"
+
 [ "$verbose" ] && exec 6>&2 || exec 6>/dev/null
 
 check()

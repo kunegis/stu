@@ -48,32 +48,43 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 
 shared_ptr <const Dep> Dep::untrivialize(shared_ptr <const Dep> dep)
 {
+	TRACE_FUNCTION(DEP, Dep::untrivialize);
+	TRACE("dep=%s", show(dep, S_DEBUG, R_SHOW_FLAGS));
 	assert(dep);
 	assert(dep->is_normalized());
 	if (to <Plain_Dep> (dep)) {
-		if (! (dep->flags & F_TRIVIAL))
+		TRACE("%s", "plain");
+		if (! (dep->flags & F_TRIVIAL)) {
+			TRACE("%s", "not trivial");
 			return nullptr;
+		}
 		shared_ptr <Dep> ret= Dep::clone(dep);
 		ret->flags &= ~F_TRIVIAL;
 		ret->places[I_TRIVIAL]= Place();
+		TRACE("untrivialized=%s", show(ret, S_DEBUG, R_SHOW_FLAGS));
 		return ret;
 	} else if (to <Dynamic_Dep> (dep)) {
+		TRACE("%s", "dynamic");
 		shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep);
-		shared_ptr <const Dep> ret_dep= untrivialize(to <Dynamic_Dep> (dep)->dep);
+		shared_ptr <const Dep> ret_dep= untrivialize(dynamic_dep->dep);
 		if (ret_dep) {
 			shared_ptr <Dynamic_Dep> ret= std::make_shared <Dynamic_Dep> (dynamic_dep, ret_dep);
 			ret->flags &= ~F_TRIVIAL;
 			ret->places[I_TRIVIAL]= Place();
+			TRACE("untrivialized ret=%s", show(ret, S_DEBUG, R_SHOW_FLAGS));
 			return ret;
 		} else if (dep->flags & F_TRIVIAL) {
 			shared_ptr <Dep> ret= Dep::clone(dep);
 			ret->flags &= ~F_TRIVIAL;
 			ret->places[I_TRIVIAL]= Place();
+			TRACE("only dyn ret=%s", show(ret, S_DEBUG, R_SHOW_FLAGS));
 			return ret;
 		} else {
+			TRACE("%s", "not trivial");
 			return nullptr;
 		}
 	} else if (to <Concat_Dep> (dep)) {
+		TRACE("%s", "concat");
 		shared_ptr <const Concat_Dep> concat_dep= to <Concat_Dep> (dep);
 		shared_ptr <Concat_Dep> ret= std::make_shared <Concat_Dep> (dep);
 		ret->deps.resize(concat_dep->deps.size());
@@ -87,10 +98,14 @@ shared_ptr <const Dep> Dep::untrivialize(shared_ptr <const Dep> dep)
 				ret->deps[i]= concat_dep->deps[i];
 			}
 		}
-		if (! found && !(dep->flags & F_TRIVIAL))
+		TRACE("found=%s", frmt("%d", found));
+		if (! found && !(dep->flags & F_TRIVIAL)) {
+			TRACE("%s", "not trivial");
 			return nullptr;
+		}
 		ret->flags &= ~F_TRIVIAL;
 		ret->places[I_TRIVIAL]= Place();
+		TRACE("ret=%s", show(ret, S_DEBUG, R_SHOW_FLAGS));
 		return ret;
 	} else {
 		unreachable();

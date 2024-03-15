@@ -4,7 +4,7 @@
 
 string frmt(const char *format, ...)
 /* Call snprintf() twice: once to compute the needed size, then once to
- * actually print everything.  */
+ * actually print everything. */
 {
 	va_list ap;
 	char buf[2];

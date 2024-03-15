@@ -45,7 +45,8 @@ public:
 	virtual bool finished() const override;
 	virtual bool finished(Flags flags) const override;
 	virtual void render(Parts &, Rendering= 0) const override;
-	virtual void notify_variable(const std::map <string, string> &result_variable_child) override {
+	virtual void notify_variable
+	(const std::map <string, string> &result_variable_child) override {
 		mapping_variable.insert(result_variable_child.begin(),
 					result_variable_child.end());
 	}
@@ -53,23 +54,18 @@ public:
 	static size_t executors_by_pid_size;
 	static pid_t *executors_by_pid_key;
 	static File_Executor **executors_by_pid_value;
-	/* The currently running executors by process IDs.  Write
-	 * access to this is enclosed in a Signal_Blocker.  */
-	/* Both arrays are malloc'ed, have the same length, and are both
-	 * sorted by PID.  malloc() is only called once for each array,
-	 * giving the allocated memory a length that will be enough for
-	 * all jobs we will ever run, based on the value passed via the
-	 * -j option, so we avoid excessive calling of realloc(), and
-	 * race conditions while accessing this.  */
-	/* For all file executors stored here, the following variables
-	 * are never changed as long as the File_Executor objects are
-	 * stored there, such that they can be accessed from
-	 * async-signal safe functions:
-	 *      FILENAMES, TIMESTAMPS_OLD    */
+	/* The currently running executors by process IDs.  Write access to this is
+	 * enclosed in a Signal_Blocker.  Both arrays are malloc'ed, have the same length,
+	 * and are both sorted by PID.  malloc() is only called once for each array,
+	 * giving the allocated memory a length that will be enough for all jobs we will
+	 * ever run, based on the value passed via the -j option, so we avoid excessive
+	 * calling of realloc(), and race conditions while accessing this.  For all file
+	 * executors stored here, the following variables are never changed as long as the
+	 * File_Executor objects are stored there, such that they can be accessed from
+	 * async-signal safe functions:  FILENAMES, TIMESTAMPS_OLD. */
 
 	static void wait();
-	/* Wait for next job to finish and finish it.  Do not start anything
-	 * new.  */
+	/* Wait for next job to finish and finish it.  Do not start anything new. */
 
 protected:
 	virtual bool optional_finished(shared_ptr <const Dep> dep_link) override;
@@ -78,39 +74,32 @@ protected:
 private:
 	friend class Executor;
 
-	/* The following two functions are called from signal handlers,
-	 * and are set up and declared in job.hh.  */
+	/* The following two functions are called from signal handlers, and are set up and
+	 * declared in job.hh. */
 	friend void terminate_jobs();
-	/* Termination signal - we must send a termination signal to all
-	 * running jobs */
+	/* Termination signal - we must send a termination signal to all running jobs */
 	friend void print_jobs();
-	/* The print-all-jobs signal was received - we must print all
-	 * jobs */
+	/* The print-all-jobs signal was received - we must print all jobs */
 
 	std::vector <Hash_Dep> hash_deps;
-	/* The targets to which this executor object corresponds.
-	 * Never empty.
-	 * All targets are non-dynamic, i.e., only plain files and
-	 * transients are included.
-	 * Does not include flags (except F_TRANSIENT).  */
+	/* The targets to which this executor object corresponds.  Never empty.  All
+	 * targets are non-dynamic, i.e., only plain files and transients are included.
+	 * Does not include flags (except F_TRANSIENT). */
 
 	Timestamp *timestamps_old;
-	/* Timestamp of each file target, before the command is
-	 * executed.  Only valid once the job was started.  The indexes
-	 * correspond to those in TARGETS.  Non-file indexes are
-	 * uninitialized.  Used for checking whether a file was rebuild
-	 * to decide whether to remove it after a command failed or was
-	 * interrupted.  This is UNDEFINED when the file did not exist,
-	 * or no target is a file.  */
-	/* Allocated with malloc().  Length equals that of TARGETS */
+	/* Timestamp of each file target, before the command is executed.  Only valid once
+	 * the job was started.  The indexes correspond to those in TARGETS.  Non-file
+	 * indexes are uninitialized.  Used for checking whether a file was rebuild to
+	 * decide whether to remove it after a command failed or was interrupted.  This is
+	 * UNDEFINED when the file did not exist, or no target is a file.  Allocated with
+	 * malloc().  Length equals that of TARGETS. */ 
 
 	char **filenames;
-	/* The actual filename for every file target.  Null for
-	 * transients.  Both the array and each filename is allocated
-	 * with malloc().  If used, it has the same length as TARGETS.
-	 * Only set when we are actually starting the jobs.  Cannot be a
-	 * C++ container because we access it from async-signal safe
-	 * functions.  Used to delete partially-built files.  */
+	/* The actual filename for every file target.  Null for transients.  Both the
+	 * array and each filename is allocated with malloc().  If used, it has the same
+	 * length as TARGETS.  Only set when we are actually starting the jobs.  Cannot be
+	 * a C++ container because we access it from async-signal safe functions.  Used to
+	 * delete partially-built files. */ 
 
 	shared_ptr <const Rule> rule;
 	/* The instantiated file rule.  Null when there is no rule for this
@@ -130,42 +119,38 @@ private:
 	~File_Executor();
 
 	bool remove_if_existing(bool output);
-	/* Remove all file targets of this executor object if they
-	 * exist.  If OUTPUT is true, output a corresponding message.
-	 * Return whether the file was removed.  If OUTPUT is false,
-	 * only do async signal-safe things.  */
+	/* Remove all file targets of this executor object if they exist.  If OUTPUT is
+	 * true, output a corresponding message.  Return whether the file was removed.  If
+	 * OUTPUT is false, only do async signal-safe things. */
 
 	void waited(pid_t pid, size_t index, int status);
 	/* Called after the job was waited for.  The PID is only passed
 	 * for checking that it is correct.  INDEX is the index within
-	 * EXECUTORS_BY_PID_*.  */
+	 * EXECUTORS_BY_PID_*. */
 
-	void warn_future_file(struct stat *buf,
-			      const char *filename,
+	void warn_future_file(struct stat *buf, const char *filename,
 			      const Place &place,
 			      const char *message_extra= nullptr);
 	/* Warn when the file has a modification time in the future.
-	 * MESSAGE_EXTRA may be null to not show an extra message.  */
+	 * MESSAGE_EXTRA may be null to not show an extra message. */
 
 	void print_command() const;
 
 	void print_as_job() const;
 	/* Print a line to stdout for a running job, as output of SIGUSR1.
-	 * Is currently running.  */
+	 * Is currently running. */
 
 	void write_content(const char *filename, const Command &command);
 	/* Create the file FILENAME with content from COMMAND */
 
 	static std::unordered_map <string, Timestamp> transients;
-	/* The timestamps for transient targets.  This container plays
-	 * the role of the file system for transient targets, holding
-	 * their timestamps, and remembering whether they have been
-	 * executed.  Note that if a rule has both file targets and
-	 * transient targets, and all file targets are up to date and
-	 * the transient targets have all their dependencies up to date,
-	 * then the command is not executed, even though it was never
-	 * executed in the current invocation of Stu. In that case, the
-	 * transient targets are never inserted in this map.  */
+	/* The timestamps for transient targets.  This container plays the role of the
+	 * file system for transient targets, holding their timestamps, and remembering
+	 * whether they have been executed.  Note that if a rule has both file targets and
+	 * transient targets, and all file targets are up to date and the transient
+	 * targets have all their dependencies up to date, then the command is not
+	 * executed, even though it was never executed in the current invocation of
+	 * Stu. In that case, the transient targets are never inserted in this map. */
 };
 
 void terminate_jobs();

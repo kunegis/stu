@@ -36,7 +36,7 @@ enum
 	I_INPUT,              /* <                                           */
 	I_RESULT_NOTIFY,      /* -*                                          */
 	I_RESULT_COPY,        /* -%                                          */
-	I_PHASE_A,            /* -A                                          */
+	I_PHASE_B,            /* -B                                          */
 
 	/* Counts */
 	C_ALL,
@@ -87,16 +87,18 @@ enum
 	/* The link A ---> B between two executors annotated with this
 	 * flags means that the results of B will be copied into A's result. */
 
-	F_PHASE_A               = 1 << I_PHASE_A,
-	/* A parent (direct or indirect) is only in phase A.  As a result, trivial
-	 * dependencies should not be built.  Only the trivial Done bits are set when
-	 * done. */
+	F_PHASE_B               = 1 << I_PHASE_B,
+	/* A parent is in phase B */
+//	F_PHASE_A               = 1 << I_PHASE_A,
+//	/* A parent (direct or indirect) is only in phase A.  As a result, trivial
+//	 * dependencies should not be built.  Only the trivial Done bits are set when
+//	 * done. */
 
 	/*
 	 * Aggregates
 	 */
 	F_PLACED        = (1 << C_PLACED) - 1,
-	F_TARGET_WORD   = (1 << C_WORD) - 1,
+	F_TARGET_WORD   = (1 << C_WORD) - 1, // TODO rename F_WORD
 	F_TARGET        = F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
 	F_ATTRIBUTE     = F_NEWLINE_SEPARATED | F_NUL_SEPARATED | F_CODE,
 };

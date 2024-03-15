@@ -2,32 +2,26 @@
 #define DEP_HH
 
 /*
- * Dependencies are polymorphous objects, and all dependencies derive from the
- * class Dep, and are used via shared_ptr<>, except in cases where access is
- * read-only.  This is necessary in cases where a member function has to access
- * its own THIS pointer, because we can't put THIS into a shared pointer.
+ * Dependencies are polymorphous objects, and all dependencies derive from class Dep, and
+ * are used via shared_ptr<>, except in cases where access is read-only.  This is
+ * necessary in cases where a member function has to access its own THIS pointer, because
+ * we can't put THIS into a shared pointer.
  *
  * All dependency classes allow parametrized targets.
- */
-
-/*
- * A dependency can be normalized or not.  A dependency is normalized if it
- * is one of:
+ *
+ * A dependency can be normalized or not.  A dependency is normalized if it is one of:
  *    - a plain dependency (file or transient);
  *    - a dynamic dependency containing a normalized dependency;
  *    - a concatenated dependency of only normalized plain and dynamic dependencies.
- * In particular, compound dependencies are never normalized; they do not appear
- * at all in normalized dependencies.  Also, concatenated dependencies never
- * contain other concatenated dependencies directly -- such constructs are
- * always "flattened" in a normalized dependency.
- */
-
-/*
+ * In particular, compound dependencies are never normalized; they do not appear at all in
+ * normalized dependencies.  Also, concatenated dependencies never contain other
+ * concatenated dependencies directly -- such constructs are always "flattened" in a
+ * normalized dependency.
+ *
  * A plain dependency is a file or a transient.
  *
- * A dependency is simple when is does not involve concatenation or compound
- * dependencies, i.e., when it is a possible multiply dynamic dependency of a
- * plain dependency.
+ * A dependency is simple when is does not involve concatenation or compound dependencies,
+ * i.e., when it is a possible multiply dynamic dependency of a plain dependency.
  *
  * A dependency that is not simple is complex.  I.e., a complex dependency involves
  * concatenation and/or compound dependencies.
@@ -81,16 +75,16 @@ public:
 	Flags flags;
 
 	Place places[C_PLACED];
-	/* For each transitive flag that is set, the place.  An empty
-	 * place if a flag is not set  */
+	/* For each transitive flag that is set, the place.  An empty place if a flag is
+	 * not set. */
 
 	shared_ptr <const Dep> top;
-	/* Additional place used for constructing traces.  Most of the
-	 * properties (such as extra flags) are ignored.  */
+	/* Additional place used for constructing traces.  Most of the properties (such as
+	 * extra flags) are ignored. */
 
 	ssize_t index;
-	/* Used by concatenated executors; the index of the dependency
-	 * within the array of concatenation.  -1 when not used. */
+	/* Used by concatenated executors; the index of the dependency within the array of
+	 * concatenation.  -1 when not used. */
 
 	Dep(): flags(0), index(-1) { }
 	Dep(Flags flags_): flags(flags_), index(-1) { }
@@ -155,7 +149,7 @@ public:
 	virtual void render(Parts &, Rendering= 0) const= 0;
 
 	virtual Hash_Dep get_target() const= 0;
-	/* Only called for non-compound and non-parametrized dependencies.  */
+	/* Only called for non-compound and non-parametrized dependencies. */
 
 	virtual bool is_normalized() const= 0;
 
@@ -187,14 +181,12 @@ void render(shared_ptr <const Dep> dep, Parts &parts, Rendering rendering= 0)
 }
 
 class Plain_Dep
-/* A dependency denoting an individual target name, which can be a file
- * or a transient.
+/* A dependency denoting an individual target name, which can be a file or a transient.
  *
- * When the target is a transient, the dependency flags have the
- * F_TARGET_TRANSIENT bit set, which is redundant, because that
- * information is also contained in PLACE_PARAM_TARGET.  No other Dep
- * type has the F_TARGET_TRANSIENT flag set.  */
-	:  public Dep
+ * When the target is a transient, the dependency flags have the F_TARGET_TRANSIENT bit
+ * set, which is redundant, because that information is also contained in
+ * PLACE_PARAM_TARGET.  No other Dep type has the F_TARGET_TRANSIENT flag set. */
+	: public Dep
 {
 public:
 	Place_Target place_target;
@@ -207,19 +199,17 @@ public:
 	/* With F_VARIABLE:  the name of the variable.  Otherwise:  empty.  */
 
 	explicit Plain_Dep(const Place_Target &place_target_)
-		:  Dep(place_target_.flags),
-		   place_target(place_target_),
-		   place(place_target_.place)
+		: Dep(place_target_.flags),
+		  place_target(place_target_),
+		  place(place_target_.place)
 	{
 		check();
 	}
 
-	Plain_Dep(Flags flags_,
-		  const Place_Target &place_target_)
+	Plain_Dep(Flags flags_, const Place_Target &place_target_)
 		/* Take the dependency place from the target place */
-		:  Dep(flags_),
-		   place_target(place_target_),
-		   place(place_target_.place)
+		: Dep(flags_), place_target(place_target_),
+		  place(place_target_.place)
 	{
 		check();
 	}
@@ -228,9 +218,9 @@ public:
 		  const Place places_[C_PLACED],
 		  const Place_Target &place_target_)
 		/* Take the dependency place from the target place */
-		:  Dep(flags_, places_),
-		   place_target(place_target_),
-		   place(place_target_.place)
+		: Dep(flags_, places_),
+		  place_target(place_target_),
+		  place(place_target_.place)
 	{
 		check();
 	}
@@ -240,10 +230,10 @@ public:
 		  const Place &place_,
 		  const string &variable_name_)
 		/* Use an explicit dependency place */
-		:  Dep(flags_),
-		   place_target(place_target_),
-		   place(place_),
-		   variable_name(variable_name_)
+		: Dep(flags_),
+		  place_target(place_target_),
+		  place(place_),
+		  variable_name(variable_name_)
 	{
 		check();
 	}
@@ -254,10 +244,10 @@ public:
 		  const Place &place_,
 		  const string &variable_name_)
 		/* Use an explicit dependency place */
-		:  Dep(flags_, places_),
-		   place_target(place_target_),
-		   place(place_),
-		   variable_name(variable_name_)
+		: Dep(flags_, places_),
+		  place_target(place_target_),
+		  place(place_),
+		  variable_name(variable_name_)
 	{
 		check();
 	}
@@ -267,19 +257,19 @@ public:
 		  const Place_Target &place_target_,
 		  const string &variable_name_)
 		/* Use an explicit dependency place */
-		:  Dep(flags_, places_),
-		   place_target(place_target_),
-		   place(place_target_.place),
-		   variable_name(variable_name_)
+		: Dep(flags_, places_),
+		  place_target(place_target_),
+		  place(place_target_.place),
+		  variable_name(variable_name_)
 	{
 		check();
 	}
 
 	Plain_Dep(const Plain_Dep &plain_dep)
-		:  Dep(plain_dep),
-		   place_target(plain_dep.place_target),
-		   place(plain_dep.place),
-		   variable_name(plain_dep.variable_name) { }
+		: Dep(plain_dep),
+		  place_target(plain_dep.place_target),
+		  place(plain_dep.place),
+		  variable_name(plain_dep.variable_name) { }
 
 	const Place &get_place() const override { return place; }
 	virtual shared_ptr <const Dep> instantiate(const std::map <string, string> &mapping) const override;
@@ -437,7 +427,7 @@ class Compound_Dep
  * dependencies, they appear only as immediate children of concatenated
  * dependencies.  Otherwise, they also appear after parsing to denote syntactic
  * groups of dependencies.  */
-	:  public Dep
+	: public Dep
 {
 public:
 	Place place;
@@ -459,8 +449,7 @@ public:
 
 	Compound_Dep(std::vector <shared_ptr <const Dep> > &&deps_,
 		     const Place &place_)
-		: place(place_),
-		  deps(deps_) { }
+		: place(place_), deps(deps_) { }
 
 	void push_back(shared_ptr <const Dep> dep) { deps.push_back(dep); }
 
@@ -476,7 +465,7 @@ class Root_Dep
 /* Dependency to denote the root object of the dependency tree.  There is just one
  * possible value of this, and it is never shown to the user, but used internally with the
  * root executor object. */
-	:  public Dep
+	: public Dep
 {
 public:
 	virtual shared_ptr <const Dep> instantiate(const std::map <string, string> &) const override {

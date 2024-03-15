@@ -13,15 +13,23 @@ string Trace::padding;
 Trace::Init Trace::init;
 std::vector <Trace *> Trace::stack;
 
-Trace::Trace(Trace_Class trace_class_, const char *name)
+Trace::Trace(Trace_Class trace_class_, const char *name, const char *file, int line)
 	: trace_class(trace_class_)
 {
 	assert(trace_class >= 0 && trace_class < TRACE_COUNT);
 	stack.push_back(this);
 	if (! (trace_files[trace_class]))
 		return;
-	prefix= padding + name + ' ';
+	string text= fmt("%s%s", padding, name);
+	if (fprintf(Trace::trace_files[trace_class],
+		    print_format,				  
+		    strip_dir(file), line,
+		    text.c_str()) == EOF) {      
+		perror("fprintf(trace_file)"); 
+		exit(ERROR_FATAL);		
+	}					
 	padding += padding_one;
+	prefix= padding;
 }
 
 Trace::~Trace()

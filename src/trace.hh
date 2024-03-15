@@ -32,10 +32,12 @@ public:
 	Trace_Class trace_class;
 	static FILE *trace_files[TRACE_COUNT];
 
-	Trace(Trace_Class trace_class_, const char *name);
+	Trace(Trace_Class trace_class_, const char *name, const char *file, int line);
 	~Trace();
 	const char *get_prefix() const { return prefix.c_str(); }
 	bool get_enabled() const { return trace_files[trace_class]; }
+
+	static constexpr const char *print_format= "%21s:%-4d  %s\n";
 
 	static Trace *get_current() {
 		assert(! stack.empty());
@@ -57,16 +59,16 @@ private:
 	static FILE *open_logfile(const char *filename);
 };
 
-#define TRACE_FUNCTION(CLASS, NAME)  Trace trace_object(TRACE_ ## CLASS, #NAME)
+#define TRACE_FUNCTION(CLASS, NAME)  Trace trace_object(TRACE_ ## CLASS, #NAME, __FILE__, __LINE__)
 
 #define TRACE(format, ...)  { \
 	if (Trace::get_current()->get_enabled()) { \
 		string trace_text= fmt("%s" format, \
-n			trace_object.get_prefix(), \
-			__VA_ARGS__); \
+				       trace_object.get_prefix(), \
+				       __VA_ARGS__); \
 		if (fprintf(Trace::trace_files[Trace::get_current()->trace_class], \
-			    "%21s:%-4d  %s\n", \
-			    Trace::strip_dir(__FILE__), __LINE__,	\
+			    Trace::print_format, \
+			    Trace::strip_dir(__FILE__), __LINE__, \
 			    trace_text.c_str()) == EOF) { \
 			perror("fprintf(trace_file)"); \
 			exit(ERROR_FATAL); \

@@ -37,7 +37,7 @@ public:
 	const char *get_prefix() const { return prefix.c_str(); }
 	bool get_enabled() const { return trace_files[trace_class]; }
 
-	static constexpr const char *print_format= "%21s:%-4d  %s\n";
+	static constexpr const char *print_format= "%21s:%-4d %s\n";
 
 	static Trace *get_current() {
 		assert(! stack.empty());

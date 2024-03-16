@@ -123,14 +123,14 @@ int main(int argc, char **argv, char **envp)
 				had_option_f= true;
 				filenames.push_back(optarg);
 				Parser::get_file(optarg, -1, Executor::rule_set,
-						 target_first, place_first);
+					target_first, place_first);
 			end:
 				break;
 
 			case 'F':
 				had_option_f= true;
 				Parser::get_string(optarg, Executor::rule_set,
-						   target_first);
+					target_first);
 				break;
 
 			case 'n':
@@ -160,10 +160,9 @@ int main(int argc, char **argv, char **envp)
 				}
 				Place places[C_PLACED];
 				places[c == 'p' ? I_PERSISTENT : I_OPTIONAL]= place;
-				deps.push_back
-					(std::make_shared <Plain_Dep>
-					 (c == 'p' ? F_PERSISTENT : F_OPTIONAL, places,
-					  Place_Target(0, Place_Name(optarg, place))));
+				deps.push_back(std::make_shared <Plain_Dep>
+					(c == 'p' ? F_PERSISTENT : F_OPTIONAL, places,
+						Place_Target(0, Place_Name(optarg, place))));
 				break;
 			}
 
@@ -201,9 +200,8 @@ int main(int argc, char **argv, char **envp)
 					throw ERROR_LOGICAL;
 				error |= ERROR_LOGICAL;
 			} else if (option_J) {
-				deps.push_back
-					(std::make_shared <Plain_Dep>
-					       (0, Place_Target(0, Place_Name(argv[i], place))));
+				deps.push_back(std::make_shared <Plain_Dep>
+					(0, Place_Target(0, Place_Name(argv[i], place))));
 			}
 		}
 

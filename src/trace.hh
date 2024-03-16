@@ -61,17 +61,17 @@ private:
 
 #define TRACE_FUNCTION(CLASS, NAME)  Trace trace_object(TRACE_ ## CLASS, #NAME, __FILE__, __LINE__)
 
-#define TRACE(format, ...)  { \
-	if (Trace::get_current()->get_enabled()) { \
-		string trace_text= fmt("%s" format, \
-				       trace_object.get_prefix(), \
-				       __VA_ARGS__); \
+#define TRACE(format, ...)  {						\
+		if (Trace::get_current()->get_enabled()) {		\
+		string trace_text= fmt("%s" format,			\
+			trace_object.get_prefix(),			\
+			__VA_ARGS__);					\
 		if (fprintf(Trace::trace_files[Trace::get_current()->trace_class], \
-			    Trace::print_format, \
-			    Trace::strip_dir(__FILE__), __LINE__, \
-			    trace_text.c_str()) == EOF) { \
-			perror("fprintf(trace_file)"); \
-			exit(ERROR_FATAL); \
+				Trace::print_format,			\
+				Trace::strip_dir(__FILE__), __LINE__,	\
+				trace_text.c_str()) == EOF) {		\
+			perror("fprintf(trace_file)");			\
+			exit(ERROR_FATAL);				\
 		} \
 	} \
 }

@@ -7,15 +7,15 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
 		assert((get_word(i) & F_TARGET_TRANSIENT) == 0);
 		if (rendering & R_SHOW_FLAGS) {
-			render_flags
-				(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
-				 parts, rendering);
+			render_flags(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
+				parts, rendering);
 		}
 		parts.append_operator("[");
 	}
 	assert(text.size() > sizeof(word_t) * (i + 1));
 	if (rendering & R_SHOW_FLAGS) {
-		render_flags(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE), parts, rendering);
+		render_flags(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE),
+			parts, rendering);
 	}
 	if (get_word(i) & F_TARGET_TRANSIENT) {
 		parts.append_operator("@");

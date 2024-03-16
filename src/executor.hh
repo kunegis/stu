@@ -2,8 +2,8 @@
 #define EXECUTOR_HH
 
 /*
- * Code for executing the building process itself.  If there is ever a "libstu",
- * this will be its main entry point.
+ * Code for executing the building process itself.  If there is ever a "libstu", this will
+ * be its main entry point.
  *
  * OVERVIEW OF TYPES
  *

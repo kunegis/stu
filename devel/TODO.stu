@@ -2,9 +2,6 @@
 # Flag -C.
 #
 
-# * change tracing such that the output better reflects the call sequence
-# ** TRACE_FUNCTION always output a line with the function name
-# ** TRACE doesn't output the function name, but uses an extra indentation
 # * make bin/stu.debug && rm -f ? list.* B2 && STU_TRACE_EXECUTOR=stderr bin/stu.debug -f tests/2.7.84-0023
 # ** We never go into phase B of [B], and therefore never build list.[-t C]
 # *** Call stack for [B]:  connect() -> disconnect() -> push()

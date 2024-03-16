@@ -589,6 +589,8 @@ void Executor::push(shared_ptr <const Dep> dep)
 
 Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
+	TRACE_FUNCTION(EXECUTOR, Executor::execute_phase_A);
+	TRACE("{%s}", show(*this, S_DEBUG, R_SHOW_FLAGS));
 	assert(options_jobs >= 0);
 	assert(dep_link);
 	DEBUG_PRINT("phase_A");
@@ -757,6 +759,8 @@ void Executor::disconnect(Executor *const child,
 
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 {
+	TRACE_FUNCTION(EXECUTOR, Executor::execute_phase_B);
+	TRACE("{%s}", show(*this, S_DEBUG, R_SHOW_FLAGS));
 	DEBUG_PRINT("phase_B");
 	Proceed proceed= 0;
 	while (! buffer_B.empty()) {

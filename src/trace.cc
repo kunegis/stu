@@ -22,12 +22,12 @@ Trace::Trace(Trace_Class trace_class_, const char *name, const char *file, int l
 		return;
 	string text= fmt("%s%s", padding, name);
 	if (fprintf(Trace::trace_files[trace_class],
-		    print_format,				  
-		    strip_dir(file), line,
-		    text.c_str()) == EOF) {      
+			print_format,				  
+			strip_dir(file), line,
+			text.c_str()) == EOF) {      
 		perror("fprintf(trace_file)"); 
 		exit(ERROR_FATAL);		
-	}					
+	}	
 	padding += padding_one;
 	prefix= padding;
 }

@@ -259,7 +259,7 @@ void Executor::cycle_print(const std::vector <Executor *> &path,
 
 Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 {
-	TRACE_FUNCTION(EXECUTOR, Executor::get_executor);
+	TRACE_FUNCTION(EXECUTOR);
 	TRACE("{%s} dep=%s", show(*this, S_DEBUG, R_SHOW_FLAGS),
 	      show(dep, S_DEBUG, R_SHOW_FLAGS));
 	
@@ -490,7 +490,7 @@ void Executor::operator<<(string text) const
 
 Proceed Executor::execute_children()
 {
-	TRACE_FUNCTION(EXECUTOR, Executor::execute_children);
+	TRACE_FUNCTION(EXECUTOR);
 	TRACE("{%s}", show(*this, S_DEBUG, R_SHOW_FLAGS));
 
 	/* Since disconnect() may change executor->children, we must first
@@ -554,7 +554,7 @@ Proceed Executor::execute_children()
 
 void Executor::push(shared_ptr <const Dep> dep)
 {
-	TRACE_FUNCTION(EXECUTOR, Executor::push);
+	TRACE_FUNCTION(EXECUTOR);
 	TRACE("{%s} dep=%s", show(*this, S_DEBUG, R_SHOW_FLAGS),
 	      show(dep, S_DEBUG, R_SHOW_FLAGS));
 	dep->check();
@@ -589,7 +589,7 @@ void Executor::push(shared_ptr <const Dep> dep)
 
 Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
-	TRACE_FUNCTION(EXECUTOR, Executor::execute_phase_A);
+	TRACE_FUNCTION(EXECUTOR);
 	TRACE("{%s}", show(*this, S_DEBUG, R_SHOW_FLAGS));
 	assert(options_jobs >= 0);
 	assert(dep_link);
@@ -672,7 +672,7 @@ void Executor::raise(int e)
 void Executor::disconnect(Executor *const child,
 			  shared_ptr <const Dep> dep_child)
 {
-	TRACE_FUNCTION(EXECUTOR, Executor::disconnect);
+	TRACE_FUNCTION(EXECUTOR);
 	TRACE("{%s} dep_child=%s", show(*this, S_DEBUG, R_SHOW_FLAGS),
 	      show(dep_child, S_DEBUG, R_SHOW_FLAGS));
 	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
@@ -759,7 +759,7 @@ void Executor::disconnect(Executor *const child,
 
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 {
-	TRACE_FUNCTION(EXECUTOR, Executor::execute_phase_B);
+	TRACE_FUNCTION(EXECUTOR);
 	TRACE("{%s}", show(*this, S_DEBUG, R_SHOW_FLAGS));
 	DEBUG_PRINT("phase_B");
 	Proceed proceed= 0;
@@ -840,7 +840,7 @@ shared_ptr <const Dep> Executor::set_top(shared_ptr <const Dep> dep,
 Proceed Executor::connect(shared_ptr <const Dep> dep_this,
 			  shared_ptr <const Dep> dep_child)
 {
-	TRACE_FUNCTION(EXECUTOR, Executor::connect);
+	TRACE_FUNCTION(EXECUTOR);
 	TRACE("{%s} dep_child=%s", show(dep_this, S_DEBUG, R_SHOW_FLAGS),
 	      show(dep_child, S_DEBUG, R_SHOW_FLAGS));
 	DEBUG_PRINT(fmt("connect %s",  show(dep_child, S_DEBUG, R_SHOW_FLAGS)));

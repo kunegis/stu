@@ -2,7 +2,7 @@
 
 void Hash_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION(SHOW, Target::show);
+	TRACE_FUNCTION(SHOW);
 	size_t i;
 	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
 		assert((get_word(i) & F_TARGET_TRANSIENT) == 0);

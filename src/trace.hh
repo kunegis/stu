@@ -59,7 +59,7 @@ private:
 	static FILE *open_logfile(const char *filename);
 };
 
-#define TRACE_FUNCTION(CLASS, NAME)  Trace trace_object(TRACE_ ## CLASS, #NAME, __FILE__, __LINE__)
+#define TRACE_FUNCTION(CLASS)  Trace trace_object(TRACE_ ## CLASS, __func__, __FILE__, __LINE__)
 
 #define TRACE(format, ...)  {						\
 		if (Trace::get_current()->get_enabled()) {		\
@@ -77,7 +77,7 @@ private:
 }
 
 #else /* NDEBUG */
-#	define TRACE_FUNCTION(a, b)
+#	define TRACE_FUNCTION(a)
 #	define TRACE(a, ...)
 #endif /* NDEBUG */
 

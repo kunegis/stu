@@ -859,7 +859,7 @@ bool Tokenizer::skip_space(bool &skipped_actual_space)
 
 string Tokenizer::current_mbchar() const
 {
-	TRACE_FUNCTION(TOKENIZER, Tokenizer::current_mbchar());
+	TRACE_FUNCTION(TOKENIZER);
 	assert(p < p_end);
 	mbstate_t mbstate;
 	TRACE("next:%s", frmt("%02x %02x", (unsigned char)p[0], (unsigned char)p[1]));

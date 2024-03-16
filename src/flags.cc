@@ -23,7 +23,7 @@ unsigned flag_get_index(char c)
 
 bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 {
-	TRACE_FUNCTION(SHOW, render_flags);
+	TRACE_FUNCTION(SHOW);
 	if (!(rendering & R_SHOW_FLAGS))
 		return false;
 	string ret;

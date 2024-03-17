@@ -20,7 +20,7 @@ Trace::Trace(Trace_Class trace_class_, const char *name, const char *file, int l
 	stack.push_back(this);
 	if (! (trace_files[trace_class]))
 		return;
-	string text= fmt("%s%s", padding, name);
+	string text= fmt("%s%s()", padding, name);
 	if (fprintf(Trace::trace_files[trace_class],
 			print_format,				  
 			strip_dir(file), line,

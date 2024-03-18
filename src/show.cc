@@ -37,7 +37,7 @@ void Part::show(string &ret) const
 
 void Part::show(string &ret, bool quotes) const
 {
-	TRACE_FUNCTION(SHOW);
+	TRACE_FUNCTION();
 	TRACE("quotes=%s", frmt("%u", (unsigned)quotes));
 	assert(is_quotable());
 	if (properties == PROP_MARKUP_QUOTABLE) {
@@ -188,7 +188,7 @@ string show(const T &object, Style style, Rendering rendering)
 template <typename T>
 void render_prefix(string prefix, const T &object, Parts &parts, Rendering rendering)
 {
-	TRACE_FUNCTION(SHOW);
+	TRACE_FUNCTION();
 	parts.append_operator(prefix);
 	render(object, parts, rendering);
 }

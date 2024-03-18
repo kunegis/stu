@@ -21,21 +21,25 @@
 
 #include <string.h>
 
-enum Trace_Class {
-	TRACE_EXECUTOR, TRACE_SHOW, TRACE_TOKENIZER, TRACE_DEP,
-	TRACE_COUNT
-};
+//enum Trace_Class {
+//	TRACE_EXECUTOR, TRACE_SHOW, TRACE_TOKENIZER, TRACE_DEP,
+//	TRACE_COUNT
+//};
 
 class Trace
 {
 public:
-	Trace_Class trace_class;
-	static FILE *trace_files[TRACE_COUNT];
+//	Trace_Class trace_class;
+	string trace_class;
+	FILE *file;
+	static std::map <string, FILE *> files;
+//	static FILE *trace_files[TRACE_COUNT];
 
-	Trace(Trace_Class trace_class_, const char *name, const char *file, int line);
+	Trace(const char *function_name, const char *filename, int line);
 	~Trace();
 	const char *get_prefix() const { return prefix.c_str(); }
-	bool get_enabled() const { return trace_files[trace_class]; }
+//	bool get_enabled() const;
+//	{ return trace_files[trace_class]; }
 
 	static constexpr const char *print_format= "%21s:%-4d %s\n";
 
@@ -50,23 +54,25 @@ private:
 	string prefix;
 	static string padding;
 	static std::vector <Trace *> stack;
-
+	static FILE *file_log;
 	static constexpr const char *padding_one= "   ";
 	static constexpr const char *trace_filename= "log/trace.log";
 
-	static struct Init { Init(); } init;
+//	static struct Init { Init(); } init;
 
+	void init_file();
 	static FILE *open_logfile(const char *filename);
+	static string class_from_filename(const char *filename);
 };
 
-#define TRACE_FUNCTION(CLASS)  Trace trace_object(TRACE_ ## CLASS, __func__, __FILE__, __LINE__)
+#define TRACE_FUNCTION()  Trace trace_object(__func__, __FILE__, __LINE__)
 
 #define TRACE(format, ...)  {						\
-		if (Trace::get_current()->get_enabled()) {		\
+		if (FILE *file= Trace::get_current()->file) {		\
 		string trace_text= fmt("%s" format,			\
 			trace_object.get_prefix(),			\
 			__VA_ARGS__);					\
-		if (fprintf(Trace::trace_files[Trace::get_current()->trace_class], \
+		if (fprintf(file,					\
 				Trace::print_format,			\
 				Trace::strip_dir(__FILE__), __LINE__,	\
 				trace_text.c_str()) == EOF) {		\

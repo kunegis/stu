@@ -2,30 +2,35 @@
 
 #ifndef NDEBUG
 
-const char *const trace_names[]= {
-	"EXECUTOR", "SHOW", "TOKENIZER", "DEP"
-};
-static_assert(sizeof(trace_names) / sizeof(trace_names[0]) == TRACE_COUNT,
-	      "sizeof(trace_names)");
+#include <algorithm>
 
-FILE *Trace::trace_files[TRACE_COUNT];
+//const char *const trace_names[]= {
+//	"EXECUTOR", "SHOW", "TOKENIZER", "DEP"
+//};
+//static_assert(sizeof(trace_names) / sizeof(trace_names[0]) == TRACE_COUNT,
+//	      "sizeof(trace_names)");
+
+std::map <string, FILE *> Trace::files;
+//FILE *Trace::trace_files[TRACE_COUNT];
 string Trace::padding;
-Trace::Init Trace::init;
 std::vector <Trace *> Trace::stack;
+FILE *Trace::file_log= nullptr;
 
-Trace::Trace(Trace_Class trace_class_, const char *name, const char *file, int line)
-	: trace_class(trace_class_)
+Trace::Trace(const char *function_name, const char *filename, int line)
 {
-	assert(trace_class >= 0 && trace_class < TRACE_COUNT);
+	const char *filename_stripped= strip_dir(filename);
+	trace_class= class_from_filename(filename_stripped);
+//	assert(trace_class >= 0 && trace_class < TRACE_COUNT);
 	stack.push_back(this);
-	if (! (trace_files[trace_class]))
-		return;
-	string text= fmt("%s%s()", padding, name);
-	if (fprintf(Trace::trace_files[trace_class],
-			print_format,				  
-			strip_dir(file), line,
+	init_file();
+	if (!file) return;
+//	if (! (trace_files[trace_class]))
+//		return;
+	string text= fmt("%s%s()", padding, function_name);
+	if (fprintf(file, print_format,				  
+			filename_stripped, line,
 			text.c_str()) == EOF) {      
-		perror("fprintf(trace_file)"); 
+		perror("Trace: fprintf"); 
 		exit(ERROR_FATAL);		
 	}	
 	padding += padding_one;
@@ -35,9 +40,36 @@ Trace::Trace(Trace_Class trace_class_, const char *name, const char *file, int l
 Trace::~Trace()
 {
 	stack.pop_back();
-	if (! (trace_files[trace_class]))
+	if (!file)
+//	if (! (trace_files[trace_class]))
 		return;
 	padding.resize(padding.size() - strlen(padding_one));
+}
+
+void Trace::init_file()
+{
+	auto i= files.find(trace_class);
+	if (i != files.end()) {
+		file= i->second;
+		return;
+	}
+
+	string name= fmt("STU_TRACE_%s", trace_class);
+	const char *env= getenv(name.c_str());
+//	bool enabled= (env && env[0]);
+	if (!env || !env[0] || !strcmp(env, "off")) {
+		files[trace_class]= file= nullptr;
+	} else if (!strcmp(env, "log")) {
+		if (!file_log)
+			file_log= open_logfile(trace_filename);
+		files[trace_class]= file= file_log;
+	} else if (!strcmp(env, "stderr")) {
+		files[trace_class]= file= stderr;
+	} else {
+		fprintf(stderr, "stu: error: invalid value for trace %s=%s\n",
+			name.c_str(), env);
+		exit(ERROR_FATAL);
+	}
 }
 
 FILE *Trace::open_logfile(const char *filename)
@@ -54,40 +86,20 @@ FILE *Trace::open_logfile(const char *filename)
 	return ret;
 }
 
-Trace::Init::Init()
-{
-	FILE *file_log= nullptr;
-	FILE *file_devnull= nullptr;
-
-	for (int i= 0; i < TRACE_COUNT; ++i) {
-		string name= fmt("STU_TRACE_%s", trace_names[i]);
-		const char *env= getenv(name.c_str());
-		bool enabled= (env && env[0]);
-		if (!enabled) {
-			if (!file_devnull)
-				file_devnull= open_logfile("/dev/null");
-			trace_files[i]= file_devnull;
-		} else if (!strcmp(env, "log")) {
-			if (!file_log)
-				file_log= open_logfile(trace_filename);
-			trace_files[i]= file_log;
-		} else if (!strcmp(env, "stderr")) {
-			trace_files[i]= stderr;
-		} else if (!strcmp(env, "off")) {
-			trace_files[i]= nullptr;
-		} else {
-			fprintf(stderr, "stu: error: invalid value for trace %s=%s\n",
-				name.c_str(), env);
-			exit(ERROR_FATAL);
-		}
-	}
-}
-
 const char *Trace::strip_dir(const char *s)
 {
 	const char *r= strchr(s, '/');
 	if (!r) return s;
 	return r+1;
+}
+
+string Trace::class_from_filename(const char *filename)
+{
+	const char *r= strchr(filename, '.');
+	assert(r);
+	string ret= string(filename, r - filename);
+	std::transform(ret.begin(), ret.end(), ret.begin(), ::toupper);
+	return ret;
 }
 
 #endif /* ! NDEBUG */

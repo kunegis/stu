@@ -48,7 +48,7 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 
 shared_ptr <const Dep> Dep::untrivialize(shared_ptr <const Dep> dep)
 {
-	TRACE_FUNCTION(DEP);
+	TRACE_FUNCTION();
 	TRACE("dep=%s", show(dep, S_DEBUG, R_SHOW_FLAGS));
 	assert(dep);
 	assert(dep->is_normalized());
@@ -201,7 +201,7 @@ Hash_Dep Plain_Dep::get_target() const
 
 void Plain_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION(SHOW);
+	TRACE_FUNCTION();
 
 	if (render_flags(flags, parts, rendering))
 		parts.append_space();
@@ -237,7 +237,7 @@ Hash_Dep Dynamic_Dep::get_target() const
 
 void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION(SHOW);
+	TRACE_FUNCTION();
 	if (render_flags(flags & ~F_TARGET_DYNAMIC, parts, rendering))
 		parts.append_space();
 	parts.append_operator("[");
@@ -302,7 +302,7 @@ bool Compound_Dep::is_unparametrized() const
 
 void Compound_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION(SHOW);
+	TRACE_FUNCTION();
 	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
 		parts.append_operator("(");
 	bool first= true;
@@ -352,7 +352,7 @@ const Place &Concat_Dep::get_place() const
 
 void Concat_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION(SHOW);
+	TRACE_FUNCTION();
 	if (rendering & R_SHOW_FLAGS) {
 		if (render_flags(flags, parts, rendering)) {
 			parts.append_space();

@@ -279,7 +279,7 @@ bool Name::anchoring_dominates(std::vector <size_t> &anchoring_a,
 
 void Name::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION(SHOW);
+	TRACE_FUNCTION();
 	assert(texts.size() == 1 + parameters.size());
 	parts.append_text(texts[0]);
 	for (size_t i= 0; i < get_n(); ++i) {
@@ -336,7 +336,7 @@ void Name::append(const Name &name)
 
 void Place_Target::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION(SHOW);
+	TRACE_FUNCTION();
 	if (flags & F_TARGET_TRANSIENT)
 		parts.append_operator("@");
 	place_name.render(parts, rendering);

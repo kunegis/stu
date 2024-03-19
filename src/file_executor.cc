@@ -629,6 +629,8 @@ void File_Executor::print_command() const
 
 Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 {
+	TRACE_FUNCTION();
+	TRACE("{%s}", show(dep_link, S_DEBUG, R_SHOW_FLAGS));
 	Debug debug(this);
 
 	assert(! job.started() || children.empty());

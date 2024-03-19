@@ -333,6 +333,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			/* The parent and child are not connected -- add the connection */
 			executor->parents[this]= dep;
 		}
+		TRACE("%s", "returning existing executor");
 		return executor;
 	}
 
@@ -397,6 +398,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		return nullptr;
 	}
 	assert(executor->parents.size() == 1);
+	TRACE("%s", "returning new executor");
 	return executor;
 }
 
@@ -823,8 +825,9 @@ shared_ptr <const Dep> Executor::append_top(shared_ptr <const Dep> dep,
 	return ret;
 }
 
-shared_ptr <const Dep> Executor::set_top(shared_ptr <const Dep> dep,
-					 shared_ptr <const Dep> top)
+shared_ptr <const Dep> Executor::set_top(
+	shared_ptr <const Dep> dep,
+	shared_ptr <const Dep> top)
 {
 	assert(dep);
 	assert(dep != top);
@@ -837,8 +840,9 @@ shared_ptr <const Dep> Executor::set_top(shared_ptr <const Dep> dep,
 	return ret;
 }
 
-Proceed Executor::connect(shared_ptr <const Dep> dep_this,
-			  shared_ptr <const Dep> dep_child)
+Proceed Executor::connect(
+	shared_ptr <const Dep> dep_this,
+	shared_ptr <const Dep> dep_child)
 {
 	TRACE_FUNCTION();
 	TRACE("{%s} dep_child=%s", show(dep_this, S_DEBUG, R_SHOW_FLAGS),

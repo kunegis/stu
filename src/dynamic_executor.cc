@@ -63,6 +63,8 @@ Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 
 Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 {
+	TRACE_FUNCTION();
+	TRACE("{%s}", show(dep_link, S_DEBUG, R_SHOW_FLAGS));
 	Debug debug(this);
 
 	Proceed proceed= execute_phase_A(dep_link);

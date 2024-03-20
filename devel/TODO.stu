@@ -44,7 +44,7 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 
 #
-# Use static_assert without a second argument. (C++17)
+# Use static_assert everywhere without a second argument. (C++17)
 #
 
 #

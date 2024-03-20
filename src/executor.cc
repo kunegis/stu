@@ -551,6 +551,7 @@ Proceed Executor::execute_children()
 		}
 	}
 
+	TRACE("proceed_all=%s", show_proceed(proceed_all));
 	return proceed_all;
 }
 
@@ -600,12 +601,14 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 
 	if (finished(dep_link->flags)) {
 		DEBUG_PRINT("finished");
-		return proceed | P_FINISHED;
+		proceed |= P_FINISHED;
+		goto ret;
 	}
 
 	if (optional_finished(dep_link)) {
 		DEBUG_PRINT("optional finished");
-		return proceed | P_FINISHED;
+		proceed |= P_FINISHED;
+		goto ret;
 	}
 
 	/* Continue the already-active child executors.  In DFS mode, first
@@ -616,51 +619,63 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 		Proceed proceed_2= execute_children();
 		proceed |= proceed_2;
 		if (proceed & P_WAIT) {
-			if (options_jobs == 0)
-				return proceed;
+			if (options_jobs == 0) {
+				goto ret;
+			}
 		} else if (finished(dep_link->flags) && ! option_k) {
 			DEBUG_PRINT("finished");
-			return proceed | P_FINISHED;
+			proceed |= P_FINISHED;
+			goto ret;
 		}
 	}
 
 	assert(error == 0 || option_k);
 
-	if (options_jobs == 0)
-		return proceed | P_WAIT;
+	if (options_jobs == 0) {
+		proceed |= P_WAIT;
+		goto ret;
+	}
 
 	while (! buffer_A.empty()) {
 		shared_ptr <const Dep> dep_child= buffer_A.pop();
 
 		Proceed proceed_2= connect(dep_link, dep_child);
 		proceed |= proceed_2;
-		if (options_jobs == 0)
-			return proceed | P_WAIT;
+		if (options_jobs == 0) {
+			proceed |= P_WAIT;
+			goto ret;
+		}
 	}
 	assert(buffer_A.empty());
 
 	if (order == Order::RANDOM) {
 		Proceed proceed_2= execute_children();
 		proceed |= proceed_2;
-		if (proceed & P_WAIT)
-			return proceed;
+		if (proceed & P_WAIT) {
+			goto ret;
+		}
 	}
 
 	/* Some dependencies are still running */
 	if (! children.empty()) {
 		assert(proceed != 0);
-		return proceed;
+		goto ret;
 	}
 
 	if (error) {
 		assert(option_k);
-		return proceed | P_ABORT | P_FINISHED;
+		proceed |= P_ABORT | P_FINISHED;
+		goto ret;
 	}
 
 	if (proceed)
-		return proceed;
+		goto ret;
 
-	return proceed | P_FINISHED;
+	proceed |= P_FINISHED;
+
+ ret:
+	TRACE("proceed=%s", show_proceed(proceed));
+	return proceed;
 }
 
 void Executor::raise(int e)
@@ -770,10 +785,16 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 		Proceed proceed_2= connect(dep_link, dep_child);
 		proceed |= proceed_2;
 		assert(options_jobs >= 0);
-		if (options_jobs == 0) return proceed | P_WAIT;
+		if (options_jobs == 0) {
+			proceed |= P_WAIT;
+			goto ret;
+		}
 	}
 	assert(buffer_B.empty());
-	return proceed | P_FINISHED;
+	proceed |= P_FINISHED;
+ ret:
+	TRACE("proceed=%s", show_proceed(proceed));
+	return proceed;
 }
 
 void Executor::push_result(shared_ptr <const Dep> dd)

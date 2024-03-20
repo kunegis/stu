@@ -26,6 +26,7 @@ using std::shared_ptr;
 #include "options.cc"
 #include "parser.cc"
 #include "preset.cc"
+#include "proceed.cc"
 #include "root_executor.cc"
 #include "rule.cc"
 #include "show.cc"

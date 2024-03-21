@@ -38,7 +38,7 @@ void Part::show(string &ret) const
 void Part::show(string &ret, bool quotes) const
 {
 	TRACE_FUNCTION();
-	TRACE("quotes=%s", frmt("%u", (unsigned)quotes));
+	TRACE("quotes= %s", frmt("%u", (unsigned)quotes));
 	assert(is_quotable());
 	if (properties == PROP_MARKUP_QUOTABLE) {
 		ret += text;

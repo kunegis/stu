@@ -865,7 +865,7 @@ string Tokenizer::current_mbchar() const
 	TRACE("next:%s", frmt("%02x %02x", (unsigned char)p[0], (unsigned char)p[1]));
 	memset(&mbstate, 0, sizeof(mbstate));
 	size_t l= mbrlen(p, p_end - p, &mbstate);
-	TRACE("l=%s", frmt("%zd", (ssize_t)l));
+	TRACE("l= %s", frmt("%zd", (ssize_t)l));
 	if (l == 0 || l == (size_t)-1 || l == (size_t)-2) {
 		return string(p, 1);
 	} else {

@@ -113,7 +113,7 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 	}
 
  ret:
-	TRACE("proceed=%s", show_proceed(proceed));
+	TRACE("proceed= %s", show_proceed(proceed));
 	assert(proceed);
 	return proceed;
 }

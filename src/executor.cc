@@ -260,7 +260,7 @@ void Executor::cycle_print(const std::vector <Executor *> &path,
 Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 {
 	TRACE_FUNCTION();
-	TRACE("{%s} dep=%s", show(*this, S_DEBUG, R_SHOW_FLAGS),
+	TRACE("{%s} dep= %s", show(*this, S_DEBUG, R_SHOW_FLAGS),
 	      show(dep, S_DEBUG, R_SHOW_FLAGS));
 	
 	/*
@@ -551,14 +551,14 @@ Proceed Executor::execute_children()
 		}
 	}
 
-	TRACE("proceed_all=%s", show_proceed(proceed_all));
+	TRACE("proceed_all= %s", show_proceed(proceed_all));
 	return proceed_all;
 }
 
 void Executor::push(shared_ptr <const Dep> dep)
 {
 	TRACE_FUNCTION();
-	TRACE("{%s} dep=%s", show(*this, S_DEBUG, R_SHOW_FLAGS),
+	TRACE("{%s} dep= %s", show(*this, S_DEBUG, R_SHOW_FLAGS),
 	      show(dep, S_DEBUG, R_SHOW_FLAGS));
 	dep->check();
 	DEBUG_PRINT(fmt("push %s", show(dep, S_DEBUG, R_SHOW_FLAGS)));
@@ -573,11 +573,11 @@ void Executor::push(shared_ptr <const Dep> dep)
 		raise(e);
 	}
 	for (const auto &d: deps) {
-		TRACE("d=%s", show(d, S_DEBUG, R_SHOW_FLAGS));
+		TRACE("d= %s", show(d, S_DEBUG, R_SHOW_FLAGS));
 		d->check();
 		assert(d->is_normalized());
 		shared_ptr <const Dep> untrivialized= Dep::untrivialize(d);
-		TRACE("untrivialized=%s", untrivialized ? show(untrivialized, S_DEBUG, R_SHOW_FLAGS) : "<null>");
+		TRACE("untrivialized= %s", untrivialized ? show(untrivialized, S_DEBUG, R_SHOW_FLAGS) : "<null>");
 		if (untrivialized) {
 			shared_ptr <Dep> d2= Dep::clone(untrivialized);
 			d2->flags |= F_PHASE_B;
@@ -674,7 +674,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	proceed |= P_FINISHED;
 
  ret:
-	TRACE("proceed=%s", show_proceed(proceed));
+	TRACE("proceed= %s", show_proceed(proceed));
 	return proceed;
 }
 
@@ -690,7 +690,7 @@ void Executor::disconnect(Executor *const child,
 			  shared_ptr <const Dep> dep_child)
 {
 	TRACE_FUNCTION();
-	TRACE("{%s} dep_child=%s", show(*this, S_DEBUG, R_SHOW_FLAGS),
+	TRACE("{%s} dep_child= %s", show(*this, S_DEBUG, R_SHOW_FLAGS),
 	      show(dep_child, S_DEBUG, R_SHOW_FLAGS));
 	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
 	assert(child);
@@ -715,7 +715,7 @@ void Executor::disconnect(Executor *const child,
 	if (! (dep_child->flags & F_PHASE_B)) {
 		// TODO Why is F not always true?  (It is asserted earlier).
 		bool f= child->finished(dep_child->flags);
-		TRACE("child->finished = %s", frmt("%d", f));
+		TRACE("child->finished= %s", frmt("%d", f));
 		if (! f) {
 			shared_ptr <Dep> d= Dep::clone(dep_child);
 			TRACE("%s", show(d, S_DEBUG, R_SHOW_FLAGS));
@@ -793,7 +793,7 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 	assert(buffer_B.empty());
 	proceed |= P_FINISHED;
  ret:
-	TRACE("proceed=%s", show_proceed(proceed));
+	TRACE("proceed= %s", show_proceed(proceed));
 	return proceed;
 }
 
@@ -866,7 +866,7 @@ Proceed Executor::connect(
 	shared_ptr <const Dep> dep_child)
 {
 	TRACE_FUNCTION();
-	TRACE("{%s} dep_child=%s", show(dep_this, S_DEBUG, R_SHOW_FLAGS),
+	TRACE("{%s} dep_child= %s", show(dep_this, S_DEBUG, R_SHOW_FLAGS),
 	      show(dep_child, S_DEBUG, R_SHOW_FLAGS));
 	DEBUG_PRINT(fmt("connect %s",  show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
 	assert(dep_child->is_normalized());
@@ -921,7 +921,7 @@ Proceed Executor::connect(
 	if (proceed_child & (P_WAIT | P_CALL_AGAIN))
 		return proceed_child;
 	bool f = child->finished(dep_child->flags);
-	TRACE("f=%s", frmt("%d", f));
+	TRACE("f= %s", frmt("%d", f));
 	if (f) {
 		disconnect(child, dep_child);
 	}

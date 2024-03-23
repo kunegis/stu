@@ -102,9 +102,9 @@ private:
 	 * delete partially-built files. */ 
 
 	shared_ptr <const Rule> rule;
-	/* The instantiated file rule.  Null when there is no rule for this
-	 * file.  Individual dynamic dependencies do have rules, in order for
-	 * cycles to be detected.  Null if and only if PARAM_RULE is null.  */
+	/* The instantiated file rule.  Null when there is no rule for this file.
+	 * Individual dynamic dependencies do have rules, in order for cycles to be
+	 * detected.  Null if and only if PARAM_RULE is null. */
 
 	Job job;
 

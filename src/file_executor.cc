@@ -218,8 +218,8 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 			     shared_ptr <const Rule> param_rule_,
 			     std::map <string, string> &mapping_parameter_,
 			     int &error_additional)
-	:  Executor(param_rule_), timestamps_old(nullptr), filenames(nullptr),
-	   rule(rule_)
+	: Executor(param_rule_), timestamps_old(nullptr), filenames(nullptr),
+	  rule(rule_)
 {
 	assert((param_rule_ == nullptr) == (rule_ == nullptr));
 
@@ -682,7 +682,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	timestamps_old= timestamps_old_new;
 	for (size_t i= 0; i < hash_deps.size(); ++i)
 		timestamps_old[i]= Timestamp::UNDEFINED;
-	char **filenames_new= (char **)realloc(filenames, sizeof(filenames[0]) * hash_deps.size());
+	char **filenames_new= (char **)realloc(filenames,
+		sizeof(filenames[0]) * hash_deps.size());
 	if (!filenames_new) {
 		perror("realloc");
 		abort();
@@ -760,7 +761,6 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			if (! (bits & B_NEED_BUILD)
 			    && ret_stat != 0 && errno == ENOENT) {
 				/* File does not exist */
-
 				if (! (dep_link->flags & F_OPTIONAL)) {
 					/* Non-optional dependency */
 					bits |= B_NEED_BUILD;
@@ -774,9 +774,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			}
 
 			if (ret_stat != 0 && errno != ENOENT) {
-				/* stat() returned an actual error,
-				 * e.g. permission denied.  This is a
-				 * build error.  */
+				/* stat() returned an actual error, e.g. permission
+				 * denied.  This is a build error. */
 				rule->place_targets[i]->place
 					<< format_errno(show(hash_dep));
 				raise(ERROR_BUILD);
@@ -924,7 +923,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		 * to after we have entered it in the map.  Note:  if we
 		 * only blocked signals during the time we update
 		 * EXECUTORS_BY_PID_*, there would be a race condition
-		 * in which the job would fail to be clean up.  */
+		 * in which the job would failed to be clean up. */
 		Job::Signal_Blocker sb;
 
 		if (rule->is_copy) {
@@ -945,9 +944,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 					= dynamic_cast <File_Executor *> (executor_source_base);
 				assert(executor_source);
 				if (executor_source->bits & B_MISSING) {
-					/* Neither the source file nor
-					 * the target file exist:  an
-					 * error  */
+					/* Neither the source file nor the target file
+					 * exist:  an error. */
 					rule->deps.at(0)->get_place()
 						<< fmt("source file %s in optional copy rule must exist",
 						       ::show(source));
@@ -975,8 +973,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				 rule->command->place);
 		}
 
+		TRACE("pid=%s", frmt("%jd", (intmax_t)pid));
 		assert(pid != 0 && pid != 1);
-
 		DEBUG_PRINT(frmt("execute: pid = %ld", (long) pid));
 
 		if (pid < 0) {
@@ -989,57 +987,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			return proceed | P_ABORT | P_FINISHED;
 		}
 
-		assert(!executors_by_pid_key == !executors_by_pid_value);
-
-		if (!executors_by_pid_key) {
-			/* This is executed just once, before we have
-			 * executed any job, and therefore JOBS is the
-			 * value passed via -j (or its default value 1),
-			 * and thus we can allocate arrays of that size
-			 * once and for all.  */
-			if (SIZE_MAX / sizeof(*executors_by_pid_key) < (size_t)options_jobs ||
-			    SIZE_MAX / sizeof(*executors_by_pid_value) < (size_t)options_jobs) {
-				errno= ENOMEM;
-				perror("malloc");
-				exit(ERROR_FATAL);
-			}
-			executors_by_pid_key  = (pid_t *)         malloc(options_jobs * sizeof(*executors_by_pid_key));
-			executors_by_pid_value= (File_Executor **)malloc(options_jobs * sizeof(*executors_by_pid_value));
-			if (!executors_by_pid_key || !executors_by_pid_value) {
-				perror("malloc");
-				exit(ERROR_FATAL);
-			}
-		}
-
-		size_t mi= 0, ma= executors_by_pid_size;
-		/* Both are exclusive */
-		assert(mi <= ma);
-		while (mi < ma) {
-			size_t ne= mi + (ma - mi) / 2;
-			assert(ne < ma);
-			assert(ne < executors_by_pid_size);
-			assert(executors_by_pid_key[ne] != pid);
-			if (executors_by_pid_key[ne] < pid) {
-				mi= ne + 1;
-			} else {
-				ma= ne;
-			}
-		}
-		assert(mi == ma);
-		assert(mi <= executors_by_pid_size);
-		assert(mi == 0 || executors_by_pid_key[mi - 1] < pid);
-		assert(mi == executors_by_pid_size || executors_by_pid_key[mi] > pid);
-		index= mi;
-
-		memmove(executors_by_pid_key + index + 1,
-			executors_by_pid_key + index,
-			sizeof(*executors_by_pid_key) * (executors_by_pid_size - index));
-		memmove(executors_by_pid_value + index + 1,
-			executors_by_pid_value + index,
-			sizeof(*executors_by_pid_value) * (executors_by_pid_size - index));
-		++ executors_by_pid_size;
-		executors_by_pid_key[index]= pid;
-		executors_by_pid_value[index]= this;
+		executors_add(pid, index);
 	}
 
 	assert(executors_by_pid_value[index]->job.started());
@@ -1095,6 +1043,62 @@ void File_Executor::write_content(const char *filename,
 
 	bits |= B_EXISTING;
 	bits &= ~B_MISSING;
+}
+
+void File_Executor::executors_add(pid_t pid, size_t &index)
+{
+	assert(Job::Signal_Blocker::is_blocked());
+	assert(!executors_by_pid_key == !executors_by_pid_value);
+
+	if (!executors_by_pid_key) {
+		/* This is executed just once, before we have executed any job, and
+		 * therefore JOBS is the value passed via -j (or its default value 1), and
+		 * thus we can allocate arrays of that size once and for all. */
+		if (SIZE_MAX / sizeof(*executors_by_pid_key) < (size_t)options_jobs ||
+			SIZE_MAX / sizeof(*executors_by_pid_value) < (size_t)options_jobs) {
+			errno= ENOMEM;
+			perror("malloc");
+			exit(ERROR_FATAL);
+		}
+		executors_by_pid_key  = (pid_t *)
+			malloc(options_jobs * sizeof(*executors_by_pid_key));
+		executors_by_pid_value= (File_Executor **)
+			malloc(options_jobs * sizeof(*executors_by_pid_value));
+		if (!executors_by_pid_key || !executors_by_pid_value) {
+			perror("malloc");
+			exit(ERROR_FATAL);
+		}
+	}
+
+	size_t mi= 0, ma= executors_by_pid_size;
+	/* Both are exclusive */
+	assert(mi <= ma);
+	while (mi < ma) {
+		size_t ne= mi + (ma - mi) / 2;
+		assert(ne < ma);
+		assert(ne < executors_by_pid_size);
+		assert(executors_by_pid_key[ne] != pid);
+		if (executors_by_pid_key[ne] < pid) {
+			mi= ne + 1;
+		} else {
+			ma= ne;
+		}
+	}
+	assert(mi == ma);
+	assert(mi <= executors_by_pid_size);
+	assert(mi == 0 || executors_by_pid_key[mi - 1] < pid);
+	assert(mi == executors_by_pid_size || executors_by_pid_key[mi] > pid);
+	index= mi;
+
+	memmove(executors_by_pid_key + index + 1,
+		executors_by_pid_key + index,
+		sizeof(*executors_by_pid_key) * (executors_by_pid_size - index));
+	memmove(executors_by_pid_value + index + 1,
+		executors_by_pid_value + index,
+		sizeof(*executors_by_pid_value) * (executors_by_pid_size - index));
+	++ executors_by_pid_size;
+	executors_by_pid_key[index]= pid;
+	executors_by_pid_value[index]= this;
 }
 
 void File_Executor::read_variable(shared_ptr <const Dep> dep)

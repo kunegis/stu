@@ -15,7 +15,7 @@
  */
 
 class File_Executor
-	:  public Executor
+	: public Executor
 {
 public:
 	File_Executor(shared_ptr <const Dep> dep_link,
@@ -141,7 +141,7 @@ private:
 	 * Is currently running. */
 
 	void write_content(const char *filename, const Command &command);
-	/* Create the file FILENAME with content from COMMAND */
+	void executors_add(pid_t pid, size_t &index);
 
 	static std::unordered_map <string, Timestamp> transients;
 	/* The timestamps for transient targets.  This container plays the role of the

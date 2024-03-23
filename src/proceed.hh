@@ -3,7 +3,6 @@
 
 /*
  * This is used as the return value of the functions Executor::execute*().
- * Defined as typedef to make arithmetic with it.
  */
 
 typedef unsigned Proceed;
@@ -20,7 +19,7 @@ enum {
 	 * randomization of execution order. */
 
 	P_FINISHED   = 1 << 2,
-	/* This Executor is finished */
+	/* This Executor is finished. */
 
 	P_ABORT      = 1 << 3,
 	/* This Executor should be finished immediately.  When set, P_FINISHED

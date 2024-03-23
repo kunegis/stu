@@ -94,17 +94,20 @@ public:
 	static pid_t get_tty() { return tty; }
 
 	class Signal_Blocker
-	/* Block termination signals for the lifetime of an object of this type.
-	 * Note that the mask of blocked signals is inherited over exec(), so we
-	 * must unblock signals also when starting child processes.  */
+	/* Block termination signals for the lifetime of an object of this type.  Note
+	 * that the mask of blocked signals is inherited over exec(), so we must unblock
+	 * signals also when starting child processes. */
 	{
+	public:
+		Signal_Blocker();
+		~Signal_Blocker();
+#ifndef NDEBUG
+		static bool is_blocked() { return blocked; }
+#endif 
 	private:
 #ifndef NDEBUG
 		static bool blocked;
 #endif
-	public:
-		Signal_Blocker();
-		~Signal_Blocker();
 	};
 
 private:

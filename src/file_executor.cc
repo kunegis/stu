@@ -604,18 +604,23 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	TRACE("{%s}", show(dep_link, S_DEBUG, R_SHOW_FLAGS));
 	Debug debug(this);
 
+	std::map <string, string> mapping;
+	bool no_execution;
+	char **filenames_new;
+	Timestamp *timestamps_old_new;
+
 	assert(! job.started() || children.empty());
 
-	Proceed proceed= execute_phase_A(dep_link);
+	Proceed proceed= execute_phase_A(dep_link), proceed_B;
 	assert(proceed);
 	if (proceed & P_ABORT) {
 		assert(proceed & P_FINISHED);
 		done |= Done::from_flags(dep_link->flags);
-		return proceed;
+		goto ret;
 	}
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		assert((proceed & P_FINISHED) == 0);
-		return proceed;
+		goto ret;
 	}
 
 	assert(proceed & P_FINISHED);
@@ -623,12 +628,14 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	if (finished(dep_link->flags)) {
 		assert(! (proceed & P_WAIT));
-		return proceed | P_FINISHED;
+		proceed |= P_FINISHED;
+		goto ret;
 	}
 
 	/* Job has already been started */
 	if (job.started_or_waited()) {
-		return proceed | P_WAIT;
+		proceed |= P_WAIT;
+		goto ret;
 	}
 
 	/* The file must now be built */
@@ -644,7 +651,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	 * Check whether executor has to be built
 	 */
 
-	Timestamp *timestamps_old_new= (Timestamp *)
+	timestamps_old_new= (Timestamp *)
 		realloc(timestamps_old, sizeof(timestamps_old[0]) * hash_deps.size());
 	if (!timestamps_old_new) {
 		perror("realloc");
@@ -653,7 +660,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	timestamps_old= timestamps_old_new;
 	for (size_t i= 0; i < hash_deps.size(); ++i)
 		timestamps_old[i]= Timestamp::UNDEFINED;
-	char **filenames_new= (char **)realloc(filenames,
+	filenames_new= (char **)realloc(filenames,
 		sizeof(filenames[0]) * hash_deps.size());
 	if (!filenames_new) {
 		perror("realloc");
@@ -673,8 +680,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	}
 
 	/* A target for which no execution has to be done */
-	const bool no_execution=
-		rule != nullptr && rule->command == nullptr && ! rule->is_copy;
+	no_execution= rule != nullptr && rule->command == nullptr && ! rule->is_copy;
 
 	if (! (bits & B_CHECKED)) {
 		bits |= B_CHECKED;
@@ -740,7 +746,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 					 * it will then not exist when the parent is
 					 * called. */
 					done |= Done::D_ALL_OPTIONAL;
-					return proceed | P_FINISHED;
+					proceed |= P_FINISHED;
+					goto ret;
 				}
 			}
 
@@ -751,7 +758,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 					<< format_errno(show(hash_dep));
 				raise(ERROR_BUILD);
 				done |= Done::from_flags(dep_link->flags);
-				return proceed | P_ABORT | P_FINISHED;
+				proceed |= P_ABORT | P_FINISHED;
+				goto ret;
 			}
 
 			/* File does not exist, all its dependencies are up to
@@ -774,7 +782,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				}
 				done |= Done::from_flags(dep_link->flags);
 				raise(ERROR_BUILD);
-				return proceed | P_ABORT | P_FINISHED;
+				proceed |= P_ABORT | P_FINISHED;
+				goto ret;
 			}
 		}
 		/* We cannot update TIMESTAMP within the loop above
@@ -811,26 +820,28 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	if (! (bits & B_NEED_BUILD)) {
 		done |= Done::from_flags(dep_link->flags);
-		return proceed | P_FINISHED;
+		proceed |= P_FINISHED;
+		goto ret;
 	}
 
 	/* We now know that the command must be run, or that there is no
 	 * command. */
 
 	/* Second pass to execute also all trivial targets */
-	Proceed proceed_B= execute_phase_B(dep_link);
+	proceed_B= execute_phase_B(dep_link);
 	assert(proceed_B);
 	proceed |= proceed_B;
 	proceed &= ~P_FINISHED;
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
-		return proceed;
+		goto ret;
 	}
 	assert(children.empty());
 
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */
 		done |= Done::from_flags(dep_link->flags);
-		return proceed | P_FINISHED;
+		proceed |= P_FINISHED;
+		goto ret;
 	}
 
 	/* The command must be run (or the file created, etc.) now */
@@ -855,12 +866,15 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			      *(rule->command));
 		done.set_all();
 		assert(proceed == 0);
-		return proceed | P_FINISHED;
+		proceed |= P_FINISHED;
+		goto ret;
 	}
 
 	/* We know that a job has to be started now */
-	if (options_jobs == 0)
-		return proceed | P_WAIT;
+	if (options_jobs == 0) {
+		proceed |= P_WAIT;
+		goto ret;
+	}
 
 	/* We have to start a job now */
 	print_command();
@@ -881,7 +895,6 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	 * Note about C++ map::insert():  The insert function is a no-op
 	 * if a key is already present.  Thus, we insert variables first
 	 * (because they have priority).  */
-	std::map <string, string> mapping;
 	mapping.insert(mapping_variable.begin(), mapping_variable.end());
 	mapping.insert(mapping_parameter.begin(), mapping_parameter.end());
 	mapping_parameter.clear();
@@ -926,7 +939,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 					raise(ERROR_BUILD);
 					done |= Done::from_flags(dep_link->flags);
 					assert(proceed == 0);
-					return proceed | P_ABORT | P_FINISHED;
+					proceed |= P_ABORT | P_FINISHED;
+					goto ret;
 				}
 			}
 
@@ -955,7 +969,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			raise(ERROR_BUILD);
 			done |= Done::from_flags(dep_link->flags);
 			assert(proceed == 0);
-			return proceed | P_ABORT | P_FINISHED;
+			proceed |= P_ABORT | P_FINISHED;
+			goto ret;
 		}
 
 		executors_add(pid, index, this);
@@ -969,6 +984,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	proceed |= P_WAIT;
 	if (order == Order::RANDOM && options_jobs > 0)
 		proceed |= P_CALL_AGAIN;
+ ret:
+	TRACE("proceed= %s", show_proceed(proceed));
 	return proceed;
 }
 

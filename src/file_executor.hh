@@ -141,7 +141,6 @@ private:
 	 * Is currently running. */
 
 	void write_content(const char *filename, const Command &command);
-	void executors_add(pid_t pid, size_t &index);
 
 	static std::unordered_map <string, Timestamp> transients;
 	/* The timestamps for transient targets.  This container plays the role of the
@@ -151,6 +150,10 @@ private:
 	 * targets have all their dependencies up to date, then the command is not
 	 * executed, even though it was never executed in the current invocation of
 	 * Stu. In that case, the transient targets are never inserted in this map. */
+
+	static void executors_add(pid_t pid, size_t &index, File_Executor *executor);
+	static bool executors_find(pid_t pid, size_t &index);
+	static void executors_remove(size_t index);
 };
 
 void terminate_jobs();

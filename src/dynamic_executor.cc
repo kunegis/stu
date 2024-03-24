@@ -52,7 +52,7 @@ Dynamic_Executor::Dynamic_Executor(
 	// TODO can this be removed? (same assignment as above)
 	parents[parent]= dep;
 
-	/* Push single initial dependency */
+	/* Push the single initial dependency */
 	shared_ptr <Dep> dep_child= Dep::clone(dep->dep);
 	dep_child->flags |= F_RESULT_NOTIFY;
 	push(dep_child);
@@ -156,9 +156,14 @@ void Dynamic_Executor::notify_variable(
 		result_variable_child.end());
 }
 
-void Dynamic_Executor::notify_result(shared_ptr <const Dep> d, Executor *source,
+void Dynamic_Executor::notify_result(shared_ptr <const Dep> dep_result, Executor *source,
 				     Flags flags, shared_ptr <const Dep> dep_source)
 {
+	TRACE_FUNCTION();
+	TRACE("d= %s; flags= %s; dep_source= %s",
+		show(dep_result, S_DEBUG, R_SHOW_FLAGS),
+		show_flags(flags),
+		show(dep_source, S_DEBUG, R_SHOW_FLAGS));
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)));
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))
 	       != (F_RESULT_NOTIFY | F_RESULT_COPY));
@@ -166,7 +171,7 @@ void Dynamic_Executor::notify_result(shared_ptr <const Dep> d, Executor *source,
 
 	if (flags & F_RESULT_NOTIFY) {
 		std::vector <shared_ptr <const Dep> > deps;
-		source->read_dynamic(to <const Plain_Dep> (d), deps, dep, this);
+		source->read_dynamic(to <const Plain_Dep> (dep_result), deps, dep, this);
 		for (auto &j: deps) {
 			shared_ptr <Dep> j_new= Dep::clone(j);
 			/* Add -% flag */
@@ -182,7 +187,7 @@ void Dynamic_Executor::notify_result(shared_ptr <const Dep> d, Executor *source,
 			push(j);
 		}
 	} else if (flags & F_RESULT_COPY) {
-		push_result(d);
+		push_result(dep_result);
 	} else {
 		unreachable();
 	}

@@ -68,13 +68,10 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		executors_remove(index);
 	}
 
-	/* The file(s) may have been built, so forget that it was known
-	 * to not exist */
+	/* The file(s) may have been built, so forget that it was known to not exist */
 	bits &= ~B_MISSING;
 
 	if (job.waited(status, pid)) {
-		/* Command was successful */
-
 		bits |=  B_EXISTING;
 		bits &= ~B_MISSING;
 		/* Subsequently set to B_MISSING if at least one target file is missing */
@@ -735,8 +732,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				}
 			}
 
-			if (! (bits & B_NEED_BUILD)
-			    && ret_stat != 0 && errno == ENOENT) {
+			if (! (bits & B_NEED_BUILD) && ret_stat != 0 && errno == ENOENT) {
 				/* File does not exist */
 				if (! (dep_link->flags & F_OPTIONAL)) {
 					/* Non-optional dependency */

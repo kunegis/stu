@@ -686,8 +686,9 @@ void Executor::raise(int e)
 		throw error;
 }
 
-void Executor::disconnect(Executor *const child,
-			  shared_ptr <const Dep> dep_child)
+void Executor::disconnect(
+	Executor *const child,
+	shared_ptr <const Dep> dep_child)
 {
 	TRACE_FUNCTION();
 	TRACE("{%s} dep_child= %s", show(*this, S_DEBUG, R_SHOW_FLAGS),
@@ -752,12 +753,12 @@ void Executor::disconnect(Executor *const child,
 	 * Propagate attributes
 	 */
 
-	/* Note: propagate the flags after propagating other things, since flags can be
+	/* Propagate the flags after propagating other things, since flags can be
 	 * changed by the propagations done before. */
 
 	error |= child->error;
 
-	/* Don't propagate the NEED_BUILD flag via DYNAMIC_LEFT links: It just means the
+	/* Don't propagate the NEED_BUILD flag via F_RESULT_NOTIFY links: It just means the
 	 * list of depenencies have changed, not the dependencies themselves. */
 	if (child->bits & B_NEED_BUILD && ! (dep_child->flags & F_RESULT_NOTIFY)) {
 		bits |= B_NEED_BUILD;
@@ -769,9 +770,7 @@ void Executor::disconnect(Executor *const child,
 	children.erase(child);
 	child->parents.erase(this);
 
-	/* Delete the Executor object */
-	if (child->want_delete())
-		delete child;
+	if (child->want_delete()) delete child;
 }
 
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)

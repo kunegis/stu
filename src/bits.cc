@@ -5,6 +5,8 @@ const char *bits_text[]= {
 };
 static_assert(B_COUNT == sizeof(bits_text)/sizeof(bits_text[0]), "bits_text");
 
+#ifndef NDEBUG
+
 string show_bits(Bits bits)
 {
 	string ret;
@@ -14,6 +16,8 @@ string show_bits(Bits bits)
 			ret += bits_text[i];
 		}
 	}
-	if (!bits) ret= "()";
+	if (!bits) ret= "0";
 	return ret;
 }
+
+#endif /* ! NDEBUG */

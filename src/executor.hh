@@ -106,7 +106,7 @@ public:
 		return "";
 	}
 
-	virtual void notify_result(shared_ptr <const Dep> dep,
+	virtual void notify_result(shared_ptr <const Dep> dep_result,
 				   Executor *source,
 				   Flags flags,
 				   shared_ptr <const Dep> dep_source)
@@ -116,8 +116,9 @@ public:
 	 * DEP_SOURCE is the dependency leading from THIS to SOURCE (for
 	 * F_RESULT_COPY). */
 	{
+		// TODO use "= 0" or a similar mechanism.
 		unreachable();
-		(void) dep; (void) source; (void) flags; (void) dep_source;
+		(void) dep_result; (void) source; (void) flags; (void) dep_source;
 	}
 
 	virtual void notify_variable

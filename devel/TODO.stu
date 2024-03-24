@@ -5,6 +5,7 @@
 # * make bin/stu.debug && rm -f ? list.* B2 && STU_TRACE_EXECUTOR=stderr STU_TRACE_FILE_EXECUTOR=stderr STU_TRACE_DYNAMIC_EXECUTOR=stderr bin/stu.debug -f tests/2.7.84-0023
 # ** We never go into phase B of [B], and therefore never build list.[-t C]
 # *** Why does Dynamic_Executor::bits not have the B_NEED_BUILD bit set in Dynamic_Executor::execute() after execute_phase_A()?
+# **** Go by hand through the whole thing
 # * Other failing tests
 
 A: [ -n -o B ] { touch A ; }  B={C}

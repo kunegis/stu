@@ -141,10 +141,8 @@ public:
 	 * removed. */
 
 protected:
-	Bits bits;
-
-	int error;
-	/* The value is propagated (using '|') to the parent. */
+	Bits bits= 0;
+	int error; /* Propagated using '|' to the parent */
 
 	std::map <Executor *, shared_ptr <const Dep> > parents;
 	/* This is a map rather than an unsorted_map because typically, the number of
@@ -179,9 +177,8 @@ protected:
 	 * in their constructor if necessary. */
 
 	explicit Executor(shared_ptr <const Rule> param_rule_= nullptr)
-		: bits(0), error(0),
-		   timestamp(Timestamp::UNDEFINED),
-		   param_rule(param_rule_) { }
+		: error(0), timestamp(Timestamp::UNDEFINED),
+		  param_rule(param_rule_) { }
 
 	Proceed execute_children();
 	/* Execute already-active children */

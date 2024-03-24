@@ -36,10 +36,7 @@ public:
 
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
-	virtual string debug_done_text() const override {
-		return done.format();
-	}
-
+	virtual string debug_done_text() const override;
 	virtual bool want_delete() const override { return false; }
 	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
 	virtual bool finished() const override;

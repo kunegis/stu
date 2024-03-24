@@ -1,18 +1,17 @@
 #include "dynamic_executor.hh"
 
-Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
-				   Executor *parent,
-				   int &error_additional)
-	:  dep(dep_)
+Dynamic_Executor::Dynamic_Executor(
+	shared_ptr <const Dynamic_Dep> dep_,
+	Executor *parent, int &error_additional)
+	: dep(dep_)
 {
 	assert(dep_);
 	assert(dep_->is_normalized());
 	assert(parent);
 	dep->check();
 
-	/* Set the rule here, so cycles in the dependency graph can be
-	 * detected.  Note however that the rule of dynamic executors
-	 * is otherwise not used.  */
+	/* Set the rule here, so cycles in the dependency graph can be detected.  Note
+	 * however that the rule of dynamic executors is otherwise not used. */
 
 	parents[parent]= dep;
 	if (error_additional) {
@@ -27,13 +26,13 @@ Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 	shared_ptr <const Dep> inner_dep= Dep::strip_dynamic(dep);
 	if (auto inner_plain_dep= to <const Plain_Dep> (inner_dep)) {
 		Hash_Dep hash_dep_base(inner_plain_dep->place_target.flags,
-				       inner_plain_dep->place_target.place_name.unparametrized());
+			inner_plain_dep->place_target.place_name.unparametrized());
 		Hash_Dep hash_dep= dep->get_target();
 		try {
 			std::map <string, string> mapping_parameter;
 			shared_ptr <const Rule> rule=
 				rule_set.get(hash_dep_base, param_rule, mapping_parameter,
-					     dep->get_place());
+					dep->get_place());
 		} catch (int e) {
 			assert(e);
 			*this << "";
@@ -64,8 +63,10 @@ Dynamic_Executor::Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION();
-	TRACE("{%s}", show(dep_link, S_DEBUG, R_SHOW_FLAGS));
+	TRACE("{%s} done= %s; bits= %s", show(dep_link, S_DEBUG, R_SHOW_FLAGS),
+		done.show(), show_bits(bits));
 	Debug debug(this);
+	bool need_build;
 
 	Proceed proceed= execute_phase_A(dep_link), proceed_B;
 	assert(proceed);
@@ -88,7 +89,9 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 		goto ret;
 	}
 
-	if (! (bits & B_NEED_BUILD)) {
+	need_build= (bits & B_NEED_BUILD) != 0;
+	TRACE("need_build= %s", frmt("%d", need_build));
+	if (! need_build) {
 		done |= Done::from_flags(dep_link->flags);
 		proceed |= P_FINISHED;
 		goto ret;
@@ -120,12 +123,20 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 
 bool Dynamic_Executor::finished() const
 {
-	return done.is_all();
+	TRACE_FUNCTION();
+	TRACE("done= %s", done.show());
+	bool ret= done.is_all();
+	TRACE("ret= %s", frmt("%d", ret));
+	return ret;
 }
 
 bool Dynamic_Executor::finished(Flags flags) const
 {
-	return done.is_done_from_flags(flags);
+	TRACE_FUNCTION();
+	TRACE("flags= %s; done= %s", show_flags(flags, S_DEBUG), done.show());
+	bool ret= done.is_done_from_flags(flags);
+	TRACE("ret= %s", frmt("%d", ret));
+	return ret;
 }
 
 bool Dynamic_Executor::want_delete() const
@@ -136,6 +147,13 @@ bool Dynamic_Executor::want_delete() const
 void Dynamic_Executor::render(Parts &parts, Rendering rendering) const
 {
 	dep->render(parts, rendering);
+}
+
+void Dynamic_Executor::notify_variable(
+	const std::map <string, string> &result_variable_child)
+{
+	result_variable.insert(result_variable_child.begin(),
+		result_variable_child.end());
 }
 
 void Dynamic_Executor::notify_result(shared_ptr <const Dep> d, Executor *source,

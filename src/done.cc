@@ -6,7 +6,7 @@ bool Done::is_done_from_flags(Flags flags) const
 	return (~bits & d.bits) == 0;
 }
 
-string Done::format() const
+string Done::show() const
 {
 	char ret[7]= "[0000]";
 	for (int i= 0; i < 4; ++i)
@@ -16,6 +16,7 @@ string Done::format() const
 
 Done Done::from_flags(Flags flags)
 {
-	return Done((~flags & (F_PERSISTENT | F_OPTIONAL))
-		    * (1 | (flags & F_PHASE_B ? 4 : 0)));
+	return Done(
+		(~flags & (F_PERSISTENT | F_OPTIONAL))
+		* (1 | (flags & F_PHASE_B ? 4 : 0)));
 }

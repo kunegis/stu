@@ -860,6 +860,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (rule->is_hardcode) {
 		assert(hash_deps.size() == 1);
 		assert(hash_deps.front().is_file());
+		TRACE("%s", "create_content");
 		DEBUG_PRINT("create_content");
 		print_command();
 		write_content(hash_deps.front().get_name_c_str_nondynamic(),
@@ -1128,6 +1129,11 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	}
 	*this << "";
 	raise(ERROR_BUILD);
+}
+
+string File_Executor::debug_done_text() const
+{
+	return done.show();
 }
 
 bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)

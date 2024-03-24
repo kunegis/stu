@@ -64,8 +64,7 @@ enum Quote_Safeness {
 	QS_QUOTE_IN_STU_CODE,
 	QS_QUOTE_IN_GLOB_PATTERN,
 	QS_SAFE,
-	QS_MIN= QS_ALWAYS_QUOTE,
-	QS_MAX= QS_SAFE,
+	QS_MIN= QS_ALWAYS_QUOTE, QS_MAX= QS_SAFE
 };
 
 class Part
@@ -75,7 +74,7 @@ public:
 	string text;
 
 	Part(Properties properties_, string text_)
-		:  properties(properties_), text(text_) {  }
+		: properties(properties_), text(text_) { }
 	bool is_quotable() const {
 		return properties == PROP_TEXT || properties == PROP_MARKUP_QUOTABLE;
 	}

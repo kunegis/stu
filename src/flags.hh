@@ -23,7 +23,7 @@ typedef unsigned Flags;
 enum
 {
 	/* The index of the flags (I_*), used for array indexing.  Variables
-	 * iterating over these values are usually called I.  */
+	 * iterating over these values are usually called I. */
 	I_PERSISTENT= 0,      /* -p  \                  \                    */
 	I_OPTIONAL,           /* -o   | placed flags     |                   */
 	I_TRIVIAL,            /* -t  /                   |                   */
@@ -89,10 +89,6 @@ enum
 
 	F_PHASE_B               = 1 << I_PHASE_B,
 	/* A parent is in phase B */
-//	F_PHASE_A               = 1 << I_PHASE_A,
-//	/* A parent (direct or indirect) is only in phase A.  As a result, trivial
-//	 * dependencies should not be built.  Only the trivial Done bits are set when
-//	 * done. */
 
 	/*
 	 * Aggregates

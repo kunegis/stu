@@ -21,27 +21,17 @@
 
 #include <string.h>
 
-//enum Trace_Class {
-//	TRACE_EXECUTOR, TRACE_SHOW, TRACE_TOKENIZER, TRACE_DEP,
-//	TRACE_COUNT
-//};
-
 class Trace
 {
 public:
-//	Trace_Class trace_class;
 	string trace_class;
 	FILE *file;
 	static std::map <string, FILE *> files;
-//	static FILE *trace_files[TRACE_COUNT];
+	static constexpr const char *print_format= "%21s:%-4d %s\n";
 
 	Trace(const char *function_name, const char *filename, int line);
 	~Trace();
 	const char *get_prefix() const { return prefix.c_str(); }
-//	bool get_enabled() const;
-//	{ return trace_files[trace_class]; }
-
-	static constexpr const char *print_format= "%21s:%-4d %s\n";
 
 	static Trace *get_current() {
 		assert(! stack.empty());
@@ -57,8 +47,6 @@ private:
 	static FILE *file_log;
 	static constexpr const char *padding_one= "   ";
 	static constexpr const char *trace_filename= "log/trace.log";
-
-//	static struct Init { Init(); } init;
 
 	void init_file();
 	static FILE *open_logfile(const char *filename);

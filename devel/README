@@ -32,6 +32,8 @@ flags for compiling this are set in the Makefile, and you might have
 to tweak these flags if you are developing Stu on another setup than the
 authors'.
 
+The debug version also enables tracing; see src/trace.hh.
+
 ==== UNIT TESTS ====
 
 Unit testing is described in 'sh/test'.

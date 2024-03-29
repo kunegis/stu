@@ -3,8 +3,7 @@
 #
 
 # * make bin/stu.debug && rm -f ? list.* B2 && STU_TRACE_EXECUTOR=stderr STU_TRACE_FILE_EXECUTOR=stderr STU_TRACE_DYNAMIC_EXECUTOR=stderr bin/stu.debug -f tests/2.7.84-0023
-# ** The A ---> [B] link should get the -B flags
-# ** Caching flags should not be changed
+# ** In -B [B], 
 # * Other failing tests
 
 A: [ -n -o B ] { touch A ; }  B={C}
@@ -397,4 +396,16 @@ A: -e B
 
 #
 # Try -fhardened.
+#
+
+#
+# Try -fvisibility=hidden
+#
+
+#
+# Try -fstack-protector[-all]
+#
+
+#
+# Deprecate the -d option.
 #

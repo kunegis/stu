@@ -639,6 +639,10 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	while (! buffer_A.empty()) {
 		shared_ptr <const Dep> dep_child= buffer_A.pop();
 
+		// Unnecessary
+		//		// XXX Add DEP_CHILD to BUFFER_B.
+		//		buffer_B.push(dep_child);
+		
 		Proceed proceed_2= connect(dep_link, dep_child);
 		proceed |= proceed_2;
 		if (options_jobs == 0) {
@@ -713,14 +717,15 @@ void Executor::disconnect(
 	}
 
 	/* Child is done for phase A, but not for phase B */
-	if (! (dep_child->flags & F_PHASE_B)) {
-		// TODO Why is F not always true?  (It is asserted earlier).
-		bool f= child->finished(dep_child->flags);
-		TRACE("child->finished= %s", frmt("%d", f));
-		if (! f) {
+	bool child_was_phase_B= dep_child->flags & F_PHASE_B;
+	TRACE("child_was_phase_B= %s", frmt("%d", child_was_phase_B));
+	if (! child_was_phase_B) {
+		bool child_finished_for_B= child->finished(dep_child->flags | F_PHASE_B);
+		TRACE("child_finished_for_B= %s", frmt("%d", child_finished_for_B));
+		if (! child_finished_for_B) {
 			shared_ptr <Dep> d= Dep::clone(dep_child);
-			TRACE("%s", show(d, S_DEBUG, R_SHOW_FLAGS));
 			d->flags |= F_PHASE_B;
+			TRACE("d= %s", show(d, S_DEBUG, R_SHOW_FLAGS));
 			DEBUG_PRINT(fmt("disconnect A_to_B %s",
 					show(d, S_DEBUG, R_SHOW_FLAGS)));
 			buffer_B.push(d);

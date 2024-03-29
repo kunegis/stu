@@ -12,9 +12,11 @@ err() {
 	echo >&2 stderr:
 	cat  >&2 list.err
 	echo >&2 _______
-	echo 1 >"$error_file"
+	stat=1
 }
 
+count_total=0
+count_error=0
 error_file=${TMP:-/tmp}/stu-long-trivial.$$
 echo 0 >"$error_file"
 
@@ -23,6 +25,8 @@ clean()
 	rm -f -- "$error_file"
 }
 trap clean EXIT INT QUIT TERM ABRT HUP
+
+clean || exit 2
 
 cat list | while IFS= read -r line ; do
 	for a_exists in yes no ; do
@@ -47,6 +51,7 @@ cat list | while IFS= read -r line ; do
 			printf '%s\n' "$l" >list.stu || exit 2
 			../../bin/stu.test -f list.stu >list.out 2>list.err
 			exitstatus=$?
+			stat=0
 			[ $exitstatus = 0 ] ||
 				err "Expected exit status 0, not $exitstatus"
 			if [ $a_exists = yes ] ; then
@@ -58,13 +63,19 @@ cat list | while IFS= read -r line ; do
 				grep -q -F -e CORRECT C ||
 					err "C must contain 'CORRECT'"
 			fi
+			echo "$stat" >>"$error_file"
 		done
 	done
 done
 
 rm -f ? list.stu
 
-echo >&2 error: ## rm
-cat >&2 $error_file ## rm
+count_total=$(echo $(wc -l <"$error_file"))
+count_error=$(echo $(grep -F -e 0 "$error_file" | wc -l))
+echo >&2 "$0: Success rate = $count_error/$count_total"
 
-exit $(cat $error_file)
+if grep -q -F -e 1 "$error_file" ; then
+	exit 1
+else
+	exit 0
+fi

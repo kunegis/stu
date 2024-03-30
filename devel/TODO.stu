@@ -2,8 +2,6 @@
 # Flag -C.
 #
 
-# * make bin/stu.debug && rm -f ? list.* B2 && STU_TRACE_EXECUTOR=stderr STU_TRACE_FILE_EXECUTOR=stderr STU_TRACE_DYNAMIC_EXECUTOR=stderr bin/stu.debug -f tests/2.7.84-0023
-# ** In -B [B], 
 # * Other failing tests
 
 A: [ -n -o B ] { touch A ; }  B={C}

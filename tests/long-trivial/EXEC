@@ -1,10 +1,11 @@
 #! /bin/sh
+
 #
 # Each line ultimately has C being a dependency of A.
 #
 
 err() {
-	echo >&2 "l=⟨$l⟩ a_exists=$a_exists x=$x"
+	echo >&2 "stucode=⟨$stucode⟩ a_exists=$a_exists x=$x"
 	echo >&2 "*** $1"
 	echo >&2 stdout:
 	cat  >&2 list.out
@@ -15,29 +16,28 @@ err() {
 	stat=1
 }
 
+clean() {
+	rm -f -- "$error_file"
+}
+
 count_total=0
 count_error=0
 error_file=${TMP:-/tmp}/stu-long-trivial.$$
 echo 0 >"$error_file"
-
-clean()
-{
-	rm -f -- "$error_file"
-}
 trap clean EXIT INT QUIT TERM ABRT HUP
-
 clean || exit 2
 
 cat list | while IFS= read -r line ; do
 	for a_exists in yes no ; do
 		for x in before after absent ; do
-			l=$line
+			../../sh/rm_tmps
+			stucode=$line
 			[ $x = before ] && {
-				l=$(echo "$l" | sed -e 's,:,: X ,;s,$, X={x},')
+				stucode=$(echo "$stucode" | sed -e 's,:,: X ,;s,$, X={x},')
 				[ $? = 0 ] || exit 1
 			}
 			[ $x = after ] && {
-				l=$(echo "$l" | sed -e 's,{, X {,;s,$, X={x},')
+				stucode=$(echo "$stucode" | sed -e 's,{, X {,;s,$, X={x},')
 				[ $? = 0 ] || exit 1
 			}
 			rm -f ? || exit 2
@@ -45,10 +45,10 @@ cat list | while IFS= read -r line ; do
 				echo aaa >A || exit 2
 				[ "$x" != absent ] && { echo xxx >X || exit 2 ; }
 			else
-				l="$l C={CORRECT}"
+				stucode="$stucode C={CORRECT}"
 			fi
-			echo "CASE: a_exists=$a_exists x=$x: $l"
-			printf '%s\n' "$l" >list.stu || exit 2
+			echo "CASE: a_exists=$a_exists x=$x: $stucode"
+			printf '%s\n' "$stucode" >list.stu || exit 2
 			../../bin/stu.test -f list.stu >list.out 2>list.err
 			exitstatus=$?
 			stat=0
@@ -68,8 +68,7 @@ cat list | while IFS= read -r line ; do
 	done
 done
 
-rm -f ? list.stu
-
+../../sh/rm_tmps
 count_total=$(echo $(wc -l <"$error_file"))
 count_error=$(echo $(grep -F -e 0 "$error_file" | wc -l))
 echo >&2 "$0: Success rate = $count_error/$count_total"

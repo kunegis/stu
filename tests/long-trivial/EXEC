@@ -5,7 +5,7 @@
 #
 
 err() {
-	echo >&2 "stucode=⟨$stucode⟩ a_exists=$a_exists x=$x"
+	echo >&2 "line_number=$line_number stucode=⟨$stucode⟩ a_exists=$a_exists"
 	echo >&2 "*** $1"
 	echo >&2 stdout:
 	cat  >&2 list.out
@@ -22,16 +22,18 @@ clean() {
 
 count_total=0
 count_error=0
+line_number=0
 error_file=${TMP:-/tmp}/stu-long-trivial.$$
 echo 0 >"$error_file"
 trap clean EXIT INT QUIT TERM ABRT HUP
 clean || exit 2
 
 cat list | while IFS= read -r line ; do
+	: $(( line_number += 1 ))
 	for a_exists in yes no ; do
 		for x in before after absent ; do
-			../../sh/rm_tmps
 			stucode=$line
+			../../sh/rm_tmps
 			[ $x = before ] && {
 				stucode=$(echo "$stucode" | sed -e 's,:,: X ,;s,$, X={x},')
 				[ $? = 0 ] || exit 1

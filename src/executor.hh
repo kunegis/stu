@@ -221,6 +221,11 @@ protected:
 			return param_rule->place;
 	}
 
+	shared_ptr <const Dep> append_top(shared_ptr <const Dep> dep,
+					  shared_ptr <const Dep> top);
+	shared_ptr <const Dep> set_top(shared_ptr <const Dep> dep,
+				       shared_ptr <const Dep> top);
+
 	virtual ~Executor()= default;
 
 	virtual int get_depth() const= 0;
@@ -271,11 +276,6 @@ protected:
 			      const Executor *executor_b);
 	/* Whether both executors have the same parametrized rule.
 	 * Only used for finding cycles. */
-
-	shared_ptr <const Dep> append_top(shared_ptr <const Dep> dep,
-					  shared_ptr <const Dep> top);
-	shared_ptr <const Dep> set_top(shared_ptr <const Dep> dep,
-				       shared_ptr <const Dep> top);
 
 private:
 	Buffer buffer_A;

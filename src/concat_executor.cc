@@ -3,8 +3,7 @@
 Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 				 Executor *parent,
 				 int &error_additional)
-	:  dep(dep_),
-	   stage(ST_DYNAMIC)
+	: dep(dep_), stage(ST_DYNAMIC)
 {
 	assert(dep_);
 	assert(dep_->is_normalized());
@@ -98,7 +97,7 @@ bool Concat_Executor::finished() const
 
 bool Concat_Executor::finished(Flags) const
 /* Since Concat_Executor objects are used just once, by a single parent, this
- * always returns the same as finished() itself.  */
+ * always returns the same as finished() itself. */
 {
 	return finished();
 }
@@ -125,7 +124,8 @@ void Concat_Executor::launch_stage_1()
 		/* Add flags from self */
 		f2->flags |= dep->flags & (F_TARGET_WORD & ~F_TARGET_DYNAMIC);
 		for (unsigned i= 0; i < C_PLACED; ++i) {
-			if (f2->get_place_flag(i).empty() && ! dep->get_place_flag(i).empty())
+			if (f2->get_place_flag(i).empty()
+				&& ! dep->get_place_flag(i).empty())
 				f2->set_place_flag(i, dep->get_place_flag(i));
 		}
 		push(f2);
@@ -139,7 +139,7 @@ void Concat_Executor::notify_result(shared_ptr <const Dep> d,
 {
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)));
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))
-	       != (F_RESULT_NOTIFY | F_RESULT_COPY));
+		!= (F_RESULT_NOTIFY | F_RESULT_COPY));
 	assert(dep_source);
 	DEBUG_PRINT(fmt("notify_result(flags = %s, d = %s)",
 			show_flags(flags, S_DEBUG),

@@ -214,30 +214,28 @@ void Executor::cycle_print(const std::vector <Executor *> &path,
 	names.back()= ::show(path.back()->parents.begin()->second);
 
 	for (ssize_t i= path.size() - 1; i >= 0; --i) {
-		shared_ptr <const Dep> d= i == 0
-			? dep
-			: path[i - 1]->parents.at(const_cast <Executor *> (path[i]));
+		shared_ptr <const Dep> d= i == 0 ? dep :
+			path[i - 1]->parents.at(const_cast <Executor *> (path[i]));
 
 		/* Don't show a message for left-branch dynamic links */
 		if (hide_link_from_message(d->flags))
 			continue;
 
-		d->get_place()
-			<< fmt("%s%s depends on %s",
-			       i == (ssize_t)(path.size() - 1)
-			       ? (path.size() == 1
-				  || (path.size() == 2 && hide_link_from_message(dep->flags))
-				  ? "target must not depend on itself: "
-				  : "cyclic dependency: ")
-			       : "",
-			       names[i],
-			       i == 0 ? ::show(dep) : names[i - 1]);
+		d->get_place() << fmt(
+			"%s%s depends on %s",
+			i == (ssize_t)(path.size() - 1)
+			? (path.size() == 1
+				|| (path.size() == 2 && hide_link_from_message(dep->flags))
+				? "target must not depend on itself: "
+				: "cyclic dependency: ")
+			: "",
+			names[i],
+			i == 0 ? ::show(dep) : names[i - 1]);
 	}
 
-	/* If the two targets are different (but have the same rule
-	 * because they match the same pattern and/or because they are
-	 * two different targets of a multitarget rule), then output a
-	 * notice to that effect */
+	/* If the two targets are different (but have the same rule because they match the
+	 * same pattern and/or because they are two different targets of a multitarget
+	 * rule), then output a notice to that effect. */
 	Hash_Dep t1= path.back()->parents.begin()->second->get_target();
 	Hash_Dep t2= dep->get_target();
 	const char *c1= t1.get_name_c_str_any();
@@ -347,7 +345,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		bool use_file_executor= false;
 		try {
 			Hash_Dep hash_dep_without_flags= hash_dep;
-			hash_dep_without_flags.get_front_word_nondynamic() &= F_TARGET_TRANSIENT;
+			hash_dep_without_flags.get_front_word_nondynamic()
+				&= F_TARGET_TRANSIENT;
 			rule_child= rule_set.get(hash_dep_without_flags,
 						 param_rule_child, mapping_parameter,
 						 dep->get_place());
@@ -577,7 +576,8 @@ void Executor::push(shared_ptr <const Dep> dep)
 		d->check();
 		assert(d->is_normalized());
 		shared_ptr <const Dep> untrivialized= Dep::untrivialize(d);
-		TRACE("untrivialized= %s", untrivialized ? show(untrivialized, S_DEBUG, R_SHOW_FLAGS) : "<null>");
+		TRACE("untrivialized= %s", untrivialized ?
+			show(untrivialized, S_DEBUG, R_SHOW_FLAGS) : "<null>");
 		if (untrivialized) {
 			shared_ptr <Dep> d2= Dep::clone(untrivialized);
 			d2->flags |= F_PHASE_B;
@@ -638,11 +638,6 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 
 	while (! buffer_A.empty()) {
 		shared_ptr <const Dep> dep_child= buffer_A.pop();
-
-		// Unnecessary
-		//		// XXX Add DEP_CHILD to BUFFER_B.
-		//		buffer_B.push(dep_child);
-		
 		Proceed proceed_2= connect(dep_link, dep_child);
 		proceed |= proceed_2;
 		if (options_jobs == 0) {
@@ -696,7 +691,7 @@ void Executor::disconnect(
 {
 	TRACE_FUNCTION();
 	TRACE("{%s} dep_child= %s", show(*this, S_DEBUG, R_SHOW_FLAGS),
-	      show(dep_child, S_DEBUG, R_SHOW_FLAGS));
+		show(dep_child, S_DEBUG, R_SHOW_FLAGS));
 	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
 	assert(child);
 	assert(child != this);
@@ -825,15 +820,16 @@ Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep)
 {
 	if (hash_dep.is_file()) {
 		/* For file targets, we don't use flags for hashing.
-		 * Zero is the word for file targets.  */
+		 * Zero is the word for file targets. */
 		hash_dep.get_front_word_nondynamic()= (word_t)0;
 	}
 
 	return hash_dep;
 }
 
-shared_ptr <const Dep> Executor::append_top(shared_ptr <const Dep> dep,
-					    shared_ptr <const Dep> top)
+shared_ptr <const Dep> Executor::append_top(
+	shared_ptr <const Dep> dep,
+	shared_ptr <const Dep> top)
 {
 	assert(dep);
 	assert(top);

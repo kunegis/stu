@@ -1,0 +1,10 @@
+A: X [[ -t B ]]
+{
+	cp C A
+}
+
+B={list.[-t B2]}
+B2={B3}
+list.B3={C}
+X={x}
+C={CORRECT}

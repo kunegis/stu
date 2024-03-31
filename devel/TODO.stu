@@ -2,6 +2,7 @@
 # Flag -C.
 #
 
+# * 2.7.84-0027 fails
 # * Other failing tests
 
 A: [ -n -o B ] { touch A ; }  B={C}

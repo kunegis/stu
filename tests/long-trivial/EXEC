@@ -33,7 +33,7 @@ cat list | while IFS= read -r line ; do
 	for a_exists in yes no ; do
 		for x in before after absent ; do
 			stucode=$line
-			../../sh/rm_tmps
+			../../sh/rm_tmps || exit 2
 			[ $x = before ] && {
 				stucode=$(echo "$stucode" | sed -e 's,:,: X ,;s,$, X={x},')
 				[ $? = 0 ] || exit 1
@@ -42,17 +42,17 @@ cat list | while IFS= read -r line ; do
 				stucode=$(echo "$stucode" | sed -e 's,{, X {,;s,$, X={x},')
 				[ $? = 0 ] || exit 1
 			}
-			rm -f ? || exit 2
 			if [ $a_exists = yes ] ; then
 				echo aaa >A || exit 2
 				[ "$x" != absent ] && { echo xxx >X || exit 2 ; }
 			else
 				stucode="$stucode C={CORRECT}"
 			fi
-			echo "CASE: a_exists=$a_exists x=$x: $stucode"
+			echo "CASE: line_number=$line_number a_exists=$a_exists x=$x ⟨$stucode⟩"
 			printf '%s\n' "$stucode" >list.stu || exit 2
 			../../bin/stu.test -f list.stu >list.out 2>list.err
 			exitstatus=$?
+			echo "	exitstatus=$exitstatus"
 			stat=0
 			[ $exitstatus = 0 ] ||
 				err "Expected exit status 0, not $exitstatus"
@@ -66,6 +66,7 @@ cat list | while IFS= read -r line ; do
 					err "C must contain 'CORRECT'"
 			fi
 			echo "$stat" >>"$error_file"
+			echo "	stat=$stat"
 		done
 	done
 done

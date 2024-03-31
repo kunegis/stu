@@ -955,7 +955,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				 rule->command->place);
 		}
 
-		TRACE("pid=%s", frmt("%jd", (intmax_t)pid));
+		TRACE("pid= %s", frmt("%jd", (intmax_t)pid));
 		assert(pid != 0 && pid != 1);
 		DEBUG_PRINT(frmt("execute: pid = %ld", (long) pid));
 

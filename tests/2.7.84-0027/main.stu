@@ -1,10 +1,10 @@
 A: X [[ -t B ]]
 {
-	cp C A
+	cp E A
 }
 
-B={[-t B2]}
-B2={B3}
-B3={C}
+B={[-t C]}
+C={D}
+D={E}
 X={x}
-C={CORRECT}
+E={CORRECT}

@@ -4,7 +4,6 @@
 
 # * 2.7.84-0027 fails:  make bin/stu.debug && rm -f ? list.* B2 && STU_TRACE_EXECUTOR=stderr STU_TRACE_FILE_EXECUTOR=stderr STU_TRACE_DYNAMIC_EXECUTOR=stderr STU_TRACE_CONCAT_EXECUTOR=stderr bin/stu.debug -f tests/2.7.84-0027
 # ** Simplify the example:
-# *** Remove concatenation
 # *** Remove the inner -t
 # ** C is added to buffer_A of [[B]], but [[B]] is already executing phase B.
 # * Other failing tests

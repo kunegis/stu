@@ -17,14 +17,14 @@
 #include "executor.hh"
 
 class Concat_Executor
-	:  public Executor
+	: public Executor
 {
 public:
 	Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 			Executor *parent,
 			int &error_additional);
 	/* DEP_ is normalized.  See File_Executor::File_Executor() for
-	 * the semantics for ERROR_ADDITIONAL.  */
+	 * the semantics for ERROR_ADDITIONAL. */
 
 	~Concat_Executor()= default;
 

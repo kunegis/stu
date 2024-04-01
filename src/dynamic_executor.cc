@@ -89,7 +89,7 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 		goto ret;
 	}
 
-	// XXX need_build should also be set when -B is set on ourselves.
+	// FIXED need_build should also be set when -B is set on ourselves.
 	need_build= (bits & B_NEED_BUILD) != 0 || dep_link->flags & F_PHASE_B;
 	TRACE("need_build= %s", frmt("%d", need_build));
 	if (! need_build) {

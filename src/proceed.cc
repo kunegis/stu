@@ -1,7 +1,7 @@
 #include "proceed.hh"
 
 constexpr const char *const proceed_names[]= {
-	"WAIT", "CALL_AGAIN", "FINISHED", "ABORT"
+	"P_WAIT", "P_CALL_AGAIN", "P_FINISHED", "P_ABORT"
 };
 static_assert(sizeof(proceed_names)/sizeof(proceed_names[0]) == P_COUNT, "P_COUNT");
 

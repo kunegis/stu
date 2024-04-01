@@ -1,5 +1,7 @@
 #include "concat_executor.hh"
 
+#include "trace.hh"
+
 Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 				 Executor *parent,
 				 int &error_additional)
@@ -56,8 +58,11 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 
 Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 {
+	TRACE_FUNCTION();
+	TRACE("{%s}", show(dep_link, S_DEBUG, R_SHOW_FLAGS));
 	Debug debug(this);
  again:
+	TRACE("stage= %s", frmt("%u", stage));
 	assert(stage <= ST_FINISHED);
 	if (stage == ST_FINISHED)
 		return P_FINISHED;
@@ -104,6 +109,7 @@ bool Concat_Executor::finished(Flags) const
 
 void Concat_Executor::launch_stage_1()
 {
+	TRACE_FUNCTION();
 	shared_ptr <Concat_Dep> c= std::make_shared <Concat_Dep> ();
 	c->deps.resize(collected.size());
 	for (size_t i= 0; i < collected.size(); ++i) {

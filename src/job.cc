@@ -158,7 +158,7 @@ pid_t Job::start(string command,
 
 		/* As $0 of the process, we pass the filename of the command followed by a
 		 * colon, the line number, a colon and the column number.  This makes the
-		 * shell if it reports an error make the most useful output. */ 
+		 * shell if it reports an error make the most useful output. */
 		string argv0= place_command.as_argv0();
 		if (argv0.empty())
 			argv0= shell;

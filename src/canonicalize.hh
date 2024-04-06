@@ -47,6 +47,6 @@ enum
 char *canonicalize_string(Canonicalize_Flags canonicalize_flags, char *p);
 /* Canonicalize the string starting at P in-place.  Return the end (\0) of the new string.
  * The operation never increases the size of the string.  P is \0-terminated, on input and
- * output. */  
+ * output. */
 
 #endif /* ! CANONICALIZE_HH */

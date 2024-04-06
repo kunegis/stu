@@ -794,15 +794,15 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 			proceed &= ~P_FINISHED;
 		}
 		
-		if (! buffer_B.empty()) {// indent
-		shared_ptr <const Dep> dep_child= buffer_B.pop();
-		Proceed proceed_2= connect(dep_link, dep_child);
-		proceed |= proceed_2;
-		assert(options_jobs >= 0);
-		if (options_jobs == 0) {
-			proceed |= P_WAIT;
-			goto ret;
-		}
+		if (! buffer_B.empty()) {
+			shared_ptr <const Dep> dep_child= buffer_B.pop();
+			Proceed proceed_2= connect(dep_link, dep_child);
+			proceed |= proceed_2;
+			assert(options_jobs >= 0);
+			if (options_jobs == 0) {
+				proceed |= P_WAIT;
+				goto ret;
+			}
 		}
 	}
 	assert(buffer_A.empty());

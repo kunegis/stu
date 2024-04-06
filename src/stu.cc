@@ -52,7 +52,7 @@ int main(int argc, char **argv, char **envp)
 
 	try {
 		// TODO put all the option parsing stuff into its own function in options.hh
-		
+
 		std::vector <string> filenames;
 		/* Filenames passed using the -f option.  Entries are unique and
 		 * sorted as they were given, except for duplicates. */

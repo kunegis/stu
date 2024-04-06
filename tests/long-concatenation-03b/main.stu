@@ -5,9 +5,6 @@ A:  [B] {
 	exit 0
 }
 
-##N = {5} 
-##N = {71} 
-
 >B:
 {
 	for i in $(seq 1 5) ; do

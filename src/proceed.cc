@@ -16,4 +16,3 @@ string show_proceed(Proceed proceed)
 	if (ret.size() == 0) ret += "0";
 	return ret;
 }
-

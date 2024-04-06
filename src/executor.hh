@@ -161,7 +161,7 @@ protected:
 	 * executors that have multiple targets.  This is not used for file dependencies,
 	 * as a file dependency's result can be each of its files, depending on the parent
 	 * -- for file dependencies, parents are notified directly, bypassing
-	 * push_result(). */ 
+	 * push_result(). */
 
 	std::map <string, string> result_variable;
 	/* Same semantics as RESULT, but for variable values, stored as KEY-VALUE pairs. */

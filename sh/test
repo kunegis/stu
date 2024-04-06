@@ -557,9 +557,15 @@ if [ "$ret" != 0 ] ; then
 	cat  >&2 log/error.log
 	success_rate=$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')
 	echo >&2 "[31m$0: *** ${success_rate}% success rate.  $count_failed test(s) failed (out of $count_total).[m"
-	exit 1
 fi
 
+ls -1dU tests/.[^.]* | grep -qEe . && {
+	echo >&2 Disabled tests:
+	ls >&2 -1d tests/.[^.]*
+	ret=1
+}
+
+[ "$ret" = 0 ] || exit "$ret"
 time_end=$(sh/now)
 time_diff=$(( time_end - time_begin ))
 runtime=$(printf '%u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)")
@@ -568,4 +574,4 @@ if [ -z "$1" ] && [ "$VARIANT" = ndebug ] ; then
 	     "$(date +%Y-%m-%dT%H:%M:%S) $(printf %s "$(cat VERSION)") $runtime"
 fi
 output_success
-exit 0
+exit "$ret"

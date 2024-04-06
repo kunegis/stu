@@ -4,14 +4,7 @@
 
 #include <algorithm>
 
-//const char *const trace_names[]= {
-//	"EXECUTOR", "SHOW", "TOKENIZER", "DEP"
-//};
-//static_assert(sizeof(trace_names) / sizeof(trace_names[0]) == TRACE_COUNT,
-//	      "sizeof(trace_names)");
-
 std::map <string, FILE *> Trace::files;
-//FILE *Trace::trace_files[TRACE_COUNT];
 string Trace::padding;
 std::vector <Trace *> Trace::stack;
 FILE *Trace::file_log= nullptr;
@@ -20,12 +13,9 @@ Trace::Trace(const char *function_name, const char *filename, int line)
 {
 	const char *filename_stripped= strip_dir(filename);
 	trace_class= class_from_filename(filename_stripped);
-//	assert(trace_class >= 0 && trace_class < TRACE_COUNT);
 	stack.push_back(this);
 	init_file();
 	if (!file) return;
-//	if (! (trace_files[trace_class]))
-//		return;
 	string text= fmt("%s%s()", padding, function_name);
 	if (fprintf(file, print_format,				  
 			filename_stripped, line,
@@ -41,7 +31,6 @@ Trace::~Trace()
 {
 	stack.pop_back();
 	if (!file)
-//	if (! (trace_files[trace_class]))
 		return;
 	padding.resize(padding.size() - strlen(padding_one));
 }
@@ -56,7 +45,6 @@ void Trace::init_file()
 
 	string name= fmt("STU_TRACE_%s", trace_class);
 	const char *env= getenv(name.c_str());
-//	bool enabled= (env && env[0]);
 	if (!env || !env[0] || !strcmp(env, "off")) {
 		files[trace_class]= file= nullptr;
 	} else if (!strcmp(env, "log")) {

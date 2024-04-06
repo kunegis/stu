@@ -1,17 +1,16 @@
 #! /bin/sh
 #
-# Perform unit tests.  Each unit test is in one subdirectory of the directory
-# tests/.  By default, each test directory contains a file 'main.stu' that
-# performs one unit test.  Additional files may be present to configure how the
-# test is performed.
+# Perform unit tests.  Each unit test is in one subdirectory of the directory tests/.  By
+# default, each test directory contains a file 'main.stu' that performs one unit test.
+# Additional files may be present to configure how the test is performed.
 #
 # INVOCATION
 #	$0 [TEST]...
 #
 # Without any arguments, perform all tests.  With one or more arguments, perform
-#the given tests.  The given test names are the names of the subdirectories of
-#tests/, and may or may not include the 'tests/' prefix.  The arguments may
-#contain glob patterns.  (No test names contain the glob characters *, ?, etc.)
+# the given tests.  The given test names are the names of the subdirectories of
+# tests/, and may or may not include the 'tests/' prefix.  The arguments may
+# contain glob patterns.  (No test names contain the glob characters *, ?, etc.)
 #
 # OUTPUT FILES
 #	log/error.log     List of tests that failed, one name per line
@@ -92,24 +91,16 @@
 #
 # NAMES OF TESTS
 #
-# The names of unit tests, i.e., the name of the directories under tests/
-# follow a pattern:
-#
 # * tests/VERSION-ID
-#	These are tests for features introduced in Stu version VERSION.
-#	This was introduced in Stu 2.5, and therefore the assignment of
-#	VERSION numbers for older versions is approximate.  The goal is
-#	to be able to run all tests in asciibetical order so as to test
-#	older features first.  Presumably, these are the features that
+#	These are tests for features introduced in Stu version VERSION.  This was
+#	introduced in Stu 2.5, and therefore the assignment of VERSION numbers for older
+#	versions is approximate.  The goal is to be able to run all tests in asciibetical
+#	order so as to test older features first.  Presumably, these are the features that
 #	should be fixed first when working on Stu.
-# * tests/NAME-ID (deprecated)
-#	These are tests for the feature named NAME, with ID being an
-#	integer.  These are being migrated to the VERSION-ID scheme.
 # * tests/long-NAME
-#	These are tests that take a long time to run.  I.e., at least
-#	one second, due to sleep being used.  We try to avoid this as
-#	much as possible, but sometimes sleeping is the only way to test
-#	something.
+#	These are tests that take a long time to run.  I.e., at least one second, due to
+#	sleep being used.  We try to avoid this as much as possible, but sometimes
+#	sleeping is the only way to test something.
 #
 # NOTES
 #
@@ -121,17 +112,11 @@
 #   only one second.  An alternative is to use sh/touch_old.
 # * Tests output '***' only in case of error.  This is convenient for
 #   grepping while the tests are running.
-#
-# TODO
-#
-# * For each test, interrupt the test after a specified timeout, to
-#   avoid that the whole testing procedure hangs when a single test
-#   hangs.
+# * Tests can be disabled by prepending "." to their directory name.
 #
 
-# Note:  we can't use "set -e" here (which is a good general practice in
-# shell scripts), because otherwise we can't use $? to check the exit
-# code of Stu.
+# Note:  we can't use "set -e" here (which is a good general practice in shell scripts),
+# because otherwise we can't use $? to check the exit code of Stu.
 
 output_next()
 {

@@ -58,11 +58,6 @@ public:
 	/* Set the error code, and throw an error except with the keep-going
 	 * option.  Does not print an error message. */
 
-	Proceed execute_phase_A(shared_ptr <const Dep> dep_link);
-	/* DEP_LINK must not be null.  In the return value, at least one bit is set.  The
-	 * P_FINISHED bit indicates only that tasks related to this function are done, not
-	 * the whole Executor. */
-
 	int get_error() const { return error; }
 
 	void read_dynamic(shared_ptr <const Plain_Dep> dep_target,
@@ -184,10 +179,15 @@ protected:
 	Proceed execute_children();
 	/* Execute already-active children */
 
+	Proceed execute_phase_A(shared_ptr <const Dep> dep_link);
+	/* DEP_LINK must not be null.  In the return value, at least one bit is set.  The
+	 * P_FINISHED bit indicates only that tasks related to this function are done, not
+	 * the whole Executor. */
+
 	Proceed execute_phase_B(shared_ptr <const Dep> dep_link);
-	/* Second pass (trivial dependencies).  Called once we are sure
-	 * that the target must be built.  Arguments and return value
-	 * have the same semantics as execute_base_B(). */
+	/* Second pass (trivial dependencies).  Called once we are sure that the target
+	 * must be built.  Arguments and return value have the same semantics as
+	 * execute_base_B(). */
 
 	Executor *get_executor(shared_ptr <const Dep> dep);
 	/* Get an existing Executor or create a new one for the given

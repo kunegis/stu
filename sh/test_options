@@ -23,4 +23,4 @@ if ! cmp test_options.a test_options.b ; then
 fi
 
 rm -f test_options.a test_options.b || exit 2
-exit $ret
+exit "$ret"

@@ -82,6 +82,7 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	assert(proceed & P_FINISHED);
 	proceed &= ~P_FINISHED;
+	assert(get_buffer_A().empty());
 
 	if (finished(dep_link->flags)) {
 		assert(! (proceed & P_WAIT));

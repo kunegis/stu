@@ -1,4 +1,4 @@
-# This tests high-order nesting of dynamic targets.  Precisely, [A] will
+# This tests high-order nesting of dynamic targets.  Precisely, [B] will
 # resolve to the dependency
 #
 # [[[....[[[A]]]...]]]
@@ -10,7 +10,7 @@
 # executions with bad algorithms. 
 # 
 # This particular test will create a missing dependency in all that to
-# test the trace printing functions.  
+# test the backtrace printing functions.  
 #
 
 A:  [B] $[N] {

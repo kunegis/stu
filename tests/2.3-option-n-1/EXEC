@@ -3,7 +3,7 @@
 set -e
 
 do_rm() {
-	rm -f aaa bbb ccc FILES
+	rm -f aaa bbb ccc list.FILES
 	rm -f :::
 	rm -f '   '
 	rm -f "$(printf '\t\t\t')"
@@ -24,12 +24,12 @@ do_rm
 	printf '"'"'"'\n'
 	echo ccc
 	printf -- '-\n'
-} >FILES
+} >list.FILES
 
-../../bin/stu.test -n FILES -F '$name = {correct}' >list.out 2>list.err
+../../bin/stu.test -n list.FILES -F '$name = {correct}' >list.out 2>list.err
 
 IFS=
-cat FILES | while read -r file ; do
+cat list.FILES | while read -r file ; do
 	[ -r "$file" ] || {
 		echo >&2 "*** File '$file' not created"
 		exit 1

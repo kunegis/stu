@@ -590,93 +590,6 @@ void Executor::push(shared_ptr <const Dep> dep)
 	}
 }
 
-Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
-{
-	TRACE_FUNCTION();
-	TRACE("{%s}", show(*this, S_DEBUG, R_SHOW_FLAGS));
-	assert(options_jobs >= 0);
-	assert(dep_link);
-	DEBUG_PRINT("phase_A");
-	Proceed proceed= 0;
-
-	if (finished(dep_link->flags)) {
-		DEBUG_PRINT("finished");
-		proceed |= P_FINISHED;
-		goto ret;
-	}
-
-	if (optional_finished(dep_link)) {
-		DEBUG_PRINT("optional finished");
-		proceed |= P_FINISHED;
-		goto ret;
-	}
-
-	/* Continue the already-active child executors.  In DFS mode, first
-	 * continue the already-open children, then open new children.  In
-	 * random mode, start new children first and continue already-open
-	 * children second. */
-	if (order != Order::RANDOM) {
-		Proceed proceed_2= execute_children();
-		proceed |= proceed_2;
-		if (proceed & P_WAIT) {
-			if (options_jobs == 0) {
-				goto ret;
-			}
-		} else if (finished(dep_link->flags) && ! option_k) {
-			DEBUG_PRINT("finished");
-			proceed |= P_FINISHED;
-			goto ret;
-		}
-	}
-
-	assert(error == 0 || option_k);
-
-	if (options_jobs == 0) {
-		proceed |= P_WAIT;
-		goto ret;
-	}
-
-	while (! buffer_A.empty()) {
-		shared_ptr <const Dep> dep_child= buffer_A.pop();
-		Proceed proceed_2= connect(dep_link, dep_child);
-		proceed |= proceed_2;
-		if (options_jobs == 0) {
-			proceed |= P_WAIT;
-			goto ret;
-		}
-	}
-	assert(buffer_A.empty());
-
-	if (order == Order::RANDOM) {
-		Proceed proceed_2= execute_children();
-		proceed |= proceed_2;
-		if (proceed & P_WAIT) {
-			goto ret;
-		}
-	}
-
-	/* Some dependencies are still running */
-	if (! children.empty()) {
-		assert(proceed != 0);
-		goto ret;
-	}
-
-	if (error) {
-		assert(option_k);
-		proceed |= P_ABORT | P_FINISHED;
-		goto ret;
-	}
-
-	if (proceed)
-		goto ret;
-
-	proceed |= P_FINISHED;
-
- ret:
-	TRACE("proceed= %s", show_proceed(proceed));
-	return proceed;
-}
-
 void Executor::raise(int e)
 {
 	assert(e >= 1 && e <= 3);
@@ -773,13 +686,115 @@ void Executor::disconnect(
 	if (child->want_delete()) delete child;
 }
 
+Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
+{
+	TRACE_FUNCTION();
+	TRACE("{%s}", show(*this, S_DEBUG, R_SHOW_FLAGS));
+	assert(options_jobs >= 0);
+	assert(dep_link);
+	DEBUG_PRINT("phase_A");
+	Proceed proceed= 0;
+
+	if (finished(dep_link->flags)) {
+		DEBUG_PRINT("finished");
+		proceed |= P_FINISHED;
+		goto ret;
+	}
+
+	if (optional_finished(dep_link)) {
+		DEBUG_PRINT("optional finished");
+		proceed |= P_FINISHED;
+		goto ret;
+	}
+
+	/* Continue the already-active child executors.  In DFS mode, first
+	 * continue the already-open children, then open new children.  In
+	 * random mode, start new children first and continue already-open
+	 * children second. */
+	if (order != Order::RANDOM) {
+		Proceed proceed_2= execute_children();
+		proceed |= proceed_2;
+		if (proceed & P_WAIT) {
+			if (options_jobs == 0) {
+				goto ret;
+			}
+		} else if (finished(dep_link->flags) && ! option_k) {
+			DEBUG_PRINT("finished");
+			proceed |= P_FINISHED;
+			goto ret;
+		}
+	}
+
+	assert(error == 0 || option_k);
+
+	if (options_jobs == 0) {
+		proceed |= P_WAIT;
+		goto ret;
+	}
+
+	while (! buffer_A.empty()) {
+		shared_ptr <const Dep> dep_child= buffer_A.pop();
+		Proceed proceed_2= connect(dep_link, dep_child);
+		proceed |= proceed_2;
+		if (options_jobs == 0) {
+			proceed |= P_WAIT;
+			goto ret;
+		}
+	}
+	assert(buffer_A.empty());
+
+	if (order == Order::RANDOM) {
+		Proceed proceed_2= execute_children();
+		proceed |= proceed_2;
+		if (proceed & P_WAIT) {
+			goto ret;
+		}
+	}
+
+	/* Some dependencies are still running */
+	if (! children.empty()) {
+		assert(proceed != 0);
+		goto ret;
+	}
+
+	if (error) {
+		assert(option_k);
+		proceed |= P_ABORT | P_FINISHED;
+		goto ret;
+	}
+
+	if (proceed)
+		goto ret;
+
+	proceed |= P_FINISHED;
+
+ ret:
+	TRACE("proceed= %s", show_proceed(proceed));
+	return proceed;
+}
+
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION();
 	TRACE("{%s}", show(*this, S_DEBUG, R_SHOW_FLAGS));
 	DEBUG_PRINT("phase_B");
+	assert(buffer_A.empty());
 	Proceed proceed= 0;
-	while (! buffer_B.empty()) {
+	while (! (buffer_A.empty() && buffer_B.empty())) {
+//	while (! buffer_B.empty()) {
+
+		if (! buffer_A.empty()) {
+			Proceed proceed_2= execute_phase_A(dep_link);
+			if (proceed_2 & (P_WAIT | P_ABORT)) {
+				proceed |= proceed_2;
+				assert(!(proceed & P_FINISHED));
+				goto ret;
+			}
+			proceed |= proceed_2;
+			proceed &= ~P_FINISHED;
+		}
+		
+		if (! buffer_B.empty()) {// indent
 		shared_ptr <const Dep> dep_child= buffer_B.pop();
 		Proceed proceed_2= connect(dep_link, dep_child);
 		proceed |= proceed_2;
@@ -788,7 +803,9 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 			proceed |= P_WAIT;
 			goto ret;
 		}
+		}
 	}
+	assert(buffer_A.empty());
 	assert(buffer_B.empty());
 	proceed |= P_FINISHED;
  ret:

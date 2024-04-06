@@ -2,8 +2,9 @@
 # Flag -C.
 #
 
-# * 2.7.84-0027 fails:  make bin/stu.debug && rm -f ? list.* B2 && STU_TRACE_EXECUTOR=stderr STU_TRACE_FILE_EXECUTOR=stderr STU_TRACE_DYNAMIC_EXECUTOR=stderr STU_TRACE_CONCAT_EXECUTOR=stderr bin/stu.debug -f tests/2.7.84-0027
-# ** E is added to buffer_A of [[B]], but [[B]] is already executing phase B.
+# * make bin/stu.debug && rm -f ? list.* B2 && STU_TRACE_EXECUTOR=stderr bin/stu.debug -f tests/long-concatenation-03b
+# ** Accidentally exponential (?) runtime
+# *** we go through everything twice -- once for phase A and once for phase B.  Compounded by each level gives a runtime of 2^71.
 # * Other failing tests
 
 A: [ -n -o B ] { touch A ; }  B={C}
@@ -408,4 +409,8 @@ A: -e B
 
 #
 # Deprecate the -d option.
+#
+
+#
+# Rename the "2-statistics" test to "long-statistics" or similar (it takes long).
 #

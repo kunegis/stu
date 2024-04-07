@@ -62,9 +62,8 @@ Dynamic_Executor::Dynamic_Executor(
 
 Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 {
-	TRACE_FUNCTION();
-	TRACE("{%s} done= %s; bits= %s", show(dep_link, S_DEBUG, R_SHOW_FLAGS),
-		done.show(), show_bits(bits));
+	TRACE_FUNCTION(show(dep_link, S_DEBUG, R_SHOW_FLAGS));
+	TRACE("done= %s; bits= %s", done.show(), show_bits(bits));
 	Debug debug(this);
 	bool need_build;
 

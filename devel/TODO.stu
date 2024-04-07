@@ -2,9 +2,11 @@
 # Flag -C.
 #
 
+# trace:  pass argumetns in TRACE_FUNCTION.
+# trace:  put the function name in bold.
 # * make bin/stu.debug && rm -f ? list.* B2 && STU_TRACE_EXECUTOR=stderr bin/stu.debug -f tests/long-concatenation-03b
 # ** Accidentally exponential (?) runtime
-# *** we go through everything twice -- once for phase A and once for phase B.  Compounded by each level gives a runtime of 2^71.
+# *** execute_phase_A() calls connect() N times for the same dependency.
 # * Other failing tests
 
 A: [ -n -o B ] { touch A ; }  B={C}

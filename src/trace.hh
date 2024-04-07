@@ -24,12 +24,19 @@
 class Trace
 {
 public:
+	class Object
+	{
+	public:
+		const string s;
+		Object(string _s= ""): s(_s) { }
+	};
+	
 	string trace_class;
 	FILE *file;
 	static std::map <string, FILE *> files;
 	static constexpr const char *print_format= "%21s:%-4d %s\n";
 
-	Trace(const char *function_name, const char *filename, int line);
+	Trace(const char *function_name, const char *filename, int line, Object);
 	~Trace();
 	const char *get_prefix() const { return prefix.c_str(); }
 
@@ -53,7 +60,7 @@ private:
 	static string class_from_filename(const char *filename);
 };
 
-#define TRACE_FUNCTION()  Trace trace_object(__func__, __FILE__, __LINE__)
+#define TRACE_FUNCTION(a)  Trace trace_object(__func__, __FILE__, __LINE__, Trace::Object(a))
 
 #define TRACE(format, ...)  {						\
 		if (FILE *file= Trace::get_current()->file) {		\

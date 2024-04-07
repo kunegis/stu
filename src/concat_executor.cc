@@ -58,8 +58,8 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 
 Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 {
-	TRACE_FUNCTION();
-	TRACE("{%s}", show(dep_link, S_DEBUG, R_SHOW_FLAGS));
+	TRACE_FUNCTION(show(dep_link, S_DEBUG, R_SHOW_FLAGS));
+//	TRACE("{%s}", show(dep_link, S_DEBUG, R_SHOW_FLAGS));
 	Debug debug(this);
  again:
 	TRACE("stage= %s", frmt("%u", stage));

@@ -202,7 +202,6 @@ Hash_Dep Plain_Dep::get_target() const
 void Plain_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION();
-
 	if (render_flags(flags, parts, rendering))
 		parts.append_space();
 	if (flags & F_VARIABLE)

@@ -9,14 +9,18 @@ string Trace::padding;
 std::vector <Trace *> Trace::stack;
 FILE *Trace::file_log= nullptr;
 
-Trace::Trace(const char *function_name, const char *filename, int line)
+Trace::Trace(const char *function_name, const char *filename, int line, Object object)
 {
 	const char *filename_stripped= strip_dir(filename);
 	trace_class= class_from_filename(filename_stripped);
 	stack.push_back(this);
 	init_file();
 	if (!file) return;
-	string text= fmt("%s%s()", padding, function_name);
+	string text= fmt("%s%s%s%s()",
+		padding,
+		object.s.empty() ? "" : object.s.c_str(),
+		object.s.empty() ? "" : ".",
+		function_name);
 	if (fprintf(file, print_format,				  
 			filename_stripped, line,
 			text.c_str()) == EOF) {      

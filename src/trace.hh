@@ -47,6 +47,9 @@ public:
 
 	static const char *strip_dir(const char *s);
 
+	template <typename... Args>
+	static void trace(const char *filename, int line, Args... args);
+
 private:
 	string prefix;
 	static string padding;
@@ -62,20 +65,7 @@ private:
 
 #define TRACE_FUNCTION(a)  Trace trace_object(__func__, __FILE__, __LINE__, Trace::Object(a))
 
-#define TRACE(format, ...)  {						\
-		if (FILE *file= Trace::get_current()->file) {		\
-		string trace_text= fmt("%s" format,			\
-			trace_object.get_prefix(),			\
-			__VA_ARGS__);					\
-		if (fprintf(file,					\
-				Trace::print_format,			\
-				Trace::strip_dir(__FILE__), __LINE__,	\
-				trace_text.c_str()) == EOF) {		\
-			perror("fprintf(trace_file)");			\
-			exit(ERROR_FATAL);				\
-		} \
-	} \
-}
+#define TRACE(...) Trace::trace(__FILE__, __LINE__, __VA_ARGS__)
 
 #else /* NDEBUG */
 #	define TRACE_FUNCTION(a)

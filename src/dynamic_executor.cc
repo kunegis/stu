@@ -157,10 +157,11 @@ void Dynamic_Executor::notify_variable(
 		result_variable_child.end());
 }
 
-void Dynamic_Executor::notify_result(shared_ptr <const Dep> dep_result, Executor *source,
-				     Flags flags, shared_ptr <const Dep> dep_source)
+void Dynamic_Executor::notify_result(
+	shared_ptr <const Dep> dep_result, Executor *source,
+	Flags flags, shared_ptr <const Dep> dep_source)
 {
-	TRACE_FUNCTION();
+	TRACE_FUNCTION(show(dep, S_DEBUG, R_SHOW_FLAGS));
 	TRACE("d= %s; flags= %s; dep_source= %s",
 		show(dep_result, S_DEBUG, R_SHOW_FLAGS),
 		show_flags(flags),

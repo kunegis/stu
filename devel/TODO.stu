@@ -2,11 +2,11 @@
 # Flag -C.
 #
 
-# trace:  pass argumetns in TRACE_FUNCTION.
-# trace:  put the function name in bold.
-# * make bin/stu.debug && rm -f ? list.* B2 && STU_TRACE_EXECUTOR=stderr bin/stu.debug -f tests/long-concatenation-03b
+# * make bin/stu.debug && rm -f ? list.* B2 && STU_TRACE_EXECUTOR=stderr STU_TRACE_FILE_EXECUTOR=stderr STU_TRACE_DYNAMIC_EXECUTOR=stderr bin/stu.debug -f tests/long-concatenation-03b
 # ** Accidentally exponential (?) runtime
-# *** execute_phase_A() calls connect() N times for the same dependency.
+# ** Example is for N=3 (minimal value that exhibits the bug)
+# ** [[list.0]] connects twice to [list.0], once for each phase, and therefore the results are pushed twice
+# ** We need to have two "result" containers, and push each just once.
 # * Other failing tests
 
 A: [ -n -o B ] { touch A ; }  B={C}

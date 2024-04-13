@@ -366,6 +366,14 @@ void File_Executor::render(Parts &parts, Rendering rendering) const
 	hash_deps.front().render(parts, rendering);
 }
 
+void File_Executor::notify_variable(
+	const std::map <string, string> &result_variable_child)
+{
+	mapping_variable.insert(
+		result_variable_child.begin(),
+		result_variable_child.end());
+}
+
 void terminate_jobs()
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
@@ -598,7 +606,6 @@ void File_Executor::print_command() const
 Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show(dep_link, S_DEBUG, R_SHOW_FLAGS));
-//	TRACE("{%s}", show(dep_link, S_DEBUG, R_SHOW_FLAGS));
 	Debug debug(this);
 
 	std::map <string, string> mapping;

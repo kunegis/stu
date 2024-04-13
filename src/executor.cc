@@ -579,10 +579,10 @@ void Executor::push(shared_ptr <const Dep> dep)
 		if (untrivialized) {
 			shared_ptr <Dep> d2= Dep::clone(untrivialized);
 			d2->flags |= F_PHASE_B;
-			TRACE("buffer_B push %s", show(d2, S_DEBUG, R_SHOW_FLAGS));
+			TRACE("to buffer_B");
 			buffer_B.push(d2);
 		} else {
-			TRACE("buffer_A push %s", show(d, S_DEBUG, R_SHOW_FLAGS));
+			TRACE("to buffer_A");
 			buffer_A.push(d);
 		}
 	}
@@ -811,6 +811,8 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 
 void Executor::push_result(shared_ptr <const Dep> dd)
 {
+	TRACE_FUNCTION();
+	TRACE("dd= %s", show(dd, S_DEBUG, R_SHOW_FLAGS));
 	DEBUG_PRINT(fmt("push_result %s", show(dd, S_DEBUG, R_SHOW_FLAGS)));
 
 	assert(! dynamic_cast <File_Executor *> (this));

@@ -94,4 +94,20 @@ string Trace::class_from_filename(const char *filename)
 	return ret;
 }
 
+template <typename... Args>
+void Trace::trace(const char *filename, int line, Args... args)
+{
+	FILE *file= get_current()->file;
+	if (!file) return;
+	string prefix= get_current()->get_prefix();
+	string text= fmt(args...);
+	string full_line= prefix + text;
+	if (fprintf(file, Trace::print_format,			
+			Trace::strip_dir(filename), line,	
+			full_line.c_str()) == EOF) {		
+		perror("fprintf(trace_file)");
+		exit(ERROR_FATAL);
+	}
+}
+
 #endif /* ! NDEBUG */

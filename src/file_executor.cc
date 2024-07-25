@@ -10,7 +10,7 @@ File_Executor::~File_Executor()
 {
 	unreachable();
 #if 0
-	/* We write this here as a reminder if this is ever activated */
+	/* We put this here as a reminder if this is ever activated */
 	free(timestamps_old);
 	if (filenames) {
 		for (size_t i= 0; i < targets.size(); ++i)

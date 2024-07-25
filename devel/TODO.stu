@@ -6,7 +6,7 @@
 # ** Accidentally exponential (?) runtime
 # ** Example is for N=3 (minimal value that exhibits the bug)
 # ** [[list.0]] connects twice to [list.0], once for each phase, and therefore the results are pushed twice
-# ** We need to have two "result" containers, and push each just once.
+# ** We need to have two "Executor::result" containers, and push each just once.
 # * Other failing tests
 
 A: [ -n -o B ] { touch A ; }  B={C}

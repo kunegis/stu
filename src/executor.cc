@@ -820,7 +820,7 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 	dd->check();
 
 	/* Add to own */
-	result.push_back(dd);
+	result2[trivial_index(dd)].push_back(dd);
 
 	/* Notify parents */
 	for (auto &i: parents) {
@@ -927,9 +927,14 @@ Proceed Executor::connect(
 	if (!child)
 		return 0;
 	children.insert(child);
-	if (dep_child->flags & F_RESULT_NOTIFY)
-		for (const auto &dependency: child->result)
+	if (! (dep_child->flags & F_TRIVIAL)) {
+		if (dep_child->flags & F_RESULT_NOTIFY) {
+			for (const auto &dependency: child->result2[0])
+				this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
+		}
+		for (const auto &dependency: child->result2[1])
 			this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
+	}
 	Proceed proceed_child= child->execute(dep_child);
 	assert(proceed_child);
 	if (proceed_child & (P_WAIT | P_CALL_AGAIN))

@@ -2,15 +2,13 @@
 # Flag -C.
 #
 
-# * make bin/stu.debug && rm -f ? list.* B2 && STU_TRACE_EXECUTOR=stderr STU_TRACE_FILE_EXECUTOR=stderr STU_TRACE_DYNAMIC_EXECUTOR=stderr bin/stu.debug -f tests/long-concatenation-03b
-# ** Accidentally exponential (?) runtime
-# ** Example is for N=3 (minimal value that exhibits the bug)
-# ** [[list.0]] connects twice to [list.0], once for each phase, and therefore the results are pushed twice
-# ** We need to have two "Executor::result" containers, and push each just once.
+# * Fix long-concatenation-03b
 # * Other failing tests
 
 A: [ -n -o B ] { touch A ; }  B={C}
 A: [ -t -o B ] { touch A ; }  B={C}
+
+# * Re-enable disabled tests (with .* pattern)
 
 #
 # Test installing the .deb from Github/releases

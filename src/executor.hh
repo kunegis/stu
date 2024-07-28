@@ -154,14 +154,18 @@ protected:
 	 * rebuilt anyway.  Implementations also change this to consider the file itself,
 	 * if any.  This final timestamp is then carried over to the parent executors. */
 
-	std::vector <shared_ptr <const Dep> > result;
+	std::vector <shared_ptr <const Dep> > result2[2];
+	// TODO remove "2" from name.
 	/* The final list of dependencies represented by the target.  This does not
 	 * include any dynamic dependencies, i.e., all dependencies are flattened to
 	 * Plain_Dep's.  Not used for executors that have file targets, neither for
 	 * executors that have multiple targets.  This is not used for file dependencies,
 	 * as a file dependency's result can be each of its files, depending on the parent
 	 * -- for file dependencies, parents are notified directly, bypassing
-	 * push_result(). */
+	 * push_result(). 
+	 * The index is the trivial bit, i.e. result[1] are results only as a trivial
+	 * target, and result[0]+result[1] are the results for non-trivial targets.
+	 */
 
 	std::map <string, string> result_variable;
 	/* Same semantics as RESULT, but for variable values, stored as KEY-VALUE pairs. */
@@ -277,6 +281,10 @@ protected:
 	/* Whether both executors have the same parametrized rule.
 	 * Only used for finding cycles. */
 
+	static int trivial_index(shared_ptr <const Dep> d) {
+		return d->flags & F_TRIVIAL ? 1 : 0;
+	}
+	
 private:
 	Buffer buffer_A;
 	/* Dependencies that have not yet begun to be built.  Initialized with all

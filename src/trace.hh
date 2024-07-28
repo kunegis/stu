@@ -55,7 +55,7 @@ private:
 	static string padding;
 	static std::vector <Trace *> stack;
 	static FILE *file_log;
-	static constexpr const char *padding_one= "   ";
+	static constexpr const char *padding_one= "|   ";
 	static constexpr const char *trace_filename= "log/trace.log";
 
 	void init_file();

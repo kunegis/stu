@@ -1,28 +1,30 @@
-A:  [B] {
-	N=3
+A:  [B] $[N] {
+#	N=1
 	[ -e list."$N" ]       || exit 1
 	[ -e list."$((N+1))" ] && exit 1
 	exit 0
 }
 
->B:
+>B:  $[N]
 {
-	for i in $(seq 1 3) ; do
+	for i in $(seq 1 $N) ; do
 		printf '%s' '['
 	done
 	printf list.0
-	for i in $(seq 1 3) ; do
+	for i in $(seq 1 $N) ; do
 		printf '%s' ']'
 	done
 	echo
 }
 
->list.$n:
+>list.$n:  $[N]
 {
-	N=3
+#	N=1
 	if [ "$n" = "$((N - 1))" ] ; then
 		echo X
 	else
 		echo list."$((n + 1))"
 	fi
 }
+
+N = {3}

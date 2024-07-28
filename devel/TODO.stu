@@ -2,13 +2,11 @@
 # Flag -C.
 #
 
-# * Fix long-concatenation-03b
+# * long-concatenation-03 still has exponential behavior
 # * Other failing tests
-
 A: [ -n -o B ] { touch A ; }  B={C}
 A: [ -t -o B ] { touch A ; }  B={C}
 
-# * Re-enable disabled tests (with .* pattern)
 
 #
 # Test installing the .deb from Github/releases

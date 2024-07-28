@@ -7,10 +7,10 @@
 # INVOCATION
 #	$0 [TEST]...
 #
-# Without any arguments, perform all tests.  With one or more arguments, perform
-# the given tests.  The given test names are the names of the subdirectories of
-# tests/, and may or may not include the 'tests/' prefix.  The arguments may
-# contain glob patterns.  (No test names contain the glob characters *, ?, etc.)
+# Without any arguments, perform all tests.  With one or more arguments, perform the given
+# tests.  The given test names are the names of the subdirectories of tests/, and may or
+# may not include the 'tests/' prefix.  The arguments may contain glob patterns.  (No test
+# names contain the glob characters *, ?, etc.) 
 #
 # OUTPUT FILES
 #	log/error.log     List of tests that failed, one name per line
@@ -21,12 +21,10 @@
 #	$VARIANT  Other variant of the compiled file; the default is to
 #	          take the file that matches the value of $NDEBUG
 #	$verbose  Set to {0,1,2} for verbose levels; default is 0
-#	$notall   If non-empty, exit on the first error, instead of
-#	          running everything
-#	$emptyok  Set to non-empty to *not* output an error for empty test
-#	          directories; useful after doing "rm" in a version
-#	          control system on one, since that leaves a directory
-#	          containing only (e.g.) ".svn".  Ignores dotfiles.
+#	$notall   If non-empty, exit on the first error, instead of running everything
+#	$emptyok  Set to non-empty to *not* output an error for empty test directories;
+#	          useful after doing "rm" in a version control system on one, since that
+#	          leaves a directory containing only (e.g.) ".svn".  Ignores dotfiles.
 #
 # EXIT STATUS
 #	0         All tests succeeded
@@ -104,15 +102,15 @@
 #
 # NOTES
 #
-# * Some tests that use EXEC need to sleep, in order to make sure that
-#   timestamps e.g. of a created file is older than Stu invocation.
-#   Usually, these scripts use "sleep 2", i.e., sleep for two seconds to
-#   make sure that there is a difference in timestamps of at least one
-#   second on systems where file modification times have a precision of
-#   only one second.  An alternative is to use sh/touch_old.
-# * Tests output '***' only in case of error.  This is convenient for
-#   grepping while the tests are running.
-# * Tests can be disabled by prepending "." to their directory name.
+# * Some tests that use EXEC need to sleep, in order to make sure that timestamps e.g. of
+#   a created file is older than Stu invocation.  Usually, these scripts use "sleep 2",
+#   i.e., sleep for two seconds to make sure that there is a difference in timestamps of
+#   at least one second on systems where file modification times have a precision of only
+#   one second.  An alternative is to use sh/touch_old.
+# * Tests output '***' only in case of error.  This is convenient for grepping while the
+#   tests are running.
+# * Tests can be disabled by prepending "." to their directory name.  Disabled tests count
+#   as failed.
 #
 
 # Note:  we can't use "set -e" here (which is a good general practice in shell scripts),
@@ -537,8 +535,9 @@ do
 	count_succeed=$(( count_succeed + 1 ))
 done
 
-output_end
 cd ..
+
+output_end
 
 if [ "$ret" != 0 ] ; then
 	if [ "$count_failed" = 0 ] ; then

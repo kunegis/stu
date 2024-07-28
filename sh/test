@@ -558,11 +558,13 @@ if [ "$ret" != 0 ] ; then
 	echo >&2 "[31m$0: *** ${success_rate}% success rate.  $count_failed test(s) failed (out of $count_total).[m"
 fi
 
-ls -1dU tests/.[^.]* | grep -qEe . && {
-	echo >&2 Disabled tests:
-	ls >&2 -1d tests/.[^.]*
-	ret=1
-}
+if [ -z "$1" ] ; then
+	ls -1dU tests/.[^.]* | grep -qEe . && {
+		echo >&2 Disabled tests:
+		ls >&2 -1d tests/.[^.]*
+		ret=1
+	}
+fi
 
 [ "$ret" = 0 ] || exit "$ret"
 time_end=$(sh/now)

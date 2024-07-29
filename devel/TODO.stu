@@ -4,7 +4,7 @@
 
 # * long-concatenation-03b does things multiple times.  Make a diagram and find out
 #   why.
-# * long-concatenation-03 has exponential behavior (test disabled at the moment).
+# * long-concatenation-03 has exponential behavior.
 # * Other failing tests
 A: [ -n -o B ] { touch A ; }  B={C}
 A: [ -t -o B ] { touch A ; }  B={C}

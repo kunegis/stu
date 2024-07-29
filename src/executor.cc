@@ -927,13 +927,15 @@ Proceed Executor::connect(
 	if (!child)
 		return 0;
 	children.insert(child);
-	if (! (dep_child->flags & F_TRIVIAL)) {
-		if (dep_child->flags & F_RESULT_NOTIFY) {
+	if (dep_child->flags & F_RESULT_NOTIFY) {
+		// TODO write it just once, and compute the index to result2.
+		if (! (dep_child->flags & F_TRIVIAL)) {
 			for (const auto &dependency: child->result2[0])
 				this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
+		} else {
+			for (const auto &dependency: child->result2[1])
+				this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
 		}
-		for (const auto &dependency: child->result2[1])
-			this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
 	}
 	Proceed proceed_child= child->execute(dep_child);
 	assert(proceed_child);

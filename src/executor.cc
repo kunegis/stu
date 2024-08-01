@@ -941,9 +941,9 @@ Proceed Executor::connect(
 	assert(proceed_child);
 	if (proceed_child & (P_WAIT | P_CALL_AGAIN))
 		return proceed_child;
-	bool f = child->finished(dep_child->flags);
-	TRACE("f= %s", frmt("%d", f));
-	if (f) {
+	bool child_finished= child->finished(dep_child->flags);
+	TRACE("child_finished= %s", frmt("%d", child_finished));
+	if (child_finished) {
 		disconnect(child, dep_child);
 	}
 	return 0;

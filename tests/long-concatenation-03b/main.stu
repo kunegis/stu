@@ -1,25 +1,26 @@
-A:  [B] $[N] {
-#	N=1
+A:  [[[list.0]]] {
+	N=3
 	[ -e list."$N" ]       || exit 1
 	[ -e list."$((N+1))" ] && exit 1
 	exit 0
 }
 
->B:  $[N]
-{
-	for i in $(seq 1 $N) ; do
-		printf '%s' '['
-	done
-	printf list.0
-	for i in $(seq 1 $N) ; do
-		printf '%s' ']'
-	done
-	echo
-}
+## >B: 
+## {
+## 	N=3
+## 	for i in $(seq 1 $N) ; do
+## 		printf '%s' '['
+## 	done
+## 	printf list.0
+## 	for i in $(seq 1 $N) ; do
+## 		printf '%s' ']'
+## 	done
+## 	echo
+## }
 
->list.$n:  $[N]
+>list.$n:  
 {
-#	N=1
+	N=3
 	if [ "$n" = "$((N - 1))" ] ; then
 		echo X
 	else
@@ -27,4 +28,4 @@ A:  [B] $[N] {
 	fi
 }
 
-N = {3}
+## N = {3}

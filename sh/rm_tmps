@@ -9,8 +9,6 @@
 # particular, all one-letter and two-letter files are deleted except 'sh'.
 #
 
-## TODO rename rm_tmp
-
 rm -Rf -- ? list.* A.* ./*.data x.* *SCHTROUMPF* .+-~_ || exit 1
 
 for file in ?? ; do

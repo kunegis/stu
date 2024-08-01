@@ -4,6 +4,9 @@
 
 # * long-concatenation-03b does things multiple times.  Make a diagram and find out
 #   why.
+# ** make bin/stu.debug && sh/rm_tmps && STU_TRACE_EXECUTOR=stderr bin/stu.debug -f tests/long-concatenation-03c
+# *** Why is [[B]] -> -% D connected twice during phase A?
+
 # * long-concatenation-03 has exponential behavior.
 # * Other failing tests
 A: [ -n -o B ] { touch A ; }  B={C}

@@ -2,7 +2,7 @@
 #define FLAGS_HH
 
 /*
- * Flags apply to dependencies.  Flags are binary and option-like, and apply at multiple
+ * Flags apply to dependencies.  Flags are binary and option-like, and appear at multiple
  * levels in Stu, from Stu source code where they are represented by a syntax ressembling
  * that of command line flags, to attributes of edges in the dependency graph. Internally,
  * flags are defined as bit fields.

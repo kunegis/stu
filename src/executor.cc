@@ -491,7 +491,6 @@ void Executor::operator<<(string text) const
 Proceed Executor::execute_children()
 {
 	TRACE_FUNCTION(show(*this, S_DEBUG, R_SHOW_FLAGS));
-//	TRACE("{%s}", show(*this, S_DEBUG, R_SHOW_FLAGS));
 
 	/* Since disconnect() may change executor->children, we must first
 	 * copy it over locally, and then iterate through it */
@@ -557,8 +556,8 @@ void Executor::push(shared_ptr <const Dep> dep)
 {
 	TRACE_FUNCTION(show(*this, S_DEBUG, R_SHOW_FLAGS));
 	TRACE("dep= %s", show(dep, S_DEBUG, R_SHOW_FLAGS));
-	dep->check();
 	DEBUG_PRINT(fmt("push %s", show(dep, S_DEBUG, R_SHOW_FLAGS)));
+	dep->check();
 
 	std::vector <shared_ptr <const Dep> > deps;
 	int e= 0;
@@ -609,15 +608,18 @@ void Executor::disconnect(
 	assert(option_k || child->error == 0);
 	dep_child->check();
 
+	// TODO the following two if's are nearly identical; merge them
 	if (dep_child->flags & F_RESULT_NOTIFY && dynamic_cast <File_Executor *> (child)) {
 		shared_ptr <Dep> d= Dep::clone(dep_child);
 		d->flags &= ~F_RESULT_NOTIFY;
+		TRACE("notifying F_RESULT_NOTIFY");
 		notify_result(d, child, F_RESULT_NOTIFY, dep_child);
 	}
 
 	if (dep_child->flags & F_RESULT_COPY && dynamic_cast <File_Executor *> (child)) {
 		shared_ptr <Dep> d= Dep::clone(dep_child);
 		d->flags &= ~F_RESULT_COPY;
+		TRACE("notifying F_RESULT_COPY");
 		notify_result(d, child, F_RESULT_COPY, dep_child);
 	}
 
@@ -686,9 +688,9 @@ void Executor::disconnect(
 Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show(*this, S_DEBUG, R_SHOW_FLAGS));
+	DEBUG_PRINT("phase_A");
 	assert(options_jobs >= 0);
 	assert(dep_link);
-	DEBUG_PRINT("phase_A");
 	Proceed proceed= 0;
 
 	if (finished(dep_link->flags)) {
@@ -730,6 +732,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 
 	while (! buffer_A.empty()) {
 		shared_ptr <const Dep> dep_child= buffer_A.pop();
+		TRACE("popped from buffer_A dep_child=%s", show(dep_child, S_DEBUG, R_SHOW_FLAGS));
 		Proceed proceed_2= connect(dep_link, dep_child);
 		proceed |= proceed_2;
 		if (options_jobs == 0) {
@@ -772,13 +775,10 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show(*this, S_DEBUG, R_SHOW_FLAGS));
-//	TRACE("{%s}", show(*this, S_DEBUG, R_SHOW_FLAGS));
 	DEBUG_PRINT("phase_B");
 	assert(buffer_A.empty());
 	Proceed proceed= 0;
 	while (! (buffer_A.empty() && buffer_B.empty())) {
-//	while (! buffer_B.empty()) {
-
 		if (! buffer_A.empty()) {
 			Proceed proceed_2= execute_phase_A(dep_link);
 			if (proceed_2 & (P_WAIT | P_ABORT)) {
@@ -789,9 +789,9 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 			proceed |= proceed_2;
 			proceed &= ~P_FINISHED;
 		}
-		
 		if (! buffer_B.empty()) {
 			shared_ptr <const Dep> dep_child= buffer_B.pop();
+			TRACE("popped from buffer_B dep_child=%s", show(dep_child, S_DEBUG, R_SHOW_FLAGS));
 			Proceed proceed_2= connect(dep_link, dep_child);
 			proceed |= proceed_2;
 			assert(options_jobs >= 0);
@@ -812,7 +812,7 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 void Executor::push_result(shared_ptr <const Dep> dd)
 {
 	TRACE_FUNCTION();
-	TRACE("dd= %s", show(dd, S_DEBUG, R_SHOW_FLAGS));
+	TRACE("dd= %s", show(dd, S_DEBUG, R_SHOW_FLAGS)); // TODO have a special show_trace() function for this type of call
 	DEBUG_PRINT(fmt("push_result %s", show(dd, S_DEBUG, R_SHOW_FLAGS)));
 
 	assert(! dynamic_cast <File_Executor *> (this));
@@ -826,6 +826,7 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 	for (auto &i: parents) {
 		Flags flags= i.second->flags & (F_RESULT_NOTIFY | F_RESULT_COPY);
 		if (flags) {
+			TRACE("notifying");
 			i.first->notify_result(dd, this, flags, i.second);
 		}
 	}
@@ -929,10 +930,13 @@ Proceed Executor::connect(
 	children.insert(child);
 	if (dep_child->flags & F_RESULT_NOTIFY) {
 		// TODO write it just once, and compute the index to result2.
+		TRACE("notifying parent of child results");
 		if (! (dep_child->flags & F_TRIVIAL)) {
+			TRACE("notifying parent of child results: from result2[0]");
 			for (const auto &dependency: child->result2[0])
 				this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
 		} else {
+			TRACE("notifying parent of child results: from result2[1]");
 			for (const auto &dependency: child->result2[1])
 				this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
 		}

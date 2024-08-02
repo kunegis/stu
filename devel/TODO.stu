@@ -6,6 +6,10 @@
 #   why.
 # ** make bin/stu.debug && sh/rm_tmps && STU_TRACE_EXECUTOR=stderr bin/stu.debug -f tests/long-concatenation-03c
 # *** Why is [[B]] -> -% D connected twice during phase A?
+# *** Why is [["B"]].push(-% D) executed twice?
+# *** Since [[B]]->[B] is connected twice, Executor::connect() calls notify_result twice.  This is an error.
+# **** Executor::connect() uses result2[0] because there is no trivial flag, but it should use result2[1] because the parent is in phase B.
+# ***** Change the condition that chooses the index of result2.
 
 # * long-concatenation-03 has exponential behavior.
 # * Other failing tests

@@ -559,7 +559,7 @@ if [ "$ret" != 0 ] ; then
 fi
 
 if [ -z "$1" ] ; then
-	ls -1dU tests/.[^.]* | grep -qEe . && {
+	ls -1UA tests | grep -q -E -e '^\.' && {
 		echo >&2 Disabled tests:
 		ls >&2 -1d tests/.[^.]*
 		ret=1

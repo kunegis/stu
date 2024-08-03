@@ -931,7 +931,7 @@ Proceed Executor::connect(
 	if (dep_child->flags & F_RESULT_NOTIFY) {
 		// TODO write it just once, and compute the index to result2.
 		TRACE("notifying parent of child results");
-		if (! (dep_child->flags & F_TRIVIAL)) {
+		if (! (dep_child->flags & F_PHASE_B)) {
 			TRACE("notifying parent of child results: from result2[0]");
 			for (const auto &dependency: child->result2[0])
 				this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);

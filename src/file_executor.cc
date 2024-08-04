@@ -34,8 +34,7 @@ void File_Executor::wait()
 	int status;
 	const pid_t pid= Job::wait(&status);
 
-	// TODO use intmax_t everywhere where pid is printed.
-	Debug::print(nullptr, frmt("waited for pid = %jd", (intmax_t) pid));
+	Debug::print(nullptr, frmt("waited for pid = %jd", (intmax_t)pid));
 
 	timestamp_last= Timestamp::now();
 
@@ -43,8 +42,7 @@ void File_Executor::wait()
 	bool r= executors_find(pid, index);
 	if (!r) {
 		should_not_happen();
-		print_warning(
-			Place(),
+		print_warning(Place(),
 			frmt("the function waitpid(2) returned the invalid process ID %jd",
 				(intmax_t)pid));
 		return;
@@ -964,7 +962,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 		TRACE("pid= %s", frmt("%jd", (intmax_t)pid));
 		assert(pid != 0 && pid != 1);
-		DEBUG_PRINT(frmt("execute: pid = %ld", (long) pid));
+		DEBUG_PRINT(frmt("execute: pid = %jd", (intmax_t) pid));
 
 		if (pid < 0) {
 			/* Starting the job failed */
@@ -997,7 +995,7 @@ void File_Executor::print_as_job() const
 {
 	pid_t pid= job.get_pid();
 	string text_target= show(hash_deps.front(), S_NORMAL);
-	printf("%9ld %s\n", (long) pid, text_target.c_str());
+	printf("%9jd %s\n", (intmax_t) pid, text_target.c_str());
 }
 
 void File_Executor::write_content(const char *filename,

@@ -88,7 +88,7 @@ string show(const Parts &parts, Style style)
 		if (parts[i].properties == PROP_SPACE) {
 			parts[i++].show(ret);
 			continue;
-		} 
+		}
 		bool has_marker= false;
 		size_t j;
 		for (j= i; j < parts.size() && parts[j].properties != PROP_SPACE; ++j)
@@ -109,7 +109,7 @@ string show(const Parts &parts, Style style)
 				if (! parts[i].is_quotable()) {
 					parts[i++].show(ret);
 					continue;
-				} 
+				}
 				size_t l;
 				Quote_Safeness quotable= QS_MAX;
 				if (style == S_ALWAYS_QUOTE)

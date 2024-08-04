@@ -262,7 +262,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 {
 	TRACE_FUNCTION(show_trace(*this));
 	TRACE("dep= %s", show_trace(dep));
-	
+
 	/*
 	 * Non-cached executors
 	 */
@@ -631,7 +631,7 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 			buffer_B.push(d);
 		}
 	}
-	
+
 	/* Propagate timestamp */
 	/* Don't propagate the timestamp of the dynamic dependency itself */
 	if (! (dep_child->flags & F_PERSISTENT) &&

@@ -30,7 +30,7 @@ public:
 		const string s;
 		Object(string _s= ""): s(_s) { }
 	};
-	
+
 	string trace_class;
 	FILE *file;
 	static std::map <string, FILE *> files;
@@ -63,7 +63,6 @@ private:
 	static string class_from_filename(const char *filename);
 };
 
-// TODO have optional parameter(s) to pass arguments of the function
 #define TRACE_FUNCTION(a)  Trace trace_object(__func__, __FILE__, __LINE__, Trace::Object(a))
 
 #define TRACE(...) Trace::trace(__FILE__, __LINE__, __VA_ARGS__)

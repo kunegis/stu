@@ -160,7 +160,7 @@ protected:
 	 * executors that have multiple targets.  This is not used for file dependencies,
 	 * as a file dependency's result can be each of its files, depending on the parent
 	 * -- for file dependencies, parents are notified directly, bypassing
-	 * push_result(). 
+	 * push_result().
 	 * The index is the trivial bit, i.e. result[1] are results only as a trivial
 	 * target, and result[0]+result[1] are the results for non-trivial targets.
 	 */
@@ -282,7 +282,7 @@ protected:
 	static int trivial_index(shared_ptr <const Dep> d) {
 		return d->flags & F_TRIVIAL ? 1 : 0;
 	}
-	
+
 private:
 	Buffer buffer_A;
 	/* Dependencies that have not yet begun to be built.  Initialized with all

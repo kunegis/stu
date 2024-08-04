@@ -49,7 +49,7 @@ shared_ptr <const T> to(shared_ptr <U> d)
 }
 
 class Dep
-/* 
+/*
  * The abstract base class for all dependencies.
  *
  * The flags only represent immediate flags.  Compound dependencies for instance may
@@ -69,7 +69,7 @@ class Dep
  *
  * The constructors of Dep and derived classes do not set the TOP and INDEX fields.  These
  * are set manually when needed.
- */ 
+ */
 {
 public:
 	Flags flags;

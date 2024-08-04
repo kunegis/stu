@@ -31,7 +31,6 @@ clean || exit 2
 cat list | while IFS= read -r line ; do
 	: $(( line_number += 1 ))
 	printf '%s\n' "$line" | grep -q -E -e '^[[:space:]]*($|#)' && continue
-##	: $(( count_total += 1 ))
 	for a_exists in yes no ; do
 		for x in before after absent ; do
 			stucode=$line

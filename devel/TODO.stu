@@ -419,7 +419,7 @@ A: -e B
 A: @x { touch A ; }  @x: -t C;
 A: @x { touch A ; }  @x: [-t B]; B={C}
 A: @x { touch A ; }  @x: -t [B]; B={C}
-A: @x { touch A ; }  @x: [B]; B = {-t C} 
+A: @x { touch A ; }  @x: [B]; B = {-t C}
 
 #
 # Combining -n/-t and -o
@@ -434,4 +434,9 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # Maybe:  merge Style and Rendering into a single bitmask.
+#
+
+#
+# TRACE_FUNCTION: have optional parameter(s) to pass arguments of the function, instead of
+# outputting them on a separate line.
 #

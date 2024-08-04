@@ -5,19 +5,6 @@ A:  [[[list.0]]] {
 	exit 0
 }
 
-## >B: 
-## {
-## 	N=3
-## 	for i in $(seq 1 $N) ; do
-## 		printf '%s' '['
-## 	done
-## 	printf list.0
-## 	for i in $(seq 1 $N) ; do
-## 		printf '%s' ']'
-## 	done
-## 	echo
-## }
-
 >list.$n:  
 {
 	N=3
@@ -27,5 +14,3 @@ A:  [[[list.0]]] {
 		echo list."$((n + 1))"
 	fi
 }
-
-## N = {3}

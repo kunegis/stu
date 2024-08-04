@@ -335,7 +335,7 @@ pid_t Job::wait(int *status)
 {
  begin:
 	/* First, try wait() without blocking.  WUNTRACED is used to also get notified
-	 * when a job is suspended (e.g. with Ctrl-Z). */ 
+	 * when a job is suspended (e.g. with Ctrl-Z). */
 	pid_t pid= waitpid(-1, status, WNOHANG | (option_i ? WUNTRACED : 0));
 	if (pid < 0) {
 		/* Should not happen as there is always something running when
@@ -360,7 +360,7 @@ pid_t Job::wait(int *status)
 	/* Any SIGCHLD sent after the last call to sigwait() will be ready for receiving,
 	 * even those SIGCHLD signals received between the last call to waitpid() and the
 	 * following call to sigwait().  This excludes a deadlock which would be possible
-	 * if we would only use sigwait(). */ 
+	 * if we would only use sigwait(). */
 
 	int sig;
 	int r;

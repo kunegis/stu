@@ -47,7 +47,7 @@ void File_Executor::wait()
 				(intmax_t)pid));
 		return;
 	}
-	
+
 	File_Executor *executor= executors_by_pid_value[index];
 	executor->waited(pid, index, status);
 	++ options_jobs;

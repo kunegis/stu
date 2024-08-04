@@ -86,14 +86,14 @@ private:
 	 * indexes are uninitialized.  Used for checking whether a file was rebuild to
 	 * decide whether to remove it after a command failed or was interrupted.  This is
 	 * UNDEFINED when the file did not exist, or no target is a file.  Allocated with
-	 * malloc().  Length equals that of TARGETS. */ 
+	 * malloc().  Length equals that of TARGETS. */
 
 	char **filenames;
 	/* The actual filename for every file target.  Null for transients.  Both the
 	 * array and each filename is allocated with malloc().  If used, it has the same
 	 * length as TARGETS.  Only set when we are actually starting the jobs.  Cannot be
 	 * a C++ container because we access it from async-signal safe functions.  Used to
-	 * delete partially-built files. */ 
+	 * delete partially-built files. */
 
 	shared_ptr <const Rule> rule;
 	/* The instantiated file rule.  Null when there is no rule for this file.

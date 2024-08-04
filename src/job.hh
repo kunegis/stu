@@ -103,7 +103,7 @@ public:
 		~Signal_Blocker();
 #ifndef NDEBUG
 		static bool is_blocked() { return blocked; }
-#endif 
+#endif
 	private:
 #ifndef NDEBUG
 		static bool blocked;

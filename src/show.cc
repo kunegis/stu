@@ -84,50 +84,56 @@ string show(const Parts &parts, Style style)
 	if (! nocolor)
 		ret += Color::highlight_on[channel];
 
-	// TODO make this less indented
 	for (size_t i= 0; i < parts.size();) {
 		if (parts[i].properties == PROP_SPACE) {
 			parts[i++].show(ret);
-		} else {
-			bool has_marker= false;
-			size_t j;
-			for (j= i; j < parts.size() && parts[j].properties != PROP_SPACE; ++j)
-				if (parts[j].properties != PROP_TEXT)
-					has_marker= true;
-			while (i < j) {
-				if (parts[i].properties == PROP_OPERATOR) {
+			continue;
+		} 
+		bool has_marker= false;
+		size_t j;
+		for (j= i; j < parts.size() && parts[j].properties != PROP_SPACE; ++j)
+			if (parts[j].properties != PROP_TEXT)
+				has_marker= true;
+		while (i < j) {
+			if (parts[i].properties == PROP_OPERATOR) {
+				parts[i++].show(ret);
+				continue;
+			}
+			bool empty= true;
+			size_t k;
+			for (k= i; k < j && parts[k].properties != PROP_OPERATOR; ++k) {
+				if (! parts[k].text.empty())
+					empty= false;
+			}
+			while (i < k) {
+				if (! parts[i].is_quotable()) {
 					parts[i++].show(ret);
-				} else {
-					bool empty= true;
-					size_t k;
-					for (k= i; k < j && parts[k].properties != PROP_OPERATOR; ++k) {
-						if (! parts[k].text.empty())
-							empty= false;
-					}
-					while (i < k) {
-						if (! parts[i].is_quotable()) {
-							parts[i++].show(ret);
-						} else {
-							size_t l;
-							Quote_Safeness quotable= QS_MAX;
-							if (style == S_ALWAYS_QUOTE)
-								quotable= QS_ALWAYS_QUOTE;
-							for (l= i; l < k && parts[l].is_quotable(); ++l) {
-								if (quotable > QS_MIN)
-									quotable= std::min(quotable, parts[l].need_quotes());
-							}
-							bool quotes= empty
-								|| quotable == QS_ALWAYS_QUOTE
-								|| style & S_QUOTE_SOURCE && quotable <= QS_QUOTE_IN_GLOB_PATTERN
-								|| !(style & S_QUOTE_SOURCE) && nocolor && !has_marker && !(style & S_QUOTE_MINIMUM)
-								|| !(style & S_QUOTE_SOURCE) && nocolor && has_marker && quotable <= QS_QUOTE_IN_STU_CODE && !(style & S_QUOTE_MINIMUM);
-							if (quotes)  ret += '"';
-							for (; i < l; ++i)
-								parts[i].show(ret, quotes);
-							if (quotes)  ret += '"';
-						}
-					}
+					continue;
+				} 
+				size_t l;
+				Quote_Safeness quotable= QS_MAX;
+				if (style == S_ALWAYS_QUOTE)
+					quotable= QS_ALWAYS_QUOTE;
+				for (l= i; l < k && parts[l].is_quotable(); ++l) {
+					if (quotable > QS_MIN)
+						quotable= std::min(quotable,
+							parts[l].need_quotes());
 				}
+				bool quotes= empty
+					|| quotable == QS_ALWAYS_QUOTE
+					|| style & S_QUOTE_SOURCE
+					&& quotable <= QS_QUOTE_IN_GLOB_PATTERN
+					|| !(style & S_QUOTE_SOURCE)
+					&& nocolor && !has_marker
+					&& !(style & S_QUOTE_MINIMUM)
+					|| !(style & S_QUOTE_SOURCE)
+					&& nocolor && has_marker
+					&& quotable <= QS_QUOTE_IN_STU_CODE
+					&& !(style & S_QUOTE_MINIMUM);
+				if (quotes)  ret += '"';
+				for (; i < l; ++i)
+					parts[i].show(ret, quotes);
+				if (quotes)  ret += '"';
 			}
 		}
 	}

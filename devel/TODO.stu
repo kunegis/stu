@@ -2,6 +2,8 @@
 # Flag -C.
 #
 
+# long-trivial(11) sometimes fails, sometimes not.
+
 # Cleanup
 
 #
@@ -425,3 +427,7 @@ A: @x { touch A ; }  @x: [B]; B = {-t C}
 
 A: [ -n -o B ] { touch A ; }  B={C}
 A: [ -t -o B ] { touch A ; }  B={C}
+
+#
+# TODO put all the option parsing stuff from main() into its own function in options.hh.
+#

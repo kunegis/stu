@@ -100,7 +100,7 @@ enum
 	F_RESULT        = F_RESULT_NOTIFY | F_RESULT_COPY,
 };
 
-extern const char *const flags_chars; // TODO make it an array (rather than a pointer)
+extern const char flags_chars[]; // TODO make it an array (rather than a pointer)
 extern const char *flags_phrases[C_PLACED];
 
 unsigned flag_get_index(char c);

@@ -175,7 +175,7 @@ void Dynamic_Executor::notify_result(
 			/* Add -% flag */
 			j_new->flags |= F_RESULT_COPY;
 			/* Add flags from self */
-			j_new->flags |= dep->flags & (F_TARGET_WORD & ~F_TARGET_DYNAMIC);
+			j_new->flags |= dep->flags & (F_WORD & ~F_TARGET_DYNAMIC);
 			for (unsigned i= 0; i < C_PLACED; ++i) {
 				if (j_new->get_place_flag(i).empty() &&
 				    ! dep->get_place_flag(i).empty())

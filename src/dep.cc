@@ -196,7 +196,7 @@ void Dep::check() const
 Hash_Dep Plain_Dep::get_target() const
 {
 	Hash_Dep ret= place_target.unparametrized();
-	ret.get_front_word_nondynamic() |= (word_t)(flags & F_TARGET_WORD);
+	ret.get_front_word_nondynamic() |= (word_t)(flags & F_WORD);
 	return ret;
 }
 
@@ -221,14 +221,14 @@ Hash_Dep Dynamic_Dep::get_target() const
 	while (dynamic_cast <const Dynamic_Dep *> (d)) {
 		Flags f= F_TARGET_DYNAMIC;
 		assert(d->flags & F_TARGET_DYNAMIC);
-		f |= d->flags & F_TARGET_WORD;
+		f |= d->flags & F_WORD;
 		text += Hash_Dep::string_from_word(f);
 		d= dynamic_cast <const Dynamic_Dep *> (d)->dep.get();
 	}
 	assert(dynamic_cast <const Plain_Dep *> (d));
 	const Plain_Dep *sin= dynamic_cast <const Plain_Dep *> (d);
 	assert(!(sin->flags & F_TARGET_DYNAMIC));
-	Flags f= sin->flags & F_TARGET_WORD;
+	Flags f= sin->flags & F_WORD;
 	text += Hash_Dep::string_from_word(f);
 	text += sin->place_target.unparametrized().get_name_nondynamic();
 

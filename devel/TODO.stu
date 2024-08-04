@@ -2,7 +2,7 @@
 # Flag -C.
 #
 
-# long-trivial(11) sometimes fails, sometimes not.
+# long-trivial(10) sometimes fails, sometimes not.
 
 # Cleanup
 

@@ -82,7 +82,7 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 	 * just the one given in the dependency.  Also, add the flags.  */
 	for (Hash_Dep t: hash_deps) {
 		t.get_front_word_nondynamic() |= (word_t)
-			(dep_link->flags & (F_TARGET_WORD & ~F_TARGET_DYNAMIC));
+			(dep_link->flags & (F_WORD & ~F_TARGET_DYNAMIC));
 		executors_by_hash_dep[t]= this;
 	}
 

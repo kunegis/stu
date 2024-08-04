@@ -53,7 +53,7 @@ cat list | while IFS= read -r line ; do
 			printf '%s\n' "$stucode" >list.stu || exit 2
 			../../bin/stu.test -f list.stu >list.out 2>list.err
 			exitstatus=$?
-			echo "	exitstatus=$exitstatus"
+			printf "\texitstatus=$exitstatus\n"
 			stat=0
 			[ $exitstatus = 0 ] ||
 				err "Expected exit status 0, not $exitstatus"
@@ -67,7 +67,7 @@ cat list | while IFS= read -r line ; do
 					err "C must contain 'CORRECT'"
 			fi
 			echo "$stat" >>"$error_file"
-			echo "	stat=$stat"
+			printf "\tstat=$stat\n"
 		done
 	done
 done

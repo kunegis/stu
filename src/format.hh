@@ -13,7 +13,7 @@ string frmt(const char *format, ...)
 /* Perform printf-like formatting.  Take the same arguments as printf() and
  * return a string.  Does *not* support passing string() objects. */
 #ifdef __GNUC__
-	/* This declaration should be replaced by a sh/conf check */
+	/* This declaration should be replaced by a sh/configure check */
 	__attribute__ ((format(printf, 1, 2)))
 #endif
 ;

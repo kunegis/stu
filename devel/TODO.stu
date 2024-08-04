@@ -2,9 +2,8 @@
 # Flag -C.
 #
 
-# long-trivial(7,10) sometimes fails, sometimes not.
-
-# Cleanup
+# long-trivial(7,9,10) sometimes fails, sometimes not.  The most frequent was 10.  Write a
+# test executing it many times.
 
 #
 # Test installing the .deb from Github/releases

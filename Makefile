@@ -11,8 +11,8 @@ test: \
     log/test_clean_last
 .PHONY: all clean install test cov prof sani
 
-conf/CXX: sh/conf
-	sh/conf
+conf/CXX: sh/configure
+	sh/configure
 src/version.hh: VERSION sh/mkversion
 	sh/mkversion >src/version.hh
 
@@ -76,7 +76,7 @@ log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/test tests tests/*/*
 install:  sh/install bin/stu man/stu.1
 	sh/install
 clean:
-	rm -Rf bin conf log cov
+	rm -Rf bin/ conf/ log/ cov/
 
 MANPAGE:  man/stu.1
 	MANWIDTH=80 man man/stu.1 >MANPAGE

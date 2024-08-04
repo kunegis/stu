@@ -22,7 +22,7 @@
 
 #define should_not_happen()						\
 	do {								\
-		fprintf(stderr, "%s:%d: should not happen\n",	        \
+		fprintf(stderr, "%s:%d: should not happen\n",		\
 			__FILE__, __LINE__);				\
 	} while (0)
 

@@ -55,7 +55,7 @@ devel/DEVEL.
 
 ==== COMPILATION OPTIONS ====
 
-These are detected automatically by sh/conf, but you may change them
+These are detected automatically by sh/configure, but you may change them
 by hand if necessary.
 
 * USE_MTIM (default: enabled if CLOCK_REALTIME_COARSE is present):  Use struct

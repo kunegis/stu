@@ -36,7 +36,7 @@
 # 'old' and 'new' are to be understood as 'than A'.  '-' means the file
 # is not present.
 #
-# Using three types ways of declaring a trivial dependency:
+# Using three ways of declaring a trivial dependency:
 #	(a.stu) Direct
 #	(b.stu) Via a transient
 #	(c.stu) Via a dynamic dependency
@@ -45,6 +45,7 @@
 #	'A'     Overall target
 #	'B'     Trivial dependency of 'A'
 #	'D'     Non-trivial dependency of 'A'
+#	'I','J' Dependencies of 'B' and 'D'
 #	'X','Y' Auxiliary files (optional)
 #
 

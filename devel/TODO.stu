@@ -2,20 +2,10 @@
 # Flag -C.
 #
 
-# * long-concatenation-03b does things multiple times.  Make a diagram and find out
-#   why.
-# ** make bin/stu.debug && sh/rm_tmps && STU_TRACE_EXECUTOR=stderr bin/stu.debug -f tests/long-concatenation-03c
-# *** Why is [[B]] -> -% D connected twice during phase A?
-# *** Why is [["B"]].push(-% D) executed twice?
-# *** Since [[B]]->[B] is connected twice, Executor::connect() calls notify_result twice.  This is an error.
-# **** Executor::connect() uses result2[0] because there is no trivial flag, but it should use result2[1] because the parent is in phase B.
-# ***** Change the condition that chooses the index of result2.
+# * Fix other failing tests
 
-# * long-concatenation-03 has exponential behavior.
-# * Other failing tests
 A: [ -n -o B ] { touch A ; }  B={C}
 A: [ -t -o B ] { touch A ; }  B={C}
-
 
 #
 # Test installing the .deb from Github/releases
@@ -421,3 +411,13 @@ A: -e B
 #
 # Rename the "2-statistics" test to "long-statistics" or similar (it takes long).
 #
+
+#
+# Tests for long-trivial that fail because the -t flag is not passed through transient
+# targets, but should.
+#
+
+A: @x { touch A ; }  @x: -t C;
+A: @x { touch A ; }  @x: [-t B]; B={C}
+A: @x { touch A ; }  @x: -t [B]; B={C}
+A: @x { touch A ; }  @x: [B]; B = {-t C} 

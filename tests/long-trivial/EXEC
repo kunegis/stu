@@ -30,6 +30,8 @@ clean || exit 2
 
 cat list | while IFS= read -r line ; do
 	: $(( line_number += 1 ))
+	printf '%s\n' "$line" | grep -q -E -e '^[[:space:]]*($|#)' && continue
+##	: $(( count_total += 1 ))
 	for a_exists in yes no ; do
 		for x in before after absent ; do
 			stucode=$line
@@ -74,7 +76,7 @@ done
 ../../sh/rm_tmps
 count_total=$(echo $(wc -l <"$error_file"))
 count_error=$(echo $(grep -F -e 0 "$error_file" | wc -l))
-echo >&2 "$0: Success rate = $count_error/$count_total"
+echo "$0: Success rate = $count_error/$count_total"
 
 if grep -q -F -e 1 "$error_file" ; then
 	exit 1

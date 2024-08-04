@@ -2,10 +2,7 @@
 # Flag -C.
 #
 
-# * Fix other failing tests
-
-A: [ -n -o B ] { touch A ; }  B={C}
-A: [ -t -o B ] { touch A ; }  B={C}
+# Cleanup
 
 #
 # Test installing the .deb from Github/releases
@@ -421,3 +418,10 @@ A: @x { touch A ; }  @x: -t C;
 A: @x { touch A ; }  @x: [-t B]; B={C}
 A: @x { touch A ; }  @x: -t [B]; B={C}
 A: @x { touch A ; }  @x: [B]; B = {-t C} 
+
+#
+# Combining -n/-t and -o
+#
+
+A: [ -n -o B ] { touch A ; }  B={C}
+A: [ -t -o B ] { touch A ; }  B={C}

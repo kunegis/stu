@@ -595,9 +595,7 @@ void Executor::raise(int e)
 		throw error;
 }
 
-void Executor::disconnect(
-	Executor *const child,
-	shared_ptr <const Dep> dep_child)
+void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_child)
 {
 	TRACE_FUNCTION(show(*this, S_DEBUG, R_SHOW_FLAGS));
 	TRACE("dep_child= %s", show(dep_child, S_DEBUG, R_SHOW_FLAGS));
@@ -608,19 +606,11 @@ void Executor::disconnect(
 	assert(option_k || child->error == 0);
 	dep_child->check();
 
-	// TODO the following two if's are nearly identical; merge them
-	if (dep_child->flags & F_RESULT_NOTIFY && dynamic_cast <File_Executor *> (child)) {
+	if (dep_child->flags & F_RESULT && dynamic_cast <File_Executor *> (child)) {
 		shared_ptr <Dep> d= Dep::clone(dep_child);
-		d->flags &= ~F_RESULT_NOTIFY;
-		TRACE("notifying F_RESULT_NOTIFY");
-		notify_result(d, child, F_RESULT_NOTIFY, dep_child);
-	}
-
-	if (dep_child->flags & F_RESULT_COPY && dynamic_cast <File_Executor *> (child)) {
-		shared_ptr <Dep> d= Dep::clone(dep_child);
-		d->flags &= ~F_RESULT_COPY;
-		TRACE("notifying F_RESULT_COPY");
-		notify_result(d, child, F_RESULT_COPY, dep_child);
+		d->flags &= ~F_RESULT;
+		TRACE("notifying F_RESULT");
+		notify_result(d, child, dep_child->flags & F_RESULT, dep_child);
 	}
 
 	/* Child is done for phase A, but not for phase B */

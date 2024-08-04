@@ -140,23 +140,23 @@ private:
 
 	string current_mbchar() const;
 
-	static void parse_tokens_file(std::vector <shared_ptr <Token> > &tokens,
-				      Context context,
-				      Place &place_end,
-				      string filename,
-				      std::vector <Backtrace> &backtraces,
-				      std::vector <string> &filenames,
-				      std::set <string> &includes,
-				      const Place &place_diagnostic,
-				      int fd= -1,
-				      bool allow_enoent= false);
-	/* TRACES can include traces that lead to this inclusion.  TRACES must
-	 * not be modified when returning, but is declared as non-const
-	 * because it is used as a stack.
+	static void parse_tokens_file(
+		std::vector <shared_ptr <Token> > &tokens,
+		Context context,
+		Place &place_end,
+		string filename,
+		std::vector <Backtrace> &backtraces,
+		std::vector <string> &filenames,
+		std::set <string> &includes,
+		const Place &place_diagnostic,
+		int fd= -1,
+		bool allow_enoent= false);
+	/* BACKTRACES can include traces that lead to this inclusion.  BACKTRACES must not
+	 * be modified when returning, but is declared as non-const because it is used as
+	 * a stack.
 	 *
-	 * FILENAMES is the list of filenames parsed up to here. I.e., it has
-	 * length zero for the main read file.  FILENAME should *not* be
-	 * included in FILENAMES.  */
+	 * FILENAMES is the list of filenames parsed up to here. I.e., it has length zero
+	 * for the main read file.  FILENAME should *not* be included in FILENAMES. */
 
 	static bool is_name_char(char);
 	static bool is_operator_char(char);

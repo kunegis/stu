@@ -5,6 +5,7 @@
 #include "color.hh"
 #include "format.hh"
 #include "trace.hh"
+#include "trace_dep.hh"
 
 void Dep::normalize(shared_ptr <const Dep> dep,
 		    std::vector <shared_ptr <const Dep> > &deps,
@@ -49,7 +50,7 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 shared_ptr <const Dep> Dep::untrivialize(shared_ptr <const Dep> dep)
 {
 	TRACE_FUNCTION();
-	TRACE("dep= %s", show(dep, S_DEBUG, R_SHOW_FLAGS));
+	TRACE("dep= %s", show_trace(dep));
 	assert(dep);
 	assert(dep->is_normalized());
 	if (to <Plain_Dep> (dep)) {
@@ -61,7 +62,7 @@ shared_ptr <const Dep> Dep::untrivialize(shared_ptr <const Dep> dep)
 		shared_ptr <Dep> ret= Dep::clone(dep);
 		ret->flags &= ~F_TRIVIAL;
 		ret->places[I_TRIVIAL]= Place();
-		TRACE("untrivialized= %s", show(ret, S_DEBUG, R_SHOW_FLAGS));
+		TRACE("untrivialized= %s", show_trace(ret));
 		return ret;
 	} else if (to <Dynamic_Dep> (dep)) {
 		TRACE("%s", "dynamic");
@@ -71,13 +72,13 @@ shared_ptr <const Dep> Dep::untrivialize(shared_ptr <const Dep> dep)
 			shared_ptr <Dynamic_Dep> ret= std::make_shared <Dynamic_Dep> (dynamic_dep, ret_dep);
 			ret->flags &= ~F_TRIVIAL;
 			ret->places[I_TRIVIAL]= Place();
-			TRACE("untrivialized ret= %s", show(ret, S_DEBUG, R_SHOW_FLAGS));
+			TRACE("untrivialized ret= %s", show_trace(ret));
 			return ret;
 		} else if (dep->flags & F_TRIVIAL) {
 			shared_ptr <Dep> ret= Dep::clone(dep);
 			ret->flags &= ~F_TRIVIAL;
 			ret->places[I_TRIVIAL]= Place();
-			TRACE("only dyn ret= %s", show(ret, S_DEBUG, R_SHOW_FLAGS));
+			TRACE("only dyn ret= %s", show_trace(ret));
 			return ret;
 		} else {
 			TRACE("%s", "not trivial");
@@ -105,7 +106,7 @@ shared_ptr <const Dep> Dep::untrivialize(shared_ptr <const Dep> dep)
 		}
 		ret->flags &= ~F_TRIVIAL;
 		ret->places[I_TRIVIAL]= Place();
-		TRACE("ret= %s", show(ret, S_DEBUG, R_SHOW_FLAGS));
+		TRACE("ret= %s", show_trace(ret));
 		return ret;
 	} else {
 		unreachable();

@@ -1,6 +1,7 @@
 #include "concat_executor.hh"
 
 #include "trace.hh"
+#include "trace_dep.hh"
 
 Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 				 Executor *parent,
@@ -58,7 +59,7 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 
 Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 {
-	TRACE_FUNCTION(show(dep_link, S_DEBUG, R_SHOW_FLAGS));
+	TRACE_FUNCTION(show_trace(dep_link));
 	Debug debug(this);
  again:
 	TRACE("stage= %s", frmt("%u", stage));

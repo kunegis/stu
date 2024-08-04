@@ -61,7 +61,7 @@ Dynamic_Executor::Dynamic_Executor(
 
 Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 {
-	TRACE_FUNCTION(show(dep_link, S_DEBUG, R_SHOW_FLAGS));
+	TRACE_FUNCTION(show_trace(dep_link));
 	TRACE("done= %s; bits= %s", done.show(), show_bits(bits));
 	Debug debug(this);
 	bool need_build;
@@ -159,11 +159,9 @@ void Dynamic_Executor::notify_result(
 	shared_ptr <const Dep> dep_result, Executor *source,
 	Flags flags, shared_ptr <const Dep> dep_source)
 {
-	TRACE_FUNCTION(show(dep, S_DEBUG, R_SHOW_FLAGS));
+	TRACE_FUNCTION(show_trace(dep));
 	TRACE("d= %s; flags= %s; dep_source= %s",
-		show(dep_result, S_DEBUG, R_SHOW_FLAGS),
-		show_flags(flags),
-		show(dep_source, S_DEBUG, R_SHOW_FLAGS));
+		show_trace(dep_result), show_flags(flags), show_trace(dep_source));
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)));
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))
 	       != (F_RESULT_NOTIFY | F_RESULT_COPY));

@@ -2,16 +2,17 @@
 
 #include <sys/mman.h>
 
-void Tokenizer::parse_tokens_file(std::vector <shared_ptr <Token> > &tokens,
-				  Context context,
-				  Place &place_end,
-				  string filename,
-				  std::vector <Backtrace> &backtraces,
-				  std::vector <string> &filenames,
-				  std::set <string> &includes,
-				  const Place &place_diagnostic,
-				  int fd,
-				  bool allow_enoent)
+void Tokenizer::parse_tokens_file(
+	std::vector <shared_ptr <Token> > &tokens,
+	Context context,
+	Place &place_end,
+	string filename,
+	std::vector <Backtrace> &backtraces,
+	std::vector <string> &filenames,
+	std::set <string> &includes,
+	const Place &place_diagnostic,
+	int fd,
+	bool allow_enoent)
 {
 	const char *in= nullptr;
 	size_t in_size;

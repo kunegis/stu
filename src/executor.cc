@@ -11,6 +11,9 @@
 #include "parser.hh"
 #include "root_executor.hh"
 #include "tokenizer.hh"
+#include "trace.hh"
+#include "trace_dep.hh"
+#include "trace_executor.hh"
 #include "transient_executor.hh"
 
 Rule_Set Executor::rule_set;
@@ -257,8 +260,8 @@ void Executor::cycle_print(const std::vector <Executor *> &path,
 
 Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 {
-	TRACE_FUNCTION(show(*this, S_DEBUG, R_SHOW_FLAGS));
-	TRACE("dep= %s", show(dep, S_DEBUG, R_SHOW_FLAGS));
+	TRACE_FUNCTION(show_trace(*this));
+	TRACE("dep= %s", show_trace(dep));
 	
 	/*
 	 * Non-cached executors
@@ -490,7 +493,7 @@ void Executor::operator<<(string text) const
 
 Proceed Executor::execute_children()
 {
-	TRACE_FUNCTION(show(*this, S_DEBUG, R_SHOW_FLAGS));
+	TRACE_FUNCTION(show_trace(*this));
 
 	/* Since disconnect() may change executor->children, we must first
 	 * copy it over locally, and then iterate through it */
@@ -554,8 +557,8 @@ Proceed Executor::execute_children()
 
 void Executor::push(shared_ptr <const Dep> dep)
 {
-	TRACE_FUNCTION(show(*this, S_DEBUG, R_SHOW_FLAGS));
-	TRACE("dep= %s", show(dep, S_DEBUG, R_SHOW_FLAGS));
+	TRACE_FUNCTION(show_trace(*this));
+	TRACE("dep= %s", show_trace(dep));
 	DEBUG_PRINT(fmt("push %s", show(dep, S_DEBUG, R_SHOW_FLAGS)));
 	dep->check();
 
@@ -569,12 +572,12 @@ void Executor::push(shared_ptr <const Dep> dep)
 		raise(e);
 	}
 	for (const auto &d: deps) {
-		TRACE("d= %s", show(d, S_DEBUG, R_SHOW_FLAGS));
+		TRACE("d= %s", show_trace(d));
 		d->check();
 		assert(d->is_normalized());
 		shared_ptr <const Dep> untrivialized= Dep::untrivialize(d);
 		TRACE("untrivialized= %s", untrivialized ?
-			show(untrivialized, S_DEBUG, R_SHOW_FLAGS) : "<null>");
+			show_trace(untrivialized) : "<null>");
 		if (untrivialized) {
 			shared_ptr <Dep> d2= Dep::clone(untrivialized);
 			d2->flags |= F_PHASE_B;
@@ -597,8 +600,8 @@ void Executor::raise(int e)
 
 void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_child)
 {
-	TRACE_FUNCTION(show(*this, S_DEBUG, R_SHOW_FLAGS));
-	TRACE("dep_child= %s", show(dep_child, S_DEBUG, R_SHOW_FLAGS));
+	TRACE_FUNCTION(show_trace(*this));
+	TRACE("dep_child= %s", show_trace(dep_child));
 	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
 	assert(child);
 	assert(child != this);
@@ -622,7 +625,7 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 		if (! child_finished_for_B) {
 			shared_ptr <Dep> d= Dep::clone(dep_child);
 			d->flags |= F_PHASE_B;
-			TRACE("d= %s", show(d, S_DEBUG, R_SHOW_FLAGS));
+			TRACE("d= %s", show_trace(d));
 			DEBUG_PRINT(fmt("disconnect A_to_B %s",
 					show(d, S_DEBUG, R_SHOW_FLAGS)));
 			buffer_B.push(d);
@@ -677,7 +680,7 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 
 Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
-	TRACE_FUNCTION(show(*this, S_DEBUG, R_SHOW_FLAGS));
+	TRACE_FUNCTION(show_trace(*this));
 	DEBUG_PRINT("phase_A");
 	assert(options_jobs >= 0);
 	assert(dep_link);
@@ -722,7 +725,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 
 	while (! buffer_A.empty()) {
 		shared_ptr <const Dep> dep_child= buffer_A.pop();
-		TRACE("popped from buffer_A dep_child=%s", show(dep_child, S_DEBUG, R_SHOW_FLAGS));
+		TRACE("popped from buffer_A dep_child=%s", show_trace(dep_child));
 		Proceed proceed_2= connect(dep_link, dep_child);
 		proceed |= proceed_2;
 		if (options_jobs == 0) {
@@ -764,7 +767,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 {
-	TRACE_FUNCTION(show(*this, S_DEBUG, R_SHOW_FLAGS));
+	TRACE_FUNCTION(show_trace(*this));
 	DEBUG_PRINT("phase_B");
 	assert(buffer_A.empty());
 	Proceed proceed= 0;
@@ -781,7 +784,7 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 		}
 		if (! buffer_B.empty()) {
 			shared_ptr <const Dep> dep_child= buffer_B.pop();
-			TRACE("popped from buffer_B dep_child=%s", show(dep_child, S_DEBUG, R_SHOW_FLAGS));
+			TRACE("popped from buffer_B dep_child=%s", show_trace(dep_child));
 			Proceed proceed_2= connect(dep_link, dep_child);
 			proceed |= proceed_2;
 			assert(options_jobs >= 0);
@@ -802,7 +805,7 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 void Executor::push_result(shared_ptr <const Dep> dd)
 {
 	TRACE_FUNCTION();
-	TRACE("dd= %s", show(dd, S_DEBUG, R_SHOW_FLAGS)); // TODO have a special show_trace() function for this type of call
+	TRACE("dd= %s", show_trace(dd));
 	DEBUG_PRINT(fmt("push_result %s", show(dd, S_DEBUG, R_SHOW_FLAGS)));
 
 	assert(! dynamic_cast <File_Executor *> (this));
@@ -871,8 +874,8 @@ Proceed Executor::connect(
 	shared_ptr <const Dep> dep_this,
 	shared_ptr <const Dep> dep_child)
 {
-	TRACE_FUNCTION(show(dep_this, S_DEBUG, R_SHOW_FLAGS));
-	TRACE("dep_child= %s", show(dep_child, S_DEBUG, R_SHOW_FLAGS));
+	TRACE_FUNCTION(show_trace(dep_this));
+	TRACE("dep_child= %s", show_trace(dep_child));
 	DEBUG_PRINT(fmt("connect %s",  show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
 	assert(dep_child->is_normalized());
 	assert(! to <Root_Dep> (dep_child));

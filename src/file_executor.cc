@@ -605,7 +605,7 @@ void File_Executor::print_command() const
 
 Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 {
-	TRACE_FUNCTION(show(dep_link, S_DEBUG, R_SHOW_FLAGS));
+	TRACE_FUNCTION(show_trace(dep_link));
 	Debug debug(this);
 
 	std::map <string, string> mapping;

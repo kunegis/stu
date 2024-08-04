@@ -36,6 +36,8 @@ using std::shared_ptr;
 #include "token.cc"
 #include "tokenizer.cc"
 #include "trace.cc"
+#include "trace_dep.cc"
+#include "trace_executor.cc"
 #include "transient_executor.cc"
 
 int main(int argc, char **argv, char **envp)

@@ -813,7 +813,7 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 	dd->check();
 
 	/* Add to own */
-	result2[trivial_index(dd)].push_back(dd);
+	result[trivial_index(dd)].push_back(dd);
 
 	/* Notify parents */
 	for (auto &i: parents) {
@@ -922,17 +922,9 @@ Proceed Executor::connect(
 		return 0;
 	children.insert(child);
 	if (dep_child->flags & F_RESULT_NOTIFY) {
-		// TODO write it just once, and compute the index to result2.
 		TRACE("notifying parent of child results");
-		if (! (dep_child->flags & F_PHASE_B)) {
-			TRACE("notifying parent of child results: from result2[0]");
-			for (const auto &dependency: child->result2[0])
+		for (const auto &dependency: child->result[(dep_child->flags & F_PHASE_B) != 0])
 				this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
-		} else {
-			TRACE("notifying parent of child results: from result2[1]");
-			for (const auto &dependency: child->result2[1])
-				this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
-		}
 	}
 	Proceed proceed_child= child->execute(dep_child);
 	assert(proceed_child);

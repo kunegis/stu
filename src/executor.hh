@@ -154,8 +154,7 @@ protected:
 	 * rebuilt anyway.  Implementations also change this to consider the file itself,
 	 * if any.  This final timestamp is then carried over to the parent executors. */
 
-	std::vector <shared_ptr <const Dep> > result2[2];
-	// TODO remove "2" from name.
+	std::vector <shared_ptr <const Dep> > result[2];
 	/* The final list of dependencies represented by the target.  This does not
 	 * include any dynamic dependencies, i.e., all dependencies are flattened to
 	 * Plain_Dep's.  Not used for executors that have file targets, neither for

@@ -49,7 +49,6 @@ Dynamic_Executor::Dynamic_Executor(
 		error_additional |= ERROR_LOGICAL;
 		return;
 	}
-	// TODO can this be removed? (same assignment as above)
 	parents[parent]= dep;
 
 	/* Push the single initial dependency */

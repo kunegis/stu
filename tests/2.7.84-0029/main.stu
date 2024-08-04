@@ -1,8 +1,0 @@
-A: X  @x
-{
-	cp C A
-}
-
-@x: -t C;
-X={x}
-C={CORRECT}

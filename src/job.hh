@@ -125,8 +125,9 @@ private:
 	static void handler_productive(int sig, siginfo_t *, void *);
 
 	static void init_signals();
-	/* Set up all signals.   May be called multiple times, and will
-	 * do the setup only the first time.  */
+	/* May be called multiple times, and will do the setup only the first time. */
+
+	static void ask_continue(pid_t pid);
 
 	static size_t count_jobs_exec, count_jobs_success, count_jobs_fail;
 	/* The number of jobs run.  Each job is of exactly one type.

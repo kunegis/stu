@@ -330,15 +330,13 @@ pid_t Job::start_copy(string target,
 }
 
 pid_t Job::wait(int *status)
-/* The main loop of Stu.  We wait for the two productive signals SIGCHLD
- * and SIGUSR1.  When this function is called, there is always at least
- * one child process running.  */
+/* The main loop of Stu.  We wait for the two productive signals SIGCHLD and SIGUSR1.
+ * When this function is called, there is always at least one child process running. */
 {
  begin:
-	/* First, try wait() without blocking.  WUNTRACED is used to also get
-	 * notified when a job is suspended (e.g. with Ctrl-Z). */
-	pid_t pid= waitpid(-1, status,
-			   WNOHANG | (option_i ? WUNTRACED : 0));
+	/* First, try wait() without blocking.  WUNTRACED is used to also get notified
+	 * when a job is suspended (e.g. with Ctrl-Z). */ 
+	pid_t pid= waitpid(-1, status, WNOHANG | (option_i ? WUNTRACED : 0));
 	if (pid < 0) {
 		/* Should not happen as there is always something running when
 		 * this function is called.  However, this may be common enough
@@ -350,45 +348,19 @@ pid_t Job::wait(int *status)
 
 	if (pid > 0) {
 		if (WIFSTOPPED(*status)) {
-			// TODO put into its own function
-			/* The process was suspended. This can have
-			 * several reasons, including someone just using
-			 * kill -STOP on the process. */
+			/* The process was suspended. This can have several reasons,
+			 * including someone just using kill -STOP on the process. */
 			assert(option_i);
-
-			/* This is the simplest thing possible we can do
-			 * in interactive mode: put ourselves in the
-			 * foreground, ask the user to press ENTER, and
-			 * then put the job back into the foreground and
-			 * continue it.  In principle, we could do much
-			 * more: allow the user to enter commands,
-			 * having an own command language, etc. */
-			if (tcsetpgrp(tty, getpid()) < 0)
-				print_errno("tcsetpgrp");
-			fprintf(stderr,
-				PACKAGE ": job stopped.  "
-				"Press ENTER to continue, Ctrl-C to terminate Stu, Ctrl-Z to suspend Stu\n");
-			char *lineptr= nullptr;
-			size_t n= 0;
-			ssize_t r= getline(&lineptr, &n, stdin);
-			/* On error, printf error message and continue */
-			if (r < 0)
-				print_errno("getline");
-			fprintf(stderr, PACKAGE ": continuing\n");
-			if (tcsetpgrp(tty, pid) < 0)
-				print_errno("tcsetpgrp");
-			/* Continue job */
-			::kill(-pid, SIGCONT);
+			ask_continue(pid);
 			goto begin;
 		}
 		return pid;
 	}
 
-	/* Any SIGCHLD sent after the last call to sigwait() will be
-	 * ready for receiving, even those SIGCHLD signals received
-	 * between the last call to waitpid() and the following call to
-	 * sigwait().  This excludes a deadlock which would be
-	 * possible if we would only use sigwait(). */
+	/* Any SIGCHLD sent after the last call to sigwait() will be ready for receiving,
+	 * even those SIGCHLD signals received between the last call to waitpid() and the
+	 * following call to sigwait().  This excludes a deadlock which would be possible
+	 * if we would only use sigwait(). */ 
 
 	int sig;
 	int r;
@@ -748,4 +720,28 @@ void Job::init_tty()
 		assert(tty == -1);
 		return;
 	}
+}
+
+void Job::ask_continue(pid_t pid)
+{
+	/* This is the simplest thing possible we can do in interactive mode: put
+	 * ourselves in the foreground, ask the user to press ENTER, and then put the job
+	 * back into the foreground and continue it.  In principle, we could do much more:
+	 * allow the user to enter commands, having an own command language, etc. */
+	if (tcsetpgrp(tty, getpid()) < 0)
+		print_errno("tcsetpgrp");
+	fprintf(stderr,
+		PACKAGE ": job stopped.  "
+		"Press ENTER to continue, Ctrl-C to terminate Stu, Ctrl-Z to suspend Stu\n");
+	char *lineptr= nullptr;
+	size_t n= 0;
+	ssize_t r= getline(&lineptr, &n, stdin);
+	/* On error, printf error message and continue */
+	if (r < 0)
+		print_errno("getline");
+	fprintf(stderr, PACKAGE ": continuing\n");
+	if (tcsetpgrp(tty, pid) < 0)
+		print_errno("tcsetpgrp");
+	/* Continue job */
+	::kill(-pid, SIGCONT);
 }

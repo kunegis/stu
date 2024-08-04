@@ -32,8 +32,6 @@
 
 #include "color.hh"
 
-// TODO maybe:  merge Style and Rendering into a single bitmask
-
 typedef unsigned Style;
 constexpr Style S_CHANNEL=         (1 << CH_BITS) - 1;
 constexpr Style S_ALWAYS_QUOTE=    1 << (CH_BITS + 0);

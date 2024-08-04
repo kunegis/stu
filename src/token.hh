@@ -41,11 +41,7 @@ public:
 	/* Render only the start of the token if it is very long */
 };
 
-// TODO put into .cc file
-void render(shared_ptr <const Token> token, Parts &parts, Rendering rendering= 0)
-{
-	token->render(parts, rendering);
-}
+void render(shared_ptr <const Token> token, Parts &parts, Rendering rendering= 0);
 
 class Operator
 	: public Token

@@ -73,6 +73,11 @@ Command::get_lines() const
 	return *lines;
 }
 
+void render(shared_ptr <const Token> token, Parts &parts, Rendering rendering)
+{
+	token->render(parts, rendering);
+}
+
 void Operator::render(Parts &parts, Rendering) const
 {
 	parts.append_operator(string(1, op));

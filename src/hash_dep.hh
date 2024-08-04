@@ -55,8 +55,7 @@ public:
 		: text(string_from_word(flags | F_TARGET_DYNAMIC) + target.text)
 	{
 		assert((flags & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0);
-		assert(flags <= (unsigned)(1 << C_WORD)); // TODO should be '<', or use
-							  // F_TARGET_WORD for check
+		assert(flags < (1 << C_WORD));
 	}
 
 	const string &get_text() const { return text; }

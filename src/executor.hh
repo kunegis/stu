@@ -111,7 +111,6 @@ public:
 	 * DEP_SOURCE is the dependency leading from THIS to SOURCE (for
 	 * F_RESULT_COPY). */
 	{
-		// TODO use "= 0" or a similar mechanism.
 		unreachable();
 		(void) dep_result; (void) source; (void) flags; (void) dep_source;
 	}

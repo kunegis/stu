@@ -1,11 +1,11 @@
 #! /bin/sh
 
 #
-# Each line ultimately has C being a dependency of A.
+# Each line in 'list' ultimately has C being a dependency of A, via a trivial dependency.
 #
 
 err() {
-	echo >&2 "line_number=$line_number stucode=⟨$stucode⟩ a_exists=$a_exists"
+	echo >&2 "line_number=$line_number stucode=⟨$stucode⟩ a_exists=$a_exists x=$x"
 	echo >&2 "*** $1"
 	echo >&2 stdout:
 	cat  >&2 list.out
@@ -35,17 +35,19 @@ cat list | while IFS= read -r line ; do
 		for x in before after absent ; do
 			stucode=$line
 			../../sh/rm_tmps || exit 2
-			[ $x = before ] && {
+			[ "$x" = before ] && {
 				stucode=$(echo "$stucode" | sed -e 's,:,: X ,;s,$, X={x},')
 				[ $? = 0 ] || exit 1
 			}
-			[ $x = after ] && {
+			[ "$x" = after ] && {
 				stucode=$(echo "$stucode" | sed -e 's,{, X {,;s,$, X={x},')
 				[ $? = 0 ] || exit 1
 			}
-			if [ $a_exists = yes ] ; then
+			if [ "$a_exists" = yes ] ; then
 				echo aaa >A || exit 2
 				[ "$x" != absent ] && { echo xxx >X || exit 2 ; }
+				../../sh/touch_old X 4 || exit 2
+				../../sh/touch_old A 2 || exit 2
 			else
 				stucode="$stucode C={CORRECT}"
 			fi

@@ -11,7 +11,7 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
-XXXXXXXXXX  version 2.7.84
+2024-08-05  Version 2.7.84
 
 * The flag -C was added.  It can be used inside dynamic dependencies (like [-C
   filename]) to denote that "filename" will be parsed in full Stu syntax.  This
@@ -370,7 +370,7 @@ output redirection.
   operator '>' to write commands that consist only of a single call to a
   filter such as sed, tr or awk.
 
-2015-05-29  Version 1.1:
+2015-05-29  Version 1.1
 
 * Output commands directly into the target file using the '>'
   operator, to be used in front of the target filename.  Only for file

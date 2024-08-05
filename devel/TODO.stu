@@ -2,8 +2,14 @@
 # Flag -C.
 #
 
-# long-trivial(7,9,10) sometimes fails, sometimes not.  The most frequent was 10.  Write a
-# test executing it many times.
+# * long-trivial(7,9,10) sometimes fails, sometimes not.  The most frequent was 10.  Write a
+#   test executing it many times.
+# ** Execute many times, collect statistics
+# *** a_exists=yes, always
+# *** x=before/after
+# ** The error happens when both A and X are pre-created, and X has a newer date than A.
+# ** Try settings pre-existing files to have older timestamps
+# ** Try sleeping between invocations
 
 #
 # Test installing the .deb from Github/releases
@@ -12,9 +18,9 @@
 #
 
 #
-# gcov:  Check whether making unreachable() empty in cov mode removes those
-# branches from the report.
-# Bring the coverage to 100%.
+# * gcov:  Check whether making unreachable() empty in cov mode removes those
+#   branches from the report.
+# * Bring the coverage to 100%.
 #
 
 #

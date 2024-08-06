@@ -159,7 +159,6 @@ void Concat_Executor::notify_result(shared_ptr <const Dep> d,
 			collected.at(i)->deps.push_back(j);
 		}
 	} else if (flags & F_RESULT_COPY) {
-		assert(flags & F_RESULT_COPY);
 		push_result(d);
 	} else {
 		unreachable();

@@ -124,15 +124,14 @@ public:
 
 	void add_flags(shared_ptr <const Dep> dep,
 		       bool overwrite_places);
-	/* Add the flags from DEP.  Also copy over the
-	 * corresponding places.  If a place is already given in THIS,
-	 * only copy a place over if OVERWRITE_PLACES is set.  */
+	/* Add the flags from DEP.  Also copy over the corresponding places.  If a place
+	 * is already given in THIS, only copy a place over if OVERWRITE_PLACES is set. */
 
-	/* The check function checks the internal consistency of a Dep object.
-	 * This is purely an assertion, and not a programmatic check.  It is
-	 * possible for Dep objects to be temporarily inconsistent while they
-	 * are changed -- therefore, consistency is not enforced by the accessor
-	 * functions, but only by this function. */
+	/* The check function checks the internal consistency of a Dep object.  This is
+	 * purely an assertion, and not a programmatic check.  It is possible for Dep
+	 * objects to be temporarily inconsistent while they are changed -- therefore,
+	 * consistency is not enforced by the accessor functions, but only by this
+	 * function. */
 #ifndef NDEBUG
 	void check() const;
 #else
@@ -163,8 +162,7 @@ public:
 	 * immediately. */
 
 	static shared_ptr <const Dep> untrivialize(shared_ptr <const Dep> dep);
-	/* Remove all trivial flags, recursively.  Return null if already
-	 * trivialized. */
+	/* Remove all trivial flags, recursively.  Return null if already trivialized. */
 
 	static shared_ptr <Dep> clone(shared_ptr <const Dep> dep);
 	/* A shallow clone */
@@ -191,12 +189,12 @@ class Plain_Dep
 public:
 	Place_Target place_target;
 	/* The target of the dependency.  Has its own place, which may
-	 * differ from the dependency's place, e.g. in '@all'.  Non-dynamic.  */
+	 * differ from the dependency's place, e.g. in '@all'.  Non-dynamic. */
 
 	Place place;
 
 	string variable_name;
-	/* With F_VARIABLE:  the name of the variable.  Otherwise:  empty.  */
+	/* With F_VARIABLE:  the name of the variable.  Otherwise:  empty. */
 
 	explicit Plain_Dep(const Place_Target &place_target_)
 		: Dep(place_target_.flags),

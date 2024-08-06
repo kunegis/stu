@@ -37,9 +37,9 @@ public:
 	}
 
 	static void print(const Debuggable *, string text);
-	/* Print a line for debug mode.  The given TEXT starts with the
-	 * lower-case name of the operation being performed, followed by
-	 * parameters, and not ending in a newline or period.  */
+	/* Print a line for debug mode.  The given TEXT starts with the lower-case name of
+	 * the operation being performed, followed by parameters, and not ending in a
+	 * newline or period. */
 
 private:
 	static string padding_current;

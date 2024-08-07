@@ -1,10 +1,4 @@
 #
-# Test installing the .deb from Github/releases
-#
-# * Also, mention them in INSTALL.
-#
-
-#
 # Check out that -Pq can work as a "lint mode"
 #
 

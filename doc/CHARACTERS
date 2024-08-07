@@ -90,3 +90,5 @@ forms of non-operators, i.e., new tokens.
         as a list constructor would be unintuitive
     ,   As higher-level file separator, allowing "lists of lists", for
         whatever purpose [I can't think of one]
+    ,   For plugins, i.e., to introduce targets which are not files, either as part of
+        files, or completely independent

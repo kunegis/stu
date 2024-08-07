@@ -5,12 +5,6 @@
 #
 
 #
-# * gcov:  Check whether making unreachable() empty in cov mode removes those
-#   branches from the report.
-# * Bring the coverage to 100%.
-#
-
-#
 # Check out that -Pq can work as a "lint mode"
 #
 
@@ -22,6 +16,7 @@
 #
 # Investigate what -fwhole-program does precisely.
 # * Make building with clang++ be warning-free
+# * When done, test on FreeBSD
 #
 
 #
@@ -51,8 +46,7 @@
 
 #
 # Have an option to output the dependency graph, i.e., output each edge
-# on a single line, e.g. separated by tab.  (Use it then to perform a network
-# analysis of the KONECT-Analysis dependency graph.)
+# on a single line, e.g. separated by tab.
 #
 
 #
@@ -76,7 +70,7 @@
 
 -n FILENAME;
 
-# This would override a previous rule for FILENAME.
+# This would override a previous rule for FILENAME.  Also, don't re-use "-n".
 
 #
 # Allow access to environment variables via e.g. $(HOME).  Using this is
@@ -105,6 +99,7 @@
 A: B C {...}
 B { ln -s ... B ; }
 C:  -L { ln -s ... B ; }
+# (this examples is incorrect)
 
 #
 # File import
@@ -141,14 +136,6 @@ C:  -L { ln -s ... B ; }
 
 % set PATH /usr/local/bin
 % unset PATH
-
-#
-# Regex patterns in parameters.  Not sure about the '|' syntax.
-#
-
-list.${name|[A-Z].*} # Matches uppercase names
-
-# Find a good syntax based on Bash/KSH.
 
 #
 # Test make install using Docker.
@@ -250,9 +237,18 @@ dep.sources {
 	# of the program
 }
 
+# This may be identical to
+program:  [-o -p dep.sources] { ... }
+# and "dep.sources" may even be a side effect of "program".
+
+# This could be the first case where "-p -o" makes sense.  We want to allow "-po" for
+# this.
+
 #
 # Have an option for: For hardcoded rules, compare the content of the file with
-# the wanted content and don't update the file if identical.
+# the wanted content and don't update the file if identical.  Very useful when someone
+# changes the content in the stu file, and then re-builds.  At the moment, it is a common
+# complaint that Stu does _not_ re-build in that case.
 #
 
 #
@@ -280,6 +276,10 @@ $NAME.bib:  bibs-B/$NAME.bib
 
 # Exclude slashes
 ${NAME:[^/]+}.bib: ...;
+
+# Can also be done with a pipe:
+list.${name|[A-Z].*} # Matches uppercase names
+# Find a good syntax based on Bash/KSH.
 
 #
 # Allow dir/@transient.  Will allow dir/(a b @c @d).
@@ -311,11 +311,11 @@ A: (B: C { cp C B ; }) (D: E {cp E D ; }) { cat B D >A ; }
 # Their definition:
 @NAME = { linux }
 @NAME2 = @NAME;
->@NAME { ./printname }
+>@NAME { ./printname ; }
 
 # Their use:
-file:  <@NAME { sed -e '...' >file }
-result.eps:  $[@NAME] { ./compute --name "$NAME" }
+>file:  <@NAME { sed -e '...' ; }
+result.eps:  $[@NAME] { ./compute --name "$NAME" ; }
 
 #
 # Achieve full coverage.
@@ -363,10 +363,6 @@ A: -e B
 
 #
 # Check for files that don't end in newline (except for empty files).
-#
-
-#
-# Consider renaming "transient" to "phony".
 #
 
 #

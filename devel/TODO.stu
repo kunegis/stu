@@ -1,13 +1,4 @@
 #
-# Check out that -Pq can work as a "lint mode"
-#
-
-#
-# Check what is more common:  "make test" or "make check".  What do the GNU
-# Coding Guidelines say?
-#
-
-#
 # Investigate what -fwhole-program does precisely.
 # * Make building with clang++ be warning-free
 # * When done, test on FreeBSD
@@ -421,4 +412,8 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 # TRACE_FUNCTION: have optional parameter(s) to pass arguments of the function, instead of
 # outputting them on a separate line.
+#
+
+#
+# Test installing the auto-generated .deb from Github.
 #

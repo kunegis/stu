@@ -1,7 +1,7 @@
 #include "flags.hh"
 
 constexpr const char flags_chars[]= "pot[@$n0C<*%B";
-static_assert(strlen(flags_chars) == C_ALL, "Keep in sync with Flags");
+static_assert(sizeof(flags_chars) == C_ALL + 1, "Keep in sync with Flags");
 const char *flags_phrases[C_PLACED]= {"persistent", "optional", "trivial"};
 static_assert(sizeof(flags_phrases) / sizeof(flags_phrases[0]) == C_PLACED,
 	      "Keep in sync with Flags");

@@ -1,10 +1,4 @@
 #
-# Investigate what -fwhole-program does precisely.
-# * Make building with clang++ be warning-free
-# * When done, test on FreeBSD
-#
-
-#
 # Color in -P output
 #
 
@@ -416,4 +410,14 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # Test installing the auto-generated .deb from Github.
+#
+
+#
+# Clang issues
+# * "make test" with Clang
+# ** Maybe include an option to turn off the error when a compilation option is unknown.
+# ** Maybe have a special test option for this, which turns off strict compilation, and
+#    also omits the source-code-cleanliness checks.
+# ** Maybe "make test" should be that mode, and "make devel-test" should be the
+#    test-everything mode.
 #

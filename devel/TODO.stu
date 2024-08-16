@@ -1,12 +1,4 @@
 #
-# Color in -P output
-#
-
-#
-# Color in the usual output "Successfully built X" and the error equivalent
-#
-
-#
 # Use static_assert everywhere without a second argument. (C++17)
 #
 

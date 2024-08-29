@@ -216,3 +216,13 @@ X= [B-dep.x.y.z] {}
 #
 
 A:   b.tar,filename { ... }
+
+#
+# Some form of "change directory" (cd) method.
+#
+
+cd path/to/dir {
+# More rules here, to which path/to/dir is always prepended.
+}
+
+# Find a good syntax for this.

@@ -1,5 +1,11 @@
 .POSIX:
 all: bin/stu
+check: \
+    bin/stu.cdebug \
+    man/stu.1 MANPAGE src/version.hh \
+    bin/stu \
+    log/test_unit.cdebug \
+    log/test_unit.ndebug
 test: \
     bin/stu.debug \
     man/stu.1 MANPAGE src/version.hh \
@@ -9,7 +15,7 @@ test: \
     log/test_clean \
     log/test_unit.ndebug \
     log/test_clean_last
-.PHONY: all clean install test cov prof sani
+.PHONY: all clean install check test cov prof sani
 
 conf/CXX: sh/configure
 	sh/configure
@@ -27,6 +33,8 @@ CXXFLAGS_DEBUG= \
     -Wcast-align -Wrestrict -Wno-parentheses -Wlogical-op -Wredundant-decls \
     -Wno-pessimizing-move -Wsuggest-override \
     -D_GLIBCXX_DEBUG
+CXXFLAGS_CDEBUG= \
+    -O0 -D_GLIBCXX_DEBUG -w
 CXXFLAGS_PROF= -pg -O2 -DNDEBUG
 CXXFLAGS_COV=  --coverage -lgcov -O0 -DNDEBUG -DSTU_COV
 CXXFLAGS_SANI= -pg -O2 -Werror -Wno-unused-result -fsanitize=undefined \
@@ -40,6 +48,10 @@ bin/stu.debug:          conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
 	@echo $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
 	@     $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
+bin/stu.cdebug:         conf/CXX src/*.cc src/*.hh src/version.hh
+	@mkdir -p bin
+	@echo $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug
+	@     $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug
 bin/stu.prof:           conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin
 	@echo $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
@@ -66,6 +78,9 @@ log/test_clean_last:  NEWS src/*.cc src/*.hh sh/test_clean_last sh sh/* tests te
 log/test_unit.debug:           bin/stu.debug          sh/test tests tests/*/*
 	@echo sh/test
 	@     sh/test && mkdir -p log && touch $@
+log/test_unit.cdebug:          bin/stu.cdebug         sh/test tests tests/*/*
+	@echo VARIANT=cdebug sh/test
+	@     VARIANT=cdebug sh/test && mkdir -p log && touch $@
 log/test_unit.ndebug:          bin/stu                sh/test tests tests/*/*
 	@echo NDEBUG=1 sh/test
 	@     NDEBUG=1 sh/test && mkdir -p log && touch $@

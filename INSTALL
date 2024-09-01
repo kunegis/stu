@@ -22,8 +22,7 @@ $CXX and $CXXFLAGS set.  For instance, to compile with Clang, do
 
 $ CXX=clang++ ./configure
 
-Stu is still a quite small program, and has not been tested on many
-systems.
+Stu is still a quite small program, and has not been tested on many systems.
 
 Stu is developed primarily on Linux, and has been used on FreeBSD, OS X
 10.11, macOS 10.12, and Microsoft Windows 10.  It has been compiled with
@@ -66,9 +65,11 @@ by hand if necessary.
 
 ==== UNIT TESTS ====
 
-This is optional, but will give you confidence that your compiled Stu
-works correctly.
+This is optional, but will give you confidence that your compiled Stu works correctly.
 
-Execute all unit tests using 'make test'.  If an error is reported, report
-it to <kunegis@gmail.com>.  It takes about five minutes (running the tests, not
-reporting to the developers).  Unit tests need "expect" to be installed.
+Execute all unit tests using 'make check'.  If an error is reported, report it to
+<kunegis@gmail.com>.  It takes about five minutes (running the tests, not reporting to the
+developers).  Unit tests need "expect" to be installed.
+
+If you submit a patch with Stu, also use "make test", which works only with GCC, but
+enables more checks.

@@ -11,6 +11,12 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2024-09-01  Version 2.7.87
+
+* Introduced "make check".  Works like "make test", but omits strict warnings and
+  code-cleanliness tests.  This makes "make check" work with non-GCC compilers such as
+  clang++.
+
 2024-08-05  Version 2.7.84
 
 * The flag -C was added.  It can be used inside dynamic dependencies (like [-C

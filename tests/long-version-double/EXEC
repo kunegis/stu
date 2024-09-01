@@ -1,7 +1,7 @@
 #! /bin/sh
 #
-# It is possible to have multiple version statements, in particular in
-# different source files.
+# It is possible to have multiple version directives, in particular in different source
+# files.
 #
 
 STUFILE1=tmp1.stu
@@ -9,15 +9,11 @@ STUFILE2=tmp2.stu
 
 error=0
 
-# Arguments:
-#   $1   Correct exit status
-#   $2   Version in %version statement of file 1
-#   $3   Version in %version statement of file 2
 do_test()
 {
-	exitstatus_correct="$1"
-	version1="$2"
-	version2="$3"
+	exitstatus_correct=$1
+	version1=$2
+	version2=$3
 
 	echo "$0:  TESTING $1 $2 $3"
 
@@ -25,20 +21,20 @@ do_test()
 
 	cat >$STUFILE1 <<EOF
 %version $version1
-A: B { cp B A }
+A: B { cp B A ; }
 %include $STUFILE2
 EOF
 
 	cat >$STUFILE2 <<EOF
 %version $version2
-B { echo CORRECT >B }
+B { echo CORRECT >B ; }
 EOF
 
 	../../bin/stu.test -f $STUFILE1 2>list.err
 	exitstatus_actual=$?
-	echo "   exitstatus=$exitstatus_actual"
+	echo "   exitstatus_actual=$exitstatus_actual"
 	if [ "$exitstatus_actual" != "$exitstatus_correct" ] ; then
-		echo >&2 "*** $0:  Error in case $1 $2"
+		echo >&2 "*** $0:  Incorrect exit status in case $1 $2 $3"
 		error=1
 	fi
 
@@ -68,6 +64,8 @@ MAJOR=$(echo "$VERSION" | sed -e 's/^\([0-9]\{1,\}\)\.[0-9]\{1,\}\.[0-9]\{1,\}$/
 MINOR=$(echo "$VERSION" | sed -e 's/^[0-9]\{1,\}\.\([0-9]\{1,\}\)\.[0-9]\{1,\}$/\1/')
 PATCH=$(echo "$VERSION" | sed -e 's/^[0-9]\{1,\}\.[0-9]\{1,\}\.\([0-9]\{1,\}\)$/\1/')
 
+echo "STUFILE1=$STUFILE1"
+echo "STUFILE2=$STUFILE2"
 echo "MAJOR='$MAJOR'"
 echo "MINOR='$MINOR'"
 echo "PATCH='$PATCH'"

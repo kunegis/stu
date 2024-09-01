@@ -11,7 +11,7 @@ This is information for hacking Stu itself.
 
 ==== SETUP ====
 
-For development, use 'make test'.
+For development, use 'make test' (it works only with GCC).
 
 Before pushing changes:
 * Increment the version number in VERSION
@@ -19,18 +19,16 @@ Before pushing changes:
 
 Version logic (see 'NEWS' for an explanation of version numbers):
 * Increment the patch version number for any changes
-* Increment the minor version number when backward-compatible new syntax
-  is introduced
-* Increment the major version number when backward-incompatible new
-  syntax is introduced (which we try to avoid)
+* Increment the minor version number when backward-compatible new syntax is introduced
+* Increment the major version number when backward-incompatible new syntax is introduced
+  (which we try to avoid)
 
 ==== DEBUG VERSION ====
 
-The file 'bin/stu.debug' is the Stu executable with all debugging turned on,
-i.e., with debugging symbols, all warnings enabled, etc.  The exact
-flags for compiling this are set in the Makefile, and you might have
-to tweak these flags if you are developing Stu on another setup than the
-authors'.
+The file 'bin/stu.debug' is the Stu executable with all debugging turned on, i.e., with
+debugging symbols, all warnings enabled, etc.  The exact flags for compiling this are set
+in the Makefile, and you might have to tweak these flags if you are developing Stu on
+another setup than the authors'.
 
 The debug version also enables tracing; see src/trace.hh.
 
@@ -41,20 +39,26 @@ Unit testing is described in 'sh/test'.
 The command 'make test' will also execute all unit tests.  This takes about
 ten minutes.
 
-When we add new functionality, we always add unit tests for it, covering
-both success and failure.
+When using another compiler than GCC, you can use 'make check' insteads, which disables
+warnings and doesn't run code cleanliness tests.  But when contributing to Stu, please run
+'make test'.
 
-If you run the tests and they fail, report that to Jérôme Kunegis
-<kunegis@gmail.com>.
+When we add new functionality, we always add unit tests for it, covering both success and
+failure.
+
+If you run the tests and they fail, report that to Jérôme Kunegis <kunegis@gmail.com>.
 
 ==== REQUIREMENTS ====
 
-Running 'make test' has more requirements than just compiling Stu:
-* The unit tests assume that the file system supports UTF-8 filenames.
-  Stu will work without such a file system, but you can't run the unit
-  tests unless you remove the offending tests (tests/1-unicode-*/).
-* You need to install the package 'expect'.  On some systems, also 'tclsh'.
-  (Exact packages vary by operating system.)  (Only used by sh/tty.)
+Running 'make check' has more requirements than just compiling Stu:
+* The unit tests assume that the file system supports UTF-8 filenames.  Stu will work
+  without such a file system, but you can't run the unit tests unless you remove the
+  offending tests (tests/1-unicode-*/).
+* You need to install the package 'expect'.  On some systems, also 'tclsh'.  (Exact
+  packages vary by operating system.)  (Only used by sh/tty.)
+
+Running 'make test' has the following requirements:
+* g++
 
 Running 'make cov' has the following requirements:
 * lcov

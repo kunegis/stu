@@ -1,12 +1,4 @@
 #
-# Clang issues
-# * "make check" with Clang
-# ** Turns off the error when a compilation option is unknown
-# ** Also omits the source-code-cleanliness checks
-# * Test with Clang and on FreeBSD
-#
-
-#
 # Use static_assert everywhere without a second argument. (C++17)
 #
 
@@ -300,8 +292,8 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" ; }
 # Achieve full coverage.
 #
 # * Exclude unreachable() blocks from counting
-# * Exclude should_not_happen() blocks count
-# * Test syscall and libc function failure using mock implementations of them
+# * Exclude should_not_happen() blocks from counting
+# * Investigate why dome descructors have multiple copies, not all of which are used
 #
 
 #

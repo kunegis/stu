@@ -5,6 +5,11 @@
 #	conf/CXXFLAGS          Flags used for all compilations
 #	conf/CXXFLAGS_NDEBUG   Flags for bin/stu
 #
+# ENVIRONMENT
+#	$CXX                   (optional)
+#	$CXXFLAGS              (optional)
+#	$verbose               (optional)
+#
 
 [ "$verbose" ] && exec 6>&2 || exec 6>/dev/null
 
@@ -14,15 +19,26 @@ check()
 	rm -f "$target" || return 1
 	[ "$CXX" ] || return 1
 	printf "Checking $(echo $CXX $CXXFLAGS ${*})..."
-	$CXX $CXXFLAGS "$@" "$source" -o "$target" 2>&6 || {
-		echo >&2 "*** Compiler failed"
+	$CXX $CXXFLAGS "$@" "$source" -o "$target" 2>"$compiler_stderr" || {
+		echo no
+		echo >&6 "*** Compiler failed:"
+		cat  >&6 "$compiler_stderr"
 		return 1
 	}
+	cat >&6 "$compiler_stderr"
+	grep -q -E -i -e '(error|warning)' "$compiler_stderr" && {
+		echo no
+		echo >&6 "*** Compiler printed an error or warning:"
+		cat  >&6 "$compiler_stderr"
+		return 1
+	}
+
 	"$target" || {
-		echo >&2 "*** Test program failed"
+		echo no
+		echo >&6 "*** Test program failed"
 		return 1
 	}
-	echo "ok"
+	echo ok
 	return 0
 }
 
@@ -33,12 +49,20 @@ check_code()
 	rm -f "$target" "$source2" || return 1
 	{ cat "$source" ; printf '%s' "$2" ; } >"$source2"
 	printf "Checking $1..."
-	$CXX $CXXFLAGS "$source2" -o "$target" 2>&6 || {
-		echo >&2 "compiler failed"
+	$CXX $CXXFLAGS "$source2" -o "$target" 2>"$compiler_stderr" || {
+		echo no
+		echo >&6 "compiler failed"
+		return 1
+	}
+	grep -q -E -i -e '(error|warning)' "$compiler_stderr" && {
+		echo no
+		echo >&6 "*** Compiler printed an error or warning:"
+		cat  >&6 "$compiler_stderr"
 		return 1
 	}
 	"$target" || {
-		echo >&2 "*** Test program failed"
+		echo no
+		echo >&6 "*** Test program failed"
 		return 1
 	}
 	echo "ok"
@@ -55,6 +79,13 @@ filename=${TMPDIR:-/tmp}/stu.conf.$$
 source=$filename.cc
 source2=$filename.2.cc
 target=$filename.out
+compiler_stderr=$filename.stderr
+
+echo >&6 source="$filename".cc
+echo >&6 source2="$filename".2.cc
+echo >&6 target="$filename".out
+echo >&6 compiler_stderr="$filename".stderr
+
 cat >"$source" <<EOF || exit 1
 struct Alpha { int x; Alpha(int a):  x(2 - a) { } };
 int main() { Alpha alpha(2); return alpha.x; }
@@ -90,7 +121,7 @@ void x() { struct timespec t; int r= clock_gettime(CLOCK_REALTIME_COARSE, &t); }
 CXXFLAGS="$CXXFLAGS -DHAVE_CLOCK_REALTIME_COARSE=$(echo $? | tr 01 10)"
 
 CXXFLAGS_NDEBUG=-DNDEBUG
-for option in -O2 -fwhole-program -s ; do
+for option in -O2 -fwhole-program -s -w ; do
 	if check $option ; then
 		CXXFLAGS_NDEBUG="$CXXFLAGS_NDEBUG $option"
 	fi

@@ -128,67 +128,62 @@ type names, e.g., we have 'Dynamic_Dep' and similar.
 
 == Shell scripts ==
 
-When writing shell scripts, make sure to follow POSIX.  Writing portable and
-safe shell scripts is hard, and the authors follow many more rules than those
-given here, mostly based on experience.  There are many more things to be said
-about portable shell scripting.
+When writing shell scripts, make sure to follow POSIX.  Writing portable and safe shell
+scripts is hard, and the authors follow many more rules than those given here, mostly
+based on experience.  There are many more things to be said about portable shell
+scripting.
 
-* Only use POSIX features of the shell and of standard tools.  Read the manpage
-  of a tool on the POSIX website
-  (http://pubs.opengroup.org/onlinepubs/9699919799/), rather than your locally
-  installed manpage, which is likely to describe extensions to the tool without
-  documenting them as such.
-* Use '##' for quickly commenting out lines, analogously to '//' in C++ code.
-  Code pushed to Github does not contain such lines.
-* Sed has *only* basic regular expressions.  In particular, no '|', '+', and no
-  escape sequences like '\s'/'\S'/'\b'/'\w'.  The -r and -E options are not
-  POSIX; they are GNU and/or BSD extensions.  A space can be written as
-  [[:space:]].  '+' can be emulated with \{1,\}.  There is no way to write
-  alternatives, i.e., the '|' operator in extended regular regular expressions.
-  (Note:  there are rumors that -E is going to be in a future POSIX standard;
-  we'll switch to -E once it's standardized.)  Also, the 'b' and 't' commands
-  must not be followed by a semicolon; always use a newline after them when
+* Only use POSIX features of the shell and of standard tools.  Read the manpage of a tool
+  on the POSIX website (http://pubs.opengroup.org/onlinepubs/9699919799/), rather than
+  your locally installed manpage, which is likely to describe extensions to the tool
+  without documenting them as such.
+* Use '##' for quickly commenting out lines, analogously to '//' in C++ code.  Code pushed
+  to Github does not contain such lines.
+* Sed has *only* basic regular expressions.  In particular, no '|', '+', and no escape
+  sequences like '\s'/'\S'/'\b'/'\w'.  The -r and -E options are not POSIX; they are GNU
+  and/or BSD extensions.  A space can be written as [[:space:]].  '+' can be emulated with
+  \{1,\}.  There is no way to write alternatives, i.e., the '|' operator in extended
+  regular regular expressions.  (Note:  there are rumors that -E is going to be in a
+  future POSIX standard; we'll switch to -E once it's standardized.)  Also, the 'b' and
+  't' commands must not be followed by a semicolon; always use a newline after them when
   there are more commands.
-* Grep does have the -E option for extended regular expressions.  Grep is always
-  invoked with the -E *or* the -F option.  (Using basic regular expressions with
-  Grep is also portable, but we don't do it.)  'date +%s' is not mandated by
-  POSIX, even though it works on all operating systems we tried it on.  It
-  outputs the correct Unix time.  There is a hackish but portable workaround
-  using the random number generator of awk(1).
-* Shell scripts don't have a filename suffix.  Use '#! /bin/sh' and set the
-  executable bit.  The space after '!' is not necessary, but is traditional and
-  we think it looks good, so we always use it.
-* 'test' does not support the -a option.  Use && in the shell instead.  POSIX
-  has deprecated 'test -a'.
-* The "recursive" option to programs such as 'ls' and 'cp' is -R and not -r.
-  '-r' for recursive behavior is available and prescribed by POSIX for *some*
-  commands such as 'rm', but it's easier to always use '-R'.  Mnemonic:  Output
-  will be *big*, hence a big letter.  The idiomatic 'rm -rf' is thus not
-  recommended, and 'rm -Rf' is used instead.
-* We use 'set -e'.  We don't rely on it for "normal" code paths, but as an
-  additional fail-safe.  It does not work with $() commands that are used within
-  other commands, and it also does not work with pipelines, except for the last
-  command.  When you use $(), assign its result to a variable, and then use its
-  result from that variable.  Using $() directly embedded in other commands will
-  make the shell ignore failure of the inner shell.  There is no good solution
-  to the "first part of pipeline fails silently" problem.
-* Use $(...) instead of `...`.  It avoids many quoting pitfalls.  In shell
-  syntax, backticks are a form of quote which also executes its content.  Thus,
-  characters such as other backticks and backslashes inside it must be quoted by
-  a backslash, leading to ugly code.  $(...) does not have this problem.  Also,
-  in Unicode ` is a standalone grave accent character, and thus a letter-like
-  character.  This is also the reason why ` doesn't need to be quoted in Stu,
-  like any other letter.  The same goes for ^ and the non-ASCII ´.
-* Double-quote all variables, except if they should expand to multiple words in
-  a command line, or when assigning to a variable.  Also, use -- when passing
-  variables as non-option arguments to programs.  E.g., write 'cp --
-  "$filename_from" "$filename_to"'.  All other invocation styles are unsafe
-  under *some* values of the variables.  Some programs such as printf don't have
-  options and thus don't support or need '--'.
-* Always use 'IFS= read -r' instead of 'read'.  It's the safe way to read
-  anything that's \n-delimited.
-* To omit the trailing newline with 'echo', both '-n' and \c are non-portable.
-  Instead, use printf.  In general, printf is an underused command.  It can
-  often be used judiciously instead of 'echo'.  Note that the format string of
-  printf should not start with a dash.  In such cases, use %s and a subsequent
-  string, which can start with a dash.
+* Grep does have the -E option for extended regular expressions.  Grep is always invoked
+  with the -E *or* the -F option.  (Using basic regular expressions with Grep is also
+  portable, but we don't do it.)  'date +%s' is not mandated by POSIX, even though it
+  works on all operating systems we tried it on.  It outputs the correct Unix time.  There
+  is a hackish but portable workaround using the random number generator of awk(1).
+* Shell scripts don't have a filename suffix.  Use '#! /bin/sh' and set the executable
+  bit.  The space after '!' is not necessary, but is traditional and we think it looks
+  good, so we always use it.
+* 'test' does not support the -a option.  Use && in the shell instead.  POSIX has
+  deprecated 'test -a'.
+* The "recursive" option to programs such as 'ls' and 'cp' is -R and not -r.  '-r' for
+  recursive behavior is available and prescribed by POSIX for *some* commands such as
+  'rm', but it's easier to always use '-R'.  Mnemonic:  Output will be *big*, hence a big
+  letter.  The idiomatic 'rm -rf' is thus not recommended, and 'rm -Rf' is used instead.
+* We use 'set -e'.  We don't rely on it for "normal" code paths, but as an additional
+  fail-safe.  It does not work with $() commands that are used within other commands, and
+  it also does not work with pipelines, except for the last command.  When you use $(),
+  assign its result to a variable, and then use its result from that variable.  Using $()
+  directly embedded in other commands will make the shell ignore failure of the inner
+  shell.  There is no good solution to the "first part of pipeline fails silently"
+  problem.
+* Use $(...) instead of `...`.  It avoids many quoting pitfalls.  In shell syntax,
+  backticks are a form of quote which also executes its content.  Thus, characters such as
+  other backticks and backslashes inside it must be quoted by a backslash, leading to ugly
+  code.  $(...) does not have this problem.  Also, in Unicode ` is a standalone grave
+  accent character, and thus a letter-like character.  This is also the reason why `
+  doesn't need to be quoted in Stu, like any other letter.  The same goes for ^ and the
+  non-ASCII ´.
+* Double-quote all variables, except if they should expand to multiple words in a command
+  line, or when assigning to a variable.  Also, use -- when passing variables as
+  non-option arguments to programs.  E.g., write 'cp -- "$filename_from" "$filename_to"'.
+  All other invocation styles are unsafe under *some* values of the variables.  Some
+  programs such as printf don't have options and thus don't support or need '--'.
+* Always use 'IFS= read -r' instead of 'read'.  It's the safe way to read anything that's
+  \n-delimited.
+* To omit the trailing newline with 'echo', both '-n' and \c are non-portable.  Instead,
+  use printf.  In general, printf is an underused command.  It can often be used
+  judiciously instead of 'echo'.  Note that the format string of printf should not start
+  with a dash.  In such cases, use %s and a subsequent string, which can start with a
+  dash.

@@ -1,8 +1,8 @@
 #! /bin/sh
 #
-# Perform unit tests.  Each unit test is in one subdirectory of the directory tests/.  By
-# default, each test directory contains a file 'main.stu' that performs one unit test.
-# Additional files may be present to configure how the test is performed.
+# Perform unit tests.  Each unit test is in one subdirectory of tests/.  By default, each
+# test directory contains a file 'main.stu' that performs one unit test.  Additional files
+# may be present to configure how the test is performed.
 #
 # INVOCATION
 #	$0 [TEST]...
@@ -10,16 +10,16 @@
 # Without any arguments, perform all tests.  With one or more arguments, perform the given
 # tests.  The given test names are the names of the subdirectories of tests/, and may or
 # may not include the 'tests/' prefix.  The arguments may contain glob patterns.  (No test
-# names contain the glob characters *, ?, etc.)
+# name contains the glob characters *, ?, etc.)
 #
 # OUTPUT FILES
 #	log/error.log     List of tests that failed, one name per line
 #
 # PARAMETERS
-#	$NDEBUG   Set to non-empty to test the nondebug version; by default
-#	          the debug version is tested
-#	$VARIANT  Other variant of the compiled file; the default is to
-#	          take the file that matches the value of $NDEBUG
+#	$NDEBUG   Set to non-empty to test the nondebug version; by default the debug
+#	          version is tested
+#	$VARIANT  Other variant of the compiled file; the default is to take the file that
+#	          matches the value of $NDEBUG
 #	$verbose  Set to {0,1,2} for verbose levels; default is 0
 #	$notall   If non-empty, exit on the first error, instead of running everything
 #	$emptyok  Set to non-empty to *not* output an error for empty test directories;
@@ -36,40 +36,35 @@
 # Each subdirectory of tests/ contains one unit test, which follows the
 # following rules:
 #
-# * Each test contains a Stu file 'main.stu' that is to be tested
-# * It must build the file 'A' by default (i.e., that should be the
-#   first target)
-# * All built files must have names that correspond to the pattern given
-#   in sh/rm_tmps, such that they are removed automatically
-#   after the test.  Most generated files' names just consist of a
-#   single uppercase letter (but they don't have to).
-# * There may be other files present used by the test; these are part of
-#   the Stu release, i.e., they are under version control.
+# * Each test contains a Stu file 'main.stu' that is to be tested (except when 'EXEC' is
+#   present)
+# * It must build the file 'A' by default (i.e., that should be the first target)
+# * All built files must have names that correspond to the pattern given in sh/rm_tmps,
+#   such that they are removed automatically after the test.  Most generated files' names
+#   just consist of a single uppercase letter (but they don't have to).
+# * There may be other files present used by the test; these are part of the Stu release,
+#   i.e., they are under version control.
 #
 # SPECIFICATION FILES
 #
-# Each of these files can be placed in the individual test directory to
-# enable additional checks or behaviors.  All of these files are optional.
+# Each of these files can be placed in the individual test directory to enable additional
+# checks or behaviors.  All of these files are optional.
 #
-# TARGET       The name of the target that is built in the test, instead
-#              of the default 'A'.  This does not change the invocation:
-#              Stu is invoked without arguments by default.  It only
-#              changes the check that the file was built, and its
-#              content.   May be an empty file to omit testing for an
-#              existing target.
-# CMD          Additional command arguments passed to Stu.  Content may
-#              use shell quoting and escaping.  For instance, the file
-#              may contain -C ' A ' to pass an argument beginning and ending
-#              in space to Stu.
+# TARGET       The name of the target that is built in the test, instead of the default
+#              'A'.  This does not change the invocation: Stu is invoked without arguments
+#              by default.  It only changes the check that the file was built, and its
+#              content.   May be an empty file to omit testing for an existing target.
+# CMD          Additional command arguments passed to Stu.  Content may use shell quoting
+#              and escaping.  For instance, the file may contain -C ' A ' to pass an
+#              argument beginning and ending in space to Stu.
 # CMDPREFIX    Prefix before command.  Used to set environment variables.
-# PARALLEL     Give the arguments of the -j option for which the test is
-#              to be executed
+# PARALLEL     Give the arguments of the -j option for which the test is to be executed
 # EXITSTATUS   The prescribed exit status; default is zero
-# NOSECOND     If file is present, do not check that second invocation
-#              results in "Targets are up to date" (A second run is only
-#              made if the prescribed exit status is not zero.)
-# NOTTY        Don't do the extra TTY test (e.g., when the -q option is
-#              used and the exit status is expected to be one)
+# NOSECOND     If file is present, do not check that second invocation results in "Targets
+#              are up to date" (A second run is only made if the prescribed exit status is
+#              not zero.)
+# NOTTY        Don't do the extra TTY test (e.g., when the -q option is used and the exit
+#              status is expected to be one)
 # NOCOLOR      Don't test for color in stderr (e.g., with the -y option)
 # CONTENT      Prescribe the exact content of the built file
 # INCONTENT    Prescribe strings that must appear in the built file
@@ -79,13 +74,12 @@
 # INSTDERR     Prescribe strings that must appear in Stu's error output
 # NOTINSTDERR  A text that must not be present in Stu's error output
 # TTYSTDOUTERR The output and error output (interleaved) when in TTY mode
-# EXEC         Can be an alternative test script; it can do anything and
-#              should return a sensible exit status (i.e., 0 on success,
-#              1 on test failed, 2 on internal error).  It also otherwise
-#              behaves like sh/test, e.g., output '***' only on error.
+# EXEC         An alternative test script; it can do anything and should return a sensible
+#              exit status (i.e., 0 on success, 1 on test failed, 2 on internal error).
+#              It also otherwise behaves like sh/test, e.g., output '***' only on error.
 #
-# For the files beginning with 'IN', each line contains a string that
-# must be present, in any order.
+# For the files beginning with 'IN', each line contains a string that must be present, in
+# any order.
 #
 # NAMES OF TESTS
 #

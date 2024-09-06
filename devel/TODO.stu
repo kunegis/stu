@@ -16,11 +16,6 @@
 #
 
 #
-# Have an option to output the dependency graph, i.e., output each edge
-# on a single line, e.g. separated by tab.
-#
-
-#
 # Mark this target to always be a persistent dependency
 #
 
@@ -34,32 +29,6 @@
 # This can also work with other flags.
 
 #
-# Have an option to block certain targets from ever being rebuilt.  (Resulting
-# in a failure when they should, or always considering them up to date.)  May
-# also be implemented in Stu syntax, i.e. something like:
-#
-
--n FILENAME;
-
-# This would override a previous rule for FILENAME.  Also, don't re-use "-n".
-
-#
-# Allow access to environment variables via e.g. $(HOME).  Using this is
-# likely to be an antipattern -- the idiomatic thing to do is set a
-# symlink to the directory in question.  Other cases are even worse,
-# e.g., having environment variables with lists of things in them.
-#
-# On the other hand, this will be useful after extended inclusion is
-# implemented, to pass paths to Stu libraries.
-#
-
-#
-# Make '~' work as the home directory.  Also for ~user/.  '~' is already
-# forbidden as the first character in unquoted names.  Needs a new type for
-# unparsed targets.
-#
-
-#
 # Allow to handle symlinks as files in themselves, i.e., check for their
 # own existence and their own timestamp.  This should not be the default
 # as the current behaviour is more often useful, but should be available
@@ -71,6 +40,22 @@ A: B C {...}
 B { ln -s ... B ; }
 C:  -L { ln -s ... B ; }
 # (this examples is incorrect)
+
+#
+# Make '~' work as the home directory.  Also for ~user/.  '~' is already
+# forbidden as the first character in unquoted names.  Needs a new type for
+# unparsed targets.
+#
+
+#
+# Allow access to environment variables via e.g. $(HOME).  Using this is
+# likely to be an antipattern -- the idiomatic thing to do is set a
+# symlink to the directory in question.  Other cases are even worse,
+# e.g., having environment variables with lists of things in them.
+#
+# On the other hand, this will be useful after extended inclusion is
+# implemented, to pass paths to Stu libraries.
+#
 
 #
 # File import
@@ -127,8 +112,8 @@ C:  -L { ln -s ... B ; }
 
 #
 # Try out further sanitizers (some may need a newer GCC)
-#    -fsanitize=address      // not used because of false positives (due to Execution caching)
-#    -fsanitize=leak         // (Execution caching)
+#    -fsanitize=address // not used because of false positives (due to Execution caching)
+#    -fsanitize=leak    // (Execution caching)
 #    <others>
 #
 
@@ -268,27 +253,6 @@ list.${name|[A-Z].*} # Matches uppercase names
 A: (B: C { cp C B ; }) (D: E {cp E D ; }) { cat B D >A ; }
 
 #
-# Transient targets can have content.  This will be executed at every Stu
-# invocation.  This is similar to the way variables worked in Stu 0.
-#
-# This might be used like variables in Make, but the result will be that
-# targets depending on them will always be rebuilt.  It would thus only
-# make sense together with fingerprinting.
-#
-# No very useful, since files can be used in exactly the same way, and
-# without the problem of not remembering what was already done.
-#
-
-# Their definition:
-@NAME = { linux }
-@NAME2 = @NAME;
->@NAME { ./printname ; }
-
-# Their use:
->file:  <@NAME { sed -e '...' ; }
-result.eps:  $[@NAME] { ./compute --name "$NAME" ; }
-
-#
 # Achieve full coverage.
 #
 # * Exclude unreachable() blocks from counting
@@ -333,7 +297,7 @@ A: -e B
 #
 
 #
-# Check for files that don't end in newline (except for empty files).
+# Check for Stu source code files that don't end in newline (except for empty files).
 #
 
 #
@@ -364,10 +328,6 @@ A: -e B
 
 #
 # Deprecate the -d option.
-#
-
-#
-# Rename the "2-statistics" test to "long-statistics" or similar (it takes long).
 #
 
 #

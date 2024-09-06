@@ -1,9 +1,57 @@
 #
-# Use [[fallthrough]].  (C++17)
+# Use string_view where appropriate. (needs C++17).
 #
 
 #
-# Use string_view where appropriate. (needs C++17).
+# Replace reverse_string with library function (C++17).
+#
+
+#
+# gcc -fanalyzer
+#
+
+#
+# Compilation mode like ndebug but non-stripped.  Check output of nm.
+#
+
+#
+# Achieve full coverage.
+#
+# * Exclude unreachable() blocks from counting
+# * Exclude should_not_happen() blocks from counting
+# * Investigate why dome descructors have multiple copies, not all of which are used
+#
+
+#
+# Test very long line length; very large number of dependencies; very large
+# number of dependencies in a dynamic dependency.
+#
+
+#
+# Check for Stu source code files that don't end in newline (except for empty files).
+#
+
+#
+# File_Executor::executor() and Dynamic_Executor::execute() are very similar.
+# Refactor to only have the common bits in the subclasses of Executor.
+#
+
+#
+# Manpage:  the synopsis should show all "top-level" options, i.e., options that
+# change the overall behavior of Stu, such as -q/-P/-I.
+#
+
+#
+# Put all the option parsing stuff from main() into its own function in options.hh.
+#
+
+#
+# Maybe:  merge Style and Rendering into a single bitmask.
+#
+
+#
+# TRACE_FUNCTION: have optional parameter(s) to pass arguments of the function, instead of
+# outputting them on a separate line.
 #
 
 #
@@ -91,14 +139,6 @@ C:  -L { ln -s ... B ; }
 
 #
 # Test make install using Docker.
-#
-
-#
-# gcc -fanalyzer
-#
-
-#
-# Compilation mode like ndebug but non-stripped.  Check output of nm.
 #
 
 #
@@ -249,14 +289,6 @@ list.${name|[A-Z].*} # Matches uppercase names
 A: (B: C { cp C B ; }) (D: E {cp E D ; }) { cat B D >A ; }
 
 #
-# Achieve full coverage.
-#
-# * Exclude unreachable() blocks from counting
-# * Exclude should_not_happen() blocks from counting
-# * Investigate why dome descructors have multiple copies, not all of which are used
-#
-
-#
 # Priority levels for rules.
 #
 
@@ -288,26 +320,7 @@ A: -e B
 }
 
 #
-# Test very long line length; very large number of dependencies; very large
-# number of dependencies in a dynamic dependency.
-#
-
-#
-# Check for Stu source code files that don't end in newline (except for empty files).
-#
-
-#
 # Flag to suppress output for a rule.  (-s presumably).
-#
-
-#
-# File_Executor::executor() and Dynamic_Executor::execute() are very similar.
-# Refactor to only have the common bits in the subclasses of Executor.
-#
-
-#
-# Manpage:  the synopsis should show all "top-level" options, i.e., options that
-# change the overall behavior of Stu, such as -q/-P/-I.
 #
 
 #
@@ -342,19 +355,6 @@ A: @x { touch A ; }  @x: [B]; B = {-t C}
 
 A: [ -n -o B ] { touch A ; }  B={C}
 A: [ -t -o B ] { touch A ; }  B={C}
-
-#
-# Put all the option parsing stuff from main() into its own function in options.hh.
-#
-
-#
-# Maybe:  merge Style and Rendering into a single bitmask.
-#
-
-#
-# TRACE_FUNCTION: have optional parameter(s) to pass arguments of the function, instead of
-# outputting them on a separate line.
-#
 
 #
 # Test installing the auto-generated .deb from Github.

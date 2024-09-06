@@ -135,7 +135,7 @@ string Place::as_argv0() const
 	default:
 	case Type::EMPTY:
 		should_not_happen();
-		/* Fall through */
+		[[fallthrough]];
 	case Type::INPUT_FILE: {
 		/* The given argv[0] should not begin with a dash,
 		 * because some shells enable special behaviour
@@ -167,7 +167,7 @@ bool Place::operator<(const Place &place) const
 		return this->type < place.type;
 	}
 	switch (this->type) {
-	default:  assert(0);
+	default:  unreachable();
 	case Type::EMPTY:
 	case Type::ARGUMENT:
 	case Type::ENV_OPTIONS:

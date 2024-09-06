@@ -9,7 +9,7 @@ static_assert(sizeof(flags_phrases) / sizeof(flags_phrases[0]) == C_PLACED,
 unsigned flag_get_index(char c)
 {
 	switch (c) {
-	default: should_not_happen(); return 0;
+	default:   should_not_happen(); return 0;
 	case 'p':  return I_PERSISTENT;
 	case 'o':  return I_OPTIONAL;
 	case 't':  return I_TRIVIAL;

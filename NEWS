@@ -11,6 +11,10 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2024-09-06  Version 2.7.89
+
+* Switched to C++17 (from C++14).
+
 2024-09-01  Version 2.7.87
 
 * Introduced "make check".  Works like "make test", but omits strict warnings and

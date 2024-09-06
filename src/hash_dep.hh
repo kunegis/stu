@@ -30,8 +30,7 @@
 typedef uint16_t word_t;
 
 static_assert(sizeof(word_t) == sizeof(uint8_t) && C_WORD <= 8
-	      || sizeof(word_t) == sizeof(uint16_t) && C_WORD > 8 && C_WORD <= 16,
-	      "sizeof(word_t)");
+	|| sizeof(word_t) == sizeof(uint16_t) && C_WORD > 8 && C_WORD <= 16);
 
 class Hash_Dep
 {

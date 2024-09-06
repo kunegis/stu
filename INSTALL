@@ -41,7 +41,7 @@ Credits for the package go to Holger Heinz (hheinz).
 
 Stu requires:
 * POSIX
-* A C++ 14 compiler
+* A C++ 17 compiler
 
 In addition, Stu uses the following features:
 * ASCII or an ASCII-compatible 8-bit encoding such as UTF-8 or ISO-8859-1

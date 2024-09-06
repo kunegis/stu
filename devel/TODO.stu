@@ -1,8 +1,4 @@
 #
-# Use static_assert everywhere without a second argument. (C++17)
-#
-
-#
 # Use [[fallthrough]].  (C++17)
 #
 

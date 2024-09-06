@@ -108,7 +108,7 @@ else
 	fi
 fi
 
-for option in -std=c++14 ; do
+for option in -std=c++17 ; do
 	if check $option ; then
 		CXXFLAGS="$CXXFLAGS $option"
 	fi

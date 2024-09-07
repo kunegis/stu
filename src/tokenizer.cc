@@ -70,9 +70,9 @@ void Tokenizer::parse_tokens_file(
 				goto error_close;
 		}
 
-		/* Handle a file of zero length separately because mmap() may fail
-		 * on it, i.e., return an error and refuse to create a memory
-		 * map of length zero. */
+		/* Handle a file of zero length separately because mmap() may fail on it,
+		 * i.e., return an error and refuse to create a memory map of length
+		 * zero. */
 		if (S_ISREG(buf.st_mode) && buf.st_size == 0) {
 			place_end= Place(Place::Type::INPUT_FILE, filename, 1, 0);
 			goto return_close;
@@ -165,7 +165,6 @@ void Tokenizer::parse_tokens_file(
 			default:
 				unreachable();
 			}
-
 			return;
 		}
 
@@ -229,24 +228,23 @@ void Tokenizer::parse_tokens_file(
 
 shared_ptr <Command> Tokenizer::parse_command()
 /*
- * To determine the place of the command:  These rules are intended to
- * make the editor go to the correct place to enter a command into the
- * editor when the command is empty.
- *    - If there is non-whitespace in the command, the place is the
- *      first non-whitespace character
- *    - If the command is completely empty (i.e., {}), then the place is
- *      the closing bracket.
- *    - If the command contains only whitespace, is on one line and is
- *      not empty, the place is on the first whitespace character.
- *    - If the command contains only whitespace and a single newline,
- *      then the place is the end of the first line.
- *    - If the command contains only whitespace and at least two
- *      newlines, the place is the first character of the second line.
+ * To determine the place of the command:  These rules are intended to make the editor go
+ * to the correct place to enter a command into the editor when the command is empty.
+ *    - If there is non-whitespace in the command, the place is the first non-whitespace
+ *      character
+ *    - If the command is completely empty (i.e., {}), then the place is the closing
+ *      bracket.
+ *    - If the command contains only whitespace, is on one line and is not empty, the
+ *      place is on the first whitespace character.
+ *    - If the command contains only whitespace and a single newline, then the place is
+ *      the end of the first line.
+ *    - If the command contains only whitespace and at least two newlines, the place is
+ *      the first character of the second line.
  */
 /*
- * The parsing of commands in Stu only approximates shell syntax.  In
- * actual shell syntax, the characters {} are only recognized as
- * block-opening and -closing in certain circumstances.  For instance:
+ * The parsing of commands in Stu only approximates shell syntax.  In actual shell syntax,
+ * the characters {} are only recognized as block-opening and -closing in certain
+ * circumstances.  For instance:
  *
  *             echo }
  *             echo {
@@ -572,13 +570,12 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 }
 
 bool Tokenizer::is_name_char(char c)
-/* The characters in the string constant are those characters that have
- * special meaning (as defined in the manpage), and those reserved for
- * future extension (also defined in the manpage).  All non-ASCII characters are
- * allowed, and thus we don't have to distinguish UTF-8 from 8-bit encodings:
- * all characters with the most significant bit set will make this return TRUE.
- * See the file CHARACTERS for more information.  This returns TRUE for the
- * mid-name characters '-', '+' and '~'.  */
+/* The characters in the string constant are those characters that have special meaning
+ * (as defined in the manpage), and those reserved for future extension (also defined in
+ * the manpage).  All non-ASCII characters are allowed, and thus we don't have to
+ * distinguish UTF-8 from 8-bit encodings: all characters with the most significant bit
+ * set will make this return TRUE.  See the file CHARACTERS for more information.  This
+ * returns TRUE for the mid-name characters '-', '+' and '~'. */
 {
 	return (c > 0x20 && c < 0x7F /* ASCII printable character except space */
 		&& nullptr == strchr("[]\"\':={}#<>@$;()%*\\!?|&,", c))
@@ -658,7 +655,6 @@ void Tokenizer::parse_tokens(std::vector <shared_ptr <Token> > &tokens,
 			     const Place &place_diagnostic)
 {
 	bool skipped_actual_space;
-	/* Output parameter for skip_space(); will become better in C++17. */
 
 	while (p < p_end) {
 		/* Operators except '$' */

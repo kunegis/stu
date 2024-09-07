@@ -1,6 +1,5 @@
 #
 # C++17 small cleanups:
-# * [[nodiscard]]
 # * if constexpr
 # * auto [a, b] = ...
 # * initializer in if

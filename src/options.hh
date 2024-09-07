@@ -10,13 +10,12 @@
  */
 
 /*
- * We use getopt(), which means that Stu does only support short options, and
- * not long options.  We avoid getopt_long() as it is a GNU extension, and the
- * short options are sufficient for now.
+ * We use getopt(), which means that Stu does only support short options, and not long
+ * options.  We avoid getopt_long() as it is a GNU extension, and the short options are
+ * sufficient for now.
  *
- * Also, using getopt() means that the exact synytax of Stu depends on the
- * platform:  GNU getopt() will all options to follow arguments, while BSD
- * getopt() does not.
+ * Also, using getopt() means that the exact synytax of Stu depends on the platform:  GNU
+ * getopt() will all options to follow arguments, while BSD getopt() does not.
  */
 const char OPTIONS[]= "0:ac:C:dEf:F:ghiIj:JkKm:M:n:o:p:PqsVxyYz";
 

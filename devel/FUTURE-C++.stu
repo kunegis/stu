@@ -2,7 +2,7 @@
 # compilers than what we use now.
 
 #
-# preset.h:  Use to_address(v.end()) instead of v.data() + v.size()  (needs C++20)
+# preset.h:  Use to_address(v.end()) instead of v.data() + v.size()  (C++20).
 #
 
 #

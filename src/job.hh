@@ -33,8 +33,8 @@
  * likelihood, implementations of assert() are already async-signal
  * safe, but we shouldn't rely on that.
  *
- * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this
- * macro.
+ * [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions in this macro.
+ *
  * Note:  This macro may change ERRNO.
  */
 #ifdef NDEBUG
@@ -69,25 +69,22 @@ public:
 		    string filename_output,
 		    string filename_input,
 		    const Place &place_command);
-	/* Start the process.  Don't output the command -- this is done
-	 * by callers of this functions.  FILENAME_OUTPUT and
-	 * FILENAME_INPUT are the files into which to redirect output
-	 * and input; either can be empty to denote no redirection.  On
-	 * error, output a message and return -1, otherwise return the
-	 * PID (>= 0).  MAPPING contains the environment variables to
-	 * set.  */
+	/* Start the process.  Don't output the command -- this is done by callers of this
+	 * function.  FILENAME_OUTPUT and FILENAME_INPUT are the files into which to
+	 * redirect output and input; either can be empty to denote no redirection.  On
+	 * error, output a message and return -1, otherwise return the PID (>= 0).
+	 * MAPPING contains the environment variables to set. */
 
 	pid_t start_copy(string target, string source);
-	/* Start a copy job.  The return value has the same semantics as
-	 * in start().  */
+	/* Start a copy job.  The return value has the same semantics as in start(). */
 
 	static pid_t wait(int *status);
 	/* Wait for the next process to terminate; provide the STATUS as
 	 * used in wait(2).  Return the PID of the waited-for process (>=0). */
 
 	static void print_statistics(bool allow_unterminated_jobs= false);
-	/* Print the statistics about jobs, regardless of OPTION_STATISTICS.  If
-	 * the argument is set, there must not be unterminated jobs.  */
+	/* Print the statistics about jobs, regardless of OPTION_STATISTICS.  If the
+	 * argument is set, there must not be unterminated jobs. */
 
 	static void kill(pid_t pid);
 	static void init_tty();
@@ -114,9 +111,8 @@ private:
 	pid_t pid;
 	/*
 	 * -2:    process was not yet started.
-	 * >= 0:  process was started but not yet waited for (just called
-	 *        "started" for short).  It may already be finished,
-	 *        i.e., a zombie.
+	 * >= 0:  process was started but not yet waited for (just called "started" for
+	 *        short).  It may already be finished, i.e., a zombie.
 	 * -1:    process has been waited for.
 	 */
 
@@ -138,16 +134,15 @@ private:
 
 	static sigset_t set_termination, set_productive,
 		set_termination_productive;
-	/* All signals handled specially by Stu are either in the
-	 * "termination" or in the "productive" set.  The third variable
-	 * holds both.  */
+	/* All signals handled specially by Stu are either in the "termination" or in the
+	 * "productive" set.  The third variable holds both. */
 
 	static volatile sig_atomic_t in_child;
-	/* Set to 1 in the child process, before execve() is called; 0 in the
-	 * parent process.  Used to avoid doing too much in the terminating
-	 * signal handler.  Note: There is a race condition because the signal
-	 * handler may be called before the variable is set.  This is the only
-	 * variable in Stu that is "volatile sig_atomic_t".  */
+	/* Set to 1 in the child process, before execve() is called; 0 in the parent
+	 * process.  Used to avoid doing too much in the terminating signal handler.
+	 * Note: There is a race condition because the signal handler may be called before
+	 * the variable is set.  This is the only variable in Stu that is "volatile
+	 * sig_atomic_t". */
 
 	static pid_t pid_foreground;
 	/* The job that is in the foreground, or -1 when none is */

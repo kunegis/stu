@@ -2,16 +2,14 @@
 #define FILE_EXECUTOR_HH
 
 /*
- * Each non-dynamic file target is represented at run time by one
- * File_Executor object.  Each File_Executor object may correspond to
- * multiple files or transients, when a rule has multiple targets.
- * Transients are only represented by a File_Executor when they appear
- * as targets of rules that have at least one file target, or when the
- * rule has a command.  Otherwise, Transient_Executor is used for them.
+ * Each non-dynamic file target is represented at run time by one File_Executor object.
+ * Each File_Executor object may correspond to multiple files or transients, when a rule
+ * has multiple targets.  Transients are only represented by a File_Executor when they
+ * appear as targets of rules that have at least one file target, or when the rule has a
+ * command.  Otherwise, Transient_Executor is used for them.
  *
- * This is the only Executor subclass that actually starts jobs -- all
- * other Executor subclasses only delegate their tasks to child
- * executors.
+ * This is the only Executor subclass that actually starts jobs -- all other Executor
+ * subclasses only delegate their tasks to child executors.
  */
 
 class File_Executor
@@ -24,11 +22,10 @@ public:
 		      shared_ptr <const Rule> param_rule,
 		      std::map <string, string> &mapping_parameter_,
 		      int &error_additional);
-	/* ERROR_ADDITIONAL indicates whether an error will be thrown after the
-	 * call.  (Because an error can only be thrown after the executor has
-	 * been connected to a parent, which is not done in the constructor.
-	 * The parent is then connected to this iff ERROR_ADDITIONAL is zero
-	 * after the call. */
+	/* ERROR_ADDITIONAL indicates whether an error will be thrown after the call.
+	 * (Because an error can only be thrown after the executor has been connected to a
+	 * parent, which is not done in the constructor.  The parent is then connected to
+	 * this iff ERROR_ADDITIONAL is zero after the call. */
 
 	void read_variable(shared_ptr <const Dep> dep);
 	/* Read the content of the file into a string as the variable value.  THIS is the

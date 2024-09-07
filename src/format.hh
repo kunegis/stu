@@ -3,8 +3,6 @@
 
 /*
  * These functions will become obsolete once we use C++20.
- *
- * The reverse function will become obsolete once we switch to C++17.
  */
 
 #include <string.h>

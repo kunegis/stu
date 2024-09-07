@@ -2,16 +2,15 @@
 #define CONCAT_EXECUTOR_HH
 
 /*
- * An executor representing a concatenation.  Its dependency is always a
- * normalized concatenated dependency containing (compound dependencies of)
- * normalized dependencies, whose results are concatenated as new targets added
- * to the parent.  At least one of the contained dependencies is dynamic, as
- * otherwise the dependencies would have been normalized to a non-concatenated
- * dependency.
+ * An executor representing a concatenation.  Its dependency is always a normalized
+ * concatenated dependency containing (compound dependencies of) normalized dependencies,
+ * whose results are concatenated as new targets added to the parent.  At least one of the
+ * contained dependencies is dynamic, as otherwise the dependencies would have been
+ * normalized to a non-concatenated dependency.
  *
- * Concatenated executors always have exactly one parent.  They are not cached,
- * and they are deleted when done.  Thus, they also don't need the 'done' field.
- * (But the parent class has it.)
+ * Concatenated executors always have exactly one parent.  They are not cached, and they
+ * are deleted when done.  Thus, they also don't need the 'done' field.  (But the parent
+ * class has it.)
  */
 
 #include "executor.hh"

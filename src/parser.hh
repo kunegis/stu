@@ -33,10 +33,10 @@
  */
 
 /*
- * This code does not check that imcompatible constructs (like -p and -o
- * or -p and '$[') are used together.  Instead, this is checked within
- * Executor and not here, because these can also be combined from
- * different sources, e.g., a file and a dynamic dependency.
+ * This code does not check that imcompatible constructs (like -p and -o or -p and '$[')
+ * are used together.  Instead, this is checked within Executor and not here, because
+ * these can also be combined from different sources, e.g., a file and a dynamic
+ * dependency.
  */
 
 #include "rule.hh"
@@ -47,18 +47,15 @@ class Parser
  */
 {
 public:
-	/*
-	 * Methods for building the syntax tree:  Each has a name corresponding
-	 * to the symbol given by the Yacc syntax in the manpage.  The argument
-	 * RET (if it is used) is where the result is written.  If the return
-	 * value is BOOL, it denotes whether something was read or not.  On
-	 * syntax errors, ERROR_LOGICAL is thrown.
-	 */
+	/* Methods for building the syntax tree:  Each has a name corresponding to the
+	 * symbol given by the Yacc syntax in the manpage.  The argument RET (if it is
+	 * used) is where the result is written.  If the return value is BOOL, it denotes
+	 * whether something was read or not.  On syntax errors, ERROR_LOGICAL is thrown. */
 
 	/* In some of the following functions, write the input filename into
-	 * PLACE_NAME_INPUT.  If PLACE_NAME_INPUT is already non-empty, throw an
-	 * error if a second input filename is specified. PLACE_INPUT is the
-	 * place of the '<' input redirection operator. */
+	 * PLACE_NAME_INPUT.  If PLACE_NAME_INPUT is already non-empty, throw an error if
+	 * a second input filename is specified. PLACE_INPUT is the place of the '<' input
+	 * redirection operator. */
 
 	static void get_rule_list(std::vector <shared_ptr <Rule> > &rules,
 				  std::vector <shared_ptr <Token> > &tokens,
@@ -164,7 +161,7 @@ private:
 	 const std::vector <shared_ptr <const Place_Target> > &targets);
 
 	/* If the next token is of type T, return it, otherwise return
-	 * null.  Also return null when at the end of the token list.  */
+	 * null.  Also return null when at the end of the token list. */
 	template <typename T>
 	shared_ptr <T> is() const {
 		if (iter == tokens.end())
@@ -184,16 +181,14 @@ private:
 	}
 
 	bool next_concatenates() const;
-	/* Whether there is a next token which concatenates to the
-	 * current token.  The current token is assumed to be a
-	 * candidate for concatenation.  */
+	/* Whether there is a next token which concatenates to the current token.  The
+	 * current token is assumed to be a candidate for concatenation. */
 
 	static void append_copy(      Name &to,
 				const Name &from);
-	/* If TO ends in '/', append to it the part of FROM that
-	 * comes after the last slash, or the full target if it contains
-	 * no slashes.  Parameters are not considered for containing
-	 * slashes */
+	/* If TO ends in '/', append to it the part of FROM that comes after the last
+	 * slash, or the full target if it contains no slashes.  Parameters are not
+	 * considered for containing slashes. */
 };
 
 #endif /* ! PARSER_HH */

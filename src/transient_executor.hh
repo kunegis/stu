@@ -7,7 +7,7 @@
  */
 
 class Transient_Executor
-	:  public Executor
+	: public Executor
 {
 public:
 	Transient_Executor(shared_ptr <const Dep> dep_link,
@@ -39,8 +39,8 @@ private:
 	~Transient_Executor();
 
 	std::vector <Hash_Dep> hash_deps;
-	/* The targets to which this executor object corresponds.  All
-	 * are transients.  Contains at least one element.  */
+	/* The targets to which this executor object corresponds.  All are transients.
+	 * Contains at least one element. */
 
 	shared_ptr <const Rule> rule;
 	/* The instantiated file rule for this executor.  Not null. */
@@ -53,8 +53,7 @@ private:
 
 	std::map <string, string> mapping_variable;
 	/* Variable assignments from variables dependencies.  This is in
-	 * Transient_Executor because it may be percolated up to the
-	 * parent executor.  */
+	 * Transient_Executor because it may be percolated up to the parent executor. */
 };
 
 #endif /* ! TRANSIENT_EXECUTOR_HH */

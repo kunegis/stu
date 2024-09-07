@@ -92,43 +92,37 @@ constexpr int ERROR_FATAL=        4;
 constexpr int ERROR_FORK_CHILD= 127;
 
 /*
- * Build errors (code 1) are errors encountered during the normal operation of
- * Stu.  They indicate failures of the executed commands or errors with files.
- * Exit status 1 is also used for the -q option (question mode), when the
- * targets are not up to date.
+ * Build errors (code 1) are errors encountered during the normal operation of Stu.  They
+ * indicate failures of the executed commands or errors with files.  Exit status 1 is also
+ * used for the -q option (question mode), when the targets are not up to date.
  *
- * Logical errors (code 2) are errors with the usage of Stu.  These are for
- * instance syntax errors in Stu scripts, cycles in the dependency graph, or
- * multiple matching rules.
+ * Logical errors (code 2) are errors with the usage of Stu.  These are for instance
+ * syntax errors in Stu scripts, cycles in the dependency graph, or multiple matching
+ * rules.
  *
- * Fatal errors (code 4) are errors that lead Stu to abort immediately, even
- * when the -k option is used.  They are avoided as much as possible.
+ * Fatal errors (code 4) are errors that lead Stu to abort immediately, even when the -k
+ * option is used.  They are avoided as much as possible.  The value 127 is only used from
+ * a child process between fork() and exec(), as done e.g. by system(), posix_spawn(), and
+ * the shell.
  *
- * The value 127 is only used from a child process between fork() and exec(), as
- * done e.g. by system(), posix_spawn(), and the shell.
+ * Errors 1 and 2 are recoverable.  If the -k option ("keep going") is given, Stu notes
+ * these errors and continues.  If the -k option is not given, they cause Stu to abort.
+ * When the -k option is used, the final exit status may combine errors 1 and 2, giving
+ * exit status 3.  Error 4 is unrecoverable, and leads to Stu aborting immediately.  Error
+ * 4 is never combined with other errors.
  *
- * Errors 1 and 2 are recoverable.  If the -k option ("keep going") is given,
- * Stu notes these errors and continues.  If the -k option is not given, they
- * cause Stu to abort.  When the -k option is used, the final exit status may
- * combine errors 1 and 2, giving exit status 3.  Error 4 is unrecoverable, and
- * leads to Stu aborting immediately.  Error 4 is never combined with other
- * errors.
- *
- * Fatal errors are rare and are only used in cases where it is OK to abort the
- * whole Stu process:
- *    - When there are errors in the usage of Stu on the command line,
- *      e.g. non-existing options.  In these cases, we don't lose anything
- *      because nothing was yet started.
+ * Fatal errors are rare and are only used in cases where it is OK to abort the whole Stu
+ * process:
+ *    - When there are errors in the usage of Stu on the command line, e.g. non-existing
+ *      options.  In these cases, we don't lose anything because nothing was yet started.
  *    - Errors that happen just before Stu exits anyway.
- *    - Errors that should not happen, such as failure to set up a signal
- *      handler.
+ *    - Errors that should not happen, such as failure to set up a signal handler.
  *
- * We have to be careful with calling exit(ERROR_FATAL):  We cannot do it when
- * child processes could still be running.  For errors that happen in the middle
- * of a Stu run, it makes more sense to generate a build error.  In the very few
- * cases that absolutely need to be fatal (such as malloc() returning null), we
- * call abort() instead, since that will take care of terminating the child
- * processes.
+ * We have to be careful with calling exit(ERROR_FATAL):  We cannot do it when child
+ * processes could still be running.  For errors that happen in the middle of a Stu run,
+ * it makes more sense to generate a build error.  In the very few cases that absolutely
+ * need to be fatal (such as malloc() returning null), we call abort() instead, since that
+ * will take care of terminating the child processes.
  */
 
 /*

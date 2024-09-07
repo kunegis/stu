@@ -8,15 +8,15 @@ Rule::Rule(std::vector <shared_ptr <const Place_Target> > &&place_targets_,
 	   bool is_hardcode_,
 	   int redirect_index_,
 	   bool is_copy_)
-	:  place_targets(place_targets_),
-	   deps(deps_),
-	   place(place_),
-	   command(command_),
-	   filename(filename_),
-	   redirect_index(redirect_index_),
-	   is_hardcode(is_hardcode_),
-	   is_copy(is_copy_)
-{  }
+	: place_targets(place_targets_),
+	  deps(deps_),
+	  place(place_),
+	  command(command_),
+	  filename(filename_),
+	  redirect_index(redirect_index_),
+	  is_hardcode(is_hardcode_),
+	  is_copy(is_copy_)
+{ }
 
 Rule::Rule(std::vector <shared_ptr <const Place_Target> > &&place_targets_,
 	   const std::vector <shared_ptr <const Dep> > &deps_,
@@ -24,14 +24,14 @@ Rule::Rule(std::vector <shared_ptr <const Place_Target> > &&place_targets_,
 	   bool is_hardcode_,
 	   int redirect_index_,
 	   const Name &filename_)
-	:  place_targets(place_targets_),
-	   deps(deps_),
-	   place(place_targets_[0]->place),
-	   command(command_),
-	   filename(filename_),
-	   redirect_index(redirect_index_),
-	   is_hardcode(is_hardcode_),
-	   is_copy(false)
+	: place_targets(place_targets_),
+	  deps(deps_),
+	  place(place_targets_[0]->place),
+	  command(command_),
+	  filename(filename_),
+	  redirect_index(redirect_index_),
+	  is_hardcode(is_hardcode_),
+	  is_copy(false)
 {
 	assert(place_targets.size() != 0);
 	assert(redirect_index>= -1);

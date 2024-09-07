@@ -1,16 +1,9 @@
 #
-# C++17 small cleanups:
-# * if constexpr
-# * auto [a, b] = ...
-# * initializer in if
+# Replace reverse_string with library function (C++17).
 #
 
 #
 # Use string_view where appropriate. (needs C++17).
-#
-
-#
-# Replace reverse_string with library function (C++17).
 #
 
 #

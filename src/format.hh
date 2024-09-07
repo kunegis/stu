@@ -16,9 +16,6 @@ string frmt(const char *format, ...)
 #endif
 ;
 
-void reverse_string(string &s);
-/* Reverse the given string in-place */
-
 string fmt(const char *s);
 template<typename T, typename... Args> string fmt(const char *s, T value, Args... args);
 /* fmt() allows only the unqualified '%s' format specifier with string and const char *

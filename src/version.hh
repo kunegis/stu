@@ -3,9 +3,9 @@
 #ifndef VERSION_HH
 #define VERSION_HH
 
-#define STU_VERSION "2.7.93"
+#define STU_VERSION "2.7.94"
 #define STU_VERSION_MAJOR 2
 #define STU_VERSION_MINOR 7
-#define STU_VERSION_PATCH 93
+#define STU_VERSION_PATCH 94
 
 #endif

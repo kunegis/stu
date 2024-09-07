@@ -30,14 +30,6 @@ string frmt(const char *format, ...)
 	return ret;
 }
 
-void reverse_string(string &s)
-{
-	const auto size= s.size();
-	for (size_t i= 0; i < size / 2; ++i) {
-		std::swap(*(s.begin() + i), *(s.begin() + size - 1 - i));
-	}
-}
-
 string fmt(const char *s)
 {
 	string ret;

@@ -1,8 +1,4 @@
 #
-# Replace reverse_string with library function (C++17).
-#
-
-#
 # Use string_view where appropriate. (needs C++17).
 #
 

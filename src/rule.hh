@@ -159,9 +159,9 @@ private:
 	 * more of the containers below.  */
 
 	Preset <shared_ptr <const Rule> > rules_param_prefix, rules_param_suffix;
-	/* All parametrized rules that have a target with a prefix/suffix,
-	 * stored by each of their affixes.  In SUFFIX, everything is reversed,
-	 * so access must use reversed strings.  */
+	/* All parametrized rules that have a target with a prefix/suffix, stored by each
+	 * of their affixes.  In SUFFIX, everything is reversed, so access must use
+	 * reversed strings. */
 
 	std::vector <shared_ptr <const Rule> > rules_param_bare;
 	/* All parametrized rules where at least one target is affixless, or in
@@ -178,9 +178,9 @@ public:
 		return rules_best.size();
 	}
 
-	/* Return all equally best targets.  They are returned as a map by
-	 * place, so iterating over them will give a consistent order, for
-	 * consistent error messages.  */
+	/* Return all equally best targets.  They are returned as a map by place, so
+	 * iterating over them will give a consistent order, for consistent error
+	 * messages. */
 	const std::map <Place, shared_ptr <const Place_Target> > &targets_best() const;
 
 	/* Access the best rule.  The best rule must be unique.  */
@@ -201,8 +201,7 @@ private:
 	std::vector <int> priorities_best;
 	std::vector <shared_ptr <const Place_Target> > place_targets_best;
 
-	/* The same as PLACE_PARAM_TARGETS_BEST, but sorted by place.  Filled on
-	 * demand.  */
+	/* The same as PLACE_PARAM_TARGETS_BEST, but sorted by place.  Filled on demand. */
 	mutable std::map <Place, shared_ptr <const Place_Target> > best_sorted;
 };
 

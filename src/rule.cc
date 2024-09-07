@@ -240,7 +240,7 @@ void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 				}
 				if (!suffix.empty()) {
 					string suffix_inv= suffix;
-					reverse_string(suffix_inv);
+					std::reverse(suffix_inv.begin(), suffix_inv.end());
 					rules_param_suffix.insert(suffix_inv, rule);
 				}
 
@@ -311,7 +311,7 @@ shared_ptr <const Rule> Rule_Set::get(Hash_Dep hash_dep,
 		best_rule_finder.add(hash_dep, *it);
 	}
 	string target_reversed= hash_dep.get_name_nondynamic();
-	reverse_string(target_reversed);
+	std::reverse(target_reversed.begin(), target_reversed.end());
 	for (auto it= rules_param_suffix.find(target_reversed);
 	     it != rules_param_suffix.end(); ++it) {
 		best_rule_finder.add(hash_dep, *it);

@@ -13,8 +13,7 @@ void print_error(string message)
 	assert(islower(message[0]) || message[0] == '\'');
 	assert(message[message.size() - 1] != '\n');
 	fprintf(stderr, "%s%s%s: %s\n",
-		Color::stderr_err_on, dollar_zero, Color::stderr_err_off,
-		message.c_str());
+		Color::stderr_err_on, dollar_zero, Color::stderr_err_off, message.c_str());
 }
 
 void print_errno(string message)
@@ -52,15 +51,15 @@ void print_out(string text)
 	       Color::stdout_success_on, text.c_str(), Color::stdout_success_off);
 }
 
-void print_error_silenceable(string text)
+void print_error_silenceable(const char *text)
 {
-	assert(! text.empty());
+	assert(text && text[0]);
 	assert(isupper(text[0]));
-	assert(text[text.size() - 1] != '\n');
+	assert(text[strlen(text) - 1] != '\n');
 	if (option_s)
 		return;
 	fprintf(stderr, "%s%s%s\n",
-		Color::stderr_err_on, text.c_str(), Color::stderr_err_off);
+		Color::stderr_err_on, text, Color::stderr_err_off);
 }
 
 const Place Place::place_empty;
@@ -188,6 +187,6 @@ void print_warning(const Place &place, string message)
 	assert(! message.empty());
 	assert(islower(message[0]) || message[0] == '\'');
 	assert(message[message.size() - 1] != '\n');
-	place.print(fmt("warning: %s", message),
+	place.print(fmt("warning: %s", message.c_str()),
 		    Color::stderr_warn_on, Color::stderr_warn_off);
 }

@@ -1213,20 +1213,21 @@ bool Parser::next_concatenates() const
 	return op == '(' || op == '[';
 }
 
-void Parser::get_file(string filename,
+void Parser::get_file(const char *filename,
 		      int file_fd,
 		      Rule_Set &rule_set,
 		      shared_ptr <const Place_Target> &target_first,
 		      Place &place_first)
 {
 	assert(file_fd == -1 || file_fd > 1);
+	assert(filename);
 
-	Place place_diagnostic= filename.empty()
-		? Place() : Place(Place::Type::OPTION, 'f');
-	if (filename.empty())
+	Place place_diagnostic=
+		!filename[0] ? Place() : Place(Place::Type::OPTION, 'f');
+	if (!filename[0])
 		filename= FILENAME_INPUT_DEFAULT;
-	string filename_passed= filename;
-	if (filename_passed == "-")
+	const char *filename_passed= filename;
+	if (!strcmp(filename_passed, "-"))
 		filename_passed= "";
 
 	/* Tokenize */

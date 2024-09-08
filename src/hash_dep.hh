@@ -35,7 +35,7 @@ static_assert(sizeof(word_t) == sizeof(uint8_t) && C_WORD <= 8
 class Hash_Dep
 {
 public:
-	explicit Hash_Dep(string text_)
+	explicit Hash_Dep(std::string_view text_)
 		/* TEXT_ is the full text field of this Hash_Dep */
 		: text(text_) { }
 

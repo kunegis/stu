@@ -223,10 +223,11 @@ public:
 		check();
 	}
 
-	Plain_Dep(Flags flags_,
-		  const Place_Target &place_target_,
-		  const Place &place_,
-		  const string &variable_name_)
+	Plain_Dep(
+		Flags flags_,
+		const Place_Target &place_target_,
+		const Place &place_,
+		std::string_view variable_name_)
 		/* Use an explicit dependency place */
 		: Dep(flags_),
 		  place_target(place_target_),
@@ -236,11 +237,12 @@ public:
 		check();
 	}
 
-	Plain_Dep(Flags flags_,
-		  const Place places_[C_PLACED],
-		  const Place_Target &place_target_,
-		  const Place &place_,
-		  const string &variable_name_)
+	Plain_Dep(
+		Flags flags_,
+		const Place places_[C_PLACED],
+		const Place_Target &place_target_,
+		const Place &place_,
+		std::string_view variable_name_)
 		/* Use an explicit dependency place */
 		: Dep(flags_, places_),
 		  place_target(place_target_),
@@ -250,10 +252,11 @@ public:
 		check();
 	}
 
-	Plain_Dep(Flags flags_,
-		  const Place places_[C_PLACED],
-		  const Place_Target &place_target_,
-		  const string &variable_name_)
+	Plain_Dep(
+		Flags flags_,
+		const Place places_[C_PLACED],
+		const Place_Target &place_target_,
+		std::string_view variable_name_)
 		/* Use an explicit dependency place */
 		: Dep(flags_, places_),
 		  place_target(place_target_),

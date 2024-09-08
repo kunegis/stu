@@ -33,5 +33,5 @@ cat <<EOF
 #define STU_VERSION_MINOR $VERSION_MINOR
 #define STU_VERSION_PATCH $VERSION_PATCH
 
-#endif
+#endif /* ! VERSION_HH */
 EOF

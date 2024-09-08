@@ -85,7 +85,7 @@ public:
 	 * Parsed dependency are appended to DEPS, which is not
 	 * necessarily empty on invocation. */
 
-	static void get_file(string filename,
+	static void get_file(const char *filename,
 			     int file_fd,
 			     Rule_Set &rule_set,
 			     shared_ptr <const Place_Target> &target_first,

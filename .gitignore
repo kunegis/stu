@@ -2,3 +2,4 @@
 /conf
 /cov
 /log
+src/version.hh

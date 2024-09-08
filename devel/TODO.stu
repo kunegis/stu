@@ -1,8 +1,4 @@
 #
-# Running sh/mktest in xterm:  Ctrl-C doesn't work.
-#
-
-#
 # gcc -fanalyzer
 #
 

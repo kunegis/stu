@@ -91,7 +91,7 @@ log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/test tests tests/*/*
 install:  sh/install bin/stu man/stu.1
 	sh/install
 clean:
-	rm -Rf bin/ conf/ log/ cov/
+	rm -Rf bin/ conf/ log/ cov/ src/version.hh
 
 MANPAGE:  man/stu.1
 	MANWIDTH=80 man man/stu.1 >MANPAGE

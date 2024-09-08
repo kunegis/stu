@@ -1,6 +1,5 @@
 #
-# Use string_view where appropriate. (needs C++17).
-# * from preset.hh
+# Running sh/mktest in the terminal:  green success text is followed by previous white text
 #
 
 #

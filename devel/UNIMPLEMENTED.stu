@@ -6,6 +6,10 @@
 # always backward-incompatible.
 
 #
+# Execute "make analyzer".  Not executed yet because it needs too much memory.
+#
+
+#
 # Have an option to output the dependency graph, i.e., output each edge
 # on a single line, e.g. separated by tab.
 #

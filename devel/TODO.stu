@@ -1,8 +1,4 @@
 #
-# gcc -fanalyzer
-#
-
-#
 # Compilation mode like ndebug but non-stripped.  Check output of nm.
 #
 

@@ -15,7 +15,7 @@ test: \
     log/test_clean \
     log/test_unit.ndebug \
     log/test_clean_last
-.PHONY: all clean install check test cov prof sani
+.PHONY: all clean install check test cov prof sani analyzer
 
 conf/CXX: sh/configure
 	sh/configure
@@ -33,37 +33,42 @@ CXXFLAGS_DEBUG= \
     -Wcast-align -Wrestrict -Wno-parentheses -Wlogical-op -Wredundant-decls \
     -Wno-pessimizing-move -Wsuggest-override \
     -D_GLIBCXX_DEBUG
-CXXFLAGS_CDEBUG= \
-    -O0 -D_GLIBCXX_DEBUG -w
-CXXFLAGS_PROF= -pg -O2 -DNDEBUG
-CXXFLAGS_COV=  --coverage -lgcov -O0 -DNDEBUG -DSTU_COV
-CXXFLAGS_SANI= -pg -O2 -Werror -Wno-unused-result -fsanitize=undefined \
+CXXFLAGS_SANI= \
+    -pg -O2 -Werror -Wno-unused-result -fsanitize=undefined \
     -fsanitize-undefined-trap-on-error
+CXXFLAGS_CDEBUG=   -O0 -D_GLIBCXX_DEBUG -w
+CXXFLAGS_PROF=     -pg -O2 -DNDEBUG
+CXXFLAGS_COV=      --coverage -lgcov -O0 -DNDEBUG -DSTU_COV
+CXXFLAGS_ANALYZER= -fanalyzer
 
 bin/stu:                conf/CXX src/*.cc src/*.hh src/version.hh
-	@mkdir -p bin
+	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
-	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
+	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu                 2>&1 | tee log/compile.ndebug
 bin/stu.debug:          conf/CXX src/*.cc src/*.hh src/version.hh
-	@mkdir -p bin
+	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
-	@     $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
+	@     $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug           2>&1 | tee log/compile.debug
 bin/stu.cdebug:         conf/CXX src/*.cc src/*.hh src/version.hh
-	@mkdir -p bin
+	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug
-	@     $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug
+	@     $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug          2>&1 | tee log/compile.cdebug
 bin/stu.prof:           conf/CXX src/*.cc src/*.hh src/version.hh
-	@mkdir -p bin
+	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
-	@     $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
+	@     $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof            2>&1 | tee log/compile.prof
 bin/stu.cov:            conf/CXX src/*.cc src/*.hh src/version.hh
-	@mkdir -p bin
+	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_COV)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov
-	@     $$(cat conf/CXX) $(CXXFLAGS_COV)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov
+	@     $$(cat conf/CXX) $(CXXFLAGS_COV)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov             2>&1 | tee log/compile.cov
 bin/stu.sani_undefined: conf/CXX src/*.cc src/*.hh src/version.hh
-	@mkdir -p bin
+	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani_undefined
-	@     $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani_undefined
+	@     $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani_undefined  2>&1 | tee log/compile.sani_undefined
+bin/stu.analyzer:       conf/CXX src/*.cc src/*.hh src/version.hh
+	@mkdir -p bin log
+	@echo $$(cat conf/CXX) $(CXXFLAGS_ANALYZER)         $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.analyzer
+	@     $$(cat conf/CXX) $(CXXFLAGS_ANALYZER)         $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.analyzer        2>&1 | tee log/compile.analyzer
 
 log/test_options:   sh/test_options src/options.hh man/stu.1.in
 	@echo sh/test_options
@@ -111,3 +116,4 @@ bin/gmon.out:   bin/stu.prof tests/long-parallel-1/main.stu
 	cd bin && ./stu.prof -j10 -f ../tests/long-parallel-1/main.stu && ../sh/rm_tmps
 
 sani: log/test_unit.sani_undefined
+analyzer:  bin/stu.analyzer

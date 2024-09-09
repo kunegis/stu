@@ -266,3 +266,10 @@ cd path/to/dir {
 }
 
 # Find a good syntax for this.
+
+#
+# A flag that removes files.  Allows Stu to check that we are not adding an removing the
+# same files concurrently.
+#
+
+@clean:  -r (bin conf);

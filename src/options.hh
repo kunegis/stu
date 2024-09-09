@@ -82,7 +82,7 @@ enum class Order {
 };
 static Order order= Order::DFS;
 
-bool option_parallel= false;
+static bool option_parallel= false;
 /* Whether the -j option is used with a value >1 */
 
 static bool order_vec;
@@ -93,7 +93,7 @@ static long options_jobs= 1;
  * long.  Set before calling main() from the -j option, and then changed
  * internally by Executor.  Always nonnegative. */
 
-const char **envp_global;
+static const char **envp_global;
 
 static const char *dollar_zero;
 /* Does the same as program_invocation_name (which is a GNU extension,

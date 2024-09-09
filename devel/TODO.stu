@@ -1,8 +1,4 @@
 #
-# Compilation mode like ndebug but non-stripped.  Check output of nm.
-#
-
-#
 # Achieve full coverage.
 #
 # * Exclude unreachable() blocks from counting

@@ -37,8 +37,9 @@ CXXFLAGS_SANI= \
     -pg -O2 -Werror -Wno-unused-result -fsanitize=undefined \
     -fsanitize-undefined-trap-on-error
 CXXFLAGS_CDEBUG=   -O0 -D_GLIBCXX_DEBUG -w
-CXXFLAGS_PROF=     -pg -O2 -DNDEBUG
-CXXFLAGS_COV=      --coverage -lgcov -O0 -DNDEBUG -DSTU_COV
+CXXFLAGS_SNDEBUG=   -DNDEBUG -O2 -fwhole-program
+CXXFLAGS_PROF=     -DNDEBUG -pg -O2
+CXXFLAGS_COV=      -DNDEBUG --coverage -lgcov -O0 -DSTU_COV
 CXXFLAGS_ANALYZER= -fanalyzer
 
 bin/stu:                conf/CXX src/*.cc src/*.hh src/version.hh
@@ -53,6 +54,10 @@ bin/stu.cdebug:         conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug
 	@     $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug          2>&1 | tee log/compile.cdebug
+bin/stu.sndebug:        conf/CXX src/*.cc src/*.hh src/version.hh
+	@mkdir -p bin log
+	@echo $$(cat conf/CXX) $(CXXFLAGS_SNDEBUG)          $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sndebug
+	@     $$(cat conf/CXX) $(CXXFLAGS_SNDEBUG)          $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sndebug         2>&1 | tee log/compile.sndebug
 bin/stu.prof:           conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof

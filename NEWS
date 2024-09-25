@@ -11,6 +11,10 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2024-09-25  Version 2.7.100
+
+* 'stu --help' and 'stu --version' now do the same as 'stu -h' and 'stu -V'.
+
 2024-09-06  Version 2.7.89
 
 * Switched to C++17 (from C++14).

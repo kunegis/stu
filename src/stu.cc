@@ -52,6 +52,15 @@ int main(int argc, char **argv, char **envp)
 	check_status();
 	int error= 0;
 
+	if (argc >= 2 && !strcmp(argv[1], "--version")) {
+		print_option_V();
+		exit(0);
+	}
+	if (argc >= 2 && !strcmp(argv[1], "--help")) {
+		fputs(HELP, stdout);
+		exit(0);
+	}
+
 	try {
 		std::vector <string> filenames;
 		/* Filenames passed using the -f option.  Entries are unique and

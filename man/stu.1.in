@@ -126,7 +126,7 @@ Pass rules in full Stu syntax.
 Treat all optional dependencies (declared with the
 .BR -o
 flag) as non-optional.
-.IP -h
+.IP "-h, --help"
 Output a short help and exit.
 .IP "-i"
 Interactive mode.  I.e., put the jobs run into the foreground.  Must not
@@ -230,7 +230,7 @@ Silent mode.  Suppress messages on standard output:  messages about
 which commands are run, a message when the build is successful, and a
 message when there is nothing to be done.  Error messages are not
 suppressed.  This option is comparable to the same option in Make.
-.IP -V
+.IP "-V, --version"
 Output the version number of Stu and exit.
 .IP "-x"
 Call the shell using the

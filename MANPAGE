@@ -95,7 +95,8 @@ OPTIONS
        -g     Treat all optional dependencies (declared with the -o  flag)  as
               non-optional.
 
-       -h     Output a short help and exit.
+       -h, --help
+              Output a short help and exit.
 
        -i     Interactive  mode.   I.e., put the jobs run into the foreground.
               Must not be used in conjunction with -j N when N >  1.   Without
@@ -188,7 +189,8 @@ OPTIONS
               messages are not suppressed.  This option is comparable  to  the
               same option in Make.
 
-       -V     Output the version number of Stu and exit.
+       -V, --version
+              Output the version number of Stu and exit.
 
        -x     Call  the shell using the -x option, i.e., each individual shell
               command is output to standard error output individually, instead
@@ -1131,4 +1133,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.7.99                      September 2024                          STU(1)
+stu-2.7.100                     September 2024                          STU(1)

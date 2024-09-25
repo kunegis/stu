@@ -1,0 +1,48 @@
+#! /bin/sh
+
+rm -Rf list.*
+
+../../bin/stu.test --version >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Expected exit status 0, not $exitstatus"
+	exit 1
+}
+
+[ -e list.err ] || {
+	echo >&2 "*** Expected list.err to exist"
+	exit 2
+}
+
+[ -s list.err ] && {
+	echo >&2 "*** Expected list.err to be empty"
+	cat >&2 list.err
+	exit 1
+}
+
+if ! sed -e '1!d' list.out | grep -q -E -e "stu $(cat ../../VERSION)" ; then
+	echo >&2 "*** Expected list.out to contain the version number"
+	cat >&2 list.out
+	exit 1
+fi
+
+../../bin/stu.test -V >list.out2 2>list.err2
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Expected exit status 0, not $exitstatus (2)"
+	exit 1
+}
+
+if ! cmp -s list.out list.out2 ; then
+	echo >&2 "*** Expected output of 'stu -V' and 'stu --version' to be identical"
+	exit 1
+fi
+
+if ! cmp -s list.err list.err2 ; then
+	echo >&2 "*** Expected error output of 'stu -V' and 'stu --version' to be identical"
+	exit 1
+fi
+
+exit 0

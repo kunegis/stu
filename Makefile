@@ -108,8 +108,10 @@ MANPAGE:  man/stu.1
 man/stu.1:  man/stu.1.in VERSION sh/mkman
 	sh/mkman
 
-cov:  bin/stu.cov sh/cov bin/stu.cov-stu.gcda
-	sh/cov
+cov:  sh/cov_eval cov/OVERVIEW
+	sh/cov_eval
+cov/OVERVIEW:  sh/cov_gcov bin/stu.cov-stu.gcda
+	sh/cov_gcov
 bin/stu.cov-stu.gcda:  bin/stu.cov sh/test tests tests/*/*
 	rm -f bin/stu.cov-stu.gcda
 	VARIANT=cov sh/test

@@ -1,0 +1,8 @@
+#! /bin/sh
+
+set -e
+
+rm -Rf cov
+mkdir cov
+gcov -r bin/stu.cov-stu.gc >cov/OVERVIEW
+mv ./*.gcov cov/

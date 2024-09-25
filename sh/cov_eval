@@ -1,0 +1,16 @@
+#! /bin/sh
+
+eval_file()
+{
+	grep -r -E -e '#''#''#' -- "$file" |
+		sed -e 's,^[[:space:]]*#*:[[:space:]]*,'"$file"':,;s,^cov/\([a-z_./]*\)\.gcov,src/\1,' && return 1
+	return 0
+}
+
+ret=0
+
+for file in cov/*.gcov ; do
+	eval_file || ret=1
+done
+
+exit "$ret"

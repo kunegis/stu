@@ -1,8 +1,6 @@
 #
 # Achieve full coverage.
 #
-# * Write a script that goes through all # # # lines and filters out which are false
-#   positives
 # * Exclude unreachable() blocks from counting
 # * Exclude should_not_happen() blocks from counting
 # * Investigate why dome descructors have multiple copies, not all of which are used

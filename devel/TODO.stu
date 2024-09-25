@@ -1,8 +1,4 @@
 #
-# Support --help and --version
-#
-
-#
 # Achieve full coverage.
 #
 # * Write a script that goes through all # # # lines and filters out which are false

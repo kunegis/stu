@@ -1,18 +1,44 @@
 #! /bin/sh
 
+[ "$cov_eval_debug" ] && exec 6>&2 || exec 6>/dev/null
+
 eval_file()
 {
-	grep -r -E -e '#''#''#' -- "$file" |
-		sed -e 's,^[[:space:]]*#*:[[:space:]]*,'"$file"':,;s,^cov/\([a-z_./]*\)\.gcov,src/\1,' |
-		sed -e '/[[:space:]]unreachable(/d' &&
-		return 1
-	return 0
+	file=$1
+	prefix=
+	src_file=$(echo "$file" | sed -e 's,^cov/\([a-z_./]*\)\.gcov,src/\1,')
+	echo >&6 "file=$file src_file=$src_file"
+	# "read" will omit a trailing ':' from $text, but that is not a problem
+	cat -- "$1" | while IFS=: read -r count line text ; do
+		line=$(echo $line)
+		echo >&6 "count='$count' line=$line text='$text'"
+		if [ "$prefix" ] && echo "$text" | grep -q -E -e '^'"$prefix" ; then
+			printf >&6 "\tStarts with prefix\n"
+			continue
+		fi
+		printf >&6 "\tReset prefix\n"
+		prefix=
+		if echo "$text" | grep -q -E -e '^\s*should_not_happen\b' ; then
+			prefix=$(echo "$text" | sed -e 's,^\([[:space:]]*\).*$,\1,')
+			printf >&6 "\tShould not happen; prefix='$prefix'\n"
+			continue
+		fi
+		if ! echo "$count" | grep -q -E -e '#''#''#' ; then
+			printf >&6 "\tNot uncovered\n"
+			continue
+		fi
+		if echo "$text" | grep -q -E -e '^\s*unreachable\b' ; then
+			printf >&6 "\tUnreachable\n"
+			continue
+		fi
+		printf '%s:%s:%s\n' "$src_file" "$line" "$text"
+	done
 }
 
 ret=0
 
 for file in cov/*.gcov ; do
-	eval_file || ret=1
+	eval_file "$file" || ret=1
 done
 
 exit "$ret"

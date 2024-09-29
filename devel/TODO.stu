@@ -1,7 +1,6 @@
 #
 # Achieve full coverage.
 #
-# * Exclude should_not_happen() blocks from counting
 # * What to do with possible, but untestable paths? (e.g., setvbuf() failing)
 # * Investigate why dome descructors have multiple copies, not all of which are used
 #

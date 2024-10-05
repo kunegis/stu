@@ -78,6 +78,8 @@ void Place::print(string message,
 
 	switch (type) {
 	default:
+		should_not_happen();
+		[[fallthrough]];
 	case Type::EMPTY:
 		should_not_happen();
 		fprintf(stderr, "%s\n", message.c_str());

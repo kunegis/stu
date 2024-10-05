@@ -1,0 +1,2 @@
+main.stu:6:5: no rule to build "C", needed by "./"
+main.stu:1:5: "./" is needed by "A"

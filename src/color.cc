@@ -24,11 +24,13 @@ void Color::set()
 		errno= 0;
 		is_tty_out= isatty(fileno(stdout));
 		if (! is_tty_out && errno != 0 && errno != ENOTTY) {
+			should_not_happen();
 			perror("isatty");
 		}
 		errno= 0;
 		is_tty_err= isatty(fileno(stderr));
 		if (! is_tty_err && errno != 0 && errno != ENOTTY) {
+			should_not_happen();
 			perror("isatty");
 		}
 	}

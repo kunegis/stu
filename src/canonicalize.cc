@@ -3,7 +3,6 @@
 #include <string.h>
 
 char *canonicalize_string(Canonicalize_Flags canonicalize_flags, char *p)
-/* Two passes are made, for '/' and '.', in that order. */
 {
 	/*
 	 * Fold '/'
@@ -75,10 +74,6 @@ char *canonicalize_string(Canonicalize_Flags canonicalize_flags, char *p)
 		} else {
 			*d= '\0';
 		}
-		s += 2;
-	} else if (canonicalize_flags & A_BEGIN && canonicalize_flags & A_END
-		   && s[0] == '.' && s[1] == '/' && s[2] == '\0') {
-		*++d= '\0';
 		s += 2;
 	} else if (canonicalize_flags & A_BEGIN && ! (canonicalize_flags & A_END)
 		   && s[0] == '.' && s[1] == '/' && s[2] == '\0') {

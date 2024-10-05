@@ -414,8 +414,8 @@ pid_t Job::wait(int *status)
 		print_jobs();
 		goto retry;
 	default:
-		/* We didn't wait for this signal */
 		should_not_happen();
+		/* We didn't wait for this signal */
 		print_error(frmt("sigwait: received signal %d", sig));
 		goto begin;
 	}

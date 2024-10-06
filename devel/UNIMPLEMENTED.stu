@@ -92,7 +92,8 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" ; }
 #
 
 #
-# Have a logfile.  Similar to debug mode, but into a file.
+# Have a logfile.  Similar to debug mode, but into a file.  We may also have individual
+# log files for each job.
 #
 
 #

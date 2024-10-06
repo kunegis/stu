@@ -1,13 +1,13 @@
 #! /bin/sh
 
-find_files()
+find_source_files()
 {
 	find . -type f |
-		grep -v -E -e '~$' -e '^\./(bin|tests|cov|.git)/' -e '^\./man/stu\.1$'
+		grep -v -E -e '~$' -e '^\./(bin|cov|tests|log|.git)/' -e '^\./man/stu\.1$'
 	find tests -name EXEC
 }
 
-find_double_slash()
+check_double_slash()
 {
 	grep -E -n '(^|[^:])//' src/*.cc src/*.hh |
 	sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 C++ source must not contain //,' |
@@ -15,7 +15,7 @@ find_double_slash()
 	return 0
 }
 
-find_double_hash()
+check_double_hash()
 {
 	find . -type f -a \( -name '*.stu' -o -perm -u+x -o -name Makefile \) -a \! -name '*~' \
 	     -a \! -path './.git*' -a \! -path './bin/stu.*' -a \! -path './bin/stu' \
@@ -27,9 +27,9 @@ find_double_hash()
 	return 0
 }
 
-find_space_file()
+check_space_file()
 {
-	find_files | {
+	find_source_files | {
 		my_ret=0
 		while read file ; do
 			head -n 1 -- "$file" | grep -q -E '^\s*$' && {
@@ -45,18 +45,18 @@ find_space_file()
 	}
 }
 
-find_space_line()
+check_space_line()
 {
-	find_files |
+	find_source_files |
 		xargs grep -E -n '\s$' |
 		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Line must not end in space,' |
 		grep -E '.' >&2 && return 1
 	return 0
 }
 
-find_double_empty_line()
+check_double_empty_line()
 {
-	find_files |
+	find_source_files |
 	xargs awk '
 BEGIN {
 	previ= "x";
@@ -75,9 +75,9 @@ BEGIN {
 	return 0
 }
 
-find_forbidden_tab()
+check_forbidden_tab()
 {
-	find_files |
+	find_source_files |
 		xargs grep -E -n -e '[^'"$(printf '\t')"'#*]'"$(printf '\t')" |
 		grep -v -F -e "$(printf '\t')"'\' |
 		grep -v -E -e '://' |
@@ -86,9 +86,9 @@ find_forbidden_tab()
 	return 0
 }
 
-find_backtick()
+check_backtick()
 {
-	find_files |
+	find_source_files |
 		grep -v -E -e '/(stu\.1\.in|CODING|COPYING|CHARACTERS|test_clean|MANPAGE|.*\.cc)$' |
 		xargs grep -E -n -e '`' |
 		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain backtick "`",' |
@@ -96,16 +96,16 @@ find_backtick()
 	return 0
 }
 
-find_control()
+check_control()
 {
-	find_files |
+	find_source_files |
 		xargs grep -E -n -e '['"$(printf '\r')"']' |
 		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain control character,' |
 		grep -E '.' >&2 && return 1
 	return 0
 }
 
-find_assert_false()
+check_assert_false()
 {
 	grep -F -n 'assert(false)' src/*.cc src/*.hh |
 	sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 C++ source must use hints.hh instead of assert(false),' |
@@ -117,7 +117,7 @@ find_assert_false()
 # enabled extended regular expressions.  POSIX does not prescribe an "extended regexp"
 # mode for sed.  In many implementations, '-E' does the same.  '-E' is more portable than
 # '-r', but still not POSIX.
-find_sed()
+check_sed()
 {
 	find . -type f -a \! -path './.git*' -a \! -name '*~' |
 		xargs grep -n -E -e 'sed[[:space:]]+-[Er]' |
@@ -126,7 +126,7 @@ find_sed()
 	return 0
 }
 
-find_test_nolong_sleep()
+check_test_nolong_sleep()
 {
 	find tests -type f | xargs grep -F -n -e sleep |
 		grep -v -E -e '^tests/long-' |
@@ -135,7 +135,7 @@ find_test_nolong_sleep()
 	return 0
 }
 
-find_manpage_tab()
+check_manpage_tab()
 {
 	grep -F -n -e "$(printf '\t')" man/stu.1.in && {
 		echo >&2 "*** 'man/stu.1.in' must not contain tabs"
@@ -146,17 +146,17 @@ find_manpage_tab()
 
 ret=0
 
-find_double_slash || ret=1
-find_double_hash || ret=1
-find_space_file || ret=1
-find_space_line || ret=1
-find_double_empty_line || ret=1
-find_forbidden_tab || ret=1
-find_backtick || ret=1
-find_control || ret=1
-find_assert_false || ret=1
-find_sed || ret=1
-find_test_nolong_sleep || ret=1
-find_manpage_tab || ret=1
+check_double_slash || ret=1
+check_double_hash || ret=1
+check_space_file || ret=1
+check_space_line || ret=1
+check_double_empty_line || ret=1
+check_forbidden_tab || ret=1
+check_backtick || ret=1
+check_control || ret=1
+check_assert_false || ret=1
+check_sed || ret=1
+check_test_nolong_sleep || ret=1
+check_manpage_tab || ret=1
 
 exit "$ret"

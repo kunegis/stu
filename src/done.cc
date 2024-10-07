@@ -6,6 +6,15 @@ bool Done::is_done_from_flags(Flags flags) const
 	return (~bits & d.bits) == 0;
 }
 
+Done Done::from_flags(Flags flags)
+{
+	return Done(
+		(~flags & (F_PERSISTENT | F_OPTIONAL))
+		* (1 | (flags & F_PHASE_B ? 4 : 0)));
+}
+
+#ifndef NDEBUG
+
 string Done::show() const
 {
 	char ret[7]= "[0000]";
@@ -14,9 +23,4 @@ string Done::show() const
 	return ret;
 }
 
-Done Done::from_flags(Flags flags)
-{
-	return Done(
-		(~flags & (F_PERSISTENT | F_OPTIONAL))
-		* (1 | (flags & F_PHASE_B ? 4 : 0)));
-}
+#endif /* ! NDEBUG */

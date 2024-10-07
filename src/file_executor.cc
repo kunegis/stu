@@ -1132,11 +1132,6 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	raise(ERROR_BUILD);
 }
 
-string File_Executor::debug_done_text() const
-{
-	return done.show();
-}
-
 bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 {
 	if ((dep_link->flags & F_OPTIONAL)

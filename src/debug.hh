@@ -16,7 +16,7 @@ class Debuggable
 {
 public:
 	virtual void render(Parts &, Rendering= 0) const= 0;
-	virtual ~Debuggable();
+	virtual ~Debuggable() { }
 };
 
 class Debug

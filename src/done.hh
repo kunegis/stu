@@ -33,9 +33,12 @@ public:
 	bool is_all() const { return (~bits & D_ALL) == 0; }
 	bool is_done_from_flags(Flags flags) const;
 	void set_all() { bits= ~0; }
-	string show() const;
 
 	static Done from_flags(Flags flags);
+
+#ifndef NDEBUG
+	string show() const;
+#endif
 
 private:
 	unsigned bits;

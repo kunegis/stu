@@ -95,12 +95,6 @@ public:
 	virtual bool finished(Flags flags) const= 0;
 	/* Whether the executor is finished working for the given tasks */
 
-	virtual string debug_done_text() const
-	/* Extra string for the "done" information; may be empty. */
-	{
-		return "";
-	}
-
 	virtual void notify_result(shared_ptr <const Dep> dep_result,
 				   Executor *source,
 				   Flags flags,

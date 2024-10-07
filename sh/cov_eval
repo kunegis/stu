@@ -9,6 +9,7 @@ eval_file()
 	src_file=$(echo "$file" | sed -e 's,^cov/\([a-z_./]*\)\.gcov,src/\1,')
 	echo >&6 "file=$file src_file=$src_file"
 	# "read" will omit a trailing ':' from $text, but that is not a problem
+	## TODO Fix this
 	cat -- "$1" | while IFS=: read -r count line text ; do
 		line=$(echo $line)
 		echo >&6 "count='$count' line=$line text='$text'"

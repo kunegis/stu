@@ -8,11 +8,14 @@ eval_file()
 	prefix=
 	src_file=$(echo "$file" | sed -e 's,^cov/\([a-z_./]*\)\.gcov,src/\1,')
 	echo >&6 "file=$file src_file=$src_file"
-	# "read" will omit a trailing ':' from $text, but that is not a problem
-	## TODO Fix this
-	cat -- "$1" | while IFS=: read -r count line text ; do
-		line=$(echo $line)
-		echo >&6 "count='$count' line=$line text='$text'"
+
+	cat -- "$1" | while IFS= read -r full_line ; do
+		printf >&6 "full_line='%s'\n" "$full_line"
+		count=$(printf '%s\n' "$full_line" | sed -e 's,^[[:space:]]*\([0-9-]*\):.*$,\1,')
+		line=$(printf '%s\n' "$full_line" | sed -e 's,^[^:]*:[[:space:]]*\([0-9]*\):.*$,\1,')
+		text=$(printf '%s\n' "$full_line" | sed -e 's,^[^:]*:[^:]*:\(.*\)$,\1,')
+		[ "$line" = 0 ] && continue
+		printf >&6 "count='%s' line=%s text='%s'\n" "$count" "$line" "$text"
 		if [ "$prefix" ] && echo "$text" | grep -q -E -e '^'"$prefix" ; then
 			printf >&6 "\tStarts with prefix\n"
 			continue
@@ -28,7 +31,7 @@ eval_file()
 			printf >&6 "\tNot uncovered\n"
 			continue
 		fi
-		if echo "$text" | grep -q -E -e '^\s*unreachable\b' ; then
+		if printf '%s\n' "$text" | grep -q -E -e '^\s*unreachable\b' ; then
 			printf >&6 "\tUnreachable\n"
 			continue
 		fi

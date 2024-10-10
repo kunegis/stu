@@ -26,10 +26,10 @@ public:
 	static constexpr unsigned D_ALL_OPTIONAL=
 		D_NONPERSISTENT_TRIVIAL | D_NONPERSISTENT_NONTRIVIAL;
 
+	Done(unsigned b): bits(b) { }
 	Done(): bits(0) { }
 
 	Done &operator|=(Done d) { bits |= d.bits; return *this; }
-	Done &operator|=(unsigned b) { bits |= b; return *this; }
 	bool is_all() const { return (~bits & D_ALL) == 0; }
 	bool is_done_from_flags(Flags flags) const;
 	void set_all() { bits= ~0; }
@@ -42,7 +42,6 @@ public:
 
 private:
 	unsigned bits;
-	Done(unsigned b): bits(b) { }
 };
 
 #endif /* ! DONE_HH */

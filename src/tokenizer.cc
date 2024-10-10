@@ -162,8 +162,7 @@ void Tokenizer::parse_tokens_file(
 				if (0 > munmap((void *) in, in_size))
 					goto error;
 				break;
-			default:
-				unreachable();
+			default: unreachable();
 			}
 			return;
 		}

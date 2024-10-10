@@ -2,8 +2,21 @@
 
 [ "$cov_eval_debug" ] && exec 6>&2 || exec 6>/dev/null
 
+echo >&6 "ret_file=$ret_file"
+ret_file=${TMP:-/tmp}/cov_eval.ret.$$
+
+clean()
+{
+	echo >&6 clean
+	rm -f -- "$ret_file"
+}
+trap clean EXIT
+
+echo 0 >"$ret_file"
+
 eval_file()
 {
+	r=0
 	file=$1
 	prefix=
 	src_file=$(echo "$file" | sed -e 's,^cov/\([a-z_./]*\)\.gcov,src/\1,')
@@ -31,18 +44,19 @@ eval_file()
 			printf >&6 "\tNot uncovered\n"
 			continue
 		fi
-		if printf '%s\n' "$text" | grep -q -E -e '^\s*unreachable\b' ; then
+		if printf '%s\n' "$text" | grep -q -E -e '\bunreachable\s*\(\)' ; then
 			printf >&6 "\tUnreachable\n"
 			continue
 		fi
 		printf '%s:%s:%s\n' "$src_file" "$line" "$text"
+		echo 1 >"$ret_file"
 	done
 }
 
 ret=0
 
 for file in cov/*.gcov ; do
-	eval_file "$file" || ret=1
+	eval_file "$file"
 done
 
-exit "$ret"
+exit $(cat -- "$ret_file")

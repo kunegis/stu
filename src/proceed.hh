@@ -30,6 +30,8 @@ enum {
 	P_COUNT      = 4
 };
 
+#ifndef NDEBUG
 string show_proceed(Proceed proceed);
+#endif
 
 #endif /* ! PROCEED_HH */

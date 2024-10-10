@@ -1,5 +1,7 @@
 #include "proceed.hh"
 
+#ifndef NDEBUG
+
 constexpr const char *const proceed_names[]= {
 	"P_WAIT", "P_CALL_AGAIN", "P_FINISHED", "P_ABORT"
 };
@@ -16,3 +18,5 @@ string show_proceed(Proceed proceed)
 	if (ret.size() == 0) ret += "0";
 	return ret;
 }
+
+#endif /* ! NDEBUG */

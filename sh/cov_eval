@@ -48,6 +48,10 @@ eval_file()
 			printf >&6 "\tUnreachable\n"
 			continue
 		fi
+		if printf '%s\n' "$text" | grep -q -E -e '\bvirtual\s+~.*=\s*default' ; then
+			printf >&6 "\Default virtual destructor"
+			continue
+		fi
 		printf '%s:%s:%s\n' "$src_file" "$line" "$text"
 		echo 1 >"$ret_file"
 	done

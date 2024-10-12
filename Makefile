@@ -45,35 +45,35 @@ CXXFLAGS_ANALYZER= -fanalyzer
 bin/stu:                conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
-	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu                 2>&1 | tee log/compile.ndebug
+	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu                 
 bin/stu.debug:          conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
-	@     $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug           2>&1 | tee log/compile.debug
+	@     $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug           
 bin/stu.cdebug:         conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug
-	@     $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug          2>&1 | tee log/compile.cdebug
+	@     $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug          
 bin/stu.sndebug:        conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_SNDEBUG)          $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sndebug
-	@     $$(cat conf/CXX) $(CXXFLAGS_SNDEBUG)          $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sndebug         2>&1 | tee log/compile.sndebug
+	@     $$(cat conf/CXX) $(CXXFLAGS_SNDEBUG)          $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sndebug         
 bin/stu.prof:           conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
-	@     $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof            2>&1 | tee log/compile.prof
+	@     $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof            
 bin/stu.cov:            conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_COV)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov
-	@     $$(cat conf/CXX) $(CXXFLAGS_COV)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov             2>&1 | tee log/compile.cov
+	@     $$(cat conf/CXX) $(CXXFLAGS_COV)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov             
 bin/stu.sani_undefined: conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani_undefined
-	@     $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani_undefined  2>&1 | tee log/compile.sani_undefined
+	@     $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani_undefined  
 bin/stu.analyzer:       conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_ANALYZER)         $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.analyzer
-	@     $$(cat conf/CXX) $(CXXFLAGS_ANALYZER)         $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.analyzer        2>&1 | tee log/compile.analyzer
+	@     $$(cat conf/CXX) $(CXXFLAGS_ANALYZER)         $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.analyzer        
 
 log/test_options:   sh/test_options src/options.hh man/stu.1.in
 	@echo sh/test_options

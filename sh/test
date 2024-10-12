@@ -21,6 +21,7 @@
 #	$VARIANT     Other variant of the compiled file; the default is to take the file that
 #	             matches the value of $NDEBUG
 #	$TEST_DEBUG  Set to {0,1,2} for verbose levels; default is 0
+#	$nolong      Skip the long-* tests
 #	$notall      If non-empty, exit on the first error, instead of running everything
 #	$emptyok     Set to non-empty to *not* output an error for empty test directories;
 #	             useful after doing "rm" in a version control system on one, since
@@ -124,7 +125,7 @@ output_next()
 	fi
 	if [ "$TEST_DEBUG" = 0 ] ; then
 		printf '[2KTesting [%s] (%s/%s/%s) %s\r' \
-		       "$VARIANT" \
+		       "$VARIANT$subset" \
 		       "[42;30m$count_succeed[m" \
 		       "[43;30m$((count_total - count_succeed - count_failed))[m" \
 		       "$count_failed_text" \
@@ -139,9 +140,7 @@ output_end()
 
 output_success()
 {
-	extra=
-	[ "$coverage" ] && extra=" subset($coverage)"
-	echo "[2K[32mTesting [$VARIANT$extra] Success (runtime $runtime)[m"
+	echo "[2K[32mTesting [$VARIANT$subset] Success (runtime $runtime)[m"
 }
 
 test_fail()
@@ -165,7 +164,15 @@ test_fail_fatal()
 
 sort_tests()
 {
-	ls -1U | sed -e '
+	ls -1U |
+	{
+		if [ "$nolong" ] ; then
+			grep -E -v -e '^long-'
+		else
+			cat
+		fi
+	} |
+	sed -e '
 s,^\(.*\)$,\1 \1,
 s,^\([a-z].*\)$,9999-\1,
 s,^\([0-9]\)\([-.]..*\)$,000\1\2,
@@ -188,6 +195,7 @@ count_succeed=0
 count_failed=0
 preload_cc=log/preload.cc
 preload_so=log/preload.so
+unset STU_OPTIONS
 
 mkdir -p log
 exec 6>log/error.log
@@ -212,20 +220,19 @@ else
 	fi
 fi
 
-unset STU_OPTIONS
-
 cd tests
 
 if [ "$1" ] ; then
 	tests="$@"
-	coverage=$(echo $(echo $tests | tr ' ' '\n' | wc -l))
+	subset=" subset($(echo $(echo $tests | tr ' ' '\n' | wc -l)))"
 else
 	# Note:  At some point there might be too many tests, but we don't
 	# want to use ls -1 | { ... } because that would make it impossible
 	# to do "error=1", as setting the variable $error in a subshell
 	# would have no effect.
 	tests=$(sort_tests)
-	coverage=
+	subset=
+	[ "$nolong" ] && subset=' <no long>'
 fi
 
 count_total=$(echo $(echo $tests | sed 's, ,\

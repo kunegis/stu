@@ -1,7 +1,6 @@
 #
 # Achieve full coverage.
 #
-# * In cov mode, exclude the long-* tests
 # * Investigate why dome descructors have multiple copies, not all of which are used
 # * When cov succeeds, save a flag file to not re-execute cov
 # * src/job.cc:416: default:

@@ -330,8 +330,7 @@ shared_ptr <const Rule> Rule_Set::get(Hash_Dep hash_dep,
 	if (best_rule_finder.count() != 1 ) {
 		place << fmt("multiple minimal matching rules for target %s",
 			     show(hash_dep));
-		for (auto &place_param_target:
-			     best_rule_finder.targets_best()) {
+		for (auto &place_param_target: best_rule_finder.targets_best()) {
 			place_param_target.second->place <<
 				fmt("rule with target %s",
 				    show(*place_param_target.second));
@@ -341,10 +340,8 @@ shared_ptr <const Rule> Rule_Set::get(Hash_Dep hash_dep,
 	}
 
 	/* Instantiate the rule */
-	shared_ptr <const Rule> rule_best=
-		best_rule_finder.rule_best();
-	swap(mapping_parameter,
-	     best_rule_finder.mapping_best());
+	shared_ptr <const Rule> rule_best= best_rule_finder.rule_best();
+	swap(mapping_parameter, best_rule_finder.mapping_best());
 	shared_ptr <const Rule> ret
 		(Rule::instantiate(best_rule_finder.rule_best(), mapping_parameter));
 	param_rule= rule_best;

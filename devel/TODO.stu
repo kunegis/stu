@@ -1,7 +1,6 @@
 #
 # Achieve full coverage.
 #
-# * src/job.cc:416: default:
 # * Destructors of File_Executor and Transient_Executor:  They are rightfully never called
 # * src/rule.cc:88:return rule;
 # ** Double check

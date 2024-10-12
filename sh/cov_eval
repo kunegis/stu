@@ -14,6 +14,23 @@ trap clean EXIT
 
 echo 0 >"$ret_file"
 
+exclude()
+{
+	if printf '%s\n' "$text" | grep -q -E -e '\bunreachable\s*\(\)' ; then
+		printf >&6 "\tUnreachable\n"
+		return 0
+	fi
+	if printf '%s\n' "$text" | grep -q -E -e '\bvirtual\s+~.*=\s*default' ; then
+		printf >&6 "\tDefault virtual destructor\n"
+		return 0
+	fi
+	if printf '%s\n' "$text" | grep -q -E -e '^\s*default\s*:\s*$' ; then
+		printf >&6 "\tDefault\n"
+		return 0
+	fi
+	return 1
+}
+
 eval_file()
 {
 	r=0
@@ -44,12 +61,7 @@ eval_file()
 			printf >&6 "\tNot uncovered\n"
 			continue
 		fi
-		if printf '%s\n' "$text" | grep -q -E -e '\bunreachable\s*\(\)' ; then
-			printf >&6 "\tUnreachable\n"
-			continue
-		fi
-		if printf '%s\n' "$text" | grep -q -E -e '\bvirtual\s+~.*=\s*default' ; then
-			printf >&6 "\Default virtual destructor"
+		if exclude ; then
 			continue
 		fi
 		printf '%s:%s:%s\n' "$src_file" "$line" "$text"

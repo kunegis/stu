@@ -1,9 +1,9 @@
 #
 # Achieve full coverage.
 #
-# * Destructors of File_Executor and Transient_Executor:  They are rightfully never called
 # * src/rule.cc:88:return rule;
 # ** Double check
+# * src/explain.cc: everything
 #
 
 #

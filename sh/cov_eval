@@ -28,6 +28,14 @@ exclude()
 		printf >&6 "\tDefault\n"
 		return 0
 	fi
+	if printf '%s\n' "$text" | grep -q -E -e '^\s*[A-Za-z0-9_]+::~[A-Za-z0-9_]+\(\)\s*$' ; then
+		printf >&6 "\tDestructor definition\n"
+		return 0
+	fi
+	if printf '%s\n' "$text" | grep -q -E -e '^\}\s*$' ; then
+		printf >&6 "\tTop-level closing brace\n"
+		return 0
+	fi
 	return 1
 }
 

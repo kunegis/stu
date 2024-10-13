@@ -1,8 +1,6 @@
 #
 # Achieve full coverage.
 #
-# * src/rule.cc:88:return rule;
-# ** Double check
 # * src/explain.cc: everything
 #
 

@@ -84,8 +84,7 @@ shared_ptr <const Rule>
 Rule::instantiate(shared_ptr <const Rule> rule,
 		  const std::map <string, string> &mapping)
 {
-	if (rule->get_parameters().size() == 0)
-		return rule;
+	assert(rule->get_parameters().size() != 0);
 
 	std::vector <shared_ptr <const Place_Target> >
 		place_targets(rule->place_targets.size());

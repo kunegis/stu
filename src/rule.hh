@@ -95,8 +95,7 @@ public:
 
 	void check_unparametrized(shared_ptr <const Dep> dep,
 				  const std::set <string> &parameters);
-	/* Print error message and throw a logical error when DEP
-	 * contains parameters  */
+	/* Print error message and throw a logical error when DEP contains parameters */
 
 	const std::vector <string> &get_parameters() const
 	{
@@ -105,15 +104,14 @@ public:
 	}
 
 	void canonicalize();
-	/* In-place canonicalization of the rule.  This applies to the
-	 * targets of the rule.  Called by Rule_Set::add(). */
+	/* In-place canonicalization of the rule.  This applies to the targets of the
+	 * rule.  Called by Rule_Set::add(). */
 
 	static shared_ptr <const Rule> instantiate(shared_ptr <const Rule> rule,
 						   const std::map <string, string> &mapping);
-	/* Return the same rule as RULE, but with parameters having been
-	 * replaced by the given MAPPING.
-	 * We pass THIS as PARAM_RULE explicitly so we can return it
-	 * itself when it is unparametrized.  */
+	/* Return the same rule as RULE, but with parameters having been replaced by the
+	 * given MAPPING.  We pass THIS as PARAM_RULE explicitly so we can return it
+	 * itself when it is unparametrized.  Must be a parametrized rule. */
 };
 
 void render(shared_ptr <const Rule> rule, Parts &parts, Rendering rendering= 0)

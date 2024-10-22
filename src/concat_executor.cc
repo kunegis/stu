@@ -12,16 +12,10 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 	assert(dep_->is_normalized());
 	assert(dep->is_normalized());
 	assert(parent);
+	assert(error_additional == 0);
 	dep->check();
 
 	parents[parent]= dep;
-	if (error_additional) {
-		*this << "";
-		stage= ST_FINISHED;
-		parents.erase(parent);
-		raise(error_additional);
-		return;
-	}
 
 	parents.erase(parent);
 	if (find_cycle(parent, this, dep)) {

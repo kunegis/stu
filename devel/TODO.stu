@@ -1,8 +1,6 @@
 #
 # Achieve full coverage.
 #
-# * src/explain.cc: everything
-#
 
 #
 # Test very long line length; very large number of dependencies; very large

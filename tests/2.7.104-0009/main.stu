@@ -1,0 +1,5 @@
+A: list.[B] { cp list.C A ; }
+B = {C}
+list.C = {CORRECT}
+
+

@@ -18,8 +18,8 @@
 # PARAMETERS
 #	$NDEBUG      Set to non-empty to test the nondebug version; by default the debug
 #	             version is tested
-#	$VARIANT     Other variant of the compiled file; the default is to take the file that
-#	             matches the value of $NDEBUG
+#	$VARIANT     Other variant of the compiled file; the default is to take the file
+#	             that matches the value of $NDEBUG
 #	$TEST_DEBUG  Set to {0,1,2} for verbose levels; default is 0
 #	$nolong      Skip the long-* tests
 #	$notall      If non-empty, exit on the first error, instead of running everything
@@ -232,7 +232,7 @@ else
 	# would have no effect.
 	tests=$(sort_tests)
 	subset=
-	[ "$nolong" ] && subset=' <no long>'
+	[ "$nolong" ] && subset=' <nolong>'
 fi
 
 count_total=$(echo $(echo $tests | sed 's, ,\

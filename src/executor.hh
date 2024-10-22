@@ -96,8 +96,7 @@ public:
 	/* Whether the executor is finished working for the given tasks */
 
 	virtual void notify_result(shared_ptr <const Dep> dep_result,
-				   Executor *source,
-				   Flags flags,
+				   Executor *source, Flags flags,
 				   shared_ptr <const Dep> dep_source)
 	/* The child executor SOURCE notifies THIS about a new result.  Only
 	 * called when the dependency linking the two had one of the F_RESULT_*

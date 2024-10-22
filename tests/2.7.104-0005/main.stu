@@ -1,0 +1,9 @@
+A:  B.1
+{
+	touch A
+}
+
+B.${^}
+{
+	touch B
+}

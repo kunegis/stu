@@ -2,7 +2,7 @@
 
 void explain_clash()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: A dependency cannot be declared as persistent (with '-p') and\n"
 	      "optional (with '-o') at the same time, as that would mean that its command\n"
 	      "is never executed.\n",
@@ -11,7 +11,7 @@ void explain_clash()
 
 void explain_file_without_command_with_dependencies()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: If a file rule has no command, this means that the file\n"
 	      "is always up-to-date whenever its dependencies are up to date.  In general,\n"
 	      "this means that the file is generated in conjunction with its dependencies.\n",
@@ -20,7 +20,7 @@ void explain_file_without_command_with_dependencies()
 
 void explain_file_without_command_without_dependencies()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: A filename followed by a semicolon declares a file that is\n"
 	      "always present.\n",
 	      stderr);
@@ -28,7 +28,7 @@ void explain_file_without_command_without_dependencies()
 
 void explain_no_target()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: There must be either a target given as an argument to Stu\n"
 	      "invocation, one of the target-specifying options -c/-C/-p/-o/-n/-0,\n"
 	      "an -f option with a default target, a file 'main.stu' with a default\n"
@@ -38,7 +38,7 @@ void explain_no_target()
 
 void explain_parameter_character()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: Parameter names can only include alphanumeric characters\n"
 	      "and underscores.\n",
 	      stderr);
@@ -46,7 +46,7 @@ void explain_parameter_character()
 
 void explain_cycle()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: A cycle in the dependency graph is an error.  Cycles are \n"
 	      "verified on the rule level, not on the target level.\n",
 	      stderr);
@@ -54,7 +54,7 @@ void explain_cycle()
 
 void explain_startup_time()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: If a created file has a timestamp older than the startup of Stu,\n"
 	      "a clock skew is likely.\n",
 	      stderr);
@@ -62,7 +62,7 @@ void explain_startup_time()
 
 void explain_variable_equal()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: The name of an environment variable cannot contain the\n"
 	      "equal sign '=', because the operating system uses '=' as a delimiter\n"
 	      "when passing environment variables to child processes.\n"
@@ -73,7 +73,7 @@ void explain_variable_equal()
 
 void explain_version()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: Each Stu script can declare a version to which it is compatible\n"
 	      "using the syntax '% version X.Y' or '% version X.Y.Z'.  Stu will then fail at\n"
 	      "runtime if (a) 'X' does not equal the major version number of Stu,\n"
@@ -85,7 +85,7 @@ void explain_version()
 
 void explain_minimal_matching_rule()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: There must by a minimal matching rule for every target.  If multiple\n"
 	      "rules match a target, then Stu chooses the one that dominates all other ones.\n"
 	      "A rule (x) is defined to dominate another rule (y) for a given name if every\n"
@@ -98,7 +98,7 @@ void explain_minimal_matching_rule()
 
 void explain_separated_parameters()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: When a target contains two contiguous parameters, it is\n"
 	      "impossible to match a target name to it as there are multiple ways to split the\n"
 	      "text matching the two parameters as a whole into two parts.  Therefore, there\n"
@@ -109,7 +109,7 @@ void explain_separated_parameters()
 
 void explain_flags()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: The valid flags are -p (persistent dependency), -o (optional dependency),\n"
 	      "and -t (trivial dependency).\n",
 	      stderr);
@@ -117,7 +117,7 @@ void explain_flags()
 
 void explain_quoted_characters()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: The following characters must always be quoted when appearing in names:\n"
 	      "\t#%\'\":;-$@<>={}()[]*\\&|!?,\n",
 	      stderr);
@@ -125,7 +125,7 @@ void explain_quoted_characters()
 
 void explain_missing_optional_copy_source()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	 fputs("Explanation: In copy rules whose source file is declared as optional\n"
 	       "using the -o option, the source file may be missing only if the target file\n"
 	       "is present.  It is an error if both the source and the target files\n"
@@ -135,7 +135,7 @@ void explain_missing_optional_copy_source()
 
 void explain_parameter_syntax()
 {
-	if (! option_E)  return;
+	if (! option_E) return;
 	fputs("Explanation: Parameters are introduced by the dollar sign, followed by the\n"
 	      "parameter name, optionally surrounded by braces, and optionally enclosed in\n"
 	      "double quotes.  Thus, valid ways to write a parameter are:\n"

@@ -1,0 +1,2 @@
+A = B;
+B { ../../sh/touch_old B ; }

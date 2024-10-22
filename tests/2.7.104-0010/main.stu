@@ -1,0 +1,4 @@
+A: list.[B];
+B = {C}
+list.C: D;
+D: list.[B];

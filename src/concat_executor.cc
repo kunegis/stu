@@ -49,9 +49,10 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 	Debug debug(this);
  again:
 	TRACE("stage= %s", frmt("%u", stage));
-	assert(stage <= ST_FINISHED);
-	if (stage == ST_FINISHED)
-		return P_FINISHED;
+
+	/* STAGE cannot be ST_FINISHED because concat executors are not cached. */
+	assert(stage < ST_FINISHED);
+
 	Proceed proceed= execute_phase_A(dep_link);
 	assert(proceed);
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {

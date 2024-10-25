@@ -6,8 +6,8 @@
 shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_first)
 {
 	const auto iter_begin= iter;
-	/* Used to check that when this function fails (i.e., returns
-	 * null), is has not read any tokens.  */
+	/* Used to check that when this function fails (i.e., returns null), is has not
+	 * read any tokens. */
 
 	Place place_output;
 	/* An empty place when output is not redirected */
@@ -1036,21 +1036,19 @@ void Parser::get_expression_list_delim(std::vector <shared_ptr <const Dep> > &de
 	ssize_t len;
 	while ((len= getdelim(&lineptr, &n, c, file)) >= 0) {
 		++place.line;
-		/* LEN is at least one by the specification of
-		 * getdelim().  */
+		/* LEN is at least one by the specification of getdelim(). */
 		assert(len >= 1);
 		assert(lineptr[len] == '\0');
 
-		/* There may or may not be a terminating \n or \0.
-		 * getdelim(3) will include it if it is present, but the
-		 * file may not have one for the last entry.  */
+		/* There may or may not be a terminating \n or \0.  getdelim(3) will
+		 * include it if it is present, but the file may not have one for the last
+		 * entry. */
 
 		if (lineptr[len - 1] == c)
 			--len;
 
-		/* An empty line: This corresponds to an empty filename,
-		 * and thus we treat is as a syntax error, because
-		 * filenames can never be empty.  */
+		/* An empty line: This corresponds to an empty filename, and thus we treat
+		 * is as a syntax error, because filenames can never be empty. */
 		if (len == 0) {
 			free(lineptr);
 			fclose(file);

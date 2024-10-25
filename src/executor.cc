@@ -523,7 +523,7 @@ Proceed Executor::execute_children()
 		Proceed proceed_child= child->execute(dep_child);
 		assert(proceed_child);
 
-		proceed_all |= (proceed_child & ~(P_FINISHED | P_ABORT));
+		proceed_all |= proceed_child & ~(P_FINISHED | P_ABORT);
 		/* The finished and abort flags of the child only apply to the
 		 * child, not to us. */
 

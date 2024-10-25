@@ -10,7 +10,7 @@
  *
  * Concatenated executors always have exactly one parent.  They are not cached, and they
  * are deleted when done.  Thus, they also don't need the 'done' field.  (But the parent
- * class has it.)
+ * class has it.)  For the same reason, they also cannot appear in cycles.
  */
 
 #include "executor.hh"
@@ -20,10 +20,9 @@ class Concat_Executor
 {
 public:
 	Concat_Executor(shared_ptr <const Concat_Dep> dep_,
-			Executor *parent,
-			int &error_additional);
-	/* DEP_ is normalized.  See File_Executor::File_Executor() for
-	 * the semantics for ERROR_ADDITIONAL. */
+			Executor *parent, int &error_additional);
+	/* DEP_ is normalized.  See File_Executor::File_Executor() for the semantics for
+	 * ERROR_ADDITIONAL. */
 
 	~Concat_Executor()= default;
 

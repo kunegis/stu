@@ -17,14 +17,6 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 
 	parents[parent]= dep;
 
-	parents.erase(parent);
-	if (find_cycle(parent, this, dep)) {
-		parent->raise(ERROR_LOGICAL);
-		error_additional |= ERROR_LOGICAL;
-		return;
-	}
-	parents[parent]= dep;
-
 	/* Initialize COLLECTED */
 	size_t k= dep_->deps.size();
 	collected.resize(k);

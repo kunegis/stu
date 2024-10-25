@@ -361,3 +361,7 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 # "sed" with "-E" argument is in POSIX 2024.
 #
+
+#
+# Have an option to disable the version check.
+#

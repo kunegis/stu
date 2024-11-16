@@ -42,14 +42,11 @@ void set_option_j(const char *value)
 	options_jobs= strtol(value, &endptr, 10);
 	Place place(Place::Type::OPTION, 'j');
 	if (errno != 0 || *endptr != '\0') {
-		place << fmt("expected the number of jobs, not %s",
-			     show(value));
+		place << fmt("expected the number of jobs, not %s", show(value));
 		exit(ERROR_FATAL);
 	}
 	if (options_jobs < 1) {
-		place << fmt("expected a positive number of jobs, not %s",
-			     show(value));
-
+		place << fmt("expected a positive number of jobs, not %s", show(value));
 		exit(ERROR_FATAL);
 	}
 	option_parallel= options_jobs > 1;
@@ -70,11 +67,10 @@ void set_option_m(const char *value)
 	} else if (!strcmp(value, "dfs")) {
 		/* Default */ ;
 	} else {
-		print_error(fmt("invalid argument %s for option %s; valid values are %s and %s",
-				show(value),
-				show_prefix("-", "m"),
-				show("random"),
-				show("dfs")));
+		print_error(
+			fmt("invalid argument %s for option %s; valid values are %s and %s",
+				show(value), show_prefix("-", "m"),
+				show("random"), show("dfs")));
 		exit(ERROR_FATAL);
 	}
 }
@@ -88,18 +84,19 @@ void set_option_M(const char *value)
 void print_option_V()
 {
 	printf(PACKAGE " " STU_VERSION "\n"
-	       "Copyright (C) Jerome Kunegis\n"
-	       "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
-	       "This is free software: you are free to change and redistribute it.\n"
-	       "There is NO WARRANTY, to the extent permitted by law.\n"
+		"Copyright (C) Jerome Kunegis\n"
+		"License GPLv3+: GNU GPL version 3 or later "
+		"<http://gnu.org/licenses/gpl.html>\n"
+		"This is free software: you are free to change and redistribute it.\n"
+		"There is NO WARRANTY, to the extent permitted by law.\n"
 #ifndef NDEBUG
-	       "NDEBUG is not defined\n"
+		"NDEBUG is not defined\n"
 #endif
 #ifdef STU_COV
-	       "This version is built for coverage analysis.\n"
+		"This version is built for coverage analysis.\n"
 #endif
-	       "USE_MTIM = %u\n",
-	       (unsigned)USE_MTIM);
+		"USE_MTIM = %u\n",
+		(unsigned)USE_MTIM);
 }
 
 void set_env_options()

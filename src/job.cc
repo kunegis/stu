@@ -139,7 +139,9 @@ pid_t Job::start(string command,
 				__gcov_dump();
 				_Exit(ERROR_FORK_CHILD);
 			}
-			if ((ssize_t)(len_combined - 1) != snprintf(combined, len_combined, "%s=%s", key.c_str(), value.c_str())) {
+			if ((ssize_t)(len_combined - 1) !=
+				snprintf(combined, len_combined, "%s=%s",
+					key.c_str(), value.c_str())) {
 				perror("snprintf");
 				__gcov_dump();
 				_Exit(ERROR_FORK_CHILD);
@@ -557,26 +559,22 @@ Job::Signal_Blocker::~Signal_Blocker()
 void Job::init_signals()
 /*
  * There are three types of signals handled by Stu:
- *    - Termination signals which make programs abort.  Stu catches
- *      them in order to stop its child processes and remove temporary
- *      files, and will then raise them again.  The handlers for these
- *      are async-signal safe.
- *    - Productive signals that actually inform the Stu process of
- *      something:
+ *    - Termination signals which make programs abort.  Stu catches them in order to stop
+ *      its child processes and remove temporary files, and will then raise them again.
+ *      The handlers for these are async-signal safe.
+ *    - Productive signals that actually inform the Stu process of something:
  *         + SIGCHLD (to know when child processes are done)
  *         + SIGUSR1 (to output statistics)
- *      These signals are blocked, and then waited for specifically.
- *      The handlers thus do not have to be async-signal safe.
- *    - The job control signals SIGTTIN and SIGTTOU.  They are both
- *      produced by certain job control events that Stu triggers, and
- *      ignored by Stu.
+ *      These signals are blocked, and then waited for specifically.  The handlers thus do
+ *      not have to be async-signal safe.
+ *    - The job control signals SIGTTIN and SIGTTOU.  They are both produced by certain
+ *      job control events that Stu triggers, and ignored by Stu.
  *
- * The signals SIGCHLD and SIGUSR1 are the signals that we wait for in
- * the main loop.  They are blocked.  At the same time, each blocked
- * signal must have a signal handler (which can do nothing), as
- * otherwise POSIX allows the signal to be discarded.  Thus, we setup a
- * no-op signal handler.  (Note that Linux does not discard such
- * signals, while FreeBSD does.)
+ * The signals SIGCHLD and SIGUSR1 are the signals that we wait for in the main loop.
+ * They are blocked.  At the same time, each blocked signal must have a signal handler
+ * (which can do nothing), as otherwise POSIX allows the signal to be discarded.  Thus, we
+ * setup a no-op signal handler.  (Note that Linux does not discard such signals, while
+ * FreeBSD does.)
  */
 {
 	if (signals_initialized)
@@ -717,16 +715,17 @@ void Job::init_tty()
 }
 
 void Job::ask_continue(pid_t pid)
+/* This is the simplest thing possible we can do in interactive mode: put ourselves in the
+ * foreground, ask the user to press ENTER, and then put the job back into the foreground
+ * and continue it.  In principle, we could do much more: allow the user to enter
+ * commands, having an own command language, etc. */
 {
-	/* This is the simplest thing possible we can do in interactive mode: put
-	 * ourselves in the foreground, ask the user to press ENTER, and then put the job
-	 * back into the foreground and continue it.  In principle, we could do much more:
-	 * allow the user to enter commands, having an own command language, etc. */
 	if (tcsetpgrp(tty, getpid()) < 0)
 		print_errno("tcsetpgrp");
 	fprintf(stderr,
 		PACKAGE ": job stopped.  "
-		"Press ENTER to continue, Ctrl-C to terminate Stu, Ctrl-Z to suspend Stu\n");
+		"Press ENTER to continue, "
+		"Ctrl-C to terminate Stu, Ctrl-Z to suspend Stu\n");
 	char *lineptr= nullptr;
 	size_t n= 0;
 	ssize_t r= getline(&lineptr, &n, stdin);

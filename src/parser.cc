@@ -18,11 +18,9 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 	std::vector <shared_ptr <const Place_Target> > place_targets;
 
 	while (iter != tokens.end()) {
-		bool is_last;
-		parse_target(
-			is_last, place_output, place_targets, redirect_index,
-			target_first);
-		if (is_last) break;
+		bool r= parse_target(
+			place_output, place_targets, redirect_index, target_first);
+		if (!r) break;
 	}
 
 	if (place_targets.size() == 0) {
@@ -231,8 +229,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 				throw ERROR_LOGICAL;
 			}
 
-			/* Check that there is just a single
-			 * target */
+			/* Check that there is just a single target */
 			if (place_targets.size() != 1) {
 				place_equal <<
 					fmt("there must not be a copy rule using %s",
@@ -256,13 +253,12 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 
 			assert(place_targets.size() == 1);
 
-			/* Append target name when source ends
-			 * in slash */
+			/* Append target name when source ends in slash */
 			append_copy(*name_copy, place_targets[0]->place_name);
 
-			return std::make_shared <Rule> (place_targets[0], name_copy,
-							place_flag_persistent,
-							place_flag_optional);
+			return std::make_shared <Rule> (
+				place_targets[0], name_copy,
+				place_flag_persistent, place_flag_optional);
 		}
 	} else if (is_operator(';')) {
 		place_nocommand= (*iter)->get_place();
@@ -279,8 +275,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 			       show_operator('='),
 			       show(*iter)));
 		place_targets[0]->place <<
-			fmt("for target %s",
-			    show(*place_targets[0]));
+			fmt("for target %s", show(*place_targets[0]));
 		throw ERROR_LOGICAL;
 	}
 
@@ -331,14 +326,12 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 		 redirect_index, filename_input);
 }
 
-void Parser::parse_target(
-	bool &is_last,
+bool Parser::parse_target(
 	Place &place_output,
 	std::vector <shared_ptr <const Place_Target> > &place_targets,
 	int &redirect_index,
 	shared_ptr <const Place_Target> &target_first)
 {
-	is_last= false;
 	Place place_output_new;
 	/* Remains an empty place when '>' is not present */
 
@@ -386,8 +379,7 @@ void Parser::parse_target(
 					show_operator('>'));
 			throw ERROR_LOGICAL;
 		}
-		is_last= true;
-		return;
+		return false;
 	}
 
 	/* Target */
@@ -443,10 +435,10 @@ void Parser::parse_target(
 	if (flags_type == F_TARGET_TRANSIENT) {
 		if (! place_output_new.empty()) {
 			place_target->place <<
-				fmt("transient target %s is invalid",
-					show(*place_target));
-			place_output_new << fmt("after output redirection using %s",
-				show_operator('>'));
+				fmt("transient target %s is invalid", show(*place_target));
+			place_output_new <<
+				fmt("after output redirection using %s",
+					show_operator('>'));
 			throw ERROR_LOGICAL;
 		}
 	}
@@ -455,6 +447,7 @@ void Parser::parse_target(
 	}
 
 	place_targets.push_back(place_target);
+	return true;
 }
 
 bool Parser::parse_expression_list(

@@ -16,9 +16,8 @@ void main_loop(const std::vector <shared_ptr <const Dep> > &deps)
 				assert(proceed);
 			} while (proceed & P_CALL_AGAIN);
 
-			if (proceed & P_WAIT) {
+			if (proceed & P_WAIT)
 				File_Executor::wait();
-			}
 		}
 
 		assert(root_executor->finished());
@@ -38,16 +37,13 @@ void main_loop(const std::vector <shared_ptr <const Dep> > &deps)
 					print_out("Targets are up to date");
 			}
 		} else {
-			if (option_k) {
-				print_error_reminder("targets not up to date because of errors");
-			}
+			if (option_k)
+				print_error_reminder(
+					"targets not up to date because of errors");
 		}
-	}
-
-	catch (int e) {
+	} catch (int e) {
 		assert(! option_k);
 		assert(e >= 1 && e <= 4);
-		/* Terminate all jobs */
 		if (File_Executor::executors_by_pid_size) {
 			print_error_reminder("terminating all jobs");
 			terminate_jobs();

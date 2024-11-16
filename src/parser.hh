@@ -124,18 +124,18 @@ private:
 			     shared_ptr <const Place_Target> &target_first);
 	/* The returned rules may not be unique -- this is checked later */
 
-	bool parse_expression_list
-	(std::vector <shared_ptr <const Dep> > &ret,
-	 Place_Name &place_name_input,
-	 Place &place_input,
-	 const std::vector <shared_ptr <const Place_Target> > &targets);
+	bool parse_expression_list(
+		std::vector <shared_ptr <const Dep> > &ret,
+		Place_Name &place_name_input,
+		Place &place_input,
+		const std::vector <shared_ptr <const Place_Target> > &targets);
 	/* RET is filled.  RET is empty when called. */
 
 	shared_ptr <Rule> parse_rule(shared_ptr <const Place_Target> &target_first);
 	/* Return null when nothing was parsed */
 
-	void parse_target(
-		bool &is_last, Place &place_output,
+	bool parse_target(
+		Place &place_output,
 		std::vector <shared_ptr <const Place_Target> > &place_targets,
 		int &redirect_index,
 		shared_ptr <const Place_Target> &target_first);
@@ -144,9 +144,9 @@ private:
 		shared_ptr <const Dep> &ret,
 		Place_Name &place_name_input, Place &place_input,
 		const std::vector <shared_ptr <const Place_Target> > &targets);
-	/* Parse an expression.  Write the parsed expression into RET. RET must be empty
-	 * when called.  Return whether an expression was parsed.  TARGETS is passed to
-	 * construct error messages. */
+	/* Write the parsed expression into RET. RET must be empty when called.  Return
+	 * whether an expression was parsed.  TARGETS is passed to construct error
+	 * messages. */
 
 	shared_ptr <const Dep> parse_compound_dep(
 		Place_Name &place_name_input,

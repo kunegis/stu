@@ -365,3 +365,12 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 # Achieve full coverage.
 #
+
+#
+# tokenizer.cc:  separate out the two techniques into own classes.
+#
+
+#
+# explain.cc/...:  Have codes for errors, and store the explanations in nicer places than
+# in functions in explain.cc.
+#

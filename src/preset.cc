@@ -25,15 +25,15 @@ void Preset <T> ::insert(string key, T value)
 		auto mm_key=    mm.second;
 
 		if (*mm_prefix == '\0' && *mm_key != '\0') {
-			/* KEY starts with E.PREFIX:  The element can be
-			 * inserted within the sub-preset.  */
+			/* KEY starts with E.PREFIX:  The element can be inserted within
+			 * the sub-preset. */
 			if (! e.preset) {
 				develop(e);
 			}
 			e.preset->insert(key.substr(e.prefix.length()), value);
 		} else if (*mm_prefix != '\0') {
-			/* KEY does not start with E.PREFIX:  The prefix must
-			 * be made shorter.  */
+			/* KEY does not start with E.PREFIX:  The prefix must be made
+			 * shorter. */
 
 			/* We already know that the prefix starts with the
 			 * correct character */
@@ -50,9 +50,8 @@ void Preset <T> ::insert(string key, T value)
 			e.preset= move(p);
 		} else {
 			assert(*mm_key == '\0' && *mm_prefix == '\0');
-			/* KEY == E.PREFIX:  The element can be inserted
-			 * directly as a value, or inserted into the
-			 * sub-preset.  */
+			/* KEY == E.PREFIX:  The element can be inserted directly as a
+			 * value, or inserted into the sub-preset. */
 			if (! e.preset) {
 				e.values.push_back(value);
 			} else {

@@ -88,9 +88,9 @@ public:
 	/* Insert the key-value pair */
 
 	Input_Iterator find(string x);
-	/* Find values matching the given string X, i.e., find all values for
-	 * which the key is a prefix of X.  Returned from longest to shortest
-	 * match.  X must not be the empty string.  */
+	/* Find values matching the given string X, i.e., find all values for which the
+	 * key is a prefix of X.  Returned from longest to shortest match.  X must not be
+	 * the empty string. */
 
 	End_Iterator end() const  {  return End_Iterator();  }
 
@@ -108,13 +108,12 @@ private:
 	/* In PARENT.  Unspecified when PARENT is null. */
 
 	std::vector <Entry> chars;
-	/* For each tuple, exactly one of {VALUES, PRESET} is nonempty/nonnull.
-	 * If PRESET is null, this object contains at least one value.  Otherwise,
-	 * the object contains a child.
-	 * Sorted by the first character of each PREFIX, which are unique.
-	 * Also, there can be a single prefix that is the empty string, which
-	 * is sorted as the character '\0', i.e., always in first position.
-	 * (string[0] returns '\0' when string is "".)  */
+	/* For each tuple, exactly one of {VALUES, PRESET} is nonempty/nonnull.  If PRESET
+	 * is null, this object contains at least one value.  Otherwise, the object
+	 * contains a child.  Sorted by the first character of each PREFIX, which are
+	 * unique.  Also, there can be a single prefix that is the empty string, which is
+	 * sorted as the character '\0', i.e., always in first position.  (string[0]
+	 * returns '\0' when string is "".) */
 
 	void insert(string key, std::unique_ptr <Preset <T> > preset);
 

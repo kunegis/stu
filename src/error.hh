@@ -2,34 +2,30 @@
 #define ERROR_HH
 
 /*
- * Errors codes in Stu are represented by integers between 0 and 4, as defined
- * in the ERROR_* constants below.  Zero represents no error.  These codes are
- * used for both Stu's exit status and as values that are stored in ints, as
- * well as thrown and caught.  Variables containing error codes are ints and are
- * named "error".
+ * Errors codes in Stu are represented by integers between 0 and 4, as defined in the
+ * ERROR_* constants below.  Zero represents no error.  These codes are used for both
+ * Stu's exit status and as values that are stored in ints, as well as thrown and caught.
+ * Variables containing error codes are ints and are named "error".
  */
 
 /*
- * Format of error output:  There are two types of error output lines:
- * error messages and backtraces.  Error messages are of the form
- *
+ * Format of error output:  There are two types of error output lines:  error messages and
+ * backtraces.  Error messages are of the form
  *         $0: $MESSAGE
  *
  * and backtraces are of the form
  *
  *         $FILENAME:$LINE:$COLUMN: $MESSAGE
  *
- * Backtraces are used when it is possible to refer to a specific location
- * in the input files (or command line, etc.).  Error messages are
- * avoided:  all errors should be traced back to a place in the source if
- * possible.  But sometimes they must be used.
+ * Backtraces are used when it is possible to refer to a specific location in the input
+ * files (or command line, etc.).  Error messages are avoided:  all errors should be
+ * traced back to a place in the source if possible.  But sometimes they must be used.
  */
 
 /*
- * Wording of messages:  Both error messages and backtraces begin with lowercase
- * letters. Filenames are quoted with double quotes.  Operators and flags are
- * not quoted.  Messages for neither type of error output lines are terminated
- * by periods.
+ * Wording of messages: Both error messages and backtraces begin with lowercase letters.
+ * Filenames are quoted with double quotes.  Operators and flags are not quoted.  Messages
+ * for neither type of error output lines are terminated by periods.
  *
  * Typical forms of error messages are:
  *
@@ -42,50 +38,44 @@
  *    Location 2: AAA must not be used
  *    Location 1: in FEATURE using OPERATOR
  *
- * Use "expected TOKEN" instead of "missing TOKEN".  That's because
- * some tokens in the given list may be optional, making the "missing"
- * phrasing confusing, as it would imply that the token is mandatory.
- * Include a definite or indefinite article after "expected" to avoid
- * interpreting "expected" as an adjective.
+ * Use "expected TOKEN" instead of "missing TOKEN".  That's because some tokens in the
+ * given list may be optional, making the "missing" phrasing confusing, as it would imply
+ * that the token is mandatory.  Include a definite or indefinite article after "expected"
+ * to avoid interpreting "expected" as an adjective.
  *
- * "not BBB" mentions the invalid token.  If end-of-file is encountered,
- * the "not BBB" part is omitted.
+ * "not BBB" mentions the invalid token.  If end-of-file is encountered, the "not BBB"
+ * part is omitted.
  *
- * Use "must not" rather than "cannot" or "shall" in error messages when
- * something must be present, but is erroneous, e.g., "filename must not
- * be empty".  On the other hand, use "cannot" when something completely
- * unexpected was encountered, e.g., "transient targets cannot be used
- * with copy rule".
+ * Use "must not" rather than "cannot" or "shall" in error messages when something must
+ * be present, but is erroneous, e.g., "filename must not be empty".  On the other hand,
+ * use "cannot" when something completely unexpected was encountered, e.g., "transient
+ * targets cannot be used with copy rule".
  *
- * Operators and other syntax elements are often introduced by the word
- * "using" rather than "with", etc., e.g., "expected a filename after
- * input redirection using "<"".  We always mention both the operator as
- * well as its function.
+ * Operators and other syntax elements are often introduced by the word "using" rather
+ * than "with", etc., e.g., "expected a filename after input redirection using "<"".
+ * We always mention both the operator as well as its function.
  *
- * When referring to dependencies and targets, we don't use the words
- * "dependency" or "target".  For instance, just write ""X" is needed by
- * "A"" instead of "dependency "X" is needed by "A"".  The exception is
- * when the word "dependency" is qualified, e.g. "dynamic dependency [X]
- * must not have input redirection using "<"", or when referring
+ * When referring to dependencies and targets, we don't use the words "dependency" or
+ * "target".  For instance, just write ""X" is needed by "A"" instead of "dependency "X"
+ * is needed by "A"".  The exception is when the word "dependency" is qualified, e.g.
+ * "dynamic dependency [X] must not have input redirection using "<"", or when referring
  * specifically to a dependency with respect to a target.
  *
- * But remember that in general it is better to state what what expected
- * in the syntax than to say that what was encountered cannot be used.
- * For instance, say "expected a filename" instead of "filename must not
- * be empty".  This cannot always be done, so "must not" is sometimes
- * used.
+ * But remember that in general it is better to state what what expected in the syntax
+ * than to say that what was encountered cannot be used.  For instance, say "expected a
+ * filename" instead of "filename must not be empty".  This cannot always be done, so
+ * "must not" is sometimes used.
  *
- * Even though error messages should contain all the information
- * mentioned above, they should still be terse.  More information is
- * included in the explanations using the -E options, output by the
- * explain_*() functions.
+ * Even though error messages should contain all the information mentioned above, they
+ * should still be terse.  More information is included in the explanations using the -E
+ * options, output by the explain_*() functions.
  */
 
 #include <assert.h>
 #include <string>
 
-/* The error constants.  Not declared as an enum because they are thrown
- * and thus need to be integers.  */
+/* The error constants.  Not declared as an enum because they are thrown and thus need to
+ * be integers. */
 constexpr int ERROR_BUILD=        1;
 constexpr int ERROR_LOGICAL=      2;
 constexpr int ERROR_FATAL=        4;
@@ -143,9 +133,9 @@ void print_error_reminder(string message);
  * error.  Since the error as already been output, use the color of warnings. */
 
 string format_errno(string text);
-/* Includes the given message, and the ERRNO-based text.  Cf. perror().  Color
- * is not added.  The output of this function is used as input to one of the
- * print_*() functions.  */
+/* Includes the given message, and the ERRNO-based text.  Cf. perror().  Color is not
+ * added.  The output of this function is used as input to one of the print_*()
+ * functions. */
 
 void print_out(string text);
 /* Print a message to standard output in "print" colors.  This is used in only
@@ -178,23 +168,21 @@ public:
 	} type;
 
 	string text;
-	/* INPUT_FILE:  Name of the file in which the error occurred.
-	 *              Empty string for standard input.
+	/* INPUT_FILE:  Name of the file in which the error occurred.  Empty string for
+	 *              standard input.
 	 * OPTION:  Name of the option (a single character)
-	 * Others:  Unused  */
+	 * Others:  Unused */
 
 	size_t line;
 	/* INPUT_FILE:  Line number, one-based.
 	 * Others:  unused.
-	 * The line number is one-based, but is allowed to be set to
-	 * zero temporarily.  It should be >0 however when operator<<()
-	 * is called.  */
+	 * The line number is one-based, but is allowed to be set to zero temporarily.  It
+	 * should be >0 however when operator<<() is called. */
 
 	size_t column;
-	/* INPUT_FILE:  Column number, zero-based.  In output, column
-	 * numbers are one-based, but they are saved here as zero-based
-	 * numbers as these are easier to generate.
-	 * Others: Unused.  */
+	/* INPUT_FILE:  Column number, zero-based.  In output, column numbers are
+	 * one-based, but they are saved here as zero-based numbers as these are easier to
+	 * generate.  Others: Unused. */
 
 	Place(): type(Type::EMPTY) { }
 
@@ -244,9 +232,8 @@ public:
 };
 
 class Backtrace
-/* A place along with a message.  This class is only used when backtraces
- * cannot be printed immediately.  Otherwise, Place::operator<<() is
- * called directly.  */
+/* A place along with a message.  This class is only used when backtraces cannot be
+ * printed immediately.  Otherwise, Place::operator<<() is called directly. */
 {
 public:
 	Place place;
@@ -260,16 +247,16 @@ public:
 
 	void print() const
 	/* Print the backtrace to STDERR as part of an error message; see
-	 * Place::operator<< for format information.  */
+	 * Place::operator<< for format information. */
 	{
 		place << message;
 	}
 };
 
 class Printer
-/* Interface that has the << operator like Place.  Only used at one place for
- * now.  The parameter MESSAGE may be "" to print a generic error message (i.e.,
- * only the backtraces).  */
+/* Interface that has the << operator like Place.  Only used at one place for now.  The
+ * parameter MESSAGE may be "" to print a generic error message (i.e., only the
+ * backtraces). */
 {
 public:
 	virtual void operator<<(string message) const= 0;

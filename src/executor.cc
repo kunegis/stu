@@ -39,8 +39,8 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		const Hash_Dep hash_dep= place_target.unparametrized();
 		assert(deps.empty());
 
-		/* Check:  variable dependencies are not allowed in multiply
-		 * dynamic dependencies.  */
+		/* Check:  variable dependencies are not allowed in multiply dynamic
+		 * dependencies. */
 		if (dep_target->flags & F_VARIABLE) {
 			dep_target->get_place() <<
 				fmt("variable dependency %s must not appear",
@@ -108,9 +108,9 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 			}
 		}
 
-		/* Forbidden features in dynamic dependencies.
-		 * In keep-going mode (-k), we set the error, set the erroneous
-		 * dependency to null, and at the end prune the null entries.  */
+		/* Forbidden features in dynamic dependencies.  In keep-going mode (-k),
+		 * we set the error, set the erroneous dependency to null, and at the end
+		 * prune the null entries. */
 		bool found_error= false;
 		if (! delim)  for (auto &j: deps) {
 			/* Check that it is unparametrized */
@@ -359,9 +359,9 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		assert((rule_child == nullptr) == (param_rule_child == nullptr));
 
 		/* RULE_CHILD may be null here; this is handled in the constructors */
-		/* We use a File_Executor if:  there is at least one file
-		 * target in the rule OR there is a command in the rule.  When
-		 * there is no rule, we consult the type of TARGET.  */
+		/* We use a File_Executor if:  there is at least one file target in the
+		 * rule OR there is a command in the rule.  When there is no rule, we
+		 * consult the type of TARGET. */
 
 		if (hash_dep.is_file()) {
 			use_file_executor= true;
@@ -421,9 +421,9 @@ void Executor::operator<<(string text) const
  * always take the first found parent, which is an arbitrary choice, but it doesn't matter
  * here which dependency path we point out as an error, so the first one it is. */
 {
-	/* If the error happens directly for the root executor, it was
-	 * an error on the command line; don't output anything beyond
-	 * the error message itself, which was already output.  */
+	/* If the error happens directly for the root executor, it was an error on the
+	 * command line; don't output anything beyond the error message itself, which was
+	 * already output. */
 	if (dynamic_cast <const Root_Executor *> (this))
 		return;
 

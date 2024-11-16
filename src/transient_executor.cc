@@ -61,8 +61,8 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 	}
 
 	if (rule == nullptr) {
-		/* There must be a rule for transient targets (as
-		 * opposed to file targets), so this is an error.  */
+		/* There must be a rule for transient targets (as opposed to file
+		 * targets), so this is an error. */
 		is_finished= true;
 		*this << fmt("no rule to build %s", show(hash_dep));
 		parents.erase(parent);
@@ -78,8 +78,8 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 
 	assert((param_rule == nullptr) == (rule == nullptr));
 
-	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not
-	 * just the one given in the dependency.  Also, add the flags.  */
+	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not just the one given
+	 * in the dependency.  Also, add the flags. */
 	for (Hash_Dep t: hash_deps) {
 		t.get_front_word_nondynamic() |= (word_t)
 			(dep_link->flags & (F_WORD & ~F_TARGET_DYNAMIC));

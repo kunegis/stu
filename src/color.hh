@@ -57,8 +57,8 @@ public:
 	static const char *highlight_on[CH_COUNT];
 	static const char *highlight_off[CH_COUNT];
 
-	/* At least one of the following functions must be called before
-	 * any output is written.  */
+	/* At least one of the following functions must be called before any output is
+	 * written. */
 	static void set();
 	static void set(bool enable_color_out, bool enable_color_err);
 };

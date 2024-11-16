@@ -56,8 +56,8 @@ public:
 					Place &place_end,
 					string string_,
 					const Place &place_string);
-	/* Parse tokens from the given TEXT.  Other arguments are
-	 * identical to parse_tokens_file().  */
+	/* Parse tokens from the given TEXT.  Other arguments are identical to
+	 * parse_tokens_file(). */
 
 private:
 	/* Stacks of included files */
@@ -67,9 +67,8 @@ private:
 	std::set <string> &includes;
 
 	Place place_base;
-	/* The place where the tokenizer is tokenizing.  The line and
-	 * column numbers are modified accordingly -- only the type and
-	 * text is used.  */
+	/* The place where the tokenizer is tokenizing.  The line and column numbers are
+	 * modified accordingly -- only the type and text is used. */
 
 	size_t line; /* Line number */
 	const char *p_line; /* Beginning of current line */
@@ -102,22 +101,20 @@ private:
 	shared_ptr <Command> parse_command();
 
 	shared_ptr <Place_Name> parse_name(bool allow_special);
-	/* Returns null when no name could be parsed.  Prints and throws
-	 * on other errors, including on empty names.
-	 * ALLOW_SPECIAL:  whether the name is allowed to start with one of '-+~'.
-	 * E_SLASH set in ENVIRONMENT as appropriate.  */
+	/* Returns null when no name could be parsed.  Prints and throws on other errors,
+	 * including on empty names. ALLOW_SPECIAL:  whether the name is allowed to start
+	 * with one of '-+~'.  E_SLASH set in ENVIRONMENT as appropriate. */
 
 	bool parse_parameter(string &parameter, Place &place_dollar);
-	/* Parse a parameter starting with '$'.  Return whether a parameter was
-	 * parsed (always TRUE).  The current position must be on the '$'
-	 * character, not after it.  If a parameter is found, write it into the
-	 * parameters.  */
+	/* Parse a parameter starting with '$'.  Return whether a parameter was parsed
+	 * (always TRUE).  The current position must be on the '$' character, not after
+	 * it.  If a parameter is found, write it into the parameters. */
 
-	/* The following three functions parse the two types of quotes, and
-	 * escapes.  The pointer must be on a ", ', or \ character respectively.
-	 * The read string is appended to RET, or a logical error is thrown.
-	 * parse_escape() consumes only the backslash, not what follows; it
-	 * returns true if what follows must be escaped.  */
+	/* The following three functions parse the two types of quotes, and escapes.  The
+	 * pointer must be on a ", ', or \ character respectively.  The read string is
+	 * appended to RET, or a logical error is thrown.  parse_escape() consumes only
+	 * the backslash, not what follows; it returns true if what follows must be
+	 * escaped. */
 	void parse_double_quote(Place_Name &ret);
 	void parse_single_quote(Place_Name &ret);
 	bool parse_escape();
@@ -125,14 +122,13 @@ private:
 	void parse_directive(std::vector <shared_ptr <Token> > &tokens,
 			     Context context,
 			     const Place &place_diagnostic);
-	/* Parse a directive.  The pointer must be on the '%' character.  Throw
-	 * a logical error when encountered.  */
+	/* Parse a directive.  The pointer must be on the '%' character.  Throw a logical
+	 * error when encountered. */
 
 	bool skip_space(bool &skipped_actual_space);
-	/* Skip any whitespace (including backslash-newline combinations).
-	 * The return value tells whether anything was skipped.  The return
-	 * parameter tells whether anything other than backslash-newline was
-	 * skipped.  */
+	/* Skip any whitespace (including backslash-newline combinations).  The return
+	 * value tells whether anything was skipped.  The return parameter tells whether
+	 * anything other than backslash-newline was skipped. */
 
 	Place current_place() const {
 		return Place(place_base.type, place_base.text, line, p - p_line);

@@ -295,8 +295,7 @@ int main(int argc, char **argv, char **envp)
 		perror("fclose(stdout)");
 		exit(ERROR_FATAL);
 	}
-	/* No need to flush stderr, because it is line buffered, and if
-	 * we used it, it means there was an error anyway, so we're not
-	 * losing any information.  */
+	/* No need to flush stderr, because it is line buffered, and if we used it, it
+	   means there was an error anyway, so we're not losing any information. */
 	exit(error);
 }

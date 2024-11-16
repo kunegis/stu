@@ -274,11 +274,10 @@ shared_ptr <const Rule> Rule_Set::get(Hash_Dep hash_dep,
 
 	hash_dep.canonicalize();
 
-	/* Check for an unparametrized rule.  Since we keep them in a
-	 * map by target filename(s), there can only be a single matching rule to
-	 * begin with.  (I.e., if multiple unparametrized rules for the same
-	 * filename exist, then that error is caught earlier when the
-	 * Rule_Set is built.)  */
+	/* Check for an unparametrized rule.  Since we keep them in a map by target
+	 * filename(s), there can only be a single matching rule to begin with.  (I.e., if
+	 * multiple unparametrized rules for the same filename exist, then that error is
+	 * caught earlier when the Rule_Set is built.) */
 	auto i= rules_unparam.find(hash_dep);
 	if (i != rules_unparam.end()) {
 		shared_ptr <const Rule> rule= i->second;
@@ -413,14 +412,13 @@ void Best_Rule_Finder::add(const Hash_Dep &hash_dep, shared_ptr <const Rule> rul
 		assert(k == priorities_best.size());
 		assert(k == mappings_best.size());
 
-		/* Check whether the rule is dominated by at least one other
-		 * rule; also, avoid inserting the same rule twice (which
-		 * happens if the rule was found from both a prefix and a
-		 * suffix.)  But note that there can be two parametrized
-		 * targets in one rule which both match the target, in which
-		 * case we do want to throw a "duplicate rule" error (because
-		 * Stu wouldn't know how to chose the parameter), and therefore
-		 * we also need to compare anchorings.  */
+		/* Check whether the rule is dominated by at least one other rule; also,
+		 * avoid inserting the same rule twice (which happens if the rule was
+		 * found from both a prefix and a suffix.)  But note that there can be two
+		 * parametrized targets in one rule which both match the target, in which
+		 * case we do want to throw a "duplicate rule" error (because Stu wouldn't
+		 * know how to chose the parameter), and therefore we also need to compare
+		 * anchorings. */
 		for (size_t j= 0; j < k; ++j) {
 			if (rule == rules_best[j]
 			    && anchoring == anchorings_best[j])

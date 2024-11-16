@@ -164,8 +164,8 @@ void Dep::check() const
 	}
 
 	if (auto plain_this= dynamic_cast <const Plain_Dep *> (this)) {
-		/* The F_TARGET_TRANSIENT flag is always set in the
-		 * dependency flags, even though that is redundant.  */
+		/* The F_TARGET_TRANSIENT flag is always set in the dependency flags, even
+		 * though that is redundant. */
 		assert((plain_this->flags & F_TARGET_TRANSIENT)
 		       == (plain_this->place_target.flags));
 
@@ -290,8 +290,8 @@ Compound_Dep::instantiate(const std::map <string, string> &mapping) const
 }
 
 bool Compound_Dep::is_unparametrized() const
-/* A compound dependency is parametrized when any of its contained
- * dependency is parametrized.  */
+/* A compound dependency is parametrized when any of its contained dependency is
+ * parametrized. */
 {
 	for (shared_ptr <const Dep> d: deps) {
 		if (! d->is_unparametrized())
@@ -331,8 +331,8 @@ shared_ptr <const Dep> Concat_Dep::instantiate(const std::map <string, string> &
 }
 
 bool Concat_Dep::is_unparametrized() const
-/* A concatenated dependency is parametrized when any of its contained
- * dependency is parametrized.  */
+/* A concatenated dependency is parametrized when any of its contained dependency is
+ * parametrized. */
 {
 	for (shared_ptr <const Dep> d: deps) {
 		if (! d->is_unparametrized())
@@ -481,10 +481,9 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 	 */
 
 	if (a->flags & F_INPUT) {
-		/* It would in principle be possible to allow
-		 * concatenations in which the left component has an
-		 * input redirection, but the current data structures do
-		 * not allow that, and therefore we make that invalid.  */
+		/* It would in principle be possible to allow concatenations in which the
+		 * left component has an input redirection, but the current data
+		 * structures do not allow that, and therefore we make that invalid. */
 		a->get_place() << fmt("%s cannot have input redirection using %s",
 				      show(a),
 				      show_operator('<'));
@@ -495,8 +494,8 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 	}
 
 	if (b->flags & F_INPUT) {
-		/* We don't save the place for the '<', so we cannot
-		 * have "using '<'" on an extra line.  */
+		/* We don't save the place for the '<', so we cannot have "using '<'" on
+		 * an extra line. */
 		b->get_place() << fmt("%s cannot have input redirection using %s",
 				      show(b),
 				      show_operator('<'));
@@ -558,8 +557,7 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 	assert(a);
 	assert(b);
 
-	/* Parametrized dependencies are instantiated first before they
-	 * are concatenated  */
+	/* Parametrized dependencies are instantiated first before they are concatenated */
 	assert(! a->place_target.place_name.is_parametrized());
 	assert(! b->place_target.place_name.is_parametrized());
 
@@ -589,10 +587,9 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_De
 
 shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> a,
 							 shared_ptr <const Dep> b)
-/* We don't have to make any checks here because any errors will be
- * caught later when the resulting plain dependencies are concatenated.
- * However, checking errors here is faster, since it avoids building
- * dynamic dependencies unnecessarily.  */
+/* We don't have to make any checks here because any errors will be caught later when the
+ * resulting plain dependencies are concatenated.  However, checking errors here is
+ * faster, since it avoids building dynamic dependencies unnecessarily. */
 {
 	assert(! (to <const Plain_Dep> (a) && to <const Plain_Dep> (b)));
 

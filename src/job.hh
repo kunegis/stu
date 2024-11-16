@@ -44,16 +44,16 @@
 #endif /* ! NDEBUG */
 
 class Job
-/* A child process of Stu that executes the command for a given rule.  An object
- * of this type can execute a job only once.  */
+/* A child process of Stu that executes the command for a given rule.  An object of this
+ * type can execute a job only once. */
 {
 public:
 	Job():  pid(-2) { }
 
 	bool waited(int status, pid_t pid_check);
-	/* Called after having returned this process from wait_do().
-	 * Return TRUE if the child was successful.  The PID is passed
-	 * to verify that it is the correct one.  */
+	/* Called after having returned this process from wait_do().  Return TRUE if the
+	 * child was successful.  The PID is passed to verify that it is the correct
+	 * one. */
 
 	bool started() const  {  return pid >= 0;  }
 	bool started_or_waited() const  {  return pid >= -1;  }
@@ -130,7 +130,7 @@ private:
 	 *
 	 * Exec:     Currently being executed
 	 * Success:  Finished, with success
-	 * Fail:     Finished, without success  */
+	 * Fail:     Finished, without success */
 
 	static sigset_t set_termination, set_productive,
 		set_termination_productive;

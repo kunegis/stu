@@ -90,21 +90,22 @@ public:
 			     Rule_Set &rule_set,
 			     shared_ptr <const Place_Target> &target_first,
 			     Place &place_first);
-	/* Read in an input file and add the rules to the given rule set.  Used
-	 * for the -f option and the default input file.  If not yet non-null,
-	 * set TARGET_FIRST to the first target of the first rule.  FILE_FD can be -1 or the FD or
-	 * the filename, if already opened.  If FILENAME is "-", use standard input.  If FILENAME is
-	 * "", use the default file ('main.stu').  */
+	/* Read in an input file and add the rules to the given rule set.  Used for the -f
+	 * option and the default input file.  If not yet non-null, set TARGET_FIRST to
+	 * the first target of the first rule.  FILE_FD can be -1 or the FD or the
+	 * filename, if already opened.  If FILENAME is "-", use standard input.  If
+	 * FILENAME is "", use the default file ('main.stu'). */
 
 	static void get_string(const char *s,
 			       Rule_Set &rule_set,
 			       shared_ptr <const Place_Target> &target_first);
-	/* Read rules from a string; same argument semantics as the other get_*() functions.  */
+	/* Read rules from a string; same argument semantics as the other get_*()
+	 * functions. */
 
 	static void add_deps_option_C(std::vector <shared_ptr <const Dep> > &deps,
 				      const char *string_);
 	/* Parse a string of dependencies and add them to the vector. Used for
-	 * the -C option.  Support the full Stu syntax.  */
+	 * the -C option.  Support the full Stu syntax. */
 
 private:
 	std::vector <shared_ptr <Token> > &tokens;
@@ -133,32 +134,38 @@ private:
 	shared_ptr <Rule> parse_rule(shared_ptr <const Place_Target> &target_first);
 	/* Return null when nothing was parsed */
 
-	bool parse_expression(shared_ptr <const Dep> &ret,
-			      Place_Name &place_name_input, Place &place_input,
-			      const std::vector <shared_ptr <const Place_Target> > &targets);
-	/* Parse an expression.  Write the parsed expression into RET.
-	 * RET must be empty when called.  Return whether an expression
-	 * was parsed.  TARGETS is passed to construct error
-	 * messages.  */
+	void parse_target(
+		bool &is_last, Place &place_output,
+		std::vector <shared_ptr <const Place_Target> > &place_targets,
+		int &redirect_index,
+		shared_ptr <const Place_Target> &target_first);
 
-	shared_ptr <const Dep> parse_compound_dep
-	(Place_Name &place_name_input,
-	 Place &place_input,
-	 const std::vector <shared_ptr <const Place_Target> > &targets);
+	bool parse_expression(
+		shared_ptr <const Dep> &ret,
+		Place_Name &place_name_input, Place &place_input,
+		const std::vector <shared_ptr <const Place_Target> > &targets);
+	/* Parse an expression.  Write the parsed expression into RET. RET must be empty
+	 * when called.  Return whether an expression was parsed.  TARGETS is passed to
+	 * construct error messages. */
 
-	shared_ptr <const Dep> parse_dynamic_dep
-	(Place_Name &place_name_input,
-	 Place &place_input,
-	 const std::vector <shared_ptr <const Place_Target> > &targets);
+	shared_ptr <const Dep> parse_compound_dep(
+		Place_Name &place_name_input,
+		Place &place_input,
+		const std::vector <shared_ptr <const Place_Target> > &targets);
 
-	shared_ptr <const Dep> parse_variable_dep
-	(Place_Name &place_name_input, Place &place_input,
-	 const std::vector <shared_ptr <const Place_Target> > &targets);
+	shared_ptr <const Dep> parse_dynamic_dep(
+		Place_Name &place_name_input,
+		Place &place_input,
+		const std::vector <shared_ptr <const Place_Target> > &targets);
+
+	shared_ptr <const Dep> parse_variable_dep(
+		Place_Name &place_name_input, Place &place_input,
+		const std::vector <shared_ptr <const Place_Target> > &targets);
 	/* A variable dependency */
 
-	shared_ptr <const Dep> parse_redirect_dep
-	(Place_Name &place_name_input, Place &place_input,
-	 const std::vector <shared_ptr <const Place_Target> > &targets);
+	shared_ptr <const Dep> parse_redirect_dep(
+		Place_Name &place_name_input, Place &place_input,
+		const std::vector <shared_ptr <const Place_Target> > &targets);
 
 	/* If the next token is of type T, return it, otherwise return
 	 * null.  Also return null when at the end of the token list. */

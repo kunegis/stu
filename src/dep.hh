@@ -326,9 +326,8 @@ public:
 	bool is_unparametrized() const override { return dep->is_unparametrized(); }
 
 	const Place &get_place() const override
-	/* In error message pointing to dynamic dependency such as
-	 * '[B]', it is more useful to the user to point to the 'B' than
-	 * to the '['.  */
+	/* In error message pointing to dynamic dependency such as '[B]', it is more
+	 * useful to the user to point to the 'B' than to the '['. */
 	{
 		return dep->get_place();
 	}
@@ -346,13 +345,15 @@ public:
 };
 
 class Concat_Dep
-/* A dependency that is the concatenation of multiple dependencies.
+/*
+ * A dependency that is the concatenation of multiple dependencies.
  * The dependency as a whole does not have a place stored; the
  * place of the first sub-dependency is used.
  *
  * In terms of Stu code, a concatenated dependency corresponds to
  *
- *         ( X )( Y )( Z )...       */
+ *         ( X )( Y )( Z )...
+ */
 	: public Dep
 {
 public:
@@ -387,9 +388,9 @@ public:
 	static shared_ptr <const Dep> concat(shared_ptr <const Dep> a,
 					     shared_ptr <const Dep> b,
 					     int &error);
-	/* Concatenate two dependencies to a single dependency.  On
-	 * error, a message is printed, bits are set in ERROR, and null
-	 * is returned.  Only plain and dynamic dependencies can be passed.  */
+	/* Concatenate two dependencies to a single dependency.  On error, a message is
+	 * printed, bits are set in ERROR, and null is returned.  Only plain and dynamic
+	 * dependencies can be passed. */
 
 	static shared_ptr <const Plain_Dep> concat_plain(shared_ptr <const Plain_Dep> a,
 							 shared_ptr <const Plain_Dep> b);
@@ -399,43 +400,38 @@ public:
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
 				     std::vector <shared_ptr <const Dep> > &deps,
 				     int &error);
-	/* Normalize this object's dependencies into a list of individual
-	 * dependencies.  The generated dependencies are appended to
-	 * DEPS which does not need to be empty on entry into
-	 * this function.
-	 * On errors, a message is printed, bits are set in ERROR, and
-	 * if not in keep-going mode, the function returns immediately.  */
+	/* Normalize this object's dependencies into a list of individual dependencies.
+	 * The generated dependencies are appended to DEPS which does not need to be empty
+	 * on entry into this function.  On errors, a message is printed, bits are set in
+	 * ERROR, and if not in keep-going mode, the function returns immediately. */
 
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
 				     std::vector <shared_ptr <const Dep> > &deps,
 				     size_t start_index,
 				     int &error);
-	/* Helper function.  Write result into DEPS,
-	 * concatenating all starting at the given index.
-	 * On errors, a message is printed, bits are set in ERROR, and
-	 * if not in keep-going mode, the function returns immediately.  */
+	/* Helper function.  Write result into DEPS, concatenating all starting at the
+	 * given index.  On errors, a message is printed, bits are set in ERROR, and if
+	 * not in keep-going mode, the function returns immediately. */
 };
 
 class Compound_Dep
-/* A list of dependencies that act as a unit, corresponding syntactically to a
- * list of dependencies in parentheses.
+/* A list of dependencies that act as a unit, corresponding syntactically to a list of
+ * dependencies in parentheses.
  *
  * In terms of Stu source code, a compound dependency corresponds to
  *
  *         (X Y Z ...)
  *
- * Compound dependencies are themselves never normalized.  Within normalized
- * dependencies, they appear only as immediate children of concatenated
- * dependencies.  Otherwise, they also appear after parsing to denote syntactic
- * groups of dependencies.  */
+ * Compound dependencies are themselves never normalized.  Within normalized dependencies,
+ * they appear only as immediate children of concatenated dependencies.  Otherwise, they
+ * also appear after parsing to denote syntactic groups of dependencies. */
 	: public Dep
 {
 public:
 	Place place;
-	/* The place of the compound ; usually the opening parenthesis
-	 * or brace.  May be empty to denote no place, in particular if
-	 * this is a "logical" compound dependency not coming from a
-	 * parenthesised expression.  */
+	/* The place of the compound ; usually the opening parenthesis or brace.  May be
+	 * empty to denote no place, in particular if this is a "logical" compound
+	 * dependency not coming from a parenthesised expression. */
 
 	std::vector <shared_ptr <const Dep> > deps;
 	/* The contained dependencies, in given order */

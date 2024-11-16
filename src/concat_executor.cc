@@ -35,8 +35,7 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 			dep_child->index= i;
 			push(dep_child);
 		} else {
-			/* Everything else would mean that DEP
-			 * was not normalized  */
+			/* Everything else would mean that DEP was not normalized */
 			unreachable();
 		}
 		++i;

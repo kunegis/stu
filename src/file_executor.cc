@@ -152,8 +152,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 				     strsignal(sig),
 				     Color::highlight_off[CH_ERR]);
 		} else {
-			/* This should not happen but the standard does not exclude
-			 * it  */
+			/* This should not happen but the standard does not exclude it */
 			should_not_happen();
 			reason= frmt("failed with status %s%d%s",
 				     Color::highlight_on[CH_ERR],
@@ -217,8 +216,8 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 		assert(hash_deps.size());
 	}
 
-	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not
-	 * just the one given in the dependency.  */
+	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not just the one given
+	 * in the dependency. */
 	for (const Hash_Dep &hash_dep: hash_deps) {
 		executors_by_hash_dep[hash_dep]= this;
 	}
@@ -439,8 +438,8 @@ void print_jobs()
 
 bool File_Executor::remove_if_existing(bool output)
 {
-	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions
-	 * here, if OUTPUT is false  */
+	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here, if OUTPUT is
+	 * false */
 
 	if (option_K)
 		return false;
@@ -454,14 +453,14 @@ bool File_Executor::remove_if_existing(bool output)
 			continue;
 		assert_async(filename[0] != '\0');
 
-		/* Remove the file if it exists.  If it is a symlink, only the
-		 * symlink itself is removed, not the file it links to.  */
+		/* Remove the file if it exists.  If it is a symlink, only the symlink
+		 * itself is removed, not the file it links to. */
 		struct stat buf;
 		if (0 > stat(filename, &buf))
 			continue;
 
-		/* If the file existed before building, remove it only if it now
-		 * has a newer timestamp.  */
+		/* If the file existed before building, remove it only if it now has a
+		 * newer timestamp. */
 		if (! (! timestamps_old[i].defined() || timestamps_old[i] < Timestamp(&buf)))
 			continue;
 
@@ -865,7 +864,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		DEBUG_PRINT("create_content");
 		print_command();
 		write_content(hash_deps.front().get_name_c_str_nondynamic(),
-			      *(rule->command));
+			*(rule->command));
 		done.set_all();
 		assert(proceed == 0);
 		proceed |= P_FINISHED;
@@ -892,11 +891,10 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		assert(! (rule->place_targets[rule->redirect_index]->flags & F_TARGET_TRANSIENT));
 	assert(options_jobs >= 1);
 
-	/* Key/value pairs for all environment variables of the job.
-	 * Variables override parameters.
-	 * Note about C++ map::insert():  The insert function is a no-op
-	 * if a key is already present.  Thus, we insert variables first
-	 * (because they have priority).  */
+	/* Key/value pairs for all environment variables of the job.  Variables override
+	 * parameters.  Note about C++ map::insert():  The insert function is a no-op if a
+	 * key is already present.  Thus, we insert variables first (because they have
+	 * priority). */
 	mapping.insert(mapping_variable.begin(), mapping_variable.end());
 	mapping.insert(mapping_parameter.begin(), mapping_parameter.end());
 	mapping_parameter.clear();
@@ -1045,10 +1043,9 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 		return;
 	}
 
-	/* It could be that the file exists but the bit is not set --
-	 * this would happen if the file was not there before and we had
-	 * no reason to check.  In such cases, we don't need the
-	 * variable.  */
+	/* It could be that the file exists but the bit is not set -- this would happen if
+	 * the file was not there before and we had no reason to check.  In such cases, we
+	 * don't need the variable. */
 	if (!(bits & B_EXISTING)) {
 		assert(dep->flags & F_TRIVIAL);
 		return;
@@ -1089,8 +1086,8 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 		goto error;
 	}
 
-	/* Remove space at beginning and end of the content. The characters are
-	 * those used by isspace() in the C locale.  */
+	/* Remove space at beginning and end of the content. The characters are those used
+	 * by isspace() in the C locale. */
 	content.erase(0, content.find_first_not_of(" \n\t\f\r\v"));
 	content.erase(content.find_last_not_of(" \n\t\f\r\v") + 1);
 

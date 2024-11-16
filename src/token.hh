@@ -81,8 +81,7 @@ public:
 	{
 		assert(isalnum(flag));
 
-		/* Can never be on the first column because there is a
-		 * preceding dash.  */
+		/* Can never be on the first column because there is a preceding dash. */
 		if (place.type == Place::Type::INPUT_FILE)
 			assert(place.column > 0);
 	}
@@ -102,9 +101,7 @@ public:
 };
 
 class Name_Token
-/* This contains two types of places:  the places for the individual
- * parameters in Place_Param_Name, and the place of the complete token
- * from Token.  */
+/* This contains two types of places:  the places for the individual parameters in Place_Param_Name, and the place of the complete token from Token. */
 	: public Token, public Place_Name
 {
 public:
@@ -123,16 +120,15 @@ public:
 };
 
 class Command
-/* A command delimited by braces, or the content of a file, also
- * delimited by braces.  */
+/* A command delimited by braces, or the content of a file, also delimited by braces. */
 	: public Token
 {
 private:
 	mutable std::unique_ptr <std::vector <string> > lines;
-	/* The individual lines of the command.  Empty lines and leading
-	 * spaces are not included.  These lines are only used for
-	 * output and writing content, not for execution.  May be null.
-	 * Generated on demand, and therefore declared as mutable.  */
+	/* The individual lines of the command.  Empty lines and leading spaces are not
+	 * included.  These lines are only used for output and writing content, not for
+	 * execution.  May be null.  Generated on demand, and therefore declared as
+	 * mutable. */
 
 public:
 	const string command;

@@ -100,8 +100,8 @@ public:
 	}
 
 	const char *get_name_c_str_nondynamic() const
-	/* Return a C pointer to the name of the file or transient.  The
-	 * object must be non-dynamic.  */
+	/* Return a C pointer to the name of the file or transient.  The object must be
+	 * non-dynamic. */
 	{
 		check();
 		assert((get_word(0) & F_TARGET_DYNAMIC) == 0);

@@ -84,8 +84,8 @@ public:
 	}
 
 	string instantiate(const std::map <string, string> &mapping) const;
-	/* Instantiate the name with the given mapping.  The name may be
-	 * empty, resulting in an empty string.  */
+	/* Instantiate the name with the given mapping.  The name may be empty, resulting
+	 * in an empty string. */
 
 	const string &unparametrized() const
 	/* Return the name as a string, assuming it is unparametrized.
@@ -139,8 +139,7 @@ void render(const Name &name, Parts &parts, Rendering rendering= 0)
 }
 
 class Target
-/* A parametrized name for which it is saved what type it represents.
- * Non-dynamic.  */
+/* A parametrized name for which it is saved what type it represents.  Non-dynamic. */
 {
 public:
 	Flags flags;  /* Only file/transient target info */
@@ -165,8 +164,8 @@ public:
 	}
 
 	Hash_Dep unparametrized() const
-	/* The corresponding unparametrized target.  This target must
-	 * have zero parameters.  */
+	/* The corresponding unparametrized target.  This target must have zero
+	 * parameters. */
 	{
 		return Hash_Dep(flags, name.unparametrized());
 	}
@@ -190,8 +189,7 @@ public:
 	/* Place of the name as a whole */
 
 	std::vector <Place> places;
-	/* Length = N (number of parameters).
-	 * The places of the individual parameters.  */
+	/* Length = N (number of parameters).  The places of the individual parameters. */
 
 	Place_Name()
 		/* Empty parametrized name, and empty place */
@@ -241,9 +239,8 @@ public:
 	Place_Name place_name;
 
 	Place place;
-	/* The place of the target as a whole.  The PLACE_NAME
-	 * variable additionally contains a place for the name itself,
-	 * as well as for individual parameters.  */
+	/* The place of the target as a whole.  The PLACE_NAME variable additionally
+	 * contains a place for the name itself, as well as for individual parameters. */
 
 	Place_Target(Flags flags_,
 		     const Place_Name &place_name_)

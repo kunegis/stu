@@ -1,8 +1,8 @@
 #include "target.hh"
 
 string Name::instantiate(const std::map <string, string> &mapping) const
-/* This function must take into account the special rules.  Special rule (a)
- * does not need to be handled, (i.e., we keep the starting './')  */
+/* This function must take into account the special rules.  Special rule (a) does not need
+ * to be handled, (i.e., we keep the starting './') */
 {
 	assert(texts.size() == 1 + parameters.size());
 	const size_t n= get_n();
@@ -79,8 +79,8 @@ bool Name::match(const string name,
 		if ((size_t)(p_end - p) <= k) {
 			goto failed;
 		}
-		/* Note:  K can be zero here, in which case memcmp()
-		 * always returns zero, i.e., a match.  */
+		/* Note:  K can be zero here, in which case memcmp() always returns zero,
+		 * i.e., a match. */
 		if (memcmp(p, texts[0].c_str(), k)) {
 			goto failed;
 		}

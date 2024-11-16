@@ -269,10 +269,10 @@ pid_t Job::start(string command,
 	return pid;
 }
 
-/* This function works analogously to start() with respect to invocation
- * of fork() and other system-related functions.  */
 pid_t Job::start_copy(string target,
 		      string source)
+/* This function works analogously to start() with respect to invocation of fork() and
+ * other system-related functions. */
 {
 	assert(! target.empty());
 	assert(! source.empty());
@@ -307,9 +307,9 @@ pid_t Job::start_copy(string target,
 				cp_command= "/bin/cp";
 		}
 
-		/* Using '--' as an argument guarantees that the two
-		 * filenames will be interpreted as filenames and not as
-		 * options, in particular when they begin with a dash.  */
+		/* Using '--' as an argument guarantees that the two filenames will be
+		 * interpreted as filenames and not as options, in particular when they
+		 * begin with a dash. */
 		const char *argv[]= {cp_command,
 				     "--",
 				     source.c_str(),
@@ -507,10 +507,9 @@ void Job::handler_termination(int sig)
 		assert_async(Job::in_child == 1);
 	}
 
-	/* We cannot call Job::Statistics::print() here because
-	 * getrusage() is not async signal safe, and because the count_*
-	 * variables are not atomic.  Not even functions like fputs()
-	 * are async signal-safe, so don't even try.  */
+	/* We cannot call Job::Statistics::print() here because getrusage() is not async
+	 * signal safe, and because the count_* variables are not atomic.  Not even
+	 * functions like fputs() are async signal-safe, so don't even try. */
 
 	/* Raise signal again */
 	int rr= raise(sig);
@@ -524,9 +523,9 @@ void Job::handler_termination(int sig)
 }
 
 void Job::handler_productive(int, siginfo_t *, void *)
-/* Do nothing -- the handler only exists because POSIX says that a
- * signal may be discarded by the kernel if there is no signal handler
- * for it, and then it may not be possible to sigwait() for that signal.  */
+/* Do nothing -- the handler only exists because POSIX says that a signal may be discarded
+ * by the kernel if there is no signal handler for it, and then it may not be possible to
+ * sigwait() for that signal. */
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 }
@@ -604,8 +603,7 @@ void Job::init_signals()
 		perror("sigemptyset");
 		exit(ERROR_FATAL);
 	}
-	/* These are all signals that by default would terminate the
-	 * process.  */
+	/* These are all signals that by default would terminate the process. */
 	const static int signals_termination[]= {
 		SIGTERM, SIGINT, SIGQUIT, SIGABRT, SIGSEGV, SIGPIPE,
 		SIGILL, SIGHUP,
@@ -631,9 +629,8 @@ void Job::init_signals()
 	 * Productive signals
 	 */
 
-	/* We have to use sigaction() rather than signal() as only
-	 * sigaction() guarantees that the signal can be queued, as per
-	 * POSIX.  */
+	/* We have to use sigaction() rather than signal() as only sigaction() guarantees
+	 * that the signal can be queued, as per POSIX. */
 	struct sigaction act_productive;
 	act_productive.sa_sigaction= Job::handler_productive;
 	if (sigemptyset(& act_productive.sa_mask)) {
@@ -680,12 +677,11 @@ void Job::init_signals()
 }
 
 void Job::kill(pid_t pid)
-/* Passing (-pid) to kill() kills the whole process group with PGID
- * (pid).  Since we set each child process to have its PID as its
- * process group ID, this kills the child and all its children
- * (recursively), up to programs that change this PGID of processes,
- * such as Stu and shells, which have to kill their children explicitly
- * in their signal handlers.  */
+/* Passing (-pid) to kill() kills the whole process group with PGID (pid).  Since we set
+ * each child process to have its PID as its process group ID, this kills the child and
+ * all its children (recursively), up to programs that change this PGID of processes, such
+ * as Stu and shells, which have to kill their children explicitly in their signal
+ * handlers. */
 {
 	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 
@@ -694,14 +690,12 @@ void Job::kill(pid_t pid)
 	/* We send first SIGTERM, then SIGCONT */
 	if (0 > ::kill(-pid, SIGTERM)) {
 		if (errno == ESRCH) {
-			/* The child process is a zombie.  This
-			 * means the child process has already
-			 * terminated but we haven't wait()ed
-			 * for it yet.  */
+			/* The child process is a zombie.  This means the child process
+			 * has already terminated but we haven't wait()ed for it yet. */
 		} else {
 			write_async(2, "stu: error: kill\n");
-			/* Note:  Don't call exit() yet; we want all
-			 * children to be killed.  */
+			/* Note:  Don't call exit() yet; we want all children to be
+			 * killed. */
 		}
 	}
 

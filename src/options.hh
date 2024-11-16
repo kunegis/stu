@@ -100,8 +100,8 @@ static const char *dollar_zero;
  * so we don't use it); the value of argv[0], set in main() */
 
 bool option_setting(char c);
-/* Set one of the "setting options", i.e., of of those that can appear
- * in $STU_OPTIONS.  Return whether this was a valid settings option.  */
+/* Set one of the "setting options", i.e., of of those that can appear in $STU_OPTIONS.
+ * Return whether this was a valid settings option. */
 
 void set_option_i();
 void set_option_j(const char *value);

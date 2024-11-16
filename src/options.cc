@@ -59,8 +59,8 @@ void set_option_m(const char *value)
 {
 	if (!strcmp(value, "random"))  {
 		order= Order::RANDOM;
-		/* Use gettimeofday() instead of time() to get millisecond
-		 * instead of second precision  */
+		/* Use gettimeofday() instead of time() to get millisecond instead of
+		 * second precision */
 		struct timeval tv;
 		if (gettimeofday(&tv, nullptr) != 0) {
 			print_errno("gettimeofday");

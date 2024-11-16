@@ -18,121 +18,11 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 	std::vector <shared_ptr <const Place_Target> > place_targets;
 
 	while (iter != tokens.end()) {
-		Place place_output_new;
-		/* Remains an empty place when '>' is not present */
-
-		if (is_operator('>')) {
-			place_output_new= (*iter)->get_place();
-			++iter;
-		}
-
-		Flags flags_type= 0;
-		/* F_TARGET_TRANSIENT is set when '@' is found */
-
-		Place place_of_target;
-		if (iter != tokens.end())
-			place_of_target= (*iter)->get_place_start();
-
-		if (is_operator('@')) {
-			Place place_at= (*iter)->get_place();
-			++iter;
-
-			if (iter == tokens.end()) {
-				place_end << "expected the name of transient target";
-				place_at << fmt("after %s", show_operator('@'));
-				throw ERROR_LOGICAL;
-			}
-			if (! is <Name_Token> ()) {
-				(*iter)->get_place_start()
-					<< fmt("expected the name of transient target, not %s",
-					       show(*iter));
-				place_at << fmt("after %s", show_operator('@'));
-				throw ERROR_LOGICAL;
-			}
-			flags_type= F_TARGET_TRANSIENT;
-		}
-
-		if (! is <Name_Token> ()) {
-			if (! place_output_new.empty()) {
-				if (iter == tokens.end())
-					place_end << "expected a filename";
-				else
-					(*iter)->get_place_start() <<
-						fmt("expected a filename, not %s",
-						    show((*iter)));
-				place_output_new <<
-					fmt("after output redirection using %s",
-					    show_operator('>'));
-				throw ERROR_LOGICAL;
-			}
-			break;
-		}
-
-		/* Target */
-		shared_ptr <Name_Token> target_name= is <Name_Token> ();
-		++iter;
-
-		string param_1, param_2;
-		if (! target_name->valid(param_1, param_2)) {
-			place_of_target <<
-				fmt("the two parameters %s and %s in the name %s "
-				    "must be separated by at least one character",
-				    show_prefix("$", param_1),
-				    show_prefix("$", param_2),
-				    show(target_name));
-			explain_separated_parameters();
-			throw ERROR_LOGICAL;
-		}
-
-		string parameter_duplicate;
-		if ((parameter_duplicate= target_name->get_duplicate_parameter()) != "") {
-			place_of_target <<
-				fmt("target %s must not contain duplicate parameter %s",
-				    show(target_name),
-				    show_prefix("$", parameter_duplicate));
-			throw ERROR_LOGICAL;
-		}
-
-		shared_ptr <const Place_Target> place_target=
-			std::make_shared <Place_Target>
-			(flags_type, *target_name, place_of_target);
-
-		if (! place_output_new.empty()) {
-			if (! place_output.empty()) {
-				place_output_new <<
-					fmt("there must not be a second output redirection %s",
-					    show_prefix(">", *place_target));
-				assert(place_targets[redirect_index]
-				       ->place_name.get_n() == 0);
-				assert((place_targets[redirect_index]->flags
-					& F_TARGET_TRANSIENT) == 0);
-				place_output <<
-					fmt("shadowing previous output redirection %s",
-					    show_prefix
-					    (">", place_targets[redirect_index]
-					     ->unparametrized().get_name_nondynamic()));
-				throw ERROR_LOGICAL;
-			}
-			place_output= place_output_new;
-			assert(! place_output.empty());
-			redirect_index= place_targets.size();
-		}
-
-		if (flags_type == F_TARGET_TRANSIENT) {
-			if (! place_output_new.empty()) {
-				place_target->place <<
-					fmt("transient target %s is invalid",
-					    show(*place_target));
-				place_output_new << fmt("after output redirection using %s",
-							show_operator('>'));
-				throw ERROR_LOGICAL;
-			}
-		}
-		if (target_first == nullptr) {
-			target_first= place_target;
-		}
-
-		place_targets.push_back(place_target);
+		bool is_last;
+		parse_target(
+			is_last, place_output, place_targets, redirect_index,
+			target_first);
+		if (is_last) break;
 	}
 
 	if (place_targets.size() == 0) {
@@ -291,9 +181,8 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 			name_copy= is <Name_Token> ();
 			++iter;
 
-			/* Check that the source file contains
-			 * only parameters that also appear in
-			 * the target  */
+			/* Check that the source file contains only parameters that also
+			 * appear in the target */
 			std::set <string> parameters;
 			for (auto &parameter:
 				     place_targets[0]->place_name.get_parameters()) {
@@ -442,11 +331,137 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 		 redirect_index, filename_input);
 }
 
-bool Parser::parse_expression_list
-(std::vector <shared_ptr <const Dep> > &ret,
- Place_Name &place_name_input,
- Place &place_input,
- const std::vector <shared_ptr <const Place_Target> > &targets)
+void Parser::parse_target(
+	bool &is_last,
+	Place &place_output,
+	std::vector <shared_ptr <const Place_Target> > &place_targets,
+	int &redirect_index,
+	shared_ptr <const Place_Target> &target_first)
+{
+	is_last= false;
+	Place place_output_new;
+	/* Remains an empty place when '>' is not present */
+
+	if (is_operator('>')) {
+		place_output_new= (*iter)->get_place();
+		++iter;
+	}
+
+	Flags flags_type= 0;
+	/* F_TARGET_TRANSIENT is set when '@' is found */
+
+	Place place_of_target;
+	if (iter != tokens.end())
+		place_of_target= (*iter)->get_place_start();
+
+	if (is_operator('@')) {
+		Place place_at= (*iter)->get_place();
+		++iter;
+
+		if (iter == tokens.end()) {
+			place_end << "expected the name of transient target";
+			place_at << fmt("after %s", show_operator('@'));
+			throw ERROR_LOGICAL;
+		}
+		if (! is <Name_Token> ()) {
+			(*iter)->get_place_start()
+				<< fmt("expected the name of transient target, not %s",
+					show(*iter));
+			place_at << fmt("after %s", show_operator('@'));
+			throw ERROR_LOGICAL;
+		}
+		flags_type= F_TARGET_TRANSIENT;
+	}
+
+	if (! is <Name_Token> ()) {
+		if (! place_output_new.empty()) {
+			if (iter == tokens.end())
+				place_end << "expected a filename";
+			else
+				(*iter)->get_place_start() <<
+					fmt("expected a filename, not %s",
+						show((*iter)));
+			place_output_new <<
+				fmt("after output redirection using %s",
+					show_operator('>'));
+			throw ERROR_LOGICAL;
+		}
+		is_last= true;
+		return;
+	}
+
+	/* Target */
+	shared_ptr <Name_Token> target_name= is <Name_Token> ();
+	++iter;
+
+	string param_1, param_2;
+	if (! target_name->valid(param_1, param_2)) {
+		place_of_target <<
+			fmt("the two parameters %s and %s in the name %s "
+				"must be separated by at least one character",
+				show_prefix("$", param_1),
+				show_prefix("$", param_2),
+				show(target_name));
+		explain_separated_parameters();
+		throw ERROR_LOGICAL;
+	}
+
+	string parameter_duplicate;
+	if ((parameter_duplicate= target_name->get_duplicate_parameter()) != "") {
+		place_of_target <<
+			fmt("target %s must not contain duplicate parameter %s",
+				show(target_name),
+				show_prefix("$", parameter_duplicate));
+		throw ERROR_LOGICAL;
+	}
+
+	shared_ptr <const Place_Target> place_target=
+		std::make_shared <Place_Target>
+		(flags_type, *target_name, place_of_target);
+
+	if (! place_output_new.empty()) {
+		if (! place_output.empty()) {
+			place_output_new <<
+				fmt("there must not be a second output redirection %s",
+					show_prefix(">", *place_target));
+			assert(place_targets[redirect_index]
+				->place_name.get_n() == 0);
+			assert((place_targets[redirect_index]->flags
+					& F_TARGET_TRANSIENT) == 0);
+			place_output <<
+				fmt("shadowing previous output redirection %s",
+					show_prefix
+					(">", place_targets[redirect_index]
+						->unparametrized().get_name_nondynamic()));
+			throw ERROR_LOGICAL;
+		}
+		place_output= place_output_new;
+		assert(! place_output.empty());
+		redirect_index= place_targets.size();
+	}
+
+	if (flags_type == F_TARGET_TRANSIENT) {
+		if (! place_output_new.empty()) {
+			place_target->place <<
+				fmt("transient target %s is invalid",
+					show(*place_target));
+			place_output_new << fmt("after output redirection using %s",
+				show_operator('>'));
+			throw ERROR_LOGICAL;
+		}
+	}
+	if (target_first == nullptr) {
+		target_first= place_target;
+	}
+
+	place_targets.push_back(place_target);
+}
+
+bool Parser::parse_expression_list(
+	std::vector <shared_ptr <const Dep> > &ret,
+	Place_Name &place_name_input,
+	Place &place_input,
+	const std::vector <shared_ptr <const Place_Target> > &targets)
 {
 	assert(ret.size() == 0);
 
@@ -465,10 +480,11 @@ bool Parser::parse_expression_list
 	return ! ret.empty();
 }
 
-bool Parser::parse_expression(shared_ptr <const Dep> &ret,
-			      Place_Name &place_name_input,
-			      Place &place_input,
-			      const std::vector <shared_ptr <const Place_Target> > &targets)
+bool Parser::parse_expression(
+	shared_ptr <const Dep> &ret,
+	Place_Name &place_name_input,
+	Place &place_input,
+	const std::vector <shared_ptr <const Place_Target> > &targets)
 {
 	assert(ret == nullptr);
 
@@ -539,10 +555,10 @@ bool Parser::parse_expression(shared_ptr <const Dep> &ret,
 	return false;
 }
 
-shared_ptr <const Dep> Parser::
-parse_compound_dep(Place_Name &place_name_input,
-		   Place &place_input,
-		   const std::vector <shared_ptr <const Place_Target> > &targets)
+shared_ptr <const Dep> Parser::parse_compound_dep(
+	Place_Name &place_name_input,
+	Place &place_input,
+	const std::vector <shared_ptr <const Place_Target> > &targets)
 {
 	if (! is_operator('('))
 		return nullptr;
@@ -575,8 +591,8 @@ parse_compound_dep(Place_Name &place_name_input,
 	}
 	++iter;
 
-	/* If RET is null, it means we had empty parentheses.
-	 * Return an empty Compound_Dependency in that case  */
+	/* If RET is null, it means we had empty parentheses.  Return an empty
+	 * Compound_Dependency in that case. */
 	if (ret == nullptr)
 		ret= std::make_shared <Compound_Dep> (place_paren);
 
@@ -597,10 +613,10 @@ parse_compound_dep(Place_Name &place_name_input,
 	return ret;
 }
 
-shared_ptr <const Dep> Parser::
-parse_dynamic_dep(Place_Name &place_name_input,
-		  Place &place_input,
-		  const std::vector <shared_ptr <const Place_Target> > &targets)
+shared_ptr <const Dep> Parser::parse_dynamic_dep(
+	Place_Name &place_name_input,
+	Place &place_input,
+	const std::vector <shared_ptr <const Place_Target> > &targets)
 {
 	if (! is_operator('['))
 		return nullptr;
@@ -664,10 +680,10 @@ parse_dynamic_dep(Place_Name &place_name_input,
 	return ret;
 }
 
-shared_ptr <const Dep> Parser::
-parse_variable_dep(Place_Name &place_name_input,
-		   Place &place_input,
-		   const std::vector <shared_ptr <const Place_Target> > &targets)
+shared_ptr <const Dep> Parser::parse_variable_dep(
+	Place_Name &place_name_input,
+	Place &place_input,
+	const std::vector <shared_ptr <const Place_Target> > &targets)
 {
 	bool has_input= false;
 	shared_ptr <const Dep> ret;
@@ -678,8 +694,8 @@ parse_variable_dep(Place_Name &place_name_input,
 
 	assert(iter != tokens.end());
 	if (! is_operator('[')) {
-		/* The '$' and '[' operators are only generated when they both
-		 * appear in conjunction.  */
+		/* The '$' and '[' operators are only generated when they both appear in
+		 * conjunction. */
 		should_not_happen();
 		return nullptr;
 	}
@@ -805,9 +821,8 @@ parse_variable_dep(Place_Name &place_name_input,
 	}
 	++iter;
 
-	/* The place of the variable dependency as a whole is set on the
-	 * name contained in it.  It would be conceivable to also set it
-	 * on the dollar sign.  */
+	/* The place of the variable dependency as a whole is set on the name contained in
+	 * it.  It would be conceivable to also set it on the dollar sign. */
 	ret= std::make_shared <Plain_Dep>
 		(flags, places_flags,
 		 Place_Target(0, *place_name, place_name->place),
@@ -834,9 +849,9 @@ parse_variable_dep(Place_Name &place_name_input,
 	return ret;
 }
 
-shared_ptr <const Dep> Parser::parse_redirect_dep
-(Place_Name &place_name_input, Place &place_input,
- const std::vector <shared_ptr <const Place_Target> > &targets)
+shared_ptr <const Dep> Parser::parse_redirect_dep(
+	Place_Name &place_name_input, Place &place_input,
+	const std::vector <shared_ptr <const Place_Target> > &targets)
 {
 	(void) targets;
 	bool has_input= false;
@@ -963,8 +978,8 @@ void Parser::append_copy(      Name &to,
 	for (ssize_t i= from.get_n(); i >= 0; --i) {
 		for (ssize_t j= from.get_texts()[i].size() - 1; j >= 0; --j) {
 			if (from.get_texts()[i][j] == '/') {
-				/* Don't append the found slash, as TO already
-				 * ends in a slash  */
+				/* Don't append the found slash, as TO already ends in a
+				 * slash */
 				to.append_text(from.get_texts()[i].substr(j + 1));
 
 				for (size_t k= i; k < from.get_n(); ++k) {
@@ -980,10 +995,11 @@ void Parser::append_copy(      Name &to,
 	to.append(from);
 }
 
-void Parser::get_rule_list(std::vector <shared_ptr <Rule> > &rules,
-			   std::vector <shared_ptr <Token> > &tokens,
-			   const Place &place_end,
-			   shared_ptr <const Place_Target> &target_first)
+void Parser::get_rule_list(
+	std::vector <shared_ptr <Rule> > &rules,
+	std::vector <shared_ptr <Token> > &tokens,
+	const Place &place_end,
+	shared_ptr <const Place_Target> &target_first)
 {
 	auto iter= tokens.begin();
 	Parser parser(tokens, iter, place_end);
@@ -996,11 +1012,12 @@ void Parser::get_rule_list(std::vector <shared_ptr <Rule> > &rules,
 	}
 }
 
-void Parser::get_expression_list(std::vector <shared_ptr <const Dep> > &deps,
-				 std::vector <shared_ptr <Token> > &tokens,
-				 const Place &place_end,
-				 Place_Name &input,
-				 Place &place_input)
+void Parser::get_expression_list(
+	std::vector <shared_ptr <const Dep> > &deps,
+	std::vector <shared_ptr <Token> > &tokens,
+	const Place &place_end,
+	Place_Name &input,
+	Place &place_input)
 {
 	auto iter= tokens.begin();
 	Parser parser(tokens, iter, place_end);
@@ -1008,18 +1025,18 @@ void Parser::get_expression_list(std::vector <shared_ptr <const Dep> > &deps,
 	parser.parse_expression_list(deps, input, place_input, targets);
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start()
-			<< fmt("expected a dependency, not %s",
-			       show(*iter));
+			<< fmt("expected a dependency, not %s", show(*iter));
 		throw ERROR_LOGICAL;
 	}
 }
 
-void Parser::get_expression_list_delim(std::vector <shared_ptr <const Dep> > &deps,
-				       const char *filename,
-				       char c, char c_printed,
-				       const Printer &printer, bool allow_enoent)
-/* We use getdelim() for parsing.  A more optimized way would be via
- * mmap()+strchr().  */
+void Parser::get_expression_list_delim(
+	std::vector <shared_ptr <const Dep> > &deps,
+	const char *filename,
+	char c, char c_printed,
+	const Printer &printer,
+	bool allow_enoent)
+/* We use getdelim() for parsing.  A more optimized way would be via mmap()+strchr(). */
 {
 	FILE *file= fopen(filename, "r");
 	if (file == nullptr) {
@@ -1106,8 +1123,8 @@ void Parser::get_target_arg(std::vector <shared_ptr <const Dep> > &deps,
  *      concatenation
  */
 {
-	/* All tokens get the same place, because we don't distinguish
-	 * the location within command line arguments  */
+	/* All tokens get the same place, because we don't distinguish the location within
+	 * command line arguments */
 	Place place(Place::Type::ARGUMENT);
 	std::vector <shared_ptr <Token> > tokens;
 

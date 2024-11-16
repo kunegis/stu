@@ -14,8 +14,8 @@ const char *Color::highlight_on[CH_COUNT];
 const char *Color::highlight_off[CH_COUNT];
 
 void Color::set()
-/* Only use color when $TERM is defined, is not equal to "dumb", and
- * stderr/stdout is a TYY.  This is  the same logic as used by GCC.  */
+/* Only use color when $TERM is defined, is not equal to "dumb", and stderr/stdout is a
+ * TYY.  This is  the same logic as used by GCC. */
 {
 	bool is_tty_out= false, is_tty_err= false;
 	const char *t= getenv("TERM");
@@ -39,8 +39,8 @@ void Color::set()
 }
 
 void Color::set(bool enable_color_out, bool enable_color_err)
-/* Note:  GCC additionally inserts "\33[K" sequences after each color code, to
- * avoid a bug in some terminals.  This is not done here.  */
+/* Note:  GCC additionally inserts "\33[K" sequences after each color code, to avoid a bug
+ * in some terminals.  This is not done here. */
 {
 	if (enable_color_out) {
 		nocolor[CH_OUT]= false;

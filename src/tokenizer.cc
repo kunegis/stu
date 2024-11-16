@@ -594,9 +594,8 @@ bool Tokenizer::is_flag_char(char c)
 void Tokenizer::parse_version(string version_req,
 			      const Place &place_version,
 			      const Place &place_percent)
-/* Note: there may be any number of version directives in Stu (in
- * particular from multiple source files), so we don't keep track
- * whether one has already been provided.  */
+/* Note: there may be any number of version directives in Stu (in particular from multiple
+ * source files), so we don't keep track whether one has already been provided. */
 {
 	unsigned major_req, minor_req, patch_req;
 	int chars= -1;
@@ -827,9 +826,8 @@ bool Tokenizer::skip_space(bool &skipped_actual_space)
 					p_line= p+1;
 					ret= true;
 				} else {
-					/* A backslash followed by something
-					 * else--this is a normal name character
-					 * and not a space  */
+					/* A backslash followed by something else--this is
+					 * a normal name character and not a space */
 					--p;
 					return ret;
 				}
@@ -1070,10 +1068,10 @@ void Tokenizer::parse_directive(std::vector <shared_ptr <Token> > &tokens,
 		filenames.push_back(place_base.text);
 
 		if (includes.count(filename_include)) {
-			/* Do nothing -- file was already parsed, or is being
-			 * parsed.  It is an error if a file includes itself
-			 * directly or indirectly.  It it ignored if a file is
-			 * included a second time non-recursively.  */
+			/* Do nothing -- file was already parsed, or is being parsed.  It
+			 * is an error if a file includes itself directly or indirectly.
+			 * It it ignored if a file is included a second time
+			 * non-recursively. */
 			for (auto &i: filenames) {
 				if (filename_include != i)
 					continue;
@@ -1094,8 +1092,7 @@ void Tokenizer::parse_directive(std::vector <shared_ptr <Token> > &tokens,
 				throw ERROR_LOGICAL;
 			}
 		} else {
-			/* Ignore the end place; it is only used for the
-			 * top-level file  */
+			/* Ignore the end place; it is only used for the top-level file */
 			Place place_end_sub;
 			parse_tokens_file(tokens,
 					  Tokenizer::SOURCE,

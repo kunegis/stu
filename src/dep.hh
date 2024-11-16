@@ -27,6 +27,11 @@
  * concatenation and/or compound dependencies.
  */
 
+/*
+ * Functions such as Dep::normalize() cannot be virtual functions because we need to
+ * access THIS as a shared pointer.
+ */
+
 #include <map>
 #include <memory>
 

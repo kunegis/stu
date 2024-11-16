@@ -288,6 +288,11 @@ private:
 	 * after (potentially) starting all non-trivial dependencies, the target must be
 	 * rebuilt anyway.  Dependencies are normalized. */
 
+	void check_unparametrized(
+		shared_ptr <const Dep> &dep,
+		Hash_Dep hash_dep,
+		bool &found_error);
+
 	static bool hide_link_from_message(Flags flags) {
 		return flags & F_RESULT_NOTIFY;
 	}

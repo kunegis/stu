@@ -5,6 +5,7 @@
 using std::string;
 using std::shared_ptr;
 
+// TODO replace with putting "src/*.cc" on the compiler invocation
 #include "bits.cc"
 #include "buffer.cc"
 #include "buffering.cc"
@@ -82,6 +83,7 @@ int main(int argc, char **argv, char **envp)
 		bool had_option_f= false; /* Both -f and -F */
 
 		for (int c; (c= getopt(argc, argv, OPTIONS)) != -1;) {
+			// TODO put into own function
 			if (option_setting(c))
 				continue;
 
@@ -228,6 +230,7 @@ int main(int argc, char **argv, char **envp)
 
 		/* Use the default Stu script if -f/-F are not used */
 		if (! had_option_f) {
+			// TODO put into own function
 			filenames.push_back(FILENAME_INPUT_DEFAULT);
 			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY);
 			if (file_fd >= 0) {

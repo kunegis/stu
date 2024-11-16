@@ -701,6 +701,7 @@ void Tokenizer::parse_tokens(std::vector <shared_ptr <Token> > &tokens,
 
 		/* Flag, name, or invalid character */
 		else {
+			// TODO put into own function
 			/* Flag */
 			bool allow_special=
 				!(environment & E_WHITESPACE)
@@ -1026,6 +1027,7 @@ void Tokenizer::parse_directive(std::vector <shared_ptr <Token> > &tokens,
 	skip_space(skipped_actual_space);
 
 	if (name == "include") {
+		// TODO put into own function
 		if (context == DYNAMIC) {
 			place_percent
 				<< fmt("%s must not appear in dynamic dependencies",
@@ -1105,6 +1107,7 @@ void Tokenizer::parse_directive(std::vector <shared_ptr <Token> > &tokens,
 		filenames.pop_back();
 
 	} else if (name == "version") {
+		// TODO put into own function
 		while (p < p_end && isspace(*p)) {
 			if (*p == '\n') {
 				++line;

@@ -5,6 +5,8 @@
 
 shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_first)
 {
+	// TODO make this use a Rule_Parser and put blocks of code into own functions, avoiding many parameters (also to parse_target()).
+
 	const auto iter_begin= iter;
 	/* Used to check that when this function fails (i.e., returns null), is has not
 	 * read any tokens. */

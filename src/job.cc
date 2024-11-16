@@ -101,12 +101,11 @@ pid_t Job::start(string command,
 		::signal(SIGTTIN, SIG_DFL);
 		::signal(SIGTTOU, SIG_DFL);
 
+		// TODO put into own function
 		/* Set variables */
 		size_t v_old= 0;
-
 		std::map <string, size_t> old;
 		/* Index of old variables */
-
 		while (envp_global[v_old]) {
 			const char *p= envp_global[v_old];
 			const char *q= p;
@@ -115,10 +114,8 @@ pid_t Job::start(string command,
 			old[key_old]= v_old;
 			++v_old;
 		}
-
 		const size_t v_new= mapping.size() + 1;
 		/* Maximal size of added variables.  The "+1" is for $STU_STATUS */
-
 		const char** envp= (const char **)
 			malloc(sizeof(char **) * (v_old + v_new + 1));
 		if (!envp) {
@@ -175,6 +172,7 @@ pid_t Job::start(string command,
 		const char *argv[]= {argv0.c_str(),
 				     shell_options, "-c", arg, nullptr};
 
+		// TODO put into own function
 		/*
 		 * Special handling of the case when the command starts with '-' or '+'.
 		 * In that case, we prepend a space to the command.  We cannot use '--' as
@@ -202,6 +200,7 @@ pid_t Job::start(string command,
 			argv[3]= arg;
 		}
 
+		// TODO put into own function
 		/* Output redirection */
 		if (!filename_output.empty()) {
 			int fd_output= creat
@@ -224,6 +223,7 @@ pid_t Job::start(string command,
 			close(fd_output);
 		}
 
+		// TODO put into own function
 		/* Input redirection:  from the given file, or from /dev/null (in
 		 * non-interactive mode) */
 		if (!filename_input.empty() || ! option_i) {
@@ -556,6 +556,7 @@ Job::Signal_Blocker::~Signal_Blocker()
 	}
 }
 
+// TODO put all signal functionality into own file
 void Job::init_signals()
 /*
  * There are three types of signals handled by Stu:

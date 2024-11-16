@@ -130,8 +130,9 @@ void Rule::render(Parts &parts, Rendering rendering) const
 	parts.append_operator(")");
 }
 
-void Rule::check_unparametrized(shared_ptr <const Dep> dep,
-				const std::set <string> &parameters)
+void Rule::check_unparametrized(
+	shared_ptr <const Dep> dep,
+	const std::set <string> &parameters)
 {
 	assert(dep != nullptr);
 
@@ -146,25 +147,23 @@ void Rule::check_unparametrized(shared_ptr <const Dep> dep,
 			check_unparametrized(d, parameters);
 		}
 	} else if (auto plain_dep= to <const Plain_Dep> (dep)) {
-		for (size_t jj= 0;
-		     jj < plain_dep->place_target.place_name.get_n(); ++jj) {
+		for (size_t jj= 0; jj < plain_dep->place_target.place_name.get_n(); ++jj) {
 			string parameter= plain_dep->place_target.place_name.get_parameters()[jj];
-			if (parameters.count(parameter) == 0) {
-				plain_dep->place_target
-					.place_name.get_places()[jj] <<
-					fmt("parameter %s must not appear in dependency %s",
-					    show_prefix("$", parameter),
-					    show(plain_dep->place_target));
-				if (place_targets.size() == 1) {
-					place_targets[0]->place <<
-						fmt("because it does not appear in target %s",
-						    show(*place_targets[0]));
-				} else {
-					place << fmt("because it does not appear in any of the targets %s... of the rule",
-						     show(*place_targets[0]));
-				}
-				throw ERROR_LOGICAL;
+			if (parameters.count(parameter) != 0) continue;
+
+			plain_dep->place_target.place_name.get_places()[jj] <<
+				fmt("parameter %s must not appear in dependency %s",
+					show_prefix("$", parameter),
+					show(plain_dep->place_target));
+			if (place_targets.size() == 1) {
+				place_targets[0]->place <<
+					fmt("because it does not appear in target %s",
+						show(*place_targets[0]));
+			} else {
+				place << fmt("because it does not appear in any of the targets %s... of the rule",
+					show(*place_targets[0]));
 			}
+			throw ERROR_LOGICAL;
 		}
 	} else {
 		unreachable();
@@ -183,6 +182,7 @@ void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 	for (auto &rule: rules_) {
 		rule->canonicalize();
 
+		// TODO put into own function
 		/* Check that the rule doesn't have a duplicate target */
 		for (size_t i= 0; i < rule->place_targets.size(); ++i) {
 			for (size_t j= 0; j < i; ++j) {
@@ -201,6 +201,7 @@ void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 
 		/* Add the rule */
 		if (! rule->is_parametrized()) {
+			// TODO put into own function
 			for (auto place_param_target: rule->place_targets) {
 				Hash_Dep hash_dep= place_param_target->unparametrized();
 
@@ -223,6 +224,7 @@ void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 				rules_unparam[hash_dep]= rule;
 			}
 		} else {
+			// TODO put into own function
 			rules_param.insert(rule);
 
 			bool found_bare= false;

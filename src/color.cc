@@ -44,10 +44,10 @@ void Color::set(bool enable_color_out, bool enable_color_err)
 {
 	if (enable_color_out) {
 		nocolor[CH_OUT]= false;
-		stdout_success_on=      "\33[32m";
-		stdout_success_off=     "\33[m";
-		highlight_on[CH_OUT]=   "\33[1m";
-		highlight_off[CH_OUT]=  "\33[22m";
+		stdout_success_on=      "\033[32m";
+		stdout_success_off=     "\033[m";
+		highlight_on[CH_OUT]=   "\033[1m";
+		highlight_off[CH_OUT]=  "\033[22m";
 	} else {
 		nocolor[CH_OUT]= true;
 		stdout_success_on=      "";
@@ -58,12 +58,12 @@ void Color::set(bool enable_color_out, bool enable_color_err)
 
 	if (enable_color_err) {
 		nocolor[CH_ERR]= false;
-		stderr_warn_on=         "\33[35m";
-		stderr_warn_off=        "\33[m";
-		stderr_err_on=          "\33[31m";
-		stderr_err_off=         "\33[m";
-		highlight_on[CH_ERR]=   "\33[1m";
-		highlight_off[CH_ERR]=  "\33[22m";
+		stderr_warn_on=         "\033[35m";
+		stderr_warn_off=        "\033[m";
+		stderr_err_on=          "\033[31m";
+		stderr_err_off=         "\033[m";
+		highlight_on[CH_ERR]=   "\033[1m";
+		highlight_off[CH_ERR]=  "\033[22m";
 	} else {
 		nocolor[CH_ERR]= true;
 		stderr_warn_on=         "";

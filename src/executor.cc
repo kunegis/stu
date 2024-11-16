@@ -25,10 +25,11 @@ bool Executor::hide_out_message= false;
 bool Executor::out_message_done= false;
 std::unordered_map <Hash_Dep, Executor *> Executor::executors_by_hash_dep;
 
-void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
-			    std::vector <shared_ptr <const Dep> > &deps,
-			    shared_ptr <const Dep> dep,
-			    Executor *dynamic_executor)
+void Executor::read_dynamic(
+	shared_ptr <const Plain_Dep> dep_target,
+	std::vector <shared_ptr <const Dep> > &deps,
+	shared_ptr <const Dep> dep,
+	Executor *dynamic_executor)
 {
 	DEBUG_PRINT(fmt("read_dynamic %s", show(dep_target, S_DEBUG, R_SHOW_FLAGS)));
 
@@ -112,32 +113,9 @@ void Executor::read_dynamic(shared_ptr <const Plain_Dep> dep_target,
 		 * we set the error, set the erroneous dependency to null, and at the end
 		 * prune the null entries. */
 		bool found_error= false;
-		if (! delim)  for (auto &j: deps) {
-			/* Check that it is unparametrized */
-			if (! j->is_unparametrized()) {
-				shared_ptr <const Dep> depp= j;
-				while (to <Dynamic_Dep> (depp)) {
-					shared_ptr <const Dynamic_Dep> depp2=
-						to <Dynamic_Dep> (depp);
-					depp= depp2->dep;
-				}
-				to <Plain_Dep> (depp)
-					->place_target.place_name.places[0] <<
-					fmt("dynamic dependency %s must not contain parametrized dependencies",
-					    show(Hash_Dep(0, hash_dep)));
-				Hash_Dep hash_dep_base= hash_dep;
-				hash_dep_base.get_front_word_nondynamic()
-					&= ~F_TARGET_TRANSIENT;
-				hash_dep_base.get_front_word_nondynamic()
-					|= (hash_dep.get_front_word_nondynamic() & F_TARGET_TRANSIENT);
-				*this << fmt("%s is declared here",
-					     show(hash_dep_base));
-				raise(ERROR_LOGICAL);
-				j= nullptr;
-				found_error= true;
-				continue;
-			}
-		}
+		if (! delim)
+			for (auto &j: deps)
+				check_unparametrized(j, hash_dep, found_error);
 
 		assert(! found_error || option_k);
 
@@ -951,6 +929,31 @@ bool Executor::same_dependency_for_print(shared_ptr <const Dep> d1,
 		return false;
 	return p1->place_target.unparametrized()
 		== p2->place_target.unparametrized();
+}
+
+void Executor::check_unparametrized(
+	shared_ptr <const Dep> &j,
+	Hash_Dep hash_dep,
+	bool &found_error)
+{
+	if (j->is_unparametrized()) return;
+
+	shared_ptr <const Dep> depp= j;
+	while (to <Dynamic_Dep> (depp)) {
+		shared_ptr <const Dynamic_Dep> depp2= to <Dynamic_Dep> (depp);
+		depp= depp2->dep;
+	}
+	to <Plain_Dep> (depp)->place_target.place_name.places[0] <<
+		fmt("dynamic dependency %s must not contain parametrized dependencies",
+			show(Hash_Dep(0, hash_dep)));
+	Hash_Dep hash_dep_base= hash_dep;
+	hash_dep_base.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT;
+	hash_dep_base.get_front_word_nondynamic()
+		|= (hash_dep.get_front_word_nondynamic() & F_TARGET_TRANSIENT);
+	*this << fmt("%s is declared here", show(hash_dep_base));
+	raise(ERROR_LOGICAL);
+	j= nullptr;
+	found_error= true;
 }
 
 void render(const Executor &executor, Parts &parts, Rendering rendering)

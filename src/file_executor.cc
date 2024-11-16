@@ -76,6 +76,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 
 		/* For file targets, check that the file was built */
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
+			// TODO put into own function
 			const Hash_Dep hash_dep= hash_deps[i];
 
 			if (! hash_dep.is_file()) {
@@ -234,6 +235,7 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 		/* Whether to produce the "no rule to build target" error */
 
 		if (hash_dep_.is_file()) {
+			// TODO make own function
 			if (! (dep->flags & (F_OPTIONAL | F_TRIVIAL))) {
 				/* Check that the file is present,
 				 * or make it an error */
@@ -690,6 +692,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		/* Now, set to B_MISSING when a file is found not to exist */
 
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
+			// TODO put into own function
 			const Hash_Dep &hash_dep= hash_deps[i];
 			if (! hash_dep.is_file())
 				continue;
@@ -910,6 +913,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		 * in which the job would failed to be clean up. */
 		Job::Signal_Blocker sb;
 
+		// TODO put into own function
 		if (rule->is_copy) {
 
 			assert(rule->place_targets.size() == 1);

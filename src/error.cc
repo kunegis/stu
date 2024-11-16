@@ -18,7 +18,7 @@ void print_error(string message)
 
 void print_errno(string message)
 {
-	assert(message.size() > 0 && message[0] != '') ;
+	assert(message.size() > 0 && message[0] != '\033');
 	fprintf(stderr, "%s%s%s: %s\n",
 		Color::stderr_err_on, message.c_str(), Color::stderr_err_off,
 		strerror(errno));

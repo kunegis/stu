@@ -103,8 +103,9 @@ public:
 	/* In-place canonicalization of the rule.  This applies to the targets of the
 	 * rule.  Called by Rule_Set::add(). */
 
-	static shared_ptr <const Rule> instantiate(shared_ptr <const Rule> rule,
-						   const std::map <string, string> &mapping);
+	static shared_ptr <const Rule> instantiate(
+		shared_ptr <const Rule> rule,
+		const std::map <string, string> &mapping);
 	/* Return the same rule as RULE, but with parameters having been replaced by the
 	 * given MAPPING.  We pass THIS as PARAM_RULE explicitly so we can return it
 	 * itself when it is unparametrized.  Must be a parametrized rule. */
@@ -186,6 +187,7 @@ public:
 	}
 
 private:
+	// TODO transform to a single vector of Found_Rule
 	/* Element [0] corresponds to the best rule. */
 	std::vector <shared_ptr <const Rule> > rules_best;
 	std::vector <std::map <string, string> > mappings_best;

@@ -1,8 +1,4 @@
 #
-# Check for Stu source code files that don't end in newline (except for empty files).
-#
-
-#
 # File_Executor::executor() and Dynamic_Executor::execute() are very similar.
 # Refactor to only have the common bits in the subclasses of Executor.
 #

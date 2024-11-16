@@ -1,8 +1,4 @@
 #
-# Achieve full coverage.
-#
-
-#
 # Test very long line length; very large number of dependencies; very large
 # number of dependencies in a dynamic dependency.
 #
@@ -364,4 +360,8 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # Have an option to disable the version check.
+#
+
+#
+# Achieve full coverage.
 #

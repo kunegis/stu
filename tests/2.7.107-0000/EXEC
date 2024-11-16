@@ -1,0 +1,11 @@
+#! /bin/sh
+
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || [ "$exitstatus" = 1 ] || {
+	echo >&2 "*** Expected exit status 0 or 1, not $exitstatus"
+	exit 1
+}
+
+exit 0

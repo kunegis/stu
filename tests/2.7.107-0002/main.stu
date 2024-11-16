@@ -1,0 +1,11 @@
+>A: [B] { cp list.10000 A ; }
+
+>B:
+{
+	../../sh/seq 10000 | while IFS= read -r i ; do
+		printf 'list.%s ' "$i"
+	done
+}
+
+list.$i = {ERROR}
+list.10000 = {CORRECT}

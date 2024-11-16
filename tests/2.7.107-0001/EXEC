@@ -1,0 +1,34 @@
+#! /bin/sh
+
+set -e
+
+n=10000
+
+rm -f list.stu
+
+{
+	printf 'A: \n'
+	../../sh/seq "$n" | while IFS= read -r i ; do
+		printf 'list.%s ' "$i"
+	done
+	printf '\n'
+	printf '{ echo CORRECT >A ; }\n'
+	printf 'list.$i = {x}\n'
+} >list.stu
+
+set +e
+../../bin/stu.test -f list.stu
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Expected exit status 0, not $exitstatus"
+	exit 1
+}
+
+grep -q -F -e CORRECT A || {
+	echo >&2 "*** Expected 'A' to contain 'CORRECT'"
+	exit 1
+}
+
+exit 0

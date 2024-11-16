@@ -1,9 +1,4 @@
 #
-# Test very long line length; very large number of dependencies; very large
-# number of dependencies in a dynamic dependency.
-#
-
-#
 # Check for Stu source code files that don't end in newline (except for empty files).
 #
 

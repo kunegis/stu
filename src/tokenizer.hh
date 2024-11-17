@@ -120,11 +120,17 @@ private:
 	void parse_single_quote(Place_Name &ret);
 	bool parse_escape();
 
-	void parse_directive(std::vector <shared_ptr <Token> > &tokens,
-			     Context context,
-			     const Place &place_diagnostic);
-	/* Parse a directive.  The pointer must be on the '%' character.  Throw a logical
-	 * error when encountered. */
+	void parse_directive(
+		std::vector <shared_ptr <Token> > &tokens,
+		Context context,
+		const Place &place_diagnostic);
+	void parse_include_directive(
+		std::vector <shared_ptr <Token> > &tokens,
+		Context context,
+		const Place &place_diagnostic,
+		const Place &place_percent);
+	void parse_version_directive(
+		const Place &place_percent);
 
 	bool skip_space(bool &skipped_actual_space);
 	/* Skip any whitespace (including backslash-newline combinations).  The return

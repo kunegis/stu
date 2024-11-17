@@ -998,9 +998,10 @@ bool Tokenizer::parse_escape()
 	return true;
 }
 
-void Tokenizer::parse_directive(std::vector <shared_ptr <Token> > &tokens,
-				Context context,
-				const Place &place_diagnostic)
+void Tokenizer::parse_directive(
+	std::vector <shared_ptr <Token> > &tokens,
+	Context context,
+	const Place &place_diagnostic)
 {
 	Place place_percent= current_place();
 	assert(*p == '%');
@@ -1030,102 +1031,9 @@ void Tokenizer::parse_directive(std::vector <shared_ptr <Token> > &tokens,
 	skip_space(skipped_actual_space);
 
 	if (name == "include") {
-		// TODO put into own function
-		if (context == DYNAMIC) {
-			place_percent
-				<< fmt("%s must not appear in dynamic dependencies",
-				       show_operator("%include"));
-			throw ERROR_LOGICAL;
-		}
-		if (context == OPTION_C || context == OPTION_F) {
-			place_percent
-				<< fmt("%s must not be used",
-				       show_operator("%include"));
-			throw ERROR_LOGICAL;
-		}
-
-		shared_ptr <Place_Name> place_name= parse_name(false);
-
-		if (place_name == nullptr) {
-			current_place() <<
-				(p == p_end
-				 ? "expected a filename"
-				 : fmt("expected a filename, not %s",
-				       show(current_mbchar())));
-			place_percent << fmt("after %s",
-					     show_operator("%include"));
-			throw ERROR_LOGICAL;
-		}
-		if (place_name->get_n() != 0) {
-			place_name->place <<
-				fmt("name %s must not be parametrized",
-				    show(*place_name));
-			place_percent << fmt("after %s",
-					     show_operator("%include"));
-			throw ERROR_LOGICAL;
-		}
-
-		const string filename_include= place_name->unparametrized();
-		Backtrace backtrace_stack(place_name->place,
-					  fmt("%s is included from here",
-					      show(filename_include)));
-		backtraces.push_back(backtrace_stack);
-		filenames.push_back(place_base.text);
-
-		if (includes.count(filename_include)) {
-			/* Do nothing -- file was already parsed, or is being parsed.  It
-			 * is an error if a file includes itself directly or indirectly.
-			 * It it ignored if a file is included a second time
-			 * non-recursively. */
-			for (auto &i: filenames) {
-				if (filename_include != i)
-					continue;
-				std::vector <Backtrace> backtraces_backward;
-				for (auto j= backtraces.rbegin(); j != backtraces.rend(); ++j) {
-					Backtrace backtrace(*j);
-					if (j == backtraces.rbegin()) {
-						backtrace.message=
-							fmt("recursive inclusion of %s using %s",
-							    show(filename_include),
-							    show_operator("%include"));
-					}
-					backtraces_backward.push_back(backtrace);
-				}
-				for (auto &j: backtraces_backward) {
-					j.print();
-				}
-				throw ERROR_LOGICAL;
-			}
-		} else {
-			/* Ignore the end place; it is only used for the top-level file */
-			Place place_end_sub;
-			parse_tokens_file(tokens,
-					  Tokenizer::SOURCE,
-					  place_end_sub,
-					  filename_include,
-					  backtraces, filenames, includes,
-					  place_diagnostic, -1);
-		}
-		backtraces.pop_back();
-		filenames.pop_back();
-
+		parse_include_directive(tokens, context, place_diagnostic, place_percent);
 	} else if (name == "version") {
-		// TODO put into own function
-		while (p < p_end && isspace(*p)) {
-			if (*p == '\n') {
-				++line;
-				p_line= p + 1;
-			}
-			++p;
-		}
-		const char *const p_version= p;
-		while (p < p_end && is_name_char(*p)) {
-			++p;
-		}
-		const string version_required(p_version, p - p_version);
-		Place place_version(place_base.type, place_base.text,
-				    line, p_version - p_line);
-		parse_version(version_required, place_version, place_percent);
+		parse_version_directive(place_percent);
 	} else {
 		/* Invalid directive */
 		place_percent <<
@@ -1133,4 +1041,100 @@ void Tokenizer::parse_directive(std::vector <shared_ptr <Token> > &tokens,
 			    show_prefix("%", name));
 		throw ERROR_LOGICAL;
 	}
+}
+
+void Tokenizer::parse_include_directive(
+	std::vector <shared_ptr <Token> > &tokens,
+	Context context,
+	const Place &place_diagnostic,
+	const Place &place_percent)
+{
+	if (context == DYNAMIC) {
+		place_percent
+			<< fmt("%s must not appear in dynamic dependencies",
+				show_operator("%include"));
+		throw ERROR_LOGICAL;
+	}
+	if (context == OPTION_C || context == OPTION_F) {
+		place_percent
+			<< fmt("%s must not be used", show_operator("%include"));
+		throw ERROR_LOGICAL;
+	}
+
+	shared_ptr <Place_Name> place_name= parse_name(false);
+
+	if (place_name == nullptr) {
+		current_place() <<
+			(p == p_end
+				? "expected a filename"
+				: fmt("expected a filename, not %s",
+					show(current_mbchar())));
+		place_percent << fmt("after %s", show_operator("%include"));
+		throw ERROR_LOGICAL;
+	}
+	if (place_name->get_n() != 0) {
+		place_name->place <<
+			fmt("name %s must not be parametrized",
+				show(*place_name));
+		place_percent << fmt("after %s",
+			show_operator("%include"));
+		throw ERROR_LOGICAL;
+	}
+
+	const string filename_include= place_name->unparametrized();
+	Backtrace backtrace_stack(place_name->place,
+		fmt("%s is included from here", show(filename_include)));
+	backtraces.push_back(backtrace_stack);
+	filenames.push_back(place_base.text);
+
+	if (includes.count(filename_include)) {
+		/* Do nothing -- file was already parsed, or is being parsed.  It is an
+		 * error if a file includes itself directly or indirectly.  It it ignored
+		 * if a file is included a second time non-recursively. */
+		for (auto &i: filenames) {
+			if (filename_include != i)
+				continue;
+			std::vector <Backtrace> backtraces_backward;
+			for (auto j= backtraces.rbegin(); j != backtraces.rend(); ++j) {
+				Backtrace backtrace(*j);
+				if (j == backtraces.rbegin()) {
+					backtrace.message=
+						fmt("recursive inclusion of %s using %s",
+							show(filename_include),
+							show_operator("%include"));
+				}
+				backtraces_backward.push_back(backtrace);
+			}
+			for (auto &j: backtraces_backward) {
+				j.print();
+			}
+			throw ERROR_LOGICAL;
+		}
+	} else {
+		/* Ignore the end place; it is only used for the top-level file */
+		Place place_end_sub;
+		parse_tokens_file(
+			tokens, Tokenizer::SOURCE, place_end_sub,
+			filename_include, backtraces, filenames, includes,
+			place_diagnostic, -1);
+	}
+	backtraces.pop_back();
+	filenames.pop_back();
+}
+
+void Tokenizer::parse_version_directive(
+	const Place &place_percent)
+{
+	while (p < p_end && isspace(*p)) {
+		if (*p == '\n') {
+			++line;
+			p_line= p + 1;
+		}
+		++p;
+	}
+	const char *const p_version= p;
+	while (p < p_end && is_name_char(*p)) ++p;
+	const string version_required(p_version, p - p_version);
+	Place place_version(place_base.type, place_base.text, line, p_version - p_line);
+	parse_version(version_required, place_version, place_percent);
 }

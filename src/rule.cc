@@ -199,48 +199,10 @@ void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 	for (auto &rule: rules_) {
 		rule->canonicalize();
 		rule->check_duplicate_target();
-
-		/* Add the rule */
 		if (! rule->is_parametrized()) {
-			add_parametrized_rule(rule);
+			add_unparametrized_rule(rule);
 		} else {
-			// TODO put into own function
-			rules_param.insert(rule);
-
-			bool found_bare= false;
-			for (auto target: rule->place_targets) {
-				const Name &name= target->place_name;
-				assert(name.is_parametrized());
-				const string prefix= name.get_texts()[0];
-				const string suffix= name.get_texts()[name.get_n()];
-				if (prefix.empty() && suffix.empty()) {
-					found_bare= true;
-				}
-				if (!prefix.empty()) {
-					rules_param_prefix.insert(prefix, rule);
-				}
-				if (!suffix.empty()) {
-					string suffix_inv= suffix;
-					std::reverse(suffix_inv.begin(), suffix_inv.end());
-					rules_param_suffix.insert(suffix_inv, rule);
-				}
-
-				/* Set FOUND_BARE when the target starts/end with a
-				 * special canonicalization string */
-
-				/* Special rule (a):  Target starts with './' follwed by
-				 * a parameter */
-				if (prefix == "./")
-					found_bare= true;
-				/* Special rules (b) and (c):  Target starts
-				 * with a parameter, followed by a slash */
-				if (prefix.empty() && name.get_texts()[1][0] == '/')
-					found_bare= true;
-			}
-
-			if (found_bare) {
-				rules_param_bare.push_back(rule);
-			}
+			add_parametrized_rule(rule);
 		}
 	}
 }
@@ -367,7 +329,7 @@ void Rule_Set::print_for_option_I() const
 	}
 }
 
-void Rule_Set::add_parametrized_rule(shared_ptr <Rule> rule)
+void Rule_Set::add_unparametrized_rule(shared_ptr <Rule> rule)
 {
 	for (auto place_param_target: rule->place_targets) {
 		Hash_Dep hash_dep= place_param_target->unparametrized();
@@ -389,6 +351,40 @@ void Rule_Set::add_parametrized_rule(shared_ptr <Rule> rule)
 		}
 		rules_unparam[hash_dep]= rule;
 	}
+}
+
+void Rule_Set::add_parametrized_rule(shared_ptr <Rule> rule)
+{
+	rules_param.insert(rule);
+	bool found_bare= false;
+
+	for (auto target: rule->place_targets) {
+		const Name &name= target->place_name;
+		assert(name.is_parametrized());
+		const string prefix= name.get_texts()[0];
+		const string suffix= name.get_texts()[name.get_n()];
+		if (prefix.empty() && suffix.empty()) {
+			found_bare= true;
+		}
+		if (!prefix.empty()) {
+			rules_param_prefix.insert(prefix, rule);
+		}
+		if (!suffix.empty()) {
+			string suffix_inv= suffix;
+			std::reverse(suffix_inv.begin(), suffix_inv.end());
+			rules_param_suffix.insert(suffix_inv, rule);
+		}
+		/* Special rule (a):  Target starts with './' follwed by a parameter */
+		if (prefix == "./")
+			found_bare= true;
+		/* Special rules (b) and (c):  Target starts with a parameter, followed by
+		 * a slash */
+		if (prefix.empty() && name.get_texts()[1][0] == '/')
+			found_bare= true;
+	}
+
+	if (found_bare)
+		rules_param_bare.push_back(rule);
 }
 
 void Best_Rule_Finder::add(const Hash_Dep &hash_dep, shared_ptr <const Rule> rule)

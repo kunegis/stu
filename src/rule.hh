@@ -165,6 +165,7 @@ private:
 	 * there is an affix which, due to special canonicalization rules (see manpage),
 	 * is not present in a matched string. */
 
+	void add_unparametrized_rule(shared_ptr <Rule>);
 	void add_parametrized_rule(shared_ptr <Rule>);
 };
 

@@ -170,6 +170,23 @@ void Rule::check_unparametrized(
 	}
 }
 
+void Rule::check_duplicate_target() const
+{
+	for (size_t i= 0; i < place_targets.size(); ++i) {
+		for (size_t j= 0; j < i; ++j) {
+			if (*place_targets[i] != *place_targets[j])
+				continue;
+			place_targets[i]->place <<
+				fmt("there must not be a target %s",
+					show(*place_targets[i]));
+			place_targets[j]->place <<
+				fmt("shadowing target %s of the same rule",
+					show(*place_targets[j]));
+			throw ERROR_LOGICAL;
+		}
+	}
+}
+
 void Rule::canonicalize()
 {
 	for (size_t i= 0; i < place_targets.size(); ++i) {
@@ -181,23 +198,7 @@ void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 {
 	for (auto &rule: rules_) {
 		rule->canonicalize();
-
-		// TODO put into own function
-		/* Check that the rule doesn't have a duplicate target */
-		for (size_t i= 0; i < rule->place_targets.size(); ++i) {
-			for (size_t j= 0; j < i; ++j) {
-				if (*rule->place_targets[i] ==
-				    *rule->place_targets[j]) {
-					rule->place_targets[i]->place <<
-						fmt("there must not be a target %s",
-						    show(*rule->place_targets[i]));
-					rule->place_targets[j]->place <<
-						fmt("shadowing target %s of the same rule",
-						    show(*rule->place_targets[j]));
-					throw ERROR_LOGICAL;
-				}
-			}
-		}
+		rule->check_duplicate_target();
 
 		/* Add the rule */
 		if (! rule->is_parametrized()) {

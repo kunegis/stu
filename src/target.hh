@@ -270,6 +270,11 @@ public:
 			this->place_name == that.place_name;
 	}
 
+	bool operator!=(const Place_Target &that) const
+	{
+		return !(*this == that);
+	}
+
 	void render(Parts &, Rendering) const;
 
 	shared_ptr <Place_Target>

@@ -90,9 +90,12 @@ public:
 	void render(Parts &, Rendering= 0) const;
 	/* Format the rule, as for the -P or -d options */
 
+	// TODO make const
 	void check_unparametrized(shared_ptr <const Dep> dep,
 				  const std::set <string> &parameters);
 	/* Print error message and throw a logical error when DEP contains parameters */
+
+	void check_duplicate_target() const;
 
 	const std::vector <string> &get_parameters() const
 	{

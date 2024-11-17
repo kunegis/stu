@@ -126,12 +126,13 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 	}
 }
 
-File_Executor::File_Executor(shared_ptr <const Dep> dep,
-			     Executor *parent,
-			     shared_ptr <const Rule> rule_,
-			     shared_ptr <const Rule> param_rule_,
-			     std::map <string, string> &mapping_parameter_,
-			     int &error_additional)
+File_Executor::File_Executor(
+	shared_ptr <const Dep> dep,
+	Executor *parent,
+	shared_ptr <const Rule> rule_,
+	shared_ptr <const Rule> param_rule_,
+	std::map <string, string> &mapping_parameter_,
+	int &error_additional)
 	: Executor(param_rule_), timestamps_old(nullptr), filenames(nullptr),
 	  rule(rule_)
 {
@@ -183,33 +184,8 @@ File_Executor::File_Executor(shared_ptr <const Dep> dep,
 		/* Whether to produce the "no rule to build target" error */
 
 		if (hash_dep_.is_file()) {
-			// TODO make own function
-			if (! (dep->flags & (F_OPTIONAL | F_TRIVIAL))) {
-				/* Check that the file is present,
-				 * or make it an error */
-				struct stat buf;
-				int ret_stat= stat(hash_dep_.get_name_c_str_nondynamic(), &buf);
-				if (0 > ret_stat) {
-					if (errno != ENOENT) {
-						string text= show(hash_dep_);
-						perror(text.c_str());
-						raise(ERROR_BUILD);
-					}
-					/* File does not exist and there is no rule for it */
-					rule_not_found= true;
-				} else {
-					/* File exists:  Do nothing, and there are no
-					 * dependencies to build */
-					if (dynamic_cast <Root_Executor *> (parent)) {
-						/* Output this only for top-level targets, and
-						 * therefore we don't need traces */
-						Style style= CH_OUT;
-						print_out(fmt("No rule for building %s, but the file exists",
-							      show(hash_dep_, style)));
-						hide_out_message= true;
-					}
-				}
-			}
+			check_file_target_without_rule(
+				dep, hash_dep_, parent, rule_not_found);
 		} else if (hash_dep_.is_transient()) {
 			rule_not_found= true;
 		} else {
@@ -1268,4 +1244,33 @@ void File_Executor::check_file_was_built(
 	*this << "";
 	explain_startup_time();
 	raise(ERROR_BUILD);
+}
+
+void File_Executor::check_file_target_without_rule(
+	shared_ptr <const Dep> dep,
+	Hash_Dep &hash_dep,
+	Executor *parent,
+	bool &rule_not_found)
+{
+	if (dep->flags & (F_OPTIONAL | F_TRIVIAL)) return;
+	struct stat buf;
+	if (stat(hash_dep.get_name_c_str_nondynamic(), &buf)) {
+		if (errno != ENOENT) {
+			string text= show(hash_dep);
+			perror(text.c_str());
+			raise(ERROR_BUILD);
+		}
+		/* File does not exist and there is no rule for it */
+		rule_not_found= true;
+	} else {
+		/* File exists:  Do nothing, and there are no dependencies to build */
+		if (dynamic_cast <Root_Executor *> (parent)) {
+			/* Output this only for top-level targets, and therefore we don't
+			 * need traces */
+			Style style= CH_OUT;
+			print_out(fmt("No rule for building %s, but the file exists",
+					show(hash_dep, style)));
+			hide_out_message= true;
+		}
+	}
 }

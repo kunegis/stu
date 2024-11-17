@@ -134,6 +134,11 @@ private:
 	void check_file_was_built(
 		Hash_Dep hash_dep,
 		shared_ptr <const Place_Target> place_target);
+	void check_file_target_without_rule(
+		shared_ptr <const Dep> dep,
+		Hash_Dep &hash_dep,
+		Executor *parent,
+		bool &rule_not_found);
 
 	static std::unordered_map <string, Timestamp> transients;
 	/* The timestamps for transient targets.  This container plays the role of the

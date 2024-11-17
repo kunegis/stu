@@ -476,17 +476,16 @@ const char **Job::create_child_argv(
 }
 
 const char *Job::get_shell()
+/* Like Make, we don't use the variable $SHELL, but use "/bin/sh" as a shell instead.  The
+ * reason is that the variable $SHELL is intended to denote the user's chosen interactive
+ * shell, and may not be a POSIX-compatible shell.  Note also that POSIX prescribes that
+ * Make use "/bin/sh" by default.  Other note: Make allows to declare the Make variable
+ * $SHELL within the Makefile or in Make's parameters to a value that *will* be used by
+ * Make instead of /bin/sh.  This is not possible with Stu, because Stu does not have its
+ * own set of variables.  Instead, there is the $STU_SHELL variable.  The Stu-native way
+ * to do it without environment variables would be via a directive (but such a directive
+ * is not implemented). */
 {
-	/* Like Make, we don't use the variable $SHELL, but use "/bin/sh" as a shell
-	 * instead.  The reason is that the variable $SHELL is intended to denote the
-	 * user's chosen interactive shell, and may not be a POSIX-compatible shell.  Note
-	 * also that POSIX prescribes that Make use "/bin/sh" by default.  Other note:
-	 * Make allows to declare the Make variable $SHELL within the Makefile or in
-	 * Make's parameters to a value that *will* be used by Make instead of /bin/sh.
-	 * This is not possible with Stu, because Stu does not have its own set of
-	 * variables.  Instead, there is the $STU_SHELL variable.  The Stu-native way to
-	 * do it without environment variables would be via a directive (but such a
-	 * directive is not implemented). */
 	static const char *shell= nullptr;
 	if (shell == nullptr) {
 		shell= getenv("STU_SHELL");

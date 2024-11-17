@@ -31,6 +31,7 @@ using std::shared_ptr;
 #include "root_executor.cc"
 #include "rule.cc"
 #include "show.cc"
+#include "signal.cc"
 #include "target.cc"
 #include "timestamp.cc"
 #include "token.cc"

@@ -1,5 +1,7 @@
 #include "file_executor.hh"
 
+#include "signal.hh"
+
 size_t File_Executor::executors_by_pid_size= 0;
 pid_t *File_Executor::executors_by_pid_key= nullptr;
 File_Executor **File_Executor::executors_by_pid_value= nullptr;
@@ -62,7 +64,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 	done.set_all();
 
 	{
-		Job::Signal_Blocker sb;
+		Signal_Blocker sb;
 		executors_remove(index);
 	}
 
@@ -911,7 +913,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		 * only blocked signals during the time we update
 		 * EXECUTORS_BY_PID_*, there would be a race condition
 		 * in which the job would failed to be clean up. */
-		Job::Signal_Blocker sb;
+		Signal_Blocker sb;
 
 		// TODO put into own function
 		if (rule->is_copy) {
@@ -1176,7 +1178,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 
 void File_Executor::executors_add(pid_t pid, size_t &index, File_Executor *executor)
 {
-	assert(Job::Signal_Blocker::is_blocked());
+	assert(Signal_Blocker::is_blocked());
 	assert(!executors_by_pid_key == !executors_by_pid_value);
 
 	if (!executors_by_pid_key) {
@@ -1269,7 +1271,7 @@ bool File_Executor::executors_find(pid_t pid, size_t &index)
 
 void File_Executor::executors_remove(size_t index)
 {
-	assert(Job::Signal_Blocker::is_blocked());
+	assert(Signal_Blocker::is_blocked());
 	assert(executors_by_pid_size > 0);
 	assert(executors_by_pid_size >= index + 1);
 	memmove(executors_by_pid_key + index,

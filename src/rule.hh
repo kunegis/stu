@@ -164,6 +164,8 @@ private:
 	/* All parametrized rules where at least one target is affixless, or in which
 	 * there is an affix which, due to special canonicalization rules (see manpage),
 	 * is not present in a matched string. */
+
+	void add_parametrized_rule(shared_ptr <Rule>);
 };
 
 class Found_Rule

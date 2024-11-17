@@ -202,28 +202,7 @@ void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 
 		/* Add the rule */
 		if (! rule->is_parametrized()) {
-			// TODO put into own function
-			for (auto place_param_target: rule->place_targets) {
-				Hash_Dep hash_dep= place_param_target->unparametrized();
-
-				if (rules_unparam.count(hash_dep)) {
-					place_param_target->place <<
-						fmt("there must not be a second rule for target %s",
-						    show(hash_dep));
-					auto rule_2= rules_unparam.at(hash_dep);
-					for (auto place_param_target_2: rule_2->place_targets) {
-						assert(place_param_target_2->place_name.get_n() == 0);
-						if (place_param_target_2->unparametrized() == hash_dep) {
-							place_param_target_2->place <<
-								fmt("shadowing previous rule %s",
-								    show(hash_dep));
-							break;
-						}
-					}
-					throw ERROR_LOGICAL;
-				}
-				rules_unparam[hash_dep]= rule;
-			}
+			add_parametrized_rule(rule);
 		} else {
 			// TODO put into own function
 			rules_param.insert(rule);
@@ -385,6 +364,30 @@ void Rule_Set::print_for_option_I() const
 	}
 	for (const string &filename: filenames) {
 		puts(filename.c_str());
+	}
+}
+
+void Rule_Set::add_parametrized_rule(shared_ptr <Rule> rule)
+{
+	for (auto place_param_target: rule->place_targets) {
+		Hash_Dep hash_dep= place_param_target->unparametrized();
+		if (rules_unparam.count(hash_dep)) {
+			place_param_target->place <<
+				fmt("there must not be a second rule for target %s",
+					show(hash_dep));
+			auto rule_2= rules_unparam.at(hash_dep);
+			for (auto place_param_target_2: rule_2->place_targets) {
+				assert(place_param_target_2->place_name.get_n() == 0);
+				if (place_param_target_2->unparametrized() == hash_dep) {
+					place_param_target_2->place <<
+						fmt("shadowing previous rule %s",
+							show(hash_dep));
+					break;
+				}
+			}
+			throw ERROR_LOGICAL;
+		}
+		rules_unparam[hash_dep]= rule;
 	}
 }
 

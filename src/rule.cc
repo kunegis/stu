@@ -132,7 +132,7 @@ void Rule::render(Parts &parts, Rendering rendering) const
 
 void Rule::check_unparametrized(
 	shared_ptr <const Dep> dep,
-	const std::set <string> &parameters)
+	const std::set <string> &parameters) const
 {
 	assert(dep != nullptr);
 

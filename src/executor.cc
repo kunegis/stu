@@ -66,16 +66,18 @@ void Executor::read_dynamic(
 			std::vector <shared_ptr <Token> > tokens;
 			Place place_end;
 
-			Tokenizer::parse_tokens_file
-				(tokens, Tokenizer::DYNAMIC, place_end, filename,
-				 place_target.place, -1, allow_enoent);
+			Tokenizer::parse_tokens_file(
+				tokens,
+				Tokenizer::DYNAMIC, place_end, filename,
+				place_target.place, -1, allow_enoent);
 
 			Place_Name input; /* remains empty */
 			Place place_input; /* remains empty */
 
 			try {
-				Parser::get_expression_list(deps, tokens,
-							    place_end, input, place_input);
+				Parser::get_expression_list(
+					deps, tokens,
+					place_end, input, place_input);
 			} catch (int e) {
 				raise(e);
 				goto end_normal;

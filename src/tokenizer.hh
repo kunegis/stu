@@ -12,54 +12,36 @@ class Tokenizer
 public:
 	enum Context { SOURCE, DYNAMIC, OPTION_C, OPTION_F };
 
-	static void parse_tokens_file(std::vector <shared_ptr <Token> > &tokens,
-				      Context context,
-				      Place &place_end,
-				      string filename,
-				      const Place &place_diagnostic,
-				      int fd= -1,
-				      bool allow_enoent= false)
-	/*
-	 * Parse the tokens from the file FILENAME.
+	static void parse_tokens_file(
+		std::vector <shared_ptr <Token> > &tokens,
+		Context context,
+		Place &place_end,
+		string filename,
+		const Place &place_diagnostic,
+		int fd= -1,
+		bool allow_enoent= false);
+	/* The given file descriptor FD may optionally be that file already opened.  If
+	 * the file was not yet opened, FD is -1.  If FILENAME is "", use standard input,
+	 * but FD must be -1.
 	 *
-	 * The given file descriptor FD may optionally be that file
-	 * already opened.  If the file was not yet opened, FD is -1.
-	 * If FILENAME is "", use standard input, but FD must be -1.
-	 *
-	 * Append the read tokens to TOKENS, and set PLACE_END to the
-	 * end of the parsed file.
-	 *
-	 * PLACE_DIAGNOSTIC is the place where this file is included
-	 * from, e.g. the -f option.
-	 *
-	 * If ALLOW_ENOENT, an ENOENT error on this first open() is not
-	 * reported as an error, and the function just returns.
-	 */
-	{
-		std::vector <Backtrace> backtraces;
-		std::vector <string> filenames;
-		std::set <string> includes;
-		parse_tokens_file(tokens,
-				  context,
-				  place_end, filename,
-				  backtraces, filenames, includes,
-				  place_diagnostic,
-				  fd,
-				  allow_enoent);
-	}
+	 * Set PLACE_END to the end of the parsed file.  PLACE_DIAGNOSTIC is the place
+	 * where this file is included from, e.g. the -f option.  If ALLOW_ENOENT, an
+	 * ENOENT error on this first open() is not reported as an error, and the function
+	 * just returns. */
+
+	static void parse_tokens_string(
+		std::vector <shared_ptr <Token> > &tokens,
+		Context context,
+		Place &place_end,
+		string string_,
+		const Place &place_string);
 
 	static bool is_flag_char(char);
 	/* Whether the character is a valid flag */
 
-	static void parse_tokens_string(std::vector <shared_ptr <Token> > &tokens,
-					Context context,
-					Place &place_end,
-					string string_,
-					const Place &place_string);
-	/* Parse tokens from the given TEXT.  Other arguments are identical to
-	 * parse_tokens_file(). */
-
 private:
+	std::vector <shared_ptr <Token> > &tokens;
+
 	/* Stacks of included files */
 	std::vector <Backtrace> &backtraces;
 	std::vector <string> &filenames;
@@ -78,28 +60,21 @@ private:
 	Environment environment= E_WHITESPACE;
 	/* For the next token */
 
-	Tokenizer(std::vector <Backtrace> &backtraces_,
-		  std::vector <string> &filenames_,
-		  std::set <string> &includes_,
-		  const Place &place_base_,
-		  const char *p_,
-		  size_t length)
-		:  backtraces(backtraces_),
-		   filenames(filenames_),
-		   includes(includes_),
-		   place_base(place_base_),
-		   line(1),
-		   p_line(p_),
-		   p(p_),
-		   p_end(p_ + length)
-	{ }
+	Tokenizer(
+		std::vector <shared_ptr <Token> > &tokens_,
+		std::vector <Backtrace> &backtraces_,
+		std::vector <string> &filenames_,
+		std::set <string> &includes_,
+		const Place &place_base_,
+		const char *p_,
+		size_t length);
 
-	void parse_tokens(std::vector <shared_ptr <Token> > &tokens,
-			  Context context,
-			  const Place &place_diagnostic);
+	void parse_tokens(
+		Context context,
+		const Place &place_diagnostic);
 
 	shared_ptr <Command> parse_command();
-	void parse_flag_or_name(std::vector <shared_ptr <Token> > &tokens);
+	void parse_flag_or_name();
 
 	shared_ptr <Place_Name> parse_name(bool allow_special);
 	/* Returns null when no name could be parsed.  Prints and throws on other errors,
@@ -121,11 +96,9 @@ private:
 	bool parse_escape();
 
 	void parse_directive(
-		std::vector <shared_ptr <Token> > &tokens,
 		Context context,
 		const Place &place_diagnostic);
 	void parse_include_directive(
-		std::vector <shared_ptr <Token> > &tokens,
 		Context context,
 		const Place &place_diagnostic,
 		const Place &place_percent);

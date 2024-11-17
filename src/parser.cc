@@ -5,8 +5,6 @@
 
 shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_first)
 {
-	// TODO make this use a Rule_Parser and put blocks of code into own functions, avoiding many parameters (also to parse_target()).
-
 	const auto iter_begin= iter;
 	/* Used to check that when this function fails (i.e., returns null), is has not
 	 * read any tokens. */
@@ -1243,10 +1241,9 @@ void Parser::get_file(const char *filename,
 	/* Tokenize */
 	std::vector <shared_ptr <Token> > tokens;
 	Place place_end;
-	Tokenizer::parse_tokens_file
-		(tokens, Tokenizer::SOURCE,
-		 place_end, filename_passed,
-		 place_diagnostic, file_fd);
+	Tokenizer::parse_tokens_file(
+		tokens, Tokenizer::SOURCE, place_end, filename_passed,
+		place_diagnostic, file_fd);
 
 	/* Build rules */
 	std::vector <shared_ptr <Rule> > rules;
@@ -1266,11 +1263,8 @@ void Parser::get_string(const char *s,
 {
 	std::vector <shared_ptr <Token> > tokens;
 	Place place_end;
-	Tokenizer::parse_tokens_string
-		(tokens,
-		 Tokenizer::OPTION_F,
-		 place_end, s,
-		 Place(Place::Type::OPTION, 'F'));
+	Tokenizer::parse_tokens_string(
+		tokens, Tokenizer::OPTION_F, place_end, s, Place(Place::Type::OPTION, 'F'));
 
 	std::vector <shared_ptr <Rule> > rules;
 	Parser::get_rule_list(rules, tokens, place_end, target_first);
@@ -1283,17 +1277,15 @@ void Parser::add_deps_option_C(std::vector <shared_ptr <const Dep> > &deps,
 {
 	std::vector <shared_ptr <Token> > tokens;
 	Place place_end;
-	Tokenizer::parse_tokens_string(tokens,
-				       Tokenizer::OPTION_C,
-				       place_end, string_,
-				       Place(Place::Type::OPTION, 'C'));
+	Tokenizer::parse_tokens_string(
+		tokens, Tokenizer::OPTION_C, place_end, string_,
+		Place(Place::Type::OPTION, 'C'));
 
 	std::vector <shared_ptr <const Dep> > deps_option;
 	Place_Name input; /* remains empty */
 	Place place_input; /* remains empty */
 
-	Parser::get_expression_list(deps_option, tokens,
-				    place_end, input, place_input);
+	Parser::get_expression_list(deps_option, tokens, place_end, input, place_input);
 
 	for (auto &j: deps_option)
 		deps.push_back(j);

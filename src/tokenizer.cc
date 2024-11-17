@@ -2,9 +2,22 @@
 
 #include <sys/mman.h>
 
-// TODO TOKENS should be a field in Tokenizer.  However, it doesn't work that trivially
-// because we use multiple Tokenizer objects, one for each included file.  Maybe use
-// a shared_ptr of TOKENS.
+void Tokenizer::parse_tokens_file(
+	std::vector <shared_ptr <Token> > &tokens,
+	Context context,
+	Place &place_end,
+	string filename,
+	const Place &place_diagnostic,
+	int fd,
+	bool allow_enoent)
+{
+	std::vector <Backtrace> backtraces;
+	std::vector <string> filenames;
+	std::set <string> includes;
+	parse_tokens_file(
+		tokens, context, place_end, filename, backtraces, filenames, includes,
+		place_diagnostic, fd, allow_enoent);
+}
 
 void Tokenizer::parse_tokens_file(
 	std::vector <shared_ptr <Token> > &tokens,
@@ -152,10 +165,11 @@ void Tokenizer::parse_tokens_file(
 		}
 
 		{
-			Tokenizer tokenizer(backtraces, filenames, includes,
-					    Place(Place::Type::INPUT_FILE, filename, 1, 0),
-					    in, in_size);
-			tokenizer.parse_tokens(tokens, context, place_diagnostic);
+			Tokenizer tokenizer(
+				tokens, backtraces, filenames, includes,
+				Place(Place::Type::INPUT_FILE, filename, 1, 0),
+				in, in_size);
+			tokenizer.parse_tokens(context, place_diagnostic);
 			place_end= tokenizer.current_place();
 
 			switch (technique) {
@@ -450,7 +464,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 	throw ERROR_LOGICAL;
 }
 
-void Tokenizer::parse_flag_or_name(std::vector <shared_ptr <Token> > &tokens)
+void Tokenizer::parse_flag_or_name()
 {
 	bool allow_special=
 		!(environment & E_WHITESPACE)
@@ -739,8 +753,23 @@ void Tokenizer::parse_version(string version_req,
 	throw ERROR_LOGICAL;
 }
 
+Tokenizer::Tokenizer(
+	std::vector <shared_ptr <Token> > &tokens_,
+	std::vector <Backtrace> &backtraces_,
+	std::vector <string> &filenames_,
+	std::set <string> &includes_,
+	const Place &place_base_,
+	const char *p_,
+	size_t length)
+	: tokens(tokens_),
+	  backtraces(backtraces_),
+	  filenames(filenames_),
+	  includes(includes_),
+	  place_base(place_base_),
+	  line(1), p_line(p_), p(p_), p_end(p_ + length)
+{ }
+
 void Tokenizer::parse_tokens(
-	std::vector <shared_ptr <Token> > &tokens,
 	Context context,
 	const Place &place_diagnostic)
 {
@@ -760,9 +789,9 @@ void Tokenizer::parse_tokens(
 			Place place_langle(place_base.type, place_base.text,
 					   line, p + 1 - p_line);
 			tokens.push_back(std::make_shared <Operator>
-					 ('$', place_dollar, environment));
+				('$', place_dollar, environment));
 			tokens.push_back(std::make_shared <Operator>
-					 ('[', place_langle, environment));
+				('[', place_langle, environment));
 			p += 2;
 		}
 
@@ -788,12 +817,12 @@ void Tokenizer::parse_tokens(
 
 		/* Directive */
 		else if (*p == '%') {
-			parse_directive(tokens, context, place_diagnostic);
+			parse_directive(context, place_diagnostic);
 		}
 
 		/* Flag, name, or invalid character */
 		else {
-			parse_flag_or_name(tokens);
+			parse_flag_or_name();
 		}
 		environment &= ~E_WHITESPACE;
 	had_whitespace:;
@@ -810,11 +839,12 @@ void Tokenizer::parse_tokens_string(std::vector <shared_ptr <Token> > &tokens,
 	std::vector <string> filenames;
 	std::set <string> includes;
 
-	Tokenizer parse(backtraces, filenames, includes,
-			place_string,
-			string_.c_str(), string_.size());
-	parse.parse_tokens(tokens, context, place_string);
-	place_end= parse.current_place();
+	Tokenizer tokenizer(
+		tokens, backtraces, filenames, includes,
+		place_string,
+		string_.c_str(), string_.size());
+	tokenizer.parse_tokens(context, place_string);
+	place_end= tokenizer.current_place();
 }
 
 bool Tokenizer::skip_space(bool &skipped_actual_space)
@@ -999,7 +1029,6 @@ bool Tokenizer::parse_escape()
 }
 
 void Tokenizer::parse_directive(
-	std::vector <shared_ptr <Token> > &tokens,
 	Context context,
 	const Place &place_diagnostic)
 {
@@ -1031,7 +1060,7 @@ void Tokenizer::parse_directive(
 	skip_space(skipped_actual_space);
 
 	if (name == "include") {
-		parse_include_directive(tokens, context, place_diagnostic, place_percent);
+		parse_include_directive(context, place_diagnostic, place_percent);
 	} else if (name == "version") {
 		parse_version_directive(place_percent);
 	} else {
@@ -1044,7 +1073,6 @@ void Tokenizer::parse_directive(
 }
 
 void Tokenizer::parse_include_directive(
-	std::vector <shared_ptr <Token> > &tokens,
 	Context context,
 	const Place &place_diagnostic,
 	const Place &place_percent)

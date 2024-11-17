@@ -122,9 +122,10 @@ public:
 
 	bool operator==(const Name &that) const;
 
-	static bool anchoring_dominates(std::vector <size_t> &anchoring_a,
-					std::vector <size_t> &anchoring_b,
-					int priority_a, int priority_b);
+	static bool anchoring_dominates(
+		const std::vector <size_t> &anchoring_a,
+		const std::vector <size_t> &anchoring_b,
+		int priority_a, int priority_b);
 	/* Whether anchoring A dominates anchoring B.  The anchorings do
 	 * not need to have the same number of parameters. */
 

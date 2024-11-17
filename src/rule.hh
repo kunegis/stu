@@ -1,6 +1,7 @@
 #ifndef RULE_HH
 #define RULE_HH
 
+#include <memory>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
@@ -162,13 +163,22 @@ private:
 	 * is not present in a matched string. */
 };
 
+class Found_Rule
+{
+public:
+	shared_ptr <const Rule> rule;
+	std::map <string, string> mapping;
+	std::vector <size_t> anchoring;
+	int priority;
+	shared_ptr <const Place_Target> place_target;
+};
+
 class Best_Rule_Finder
 {
 public:
 	void add(const Hash_Dep &, shared_ptr <const Rule> );
 	size_t count() const {
-		assert(rules_best.size() == place_targets_best.size());
-		return rules_best.size();
+		return found_rules.size();
 	}
 
 	/* Return all equally best targets.  They are returned as a map by place, so
@@ -177,23 +187,13 @@ public:
 	const std::map <Place, shared_ptr <const Place_Target> > &targets_best() const;
 
 	/* Access the best rule.  The best rule must be unique. */
-	const shared_ptr <const Rule> &rule_best() const {
-		assert(rules_best.size() == 1);
-		return rules_best[0];
-	}
-	std::map <string, string> &mapping_best() {
-		assert(rules_best.size() == 1);
-		return mappings_best[0];
+	Found_Rule &best() {
+		assert(found_rules.size() == 1);
+		return found_rules[0];
 	}
 
 private:
-	// TODO transform to a single vector of Found_Rule
-	/* Element [0] corresponds to the best rule. */
-	std::vector <shared_ptr <const Rule> > rules_best;
-	std::vector <std::map <string, string> > mappings_best;
-	std::vector <std::vector <size_t> > anchorings_best;
-	std::vector <int> priorities_best;
-	std::vector <shared_ptr <const Place_Target> > place_targets_best;
+	std::vector <Found_Rule> found_rules;
 
 	/* The same as PLACE_PARAM_TARGETS_BEST, but sorted by place.  Filled on demand. */
 	mutable std::map <Place, shared_ptr <const Place_Target> > best_sorted;

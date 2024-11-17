@@ -219,9 +219,10 @@ bool Name::valid(string &param_1, string &param_2) const
 	return true;
 }
 
-bool Name::anchoring_dominates(std::vector <size_t> &anchoring_a,
-			       std::vector <size_t> &anchoring_b,
-			       int priority_a, int priority_b)
+bool Name::anchoring_dominates(
+	const std::vector <size_t> &anchoring_a,
+	const std::vector <size_t> &anchoring_b,
+	int priority_a, int priority_b)
 /*
  * (A) dominates (B) when every character in a parameter in (A) is also
  * in a parameter in (B) and at least one character is not parametrized

@@ -5,7 +5,6 @@
 using std::string;
 using std::shared_ptr;
 
-// TODO replace with putting "src/*.cc" on the compiler invocation
 #include "bits.cc"
 #include "buffer.cc"
 #include "buffering.cc"

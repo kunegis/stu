@@ -265,10 +265,11 @@ void Rule_Set::add(std::vector <shared_ptr <Rule> > &rules_)
 	}
 }
 
-shared_ptr <const Rule> Rule_Set::get(Hash_Dep hash_dep,
-				      shared_ptr <const Rule> &param_rule,
-				      std::map <string, string> &mapping_parameter,
-				      const Place &place)
+shared_ptr <const Rule> Rule_Set::get(
+	Hash_Dep hash_dep,
+	shared_ptr <const Rule> &param_rule,
+	std::map <string, string> &mapping_parameter,
+	const Place &place)
 {
 	assert(hash_dep.is_file() || hash_dep.is_transient());
 	assert((hash_dep.get_front_word() & ~F_TARGET_TRANSIENT) == 0);
@@ -340,10 +341,9 @@ shared_ptr <const Rule> Rule_Set::get(Hash_Dep hash_dep,
 	}
 
 	/* Instantiate the rule */
-	shared_ptr <const Rule> rule_best= best_rule_finder.rule_best();
-	swap(mapping_parameter, best_rule_finder.mapping_best());
-	shared_ptr <const Rule> ret
-		(Rule::instantiate(best_rule_finder.rule_best(), mapping_parameter));
+	shared_ptr <const Rule> rule_best= best_rule_finder.best().rule;
+	swap(mapping_parameter, best_rule_finder.best().mapping);
+	shared_ptr <const Rule> ret(Rule::instantiate(rule_best, mapping_parameter));
 	param_rule= rule_best;
 	return ret;
 }
@@ -403,16 +403,14 @@ void Best_Rule_Finder::add(const Hash_Dep &hash_dep, shared_ptr <const Rule> rul
 			continue;
 
 		/* The parametrized rule does not match */
-		if (! place_param_target->place_name.match(hash_dep.get_name_nondynamic(),
-							   mapping, anchoring, priority))
+		if (! place_param_target->place_name.match(
+				hash_dep.get_name_nondynamic(),
+				mapping, anchoring, priority))
 			continue;
 
 		assert(anchoring.size() == 2 * place_param_target->place_name.get_n());
 
-		size_t k= rules_best.size();
-		assert(k == anchorings_best.size());
-		assert(k == priorities_best.size());
-		assert(k == mappings_best.size());
+		size_t k= found_rules.size();
 
 		/* Check whether the rule is dominated by at least one other rule; also,
 		 * avoid inserting the same rule twice (which happens if the rule was
@@ -422,52 +420,45 @@ void Best_Rule_Finder::add(const Hash_Dep &hash_dep, shared_ptr <const Rule> rul
 		 * know how to chose the parameter), and therefore we also need to compare
 		 * anchorings. */
 		for (size_t j= 0; j < k; ++j) {
-			if (rule == rules_best[j]
-			    && anchoring == anchorings_best[j])
+			const Found_Rule &found_rule= found_rules[j];
+			if (rule == found_rule.rule && anchoring == found_rule.anchoring)
 				return;
-			if (Name::anchoring_dominates
-			    (anchorings_best[j], anchoring,
-			     priorities_best[j], priority))
+			if (Name::anchoring_dominates(
+					found_rule.anchoring, anchoring,
+					found_rule.priority, priority))
 				return;
 		}
 
 		/* Check whether the rule dominates all other rules */
-		{
-			bool is_best= true;
-			for (ssize_t j= 0; is_best && j < (ssize_t) k; ++j) {
-				if (! Name::anchoring_dominates
-				    (anchoring, anchorings_best[j],
-				     priority, priorities_best[j]))
-					is_best= false;
-			}
-			if (is_best) {
-				k= 0;
-			}
+		bool is_best= true;
+		for (size_t j= 0; is_best && j < k; ++j) {
+			const Found_Rule &found_rule= found_rules[j];
+			if (! Name::anchoring_dominates(
+					anchoring, found_rule.anchoring,
+					priority, found_rule.priority))
+				is_best= false;
 		}
-		rules_best.resize(k+1);
-		mappings_best.resize(k+1);
-		anchorings_best.resize(k+1);
-		priorities_best.resize(k+1);
-		place_targets_best.resize(k+1);
-		rules_best[k]= rule;
-		swap(mapping, mappings_best[k]);
-		swap(anchoring, anchorings_best[k]);
-		priorities_best[k]= priority;
-		place_targets_best[k]= place_param_target;
+		if (is_best) k= 0;
+
+		found_rules.resize(k+1);
+		found_rules[k].rule= rule;
+		swap(mapping, found_rules[k].mapping);
+		swap(anchoring, found_rules[k].anchoring);
+		found_rules[k].priority= priority;
+		found_rules[k].place_target= place_param_target;
 	}
 }
 
-const std::map <Place, shared_ptr <const Place_Target> > &Best_Rule_Finder::targets_best() const
+const std::map <Place, shared_ptr <const Place_Target> > &
+Best_Rule_Finder::targets_best() const
 {
-	assert(! place_targets_best.empty());
-
+	assert(! found_rules.empty());
 	if (best_sorted.empty()) {
-		for (auto &place_param_target:
-			     place_targets_best) {
-			best_sorted[place_param_target->place]= place_param_target;
+		for (auto &found_rule: found_rules) {
+			best_sorted[found_rule.place_target->place]=
+				found_rule.place_target;
 		}
-		assert(place_targets_best.size() == best_sorted.size());
+		assert(best_sorted.size() == found_rules.size());
 	}
-
 	return best_sorted;
 }

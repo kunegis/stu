@@ -83,6 +83,7 @@ private:
 		string &command,
 		string &argv0);
 	static const char *get_shell();
+	static const char *get_cp();
 	static void create_child_output_redirection(string filename_output);
 	static void create_child_input_redirection(string filename_input);
 };

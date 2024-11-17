@@ -123,25 +123,15 @@ pid_t Job::start_copy(string target,
 	}
 
 	if (pid == 0) {
-		/* We are the child process */
-
+		in_child= 1;
 		/* We don't set $STU_STATUS for copy jobs */
-
-		static const char *cp_command= nullptr;
-		if (cp_command == nullptr) {
-			cp_command= getenv("STU_CP");
-			if (cp_command == nullptr || cp_command[0] == '\0')
-				cp_command= "/bin/cp";
-		}
+		const char *cp_command= get_cp();
 
 		/* Using '--' as an argument guarantees that the two filenames will be
 		 * interpreted as filenames and not as options, in particular when they
 		 * begin with a dash. */
-		const char *argv[]= {cp_command,
-				     "--",
-				     source.c_str(),
-				     target.c_str(),
-				     nullptr};
+		const char *argv[]= {
+			cp_command, "--", source.c_str(), target.c_str(), nullptr};
 		__gcov_dump();
 		int r= execv(cp_command, (char *const *) argv);
 		assert(r == -1);
@@ -504,6 +494,17 @@ const char *Job::get_shell()
 			shell= "/bin/sh";
 	}
 	return shell;
+}
+
+const char *Job::get_cp()
+{
+	static const char *cp= nullptr;
+	if (cp == nullptr) {
+		cp= getenv("STU_CP");
+		if (cp == nullptr || cp[0] == '\0')
+			cp= "/bin/cp";
+	}
+	return cp;
 }
 
 void Job::create_child_output_redirection(

@@ -979,7 +979,7 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 	while (p < p_end) {
 		if (*p == '\'') {
 			++p;
-			goto end_of_single_quote;
+			return;
 		} else if (*p == '\0') {
 			current_place() << fmt("invalid character %s", show(string(p, 1)));
 			place_begin_quote <<
@@ -997,7 +997,6 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 	current_place() << fmt("expected a closing %s", show_operator('\''));
 	place_begin_quote << fmt("for quote started by %s", show_operator('\''));
 	throw ERROR_LOGICAL;
- end_of_single_quote:;
 }
 
 bool Tokenizer::parse_escape()

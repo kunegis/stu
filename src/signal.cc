@@ -78,30 +78,10 @@ void signal_handler_productive(int, siginfo_t *, void *)
 /* Do nothing -- the handler only exists because POSIX says that a signal may be discarded
  * by the kernel if there is no signal handler for it, and then it may not be possible to
  * sigwait() for that signal. */
-{
-	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
-}
+/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
+{ }
 
 void init_signals()
-/*
- * There are three types of signals handled by Stu:
- *    - Termination signals which make programs abort.  Stu catches them in order to stop
- *      its child processes and remove temporary files, and will then raise them again.
- *      The handlers for these are async-signal safe.
- *    - Productive signals that actually inform the Stu process of something:
- *         + SIGCHLD (to know when child processes are done)
- *         + SIGUSR1 (to output statistics)
- *      These signals are blocked, and then waited for specifically.  The handlers thus do
- *      not have to be async-signal safe.
- *    - The job control signals SIGTTIN and SIGTTOU.  They are both produced by certain
- *      job control events that Stu triggers, and ignored by Stu.
- *
- * The signals SIGCHLD and SIGUSR1 are the signals that we wait for in the main loop.
- * They are blocked.  At the same time, each blocked signal must have a signal handler
- * (which can do nothing), as otherwise POSIX allows the signal to be discarded.  Thus, we
- * setup a no-op signal handler.  (Linux does not discard such signals, while FreeBSD
- * does.)
- */
 {
 	static bool signals_initialized = false;
 	if (signals_initialized) return;

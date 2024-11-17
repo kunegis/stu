@@ -27,38 +27,18 @@ bool Job::signals_initialized;
 bool Job::Signal_Blocker::blocked= false;
 #endif
 
-pid_t Job::start(string command,
-		 const std::map <string, string> &mapping,
-		 string filename_output,
-		 string filename_input,
-		 const Place &place_command)
+pid_t Job::start(
+	string command,
+	const std::map <string, string> &mapping,
+	string filename_output,
+	string filename_input,
+	const Place &place_command)
 {
 	assert(pid == -2);
 	init_signals();
-
-	/* Like Make, we don't use the variable $SHELL, but use "/bin/sh" as a shell
-	 * instead.  The reason is that the variable $SHELL is intended to denote the
-	 * user's chosen interactive shell, and may not be a POSIX-compatible shell.  Note
-	 * also that POSIX prescribes that Make use "/bin/sh" by default.  Other note:
-	 * Make allows to declare the Make variable $SHELL within the Makefile or in
-	 * Make's parameters to a value that *will* be used by Make instead of /bin/sh.
-	 * This is not possible with Stu, because Stu does not have its own set of
-	 * variables.  Instead, there is the $STU_SHELL variable.  The Stu-native way to
-	 * do it without environment variables would be via a directive (but such a
-	 * directive is not implemented). */
-	static const char *shell= nullptr;
-	if (shell == nullptr) {
-		shell= getenv("STU_SHELL");
-		if (shell == nullptr || shell[0] == '\0')
-			shell= "/bin/sh";
-	}
-
-	const char *arg= command.c_str();
-	/* c_str() never returns nullptr, as by the standard */
-	assert(arg != nullptr);
+	const char *shell= get_shell();
 
 	pid= fork();
-
 	if (pid < 0) {
 		print_errno("fork");
 		assert(pid == -1);
@@ -84,9 +64,7 @@ pid_t Job::start(string command,
 	}
 
 	if (pid == 0) {
-		/* We are the child process */
 		in_child= 1;
-
 		/* Instead of throwing exceptions, use perror() and
 		 * _Exit(ERROR_FORK_CHILD). */
 
@@ -101,127 +79,10 @@ pid_t Job::start(string command,
 		::signal(SIGTTIN, SIG_DFL);
 		::signal(SIGTTOU, SIG_DFL);
 
-		// TODO put into own function
-		/* Set variables */
-		size_t v_old= 0;
-		std::map <string, size_t> old;
-		/* Index of old variables */
-		while (envp_global[v_old]) {
-			const char *p= envp_global[v_old];
-			const char *q= p;
-			while (*q && *q != '=')  ++q;
-			string key_old(p, q-p);
-			old[key_old]= v_old;
-			++v_old;
-		}
-		const size_t v_new= mapping.size() + 1;
-		/* Maximal size of added variables.  The "+1" is for $STU_STATUS */
-		const char** envp= (const char **)
-			malloc(sizeof(char **) * (v_old + v_new + 1));
-		if (!envp) {
-			perror("malloc");
-			__gcov_dump();
-			_Exit(ERROR_FORK_CHILD);
-		}
-		memcpy(envp, envp_global, v_old * sizeof(char **));
-		size_t i= v_old;
-		for (auto j= mapping.begin(); j != mapping.end(); ++j) {
-			string key= j->first;
-			string value= j->second;
-			assert(key.find('=') == string::npos);
-			size_t len_combined= key.size() + 1 + value.size() + 1;
-			char *combined= (char *)malloc(len_combined);
-			if (! combined) {
-				perror("malloc");
-				__gcov_dump();
-				_Exit(ERROR_FORK_CHILD);
-			}
-			if ((ssize_t)(len_combined - 1) !=
-				snprintf(combined, len_combined, "%s=%s",
-					key.c_str(), value.c_str())) {
-				perror("snprintf");
-				__gcov_dump();
-				_Exit(ERROR_FORK_CHILD);
-			}
-			if (old.count(key)) {
-				size_t v_index= old.at(key);
-				envp[v_index]= combined;
-			} else {
-				assert(i < v_old + v_new);
-				envp[i++]= combined;
-			}
-		}
-		envp[i++]= "STU_STATUS=1";
-		assert(i <= v_old + v_new);
-		envp[i]= nullptr;
-
-		/* As $0 of the process, we pass the filename of the command followed by a
-		 * colon, the line number, a colon and the column number.  This makes the
-		 * shell if it reports an error make the most useful output. */
-		string argv0= place_command.as_argv0();
-		if (argv0.empty())
-			argv0= shell;
-
-		/* The one-character options to the shell.  We use the -e option
-		 * ('error'), which makes the shell abort on a command that fails.  This
-		 * is also what POSIX prescribes for Make.  It is particularly important
-		 * for Stu, as Stu invokes the whole (possibly multiline) command in one
-		 * step. */
-		const char *shell_options= option_x ? "-ex" : "-e";
-
-		const char *argv[]= {argv0.c_str(),
-				     shell_options, "-c", arg, nullptr};
-
-		// TODO put into own function
-		/*
-		 * Special handling of the case when the command starts with '-' or '+'.
-		 * In that case, we prepend a space to the command.  We cannot use '--' as
-		 * prescribed by POSIX because Linux and FreeBSD handle '--' differently:
-		 *
-		 *      /bin/sh -c -- '+x'
-		 *      on Linux: Execute the command '+x'
-		 *      on FreeBSD: Execute the command '--' and set
-		 *                  the +x option
-		 *
-		 *      /bin/sh -c +x
-		 *      on Linux: Set the +x option, and missing
-		 *                argument to -c
-		 *      on FreeBSD: Execute the command '+x'
-		 *
-		 * See:
-		 * http://stackoverflow.com/questions/37886661/handling-of-in-arguments-of-bin-sh-posix-vs-implementations-by-bash-dash
-		 *
-		 * It seems that FreeBSD violates POSIX in this regard.
-		 */
-
-		if (arg[0] == '-' || arg[0] == '+') {
-			command= ' ' + command;
-			arg= command.c_str();
-			argv[3]= arg;
-		}
-
-		// TODO put into own function
-		/* Output redirection */
-		if (!filename_output.empty()) {
-			int fd_output= creat
-				(filename_output.c_str(),
-				 /* All +rw, i.e. 0666 */
-				 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-			if (fd_output < 0) {
-				perror(filename_output.c_str());
-				__gcov_dump();
-				_Exit(ERROR_FORK_CHILD);
-			}
-			assert(fd_output != 1);
-			int r= dup2(fd_output, 1); /* 1 = file descriptor of STDOUT */
-			if (r < 0) {
-				perror(filename_output.c_str());
-				__gcov_dump();
-				_Exit(ERROR_FORK_CHILD);
-			}
-			assert(r == 1);
-			close(fd_output);
-		}
+		const char **envp= create_child_env(mapping);
+		string argv0;
+		const char **argv= create_child_argv(place_command, shell, command, argv0);
+		create_child_output_redirection(filename_output);
 
 		// TODO put into own function
 		/* Input redirection:  from the given file, or from /dev/null (in
@@ -738,4 +599,164 @@ void Job::ask_continue(pid_t pid)
 		print_errno("tcsetpgrp");
 	/* Continue job */
 	::kill(-pid, SIGCONT);
+}
+
+const char **Job::create_child_env(
+	const std::map <string, string> &mapping)
+{
+	const char **envp;
+
+	/* Set variables */
+	size_t v_old= 0;
+	std::map <string, size_t> old;
+	/* Index of old variables */
+
+	while (envp_global[v_old]) {
+		const char *p= envp_global[v_old];
+		const char *q= p;
+		while (*q && *q != '=')  ++q;
+		string key_old(p, q-p);
+		old[key_old]= v_old;
+		++v_old;
+	}
+
+	const size_t v_new= mapping.size() + 1;
+	/* Maximal size of added variables.  The "+1" is for $STU_STATUS */
+
+	envp= (const char **) malloc(sizeof(char **) * (v_old + v_new + 1));
+	if (!envp) {
+		perror("malloc");
+		__gcov_dump();
+		_Exit(ERROR_FORK_CHILD);
+	}
+	memcpy(envp, envp_global, v_old * sizeof(char **));
+	size_t i= v_old;
+
+	for (auto j= mapping.begin(); j != mapping.end(); ++j) {
+		string key= j->first;
+		string value= j->second;
+		assert(key.find('=') == string::npos);
+		size_t len_combined= key.size() + 1 + value.size() + 1;
+		char *combined= (char *)malloc(len_combined);
+		if (! combined) {
+			perror("malloc");
+			__gcov_dump();
+			_Exit(ERROR_FORK_CHILD);
+		}
+		if ((ssize_t)(len_combined - 1) !=
+			snprintf(combined, len_combined, "%s=%s",
+				key.c_str(), value.c_str())) {
+			perror("snprintf");
+			__gcov_dump();
+			_Exit(ERROR_FORK_CHILD);
+		}
+		if (old.count(key)) {
+			size_t v_index= old.at(key);
+			(envp)[v_index]= combined;
+		} else {
+			assert(i < v_old + v_new);
+			(envp)[i++]= combined;
+		}
+	}
+
+	envp[i++]= "STU_STATUS=1";
+	assert(i <= v_old + v_new);
+	envp[i]= nullptr;
+	return envp;
+}
+
+const char **Job::create_child_argv(
+	const Place &place_command,
+	const char *shell,
+	string &command,
+	string &argv0)
+{
+	const char *arg= command.c_str();
+	/* c_str() never returns nullptr, as by the standard */
+	assert(arg != nullptr);
+
+	/* As $0 of the process, we pass the filename of the command followed by a colon,
+	 * the line number, a colon and the column number.  This makes the shell if it
+	 * reports an error make the most useful output. */
+	argv0= place_command.as_argv0();
+	if (argv0.empty()) argv0= shell;
+
+	/* The one-character options to the shell.  We use the -e option ('error'), which
+	 * makes the shell abort on a command that fails.  This is also what POSIX
+	 * prescribes for Make.  It is particularly important for Stu, as Stu invokes the
+	 * whole (possibly multiline) command in one step. */
+	const char *shell_options= option_x ? "-ex" : "-e";
+	static const char *argv[]= {argv0.c_str(), shell_options, "-c", arg, nullptr};
+
+	/* Special handling of the case when the command starts with '-' or '+'.  In that
+	 * case, we prepend a space to the command.  We cannot use '--' as prescribed by
+	 * POSIX because Linux and FreeBSD handle '--' differently:
+	 *
+	 *      /bin/sh -c -- '+x'
+	 *      on Linux: Execute the command '+x'
+	 *      on FreeBSD: Execute the command '--' and set
+	 *                  the +x option
+	 *
+	 *      /bin/sh -c +x
+	 *      on Linux: Set the +x option, and missing
+	 *                argument to -c
+	 *      on FreeBSD: Execute the command '+x'
+	 *
+	 * See:
+	 * http://stackoverflow.com/questions/37886661/handling-of-in-arguments-of-bin-sh-posix-vs-implementations-by-bash-dash
+	 *
+	 * It seems that FreeBSD violates POSIX in this regard. */
+	if (arg[0] == '-' || arg[0] == '+') {
+		command= ' ' + command;
+		arg= command.c_str();
+		argv[3]= arg;
+	}
+
+	return argv;
+}
+
+const char *Job::get_shell()
+{
+	/* Like Make, we don't use the variable $SHELL, but use "/bin/sh" as a shell
+	 * instead.  The reason is that the variable $SHELL is intended to denote the
+	 * user's chosen interactive shell, and may not be a POSIX-compatible shell.  Note
+	 * also that POSIX prescribes that Make use "/bin/sh" by default.  Other note:
+	 * Make allows to declare the Make variable $SHELL within the Makefile or in
+	 * Make's parameters to a value that *will* be used by Make instead of /bin/sh.
+	 * This is not possible with Stu, because Stu does not have its own set of
+	 * variables.  Instead, there is the $STU_SHELL variable.  The Stu-native way to
+	 * do it without environment variables would be via a directive (but such a
+	 * directive is not implemented). */
+	static const char *shell= nullptr;
+	if (shell == nullptr) {
+		shell= getenv("STU_SHELL");
+		if (shell == nullptr || shell[0] == '\0')
+			shell= "/bin/sh";
+	}
+	return shell;
+}
+
+void Job::create_child_output_redirection(
+	string filename_output)
+{
+	if (filename_output.empty()) return;
+
+	int fd_output= creat(
+		filename_output.c_str(),
+		/* All +rw, i.e. 0666 */
+		S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+	if (fd_output < 0) {
+		perror(filename_output.c_str());
+		__gcov_dump();
+		_Exit(ERROR_FORK_CHILD);
+	}
+	assert(fd_output != 1);
+	int r= dup2(fd_output, 1);
+	if (r < 0) {
+		perror(filename_output.c_str());
+		__gcov_dump();
+		_Exit(ERROR_FORK_CHILD);
+	}
+	assert(r == 1);
+	close(fd_output);
 }

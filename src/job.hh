@@ -116,15 +116,6 @@ private:
 	 * -1:    process has been waited for.
 	 */
 
-	/* The signal handlers */
-	static void handler_termination(int sig);
-	static void handler_productive(int sig, siginfo_t *, void *);
-
-	static void init_signals();
-	/* May be called multiple times, and will do the setup only the first time. */
-
-	static void ask_continue(pid_t pid);
-
 	static size_t count_jobs_exec, count_jobs_success, count_jobs_fail;
 	/* The number of jobs run.  Each job is of exactly one type.
 	 *
@@ -151,6 +142,25 @@ private:
 	/* The file descriptor of the TTY used by Stu.  -1 if there is none. */
 
 	static bool signals_initialized;
+
+	/* The signal handlers */
+	static void handler_termination(int sig);
+	static void handler_productive(int sig, siginfo_t *, void *);
+
+	static void init_signals();
+	/* May be called multiple times, and will do the setup only the first time. */
+
+	static void ask_continue(pid_t pid);
+	static const char **create_child_env(
+		const std::map <string, string> &mapping);
+	static const char **create_child_argv(
+		const Place &place_command,
+		const char *shell,
+		string &command,
+		string &argv0);
+	static const char *get_shell();
+	static void create_child_output_redirection(
+		string filename_output);
 };
 
 #endif /* ! JOB_HH */

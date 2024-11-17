@@ -92,13 +92,14 @@ private:
 		   p_line(p_),
 		   p(p_),
 		   p_end(p_ + length)
-	{  }
+	{ }
 
 	void parse_tokens(std::vector <shared_ptr <Token> > &tokens,
 			  Context context,
 			  const Place &place_diagnostic);
 
 	shared_ptr <Command> parse_command();
+	void parse_flag_or_name(std::vector <shared_ptr <Token> > &tokens);
 
 	shared_ptr <Place_Name> parse_name(bool allow_special);
 	/* Returns null when no name could be parsed.  Prints and throws on other errors,

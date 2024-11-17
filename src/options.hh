@@ -99,9 +99,9 @@ static const char *dollar_zero;
 /* Does the same as program_invocation_name (which is a GNU extension,
  * so we don't use it); the value of argv[0], set in main() */
 
+/* Return whether this was a valid settings option */
 bool option_setting(char c);
-/* Set one of the "setting options", i.e., of of those that can appear in $STU_OPTIONS.
- * Return whether this was a valid settings option. */
+bool option_various(char c);
 
 void set_option_i();
 void set_option_j(const char *value);

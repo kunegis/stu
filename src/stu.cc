@@ -82,27 +82,10 @@ int main(int argc, char **argv, char **envp)
 		bool had_option_f= false; /* Both -f and -F */
 
 		for (int c; (c= getopt(argc, argv, OPTIONS)) != -1;) {
-			// TODO put into own function
-			if (option_setting(c))
-				continue;
+			if (option_setting(c)) continue;
+			if (option_various(c)) continue;
 
 			switch (c) {
-			case 'a':  option_a= true;         break;
-			case 'd':  option_d= true;         break;
-			case 'g':  option_g= true;         break;
-			case 'h':  fputs(HELP, stdout);    exit(0);
-			case 'i':  set_option_i();         break;
-			case 'I':  option_I= true;         break;
-			case 'j':  set_option_j(optarg);   break;
-			case 'J':  option_J= true;         break;
-			case 'k':  option_k= true;         break;
-			case 'K':  option_K= true;         break;
-			case 'm':  set_option_m(optarg);   break;
-			case 'M':  set_option_M(optarg);   break;
-			case 'P':  option_P= true;         break;
-			case 'q':  option_q= true;         break;
-			case 'V':  print_option_V();       exit(0);
-
 			case 'c':  {
 				had_option_target= true;
 				Place place(Place::Type::OPTION, 'c');
@@ -229,7 +212,6 @@ int main(int argc, char **argv, char **envp)
 
 		/* Use the default Stu script if -f/-F are not used */
 		if (! had_option_f) {
-			// TODO put into own function
 			filenames.push_back(FILENAME_INPUT_DEFAULT);
 			int file_fd= open(FILENAME_INPUT_DEFAULT, O_RDONLY);
 			if (file_fd >= 0) {

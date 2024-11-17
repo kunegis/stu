@@ -25,6 +25,29 @@ bool option_setting(char c)
 	return true;
 }
 
+bool option_various(char c)
+{
+	switch (c) {
+	default:   return false;
+	case 'a':  option_a= true;         break;
+	case 'd':  option_d= true;         break;
+	case 'g':  option_g= true;         break;
+	case 'h':  fputs(HELP, stdout);    exit(0);
+	case 'i':  set_option_i();         break;
+	case 'I':  option_I= true;         break;
+	case 'j':  set_option_j(optarg);   break;
+	case 'J':  option_J= true;         break;
+	case 'k':  option_k= true;         break;
+	case 'K':  option_K= true;         break;
+	case 'm':  set_option_m(optarg);   break;
+	case 'M':  set_option_M(optarg);   break;
+	case 'P':  option_P= true;         break;
+	case 'q':  option_q= true;         break;
+	case 'V':  print_option_V();       exit(0);
+	}
+	return true;
+}
+
 void set_option_i()
 {
 	option_i= true;

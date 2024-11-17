@@ -2,6 +2,10 @@
 
 #include <sys/mman.h>
 
+// TODO TOKENS should be a field in Tokenizer.  However, it doesn't work that trivially
+// because we use multiple Tokenizer objects, one for each included file.  Maybe use
+// a shared_ptr of TOKENS.
+
 void Tokenizer::parse_tokens_file(
 	std::vector <shared_ptr <Token> > &tokens,
 	Context context,
@@ -446,6 +450,93 @@ shared_ptr <Command> Tokenizer::parse_command()
 	throw ERROR_LOGICAL;
 }
 
+void Tokenizer::parse_flag_or_name(std::vector <shared_ptr <Token> > &tokens)
+{
+	bool allow_special=
+		!(environment & E_WHITESPACE)
+		&& !tokens.empty()
+		&& to <Operator> (tokens.back())
+		&& (to <Operator> (tokens.back())->op == ']' ||
+			to <Operator> (tokens.back())->op == ')');
+
+	if (p < p_end && (*p == '-' || *p == '+' || *p == '~') && ! allow_special) {
+		if (*p == '+' || *p == '~') {
+			current_place() <<
+				fmt("an unquoted name must not begin with the character %s",
+					show_text(string(1, *p)));
+			throw ERROR_LOGICAL;
+		}
+		Place place_dash= current_place();
+		++p;
+		assert(p <= p_end);
+		if (p == p_end) {
+			current_place() << "expected a flag character";
+			place_dash << fmt("after dash %s",
+				show_operator('-'));
+			throw ERROR_LOGICAL;
+		}
+		char op= *p;
+		if (! is_flag_char(op)) {
+			if (isalnum(op)) {
+				current_place() <<
+					fmt("invalid flag %s",
+						show_prefix("-", frmt("%c", op)));
+			} else {
+				current_place() <<
+					fmt("expected a flag character, not %s",
+						show(string(1, op)));
+				place_dash <<
+					fmt("after dash %s", show_operator('-'));
+			}
+			explain_flags();
+			throw ERROR_LOGICAL;
+		}
+		assert(isalnum(op));
+		shared_ptr <Flag_Token> token= std::make_shared <Flag_Token>
+			(op, current_place(), environment);
+		tokens.push_back(token);
+		++p;
+		if (p < p_end &&
+			(is_name_char(*p) || *p == '"' || *p == '\'' || *p == '$'
+				|| *p == '@')) {
+			current_place() <<
+				fmt("expected whitespace before character %s",
+					show(current_mbchar()));
+			token->get_place() <<
+				fmt("after flag %s", show_prefix("-", frmt("%c", op)));
+			throw ERROR_LOGICAL;
+		}
+	} else {
+		shared_ptr <Place_Name> place_name= parse_name(allow_special);
+		if (place_name == nullptr) {
+			if (*p == '!') {
+				current_place() <<
+					fmt("character %s is invalid for persistent dependencies; use %s instead",
+						show_operator('!'),
+						show_prefix("-", "p"));
+			} else if (*p == '?') {
+				current_place() <<
+					fmt("character %s is invalid for optional dependencies; use %s instead",
+						show_operator('?'),
+						show_prefix("-", "o"));
+			} else if (*p == '&') {
+				current_place() <<
+					fmt("character %s is invalid for trivial dependencies; use %s instead",
+						show_operator('&'),
+						show_prefix("-", "t"));
+			} else {
+				current_place() << fmt("invalid character %s",
+					show(current_mbchar()));
+				if (strchr("#%\'\":;-$@<>={}()[]*\\&|!?,", *p))
+					explain_quoted_characters();
+			}
+			throw ERROR_LOGICAL;
+		}
+		assert(! place_name->empty());
+		tokens.push_back(std::make_shared <Name_Token> (*place_name, environment));
+	}
+}
+
 shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 {
 	const char *const p_begin= p;
@@ -648,9 +739,10 @@ void Tokenizer::parse_version(string version_req,
 	throw ERROR_LOGICAL;
 }
 
-void Tokenizer::parse_tokens(std::vector <shared_ptr <Token> > &tokens,
-			     Context context,
-			     const Place &place_diagnostic)
+void Tokenizer::parse_tokens(
+	std::vector <shared_ptr <Token> > &tokens,
+	Context context,
+	const Place &place_diagnostic)
 {
 	bool skipped_actual_space;
 
@@ -701,96 +793,7 @@ void Tokenizer::parse_tokens(std::vector <shared_ptr <Token> > &tokens,
 
 		/* Flag, name, or invalid character */
 		else {
-			// TODO put into own function
-			/* Flag */
-			bool allow_special=
-				!(environment & E_WHITESPACE)
-				&& !tokens.empty()
-				&& to <Operator> (tokens.back())
-				&& (to <Operator> (tokens.back())->op == ']' ||
-				    to <Operator> (tokens.back())->op == ')');
-
-			if (p < p_end
-			    && (*p == '-' || *p == '+' || *p == '~')
-			    && ! allow_special) {
-				if (*p == '+' || *p == '~') {
-					current_place() <<
-						fmt("an unquoted name must not begin with the character %s",
-						    show_text(string(1, *p)));
-					throw ERROR_LOGICAL;
-				}
-				Place place_dash= current_place();
-				++p;
-				assert(p <= p_end);
-				if (p == p_end) {
-					current_place() << "expected a flag character";
-					place_dash << fmt("after dash %s",
-							  show_operator('-'));
-					throw ERROR_LOGICAL;
-				}
-				char op= *p;
-				if (! is_flag_char(op)) {
-					if (isalnum(op)) {
-						current_place() <<
-							fmt("invalid flag %s",
-							    show_prefix("-", frmt("%c", op)));
-					} else {
-						current_place() <<
-							fmt("expected a flag character, not %s",
-							    show(string(1, op)));
-						place_dash <<
-							fmt("after dash %s",
-							    show_operator('-'));
-					}
-					explain_flags();
-					throw ERROR_LOGICAL;
-				}
-				assert(isalnum(op));
-				shared_ptr <Flag_Token> token= std::make_shared <Flag_Token>
-					(op, current_place(), environment);
-				tokens.push_back(token);
-				++p;
-				if (p < p_end &&
-				    (is_name_char(*p) || *p == '"' || *p == '\'' || *p == '$' || *p == '@')) {
-					current_place() <<
-						fmt("expected whitespace before character %s",
-						    show(current_mbchar()));
-					token->get_place() <<
-						fmt("after flag %s",
-						    show_prefix("-", frmt("%c", op)));
-					throw ERROR_LOGICAL;
-				}
-			} else {
-				shared_ptr <Place_Name> place_name= parse_name(allow_special);
-				if (place_name == nullptr) {
-					if (*p == '!') {
-						current_place() <<
-							fmt("character %s is invalid for persistent dependencies; use %s instead",
-							    show_operator('!'),
-							    show_prefix("-", "p"));
-					} else if (*p == '?') {
-						current_place() <<
-							fmt("character %s is invalid for optional dependencies; use %s instead",
-							    show_operator('?'),
-							    show_prefix("-", "o"));
-					} else if (*p == '&') {
-						current_place() <<
-							fmt("character %s is invalid for trivial dependencies; use %s instead",
-							    show_operator('&'),
-							    show_prefix("-", "t"));
-					} else {
-						current_place() << fmt("invalid character %s",
-								       show(current_mbchar()));
-						if (strchr("#%\'\":;-$@<>={}()[]*\\&|!?,", *p)) {
-							explain_quoted_characters();
-						}
-					}
-					throw ERROR_LOGICAL;
-				}
-				assert(! place_name->empty());
-				tokens.push_back(std::make_shared <Name_Token>
-						 (*place_name, environment));
-			}
+			parse_flag_or_name(tokens);
 		}
 		environment &= ~E_WHITESPACE;
 	had_whitespace:;

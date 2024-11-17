@@ -131,6 +131,9 @@ private:
 	 * Is currently running. */
 
 	void write_content(const char *filename, const Command &command);
+	void check_file_was_built(
+		Hash_Dep hash_dep,
+		shared_ptr <const Place_Target> place_target);
 
 	static std::unordered_map <string, Timestamp> transients;
 	/* The timestamps for transient targets.  This container plays the role of the

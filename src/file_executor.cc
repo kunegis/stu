@@ -76,65 +76,11 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		bits &= ~B_MISSING;
 		/* Subsequently set to B_MISSING if at least one target file is missing */
 
-		/* For file targets, check that the file was built */
+		/* Check that the file targets were built */
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
-			// TODO put into own function
 			const Hash_Dep hash_dep= hash_deps[i];
-
-			if (! hash_dep.is_file()) {
-				continue;
-			}
-
-			const char *const filename= hash_dep.get_name_c_str_nondynamic();
-			struct stat buf;
-
-			if (0 == stat(filename, &buf)) {
-				/* The file exists */
-				warn_future_file(&buf,
-						 filename,
-						 rule->place_targets[i]->place,
-						 "after execution of command");
-
-				/* Check that file is not older that Stu
-				 * startup */
-				Timestamp timestamp_file(&buf);
-				if (! timestamp.defined() ||
-				    timestamp < timestamp_file)
-					timestamp= timestamp_file;
-				if (timestamp_file < Timestamp::startup) {
-					/* The target is older than Stu startup */
-
-					/* Check whether the file is actually a symlink, in
-					 * which case we ignore that error */
-					if (0 > lstat(filename, &buf)) {
-						rule->place_targets[i]->place <<
-							format_errno(show(hash_dep));
-						raise(ERROR_BUILD);
-					}
-					if (S_ISLNK(buf.st_mode))
-						continue;
-					rule->place_targets[i]->place
-						<< fmt("timestamp of file %s after execution of its command is older than %s startup",
-						       show(hash_dep),
-						       dollar_zero)
-						<< fmt("timestamp of %s is %s",
-						       show(hash_dep),
-						       timestamp_file.format())
-						<< fmt("startup timestamp is %s",
-						       Timestamp::startup.format());
-					*this << "";
-					explain_startup_time();
-					raise(ERROR_BUILD);
-				}
-			} else {
-				bits |= B_MISSING;
-				bits &= ~B_EXISTING;
-				rule->place_targets[i]->place <<
-					fmt("file %s was not built by command",
-					    show(hash_dep));
-				*this << "";
-				raise(ERROR_BUILD);
-			}
+			if (! hash_dep.is_file()) continue;
+			check_file_was_built(hash_dep, rule->place_targets[i]);
 		}
 		/* In parallel mode, print "done" message */
 		if (option_parallel && !option_s) {
@@ -376,9 +322,8 @@ void File_Executor::notify_variable(
 }
 
 void terminate_jobs()
+/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 {
-	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
-
 	int errno_save= errno;
 
 	write_async(2, PACKAGE ": terminating all jobs\n");
@@ -460,7 +405,7 @@ bool File_Executor::remove_if_existing(bool output)
 		/* Remove the file if it exists.  If it is a symlink, only the symlink
 		 * itself is removed, not the file it links to. */
 		struct stat buf;
-		if (0 > stat(filename, &buf))
+		if (stat(filename, &buf))
 			continue;
 
 		/* If the file existed before building, remove it only if it now has a
@@ -655,7 +600,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	/*
 	 * Check whether executor has to be built
 	 */
-
+	// TODO put timestamp code in own function
 	timestamps_old_new= (Timestamp *)
 		realloc(timestamps_old, sizeof(timestamps_old[0]) * hash_deps.size());
 	if (!timestamps_old_new) {
@@ -1281,4 +1226,46 @@ void File_Executor::executors_remove(size_t index)
 		executors_by_pid_value + index + 1,
 		sizeof(*executors_by_pid_value) * (executors_by_pid_size - index - 1));
 	-- executors_by_pid_size;
+}
+
+void File_Executor::check_file_was_built(
+	Hash_Dep hash_dep,
+	shared_ptr <const Place_Target> place_target)
+{
+	const char *filename= hash_dep.get_name_c_str_nondynamic();
+	struct stat buf;
+	if (stat(filename, &buf)) {
+		bits |= B_MISSING;
+		bits &= ~B_EXISTING;
+		place_target->place <<
+			fmt("file %s was not built by command", show(hash_dep));
+		*this << "";
+		raise(ERROR_BUILD);
+	}
+
+	warn_future_file(&buf, filename, place_target->place, "after execution of command");
+
+	/* Check that file is not older that Stu startup */
+	Timestamp timestamp_file(&buf);
+	if (! timestamp.defined() || timestamp < timestamp_file)
+		timestamp= timestamp_file;
+	if (timestamp_file >= Timestamp::startup) return;
+	/* The target is older than Stu startup */
+
+	/* Check whether the file is actually a symlink, in which case we ignore that
+	 * error */
+	if (0 > lstat(filename, &buf)) {
+		place_target->place << format_errno(show(hash_dep));
+		raise(ERROR_BUILD);
+	}
+	if (S_ISLNK(buf.st_mode))
+		return;
+	place_target->place
+		<< fmt("timestamp of file %s after execution of its command is older than %s startup",
+			show(hash_dep), dollar_zero)
+		<< fmt("timestamp of %s is %s", show(hash_dep), timestamp_file.format())
+		<< fmt("startup timestamp is %s", Timestamp::startup.format());
+	*this << "";
+	explain_startup_time();
+	raise(ERROR_BUILD);
 }

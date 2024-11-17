@@ -69,6 +69,7 @@ public:
 		return this->t.tv_sec < that.t.tv_sec ||
 			(this->t.tv_sec == that.t.tv_sec && this->t.tv_nsec < that.t.tv_nsec);
 	}
+	bool operator>=(const Timestamp &that) const { return !(*this < that); }
 
 	string format() const {
 		assert(defined());
@@ -133,6 +134,7 @@ public:
 		assert(that.defined());
 		return this->t < that.t;
 	}
+	bool operator>=(const Timestamp &that) const { return !(*this < that); }
 
 	string format() const { return frmt("%ld", (long) t); }
 

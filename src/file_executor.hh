@@ -139,6 +139,11 @@ private:
 		Hash_Dep &hash_dep,
 		Executor *parent,
 		bool &rule_not_found);
+	bool start(
+		shared_ptr <const Dep> dep_link,
+		Proceed &proceed,
+		pid_t &pid,
+		const std::map <string, string> &mapping);
 
 	static std::unordered_map <string, Timestamp> transients;
 	/* The timestamps for transient targets.  This container plays the role of the

@@ -1,5 +1,5 @@
 #
-# File_Executor::executor() and Dynamic_Executor::execute() are very similar.
+# File_Executor::execute() and Dynamic_Executor::execute() are very similar.
 # Refactor to only have the common bits in the subclasses of Executor.
 #
 
@@ -364,4 +364,8 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 # explain.cc/...:  Have codes for errors, and store the explanations in nicer places than
 # in functions in explain.cc.
+#
+
+#
+# Break up File_Executor::execute() into manageable functions.
 #

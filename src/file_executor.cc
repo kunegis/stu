@@ -576,7 +576,6 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	/*
 	 * Check whether executor has to be built
 	 */
-	// TODO put timestamp code in own function
 	timestamps_old_new= (Timestamp *)
 		realloc(timestamps_old, sizeof(timestamps_old[0]) * hash_deps.size());
 	if (!timestamps_old_new) {
@@ -615,7 +614,6 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		/* Now, set to B_MISSING when a file is found not to exist */
 
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
-			// TODO put into own function
 			const Hash_Dep &hash_dep= hash_deps[i];
 			if (! hash_dep.is_file())
 				continue;
@@ -836,55 +834,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		 * in which the job would failed to be clean up. */
 		Signal_Blocker sb;
 
-		// TODO put into own function
-		if (rule->is_copy) {
-
-			assert(rule->place_targets.size() == 1);
-			assert(! (rule->place_targets.front()->flags & F_TARGET_TRANSIENT));
-
-			string source= rule->filename.unparametrized();
-
-			/* If optional copy, don't just call 'cp' and
-			 * let it fail:  look up whether the source
-			 * exists in the cache */
-			if (rule->deps.at(0)->flags & F_OPTIONAL) {
-				Executor *executor_source_base=
-					executors_by_hash_dep.at(Hash_Dep(0, source));
-				assert(executor_source_base);
-				File_Executor *executor_source
-					= dynamic_cast <File_Executor *> (executor_source_base);
-				assert(executor_source);
-				if (executor_source->bits & B_MISSING) {
-					/* Neither the source file nor the target file
-					 * exist:  an error. */
-					rule->deps.at(0)->get_place()
-						<< fmt("source file %s in optional copy rule must exist",
-						       ::show(source));
-					*this << fmt("when target file %s does not exist",
-						     show(hash_deps.at(0)));
-					explain_missing_optional_copy_source();
-					raise(ERROR_BUILD);
-					done |= Done::from_flags(dep_link->flags);
-					assert(proceed == 0);
-					proceed |= P_ABORT | P_FINISHED;
-					goto ret;
-				}
-			}
-
-			pid= job.start_copy
-				(rule->place_targets[0]->place_name.unparametrized(),
-				 source);
-		} else {
-			pid= job.start
-				(rule->command->command,
-				 mapping,
-				 rule->redirect_index < 0 ? "" :
-				 rule->place_targets[rule->redirect_index]
-				 ->place_name.unparametrized(),
-				 rule->filename.unparametrized(),
-				 rule->command->place);
-		}
-
+		if (start(dep_link, proceed, pid, mapping)) goto ret;
 		TRACE("pid= %s", frmt("%jd", (intmax_t)pid));
 		assert(pid != 0 && pid != 1);
 		DEBUG_PRINT(frmt("execute: pid = %jd", (intmax_t) pid));
@@ -1273,4 +1223,56 @@ void File_Executor::check_file_target_without_rule(
 			hide_out_message= true;
 		}
 	}
+}
+
+bool File_Executor::start(
+	shared_ptr <const Dep> dep_link,
+	Proceed &proceed,
+	pid_t &pid,
+	const std::map <string, string> &mapping)
+{
+	if (rule->is_copy) {
+		assert(rule->place_targets.size() == 1);
+		assert(! (rule->place_targets.front()->flags & F_TARGET_TRANSIENT));
+		string source= rule->filename.unparametrized();
+
+		/* If optional copy, don't just call 'cp' and let it fail:  Look up
+		 * whether the source exists in the cache */
+		if (rule->deps.at(0)->flags & F_OPTIONAL) {
+			Executor *executor_source_base=
+				executors_by_hash_dep.at(Hash_Dep(0, source));
+			assert(executor_source_base);
+			File_Executor *executor_source
+				= dynamic_cast <File_Executor *> (executor_source_base);
+			assert(executor_source);
+			if (executor_source->bits & B_MISSING) {
+				/* Neither the source file nor the target file exist:  an
+				 * error. */
+				rule->deps.at(0)->get_place()
+					<< fmt("source file %s in optional copy rule must exist",
+						::show(source));
+				*this << fmt("when target file %s does not exist",
+					show(hash_deps.at(0)));
+				explain_missing_optional_copy_source();
+				raise(ERROR_BUILD);
+				done |= Done::from_flags(dep_link->flags);
+				assert(proceed == 0);
+				proceed |= P_ABORT | P_FINISHED;
+				return true;
+			}
+		}
+
+		pid= job.start_copy(
+			rule->place_targets[0]->place_name.unparametrized(), source);
+	} else {
+		pid= job.start(
+			rule->command->command,
+			mapping,
+			rule->redirect_index < 0 ? "" :
+			rule->place_targets[rule->redirect_index]
+			->place_name.unparametrized(),
+			rule->filename.unparametrized(),
+			rule->command->place);
+	}
+	return false;
 }

@@ -3,6 +3,7 @@
 stu \- build automation
 .SH SYNOPSIS
 .B stu
+[ -q | -P | -I ]
 [ -f
 .I FILENAME
 ] [

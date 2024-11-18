@@ -21,7 +21,7 @@ const char OPTIONS[]= "0:ac:C:dEf:F:ghiIj:JkKm:M:n:o:p:PqsVxyYz";
 
 /* The following strings do not contain tabs, but only space characters. */
 const char HELP[]=
-	"Usage: " PACKAGE " [-f FILENAME] [OPTION]... [TARGET]...\n"
+	"Usage: " PACKAGE " [ -q | -P | -I ] [-f FILENAME] [OPTION]... [TARGET]...\n"
 	"By default, build the first target in the file 'main.stu'.\n"
 	"TARGET may include the special characters '@[]-'.\n"
 	"Options:\n"

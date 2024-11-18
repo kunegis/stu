@@ -4,7 +4,7 @@ NAME
        stu - build automation
 
 SYNOPSIS
-       stu [ -f FILENAME ] [ OPTION ]... [ TARGET ]...
+       stu [ -q | -P | -I ] [ -f FILENAME ] [ OPTION ]... [ TARGET ]...
 
 DESCRIPTION
        Stu  is  a  tool  for  build automation.  Like Make, it is used to call
@@ -1133,4 +1133,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.7.110                      November 2024                          STU(1)
+stu-2.7.111                      November 2024                          STU(1)

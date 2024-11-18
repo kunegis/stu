@@ -1,9 +1,4 @@
 #
-# Manpage:  the synopsis should show all "top-level" options, i.e., options that
-# change the overall behavior of Stu, such as -q/-P/-I.
-#
-
-#
 # Put all the option parsing stuff from main() into its own function in options.hh.
 #
 

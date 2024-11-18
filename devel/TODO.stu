@@ -1,9 +1,4 @@
 #
-# File_Executor::execute() and Dynamic_Executor::execute() are very similar.
-# Refactor to only have the common bits in the subclasses of Executor.
-#
-
-#
 # Manpage:  the synopsis should show all "top-level" options, i.e., options that
 # change the overall behavior of Stu, such as -q/-P/-I.
 #

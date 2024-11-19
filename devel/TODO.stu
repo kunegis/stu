@@ -1,8 +1,4 @@
 #
-# Put all the option parsing stuff from main() into its own function in options.hh.
-#
-
-#
 # Maybe:  merge Style and Rendering into a single bitmask.
 #
 

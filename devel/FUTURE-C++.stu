@@ -16,6 +16,11 @@
 #
 
 #
+# (C++20) TRACE_FUNCTION: have optional parameter(s) to pass arguments of the function, instead of
+# outputting them on a separate line.
+#
+
+#
 # Use Assume (C++23).
 #
 

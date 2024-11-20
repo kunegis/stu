@@ -1,10 +1,57 @@
 #
-# Maybe:  merge Style and Rendering into a single bitmask.
+# sh/tty:  Also test the case where stdout is a tty and stderr is not, and vice
+# versa.
 #
 
 #
-# TRACE_FUNCTION: have optional parameter(s) to pass arguments of the function, instead of
-# outputting them on a separate line.
+# Try out further sanitizers (some may need a newer GCC)
+#    -fsanitize=address // not used because of false positives (due to Execution caching)
+#    -fsanitize=leak    // (Execution caching)
+#    <others>
+#
+
+#
+# Try -fhardened.
+#
+
+#
+# Try -fvisibility=hidden
+#
+
+#
+# Try -fstack-protector[-all]
+#
+
+#
+# Tests for long-trivial that fail because the -t flag is not passed through transient
+# targets, but should.
+#
+
+A: @x { touch A ; }  @x: -t C;
+A: @x { touch A ; }  @x: [-t B]; B={C}
+A: @x { touch A ; }  @x: -t [B]; B={C}
+A: @x { touch A ; }  @x: [B]; B = {-t C}
+
+#
+# Dep and other classes:  use std::enable_shared_from_this and turn static functions into
+# member functions.  Some functions such as Dep::clone() should be member functions but
+# are static at the moment because we need to transform THIS into a shared_ptr.
+#
+
+#
+# gettimeofday() has been deprecated by POSIX.  Find an alternative.
+#
+
+#
+# "set -o pipefail" is in POSIX 2024.
+#
+
+#
+# "sed" with "-E" argument is in POSIX 2024.
+#
+
+#
+# Have an option to disable the version check.
 #
 
 #
@@ -41,7 +88,7 @@ C:  -L { ln -s ... B ; }
 #
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
 # forbidden as the first character in unquoted names.  Needs a new type for
-# unparsed targets.
+# unparsed targets.  This is very similar to supporting environment variables.
 #
 
 #
@@ -92,18 +139,6 @@ C:  -L { ln -s ... B ; }
 
 #
 # Test make install using Docker.
-#
-
-#
-# sh/tty:  Also test the case where stdout is a tty and stderr is not, and vice
-# versa.
-#
-
-#
-# Try out further sanitizers (some may need a newer GCC)
-#    -fsanitize=address // not used because of false positives (due to Execution caching)
-#    -fsanitize=leak    // (Execution caching)
-#    <others>
 #
 
 #
@@ -277,30 +312,8 @@ A: -e B
 #
 
 #
-# Try -fhardened.
-#
-
-#
-# Try -fvisibility=hidden
-#
-
-#
-# Try -fstack-protector[-all]
-#
-
-#
 # Deprecate the -d option.
 #
-
-#
-# Tests for long-trivial that fail because the -t flag is not passed through transient
-# targets, but should.
-#
-
-A: @x { touch A ; }  @x: -t C;
-A: @x { touch A ; }  @x: [-t B]; B={C}
-A: @x { touch A ; }  @x: -t [B]; B={C}
-A: @x { touch A ; }  @x: [B]; B = {-t C}
 
 #
 # Combining -n/-t and -o
@@ -311,32 +324,6 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # Test installing the auto-generated .deb from Github.
-#
-
-#
-# Dep and other classes:  use std::enable_shared_from_this and turn static functions into
-# member functions.  Some functions such as Dep::clone() should be member functions but
-# are static at the moment because we need to transform THIS into a shared_ptr.
-#
-
-#
-# stu.cc:  Don't include all .cc files.  Instead, pass src/*.cc to the compiler.
-#
-
-#
-# gettimeofday() has been deprecated by POSIX.  Find an alternative.
-#
-
-#
-# "set -o pipefail" is in POSIX 2024.
-#
-
-#
-# "sed" with "-E" argument is in POSIX 2024.
-#
-
-#
-# Have an option to disable the version check.
 #
 
 #

@@ -150,17 +150,13 @@ void print_error_silenceable(const char *text);
 /* A message on STDERR that is made silent by the silent option (-s) */
 
 class Place
-/*
- * Denotes a position in Stu source code.  This is either in a file or in
- * arguments/options to Stu.  A Place object can also be empty, which is used as
- * the "uninitialized" value.
- *
- * Places are used to show the location of an error on standard error output.
- */
+/* Denotes a position in Stu source code.  This is either in a file or in
+ * arguments/options to Stu.  A Place object can also be empty, which is used as the
+ * "uninitialized" value. */
 {
 public:
 	enum class Type {
-		EMPTY,        /* Empty "Place" object */
+		EMPTY,
 		INPUT_FILE,   /* In a file, with line/column numbers */
 		ARGUMENT,     /* Command line argument (outside options) */
 		OPTION,       /* In an option */

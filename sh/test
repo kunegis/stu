@@ -193,8 +193,7 @@ time_begin=$(sh/now)
 ret=0
 count_succeed=0
 count_failed=0
-preload_cc=log/preload.cc
-preload_so=log/preload.so
+preload_so=$(pwd)/bin/preload.so
 unset STU_OPTIONS
 
 mkdir -p log
@@ -297,11 +296,8 @@ do
 		fi
 		if [ -r PRELOAD.cc ]; then
 			echo >&7 "PRELOAD.cc found; cc=$preload_cc so=$preload_so"
-			rm -f "../../$preload_cc" "../../$preload_so" || exit 2
-			{ echo '#line 1' \"tests/"$file"/PRELOAD.cc\" && cat PRELOAD.cc ; } >"../../$preload_cc" || exit 2
-			$(cat ../../conf/CXX) $(cat ../../conf/CXXFLAGS) -shared -fpic \
-				"../../$preload_cc" -o "../../$preload_so" || exit 2
-			CMDPREFIX="LD_PRELOAD=../../$preload_so $CMDPREFIX"
+			CMDPREFIX="$(cd ../.. && sh/ccpreload tests/"$file"/PRELOAD.cc $preload_so) $CMDPREFIX"
+			[ "$?" = 0 ] || exit 2
 		fi
 
 		# Execute command

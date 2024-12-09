@@ -1,0 +1,41 @@
+#! /bin/sh
+#
+# Create a shared object for preloading
+#
+# INVOCATION
+#	$0 $SOURCE $FILE_SO
+#
+# PARAMETERS
+#	$SOURCE      Filename of C++ source
+#	$FILE_SO     Filename of .so to be created
+#
+# STDOUT
+#	"LD_PRELOAD=..." setting
+#
+
+set -e
+
+[ $# = 2 ] || { echo >&2 "*** $0: Invocation" ; exit 2 ; }
+
+SOURCE=$1
+FILE_SO=$2
+CXXFLAGS_PRELOAD="-shared -fpic"
+FILE_CC=${TMPDIR:-/tmp}/ccpreload.$$.cc
+
+clean()
+{
+	rm -f -- "$FILE_CC" "$FILE_SO"
+}
+
+trap 'rm -f -- "$FILE_CC"' 0
+
+clean
+
+{
+	echo '#line 1' \"$SOURCE\"
+	cat -- "$SOURCE"
+} >"$FILE_CC"
+
+$(cat conf/CXX) $(cat conf/CXXFLAGS) $CXXFLAGS_PRELOAD "$FILE_CC" -o "$FILE_SO"
+
+printf '%s\n' "LD_PRELOAD=$FILE_SO"

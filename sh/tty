@@ -3,7 +3,7 @@
 # Simulate a TTY:  Execute the given COMMAND as if in a TTY.
 #
 # INVOCATION
-#	sh/tty COMMAND
+#	sh/tty COMMAND...
 #
 # REQUIREMENTS
 #	expect

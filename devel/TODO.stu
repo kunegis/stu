@@ -1,6 +1,7 @@
 #
 # sh/tty:  Also test the case where stdout is a tty and stderr is not, and vice
 # versa.
+# * use a mock isatty
 #
 
 #

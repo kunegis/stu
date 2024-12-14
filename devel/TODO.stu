@@ -1,7 +1,5 @@
 #
-# sh/tty:  Also test the case where stdout is a tty and stderr is not, and vice
-# versa.
-# * use a mock isatty
+# * Write preload for fork
 #
 
 #
@@ -342,4 +340,8 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # Break up File_Executor::execute() into manageable functions.
+#
+
+#
+# Make sure all environment variables are macros.
 #

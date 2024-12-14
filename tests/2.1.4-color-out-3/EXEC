@@ -1,10 +1,16 @@
 #! /bin/sh
 
+preload_tty_so=$(cd ../.. ; pwd)/bin/preload-tty.so
+CMDPREFIX_TTY="TERM=xterm"
+LD_PRELOAD_VALUE_TTY="$preload_tty_so"
+
 set -e
+
+( cd ../.. ; sh/ccpreload src/preload-tty.cc bin/preload-tty.so ; ) || exit 2
 
 touch A
 
-../../sh/tty ../../bin/stu.test A >list.all
+eval $CMDPREFIX_TTY LD_PRELOAD=$LD_PRELOAD_VALUE_TTY ../../bin/stu.test A \>list.all 2\>\&1
 
 cmp -s list.all stdall || {
 	echo >&2 "*** Output"

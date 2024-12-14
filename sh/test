@@ -189,11 +189,19 @@ s,^\([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9]\)\.\([0-9][0-9][0-9]\)\([-.]..*\
 	' | sort | sed -e 's,^[^ ][^ ]* \(..*\)$,\1,'
 }
 
+preload_prefix()
+{
+	value=$(printf '%s\n' "$1" | sed -e 's,^:,,;s,:$,,')
+	printf 'LD_PRELOAD=%s\n' "$value"
+}
+
 time_begin=$(sh/now)
 ret=0
 count_succeed=0
 count_failed=0
-preload_so=$(pwd)/bin/preload.so
+preload_so=$PWD/bin/preload.so
+preload_tty_so=$PWD/bin/preload-tty.so
+CMDPREFIX_TTY="TERM=xterm"
 unset STU_OPTIONS
 
 mkdir -p log
@@ -218,6 +226,8 @@ else
 		ln -s stu.debug bin/stu.test || exit 2
 	fi
 fi
+
+sh/ccpreload src/preload-tty.cc bin/preload-tty.so || exit 2
 
 cd tests
 
@@ -287,22 +297,23 @@ do
 		fi
 	else
 		CMD=
+		CMDPREFIX=
+		LD_PRELOAD_VALUE=
 		if [ -r CMD ]; then
 			CMD=$(sed -e '/^[[:space:]]*$/d' <CMD)
 		fi
-		CMDPREFIX=
 		if [ -r CMDPREFIX ]; then
 			CMDPREFIX=$(sed -e '/^[[:space:]]*$/d' <CMDPREFIX)
 		fi
 		if [ -r PRELOAD.cc ]; then
 			echo >&7 "PRELOAD.cc found; cc=$preload_cc so=$preload_so"
-			CMDPREFIX="$(cd ../.. && sh/ccpreload tests/"$file"/PRELOAD.cc $preload_so) $CMDPREFIX"
-			[ "$?" = 0 ] || exit 2
+			(cd ../.. && sh/ccpreload tests/"$file"/PRELOAD.cc $preload_so) || exit 2
+			LD_PRELOAD_VALUE="$LD_PRELOAD_VALUE:$preload_so"
 		fi
 
 		# Execute command
-		echo >&7 $CMDPREFIX ../../bin/stu.test "$CMD"
-		eval $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err
+		echo >&7 $(preload_prefix $LD_PRELOAD_VALUE) $CMDPREFIX ../../bin/stu.test "$CMD"
+		eval $(preload_prefix $LD_PRELOAD_VALUE) $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err
 		exitstatus_actual=$?
 
 		if [ "$TEST_DEBUG" -ge 2 ] ; then
@@ -459,18 +470,19 @@ do
 		# TTYSTDOUTERR
 		if { [ -r TTYSTDOUTERR ] || [ -r EXITSTATUS ]; } && ! [ -r NOTTY ]; then
 			../../sh/rm_tmps || exit 1
-			echo >&7 $CMDPREFIX ../../bin/stu.test "$CMD" '[TTY]'
-			eval $CMDPREFIX ../../sh/tty ../../bin/stu.test $CMD \>list.def.out
+			LD_PRELOAD_VALUE_TTY="$LD_PRELOAD_VALUE:$preload_tty_so"
+			echo >&7 $CMDPREFIX_TTY $(preload_prefix $LD_PRELOAD_VALUE_TTY) $CMDPREFIX \
+				../../bin/stu.test "$CMD"
+			eval $CMDPREFIX_TTY $(preload_prefix $LD_PRELOAD_VALUE_TTY) $CMDPREFIX \
+				../../bin/stu.test $CMD \>list.def.out 2\>\&1
 			exitstatus_actual=$?
 
-			# Exit code
 			if [ "$exitstatus_actual" != "$exitstatus_correct" ]; then
 				test_fail "Test '$file' should have returned $exitstatus_correct, but returned $exitstatus_actual [TTY]"
 			else
 				echo >&7 "EXITSTATUS:TTY...$exitstatus_correct correct"
 			fi
 
-			# correct output
 			if [ -r TTYSTDOUTERR ]; then
 				if cmp -s list.def.out TTYSTDOUTERR ; then
 					echo >&7 "TTYSTDOUTERR...correct"
@@ -481,7 +493,7 @@ do
 			fi
 
 			if [ -r EXITSTATUS ] && ! [ -r NOCOLOR ] ; then
-				if ! grep -qE -e '' list.def.out ; then
+				if ! grep -q -E -e '' list.def.out ; then
 					test_fail "Expected ESC in TTY output because EXITSTATUS exists"
 					echo >&2 output:
 					echo >&2 _________

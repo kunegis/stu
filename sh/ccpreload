@@ -9,9 +9,6 @@
 #	$SOURCE      Filename of C++ source
 #	$FILE_SO     Filename of .so to be created
 #
-# STDOUT
-#	"LD_PRELOAD=..." setting
-#
 
 set -e
 
@@ -37,5 +34,3 @@ clean
 } >"$FILE_CC"
 
 $(cat conf/CXX) $(cat conf/CXXFLAGS) $CXXFLAGS_PRELOAD "$FILE_CC" -o "$FILE_SO"
-
-printf '%s\n' "LD_PRELOAD=$FILE_SO"

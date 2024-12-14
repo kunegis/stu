@@ -12,6 +12,12 @@
 #	codes.  Can for instance be piped into less -R to see all.
 #
 
+preload_tty_so=$PWD/bin/preload-tty.so
+CMDPREFIX_TTY="TERM=xterm"
+LD_PRELOAD_VALUE_TTY="$preload_tty_so"
+
+sh/ccpreload src/preload-tty.cc bin/preload-tty.so || exit 2
+
 rm -f bin/stu.test || exit 2
 if [ "$NDEBUG" ] ; then
 	ln -s stu bin/stu.test || exit 2
@@ -29,9 +35,7 @@ fi
 
 for file in $tests
 do
-	# Remove optional 'tests/' prefix
 	file=$(echo "$file" | sed -e 's,^tests/,,')
-
 	if [ ! -d "$file" ]; then
 		echo >&2 "$0: *** '$file' is not a directory"
 		error=1
@@ -41,33 +45,23 @@ do
 	fi
 
 	cd "$file"
-
-	if [ -r EXITSTATUS ] && ! [ -r NOTTY ]; then
-
+	if [ -r EXITSTATUS ] && ! [ -r NOTTY ] && ! [ -r PRELOAD.cc ] ; then
 		../../sh/rm_tmps || exit 2
-
 		CMD=
 		if [ -r CMD ]; then
 			CMD=$(sed -e '/^[[:space:]]*$/d' <CMD)
 		fi
-
 		echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 		echo "~~~~~~~~~~~ $file"
 		echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 		echo
-
-		# 'sh/tty' makes sure that Stu sees stderr as a TTY,
-		# and outputs both stdout and stderr of Stu to stdout.
-		eval ../../sh/tty ../../bin/stu.test $CMD
-
+		eval $CMDPREFIX_TTY LD_PRELOAD=$LD_PRELOAD_VALUE_TTY \
+			../../bin/stu.test "$CMD" 2\>\&1
 		echo
-
 		../../sh/rm_tmps || exit 2
 	fi
-
 	cd ..
 done
 
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-
 exit 0

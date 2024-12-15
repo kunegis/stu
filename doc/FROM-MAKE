@@ -5,6 +5,8 @@ A common pattern is to have a Makefile, and converting it to a Stu
 script.  Here are some things to keep in mind for migrating from Make to
 Stu.
 
+== Avoid Variables ==
+
 * Instead of Make variables, use files or transient targets
 
 Instead of
@@ -17,6 +19,8 @@ use
 
 and then just access the file 'DATASETS'.
 
+== Transient Targets ==
+
 Instead of
 
 FILES = aaa.h bbb.h ccc.h
@@ -28,9 +32,10 @@ Use
 * Phony targets are called transient targets, and they have their own
   namespace, using the '@' prefix.
 
-* Use the options -o, -t and -p judiciously
+== Other ==
 
-* Never generate Stu source code automatically.
+* Use the options -o, -t and -p judiciously
+* Never generate Stu source code automatically
 * Never call Stu recursively
-* Use the -E option to get explanations for error messages.  You can set
-  STU_OPTIONS in the environment to '-E' to set this persistently.
+* Use the -E option to get explanations for error messages.  You can set STU_OPTIONS in
+  the environment to '-E' to set this persistently.

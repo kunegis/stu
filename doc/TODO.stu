@@ -1,8 +1,4 @@
 #
-# * Write preload for fork
-#
-
-#
 # Try out further sanitizers (some may need a newer GCC)
 #    -fsanitize=address // not used because of false positives (due to Execution caching)
 #    -fsanitize=leak    // (Execution caching)
@@ -344,4 +340,8 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # Make sure all environment variables are macros.
+#
+
+#
+# Check what -static does.
 #

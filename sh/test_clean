@@ -113,7 +113,7 @@ check_double_hash()
 {
 	find . -type f -a \( -name '*.stu' -o -perm -u+x -o -name Makefile \) -a \! -name '*~' \
 	     -a \! -path './.git*' -a \! -path './bin/stu.*' -a \! -path './bin/stu' \
-	     -a \! -path './config*' -a \! -path './build-aux/*' -a \! -path devel/TODO.stu |
+	     -a \! -path './config*' -a \! -path './build-aux/*' -a \! -path doc/TODO.stu |
 		xargs grep -F -n '#''#' && {
 		echo >&2 "*** Shell scripts, makefiles and Stu scripts must not contain #""#"
 		return 1

@@ -50,7 +50,7 @@ In addition, Stu uses the following features:
   standardized.
 
 If you want to develop Stu (or run the tests), there are more dependencies, see
-devel/DEVEL.
+doc/DEVELOPMENT.
 
 ==== COMPILATION OPTIONS ====
 

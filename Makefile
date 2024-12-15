@@ -14,7 +14,8 @@ test: \
     log/test_unit.debug \
     log/test_clean \
     log/test_unit.ndebug \
-    log/test_clean_last
+    log/test_clean_last \
+    sani
 .PHONY: all clean install check test cov prof sani analyzer
 
 conf/CXX: sh/configure
@@ -34,7 +35,7 @@ CXXFLAGS_DEBUG= \
     -Wno-pessimizing-move -Wsuggest-override \
     -D_GLIBCXX_DEBUG
 CXXFLAGS_SANI= \
-    -pg -O2 -Werror -Wno-unused-result -fsanitize=undefined \
+    -ggdb -O2 -Werror -Wno-unused-result -fsanitize=undefined \
     -fsanitize-undefined-trap-on-error
 CXXFLAGS_CDEBUG=   -O0 -D_GLIBCXX_DEBUG -w
 CXXFLAGS_SNDEBUG=   -DNDEBUG -O2 -fwhole-program

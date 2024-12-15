@@ -9,7 +9,7 @@ This is information for hacking Stu itself.
 
 'CODING' gives the coding standards used in Stu.
 
-==== SETUP ====
+== SETUP ==
 
 For development, use 'make test' (it works only with GCC).
 
@@ -23,21 +23,21 @@ Version logic (see 'NEWS' for an explanation of version numbers):
 * Increment the major version number when backward-incompatible new syntax is introduced
   (which we try to avoid)
 
-==== DEBUG VERSION ====
+== DEBUG VERSION ==
 
 The file 'bin/stu.debug' is the Stu executable with all debugging turned on, i.e., with
 debugging symbols, all warnings enabled, etc.  The exact flags for compiling this are set
 in the Makefile, and you might have to tweak these flags if you are developing Stu on
 another setup than the authors'.
 
-The debug version also enables tracing; see src/trace.hh.
+The debug version enables tracing, which is very useful for debugging; see src/trace.hh.
 
-==== UNIT TESTS ====
+== UNIT TESTS ==
 
 Unit testing is described in 'sh/test'.
 
-The command 'make test' will also execute all unit tests.  This takes about
-ten minutes.
+The command 'make test' will also execute all unit tests, as well as sanitizer tests.
+This takes about fifteen minutes.
 
 When using another compiler than GCC, you can use 'make check' insteads, which disables
 warnings and doesn't run code cleanliness tests.  But when contributing to Stu, please run
@@ -48,7 +48,7 @@ failure.
 
 If you run the tests and they fail, report that to Jérôme Kunegis <kunegis@gmail.com>.
 
-==== REQUIREMENTS ====
+== REQUIREMENTS ==
 
 Running 'make check' has more requirements than just compiling Stu:
 * The unit tests assume that the file system supports UTF-8 filenames.  Stu will work
@@ -57,7 +57,7 @@ Running 'make check' has more requirements than just compiling Stu:
 * LD_PRELOAD must work
 
 Running 'make test' has the following requirements:
-* g++
+* -fsanitize=undefined must work
 
 Running 'make cov' has the following requirements:
 * lcov

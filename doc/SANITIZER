@@ -1,0 +1,5 @@
+At the moment, a single sanitizer can be used, -fsanitize=undefined.
+
+Use "make sani", which is a subtarget of "make test".
+
+We can't use memory leak sanitizers because of the cached Execution objects.

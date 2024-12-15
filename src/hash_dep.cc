@@ -41,7 +41,8 @@ string Hash_Dep::string_from_word(Flags flags)
 	assert(flags < 1 << C_WORD);
 	char ret[sizeof(word_t) + 1];
 	ret[sizeof(word_t)]= '\0';
-	*(word_t *)ret= (word_t)flags;
+	word_t w= (word_t)flags;
+	memcpy(ret, &w, sizeof(word_t)); /* Assigning it directly is undefined behavior */
 	return string(ret, sizeof(word_t));
 }
 

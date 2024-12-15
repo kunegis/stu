@@ -1,16 +1,4 @@
 #
-# Try -fhardened.
-#
-
-#
-# Try -fvisibility=hidden
-#
-
-#
-# Try -fstack-protector[-all]
-#
-
-#
 # Tests for long-trivial that fail because the -t flag is not passed through transient
 # targets, but should.
 #

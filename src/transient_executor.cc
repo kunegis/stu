@@ -8,27 +8,61 @@ Transient_Executor::~Transient_Executor()
 
 Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 {
+	TRACE_FUNCTION(show_trace(dep_link));
+	TRACE("done= %s", done.show());
 	Debug debug(this);
+
 	Proceed proceed= execute_phase_A(dep_link);
 	assert(proceed);
-	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
+	if (proceed & P_ABORT) {
+		assert(proceed & P_FINISHED);
+		done |= Done::from_flags(dep_link->flags);
 		return proceed;
 	}
-	if (proceed & P_FINISHED) {
-		is_finished= true;
+	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
+		assert((proceed & P_FINISHED) == 0);
+		return proceed;
 	}
 
-	return proceed;
+	assert(proceed == P_FINISHED);
+	done |= Done::from_flags(dep_link->flags & (F_PERSISTENT | F_OPTIONAL));
+
+	if (finished(dep_link->flags)) {
+		done |= Done::from_flags(dep_link->flags);
+		return proceed |= P_FINISHED;
+	}
+
+	Proceed proceed_B= execute_phase_B(dep_link);
+	TRACE("proceed_B= %s", show(proceed_B));
+	assert(proceed_B);
+	if (proceed_B & P_ABORT) {
+		assert(proceed_B & P_FINISHED);
+		done |= Done::from_flags(dep_link->flags);
+		return proceed_B;
+	}
+	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
+		assert((proceed_B & P_FINISHED) == 0);
+		return proceed_B;
+	}
+
+	assert(proceed_B == P_FINISHED);
+
+	done |= Done::from_flags(dep_link->flags);
+	return proceed_B |= P_FINISHED;
 }
 
 bool Transient_Executor::finished() const
 {
-	return is_finished;
+	return done.is_all();
 }
 
-bool Transient_Executor::finished(Flags) const
+bool Transient_Executor::finished(Flags flags) const
 {
-	return is_finished;
+	TRACE_FUNCTION();
+	TRACE("flags= %s", show(flags));
+	bool ret= done.is_done_from_flags(flags);
+	TRACE("ret= %s", frmt("%d", ret));
+	return ret;
 }
 
 Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
@@ -37,7 +71,7 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 				       shared_ptr <const Rule> param_rule_,
 				       std::map <string, string> &mapping_parameter_,
 				       int &error_additional)
-	:  Executor(param_rule_), rule(rule_), is_finished(false)
+	:  Executor(param_rule_), rule(rule_)
 {
 	swap(mapping_parameter, mapping_parameter_);
 
@@ -54,7 +88,7 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 	parents[parent]= dep_link;
 	if (error_additional) {
 		*this << "";
-		is_finished= true;
+		done.set_all();
 		parents.erase(parent);
 		raise(error_additional);
 		return;
@@ -63,7 +97,7 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 	if (rule == nullptr) {
 		/* There must be a rule for transient targets (as opposed to file
 		 * targets), so this is an error. */
-		is_finished= true;
+		done.set_all();
 		*this << fmt("no rule to build %s", show(hash_dep));
 		parents.erase(parent);
 		error_additional |= ERROR_BUILD;

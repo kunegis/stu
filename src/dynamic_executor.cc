@@ -66,16 +66,17 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 	Debug debug(this);
 	bool need_build;
 
-	Proceed proceed= execute_phase_A(dep_link), proceed_B;
-	assert(proceed);
+	Proceed proceed= execute_phase_A(dep_link);
+	TRACE("proceed= %s", show(proceed));
+	assert(is_valid(proceed));
 	if (proceed & P_ABORT) {
 		assert(proceed & P_FINISHED);
 		done |= Done::from_flags(dep_link->flags);
-		goto ret;
+		return proceed;
 	}
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		assert((proceed & P_FINISHED) == 0);
-		goto ret;
+		return proceed;
 	}
 
 	assert(proceed & P_FINISHED);
@@ -84,39 +85,34 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	if (finished(dep_link->flags)) {
 		assert(! (proceed & P_WAIT));
-		proceed |= P_FINISHED;
-		goto ret;
+		return proceed |= P_FINISHED;
 	}
 
 	need_build= (bits & B_NEED_BUILD) != 0 || dep_link->flags & F_PHASE_B;
 	TRACE("need_build= %s", frmt("%d", need_build));
 	if (! need_build) {
 		done |= Done::from_flags(dep_link->flags);
-		proceed |= P_FINISHED;
-		goto ret;
+		return proceed |= P_FINISHED;
 	}
 
-	proceed_B= execute_phase_B(dep_link);
-	assert(proceed_B);
+	Proceed proceed_B= execute_phase_B(dep_link);
+	assert(is_valid(proceed_B));
 	proceed |= proceed_B;
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		assert((proceed & P_FINISHED) == 0);
-		goto ret;
+		return proceed;
 	}
 	if (proceed & P_FINISHED) {
 		done |= Done::from_flags(dep_link->flags);
-		goto ret;
+		return proceed;
 	}
 
 	if (finished(dep_link->flags)) {
 		assert(! (proceed & P_WAIT));
-		proceed |= P_FINISHED;
-		goto ret;
+		return P_FINISHED;
 	}
 
- ret:
-	TRACE("proceed= %s", show_proceed(proceed));
-	assert(proceed);
+	assert(is_valid(proceed));
 	return proceed;
 }
 

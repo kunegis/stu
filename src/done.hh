@@ -2,14 +2,12 @@
 #define DONE_HH
 
 /*
- * Denotes which "aspects" of an execution have been done.  Each bit that is set
+ * Denotes which aspects of an execution have been done.  Each bit that is set
  * represents one aspect that was done.  When an executor is invoked with a
  * certain set of flags, all flags *not* passed will be set when the execution
  * is finished.  This is a different way to encode the three placed flags.  The
  * first two flags correspond to the first two flags (persistent and optional).
  * These two are duplicated in order to accommodate trivial dependencies.
- * Only the first C_PLACED flags are used; the other bits have an unspecified
- * value.
  */
 
 #include "flags.hh"

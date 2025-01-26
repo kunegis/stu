@@ -21,12 +21,7 @@ Trace::Trace(const char *function_name, const char *filename, int line, Object o
 		object.s.empty() ? "" : object.s.c_str(),
 		object.s.empty() ? "" : ".",
 		function_name);
-	if (fprintf(file, print_format,
-			filename_stripped, line,
-			text.c_str()) == EOF) {
-		perror("Trace: fprintf");
-		exit(ERROR_FATAL);
-	}
+	print(file, filename, line, text.c_str());
 	padding += padding_one;
 	prefix= padding;
 }
@@ -102,9 +97,19 @@ void Trace::trace(const char *filename, int line, Args... args)
 	string prefix= get_current()->get_prefix();
 	string text= fmt(args...);
 	string full_line= prefix + text;
+	print(file, filename, line, full_line.c_str());
+}
+
+void Trace::print(FILE *file, const char *filename, int line, const char *text)
+{
+	assert(line > 0);
+	int digits= 0;
+	for (int n= line; n; n /= 10) ++digits;
+	int spaces= place_len - strlen(filename) - digits;
 	if (fprintf(file, Trace::print_format,
-			Trace::strip_dir(filename), line,
-			full_line.c_str()) == EOF) {
+			filename, line,
+			spaces, "",
+			text) < 0) {
 		perror("fprintf(trace_file)");
 		exit(ERROR_FATAL);
 	}

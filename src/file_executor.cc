@@ -862,7 +862,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (order == Order::RANDOM && options_jobs > 0)
 		proceed |= P_CALL_AGAIN;
  ret:
-	TRACE("proceed= %s", show_proceed(proceed));
+	TRACE("proceed= %s", show(proceed));
 	return proceed;
 }
 

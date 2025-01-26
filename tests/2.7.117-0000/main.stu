@@ -1,0 +1,8 @@
+A: @x
+{
+	cp C A
+}
+
+@x: -t C;
+
+C = {CORRECT}

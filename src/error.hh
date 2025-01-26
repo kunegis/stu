@@ -61,7 +61,7 @@
  * "dynamic dependency [X] must not have input redirection using "<"", or when referring
  * specifically to a dependency with respect to a target.
  *
- * But remember that in general it is better to state what what expected in the syntax
+ * But remember that in general it is better to state what was expected in the syntax
  * than to say that what was encountered cannot be used.  For instance, say "expected a
  * filename" instead of "filename must not be empty".  This cannot always be done, so
  * "must not" is sometimes used.

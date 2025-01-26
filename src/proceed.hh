@@ -2,7 +2,7 @@
 #define PROCEED_HH
 
 /*
- * This is used as the return value of the functions Executor::execute*().
+ * The return value of the functions Executor::execute*().
  */
 
 typedef unsigned Proceed;
@@ -30,8 +30,18 @@ enum {
 	P_COUNT      = 4
 };
 
+bool is_valid(Proceed proceed)
+{
+	return
+		proceed == P_WAIT ||
+		proceed == P_CALL_AGAIN ||
+		proceed == (P_WAIT | P_CALL_AGAIN) ||
+		proceed == P_FINISHED ||
+		proceed == (P_FINISHED | P_ABORT);
+}
+
 #ifndef NDEBUG
-string show_proceed(Proceed proceed);
+string show(Proceed proceed);
 #endif
 
 #endif /* ! PROCEED_HH */

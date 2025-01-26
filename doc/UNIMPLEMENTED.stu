@@ -252,6 +252,12 @@ X= list.$(x).$(y).$(z) {...} # Arguments are available as environment variables.
 X= [B-dep.x.y.z] {}
 
 #
+# "cd".  All rules are interpreted relative to the given directory.
+#
+
+--cd DIRECTORY { ...<rules>..... }
+
+#
 # Allow plugins for specialized targets, e.g. files within archives, or "special" data
 # that is not a file.
 #

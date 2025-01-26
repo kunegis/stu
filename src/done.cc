@@ -8,6 +8,8 @@ bool Done::is_done_from_flags(Flags flags) const
 
 Done Done::from_flags(Flags flags)
 {
+	static_assert(F_PERSISTENT == 1 << 0);
+	static_assert(F_OPTIONAL   == 1 << 1);
 	return Done(
 		(~flags & (F_PERSISTENT | F_OPTIONAL))
 		* (1 | (flags & F_PHASE_B ? 4 : 0)));

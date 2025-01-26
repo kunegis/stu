@@ -7,7 +7,7 @@ constexpr const char *const proceed_names[]= {
 };
 static_assert(sizeof(proceed_names)/sizeof(proceed_names[0]) == P_COUNT);
 
-string show_proceed(Proceed proceed)
+string show(Proceed proceed)
 {
 	string ret;
 	for (int i= 0; i < P_COUNT; ++i) {

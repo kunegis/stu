@@ -275,7 +275,7 @@ do
 	do
 		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi
 		test_fail_fatal "Invalid file '$otherfile' in test directory"
-		continue
+		continue 2 # Continue outer loop
 	done
 
 	# The following will save:  list.def.out and list.def.err

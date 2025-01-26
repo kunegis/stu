@@ -4,6 +4,8 @@ set -e
 
 dorm() { rm -f a b a.c b.c CFLAGS LDFLAGS list.* ; }
 
+trap dorm EXIT
+
 dorm
 
 echo "== run A"
@@ -23,5 +25,3 @@ echo ___
 echo "== grep"
 ! grep -qF Compiling list.out
 grep -qF CFLAGS list.out
-
-dorm

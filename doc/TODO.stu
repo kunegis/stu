@@ -3,11 +3,6 @@
 # targets, but should.
 #
 
-A: @x { touch A ; }  @x: -t C;
-A: @x { touch A ; }  @x: [-t B]; B={C}
-A: @x { touch A ; }  @x: -t [B]; B={C}
-A: @x { touch A ; }  @x: [B]; B = {-t C}
-
 #
 # Dep and other classes:  use std::enable_shared_from_this and turn static functions into
 # member functions.  Some functions such as Dep::clone() should be member functions but
@@ -325,4 +320,14 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # Check what -static does.
+#
+
+#
+# Verbose mode with:
+# * ls-like output after each built file
+# * Number of files/targets built / to be built / etc. after each built file
+#
+
+#
+# Trace:  better configuration.  Make it possible to configure via a single environment variable.
 #

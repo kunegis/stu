@@ -46,7 +46,7 @@ private:
 	/* The instantiated file rule for this executor.  Not null. */
 
 	Timestamp timestamp_old;
-	bool is_finished;
+	Done done;
 
 	std::map <string, string> mapping_parameter;
 	/* Contains the parameters; is not used */

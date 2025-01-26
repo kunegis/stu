@@ -7,8 +7,8 @@
  * and therefore, the choice of which functions have tracing depends on which parts have
  * needed it in the past.
  *
- * To enable tracing for a trace class TRACE_ABC, set the environment variable
- * $STU_TRACE_ABC to:
+ * To enable tracing for the file src/<name>.cc, set the environment variable
+ * $STU_TRACE_<NAME> to:
  *	"log"     Write into the trace logfile (see name below)
  *	"stderr"  Write on stderr
  *	"off"     No tracing (same as variable not set)
@@ -34,7 +34,7 @@ public:
 	string trace_class;
 	FILE *file;
 	static std::map <string, FILE *> files;
-	static constexpr const char *print_format= "%21s:%-4d %s\n";
+	static constexpr const char *print_format= "%s:%d:%*s %s\n";
 
 	Trace(const char *function_name, const char *filename, int line, Object);
 	~Trace();
@@ -55,10 +55,12 @@ private:
 	static string padding;
 	static std::vector <Trace *> stack;
 	static FILE *file_log;
+	static constexpr int place_len= 30;
 	static constexpr const char *padding_one= "|   ";
 	static constexpr const char *trace_filename= "log/trace.log";
 
 	void init_file();
+	static void print(FILE *file, const char *filename, int line, const char *text);
 	static FILE *open_logfile(const char *filename);
 	static string class_from_filename(const char *filename);
 };

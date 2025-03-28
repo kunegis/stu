@@ -1,9 +1,4 @@
 #
-# Tests for long-trivial that fail because the -t flag is not passed through transient
-# targets, but should.
-#
-
-#
 # Dep and other classes:  use std::enable_shared_from_this and turn static functions into
 # member functions.  Some functions such as Dep::clone() should be member functions but
 # are static at the moment because we need to transform THIS into a shared_ptr.

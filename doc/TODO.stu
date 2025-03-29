@@ -1,8 +1,4 @@
 #
-# gettimeofday() has been deprecated by POSIX.  Find an alternative.
-#
-
-#
 # "set -o pipefail" is in POSIX 2024.
 #
 

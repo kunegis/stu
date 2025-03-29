@@ -77,16 +77,16 @@ void set_option_j(const char *value)
 
 void set_option_m(const char *value)
 {
-	if (!strcmp(value, "random"))  {
+	if (!strcmp(value, "random")) {
 		order= Order::RANDOM;
 		/* Use gettimeofday() instead of time() to get millisecond instead of
 		 * second precision */
-		struct timeval tv;
-		if (gettimeofday(&tv, nullptr) != 0) {
-			print_errno("gettimeofday");
+		struct timespec ts;
+		if (clock_gettime(CLOCK_REALTIME, &ts) < 0) {
+			print_errno("clock_gettime");
 			exit(ERROR_FATAL);
 		}
-		buffer_generator.seed(tv.tv_sec + tv.tv_usec);
+		buffer_generator.seed(ts.tv_sec + ts.tv_nsec);
 	} else if (!strcmp(value, "dfs")) {
 		/* Default */ ;
 	} else {

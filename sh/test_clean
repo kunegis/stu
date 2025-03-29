@@ -103,9 +103,10 @@ check_backtick()
 
 check_double_slash()
 {
-	grep -E -n '(^|[^:])//' src/*.cc src/*.hh |
-	sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 C++ source must not contain //,' |
-	grep -E '.' >&2 && return 1
+	find . -name '*.cc' -o -name '*.hh' |
+		xargs grep -E -n '(^|[^:])//' |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 C++ source must not contain //,' |
+		grep -E '.' >&2 && return 1
 	return 0
 }
 

@@ -1,10 +1,10 @@
 #include <errno.h>
+#include <time.h>
 
-struct timeval;
-struct timezone;
+struct timespec;
 
 extern "C"
-int gettimeofday(struct timeval *tv, struct timezone *tz)
+int clock_gettime(clockid_t, struct timespec *)
 {
 	errno= EINVAL;
 	return -1;

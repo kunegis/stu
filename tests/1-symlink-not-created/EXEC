@@ -5,6 +5,8 @@
 # startup".
 #
 
+set -o pipefail
+
 # A is the symlink that links to X.  X is a preexisting file with a
 # timestamp in the past.
 

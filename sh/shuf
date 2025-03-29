@@ -5,6 +5,8 @@
 # There is shuf(1), but that's not POSIX.
 #
 
+set -o pipefail
+
 awk 'BEGIN {srand(); OFMT="%.17f"} {print rand(), $0}' |
 sort -k1,1n |
 cut -d ' ' -f2-

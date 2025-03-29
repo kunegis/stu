@@ -10,6 +10,7 @@
 #
 
 set -e
+set -o pipefail
 
 VERSION=$(echo $(cat VERSION))
 

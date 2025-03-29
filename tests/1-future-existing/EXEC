@@ -1,5 +1,7 @@
 #! /bin/sh
 
+set -o pipefail
+
 rm -f A B || exit 2
 
 now=$(LC_ALL=C date)

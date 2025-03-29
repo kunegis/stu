@@ -1,8 +1,4 @@
 #
-# "set -o pipefail" is in POSIX 2024.
-#
-
-#
 # "sed" with "-E" argument is in POSIX 2024.
 #
 
@@ -11,7 +7,7 @@
 #
 
 #
-# Have flags +p +o +t that negative -p -o -t (useful when flags can be put on
+# Have flags +p +o +t that negate -p -o -t (useful when flags can be put on
 # the target side of rules).
 #
 

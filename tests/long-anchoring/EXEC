@@ -8,6 +8,8 @@
 # inverts the order in all cases.)
 #
 
+set -o pipefail
+
 do_test()
 {
 	rm -f abcdefghijklmno || exit 2

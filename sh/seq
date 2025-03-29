@@ -11,6 +11,8 @@
 #       $n lines, containing increasing integers starting at "1"
 #
 
+set -o pipefail
+
 n=$1
 
 [ "$n" ] || {

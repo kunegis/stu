@@ -5,6 +5,7 @@
 #
 
 set -e
+set -o pipefail
 
 rm -f ?
 

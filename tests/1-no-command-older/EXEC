@@ -1,5 +1,7 @@
 #! /bin/sh
 
+set -o pipefail
+
 now=$(LC_ALL=C date)
 year=$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')
 year_a=$(expr $year - 3)

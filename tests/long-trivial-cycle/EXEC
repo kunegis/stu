@@ -49,6 +49,8 @@
 #	'X','Y' Auxiliary files (optional)
 #
 
+set -o pipefail
+
 # Sort the characters passed as parameters in inverse alphabetical
 # order, and output them one per line.  We need inverse alphabetical
 # order so Stu will not remake 'B' or 'D' because 'I' or 'J' would be

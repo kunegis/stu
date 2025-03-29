@@ -12,6 +12,8 @@
 #	codes.  Can for instance be piped into less -R to see all.
 #
 
+set -o pipefail
+
 preload_tty_so=$PWD/bin/preload-tty.so
 CMDPREFIX_TTY="TERM=xterm"
 LD_PRELOAD_VALUE_TTY="$preload_tty_so"

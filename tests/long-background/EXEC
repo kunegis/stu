@@ -3,6 +3,8 @@
 # Test that non-background processes don't hang.
 #
 
+set -o pipefail
+
 #
 # (1) Non-background
 #

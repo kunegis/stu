@@ -1,5 +1,7 @@
 #! /bin/sh
 
+set -o pipefail
+
 #
 # Each line in 'list' ultimately has C being a dependency of A, via a trivial dependency.
 #

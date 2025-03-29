@@ -1,5 +1,7 @@
 #! /bin/sh
 
+set -o pipefail
+
 {
 	printf 'A = B;\n'
 	printf 'B: C { cp C B ; }\n'

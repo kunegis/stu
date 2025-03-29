@@ -11,6 +11,8 @@
 #	$verbose               (optional)
 #
 
+set -o pipefail
+
 [ "$verbose" ] && exec 6>&2 || exec 6>/dev/null
 
 check()

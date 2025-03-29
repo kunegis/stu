@@ -168,6 +168,7 @@ scripting.
   directly embedded in other commands will make the shell ignore failure of the inner
   shell.  There is no good solution to the "first part of pipeline fails silently"
   problem.
+* Use "set -o pipefail" whenever pipes are used.
 * Use $(...) instead of `...`.  It avoids many quoting pitfalls.  In shell syntax,
   backticks are a form of quote which also executes its content.  Thus, characters such as
   other backticks and backslashes inside it must be quoted by a backslash, leading to ugly

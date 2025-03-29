@@ -1,5 +1,7 @@
 #! /bin/sh
 
+set -o pipefail
+
 rm -Rf list.*
 
 ../../bin/stu.test --version >list.out 2>list.err

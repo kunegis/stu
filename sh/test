@@ -114,6 +114,8 @@
 # Note:  we can't use "set -e" here (which is a good general practice in shell scripts),
 # because otherwise we can't use $? to check the exit code of Stu.
 
+set -o pipefail
+
 output_next()
 {
 	echo >&7 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'

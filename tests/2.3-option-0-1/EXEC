@@ -1,6 +1,7 @@
 #! /bin/sh
 
 set -e
+set -o pipefail
 
 do_rm() {
 	rm -f aaa bbb ccc list.FILES

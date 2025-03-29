@@ -4,6 +4,8 @@
 # files.
 #
 
+set -o pipefail
+
 STUFILE1=tmp1.stu
 STUFILE2=tmp2.stu
 

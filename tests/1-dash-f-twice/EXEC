@@ -6,6 +6,8 @@
 # we filter multiple input files.
 #
 
+set -o pipefail
+
 rm -f A || exit 2
 
 cat <<EOF | ../../bin/stu.test -f - -f -

@@ -11,6 +11,8 @@
 # Empty lines and lines beginning with '%' are ignored.
 #
 
+set -o pipefail
+
 cat patterns | while IFS= read -r line ; do
 	printf '.'
 	printf '%s\n' "$line" | grep -q -E '^\s*(|%)$' && continue

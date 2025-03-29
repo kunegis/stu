@@ -1,5 +1,7 @@
 #! /bin/sh
 
+set -o pipefail
+
 doo() { echo "$@" ; "$@" ; }
 
 # Make all one-character files very old

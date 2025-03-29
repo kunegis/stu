@@ -7,15 +7,16 @@
 #include "trace.hh"
 #include "trace_dep.hh"
 
-void Dep::normalize(shared_ptr <const Dep> dep,
-		    std::vector <shared_ptr <const Dep> > &deps,
-		    int &error)
+void Dep::normalize(
+	std::vector <shared_ptr <const Dep> > &deps,
+	int &error) const
 {
-	if (to <Plain_Dep> (dep)) {
-		deps.push_back(dep);
-	} else if (shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep)) {
+	shared_ptr <const Dep> _this= shared_from_this();
+	if (to <Plain_Dep> (_this)) {
+		deps.push_back(_this);
+	} else if (shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (_this)) {
 		std::vector <shared_ptr <const Dep> > deps_child;
-		normalize(dynamic_dep->dep, deps_child, error);
+		dynamic_dep->dep->normalize(deps_child, error);
 		if (error && ! option_k)
 			return;
 		for (auto &d:  deps_child) {
@@ -27,18 +28,19 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 			dep_new->top= dynamic_dep->top;
 			deps.push_back(dep_new);
 		}
-	} else if (shared_ptr <const Compound_Dep> compound_dep= to <Compound_Dep> (dep)) {
+	} else if (shared_ptr <const Compound_Dep> compound_dep=
+		to <Compound_Dep> (_this)) {
 		for (auto &d:  compound_dep->deps) {
-			shared_ptr <Dep> dd= Dep::clone(d);
+			shared_ptr <Dep> dd= d->clone();
 			dd->add_flags(compound_dep, false);
 			if (compound_dep->index >= 0)
 				dd->index= compound_dep->index;
 			dd->top= compound_dep->top;
-			normalize(dd, deps, error);
+			dd->normalize(deps, error);
 			if (error && ! option_k)
 				return;
 		}
-	} else if (auto concat_dep= to <Concat_Dep> (dep)) {
+	} else if (auto concat_dep= to <Concat_Dep> (_this)) {
 		Concat_Dep::normalize_concat(concat_dep, deps, error);
 		if (error && ! option_k)
 			return;
@@ -47,35 +49,37 @@ void Dep::normalize(shared_ptr <const Dep> dep,
 	}
 }
 
-shared_ptr <const Dep> Dep::untrivialize(shared_ptr <const Dep> dep)
+shared_ptr <const Dep> Dep::untrivialize() const
 {
 	TRACE_FUNCTION();
-	TRACE("dep= %s", show_trace(dep));
-	assert(dep);
-	assert(dep->is_normalized());
-	if (to <Plain_Dep> (dep)) {
+	shared_ptr <const Dep> _this= shared_from_this();
+	TRACE("dep= %s", show_trace(_this));
+	assert(_this);
+	assert(_this->is_normalized());
+	if (to <Plain_Dep> (_this)) {
 		TRACE("%s", "plain");
-		if (! (dep->flags & F_TRIVIAL)) {
+		if (! (_this->flags & F_TRIVIAL)) {
 			TRACE("%s", "not trivial");
 			return nullptr;
 		}
-		shared_ptr <Dep> ret= Dep::clone(dep);
+		shared_ptr <Dep> ret= _this->clone();
 		ret->flags &= ~F_TRIVIAL;
 		ret->places[I_TRIVIAL]= Place();
 		TRACE("untrivialized= %s", show_trace(ret));
 		return ret;
-	} else if (to <Dynamic_Dep> (dep)) {
+	} else if (to <Dynamic_Dep> (_this)) {
 		TRACE("%s", "dynamic");
-		shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (dep);
-		shared_ptr <const Dep> ret_dep= untrivialize(dynamic_dep->dep);
+		shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (_this);
+		shared_ptr <const Dep> ret_dep= dynamic_dep->dep->untrivialize();
 		if (ret_dep) {
-			shared_ptr <Dynamic_Dep> ret= std::make_shared <Dynamic_Dep> (dynamic_dep, ret_dep);
+			shared_ptr <Dynamic_Dep> ret=
+				std::make_shared <Dynamic_Dep> (dynamic_dep, ret_dep);
 			ret->flags &= ~F_TRIVIAL;
 			ret->places[I_TRIVIAL]= Place();
 			TRACE("untrivialized ret= %s", show_trace(ret));
 			return ret;
-		} else if (dep->flags & F_TRIVIAL) {
-			shared_ptr <Dep> ret= Dep::clone(dep);
+		} else if (_this->flags & F_TRIVIAL) {
+			shared_ptr <Dep> ret= _this->clone();
 			ret->flags &= ~F_TRIVIAL;
 			ret->places[I_TRIVIAL]= Place();
 			TRACE("only dyn ret= %s", show_trace(ret));
@@ -84,14 +88,14 @@ shared_ptr <const Dep> Dep::untrivialize(shared_ptr <const Dep> dep)
 			TRACE("%s", "not trivial");
 			return nullptr;
 		}
-	} else if (to <Concat_Dep> (dep)) {
+	} else if (to <Concat_Dep> (_this)) {
 		TRACE("%s", "concat");
-		shared_ptr <const Concat_Dep> concat_dep= to <Concat_Dep> (dep);
-		shared_ptr <Concat_Dep> ret= std::make_shared <Concat_Dep> (dep);
+		shared_ptr <const Concat_Dep> concat_dep= to <Concat_Dep> (_this);
+		shared_ptr <Concat_Dep> ret= std::make_shared <Concat_Dep> (_this);
 		ret->deps.resize(concat_dep->deps.size());
 		bool found= false;
 		for (size_t i= 0; i < concat_dep->deps.size(); ++i) {
-			shared_ptr <const Dep> dep_i= untrivialize(concat_dep->deps[i]);
+			shared_ptr <const Dep> dep_i= concat_dep->deps[i]->untrivialize();
 			if (dep_i) {
 				found= true;
 				ret->deps[i]= dep_i;
@@ -100,7 +104,7 @@ shared_ptr <const Dep> Dep::untrivialize(shared_ptr <const Dep> dep)
 			}
 		}
 		TRACE("found= %s", frmt("%d", found));
-		if (! found && !(dep->flags & F_TRIVIAL)) {
+		if (! found && !(_this->flags & F_TRIVIAL)) {
 			TRACE("%s", "not trivial");
 			return nullptr;
 		}
@@ -113,19 +117,20 @@ shared_ptr <const Dep> Dep::untrivialize(shared_ptr <const Dep> dep)
 	}
 }
 
-shared_ptr <Dep> Dep::clone(shared_ptr <const Dep> dep)
+shared_ptr <Dep> Dep::clone() const
 {
-	assert(dep);
-	if (to <Plain_Dep> (dep)) {
-		return std::make_shared <Plain_Dep> (* to <Plain_Dep> (dep));
-	} else if (to <Dynamic_Dep> (dep)) {
-		return std::make_shared <Dynamic_Dep> (* to <Dynamic_Dep> (dep));
-	} else if (to <Compound_Dep> (dep)) {
-		return std::make_shared <Compound_Dep> (* to <Compound_Dep> (dep));
-	} else if (to <Concat_Dep> (dep)) {
-		return std::make_shared <Concat_Dep> (* to <Concat_Dep> (dep));
-	} else if (to <Root_Dep> (dep)) {
-		return std::make_shared <Root_Dep> (* to <Root_Dep> (dep));
+	shared_ptr <const Dep> _this= shared_from_this();
+	assert(_this);
+	if (to <Plain_Dep> (_this)) {
+		return std::make_shared <Plain_Dep> (* to <Plain_Dep> (_this));
+	} else if (to <Dynamic_Dep> (_this)) {
+		return std::make_shared <Dynamic_Dep> (* to <Dynamic_Dep> (_this));
+	} else if (to <Compound_Dep> (_this)) {
+		return std::make_shared <Compound_Dep> (* to <Compound_Dep> (_this));
+	} else if (to <Concat_Dep> (_this)) {
+		return std::make_shared <Concat_Dep> (* to <Concat_Dep> (_this));
+	} else if (to <Root_Dep> (_this)) {
+		return std::make_shared <Root_Dep> (* to <Root_Dep> (_this));
 	} else {
 		unreachable();
 	}
@@ -144,14 +149,15 @@ void Dep::add_flags(shared_ptr <const Dep> dep,
 	this->flags |= dep->flags;
 }
 
-shared_ptr <const Dep> Dep::strip_dynamic(shared_ptr <const Dep> d)
+shared_ptr <const Dep> Dep::strip_dynamic() const
 {
-	assert(d != nullptr);
-	while (to <Dynamic_Dep> (d)) {
-		d= to <Dynamic_Dep> (d)->dep;
+	shared_ptr <const Dep> _this= shared_from_this();
+	assert(_this != nullptr);
+	while (to <Dynamic_Dep> (_this)) {
+		_this= to <Dynamic_Dep> (_this)->dep;
 	}
-	assert(d != nullptr);
-	return d;
+	assert(_this != nullptr);
+	return _this;
 }
 
 #ifndef NDEBUG
@@ -386,7 +392,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 	/* Add attributes from DEP */
 	if (dep->flags || dep->index >= 0 || dep->top) {
 		for (size_t k= k_init; k < deps_.size(); ++k) {
-			shared_ptr <Dep> d_new= Dep::clone(deps_[k]);
+			shared_ptr <Dep> d_new= deps_[k]->clone();
 			/* The innermost flag is kept */
 			d_new->add_flags(dep, false);
 			if (dep->index >= 0)
@@ -408,7 +414,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 		shared_ptr <const Dep> dd= dep->deps.at(start_index);
 		if (auto compound_dd= to <Compound_Dep> (dd)) {
 			for (const auto &d: compound_dd->deps) {
-				normalize(d, deps_, error);
+				d->normalize(deps_, error);
 				if (error && ! option_k)
 					return;
 			}
@@ -419,7 +425,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 			if (error && ! option_k)
 				return;
 		} else if (to <Dynamic_Dep> (dd)) {
-			normalize(dd, deps_, error);
+			dd->normalize(deps_, error);
 			if (error && ! option_k)
 				return;
 		} else {
@@ -433,14 +439,14 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 		shared_ptr <const Dep> dd= dep->deps.at(start_index);
 		if (auto compound_dd= to <Compound_Dep> (dd)) {
 			for (const auto &d: compound_dd->deps) {
-				normalize(d, vec1, error);
+				d->normalize(vec1, error);
 				if (error && ! option_k)
 					return;
 			}
 		} else if (to <Plain_Dep> (dd)) {
 			vec1.push_back(dd);
 		} else if (to <Dynamic_Dep> (dd)) {
-			normalize(dd, vec1, error);
+			dd->normalize(vec1, error);
 			if (error && ! option_k)
 				return;
 		} else if (auto concat_dd= to <Concat_Dep> (dd)) {

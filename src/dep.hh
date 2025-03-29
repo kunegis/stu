@@ -3,9 +3,7 @@
 
 /*
  * Dependencies are polymorphous objects, and all dependencies derive from class Dep, and
- * are used via shared_ptr<>, except in cases where access is read-only.  This is
- * necessary in cases where a member function has to access its own THIS pointer, because
- * we can't put THIS into a shared pointer.
+ * are used via shared_ptr<>.
  *
  * All dependency classes allow parametrized targets.
  *
@@ -54,6 +52,7 @@ shared_ptr <const T> to(shared_ptr <U> d)
 }
 
 class Dep
+	:  public std::enable_shared_from_this <Dep>
 /*
  * The abstract base class for all dependencies.
  *
@@ -65,12 +64,6 @@ class Dep
  * immutable, except if we just created the object in which case we know that it is not
  * shared.  Therefore, we always use shared_ptr <const ...>, except when we just created
  * the dependency.  All dependencies are created via make_shared<>.
- *
- * The use of shared_ptr<> also means that certain functions cannot be member functions
- * but must be static functions instead: clone(), normalize(), etc.  This is because we
- * cannot use a construct like shared_ptr <Dep> (this), which is erroneous (the object
- * would be released twice, etc.).  As a result, we replace THIS by an argument of type
- * shared_ptr<>.  [Note: there is also std::enable_shared_from_this as a possibility.]
  *
  * The constructors of Dep and derived classes do not set the TOP and INDEX fields.  These
  * are set manually when needed.
@@ -103,7 +96,8 @@ public:
 	}
 
 	Dep(const Dep &that)
-		: flags(that.flags), top(that.top), index(that.index)
+		: std::enable_shared_from_this <Dep> (that),
+		  flags(that.flags), top(that.top), index(that.index)
 	{
 		assert(this != &that);
 		for (unsigned i= 0;  i < C_PLACED;  ++i)
@@ -132,13 +126,32 @@ public:
 	/* Add the flags from DEP.  Also copy over the corresponding places.  If a place
 	 * is already given in THIS, only copy a place over if OVERWRITE_PLACES is set. */
 
+	void normalize(
+		std::vector <shared_ptr <const Dep> > &deps,
+		int &error) const;
+	/* Split DEP into multiple DEPS that are each normalized.  The resulting
+	 * dependencies are appended to DEPS, which does not have to be empty on
+	 * entering the function. On errors, a message is printed, bits are set
+	 * in ERROR, and if not in keep-going mode, the function returns
+	 * immediately. */
+
+	shared_ptr <const Dep> untrivialize() const;
+	/* Remove all trivial flags, recursively.  Return null if already trivialized. */
+
+	shared_ptr <Dep> clone() const; /* Shallow clone */
+
+	shared_ptr <const Dep> strip_dynamic() const;
+	/* Strip dynamic dependencies from the given dependency.  Perform
+	 * recursively:  If D is a dynamic dependency, return its contained
+	 * dependency, otherwise return D.  Thus, never return null. */
+
+#ifndef NDEBUG
+	void check() const;
 	/* The check function checks the internal consistency of a Dep object.  This is
 	 * purely an assertion, and not a programmatic check.  It is possible for Dep
 	 * objects to be temporarily inconsistent while they are changed -- therefore,
 	 * consistency is not enforced by the accessor functions, but only by this
 	 * function. */
-#ifndef NDEBUG
-	void check() const;
 #else
 	void check() const { }
 #endif
@@ -157,25 +170,6 @@ public:
 
 	virtual bool is_normalized() const= 0;
 
-	static void normalize(shared_ptr <const Dep> dep,
-			      std::vector <shared_ptr <const Dep> > &deps,
-			      int &error);
-	/* Split DEP into multiple DEPS that are each normalized.  The resulting
-	 * dependencies are appended to DEPS, which does not have to be empty on
-	 * entering the function. On errors, a message is printed, bits are set
-	 * in ERROR, and if not in keep-going mode, the function returns
-	 * immediately. */
-
-	static shared_ptr <const Dep> untrivialize(shared_ptr <const Dep> dep);
-	/* Remove all trivial flags, recursively.  Return null if already trivialized. */
-
-	static shared_ptr <Dep> clone(shared_ptr <const Dep> dep);
-	/* A shallow clone */
-
-	static shared_ptr <const Dep> strip_dynamic(shared_ptr <const Dep> d);
-	/* Strip dynamic dependencies from the given dependency.  Perform
-	 * recursively:  If D is a dynamic dependency, return its contained
-	 * dependency, otherwise return D.  Thus, never return null. */
 };
 
 void render(shared_ptr <const Dep> dep, Parts &parts, Rendering rendering= 0)

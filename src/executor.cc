@@ -122,7 +122,7 @@ void Executor::read_dynamic(
 		assert(! found_error || option_k);
 
 		shared_ptr <const Dep> top_top= dep_target->top;
-		shared_ptr <Dep> no_top= Dep::clone(dep_target);
+		shared_ptr <Dep> no_top= dep_target->clone();
 		no_top->top= nullptr;
 		shared_ptr <Dep> top= std::make_shared <Dynamic_Dep> (no_top);
 		top->top= top_top;
@@ -130,7 +130,7 @@ void Executor::read_dynamic(
 		std::vector <shared_ptr <const Dep> > deps_new;
 		for (auto &j: deps) {
 			if (j) {
-				shared_ptr <Dep> j_new= Dep::clone(j);
+				shared_ptr <Dep> j_new= j->clone();
 				j_new->top= top;
 				deps_new.push_back(j_new);
 			}
@@ -264,7 +264,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 
 	/* Dynamics that are not cached (with concatenations somewhere inside) */
 	if (to <const Dynamic_Dep> (dep)
-	    && ! to <const Plain_Dep> (Dep::strip_dynamic(dep))) {
+	    && ! to <const Plain_Dep> (dep->strip_dynamic())) {
 		int error_additional= 0;
 		Dynamic_Executor *executor= new Dynamic_Executor
 			(to <const Dynamic_Dep> (dep), this, error_additional);
@@ -297,7 +297,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			Flags flags= dep->flags;
 			if (flags & ~executor->parents.at(this)->flags) {
 				shared_ptr <Dep> dep_new=
-					Dep::clone(executor->parents.at(this));
+					executor->parents.at(this)->clone();
 				dep_new->flags |= flags;
 				dep= dep_new;
 				/* No need to check for cycles here, because a link
@@ -549,7 +549,7 @@ void Executor::push(shared_ptr <const Dep> dep)
 
 	std::vector <shared_ptr <const Dep> > deps;
 	int e= 0;
-	Dep::normalize(dep, deps, e);
+	dep->Dep::normalize(deps, e);
 	if (e) {
 		dep->get_place() <<
 			fmt("%s is needed by %s", show(dep), show(parents.begin()->second));
@@ -560,11 +560,11 @@ void Executor::push(shared_ptr <const Dep> dep)
 		TRACE("d= %s", show_trace(d));
 		d->check();
 		assert(d->is_normalized());
-		shared_ptr <const Dep> untrivialized= Dep::untrivialize(d);
+		shared_ptr <const Dep> untrivialized= d->untrivialize();
 		TRACE("untrivialized= %s", untrivialized ?
 			show_trace(untrivialized) : "<null>");
 		if (untrivialized) {
-			shared_ptr <Dep> d2= Dep::clone(untrivialized);
+			shared_ptr <Dep> d2= untrivialized->clone();
 			d2->flags |= F_PHASE_B;
 			TRACE("to buffer_B");
 			buffer_B.push(d2);
@@ -595,7 +595,7 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 	dep_child->check();
 
 	if (dep_child->flags & F_RESULT && dynamic_cast <File_Executor *> (child)) {
-		shared_ptr <Dep> d= Dep::clone(dep_child);
+		shared_ptr <Dep> d= dep_child->clone();
 		d->flags &= ~F_RESULT;
 		TRACE("notifying F_RESULT");
 		notify_result(d, child, dep_child->flags & F_RESULT, dep_child);
@@ -608,7 +608,7 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 		bool child_finished_for_B= child->finished(dep_child->flags | F_PHASE_B);
 		TRACE("child_finished_for_B= %s", frmt("%d", child_finished_for_B));
 		if (! child_finished_for_B) {
-			shared_ptr <Dep> d= Dep::clone(dep_child);
+			shared_ptr <Dep> d= dep_child->clone();
 			d->flags |= F_PHASE_B;
 			TRACE("d= %s", show_trace(d));
 			DEBUG_PRINT(fmt("disconnect A_to_B %s",
@@ -830,7 +830,7 @@ shared_ptr <const Dep> Executor::append_top(
 	assert(top);
 	assert(dep != top);
 
-	shared_ptr <Dep> ret= Dep::clone(dep);
+	shared_ptr <Dep> ret= dep->clone();
 
 	if (dep->top) {
 		ret->top= append_top(dep->top, top);
@@ -851,7 +851,7 @@ shared_ptr <const Dep> Executor::set_top(
 	if (dep->top == nullptr && top == nullptr)
 		return dep;
 
-	shared_ptr <Dep> ret= Dep::clone(dep);
+	shared_ptr <Dep> ret= dep->clone();
 	ret->top= top;
 	return ret;
 }
@@ -925,15 +925,16 @@ Proceed Executor::connect(
 	return P_FINISHED;
 }
 
-bool Executor::same_dependency_for_print(shared_ptr <const Dep> d1,
-					 shared_ptr <const Dep> d2)
+bool Executor::same_dependency_for_print(
+	shared_ptr <const Dep> d1,
+	shared_ptr <const Dep> d2)
 {
 	shared_ptr <const Plain_Dep> p1= to <Plain_Dep> (d1);
 	shared_ptr <const Plain_Dep> p2= to <Plain_Dep> (d2);
 	if (!p1 && to <Dynamic_Dep> (d1))
-		p1= to <Plain_Dep> (Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d1)));
+		p1= to <Plain_Dep> (to <Dynamic_Dep> (d1)->strip_dynamic());
 	if (!p2 && to <Dynamic_Dep> (d2))
-		p2= to <Plain_Dep> (Dynamic_Dep::strip_dynamic(to <Dynamic_Dep> (d2)));
+		p2= to <Plain_Dep> (to <Dynamic_Dep> (d2)->strip_dynamic());
 	if (! (p1 && p2))
 		return false;
 	return p1->place_target.unparametrized()

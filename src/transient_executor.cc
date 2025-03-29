@@ -123,7 +123,7 @@ Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
 	for (auto &dependency: rule->deps) {
 		shared_ptr <const Dep> depp= dependency;
 		if (dep_link->flags) {
-			shared_ptr <Dep> depp_new= Dep::clone(depp);
+			shared_ptr <Dep> depp_new= depp->clone();
 			depp_new->flags |= dep_link->flags & (F_PLACED | F_ATTRIBUTE);
 			depp_new->flags |= F_RESULT_COPY;
 			for (unsigned i= 0; i < C_PLACED; ++i) {

@@ -30,7 +30,7 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 		if (auto plain_d= to <const Plain_Dep> (d)) {
 			collected.at(i)->deps.push_back(d);
 		} else if (auto dynamic_d= to <const Dynamic_Dep> (d)) {
-			shared_ptr <Dep> dep_child= Dep::clone(dynamic_d->dep);
+			shared_ptr <Dep> dep_child= dynamic_d->dep->clone();
 			dep_child->flags |= F_RESULT_NOTIFY;
 			dep_child->index= i;
 			push(dep_child);
@@ -103,14 +103,14 @@ void Concat_Executor::launch_stage_1()
 	}
 	std::vector <shared_ptr <const Dep> > deps;
 	int e= 0;
-	Dep::normalize(c, deps, e);
+	c->normalize(deps, e);
 	if (e) {
 		*this << "";
 		raise(e);
 	}
 
 	for (auto f: deps) {
-		shared_ptr <Dep> f2= Dep::clone(f);
+		shared_ptr <Dep> f2= f->clone();
 		/* Add -% flag */
 		f2->flags |= F_RESULT_COPY;
 		/* Add flags from self */

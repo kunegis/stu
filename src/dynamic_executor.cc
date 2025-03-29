@@ -23,7 +23,7 @@ Dynamic_Executor::Dynamic_Executor(
 	}
 
 	/* Find the rule of the inner dependency */
-	shared_ptr <const Dep> inner_dep= Dep::strip_dynamic(dep);
+	shared_ptr <const Dep> inner_dep= dep->strip_dynamic();
 	if (auto inner_plain_dep= to <const Plain_Dep> (inner_dep)) {
 		Hash_Dep hash_dep_base(inner_plain_dep->place_target.flags,
 			inner_plain_dep->place_target.place_name.unparametrized());
@@ -52,7 +52,7 @@ Dynamic_Executor::Dynamic_Executor(
 	parents[parent]= dep;
 
 	/* Push the single initial dependency */
-	shared_ptr <Dep> dep_child= Dep::clone(dep->dep);
+	shared_ptr <Dep> dep_child= dep->dep->clone();
 	dep_child->flags |= F_RESULT_NOTIFY;
 	push(dep_child);
 
@@ -136,7 +136,7 @@ bool Dynamic_Executor::finished(Flags flags) const
 
 bool Dynamic_Executor::want_delete() const
 {
-	return to <Plain_Dep> (Dep::strip_dynamic(dep)) == nullptr;
+	return to <Plain_Dep> (dep->strip_dynamic()) == nullptr;
 }
 
 void Dynamic_Executor::render(Parts &parts, Rendering rendering) const
@@ -167,7 +167,7 @@ void Dynamic_Executor::notify_result(
 		std::vector <shared_ptr <const Dep> > deps;
 		source->read_dynamic(to <const Plain_Dep> (dep_result), deps, dep, this);
 		for (auto &j: deps) {
-			shared_ptr <Dep> j_new= Dep::clone(j);
+			shared_ptr <Dep> j_new= j->clone();
 			/* Add -% flag */
 			j_new->flags |= F_RESULT_COPY;
 			/* Add flags from self */

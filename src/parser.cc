@@ -526,7 +526,7 @@ bool Parser::parse_expression(
 		/* Add the flag */
 		if (! ((i_flag == I_OPTIONAL && option_g) ||
 		       (i_flag == I_TRIVIAL  && option_a))) {
-			shared_ptr <Dep> ret_new= Dep::clone(ret);
+			shared_ptr <Dep> ret_new= ret->clone();
 			ret_new->flags |= (1 << i_flag);
 			assert(i_flag < C_WORD);
 			if (i_flag < C_PLACED)

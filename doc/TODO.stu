@@ -1,8 +1,4 @@
 #
-# "set -o pipefail" is in POSIX 2024.
-#
-
-#
 # "sed" with "-E" argument is in POSIX 2024.
 #
 

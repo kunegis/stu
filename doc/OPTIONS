@@ -68,7 +68,7 @@ List of options
 -t  s x x x  Trivial dependency (2)
 -t  x M G F  Touch instead of build
 -T        F  Trace mode (log into a file with a given name)
--u
+-U  s        Ignore '%version'
 -v  .   x    Verbose
 -v  x   G    Show version
 -V  S     x  Show version

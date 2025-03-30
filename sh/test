@@ -27,6 +27,7 @@
 #	             useful after doing "rm" in a version control system on one, since
 #	             that leaves a directory containing only (e.g.) ".svn".  Ignores
 #	             dotfiles.
+#	$normtmps    Don't remove temporary files
 #
 # EXIT STATUS
 #	0         All tests succeeded
@@ -548,7 +549,7 @@ do
 		fi
 	fi
 
-	../../sh/rm_tmps || exit 2
+	[ -z "$normtmps" ] && { ../../sh/rm_tmps || exit 2 ; }
 	if [ "$error" != 0 ] ; then
 		test_fail_fatal
 		continue

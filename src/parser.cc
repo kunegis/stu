@@ -5,6 +5,7 @@
 
 shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_first)
 {
+	TRACE_FUNCTION();
 	const auto iter_begin= iter;
 	/* Used to check that when this function fails (i.e., returns null), is has not
 	 * read any tokens. */
@@ -33,13 +34,17 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 	for (const string &parameter: place_targets[0]->place_name.get_parameters()) {
 		parameters_0.insert(parameter);
 	}
+	TRACE("parameters_0.size= %s", frmt("%zu", parameters_0.size()));
+	TRACE("place_targets.size= %s", frmt("%zu", place_targets.size()));
 	assert(place_targets.size() >= 1);
 	for (size_t i= 1; i < place_targets.size(); ++i) {
+		TRACE("i= %s", frmt("%zu", i));
 		std::set <string> parameters_i;
 		for (const string &parameter:
 			     place_targets[i]->place_name.get_parameters()) {
 			parameters_i.insert(parameter);
 		}
+		TRACE("parameters_i.size= %s", frmt("%zu", parameters_i.size()));
 		if (parameters_i != parameters_0) {
 			place_targets[i]->place <<
 				fmt("parameters of target %s differ",
@@ -88,7 +93,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 	shared_ptr <Command> command;
 	/* Remains null when there is no command */
 
-	bool is_hardcode;
+	bool is_hardcode= false;
 	/* When command is not null, whether the command is a command or
 	 * hardcoded content */
 

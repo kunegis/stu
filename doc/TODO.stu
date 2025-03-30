@@ -1,8 +1,4 @@
 #
-# Have an option to disable the version check.
-#
-
-#
 # Have flags +p +o +t that negative -p -o -t (useful when flags can be put on
 # the target side of rules).
 #

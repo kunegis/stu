@@ -189,6 +189,8 @@ OPTIONS
               messages are not suppressed.  This option is comparable  to  the
               same option in Make.
 
+       -U     Disable all version checks due to the %version directive.
+
        -V, --version
               Output the version number of Stu and exit.
 
@@ -909,10 +911,10 @@ ENVIRONMENT
 
        STU_OPTIONS
               Contains  options  to  be set on every run of Stu.  Only the op‐
-              tions EQswxyYz can be set this way.  The variable should contain
-              only  these characters, dashes, and whitespace; other characters
-              produce an error.  Options passed on the command line apply  af‐
-              ter those passed using this variable.
+              tions EQsUwxyYz can be set this way.  The variable  should  con‐
+              tain  only these characters, dashes, and whitespace; other char‐
+              acters produce an error.  Options passed on the command line ap‐
+              ply after those passed using this variable.
 
        STU_SHELL
               If  set,  Stu calls the shell from the given location instead of
@@ -1133,4 +1135,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.7.120                       March 2025                            STU(1)
+stu-2.7.121                       March 2025                            STU(1)

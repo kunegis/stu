@@ -17,7 +17,7 @@
  * Also, using getopt() means that the exact synytax of Stu depends on the platform:  GNU
  * getopt() will all options to follow arguments, while BSD getopt() does not.
  */
-const char OPTIONS[]= "0:ac:C:dEf:F:ghiIj:JkKm:M:n:o:p:PqsVxyYz";
+const char OPTIONS[]= "0:ac:C:dEf:F:ghiIj:JkKm:M:n:o:p:PqsUVxyYz";
 
 /* The following strings do not contain tabs, but only space characters. */
 const char HELP[]=
@@ -52,6 +52,7 @@ const char HELP[]=
 	"  -P               Print the rules\n"
 	"  -q               Question mode: check whether targets are up to date\n"
 	"  -s               Silent mode: don't use stdout\n"
+	"  -U               Ignore %version directives\n"
 	"  -V, --version    Output version\n"
 	"  -x               Output each line in a command individually\n"
 	"  -y               Disable color in output\n"
@@ -69,6 +70,7 @@ static bool option_I= false;
 static bool option_J= false;
 static bool option_k= false;
 static bool option_K= false;
+static bool option_U= false;
 static bool option_P= false;
 static bool option_q= false;
 static bool option_s= false;
@@ -85,7 +87,7 @@ static Order order= Order::DFS;
 static bool option_parallel= false;
 /* Whether the -j option is used with a value >1 */
 
-static bool order_vec;
+static bool order_vec= false;
 /* Whether to use vectors for randomization */
 
 static long options_jobs= 1;
@@ -93,9 +95,9 @@ static long options_jobs= 1;
  * long.  Set before calling main() from the -j option, and then changed
  * internally by Executor.  Always nonnegative. */
 
-static const char **envp_global;
+static const char **envp_global= nullptr;
 
-static const char *dollar_zero;
+static const char *dollar_zero= nullptr;
 /* Does the same as program_invocation_name (which is a GNU extension,
  * so we don't use it); the value of argv[0], set in main() */
 

@@ -696,12 +696,14 @@ bool Tokenizer::is_flag_char(char c)
 	return c == 'p' || c == 'o' || c == 't' || c == 'n' || c == '0' || c == 'C';
 }
 
-void Tokenizer::parse_version(string version_req,
-			      const Place &place_version,
-			      const Place &place_percent)
+void Tokenizer::parse_version(
+	string version_req,
+	const Place &place_version,
+	const Place &place_percent)
 /* Note: there may be any number of version directives in Stu (in particular from multiple
  * source files), so we don't keep track whether one has already been provided. */
 {
+	if (option_U) return;
 	unsigned major_req, minor_req, patch_req;
 	int chars= -1;
 	int n= sscanf(version_req.c_str(), "%u.%u.%u%n",
@@ -1149,8 +1151,7 @@ void Tokenizer::parse_include_directive(
 	filenames.pop_back();
 }
 
-void Tokenizer::parse_version_directive(
-	const Place &place_percent)
+void Tokenizer::parse_version_directive(const Place &place_percent)
 {
 	while (p < p_end && isspace(*p)) {
 		if (*p == '\n') {

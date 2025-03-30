@@ -1,5 +1,10 @@
 At the moment, a single sanitizer can be used, -fsanitize=undefined.
 
-Use "make sani", which is a subtarget of "make test".
+Use "make sani" to run it, which is a subtarget of "make test".
 
 We can't use memory leak sanitizers because of the cached Execution objects.
+
+In the Makefile, we define "-fsanitize-undefined-trap-on-error" to make programs abort on
+error.  This will however not print the actual problem.  To print the actual problem,
+comment out "-fsanitize-undefined-trap-on-error", recompile, and run Stu with
+"UBSAN_OPTIONS=print_stacktrace=1" to print a full stack trace.

@@ -9,13 +9,17 @@
 #include "package.hh"
 #include "show.hh"
 #include "timestamp.hh"
+#include "trace.hh"
 #include "version.hh"
 
 bool option_setting(char c)
 {
+	TRACE_FUNCTION();
+	TRACE("c= %s", frmt("%c", c));
 	switch (c) {
 	default:   return false;
 	case 'E':  option_E= true;            break;
+	case 'U':  option_U= true;            break;
 	case 's':  option_s= true;            break;
 	case 'x':  option_x= true;            break;
 	case 'y':  Color::set(false, false);  break;

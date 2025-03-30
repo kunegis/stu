@@ -31,3 +31,8 @@
 #
 # Replace unreachable() by std::unreachable() (C++23).
 #
+
+#
+# "set -o pipefail" (POSIX 2024).  Need to wait longer until all shells support it,
+# e.g. Dash on Debian.
+#

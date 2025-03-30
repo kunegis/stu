@@ -6,11 +6,6 @@
 # always backward-incompatible.
 
 #
-# "set -o pipefail" is in POSIX 2024.  Need to wait longer until all shells support it,
-# e.g. Dash on Debian.
-#
-
-#
 # Execute "make analyzer".  Not executed yet because it needs too much memory.
 #
 

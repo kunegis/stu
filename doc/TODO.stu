@@ -1,4 +1,20 @@
 #
+# Make sure all environment variables are macros.
+#
+
+#
+# Achieve full coverage.
+#
+
+#
+# tokenizer.cc:  separate out the two techniques into own classes.
+#
+
+#
+# Check what -static does.
+#
+
+#
 # Have flags +p +o +t that negative -p -o -t (useful when flags can be put on
 # the target side of rules).
 #
@@ -271,28 +287,12 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 
 #
-# Achieve full coverage.
-#
-
-#
-# tokenizer.cc:  separate out the two techniques into own classes.
-#
-
-#
 # explain.cc/...:  Have codes for errors, and store the explanations in nicer places than
 # in functions in explain.cc.
 #
 
 #
 # Break up File_Executor::execute() into manageable functions.
-#
-
-#
-# Make sure all environment variables are macros.
-#
-
-#
-# Check what -static does.
 #
 
 #

@@ -61,6 +61,11 @@ const char HELP[]=
 	"Report bugs to: " PACKAGE_EMAIL "\n"
 	"Stu home page: <" PACKAGE_URL ">\n";
 
+#define ENV_STU_CP         "STU_CP"
+#define ENV_STU_OPTIONS    "STU_OPTIONS"
+#define ENV_STU_SHELL      "STU_SHELL"
+#define ENV_STU_STATUS     "STU_STATUS"
+
 static bool option_a= false;
 static bool option_d= false;
 static bool option_E= false;

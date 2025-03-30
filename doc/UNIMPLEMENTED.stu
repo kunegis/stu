@@ -6,12 +6,16 @@
 # always backward-incompatible.
 
 #
-# Execute "make analyzer".  Not executed yet because it needs too much memory.
+# Nested rules.  Good for dependencies that are used only once.  This is
+# quite hard to read, honestly, and mostly fulfills the fantasy of
+# people who like deeply nested constructs :)  But implementation-wise,
+# it's not that difficult.
 #
 
+A: (B: C { cp C B ; }) (D: E {cp E D ; }) { cat B D >A ; }
+
 #
-# Have an option to output the dependency graph, i.e., output each edge
-# on a single line, e.g. separated by tab.
+# Execute "make analyzer".  Not executed yet because it needs too much memory. (?)
 #
 
 #

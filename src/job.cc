@@ -419,7 +419,7 @@ const char **Job::create_child_env(
 		}
 	}
 
-	envp[i++]= "STU_STATUS=1";
+	envp[i++]= ENV_STU_STATUS "=1";
 	assert(i <= v_old + v_new);
 	envp[i]= nullptr;
 	return envp;
@@ -488,7 +488,7 @@ const char *Job::get_shell()
 {
 	static const char *shell= nullptr;
 	if (shell == nullptr) {
-		shell= getenv("STU_SHELL");
+		shell= getenv(ENV_STU_SHELL);
 		if (shell == nullptr || shell[0] == '\0')
 			shell= "/bin/sh";
 	}
@@ -499,7 +499,7 @@ const char *Job::get_cp()
 {
 	static const char *cp= nullptr;
 	if (cp == nullptr) {
-		cp= getenv("STU_CP");
+		cp= getenv(ENV_STU_CP);
 		if (cp == nullptr || cp[0] == '\0')
 			cp= "/bin/cp";
 	}

@@ -128,7 +128,7 @@ void print_option_V()
 
 void set_env_options()
 {
-	const char *stu_options= getenv("STU_OPTIONS");
+	const char *stu_options= getenv(ENV_STU_OPTIONS);
 	if (!stu_options)
 		return;
 	while (*stu_options) {
@@ -146,10 +146,10 @@ void set_env_options()
 
 void check_status()
 {
-	const char *const stu_status= getenv("STU_STATUS");
+	const char *const stu_status= getenv(ENV_STU_STATUS);
 	if (!stu_status)
 		return;
 	print_error(fmt("refusing to run recursive Stu; unset %s to circumvent",
-			show_operator("$STU_STATUS")));
+			show_operator("$" ENV_STU_STATUS)));
 	exit(ERROR_FATAL);
 }

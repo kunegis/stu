@@ -122,7 +122,7 @@ void Place::print(string message,
 
 	case Type::ENV_OPTIONS:
 		fprintf(stderr,
-			"%sIn %s$STU_OPTIONS%s%s: %s\n",
+			"%sIn %s$" ENV_STU_OPTIONS "%s%s: %s\n",
 			color_on, Color::highlight_on[CH_ERR],
 			Color::highlight_off[CH_ERR], color_off,
 			message.c_str());
@@ -152,7 +152,7 @@ string Place::as_argv0() const
 	case Type::OPTION:
 		return fmt("Option -%s", text);
 	case Type::ENV_OPTIONS:
-		return "$STU_OPTIONS";
+		return "$" ENV_STU_OPTIONS;
 	}
 }
 

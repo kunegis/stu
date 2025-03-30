@@ -1,17 +1,13 @@
 #
-# Make sure all environment variables are macros.
-#
-
-#
-# Achieve full coverage.
-#
-
-#
 # tokenizer.cc:  separate out the two techniques into own classes.
 #
 
 #
 # Check what -static does.
+#
+
+#
+# Achieve full coverage.
 #
 
 #
@@ -228,15 +224,6 @@ list.${name|[A-Z].*} # Matches uppercase names
 #
 
 #
-# Nested rules.  Good for dependencies that are used only once.  This is
-# quite hard to read, honestly, and mostly fulfills the fantasy of
-# people who like deeply nested constructs :)  But implementation-wise,
-# it's not that difficult.
-#
-
-A: (B: C { cp C B ; }) (D: E {cp E D ; }) { cat B D >A ; }
-
-#
 # Priority levels for rules.
 #
 
@@ -272,10 +259,6 @@ A: -e B
 #
 
 #
-# Deprecate the -d option.
-#
-
-#
 # Combining -n/-t and -o
 #
 
@@ -283,7 +266,12 @@ A: [ -n -o B ] { touch A ; }  B={C}
 A: [ -t -o B ] { touch A ; }  B={C}
 
 #
-# Test installing the auto-generated .deb from Github.
+# Deprecate the -d option.
+#
+
+#
+# Test installing the auto-generated .deb from Github.  Or remove it and the source code
+# for it.
 #
 
 #
@@ -304,4 +292,9 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 # Trace:  better configuration.  Make it possible to configure via a single environment
 # variable.
+#
+
+#
+# Have an option to output the dependency graph, i.e., output each edge
+# on a single line, e.g. separated by tab.
 #

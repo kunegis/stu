@@ -139,14 +139,8 @@ scripting.
   without documenting them as such.
 * Use '##' for quickly commenting out lines, analogously to '//' in C++ code.  Code pushed
   to Github does not contain such lines.
-* Sed has *only* basic regular expressions.  In particular, no '|', '+', and no escape
-  sequences like '\s'/'\S'/'\b'/'\w'.  The -r and -E options are not POSIX; they are GNU
-  and/or BSD extensions.  A space can be written as [[:space:]].  '+' can be emulated with
-  \{1,\}.  There is no way to write alternatives, i.e., the '|' operator in extended
-  regular regular expressions.  (Note:  there are rumors that -E is going to be in a
-  future POSIX standard; we'll switch to -E once it's standardized.)  Also, the 'b' and
-  't' commands must not be followed by a semicolon; always use a newline after them when
-  there are more commands.
+* "sed -E" (EREs) is allowed in POSIX 2024.  We use it in new code, but old code (using
+  BREs) is still common in the code base.
 * Grep does have the -E option for extended regular expressions.  Grep is always invoked
   with the -E *or* the -F option.  (Using basic regular expressions with Grep is also
   portable, but we don't do it.)  'date +%s' is not mandated by POSIX, even though it

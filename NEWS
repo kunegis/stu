@@ -11,6 +11,11 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2025-03-30  Version 2.7.121
+
+* There is now an option '-U' that suppresses the version checking done by the '%version'
+  directive.
+
 2024-09-25  Version 2.7.100
 
 * 'stu --help' and 'stu --version' now do the same as 'stu -h' and 'stu -V'.

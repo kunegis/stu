@@ -21,6 +21,8 @@
  * does.)
  */
 
+#include <signal.h>
+
 /*
  * Write in an async signal-safe manner.  FD must be '1' or '2'.  MESSAGE must be a string
  * literal.  Ignore errors, as this is called from the terminating signal handler.

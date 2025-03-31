@@ -1,5 +1,6 @@
 #include "job.hh"
 
+#include <signal.h>
 #include <sys/resource.h>
 
 #include "file_executor.hh"

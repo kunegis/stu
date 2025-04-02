@@ -1,11 +1,13 @@
 # list.x$path is allowed, even though $path starts with a slash
 
-A:  /bin/sh { 
+A:  list.y/bin {
 	cp list.x/bin A
 }
 
-$path/sh:  list.x$path { 
-	# Always exists -- do nothing 
+list.y$path:  list.x$path
+{
+	mkdir -p list.y
+	cp -- list.x"$path" list.y"$path"
 }
 
 list.x/bin {

@@ -12,8 +12,8 @@
 #
 
 cat patterns | while IFS= read -r line ; do
+	printf '%s\n' "$line" | grep -q -E '^\s*$|^\s*%' && continue
 	printf '.'
-	printf '%s\n' "$line" | grep -q -E '^\s*(|%)$' && continue
 	norm=$(printf '%s\n' "$line" | sed -e 's|^[[:space:]]*#[[:space:]]*-[[:space:]]*\([^[:space:]]\{1,\}\)[[:space:]]*->[[:space:]]*\([^[:space:]]\{1,\}\)[[:space:]]*$|\1 \2|')
 	uncanonicalized=$(printf '%s\n' "$norm" | sed -e 's|^\([^[:space:]]\{1,\}\) [^[:space:]]\{1,\}$|\1|')
 	canonicalized=$(printf '%s\n' "$norm" | sed -e 's|^[^[:space:]]\{1,\} \([^[:space:]]\{1,\}\)$|\1|')
@@ -63,5 +63,6 @@ EOF
 done
 ret=$?
 
+echo
 rm -f main.stu list.* || exit 2
 exit "$ret"

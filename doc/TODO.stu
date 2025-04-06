@@ -2,7 +2,7 @@
 # [2.7.126]
 #
 
-# * make bin/stu.debug && rm -f ? && STU_TRACE_EXECUTOR=stderr bin/stu.debug -f tests/2.7.126-0000/
+# * make bin/stu.debug && rm -f ? && STU_TRACE_EXECUTOR=stderr bin/stu.debug -j2 -f tests/2.7.126-0000/
 
 #
 # Achieve full coverage.

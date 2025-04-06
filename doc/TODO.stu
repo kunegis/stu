@@ -2,6 +2,8 @@
 # Achieve full coverage.
 #
 
+# * make bin/stu.debug && STU_TRACE_EXECUTOR=stderr sh/test 2.7.126-0000
+
 #
 # Have flags +p +o +t that negative -p -o -t (useful when flags can be put on
 # the target side of rules).

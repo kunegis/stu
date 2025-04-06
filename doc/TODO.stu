@@ -1,8 +1,4 @@
 #
-# tokenizer.cc:  separate out the two techniques into own classes.
-#
-
-#
 # Check what -static does.
 #
 

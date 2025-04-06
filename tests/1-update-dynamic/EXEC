@@ -12,8 +12,8 @@ exitstatus=$?
 	exit 1
 }
 
-../../sh/touch_old A 2 || exit 1
-../../sh/touch_old list.A 2 || exit 1
+../../sh/touch_old A 2 || exit 2
+../../sh/touch_old list.A 2 || exit 2
 echo "Hello CORRECT World" >B
 
 ../../bin/stu.test
@@ -24,7 +24,7 @@ exitstatus=$?
 	exit 1
 }
 
-grep -qF CORRECT A || {
+grep -q -F -e CORRECT A || {
 	echo >&2 "$0:  *** 'A' was not updated"
 	exit 1
 }

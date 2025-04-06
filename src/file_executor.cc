@@ -280,7 +280,12 @@ bool File_Executor::finished() const
 
 bool File_Executor::finished(Flags flags) const
 {
-	return done.is_done_from_flags(flags);
+	TRACE_FUNCTION(show(hash_deps[0]));
+	TRACE("flags= %s", show(flags));
+	TRACE("done= %s", done.show());
+	bool ret= done.is_done_from_flags(flags);
+	TRACE("ret= %s", frmt("%d", ret));
+	return ret;
 }
 
 void File_Executor::render(Parts &parts, Rendering rendering) const
@@ -538,15 +543,16 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	assert(! job.started() || children.empty());
 
 	Proceed proceed= execute_phase_A(dep_link), proceed_B;
+	TRACE("proceed= %s", show(proceed));
 	assert(proceed);
 	if (proceed & P_ABORT) {
 		assert(proceed & P_FINISHED);
 		done |= Done::from_flags(dep_link->flags);
-		goto ret;
+		return proceed;
 	}
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		assert((proceed & P_FINISHED) == 0);
-		goto ret;
+		return proceed;
 	}
 
 	assert(proceed & P_FINISHED);
@@ -554,14 +560,12 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	if (finished(dep_link->flags)) {
 		assert(! (proceed & P_WAIT));
-		proceed |= P_FINISHED;
-		goto ret;
+		return proceed |= P_FINISHED;
 	}
 
 	/* Job has already been started */
 	if (job.started_or_waited()) {
-		proceed |= P_WAIT;
-		goto ret;
+		return proceed |= P_WAIT;
 	}
 
 	/* The file must now be built */
@@ -606,6 +610,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	/* A target for which no execution has to be done */
 	no_execution= rule != nullptr && rule->command == nullptr && ! rule->is_copy;
+	TRACE("no_execution= %s", frmt("%d", no_execution));
 
 	if (! (bits & B_CHECKED)) {
 		bits |= B_CHECKED;
@@ -669,29 +674,28 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 					/* Optional dependency:  don't create the file;
 					 * it will then not exist when the parent is
 					 * called. */
+					TRACE("Optional dependency: don't create the file");
 					done |= Done::D_ALL_OPTIONAL;
-					proceed |= P_FINISHED;
-					goto ret;
+					return proceed |= P_FINISHED;
 				}
 			}
 
 			if (ret_stat != 0 && errno != ENOENT) {
 				/* stat() returned an actual error, e.g. permission
 				 * denied.  This is a build error. */
+				TRACE("stat() returned an actual error");
 				rule->place_targets[i]->place
 					<< format_errno(show(hash_dep));
 				raise(ERROR_BUILD);
 				done |= Done::from_flags(dep_link->flags);
-				proceed |= P_ABORT | P_FINISHED;
-				goto ret;
+				return proceed |= P_ABORT | P_FINISHED;
 			}
 
 			/* File does not exist, all its dependencies are up to
 			 * date, and the file has no commands: that's an error */
 			if (ret_stat != 0 && no_execution) {
-
+				TRACE("File doesn't exist, all dependencies are up to date, and file has no command");
 				assert(errno == ENOENT);
-
 				if (rule->deps.size()) {
 					*this <<
 						fmt("expected the file without command %s to exist because all its dependencies are up to date, but it does not",
@@ -706,8 +710,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				}
 				done |= Done::from_flags(dep_link->flags);
 				raise(ERROR_BUILD);
-				proceed |= P_ABORT | P_FINISHED;
-				goto ret;
+				return proceed |= P_ABORT | P_FINISHED;
 			}
 		}
 		/* We cannot update TIMESTAMP within the loop above
@@ -743,13 +746,12 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	}
 
 	if (! (bits & B_NEED_BUILD)) {
-		done |= Done::from_flags(dep_link->flags);
-		proceed |= P_FINISHED;
-		goto ret;
+		TRACE("No need to build");
+		done |= Done::from_flags_trivial_and_nontrivial(dep_link->flags);
+		return proceed |= P_FINISHED;
 	}
 
-	/* We now know that the command must be run, or that there is no
-	 * command. */
+	/* We now know that the command must be run, or that there is no command. */
 
 	/* Second pass to execute also all trivial targets */
 	proceed_B= execute_phase_B(dep_link);
@@ -757,15 +759,14 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	proceed |= proceed_B;
 	proceed &= ~P_FINISHED;
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
-		goto ret;
+		return proceed;
 	}
 	assert(children.empty());
 
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */
 		done |= Done::from_flags(dep_link->flags);
-		proceed |= P_FINISHED;
-		goto ret;
+		return proceed |= P_FINISHED;
 	}
 
 	/* The command must be run (or the file created, etc.) now */
@@ -784,21 +785,19 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (rule->is_hardcode) {
 		assert(hash_deps.size() == 1);
 		assert(hash_deps.front().is_file());
-		TRACE("%s", "create_content");
+		TRACE("%s", "Create content");
 		DEBUG_PRINT("create_content");
 		print_command();
 		write_content(hash_deps.front().get_name_c_str_nondynamic(),
 			*(rule->command));
 		done.set_all();
 		assert(proceed == 0);
-		proceed |= P_FINISHED;
-		goto ret;
+		return proceed |= P_FINISHED;
 	}
 
 	/* We know that a job has to be started now */
 	if (options_jobs == 0) {
-		proceed |= P_WAIT;
-		goto ret;
+		return proceed |= P_WAIT;
 	}
 
 	/* We have to start a job now */
@@ -834,7 +833,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		 * in which the job would failed to be clean up. */
 		Signal_Blocker sb;
 
-		if (start(dep_link, proceed, pid, mapping)) goto ret;
+		if (start(dep_link, proceed, pid, mapping))
+			return proceed;
 		TRACE("pid= %s", frmt("%jd", (intmax_t)pid));
 		assert(pid != 0 && pid != 1);
 		DEBUG_PRINT(frmt("execute: pid = %jd", (intmax_t) pid));
@@ -846,8 +846,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			raise(ERROR_BUILD);
 			done |= Done::from_flags(dep_link->flags);
 			assert(proceed == 0);
-			proceed |= P_ABORT | P_FINISHED;
-			goto ret;
+			return proceed |= P_ABORT | P_FINISHED;
 		}
 
 		executors_add(pid, index, this);
@@ -861,7 +860,6 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	proceed |= P_WAIT;
 	if (order == Order::RANDOM && options_jobs > 0)
 		proceed |= P_CALL_AGAIN;
- ret:
 	TRACE("proceed= %s", show(proceed));
 	return proceed;
 }

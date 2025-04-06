@@ -193,7 +193,8 @@ s,^\([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9]\)\.\([0-9][0-9][0-9]\)\([-.]..*\
 preload_prefix()
 {
 	value=$(printf '%s\n' "$1" | sed -e 's,^:,,;s,:$,,')
-	printf 'LD_PRELOAD=%s\n' "$value"
+	[ "$value" ] &&
+		printf 'LD_PRELOAD=%s\n' "$value"
 }
 
 time_begin=$(sh/now)
@@ -359,7 +360,6 @@ do
 			echo >&7 "EXITSTATUS...$exitstatus_correct correct"
 		fi
 
-		# Target was built or not generate in case of error
 		if [ "$exitstatus_correct" = 0 ]; then
 			target=A
 			if [ -r TARGET ]; then

@@ -1,4 +1,11 @@
 #
+# FreeBSD fixes
+#
+
+# * [long-int-remove-files] fails
+# * tcsetpgrp: Operation not permitted-foreground  [which test?]
+
+#
 # Achieve full coverage.
 #
 
@@ -71,6 +78,11 @@ C:  -L { ln -s ... B ; }
 # gets converted to:       @dir/all:  ...;
 # or to:                   dir/@all:  ...;  # ???
 
+# File import should also work in the command line
+#    $ stu -d dir/main.stu # Like first cd'ing to dir/
+# -d is "debug" for now -- would have to deprecate debug mode, which we want to do
+# anyway.
+
 #
 # When doing %include or %import, allow to pass environment variables.
 #
@@ -94,7 +106,8 @@ C:  -L { ln -s ... B ; }
 #
 
 -a A : B;
-# There must already be a rule for A.  The dependency B is added.
+# There must already be a rule for A.  The dependency B is added.  There cannot be a
+# command.
 
 #
 # Line number and file syntax:  A preprocessor-like construct that gives a new
@@ -225,6 +238,10 @@ $x.bbb -p1:  ... { ... }
 aaa.$x -p2:  ... { ... }
 
 #
+# Get Stu into RHEL.
+#
+
+#
 # Get Stu into Debian.
 # * https://www.debian.org/devel/wnpp/
 # * https://wiki.debian.org/DebianMentorsFaq#How_do_I_make_my_first_package.3F
@@ -289,4 +306,14 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 # Have an option to output the dependency graph, i.e., output each edge
 # on a single line, e.g. separated by tab.
+#
+
+#
+# shared_ptr <const Dep>:  This can be replaced by "const Dep *" in certain function
+# arguments, when the argument is not clone or saved somewhere else.
+#
+
+#
+# An option to consider nothing up to date, i.e., rebuild everything.  GNU Make has an
+# option for this.
 #

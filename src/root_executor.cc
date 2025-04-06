@@ -20,26 +20,31 @@ Root_Executor::Root_Executor(const std::vector <shared_ptr <const Dep> > &deps)
 
 Proceed Root_Executor::execute(shared_ptr <const Dep> dep_link)
 /* This is an example of a "plain" execute() function, containing the minimal wrapper
- * around execute_phase_?() */
+ * around execute_phase_{A,B}() */
 {
+	TRACE_FUNCTION();
 	Debug debug(this);
 	Proceed proceed= execute_phase_A(dep_link);
-	assert(proceed);
-	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
-		assert((proceed & P_FINISHED) == 0);
-		return proceed;
-	}
-	if (proceed & P_FINISHED) {
+	TRACE("proceed= %s", show(proceed));
+	assert(is_valid(proceed));
+	if (proceed & P_ABORT) {
 		is_finished= true;
 		return proceed;
 	}
-
-	proceed |= execute_phase_B(dep_link);
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		assert((proceed & P_FINISHED) == 0);
 		return proceed;
 	}
-	if (proceed & P_FINISHED) {
+	assert(proceed & P_FINISHED);
+	assert(get_buffer_A().empty());
+
+	Proceed proceed_B= execute_phase_B(dep_link);
+	TRACE("proceed_B= %s", show(proceed));
+	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
+		assert((proceed & P_FINISHED) == 0);
+		return proceed;
+	}
+	if (proceed_B & P_FINISHED) {
 		is_finished= true;
 	}
 

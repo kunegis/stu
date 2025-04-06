@@ -33,6 +33,7 @@ public:
 	void set_all() { bits= ~0; }
 
 	static Done from_flags(Flags flags);
+	static Done from_flags_trivial_and_nontrivial(Flags flags);
 
 #ifndef NDEBUG
 	string show() const;

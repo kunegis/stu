@@ -1,0 +1,5 @@
+A:  B C E   { echo a >A ; }
+B:  D       { echo b >B ; }
+C:  D       { echo c >C ; }
+D:          { echo d >D ; }
+E:          { echo e >E ; }

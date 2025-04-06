@@ -29,6 +29,7 @@ List of options
 -C  S   x x  Explicit target with syntax
 -C  x   G F  Change directory
 -d  s   G F  Print debugging information
+-d  .        Import file (as opposed to include)
 -D        F  Define variable
 -e  - M G F  Environment overrides Make macros
 -E  S        Explain errors

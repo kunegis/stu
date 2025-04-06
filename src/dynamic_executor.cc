@@ -70,12 +70,10 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 	TRACE("proceed= %s", show(proceed));
 	assert(is_valid(proceed));
 	if (proceed & P_ABORT) {
-		assert(proceed & P_FINISHED);
 		done |= Done::from_flags(dep_link->flags);
 		return proceed;
 	}
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
-		assert((proceed & P_FINISHED) == 0);
 		return proceed;
 	}
 
@@ -152,11 +150,13 @@ void Dynamic_Executor::notify_variable(
 }
 
 void Dynamic_Executor::notify_result(
-	shared_ptr <const Dep> dep_result, Executor *source,
-	Flags flags, shared_ptr <const Dep> dep_source)
+	shared_ptr <const Dep> dep_result,
+	Executor *source,
+	Flags flags,
+	shared_ptr <const Dep> dep_source)
 {
 	TRACE_FUNCTION(show_trace(dep));
-	TRACE("d= %s; flags= %s; dep_source= %s",
+	TRACE("dep_result= %s; flags= %s; dep_source= %s",
 		show_trace(dep_result), show_flags(flags), show_trace(dep_source));
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)));
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))

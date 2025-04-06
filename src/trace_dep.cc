@@ -4,7 +4,7 @@
 
 string show_trace(const shared_ptr <const Dep> &dep)
 {
-	return show(dep, S_DEBUG, R_SHOW_FLAGS);
+	return show(dep, S_DEBUG, R_SHOW_FLAGS | R_SHOW_INDEX);
 }
 
 string show_trace(const shared_ptr <Dep> &dep)

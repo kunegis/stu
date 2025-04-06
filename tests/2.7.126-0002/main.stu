@@ -1,0 +1,8 @@
+A:  [X]
+{
+	cp B A
+}
+
+X = {B}
+
+B = {CORRECT}

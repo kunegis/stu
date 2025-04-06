@@ -35,14 +35,11 @@ public:
 		return dep->render(parts);
 	}
 
-	virtual void notify_variable(const std::map <string, string> &result_variable_child) override {
-		result_variable.insert(result_variable_child.begin(),
-				       result_variable_child.end());
-	}
-	virtual void notify_result(shared_ptr <const Dep> dep,
-				   Executor *source,
-				   Flags flags,
-				   shared_ptr <const Dep> dep_source) override;
+	virtual void notify_variable(
+		const std::map <string, string> &result_variable_child) override;
+	virtual void notify_result(
+		shared_ptr <const Dep> dep_result, Executor *source, Flags flags,
+		shared_ptr <const Dep> dep_source) override;
 
 protected:
 	virtual bool optional_finished(shared_ptr <const Dep> ) override { return false; }
@@ -57,7 +54,7 @@ private:
 	Stage stage;
 	std::vector <shared_ptr <Compound_Dep> > collected;
 
-	void launch_stage_1();
+	void launch_stage_normal();
 };
 
 #endif /* ! CONCAT_EXECUTOR_HH */

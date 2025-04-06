@@ -1,7 +1,7 @@
 #! /bin/sh
 #
 # OUTPUT FILES
-#	conf/CXX               Compile
+#	conf/CXX               Compiler
 #	conf/CXXFLAGS          Flags used for all compilations
 #	conf/CXXFLAGS_NDEBUG   Flags for bin/stu
 #

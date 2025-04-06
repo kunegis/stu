@@ -48,6 +48,7 @@ constexpr Rendering R_SHOW_FLAGS=               1 << 0;
 constexpr Rendering R_GLOB=                     1 << 1;
 constexpr Rendering R_SHOW_INPUT=               1 << 2;
 constexpr Rendering R_NO_COMPOUND_PARENTHESES=  1 << 3;
+constexpr Rendering R_SHOW_INDEX=               1 << 4;
 
 enum Properties {
 	PROP_TEXT,

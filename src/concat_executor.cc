@@ -8,8 +8,9 @@ Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
 				 int &error_additional)
 	: dep(dep_), stage(ST_DYNAMIC)
 {
-	assert(dep_);
-	assert(dep_->is_normalized());
+	TRACE_FUNCTION();
+	TRACE("dep_= %s", show_trace(dep_));
+	assert(dep);
 	assert(dep->is_normalized());
 	assert(parent);
 	assert(error_additional == 0);
@@ -53,31 +54,44 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 	assert(stage < ST_FINISHED);
 
 	Proceed proceed= execute_phase_A(dep_link);
-	assert(proceed);
+	assert(is_valid(proceed));
+	if (proceed & P_ABORT) {
+		TRACE("phase A aborted");
+		assert(is_valid(proceed) && (proceed & P_FINISHED));
+		stage= ST_FINISHED;
+		return proceed;
+	}
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
+		TRACE("phase A wait/call again");
 		assert((proceed & P_FINISHED) == 0);
 		return proceed;
 	}
-	if (!(proceed & P_FINISHED)) {
-		proceed |= execute_phase_B(dep_link);
-		if (proceed & (P_WAIT | P_CALL_AGAIN)) {
-			assert((proceed & P_FINISHED) == 0);
-			return proceed;
-		}
+
+	assert(proceed == P_FINISHED);
+	proceed= execute_phase_B(dep_link);
+	if (proceed & P_ABORT) {
+		TRACE("phase B aborted");
+		assert(is_valid(proceed) && (proceed & P_FINISHED));
+		stage= ST_FINISHED;
+		return proceed;
 	}
-	if (proceed & P_FINISHED) {
-		++stage;
-		assert(stage <= ST_FINISHED);
-		if (stage == ST_FINISHED) {
-			return proceed;
-		} else {
-			assert(stage == ST_NORMAL);
-			launch_stage_1();
-			goto again;
-		}
+	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
+		assert((proceed & P_FINISHED) == 0);
+		TRACE("phase B wait/call again");
+		return proceed;
 	}
 
-	return proceed;
+	assert(proceed == P_FINISHED);
+	assert(stage < ST_FINISHED);
+	if (stage == ST_NORMAL) {
+		++stage;
+		TRACE("finished");
+		return proceed;
+	} else if (stage == ST_DYNAMIC) {
+		launch_stage_normal();
+		goto again;
+	}
+	unreachable();
 }
 
 bool Concat_Executor::finished() const
@@ -93,14 +107,27 @@ bool Concat_Executor::finished(Flags) const
 	return finished();
 }
 
-void Concat_Executor::launch_stage_1()
+void Concat_Executor::notify_variable(
+	const std::map <string, string> &result_variable_child)
+{
+	result_variable.insert(result_variable_child.begin(),
+		result_variable_child.end());
+}
+
+void Concat_Executor::launch_stage_normal()
 {
 	TRACE_FUNCTION();
+	assert(stage == ST_DYNAMIC);
+	++stage;
+	assert(stage == ST_NORMAL);
 	shared_ptr <Concat_Dep> c= std::make_shared <Concat_Dep> ();
+	TRACE("collected.size()= %s", frmt("%zu", collected.size()));
 	c->deps.resize(collected.size());
 	for (size_t i= 0; i < collected.size(); ++i) {
-		c->deps.at(i)= move(collected.at(i));
+		TRACE("collected[%s]= %s", frmt("%zu", i), show(collected[i]));
+		c->deps.at(i)= move(collected[i]);
 	}
+	TRACE("c= %s", show(c, S_DEBUG, R_SHOW_FLAGS));
 	std::vector <shared_ptr <const Dep> > deps;
 	int e= 0;
 	c->normalize(deps, e);
@@ -108,6 +135,7 @@ void Concat_Executor::launch_stage_1()
 		*this << "";
 		raise(e);
 	}
+	TRACE("deps.size()= %s", frmt("%zu", deps.size()));
 
 	for (auto f: deps) {
 		shared_ptr <Dep> f2= f->clone();
@@ -124,28 +152,35 @@ void Concat_Executor::launch_stage_1()
 	}
 }
 
-void Concat_Executor::notify_result(shared_ptr <const Dep> d,
-				    Executor *source,
-				    Flags flags,
-				    shared_ptr <const Dep> dep_source)
+void Concat_Executor::notify_result(
+	shared_ptr <const Dep> dep_result,
+	Executor *source,
+	Flags flags,
+	shared_ptr <const Dep> dep_source)
 {
+	assert(source);
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)));
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))
 		!= (F_RESULT_NOTIFY | F_RESULT_COPY));
 	assert(dep_source);
+	TRACE_FUNCTION(show_trace(dep));
+	TRACE("dep_result= %s", show_trace(dep_result));
+	TRACE("source= %s", show(*source));
+	TRACE("flags= %s", show_flags(flags));
+	TRACE("i= %s", frmt("%zd", dep_source->index));
 	DEBUG_PRINT(fmt("notify_result(flags = %s, d = %s)",
 			show_flags(flags, S_DEBUG),
-			::show(d, S_DEBUG, R_SHOW_FLAGS)));
+			::show(dep_result, S_DEBUG, R_SHOW_FLAGS)));
 
 	if (flags & F_RESULT_NOTIFY) {
 		std::vector <shared_ptr <const Dep> > deps;
-		source->read_dynamic(to <const Plain_Dep> (d), deps, dep, this);
+		source->read_dynamic(to <const Plain_Dep> (dep_result), deps, dep, this);
 		for (auto &j: deps) {
 			size_t i= dep_source->index;
 			collected.at(i)->deps.push_back(j);
 		}
 	} else if (flags & F_RESULT_COPY) {
-		push_result(d);
+		push_result(dep_result);
 	} else {
 		unreachable();
 	}

@@ -85,7 +85,7 @@ enum
 
 	F_RESULT_COPY           = 1 << I_RESULT_COPY,
 	/* The link A ---> B between two executors annotated with this
-	 * flags means that the results of B will be copied into A's result. */
+	 * flag means that the results of B will be copied into A's result. */
 
 	F_PHASE_B               = 1 << I_PHASE_B,
 	/* A parent is in phase B */

@@ -1,23 +1,5 @@
-A:  A5 B5 C5 {
-    cat A5 B5 C5 >A
-}
-
-#-----------
-
-A5:  A4 {
-     cat A4 >A5
-}
-
-B5:  A4 {
-     cat A4 >B5
-}
-
-C5: {
-	echo hello >C5
-}
-
-#-----------------
-
-A4: {
-    echo A four >A4
-}
+A:  B C E   { echo a >A ; }
+B:  D       { echo b >B ; }
+C:  D       { echo c >C ; }
+D:          { echo d >D ; }
+E:          { echo e >E ; }

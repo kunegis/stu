@@ -53,31 +53,36 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 	assert(stage < ST_FINISHED);
 
 	Proceed proceed= execute_phase_A(dep_link);
-	assert(proceed);
+	assert(is_valid(proceed));
+	if (proceed & P_ABORT) {
+		return proceed;
+	}
+	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
+//		assert((proceed & P_FINISHED) == 0);
+		return proceed;
+	}
+
+	assert(proceed == P_FINISHED);
+	proceed= execute_phase_B(dep_link);
+	if (proceed & P_ABORT) {
+		return proceed;
+	}
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
 		assert((proceed & P_FINISHED) == 0);
 		return proceed;
 	}
-	if (!(proceed & P_FINISHED)) {
-		proceed |= execute_phase_B(dep_link);
-		if (proceed & (P_WAIT | P_CALL_AGAIN)) {
-			assert((proceed & P_FINISHED) == 0);
-			return proceed;
-		}
-	}
-	if (proceed & P_FINISHED) {
-		++stage;
-		assert(stage <= ST_FINISHED);
-		if (stage == ST_FINISHED) {
-			return proceed;
-		} else {
-			assert(stage == ST_NORMAL);
-			launch_stage_1();
-			goto again;
-		}
-	}
 
-	return proceed;
+	assert(proceed == P_FINISHED);
+	++stage;
+	assert(stage <= ST_FINISHED);
+	if (stage == ST_FINISHED) {
+		return proceed;
+	} else {
+		assert(stage == ST_NORMAL);
+		launch_stage_1();
+		goto again;
+	}
+	unreachable();
 }
 
 bool Concat_Executor::finished() const

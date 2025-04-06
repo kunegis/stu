@@ -70,12 +70,12 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 	TRACE("proceed= %s", show(proceed));
 	assert(is_valid(proceed));
 	if (proceed & P_ABORT) {
-		assert(proceed & P_FINISHED);
+//		assert(proceed & P_FINISHED);
 		done |= Done::from_flags(dep_link->flags);
 		return proceed;
 	}
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
-		assert((proceed & P_FINISHED) == 0);
+//		assert((proceed & P_FINISHED) == 0);
 		return proceed;
 	}
 

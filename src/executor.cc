@@ -667,6 +667,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(*this));
 	DEBUG_PRINT("phase_A");
+	TRACE("options_jobs= %s", frmt("%ld", options_jobs));
 	assert(options_jobs >= 0);
 	assert(dep_link);
 	if (finished(dep_link->flags)) {
@@ -704,7 +705,8 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	assert(error == 0 || option_k);
 
 	if (options_jobs == 0) {
-		return proceed |= P_WAIT;
+		return proceed;
+//		return proceed |= P_WAIT;
 	}
 
 	while (! buffer_A.empty()) {
@@ -715,7 +717,8 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 		TRACE("proceed= %s", show(proceed));
 		proceed |= (proceed_2 & ~P_FINISHED);
 		if (options_jobs == 0) {
-			return proceed |= P_WAIT;
+			return proceed;
+//			return proceed |= P_WAIT;
 		}
 		TRACE("proceed= %s", show(proceed));
 	}
@@ -730,7 +733,8 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 		}
 	}
 
-	/* Some dependencies are still running */
+	/* Some dependencies are still open */
+	TRACE("proceed= %s", show(proceed));
 	if (! children.empty()) {
 		assert(is_valid(proceed));
 		return proceed;

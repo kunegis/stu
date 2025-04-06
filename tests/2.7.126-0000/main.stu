@@ -1,5 +1,5 @@
-A:  A5 B5 C5 D5 E5 {
-    cat A5 B5 C5 D5 E5 >A
+A:  A5 B5 C5 {
+    cat A5 B5 C5 >A
 }
 
 #-----------
@@ -12,16 +12,8 @@ B5:  A4 B4 C4 {
      cat A4 B4 C4 >B5
 }
 
-C5:  B4 C4 D4 {
-     cat B4 C4 D4 >C5
-}
-
-D5:  C4 D4 E4 {
-     cat C4 D4 E4 >D5
-}
-
-E5:  D4 E4 {
-     cat D4 E4 >E5
+C5:  B4 C4 {
+     cat B4 C4 >C5
 }
 
 #-----------------
@@ -36,13 +28,5 @@ B4: {
 
 C4: {
     echo C four >C4
-}
-
-D4: {
-    echo D four >D4
-}
-
-E4: {
-    echo E four >E4
 }
 

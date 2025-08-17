@@ -317,3 +317,7 @@ A: [ -t -o B ] { touch A ; }  B={C}
 # An option to consider nothing up to date, i.e., rebuild everything.  GNU Make has an
 # option for this.
 #
+
+#
+# Concatenation with the '|' operator.
+#

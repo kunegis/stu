@@ -37,5 +37,5 @@ Use
 * Use the options -o, -t and -p judiciously
 * Never generate Stu source code automatically
 * Never call Stu recursively
-* Use the -E option to get explanations for error messages.  You can set STU_OPTIONS in
+* Use the -E option to get explanations for error messages.  You can set $STU_OPTIONS in
   the environment to '-E' to set this persistently.

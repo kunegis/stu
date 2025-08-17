@@ -12,12 +12,12 @@
 #
 
 #
-# (C++20) Executor::execute() and subclasses:  Use coroutines.
+# (C++20) TRACE_FUNCTION: have optional parameter(s) to pass arguments of the function,
+# instead of outputting them on a separate line.
 #
 
 #
-# (C++20) TRACE_FUNCTION: have optional parameter(s) to pass arguments of the function, instead of
-# outputting them on a separate line.
+# (C++20) Executor::execute() and subclasses:  Use coroutines.
 #
 
 #

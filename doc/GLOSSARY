@@ -1,18 +1,16 @@
-Anchoring - Represents the position of a parameter in a matched
-	filename.  Each anchoring is represented by two numbers,
-	representing the start and end position of the match.
-	Anchorings are represented as arrays of integers of length 2*N,
-	where N is the number of parameters.  For instance, when
-	"/usr/bin" is matched to "/$DIR/$NAME", the anchorings are given
-	by the array [1 4 5 8].
+Anchoring - Represents the position of a parameter in a matched filename.  Each anchoring
+	isrepresented by two numbers, representing the start and end position of the
+	match.  Anchorings are represented as arrays of integers of length 2*N, where N is
+	the number of parameters.  For instance, when "/usr/bin" is matched to
+	"/$DIR/$NAME", the anchoring is given by the array [1 4 5 8].
 
 Command - A command that is run for a target.  Enclosed by braces ({}) in
 	Stu files, and executed with the shell.
 
-Depth - The depth of a dependency counts how many times over it includes a
-	dynamic dependency.  For instance, an ordinary file target "file" has
-	depth zero, a dynamic dependency "[file]" has depth one, a doubly
-	dynamic dependency "[[file]]" has depth two, etc.
+Depth - The depth of a dependency counts how many times over it includes a dynamic
+	dependency.  For instance, an ordinary file target "file" has depth zero, a
+	dynamic dependency "[file]" has depth one, a doubly dynamic dependency "[[file]]"
+	has depth two.
 
 Directive - A construct introduced with the '%' in Stu source code.
 	Directives are processed before the source code is otherwise

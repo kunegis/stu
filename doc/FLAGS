@@ -4,7 +4,7 @@ to each edge in the dependency graph.
 
 -o   Optional dependency
 -p   Persistent dependency
--t   Transient dependency
+-t   Trivial dependency
 
 (The flags -o and -p are mutually exclusive.)
 
@@ -19,3 +19,4 @@ Possible future flags:
 -a   Additional dependencies
 -s   Secondary
 -c   Command
+<...and others...>

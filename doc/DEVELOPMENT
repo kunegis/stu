@@ -5,7 +5,7 @@ This is information for hacking Stu itself.
 
 'TODO.stu' lists the next features to be implemented.
 
-'UNIMPLEMENTED.stu' lists things we're unlikely to implement.
+'UNIMPLEMENTED.stu' lists things we are not planning to implement at the moment.
 
 'CODING' gives the coding standards used in Stu.
 
@@ -16,6 +16,7 @@ For development, use 'make test' (it works only with GCC).
 Before pushing changes:
 * Increment the version number in VERSION
 * Run 'make test' successfully
+* Squash the commits
 
 Version logic (see 'NEWS' for an explanation of version numbers):
 * Increment the patch version number for any changes
@@ -39,7 +40,7 @@ Unit testing is described in 'sh/test'.
 The command 'make test' will also execute all unit tests, as well as sanitizer tests.
 This takes about fifteen minutes.
 
-When using another compiler than GCC, you can use 'make check' insteads, which disables
+When using another compiler than GCC, you can use 'make check' instead, which disables
 warnings and doesn't run code cleanliness tests.  But when contributing to Stu, please run
 'make test'.
 
@@ -56,7 +57,7 @@ Running 'make check' has more requirements than just compiling Stu:
   offending tests (tests/1-unicode-*/).
 * LD_PRELOAD must work
 
-Running 'make test' has the following requirements:
+Running 'make test' has the following additional requirements:
 * -fsanitize=undefined must work
 
 Running 'make cov' has the following requirements:

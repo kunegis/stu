@@ -10,3 +10,7 @@
 # Cache the content of files that are used as dynamic dependencies or
 # dynamic variables.
 #
+
+#
+# Part::need_quotes() should be implemented using a bit mask, and inlined.
+#

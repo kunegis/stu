@@ -11,10 +11,10 @@ These are the relevant coding conventions we use.
   extensions for that matter.  Source files are named '*.hh' and '*.cc'.  (In
   principle, we use the latest C++ version, but only adopt a new version five
   years or so after it is released.)
-* Compilation is done in a single step by compiling the file 'stu.cc'.  All
-  other source files are actually '*.hh' files which are included.  Therefore,
-  we don't strictly separate declarations and definitions.  If one day we think
-  the compilation has become too slow, we'll start using '*.o' files though.
+* Compilation is done in a single step by compiling the file 'stu.cc'.  All other source
+  files are included.  Therefore, we don't strictly separate declarations and definitions.
+  If one day we think the compilation has become too slow, we'll start using '*.o' files
+  though.
 * Names of targets in the Makefile follow the GNU Coding Standards.
 * Use SemVer.org for version number semantics.  We consider only changes in the
   Stu language specification and options marked as stable in 'OPTIONS'.  See the
@@ -47,9 +47,8 @@ This is my preferred style.  --Jérôme Kunegis
 * No space before the assignment operator and around parentheses.  Also, no
   space between 'operator' and the operator symbol.  Otherwise, spaces around
   most operators.
-* Pointer and reference characters (* and &) attach to the variable name in
-  declarations.  This is compatible to C usage, and in defiance of common C++
-  wisdom.
+* Pointer and reference characters (* and &) attach to the variable name in declarations.
+  This is compatible to C usage, and in defiance of widespread C++ wisdom.
 
 === Code ===
 
@@ -71,9 +70,9 @@ This is my preferred style.  --Jérôme Kunegis
 * When overriding a virtual function, we do use the 'virtual' keyword, even if
   it is redundant.
 * For IO, we use C-style IO only; no C++ IO.
-* Stu does not call setlocale(), and therefore can make use of isspace()
-  detecting spaces as defined in the C locale.  The same is true for isalnum(),
-  which is used to get ASCII results.
+* Stu uses setlocale(LC_CTYPE, ""), and therefore can make use of isspace() detecting
+  spaces as defined in the C locale.  The same is true for isalnum(), which is used to get
+  ASCII results.
 
 == Dynamic variables ==
 

@@ -81,7 +81,7 @@ forms of non-operators, i.e., new tokens.
     +   Inverted flag [as in the shell] (maybe)
     ~   Home directory [as in the shell] (maybe)
     &   Intersection (maybe)
-    |   Componentwise concatenation (maybe)
+    |   (Componentwise) concatenation (maybe)
     |   Union [redundant to juxtaposition]
     !?  Some form of dual operators
     !   Command interpreter (maybe)

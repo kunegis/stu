@@ -6,9 +6,9 @@
  * This is a two-step process:
  *
  *              render()                     show()
- *   Objects --------------> Parts -------------------------> string
- *  (any Stu               (array of                      (to be output)
- *   object)              Part objects)
+ *   Objects --------------> Parts -------------------------> Text
+ *  (any Stu               (array of                      (std::string
+ *   object)              Part objects)                    to be output)
  *
  * render*() functions takes a Rendering parameter, and a "Parts &"
  * parameter to which they append the rendered parts.

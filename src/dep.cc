@@ -218,10 +218,12 @@ void Plain_Dep::render(Parts &parts, Rendering rendering) const
 	place_target.render(parts, rendering);
 	if (flags & F_VARIABLE)
 		parts.append_operator("]");
+#ifndef NDEBUG
 	if (rendering & R_SHOW_INDEX && index >= 0) {
 		parts.append_operator("_");
 		parts.append_text(frmt("%zd", index));
 	}
+#endif
 }
 
 Hash_Dep Dynamic_Dep::get_target() const

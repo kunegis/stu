@@ -12,7 +12,7 @@ clean()
 }
 trap clean EXIT
 
-echo 0 >"$ret_file"
+touch "$ret_file" || exit 2
 
 exclude()
 {
@@ -73,14 +73,18 @@ eval_file()
 			continue
 		fi
 		printf '%s:%s:%s\n' "$src_file" "$line" "$text"
-		echo 1 >"$ret_file"
+		echo 1 >>"$ret_file"
 	done
 }
-
-ret=0
 
 for file in cov/*.gcov ; do
 	eval_file "$file"
 done
 
-exit $(cat -- "$ret_file")
+uncovered_line_count=$(echo $(wc -l <"$ret_file"))
+if [ "$uncovered_line_count" != 0 ] ; then
+	echo >&2 "*** Found $uncovered_line_count uncovered lines"
+	exit 1
+fi
+
+exit 0

@@ -36,6 +36,8 @@ void Tokenizer::parse_tokens_file(
 	struct stat buf;
 	FILE *file= nullptr;
 	enum {TC_MMAP, TC_MALLOC} technique;
+	TRACE_FUNCTION();
+	TRACE("filename= %s", filename);
 
 	try {
 		if (context == SOURCE) {
@@ -102,35 +104,44 @@ void Tokenizer::parse_tokens_file(
 		technique= TC_MMAP;
 		in_size= buf.st_size;
 		in= (char *) mmap(nullptr, in_size, PROT_READ, MAP_SHARED, fd, 0);
+		TRACE("in= %s", frmt("%p", in));
 		if (in == MAP_FAILED) {
-
+			TRACE("mmap() failed");
 		try_read:
 			technique= TC_MALLOC;
 			if (file == nullptr) {
 				file= fdopen(fd, "r");
+				TRACE("file= %s", frmt("%p", (void *)file));
 				if (file == nullptr)
 					goto error_close;
+				fd= -1;
 			}
 			const size_t BUFLEN= 0x1000;
 			char *mem= nullptr;
 			size_t len= 0;
 
 			while (true) {
+				TRACE("Read...");
 				if (len + BUFLEN < len) {
+					TRACE("Overflow");
 					free(mem);
 					errno= ENOMEM;
 					goto error_close;
 				}
 				char *mem_new= (char *) realloc(mem, len + BUFLEN);
 				if (mem_new == nullptr) {
+					TRACE("realloc failed");
 					free(mem);
 					goto error_close;
 				}
 				mem= mem_new;
 				size_t r= fread(mem + len, 1, BUFLEN, file);
+				TRACE("r= %s", frmt("%zu", r));
 				assert(r <= BUFLEN);
 				if (r == 0) {
+					TRACE("r is zero");
 					if (ferror(file)) {
+						TRACE("errno= %s", frmt("%s", strerror(errno)));
 						if (! filename.empty()) {
 							int errno_save= errno;
 							fclose(file);
@@ -138,15 +149,17 @@ void Tokenizer::parse_tokens_file(
 						}
 						goto error_close;
 					} else {
+						TRACE("End of file");
 						break;
 					}
 				}
 				len += r;
 			}
 
-			/* Close the input file, but not if it is STDIN */
+			TRACE("Close the input file, but not if it is STDIN");
 			if (! filename.empty()) {
 				if (fclose(file) != 0) {
+					TRACE("fclose failed");
 					goto error_close;
 				}
 			} else {
@@ -158,10 +171,14 @@ void Tokenizer::parse_tokens_file(
 			in_size= len;
 		}
 
-		if (! filename.empty()) {
+		if (fd >= 3) {
+			assert(! filename.empty());
+			TRACE("Close file");
 			assert(fd >= 3);
-			if (0 > close(fd))
+			if (0 > close(fd)) {
+				TRACE("close failed");
 				goto error;
+			}
 		}
 
 		{
@@ -186,6 +203,7 @@ void Tokenizer::parse_tokens_file(
 		}
 
 	return_close:
+		TRACE("Return close");
 		if (! filename.empty()) {
 			assert(fd >= 3);
 			if (0 > close(fd))
@@ -196,6 +214,7 @@ void Tokenizer::parse_tokens_file(
 		return;
 
 	error_close:
+		TRACE("Error close");
 		if (! filename.empty()) {
 			assert(fd >= 3);
 			close(fd);
@@ -203,6 +222,7 @@ void Tokenizer::parse_tokens_file(
 			assert(fd == 0);
 		}
 	error:
+		TRACE("error");
 		const char *filename_diagnostic= !filename.empty()
 			? filename.c_str() : "<stdin>";
 		if (backtraces.size() > 0) {

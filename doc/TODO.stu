@@ -310,7 +310,7 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # shared_ptr <const Dep>:  This can be replaced by "const Dep *" in certain function
-# arguments, when the argument is not clone or saved somewhere else.
+# arguments, when the argument is not cloned or saved somewhere else.
 #
 
 #

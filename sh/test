@@ -308,7 +308,7 @@ do
 			CMDPREFIX=$(sed -e '/^[[:space:]]*$/d' <CMDPREFIX)
 		fi
 		if [ -r PRELOAD.cc ]; then
-			echo >&7 "PRELOAD.cc found; cc=$preload_cc so=$preload_so"
+			echo >&7 "PRELOAD.cc found; so=$preload_so"
 			(cd ../.. && sh/ccpreload tests/"$file"/PRELOAD.cc $preload_so) || exit 2
 			LD_PRELOAD_VALUE="$LD_PRELOAD_VALUE:$preload_so"
 		fi

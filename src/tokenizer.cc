@@ -38,6 +38,7 @@ void Tokenizer::parse_tokens_file(
 	enum {TC_MMAP, TC_MALLOC} technique;
 	TRACE_FUNCTION();
 	TRACE("filename= %s", filename);
+	TRACE("fd= %s", frmt("%d", fd));
 
 	try {
 		if (context == SOURCE) {
@@ -68,7 +69,9 @@ void Tokenizer::parse_tokens_file(
 			}
 		}
 
+		TRACE("fstat");
 		if (fstat(fd, &buf) < 0) {
+			TRACE("fstat failed");
 			goto error_close;
 		}
 

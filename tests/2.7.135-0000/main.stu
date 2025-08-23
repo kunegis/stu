@@ -1,0 +1,9 @@
+# The command has three lines, each of which starts with a tab.  The first and last lines
+# contain ONLY a tab.  Only the middle line is kept for output.
+
+>A
+{
+	
+	echo CORRECT
+	
+}

@@ -6,7 +6,7 @@
 # * tcsetpgrp: Operation not permitted-foreground  [which test?]
 
 #
-# Deprecate/remove debug mode (-d).
+# Deprecate/remove debug mode (-d).  Or maybe not.
 #
 
 #

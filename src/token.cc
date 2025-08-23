@@ -6,14 +6,12 @@ Command::Command(string command_, const Place &place_,
 	  place(place_), place_start(place_start_)
 { }
 
-const std::vector <string> &
-Command::get_lines() const
-/* This code parses the command string into lines ready for output.
- * Most of the code is for making the output pretty.
+const std::vector <string> &Command::get_lines() const
+/* This code parses the command string into lines ready for output.  Most of the code is
+ * for making the output pretty.
  *
- * We only output a command when it has a single line, but the following
- * code also handles the case of multiline commands.  We keep it because
- * we may need it in the future. */
+ * We only output a command when it has a single line, but the following code also handles
+ * the case of multiline commands.  We keep it because we may need it in the future. */
 {
 	if (lines != nullptr)
 		return *lines;
@@ -29,10 +27,8 @@ Command::get_lines() const
 		if (line.size()) {
 			/* Discard lines consisting only of whitespace */
 			bool keep= false;
-			for (size_t i= 0; i < line.size(); ++i) {
-				if (! isspace(line[i]))
-					keep= true;
-			}
+			for (size_t i= 0; i < line.size(); ++i)
+				if (! isspace(line[i])) keep= true;
 			if (keep)
 				lines->push_back(line);
 		}
@@ -56,10 +52,8 @@ Command::get_lines() const
 			string &line= (*lines)[i];
 			assert(line.size());
 			line.erase(0, 1);
-			if (line.empty())
-				lines->erase(lines->begin() + i);
-			else
-				++i;
+			assert(! line.empty());
+			++i;
 		}
 	}
 

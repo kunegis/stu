@@ -5,7 +5,7 @@ check: \
     man/stu.1 MANPAGE src/version.hh \
     bin/stu \
     log/test_unit.cdebug \
-    log/test_unit.ndebug
+    log/test_unit.ndebug-nopreload
 test: \
     bin/stu.debug \
     man/stu.1 MANPAGE src/version.hh \
@@ -90,14 +90,17 @@ log/test_unit.debug:           bin/stu.debug          sh/test tests tests/*/*
 	@echo sh/test
 	@     sh/test && mkdir -p log && touch $@
 log/test_unit.cdebug:          bin/stu.cdebug         sh/test tests tests/*/*
-	@echo VARIANT=cdebug sh/test
-	@     VARIANT=cdebug sh/test && mkdir -p log && touch $@
+	@echo VARIANT=cdebug nopreload=1 sh/test
+	@     VARIANT=cdebug nopreload=1 sh/test && mkdir -p log && touch $@
 log/test_unit.ndebug:          bin/stu                sh/test tests tests/*/*
-	@echo NDEBUG=1 sh/test
-	@     NDEBUG=1 sh/test && mkdir -p log && touch $@
+	@echo NDEBUG=1                   sh/test
+	@     NDEBUG=1                   sh/test && mkdir -p log && touch $@
+log/test_unit.ndebug-nopreload:bin/stu                sh/test tests tests/*/*
+	@echo NDEBUG=1       nopreload=1 sh/test
+	@     NDEBUG=1       nopreload=1 sh/test && mkdir -p log && touch $@
 log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/test tests tests/*/*
-	@echo VARIANT=sani_undefined sh/test
-	@     VARIANT=sani_undefined sh/test && mkdir -p log && touch $@
+	@echo VARIANT=sani_undefined     sh/test
+	@     VARIANT=sani_undefined     sh/test && mkdir -p log && touch $@
 
 install:  sh/install bin/stu man/stu.1
 	sh/install

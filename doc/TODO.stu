@@ -1,9 +1,4 @@
 #
-# Make sure that "make check" does not execute tests with PRELOAD.cc, and that not all
-# test variants execute the long tests.
-#
-
-#
 # FreeBSD fixes
 #
 

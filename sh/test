@@ -22,6 +22,7 @@
 #	             that matches the value of $NDEBUG
 #	$TEST_DEBUG  Set to {0,1,2} for verbose levels; default is 0
 #	$nolong      Skip the long-* tests
+#	$nopreload   Skip the tests that use $LD_PRELOAD
 #	$notall      If non-empty, exit on the first error, instead of running everything
 #	$emptyok     Set to non-empty to *not* output an error for empty test directories;
 #	             useful after doing "rm" in a version control system on one, since
@@ -141,7 +142,7 @@ output_end()
 
 output_success()
 {
-	echo "[2K[32mTesting [$VARIANT$subset] Success (runtime $runtime)[m"
+	echo "[2K[32mTesting [$VARIANT$subset] Success ($count_total tests) (runtime $runtime)[m"
 }
 
 test_fail()
@@ -169,6 +170,15 @@ sort_tests()
 	{
 		if [ "$nolong" ] ; then
 			grep -E -v -e '^long-'
+		else
+			cat
+		fi
+	} |
+	{
+		if [ "$nopreload" ] ; then
+			while IFS= read -r name ; do
+				[ -f "$name"/PRELOAD.cc ] || echo "$name"
+			done
 		else
 			cat
 		fi
@@ -229,7 +239,9 @@ else
 	fi
 fi
 
-sh/ccpreload src/preload-tty.cc bin/preload-tty.so || exit 2
+[ -z "$nopreload" ] && {
+	sh/ccpreload src/preload-tty.cc bin/preload-tty.so || exit 2
+}
 
 cd tests
 
@@ -243,7 +255,8 @@ else
 	# would have no effect.
 	tests=$(sort_tests)
 	subset=
-	[ "$nolong" ] && subset=' <nolong>'
+	[ "$nolong" ]    && subset=$subset' <nolong>'
+	[ "$nopreload" ] && subset=$subset' <nopreload>'
 fi
 
 count_total=$(echo $(echo $tests | sed 's, ,\
@@ -307,7 +320,7 @@ do
 		if [ -r CMDPREFIX ]; then
 			CMDPREFIX=$(sed -e '/^[[:space:]]*$/d' <CMDPREFIX)
 		fi
-		if [ -r PRELOAD.cc ]; then
+		if [ -z "$nopreload" ] && [ -r PRELOAD.cc ]; then
 			echo >&7 "PRELOAD.cc found; so=$preload_so"
 			(cd ../.. && sh/ccpreload tests/"$file"/PRELOAD.cc $preload_so) || exit 2
 			LD_PRELOAD_VALUE="$LD_PRELOAD_VALUE:$preload_so"
@@ -469,7 +482,7 @@ do
 		fi
 
 		# TTYSTDOUTERR
-		if { [ -r TTYSTDOUTERR ] || [ -r EXITSTATUS ]; } && ! [ -r NOTTY ]; then
+		if [ -z "$nopreload" ] && { [ -r TTYSTDOUTERR ] || [ -r EXITSTATUS ]; } && ! [ -r NOTTY ]; then
 			../../sh/rm_tmps || exit 1
 			LD_PRELOAD_VALUE_TTY="$LD_PRELOAD_VALUE:$preload_tty_so"
 			echo >&7 $CMDPREFIX_TTY $(preload_prefix $LD_PRELOAD_VALUE_TTY) $CMDPREFIX \

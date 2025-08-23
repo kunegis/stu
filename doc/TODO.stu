@@ -1,9 +1,6 @@
 #
-# Make various compilations tee their output to log/
-#
-
-#
-# Make sure that "make check" does not execute tests with PRELOAD.cc.
+# Make sure that "make check" does not execute tests with PRELOAD.cc, and that not all
+# test variants execute the long tests.
 #
 
 #
@@ -340,4 +337,10 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 #  In 'stu -P -Y' output, "Rule(" and ")" should not be in bold
+#
+
+#
+# A syntax of the form "-l FILENAME" in Stu, that will log the output of the build into
+# the given file.  This can be part of the targets.  It's similar to >FILENAME, but also
+# outputs the content to the screen, and handles both stdout and stderr.
 #

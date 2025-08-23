@@ -2,8 +2,8 @@
 
 [ "$cov_eval_debug" ] && exec 6>&2 || exec 6>/dev/null
 
-echo >&6 "ret_file=$ret_file"
 ret_file=${TMP:-/tmp}/cov_eval.ret.$$
+echo >&6 "ret_file=$ret_file"
 
 clean()
 {
@@ -12,6 +12,7 @@ clean()
 }
 trap clean EXIT
 
+clean || exit 2
 touch "$ret_file" || exit 2
 
 exclude()
@@ -72,8 +73,7 @@ eval_file()
 		if exclude ; then
 			continue
 		fi
-		printf '%s:%s:%s\n' "$src_file" "$line" "$text"
-		echo 1 >>"$ret_file"
+		printf '%s:%s:%s\n' "$src_file" "$line" "$text" | tee -a -- "$ret_file"
 	done
 }
 
@@ -82,8 +82,9 @@ for file in cov/*.gcov ; do
 done
 
 uncovered_line_count=$(echo $(wc -l <"$ret_file"))
+uncovered_file_count=$(echo $(<"$ret_file" sed -E -e 's,:.*$,,' | sort -u | wc -l))
 if [ "$uncovered_line_count" != 0 ] ; then
-	echo >&2 "*** Found $uncovered_line_count uncovered lines"
+	echo >&2 "*** Found $uncovered_line_count uncovered lines in $uncovered_file_count files"
 	exit 1
 fi
 

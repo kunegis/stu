@@ -141,10 +141,14 @@ public:
 
 	bool operator==(const Hash_Dep &target) const { return text == target.text; }
 	bool operator!=(const Hash_Dep &target) const { return text != target.text; }
-	void canonicalize(); /* In-place */
+	void canonicalize_plain(); /* In-place, knowing it is plain */
 
 	static string string_from_word(Flags flags);
 	/* Return a string of length sizeof(word_t) containing the given flags */
+
+#ifndef NEBUG
+	void canonicalize(); /* In-place */
+#endif /* ! NDEBUG */
 
 private:
 	string text;

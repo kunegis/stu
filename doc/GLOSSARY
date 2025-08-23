@@ -39,6 +39,8 @@ Parameter - A parameter in the name of a file or a transient; introduced
 	by the dollar sign ($).  In the command, the corresponding
 	environment variable is set.
 
+Plain - (Said of a dependency or target) Either a file or a transient.
+
 Special rule - Special rules are used when matching parametrized targets
 	to names of files and transients.  They are described in the
 	manpage.

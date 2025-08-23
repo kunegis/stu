@@ -217,7 +217,7 @@ shared_ptr <const Rule> Rule_Set::get(
 	assert((hash_dep.get_front_word() & ~F_TARGET_TRANSIENT) == 0);
 	assert(mapping_parameter.size() == 0);
 
-	hash_dep.canonicalize();
+	hash_dep.canonicalize_plain();
 
 	/* Check for an unparametrized rule.  Since we keep them in a map by target
 	 * filename(s), there can only be a single matching rule to begin with.  (I.e., if

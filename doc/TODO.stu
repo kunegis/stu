@@ -14,6 +14,10 @@
 # * tcsetpgrp: Operation not permitted-foreground  [which test?]
 
 #
+# Deprecate/remove debug mode (-d).
+#
+
+#
 # Achieve full coverage.
 #
 
@@ -332,4 +336,8 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # Migrate from Github to a better hoster. (Keep all history)
+#
+
+#
+#  In 'stu -P -Y' output, "Rule(" and ")" should not be in bold
 #

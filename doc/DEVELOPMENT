@@ -16,6 +16,8 @@ For development, use 'make test' (it works only with GCC).
 Before pushing changes:
 * Increment the version number in VERSION
 * Run 'make test' successfully
+* Run 'make cov' and check that no new uncovered lines were added (one day we'll require
+  100% coverage)
 * Squash the commits
 
 Version logic (see 'NEWS' for an explanation of version numbers):

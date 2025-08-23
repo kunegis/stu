@@ -24,31 +24,27 @@ string Name::instantiate(const std::map <string, string> &mapping) const
 	return ret;
 }
 
-bool Name::match(const string name,
-		 std::map <string, string> &mapping,
-		 std::vector <size_t> &anchoring,
-		 int &priority) const
+bool Name::match(
+	const string name,
+	std::map <string, string> &mapping,
+	std::vector <size_t> &anchoring,
+	int &priority) const
 /*
  * Rule:  Each parameter must match at least one character.
  *
- * This algorithm uses one pass without backtracking or recursion.
- * Therefore, there are no "deadly" patterns that can make it hang,
- * which is a common source of errors for naive trivial implementations
- * of regular expression matching.
+ * This algorithm uses one pass without backtracking or recursion.  Therefore, there are
+ * no "deadly" patterns that can make it hang, which is a common source of errors for
+ * naive trivial implementations of regular expression matching.
  *
- * This implementation takes into account the special rules described in
- * the manpage.  Each special rule is referred to by a letter (a, b, c,
- * etc.)
+ * This implementation takes into account the special rules described in the manpage.
+ * Each special rule is referred to by a letter (a, b, c, etc.).
  */
 {
 	assert(mapping.size() == 0);
+	assert(! name.empty());
 	priority= 0;
 	std::map <string, string> ret;
 	const size_t n= get_n();
-
-	if (name.empty()) {
-		return n == 0 && texts[0].empty();
-	}
 
 	anchoring.resize(2 * n);
 

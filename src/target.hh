@@ -99,7 +99,8 @@ public:
 		   std::vector <size_t> &anchoring, int &priority) const;
 	/* Check whether NAME matches this name.  If it does, return
 	 * TRUE and set MAPPING and ANCHORING accordingly.
-	 * MAPPING must be empty.  PRIORITY determines whether a special rule was used:
+	 * MAPPING must be empty.  NAME must not be empty.  PRIORITY determines whether a
+	 * special rule was used:
 	 *    0:   no special rule was used
 	 *    +1:  a special rule was used, having priority of matches without special rule
 	 *    -1:  a special rule was used, having less priority than matches

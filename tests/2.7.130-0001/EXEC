@@ -1,0 +1,21 @@
+#! /bin/sh
+
+../../bin/stu.test -y -P >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" != 0 ] && {
+	echo >&2 "*** Expected exit status 0, not $exitstatus"
+	exit 1
+}
+
+[ -f list.err ] && [ \! -s list.err ] || {
+	echo >&2 "*** list.err must be empty"
+	exit 1
+}
+
+grep -q -F -e 'A B C' list.out || {
+	echo >&2 "*** Expected list.err to contain 'A B C'"
+	exit 1
+}
+
+exit 0

@@ -92,7 +92,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		string reason;
 		if (WIFEXITED(status)) {
 			reason= fmt("failed with exit status %s",
-				    show_operator(frmt("%d", WEXITSTATUS(status))));
+				show_operator(frmt("%d", WEXITSTATUS(status))));
 		} else if (WIFSIGNALED(status)) {
 			int sig= WTERMSIG(status);
 			reason= frmt("received signal %d (%s%s%s)",

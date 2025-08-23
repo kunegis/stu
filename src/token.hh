@@ -144,7 +144,8 @@ public:
 		Environment environment_);
 	const Place &get_place() const override { return place; }
 	const Place &get_place_start() const override { return place_start; }
-	void render(Parts &parts, Rendering= 0) const override { parts.append_operator("{"); }
+	void render(Parts &parts, Rendering= 0) const override {
+		parts.append_operator("{"); }
 	const std::vector <string> &get_lines() const;
 };
 

@@ -78,33 +78,43 @@ void Part::show(string &ret, bool quotes) const
 
 string show(const Parts &parts, Style style)
 {
+	TRACE_FUNCTION();
 	Channel channel= (Channel)(style & S_CHANNEL);
+	TRACE("channel= %s", frmt("%d", channel));
 	bool nocolor= Color::nocolor[channel] || style & S_NO_COLOR;
+	TRACE("nocolor= %s", frmt("%d", nocolor));
 	string ret;
 	if (! nocolor)
 		ret += Color::highlight_on[channel];
 
 	for (size_t i= 0; i < parts.size();) {
-		if (parts[i].properties == PROP_SPACE) {
+		if (parts[i].properties == PROP_SPACE ||
+			parts[i].properties == PROP_OPERATOR) {
 			parts[i++].show(ret);
 			continue;
 		}
 		bool has_marker= false;
 		size_t j;
-		for (j= i; j < parts.size() && parts[j].properties != PROP_SPACE; ++j)
-			if (parts[j].properties != PROP_TEXT)
+		for (j= i; j < parts.size() && parts[j].properties != PROP_SPACE && parts[j].properties != PROP_OPERATOR; ++j)
+			if (parts[j].properties != PROP_TEXT) {
+				TRACE("parts[%s]= %s has_marker= true", frmt("%zu", j), show(parts[j].text));
 				has_marker= true;
+			}
+		TRACE("Continuous non-spaces range= %s, has_marker= %s",
+			frmt("[%zu, %zu[", i, j), frmt("%d", has_marker));
 		while (i < j) {
-			if (parts[i].properties == PROP_OPERATOR) {
+			if (parts[i].properties == PROP_MARKER) {
 				parts[i++].show(ret);
 				continue;
 			}
 			bool empty= true;
 			size_t k;
-			for (k= i; k < j && parts[k].properties != PROP_OPERATOR; ++k) {
+			for (k= i; k < j && parts[k].properties != PROP_MARKER; ++k) {
 				if (! parts[k].text.empty())
 					empty= false;
 			}
+			TRACE("Continuous non-space/operator range= %s",
+				frmt("[%zu, %zu]", i, k));
 			while (i < k) {
 				if (! parts[i].is_quotable()) {
 					parts[i++].show(ret);
@@ -119,6 +129,8 @@ string show(const Parts &parts, Style style)
 						quotable= std::min(quotable,
 							parts[l].need_quotes());
 				}
+				TRACE("Continuous quotable range= %s",
+					frmt("[%zu, %zu[", i, l));
 				bool quotes= empty
 					|| quotable == QS_ALWAYS_QUOTE
 					|| style & S_QUOTE_SOURCE
@@ -166,9 +178,9 @@ string show_text(string text, Style style)
 
 void render_dynamic_variable(string name, Parts &parts, Rendering)
 {
-	parts.append_operator("$[");
+	parts.append_marker("$[");
 	parts.append_text(name);
-	parts.append_operator("]");
+	parts.append_marker("]");
 }
 
 string show_dynamic_variable(string name, Style style)
@@ -184,18 +196,10 @@ void render(string s, Parts &parts, Rendering)
 }
 
 template <typename T>
-string show(const T &object, Style style, Rendering rendering)
-{
-	Parts parts;
-	render(object, parts, rendering);
-	return show(parts, style);
-}
-
-template <typename T>
 void render_prefix(string prefix, const T &object, Parts &parts, Rendering rendering)
 {
 	TRACE_FUNCTION();
-	parts.append_operator(prefix);
+	parts.append_marker(prefix);
 	render(object, parts, rendering);
 }
 
@@ -204,5 +208,13 @@ string show_prefix(string prefix, const T &object, Style style)
 {
 	Parts parts;
 	render_prefix(prefix, object, parts);
+	return show(parts, style);
+}
+
+template <typename T>
+string show(const T &object, Style style, Rendering rendering)
+{
+	Parts parts;
+	render(object, parts, rendering);
 	return show(parts, style);
 }

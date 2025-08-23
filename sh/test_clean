@@ -148,6 +148,18 @@ check_test_nolong_sleep()
 	return 0
 }
 
+check_preload()
+{
+	find tests -name PRELOAD.cc |
+	while IFS= read -r filename ; do
+		grep -q -F -e 'extern "C"' -- "$filename" || {
+			echo >&2 "$filename:1:  Preload files must contain 'extern \"C\"'"
+			return 1
+		}
+	done
+	return 0
+}
+
 ret=0
 
 check_newline_eof || ret=1
@@ -162,5 +174,6 @@ check_double_hash || ret=1
 check_control || ret=1
 check_assert_false || ret=1
 check_test_nolong_sleep || ret=1
+check_preload || ret=1
 
 exit "$ret"

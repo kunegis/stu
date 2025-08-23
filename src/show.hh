@@ -17,6 +17,10 @@
  *
  * There are also show*() functions that take Stu objects and perform both steps
  * at once.
+ *
+ * A MARKER is an operator that makes unquotes unnecessary in certain contexts.  For
+ * instance, a single dependency may be rendered as "A", but a variable dependency as
+ * $[A], rather than "A".
  */
 
 /*
@@ -42,6 +46,7 @@ constexpr Style S_DEFAULT=         CH_ERR;
 constexpr Style S_DEBUG=           CH_OUT | S_ALWAYS_QUOTE;
 constexpr Style S_NORMAL=          CH_OUT | S_QUOTE_MINIMUM;
 constexpr Style S_OPTION_I=        CH_OUT | S_NO_COLOR | S_QUOTE_SOURCE;
+constexpr Style S_OPTION_dP=       CH_OUT | S_QUOTE_MINIMUM;
 
 typedef unsigned Rendering;
 constexpr Rendering R_SHOW_FLAGS=               1 << 0;
@@ -54,6 +59,7 @@ enum Properties {
 	PROP_TEXT,
 	PROP_MARKUP_QUOTABLE,
 	PROP_MARKUP_UNQUOTABLE,
+	PROP_MARKER,
 	PROP_OPERATOR,
 	PROP_SPACE,
 };
@@ -89,10 +95,18 @@ public:
 	size_t size() const { return parts.size(); }
 	const Part &operator[](size_t i) const { return parts[i]; }
 	void append_text(string text) { parts.emplace_back(PROP_TEXT, text); }
-	void append_markup_quotable(string op) { parts.emplace_back(PROP_MARKUP_QUOTABLE, op); }
-	void append_markup_quotable(char c) { parts.emplace_back(PROP_MARKUP_QUOTABLE, string(1, c)); }
-	void append_markup_unquotable(string op) { parts.emplace_back(PROP_MARKUP_UNQUOTABLE, op); }
-	void append_markup_unquotable(char c) { parts.emplace_back(PROP_MARKUP_UNQUOTABLE, string(1, c)); }
+	void append_markup_quotable(string op)
+	{ parts.emplace_back(PROP_MARKUP_QUOTABLE, op); }
+	void append_markup_quotable(char c)
+	{ parts.emplace_back(PROP_MARKUP_QUOTABLE, string(1, c)); }
+	void append_markup_unquotable(string op)
+	{ parts.emplace_back(PROP_MARKUP_UNQUOTABLE, op); }
+	void append_markup_unquotable(char c)
+	{ parts.emplace_back(PROP_MARKUP_UNQUOTABLE, string(1, c)); }
+	void append_marker(string s) {
+		assert(s.size() != 0 && s[0] != ' ');
+		parts.emplace_back(PROP_MARKER, s);
+	}
 	void append_operator(string s) {
 		assert(s.size() != 0 && s[0] != ' ');
 		parts.emplace_back(PROP_OPERATOR, s);
@@ -111,12 +125,12 @@ void render_dynamic_variable(string name, Parts &, Rendering= 0);
 string show_dynamic_variable(string name, Style= S_DEFAULT);
 
 template <typename T>
-string show(const T &, Style= S_DEFAULT, Rendering= 0);
-template <typename T>
 void render(const T &, Style= S_DEFAULT, Rendering= 0);
 template <typename T>
 void render_prefix(string prefix, const T &object, Parts &, Rendering= 0);
 template <typename T>
 string show_prefix(string prefix, const T &object, Style= S_DEFAULT);
+template <typename T>
+string show(const T &, Style= S_DEFAULT, Rendering= 0);
 
 #endif /* ! SHOW_HH */

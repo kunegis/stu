@@ -212,15 +212,15 @@ void Plain_Dep::render(Parts &parts, Rendering rendering) const
 	if (render_flags(flags, parts, rendering))
 		parts.append_space();
 	if (flags & F_VARIABLE)
-		parts.append_operator("$[");
+		parts.append_marker("$[");
 	if (flags & F_INPUT && rendering & R_SHOW_INPUT)
-		parts.append_operator("<");
+		parts.append_marker("<");
 	place_target.render(parts, rendering);
 	if (flags & F_VARIABLE)
-		parts.append_operator("]");
+		parts.append_marker("]");
 #ifndef NDEBUG
 	if (rendering & R_SHOW_INDEX && index >= 0) {
-		parts.append_operator("_");
+		parts.append_marker("_");
 		parts.append_text(frmt("%zd", index));
 	}
 #endif
@@ -252,9 +252,9 @@ void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 	TRACE_FUNCTION();
 	if (render_flags(flags & ~F_TARGET_DYNAMIC, parts, rendering))
 		parts.append_space();
-	parts.append_operator("[");
+	parts.append_marker("[");
 	dep->render(parts, rendering | R_NO_COMPOUND_PARENTHESES);
-	parts.append_operator("]");
+	parts.append_marker("]");
 }
 
 shared_ptr <const Dep> Dynamic_Dep::instantiate(const std::map <string, string> &mapping) const
@@ -281,8 +281,8 @@ shared_ptr <const Dep> Plain_Dep::instantiate(const std::map <string, string> &m
 	if ((flags & F_VARIABLE) && this_name.find('=') != string::npos) {
 		assert((ret_target->flags & F_TARGET_TRANSIENT) == 0);
 		place << fmt("dynamic variable %s must not be instantiated with parameter value that contains %s",
-			     show_dynamic_variable(this_name),
-			     show_operator('='));
+			show_dynamic_variable(this_name),
+			show_operator('='));
 		throw ERROR_LOGICAL;
 	}
 
@@ -497,8 +497,7 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		 * left component has an input redirection, but the current data
 		 * structures do not allow that, and therefore we make that invalid. */
 		a->get_place() << fmt("%s cannot have input redirection using %s",
-				      show(a),
-				      show_operator('<'));
+			show(a), show_operator('<'));
 		b->get_place() << fmt("because %s is concatenated to it",
 				      show(b));
 		error |= ERROR_LOGICAL;
@@ -509,8 +508,7 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		/* We don't save the place for the '<', so we cannot have "using '<'" on
 		 * an extra line. */
 		b->get_place() << fmt("%s cannot have input redirection using %s",
-				      show(b),
-				      show_operator('<'));
+			show(b), show_operator('<'));
 		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
@@ -527,7 +525,7 @@ shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
 		b->get_place() << fmt("%s cannot be declared as %s",
 				      show(b), flags_phrases[i_flag]);
 		b->places[i_flag] << fmt("using %s",
-					 show_operator(frmt("-%c", flags_chars[i_flag])));
+			show_operator(frmt("-%c", flags_chars[i_flag])));
 		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;

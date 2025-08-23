@@ -1,4 +1,8 @@
 #
+# Make various compilations tee their output to log/
+#
+
+#
 # Make sure that "make check" does not execute tests with PRELOAD.cc.
 #
 
@@ -324,4 +328,8 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # Concatenation with the '|' operator.
+#
+
+#
+# Migrate from Github to a better hoster. (Keep all history)
 #

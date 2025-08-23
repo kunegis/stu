@@ -39,7 +39,7 @@ void Color::set()
 }
 
 void Color::set(bool enable_color_out, bool enable_color_err)
-/* Note:  GCC additionally inserts "\33[K" sequences after each color code, to avoid a bug
+/* Note:  GCC additionally inserts "\033[K" sequences after each color code, to avoid a bug
  * in some terminals.  This is not done here. */
 {
 	if (enable_color_out) {

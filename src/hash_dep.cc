@@ -10,7 +10,7 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 			render_flags(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
 				parts, rendering);
 		}
-		parts.append_operator("[");
+		parts.append_marker("[");
 	}
 	assert(text.size() > sizeof(word_t) * (i + 1));
 	if (rendering & R_SHOW_FLAGS) {
@@ -18,11 +18,11 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 			parts, rendering);
 	}
 	if (get_word(i) & F_TARGET_TRANSIENT) {
-		parts.append_operator("@");
+		parts.append_marker("@");
 	}
 	parts.append_text(text.substr(sizeof(word_t) * (i + 1)));
 	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
-		parts.append_operator("]");
+		parts.append_marker("]");
 	}
 }
 

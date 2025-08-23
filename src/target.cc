@@ -336,7 +336,7 @@ void Place_Target::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION();
 	if (flags & F_TARGET_TRANSIENT)
-		parts.append_operator("@");
+		parts.append_marker("@");
 	place_name.render(parts, rendering);
 }
 

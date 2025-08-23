@@ -292,12 +292,15 @@ shared_ptr <const Rule> Rule_Set::get(
 
 void Rule_Set::print_for_option_dP() const
 {
+	std::unordered_set <shared_ptr <const Rule> > seen;
 	for (auto i: rules_unparam)  {
-		string text= show(i.second, CH_OUT);
+		if (seen.find(i.second) != seen.end()) continue;
+		seen.insert(i.second);
+		string text= show(i.second, S_OPTION_dP);
 		puts(text.c_str());
 	}
 	for (auto i: rules_param)  {
-		string text= show(i, CH_OUT);
+		string text= show(i, S_OPTION_dP);
 		puts(text.c_str());
 	}
 }

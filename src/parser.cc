@@ -168,14 +168,14 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 
 			if (! is <Name_Token> ()) {
 				if (iter == tokens.end()) {
-					(*iter)->get_place_start() <<
-						fmt("expected a filename, a flag, or %s",
+					place_end <<
+						fmt("expected a filename or %s",
 							show_operator('{'));
 				} else {
 					(*iter)->get_place_start() <<
 						fmt("expected a filename, a flag, or %s, not %s",
 							show_operator('{'),
-						    show(*iter));
+							show(*iter));
 				}
 				place_equal << fmt("after %s", show_operator('='));
 				throw ERROR_LOGICAL;
@@ -627,13 +627,13 @@ shared_ptr <const Dep> Parser::parse_dynamic_dep(
 	parse_expression_list(r2, place_name_input, place_input, targets);
 
 	if (iter == tokens.end()) {
-		place_end << fmt("expected dependency or %s", show_operator(']'));
+		place_end << fmt("expected a dependency or %s", show_operator(']'));
 		place_bracket << fmt("after opening %s", show_operator('['));
 		throw ERROR_LOGICAL;
 	}
 	if (! is_operator(']')) {
 		(*iter)->get_place_start() <<
-			fmt("expected dependency or %s, not %s",
+			fmt("expected a dependency or %s, not %s",
 				show_operator(']'), show(*iter));
 		place_bracket << fmt("after opening %s", show_operator('['));
 		throw ERROR_LOGICAL;

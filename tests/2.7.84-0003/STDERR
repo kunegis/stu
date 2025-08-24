@@ -1,2 +1,2 @@
-main.stu:5:2: expected dependency or ], not :
+main.stu:5:2: expected a dependency or ], not :
 main.stu:2:1: after opening [

@@ -167,10 +167,10 @@ private:
 		Place_Name &place_name_input, Place &place_input,
 		const std::vector <shared_ptr <const Place_Target> > &targets);
 
-	/* If the next token is of type T, return it, otherwise return
-	 * null.  Also return null when at the end of the token list. */
-	template <typename T>
-	shared_ptr <T> is() const {
+	template <typename T> shared_ptr <T> is() const
+	/* If the next token is of type T, return it, otherwise return null.  Also return
+	 * null when at the end of the token list. */
+	{
 		if (iter == tokens.end())
 			return nullptr;
 		else

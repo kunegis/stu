@@ -1,0 +1,5 @@
+>A: [ -n B ] { echo ERROR ; }
+
+B {
+	touch B && chmod a-r B 
+}

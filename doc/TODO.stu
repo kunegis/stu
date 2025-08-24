@@ -11,6 +11,8 @@
 
 #
 # Achieve full coverage.
+# * tokenizer.cc
+# * etc.
 #
 
 #

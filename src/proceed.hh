@@ -28,18 +28,9 @@ enum {
 	P_COUNT      = 4
 };
 
-bool is_valid(Proceed proceed)
-{
-	return
-		proceed == (P_WAIT) ||
-		proceed == (P_CALL_AGAIN) ||
-		proceed == (P_WAIT | P_CALL_AGAIN) ||
-		proceed == (P_FINISHED) ||
-		proceed == (P_FINISHED | P_ABORT);
-}
-
 #ifndef NDEBUG
+bool is_valid(Proceed proceed);
 string show(Proceed proceed);
-#endif
+#endif /* ! NDEBUG */
 
 #endif /* ! PROCEED_HH */

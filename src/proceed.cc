@@ -7,6 +7,16 @@ constexpr const char *const proceed_names[]= {
 };
 static_assert(sizeof(proceed_names)/sizeof(proceed_names[0]) == P_COUNT);
 
+bool is_valid(Proceed proceed)
+{
+	return
+		proceed == (P_WAIT) ||
+		proceed == (P_CALL_AGAIN) ||
+		proceed == (P_WAIT | P_CALL_AGAIN) ||
+		proceed == (P_FINISHED) ||
+		proceed == (P_FINISHED | P_ABORT);
+}
+
 string show(Proceed proceed)
 {
 	string ret;

@@ -1,0 +1,9 @@
+A: [-n B] { }
+
+B {
+	rm -f B
+	touch B
+	echo a >>B
+	echo b >>B
+	echo c >>B
+}

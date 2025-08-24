@@ -4,7 +4,7 @@ find_source_files()
 {
 	find . -type f |
 		grep -v -E -e '~$' -e '^\./(bin|cov|tests|log|.git)/' -e '^\./man/stu\.1$'
-	find tests -name EXEC
+	find tests -name EXEC -o -name PRELOAD.cc
 }
 
 check_newline_eof()

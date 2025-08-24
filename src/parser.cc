@@ -1034,11 +1034,13 @@ void Parser::get_expression_list_delim(
 	bool allow_enoent)
 /* We use getdelim() for parsing.  A more optimized way would be via mmap()+strchr(). */
 {
+	TRACE_FUNCTION();
+	TRACE("filename= %s", filename);
 	FILE *file= fopen(filename, "r");
 	if (file == nullptr) {
 		if (allow_enoent && errno == ENOENT)
 			return;
-		print_errno(filename);
+		print_errno(fmt("fopen(%s)", filename));
 		throw ERROR_BUILD;
 	}
 
@@ -1101,7 +1103,7 @@ void Parser::get_expression_list_delim(
 	}
 	free(lineptr);
 	if (fclose(file)) {
-		print_errno(show(filename));
+		print_errno(fmt("fclose(%s)", filename));
 		throw ERROR_BUILD;
 	}
 }

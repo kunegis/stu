@@ -77,24 +77,8 @@ public:
 	}
 
 	static const Timestamp UNDEFINED;
-
 	static Timestamp startup;
-
-	static Timestamp now() {
-		Timestamp ret;
-		int r= clock_gettime(CLOCK_REALTIME_COARSE, & ret.t);
-		if (r != 0) {
-			/* If this happens, it is a bug in Stu */
-			should_not_happen();
-			print_errno("clock_gettime(CLOCK_REALTIME_COARSE, ...)");
-			/* Do the next best thing:  use time(2).
-			 * This may lead to clock skew, as the
-			 * nanoseconds are not set correctly */
-			ret.t.tv_sec= time(nullptr);
-			ret.t.tv_nsec= 0;
-		}
-		return ret;
-	}
+	static Timestamp now();
 };
 
 #else /* variant */

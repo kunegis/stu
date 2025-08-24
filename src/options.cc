@@ -81,10 +81,10 @@ void set_option_j(const char *value)
 
 void set_option_m(const char *value)
 {
+	TRACE_FUNCTION();
+	TRACE("value= %s", value);
 	if (!strcmp(value, "random")) {
 		order= Order::RANDOM;
-		/* Use gettimeofday() instead of time() to get millisecond instead of
-		 * second precision */
 		struct timespec ts;
 		if (clock_gettime(CLOCK_REALTIME, &ts) < 0) {
 			print_errno("clock_gettime");

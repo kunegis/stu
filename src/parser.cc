@@ -623,8 +623,8 @@ shared_ptr <const Dep> Parser::parse_dynamic_dep(
 	shared_ptr <const Dep> ret;
 	Place place_bracket= (*iter)->get_place();
 	++iter;
-	std::vector <shared_ptr <const Dep> > r2;
-	parse_expression_list(r2, place_name_input, place_input, targets);
+	std::vector <shared_ptr <const Dep> > content;
+	parse_expression_list(content, place_name_input, place_input, targets);
 
 	if (iter == tokens.end()) {
 		place_end << fmt("expected a dependency or %s", show_operator(']'));
@@ -641,7 +641,7 @@ shared_ptr <const Dep> Parser::parse_dynamic_dep(
 	++iter;
 	shared_ptr <Compound_Dep> ret_nondynamic=
 		std::make_shared <Compound_Dep> (place_bracket);
-	for (auto &j: r2) {
+	for (auto &j: content) {
 		/* Variable dependency cannot appear within
 		 * dynamic dependency */
 		if (j->flags & F_VARIABLE) {
@@ -672,11 +672,7 @@ shared_ptr <const Dep> Parser::parse_dynamic_dep(
 		}
 	}
 
-	/* If RET is null, it means we had empty parentheses.
-	 * Return an empty Compound_Dependency in that case. */
-	if (ret == nullptr)
-		ret= std::make_shared <Compound_Dep> (place_bracket);
-
+	assert(ret);
 	return ret;
 }
 

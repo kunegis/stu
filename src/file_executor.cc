@@ -1,5 +1,6 @@
 #include "file_executor.hh"
 
+#include "cov.hh"
 #include "signal.hh"
 
 size_t File_Executor::executors_by_pid_size= 0;

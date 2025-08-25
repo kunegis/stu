@@ -10,6 +10,11 @@
 #
 
 #
+# Find a way to sleep sub-second amounts in a POSIX script, so that we can make the tests
+# faster.
+#
+
+#
 # Achieve full coverage.
 # * tokenizer.cc
 # * etc.

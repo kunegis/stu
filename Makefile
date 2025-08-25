@@ -119,7 +119,7 @@ cov/OVERVIEW:  sh/cov_gcov bin/stu.cov-stu.gcda
 	sh/cov_gcov
 bin/stu.cov-stu.gcda:  bin/stu.cov sh/test tests tests/*/*
 	rm -f bin/stu.cov-stu.gcda
-	VARIANT=cov nolong=1 sh/test
+	VARIANT=cov sh/test
 
 prof: bin/analysis.prof
 bin/analysis.prof:  bin/gmon.out

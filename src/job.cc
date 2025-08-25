@@ -1,17 +1,10 @@
+#include "cov.hh"
 #include "job.hh"
 
 #include <signal.h>
 #include <sys/resource.h>
 
 #include "file_executor.hh"
-
-#ifdef STU_COV
-extern "C" {
-#include "gcov.h"
-}
-#else
-#define __gcov_dump()
-#endif
 
 size_t Job::count_jobs_exec=    0;
 size_t Job::count_jobs_success= 0;

@@ -59,7 +59,9 @@ void Tokenizer::parse_tokens_file(
 		}
 
 		if (fd < 0) {
+			TRACE("open(%s)", filename);
 			fd= open(filename.c_str(), O_RDONLY);
+			TRACE("fd= %s", frmt("%d", fd));
 			if (fd < 0) {
 				if (allow_enoent) {
 					if (errno == ENOENT)
@@ -77,10 +79,13 @@ void Tokenizer::parse_tokens_file(
 
 		/* If the file is a directory, open the file "main.stu" within it */
 		if (S_ISDIR(buf.st_mode)) {
+			TRACE("Is directory");
 			if (filename[filename.size() - 1] != '/')
 				filename += '/';
 			filename += FILENAME_INPUT_DEFAULT;
+			TRACE("openat");
 			int fd2= openat(fd, FILENAME_INPUT_DEFAULT, O_RDONLY);
+			TRACE("fd2= %s", frmt("%d", fd2));
 			if (fd2 < 0)
 				goto error_close;
 			if (close(fd) < 0) {

@@ -85,6 +85,7 @@ uncovered_line_count=$(echo $(wc -l <"$ret_file"))
 uncovered_file_count=$(echo $(<"$ret_file" sed -E -e 's,:.*$,,' | sort -u | wc -l))
 if [ "$uncovered_line_count" != 0 ] ; then
 	echo >&2 "*** Found $uncovered_line_count uncovered lines in $uncovered_file_count files"
+	<"$ret_file" sed -E -e 's,:.*$,,' | sort | uniq -c | sort -r -n
 	exit 1
 fi
 

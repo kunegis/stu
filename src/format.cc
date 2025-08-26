@@ -32,25 +32,10 @@ string frmt(const char *format, ...)
 
 string fmt(const char *s)
 {
-	string ret;
-	while (*s) {
-		const char *q= strchr(s, '%');
-		if (!q) {
-			ret += s;
-			break;
-		}
-		assert(*q == '%');
-		ret += string(s, q - s);
-		s= q + 1;
-		if (*s != '%') {
-			/* Missing argument, or one too many %s */
-			should_not_happen();
-			break;
-		}
-		ret += '%';
-		++s;
-	}
-	return ret;
+	/* Since there are no more arguments, there cannot be any '%' in the string.  '%%'
+	 * is not supported. */
+	assert(!strchr(s, '%'));
+	return std::string(s);
 }
 
 template<typename T, typename... Args>
@@ -65,11 +50,6 @@ string fmt(const char *s, T value, Args... args)
 	assert(*q == '%');
 	string ret(s, q - s);
 	s= q + 1;
-	if (*s == '%') {
-		ret += '%';
-		++s;
-		return ret + fmt(s, value, args...);
-	}
 	if (*s != 's') {
 		/* Invalid format specifier */
 		should_not_happen();

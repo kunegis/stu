@@ -18,8 +18,8 @@ string frmt(const char *format, ...)
 
 string fmt(const char *s);
 template<typename T, typename... Args> string fmt(const char *s, T value, Args... args);
-/* fmt() allows only the unqualified '%s' format specifier with string and const char *
- * arguments, and '%%'.  Precisely, this allows any argument that can be concatenated to a
- * string with the '+' operator. */
+/* fmt() allows only the unqualified '%s' format specifier with std::string and const char *
+ * arguments.  Precisely, this allows any argument that can be concatenated to a
+ * string with the '+' operator.  '%%' is not supported. */
 
 #endif /* ! FORMAT_HH */

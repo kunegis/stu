@@ -1,12 +1,8 @@
 #
 # FreeBSD fixes
 #
-
 # * [long-int-remove-files] fails
 # * tcsetpgrp: Operation not permitted-foreground  [which test?]
-
-#
-# Deprecate/remove debug mode (-d).  Or maybe not.
 #
 
 #
@@ -16,8 +12,6 @@
 
 #
 # Achieve full coverage.
-# * tokenizer.cc
-# * etc.
 #
 
 #

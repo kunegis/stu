@@ -26,7 +26,6 @@ public:
 
 	~Concat_Executor()= default;
 
-	virtual int get_depth() const override { return -1; }
 	virtual bool want_delete() const override { return true; }
 	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
 	virtual bool finished() const override;

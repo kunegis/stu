@@ -59,7 +59,6 @@ public:
 
 protected:
 	virtual bool optional_finished(shared_ptr <const Dep> dep_link) override;
-	virtual int get_depth() const override { return 0; }
 
 private:
 	friend class Executor;

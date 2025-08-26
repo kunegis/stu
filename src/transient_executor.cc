@@ -162,3 +162,15 @@ void Transient_Executor::notify_result(shared_ptr <const Dep> dep,
 	dep= append_top(dep, dep_source);
 	push_result(dep);
 }
+
+void Transient_Executor::notify_variable(
+	const std::map <string, string> &result_variable_child)
+{
+	result_variable.insert(result_variable_child.begin(),
+		result_variable_child.end());
+}
+
+bool Transient_Executor::optional_finished(shared_ptr <const Dep> )
+{
+	return false;
+}

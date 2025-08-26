@@ -164,7 +164,7 @@ protected:
 	/* The (possibly parametrized) rule from which this executor was derived.  This is
 	 * only used to detect cycles.  To manage the dependencies, the instantiated
 	 * general rule is used.  Null by default, and set by individual implementations
-	 * in their constructor if necessary. */
+	 * in their constructor if necessary: dynamic, file, and transient executors. */
 
 	explicit Executor(shared_ptr <const Rule> param_rule_= nullptr)
 		: error(0), timestamp(Timestamp::UNDEFINED),
@@ -222,10 +222,10 @@ protected:
 
 	virtual ~Executor()= default;
 
-	virtual int get_depth() const= 0;
-	/* -1 when undefined as in concatenated executors and the root
-	 * executor, in which case PARAM_RULE is always null.  Only used to
-	 * check for cycles on the rule level. */
+	virtual int get_depth() const {return 0; }
+	/* -1 when undefined as in concatenated executors and the root executor, in which
+	 * case PARAM_RULE is always null.  Only used to check for cycles on the rule
+	 * level. */
 
 	virtual bool optional_finished(shared_ptr <const Dep> dep_link)= 0;
 	/* Whether the executor would be finished if this was an optional

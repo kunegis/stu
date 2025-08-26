@@ -16,7 +16,6 @@ public:
 	}
 
 protected:
-	virtual int get_depth() const override { return -1; }
 	virtual bool optional_finished(shared_ptr <const Dep> ) override { return false; }
 
 private:

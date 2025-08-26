@@ -383,17 +383,15 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	return executor;
 }
 
-bool Executor::same_rule(const Executor *executor_a,
-			 const Executor *executor_b)
-/* This must also take into account that two executors could use the
- * same rule but parametrized differently, thus the two executors could
- * have different targets, but the same rule. */
+bool Executor::same_rule(const Executor *executor_a, const Executor *executor_b)
+/* This must also take into account that two executors could use the same rule but
+ * parametrized differently, thus the two executors could have different targets, but the
+ * same rule. */
 {
 	return
 		executor_a->param_rule != nullptr &&
-		executor_b->param_rule != nullptr &&
-		executor_a->get_depth() == executor_b->get_depth() &&
-		executor_a->param_rule == executor_b->param_rule;
+		executor_a->param_rule == executor_b->param_rule &&
+		executor_a->get_depth() == executor_b->get_depth();
 }
 
 void Executor::operator<<(string text) const

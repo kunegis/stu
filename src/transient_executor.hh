@@ -26,14 +26,11 @@ public:
 	virtual void notify_result(shared_ptr <const Dep> dep,
 				   Executor *, Flags flags,
 				   shared_ptr <const Dep> dep_source) override;
-	virtual void notify_variable(const std::map <string, string> &result_variable_child) override {
-		result_variable.insert(result_variable_child.begin(),
-				       result_variable_child.end());
-	}
+	virtual void notify_variable(
+		const std::map <string, string> &result_variable_child) override;
 
 protected:
-	virtual int get_depth() const override { return 0; }
-	virtual bool optional_finished(shared_ptr <const Dep> ) override { return false; }
+	virtual bool optional_finished(shared_ptr <const Dep> ) override;
 
 private:
 	~Transient_Executor();

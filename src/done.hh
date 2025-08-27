@@ -28,7 +28,6 @@ public:
 	Done(): bits(0) { }
 
 	Done &operator|=(Done d) { bits |= d.bits; return *this; }
-	bool is_all() const { return (~bits & D_ALL) == 0; }
 	bool is_done_from_flags(Flags flags) const;
 	void set_all() { bits= ~0; }
 

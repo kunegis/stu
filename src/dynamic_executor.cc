@@ -114,15 +114,6 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 	return proceed;
 }
 
-bool Dynamic_Executor::finished() const
-{
-	TRACE_FUNCTION();
-	TRACE("done= %s", done.show());
-	bool ret= done.is_all();
-	TRACE("ret= %s", frmt("%d", ret));
-	return ret;
-}
-
 bool Dynamic_Executor::finished(Flags flags) const
 {
 	TRACE_FUNCTION();

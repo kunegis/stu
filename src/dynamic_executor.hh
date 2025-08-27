@@ -22,7 +22,6 @@ public:
 
 	virtual bool want_delete() const override;
 	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
-	virtual bool finished() const override;
 	virtual bool finished(Flags flags) const override;
 	virtual int get_depth() const override { return dep->get_depth(); }
 	virtual bool optional_finished(shared_ptr <const Dep> ) override { return false; }

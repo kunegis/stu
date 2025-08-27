@@ -51,11 +51,6 @@ Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 	return proceed_B |= P_FINISHED;
 }
 
-bool Transient_Executor::finished() const
-{
-	return done.is_all();
-}
-
 bool Transient_Executor::finished(Flags flags) const
 {
 	TRACE_FUNCTION();

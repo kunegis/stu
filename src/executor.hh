@@ -89,9 +89,6 @@ public:
 	 * is only null when called on the root executor, because it is the only executor
 	 * that is not linked from another executor. */
 
-	virtual bool finished() const= 0;
-	/* Whether the executor is completely finished */
-
 	virtual bool finished(Flags flags) const= 0;
 	/* Whether the executor is finished working for the given tasks */
 

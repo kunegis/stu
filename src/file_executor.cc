@@ -274,11 +274,6 @@ File_Executor::File_Executor(
 	parents[parent]= dep;
 }
 
-bool File_Executor::finished() const
-{
-	return done.is_all();
-}
-
 bool File_Executor::finished(Flags flags) const
 {
 	TRACE_FUNCTION(show(hash_deps[0]));

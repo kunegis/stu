@@ -76,7 +76,7 @@ public:
 		return parents;
 	}
 
-	virtual bool want_delete() const= 0;
+	virtual bool want_delete() const;
 
 	virtual Proceed execute(shared_ptr <const Dep> dep_link)= 0;
 	/* Start the next job(s).  This will also terminate jobs when they don't need to

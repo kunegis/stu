@@ -469,6 +469,11 @@ void Executor::operator<<(string text) const
 	}
 }
 
+bool Executor::want_delete() const
+{
+	return true;
+}
+
 Proceed Executor::execute_children()
 {
 	TRACE_FUNCTION(show_trace(*this));

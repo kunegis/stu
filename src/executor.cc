@@ -474,6 +474,12 @@ bool Executor::want_delete() const
 	return true;
 }
 
+void Executor::notify_result(
+	shared_ptr <const Dep>, Executor *, Flags, shared_ptr <const Dep>)
+{
+	unreachable();
+}
+
 Proceed Executor::execute_children()
 {
 	TRACE_FUNCTION(show_trace(*this));

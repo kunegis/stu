@@ -92,17 +92,14 @@ public:
 	virtual bool finished(Flags flags) const= 0;
 	/* Whether the executor is finished working for the given tasks */
 
-	virtual void notify_result(shared_ptr <const Dep> dep_result,
-				   Executor *source, Flags flags,
-				   shared_ptr <const Dep> dep_source)
+	virtual void notify_result(
+		shared_ptr <const Dep> dep_result,
+		Executor *source, Flags flags,
+		shared_ptr <const Dep> dep_source);
 	/* The child executor SOURCE notifies THIS about a new result DEP_RESULT.  Only
 	 * called when the dependency linking the two had one of the F_RESULT_* flag.  The
 	 * given flag contains only one of the two F_RESULT_* flags.  DEP_SOURCE is the
 	 * dependency leading from THIS to SOURCE (for F_RESULT_COPY). */
-	{
-		unreachable();
-		(void) dep_result; (void) source; (void) flags; (void) dep_source;
-	}
 
 	virtual void notify_variable
 	(const std::map <string, string> &result_variable_child) {

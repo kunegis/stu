@@ -322,8 +322,10 @@ void Job::kill(pid_t pid)
 
 void Job::init_tty()
 {
+	TRACE_FUNCTION();
 	assert(tty == -1);
 	tty= open("/dev/tty", O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	TRACE("tty= %s", frmt("%d", tty));
 	if (tty < 0) {
 		assert(tty == -1);
 		return;
@@ -336,6 +338,9 @@ void Job::ask_continue(pid_t pid)
  * and continue it.  In principle, we could do much more: allow the user to enter
  * commands, having an own command language, etc. */
 {
+	if (tty < 0) {
+		return; /* May happen if e.g. a process received SIGSTOP from outside Stu */
+	}
 	if (tcsetpgrp(tty, getpid()) < 0)
 		print_errno("tcsetpgrp");
 	fprintf(stderr,

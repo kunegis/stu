@@ -54,12 +54,13 @@ bool option_various(char c)
 
 void set_option_i()
 {
+	TRACE_FUNCTION();
 	option_i= true;
-	if (Job::get_tty() >= 0)
-		return;
-	Place place(Place::Type::OPTION, 'i');
-	print_warning(place,
-		      "interactive mode cannot be used because no TTY is available");
+	if (Job::get_tty() < 0) {
+		Place place(Place::Type::OPTION, 'i');
+		print_warning(place,
+			"interactive mode cannot be used because no TTY is available");
+	}
 }
 
 void set_option_j(const char *value)

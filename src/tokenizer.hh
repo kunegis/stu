@@ -138,6 +138,12 @@ private:
 	static bool is_operator_char(char);
 	static void parse_version(string version_req,
 				  const Place &place_version, const Place &place_percent);
+
+	/* Reads from FD.  MEM must be null when called, and must be free()'d when
+	 * non-null after (even in case of error).  If SIZE is nonzero, must read SIZE to
+	 * succeed.  Otherwise, read as much as possible.  Return 0 on success, -1 on
+	 * error, in which case errno is set.  The read size is returned in MEM_SIZE. */
+	static int read_fd(int fd, size_t size, char **mem, size_t *mem_size);
 };
 
 #endif /* ! TOKENIZER_HH */

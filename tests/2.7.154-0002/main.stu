@@ -1,0 +1,4 @@
+# The size of this file is kept at a prime number to minimize the chance of the standard
+# using the same size argument to malloc().
+
+A =  {CORRECT}

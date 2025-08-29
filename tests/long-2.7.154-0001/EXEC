@@ -1,0 +1,28 @@
+#! /bin/sh
+
+LINES=100000
+PART=01234567890
+LINE=$PART$PART$PART$PART$PART$PART$PART$PART$PART$PART
+
+rm -Rf A || exit 2
+
+{
+	../../sh/seq "$LINES" | while read -r line ; do
+		echo "# $LINE"
+	done
+	echo "A={CORRECT}"
+} |
+../../bin/stu.test -f-
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || {
+	echo >&2 "*** Expected exitstatus=0, not exitstatus=$exitstatus"
+	exit 1
+}
+
+grep -q -F -e "CORRECT" A || {
+	echo >&2 "*** Expected A to contain 'CORRECT'"
+	exit 1
+}
+
+exit 0

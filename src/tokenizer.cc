@@ -31,14 +31,13 @@ void Tokenizer::parse_tokens_file(
 	int fd,
 	bool allow_enoent)
 {
-	const char *in= nullptr;
+	TRACE_FUNCTION();
+	TRACE("filename= '%s'", filename);
+	TRACE("fd= %s", frmt("%d", fd));
+	char *in= nullptr;
 	size_t in_size;
 	struct stat buf;
-	FILE *file= nullptr;
 	enum {TC_MMAP, TC_MALLOC} technique;
-	TRACE_FUNCTION();
-	TRACE("filename= %s", filename);
-	TRACE("fd= %s", frmt("%d", fd));
 
 	try {
 		if (context == SOURCE) {
@@ -55,7 +54,6 @@ void Tokenizer::parse_tokens_file(
 		if (filename.empty()) {
 			assert(fd == -1);
 			fd= 0;
-			file= stdin;
 		}
 
 		if (fd < 0) {
@@ -71,11 +69,12 @@ void Tokenizer::parse_tokens_file(
 			}
 		}
 
-		TRACE("fstat");
+		TRACE("fd= %s", frmt("%d", fd));
 		if (fstat(fd, &buf) < 0) {
 			TRACE("fstat failed");
 			goto error_close;
 		}
+		TRACE("buf.st_stat= %s", frmt("%zu", (size_t) buf.st_size));
 
 		/* If the file is a directory, open the file "main.stu" within it */
 		if (S_ISDIR(buf.st_mode)) {
@@ -115,68 +114,17 @@ void Tokenizer::parse_tokens_file(
 		TRACE("in= %s", frmt("%p", in));
 		if (in == MAP_FAILED) {
 			TRACE("mmap() failed");
+			in= NULL;
 		try_read:
 			technique= TC_MALLOC;
-			if (file == nullptr) {
-				file= fdopen(fd, "r");
-				TRACE("file= %s", frmt("%p", (void *)file));
-				if (file == nullptr)
-					goto error_close;
-				fd= -1;
+			int r= read_fd(fd, fd ? buf.st_size : 0, &in, &in_size);
+			if (r < 0) {
+				free(in);
+				in= nullptr;
+				goto error_close;
 			}
-			const size_t BUFLEN= 0x1000;
-			char *mem= nullptr;
-			size_t len= 0;
-
-			while (true) {
-				TRACE("Read...");
-				if (len + BUFLEN < len) {
-					TRACE("Overflow");
-					free(mem);
-					errno= ENOMEM;
-					goto error_close;
-				}
-				char *mem_new= (char *) realloc(mem, len + BUFLEN);
-				if (mem_new == nullptr) {
-					TRACE("realloc failed");
-					free(mem);
-					goto error_close;
-				}
-				mem= mem_new;
-				size_t r= fread(mem + len, 1, BUFLEN, file);
-				TRACE("r= %s", frmt("%zu", r));
-				assert(r <= BUFLEN);
-				if (r == 0) {
-					TRACE("r is zero");
-					if (ferror(file)) {
-						TRACE("errno= %s", frmt("%s", strerror(errno)));
-						if (! filename.empty()) {
-							int errno_save= errno;
-							fclose(file);
-							errno= errno_save;
-						}
-						goto error_close;
-					} else {
-						TRACE("End of file");
-						break;
-					}
-				}
-				len += r;
-			}
-
-			TRACE("Close the input file, but not if it is STDIN");
-			if (! filename.empty()) {
-				if (fclose(file) != 0) {
-					TRACE("fclose failed");
-					goto error_close;
-				}
-			} else {
-				if (ferror(file))
-					goto error_close;
-			}
-
-			in= mem;
-			in_size= len;
+			assert(!fd || in_size == (size_t)buf.st_size);
+			TRACE("in[0]= %s", frmt("0x%02X", (unsigned char)in[0]));
 		}
 
 		if (fd >= 3) {
@@ -797,7 +745,12 @@ Tokenizer::Tokenizer(
 	  includes(includes_),
 	  place_base(place_base_),
 	  line(1), p_line(p_), p(p_), p_end(p_ + length)
-{ }
+{
+	TRACE_FUNCTION();
+	if (length > 0)
+		TRACE("p_[0]= %s", frmt("0x%02X", (unsigned char)(p_[0])));
+	TRACE("length= %s", frmt("%zu", length));
+}
 
 void Tokenizer::parse_tokens(
 	Context context,
@@ -1193,4 +1146,56 @@ void Tokenizer::parse_version_directive(const Place &place_percent)
 	const string version_required(p_version, p - p_version);
 	Place place_version(place_base.type, place_base.text, line, p_version - p_line);
 	parse_version(version_required, place_version, place_percent);
+}
+
+int Tokenizer::read_fd(int fd, const size_t size, char **mem, size_t *mem_size)
+{
+	TRACE_FUNCTION();
+	TRACE("fd= %s", frmt("%d", fd));
+	TRACE("size= %s", frmt("%zu", size));
+	constexpr size_t BUFLEN= 0x1000;
+	assert(*mem == nullptr);
+	*mem_size= 0;
+	ssize_t r;
+	if (size) {
+		TRACE("malloc(%s)", frmt("%zu", size));
+		char *mem_new= (char *)malloc(size);
+		if (!mem_new) {
+			return -1;
+		}
+		*mem= mem_new;
+	}
+	do {
+		size_t mem_size_new= size;
+		if (!size) {
+			mem_size_new= *mem_size + BUFLEN;
+			TRACE("mem_size_new= %s", frmt("%zu", mem_size_new));
+			char *mem_new= (char *)realloc(*mem, mem_size_new);
+			if (!mem_new) {
+				return -1;
+			}
+			*mem= mem_new;
+		}
+		size_t read_size= mem_size_new - *mem_size;
+		TRACE("read_size= %s", frmt("%zu", read_size));
+		r= read(fd, *mem + *mem_size, read_size);
+		TRACE("r= %s", frmt("%zd", r));
+		assert(r <= (ssize_t)BUFLEN);
+		if (r < 0) {
+			return -1;
+		}
+		TRACE("Read block of r= %s bytes", frmt("%zd", r));
+		TRACE("Increment by r= %s", frmt("%zd", r));
+		*mem_size += r;
+		TRACE("*mem_size= %s", frmt("%zu", *mem_size));
+	} while (r);
+	if (size) {
+		if (*mem_size != size) {
+			TRACE("File was shorter than expected, *mem_size= %s, size= %s",
+				frmt("%zu", *mem_size), frmt("%zu", size));
+			return -1;
+		}
+	}
+	TRACE("Read total of in_size= %s bytes", frmt("%zu", *mem_size));
+	return 0;
 }

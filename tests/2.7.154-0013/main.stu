@@ -1,0 +1,5 @@
+# This is a slightly longer comment, because the file should be a little bit longer.
+# Since we are reading this file three bytes at a time, it'll be nice to see more than
+# just a few three-byte blocks being read in a loop.
+
+A =  {CORRECT}

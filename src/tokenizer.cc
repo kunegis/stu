@@ -277,6 +277,7 @@ shared_ptr <Command> Tokenizer::parse_command()
  * parse identically as the shell.
  */
 {
+	TRACE_FUNCTION();
 	assert(p < p_end && *p == '{');
 	const Place place_open= current_place();
 	++p;
@@ -442,6 +443,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 
 void Tokenizer::parse_flag_or_name()
 {
+	TRACE_FUNCTION();
 	bool allow_special=
 		!(environment & E_WHITESPACE)
 		&& !tokens.empty()
@@ -529,6 +531,7 @@ void Tokenizer::parse_flag_or_name()
 
 shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 {
+	TRACE_FUNCTION();
 	const char *const p_begin= p;
 	Place place_begin= current_place();
 
@@ -584,6 +587,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 
 bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 {
+	TRACE_FUNCTION();
 	assert(p < p_end && *p == '$');
 
 	place_dollar= current_place();
@@ -679,6 +683,7 @@ void Tokenizer::parse_version(
 /* Note: there may be any number of version directives in Stu (in particular from multiple
  * source files), so we don't keep track whether one has already been provided. */
 {
+	TRACE_FUNCTION();
 	if (option_U) return;
 	unsigned major_req, minor_req, patch_req;
 	int chars= -1;
@@ -695,12 +700,18 @@ void Tokenizer::parse_version(
 	if ((size_t) chars != version_req.size())
 		goto error;
 
+	TRACE("n= %s", frmt("%d", n));
 	assert(n == 2 || n == 3);
 
 	if (n == 2) {
+		TRACE("major_req= %s; minor_req= %s",
+			frmt("%u", major_req), frmt("%u", minor_req));
 		if (STU_VERSION_MAJOR != major_req || STU_VERSION_MINOR < minor_req)
 			goto wrong_version;
 	} else {
+		TRACE("major_req= %s; minor_req= %s; patch_req= %s",
+			frmt("%u", major_req), frmt("%u", minor_req),
+			frmt("%u", patch_req));
 		if (STU_VERSION_MAJOR != major_req || STU_VERSION_MINOR < minor_req ||
 		    (STU_VERSION_MINOR == minor_req && STU_VERSION_PATCH < patch_req))
 			goto wrong_version;
@@ -756,6 +767,7 @@ void Tokenizer::parse_tokens(
 	Context context,
 	const Place &place_diagnostic)
 {
+	TRACE_FUNCTION();
 	bool skipped_actual_space;
 
 	while (p < p_end) {
@@ -832,6 +844,7 @@ void Tokenizer::parse_tokens_string(std::vector <shared_ptr <Token> > &tokens,
 
 bool Tokenizer::skip_space(bool &skipped_actual_space)
 {
+	TRACE_FUNCTION();
 	bool ret= false;
 	skipped_actual_space= false;
 	while (p < p_end && (isspace(*p) || *p == '\\')) {
@@ -886,6 +899,7 @@ string Tokenizer::current_mbchar() const
 
 void Tokenizer::parse_double_quote(Place_Name &ret)
 {
+	TRACE_FUNCTION();
 	Place place_begin_quote= current_place();
 	++p;
 
@@ -957,6 +971,7 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 
 void Tokenizer::parse_single_quote(Place_Name &ret)
 {
+	TRACE_FUNCTION();
 	Place place_begin_quote= current_place();
 	++p;
 	while (p < p_end) {
@@ -984,6 +999,7 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 
 bool Tokenizer::parse_escape()
 {
+	TRACE_FUNCTION();
 	assert(p < p_end && *p == '\\');
 	Place place_escape= current_place();
 	++p;
@@ -1014,6 +1030,7 @@ void Tokenizer::parse_directive(
 	Context context,
 	const Place &place_diagnostic)
 {
+	TRACE_FUNCTION();
 	Place place_percent= current_place();
 	assert(*p == '%');
 	++p;
@@ -1039,6 +1056,7 @@ void Tokenizer::parse_directive(
 	}
 
 	const string name(p_name, p - p_name);
+	TRACE("name= '%s'", name);
 	skip_space(skipped_actual_space);
 
 	if (name == "include") {
@@ -1059,6 +1077,7 @@ void Tokenizer::parse_include_directive(
 	const Place &place_diagnostic,
 	const Place &place_percent)
 {
+	TRACE_FUNCTION();
 	if (context == DYNAMIC) {
 		place_percent
 			<< fmt("%s must not appear in dynamic dependencies",
@@ -1134,13 +1153,9 @@ void Tokenizer::parse_include_directive(
 
 void Tokenizer::parse_version_directive(const Place &place_percent)
 {
-	while (p < p_end && isspace(*p)) {
-		if (*p == '\n') {
-			++line;
-			p_line= p + 1;
-		}
-		++p;
-	}
+	TRACE_FUNCTION();
+	TRACE("line= %s", frmt("%zu", line));
+	TRACE("*p= '%s'/%s", frmt("%c", *p), frmt("0x%02X", (unsigned char)*p));
 	const char *const p_version= p;
 	while (p < p_end && is_name_char(*p)) ++p;
 	const string version_required(p_version, p - p_version);

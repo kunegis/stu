@@ -64,6 +64,7 @@ void signal_handler_termination(int sig)
 	 * functions like fputs() are async signal-safe, so don't even try. */
 
 	/* Raise signal again */
+	__gcov_dump();
 	int rr= raise(sig);
 	if (rr != 0) {
 		write_async(2, "stu: error: raise\n");
@@ -72,6 +73,7 @@ void signal_handler_termination(int sig)
 	/* Don't abort here -- the reraising of this signal may only be
 	 * delivered after this handler is done. */
 	errno= errno_save;
+	__gcov_dump();
 }
 
 void signal_handler_productive(int, siginfo_t *, void *)

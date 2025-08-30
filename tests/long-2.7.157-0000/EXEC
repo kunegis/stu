@@ -1,0 +1,42 @@
+#! /bin/sh
+
+rm -f list.pid A || exit 2
+
+../../bin/stu.test >list.out 2>list.err &
+pid=$!
+sleep 1
+kill -s TERM "$pid"
+wait "$pid" 2>/dev/null
+exitstatus=$?
+
+echo list.out:
+echo ____________________
+cat  list.out
+echo ____________________
+
+echo list.err:
+echo ____________________
+cat  list.err
+echo ____________________
+
+[ "$exitstatus" = 143 ] || {
+	echo >&2 "*** Expected exit status 143, not $exitstatus"
+	exit 1
+}
+
+[ -f "list.xxx" ] && {
+	echo >&2 "*** File list.xxx must not exist"
+	exit 1
+}
+
+grep -q -F -e 'stu: terminating all jobs' list.err || {
+	echo >&2 "*** Unexpected stderr (1)"
+	exit 1
+}
+
+grep -q -F -e 'stu: removing partially built files (1)' list.err || {
+	echo >&2 "*** Unexpected stderr (2)"
+	exit 1
+}
+
+exit 0

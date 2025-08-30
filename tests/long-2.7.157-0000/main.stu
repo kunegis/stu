@@ -1,0 +1,6 @@
+A:  list.xxx { touch A ; }
+
+list.xxx {
+	echo abc >list.xxx
+	sleep 10
+}

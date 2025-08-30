@@ -10,7 +10,6 @@ size_t Job::count_jobs_exec=    0;
 size_t Job::count_jobs_success= 0;
 size_t Job::count_jobs_fail=    0;
 pid_t Job::pid_foreground= -1;
-int Job::tty= -1;
 
 pid_t Job::start(
 	string command,
@@ -80,11 +79,14 @@ pid_t Job::start(
 
 	/* We are the parent process */
 	assert(pid >= 1);
-	if (option_i && tty >= 0) {
-		assert(pid_foreground < 0);
-		if (tcsetpgrp(tty, pid) < 0)
-			print_errno("tcsetpgrp");
-		pid_foreground= pid;
+	if (option_i) {
+		int fd_tty= get_fd_tty();
+		if (fd_tty >= 0) {
+			assert(pid_foreground < 0);
+			if (tcsetpgrp(fd_tty, pid) < 0)
+				print_errno("tcsetpgrp");
+			pid_foreground= pid;
+		}
 	}
 	++ count_jobs_exec;
 	return pid;
@@ -246,9 +248,10 @@ bool Job::waited(int status, pid_t pid_check)
 		++ count_jobs_fail;
 
 	if (pid == pid_foreground) {
-		assert(tty >= 0);
+		int fd_tty= get_fd_tty();
+		assert(fd_tty >= 0);
 		assert(option_i);
-		if (tcsetpgrp(tty, getpid()) < 0)
+		if (tcsetpgrp(fd_tty, getpid()) < 0)
 			print_errno("tcsetpgrp");
 	}
 	pid= -1;
@@ -320,16 +323,23 @@ void Job::kill(pid_t pid)
 	}
 }
 
-void Job::init_tty()
+int Job::get_fd_tty()
 {
 	TRACE_FUNCTION();
-	assert(tty == -1);
-	tty= open("/dev/tty", O_RDWR | O_NONBLOCK | O_CLOEXEC);
-	TRACE("tty= %s", frmt("%d", tty));
-	if (tty < 0) {
-		assert(tty == -1);
-		return;
+	static int fd= -1;
+	static bool has= false;
+	if (has) {
+		return fd;
 	}
+	has= true;
+	assert(fd == -1);
+	fd= open("/dev/tty", O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	TRACE("fd= %s", frmt("%d", fd));
+	if (fd < 0) {
+		assert(fd == -1);
+		return -1;
+	}
+	return fd;
 }
 
 void Job::ask_continue(pid_t pid)
@@ -338,10 +348,11 @@ void Job::ask_continue(pid_t pid)
  * and continue it.  In principle, we could do much more: allow the user to enter
  * commands, having an own command language, etc. */
 {
-	if (tty < 0) {
+	int fd_tty= get_fd_tty();
+	if (fd_tty < 0) {
 		return; /* May happen if e.g. a process received SIGSTOP from outside Stu */
 	}
-	if (tcsetpgrp(tty, getpid()) < 0)
+	if (tcsetpgrp(fd_tty, getpid()) < 0)
 		print_errno("tcsetpgrp");
 	fprintf(stderr,
 		PACKAGE ": job stopped.  "
@@ -354,7 +365,7 @@ void Job::ask_continue(pid_t pid)
 	if (r < 0)
 		print_errno("getline");
 	fprintf(stderr, PACKAGE ": continuing\n");
-	if (tcsetpgrp(tty, pid) < 0)
+	if (tcsetpgrp(fd_tty, pid) < 0)
 		print_errno("tcsetpgrp");
 	/* Continue job */
 	::kill(-pid, SIGCONT);

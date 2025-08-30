@@ -1,12 +1,4 @@
 #
-# TTY:
-# What does Job::init_tty() even do?
-# * Why is a file descriptor saved in a pid_t variable?
-# * Why is /dev/tty never closed?
-# * Is Job::tty a file description or a pid_t?
-#
-
-#
 # FreeBSD fixes
 #
 # * [long-int-remove-files] fails

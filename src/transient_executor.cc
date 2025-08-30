@@ -60,13 +60,14 @@ bool Transient_Executor::finished(Flags flags) const
 	return ret;
 }
 
-Transient_Executor::Transient_Executor(shared_ptr <const Dep> dep_link,
-				       Executor *parent,
-				       shared_ptr <const Rule> rule_,
-				       shared_ptr <const Rule> param_rule_,
-				       std::map <string, string> &mapping_parameter_,
-				       int &error_additional)
-	:  Executor(param_rule_), rule(rule_)
+Transient_Executor::Transient_Executor(
+	shared_ptr <const Dep> dep_link,
+	Executor *parent,
+	shared_ptr <const Rule> rule_,
+	shared_ptr <const Rule> param_rule_,
+	std::map <string, string> &mapping_parameter_,
+	int &error_additional)
+	: Executor(param_rule_), rule(rule_)
 {
 	swap(mapping_parameter, mapping_parameter_);
 

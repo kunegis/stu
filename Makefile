@@ -32,7 +32,7 @@ CXXFLAGS_DEBUG= \
     -Wignored-attributes -Wswitch-default -Wswitch-enum -Wunused-const-variable=2 \
     -Wuninitialized -Walloc-zero -Wduplicated-branches -Wduplicated-cond -Wunused-macros \
     -Wcast-align -Wrestrict -Wno-parentheses -Wlogical-op -Wredundant-decls \
-    -Wno-pessimizing-move -Wsuggest-override \
+    -Wno-pessimizing-move -Wsuggest-override -Wunused-function \
     -D_GLIBCXX_DEBUG
 CXXFLAGS_SANI= \
     -ggdb -O2 -Werror -Wno-unused-result -fsanitize=undefined \

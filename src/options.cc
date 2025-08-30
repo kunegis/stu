@@ -56,7 +56,7 @@ void set_option_i()
 {
 	TRACE_FUNCTION();
 	option_i= true;
-	if (Job::get_tty() < 0) {
+	if (Job::get_fd_tty() < 0) {
 		Place place(Place::Type::OPTION, 'i');
 		print_warning(place,
 			"interactive mode cannot be used because no TTY is available");

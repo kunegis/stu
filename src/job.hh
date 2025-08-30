@@ -50,8 +50,7 @@ public:
 	 * argument is set, there must not be unterminated jobs. */
 
 	static void kill(pid_t pid);
-	static void init_tty();
-	static pid_t get_tty() { return tty; }
+	static int get_fd_tty(); /* -1 if there is none */
 
 private:
 	pid_t pid;
@@ -71,9 +70,6 @@ private:
 
 	static pid_t pid_foreground;
 	/* The job that is in the foreground, or -1 when none is */
-
-	static int tty;
-	/* The file descriptor of the TTY used by Stu.  -1 if there is none. */
 
 	static void ask_continue(pid_t pid);
 	static const char **create_child_env(const std::map <string, string> &mapping);

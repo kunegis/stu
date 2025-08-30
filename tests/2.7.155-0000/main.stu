@@ -1,0 +1,3 @@
+# Test that /dev/tty is not opened when -i is not used.
+
+A = {CORRECT}

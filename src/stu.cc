@@ -47,7 +47,6 @@ int main(int argc, char **argv, char **envp)
 	envp_global= (const char **) envp;
 	setlocale(LC_CTYPE, ""); /* Tokenizer::current_mbchar() */
 	init_buffering();
-	Job::init_tty();
 	Color::set();
 	set_env_options();
 	check_status();

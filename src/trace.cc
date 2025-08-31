@@ -45,10 +45,11 @@ void Trace::init_file()
 	string name= fmt("STU_TRACE_%s", trace_class);
 	string name_all= "STU_TRACE_ALL";
 	string vars[]= {name, name_all};
+	files[trace_class]= file= nullptr;
 	for (const string &var: vars) {
 		const char *env= getenv(var.c_str());
 		if (!env || !env[0] || !strcmp(env, "off")) {
-			files[trace_class]= file= nullptr;
+			/* Leave value */
 		} else if (!strcmp(env, "log")) {
 			if (!file_log)
 				file_log= open_logfile(trace_filename);

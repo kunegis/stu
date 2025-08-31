@@ -137,6 +137,7 @@ File_Executor::File_Executor(
 	: Executor(param_rule_), timestamps_old(nullptr), filenames(nullptr),
 	  rule(rule_)
 {
+	TRACE_FUNCTION();
 	assert((param_rule_ == nullptr) == (rule_ == nullptr));
 
 	swap(mapping_parameter, mapping_parameter_);
@@ -150,6 +151,7 @@ File_Executor::File_Executor(
 
 	parents[parent]= dep;
 	if (error_additional) {
+		TRACE("Additional error");
 		*this << "";
 		done.set_all();
 		parents.erase(parent);
@@ -158,7 +160,7 @@ File_Executor::File_Executor(
 	}
 
 	if (rule == nullptr) {
-		/* TARGETS contains only DEPENDENCY->TARGET */
+		TRACE("TARGETS contains only DEPENDENCY->TARGET");
 	} else {
 		hash_deps.clear();
 		for (auto &place_param_target: rule->place_targets) {
@@ -174,26 +176,22 @@ File_Executor::File_Executor(
 	}
 
 	if (rule != nullptr) {
-		/* There is a rule for this executor */
+		TRACE("There is a rule for this executor");
 		for (auto &d: rule->deps) {
 			push(d);
 		}
 	} else {
-		/* There is no rule for this executor */
+		TRACE("There is no rule for this executor");
 
 		bool rule_not_found= false;
 		/* Whether to produce the "no rule to build target" error */
 
-		if (hash_dep_.is_file()) {
-			check_file_target_without_rule(
-				dep, hash_dep_, parent, rule_not_found);
-		} else if (hash_dep_.is_transient()) {
-			rule_not_found= true;
-		} else {
-			unreachable();
-		}
+		assert(hash_dep_.is_file());
+		check_file_target_without_rule(
+			dep, hash_dep_, parent, rule_not_found);
 
 		if (rule_not_found) {
+			TRACE("Rule not found");
 			assert(rule == nullptr);
 			*this << fmt("no rule to build %s", show(hash_dep_));
 			error_additional |= error |= ERROR_BUILD;

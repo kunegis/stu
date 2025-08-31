@@ -1,0 +1,10 @@
+# Since @a is used as a dynamic dependency, @a cannot have command.
+
+A: [@a] C
+{
+	echo ERROR >A;
+}
+
+@a: B { echo HELLO ; }
+
+C = {CORRECT}

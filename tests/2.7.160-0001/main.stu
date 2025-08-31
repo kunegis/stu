@@ -1,0 +1,5 @@
+# It's not possible to have @a as an optional dependency, because @a is a target of a rule
+# which also has file targets.
+
+A: -o @a { touch A ; }
+B @a;

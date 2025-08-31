@@ -336,6 +336,7 @@ int Job::get_fd_tty()
 	fd= open("/dev/tty", O_RDWR | O_NONBLOCK | O_CLOEXEC);
 	TRACE("fd= %s", frmt("%d", fd));
 	if (fd < 0) {
+		TRACE("/dev/tty not found");
 		assert(fd == -1);
 		return -1;
 	}

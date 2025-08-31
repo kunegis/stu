@@ -43,6 +43,7 @@ using std::shared_ptr;
 
 int main(int argc, char **argv, char **envp)
 {
+	TRACE_FUNCTION();
 	dollar_zero= argv[0];
 	envp_global= (const char **) envp;
 	setlocale(LC_CTYPE, ""); /* Tokenizer::current_mbchar() */

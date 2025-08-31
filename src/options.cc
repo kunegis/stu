@@ -15,7 +15,7 @@
 bool option_setting(char c)
 {
 	TRACE_FUNCTION();
-	TRACE("c= %s", frmt("%c", c));
+	TRACE("c= %s", frmt("'%c'", c));
 	switch (c) {
 	default:   return false;
 	case 'E':  option_E= true;            break;
@@ -31,6 +31,8 @@ bool option_setting(char c)
 
 bool option_various(char c)
 {
+	TRACE_FUNCTION();
+	TRACE("c= %s", frmt("'%c'", c));
 	switch (c) {
 	default:   return false;
 	case 'a':  option_a= true;         break;
@@ -65,6 +67,7 @@ void set_option_i()
 
 void set_option_j(const char *value)
 {
+	TRACE_FUNCTION();
 	errno= 0;
 	char *endptr;
 	options_jobs= strtol(value, &endptr, 10);
@@ -105,12 +108,14 @@ void set_option_m(const char *value)
 
 void set_option_M(const char *value)
 {
+	TRACE_FUNCTION();
 	order= Order::RANDOM;
 	buffer_generator.seed(std::hash <string> ()(string(value)));
 }
 
 void print_option_V()
 {
+	TRACE_FUNCTION();
 	printf(PACKAGE " " STU_VERSION "\n"
 		"Copyright (C) Jerome Kunegis\n"
 		"License GPLv3+: GNU GPL version 3 or later "
@@ -129,6 +134,7 @@ void print_option_V()
 
 void set_env_options()
 {
+	TRACE_FUNCTION();
 	const char *stu_options= getenv(ENV_STU_OPTIONS);
 	if (!stu_options)
 		return;
@@ -147,6 +153,7 @@ void set_env_options()
 
 void check_status()
 {
+	TRACE_FUNCTION();
 	const char *const stu_status= getenv(ENV_STU_STATUS);
 	if (!stu_status)
 		return;

@@ -100,7 +100,7 @@ string show(const Parts &parts, Style style)
 				TRACE("parts[%s]= %s has_marker= true", frmt("%zu", j), show(parts[j].text));
 				has_marker= true;
 			}
-		TRACE("Continuous non-spaces range= %s, has_marker= %s",
+		TRACE("Contiguous non-spaces range= %s, has_marker= %s",
 			frmt("[%zu, %zu[", i, j), frmt("%d", has_marker));
 		while (i < j) {
 			if (parts[i].properties == PROP_MARKER) {
@@ -113,8 +113,8 @@ string show(const Parts &parts, Style style)
 				if (! parts[k].text.empty())
 					empty= false;
 			}
-			TRACE("Continuous non-space/operator range= %s",
-				frmt("[%zu, %zu]", i, k));
+			TRACE("Contiguous non-space/operator range= %s",
+				frmt("[%zu, %zu[", i, k));
 			while (i < k) {
 				if (! parts[i].is_quotable()) {
 					parts[i++].show(ret);
@@ -129,7 +129,7 @@ string show(const Parts &parts, Style style)
 						quotable= std::min(quotable,
 							parts[l].need_quotes());
 				}
-				TRACE("Continuous quotable range= %s",
+				TRACE("Contiguous quotable range= %s",
 					frmt("[%zu, %zu[", i, l));
 				bool quotes= empty
 					|| quotable == QS_ALWAYS_QUOTE

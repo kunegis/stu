@@ -98,7 +98,10 @@ bool Name::match(
 
 		if (special_c && i == 0) {
 			ret[parameters[i]]= ".";
-			anchoring[2*i + 1]= p_end - p_begin; /* The anchoring has zero length */
+
+			/* The anchoring has zero length */
+			anchoring[2*i + 1]= p_end - p_begin;
+
 			if (p + (texts.at(i+1).size() - 1) > p_end)
 				goto failed;
 			if (memcmp(p, texts.at(i+1).c_str() + 1, texts.at(i+1).size() - 1))
@@ -107,7 +110,8 @@ bool Name::match(
 			continue;
 		}
 		if (i == n - 1) {
-			/* For the last segment, texts[n-1] must match the end of the input string */
+			/* For the last segment, texts[n-1] must match the end of the
+			 * input string */
 			size_t size_last= texts[n].size();
 			const char *last= texts[n].c_str();
 			/* Minimal length of matched text */

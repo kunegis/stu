@@ -43,19 +43,23 @@ void Trace::init_file()
 	}
 
 	string name= fmt("STU_TRACE_%s", trace_class);
-	const char *env= getenv(name.c_str());
-	if (!env || !env[0] || !strcmp(env, "off")) {
-		files[trace_class]= file= nullptr;
-	} else if (!strcmp(env, "log")) {
-		if (!file_log)
-			file_log= open_logfile(trace_filename);
-		files[trace_class]= file= file_log;
-	} else if (!strcmp(env, "stderr")) {
-		files[trace_class]= file= stderr;
-	} else {
-		fprintf(stderr, "stu: error: invalid value for trace %s=%s\n",
-			name.c_str(), env);
-		exit(ERROR_FATAL);
+	string name_all= "STU_TRACE_ALL";
+	string vars[]= {name, name_all};
+	for (const string &var: vars) {
+		const char *env= getenv(var.c_str());
+		if (!env || !env[0] || !strcmp(env, "off")) {
+			files[trace_class]= file= nullptr;
+		} else if (!strcmp(env, "log")) {
+			if (!file_log)
+				file_log= open_logfile(trace_filename);
+			files[trace_class]= file= file_log;
+		} else if (!strcmp(env, "stderr") || !strcmp(env, "1")) {
+			files[trace_class]= file= stderr;
+		} else {
+			fprintf(stderr, "stu: error: invalid value for trace %s=%s\n",
+				var.c_str(), env);
+			exit(ERROR_FATAL);
+		}
 	}
 }
 

@@ -340,3 +340,7 @@ A: [ -t -o B ] { touch A ; }  B={C}
 # the given file.  This can be part of the targets.  It's similar to >FILENAME, but also
 # outputs the content to the screen, and handles both stdout and stderr.
 #
+
+#
+# Don't increase the patch number with every commit.
+#

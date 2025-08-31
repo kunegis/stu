@@ -1,0 +1,4 @@
+main.stu:5:11: target must not depend on itself: "list.a" depends on "list.abc.a"
+main.stu:5:1: both "list.a" and "list.abc.a" match the same rule
+main.stu:1:5: "list.a" is needed by "A"
+../../bin/stu.test: targets not up to date because of errors

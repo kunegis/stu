@@ -1,0 +1,9 @@
+A:  list.a C {
+	echo ERROR >A;
+}
+
+list.$x:  list.abc.$x {
+	echo ERROR >list."$x"
+}
+
+C = {abcd}

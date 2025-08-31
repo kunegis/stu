@@ -145,6 +145,7 @@ bool Executor::find_cycle(Executor *parent,
 			  Executor *child,
 			  shared_ptr <const Dep> dep_link)
 {
+	TRACE_FUNCTION();
 	std::vector <Executor *> path;
 	path.push_back(parent);
 	return find_cycle(path, child, dep_link);
@@ -186,6 +187,7 @@ void Executor::cycle_print(const std::vector <Executor *> &path,
  *      ...                   /
  */
 {
+	TRACE_FUNCTION();
 	assert(path.size() > 0);
 
 	std::vector <string> names;
@@ -307,6 +309,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			}
 		} else {
 			if (find_cycle(this, executor, dep)) {
+				TRACE("File-level cycle found");
 				raise(ERROR_LOGICAL);
 				return nullptr;
 			}

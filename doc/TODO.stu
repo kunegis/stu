@@ -1,4 +1,10 @@
 #
+# Try whether loops of the form
+@a.$x:  @a.b.$x;
+# are detected.
+#
+
+#
 # FreeBSD fixes
 #
 # * [long-int-remove-files] fails
@@ -343,4 +349,13 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # Don't increase the patch number with every commit.
+#
+
+#
+# Option to disable check that targets have been created after command is successful.
+#
+
+#
+# Rename transients to phonies, and use the word "tranient" only when there is no command
+# and no file target.
 #

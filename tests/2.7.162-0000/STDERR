@@ -1,0 +1,3 @@
+main.stu:5:9: target must not depend on itself: @a.1 depends on @a.b.1
+main.stu:5:1: both "a.1" and "a.b.1" match the same rule
+main.stu:3:4: @a.1 is needed by "A"

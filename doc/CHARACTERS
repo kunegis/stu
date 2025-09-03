@@ -83,6 +83,7 @@ forms of non-operators, i.e., new tokens.
     &   Intersection (maybe)
     |   (Componentwise) concatenation (maybe)
     |   Union [redundant to juxtaposition]
+    |   Barrier, i.e. in (@a | @b), first finish all of @a before starting @b
     !?  Some form of dual operators
     !   Command interpreter (maybe)
     *?  For file globbing [We're against expensive operations not saved in a file]

@@ -285,3 +285,11 @@ cd path/to/dir {
 #
 
 @clean:  -r (bin conf);
+
+#
+# Barrier operator:  Finish things left of the operator before starting things on the
+# right of it.
+#
+
+# Do all of @a before starting with @b
+@all:  @a | @b;

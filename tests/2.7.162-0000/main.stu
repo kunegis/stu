@@ -1,0 +1,5 @@
+# Loop of length 1 at rule level.
+
+A: @a.1;
+
+@a.$x:  @a.b.$x;

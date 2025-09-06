@@ -1,8 +1,10 @@
 #
-# FreeBSD fixes
-#
-# * [long-int-remove-files] fails
-# * tcsetpgrp: Operation not permitted-foreground  [which test?]
+# FreeBSD:
+# * make check
+# ** 2.7.159-0001 & 2.7.159-0002
+# ** 2.4.7-foreground:  tcsetpgrp: Operation not permitted-foreground  (test does not fail, but outputs this)
+# ** long-int-remove-files:  kill: <pid>: No such process
+# * Try: make test
 #
 
 #

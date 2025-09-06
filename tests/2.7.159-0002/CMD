@@ -1,1 +1,1 @@
-@b -F '@b >A {echo CORRECT;}'
+-F '@b >A {echo CORRECT;}' @b

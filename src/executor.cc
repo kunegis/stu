@@ -291,7 +291,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 
 	if (it != executors_by_hash_dep.end()) {
 		/* An Executor object already exists for the target */
-		TRACE("%s", "Already exists");
+		TRACE("Already exists");
 		executor= it->second;
 		if (executor->parents.count(this)) {
 			/* THIS and CHILD are already connected -- add the necessary
@@ -316,7 +316,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			/* The parent and child are not connected -- add the connection */
 			executor->parents[this]= dep;
 		}
-		TRACE("%s", "Returning existing executor");
+		TRACE("Returning existing executor");
 		return executor;
 	}
 
@@ -382,7 +382,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		return nullptr;
 	}
 	assert(executor->parents.size() == 1);
-	TRACE("%s", "returning new executor");
+	TRACE("Returning new executor");
 	return executor;
 }
 
@@ -578,10 +578,10 @@ void Executor::push(shared_ptr <const Dep> dep)
 		if (untrivialized) {
 			shared_ptr <Dep> d2= untrivialized->clone();
 			d2->flags |= F_PHASE_B;
-			TRACE("to buffer_B");
+			TRACE("To buffer_B");
 			buffer_B.push(d2);
 		} else {
-			TRACE("to buffer_A");
+			TRACE("To buffer_A");
 			buffer_A.push(d);
 		}
 	}
@@ -678,16 +678,18 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(*this));
-	DEBUG_PRINT("phase_A");
 	TRACE("options_jobs= %s", frmt("%ld", options_jobs));
+	DEBUG_PRINT("phase_A");
 	assert(options_jobs >= 0);
 	assert(dep_link);
 	if (finished(dep_link->flags)) {
+		TRACE("Finished");
 		DEBUG_PRINT("finished");
 		return P_FINISHED;
 	}
 
 	if (optional_finished(dep_link)) {
+		TRACE("Optional finished");
 		DEBUG_PRINT("optional finished");
 		return P_FINISHED;
 	}
@@ -705,12 +707,12 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 		proceed |= (proceed_2 & ~P_FINISHED);
 		if (proceed & P_WAIT) {
 			if (options_jobs == 0) {
-				TRACE("Wait - no jobs left");
+				TRACE("Wait; no jobs left");
 				return proceed;
 			}
 		} else if (finished(dep_link->flags) && ! option_k) {
 			DEBUG_PRINT("finished");
-			TRACE("finished");
+			TRACE("Finished");
 			return proceed |= P_FINISHED;
 		}
 	}
@@ -718,13 +720,13 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	assert(error == 0 || option_k);
 
 	if (options_jobs == 0) {
-		TRACE("no jobs left, proceed= %s", show(proceed));
+		TRACE("No jobs left, proceed= %s", show(proceed));
 		return proceed |= P_WAIT;
 	}
 
 	while (! buffer_A.empty()) {
 		shared_ptr <const Dep> dep_child= buffer_A.pop();
-		TRACE("popped from buffer_A dep_child= %s", show_trace(dep_child));
+		TRACE("Popped from buffer_A dep_child= %s", show_trace(dep_child));
 		Proceed proceed_child= connect(dep_link, dep_child);
 		assert(is_valid(proceed_child));
 		TRACE("proceed_child= %s", show(proceed_child));
@@ -753,13 +755,13 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 		if (! (proceed & P_WAIT))
 			proceed |= P_CALL_AGAIN;
 		assert(is_valid(proceed));
-		TRACE("children not empty, proceed= %s", show(proceed));
+		TRACE("Children not empty, proceed= %s", show(proceed));
 		return proceed;
 	}
 
 	if (error) {
 		assert(option_k);
-		TRACE("error");
+		TRACE("Error");
 		return proceed |= P_ABORT | P_FINISHED;
 	}
 

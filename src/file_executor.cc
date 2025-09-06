@@ -645,7 +645,6 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			}
 
 			if (ret_stat == 0) {
-
 				assert(timestamps_old[i].defined());
 				if (timestamp.defined() &&
 				    timestamps_old[i] < timestamp &&
@@ -663,12 +662,9 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 					/* Non-optional dependency */
 					bits |= B_NEED_BUILD;
 				} else {
-					/* Optional dependency:  don't create the file;
-					 * it will then not exist when the parent is
-					 * called. */
-					TRACE("Optional dependency: don't create the file");
-					done |= Done::D_ALL_OPTIONAL;
-					return proceed |= P_FINISHED;
+					unreachable();
+					/* In this case, execute_phase_A() will already
+					 * have returned P_FINISHED. */
 				}
 			}
 
@@ -998,26 +994,34 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 
 bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 {
+	TRACE_FUNCTION();
+	TRACE("dep_link= %s", show_trace(dep_link));
+
 	if ((dep_link->flags & F_OPTIONAL)
 	    && to <Plain_Dep> (dep_link)
 	    && ! (to <Plain_Dep> (dep_link)
 		  ->place_target.flags & F_TARGET_TRANSIENT)) {
+		TRACE("Is optional file target");
 
-		/* We already know a file to be missing */
 		if (bits & B_MISSING) {
+			TRACE("We already know a file to be missing");
 			done |= Done::from_flags(dep_link->flags);
 			return true;
 		}
 
 		const char *name= to <Plain_Dep> (dep_link)
 			->place_target.place_name.unparametrized().c_str();
+		TRACE("name= '%s'", name);
 
 		struct stat buf;
 		int ret_stat= stat(name, &buf);
+		TRACE("ret_stat= %s", frmt("%d", ret_stat));
 		if (ret_stat < 0) {
+			TRACE("Stat failed");
 			bits |= B_MISSING;
 			bits &= ~B_EXISTING;
 			if (errno != ENOENT) {
+				TRACE("Stat failed with error other than ENOENT");
 				to <Plain_Dep> (dep_link)
 					->place_target.place <<
 					format_errno(::show(name));
@@ -1025,9 +1029,11 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 				done |= Done::from_flags(dep_link->flags);
 				return true;
 			}
+			TRACE("File is missing; consider it done");
 			done |= Done::from_flags(dep_link->flags);
 			return true;
 		} else {
+			TRACE("File exists");
 			assert(ret_stat == 0);
 			bits |= B_EXISTING;
 			bits &= ~B_MISSING;

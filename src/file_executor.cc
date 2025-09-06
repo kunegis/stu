@@ -512,10 +512,8 @@ void File_Executor::print_command() const
 
 	/* Colon */
 	if (! begin) {
-		if (! single_line)
-			puts(":");
-		else
-			fputs(": ", stdout);
+		assert(single_line);
+		fputs(": ", stdout);
 	}
 
 	/* The command itself */

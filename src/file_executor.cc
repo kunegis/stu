@@ -489,8 +489,7 @@ void File_Executor::print_command() const
 
 	/* Redirections */
 	if (! filename_output.empty()) {
-		if (! begin)
-			putchar(' ');
+		assert(begin);
 		begin= false;
 		printf(">%s", filename_output.c_str());
 	}

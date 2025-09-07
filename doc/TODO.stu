@@ -355,3 +355,7 @@ A: [ -t -o B ] { touch A ; }  B={C}
 # Rename transients to phonies, and use the word "tranient" only when there is no command
 # and no file target.
 #
+
+#
+# Think about putting a space before the assignment operator.
+#

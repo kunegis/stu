@@ -444,6 +444,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 void Tokenizer::parse_flag_or_name()
 {
 	TRACE_FUNCTION();
+	assert(p < p_end);
 	bool allow_special=
 		!(environment & E_WHITESPACE)
 		&& !tokens.empty()
@@ -451,7 +452,7 @@ void Tokenizer::parse_flag_or_name()
 		&& (to <Operator> (tokens.back())->op == ']' ||
 			to <Operator> (tokens.back())->op == ')');
 
-	if (p < p_end && (*p == '-' || *p == '+' || *p == '~') && ! allow_special) {
+	if ((*p == '-' || *p == '+' || *p == '~') && ! allow_special) {
 		if (*p == '+' || *p == '~') {
 			current_place() <<
 				fmt("an unquoted name must not begin with the character %s",
@@ -537,9 +538,9 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 
 	shared_ptr <Place_Name> ret= std::make_shared <Place_Name> ("", place_begin);
 
-	/* Don't allow '-', '+' and '~' at beginning of a name */
 	if (p < p_end && ! allow_special) {
 		if (*p == '-' || *p == '+' || *p == '~') {
+			TRACE("Don't allow '-', '+' and '~' at beginning of a name");
 			return nullptr;
 		}
 	}

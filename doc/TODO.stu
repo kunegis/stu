@@ -357,5 +357,6 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 
 #
-# Think about putting a space before the assignment operator.
+# Think about putting a space before the assignment operator, and removing the space after
+# #!.
 #

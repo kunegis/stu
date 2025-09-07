@@ -1,9 +1,9 @@
-#include "cov.hh"
 #include "job.hh"
 
 #include <signal.h>
 #include <sys/resource.h>
 
+#include "cov.hh"
 #include "file_executor.hh"
 
 size_t Job::count_jobs_exec=    0;
@@ -20,7 +20,8 @@ pid_t Job::start(
 {
 	assert(pid == -2);
 	init_signals();
-	const char *shell= get_shell();
+	const char *shell_shortname;
+	const char *shell= get_shell(shell_shortname);
 
 	pid= fork();
 	if (pid < 0) {
@@ -65,15 +66,16 @@ pid_t Job::start(
 
 		const char **envp= create_child_env(mapping);
 		string argv0;
-		const char **argv= create_child_argv(place_command, shell, command, argv0);
+		const char **argv= create_child_argv(
+			place_command, shell_shortname, command, argv0);
 		create_child_output_redirection(filename_output);
 		create_child_input_redirection(filename_input);
 
 		__gcov_dump();
+		coverage_impossible();
 		int r= execve(shell, (char *const *) argv, (char *const *) envp);
 		assert(r == -1);
-		perror("execve");
-		__gcov_dump();
+		fprintf(stderr, "execve: %s: %s\n", shell, strerror(errno));
 		_Exit(ERROR_FORK_CHILD);
 	}
 
@@ -97,6 +99,7 @@ pid_t Job::start_copy(string target,
 /* This function works analogously to start() with respect to invocation of fork() and
  * other system-related functions. */
 {
+	TRACE_FUNCTION();
 	assert(! target.empty());
 	assert(! source.empty());
 	assert(pid == -2);
@@ -119,20 +122,22 @@ pid_t Job::start_copy(string target,
 	}
 
 	if (pid == 0) {
+		TRACE("In child");
 		in_child= 1;
 		/* We don't set $STU_STATUS for copy jobs */
-		const char *cp_command= get_cp();
+		const char *cp_shortname;
+		const char *cp= get_cp(cp_shortname);
 
 		/* Using '--' as an argument guarantees that the two filenames will be
 		 * interpreted as filenames and not as options, in particular when they
 		 * begin with a dash. */
 		const char *argv[]= {
-			cp_command, "--", source.c_str(), target.c_str(), nullptr};
+			cp_shortname, "--", source.c_str(), target.c_str(), nullptr};
 		__gcov_dump();
-		int r= execv(cp_command, (char *const *) argv);
+		coverage_impossible();
+		int r= execv(cp, (char *const *) argv);
 		assert(r == -1);
-		perror("execv");
-		__gcov_dump();
+		fprintf(stderr, "execv: %s: %s\n", cp, strerror(errno));
 		_Exit(ERROR_FORK_CHILD);
 	}
 
@@ -438,7 +443,7 @@ const char **Job::create_child_env(
 
 const char **Job::create_child_argv(
 	const Place &place_command,
-	const char *shell,
+	const char *shell_shortname,
 	string &command,
 	string &argv0)
 {
@@ -450,7 +455,7 @@ const char **Job::create_child_argv(
 	 * the line number, a colon and the column number.  This makes the shell if it
 	 * reports an error make the most useful output. */
 	argv0= place_command.as_argv0();
-	if (argv0.empty()) argv0= shell;
+	if (argv0.empty()) argv0= shell_shortname;
 
 	/* The one-character options to the shell.  We use the -e option ('error'), which
 	 * makes the shell abort on a command that fails.  This is also what POSIX
@@ -486,7 +491,7 @@ const char **Job::create_child_argv(
 	return argv;
 }
 
-const char *Job::get_shell()
+const char *Job::get_shell(const char *&shell_shortname_)
 /* Like Make, we don't use the variable $SHELL, but use "/bin/sh" as a shell instead.  The
  * reason is that the variable $SHELL is intended to denote the user's chosen interactive
  * shell, and may not be a POSIX-compatible shell.  Note also that POSIX prescribes that
@@ -498,23 +503,37 @@ const char *Job::get_shell()
  * is not implemented). */
 {
 	static const char *shell= nullptr;
+	static const char *shell_shortname;
 	if (shell == nullptr) {
 		shell= getenv(ENV_STU_SHELL);
 		if (shell == nullptr || shell[0] == '\0')
 			shell= "/bin/sh";
+		shell_shortname= get_shortname(shell);
 	}
+
+	shell_shortname_= shell_shortname;
 	return shell;
 }
 
-const char *Job::get_cp()
+const char *Job::get_cp(const char *&cp_shortname_)
 {
 	static const char *cp= nullptr;
+	static const char *cp_shortname;
 	if (cp == nullptr) {
 		cp= getenv(ENV_STU_CP);
 		if (cp == nullptr || cp[0] == '\0')
 			cp= "/bin/cp";
+		cp_shortname= get_shortname(cp);
 	}
+	cp_shortname_= cp_shortname;
 	return cp;
+}
+
+const char *Job::get_shortname(const char *name)
+{
+	assert(name);
+	const char *slash= strrchr(name, '/');
+	return slash && slash[1] ? slash+1 : name;
 }
 
 void Job::create_child_output_redirection(

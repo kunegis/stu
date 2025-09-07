@@ -1,6 +1,6 @@
 #! /bin/sh
 
-[ "$cov_eval_debug" ] && exec 6>&2 || exec 6>/dev/null
+[ "$COV_EVAL_DEBUG" ] && exec 6>&2 || exec 6>/dev/null
 
 ret_file=${TMP:-/tmp}/cov_eval.ret.$$
 echo >&6 "ret_file=$ret_file"
@@ -61,9 +61,9 @@ eval_file()
 		fi
 		printf >&6 "\tReset prefix\n"
 		prefix=
-		if echo "$text" | grep -q -E -e '^\s*should_not_happen\b' ; then
+		if echo "$text" | grep -q -E -e '^\s*(should_not_happen|coverage_impossible)\b' ; then
 			prefix=$(echo "$text" | sed -e 's,^\([[:space:]]*\).*$,\1,')
-			printf >&6 "\tShould not happen; prefix='$prefix'\n"
+			printf >&6 "\tShould not happen / coverage impossible; prefix='$prefix'\n"
 			continue
 		fi
 		if ! echo "$count" | grep -q -E -e '#''#''#' ; then

@@ -2,10 +2,9 @@
 #
 # Test anchoring.  See 'target.hh'.
 #
-# In all cases, a target 'abcdefghijklmno' is built, and the file
-# contains two rules.  Each of the two rules git.  Either none dominates
-# the other, or the first dominates the second.  (The actual test also
-# inverts the order in all cases.)
+# In all cases, a target 'abcdefghijklmno' is built, and the file contains two rules.
+# Each of the two rules matches.  Either none dominates the other, or the first dominates
+# the second.  (The actual test also inverts the order in all cases.)
 #
 
 do_test()

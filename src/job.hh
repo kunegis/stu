@@ -75,11 +75,12 @@ private:
 	static const char **create_child_env(const std::map <string, string> &mapping);
 	static const char **create_child_argv(
 		const Place &place_command,
-		const char *shell,
+		const char *shell_shortname,
 		string &command,
 		string &argv0);
-	static const char *get_shell();
-	static const char *get_cp();
+	static const char *get_shell(const char *&shell_shortname);
+	static const char *get_cp(const char *&cp_shortname);
+	static const char *get_shortname(const char *name);
 	static void create_child_output_redirection(string filename_output);
 	static void create_child_input_redirection(string filename_input);
 };

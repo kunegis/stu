@@ -290,14 +290,14 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	auto it= executors_by_hash_dep.find(target_for_cache);
 
 	if (it != executors_by_hash_dep.end()) {
-		/* An Executor object already exists for the target */
 		TRACE("Already exists");
 		executor= it->second;
 		if (executor->parents.count(this)) {
-			/* THIS and CHILD are already connected -- add the necessary
-			 * flags */
+			TRACE("Already connected");
+			/* Add necessary flags */
 			Flags flags= dep->flags;
 			if (flags & ~executor->parents.at(this)->flags) {
+				TRACE("Has flags");
 				shared_ptr <Dep> dep_new=
 					executor->parents.at(this)->clone();
 				dep_new->flags |= flags;

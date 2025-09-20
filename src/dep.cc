@@ -120,6 +120,7 @@ shared_ptr <const Dep> Dep::untrivialize() const
 shared_ptr <Dep> Dep::clone() const
 {
 	shared_ptr <const Dep> _this= shared_from_this();
+	TRACE_FUNCTION(show_trace(_this));
 	assert(_this);
 	if (to <Plain_Dep> (_this)) {
 		return std::make_shared <Plain_Dep> (* to <Plain_Dep> (_this));
@@ -130,7 +131,7 @@ shared_ptr <Dep> Dep::clone() const
 	} else if (to <Concat_Dep> (_this)) {
 		return std::make_shared <Concat_Dep> (* to <Concat_Dep> (_this));
 	} else if (to <Root_Dep> (_this)) {
-		return std::make_shared <Root_Dep> (* to <Root_Dep> (_this));
+		unreachable();
 	} else {
 		unreachable();
 	}
@@ -208,7 +209,6 @@ Hash_Dep Plain_Dep::get_target() const
 
 void Plain_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION();
 	if (render_flags(flags, parts, rendering))
 		parts.append_space();
 	if (flags & F_VARIABLE)

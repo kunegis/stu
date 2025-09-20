@@ -293,3 +293,13 @@ cd path/to/dir {
 
 # Do all of @a before starting with @b
 @all:  @a | @b;
+
+#
+# Use the -i flag to mark a command as interactive, e.g. when it asks for a password, or
+# some other input.  This can be used in conjunction with the -j option:  All '-i'
+# commands will run in the foreground, and so none of them can run in parallel.
+#
+
+A -i {
+	./command # Asks for a password on the command line
+}

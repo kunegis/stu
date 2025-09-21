@@ -54,7 +54,8 @@ void Trace::init_file()
 			if (!file_log)
 				file_log= open_logfile(trace_filename);
 			files[trace_class]= file= file_log;
-		} else if (!strcmp(env, "stderr") || !strcmp(env, "1")) {
+		} else if (!strcmp(env, "stderr") ||
+			(env[0] >= '1' && env[0] <= '9' && !env[1])) {
 			files[trace_class]= file= stderr;
 		} else {
 			fprintf(stderr, "stu: error: invalid value for trace %s=%s\n",

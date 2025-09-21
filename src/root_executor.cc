@@ -41,7 +41,7 @@ Proceed Root_Executor::execute(shared_ptr <const Dep> dep_link)
 	Proceed proceed_B= execute_phase_B(dep_link);
 	TRACE("proceed_B= %s", show(proceed));
 	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
-		assert((proceed & P_FINISHED) == 0);
+		assert((proceed_B & P_FINISHED) == 0);
 		return proceed;
 	}
 	if (proceed_B & P_FINISHED) {

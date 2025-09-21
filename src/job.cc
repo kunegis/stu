@@ -539,10 +539,9 @@ void Job::create_child_output_redirection(
 {
 	if (filename_output.empty()) return;
 
-	int fd_output= creat(
-		filename_output.c_str(),
-		/* All +rw, i.e. 0666 */
-		S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+	constexpr mode_t mode_0666=
+		S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
+	int fd_output= creat(filename_output.c_str(), mode_0666);
 	if (fd_output < 0) {
 		perror(filename_output.c_str());
 		__gcov_dump();
@@ -573,7 +572,8 @@ void Job::create_child_input_redirection(string filename_input)
 		_Exit(ERROR_FORK_CHILD);
 	}
 	assert(fd_input >= 3);
-	int r= dup2(fd_input, 0); /* 0 = file descriptor of STDIN */
+	constexpr int fd_stdin= 0;
+	int r= dup2(fd_input, fd_stdin);
 	if (r < 0) {
 		perror(name);
 		__gcov_dump();

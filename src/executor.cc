@@ -675,6 +675,14 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 	if (child->want_delete()) delete child;
 }
 
+const Place &Executor::get_place() const
+{
+	if (param_rule == nullptr)
+		return Place::place_empty;
+	else
+		return param_rule->place;
+}
+
 Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(*this));

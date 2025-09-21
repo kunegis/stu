@@ -31,8 +31,8 @@ public:
 	virtual ~Token()= default;
 
 	virtual const Place &get_place() const= 0;
-	/* The place of the token.  May be in the middle of the token.
-	 * This is the case for commands. */
+	/* The place of the token.  May be in the middle of the token.  This is the case
+	 * for commands. */
 
 	virtual const Place &get_place_start() const= 0;
 	/* The starting place.  Always the first character. */

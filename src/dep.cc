@@ -482,9 +482,10 @@ Hash_Dep Concat_Dep::get_target() const
 	unreachable();
 }
 
-shared_ptr <const Dep> Concat_Dep::concat(shared_ptr <const Dep> a,
-					  shared_ptr <const Dep> b,
-					  int &error)
+shared_ptr <const Dep> Concat_Dep::concat(
+	shared_ptr <const Dep> a,
+	shared_ptr <const Dep> b,
+	int &error)
 {
 	assert(a);
 	assert(b);

@@ -163,6 +163,7 @@ protected:
 	explicit Executor(shared_ptr <const Rule> param_rule_= nullptr)
 		: error(0), timestamp(Timestamp::UNDEFINED),
 		  param_rule(param_rule_) { }
+	virtual ~Executor()= default;
 
 	Proceed execute_children();
 	/* Execute already-active children */
@@ -199,22 +200,11 @@ protected:
 			shared_ptr <const Dep> dep_child);
 	void disconnect(Executor *const child,
 			shared_ptr <const Dep> dep_child);
-
-	const Place &get_place() const
-	/* The place for the executor; e.g. the rule; empty if there is no place */
-	{
-		if (param_rule == nullptr)
-			return Place::place_empty;
-		else
-			return param_rule->place;
-	}
-
+	const Place &get_place() const; /* Empty if there is no place */
 	shared_ptr <const Dep> append_top(shared_ptr <const Dep> dep,
 					  shared_ptr <const Dep> top);
 	shared_ptr <const Dep> set_top(shared_ptr <const Dep> dep,
 				       shared_ptr <const Dep> top);
-
-	virtual ~Executor()= default;
 
 	virtual int get_depth() const {return 0; }
 	/* -1 when undefined as in concatenated executors and the root executor, in which

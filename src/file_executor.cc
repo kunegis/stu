@@ -858,15 +858,15 @@ void File_Executor::print_as_job() const
 	printf("%9jd %s\n", (intmax_t) pid, text_target.c_str());
 }
 
-void File_Executor::write_content(const char *filename,
-				  const Command &command)
+void File_Executor::write_content(
+	const char *filename,
+	const Command &command)
 {
 	FILE *file= fopen(filename, "w");
 
 	if (file == nullptr) {
 		rule->place << format_errno(::show(filename));
-		raise(ERROR_BUILD);
-		return;
+		goto error;
 	}
 
 	for (const string &line: command.get_lines()) {
@@ -874,25 +874,31 @@ void File_Executor::write_content(const char *filename,
 			assert(ferror(file));
 			fclose(file);
 			rule->place << format_errno(::show(filename));
-			raise(ERROR_BUILD);
+			goto remove;
 		}
 		if (EOF == putc('\n', file)) {
 			fclose(file);
 			rule->place << format_errno(::show(filename));
-			raise(ERROR_BUILD);
+			goto remove;
 		}
 	}
 
 	if (0 != fclose(file)) {
 		rule->place << format_errno(::show(filename));
-		command.get_place() <<
-			fmt("error creating %s",
-			    ::show(filename));
-		raise(ERROR_BUILD);
+		command.get_place() << fmt("error creating %s", ::show(filename));
+		goto remove;
 	}
 
 	bits |= B_EXISTING;
 	bits &= ~B_MISSING;
+	return;
+
+ remove:
+	remove(filename);
+ error:
+	raise(ERROR_BUILD);
+	bits &= ~B_EXISTING;
+	bits |= B_MISSING;
 }
 
 void File_Executor::read_variable(shared_ptr <const Dep> dep)

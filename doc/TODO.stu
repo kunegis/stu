@@ -12,6 +12,14 @@
 #
 
 #
+# cov_eval:  use expr where possible to make execution faster.
+#
+
+#
+# Write a check that we don't use 'NULL' in C++ sources.
+#
+
+#
 # Achieve full coverage.
 # * Make 'make test' also execute 'make cov'
 #

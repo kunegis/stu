@@ -73,6 +73,11 @@ eval_file()
 		if exclude ; then
 			continue
 		fi
+		if grep -q -E -e '^\s*[0-9]+:\s*'"$line"':' "$1" ; then
+			# The same line is covered (the same line can have multiple
+			# implementations, e.g. due to templates)
+			continue
+		fi
 		printf '%s:%s:%s\n' "$src_file" "$line" "$text" | tee -a -- "$ret_file"
 	done
 }

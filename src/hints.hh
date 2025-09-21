@@ -30,8 +30,4 @@
 
 #endif /* ! NDEBUG */
 
-/* Used in blocks which cannot have coverage, e.g. after execve() fails, because we can't
- * call __cov_dump() twice. */
-#define coverage_impossible()
-
 #endif /* ! HINTS_HH */

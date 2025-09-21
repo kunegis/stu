@@ -72,7 +72,6 @@ pid_t Job::start(
 		create_child_input_redirection(filename_input);
 
 		__gcov_dump();
-		coverage_impossible();
 		int r= execve(shell, (char *const *) argv, (char *const *) envp);
 		assert(r == -1);
 		fprintf(stderr, "execve: %s: %s\n", shell, strerror(errno));
@@ -134,7 +133,6 @@ pid_t Job::start_copy(string target,
 		const char *argv[]= {
 			cp_shortname, "--", source.c_str(), target.c_str(), nullptr};
 		__gcov_dump();
-		coverage_impossible();
 		int r= execv(cp, (char *const *) argv);
 		assert(r == -1);
 		fprintf(stderr, "execv: %s: %s\n", cp, strerror(errno));

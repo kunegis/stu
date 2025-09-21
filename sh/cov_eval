@@ -61,7 +61,7 @@ eval_file()
 		fi
 		printf >&6 "\tReset prefix\n"
 		prefix=
-		if echo "$text" | grep -q -E -e '^\s*(should_not_happen|coverage_impossible)\b' ; then
+		if echo "$text" | grep -q -E -e '^\s*(should_not_happen|__gcov_dump)\b' ; then
 			prefix=$(echo "$text" | sed -e 's,^\([[:space:]]*\).*$,\1,')
 			printf >&6 "\tShould not happen / coverage impossible; prefix='$prefix'\n"
 			continue

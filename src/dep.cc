@@ -131,7 +131,8 @@ shared_ptr <Dep> Dep::clone() const
 	} else if (to <Concat_Dep> (_this)) {
 		return std::make_shared <Concat_Dep> (* to <Concat_Dep> (_this));
 	} else if (to <Root_Dep> (_this)) {
-		unreachable();
+		should_not_happen();
+		return std::make_shared <Root_Dep> ();
 	} else {
 		unreachable();
 	}

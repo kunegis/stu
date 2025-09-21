@@ -148,6 +148,7 @@ public:
 
 #ifndef NEBUG
 	void canonicalize(); /* In-place */
+	size_t get_dynamic_depth() const;
 #endif /* ! NDEBUG */
 
 private:

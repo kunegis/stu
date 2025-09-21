@@ -1,13 +1,14 @@
 #include "rule.hh"
 
-Rule::Rule(std::vector <shared_ptr <const Place_Target> > &&place_targets_,
-	   std::vector <shared_ptr <const Dep> > &&deps_,
-	   const Place &place_,
-	   const shared_ptr <const Command> &command_,
-	   Name &&filename_,
-	   bool is_hardcode_,
-	   int redirect_index_,
-	   bool is_copy_)
+Rule::Rule(
+	std::vector <shared_ptr <const Place_Target> > &&place_targets_,
+	std::vector <shared_ptr <const Dep> > &&deps_,
+	const Place &place_,
+	const shared_ptr <const Command> &command_,
+	Name &&filename_,
+	bool is_hardcode_,
+	int redirect_index_,
+	bool is_copy_)
 	: place_targets(place_targets_),
 	  deps(deps_),
 	  place(place_),

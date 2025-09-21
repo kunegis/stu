@@ -3,10 +3,17 @@
 void Hash_Dep::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION();
+	TRACE("show_flags= %s", frmt("%d", (rendering & R_SHOW_FLAGS) != 0));
+	TRACE("depth= %s", frmt("%zu", get_dynamic_depth()));
 	size_t i;
 	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
+		TRACE("One dynamic");
 		assert((get_word(i) & F_TARGET_TRANSIENT) == 0);
 		if (rendering & R_SHOW_FLAGS) {
+			/* Hash_Dep::render() is only called with the -d option from
+			 * File_Executor and Transient_Executor, none of which uses
+			 * dynamic Hash_Dep's. */
+			should_not_happen();
 			render_flags(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
 				parts, rendering);
 		}
@@ -36,6 +43,13 @@ void Hash_Dep::canonicalize()
 	p += sizeof(word_t);
 	p= canonicalize_string(A_BEGIN | A_END, p);
 	text.resize(p - b);
+}
+
+size_t Hash_Dep::get_dynamic_depth() const
+{
+	size_t ret;
+	for (ret= 0; get_word(ret) & F_TARGET_DYNAMIC; ++ret);
+	return ret;
 }
 
 #endif /* ! NDEBUG */

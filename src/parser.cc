@@ -393,8 +393,9 @@ bool Parser::parse_target(
 	shared_ptr <Name_Token> target_name= is <Name_Token> ();
 	++iter;
 
+	assert(! target_name->empty());
 	string param_1, param_2;
-	if (! target_name->valid(param_1, param_2)) {
+	if (! target_name->find_duplicate_parameters(param_1, param_2)) {
 		place_of_target <<
 			fmt("the two parameters %s and %s in the name %s "
 				"must be separated by at least one character",

@@ -233,11 +233,8 @@ string Name::get_duplicate_parameter() const
 	return "";
 }
 
-bool Name::valid(string &param_1, string &param_2) const
+bool Name::find_duplicate_parameters(string &param_1, string &param_2) const
 {
-	if (empty())
-		return false;
-
 	for (size_t i= 1; i + 1 < get_n() + 1; ++i) {
 		if (texts[i].empty()) {
 			param_1= parameters[i-1];

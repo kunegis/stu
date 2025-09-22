@@ -113,7 +113,7 @@ public:
 	/* Check whether there are duplicate parameters.  Return the
 	 * name of the found duplicate parameter, or "" if none is found. */
 
-	bool valid(string &param_1, string &param_2) const;
+	bool find_duplicate_parameters(string &param_1, string &param_2) const;
 	/* Whether this is a valid name.  If it is not, fill the given
 	 * parameters with the two unseparated parameters. */
 

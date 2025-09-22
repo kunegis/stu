@@ -29,31 +29,29 @@ bool Name::match(
 	std::map <string, string> &mapping,
 	std::vector <size_t> &anchoring,
 	int &priority) const
-/*
- * Rule:  Each parameter must match at least one character.
+/* Rule:  Each parameter must match at least one character.
  *
  * This algorithm uses one pass without backtracking or recursion.  Therefore, there are
  * no "deadly" patterns that can make it hang, which is a common source of errors for
  * naive trivial implementations of regular expression matching.
  *
  * This implementation takes into account the special rules described in the manpage.
- * Each special rule is referred to by a letter (a, b, c, etc.).
- */
+ * Each special rule is referred to by a letter (a, b, c, etc.). */
 {
+	TRACE_FUNCTION();
+	TRACE("name= '%s'", name);
 	assert(mapping.size() == 0);
 	assert(! name.empty());
 	priority= 0;
 	std::map <string, string> ret;
 	const size_t n= get_n();
-
 	anchoring.resize(2 * n);
 
 	/*
 	 * Special rules
 	 */
 
-	/* ./$A... is equivalent to $A... where $A must not begin in a
-	 * slash */
+	/* ./$A... is equivalent to $A... where $A must not begin with a slash */
 	bool special_a= n != 0 && texts[0] == "./";
 	if (special_a)
 		priority= 1;
@@ -65,19 +63,23 @@ bool Name::match(
 	bool special_c= false;  /* We are in the second pass for Special Rule (c) */
 
  restart:
+	TRACE("Start special_c= %s", frmt("%d", special_c));
 	const char *const p_begin= name.c_str();
-	const char *p= p_begin;
 	const char *const p_end= name.c_str() + name.size();
+	const char *p= p_begin;
 
 	/* Match first text */
 	if (! special_a) {
+		TRACE("Not (a)");
 		size_t k= texts[0].size();
 		if ((size_t)(p_end - p) <= k) {
+			TRACE("String is too short for first text");
 			goto failed;
 		}
 		/* Note:  K can be zero here, in which case memcmp() always returns zero,
 		 * i.e., a match. */
 		if (memcmp(p, texts[0].c_str(), k)) {
+			TRACE("String does not start with first text");
 			goto failed;
 		}
 		p += k;
@@ -90,6 +92,7 @@ bool Name::match(
 	}
 
 	for (size_t i= 0; i < n; ++i) {
+		TRACE("i= %s, p= '%s', texts[i+1]= %s", frmt("%zu", i), p, texts[i+1]);
 		size_t length_min= 1;
 		/* Minimal length of the matching parameter */
 
@@ -99,26 +102,42 @@ bool Name::match(
 		if (special_c && i == 0) {
 			ret[parameters[i]]= ".";
 
-			/* The anchoring has zero length */
-			anchoring[2*i + 1]= p_end - p_begin;
-
-			if (p + (texts.at(i+1).size() - 1) > p_end)
-				goto failed;
-			if (memcmp(p, texts.at(i+1).c_str() + 1, texts.at(i+1).size() - 1))
-				goto failed;
-			p += texts.at(i+1).size() - 1;
+			if (i == n - 1) {
+				TRACE("Last text");
+				anchoring[2*i + 1]= p_end - p_begin;
+				if ((size_t) (p_end - p) != texts.at(i+1).size() - 1) {
+					goto failed;
+				}
+				if (memcmp(p, texts.at(i+1).c_str() + 1, texts.at(i+1).size() - 1)) {
+					goto failed;
+				}
+			} else {
+				TRACE("Not last text");
+				anchoring[2*i + 1]= p - p_begin;
+				if (p + (texts.at(i+1).size() - 1) > p_end) {
+					goto failed;
+				}
+				if (memcmp(p, texts.at(i+1).c_str() + 1, texts.at(i+1).size() - 1)) {
+					goto failed;
+				}
+				p += texts.at(i+1).size() - 1;
+			}
 			continue;
 		}
 		if (i == n - 1) {
-			/* For the last segment, texts[n-1] must match the end of the
+			/* For the last segment, texts[n] must match the end of the
 			 * input string */
 			size_t size_last= texts[n].size();
 			const char *last= texts[n].c_str();
 			/* Minimal length of matched text */
-			if (p_end - p < (ssize_t) length_min + (ssize_t) size_last)
+			if (p_end - p < (ssize_t) length_min + (ssize_t) size_last) {
+				TRACE("Not enough characters left in string for last text");
 				goto failed;
-			if (memcmp(p_end - size_last, last, size_last))
+			}
+			if (memcmp(p_end - size_last, last, size_last)) {
+				TRACE("Rest of string does not match last text");
 				goto failed;
+			}
 			string matched= string(p, p_end - p - size_last);
 			if (matched.empty()) {
 				assert(special_b_potential);
@@ -133,8 +152,10 @@ bool Name::match(
 			 * two parameters cannot be unseparated */
 			assert(texts[i+1].size() != 0);
 			const char *q= strstr(p+length_min, texts[i+1].c_str());
-			if (q == nullptr)
+			if (q == nullptr) {
+				TRACE("Intermediate text not found");
 				goto failed;
+			}
 			assert(q >= p + length_min);
 			anchoring[i * 2 + 1]= q - p_begin;
 			string matched= string(p, q-p);
@@ -158,9 +179,16 @@ bool Name::match(
 	/* There is a match */
 	swap(mapping, ret);
 	assert(anchoring.size() == 2 * n);
+	TRACE("ret= true");
+#ifndef NDEBUG
+	for (size_t i= 0; i < anchoring.size(); ++i) {
+		TRACE("anchoring[%s]= %s", frmt("%zu", i), frmt("%zu", anchoring[i]));
+	}
+#endif /* ! NDEBUG */
 	return true;
 
  failed:
+	TRACE("Failed");
 	if (special_c)
 		return false;
 
@@ -181,10 +209,12 @@ bool Name::match(
 	 */
 
 	if (n != 0 && texts[0].empty() && texts[1].size() != 0 && texts[1][0] == '/') {
+		TRACE("Restart");
 		special_c= true;
 		priority= -1;
 		goto restart;
 	} else {
+		TRACE("ret= false");
 		return false;
 	}
 }

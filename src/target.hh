@@ -102,11 +102,10 @@ public:
 	 * MAPPING must be empty.  NAME must not be empty.  PRIORITY determines whether a
 	 * special rule was used:
 	 *    0:   no special rule was used
-	 *    +1:  a special rule was used, having priority of matches without special rule
+	 *    +1:  a special rule was used, having priority over matches without special rule
 	 *    -1:  a special rule was used, having less priority than matches
 	 *         without special rule
-	 * PRIORITY has an unspecified value after returing FALSE.
-	 * The range of PRIORITY can be easily extended to other integers if necessary. */
+	 * PRIORITY has an unspecified value after returing FALSE. */
 
 	void render(Parts &, Rendering= 0) const;
 

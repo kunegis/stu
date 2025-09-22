@@ -1,0 +1,5 @@
+@all: AA;
+
+$dir/AAA$x: {
+	exit 1
+}

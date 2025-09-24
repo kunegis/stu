@@ -3,7 +3,7 @@
 
 #ifdef STU_COV
 extern "C" {
-#include "gcov.h"
+#include <gcov.h>
 }
 #else
 #define __gcov_dump()

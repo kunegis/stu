@@ -1227,11 +1227,12 @@ bool Parser::next_concatenates() const
 	return op == '(' || op == '[';
 }
 
-void Parser::get_file(const char *filename,
-		      int file_fd,
-		      Rule_Set &rule_set,
-		      shared_ptr <const Place_Target> &target_first,
-		      Place &place_first)
+void Parser::get_file(
+	const char *filename,
+	int file_fd,
+	Rule_Set &rule_set,
+	shared_ptr <const Place_Target> &target_first,
+	Place &place_first)
 {
 	assert(file_fd == -1 || file_fd > 1);
 	assert(filename);

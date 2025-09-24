@@ -120,7 +120,7 @@ public:
 	void canonicalize();
 	/* In-place canonicalizarion */
 
-	bool operator==(const Name &that) const;
+	bool equals_same_length(const Name &that) const;
 
 	static bool anchoring_dominates(
 		const std::vector <size_t> &anchoring_a,
@@ -169,15 +169,6 @@ public:
 	 * parameters. */
 	{
 		return Hash_Dep(flags, name.unparametrized());
-	}
-
-	bool operator== (const Target &that) const {
-		return this->flags == that.flags &&
-			this->name == that.name;
-	}
-
-	bool operator!= (const Target &that) const {
-		return ! (*this == that);
 	}
 };
 
@@ -263,16 +254,11 @@ public:
 		  place_name(that.place_name),
 		  place(that.place) { }
 
-	bool operator==(const Place_Target &that) const
-	/* Compares only the content, not the place. */
+	bool equals_same_length(const Place_Target &that) const
+	/* Compare, assuming same length */
 	{
 		return this->flags == that.flags &&
-			this->place_name == that.place_name;
-	}
-
-	bool operator!=(const Place_Target &that) const
-	{
-		return !(*this == that);
+			this->place_name.equals_same_length(that.place_name);
 	}
 
 	void render(Parts &, Rendering) const;

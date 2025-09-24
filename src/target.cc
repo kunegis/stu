@@ -333,10 +333,9 @@ void Name::canonicalize()
 	}
 }
 
-bool Name::operator==(const Name &that) const
+bool Name::equals_same_length(const Name &that) const
 {
-	if (this->get_n() != that.get_n())
-		return false;
+	assert(this->get_n() == that.get_n());
 	for (size_t i= 0; i < get_n(); ++i) {
 		if (this->parameters[i] != that.parameters[i])
 			return false;

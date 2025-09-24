@@ -1,0 +1,9 @@
+@all: list.1.2 A;
+
+list.$x.$y list.$x
+{
+	touch -- list."$x"."$y"
+	touch -- list."$x"
+}
+
+A = {CORRECT}

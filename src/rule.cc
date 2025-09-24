@@ -175,7 +175,7 @@ void Rule::check_duplicate_target() const
 {
 	for (size_t i= 0; i < place_targets.size(); ++i) {
 		for (size_t j= 0; j < i; ++j) {
-			if (*place_targets[i] != *place_targets[j])
+			if (! place_targets[i]->equals_same_length(*place_targets[j]))
 				continue;
 			place_targets[i]->place <<
 				fmt("there must not be a target %s",

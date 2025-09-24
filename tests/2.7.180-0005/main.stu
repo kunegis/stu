@@ -1,0 +1,8 @@
+@all:  A.1.2;
+
+A.$x.$y A.$y.$x
+{
+	touch A.1.2
+	touch A.2.1
+	echo CORRECT >A
+}

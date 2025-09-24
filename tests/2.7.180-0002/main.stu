@@ -1,0 +1,9 @@
+@all: x.1.2 A;
+
+A.$x.$y x.$x.$y
+{
+	touch -- A."$x"."$y"
+	touch -- x."$x"."$y"
+}
+
+A = {CORRECT}

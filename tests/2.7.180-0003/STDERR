@@ -1,0 +1,2 @@
+main.stu:1:9: parameters of target A.${x}.${z} differ
+main.stu:1:1: from parameters of target A.${x}.${y} in rule with multiple targets

@@ -1,0 +1,2 @@
+main.stu:3:12: parameters of target list.${x} differ
+main.stu:3:1: from parameters of target list.${x}.${y} in rule with multiple targets

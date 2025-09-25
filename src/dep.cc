@@ -376,6 +376,7 @@ void Concat_Dep::render(Parts &parts, Rendering rendering) const
 	}
 }
 
+#ifndef NDEBUG
 bool Concat_Dep::is_normalized() const
 {
 	for (auto &i: deps) {
@@ -386,6 +387,7 @@ bool Concat_Dep::is_normalized() const
 	}
 	return true;
 }
+#endif /* ! NDEBUG */
 
 void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 				  std::vector <shared_ptr <const Dep> > &deps_,

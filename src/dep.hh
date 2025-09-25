@@ -167,8 +167,9 @@ public:
 
 	virtual Hash_Dep get_target() const= 0;
 	/* Only called for non-compound and non-parametrized dependencies. */
-
+#ifndef NDEBUG
 	virtual bool is_normalized() const= 0;
+#endif /* ! NDEBUG */
 
 };
 
@@ -279,10 +280,13 @@ public:
 	}
 
 	virtual void render(Parts &, Rendering= 0) const override;
-	virtual bool is_normalized() const override { return true; }
 
 	virtual Hash_Dep get_target() const override;
 	/* Does not preserve the F_VARIABLE bit */
+
+#ifndef NDEBUG
+	virtual bool is_normalized() const override { return true; }
+#endif /* ! NDEBUG */
 };
 
 class Dynamic_Dep
@@ -332,7 +336,6 @@ public:
 	}
 
 	virtual void render(Parts &, Rendering= 0) const override;
-	virtual bool is_normalized() const override { return dep->is_normalized(); }
 	virtual Hash_Dep get_target() const override;
 
 	unsigned get_depth() const {
@@ -341,6 +344,10 @@ public:
 		else
 			return 1;
 	}
+
+#ifndef NDEBUG
+	virtual bool is_normalized() const override { return dep->is_normalized(); }
+#endif /* ! NDEBUG */
 };
 
 class Concat_Dep
@@ -381,7 +388,6 @@ public:
 	virtual bool is_unparametrized() const override;
 	virtual const Place &get_place() const override;
 	virtual void render(Parts &, Rendering= 0) const override;
-	virtual bool is_normalized() const override;
 	virtual Hash_Dep get_target() const override;
 
 	static shared_ptr <const Dep> concat(shared_ptr <const Dep> a,
@@ -411,6 +417,9 @@ public:
 	/* Helper function.  Write result into DEPS, concatenating all starting at the
 	 * given index.  On errors, a message is printed, bits are set in ERROR, and if
 	 * not in keep-going mode, the function returns immediately. */
+#ifndef NDEBUG
+	virtual bool is_normalized() const override;
+#endif /* ! NDEBUG */
 };
 
 class Compound_Dep
@@ -453,8 +462,10 @@ public:
 	virtual bool is_unparametrized() const override;
 	virtual const Place &get_place() const override { return place; }
 	virtual void render(Parts &, Rendering= 0) const override;
-	virtual bool is_normalized() const override { return false; }
 	virtual Hash_Dep get_target() const override { unreachable(); }
+#ifndef NDEBUG
+	virtual bool is_normalized() const override { return false; }
+#endif /* ! NDEBUG */
 };
 
 class Root_Dep
@@ -471,7 +482,9 @@ public:
 	virtual const Place &get_place() const override { return Place::place_empty; }
 	virtual void render(Parts &parts, Rendering= 0) const override;
 	virtual Hash_Dep get_target() const override { unreachable(); }
+#ifndef NDEBUG
 	virtual bool is_normalized() const override { return true; }
+#endif /* ! NDEBUG */
 };
 
 #endif /* ! DEP_HH */

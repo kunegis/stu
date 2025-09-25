@@ -17,8 +17,8 @@ touch "$ret_file" || exit 2
 
 exclude()
 {
-	if printf '%s\n' "$text" | grep -q -E -e '\bunreachable\s*\(\)' ; then
-		printf >&6 "\tUnreachable\n"
+	if printf '%s\n' "$text" | grep -q -E -e '\b(unreachable|uncovered_due_to_bug_in_gcov)\s*\(\)' ; then
+		printf >&6 "\tException line\n"
 		return 0
 	fi
 	if printf '%s\n' "$text" | grep -q -E -e '\bvirtual\s+~.*=\s*default' ; then

@@ -57,7 +57,7 @@ void Tokenizer::parse_tokens_file(
 		}
 
 		if (fd < 0) {
-			TRACE("open(%s)", filename);
+			TRACE("open('%s')", filename);
 			fd= open(filename.c_str(), O_RDONLY);
 			TRACE("fd= %s", frmt("%d", fd));
 			if (fd < 0) {
@@ -74,7 +74,7 @@ void Tokenizer::parse_tokens_file(
 			TRACE("fstat failed");
 			goto error_close;
 		}
-		TRACE("buf.st_stat= %s", frmt("%zu", (size_t) buf.st_size));
+		TRACE("buf.st_size= %s", frmt("%zu", (size_t) buf.st_size));
 
 		/* If the file is a directory, open the file "main.stu" within it */
 		if (S_ISDIR(buf.st_mode)) {
@@ -131,10 +131,8 @@ void Tokenizer::parse_tokens_file(
 			assert(! filename.empty());
 			TRACE("Close file");
 			assert(fd >= 3);
-			if (0 > close(fd)) {
-				TRACE("close failed");
+			if (0 > close(fd))
 				goto error;
-			}
 		}
 
 		{
@@ -177,7 +175,8 @@ void Tokenizer::parse_tokens_file(
 		} else {
 			assert(fd == 0);
 		}
-	error:
+
+	error:  uncovered_due_to_bug_in_gcov();
 		const char *filename_diagnostic= !filename.empty()
 			? filename.c_str() : "<stdin>";
 		if (backtraces.size() > 0) {

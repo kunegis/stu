@@ -178,7 +178,6 @@ void Tokenizer::parse_tokens_file(
 			assert(fd == 0);
 		}
 	error:
-		TRACE("error");
 		const char *filename_diagnostic= !filename.empty()
 			? filename.c_str() : "<stdin>";
 		if (backtraces.size() > 0) {
@@ -863,7 +862,9 @@ bool Tokenizer::skip_space(bool &skipped_actual_space)
 					return ret;
 				}
 			} else {
-				current_place() << "backslash must be followed by a character";
+				current_place() <<
+					fmt("expected a character after %s",
+						show_operator('\\'));
 				throw ERROR_LOGICAL;
 			}
 		}
@@ -1005,7 +1006,6 @@ bool Tokenizer::parse_escape()
 	Place place_escape= current_place();
 	++p;
 	if (p == p_end) {
-		/* Error:  expected a character after \ */
 		place_escape << fmt("expected a character after %s", show_operator('\\'));
 		throw ERROR_LOGICAL;
 	}

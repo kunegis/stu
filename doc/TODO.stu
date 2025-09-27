@@ -1,4 +1,10 @@
 #
+# 2.7.188:  Rule::rule_best is problematic as it used Place as a key.  However, this
+# dosn't work as multiple matching rules given in the -F option will have the same place.
+# * Sort not only by target, but also by Rule pointer as a fallback
+#
+
+#
 # FreeBSD:
 # * make check
 # ** 2.4.7-foreground:  tcsetpgrp: Operation not permitted-foreground  (test does not fail, but outputs this)

@@ -177,32 +177,49 @@ public:
 	std::vector <size_t> anchoring;
 	int priority;
 	shared_ptr <const Place_Target> place_target;
+
+	bool operator<(const Found_Rule &) const;
 };
 
 class Best_Rule_Finder
 {
 public:
+//	Best_Rule_Finder()
+//		: best_sorted(&rule_less_by_targets)
+//	{ }
+
+//	struct Cmp
+//	{
+//		bool operator()(
+//			shared_ptr <const Place_Target>,
+//			shared_ptr <const Place_Target>) const;
+//	};
+	
 	void add(const Hash_Dep &, shared_ptr <const Rule> );
 	size_t count() const {
 		return found_rules.size();
 	}
 
-	/* Return all equally best targets.  They are returned as a map by place, so
-	 * iterating over them will give a consistent order, for consistent error
-	 * messages. */
-	const std::map <Place, shared_ptr <const Place_Target> > &targets_best() const;
+//	/* Return all equally best targets.  They are returned as a map by place, so
+//	 * iterating over them will give a consistent order, for consistent error
+//	 * messages. */
+//	const std::set <shared_ptr <const Place_Target>, Cmp> &targets_best() const;
 
 	/* Access the best rule.  The best rule must be unique. */
-	Found_Rule &best() {
+	const Found_Rule &best() {
 		assert(found_rules.size() == 1);
-		return found_rules[0];
+		return * found_rules.begin();
+//		return found_rules[0];
 	}
 
-private:
-	std::vector <Found_Rule> found_rules;
+	const std::set <Found_Rule> &all_best() const { return found_rules; }
 
-	/* The same as PLACE_PARAM_TARGETS_BEST, but sorted by place.  Filled on demand. */
-	mutable std::map <Place, shared_ptr <const Place_Target> > best_sorted;
+private:
+	std::set <Found_Rule> found_rules;
+
+	/* The same as PLACE_PARAM_TARGETS_BEST, but sorted as needed in error messages */
+//	mutable std::map <Place, shared_ptr <const Place_Target> > best_sorted;
+//	mutable std::set <shared_ptr <const Place_Target>, Cmp> best_sorted;
 };
 
 #endif /* ! RULE_HH */

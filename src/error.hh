@@ -219,8 +219,8 @@ public:
 	bool empty() const  {  return type == Type::EMPTY;  }
 	void clear()  {  type= Type::EMPTY;  }
 
-	bool operator<(const Place &place) const;
-	/* Places are used as keys in maps */
+//	bool operator<(const Place &place) const;
+//	/* Places are used as keys in maps */
 
 	static const Place place_empty;
 	/* A static empty place object, used in various places when a reference to an

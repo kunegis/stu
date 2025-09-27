@@ -358,6 +358,21 @@ void Name::append(const Name &name)
 	}
 }
 
+bool Name::operator<(const Name &that) const
+{
+	size_t n_this= get_n();
+	size_t n_that= that.get_n();
+	if (n_this < n_that) return true;
+	if (n_this > n_that) return false;
+
+	for (size_t i= 0; i < n_this; ++i) {
+		int r= strcmp(texts[i].c_str(), that.texts[i].c_str());
+		if (r < 0) return true;
+		if (r > 0) return false;
+	}
+	return false;
+}
+	
 void Place_Target::render(Parts &parts, Rendering rendering) const
 {
 	TRACE_FUNCTION();

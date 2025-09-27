@@ -81,9 +81,9 @@ Rule::Rule(shared_ptr <const Place_Target> place_target_,
 	deps.push_back(dep);
 }
 
-shared_ptr <const Rule>
-Rule::instantiate(shared_ptr <const Rule> rule,
-		  const std::map <string, string> &mapping)
+shared_ptr <const Rule> Rule::instantiate(
+	shared_ptr <const Rule> rule,
+	const std::map <string, string> &mapping)
 {
 	assert(rule->get_parameters().size() != 0);
 

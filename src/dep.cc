@@ -258,7 +258,8 @@ void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 	parts.append_marker("]");
 }
 
-shared_ptr <const Dep> Dynamic_Dep::instantiate(const std::map <string, string> &mapping) const
+shared_ptr <const Dep> Dynamic_Dep::instantiate(
+	const std::map <string, string> &mapping) const
 {
 	shared_ptr <Dynamic_Dep> ret= std::make_shared <Dynamic_Dep>
 		(flags, places, dep->instantiate(mapping));
@@ -267,7 +268,8 @@ shared_ptr <const Dep> Dynamic_Dep::instantiate(const std::map <string, string> 
 	return ret;
 }
 
-shared_ptr <const Dep> Plain_Dep::instantiate(const std::map <string, string> &mapping) const
+shared_ptr <const Dep> Plain_Dep::instantiate(
+	const std::map <string, string> &mapping) const
 {
 	shared_ptr <Place_Target> ret_target= place_target.instantiate(mapping);
 
@@ -290,10 +292,11 @@ shared_ptr <const Dep> Plain_Dep::instantiate(const std::map <string, string> &m
 	return ret;
 }
 
-shared_ptr <const Dep>
-Compound_Dep::instantiate(const std::map <string, string> &mapping) const
+shared_ptr <const Dep> Compound_Dep::instantiate(
+	const std::map <string, string> &mapping) const
 {
-	shared_ptr <Compound_Dep> ret= std::make_shared <Compound_Dep> (flags, places, place);
+	shared_ptr <Compound_Dep> ret= std::make_shared <Compound_Dep>
+		(flags, places, place);
 	ret->index= index;
 	ret->top= top;
 	for (const shared_ptr <const Dep> &d: deps) {
@@ -330,7 +333,8 @@ void Compound_Dep::render(Parts &parts, Rendering rendering) const
 		parts.append_operator(")");
 }
 
-shared_ptr <const Dep> Concat_Dep::instantiate(const std::map <string, string> &mapping) const
+shared_ptr <const Dep> Concat_Dep::instantiate(
+	const std::map <string, string> &mapping) const
 {
 	shared_ptr <Concat_Dep> ret= std::make_shared <Concat_Dep> (flags, places);
 	ret->index= index;
@@ -565,8 +569,9 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		return concat_complex(a, b);
 }
 
-shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(shared_ptr <const Plain_Dep> a,
-						      shared_ptr <const Plain_Dep> b)
+shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(
+	shared_ptr <const Plain_Dep> a,
+	shared_ptr <const Plain_Dep> b)
 {
 	assert(a);
 	assert(b);
@@ -624,6 +629,25 @@ shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> 
 	}
 
 	return ret;
+}
+
+shared_ptr <const Dep> Root_Dep::instantiate( /* unreachable */
+	const std::map <string, string> &) const
+{
+	should_not_happen();
+	return shared_ptr <const Dep> (std::make_shared <Root_Dep> ());
+}
+
+bool Root_Dep::is_unparametrized() const /* unreachable */
+{
+	should_not_happen();
+	return true;
+}
+
+const Place &Root_Dep::get_place() const /* unreachable */
+{
+	should_not_happen();
+	return Place::place_empty;
 }
 
 void Root_Dep::render(Parts &parts, Rendering) const

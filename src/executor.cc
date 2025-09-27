@@ -904,6 +904,7 @@ Proceed Executor::connect(
 
 	/* '-p' and '-o' do not mix */
 	if (dep_child->flags & F_PERSISTENT && dep_child->flags & F_OPTIONAL) {
+		assert(! to <Root_Dep> (dep_this));
 		const Place &place_persistent= dep_child->get_place_flag(I_PERSISTENT);
 		const Place &place_optional= dep_child->get_place_flag(I_OPTIONAL);
 		place_persistent <<

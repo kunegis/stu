@@ -267,8 +267,8 @@ public:
 
 	void render(Parts &, Rendering) const;
 
-	shared_ptr <Place_Target>
-	instantiate(const std::map <string, string> &mapping) const {
+	shared_ptr <Place_Target> instantiate(
+		const std::map <string, string> &mapping) const {
 		return std::make_shared <Place_Target>
 			(flags, *place_name.instantiate(mapping), place);
 	}

@@ -76,12 +76,14 @@ void signal_handler_termination(int sig)
 	__gcov_dump();
 }
 
-void signal_handler_productive(int, siginfo_t *, void *)
+void signal_handler_productive(int, siginfo_t *, void *) /* uncovered */
 /* Do nothing -- the handler only exists because POSIX says that a signal may be discarded
  * by the kernel if there is no signal handler for it, and then it may not be possible to
  * sigwait() for that signal. */
 /* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
-{ }
+{
+	/* uncovered */
+}
 
 void init_signals()
 {

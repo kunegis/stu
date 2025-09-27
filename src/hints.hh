@@ -1,14 +1,11 @@
 #ifndef HINTS_HH
 #define HINTS_HH
 
-/*
- * "Should not happen":  Used in branches that we expect not to never happen, but could
- * happen when Stu has a bug, and we want to handle that case even in non-debug mode.
- */
-
 #ifdef NDEBUG
 
 #define should_not_happen()
+/* Used in branches that we expect not to never happen, but could happen when Stu has a
+ * bug, and we want to handle that case even in non-debug mode. */
 
 #ifdef __GNUC__
 #	define unreachable() __builtin_unreachable()

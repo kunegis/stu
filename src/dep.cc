@@ -650,7 +650,14 @@ const Place &Root_Dep::get_place() const /* unreachable */
 	return Place::place_empty;
 }
 
+#ifdef NDEBUG
+void Root_Dep::render(Parts &parts, Rendering) const /* unreachable */
+{
+	unreachable();
+}
+#else /* ! NDEBUG */
 void Root_Dep::render(Parts &parts, Rendering) const
 {
 	parts.append_operator("ROOT");
 }
+#endif /* ! NDEBUG */

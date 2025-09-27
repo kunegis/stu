@@ -93,8 +93,7 @@ pid_t Job::start(
 	return pid;
 }
 
-pid_t Job::start_copy(string target,
-		      string source)
+pid_t Job::start_copy(string target, string source)
 /* This function works analogously to start() with respect to invocation of fork() and
  * other system-related functions. */
 {
@@ -102,7 +101,6 @@ pid_t Job::start_copy(string target,
 	assert(! target.empty());
 	assert(! source.empty());
 	assert(pid == -2);
-
 	init_signals();
 
 	pid= fork();

@@ -11,6 +11,13 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2025-09-27  Version 2.7.188
+
+* Change in error message:  When multiple rules match a target and none dominates the
+  others, the ordering in which the matching rules are output is now based on the
+  parametrized targets (from shorted to longest initial matching equence), and not on the
+  location in the source file as before.
+
 2025-03-30  Version 2.7.121
 
 * There is now an option '-U' that suppresses the version checking done by the '%version'

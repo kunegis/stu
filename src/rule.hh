@@ -184,42 +184,21 @@ public:
 class Best_Rule_Finder
 {
 public:
-//	Best_Rule_Finder()
-//		: best_sorted(&rule_less_by_targets)
-//	{ }
-
-//	struct Cmp
-//	{
-//		bool operator()(
-//			shared_ptr <const Place_Target>,
-//			shared_ptr <const Place_Target>) const;
-//	};
-	
 	void add(const Hash_Dep &, shared_ptr <const Rule> );
 	size_t count() const {
 		return found_rules.size();
 	}
 
-//	/* Return all equally best targets.  They are returned as a map by place, so
-//	 * iterating over them will give a consistent order, for consistent error
-//	 * messages. */
-//	const std::set <shared_ptr <const Place_Target>, Cmp> &targets_best() const;
-
 	/* Access the best rule.  The best rule must be unique. */
 	const Found_Rule &best() {
 		assert(found_rules.size() == 1);
 		return * found_rules.begin();
-//		return found_rules[0];
 	}
 
 	const std::set <Found_Rule> &all_best() const { return found_rules; }
 
 private:
 	std::set <Found_Rule> found_rules;
-
-	/* The same as PLACE_PARAM_TARGETS_BEST, but sorted as needed in error messages */
-//	mutable std::map <Place, shared_ptr <const Place_Target> > best_sorted;
-//	mutable std::set <shared_ptr <const Place_Target>, Cmp> best_sorted;
 };
 
 #endif /* ! RULE_HH */

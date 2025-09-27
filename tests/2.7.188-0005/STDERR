@@ -1,0 +1,9 @@
+main.stu:1:5: multiple minimal matching rules for target "1.2.3.4.5.6.7"
+main.stu:3:1: rule with target ${a}.2.3.4.5.6.7
+main.stu:4:1: rule with target 1.${b}.3.4.5.6.7
+main.stu:5:1: rule with target 1.2.${c}.4.5.6.7
+main.stu:6:1: rule with target 1.2.3.${d}.5.6.7
+main.stu:7:1: rule with target 1.2.3.4.${e}.6.7
+main.stu:8:1: rule with target 1.2.3.4.5.${f}.7
+main.stu:9:1: rule with target 1.2.3.4.5.6.${g}
+main.stu:1:5: "1.2.3.4.5.6.7" is needed by "A"

@@ -1,1 +1,3 @@
-todo
+../../bin/stu.test: multiple minimal matching rules for target "list.1.2"
+Option -F: rule with target list.${x}.2
+Option -F: rule with target list.1.${y}

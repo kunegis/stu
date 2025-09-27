@@ -1,4 +1,4 @@
 main.stu:1:5: multiple minimal matching rules for target "list.B"
-main.stu:7:1: rule with target list.${name}
 main.stu:8:1: rule with target ${name}.B
+main.stu:7:1: rule with target list.${name}
 main.stu:1:5: [list.B] is needed by "A"

@@ -102,7 +102,8 @@ public:
 	 * MAPPING must be empty.  NAME must not be empty.  PRIORITY determines whether a
 	 * special rule was used:
 	 *    0:   no special rule was used
-	 *    +1:  a special rule was used, having priority over matches without special rule
+	 *    +1:  a special rule was used, having priority over matches without special
+	 *         rule
 	 *    -1:  a special rule was used, having less priority than matches
 	 *         without special rule
 	 * PRIORITY has an unspecified value after returing FALSE. */
@@ -121,6 +122,9 @@ public:
 	/* In-place canonicalizarion */
 
 	bool equals_same_length(const Name &that) const;
+
+	bool operator<(const Name &) const; /* Compares only texts */
+	bool operator>(const Name &that) const { return that < *this; }
 
 	static bool anchoring_dominates(
 		const std::vector <size_t> &anchoring_a,

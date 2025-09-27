@@ -1,4 +1,4 @@
 main.stu:7:5: multiple minimal matching rules for target "abcdefghijk"
-main.stu:11:1: rule with target abcdef${X}jk
 main.stu:15:1: rule with target ab${X}hijk
+main.stu:11:1: rule with target abcdef${X}jk
 main.stu:7:5: "abcdefghijk" is needed by "A"

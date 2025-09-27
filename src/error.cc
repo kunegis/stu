@@ -164,28 +164,6 @@ const char *Place::get_filename_str() const
 	return text.empty() ? "<stdin>" : text.c_str();
 }
 
-bool Place::operator<(const Place &place) const
-{
-	if (this->type != place.type) {
-		return this->type < place.type;
-	}
-	switch (this->type) {
-	default:  unreachable();
-	case Type::EMPTY:
-	case Type::ARGUMENT:
-	case Type::ENV_OPTIONS:
-		return false;
-	case Type::INPUT_FILE:
-		if (this->text != place.text)
-			return this->text < place.text;
-		if (this->line != place.line)
-			return this->line < place.line;
-		return this->column < place.column;
-	case Type::OPTION:
-		return this->text < place.text;
-	}
-}
-
 void print_warning(const Place &place, string message)
 {
 	assert(! message.empty());

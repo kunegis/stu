@@ -1,4 +1,4 @@
 main.stu:3:4: multiple minimal matching rules for target "a.b.c"
-main.stu:5:1: rule with target a.${x}.${y}
 main.stu:5:9: rule with target ${x}.b.${y}
+main.stu:5:1: rule with target a.${x}.${y}
 main.stu:3:4: "a.b.c" is needed by "A"

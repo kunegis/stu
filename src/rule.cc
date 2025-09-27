@@ -274,10 +274,9 @@ shared_ptr <const Rule> Rule_Set::get(
 	if (best_rule_finder.count() != 1 ) {
 		place << fmt("multiple minimal matching rules for target %s",
 			     show(hash_dep));
-		for (auto &place_param_target: best_rule_finder.targets_best()) {
-			place_param_target.second->place <<
-				fmt("rule with target %s",
-				    show(*place_param_target.second));
+		for (const Found_Rule &f: best_rule_finder.all_best()) {
+			f.place_target->place <<
+				fmt("rule with target %s", show(* f.place_target));
 		}
 		explain_minimal_matching_rule();
 		throw ERROR_LOGICAL;
@@ -285,7 +284,7 @@ shared_ptr <const Rule> Rule_Set::get(
 
 	/* Instantiate the rule */
 	shared_ptr <const Rule> rule_best= best_rule_finder.best().rule;
-	swap(mapping_parameter, best_rule_finder.best().mapping);
+	mapping_parameter= best_rule_finder.best().mapping;
 	shared_ptr <const Rule> ret(Rule::instantiate(rule_best, mapping_parameter));
 	param_rule= rule_best;
 	return ret;
@@ -391,10 +390,17 @@ void Rule_Set::add_parametrized_rule(shared_ptr <Rule> rule)
 		rules_param_bare.push_back(rule);
 }
 
+bool Found_Rule::operator<(const Found_Rule &that) const
+{
+	TRACE_FUNCTION();
+	if (place_target->place_name < that.place_target->place_name) return true;
+	if (place_target->place_name > that.place_target->place_name) return false;
+	bool ret= rule.get() < that.rule.get();
+	return ret;
+}
+
 void Best_Rule_Finder::add(const Hash_Dep &hash_dep, shared_ptr <const Rule> rule)
 {
-	best_sorted.clear();
-
 	for (auto &place_param_target: rule->place_targets) {
 		assert(place_param_target->place_name.get_n() > 0);
 		std::map <string, string> mapping;
@@ -414,8 +420,6 @@ void Best_Rule_Finder::add(const Hash_Dep &hash_dep, shared_ptr <const Rule> rul
 
 		assert(anchoring.size() == 2 * place_param_target->place_name.get_n());
 
-		size_t k= found_rules.size();
-
 		/* Check whether the rule is dominated by at least one other rule; also,
 		 * avoid inserting the same rule twice (which happens if the rule was
 		 * found from both a prefix and a suffix.)  But note that there can be two
@@ -423,46 +427,26 @@ void Best_Rule_Finder::add(const Hash_Dep &hash_dep, shared_ptr <const Rule> rul
 		 * case we do want to throw a "duplicate rule" error (because Stu wouldn't
 		 * know how to chose the parameter), and therefore we also need to compare
 		 * anchorings. */
-		for (size_t j= 0; j < k; ++j) {
-			const Found_Rule &found_rule= found_rules[j];
-			if (rule == found_rule.rule && anchoring == found_rule.anchoring)
+		for (const Found_Rule &f: found_rules) {
+			if (rule == f.rule && anchoring == f.anchoring)
 				return;
 			if (Name::anchoring_dominates(
-					found_rule.anchoring, anchoring,
-					found_rule.priority, priority))
+					f.anchoring, anchoring,
+					f.priority, priority))
 				return;
 		}
 
 		/* Check whether the rule dominates all other rules */
 		bool is_best= true;
-		for (size_t j= 0; is_best && j < k; ++j) {
-			const Found_Rule &found_rule= found_rules[j];
+		for (const Found_Rule &f: found_rules) {
 			if (! Name::anchoring_dominates(
-					anchoring, found_rule.anchoring,
-					priority, found_rule.priority))
+					anchoring, f.anchoring,
+					priority, f.priority))
 				is_best= false;
 		}
-		if (is_best) k= 0;
+		if (is_best) found_rules.clear();
 
-		found_rules.resize(k+1);
-		found_rules[k].rule= rule;
-		swap(mapping, found_rules[k].mapping);
-		swap(anchoring, found_rules[k].anchoring);
-		found_rules[k].priority= priority;
-		found_rules[k].place_target= place_param_target;
+		found_rules.insert({
+				rule, mapping, anchoring, priority, place_param_target});
 	}
-}
-
-const std::map <Place, shared_ptr <const Place_Target> > &
-Best_Rule_Finder::targets_best() const
-{
-	assert(! found_rules.empty());
-	if (best_sorted.empty()) {
-		for (auto &found_rule: found_rules) {
-			best_sorted[found_rule.place_target->place]=
-				found_rule.place_target;
-		}
-		assert(best_sorted.size() == found_rules.size());
-	}
-	return best_sorted;
 }

@@ -1,0 +1,4 @@
+../../bin/stu.test: multiple minimal matching rules for target "list.1.2.3"
+Option -F: rule with target list.${x}.2.3
+<stdin>:1:1: rule with target list.1.${y}.3
+a.stu:1:1: rule with target list.1.2.${z}

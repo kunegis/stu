@@ -130,7 +130,7 @@ shared_ptr <Dep> Dep::clone() const
 		return std::make_shared <Compound_Dep> (* to <Compound_Dep> (_this));
 	} else if (to <Concat_Dep> (_this)) {
 		return std::make_shared <Concat_Dep> (* to <Concat_Dep> (_this));
-	} else if (to <Root_Dep> (_this)) {
+	} else if (to <Root_Dep> (_this)) { /* uncovered */
 		should_not_happen();
 		return std::make_shared <Root_Dep> ();
 	} else {
@@ -359,7 +359,6 @@ bool Concat_Dep::is_unparametrized() const
 }
 
 const Place &Concat_Dep::get_place() const
-/* Return the place of the first dependency, or an empty place */
 {
 	if (deps.empty())
 		return Place::place_empty;

@@ -149,11 +149,13 @@ string Place::as_argv0() const
 			    s[0] == '-' ? "file " : "",
 			    s, line);
 	}
-	case Type::ARGUMENT:
+	case Type::ARGUMENT: /* uncovered */
+		should_not_happen();
 		return "";
 	case Type::OPTION:
 		return fmt("Option -%s", text);
-	case Type::ENV_OPTIONS:
+	case Type::ENV_OPTIONS: /* uncovered */
+		should_not_happen();
 		return "$" ENV_STU_OPTIONS;
 	}
 }

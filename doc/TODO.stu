@@ -8,7 +8,7 @@
 
 #
 # Find a way to sleep sub-second amounts in a POSIX script, so that we can make the tests
-# faster.
+# faster.  (Maybe)
 #
 
 #
@@ -378,4 +378,8 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 # Think about putting a space before the assignment operator, and removing the space after
 # #!.
+#
+
+#
+# long-sigusr1-1 sometimes hangs.
 #

@@ -1,0 +1,1 @@
+>A: -p list.(1 2) {cat list.1 list.2;} >list.$x{echo $x;}

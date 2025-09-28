@@ -11,7 +11,9 @@ void Dep::normalize(
 	std::vector <shared_ptr <const Dep> > &deps,
 	int &error) const
 {
+	TRACE_FUNCTION();
 	shared_ptr <const Dep> _this= shared_from_this();
+	TRACE("_this= %s", show(_this));
 	if (to <Plain_Dep> (_this)) {
 		deps.push_back(_this);
 	} else if (shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (_this)) {
@@ -30,7 +32,9 @@ void Dep::normalize(
 		}
 	} else if (shared_ptr <const Compound_Dep> compound_dep=
 		to <Compound_Dep> (_this)) {
+		TRACE("compound_dep= %s", show(compound_dep));
 		for (auto &d:  compound_dep->deps) {
+			TRACE("d= %s", show(d));
 			shared_ptr <Dep> dd= d->clone();
 			dd->add_flags(compound_dep, false);
 			if (compound_dep->index >= 0)
@@ -41,6 +45,7 @@ void Dep::normalize(
 				return;
 		}
 	} else if (auto concat_dep= to <Concat_Dep> (_this)) {
+		TRACE("concat_dep= %s", show(concat_dep));
 		Concat_Dep::normalize_concat(concat_dep, deps, error);
 		if (error && ! option_k)
 			return;
@@ -57,9 +62,9 @@ shared_ptr <const Dep> Dep::untrivialize() const
 	assert(_this);
 	assert(_this->is_normalized());
 	if (to <Plain_Dep> (_this)) {
-		TRACE("%s", "plain");
+		TRACE("%s", "Plain");
 		if (! (_this->flags & F_TRIVIAL)) {
-			TRACE("%s", "not trivial");
+			TRACE("%s", "Not trivial");
 			return nullptr;
 		}
 		shared_ptr <Dep> ret= _this->clone();
@@ -366,9 +371,10 @@ bool Concat_Dep::is_normalized() const
 }
 #endif /* ! NDEBUG */
 
-void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
-				  std::vector <shared_ptr <const Dep> > &deps_,
-				  int &error)
+void Concat_Dep::normalize_concat(
+	shared_ptr <const Concat_Dep> dep,
+	std::vector <shared_ptr <const Dep> > &deps_,
+	int &error)
 {
 	size_t k_init= deps_.size();
 	normalize_concat(dep, deps_, 0, error);
@@ -389,10 +395,11 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 	}
 }
 
-void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
-				  std::vector <shared_ptr <const Dep> > &deps_,
-				  size_t start_index,
-				  int &error)
+void Concat_Dep::normalize_concat(
+	shared_ptr <const Concat_Dep> dep,
+	std::vector <shared_ptr <const Dep> > &deps_,
+	size_t start_index,
+	int &error)
 {
 	assert(start_index < dep->deps.size());
 

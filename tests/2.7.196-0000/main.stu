@@ -1,0 +1,7 @@
+>A:  list.(B C)
+{
+	cat list.B list.C
+}
+
+list.B = {aaa}
+list.C = {bbb}

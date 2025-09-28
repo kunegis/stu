@@ -1,0 +1,5 @@
+B:1:1: dynamic dependency [B] must not contain parameter $x
+Option -F: "B" is declared here
+Option -F: [B] is needed by "A"
+Explanation: Dynamic dependencies cannot contain parameters introduced
+with '$s'.

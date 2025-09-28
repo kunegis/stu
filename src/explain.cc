@@ -9,6 +9,14 @@ void explain_clash()
 	      stderr);
 }
 
+void explain_dynamic_no_param()
+{
+	if (! option_E) return;
+	fputs("Explanation: Dynamic dependencies cannot contain parameters introduced\n"
+		"with '$s'.\n",
+		stderr);
+}
+
 void explain_file_without_command_with_dependencies()
 {
 	if (! option_E) return;

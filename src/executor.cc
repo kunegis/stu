@@ -981,21 +981,24 @@ void Executor::check_unparametrized(
 	Hash_Dep hash_dep,
 	bool &found_error)
 {
-	if (j->is_unparametrized()) return;
+	TRACE_FUNCTION();
+	TRACE("j= %s", show(j));
+	TRACE("hash_dep= %s", show(hash_dep));
+	string parameter_name;
+	Place parameter_place;
+	if (! j->find_parameter(parameter_name, parameter_place))
+		return;
 
-	shared_ptr <const Dep> depp= j;
-	while (to <Dynamic_Dep> (depp)) {
-		shared_ptr <const Dynamic_Dep> depp2= to <Dynamic_Dep> (depp);
-		depp= depp2->dep;
-	}
-	to <Plain_Dep> (depp)->place_target.place_name.places[0] <<
-		fmt("dynamic dependency %s must not contain parametrized dependencies",
-			show(Hash_Dep(0, hash_dep)));
+	parameter_place <<
+		fmt("dynamic dependency %s must not contain parameter %s",
+			show(Hash_Dep(0, hash_dep)),
+			show_prefix("$", parameter_name));
 	Hash_Dep hash_dep_base= hash_dep;
 	hash_dep_base.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT;
 	hash_dep_base.get_front_word_nondynamic()
 		|= (hash_dep.get_front_word_nondynamic() & F_TARGET_TRANSIENT);
 	*this << fmt("%s is declared here", show(hash_dep_base));
+	explain_dynamic_no_param();
 	raise(ERROR_LOGICAL);
 	j= nullptr;
 	found_error= true;

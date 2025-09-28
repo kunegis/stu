@@ -1,4 +1,4 @@
-B:1:3: dynamic dependency [B] must not contain parametrized dependencies
+B:1:3: dynamic dependency [B] must not contain parameter $name
 main.stu:8:1: "B" is declared here
 main.stu:4:5: [B] is needed by "A"
 ../../bin/stu.test: targets not up to date because of errors

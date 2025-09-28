@@ -135,6 +135,7 @@ public:
 
 private:
 	std::vector <string> texts; /* Length = N + 1 */
+
 	std::vector <string> parameters; /* Length = N */
 };
 

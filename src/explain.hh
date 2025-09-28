@@ -12,6 +12,7 @@
  */
 
 void explain_clash();
+void explain_dynamic_no_param();
 void explain_file_without_command_with_dependencies();
 void explain_file_without_command_without_dependencies();
 void explain_no_target();

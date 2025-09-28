@@ -199,7 +199,42 @@ void Dep::check() const
 
 	assert(index >= -1);
 }
-#endif
+#endif /* ! NDEBUG */
+
+shared_ptr <const Dep> Plain_Dep::instantiate(
+	const std::map <string, string> &mapping) const
+{
+	shared_ptr <Place_Target> ret_target= place_target.instantiate(mapping);
+
+	shared_ptr <Dep> ret= std::make_shared <Plain_Dep>
+		(flags, places, *ret_target, place, variable_name);
+	ret->index= index;
+	ret->top= top;
+
+	assert(ret_target->place_name.get_n() == 0);
+
+	string this_name= ret_target->place_name.unparametrized();
+	if ((flags & F_VARIABLE) && this_name.find('=') != string::npos) {
+		assert((ret_target->flags & F_TARGET_TRANSIENT) == 0);
+		place << fmt("dynamic variable %s must not be instantiated with parameter value that contains %s",
+			show_dynamic_variable(this_name),
+			show_operator('='));
+		throw ERROR_LOGICAL;
+	}
+
+	return ret;
+}
+
+bool Plain_Dep::find_parameter(
+	string &parameter_name, Place &parameter_place) const
+{
+	if (place_target.place_name.get_n() == 0)
+		return false;
+
+	parameter_name= place_target.place_name.get_parameters()[0];
+	parameter_place= place_target.place_name.places[0];
+	return true;
+}
 
 Hash_Dep Plain_Dep::get_target() const
 {
@@ -268,69 +303,10 @@ shared_ptr <const Dep> Dynamic_Dep::instantiate(
 	return ret;
 }
 
-shared_ptr <const Dep> Plain_Dep::instantiate(
-	const std::map <string, string> &mapping) const
+bool Dynamic_Dep::find_parameter(
+	string &parameter_name, Place &parameter_place) const
 {
-	shared_ptr <Place_Target> ret_target= place_target.instantiate(mapping);
-
-	shared_ptr <Dep> ret= std::make_shared <Plain_Dep>
-		(flags, places, *ret_target, place, variable_name);
-	ret->index= index;
-	ret->top= top;
-
-	assert(ret_target->place_name.get_n() == 0);
-
-	string this_name= ret_target->place_name.unparametrized();
-	if ((flags & F_VARIABLE) && this_name.find('=') != string::npos) {
-		assert((ret_target->flags & F_TARGET_TRANSIENT) == 0);
-		place << fmt("dynamic variable %s must not be instantiated with parameter value that contains %s",
-			show_dynamic_variable(this_name),
-			show_operator('='));
-		throw ERROR_LOGICAL;
-	}
-
-	return ret;
-}
-
-shared_ptr <const Dep> Compound_Dep::instantiate(
-	const std::map <string, string> &mapping) const
-{
-	shared_ptr <Compound_Dep> ret= std::make_shared <Compound_Dep>
-		(flags, places, place);
-	ret->index= index;
-	ret->top= top;
-	for (const shared_ptr <const Dep> &d: deps) {
-		ret->push_back(d->instantiate(mapping));
-	}
-	return ret;
-}
-
-bool Compound_Dep::is_unparametrized() const
-/* A compound dependency is parametrized when any of its contained dependency is
- * parametrized. */
-{
-	for (shared_ptr <const Dep> d: deps) {
-		if (! d->is_unparametrized())
-			return false;
-	}
-	return true;
-}
-
-void Compound_Dep::render(Parts &parts, Rendering rendering) const
-{
-	TRACE_FUNCTION();
-	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
-		parts.append_operator("(");
-	bool first= true;
-	for (const shared_ptr <const Dep> &d: deps) {
-		if (first)
-			first= false;
-		else
-			parts.append_space();
-		d->render(parts, rendering & ~R_NO_COMPOUND_PARENTHESES);
-	}
-	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
-		parts.append_operator(")");
+	return dep->find_parameter(parameter_name, parameter_place);
 }
 
 shared_ptr <const Dep> Concat_Dep::instantiate(
@@ -347,15 +323,13 @@ shared_ptr <const Dep> Concat_Dep::instantiate(
 	return ret;
 }
 
-bool Concat_Dep::is_unparametrized() const
-/* A concatenated dependency is parametrized when any of its contained dependency is
- * parametrized. */
+bool Concat_Dep::find_parameter(string &parameter_name, Place &parameter_place) const
 {
 	for (shared_ptr <const Dep> d: deps) {
-		if (! d->is_unparametrized())
-			return false;
+		if (d->find_parameter(parameter_name, parameter_place))
+			return true;
 	}
-	return true;
+	return false;
 }
 
 const Place &Concat_Dep::get_place() const
@@ -481,7 +455,7 @@ void Concat_Dep::normalize_concat(shared_ptr <const Concat_Dep> dep,
 	}
 }
 
-Hash_Dep Concat_Dep::get_target() const
+Hash_Dep Concat_Dep::get_target() const /* unreachable */
 {
 	/* Dep::get_target() is not used for complex dependencies */
 	unreachable();
@@ -603,8 +577,9 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(
 	return ret;
 }
 
-shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> a,
-							 shared_ptr <const Dep> b)
+shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(
+	shared_ptr <const Dep> a,
+	shared_ptr <const Dep> b)
 /* We don't have to make any checks here because any errors will be caught later when the
  * resulting plain dependencies are concatenated.  However, checking errors here is
  * faster, since it avoids building dynamic dependencies unnecessarily. */
@@ -630,6 +605,43 @@ shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(shared_ptr <const Dep> 
 	return ret;
 }
 
+shared_ptr <const Dep> Compound_Dep::instantiate(
+	const std::map <string, string> &mapping) const
+{
+	shared_ptr <Compound_Dep> ret= std::make_shared <Compound_Dep>
+		(flags, places, place);
+	ret->index= index;
+	ret->top= top;
+	for (const shared_ptr <const Dep> &d: deps)
+		ret->push_back(d->instantiate(mapping));
+	return ret;
+}
+
+bool Compound_Dep::find_parameter(string &parameter_name, Place &parameter_place) const
+{
+	for (shared_ptr <const Dep> d: deps)
+		if (d->find_parameter(parameter_name, parameter_place))
+			return true;
+	return false;
+}
+
+void Compound_Dep::render(Parts &parts, Rendering rendering) const
+{
+	TRACE_FUNCTION();
+	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
+		parts.append_operator("(");
+	bool first= true;
+	for (const shared_ptr <const Dep> &d: deps) {
+		if (first)
+			first= false;
+		else
+			parts.append_space();
+		d->render(parts, rendering & ~R_NO_COMPOUND_PARENTHESES);
+	}
+	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
+		parts.append_operator(")");
+}
+
 shared_ptr <const Dep> Root_Dep::instantiate( /* unreachable */
 	const std::map <string, string> &) const
 {
@@ -637,10 +649,10 @@ shared_ptr <const Dep> Root_Dep::instantiate( /* unreachable */
 	return shared_ptr <const Dep> (std::make_shared <Root_Dep> ());
 }
 
-bool Root_Dep::is_unparametrized() const /* unreachable */
+bool Root_Dep::find_parameter(string &, Place &) const /* unreachable */
 {
 	should_not_happen();
-	return true;
+	return false;
 }
 
 const Place &Root_Dep::get_place() const /* unreachable */

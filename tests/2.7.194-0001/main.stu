@@ -1,0 +1,3 @@
+A: [B] {}
+
+B = { list.($param C D) }

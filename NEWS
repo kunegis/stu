@@ -11,6 +11,11 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2025-09-28  Version 2.7.194
+
+* Bugfix:  When a dynamic dependency contained a parameter and was a compound dependency
+  or contained a concatenation, Stu crashed.  A proper error message is now produced.
+
 2025-09-27  Version 2.7.187
 
 * Change in error message:  When multiple rules match a target and none dominates the

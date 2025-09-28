@@ -158,7 +158,8 @@ public:
 
 	virtual shared_ptr <const Dep> instantiate(
 		const std::map <string, string> &mapping) const= 0;
-	virtual bool is_unparametrized() const= 0;
+	virtual bool find_parameter(
+		string &parameter_name, Place &parameter_place) const= 0;
 
 	virtual const Place &get_place() const= 0;
 	/* Where the dependency as a whole is declared */
@@ -273,20 +274,17 @@ public:
 		  variable_name(plain_dep.variable_name) { }
 
 	const Place &get_place() const override { return place; }
-	virtual shared_ptr <const Dep> instantiate(
+	shared_ptr <const Dep> instantiate(
 		const std::map <string, string> &mapping) const override;
 
-	bool is_unparametrized() const override {
-		return place_target.place_name.get_n() == 0;
-	}
+	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
+	void render(Parts &, Rendering= 0) const override;
 
-	virtual void render(Parts &, Rendering= 0) const override;
-
-	virtual Hash_Dep get_target() const override;
+	Hash_Dep get_target() const override;
 	/* Does not preserve the F_VARIABLE bit */
 
 #ifndef NDEBUG
-	virtual bool is_normalized() const override { return true; }
+	bool is_normalized() const override { return true; }
 #endif /* ! NDEBUG */
 };
 
@@ -325,9 +323,9 @@ public:
 		assert(dep_ != nullptr);
 	}
 
-	virtual shared_ptr <const Dep> instantiate(
+	shared_ptr <const Dep> instantiate(
 		const std::map <string, string> &mapping) const override;
-	bool is_unparametrized() const override { return dep->is_unparametrized(); }
+	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
 
 	const Place &get_place() const override
 	/* In error message pointing to dynamic dependency such as '[B]', it is more
@@ -336,8 +334,8 @@ public:
 		return dep->get_place();
 	}
 
-	virtual void render(Parts &, Rendering= 0) const override;
-	virtual Hash_Dep get_target() const override;
+	void render(Parts &, Rendering= 0) const override;
+	Hash_Dep get_target() const override;
 
 	unsigned get_depth() const {
 		if (to <Dynamic_Dep> (dep))
@@ -347,7 +345,7 @@ public:
 	}
 
 #ifndef NDEBUG
-	virtual bool is_normalized() const override { return dep->is_normalized(); }
+	bool is_normalized() const override { return dep->is_normalized(); }
 #endif /* ! NDEBUG */
 };
 
@@ -383,13 +381,13 @@ public:
 	void push_back(shared_ptr <const Dep> dep)
 	{ deps.push_back(dep); }
 
-	virtual shared_ptr <const Dep> instantiate(
+	shared_ptr <const Dep> instantiate(
 		const std::map <string, string> &mapping) const override;
 
-	virtual bool is_unparametrized() const override;
-	virtual const Place &get_place() const override;
-	virtual void render(Parts &, Rendering= 0) const override;
-	virtual Hash_Dep get_target() const override;
+	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
+	const Place &get_place() const override;
+	void render(Parts &, Rendering= 0) const override;
+	Hash_Dep get_target() const override;
 
 	static shared_ptr <const Dep> concat(shared_ptr <const Dep> a,
 					     shared_ptr <const Dep> b,
@@ -419,7 +417,7 @@ public:
 	 * given index.  On errors, a message is printed, bits are set in ERROR, and if
 	 * not in keep-going mode, the function returns immediately. */
 #ifndef NDEBUG
-	virtual bool is_normalized() const override;
+	bool is_normalized() const override;
 #endif /* ! NDEBUG */
 };
 
@@ -459,14 +457,14 @@ public:
 
 	void push_back(shared_ptr <const Dep> dep) { deps.push_back(dep); }
 
-	virtual shared_ptr <const Dep> instantiate(
+	shared_ptr <const Dep> instantiate(
 		const std::map <string, string> &mapping) const override;
-	virtual bool is_unparametrized() const override;
-	virtual const Place &get_place() const override { return place; }
-	virtual void render(Parts &, Rendering= 0) const override;
-	virtual Hash_Dep get_target() const override { unreachable(); }
+	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
+	const Place &get_place() const override { return place; }
+	void render(Parts &, Rendering= 0) const override;
+	Hash_Dep get_target() const override { unreachable(); }
 #ifndef NDEBUG
-	virtual bool is_normalized() const override { return false; }
+	bool is_normalized() const override { return false; }
 #endif /* ! NDEBUG */
 };
 
@@ -477,14 +475,14 @@ class Root_Dep
 	: public Dep
 {
 public:
-	virtual shared_ptr <const Dep> instantiate(
+	shared_ptr <const Dep> instantiate(
 		const std::map <string, string> &) const override;
-	virtual bool is_unparametrized() const override;
-	virtual const Place &get_place() const override;
-	virtual void render(Parts &parts, Rendering= 0) const override;
-	virtual Hash_Dep get_target() const override { unreachable(); }
+	bool find_parameter(string &parameter_name, Place &parameter_place) const override;
+	const Place &get_place() const override;
+	void render(Parts &parts, Rendering= 0) const override;
+	Hash_Dep get_target() const override { unreachable(); }
 #ifndef NDEBUG
-	virtual bool is_normalized() const override { return true; }
+	bool is_normalized() const override { return true; }
 #endif /* ! NDEBUG */
 };
 

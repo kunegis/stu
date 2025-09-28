@@ -3,9 +3,10 @@
 #include "trace.hh"
 #include "trace_dep.hh"
 
-Concat_Executor::Concat_Executor(shared_ptr <const Concat_Dep> dep_,
-				 Executor *parent,
-				 int &error_additional)
+Concat_Executor::Concat_Executor(
+	shared_ptr <const Concat_Dep> dep_,
+	Executor *parent,
+	int &error_additional)
 	: dep(dep_), stage(ST_DYNAMIC)
 {
 	TRACE_FUNCTION();

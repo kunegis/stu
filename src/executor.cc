@@ -171,8 +171,9 @@ bool Executor::find_cycle(std::vector <Executor *> &path,
 	return false;
 }
 
-void Executor::cycle_print(const std::vector <Executor *> &path,
-			   shared_ptr <const Dep> dep)
+void Executor::cycle_print(
+	const std::vector <Executor *> &path,
+	shared_ptr <const Dep> dep)
 /*
  * Given PATH = [a, b, c, d, ..., x], we print:
  *
@@ -332,9 +333,10 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			Hash_Dep hash_dep_without_flags= hash_dep;
 			hash_dep_without_flags.get_front_word_nondynamic()
 				&= F_TARGET_TRANSIENT;
-			rule_child= rule_set.get(hash_dep_without_flags,
-						 param_rule_child, mapping_parameter,
-						 dep->get_place());
+			rule_child= rule_set.get(
+				hash_dep_without_flags,
+				param_rule_child, mapping_parameter,
+				dep->get_place());
 		} catch (int e) {
 			assert(e);
 			error_additional= e;

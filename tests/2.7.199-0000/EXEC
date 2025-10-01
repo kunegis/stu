@@ -1,0 +1,21 @@
+#! /bin/sh
+
+file_so=../../bin/preload.so
+
+( cd ../.. && sh/ccpreload tests/2.7.199-0000/preload.cc bin/preload.so ) || exit 2
+
+for i in 0 1 2 3 4
+do
+	../../sh/rm_tmps || exit 2
+	LD_PRELOAD=$file_so STU_N=$i ../../bin/stu.test -F '@all{}' >list.out 2>list.err
+	exitstatus=$?
+	[ "$exitstatus" = 4 ] || {
+		echo >&2 "*** $0: Expected exit status 4, not $exitstatus; i=$i"
+		exit 1
+	}
+
+	grep -q -F -e 'sigemptyset' list.err || {
+		echo >&2 "*** $0: Expected 'sigemptyset' in stderr"
+		exit 1
+	}
+done

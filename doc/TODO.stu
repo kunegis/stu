@@ -383,3 +383,14 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 # long-sigusr1-1 sometimes hangs.
 #
+
+#
+# When using the -i option, should copy jobs also be put in the foreground?  (For now, they
+# are not.)
+#
+
+#
+# Include file only if it exists.  This goes dangerously close to generating included
+# files, which we will never support.
+#
+%include -o FILENAME

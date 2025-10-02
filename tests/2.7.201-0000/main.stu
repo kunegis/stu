@@ -1,0 +1,8 @@
+A:  (list.[B]).2
+{
+	cp list.1.2 A
+}
+
+B = {1}
+
+list.1.2 = {CORRECT}

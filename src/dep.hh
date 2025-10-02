@@ -404,7 +404,7 @@ public:
 	static void normalize_concat(shared_ptr <const Concat_Dep> dep,
 				     std::vector <shared_ptr <const Dep> > &deps,
 				     int &error);
-	/* Normalize this object's dependencies into a list of individual dependencies.
+	/* Normalize DEP's dependencies into a list of individual dependencies.
 	 * The generated dependencies are appended to DEPS which does not need to be empty
 	 * on entry into this function.  On errors, a message is printed, bits are set in
 	 * ERROR, and if not in keep-going mode, the function returns immediately. */

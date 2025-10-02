@@ -585,9 +585,6 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(
 shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(
 	shared_ptr <const Dep> a,
 	shared_ptr <const Dep> b)
-/* We don't have to make any checks here because any errors will be caught later when the
- * resulting plain dependencies are concatenated.  However, checking errors here is
- * faster, since it avoids building dynamic dependencies unnecessarily. */
 {
 	assert(! (to <const Plain_Dep> (a) && to <const Plain_Dep> (b)));
 

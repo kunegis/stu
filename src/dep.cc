@@ -570,12 +570,12 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(
 				       b->place_target.place_name.unparametrized(),
 				       a->place_target.place_name.place);
 
-	shared_ptr <Plain_Dep> ret=
-		std::make_shared <Plain_Dep>
+	shared_ptr <Plain_Dep> ret= std::make_shared <Plain_Dep>
 		(flags_combined, a->places,
-		 Place_Target(flags_combined & F_TARGET_TRANSIENT, place_name_combined,
-			 a->place_target.place),
-		 a->place, "");
+			Place_Target(flags_combined & F_TARGET_TRANSIENT, /* uncovered */
+				place_name_combined,
+				a->place_target.place),
+			a->place, "");
 	ret->top= a->top;
 	if (! ret->top)
 		ret->top= b->top;

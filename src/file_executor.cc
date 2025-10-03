@@ -1061,7 +1061,7 @@ void File_Executor::executors_add(pid_t pid, size_t &index, File_Executor *execu
 			SIZE_MAX / sizeof(*executors_by_pid_value) < (size_t)options_jobs) {
 			errno= ENOMEM;
 			perror("malloc");
-			exit(ERROR_FATAL);
+			abort();
 		}
 		executors_by_pid_key  = (pid_t *)
 			malloc(options_jobs * sizeof(*executors_by_pid_key));
@@ -1069,7 +1069,7 @@ void File_Executor::executors_add(pid_t pid, size_t &index, File_Executor *execu
 			malloc(options_jobs * sizeof(*executors_by_pid_value));
 		if (!executors_by_pid_key || !executors_by_pid_value) {
 			perror("malloc");
-			exit(ERROR_FATAL);
+			abort();
 		}
 	}
 

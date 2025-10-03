@@ -394,3 +394,7 @@ A: [ -t -o B ] { touch A ; }  B={C}
 # files, which we will never support.
 #
 %include -o FILENAME
+
+#
+# Test what happens when a child process of Stu is stopped.
+#

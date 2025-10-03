@@ -210,10 +210,10 @@ pid_t Job::wait(int *status)
 		 * ends, or it may not. */
 		raise(sig);
 		perror("raise");
-		exit(ERROR_FATAL);
+		abort();
 	} else if (is_termination != 0) {
 		perror("sigismember");
-		exit(ERROR_FATAL);
+		abort();
 	}
 
 	switch (sig) {

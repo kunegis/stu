@@ -15,7 +15,7 @@ Signal_Blocker::Signal_Blocker()
 #endif
 	if (0 != sigprocmask(SIG_BLOCK, &set_termination, nullptr)) {
 		perror("sigprocmask");
-		exit(ERROR_FATAL);
+		abort();
 	}
 }
 
@@ -27,7 +27,7 @@ Signal_Blocker::~Signal_Blocker()
 #endif
 	if (0 != sigprocmask(SIG_UNBLOCK, &set_termination, nullptr)) {
 		perror("sigprocmask");
-		exit(ERROR_FATAL);
+		abort();
 	}
 }
 

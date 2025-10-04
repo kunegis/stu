@@ -7,7 +7,7 @@
  *
  * All dependency classes allow parametrized targets.
  *
- * A dependency can be normalized or not.  A dependency is normalized if it is one of:
+ * A dependency is normalized if it is one of:
  *    - a plain dependency (file or transient);
  *    - a dynamic dependency containing a normalized dependency;
  *    - a concatenated dependency of only normalized plain and dynamic dependencies.
@@ -23,11 +23,6 @@
  *
  * A dependency that is not simple is complex.  I.e., a complex dependency involves
  * concatenation and/or compound dependencies.
- */
-
-/*
- * Functions such as Dep::normalize() cannot be virtual functions because we need to
- * access THIS as a shared pointer.
  */
 
 #include <map>

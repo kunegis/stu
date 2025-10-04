@@ -1,5 +1,6 @@
 #include "file_executor.hh"
 
+#include "cov.hh"
 #include "signal.hh"
 
 size_t File_Executor::executors_by_pid_size= 0;
@@ -588,10 +589,13 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	}
 	filenames= filenames_new;
 	for (size_t i= 0; i < hash_deps.size(); ++i) {
+		TRACE("hash_deps[i]= %s", show(hash_deps[i]));
 		if (hash_deps[i].is_file()) {
+			TRACE("Is file");
 			filenames[i]= strdup(hash_deps[i].get_name_c_str_nondynamic());
 			if (!filenames[i]) {
 				perror("strdup");
+				__gcov_dump();
 				abort();
 			}
 		} else {

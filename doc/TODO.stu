@@ -109,6 +109,16 @@ C:  -L { ln -s ... B ; }
 # -d is "debug" for now -- would have to deprecate debug mode, which we want to do
 # anyway.
 
+# Can we even use '%', because '%' directives are token-based, and 'import' should be at
+# rule level.  Maybe use '*' instead.
+*import dir/
+*import -d dir/
+
+# There should also be a 'cd' command, e.g.
+*cd dir/
+
+# And theoretically also braces for blocks
+
 #
 # When doing %include or %import, allow to pass environment variables.
 #

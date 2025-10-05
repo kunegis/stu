@@ -866,6 +866,7 @@ void File_Executor::write_content(
 	const char *filename,
 	const Command &command)
 {
+	TRACE_FUNCTION();
 	FILE *file= fopen(filename, "w");
 
 	if (file == nullptr) {
@@ -874,6 +875,7 @@ void File_Executor::write_content(
 	}
 
 	for (const string &line: command.get_lines()) {
+		TRACE("line= '%s'", line);
 		if (fwrite(line.c_str(), 1, line.size(), file) != line.size()) {
 			assert(ferror(file));
 			fclose(file);

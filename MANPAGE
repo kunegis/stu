@@ -485,9 +485,11 @@ FEATURES
            -p NAME   A persistent dependency
 
        Stu will only check whether the dependency exists, but not its  modifi‐
-       cation  time.   This is mostly useful for directories, as the modifica‐
-       tion time of directories is updated whenever files are added or removed
-       in the directory.
+       cation  time for determining whether the target has to be rebuilt.  (If
+       the file itself is the target of a rule, the modification time  of  the
+       dependency  will  be taken into account while building the file.)  This
+       is mostly useful for directories, as the modification time of  directo‐
+       ries is updated whenever files are added or removed in the directory.
 
            -o NAME   An optional dependency
 
@@ -1135,4 +1137,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.7.207                      October 2025                           STU(1)
+stu-2.7.208                      October 2025                           STU(1)

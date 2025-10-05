@@ -556,7 +556,8 @@ thus their command do not create files.
     -p NAME   A persistent dependency
 
 Stu will only check whether the dependency exists, but not its
-modification time.  This is mostly useful for directories, as the
+modification time for determining whether the target has to be rebuilt.
+This is mostly useful for directories, as the
 modification time of directories is updated whenever files are added or
 removed in the directory.
 

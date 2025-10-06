@@ -4,6 +4,6 @@
 extern "C"
 pid_t fork()
 {
-	errno = ENOSYS;
+	errno= ENOMEM;
 	return -1;
 }

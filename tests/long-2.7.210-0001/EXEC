@@ -1,0 +1,58 @@
+#! /bin/sh
+
+[ "$EXEC_DEBUG" ] && exec 6>&2 || exec 6>/dev/null
+
+Do()
+{
+	echo >&6 "$@"
+	"$@"
+}
+
+Error()
+{
+	printf >&6 '*** %s\n' "$1"
+	[ -r list.out ] && Output list.out
+	[ -r list.err ] && Output list.err
+	exit 1
+}
+
+Output()
+{
+	file=$1
+	echo >&6 ________ "$file" ________
+	cat  >&6 "$file"
+	echo >&6 __________________________
+}
+
+rm -f ? list.* || Error 'rm'
+Do touch C || Error 'touch C'
+
+echo >&6 '../../bin/stu.test -i >list.out 2>list.err <C &'
+../../bin/stu.test -i >list.out 2>list.err <C &
+pid=$!
+echo >&6 "pid=$pid"
+
+Do sleep 1 || Error 'sleep'
+
+ls -l B >&6
+[ -r B ] || Error 'B must exist'
+pid_child=$(cat B)
+echo >&6 "pid_child=$pid_child"
+
+Do kill -s STOP $pid_child || Error 'kill -s STOP'
+Do sleep 1 || Error 'sleep'
+Do kill -s CONT $pid_child || Error 'kill -s CONT'
+
+echo >&6 "wait $pid"
+wait $pid
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || Error 'Exit status'
+grep -q -E -e '^CORRECT$' A || Error 'Expected A to contain "CORRECT"'
+
+grep -q -F -e 'getline' list.err && Error 'getline'
+
+Output list.out
+Output list.err
+
+exit 0

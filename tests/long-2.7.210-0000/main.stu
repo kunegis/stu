@@ -1,0 +1,6 @@
+A
+{
+	echo $$ >B
+	sleep 2
+	echo CORRECT >A
+}

@@ -167,6 +167,8 @@ pid_t Job::wait(int *status)
 			assert(option_i);
 			ask_continue(pid);
 			goto begin;
+		} else if (WIFCONTINUED(*status)) {
+			unreachable();
 		}
 		return pid;
 	}
@@ -350,6 +352,7 @@ void Job::ask_continue(pid_t pid)
  * and continue it.  In principle, we could do much more: allow the user to enter
  * commands, having an own command language, etc. */
 {
+	TRACE_FUNCTION();
 	int fd_tty= get_fd_tty();
 	if (fd_tty < 0) {
 		return; /* May happen if e.g. a process received SIGSTOP from outside Stu */
@@ -363,14 +366,15 @@ void Job::ask_continue(pid_t pid)
 	char *lineptr= nullptr;
 	size_t n= 0;
 	ssize_t r= getline(&lineptr, &n, stdin);
-	/* On error, printf error message and continue */
-	if (r < 0)
+	TRACE("r= %s", frmt("%zd", r));
+	if (!feof(stdin) && r < 0)
 		print_errno("getline");
 	fprintf(stderr, PACKAGE ": continuing\n");
 	if (tcsetpgrp(fd_tty, pid) < 0)
 		print_errno("tcsetpgrp");
 	/* Continue job */
 	::kill(-pid, SIGCONT);
+	free(lineptr);
 }
 
 const char **Job::create_child_env(

@@ -195,11 +195,12 @@ pid_t Job::wait(int *status)
 	}
 
 	if (r != 0) {
-		if (errno == EINTR) {
+		if (r == EINTR) {
 			/* This should not happen, but be prepared */
 			should_not_happen();
 			goto retry;
 		} else {
+			errno= r;
 			perror("sigwait");
 			abort();
 		}

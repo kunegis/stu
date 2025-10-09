@@ -7,12 +7,9 @@ void Preset <T> ::insert(string key, T value)
 {
 	assert(! key.empty() || parent != nullptr);
 	const char k= key[0];
-	auto lb= lower_bound(chars.begin(),
-			     chars.end(),
-			     string(1, k),
-			     [](const Entry &a, const string &b) -> bool {
-				     return a.prefix[0] < b[0];
-			     });
+	auto lb= lower_bound(
+		chars.begin(), chars.end(), string(1, k),
+		[](const Entry &a, const string &b) -> bool { return a.prefix[0] < b[0]; });
 	const size_t i= lb - chars.begin();
 	assert(i <= chars.size());
 	if (i < chars.size() && chars[i].prefix[0] == k) {
@@ -71,12 +68,9 @@ typename Preset <T> ::Input_Iterator Preset <T> ::find(string x)
 {
 	assert(x[0] != '\0');
 	const char k= x[0];
-	auto lb= lower_bound(chars.begin(),
-			     chars.end(),
-			     string(1, k),
-			     [](const Entry &a, const string &b) -> bool {
-				     return a.prefix[0] < b[0];
-			     });
+	auto lb= lower_bound(
+		chars.begin(), chars.end(), string(1, k),
+		[](const Entry &a, const string &b) -> bool { return a.prefix[0] < b[0]; });
 	const size_t i= lb - chars.begin();
 	assert(i <= chars.size());
 
@@ -112,16 +106,14 @@ typename Preset <T> ::Input_Iterator Preset <T> ::find(string x)
 template <typename T>
 void Preset <T> ::insert(string key, std::unique_ptr <Preset <T> > preset)
 {
-	/* This implementation follows that of the insert() function for individual values */
+	/* This implementation follows that of the insert() function for individual
+	 * values */
 
 	assert(! key.empty());
 	const char k= key[0];
-	auto lb= lower_bound(chars.begin(),
-			     chars.end(),
-			     string(1, k),
-			     [](const Entry &a, const string &b) -> bool {
-				     return a.prefix[0] < b[0];
-			     });
+	auto lb= lower_bound(
+		chars.begin(), chars.end(), string(1, k),
+		[](const Entry &a, const string &b) -> bool { return a.prefix[0] < b[0]; });
 	const size_t i= lb - chars.begin();
 	assert(i <= chars.size());
 	if (i < chars.size() && chars[i].prefix[0] == k) {
@@ -173,12 +165,9 @@ template <typename T>
 void Preset <T> ::insert(string key, std::vector <T> &&values)
 {
 	const char k= key[0];
-	auto lb= lower_bound(chars.begin(),
-			     chars.end(),
-			     string(1, k),
-			     [](const Entry &a, const string &b) -> bool {
-				     return a.prefix[0] < b[0];
-			     });
+	auto lb= lower_bound(
+		chars.begin(), chars.end(), string(1, k),
+		[](const Entry &a, const string &b) -> bool { return a.prefix[0] < b[0]; });
 	const size_t i= lb - chars.begin();
 
 	/* There is no entry yet starting with the same character or \0 */
@@ -218,12 +207,12 @@ void Preset <T> ::Input_Iterator::advance()
 			return;
 		}
 
-		auto lb= lower_bound(preset_new->chars.begin(),
-				     preset_new->chars.end(),
-				     string(1, preset->index),
-				     [](const Entry &a, const string &b) -> bool {
-					     return a.prefix[0] < b[0];
-				     });
+		auto lb= lower_bound(
+			preset_new->chars.begin(), preset_new->chars.end(),
+			string(1, preset->index),
+			[](const Entry &a, const string &b) -> bool {
+				return a.prefix[0] < b[0];
+			});
 		const size_t i= lb - preset_new->chars.begin();
 		assert(i >= 0 && i < preset_new->chars.size());
 		assert(preset_new->chars[i].preset.get() == preset);

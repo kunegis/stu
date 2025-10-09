@@ -1,4 +1,10 @@
 #! /bin/sh
+#
+# The following strings are used to exclude a line from the output of uncovered lines:
+#
+# uncovered_due_to_bug_in_gcov
+# uncovered                    // For other reasons
+#
 
 [ "$COV_EVAL_DEBUG" ] && exec 6>&2 || exec 6>/dev/null
 

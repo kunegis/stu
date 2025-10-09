@@ -79,7 +79,6 @@ public:
 	};
 
 	Preset(): parent(nullptr) { }
-
 	Preset(const Preset <T> *_parent, char _index)
 		: parent(_parent), index(_index) { }
 
@@ -113,11 +112,6 @@ private:
 	 * unique.  Also, there can be a single prefix that is the empty string, which is
 	 * sorted as the character '\0', i.e., always in first position.  (string[0]
 	 * returns '\0' when string is "".) */
-
-	void insert(string key, std::unique_ptr <Preset <T> > preset);
-
-	void insert(string key, std::vector <T> &&values);
-	/* There must not be an entry there yet starting with KEY[0].  KEY may be empty. */
 
 	void develop(Entry &);
 	/* Transform a VALUES-containing entry to a PRESET-containing entry */

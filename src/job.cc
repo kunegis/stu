@@ -3,7 +3,6 @@
 #include <signal.h>
 #include <sys/resource.h>
 
-#include "cov.hh"
 #include "file_executor.hh"
 
 size_t Job::count_jobs_exec=    0;

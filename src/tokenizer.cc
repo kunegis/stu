@@ -176,7 +176,7 @@ void Tokenizer::parse_tokens_file(
 			assert(fd == 0);
 		}
 
-	error:  uncovered_due_to_bug_in_gcov();
+	error:  /* uncovered_due_to_bug_in_gcov */
 		const char *filename_diagnostic= !filename.empty()
 			? filename.c_str() : "<stdin>";
 		if (backtraces.size() > 0) {

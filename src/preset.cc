@@ -43,7 +43,13 @@ void Preset <T> ::insert(string key, T value)
 			}
 			std::unique_ptr <Preset <T> > p= /* uncovered_due_to_bug_in_gcov */
 				std::make_unique <Preset <T> > (this, e.prefix[0]);
-			p->insert(&*mm_prefix, move(e.preset));
+
+			string key_new= &*mm_prefix;
+			assert(! key_new.empty());
+			std::unique_ptr <Preset <T> > preset= move(e.preset);
+			preset->parent= p.get();
+			preset->index= key_new[0];
+			p->chars.push_back(Entry{key_new, move(preset), {}});
 			p->insert("", value);
 			e.prefix= string(e.prefix.begin(), mm_prefix);
 			e.preset= move(p);
@@ -95,86 +101,13 @@ typename Preset <T> ::Input_Iterator Preset <T> ::find(string x)
 			 * we must return */
 			assert(chars[0].values.size() != 0);
 			assert(chars[0].preset == nullptr);
-			return Input_Iterator(this,
-					      chars[0].values.data(),
-					      chars[0].values.data() + chars[0].values.size());
+			return Input_Iterator(
+				this,
+				chars[0].values.data(),
+				chars[0].values.data() + chars[0].values.size());
 		} else
 			return Input_Iterator(this, nullptr, nullptr);
 	}
-}
-
-template <typename T>
-void Preset <T> ::insert(string key, std::unique_ptr <Preset <T> > preset)
-{
-	/* This implementation follows that of the insert() function for individual
-	 * values */
-
-	assert(! key.empty());
-	const char k= key[0];
-	auto lb= lower_bound(
-		chars.begin(), chars.end(), string(1, k),
-		[](const Entry &a, const string &b) -> bool { return a.prefix[0] < b[0]; });
-	const size_t i= lb - chars.begin();
-	assert(i <= chars.size());
-	if (i < chars.size() && chars[i].prefix[0] == k) {
-		/* Add to existing character */
-
-		Entry &e= chars[i];
-
-		/* Find longest common prefix of both */
-		auto mm= mismatch(e.prefix.begin(), e.prefix.end(),
-				  key.begin(), key.end());
-		auto mm_prefix= mm.first;
-		auto mm_key=    mm.second;
-
-		if (*mm_prefix == '\0' && *mm_key != '\0') {
-			/* KEY starts with E.PREFIX */
-			if (! e.preset) {
-				develop(e);
-			}
-			e.preset->insert(key.substr(e.prefix.length()), move(preset));
-		} else if (*mm_prefix != '\0') {
-			if (! e.preset) {
-				develop(e);
-			}
-			e.preset= move(preset);
-			preset->parent= this;
-			preset->index= k;
-		} else /* *mm_key == '\0' && *mm_prefix == '\0' */ {
-			assert(*mm_key == '\0' && *mm_prefix == '\0');
-			/* KEY == E.PREFIX */
-			if (! e.preset) {
-				preset->insert("", move(e.values));
-				e.preset= move(preset);
-				assert(e.values.empty());
-				preset->parent= this;
-				preset->index= k;
-			} else {
-				unreachable();
-			}
-		}
-	} else {
-		/* Insert a new character */
-		preset->parent= this;
-		preset->index= k;
-		chars.insert(chars.begin() + i, Entry{key, move(preset), {}});
-	}
-}
-
-template <typename T>
-void Preset <T> ::insert(string key, std::vector <T> &&values)
-{
-	const char k= key[0];
-	auto lb= lower_bound(
-		chars.begin(), chars.end(), string(1, k),
-		[](const Entry &a, const string &b) -> bool { return a.prefix[0] < b[0]; });
-	const size_t i= lb - chars.begin();
-
-	/* There is no entry yet starting with the same character or \0 */
-	assert(i == chars.size() || chars[i].prefix[0] != key[0]);
-
-	Entry e{key, nullptr, move(values)};
-	chars.insert(chars.begin() + i, std::move(e));
 }
 
 template <typename T>

@@ -8,7 +8,8 @@
  *     is the longest prefix of x.
  */
 
-#include <algorithm>
+#include <memory>
+#include <vector>
 
 template <class T>
 class Preset
@@ -57,10 +58,8 @@ public:
 		const T *begin1, *end1;
 		const T *begin2, *end2;
 
-		Input_Iterator(const Preset <T> *p,
-			       const T *b1, const T *e1)
-			:  preset(p),
-			   begin1(b1), end1(e1)
+		Input_Iterator(const Preset <T> *p, const T *b1, const T *e1)
+			: preset(p), begin1(b1), end1(e1)
 		{
 			if (p->chars.size() && p->chars[0].prefix[0] == '\0') {
 				assert(p->chars[0].prefix == "");
@@ -79,10 +78,10 @@ public:
 		void advance();
 	};
 
-	Preset():  parent(nullptr)  {  }
+	Preset(): parent(nullptr) { }
 
 	Preset(const Preset <T> *_parent, char _index)
-		:  parent(_parent), index(_index)  {  }
+		: parent(_parent), index(_index) { }
 
 	void insert(string key, T value);
 	/* Insert the key-value pair */
@@ -92,7 +91,7 @@ public:
 	 * key is a prefix of X.  Returned from longest to shortest match.  X must not be
 	 * the empty string. */
 
-	End_Iterator end() const  {  return End_Iterator();  }
+	End_Iterator end() const { return End_Iterator(); }
 
 private:
 	struct Entry {

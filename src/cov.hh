@@ -11,6 +11,7 @@ extern "C" {
 
 #define uncovered_due_to_bug_in_gcov()
 /* https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83616
- * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83434 */
+ * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83434
+ * And others */
 
 #endif /* ! COV_HH */

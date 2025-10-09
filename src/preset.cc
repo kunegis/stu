@@ -1,5 +1,7 @@
 #include "preset.hh"
 
+#include <algorithm>
+
 template <typename T>
 void Preset <T> ::insert(string key, T value)
 {
@@ -42,8 +44,8 @@ void Preset <T> ::insert(string key, T value)
 			if (! e.preset) {
 				develop(e);
 			}
-			std::unique_ptr <Preset <T> > p= std::make_unique <Preset <T> >
-				(this, e.prefix[0]);
+			std::unique_ptr <Preset <T> > p= /* uncovered_due_to_bug_in_gcov */
+				std::make_unique <Preset <T> > (this, e.prefix[0]);
 			p->insert(&*mm_prefix, move(e.preset));
 			p->insert("", value);
 			e.prefix= string(e.prefix.begin(), mm_prefix);
@@ -201,7 +203,6 @@ template <typename T>
 void Preset <T> ::Input_Iterator::advance()
 {
 	while (preset && begin1 == end1) {
-
 		if (begin2 != end2) {
 			begin1= begin2;
 			end1  = end2  ;

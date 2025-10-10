@@ -1,0 +1,2 @@
+main.stu:4:5: command for "Y" failed with exit status 1
+main.stu:1:13: "Y" is needed by @all

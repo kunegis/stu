@@ -15,11 +15,13 @@ Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 	Proceed proceed= execute_phase_A(dep_link);
 	assert(proceed);
 	if (proceed & P_ABORT) {
+		TRACE("Phase A abort");
 		assert(proceed & P_FINISHED);
 		done |= Done::from_flags(dep_link->flags);
 		return proceed;
 	}
 	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
+		TRACE("Phase A wait / call again");
 		assert((proceed & P_FINISHED) == 0);
 		return proceed;
 	}
@@ -36,11 +38,13 @@ Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 	TRACE("proceed_B= %s", show(proceed_B));
 	assert(proceed_B);
 	if (proceed_B & P_ABORT) {
+		TRACE("Phase B abort");
 		assert(proceed_B & P_FINISHED);
 		done |= Done::from_flags(dep_link->flags);
 		return proceed_B;
 	}
 	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
+		TRACE("Phase B wait / call again");
 		assert((proceed_B & P_FINISHED) == 0);
 		return proceed_B;
 	}

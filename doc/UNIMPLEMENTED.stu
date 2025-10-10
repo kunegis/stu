@@ -309,4 +309,5 @@ A -i {
 #
 
 A: -k B {...}
-# Try to build B, but continue with building A if building B fails.
+# Try to build B, but continue with building A if building B fails.  (This is not 100% the
+# same as the -k option.)

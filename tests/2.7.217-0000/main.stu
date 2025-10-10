@@ -1,0 +1,4 @@
+@all:  X -t Y;
+
+X = {x}
+Y { exit 1; }

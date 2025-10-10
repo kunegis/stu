@@ -68,7 +68,6 @@ void signal_handler_termination(int sig)
 	if (rr != 0) {
 		write_async(2, "stu: error: raise\n");
 	}
-
 	/* Don't abort here -- the reraising of this signal may only be
 	 * delivered after this handler is done. */
 	errno= errno_save;

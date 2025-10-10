@@ -1,0 +1,7 @@
+A: [B].list;
+
+B = { list -t D }
+
+list.list = {c}
+
+D.list { exit 1; }

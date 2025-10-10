@@ -303,3 +303,10 @@ cd path/to/dir {
 A -i {
 	./command # Asks for a password on the command line
 }
+
+#
+# Allow the -k option as a flag.
+#
+
+A: -k B {...}
+# Try to build B, but continue with building A if building B fails.

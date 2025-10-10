@@ -1,0 +1,4 @@
+main.stu:7:10: command for "D.list" failed with exit status 1
+B:1:9: "D.list" is needed by [B]
+main.stu:1:5: [B] is needed by [B].list
+main.stu:1:5: [B].list is needed by "A"

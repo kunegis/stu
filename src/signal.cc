@@ -109,10 +109,8 @@ void init_signals()
 		perror("sigemptyset");
 		exit(ERROR_FATAL);
 	}
-	/* These are all signals that by default would terminate the process. */
 	const static int signals_termination[]= {
-		SIGTERM, SIGINT, SIGQUIT, SIGABRT, SIGSEGV, SIGPIPE,
-		SIGILL, SIGHUP,
+		SIGTERM, SIGINT, SIGQUIT, SIGABRT, SIGSEGV, SIGPIPE, SIGILL, SIGHUP,
 	};
 
 	for (size_t i= 0;

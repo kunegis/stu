@@ -1,0 +1,29 @@
+#! /bin/sh
+
+FILE_SO=../../bin/preload.so
+dir=$(pwd)
+
+( cd ../.. && sh/ccpreload "$dir"/preload.cc "$dir"/"$FILE_SO" ; ) || exit 2
+
+Error()
+{
+	printf >&2 '*** %s' "$1"
+	exit 1
+}
+
+Clean()
+{
+	rm -f list.*
+}
+
+for i in $(../../sh/seq 20)
+do
+	Clean
+	LD_PRELOAD=$FILE_SO STU_I=$i ../../bin/stu.test -F '@all{}' >list.out 2>list.err
+	exitstatus=$?
+	[ "$exitstatus" = 4 ] || Error 'Exit status'
+	grep -q -F -e sigaddset list.err || Error 'Expected "sigaddset"'
+done
+
+Clean
+exit 0

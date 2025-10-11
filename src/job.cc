@@ -270,7 +270,7 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 	int r= getrusage(RUSAGE_CHILDREN, &usage);
 	if (r < 0) {
 		print_errno("getrusage");
-		throw ERROR_BUILD;
+		abort();
 	}
 
 	if (! allow_unterminated_jobs)
@@ -294,6 +294,10 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 	       (uintmax_t)     usage.ru_stime.tv_sec,
 	       (unsigned long) usage.ru_stime.tv_usec);
 	printf("STATISTICS  Note: children execution times exclude running jobs\n");
+	if (ferror(stdout)) {
+		print_errno("printf");
+		abort();
+	}
 }
 
 void Job::kill(pid_t pid)

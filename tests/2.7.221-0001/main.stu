@@ -1,0 +1,2 @@
+>X: B C D { cat B C D ; }
+>$name { echo $name ; }

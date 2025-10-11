@@ -144,8 +144,14 @@ void init_signals()
 		exit(ERROR_FATAL);
 	}
 	act_productive.sa_flags= SA_SIGINFO;
-	sigaction(SIGCHLD, &act_productive, nullptr);
-	sigaction(SIGUSR1, &act_productive, nullptr);
+	if (0 != sigaction(SIGCHLD, &act_productive, nullptr)) {
+		perror("sigaction");
+		exit(ERROR_FATAL);
+	}
+	if (0 != sigaction(SIGUSR1, &act_productive, nullptr)) {
+		perror("sigaction");
+		exit(ERROR_FATAL);
+	}
 
 	if (0 != sigemptyset(&set_productive)) {
 		perror("sigemptyset");

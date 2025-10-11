@@ -310,4 +310,5 @@ A -i {
 
 A: -k B {...}
 # Try to build B, but continue with building A if building B fails.  (This is not 100% the
-# same as the -k option.)
+# same as the -k option; but rather like -k -o.)  Maybe -k should just set the keep going
+# flag, but maybe that is not useful.

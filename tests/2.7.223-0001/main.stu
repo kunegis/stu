@@ -1,0 +1,3 @@
+A: B C {}
+B { sleep 1 ; }
+C { exit 1 ; }

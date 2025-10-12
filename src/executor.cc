@@ -479,7 +479,7 @@ bool Executor::want_delete() const
 	return true;
 }
 
-void Executor::notify_result(
+void Executor::notify_result( /* uncovered */
 	shared_ptr <const Dep>, Executor *, Flags, shared_ptr <const Dep>)
 {
 	unreachable();

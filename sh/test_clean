@@ -1,10 +1,30 @@
 #! /bin/sh
 
+error_file=${TMP:-/tmp}/test_clean.$$.error
+rm -f -- "$error_file"
+trap clean EXIT
+# Functions report errors by returning non-zero OR by touching $error_file
+
 find_source_files()
 {
 	find . -type f |
 		grep -v -E -e '~$' -e '^\./(bin|cov|tests|log|.git)/' -e '^\./man/stu\.1$'
 	find tests -name EXEC -o -name PRELOAD.cc
+}
+
+check_test_own_name()
+{
+	ls -1U tests | while IFS= read -r test ; do
+		grep -r -F -n -e "$test" "tests/$test" |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 Source code of test must not contain name of directory in order for directories in tests/ to be renamable,' |
+		grep -E '.' >&2 && touch -- "$error_file"
+	done
+	return 0
+}
+
+clean()
+{
+	rm -f -- "$error_file"
 }
 
 check_newline_eof()
@@ -164,6 +184,7 @@ check_preload()
 
 ret=0
 
+check_test_own_name || ret=1
 check_newline_eof || ret=1
 check_space_file || ret=1
 check_space_line || ret=1
@@ -178,4 +199,5 @@ check_assert_false || ret=1
 check_test_nolong_sleep || ret=1
 check_preload || ret=1
 
+[ -e "$error_file" ] && ret=1
 exit "$ret"

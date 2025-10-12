@@ -2,7 +2,9 @@
 
 file_so=../../bin/preload.so
 
-( cd ../.. && sh/ccpreload tests/2.7.199-0000/preload.cc bin/preload.so ) || exit 2
+dir=$(pwd)
+
+( cd ../.. && sh/ccpreload "$dir"/preload.cc bin/preload.so ) || exit 2
 
 for i in 0 1 2 3 4
 do

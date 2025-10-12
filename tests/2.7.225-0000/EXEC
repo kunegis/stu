@@ -1,0 +1,23 @@
+#! /bin/sh
+
+clean()
+{
+	rm -f list.* ?
+}
+
+clean
+
+STU_VAR=WRONG ../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || {
+	echo >&2 '*** Exit status'
+	exit 1
+}
+
+grep -q -F -e CORRECT A || {
+	echo >&2 '*** Content'
+	exit 1
+}
+
+exit 0

@@ -430,12 +430,13 @@ const char **Job::create_child_env(
 			__gcov_dump();
 			_Exit(ERROR_FORK_CHILD);
 		}
-		if (old.count(key)) {
-			size_t v_index= old.at(key);
-			(envp)[v_index]= combined;
-		} else {
+		auto found_index= old.find(key);
+		if (found_index == old.end()) {
 			assert(i < v_old + v_new);
 			(envp)[i++]= combined;
+		} else {
+			size_t v_index= found_index->second;
+			(envp)[v_index]= combined;
 		}
 	}
 

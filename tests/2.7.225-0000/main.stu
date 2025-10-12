@@ -1,0 +1,9 @@
+A: list.CORRECT
+{
+	cp list.CORRECT A
+}
+
+>list.$STU_VAR
+{
+	echo $STU_VAR
+}

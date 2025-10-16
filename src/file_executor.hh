@@ -16,12 +16,13 @@ class File_Executor
 	: public Executor
 {
 public:
-	File_Executor(shared_ptr <const Dep> dep_link,
-		      Executor *parent,
-		      shared_ptr <const Rule> rule,
-		      shared_ptr <const Rule> param_rule,
-		      std::map <string, string> &mapping_parameter_,
-		      int &error_additional);
+	File_Executor(
+		shared_ptr <const Dep> dep_link,
+		Executor *parent,
+		shared_ptr <const Rule> rule,
+		shared_ptr <const Rule> param_rule,
+		std::map <string, string> &mapping_parameter_,
+		int &error_additional);
 	/* ERROR_ADDITIONAL indicates whether an error will be thrown after the call.
 	 * (Because an error can only be thrown after the executor has been connected to a
 	 * parent, which is not done in the constructor.  The parent is then connected to

@@ -910,12 +910,8 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 {
 	DEBUG_PRINT(fmt("read_variable %s", show(dep, S_DEBUG, R_SHOW_FLAGS)));
 	assert(to <Plain_Dep> (dep));
-
-	if (! result_variable.empty()) {
-		/* It was already read */
+	if (! result_variable.empty())
 		return;
-	}
-
 	/* It could be that the file exists but the bit is not set -- this would happen if
 	 * the file was not there before and we had no reason to check.  In such cases, we
 	 * don't need the variable. */
@@ -923,26 +919,45 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 		assert(dep->flags & F_TRIVIAL);
 		return;
 	}
-
 	if (error)
 		return;
 
 	Hash_Dep hash_dep= dep->get_target();
 	assert(! hash_dep.is_dynamic());
-
+	const char *filename= hash_dep.get_name_c_str_nondynamic();
 	size_t filesize;
 	struct stat buf;
 	string dependency_variable_name;
 	string content;
+	constexpr const char *whitespace= " \n\t\f\r\v";
 
-	int fd= open(hash_dep.get_name_c_str_nondynamic(), O_RDONLY);
+	int fd= open(filename, O_RDONLY);
 	if (fd < 0) {
-		if (errno != ENOENT) {
-			dep->get_place() << show(hash_dep);
+		if (errno == ENOENT) {
+			Hash_Dep hash_dep_variable=
+				to <Plain_Dep> (dep)->place_target.unparametrized();
+			if (rule == nullptr) {
+				dep->get_place() <<
+					fmt("file %s was up to date but cannot be found now",
+						show(hash_dep_variable));
+			} else {
+				for (auto const &place_param_target: rule->place_targets) {
+					if (place_param_target->unparametrized()
+						== hash_dep_variable) {
+						place_param_target->place <<
+							fmt("generated file %s was built but cannot be found now",
+								show(*place_param_target));
+						break;
+					}
+				}
+			}
+			*this << "";
+		} else {
+			print_errno(filename);
 		}
 		goto error;
 	}
-	if (0 > fstat(fd, &buf)) {
+	if (fstat(fd, &buf) < 0) {
 		dep->get_place() << show(hash_dep);
 		goto error_fd;
 	}
@@ -961,44 +976,22 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 
 	/* Remove space at beginning and end of the content. The characters are those used
 	 * by isspace() in the C locale. */
-	content.erase(0, content.find_first_not_of(" \n\t\f\r\v"));
-	content.erase(content.find_last_not_of(" \n\t\f\r\v") + 1);
+	content.erase(0, content.find_first_not_of(whitespace));
+	content.erase(content.find_last_not_of(whitespace) + 1);
 
 	/* The variable name */
-	dependency_variable_name=
-		to <Plain_Dep> (dep)->variable_name;
-
+	dependency_variable_name= to <Plain_Dep> (dep)->variable_name;
 	{
 		string variable_name=
 			dependency_variable_name.empty() ?
 			hash_dep.get_name_nondynamic() : dependency_variable_name;
-
 		result_variable[variable_name]= content;
 	}
-
 	return;
 
  error_fd:
 	close(fd);
  error:
-	Hash_Dep hash_dep_variable=
-		to <Plain_Dep> (dep)->place_target.unparametrized();
-
-	if (rule == nullptr) {
-		dep->get_place() <<
-			fmt("file %s was up to date but cannot be found now",
-			    show(hash_dep_variable));
-	} else {
-		for (auto const &place_param_target: rule->place_targets) {
-			if (place_param_target->unparametrized() == hash_dep_variable) {
-				place_param_target->place <<
-					fmt("generated file %s was built but cannot be found now",
-					    show(*place_param_target));
-				break;
-			}
-		}
-	}
-	*this << "";
 	raise(ERROR_BUILD);
 }
 

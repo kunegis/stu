@@ -1,0 +1,10 @@
+>A: $[SCHTROUMPF]
+{
+	set | grep -q -E -e '^SCHTROUMPF=' || {
+		echo >&2 "*** Expected variable"
+		exit 1
+	}
+	echo COR${SCHTROUMPF}RECT
+}
+
+SCHTROUMPF { touch SCHTROUMPF; }

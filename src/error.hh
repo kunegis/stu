@@ -124,8 +124,8 @@ constexpr int ERROR_FORK_CHILD= 127;
 void print_error(string message);
 /* Print an error without a place */
 
-void print_errno(string message);
-/* Like perror(), but add color.  MESSAGE must not contain color. */
+void print_errno(string call);
+void print_errno(string call, string filename);
 
 void print_error_reminder(string message);
 /* Print a reminder of an error on STDERR.  This is used in situations where an

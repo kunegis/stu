@@ -69,7 +69,7 @@ FILE *Trace::open_logfile(const char *filename)
 {
 	FILE *ret= fopen(filename, "w");
 	if (!ret) {
-		print_errno(fmt("fopen(%s)", filename));
+		print_errno("fopen", filename);
 		abort();
 	}
 	int flags= fcntl(fileno(ret), F_GETFL, 0);

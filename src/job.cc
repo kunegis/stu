@@ -403,7 +403,7 @@ const char **Job::create_child_env(
 	const size_t v_new= mapping.size() + 1;
 	/* Maximal size of added variables.  The "+1" is for $STU_STATUS */
 
-	envp= (const char **) malloc(sizeof(char **) * (v_old + v_new + 1));
+	envp= (const char **) malloc(sizeof(char *) * (v_old + v_new + 1));
 	if (!envp) {
 		perror("malloc");
 		__gcov_dump();

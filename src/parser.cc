@@ -1041,7 +1041,7 @@ void Parser::get_expression_list_delim(
 	if (file == nullptr) {
 		if (allow_enoent && errno == ENOENT)
 			return;
-		print_errno(fmt("fopen(%s)", filename));
+		print_errno("fopen", filename);
 		throw ERROR_BUILD;
 	}
 
@@ -1104,7 +1104,7 @@ void Parser::get_expression_list_delim(
 	}
 	free(lineptr);
 	if (fclose(file)) {
-		print_errno(fmt("fclose(%s)", filename));
+		print_errno("fclose", filename);
 		throw ERROR_BUILD;
 	}
 }

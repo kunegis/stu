@@ -78,7 +78,7 @@
 # STDOUT       The exact output of Stu
 # STDERR       The exact error output of Stu
 # INSTDOUT     Prescribe strings that must appear in Stu's output
-# INSTDERR     Prescribe strings that must appear in Stu's error output
+# INSTDERR     Prescribe strings that must appear in Stu's error output (one per line)
 # NOTINSTDERR  A text that must not be present in Stu's error output
 # TTYSTDOUTERR The output and error output (interleaved) when in TTY mode
 # PRELOAD.cc   If present, the file is compiled as a shared object and Stu executed with
@@ -336,13 +336,13 @@ do
 
 		if [ "$TEST_DEBUG" -ge 2 ] ; then
 			echo stdout:
-			echo _______
+			printf '/------\n'
 			cat list.def.out
-			echo _______
+			printf '\\------\n'
 			echo stderr:
-			echo _______
+			printf '/------\n'
 			cat list.def.err
-			echo _______
+			printf '\\------\n'
 		fi
 
 		# Exit status

@@ -160,7 +160,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			}
 		} else {
 			/* Other errors by open() are fatal */
-			print_errno(fmt("open(%s)", FILENAME_INPUT_DEFAULT));
+			print_errno("open", FILENAME_INPUT_DEFAULT);
 			exit(ERROR_FATAL);
 		}
 	}

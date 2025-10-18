@@ -10,6 +10,7 @@ FILE *fopen(const char *pathname, const char *mode)
 {
 	FILE *ret= ((FILE * (*)(const char *, const char *))dlsym(RTLD_NEXT, "fopen"))
 		(pathname, mode);
+//	fprintf(stderr, ">>> fopen pathname='%s' mode='%s' ret=%p\n", pathname, mode, ret); // RM
 	if (ret && !strcmp(pathname, "SCHTROUMPF")) {
 		file_schtroumpf= ret;
 	}
@@ -17,12 +18,14 @@ FILE *fopen(const char *pathname, const char *mode)
 }
 
 extern "C"
-int fclose(FILE *stream)
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
+//	fprintf(stderr, ">>> fread stream=%p size=%zu nmemb=%zu\n", stream, size, nmemb); // RM
 	if (file_schtroumpf && stream == file_schtroumpf) {
 		file_schtroumpf= NULL;
 		errno= ENOMEM;
-		return EOF;
+		return 0;
 	}
-	return ((int (*)(FILE *))dlsym(RTLD_NEXT, "fclose"))(stream);
+	return ((size_t (*)(void *, size_t, size_t, FILE *))dlsym(RTLD_NEXT, "fread"))
+		(ptr, size, nmemb, stream);
 }

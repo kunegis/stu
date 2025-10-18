@@ -20,6 +20,7 @@ extern "C"
 int fstat(int fd, struct stat *buf)
 {
 	if (fd_schtroumpf >= 0 && fd == fd_schtroumpf) {
+		fd_schtroumpf= -1;
 		errno= ENOMEM;
 		return -1;
 	}

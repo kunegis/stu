@@ -931,8 +931,8 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	string content;
 	constexpr const char *whitespace= " \n\t\f\r\v";
 
-	int fd= open(filename, O_RDONLY);
-	if (fd < 0) {
+	FILE *file= fopen(filename, "r");
+	if (!file) {
 		if (errno == ENOENT) {
 			Hash_Dep hash_dep_variable=
 				to <Plain_Dep> (dep)->place_target.unparametrized();
@@ -953,24 +953,28 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 			}
 			*this << "";
 		} else {
-			print_errno(filename);
+			print_errno("fopen", filename);
+			*this << "";
 		}
 		goto error;
 	}
-	if (fstat(fd, &buf) < 0) {
-		dep->get_place() << show(hash_dep);
-		goto error_fd;
+	if (fstat(fileno(file), &buf) < 0) {
+		print_errno("fstat", filename);
+		*this << "";
+		goto error_close;
 	}
 
 	filesize= buf.st_size;
 	content.resize(filesize);
-	if ((ssize_t) filesize != read(fd, (void *) content.c_str(), filesize)) {
-		dep->get_place() << show(hash_dep);
-		goto error_fd;
+	if (filesize && fread(content.data(), filesize, 1, file) != 1) {
+		print_errno("fread", filename);
+		*this << "";
+		goto error_close;
 	}
 
-	if (0 > close(fd)) {
-		dep->get_place() << show(hash_dep);
+	if (fclose(file)) {
+		print_errno("fclose", filename);
+		*this << "";
 		goto error;
 	}
 
@@ -989,8 +993,8 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	}
 	return;
 
- error_fd:
-	close(fd);
+ error_close:
+	fclose(file);
  error:
 	raise(ERROR_BUILD);
 }

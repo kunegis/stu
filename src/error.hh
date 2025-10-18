@@ -124,15 +124,16 @@ constexpr int ERROR_FORK_CHILD= 127;
 void print_error(string message);
 /* Print an error without a place */
 
-void print_errno(string call);
-void print_errno(string call, string filename);
-
 void print_error_reminder(string message);
 /* Print a reminder of an error on STDERR.  This is used in situations where an
  * error has already been output, but it is better to remind the user of the
  * error.  Since the error as already been output, use the color of warnings. */
 
-string format_errno(string text);
+void print_errno(string call);
+void print_errno(string call, string filename);
+
+string format_errno(string call, string filename);
+string format_errno_bare(string text);
 /* Includes the given message, and the ERRNO-based text.  Cf. perror().  Color is not
  * added.  The output of this function is used as input to one of the print_*()
  * functions. */

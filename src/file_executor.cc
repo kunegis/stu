@@ -398,7 +398,7 @@ bool File_Executor::remove_if_existing(bool output)
 
 		if (0 > unlink(filename)) {
 			if (output) {
-				rule->place << format_errno(filename);
+				rule->place << format_errno("unlink", filename);
 			} else {
 				write_async(2, "stu: error: unlink\n");
 			}
@@ -671,11 +671,10 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			}
 
 			if (ret_stat != 0 && errno != ENOENT) {
-				/* stat() returned an actual error, e.g. permission
-				 * denied.  This is a build error. */
 				TRACE("stat() returned an actual error");
 				rule->place_targets[i]->place
-					<< format_errno(show(hash_dep));
+					<< format_errno("stat",
+						hash_dep.get_name_c_str_nondynamic());
 				raise(ERROR_BUILD);
 				done |= Done::from_flags(dep_link->flags);
 				return proceed |= P_ABORT | P_FINISHED;
@@ -869,27 +868,28 @@ void File_Executor::write_content(
 	FILE *file= fopen(filename, "w");
 
 	if (file == nullptr) {
-		rule->place << format_errno(::show(filename));
+		rule->place << format_errno("fopen", filename);
 		goto error;
 	}
 
 	for (const string &line: command.get_lines()) {
 		TRACE("line= '%s'", line);
-		if (fwrite(line.c_str(), 1, line.size(), file) != line.size()) {
+		if (fwrite(line.c_str(), line.size(), 1, file) != 1) {
+			TRACE("fwrite failed");
 			assert(ferror(file));
 			fclose(file);
-			rule->place << format_errno(::show(filename));
+			rule->place << format_errno("fwrite", filename);
 			goto remove;
 		}
-		if (EOF == putc('\n', file)) {
+		if (EOF == fputc('\n', file)) {
 			fclose(file);
-			rule->place << format_errno(::show(filename));
+			rule->place << format_errno("putc", filename);
 			goto remove;
 		}
 	}
 
 	if (0 != fclose(file)) {
-		rule->place << format_errno(::show(filename));
+		rule->place << format_errno("fclose", filename);
 		command.get_place() << fmt("error creating %s", ::show(filename));
 		goto remove;
 	}
@@ -899,7 +899,10 @@ void File_Executor::write_content(
 	return;
 
  remove:
-	remove(filename);
+	if (remove(filename)) {
+		TRACE("remove failed");
+		rule->place << format_errno("remove", filename);
+	}
  error:
 	raise(ERROR_BUILD);
 	bits &= ~B_EXISTING;
@@ -1031,7 +1034,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 				TRACE("Stat failed with error other than ENOENT");
 				to <Plain_Dep> (dep_link)
 					->place_target.place <<
-					format_errno(::show(name));
+					format_errno("stat", name);
 				raise(ERROR_BUILD);
 				done |= Done::from_flags(dep_link->flags);
 				return true;
@@ -1184,7 +1187,7 @@ void File_Executor::check_file_was_built(
 	/* Check whether the file is actually a symlink, in which case we ignore that
 	 * error */
 	if (0 > lstat(filename, &buf)) {
-		place_target->place << format_errno(show(hash_dep));
+		place_target->place << format_errno("lstat", filename);
 		raise(ERROR_BUILD);
 	}
 	if (S_ISLNK(buf.st_mode))

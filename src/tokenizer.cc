@@ -182,7 +182,7 @@ void Tokenizer::parse_tokens_file(
 		if (backtraces.size() > 0) {
 			for (auto j= backtraces.begin(); j != backtraces.end(); ++j) {
 				if (j == backtraces.begin()) {
-					j->place << format_errno
+					j->place << format_errno_bare
 						(fmt("%s %s",
 						     show_operator("%include"),
 						     show(filename_diagnostic)));
@@ -192,7 +192,7 @@ void Tokenizer::parse_tokens_file(
 			}
 		} else {
 			if (place_diagnostic.get_type() != Place::Type::EMPTY) {
-				place_diagnostic << format_errno
+				place_diagnostic << format_errno_bare
 					(show(filename_diagnostic));
 			} else {
 				print_errno(filename_diagnostic);

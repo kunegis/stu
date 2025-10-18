@@ -16,6 +16,16 @@ void print_error(string message)
 		Color::stderr_err_on, dollar_zero, Color::stderr_err_off, message.c_str());
 }
 
+void print_error_reminder(string message)
+{
+	assert(! message.empty());
+	assert(islower(message[0]) || message[0] == '\'');
+	assert(message[message.size() - 1] != '\n');
+	fprintf(stderr, "%s%s%s: %s\n",
+		Color::stderr_warn_on, dollar_zero, Color::stderr_warn_off,
+		message.c_str());
+}
+
 void print_errno(string call)
 {
 	TRACE_FUNCTION();
@@ -33,23 +43,20 @@ void print_errno(string call, string filename)
 	TRACE("filename= '%s'", filename);
 	assert(call.size() > 0 && call[0] != '\033');
 	assert(filename.size() > 0 && filename[0] != '\033');
-	fprintf(stderr, "%s%s%s: %s%s%s: %s\n",
+	fprintf(stderr, "%s%s%s: %s: %s\n",
 		Color::stderr_err_on, filename.c_str(), Color::stderr_err_off,
-		Color::stderr_err_on, call.c_str(), Color::stderr_err_off,
+		call.c_str(),
 		strerror(errno));
 }
 
-void print_error_reminder(string message)
+string format_errno(string call, string filename)
 {
-	assert(! message.empty());
-	assert(islower(message[0]) || message[0] == '\'');
-	assert(message[message.size() - 1] != '\n');
-	fprintf(stderr, "%s%s%s: %s\n",
-		Color::stderr_warn_on, dollar_zero, Color::stderr_warn_off,
-		message.c_str());
+	string show_call= ::show(call, S_QUOTE_MINIMUM);
+	string show_filename= ::show(filename, S_QUOTE_MINIMUM);
+	return fmt("%s: %s: %s", show_filename, show_call, strerror(errno));
 }
 
-string format_errno(string text)
+string format_errno_bare(string text)
 {
 	return fmt("%s: %s", text, strerror(errno));
 }

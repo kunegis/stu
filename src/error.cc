@@ -16,13 +16,26 @@ void print_error(string message)
 		Color::stderr_err_on, dollar_zero, Color::stderr_err_off, message.c_str());
 }
 
-void print_errno(string message)
+void print_errno(string call)
 {
 	TRACE_FUNCTION();
-	TRACE("message= %s", message);
-	assert(message.size() > 0 && message[0] != '\033');
+	TRACE("call= '%s'", call);
+	assert(call.size() > 0 && call[0] != '\033');
 	fprintf(stderr, "%s%s%s: %s\n",
-		Color::stderr_err_on, message.c_str(), Color::stderr_err_off,
+		Color::stderr_err_on, call.c_str(), Color::stderr_err_off,
+		strerror(errno));
+}
+
+void print_errno(string call, string filename)
+{
+	TRACE_FUNCTION();
+	TRACE("call= '%s'", call);
+	TRACE("filename= '%s'", filename);
+	assert(call.size() > 0 && call[0] != '\033');
+	assert(filename.size() > 0 && filename[0] != '\033');
+	fprintf(stderr, "%s%s%s: %s%s%s: %s\n",
+		Color::stderr_err_on, filename.c_str(), Color::stderr_err_off,
+		Color::stderr_err_on, call.c_str(), Color::stderr_err_off,
 		strerror(errno));
 }
 

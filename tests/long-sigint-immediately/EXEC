@@ -1,9 +1,11 @@
 #! /bin/sh
 
+N=999
+
 rm -f ? list.* || exit 2
 
-echo '../../bin/stu.test -j1000 &'
-../../bin/stu.test -j1000 >list.out 2>list.err &
+echo "../../bin/stu.test -j$N &"
+../../bin/stu.test -j$N >list.out 2>list.err &
 pid=$!
 
 begin=$(../../sh/now)

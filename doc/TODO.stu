@@ -412,3 +412,14 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 # Maybe remove the file "tests.runtime".
 #
+
+#
+# tokenizer.cc: print_errno() should be passed the name of the failing function as first
+# argument.  Then, we can write print_errno() such that the first arg must always be known
+# at compile time, i.e., be a string constant representing the failing function.
+#
+
+#
+# Option -F:  Error messages for which the place is in option -f should not print "Option
+# -F".  Instead, don't print a place.
+#

@@ -423,3 +423,9 @@ A: [ -t -o B ] { touch A ; }  B={C}
 # Option -F:  Error messages for which the place is in option -f should not print "Option
 # -F".  Instead, don't print a place.
 #
+
+#
+# Output the time it takes for each test to execute.  For all long-* tests, check if any
+# is short, and if it is, whether the test goes wrong accidentally, or should not be in
+# long-*.
+#

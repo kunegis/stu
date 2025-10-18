@@ -420,7 +420,7 @@ A: [ -t -o B ] { touch A ; }  B={C}
 # * Also check whether maybe all uses of print_errno() should be replaced by
 #   place << format(::show(filename));
 # * If kept, print_errno() should also use show() to correctly escape characters in
-#   filenames.  
+#   filenames.
 #
 
 #

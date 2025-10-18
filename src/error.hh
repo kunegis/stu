@@ -132,7 +132,6 @@ void print_error_reminder(string message);
 void print_errno(string call);
 void print_errno(string call, string filename);
 
-//string format_errno(string call);
 string format_errno(string call, string filename);
 string format_errno_bare(string text);
 /* Includes the given message, and the ERRNO-based text.  Cf. perror().  Color is not

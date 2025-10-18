@@ -877,7 +877,7 @@ void File_Executor::write_content(
 		if (fwrite(line.c_str(), line.size(), 1, file) != 1) {
 			TRACE("fwrite failed");
 			assert(ferror(file));
-			fclose(file); // XXX line should be covered by 2.7.227-0000 but is not. 
+			fclose(file);
 			rule->place << format_errno("fwrite", filename);
 			goto remove;
 		}

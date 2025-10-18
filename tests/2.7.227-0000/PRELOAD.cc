@@ -10,7 +10,6 @@ FILE *fopen(const char *pathname, const char *mode)
 {
 	FILE *stream= ((FILE * (*)(const char *, const char *))
 		dlsym(RTLD_NEXT, "fopen"))(pathname, mode);
-	fprintf(stderr, ">>> fopen pathname='%s' mode='%s' stream=%p\n", pathname, mode, stream); // rm
 	if (stream && !strcmp(pathname, "SCHTROUMPF")) {
 		stream_schtroumpf= stream;
 	}
@@ -20,7 +19,6 @@ FILE *fopen(const char *pathname, const char *mode)
 extern "C"
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
-	fprintf(stderr, ">>> fwrite ptr=%p size=%zu nmemb=%zu stream=%p\n", ptr, size, nmemb, stream); // rm
 	if (stream_schtroumpf && stream == stream_schtroumpf) {
 		errno= ENOSPC;
 		return 0;
@@ -30,9 +28,8 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
 }
 
 extern "C"
-int ferror(FILE *stream) 
+int ferror(FILE *stream)
 {
-	fprintf(stderr, ">>> ferror stream=%p\n", stream); // rm
 	if (stream_schtroumpf && stream == stream_schtroumpf) {
 		stream_schtroumpf= nullptr;
 		return 1;
@@ -43,7 +40,6 @@ int ferror(FILE *stream)
 extern "C"
 int fclose(FILE *stream)
 {
-	fprintf(stderr, ">>> fclose stream=%p\n", stream); // rm
 	if (stream_schtroumpf && stream == stream_schtroumpf) {
 		stream_schtroumpf= nullptr;
 	}

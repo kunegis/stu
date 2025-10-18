@@ -49,12 +49,6 @@ void print_errno(string call, string filename)
 		strerror(errno));
 }
 
-//string format_errno(string call)
-//{
-//	string show_call= ::show(call, S_QUOTE_MINIMUM);
-//	return fmt("%s: %s", show_call, strerror(errno));
-//}
-
 string format_errno(string call, string filename)
 {
 	string show_call= ::show(call, S_QUOTE_MINIMUM);

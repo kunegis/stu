@@ -1,6 +1,0 @@
-A: $[x] {}
-
-x {
-	unset LD_PRELOAD
-	touch x;
-}

@@ -3,7 +3,7 @@
 FILE_SO=../../bin/preload.so
 dir=$(pwd)
 
-( cd ../.. && sh/ccpreload "$dir"/preload.cc "$dir"/"$FILE_SO" ; ) || exit 2
+( cd ../.. && sh/ccpreload "$dir"/PRELOAD.cc "$dir"/"$FILE_SO" ; ) || exit 2
 
 Error()
 {

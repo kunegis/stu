@@ -1,0 +1,46 @@
+#! /bin/sh
+
+clean()
+{
+	rm -f ? list.* || exit 2
+}
+
+error()
+{
+	printf '*** %s\n' "$1"
+	exit 1
+}
+
+clean
+
+dir=$(pwd)
+
+( cd ../.. ; sh/ccpreload "$dir"/PRELOAD.cc bin/preload.so ) || error ccpreload
+
+LD_PRELOAD=../../bin/preload.so ../../bin/stu.test >list.out 2>list.err &
+pid=$!
+
+sleep 1
+kill -s TERM "$pid" || error kill
+
+wait "$pid"
+exitstatus=$?
+
+[ "$exitstatus" = 143 ] || error "Expected exit status 143, not $exitstatus"
+
+grep -q -F -e 'stu: error: unlink' list.err || error 'stderr'
+
+if [ "$TEST_DEBUG" ] ; then
+	>&2 echo stdout:
+	>&2 echo '/-----------'
+	>&2 cat list.out
+	>&2 echo '\-----------'
+	>&2 echo stderr:
+	>&2 echo '/-----------'
+	>&2 cat list.err
+	>&2 echo '\-----------'
+fi
+
+clean
+
+exit 0

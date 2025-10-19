@@ -385,7 +385,8 @@ bool File_Executor::remove_if_existing(bool output)
 
 		/* If the file existed before building, remove it only if it now has a
 		 * newer timestamp. */
-		if (! (! timestamps_old[i].defined() || timestamps_old[i] < Timestamp(&buf)))
+		if (! (! timestamps_old[i].defined()
+				|| timestamps_old[i] < Timestamp(&buf)))
 			continue;
 
 		if (output) {
@@ -408,10 +409,11 @@ bool File_Executor::remove_if_existing(bool output)
 	return removed;
 }
 
-void File_Executor::warn_future_file(struct stat *buf,
-				     const char *filename,
-				     const Place &place,
-				     const char *message_extra)
+void File_Executor::warn_future_file(
+	struct stat *buf,
+	const char *filename,
+	const Place &place,
+	const char *message_extra)
 {
 	Timestamp timestamp_buf= Timestamp(buf);
 

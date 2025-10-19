@@ -1,0 +1,5 @@
+SCHTROUMPF
+{
+	touch SCHTROUMPF
+	sleep 2
+}

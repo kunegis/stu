@@ -303,8 +303,8 @@ do
 			-o -r STDERR -o -r NOTINSTDERR -o -r CMD -o -r CMDPREFIX \
 			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
 			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR \
-			-o -r NOCOLOR -o -r PRELOAD.cc ]; then
-			test_fail_fatal "EXEC does not allow any other file"
+			-o -r NOCOLOR ]; then
+			test_fail_fatal "EXEC does not allow any other file except PRELOAD.cc"
 			continue
 		fi
 

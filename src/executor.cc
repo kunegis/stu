@@ -252,6 +252,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 
 	/* Concatenations */
 	if (shared_ptr <const Concat_Dep> concat_dep= to <const Concat_Dep> (dep)) {
+		TRACE("Creating Concat_Executor");
 		int error_additional= 0;
 		Concat_Executor *executor= new Concat_Executor
 			(concat_dep, this, error_additional);
@@ -268,6 +269,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	/* Dynamics that are not cached (with concatenations somewhere inside) */
 	if (to <const Dynamic_Dep> (dep)
 	    && ! to <const Plain_Dep> (dep->strip_dynamic())) {
+		TRACE("Create Dynamic_Executor with concatenation inside");
 		int error_additional= 0;
 		Dynamic_Executor *executor= new Dynamic_Executor
 			(to <const Dynamic_Dep> (dep), this, error_additional);
@@ -298,10 +300,17 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			/* Add necessary flags */
 			Flags flags= dep->flags;
 			if (flags & ~executor->parents.at(this)->flags) {
-				TRACE("Has flags");
+				TRACE("Has new flags");
 				shared_ptr <Dep> dep_new=
 					executor->parents.at(this)->clone();
+				for (int i= 0; i < C_PLACED; ++i) {
+					if ((flags & (1 << i))
+						&& ! (dep_new->flags & (1 << i))) {
+						dep_new->places[i]= dep->places[i];
+					}
+				}
 				dep_new->flags |= flags;
+				dep_new->check();
 				dep= dep_new;
 				/* No need to check for cycles here, because a link
 				 * between the two already exists and therefore a cycle
@@ -309,6 +318,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 				executor->parents[this]= dep;
 			}
 		} else {
+			TRACE("Not yet connected");
 			if (find_cycle(this, executor, dep)) {
 				TRACE("File-level cycle found");
 				raise(ERROR_LOGICAL);
@@ -317,12 +327,12 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			/* The parent and child are not connected -- add the connection */
 			executor->parents[this]= dep;
 		}
-		TRACE("Returning existing executor");
 		return executor;
 	}
 
 	/* Create a new Executor object */
 
+	TRACE("Creating new executor");
 	int error_additional= 0; /* Passed to the executor */
 	if (! hash_dep.is_dynamic()) {
 		/* Plain executor */

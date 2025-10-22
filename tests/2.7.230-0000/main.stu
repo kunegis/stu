@@ -1,0 +1,9 @@
+A:  B -p B
+{
+	cp B A
+}
+
+B
+{
+	echo CORRECT >B
+}

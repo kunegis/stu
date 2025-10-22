@@ -32,8 +32,7 @@ public:
 		return dep->render(parts);
 	}
 
-	virtual void notify_variable(
-		const std::map <string, string> &result_variable_child) override;
+	virtual void notify_variable(const std::map <string, string> &) override;
 	virtual void notify_result(
 		shared_ptr <const Dep> dep_result, Executor *source, Flags flags,
 		shared_ptr <const Dep> dep_source) override;

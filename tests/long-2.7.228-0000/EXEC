@@ -23,7 +23,7 @@ pid=$!
 sleep 1
 kill -s TERM "$pid" || error kill
 
-wait "$pid"
+wait "$pid" 2>/dev/null
 exitstatus=$?
 
 [ "$exitstatus" = 143 ] || error "Expected exit status 143, not $exitstatus"

@@ -7,6 +7,10 @@
 #
 
 #
+# Make sure no tests leave files in /tmp/.
+#
+
+#
 # Find a way to sleep sub-second amounts in a POSIX script, so that we can make the tests
 # faster.  (Maybe)
 #
@@ -22,6 +26,10 @@
 #
 # Achieve full coverage.
 # * Make 'make test' also execute 'make cov'
+#
+
+#
+# long-sigusr1-1 sometimes hangs.
 #
 
 #
@@ -391,10 +399,6 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 
 #
-# long-sigusr1-1 sometimes hangs.
-#
-
-#
 # When using the -i option, should copy jobs also be put in the foreground?  (For now, they
 # are not.)
 #
@@ -432,4 +436,13 @@ A: [ -t -o B ] { touch A ; }  B={C}
 # Output the time it takes for each test to execute.  For all long-* tests, check if any
 # is short, and if it is, whether the test goes wrong accidentally, or should not be in
 # long-*.
+#
+
+#
+# In content rules, when the content is very long, don't output the content in stdout when
+# building.
+#
+
+#
+# Have verbose mode which mostly only shows all the stat calls that Stu makes.
 #

@@ -1,0 +1,10 @@
+>A:  @make.[B]
+{
+	echo $SCHTROUMPF
+}
+
+B = {C}
+
+@make.C:  $[SCHTROUMPF];
+
+SCHTROUMPF = {CORRECT}

@@ -26,8 +26,7 @@ public:
 	virtual int get_depth() const override { return dep->get_depth(); }
 	virtual bool optional_finished(shared_ptr <const Dep> ) override { return false; }
 	virtual void render(Parts &, Rendering= 0) const override;
-	virtual void notify_variable(
-		const std::map <string, string> &result_variable_child) override;
+	virtual void notify_variable(const std::map <string, string> &) override;
 	virtual void notify_result(shared_ptr <const Dep> dep,
 		Executor *source, Flags flags,
 		shared_ptr <const Dep> dep_source) override;

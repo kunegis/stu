@@ -485,6 +485,11 @@ void Executor::notify_result( /* uncovered */
 	unreachable();
 }
 
+void Executor::notify_variable(const std::map <string, string> &)
+{
+	/* empty */
+}
+
 Proceed Executor::execute_children()
 {
 	TRACE_FUNCTION(show_trace(*this));

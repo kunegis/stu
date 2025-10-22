@@ -527,17 +527,16 @@ shared_ptr <const Dep> Concat_Dep::concat(
 	}
 
 	if (a->flags & F_VARIABLE) {
-		a->get_place() << fmt("the variable dependency %s cannot be used",
-				      show(a));
-		b->get_place() << fmt("in concatenation with %s",
-				      show(b));
+		a->get_place() <<
+			fmt("the variable dependency %s cannot be used", show(a));
+		b->get_place() << fmt("in concatenation with %s", show(b));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
 	if (b->flags & F_VARIABLE) {
-		b->get_place() << fmt("variable dependency %s is invalid",
-				      show(b));
+		b->get_place() <<
+			fmt("the variable dependency %s cannot be used", show(b));
 		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;

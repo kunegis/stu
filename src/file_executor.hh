@@ -38,8 +38,7 @@ public:
 	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
 	virtual bool finished(Flags flags) const override;
 	virtual void render(Parts &, Rendering= 0) const override;
-	virtual void notify_variable(
-		const std::map <string, string> &result_variable_child) override;
+	virtual void notify_variable(const std::map <string, string> &) override;
 
 	static size_t executors_by_pid_size;
 	static pid_t *executors_by_pid_key;

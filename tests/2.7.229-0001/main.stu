@@ -1,0 +1,6 @@
+>A:  @make.[B]
+{
+	echo $SCHTROUMPF
+}
+
+B = {$[SCHTROUMPF]}

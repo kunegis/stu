@@ -101,10 +101,8 @@ public:
 	 * given flag contains only one of the two F_RESULT_* flags.  DEP_SOURCE is the
 	 * dependency leading from THIS to SOURCE (for F_RESULT_COPY). */
 
-	virtual void notify_variable
-	(const std::map <string, string> &result_variable_child) {
-		(void) result_variable_child;
-	}
+	virtual void notify_variable(
+		const std::map <string, string> &result_variable_child);
 
 	virtual void render(Parts &, Rendering= 0) const override= 0;
 

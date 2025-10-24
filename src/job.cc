@@ -388,6 +388,8 @@ void Job::ask_continue(pid_t pid)
 const char **Job::create_child_env(
 	const std::map <string, string> &mapping)
 {
+	TRACE_FUNCTION();
+	TRACE("mapping.size()= %s", frmt("%zu", mapping.size()));
 	const char **envp;
 
 	/* Set variables */
@@ -419,6 +421,7 @@ const char **Job::create_child_env(
 	for (auto j= mapping.begin(); j != mapping.end(); ++j) {
 		string key= j->first;
 		string value= j->second;
+		TRACE("key= '%s'; value= '%s'", key, value);
 		assert(key.find('=') == string::npos);
 		size_t len_combined= key.size() + 1 + value.size() + 1;
 		char *combined= (char *)malloc(len_combined);
@@ -430,8 +433,8 @@ const char **Job::create_child_env(
 		if ((ssize_t)(len_combined - 1) !=
 			snprintf(combined, len_combined, "%s=%s",
 				key.c_str(), value.c_str())) {
-			perror("snprintf");
-			__gcov_dump();
+			should_not_happen();
+			print_error("snprintf: Error");
 			_Exit(ERROR_FORK_CHILD);
 		}
 		auto found_index= old.find(key);

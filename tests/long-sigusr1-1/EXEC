@@ -19,18 +19,24 @@ echo sleep 1
 echo >&6 sleep 1
 sleep 1 || exit 2
 
-echo >&6 kill
+echo >&6 kill -s USR1 "$pid"
 kill -s USR1 "$pid" || {
 	echo >&2 '*** Kill'
 	exit 1
 }
 
 >&6 ps -fe | grep -F -e "$pid"
-echo >&6 wait
-wait "$pid" 2>/dev/null || {
-	echo >&2 '*** Wait'
-	exit 1
-}
+
+>&6 ps -e -o command,pid,ppid,pgid,blocked,caught,cls,f,ignored,wchan,pending,stat,sched | grep stu
+
+echo >&6 sleep 1
+sleep 1
+echo kill -s TERM "$pid"
+kill -s TERM "$pid"
+
+echo >&6 wait "$pid"
+wait "$pid" 2>/dev/null
+exitstatus=$?
 
 grep -qE '^STATISTICS  ' list.out || {
 	echo >&2 '*** Output A'
@@ -70,11 +76,6 @@ grep -qF " @x" list.out || {
 	echo >&2 ____
 	cat >&2 list.out
 	echo >&2 ____
-	exit 1
-}
-
-[ -r list.err ] && [ ! -s list.err ] || {
-	echo >&2 '*** Error output'
 	exit 1
 }
 

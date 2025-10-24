@@ -146,7 +146,9 @@ pid_t Job::wait(int *status)
 /* The main loop of Stu.  We wait for the two productive signals SIGCHLD and SIGUSR1.
  * When this function is called, there is always at least one child process running. */
 {
+	TRACE_FUNCTION();
  begin:
+	TRACE("Begin");
 	/* First, try wait() without blocking.  WUNTRACED is used to also get notified
 	 * when a job is suspended (e.g. with Ctrl-Z). */
 	pid_t pid= waitpid(-1, status, WNOHANG | (option_i ? WUNTRACED : 0));
@@ -180,6 +182,7 @@ pid_t Job::wait(int *status)
 	int sig;
 	int r;
  retry:
+	TRACE("Retry");
 	/* We block the termination signals and wait for them using sigwait(),
 	 * because the signal handlers for them may not be called while
 	 * sigwait() is pending.  Depending on the system, sigwait() may allow
@@ -207,11 +210,12 @@ pid_t Job::wait(int *status)
 
 	int is_termination= sigismember(&set_termination, sig);
 	if (is_termination == 1) {
+		TRACE("Is termination signal");
 		/* If a termination signal arrives while we were waiting, the
 		 * signal handler may be called immediately after sigwait()
 		 * ends, or it may not. */
 		raise(sig);
-		perror("raise");
+		print_error("raise: Error");
 		abort();
 	} else if (is_termination != 0) {
 		perror("sigismember");

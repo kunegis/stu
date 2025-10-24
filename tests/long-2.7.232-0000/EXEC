@@ -1,0 +1,43 @@
+#! /bin/sh
+
+clean()
+{
+	../../sh/rm_tmps
+}
+
+error()
+{
+	printf 'Error: %s\n' "$1"
+
+	>&2 echo list.out:
+	>&2 echo '/----------'
+	>&2 cat list.out
+	>&2 echo '\\----------'
+
+	>&2 echo list.err:
+	>&2 echo '/----------'
+	>&2 cat list.err
+	>&2 echo '\\----------'
+
+	exit 1
+}
+
+trap clean EXIT
+clean || error 'rm'
+
+dir=$(pwd)
+( cd ../.. ; sh/ccpreload "$dir"/PRELOAD.cc bin/preload.so ) || error ccpreload
+
+LD_PRELOAD=../../bin/preload.so ../../bin/stu.test >list.out 2>list.err &
+pid=$!
+
+echo sleep 1
+sleep 1
+kill -s QUIT "$pid"
+wait "$pid" 2>/dev/null
+exitstatus=$?
+
+[ "$exitstatus" = 134 ] || error 'Exit status'
+grep -q -F -e 'raise' list.err || error 'stderr'
+
+exit 0

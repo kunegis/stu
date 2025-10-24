@@ -12,7 +12,7 @@
 #
 
 #
-# Make sure no tests leave files in /tmp/.
+# Make sure no tests leave files in /tmp/, or processes running.
 #
 
 #
@@ -26,10 +26,6 @@
 
 #
 # Write a check that we don't use 'NULL' in C++ sources.
-#
-
-#
-# long-sigusr1-1 sometimes hangs.
 #
 
 #

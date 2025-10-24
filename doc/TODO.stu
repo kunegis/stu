@@ -425,6 +425,7 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #   place << format(::show(filename));
 # * If kept, print_errno() should also use show() to correctly escape characters in
 #   filenames.
+# * Check whether uses of perror() can be replaces by print_errno().
 #
 
 #

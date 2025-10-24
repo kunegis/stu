@@ -1214,7 +1214,7 @@ void File_Executor::check_file_target_without_rule(
 	if (stat(hash_dep.get_name_c_str_nondynamic(), &buf)) {
 		if (errno != ENOENT) {
 			string text= show(hash_dep);
-			perror(text.c_str());
+			print_errno("stat", hash_dep.get_name_c_str_nondynamic());
 			raise(ERROR_BUILD);
 		}
 		/* File does not exist and there is no rule for it */

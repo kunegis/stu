@@ -1184,7 +1184,6 @@ void File_Executor::check_file_was_built(
 	if (! timestamp.defined() || timestamp < timestamp_file)
 		timestamp= timestamp_file;
 	if (timestamp_file >= Timestamp::startup) return;
-	/* The target is older than Stu startup */
 
 	/* Check whether the file is actually a symlink, in which case we ignore that
 	 * error */

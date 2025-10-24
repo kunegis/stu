@@ -1,0 +1,5 @@
+X
+{
+	../../sh/touch_old B
+	ln -s B X
+}

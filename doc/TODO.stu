@@ -1,4 +1,8 @@
 #
+# tests/long-sigusr1-1/EXEC:  Remove the logfile and ps calls.
+#
+
+#
 # Achieve full coverage.
 # * Make 'make test' also execute 'make cov'
 #
@@ -441,4 +445,9 @@ A: [ -t -o B ] { touch A ; }  B={C}
 
 #
 # Have verbose mode which mostly only shows all the stat calls that Stu makes.
+#
+
+#
+# In File_Executor::check_file_was_built() when calling stat(), check errno and
+# distinguish between the file being absent and other errors.
 #

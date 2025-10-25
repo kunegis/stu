@@ -1,6 +1,6 @@
 #! /bin/sh
 
-[ "$EXEC_DEBUG" ] && exec 6>&2 || exec 6>/dev/null
+[ "$TEST_VERBOSE" ] && exec 6>&2 || exec 6>/dev/null
 
 Do()
 {

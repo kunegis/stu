@@ -29,7 +29,7 @@ exitstatus=$?
 
 grep -q -F -e 'stu: error: unlink' list.err || error 'stderr'
 
-if [ "$TEST_DEBUG" ] ; then
+if [ "$TEST_VERBOSE" ] ; then
 	>&2 echo stdout:
 	>&2 echo '/-----------'
 	>&2 cat list.out

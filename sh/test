@@ -13,27 +13,27 @@
 # name contains the glob characters *, ?, etc.)
 #
 # OUTPUT FILES
-#	log/error.log     List of tests that failed, one name per line
+#	log/error.log List of tests that failed, one name per line
 #
 # PARAMETERS
-#	$NDEBUG      Set to non-empty to test the nondebug version; by default the debug
-#	             version is tested
-#	$VARIANT     Other variant of the compiled file; the default is to take the file
-#	             that matches the value of $NDEBUG
-#	$TEST_DEBUG  Set to {0,1,2} for verbose levels; default is 0
-#	$nolong      Skip the long-* tests
-#	$nopreload   Skip the tests that use $LD_PRELOAD
-#	$notall      If non-empty, exit on the first error, instead of running everything
-#	$emptyok     Set to non-empty to *not* output an error for empty test directories;
-#	             useful after doing "rm" in a version control system on one, since
-#	             that leaves a directory containing only (e.g.) ".svn".  Ignores
-#	             dotfiles.
-#	$normtmps    Don't remove temporary files
+#	$NDEBUG       Set to non-empty to test the nondebug version; by default the debug
+#	              version is tested
+#	$VARIANT      Other variant of the compiled file; the default is to take the file
+#	              that matches the value of $NDEBUG
+#	$TEST_VERBOSE Set to {0,1,2} for verbose levels; default is 0
+#	$nolong       Skip the long-* tests
+#	$nopreload    Skip the tests that use $LD_PRELOAD
+#	$notall       If non-empty, exit on the first error, instead of running everything
+#	$emptyok      Set to non-empty to *not* output an error for empty test directories;
+#	              useful after doing "rm" in a version control system on one, since
+#	              that leaves a directory containing only (e.g.) ".svn".  Ignores
+#	              dotfiles.
+#	$normtmps     Don't remove temporary files
 #
 # EXIT STATUS
-#	0         All tests succeeded
-#	1         At least one test failed
-#	2         Internal error
+#	0             All tests succeeded
+#	1             At least one test failed
+#	2             Internal error
 #
 # TEST SPECIFICATION
 #
@@ -128,7 +128,7 @@ output_next()
 	else
 		count_failed_text="[41;30m$count_failed[m"
 	fi
-	if [ "$TEST_DEBUG" = 0 ] ; then
+	if [ "$TEST_VERBOSE" = 0 ] ; then
 		printf '[2KTesting [%s] (%s/%s/%s) %s\r' \
 		       "$VARIANT$subset" \
 		       "[42;30m$count_succeed[m" \
@@ -222,12 +222,12 @@ unset STU_OPTIONS
 mkdir -p log
 exec 6>log/error.log
 
-TEST_DEBUG=${TEST_DEBUG:-0}
-printf '%s\n' "$TEST_DEBUG" | grep -q -E '^[0123456789]$' || {
-	echo >&2 "$0: *** Invalid verbosity level '$TEST_DEBUG'"
+TEST_VERBOSE=${TEST_VERBOSE:-0}
+printf '%s\n' "$TEST_VERBOSE" | grep -q -E '^[0123456789]$' || {
+	echo >&2 "$0: *** Invalid verbosity level '$TEST_VERBOSE'"
 	exit 2
 }
-[ "$TEST_DEBUG" -ge 1 ] && exec 7>&1 || exec 7>/dev/null
+[ "$TEST_VERBOSE" -ge 1 ] && exec 7>&1 || exec 7>/dev/null
 
 rm -f bin/stu.test || exit 2
 if [ "$VARIANT" ] ; then
@@ -334,7 +334,7 @@ do
 		eval $(preload_prefix $LD_PRELOAD_VALUE) $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err
 		exitstatus_actual=$?
 
-		if [ "$TEST_DEBUG" -ge 2 ] ; then
+		if [ "$TEST_VERBOSE" -ge 2 ] ; then
 			echo stdout:
 			printf '/---------\n'
 			cat list.def.out
@@ -588,7 +588,7 @@ if [ "$ret" != 0 ] ; then
 	else
 		count_failed_text="[41;30m$count_failed[m"
 	fi
-	if [ "$TEST_DEBUG" = 0 ] ; then
+	if [ "$TEST_VERBOSE" = 0 ] ; then
 		printf '[2KTesting done [%s] (%s/%s/%s)\n' \
 		       "$VARIANT" \
 		       "[42;30m$count_succeed[m" \

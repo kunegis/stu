@@ -1009,10 +1009,9 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 	TRACE_FUNCTION();
 	TRACE("dep_link= %s", show_trace(dep_link));
 
-	if ((dep_link->flags & F_OPTIONAL)
-	    && to <Plain_Dep> (dep_link)
-	    && ! (to <Plain_Dep> (dep_link)
-		  ->place_target.flags & F_TARGET_TRANSIENT)) {
+	if ((dep_link->flags & F_OPTIONAL) && to <Plain_Dep> (dep_link)
+		&& ! (to <Plain_Dep> (dep_link)->place_target.flags & F_TARGET_TRANSIENT))
+	{
 		TRACE("Is optional file target");
 
 		if (bits & B_MISSING) {
@@ -1020,6 +1019,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 			done |= Done::from_flags(dep_link->flags);
 			return true;
 		}
+		TRACE("File not known to be missing");
 
 		const char *name= to <Plain_Dep> (dep_link)
 			->place_target.place_name.unparametrized().c_str();
@@ -1034,8 +1034,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 			bits &= ~B_EXISTING;
 			if (errno != ENOENT) {
 				TRACE("Stat failed with error other than ENOENT");
-				to <Plain_Dep> (dep_link)
-					->place_target.place <<
+				to <Plain_Dep> (dep_link)->place_target.place <<
 					format_errno("stat", name);
 				raise(ERROR_BUILD);
 				done |= Done::from_flags(dep_link->flags);

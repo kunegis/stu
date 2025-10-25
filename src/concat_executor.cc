@@ -147,7 +147,9 @@ void Concat_Executor::launch_stage_normal()
 		for (unsigned i= 0; i < C_PLACED; ++i) {
 			if (f2->get_place_flag(i).empty()
 				&& ! dep->get_place_flag(i).empty())
+			{
 				f2->set_place_flag(i, dep->get_place_flag(i));
+			}
 		}
 		push(f2);
 	}

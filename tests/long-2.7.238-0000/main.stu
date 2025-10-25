@@ -1,0 +1,11 @@
+A: B C;
+
+B {
+	touch B
+	sleep 2
+}
+
+C {
+	sleep 1
+	exit 1
+}

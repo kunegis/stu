@@ -53,7 +53,7 @@ void signal_handler_termination(int sig)
 	/* If in the child process (the short time between fork() and
 	 * exec()), just quit */
 	if (in_child == 0) {
-		terminate_jobs();
+		terminate_jobs(true);
 	} else {
 		assert_async(in_child == 1);
 	}

@@ -240,8 +240,7 @@ void Invocation::main_loop()
 		assert(! option_k);
 		assert(e >= 1 && e <= 4);
 		if (File_Executor::executors_by_pid_size) {
-			print_error_reminder("terminating all jobs");
-			terminate_jobs();
+			terminate_jobs(false);
 		}
 		assert(e > 0 && e < ERROR_FATAL);
 		error= e;

@@ -1,0 +1,35 @@
+#! /bin/sh
+
+error()
+{
+	printf 'Error: %s\n' "$1"
+	[ -r list.err ] && {
+		>&2 echo stderr:
+		>&2 printf '/---------\n'
+		>&2 cat list.err
+		>&2 printf '\\---------\n'
+	}
+	exit 1
+}
+
+trap ../../sh/rm_tmps EXIT
+../../sh/rm_tmps || error rm
+
+dir=$(pwd)
+( cd ../.. ; sh/ccpreload "$dir"/PRELOAD.cc bin/preload.so ) || error ccpreload
+
+LD_PRELOAD=../../bin/preload.so ../../bin/stu.test >list.out 2>list.err &
+pid=$!
+
+echo sleep 1
+sleep 1
+kill -s TERM "$pid"
+wait "$pid" 2>/dev/null
+exitstatus=$?
+
+[ "$exitstatus" = 143 ] || error 'Exit status'
+cmp list.err stderr || error 'stderr'
+
+../../sh/rm_tmps || error rm
+
+exit 0

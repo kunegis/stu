@@ -1,0 +1,4 @@
+main.stu:9:2: command for "C" failed with exit status 1
+main.stu:1:6: "C" is needed by "A"
+../../bin/stu.test: terminating all jobs
+../../bin/stu.test: removing partially built files (1)

@@ -64,10 +64,8 @@ private:
 
 	/* The following two functions are called from signal handlers, and are set up and
 	 * declared in job.hh. */
-	friend void terminate_jobs();
-	/* Termination signal - we must send a termination signal to all running jobs */
+	friend void terminate_jobs(bool asynch);
 	friend void print_jobs();
-	/* The print-all-jobs signal was received - we must print all jobs */
 
 	std::vector <Hash_Dep> hash_deps;
 	/* The targets to which this executor object corresponds.  Never empty.  All
@@ -157,7 +155,7 @@ private:
 	static void executors_remove(size_t index);
 };
 
-void terminate_jobs();
+void terminate_jobs(bool asynch);
 void print_jobs();
 
 #endif /* ! FILE_EXECUTOR_HH */

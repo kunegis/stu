@@ -274,7 +274,7 @@ do
 	# There are no files in the test directory (ignoring dotfiles)
 	if [ "$(echo $(ls -1 "$file" | wc -l))" = 0 ] ; then
 		if [ "$emptyok" != 1 ] ; then
-			test_fail_fatal "Directory $file/ does not contain any files"
+			test_fail_fatal "Directory $file/ does exist or is empty"
 			continue
 		fi
 	fi

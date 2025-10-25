@@ -4,5 +4,4 @@ Building [1mC[22m
 [31m[1mmain.stu[22m:16:2[m: command for [1mC[22m failed with exit status [1m1[22m
 [31m[1mmain.stu[22m:1:12[m: [1mC[22m is needed by [1m@all[22m
 [35m../../bin/stu.test[m: terminating all jobs
-stu: terminating all jobs
-stu: removing partially built files (2)
+[35m../../bin/stu.test[m: removing partially built files (2)

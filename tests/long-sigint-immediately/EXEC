@@ -1,6 +1,8 @@
 #! /bin/sh
 
+ret=0
 N=999
+TIMEOUT_S=20
 
 rm -f ? list.* || exit 2
 
@@ -9,28 +11,63 @@ echo "../../bin/stu.test -j$N &"
 pid=$!
 
 begin=$(../../sh/now)
+echo begin="$begin"
 
 # Write until a first line has been written
-while [ \! -s list.out ] ; do
+while :; do
 	now=$(../../sh/now)
-	if [ "$now" -gt "$((begin + 2))" ] ; then
-		echo >&2 '*** No output written in first 2 seconds'
+	echo now="$now"
+	if [ "$now" -gt "$((begin + $TIMEOUT_S))" ] ; then
+		echo >&2 "*** Not ready in first $TIMEOUT_S seconds"
+		ret=1
 		break
 	fi
+	count=$(echo $(ls -1U list.tag.* 2>/dev/null | wc -l))
+	echo count=$count
+	[ $count = $N ] && break
+	sleep 1
 done
 
 echo "kill -s TERM $pid"
 kill -s TERM "$pid" || {
 	echo >&2 '*** Kill'
-	exit 1
+	ret=1
 }
 
 echo sleep 1
-sleep 1 || exit 2
+sleep 1 || {
+	echo >&2 '*** sleep'
+	ret=1
+}
 
 if [ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" \!= 0 ]; then
 	echo >&2 "$0: *** Stu is still running"
-	exit 1
+	ret=1
 fi
 
-exit 0
+echo "wait $pid"
+wait "$pid" 2>/dev/null
+exitstatus=$?
+
+[ "$exitstatus" = 143 ] || {
+	echo >&2 '*** Exit status'
+	ret=1
+}
+
+[ "$TEST_VERBOSE" ] && {
+	ls -l
+	echo stdout:
+	echo '/-----'
+	cat list.out
+	echo '\\-----'
+	echo stderr:
+	echo '/-----'
+	cat list.err
+	echo '\\-----'
+	list.dep:
+	echo '/-----'
+	cat list.dep
+	echo '\\-----'
+}
+
+exit $ret

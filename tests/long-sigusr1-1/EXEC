@@ -27,7 +27,7 @@ kill -s USR1 "$pid" || {
 
 >&6 ps -fe | grep -F -e "$pid"
 
->&6 ps -e -o command,pid,ppid,pgid,blocked,caught,cls,f,ignored,wchan,pending,stat,sched | grep stu
+>&6 ps -e -o command,pid,ppid,pgid,blocked,caught,cls,f,ignored,wchan:30,pending,stat,sched | grep stu
 
 echo >&6 sleep 1
 sleep 1

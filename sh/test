@@ -20,7 +20,8 @@
 #	              version is tested
 #	$VARIANT      Other variant of the compiled file; the default is to take the file
 #	              that matches the value of $NDEBUG
-#	$TEST_VERBOSE Set to {0,1,2} for verbose levels; default is 0
+#	$TEST_VERBOSE Set to {0,1,2} for verbose levels; default is 0. (This variable is
+#	              used by EXEC scripts in the same way.)
 #	$nolong       Skip the long-* tests
 #	$nopreload    Skip the tests that use $LD_PRELOAD
 #	$notall       If non-empty, exit on the first error, instead of running everything

@@ -1,1 +1,1 @@
-Option -j: expected the number of jobs, not "lsdkjflskdjf"
+Option -j: invalid number of jobs "lsdkjflskdjf"

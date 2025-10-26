@@ -1078,10 +1078,16 @@ void File_Executor::executors_add(pid_t pid, size_t &index, File_Executor *execu
 		/* This is executed just once, before we have executed any job, and
 		 * therefore JOBS is the value passed via -j (or its default value 1), and
 		 * thus we can allocate arrays of that size once and for all. */
-		if (SIZE_MAX / sizeof(*executors_by_pid_key) < (size_t)options_jobs ||
-			SIZE_MAX / sizeof(*executors_by_pid_value) < (size_t)options_jobs) {
+		if ((uintmax_t)SIZE_MAX / sizeof(*executors_by_pid_key) < (uintmax_t)options_jobs ||
+			(uintmax_t)SIZE_MAX / sizeof(*executors_by_pid_value) < (uintmax_t)options_jobs)
+		{
+			happens_only_on_certain_platforms();
+			/* This can only happen when long is at least as large as size_t,
+			 * which is not the case on any commonly used platform, but is
+			 * allowed by ISO C++ and POSIX. */
 			errno= ENOMEM;
-			perror("malloc");
+			print_errno(frmt("Value too large for option -j, maximum value is %ju",
+					(uintmax_t)SIZE_MAX / std::max(sizeof(*executors_by_pid_key), sizeof(*executors_by_pid_value))));
 			abort();
 		}
 		executors_by_pid_key  = (pid_t *)

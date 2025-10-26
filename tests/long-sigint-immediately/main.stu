@@ -4,11 +4,12 @@ A:  [list.dep]
 { touch A }
 
 >list.dep: {
-	seq 1 999 | sed -e 's,^,list.,'
+	../../sh/seq 999 | sed -e 's,^,list.,'
 }
 
 list.$n
 {
+	touch "list.tag.$n"
 	sleep 74634275
 	touch "list.$n"
 }

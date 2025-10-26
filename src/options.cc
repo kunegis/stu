@@ -72,8 +72,12 @@ void set_option_j(const char *value)
 	char *endptr;
 	options_jobs= strtol(value, &endptr, 10);
 	Place place(Place::Type::OPTION, 'j');
+	if (*endptr != '\0') {
+		place << fmt("invalid number of jobs %s", show(value));
+		exit(ERROR_FATAL);
+	}
 	if (errno != 0 || *endptr != '\0') {
-		place << fmt("expected the number of jobs, not %s", show(value));
+		place << fmt("invalid number of jobs %s: %s", show(value), strerror(errno));
 		exit(ERROR_FATAL);
 	}
 	if (options_jobs < 1) {

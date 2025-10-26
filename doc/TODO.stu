@@ -1,5 +1,12 @@
 #
-# tests/long-sigusr1-1/EXEC:  Remove the logfile and ps calls.
+# tests/long-sigusr1-1/EXEC hangs.
+# * Happens only in the cov variant
+# * Processes hang in the futex() system, maybe because other cov test processes are
+#   running and hold a lock on the cov output file.
+# ** long-sigint-immediately:  may leak processes. (fixed)
+# ** Maybe some cov Stu processes get killed in the middle of a cov operation, and leave
+#    the cov file in an inconsistent state.
+# * When done, remove the logfile and ps calls.
 #
 
 #

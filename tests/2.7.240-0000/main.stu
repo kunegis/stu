@@ -1,0 +1,11 @@
+A: B C D;
+
+B = {content}
+
+C {
+	rm B
+	touch C
+}
+
+D = B;
+

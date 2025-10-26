@@ -1,0 +1,3 @@
+main.stu:1:8: source file "B" in optional copy rule must exist
+main.stu:1:1: when target file "A" does not exist
+../../bin/stu.test: targets not up to date because of errors

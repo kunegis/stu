@@ -1,0 +1,2 @@
+main.stu:10:1: cp to "D" failed with exit status 1
+main.stu:1:8: "D" is needed by "A"

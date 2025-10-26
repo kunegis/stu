@@ -140,6 +140,7 @@ private:
 		Proceed &proceed,
 		pid_t &pid,
 		const std::map <string, string> &mapping);
+	/* Return value is TRUE on error */
 
 	static std::unordered_map <string, Timestamp> transients;
 	/* The timestamps for transient targets.  This container plays the role of the

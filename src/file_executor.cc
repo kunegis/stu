@@ -430,6 +430,10 @@ void File_Executor::warn_future_file(
 	const Place &place,
 	const char *message_extra)
 {
+	TRACE_FUNCTION();
+	TRACE("filename= '%s'", filename);
+	TRACE("buf.st_mtime= %s", frmt("%jd", (intmax_t)buf->st_mtime));
+	TRACE("now= %s", frmt("%jd", (intmax_t)time(nullptr)));
 	Timestamp timestamp_buf= Timestamp(buf);
 
 	if (! (timestamp_last < timestamp_buf))
@@ -633,10 +637,13 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			const Hash_Dep &hash_dep= hash_deps[i];
 			if (! hash_dep.is_file())
 				continue;
+			TRACE("Check filename= '%s'", hash_dep.get_name_c_str_nondynamic());
 
 			/* We save the return value of stat() and handle errors later */
 			struct stat buf;
 			int ret_stat= stat(hash_dep.get_name_c_str_nondynamic(), &buf);
+			int errno_stat= errno;
+			TRACE("stat ret= %s, errno= %s", frmt("%d", ret_stat), frmt("%d", errno_stat));
 
 			/* Warn when file has timestamp in the future */
 			if (ret_stat == 0) {
@@ -659,7 +666,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			if (! (bits & B_NEED_BUILD)
 			    && ret_stat == 0
 			    && timestamp.defined() && timestamps_old[i] < timestamp
-			    && ! no_execution) {
+			    && ! no_execution)
+			{
 				bits |= B_NEED_BUILD;
 			}
 
@@ -667,7 +675,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				assert(timestamps_old[i].defined());
 				if (timestamp.defined() &&
 				    timestamps_old[i] < timestamp &&
-				    no_execution) {
+				    no_execution)
+				{
 					print_warning
 						(rule->place_targets[i]->place,
 						 fmt("file target %s which has no command is older than its dependency",
@@ -675,7 +684,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				}
 			}
 
-			if (! (bits & B_NEED_BUILD) && ret_stat != 0 && errno == ENOENT) {
+			if (! (bits & B_NEED_BUILD) && ret_stat != 0 && errno_stat == ENOENT) {
 				/* File does not exist */
 				if (! (dep_link->flags & F_OPTIONAL)) {
 					/* Non-optional dependency */
@@ -687,7 +696,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				}
 			}
 
-			if (ret_stat != 0 && errno != ENOENT) {
+			if (ret_stat != 0 && errno_stat != ENOENT) {
 				TRACE("stat() returned an actual error");
 				rule->place_targets[i]->place
 					<< format_errno("stat",
@@ -1195,6 +1204,7 @@ void File_Executor::check_file_was_built(
 			fmt("file %s was not built by command", show(hash_dep));
 		*this << "";
 		raise(ERROR_BUILD);
+		return;
 	}
 
 	warn_future_file(&buf, filename, place_target->place, "after execution of command");

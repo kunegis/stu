@@ -1,0 +1,2 @@
+main.stu:1:1: expected the file without command "A" to exist because all its dependencies are up to date, but it does not
+../../bin/stu.test: targets not up to date because of errors

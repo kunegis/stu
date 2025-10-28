@@ -1,0 +1,37 @@
+#! /bin/sh
+
+clean()
+{
+	../../sh/rm_tmps | exit 1
+}
+
+error()
+{
+	>&2 printf '*** %s\n' "$1"
+	>&2 echo stdout:
+	>&2 printf '/---------\n'
+	>&2 cat list.out
+	>&2 printf '\\---------\n'
+	>&2 echo stderr:
+	>&2 printf '/---------\n'
+	>&2 cat list.err
+	>&2 printf '\\---------\n'
+	exit 1
+}
+
+clean
+
+dir=$(pwd)
+( cd ../.. ; sh/ccpreload "$dir"/PRELOAD.cc bin/preload.so ) || error ccpreload
+
+echo content >SCHTROUMPF
+
+LD_PRELOAD=../../bin/preload.so ../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 1 ] || error 'Exit status'
+cmp list.err stderr || error 'stderr'
+
+clean
+
+exit 0

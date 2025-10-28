@@ -1,0 +1,2 @@
+main.stu:1:6: file "SCHTROUMPF" was up to date but cannot be found now
+main.stu:1:6: $[SCHTROUMPF] is needed by "A"

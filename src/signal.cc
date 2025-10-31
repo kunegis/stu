@@ -14,8 +14,8 @@ Signal_Blocker::Signal_Blocker()
 	blocked= true;
 #endif
 	if (0 != sigprocmask(SIG_BLOCK, &set_termination, nullptr)) {
-		perror("sigprocmask");
-		abort();
+		print_errno("sigprocmask");
+		error_exit();
 	}
 }
 
@@ -26,8 +26,8 @@ Signal_Blocker::~Signal_Blocker()
 	blocked= false;
 #endif
 	if (0 != sigprocmask(SIG_UNBLOCK, &set_termination, nullptr)) {
-		perror("sigprocmask");
-		abort();
+		print_errno("sigprocmask");
+		error_exit();
 	}
 }
 
@@ -90,7 +90,7 @@ void init_signals()
 	signals_initialized= true;
 
 	if (0 != sigemptyset(&set_termination_productive))  {
-		perror("sigemptyset");
+		print_errno("sigemptyset");
 		exit(ERROR_FATAL);
 	}
 
@@ -101,12 +101,12 @@ void init_signals()
 	struct sigaction act_termination;
 	act_termination.sa_handler= signal_handler_termination;
 	if (0 != sigemptyset(&act_termination.sa_mask))  {
-		perror("sigemptyset");
+		print_errno("sigemptyset");
 		exit(ERROR_FATAL);
 	}
 	act_termination.sa_flags= 0;
 	if (0 != sigemptyset(&set_termination))  {
-		perror("sigemptyset");
+		print_errno("sigemptyset");
 		exit(ERROR_FATAL);
 	}
 	const static int signals_termination[]= {
@@ -116,15 +116,15 @@ void init_signals()
 	for (size_t i= 0;
 	     i < sizeof(signals_termination) / sizeof(signals_termination[0]); ++i) {
 		if (0 != sigaction(signals_termination[i], &act_termination, nullptr)) {
-			perror("sigaction");
+			print_errno("sigaction");
 			exit(ERROR_FATAL);
 		}
 		if (0 != sigaddset(&set_termination, signals_termination[i])) {
-			perror("sigaddset");
+			print_errno("sigaddset");
 			exit(ERROR_FATAL);
 		}
 		if (0 != sigaddset(&set_termination_productive, signals_termination[i])) {
-			perror("sigaddset");
+			print_errno("sigaddset");
 			exit(ERROR_FATAL);
 		}
 	}
@@ -138,41 +138,41 @@ void init_signals()
 	struct sigaction act_productive;
 	act_productive.sa_sigaction= signal_handler_productive;
 	if (sigemptyset(& act_productive.sa_mask)) {
-		perror("sigemptyset");
+		print_errno("sigemptyset");
 		exit(ERROR_FATAL);
 	}
 	act_productive.sa_flags= SA_SIGINFO;
 	if (0 != sigaction(SIGCHLD, &act_productive, nullptr)) {
-		perror("sigaction");
+		print_errno("sigaction");
 		exit(ERROR_FATAL);
 	}
 	if (0 != sigaction(SIGUSR1, &act_productive, nullptr)) {
-		perror("sigaction");
+		print_errno("sigaction");
 		exit(ERROR_FATAL);
 	}
 
 	if (0 != sigemptyset(&set_productive)) {
-		perror("sigemptyset");
+		print_errno("sigemptyset");
 		exit(ERROR_FATAL);
 	}
 	if (0 != sigaddset(&set_productive, SIGCHLD)) {
-		perror("sigaddset");
+		print_errno("sigaddset");
 		exit(ERROR_FATAL);
 	}
 	if (0 != sigaddset(&set_productive, SIGUSR1)) {
-		perror("sigaddset");
+		print_errno("sigaddset");
 		exit(ERROR_FATAL);
 	}
 	if (0 != sigaddset(&set_termination_productive, SIGCHLD)) {
-		perror("sigaddset");
+		print_errno("sigaddset");
 		exit(ERROR_FATAL);
 	}
 	if (0 != sigaddset(&set_termination_productive, SIGUSR1)) {
-		perror("sigaddset");
+		print_errno("sigaddset");
 		exit(ERROR_FATAL);
 	}
 	if (0 != sigprocmask(SIG_BLOCK, &set_productive, nullptr)) {
-		perror("sigprocmask");
+		print_errno("sigprocmask");
 		exit(ERROR_FATAL);
 	}
 

@@ -32,11 +32,25 @@
 #endif /* ! NDEBUG */
 
 #ifdef STU_COV
+
 extern "C" {
 #include <gcov.h>
 }
-#else
+
+#else /* ! STU_COV */
+
 #define __gcov_dump()
+
+#endif /* ! STU_COV */
+
+/* Used to mark specific location in the source code for testing.  Disabled in the NDEBUG
+ * variant.  Sets errno to a hash of the given string.  Tests that use PRELOAD.cc can use
+ * the same function to check that errno is set to the specific value. */
+#if !defined(NDEBUG) || defined(STU_COV)
+#include "strhash.hh"
+void cov_tag(const char *tag);
+#else
+#define cov_tag(tag)
 #endif
 
 #endif /* ! HINTS_HH */

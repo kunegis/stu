@@ -38,7 +38,7 @@ CXXFLAGS_SANI= \
     -ggdb -O2 -Werror -Wno-unused-result -fsanitize=undefined \
     -fsanitize-undefined-trap-on-error
 CXXFLAGS_CDEBUG=   -O0 -D_GLIBCXX_DEBUG -w
-CXXFLAGS_SNDEBUG=   -DNDEBUG -O2 -fwhole-program
+CXXFLAGS_SNDEBUG=  -DNDEBUG -O2 -fwhole-program
 CXXFLAGS_PROF=     -DNDEBUG -pg -O2
 CXXFLAGS_COV=      -DNDEBUG --coverage -lgcov -O0 -DSTU_COV
 CXXFLAGS_ANALYZER= -fanalyzer

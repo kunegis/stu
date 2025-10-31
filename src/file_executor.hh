@@ -34,6 +34,11 @@ public:
 
 	shared_ptr <const Rule> get_rule() const { return rule; }
 
+	bool remove_if_existing(bool output);
+	/* Remove all file targets of this executor object if they exist.  If OUTPUT is
+	 * true, output a corresponding message.  Return whether the file was removed.  If
+	 * OUTPUT is false, only do async signal-safe things. */
+
 	virtual bool want_delete() const override { return false; }
 	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
 	virtual bool finished(Flags flags) const override;
@@ -62,9 +67,6 @@ protected:
 private:
 	friend class Executor;
 
-	/* The following two functions are called from signal handlers, and are set up and
-	 * declared in job.hh. */
-	friend void terminate_jobs(bool asynch);
 	friend void print_jobs();
 
 	std::vector <Hash_Dep> hash_deps;
@@ -103,11 +105,6 @@ private:
 	Done done;
 
 	~File_Executor();
-
-	bool remove_if_existing(bool output);
-	/* Remove all file targets of this executor object if they exist.  If OUTPUT is
-	 * true, output a corresponding message.  Return whether the file was removed.  If
-	 * OUTPUT is false, only do async signal-safe things. */
 
 	void waited(pid_t pid, size_t index, int status);
 	/* Called after the job was waited for.  The PID is only passed
@@ -156,7 +153,6 @@ private:
 	static void executors_remove(size_t index);
 };
 
-void terminate_jobs(bool asynch);
 void print_jobs();
 
 #endif /* ! FILE_EXECUTOR_HH */

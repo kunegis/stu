@@ -22,6 +22,7 @@ using std::shared_ptr;
 #include "flags.cc"
 #include "format.cc"
 #include "hash_dep.cc"
+#include "hints.cc"
 #include "invocation.cc"
 #include "job.cc"
 #include "options.cc"
@@ -33,6 +34,7 @@ using std::shared_ptr;
 #include "show.cc"
 #include "signal.cc"
 #include "target.cc"
+#include "terminate_jobs.cc"
 #include "timestamp.cc"
 #include "token.cc"
 #include "tokenizer.cc"
@@ -64,7 +66,7 @@ int main(int argc, char **argv, char **envp)
 	if (option_z)
 		Job::print_statistics();
 	if (fclose(stdout)) {
-		perror("fclose(stdout)");
+		print_errno("fclose", "<stdout>");
 		exit(ERROR_FATAL);
 	}
 	/* No need to flush stderr, because it is line buffered, and if we used it, it

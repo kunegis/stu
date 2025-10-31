@@ -1,0 +1,2 @@
+@all: list.X;
+list.$n: {}

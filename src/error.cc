@@ -6,6 +6,7 @@
 #include "format.hh"
 #include "options.hh"
 #include "show.hh"
+#include "terminate_jobs.hh"
 
 void print_error(string message)
 {
@@ -82,6 +83,13 @@ void print_error_silenceable(const char *text)
 		return;
 	fprintf(stderr, "%s%s%s\n",
 		Color::stderr_err_on, text, Color::stderr_err_off);
+}
+
+[[noreturn]]
+void error_exit()
+{
+	terminate_jobs(false);
+	exit(ERROR_FATAL);
 }
 
 const Place Place::place_empty;

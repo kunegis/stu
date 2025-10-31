@@ -33,4 +33,4 @@ clean
 	cat -- "$SOURCE"
 } >"$FILE_CC"
 
-$(cat conf/CXX) $(cat conf/CXXFLAGS) $CXXFLAGS_PRELOAD "$FILE_CC" -o "$FILE_SO"
+$(cat conf/CXX) $(cat conf/CXXFLAGS) $CXXFLAGS_PRELOAD -I src "$FILE_CC" -o "$FILE_SO"

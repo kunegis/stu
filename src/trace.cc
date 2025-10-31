@@ -58,9 +58,9 @@ void Trace::init_file()
 			(env[0] >= '1' && env[0] <= '9' && !env[1])) {
 			files[trace_class]= file= stderr;
 		} else {
-			fprintf(stderr, "stu: error: invalid value for trace %s=%s\n",
-				var.c_str(), env);
-			abort();
+			print_error(fmt("invalid value for trace %s=%s",
+					var.c_str(), env));
+			error_exit();
 		}
 	}
 }
@@ -70,7 +70,7 @@ FILE *Trace::open_logfile(const char *filename)
 	FILE *ret= fopen(filename, "w");
 	if (!ret) {
 		print_errno("fopen", filename);
-		abort();
+		error_exit();
 	}
 	int flags= fcntl(fileno(ret), F_GETFL, 0);
 	if (flags >= 0)
@@ -116,8 +116,8 @@ void Trace::print(FILE *file, const char *filename, int line, const char *text)
 			filename, line,
 			spaces, "",
 			text) < 0) {
-		perror("fprintf(trace_file)");
-		abort();
+		print_errno("fprintf", filename);
+		error_exit();
 	}
 }
 

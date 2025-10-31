@@ -56,7 +56,7 @@ pid_t Job::start(
 		 * before exec() will remain blocked after exec().  Thus, unblock them
 		 * here. */
 		if (0 != sigprocmask(SIG_UNBLOCK, &set_termination_productive, nullptr)) {
-			perror("sigprocmask");
+			print_errno("sigprocmask");
 			__gcov_dump();
 			_Exit(ERROR_FORK_CHILD);
 		}
@@ -157,8 +157,8 @@ pid_t Job::wait(int *status)
 		 * this function is called.  However, this may be common enough
 		 * that we may want Stu to act correctly. */
 		should_not_happen();
-		perror("waitpid");
-		abort();
+		print_errno("waitpid");
+		error_exit();
 	}
 
 	if (pid > 0) {
@@ -203,8 +203,8 @@ pid_t Job::wait(int *status)
 			goto retry;
 		} else {
 			errno= r;
-			perror("sigwait");
-			abort();
+			print_errno("sigwait");
+			error_exit();
 		}
 	}
 
@@ -216,10 +216,10 @@ pid_t Job::wait(int *status)
 		 * ends, or it may not. */
 		raise(sig);
 		print_error("raise: Error");
-		abort();
+		error_exit();
 	} else if (is_termination != 0) {
-		perror("sigismember");
-		abort();
+		print_errno("sigismember");
+		error_exit();
 	}
 
 	switch (sig) {
@@ -274,7 +274,7 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 	int r= getrusage(RUSAGE_CHILDREN, &usage);
 	if (r < 0) {
 		print_errno("getrusage");
-		abort();
+		error_exit();
 	}
 
 	if (! allow_unterminated_jobs)
@@ -300,7 +300,7 @@ void Job::print_statistics(bool allow_unterminated_jobs)
 	printf("STATISTICS  Note: children execution times exclude running jobs\n");
 	if (ferror(stdout)) {
 		print_errno("printf");
-		abort();
+		error_exit();
 	}
 }
 
@@ -409,9 +409,10 @@ const char **Job::create_child_env(
 	const size_t v_new= mapping.size() + 1;
 	/* Maximal size of added variables.  The "+1" is for $STU_STATUS */
 
+	cov_tag("Job::create_child_env::0");
 	envp= (const char **) malloc(sizeof(char *) * (v_old + v_new + 1));
 	if (!envp) {
-		perror("malloc");
+		print_errno("malloc");
 		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
@@ -424,9 +425,10 @@ const char **Job::create_child_env(
 		TRACE("key= '%s'; value= '%s'", key, value);
 		assert(key.find('=') == string::npos);
 		size_t len_combined= key.size() + 1 + value.size() + 1;
+		cov_tag("Job::create_child_env::1");
 		char *combined= (char *)malloc(len_combined);
 		if (! combined) {
-			perror("malloc");
+			print_errno("malloc");
 			__gcov_dump();
 			_Exit(ERROR_FORK_CHILD);
 		}
@@ -557,14 +559,14 @@ void Job::create_child_output_redirection(
 		S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 	int fd_output= creat(filename_output.c_str(), mode_0666);
 	if (fd_output < 0) {
-		perror(filename_output.c_str());
+		print_errno(filename_output.c_str());
 		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
 	assert(fd_output != 1);
 	int r= dup2(fd_output, 1);
 	if (r < 0) {
-		perror(filename_output.c_str());
+		print_errno(filename_output.c_str());
 		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
@@ -581,7 +583,7 @@ void Job::create_child_input_redirection(string filename_input)
 		: filename_input.c_str();
 	int fd_input= open(name, O_RDONLY);
 	if (fd_input < 0) {
-		perror(name);
+		print_errno(name);
 		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
@@ -589,13 +591,13 @@ void Job::create_child_input_redirection(string filename_input)
 	constexpr int fd_stdin= 0;
 	int r= dup2(fd_input, fd_stdin);
 	if (r < 0) {
-		perror(name);
+		print_errno(name);
 		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
 	assert(r == 0);
 	if (close(fd_input) < 0) {
-		perror(name);
+		print_errno(name);
 		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}

@@ -111,8 +111,8 @@ constexpr int ERROR_FORK_CHILD= 127;
  * We have to be careful with calling exit(ERROR_FATAL):  We cannot do it when child
  * processes could still be running.  For errors that happen in the middle of a Stu run,
  * it makes more sense to generate a build error.  In the very few cases that absolutely
- * need to be fatal (such as malloc() returning null), we call abort() instead, since that
- * will take care of terminating the child processes.
+ * need to be fatal (such as malloc() returning null), we call error_exit(), which takes
+ * care of terminating all jobs.
  */
 
 /*
@@ -149,6 +149,9 @@ void print_out(string text);
 
 void print_error_silenceable(const char *text);
 /* A message on STDERR that is made silent by the silent option (-s) */
+
+[[noreturn]]
+void error_exit();
 
 class Place
 /* Denotes a position in Stu source code.  This is either in a file or in

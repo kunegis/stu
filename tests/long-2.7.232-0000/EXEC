@@ -37,7 +37,7 @@ kill -s QUIT "$pid"
 wait "$pid" 2>/dev/null
 exitstatus=$?
 
-[ "$exitstatus" = 134 ] || error 'Exit status'
+[ "$exitstatus" = 4 ] || error 'Exit status'
 grep -q -F -e 'raise' list.err || error 'stderr'
 
 exit 0

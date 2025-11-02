@@ -73,7 +73,8 @@ pid_t Job::start(
 		__gcov_dump();
 		int r= execve(shell, (char *const *) argv, (char *const *) envp);
 		assert(r == -1);
-		fprintf(stderr, "execve: %s: %s\n", shell, strerror(errno));
+		print_errno("execve", shell);
+		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
 

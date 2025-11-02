@@ -1,5 +1,5 @@
 #
-# tests/long-sigusr1-1/EXEC hangs.
+# tests/long-sigusr1-1/EXEC hangs sometimes.
 # * Happens only in the cov variant
 # * Processes hang in the futex() system, maybe because other cov test processes are
 #   running and hold a lock on the cov output file.

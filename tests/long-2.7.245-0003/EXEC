@@ -1,0 +1,71 @@
+#! /bin/sh
+
+clean()
+{
+	../../sh/rm_tmps || error clean
+}
+
+verbose()
+{
+	if [ "$TEST_VERBOSE" ] ; then
+		>&2 echo stdout:
+		>&2 echo '/-------------'
+		>&2 cat list.out
+		>&2 echo '\\-------------'
+		>&2 echo stderr:
+		>&2 echo '/-------------'
+		>&2 cat list.err
+		>&2 echo '\\-------------'
+	fi
+}
+
+error()
+{
+	printf >&2 '*** %s\n' "$1"
+	verbose
+	exit 1
+}
+
+FILE_SO=../../bin/preload.so
+dir=$(pwd)
+( cd ../.. && sh/ccpreload "$dir"/PRELOAD.cc "$dir"/"$FILE_SO" ; ) || error ccpreload
+
+echo ../../bin/stu.test -i '&'
+LD_PRELOAD=$FILE_SO ../../bin/stu.test -i >list.out 2>list.err &
+pid=$!
+
+echo sleep 1
+sleep 1 || error 'sleep (1)'
+
+child_pid=$(sed -E -e 's,^pid=,,;t;d' list.out)
+echo child_pid="$child_pid"
+echo "$child_pid" | grep -q -E -e '^[0-9]+$' || error 'Child PID'
+
+echo kill -s STOP "$child_pid"
+kill -s STOP "$child_pid" || error 'kill STOP child'
+
+echo sleep 1
+sleep 1 || error 'sleep (2)'
+
+echo kill -s TERM "$child_pid"
+kill -s TERM "$child_pid" || error 'kill TERM child'
+
+echo kill -s TERM "$pid"
+kill -s TERM "$pid" || error 'kill TERM parent'
+
+wait "$child_pid" 2>/dev/null
+exitstatus_child=$?
+echo exitstatus_child=$exitstatus_child
+
+wait "$pid" 2>/dev/null
+exitstatus=$?
+echo exitstatus=$exitstatus
+
+[ "$exitstatus" = 143 ] || error 'Exit status'
+
+grep -q -F -e 'getline: ' list.err || error 'getline'
+
+verbose
+clean
+
+exit 0

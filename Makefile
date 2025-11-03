@@ -101,6 +101,10 @@ log/test_unit.ndebug-nopreload:bin/stu                sh/test tests tests/*/*
 log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/test tests tests/*/*
 	@echo VARIANT=sani_undefined nopreload=1 sh/test
 	@     VARIANT=sani_undefined nopreload=1 sh/test && mkdir -p log && touch $@
+log/test_unit.cov:             bin/stu.cov       sh/test tests tests/*/*
+	rm -f bin/stu.cov-stu.gcda
+	@echo VARIANT=cov                        sh/test
+	@     VARIANT=cov                        sh/test && mkdir -p log && touch $@
 
 install:  sh/install bin/stu man/stu.1
 	sh/install
@@ -115,11 +119,8 @@ man/stu.1:  man/stu.1.in VERSION sh/mkman
 cov:  log/cov
 log/cov:  sh/cov_eval cov/OVERVIEW
 	sh/cov_eval && touch log/cov
-cov/OVERVIEW:  sh/cov_gcov bin/stu.cov-stu.gcda
+cov/OVERVIEW:  sh/cov_gcov log/test_unit.cov
 	sh/cov_gcov
-bin/stu.cov-stu.gcda:  bin/stu.cov sh/test tests tests/*/*
-	rm -f bin/stu.cov-stu.gcda
-	VARIANT=cov sh/test
 
 prof: bin/analysis.prof
 bin/analysis.prof:  bin/gmon.out

@@ -464,3 +464,21 @@ A: [ -t -o B ] { touch A ; }  B={C}
 # sh/test:  It should not be necessary to set nopreload=1 with VARIANT=sani_undefined;
 # that should be automatic.
 #
+
+#
+# File_Executor::executors_add():  The content of the while loop
+# ("happens_only_on_certain_platforms()") happens only when smallern PIDs are returned --
+# test that case by mocking fork() and related syscalls.  (Take care to unset LD_PRELOAD
+# in child processes.)
+#
+
+#
+# job.cc:  At the moment, the various cases of execve() are always counted as "covered"
+# because they happen after "__gcov_dump()".  Change the sh/cov_eval code to not do that.
+# There shoud already be tests for those cases.
+#
+
+#
+# Option -i:  when no TTY is available, this should be an error (code 4) and not a
+# warning.
+#

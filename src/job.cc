@@ -153,6 +153,7 @@ pid_t Job::wait(int *status)
 	/* First, try wait() without blocking.  WUNTRACED is used to also get notified
 	 * when a job is suspended (e.g. with Ctrl-Z). */
 	pid_t pid= waitpid(-1, status, WNOHANG | (option_i ? WUNTRACED : 0));
+	TRACE("pid= %s", frmt("%jd", (intmax_t)pid));
 	if (pid < 0) {
 		/* Should not happen as there is always something running when
 		 * this function is called.  However, this may be common enough
@@ -164,12 +165,14 @@ pid_t Job::wait(int *status)
 
 	if (pid > 0) {
 		if (WIFSTOPPED(*status)) {
+			TRACE("WIFSTOPPED");
 			/* The process was suspended. This can have several reasons,
 			 * including someone just using kill -STOP on the process. */
 			assert(option_i);
 			ask_continue(pid);
 			goto begin;
 		} else if (WIFCONTINUED(*status)) {
+			TRACE("WIFCONTINUED");
 			unreachable();
 		}
 		return pid;
@@ -338,6 +341,7 @@ void Job::kill(pid_t pid)
 int Job::get_fd_tty()
 {
 	TRACE_FUNCTION();
+	constexpr const char *filename_tty= "/dev/tty";
 	static int fd= -1;
 	static bool has= false;
 	if (has) {
@@ -345,10 +349,11 @@ int Job::get_fd_tty()
 	}
 	has= true;
 	assert(fd == -1);
-	fd= open("/dev/tty", O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	fd= open(filename_tty, O_RDWR | O_NONBLOCK | O_CLOEXEC);
 	TRACE("fd= %s", frmt("%d", fd));
 	if (fd < 0) {
-		TRACE("/dev/tty not found");
+		TRACE("TTY device file not found");
+		print_errno("open", filename_tty);
 		assert(fd == -1);
 		return -1;
 	}
@@ -363,9 +368,9 @@ void Job::ask_continue(pid_t pid)
 {
 	TRACE_FUNCTION();
 	int fd_tty= get_fd_tty();
-	if (fd_tty < 0) {
-		return; /* May happen if e.g. a process received SIGSTOP from outside Stu */
-	}
+	TRACE("fd_tty= %s", frmt("%d", fd_tty));
+	if (fd_tty < 0)
+		return;
 	if (tcsetpgrp(fd_tty, getpid()) < 0)
 		print_errno("tcsetpgrp");
 	fprintf(stderr,

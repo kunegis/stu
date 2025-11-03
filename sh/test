@@ -84,6 +84,7 @@
 # TTYSTDOUTERR The output and error output (interleaved) when in TTY mode
 # COV_TAG      The file must exist when the test uses the cov_tag mechanism, to exclude
 #              the test from the ndebug variant.
+# NONDEBUG     Exclude test from NDEBUG
 # PRELOAD.cc   If present, the file is compiled as a shared object and Stu executed with
 #              LD_PRELOAD set to that file
 # EXEC         An alternative test script; it can do anything and should return a sensible
@@ -194,7 +195,7 @@ sort_tests()
 			cat
 		else
 			while IFS= read -r name ; do
-				! [ -e "$name"/COV_TAG ] && echo "$name"
+				! [ -e "$name"/COV_TAG ] && ! [ -e "$name"/NONDEBUG ] && echo "$name"
 			done
 		fi
 	} |
@@ -300,7 +301,7 @@ do
 	../../sh/rm_tmps || exit 2
 
 	# Check that all all-uppercase files are of one of the allowed files
-	allowed=",EXITSTATUS,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,COV_TAG,"
+	allowed=",EXITSTATUS,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,COV_TAG,NONDEBUG,"
 	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
 	do
 		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi

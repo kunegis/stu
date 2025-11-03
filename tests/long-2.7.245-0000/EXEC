@@ -1,0 +1,52 @@
+#! /bin/sh
+
+clean()
+{
+	../../sh/rm_tmps || exit 2
+}
+
+echo ../../bin/stu.test '&'
+../../bin/stu.test >list.out 2>list.err &
+pid=$!
+
+echo sleep 1
+sleep 1 || exit 2
+
+child_pid=$(sed -E -e 's,^pid=,,;t;d' list.out)
+echo child_pid="$child_pid"
+echo "$child_pid" | grep -q -E -e '^[0-9]+$' || exit 2
+
+echo kill -s STOP "$child_pid"
+kill -s STOP "$child_pid" || exit 2
+
+echo sleep 1
+sleep 1 || exit 2
+
+echo kill -s CONT "$child_pid"
+kill -s CONT "$child_pid" || exit 2
+
+echo sleep 1
+sleep 1 || exit 2
+
+echo kill -s TERM "$pid"
+kill -s TERM "$pid" || exit 2
+
+wait "$pid" 2>/dev/null
+exitstatus=$?
+
+[ "$exitstatus" = 143 ] || exit 2
+
+if [ "$TEST_VERBOSE" ] ; then
+	>&2 echo stdout:
+	>&2 echo '/-------------'
+	>&2 cat list.out
+	>&2 echo '\\-------------'
+	>&2 echo stderr:
+	>&2 echo '/-------------'
+	>&2 cat list.err
+	>&2 echo '\\-------------'
+fi
+
+clean
+
+exit 0

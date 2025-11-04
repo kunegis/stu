@@ -1025,7 +1025,9 @@ void Executor::check_unparametrized(
 	found_error= true;
 }
 
+#ifndef NDEBUG
 void render(const Executor &executor, Parts &parts, Rendering rendering)
 {
 	executor.render(parts, rendering);
 }
+#endif /* ! NDEBUG */

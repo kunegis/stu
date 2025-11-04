@@ -281,6 +281,8 @@ private:
 					      shared_ptr <const Dep> d2);
 };
 
+#ifndef NDEBUG
 void render(const Executor &, Parts &, Rendering= 0);
+#endif /* ! NDEBUG */
 
 #endif /* ! EXECUTOR_HH */

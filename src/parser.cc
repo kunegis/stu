@@ -1279,8 +1279,9 @@ void Parser::get_string(const char *s,
 	rule_set.add(rules);
 }
 
-void Parser::add_deps_option_C(std::vector <shared_ptr <const Dep> > &deps,
-			       const char *string_)
+void Parser::add_deps_option_C(
+	std::vector <shared_ptr <const Dep> > &deps,
+	const char *string_)
 {
 	std::vector <shared_ptr <Token> > tokens;
 	Place place_end;

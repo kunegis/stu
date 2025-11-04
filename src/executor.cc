@@ -417,8 +417,10 @@ void Executor::operator<<(string text) const
 	/* If the error happens directly for the root executor, it was an error on the
 	 * command line; don't output anything beyond the error message itself, which was
 	 * already output. */
-	if (dynamic_cast <const Root_Executor *> (this))
+	if (dynamic_cast <const Root_Executor *> (this)) {
+		should_not_happen();
 		return;
+	}
 
 	bool first= true;
 
@@ -580,9 +582,11 @@ void Executor::push(shared_ptr <const Dep> dep)
 	int e= 0;
 	dep->Dep::normalize(deps, e);
 	if (e) {
-		dep->get_place() <<
-			fmt("%s is needed by %s", show(dep), show(parents.begin()->second));
-		*this << "";
+		if (parents.size()) {
+			dep->get_place() <<
+				fmt("%s is needed by %s", show(dep), show(parents.begin()->second));
+			*this << "";
+		}
 		raise(e);
 	}
 	for (const auto &d: deps) {

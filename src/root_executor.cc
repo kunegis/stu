@@ -12,10 +12,11 @@ bool Root_Executor::finished(Flags flags) const
 }
 
 Root_Executor::Root_Executor(const std::vector <shared_ptr <const Dep> > &deps)
-	:  is_finished(false)
+	: is_finished(false)
 {
-	for (auto &d: deps)
+	for (auto &d: deps) {
 		push(d);
+	}
 }
 
 Proceed Root_Executor::execute(shared_ptr <const Dep> dep_link)

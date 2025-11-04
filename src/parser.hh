@@ -102,8 +102,9 @@ public:
 	/* Read rules from a string; same argument semantics as the other get_*()
 	 * functions. */
 
-	static void add_deps_option_C(std::vector <shared_ptr <const Dep> > &deps,
-				      const char *string_);
+	static void add_deps_option_C(
+		std::vector <shared_ptr <const Dep> > &deps,
+		const char *string_);
 	/* Parse a string of dependencies and add them to the vector. Used for
 	 * the -C option.  Support the full Stu syntax. */
 

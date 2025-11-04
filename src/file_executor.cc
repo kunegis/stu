@@ -264,7 +264,7 @@ File_Executor::File_Executor(
 
 	parents.erase(parent);
 	if (find_cycle(parent, this, dep)) {
-		TRACE("Rule-level cycle found");
+		TRACE("Rule-level but not file-level cycle found");
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
 		return;

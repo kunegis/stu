@@ -1,0 +1,4 @@
+main.stu:2:6: "B" depends on [B.2]
+main.stu:2:1: both "B" and "B.2" match the same rule
+main.stu:1:9: [B] is needed by @main
+../../bin/stu.test: targets not up to date because of errors

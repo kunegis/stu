@@ -1,0 +1,4 @@
+main.stu:3:7: target must not depend on itself: @x depends on @xx
+main.stu:3:1: both "x" and "xx" match the same rule
+main.stu:1:4: @x is needed by "A"
+../../bin/stu.test: targets not up to date because of errors

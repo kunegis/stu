@@ -141,20 +141,37 @@ void Executor::read_dynamic(
 	}
 }
 
-bool Executor::find_cycle(Executor *parent,
-			  Executor *child,
-			  shared_ptr <const Dep> dep_link)
+bool Executor::find_cycle(
+	Executor *parent,
+	Executor *child,
+	shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION();
+	TRACE("parent= %s", ::show(*parent));
+	TRACE("child= %s", ::show(*child));
 	std::vector <Executor *> path;
 	path.push_back(parent);
 	return find_cycle(path, child, dep_link);
 }
 
-bool Executor::find_cycle(std::vector <Executor *> &path,
-			  Executor *child,
-			  shared_ptr <const Dep> dep_link)
+bool Executor::find_cycle(
+	std::vector <Executor *> &path,
+	Executor *child,
+	shared_ptr <const Dep> dep_link)
 {
+	TRACE_FUNCTION();
+#ifndef NDEBUG
+	string path_text= "";
+	path_text += "[";
+	for (Executor *e: path) {
+		path_text += ::show(*e);
+		path_text += ", ";
+	}
+	path_text += "]";
+	TRACE("path= %s", path_text);
+	TRACE("child= %s", ::show(*child));
+#endif /* ! NDEBUG */
+
 	if (same_rule(path.back(), child)) {
 		cycle_print(path, dep_link);
 		return true;

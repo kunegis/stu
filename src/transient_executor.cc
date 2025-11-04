@@ -73,6 +73,7 @@ Transient_Executor::Transient_Executor(
 	int &error_additional)
 	: Executor(param_rule_), rule(rule_)
 {
+	TRACE_FUNCTION();
 	swap(mapping_parameter, mapping_parameter_);
 
 	assert(to <Plain_Dep> (dep_link));
@@ -137,8 +138,10 @@ Transient_Executor::Transient_Executor(
 		push(depp);
 	}
 
+	TRACE("Check cycle");
 	parents.erase(parent);
 	if (find_cycle(parent, this, dep_link)) {
+		TRACE("Rule-level but not file-level cycle found");
 		raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
 		return;

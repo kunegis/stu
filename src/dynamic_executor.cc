@@ -5,6 +5,7 @@ Dynamic_Executor::Dynamic_Executor(
 	Executor *parent, int &error_additional)
 	: dep(dep_)
 {
+	TRACE_FUNCTION();
 	assert(dep_);
 	assert(dep_->is_normalized());
 	assert(parent);
@@ -45,6 +46,7 @@ Dynamic_Executor::Dynamic_Executor(
 
 	parents.erase(parent);
 	if (find_cycle(parent, this, dep)) {
+		TRACE("Found rule-level but not file-level cycle");
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
 		return;

@@ -224,22 +224,25 @@ protected:
 	/* All cached Executor objects by each of their Target.  Such
 	 * Executor objects are never deleted. */
 
-	static bool find_cycle(Executor *parent, Executor *child,
-			       shared_ptr <const Dep> dep_link);
+	static bool find_cycle(
+		Executor *parent, Executor *child,
+		shared_ptr <const Dep> dep_link);
 	/* Find a cycle.  Assuming that the edge parent-->child will be added, find a
 	 * directed cycle that would be created.  Start at PARENT and perform a
 	 * depth-first search upwards in the hierarchy to find CHILD.  DEPENDENCY_LINK is
 	 * the link that would be added between child and parent, and would create a
 	 * cycle. */
 
-	static bool find_cycle(std::vector <Executor *> &path,
-			       Executor *child,
-			       shared_ptr <const Dep> dep_link);
+	static bool find_cycle(
+		std::vector <Executor *> &path,
+		Executor *child,
+		shared_ptr <const Dep> dep_link);
 	/* Helper function.  PATH is the currently explored path.  PATH[0] is the original
 	 * PARENT; PATH[end] is the oldest grandparent found yet. */
 
-	static void cycle_print(const std::vector <Executor *> &path,
-				shared_ptr <const Dep> dep);
+	static void cycle_print(
+		const std::vector <Executor *> &path,
+		shared_ptr <const Dep> dep);
 	/* Print the error message of a cycle on rule level.
 	 * Given PATH = [a, b, c, d, ..., x], the found cycle is
 	 * [x <- a <- b <- c <- d <- ... <- x], where A <- B denotes
@@ -248,8 +251,7 @@ protected:
 	 * created in the executor objects.  All other link
 	 * dependencies are read from the executor objects. */
 
-	static bool same_rule(const Executor *executor_a,
-			      const Executor *executor_b);
+	static bool same_rule(const Executor *executor_a, const Executor *executor_b);
 	/* Whether both executors have the same parametrized rule.
 	 * Only used for finding cycles. */
 

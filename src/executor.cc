@@ -160,18 +160,6 @@ bool Executor::find_cycle(
 	shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION();
-#ifndef NDEBUG
-	string path_text= "";
-	path_text += "[";
-	for (Executor *e: path) {
-		path_text += ::show(*e);
-		path_text += ", ";
-	}
-	path_text += "]";
-	TRACE("path= %s", path_text);
-	TRACE("child= %s", ::show(*child));
-#endif /* ! NDEBUG */
-
 	if (same_rule(path.back(), child)) {
 		cycle_print(path, dep_link);
 		return true;

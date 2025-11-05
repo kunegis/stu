@@ -10,7 +10,8 @@
  * A dependency is normalized if it is one of:
  *    - a plain dependency (file or transient);
  *    - a dynamic dependency containing a normalized dependency;
- *    - a concatenated dependency of only normalized plain and dynamic dependencies.
+ *    - a concatenated dependency of only normalized plain and dynamic dependencies, and
+ *      of size at least two
  * In particular, compound dependencies are never normalized; they do not appear at all in
  * normalized dependencies.  Also, concatenated dependencies never contain other
  * concatenated dependencies directly -- such constructs are always "flattened" in a

@@ -339,8 +339,14 @@ bool Concat_Dep::find_parameter(string &parameter_name, Place &parameter_place) 
 
 const Place &Concat_Dep::get_place() const
 {
-	if (deps.empty())
+	if (deps.empty()) {
+		/* This can only be called if THIS is normalized or after normalization of
+		 * THIS fails.  If THIS is normalized, DEPS is not empty, and if THIS is
+		 * not normalized, then DEPS can be empty but in that case normalization
+		 * will not fail. */
+		should_not_happen();
 		return Place::place_empty;
+	}
 
 	return deps.front()->get_place();
 }

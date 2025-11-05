@@ -32,10 +32,12 @@ Concat_Executor::Concat_Executor(
 		if (auto plain_d= to <const Plain_Dep> (d)) {
 			collected.at(i)->deps.push_back(d);
 		} else if (auto dynamic_d= to <const Dynamic_Dep> (d)) {
+			/* This is the only place where Dependency::index is set to
+			 * another value than -1. */
 			shared_ptr <Dep> dep_child= dynamic_d->dep->clone();
 			dep_child->flags |= F_RESULT_NOTIFY;
 			dep_child->index= i;
-			push(dep_child);
+			push_normalized(dep_child);
 		} else {
 			/* Everything else would mean that DEP was not normalized */
 			unreachable();

@@ -129,7 +129,7 @@ public:
 	 * dependencies are appended to DEPS, which does not have to be empty on
 	 * entering the function. On errors, a message is printed, bits are set
 	 * in ERROR, and if not in keep-going mode, the function returns
-	 * immediately. */
+	 * immediately.  INDEX is always -1. */
 
 	shared_ptr <const Dep> untrivialize() const;
 	/* Remove all trivial flags, recursively.  Return null if already trivialized. */

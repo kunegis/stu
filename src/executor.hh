@@ -192,6 +192,7 @@ protected:
 	void push(shared_ptr <const Dep> dep);
 	/* Push a dependency to the default buffer, breaking down non-normalized
 	 * dependencies while doing so.  DEP does not have to be normalized. */
+	void push_normalized(shared_ptr <const Dep> dep);
 
 	void push_result(shared_ptr <const Dep> dd);
 	Proceed connect(shared_ptr <const Dep> dep_this,

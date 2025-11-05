@@ -595,21 +595,26 @@ void Executor::push(shared_ptr <const Dep> dep)
 		raise(e);
 	}
 	for (const auto &d: deps) {
-		TRACE("d= %s", show_trace(d));
-		d->check();
-		assert(d->is_normalized());
-		shared_ptr <const Dep> untrivialized= d->untrivialize();
-		TRACE("untrivialized= %s", untrivialized ?
-			show_trace(untrivialized) : "<null>");
-		if (untrivialized) {
-			shared_ptr <Dep> d2= untrivialized->clone();
-			d2->flags |= F_PHASE_B;
-			TRACE("To buffer_B");
-			buffer_B.push(d2);
-		} else {
-			TRACE("To buffer_A");
-			buffer_A.push(d);
-		}
+		push_normalized(d);
+	}
+}
+
+void Executor::push_normalized(shared_ptr <const Dep> dep)
+{
+	TRACE_FUNCTION();
+	TRACE("dep= %s", show(dep));
+	assert(dep->is_normalized());
+	shared_ptr <const Dep> untrivialized= dep->untrivialize();
+	TRACE("untrivialized= %s", untrivialized ?
+		show_trace(untrivialized) : "<null>");
+	if (untrivialized) {
+		shared_ptr <Dep> dep_b= untrivialized->clone();
+		dep_b->flags |= F_PHASE_B;
+		TRACE("To buffer_B");
+		buffer_B.push(dep_b);
+	} else {
+		TRACE("To buffer_A");
+		buffer_A.push(dep);
 	}
 }
 

@@ -24,8 +24,7 @@ void Dep::normalize(
 			shared_ptr <Dep> dep_new=
 				std::make_shared <Dynamic_Dep>
 				(dynamic_dep->flags, dynamic_dep->places, d);
-			if (dynamic_dep->index >= 0)
-				dep_new->index= dynamic_dep->index;
+			assert(dynamic_dep->index < 0);
 			dep_new->top= dynamic_dep->top;
 			deps.push_back(dep_new);
 		}
@@ -36,8 +35,7 @@ void Dep::normalize(
 			TRACE("d= %s", show(d));
 			shared_ptr <Dep> dd= d->clone();
 			dd->add_flags(compound_dep, false);
-			if (compound_dep->index >= 0)
-				dd->index= compound_dep->index;
+			assert(compound_dep->index < 0);
 			dd->top= compound_dep->top;
 			dd->normalize(deps, error);
 			if (error && ! option_k)
@@ -391,8 +389,7 @@ void Concat_Dep::normalize_concat(
 			shared_ptr <Dep> d_new= deps_[k]->clone();
 			/* The innermost flag is kept */
 			d_new->add_flags(dep, false);
-			if (dep->index >= 0)
-				d_new->index= dep->index;
+			assert(dep->index < 0);
 			d_new->top= dep->top;
 			deps_[k]= d_new;
 		}

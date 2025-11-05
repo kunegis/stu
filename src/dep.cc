@@ -11,9 +11,8 @@ void Dep::normalize(
 	std::vector <shared_ptr <const Dep> > &deps,
 	int &error) const
 {
-	TRACE_FUNCTION();
 	shared_ptr <const Dep> _this= shared_from_this();
-	TRACE("_this= %s", show(_this));
+	TRACE_FUNCTION(show(_this));
 	if (to <Plain_Dep> (_this)) {
 		deps.push_back(_this);
 	} else if (shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (_this)) {
@@ -290,7 +289,6 @@ Hash_Dep Dynamic_Dep::get_target() const
 
 void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION();
 	if (render_flags(flags & ~F_TARGET_DYNAMIC, parts, rendering))
 		parts.append_space();
 	parts.append_marker("[");
@@ -353,7 +351,6 @@ const Place &Concat_Dep::get_place() const
 
 void Concat_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION();
 	if (rendering & R_SHOW_FLAGS) {
 		if (render_flags(flags, parts, rendering)) {
 			parts.append_space();
@@ -382,6 +379,7 @@ void Concat_Dep::normalize_concat(
 	std::vector <shared_ptr <const Dep> > &deps_,
 	int &error)
 {
+	TRACE_FUNCTION(show(dep));
 	size_t k_init= deps_.size();
 	normalize_concat(dep, deps_, 0, error);
 	if (error && ! option_k)
@@ -407,6 +405,8 @@ void Concat_Dep::normalize_concat(
 	size_t start_index,
 	int &error)
 {
+	TRACE_FUNCTION(show(dep));
+	TRACE("start_index= %s", frmt("%zu", start_index));
 	assert(start_index < dep->deps.size());
 
 	if (start_index + 1 == dep->deps.size()) {
@@ -634,7 +634,6 @@ bool Compound_Dep::find_parameter(string &parameter_name, Place &parameter_place
 
 void Compound_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION();
 	if (!(rendering & R_NO_COMPOUND_PARENTHESES))
 		parts.append_operator("(");
 	bool first= true;

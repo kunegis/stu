@@ -1,0 +1,2 @@
+Option -C: "c" cannot have input redirection using <
+Option -C: in concatenation to "b"

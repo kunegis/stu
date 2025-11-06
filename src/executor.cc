@@ -391,8 +391,12 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 
 	if (error_additional) {
 		error |= error_additional;
-		if (executor->want_delete())
+		if (executor->want_delete()) {
+			should_not_happen();
+			/* At the moment, all executors for which want_delete() returns
+			 * true don't set error_additional. */
 			delete executor;
+		}
 		return nullptr;
 	}
 	assert(executor->parents.size() == 1);

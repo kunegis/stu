@@ -90,6 +90,11 @@ Transient_Executor::~Transient_Executor()
 	unreachable();
 }
 
+bool Transient_Executor::want_delete() const
+{
+	return false;
+}
+
 Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(dep_link));

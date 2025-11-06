@@ -272,6 +272,11 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			(to <const Dynamic_Dep> (dep), this, error_additional);
 		assert(executor);
 		if (error_additional) {
+			should_not_happen();
+			/* This cannot happen currently, as either (1) the dynamic would
+			 * need to contain a single plain dependency, or (2) a cycle at
+			 * rule-level would be found (but this type of Dynamic_Executor
+			 * does not have a rule. */
 			error |= error_additional;
 			assert(executor->want_delete());
 			delete executor;

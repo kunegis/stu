@@ -18,6 +18,11 @@ class Dynamic_Executor
 public:
 	Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
 		Executor *parent, int &error_additional);
+	/* ERROR_ADDITIONAL is only set:
+	 * - When the dynamic contains a plain dependency for which there are multiple
+	 *   matching rules.
+	 * - When a cycle is found at rule-level. */
+
 	shared_ptr <const Dynamic_Dep> get_dep() const { return dep; }
 
 	virtual bool want_delete() const override;

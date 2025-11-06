@@ -23,6 +23,7 @@ Dynamic_Executor::Dynamic_Executor(
 		Hash_Dep hash_dep_base(inner_plain_dep->place_target.flags,
 			inner_plain_dep->place_target.place_name.unparametrized());
 		Hash_Dep hash_dep= dep->get_target();
+		TRACE("hash_dep= %s", show(hash_dep));
 		try {
 			std::map <string, string> mapping_parameter;
 			shared_ptr <const Rule> rule=

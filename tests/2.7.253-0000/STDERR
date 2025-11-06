@@ -1,0 +1,5 @@
+Option -F: multiple minimal matching rules for target @aa
+Option -F: rule with target @${x}a
+Option -F: rule with target @a${x}
+Option -F: @aa is needed by "A"
+../../bin/stu.test: targets not up to date because of errors

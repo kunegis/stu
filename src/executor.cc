@@ -258,16 +258,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	/* Concatenations */
 	if (shared_ptr <const Concat_Dep> concat_dep= to <const Concat_Dep> (dep)) {
 		TRACE("Creating Concat_Executor");
-		int error_additional= 0;
-		Concat_Executor *executor= new Concat_Executor
-			(concat_dep, this, error_additional);
+		Concat_Executor *executor= new Concat_Executor(concat_dep, this);
 		assert(executor);
-		if (error_additional) {
-			error |= error_additional;
-			assert(executor->want_delete());
-			delete executor;
-			return nullptr;
-		}
 		return executor;
 	}
 

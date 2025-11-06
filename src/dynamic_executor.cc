@@ -9,19 +9,13 @@ Dynamic_Executor::Dynamic_Executor(
 	assert(dep_);
 	assert(dep_->is_normalized());
 	assert(parent);
+	assert(error_additional == 0);
 	dep->check();
 
 	/* Set the rule here, so cycles in the dependency graph can be detected.  Note
 	 * however that the rule of dynamic executors is otherwise not used. */
 
 	parents[parent]= dep;
-	if (error_additional) {
-		*this << "";
-		done.set_all();
-		parents.erase(parent);
-		raise(error_additional);
-		return;
-	}
 
 	/* Find the rule of the inner dependency */
 	shared_ptr <const Dep> inner_dep= dep->strip_dynamic();

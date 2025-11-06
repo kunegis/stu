@@ -7,125 +7,6 @@ pid_t *File_Executor::executors_by_pid_key= nullptr;
 File_Executor **File_Executor::executors_by_pid_value= nullptr;
 std::unordered_map <string, Timestamp> File_Executor::transients;
 
-File_Executor::~File_Executor()
-/* Objects of this type are never deleted */
-{
-	unreachable();
-#if 0
-	/* We put this here as a reminder if this is ever activated */
-	free(timestamps_old);
-	if (filenames) {
-		for (size_t i= 0; i < targets.size(); ++i)
-			if (filenames[i])
-				free(filenames[i]);
-		free(filenames);
-	}
-#endif /* 0 */
-}
-
-void File_Executor::wait()
-/* We wait for a single job to finish, and then return so that the next job can be
- * started.  It would also be possible to process as many finished jobs as possible, and
- * then return, but the current implementation prefers to first start the next job before
- * waiting for the next finished job. */
-{
-	Debug::print(nullptr, "wait...");
-
-	assert(File_Executor::executors_by_pid_size);
-
-	int status;
-	const pid_t pid= Job::wait(&status);
-
-	Debug::print(nullptr, frmt("waited for pid = %jd", (intmax_t)pid));
-
-	timestamp_last= Timestamp::now();
-
-	size_t index;
-	bool r= executors_find(pid, index);
-	if (!r) {
-		should_not_happen();
-		print_warning(Place(),
-			frmt("the function waitpid(2) returned the invalid process ID %jd",
-				(intmax_t)pid));
-		return;
-	}
-
-	File_Executor *executor= executors_by_pid_value[index];
-	executor->waited(pid, index, status);
-	++ options_jobs;
-}
-
-void File_Executor::waited(pid_t pid, size_t index, int status)
-{
-	assert(job.started());
-	assert(job.get_pid() == pid);
-
-	Executor::check_waited();
-	done.set_all();
-
-	{
-		Signal_Blocker sb;
-		executors_remove(index);
-	}
-
-	/* The file(s) may have been built, so forget that it was known to not exist */
-	bits &= ~B_MISSING;
-
-	if (job.waited(status, pid)) {
-		bits |=  B_EXISTING;
-		bits &= ~B_MISSING;
-		/* Subsequently set to B_MISSING if at least one target file is missing */
-
-		/* Check that the file targets were built */
-		for (size_t i= 0; i < hash_deps.size(); ++i) {
-			const Hash_Dep hash_dep= hash_deps[i];
-			if (! hash_dep.is_file()) continue;
-			check_file_was_built(hash_dep, rule->place_targets[i]);
-		}
-		/* In parallel mode, print "done" message */
-		if (option_parallel && !option_s) {
-			string text= show(hash_deps[0], S_NORMAL);
-			printf("Successfully built %s\n", text.c_str());
-		}
-	} else {
-		/* Command failed */
-		string reason;
-		if (WIFEXITED(status)) {
-			reason= fmt("failed with exit status %s",
-				show_operator(frmt("%d", WEXITSTATUS(status))));
-		} else if (WIFSIGNALED(status)) {
-			int sig= WTERMSIG(status);
-			reason= frmt("received signal %d (%s%s%s)",
-				     sig,
-				     Color::highlight_on[CH_ERR],
-				     strsignal(sig),
-				     Color::highlight_off[CH_ERR]);
-		} else {
-			/* This should not happen but the standard does not exclude it */
-			should_not_happen();
-			reason= frmt("failed with status %s%d%s",
-				     Color::highlight_on[CH_ERR],
-				     status,
-				     Color::highlight_off[CH_ERR]);
-		}
-
-		if (! param_rule->is_copy) {
-			Hash_Dep hash_dep= parents.begin()->second->get_target();
-			param_rule->command->place <<
-				fmt("command for %s %s",
-				    show(hash_dep), reason);
-		} else {
-			/* Copy rule */
-			param_rule->place <<
-				fmt("cp to %s %s", show(hash_deps.front()), reason);
-		}
-
-		*this << "";
-		remove_if_existing(true);
-		raise(ERROR_BUILD);
-	}
-}
-
 File_Executor::File_Executor(
 	shared_ptr <const Dep> dep,
 	Executor *parent,
@@ -270,6 +151,125 @@ File_Executor::File_Executor(
 		return;
 	}
 	parents[parent]= dep;
+}
+
+File_Executor::~File_Executor()
+/* Objects of this type are never deleted */
+{
+	unreachable();
+#if 0
+	/* We put this here as a reminder if this is ever activated */
+	free(timestamps_old);
+	if (filenames) {
+		for (size_t i= 0; i < targets.size(); ++i)
+			if (filenames[i])
+				free(filenames[i]);
+		free(filenames);
+	}
+#endif /* 0 */
+}
+
+void File_Executor::wait()
+/* We wait for a single job to finish, and then return so that the next job can be
+ * started.  It would also be possible to process as many finished jobs as possible, and
+ * then return, but the current implementation prefers to first start the next job before
+ * waiting for the next finished job. */
+{
+	Debug::print(nullptr, "wait...");
+
+	assert(File_Executor::executors_by_pid_size);
+
+	int status;
+	const pid_t pid= Job::wait(&status);
+
+	Debug::print(nullptr, frmt("waited for pid = %jd", (intmax_t)pid));
+
+	timestamp_last= Timestamp::now();
+
+	size_t index;
+	bool r= executors_find(pid, index);
+	if (!r) {
+		should_not_happen();
+		print_warning(Place(),
+			frmt("the function waitpid(2) returned the invalid process ID %jd",
+				(intmax_t)pid));
+		return;
+	}
+
+	File_Executor *executor= executors_by_pid_value[index];
+	executor->waited(pid, index, status);
+	++ options_jobs;
+}
+
+void File_Executor::waited(pid_t pid, size_t index, int status)
+{
+	assert(job.started());
+	assert(job.get_pid() == pid);
+
+	Executor::check_waited();
+	done.set_all();
+
+	{
+		Signal_Blocker sb;
+		executors_remove(index);
+	}
+
+	/* The file(s) may have been built, so forget that it was known to not exist */
+	bits &= ~B_MISSING;
+
+	if (job.waited(status, pid)) {
+		bits |=  B_EXISTING;
+		bits &= ~B_MISSING;
+		/* Subsequently set to B_MISSING if at least one target file is missing */
+
+		/* Check that the file targets were built */
+		for (size_t i= 0; i < hash_deps.size(); ++i) {
+			const Hash_Dep hash_dep= hash_deps[i];
+			if (! hash_dep.is_file()) continue;
+			check_file_was_built(hash_dep, rule->place_targets[i]);
+		}
+		/* In parallel mode, print "done" message */
+		if (option_parallel && !option_s) {
+			string text= show(hash_deps[0], S_NORMAL);
+			printf("Successfully built %s\n", text.c_str());
+		}
+	} else {
+		/* Command failed */
+		string reason;
+		if (WIFEXITED(status)) {
+			reason= fmt("failed with exit status %s",
+				show_operator(frmt("%d", WEXITSTATUS(status))));
+		} else if (WIFSIGNALED(status)) {
+			int sig= WTERMSIG(status);
+			reason= frmt("received signal %d (%s%s%s)",
+				     sig,
+				     Color::highlight_on[CH_ERR],
+				     strsignal(sig),
+				     Color::highlight_off[CH_ERR]);
+		} else {
+			/* This should not happen but the standard does not exclude it */
+			should_not_happen();
+			reason= frmt("failed with status %s%d%s",
+				     Color::highlight_on[CH_ERR],
+				     status,
+				     Color::highlight_off[CH_ERR]);
+		}
+
+		if (! param_rule->is_copy) {
+			Hash_Dep hash_dep= parents.begin()->second->get_target();
+			param_rule->command->place <<
+				fmt("command for %s %s",
+				    show(hash_dep), reason);
+		} else {
+			/* Copy rule */
+			param_rule->place <<
+				fmt("cp to %s %s", show(hash_deps.front()), reason);
+		}
+
+		*this << "";
+		remove_if_existing(true);
+		raise(ERROR_BUILD);
+	}
 }
 
 bool File_Executor::finished(Flags flags) const

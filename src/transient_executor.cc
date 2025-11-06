@@ -1,69 +1,5 @@
 #include "transient_executor.hh"
 
-Transient_Executor::~Transient_Executor()
-/* Objects of this type are never deleted */
-{
-	unreachable();
-}
-
-Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
-{
-	TRACE_FUNCTION(show_trace(dep_link));
-	TRACE("done= %s", done.show());
-	Debug debug(this);
-
-	Proceed proceed= execute_phase_A(dep_link);
-	assert(proceed);
-	if (proceed & P_ABORT) {
-		TRACE("Phase A abort");
-		assert(proceed & P_FINISHED);
-		done |= Done::from_flags(dep_link->flags);
-		return proceed;
-	}
-	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
-		TRACE("Phase A wait / call again");
-		assert((proceed & P_FINISHED) == 0);
-		return proceed;
-	}
-
-	assert(proceed == P_FINISHED);
-	done |= Done::from_flags(dep_link->flags & (F_PERSISTENT | F_OPTIONAL));
-
-	if (finished(dep_link->flags)) {
-		done |= Done::from_flags(dep_link->flags);
-		return proceed |= P_FINISHED;
-	}
-
-	Proceed proceed_B= execute_phase_B(dep_link);
-	TRACE("proceed_B= %s", show(proceed_B));
-	assert(proceed_B);
-	if (proceed_B & P_ABORT) {
-		TRACE("Phase B abort");
-		assert(proceed_B & P_FINISHED);
-		done |= Done::from_flags(dep_link->flags);
-		return proceed_B;
-	}
-	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
-		TRACE("Phase B wait / call again");
-		assert((proceed_B & P_FINISHED) == 0);
-		return proceed_B;
-	}
-
-	assert(proceed_B == P_FINISHED);
-
-	done |= Done::from_flags(dep_link->flags);
-	return proceed_B |= P_FINISHED;
-}
-
-bool Transient_Executor::finished(Flags flags) const
-{
-	TRACE_FUNCTION();
-	TRACE("flags= %s", show(flags));
-	bool ret= done.is_done_from_flags(flags);
-	TRACE("ret= %s", frmt("%d", ret));
-	return ret;
-}
-
 Transient_Executor::Transient_Executor(
 	shared_ptr <const Dep> dep_link,
 	Executor *parent,
@@ -77,8 +13,7 @@ Transient_Executor::Transient_Executor(
 	swap(mapping_parameter, mapping_parameter_);
 
 	assert(to <Plain_Dep> (dep_link));
-	shared_ptr <const Plain_Dep> plain_dep=
-		to <Plain_Dep> (dep_link);
+	shared_ptr <const Plain_Dep> plain_dep= to <Plain_Dep> (dep_link);
 
 	Hash_Dep hash_dep= plain_dep->place_target.unparametrized();
 	assert(hash_dep.is_transient());
@@ -147,6 +82,70 @@ Transient_Executor::Transient_Executor(
 		return;
 	}
 	parents[parent]= dep_link;
+}
+
+Transient_Executor::~Transient_Executor()
+/* Objects of this type are never deleted */
+{
+	unreachable();
+}
+
+Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
+{
+	TRACE_FUNCTION(show_trace(dep_link));
+	TRACE("done= %s", done.show());
+	Debug debug(this);
+
+	Proceed proceed= execute_phase_A(dep_link);
+	assert(proceed);
+	if (proceed & P_ABORT) {
+		TRACE("Phase A abort");
+		assert(proceed & P_FINISHED);
+		done |= Done::from_flags(dep_link->flags);
+		return proceed;
+	}
+	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
+		TRACE("Phase A wait / call again");
+		assert((proceed & P_FINISHED) == 0);
+		return proceed;
+	}
+
+	assert(proceed == P_FINISHED);
+	done |= Done::from_flags(dep_link->flags & (F_PERSISTENT | F_OPTIONAL));
+
+	if (finished(dep_link->flags)) {
+		done |= Done::from_flags(dep_link->flags);
+		return proceed |= P_FINISHED;
+	}
+
+	Proceed proceed_B= execute_phase_B(dep_link);
+	TRACE("proceed_B= %s", show(proceed_B));
+	assert(proceed_B);
+	if (proceed_B & P_ABORT) {
+		TRACE("Phase B abort");
+		assert(proceed_B & P_FINISHED);
+		done |= Done::from_flags(dep_link->flags);
+		return proceed_B;
+	}
+	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
+		TRACE("Phase B wait / call again");
+		assert((proceed_B & P_FINISHED) == 0);
+		return proceed_B;
+	}
+
+	assert(proceed_B == P_FINISHED);
+
+	done |= Done::from_flags(dep_link->flags);
+	return proceed_B |= P_FINISHED;
+}
+
+bool Transient_Executor::finished(Flags flags) const
+{
+	TRACE_FUNCTION();
+	TRACE("flags= %s", show(flags));
+	bool ret= done.is_done_from_flags(flags);
+	TRACE("ret= %s", frmt("%d", ret));
+	return ret;
 }
 
 void Transient_Executor::render(Parts &parts, Rendering rendering) const

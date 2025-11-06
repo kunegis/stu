@@ -5,8 +5,7 @@
 
 Concat_Executor::Concat_Executor(
 	shared_ptr <const Concat_Dep> dep_,
-	Executor *parent,
-	int &error_additional)
+	Executor *parent)
 	: dep(dep_), stage(ST_DYNAMIC)
 {
 	TRACE_FUNCTION();
@@ -14,7 +13,6 @@ Concat_Executor::Concat_Executor(
 	assert(dep);
 	assert(dep->is_normalized());
 	assert(parent);
-	assert(error_additional == 0);
 	dep->check();
 
 	parents[parent]= dep;

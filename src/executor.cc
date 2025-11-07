@@ -908,21 +908,6 @@ shared_ptr <const Dep> Executor::append_top(
 	return ret;
 }
 
-shared_ptr <const Dep> Executor::set_top(
-	shared_ptr <const Dep> dep,
-	shared_ptr <const Dep> top)
-{
-	assert(dep);
-	assert(dep != top);
-
-	if (dep->top == nullptr && top == nullptr)
-		return dep;
-
-	shared_ptr <Dep> ret= dep->clone();
-	ret->top= top;
-	return ret;
-}
-
 Proceed Executor::connect(
 	shared_ptr <const Dep> dep_this,
 	shared_ptr <const Dep> dep_child)

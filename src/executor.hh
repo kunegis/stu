@@ -202,8 +202,6 @@ protected:
 	const Place &get_place() const; /* Empty if there is no place */
 	shared_ptr <const Dep> append_top(shared_ptr <const Dep> dep,
 					  shared_ptr <const Dep> top);
-	shared_ptr <const Dep> set_top(shared_ptr <const Dep> dep,
-				       shared_ptr <const Dep> top);
 
 	virtual int get_depth() const {return 0; }
 	/* -1 when undefined as in concatenated executors and the root executor, in which

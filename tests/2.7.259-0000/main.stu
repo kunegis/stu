@@ -1,0 +1,21 @@
+A: list.[B]
+{
+	cp list.D A ;
+}
+
+B = {D}
+
+list.D:  E -t F
+{
+	cp F list.D
+}
+
+E
+{
+	touch E
+}
+
+F
+{
+	exit 77
+}

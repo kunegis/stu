@@ -198,7 +198,7 @@ void File_Executor::wait()
 
 	File_Executor *executor= executors_by_pid_value[index];
 	executor->waited(pid, index, status);
-	++ options_jobs;
+	++options_jobs;
 }
 
 void File_Executor::waited(pid_t pid, size_t index, int status)
@@ -721,7 +721,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	out_message_done= true;
 
-	assert(options_jobs >= 0);
+	assert(options_jobs > 0);
 
 	/* For hardcoded rules (i.e., static content), we don't need to start a
 	 * job, and therefore this is executed even if JOBS is zero. */
@@ -738,11 +738,6 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		return proceed |= P_FINISHED;
 	}
 
-	/* We know that a job has to be started now */
-	if (options_jobs == 0) {
-		return proceed |= P_WAIT;
-	}
-
 	/* We have to start a job now */
 	print_command();
 	for (const Hash_Dep &hash_dep: hash_deps) {
@@ -755,7 +750,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	}
 	if (rule->redirect_index >= 0)
 		assert(! (rule->place_targets[rule->redirect_index]->flags & F_TARGET_TRANSIENT));
-	assert(options_jobs >= 1);
+	assert(options_jobs > 0);
 
 	/* Key/value pairs for all environment variables of the job.  Variables override
 	 * parameters.  Note about C++ map::insert():  The insert function is a no-op if a
@@ -797,7 +792,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	assert(executors_by_pid_value[index]->job.started());
 	assert(pid == executors_by_pid_value[index]->job.get_pid());
-	-- options_jobs;
+	--options_jobs;
 	assert(options_jobs >= 0);
 
 	proceed |= P_WAIT;

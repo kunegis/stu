@@ -96,31 +96,31 @@ bool Transient_Executor::want_delete() const
 }
 
 Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
+/* This is an example of a "plain" execute() function, containing the minimal wrapper
+ * around execute_phase_{A,B}() */
 {
 	TRACE_FUNCTION(show_trace(dep_link));
 	TRACE("done= %s", done.show());
 	Debug debug(this);
 
-	Proceed proceed= execute_phase_A(dep_link);
-	assert(proceed);
-	if (proceed & P_ABORT) {
+	Proceed proceed_A= execute_phase_A(dep_link);
+	assert(is_valid(proceed_A));
+	if (proceed_A & P_ABORT) {
 		TRACE("Phase A abort");
-		assert(proceed & P_FINISHED);
+		assert(proceed_A & P_FINISHED);
 		done |= Done::from_flags(dep_link->flags);
-		return proceed;
+		return proceed_A;
 	}
-	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
+	if (proceed_A & (P_WAIT | P_CALL_AGAIN)) {
 		TRACE("Phase A wait / call again");
-		assert((proceed & P_FINISHED) == 0);
-		return proceed;
+		assert((proceed_A & P_FINISHED) == 0);
+		return proceed_A;
 	}
-
-	assert(proceed == P_FINISHED);
+	assert(proceed_A == P_FINISHED);
 	done |= Done::from_flags(dep_link->flags & (F_PERSISTENT | F_OPTIONAL));
-
 	if (finished(dep_link->flags)) {
 		done |= Done::from_flags(dep_link->flags);
-		return proceed |= P_FINISHED;
+		return proceed_A |= P_FINISHED;
 	}
 
 	Proceed proceed_B= execute_phase_B(dep_link);
@@ -139,9 +139,8 @@ Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 	}
 
 	assert(proceed_B == P_FINISHED);
-
 	done |= Done::from_flags(dep_link->flags);
-	return proceed_B |= P_FINISHED;
+	return proceed_B;
 }
 
 bool Transient_Executor::finished(Flags flags) const

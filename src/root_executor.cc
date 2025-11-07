@@ -20,34 +20,43 @@ Root_Executor::Root_Executor(const std::vector <shared_ptr <const Dep> > &deps)
 }
 
 Proceed Root_Executor::execute(shared_ptr <const Dep> dep_link)
-/* This is an example of a "plain" execute() function, containing the minimal wrapper
- * around execute_phase_{A,B}() */
 {
 	TRACE_FUNCTION();
+	TRACE("is_finished= %s", frmt("%d", is_finished));
 	Debug debug(this);
-	Proceed proceed= execute_phase_A(dep_link);
-	TRACE("proceed= %s", show(proceed));
-	assert(is_valid(proceed));
-	if (proceed & P_ABORT) {
+
+	Proceed proceed_A= execute_phase_A(dep_link);
+	TRACE("proceed_A= %s", show(proceed_A));
+	assert(is_valid(proceed_A));
+	if (proceed_A & P_ABORT) {
+		TRACE("Phase A abort");
+		assert(proceed_A & P_FINISHED);
 		is_finished= true;
-		return proceed;
+		return proceed_A;
 	}
-	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
-		assert((proceed & P_FINISHED) == 0);
-		return proceed;
+	if (proceed_A & (P_WAIT | P_CALL_AGAIN)) {
+		TRACE("Phase A wait / call again");
+		assert((proceed_A & P_FINISHED) == 0);
+		return proceed_A;
 	}
-	assert(proceed & P_FINISHED);
+	assert(proceed_A == P_FINISHED);
 	assert(get_buffer_A().empty());
 
 	Proceed proceed_B= execute_phase_B(dep_link);
-	TRACE("proceed_B= %s", show(proceed));
-	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
-		assert((proceed_B & P_FINISHED) == 0);
-		return proceed;
-	}
-	if (proceed_B & P_FINISHED) {
+	TRACE("proceed_B= %s", show(proceed_B));
+	if (proceed_B & P_ABORT) {
+		TRACE("Phase B abort");
+		assert(proceed_B & P_FINISHED);
 		is_finished= true;
+		return proceed_B;
+	}
+	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
+		TRACE("Phase B wait / call again");
+		assert((proceed_B & P_FINISHED) == 0);
+		return proceed_B;
 	}
 
-	return proceed;
+	assert(proceed_B == P_FINISHED);
+	is_finished= true;
+	return proceed_B;
 }

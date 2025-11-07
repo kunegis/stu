@@ -1,4 +1,12 @@
 #
+# Handling of execute*() functions and Proceed values.
+# * Make graph of calls
+# * Make sure all functions have separate Proceed values for the return value from called
+#   functions, and or themselves
+# * Make rule for which return value leads to which action
+#
+
+#
 # tests/long-sigusr1-1/EXEC hangs sometimes.
 # * Happens only in the cov variant
 # * Processes hang in the futex() system, maybe because other cov test processes are
@@ -481,4 +489,14 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 # Option -i:  when no TTY is available, this should be an error (code 4) and not a
 # warning.
+#
+
+#
+# bin/stu.debug -F 'A: B C D; B{sleep 2; touch B;} C={ccc} D{touch D;}'
+#
+# Stu shouldn't wait for B to be built before creating C, because C doesn't need a process
+# to be built.
+#
+# On the other hand, maybe don't do this, because it will force the whole dependency tree
+# to be generated after the first <k> jobs are started, even if no content rule exists.
 #

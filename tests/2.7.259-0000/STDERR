@@ -1,0 +1,5 @@
+main.stu:20:2: command for "F" failed with exit status 77
+main.stu:8:15: "F" is needed by "list.D"
+main.stu:1:4: "list.D" is needed by [B]
+main.stu:1:10: [B] is needed by list.[B]
+main.stu:1:4: list.[B] is needed by "A"

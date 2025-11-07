@@ -90,10 +90,10 @@ enum class Order {
 static Order order= Order::DFS;
 
 static bool option_parallel= false;
-/* Whether the -j option is used with a value >1 */
+/* Option -j is used with value >1 */
 
 static bool order_vec= false;
-/* Whether to use vectors for randomization */
+/* Use vectors for randomization */
 
 static long options_jobs= 1;
 /* Number of free slots for jobs.  This is a long because strtol() gives a

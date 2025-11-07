@@ -17,7 +17,8 @@
 #
 
 #
-# (C++20) Executor::execute() and subclasses:  Use coroutines.
+# (C++20) Executor::execute() and subclasses:  Use coroutines.  (Probably not a good
+# idea.)
 #
 
 #

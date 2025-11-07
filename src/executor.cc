@@ -511,6 +511,7 @@ void Executor::notify_variable(const std::map <string, string> &)
 Proceed Executor::execute_children()
 {
 	TRACE_FUNCTION(show_trace(*this));
+	assert(options_jobs > 0);
 
 	/* Since disconnect() may change executor->children, we must first
 	 * copy it over locally, and then iterate through it */
@@ -519,7 +520,7 @@ Proceed Executor::execute_children()
 	Proceed proceed_all= 0;
 
 	while (! executors_children_vector.empty()) {
-		assert(options_jobs >= 0);
+		assert(options_jobs > 0);
 		if (order_vec) {
 			/* Exchange a random position with last position */
 			size_t p_last= executors_children_vector.size() - 1;
@@ -557,6 +558,8 @@ Proceed Executor::execute_children()
 			/* If the child executor is not finished, it must have returned
 			 * either the P_WAIT or P_CALL_AGAIN bit. */
 		}
+		if (proceed_all & P_WAIT && options_jobs == 0)
+			return proceed_all;
 	}
 
 	if (error) {
@@ -720,7 +723,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	TRACE_FUNCTION(show_trace(*this));
 	TRACE("options_jobs= %s", frmt("%ld", options_jobs));
 	DEBUG_PRINT("phase_A");
-	assert(options_jobs >= 0);
+	assert(options_jobs > 0);
 	assert(dep_link);
 	if (finished(dep_link->flags)) {
 		TRACE("Finished");
@@ -758,24 +761,21 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	}
 
 	assert(error == 0 || option_k);
-
-	if (options_jobs == 0) {
-		TRACE("No jobs left, proceed= %s", show(proceed));
-		return proceed |= P_WAIT;
-	}
+	assert(options_jobs > 0);
 
 	while (! buffer_A.empty()) {
+		TRACE("Buffer B not empty");
 		shared_ptr <const Dep> dep_child= buffer_A.pop();
 		TRACE("Popped from buffer_A dep_child= %s", show_trace(dep_child));
 		Proceed proceed_child= connect(dep_link, dep_child);
 		assert(is_valid(proceed_child));
 		TRACE("proceed_child= %s", show(proceed_child));
 		proceed |= (proceed_child & ~P_FINISHED);
+		assert(options_jobs >= 0);
 		if (options_jobs == 0) {
 			TRACE("No jobs left");
 			return proceed |= P_WAIT;
 		}
-		TRACE("proceed= %s", show(proceed));
 	}
 	assert(buffer_A.empty());
 
@@ -822,6 +822,7 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 	TRACE_FUNCTION(show_trace(*this));
 	DEBUG_PRINT("phase_B");
 	assert(buffer_A.empty());
+	assert(options_jobs > 0);
 	Proceed proceed= 0;
 
 	while (! (buffer_A.empty() && buffer_B.empty())) {
@@ -841,10 +842,11 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 			TRACE("Buffer B not empty");
 			shared_ptr <const Dep> dep_child= buffer_B.pop();
 			TRACE("Popped from buffer_B dep_child=%s", show_trace(dep_child));
-			Proceed proceed_2= connect(dep_link, dep_child);
-			proceed |= proceed_2;
+			Proceed proceed_child= connect(dep_link, dep_child);
+			proceed |= (proceed_child & ~P_FINISHED);
 			assert(options_jobs >= 0);
 			if (options_jobs == 0) {
+				TRACE("No jobs left");
 				return proceed |= P_WAIT;
 			}
 		}

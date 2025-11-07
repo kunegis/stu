@@ -1,0 +1,22 @@
+A: B C
+{
+	cp C A
+}
+
+B
+{
+	touch B
+	echo CORRECT >C
+}
+
+C: $[-t V]
+{
+	# This is never executed because C already exists
+	exit 91
+}
+
+V
+{
+	# This is never executed because C already exists
+	exit 92
+}

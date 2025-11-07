@@ -868,20 +868,14 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	TRACE_FUNCTION();
 	TRACE("dep= %s", show(dep));
 	TRACE("result_variable.size()= %s", frmt("%zu", result_variable.size()));
+	TRACE("error= %s", frmt("%d", error));
+	TRACE("bits= %s", show_bits(bits));
 	DEBUG_PRINT(fmt("read_variable %s", show(dep, S_DEBUG, R_SHOW_FLAGS)));
 	assert(to <Plain_Dep> (dep));
 	if (! result_variable.empty())
 		return;
 	if (error)
 		return;
-
-	/* It could be that the file exists but the bit is not set -- this would happen if
-	 * the file was not there before and we had no reason to check.  In such cases, we
-	 * don't need the variable. */
-	if (!(bits & B_EXISTING)) {
-		assert(dep->flags & F_TRIVIAL);
-		return;
-	}
 
 	Hash_Dep hash_dep= dep->get_target();
 	assert(! hash_dep.is_dynamic());

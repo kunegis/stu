@@ -3,7 +3,7 @@
 #ifndef NDEBUG
 
 constexpr const char *const proceed_names[]= {
-	"P_WAIT", "P_CALL_AGAIN", "P_FINISHED", "P_ABORT"
+	"P_WAIT", "P_CALL_AGAIN", "P_FINISHED"
 };
 static_assert(sizeof(proceed_names)/sizeof(proceed_names[0]) == P_COUNT);
 
@@ -13,8 +13,7 @@ bool is_valid(Proceed proceed)
 		proceed == (P_WAIT) ||
 		proceed == (P_CALL_AGAIN) ||
 		proceed == (P_WAIT | P_CALL_AGAIN) ||
-		proceed == (P_FINISHED) ||
-		proceed == (P_FINISHED | P_ABORT);
+		proceed == (P_FINISHED);
 }
 
 string show(Proceed proceed)

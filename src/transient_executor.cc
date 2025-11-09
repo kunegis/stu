@@ -105,42 +105,34 @@ Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	Proceed proceed_A= execute_phase_A(dep_link);
 	assert(is_valid(proceed_A));
-	if (proceed_A & P_ABORT) {
-		TRACE("Phase A abort");
-		assert(proceed_A & P_FINISHED);
-		done |= Done::from_flags(dep_link->flags);
-		return proceed_A;
-	}
 	if (proceed_A & (P_WAIT | P_CALL_AGAIN)) {
 		TRACE("Phase A wait / call again");
-		assert((proceed_A & P_FINISHED) == 0);
 		return proceed_A;
 	}
 	assert(proceed_A == P_FINISHED);
+	if (error) {
+		TRACE("Phase A abort");
+		done |= Done::from_flags(dep_link->flags);
+		return P_FINISHED;
+	}
+
 	done |= Done::from_flags(dep_link->flags & (F_PERSISTENT | F_OPTIONAL));
 	if (finished(dep_link->flags)) {
 		done |= Done::from_flags(dep_link->flags);
-		return proceed_A |= P_FINISHED;
+		return P_FINISHED;
 	}
 
 	Proceed proceed_B= execute_phase_B(dep_link);
 	TRACE("proceed_B= %s", show(proceed_B));
-	assert(proceed_B);
-	if (proceed_B & P_ABORT) {
-		TRACE("Phase B abort");
-		assert(proceed_B & P_FINISHED);
-		done |= Done::from_flags(dep_link->flags);
-		return proceed_B;
-	}
+	assert(is_valid(proceed_B));
 	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
 		TRACE("Phase B wait / call again");
-		assert((proceed_B & P_FINISHED) == 0);
 		return proceed_B;
 	}
-
 	assert(proceed_B == P_FINISHED);
+
 	done |= Done::from_flags(dep_link->flags);
-	return proceed_B;
+	return P_FINISHED;
 }
 
 bool Transient_Executor::finished(Flags flags) const

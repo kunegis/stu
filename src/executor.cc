@@ -544,14 +544,14 @@ Proceed Executor::execute_children()
 		TRACE("child->finished(dep_child->flags)= %s",
 			frmt("%d", child->finished(dep_child->flags)));
 		assert(proceed_child);
-		assert(((proceed_child & P_FINISHED) == 0) ==
+		assert((proceed_child == P_FINISHED) !=
 		       ((child->finished(dep_child->flags)) == 0));
 
-		proceed_all |= proceed_child & ~(P_FINISHED | P_ABORT);
+		proceed_all |= proceed_child & ~P_FINISHED;
 		/* The finished and abort flags of the child only apply to the
 		 * child, not to us. */
 
-		if (proceed_child & P_FINISHED) {
+		if (proceed_child == P_FINISHED) {
 			disconnect(child, dep_child);
 		} else {
 			assert((proceed_child & ~P_FINISHED) != 0);
@@ -744,10 +744,10 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	 * random mode, start new children first and continue already-open
 	 * children second. */
 	if (order != Order::RANDOM) {
-		Proceed proceed_2= execute_children();
-		assert(is_valid(proceed_2));
-		TRACE("proceed= %s, proceed_2= %s", show(proceed), show(proceed_2));
-		proceed |= (proceed_2 & ~P_FINISHED);
+		Proceed proceed_children= execute_children();
+		assert(is_valid(proceed_children));
+		TRACE("proceed= %s, proceed_children= %s", show(proceed), show(proceed_children));
+		proceed |= (proceed_children & ~P_FINISHED);
 		if (proceed & P_WAIT) {
 			if (options_jobs == 0) {
 				TRACE("Wait; no jobs left");
@@ -756,7 +756,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 		} else if (finished(dep_link->flags) && ! option_k) {
 			DEBUG_PRINT("finished");
 			TRACE("Finished");
-			return proceed |= P_FINISHED;
+			return P_FINISHED;
 		}
 	}
 
@@ -802,7 +802,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	if (error) {
 		assert(option_k);
 		TRACE("Error");
-		return proceed |= P_ABORT | P_FINISHED;
+		return P_FINISHED;
 	}
 
 	if (proceed) {
@@ -810,10 +810,8 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 		return proceed;
 	}
 
-	proceed |= P_FINISHED;
-
+	proceed= P_FINISHED;
 	TRACE("Finished, proceed= %s", show(proceed));
-	assert(is_valid(proceed));
 	return proceed;
 }
 
@@ -829,13 +827,16 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 		TRACE("Buffers not empty");
 		if (! buffer_A.empty()) {
 			TRACE("Buffer A not empty");
-			Proceed proceed_2= execute_phase_A(dep_link);
-			if (proceed_2 & (P_WAIT | P_ABORT)) {
-				proceed |= proceed_2;
+			Proceed proceed_A= execute_phase_A(dep_link);
+			if (proceed_A & P_WAIT) {
+				return proceed | proceed_A;
+			}
+			if (proceed_A == P_FINISHED && error) {
+				proceed |= proceed_A;
 				proceed &= ~P_FINISHED;
 				return proceed;
 			}
-			proceed |= proceed_2;
+			proceed |= proceed_A;
 			proceed &= ~P_FINISHED;
 		}
 		if (! buffer_B.empty()) {
@@ -853,7 +854,7 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 	}
 	assert(buffer_A.empty());
 	assert(buffer_B.empty());
-	proceed |= P_FINISHED;
+	proceed= P_FINISHED;
 	TRACE("proceed= %s", show(proceed));
 	return proceed;
 }

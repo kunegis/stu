@@ -134,7 +134,6 @@ private:
 		bool &rule_not_found);
 	bool start(
 		shared_ptr <const Dep> dep_link,
-		Proceed &proceed,
 		pid_t &pid,
 		const std::map <string, string> &mapping);
 	/* Return value is TRUE on error */

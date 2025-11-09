@@ -28,35 +28,26 @@ Proceed Root_Executor::execute(shared_ptr <const Dep> dep_link)
 	Proceed proceed_A= execute_phase_A(dep_link);
 	TRACE("proceed_A= %s", show(proceed_A));
 	assert(is_valid(proceed_A));
-	if (proceed_A & P_ABORT) {
-		TRACE("Phase A abort");
-		assert(proceed_A & P_FINISHED);
-		is_finished= true;
-		return proceed_A;
-	}
 	if (proceed_A & (P_WAIT | P_CALL_AGAIN)) {
 		TRACE("Phase A wait / call again");
-		assert((proceed_A & P_FINISHED) == 0);
 		return proceed_A;
 	}
 	assert(proceed_A == P_FINISHED);
+	if (error) {
+		TRACE("Phase A abort");
+		is_finished= true;
+		return P_FINISHED;
+	}
 	assert(get_buffer_A().empty());
 
 	Proceed proceed_B= execute_phase_B(dep_link);
 	TRACE("proceed_B= %s", show(proceed_B));
-	if (proceed_B & P_ABORT) {
-		TRACE("Phase B abort");
-		assert(proceed_B & P_FINISHED);
-		is_finished= true;
-		return proceed_B;
-	}
+	assert(is_valid(proceed_B));
 	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
 		TRACE("Phase B wait / call again");
-		assert((proceed_B & P_FINISHED) == 0);
 		return proceed_B;
 	}
-
 	assert(proceed_B == P_FINISHED);
 	is_finished= true;
-	return proceed_B;
+	return P_FINISHED;
 }

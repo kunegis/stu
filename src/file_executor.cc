@@ -481,30 +481,25 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	assert(! job.started() || children.empty());
 
-	Proceed proceed= execute_phase_A(dep_link), proceed_B;
-	TRACE("proceed= %s", show(proceed));
-	assert(proceed);
-	if (proceed & P_ABORT) {
-		assert(proceed & P_FINISHED);
+	Proceed proceed_A= execute_phase_A(dep_link), proceed_B;
+	TRACE("proceed_A= %s", show(proceed_A));
+	assert(is_valid(proceed_A));
+	if (proceed_A & (P_WAIT | P_CALL_AGAIN)) {
+		return proceed_A;
+	}
+	assert(proceed_A == P_FINISHED);
+	if (error) {
 		done |= Done::from_flags(dep_link->flags);
-		return proceed;
+		return P_FINISHED;
 	}
-	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
-		assert((proceed & P_FINISHED) == 0);
-		return proceed;
-	}
-
-	assert(proceed & P_FINISHED);
-	proceed &= ~P_FINISHED;
 
 	if (finished(dep_link->flags)) {
-		assert(! (proceed & P_WAIT));
-		return proceed |= P_FINISHED;
+		return P_FINISHED;
 	}
 
 	/* Job has already been started */
 	if (job.started_or_waited()) {
-		return proceed |= P_WAIT;
+		return P_WAIT;
 	}
 
 	/* The file must now be built */
@@ -631,7 +626,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 						hash_dep.get_name_c_str_nondynamic());
 				raise(ERROR_BUILD);
 				done |= Done::from_flags(dep_link->flags);
-				return proceed |= P_ABORT | P_FINISHED;
+				return P_FINISHED;
 			}
 
 			/* File does not exist, all its dependencies are up to
@@ -653,7 +648,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				}
 				done |= Done::from_flags(dep_link->flags);
 				raise(ERROR_BUILD);
-				return proceed |= P_ABORT | P_FINISHED;
+				return P_FINISHED;
 			}
 		}
 		/* We cannot update TIMESTAMP within the loop above
@@ -691,25 +686,23 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (! (bits & B_NEED_BUILD)) {
 		TRACE("No need to build");
 		done |= Done::from_flags_trivial_and_nontrivial(dep_link->flags);
-		return proceed |= P_FINISHED;
+		return P_FINISHED;
 	}
 
 	/* We now know that the command must be run, or that there is no command. */
 
 	/* Second pass to execute also all trivial targets */
 	proceed_B= execute_phase_B(dep_link);
-	assert(proceed_B);
-	proceed |= proceed_B;
-	proceed &= ~P_FINISHED;
-	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
-		return proceed;
+	assert(is_valid(proceed_B));
+	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
+		return proceed_B;
 	}
 	assert(children.empty());
 
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */
 		done |= Done::from_flags(dep_link->flags);
-		return proceed |= P_FINISHED;
+		return P_FINISHED;
 	}
 
 	/* The command must be run (or the file created, etc.) now */
@@ -734,8 +727,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		write_content(hash_deps.front().get_name_c_str_nondynamic(),
 			*(rule->command));
 		done.set_all();
-		assert(proceed == 0);
-		return proceed |= P_FINISHED;
+		return P_FINISHED;
 	}
 
 	/* We have to start a job now */
@@ -771,8 +763,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		 * in which the job would failed to be clean up. */
 		Signal_Blocker sb;
 
-		if (start(dep_link, proceed, pid, mapping))
-			return proceed;
+		if (start(dep_link, pid, mapping))
+			return P_FINISHED;
 		TRACE("pid= %s", frmt("%jd", (intmax_t)pid));
 		assert(pid != 0 && pid != 1);
 		DEBUG_PRINT(frmt("execute: pid = %jd", (intmax_t) pid));
@@ -783,8 +775,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				     show(hash_deps.front()));
 			raise(ERROR_BUILD);
 			done |= Done::from_flags(dep_link->flags);
-			assert(proceed == 0);
-			return proceed |= P_ABORT | P_FINISHED;
+			return P_FINISHED;
 		}
 
 		executors_add(pid, index, this);
@@ -795,11 +786,11 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	--options_jobs;
 	assert(options_jobs >= 0);
 
-	proceed |= P_WAIT;
+	Proceed proceed_ret= P_WAIT;
 	if (order == Order::RANDOM && options_jobs > 0)
-		proceed |= P_CALL_AGAIN;
-	TRACE("proceed= %s", show(proceed));
-	return proceed;
+		proceed_ret |= P_CALL_AGAIN;
+	TRACE("proceed_ret= %s", show(proceed_ret));
+	return proceed_ret;
 }
 
 void File_Executor::print_as_job() const
@@ -1173,7 +1164,6 @@ void File_Executor::check_file_target_without_rule(
 
 bool File_Executor::start(
 	shared_ptr <const Dep> dep_link,
-	Proceed &proceed,
 	pid_t &pid,
 	const std::map <string, string> &mapping)
 {
@@ -1202,8 +1192,6 @@ bool File_Executor::start(
 				explain_missing_optional_copy_source();
 				raise(ERROR_BUILD);
 				done |= Done::from_flags(dep_link->flags);
-				assert(proceed == 0);
-				proceed |= P_ABORT | P_FINISHED;
 				return true;
 			}
 		}

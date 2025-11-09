@@ -1,12 +1,4 @@
 #
-# Handling of execute*() functions and Proceed values.
-# * Make graph of calls
-# * Make sure all functions have separate Proceed values for the return value from called
-#   functions, and or themselves
-# * Make rule for which return value leads to which action
-#
-
-#
 # tests/long-sigusr1-1/EXEC hangs sometimes.
 # * Happens only in the cov variant
 # * Processes hang in the futex() system, maybe because other cov test processes are
@@ -19,7 +11,7 @@
 
 #
 # Achieve full coverage.
-# * Make 'make test' also execute 'make cov'
+# * Make 'make test' also execute 'make cov' (between debug and ndebug tests).
 #
 
 #

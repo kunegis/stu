@@ -54,40 +54,37 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 	/* STAGE cannot be ST_FINISHED because concat executors are not cached. */
 	assert(stage < ST_FINISHED);
 
-	Proceed proceed= execute_phase_A(dep_link);
-	assert(is_valid(proceed));
-	if (proceed & P_ABORT) {
-		TRACE("phase A aborted");
-		assert(is_valid(proceed) && (proceed & P_FINISHED));
-		stage= ST_FINISHED;
-		return proceed;
-	}
-	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
+	Proceed proceed_A= execute_phase_A(dep_link);
+	assert(is_valid(proceed_A));
+	if (proceed_A & (P_WAIT | P_CALL_AGAIN)) {
 		TRACE("phase A wait/call again");
-		assert((proceed & P_FINISHED) == 0);
-		return proceed;
+		return proceed_A;
 	}
-
-	assert(proceed == P_FINISHED);
-	proceed= execute_phase_B(dep_link);
-	if (proceed & P_ABORT) {
-		TRACE("phase B aborted");
-		assert(is_valid(proceed) && (proceed & P_FINISHED));
+	assert(proceed_A == P_FINISHED);
+	if (error) {
+		TRACE("phase A aborted");
 		stage= ST_FINISHED;
-		return proceed;
-	}
-	if (proceed & (P_WAIT | P_CALL_AGAIN)) {
-		assert((proceed & P_FINISHED) == 0);
-		TRACE("phase B wait/call again");
-		return proceed;
+		return P_FINISHED;
 	}
 
-	assert(proceed == P_FINISHED);
+	Proceed proceed_B= execute_phase_B(dep_link);
+	assert(is_valid(proceed_B));
+	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
+		TRACE("phase B wait/call again");
+		return proceed_B;
+	}
+	assert(proceed_B == P_FINISHED);
+	if (error) {
+		TRACE("phase B aborted");
+		stage= ST_FINISHED;
+		return P_FINISHED;
+	}
+
 	assert(stage < ST_FINISHED);
 	if (stage == ST_NORMAL) {
 		++stage;
 		TRACE("finished");
-		return proceed;
+		return proceed_B;
 	} else if (stage == ST_DYNAMIC) {
 		launch_stage_normal();
 		goto again;

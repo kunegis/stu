@@ -18,14 +18,9 @@ enum {
 	 * order. */
 
 	P_FINISHED   = 1 << 2,
-	/* This Executor is finished. */
+	/* The executor is finished. */
 
-	P_ABORT      = 1 << 3,
-	/* This Executor should be finished immediately.  When set, P_FINISHED is also
-	 * set.  This does not imply that there was an error -- for instance, the trivial
-	 * flag -t may mean that nothing more should be done. */
-
-	P_COUNT      = 4
+	P_COUNT      = 3
 };
 
 #ifndef NDEBUG

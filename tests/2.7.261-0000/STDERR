@@ -1,0 +1,5 @@
+main.stu:5:9: no rule to build "X", needed by "list.C"
+B:1:4: "list.C" is needed by [B]
+main.stu:1:5: [B] is needed by [B].C
+main.stu:1:5: [B].C is needed by "A"
+../../bin/stu.test: targets not up to date because of errors

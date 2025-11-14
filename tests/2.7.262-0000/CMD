@@ -1,0 +1,1 @@
+-F 'A: [B] { cp C A ; } B { echo "-t C" >B ; } C { echo CORRECT >C ; }'

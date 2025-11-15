@@ -144,7 +144,7 @@ File_Executor::File_Executor(
 	}
 
 	parents.erase(parent);
-	if (find_cycle(parent, this, dep)) {
+	if (Cycle::find(parent, this, dep)) {
 		TRACE("Rule-level but not file-level cycle found");
 		parent->raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
@@ -484,10 +484,9 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	Proceed proceed_A= execute_phase_A(dep_link), proceed_B;
 	TRACE("proceed_A= %s", show(proceed_A));
 	assert(is_valid(proceed_A));
-	if (proceed_A & (P_WAIT | P_CALL_AGAIN)) {
+	if (proceed_A) {
 		return proceed_A;
 	}
-	assert(proceed_A == P_NOTHING);
 	if (error) {
 		done |= Done::from_flags(dep_link->flags);
 		return P_NOTHING;
@@ -694,7 +693,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	/* Second pass to execute also all trivial targets */
 	proceed_B= execute_phase_B(dep_link);
 	assert(is_valid(proceed_B));
-	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
+	if (proceed_B) {
 		return proceed_B;
 	}
 	assert(children.empty());

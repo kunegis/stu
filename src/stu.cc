@@ -11,6 +11,7 @@ using std::shared_ptr;
 #include "canonicalize.cc"
 #include "color.cc"
 #include "concat_executor.cc"
+#include "cycle.cc"
 #include "debug.cc"
 #include "dep.cc"
 #include "done.cc"

@@ -56,7 +56,7 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	Proceed proceed_A= execute_phase_A(dep_link);
 	assert(is_valid(proceed_A));
-	if (proceed_A & (P_WAIT | P_CALL_AGAIN)) {
+	if (proceed_A) {
 		TRACE("phase A wait/call again");
 		return proceed_A;
 	}
@@ -69,7 +69,7 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	Proceed proceed_B= execute_phase_B(dep_link);
 	assert(is_valid(proceed_B));
-	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
+	if (proceed_B) {
 		TRACE("phase B wait/call again");
 		return proceed_B;
 	}

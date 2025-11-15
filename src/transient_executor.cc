@@ -56,26 +56,13 @@ Transient_Executor::Transient_Executor(
 		executors_by_hash_dep[t]= this;
 	}
 
-	for (auto &dependency: rule->deps) {
-		shared_ptr <const Dep> depp= dependency;
-		if (dep_link->flags) {
-			shared_ptr <Dep> depp_new= depp->clone();
-			depp_new->flags |= dep_link->flags & (F_PLACED | F_ATTRIBUTE);
-			depp_new->flags |= F_RESULT_COPY;
-			for (unsigned i= 0; i < C_PLACED; ++i) {
-				assert(!(dep_link->flags & (1 << i)) ==
-				       dep_link->get_place_flag(i).empty());
-				if (depp_new->get_place_flag(i).empty() && ! dep_link->get_place_flag(i).empty())
-					depp_new->set_place_flag(i, dep_link->get_place_flag(i));
-			}
-			depp= depp_new;
-		}
-		push(depp);
+	for (auto &dep: rule->deps) {
+		push(prepare(dep, dep_link));
 	}
 
 	TRACE("Check cycle");
 	parents.erase(parent);
-	if (find_cycle(parent, this, dep_link)) {
+	if (Cycle::find(parent, this, dep_link)) {
 		TRACE("Rule-level but not file-level cycle found");
 		raise(ERROR_LOGICAL);
 		error_additional |= ERROR_LOGICAL;
@@ -105,11 +92,10 @@ Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	Proceed proceed_A= execute_phase_A(dep_link);
 	assert(is_valid(proceed_A));
-	if (proceed_A & (P_WAIT | P_CALL_AGAIN)) {
+	if (proceed_A) {
 		TRACE("Phase A wait / call again");
 		return proceed_A;
 	}
-	assert(proceed_A == P_NOTHING);
 	if (error) {
 		TRACE("Phase A abort");
 		done |= Done::from_flags(dep_link->flags);
@@ -125,11 +111,10 @@ Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 	Proceed proceed_B= execute_phase_B(dep_link);
 	TRACE("proceed_B= %s", show(proceed_B));
 	assert(is_valid(proceed_B));
-	if (proceed_B & (P_WAIT | P_CALL_AGAIN)) {
+	if (proceed_B) {
 		TRACE("Phase B wait / call again");
 		return proceed_B;
 	}
-	assert(proceed_B == P_NOTHING);
 
 	done |= Done::from_flags(dep_link->flags);
 	return P_NOTHING;
@@ -171,4 +156,20 @@ void Transient_Executor::notify_variable(
 bool Transient_Executor::optional_finished(shared_ptr <const Dep> )
 {
 	return false;
+}
+
+shared_ptr <const Dep> Transient_Executor::prepare(
+	shared_ptr <const Dep> dep,
+	shared_ptr <const Dep> dep_link)
+{
+	if (! dep_link->flags) return dep;
+	shared_ptr <Dep> dep_new= dep->clone();
+	dep_new->flags |= dep_link->flags & (F_PLACED | F_ATTRIBUTE);
+	dep_new->flags |= F_RESULT_COPY;
+	for (unsigned i= 0; i < C_PLACED; ++i) {
+		assert(!(dep_link->flags & (1 << i)) == dep_link->get_place_flag(i).empty());
+		if (dep_new->get_place_flag(i).empty() && ! dep_link->get_place_flag(i).empty())
+			dep_new->set_place_flag(i, dep_link->get_place_flag(i));
+	}
+	return dep_new;
 }

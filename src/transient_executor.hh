@@ -49,6 +49,8 @@ private:
 	std::map <string, string> mapping_variable;
 	/* Variable assignments from variables dependencies.  This is in
 	 * Transient_Executor because it may be percolated up to the parent executor. */
+
+	static shared_ptr <const Dep> prepare(shared_ptr <const Dep> dep, shared_ptr <const Dep> dep_link);
 };
 
 #endif /* ! TRANSIENT_EXECUTOR_HH */

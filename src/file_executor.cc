@@ -487,14 +487,14 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (proceed_A & (P_WAIT | P_CALL_AGAIN)) {
 		return proceed_A;
 	}
-	assert(proceed_A == P_FINISHED);
+	assert(proceed_A == P_NOTHING);
 	if (error) {
 		done |= Done::from_flags(dep_link->flags);
-		return P_FINISHED;
+		return P_NOTHING;
 	}
 
 	if (finished(dep_link->flags)) {
-		return P_FINISHED;
+		return P_NOTHING;
 	}
 
 	/* Job has already been started */
@@ -615,7 +615,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				} else {
 					unreachable();
 					/* In this case, execute_phase_A() will already
-					 * have returned P_FINISHED. */
+					 * have returned zero. */
 				}
 			}
 
@@ -626,7 +626,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 						hash_dep.get_name_c_str_nondynamic());
 				raise(ERROR_BUILD);
 				done |= Done::from_flags(dep_link->flags);
-				return P_FINISHED;
+				return P_NOTHING;
 			}
 
 			/* File does not exist, all its dependencies are up to
@@ -648,7 +648,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				}
 				done |= Done::from_flags(dep_link->flags);
 				raise(ERROR_BUILD);
-				return P_FINISHED;
+				return P_NOTHING;
 			}
 		}
 		/* We cannot update TIMESTAMP within the loop above
@@ -686,7 +686,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (! (bits & B_NEED_BUILD)) {
 		TRACE("No need to build");
 		done |= Done::from_flags_trivial_and_nontrivial(dep_link->flags);
-		return P_FINISHED;
+		return P_NOTHING;
 	}
 
 	/* We now know that the command must be run, or that there is no command. */
@@ -702,7 +702,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */
 		done |= Done::from_flags(dep_link->flags);
-		return P_FINISHED;
+		return P_NOTHING;
 	}
 
 	/* The command must be run (or the file created, etc.) now */
@@ -727,7 +727,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		write_content(hash_deps.front().get_name_c_str_nondynamic(),
 			*(rule->command));
 		done.set_all();
-		return P_FINISHED;
+		return P_NOTHING;
 	}
 
 	/* We have to start a job now */
@@ -764,7 +764,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		Signal_Blocker sb;
 
 		if (start(dep_link, pid, mapping))
-			return P_FINISHED;
+			return P_NOTHING;
 		TRACE("pid= %s", frmt("%jd", (intmax_t)pid));
 		assert(pid != 0 && pid != 1);
 		DEBUG_PRINT(frmt("execute: pid = %jd", (intmax_t) pid));
@@ -775,7 +775,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				     show(hash_deps.front()));
 			raise(ERROR_BUILD);
 			done |= Done::from_flags(dep_link->flags);
-			return P_FINISHED;
+			return P_NOTHING;
 		}
 
 		executors_add(pid, index, this);

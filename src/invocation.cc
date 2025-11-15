@@ -208,7 +208,7 @@ void Invocation::main_loop()
 			do {
 				Debug::print(nullptr, "loop");
 				proceed= root_executor->execute(dep_root);
-				assert(proceed);
+				assert(is_valid(proceed));
 			} while (proceed & P_CALL_AGAIN);
 
 			if (proceed & P_WAIT)

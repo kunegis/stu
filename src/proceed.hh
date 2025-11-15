@@ -17,10 +17,8 @@ enum {
 	 * waiting) at least, for various reasons, mostly for randomization of execution
 	 * order. */
 
-	P_FINISHED   = 1 << 2,
-	/* The executor is finished. */
-
-	P_COUNT      = 3
+	P_COUNT      = 2,
+	P_NOTHING    = 0,
 };
 
 #ifndef NDEBUG

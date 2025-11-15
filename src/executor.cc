@@ -548,7 +548,7 @@ Proceed Executor::execute_children()
 		       ((child->finished(dep_child->flags)) == 0));
 
 		proceed_all |= proceed_child & ~P_FINISHED;
-		/* The finished and abort flags of the child only apply to the
+		/* The finished flag of the child only applies to the
 		 * child, not to us. */
 
 		if (proceed_child == P_FINISHED) {
@@ -573,7 +573,7 @@ Proceed Executor::execute_children()
 		if (error) {
 			assert(option_k);
 		}
-		proceed_all |= P_FINISHED;
+		proceed_all= P_FINISHED;
 	}
 
 	TRACE("proceed_all= %s", show(proceed_all));
@@ -753,10 +753,6 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 				TRACE("Wait; no jobs left");
 				return proceed;
 			}
-		} else if (finished(dep_link->flags) && ! option_k) {
-			DEBUG_PRINT("finished");
-			TRACE("Finished");
-			return P_FINISHED;
 		}
 	}
 
@@ -810,9 +806,8 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 		return proceed;
 	}
 
-	proceed= P_FINISHED;
-	TRACE("Finished, proceed= %s", show(proceed));
-	return proceed;
+	TRACE("Finished");
+	return P_FINISHED;
 }
 
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)

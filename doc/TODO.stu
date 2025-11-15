@@ -15,6 +15,10 @@
 #
 
 #
+# Maybe remove P_FINISHED, and return zero when things are finished.
+#
+
+#
 # FreeBSD:
 # * make check
 # ** 2.4.7-foreground:  tcsetpgrp: Operation not permitted-foreground  (test does not fail, but outputs this)

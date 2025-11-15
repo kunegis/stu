@@ -59,6 +59,7 @@ Transient_Executor::Transient_Executor(
 	for (auto &dependency: rule->deps) {
 		shared_ptr <const Dep> depp= dependency;
 		if (dep_link->flags) {
+			// TODO make own function
 			shared_ptr <Dep> depp_new= depp->clone();
 			depp_new->flags |= dep_link->flags & (F_PLACED | F_ATTRIBUTE);
 			depp_new->flags |= F_RESULT_COPY;

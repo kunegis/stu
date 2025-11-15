@@ -147,8 +147,8 @@ bool Executor::find_cycle(
 	shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION();
-	TRACE("parent= %s", ::show(*parent));
-	TRACE("child= %s", ::show(*child));
+	TRACE("parent= %s", show_trace(*parent));
+	TRACE("child= %s", show_trace(*child));
 	std::vector <Executor *> path;
 	path.push_back(parent);
 	return find_cycle(path, child, dep_link);
@@ -602,7 +602,7 @@ void Executor::push(shared_ptr <const Dep> dep)
 void Executor::push_normalized(shared_ptr <const Dep> dep)
 {
 	TRACE_FUNCTION();
-	TRACE("dep= %s", show(dep));
+	TRACE("dep= %s", show_trace(dep));
 	assert(dep->is_normalized());
 	shared_ptr <const Dep> untrivialized= dep->untrivialize();
 	TRACE("untrivialized= %s", untrivialized ?
@@ -756,7 +756,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	assert(options_jobs > 0);
 
 	while (! buffer_A.empty()) {
-		TRACE("Buffer B not empty");
+		TRACE("A: Buffer A not empty");
 		shared_ptr <const Dep> dep_child= buffer_A.pop();
 		TRACE("Popped from buffer_A dep_child= %s", show_trace(dep_child));
 		Proceed proceed_child= connect(dep_link, dep_child);
@@ -809,12 +809,13 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 	Proceed proceed= 0;
 
 	while (! (buffer_A.empty() && buffer_B.empty())) {
-		TRACE("Buffers not empty");
+		TRACE("B: Buffers not empty");
 		if (! buffer_A.empty()) {
-			TRACE("Buffer A not empty");
+			TRACE("B: Buffer A not empty");
 			Proceed proceed_A= execute_phase_A(dep_link);
 			if (proceed_A & P_WAIT) {
-				return proceed | proceed_A;
+				TRACE("XXX"); // rm 
+				return proceed | proceed_A; // XXX coverage
 			}
 			if (proceed_A == P_NOTHING && error) {
 				proceed |= proceed_A;
@@ -823,7 +824,7 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 			proceed |= proceed_A;
 		}
 		if (! buffer_B.empty()) {
-			TRACE("Buffer B not empty");
+			TRACE("B: Buffer B not empty");
 			shared_ptr <const Dep> dep_child= buffer_B.pop();
 			TRACE("Popped from buffer_B dep_child=%s", show_trace(dep_child));
 			Proceed proceed_child= connect(dep_link, dep_child);

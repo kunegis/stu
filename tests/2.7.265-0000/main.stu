@@ -1,0 +1,6 @@
+A:  [-o [B]] [[B]] { cat D >A ; }
+B { echo 'C' >B ; }
+C { echo D >C ; }
+##E { echo F >E ; }
+D { echo correct >D ; }
+##F { echo fff >F ; }

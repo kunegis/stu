@@ -1,0 +1,4 @@
+A: [-o[B]] -o[[B]] { cp D A ; }
+>B { echo C ; }
+>C { echo D ; }
+>D { echo ddd ; }

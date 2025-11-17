@@ -1,0 +1,5 @@
+>B: echo C ;
+>C: echo D ;
+>D: echo ddd ;
+cp D A ;
+Build successful

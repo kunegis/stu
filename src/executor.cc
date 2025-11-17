@@ -676,10 +676,9 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	}
 
 	TRACE("Some dependencies are still open");
-	TRACE("proceed= %s", show(proceed));
 	if (! children.empty()) {
-		assert(is_valid(proceed));
 		TRACE("Children not empty, proceed= %s", show(proceed));
+		assert(is_valid(proceed));
 		return proceed;
 	}
 

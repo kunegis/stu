@@ -1,9 +1,4 @@
 #
-# Achieve full coverage.
-# * Make 'make test' also execute 'make cov' (between debug and ndebug tests).
-#
-
-#
 # tests/long-sigusr1-1/EXEC hangs sometimes.
 # * Happens only in the cov variant
 # * Processes hang in the futex() system, maybe because other cov test processes are

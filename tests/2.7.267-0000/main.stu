@@ -1,0 +1,4 @@
+A: [-o[B]] -o[[B]] {}
+>B { echo C ; }
+>C { echo ddd/eee ; }
+ddd/eee = {EEE}

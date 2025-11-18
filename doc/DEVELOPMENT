@@ -16,8 +16,6 @@ For development, use 'make test' (it works only with GCC).
 Before pushing changes:
 * Increment the version number in VERSION
 * Run 'make test' successfully
-* Run 'make cov' and check that no new uncovered lines were added (one day we'll require
-  100% coverage)
 * Squash the commits
 
 Version logic (see 'NEWS' for an explanation of version numbers):
@@ -39,15 +37,15 @@ The debug version enables tracing, which is very useful for debugging; see src/t
 
 Unit testing is described in 'sh/test'.
 
-The command 'make test' will also execute all unit tests, as well as sanitizer tests.
-This takes about fifteen minutes.
+The command 'make test' will also execute all unit tests, as well as sanitizer tests, and
+check that the tests have 100% code line coverage.  This takes about twenty minutes.
 
 When using another compiler than GCC, you can use 'make check' instead, which disables
 warnings and doesn't run code cleanliness tests.  But when contributing to Stu, please run
 'make test'.
 
 When we add new functionality, we always add unit tests for it, covering both success and
-failure.
+failure.  'make test' will fail if there is not 100% code line test coverage.
 
 If you run the tests and they fail, report that to Jérôme Kunegis <kunegis@gmail.com>.
 
@@ -57,10 +55,7 @@ Running 'make check' has more requirements than just compiling Stu:
 * The unit tests assume that the file system supports UTF-8 filenames.  Stu will work
   without such a file system, but you can't run the unit tests unless you remove the
   offending tests (tests/1-unicode-*/).
-* LD_PRELOAD must work
 
 Running 'make test' has the following additional requirements:
+* $LD_PRELOAD must work
 * -fsanitize=undefined must work
-
-Running 'make cov' has the following requirements:
-* lcov

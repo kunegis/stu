@@ -12,6 +12,7 @@ test: \
     bin/stu \
     log/test_options \
     log/test_unit.debug \
+    cov \
     log/test_clean \
     log/test_unit.ndebug \
     log/test_clean_last \
@@ -110,6 +111,7 @@ install:  sh/install bin/stu man/stu.1
 	sh/install
 clean:
 	rm -Rf bin/ conf/ log/ cov/ src/version.hh
+	sh/rm_tmps
 
 MANPAGE:  man/stu.1
 	MANWIDTH=80 man man/stu.1 >MANPAGE

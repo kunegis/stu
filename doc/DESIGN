@@ -4,69 +4,58 @@
 
 The design considerations of Stu are:
 
-* Genericity:  In many projects, the same rule has to be executed over
-  and over again with varying parameters.  This is particularly true in
-  data mining / data science / machine learning and related areas, but
-  also applies to simply compiling programs with varying compiler
-  options, etc.  Being able to do this using a clean syntax and friendly
-  semantics is the main motivation of Stu, and where virtually all other
-  Make replacements fail.  Most Make replacement force the user to write
-  loops or similar constructs.
-* Generality:  Don't focus on a particular use case such as compilation,
-  but be a generic build tool.  There are no built-in rules for
-  compilation or other specific applications.  Instead, allow use
-  case-specific rules to be written in the Stu language itself.  Most
-  Make replacement tools instead focus on one specific use-case (almost
-  always compilation), making them ill-suited for general use.
-* Files are the central datatype.  Everything is a file.  You can think
-  of Stu as "a declarative programming language in which all variables
-  are files."  For instance, Stu has no variables like Make; instead,
-  files are used.  Other Make replacements are even worse than Make in
-  this regard, and allow any variable in whatever programming language
-  they are using.  Stu is based on the Unix principle that any
-  persistent object should have a name in the file system -- "everything
-  is a file."
-* Scalability:  Assume that projects are so large that you can't just
-  clean and rebuild everything if there are build inconsistencies.
-  Files are sacred; never make the user delete files in order to rebuild
-  things.
-* Simplicity:  Do one thing well.  We don't include features such as file
-  compression that can be achieved by other tools from within shell
-  commands.  List of files and dependencies are themselves targets that
-  are built using shell commands, and therefore any external software
-  can be used to define them, without any special support needed from
-  Stu.  Too many Make replacements try to "avoid the shell" and include
-  every transformation possible into the tool, effectively amassing
-  dozens of unnecessary dependencies, and creating an ad-hoc language
-  much less well-defined, and let alone portable, than the shell.
-* Debuggability:  Like programs written in any programming language, Stu
-  scripts will contain errors.  Stu makes it easy to detect and correct
-  errors by having much better error messages than Make.  This is
-  achieved by (1) having a proper syntax based on tokenization (rather
-  than Make's text replacement rules), and (2) having "compiler-grade"
-  error messages, showing not only what went wrong, but how Stu got
-  there.  Anyone who has ever wondered why a certain Make rule was
-  executed (or not) will know the value of this.
-* Portability:  Embrace POSIX as an underlying standard.  Use the shell
-  as the underlying command interpreter.  Don't try to create a
-  purportedly portable layer on top of it, as POSIX _already is_ a
-  portability layer.  Also, don't try to create a new portable language
-  for executing commands, as /bin/sh _already is_ one.  Furthermore,
-  don't use fancy libraries or hip programming languages.  Stu is
-  written in plain C++ with only standard libraries.  Many other Make
-  replacements are based on specific programming languages as their
-  "base standard", effectively limiting their use to that language, and
-  thus preventing projects to use multiple programming languages.
-  Others even do worse and create their own mini-language, invariably
-  less portable and more buggy than the shell.
-* Reliability:  Stu has extensive unit test coverage, with more than 1,000
-  tests.  All published versions pass 100% of these tests.  All language
-  features and error paths are unit tested.
-* Stability:  We follow Semantic Versioning (semver.org) in order to
-  provide syntax and semantics that are stable over time.  Stu scripts
-  written now will still work in the future.
-* Familiarity:  Stu follows the conventions of Make and of the shell as
-  much as possible, to make it easier to make the switch from Make to
-  Stu.  For instance, the options -j and -k work like in Make.  Also,
-  Stu source can be edited with syntax highlighting for the shell, as
-  the syntaxes are very similar.
+* Genericity:  In many projects, the same rule has to be executed over and over again with
+  varying parameters.  This is particularly true in data mining / data science / machine
+  learning and related areas, but also applies to simply compiling programs with varying
+  compiler options, etc.  Being able to do this using a clean syntax and friendly
+  semantics is the main motivation of Stu, and where virtually all other Make replacements
+  fail.  Most Make replacement force the user to write loops or similar constructs.
+* Generality:  Don't focus on a particular use case such as compilation, but be a generic
+  build tool.  There are no built-in rules for compilation or other specific applications.
+  Instead, allow use case-specific rules to be written in the Stu language itself.  Most
+  Make replacement tools instead focus on one specific use-case (almost always
+  compilation), making them ill-suited for general use.
+* Files are the central datatype.  Everything is a file.  You can think of Stu as "a
+  declarative programming language in which all variables are files."  For instance, Stu
+  has no variables like Make; instead, files are used.  Other Make replacements are even
+  worse than Make in this regard, and allow any variable in whatever programming language
+  they are using.  Stu is based on the Unix principle that any persistent object should
+  have a name in the file system -- "everything is a file."
+* Scalability: Assume that projects are so large that you can't just clean and rebuild
+  everything if there are build inconsistencies.  Files are sacred; never make the user
+  delete files in order to rebuild things.
+* Simplicity: Do one thing well.  We don't include features such as file compression that
+  can be achieved by other tools from within shell commands.  List of files and
+  dependencies are themselves targets that are built using shell commands, and therefore
+  any external software can be used to define them, without any special support needed
+  from Stu.  Too many Make replacements try to "avoid the shell" and include every
+  transformation possible into the tool, effectively amassing dozens of unnecessary
+  dependencies, and creating an ad-hoc language much less well-defined, and let alone
+  portable, than the shell.
+* Debuggability: Like programs written in any programming language, Stu scripts will
+  contain errors.  Stu makes it easy to detect and correct errors by having much better
+  error messages than Make.  This is achieved by (1) having a proper syntax based on
+  tokenization (rather than Make's text replacement rules), and (2) having
+  "compiler-grade" error messages, showing not only what went wrong, but how Stu got
+  there.  Anyone who has ever wondered why a certain Make rule was executed (or not) will
+  know the value of this.
+* Portability: Embrace POSIX as an underlying standard.  Use the shell as the underlying
+  command interpreter.  Don't try to create a purportedly portable layer on top of it, as
+  POSIX _already is_ a portability layer.  Also, don't try to create a new portable
+  language for executing commands, as /bin/sh _already is_ one.  Furthermore, don't use
+  fancy libraries or hip programming languages.  Stu is written in plain C++ with only
+  standard libraries.  Many other Make replacements are based on specific programming
+  languages as their "base standard", effectively limiting their use to that language, and
+  thus preventing projects to use multiple programming languages.  Others even do worse
+  and create their own mini-language, invariably less portable and more buggy than the
+  shell.
+* Reliability: Stu has extensive unit test coverage, with more than 1,000 tests.  All
+  published versions pass 100% of these tests.  All language features and error paths are
+  unit tested, with 100% test coverage of code lines.
+* Stability: We follow Semantic Versioning (semver.org) in order to provide syntax and
+  semantics that are stable over time.  Stu scripts written now will still work in the
+  future.
+* Familiarity: Stu follows the conventions of Make and of the shell as much as possible,
+  to make it easier to make the switch from Make to Stu.  For instance, the options -j and
+  -k work like in Make.  Also, Stu source can be edited with syntax highlighting for the
+  shell, as the syntaxes are very similar.

@@ -1,15 +1,4 @@
 #
-# tests/long-sigusr1-1/EXEC hangs sometimes.
-# * Happens only in the cov variant
-# * Processes hang in the futex() system, maybe because other cov test processes are
-#   running and hold a lock on the cov output file.
-# ** long-sigint-immediately:  may leak processes. (fixed)
-# ** Maybe some cov Stu processes get killed in the middle of a cov operation, and leave
-#    the cov file in an inconsistent state.
-# * When done, remove the logfile and ps calls.
-#
-
-#
 # FreeBSD:
 # * make check
 # ** 2.4.7-foreground:  tcsetpgrp: Operation not permitted-foreground  (test does not fail, but outputs this)
@@ -43,6 +32,62 @@
 #
 # will print the full traces of includes.  But replacing the content of main3.stu with
 # ::::::: will only print an error as if it was in main.stu.
+#
+
+#
+# Combining -n/-t and -o
+#
+
+A: [ -n -o B ] { touch A ; }  B={C}
+A: [ -t -o B ] { touch A ; }  B={C}
+
+#
+# Deprecate the -d option.
+#
+
+#
+# Test installing the auto-generated .deb from Github.  Or remove it and the source code
+# for it.
+#
+
+#
+# Rename transients to phonies, and use the word "transient" only when there is no command
+# and no file target.
+#
+
+#
+# Test what happens when a child process of Stu is stopped.
+#
+
+#
+# Remove the file "tests.runtime".
+#
+
+#
+# tokenizer.cc: print_errno()/format_errno() should be passed the name of the failing function as first
+# argument.  Then, we can write print_errno() such that the first arg must always be known
+# at compile time, i.e., be a string constant representing the failing function.
+# * Also check whether maybe all uses of print_errno() should be replaced by
+#   place << format(::show(filename));
+# * If kept, print_errno() should also use show() to correctly escape characters in
+#   filenames.
+# * Check whether uses of perror() can be replaces by print_errno().
+#
+
+#
+# In content rules, when the content is very long, don't output the content in stdout when
+# building.
+#
+
+#
+# job.cc:  At the moment, the various cases of execve() are always counted as "covered"
+# because they happen after "__gcov_dump()".  Change the sh/cov_eval code to not do that.
+# There shoud already be tests for those cases.
+#
+
+#
+# Option -i:  when no TTY is available, this should be an error (code 4) and not a
+# warning.
 #
 
 #
@@ -314,22 +359,6 @@ A: -e B
 #
 
 #
-# Combining -n/-t and -o
-#
-
-A: [ -n -o B ] { touch A ; }  B={C}
-A: [ -t -o B ] { touch A ; }  B={C}
-
-#
-# Deprecate the -d option.
-#
-
-#
-# Test installing the auto-generated .deb from Github.  Or remove it and the source code
-# for it.
-#
-
-#
 # explain.cc/...:  Have codes for errors, and store the explanations in nicer places than
 # in functions in explain.cc.
 #
@@ -365,7 +394,7 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 
 #
-# Concatenation with the '|' operator.
+# Concatenation with the '|' or '*' operator.
 #
 
 #
@@ -383,21 +412,12 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 
 #
-# Don't increase the patch number with every commit.
-#
-
-#
 # Option to disable check that targets have been created after command is successful.
 #
 
 #
-# Rename transients to phonies, and use the word "tranient" only when there is no command
-# and no file target.
-#
-
-#
-# Think about putting a space before the assignment operator, and removing the space after
-# #!.
+# In Stu's sources, think about putting a space before the assignment operator, and
+# removing the space after #!.
 #
 
 #
@@ -412,38 +432,14 @@ A: [ -t -o B ] { touch A ; }  B={C}
 %include -o FILENAME
 
 #
-# Test what happens when a child process of Stu is stopped.
-#
-
-#
-# Maybe remove the file "tests.runtime".
-#
-
-#
-# tokenizer.cc: print_errno()/format_errno() should be passed the name of the failing function as first
-# argument.  Then, we can write print_errno() such that the first arg must always be known
-# at compile time, i.e., be a string constant representing the failing function.
-# * Also check whether maybe all uses of print_errno() should be replaced by
-#   place << format(::show(filename));
-# * If kept, print_errno() should also use show() to correctly escape characters in
-#   filenames.
-# * Check whether uses of perror() can be replaces by print_errno().
-#
-
-#
 # Option -F:  Error messages for which the place is in option -f should not print "Option
-# -F".  Instead, don't print a place.
+# -F".  Instead, don't print a place.  (Maybe -- discuss)
 #
 
 #
 # Output the time it takes for each test to execute.  For all long-* tests, check if any
 # is short, and if it is, whether the test goes wrong accidentally, or should not be in
 # long-*.
-#
-
-#
-# In content rules, when the content is very long, don't output the content in stdout when
-# building.
 #
 
 #
@@ -468,17 +464,6 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 
 #
-# job.cc:  At the moment, the various cases of execve() are always counted as "covered"
-# because they happen after "__gcov_dump()".  Change the sh/cov_eval code to not do that.
-# There shoud already be tests for those cases.
-#
-
-#
-# Option -i:  when no TTY is available, this should be an error (code 4) and not a
-# warning.
-#
-
-#
 # bin/stu.debug -F 'A: B C D; B{sleep 2; touch B;} C={ccc} D{touch D;}'
 #
 # Stu shouldn't wait for B to be built before creating C, because C doesn't need a process
@@ -486,4 +471,16 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 # On the other hand, maybe don't do this, because it will force the whole dependency tree
 # to be generated after the first <k> jobs are started, even if no content rule exists.
+#
+
+#
+# tests/long-sigusr1-1/EXEC hangs sometimes.
+# * Happens only in the cov variant
+# * Last observed in October 2025
+# * Processes hang in the futex() system, maybe because other cov test processes are
+#   running and hold a lock on the cov output file.
+# ** long-sigint-immediately:  may leak processes. (fixed)
+# ** Maybe some cov Stu processes get killed in the middle of a cov operation, and leave
+#    the cov file in an inconsistent state.
+# * When done, remove the logfile and ps calls.
 #

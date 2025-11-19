@@ -80,6 +80,10 @@ A: [ -t -o B ] { touch A ; }  B={C}
 #
 
 #
+# Support long options, with getopt_long().
+#
+
+#
 # job.cc:  At the moment, the various cases of execve() are always counted as "covered"
 # because they happen after "__gcov_dump()".  Change the sh/cov_eval code to not do that.
 # There shoud already be tests for those cases.

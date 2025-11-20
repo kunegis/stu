@@ -17,6 +17,7 @@ pid_t Job::start(
 	string filename_input,
 	const Place &place_command)
 {
+	TRACE_FUNCTION();
 	assert(pid == -2);
 	init_signals();
 	const char *shell_shortname;
@@ -247,6 +248,7 @@ pid_t Job::wait(int *status)
 
 bool Job::waited(int status, pid_t pid_check)
 {
+	TRACE_FUNCTION();
 	assert(pid_check >= 0);
 	assert(pid >= 0);
 	assert(pid_check == pid);
@@ -262,7 +264,7 @@ bool Job::waited(int status, pid_t pid_check)
 		int fd_tty= get_fd_tty();
 		assert(fd_tty >= 0);
 		assert(option_i);
-		if (tcsetpgrp(fd_tty, getpid()) < 0)
+		if (tcsetpgrp(fd_tty, getpgrp()) < 0)
 			print_errno("tcsetpgrp");
 	}
 	pid= -1;

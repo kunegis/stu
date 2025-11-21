@@ -1,11 +1,8 @@
 #
-# FreeBSD:
-# * make check
-# ** long-int-remove-files:  kill: <pid>: No such process
-# ** long-2.7.245-0000: EXEC failed
-# ** unidentified test after long-int-remove-files, maybe around long-sigusr1-1:  ps on
-#    FreeBSD doesn't support the used ps options
-# * Try: make test (or maybe do that later)
+# FreeBSD: make check
+# * long-2.7.245-0000: EXEC failed
+# * unidentified test after long-int-remove-files, maybe around long-sigusr1-1:  ps on
+#   FreeBSD doesn't support the used ps options
 #
 
 #
@@ -489,4 +486,8 @@ A: -e B
 # ** Maybe some cov Stu processes get killed in the middle of a cov operation, and leave
 #    the cov file in an inconsistent state.
 # * When done, remove the logfile and ps calls.
+#
+
+#
+# * "make test" on FreeBSD
 #

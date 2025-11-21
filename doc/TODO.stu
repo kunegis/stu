@@ -1,6 +1,5 @@
 #
 # FreeBSD: make check
-# * long-2.7.245-0000: EXEC failed
 # * unidentified test after long-int-remove-files, maybe around long-sigusr1-1:  ps on
 #   FreeBSD doesn't support the used ps options
 #

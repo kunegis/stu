@@ -16,7 +16,8 @@ pid=$!
 echo sleep 1
 sleep 1 || exit 2
 
-child_pid=$(sed -E -e 's,^pid=,,;t;d' list.out)
+child_pid=$(sed -E -e 's,^pid=,,;t
+d' list.out)
 echo child_pid="$child_pid"
 echo "$child_pid" | grep -q -E -e '^[0-9]+$' || exit 2
 

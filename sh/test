@@ -626,9 +626,5 @@ fi
 time_end=$(sh/now)
 time_diff=$(( time_end - time_begin ))
 runtime=$(printf '%u:%02u\n' "$(expr $time_diff / 60)" "$(expr $time_diff % 60)")
-if [ -z "$1" ] && [ "$VARIANT" = ndebug ] ; then
-	echo >>tests.runtime \
-	     "$(date +%Y-%m-%dT%H:%M:%S) $(printf %s "$(cat VERSION)") $runtime"
-fi
 output_success
 exit "$ret"

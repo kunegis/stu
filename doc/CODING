@@ -175,3 +175,8 @@ scripting.
   judiciously instead of 'echo'.  Note that the format string of printf should not start
   with a dash.  In such cases, use %s and a subsequent string, which can start with a
   dash.
+* When using temporary files, use ${TMPDIR:-/tmp} as the directory.  Scripts delete all
+  temporary files they create, even when interrupted.  Some tests cannot use $TMPDIR and
+  must use /tmp directly, because they test Stu pattern matching.  That could be changed
+  at some point, but we keep things like that for now.  Temporary files include $$ (the
+  PID) to make sure multiple scripts/tests can be executed in parallel.

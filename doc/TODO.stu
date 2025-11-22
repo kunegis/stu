@@ -1,10 +1,8 @@
 #
-# Make sure no tests leave files in /tmp/, or processes running.
-#
-
-#
 # Find a way to sleep sub-second amounts in a POSIX script, so that we can make the tests
 # faster.  (Maybe)
+# * There seems to be no way to sleep sub-second amounts on POSIX scripts, so we would
+#   have to compile a separate program for it.
 #
 
 #
@@ -482,5 +480,9 @@ A: -e B
 #
 
 #
-# * "make test" on FreeBSD
+# "make test" on FreeBSD
+#
+
+#
+# On FreeBSD, "echo '\\-----' outputs to backslashes, but we use it to output one.
 #

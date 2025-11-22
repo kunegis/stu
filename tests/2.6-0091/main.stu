@@ -2,7 +2,8 @@
 
 A: @Y /tmp/[N]  {
 	[ -e Z ] || exit 1
-	touch A 
+	touch A
+	rm /tmp/"$(cat N)"
 }
 
 $dir/tmp/$name:  

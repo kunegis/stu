@@ -23,7 +23,7 @@ clean() {
 count_total=0
 count_error=0
 line_number=0
-error_file=${TMP:-/tmp}/stu-longtrivial.$$
+error_file=${TMPDIR:-/tmp}/stu-longtrivial.$$
 echo 0 >"$error_file"
 trap clean EXIT INT QUIT TERM ABRT HUP
 clean || exit 2

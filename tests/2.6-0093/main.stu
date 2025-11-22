@@ -1,6 +1,7 @@
 A:  /tmp/list.[N]/tmp/bbb
 {
 	cp /tmp/list."$(cat N)"/tmp/bbb A
+	rm -Rf /tmp/list."$(cat N)"
 }
 
 $dir/tmp/$B

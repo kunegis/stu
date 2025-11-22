@@ -8,7 +8,7 @@
 
 [ "$COV_EVAL_VERBOSE" ] && exec 6>&2 || exec 6>/dev/null
 
-ret_file=${TMP:-/tmp}/cov_eval.ret.$$
+ret_file=${TMPDIR:-/tmp}/cov_eval.ret.$$
 echo >&6 "ret_file=$ret_file"
 
 clean()

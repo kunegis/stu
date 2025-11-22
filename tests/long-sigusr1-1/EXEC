@@ -1,6 +1,6 @@
 #! /bin/sh
 
-logfile=${TMP:-/tmp}/stu-$(basename $(pwd)).$$.log
+logfile=${TMPDIR:-/tmp}/stu-$(basename $(pwd)).$$.log
 
 exec 6>"$logfile"
 

@@ -1,18 +1,21 @@
 # '$dir/name' matches '/name' with $dir set to '/'.
 
-A: Y /tmp/list.SCHTROUMPF.8237674236  {
-	touch A 
+A: Y /tmp/list.SCHTROUMPF.[list.pid]  {
+	touch A
+	rm /tmp/list.SCHTROUMPF."$(cat list.pid)"
 }
 
-$dir/tmp/list.SCHTROUMPF.8237674236 {
+$dir/tmp/list.SCHTROUMPF.$x {
 	[ / = "$dir" ] || exit 1
-	[ -e /tmp/list.SCHTROUMPF.8237674236 ] && exit 1
-	touch /tmp/list.SCHTROUMPF.8237674236
-	[ -e /tmp/list.SCHTROUMPF.8237674236 ] || exit 1
+	[ -e /tmp/list.SCHTROUMPF."$x" ] && exit 1
+	touch /tmp/list.SCHTROUMPF."$x"
+	[ -e /tmp/list.SCHTROUMPF."$x" ] || exit 1
 	exit 0
 }
 
-Y {
-	rm -f /tmp/list.SCHTROUMPF.8237674236
+Y: list.pid {
+	rm -f /tmp/list.SCHTROUMPF."$(cat list.pid)"
 	touch Y
 }
+
+>list.pid { echo $$ ; }

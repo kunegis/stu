@@ -1,6 +1,6 @@
 #! /bin/sh
 
-error_file=${TMP:-/tmp}/test_clean.$$.error
+error_file=${TMPDIR:-/tmp}/test_clean.$$.error
 rm -f -- "$error_file"
 trap clean EXIT
 # Functions report errors by returning non-zero OR by touching $error_file

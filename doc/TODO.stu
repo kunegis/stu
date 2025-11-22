@@ -1,10 +1,4 @@
 #
-# FreeBSD: make check
-# * unidentified test after long-int-remove-files, maybe around long-sigusr1-1:  ps on
-#   FreeBSD doesn't support the used ps options
-#
-
-#
 # Make sure no tests leave files in /tmp/, or processes running.
 #
 

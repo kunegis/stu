@@ -1,10 +1,4 @@
 #
-# Output the time it takes for each test to execute.  For all long-* tests, check if any
-# is short, and if it is, whether the test goes wrong accidentally, or should not be in
-# long-*.
-#
-
-#
 # Find a way to sleep sub-second amounts in a POSIX script, so that we can make the tests
 # faster.  (Maybe)
 # * There seems to be no way to sleep sub-second amounts on POSIX scripts, so we would
@@ -481,4 +475,14 @@ A: -e B
 
 #
 # On FreeBSD, "echo '\\-----' outputs to backslashes, but we use it to output one.
+#
+
+#
+# Check why long-1-concatenation-04 takes so much time.  Maybe it has accidential
+# quadratic or exponential behavior?
+#
+
+#
+# Runtime checks for tests:  In sh/test, check the runtime for each test individually, and
+# use the usual error mechanism.
 #

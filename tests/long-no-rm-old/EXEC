@@ -2,12 +2,14 @@
 
 set -e
 
-rm -f ?
+rm -f ? list.*
 
 touch A
 
-../../bin/stu.test &
+../../bin/stu.test >list.out 2>list.err &
 pid=$!
+
+sleep 1
 
 kill "$pid"
 
@@ -15,5 +17,7 @@ kill "$pid"
 	echo >&2 "*** error (a) 'A' must be present"
 	exit 1
 }
+
+rm -f ? list.*
 
 exit 0

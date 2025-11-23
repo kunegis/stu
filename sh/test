@@ -13,13 +13,14 @@
 # name contains the glob characters *, ?, etc.)
 #
 # OUTPUT FILES
-#	log/error.log List of tests that failed, one name per line
+#	log/error.log           List of tests that failed, one name per line
+#	log/runtime.$VARIANT    Runtimes of all tests
 #
 # PARAMETERS
 #	$NDEBUG       Set to non-empty to test the nondebug version; by default the debug
 #	              version is tested
 #	$VARIANT      Other variant of the compiled file; the default is to take the file
-#	              that matches the value of $NDEBUG
+#	              that matches the value of $NDEBUG (debug / ndebug)
 #	$TEST_VERBOSE Set to {0,1,2} for verbose levels; default is 0. (This variable is
 #	              used by EXEC scripts in the same way.)
 #	$nolong       Skip the long-* tests
@@ -232,9 +233,6 @@ preload_tty_so=$PWD/bin/preload-tty.so
 CMDPREFIX_TTY="TERM=xterm"
 unset STU_OPTIONS
 
-mkdir -p log
-exec 6>log/error.log
-
 TEST_VERBOSE=${TEST_VERBOSE:-0}
 printf '%s\n' "$TEST_VERBOSE" | grep -q -E '^[0123456789]$' || {
 	echo >&2 "$0: *** Invalid verbosity level '$TEST_VERBOSE'"
@@ -254,6 +252,11 @@ else
 		ln -s stu.debug bin/stu.test || exit 2
 	fi
 fi
+echo >&7 "VARIANT=$VARIANT"
+
+mkdir -p log
+exec 6>log/error.log
+exec 8>log/runtime.$VARIANT
 
 [ -z "$nopreload" ] && {
 	sh/ccpreload src/preload-tty.cc bin/preload-tty.so || exit 2
@@ -299,6 +302,7 @@ do
 	}
 
 	../../sh/rm_tmps || exit 2
+	time_begin_test=$(../../sh/now)
 
 	# Check that all all-uppercase files are of one of the allowed files
 	allowed=",EXITSTATUS,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,COV_TAG,NONDEBUG,"
@@ -587,6 +591,8 @@ do
 		test_fail_fatal
 		continue
 	fi
+	time_end_test=$(../../sh/now)
+	>&8 printf '%s %s\n' "$((time_end_test - time_begin_test))" "$file"
 	cd ..
 	count_succeed=$(( count_succeed + 1 ))
 done
@@ -620,6 +626,28 @@ if [ -z "$1" ] ; then
 		ls >&2 -1d tests/.[^.]*
 		ret=1
 	}
+fi
+
+if [ "$VARIANT" = debug ]
+then
+	if grep -q -E -v -e '^([01234] |[0-9]+ long-)' log/runtime.$VARIANT
+	then
+		>&2 echo "*** Error: Some tests took longer than 4s but are not marked as 'long-':"
+		>&2 sed -E -e '
+/^([01234] |[0-9]+ long-)/d
+s,^(\S+) (\S+)$,tests/\2: Took \1 seconds,
+		' log/runtime.$VARIANT
+		exit 1
+	fi
+	if grep -q -E -e '^0 long-' log/runtime.$VARIANT
+	then
+		>&2 echo "*** Error: 'long-' tests must not take 0 seconds:"
+		>&2 sed -E -e '
+/^0 long-/!d
+s,^(\S+) (\S+)$,tests/\2: Took \1 seconds,
+		' log/runtime.$VARIANT
+		exit 1
+	fi
 fi
 
 [ "$ret" = 0 ] || exit "$ret"

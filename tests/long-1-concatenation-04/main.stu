@@ -1,7 +1,7 @@
 # This tests high-order nesting of dynamic targets.  Precisely, [A] will
 # resolve to the dependency
 #
-# [[[....[[[A]]]...]]]
+# [[[....[[[list.0]]]...]]]
 #
 # where the number of bracket pairs equals the number stored in the file
 # 'N'.  We chose a value larger than 64 to catch implementations that

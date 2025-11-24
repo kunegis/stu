@@ -576,8 +576,7 @@ do
 				../../sh/rm_tmps || exit 2
 				echo >&7 $CMDPREFIX ../../bin/stu.test "$CMD" -j "$k"
 				eval $CMDPREFIX ../../bin/stu.test $CMD -j $k \>list.def.out 2\>list.def.err
-				if [ $? != 0 ]
-				then
+				if [ $? != 0 ] ; then
 					test_fail "Parallel stu failed for '$file' with k = $k"
 				else
 					echo >&7 "PARALLEL...correct"
@@ -628,10 +627,8 @@ if [ -z "$1" ] ; then
 	}
 fi
 
-if [ "$VARIANT" = debug ]
-then
-	if grep -q -E -v -e '^([01234] |[0-9]+ long-)' log/runtime.$VARIANT
-	then
+if [ "$VARIANT" = debug ] ; then
+	if grep -q -E -v -e '^([01234] |[0-9]+ long-)' log/runtime.$VARIANT ; then
 		>&2 echo "*** Error: Some tests took longer than 4s but are not marked as 'long-':"
 		>&2 sed -E -e '
 /^([01234] |[0-9]+ long-)/d
@@ -639,8 +636,7 @@ s,^(\S+) (\S+)$,tests/\2: Took \1 seconds,
 		' log/runtime.$VARIANT
 		exit 1
 	fi
-	if grep -q -E -e '^0 long-' log/runtime.$VARIANT
-	then
+	if grep -q -E -e '^0 long-' log/runtime.$VARIANT ; then
 		>&2 echo "*** Error: 'long-' tests must not take 0 seconds:"
 		>&2 sed -E -e '
 /^0 long-/!d

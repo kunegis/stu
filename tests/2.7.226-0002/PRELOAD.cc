@@ -8,7 +8,7 @@ FILE *fopen(const char *pathname, const char *mode)
 {
 	if (!strcmp(pathname, "SCHTROUMPF")) {
 		errno= ENOENT;
-		return NULL;
+		return nullptr;
 	}
 
 	return ((FILE * (*)(const char *, const char *))dlsym(RTLD_NEXT, "fopen"))

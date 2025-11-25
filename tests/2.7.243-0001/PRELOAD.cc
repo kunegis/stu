@@ -9,7 +9,7 @@ void *malloc(size_t size)
 {
 	if (errno == strhash("File_Executors::executors_add")) {
 		errno= ENOMEM;
-		return NULL;
+		return nullptr;
 	}
 	static void * (*f)(size_t)= nullptr;
 	if (!f) {

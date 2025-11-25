@@ -5,7 +5,7 @@
 #include <sys/types.h>
 
 int fd_main= -1;
-void *addr_main= NULL;
+void *addr_main= nullptr;
 
 extern "C"
 int open(const char *pathname, int flags, mode_t mode)

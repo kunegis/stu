@@ -9,7 +9,7 @@ void *malloc(size_t size)
 {
 	if (errno == strhash("Job::create_child_env::1")) {
 		errno= ENOMEM;
-		return NULL;
+		return nullptr;
 	}
 	static void * (*f)(size_t)= nullptr;
 	if (!f) {

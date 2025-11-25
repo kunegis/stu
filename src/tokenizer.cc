@@ -114,7 +114,7 @@ void Tokenizer::parse_tokens_file(
 		TRACE("in= %s", frmt("%p", in));
 		if (in == MAP_FAILED) {
 			TRACE("mmap() failed");
-			in= NULL;
+			in= nullptr;
 		try_read:
 			technique= TC_MALLOC;
 			int r= read_fd(fd, fd ? buf.st_size : 0, &in, &in_size);

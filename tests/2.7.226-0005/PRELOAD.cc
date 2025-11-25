@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static FILE *file_schtroumpf= NULL;
+static FILE *file_schtroumpf= nullptr;
 
 extern "C"
 FILE *fopen(const char *pathname, const char *mode)
@@ -20,7 +20,7 @@ extern "C"
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
 	if (file_schtroumpf && stream == file_schtroumpf) {
-		file_schtroumpf= NULL;
+		file_schtroumpf= nullptr;
 		errno= ENOMEM;
 		return 0;
 	}

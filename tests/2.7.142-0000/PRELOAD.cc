@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static FILE *b= NULL;
+static FILE *b= nullptr;
 
 extern "C"
 FILE *fopen(const char *pathname, const char *mode)

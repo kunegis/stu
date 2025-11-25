@@ -16,7 +16,7 @@
 extern "C"
 int isatty(int fd)
 {
-	static const char *v= NULL;
+	static const char *v= nullptr;
 	if (!v) v= getenv(ENV_STU_PRELOAD_TTY);
 	if (!v) v= "";
 	struct stat stat;

@@ -1,19 +1,4 @@
 #
-# Find a way to sleep sub-second amounts in a POSIX script, so that we can make the tests
-# faster.  (Maybe)
-# * There seems to be no way to sleep sub-second amounts on POSIX scripts, so we would
-#   have to compile a separate program for it.
-#
-
-#
-# cov_eval:  use expr where possible to make execution faster.
-#
-
-#
-# Write a check that we don't use 'NULL' in C++ sources.
-#
-
-#
 # Traces of errors in files included with %include are inconsistent.  Example:
 #
 # main.stu:   %include main2.stu
@@ -485,4 +470,11 @@ A: -e B
 #
 # Runtime checks for tests:  In sh/test, check the runtime for each test individually, and
 # use the usual error mechanism.
+#
+
+#
+# Find a way to sleep sub-second amounts in a POSIX script, so that we can make the tests
+# faster.  (Maybe)
+# * There seems to be no way to sleep sub-second amounts on POSIX scripts, so we would
+#   have to compile a separate program for it.
 #

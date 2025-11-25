@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static FILE *file= NULL;
+static FILE *file= nullptr;
 static bool error= false;
 
 extern "C"

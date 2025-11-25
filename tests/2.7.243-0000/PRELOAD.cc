@@ -11,7 +11,7 @@ void *realloc(void *ptr, size_t size)
 {
 	if (errno == strhash("File_Executor::execute")) {
 		errno= ENOMEM;
-		return NULL;
+		return nullptr;
 	}
 	return ((void * (*)(void *, size_t))dlsym(RTLD_NEXT, "realloc"))
 		(ptr, size);

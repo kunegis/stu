@@ -159,7 +159,7 @@ test_fail()
 	error=1
 }
 
-test_fail_fatal()
+test_fail_fatal_no_cd()
 {
 	echo >&2 "$0: ($file) *** $1"
 	echo "$file" >&6
@@ -169,6 +169,11 @@ test_fail_fatal()
 	}
 	ret=1
 	count_failed=$(( count_failed + 1 ))
+}
+
+test_fail_fatal()
+{
+	test_fail_fatal_no_cd "$@"
 	cd ..
 }
 
@@ -287,10 +292,13 @@ do
 	file=$(echo "$file" | sed -e 's,^tests/,,')
 	error=0
 
+	[ -d "$file" ] ||
+		{ test_fail_fatal_no_cd "Expected '$file' to be a directory" ; continue ; }
+
 	# There are no files in the test directory (ignoring dotfiles)
 	if [ "$(echo $(ls -1 "$file" | wc -l))" = 0 ] ; then
 		if [ "$emptyok" != 1 ] ; then
-			test_fail_fatal "Directory $file/ does exist or is empty"
+			test_fail_fatal_no_cd "Directory '$file' is empty"
 			continue
 		fi
 	fi

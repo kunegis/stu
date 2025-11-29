@@ -1,15 +1,4 @@
 #
-# Traces of errors in files included with %include are inconsistent.  Example:
-#
-# main.stu:   %include main2.stu
-# main2.stu:  %include main3.stu
-# main3.stu:  %include sdfskjfd
-#
-# will print the full traces of includes.  But replacing the content of main3.stu with
-# ::::::: will only print an error as if it was in main.stu.
-#
-
-#
 # Combining -n/-t and -o
 #
 

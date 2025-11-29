@@ -312,3 +312,33 @@ A: -k B {...}
 # Try to build B, but continue with building A if building B fails.  (This is not 100% the
 # same as the -k option; but rather like -k -o.)  Maybe -k should just set the keep going
 # flag, but maybe that is not useful.
+
+#
+# In error traces, also show traces showing where a file was '%include'ed.
+#
+# This is problematic because it leads to a non-linear chain of traces.  In addition to
+# the main chain of traces (with parent-child executor links), each trace has a also its
+# on side-chain of '%include' traces.
+#
+# EXAMPLE BUG
+#
+# Traces of errors in files included with %include are inconsistent.  Example:
+#
+# main.stu:   %include main2.stu
+# main2.stu:  %include main3.stu
+# main3.stu:  %include sdfskjfd
+#
+# will print the full traces of includes.  But replacing the content of main3.stu with
+# ::::::: will only print an error as if it was in main.stu.
+#
+# With ":::::::": Error in parser.cc, exits directly without traces
+# With nonexisting file: Error in tokenizer.cc, shows tokenizing traces
+#
+# EXPLANATION
+#
+# In principle, every trace has '%include' traces.  Only the last normal trace should be
+# followed by '%include' traces.  But even that is not enough.
+#
+# Theoretically, we could accumulate '%include' traces while showing normal traces, and
+# show them all at the end.  But they are not linear, so it is not clear how to show them.
+#

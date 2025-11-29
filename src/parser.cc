@@ -998,6 +998,7 @@ void Parser::get_rule_list(
 	const Place &place_end,
 	shared_ptr <const Place_Target> &target_first)
 {
+	TRACE_FUNCTION();
 	auto iter= tokens.begin();
 	Parser parser(tokens, iter, place_end);
 	parser.parse_rule_list(rules, target_first);
@@ -1299,8 +1300,9 @@ void Parser::add_deps_option_C(
 		deps.push_back(j);
 }
 
-void Parser::parse_rule_list(std::vector <shared_ptr <Rule> > &ret,
-			     shared_ptr <const Place_Target> &target_first)
+void Parser::parse_rule_list(
+	std::vector <shared_ptr <Rule> > &ret,
+	shared_ptr <const Place_Target> &target_first)
 {
 	assert(ret.size() == 0);
 	while (iter != tokens.end()) {

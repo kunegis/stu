@@ -1,0 +1,3 @@
+A: [ -t -o B ] { touch A ; }
+
+B { exit 77 ; }

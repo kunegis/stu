@@ -1,12 +1,7 @@
 #
-# Combining -n/-t and -o
-#
-
-A: [ -n -o B ] { touch A ; }  B={C}
-A: [ -t -o B ] { touch A ; }  B={C}
-
-#
 # Deprecate the -d option.
+# * Switch to version 2.8
+# * Write NEWS item
 #
 
 #

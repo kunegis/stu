@@ -36,7 +36,6 @@ bool option_various(char c)
 	switch (c) {
 	default:   return false;
 	case 'a':  option_a= true;         break;
-	case 'd':  option_d= true;         break;
 	case 'g':  option_g= true;         break;
 	case 'h':  fputs(HELP, stdout);    exit(0);
 	case 'i':  set_option_i();         break;

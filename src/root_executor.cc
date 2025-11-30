@@ -23,7 +23,6 @@ Proceed Root_Executor::execute(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION();
 	TRACE("is_finished= %s", frmt("%d", is_finished));
-	Debug debug(this);
 
 	Proceed proceed_A= execute_phase_A(dep_link);
 	TRACE("proceed_A= %s", show(proceed_A));

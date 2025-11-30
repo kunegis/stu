@@ -88,7 +88,7 @@ public:
 	}
 
 	void render(Parts &, Rendering= 0) const;
-	/* Format the rule, as for the -P or -d options */
+	/* Format the rule, as for the -P option */
 
 	void check_unparametrized(
 		shared_ptr <const Dep> dep,

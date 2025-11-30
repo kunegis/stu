@@ -32,8 +32,6 @@ void Executor::read_dynamic(
 	shared_ptr <const Dep> dep,
 	Executor *dynamic_executor)
 {
-	DEBUG_PRINT(fmt("read_dynamic %s", show(dep_target, S_DEBUG, R_SHOW_FLAGS)));
-
 	try {
 		const Place_Target &place_target=
 			to <Plain_Dep> (dep_target)->place_target;
@@ -475,7 +473,6 @@ void Executor::push(shared_ptr <const Dep> dep)
 {
 	TRACE_FUNCTION(show_trace(*this));
 	TRACE("dep= %s", show_trace(dep));
-	DEBUG_PRINT(fmt("push %s", show(dep, S_DEBUG, R_SHOW_FLAGS)));
 	dep->check();
 
 	std::vector <shared_ptr <const Dep> > deps;
@@ -484,7 +481,8 @@ void Executor::push(shared_ptr <const Dep> dep)
 	if (e) {
 		if (parents.size()) {
 			dep->get_place() <<
-				fmt("%s is needed by %s", show(dep), show(parents.begin()->second));
+				fmt("%s is needed by %s",
+					show(dep), show(parents.begin()->second));
 			*this << "";
 		}
 		raise(e);
@@ -524,7 +522,6 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 {
 	TRACE_FUNCTION(show_trace(*this));
 	TRACE("dep_child= %s", show_trace(dep_child));
-	DEBUG_PRINT(fmt("disconnect %s", show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
 	assert(child);
 	assert(child != this);
 	assert(child->finished(dep_child->flags));
@@ -549,8 +546,6 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 		shared_ptr <Dep> d= dep_child->clone();
 		d->flags |= F_PHASE_B;
 		TRACE("d= %s", show_trace(d));
-		DEBUG_PRINT(fmt("disconnect A_to_B %s",
-				show(d, S_DEBUG, R_SHOW_FLAGS)));
 		buffer_B.push(d);
 	}
 
@@ -611,18 +606,15 @@ const Place &Executor::get_place() const
 Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(*this));
-	DEBUG_PRINT("phase_A");
 	assert(options_jobs > 0);
 	assert(dep_link);
 	if (finished(dep_link->flags)) {
 		TRACE("Finished");
-		DEBUG_PRINT("finished");
 		return P_NOTHING;
 	}
 
 	if (optional_finished(dep_link)) {
 		TRACE("Optional finished");
-		DEBUG_PRINT("optional finished");
 		return P_NOTHING;
 	}
 
@@ -695,7 +687,6 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(*this));
-	DEBUG_PRINT("phase_B");
 	assert(buffer_A.empty());
 	assert(options_jobs > 0);
 	Proceed proceed= 0;
@@ -738,7 +729,6 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 {
 	TRACE_FUNCTION();
 	TRACE("dd= %s", show_trace(dd));
-	DEBUG_PRINT(fmt("push_result %s", show(dd, S_DEBUG, R_SHOW_FLAGS)));
 
 	assert(! dynamic_cast <File_Executor *> (this));
 	assert(! (dd->flags & F_RESULT_NOTIFY));
@@ -792,7 +782,6 @@ Proceed Executor::connect(
 {
 	TRACE_FUNCTION(show_trace(dep_this));
 	TRACE("dep_child= %s", show_trace(dep_child));
-	DEBUG_PRINT(fmt("connect %s",  show(dep_child, S_DEBUG, R_SHOW_FLAGS)));
 	assert(dep_child->is_normalized());
 	assert(! to <Root_Dep> (dep_child));
 	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);

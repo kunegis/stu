@@ -44,14 +44,13 @@
 
 #include "bits.hh"
 #include "buffer.hh"
-#include "debug.hh"
 #include "job.hh"
 #include "proceed.hh"
 #include "rule.hh"
 #include "timestamp.hh"
 
 class Executor
-	: private Printer, protected Debuggable
+	: private Printer
 {
 public:
 	void raise(int error);
@@ -110,7 +109,6 @@ public:
 	virtual void notify_variable(
 		const std::map <string, string> &result_variable_child);
 
-	virtual void render(Parts &, Rendering= 0) const override= 0;
 	const Place &get_place() const; /* Empty if there is no place */
 
 	static bool hide_out_message;
@@ -131,6 +129,10 @@ public:
 	static bool hide_link_from_message(Flags flags) {
 		return flags & F_RESULT_NOTIFY;
 	}
+
+#ifndef NDEBUG
+	virtual void render(Parts &, Rendering= 0) const= 0;
+#endif /* ! NDEBUG */
 
 protected:
 	Bits bits= 0;

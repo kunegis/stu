@@ -97,11 +97,6 @@ result.eps:  $[@NAME] { ./compute --name "$NAME" ; }
 #
 
 #
-# Have a logfile.  Similar to debug mode, but into a file.  We may also have individual
-# log files for each job.
-#
-
-#
 # Let Stu itself be multithreaded.  Very complex to implement, and has
 # only very little benefit since Stu already starts many processes.
 # Would only make sense in scenarios with thousands of processes, which

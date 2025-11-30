@@ -47,7 +47,6 @@ Concat_Executor::Concat_Executor(
 Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(dep_link));
-	Debug debug(this);
  again:
 	TRACE("stage= %s", frmt("%u", stage));
 
@@ -168,9 +167,6 @@ void Concat_Executor::notify_result(
 	TRACE("source= %s", show(*source));
 	TRACE("flags= %s", show_flags(flags));
 	TRACE("i= %s", frmt("%zd", dep_source->index));
-	DEBUG_PRINT(fmt("notify_result(flags = %s, d = %s)",
-			show_flags(flags, S_DEBUG),
-			::show(dep_result, S_DEBUG, R_SHOW_FLAGS)));
 
 	if (flags & F_RESULT_NOTIFY) {
 		std::vector <shared_ptr <const Dep> > deps;

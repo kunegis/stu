@@ -49,11 +49,13 @@ constexpr Style S_OPTION_I=        CH_OUT | S_NO_COLOR | S_QUOTE_SOURCE;
 constexpr Style S_OPTION_dP=       CH_OUT | S_QUOTE_MINIMUM;
 
 typedef unsigned Rendering;
-constexpr Rendering R_SHOW_FLAGS=               1 << 0;
-constexpr Rendering R_GLOB=                     1 << 1;
-constexpr Rendering R_SHOW_INPUT=               1 << 2;
-constexpr Rendering R_NO_COMPOUND_PARENTHESES=  1 << 3;
+constexpr Rendering R_GLOB=                     1 << 0;
+constexpr Rendering R_SHOW_INPUT=               1 << 1;
+constexpr Rendering R_NO_COMPOUND_PARENTHESES=  1 << 2;
+#ifndef NDEBUG
+constexpr Rendering R_SHOW_FLAGS=               1 << 3;
 constexpr Rendering R_SHOW_INDEX=               1 << 4;
+#endif /* ! NDEBUG */
 
 enum Properties {
 	PROP_TEXT,

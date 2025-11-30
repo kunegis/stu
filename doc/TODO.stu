@@ -1,10 +1,4 @@
 #
-# Deprecate the -d option.
-# * Switch to version 2.8
-# * Write NEWS item
-#
-
-#
 # Test installing the auto-generated .deb from Github.  Or remove it and the source code
 # for it.
 #
@@ -120,8 +114,6 @@ C:  -L { ln -s ... B ; }
 
 # File import should also work in the command line
 #    $ stu -d dir/main.stu # Like first cd'ing to dir/
-# -d is "debug" for now -- would have to deprecate debug mode, which we want to do
-# anyway.
 
 # Can we even use '%', because '%' directives are token-based, and 'import' should be at
 # rule level.  Maybe use '*' instead.
@@ -330,6 +322,9 @@ A: -e B
 # Verbose mode with:
 # * ls-like output after each built file
 # * Number of files/targets built / to be built / etc. after each built file
+# * Creation and deletion of executors (although, maybe not)
+# Use option '-v'.
+# Allow to output this into a file.
 #
 
 #

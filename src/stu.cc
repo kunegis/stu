@@ -12,7 +12,6 @@ using std::shared_ptr;
 #include "color.cc"
 #include "concat_executor.cc"
 #include "cycle.cc"
-#include "debug.cc"
 #include "dep.cc"
 #include "done.cc"
 #include "dynamic_executor.cc"

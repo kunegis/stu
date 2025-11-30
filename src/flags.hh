@@ -104,7 +104,12 @@ extern const char flags_chars[];
 extern const char *flags_phrases[C_PLACED];
 
 unsigned flag_get_index(char c);
+
+#ifndef NDEBUG
+
 bool render_flags(Flags flags, Parts &, Rendering= 0);
 string show_flags(Flags, Style= S_DEFAULT);
+
+#endif /* ! NDEBUG */
 
 #endif /* ! FLAGS_HH */

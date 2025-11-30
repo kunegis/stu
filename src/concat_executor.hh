@@ -24,14 +24,16 @@ public:
 
 	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
 	virtual bool finished(Flags flags) const override;
-	virtual void render(Parts &parts, Rendering= 0) const override {
-		return dep->render(parts);
-	}
 
 	virtual void notify_variable(const std::map <string, string> &) override;
 	virtual void notify_result(
 		shared_ptr <const Dep> dep_result, Executor *source, Flags flags,
 		shared_ptr <const Dep> dep_source) override;
+#ifndef NDEBUG
+	virtual void render(Parts &parts, Rendering= 0) const override {
+		return dep->render(parts);
+	}
+#endif /* ! NDEBUG */
 
 protected:
 	virtual bool optional_finished(shared_ptr <const Dep> ) override { return false; }

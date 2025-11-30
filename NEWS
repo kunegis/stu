@@ -11,6 +11,13 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2025-11-30  Version 2.8
+
+* Remove the -d option, which enabled a 'debug' mode.  Was rarely used, and was a mix
+  between what a 'verbose' mode should be, and traces.  The '-d' will be needed to
+  implement the "change directory" logic, both as an option and as a flag.  A '-v'
+  (verbose) will be added at a later point, which will be more useful.
+
 2025-09-28  Version 2.7.194
 
 * Bugfix:  When a dynamic dependency contained a parameter and was a compound dependency

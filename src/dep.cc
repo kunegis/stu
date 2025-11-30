@@ -247,8 +247,10 @@ Hash_Dep Plain_Dep::get_target() const
 
 void Plain_Dep::render(Parts &parts, Rendering rendering) const
 {
+#ifndef NDEBUG
 	if (render_flags(flags, parts, rendering))
 		parts.append_space();
+#endif /* ! NDEBUG */
 	if (flags & F_VARIABLE)
 		parts.append_marker("$[");
 	if (flags & F_INPUT && rendering & R_SHOW_INPUT)
@@ -287,8 +289,10 @@ Hash_Dep Dynamic_Dep::get_target() const
 
 void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 {
+#ifndef NDEBUG
 	if (render_flags(flags & ~F_TARGET_DYNAMIC, parts, rendering))
 		parts.append_space();
+#endif /* ! NDEBUG */
 	parts.append_marker("[");
 	dep->render(parts, rendering | R_NO_COMPOUND_PARENTHESES);
 	parts.append_marker("]");
@@ -349,14 +353,12 @@ const Place &Concat_Dep::get_place() const
 
 void Concat_Dep::render(Parts &parts, Rendering rendering) const
 {
-	if (rendering & R_SHOW_FLAGS) {
-		if (render_flags(flags, parts, rendering)) {
-			parts.append_space();
-		}
-	}
-	for (const shared_ptr <const Dep> &d: deps) {
+#ifndef NDEBUG
+	if (render_flags(flags, parts, rendering))
+		parts.append_space();
+#endif /* ! NDEBUG */
+	for (const shared_ptr <const Dep> &d: deps)
 		d->render(parts, rendering);
-	}
 }
 
 #ifndef NDEBUG

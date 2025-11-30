@@ -1,5 +1,0 @@
-A:
-{
-	echo aaa >A
-	exit 1
-}

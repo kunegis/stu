@@ -88,7 +88,6 @@ Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(dep_link));
 	TRACE("done= %s", done.show());
-	Debug debug(this);
 
 	Proceed proceed_A= execute_phase_A(dep_link);
 	assert(is_valid(proceed_A));
@@ -129,11 +128,13 @@ bool Transient_Executor::finished(Flags flags) const
 	return ret;
 }
 
+#ifndef NDEBUG
 void Transient_Executor::render(Parts &parts, Rendering rendering) const
 {
 	assert(hash_deps.size());
 	return hash_deps.front().render(parts, rendering);
 }
+#endif /* ! NDEBUG */
 
 void Transient_Executor::notify_result(shared_ptr <const Dep> dep,
 				       Executor *,

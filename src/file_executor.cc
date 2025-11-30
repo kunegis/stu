@@ -175,15 +175,9 @@ void File_Executor::wait()
  * then return, but the current implementation prefers to first start the next job before
  * waiting for the next finished job. */
 {
-	Debug::print(nullptr, "wait...");
-
 	assert(File_Executor::executors_by_pid_size);
-
 	int status;
 	const pid_t pid= Job::wait(&status);
-
-	Debug::print(nullptr, frmt("waited for pid = %jd", (intmax_t)pid));
-
 	timestamp_last= Timestamp::now();
 
 	size_t index;
@@ -282,11 +276,13 @@ bool File_Executor::finished(Flags flags) const
 	return ret;
 }
 
+#ifndef NDEBUG
 void File_Executor::render(Parts &parts, Rendering rendering) const
 {
 	assert(hash_deps.size());
 	hash_deps.front().render(parts, rendering);
 }
+#endif /* ! NDEBUG */
 
 void File_Executor::notify_variable(
 	const std::map <string, string> &result_variable_child)
@@ -333,7 +329,6 @@ bool File_Executor::remove_if_existing(bool output)
 
 		if (output) {
 			string text_filename= ::show(filename, S_DEBUG);
-			DEBUG_PRINT(fmt("remove %s", text_filename));
 			print_error_reminder(fmt("removing file %s because command failed",
 						 ::show(filename)));
 		}
@@ -472,7 +467,6 @@ void File_Executor::print_command() const
 Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(dep_link));
-	Debug debug(this);
 
 	std::map <string, string> mapping;
 	bool no_execution;
@@ -720,8 +714,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (rule->is_hardcode) {
 		assert(hash_deps.size() == 1);
 		assert(hash_deps.front().is_file());
-		TRACE("%s", "Create content");
-		DEBUG_PRINT("create_content");
+		TRACE("Create content");
 		print_command();
 		write_content(hash_deps.front().get_name_c_str_nondynamic(),
 			*(rule->command));
@@ -766,7 +759,6 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			return P_NOTHING;
 		TRACE("pid= %s", frmt("%jd", (intmax_t)pid));
 		assert(pid != 0 && pid != 1);
-		DEBUG_PRINT(frmt("execute: pid = %jd", (intmax_t) pid));
 
 		if (pid < 0) {
 			/* Starting the job failed */
@@ -855,7 +847,6 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	TRACE("result_variable.size()= %s", frmt("%zu", result_variable.size()));
 	TRACE("error= %s", frmt("%d", error));
 	TRACE("bits= %s", show_bits(bits));
-	DEBUG_PRINT(fmt("read_variable %s", show(dep, S_DEBUG, R_SHOW_FLAGS)));
 	assert(to <Plain_Dep> (dep));
 	if (! result_variable.empty())
 		return;

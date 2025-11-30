@@ -9,21 +9,15 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
 		TRACE("One dynamic");
 		assert((get_word(i) & F_TARGET_TRANSIENT) == 0);
-		if (rendering & R_SHOW_FLAGS) {
-			/* Hash_Dep::render() is only called with the -d option from
-			 * File_Executor and Transient_Executor, none of which uses
-			 * dynamic Hash_Dep's. */
-			should_not_happen();
-			render_flags(get_word(i) & ~(F_TARGET_DYNAMIC | F_TARGET_TRANSIENT),
-				parts, rendering);
-		}
 		parts.append_marker("[");
 	}
 	assert(text.size() > sizeof(word_t) * (i + 1));
+#ifndef NDEBUG
 	if (rendering & R_SHOW_FLAGS) {
 		render_flags(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE),
 			parts, rendering);
 	}
+#endif /* ! NDEBUG */
 	if (get_word(i) & F_TARGET_TRANSIENT) {
 		parts.append_marker("@");
 	}

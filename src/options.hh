@@ -29,7 +29,6 @@ const char HELP[]=
 	"  -a               Treat all trivial dependencies as non-trivial\n"
 	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"
 	"  -C EXPRESSION    Pass a target in full Stu syntax\n"
-	"  -d               Debug mode: show execution information on stderr\n"
 	"  -E               Explain error messages\n"
 	"  -f FILENAME      The input file to use instead of 'main.stu'\n"
 	"  -F RULES         Pass rules in Stu syntax\n"
@@ -67,7 +66,6 @@ const char HELP[]=
 #define ENV_STU_STATUS     "STU_STATUS"
 
 static bool option_a= false;
-static bool option_d= false;
 static bool option_E= false;
 static bool option_g= false;
 static bool option_i= false;

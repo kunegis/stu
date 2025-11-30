@@ -206,7 +206,6 @@ void Invocation::main_loop()
 		while (! root_executor->finished()) {
 			Proceed proceed;
 			do {
-				Debug::print(nullptr, "loop");
 				proceed= root_executor->execute(dep_root);
 				assert(is_valid(proceed));
 			} while (proceed & P_CALL_AGAIN);

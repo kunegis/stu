@@ -14,7 +14,8 @@ set -e
 VERSION=$(echo $(cat VERSION))
 
 if echo "$VERSION" | grep -qEv '^[0-9]+\.[0-9]+\.[0-9]+$' ; then
-	echo >&2 "*** $0: Invalid version number '$VERSION'"
+	echo >&2 "VERSION:1: Invalid version number '$VERSION'"
+	echo >&2 "*** The version in the file 'VERSION' must be of the form 'X.Y.Z'."
 	exit 1
 fi
 

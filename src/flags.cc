@@ -19,6 +19,8 @@ unsigned flag_get_index(char c)
 	}
 }
 
+#ifndef NDEBUG
+
 bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 {
 	TRACE_FUNCTION();
@@ -44,3 +46,5 @@ string show_flags(Flags flags, Style style)
 	render_flags(flags, parts, R_SHOW_FLAGS);
 	return show(parts, style);
 }
+
+#endif /* ! NDEBUG */

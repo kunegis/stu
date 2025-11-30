@@ -105,12 +105,6 @@ passing a string as an argument to Stu outside of options, because
 .BR -C
 supports full Stu syntax, while arguments supports only a reduced syntax
 (see above).
-.IP -d
-Debug mode.  Show internal information about the Stu algorithm on
-standard error output.  All printed output lines begin with the
-string 'DEBUG  ', i.e. the word DEBUG followed by two spaces.  The
-output is otherwise not standardized and is subject to change, in
-particular with internal changes to the algorithms used.
 .IP "-E"
 Explain error messages.  For certain errors, an additional explanation is
 written on standard error output.  Only some error messages have explanations.

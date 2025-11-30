@@ -61,7 +61,6 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(dep_link));
 	TRACE("done= %s; bits= %s", done.show(), show_bits(bits));
-	Debug debug(this);
 	bool need_build;
 
 	Proceed proceed_A= execute_phase_A(dep_link);
@@ -113,10 +112,12 @@ bool Dynamic_Executor::want_delete() const
 	return to <Plain_Dep> (dep->strip_dynamic()) == nullptr;
 }
 
+#ifndef NDEBUG
 void Dynamic_Executor::render(Parts &parts, Rendering rendering) const
 {
 	dep->render(parts, rendering);
 }
+#endif /* ! NDEBUG */
 
 void Dynamic_Executor::notify_variable(
 	const std::map <string, string> &result_variable_child)

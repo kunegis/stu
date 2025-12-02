@@ -1,6 +1,6 @@
 
 #
-# Check that files and transients really use two distinct namespaces. 
+# Check that files and phonies really use two distinct namespaces. 
 #
 
 A:  @B

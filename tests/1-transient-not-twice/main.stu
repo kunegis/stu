@@ -1,6 +1,6 @@
 
 #
-# The command of a transient target is executed only once. 
+# The command of a phony target is executed only once. 
 #
 # Test with both -j1 and -j2.
 #

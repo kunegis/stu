@@ -15,7 +15,7 @@ A { touch A ; }
 A { touch A }
 
 #
-# Disallow a mix of transient and files as targets in the same rule.
+# Disallow a mix of phony and files as targets in the same rule.
 #
 
 # This is an error
@@ -32,14 +32,14 @@ A: B { cp B A ; }
 # the extra rules for mixed targets that we have at the moment.
 
 #
-# Don't allow both transients and files as targets in the same
-# rule.  Also, never allow multiple transient targets.  Then,
-# File_Execution will not have to support transients anymore.
+# Don't allow both phonines and files as targets in the same
+# rule.  Also, never allow multiple phony targets.  Then,
+# File_Execution will not have to support phony targets anymore.
 #
 
 #
 # The 'trivial' flag '-t' should "go up" when applied to the
-# dependencies of transient targets.
+# dependencies of phony targets.
 #
 
 # 'V' is built because 'A' does not exist.
@@ -86,7 +86,7 @@ EOF
 }
 P = {...}
 
-# Even when a transient target has a command, the '-t' "goes up".
+# Even when a phony target has a command, the '-t' "goes up".
 A: @x {
 	[ -r V ] && {
 		exit 1

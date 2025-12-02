@@ -7,19 +7,19 @@
  *
  * OVERVIEW OF TYPES
  *
- * EXECUTOR CLASS     CACHING STRATEGY     WHEN USED
+ * EXECUTOR CLASS      CACHING STRATEGY     WHEN USED
  * -----------------------------------------------------------------------------------------
- * Root_Executor      Singleton            The root of the dependency graph; uses the
+ * Root_Executor       Singleton            The root of the dependency graph; uses the
  *                                         dummy Root_Dep
- * File_Executor      By Target (no flags) Non-dynamic targets with at least one file target
- *                                         in rule OR a command in rule OR files without a
- *                                         rule
- * Transient_Executor By Target (w/ flags) Transients without commands nor file targets in
- *                                         the same rule, i.e., transitive transient targets
- * "Plain executor"   By Target            Name for File_Executor or Transient_Executor
- * Dynamic_Ex.[nocat] By Target (w/ flags) Dynamic^+ targets of Plain_Dep w/o -* flag
- * Dynamic_Ex.[w/cat] Not cached           Dynamic^+ targets of Concat_Dep w/o -* flag
- * Concat_Executor    Not cached           Concatenated targets
+ * File_Executor       By Target (no flags) Non-dynamic targets with 1+ file target
+ *                                          in rule OR a command in rule OR files without a
+ *                                          rule
+ * Transitive_Executor By Target (w/ flags) Phonies without commands nor file targets in
+ *                                          the same rule, i.e., transitive phony targets
+ * "Plain executor"    By Target            Name for File_Executor or Transitive_Executor
+ * Dynamic_Ex.[nocat]  By Target (w/ flags) Dynamic^+ targets of Plain_Dep w/o -* flag
+ * Dynamic_Ex.[w/cat]  Not cached           Dynamic^+ targets of Concat_Dep w/o -* flag
+ * Concat_Executor     Not cached           Concatenated targets
  *
  * Caching with flags excludes flags that are not stored in Target objects,
  * i.e., F_RESULT_* flags.
@@ -171,7 +171,7 @@ protected:
 	/* The (possibly parametrized) rule from which this executor was derived.  This is
 	 * only used to detect cycles.  To manage the dependencies, the instantiated
 	 * general rule is used.  Null by default, and set by individual implementations
-	 * in their constructor if necessary: dynamic, file, and transient executors. */
+	 * in their constructor if necessary: dynamic, file, and transitive executors. */
 
 	explicit Executor(shared_ptr <const Rule> param_rule_= nullptr)
 		: error(0), timestamp(Timestamp::UNDEFINED),

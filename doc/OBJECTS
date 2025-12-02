@@ -1,8 +1,8 @@
 Various classes that represent objects.
 
-                    PARAMETRIZED    DYNAMIC  PLACE   FLAGS  TRANSIENT  HASHABLE
+                    PARAMETRIZED    DYNAMIC  PLACE   FLAGS  PHONY T.   HASHABLE
 --------------------------------------------------------------------------------
-string              no              no       no      no     no         yes
+std::string         no              no       no      no     no         yes
 Hash_Dep            no              yes      no      yes    yes        yes
 Name                yes             no       no      no     no         no
 Target              yes             no       no      no     yes        no

@@ -130,7 +130,7 @@ scripting.
   your locally installed manpage, which is likely to describe extensions to the tool
   without documenting them as such.
 * Use '##' for quickly commenting out lines, analogously to '//' in C++ code.  Code pushed
-  to Github does not contain such lines.
+  to Git does not contain such lines.
 * "sed -E" (EREs) is allowed in POSIX 2024.  We use it in new code, but old code (using
   BREs) is still common in the code base.
 * Grep does have the -E option for extended regular expressions.  Grep is always invoked

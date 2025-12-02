@@ -28,7 +28,7 @@ enum
 	I_OPTIONAL,           /* -o   | placed flags     |                   */
 	I_TRIVIAL,            /* -t  /                   |                   */
 	I_TARGET_DYNAMIC,     /* [ ] \  target flags     |                   */
-	I_TARGET_TRANSIENT,   /* @   /                   | target word flags */
+	I_TARGET_PHONY,       /* @   /                   | target word flags */
 	I_VARIABLE,           /* $                       |                   */
 	I_NEWLINE_SEPARATED,  /* -n  \                   |                   */
 	I_NUL_SEPARATED,      /* -0   | attribute flags  |                   */
@@ -59,8 +59,8 @@ enum
 	F_TARGET_DYNAMIC        = 1 << I_TARGET_DYNAMIC,
 	/* A dynamic target */
 
-	F_TARGET_TRANSIENT      = 1 << I_TARGET_TRANSIENT,
-	/* A transient target */
+	F_TARGET_PHONY          = 1 << I_TARGET_PHONY,
+	/* A phony target */
 
 	F_VARIABLE              = 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */
@@ -95,7 +95,7 @@ enum
 	 */
 	F_PLACED        = (1 << C_PLACED) - 1,
 	F_WORD          = (1 << C_WORD) - 1,
-	F_TARGET        = F_TARGET_DYNAMIC | F_TARGET_TRANSIENT,
+	F_TARGET        = F_TARGET_DYNAMIC | F_TARGET_PHONY,
 	F_ATTRIBUTE     = F_NEWLINE_SEPARATED | F_NUL_SEPARATED | F_CODE,
 	F_RESULT        = F_RESULT_NOTIFY | F_RESULT_COPY,
 };

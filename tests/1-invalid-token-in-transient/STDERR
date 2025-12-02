@@ -1,2 +1,2 @@
-main.stu:4:2: expected the name of transient target, not :
+main.stu:4:2: expected the name of phony target, not :
 main.stu:4:1: after @

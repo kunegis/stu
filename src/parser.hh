@@ -17,7 +17,7 @@
  * specifying in what order operators can be nested, not to disambiguate
  * expressions.
  *
- * @...      (prefix) Transient dependency; argument can only contain name
+ * @...      (prefix) Phony dependency; argument can only contain name
  * ---------------
  * <...      (prefix) Input redirection; argument must not contain '()',
  *           '[]', '$[]' or '@'

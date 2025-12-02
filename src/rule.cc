@@ -38,7 +38,7 @@ Rule::Rule(std::vector <shared_ptr <const Place_Target> > &&place_targets_,
 	assert(redirect_index>= -1);
 	assert(redirect_index < (ssize_t) place_targets.size());
 	if (redirect_index >= 0) {
-		assert((place_targets[redirect_index]->flags & F_TARGET_TRANSIENT) == 0);
+		assert((place_targets[redirect_index]->flags & F_TARGET_PHONY) == 0);
 	}
 
 	/* Check that all dependencies only include
@@ -214,8 +214,8 @@ shared_ptr <const Rule> Rule_Set::get(
 	std::map <string, string> &mapping_parameter,
 	const Place &place)
 {
-	assert(hash_dep.is_file() || hash_dep.is_transient());
-	assert((hash_dep.get_front_word() & ~F_TARGET_TRANSIENT) == 0);
+	assert(hash_dep.is_file() || hash_dep.is_phony());
+	assert((hash_dep.get_front_word() & ~F_TARGET_PHONY) == 0);
 	assert(mapping_parameter.size() == 0);
 
 	hash_dep.canonicalize_plain();
@@ -313,7 +313,7 @@ void Rule_Set::print_for_option_I() const
 		if (rule.must_exist())
 			continue;
 		for (auto target: rule.place_targets) {
-			if (target->flags & F_TARGET_TRANSIENT)
+			if (target->flags & F_TARGET_PHONY)
 				continue;
 			filenames.insert(show(target->place_name, S_OPTION_I, R_GLOB));
 		}
@@ -322,7 +322,7 @@ void Rule_Set::print_for_option_I() const
 		if (rule->must_exist())
 			continue;
 		for (auto target: rule->place_targets) {
-			if (target->flags & F_TARGET_TRANSIENT)
+			if (target->flags & F_TARGET_PHONY)
 				continue;
 			filenames.insert(show(target->place_name, S_OPTION_I, R_GLOB));
 		}
@@ -409,7 +409,7 @@ void Best_Rule_Finder::add(const Hash_Dep &hash_dep, shared_ptr <const Rule> rul
 
 		/* The parametrized rule is of another type */
 		if (hash_dep.get_front_word() !=
-		    (place_param_target->flags & F_TARGET_TRANSIENT))
+		    (place_param_target->flags & F_TARGET_PHONY))
 			continue;
 
 		/* The parametrized rule does not match */

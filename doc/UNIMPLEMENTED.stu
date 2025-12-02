@@ -30,7 +30,7 @@ A: (B: C { cp C B ; }) (D: E {cp E D ; }) { cat B D >A ; }
 # This would override a previous rule for FILENAME.  Also, don't re-use "-n".
 
 #
-# Transient targets can have content.  This will be executed at every Stu
+# Phony targets can have content.  This will be executed at every Stu
 # invocation.  This is similar to the way variables worked in Stu 0.
 #
 # This might be used like variables in Make, but the result will be that
@@ -205,7 +205,7 @@ A:  (B C) | (D E) { ... }
 #
 
 #
-# Input and output to transients as a way to implement pipe-like
+# Input and output to phonies as a way to implement pipe-like
 # constructs.
 #
 

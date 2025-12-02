@@ -8,7 +8,7 @@
  * All dependency classes allow parametrized targets.
  *
  * A dependency is normalized if it is one of:
- *    - a plain dependency (file or transient);
+ *    - a plain dependency (file or phony);
  *    - a dynamic dependency containing a normalized dependency;
  *    - a concatenated dependency of only normalized plain and dynamic dependencies, and
  *      of size at least two
@@ -17,7 +17,7 @@
  * concatenated dependencies directly -- such constructs are always "flattened" in a
  * normalized dependency.
  *
- * A plain dependency is a file or a transient.
+ * A plain dependency is a file or a phony.
  *
  * A dependency is simple when is does not involve concatenation or compound dependencies,
  * i.e., when it is a possible multiply dynamic dependency of a plain dependency.
@@ -176,11 +176,11 @@ void render(shared_ptr <const Dep> dep, Parts &parts, Rendering rendering= 0)
 }
 
 class Plain_Dep
-/* A dependency denoting an individual target name, which can be a file or a transient.
+/* A dependency denoting an individual target name, which can be a file or a phony.
  *
- * When the target is a transient, the dependency flags have the F_TARGET_TRANSIENT bit
+ * When the target is a phony, the dependency flags have the F_TARGET_PHONY bit
  * set, which is redundant, because that information is also contained in
- * PLACE_PARAM_TARGET.  No other Dep type has the F_TARGET_TRANSIENT flag set. */
+ * PLACE_PARAM_TARGET.  No other Dep type has the F_TARGET_PHONY flag set. */
 	: public Dep
 {
 public:

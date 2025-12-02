@@ -21,7 +21,7 @@
 #      (6) -o -> -p      # Not present: is built                        XXX fails
 #   <CCC> and <DDD> are each one of:
 #      (1) Direct dependency list.C
-#      (2) Transient to list.C
+#      (2) Transitive phony to list.C
 #      (3) Dynamic dependency that contains list.C
 #      (4) Concatenation that results in list.C
 #

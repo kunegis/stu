@@ -1,5 +1,5 @@
 #
-# Multiple transients in dynamics. 
+# Multiple phonies in dynamics. 
 #
 
 >A:  [@x] { cat $(cat $(cat x)) }

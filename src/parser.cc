@@ -130,12 +130,12 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 					    show(*place_targets[0]));
 				throw ERROR_LOGICAL;
 			}
-			if ((place_targets[0]->flags & F_TARGET_TRANSIENT)) {
+			if ((place_targets[0]->flags & F_TARGET_PHONY)) {
 				place_equal <<
 					fmt("there must not be assigned content using %s",
 						show_operator('='));
 				place_targets[0]->place <<
-					fmt("for transient target %s",
+					fmt("for phony target %s",
 					    show(*place_targets[0]));
 				throw ERROR_LOGICAL;
 			}
@@ -247,13 +247,13 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 				throw ERROR_LOGICAL;
 			}
 
-			/* Check that target is not transient */
-			if (place_targets[0]->flags & F_TARGET_TRANSIENT) {
-				assert(place_targets[0]->flags & F_TARGET_TRANSIENT);
+			/* Check that target is not phony */
+			if (place_targets[0]->flags & F_TARGET_PHONY) {
+				assert(place_targets[0]->flags & F_TARGET_PHONY);
 				place_equal << fmt("copy rule using %s cannot be used",
 						   show_operator('='));
 				place_targets[0]->place
-					<< fmt("with transient target %s",
+					<< fmt("with phony target %s",
 					       show(*place_targets[0]));
 				throw ERROR_LOGICAL;
 			}
@@ -289,7 +289,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 	/* Cases where output redirection is not possible */
 	if (! place_output.empty()) {
 		/* Already checked before */
-		assert((place_targets[redirect_index]->flags & F_TARGET_TRANSIENT) == 0);
+		assert((place_targets[redirect_index]->flags & F_TARGET_PHONY) == 0);
 
 		if (command == nullptr) {
 			place_output <<
@@ -348,7 +348,7 @@ bool Parser::parse_target(
 	}
 
 	Flags flags_type= 0;
-	/* F_TARGET_TRANSIENT is set when '@' is found */
+	/* F_TARGET_PHONY is set when '@' is found */
 
 	Place place_of_target;
 	if (iter != tokens.end())
@@ -359,18 +359,18 @@ bool Parser::parse_target(
 		++iter;
 
 		if (iter == tokens.end()) {
-			place_end << "expected the name of transient target";
+			place_end << "expected the name of phony target";
 			place_at << fmt("after %s", show_operator('@'));
 			throw ERROR_LOGICAL;
 		}
 		if (! is <Name_Token> ()) {
 			(*iter)->get_place_start()
-				<< fmt("expected the name of transient target, not %s",
+				<< fmt("expected the name of phony target, not %s",
 					show(*iter));
 			place_at << fmt("after %s", show_operator('@'));
 			throw ERROR_LOGICAL;
 		}
-		flags_type= F_TARGET_TRANSIENT;
+		flags_type= F_TARGET_PHONY;
 	}
 
 	if (! is <Name_Token> ()) {
@@ -427,7 +427,7 @@ bool Parser::parse_target(
 			assert(place_targets[redirect_index]
 				->place_name.get_n() == 0);
 			assert((place_targets[redirect_index]->flags
-					& F_TARGET_TRANSIENT) == 0);
+					& F_TARGET_PHONY) == 0);
 			place_output <<
 				fmt("shadowing previous output redirection %s",
 					show_prefix
@@ -440,10 +440,10 @@ bool Parser::parse_target(
 		redirect_index= place_targets.size();
 	}
 
-	if (flags_type == F_TARGET_TRANSIENT) {
+	if (flags_type == F_TARGET_PHONY) {
 		if (! place_output_new.empty()) {
 			place_target->place <<
-				fmt("transient target %s is invalid", show(*place_target));
+				fmt("phony target %s is invalid", show(*place_target));
 			place_output_new <<
 				fmt("after output redirection using %s",
 					show_operator('>'));
@@ -860,7 +860,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 		++iter;
 	}
 
-	bool has_transient= false;
+	bool has_phony= false;
 	Place place_at;
 	if (is_operator('@')) {
 		place_at= (*iter)->get_place();
@@ -871,7 +871,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 			throw ERROR_LOGICAL;
 		}
 		++iter;
-		has_transient= true;
+		has_phony= true;
 	}
 
 	if (iter == tokens.end()) {
@@ -880,8 +880,8 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 			place_input << fmt("after input redirection using %s",
 					   show_operator('<'));
 			throw ERROR_LOGICAL;
-		} else if (has_transient) {
-			place_end << "expected the name of a transient target";
+		} else if (has_phony) {
+			place_end << "expected the name of a phony target";
 			place_at << fmt("after %s", show_operator('@'));
 			throw ERROR_LOGICAL;
 		} else {
@@ -897,9 +897,9 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 			place_input << fmt("after input redirection using %s",
 					   show_operator('<'));
 			throw ERROR_LOGICAL;
-		} else if (has_transient) {
+		} else if (has_phony) {
 			(*iter)->get_place_start()
-				<< fmt("expected the name of a transient target, not %s",
+				<< fmt("expected the name of a phony target, not %s",
 				       show(*iter));
 			place_at << fmt("after %s",
 					show_operator('@'));
@@ -920,11 +920,11 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 	if (! place_name_input.empty())
 		assert(! place_input.empty());
 
-	Flags transient_bit= has_transient ? F_TARGET_TRANSIENT : 0;
+	Flags phony_bit= has_phony ? F_TARGET_PHONY : 0;
 	shared_ptr <const Dep> ret= std::make_shared <Plain_Dep>
-		(flags | transient_bit,
-		 Place_Target(transient_bit, *name_token,
-			      has_transient ? place_at : name_token->place));
+		(flags | phony_bit,
+		 Place_Target(phony_bit, *name_token,
+			      has_phony ? place_at : name_token->place));
 
 	if (has_input && ! place_name_input.empty()) {
 		name_token->place <<

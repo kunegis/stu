@@ -2,7 +2,7 @@
 #define CANONICALIZE_HH
 
 /*
- * Canonicalization is the mapping of filenames and transient names to unique names in
+ * Canonicalization is the mapping of filenames and phony names to unique names in
  * their simplest form with respect to the filename components '/' and '.'.
  *
  * This function canonicalizes a string, and is used by higher-level code to canonicalize

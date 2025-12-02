@@ -174,13 +174,13 @@ void Dep::check() const
 	}
 
 	if (auto plain_this= dynamic_cast <const Plain_Dep *> (this)) {
-		/* The F_TARGET_TRANSIENT flag is always set in the dependency flags, even
+		/* The F_TARGET_PHONY flag is always set in the dependency flags, even
 		 * though that is redundant. */
-		assert((plain_this->flags & F_TARGET_TRANSIENT)
+		assert((plain_this->flags & F_TARGET_PHONY)
 		       == (plain_this->place_target.flags));
 
 		if (! plain_this->variable_name.empty()) {
-			assert((plain_this->place_target.flags & F_TARGET_TRANSIENT) == 0);
+			assert((plain_this->place_target.flags & F_TARGET_PHONY) == 0);
 			assert(plain_this->flags & F_VARIABLE);
 		}
 	}
@@ -217,7 +217,7 @@ shared_ptr <const Dep> Plain_Dep::instantiate(
 
 	string this_name= ret_target->place_name.unparametrized();
 	if ((flags & F_VARIABLE) && this_name.find('=') != string::npos) {
-		assert((ret_target->flags & F_TARGET_TRANSIENT) == 0);
+		assert((ret_target->flags & F_TARGET_PHONY) == 0);
 		place << fmt("dynamic variable %s must not be instantiated with parameter value that contains %s",
 			show_dynamic_variable(this_name),
 			show_operator('='));
@@ -524,8 +524,8 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		return nullptr;
 	}
 
-	if (b->flags & F_TARGET_TRANSIENT) {
-		b->get_place() << fmt("transient target %s is invalid", show(b));
+	if (b->flags & F_TARGET_PHONY) {
+		b->get_place() << fmt("phony target %s is invalid", show(b));
 		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
@@ -576,7 +576,7 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(
 
 	shared_ptr <Plain_Dep> ret= std::make_shared <Plain_Dep>
 		(flags_combined, a->places,
-			Place_Target(flags_combined & F_TARGET_TRANSIENT, /* uncovered */
+			Place_Target(flags_combined & F_TARGET_PHONY, /* uncovered */
 				place_name_combined,
 				a->place_target.place),
 			a->place, "");

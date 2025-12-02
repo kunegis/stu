@@ -1,5 +1,5 @@
 #
-# The transient target does nothing, but outputs something and creates 'X'. 
+# The phony target does nothing, but outputs something and creates 'X'. 
 #
 
 A: [[B]] { cp X A }

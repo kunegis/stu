@@ -1,5 +1,5 @@
 
 
-# Empty transient target name is invalid.
+# Empty phony target name is invalid.
 
 @"" {}

@@ -1,4 +1,4 @@
-# When a transient target rule has a command, flags are not passed
+# When a phony target rule has a command, flags are not passed
 # transitively.  This is an error. 
 
 A:  -o @x { cp B A ; }

@@ -1,5 +1,5 @@
 
-# Transient-only cycle of length two
+# Phony-only cycle of length two
 
 @A:  @B;
 

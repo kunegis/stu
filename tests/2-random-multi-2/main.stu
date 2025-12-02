@@ -5,7 +5,7 @@
 # successfully, instead of building the rest.
 #
 
-# Variant:  overall target is a transient. 
+# Variant:  overall target is a phony. 
 
 @all:     B C D E F G; 
 

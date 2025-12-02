@@ -1,6 +1,6 @@
 
 
-# Parametrized transient target without a command. 
+# Parametrized phony target without a command. 
 
 A:  @do-B
 {

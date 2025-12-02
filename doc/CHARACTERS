@@ -49,7 +49,7 @@ These characters are single-character tokens.
 
     :   Introduces dependencies
     ;   End of rule when no command or content is present
-    @   Transient target prefix
+    @   Phony target prefix
     ()  List
     []  Dynamic list
     >   Output redirection (target only)

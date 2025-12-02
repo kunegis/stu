@@ -15,7 +15,7 @@
 #include "trace.hh"
 #include "trace_dep.hh"
 #include "trace_executor.hh"
-#include "transient_executor.hh"
+#include "transitive_executor.hh"
 
 Rule_Set Executor::rule_set;
 
@@ -49,7 +49,7 @@ void Executor::read_dynamic(
 				     ::show(dep));
 			raise(ERROR_LOGICAL);
 		}
-		if (place_target.flags & F_TARGET_TRANSIENT)
+		if (place_target.flags & F_TARGET_PHONY)
 			return;
 
 		assert(hash_dep.is_file());
@@ -90,7 +90,8 @@ void Executor::read_dynamic(
 					    show(hash_dep_dynamic),
 					    show_prefix("<", input));
 				Hash_Dep hash_dep_file= hash_dep;
-				hash_dep_file.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT;
+				hash_dep_file.get_front_word_nondynamic()
+					&= ~F_TARGET_PHONY;
 				(*dynamic_executor) << fmt("%s is declared here",
 							   show(hash_dep_file));
 				raise(ERROR_LOGICAL);
@@ -238,7 +239,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		try {
 			Hash_Dep hash_dep_without_flags= hash_dep;
 			hash_dep_without_flags.get_front_word_nondynamic()
-				&= F_TARGET_TRANSIENT;
+				&= F_TARGET_PHONY;
 			rule_child= rule_set.get(
 				hash_dep_without_flags,
 				param_rule_child, mapping_parameter,
@@ -262,7 +263,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			use_file_executor= true;
 		} else {
 			for (auto &i: rule_child->place_targets) {
-				if ((i->flags & F_TARGET_TRANSIENT) == 0)
+				if ((i->flags & F_TARGET_PHONY) == 0)
 					use_file_executor= true;
 			}
 		}
@@ -272,8 +273,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 				(dep, this, rule_child,
 				 param_rule_child, mapping_parameter,
 				 error_additional);
-		} else if (hash_dep.is_transient()) {
-			executor= new Transient_Executor
+		} else if (hash_dep.is_phony()) {
+			executor= new Transitive_Executor
 				(dep, this,
 				 rule_child, param_rule_child, mapping_parameter,
 				 error_additional);
@@ -810,7 +811,7 @@ Proceed Executor::connect(
 	if (dep_child->flags & F_VARIABLE && dep_child->flags & F_OPTIONAL) {
 		shared_ptr <const Plain_Dep> plain_dep_child= to <Plain_Dep> (dep_child);
 		assert(plain_dep_child);
-		assert(!(dep_child->flags & F_TARGET_TRANSIENT));
+		assert(!(dep_child->flags & F_TARGET_PHONY));
 		const Place &place_variable= dep_child->get_place();
 		const Place &place_flag= dep_child->get_place_flag(I_OPTIONAL);
 		place_variable <<
@@ -879,9 +880,9 @@ void Executor::check_unparametrized(
 			show(Hash_Dep(0, hash_dep)),
 			show_prefix("$", parameter_name));
 	Hash_Dep hash_dep_base= hash_dep;
-	hash_dep_base.get_front_word_nondynamic() &= ~F_TARGET_TRANSIENT;
+	hash_dep_base.get_front_word_nondynamic() &= ~F_TARGET_PHONY;
 	hash_dep_base.get_front_word_nondynamic()
-		|= (hash_dep.get_front_word_nondynamic() & F_TARGET_TRANSIENT);
+		|= (hash_dep.get_front_word_nondynamic() & F_TARGET_PHONY);
 	*this << fmt("%s is declared here", show(hash_dep_base));
 	explain_dynamic_no_param();
 	raise(ERROR_LOGICAL);

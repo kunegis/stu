@@ -135,7 +135,7 @@ public:
 				    const Place &place);
 	/* Match TARGET to a rule, and return the instantiated (non-parametrized)
 	 * corresponding rule.  TARGET must be non-dynamic and not have flags (except
-	 * F_TARGET_TRANSIENT).  MAPPING_PARAMETER must be empty.  Return null when no
+	 * F_TARGET_PHONY).  MAPPING_PARAMETER must be empty.  Return null when no
 	 * match is found.  When a match is found, write the original (possibly
 	 * parametrized) rule into PARAM_RULE and the matched parameters into
 	 * MAPPING_PARAMETER.  Throws errors, in which case PARAM_RULE is never set.

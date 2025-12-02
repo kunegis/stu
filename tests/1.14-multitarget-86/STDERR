@@ -1,2 +1,2 @@
-main.stu:3:4: transient target @x is invalid
+main.stu:3:4: phony target @x is invalid
 main.stu:3:3: after output redirection using >

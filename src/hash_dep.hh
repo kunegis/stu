@@ -11,8 +11,8 @@
  * words (word_t, at least one), followed by the name of the target as a string.  A word_t
  * is represented by a fixed number of characters.
  *
- * A non-dynamic dependency is represented as a Type word (F_TARGET_TRANSIENT or 0)
- * followed by the name.
+ * A non-dynamic dependency is represented as a Type word (F_TARGET_PHONY or 0) followed
+ * by the name.
  *
  * A dynamic is represented as a dynamic word (F_TARGET_DYNAMIC) followed by the string
  * representation of the contained dependency.
@@ -43,7 +43,7 @@ public:
 	/* A plain target */
 		: text(string_from_word(flags) + name)
 	{
-		assert((flags & ~F_TARGET_TRANSIENT) == 0);
+		assert((flags & ~F_TARGET_PHONY) == 0);
 		assert(name.find('\0') == string::npos); /* Names do not contain \0 */
 		assert(! name.empty());
 	}
@@ -53,7 +53,7 @@ public:
 	 * flags, which must *not* contain the 'dynamic' flag. */
 		: text(string_from_word(flags | F_TARGET_DYNAMIC) + target.text)
 	{
-		assert((flags & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0);
+		assert((flags & (F_TARGET_DYNAMIC | F_TARGET_PHONY)) == 0);
 		assert(flags < (1 << C_WORD));
 	}
 
@@ -64,13 +64,13 @@ public:
 
 	bool is_file() const {
 		check();
-		return (get_word(0) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT)) == 0;
+		return (get_word(0) & (F_TARGET_DYNAMIC | F_TARGET_PHONY)) == 0;
 	}
 
-	bool is_transient() const {
+	bool is_phony() const {
 		check();
-		return (get_word(0) & (F_TARGET_DYNAMIC | F_TARGET_TRANSIENT))
-			== F_TARGET_TRANSIENT;
+		return (get_word(0) & (F_TARGET_DYNAMIC | F_TARGET_PHONY))
+			== F_TARGET_PHONY;
 	}
 
 	bool is_any_file() const {
@@ -78,15 +78,15 @@ public:
 		while (get_word(i) & F_TARGET_DYNAMIC) {
 			++i;
 		}
-		return (get_word(i) & F_TARGET_TRANSIENT) == 0;
+		return (get_word(i) & F_TARGET_PHONY) == 0;
 	}
 
-	bool is_any_transient() const {
+	bool is_any_phony() const {
 		size_t i= 0;
 		while (get_word(i) & F_TARGET_DYNAMIC) {
 			++i;
 		}
-		return get_word(i) & F_TARGET_TRANSIENT;
+		return get_word(i) & F_TARGET_PHONY;
 	}
 
 	void render(Parts &, Rendering= 0) const;
@@ -100,7 +100,7 @@ public:
 	}
 
 	const char *get_name_c_str_nondynamic() const
-	/* Return a C pointer to the name of the file or transient.  The object must be
+	/* Return a C pointer to the name of the file or phony.  The object must be
 	 * non-dynamic. */
 	{
 		check();

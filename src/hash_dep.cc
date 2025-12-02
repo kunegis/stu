@@ -8,17 +8,17 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 	size_t i;
 	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
 		TRACE("One dynamic");
-		assert((get_word(i) & F_TARGET_TRANSIENT) == 0);
+		assert((get_word(i) & F_TARGET_PHONY) == 0);
 		parts.append_marker("[");
 	}
 	assert(text.size() > sizeof(word_t) * (i + 1));
 #ifndef NDEBUG
 	if (rendering & R_SHOW_FLAGS) {
-		render_flags(get_word(i) & ~(F_TARGET_TRANSIENT | F_VARIABLE),
+		render_flags(get_word(i) & ~(F_TARGET_PHONY | F_VARIABLE),
 			parts, rendering);
 	}
 #endif /* ! NDEBUG */
-	if (get_word(i) & F_TARGET_TRANSIENT) {
+	if (get_word(i) & F_TARGET_PHONY) {
 		parts.append_marker("@");
 	}
 	parts.append_text(text.substr(sizeof(word_t) * (i + 1)));

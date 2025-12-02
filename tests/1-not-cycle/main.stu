@@ -1,7 +1,7 @@
 
 #
 # This is not a cycle, but would be found to be a cycle of file and
-# transient objects are confused. 
+# phoniy objects are confused. 
 #
 
 A:  @A {

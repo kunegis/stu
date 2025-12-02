@@ -1,6 +1,6 @@
 
 #
-# A transient target that has both a command, dependencies, and is used as a
+# A phony target that has both a command, dependencies, and is used as a
 # dependency. 
 # 
 # On repeated invocation, this should output "ALL HEADERS BUILT", but

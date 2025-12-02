@@ -1,4 +1,4 @@
-# An named variable in a transient target command.
+# An named variable in a phony target command.
 
 @x :  $[xyz = 'list.xxx=zzz'] 
 {

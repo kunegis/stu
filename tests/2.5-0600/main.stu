@@ -1,6 +1,6 @@
-# Because @x is a "side-transient" and not a real transient, it does not
+# Because @x is a "side-phony" and not a real transitive phony, it does not
 # act transitively.  Instead, this is an error:  non-transitive
-# transients cannot be used in dynamic dependencies. 
+# phonies cannot be used in dynamic dependencies. 
 
 A: [@x] { touch A ; }
 @x { echo Building @x ; }

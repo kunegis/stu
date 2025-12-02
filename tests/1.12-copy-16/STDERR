@@ -1,2 +1,2 @@
 main.stu:1:4: copy rule using = cannot be used
-main.stu:1:1: with transient target @A
+main.stu:1:1: with phony target @A

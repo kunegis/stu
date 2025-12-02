@@ -1,6 +1,6 @@
 
 # Error:  '-o' and '-p' don't mix.  Here, '-o' is transitive through the
-# transient @x.  
+# phony @x.  
 
 A:  -o @x { touch A }
 

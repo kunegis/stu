@@ -1,6 +1,6 @@
-#include "transient_executor.hh"
+#include "transitive_executor.hh"
 
-Transient_Executor::Transient_Executor(
+Transitive_Executor::Transitive_Executor(
 	shared_ptr <const Dep> dep_link,
 	Executor *parent,
 	shared_ptr <const Rule> rule_,
@@ -16,7 +16,7 @@ Transient_Executor::Transient_Executor(
 	shared_ptr <const Plain_Dep> plain_dep= to <Plain_Dep> (dep_link);
 
 	Hash_Dep hash_dep= plain_dep->place_target.unparametrized();
-	assert(hash_dep.is_transient());
+	assert(hash_dep.is_phony());
 
 	if (rule == nullptr)
 		hash_deps.push_back(dep_link->get_target());
@@ -31,7 +31,7 @@ Transient_Executor::Transient_Executor(
 	}
 
 	if (rule == nullptr) {
-		/* There must be a rule for transient targets (as opposed to file
+		/* There must be a rule for phony targets (as opposed to file
 		 * targets), so this is an error. */
 		done.set_all();
 		*this << fmt("no rule to build %s", show(hash_dep));
@@ -71,18 +71,18 @@ Transient_Executor::Transient_Executor(
 	parents[parent]= dep_link;
 }
 
-Transient_Executor::~Transient_Executor()
+Transitive_Executor::~Transitive_Executor()
 /* Objects of this type are never deleted */
 {
 	unreachable();
 }
 
-bool Transient_Executor::want_delete() const
+bool Transitive_Executor::want_delete() const
 {
 	return false;
 }
 
-Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
+Proceed Transitive_Executor::execute(shared_ptr <const Dep> dep_link)
 /* This is an example of a "plain" execute() function, containing the minimal wrapper
  * around execute_phase_{A,B}() */
 {
@@ -119,7 +119,7 @@ Proceed Transient_Executor::execute(shared_ptr <const Dep> dep_link)
 	return P_NOTHING;
 }
 
-bool Transient_Executor::finished(Flags flags) const
+bool Transitive_Executor::finished(Flags flags) const
 {
 	TRACE_FUNCTION();
 	TRACE("flags= %s", show(flags));
@@ -129,17 +129,18 @@ bool Transient_Executor::finished(Flags flags) const
 }
 
 #ifndef NDEBUG
-void Transient_Executor::render(Parts &parts, Rendering rendering) const
+void Transitive_Executor::render(Parts &parts, Rendering rendering) const
 {
 	assert(hash_deps.size());
 	return hash_deps.front().render(parts, rendering);
 }
 #endif /* ! NDEBUG */
 
-void Transient_Executor::notify_result(shared_ptr <const Dep> dep,
-				       Executor *,
-				       Flags flags,
-				       shared_ptr <const Dep> dep_source)
+void Transitive_Executor::notify_result(
+	shared_ptr <const Dep> dep,
+	Executor *,
+	Flags flags,
+	shared_ptr <const Dep> dep_source)
 {
 	assert(flags == F_RESULT_COPY);
 	assert(dep_source);
@@ -147,19 +148,19 @@ void Transient_Executor::notify_result(shared_ptr <const Dep> dep,
 	push_result(dep);
 }
 
-void Transient_Executor::notify_variable(
+void Transitive_Executor::notify_variable(
 	const std::map <string, string> &result_variable_child)
 {
 	result_variable.insert(result_variable_child.begin(),
 		result_variable_child.end());
 }
 
-bool Transient_Executor::optional_finished(shared_ptr <const Dep> )
+bool Transitive_Executor::optional_finished(shared_ptr <const Dep> )
 {
 	return false;
 }
 
-shared_ptr <const Dep> Transient_Executor::prepare(
+shared_ptr <const Dep> Transitive_Executor::prepare(
 	shared_ptr <const Dep> dep,
 	shared_ptr <const Dep> dep_link)
 {

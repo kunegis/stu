@@ -1,21 +1,22 @@
-#ifndef TRANSIENT_EXECUTOR_HH
-#define TRANSIENT_EXECUTOR_HH
+#ifndef TRANSITIVE_EXECUTOR_HH
+#define TRANSITIVE_EXECUTOR_HH
 
 /*
- * Used for non-dynamic transients that appear in rules that have only
- * transients as targets, and have no command.
+ * Used for non-dynamic phony targets that appear in rules that have only
+ * phonies as targets, and have no command.
  */
 
-class Transient_Executor
+class Transitive_Executor
 	: public Executor
 {
 public:
-	Transient_Executor(shared_ptr <const Dep> dep_link,
-			   Executor *parent,
-			   shared_ptr <const Rule> rule,
-			   shared_ptr <const Rule> param_rule,
-			   std::map <string, string> &mapping_parameter,
-			   int &error_additional);
+	Transitive_Executor(
+		shared_ptr <const Dep> dep_link,
+		Executor *parent,
+		shared_ptr <const Rule> rule,
+		shared_ptr <const Rule> param_rule,
+		std::map <string, string> &mapping_parameter,
+		int &error_additional);
 
 	shared_ptr <const Rule> get_rule() const {  return rule;  }
 	virtual bool want_delete() const override;
@@ -33,10 +34,10 @@ protected:
 	virtual bool optional_finished(shared_ptr <const Dep> ) override;
 
 private:
-	~Transient_Executor();
+	~Transitive_Executor();
 
 	std::vector <Hash_Dep> hash_deps;
-	/* The targets to which this executor object corresponds.  All are transients.
+	/* The targets to which this executor object corresponds.  All are phonies.
 	 * Contains at least one element. */
 
 	shared_ptr <const Rule> rule;
@@ -50,9 +51,9 @@ private:
 
 	std::map <string, string> mapping_variable;
 	/* Variable assignments from variables dependencies.  This is in
-	 * Transient_Executor because it may be percolated up to the parent executor. */
+	 * Transitive_Executor because it may be percolated up to the parent executor. */
 
 	static shared_ptr <const Dep> prepare(shared_ptr <const Dep> dep, shared_ptr <const Dep> dep_link);
 };
 
-#endif /* ! TRANSIENT_EXECUTOR_HH */
+#endif /* ! TRANSITIVE_EXECUTOR_HH */

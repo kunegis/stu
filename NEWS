@@ -11,6 +11,12 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2025-12-02  Version 2.8.2
+
+* Transient dependencies have been renamed to phony dependencies, as in make(1).  Phony
+  targets that appear in rules that have no file targets and no command are called
+  transitive phony targets.
+
 2025-11-30  Version 2.8
 
 * Remove the -d option, which enabled a 'debug' mode.  Was rarely used, and was a mix

@@ -14,11 +14,11 @@ DESCRIPTION
        selves computed by a command.  When '[FILENAME]' (a filename currounded
        by angle brackets) is used as a dependency, Stu  will  build  the  file
        FILENAME  and  read  dependencies  from  it.  (2) Parameters:  Names of
-       files (and transient targets) can contain parameters written using dol‐
-       lar  syntax.   For  example, a rule with a target filename 'list.$name'
-       will be used to build any file matching the pattern 'list.*',  and  the
-       parameter  $name  can be used in names of dependencies and in the build
-       command.  Targets may contain any number of parameters.  (3) Concatena‐
+       files (and phony targets) can contain parameters written  using  dollar
+       syntax.   For  example, a rule with a target filename 'list.$name' will
+       be used to build any file matching the pattern 'list.*', and the param‐
+       eter  $name  can be used in names of dependencies and in the build com‐
+       mand.  Targets may contain any number of  parameters.   (3)  Concatena‐
        tion:   Stu allows expressions such as list.[FILENAME] and list.(a b c)
        to construct a list of files following a certain pattern.
 
@@ -34,15 +34,15 @@ DESCRIPTION
 
        Names of targets to build passed on the command line outside of options
        follow  a  simplified  Stu syntax, in which the only special characters
-       are the transient target marker '@', brackets '[]', and flags  starting
-       with a dash '-'.  All other characters are interpreted as part of file‐
-       names; this includes all spaces.  The parentheses '()' are  not  parsed
-       as  Stu  syntax,  because  the shell's braces '{}' can be used instead.
-       When -J is used, arguments passed on the command line  are  interpreted
-       as  filenames  without  Stu syntax.  The syntax of arguments outside of
-       options and without using the -J is subject to change with new features
-       in  Stu  --  to pass filenames portably, use the -c option when passing
-       individual filenames, or -J when passing multiple filenames,  e.g.  via
+       are the phony target marker '@', brackets '[]', and flags starting with
+       a dash '-'.  All other characters are interpreted as part of filenames;
+       this includes all spaces.  The parentheses '()' are not parsed  as  Stu
+       syntax,  because  the shell's braces '{}' can be used instead.  When -J
+       is used, arguments passed on the command line are interpreted as  file‐
+       names  without  Stu syntax.  The syntax of arguments outside of options
+       and without using the -J is subject to change with new features in  Stu
+       --  to pass filenames portably, use the -c option when passing individ‐
+       ual  filenames,  or  -J  when  passing  multiple  filenames,  e.g.  via
        xargs(1).   To pass targets in full stu syntax portably, use the -C op‐
        tion.
 
@@ -60,7 +60,7 @@ OPTIONS
 
        -c FILENAME
               Pass a target filename, without Stu syntax.   This  option  only
-              allows file targets to be specified, not transient targets.
+              allows file targets to be specified, not phony targets.
 
        -C EXPRESSION
               Pass  a  target  using full Stu syntax.  The given expression is
@@ -334,22 +334,22 @@ OVERVIEW
        which one is used.  If a variable dependencies has the same name  as  a
        parameter, it overrides the parameter.
 
-       Transient  targets are marked with '@'.  They are used for targets such
-       as '@clean' that do an action without building a file, and for lists of
+       Phony  targets  are marked with '@'.  They are used for targets such as
+       '@clean' that do an action without building a file, and  for  lists  of
        files that depend on other targets, but don't have a command associated
        with them.  They are also used instead of variables that  would  other‐
        wise contain a list of filenames.
 
-       Here is a transient target that cleans up the directory:
+       Here is a phony target that cleans up the directory:
 
-           @clean:  { rm -Rf *.o *~ }
+           @clean:  { rm -Rf *.o *~ ; }
 
-       Here a transient target is used as a shortcut to a longer name:
+       Here a phony target is used as a shortcut to a longer name:
 
            @build.$name:   dat/build.$name.txt;
 
-       Here  a  transient target is used as a list of files.  Multiple targets
-       can depend on it, to effectively depend on the individual files:
+       Here  a  phony target is used as a list of files.  Multiple targets can
+       depend on it, to effectively depend on the individual files:
 
            @headers:  a.h b.h c.h;
 
@@ -371,11 +371,11 @@ FEATURES
        mandatory whitespace.  Instead of tabs, the commands  are  enclosed  in
        curly braces.
 
-       Stu  syntax  supports two types of objects:  file targets and transient
-       targets.  Files are any file in the file system, and are always  refer‐
-       enced  by  their filename.  Transient targets have names beginning with
-       the '@' symbol and do not correspond to files, but can  have  dependen‐
-       cies and commands.
+       Stu  syntax supports two types of objects:  file targets and phony tar‐
+       gets.  Files are any file in the file system, and are always referenced
+       by  their  filename.   Phony  targets have names beginning with the '@'
+       symbol and do not correspond to files, but can  have  dependencies  and
+       commands.
 
        A rule for a file in Stu has the following syntax:
 
@@ -413,22 +413,22 @@ FEATURES
 
            TARGET ;
 
-       For a transient, the same syntax is used as for a file:
+       For a phony target, the same syntax is used as for a file:
 
            @TARGET [ : DEPENDENCY ... ] { COMMAND }
            @TARGET [ : DEPENDENCY ... ] ;
 
-       If  a  transient target includes a command, Stu will have no way of re‐
-       membering that the command was executed, and the command will  be  exe‐
-       cuted again on the next invocation of Stu, even if the previous invoca‐
-       tion was successful.  Therefore, commands for  transient  targets  will
-       typically output build progress information, or perform actions that do
-       not fit well the build system paradigm, such as removing  or  deploying
-       built files.
+       If a phony target includes a command, Stu will have no way of remember‐
+       ing that the command was executed, and the  command  will  be  executed
+       again  on  the  next invocation of Stu, even if the previous invocation
+       was successful.  Therefore, commands for phony targets  will  typically
+       output  build  progress information, or perform actions that do not fit
+       well the build system paradigm, such as  removing  or  deploying  built
+       files.
 
        Rules  can  have multiple targets, in which case the command must build
-       all the targets that are files.  If one of the targets is  a  transient
-       target, this effectively creates an alias for the file targets.
+       all the targets that are files.  If one of the targets is a phony  tar‐
+       get, this effectively creates an alias for the file targets.
 
            TARGET... [ : DEPENDENCY ... ] { COMMAND }
            TARGET... [ : DEPENDENCY ... ] ;
@@ -470,10 +470,10 @@ FEATURES
        that  the file NAME is up to date before the target itself can be up to
        date.
 
-           @NAME   A transient dependency
+           @NAME   A phony dependency
 
-       A transient target.  They represent a distinct  namespace  from  files,
-       and thus their command do not create files.
+       A phony target.  They represent a distinct namespace  from  files,  and
+       thus their command do not create files.
 
            -p NAME   A persistent dependency
 
@@ -512,11 +512,11 @@ FEATURES
        name of exactly one file.  If -C or no flag is used, the file is parsed
        in full Stu syntax.
 
-           '[' @NAME ']'  A dynamic transient target
+           '[' @NAME ']'  A dynamic phony target
 
-       Brackets can also be used around a transient dependency name.  In  that
-       case,  all  dependencies of the given transient targets will be consid‐
-       ered dynamic dependencies.
+       Brackets can also be used around a  phony  dependency  name.   In  that
+       case,  all  dependencies  of the given phony targets will be considered
+       dynamic dependencies.
 
            $[NAME] A variable dependency
 
@@ -568,12 +568,12 @@ CONCATENATION
        left groups concatenated textually with items in the right group.
 
 PARAMETERS
-       Any  file  or  transient target may include parameters.  Parameters are
-       noted using the '$' character and are given a name.  The syntax for pa‐
-       rameters  is  similar  to that for variables in the shell.  If the sign
-       '$' is followed by '{', then everything up to the corresponding '}'  is
-       the  parameter name.  Otherwise, all alphanumeric characters and under‐
-       scores '_' following will be taken as the parameter name:
+       Any  file or phony target may include parameters.  Parameters are noted
+       using the '$' character and are given a name.  The syntax  for  parame‐
+       ters is similar to that for variables in the shell.  If the sign '$' is
+       followed by '{', then everything up to the corresponding '}' is the pa‐
+       rameter  name.   Otherwise, all alphanumeric characters and underscores
+       '_' following will be taken as the parameter name:
 
            data/$name.png
            data/${name}_2.png
@@ -589,7 +589,7 @@ PARAMETERS
 
        are errors.
 
-       Stu  will match the pattern to any file or transient target it needs to
+       Stu  will  match  the  pattern  to any file or phony target it needs to
        build.  Parameters can appear in dependencies and in commands any  num‐
        ber of times (included not appearing in them).  In a target name, a pa‐
        rameter can only appear once.  The following rule uses the  single  pa‐
@@ -624,7 +624,7 @@ PARAMETERS
            a.b.$x: ... { ... }
 
 CANONICALIZATION
-       Stu canonicalizes names of files and transients.  As  an  example,  the
+       Stu canonicalizes names of files and phony targets.  As an example, the
        filenames  'aaa//bbb'  and  'aaa/bbb'  are considered to be the same by
        Stu, and can be used interchangingly.   Canonicalization  concerns  the
        use  of  '/' (the directory separator) and '.' (the current directory).
@@ -645,9 +645,9 @@ CANONICALIZATION
        is not simplified.  Likewise, '/..' is not simplified to '/'.
 
        The canonicalization rules apply not only to file targets, but also  to
-       transient targets.  Thus, @aaa//bbb and @aaa/bbb refer to the same tar‐
-       get.  It is thus strongly suggested to use transient targets in a fash‐
-       ion that is consistent with the file system semantics of '/' and '.'.
+       phony  targets.  Thus, @aaa//bbb and @aaa/bbb refer to the same target.
+       It is thus strongly suggested to use phony targets in a fashion that is
+       consistent with the file system semantics of '/' and '.'.
 
        Canonicalization is applied in the following fashion:
 
@@ -659,7 +659,7 @@ CANONICALIZATION
        Phase 2: Second, When a dependency is matched to a rule,  canonicaliza‐
        tion  is  applied  to the dependency name.  At this stage, names do not
        contain parameters and canonicalization is performed on the final  file
-       or transient name.
+       or phony target name.
 
        Additionally, there are three special rules for canonicalization:
 
@@ -747,7 +747,7 @@ TOKENIZATION
            ;     In rules without command, end of dependency declaration
            -     Prefix character for flag, followed by a single character
            $     Parameter
-           @     Transient target marker
+           @     Phony target marker
            >     Output redirection
            <     Input redirection
            =     Assignment rule; copy rule; named variable
@@ -779,7 +779,7 @@ TOKENIZATION
        duce  parameter names in the same way as outside quotes.  Double quotes
        may also contain unescaped newline characters.  The NUL character  '\0'
        is  not  allowed inside double quotes.  There is no \0 escape sequence,
-       as names of files and transients cannot contain the NUL byte.
+       as names of files and phony targets cannot contain the NUL byte.
 
        Spacing rules:   The lack of whitespace between tokens represents  con‐
        catenation under certain conditions.  Specifically:  To separate depen‐
@@ -969,10 +969,10 @@ EXAMPLES
            >A: <B { tr a-z A-Z ; }
            B = { hello }
 
-       Variable dependencies may be included indirectly through transient tar‐
-       gets  without  commands, and through dynamic dependencies.  In the fol‐
-       lowing example, the variable $V will be passed through to the  commands
-       for the targets A and B:
+       Variable dependencies may be included indirectly through phony  targets
+       without  commands,  and through dynamic dependencies.  In the following
+       example, the variable $V will be passed through to the commands for the
+       targets A and B:
 
            V: { echo Hello >V ; }
            @x: $[V];
@@ -1114,7 +1114,7 @@ BUGS
        ters, etc.  Thus, the placement of error messages may be  wrong  within
        the line in certain editors or GUIs.
 
-       When  an  error  occurs with a concatenated file or transient name, Stu
+       When an error occurs with a concatenated file or phony target name, Stu
        only outputs the location of the name as a whole, and does not point to
        the source of the individual components of the concatenation.  This can
        lead to confusing error backtraces.
@@ -1130,4 +1130,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.8.1                        November 2025                          STU(1)
+stu-2.8.2                        December 2025                          STU(1)

@@ -18,8 +18,7 @@ Advantages of Stu over Make are:
 * Stu catches typical Makefile errors such as dependencies that where
   not built.  Make cannot do this because the namespace for files is
   intermixed with namespace for phony targets.  In Stu, both namespaces
-  are separate (phony targets are called "transient targets" in Stu),
-  and thus Stu can perform all checks properly.
+  are separate, and thus Stu can perform all checks properly.
 * Stu has better support for interrupting large builds.  Make will often
   hang or leave processes running.
 * Stu avoids the "inner platform" antipattern present in Make, in which

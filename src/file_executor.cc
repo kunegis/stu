@@ -5,7 +5,7 @@
 size_t File_Executor::executors_by_pid_size= 0;
 pid_t *File_Executor::executors_by_pid_key= nullptr;
 File_Executor **File_Executor::executors_by_pid_value= nullptr;
-std::unordered_map <string, Timestamp> File_Executor::transients;
+std::unordered_map <string, Timestamp> File_Executor::phonies;
 
 File_Executor::File_Executor(
 	shared_ptr <const Dep> dep,
@@ -25,7 +25,7 @@ File_Executor::File_Executor(
 
 	/* Later replaced with all targets from the rule, if a rule exists */
 	Hash_Dep hash_dep_no_flags= hash_dep_;
-	hash_dep_no_flags.get_front_word_nondynamic() &= F_TARGET_TRANSIENT;
+	hash_dep_no_flags.get_front_word_nondynamic() &= F_TARGET_PHONY;
 	hash_deps.push_back(hash_dep_no_flags);
 	executors_by_hash_dep[hash_dep_no_flags]= this;
 
@@ -80,10 +80,10 @@ File_Executor::File_Executor(
 		}
 	}
 
-	/* It is not allowed to have a dynamic of a non-transitive transient */
+	/* It is not allowed to have a dynamic of a non-transitive phony */
 	if (dynamic_cast <Dynamic_Executor *> (parent) &&
 	    dep->flags & F_RESULT_NOTIFY &&
-	    dep->flags & F_TARGET_TRANSIENT) {
+	    dep->flags & F_TARGET_PHONY) {
 
 		Place place_target;
 		for (auto &i: rule->place_targets) {
@@ -95,11 +95,11 @@ File_Executor::File_Executor(
 		assert(! place_target.empty());
 		if (rule->command) {
 			place_target <<
-				fmt("rule for transient target %s must not have a command",
+				fmt("rule for phony target %s must not have a command",
 				    show(hash_dep_));
 		} else {
 			place_target <<
-				fmt("rule for transient target %s must not have file targets",
+				fmt("rule for phony target %s must not have file targets",
 				    show(hash_dep_));
 		}
 		dep->get_place() << fmt("when used as dynamic dependency of %s",
@@ -110,8 +110,8 @@ File_Executor::File_Executor(
 		return;
 	}
 
-	/* -o and -p are not allowed on non-transitive transients */
-	if (dep->flags & F_TARGET_TRANSIENT &&
+	/* -o and -p are not allowed on non-transitive phonies */
+	if (dep->flags & F_TARGET_PHONY &&
 	    dep->flags & (F_OPTIONAL | F_PERSISTENT)) {
 
 		Place place_target;
@@ -131,11 +131,11 @@ File_Executor::File_Executor(
 			fmt("using flag %s", show_prefix("-", frmt("%c", flags_chars[ind])));
 		if (rule->command)
 			place_target <<
-				fmt("because rule for transient target %s has a command",
+				fmt("because rule for phony target %s has a command",
 				    show(hash_dep_));
 		else
 			place_target <<
-				fmt("because rule for transient target %s has file targets",
+				fmt("because rule for phony target %s has file targets",
 				    show(hash_dep_));
 		*this << "";
 		parent->raise(ERROR_LOGICAL);
@@ -664,10 +664,10 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			}
 		}
 		for (const Hash_Dep &hash_dep: hash_deps) {
-			if (! hash_dep.is_transient())
+			if (! hash_dep.is_phony())
 				continue;
-			if (transients.count(hash_dep.get_name_nondynamic()) == 0) {
-				/* Transient was not yet executed */
+			if (phonies.count(hash_dep.get_name_nondynamic()) == 0) {
+				/* Phony was not yet executed */
 				if (! no_execution && ! has_file) {
 					bits |= B_NEED_BUILD;
 				}
@@ -725,15 +725,15 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	/* We have to start a job now */
 	print_command();
 	for (const Hash_Dep &hash_dep: hash_deps) {
-		if (! hash_dep.is_transient())
+		if (! hash_dep.is_phony())
 			continue;
 		Timestamp timestamp_now= Timestamp::now();
 		assert(timestamp_now.defined());
-		assert(transients.count(hash_dep.get_name_nondynamic()) == 0);
-		transients[hash_dep.get_name_nondynamic()]= timestamp_now;
+		assert(phonies.count(hash_dep.get_name_nondynamic()) == 0);
+		phonies[hash_dep.get_name_nondynamic()]= timestamp_now;
 	}
 	if (rule->redirect_index >= 0)
-		assert(! (rule->place_targets[rule->redirect_index]->flags & F_TARGET_TRANSIENT));
+		assert(! (rule->place_targets[rule->redirect_index]->flags & F_TARGET_PHONY));
 	assert(options_jobs > 0);
 
 	/* Key/value pairs for all environment variables of the job.  Variables override
@@ -936,7 +936,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 	TRACE("dep_link= %s", show_trace(dep_link));
 
 	if ((dep_link->flags & F_OPTIONAL) && to <Plain_Dep> (dep_link)
-		&& ! (to <Plain_Dep> (dep_link)->place_target.flags & F_TARGET_TRANSIENT))
+		&& ! (to <Plain_Dep> (dep_link)->place_target.flags & F_TARGET_PHONY))
 	{
 		TRACE("Is optional file target");
 
@@ -1159,7 +1159,7 @@ bool File_Executor::start(
 {
 	if (rule->is_copy) {
 		assert(rule->place_targets.size() == 1);
-		assert(! (rule->place_targets.front()->flags & F_TARGET_TRANSIENT));
+		assert(! (rule->place_targets.front()->flags & F_TARGET_PHONY));
 		string source= rule->filename.unparametrized();
 
 		/* If optional copy, don't just call 'cp' and let it fail:  Look up

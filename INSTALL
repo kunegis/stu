@@ -29,13 +29,17 @@ Stu is developed primarily on Linux, and has been used on FreeBSD, OS X
 both GCC and Clang.
 
 --------- Arch Linux ---------
-
 Stu can be installed on Arch Linux via the following package, which will
 fetch the current version from Github and compile it locally:
 
 https://aur.archlinux.org/packages/stu-git/
 
 Credits for the package go to Holger Heinz (hheinz).
+
+--------- Precompiled Debian packages ------------
+Github hooks (.github) are used to generate precompiled packages.  These are only
+available when developers go to https://github.com/kunegis/stu/releases and create a
+release.
 
 ==== REQUIREMENTS ====
 

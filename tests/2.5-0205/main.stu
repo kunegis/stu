@@ -1,4 +1,4 @@
-# Transients don't pass dependencies for dynamics when they are in a
+# Phonies don't pass dependencies for dynamics when they are in a
 # rule with multiple targets.
 # This example succeeds; 'D' is not built. 
 A: [@x] { cat B C >A ; }

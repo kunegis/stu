@@ -2,10 +2,10 @@
 #define DYNAMIC_EXECUTOR_HH
 
 /*
- * This is used for all dynamic targets, regardless of whether they are files, transients,
- * or concatenations.  If it corresponds to a (possibly multiply) dynamic transient or
- * file, it used for caching and is not deleted.  If it corresponds to a concatenation, it
- * is not cached, and is deleted when not used anymore.
+ * This is used for all dynamic targets, regardless of whether they are files, phony
+ * targets, or concatenations.  If it corresponds to a (possibly multiply) dynamic phonies
+ * or file, it used for caching and is not deleted.  If it corresponds to a concatenation,
+ * it is not cached, and is deleted when not used anymore.
  *
  * Each dynamic executor corresponds to an exact dynamic dependency, taking into account
  * all flags.  This is as opposed to file executors, where multiple file dependencies

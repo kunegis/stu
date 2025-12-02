@@ -4,8 +4,7 @@
 /*
  * Targets are to be distinguished from the more general dependencies, which can
  * represent any nested expression, including concatenations, flags, compound
- * expressions, etc., while targets only represent individual files or
- * transients.
+ * expressions, etc., while targets only represent individual files or phonies.
  */
 
 #include "error.hh"
@@ -14,7 +13,7 @@
 #include "show.hh"
 
 class Name
-/* The possibly parametrized name of a file or transient.  A name has N >= 0
+/* The possibly parametrized name of a file or phony.  A name has N >= 0
  * parameters.  When N > 0, the name is parametrized, otherwise it is
  * unparametrized.  A name consists of N+1 static text elements (in the variable
  * TEXTS) and N parameters (in PARAMETERS), which are interleaved.  For instance
@@ -148,18 +147,18 @@ class Target
 /* A parametrized name for which it is saved what type it represents.  Non-dynamic. */
 {
 public:
-	Flags flags;  /* Only file/transient target info */
+	Flags flags;  /* Only file/phony target info */
 	Name name;
 
 	Target(Flags flags_, const Name &name_)
 		: flags(flags_), name(name_)
 	{
-		assert((flags_ & ~F_TARGET_TRANSIENT) == 0);
+		assert((flags_ & ~F_TARGET_PHONY) == 0);
 	}
 
 	Target(Hash_Dep hash_dep)
 	/* Unparametrized target. The passed TARGET must be non-dynamic. */
-		: flags(hash_dep.get_front_word_nondynamic() & F_TARGET_TRANSIENT),
+		: flags(hash_dep.get_front_word_nondynamic() & F_TARGET_PHONY),
 		  name(hash_dep.get_name_nondynamic())
 	{
 		assert(! hash_dep.is_dynamic());
@@ -232,7 +231,7 @@ class Place_Target
 /* A target that is parametrized and contains places.  Non-dynamic. */
 {
 public:
-	Flags flags;  /* Only F_TARGET_TRANSIENT is used */
+	Flags flags;  /* Only F_TARGET_PHONY is used */
 	Place_Name place_name;
 
 	Place place;
@@ -243,7 +242,7 @@ public:
 		     const Place_Name &place_name_)
 		: flags(flags_), place_name(place_name_), place(place_name_.place)
 	{
-		assert((flags_ & ~F_TARGET_TRANSIENT) == 0);
+		assert((flags_ & ~F_TARGET_PHONY) == 0);
 	}
 
 	Place_Target(Flags flags_,
@@ -251,7 +250,7 @@ public:
 		     const Place &place_)
 		: flags(flags_), place_name(place_name_), place(place_)
 	{
-		assert((flags_ & ~F_TARGET_TRANSIENT) == 0);
+		assert((flags_ & ~F_TARGET_PHONY) == 0);
 	}
 
 	Place_Target(const Place_Target &that)

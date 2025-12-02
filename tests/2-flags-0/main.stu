@@ -2,7 +2,7 @@
 # Test the $CFLAGS idiom, i.e. using a persistent dependency (using the
 # flag -p) to make sure programs are *not* recompiled just because the
 # flags change.  Also, test that variable dependencies are transitive
-# through transient targets without commands. 
+# through phony targets without commands. 
 #
 # Note:  this is an old version of the CFLAGS idiom.  In newer version
 # of Stu, this is better achieved using trivial dependencies. 

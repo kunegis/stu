@@ -3,10 +3,10 @@
 
 /*
  * Each non-dynamic file target is represented at run time by one File_Executor object.
- * Each File_Executor object may correspond to multiple files or transients, when a rule
- * has multiple targets.  Transients are only represented by a File_Executor when they
+ * Each File_Executor object may correspond to multiple files or phonies, when a rule
+ * has multiple targets.  Phonies are only represented by a File_Executor when they
  * appear as targets of rules that have at least one file target, or when the rule has a
- * command.  Otherwise, Transient_Executor is used for them.
+ * command.  Otherwise, Transitive_Executor is used for them.
  *
  * This is the only Executor subclass that actually starts jobs -- all other Executor
  * subclasses only delegate their tasks to child executors.
@@ -74,8 +74,8 @@ private:
 
 	std::vector <Hash_Dep> hash_deps;
 	/* The targets to which this executor object corresponds.  Never empty.  All
-	 * targets are non-dynamic, i.e., only plain files and transients are included.
-	 * Does not include flags (except F_TRANSIENT). */
+	 * targets are non-dynamic, i.e., only plain files and phonies are included.
+	 * Does not include flags (except F_PHONY). */
 
 	Timestamp *timestamps_old;
 	/* Timestamp of each file target, before the command is executed.  Only valid once
@@ -86,7 +86,7 @@ private:
 	 * malloc().  Length equals that of TARGETS. */
 
 	char **filenames;
-	/* The actual filename for every file target.  Null for transients.  Both the
+	/* The actual filename for every file target.  Null for phonies.  Both the
 	 * array and each filename is allocated with malloc().  If used, it has the same
 	 * length as TARGETS.  Only set when we are actually starting the jobs.  Cannot be
 	 * a C++ container because we access it from async-signal safe functions.  Used to
@@ -141,14 +141,14 @@ private:
 		const std::map <string, string> &mapping);
 	/* Return value is TRUE on error */
 
-	static std::unordered_map <string, Timestamp> transients;
-	/* The timestamps for transient targets.  This container plays the role of the
-	 * file system for transient targets, holding their timestamps, and remembering
-	 * whether they have been executed.  Note that if a rule has both file targets and
-	 * transient targets, and all file targets are up to date and the transient
-	 * targets have all their dependencies up to date, then the command is not
-	 * executed, even though it was never executed in the current invocation of
-	 * Stu. In that case, the transient targets are never inserted in this map. */
+	static std::unordered_map <string, Timestamp> phonies;
+	/* The timestamps for phony targets.  This container plays the role of the file
+	 * system for phony targets, holding their timestamps, and remembering whether
+	 * they have been executed.  Note that if a rule has both file targets and phony
+	 * targets, and all file targets are up to date and the phony targets have all
+	 * their dependencies up to date, then the command is not executed, even though it
+	 * was never executed in the current invocation of Stu. In that case, the phony
+	 * targets are never inserted in this map.  */
 
 	static void executors_add(pid_t pid, size_t &index, File_Executor *executor);
 	static bool executors_find(pid_t pid, size_t &index);

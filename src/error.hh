@@ -46,10 +46,10 @@
  * "not BBB" mentions the invalid token.  If end-of-file is encountered, the "not BBB"
  * part is omitted.
  *
- * Use "must not" rather than "cannot" or "shall" in error messages when something must
- * be present, but is erroneous, e.g., "filename must not be empty".  On the other hand,
- * use "cannot" when something completely unexpected was encountered, e.g., "transient
- * targets cannot be used with copy rule".
+ * Use "must not" rather than "cannot" or "shall" in error messages when something must be
+ * present, but is erroneous, e.g., "filename must not be empty".  On the other hand, use
+ * "cannot" when something completely unexpected was encountered, e.g., "phony targets
+ * cannot be used with copy rule".
  *
  * Operators and other syntax elements are often introduced by the word "using" rather
  * than "with", etc., e.g., "expected a filename after input redirection using "<"".

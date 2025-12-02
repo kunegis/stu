@@ -1,14 +1,4 @@
 #
-# Test installing the auto-generated .deb from Github.  Or remove it and the source code
-# for it.
-#
-
-#
-# Rename transients to phonies, and use the word "transient" only when there is no command
-# and no file target.
-#
-
-#
 # Test what happens when a child process of Stu is stopped.
 #
 
@@ -106,7 +96,7 @@ C:  -L { ln -s ... B ; }
 % include -d src
 # The flag -d can be something else.
 
-# - What about transient targets imported in that way.  Do we
+# - What about phony targets imported in that way.  Do we
 #   prepend a directory to them?
 %import dir   # contains:   @all:  ...;
 # gets converted to:       @dir/all:  ...;
@@ -265,7 +255,7 @@ list.${name|[A-Z].*} # Matches uppercase names
 # Find a good syntax based on Bash/KSH.
 
 #
-# Allow dir/@transient.  Will allow dir/(a b @c @d).
+# Allow dir/@phony.  Will allow dir/(a b @c @d).
 #
 # a/@b is equivalent to @a/b.
 #

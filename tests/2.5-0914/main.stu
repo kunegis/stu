@@ -1,4 +1,4 @@
-# -n is transitive through a transitive transient. 
+# -n is transitive through a transitive phony. 
 A: [-n @x] { 
 	cat 'list.aaa bbb' 'list.ccc ddd' >A
 }

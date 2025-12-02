@@ -1,4 +1,4 @@
-# Flags don't propagate over transient targets when they have a
+# Flags don't propagate over phony targets when they have a
 # command.  This is an error. 
 
 A: -o @x { 

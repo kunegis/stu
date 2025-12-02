@@ -41,7 +41,7 @@ using std::shared_ptr;
 #include "trace.cc"
 #include "trace_dep.cc"
 #include "trace_executor.cc"
-#include "transient_executor.cc"
+#include "transitive_executor.cc"
 
 int main(int argc, char **argv, char **envp)
 {

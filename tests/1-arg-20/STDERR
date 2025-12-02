@@ -1,2 +1,2 @@
-../../bin/stu.test: expected the name of a transient target
+../../bin/stu.test: expected the name of a phony target
 ../../bin/stu.test: after @

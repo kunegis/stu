@@ -1,6 +1,6 @@
 
 #
-# Variables are passed through two levels of transients without commands.
+# Variables are passed through two levels of phonies without commands.
 #
 
 A: @a { echo $V >A }

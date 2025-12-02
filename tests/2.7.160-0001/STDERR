@@ -1,4 +1,4 @@
 main.stu:4:7: dependency @a must not be declared as optional
 main.stu:4:5: using flag -o
-main.stu:5:3: because rule for transient target @a has file targets
+main.stu:5:3: because rule for phony target @a has file targets
 main.stu:4:7: @a is needed by "A"

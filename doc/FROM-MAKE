@@ -7,7 +7,7 @@ Stu.
 
 == Avoid Variables ==
 
-* Instead of Make variables, use files or transient targets
+* Instead of Make variables, use files or phony targets
 
 Instead of
 
@@ -19,7 +19,7 @@ use
 
 and then just access the file 'DATASETS'.
 
-== Transient Targets ==
+== Phony Targets ==
 
 Instead of
 
@@ -29,8 +29,7 @@ Use
 
 @files:  aaa.h bbb.h ccc.h;
 
-* Phony targets are called transient targets, and they have their own
-  namespace, using the '@' prefix.
+* Phony have their own namespace, using the '@' prefix.
 
 == Other ==
 

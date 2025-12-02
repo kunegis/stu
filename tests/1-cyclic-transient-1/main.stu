@@ -1,4 +1,4 @@
 
-# Transient-only cycle of length one
+# Phony-only cycle of length one.
 
 @all:  @all;

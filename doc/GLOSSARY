@@ -1,5 +1,5 @@
 Anchoring - Represents the position of a parameter in a matched filename.  Each anchoring
-	isrepresented by two numbers, representing the start and end position of the
+	is represented by two numbers, representing the start and end position of the
 	match.  Anchorings are represented as arrays of integers of length 2*N, where N is
 	the number of parameters.  For instance, when "/usr/bin" is matched to
 	"/$DIR/$NAME", the anchoring is given by the array [1 4 5 8].
@@ -24,31 +24,30 @@ File - An object in the file system.  We use the term in the broad
 Flag - A flag is a syntax and semantic element of Stu scripts.  They start with
 	a dash.  An example is '-p' for persistent dependencies.
 
-Job - A job is a child process started by Stu to build one or more files
-        or transient targets.  Jobs are run in the background by
-        default, but the -i option changes that.
+Job - A job is a child process started by Stu to build one or more files or phony targets.
+	Jobs are run in the background by default, but the -i option changes that.
 
-Name - The name of a file or of a transient.  Names are strings of
+Name - The name of a file or of a phony target.  Names are strings of
 	bytes, must have length at least one, and cannot contain the NUL
 	(\0) character.
 
 Option - An option is passed on the Stu command line and starts with a
 	dash.  Some have arguments.
 
-Parameter - A parameter in the name of a file or a transient; introduced
+Parameter - A parameter in the name of a file or a phony target; introduced
 	by the dollar sign ($).  In the command, the corresponding
 	environment variable is set.
 
-Plain - (Said of a dependency or target) Either a file or a transient.
+Phony target - One of the two basic datatypes ("targets") of Stu, the other
+	being files.  They are noted with the '@' symbol, e.g., '@all'.
+	A phony target can be built like a file, but will not result in a
+	built file.  A phony target can also be used only for its
+	dependency.
+
+Plain - (Said of a dependency or target) Either a file or a phony target.
 
 Special rule - Special rules are used when matching parametrized targets
-	to names of files and transients.  They are described in the
+	to names of files and phony targets.  They are described in the
 	manpage.
 
-Target - A file or a transient, possibly (multiply) dynamic.
-
-Transient - One of the two basic datatypes ("targets") of Stu, the other
-	being files.  They are noted with the '@' symbol, e.g., '@all'.
-	A transient can be built like a file, but will not result in a
-	built file.  A transient can also be used only for its
-	dependency.
+Target - A file or a phony target, possibly (multiply) dynamic.

@@ -1,4 +1,4 @@
-# Inheriting multiple dynamic dependencies through a transient target. 
+# Inheriting multiple dynamic dependencies through a phony target. 
 A:  [@x] { cat B C >A ; }
 @x:  X Y;
 X = { B }

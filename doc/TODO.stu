@@ -1,8 +1,4 @@
 #
-# Test what happens when a child process of Stu is stopped.
-#
-
-#
 # tokenizer.cc: print_errno()/format_errno() should be passed the name of the failing function as first
 # argument.  Then, we can write print_errno() such that the first arg must always be known
 # at compile time, i.e., be a string constant representing the failing function.
@@ -446,4 +442,9 @@ A: -e B
 # faster.  (Maybe)
 # * There seems to be no way to sleep sub-second amounts on POSIX scripts, so we would
 #   have to compile a separate program for it.
+#
+
+#
+# When the number of parallel jobs is 1 (-j not used or -j1), "stu: terminating all jobs"
+# should not be shown Control-C.
 #

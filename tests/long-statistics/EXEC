@@ -22,8 +22,7 @@ grep -qE '^STATISTICS  children system execution time = [0-9.]+[1-9][0-9.]* s$' 
 	exit 1
 }
 
-# This is the sum of numbers from 1 to 99999
-grep -qE '^4999950000$' A || {
+grep -qE '^999999$' A || {
 	echo >&2 "*** Content of 'A'"
 	exit 1
 }

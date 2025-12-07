@@ -103,9 +103,10 @@ void Executor::read_dynamic(
 			const char c= (dep_target->flags & F_NEWLINE_SEPARATED) ? '\n' : '\0';
 			const char c_printed= (dep_target->flags & F_NEWLINE_SEPARATED) ? 'n' : '0';
 			try {
-				Parser::get_expression_list_delim
-					(deps, filename.c_str(), c, c_printed,
-					 *dynamic_executor, allow_enoent);
+				Parser::get_expression_list_delim(
+					deps, filename.c_str(),
+					place_target.place, c, c_printed,
+					*dynamic_executor, allow_enoent);
 			} catch (int e) {
 				raise(e);
 			}

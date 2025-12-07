@@ -185,7 +185,7 @@ void File_Executor::wait()
 	if (!r) {
 		should_not_happen();
 		print_warning(Place(),
-			frmt("the function waitpid(2) returned the invalid process ID %jd",
+			frmt("the function waitpid(2) returned the unknown process ID %jd",
 				(intmax_t)pid));
 		return;
 	}
@@ -402,7 +402,7 @@ void File_Executor::print_command() const
 	if (rule->is_copy) {
 		assert(rule->place_targets.size() == 1);
 		string cp_target= show(rule->place_targets[0]->place_name, S_NORMAL);
-		string cp_source= show(rule->filename, S_NORMAL);
+		string cp_source= show(rule->place_name_input.unparametrized(), S_NORMAL);
 		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str());
 		return;
 	}
@@ -424,10 +424,10 @@ void File_Executor::print_command() const
 	/* For single-line commands, show the variables on the same line.
 	 * For multi-line commands, show them on a separate line. */
 
-	string filename_output= rule->redirect_index < 0 ? "" :
-		rule->place_targets[rule->redirect_index]
+	string filename_output= rule->output_redirect_index < 0 ? "" :
+		rule->place_targets[rule->output_redirect_index]
 		->place_name.unparametrized();
-	string filename_input= rule->filename.unparametrized();
+	string filename_input= rule->place_name_input.unparametrized();
 
 	/* Redirections */
 	if (! filename_output.empty()) {
@@ -732,8 +732,9 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		assert(phonies.count(hash_dep.get_name_nondynamic()) == 0);
 		phonies[hash_dep.get_name_nondynamic()]= timestamp_now;
 	}
-	if (rule->redirect_index >= 0)
-		assert(! (rule->place_targets[rule->redirect_index]->flags & F_TARGET_PHONY));
+	if (rule->output_redirect_index >= 0)
+		assert(! (rule->place_targets[rule->output_redirect_index]->flags
+				& F_TARGET_PHONY));
 	assert(options_jobs > 0);
 
 	/* Key/value pairs for all environment variables of the job.  Variables override
@@ -884,28 +885,24 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 			}
 			*this << "";
 		} else {
-			print_errno("fopen", filename);
-			*this << "";
+			*this << format_errno("fopen", filename);
 		}
 		goto error;
 	}
 	if (fstat(fileno(file), &buf) < 0) {
-		print_errno("fstat", filename);
-		*this << "";
+		*this << format_errno("fstat", filename);
 		goto error_close;
 	}
 
 	filesize= buf.st_size;
 	content.resize(filesize);
 	if (filesize && fread(content.data(), filesize, 1, file) != 1) {
-		print_errno("fread", filename);
-		*this << "";
+		*this << format_errno("fread", filename);
 		goto error_close;
 	}
 
 	if (fclose(file)) {
-		print_errno("fclose", filename);
-		*this << "";
+		*this << format_errno("fclose", filename);
 		goto error;
 	}
 
@@ -997,7 +994,7 @@ void File_Executor::executors_add(pid_t pid, size_t &index, File_Executor *execu
 			 * which is not the case on any commonly used platform, but is
 			 * allowed by ISO C++ and POSIX. */
 			errno= ENOMEM;
-			print_errno(frmt("Value too large for option -j, maximum value is %ju",
+			print_errno_bare(frmt("Value too large for option -j, maximum value is %ju",
 					(uintmax_t)SIZE_MAX / std::max(sizeof(*executors_by_pid_key), sizeof(*executors_by_pid_value))));
 			error_exit();
 		}
@@ -1134,7 +1131,8 @@ void File_Executor::check_file_target_without_rule(
 	if (stat(hash_dep.get_name_c_str_nondynamic(), &buf)) {
 		if (errno != ENOENT) {
 			string text= show(hash_dep);
-			print_errno("stat", hash_dep.get_name_c_str_nondynamic());
+			dep->get_place() << format_errno(
+				"stat", hash_dep.get_name_c_str_nondynamic());
 			raise(ERROR_BUILD);
 		}
 		/* File does not exist and there is no rule for it */
@@ -1160,7 +1158,7 @@ bool File_Executor::start(
 	if (rule->is_copy) {
 		assert(rule->place_targets.size() == 1);
 		assert(! (rule->place_targets.front()->flags & F_TARGET_PHONY));
-		string source= rule->filename.unparametrized();
+		string source= rule->place_name_input.unparametrized();
 
 		/* If optional copy, don't just call 'cp' and let it fail:  Look up
 		 * whether the source exists in the cache */
@@ -1187,16 +1185,20 @@ bool File_Executor::start(
 		}
 
 		pid= job.start_copy(
-			rule->place_targets[0]->place_name.unparametrized(), source);
+			rule->place_targets[0]->place_name.unparametrized(), source,
+				    rule->place_targets[0]->place);
 	} else {
 		pid= job.start(
 			rule->command->command,
 			mapping,
-			rule->redirect_index < 0 ? "" :
-			rule->place_targets[rule->redirect_index]
-			->place_name.unparametrized(),
-			rule->filename.unparametrized(),
-			rule->command->place);
+			rule->output_redirect_index < 0 ? "" :
+				rule->place_targets[rule->output_redirect_index]
+				->place_name.unparametrized(),
+			rule->place_name_input.unparametrized(),
+			rule->command->place,
+			rule->output_redirect_index < 0 ? Place() :
+				rule->place_targets[rule->output_redirect_index]->place,
+			rule->place_name_input.place);
 	}
 	return false;
 }

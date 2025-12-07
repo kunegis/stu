@@ -27,18 +27,24 @@ public:
 		return pid;
 	}
 
-	pid_t start(string command,
-		    const std::map <string, string> &mapping,
-		    string filename_output,
-		    string filename_input,
-		    const Place &place_command);
+	pid_t start(
+		string command,
+		const std::map <string, string> &mapping,
+		string filename_output,
+		string filename_input,
+		const Place &place_command,
+		const Place &place_output,
+		const Place &place_input);
 	/* Start the process.  Don't output the command -- this is done by callers of this
 	 * function.  FILENAME_OUTPUT and FILENAME_INPUT are the files into which to
 	 * redirect output and input; either can be empty to denote no redirection.  On
 	 * error, output a message and return -1, otherwise return the PID (>= 0).
 	 * MAPPING contains the environment variables to set. */
 
-	pid_t start_copy(string target, string source);
+	pid_t start_copy(
+		string target,
+		string source,
+		const Place &place);
 	/* Start a copy job.  The return value has the same semantics as in start(). */
 
 	static pid_t wait(int *status);
@@ -81,8 +87,8 @@ private:
 	static const char *get_shell(const char *&shell_shortname);
 	static const char *get_cp(const char *&cp_shortname);
 	static const char *get_shortname(const char *name);
-	static void create_child_output_redirection(string filename_output);
-	static void create_child_input_redirection(string filename_input);
+	static void create_child_output_redirection(string filename_output, const Place &);
+	static void create_child_input_redirection(string filename_input, const Place &);
 };
 
 #endif /* ! JOB_HH */

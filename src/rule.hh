@@ -34,13 +34,13 @@ public:
 	 * the rule does not have a command, i.e., ends in a semicolon ';'.  For hardcoded
 	 * rules, the content of the file (not optional). */
 
-	const Name filename;
-	/* When !is_copy:  The name of the file from which input should be read; must be
-	 * one of the file dependencies.  Empty for no input redirection.  When is_copy:
-	 * the file from which to copy; never empty. */
+	const Place_Name place_name_input;
+	/* Unparametrized. When !is_copy:  The name of the file from which input should be
+	 * read; must be one of the file dependencies.  Empty for no input redirection.
+	 * When is_copy: the file from which to copy; never empty. */
 
-	const int redirect_index;
-	/* Index within PLACE_PARAM_TARGETS of the target to which output redirection is
+	const int output_redirect_index;
+	/* Index within PLACE_TARGETS of the target to which output redirection is
 	 * applied. -1 if no output redirection is used. The target with that index is a
 	 * file target. */
 
@@ -55,9 +55,9 @@ public:
 	     std::vector <shared_ptr <const Dep> > &&deps_,
 	     const Place &place_,
 	     const shared_ptr <const Command> &command_,
-	     Name &&filename_,
+	     const Place_Name &place_name_input_,
 	     bool is_hardcode_,
-	     int redirect_index_,
+	     int output_redirect_index_,
 	     bool is_copy_);
 	/* Direct constructor that specifies everything; no checks, initialization or
 	 * canonicalization is performed. */
@@ -66,8 +66,8 @@ public:
 	     const std::vector <shared_ptr <const Dep> > &deps_,
 	     shared_ptr <const Command> command_,
 	     bool is_hardcode_,
-	     int redirect_index_,
-	     const Name &filename_input_);
+	     int output_redirect_index_,
+	     const Place_Name &place_name_input_);
 	/* Regular rule:  all cases except copy rules */
 
 	Rule(shared_ptr <const Place_Target> place_target_,

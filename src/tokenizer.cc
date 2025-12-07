@@ -195,7 +195,7 @@ void Tokenizer::parse_tokens_file(
 				place_diagnostic << format_errno_bare
 					(show(filename_diagnostic));
 			} else {
-				print_errno(filename_diagnostic);
+				place_diagnostic << format_errno_bare(filename_diagnostic);
 			}
 		}
 		throw ERROR_BUILD;

@@ -1,6 +1,10 @@
 #ifndef HINTS_HH
 #define HINTS_HH
 
+/*
+ * Macros to mark certain things in the code.
+ */
+
 #define happens_only_on_certain_platforms()
 /* Used to mark branches that are only possible on certain platforms or architectures,
  * usually with certain combinations of type sizes. */

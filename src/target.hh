@@ -59,8 +59,7 @@ public:
 	}
 
 	void append_parameter(string parameter)
-	/* Append the given PARAMETER and an empty text.  This does not
-	 * check that the result is valid. */
+	/* Append a PARAMETER and an empty text.  Do not check that the result is valid. */
 	{
 		parameters.push_back(parameter);
 		texts.push_back("");
@@ -178,7 +177,7 @@ public:
 
 class Place_Name
 /* A possibly parametrized name annotated with places */
-	:  public Name
+	: public Name
 {
 public:
 	Place place;
@@ -200,10 +199,7 @@ public:
 
 	Place_Name(string name, const Place &_place)
 		/* Unparametrized, with explicit place */
-		: Name(name), place(_place)
-	{
-		assert(! place.empty());
-	}
+		: Name(name), place(_place) { }
 
 	const std::vector <Place> &get_places() const {
 		return places;

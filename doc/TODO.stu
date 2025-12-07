@@ -1,12 +1,6 @@
 #
-# tokenizer.cc: print_errno()/format_errno() should be passed the name of the failing function as first
-# argument.  Then, we can write print_errno() such that the first arg must always be known
-# at compile time, i.e., be a string constant representing the failing function.
-# * Also check whether maybe all uses of print_errno() should be replaced by
-#   place << format(::show(filename));
-# * If kept, print_errno() should also use show() to correctly escape characters in
-#   filenames.
-# * Check whether uses of perror() can be replaces by print_errno().
+# tests/:  Make sure no (IN)STDERR file contains "Permission denied" or "No such file or
+# directory", etc.
 #
 
 #

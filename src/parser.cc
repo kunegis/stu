@@ -1031,6 +1031,7 @@ void Parser::get_expression_list(
 void Parser::get_expression_list_delim(
 	std::vector <shared_ptr <const Dep> > &deps,
 	const char *filename,
+	const Place &place_filename,
 	char c, char c_printed,
 	const Printer &printer,
 	bool allow_enoent)
@@ -1042,7 +1043,7 @@ void Parser::get_expression_list_delim(
 	if (file == nullptr) {
 		if (allow_enoent && errno == ENOENT)
 			return;
-		print_errno("fopen", filename);
+		place_filename << format_errno("fopen", filename);
 		throw ERROR_BUILD;
 	}
 
@@ -1105,7 +1106,7 @@ void Parser::get_expression_list_delim(
 	}
 	free(lineptr);
 	if (fclose(file)) {
-		print_errno("fclose", filename);
+		place_filename << format_errno("fclose", filename);
 		throw ERROR_BUILD;
 	}
 }

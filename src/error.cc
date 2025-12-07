@@ -27,34 +27,48 @@ void print_error_reminder(string message)
 		message.c_str());
 }
 
-void print_errno(string call)
+void print_errno(const char *call)
 {
 	TRACE_FUNCTION();
 	TRACE("call= '%s'", call);
-	assert(call.size() > 0 && call[0] != '\033');
+	assert(call && call[0] && call[0] != '\033');
 	fprintf(stderr, "%s%s%s: %s\n",
-		Color::stderr_err_on, call.c_str(), Color::stderr_err_off,
+		Color::stderr_err_on, call, Color::stderr_err_off,
 		strerror(errno));
 }
 
-void print_errno(string call, string filename)
+void print_errno(const char *call, string filename)
 {
 	TRACE_FUNCTION();
 	TRACE("call= '%s'", call);
 	TRACE("filename= '%s'", filename);
-	assert(call.size() > 0 && call[0] != '\033');
+	assert(call && call[0] && call[0] != '\033');
 	assert(filename.size() > 0 && filename[0] != '\033');
+	string show_filename= ::show(filename, S_QUOTE_MINIMUM);
 	fprintf(stderr, "%s%s%s: %s: %s\n",
-		Color::stderr_err_on, filename.c_str(), Color::stderr_err_off,
-		call.c_str(),
-		strerror(errno));
+		Color::stderr_err_on, show_filename.c_str(), Color::stderr_err_off,
+		call, strerror(errno));
 }
 
-string format_errno(string call, string filename)
+void print_errno_bare(string text) /* uncovered */
 {
-	string show_call= ::show(call, S_QUOTE_MINIMUM);
+	happens_only_on_certain_platforms();
+	TRACE_FUNCTION();
+	TRACE("text= '%s'", text);
+	assert(text.size() > 0);
+	fprintf(stderr, "%s%s%s: %s: %s\n",
+		Color::stderr_err_on, dollar_zero, Color::stderr_err_off,
+		text.c_str(), strerror(errno));
+}
+
+string format_errno(const char *call)
+{
+	return fmt("%s: %s", call, strerror(errno));
+}
+string format_errno(const char *call, string filename)
+{
 	string show_filename= ::show(filename, S_QUOTE_MINIMUM);
-	return fmt("%s: %s: %s", show_filename, show_call, strerror(errno));
+	return fmt("%s: %s: %s", show_filename, call, strerror(errno));
 }
 
 string format_errno_bare(string text)
@@ -111,8 +125,12 @@ void Place::print(string message,
 		should_not_happen();
 		[[fallthrough]];
 	case Type::EMPTY:
-		should_not_happen();
-		fprintf(stderr, "%s\n", message.c_str());
+		fprintf(stderr,
+			"%s%s%s: %s\n",
+			color_on,
+			dollar_zero,
+			color_off,
+			message.c_str());
 		break;
 
 	case Type::INPUT_FILE:

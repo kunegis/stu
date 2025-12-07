@@ -5,40 +5,41 @@ Rule::Rule(
 	std::vector <shared_ptr <const Dep> > &&deps_,
 	const Place &place_,
 	const shared_ptr <const Command> &command_,
-	Name &&filename_,
+	const Place_Name &place_name_input_,
 	bool is_hardcode_,
-	int redirect_index_,
+	int output_redirect_index_,
 	bool is_copy_)
 	: place_targets(place_targets_),
 	  deps(deps_),
 	  place(place_),
 	  command(command_),
-	  filename(filename_),
-	  redirect_index(redirect_index_),
+	  place_name_input(place_name_input_),
+	  output_redirect_index(output_redirect_index_),
 	  is_hardcode(is_hardcode_),
 	  is_copy(is_copy_)
 { }
 
-Rule::Rule(std::vector <shared_ptr <const Place_Target> > &&place_targets_,
-	   const std::vector <shared_ptr <const Dep> > &deps_,
-	   shared_ptr <const Command> command_,
-	   bool is_hardcode_,
-	   int redirect_index_,
-	   const Name &filename_)
+Rule::Rule(
+	std::vector <shared_ptr <const Place_Target> > &&place_targets_,
+	const std::vector <shared_ptr <const Dep> > &deps_,
+	shared_ptr <const Command> command_,
+	bool is_hardcode_,
+	int output_redirect_index_,
+	const Place_Name &place_name_input_)
 	: place_targets(place_targets_),
 	  deps(deps_),
 	  place(place_targets_[0]->place),
 	  command(command_),
-	  filename(filename_),
-	  redirect_index(redirect_index_),
+	  place_name_input(place_name_input_),
+	  output_redirect_index(output_redirect_index_),
 	  is_hardcode(is_hardcode_),
 	  is_copy(false)
 {
 	assert(place_targets.size() != 0);
-	assert(redirect_index>= -1);
-	assert(redirect_index < (ssize_t) place_targets.size());
-	if (redirect_index >= 0) {
-		assert((place_targets[redirect_index]->flags & F_TARGET_PHONY) == 0);
+	assert(output_redirect_index >= -1);
+	assert(output_redirect_index < (ssize_t) place_targets.size());
+	if (output_redirect_index >= 0) {
+		assert((place_targets[output_redirect_index]->flags & F_TARGET_PHONY) == 0);
 	}
 
 	/* Check that all dependencies only include
@@ -61,8 +62,8 @@ Rule::Rule(shared_ptr <const Place_Target> place_target_,
 	   const Place &place_optional)
 	:  place_targets{place_target_},
 	   place(place_target_->place),
-	   filename(*place_name_source_),
-	   redirect_index(-1),
+	   place_name_input(*place_name_source_),
+	   output_redirect_index(-1),
 	   is_hardcode(false),
 	   is_copy(true)
 {
@@ -96,12 +97,15 @@ shared_ptr <const Rule> Rule::instantiate(
 	for (auto &dep: rule->deps)
 		deps.push_back(dep->instantiate(mapping));
 
-	return std::make_shared <Rule>
-		(move(place_targets),
-		 move(deps), rule->place, rule->command,
-		 move(rule->filename.instantiate(mapping)),
-		 rule->is_hardcode, rule->redirect_index,
-		 rule->is_copy);
+	shared_ptr <Place_Name> place_name_input=
+		rule->place_name_input.instantiate(mapping);
+
+	return std::make_shared <Rule> (
+		move(place_targets),
+		move(deps), rule->place, rule->command,
+		*place_name_input,
+		rule->is_hardcode, rule->output_redirect_index,
+		rule->is_copy);
 }
 
 void Rule::render(Parts &parts, Rendering rendering) const

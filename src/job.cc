@@ -15,7 +15,9 @@ pid_t Job::start(
 	const std::map <string, string> &mapping,
 	string filename_output,
 	string filename_input,
-	const Place &place_command)
+	const Place &place_command,
+	const Place &place_output,
+	const Place &place_input)
 {
 	TRACE_FUNCTION();
 	assert(pid == -2);
@@ -25,7 +27,7 @@ pid_t Job::start(
 
 	pid= fork();
 	if (pid < 0) {
-		print_errno("fork");
+		place_command << format_errno("fork");
 		assert(pid == -1);
 		return -1;
 	}
@@ -50,7 +52,7 @@ pid_t Job::start(
 
 	if (pid == 0) {
 		in_child= 1;
-		/* Instead of throwing exceptions, use perror() and
+		/* Instead of throwing exceptions, use print_errno() and
 		 * _Exit(ERROR_FORK_CHILD). */
 
 		/* Unblock/reset all signals.  As a general rule, signals that are blocked
@@ -68,8 +70,8 @@ pid_t Job::start(
 		string argv0;
 		const char **argv= create_child_argv(
 			place_command, shell_shortname, command, argv0);
-		create_child_output_redirection(filename_output);
-		create_child_input_redirection(filename_input);
+		create_child_output_redirection(filename_output, place_output);
+		create_child_input_redirection(filename_input, place_input);
 
 		__gcov_dump();
 		int r= execve(shell, (char *const *) argv, (char *const *) envp);
@@ -94,7 +96,10 @@ pid_t Job::start(
 	return pid;
 }
 
-pid_t Job::start_copy(string target, string source)
+pid_t Job::start_copy(
+	string target,
+	string source,
+	const Place &place)
 /* This function works analogously to start() with respect to invocation of fork() and
  * other system-related functions. */
 {
@@ -107,7 +112,7 @@ pid_t Job::start_copy(string target, string source)
 	pid= fork();
 
 	if (pid < 0) {
-		print_errno("fork");
+		place << format_errno("fork");
 		assert(pid == -1);
 		return -1;
 	}
@@ -559,7 +564,8 @@ const char *Job::get_shortname(const char *name)
 }
 
 void Job::create_child_output_redirection(
-	string filename_output)
+	string filename_output,
+	const Place &place)
 {
 	if (filename_output.empty()) return;
 
@@ -567,14 +573,14 @@ void Job::create_child_output_redirection(
 		S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 	int fd_output= creat(filename_output.c_str(), mode_0666);
 	if (fd_output < 0) {
-		print_errno(filename_output.c_str());
+		place << format_errno("creat", filename_output.c_str());
 		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
 	assert(fd_output != 1);
 	int r= dup2(fd_output, 1);
 	if (r < 0) {
-		print_errno(filename_output.c_str());
+		place << format_errno("dup2", filename_output.c_str());
 		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
@@ -582,7 +588,9 @@ void Job::create_child_output_redirection(
 	close(fd_output);
 }
 
-void Job::create_child_input_redirection(string filename_input)
+void Job::create_child_input_redirection(
+	string filename_input,
+	const Place &place)
 {
 	if (filename_input.empty() && option_i) return;
 
@@ -591,7 +599,7 @@ void Job::create_child_input_redirection(string filename_input)
 		: filename_input.c_str();
 	int fd_input= open(name, O_RDONLY);
 	if (fd_input < 0) {
-		print_errno(name);
+		place << format_errno("open", name);
 		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
@@ -599,13 +607,13 @@ void Job::create_child_input_redirection(string filename_input)
 	constexpr int fd_stdin= 0;
 	int r= dup2(fd_input, fd_stdin);
 	if (r < 0) {
-		print_errno(name);
+		place << format_errno("dup2", name);
 		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
 	assert(r == 0);
 	if (close(fd_input) < 0) {
-		print_errno(name);
+		place << format_errno("close", name);
 		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}

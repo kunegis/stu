@@ -69,11 +69,13 @@ public:
 					Place &place_input);
 	/* DEPS is filled.  DEPS is empty when called. */
 
-	static void get_expression_list_delim(std::vector <shared_ptr <const Dep> > &deps,
-					      const char *filename,
-					      char c, char c_printed,
-					      const Printer &printer,
-					      bool allow_enoent);
+	static void get_expression_list_delim(
+		std::vector <shared_ptr <const Dep> > &deps,
+		const char *filename,
+		const Place &place_filename,
+		char c, char c_printed,
+		const Printer &printer,
+		bool allow_enoent);
 	/* Read delimiter-separated dynamic dependency from FILENAME,
 	 * delimited by C.  Write result into DEPS.  Throws errors.  When
 	 * ALLOW_ENOENT, just return on ENOENT. */

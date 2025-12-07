@@ -1,9 +1,4 @@
 #
-# In content rules, when the content is very long, don't output the content in stdout when
-# building.
-#
-
-#
 # Support long options, with getopt_long().
 #
 

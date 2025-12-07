@@ -83,6 +83,7 @@
 # INSTDERR     Prescribe strings that must appear in Stu's error output (one per line)
 # NOTINSTDERR  A text that must not be present in Stu's error output
 # TTYSTDOUTERR The output and error output (interleaved) when in TTY mode
+# INTTYSTDOUTERR Each line in the file must be present in stdout or stderr in TTY mode
 # COV_TAG      The file must exist when the test uses the cov_tag mechanism, to exclude
 #              the test from the ndebug variant.
 # NONDEBUG     Exclude test from NDEBUG
@@ -313,7 +314,7 @@ do
 	time_begin_test=$(../../sh/now)
 
 	# Check that all all-uppercase files are of one of the allowed files
-	allowed=",EXITSTATUS,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,COV_TAG,NONDEBUG,"
+	allowed=",EXITSTATUS,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,INTTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,COV_TAG,NONDEBUG,"
 	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
 	do
 		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi
@@ -327,7 +328,7 @@ do
 		if [ -r EXITSTATUS -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
 			-o -r STDERR -o -r NOTINSTDERR -o -r CMD -o -r CMDPREFIX \
 			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
-			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR \
+			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR -o -r INTTYSTDOUTERR \
 			-o -r NOCOLOR ]; then
 			test_fail_fatal "EXEC does not allow any other file except PRELOAD.cc"
 			continue
@@ -483,7 +484,7 @@ do
 		if [ -r INSTDERR ]; then
 			for lineno in $(../../sh/seq $(awk '{x++} END{ print x; }' <INSTDERR)) ; do
 				line=$(<INSTDERR sed -e "$lineno"'!d')
-				if grep <list.def.err -qF -e "$line" ; then
+				if grep <list.def.err -q -F -e "$line" ; then
 					echo >&7 "INSTDERR...correct"
 				else
 					test_fail "'$line' was not found in stderr"
@@ -512,7 +513,7 @@ do
 			fi
 		fi
 
-		# TTYSTDOUTERR
+		# TTYSTDOUTERR / INTTYSTDOUTERR
 		if [ -z "$nopreload" ] && { [ -r TTYSTDOUTERR ] || [ -r EXITSTATUS ]; } && ! [ -r NOTTY ]; then
 			../../sh/rm_tmps || exit 1
 			LD_PRELOAD_VALUE_TTY="$LD_PRELOAD_VALUE:$preload_tty_so"
@@ -535,6 +536,21 @@ do
 					test_fail "TTY error output does not match 'TTYSTDOUTERR'"
 					diff >&2 list.def.out TTYSTDOUTERR
 				fi
+			fi
+
+			if [ -r INTTYSTDOUTERR ]; then
+				cat INTTYSTDOUTERR | while IFS= read -r line ; do
+					if cat list.def.out list.def.out |
+							grep -q -F -e "$line" ; then
+						echo >&7 "INSTDTTYSTDOUTERR...correct"
+					else
+						test_fail "'$line' was not found in stdout/stderr for TTY mode"
+						echo >&2 stdout:
+						cat  >&2 list.def.out
+						echo >&2 stderr:
+						cat  >&2 list.def.err
+					fi
+				done
 			fi
 
 			if [ -r EXITSTATUS ] && ! [ -r NOCOLOR ] ; then

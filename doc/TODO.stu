@@ -1,9 +1,4 @@
 #
-# tests/:  Make sure no (IN)STDERR file contains "Permission denied" or "No such file or
-# directory", etc.
-#
-
-#
 # In content rules, when the content is very long, don't output the content in stdout when
 # building.
 #

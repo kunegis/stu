@@ -1,0 +1,3 @@
+@all:  A B;
+>A { echo aaa ; }
+>B { echo bbb ; }

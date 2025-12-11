@@ -81,7 +81,6 @@ void print_out(string text)
 	assert(! text.empty());
 	assert(isupper(text[0]));
 	assert(text[text.size() - 1] != '\n');
-
 	if (option_s)
 		return;
 	printf("%s%s%s\n",

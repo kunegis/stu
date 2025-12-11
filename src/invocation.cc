@@ -2,16 +2,10 @@
 
 Invocation::Invocation(int argc, char **argv, int &error)
 {
-	if (argc >= 2 && !strcmp(argv[1], "--version")) {
-		print_option_V();
-		exit(0);
-	}
-	if (argc >= 2 && !strcmp(argv[1], "--help")) {
-		fputs(HELP, stdout);
-		exit(0);
-	}
+	int option_index= 0;
+	int c;
 
-	for (int c; (c= getopt(argc, argv, OPTIONS)) != -1;) {
+	while ((c= getopt_long(argc, argv, OPTIONS, LONG_OPTIONS, &option_index)) != -1) {
 		if (option_setting(c)) continue;
 		if (option_various(c)) continue;
 
@@ -166,7 +160,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 	}
 
 	if (option_P) {
-		Executor::rule_set.print_for_option_dP();
+		Executor::rule_set.print_for_option_P();
 		exit(0);
 	}
 	if (option_I) {

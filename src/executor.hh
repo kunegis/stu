@@ -10,7 +10,7 @@
  * EXECUTOR CLASS      CACHING STRATEGY     WHEN USED
  * -----------------------------------------------------------------------------------------
  * Root_Executor       Singleton            The root of the dependency graph; uses the
- *                                         dummy Root_Dep
+ *                                          dummy Root_Dep
  * File_Executor       By Target (no flags) Non-dynamic targets with 1+ file target
  *                                          in rule OR a command in rule OR files without a
  *                                          rule

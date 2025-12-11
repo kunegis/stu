@@ -1,0 +1,14 @@
+#! /bin/sh
+
+../../sh/rm_tmps || exit 2
+
+../../bin/stu.test --keep-going >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 1 ] || exit 1
+grep -F -e 'command for "Y" failed with exit status 1' list.err || exit 1
+grep -F -e CORRECT A || exit 1
+
+../../sh/rm_tmps || exit 2
+
+exit 0

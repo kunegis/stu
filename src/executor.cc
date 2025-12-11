@@ -629,7 +629,8 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	if (order != Order::RANDOM) {
 		Proceed proceed_children= execute_children();
 		assert(is_valid(proceed_children));
-		TRACE("proceed= %s, proceed_children= %s", show(proceed), show(proceed_children));
+		TRACE("proceed= %s, proceed_children= %s",
+			show(proceed), show(proceed_children));
 		proceed |= proceed_children;
 		if (proceed & P_WAIT) {
 			if (options_jobs == 0) {

@@ -79,7 +79,7 @@ bin/stu.analyzer:       conf/CXX src/*.cc src/*.hh src/version.hh
 
 log/test_options:   sh/test_options src/options.hh man/stu.1.in
 	@echo sh/test_options
-	@     sh/test_options && mkdir -p log && touch $@
+	@mkdir -p log && sh/test_options && touch $@
 log/test_clean:  src/*.cc src/*.hh sh/test_clean sh sh/* tests tests/*/*
 	@echo sh/test_clean
 	@     sh/test_clean && mkdir -p log && touch $@

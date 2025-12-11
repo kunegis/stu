@@ -1,0 +1,3 @@
+X: Y Z {}
+Y { exit 1 ; }
+Z { echo CORRECT >A ; }

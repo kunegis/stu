@@ -1,0 +1,19 @@
+#! /bin/sh
+
+[ "$TEST_VERBOSE" ] && exec 3>&1 || exec 3>/dev/null
+
+rm -f A || exit 2
+
+echo CORRECT |
+	../../bin/stu.test --interactive >list.out 2>list.err
+exitstatus=$?
+
+echo >&3 "exitstatus=$exitstatus"
+
+[ "$exitstatus" = 0 ] || { echo >&2 "*** Exit status" ; exit 1 ; }
+
+grep -q -F -e CORRECT A || { echo >&2 "*** Content" ; exit 1 ; }
+
+[ -s list.err ] && { echo >&2 "*** stderr" ; exit 1 ; }
+
+exit 0

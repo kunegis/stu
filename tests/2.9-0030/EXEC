@@ -1,0 +1,25 @@
+#! /bin/sh
+
+Error() # <message>
+{
+	printf >&2 '*** Error: %s\n' "$1"
+	exit 1
+}
+
+for options in --jobs=2 "--jobs 2" ; do
+	../../sh/rm_tmps || exit 2
+	../../bin/stu.test $options >list.out 2>list.err
+	exitstatus=$?
+done
+
+[ "$exitstatus" = 0 ] || Error 'Exit status'
+[ -e list.err ] || Error 'list.err must exist'
+[ -s list.err ] && Error 'list.err must be empty'
+[ -e list.out ] || Error 'list.out must exist'
+[ $(wc -l <list.out) = 5 ] || Error 'list.out length'
+<list.out sed -E -e '1!d' | grep -q -x -F -e 'Building A' || Error 'Building A'
+<list.out sed -E -e '2!d' | grep -q -x -F -e 'Building B' || Error 'Building B'
+
+../../sh/rm_tmps || exit 2
+
+exit 0

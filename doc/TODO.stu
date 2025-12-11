@@ -1,8 +1,4 @@
 #
-# Support long options, with getopt_long().
-#
-
-#
 # job.cc:  At the moment, the various cases of execve() are always counted as "covered"
 # because they happen after "__gcov_dump()".  Change the sh/cov_eval code to not do that.
 # There shoud already be tests for those cases.
@@ -431,4 +427,24 @@ A: -e B
 #
 # When the number of parallel jobs is 1 (-j not used or -j1), "stu: terminating all jobs"
 # should not be shown Control-C.
+#
+
+#
+# Option --print-rules:  At the moment, the order of printing is arbitrary (based on what
+# std::unordered_map does).  Instead, order alphabetically by target name.  Need to
+# determine how to handle files vs phonies.  Also need to think about whether to keep
+# parametrized and unparametrized rules separate as it is now, or whether to mix them.
+#
+
+#
+# Check why "stu -f /dev/zero" hangs on Ubuntu.
+#
+
+#
+# * Add long options: for all randomization options; all non-stable options.
+#
+
+#
+# In the manpage, in the option list, make all option names bold, and underline all
+# argument names.  (As done e.g. in the make(1) manpage.)
 #

@@ -1,6 +1,8 @@
 #ifndef OPTIONS_HH
 #define OPTIONS_HH
 
+#include <getopt.h>
+
 #include "package.hh"
 
 /*
@@ -9,56 +11,11 @@
  * All boolean option variables are FALSE by default.
  */
 
-/*
- * We use getopt(), which means that Stu does only support short options, and not long
- * options.  We avoid getopt_long() as it is a GNU extension, and the short options are
- * sufficient for now.
- *
- * Also, using getopt() means that the exact synytax of Stu depends on the platform:  GNU
- * getopt() will all options to follow arguments, while BSD getopt() does not.
- */
 const char OPTIONS[]= "0:ac:C:dEf:F:ghiIj:JkKm:M:n:o:p:PqsUVxyYz";
 
-/* The following strings do not contain tabs, but only space characters. */
-const char HELP[]=
-	"Usage: " PACKAGE " [ -q | -P | -I ] [-f FILENAME] [OPTION]... [TARGET]...\n"
-	"By default, build the first target in the file 'main.stu'.\n"
-	"TARGET may include the special characters '@[]-'.\n"
-	"Options:\n"
-	"  -0 FILENAME      Read \\0-separated file targets from the given file\n"
-	"  -a               Treat all trivial dependencies as non-trivial\n"
-	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"
-	"  -C EXPRESSION    Pass a target in full Stu syntax\n"
-	"  -E               Explain error messages\n"
-	"  -f FILENAME      The input file to use instead of 'main.stu'\n"
-	"  -F RULES         Pass rules in Stu syntax\n"
-	"  -g               Treat all optional dependencies as non-optional\n"
-	"  -h, --help       Output help\n"
-	"  -i               Interactive mode (run jobs in foreground)\n"
-	"  -I               Print all buildable file targets as glob patterns\n"
-	"  -j K             Run K jobs in parallel\n"
-	"  -J               Disable Stu syntax in arguments\n"
-	"  -k               Keep on running after errors\n"
-	"  -K               Don't delete target files on error or interruption\n"
-	"  -m ORDER         Order to run the targets:\n"
-	"     dfs           (default) Depth-first order, as in Make\n"
-	"     random        Random order\n"
-	"  -M STRING        Pseudorandom run order, seeded by given string\n"
-	"  -n FILENAME      Read \\n-separated file targets from the given file\n"
-	"  -o FILENAME      Build an optional dependency, i.e., build it only if it\n"
-	"                   exists and is out of date\n"
-	"  -p FILENAME      Build a persistent dependency, i.e., ignore its timestamp\n"
-	"  -P               Print the rules\n"
-	"  -q               Question mode: check whether targets are up to date\n"
-	"  -s               Silent mode: don't use stdout\n"
-	"  -U               Ignore %version directives\n"
-	"  -V, --version    Output version\n"
-	"  -x               Output each line in a command individually\n"
-	"  -y               Disable color in output\n"
-	"  -Y               Enable color in output\n"
-	"  -z               Output run-time statistics on stdout\n"
-	"Report bugs to: " PACKAGE_EMAIL "\n"
-	"Stu home page: <" PACKAGE_URL ">\n";
+extern const struct option LONG_OPTIONS[];
+
+extern const char HELP[];
 
 #define ENV_STU_CP         "STU_CP"
 #define ENV_STU_OPTIONS    "STU_OPTIONS"

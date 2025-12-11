@@ -337,3 +337,13 @@ A: -k B {...}
 # Theoretically, we could accumulate '%include' traces while showing normal traces, and
 # show them all at the end.  But they are not linear, so it is not clear how to show them.
 #
+
+#
+# Something like "stu --clean" that removes everything that can be rebuilt.  (cf. "git
+# clean").
+#
+
+#
+# For some options, remove the short form and keep only the long form.  In particular, do
+# this for all options whose short form is not guaranteed to be future-compatible.
+#

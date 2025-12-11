@@ -76,7 +76,7 @@ OPTIONS
               planation  is written on standard error output.  Only some error
               messages have explanations.
 
-       -f FILENAME
+       -f FILENAME, --file=FILENAME
               Read the given file instead of the default 'main.stu'.   If  the
               name  of a directory is passed, the file 'main.stu' in the given
               directory is read.  If '-' is passed, read standard input.   The
@@ -91,7 +91,8 @@ OPTIONS
        -h, --help
               Output a short help and exit.
 
-       -i     Interactive mode.  I.e., put the jobs run into  the  foreground.
+       -i, --interactive
+              Interactive mode.  I.e., put the jobs run into  the  foreground.
               Must  not  be used in conjunction with -j N when N > 1.  Without
               this option, jobs are run in the background, meaning they  can't
               read  standard  input (they get /dev/null instead), will not get
@@ -115,7 +116,8 @@ OPTIONS
               tax and Git's special handling of names that start or end with a
               slash.
 
-       -j K   Run K jobs in parallel.  K must be a positive integer.   Without
+       -j K, --jobs=K
+              Run K jobs in parallel.  K must be a positive integer.   Without
               this  option,  jobs are not run in parallel, which is equivalent
               to using the -j 1 setting.  When running jobs  in  parallel  and
               the -k option is not used, a single job that fails will make Stu
@@ -131,7 +133,8 @@ OPTIONS
               not  take an argument; it only changes the way arguments outside
               of options are interpreted.
 
-       -k     Keep going.  Do not stop running when an error occurs.  Instead,
+       -k, --keep-going
+              Keep going.  Do not stop running when an error occurs.  Instead,
               try  to build as much as possible.  This option is equivalent to
               that of Make.
 
@@ -166,17 +169,20 @@ OPTIONS
               Pass  the given file as a persistent dependency, i.e., build the
               file but ignore its timestamp.
 
-       -P     Print the set of rules and exit.  Note that Make has a -p option
+       -P, --print-rules
+              Print the set of rules and exit.  Note that Make has a -p option
               to print the rules, but does not exit.  The output format is not
               specified.
 
-       -q     Question mode.  Do not execute any commands.  Instead, determine
+       -q, --question
+              Question mode.  Do not execute any commands.  Instead, determine
               whether  the  targets are up to date.  The exit status is 0 when
               all given targets (or the default target) are up to date, and  1
               when  not.   The exit status may still be 2 or 4 on encountering
               logical or fatal errors.  The options -k and -j are ignored.
 
-       -s     Silent mode.  Suppress messages on  standard  output:   messages
+       -s, --quiet, --silent
+              Silent mode.  Suppress messages on  standard  output:   messages
               about  which  commands are run, a message when the build is suc‐
               cessful, and a message when there is nothing to be done.   Error
               messages  are  not suppressed.  This option is comparable to the
@@ -1130,4 +1136,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.8.5                        December 2025                          STU(1)
+stu-2.9.1                        January 2026                           STU(1)

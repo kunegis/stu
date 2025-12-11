@@ -11,6 +11,10 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2025-01-18  Version 2.9
+
+* Long options are supported.
+
 2025-12-02  Version 2.8.2
 
 * Transient dependencies have been renamed to phony dependencies, as in make(1).  Phony

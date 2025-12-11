@@ -11,10 +11,10 @@
  *    - a plain dependency (file or phony);
  *    - a dynamic dependency containing a normalized dependency;
  *    - a concatenated dependency of only normalized plain and dynamic dependencies, and
- *      of size at least two
+ *      of size at least two.
  * In particular, compound dependencies are never normalized; they do not appear at all in
  * normalized dependencies.  Also, concatenated dependencies never contain other
- * concatenated dependencies directly -- such constructs are always "flattened" in a
+ * concatenated dependencies directly -- such constructs are always flattened in a
  * normalized dependency.
  *
  * A plain dependency is a file or a phony.
@@ -48,7 +48,7 @@ shared_ptr <const T> to(shared_ptr <U> d)
 }
 
 class Dep
-	:  public std::enable_shared_from_this <Dep>
+	: public std::enable_shared_from_this <Dep>
 /*
  * The abstract base class for all dependencies.
  *
@@ -285,7 +285,7 @@ public:
 };
 
 class Dynamic_Dep
-/* The Dep::flags field has the F_TARGET_DYNAMIC set. */
+/* The Dep::flags field has F_TARGET_DYNAMIC set. */
 	: public Dep
 {
 public:

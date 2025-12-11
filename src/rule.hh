@@ -141,7 +141,7 @@ public:
 	 * MAPPING_PARAMETER.  Throws errors, in which case PARAM_RULE is never set.
 	 * PLACE is the place of the dependency; used in error messages. */
 
-	void print_for_option_dP() const;
+	void print_for_option_P() const;
 	void print_for_option_I() const;
 
 private:

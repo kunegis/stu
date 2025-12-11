@@ -1,0 +1,22 @@
+#! /bin/sh
+SCRIPT=$0
+
+Error() # <message>
+{
+	printf '%s: *** Error: %s\n' "$SCRIPT" "$1"
+	exit 1
+}
+
+../../sh/rm_tmps || exit 2
+
+../../bin/stu.test --question -F 'A={x}' A >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 1 ] || Error 'Exit status'
+grep -q -E -e 'Targets are not up to date' list.err || Error 'stderr'
+[ -e list.out ] || Error 'list.out must exist'
+[ -s list.out ] && Error 'stdout'
+
+../../sh/rm_tmps || exit 2
+
+exit 0

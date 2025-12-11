@@ -12,6 +12,65 @@
 #include "trace.hh"
 #include "version.hh"
 
+const struct option LONG_OPTIONS[]= {
+	{ "file",        required_argument, nullptr, 'f'},
+	{ "help",        no_argument,       nullptr, 'h'},
+	{ "interactive", no_argument,       nullptr, 'i'},
+	{ "jobs",        required_argument, nullptr, 'j'},
+	{ "keep-going",  no_argument,       nullptr, 'k'},
+	{ "print-rules", no_argument,       nullptr, 'P'},
+	{ "question",    no_argument,       nullptr, 'q'},
+	{ "quiet",       no_argument,       nullptr, 's'},
+	{ "silent",      no_argument,       nullptr, 's'},
+	{ "version",     no_argument,       nullptr, 'V'},
+	{ nullptr, 0, nullptr, 0}
+};
+
+const char HELP[]=
+/* The following strings do not contain tabs, but only space characters. */
+	"Usage: " PACKAGE " [ -q | -P | -I ] [-f FILENAME] [OPTION]... [TARGET]...\n"
+	"By default, build the first target in the file 'main.stu'.\n"
+	"TARGET may include the special characters '@[]-'.\n"
+	"Options:\n"
+	"  -0 FILENAME      Read \\0-separated file targets from the given file\n"
+	"  -a               Treat all trivial dependencies as non-trivial\n"
+	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"
+	"  -C EXPRESSION    Pass a target in full Stu syntax\n"
+	"  -E               Explain error messages\n"
+	"  -f FILENAME, --file=FILENAME\n"
+	"                   The input file to use instead of 'main.stu'\n"
+	"  -F RULES         Pass rules in Stu syntax\n"
+	"  -g               Treat all optional dependencies as non-optional\n"
+	"  -h, --help       Output help\n"
+	"  -i, --interactive\n"
+	"                   Interactive mode (run jobs in foreground)\n"
+	"  -I               Print all buildable file targets as glob patterns\n"
+	"  -j K, --jobs=K   Run K jobs in parallel\n"
+	"  -J               Disable Stu syntax in arguments\n"
+	"  -k, --keep-going Keep on running after errors\n"
+	"  -K               Don't delete target files on error or interruption\n"
+	"  -m ORDER         Order to run the targets:\n"
+	"     dfs           (default) Depth-first order, as in Make\n"
+	"     random        Random order\n"
+	"  -M STRING        Pseudorandom run order, seeded by given string\n"
+	"  -n FILENAME      Read \\n-separated file targets from the given file\n"
+	"  -o FILENAME      Build an optional dependency, i.e., build it only if it\n"
+	"                   exists and is out of date\n"
+	"  -p FILENAME      Build a persistent dependency, i.e., ignore its timestamp\n"
+	"  -P, --print-rules\n"
+	"                   Print the rules\n"
+	"  -q, --question   Question mode: check whether targets are up to date\n"
+	"  -s, --quiet, --silent\n"
+	"                   Silent mode: don't use stdout\n"
+	"  -U               Ignore %version directives\n"
+	"  -V, --version    Output version\n"
+	"  -x               Output each line in a command individually\n"
+	"  -y               Disable color in output\n"
+	"  -Y               Enable color in output\n"
+	"  -z               Output run-time statistics on stdout\n"
+	"Report bugs to: " PACKAGE_EMAIL "\n"
+	"Stu home page: <" PACKAGE_URL ">\n";
+
 bool option_setting(char c)
 {
 	TRACE_FUNCTION();

@@ -108,7 +108,7 @@ supports full Stu syntax, while arguments supports only a reduced syntax
 .IP "-E"
 Explain error messages.  For certain errors, an additional explanation is
 written on standard error output.  Only some error messages have explanations.
-.IP "-f FILENAME"
+.IP "-f FILENAME, --file=FILENAME"
 Read the given file instead of the default 'main.stu'.  If the name of a
 directory is passed, the file 'main.stu' in the given directory is
 read.  If '-' is passed, read standard input.  The
@@ -123,7 +123,7 @@ Treat all optional dependencies (declared with the
 flag) as non-optional.
 .IP "-h, --help"
 Output a short help and exit.
-.IP "-i"
+.IP "-i, --interactive"
 Interactive mode.  I.e., put the jobs run into the foreground.  Must not
 be used in conjunction with
 .B -j N
@@ -151,7 +151,7 @@ quoting for all characters that need quoting in the shell.  Can be used to
 populate files such as ".gitgignore", but care should be taken due to the
 quoting syntax and Git's special handling of names that start or end with a
 slash.
-.IP "-j K"
+.IP "-j K, --jobs=K"
 Run K jobs in parallel.  K must be a positive integer.  Without this
 option, jobs are not run in parallel, which is equivalent to using the
 .BR "-j 1"
@@ -176,7 +176,7 @@ or similar.  The
 .BR -J
 option itself does not take an argument; it only
 changes the way arguments outside of options are interpreted.
-.IP -k
+.IP "-k, --keep-going"
 Keep going.  Do not stop running when an error occurs.  Instead, try to build as much
 as possible.  This option is equivalent to that of Make.
 .IP "-K"
@@ -204,12 +204,12 @@ already exists and is out of date.
 .IP "-p FILENAME"
 Pass the given file as a persistent dependency, i.e., build the file but
 ignore its timestamp.
-.IP "-P"
+.IP "-P, --print-rules"
 Print the set of rules and exit.  Note that Make has a
 .BR -p
 option to print the rules, but does not exit.  The output
 format is not specified.
-.IP "-q"
+.IP "-q, --question"
 Question mode.  Do not execute any commands.  Instead, determine whether
 the targets are up to date.  The exit status is 0 when all given
 targets (or the default target) are up to date, and 1 when not.  The
@@ -220,7 +220,7 @@ The options
 and
 .BR -j
 are ignored.
-.IP "-s"
+.IP "-s, --quiet, --silent"
 Silent mode.  Suppress messages on standard output:  messages about
 which commands are run, a message when the build is successful, and a
 message when there is nothing to be done.  Error messages are not

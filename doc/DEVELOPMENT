@@ -47,7 +47,7 @@ warnings and doesn't run code cleanliness tests.  But when contributing to Stu, 
 When we add new functionality, we always add unit tests for it, covering both success and
 failure.  'make test' will fail if there is not 100% code line test coverage.
 
-If you run the tests and they fail, report that to Jérôme Kunegis <kunegis@gmail.com>.
+If you run the tests and they fail, report that to Jérôme KUNEGIS <kunegis@gmail.com>.
 
 == REQUIREMENTS ==
 
@@ -59,3 +59,4 @@ Running 'make check' has more requirements than just compiling Stu:
 Running 'make test' has the following additional requirements:
 * $LD_PRELOAD must work
 * -fsanitize=undefined must work
+* gcov must work

@@ -4,23 +4,59 @@
 #
 
 ret=0
-
-file_src=src/options.hh
 file_man=man/stu.1.in
+[ "$TEST_OPTIONS_VERBOSE" ] && exec 3>&2 || exec 3>/dev/null
 
-<"$file_src" sed -e '/^[[:space:]]*" *-[0-9a-zA-Z]/!d;s,^[^-]*-\(.\).*$,\1,' >test_options.a || exit 2
-<"$file_man" sed -e '/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-./!d;s/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-\(.\).*$/\1/' >test_options.b || exit 2
+<src/options.cc sed -E -e '
+s/^\s*" *-([0-9a-zA-Z]).*--([a-z0-9-]+).*--([a-z0-9-]+).*$/\1,\2\
+\1,\3/
+t
+s/^\s*" *-([0-9a-zA-Z]).*--([a-z0-9-]+).*$/\1,\2/
+t
+s/^\s*" *-([0-9a-zA-Z]).*$/\1/
+t
+d
+' >log/test_options.help || exit 2
 
-if ! cmp test_options.a test_options.b ; then
-	echo >&2 "$0: *** The options given and '$file_src' are different from those given in '$file_man'"
-	echo >&2 "Options from '$file_src':"
-	cat >&2 test_options.a
-	echo >&2 "Options from '$file_man':"
-	cat >&2 test_options.b
+<src/options.cc sed -E -e '
+s/^\s*\{\s*"([a-z0-9-]+)",\s*[a-z_]+,\s*nullptr,\s*'\''(.)'\''\},$/\2,\1/
+t
+d' | sort >log/test_options.getopt_long
+
+<"$file_man" sed -E -e '
+s/^\.IP\s+"{0,1}-(.).*--([a-z0-9-]+).*--([a-z0-9-]+).*$/\1,\2\
+\1,\3/
+t
+s/^\.IP\s+"{0,1}-(.).*--([a-z0-9-]+).*$/\1,\2/
+t
+s/^\.IP\s+"{0,1}-(.).*$/\1/
+t
+d
+' >log/test_options.man || exit 2
+
+if ! cmp log/test_options.help log/test_options.man ; then
+	echo >&2 "$0: *** The options given in --help are different from those given in '$file_man'"
+	echo >&3 "Options from --help:"
+	cat  >&3 log/test_options.help
+	echo >&3 "Options from '$file_man':"
+	cat  >&3 log/test_options.man
 	echo >&2 "Diff:"
-	diff test_options.a test_options.b
+	diff log/test_options.help log/test_options.man
 	ret=1
 fi
 
-rm -f test_options.a test_options.b || exit 2
+if grep -q -F -v -x -f log/test_options.man log/test_options.getopt_long ; then
+	echo >&2 "$0: *** The options passed to getopt_long are not a subset of those given in '$file_man'"
+	echo >&3 "Options from getopt_long:"
+	cat  >&3 log/test_options.getopt_long
+	echo >&3 "Options from '$file_man':"
+	cat  >&3 log/test_options.man
+	echo >&2 "The following options are declared in LONG_OPTIONS but are not in $file_man:"
+	grep -F -v -x -f log/test_options.man log/test_options.getopt_long |
+		sed -E -e 's/^(.*),(.*)$/-\1, --\2/'
+	ret=1
+fi
+
+rm -f log/test_options.help log/test_options.getopt_long log/test_options.man || exit 2
+
 exit "$ret"

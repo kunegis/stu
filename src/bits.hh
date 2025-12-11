@@ -29,6 +29,8 @@ enum {
 	B_COUNT       = 4
 };
 
+#ifndef NDEBUG
 string show_bits(Bits);
+#endif /* ! NDEBUG */
 
 #endif /* ! BITS_HH */

@@ -73,6 +73,9 @@ https://github.com/kunegis/konect-analysis/blob/master/main.stu
  About
 -------
 
+Stu was mainly written by Jérôme Kunegis, with contributions from Jun
+Sun, Aaron McDaid, Heinrich Hartmann, and Holger Heinz.
+
 Stu was originally written to accommodate the KONECT project (Koblenz
 Network Collection -- http://konect.cc/).  It is thus mainly used for
 large data mining projects, where it manages everything from acquiring
@@ -89,7 +92,7 @@ the author of the original Unix Make, Stuart Feldman.
 Stu was initiated by Jérôme Kunegis at the University of Koblenz-Landau
 (Germany), was then maintained at the University of Namur (Belgium), and is now
 maintained by Jérôme Kunegis privately, with help from other contributors; see
-the file AUTHORS.
+above.
 
 Stu is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free

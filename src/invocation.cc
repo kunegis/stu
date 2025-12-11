@@ -11,7 +11,10 @@ Invocation::Invocation(int argc, char **argv, int &error)
 		exit(0);
 	}
 
-	for (int c; (c= getopt(argc, argv, OPTIONS)) != -1;) {
+	int option_index= 0;
+	int c;
+
+	while ((c= getopt_long(argc, argv, OPTIONS, LONG_OPTIONS, &option_index)) != -1) {
 		if (option_setting(c)) continue;
 		if (option_various(c)) continue;
 

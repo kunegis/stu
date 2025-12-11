@@ -1,6 +1,8 @@
 #ifndef OPTIONS_HH
 #define OPTIONS_HH
 
+#include <getopt.h>
+
 #include "package.hh"
 
 /*
@@ -9,15 +11,17 @@
  * All boolean option variables are FALSE by default.
  */
 
-/*
- * We use getopt(), which means that Stu does only support short options, and not long
- * options.  We avoid getopt_long() as it is a GNU extension, and the short options are
- * sufficient for now.
- *
- * Also, using getopt() means that the exact synytax of Stu depends on the platform:  GNU
- * getopt() will all options to follow arguments, while BSD getopt() does not.
- */
 const char OPTIONS[]= "0:ac:C:dEf:F:ghiIj:JkKm:M:n:o:p:PqsUVxyYz";
+
+struct option LONG_OPTIONS[]= {
+	{ "jobs",        required_argument, nullptr, 'j'},
+	{ "keep-going",  no_argument,       nullptr, 'k'},
+	{ "print-rules", no_argument,       nullptr, 'P'},
+	{ "question",    no_argument,       nullptr, 'q'},
+	{ "quiet",       no_argument,       nullptr, 's'},
+	{ "silent",      no_argument,       nullptr, 's'},
+	{ nullptr, 0, nullptr, 0}
+};
 
 /* The following strings do not contain tabs, but only space characters. */
 const char HELP[]=
@@ -36,9 +40,9 @@ const char HELP[]=
 	"  -h, --help       Output help\n"
 	"  -i               Interactive mode (run jobs in foreground)\n"
 	"  -I               Print all buildable file targets as glob patterns\n"
-	"  -j K             Run K jobs in parallel\n"
+	"  -j K, --jobs K   Run K jobs in parallel\n"
 	"  -J               Disable Stu syntax in arguments\n"
-	"  -k               Keep on running after errors\n"
+	"  -k, --keep-going Keep on running after errors\n"
 	"  -K               Don't delete target files on error or interruption\n"
 	"  -m ORDER         Order to run the targets:\n"
 	"     dfs           (default) Depth-first order, as in Make\n"
@@ -48,9 +52,11 @@ const char HELP[]=
 	"  -o FILENAME      Build an optional dependency, i.e., build it only if it\n"
 	"                   exists and is out of date\n"
 	"  -p FILENAME      Build a persistent dependency, i.e., ignore its timestamp\n"
-	"  -P               Print the rules\n"
-	"  -q               Question mode: check whether targets are up to date\n"
-	"  -s               Silent mode: don't use stdout\n"
+	"  -P, --print-rules\n"
+	"                   Print the rules\n"
+	"  -q, --question   Question mode: check whether targets are up to date\n"
+	"  -s, --silent, --quiet\n"
+	"                   Silent mode: don't use stdout\n"
 	"  -U               Ignore %version directives\n"
 	"  -V, --version    Output version\n"
 	"  -x               Output each line in a command individually\n"

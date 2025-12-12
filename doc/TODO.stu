@@ -1,6 +1,5 @@
 #
 # Support long options, with getopt_long().
-# * Use the library also for --help and --version
 # * Check which long options FreeBSD Make supports
 # * Tests for new long options
 # * Test for non-existing long option

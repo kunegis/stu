@@ -2,15 +2,6 @@
 
 Invocation::Invocation(int argc, char **argv, int &error)
 {
-	if (argc >= 2 && !strcmp(argv[1], "--version")) {
-		print_option_V();
-		exit(0);
-	}
-	if (argc >= 2 && !strcmp(argv[1], "--help")) {
-		fputs(HELP, stdout);
-		exit(0);
-	}
-
 	int option_index= 0;
 	int c;
 

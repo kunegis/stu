@@ -12,6 +12,18 @@
 #include "trace.hh"
 #include "version.hh"
 
+const struct option LONG_OPTIONS[]= {
+	{ "help",        no_argument,       nullptr, 'h'},
+	{ "jobs",        required_argument, nullptr, 'j'},
+	{ "keep-going",  no_argument,       nullptr, 'k'},
+	{ "print-rules", no_argument,       nullptr, 'P'},
+	{ "question",    no_argument,       nullptr, 'q'},
+	{ "quiet",       no_argument,       nullptr, 's'},
+	{ "silent",      no_argument,       nullptr, 's'},
+	{ "version",     no_argument,       nullptr, 'V'},
+	{ nullptr, 0, nullptr, 0}
+};
+
 bool option_setting(char c)
 {
 	TRACE_FUNCTION();

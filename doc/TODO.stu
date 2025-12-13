@@ -1,11 +1,16 @@
 #
 # Support long options, with getopt_long().
-# * Check which long options FreeBSD Make supports
-# * Tests for new long options
-# * Test for non-existing long option
+# * Add options (and more if they make sense):
+#   -f   --file
+#   -i   --interactive
+# * Tests for all new long options
+# * Test a non-existing long option
+# * Test --
+# * Add test that all options in the array in options.hh are also in the --help output and
+#   in the manpage.
 # * Change manpage
 # * Change doc/ options/flags list
-# * Change install instructions to mention dependency
+# * Change install instructions to mention dependency on getopt_long
 # * Test on FreeBSD
 #
 

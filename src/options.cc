@@ -13,7 +13,9 @@
 #include "version.hh"
 
 const struct option LONG_OPTIONS[]= {
+	{ "file",        required_argument, nullptr, 'f'},
 	{ "help",        no_argument,       nullptr, 'h'},
+	{ "interactive", no_argument,       nullptr, 'i'},
 	{ "jobs",        required_argument, nullptr, 'j'},
 	{ "keep-going",  no_argument,       nullptr, 'k'},
 	{ "print-rules", no_argument,       nullptr, 'P'},

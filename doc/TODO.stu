@@ -1,8 +1,5 @@
 #
 # Support long options, with getopt_long().
-# * Add options (and more if they make sense):
-#   -f   --file
-#   -i   --interactive
 # * Tests for all new long options
 # * Test a non-existing long option
 # * Test --

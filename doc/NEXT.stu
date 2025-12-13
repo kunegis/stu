@@ -122,3 +122,8 @@ V {
 #
 #	\x13    same as "\x13", rather than "x13"
 #
+
+#
+# Maybe write parameters with paratheses as $(param_name), and reserve $param_name and
+# ${param_name} for environment variables.
+#

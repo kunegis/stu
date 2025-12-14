@@ -1,0 +1,15 @@
+#! /bin/sh
+
+../../bin/stu.test --help >list.out 2>list.err
+
+grep -q -F -e '--interactive' list.out || {
+	echo >&2 '*** Expected help output'
+	exit 1
+}
+
+[ -s list.err ] && {
+	echo >&2 '*** Expected empty stderr'
+	exit 1
+}
+
+exit 0

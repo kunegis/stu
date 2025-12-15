@@ -1,7 +1,8 @@
 #
 # Support long options, with getopt_long().
-# * Tests for all new long options from '--interactive'
+# * Tests for all new long options from '--jobs'
 # * Test a non-existing long option
+# * Test prefix and suffix option
 # * Test --
 # * Add test that all options in the array in options.hh are also in the --help output and
 #   in the manpage.

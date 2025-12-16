@@ -5,7 +5,7 @@
 
 ret=0
 
-file_src=src/options.hh
+file_src=src/options.cc
 file_man=man/stu.1.in
 
 <"$file_src" sed -e '/^[[:space:]]*" *-[0-9a-zA-Z]/!d;s,^[^-]*-\(.\).*$,\1,' >test_options.a || exit 2

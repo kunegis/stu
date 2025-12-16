@@ -1,6 +1,6 @@
 #
 # Support long options, with getopt_long().
-# * Tests for all new long options from '--jobs'
+# * Tests for all new long options from '--keep-going'
 # * Test a non-existing long option
 # * Test prefix and suffix option
 # * Test --

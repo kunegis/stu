@@ -17,4 +17,3 @@ grep -q -F -e CORRECT A || { echo >&2 "*** Content" ; exit 1 ; }
 [ -s list.err ] && { echo >&2 "*** stderr" ; exit 1 ; }
 
 exit 0
-

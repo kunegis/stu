@@ -160,7 +160,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 	}
 
 	if (option_P) {
-		Executor::rule_set.print_for_option_dP();
+		Executor::rule_set.print_for_option_P();
 		exit(0);
 	}
 	if (option_I) {

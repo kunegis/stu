@@ -1,6 +1,6 @@
 #
 # Support long options, with getopt_long().
-# * Tests for all new long options from '--print-rules'
+# * Tests for all new long options from '--question'
 # * Add long options: for all randomization options; all non-stable options.
 # * Test a non-existing long option
 # * Test prefix and suffix option
@@ -442,4 +442,11 @@ A: -e B
 #
 # When the number of parallel jobs is 1 (-j not used or -j1), "stu: terminating all jobs"
 # should not be shown Control-C.
+#
+
+#
+# Option --print-rules:  At the moment, the order of printing is arbitrary (based on what
+# std::unordered_map does).  Instead, order alphabetically by target name.  Need to
+# determine how to handle files vs phonies.  Also need to think about whether to keep
+# parametrized and unparametrized rules separate as it is now, or whether to mix them.
 #

@@ -1,0 +1,17 @@
+#! /bin/sh
+
+Error() # <message>
+{
+	>&2 printf 'Error: %s\n' "$1"
+	exit 1
+}
+
+../../bin/stu.test --print-rules >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || Error 'Exit status'
+[ -e list.err ] || Error 'list.err must exist'
+[ -s list.err ] && Error 'list.err must be empty'
+cmp -s list.out stdout || Error 'list.out'
+
+exit 0

@@ -46,7 +46,7 @@ constexpr Style S_DEFAULT=         CH_ERR;
 constexpr Style S_DEBUG=           CH_OUT | S_ALWAYS_QUOTE;
 constexpr Style S_NORMAL=          CH_OUT | S_QUOTE_MINIMUM;
 constexpr Style S_OPTION_I=        CH_OUT | S_NO_COLOR | S_QUOTE_SOURCE;
-constexpr Style S_OPTION_dP=       CH_OUT | S_QUOTE_MINIMUM;
+constexpr Style S_OPTION_P=        CH_OUT | S_QUOTE_MINIMUM;
 
 typedef unsigned Rendering;
 constexpr Rendering R_GLOB=                     1 << 0;

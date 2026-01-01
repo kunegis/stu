@@ -1,6 +1,6 @@
 #
 # Support long options, with getopt_long().
-# * Tests for all new long options from '--question'
+# * Tests for all new long options from '--quiet'
 # * Add long options: for all randomization options; all non-stable options.
 # * Test a non-existing long option
 # * Test prefix and suffix option

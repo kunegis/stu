@@ -1,0 +1,2 @@
+../../bin/stu.test: unrecognized option '--question0'
+To get a list of all options, use "../../bin/stu.test -h"

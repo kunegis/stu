@@ -1,6 +1,5 @@
 #
 # Support long options, with getopt_long().
-# * Test prefix and suffix option
 # * Test --
 # * Test passing an argument to an option that doesn't take one
 # * Test not passing an argument to an option that takes one

@@ -1,10 +1,9 @@
 #
 # Support long options, with getopt_long().
-# * Tests for all new long options from '--quiet'
-# * Add long options: for all randomization options; all non-stable options.
-# * Test a non-existing long option
 # * Test prefix and suffix option
 # * Test --
+# * Test passing an argument to an option that doesn't take one
+# * Test not passing an argument to an option that takes one
 # * Add test that all options in the array in options.hh are also in the --help output and
 #   in the manpage.
 # * Change manpage
@@ -449,4 +448,12 @@ A: -e B
 # std::unordered_map does).  Instead, order alphabetically by target name.  Need to
 # determine how to handle files vs phonies.  Also need to think about whether to keep
 # parametrized and unparametrized rules separate as it is now, or whether to mix them.
+#
+
+#
+# Check why "stu -f /dev/zero" hangs on Ubuntu.
+#
+
+#
+# * Add long options: for all randomization options; all non-stable options.
 #

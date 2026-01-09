@@ -1,12 +1,10 @@
 #
 # Support long options, with getopt_long().
-# * Test passing an argument to an option that doesn't take one
-# * Test not passing an argument to an option that takes one
+# * Change install instructions to mention dependency on getopt_long
+# * Change manpage
 # * Add test that all options in the array in options.hh are also in the --help output and
 #   in the manpage.
-# * Change manpage
 # * Change doc/ options/flags list
-# * Change install instructions to mention dependency on getopt_long
 # * Test on FreeBSD
 #
 

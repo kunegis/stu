@@ -1,0 +1,2 @@
+../../bin/stu.test: option '--question' doesn't allow an argument
+To get a list of all options, use "../../bin/stu.test -h"

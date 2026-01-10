@@ -1,6 +1,5 @@
 #
 # Support long options, with getopt_long().
-# * Change manpage
 # * Add test that all options in the array in options.hh are also in the --help output and
 #   in the manpage.
 # * Change doc/ options/flags list
@@ -451,4 +450,9 @@ A: -e B
 
 #
 # * Add long options: for all randomization options; all non-stable options.
+#
+
+#
+# In the manpage, in the option list, make all option names bold, and underline all
+# argument names.  (As done e.g. in the make(1) manpage.)
 #

@@ -1,7 +1,6 @@
 #
 # Support long options, with getopt_long().
 # * sh/test_options:
-# ** Compare getopt with one of the other two
 # ** Also include long options
 # ** Handle temp files correctly
 # * Change doc/ options/flags list

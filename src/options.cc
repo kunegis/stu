@@ -23,6 +23,7 @@ const struct option LONG_OPTIONS[]= {
 	{ "quiet",       no_argument,       nullptr, 's'},
 	{ "silent",      no_argument,       nullptr, 's'},
 	{ "version",     no_argument,       nullptr, 'V'},
+//	{ "shdjshd",     no_argument,       nullptr, 'Z'},
 	{ nullptr, 0, nullptr, 0}
 };
 

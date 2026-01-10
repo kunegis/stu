@@ -1,7 +1,9 @@
 #
 # Support long options, with getopt_long().
-# * Add test that all options in the array in options.hh are also in the --help output and
-#   in the manpage.
+# * sh/test_options:
+# ** Compare getopt with one of the other two
+# ** Also include long options
+# ** Handle temp files correctly
 # * Change doc/ options/flags list
 # * Test on FreeBSD
 #

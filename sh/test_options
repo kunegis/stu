@@ -4,23 +4,38 @@
 #
 
 ret=0
-
-file_src=src/options.cc
 file_man=man/stu.1.in
+[ "$TEST_OPTIONS_VERBOSE" ] && exec 3>&2 || exec 3>/dev/null
 
-<"$file_src" sed -e '/^[[:space:]]*" *-[0-9a-zA-Z]/!d;s,^[^-]*-\(.\).*$,\1,' >test_options.a || exit 2
-<"$file_man" sed -e '/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-./!d;s/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-\(.\).*$/\1/' >test_options.b || exit 2
+<src/options.cc sed -e '/^[[:space:]]*" *-[0-9a-zA-Z]/!d;s,^[^-]*-\(.\).*$,\1,' >test_options.help || exit 2
+<src/options.cc sed -E -e '
+s/^\s*\{\s*"([a-z-]+)",\s*[a-z_]+,\s*nullptr,\s*'\''(.)'\''\},$/\2/
+t
+d' >test_options.getopt_long
+<"$file_man" sed -e '/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-./!d;s/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-\(.\).*$/\1/' >test_options.man || exit 2
 
-if ! cmp test_options.a test_options.b ; then
-	echo >&2 "$0: *** The options given and '$file_src' are different from those given in '$file_man'"
-	echo >&2 "Options from '$file_src':"
-	cat >&2 test_options.a
-	echo >&2 "Options from '$file_man':"
-	cat >&2 test_options.b
+if ! cmp test_options.help test_options.man ; then
+	echo >&2 "$0: *** The options given in --help are different from those given in '$file_man'"
+	echo >&3 "Options from '$file_help':"
+	cat  >&3 test_options.help
+	echo >&3 "Options from '$file_man':"
+	cat  >&3 test_options.man
 	echo >&2 "Diff:"
-	diff test_options.a test_options.b
+	diff test_options.help test_options.man
 	ret=1
 fi
 
-rm -f test_options.a test_options.b || exit 2
+if grep -q -F -v -x -f test_options.man test_options.getopt_long ; then
+	echo >&2 "$0: *** The options passed to getopt_long are not a subset of those given in '$file_man'"
+	echo >&3 "Options from getopt_long:"
+	cat  >&3 test_options.getopt_long
+	echo >&3 "Options from '$file_man':"
+	cat  >&3 test_options.man
+	echo >&2 "Unknown options passed to getopt_long:"
+	grep -F -v -x -f test_options.man test_options.getopt_long
+	ret=1
+fi
+
+rm -f test_options.help test_options.getopt_long test_options.man || exit 2
+
 exit "$ret"

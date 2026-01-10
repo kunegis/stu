@@ -7,16 +7,30 @@ ret=0
 file_man=man/stu.1.in
 [ "$TEST_OPTIONS_VERBOSE" ] && exec 3>&2 || exec 3>/dev/null
 
-<src/options.cc sed -e '/^[[:space:]]*" *-[0-9a-zA-Z]/!d;s,^[^-]*-\(.\).*$,\1,' >test_options.help || exit 2
 <src/options.cc sed -E -e '
-s/^\s*\{\s*"([a-z-]+)",\s*[a-z_]+,\s*nullptr,\s*'\''(.)'\''\},$/\2/
+s/^\s*" *-([0-9a-zA-Z]).*--([a-z0-9-]+).*$/\1,\2/
+t
+s/^\s*" *-([0-9a-zA-Z]).*$/\1/
+t
+d
+' >test_options.help || exit 2
+
+<src/options.cc sed -E -e '
+s/^\s*\{\s*"([a-z0-9-]+)",\s*[a-z_]+,\s*nullptr,\s*'\''(.)'\''\},$/\2,\1/
 t
 d' >test_options.getopt_long
-<"$file_man" sed -e '/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-./!d;s/^[[:space:]]*\.IP[[:space:]]\{1,\}"\{0,1\}-\(.\).*$/\1/' >test_options.man || exit 2
+
+<"$file_man" sed -E -e '
+s/^\.IP\s+"{0,1}-(.).*--([a-z0-9-]+).*$/\1,\2/
+t
+s/^\.IP\s+"{0,1}-(.).*$/\1/
+t
+d
+' >test_options.man || exit 2
 
 if ! cmp test_options.help test_options.man ; then
 	echo >&2 "$0: *** The options given in --help are different from those given in '$file_man'"
-	echo >&3 "Options from '$file_help':"
+	echo >&3 "Options from --help:"
 	cat  >&3 test_options.help
 	echo >&3 "Options from '$file_man':"
 	cat  >&3 test_options.man

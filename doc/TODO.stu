@@ -1,7 +1,7 @@
 #
 # Support long options, with getopt_long().
 # * sh/test_options:
-# ** Also include long options
+# ** Fix bug due to quiet/silent
 # ** Handle temp files correctly
 # * Change doc/ options/flags list
 # * Test on FreeBSD

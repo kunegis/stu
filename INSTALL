@@ -1,4 +1,4 @@
-========= INSTALLING STU =========
+\========= INSTALLING STU =========
 
 To install Stu, run this:
 
@@ -44,8 +44,9 @@ release.
 ==== REQUIREMENTS ====
 
 Stu requires:
+* C++ 17
 * POSIX
-* A C++ 17 compiler
+* getopt_long
 
 In addition, Stu uses the following features:
 * ASCII or an ASCII-compatible 8-bit encoding such as UTF-8 or ISO-8859-1

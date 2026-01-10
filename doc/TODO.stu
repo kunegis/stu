@@ -1,6 +1,5 @@
 #
 # Support long options, with getopt_long().
-# * Change install instructions to mention dependency on getopt_long
 # * Change manpage
 # * Add test that all options in the array in options.hh are also in the --help output and
 #   in the manpage.

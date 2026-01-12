@@ -1,4 +1,0 @@
->A: B C D { cat B C D ; }
->B { echo bbb ; }
->C { echo ccc ; }
->D { echo ddd ; }

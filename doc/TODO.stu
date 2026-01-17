@@ -1,6 +1,5 @@
 #
 # Support long options, with getopt_long().
-# * Change doc/ options/flags list
 # * Test on FreeBSD
 #
 

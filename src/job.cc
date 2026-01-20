@@ -375,10 +375,10 @@ void Job::ask_continue(pid_t pid)
  * commands, having an own command language, etc. */
 {
 	TRACE_FUNCTION();
+	assert(option_i);
 	int fd_tty= get_fd_tty();
 	TRACE("fd_tty= %s", frmt("%d", fd_tty));
-	if (fd_tty < 0)
-		return;
+	assert(fd_tty >= 0);
 	if (tcsetpgrp(fd_tty, getpid()) < 0)
 		print_errno("tcsetpgrp");
 	fprintf(stderr,

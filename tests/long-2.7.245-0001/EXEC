@@ -9,8 +9,8 @@ FILE_SO=../../bin/preload.so
 dir=$(pwd)
 ( cd ../.. && sh/ccpreload "$dir"/PRELOAD.cc "$dir"/"$FILE_SO" ; ) || exit 2
 
-echo ../../bin/stu.test -i '&'
-LD_PRELOAD=$FILE_SO ../../bin/stu.test -i >list.out 2>list.err &
+echo ../../bin/stu.test '&'
+LD_PRELOAD=$FILE_SO ../../bin/stu.test >list.out 2>list.err &
 pid=$!
 
 echo sleep 1

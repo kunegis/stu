@@ -1,14 +1,4 @@
 #
-# Option -i:  when no TTY is available, this should be an error (code 4) and not a
-# warning.
-#
-
-#
-# Have flags +p +o +t that negative -p -o -t (useful when flags can be put on
-# the target side of rules).
-#
-
-#
 # Mark this target to always be a persistent dependency
 #
 

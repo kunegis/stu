@@ -1,0 +1,2 @@
+/dev/tty: open: 
+Option -i: interactive mode cannot be used because no TTY is available

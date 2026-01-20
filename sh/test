@@ -88,7 +88,7 @@
 #              the test from the ndebug variant.
 # NONDEBUG     Exclude test from NDEBUG
 # PRELOAD.cc   If present, the file is compiled as a shared object and Stu executed with
-#              LD_PRELOAD set to that file
+#              LD_PRELOAD set to that file.
 # EXEC         An alternative test script; it can do anything and should return a sensible
 #              exit status (i.e., 0 on success, 1 on test failed, 2 on internal error).
 #              It also otherwise behaves like sh/test, e.g., output '***' only on error.

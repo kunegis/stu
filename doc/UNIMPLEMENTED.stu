@@ -6,6 +6,11 @@
 # always backward-incompatible.
 
 #
+# Have flags +p +o +t that negative -p -o -t (useful when flags can be put on
+# the target side of rules).
+#
+
+#
 # Nested rules.  Good for dependencies that are used only once.  This is
 # quite hard to read, honestly, and mostly fulfills the fantasy of
 # people who like deeply nested constructs :)  But implementation-wise,

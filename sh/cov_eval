@@ -3,7 +3,20 @@
 # The following strings are used to exclude a line from the output of uncovered lines:
 #
 # uncovered_due_to_bug_in_gcov
-# uncovered                    // For other reasons
+#    // Deemed to be a bug un gcov
+# uncovered
+#    // For other reasons
+# unreachable
+#    // Unreachable; can be optimized out in NDEBUG
+# should_not_happen
+#    // Cannot happen, but we still compile in code for it in NDEBUG mode
+# happens_only_on_certain_platforms
+#    // Can't happen on the platform we use for testing, but may happen elsewhere;
+#    // untested
+# __gcov_dump
+#    // Last call to __gcov_dump in block; anything after it cannot be counted by gcov
+# __gcov_maybe_dump
+#    // May be last call to __gcov_dump
 #
 
 [ "$COV_EVAL_VERBOSE" ] && exec 6>&2 || exec 6>/dev/null

@@ -73,7 +73,7 @@ pid_t Job::start(
 		create_child_output_redirection(filename_output, place_output);
 		create_child_input_redirection(filename_input, place_input);
 
-		__gcov_dump();
+		__gcov_pre_dump();
 		int r= execve(shell, (char *const *) argv, (char *const *) envp);
 		assert(r == -1);
 		print_errno("execve", shell);
@@ -136,10 +136,11 @@ pid_t Job::start_copy(
 		 * begin with a dash. */
 		const char *argv[]= {
 			cp_shortname, "--", source.c_str(), target.c_str(), nullptr};
-		__gcov_dump();
+		__gcov_pre_dump();
 		int r= execv(cp, (char *const *) argv);
 		assert(r == -1);
 		fprintf(stderr, "execv: %s: %s\n", cp, strerror(errno));
+		__gcov_dump();
 		_Exit(ERROR_FORK_CHILD);
 	}
 

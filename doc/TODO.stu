@@ -1,10 +1,4 @@
 #
-# job.cc:  At the moment, the various cases of execve() are always counted as "covered"
-# because they happen after "__gcov_dump()".  Change the sh/cov_eval code to not do that.
-# There shoud already be tests for those cases.
-#
-
-#
 # Option -i:  when no TTY is available, this should be an error (code 4) and not a
 # warning.
 #
@@ -447,4 +441,14 @@ A: -e B
 #
 # In the manpage, in the option list, make all option names bold, and underline all
 # argument names.  (As done e.g. in the make(1) manpage.)
+#
+
+#
+# strhash() should not be in a .hh file.
+#
+
+#
+# sh/test:  The check that tests have correct runtime depending on whether they are long
+# or non-long should only be executed in DEBUG mode.  (It should not occur with "make
+# check".)
 #

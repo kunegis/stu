@@ -41,9 +41,14 @@ extern "C" {
 #include <gcov.h>
 }
 
+/* Like __gcov_pre_dump(), but may be followed by _gcov_dump().  __gcov_dump() cannot be
+ * called multiple times. */
+#define __gcov_pre_dump() __gcov_dump(); __gcov_reset()
+
 #else /* ! STU_COV */
 
 #define __gcov_dump()
+#define __gcov_pre_dump()
 
 #endif /* ! STU_COV */
 

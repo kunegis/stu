@@ -1,0 +1,30 @@
+#! /bin/sh
+SCRIPT=$0
+
+Error() # <message>
+{
+	printf '%s: Error: %s\n' "$SCRIPT" "$1"
+	exit 1
+}
+
+../../sh/rm_tmps || exit 2
+
+../../bin/stu.test list.data/A
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || Error "exit status (1)"
+[ -f list.data/A ] || Error "file (1)"
+grep -q -F -e aaa list.data/A || Error "content (1)"
+
+echo bbb >list.data/B
+../../sh/touch_old list.data/B
+
+../../bin/stu.test list.data/B
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || Error "exit status (2)"
+grep -q -F -e bbb list.data/B || Error "content (2)"
+
+../../sh/rm_tmps || exit 2
+
+exit 0

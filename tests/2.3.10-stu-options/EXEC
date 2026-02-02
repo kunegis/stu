@@ -10,7 +10,7 @@ exitstatus=$?
 	exit 1
 }
 
-grep -qF 'Explanation: Each Stu script can declare a version to which it is compatible' list.err || {
+grep -qF 'Explanation: Each Stu script can declare a version to which it is' list.err || {
 	echo >&2 "*** Expected a message"
 	exit 1
 }

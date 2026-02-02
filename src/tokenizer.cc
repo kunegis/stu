@@ -470,8 +470,7 @@ void Tokenizer::parse_flag_or_name()
 		if (! is_flag_char(op)) {
 			if (isalnum(op)) {
 				current_place() <<
-					fmt("invalid flag %s",
-						show_prefix("-", frmt("%c", op)));
+					fmt("invalid flag %s", show(Flag_View(op)));
 			} else {
 				current_place() <<
 					fmt("expected a flag character, not %s",
@@ -494,7 +493,7 @@ void Tokenizer::parse_flag_or_name()
 				fmt("expected whitespace before character %s",
 					show(current_mbchar()));
 			token->get_place() <<
-				fmt("after flag %s", show_prefix("-", frmt("%c", op)));
+				fmt("after flag %s", show(Flag_View(op)));
 			throw ERROR_LOGICAL;
 		}
 	} else {
@@ -504,17 +503,17 @@ void Tokenizer::parse_flag_or_name()
 				current_place() <<
 					fmt("character %s is invalid for persistent dependencies; use %s instead",
 						show_operator('!'),
-						show_prefix("-", "p"));
+						show(Flag_View(flags_chars[I_PERSISTENT])));
 			} else if (*p == '?') {
 				current_place() <<
 					fmt("character %s is invalid for optional dependencies; use %s instead",
 						show_operator('?'),
-						show_prefix("-", "o"));
+						show(Flag_View(flags_chars[I_OPTIONAL])));
 			} else if (*p == '&') {
 				current_place() <<
 					fmt("character %s is invalid for trivial dependencies; use %s instead",
 						show_operator('&'),
-						show_prefix("-", "t"));
+						show(Flag_View(flags_chars[I_TRIVIAL])));
 			} else {
 				current_place() << fmt("invalid character %s",
 					show(current_mbchar()));
@@ -672,7 +671,13 @@ bool Tokenizer::is_operator_char(char c)
 
 bool Tokenizer::is_flag_char(char c)
 {
-	return c == 'p' || c == 'o' || c == 't' || c == 'n' || c == '0' || c == 'C';
+	return
+		c == flags_chars[I_PERSISTENT] ||
+		c == flags_chars[I_OPTIONAL] ||
+		c == flags_chars[I_TRIVIAL] ||
+		c == flags_chars[I_NEWLINE_SEPARATED] ||
+		c == flags_chars[I_NUL_SEPARATED] ||
+		c == flags_chars[I_CODE];
 }
 
 void Tokenizer::parse_version(

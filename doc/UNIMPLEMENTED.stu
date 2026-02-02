@@ -6,8 +6,17 @@
 # always backward-incompatible.
 
 #
-# Have flags +p +o +t that negative -p -o -t (useful when flags can be put on
-# the target side of rules).
+# A flag which means "delete this file at the end of the Stu run".
+#
+
+A: B.utf8 { ... ; }
+--temp >B.utf8 <B { recode ... ; }
+B;
+
+#
+# Allow dir/@phony.  Will allow dir/(a b @c @d).
+#
+# a/@b is equivalent to @a/b.
 #
 
 #
@@ -18,11 +27,6 @@
 #
 
 A: (B: C { cp C B ; }) (D: E {cp E D ; }) { cat B D >A ; }
-
-#
-# Execute "make analyzer".  Not executed yet because it needs too much memory.  The GCC
-# analyzer is not yet ready for C++, but should be in the future.
-#
 
 #
 # Have an option to block certain targets from ever being rebuilt.  (Resulting
@@ -267,7 +271,7 @@ X= [B-dep.x.y.z] {}
 # that is not a file.
 #
 
-A:   b.tar,filename { ... }
+A:  b.tar,filename { ... }
 
 #
 # Some form of "change directory" (cd) method.
@@ -284,15 +288,7 @@ cd path/to/dir {
 # same files concurrently.
 #
 
-@clean:  -r (bin conf);
-
-#
-# Barrier operator:  Finish things left of the operator before starting things on the
-# right of it.
-#
-
-# Do all of @a before starting with @b
-@all:  @a | @b;
+@clean:  --remove (bin conf);
 
 #
 # Use the -i flag to mark a command as interactive, e.g. when it asks for a password, or
@@ -303,6 +299,14 @@ cd path/to/dir {
 A -i {
 	./command # Asks for a password on the command line
 }
+
+#
+# Barrier operator:  Finish things left of the operator before starting things on the
+# right of it.
+#
+
+# Do all of @a before starting with @b
+@all:  @a | @b;
 
 #
 # Allow the -k option as a flag.
@@ -351,4 +355,8 @@ A: -k B {...}
 #
 # For some options, remove the short form and keep only the long form.  In particular, do
 # this for all options whose short form is not guaranteed to be future-compatible.
+#
+
+#
+# Support -t in front of targets.  This may be difficult.
 #

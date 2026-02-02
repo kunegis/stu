@@ -1,0 +1,10 @@
+A: list.abc
+{
+	[ -e list.abc ] && exit 77
+	touch A
+}
+
+-o list.$name
+{
+	exit 77
+}

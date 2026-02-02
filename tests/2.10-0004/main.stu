@@ -1,0 +1,11 @@
+A: X B {
+	echo CORRECT >A
+}
+
+-p -p B: C;
+
+X {
+	../../sh/touch_old B
+	touch C
+	touch X
+}

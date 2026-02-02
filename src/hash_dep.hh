@@ -166,12 +166,14 @@ private:
 
 void render(const Hash_Dep &hash_dep, Parts &parts, Rendering rendering= 0);
 
+#ifndef NDEBUG
+string show_trace(const Hash_Dep &hash_dep);
+#endif /* ! NDEBUG */
+
 namespace std {
 	template <> struct hash <Hash_Dep>
 	{
-		size_t operator()(const Hash_Dep &hash_dep) const {
-			return hash <string> ()(hash_dep.get_text());
-		}
+		size_t operator()(const Hash_Dep &hash_dep) const;
 	};
 }
 

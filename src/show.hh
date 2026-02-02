@@ -127,8 +127,6 @@ void render_dynamic_variable(string name, Parts &, Rendering= 0);
 string show_dynamic_variable(string name, Style= S_DEFAULT);
 
 template <typename T>
-void render(const T &, Style= S_DEFAULT, Rendering= 0);
-template <typename T>
 void render_prefix(string prefix, const T &object, Parts &, Rendering= 0);
 template <typename T>
 string show_prefix(string prefix, const T &object, Style= S_DEFAULT);

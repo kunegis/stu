@@ -1,0 +1,3 @@
+# Error: -o and -p cannot be used together
+
+A: -o @x; @x: B; -p B; 

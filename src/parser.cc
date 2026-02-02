@@ -2,8 +2,10 @@
 
 #include "explain.hh"
 #include "tokenizer.hh"
+#include "flags.hh"
 
-shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_first)
+shared_ptr <Rule> Parser::parse_rule(
+	shared_ptr <const Plain_Dep> &target_first)
 {
 	TRACE_FUNCTION();
 	const auto iter_begin= iter;
@@ -12,46 +14,43 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 
 	Place place_output;
 	/* An empty place when output is not redirected */
-
 	int redirect_index= -1;
 	/* Index of the target that has the output, or -1 */
-
-	std::vector <shared_ptr <const Place_Target> > place_targets;
-
+	std::vector <shared_ptr <const Plain_Dep> > targets;
 	while (iter != tokens.end()) {
 		bool r= parse_target(
-			place_output, place_targets, redirect_index, target_first);
+			place_output, targets, redirect_index, target_first);
 		if (!r) break;
 	}
-
-	if (place_targets.size() == 0) {
+	if (targets.size() == 0) {
 		assert(iter == iter_begin);
 		return nullptr;
 	}
 
 	/* Check that all targets have the same set of parameters */
 	std::set <string> parameters_0;
-	for (const string &parameter: place_targets[0]->place_name.get_parameters()) {
+	for (const string &parameter: targets[0]->place_target
+		     .place_name.get_parameters()) {
 		parameters_0.insert(parameter);
 	}
 	TRACE("parameters_0.size= %s", frmt("%zu", parameters_0.size()));
-	TRACE("place_targets.size= %s", frmt("%zu", place_targets.size()));
-	assert(place_targets.size() >= 1);
-	for (size_t i= 1; i < place_targets.size(); ++i) {
+	TRACE("targets.size= %s", frmt("%zu", targets.size()));
+	assert(targets.size() >= 1);
+	for (size_t i= 1; i < targets.size(); ++i) {
 		TRACE("i= %s", frmt("%zu", i));
 		std::set <string> parameters_i;
 		for (const string &parameter:
-			     place_targets[i]->place_name.get_parameters()) {
+			     targets[i]->place_target.place_name.get_parameters()) {
 			parameters_i.insert(parameter);
 		}
 		TRACE("parameters_i.size= %s", frmt("%zu", parameters_i.size()));
 		if (parameters_i != parameters_0) {
-			place_targets[i]->place <<
+			targets[i]->place <<
 				fmt("parameters of target %s differ",
-				    show(*place_targets[i]));
-			place_targets[0]->place <<
+					show(targets[i]));
+			targets[0]->place <<
 				fmt("from parameters of target %s in rule with multiple targets",
-				    show(*place_targets[0]));
+				    show(targets[0]));
 			throw ERROR_LOGICAL;
 		}
 	}
@@ -61,9 +60,8 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 			fmt("expected a command, %s, %s, or %s",
 				show_operator(':'), show_operator(';'),
 				show_operator('='));
-		place_targets.back()->place
-			<< fmt("after target %s",
-			       show(*place_targets.back()));
+		targets.back()->place <<
+			fmt("after target %s", show(targets.back()));
 		throw ERROR_LOGICAL;
 	}
 
@@ -77,8 +75,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 	if (is_operator(':')) {
 		had_colon= true;
 		++iter;
-		parse_expression_list(deps, filename_input,
-				      place_input, place_targets);
+		parse_expression_list(deps, filename_input, place_input, targets);
 	}
 
 	/* Command */
@@ -86,8 +83,8 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 		assert(had_colon);
 		place_end << fmt("expected a dependency, a command, or %s",
 			show_operator(';'));
-		place_targets[0]->place
-			<< fmt("for target %s", show(*place_targets[0]));
+		targets[0]->place
+			<< fmt("for target %s", show(targets[0]));
 		throw ERROR_LOGICAL;
 	}
 
@@ -100,7 +97,6 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 
 	Place place_nocommand; /* Place of ';' */
 	Place place_equal;
-	shared_ptr <Name_Token> name_copy; /* Name of the copy-from file */
 
 	if ((command= is <Command> ())) {
 		++iter;
@@ -110,162 +106,40 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 		++iter;
 
 		if (iter == tokens.end()) {
-			place_end << fmt("expected a filename, a flag, or %s",
-				show_operator('{'));
-			place_equal << fmt("after %s",
-					   show_operator('='));
+			place_end <<
+				fmt("expected a filename, a flag, or %s",
+					show_operator('{'));
+			place_equal << fmt("after %s", show_operator('='));
 			throw ERROR_LOGICAL;
 		}
 
 		if ((command= is <Command> ())) {
 			/* Hardcoded content */
 			++iter;
-			assert(place_targets.size() != 0);
-			if (place_targets.size() != 1) {
+			assert(targets.size() != 0);
+			if (targets.size() != 1) {
 				place_equal <<
 					fmt("there must not be assigned content using %s",
 						show_operator('='));
-				place_targets[0]->place <<
+				targets[0]->place <<
 					fmt("in rule for %s... with multiple targets",
-					    show(*place_targets[0]));
+					    show(targets[0]));
 				throw ERROR_LOGICAL;
 			}
-			if ((place_targets[0]->flags & F_TARGET_PHONY)) {
+			if ((targets[0]->flags & F_TARGET_PHONY)) {
 				place_equal <<
 					fmt("there must not be assigned content using %s",
 						show_operator('='));
-				place_targets[0]->place <<
+				targets[0]->place <<
 					fmt("for phony target %s",
-					    show(*place_targets[0]));
+					    show(targets[0]));
 				throw ERROR_LOGICAL;
 			}
 			/* No redirected output is checked later */
 			is_hardcode= true;
 		} else {
-			Place place_flag_persistent;
-			Place place_flag_optional;
-
-			while (is <Flag_Token> ()) {
-				shared_ptr <Flag_Token> flag= is <Flag_Token> ();
-				if (flag->flag == 'p') {
-					place_flag_persistent= flag->get_place();
-					++iter;
-				} else if (flag->flag == 'o') {
-					if (! option_g)
-						place_flag_optional= flag->get_place();
-					++iter;
-				} else {
-					flag->get_place()
-						<< fmt("flag %s must not be used",
-						       show_prefix("-", frmt("%c", flag->flag)));
-					place_equal <<
-						fmt("in copy rule using %s for target %s",
-							show_operator('='),
-						    show(*place_targets[0]));
-					throw ERROR_LOGICAL;
-				}
-			}
-
-			if (! is <Name_Token> ()) {
-				if (iter == tokens.end()) {
-					place_end <<
-						fmt("expected a filename or %s",
-							show_operator('{'));
-				} else {
-					(*iter)->get_place_start() <<
-						fmt("expected a filename, a flag, or %s, not %s",
-							show_operator('{'),
-							show(*iter));
-				}
-				place_equal << fmt("after %s", show_operator('='));
-				throw ERROR_LOGICAL;
-			}
-
-			/* Copy rule */
-			name_copy= is <Name_Token> ();
-			++iter;
-
-			/* Check that the source file contains only parameters that also
-			 * appear in the target */
-			std::set <string> parameters;
-			for (auto &parameter:
-				     place_targets[0]->place_name.get_parameters()) {
-				parameters.insert(parameter);
-			}
-			for (size_t jj= 0; jj < name_copy->get_n(); ++jj) {
-				string parameter=
-					name_copy->get_parameters()[jj];
-				if (parameters.count(parameter) == 0) {
-					name_copy->places[jj] <<
-						fmt("parameter %s must not appear in copied file %s",
-						    show_prefix("$", parameter),
-						    show(name_copy));
-					place_targets[0]->place <<
-						fmt("because it does not appear in target %s",
-						    show(*place_targets[0]));
-					throw ERROR_LOGICAL;
-				}
-			}
-
-			if (iter == tokens.end()) {
-				place_end << fmt("expected %s",
-					show_operator(';'));
-				name_copy->get_place() <<
-					fmt("after copy dependency %s",
-					    show(name_copy));
-				throw ERROR_LOGICAL;
-			}
-			if (! is_operator(';')) {
-				(*iter)->get_place() <<
-					fmt("expected %s", show_operator(';'));
-				name_copy->place <<
-					fmt("after copy dependency %s",
-					    show(name_copy));
-				throw ERROR_LOGICAL;
-			}
-			++iter;
-
-			if (! place_output.empty()) {
-				place_output <<
-					fmt("output redirection using %s must not be used",
-					    show_operator('>'));
-				place_equal <<
-					fmt("in copy rule using %s for target %s",
-					    show_operator('='),
-					    show(*place_targets[0]));
-				throw ERROR_LOGICAL;
-			}
-
-			/* Check that there is just a single target */
-			if (place_targets.size() != 1) {
-				place_equal <<
-					fmt("there must not be a copy rule using %s",
-					    show_operator('='));
-				place_targets[0]->place <<
-					fmt("for multiple targets %s...",
-					    show(*place_targets[0]));
-				throw ERROR_LOGICAL;
-			}
-
-			/* Check that target is not phony */
-			if (place_targets[0]->flags & F_TARGET_PHONY) {
-				assert(place_targets[0]->flags & F_TARGET_PHONY);
-				place_equal << fmt("copy rule using %s cannot be used",
-						   show_operator('='));
-				place_targets[0]->place
-					<< fmt("with phony target %s",
-					       show(*place_targets[0]));
-				throw ERROR_LOGICAL;
-			}
-
-			assert(place_targets.size() == 1);
-
-			/* Append target name when source ends in slash */
-			append_copy(*name_copy, place_targets[0]->place_name);
-
-			return std::make_shared <Rule> (
-				place_targets[0], name_copy,
-				place_flag_persistent, place_flag_optional);
+			return parse_remainder_copy_rule(
+				place_equal, place_output, targets);
 		}
 	} else if (is_operator(';')) {
 		place_nocommand= (*iter)->get_place();
@@ -281,15 +155,15 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 			       show_operator(';'),
 			       show_operator('='),
 			       show(*iter)));
-		place_targets[0]->place <<
-			fmt("for target %s", show(*place_targets[0]));
+		targets[0]->place <<
+			fmt("for target %s", show(targets[0]));
 		throw ERROR_LOGICAL;
 	}
 
 	/* Cases where output redirection is not possible */
 	if (! place_output.empty()) {
 		/* Already checked before */
-		assert((place_targets[redirect_index]->flags & F_TARGET_PHONY) == 0);
+		assert((targets[redirect_index]->flags & F_TARGET_PHONY) == 0);
 
 		if (command == nullptr) {
 			place_output <<
@@ -297,7 +171,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 				    show_operator('>'));
 			place_nocommand <<
 				fmt("in rule for %s without a command",
-				    show(*place_targets[0]));
+				    show(targets[0]));
 			throw ERROR_LOGICAL;
 		}
 
@@ -307,7 +181,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 					show_operator('>'));
 			place_equal <<
 				fmt("in rule for %s with assigned content using %s",
-				    show(*place_targets[0]),
+				    show(targets[0]),
 				    show_operator('='));
 			throw ERROR_LOGICAL;
 		}
@@ -321,7 +195,7 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 					show_operator('<'));
 			place_nocommand <<
 				fmt("in rule for %s without a command",
-				    show(*place_targets[0]));
+				    show(targets[0]));
 			throw ERROR_LOGICAL;
 		} else {
 			assert(! is_hardcode);
@@ -329,26 +203,181 @@ shared_ptr <Rule> Parser::parse_rule(shared_ptr <const Place_Target> &target_fir
 	}
 
 	return std::make_shared <Rule>
-		(move(place_targets), deps, command, is_hardcode,
-		 redirect_index, filename_input);
+		(move(targets), deps, command, is_hardcode,redirect_index, filename_input);
+}
+
+shared_ptr <Rule> Parser::parse_remainder_copy_rule(
+	const Place &place_equal,
+	const Place &place_output,
+	std::vector <shared_ptr <const Plain_Dep> > targets)
+{
+	Place place_flag_persistent;
+	Place place_flag_optional;
+	shared_ptr <Name_Token> name_copy_src;
+
+	while (is <Flag_Token> ()) {
+		shared_ptr <Flag_Token> flag_token= is <Flag_Token> ();
+		if (flag_token->flag == flags_chars[I_PERSISTENT]) {
+			place_flag_persistent= flag_token->get_place();
+			++iter;
+		} else if (flag_token->flag == flags_chars[I_OPTIONAL]) {
+			if (! option_g)
+				place_flag_optional= flag_token->get_place();
+			++iter;
+		} else {
+			flag_token->get_place()
+				<< fmt("flag %s must not be used",
+					show(flag_token));
+			place_equal <<
+				fmt("in copy rule using %s for target %s",
+					show_operator('='),
+					show(targets[0]));
+			throw ERROR_LOGICAL;
+		}
+	}
+
+	if (! is <Name_Token> ()) {
+		if (iter == tokens.end()) {
+			place_end <<
+				fmt("expected a filename or %s",
+					show_operator('{'));
+		} else {
+			(*iter)->get_place_start() <<
+				fmt("expected a filename, a flag, or %s, not %s",
+					show_operator('{'),
+					show(*iter));
+		}
+		place_equal << fmt("after %s", show_operator('='));
+		throw ERROR_LOGICAL;
+	}
+
+	/* Copy rule */
+	name_copy_src= is <Name_Token> ();
+	++iter;
+
+	/* Check that the source file contains only parameters that also
+	 * appear in the target */
+	std::set <string> parameters;
+	for (auto &parameter: targets[0]->place_target
+		     .place_name.get_parameters()) {
+		parameters.insert(parameter);
+	}
+	for (size_t jj= 0; jj < name_copy_src->get_n(); ++jj) {
+		string parameter=
+			name_copy_src->get_parameters()[jj];
+		if (parameters.count(parameter) == 0) {
+			name_copy_src->places[jj] <<
+				fmt("parameter %s must not appear in copied file %s",
+					show_prefix("$", parameter),
+					show(name_copy_src));
+			targets[0]->place <<
+				fmt("because it does not appear in target %s",
+					show(targets[0]));
+			throw ERROR_LOGICAL;
+		}
+	}
+
+	if (iter == tokens.end()) {
+		place_end << fmt("expected %s",
+			show_operator(';'));
+		name_copy_src->get_place() <<
+			fmt("after copy dependency %s",
+				show(name_copy_src));
+		throw ERROR_LOGICAL;
+	}
+	if (! is_operator(';')) {
+		(*iter)->get_place() <<
+			fmt("expected %s", show_operator(';'));
+		name_copy_src->place <<
+			fmt("after copy dependency %s",
+				show(name_copy_src));
+		throw ERROR_LOGICAL;
+	}
+	++iter;
+
+	if (! place_output.empty()) {
+		place_output <<
+			fmt("output redirection using %s must not be used",
+				show_operator('>'));
+		place_equal <<
+			fmt("in copy rule using %s for target %s",
+				show_operator('='),
+				show(targets[0]));
+		throw ERROR_LOGICAL;
+	}
+
+	/* Check that there is just a single target */
+	if (targets.size() != 1) {
+		place_equal <<
+			fmt("there must not be a copy rule using %s",
+				show_operator('='));
+		targets[0]->place <<
+			fmt("for multiple targets %s...",
+				show(targets[0]));
+		throw ERROR_LOGICAL;
+	}
+
+	/* Check that target is not phony */
+	if (targets[0]->flags & F_TARGET_PHONY) {
+		assert(targets[0]->flags & F_TARGET_PHONY);
+		place_equal << fmt("copy rule using %s cannot be used",
+			show_operator('='));
+		targets[0]->place
+			<< fmt("with phony target %s",
+				show(targets[0]));
+		throw ERROR_LOGICAL;
+	}
+
+	assert(targets.size() == 1);
+
+	/* Append target name when source ends in slash */
+	append_copy(*name_copy_src, targets[0]->place_target.place_name);
+
+	return std::make_shared <Rule> (
+		targets[0], name_copy_src,
+		place_flag_persistent, place_flag_optional);
 }
 
 bool Parser::parse_target(
 	Place &place_output,
-	std::vector <shared_ptr <const Place_Target> > &place_targets,
+	std::vector <shared_ptr <const Plain_Dep> > &place_targets,
 	int &redirect_index,
-	shared_ptr <const Place_Target> &target_first)
+	shared_ptr <const Plain_Dep> &target_first)
 {
 	Place place_output_new;
 	/* Remains an empty place when '>' is not present */
+
+	Flags flags= 0;
+	Place places[C_PLACED];
+	shared_ptr <Flag_Token> flag_token;
+	while (is <Flag_Token> ()) {
+		flag_token= is <Flag_Token> ();
+		++iter;
+		const char *p= (const char *)memchr
+			(flags_chars, flag_token->flag, C_TARGET_PLACED);
+		if (!p) {
+			string possible;
+			for (int i= 0; i < C_TARGET_PLACED; ++i) {
+				if (! possible.empty()) possible += "/";
+				possible += show(Flag_View(flags_chars[i]));
+			}
+			flag_token->place <<
+				fmt("flag %s is invalid before target (only %s are possible)",
+					show(flag_token),
+				    possible);
+			explain_target_flags();
+			throw ERROR_LOGICAL;
+		}
+		int index= p - flags_chars;
+		assert(index >= 0 && index < C_TARGET_PLACED);
+		flags |= 1 << index;
+		places[index]= flag_token->place;
+	}
 
 	if (is_operator('>')) {
 		place_output_new= (*iter)->get_place();
 		++iter;
 	}
-
-	Flags flags_type= 0;
-	/* F_TARGET_PHONY is set when '@' is found */
 
 	Place place_of_target;
 	if (iter != tokens.end())
@@ -370,7 +399,7 @@ bool Parser::parse_target(
 			place_at << fmt("after %s", show_operator('@'));
 			throw ERROR_LOGICAL;
 		}
-		flags_type= F_TARGET_PHONY;
+		flags |= F_TARGET_PHONY;
 	}
 
 	if (! is <Name_Token> ()) {
@@ -384,6 +413,17 @@ bool Parser::parse_target(
 			place_output_new <<
 				fmt("after output redirection using %s",
 					show_operator('>'));
+			throw ERROR_LOGICAL;
+		}
+		if (flag_token) {
+			if (iter == tokens.end())
+				place_end << "expected a filename";
+			else
+				(*iter)->get_place_start() <<
+					fmt("expected a filename, not %s",
+						show((*iter)));
+			flag_token->place <<
+				fmt("after flag %s", show(flag_token));
 			throw ERROR_LOGICAL;
 		}
 		return false;
@@ -415,24 +455,31 @@ bool Parser::parse_target(
 		throw ERROR_LOGICAL;
 	}
 
-	shared_ptr <const Place_Target> place_target=
-		std::make_shared <Place_Target>
-		(flags_type, *target_name, place_of_target);
+	shared_ptr <const Plain_Dep> target= std::make_shared <Plain_Dep>
+		(flags, places, Place_Target(
+			flags & F_TARGET_PHONY, *target_name, place_of_target));
+
+	if (flags & F_TARGET_PHONY && flag_token) {
+		flag_token->place << fmt("flag %s cannot be used", show(flag_token));
+		place_of_target << fmt("before phony target %s", show(target));
+		explain_target_flags();
+		throw ERROR_LOGICAL;
+	}
 
 	if (! place_output_new.empty()) {
 		if (! place_output.empty()) {
 			place_output_new <<
 				fmt("there must not be a second output redirection %s",
-					show_prefix(">", *place_target));
+					show_prefix(">", target));
 			assert(place_targets[redirect_index]
-				->place_name.get_n() == 0);
+				->place_target.place_name.get_n() == 0);
 			assert((place_targets[redirect_index]->flags
 					& F_TARGET_PHONY) == 0);
 			place_output <<
 				fmt("shadowing previous output redirection %s",
 					show_prefix
-					(">", place_targets[redirect_index]
-						->unparametrized().get_name_nondynamic()));
+					(">", place_targets[redirect_index]->place_target
+						.unparametrized().get_name_nondynamic()));
 			throw ERROR_LOGICAL;
 		}
 		place_output= place_output_new;
@@ -440,21 +487,18 @@ bool Parser::parse_target(
 		redirect_index= place_targets.size();
 	}
 
-	if (flags_type == F_TARGET_PHONY) {
-		if (! place_output_new.empty()) {
-			place_target->place <<
-				fmt("phony target %s is invalid", show(*place_target));
-			place_output_new <<
-				fmt("after output redirection using %s",
-					show_operator('>'));
-			throw ERROR_LOGICAL;
-		}
+	if (flags & F_TARGET_PHONY && ! place_output_new.empty()) {
+		target->place <<
+			fmt("phony target %s is invalid", show(target));
+		place_output_new <<
+			fmt("after output redirection using %s",
+				show_operator('>'));
+		throw ERROR_LOGICAL;
 	}
-	if (target_first == nullptr) {
-		target_first= place_target;
-	}
+	if (target_first == nullptr)
+		target_first= target;
 
-	place_targets.push_back(place_target);
+	place_targets.push_back(target);
 	return true;
 }
 
@@ -462,7 +506,7 @@ bool Parser::parse_expression_list(
 	std::vector <shared_ptr <const Dep> > &ret,
 	Place_Name &place_name_input,
 	Place &place_input,
-	const std::vector <shared_ptr <const Place_Target> > &targets)
+	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
 	assert(ret.size() == 0);
 
@@ -485,7 +529,7 @@ bool Parser::parse_expression(
 	shared_ptr <const Dep> &ret,
 	Place_Name &place_name_input,
 	Place &place_input,
-	const std::vector <shared_ptr <const Place_Target> > &targets)
+	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
 	assert(ret == nullptr);
 
@@ -512,8 +556,7 @@ bool Parser::parse_expression(
 					fmt("expected a dependency, not %s",
 					    show(*iter));
 			}
-			place_flag << fmt("after flag %s",
-					  show_prefix("-", frmt("%c", flag_token.flag)));
+			place_flag << fmt("after flag %s", show(flag_token));
 			throw ERROR_LOGICAL;
 		}
 
@@ -521,19 +564,22 @@ bool Parser::parse_expression(
 		 * the same time.  Note: Input redirection must not appear in
 		 * dynamic dependencies, and therefore it is sufficient to check
 		 * this here. */
-		if (! place_name_input.place.empty() && flag_token.flag == 'o') {
+		if (! place_name_input.place.empty() &&
+			flag_token.flag == flags_chars[I_OPTIONAL])
+		{
 			place_input <<
 				fmt("input redirection using %s must not be used",
 					show_operator('<'));
 			place_flag <<
 				fmt("in conjunction with optional dependency flag %s",
-				    show_prefix("-", "o"));
+					show(Flag_View(flags_chars[I_OPTIONAL])));
 			throw ERROR_LOGICAL;
 		}
 
 		/* Add the flag */
 		if (! ((i_flag == I_OPTIONAL && option_g) ||
-		       (i_flag == I_TRIVIAL  && option_a))) {
+		       (i_flag == I_TRIVIAL  && option_a)))
+		{
 			shared_ptr <Dep> ret_new= ret->clone();
 			ret_new->flags |= (1 << i_flag);
 			assert(i_flag < C_WORD);
@@ -559,7 +605,7 @@ bool Parser::parse_expression(
 shared_ptr <const Dep> Parser::parse_compound_dep(
 	Place_Name &place_name_input,
 	Place &place_input,
-	const std::vector <shared_ptr <const Place_Target> > &targets)
+	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
 	if (! is_operator('('))
 		return nullptr;
@@ -617,7 +663,7 @@ shared_ptr <const Dep> Parser::parse_compound_dep(
 shared_ptr <const Dep> Parser::parse_dynamic_dep(
 	Place_Name &place_name_input,
 	Place &place_input,
-	const std::vector <shared_ptr <const Place_Target> > &targets)
+	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
 	if (! is_operator('['))
 		return nullptr;
@@ -680,7 +726,7 @@ shared_ptr <const Dep> Parser::parse_dynamic_dep(
 shared_ptr <const Dep> Parser::parse_variable_dep(
 	Place_Name &place_name_input,
 	Place &place_input,
-	const std::vector <shared_ptr <const Place_Target> > &targets)
+	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
 	bool has_input= false;
 	shared_ptr <const Dep> ret;
@@ -705,22 +751,25 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 		places_flags[i].clear();
 	Place place_flag_last;
 	shared_ptr <Flag_Token> flag_token_last;
-	while (is_flag('p') || is_flag('o') || is_flag('t')) {
+	while (is_flag(flags_chars[I_PERSISTENT]) ||
+		is_flag(flags_chars[I_OPTIONAL]) ||
+		is_flag(flags_chars[I_TRIVIAL]))
+	{
 		flag_token_last= is <Flag_Token> ();
 		place_flag_last= (*iter)->get_place();
-		if (is_flag('p')) {
+		if (is_flag(flags_chars[I_PERSISTENT])) {
 			flags |= F_PERSISTENT;
 			places_flags[I_PERSISTENT]= place_flag_last;
-		} else if (is_flag('o')) {
+		} else if (is_flag(flags_chars[I_OPTIONAL])) {
 			/* If the nonoptional (-g) option is set, ignore the -o flag */
 			if (! option_g) {
 				(*iter)->get_place() <<
 					fmt("optional dependency using %s must not appear",
-					    show_prefix("-", "o"));
+						show(Flag_View('o')));
 				place_dollar << "within dynamic variable declaration";
 				throw ERROR_LOGICAL;
 			}
-		} else if (is_flag('t')) {
+		} else if (is_flag(flags_chars[I_TRIVIAL])) {
 			if (! option_a) {
 				flags |= F_TRIVIAL;
 				places_flags[I_TRIVIAL]= place_flag_last;
@@ -820,10 +869,8 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 
 	/* The place of the variable dependency as a whole is set on the name contained in
 	 * it.  It would be conceivable to also set it on the dollar sign. */
-	ret= std::make_shared <Plain_Dep>
-		(flags, places_flags,
-		 Place_Target(0, *place_name, place_name->place),
-		 variable_name);
+	ret= std::make_shared <Plain_Dep> (flags, places_flags,
+		Place_Target(0, *place_name, place_name->place), variable_name);
 
 	if (has_input && ! place_name_input.empty()) {
 		place_name->place <<
@@ -834,10 +881,10 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 			    show_prefix("<", place_name_input));
 		if (targets.size() == 1) {
 			targets.front()->place <<
-				fmt("for target %s", show(*targets.front()));
+				fmt("for target %s", show(targets.front()));
 		} else if (targets.size() > 1) {
 			targets.front()->place <<
-				fmt("for targets %s...", show(*targets.front()));
+				fmt("for targets %s...", show(targets.front()));
 		}
 		throw ERROR_LOGICAL;
 	}
@@ -848,7 +895,7 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 
 shared_ptr <const Dep> Parser::parse_redirect_dep(
 	Place_Name &place_name_input, Place &place_input,
-	const std::vector <shared_ptr <const Place_Target> > &targets)
+	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
 	(void) targets;
 	bool has_input= false;
@@ -923,8 +970,8 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 	Flags phony_bit= has_phony ? F_TARGET_PHONY : 0;
 	shared_ptr <const Dep> ret= std::make_shared <Plain_Dep>
 		(flags | phony_bit,
-		 Place_Target(phony_bit, *name_token,
-			      has_phony ? place_at : name_token->place));
+			Place_Target(phony_bit, *name_token,
+				has_phony ? place_at : name_token->place));
 
 	if (has_input && ! place_name_input.empty()) {
 		name_token->place <<
@@ -935,10 +982,10 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 			    show_prefix("<", place_name_input));
 		if (targets.size() == 1) {
 			targets.front()->place <<
-				fmt("for target %s", show(*targets.front()));
+				fmt("for target %s", show(targets.front()));
 		} else if (targets.size() > 1) {
 			targets.front()->place <<
-				fmt("for targets %s...", show(*targets.front()));
+				fmt("for targets %s...", show(targets.front()));
 		}
 		throw ERROR_LOGICAL;
 	}
@@ -996,7 +1043,7 @@ void Parser::get_rule_list(
 	std::vector <shared_ptr <Rule> > &rules,
 	std::vector <shared_ptr <Token> > &tokens,
 	const Place &place_end,
-	shared_ptr <const Place_Target> &target_first)
+	shared_ptr <const Plain_Dep> &target_first)
 {
 	TRACE_FUNCTION();
 	auto iter= tokens.begin();
@@ -1019,7 +1066,7 @@ void Parser::get_expression_list(
 {
 	auto iter= tokens.begin();
 	Parser parser(tokens, iter, place_end);
-	std::vector <shared_ptr <const Place_Target>> targets;
+	std::vector <shared_ptr <const Plain_Dep>> targets;
 	parser.parse_expression_list(deps, input, place_input, targets);
 	if (iter != tokens.end()) {
 		(*iter)->get_place_start()
@@ -1072,11 +1119,10 @@ void Parser::get_expression_list_delim(
 			fclose(file);
 			place << "filename must not be empty";
 			printer <<
-				fmt("in %s-separated dynamic dependency %s "
-				    "declared with flag %s",
-				    c == '\0' ? "zero" : "newline",
-				    show(filename),
-				    show_prefix("-", frmt("%c", c_printed)));
+				fmt("in %s-separated dynamic dependency %s declared with flag %s",
+					c == '\0' ? "zero" : "newline",
+					show(filename),
+					show(Flag_View(c_printed)));
 			throw ERROR_LOGICAL;
 		}
 
@@ -1089,11 +1135,10 @@ void Parser::get_expression_list_delim(
 				     show(filename_dep),
 				     show_text(string(1, '\0')));
 			printer <<
-				fmt("in %s-separated dynamic dependency %s "
-				    "declared with flag %s",
-				    c == '\0' ? "zero" : "newline",
-				    show(filename),
-				    show_prefix("-", frmt("%c", c_printed)));
+				fmt("in %s-separated dynamic dependency %s declared with flag %s",
+					c == '\0' ? "zero" : "newline",
+					show(filename),
+					show(Flag_View(c_printed)));
 			throw ERROR_LOGICAL;
 		}
 		if (c == '\0') {
@@ -1169,8 +1214,7 @@ void Parser::get_target_arg(std::vector <shared_ptr <const Dep> > &deps,
 				}
 				if (! Tokenizer::is_flag_char(*p)) {
 					if (isalnum(*p)) {
-						place << fmt("invalid flag %s",
-							     show_prefix("-", frmt("%c", *p)));
+						place << fmt("invalid flag %s", show(Flag_View(*p)));
 					} else {
 						place << fmt("expected a flag character after dash %s, not %s",
 							     show_operator('-'),
@@ -1233,7 +1277,7 @@ void Parser::get_file(
 	const char *filename,
 	int file_fd,
 	Rule_Set &rule_set,
-	shared_ptr <const Place_Target> &target_first,
+	shared_ptr <const Plain_Dep> &target_first,
 	Place &place_first)
 {
 	assert(file_fd == -1 || file_fd > 1);
@@ -1266,9 +1310,10 @@ void Parser::get_file(
 	}
 }
 
-void Parser::get_string(const char *s,
-			Rule_Set &rule_set,
-			shared_ptr <const Place_Target> &target_first)
+void Parser::get_string(
+	const char *s,
+	Rule_Set &rule_set,
+	shared_ptr <const Plain_Dep> &target_first)
 {
 	std::vector <shared_ptr <Token> > tokens;
 	Place place_end;
@@ -1303,7 +1348,7 @@ void Parser::add_deps_option_C(
 
 void Parser::parse_rule_list(
 	std::vector <shared_ptr <Rule> > &ret,
-	shared_ptr <const Place_Target> &target_first)
+	shared_ptr <const Plain_Dep> &target_first)
 {
 	assert(ret.size() == 0);
 	while (iter != tokens.end()) {

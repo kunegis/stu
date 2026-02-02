@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Test that both lists of options are the same.
+# Test that all lists of options are the same.
 #
 
 ret=0

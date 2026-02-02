@@ -1,0 +1,2 @@
+A: B { echo CORRECT >A ; }
+-o -o B { exit 99 ; }

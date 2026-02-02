@@ -21,7 +21,7 @@ Root_Executor::Root_Executor(const std::vector <shared_ptr <const Dep> > &deps)
 
 Proceed Root_Executor::execute(shared_ptr <const Dep> dep_link)
 {
-	TRACE_FUNCTION();
+	TRACE_FUNCTION(show_trace(dep_link));
 	TRACE("is_finished= %s", frmt("%d", is_finished));
 
 	Proceed proceed_A= execute_phase_A(dep_link);

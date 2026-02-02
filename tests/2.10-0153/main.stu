@@ -1,0 +1,1 @@
+A: -o B; -p B; # Error because -p and -o cannot be used together

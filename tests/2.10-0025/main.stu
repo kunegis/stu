@@ -1,0 +1,20 @@
+A: list.prep B
+{
+	touch A
+}
+
+list.prep
+{
+	../../sh/touch_old B
+	touch X Y list.prep
+}
+
+B: Y
+{
+	exit 77
+}
+
+-p Y X
+{
+	exit 77
+}

@@ -79,10 +79,11 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				place << "expected a non-empty argument";
 				exit(ERROR_FATAL);
 			}
+			int index= flag_get_index(c);
 			Place places[C_PLACED];
-			places[c == 'p' ? I_PERSISTENT : I_OPTIONAL]= place;
+			places[index]= place;
 			deps.push_back(std::make_shared <Plain_Dep>
-				(c == 'p' ? F_PERSISTENT : F_OPTIONAL, places,
+				(1 << flag_get_index(c), places,
 					Place_Target(0, Place_Name(optarg, place))));
 			break;
 		}
@@ -103,7 +104,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 	if (option_i && option_parallel) {
 		Place(Place::Type::OPTION, 'i')
 			<< fmt("parallel mode using %s cannot be used in interactive mode",
-				show_prefix("-", "j"));
+				show(Flag_View('j')));
 		exit(ERROR_FATAL);
 	}
 
@@ -179,10 +180,10 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			}
 			exit(ERROR_FATAL);
 		}
-		if (target_first->place_name.is_parametrized()) {
+		if (target_first->place_target.place_name.is_parametrized()) {
 			target_first->place <<
 				fmt("the first target %s must not be parametrized if no target is given",
-					show(*target_first));
+					show(target_first));
 			exit(ERROR_FATAL);
 		}
 		deps.push_back(std::make_shared <Plain_Dep> (*target_first));

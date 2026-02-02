@@ -1,0 +1,2 @@
+main: target;
+-p -o target {}

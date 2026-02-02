@@ -40,8 +40,9 @@ enum
 
 	/* Counts */
 	C_ALL,
-	C_PLACED    = 3,  /* Flags for which we store a place in Dep */
-	C_WORD      = 9,  /* Flags used for caching; stored in Hash_Dep */
+	C_TARGET_PLACED = 2, /* Flags that can appear before a target of a rule */
+	C_PLACED        = 3, /* Flags for which we store a place in Dep */
+	C_WORD          = 9, /* Flags used for caching; stored in Hash_Dep */
 
 	/*
 	 * Flag bits to be ORed together
@@ -90,9 +91,8 @@ enum
 	F_PHASE_B               = 1 << I_PHASE_B,
 	/* A parent is in phase B */
 
-	/*
-	 * Aggregates
-	 */
+	/* Aggregates */
+	F_TARGET_PLACED = (1 << C_TARGET_PLACED) - 1,
 	F_PLACED        = (1 << C_PLACED) - 1,
 	F_WORD          = (1 << C_WORD) - 1,
 	F_TARGET        = F_TARGET_DYNAMIC | F_TARGET_PHONY,
@@ -100,10 +100,20 @@ enum
 	F_RESULT        = F_RESULT_NOTIFY | F_RESULT_COPY,
 };
 
-extern const char flags_chars[];
+constexpr const char flags_chars[]= "pot[@$n0C<*%B";
+static_assert(sizeof(flags_chars) == C_ALL + 1, "Keep in sync with Flags");
 extern const char *flags_phrases[C_PLACED];
 
 unsigned flag_get_index(char c);
+
+class Flag_View
+{
+public:
+	char c;
+	Flag_View(char c_): c(c_) {}
+};
+
+void render(Flag_View, Parts &, Rendering= 0);
 
 #ifndef NDEBUG
 

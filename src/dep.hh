@@ -33,7 +33,7 @@
 #include "flags.hh"
 #include "hints.hh"
 #include "options.hh"
-#include "show.hh"
+#include "place.hh"
 
 template <typename T, typename U>
 shared_ptr <const T> to(shared_ptr <const U> d)
@@ -42,9 +42,9 @@ shared_ptr <const T> to(shared_ptr <const U> d)
 }
 
 template <typename T, typename U>
-shared_ptr <const T> to(shared_ptr <U> d)
+shared_ptr <T> to(shared_ptr <U> d)
 {
-	return std::dynamic_pointer_cast <const T> (d);
+	return std::dynamic_pointer_cast <T> (d);
 }
 
 class Dep

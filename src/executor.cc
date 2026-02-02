@@ -13,7 +13,7 @@
 #include "root_executor.hh"
 #include "tokenizer.hh"
 #include "trace.hh"
-#include "trace_dep.hh"
+#include "show_dep.hh"
 #include "trace_executor.hh"
 #include "transitive_executor.hh"
 
@@ -44,9 +44,9 @@ void Executor::read_dynamic(
 		if (dep_target->flags & F_VARIABLE) {
 			dep_target->get_place() <<
 				fmt("variable dependency %s must not appear",
-				    ::show(dep_target));
+					::show(dep_target));
 			*this << fmt("within multiply-dynamic dependency %s",
-				     ::show(dep));
+				::show(dep));
 			raise(ERROR_LOGICAL);
 		}
 		if (place_target.flags & F_TARGET_PHONY)
@@ -191,7 +191,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 	auto it= executors_by_hash_dep.find(target_for_cache);
 
 	if (it != executors_by_hash_dep.end()) {
-		TRACE("Already exists");
+		TRACE("Executor already exists");
 		executor= it->second;
 		if (executor->parents.count(this)) {
 			TRACE("Already connected");
@@ -216,13 +216,12 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 				executor->parents[this]= dep;
 			}
 		} else {
-			TRACE("Not yet connected");
+			TRACE("Not yet connected; add connection");
 			if (Cycle::find(this, executor, dep)) {
 				TRACE("File-level cycle found");
 				raise(ERROR_LOGICAL);
 				return nullptr;
 			}
-			/* The parent and child are not connected -- add the connection */
 			executor->parents[this]= dep;
 		}
 		return executor;
@@ -237,6 +236,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		shared_ptr <const Rule> rule_child, param_rule_child;
 		std::map <string, string> mapping_parameter;
 		bool use_file_executor= false;
+		shared_ptr <const Plain_Dep> target_plain_dep;
 		try {
 			Hash_Dep hash_dep_without_flags= hash_dep;
 			hash_dep_without_flags.get_front_word_nondynamic()
@@ -244,7 +244,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			rule_child= rule_set.get(
 				hash_dep_without_flags,
 				param_rule_child, mapping_parameter,
-				dep->get_place());
+				dep->get_place(), target_plain_dep);
 		} catch (int e) {
 			assert(e);
 			error_additional= e;
@@ -263,10 +263,22 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		} else if (rule_child->command) {
 			use_file_executor= true;
 		} else {
-			for (auto &i: rule_child->place_targets) {
+			for (auto &i: rule_child->targets) {
 				if ((i->flags & F_TARGET_PHONY) == 0)
 					use_file_executor= true;
 			}
+		}
+
+		if (target_plain_dep) {
+			TRACE("Adding target_plain_dep");
+			shared_ptr <Dep> dep_new= dep->clone();
+			for (int i= 0; i < C_TARGET_PLACED; ++i) {
+				if ((target_plain_dep->flags & (1 << i)) == 0) continue;
+				if (dep_new->flags & (1 << i)) continue;
+				dep_new->flags |= 1 << i;
+				dep_new->places[i]= target_plain_dep->places[i];
+			}
+			dep= dep_new;
 		}
 
 		if (use_file_executor) {
@@ -281,7 +293,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 				 error_additional);
 		}
 	} else {
-		executor= new Dynamic_Executor(to <Dynamic_Dep> (dep), this, error_additional);
+		executor= new Dynamic_Executor(
+			to <Dynamic_Dep> (dep), this, error_additional);
 	}
 
 	if (error_additional) {
@@ -607,7 +620,7 @@ const Place &Executor::get_place() const
 
 Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 {
-	TRACE_FUNCTION(show_trace(*this));
+	TRACE_FUNCTION(show_trace(dep_link));
 	assert(options_jobs > 0);
 	assert(dep_link);
 	if (finished(dep_link->flags)) {
@@ -789,26 +802,6 @@ Proceed Executor::connect(
 	assert(! to <Root_Dep> (dep_child));
 	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);
 
-	/* '-p' and '-o' do not mix */
-	if (dep_child->flags & F_PERSISTENT && dep_child->flags & F_OPTIONAL) {
-		assert(! to <Root_Dep> (dep_this));
-		const Place &place_persistent= dep_child->get_place_flag(I_PERSISTENT);
-		const Place &place_optional= dep_child->get_place_flag(I_OPTIONAL);
-		place_persistent <<
-			fmt("declaration of persistent dependency using %s",
-			    show_prefix("-", "p"));
-		place_optional <<
-			fmt("clashes with declaration of optional dependency using %s",
-			    show_prefix("-", "o"));
-		dep_child->get_place() <<
-			fmt("in declaration of %s, needed by %s",
-			    show(dep_child), show(dep_this->get_target()));
-		*this << "";
-		explain_clash();
-		raise(ERROR_LOGICAL);
-		return P_NOTHING;
-	}
-
 	/* '-o' does not mix with '$[' */
 	if (dep_child->flags & F_VARIABLE && dep_child->flags & F_OPTIONAL) {
 		shared_ptr <const Plain_Dep> plain_dep_child= to <Plain_Dep> (dep_child);
@@ -820,7 +813,7 @@ Proceed Executor::connect(
 			fmt("variable dependency %s must not be declared as optional dependency",
 			    show_dynamic_variable
 			    (plain_dep_child->place_target.place_name.unparametrized()));
-		place_flag << fmt("using %s", show_prefix("-", "o"));
+		place_flag << fmt("using %s", show(Flag_View(flags_chars[I_OPTIONAL])));
 		*this << "";
 		raise(ERROR_LOGICAL);
 		return P_NOTHING;
@@ -835,6 +828,32 @@ Proceed Executor::connect(
 		for (const auto &dependency: child->result[(dep_child->flags & F_PHASE_B) != 0])
 			this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
 	}
+	dep_child= child->parents[this];
+	assert(dep_child);
+	dep_child->check();
+
+	/* '-p' and '-o' do not mix */
+	if (dep_child->flags & F_PERSISTENT && dep_child->flags & F_OPTIONAL) {
+		const Place &place_persistent= dep_child->get_place_flag(I_PERSISTENT);
+		const Place &place_optional= dep_child->get_place_flag(I_OPTIONAL);
+		place_persistent <<
+			fmt("declaration of persistent dependency using %s",
+				show(Flag_View(flags_chars[I_PERSISTENT])));
+		place_optional <<
+			fmt("clashes with declaration of optional dependency using %s",
+				show(Flag_View(flags_chars[I_OPTIONAL])));
+		if (to <Root_Dep> (dep_this)) {
+			dep_child->get_place() << fmt("for target %s", show(dep_child));
+		} else {
+			dep_child->get_place() << fmt("for target %s, needed by %s",
+				show(dep_child), show(dep_this->get_target()));
+			*this << "";
+		}
+		explain_clash();
+		raise(ERROR_LOGICAL);
+		return P_NOTHING;
+	}
+
 	Proceed proceed_child= child->execute(dep_child);
 	TRACE("proceed_child= %s", show(proceed_child));
 	assert(is_valid(proceed_child));

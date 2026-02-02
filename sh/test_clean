@@ -12,6 +12,11 @@ find_source_files()
 	find tests -name EXEC -o -name PRELOAD.cc
 }
 
+clean()
+{
+	rm -f -- "$error_file"
+}
+
 check_test_own_name()
 {
 	ls -1U tests | while IFS= read -r test ; do
@@ -20,11 +25,6 @@ check_test_own_name()
 		grep -E -e '.' >&2 && touch -- "$error_file"
 	done
 	return 0
-}
-
-clean()
-{
-	rm -f -- "$error_file"
 }
 
 check_newline_eof()

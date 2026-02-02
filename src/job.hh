@@ -5,13 +5,14 @@
 #include <string>
 
 #include "error.hh"
+#include "place.hh"
 
 class Job
 /* A child process of Stu that executes the command for a given rule.  An object of this
  * type can execute a job only once. */
 {
 public:
-	Job():  pid(-2) { }
+	Job(): pid(-2) { }
 
 	bool waited(int status, pid_t pid_check);
 	/* Called after having returned this process from wait_do().  Return TRUE if the

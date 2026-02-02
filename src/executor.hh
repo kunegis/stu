@@ -45,6 +45,7 @@
 #include "bits.hh"
 #include "buffer.hh"
 #include "job.hh"
+#include "place.hh"
 #include "proceed.hh"
 #include "rule.hh"
 #include "timestamp.hh"
@@ -142,7 +143,8 @@ protected:
 	/* This is a map rather than an unsorted_map because typically, the number of
 	 * elements is always very small, i.e., mostly one, and a map is better suited in
 	 * this case.  The map is sorted, but by the executor pointer, i.e., the sorting
-	 * is arbitrary as far as Stu is concerned. */
+	 * is arbitrary as far as Stu is concerned.  The dependencies contain flags
+	 * declared on targets of rules. */
 
 	std::set <Executor *> children;
 

@@ -1,5 +1,7 @@
 #include "terminate_jobs.hh"
 
+#include "file_executor.hh"
+
 void terminate_jobs(bool asynch)
 /* [ASYNC-SIGNAL-SAFE] If ASYNCH, we use only async signal-safe functions */
 {

@@ -1,0 +1,2 @@
+A: target { echo CORRECT >A ; }
+-o >target { exit 77 ; }

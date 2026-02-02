@@ -1,0 +1,14 @@
+# Works, C is not built
+
+A: -o [B]
+{
+	[ -e C ] && exit 77
+	touch A
+}
+
+B = {C}
+
+-o C
+{
+	exit 77
+}

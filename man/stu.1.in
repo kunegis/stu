@@ -327,48 +327,6 @@ When building 'X.txt' in this example, only the second rule is called:
     $name.txt: {  echo "$name" is the best >"$name.txt" }
     X.txt:  { echo X sucks >X.txt }
 
-Persistent dependencies:  In the following example, the
-directory 'data' is a persistent dependency, i.e. 'data' is only
-built when it does not exist, but it is never re-built.  A
-persistent dependency is indicated by the
-.BR -p
-flag.  This is
-useful for directories, whose timestamps change when files are
-created/removed in them.
-
-    data/file:  -p data {
-        echo Hello >data/file
-    }
-    data: { mkdir data }
-
-Optional dependencies can be declared with the
-.BR -o
-flag.  An optional
-dependency will never be built if it does not already exist.  If it
-already exists, then its own rule is used (and its date checked) to
-decide whether it should be rebuilt.
-
-    target:  -o input {
-        if [ -r input ] ; then
-            cp input target
-        else
-            echo Hello >target
-        fi
-    }
-
-Trivial dependencies are denoted with the
-.BR -t
-flag.  They denote a
-dependency that should never cause a target to be rebuilt, but if the
-target is rebuilt for another reason, then they are treated like normal
-dependencies.  Trivial dependencies don't even cause a target to be
-rebuilt if they don't exist.
-Trivial dependencies are typically used for
-configuration, i.e., for the setting up configuration of application.
-Trivial dependencies are not allowed if the rule has no command.
-
-    target:  -t input { ... }
-
 Variable dependency:  the content of variables can come from files.
 In the following example, the C flags are stored in the file 'CFLAGS',
 and used in the compilation command using the $[CFLAGS] dependency.
@@ -379,13 +337,6 @@ and used in the compilation command using the $[CFLAGS] dependency.
     }
     CFLAGS: { echo -Wall -Werror >CFLAGS }
 
-Variable dependencies may be declared as persistent as in
-.B $[-p X]
-and as trivial as in
-.B $[-t X]
-but not as optional using the
-.B -o
-flag.
 By default, the name of the variable set is the same as the filename.
 Another variable name can be used in the following way:
 
@@ -456,18 +407,6 @@ Stu uses the
 option when calling the shell; this means that any
 failing command will make the whole target fail.
 
-The standard input is redirected from /dev/null, except when an explicit input
-redirection is specified using '<'.  Thus, commands executed from within
-Stu cannot read from standard input, except when the
-.BR -i
-option is used.
-Stu starts each job in its own process group, whose process group ID is
-equal to its process ID.  This allows Stu to kill all (direct and
-indirect) child processes of jobs, by using
-.BR kill (2)
-to terminate all
-processes in the corresponding process group.
-
 When the command of a file is replaced by a semicolon, this means that the file is
 always built together with its dependencies:
 
@@ -502,13 +441,6 @@ target, this effectively creates an alias for the file targets.
     TARGET... [ : DEPENDENCY ... ] { COMMAND }
     TARGET... [ : DEPENDENCY ... ] ;
 
-The operator '>' can be used in front of the target name to indicate
-that the output of the command should be redirected into the target
-file.  As an example, the following rule creates the file 'HEADERS'
-containing the output of the given 'echo' command:
-
-    >HEADERS { echo *.h }
-
 For a file target, content can be specified directly using the '='
 operator:
 
@@ -516,23 +448,6 @@ operator:
 
 The content is stripped of empty lines and common whitespace at the
 beginning of lines, and written into the file.
-
-Using the equal sign with a file name creates a copy rule, i.e., the
-given file is copied with the 'cp' command:
-
-    TARGET = [ -p | -o ] SOURCE;
-
-By default, Stu will use '/bin/cp' to perform the copy.  This can be
-changed by setting the variable $STU_CP.  If source ends in a slash
-(outside of any parameter value), then Stu will look for a file with the
-same basename as TARGET in the directory SOURCE.  If the persistent flag
-.BR -p
-is used, the timestamp of the source file is not verified, only
-its existence.  If the optional flag
-.BR -o
-is used, it is not an error if
-the target exists and not the source:  in that case the target is
-considered up to date.  Both flags must not be used simultaenously.
 
 A dependency can be one of the following:
 
@@ -546,32 +461,6 @@ date.
 
 A phony target.  They represent a distinct namespace from files, and
 thus their command do not create files.
-
-    -p NAME   A persistent dependency
-
-Stu will only check whether the dependency exists, but not its modification time for
-determining whether the target has to be rebuilt.  (If the file itself is the target of a
-rule, the modification time of the dependency will be taken into account while building
-the file.)  This is mostly useful for directories, as the modification time of directories
-is updated whenever files are added or removed in the directory.
-
-    -o NAME   An optional dependency
-
-Optional dependencies are never built if they don't exist.  If they
-exist, they are treated like normal dependencies and their date is taken
-into account for determining whether the target has to be rebuilt.
-
-A dependency cannot be declared as persistent and optional at the
-same time, as that would imply that its command is never executed.
-
-    -t NAME   A trivial dependency
-
-A trivial dependency will never cause the target to be rebuilt.
-However, if the target is rebuilt for another reason, then the trivial
-dependency will be rebuilt itself.  This is mostly useful for
-configuration files that are generated automatically, including the case
-of files containing the flags used to invoke compilers and other
-programs.
 
     '[' ['-n' | '-0' | '-C'] NAME ']'  A dynamic dependency
 
@@ -612,21 +501,106 @@ command.
 Groups of dependencies can be enclosed in parentheses.
 Parentheses may not contain variable dependencies (i.e., something like
 '$[NAME]').
-The flags
+
+Both parentheses and brackets may be nested:
+
+    ((A)) # Equivalent to A
+    [[A]] # Read out dependencies from all files given in the file 'A'.
+
+.SH "FLAGS"
+
+Targets and dependencies can be annotated with flags.  Flags have syntax similar to
+options on the command line, and change the way Stu handles files.
+
+Persistent dependencies:  In the following example, the
+directory 'data' is a persistent dependency, i.e. 'data' is only
+built when it does not exist, but it is never re-built.  A
+persistent dependency is indicated by the
 .BR -p
-and
+flag.  This is
+useful for directories, whose timestamps change when files are
+created/removed in them.
+
+    data/file:  -p data {
+        echo Hello >data/file
+    }
+    data: { mkdir data }
+
+Optional dependencies can be declared with the
 .BR -o
-can be applied to a group of dependencies given in
-parentheses:
+flag.  An optional
+dependency will never be built if it does not already exist.  If it
+already exists, then its own rule is used (and its date checked) to
+decide whether it should be rebuilt.
+
+    target:  -o input {
+        if [ -r input ] ; then
+            cp input target
+        else
+            echo Hello >target
+        fi
+    }
+
+Trivial dependencies are denoted with the
+.BR -t
+flag.  They denote a
+dependency that should never cause a target to be rebuilt, but if the
+target is rebuilt for another reason, then they are treated like normal
+dependencies.  Trivial dependencies don't even cause a target to be
+rebuilt if they don't exist.
+Trivial dependencies are typically used for
+configuration, i.e., for the setting up configuration of application.
+Trivial dependencies are not allowed if the rule has no command.
+
+    target:  -t input { ... }
+
+Variable dependencies may be declared as persistent as in
+.B $[-p X]
+and as trivial as in
+.B $[-t X]
+but not as optional using the
+.B -o
+flag.
+
+    -p NAME   A persistent dependency
+
+Stu will only check whether the dependency exists, but not its modification time for
+determining whether the target has to be rebuilt.  (If the file itself is the target of a
+rule, the modification time of the dependency will be taken into account while building
+the file.)  This is mostly useful for directories, as the modification time of directories
+is updated whenever files are added or removed in the directory.
+
+    -o NAME   An optional dependency
+
+Optional dependencies are never built if they don't exist.  If they
+exist, they are treated like normal dependencies and their date is taken
+into account for determining whether the target has to be rebuilt.
+
+A dependency cannot be declared as persistent and optional at the
+same time, as that would imply that its command is never executed.
+
+Targets of rules can have the flags
+.BR -p
+(persistent dependency) and
+.BR -o
+(optional dependency).  In that case, the target will always be considered persistent or
+optional.
+
+    -t NAME   A trivial dependency
+
+A trivial dependency will never cause the target to be rebuilt.
+However, if the target is rebuilt for another reason, then the trivial
+dependency will be rebuilt itself.  This is mostly useful for
+configuration files that are generated automatically, including the case
+of files containing the flags used to invoke compilers and other
+programs.
+
+Flags can be applied to a group of dependencies given in parentheses:
 
     -p ( ... )
     -o ( ... )
 
-The flags
-.BR -p
-and
-.BR -o
-can be applied to dynamic dependencies:
+Flags can also be applied to dynamic dependencies:
 
     -p [ ... ]
     -o [ ... ]
@@ -634,10 +608,69 @@ can be applied to dynamic dependencies:
 in which case all resulting dynamic dependencies will be flagged as
 optional or persistent.
 
-Both parentheses and brackets may be nested:
+The flags
+.BR -n/-0/-C
+can be used on files used as dynamic dependencies to specify how the file is parsed.
 
-    ((A)) # Equivalent to A
-    [[A]] # Read out dependencies from all files given in the file 'A'.
+    [ -n FILE ]    # File contains one filename per line
+    [ -0 FILE ]    # File contains \\0-separated filenames
+    [ -C FILE ]    # File contains dependencies in full Stu syntax (default)
+
+.SH "COPY RULES"
+
+Using the equal sign with a file name creates a copy rule, i.e., the
+given file is copied with the 'cp' command:
+
+    TARGET = [ -p | -o ] SOURCE;
+
+By default, Stu will use '/bin/cp' to perform the copy.  This can be
+changed by setting the variable $STU_CP.  If source ends in a slash
+(outside of any parameter value), then Stu will look for a file with the
+same basename as TARGET in the directory SOURCE.
+
+If the persistent flag
+.BR -p
+is used, the timestamp of the source file is not verified, only
+its existence.  If the optional flag
+.BR -o
+is used, it is not an error if
+the target exists and not the source:  in that case the target is
+considered up to date.  Both flags must not be used simultaenously.
+
+.SH "REDIRECTION"
+
+The operators
+.BR <
+and
+.BR >
+are used for input and output redirection, in a similar way as in the shell.
+
+The operator
+.BR >
+can be used in front of the target name to indicate
+that the output of the command should be redirected into the target
+file.  As an example, the following rule creates the file 'HEADERS'
+containing the output of the given 'echo' command:
+
+    >HEADERS { echo *.h }
+
+Only a single target may be annotated with the
+.BR >
+operator, and when flags are used, they must preceded the output operator.
+
+    >A B { ... } # Output into file 'A'; 'B' is also built by the command
+    -o >A { ... } # Output into file 'A', which is optional
+
+A file dependency can be annotated with the
+.BR <
+operator to redirect standard input from the given file to the command.
+Only a single file can be used for input redirection.
+If no input redirection is specified,
+standard input for the command is redirected from /dev/null (when option
+.BR -i
+is not used) and from Stu'd stdin (when
+.BR -i
+is used).
 
 .SH "CONCATENATION"
 
@@ -985,6 +1018,14 @@ Stu sees the new file and considers it as up to date, even though it was
 only partially created.  Thus, commands in Stu do not need to make sure
 they delete any output files when they fail.  This behavior is
 equivalent to that in Make.
+
+.SH "JOB CONTROL"
+
+Stu starts each job in its own process group, whose process group ID is
+equal to its process ID.  This allows Stu to kill all (direct and
+indirect) child processes of jobs, by using
+.BR kill (2)
+to terminate all processes in the corresponding process group.
 
 .SH "EXIT STATUS"
 .IP 0

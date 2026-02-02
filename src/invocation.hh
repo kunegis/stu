@@ -1,6 +1,9 @@
 #ifndef INVOCATION_HH
 #define INVOCATION_HH
 
+#include "dep.hh"
+#include "place.hh"
+
 class Invocation
 {
 public:
@@ -14,8 +17,8 @@ private:
 
 	std::vector <shared_ptr <const Dep> > deps;
 
-	shared_ptr <const Place_Target> target_first;
-	/* Set to the first rule when there is one */
+	shared_ptr <const Plain_Dep> target_first;
+	/* Set to the first target of the first rule when there is one */
 
 	Place place_first; /* Place of first file when no rule is contained */
 

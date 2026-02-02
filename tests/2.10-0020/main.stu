@@ -1,0 +1,21 @@
+A:  B C
+{
+	cp C A
+}
+
+B: Y
+{
+	[ -e Y ] && exit 77
+	touch B
+}
+
+C: X
+{
+	cp X C
+}
+
+X -o Y
+{
+	echo CORRECT >X
+	touch Y
+}

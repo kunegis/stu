@@ -1,0 +1,4 @@
+A: B { cp B A ; }
+
+# Not useful because B doesn't have dependencies, but allowed
+-p B = {CORRECT}

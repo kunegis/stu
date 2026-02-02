@@ -5,14 +5,14 @@
 #include "color.hh"
 #include "format.hh"
 #include "trace.hh"
-#include "trace_dep.hh"
+#include "show_dep.hh"
 
 void Dep::normalize(
 	std::vector <shared_ptr <const Dep> > &deps,
 	int &error) const
 {
 	shared_ptr <const Dep> _this= shared_from_this();
-	TRACE_FUNCTION(show(_this));
+	TRACE_FUNCTION(show_trace(_this));
 	if (to <Plain_Dep> (_this)) {
 		deps.push_back(_this);
 	} else if (shared_ptr <const Dynamic_Dep> dynamic_dep= to <Dynamic_Dep> (_this)) {
@@ -30,9 +30,9 @@ void Dep::normalize(
 		}
 	} else if (shared_ptr <const Compound_Dep> compound_dep=
 		to <Compound_Dep> (_this)) {
-		TRACE("compound_dep= %s", show(compound_dep));
+		TRACE("compound_dep= %s", show_trace(compound_dep));
 		for (auto &d:  compound_dep->deps) {
-			TRACE("d= %s", show(d));
+			TRACE("d= %s", show_trace(d));
 			shared_ptr <Dep> dd= d->clone();
 			dd->add_flags(compound_dep, false);
 			assert(compound_dep->index < 0);
@@ -42,7 +42,7 @@ void Dep::normalize(
 				return;
 		}
 	} else if (auto concat_dep= to <Concat_Dep> (_this)) {
-		TRACE("concat_dep= %s", show(concat_dep));
+		TRACE("concat_dep= %s", show_trace(concat_dep));
 		Concat_Dep::normalize_concat(concat_dep, deps, error);
 		if (error && ! option_k)
 			return;
@@ -379,7 +379,7 @@ void Concat_Dep::normalize_concat(
 	std::vector <shared_ptr <const Dep> > &deps_,
 	int &error)
 {
-	TRACE_FUNCTION(show(dep));
+	TRACE_FUNCTION(show_trace(dep));
 	size_t k_init= deps_.size();
 	normalize_concat(dep, deps_, 0, error);
 	if (error && ! option_k)
@@ -404,7 +404,7 @@ void Concat_Dep::normalize_concat(
 	size_t start_index,
 	int &error)
 {
-	TRACE_FUNCTION(show(dep));
+	TRACE_FUNCTION(show_trace(dep));
 	TRACE("start_index= %s", frmt("%zu", start_index));
 	assert(start_index < dep->deps.size());
 

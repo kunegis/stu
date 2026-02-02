@@ -1,0 +1,2 @@
+main.stu:2:1: expected a filename, not ;
+main.stu:1:2: after flag -o

@@ -126,10 +126,15 @@ private:
 	/* Print a line to stdout for a running job, as output of SIGUSR1.
 	 * Is currently running. */
 
+	bool check_file_target(
+		const Hash_Dep &target,
+		size_t index,
+		shared_ptr <const Dep> dep_link,
+		bool no_execution);
+	/* Return whether we are done */
+
 	void write_content(const char *filename, const Command &command);
-	void check_file_was_built(
-		Hash_Dep hash_dep,
-		shared_ptr <const Place_Target> place_target);
+	void check_file_was_built(Hash_Dep hash_dep, const Place &place);
 	void check_file_target_without_rule(
 		shared_ptr <const Dep> dep,
 		Hash_Dep &hash_dep,

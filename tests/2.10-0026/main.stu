@@ -1,0 +1,20 @@
+A: list.prep B
+{
+	cp B A
+}
+
+list.prep
+{
+	../../sh/touch_old B
+	touch X Y list.prep
+}
+
+B: X
+{
+	echo CORRECT >B
+}
+
+-p Y X
+{
+	exit 77
+}

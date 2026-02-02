@@ -24,7 +24,7 @@ string show(Proceed proceed)
 		if (ret.size()) ret += "|";
 		ret += proceed_names[i];
 	}
-	if (ret.size() == 0) ret += "P_NOTHING";
+	if (ret.size() == 0) ret += "0";
 	return ret;
 }
 

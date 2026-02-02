@@ -1,0 +1,2 @@
+A: B { touch A ; }
+-o B { exit 77 ; }

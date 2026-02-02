@@ -1,0 +1,6 @@
+main.stu:2:2: flag -o cannot be used
+main.stu:2:4: before phony target @all
+Explanation: Only the flags -p and -o can be used before targets of a
+rule.  In that case, the flags will always apply to that target.  Flags
+cannot be used before phony targets.  If a rule has multiple targets,
+each flag only applies to the target immediately following it.

@@ -26,6 +26,11 @@
 #
 
 #
+# Execute "make analyzer".  Not executed yet because it needs too much memory.  The GCC
+# analyzer is not yet ready for C++, but should be in the future.
+#
+
+#
 # Use Assume (C++23).
 #
 
@@ -43,5 +48,5 @@
 #
 
 #
-# Use std::zstring_view once it's standardized.
+# Use std::zstring_view/cstring_view once it's standardized.
 #

@@ -1,15 +1,90 @@
 #
-# Mark this target to always be a persistent dependency
+# strhash() should not be in a .hh file.
 #
 
--p data: { mkdir data ; }
+#
+# Trace:  better configuration.  Make it possible to configure via a single environment
+# variable.
+#
 
-# Alternatively, we may introduce the rule that for directories, the
-# modification date is not used.  (Not a good idea because the date may
-# be useful for directories in some cases.)  (Would also not be
-# backward-compatible.)
+#
+#  In 'stu -P -Y' output, "Rule(" and ")" should not be in bold
+#
 
-# This can also work with other flags.
+#
+# In Stu's sources, think about putting a space before the assignment operator, and
+# removing the space after #!.
+#
+
+#
+# Option -F:  Error messages for which the place is in option -F should not print "Option
+# -F".  Instead, don't print a place.  (Maybe -- discuss)
+#
+
+#
+# In File_Executor::check_file_was_built() when calling stat(), check errno and
+# distinguish between the file being absent and other errors.
+#
+
+#
+# sh/test:  It should not be necessary to set nopreload=1 with VARIANT=sani_undefined;
+# that should be automatic.
+#
+
+#
+# File_Executor::executors_add():  The content of the while loop
+# ("happens_only_on_certain_platforms()") happens only when smallern PIDs are returned --
+# test that case by mocking fork() and related syscalls.  (Take care to unset LD_PRELOAD
+# in child processes.)
+#
+
+#
+# On FreeBSD, "echo '\\-----' outputs to backslashes, but we use it to output one.
+#
+
+#
+# Check why long-1-concatenation-04 takes so much time.  Maybe it has accidential
+# quadratic or exponential behavior?
+#
+
+#
+# Find a way to sleep sub-second amounts in a POSIX script, so that we can make the tests
+# faster.  (Maybe)
+# * There seems to be no way to sleep sub-second amounts on POSIX scripts, so we would
+#   have to compile a separate program for it.
+#
+
+#
+# When the number of parallel jobs is 1 (-j not used or -j1), "stu: terminating all jobs"
+# should not be shown after Control-C.
+#
+
+#
+# Check why "stu -f /dev/zero" hangs on Ubuntu.
+#
+
+#
+# In the manpage, in the option list, make all option names bold, and underline all
+# argument names.  (As done e.g. in the make(1) manpage.)
+#
+
+#
+# Replace all show_*() render_*() functions by *_View classes.  Also, there should be no
+# specialized show() functions; only render().  Only exception is show_trace() [maybe].
+#
+
+#
+# Allow to coalesce flags
+#
+
+A: [-pn B];
+
+-po A: B; # tokenizer allows this, but parser will fail.
+-pt A; # Error: -t not allow for target
+
+#
+# terminate_jobs.cc/.hh:  Other related functions/variables should be moved here.
+#
 
 #
 # Allow to handle symlinks as files in themselves, i.e., check for their
@@ -22,13 +97,8 @@
 A: B C {...}
 B { ln -s ... B ; }
 C:  -L { ln -s ... B ; }
-# (this example is incorrect)
-
-#
-# Make '~' work as the home directory.  Also for ~user/.  '~' is already
-# forbidden as the first character in unquoted names.  Needs a new type for
-# unparsed targets.  This is very similar to supporting environment variables.
-#
+# (this example is incorrect)e
+# * A target must always have -L or never have -L
 
 #
 # Allow access to environment variables via e.g. $(HOME).  Using this is
@@ -38,6 +108,20 @@ C:  -L { ln -s ... B ; }
 #
 # On the other hand, this will be useful after extended inclusion is
 # implemented, to pass paths to Stu libraries.
+#
+
+file = $(CONFIG_DIR)/file;
+$(DIR)/A: ... {} # Can be used in targets
+@check:  -p $(TOOL_HOME); # Check that dirctory exists.
+
+$() # Error
+$(1) # Error
+$(aaa$(bbb)aaa) # Error
+
+#
+# Make '~' work as the home directory.  Also for ~user/.  '~' is already
+# forbidden as the first character in unquoted names.  Needs a new type for
+# unparsed targets.  This is very similar to supporting environment variables.
 #
 
 #
@@ -215,12 +299,6 @@ list.${name|[A-Z].*} # Matches uppercase names
 # Find a good syntax based on Bash/KSH.
 
 #
-# Allow dir/@phony.  Will allow dir/(a b @c @d).
-#
-# a/@b is equivalent to @a/b.
-#
-
-#
 # Priority levels for rules.
 #
 
@@ -261,7 +339,7 @@ A: -e B
 
 #
 # explain.cc/...:  Have codes for errors, and store the explanations in nicer places than
-# in functions in explain.cc.
+# in functions in explain.cc.  Also, do automatic line breaks instead of hand-written ones.
 #
 
 #
@@ -272,14 +350,8 @@ A: -e B
 # Verbose mode with:
 # * ls-like output after each built file
 # * Number of files/targets built / to be built / etc. after each built file
-# * Creation and deletion of executors (although, maybe not)
 # Use option '-v'.
 # Allow to output this into a file.
-#
-
-#
-# Trace:  better configuration.  Make it possible to configure via a single environment
-# variable.
 #
 
 #
@@ -306,10 +378,6 @@ A: -e B
 #
 
 #
-#  In 'stu -P -Y' output, "Rule(" and ")" should not be in bold
-#
-
-#
 # A syntax of the form "-l FILENAME" in Stu, that will log the output of the build into
 # the given file.  This can be part of the targets.  It's similar to >FILENAME, but also
 # outputs the content to the screen, and handles both stdout and stderr.
@@ -317,11 +385,6 @@ A: -e B
 
 #
 # Option to disable check that targets have been created after command is successful.
-#
-
-#
-# In Stu's sources, think about putting a space before the assignment operator, and
-# removing the space after #!.
 #
 
 #
@@ -334,32 +397,6 @@ A: -e B
 # files, which we will never support.
 #
 %include -o FILENAME
-
-#
-# Option -F:  Error messages for which the place is in option -f should not print "Option
-# -F".  Instead, don't print a place.  (Maybe -- discuss)
-#
-
-#
-# Have verbose mode which mostly only shows all the stat calls that Stu makes.
-#
-
-#
-# In File_Executor::check_file_was_built() when calling stat(), check errno and
-# distinguish between the file being absent and other errors.
-#
-
-#
-# sh/test:  It should not be necessary to set nopreload=1 with VARIANT=sani_undefined;
-# that should be automatic.
-#
-
-#
-# File_Executor::executors_add():  The content of the while loop
-# ("happens_only_on_certain_platforms()") happens only when smallern PIDs are returned --
-# test that case by mocking fork() and related syscalls.  (Take care to unset LD_PRELOAD
-# in child processes.)
-#
 
 #
 # bin/stu.debug -F 'A: B C D; B{sleep 2; touch B;} C={ccc} D{touch D;}'
@@ -388,29 +425,8 @@ A: -e B
 #
 
 #
-# On FreeBSD, "echo '\\-----' outputs to backslashes, but we use it to output one.
-#
-
-#
-# Check why long-1-concatenation-04 takes so much time.  Maybe it has accidential
-# quadratic or exponential behavior?
-#
-
-#
 # Runtime checks for tests:  In sh/test, check the runtime for each test individually, and
 # use the usual error mechanism.
-#
-
-#
-# Find a way to sleep sub-second amounts in a POSIX script, so that we can make the tests
-# faster.  (Maybe)
-# * There seems to be no way to sleep sub-second amounts on POSIX scripts, so we would
-#   have to compile a separate program for it.
-#
-
-#
-# When the number of parallel jobs is 1 (-j not used or -j1), "stu: terminating all jobs"
-# should not be shown Control-C.
 #
 
 #
@@ -421,24 +437,50 @@ A: -e B
 #
 
 #
-# Check why "stu -f /dev/zero" hangs on Ubuntu.
-#
-
-#
 # * Add long options: for all randomization options; all non-stable options.
-#
-
-#
-# In the manpage, in the option list, make all option names bold, and underline all
-# argument names.  (As done e.g. in the make(1) manpage.)
-#
-
-#
-# strhash() should not be in a .hh file.
 #
 
 #
 # sh/test:  The check that tests have correct runtime depending on whether they are long
 # or non-long should only be executed in DEBUG mode.  (It should not occur with "make
 # check".)
+#
+
+#
+# For content rules, maybe have an own Executor subclass that checks whether the existing
+# has the same content as the to-be-written content, and if it has, does not touch the old
+# file.  This would make it possible that things are re-built when the content of {...} in
+# the Stu file is changed.
+#
+# This behavior could also be implemented in File_Executor, by querying hashes of each
+# file's content and timestamp before execution, and if after execution the content has
+# not change, revert the timestamps to their old values.  That would be expensive though
+# due to scanning a whole file, and should be disable by default.
+#
+
+#
+# New flag with meaning: Just because B is newer that A, doesn't mean A has to be
+# rebuilt.  ('X' is just and example name, chose something else.)
+#
+
+A: -X B {}
+B {}
+
+#
+# Allow -n/-0/-C on targets.
+#
+
+-n >list.1 { find ... ; }
+-0 >list.2 { find ... -print0 ; }
+
+#
+# Simplify object classes if possible (targets, names, plain_dep, hash_dep, etc.).
+#
+
+#
+# Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
+#
+
+#
+# Support negation of flags using +o, +p, etc.
 #

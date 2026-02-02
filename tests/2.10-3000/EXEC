@@ -1,0 +1,49 @@
+#! /bin/sh
+[ "$EXEC_TRACE" ] && exec 3>&2 || exec 3>/dev/null
+
+lines='
+-o B; B;
+B; -o B;
+-p B; B;
+B; -p B;
+-o B; B C;
+B; -o B C;
+-p B; B C;
+B; -p B C;
+-o B C; B;
+B C; -o B;
+-p B C; B;
+B C; -p B;
+-o B; C B;
+B; -o C B;
+-p B; C B;
+B; -p C B;
+C -o B; B;
+C B; -o B;
+C -p B; B;
+C B; -p B;
+'
+
+Error() # <message>
+{
+	printf '*** Error: %s\nline="%s"\n' "$1" "$line"
+	exit 1
+}
+
+printf '%s\n' "$lines" |
+while IFS= read -r line ; do
+	printf >&3 'line="%s"\n' "$line"
+	printf '%s\n' "$line" | grep -q -E -e '^\s*$' && continue
+	../../sh/rm_tmps || exit 2
+	../../bin/stu.test -F "$line" >list.out 2>list.err
+	exitstatus=$?
+	printf >&3 'exitstatus=%s\n' "$exitstatus"
+	[ "$exitstatus" = 2 ] || Error "exit status"
+	[ -f list.out ] && ! [ -s list.out ] || Error "stdout"
+	[ -f list.err ] || Error "stderr"
+	cmp list.err stderr || Error "stderr content"
+done || exit 1
+
+../../sh/rm_tmps || exit 2
+
+exit 0

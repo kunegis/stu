@@ -1,0 +1,8 @@
+A: B
+{
+	[ -e B ] && exit 77
+	touch A
+}
+
+# Not useful because the content will never be used, but allowed.
+-o B = {error}

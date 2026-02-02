@@ -2,12 +2,8 @@
 
 void Hash_Dep::render(Parts &parts, Rendering rendering) const
 {
-	TRACE_FUNCTION();
-	TRACE("show_flags= %s", frmt("%d", (rendering & R_SHOW_FLAGS) != 0));
-	TRACE("depth= %s", frmt("%zu", get_dynamic_depth()));
 	size_t i;
 	for (i= 0; get_word(i) & F_TARGET_DYNAMIC; ++i) {
-		TRACE("One dynamic");
 		assert((get_word(i) & F_TARGET_PHONY) == 0);
 		parts.append_marker("[");
 	}
@@ -70,4 +66,18 @@ string Hash_Dep::string_from_word(Flags flags)
 void render(const Hash_Dep &hash_dep, Parts &parts, Rendering rendering)
 {
 	hash_dep.render(parts, rendering);
+}
+
+#ifndef NDEBUG
+string show_trace(const Hash_Dep &hash_dep)
+{
+	Parts parts;
+	render(hash_dep, parts, R_SHOW_FLAGS);
+	return show(parts, S_DEBUG);
+}
+#endif /* ! NDEBUG */
+
+size_t std::hash <Hash_Dep> ::operator()(const Hash_Dep &hash_dep) const
+{
+	return std::hash <string> ()(hash_dep.get_text());
 }

@@ -1,0 +1,14 @@
+A: X B
+{
+	cp B A
+}
+
+-p B {
+	echo error >B
+}
+
+X {
+	echo xxx >X
+	echo CORRECT >B
+	../../sh/touch_old B
+}

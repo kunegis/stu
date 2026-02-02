@@ -1,0 +1,10 @@
+A: Y
+{
+	[ -e Y ] || exit 77
+	touch A
+}
+
+-o X Y
+{
+	touch X Y
+}

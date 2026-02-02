@@ -1,0 +1,2 @@
+Option -F: there must not be a second rule for target "B"
+Option -F: shadowing previous rule "B"

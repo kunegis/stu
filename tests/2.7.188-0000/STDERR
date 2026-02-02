@@ -1,4 +1,4 @@
 B:1:5: declaration of persistent dependency using -p
 B:1:2: clashes with declaration of optional dependency using -o
-B:1:7: in declaration of "C", needed by [B]
+B:1:7: for target "C", needed by [B]
 Option -F: [B] is needed by "A"

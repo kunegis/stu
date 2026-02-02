@@ -357,7 +357,7 @@ int Job::get_fd_tty()
 	}
 	has= true;
 	assert(fd == -1);
-	fd= open(filename_tty, O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	fd= open(filename_tty, O_RDWR|O_NONBLOCK|O_CLOEXEC);
 	TRACE("fd= %s", frmt("%d", fd));
 	if (fd < 0) {
 		TRACE("TTY device file not found");
@@ -571,8 +571,9 @@ void Job::create_child_output_redirection(
 	if (filename_output.empty()) return;
 
 	constexpr mode_t mode_0666=
-		S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
-	int fd_output= creat(filename_output.c_str(), mode_0666);
+		S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH;
+	int fd_output= open(filename_output.c_str(),
+		O_CREAT|O_WRONLY|O_TRUNC|O_CLOEXEC, mode_0666);
 	if (fd_output < 0) {
 		place << format_errno("creat", filename_output.c_str());
 		__gcov_dump();
@@ -586,7 +587,6 @@ void Job::create_child_output_redirection(
 		_Exit(ERROR_FORK_CHILD);
 	}
 	assert(r == 1);
-	close(fd_output);
 }
 
 void Job::create_child_input_redirection(
@@ -599,7 +599,7 @@ void Job::create_child_input_redirection(
 	const char *name= filename_input.empty()
 		? "/dev/null"
 		: filename_input.c_str();
-	int fd_input= open(name, O_RDONLY);
+	int fd_input= open(name, O_RDONLY|O_CLOEXEC);
 	if (fd_input < 0) {
 		place << format_errno("open", name);
 		__gcov_dump();
@@ -614,9 +614,4 @@ void Job::create_child_input_redirection(
 		_Exit(ERROR_FORK_CHILD);
 	}
 	assert(r == 0);
-	if (close(fd_input) < 0) {
-		place << format_errno("close", name);
-		__gcov_dump();
-		_Exit(ERROR_FORK_CHILD);
-	}
 }

@@ -1,6 +1,11 @@
 #ifndef TOKENIZER_HH
 #define TOKENIZER_HH
 
+#include "backtrace.hh"
+#include "place.hh"
+#include "target.hh"
+#include "token.hh"
+
 /*
  * On errors, these functions print a message and throw integer error codes.
  */

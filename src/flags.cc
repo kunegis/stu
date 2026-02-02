@@ -1,22 +1,20 @@
 #include "flags.hh"
 
-constexpr const char flags_chars[]= "pot[@$n0C<*%B";
-static_assert(sizeof(flags_chars) == C_ALL + 1, "Keep in sync with Flags");
 const char *flags_phrases[C_PLACED]= {"persistent", "optional", "trivial"};
 static_assert(sizeof(flags_phrases) / sizeof(flags_phrases[0]) == C_PLACED,
 	      "Keep in sync with Flags");
 
 unsigned flag_get_index(char c)
 {
-	switch (c) {
-	default:   unreachable();
-	case 'p':  return I_PERSISTENT;
-	case 'o':  return I_OPTIONAL;
-	case 't':  return I_TRIVIAL;
-	case 'n':  return I_NEWLINE_SEPARATED;
-	case '0':  return I_NUL_SEPARATED;
-	case 'C':  return I_CODE;
-	}
+	char *r= strchr((char *)flags_chars, c);
+	assert(r);
+	return r - flags_chars;
+}
+
+void render(Flag_View fv, Parts &parts, Rendering rendering)
+{
+	parts.append_marker("-");
+	render(string(1, fv.c), parts, rendering);
 }
 
 #ifndef NDEBUG

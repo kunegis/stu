@@ -41,9 +41,8 @@ Transitive_Executor::Transitive_Executor(
 		return;
 	}
 
-	for (auto &place_param_target: rule->place_targets) {
-		hash_deps.push_back(place_param_target->unparametrized());
-	}
+	for (auto &t: rule->targets)
+		hash_deps.push_back(t->place_target.unparametrized());
 	assert(hash_deps.size());
 
 	assert((param_rule == nullptr) == (rule == nullptr));

@@ -1,7 +1,8 @@
 #include "concat_executor.hh"
 
+#include "place.hh"
+#include "show_dep.hh"
 #include "trace.hh"
-#include "trace_dep.hh"
 
 Concat_Executor::Concat_Executor(
 	shared_ptr <const Concat_Dep> dep_,

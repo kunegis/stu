@@ -1,0 +1,5 @@
+>A: filename {}
+
+@x -o filename {
+	exit 77
+}

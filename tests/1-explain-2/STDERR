@@ -1,5 +1,6 @@
 main.stu:5:1: expected the file without command "B" to exist because all its dependencies are up to date, but it does not
 main.stu:3:4: "B" is needed by "A"
 Explanation: If a file rule has no command, this means that the file
-is always up-to-date whenever its dependencies are up to date.  In general,
-this means that the file is generated in conjunction with its dependencies.
+is always up-to-date whenever its dependencies are up to date.  In
+general, this means that the file is generated in conjunction with its
+dependencies.

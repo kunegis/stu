@@ -1,0 +1,2 @@
+@main: @all;
+-o @all;

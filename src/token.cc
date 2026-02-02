@@ -81,3 +81,8 @@ void Flag_Token::render(Parts &parts, Rendering) const
 {
 	parts.append_operator(frmt("-%c", flag));
 }
+
+void render(const Flag_Token &flag_token, Parts &parts, Rendering rendering)
+{
+	flag_token.render(parts, rendering);
+}

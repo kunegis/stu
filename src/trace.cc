@@ -48,8 +48,10 @@ void Trace::init_file()
 	files[trace_class]= file= nullptr;
 	for (const string &var: vars) {
 		const char *env= getenv(var.c_str());
-		if (!env || !env[0] || !strcmp(env, "off")) {
-			/* Leave value */
+		if (env && (!strcmp(env, "off") || !strcmp(env, "0"))) {
+			break;
+		} else if (!env || !env[0]) {
+			continue;
 		} else if (!strcmp(env, "log")) {
 			if (!file_log)
 				file_log= open_logfile(trace_filename);

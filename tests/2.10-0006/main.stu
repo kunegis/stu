@@ -1,0 +1,14 @@
+list.data/A:  list.data
+{
+	echo aaa >list.data/A
+}
+
+list.data/B:  list.data
+{
+	exit 77
+}
+
+-p list.data
+{
+	mkdir list.data
+}

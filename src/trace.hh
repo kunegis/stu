@@ -8,15 +8,16 @@
  * needed it in the past.
  *
  * To enable tracing for the file src/<name>.cc, set the environment variable
- * $STU_TRACE_<NAME> to:
+ * $STU_TRACE_<NAME> (all uppercase) to the following: (Example: use $STU_TRACE_DEP to
+ * enable tracing in src/dep.{cc,hh})
  *	"1".."9"  Synonym of "stderr"
  *	"log"     Write into the trace logfile (see name below)
  *	"stderr"  Write on stderr
- *	"off"     No tracing (same as variable not set)
+ *	"off"/"0" No tracing (useful to disable a single file when $STU_TRACE_ALL is set)
  *
- * Set $STU_TRACE_ALL to the same values to enable tracing for all modules.
+ * Set $STU_TRACE_ALL to enable tracing in all source code files.
  *
- * There are no trace levels, and it is not possible to output traces in an arbitrary
+ * There are no trace levels, and it is not possible to output traces into an arbitrary
  * file.
  */
 

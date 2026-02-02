@@ -1,6 +1,9 @@
 #include <locale.h>
-#include <string>
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <memory>
+#include <string>
 
 using std::string;
 using std::shared_ptr;
@@ -25,13 +28,16 @@ using std::shared_ptr;
 #include "hints.cc"
 #include "invocation.cc"
 #include "job.cc"
+#include "name.cc"
 #include "options.cc"
 #include "parser.cc"
+#include "place.cc"
 #include "preset.cc"
 #include "proceed.cc"
 #include "root_executor.cc"
 #include "rule.cc"
 #include "show.cc"
+#include "show_dep.cc"
 #include "signal.cc"
 #include "target.cc"
 #include "terminate_jobs.cc"
@@ -39,7 +45,6 @@ using std::shared_ptr;
 #include "token.cc"
 #include "tokenizer.cc"
 #include "trace.cc"
-#include "trace_dep.cc"
 #include "trace_executor.cc"
 #include "transitive_executor.cc"
 

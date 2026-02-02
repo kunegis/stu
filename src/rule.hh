@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "dep.hh"
+#include "place.hh"
 #include "preset.hh"
 #include "token.hh"
 
@@ -13,7 +15,7 @@ class Rule
 /* The class Rule allows parameters; there is no "unparametrized rule" class. */
 {
 public:
-	std::vector <shared_ptr <const Place_Target> > place_targets;
+	std::vector <shared_ptr <const Plain_Dep> > targets;
 	/* The targets of the rule, in the order specified in the rule.  Contains at least
 	 * one element.  Each element contains all parameters of the rule, and therefore
 	 * should be used for iterating over all parameters.  The place in each target is
@@ -23,11 +25,11 @@ public:
 	std::vector <shared_ptr <const Dep> > deps;
 	/* The dependencies in order of declaration.  Dependencies are included multiple
 	 * times if they appear multiple times in the source.  Any parameter occuring in
-	 * any dependency also occurs in every target. */
+	 * a dependency must occur in every target. */
 
 	const Place place;
 	/* The place of the rule as a whole.  Taken from the place of the first target
-	 * (but could be different, in principle) */
+	 * (but could be different, in principle). */
 
 	const shared_ptr <const Command> command;
 	/* The command (optional).  Contains its own place, as it is a token.  Null when
@@ -41,7 +43,7 @@ public:
 
 	const int output_redirect_index;
 	/* Index within PLACE_TARGETS of the target to which output redirection is
-	 * applied. -1 if no output redirection is used. The target with that index is a
+	 * applied.  -1 if no output redirection is used. The target with that index is a
 	 * file target. */
 
 	const bool is_hardcode;
@@ -51,7 +53,7 @@ public:
 	/* Whether the rule is a copy rule, i.e., declared with '=' followed by a
 	 * filename. */
 
-	Rule(std::vector <shared_ptr <const Place_Target> > &&place_targets,
+	Rule(std::vector <shared_ptr <const Plain_Dep> > &&place_targets,
 	     std::vector <shared_ptr <const Dep> > &&deps_,
 	     const Place &place_,
 	     const shared_ptr <const Command> &command_,
@@ -62,7 +64,7 @@ public:
 	/* Direct constructor that specifies everything; no checks, initialization or
 	 * canonicalization is performed. */
 
-	Rule(std::vector <shared_ptr <const Place_Target> > &&place_targets_,
+	Rule(std::vector <shared_ptr <const Plain_Dep> > &&place_targets_,
 	     const std::vector <shared_ptr <const Dep> > &deps_,
 	     shared_ptr <const Command> command_,
 	     bool is_hardcode_,
@@ -70,16 +72,15 @@ public:
 	     const Place_Name &place_name_input_);
 	/* Regular rule:  all cases except copy rules */
 
-	Rule(shared_ptr <const Place_Target> place_target_,
+	Rule(shared_ptr <const Plain_Dep> place_target_,
 	     shared_ptr <const Place_Name> place_name_source_,
 	     const Place &place_persistent,
 	     const Place &place_optional);
-	/* A copy rule.  When the places are EMPTY, the corresponding
-	 * flag is not used. */
+	/* A copy rule.  When the places are EMPTY, the corresponding flag is not used. */
 
 	/* Whether the rule is parametrized */
 	bool is_parametrized() const {
-		return place_targets.front()->place_name.get_n() != 0;
+		return targets.front()->place_target.place_name.get_n() != 0;
 	}
 
 	/* A rule in which the targets must exist */
@@ -99,8 +100,8 @@ public:
 
 	const std::vector <string> &get_parameters() const
 	{
-		assert(place_targets.size() != 0);
-		return place_targets.front()->place_name.get_parameters();
+		assert(targets.size() != 0);
+		return targets.front()->place_target.place_name.get_parameters();
 	}
 
 	void canonicalize();
@@ -115,10 +116,7 @@ public:
 	 * itself when it is unparametrized.  Must be a parametrized rule. */
 };
 
-void render(shared_ptr <const Rule> rule, Parts &parts, Rendering rendering= 0)
-{
-	rule->render(parts, rendering);
-}
+void render(shared_ptr <const Rule>, Parts &, Rendering= 0);
 
 class Rule_Set
 /* A set of rules.  They can be both parametrized and unparametrized. */
@@ -129,11 +127,13 @@ public:
 	 * print and throw a logical error if there is.  If a given rule has duplicate
 	 * targets, print and throw a logical error. */
 
-	shared_ptr <const Rule> get(Hash_Dep hash_dep,
-				    shared_ptr <const Rule> &param_rule,
-				    std::map <string, string> &mapping_parameter,
-				    const Place &place);
-	/* Match TARGET to a rule, and return the instantiated (non-parametrized)
+	shared_ptr <const Rule> get(
+		Hash_Dep hash_dep,
+		shared_ptr <const Rule> &param_rule,
+		std::map <string, string> &mapping_parameter,
+		const Place &place,
+		shared_ptr <const Plain_Dep> &target_plain_dep);
+	/* Match HASH_DEP to a rule, and return the instantiated (non-parametrized)
 	 * corresponding rule.  TARGET must be non-dynamic and not have flags (except
 	 * F_TARGET_PHONY).  MAPPING_PARAMETER must be empty.  Return null when no
 	 * match is found.  When a match is found, write the original (possibly
@@ -145,11 +145,13 @@ public:
 	void print_for_option_I() const;
 
 private:
-	std::unordered_map <Hash_Dep, shared_ptr <const Rule> > rules_unparam;
-	/* All unparametrized rules by their target.  Rules with multiple targets are
-	 * included multiple times, for each of their targets.  None of the targets has
-	 * flags set (except F_TARGET_TARNSIENT.)  The targets are canonicalized, both as
-	 * keys in this map, as well as in each Rule. */
+	std::unordered_map <Hash_Dep, std::pair<size_t, shared_ptr <const Rule> > >
+		rules_unparam;
+	/* All unparametrized rules by their targets; the size_t is the index of the target
+	 * in the rule.  Rules with multiple targets are included multiple times, for each
+	 * of their targets.  None of the targets has flags set (except
+	 * F_TARGET_TARNSIENT.)  The targets are canonicalized, both as keys in this map,
+	 * as well as in each Rule. */
 
 	std::unordered_set <shared_ptr <const Rule> > rules_param;
 	/* All parametrized rules.  Each parametrized rule is here, and in one more of the
@@ -176,7 +178,7 @@ public:
 	std::map <string, string> mapping;
 	std::vector <size_t> anchoring;
 	int priority;
-	shared_ptr <const Place_Target> place_target;
+	shared_ptr <const Plain_Dep> target;
 
 	bool operator<(const Found_Rule &) const;
 };

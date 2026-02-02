@@ -39,7 +39,10 @@
  * dependency.
  */
 
+#include "dep.hh"
+#include "place.hh"
 #include "rule.hh"
+#include "token.hh"
 
 class Parser
 /*
@@ -57,16 +60,18 @@ public:
 	 * a second input filename is specified. PLACE_INPUT is the place of the '<' input
 	 * redirection operator. */
 
-	static void get_rule_list(std::vector <shared_ptr <Rule> > &rules,
-				  std::vector <shared_ptr <Token> > &tokens,
-				  const Place &place_end,
-				  shared_ptr <const Place_Target> &target_first);
+	static void get_rule_list(
+		std::vector <shared_ptr <Rule> > &rules,
+		std::vector <shared_ptr <Token> > &tokens,
+		const Place &place_end,
+		shared_ptr <const Plain_Dep> &target_first);
 
-	static void get_expression_list(std::vector <shared_ptr <const Dep> > &deps,
-					std::vector <shared_ptr <Token> > &tokens,
-					const Place &place_end,
-					Place_Name &input,
-					Place &place_input);
+	static void get_expression_list(
+		std::vector <shared_ptr <const Dep> > &deps,
+		std::vector <shared_ptr <Token> > &tokens,
+		const Place &place_end,
+		Place_Name &input,
+		Place &place_input);
 	/* DEPS is filled.  DEPS is empty when called. */
 
 	static void get_expression_list_delim(
@@ -87,20 +92,22 @@ public:
 	 * Parsed dependency are appended to DEPS, which is not
 	 * necessarily empty on invocation. */
 
-	static void get_file(const char *filename,
-			     int file_fd,
-			     Rule_Set &rule_set,
-			     shared_ptr <const Place_Target> &target_first,
-			     Place &place_first);
+	static void get_file(
+		const char *filename,
+		int file_fd,
+		Rule_Set &rule_set,
+		shared_ptr <const Plain_Dep> &target_first,
+		Place &place_first);
 	/* Read in an input file and add the rules to the given rule set.  Used for the -f
 	 * option and the default input file.  If not yet non-null, set TARGET_FIRST to
 	 * the first target of the first rule.  FILE_FD can be -1 or the FD or the
 	 * filename, if already opened.  If FILENAME is "-", use standard input.  If
 	 * FILENAME is "", use the default file ('main.stu'). */
 
-	static void get_string(const char *s,
-			       Rule_Set &rule_set,
-			       shared_ptr <const Place_Target> &target_first);
+	static void get_string(
+		const char *s,
+		Rule_Set &rule_set,
+		shared_ptr <const Plain_Dep> &target_first);
 	/* Read rules from a string; same argument semantics as the other get_*()
 	 * functions. */
 
@@ -123,30 +130,37 @@ private:
 		   place_end(place_end_)
 	{ }
 
-	void parse_rule_list(std::vector <shared_ptr <Rule> > &ret,
-			     shared_ptr <const Place_Target> &target_first);
+	void parse_rule_list(
+		std::vector <shared_ptr <Rule> > &ret,
+		shared_ptr <const Plain_Dep> &target_first);
 	/* The returned rules may not be unique -- this is checked later */
 
 	bool parse_expression_list(
 		std::vector <shared_ptr <const Dep> > &ret,
 		Place_Name &place_name_input,
 		Place &place_input,
-		const std::vector <shared_ptr <const Place_Target> > &targets);
+		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 	/* RET is filled.  RET is empty when called. */
 
-	shared_ptr <Rule> parse_rule(shared_ptr <const Place_Target> &target_first);
+	shared_ptr <Rule> parse_rule(shared_ptr <const Plain_Dep> &target_first);
 	/* Return null when nothing was parsed */
+
+	shared_ptr <Rule> parse_remainder_copy_rule(
+		const Place &place_equal,
+		const Place &place_output,
+		std::vector <shared_ptr <const Plain_Dep> > targets);
+	/* Never returns null */
 
 	bool parse_target(
 		Place &place_output,
-		std::vector <shared_ptr <const Place_Target> > &place_targets,
+		std::vector <shared_ptr <const Plain_Dep> > &place_targets,
 		int &redirect_index,
-		shared_ptr <const Place_Target> &target_first);
+		shared_ptr <const Plain_Dep> &target_first);
 
 	bool parse_expression(
 		shared_ptr <const Dep> &ret,
 		Place_Name &place_name_input, Place &place_input,
-		const std::vector <shared_ptr <const Place_Target> > &targets);
+		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 	/* Write the parsed expression into RET. RET must be empty when called.  Return
 	 * whether an expression was parsed.  TARGETS is passed to construct error
 	 * messages. */
@@ -154,21 +168,21 @@ private:
 	shared_ptr <const Dep> parse_compound_dep(
 		Place_Name &place_name_input,
 		Place &place_input,
-		const std::vector <shared_ptr <const Place_Target> > &targets);
+		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 
 	shared_ptr <const Dep> parse_dynamic_dep(
 		Place_Name &place_name_input,
 		Place &place_input,
-		const std::vector <shared_ptr <const Place_Target> > &targets);
+		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 
 	shared_ptr <const Dep> parse_variable_dep(
 		Place_Name &place_name_input, Place &place_input,
-		const std::vector <shared_ptr <const Place_Target> > &targets);
+		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 	/* A variable dependency */
 
 	shared_ptr <const Dep> parse_redirect_dep(
 		Place_Name &place_name_input, Place &place_input,
-		const std::vector <shared_ptr <const Place_Target> > &targets);
+		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 
 	template <typename T> shared_ptr <T> is() const
 	/* If the next token is of type T, return it, otherwise return null.  Also return

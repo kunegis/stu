@@ -96,7 +96,7 @@ void Cycle::print(
 	if (strcmp(c1, c2)) {
 		path.back()->get_place()
 			<< fmt("both %s and %s match the same rule",
-			       ::show(c1), ::show(c2));
+				::show(c1), ::show(c2));
 	}
 
 	/* Remove the offending (cycle-generating) link between the two.  The offending

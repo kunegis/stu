@@ -7,6 +7,7 @@
 #include "format.hh"
 #include "job.hh"
 #include "package.hh"
+#include "place.hh"
 #include "show.hh"
 #include "timestamp.hh"
 #include "trace.hh"
@@ -162,7 +163,7 @@ void set_option_m(const char *value)
 	} else {
 		print_error(
 			fmt("invalid argument %s for option %s; valid values are %s and %s",
-				show(value), show_prefix("-", "m"),
+				show(value), show(Flag_View('m')),
 				show("random"), show("dfs")));
 		exit(ERROR_FATAL);
 	}
@@ -206,8 +207,7 @@ void set_env_options()
 			continue;
 		if (! option_setting(c)) {
 			Place place(Place::Type::ENV_OPTIONS);
-			place << fmt("invalid option %s",
-				     show_prefix("-", frmt("%c", c)));
+			place << fmt("invalid option %s", show(Flag_View(c)));
 			exit(ERROR_FATAL);
 		}
 	}

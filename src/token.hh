@@ -11,6 +11,9 @@
  *   - commands (delimited by { })
  */
 
+#include "place.hh"
+#include "show.hh"
+
 typedef unsigned Environment;
 /* Information about a token, as flags */
 
@@ -100,8 +103,11 @@ public:
 	void render(Parts &, Rendering= 0) const override;
 };
 
+void render(const Flag_Token &, Parts &, Rendering= 0);
+
 class Name_Token
-/* This contains two types of places:  the places for the individual parameters in Place_Param_Name, and the place of the complete token from Token. */
+/* This contains two types of places:  the places for the individual parameters in
+ * Place_Param_Name, and the place of the complete token from Token. */
 	: public Token, public Place_Name
 {
 public:

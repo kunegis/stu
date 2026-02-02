@@ -11,6 +11,10 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2026-02-24  Version 2.10
+
+* Flags are supported before the targets of a rule.
+
 2026-01-20  Version 2.9.3
 
 * Using -i/--interactive when no TTY is present is now an immediate error (exit status 4)

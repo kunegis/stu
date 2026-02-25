@@ -13,7 +13,13 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 2026-02-24  Version 2.10
 
-* Flags are supported before the targets of a rule.
+* Flags are supported before the targets of a rule.  Only flags -p and -o can be used, and
+  not before phonies.
+
+-o A: ... { ... }  # Consider building A only if it already exists
+-p B: ... { ... }  # Never compare the timestamp of B with the timestamp of its parent
+-o C D: ... { ... } # Only C is an optional dependency
+-p >E: ... { ... } # Flag must come before output redirection operator
 
 2026-01-20  Version 2.9.3
 

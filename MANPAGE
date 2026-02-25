@@ -842,10 +842,11 @@ SYNTAX
        troduced with '%'.
 
            rule_list:        rule*
-           rule:              ('@'  NAME  | ['>'] NAME)+ [':' expression_list]
-       ('{' COMMAND '}' | ';')
+           rule:              target+ [':' expression_list] ('{' COMMAND '}' |
+       ';')
                              NAME '=' '{' CONTENT '}'
-                             NAME '=' ('-p' | '-o')* NAME ';'
+                             NAME '=' target_flag* NAME ';'
+           target:           target_flag* ('@' NAME | ['>'] NAME)+
            expression_list:  expression* {1}
            expression:       unit_expression* {2}
                              flag expression
@@ -856,7 +857,8 @@ SYNTAX
            redirect_dep:     ['<'] bare_dep
            bare_dep:         ['@'] NAME
            variable_dep:     '$' '[' flag* ['<'] NAME ']'
-           flag:             '-p' | '-o' | '-t' | '-n' | '-0'
+           flag:             target_flag | '-t' | '-n' | '-0' | '-C'
+           target_flag:      '-p' | '-o'
 
        {1} with intervening whitespace {2} without intervening whitespace
 
@@ -866,9 +868,9 @@ SYNTAX
        arguments  to  the  -C option must contain an 'expression_list'.  Argu‐
        ments passed outside of options on the command  line  must  contain  an
        'expression_list',  but  a  simplified syntax is used in which only the
-       charaters '[]-@' are recognized, and that only in positions where  they
-       make  sense;  in all other cases, characters are interpreted as part of
-       filenames -- this is also valid for whitespace.
+       charaters '[]-@' have special meaning, and that only in positions where
+       they make sense; in all other cases, characters are interpreted as part
+       of filenames -- this is also valid for whitespace.
 
 SEMANTICS
        Cycles in the dependency graph are not allowed. As an example, the fol‐
@@ -1137,16 +1139,16 @@ BUGS
        also lead to a rebuild, although it is not  needed.   Both  limitations
        could be removed by using fingerprints instead of modification times.
 
-       All  timestamps have only one-second resolution, except when the Linux-
-       only USE_MTIM option is set on compilation.  (Which it is by default on
-       Linux.)
+       All  timestamps  have  only one-second resolution, except when the non-
+       portable but widespread USE_MTIM option is set on compilation.   (Which
+       it is by default on Linux and FreeBSD.)
 
        Using  optional  dependencies  may  make a second invocation of Stu not
        output 'Targets are up to date', as the optional  dependency  may  have
        been created by subsequent targets.
 
        Commands  enclosed  in braces { ... } are parsed using shell syntax, up
-       to one exception:  a closing brace is detected everywhere  in  unqotued
+       to one exception:  a closing brace is detected everywhere  in  unquoted
        environments,  not only when standing alone as the first word of a com‐
        mand.  E.g., the command { echo Hello } is a  valid  command  for  Stu,
        while it would be an error for the shell, as the closing } would be in‐
@@ -1173,4 +1175,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.10.1                       February 2026                          STU(1)
+stu-2.10.2                       February 2026                          STU(1)

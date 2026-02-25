@@ -2,12 +2,12 @@
 #include <errno.h>
 #include <sys/types.h>
 
-#include "strhash.hh"
+#include "cov_hash.hh"
 
 extern "C"
 void *malloc(size_t size)
 {
-	if (errno == strhash("File_Executors::executors_add")) {
+	if (errno == cov_hash("File_Executors::executors_add")) {
 		errno= ENOMEM;
 		return nullptr;
 	}

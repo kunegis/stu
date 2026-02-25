@@ -1,8 +1,4 @@
 #
-# strhash() should not be in a .hh file.
-#
-
-#
 # Trace:  better configuration.  Make it possible to configure via a single environment
 # variable.
 #

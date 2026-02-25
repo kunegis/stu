@@ -56,7 +56,6 @@ extern "C" {
  * variant.  Sets errno to a hash of the given string.  Tests that use PRELOAD.cc can use
  * the same function to check that errno is set to the specific value. */
 #if !defined(NDEBUG) || defined(STU_COV)
-#include "strhash.hh"
 void cov_tag(const char *tag);
 #else
 #define cov_tag(tag)

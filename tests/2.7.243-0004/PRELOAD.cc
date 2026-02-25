@@ -2,12 +2,12 @@
 #include <errno.h>
 #include <sys/types.h>
 
-#include "strhash.hh"
+#include "cov_hash.hh"
 
 extern "C"
 void *malloc(size_t size)
 {
-	if (errno == strhash("Job::create_child_env::1")) {
+	if (errno == cov_hash("Job::create_child_env::1")) {
 		errno= ENOMEM;
 		return nullptr;
 	}

@@ -2,14 +2,14 @@
 #include <errno.h>
 #include <string.h>
 
-#include "strhash.hh"
+#include "cov_hash.hh"
 
 static bool active= false;
 
 extern "C"
 void *realloc(void *ptr, size_t size)
 {
-	if (errno == strhash("File_Executor::execute::1")) {
+	if (errno == cov_hash("File_Executor::execute::1")) {
 		errno= ENOMEM;
 		return nullptr;
 	}

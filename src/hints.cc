@@ -2,9 +2,11 @@
 
 #if !defined(NDEBUG) || defined(STU_COV)
 
+#include "cov_hash.hh"
+
 void cov_tag(const char *tag)
 {
-	errno= strhash(tag);
+	errno= cov_hash(tag);
 }
 
-#endif
+#endif /* !NDEBUG || STU_COV */

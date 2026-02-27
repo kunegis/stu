@@ -8,11 +8,11 @@ std::map <string, FILE *> Trace::files;
 string Trace::padding;
 std::vector <Trace *> Trace::stack;
 FILE *Trace::file_log= nullptr;
+bool Trace::global_done= false;
 
 Trace::Trace(const char *function_name, const char *filename, int line, Object object)
 {
-	const char *filename_stripped= strip_dir(filename);
-	trace_class= class_from_filename(filename_stripped);
+	trace_class= normalize_trace_class(filename);
 	stack.push_back(this);
 	init_file();
 	if (!file) return;
@@ -36,34 +36,17 @@ Trace::~Trace()
 
 void Trace::init_file()
 {
+	init_global();
+	file= nullptr;
 	auto i= files.find(trace_class);
 	if (i != files.end()) {
 		file= i->second;
 		return;
 	}
-
-	string name= fmt("STU_TRACE_%s", trace_class);
-	string name_all= "STU_TRACE_ALL";
-	string vars[]= {name, name_all};
-	files[trace_class]= file= nullptr;
-	for (const string &var: vars) {
-		const char *env= getenv(var.c_str());
-		if (env && (!strcmp(env, "off") || !strcmp(env, "0"))) {
-			break;
-		} else if (!env || !env[0]) {
-			continue;
-		} else if (!strcmp(env, "log")) {
-			if (!file_log)
-				file_log= open_logfile(trace_filename);
-			files[trace_class]= file= file_log;
-		} else if (!strcmp(env, "stderr") ||
-			(env[0] >= '1' && env[0] <= '9' && !env[1])) {
-			files[trace_class]= file= stderr;
-		} else {
-			print_error(fmt("invalid value for trace %s=%s",
-					var.c_str(), env));
-			error_exit();
-		}
+	i= files.find(TRACE_CLASS_ALL);
+	if (i != files.end()) {
+		file= i->second;
+		return;
 	}
 }
 
@@ -71,12 +54,13 @@ FILE *Trace::open_logfile(const char *filename)
 {
 	FILE *ret= fopen(filename, "w");
 	if (!ret) {
-		print_errno("fopen", filename);
-		error_exit();
+		fprintf(stderr, "%s: fopen: %s\n", filename, strerror(errno));
+		error();
 	}
 	int flags= fcntl(fileno(ret), F_GETFL, 0);
-	if (flags >= 0)
+	if (flags >= 0) {
 		fcntl(fileno(ret), F_SETFL, flags | O_APPEND | FD_CLOEXEC);
+	}
 	assert(ret);
 	return ret;
 }
@@ -88,12 +72,16 @@ const char *Trace::strip_dir(const char *s)
 	return r+1;
 }
 
-string Trace::class_from_filename(const char *filename)
+string Trace::normalize_trace_class(const char *s)
 {
-	const char *r= strchr(filename, '.');
-	assert(r);
-	string ret= string(filename, r - filename);
-	std::transform(ret.begin(), ret.end(), ret.begin(), ::toupper);
+	s= strip_dir(s);
+	string ret;
+	const char *r= strchr(s, '.');
+	if (r)
+		ret= string(s, r - s);
+	else
+		ret= string(s);
+	std::transform(ret.begin(), ret.end(), ret.begin(), ::tolower);
 	return ret;
 }
 
@@ -118,9 +106,104 @@ void Trace::print(FILE *file, const char *filename, int line, const char *text)
 			filename, line,
 			spaces, "",
 			text) < 0) {
-		print_errno("fprintf", filename);
-		error_exit();
+		fprintf(stderr, "%s: fprintf: %s\n", filename, strerror(errno));
+		error();
 	}
+}
+
+void Trace::init_global()
+{
+	if (global_done) return;
+	global_done= true;
+	const char *env= getenv(ENV_STU_TRACE);
+	if (!env) return;
+	string content;
+	if (env[0] == '<') {
+		const char *filename= env + 1;
+		FILE *file= fopen(filename, "r");
+		if (!file) error(fmt("%s: open: %s", filename, strerror(errno)));
+		struct stat stat;
+		if (fstat(fileno(file), &stat))
+			error(fmt("%s: fstat: %s", filename, strerror(errno)));
+		content= string(stat.st_size, '\0');
+		if (1 != fread(content.data(), stat.st_size, 1, file))
+			error(fmt("%s: fread: %s", filename, strerror(errno)));
+		fclose(file);
+		env= content.c_str();
+	}
+	for (;;) {
+		while (isspace(*env) || *env == ';') ++env;
+		if (!*env) break;
+		std::vector <string> trace_classes;
+		while (*env && *env != ';' && *env != '\n' && *env != '=') {
+			const char *p= env;
+			while (*p >= 'a' && *p <= 'z' || *p == '_') ++p;
+			if (p == env) {
+				break;
+			} else {
+				trace_classes.push_back(string(env, p-env));
+				env= p;
+				while (isspace(*env) && *env != '\n') ++env;
+			}
+		}
+		while (isspace(*env) && *env != '\n') ++env;
+		string value;
+		if (*env == ';' || *env == '\n' || !*env) {
+			value= "1";
+		} else if (*env) {
+			if (*env == '=') {
+				if (trace_classes.empty())
+					error("invalid '='");
+				++env;
+			} else {
+				if (trace_classes.empty())
+					trace_classes.push_back(TRACE_CLASS_ALL);
+				else
+					error(fmt("invalid string '%s'", env));
+			}
+			while (isspace(*env) && *env != '\n' && *env != ';') ++env;
+			const char *p= env;
+			while (*p && !isspace(*p) && *p != ';') ++p;
+			if (p == env)
+				error(frmt("invalid character in $%s: %c/%d",
+						ENV_STU_TRACE, env[0], (int)p[0]));
+			value= string(env, p);
+			env= p;
+			while (isspace(*env) || *env == '\n') ++env;
+		}
+		for (string trace_class: trace_classes) {
+			init_single(
+				normalize_trace_class(trace_class.c_str()), value.c_str());
+		}
+	}
+}
+
+void Trace::init_single(string trace_class, const char *value)
+{
+	if (!value || !value[0]) return;
+	if (!strcmp(value, "0")) {
+		files[trace_class]= nullptr;
+	} else if (value[0] == '>') {
+		if (!value[1])
+			error(frmt("Invalid value '%s'", value));
+		files[trace_class]= open_logfile(value + 1);
+	} else if (!strcmp(value, "1")) {
+		files[trace_class]= stderr;
+	} else {
+		error(fmt("invalid value for trace %s: '%s'",
+				trace_class, value));
+	}
+}
+
+void Trace::error(string message)
+{
+	if (!message.empty()) {
+		fprintf(stderr, "%s%sTrace error: %s\n",
+			dollar_zero ? dollar_zero : "",
+			dollar_zero ? ": " : "",
+			message.c_str());
+	}
+	exit(ERROR_TRACE);
 }
 
 #endif /* ! NDEBUG */

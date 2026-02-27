@@ -1,10 +1,5 @@
 #
-# Trace:  better configuration.  Make it possible to configure via a single environment
-# variable.
-#
-
-#
-#  In 'stu -P -Y' output, "Rule(" and ")" should not be in bold
+# In 'stu -P -Y' output, "Rule(" and ")" should not be in bold
 #
 
 #
@@ -23,8 +18,8 @@
 #
 
 #
-# sh/test:  It should not be necessary to set nopreload=1 with VARIANT=sani_undefined;
-# that should be automatic.
+# sh/test:  It should not be necessary to set nopreload=1 with VARIANT=sani/cdebug and
+# NDEBUG; that should be automatic.
 #
 
 #
@@ -35,7 +30,7 @@
 #
 
 #
-# On FreeBSD, "echo '\\-----' outputs to backslashes, but we use it to output one.
+# On FreeBSD, "echo '\\-----' outputs two backslashes, but we use it to output one.
 #
 
 #
@@ -479,4 +474,13 @@ B {}
 
 #
 # Support negation of flags using +o, +p, etc.
+#
+
+#
+# sh/test: In the ndebug variant, we should pass VARIANT=ndebug, and not NDEBUG=1.
+#
+
+#
+# sh/test: deprecate the PARALLEL file.  Instead, tests should specify "-j..." in the CMD
+# file.
 #

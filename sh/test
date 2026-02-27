@@ -76,17 +76,19 @@
 #              status is expected to be one)
 # NOCOLOR      Don't test for color in stderr (e.g., with the -y option)
 # CONTENT      Prescribe the exact content of the built file
-# INCONTENT    Prescribe strings that must appear in the built file
+# INCONTENT    Prescribe strings that must appear in the built file (one per line)
+# NONINCONTENT Prescribe strings that must not appear in the built file (one per line)
 # STDOUT       The exact output of Stu
 # STDERR       The exact error output of Stu
-# INSTDOUT     Prescribe strings that must appear in Stu's output
+# INSTDOUT     Prescribe strings that must appear in Stu's output (one per line)
 # INSTDERR     Prescribe strings that must appear in Stu's error output (one per line)
 # NOTINSTDERR  A text that must not be present in Stu's error output
 # TTYSTDOUTERR The output and error output (interleaved) when in TTY mode
 # INTTYSTDOUTERR Each line in the file must be present in stdout or stderr in TTY mode
 # COV_TAG      The file must exist when the test uses the cov_tag mechanism, to exclude
 #              the test from the ndebug variant.
-# NONDEBUG     Exclude test from NDEBUG
+# VARIANT      The variant(s) in which the test should be executed.  Can contain any
+#              number of variants.  Each can be preceded by '!' to exclude it.
 # PRELOAD.cc   If present, the file is compiled as a shared object and Stu executed with
 #              LD_PRELOAD set to that file.
 # EXEC         An alternative test script; it can do anything and should return a sensible
@@ -125,6 +127,9 @@
 # Note:  we can't use "set -e" here (which is a good general practice in shell scripts),
 # because otherwise we can't use $? to check the exit code of Stu.
 
+ALLOWED_FILES='EXITSTATUS PARALLEL INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC STDOUT NOSECOND NOTTY NOCOLOR COV_TAG VARIANT'
+error_file=${TMPDIR:-/tmp}/test.$$.error
+
 output_next()
 {
 	echo >&7 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
@@ -157,7 +162,7 @@ output_success()
 test_fail()
 {
 	echo >&2 "$0: ($file) *** $1"
-	error=1
+	echo 1 >"$error_file"
 }
 
 test_fail_fatal_no_cd()
@@ -178,9 +183,8 @@ test_fail_fatal()
 	cd ..
 }
 
-sort_tests()
+filter_tests()
 {
-	ls -1U |
 	{
 		if [ "$nolong" ] ; then
 			grep -E -v -e '^long-'
@@ -191,7 +195,7 @@ sort_tests()
 	{
 		if [ "$nopreload" ] ; then
 			while IFS= read -r name ; do
-				[ -f "$name"/PRELOAD.cc ] || echo "$name"
+				[ -e "$name"/PRELOAD.cc ] || echo "$name"
 			done
 		else
 			cat
@@ -202,10 +206,22 @@ sort_tests()
 			cat
 		else
 			while IFS= read -r name ; do
-				! [ -e "$name"/COV_TAG ] && ! [ -e "$name"/NONDEBUG ] && echo "$name"
+				! [ -e "$name"/COV_TAG ] && echo "$name"
 			done
 		fi
 	} |
+	{
+		while IFS= read -r name ; do
+			[ -e "$name"/VARIANT ] || { echo "$name" ; continue ; }
+			grep -q -E -e '![[:space:]]*'"$VARIANT"'($|!|[[:space:]])' "$name"/VARIANT && continue
+			grep -q -E -e '(^|[[:alpha:]][[:space:]])[[:space:]]*'"$VARIANT"'($|!|[[:space:]])' "$name"/VARIANT && { echo "$name" ; continue ; }
+			grep -q -E -e '(^|[[:alpha:]][[:space:]])[[:space:]]*[[:alpha:]]' "$name"/VARIANT || { echo "$name" ; continue ; }
+		done
+	}
+}
+
+sort_tests()
+{
 	sed -e '
 s,^\(.*\)$,\1 \1,
 s,^\([a-z].*\)$,9999-\1,
@@ -272,26 +288,26 @@ cd tests
 
 if [ "$1" ] ; then
 	tests="$@"
-	subset=" subset($(echo $(echo $tests | tr ' ' '\n' | wc -l)))"
+	tests=$(echo $tests | filter_tests)
+	subset=" subset($(echo $(echo $tests | tr ' ' '\n' | grep -E -e . | wc -l)))"
 else
 	# Note:  At some point there might be too many tests, but we don't
 	# want to use ls -1 | { ... } because that would make it impossible
 	# to do "error=1", as setting the variable $error in a subshell
 	# would have no effect.
-	tests=$(sort_tests)
+	tests=$(ls -1U | filter_tests | sort_tests)
 	subset=
 	[ "$nolong" ]    && subset=$subset' <nolong>'
 	[ "$nopreload" ] && subset=$subset' <nopreload>'
 fi
 
-count_total=$(echo $(echo $tests | sed 's, ,\
-,g' | wc -l))
+count_total=$(echo $(echo $tests | tr ' ' '\n' | grep -E -e . | wc -l))
 
 # In the next line, '$tests' expands with glob replacement
 for file in $tests
 do
 	file=$(echo "$file" | sed -e 's,^tests/,,')
-	error=0
+	error=0 ; echo 0 >"$error_file"
 
 	[ -d "$file" ] ||
 		{ test_fail_fatal_no_cd "Expected '$file' to be a directory" ; continue ; }
@@ -314,26 +330,22 @@ do
 	time_begin_test=$(../../sh/now)
 
 	# Check that all all-uppercase files are of one of the allowed files
-	allowed=",EXITSTATUS,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,INTTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,COV_TAG,NONDEBUG,"
-	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
+	has_exec= ; [ -r "EXEC" ] && has_exec=1
+	for otherfile in $(ls -1dU | grep -E -e '^[A-Z]*$')
 	do
-		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi
-		test_fail_fatal "Invalid file '$otherfile' in test directory"
+		[ "$otherfile" = EXEC -o "$otherfile" = VARIANT ] && continue
+		if [ "$has_exec" ] ; then
+			test_fail_fatal "EXEC doesn't allow other all-uppercase files except VARIANT (found '$otherfile')"
+			continue 2 # Continue outer loop
+		fi
+		expr " $ALLOWED_FILES " : ".* $otherfile .*" >/dev/null && continue
+		test_fail_fatal "Invalid file '$otherfile' in test directory; only files in ($ALLOWED_FILES) are allowed"
 		continue 2 # Continue outer loop
 	done
 
 	# The following will save:  list.def.out and list.def.err
 
-	if [ -r EXEC ]; then
-		if [ -r EXITSTATUS -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
-			-o -r STDERR -o -r NOTINSTDERR -o -r CMD -o -r CMDPREFIX \
-			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
-			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR -o -r INTTYSTDOUTERR \
-			-o -r NOCOLOR ]; then
-			test_fail_fatal "EXEC does not allow any other file except PRELOAD.cc"
-			continue
-		fi
-
+	if [ -r EXEC ] ; then
 		echo >&7 ./EXEC
 		./EXEC 1>&7
 		if [ "$?" != 0 ]; then
@@ -374,7 +386,7 @@ do
 		# Exit status
 		exitstatus_correct=0
 		if [ -r EXITSTATUS ]; then
-			[ 1 = "$(echo $(grep -E '[^[:space:]]' EXITSTATUS | wc -l))" ] || {
+			[ 1 = "$(echo $(<EXITSTATUS wc -l))" ] || {
 				test_fail_fatal "Expected EXITSTATUS to contain a single non-empty line"
 				continue
 			}
@@ -412,19 +424,6 @@ do
 				if [ ! -r "$target" ]; then  # The main target must have been built
 					test_fail "Target '$target' was not built"
 				else
-					# Check that INCONTENT is found in the built file
-					if [ -r INCONTENT ]; then
-						if grep -q -F -e "$(cat INCONTENT)" "$target" ; then
-							echo >&7 "INCONTENT...correct"
-						else
-							test_fail "'$(cat INCONTENT)' must appear in generated file"
-							>&2 echo "$target:"
-							>&2 printf '/---------\n'
-							>&2 cat "$target"
-							>&2 printf '\\---------\n'
-						fi
-					fi
-
 					# Check exact content of the target file
 					if [ -r CONTENT ] ; then
 						if cmp -s -- "$target" CONTENT ; then
@@ -433,6 +432,24 @@ do
 							test_fail "CONTENT invalid"
 							diff >&2 -- "$target" CONTENT
 						fi
+					fi
+
+					# Check that INCONTENT is found in the built file
+					if [ -r INCONTENT ]; then
+						cat INCONTENT | while IFS= read -r line ; do
+							if ! grep -q -F -e "$line" "$target" ; then
+								test_fail "'$line' must appear in '$target' (INCONTENT)"
+							fi
+						done
+					fi
+
+					# Check that NOTINCONTENT is not found in the error output
+					if [ -r NOTINCONTENT ]; then
+						cat NOTINCONTENT | while IFS= read -r line ; do
+							if grep -q -F -e "$line" "$target" ; then
+								test_fail "'$line' was found in target, but should not be there (NOTINCONTENT)"
+							fi
+						done
 					fi
 				fi
 			else
@@ -480,20 +497,6 @@ do
 			fi
 		fi
 
-		# Check that INSTDERR is found in the error output
-		if [ -r INSTDERR ]; then
-			for lineno in $(../../sh/seq $(awk '{x++} END{ print x; }' <INSTDERR)) ; do
-				line=$(<INSTDERR sed -e "$lineno"'!d')
-				if grep <list.def.err -q -F -e "$line" ; then
-					echo >&7 "INSTDERR...correct"
-				else
-					test_fail "'$line' was not found in stderr"
-					echo >&2 stderr:
-					cat  >&2 list.def.err
-				fi
-			done
-		fi
-
 		# Check that STDERR matches the error output exactly
 		if [ -r STDERR ]; then
 			if cmp -s list.def.err STDERR ; then
@@ -504,13 +507,22 @@ do
 			fi
 		fi
 
+		# Check that INSTDERR is found in the error output
+		if [ -r INSTDERR ]; then
+			cat INSTDERR | while IFS= read -r line ; do
+				if ! grep -q -F -e "$line" list.def.err ; then
+					test_fail "'$line' was not found in stderr (INSTDERR)"
+				fi
+			done
+		fi
+
 		# Check that NOTINSTDERR is not found in the error output
 		if [ -r NOTINSTDERR ]; then
-			if grep -q -F -e "$(cat NOTINSTDERR)" list.def.err ; then
-				test_fail "'$(cat NOTINSTDERR)' was found in error output, but should not be there"
-			else
-				echo >&7 "NOTINSTDERR...correct"
-			fi
+			cat NOTINSTDERR | while IFS= read -r line ; do
+				if grep -q -F -e "$line" list.def.err ; then
+					test_fail "'$line' was found in error output, but should not be there (NOTINSTDERR)"
+				fi
+			done
 		fi
 
 		# TTYSTDOUTERR / INTTYSTDOUTERR
@@ -553,7 +565,7 @@ do
 				done
 			fi
 
-			if [ -r EXITSTATUS ] && ! [ -r NOCOLOR ] ; then
+			if [ -r EXITSTATUS ] && ! grep -q -F -e 5 EXITSTATUS && ! [ -r NOCOLOR ] ; then
 				if ! grep -q -E -e '' list.def.out ; then
 					test_fail "Expected ESC in TTY output because EXITSTATUS exists"
 					>&2 echo output:
@@ -610,7 +622,7 @@ do
 	fi
 
 	[ -z "$normtmps" ] && { ../../sh/rm_tmps || exit 2 ; }
-	if [ "$error" != 0 ] ; then
+	if [ "$error" != 0 ] || grep -q -F -e 1 -- "$error_file" ; then
 		test_fail_fatal
 		continue
 	fi

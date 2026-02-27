@@ -6,6 +6,25 @@
 # always backward-incompatible.
 
 #
+# A flag which makes stu pass its arguments as arguments to the command.
+# Argument must be a file (not a phony).  This will allow commands to properly pass a list
+# of files to another command.
+#
+
+# Without this feature, we'd have to aggregate first_file and FILES into a single file,
+# and use xargs to pass the files to ./command
+file: --argument first_file --argument [FILES] command
+{
+	./command "$@"
+}
+
+# Avoids repeating 'input'
+>output: command --argument input
+{
+	./command
+}
+
+#
 # A flag which means "delete this file at the end of the Stu run".
 #
 

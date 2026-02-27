@@ -81,6 +81,10 @@ constexpr int ERROR_LOGICAL=      2;
 constexpr int ERROR_FATAL=        4;
 constexpr int ERROR_FORK_CHILD= 127;
 
+#ifndef NDEBUG
+constexpr int ERROR_TRACE=        5;
+#endif /* ! NDEBUG */
+
 /*
  * Build errors (code 1) are errors encountered during the normal operation of Stu.  They
  * indicate failures of the executed commands or errors with files.  Exit status 1 is also

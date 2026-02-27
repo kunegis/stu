@@ -7,23 +7,51 @@
  * and therefore, the choice of which functions have tracing depends on which parts have
  * needed it in the past.
  *
- * To enable tracing for the file src/<name>.cc, set the environment variable
- * $STU_TRACE_<NAME> (all uppercase) to the following: (Example: use $STU_TRACE_DEP to
- * enable tracing in src/dep.{cc,hh})
- *	"1".."9"  Synonym of "stderr"
- *	"log"     Write into the trace logfile (see name below)
- *	"stderr"  Write on stderr
- *	"off"/"0" No tracing (useful to disable a single file when $STU_TRACE_ALL is set)
- *
- * Set $STU_TRACE_ALL to enable tracing in all source code files.
- *
  * There are no trace levels, and it is not possible to output traces into an arbitrary
  * file.
+ *
+ * Set the variable $STU_TRACE to contain trace configuration:
+ *
+ * Individual settings can be separated by semicolon or newlines.  Settings can also be
+ * separated by whitespace, if the setting left of the whitespace contains the LEVEL.
+ * Each setting is in one of the forms:
+ *
+ *     NAME+ = LEVEL
+ *     NAME+                   # LEVEL is '1'
+ *     LEVEL                   # NAME is 'all'
+ *
+ * where NAME is the name of a source file (without src/ or .cc/.hh), and LEVEL is:
+ *     0            Disabled
+ *     1            Ouptut to stderr
+ *     >FILENAME    Output to file
+ *
+ * NAME can also be 'all' to enable traces for all source files.
+ *
+ * To read trace configuration from a file, use STU_TRACE="<FILENAME".
+ *
+ * EXAMPLES
+ *
+ *     STU_TRACE=1              Enable all traces on stderr
+ *     STU_TRACE=all=1          Enable all traces on stderr
+ *     STU_TRACE=>file.log      Send all traces to 'file.log'
+ *     STU_TRACE=all=>file.log  Send all traces to 'file.log'
+ *     STU_TRACE=dep            Send only traces for dep.cc/hh to stderr
+ *     STU_TRACE=dep=1          Send only traces for dep.cc/hh to stderr
+ *     STU_TRACE=dep=>file.log  Send only traces for dep.cc/hh to 'file.log'
+ *     STU_TRACE=all;dep=0      Enable all traces except dep.cc/hh
+ *     STU_TRACE='dep executor' Enable traces for dep.cc/hh and executor.cc/hh
+ *     STU_TRACE='dep executor=>file.log'
+ *                              Send traces for dep.cc/hh and executor.cc/hh to 'file.log'
+ *     STU_TRACE='all=>file.log;dep=1'
+ *                              Send all traces to 'file.log', except for dep.cc/hh to
+ *                              stderr
  */
 
 #ifndef NDEBUG
 
+#include <stdio.h>
 #include <string.h>
+#include <map>
 
 class Trace
 {
@@ -32,7 +60,7 @@ public:
 	{
 	public:
 		const string s;
-		Object(string _s= ""): s(_s) { }
+		Object(string _s= ""): s(_s) {}
 	};
 
 	string trace_class;
@@ -55,18 +83,25 @@ public:
 	static void trace(const char *filename, int line, Args... args);
 
 private:
+	static constexpr int place_len= 30;
+	static constexpr const char *padding_one= "|   ";
+	static constexpr const char *ENV_STU_TRACE= "STU_TRACE";
+	static constexpr const char *TRACE_CLASS_ALL= "all";
+
 	string prefix;
 	static string padding;
 	static std::vector <Trace *> stack;
 	static FILE *file_log;
-	static constexpr int place_len= 30;
-	static constexpr const char *padding_one= "|   ";
-	static constexpr const char *trace_filename= "log/trace.log";
+	static bool global_done;
 
 	void init_file();
+
 	static void print(FILE *file, const char *filename, int line, const char *text);
 	static FILE *open_logfile(const char *filename);
-	static string class_from_filename(const char *filename);
+	static string normalize_trace_class(const char *trace_class);
+	static void init_global();
+	static void init_single(string trace_class, const char *value);
+	static void error(string message= "");
 };
 
 #define TRACE_FUNCTION(a)  Trace trace_object(__func__, __FILE__, __LINE__, Trace::Object(a))

@@ -3,7 +3,6 @@
 # variable.
 #
 * Add tests
-** Have variable with list of allowed files in test directories
 ** Merge the current 'NONDEBUG' flag file with what is needed here.
 
 #

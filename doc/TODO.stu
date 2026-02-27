@@ -2,9 +2,12 @@
 # Trace:  better configuration.  Make it possible to configure via a single environment
 # variable.
 #
+* Add tests
+** Have variable with list of allowed files in test directories
+** Merge the current 'NONDEBUG' flag file with what is needed here.
 
 #
-#  In 'stu -P -Y' output, "Rule(" and ")" should not be in bold
+# In 'stu -P -Y' output, "Rule(" and ")" should not be in bold
 #
 
 #
@@ -35,7 +38,7 @@
 #
 
 #
-# On FreeBSD, "echo '\\-----' outputs to backslashes, but we use it to output one.
+# On FreeBSD, "echo '\\-----' outputs two backslashes, but we use it to output one.
 #
 
 #

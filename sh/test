@@ -125,6 +125,8 @@
 # Note:  we can't use "set -e" here (which is a good general practice in shell scripts),
 # because otherwise we can't use $? to check the exit code of Stu.
 
+ALLOWED_FILES='EXITSTATUS PARALLEL INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT CONTENT EXEC STDOUT NOSECOND NOTTY NOCOLOR COV_TAG NONDEBUG'
+
 output_next()
 {
 	echo >&7 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
@@ -314,26 +316,22 @@ do
 	time_begin_test=$(../../sh/now)
 
 	# Check that all all-uppercase files are of one of the allowed files
-	allowed=",EXITSTATUS,PARALLEL,INSTDOUT,INSTDERR,NOTINSTDERR,STDERR,TTYSTDOUTERR,INTTYSTDOUTERR,CMD,CMDPREFIX,TARGET,INCONTENT,CONTENT,EXEC,STDOUT,NOSECOND,NOTTY,NOCOLOR,COV_TAG,NONDEBUG,"
+	has_exec= ; [ -r "EXEC" ] && has_exec=1
 	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
 	do
-		if expr "$allowed" : ".*,$otherfile,.*" >/dev/null ; then continue ; fi
+		[ "$otherfile" = EXEC -o "$otherfile" = PRELOAD.cc ] && continue
+		if [ "$has_exec" ] ; then
+			test_fail_fatal "EXEC doesn't allow other all-uppercase files except 'PRELOAD.cc' (found '$otherfile')"
+			continue 2 # Continue outer loop
+		fi
+		expr " $ALLOWED_FILES " : ".* $otherfile .*" >/dev/null && continue
 		test_fail_fatal "Invalid file '$otherfile' in test directory"
 		continue 2 # Continue outer loop
 	done
 
 	# The following will save:  list.def.out and list.def.err
 
-	if [ -r EXEC ]; then
-		if [ -r EXITSTATUS -o -r PARALLEL -o -r INSTDOUT -o -r INSTDERR \
-			-o -r STDERR -o -r NOTINSTDERR -o -r CMD -o -r CMDPREFIX \
-			-o -r TARGET -o -r INCONTENT -o -r CONTENT \
-			-o -r STDOUT -o -r NOSECOND -o -r NOTTY -o -r TTYSTDOUTERR -o -r INTTYSTDOUTERR \
-			-o -r NOCOLOR ]; then
-			test_fail_fatal "EXEC does not allow any other file except PRELOAD.cc"
-			continue
-		fi
-
+	if [ -r EXEC ] ; then
 		echo >&7 ./EXEC
 		./EXEC 1>&7
 		if [ "$?" != 0 ]; then

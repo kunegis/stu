@@ -8,6 +8,7 @@ std::map <string, FILE *> Trace::files;
 string Trace::padding;
 std::vector <Trace *> Trace::stack;
 FILE *Trace::file_log= nullptr;
+bool Trace::global_done= false;
 
 Trace::Trace(const char *function_name, const char *filename, int line, Object object)
 {
@@ -36,6 +37,7 @@ Trace::~Trace()
 
 void Trace::init_file()
 {
+	init_global();
 	auto i= files.find(trace_class);
 	if (i != files.end()) {
 		file= i->second;
@@ -43,27 +45,16 @@ void Trace::init_file()
 	}
 
 	string name= fmt("STU_TRACE_%s", trace_class);
-	string name_all= "STU_TRACE_ALL";
+	string name_all= ENV_STU_TRACE_ALL;
 	string vars[]= {name, name_all};
 	files[trace_class]= file= nullptr;
 	for (const string &var: vars) {
 		const char *env= getenv(var.c_str());
-		if (env && (!strcmp(env, "off") || !strcmp(env, "0"))) {
-			break;
-		} else if (!env || !env[0]) {
-			continue;
-		} else if (!strcmp(env, "log")) {
-			if (!file_log)
-				file_log= open_logfile(trace_filename);
-			files[trace_class]= file= file_log;
-		} else if (!strcmp(env, "stderr") ||
-			(env[0] >= '1' && env[0] <= '9' && !env[1])) {
-			files[trace_class]= file= stderr;
-		} else {
-			print_error(fmt("invalid value for trace %s=%s",
-					var.c_str(), env));
-			error_exit();
-		}
+		if (init_single(trace_class, env)) break;
+	}
+	i= files.find(trace_class);
+	if (i != files.end()) {
+		file= i->second;
 	}
 }
 
@@ -119,6 +110,74 @@ void Trace::print(FILE *file, const char *filename, int line, const char *text)
 			spaces, "",
 			text) < 0) {
 		print_errno("fprintf", filename);
+		error_exit();
+	}
+}
+
+void Trace::init_global()
+{
+	if (global_done) return;
+	const char *env= getenv(ENV_STU_TRACE);
+	if (!env) return;
+	for (;;) {
+		while (isspace(*env) || *env == ';') ++env;
+		if (!*env) break;
+		std::vector <string> trace_classes;
+		while (*env && *env != ';') {
+			const char *p= env;
+			while (*p >= 'A' && *p <= 'Z' || *p == '_') ++p;
+			if (p == env) {
+				print_error(fmt("invalid value in $%s (1)", ENV_STU_TRACE));
+				error_exit();
+			}
+			trace_classes.push_back(string(env, p-env));
+			env= p;
+			while (isspace(*env)) ++env;
+		}
+		while (isspace(*env)) ++env;
+		string value;
+		if (*env == ';' || !*env) {
+			value= "stderr";
+		} else if (*env == '=') {
+			++env;
+			while (isspace(*env)) ++env;
+			const char *p= env;
+			while (isalnum(*p)) ++p;
+			if (p == env) {
+				print_error(fmt("invalid value in $%s (3)", ENV_STU_TRACE));
+				error_exit();
+			}
+			value= string(env, p);
+			env= p;
+			while (isspace(*env)) ++env;
+		} else {
+			print_error(fmt("invalid value in $%s (2)", ENV_STU_TRACE));
+			error_exit();
+		}
+		for (string trace_class: trace_classes) {
+			init_single(trace_class, value.c_str());
+		}
+	}
+}
+
+bool Trace::init_single(string trace_class, const char *value)
+{
+	if (value && (!strcmp(value, "off") || !strcmp(value, "0"))) {
+		return true;
+	} else if (!value || !value[0]) {
+		return false;
+	} else if (!strcmp(value, "log")) {
+		if (!file_log)
+			file_log= open_logfile(trace_filename);
+		files[trace_class]= file_log;
+		return false;
+	} else if (!strcmp(value, "stderr") ||
+		(value[0] >= '1' && value[0] <= '9' && !value[1])) {
+		files[trace_class]= stderr;
+		return false;
+	} else {
+		print_error(fmt("invalid value for trace %s: %s",
+				trace_class, value));
 		error_exit();
 	}
 }

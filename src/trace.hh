@@ -7,6 +7,11 @@
  * and therefore, the choice of which functions have tracing depends on which parts have
  * needed it in the past.
  *
+ * There are no trace levels, and it is not possible to output traces into an arbitrary
+ * file.
+ *
+ * (1) Tracing via individual environment variables
+ *
  * To enable tracing for the file src/<name>.cc, set the environment variable
  * $STU_TRACE_<NAME> (all uppercase) to the following: (Example: use $STU_TRACE_DEP to
  * enable tracing in src/dep.{cc,hh})
@@ -17,8 +22,17 @@
  *
  * Set $STU_TRACE_ALL to enable tracing in all source code files.
  *
- * There are no trace levels, and it is not possible to output traces into an arbitrary
- * file.
+ * (2) Tracing via global setting
+ *
+ * Set the variable $STU_TRACE to contain trace configuration:
+ *
+ * * Individual settings can be separated by semicolon or newlines.
+ * * Each setting is of the form
+ *
+ *     NAME* [ = LEVEL]
+ *
+ * where NAME is the name of a source file (without .cc/.hh), and level is as described
+ * above (0..9, log, stderr, off).
  */
 
 #ifndef NDEBUG
@@ -32,7 +46,7 @@ public:
 	{
 	public:
 		const string s;
-		Object(string _s= ""): s(_s) { }
+		Object(string _s= ""): s(_s) {}
 	};
 
 	string trace_class;
@@ -55,18 +69,25 @@ public:
 	static void trace(const char *filename, int line, Args... args);
 
 private:
+	static constexpr int place_len= 30;
+	static constexpr const char *padding_one= "|   ";
+	static constexpr const char *trace_filename= "log/trace.log";
+	static constexpr const char *ENV_STU_TRACE= "STU_TRACE";
+	static constexpr const char *ENV_STU_TRACE_ALL= "STU_TRACE_ALL";
+
 	string prefix;
 	static string padding;
 	static std::vector <Trace *> stack;
 	static FILE *file_log;
-	static constexpr int place_len= 30;
-	static constexpr const char *padding_one= "|   ";
-	static constexpr const char *trace_filename= "log/trace.log";
+	static bool global_done;
 
 	void init_file();
+
 	static void print(FILE *file, const char *filename, int line, const char *text);
 	static FILE *open_logfile(const char *filename);
 	static string class_from_filename(const char *filename);
+	static void init_global();
+	static bool init_single(string trace_class, const char *value);
 };
 
 #define TRACE_FUNCTION(a)  Trace trace_object(__func__, __FILE__, __LINE__, Trace::Object(a))

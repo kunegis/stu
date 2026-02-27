@@ -1,0 +1,14 @@
+Stu is compiled in mutiple variants, e.g. debug variant, non-debug variant, etc.
+
+VARIANT   NDEBUG   MAKE CHECK TEST WARNINGS COMPILER
+
+debug     -        -    -     Y    Y        GCC      Main debug variant
+cdebug    -        -    Y     -    -        any      Debug variant, no compilation warnings
+ndebug    defined  Y    Y     Y    -        any      Release version
+cov       defined  -    -     Y    -        GCC      Coverage
+sani      -        -    -     Y    -        GCC      Sanitizer
+prof      defined  -    -     -    -        GCC      Profiler
+analyzer  -        -    -     -    -        none     Static analyzer
+
+The compiled filename is bin/stu.$VARIANT, except for variant 'ndebug', where the filename
+is bin/stu, because that is the version that gets installed.

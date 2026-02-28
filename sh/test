@@ -211,7 +211,6 @@ filter_tests()
 	{
 		while IFS= read -r name ; do
 			[ -e "$name"/VARIANT ] || { echo "$name" ; continue ; }
-			cat >&2 "$name"/VARIANT
 			grep -q -E -e '![[:space:]]*'"$VARIANT"'($|!|[[:space:]])' "$name"/VARIANT && continue
 			grep -q -E -e '(^|[[:alpha:]][[:space:]])[[:space:]]*'"$VARIANT"'($|!|[[:space:]])' "$name"/VARIANT && { echo "$name" ; continue ; }
 			grep -q -E -e '(^|[[:alpha:]][[:space:]])[[:space:]]*[[:alpha:]]' "$name"/VARIANT || { echo "$name" ; continue ; }

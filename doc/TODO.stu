@@ -2,7 +2,6 @@
 # Trace:  better configuration.  Make it possible to configure via a single environment
 # variable.
 #
-* VARIANT file
 * Add tests
 
 #

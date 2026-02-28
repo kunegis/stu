@@ -3,7 +3,6 @@
 # variable.
 #
 
-file_executor # + STU_TRACE_DEP=1
 dep.hh
 src/dep.hh
 dep executor

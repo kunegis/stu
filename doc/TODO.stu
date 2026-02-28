@@ -2,7 +2,21 @@
 # Trace:  better configuration.  Make it possible to configure via a single environment
 # variable.
 #
-* Add tests
+
+dep # Support lowercase
+file_executor
+file_executor # + STU_TRACE_DEP=1
+dep.hh
+src/dep.hh
+dep executor
+dep;executor;
+dep;executor
+dep ; executor ;
+all; dep=0;
+all; dep executor=0;
+all; dep=off;
+all=0 # + STU_TRACE_DEP=1
+*_executor;
 
 #
 # In 'stu -P -Y' output, "Rule(" and ")" should not be in bold

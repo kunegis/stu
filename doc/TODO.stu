@@ -3,7 +3,6 @@
 # variable.
 #
 
-dep # Support lowercase
 file_executor
 file_executor # + STU_TRACE_DEP=1
 dep.hh
@@ -17,6 +16,10 @@ all; dep executor=0;
 all; dep=off;
 all=0 # + STU_TRACE_DEP=1
 *_executor;
+1 # Enable all
+# STU_TRACE set but epty does nothing
+1;dep=0
+1 # + $STU_TRACE_DEP=0
 
 #
 # In 'stu -P -Y' output, "Rule(" and ")" should not be in bold

@@ -132,7 +132,8 @@ void Trace::init_global()
 		while (*env && *env != ';') {
 			fprintf(stderr, "F env=%s\n", env);//
 			const char *p= env;
-			while (*p >= 'A' && *p <= 'Z' || *p == '_') ++p;
+			while (isalpha(*p) || *p && strchr("_./", *p)) ++p;
+//			while (*p >= 'A' && *p <= 'Z' || *p == '_') ++p;
 			fprintf(stderr, "F p=%s\n", p);//
 			if (p == env) {
 				print_error(fmt("invalid value in $%s: %s (1)",
@@ -172,6 +173,7 @@ void Trace::init_global()
 			error_exit();
 		}
 		for (string trace_class: trace_classes) {
+			std::transform(trace_class.begin(), trace_class.end(), trace_class.begin(), ::toupper);
 			init_single(trace_class, value.c_str());
 		}
 	}

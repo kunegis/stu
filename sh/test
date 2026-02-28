@@ -86,7 +86,8 @@
 # INTTYSTDOUTERR Each line in the file must be present in stdout or stderr in TTY mode
 # COV_TAG      The file must exist when the test uses the cov_tag mechanism, to exclude
 #              the test from the ndebug variant.
-# NONDEBUG     Exclude test from NDEBUG
+# VARIANT      The variant(s) in which the test should be executed.  Can contain any
+#              number of variants.  Each can be preceded by '!' to exclude it.
 # PRELOAD.cc   If present, the file is compiled as a shared object and Stu executed with
 #              LD_PRELOAD set to that file.
 # EXEC         An alternative test script; it can do anything and should return a sensible
@@ -125,7 +126,7 @@
 # Note:  we can't use "set -e" here (which is a good general practice in shell scripts),
 # because otherwise we can't use $? to check the exit code of Stu.
 
-ALLOWED_FILES='EXITSTATUS PARALLEL INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT CONTENT EXEC STDOUT NOSECOND NOTTY NOCOLOR COV_TAG NONDEBUG'
+ALLOWED_FILES='EXITSTATUS PARALLEL INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT CONTENT EXEC STDOUT NOSECOND NOTTY NOCOLOR COV_TAG VARIANT'
 
 output_next()
 {
@@ -180,9 +181,8 @@ test_fail_fatal()
 	cd ..
 }
 
-sort_tests()
+filter_tests()
 {
-	ls -1U |
 	{
 		if [ "$nolong" ] ; then
 			grep -E -v -e '^long-'
@@ -193,7 +193,7 @@ sort_tests()
 	{
 		if [ "$nopreload" ] ; then
 			while IFS= read -r name ; do
-				[ -f "$name"/PRELOAD.cc ] || echo "$name"
+				[ -e "$name"/PRELOAD.cc ] || echo "$name"
 			done
 		else
 			cat
@@ -204,10 +204,28 @@ sort_tests()
 			cat
 		else
 			while IFS= read -r name ; do
-				! [ -e "$name"/COV_TAG ] && ! [ -e "$name"/NONDEBUG ] && echo "$name"
+				! [ -e "$name"/COV_TAG ] && echo "$name"
 			done
 		fi
 	} |
+	{
+		while IFS= read -r name ; do
+			echo >&2 "AAA name='$name' VARIANT='$VARIANT'" ##
+			[ -e "$name"/VARIANT ] || { echo "$name" ; continue ; }
+			cat >&2 "$name"/VARIANT
+			echo >&2 "AAA 'VARIANT' exists" ##
+			grep -q -E -e '![[:space:]]*'"$VARIANT"'($|!|[[:space:]])' "$name"/VARIANT && continue
+			echo >&2 "AAA not excluded" ##
+			grep -q -E -e '(^|[[:alpha:]][[:space:]])[[:space:]]*'"$VARIANT"'($|!|[[:space:]])' "$name"/VARIANT && { echo "$name" ; continue ; }
+			echo >&2 "AAA not included" ##
+			grep -q -E -e '(^|[[:alpha:]][[:space:]])[[:space:]]*[[:alpha:]]' "$name"/VARIANT || { echo "$name" ; continue ; }
+			echo >&2 "AAA not included by default" ##
+		done
+	}
+}
+
+sort_tests()
+{
 	sed -e '
 s,^\(.*\)$,\1 \1,
 s,^\([a-z].*\)$,9999-\1,
@@ -274,20 +292,21 @@ cd tests
 
 if [ "$1" ] ; then
 	tests="$@"
-	subset=" subset($(echo $(echo $tests | tr ' ' '\n' | wc -l)))"
+	tests=$(echo $tests | filter_tests)
+	echo >&2 "tests='$tests'" ##
+	subset=" subset($(echo $(echo $tests | tr ' ' '\n' | grep -E -e . | wc -l)))"
 else
 	# Note:  At some point there might be too many tests, but we don't
 	# want to use ls -1 | { ... } because that would make it impossible
 	# to do "error=1", as setting the variable $error in a subshell
 	# would have no effect.
-	tests=$(sort_tests)
+	tests=$(ls -1U | filter_tests | sort_tests)
 	subset=
 	[ "$nolong" ]    && subset=$subset' <nolong>'
 	[ "$nopreload" ] && subset=$subset' <nopreload>'
 fi
 
-count_total=$(echo $(echo $tests | sed 's, ,\
-,g' | wc -l))
+count_total=$(echo $(echo $tests | tr ' ' '\n' | grep -E -e . | wc -l))
 
 # In the next line, '$tests' expands with glob replacement
 for file in $tests
@@ -319,9 +338,9 @@ do
 	has_exec= ; [ -r "EXEC" ] && has_exec=1
 	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
 	do
-		[ "$otherfile" = EXEC -o "$otherfile" = PRELOAD.cc ] && continue
+		[ "$otherfile" = EXEC -o "$otherfile" = VARIANT ] && continue
 		if [ "$has_exec" ] ; then
-			test_fail_fatal "EXEC doesn't allow other all-uppercase files except 'PRELOAD.cc' (found '$otherfile')"
+			test_fail_fatal "EXEC doesn't allow other all-uppercase files except VARIANT (found '$otherfile')"
 			continue 2 # Continue outer loop
 		fi
 		expr " $ALLOWED_FILES " : ".* $otherfile .*" >/dev/null && continue
@@ -372,7 +391,7 @@ do
 		# Exit status
 		exitstatus_correct=0
 		if [ -r EXITSTATUS ]; then
-			[ 1 = "$(echo $(grep -E '[^[:space:]]' EXITSTATUS | wc -l))" ] || {
+			[ 1 = "$(echo $(<EXITSTATUS wc -l))" ] || {
 				test_fail_fatal "Expected EXITSTATUS to contain a single non-empty line"
 				continue
 			}

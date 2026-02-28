@@ -17,7 +17,7 @@ test: \
     log/test_unit.ndebug \
     log/test_clean_last \
     sani
-.PHONY: all clean install check test cov prof sani analyzer
+.PHONY: all clean install check test cov sani prof analyzer
 
 conf/CXX: sh/configure
 	sh/configure
@@ -35,44 +35,39 @@ CXXFLAGS_DEBUG= \
     -Wcast-align -Wrestrict -Wno-parentheses -Wlogical-op -Wredundant-decls \
     -Wno-pessimizing-move -Wsuggest-override -Wunused-function \
     -D_GLIBCXX_DEBUG
+CXXFLAGS_CDEBUG=   -O0 -D_GLIBCXX_DEBUG -w
+CXXFLAGS_COV=      -DNDEBUG --coverage -lgcov -O0 -DSTU_COV
 CXXFLAGS_SANI= \
     -ggdb -O2 -Werror -Wno-unused-result -fsanitize=undefined \
     -fsanitize-undefined-trap-on-error
-CXXFLAGS_CDEBUG=   -O0 -D_GLIBCXX_DEBUG -w
-CXXFLAGS_SNDEBUG=  -DNDEBUG -O2 -fwhole-program
 CXXFLAGS_PROF=     -DNDEBUG -pg -O2
-CXXFLAGS_COV=      -DNDEBUG --coverage -lgcov -O0 -DSTU_COV
 CXXFLAGS_ANALYZER= -fanalyzer
 
-bin/stu:                conf/CXX src/*.cc src/*.hh src/version.hh
-	@mkdir -p bin log
-	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
-	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
-bin/stu.debug:          conf/CXX src/*.cc src/*.hh src/version.hh
+bin/stu.debug:    conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
 	@     $$(cat conf/CXX) $(CXXFLAGS_DEBUG)            $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.debug
-bin/stu.cdebug:         conf/CXX src/*.cc src/*.hh src/version.hh
+bin/stu.cdebug:   conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug
 	@     $$(cat conf/CXX) $(CXXFLAGS_CDEBUG)           $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cdebug
-bin/stu.sndebug:        conf/CXX src/*.cc src/*.hh src/version.hh
+bin/stu:          conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
-	@echo $$(cat conf/CXX) $(CXXFLAGS_SNDEBUG)          $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sndebug
-	@     $$(cat conf/CXX) $(CXXFLAGS_SNDEBUG)          $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sndebug
-bin/stu.prof:           conf/CXX src/*.cc src/*.hh src/version.hh
-	@mkdir -p bin log
-	@echo $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
-	@     $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
-bin/stu.cov:            conf/CXX src/*.cc src/*.hh src/version.hh
+	@echo $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
+	@     $$(cat conf/CXX) $$(cat conf/CXXFLAGS_NDEBUG) $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu
+bin/stu.cov:      conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_COV)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov
 	@     $$(cat conf/CXX) $(CXXFLAGS_COV)              $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.cov
-bin/stu.sani_undefined: conf/CXX src/*.cc src/*.hh src/version.hh
+bin/stu.sani:     conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
-	@echo $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani_undefined
-	@     $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani_undefined
-bin/stu.analyzer:       conf/CXX src/*.cc src/*.hh src/version.hh
+	@echo $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani
+	@     $$(cat conf/CXX) $(CXXFLAGS_SANI)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.sani
+bin/stu.prof:     conf/CXX src/*.cc src/*.hh src/version.hh
+	@mkdir -p bin log
+	@echo $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
+	@     $$(cat conf/CXX) $(CXXFLAGS_PROF)             $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.prof
+bin/stu.analyzer: conf/CXX src/*.cc src/*.hh src/version.hh
 	@mkdir -p bin log
 	@echo $$(cat conf/CXX) $(CXXFLAGS_ANALYZER)         $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.analyzer
 	@     $$(cat conf/CXX) $(CXXFLAGS_ANALYZER)         $$(cat conf/CXXFLAGS) src/stu.cc -o bin/stu.analyzer
@@ -99,24 +94,15 @@ log/test_unit.ndebug:          bin/stu                sh/test tests tests/*/*
 log/test_unit.ndebug-nopreload:bin/stu                sh/test tests tests/*/*
 	@echo NDEBUG=1               nopreload=1 sh/test
 	@     NDEBUG=1               nopreload=1 sh/test && mkdir -p log && touch $@
-log/test_unit.sani_undefined:  bin/stu.sani_undefined sh/test tests tests/*/*
-	@echo VARIANT=sani_undefined nopreload=1 sh/test
-	@     VARIANT=sani_undefined nopreload=1 sh/test && mkdir -p log && touch $@
+log/test_unit.sani:  bin/stu.sani sh/test tests tests/*/*
+	@echo VARIANT=sani nopreload=1 sh/test
+	@     VARIANT=sani nopreload=1 sh/test && mkdir -p log && touch $@
 log/test_unit.cov:             bin/stu.cov       sh/test tests tests/*/*
 	rm -f bin/stu.cov-stu.gcda
 	@echo VARIANT=cov                        sh/test
 	@     VARIANT=cov                        sh/test && mkdir -p log && touch $@
 
-install:  sh/install bin/stu man/stu.1
-	sh/install
-clean:
-	rm -Rf bin/ conf/ log/ cov/ src/version.hh
-	sh/rm_tmps
-
-MANPAGE:  man/stu.1
-	MANWIDTH=80 man man/stu.1 >MANPAGE
-man/stu.1:  man/stu.1.in VERSION sh/mkman
-	sh/mkman
+sani: log/test_unit.sani
 
 cov:  log/cov
 log/cov:  sh/cov_eval cov/OVERVIEW
@@ -130,5 +116,15 @@ bin/analysis.prof:  bin/gmon.out
 bin/gmon.out:   bin/stu.prof tests/long-parallel-1/main.stu
 	cd bin && ./stu.prof -j10 -f ../tests/long-parallel-1/main.stu && ../sh/rm_tmps
 
-sani: log/test_unit.sani_undefined
 analyzer:  bin/stu.analyzer
+
+install:  sh/install bin/stu man/stu.1
+	sh/install
+clean:
+	rm -Rf bin/ conf/ log/ cov/ src/version.hh
+	sh/rm_tmps
+
+MANPAGE:  man/stu.1
+	MANWIDTH=80 man man/stu.1 >MANPAGE
+man/stu.1:  man/stu.1.in VERSION sh/mkman
+	sh/mkman

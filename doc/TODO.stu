@@ -2,8 +2,8 @@
 # Trace:  better configuration.  Make it possible to configure via a single environment
 # variable.
 #
+* VARIANT file
 * Add tests
-** Merge the current 'NONDEBUG' flag file with what is needed here.
 
 #
 # In 'stu -P -Y' output, "Rule(" and ")" should not be in bold
@@ -25,8 +25,8 @@
 #
 
 #
-# sh/test:  It should not be necessary to set nopreload=1 with VARIANT=sani_undefined;
-# that should be automatic.
+# sh/test:  It should not be necessary to set nopreload=1 with VARIANT=sani/cdebug and
+# NDEBUG; that should be automatic.
 #
 
 #
@@ -481,4 +481,8 @@ B {}
 
 #
 # Support negation of flags using +o, +p, etc.
+#
+
+#
+# sh/test: In the ndebug variant, we should pass VARIANT=ndebug, and not NDEBUG=1.
 #

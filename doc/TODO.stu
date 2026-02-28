@@ -3,8 +3,6 @@
 # variable.
 #
 
-dep.hh
-src/dep.hh
 dep executor
 dep;executor;
 dep;executor

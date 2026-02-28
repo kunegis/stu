@@ -12,8 +12,8 @@ bool Trace::global_done= false;
 
 Trace::Trace(const char *function_name, const char *filename, int line, Object object)
 {
-	const char *filename_stripped= strip_dir(filename);
-	trace_class= class_from_filename(filename_stripped);
+//	const char *filename_stripped= strip_dir(filename);
+	trace_class= normalize_trace_class(filename);
 	stack.push_back(this);
 	init_file();
 	if (!file) return;
@@ -79,11 +79,15 @@ const char *Trace::strip_dir(const char *s)
 	return r+1;
 }
 
-string Trace::class_from_filename(const char *filename)
+string Trace::normalize_trace_class(const char *s)
 {
-	const char *r= strchr(filename, '.');
-	assert(r);
-	string ret= string(filename, r - filename);
+	s= strip_dir(s);
+	string ret;
+	const char *r= strchr(s, '.');
+	if (r)
+		ret= string(s, r - s);
+	else
+		ret= string(s);
 	std::transform(ret.begin(), ret.end(), ret.begin(), ::toupper);
 	return ret;
 }
@@ -133,8 +137,7 @@ void Trace::init_global()
 			fprintf(stderr, "F env=%s\n", env);//
 			const char *p= env;
 			while (isalpha(*p) || *p && strchr("_./", *p)) ++p;
-//			while (*p >= 'A' && *p <= 'Z' || *p == '_') ++p;
-			fprintf(stderr, "F p=%s\n", p);//
+//			fprintf(stderr, "F p=%s\n", p);//
 			if (p == env) {
 				print_error(fmt("invalid value in $%s: %s (1)",
 						ENV_STU_TRACE, p));
@@ -143,11 +146,11 @@ void Trace::init_global()
 			trace_classes.push_back(string(env, p-env));
 			env= p;
 			while (isspace(*env)) ++env;
-			fprintf(stderr, "G env=%s\n", env);//
+//			fprintf(stderr, "G env=%s\n", env);//
 		}
-		fprintf(stderr, "H env=%s\n", env);//
+//		fprintf(stderr, "H env=%s\n", env);//
 		while (isspace(*env)) ++env;
-		fprintf(stderr, "I env=%s\n", env);//
+//		fprintf(stderr, "I env=%s\n", env);//
 		string value;
 		if (*env == ';' || !*env) {
 			fprintf(stderr, "J env=%s\n", env);//
@@ -172,10 +175,9 @@ void Trace::init_global()
 			print_error(fmt("invalid value in $%s (2)", ENV_STU_TRACE));
 			error_exit();
 		}
-		for (string trace_class: trace_classes) {
-			std::transform(trace_class.begin(), trace_class.end(), trace_class.begin(), ::toupper);
-			init_single(trace_class, value.c_str());
-		}
+		for (string trace_class: trace_classes)
+			init_single(
+				normalize_trace_class(trace_class.c_str()), value.c_str());
 	}
 }
 

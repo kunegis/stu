@@ -85,7 +85,7 @@ private:
 
 	static void print(FILE *file, const char *filename, int line, const char *text);
 	static FILE *open_logfile(const char *filename);
-	static string class_from_filename(const char *filename);
+	static string normalize_trace_class(const char *trace_class);
 	static void init_global();
 	static bool init_single(string trace_class, const char *value);
 };

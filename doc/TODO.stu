@@ -3,9 +3,6 @@
 # variable.
 #
 
-dep;executor;
-dep;executor
-dep ; executor ;
 all; dep=0;
 all; dep executor=0;
 all; dep=off;

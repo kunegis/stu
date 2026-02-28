@@ -9,7 +9,8 @@ find_source_files()
 {
 	find . -type f |
 		grep -v -E -e '~$' -e '^\./(bin|cov|tests|log|.git)/' -e '^\./man/stu\.1$'
-	find tests -name EXEC -o -name PRELOAD.cc
+	find tests -name EXEC -o -name PRELOAD.cc -o -name EXITSTATUS -o -name CMD \
+	     -o -name VARIANT
 }
 
 clean()

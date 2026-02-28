@@ -210,16 +210,11 @@ filter_tests()
 	} |
 	{
 		while IFS= read -r name ; do
-			echo >&2 "AAA name='$name' VARIANT='$VARIANT'" ##
 			[ -e "$name"/VARIANT ] || { echo "$name" ; continue ; }
 			cat >&2 "$name"/VARIANT
-			echo >&2 "AAA 'VARIANT' exists" ##
 			grep -q -E -e '![[:space:]]*'"$VARIANT"'($|!|[[:space:]])' "$name"/VARIANT && continue
-			echo >&2 "AAA not excluded" ##
 			grep -q -E -e '(^|[[:alpha:]][[:space:]])[[:space:]]*'"$VARIANT"'($|!|[[:space:]])' "$name"/VARIANT && { echo "$name" ; continue ; }
-			echo >&2 "AAA not included" ##
 			grep -q -E -e '(^|[[:alpha:]][[:space:]])[[:space:]]*[[:alpha:]]' "$name"/VARIANT || { echo "$name" ; continue ; }
-			echo >&2 "AAA not included by default" ##
 		done
 	}
 }
@@ -293,7 +288,6 @@ cd tests
 if [ "$1" ] ; then
 	tests="$@"
 	tests=$(echo $tests | filter_tests)
-	echo >&2 "tests='$tests'" ##
 	subset=" subset($(echo $(echo $tests | tr ' ' '\n' | grep -E -e . | wc -l)))"
 else
 	# Note:  At some point there might be too many tests, but we don't

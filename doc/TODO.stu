@@ -486,3 +486,8 @@ B {}
 #
 # sh/test: In the ndebug variant, we should pass VARIANT=ndebug, and not NDEBUG=1.
 #
+
+#
+# sh/test: deprecate the PARALLEL file.  Instead, tests should specify "-j..." in the CMD
+# file.
+#

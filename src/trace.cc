@@ -48,19 +48,6 @@ void Trace::init_file()
 		file= i->second;
 		return;
 	}
-
-//	string name= fmt("STU_TRACE_%s", trace_class);
-//	string name_all= ENV_STU_TRACE_ALL;
-//	string vars[]= {name, name_all};
-//	files[trace_class]= file= nullptr;
-//	for (const string &var: vars) {
-//		const char *env= getenv(var.c_str());
-//		if (init_single(trace_class, env)) break;
-//	}
-//	i= files.find(trace_class);
-//	if (i != files.end()) {
-//		file= i->second;
-//	}
 }
 
 FILE *Trace::open_logfile(const char *filename)
@@ -68,7 +55,7 @@ FILE *Trace::open_logfile(const char *filename)
 	FILE *ret= fopen(filename, "w");
 	if (!ret) {
 		print_errno("fopen", filename);
-		error_exit();
+		error();
 	}
 	int flags= fcntl(fileno(ret), F_GETFL, 0);
 	if (flags >= 0)
@@ -93,7 +80,7 @@ string Trace::normalize_trace_class(const char *s)
 		ret= string(s, r - s);
 	else
 		ret= string(s);
-	std::transform(ret.begin(), ret.end(), ret.begin(), ::toupper);
+	std::transform(ret.begin(), ret.end(), ret.begin(), ::tolower);
 	return ret;
 }
 
@@ -119,19 +106,19 @@ void Trace::print(FILE *file, const char *filename, int line, const char *text)
 			spaces, "",
 			text) < 0) {
 		print_errno("fprintf", filename);
-		error_exit();
+		error();
 	}
 }
 
 void Trace::init_global()
 {
-	fprintf(stderr, "A\n");//
+//	fprintf(stderr, "A\n");//
 	if (global_done) return;
 	global_done= true;
-	fprintf(stderr, "B\n");//
+//	fprintf(stderr, "B\n");//
 	const char *env= getenv(ENV_STU_TRACE);
 	if (!env) return;
-	fprintf(stderr, "C env='%s'\n", env);//
+	fprintf(stderr, "C env=%s\n", env);//
 	for (;;) {
 		fprintf(stderr, "D env=%s\n", env);//
 		while (isspace(*env) || *env == ';') ++env;
@@ -141,16 +128,12 @@ void Trace::init_global()
 		while (*env && *env != ';' && *env != '\n' && *env != '=') {
 			fprintf(stderr, "F env=%s\n", env);//
 			const char *p= env;
-			while (isalpha(*p) || *p && strchr("_./", *p)) ++p;
+			while (*p >= 'a' && *p <= 'z' || *p == '_') ++p;
 			fprintf(stderr, "Fa p=%s\n", p);//
 			if (p == env) {
 				fprintf(stderr, "Fb env=%s\n", p);//
 				trace_classes.push_back(TRACE_CLASS_ALL);
 				break;
-//				print_error(fmt("invalid value in $%s: %s (1)",
-//						ENV_STU_TRACE, p));
-//				error_exit();
-				
 			} else {
 				fprintf(stderr, "Fc env=%s\n", p);//
 				trace_classes.push_back(string(env, p-env));
@@ -168,23 +151,22 @@ void Trace::init_global()
 			value= "1";
 		} else if (*env) {
 			fprintf(stderr, "K env=%s\n", env);//
-			if (*env == '=') ++env;
+			if (trace_classes.size() && *env == '=') ++env;
+			fprintf(stderr, "Ka env=%s\n", env);//
 			while (isspace(*env) && *env != '\n') ++env;
 			fprintf(stderr, "L env=%s\n", env);//
 			const char *p= env;
 			while (isalnum(*p)) ++p;
 			fprintf(stderr, "M env=%s\n", env);//
 			if (p == env) {
-				print_error(fmt("invalid value in $%s (3)", ENV_STU_TRACE));
-				error_exit();
+				error(fmt("invalid value in $%s (3)", ENV_STU_TRACE));
 			}
 			value= string(env, p);
 			env= p;
 			while (isspace(*env) || *env == '\n') ++env;
 			fprintf(stderr, "N env=%s\n", env);//
 		} else {
-			print_error(fmt("invalid value in $%s (2)", ENV_STU_TRACE));
-			error_exit();
+			error(fmt("invalid value in $%s (2)", ENV_STU_TRACE));
 		}
 		for (string trace_class: trace_classes)
 			init_single(
@@ -196,9 +178,8 @@ void Trace::init_single(string trace_class, const char *value)
 {
 	fprintf(stderr, "init_single trace_class='%s' value='%s'\n",
 		trace_class.c_str(), value);//
-	if (!value || !value[0]) {
-		/* Nothing */
-	} else if (value && (!strcmp(value, "0"))) {
+	if (!value || !value[0]) return;
+	if (!strcmp(value, "0")) {
 		files[trace_class]= nullptr;
 	} else if (!strcmp(value, "@")) {
 		if (!file_log)
@@ -207,10 +188,17 @@ void Trace::init_single(string trace_class, const char *value)
 	} else if (!strcmp(value, "1")) {
 		files[trace_class]= stderr;
 	} else {
-		print_error(fmt("invalid value for trace %s: %s",
+		error(fmt("invalid value for trace %s: %s",
 				trace_class, value));
-		error_exit();
 	}
+}
+
+void Trace::error(string message)
+{
+	if (!message.empty()) {
+		fprintf(stderr, "%s: Trace error: %s\n", dollar_zero, message.c_str());
+	}
+	exit(ERROR_TRACE);
 }
 
 #endif /* ! NDEBUG */

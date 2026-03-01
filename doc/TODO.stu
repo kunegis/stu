@@ -14,7 +14,8 @@ all=1 dep=0
 ;;dep
 ;;;dep
 1;dep=log
-   
+all dep= 1 # Works, but redundant
+
 #
 # In 'stu -P -Y' output, "Rule(" and ")" should not be in bold
 #

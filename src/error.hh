@@ -79,6 +79,7 @@
 constexpr int ERROR_BUILD=        1;
 constexpr int ERROR_LOGICAL=      2;
 constexpr int ERROR_FATAL=        4;
+constexpr int ERROR_TRACE=        5;
 constexpr int ERROR_FORK_CHILD= 127;
 
 /*

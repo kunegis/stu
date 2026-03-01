@@ -127,6 +127,7 @@
 # because otherwise we can't use $? to check the exit code of Stu.
 
 ALLOWED_FILES='EXITSTATUS PARALLEL INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT CONTENT EXEC STDOUT NOSECOND NOTTY NOCOLOR COV_TAG VARIANT'
+error_file=${TMPDIR:-/tmp}/test.$$.error
 
 output_next()
 {
@@ -160,11 +161,12 @@ output_success()
 test_fail()
 {
 	echo >&2 "$0: ($file) *** $1"
-	error=1
+	echo 1 >"$error_file"
 }
 
 test_fail_fatal_no_cd()
 {
+##	echo >&2 test_fail_fatal_no_cd ##
 	echo >&2 "$0: ($file) *** $1"
 	echo "$file" >&6
 	[ "$notall" ] && {
@@ -173,10 +175,12 @@ test_fail_fatal_no_cd()
 	}
 	ret=1
 	count_failed=$(( count_failed + 1 ))
+##	echo >&2 "count_failed='$count_failed'" ##
 }
 
 test_fail_fatal()
 {
+##	echo >&2 test_fail_fatal ##
 	test_fail_fatal_no_cd "$@"
 	cd ..
 }
@@ -305,7 +309,7 @@ count_total=$(echo $(echo $tests | tr ' ' '\n' | grep -E -e . | wc -l))
 for file in $tests
 do
 	file=$(echo "$file" | sed -e 's,^tests/,,')
-	error=0
+	error=0 ; echo 0 >"$error_file"
 
 	[ -d "$file" ] ||
 		{ test_fail_fatal_no_cd "Expected '$file' to be a directory" ; continue ; }
@@ -329,7 +333,7 @@ do
 
 	# Check that all all-uppercase files are of one of the allowed files
 	has_exec= ; [ -r "EXEC" ] && has_exec=1
-	for otherfile in $(ls -1 | sed -e '/^[A-Z]*$/!d')
+	for otherfile in $(ls -1dU | grep -E -e '^[A-Z]*$')
 	do
 		[ "$otherfile" = EXEC -o "$otherfile" = VARIANT ] && continue
 		if [ "$has_exec" ] ; then
@@ -562,7 +566,7 @@ do
 				done
 			fi
 
-			if [ -r EXITSTATUS ] && ! [ -r NOCOLOR ] ; then
+			if [ -r EXITSTATUS ] && ! grep -q -F -e 5 EXITSTATUS && ! [ -r NOCOLOR ] ; then
 				if ! grep -q -E -e '' list.def.out ; then
 					test_fail "Expected ESC in TTY output because EXITSTATUS exists"
 					>&2 echo output:
@@ -619,7 +623,7 @@ do
 	fi
 
 	[ -z "$normtmps" ] && { ../../sh/rm_tmps || exit 2 ; }
-	if [ "$error" != 0 ] ; then
+	if [ "$error" != 0 ] || grep -q -F -e 1 -- "$error_file" ; then
 		test_fail_fatal
 		continue
 	fi

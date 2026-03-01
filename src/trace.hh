@@ -12,22 +12,23 @@
  *
  * Set the variable $STU_TRACE to contain trace configuration:
  *
- * * Individual settings can be separated by semicolon or newlines.
- * * Each setting is of the form
+ * Individual settings can be separated by semicolon or newlines.  Each setting is in one
+ * of the form:
  *
- *     NAME* [ = LEVEL]
+ *     NAME+ = LEVEL
+ *     NAME+                   # LEVEL is '1'
+ *     LEVEL                   # NAME is 'all'
  *
- * where NAME is the name of a source file (without .cc/.hh), and LEVEL is:
+ * where NAME is the name of a source file (without src/ or .cc/.hh), and LEVEL is:
  *     0            Disabled
  *     1            Ouptut to stderr
  *     @            Output to logfile log/trace.log
+ *     @<filename>  Output to given file (not implemented)
  *
- * NAME can also be 'ALL'.
- *
- * NAME is case insensitive, and can end in .hh or .cc, and may be preceded by 'src/'.
+ * NAME can also be 'all' to enable traces for all source files.
  *
  * EXAMPLES
- *  
+ *
  *     STU_TRACE=1              Enable all traces on stderr
  *     STU_TRACE=all=1          Enable all traces on stderr
  *     STU_TRACE=@              Send all traces to logfile log/trace.log
@@ -45,7 +46,9 @@
 
 #ifndef NDEBUG
 
+#include <stdio.h>
 #include <string.h>
+#include <map>
 
 class Trace
 {
@@ -81,8 +84,7 @@ private:
 	static constexpr const char *padding_one= "|   ";
 	static constexpr const char *trace_filename= "log/trace.log";
 	static constexpr const char *ENV_STU_TRACE= "STU_TRACE";
-//	static constexpr const char *ENV_STU_TRACE_ALL= "STU_TRACE_ALL";
-	static constexpr const char *TRACE_CLASS_ALL= "ALL";
+	static constexpr const char *TRACE_CLASS_ALL= "all";
 
 	string prefix;
 	static string padding;
@@ -97,6 +99,7 @@ private:
 	static string normalize_trace_class(const char *trace_class);
 	static void init_global();
 	static void init_single(string trace_class, const char *value);
+	static void error(string message= "");
 };
 
 #define TRACE_FUNCTION(a)  Trace trace_object(__func__, __FILE__, __LINE__, Trace::Object(a))

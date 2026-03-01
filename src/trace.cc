@@ -166,7 +166,7 @@ void Trace::init_global()
 			while (isspace(*env) && *env != '\n') ++env;
 			fprintf(stderr, "L env=%s\n", env);//
 			const char *p= env;
-			while (isdigit(*p) || *p == '@') ++p;
+			while (isdigit(*p) || *p == '>') ++p;
 			fprintf(stderr, "M env=%s\n", env);//
 			if (p == env)
 				error(fmt("invalid value in $%s (3)", ENV_STU_TRACE));
@@ -188,14 +188,14 @@ void Trace::init_single(string trace_class, const char *value)
 	if (!value || !value[0]) return;
 	if (!strcmp(value, "0")) {
 		files[trace_class]= nullptr;
-	} else if (!strcmp(value, "@")) {
+	} else if (!strcmp(value, ">")) {
 		if (!file_log)
 			file_log= open_logfile(trace_filename);
 		files[trace_class]= file_log;
 	} else if (!strcmp(value, "1")) {
 		files[trace_class]= stderr;
 	} else {
-		error(fmt("invalid value for trace %s: %s",
+		error(fmt("invalid value for trace %s: '%s'",
 				trace_class, value));
 	}
 }

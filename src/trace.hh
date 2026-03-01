@@ -22,8 +22,9 @@
  * where NAME is the name of a source file (without src/ or .cc/.hh), and LEVEL is:
  *     0            Disabled
  *     1            Ouptut to stderr
- *     @            Output to logfile log/trace.log
- *     @<filename>  Output to given file (not implemented)
+ *     >            Output to logfile log/trace.log
+ *     >FILENAME    Output to file (not implemented)
+ *     <FILENAME    Read configuration from file (not implemented)
  *
  * NAME can also be 'all' to enable traces for all source files.
  *
@@ -31,16 +32,16 @@
  *
  *     STU_TRACE=1              Enable all traces on stderr
  *     STU_TRACE=all=1          Enable all traces on stderr
- *     STU_TRACE=@              Send all traces to logfile log/trace.log
- *     STU_TRACE=all=@          Send all traces to logfile log/trace.log
+ *     STU_TRACE=>              Send all traces to logfile log/trace.log
+ *     STU_TRACE=all=>          Send all traces to logfile log/trace.log
  *     STU_TRACE=dep            Send only traces for dep.cc/hh to stderr
  *     STU_TRACE=dep=1          Send only traces for dep.cc/hh to stderr
- *     STU_TRACE=dep=@          Send only traces for dep.cc/hh to logfile
+ *     STU_TRACE=dep=>          Send only traces for dep.cc/hh to logfile
  *     STU_TRACE=all;dep=0      Enable all traces except dep.cc/hh
  *     STU_TRACE='dep executor' Enable traces for dep.cc/hh and executor.cc/hh
- *     STU_TRACE='dep executor=@'
+ *     STU_TRACE='dep executor=>'
  *                              Send traces for  dep.cc/hh and executor.cc/hh to logfile
- *     STU_TRACE='all=@;dep=1'
+ *     STU_TRACE='all=>;dep=1'
  *                              Send all traces to logfile, except for dep.cc/hh to stderr
  */
 

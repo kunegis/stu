@@ -3,9 +3,7 @@
 # variable.
 #
 
-> # all into logfile
 dep=>
-all=>
 all=1 dep=0
 dep=0;all # is dep enabled or not?
 dep=0 all # is dep enabled or not?
@@ -16,7 +14,10 @@ dep=0 all # is dep enabled or not?
 ;;;dep
 1;dep=log
 all dep= 1 # Works, but redundant
-<file # read config from file (unimplemented)
+<file # read config from file
+>file # log into file
+dep=>file
+all=>file;dep=0
 
 #
 # In 'stu -P -Y' output, "Rule(" and ")" should not be in bold

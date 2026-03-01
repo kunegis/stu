@@ -132,7 +132,7 @@ void Trace::init_global()
 			fprintf(stderr, "Fa p=%s\n", p);//
 			if (p == env) {
 				fprintf(stderr, "Fb env=%s\n", p);//
-				trace_classes.push_back(TRACE_CLASS_ALL);
+//				trace_classes.push_back(TRACE_CLASS_ALL);
 				break;
 			} else {
 				fprintf(stderr, "Fc env=%s\n", p);//
@@ -151,22 +151,29 @@ void Trace::init_global()
 			value= "1";
 		} else if (*env) {
 			fprintf(stderr, "K env=%s\n", env);//
-			if (trace_classes.size() && *env == '=') ++env;
-			fprintf(stderr, "Ka env=%s\n", env);//
+			if (*env == '=') {
+				fprintf(stderr, "Ka env=%s\n", env);//
+				if (trace_classes.empty())
+					error("invalid '='");
+				++env;
+			} else {
+				if (trace_classes.empty())
+					trace_classes.push_back(TRACE_CLASS_ALL);
+				else
+					error(fmt("invalid string '%s'", env));
+			}
+			fprintf(stderr, "Kb env=%s\n", env);//
 			while (isspace(*env) && *env != '\n') ++env;
 			fprintf(stderr, "L env=%s\n", env);//
 			const char *p= env;
-			while (isalnum(*p)) ++p;
+			while (isdigit(*p) || *p == '@') ++p;
 			fprintf(stderr, "M env=%s\n", env);//
-			if (p == env) {
+			if (p == env)
 				error(fmt("invalid value in $%s (3)", ENV_STU_TRACE));
-			}
 			value= string(env, p);
 			env= p;
 			while (isspace(*env) || *env == '\n') ++env;
 			fprintf(stderr, "N env=%s\n", env);//
-		} else {
-			error(fmt("invalid value in $%s (2)", ENV_STU_TRACE));
 		}
 		for (string trace_class: trace_classes)
 			init_single(

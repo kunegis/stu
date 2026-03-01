@@ -3,11 +3,12 @@
 # variable.
 #
 
-dep 1
-@
-dep=@
-all=@
+> # all into logfile
+dep=>
+all=>
 all=1 dep=0
+dep=0;all # is dep enabled or not?
+dep=0 all # is dep enabled or not?
 # STU_TRACE set to empty -- does nothing
 1;dep=0 # all except dep
 ;dep
@@ -15,6 +16,7 @@ all=1 dep=0
 ;;;dep
 1;dep=log
 all dep= 1 # Works, but redundant
+<file # read config from file (unimplemented)
 
 #
 # In 'stu -P -Y' output, "Rule(" and ")" should not be in bold

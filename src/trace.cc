@@ -142,16 +142,22 @@ void Trace::init_global()
 			fprintf(stderr, "F env=%s\n", env);//
 			const char *p= env;
 			while (isalpha(*p) || *p && strchr("_./", *p)) ++p;
-			fprintf(stderr, "F p=%s\n", p);//
+			fprintf(stderr, "Fa p=%s\n", p);//
 			if (p == env) {
-				print_error(fmt("invalid value in $%s: %s (1)",
-						ENV_STU_TRACE, p));
-				error_exit();
+				fprintf(stderr, "Fb env=%s\n", p);//
+				trace_classes.push_back(TRACE_CLASS_ALL);
+				break;
+//				print_error(fmt("invalid value in $%s: %s (1)",
+//						ENV_STU_TRACE, p));
+//				error_exit();
+				
+			} else {
+				fprintf(stderr, "Fc env=%s\n", p);//
+				trace_classes.push_back(string(env, p-env));
+				env= p;
+				while (isspace(*env) && *env != '\n') ++env;
+				fprintf(stderr, "G env=%s\n", env);//
 			}
-			trace_classes.push_back(string(env, p-env));
-			env= p;
-			while (isspace(*env) && *env != '\n') ++env;
-			fprintf(stderr, "G env=%s\n", env);//
 		}
 		fprintf(stderr, "H env=%s\n", env);//
 		while (isspace(*env) && *env != '\n') ++env;
@@ -159,10 +165,10 @@ void Trace::init_global()
 		string value;
 		if (*env == ';' || *env == '\n' || !*env) {
 			fprintf(stderr, "J env=%s\n", env);//
-			value= "stderr";
-		} else if (*env == '=') {
+			value= "1";
+		} else if (*env) {
 			fprintf(stderr, "K env=%s\n", env);//
-			++env;
+			if (*env == '=') ++env;
 			while (isspace(*env) && *env != '\n') ++env;
 			fprintf(stderr, "L env=%s\n", env);//
 			const char *p= env;
@@ -190,16 +196,15 @@ void Trace::init_single(string trace_class, const char *value)
 {
 	fprintf(stderr, "init_single trace_class='%s' value='%s'\n",
 		trace_class.c_str(), value);//
-	if (value && (!strcmp(value, "off") || !strcmp(value, "0"))) {
-		files[trace_class]= nullptr;
-	} else if (!value || !value[0]) {
+	if (!value || !value[0]) {
 		/* Nothing */
-	} else if (!strcmp(value, "log")) {
+	} else if (value && (!strcmp(value, "0"))) {
+		files[trace_class]= nullptr;
+	} else if (!strcmp(value, "@")) {
 		if (!file_log)
 			file_log= open_logfile(trace_filename);
 		files[trace_class]= file_log;
-	} else if (!strcmp(value, "stderr") ||
-		(value[0] >= '1' && value[0] <= '9' && !value[1])) {
+	} else if (!strcmp(value, "1")) {
 		files[trace_class]= stderr;
 	} else {
 		print_error(fmt("invalid value for trace %s: %s",

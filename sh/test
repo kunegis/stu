@@ -337,7 +337,7 @@ do
 			continue 2 # Continue outer loop
 		fi
 		expr " $ALLOWED_FILES " : ".* $otherfile .*" >/dev/null && continue
-		test_fail_fatal "Invalid file '$otherfile' in test directory"
+		test_fail_fatal "Invalid file '$otherfile' in test directory; only files in ($ALLOWED_FILES) are allowed"
 		continue 2 # Continue outer loop
 	done
 

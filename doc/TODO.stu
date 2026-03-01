@@ -3,17 +3,18 @@
 # variable.
 #
 
-all; dep executor=0;
-dep\nexecutor
-all; dep=off;
-*_executor;
-1 # Enable all
+dep 1
+@
+dep=@
+all=@
+all=1 dep=0
 # STU_TRACE set to empty -- does nothing
 1;dep=0 # all except dep
 ;dep
 ;;dep
 ;;;dep
-
+1;dep=log
+   
 #
 # In 'stu -P -Y' output, "Rule(" and ")" should not be in bold
 #

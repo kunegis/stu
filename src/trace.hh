@@ -18,13 +18,29 @@
  *     NAME* [ = LEVEL]
  *
  * where NAME is the name of a source file (without .cc/.hh), and LEVEL is:
- *     0/off        Disabled
- *     1..9/stderr  Ouptut to stderr
- *     log          Output to logfile log/trace.log
+ *     0            Disabled
+ *     1            Ouptut to stderr
+ *     @            Output to logfile log/trace.log
  *
  * NAME can also be 'ALL'.
  *
  * NAME is case insensitive, and can end in .hh or .cc, and may be preceded by 'src/'.
+ *
+ * EXAMPLES
+ *  
+ *     STU_TRACE=1              Enable all traces on stderr
+ *     STU_TRACE=all=1          Enable all traces on stderr
+ *     STU_TRACE=@              Send all traces to logfile log/trace.log
+ *     STU_TRACE=all=@          Send all traces to logfile log/trace.log
+ *     STU_TRACE=dep            Send only traces for dep.cc/hh to stderr
+ *     STU_TRACE=dep=1          Send only traces for dep.cc/hh to stderr
+ *     STU_TRACE=dep=@          Send only traces for dep.cc/hh to logfile
+ *     STU_TRACE=all;dep=0      Enable all traces except dep.cc/hh
+ *     STU_TRACE='dep executor' Enable traces for dep.cc/hh and executor.cc/hh
+ *     STU_TRACE='dep executor=@'
+ *                              Send traces for  dep.cc/hh and executor.cc/hh to logfile
+ *     STU_TRACE='all=@;dep=1'
+ *                              Send all traces to logfile, except for dep.cc/hh to stderr
  */
 
 #ifndef NDEBUG

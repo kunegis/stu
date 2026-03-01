@@ -1,0 +1,31 @@
+#! /bin/sh
+
+Error() # <message>
+{
+	>&2 printf '*** %s\n' "$1"
+	>&2 echo ======= list.err:
+	>&2 cat list.err
+	>&2 echo ======= log/trace.log:
+	>&2 cat log/trace.log
+	>&2 echo =======
+	exit 1
+}
+
+../../sh/rm_tmps || exit 2
+
+mkdir -p log
+
+STU_TRACE='dep=>' ../../bin/stu.test -F 'A={a}' >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 0 ] || exit 1
+[ -e A ] || exit 1
+grep -q -F -e 'stu.cc' list.err && Error 1
+grep -q -F -e 'dep.cc' list.err && Error 2
+grep -q -F -e 'stu.cc' log/trace.log && Error 3
+grep -q -F -e 'dep.cc' log/trace.log || Error 4
+
+../../sh/rm_tmps || exit 2
+rm -fR log || exit 2
+
+exit 0

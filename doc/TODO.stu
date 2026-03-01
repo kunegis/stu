@@ -3,10 +3,11 @@
 # variable.
 #
 
-dep=>
 all=1 dep=0
-dep=0;all # is dep enabled or not?
-dep=0 all # is dep enabled or not?
+1 dep=0
+dep=0 1 
+dep=0;all
+dep=0 all
 # STU_TRACE set to empty -- does nothing
 1;dep=0 # all except dep
 ;dep

@@ -9,8 +9,8 @@ exitstatus=$?
 
 [ "$exitstatus" = 0 ] || exit 1
 [ -e A ] || exit 1
-grep -q -F -e 'stu.cc' log/trace.log
-grep -q -F -e 'dep.cc' log/trace.log
+grep -q -F -e 'stu.cc' log/trace.log || exit 1
+grep -q -F -e 'dep.cc' log/trace.log || exit 1
 
 ../../sh/rm_tmps || exit 2
 

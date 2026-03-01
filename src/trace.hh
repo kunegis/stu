@@ -12,8 +12,9 @@
  *
  * Set the variable $STU_TRACE to contain trace configuration:
  *
- * Individual settings can be separated by semicolon or newlines.  Each setting is in one
- * of the form:
+ * Individual settings can be separated by semicolon or newlines.  Settings can also be
+ * separated by whitespace, if the setting left of the whitespace contains the LEVEL.
+ * Each setting is in one of the form:
  *
  *     NAME+ = LEVEL
  *     NAME+                   # LEVEL is '1'

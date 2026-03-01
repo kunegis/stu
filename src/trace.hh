@@ -10,20 +10,6 @@
  * There are no trace levels, and it is not possible to output traces into an arbitrary
  * file.
  *
- * (1) Tracing via individual environment variables
- *
- * To enable tracing for the file src/<name>.cc, set the environment variable
- * $STU_TRACE_<NAME> (all uppercase) to the following: (Example: use $STU_TRACE_DEP to
- * enable tracing in src/dep.{cc,hh})
- *	"1".."9"  Synonym of "stderr"
- *	"log"     Write into the trace logfile (see name below)
- *	"stderr"  Write on stderr
- *	"off"/"0" No tracing (useful to disable a single file when $STU_TRACE_ALL is set)
- *
- * Set $STU_TRACE_ALL to enable tracing in all source code files.
- *
- * (2) Tracing via global setting
- *
  * Set the variable $STU_TRACE to contain trace configuration:
  *
  * * Individual settings can be separated by semicolon or newlines.
@@ -31,8 +17,14 @@
  *
  *     NAME* [ = LEVEL]
  *
- * where NAME is the name of a source file (without .cc/.hh), and level is as described
- * above (0..9, log, stderr, off).
+ * where NAME is the name of a source file (without .cc/.hh), and LEVEL is:
+ *     0/off        Disabled
+ *     1..9/stderr  Ouptut to stderr
+ *     log          Output to logfile log/trace.log
+ *
+ * NAME can also be 'ALL'.
+ *
+ * NAME is case insensitive, and can end in .hh or .cc, and may be preceded by 'src/'.
  */
 
 #ifndef NDEBUG
@@ -73,7 +65,8 @@ private:
 	static constexpr const char *padding_one= "|   ";
 	static constexpr const char *trace_filename= "log/trace.log";
 	static constexpr const char *ENV_STU_TRACE= "STU_TRACE";
-	static constexpr const char *ENV_STU_TRACE_ALL= "STU_TRACE_ALL";
+//	static constexpr const char *ENV_STU_TRACE_ALL= "STU_TRACE_ALL";
+	static constexpr const char *TRACE_CLASS_ALL= "ALL";
 
 	string prefix;
 	static string padding;
@@ -87,7 +80,7 @@ private:
 	static FILE *open_logfile(const char *filename);
 	static string normalize_trace_class(const char *trace_class);
 	static void init_global();
-	static bool init_single(string trace_class, const char *value);
+	static void init_single(string trace_class, const char *value);
 };
 
 #define TRACE_FUNCTION(a)  Trace trace_object(__func__, __FILE__, __LINE__, Trace::Object(a))

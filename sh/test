@@ -79,7 +79,7 @@
 # INCONTENT    Prescribe strings that must appear in the built file
 # STDOUT       The exact output of Stu
 # STDERR       The exact error output of Stu
-# INSTDOUT     Prescribe strings that must appear in Stu's output
+# INSTDOUT     Prescribe strings that must appear in Stu's output (one per line)
 # INSTDERR     Prescribe strings that must appear in Stu's error output (one per line)
 # NOTINSTDERR  A text that must not be present in Stu's error output
 # TTYSTDOUTERR The output and error output (interleaved) when in TTY mode
@@ -516,11 +516,10 @@ do
 
 		# Check that NOTINSTDERR is not found in the error output
 		if [ -r NOTINSTDERR ]; then
-			if grep -q -F -e "$(cat NOTINSTDERR)" list.def.err ; then
-				test_fail "'$(cat NOTINSTDERR)' was found in error output, but should not be there"
-			else
-				echo >&7 "NOTINSTDERR...correct"
-			fi
+			cat NOTINSTDERR | while IFS= read -r line ; do
+				printf '%s\n' "$line" | grep -q -F -e "$line" list.def.err &&
+					test_fail "'$line' was found in error output, but should not be there (NOTINSTDERR)"
+			done
 		fi
 
 		# TTYSTDOUTERR / INTTYSTDOUTERR

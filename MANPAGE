@@ -212,10 +212,6 @@ OPTIONS
               children or grandchildren that have not been waited  for  (which
               only happens when Stu is interrupted by a signal.)
 
-              Stu options are parsed with getopt(3) and therefore options must
-              precede arguments.  Options following arguments may be supported
-              on some platforms.
-
 OVERVIEW
        A simple rule looks as follows:
 
@@ -1175,4 +1171,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.10.4                       February 2026                          STU(1)
+stu-2.10.5                        March 2026                            STU(1)

@@ -299,7 +299,7 @@ $x.bbb -p1:  ... { ... }
 aaa.$x -p2:  ... { ... }
 
 #
-# Get Stu into RHEL.
+# Get Stu into RHEL (EPEL).
 #
 
 #

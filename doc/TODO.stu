@@ -1,8 +1,4 @@
 #
-# In 'stu -P -Y' output, "Rule(" and ")" should not be in bold
-#
-
-#
 # In Stu's sources, think about putting a space before the assignment operator, and
 # removing the space after #!.
 #

@@ -11,6 +11,11 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2026-03-05  Version 2.10.6
+
+* Bugfix: When using 'stu -P', the output is not printed in bold, even when Stu would
+  otherwise use color, e.g. when using the -Y option.
+
 2026-03-04  Version 2.10.4
 
 * In the debug variant of Stu (bin/stu.debug), traces have been enhanced.  All traces are

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Test that Unicode file names are supported.  All filenames and the
 # content of this file contain UTF-8, which Stu should handle

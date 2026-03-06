@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 ../../bin/stu.test -k @lakndlkwande >list.out 2>list.err
 exitstatus=$?

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 #
 # (1) File does not exist

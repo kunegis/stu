@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # We must have an own EXEC file here because the default text mechanism
 # executes the test a second time, and checks that "Noting to be done"

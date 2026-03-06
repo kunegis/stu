@@ -1,9 +1,4 @@
 #
-# In Stu's sources, think about putting a space before the assignment operator, and
-# removing the space after #!.
-#
-
-#
 # Option -F:  Error messages for which the place is in option -F should not print "Option
 # -F".  Instead, don't print a place.  (Maybe -- discuss)
 #

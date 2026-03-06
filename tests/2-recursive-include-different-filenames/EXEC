@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 rm -Rf xxx || exit 2
 mkdir xxx || exit 2

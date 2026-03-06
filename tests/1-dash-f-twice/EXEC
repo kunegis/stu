@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # What happens when standard input is read twice from the command line.
 #

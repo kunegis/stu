@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 # $1:  the character to insert
 # $2:  the error output

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 rmm() { echo RMM ; rm -f ? list.* data.* || exit 2 ; }
 

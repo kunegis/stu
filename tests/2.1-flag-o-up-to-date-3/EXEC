@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 #
 # (1) 'A' and 'B' are both up to date; nothing to be done

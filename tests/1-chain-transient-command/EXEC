@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 echo ../../bin/stu.test
 ../../bin/stu.test >list.out 2>list.err

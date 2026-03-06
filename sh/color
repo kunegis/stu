@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Run all tests that fail, and show their output.  Used to visually
 # inspect color ouput, to see whether it looks nice.  This is in

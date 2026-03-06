@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 error_file=${TMPDIR:-/tmp}/test_clean.$$.error
 rm -f -- "$error_file"

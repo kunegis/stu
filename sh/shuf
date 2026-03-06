@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Randomly permute a text file, line by line.  Works via stdin and stdout.
 #

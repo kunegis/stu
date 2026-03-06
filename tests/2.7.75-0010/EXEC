@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # 'main.stu' exists but cannot be read.
 #

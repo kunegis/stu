@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 FILE_SO=../../bin/preload.so
 dir=$(pwd)

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # The output of "stu -h" does not contains tabs.
 #

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Test individual canonicalization patterns.  The file 'patterns'
 # contains the patterns that are tested, one per line.

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # The -s option (silent) does suppress the 'File ... exists but has
 # no rule' message.

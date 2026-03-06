@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 for K in 20 30 50 90 99 100 101 1234 ; do
 	rm -f list.* All || exit 2

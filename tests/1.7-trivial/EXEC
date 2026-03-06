@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 #
 # Each line in 'list' ultimately has C being a dependency of A, via a trivial dependency.

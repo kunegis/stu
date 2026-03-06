@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 logfile=${TMPDIR:-/tmp}/stu-$(basename $(pwd)).$$.log
 

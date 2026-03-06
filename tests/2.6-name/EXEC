@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # A dependency of ./X does not match a rule target of C/X, where C is the actual
 # name of the current directory.

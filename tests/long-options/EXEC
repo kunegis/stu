@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 rmall() {
 	rm -f files list.* || exit 2

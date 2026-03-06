@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Test all 'switch' cases, like in the following.  What we call a
 # 'switch' case is when a dependency is given twice with different

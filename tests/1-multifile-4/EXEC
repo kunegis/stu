@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 ../../bin/stu.test -P -f a.stu -f b.stu >list.out 2>list.err
 exitstatus=$?

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 [ "$EXEC_TRACE" ] && exec 3>&2 || exec 3>/dev/null
 
 lines='

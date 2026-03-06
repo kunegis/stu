@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Since seq(1) is not POSIX, we use this cheap replacement.  Only a parameter $n
 # is supported, to output $n lines with numbers from 1 to $n on it.  (This is

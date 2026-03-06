@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Perform unit tests.  Each unit test is in one subdirectory of tests/.  By default, each
 # test directory contains a file 'main.stu' that performs one unit test.  Additional files

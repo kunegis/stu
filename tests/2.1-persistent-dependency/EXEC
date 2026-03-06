@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 rm -Rf data || exit 2
 

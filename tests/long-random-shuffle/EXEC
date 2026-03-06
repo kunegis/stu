@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # In a loop, create a random list of names, and then run a test with those
 # names.

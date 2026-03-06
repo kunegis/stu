@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 export STU_STATUS=1
 export STU_OPTIONS=y

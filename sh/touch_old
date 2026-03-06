@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Touch a file, giving it an old timestamp.
 #

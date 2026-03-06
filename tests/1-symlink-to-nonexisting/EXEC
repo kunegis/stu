@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 echo rm -f A B
 rm -f A B || {

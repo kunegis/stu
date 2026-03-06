@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 preload_tty_so=$(cd ../.. ; pwd)/bin/preload-tty.so
 CMDPREFIX_TTY="TERM=xterm"

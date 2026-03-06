@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 [ "$TEST_VERBOSE" ] && exec 6>&2 || exec 6>/dev/null
 

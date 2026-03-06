@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Remove temporary files created by tests.  The tests only create temporary files of these
 # patterns.  Executed within each test directory.  Any such named files may be

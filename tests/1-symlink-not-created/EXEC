@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Bug:  when a symlink is created, Stu complains with "timestamp of
 # target 'symlink' after execution of command is older than stu

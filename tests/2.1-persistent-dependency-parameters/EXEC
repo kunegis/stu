@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 rm -Rf data-X-dir || exit 2
 

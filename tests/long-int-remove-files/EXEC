@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 MAGIC_NUMBER=986745321
 
 kill_sleeps()

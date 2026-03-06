@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 rm -Rf list.* || exit 1
 

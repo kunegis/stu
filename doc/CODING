@@ -138,9 +138,7 @@ scripting.
   portable, but we don't do it.)  'date +%s' is not mandated by POSIX, even though it
   works on all operating systems we tried it on.  It outputs the correct Unix time.  There
   is a hackish but portable workaround using the random number generator of awk(1).
-* Shell scripts don't have a filename suffix.  Use '#! /bin/sh' and set the executable
-  bit.  The space after '!' is not necessary, but is traditional and we think it looks
-  good, so we always use it.
+* Shell scripts don't have a filename suffix.  Use '#!/bin/sh' and set the executable bit.
 * 'test' does not support the -a option.  Use && in the shell instead.  POSIX has
   deprecated 'test -a'.
 * The "recursive" option to programs such as 'ls' and 'cp' is -R and not -r.  '-r' for

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 LINES=200000
 PART=01234567890

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Rudimentary fuzz testing.  Run Stu on an input file with random bytes.  If
 # something goes wrong (i.e., an assertion fails), the exit status is

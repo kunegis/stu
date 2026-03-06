@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 rm -f NOTEXECUTED nonexisting list.* || exit 1
 

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # A single dash as a filename should work with '%include', even if a
 # single dash with the '-f' options means to read standard input.

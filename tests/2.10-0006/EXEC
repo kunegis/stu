@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 SCRIPT=$0
 
 Error() # <message>

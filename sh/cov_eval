@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # The following strings are used to exclude a line from the output of uncovered lines:
 #

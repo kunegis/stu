@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 rm -f ? list.* || exit 2
 ../../sh/touch_old A 2 || exit 2

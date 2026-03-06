@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 #
 # (1) A must be built:  B is built and thus C is built

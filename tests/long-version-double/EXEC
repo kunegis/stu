@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # It is possible to have multiple version directives, in particular in different source
 # files.

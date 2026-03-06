@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Test that all lists of options are the same.
 #

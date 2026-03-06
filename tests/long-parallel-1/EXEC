@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # This test is also used by "make prof".
 #

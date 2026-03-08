@@ -1,0 +1,7 @@
+A: B/C/D;
+
+B/C/D
+{
+	mkdir -p B/C/D
+	chmod a-rwx B
+}

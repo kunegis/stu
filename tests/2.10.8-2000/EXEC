@@ -1,0 +1,19 @@
+#!/bin/sh
+
+Clean()
+{
+	[ -e B ] && chmod -R u+rwx B
+	../../sh/rm_tmps || exit 2
+}
+
+Clean
+
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+
+[ "$exitstatus" = 1 ] || exit 1
+grep -q -F -e 'cannot determine whether file "B/C/D" was built by command' list.err ||
+	exit 1
+
+Clean
+exit 0

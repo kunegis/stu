@@ -1085,9 +1085,14 @@ void File_Executor::check_file_was_built(Hash_Dep hash_dep, const Place &place)
 	const char *filename= hash_dep.get_name_c_str_nondynamic();
 	struct stat buf;
 	if (stat(filename, &buf)) {
-		bits |= B_MISSING;
-		bits &= ~B_EXISTING;
-		place << fmt("file %s was not built by command", show(hash_dep));
+		if (errno == ENOENT) {
+			bits |= B_MISSING;
+			bits &= ~B_EXISTING;
+			place << fmt("file %s was not built by command", show(hash_dep));
+		} else {
+			bits &= ~(B_MISSING | B_EXISTING);
+			place << fmt("cannot determine whether file %s was built by command", show(hash_dep));
+		}
 		*this << "";
 		raise(ERROR_BUILD);
 		return;

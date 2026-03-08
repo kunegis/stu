@@ -1,9 +1,4 @@
 #
-# In File_Executor::check_file_was_built() when calling stat(), check errno and
-# distinguish between the file being absent and other errors.
-#
-
-#
 # sh/test:  It should not be necessary to set nopreload=1 with VARIANT=sani/cdebug and
 # NDEBUG; that should be automatic.
 #

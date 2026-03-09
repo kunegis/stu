@@ -86,8 +86,8 @@ log/test_unit.debug:           bin/stu.debug          sh/test tests tests/*/*
 	@echo                                    sh/test
 	@                                        sh/test && mkdir -p log && touch $@
 log/test_unit.cdebug:          bin/stu.cdebug         sh/test tests tests/*/*
-	@echo VARIANT=cdebug         nopreload=1 sh/test
-	@     VARIANT=cdebug         nopreload=1 sh/test && mkdir -p log && touch $@
+	@echo VARIANT=cdebug                     sh/test
+	@     VARIANT=cdebug                     sh/test && mkdir -p log && touch $@
 log/test_unit.ndebug:          bin/stu                sh/test tests tests/*/*
 	@echo NDEBUG=1                           sh/test
 	@     NDEBUG=1                           sh/test && mkdir -p log && touch $@
@@ -95,8 +95,8 @@ log/test_unit.ndebug-nopreload:bin/stu                sh/test tests tests/*/*
 	@echo NDEBUG=1               nopreload=1 sh/test
 	@     NDEBUG=1               nopreload=1 sh/test && mkdir -p log && touch $@
 log/test_unit.sani:  bin/stu.sani sh/test tests tests/*/*
-	@echo VARIANT=sani nopreload=1 sh/test
-	@     VARIANT=sani nopreload=1 sh/test && mkdir -p log && touch $@
+	@echo VARIANT=sani                       sh/test
+	@     VARIANT=sani                       sh/test && mkdir -p log && touch $@
 log/test_unit.cov:             bin/stu.cov       sh/test tests tests/*/*
 	rm -f bin/stu.cov-stu.gcda
 	@echo VARIANT=cov                        sh/test

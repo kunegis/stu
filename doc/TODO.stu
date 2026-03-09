@@ -1,11 +1,6 @@
 #
-# sh/test:  It should not be necessary to set nopreload=1 with VARIANT=sani/cdebug and
-# NDEBUG; that should be automatic.
-#
-
-#
 # File_Executor::executors_add():  The content of the while loop
-# ("happens_only_on_certain_platforms()") happens only when smallern PIDs are returned --
+# ("happens_only_on_certain_platforms()") happens only when smaller PIDs are returned --
 # test that case by mocking fork() and related syscalls.  (Take care to unset LD_PRELOAD
 # in child processes.)
 #

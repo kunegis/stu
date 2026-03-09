@@ -276,6 +276,10 @@ else
 fi
 echo >&7 "VARIANT=$VARIANT"
 
+if [ "$VARIANT" = cdebug -o "$VARIANT" = sani ] ; then
+	nopreload=1
+fi
+
 mkdir -p log
 exec 6>log/error.log
 exec 8>log/runtime.$VARIANT

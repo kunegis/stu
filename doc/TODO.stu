@@ -1,11 +1,4 @@
 #
-# File_Executor::executors_add():  The content of the while loop
-# ("happens_only_on_certain_platforms()") happens only when smaller PIDs are returned --
-# test that case by mocking fork() and related syscalls.  (Take care to unset LD_PRELOAD
-# in child processes.)
-#
-
-#
 # On FreeBSD, "echo '\\-----' outputs two backslashes, but we use it to output one.
 #
 

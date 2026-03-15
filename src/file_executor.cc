@@ -981,6 +981,8 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 
 void File_Executor::executors_add(pid_t pid, size_t &index, File_Executor *executor)
 {
+	TRACE_FUNCTION();
+	TRACE("pid= %s", frmt("%jd", (intmax_t)pid));
 	assert(Signal_Blocker::is_blocked());
 	assert(!executors_by_pid_key == !executors_by_pid_value);
 
@@ -1013,13 +1015,6 @@ void File_Executor::executors_add(pid_t pid, size_t &index, File_Executor *execu
 
 	size_t index_new= executors_by_pid_size++;
 	while (index_new && executors_by_pid_key[index_new - 1] > pid) {
-		happens_only_on_certain_platforms();
-		/* These lines are only executed if a PID returned by fork() is smaller
-		 * than a previous PID returned by fork().  This is not the case on the OS
-		 * we use for testing.  We tried mockind PID-related syscalls, but
-		 * execve() called getpid() with different value of PRELOAD.cc's static
-		 * variables, making it impossible to share a PID translation table.  As a
-		 * result, we mark this as not tested. */
 		executors_by_pid_key[index_new]= executors_by_pid_key[index_new - 1];
 		executors_by_pid_value[index_new]= executors_by_pid_value[index_new - 1];
 		--index_new;
@@ -1068,6 +1063,8 @@ bool File_Executor::executors_find(pid_t pid, size_t &index)
 
 void File_Executor::executors_remove(size_t index)
 {
+	TRACE_FUNCTION();
+	TRACE("index= %s", frmt("%zu", index));
 	assert(Signal_Blocker::is_blocked());
 	assert(executors_by_pid_size > 0);
 	assert(executors_by_pid_size >= index + 1);

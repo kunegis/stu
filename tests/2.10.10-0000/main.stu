@@ -1,0 +1,4 @@
+>A: list.[-n <list.N] { sed -E -e 's,^,list.,' | xargs cat ; }
+N = {90}
+>list.N: N { ../../sh/seq $(cat N) | tr ' ' '\n' ; }
+>list.$n { echo $n ; }

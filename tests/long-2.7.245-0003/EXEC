@@ -9,13 +9,13 @@ verbose()
 {
 	if [ "$TEST_VERBOSE" ] ; then
 		>&2 echo stdout:
-		>&2 echo '/-------------'
+		>&2 printf '/-------------\n'
 		>&2 cat list.out
-		>&2 echo '\\-------------'
+		>&2 printf '\\-------------\n'
 		>&2 echo stderr:
-		>&2 echo '/-------------'
+		>&2 printf '/-------------\n'
 		>&2 cat list.err
-		>&2 echo '\\-------------'
+		>&2 printf '\\-------------\n'
 	fi
 }
 

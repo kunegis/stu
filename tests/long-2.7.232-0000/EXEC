@@ -5,19 +5,19 @@ clean()
 	../../sh/rm_tmps
 }
 
-error()
+error() # <message>
 {
-	printf 'Error: %s\n' "$1"
+	>&2 printf 'Error: %s\n' "$1"
 
 	>&2 echo list.out:
-	>&2 echo '/----------'
+	>&2 printf '/----------\n'
 	>&2 cat list.out
-	>&2 echo '\\----------'
+	>&2 printf '\\----------\n'
 
 	>&2 echo list.err:
-	>&2 echo '/----------'
+	>&2 printf '/----------\n'
 	>&2 cat list.err
-	>&2 echo '\\----------'
+	>&2 printf '\\----------\n'
 
 	exit 1
 }

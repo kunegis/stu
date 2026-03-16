@@ -1,8 +1,4 @@
 #
-# On FreeBSD, "echo '\\-----' outputs two backslashes, but we use it to output one.
-#
-
-#
 # Check why long-1-concatenation-04 takes so much time.  Maybe it has accidential
 # quadratic or exponential behavior?
 #

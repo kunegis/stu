@@ -57,17 +57,17 @@ exitstatus=$?
 [ "$TEST_VERBOSE" ] && {
 	ls -l
 	echo stdout:
-	echo '/-----'
+	printf '/-----\n'
 	cat list.out
-	echo '\\-----'
+	printf '\\-----\n'
 	echo stderr:
-	echo '/-----'
+	printf '/-----\n'
 	cat list.err
-	echo '\\-----'
+	printf '\\-----\n'
 	list.dep:
-	echo '/-----'
+	printf '/-----\n'
 	cat list.dep
-	echo '\\-----'
+	printf '\\-----\n'
 }
 
 exit $ret

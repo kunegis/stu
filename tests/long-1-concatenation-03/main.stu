@@ -23,11 +23,11 @@ N = {71}
 
 >B:  N
 {
-	for i in $(seq 1 $(cat N)) ; do
+	for i in $(../../sh/seq $(cat N)) ; do
 		printf '%s' '['
 	done
 	printf list.0
-	for i in $(seq 1 $(cat N)) ; do
+	for i in $(../../sh/seq $(cat N)) ; do
 		printf '%s' ']'
 	done
 	echo

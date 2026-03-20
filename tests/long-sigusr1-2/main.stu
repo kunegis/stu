@@ -4,7 +4,7 @@ A:  [list.dep]
 { touch A }
 
 >list.dep: {
-	seq 1 99 | sed -e 's,^,list.,'
+	../../sh/seq 99 | sed -E -e 's,^,list.,'
 }
 
 list.$n

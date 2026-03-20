@@ -11,7 +11,7 @@ A = {correct}
 
 >list.files
 {
-	seq 1 99 | 
+	../../sh/seq 99 | 
 		sed -e 's,^,list.File ,' |
 		tr '\n' '\0'
 }

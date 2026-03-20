@@ -16,7 +16,7 @@ N:  { echo 3 > N}
 
 files:  $[N]
 {
-    seq 1 $N | sed -e 's,^,list.,' >files
+    ../../sh/seq $N | sed -e 's,^,list.,' >files
 }
 
 list.$N: 

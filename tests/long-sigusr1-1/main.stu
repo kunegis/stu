@@ -43,5 +43,5 @@ $X: {
 >"list.File 123"
 {
 	sleep 2
-	seq 1 99 
+	../../sh/seq 99 
 }

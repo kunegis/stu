@@ -6,7 +6,7 @@
 >N { echo 100 }
 
 >D: $[N] {
-	seq 1 "$N" | sed -e 's,^,list.,'
+	../../sh/seq "$N" | sed -E -e 's,^,list.,'
 }
 
 list.$K {

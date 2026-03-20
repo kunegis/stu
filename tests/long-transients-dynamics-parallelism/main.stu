@@ -7,7 +7,7 @@
 
 All: 
 {
-    for i in $(seq 1 100) ; do
+    for i in $(../../sh/seq 100) ; do
 		echo "list.$i"
     done >All
 }

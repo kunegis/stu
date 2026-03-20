@@ -4,9 +4,9 @@ A: [C] {
 
 >C:  $[N]
 {
-	printf '%0.s(' $(seq 1 $N)
+	printf '%0.s(' $(../../sh/seq $N)
 	printf B
-	printf '%0.s)' $(seq 1 $N)
+	printf '%0.s)' $(../../sh/seq $N)
 }
 
 N = {1000}

@@ -1,6 +1,8 @@
 #
 # Check why long-1-concatenation-04 takes so much time.  Maybe it has accidential
 # quadratic or exponential behavior?
+# * Execute the test with well-chosen traces on, and check the output length in function
+#   of N.
 #
 
 #
@@ -448,4 +450,8 @@ B {}
 #
 # sh/test: deprecate the PARALLEL file.  Instead, tests should specify "-j..." in the CMD
 # file.
+#
+
+#
+# There should not be escape characters (^[) anywhere in the repo.
 #

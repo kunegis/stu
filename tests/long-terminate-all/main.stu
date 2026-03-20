@@ -3,7 +3,7 @@
 @all: [A];
 
 >A: {
-	seq 1 30 | sed -e 's,^,list.,'
+	../../sh/seq 30 | sed -e 's,^,list.,'
 }
 
 list.$n

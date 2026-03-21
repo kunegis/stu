@@ -16,7 +16,15 @@
 	exit 0
 }
 
-N = {71}
+>N
+{
+	if [ "$STU_TEST_N" ]
+	then
+		echo $STU_TEST_N
+	else
+		echo 71
+	fi
+}
 
 >A:  N
 {

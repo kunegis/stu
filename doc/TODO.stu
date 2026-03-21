@@ -1,11 +1,4 @@
 #
-# Check why long-1-concatenation-04 takes so much time.  Maybe it has accidential
-# quadratic or exponential behavior?
-# * Execute the test with well-chosen traces on, and check the output length in function
-#   of N.
-#
-
-#
 # Find a way to sleep sub-second amounts in a POSIX script, so that we can make the tests
 # faster.  (Maybe)
 # * There seems to be no way to sleep sub-second amounts on POSIX scripts, so we would

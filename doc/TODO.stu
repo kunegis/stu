@@ -1,8 +1,4 @@
 #
-# Check why "stu -f /dev/zero" hangs on Ubuntu.
-#
-
-#
 # sh/test: In the ndebug variant, we should pass VARIANT=ndebug, and not NDEBUG=1.
 #
 

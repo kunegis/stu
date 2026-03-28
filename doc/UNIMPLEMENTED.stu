@@ -379,3 +379,8 @@ A: -k B {...}
 #
 # Support -t in front of targets.  This may be difficult.
 #
+
+#
+# Flag for phonies, to never remember that it was done.  I.e., do it everytime it is
+# mentioned.
+#

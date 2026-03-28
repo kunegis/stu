@@ -7,14 +7,15 @@ void terminate_jobs(bool asynch)
 {
 	int errno_save= errno;
 
-	if (asynch)
-		write_async(2, PACKAGE ": terminating all jobs\n");
-	else
-		print_error_reminder("terminating all jobs");
+	if (File_Executor::executors_by_pid_size > 1) {
+		if (asynch)
+			write_async(2, PACKAGE ": terminating all jobs\n");
+		else
+			print_error_reminder("terminating all jobs");
+	}
 
-	/* We have two separate loops, one for killing all jobs, and one
-	 * for removing all target files.  This could also be merged
-	 * into a single loop. */
+	/* We have two separate loops, one for killing all jobs, and one for removing all
+	 * target files.  This could also be merged into a single loop. */
 
 	for (size_t i= 0; i < File_Executor::executors_by_pid_size; ++i) {
 		const pid_t pid= File_Executor::executors_by_pid_key[i];

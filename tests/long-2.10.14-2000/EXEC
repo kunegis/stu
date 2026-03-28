@@ -1,0 +1,23 @@
+#!/bin/sh
+
+Error() # <message>
+{
+	message=$1
+	printf 'Error: %s\n' "$message"
+	exit 1
+}
+
+../../sh/rm_tmps || Error "rm_tmps 1"
+../../bin/stu.test -F '@main{sleep 10;}' >list.out 2>list.err &
+pid=$!
+sleep 1 || Error "sleep"
+kill -s INT "$pid" || Error "kill"
+wait "$pid"
+exitstatus=$?
+
+[ "$exitstatus" = 130 ] || Error "exit status"
+grep -q -F -i -e 'terminating all jobs' list.out && Error "stdout"
+grep -q -F -i -e 'terminating all jobs' list.err && Error "stderr"
+
+../../sh/rm_tmps || Error "rm_tmps 2"
+exit 0

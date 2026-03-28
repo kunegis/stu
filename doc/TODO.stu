@@ -1,17 +1,18 @@
 #
-# Find a way to sleep sub-second amounts in a POSIX script, so that we can make the tests
-# faster.  (Maybe)
-# * There seems to be no way to sleep sub-second amounts on POSIX scripts, so we would
-#   have to compile a separate program for it.
-#
-
-#
-# When the number of parallel jobs is 1 (-j not used or -j1), "stu: terminating all jobs"
-# should not be shown after Control-C.
-#
-
-#
 # Check why "stu -f /dev/zero" hangs on Ubuntu.
+#
+
+#
+# sh/test: In the ndebug variant, we should pass VARIANT=ndebug, and not NDEBUG=1.
+#
+
+#
+# sh/test: deprecate the PARALLEL file.  Instead, tests should specify "-j..." in the CMD
+# file.
+#
+
+#
+# There should not be escape characters (^[) anywhere in the repo.
 #
 
 #
@@ -161,6 +162,8 @@ A: [-d data/B];
 # they must be started, not just when everything else is done.
 #
 
+* Maybe this is already the case?
+
 #
 # Search within predefined paths for %include ($STU_PATH or $STUPATH;
 # the -I option)
@@ -213,7 +216,7 @@ program:  [-o -p dep.sources] { ... }
 # this.
 
 #
-# Have an option for: For hardcoded rules, compare the content of the file with
+# Have an option/flag for: For hardcoded rules, compare the content of the file with
 # the wanted content and don't update the file if identical.  Very useful when someone
 # changes the content in the stu file, and then re-builds.  At the moment, it is a common
 # complaint that Stu does _not_ re-build in that case.
@@ -335,7 +338,7 @@ A: -e B
 #
 
 #
-# Option to disable check that targets have been created after command is successful.
+# Option/flag to disable check that targets have been created after command is successful.
 #
 
 #
@@ -363,12 +366,13 @@ A: -e B
 # tests/long-sigusr1-1/EXEC hangs sometimes.
 # * Happens only in the cov variant
 # * Last observed in October 2025
-# * Processes hang in the futex() system, maybe because other cov test processes are
+# * Processes hang in the futex() system call, maybe because other cov test processes are
 #   running and hold a lock on the cov output file.
-# ** long-sigint-immediately:  may leak processes. (fixed)
+# ** long-sigint-immediately:  may leak processes. [fixed]
 # ** Maybe some cov Stu processes get killed in the middle of a cov operation, and leave
 #    the cov file in an inconsistent state.
 # * When done, remove the logfile and ps calls.
+# * 2026-10 Remove this entry
 #
 
 #
@@ -417,6 +421,8 @@ A: -e B
 A: -X B {}
 B {}
 
+# *  Isn't this what -p does?
+
 #
 # Allow -n/-0/-C on targets.
 #
@@ -437,14 +443,5 @@ B {}
 #
 
 #
-# sh/test: In the ndebug variant, we should pass VARIANT=ndebug, and not NDEBUG=1.
-#
-
-#
-# sh/test: deprecate the PARALLEL file.  Instead, tests should specify "-j..." in the CMD
-# file.
-#
-
-#
-# There should not be escape characters (^[) anywhere in the repo.
+# sh/test_clean: Add test that all #! files use '#!/bin/sh'.
 #

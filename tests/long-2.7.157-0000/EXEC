@@ -29,11 +29,6 @@ echo ____________________
 	exit 1
 }
 
-grep -q -F -e 'stu: terminating all jobs' list.err || {
-	echo >&2 "*** Unexpected stderr (1)"
-	exit 1
-}
-
 grep -q -F -e 'stu: removing partially built files (1)' list.err || {
 	echo >&2 "*** Unexpected stderr (2)"
 	exit 1

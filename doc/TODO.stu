@@ -1,8 +1,4 @@
 #
-# There should not be escape characters (^[) anywhere in the repo.
-#
-
-#
 # sh/test_clean: Add test that all #! files use '#!/bin/sh'.
 #
 
@@ -431,4 +427,8 @@ B {}
 
 #
 # Support negation of flags using +o, +p, etc.
+#
+
+#
+# sh/test: put console codes into variables.
 #

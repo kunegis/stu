@@ -123,6 +123,24 @@ check_backtick()
 	return 0
 }
 
+check_escape()
+{
+	find_source_files |
+		xargs grep -F -n -e $(printf '\033') |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain escape,' |
+		grep -E -e '.' >&2 && return 1
+	find_source_files |
+		xargs grep -F -n -e "\\"e |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain backslash-e sequence,' |
+		grep -E -e '.' >&2 && return 1
+	find_source_files |
+		grep -v -E -e './(man|doc)/' |
+		xargs grep -F -n -e '$'"'\\" |
+		sed -e 's,^\([^:]*:[0-9]*:\).*$,\1 File must not contain $-single-quote escape,' |
+		grep -E -e '.' >&2 && return 1
+	return 0
+}
+
 check_double_slash()
 {
 	find . -name '*.cc' -o -name '*.hh' |
@@ -202,6 +220,7 @@ check_double_empty_line || ret=1
 check_midline_tab || ret=1
 check_manpage_tab || ret=1
 check_backtick || ret=1
+check_escape || ret=1
 check_double_slash || ret=1
 check_double_hash || ret=1
 check_control || ret=1

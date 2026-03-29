@@ -178,3 +178,5 @@ scripting.
   must use /tmp directly, because they test Stu pattern matching.  That could be changed
   at some point, but we keep things like that for now.  Temporary files include $$ (the
   PID) to make sure multiple scripts/tests can be executed in parallel.
+* The dollor-single-quote syntax is in 2024 POSIX but not portable yet.  Don't use it.
+  (E.g. $'\t')

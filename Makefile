@@ -82,19 +82,19 @@ log/test_clean_last:  NEWS src/*.cc src/*.hh sh/test_clean_last sh sh/* tests te
 	@echo sh/test_clean_last
 	@     sh/test_clean_last && mkdir -p log && touch $@
 
-log/test_unit.debug:           bin/stu.debug          sh/test tests tests/*/*
+log/test_unit.debug:           bin/stu.debug     sh/test tests tests/*/*
 	@echo                                    sh/test
 	@                                        sh/test && mkdir -p log && touch $@
-log/test_unit.cdebug:          bin/stu.cdebug         sh/test tests tests/*/*
+log/test_unit.cdebug:          bin/stu.cdebug    sh/test tests tests/*/*
 	@echo VARIANT=cdebug                     sh/test
 	@     VARIANT=cdebug                     sh/test && mkdir -p log && touch $@
-log/test_unit.ndebug:          bin/stu                sh/test tests tests/*/*
-	@echo NDEBUG=1                           sh/test
-	@     NDEBUG=1                           sh/test && mkdir -p log && touch $@
-log/test_unit.ndebug-nopreload:bin/stu                sh/test tests tests/*/*
-	@echo NDEBUG=1               nopreload=1 sh/test
-	@     NDEBUG=1               nopreload=1 sh/test && mkdir -p log && touch $@
-log/test_unit.sani:  bin/stu.sani sh/test tests tests/*/*
+log/test_unit.ndebug:          bin/stu           sh/test tests tests/*/*
+	@echo VARIANT=ndebug                     sh/test
+	@     VARIANT=ndebug                     sh/test && mkdir -p log && touch $@
+log/test_unit.ndebug-nopreload:bin/stu           sh/test tests tests/*/*
+	@echo VARIANT=ndebug         nopreload=1 sh/test
+	@     VARIANT=ndebug         nopreload=1 sh/test && mkdir -p log && touch $@
+log/test_unit.sani:            bin/stu.sani      sh/test tests tests/*/*
 	@echo VARIANT=sani                       sh/test
 	@     VARIANT=sani                       sh/test && mkdir -p log && touch $@
 log/test_unit.cov:             bin/stu.cov       sh/test tests tests/*/*

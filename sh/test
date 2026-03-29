@@ -17,14 +17,12 @@
 #	log/runtime.$VARIANT    Runtimes of all tests
 #
 # PARAMETERS
-#	$NDEBUG       Set to non-empty to test the nondebug version; by default the debug
-#	              version is tested
-#	$VARIANT      Other variant of the compiled file; the default is to take the file
-#	              that matches the value of $NDEBUG (debug / ndebug)
+#	$VARIANT      Other variant of the compiled file; the default is 'debug'
 #	$TEST_VERBOSE Set to {0,1,2} for verbose levels; default is 0. (This variable is
 #	              used by EXEC scripts in the same way.)
 #	$nolong       Skip the long-* tests
-#	$nopreload    Skip the tests that use $LD_PRELOAD
+#	$nopreload    Skip the tests that use $LD_PRELOAD (set by default for variants
+#                     that cannot use preloading)
 #	$notall       If non-empty, exit on the first error, instead of running everything
 #	$emptyok      Set to non-empty to *not* output an error for empty test directories;
 #	              useful after doing "rm" in a version control system on one, since
@@ -86,7 +84,7 @@
 # TTYSTDOUTERR The output and error output (interleaved) when in TTY mode
 # INTTYSTDOUTERR Each line in the file must be present in stdout or stderr in TTY mode
 # COV_TAG      The file must exist when the test uses the cov_tag mechanism, to exclude
-#              the test from the ndebug variant.
+#              the test from the 'ndebug' variant.
 # VARIANT      The variant(s) in which the test should be executed.  Can contain any
 #              number of variants.  Each can be preceded by '!' to exclude it.
 # PRELOAD.cc   If present, the file is compiled as a shared object and Stu executed with
@@ -263,16 +261,11 @@ printf '%s\n' "$TEST_VERBOSE" | grep -q -E '^[0123456789]$' || {
 [ "$TEST_VERBOSE" -ge 1 ] && exec 7>&1 || exec 7>/dev/null
 
 rm -f bin/stu.test || exit 2
-if [ "$VARIANT" ] ; then
+[ "$VARIANT" ] || VARIANT=debug
+if [ "$VARIANT" != ndebug ] ; then
 	ln -s stu."$VARIANT" bin/stu.test || exit 2
 else
-	if [ "$NDEBUG" ] ; then
-		VARIANT=ndebug
-		ln -s stu bin/stu.test || exit 2
-	else
-		VARIANT=debug
-		ln -s stu.debug bin/stu.test || exit 2
-	fi
+	ln -s stu bin/stu.test || exit 2
 fi
 echo >&7 "VARIANT=$VARIANT"
 

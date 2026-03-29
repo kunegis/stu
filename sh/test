@@ -65,7 +65,6 @@
 #              and escaping.  For instance, the file may contain -C ' A ' to pass an
 #              argument beginning and ending in space to Stu.
 # CMDPREFIX    Prefix before command.  Used to set environment variables.
-# PARALLEL     Give the arguments of the -j option for which the test is to be executed
 # EXITSTATUS   The prescribed exit status; default is zero
 # NOSECOND     If file is present, do not check that second invocation results in "Targets
 #              are up to date" (A second run is only made if the prescribed exit status is
@@ -125,7 +124,7 @@
 # Note:  we can't use "set -e" here (which is a good general practice in shell scripts),
 # because otherwise we can't use $? to check the exit code of Stu.
 
-ALLOWED_FILES='EXITSTATUS PARALLEL INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC STDOUT NOSECOND NOTTY NOCOLOR COV_TAG VARIANT'
+ALLOWED_FILES='EXITSTATUS INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC STDOUT NOSECOND NOTTY NOCOLOR COV_TAG VARIANT'
 error_file=${TMPDIR:-/tmp}/test.$$.error
 
 output_next()
@@ -600,21 +599,6 @@ do
 				>&2 cat list.def.out
 				>&2 printf '\\---------\n'
 			fi
-		fi
-
-		# Run in parallel
-		if [ -r PARALLEL ]; then
-			ks=$(sed -e '/^[[:space:]]*$/d' <PARALLEL)
-			for k in $ks; do
-				../../sh/rm_tmps || exit 2
-				echo >&7 $CMDPREFIX ../../bin/stu.test "$CMD" -j "$k"
-				eval $CMDPREFIX ../../bin/stu.test $CMD -j $k \>list.def.out 2\>list.def.err
-				if [ $? != 0 ] ; then
-					test_fail "Parallel stu failed for '$file' with k = $k"
-				else
-					echo >&7 "PARALLEL...correct"
-				fi
-			done
 		fi
 	fi
 

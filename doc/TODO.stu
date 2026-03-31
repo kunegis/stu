@@ -1,8 +1,4 @@
 #
-# sh/test_clean: Add test that all #! files use '#!/bin/sh'.
-#
-
-#
 # In the manpage, in the option list, make all option names bold, and underline all
 # argument names.  (As done e.g. in the make(1) manpage.)
 #

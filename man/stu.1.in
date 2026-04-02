@@ -1,16 +1,14 @@
 .TH STU 1 "$DATE" "stu-$STU_VERSION" "STU"
 .SH NAME
-stu \- build automation
+\fBstu\fR \- Build automation
 .SH SYNOPSIS
-.B stu
-[ -q | -P | -I ]
-[ -f
-.I FILENAME
-] [
-.I OPTION
-]... [
-.I TARGET
-]...
+\fBstu\fR [-f \fIFILENAME\fR] [\fIOPTION\fR]... [\fITARGET\fR]...    # Build targets
+.br
+\fBstu\fR -q [-f \fIFILENAME\fR] [\fIOPTION\fR]... [\fITARGET\fR]... # Query whether targets are up to date
+.br
+\fBstu\fR -P [-f \fIFILENAME\fR] [\fIOPTION\fR]... [\fITARGET\fR]... # Print rules
+.br
+\fBstu\fR -I [-f \fIFILENAME\fR] [\fIOPTION\fR]... [\fITARGET\fR]... # Print all targets
 .SH DESCRIPTION
 Stu is a tool for build automation.  Like Make, it is used to call other
 programs in order to build files.  Stu has three features that work in
@@ -18,15 +16,15 @@ conjunction to allow contructs impossible to realize in Make:
 (1) Dynamic dependencies:  The dependencies of a target can be
 themselves computed by a command.  When \fB[\fR\fIFILENAME\fR\fB]\fR (a filename
 currounded by angle brackets) is used as a dependency, Stu will build the file
-FILENAME and read dependencies from it.
+\fIFILENAME\fR and read dependencies from it.
 (2) Parameters:  Names of files (and phony targets) can contain
 parameters written using dollar syntax.  For example, a rule with a target
 filename \fIlist.$name\fR will be used to build any file matching the
 pattern \fIlist.*\fR, and the parameter $name can be used in names of
 dependencies and in the build command.  Targets may contain any number
 of parameters.
-(3) Concatenation:  Stu allows expressions such as list.[FILENAME] and
-list.(a b c) to construct a list of files following a certain pattern.
+(3) Concatenation:  Stu allows expressions such as \fIlist.[FILENAME]\fR and
+\fIlist.(a b c)\fR to construct a list of files following a certain pattern.
 
 At its core, Stu is very much like Make: Instead of a \fIMakefile\fR, one
 uses a file named \fImain.stu\fR, which is read by Stu. Also like Make, Stu
@@ -63,15 +61,10 @@ option.
 
 .SH OPTIONS
 .IP "\fB\-0\fR \fIFILENAME\fR"
-Read targets from
-\fIFILENAME\fR, which must contain
-\\0-separated filenames.
-No Stu syntax is processed.  This option is also suitable in all cases
-where a file contains only the name of a single file, since filenames do
-not contain the \\0 character.
-Using this option is equivalent to using the
-.BR "[-0 FILENAME]"
-syntax.
+Read targets from \fIFILENAME\fR, which must contain \\0-separated filenames.  No Stu
+syntax is processed.  This option is also suitable in all cases where a file contains only
+the name of a single file, since filenames do not contain the \\0 character.  Using this
+option is equivalent to using the \fB[-0\fR \fIFILENAME\fR\fB]\fR syntax.
 .IP \fB\-a\fR
 Treat all trivial dependencies, which are declared with the
 .BR -t
@@ -112,58 +105,36 @@ flag) as non-optional.
 .IP "\fB-h\fR, \fB--help\fR"
 Output a short help and exit.
 .IP "\fB-i\fR, \fB--interactive\fR"
-Interactive mode.  I.e., put the jobs run into the foreground.  Must not
-be used in conjunction with
-.B -j N
-when N > 1.  Without this option, jobs are run in the
-background, meaning they can't read standard input (they get /dev/null instead), will not get any
-terminal signals, and pressing Ctrl-C will stop Stu as a whole.  Using
-this option, each job is run in the foreground, and therefore they can
-read standard input, will get terminal signals such as SIGINT (after
-Ctrl-C) and end-of-stdin (after Ctrl-D).  Thus, when
-.BR -i
-is used, pressing Ctrl-C will only interrupt the currently running job,
-and if the
-.BR -k
-option is used, Stu will continue with the next job.  When Ctrl-Z
-is pressed, Stu will interrupt the currently running job, and ask the
-user to press ENTER to continue, or press Ctrl-C/Ctrl-Z to interrupt or
-suspend Stu itself.
-When
-.BR -i
-is used, Stu must be run in a terminal.
+Interactive mode.  I.e., put the jobs run into the foreground.  Must not be used in
+conjunction with \fB-j\fR \fIN\fR when \fIN\fR > 1.  Without this option, jobs are run in
+the background, meaning they can't read standard input (they get \fI/dev/null\fR instead),
+will not get any terminal signals, and pressing Ctrl-C will stop Stu as a whole.  Using
+this option, each job is run in the foreground, and therefore they can read standard
+input, will get terminal signals such as SIGINT (after Ctrl-C) and end-of-stdin (after
+Ctrl-D).  Thus, when \fB-i\fR is used, pressing Ctrl-C will only interrupt the currently
+running job, and if the \fB-k\fR option is used, Stu will continue with the next job.
+When Ctrl-Z is pressed, Stu will interrupt the currently running job, and ask the user to
+press ENTER to continue, or press Ctrl-C/Ctrl-Z to interrupt or suspend Stu itself.  When
+\fB-i\fR is used, Stu must be run in a terminal.
 .IP "\fB-I\fR"
-Print a list of all buildable file targets and exit.  Prints one file pattern
-per line.  The patterns are glob pattern suitable for use in the shell.  Use
-quoting for all characters that need quoting in the shell.  Can be used to
-populate files such as ".gitgignore", but care should be taken due to the
-quoting syntax and Git's special handling of names that start or end with a
-slash.
+Print a list of all buildable file targets and exit.  Prints one file pattern per line.
+The patterns are glob pattern suitable for use in the shell.  Use quoting for all
+characters that need quoting in the shell.  Can be used to populate files such as
+\fI.gitignore\fR, but care should be taken due to the quoting syntax and Git's special
+handling of names that start or end with a slash.
 .IP "\fB-j\fR \fIK\fR, \fB--jobs\fR=\fIK\fR"
-Run \fIK\fR jobs in parallel.  \fIK\fR must be a positive integer.  Without this
-option, jobs are not run in parallel, which is equivalent to using the
-.BR "-j 1"
-setting.
-When running jobs in parallel and the
-.BR -k
-option is not used, a single job that fails will make Stu abort all
-other running jobs and terminate.  Thus, the
-.BR -j
-option is often used in conjunction with the
-.BR -k
-option.
-The parameter K is mandatory.
-This option works like the corresponding option in GNU Make, but note
-that in GNU Make, the argument is optional.
+Run \fIK\fR jobs in parallel.  \fIK\fR must be a positive integer.  Without this option,
+jobs are not run in parallel, which is equivalent to using the \fB-j 1\fR setting.  When
+running jobs in parallel and the \fB-k\fR option is not used, a single job that fails will
+make Stu abort all other running jobs and terminate.  Thus, the \fB-j\fR option is often
+used in conjunction with the \fB-k\fR option.  The parameter \fIK\fR is mandatory.  This
+option works like the corresponding option in GNU Make, but note that in GNU Make, the
+argument is optional.
 .IP "\fB-J\fR"
-Parse all arguments to Stu as filenames, disabling all Stu syntax that
-is otherwise used.  Intended when Stu is used with tools such
-as
-.BR xargs (1)
-or similar.  The
-.BR -J
-option itself does not take an argument; it only
-changes the way arguments outside of options are interpreted.
+Parse all arguments to Stu as filenames, disabling all Stu syntax that is otherwise used.
+Intended when Stu is used with tools such as \fBxargs\fR(1).  The \fB-J\fR option itself
+does not take an argument; it only changes the way arguments outside of options are
+interpreted.
 .IP "\fB-k\fR, \fB--keep-going\fR"
 Keep going.  Do not stop running when an error occurs.  Instead, try to build as much
 as possible.  This option is equivalent to that of Make.
@@ -193,10 +164,8 @@ already exists and is out of date.
 Pass the given file as a persistent dependency, i.e., build the file but
 ignore its timestamp.
 .IP "\fB-P\fR, \fB--print-rules\fR"
-Print the set of rules and exit.  Note that Make has a
-.BR -p
-option to print the rules, but does not exit.  The output
-format is not specified.
+Print the set of rules and exit.  The output format is not specified.  Note that Make has
+a \fB-p\fR option to print the rules, but continues with build after printing the rules.
 .IP "\fB-q\fR, \fB--question\fR"
 Question mode.  Do not execute any commands.  Instead, determine whether
 the targets are up to date.  The exit status is 0 when all given
@@ -250,7 +219,7 @@ A simple rule looks as follows:
 
 The colon may be omitted when there are no dependencies:
 
-    data.csv { ./generate --output data.csv }
+    data.csv { ./generate --output data.csv ; }
 
 Here is an example of a rule containing three parameters.  Stu will use
 pattern matching to match the target pattern to a given filename:
@@ -264,12 +233,11 @@ pattern matching to match the target pattern to a given filename:
             -o plot.$dataset.$method.$measure.eps
     }
 
-Here is an example of a dynamic dependency.  The target \fIcompute\fR (a C
-program) must be rebuild whenever its source code files are modified.
-Since the set of source code files is large and may be changed by
-changing the source code itself, we use the file \fIcompute.c.dep\fR to
-contain the list of dependencies.  The file \fIcompute.c.dep\fR will then be
-built by Stu like any file, and its content parsed for the actual
+Here is an example of a dynamic dependency.  The target \fIcompute\fR (a C program) must
+be rebuild whenever its source code files are modified.  Since the set of source code
+files is large and may be changed by changing the source code itself, we use the file
+\fIcompute.c.dep\fR to contain the list of dependencies.  The file \fIcompute.c.dep\fR
+will then be built by Stu like any file, and its content parsed for the actual
 dependencies:
 
     compute:  [compute.c.dep] {
@@ -293,7 +261,7 @@ backslashes are needed at line ends:
 
 A rule may be entirely given on a single line:
 
-    system-info: { uname -a >system-info }
+    system-info: { uname -a >system-info ; }
 
 The following rule uses single quotes to declare filenames that include
 parentheses and a colon:
@@ -307,8 +275,8 @@ the one that is the least parametrized, as defined by the subset
 relation on the set of characters that are in parameters.
 When building \fIX.txt\fR in this example, only the second rule is called:
 
-    $name.txt: {  echo "$name" is the best >"$name.txt" }
-    X.txt:  { echo X sucks >X.txt }
+    $name.txt: {  echo "$name" is the best >"$name.txt" ; }
+    X.txt:  { echo X sucks >X.txt ; }
 
 Variable dependency:  the content of variables can come from files.
 In the following example, the C flags are stored in the file \fICFLAGS\fR,
@@ -318,12 +286,12 @@ and used in the compilation command using the \fB$[CFLAGS]\fR dependency.
     {
         gcc $CFLAGS compute -o compute.c
     }
-    CFLAGS: { echo -Wall -Werror >CFLAGS }
+    CFLAGS: { echo -Wall -Werror >CFLAGS ; }
 
 By default, the name of the variable set is the same as the filename.
 Another variable name can be used in the following way:
 
-    $[NAME = FILENAME]
+    \fB$[\fR\fINAME\fR = \fIFILENAME\fR\fB]\fR
 
 If multiple variable dependencies have the same name, it is unspecified
 which one is used.  If a variable dependencies has the same name as a
@@ -367,23 +335,20 @@ The basic syntax is similar to that of make, but does not rely on
 mandatory whitespace.  Instead of tabs, the commands are enclosed in
 curly braces.
 
-Stu syntax supports two types of objects:  file targets and phony targets.  Files are
-any file in the file system, and are always
-referenced by their filename.  Phony targets have names beginning with the \fB\fR
-symbol and do not correspond to files, but can have dependencies and
-commands.
+Stu syntax supports two types of objects: file targets and phony targets.  Files are any
+file in the file system, and are always referenced by their filename.  Phony targets have
+names beginning with the \fB\fR symbol and do not correspond to files, but can have
+dependencies and commands.
 
 A rule for a file in Stu has the following syntax:
 
-    [>] TARGET [ : DEPENDENCY ... ] { COMMAND }
+    [\fB>\fR] \fITARGET\fR [ \fB:\fR \fIDEPENDENCY\fR ... ] \fB{\fR COMMAND \fB}\fR
 
-The target is a filename.  DEPENDENCY ... are depencies.
-COMMAND is a command which is passed to the shell for building.
-Stu will always execute
-the whole command block using a single call to the shell.  This is
-different than Make, which calls each line individually.  This means
-that you can for instance define a variable on one line and use it on
-the next.
+The target is a filename.  \fIDEPENDENCY\fR ... are depencies.  \fICOMMAND\fR is a command
+which is passed to the shell for building.  Stu will always execute the whole command
+block using a single call to the shell.  This is different than Make, which calls each
+line individually.  This means that you can for instance define a variable on one line and
+use it on the next.
 
 Stu uses the
 .BR -e
@@ -393,21 +358,20 @@ failing command will make the whole target fail.
 When the command of a file is replaced by a semicolon, this means that the file is
 always built together with its dependencies:
 
-    TARGET [ : DEPENDENCY ... ] ;
+    \fITARGET\fR [ \fB:\fR \fIDEPENDENCY\fR ... ] \fB\fR;
 
-In this example, the file TARGET is assumed to be up to date whenever
-all dependencies are up to date.  This can be used when two files are
-built by a single command.  As a special case, writing the name of a
-file followed by semicolon tells Stu that the file must always exist,
-and is always up to date;  Stu will then report an error if the file
-does not exist:
+In this example, the file \fITARGET\fR is assumed to be up to date whenever all
+dependencies are up to date.  This can be used when two files are built by a single
+command.  As a special case, writing the name of a file followed by semicolon tells Stu
+that the file must always exist, and is always up to date; Stu will then report an error
+if the file does not exist:
 
-    TARGET ;
+    \fITARGET\fR \fB;\fR
 
 For a phony target, the same syntax is used as for a file:
 
-    @TARGET [ : DEPENDENCY ... ] { COMMAND }
-    @TARGET [ : DEPENDENCY ... ] ;
+    \fI@TARGET\fR [ \fB:\fR \fIDEPENDENCY\fR ... ] \fB{\fR COMMAND \fB}\fR
+    \fI@TARGET\fR [ \fB:\fR \fIDEPENDENCY\fR ... ] \fB;\fR
 
 If a phony target includes a command, Stu will have no way of
 remembering that the command was executed, and the command will be
@@ -421,34 +385,34 @@ Rules can have multiple targets, in which case the command must build
 all the targets that are files.  If one of the targets is a phony
 target, this effectively creates an alias for the file targets.
 
-    TARGET... [ : DEPENDENCY ... ] { COMMAND }
-    TARGET... [ : DEPENDENCY ... ] ;
+    \fITARGET\fR... [ \fB:\fR \fIDEPENDENCY\fR ... ] \fB{\fR COMMAND \fB}\fR
+    \fITARGET\fR... [ \fB:\fR \fIDEPENDENCY\fR ... ] \fB;\fR
 
 For a file target, content can be specified directly using the \fB=\fR
 operator:
 
-    TARGET = { CONTENT ... }
+    \fITARGET\fR \fB= {\fR CONTENT ... \fB}\fR
 
 The content is stripped of empty lines and common whitespace at the
 beginning of lines, and written into the file.
 
 A dependency can be one of the following:
 
-    NAME    A file dependency
+    \fINAME\fR # A file dependency
 
-The target depends on the file with the name NAME.  Stu will make sure
-that the file NAME is up to date before the target itself can be up to
+The target depends on the file with the name \fINAME\fR.  Stu will make sure
+that the file \fINAME\fR is up to date before the target itself can be up to
 date.
 
-    @NAME   A phony dependency
+    \fI@NAME\fR # A phony dependency
 
 A phony target.  They represent a distinct namespace from files, and
 thus their command do not create files.
 
-    '[' ['-n' | '-0' | '-C'] NAME ']'  A dynamic dependency
+    \fB[\fR [\fB-n\fR | \fB-0\fR | \fB-C\fR] \fINAME\fR \fB]\fR # A dynamic dependency
 
-Stu will ensure the file named NAME exists, and then parse it as containing further
-dependencies of the target.  The fact that NAME needs to be rebuild does not imply that
+Stu will ensure the file named \fINAME\fR exists, and then parse it as containing further
+dependencies of the target.  The fact that \fINAME\fR needs to be rebuild does not imply that
 the target has to be rebuilt.  The flag \fB-n\fR makes Stu interpret the content of the
 file as a newline-separated list of filenames.  Analogously, the
 .BR -0
@@ -459,33 +423,31 @@ exactly one file.  If
 .BR -C
 or no flag is used, the file is parsed in full Stu syntax.
 
-    '[' @NAME ']'  A dynamic phony target
+    \fB[\fR \fI@NAME\fR \fB]\fR # A dynamic phony target
 
 Brackets can also be used around a phony dependency name.  In that case, all
 dependencies of the given phony targets will be considered dynamic
 dependencies.
 
-    $[NAME] A variable dependency
+    \fB$[\fR\fINAME\fR\fB]\fR # A variable dependency
 
-The file NAME is ensured to be up to date, and the content of the file
-NAME is used as the value of the variable $NAME when the target's
-command is executed.
+The file \fINAME\fR is ensured to be up to date, and the content of the file \fINAME\fR is
+used as the value of the variable \fI$NAME\fR when the target's command is executed.
 
-    <NAME An input dependency
+    \fB<\fR\fINAME\fR # An input dependency
 
 The dependency is a file which will be used as standard input for the
 command.
 
-    ( ... )
+    \fB(\fR ... \fB)\fR
 
-Groups of dependencies can be enclosed in parentheses.
-Parentheses may not contain variable dependencies (i.e., something like
-\fB$[NAME]\fR).
+Groups of dependencies can be enclosed in parentheses.  Parentheses may not contain
+variable dependencies (i.e., something like \fB$[\fR\fINAME\fR\fB]\fR).
 
 Both parentheses and brackets may be nested:
 
-    ((FILENAME)) # Equivalent to \fIFILENAME\fR
-    [[FILENAME]] # Read out dependencies from all files given in the file \fIFILENAME\fR.
+    \fB((\fR\fIFILENAME\fR\fB))\fR # Equivalent to \fIFILENAME\fR
+    \fB[[\fR\fIFILENAME\fR\fB]]\fR # Read out dependencies from all files given in the file \fIFILENAME\fR.
 
 .SH "FLAGS"
 
@@ -534,12 +496,8 @@ Trivial dependencies are not allowed if the rule has no command.
 
     target:  -t input { ... }
 
-Variable dependencies may be declared as persistent as in \fB$[-p X]\fR
-and as trivial as in
-.B $[-t X]
-but not as optional using the
-.B -o
-flag.
+Variable dependencies may be declared as persistent as in \fB$[-p\fR \fIX\fR\fB]\fR and as
+trivial as in \fB$[-t\fR \fIX\fR\fB]\fR but not as optional using the \fB-o\fR flag.
 
     -p NAME   A persistent dependency
 
@@ -587,9 +545,8 @@ Flags can also be applied to dynamic dependencies:
 in which case all resulting dynamic dependencies will be flagged as
 optional or persistent.
 
-The flags
-.BR -n/-0/-C
-can be used on files used as dynamic dependencies to specify how the file is parsed.
+The flags \fB-n\fR/\fB-0\fR/\fB-C\fR can be used on files used as dynamic dependencies to
+specify how the file is parsed.
 
     [ -n FILE ]    # File contains one filename per line
     [ -0 FILE ]    # File contains \\0-separated filenames
@@ -605,7 +562,7 @@ given file is copied with the \fIcp\fR command:
 By default, Stu will use \fI/bin/cp\fR to perform the copy.  This can be
 changed by setting the variable $STU_CP.  If source ends in a slash
 (outside of any parameter value), then Stu will look for a file with the
-same basename as TARGET in the directory SOURCE.
+same basename as \fITARGET\fR in the directory \fISOURCE\fR.
 
 If the persistent flag
 .BR -p
@@ -631,7 +588,7 @@ that the output of the command should be redirected into the target
 file.  As an example, the following rule creates the file \fIHEADERS\fR
 containing the output of the given \fIecho\fR command:
 
-    >HEADERS { echo *.h }
+    >HEADERS { echo *.h ; }
 
 Only a single target may be annotated with the
 .BR >
@@ -645,7 +602,7 @@ A file dependency can be annotated with the
 operator to redirect standard input from the given file to the command.
 Only a single file can be used for input redirection.
 If no input redirection is specified,
-standard input for the command is redirected from /dev/null (when option
+standard input for the command is redirected from \fI/dev/null\fR (when option
 .BR -i
 is not used) and from Stu's stdin (when
 .BR -i
@@ -720,8 +677,8 @@ the file named \fIa.b.c\fR:
     a.$x:   ... { ... }
     $x.c:   ... { ... }
 
-In the following example, no rule dominates the others for the
-filename \fIa.b.c\fR, so Stu will report an error:
+In the following example, no rule dominates the others for the filename \fIa.b.c\fR, and
+Stu will report an error if the file \fIa.b.c\fR must be built:
 
     $x.b.c: ... { ... }
     a.$x.c: ... { ... }
@@ -750,11 +707,10 @@ Canonicalization does not involve any procedure that requires system
 calls to be performed.  Thus, symlinks are not resolved, and names such as \fIaaa/..\fR
 is not simplified.  Likewise, \fB/..\fR is not simplified to \fB/\fR.
 
-The canonicalization rules apply not only to file targets, but also to
-phony targets.  Thus, @aaa//bbb and @aaa/bbb refer to the same
-target.  It is thus strongly suggested to use phony targets in a
-fashion that is consistent with the file system semantics of \fB/\fR
-and \fB.\fR.
+The canonicalization rules apply not only to file targets, but also to phony targets.
+Thus, \fI@aaa//bbb\fR and \fI@aaa/bbb\fR refer to the same target.  It is thus strongly
+suggested to use phony targets in a fashion that is consistent with the file system
+semantics of \fB/\fR and \fB.\fR (slash and dot).
 
 Canonicalization is applied in the following fashion:
 
@@ -798,12 +754,11 @@ to \fB.\fR, as long as \fIAAA\fR does not start with a slash.
 
 .SH "DIRECTIVES"
 
-Directives in Stu are introduced by \fB%\fRand serve a similar purpose to
-the C preprocessor, i.e., they are processed before the actual Stu
-script is parsed and interpreted.  (However, they are not used to
-implement a macro system.)  The token \fB%\fR must be followed by the
-directive name. There may be any amount of whitespace (including none)
-between \fB%\fR and the name of the directive.
+Directives in Stu are introduced by \fB%\fR and serve a similar purpose to the C
+preprocessor, i.e., they are processed before the actual Stu script is parsed and
+interpreted.  (However, they are not used to implement a macro system.)  The token \fB%\fR
+must be followed by the directive name. There may be any amount of whitespace (including
+none) between \fB%\fR and the name of the directive.
 
 File inclusion is done using the \fI%include\fR directive.
 This can be put at any place in the input file, and will temporarily continue
@@ -841,10 +796,9 @@ Unquoted filenames in Stu may contain the following ASCII characters:
 
     [a-z] [A-Z] [0-9] _ ^ ` + - . ~ /
 
-and all non-ASCII characters.  Filenames containing
-other characters must be quoted by either single or double quotes, or by using
-backslashes.  The characters -, + and ~ are not allowed as the first character
-of a name if they are not quoted.
+and all non-ASCII characters.  Filenames containing other characters must be quoted by
+either single or double quotes, or by using backslashes.  The characters \fB-\fR, \fB+\fR
+and \fB~\fR are not allowed as the first character of a name if they are not quoted.
 
 The following characters have special meaning in Stu and cannot be used in
 unquoted filenames:
@@ -962,7 +916,7 @@ following results in an error:
 Cycles are considered at the rule level, i.e., cycles such as the
 following are also flagged as an error, even though there is no cycle on
 the filename level.  In the following example, it is not possible to
-build the file \fIa.gz.gz\fR from the file \fIafR, even though it would not
+build the file \fIa.gz.gz\fR from the file \fIa\fR, even though it would not
 result in a cycle, but since both files \fIa.gz\fR and \fIa.gz.gz\fR use the
 same parametrized rule, this is not allowed:
 
@@ -980,23 +934,17 @@ Symlinks are treated transparently by Stu.  In other words, Stu will
 always consider the timestamp of the linked-to file.  A symlink to a
 non-existing file will be treated as a non-existing file.
 
-Stu uses job control:  Each job is put into its own process group.
-All jobs are put into the background, except when the option
-.BR -i
-is used.  When
-.BR -i
-is not used, the standard input of all jobs is redirected from
-/dev/null.
+Stu uses job control: Each job is put into its own process group.  All jobs are put into
+the background, except when the option \fB-i\fR is used.  When \fB-i\fR is not used, the
+standard input of all jobs is redirected from \fI/dev/null\fR.
 
-If a command fails, Stu will remove any of its target files, if they
-have been already touched by the command.  If the failing command did not
-touch a target file, that existing target file is not removed.  This
-behavior is necessary to avoid the case that a commands partially
-creates a target file, then fails, and then a subsequent invocation of
-Stu sees the new file and considers it as up to date, even though it was
-only partially created.  Thus, commands in Stu do not need to make sure
-they delete any output files when they fail.  This behavior is
-equivalent to that in Make.
+If a command fails, Stu will remove any of its target files, if they have been already
+touched by the command.  If the failing command did not touch a target file, that existing
+target file is not removed.  This behavior is necessary to avoid the case that a commands
+partially creates a target file, then fails, and then a subsequent invocation of Stu sees
+the new file and considers it as up to date, even though it was only partially created.
+Thus, commands in Stu do not need to make sure they delete any output files when they
+fail.  This behavior is equivalent to that in Make.
 
 .SH "JOB CONTROL"
 
@@ -1048,7 +996,7 @@ using this variable.
 If set, Stu calls the shell from the given location instead of \fI/bin/sh\fR.  The given shell
 must support the
 .BR -e
-and /fB-cfI options.  This is mainly useful on systems where \fI/bin/sh\fR is not a POSIX
+and \fB-c\fR options.  This is mainly useful on systems where \fI/bin/sh\fR is not a POSIX
 shell.  Stu ignores the $SHELL variable, like Make does, as that variable is only intended to set the
 user's interactive shell.
 .IP STU_STATUS
@@ -1114,7 +1062,7 @@ the file \fIA\fR containing the string 'HELLO':
 Variable dependencies may be included indirectly through phony targets
 without commands, and through dynamic dependencies.  In the
 following example, the variable $V will be passed through to the
-commands for the targets A and B:
+commands for the targets \fIA\fR and \fIB\fR:
 
     V: { echo Hello >V ; }
     @x: $[V];
@@ -1155,8 +1103,8 @@ construct a list of filenames following a pattern:
 
     @headers:   (config data list).h;
 
-This will make @headers depend on the files config.h, data.h, and
-list.h.  This can be combined with brackets in the following way:
+This will make \fI@headers\fR depend on the files \fIconfig.h\fR, \fIdata.h\fR, and
+\fIlist.h\fR.  This can be combined with brackets in the following way:
 
     @headers:   [NAMES].h;
 
@@ -1197,7 +1145,7 @@ You can use Stu to just execute something, like a poor man's shell:
 
     stu -F '@main{ echo Hello World ; }'
 
-of course, you can also type that directly or use \fIsh -c\fR, etc.
+of course, you can also type that directly or use \fBsh -c\fR, etc.
 
 Using the
 .BR -i
@@ -1215,7 +1163,7 @@ option (except for
         echo "#define COUNT $count"
     }
 
-.SH "BUGS"
+.SH "LIMITATIONS"
 
 There is no way to change the used shell from within a Stu script.  The only way to do it
 is with the $STU_SHELL environment variable.
@@ -1259,11 +1207,10 @@ Using optional dependencies may make a second invocation of Stu not
 output 'Targets are up to date', as the optional dependency may have been
 created by subsequent targets.
 
-Commands enclosed in braces { ... } are parsed using shell syntax, up to
-one exception:  a closing brace is detected everywhere in unquoted
-environments, not only when standing alone as the first word of a
-command.  E.g., the command { echo Hello } is a valid command for Stu,
-while it would be an error for the shell, as the closing } would be
+Commands enclosed in braces \fB{\fR ... \fB}\fR are parsed using shell syntax, up to one
+exception: a closing brace is detected everywhere in unquoted environments, not only when
+standing alone as the first word of a command.  E.g., the command \fB{\fR echo Hello \fB}\fR is a
+valid command for Stu, while it would be an error for the shell, as the closing \fB}\fR would be
 interpreted as a second argument to \fIecho\fR.
 
 In error messages, the column numbers are based on the number of bytes,

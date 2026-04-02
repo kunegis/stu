@@ -1,9 +1,4 @@
 #
-# In the manpage, in the option list, make all option names bold, and underline all
-# argument names.  (As done e.g. in the make(1) manpage.)
-#
-
-#
 # Replace all show_*() render_*() functions by *_View classes.  Also, there should be no
 # specialized show() functions; only render().  Only exception is show_trace() [maybe].
 #
@@ -427,4 +422,22 @@ B {}
 
 #
 # sh/test: put console codes into variables.
+#
+
+#
+# Comtact output mode, in which each line is prefixed by a [....] block with colors for
+# success/fail/ongoing.  Can even accumulate all past progress in a progress bar (which
+# may become longer as new tasks are discovered).
+#
+
+#
+# Add spellchecking to make test.  (1) extract words from source files where relevant.
+# (2) use /usr/share/dict/words + own list as dictionary.  Fail 'mate test' when a word is
+# not in the dictionary.
+#
+
+#
+# Add sections to the manpage for:
+# * Content rules
+# * Variable dependencies
 #

@@ -43,10 +43,14 @@
 #
 
 #
+# Use std::zstring_view/cstring_view once it's standardized.
+#
+
+#
 # "set -o pipefail" (POSIX 2024).  Need to wait longer until all shells support it,
 # e.g. Dash on Debian.
 #
 
 #
-# Use std::zstring_view/cstring_view once it's standardized.
+# In the shell, dollar-single-quote (e.g., $'\t') is available in (POSIX 2024).
 #

@@ -91,9 +91,8 @@ Invocation::Invocation(int argc, char **argv, int &error)
 		default:
 			/* Invalid option -- an error message was
 			 * already printed by getopt() */
-			string text= show(frmt("%s -h", dollar_zero));
-			fprintf(stderr,
-				"To get a list of all options, use %s\n",
+			string text= show(frmt("%s --help", dollar_zero));
+			fprintf(stderr, "To get a list of all options, use %s\n",
 				text.c_str());
 			exit(ERROR_FATAL);
 		}

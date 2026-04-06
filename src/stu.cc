@@ -8,7 +8,6 @@
 using std::string;
 using std::shared_ptr;
 
-#include "bits.cc"
 #include "buffer.cc"
 #include "buffering.cc"
 #include "canonicalize.cc"
@@ -39,6 +38,7 @@ using std::shared_ptr;
 #include "show.cc"
 #include "show_dep.cc"
 #include "signal.cc"
+#include "state.cc"
 #include "target.cc"
 #include "terminate_jobs.cc"
 #include "timestamp.cc"

@@ -597,8 +597,8 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 
 	/* Don't propagate the NEED_BUILD flag via F_RESULT_NOTIFY links: It just means the
 	 * list of depenencies have changed, not the dependencies themselves. */
-	if (child->bits & B_NEED_BUILD && ! (dep_child->flags & F_RESULT_NOTIFY)) {
-		bits |= B_NEED_BUILD;
+	if (child->state & State::NEED_BUILD && ! (dep_child->flags & F_RESULT_NOTIFY)) {
+		state |= State::NEED_BUILD;
 	}
 
 	/* Remove the links between them */

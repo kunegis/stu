@@ -55,13 +55,13 @@ Dynamic_Executor::Dynamic_Executor(
 	dep_child->flags |= F_RESULT_NOTIFY;
 	push(dep_child);
 
-	if (dep->flags & F_PHASE_B) bits |= B_NEED_BUILD;
+	if (dep->flags & F_PHASE_B) state |= State::NEED_BUILD;
 }
 
 Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(dep_link));
-	TRACE("done= %s; bits= %s", done.show(), show_bits(bits));
+	TRACE("done= %s; state= %s", done.show(), show(state));
 	bool need_build;
 
 	Proceed proceed_A= execute_phase_A(dep_link);
@@ -81,7 +81,7 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 		return P_NOTHING;
 	}
 
-	need_build= (bits & B_NEED_BUILD) != 0 || dep_link->flags & F_PHASE_B;
+	need_build= (state & State::NEED_BUILD) != 0 || dep_link->flags & F_PHASE_B;
 	TRACE("need_build= %s", frmt("%d", need_build));
 	if (! need_build) {
 		done |= Done::from_flags(dep_link->flags);

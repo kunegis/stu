@@ -1,9 +1,4 @@
 #
-# Replace all show_*() render_*() functions by *_View classes.  Also, there should be no
-# specialized show() functions; only render().  Only exception is show_trace() [maybe].
-#
-
-#
 # Allow to coalesce flags
 #
 
@@ -440,4 +435,9 @@ B {}
 # Add sections to the manpage for:
 # * Content rules
 # * Variable dependencies
+#
+
+#
+# Replace all show_*() render_*() functions by *_View classes.  Also, there should be no
+# specialized show() functions; only render().  Only exception is show_trace() [maybe].
 #

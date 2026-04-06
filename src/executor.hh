@@ -42,12 +42,12 @@
  * the edge connecting them is the dependency.
  */
 
-#include "bits.hh"
 #include "buffer.hh"
 #include "job.hh"
 #include "place.hh"
 #include "proceed.hh"
 #include "rule.hh"
+#include "state.hh"
 #include "timestamp.hh"
 
 class Executor
@@ -136,7 +136,7 @@ public:
 #endif /* ! NDEBUG */
 
 protected:
-	Bits bits= 0;
+	State state;
 	int error; /* Propagated using '|' to the parent */
 
 	std::map <Executor *, shared_ptr <const Dep> > parents;

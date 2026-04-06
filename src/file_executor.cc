@@ -214,12 +214,12 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 	}
 
 	/* The file(s) may have been built, so forget that it was known to not exist */
-	bits &= ~B_MISSING;
+	state &= ~State::MISSING;
 
 	if (job.waited(status, pid)) {
-		bits |=  B_EXISTING;
-		bits &= ~B_MISSING;
-		/* Subsequently set to B_MISSING if at least one target file is missing */
+		state |=  State::EXISTING;
+		state &= ~State::MISSING;
+		/* Subsequently set to State::MISSING if at least one target file is missing */
 
 		/* Check that the file targets were built */
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
@@ -468,7 +468,7 @@ void File_Executor::print_command() const
 Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 {
 	TRACE_FUNCTION(show_trace(dep_link));
-	TRACE("bits= %s", show_bits(bits));
+	TRACE("state= %s", show(state));
 	assert(! job.started() || children.empty());
 
 	Proceed proceed_A= execute_phase_A(dep_link);
@@ -488,7 +488,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		return P_WAIT;
 
 	TRACE("File needs to be present");
-	TRACE("bits= %s", show_bits(bits));
+	TRACE("state= %s", show(state));
 	assert(! hash_deps.empty());
 	assert(! hash_deps.front().is_dynamic());
 	assert(! hash_deps.back().is_dynamic());
@@ -535,11 +535,10 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	bool no_execution= rule != nullptr && rule->command == nullptr && ! rule->is_copy;
 	TRACE("no_execution= %s", frmt("%d", no_execution));
 
-	if (! (bits & B_CHECKED)) {
-		bits |= B_CHECKED;
-		bits |= B_EXISTING;
-		bits &= ~B_MISSING;
-		/* Now, set to B_MISSING when a file is found not to exist */
+	if (! (state & State::CHECKED)) {
+		state |= State::CHECKED | State::EXISTING;
+		state &= ~State::MISSING;
+		/* Now, set to State::MISSING when a file is found not to exist */
 
 		for (size_t i= 0; i < hash_deps.size(); ++i) {
 			const Hash_Dep &hash_dep= hash_deps[i];
@@ -558,7 +557,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		}
 	}
 
-	if (! (bits & B_NEED_BUILD)) {
+	if (! (state & State::NEED_BUILD)) {
 		TRACE("Check whether target is phony of not-yet executed command");
 		bool has_file= false; /* One of the targets is a file */
 		for (const Hash_Dep &hash_dep: hash_deps) {
@@ -573,14 +572,14 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			if (phonies.count(hash_dep.get_name_nondynamic()) == 0) {
 				/* Phony was not yet executed */
 				if (! no_execution && ! has_file) {
-					bits |= B_NEED_BUILD;
+					state |= State::NEED_BUILD;
 				}
 				break;
 			}
 		}
 	}
 
-	if (! (bits & B_NEED_BUILD)) {
+	if (! (state & State::NEED_BUILD)) {
 		TRACE("No need to build");
 		done |= Done::from_flags_trivial_and_nontrivial(dep_link->flags);
 		return P_NOTHING;
@@ -726,16 +725,16 @@ bool File_Executor::check_file_target(
 				: rule->targets[index]->place);
 		/* EXISTS is not changed */
 	} else {
-		bits |= B_MISSING;
-		bits &= ~B_EXISTING;
+		state |= State::MISSING;
+		state &= ~State::EXISTING;
 	}
 
-	if (! (bits & B_NEED_BUILD) && ret_stat == 0
+	if (! (state & State::NEED_BUILD) && ret_stat == 0
 		&& timestamp.defined() && timestamps_old[index] < timestamp
 		&& ! no_execution)
 	{
 		TRACE("Need build due to timestamp");
-		bits |= B_NEED_BUILD;
+		state |= State::NEED_BUILD;
 	}
 
 	if (ret_stat == 0) {
@@ -749,11 +748,11 @@ bool File_Executor::check_file_target(
 		}
 	}
 
-	if (! (bits & B_NEED_BUILD) && ret_stat != 0 && errno_stat == ENOENT) {
+	if (! (state & State::NEED_BUILD) && ret_stat != 0 && errno_stat == ENOENT) {
 		TRACE("File does not exist");
 		if (! (dep_link->flags & F_OPTIONAL)) {
 			TRACE("Non-optional dependency");
-			bits |= B_NEED_BUILD;
+			state |= State::NEED_BUILD;
 		} else {
 			unreachable();
 			/* In this case, execute_phase_A() will already
@@ -828,8 +827,8 @@ void File_Executor::write_content(
 		goto remove;
 	}
 
-	bits |= B_EXISTING;
-	bits &= ~B_MISSING;
+	state |= State::EXISTING;
+	state &= ~State::MISSING;
 	return;
 
  remove:
@@ -839,8 +838,8 @@ void File_Executor::write_content(
 	}
  error:
 	raise(ERROR_BUILD);
-	bits &= ~B_EXISTING;
-	bits |= B_MISSING;
+	state &= ~State::EXISTING;
+	state |= State::MISSING;
 }
 
 void File_Executor::read_variable(shared_ptr <const Dep> dep)
@@ -849,7 +848,7 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	TRACE("dep= %s", show_trace(dep));
 	TRACE("result_variable.size()= %s", frmt("%zu", result_variable.size()));
 	TRACE("error= %s", frmt("%d", error));
-	TRACE("bits= %s", show_bits(bits));
+	TRACE("state= %s", show(state));
 	assert(to <Plain_Dep> (dep));
 	if (! result_variable.empty())
 		return;
@@ -939,7 +938,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 	{
 		TRACE("Is optional file target");
 
-		if (bits & B_MISSING) {
+		if (state & State::MISSING) {
 			TRACE("We already know a file to be missing");
 			done |= Done::from_flags(dep_link->flags);
 			return true;
@@ -955,8 +954,8 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 		TRACE("ret_stat= %s", frmt("%d", ret_stat));
 		if (ret_stat < 0) {
 			TRACE("Stat failed");
-			bits |= B_MISSING;
-			bits &= ~B_EXISTING;
+			state |= State::MISSING;
+			state &= ~State::EXISTING;
 			if (errno != ENOENT) {
 				TRACE("Stat failed with error other than ENOENT");
 				to <Plain_Dep> (dep_link)->place_target.place <<
@@ -971,8 +970,8 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 		} else {
 			TRACE("File exists");
 			assert(ret_stat == 0);
-			bits |= B_EXISTING;
-			bits &= ~B_MISSING;
+			state |= State::EXISTING;
+			state &= ~State::MISSING;
 		}
 	}
 
@@ -1083,11 +1082,11 @@ void File_Executor::check_file_was_built(Hash_Dep hash_dep, const Place &place)
 	struct stat buf;
 	if (stat(filename, &buf)) {
 		if (errno == ENOENT) {
-			bits |= B_MISSING;
-			bits &= ~B_EXISTING;
+			state |= State::MISSING;
+			state &= ~State::EXISTING;
 			place << fmt("file %s was not built by command", show(hash_dep));
 		} else {
-			bits &= ~(B_MISSING | B_EXISTING);
+			state &= ~(State::MISSING | State::EXISTING);
 			place << fmt("cannot determine whether file %s was built by command", show(hash_dep));
 		}
 		*this << "";
@@ -1170,7 +1169,7 @@ bool File_Executor::start(
 			File_Executor *executor_source
 				= dynamic_cast <File_Executor *> (executor_source_base);
 			assert(executor_source);
-			if (executor_source->bits & B_MISSING) {
+			if (executor_source->state & State::MISSING) {
 				/* Neither the source file nor the target file exist:  an
 				 * error. */
 				rule->deps.at(0)->get_place()

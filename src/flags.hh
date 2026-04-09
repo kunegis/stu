@@ -4,8 +4,8 @@
 /*
  * Flags apply to dependencies.  Flags are binary and option-like, and appear at multiple
  * levels in Stu, from Stu source code where they are represented by a syntax ressembling
- * that of command line flags, to attributes of edges in the dependency graph. Internally,
- * flags are defined as bit fields.
+ * that of command line options, to attributes of edges in the dependency graph.
+ * Internally, flags are defined as bit fields.
  *
  * Each edge in the dependency graph is annotated with one object of this type.  This
  * contains bits related to what should be done with the dependency, whether time is

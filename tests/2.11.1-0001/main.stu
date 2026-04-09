@@ -1,0 +1,25 @@
+>A: X [-pn <B]
+{
+	cat B | while IFS= read -r file
+	do
+		cat -- "$file"
+	done
+}
+
+>X
+{
+	{
+		echo list.'1 2' 
+		echo list.'3 4'
+	} >B
+}
+
+>B
+{
+	echo ERROR
+}
+
+>list.$x
+{
+	printf '%s\n' "$x"
+}

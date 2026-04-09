@@ -1,0 +1,7 @@
+# The concatenation results in an empty dependency list.  '-xxx' is not interpreted as a
+# flag.
+
+A: ()-p
+{
+	touch A
+}

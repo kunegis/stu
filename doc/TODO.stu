@@ -1,13 +1,4 @@
 #
-# Allow to coalesce flags
-#
-
-A: [-pn B];
-
--po A: B; # tokenizer allows this, but parser will fail.
--pt A; # Error: -t not allow for target
-
-#
 # terminate_jobs.cc/.hh:  Other related functions/variables should be moved here.
 #
 
@@ -44,26 +35,59 @@ $(1) # Error
 $(aaa$(bbb)aaa) # Error
 
 #
+# sh/test: put console codes into variables.
+#
+
+#
+# Add sections to the manpage for:
+# * Content rules
+# * Variable dependencies
+#
+# In the 'Flags' section, list all flags, like in the 'Options' section.
+#
+
+#
+# Replace all show_*() render_*() functions by *_View classes.  Also, there should be no
+# specialized show() functions; only render().  Only exception is show_trace() [maybe].
+#
+
+#
+# Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
+#
+
+#
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
 # forbidden as the first character in unquoted names.  Needs a new type for
 # unparsed targets.  This is very similar to supporting environment variables.
 #
 
 #
-# File import
+# File import.  '%import' should work at rule level, and allow both cd-ing and not
+# cd-ing.
+# * Need to decide if there is a default, or whether to give two different names.
+# * '%include' should remain as the token level inclusion mechanism.
 #
 
 # Import all rules from subdirectory; will prepend the directory name to
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of
 # all these are equivalent:
-% import src/main.stu
-% import src/
-% import src
-% include -d src/main.stu
-% include -d src/
-% include -d src
-# The flag -d can be something else.
+%import --change-directory src/main.stu
+%import --cd src/
+%import -d src
+
+# Without cd-ing, i.e. "library mode".  Allows paths with slashes, but also
+# $STU_{,LIB_}PATH.
+%import --library c++.stu
+%import -l c++/simple.stu
+%import -l /usr/stulib/c++.stu
+* Need to determine in which cases we use $STU_LIB_PATH and in which not.
+
+* Need to determine whether ".stu" is automatically appended to names, but probably not.
+* Need to determine whether we want different filenames for "normal" Stu
+  files (applying to the current directory) and Stu
+  libraries (that should only be imported via '%import -l' (e.g. *.stl).  That also means
+  that '%include' will by default apply to Stu libraries, and that is not good.
 
 # - What about phony targets imported in that way.  Do we
 #   prepend a directory to them?
@@ -72,15 +96,15 @@ $(aaa$(bbb)aaa) # Error
 # or to:                   dir/@all:  ...;  # ???
 
 # File import should also work in the command line
-#    $ stu -d dir/main.stu # Like first cd'ing to dir/
+$ stu -d dir/main.stu # Like first cd'ing to dir/
 
 # Can we even use '%', because '%' directives are token-based, and 'import' should be at
-# rule level.  Maybe use '*' instead.
+# rule level.  Maybe use '*' instead.  (No).
 *import dir/
 *import -d dir/
 
-# There should also be a 'cd' command, e.g.
-*cd dir/
+# There could also be a 'cd' command, e.g.
+%cd dir/
 
 # And theoretically also braces for blocks
 
@@ -408,19 +432,11 @@ B {}
 #
 
 #
-# Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
-#
-
-#
 # Support negation of flags using +o, +p, etc.
 #
 
 #
-# sh/test: put console codes into variables.
-#
-
-#
-# Comtact output mode, in which each line is prefixed by a [....] block with colors for
+# Compact output mode, in which each line is prefixed by a [....] block with colors for
 # success/fail/ongoing.  Can even accumulate all past progress in a progress bar (which
 # may become longer as new tasks are discovered).
 #
@@ -432,12 +448,11 @@ B {}
 #
 
 #
-# Add sections to the manpage for:
-# * Content rules
-# * Variable dependencies
+# Make it an error when -n/-0/-C are used together.
 #
 
-#
-# Replace all show_*() render_*() functions by *_View classes.  Also, there should be no
-# specialized show() functions; only render().  Only exception is show_trace() [maybe].
-#
+A: [-0n B]; # Error
+A: -n -0 B; # Error
+A: -n [B]; B={-0 C} # Error
+A: -n @x; @x: -0 C; # Error
+A: -n @x; @x: @y; @y: -0 C; # Error

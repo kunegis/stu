@@ -1156,8 +1156,10 @@ void Parser::get_expression_list_delim(
 	}
 }
 
-void Parser::get_target_arg(std::vector <shared_ptr <const Dep> > &deps,
-			    int argc, const char *const *argv)
+void Parser::get_target_arg(
+	std::vector <shared_ptr <const Dep> > &deps,
+	int argc,
+	const char *const *argv)
 /*
  *    - Recognize only the special characters "-@[]".  And "-@" only at the
  *      beginning of arguments, or after [ or ], etc.
@@ -1174,78 +1176,8 @@ void Parser::get_target_arg(std::vector <shared_ptr <const Dep> > &deps,
 	Place place(Place::Type::ARGUMENT);
 	std::vector <shared_ptr <Token> > tokens;
 
-	for (int j= 0; j < argc; ++j) {
-		const char *p= argv[j];
-
-		bool allow_dash= true;
-		bool allow_at= true;
-
-		Environment environment= E_WHITESPACE;
-		/* Whether the token is preceded by whitespace */
-
-		while (*p) {
-			if (allow_at && *p == '@') {
-				tokens.push_back(std::make_shared <Operator>
-						 (*p, place, environment));
-				++p;
-				allow_dash= false;
-				allow_at= false;
-				environment= 0;
-			} else if (*p == '[') {
-				tokens.push_back(std::make_shared <Operator>
-						 (*p, place, environment));
-				++p;
-				allow_dash= true;
-				allow_at= true;
-				environment= 0;
-			} else if (*p == ']') {
-				tokens.push_back(std::make_shared <Operator>
-						 (*p, place, environment));
-				++p;
-				allow_dash= false;
-				allow_at= false;
-				environment= 0;
-			} else if (allow_dash && *p == '-') {
-				++p;
-				if (*p == '\0') {
-					place << fmt("expected a flag character after %s",
-						     show_operator('-'));
-					throw ERROR_LOGICAL;
-				}
-				if (! Tokenizer::is_flag_char(*p)) {
-					if (isalnum(*p)) {
-						place << fmt("invalid flag %s", show(Flag_View(*p)));
-					} else {
-						place << fmt("expected a flag character after dash %s, not %s",
-							     show_operator('-'),
-							     show_text(string(1, *p)));
-					}
-					throw ERROR_LOGICAL;
-				}
-				tokens.push_back(std::make_shared <Flag_Token>
-						 (*p, place, environment));
-				++p;
-				allow_dash= true;
-				allow_at= true;
-				environment= 0;
-			} else {
-				const char *q= p;
-				while (*p
-				       && (*p != '@' || ! allow_at)
-				       && (*p != '-' || ! allow_dash)
-				       && *p != '[' && *p != ']') {
-					++p;
-				}
-				assert(p > q);
-				Place_Name place_name(string(q, p-q), place);
-				tokens.push_back(std::make_shared <Name_Token>
-						 (place_name, environment));
-				allow_dash= false;
-				allow_at= false;
-				environment= 0;
-			}
-		}
-	}
+	for (int j= 0; j < argc; ++j)
+		Tokenizer::parse_tokens_arg(tokens, argv[j], place);
 
 	Place_Name input;  /* Remains empty */
 	Place place_input;  /* Remains empty */

@@ -1,0 +1,6 @@
+# Dash and flag character can't be separated by backslash+newline.
+
+A: -\
+x
+{
+}

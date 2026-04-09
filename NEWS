@@ -11,6 +11,10 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2026-04-09  Version 2.11
+
+* Flags can be coalesced.  For instance '-on' is equivalent to '-o -n'.
+
 2026-03-05  Version 2.10.6
 
 * Bugfix: When using 'stu -P', the output is not printed in bold, even when Stu would

@@ -41,8 +41,10 @@ public:
 		string string_,
 		const Place &place_string);
 
-	static bool is_flag_char(char);
-	/* Whether the character is a valid flag */
+	static void parse_tokens_arg(
+		std::vector <shared_ptr <Token> > &tokens,
+		const char *p,
+		const Place &place);
 
 private:
 	std::vector <shared_ptr <Token> > &tokens;
@@ -141,6 +143,8 @@ private:
 
 	static bool is_name_char(char);
 	static bool is_operator_char(char);
+	static bool is_any_flag_char(char);
+	static bool is_valid_flag_char(char);
 	static void parse_version(string version_req,
 				  const Place &place_version, const Place &place_percent);
 

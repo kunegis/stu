@@ -217,6 +217,99 @@ void Tokenizer::parse_tokens_file(
 	}
 }
 
+void Tokenizer::parse_tokens_string(std::vector <shared_ptr <Token> > &tokens,
+				    Context context,
+				    Place &place_end,
+				    string string_,
+				    const Place &place_string)
+{
+	std::vector <Backtrace> backtraces;
+	std::vector <string> filenames;
+	std::set <string> includes;
+
+	Tokenizer tokenizer(
+		tokens, backtraces, filenames, includes,
+		place_string,
+		string_.c_str(), string_.size());
+	tokenizer.parse_tokens(context, place_string);
+	place_end= tokenizer.current_place();
+}
+
+void Tokenizer::parse_tokens_arg(
+	std::vector <shared_ptr <Token> > &tokens,
+	const char *p,
+	const Place &place)
+{
+	bool allow_dash= true;
+	bool allow_at= true;
+
+	Environment environment= E_WHITESPACE;
+	/* Whether the token is preceded by whitespace */
+
+	while (*p) {
+		if (allow_at && *p == '@') {
+			tokens.push_back(std::make_shared <Operator>
+				(*p, place, environment));
+			++p;
+			allow_dash= false;
+			allow_at= false;
+			environment= 0;
+		} else if (*p == '[') {
+			tokens.push_back(std::make_shared <Operator>
+				(*p, place, environment));
+			++p;
+			allow_dash= true;
+			allow_at= true;
+			environment= 0;
+		} else if (*p == ']') {
+			tokens.push_back(std::make_shared <Operator>
+				(*p, place, environment));
+			++p;
+			allow_dash= false;
+			allow_at= false;
+			environment= 0;
+		} else if (allow_dash && *p == '-') {
+			++p;
+			if (*p == '\0') {
+				place << fmt("expected a flag character after %s",
+					show_operator('-'));
+				throw ERROR_LOGICAL;
+			}
+			if (! Tokenizer::is_valid_flag_char(*p)) {
+				if (isalnum(*p)) {
+					place << fmt("invalid flag %s", show(Flag_View(*p)));
+				} else {
+					place << fmt("expected a flag character after dash %s, not %s",
+						show_operator('-'),
+						show_text(string(1, *p)));
+				}
+				throw ERROR_LOGICAL;
+			}
+			tokens.push_back(std::make_shared <Flag_Token>
+				(*p, place, environment));
+			++p;
+			allow_dash= true;
+			allow_at= true;
+			environment= 0;
+		} else {
+			const char *q= p;
+			while (*p
+				&& (*p != '@' || ! allow_at)
+				&& (*p != '-' || ! allow_dash)
+				&& *p != '[' && *p != ']') {
+				++p;
+			}
+			assert(p > q);
+			Place_Name place_name(string(q, p-q), place);
+			tokens.push_back(std::make_shared <Name_Token>
+				(place_name, environment));
+			allow_dash= false;
+			allow_at= false;
+			environment= 0;
+		}
+	}
+}
+
 shared_ptr <Command> Tokenizer::parse_command()
 /*
  * To determine the place of the command:  These rules are intended to make the editor go
@@ -466,26 +559,30 @@ void Tokenizer::parse_flag_or_name()
 				show_operator('-'));
 			throw ERROR_LOGICAL;
 		}
-		char op= *p;
-		if (! is_flag_char(op)) {
-			if (isalnum(op)) {
-				current_place() <<
-					fmt("invalid flag %s", show(Flag_View(op)));
-			} else {
-				current_place() <<
-					fmt("expected a flag character, not %s",
-						show(string(1, op)));
-				place_dash <<
-					fmt("after dash %s", show_operator('-'));
-			}
+		char flag_char= *p;
+		if (! is_any_flag_char(flag_char)) {
+			current_place() <<
+				fmt("expected a flag character, not %s",
+					show(string(1, flag_char)));
+			place_dash <<
+				fmt("after dash %s", show_operator('-'));
 			explain_flags();
 			throw ERROR_LOGICAL;
 		}
-		assert(isalnum(op));
-		shared_ptr <Flag_Token> token= std::make_shared <Flag_Token>
-			(op, current_place(), environment);
-		tokens.push_back(token);
-		++p;
+		shared_ptr <Flag_Token> token;
+		do {
+			flag_char= *p;
+			if (! is_valid_flag_char(flag_char)) {
+				current_place() <<
+					fmt("invalid flag %s", show(Flag_View(flag_char)));
+				explain_flags();
+				throw ERROR_LOGICAL;
+			}
+			token= std::make_shared <Flag_Token>
+				(flag_char, current_place(), environment);
+			tokens.push_back(token);
+			++p;
+		} while (p < p_end && is_any_flag_char(*p));
 		if (p < p_end &&
 			(is_name_char(*p) || *p == '"' || *p == '\'' || *p == '$'
 				|| *p == '@')) {
@@ -493,7 +590,7 @@ void Tokenizer::parse_flag_or_name()
 				fmt("expected whitespace before character %s",
 					show(current_mbchar()));
 			token->get_place() <<
-				fmt("after flag %s", show(Flag_View(op)));
+				fmt("after flag %s", show(Flag_View(flag_char)));
 			throw ERROR_LOGICAL;
 		}
 	} else {
@@ -669,7 +766,12 @@ bool Tokenizer::is_operator_char(char c)
 	return c != '\0' && nullptr != strchr(":<>=@;()[],|", c);
 }
 
-bool Tokenizer::is_flag_char(char c)
+bool Tokenizer::is_any_flag_char(char c)
+{
+	return isalnum(c);
+}
+
+bool Tokenizer::is_valid_flag_char(char c)
 {
 	return
 		c == flags_chars[I_PERSISTENT] ||
@@ -826,24 +928,6 @@ void Tokenizer::parse_tokens(
 		environment &= ~E_WHITESPACE;
 	had_whitespace:;
 	}
-}
-
-void Tokenizer::parse_tokens_string(std::vector <shared_ptr <Token> > &tokens,
-				    Context context,
-				    Place &place_end,
-				    string string_,
-				    const Place &place_string)
-{
-	std::vector <Backtrace> backtraces;
-	std::vector <string> filenames;
-	std::set <string> includes;
-
-	Tokenizer tokenizer(
-		tokens, backtraces, filenames, includes,
-		place_string,
-		string_.c_str(), string_.size());
-	tokenizer.parse_tokens(context, place_string);
-	place_end= tokenizer.current_place();
 }
 
 bool Tokenizer::skip_space(bool &skipped_actual_space)

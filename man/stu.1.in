@@ -412,7 +412,10 @@ Dynamic dependencies can be nested:
 .SH "FLAGS"
 
 Targets and dependencies can be annotated with flags.  Flags have syntax similar to
-options on the command line, and change the way Stu handles files.
+options on the command line, and change the way Stu handles files.  A flag is written as a
+dash immediately followed by one or more letters, each of which is interpreted as a
+different flag. Flags apply to the following name, and more than one flag can precede any
+name.
 
 Persistent dependencies: In the following example, the directory \fIdata\fR is a
 persistent dependency, i.e. \fIdata\fR is only built when it does not exist, but it is

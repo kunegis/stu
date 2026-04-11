@@ -38,24 +38,14 @@ public:
 	/* Remove all file targets of this executor object if they exist.  If OUTPUT is
 	 * true, output a corresponding message.  Return whether the file was removed.  If
 	 * OUTPUT is false, only do async signal-safe things. */
+	void print_as_job() const;
+	/* Print a line to stdout for a running job, as output of SIGUSR1.
+	 * Is currently running. */
 
 	virtual bool want_delete() const override { return false; }
 	virtual Proceed execute(shared_ptr <const Dep> dep_link) override;
 	virtual bool finished(Flags flags) const override;
 	virtual void notify_variable(const std::map <string, string> &) override;
-
-	static size_t executors_by_pid_size;
-	static pid_t *executors_by_pid_key;
-	static File_Executor **executors_by_pid_value;
-	/* The currently running executors by process IDs.  Write access to this is
-	 * enclosed in a Signal_Blocker.  Both arrays are malloc'ed, have the same length,
-	 * and are both sorted by PID.  malloc() is only called once for each array,
-	 * giving the allocated memory a length that will be enough for all jobs we will
-	 * ever run, based on the value passed via the -j option, so we avoid excessive
-	 * calling of realloc(), and race conditions while accessing this.  For all file
-	 * executors stored here, the following variables are never changed as long as the
-	 * File_Executor objects are stored there, such that they can be accessed from
-	 * async-signal safe functions:  FILENAMES, TIMESTAMPS_OLD. */
 
 	static void wait();
 	/* Wait for next job to finish and finish it.  Do not start anything new. */
@@ -69,8 +59,6 @@ protected:
 
 private:
 	friend class Executor;
-
-	friend void print_jobs();
 
 	std::vector <Hash_Dep> hash_deps;
 	/* The targets to which this executor object corresponds.  Never empty.  All
@@ -122,10 +110,6 @@ private:
 
 	void print_command() const;
 
-	void print_as_job() const;
-	/* Print a line to stdout for a running job, as output of SIGUSR1.
-	 * Is currently running. */
-
 	bool check_file_target(
 		const Hash_Dep &target,
 		size_t index,
@@ -154,12 +138,6 @@ private:
 	 * their dependencies up to date, then the command is not executed, even though it
 	 * was never executed in the current invocation of Stu. In that case, the phony
 	 * targets are never inserted in this map.  */
-
-	static void executors_add(pid_t pid, size_t &index, File_Executor *executor);
-	static bool executors_find(pid_t pid, size_t &index);
-	static void executors_remove(size_t index);
 };
-
-void print_jobs();
 
 #endif /* ! FILE_EXECUTOR_HH */

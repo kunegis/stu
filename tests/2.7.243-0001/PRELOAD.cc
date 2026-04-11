@@ -7,7 +7,7 @@
 extern "C"
 void *malloc(size_t size)
 {
-	if (errno == cov_hash("File_Executors::executors_add")) {
+	if (errno == cov_hash("Job_List::add")) {
 		errno= ENOMEM;
 		return nullptr;
 	}

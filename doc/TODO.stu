@@ -1,5 +1,13 @@
 #
-# terminate_jobs.cc/.hh:  Other related functions/variables should be moved here.
+# sh/test: put console codes into variables.
+#
+
+#
+# Add sections to the manpage for:
+# * Content rules
+# * Variable dependencies
+#
+# In the 'Flags' section, list all flags, like in the 'Options' section.
 #
 
 #
@@ -33,18 +41,6 @@ $(DIR)/A: ... {} # Can be used in targets
 $() # Error
 $(1) # Error
 $(aaa$(bbb)aaa) # Error
-
-#
-# sh/test: put console codes into variables.
-#
-
-#
-# Add sections to the manpage for:
-# * Content rules
-# * Variable dependencies
-#
-# In the 'Flags' section, list all flags, like in the 'Options' section.
-#
 
 #
 # Replace all show_*() render_*() functions by *_View classes.  Also, there should be no

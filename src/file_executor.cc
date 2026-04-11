@@ -2,9 +2,6 @@
 
 #include "signal.hh"
 
-size_t File_Executor::executors_by_pid_size= 0;
-pid_t *File_Executor::executors_by_pid_key= nullptr;
-File_Executor **File_Executor::executors_by_pid_value= nullptr;
 std::unordered_map <string, Timestamp> File_Executor::phonies;
 
 File_Executor::File_Executor(
@@ -180,14 +177,13 @@ void File_Executor::wait()
  * then return, but the current implementation prefers to first start the next job before
  * waiting for the next finished job. */
 {
-	assert(File_Executor::executors_by_pid_size);
 	int status;
 	const pid_t pid= Job::wait(&status);
 	timestamp_last= Timestamp::now();
 
 	size_t index;
-	bool r= executors_find(pid, index);
-	if (!r) {
+	File_Executor *executor= Job_List::find(pid, index);
+	if (!executor) {
 		should_not_happen();
 		print_warning(Place(),
 			frmt("the function waitpid(2) returned the unknown process ID %jd",
@@ -195,7 +191,6 @@ void File_Executor::wait()
 		return;
 	}
 
-	File_Executor *executor= executors_by_pid_value[index];
 	executor->waited(pid, index, status);
 	++options_jobs;
 }
@@ -210,7 +205,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 
 	{
 		Signal_Blocker sb;
-		executors_remove(index);
+		Job_List::remove(index);
 	}
 
 	/* The file(s) may have been built, so forget that it was known to not exist */
@@ -291,12 +286,6 @@ void File_Executor::notify_variable(
 	mapping_variable.insert(
 		result_variable_child.begin(),
 		result_variable_child.end());
-}
-
-void print_jobs()
-{
-	for (size_t i= 0; i < File_Executor::executors_by_pid_size; ++i)
-		File_Executor::executors_by_pid_value[i]->print_as_job();
 }
 
 bool File_Executor::remove_if_existing(bool output)
@@ -674,11 +663,11 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			return P_NOTHING;
 		}
 
-		executors_add(pid, index, this);
+		Job_List::add(pid, index, this);
 	}
 
-	assert(executors_by_pid_value[index]->job.started());
-	assert(pid == executors_by_pid_value[index]->job.get_pid());
+	assert(Job_List::get(index)->job.started());
+	assert(pid == Job_List::get(index)->job.get_pid());
 	--options_jobs;
 	assert(options_jobs >= 0);
 
@@ -976,104 +965,6 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 	}
 
 	return false;
-}
-
-void File_Executor::executors_add(pid_t pid, size_t &index, File_Executor *executor)
-{
-	TRACE_FUNCTION();
-	TRACE("pid= %s", frmt("%jd", (intmax_t)pid));
-	assert(Signal_Blocker::is_blocked());
-	assert(!executors_by_pid_key == !executors_by_pid_value);
-
-	if (!executors_by_pid_key) {
-		/* This is executed just once, before we have executed any job, and
-		 * therefore JOBS is the value passed via -j (or its default value 1), and
-		 * thus we can allocate arrays of that size once and for all. */
-		if ((uintmax_t)SIZE_MAX / sizeof(*executors_by_pid_key) < (uintmax_t)options_jobs ||
-			(uintmax_t)SIZE_MAX / sizeof(*executors_by_pid_value) < (uintmax_t)options_jobs)
-		{
-			happens_only_on_certain_platforms();
-			/* This can only happen when long is at least as large as size_t,
-			 * which is not the case on any commonly used platform, but is
-			 * allowed by ISO C++ and POSIX. */
-			errno= ENOMEM;
-			print_errno_bare(frmt("Value too large for option -j, maximum value is %ju",
-					(uintmax_t)SIZE_MAX / std::max(sizeof(*executors_by_pid_key), sizeof(*executors_by_pid_value))));
-			error_exit();
-		}
-		cov_tag("File_Executors::executors_add");
-		executors_by_pid_key  = (pid_t *)
-			malloc(options_jobs * sizeof(*executors_by_pid_key));
-		executors_by_pid_value= (File_Executor **)
-			malloc(options_jobs * sizeof(*executors_by_pid_value));
-		if (!executors_by_pid_key || !executors_by_pid_value) {
-			print_errno("malloc");
-			error_exit();
-		}
-	}
-
-	size_t index_new= executors_by_pid_size++;
-	while (index_new && executors_by_pid_key[index_new - 1] > pid) {
-		executors_by_pid_key[index_new]= executors_by_pid_key[index_new - 1];
-		executors_by_pid_value[index_new]= executors_by_pid_value[index_new - 1];
-		--index_new;
-	}
-	executors_by_pid_key[index_new]= pid;
-	executors_by_pid_value[index_new]= executor;
-	index= index_new;
-}
-
-bool File_Executor::executors_find(pid_t pid, size_t &index)
-{
-	size_t mi= 0, ma= executors_by_pid_size - 1;
-	/* Both are inclusive */
-
-	assert(mi <= ma);
-	while (mi < ma) {
-		size_t ne= mi + (ma - mi + 1) / 2;
-		assert(ne <= ma);
-		if (executors_by_pid_key[ne] == pid) {
-			mi= ma= ne;
-			break;
-		}
-		if (executors_by_pid_key[ne] < pid) {
-			mi= ne + 1;
-		} else {
-			ma= ne - 1;
-		}
-	}
-	if (mi > ma || mi == SIZE_MAX) {
-		/* No File_Executor is registered for the PID that just finished.  Should
-		 * not happen, but since the PID value came from outside this process, we
-		 * better handle this case gracefully, i.e., do nothing. */
-		should_not_happen();
-		print_warning(Place(),
-			      frmt("the function waitpid(2) returned the invalid process ID %jd",
-				   (intmax_t)pid));
-		return false;
-	}
-
-	assert(mi == ma);
-	index= mi;
-	assert(index < executors_by_pid_size);
-	assert(executors_by_pid_key[index] == pid);
-	return true;
-}
-
-void File_Executor::executors_remove(size_t index)
-{
-	TRACE_FUNCTION();
-	TRACE("index= %s", frmt("%zu", index));
-	assert(Signal_Blocker::is_blocked());
-	assert(executors_by_pid_size > 0);
-	assert(executors_by_pid_size >= index + 1);
-	memmove(executors_by_pid_key + index,
-		executors_by_pid_key + index + 1,
-		sizeof(*executors_by_pid_key) * (executors_by_pid_size - index - 1));
-	memmove(executors_by_pid_value + index,
-		executors_by_pid_value + index + 1,
-		sizeof(*executors_by_pid_value) * (executors_by_pid_size - index - 1));
-	-- executors_by_pid_size;
 }
 
 void File_Executor::check_file_was_built(Hash_Dep hash_dep, const Place &place)

@@ -4,9 +4,9 @@
 
 #include "color.hh"
 #include "format.hh"
+#include "job_list.hh"
 #include "options.hh"
 #include "show.hh"
-#include "terminate_jobs.hh"
 
 void print_error(string message)
 {
@@ -101,6 +101,6 @@ void print_error_silenceable(const char *text)
 [[noreturn]]
 void error_exit()
 {
-	terminate_jobs(false);
+	Job_List::terminate_jobs(false);
 	exit(ERROR_FATAL);
 }

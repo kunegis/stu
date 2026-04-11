@@ -242,7 +242,7 @@ pid_t Job::wait(int *status)
 		goto begin;
 	case SIGUSR1:
 		print_statistics(true);
-		print_jobs();
+		Job_List::print();
 		goto retry;
 	default:
 		should_not_happen();

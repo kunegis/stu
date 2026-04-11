@@ -209,7 +209,7 @@ void Invocation::main_loop()
 		}
 
 		assert(root_executor->finished());
-		assert(File_Executor::executors_by_pid_size == 0);
+		assert(Job_List::get_size() == 0);
 
 		bool success= (root_executor->get_error() == 0);
 		assert(option_k || success);
@@ -232,8 +232,8 @@ void Invocation::main_loop()
 	} catch (int e) {
 		assert(! option_k);
 		assert(e >= 1 && e <= 4);
-		if (File_Executor::executors_by_pid_size) {
-			terminate_jobs(false);
+		if (Job_List::get_size()) {
+			Job_List::terminate_jobs(false);
 		}
 		assert(e > 0 && e < ERROR_FATAL);
 		error= e;

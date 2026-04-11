@@ -1,12 +1,4 @@
 #
-# Add sections to the manpage for:
-# * Content rules
-# * Variable dependencies
-#
-# In the 'Flags' section, list all flags, like in the 'Options' section.
-#
-
-#
 # Allow to handle symlinks as files in themselves, i.e., check for their
 # own existence and their own timestamp.  This should not be the default
 # as the current behaviour is more often useful, but should be available

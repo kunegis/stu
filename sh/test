@@ -162,7 +162,7 @@ output_end()
 
 output_success()
 {
-	echo "$del$greenTesting [$VARIANT$subset] Success ($count_total tests) (runtime $runtime)$off"
+	echo "$del${green}Testing [$VARIANT$subset] Success ($count_total tests) (runtime $runtime)$off"
 }
 
 test_fail()

@@ -40,7 +40,7 @@ the \fB-c\fR option when passing individual filenames, or \fB-J\fR when passing 
 filenames, e.g. via \fBxargs\fR(1).  To pass targets in full Stu syntax portably, use the
 \fB-C\fR option.
 
-.SH OPTIONS
+.SH "OPTIONS"
 .IP "\fB-0\fR \fIFILENAME\fR"
 Read targets from \fIFILENAME\fR, which must contain \\0-separated filenames.  No Stu
 syntax is processed.  This option is also suitable in all cases where a file contains only
@@ -229,24 +229,6 @@ parameters.  When building \fIX.txt\fR in this example, only the second rule is 
     $name.txt: {  echo "$name" is the best >"$name.txt" ; }
     X.txt:  { echo X sucks >X.txt ; }
 
-Variable dependency: the content of variables can come from files.  In the following
-example, the C flags are stored in the file \fICFLAGS\fR, and used in the compilation
-command using the \fB$[CFLAGS]\fR dependency.
-
-    compute:  compute.c $[CFLAGS]
-    {
-        gcc $CFLAGS compute -o compute.c
-    }
-    CFLAGS: { echo -Wall -Werror >CFLAGS ; }
-
-By default, the name of the variable set is the same as the filename.  Another variable
-name can be used in the following way:
-
-    \fB$[\fR\fINAME\fR = \fIFILENAME\fR\fB]\fR
-
-If multiple variable dependencies have the same name, it is unspecified which one is used.
-If a variable dependencies has the same name as a parameter, it overrides the parameter.
-
 Phony targets are marked with \fB@\fR.  They are used for targets such as \fI@clean\fR
 that do an action without building a file, and for lists of files that depend on other
 targets, but don't have a command associated with them.  They are also used instead of
@@ -291,11 +273,11 @@ A rule for a file in Stu has the following syntax:
 
     [\fB>\fR] \fITARGET\fR [ \fB:\fR \fIDEPENDENCY\fR ... ] \fB{\fR COMMAND \fB}\fR
 
-The target is a filename.  \fIDEPENDENCY\fR ... are dependencies.  \fICOMMAND\fR is a command
-which is passed to the shell for building.  Stu will always execute the whole command
-block using a single call to the shell.  This is different than Make, which calls each
-line individually.  This means that you can for instance define a variable on one line and
-use it on the next.
+The target is a filename.  \fIDEPENDENCY\fR ... are dependencies.  \fICOMMAND\fR is a
+command which is passed to the shell for building.  Stu will always execute the whole
+command block using a single call to the shell.  This is different than Make, which calls
+each line individually.  This means that you can for instance define a variable on one
+line and use it on the next.
 
 Stu uses the \fB-e\fR option when calling the shell; this means that any failing command
 will make the whole target fail.
@@ -330,14 +312,6 @@ the file targets.
 
     \fITARGET\fR... [ \fB:\fR \fIDEPENDENCY\fR ... ] \fB{\fR COMMAND \fB}\fR
     \fITARGET\fR... [ \fB:\fR \fIDEPENDENCY\fR ... ] \fB;\fR
-
-For a file target, content can be specified directly using the \fB=\fR
-operator:
-
-    \fITARGET\fR \fB= {\fR CONTENT ... \fB}\fR
-
-The content is stripped of empty lines and common whitespace at the
-beginning of lines, and written into the file.
 
 A dependency can be one of the following:
 
@@ -409,62 +383,63 @@ Dynamic dependencies can be nested:
     C = {D}
     D = {content}
 
-.SH "FLAGS"
+.SH "VARIABLE DEPENDENCIES"
+A variable dependency allows to pass environment variables to commands, whose content is
+taken from a file.  The general syntax is:
 
+    \fB$[\fR [ \fINAME\fR \fB=\fR ] [ <flags> ] \fIFILENAME\fR \fB]\fR
+
+\fINAME\fR is the name of the environment variable, and defaults to \fIFILENAME\fR.
+
+If a rule has multiple variable dependencies with the same name, it is unspecified which
+one is used.  If a variable dependencies has the same name as a parameter, it overrides
+the parameter.
+
+Variable dependencies may be declared as persistent as in \fB$[-p\fR \fIX\fR\fB]\fR and as
+trivial as in \fB$[-t\fR \fIX\fR\fB]\fR but not as optional using the \fB-o\fR flag.
+
+In the following example, the C flags are stored in the file \fICFLAGS\fR, and used in the
+compilation command using the \fB$[CFLAGS]\fR dependency.
+
+    compute:  compute.c $[CFLAGS]
+    {
+        gcc $CFLAGS compute -o compute.c
+    }
+    CFLAGS = { -Wall -Werror }
+
+.SH "FLAGS"
 Targets and dependencies can be annotated with flags.  Flags have syntax similar to
 options on the command line, and change the way Stu handles files.  A flag is written as a
 dash immediately followed by one or more letters, each of which is interpreted as a
 different flag. Flags apply to the following name, and more than one flag can precede any
 name.
 
-Persistent dependencies: In the following example, the directory \fIdata\fR is a
-persistent dependency, i.e. \fIdata\fR is only built when it does not exist, but it is
-never rebuilt.  A persistent dependency is indicated by the \fB-p\fR flag.  This is
-useful for directories, whose timestamps change when files are created/removed in them.
-
-    data/file:  -p data {
-        echo Hello >data/file
-    }
-    data: { mkdir data ; }
-
-Optional dependencies can be declared with the \fB-o\fR flag.  An optional dependency will
-never be built if it does not already exist.  If it already exists, then its own rule is
-used (and its date checked) to decide whether it should be rebuilt.
-
-    target:  -o input {
-        if [ -r input ] ; then
-            cp input target
-        else
-            echo Hello >target
-        fi
-    }
-
-Trivial dependencies are denoted with the \fB-t\fR flag.  They denote a dependency that
-should never cause a target to be rebuilt, but if the target is rebuilt for another
-reason, then they are treated like normal dependencies.  Trivial dependencies don't even
-cause a target to be rebuilt if they don't exist.  Trivial dependencies are typically used
-for configuration, i.e., for the setting up configuration of application.  Trivial
-dependencies are not allowed if the rule has no command.
-
-    target:  -t input { ... }
-
-Variable dependencies may be declared as persistent as in \fB$[-p\fR \fIX\fR\fB]\fR and as
-trivial as in \fB$[-t\fR \fIX\fR\fB]\fR but not as optional using the \fB-o\fR flag.
-
-    -p NAME   A persistent dependency
-
-Stu will only check whether the dependency exists, but not its modification time for
-determining whether the target has to be rebuilt.  (If the file itself is the target of a
-rule, the modification time of the dependency will be taken into account while building
-the file.)  This is mostly useful for directories, as the modification time of directories
-is updated whenever files are added or removed in the directory.
-
-    -o NAME   An optional dependency
-
-Optional dependencies are never built if they don't exist.  If they exist, they are
-treated like normal dependencies and their date is taken into account for determining
-whether the target has to be rebuilt.
-
+.IP "\fB-0\fR"
+If the file is used as a dynamic dependency, interpret the content as a \\0-separated
+list of filenames.
+.IP "\fB-C\fR"
+If the file is used as a dynamic dependency, interpret the content in full Stu
+syntax. This is the default.
+.IP "\fB-n\fR"
+If the file is used as a dynamic dependency, interpret the content as a newline-separated
+list of filenames.
+.IP "\fB-o\fR"
+Optional dependency. The file is not built if it doesn't already exist.  If the file
+exists, the modification date is taken into account for determining whether the target has
+to be rebuilt.
+.IP "\fB-p\fR"
+Persistent dependency. The file is not rebuilt if it already exists.  Stu will only check
+whether the dependency exists, but not its modification time for determining whether the
+target has to be rebuilt.  (If the file itself is the target of a rule, the modification
+time of the dependency will be taken into account while building the file.)  This is
+mostly useful for directories, as the modification time of directories is updated whenever
+files are added or removed in the directory.
+.IP "\fB-t\fR"
+Trivial dependency. The file is only (re)built is the parent target needs to be (re)built
+for other reasons.  This is mostly useful for configuration files that are generated
+automatically, including the case of files containing the flags used to invoke compilers
+and other programs.  Trivial dependencies are not allowed if the rule has no command.
+.SH ""
 A dependency cannot be declared as persistent and optional at the same time, as that would
 imply that its command is never executed.
 
@@ -472,25 +447,15 @@ Targets of rules can have the flags \fB-p\fR (persistent dependency) and \fB-o\f
 (optional dependency).  In that case, the target will always be considered persistent or
 optional.
 
-    -t NAME   A trivial dependency
-
-A trivial dependency will never cause the target to be rebuilt.  However, if the target is
-rebuilt for another reason, then the trivial dependency will be rebuilt itself.  This is
-mostly useful for configuration files that are generated automatically, including the case
-of files containing the flags used to invoke compilers and other programs.
-
 Flags can be applied to a group of dependencies given in parentheses:
 
-    -p ( ... )
-    -o ( ... )
+    \fB-\fR\fIflag\fR \fB(\fR ... \fB)\fR
 
 Flags can also be applied to dynamic dependencies:
 
-    -p [ ... ]
-    -o [ ... ]
+    \fB-\fR\fIflag\fR \fB[\fR ... \fB]\fR
 
-in which case all resulting dynamic dependencies will be flagged as
-optional or persistent.
+in which case all the flag is applied to all resulting dynamic dependencies.
 
 The flags \fB-n\fR/\fB-0\fR/\fB-C\fR can be used on files used as dynamic dependencies to
 specify how the file is parsed.
@@ -504,10 +469,10 @@ specify how the file is parsed.
 Using the equal sign with a file name creates a copy rule, i.e., the
 given file is copied with the \fIcp\fR command:
 
-    TARGET = [ -p | -o ] SOURCE;
+    \fITARGET\fR \fB=\fR [ \fB-p\fR | \fB-o\fR ] \fISOURCE\fR\fB;\fR
 
 By default, Stu will use \fI/bin/cp\fR to perform the copy.  This can be changed by
-setting the variable $STU_CP.  If source ends in a slash (outside of any parameter value),
+setting the variable $STU_CP.  If \fISOURCE\fR ends in a slash (outside of any parameter value),
 then Stu will look for a file with the same basename as \fITARGET\fR in the directory
 \fISOURCE\fR.
 
@@ -515,6 +480,17 @@ If the persistent flag \fB-p\fR is used, the timestamp of the source file is not
 only its existence.  If the optional flag \fB-o\fR is used, it is not an error if the
 target exists and not the source: in that case the target is considered up to date.  Both
 flags must not be used simultaneously.
+
+.SH "CONTENT RULES"
+
+A content rule allows to hardcode the content of a file in the Stu source.  For a content
+rule, a single filename must be followed by an equal sign, and then braces containing the
+content:
+
+    \fITARGET\fR \fB= {\fR CONTENT ... \fB}\fR
+
+The content can span multiple lines.  The content is stripped of empty lines and common
+whitespace at the beginning of lines, and written into the file.
 
 .SH "REDIRECTION"
 
@@ -726,14 +702,14 @@ unquoted filenames:
     :     Separator for rule definition
     ;     In rules without command, end of dependency declaration
     -     Prefix character for flag, followed by a single character
-    $     Parameter
+    $     Parameter; variable dependency
     @     Phony target marker
     >     Output redirection
     <     Input redirection
     =     Assignment rule; copy rule; named variable
     ( )   List
-    [ ]   Dynamic dependency
-    { }   Command
+    [ ]   Dynamic dependency; variable dependency
+    { }   Command; parameter
 
 Comments introduced by \fB#\fR go until the end of the line.  Commands starting with
 \fB{\fR go until the matching \fB}\fR, taking into account shell syntax, i.e., the command
@@ -948,6 +924,16 @@ passed through to the commands for the targets \fIA\fR and \fIB\fR:
     y: { echo '$[V]' >y ; }
     A: @x { echo $V >A ; }
     B: [y] { echo $V >B ; }
+
+Persistent dependencies: In the following example, the directory \fIdata\fR is a
+persistent dependency, i.e. \fIdata\fR is only built when it does not exist, but it is
+never rebuilt.  A persistent dependency is indicated by the \fB-p\fR flag.  This is
+useful for directories, whose timestamps change when files are created/removed in them.
+
+    data/file:  -p data {
+        echo Hello >data/file
+    }
+    data: { mkdir data ; }
 
 Trivial dependencies are often combined with variable dependencies to implement flags, for
 instance to a compiler, as in the following example. This will make sure that a change in

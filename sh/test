@@ -124,9 +124,17 @@
 # Note:  we can't use "set -e" here (which is a good general practice in shell scripts),
 # because otherwise we can't use $? to check the exit code of Stu.
 
-esc=$(printf '\033')
 ALLOWED_FILES='EXITSTATUS INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC STDOUT NOSECOND NOTTY NOCOLOR COV_TAG VARIANT'
 error_file=${TMPDIR:-/tmp}/test.$$.error
+
+esc=$(printf '\033')
+off="$esc[m"
+red="$esc[31m"
+green="$esc[32m"
+bgred="$esc[41;30m"
+bggreen="$esc[42;30m"
+bgbrown="$esc[43;30m"
+del="$esc[2K"
 
 output_next()
 {
@@ -135,13 +143,13 @@ output_next()
 	if [ "$count_failed" = 0 ] ; then
 		count_failed_text=0
 	else
-		count_failed_text="$esc[41;30m$count_failed$esc[m"
+		count_failed_text="$bgred$count_failed$off"
 	fi
 	if [ "$TEST_VERBOSE" = 0 ] ; then
-		printf "$esc"'[2KTesting [%s] (%s/%s/%s) %s\r' \
+		printf "$del"'Testing [%s] (%s/%s/%s) %s\r' \
 		       "$VARIANT$subset" \
-		       "$esc[42;30m$count_succeed$esc[m" \
-		       "$esc[43;30m$((count_total - count_succeed - count_failed))$esc[m" \
+		       "$bggreen$count_succeed$off" \
+		       "$bgbrown$((count_total - count_succeed - count_failed))$off" \
 		       "$count_failed_text" \
 		       "$file"
 	fi
@@ -154,7 +162,7 @@ output_end()
 
 output_success()
 {
-	echo "$esc[2K$esc[32mTesting [$VARIANT$subset] Success ($count_total tests) (runtime $runtime)$esc[m"
+	echo "$del$greenTesting [$VARIANT$subset] Success ($count_total tests) (runtime $runtime)$off"
 }
 
 test_fail()
@@ -168,7 +176,7 @@ test_fail_fatal_no_cd()
 	echo >&2 "$0: ($file) *** $1"
 	echo "$file" >&6
 	[ "$notall" ] && {
-		echo >&2 "$esc[31m$0: ($file) *** Test '$file' failed [notall]$esc[m"
+		echo >&2 "$red$0: ($file) *** Test '$file' failed [notall]$off"
 		exit 1
 	}
 	ret=1
@@ -622,19 +630,19 @@ if [ "$ret" != 0 ] ; then
 	if [ "$count_failed" = 0 ] ; then
 		count_failed_text=0
 	else
-		count_failed_text="$esc[41;30m$count_failed$esc[m"
+		count_failed_text="$bgred$count_failed$off"
 	fi
 	if [ "$TEST_VERBOSE" = 0 ] ; then
-		printf "$esc"'[2KTesting done [%s] (%s/%s/%s)\n' \
+		printf "$del"'Testing done [%s] (%s/%s/%s)\n' \
 		       "$VARIANT" \
-		       "$esc[42;30m$count_succeed$esc[m" \
-		       "$esc[43;30m$((count_total - count_succeed - count_failed))$esc[m" \
+		       "$bggreen$count_succeed$off" \
+		       "$bgbrown$((count_total - count_succeed - count_failed))$off" \
 		       "$count_failed_text"
 	fi
 	echo >&2 Failed tests:
 	cat  >&2 log/error.log
 	success_rate=$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')
-	echo >&2 "$esc[31m$0: *** ${success_rate}% success rate.  $count_failed test(s) failed (out of $count_total).$esc[m"
+	echo >&2 "$red$0: *** ${success_rate}% success rate.  $count_failed test(s) failed (out of $count_total).$off"
 fi
 
 if [ -z "$1" ] ; then

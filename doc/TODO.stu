@@ -1,8 +1,4 @@
 #
-# sh/test: put console codes into variables.
-#
-
-#
 # Add sections to the manpage for:
 # * Content rules
 # * Variable dependencies

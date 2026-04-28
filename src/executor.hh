@@ -218,26 +218,24 @@ protected:
 
 	virtual int get_depth() const {return 0; }
 	/* -1 when undefined as in concatenated executors and the root executor, in which
-	 * case PARAM_RULE is always null.  Only used to check for cycles on the rule
-	 * level. */
+	 * case PARAM_RULE is always null. */
 
 	virtual bool optional_finished(shared_ptr <const Dep> dep_link)= 0;
-	/* Whether the executor would be finished if this was an optional
-	 * dependency.  Check whether this is an optional dependency and if it
-	 * is, return TRUE when the file does not exist.  Return FALSE when
-	 * children should be started.  Return FALSE in executor types that are
-	 * not affected. */
+	/* Whether the executor would be finished if this was an optional dependency.
+	 * Check whether this is an optional dependency and if it is, return TRUE when the
+	 * file does not exist.  Return FALSE when children should be started.  Return
+	 * FALSE in executor types that are not affected. */
 
 	static Timestamp timestamp_last;
-	/* The timepoint of the last time wait() returned.  No file in the
-	 * file system should be newer than this. */
+	/* The timepoint of the last time wait() returned.  No file in the file system
+	 * should be newer than this. */
 
 	static std::unordered_map <Hash_Dep, Executor *> executors_by_hash_dep;
-	/* All cached Executor objects by each of their Target.  Such
-	 * Executor objects are never deleted. */
+	/* All cached Executor objects by each of their Target.  Such Executor objects are
+	 * never deleted. */
 
 	static int trivial_index(shared_ptr <const Dep> d) {
-		return d->flags & F_TRIVIAL ? 1 : 0;
+		return d->flags.get_flags() & F_TRIVIAL ? 1 : 0;
 	}
 
 private:

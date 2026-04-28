@@ -11,6 +11,11 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2026-05-07  Version 2.12
+
+* Flag -P (no-follow):  Can be placed before targets, to not dereference them if they
+  are symlinks.  The name of the flag is taken from similar options in find(1) and cp(1).
+
 2026-04-09  Version 2.11
 
 * Flags can be coalesced.  For instance '-on' is equivalent to '-o -n'.

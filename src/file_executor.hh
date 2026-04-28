@@ -62,23 +62,25 @@ private:
 
 	std::vector <Hash_Dep> hash_deps;
 	/* The targets to which this executor object corresponds.  Never empty.  All
-	 * targets are non-dynamic, i.e., only plain files and phonies are included.
-	 * Does not include flags (except F_PHONY). */
+	 * targets are non-dynamic, i.e., only plain files and phonies are included. */
 
 	Timestamp *timestamps_old;
 	/* Timestamp of each file target, before the command is executed.  Only valid once
-	 * the job was started.  The indexes correspond to those in TARGETS.  Non-file
+	 * the job was started.  The indexes correspond to those in HASH_DEPS.  Non-file
 	 * indexes are uninitialized.  Used for checking whether a file was rebuild to
 	 * decide whether to remove it after a command failed or was interrupted.  This is
 	 * UNDEFINED when the file did not exist, or no target is a file.  Allocated with
-	 * malloc().  Length equals that of TARGETS. */
+	 * malloc().  Length equals that of HASH_DEPS. */
 
 	char **filenames;
 	/* The actual filename for every file target.  Null for phonies.  Both the
 	 * array and each filename is allocated with malloc().  If used, it has the same
-	 * length as TARGETS.  Only set when we are actually starting the jobs.  Cannot be
+	 * length as HASH_DEPS.  Only set when we are actually starting the jobs.  Cannot be
 	 * a C++ container because we access it from async-signal safe functions.  Used to
 	 * delete partially-built files. */
+
+	Flags *target_flags;
+	/* Same length as HASH_DEPS */
 
 	shared_ptr <const Rule> rule;
 	/* The instantiated file rule.  Null when there is no rule for this file.
@@ -130,6 +132,9 @@ private:
 		const std::map <string, string> &mapping);
 	/* Return value is TRUE on error */
 
+	void make_timestamps_old();
+	void make_remove_data();
+
 	static std::unordered_map <string, Timestamp> phonies;
 	/* The timestamps for phony targets.  This container plays the role of the file
 	 * system for phony targets, holding their timestamps, and remembering whether
@@ -138,6 +143,10 @@ private:
 	 * their dependencies up to date, then the command is not executed, even though it
 	 * was never executed in the current invocation of Stu. In that case, the phony
 	 * targets are never inserted in this map.  */
+
+	static int stat_file(const char *filename, struct stat *buf, Flags flags);
+	/* Calls stat()/lstat() depending on F_NO_DEREFERENCE.  Returns 0/-1, and sets
+	 * errno on error. */
 };
 
 #endif /* ! FILE_EXECUTOR_HH */

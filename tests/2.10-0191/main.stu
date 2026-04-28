@@ -1,0 +1,1 @@
+> -o X {} # Error (order of > and -o);

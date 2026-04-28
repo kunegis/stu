@@ -1,0 +1,2 @@
+main.stu:3:4: output redirection using > cannot be used
+main.stu:3:2: before target with flag -P (no-follow)

@@ -1,0 +1,13 @@
+# Just-created dangling symlink is older than Stu startup: Error.
+
+A: B
+{
+}
+
+-P B
+{
+	ln -s nonexisting B || exit 1
+	year=$(date +%Y)
+	year=$(( year - 2 ))
+	touch -h -t ${year}01010000 B || exit 1
+}

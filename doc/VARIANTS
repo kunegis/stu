@@ -12,3 +12,11 @@ analyzer  -        -    -     -    -        none     Static analyzer
 
 The compiled filename is bin/stu.$VARIANT, except for variant 'ndebug', where the filename
 is bin/stu, because that is the version that gets installed.
+
+Legend:
+
+  VARIANT - Name of variant
+  NDEBUG - Whether 'NDEBUG' macro is defined
+  MAKE - Whether the variant is compiled by 'make'
+  CHECK - Whether the variant is compiled by 'make check'
+  TEST - Whether the variant is compiled by 'make test'

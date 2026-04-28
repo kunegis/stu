@@ -71,14 +71,14 @@ void Cycle::print(
 			path[i - 1]->get_parents().at(const_cast <Executor *> (path[i]));
 
 		/* Don't show a message for left-branch dynamic links */
-		if (Executor::hide_link_from_message(d->flags))
+		if (Executor::hide_link_from_message(d->flags.get_flags()))
 			continue;
 
 		d->get_place() << fmt(
 			"%s%s depends on %s",
 			i == (ssize_t)(path.size() - 1)
 			? (path.size() == 1
-				|| (path.size() == 2 && Executor::hide_link_from_message(dep->flags))
+				|| (path.size() == 2 && Executor::hide_link_from_message(dep->flags.get_flags()))
 				? "target must not depend on itself: "
 				: "cyclic dependency: ")
 			: "",

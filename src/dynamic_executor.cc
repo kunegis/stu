@@ -52,10 +52,10 @@ Dynamic_Executor::Dynamic_Executor(
 
 	/* Push the single initial dependency */
 	shared_ptr <Dep> dep_child= dep->dep->clone();
-	dep_child->flags |= F_RESULT_NOTIFY;
+	dep_child->flags.add_unplaced_flags(F_RESULT_NOTIFY);
 	push(dep_child);
 
-	if (dep->flags & F_PHASE_B) state |= State::NEED_BUILD;
+	if (dep->flags.get_flags() & F_PHASE_B) state |= State::NEED_BUILD;
 }
 
 Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
@@ -72,19 +72,20 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 	}
 	assert(proceed_A == P_NOTHING);
 	if (error) {
-		done |= Done::from_flags(dep_link->flags);
+		done |= Done::from_flags(dep_link->flags.get_flags());
 		return P_NOTHING;
 	}
 
 	assert(get_buffer_A().empty());
-	if (finished(dep_link->flags)) {
+	if (finished(dep_link->flags.get_flags())) {
 		return P_NOTHING;
 	}
 
-	need_build= (state & State::NEED_BUILD) != 0 || dep_link->flags & F_PHASE_B;
+	need_build= (state & State::NEED_BUILD) != 0 ||
+		dep_link->flags.get_flags() & F_PHASE_B;
 	TRACE("need_build= %s", frmt("%d", need_build));
 	if (! need_build) {
-		done |= Done::from_flags(dep_link->flags);
+		done |= Done::from_flags(dep_link->flags.get_flags());
 		return P_NOTHING;
 	}
 
@@ -95,7 +96,7 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 		return proceed_B;
 	}
 	assert(proceed_B == P_NOTHING);
-	done |= Done::from_flags(dep_link->flags);
+	done |= Done::from_flags(dep_link->flags.get_flags());
 	return P_NOTHING;
 }
 
@@ -147,14 +148,9 @@ void Dynamic_Executor::notify_result(
 		for (auto &j: deps) {
 			shared_ptr <Dep> j_new= j->clone();
 			/* Add -% flag */
-			j_new->flags |= F_RESULT_COPY;
+			j_new->flags.add_unplaced_flags(F_RESULT_COPY);
 			/* Add flags from self */
-			j_new->flags |= dep->flags & (F_WORD & ~F_TARGET_DYNAMIC);
-			for (unsigned i= 0; i < C_PLACED; ++i) {
-				if (j_new->get_place_flag(i).empty() &&
-				    ! dep->get_place_flag(i).empty())
-					j_new->set_place_flag(i, dep->get_place_flag(i));
-			}
+			j_new->flags.add(dep->flags, F_WORD & ~F_TARGET_DYNAMIC);
 			j= j_new;
 			push(j);
 		}

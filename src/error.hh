@@ -32,10 +32,10 @@
  *    Location 2: expected an AAA, not BBB
  *    Location 1: in CCC
  *
- *    Location 2: AAA must not be used
+ *    Location 2: AAA cannot be used
  *    Location 1: in BBB
  *
- *    Location 2: AAA must not be used
+ *    Location 2: AAA must not be BBB
  *    Location 1: in FEATURE using OPERATOR
  *
  * Use "expected TOKEN" instead of "missing TOKEN".  That's because some tokens in the
@@ -46,10 +46,14 @@
  * "not BBB" mentions the invalid token.  If end-of-file is encountered, the "not BBB"
  * part is omitted.
  *
- * Use "must not" rather than "cannot" or "shall" in error messages when something must be
- * present, but is erroneous, e.g., "filename must not be empty".  On the other hand, use
- * "cannot" when something completely unexpected was encountered, e.g., "phony targets
- * cannot be used with copy rule".
+ * "must not" vs "cannot":
+ * - Use "must not" when referring to an element whose presence is valid, but which has an
+ *   invalid property.
+ * - Use "cannot" when referring to an element that is invalid, i.e., an element that
+ *   should not be present in the first place.
+ * Fictional examples:
+ * - "Command name must not start with a dash."
+ * - "Command name cannot be specified with the \ operator".
  *
  * Operators and other syntax elements are often introduced by the word "using" rather
  * than "with", etc., e.g., "expected a filename after input redirection using "<"".
@@ -61,10 +65,10 @@
  * "dynamic dependency [X] must not have input redirection using "<"", or when referring
  * specifically to a dependency with respect to a target.
  *
- * But remember that in general it is better to state what was expected in the syntax
- * than to say that what was encountered cannot be used.  For instance, say "expected a
- * filename" instead of "filename must not be empty".  This cannot always be done, so
- * "must not" is sometimes used.
+ * Remember that in general it is better to state what was expected in the syntax than to
+ * say that what was encountered cannot be used.  For instance, say "expected a filename"
+ * instead of "filename must not be empty".  This cannot always be done, so "must not" is
+ * sometimes used.
  *
  * Even though error messages should contain all the information mentioned above, they
  * should still be terse.  More information is included in the explanations using the -E

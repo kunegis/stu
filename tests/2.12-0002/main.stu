@@ -1,0 +1,9 @@
+>A: list.1
+{
+	readlink list.1
+}
+
+-P list.1
+{
+	ln -s CORRECT list.1
+}

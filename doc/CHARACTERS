@@ -54,7 +54,7 @@ These characters are single-character tokens.
     []  Dynamic list
     >   Output redirection (target only)
     <   Input redirection (dependency only)
-    =   Assignment, copy, and named variable
+    =   Content rule, copy rule, named variable
     $[  The sequence '$[' is analysed as a sequence of the two operators
         '$' and '['.  In other environments, '$' introduces parameters.
 

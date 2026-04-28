@@ -1,0 +1,3 @@
+# Copy rule cannot have "no-follow" target.
+
+-P A=B;

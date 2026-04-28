@@ -1,16 +1,45 @@
 #
-# Allow to handle symlinks as files in themselves, i.e., check for their
-# own existence and their own timestamp.  This should not be the default
-# as the current behaviour is more often useful, but should be available
-# as a possibility, probably using a new flag (-L).
+# Replace all show_*() render_*() functions by *_View classes.  Also, there should be no
+# specialized show() functions; only render().  Only exception is show_trace() [maybe].
 #
 
-# What happens if the same target is used with and without "-L"?
-A: B C {...}
-B { ln -s ... B ; }
-C:  -L { ln -s ... B ; }
-# (this example is incorrect)e
-# * A target must always have -L or never have -L
+#
+# Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
+# * Use --no-dereference for -P [like cp]
+#
+
+#
+# Break up File_Executor::execute() into manageable functions.
+#
+
+#
+# Verbose mode with:
+# * ls-like output after each built file
+# * Number of files/targets built / to be built / etc. after each built file
+# Use option '-v'.
+# Allow to output this into a file.
+#
+
+#
+# shared_ptr <const Dep>:  This can be replaced by "const Dep *" in certain function
+# arguments, when the argument is not cloned or saved somewhere else.
+#
+
+#
+# sh/test:  The check that tests have correct runtime depending on whether they are long
+# or non-long should only be executed in DEBUG mode.  (It should not occur with "make
+# check".)
+#
+
+#
+# Make it an error when -n/-0/-C are used together.
+#
+
+A: [-0n B]; # Error
+A: -n -0 B; # Error
+A: -n [B]; B={-0 C} # Error
+A: -n @x; @x: -0 C; # Error
+A: -n @x; @x: @y; @y: -0 C; # Error
 
 #
 # Allow access to environment variables via e.g. $(HOME).  Using this is
@@ -31,12 +60,10 @@ $(1) # Error
 $(aaa$(bbb)aaa) # Error
 
 #
-# Replace all show_*() render_*() functions by *_View classes.  Also, there should be no
-# specialized show() functions; only render().  Only exception is show_trace() [maybe].
-#
-
-#
-# Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
+# Have an option/flag for: For content rules, compare the content of the file with
+# the wanted content and don't update the file if identical.  Very useful when someone
+# changes the content in the stu file, and then re-builds.  At the moment, it is a common
+# complaint that Stu does _not_ re-build in that case.
 #
 
 #
@@ -93,7 +120,7 @@ $ stu -d dir/main.stu # Like first cd'ing to dir/
 # And theoretically also braces for blocks
 
 #
-# When doing %include or %import, allow to pass environment variables.
+# When doing %include or %import, allow to pass environment variables.  (Discuss.)
 #
 
 #
@@ -193,15 +220,8 @@ dep.sources {
 program:  [-o -p dep.sources] { ... }
 # and "dep.sources" may even be a side effect of "program".
 
-# This could be the first case where "-p -o" makes sense.  We want to allow "-po" for
+# This could be the first case where "-p -o" makes sense.  We may want to allow "-po" for
 # this.
-
-#
-# Have an option/flag for: For hardcoded rules, compare the content of the file with
-# the wanted content and don't update the file if identical.  Very useful when someone
-# changes the content in the stu file, and then re-builds.  At the moment, it is a common
-# complaint that Stu does _not_ re-build in that case.
-#
 
 #
 # Regular expressions in target names.
@@ -260,7 +280,7 @@ aaa.$x -p2:  ... { ... }
 #
 
 #
-# A flag:  A dependency may fail.
+# A flag:  A dependency may fail. (?)
 #
 
 A: -e B
@@ -278,25 +298,8 @@ A: -e B
 #
 
 #
-# Break up File_Executor::execute() into manageable functions.
-#
-
-#
-# Verbose mode with:
-# * ls-like output after each built file
-# * Number of files/targets built / to be built / etc. after each built file
-# Use option '-v'.
-# Allow to output this into a file.
-#
-
-#
 # Have an option to output the dependency graph, i.e., output each edge
 # on a single line, e.g. separated by tab.
-#
-
-#
-# shared_ptr <const Dep>:  This can be replaced by "const Dep *" in certain function
-# arguments, when the argument is not cloned or saved somewhere else.
 #
 
 #
@@ -357,12 +360,7 @@ A: -e B
 #
 
 #
-# "make test" on FreeBSD
-#
-
-#
-# Runtime checks for tests:  In sh/test, check the runtime for each test individually, and
-# use the usual error mechanism.
+# "make test" on FreeBSD.
 #
 
 #
@@ -377,12 +375,6 @@ A: -e B
 #
 
 #
-# sh/test:  The check that tests have correct runtime depending on whether they are long
-# or non-long should only be executed in DEBUG mode.  (It should not occur with "make
-# check".)
-#
-
-#
 # For content rules, maybe have an own Executor subclass that checks whether the existing
 # has the same content as the to-be-written content, and if it has, does not touch the old
 # file.  This would make it possible that things are re-built when the content of {...} in
@@ -391,7 +383,7 @@ A: -e B
 # This behavior could also be implemented in File_Executor, by querying hashes of each
 # file's content and timestamp before execution, and if after execution the content has
 # not change, revert the timestamps to their old values.  That would be expensive though
-# due to scanning a whole file, and should be disable by default.
+# due to scanning a whole file, and should be disabled by default.
 #
 
 #
@@ -432,11 +424,22 @@ B {}
 #
 
 #
-# Make it an error when -n/-0/-C are used together.
+# argv place formatting: Instad of the name of the program, show "argv[$i]"
 #
 
-A: [-0n B]; # Error
-A: -n -0 B; # Error
-A: -n [B]; B={-0 C} # Error
-A: -n @x; @x: -0 C; # Error
-A: -n @x; @x: @y; @y: -0 C; # Error
+#
+# Clean up test naming.
+#
+
+* Correct version numbers
+* Test numbers should have four digits; first digit shows type (success, fail, EXEC)
+* First digit of test: 0 (success), 1 (fail), 2 (EXEC), 3 (preload).
+
+#
+# Place_Flags:  replace certain functions by operators (&, |=, etc.) that mimic how a
+# Flags variable would be used.
+#
+
+#
+# sh/test_clean: find_source_files:  Do not exclude doc/.
+#

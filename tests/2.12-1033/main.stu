@@ -1,0 +1,13 @@
+>A: X -o B
+{
+}
+
+>X
+{
+	ln -s nonexisting B
+}
+
+B
+{
+	exit 77
+}

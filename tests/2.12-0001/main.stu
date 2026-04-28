@@ -1,0 +1,3 @@
+# -P does nothing when target is not a symlink.
+
+-P A:B{cp B A;} B=C; C={CONTENT}

@@ -12,7 +12,7 @@ File_Executor::File_Executor(
 	std::map <string, string> &mapping_parameter_,
 	int &error_additional)
 	: Executor(param_rule_), timestamps_old(nullptr), filenames(nullptr),
-	  rule(rule_)
+	  target_flags(nullptr), rule(rule_)
 {
 	TRACE_FUNCTION();
 	TRACE("dep= %s", show_trace(dep));
@@ -45,7 +45,10 @@ File_Executor::File_Executor(
 		hash_deps.clear();
 		for (auto &d: rule->targets) {
 			Hash_Dep hd= d->place_target.unparametrized();
+			hd.get_front_word_nondynamic() |=
+				d->flags.get_flags() & F_WORD;
 			TRACE("hd= %s", show_trace(hd));
+			TRACE("hd_flags= %s", show_flags(hd.get_front_word_nondynamic()));
 			hash_deps.push_back(hd);
 		}
 		assert(hash_deps.size());
@@ -83,7 +86,8 @@ File_Executor::File_Executor(
 
 	/* It is not allowed to have a dynamic of a non-transitive phony */
 	if (dynamic_cast <Dynamic_Executor *> (parent) &&
-		dep->flags & F_RESULT_NOTIFY && dep->flags & F_TARGET_PHONY)
+		(dep->flags.get_flags() & (F_RESULT_NOTIFY | F_TARGET_PHONY))
+		== (F_RESULT_NOTIFY | F_TARGET_PHONY))
 	{
 		Place place_target;
 		for (auto &i: rule->targets) {
@@ -112,9 +116,8 @@ File_Executor::File_Executor(
 		return;
 	}
 
-	/* -o and -p are not allowed on non-transitive phonies */
-	if (dep->flags & F_TARGET_PHONY &&
-	    dep->flags & (F_OPTIONAL | F_PERSISTENT))
+	if (dep->flags.get_flags() & F_TARGET_PHONY &&
+		dep->flags.get_flags() & (F_OPTIONAL | F_PERSISTENT))
 	{
 		Place place_target;
 		for (auto &i: rule->targets) {
@@ -125,12 +128,12 @@ File_Executor::File_Executor(
 			}
 		}
 		assert(! place_target.empty());
-		unsigned ind= dep->flags & F_OPTIONAL ? I_OPTIONAL : I_PERSISTENT;
-		dep->get_place() << fmt((dep->flags & F_OPTIONAL)
+		Index ind= dep->flags.get_flags() & F_OPTIONAL ? I_OPTIONAL : I_PERSISTENT;
+		dep->get_place() << fmt((dep->flags.get_flags() & F_OPTIONAL)
 			? "dependency %s must not be declared as optional"
 			: "dependency %s must not be declared as persistent",
 			show(dep));
-		dep->places[ind] << fmt("using flag %s", show(Flag_View(flags_chars[ind])));
+		dep->flags.place_by_index(ind) << fmt("using flag %s", show(Flag_View(flags_chars[ind])));
 		if (rule->command)
 			place_target <<
 				fmt("because rule for phony target %s has a command",
@@ -168,6 +171,7 @@ File_Executor::~File_Executor()
 				free(filenames[i]);
 		free(filenames);
 	}
+	free(target_flags);
 #endif /* 0 */
 }
 
@@ -197,6 +201,7 @@ void File_Executor::wait()
 
 void File_Executor::waited(pid_t pid, size_t index, int status)
 {
+	TRACE_FUNCTION();
 	assert(job.started());
 	assert(job.get_pid() == pid);
 
@@ -289,9 +294,9 @@ void File_Executor::notify_variable(
 }
 
 bool File_Executor::remove_if_existing(bool output)
+/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here, if !OUTPUT */
 {
-	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here, if OUTPUT is
-	 * false */
+	int r;
 
 	if (option_K)
 		return false;
@@ -301,21 +306,25 @@ bool File_Executor::remove_if_existing(bool output)
 
 	for (size_t i= 0; i < hash_deps.size(); ++i) {
 		const char *filename= filenames[i];
-		if (!filename)
-			continue;
+		if (!filename) continue;
 		assert_async(filename[0] != '\0');
+		Flags flags= target_flags[i];
 
-		/* Remove the file if it exists.  If it is a symlink, only the symlink
-		 * itself is removed, not the file it links to. */
 		struct stat buf;
-		if (stat(filename, &buf))
-			continue;
+		r= lstat(filename, &buf);
+		if (r) continue;
+
+		if (timestamps_old[i].defined()) {
+			if (!(flags & F_NO_FOLLOW)) {
+				r= stat(filename, &buf);
+			}
+			if (timestamps_old[i] >= Timestamp(&buf)) {
+				continue;
+			}
+		}
 
 		/* If the file existed before building, remove it only if it now has a
 		 * newer timestamp. */
-		if (! (! timestamps_old[i].defined()
-				|| timestamps_old[i] < Timestamp(&buf)))
-			continue;
 
 		if (output) {
 			string text_filename= ::show(filename, S_DEBUG);
@@ -343,7 +352,7 @@ void File_Executor::warn_future_file(
 	const char *message_extra)
 {
 	TRACE_FUNCTION();
-	TRACE("filename= '%s'", filename);
+	TRACE("filename= \"%s\"", filename);
 	TRACE("buf.st_mtime= %s", frmt("%jd", (intmax_t)buf->st_mtime));
 	TRACE("now= %s", frmt("%jd", (intmax_t)time(nullptr)));
 	Timestamp timestamp_buf= Timestamp(buf);
@@ -367,7 +376,7 @@ void File_Executor::print_command() const
 	if (option_s)
 		return;
 
-	if (rule->is_hardcode) {
+	if (rule->is_content) {
 		assert(hash_deps.size() == 1);
 		string content= rule->command->command;
 		bool is_printable= false;
@@ -466,11 +475,11 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (proceed_A)
 		return proceed_A;
 	if (error) {
-		done |= Done::from_flags(dep_link->flags);
+		done |= Done::from_flags(dep_link->flags.get_flags());
 		return P_NOTHING;
 	}
 
-	if (finished(dep_link->flags))
+	if (finished(dep_link->flags.get_flags()))
 		return P_NOTHING;
 
 	if (job.started_or_waited())
@@ -485,40 +494,11 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	assert(children.empty());
 	assert(error == 0);
 
+	make_timestamps_old();
+
 	/*
 	 * Check whether executor has to be built
 	 */
-	cov_tag("File_Executor::execute");
-	Timestamp *timestamps_old_new= (Timestamp *)
-		realloc(timestamps_old, sizeof(timestamps_old[0]) * hash_deps.size());
-	if (!timestamps_old_new) {
-		print_errno("realloc");
-		error_exit();
-	}
-	timestamps_old= timestamps_old_new;
-	for (size_t i= 0; i < hash_deps.size(); ++i)
-		timestamps_old[i]= Timestamp::UNDEFINED;
-	cov_tag("File_Executor::execute::1");
-	char **filenames_new= (char **)realloc(filenames,
-		sizeof(filenames[0]) * hash_deps.size());
-	if (!filenames_new) {
-		print_errno("realloc");
-		error_exit();
-	}
-	filenames= filenames_new;
-	for (size_t i= 0; i < hash_deps.size(); ++i) {
-		TRACE("hash_deps[i]= %s", show_trace(hash_deps[i]));
-		if (hash_deps[i].is_file()) {
-			TRACE("Is file");
-			filenames[i]= strdup(hash_deps[i].get_name_c_str_nondynamic());
-			if (!filenames[i]) {
-				print_errno("strdup");
-				error_exit();
-			}
-		} else {
-			filenames[i]= nullptr;
-		}
-	}
 
 	/* A target for which no execution has to be done */
 	bool no_execution= rule != nullptr && rule->command == nullptr && ! rule->is_copy;
@@ -533,7 +513,9 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			const Hash_Dep &hash_dep= hash_deps[i];
 			if (! hash_dep.is_file())
 				continue;
-			if (check_file_target(hash_dep, i, dep_link, no_execution))
+			if (check_file_target(hash_dep, i,
+					dep_link,
+					no_execution))
 				return P_NOTHING;
 		}
 		/* We cannot update TIMESTAMP within the loop above because we need to
@@ -570,7 +552,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	if (! (state & State::NEED_BUILD)) {
 		TRACE("No need to build");
-		done |= Done::from_flags_trivial_and_nontrivial(dep_link->flags);
+		done |= Done::from_flags_trivial_and_nontrivial(
+			dep_link->flags.get_flags());
 		return P_NOTHING;
 	}
 
@@ -586,7 +569,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */
-		done |= Done::from_flags(dep_link->flags);
+		done |= Done::from_flags(dep_link->flags.get_flags());
 		return P_NOTHING;
 	}
 
@@ -601,9 +584,9 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	assert(options_jobs > 0);
 
-	/* For hardcoded rules (i.e., static content), we don't need to start a
-	 * job, and therefore this is executed even if JOBS is zero. */
-	if (rule->is_hardcode) {
+	/* For content rules, we don't need to start a job, and therefore this is executed
+	 * even if JOBS is zero. */
+	if (rule->is_content) {
 		assert(hash_deps.size() == 1);
 		assert(hash_deps.front().is_file());
 		TRACE("Create content");
@@ -639,6 +622,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	mapping_parameter.clear();
 	mapping_variable.clear();
 
+	make_remove_data();
 	pid_t pid;
 	size_t index; /* In EXECUTORS_BY_PID_* */
 	{
@@ -659,7 +643,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			*this << fmt("error executing command for %s",
 				show(hash_deps.front()));
 			raise(ERROR_BUILD);
-			done |= Done::from_flags(dep_link->flags);
+			done |= Done::from_flags(dep_link->flags.get_flags());
 			return P_NOTHING;
 		}
 
@@ -692,21 +676,29 @@ bool File_Executor::check_file_target(
 	bool no_execution)
 {
 	TRACE_FUNCTION();
-	TRACE("target= '%s'", target.get_name_c_str_nondynamic());
+	TRACE("target= \"%s\"", target.get_name_c_str_nondynamic());
 	assert(target.is_file());
+	Flags flags= target.get_front_word_nondynamic();
+	if (to <Plain_Dep> (dep_link)->place_target.place_name.unparametrized()
+		== target.get_name_c_str_nondynamic())
+	{
+		Flags dep_flags= dep_link->flags.get_flags();
+		TRACE("dep_flags= %s", show_flags(dep_flags));
+		flags |= dep_flags;
+	}
+	TRACE("flags= %s", show_flags(flags));
 
-	/* We save the return value of stat() and handle errors later */
 	struct stat buf;
-	int ret_stat= stat(target.get_name_c_str_nondynamic(), &buf);
+	int ret_stat= stat_file(target.get_name_c_str_nondynamic(), &buf,
+		flags);
 	int errno_stat= errno;
-	TRACE("stat ret= %s, errno= %s", frmt("%d", ret_stat), frmt("%d", errno_stat));
 
 	/* Warn when file has timestamp in the future */
 	if (ret_stat == 0) {
 		/* File exists */
 		Timestamp timestamp_file= Timestamp(&buf);
 		timestamps_old[index]= timestamp_file;
-		if (! (dep_link->flags & F_PERSISTENT))
+		if (! (flags & F_PERSISTENT))
 			warn_future_file(&buf,
 				target.get_name_c_str_nondynamic(),
 				rule == nullptr
@@ -739,27 +731,22 @@ bool File_Executor::check_file_target(
 
 	if (! (state & State::NEED_BUILD) && ret_stat != 0 && errno_stat == ENOENT) {
 		TRACE("File does not exist");
-		if (! (dep_link->flags & F_OPTIONAL)) {
+		if (! (flags & F_OPTIONAL)) {
 			TRACE("Non-optional dependency");
 			state |= State::NEED_BUILD;
-		} else {
-			unreachable();
-			/* In this case, execute_phase_A() will already
-			 * have returned zero. */
 		}
 	}
 
 	if (ret_stat != 0 && errno_stat != ENOENT) {
-		TRACE("stat() returned an actual error");
-		rule->targets[index]->place << format_errno("stat",
+		rule->targets[index]->place << format_errno("fstatat",
 			target.get_name_c_str_nondynamic());
 		raise(ERROR_BUILD);
-		done |= Done::from_flags(dep_link->flags);
+		done |= Done::from_flags(flags);
 		return true;
 	}
 
-	/* File does not exist, all its dependencies are up to
-	 * date, and the file has no commands: that's an error */
+	/* File does not exist, all its dependencies are up to date, and the file has no
+	 * commands: that's an error */
 	if (ret_stat != 0 && no_execution) {
 		TRACE("File doesn't exist, all dependencies are up to date, and file has no command");
 		assert(errno == ENOENT);
@@ -775,7 +762,7 @@ bool File_Executor::check_file_target(
 			*this << "";
 			explain_file_without_command_without_dependencies();
 		}
-		done |= Done::from_flags(dep_link->flags);
+		done |= Done::from_flags(flags);
 		raise(ERROR_BUILD);
 		return true;
 	}
@@ -795,7 +782,7 @@ void File_Executor::write_content(
 	}
 
 	for (const string &line: command.get_lines()) {
-		TRACE("line= '%s'", line);
+		TRACE("line= \"%s\"", line);
 		if (fwrite(line.c_str(), line.size(), 1, file) != 1) {
 			TRACE("fwrite failed");
 			assert(ferror(file));
@@ -922,14 +909,15 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 	TRACE_FUNCTION();
 	TRACE("dep_link= %s", show_trace(dep_link));
 
-	if ((dep_link->flags & F_OPTIONAL) && to <Plain_Dep> (dep_link)
+	if (dep_link->flags.get_flags() & F_OPTIONAL
+		&& to <Plain_Dep> (dep_link)
 		&& ! (to <Plain_Dep> (dep_link)->place_target.flags & F_TARGET_PHONY))
 	{
 		TRACE("Is optional file target");
 
 		if (state & State::MISSING) {
 			TRACE("We already know a file to be missing");
-			done |= Done::from_flags(dep_link->flags);
+			done |= Done::from_flags(dep_link->flags.get_flags());
 			return true;
 		}
 		TRACE("File not known to be missing");
@@ -937,9 +925,12 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 		const char *name= to <Plain_Dep> (dep_link)
 			->place_target.place_name.unparametrized().c_str();
 		TRACE("name= '%s'", name);
+		TRACE("flags= %s",
+			show_flags(to <Plain_Dep> (dep_link)->flags.get_flags()));
 
 		struct stat buf;
-		int ret_stat= stat(name, &buf);
+		int ret_stat= stat_file(name, &buf,
+			to <Plain_Dep> (dep_link)->flags.get_flags());
 		TRACE("ret_stat= %s", frmt("%d", ret_stat));
 		if (ret_stat < 0) {
 			TRACE("Stat failed");
@@ -948,13 +939,13 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 			if (errno != ENOENT) {
 				TRACE("Stat failed with error other than ENOENT");
 				to <Plain_Dep> (dep_link)->place_target.place <<
-					format_errno("stat", name);
+					format_errno("fstatat", name);
 				raise(ERROR_BUILD);
-				done |= Done::from_flags(dep_link->flags);
+				done |= Done::from_flags(dep_link->flags.get_flags());
 				return true;
 			}
 			TRACE("File is missing; consider it done");
-			done |= Done::from_flags(dep_link->flags);
+			done |= Done::from_flags(dep_link->flags.get_flags());
 			return true;
 		} else {
 			TRACE("File exists");
@@ -969,16 +960,22 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 
 void File_Executor::check_file_was_built(Hash_Dep hash_dep, const Place &place)
 {
+	TRACE_FUNCTION();
 	const char *filename= hash_dep.get_name_c_str_nondynamic();
+	Flags flags= hash_dep.get_front_word_nondynamic();
+	TRACE("filename=\"%s\"", filename);
+	TRACE("flags= %s", show_flags(flags));
 	struct stat buf;
-	if (stat(filename, &buf)) {
+	if (stat_file(filename, &buf, flags)) {
 		if (errno == ENOENT) {
 			state |= State::MISSING;
 			state &= ~State::EXISTING;
 			place << fmt("file %s was not built by command", show(hash_dep));
 		} else {
 			state &= ~(State::MISSING | State::EXISTING);
-			place << fmt("cannot determine whether file %s was built by command", show(hash_dep));
+			place << fmt(
+				"cannot determine whether file %s was built by command",
+				show(hash_dep));
 		}
 		*this << "";
 		raise(ERROR_BUILD);
@@ -993,19 +990,22 @@ void File_Executor::check_file_was_built(Hash_Dep hash_dep, const Place &place)
 		timestamp= timestamp_file;
 	if (timestamp_file >= Timestamp::startup) return;
 
-	/* Check whether the file is actually a symlink, in which case we ignore that
-	 * error */
-	if (0 > lstat(filename, &buf)) {
-		place << format_errno("lstat", filename);
-		raise(ERROR_BUILD);
+	/* Check whether a non-(-P) file is actually a symlink, in which case we ignore
+	 * that error */
+	if (! (flags & F_NO_FOLLOW)) {
+		if (0 > lstat(filename, &buf)) {
+			place << format_errno("lstat", filename);
+			raise(ERROR_BUILD);
+		}
+		if (S_ISLNK(buf.st_mode))
+			return;
 	}
-	if (S_ISLNK(buf.st_mode))
-		return;
-	place
-		<< fmt("timestamp of file %s after execution of its command is older than %s startup",
-			show(hash_dep), dollar_zero)
-		<< fmt("timestamp of %s is %s", show(hash_dep), timestamp_file.format())
-		<< fmt("startup timestamp is %s", Timestamp::startup.format());
+
+	place << fmt(
+		"timestamp of file %s after execution of its command is older than %s startup",
+		show(hash_dep), program_name)
+	      << fmt("timestamp of %s is %s", show(hash_dep), timestamp_file.format())
+	      << fmt("startup timestamp is %s", Timestamp::startup.format());
 	*this << "";
 	explain_startup_time();
 	raise(ERROR_BUILD);
@@ -1017,13 +1017,14 @@ void File_Executor::check_file_target_without_rule(
 	Executor *parent,
 	bool &rule_not_found)
 {
-	if (dep->flags & (F_OPTIONAL | F_TRIVIAL)) return;
+	Flags flags= dep->flags.get_flags();
+	if (flags & (F_OPTIONAL | F_TRIVIAL)) return;
 	struct stat buf;
-	if (stat(hash_dep.get_name_c_str_nondynamic(), &buf)) {
+	if (stat_file(hash_dep.get_name_c_str_nondynamic(), &buf, flags)) {
 		if (errno != ENOENT) {
 			string text= show(hash_dep);
 			dep->get_place() << format_errno(
-				"stat", hash_dep.get_name_c_str_nondynamic());
+				"fstatat", hash_dep.get_name_c_str_nondynamic());
 			raise(ERROR_BUILD);
 		}
 		/* File does not exist and there is no rule for it */
@@ -1053,7 +1054,7 @@ bool File_Executor::start(
 
 		/* If optional copy, don't just call 'cp' and let it fail:  Look up
 		 * whether the source exists in the cache */
-		if (rule->deps.at(0)->flags & F_OPTIONAL) {
+		if (rule->deps.at(0)->flags.get_flags() & F_OPTIONAL) {
 			Executor *executor_source_base=
 				executors_by_hash_dep.at(Hash_Dep(0, source));
 			assert(executor_source_base);
@@ -1070,7 +1071,7 @@ bool File_Executor::start(
 					show(hash_deps.at(0)));
 				explain_missing_optional_copy_source();
 				raise(ERROR_BUILD);
-				done |= Done::from_flags(dep_link->flags);
+				done |= Done::from_flags(dep_link->flags.get_flags());
 				return true;
 			}
 		}
@@ -1093,4 +1094,71 @@ bool File_Executor::start(
 			rule->place_name_input.place);
 	}
 	return false;
+}
+
+void File_Executor::make_timestamps_old()
+{
+	TRACE_FUNCTION();
+	cov_tag("File_Executor::execute");
+	Timestamp *timestamps_old_new= (Timestamp *)
+		realloc(timestamps_old, sizeof(timestamps_old[0]) * hash_deps.size());
+	if (!timestamps_old_new) {
+		print_errno("realloc");
+		error_exit();
+	}
+	timestamps_old= timestamps_old_new;
+	for (size_t i= 0; i < hash_deps.size(); ++i)
+		timestamps_old[i]= Timestamp::UNDEFINED;
+}
+
+void File_Executor::make_remove_data()
+{
+	TRACE_FUNCTION();
+
+	cov_tag("File_Executor::execute::1");
+	char **filenames_new= (char **)realloc(filenames,
+		sizeof(filenames[0]) * hash_deps.size());
+	if (!filenames_new) {
+		print_errno("realloc");
+		error_exit();
+	}
+	filenames= filenames_new;
+
+	cov_tag("File_Executor::execute::2");
+	Flags *target_flags_new= (Flags *)realloc(target_flags,
+		sizeof(target_flags[0]) * hash_deps.size());
+	if (! target_flags_new) {
+		print_errno("realloc");
+		error_exit();
+	}
+	target_flags= target_flags_new;
+
+	for (size_t i= 0; i < hash_deps.size(); ++i) {
+		TRACE("hash_deps[i]= %s", show_trace(hash_deps[i]));
+		if (hash_deps[i].is_file()) {
+			TRACE("Is file");
+			filenames[i]= strdup(hash_deps[i].get_name_c_str_nondynamic());
+			if (!filenames[i]) {
+				print_errno("strdup");
+				error_exit();
+			}
+		} else {
+			filenames[i]= nullptr;
+		}
+		target_flags[i]= hash_deps[i].get_front_word_nondynamic();
+	}
+}
+
+int File_Executor::stat_file(const char *filename, struct stat *buf, Flags flags)
+{
+	TRACE_FUNCTION();
+	bool no_follow= flags & F_NO_FOLLOW;
+	TRACE("filename= '%s'", filename);
+	TRACE("no_follow= %s", frmt("%d", no_follow));
+
+	int r= fstatat(AT_FDCWD, filename, buf,
+		no_follow ? AT_SYMLINK_NOFOLLOW : 0);
+	TRACE("r= %s", frmt("%d", r));
+	TRACE("errno= %s", strerror(errno));
+	return r;
 }

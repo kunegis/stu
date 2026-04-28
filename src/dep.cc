@@ -21,9 +21,8 @@ void Dep::normalize(
 		if (error && ! option_k)
 			return;
 		for (auto &d:  deps_child) {
-			shared_ptr <Dep> dep_new=
-				std::make_shared <Dynamic_Dep>
-				(dynamic_dep->flags, dynamic_dep->places, d);
+			shared_ptr <Dep> dep_new= std::make_shared <Dynamic_Dep>(
+				dynamic_dep->flags, d);
 			assert(dynamic_dep->index < 0);
 			dep_new->top= dynamic_dep->top;
 			deps.push_back(dep_new);
@@ -34,7 +33,7 @@ void Dep::normalize(
 		for (auto &d:  compound_dep->deps) {
 			TRACE("d= %s", show_trace(d));
 			shared_ptr <Dep> dd= d->clone();
-			dd->add_flags(compound_dep, false);
+			dd->flags.add(compound_dep->flags);
 			assert(compound_dep->index < 0);
 			dd->top= compound_dep->top;
 			dd->normalize(deps, error);
@@ -60,13 +59,12 @@ shared_ptr <const Dep> Dep::untrivialize() const
 	assert(_this->is_normalized());
 	if (to <Plain_Dep> (_this)) {
 		TRACE("%s", "Plain");
-		if (! (_this->flags & F_TRIVIAL)) {
+		if (! (_this->flags.get_flags() & F_TRIVIAL)) {
 			TRACE("%s", "Not trivial");
 			return nullptr;
 		}
 		shared_ptr <Dep> ret= _this->clone();
-		ret->flags &= ~F_TRIVIAL;
-		ret->places[I_TRIVIAL]= Place();
+		ret->flags.remove_index(I_TRIVIAL);
 		TRACE("untrivialized= %s", show_trace(ret));
 		return ret;
 	} else if (to <Dynamic_Dep> (_this)) {
@@ -76,14 +74,12 @@ shared_ptr <const Dep> Dep::untrivialize() const
 		if (ret_dep) {
 			shared_ptr <Dynamic_Dep> ret=
 				std::make_shared <Dynamic_Dep> (dynamic_dep, ret_dep);
-			ret->flags &= ~F_TRIVIAL;
-			ret->places[I_TRIVIAL]= Place();
+			ret->flags.remove_index(I_TRIVIAL);
 			TRACE("untrivialized ret= %s", show_trace(ret));
 			return ret;
-		} else if (_this->flags & F_TRIVIAL) {
+		} else if (_this->flags.get_flags() & F_TRIVIAL) {
 			shared_ptr <Dep> ret= _this->clone();
-			ret->flags &= ~F_TRIVIAL;
-			ret->places[I_TRIVIAL]= Place();
+			ret->flags.remove_index(I_TRIVIAL);
 			TRACE("only dyn ret= %s", show_trace(ret));
 			return ret;
 		} else {
@@ -106,12 +102,11 @@ shared_ptr <const Dep> Dep::untrivialize() const
 			}
 		}
 		TRACE("found= %s", frmt("%d", found));
-		if (! found && !(_this->flags & F_TRIVIAL)) {
+		if (! found && !(_this->flags.get_flags() & F_TRIVIAL)) {
 			TRACE("%s", "not trivial");
 			return nullptr;
 		}
-		ret->flags &= ~F_TRIVIAL;
-		ret->places[I_TRIVIAL]= Place();
+		ret->flags.remove_index(I_TRIVIAL);
 		TRACE("ret= %s", show_trace(ret));
 		return ret;
 	} else {
@@ -140,19 +135,6 @@ shared_ptr <Dep> Dep::clone() const
 	}
 }
 
-void Dep::add_flags(shared_ptr <const Dep> dep,
-		    bool overwrite_places)
-{
-	for (unsigned i= 0; i < C_PLACED; ++i) {
-		if (dep->flags & (1 << i)) {
-			if (overwrite_places || ! (this->flags & (1 << i))) {
-				this->set_place_flag(i, dep->get_place_flag(i));
-			}
-		}
-	}
-	this->flags |= dep->flags;
-}
-
 shared_ptr <const Dep> Dep::strip_dynamic() const
 {
 	shared_ptr <const Dep> _this= shared_from_this();
@@ -167,29 +149,26 @@ shared_ptr <const Dep> Dep::strip_dynamic() const
 #ifndef NDEBUG
 void Dep::check() const
 {
+	flags.check();
 	assert(top.get() != this);
-
-	for (unsigned i= 0; i < C_PLACED; ++i) {
-		assert(((flags & (1 << i)) == 0) == get_place_flag(i).empty());
-	}
 
 	if (auto plain_this= dynamic_cast <const Plain_Dep *> (this)) {
 		/* The F_TARGET_PHONY flag is always set in the dependency flags, even
 		 * though that is redundant. */
-		assert((plain_this->flags & F_TARGET_PHONY)
+		assert((plain_this->flags.get_flags() & F_TARGET_PHONY)
 		       == (plain_this->place_target.flags));
 
 		if (! plain_this->variable_name.empty()) {
 			assert((plain_this->place_target.flags & F_TARGET_PHONY) == 0);
-			assert(plain_this->flags & F_VARIABLE);
+			assert(plain_this->flags.get_flags() & F_VARIABLE);
 		}
 	}
 
 	if (auto dynamic_this= dynamic_cast <const Dynamic_Dep *> (this)) {
-		assert(flags & F_TARGET_DYNAMIC);
+		assert(flags.get_flags() & F_TARGET_DYNAMIC);
 		dynamic_this->dep->check();
 	} else {
-		assert(!(flags & F_TARGET_DYNAMIC));
+		assert(!(flags.get_flags() & F_TARGET_DYNAMIC));
 	}
 
 	if (auto concat_this= dynamic_cast <const Concat_Dep *> (this)) {
@@ -208,17 +187,17 @@ shared_ptr <const Dep> Plain_Dep::instantiate(
 {
 	shared_ptr <Place_Target> ret_target= place_target.instantiate(mapping);
 
-	shared_ptr <Dep> ret= std::make_shared <Plain_Dep>
-		(flags, places, *ret_target, place, variable_name);
+	shared_ptr <Dep> ret= std::make_shared <Plain_Dep> (
+		flags, *ret_target, place, variable_name);
 	ret->index= index;
 	ret->top= top;
 
 	assert(ret_target->place_name.get_n() == 0);
 
 	string this_name= ret_target->place_name.unparametrized();
-	if ((flags & F_VARIABLE) && this_name.find('=') != string::npos) {
+	if ((flags.get_flags() & F_VARIABLE) && this_name.find('=') != string::npos) {
 		assert((ret_target->flags & F_TARGET_PHONY) == 0);
-		place << fmt("dynamic variable %s must not be instantiated with parameter value that contains %s",
+		place << fmt("dynamic variable %s cannot be instantiated with parameter value that contains %s",
 			show_dynamic_variable(this_name),
 			show_operator('='));
 		throw ERROR_LOGICAL;
@@ -241,22 +220,22 @@ bool Plain_Dep::find_parameter(
 Hash_Dep Plain_Dep::get_target() const
 {
 	Hash_Dep ret= place_target.unparametrized();
-	ret.get_front_word_nondynamic() |= (word_t)(flags & F_WORD);
+	ret.get_front_word_nondynamic() |= (word_t)(flags.get_flags() & F_WORD);
 	return ret;
 }
 
 void Plain_Dep::render(Parts &parts, Rendering rendering) const
 {
 #ifndef NDEBUG
-	if (render_flags(flags, parts, rendering))
+	if (render_flags(flags.get_flags(), parts, rendering))
 		parts.append_space();
 #endif /* ! NDEBUG */
-	if (flags & F_VARIABLE)
+	if (flags.get_flags() & F_VARIABLE)
 		parts.append_marker("$[");
-	if (flags & F_INPUT && rendering & R_SHOW_INPUT)
+	if (flags.get_flags() & F_INPUT && rendering & R_SHOW_INPUT)
 		parts.append_marker("<");
 	place_target.render(parts, rendering);
-	if (flags & F_VARIABLE)
+	if (flags.get_flags() & F_VARIABLE)
 		parts.append_marker("]");
 #ifndef NDEBUG
 	if (rendering & R_SHOW_INDEX && index >= 0) {
@@ -272,15 +251,15 @@ Hash_Dep Dynamic_Dep::get_target() const
 	const Dep *d= this;
 	while (dynamic_cast <const Dynamic_Dep *> (d)) {
 		Flags f= F_TARGET_DYNAMIC;
-		assert(d->flags & F_TARGET_DYNAMIC);
-		f |= d->flags & F_WORD;
+		assert(d->flags.get_flags() & F_TARGET_DYNAMIC);
+		f |= d->flags.get_flags() & F_WORD;
 		text += Hash_Dep::string_from_word(f);
 		d= dynamic_cast <const Dynamic_Dep *> (d)->dep.get();
 	}
 	assert(dynamic_cast <const Plain_Dep *> (d));
 	const Plain_Dep *sin= dynamic_cast <const Plain_Dep *> (d);
-	assert(!(sin->flags & F_TARGET_DYNAMIC));
-	Flags f= sin->flags & F_WORD;
+	assert(!(sin->flags.get_flags() & F_TARGET_DYNAMIC));
+	Flags f= sin->flags.get_flags() & F_WORD;
 	text += Hash_Dep::string_from_word(f);
 	text += sin->place_target.unparametrized().get_name_nondynamic();
 
@@ -290,7 +269,7 @@ Hash_Dep Dynamic_Dep::get_target() const
 void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 {
 #ifndef NDEBUG
-	if (render_flags(flags & ~F_TARGET_DYNAMIC, parts, rendering))
+	if (render_flags(flags.get_flags() & ~F_TARGET_DYNAMIC, parts, rendering))
 		parts.append_space();
 #endif /* ! NDEBUG */
 	parts.append_marker("[");
@@ -301,8 +280,8 @@ void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 shared_ptr <const Dep> Dynamic_Dep::instantiate(
 	const std::map <string, string> &mapping) const
 {
-	shared_ptr <Dynamic_Dep> ret= std::make_shared <Dynamic_Dep>
-		(flags, places, dep->instantiate(mapping));
+	shared_ptr <Dynamic_Dep> ret= std::make_shared <Dynamic_Dep> (
+		flags, dep->instantiate(mapping));
 	ret->index= index;
 	ret->top= top;
 	return ret;
@@ -317,7 +296,7 @@ bool Dynamic_Dep::find_parameter(
 shared_ptr <const Dep> Concat_Dep::instantiate(
 	const std::map <string, string> &mapping) const
 {
-	shared_ptr <Concat_Dep> ret= std::make_shared <Concat_Dep> (flags, places);
+	shared_ptr <Concat_Dep> ret= std::make_shared <Concat_Dep> (flags);
 	ret->index= index;
 	ret->top= top;
 
@@ -354,7 +333,7 @@ const Place &Concat_Dep::get_place() const
 void Concat_Dep::render(Parts &parts, Rendering rendering) const
 {
 #ifndef NDEBUG
-	if (render_flags(flags, parts, rendering))
+	if (render_flags(flags.get_flags(), parts, rendering))
 		parts.append_space();
 #endif /* ! NDEBUG */
 	for (const shared_ptr <const Dep> &d: deps)
@@ -386,11 +365,11 @@ void Concat_Dep::normalize_concat(
 		return;
 
 	/* Add attributes from DEP */
-	if (dep->flags || dep->index >= 0 || dep->top) {
+	if (dep->flags.get_flags() || dep->index >= 0 || dep->top) {
 		for (size_t k= k_init; k < deps_.size(); ++k) {
 			shared_ptr <Dep> d_new= deps_[k]->clone();
 			/* The innermost flag is kept */
-			d_new->add_flags(dep, false);
+			d_new->flags.add(dep->flags);
 			assert(dep->index < 0);
 			d_new->top= dep->top;
 			deps_[k]= d_new;
@@ -485,7 +464,7 @@ shared_ptr <const Dep> Concat_Dep::concat(
 	 * Check for invalid combinations
 	 */
 
-	if (a->flags & F_INPUT) {
+	if (a->flags.get_flags() & F_INPUT) {
 		/* It would in principle be possible to allow concatenations in which the
 		 * left component has an input redirection, but the current data
 		 * structures do not allow that, and therefore we make that invalid. */
@@ -497,7 +476,7 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		return nullptr;
 	}
 
-	if (b->flags & F_INPUT) {
+	if (b->flags.get_flags() & F_INPUT) {
 		/* We don't save the place for the '<', so we cannot have "using '<'" on
 		 * an extra line. */
 		b->get_place() << fmt("%s cannot have input redirection using %s",
@@ -507,31 +486,25 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		return nullptr;
 	}
 
-	if (b->flags & F_PLACED) {
-		static_assert(C_PLACED == 3);
-		unsigned i_flag=
-			b->flags & F_PERSISTENT ? I_PERSISTENT :
-			b->flags & F_OPTIONAL   ? I_OPTIONAL   :
-			b->flags & F_TRIVIAL    ? I_TRIVIAL    :
-			C_ALL;
-		assert(i_flag != C_ALL);
+	if (b->flags.get_flags() & F_PLACED) {
+		Index i_flag= b->flags.get()[0].index;
 		b->get_place() << fmt("%s cannot be declared as %s",
-				      show(b), flags_phrases[i_flag]);
-		b->places[i_flag] << fmt("using %s",
+				      show(b), flags_placed_phrases[i_flag]);
+		b->flags.get()[0].place << fmt("using %s",
 			show_operator(frmt("-%c", flags_chars[i_flag])));
 		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
-	if (b->flags & F_TARGET_PHONY) {
+	if (b->flags.get_flags() & F_TARGET_PHONY) {
 		b->get_place() << fmt("phony target %s is invalid", show(b));
 		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
 	}
 
-	if (a->flags & F_VARIABLE) {
+	if (a->flags.get_flags() & F_VARIABLE) {
 		a->get_place() <<
 			fmt("the variable dependency %s cannot be used", show(a));
 		b->get_place() << fmt("in concatenation with %s", show(b));
@@ -539,7 +512,7 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		return nullptr;
 	}
 
-	if (b->flags & F_VARIABLE) {
+	if (b->flags.get_flags() & F_VARIABLE) {
 		b->get_place() <<
 			fmt("the variable dependency %s cannot be used", show(b));
 		a->get_place() << fmt("in concatenation to %s", show(a));
@@ -568,18 +541,19 @@ shared_ptr <const Plain_Dep> Concat_Dep::concat_plain(
 	 * Combine
 	 */
 
-	Flags flags_combined= a->flags | b->flags;
+	Place_Flags flags_combined= a->flags;
+	flags_combined.add(b->flags);
 
-	Place_Name place_name_combined(a->place_target.place_name.unparametrized() +
-				       b->place_target.place_name.unparametrized(),
-				       a->place_target.place_name.place);
+	Place_Name place_name_combined(
+		a->place_target.place_name.unparametrized() +
+		b->place_target.place_name.unparametrized(),
+		a->place_target.place_name.place);
 
-	shared_ptr <Plain_Dep> ret= std::make_shared <Plain_Dep>
-		(flags_combined, a->places,
-			Place_Target(flags_combined & F_TARGET_PHONY, /* uncovered */
-				place_name_combined,
-				a->place_target.place),
-			a->place, "");
+	shared_ptr <Plain_Dep> ret= std::make_shared <Plain_Dep> (
+		flags_combined,
+		Place_Target(flags_combined.get_flags() & F_TARGET_PHONY,
+			place_name_combined, a->place_target.place),
+		a->place, "");
 	ret->top= a->top;
 	if (! ret->top)
 		ret->top= b->top;
@@ -614,8 +588,8 @@ shared_ptr <const Concat_Dep> Concat_Dep::concat_complex(
 shared_ptr <const Dep> Compound_Dep::instantiate(
 	const std::map <string, string> &mapping) const
 {
-	shared_ptr <Compound_Dep> ret= std::make_shared <Compound_Dep>
-		(flags, places, place);
+	shared_ptr <Compound_Dep> ret= std::make_shared <Compound_Dep> (
+		flags, place);
 	ret->index= index;
 	ret->top= top;
 	for (const shared_ptr <const Dep> &d: deps)

@@ -1,0 +1,1 @@
+main.stu:1:9: flag -P is invalid before dependency (only -p/-o/-t/-n/-0/-C are possible)

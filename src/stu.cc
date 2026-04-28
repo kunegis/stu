@@ -32,6 +32,7 @@ using std::shared_ptr;
 #include "options.cc"
 #include "parser.cc"
 #include "place.cc"
+#include "place_flags.cc"
 #include "preset.cc"
 #include "proceed.cc"
 #include "root_executor.cc"
@@ -51,7 +52,7 @@ using std::shared_ptr;
 int main(int argc, char **argv, char **envp)
 {
 	TRACE_FUNCTION();
-	dollar_zero= argv[0];
+	program_name= argv[0] ? argv[0] : "stu";
 	envp_global= (const char **) envp;
 	setlocale(LC_CTYPE, ""); /* Tokenizer::current_mbchar() */
 	init_buffering();

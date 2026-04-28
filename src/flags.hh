@@ -19,30 +19,32 @@
 #include "show.hh"
 
 typedef unsigned Flags;
+typedef unsigned Index;
 
 enum
 {
 	/* The index of the flags (I_*), used for array indexing.  Variables
 	 * iterating over these values are usually called I. */
-	I_PERSISTENT= 0,      /* -p  \                  \                    */
-	I_OPTIONAL,           /* -o   | placed flags     |                   */
-	I_TRIVIAL,            /* -t  /                   |                   */
+	I_PERSISTENT= 0,      /* -p \   common flags    \                    */
+	I_OPTIONAL,           /* -o /                    |                   */
+	I_TRIVIAL,            /* -t                      |                   */
 	I_TARGET_DYNAMIC,     /* [ ] \  target flags     |                   */
-	I_TARGET_PHONY,       /* @   /                   | target word flags */
+	I_TARGET_PHONY,       /* @   /                   | Hash_Dep          */
 	I_VARIABLE,           /* $                       |                   */
 	I_NEWLINE_SEPARATED,  /* -n  \                   |                   */
-	I_NUL_SEPARATED,      /* -0   | attribute flags  |                   */
-	I_CODE,               /* -C  /                  /                    */
+	I_NUL_SEPARATED,      /* -0   | dynamic format   |                   */
+	I_CODE,               /* -C  /                   |                   */
+	I_NO_FOLLOW,          /* -P                     /                    */
 	I_INPUT,              /* <                                           */
 	I_RESULT_NOTIFY,      /* -*                                          */
 	I_RESULT_COPY,        /* -%                                          */
-	I_PHASE_B,            /* -B                                          */
+	I_PHASE_B,            /* -&                                          */
 
 	/* Counts */
 	C_ALL,
-	C_TARGET_PLACED = 2, /* Flags that can appear before a target of a rule */
-	C_PLACED        = 3, /* Flags for which we store a place in Dep */
-	C_WORD          = 9, /* Flags used for caching; stored in Hash_Dep */
+	C_COMMON_PLACED =  2, /* Flags that can appear in front of target or dependency */
+	C_CACHE         =  9, /* Flags used for caching */
+	C_WORD          = 10, /* Flags stored in Hash_Dep */
 
 	/*
 	 * Flag bits to be ORed together
@@ -77,6 +79,9 @@ enum
 	F_CODE                  = 1 << I_CODE,
 	/* For dynamic dependencies, the file contains Stu code */
 
+	F_NO_FOLLOW             = 1 << I_NO_FOLLOW,
+	/* Target is symlink and should not be dereferenced */
+
 	F_INPUT                 = 1 << I_INPUT,
 	/* A dependency is annotated with the input redirection flag '<' */
 
@@ -92,19 +97,25 @@ enum
 	/* A parent is in phase B */
 
 	/* Aggregates */
-	F_TARGET_PLACED = (1 << C_TARGET_PLACED) - 1,
-	F_PLACED        = (1 << C_PLACED) - 1,
+	F_ALL           = (1 << C_ALL) - 1,
+	F_COMMON_PLACED = (1 << C_COMMON_PLACED) - 1,
+	F_CACHE         = (1 << C_CACHE) - 1,
 	F_WORD          = (1 << C_WORD) - 1,
-	F_TARGET        = F_TARGET_DYNAMIC | F_TARGET_PHONY,
 	F_ATTRIBUTE     = F_NEWLINE_SEPARATED | F_NUL_SEPARATED | F_CODE,
 	F_RESULT        = F_RESULT_NOTIFY | F_RESULT_COPY,
+	F_PLACED_TARGET= F_PERSISTENT | F_OPTIONAL | F_NO_FOLLOW,
+	F_PLACED_DEPENDENCY= F_PERSISTENT | F_OPTIONAL | F_TRIVIAL
+		| F_NEWLINE_SEPARATED | F_NUL_SEPARATED | F_CODE,
+	F_PLACED= F_PLACED_TARGET | F_PLACED_DEPENDENCY,
+	F_UNPLACED= F_ALL & ~F_PLACED,
 };
 
-constexpr const char flags_chars[]= "pot[@$n0C<*%B";
+constexpr const char flags_chars[]= "pot[@$n0CP<*%&";
 static_assert(sizeof(flags_chars) == C_ALL + 1, "Keep in sync with Flags");
-extern const char *flags_phrases[C_PLACED];
+extern const char *flags_placed_phrases[C_ALL];
 
-unsigned flag_get_index(char c);
+Index flag_get_index(char c); /* Must exist */
+bool is_placed_flag_char(char c);
 
 class Flag_View
 {

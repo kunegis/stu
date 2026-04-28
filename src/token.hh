@@ -76,18 +76,7 @@ public:
 	const char flag;
 	/* The flag character */
 
-	/* PLACE is the place of the letter */
-	Flag_Token(char flag_, const Place place_, Environment environment_)
-		: Token(environment_),
-		  place(place_),
-		  flag(flag_)
-	{
-		assert(isalnum(flag));
-
-		/* Can never be on the first column because there is a preceding dash. */
-		if (place.type == Place::Type::INPUT_FILE)
-			assert(place.column > 0);
-	}
+	Flag_Token(char flag_, const Place letter_place_, Environment environment_);
 
 	const Place &get_place() const override { return place; }
 

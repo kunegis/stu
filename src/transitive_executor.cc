@@ -51,7 +51,7 @@ Transitive_Executor::Transitive_Executor(
 	 * in the dependency.  Also, add the flags. */
 	for (Hash_Dep t: hash_deps) {
 		t.get_front_word_nondynamic() |= (word_t)
-			(dep_link->flags & (F_WORD & ~F_TARGET_DYNAMIC));
+			(dep_link->flags.get_flags() & (F_WORD & ~F_TARGET_DYNAMIC));
 		executors_by_hash_dep[t]= this;
 	}
 
@@ -96,13 +96,14 @@ Proceed Transitive_Executor::execute(shared_ptr <const Dep> dep_link)
 	}
 	if (error) {
 		TRACE("Phase A abort");
-		done |= Done::from_flags(dep_link->flags);
+		done |= Done::from_flags(dep_link->flags.get_flags());
 		return P_NOTHING;
 	}
 
-	done |= Done::from_flags(dep_link->flags & (F_PERSISTENT | F_OPTIONAL));
-	if (finished(dep_link->flags)) {
-		done |= Done::from_flags(dep_link->flags);
+	done |= Done::from_flags(dep_link->flags.get_flags()
+		& (F_PERSISTENT | F_OPTIONAL));
+	if (finished(dep_link->flags.get_flags())) {
+		done |= Done::from_flags(dep_link->flags.get_flags());
 		return P_NOTHING;
 	}
 
@@ -114,7 +115,7 @@ Proceed Transitive_Executor::execute(shared_ptr <const Dep> dep_link)
 		return proceed_B;
 	}
 
-	done |= Done::from_flags(dep_link->flags);
+	done |= Done::from_flags(dep_link->flags.get_flags());
 	return P_NOTHING;
 }
 
@@ -163,14 +164,11 @@ shared_ptr <const Dep> Transitive_Executor::prepare(
 	shared_ptr <const Dep> dep,
 	shared_ptr <const Dep> dep_link)
 {
-	if (! dep_link->flags) return dep;
+	if (! dep_link->flags.get_flags()) return dep;
 	shared_ptr <Dep> dep_new= dep->clone();
-	dep_new->flags |= dep_link->flags & (F_PLACED | F_ATTRIBUTE);
-	dep_new->flags |= F_RESULT_COPY;
-	for (unsigned i= 0; i < C_PLACED; ++i) {
-		assert(!(dep_link->flags & (1 << i)) == dep_link->get_place_flag(i).empty());
-		if (dep_new->get_place_flag(i).empty() && ! dep_link->get_place_flag(i).empty())
-			dep_new->set_place_flag(i, dep_link->get_place_flag(i));
-	}
+
+	dep_new->flags.add(dep_link->flags, F_PLACED);
+	dep_new->flags.add_unplaced_index(I_RESULT_COPY);
+
 	return dep_new;
 }

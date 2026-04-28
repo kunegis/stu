@@ -77,6 +77,19 @@ void Operator::render(Parts &parts, Rendering) const
 	parts.append_operator(string(1, op));
 }
 
+Flag_Token::Flag_Token(
+	char flag_,
+	const Place letter_place_,
+	Environment environment_)
+	: Token(environment_),
+	  place(letter_place_),
+	  flag(flag_)
+{
+	assert(is_placed_flag_char(flag_));
+	if (place.type == Place::Type::INPUT_FILE)
+		assert(place.column > 0);
+}
+
 void Flag_Token::render(Parts &parts, Rendering) const
 {
 	parts.append_operator(frmt("-%c", flag));

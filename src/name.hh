@@ -77,8 +77,8 @@ public:
 	 * in an empty string. */
 
 	const string &unparametrized() const
-	/* Return the name as a string, assuming it is unparametrized.
-	 * The name must be unparametrized. */
+	/* Return the name as a string, assuming it is unparametrized.  Must be
+	 * unparametrized. */
 	{
 		assert(get_n() == 0);
 		return texts[0];

@@ -2,11 +2,10 @@
 # Thus, there is no need to integrate them into Stu, and in fact supporting them would
 # bloat Stu and add unnecessary dependencies to it.
 #
-# If anything, the question we should ask for each of these features is
-# not whether we should hardcode it into Stu, but how easily these
-# things can be implemented using the Stu language.  If necessary, we
-# should then extend the Stu language to make such implementations
-# possible, and easy.
+# If anything, the question we should ask for each of these features is not whether we
+# should hardcode it into Stu, but how easily these things can be implemented using the
+# Stu language.  If necessary, we should then extend the Stu language to make such
+# implementations possible, and easy.
 
 #
 # Things that can be implemented by simply using the appropriate

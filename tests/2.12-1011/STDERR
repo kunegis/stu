@@ -1,0 +1,4 @@
+main.stu:1:11: "C" cannot be declared as nul-separated
+main.stu:1:9: using -0
+main.stu:1:5: in concatenation to "B"
+main.stu:1:5: "BC" is needed by "A"

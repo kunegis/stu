@@ -72,7 +72,7 @@ public:
 		const Place &place_end,
 		Place_Name &input,
 		Place &place_input);
-	/* DEPS is filled.  DEPS is empty when called. */
+	/* DEPS gets filled.  DEPS is empty when called. */
 
 	static void get_expression_list_delim(
 		std::vector <shared_ptr <const Dep> > &deps,

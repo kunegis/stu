@@ -3,8 +3,8 @@
 void explain_clash()
 {
 	if (! option_E) return;
-	fputs("Explanation: A dependency cannot be declared as persistent (with '-p') and\n"
-		"optional (with '-o') at the same time, as that would mean that its\n"
+	fputs("Explanation: A dependency must not be declared as persistent (with '-p')\n"
+		"and optional (with '-o') at the same time, as that would mean that its\n"
 		"command is never executed.\n",
 		stderr);
 }
@@ -20,8 +20,8 @@ void explain_cycle()
 void explain_dynamic_no_param()
 {
 	if (! option_E) return;
-	fputs("Explanation: Dynamic dependencies cannot contain parameters introduced\n"
-		"with '$s'.\n",
+	fputs("Explanation: Dynamic dependencies must not contain parameters introduced\n"
+		"using '$'.\n",
 		stderr);
 }
 
@@ -134,7 +134,7 @@ void explain_startup_time()
 void explain_target_flags()
 {
 	if (! option_E) return;
-	fputs("Explanation: Only the flags -p and -o can be used before targets of a\n"
+	fputs("Explanation: Only the flags -p/-o/-P can be used before targets of a\n"
 		"rule.  In that case, the flags will always apply to that target.  Flags\n"
 		"cannot be used before phony targets.  If a rule has multiple targets,\n"
 		"each flag only applies to the target immediately following it.\n",
@@ -144,7 +144,7 @@ void explain_target_flags()
 void explain_variable_equal()
 {
 	if (! option_E) return;
-	fputs("Explanation: The name of an environment variable cannot contain the\n"
+	fputs("Explanation: The name of an environment variable must not contain the\n"
 		"equal sign '=', because the operating system uses '=' as a delimiter\n"
 		"when passing environment variables to child processes.\n"
 		"The syntax $[VARIABLENAME = FILENAME] can be used to use a different\n"

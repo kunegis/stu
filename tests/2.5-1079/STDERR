@@ -1,1 +1,1 @@
-X:1:1: %include must not appear in dynamic dependencies
+X:1:1: %include cannot appear in dynamic dependencies

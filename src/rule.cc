@@ -6,7 +6,7 @@ Rule::Rule(
 	const Place &place_,
 	const shared_ptr <const Command> &command_,
 	const Place_Name &place_name_input_,
-	bool is_hardcode_,
+	bool is_content_,
 	int output_redirect_index_,
 	bool is_copy_)
 	: targets(targets_),
@@ -15,7 +15,7 @@ Rule::Rule(
 	  command(command_),
 	  place_name_input(place_name_input_),
 	  output_redirect_index(output_redirect_index_),
-	  is_hardcode(is_hardcode_),
+	  is_content(is_content_),
 	  is_copy(is_copy_)
 { }
 
@@ -23,7 +23,7 @@ Rule::Rule(
 	std::vector <shared_ptr <const Plain_Dep> > &&targets_,
 	const std::vector <shared_ptr <const Dep> > &deps_,
 	shared_ptr <const Command> command_,
-	bool is_hardcode_,
+	bool is_content_,
 	int output_redirect_index_,
 	const Place_Name &place_name_input_)
 	: targets(targets_),
@@ -32,14 +32,15 @@ Rule::Rule(
 	  command(command_),
 	  place_name_input(place_name_input_),
 	  output_redirect_index(output_redirect_index_),
-	  is_hardcode(is_hardcode_),
+	  is_content(is_content_),
 	  is_copy(false)
 {
 	assert(targets.size() != 0);
 	assert(output_redirect_index >= -1);
 	assert(output_redirect_index < (ssize_t) targets.size());
 	if (output_redirect_index >= 0) {
-		assert((targets[output_redirect_index]->flags & F_TARGET_PHONY) == 0);
+		assert((targets[output_redirect_index]->flags.get_flags()
+			& F_TARGET_PHONY) == 0);
 	}
 
 	/* Check that all dependencies only include
@@ -65,19 +66,17 @@ Rule::Rule(
 	  place(target_->place),
 	  place_name_input(*place_name_source_),
 	  output_redirect_index(-1),
-	  is_hardcode(false),
+	  is_content(false),
 	  is_copy(true)
 {
 	auto dep= std::make_shared <Plain_Dep>
 		(Place_Target(0, *place_name_source_));
 
 	if (! place_persistent.empty()) {
-		dep->flags |= F_PERSISTENT;
-		dep->places[I_PERSISTENT]= place_persistent;
+		dep->flags.add_placed_index(I_PERSISTENT, place_persistent);
 	}
 	if (! place_optional.empty()) {
-		dep->flags |= F_OPTIONAL;
-		dep->places[I_OPTIONAL]= place_optional;
+		dep->flags.add_placed_index(I_OPTIONAL, place_optional);
 	}
 
 	deps.push_back(dep);
@@ -109,7 +108,7 @@ shared_ptr <const Rule> Rule::instantiate(
 		move(place_targets),
 		move(deps), rule->place, rule->command,
 		*place_name_input,
-		rule->is_hardcode, rule->output_redirect_index,
+		rule->is_content, rule->output_redirect_index,
 		rule->is_copy);
 }
 
@@ -162,7 +161,7 @@ void Rule::check_unparametrized(
 			if (parameters.count(parameter) != 0) continue;
 
 			plain_dep->place_target.place_name.get_places()[jj] <<
-				fmt("parameter %s must not appear in dependency %s",
+				fmt("parameter %s cannot appear in dependency %s",
 					show_prefix("$", parameter),
 					show(plain_dep->place_target));
 			if (targets.size() == 1) {
@@ -189,7 +188,7 @@ void Rule::check_duplicate_target() const
 				.equals_same_length(targets[j]->place_target))
 				continue;
 			targets[i]->place <<
-				fmt("there must not be a target %s",
+				fmt("there cannot be a target %s",
 					show(targets[i]));
 			targets[j]->place <<
 				fmt("shadowing target %s of the same rule",
@@ -264,7 +263,7 @@ shared_ptr <const Rule> Rule_Set::get(
 				found= true;
 		}
 		assert(found);
-#endif
+#endif /* ! NDEBUG */
 		param_rule= rule;
 		target_plain_dep= rule->targets[index];
 		TRACE("target_plain_dep= %s", show_trace(target_plain_dep));
@@ -342,7 +341,7 @@ void Rule_Set::print_for_option_I() const
 		if (rule.must_exist())
 			continue;
 		for (auto target: rule.targets) {
-			if (target->flags & F_TARGET_PHONY)
+			if (target->flags.get_flags() & F_TARGET_PHONY)
 				continue;
 			filenames.insert(
 				show(target->place_target.place_name, S_OPTION_I, R_GLOB));
@@ -352,7 +351,7 @@ void Rule_Set::print_for_option_I() const
 		if (rule->must_exist())
 			continue;
 		for (auto target: rule->targets) {
-			if (target->flags & F_TARGET_PHONY)
+			if (target->flags.get_flags() & F_TARGET_PHONY)
 				continue;
 			filenames.insert(
 				show(target->place_target.place_name, S_OPTION_I, R_GLOB));
@@ -370,7 +369,7 @@ void Rule_Set::add_unparametrized_rule(shared_ptr <Rule> rule)
 		Hash_Dep hash_dep= t->place_target.unparametrized();
 		if (rules_unparam.count(hash_dep)) {
 			t->place <<
-				fmt("there must not be a second rule for target %s",
+				fmt("there cannot be a second rule for target %s",
 					show(hash_dep));
 			auto rule_2= rules_unparam.at(hash_dep);
 			for (auto t2: rule_2.second->targets) {
@@ -443,7 +442,7 @@ void Best_Rule_Finder::add(const Hash_Dep &hash_dep, shared_ptr <const Rule> rul
 
 		/* The parametrized rule is of another type */
 		if (hash_dep.get_front_word() !=
-		    (t->flags & F_TARGET_PHONY))
+			(t->flags.get_flags() & F_TARGET_PHONY))
 			continue;
 
 		/* The parametrized rule does not match */

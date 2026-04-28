@@ -17,10 +17,8 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				place << "expected a non-empty argument";
 				exit(ERROR_FATAL);
 			}
-			deps.push_back
-				(std::make_shared <Plain_Dep>
-					(0, Place_Target
-						(0, Place_Name(optarg, place))));
+			deps.push_back(std::make_shared <Plain_Dep> (
+				Place_Target(0, Place_Name(optarg, place))));
 			break;
 		}
 
@@ -62,12 +60,12 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				place << "expected a non-empty argument";
 				exit(ERROR_FATAL);
 			}
-			deps.push_back
-				(std::make_shared <Dynamic_Dep>
-					(0, std::make_shared <Plain_Dep>
-						(1 << flag_get_index(c),
-							Place_Target
-							(0, Place_Name(optarg, place)))));
+			Place_Flags place_flags;
+			place_flags.add_placed_index(flag_get_index(c), place);
+			deps.push_back(std::make_shared <Dynamic_Dep> (
+				std::make_shared <Plain_Dep> (
+					place_flags,
+					Place_Target(0, Place_Name(optarg, place)))));
 			break;
 		}
 
@@ -79,19 +77,18 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				place << "expected a non-empty argument";
 				exit(ERROR_FATAL);
 			}
-			int index= flag_get_index(c);
-			Place places[C_PLACED];
-			places[index]= place;
+			Index index= flag_get_index(c);
+			Place_Flags flags;
+			flags.add_placed_index(index, place);
 			deps.push_back(std::make_shared <Plain_Dep>
-				(1 << flag_get_index(c), places,
-					Place_Target(0, Place_Name(optarg, place))));
+				(flags, Place_Target(0, Place_Name(optarg, place))));
 			break;
 		}
 
 		default:
 			/* Invalid option -- an error message was
 			 * already printed by getopt() */
-			string text= show(frmt("%s --help", dollar_zero));
+			string text= show(frmt("%s --help", program_name));
 			fprintf(stderr, "To get a list of all options, use %s\n",
 				text.c_str());
 			exit(ERROR_FATAL);
@@ -121,7 +118,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			error |= ERROR_LOGICAL;
 		} else if (option_J) {
 			deps.push_back(std::make_shared <Plain_Dep>
-				(0, Place_Target(0, Place_Name(argv[i], place))));
+				(Place_Target(0, Place_Name(argv[i], place))));
 		}
 	}
 
@@ -129,7 +126,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 		Parser::get_target_arg(deps, argc - optind, argv + optind);
 
 	if (option_I + option_P + option_q >= 2) {
-		print_error("options -I/-P/-q must not be used together");
+		print_error("options -I/-P/-q cannot be used together");
 		exit(ERROR_FATAL);
 	}
 
@@ -191,6 +188,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 
 void Invocation::main_loop()
 {
+	TRACE_FUNCTION();
 	assert(options_jobs >= 0);
 	Root_Executor *root_executor= new Root_Executor(deps);
 	int error= 0;

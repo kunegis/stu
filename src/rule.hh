@@ -33,7 +33,7 @@ public:
 
 	const shared_ptr <const Command> command;
 	/* The command (optional).  Contains its own place, as it is a token.  Null when
-	 * the rule does not have a command, i.e., ends in a semicolon ';'.  For hardcoded
+	 * the rule does not have a command, i.e., ends in a semicolon ';'.  For content
 	 * rules, the content of the file (not optional). */
 
 	const Place_Name place_name_input;
@@ -46,8 +46,9 @@ public:
 	 * applied.  -1 if no output redirection is used. The target with that index is a
 	 * file target. */
 
-	const bool is_hardcode;
-	/* Whether the command is a command or hardcoded content */
+	const bool is_content;
+	/* The rule is content rule; i.e., the command represents the content, not an
+	 * actual command. */
 
 	const bool is_copy;
 	/* Whether the rule is a copy rule, i.e., declared with '=' followed by a
@@ -58,7 +59,7 @@ public:
 	     const Place &place_,
 	     const shared_ptr <const Command> &command_,
 	     const Place_Name &place_name_input_,
-	     bool is_hardcode_,
+	     bool is_content_,
 	     int output_redirect_index_,
 	     bool is_copy_);
 	/* Direct constructor that specifies everything; no checks, initialization or
@@ -67,7 +68,7 @@ public:
 	Rule(std::vector <shared_ptr <const Plain_Dep> > &&place_targets_,
 	     const std::vector <shared_ptr <const Dep> > &deps_,
 	     shared_ptr <const Command> command_,
-	     bool is_hardcode_,
+	     bool is_content_,
 	     int output_redirect_index_,
 	     const Place_Name &place_name_input_);
 	/* Regular rule:  all cases except copy rules */
@@ -85,7 +86,7 @@ public:
 
 	/* A rule in which the targets must exist */
 	bool must_exist() const {
-		return command == nullptr && !is_hardcode && !is_copy;
+		return command == nullptr && !is_content && !is_copy;
 	}
 
 	void render(Parts &, Rendering= 0) const;

@@ -275,7 +275,7 @@ void Tokenizer::parse_tokens_arg(
 					show_operator('-'));
 				throw ERROR_LOGICAL;
 			}
-			if (! Tokenizer::is_valid_flag_char(*p)) {
+			if (! is_placed_flag_char(*p)) {
 				if (isalnum(*p)) {
 					place << fmt("invalid flag %s", show(Flag_View(*p)));
 				} else {
@@ -560,7 +560,7 @@ void Tokenizer::parse_flag_or_name()
 			throw ERROR_LOGICAL;
 		}
 		char flag_char= *p;
-		if (! is_any_flag_char(flag_char)) {
+		if (! isalnum(flag_char)) {
 			current_place() <<
 				fmt("expected a flag character, not %s",
 					show(string(1, flag_char)));
@@ -572,7 +572,7 @@ void Tokenizer::parse_flag_or_name()
 		shared_ptr <Flag_Token> token;
 		do {
 			flag_char= *p;
-			if (! is_valid_flag_char(flag_char)) {
+			if (! is_placed_flag_char(flag_char)) {
 				current_place() <<
 					fmt("invalid flag %s", show(Flag_View(flag_char)));
 				explain_flags();
@@ -582,7 +582,7 @@ void Tokenizer::parse_flag_or_name()
 				(flag_char, current_place(), environment);
 			tokens.push_back(token);
 			++p;
-		} while (p < p_end && is_any_flag_char(*p));
+		} while (p < p_end && isalnum(*p));
 		if (p < p_end &&
 			(is_name_char(*p) || *p == '"' || *p == '\'' || *p == '$'
 				|| *p == '@')) {
@@ -711,7 +711,7 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 			throw ERROR_LOGICAL;
 		} else if (*p != '}') {
 			current_place() <<
-				fmt("character %s must not appear",
+				fmt("character %s cannot appear",
 				    show(current_mbchar()));
 			place_dollar <<
 				fmt("in parameter started by %s",
@@ -764,22 +764,6 @@ bool Tokenizer::is_name_char(char c)
 bool Tokenizer::is_operator_char(char c)
 {
 	return c != '\0' && nullptr != strchr(":<>=@;()[],|", c);
-}
-
-bool Tokenizer::is_any_flag_char(char c)
-{
-	return isalnum(c);
-}
-
-bool Tokenizer::is_valid_flag_char(char c)
-{
-	return
-		c == flags_chars[I_PERSISTENT] ||
-		c == flags_chars[I_OPTIONAL] ||
-		c == flags_chars[I_TRIVIAL] ||
-		c == flags_chars[I_NEWLINE_SEPARATED] ||
-		c == flags_chars[I_NUL_SEPARATED] ||
-		c == flags_chars[I_CODE];
 }
 
 void Tokenizer::parse_version(
@@ -1169,13 +1153,13 @@ void Tokenizer::parse_include_directive(
 	TRACE_FUNCTION();
 	if (context == DYNAMIC) {
 		place_percent
-			<< fmt("%s must not appear in dynamic dependencies",
+			<< fmt("%s cannot appear in dynamic dependencies",
 				show_operator("%include"));
 		throw ERROR_LOGICAL;
 	}
 	if (context == OPTION_C || context == OPTION_F) {
 		place_percent
-			<< fmt("%s must not be used", show_operator("%include"));
+			<< fmt("%s cannot be used", show_operator("%include"));
 		throw ERROR_LOGICAL;
 	}
 

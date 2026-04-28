@@ -2,22 +2,10 @@ Flags are an element of syntax in Stu script that look like options in the shell
 apply to dependencies. They can be thought as applying to each edge in the dependency
 graph.
 
--o   Optional dependency
--p   Persistent dependency
--t   Trivial dependency
-
-(The flags -o and -p are mutually exclusive.)
-
-Dynamic dependency flags:
--0   \0 separated
--n   \n separated
--C   Use Stu syntax (default)
+The currently existing flags are listed in the manpage.
 
 Possible future flags:
--L   Follow symlinks
--d   Change directory
--a   Additional dependencies
--s   Secondary
--c   Command
--i   Interactive (following commands needs to be executed in the foreground)
+-d         Change directory
+-i         Interactive (following commands needs to be executed in the foreground)
+-a/-s      Additional dependencies
 <...and others...>

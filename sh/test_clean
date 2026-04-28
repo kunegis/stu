@@ -227,12 +227,6 @@ check_seq()
 }
 
 check_test_own_name || ret=1
-check_newline_eof || ret=1
-check_space_file || ret=1
-check_space_line || ret=1
-check_double_empty_line || ret=1
-check_midline_tab || ret=1
-check_manpage_tab || ret=1
 check_backtick || ret=1
 check_escape || ret=1
 check_control || ret=1
@@ -243,6 +237,12 @@ check_assert_false || ret=1
 check_null || ret=1
 check_preload || ret=1
 check_seq || ret=1
+check_newline_eof || ret=1
+check_space_file || ret=1
+check_space_line || ret=1
+check_double_empty_line || ret=1
+check_midline_tab || ret=1
+check_manpage_tab || ret=1
 
 [ -e "$error_file" ] && ret=1
 exit "$ret"

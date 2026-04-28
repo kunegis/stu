@@ -1,0 +1,4 @@
+main.stu:1:11: "C" cannot be declared as stu-syntax
+main.stu:1:9: using -C
+main.stu:1:5: in concatenation to "B"
+main.stu:1:5: "BC" is needed by "A"

@@ -14,8 +14,14 @@ A { touch A ; }
 # Error: The command started by '{' is not closed
 A { touch A }
 
+# As a special rule, all nothing or whitespace (maybe)
+A {}
+A {    }
+A {
+}
+
 #
-# Disallow a mix of phony and files as targets in the same rule.
+# Disallow a mix of phony and files as targets in the same rule. (probably not)
 #
 
 # This is an error
@@ -30,12 +36,6 @@ A: B { cp B A ; }
 # case where '@x' is not used as a target.  The way to rewrite this
 # shown above lets people use -o @x as intended, without the need for
 # the extra rules for mixed targets that we have at the moment.
-
-#
-# Don't allow both phonines and files as targets in the same
-# rule.  Also, never allow multiple phony targets.  Then,
-# File_Execution will not have to support phony targets anymore.
-#
 
 #
 # The 'trivial' flag '-t' should "go up" when applied to the
@@ -107,7 +107,7 @@ V {
 #
 
 #
-# Make the %version mandatory in every file, to avoid parsing a file of
+# Make the %version declaration mandatory in every file, to avoid parsing a file of
 # the wrong Stu version.
 #
 
@@ -124,6 +124,6 @@ V {
 #
 
 #
-# Maybe write parameters with paratheses as $(param_name), and reserve $param_name and
+# Write parameters with parentheses as $(param_name), and reserve $param_name and
 # ${param_name} for environment variables.
 #

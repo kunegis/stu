@@ -199,8 +199,8 @@ void Trace::error(string message)
 {
 	if (!message.empty()) {
 		fprintf(stderr, "%s%sTrace error: %s\n",
-			dollar_zero ? dollar_zero : "",
-			dollar_zero ? ": " : "",
+			program_name ? program_name : "",
+			program_name ? ": " : "",
 			message.c_str());
 	}
 	exit(ERROR_TRACE);

@@ -41,9 +41,9 @@ void Executor::read_dynamic(
 
 		/* Check:  variable dependencies are not allowed in multiply dynamic
 		 * dependencies. */
-		if (dep_target->flags & F_VARIABLE) {
+		if (dep_target->flags.get_flags() & F_VARIABLE) {
 			dep_target->get_place() <<
-				fmt("variable dependency %s must not appear",
+				fmt("variable dependency %s cannot appear",
 					::show(dep_target));
 			*this << fmt("within multiply-dynamic dependency %s",
 				::show(dep));
@@ -55,10 +55,12 @@ void Executor::read_dynamic(
 		assert(hash_dep.is_file());
 		string filename= hash_dep.get_name_nondynamic();
 
-		bool delim= (dep_target->flags & (F_NEWLINE_SEPARATED | F_NUL_SEPARATED));
+		bool delim= (dep_target->flags.get_flags()
+			& (F_NEWLINE_SEPARATED | F_NUL_SEPARATED));
 		/* Whether the dynamic dependency is delimiter-separated */
 
-		bool allow_enoent= dep_target->flags & (F_OPTIONAL | F_TRIVIAL);
+		bool allow_enoent= dep_target->flags.get_flags()
+			& (F_OPTIONAL | F_TRIVIAL);
 
 		if (! delim) {
 			/* Dynamic dependency in full Stu syntax */
@@ -100,8 +102,10 @@ void Executor::read_dynamic(
 
 		} else {
 			/* Delimiter-separated dynamic dependency (-n/-0) */
-			const char c= (dep_target->flags & F_NEWLINE_SEPARATED) ? '\n' : '\0';
-			const char c_printed= (dep_target->flags & F_NEWLINE_SEPARATED) ? 'n' : '0';
+			const char c= (dep_target->flags.get_flags()
+				& F_NEWLINE_SEPARATED) ? '\n' : '\0';
+			const char c_printed= (dep_target->flags.get_flags()
+				& F_NEWLINE_SEPARATED) ? 'n' : '0';
 			try {
 				Parser::get_expression_list_delim(
 					deps, filename.c_str(),
@@ -196,18 +200,12 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		if (executor->parents.count(this)) {
 			TRACE("Already connected");
 			/* Add necessary flags */
-			Flags flags= dep->flags;
-			if (flags & ~executor->parents.at(this)->flags) {
+			Flags flags= dep->flags.get_flags();
+			if (flags & ~executor->parents.at(this)->flags.get_flags()) {
 				TRACE("Has new flags");
 				shared_ptr <Dep> dep_new=
 					executor->parents.at(this)->clone();
-				for (int i= 0; i < C_PLACED; ++i) {
-					if ((flags & (1 << i))
-						&& ! (dep_new->flags & (1 << i))) {
-						dep_new->places[i]= dep->places[i];
-					}
-				}
-				dep_new->flags |= flags;
+				dep_new->flags.add(dep->flags, F_PLACED);
 				dep_new->check();
 				dep= dep_new;
 				/* No need to check for cycles here, because a link
@@ -264,7 +262,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			use_file_executor= true;
 		} else {
 			for (auto &i: rule_child->targets) {
-				if ((i->flags & F_TARGET_PHONY) == 0)
+				if ((i->flags.get_flags() & F_TARGET_PHONY) == 0)
 					use_file_executor= true;
 			}
 		}
@@ -272,12 +270,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		if (target_plain_dep) {
 			TRACE("Adding target_plain_dep");
 			shared_ptr <Dep> dep_new= dep->clone();
-			for (int i= 0; i < C_TARGET_PLACED; ++i) {
-				if ((target_plain_dep->flags & (1 << i)) == 0) continue;
-				if (dep_new->flags & (1 << i)) continue;
-				dep_new->flags |= 1 << i;
-				dep_new->places[i]= target_plain_dep->places[i];
-			}
+			dep_new->flags.add(dep->flags, F_COMMON_PLACED);
+			dep_new->flags.add(target_plain_dep->flags);
 			dep= dep_new;
 		}
 
@@ -379,7 +373,7 @@ void Executor::operator<<(string text) const
 		text_parent= show(depp);
 
 		/* Don't show left-branch edges of dynamic executors */
-		if (hide_link_from_message(depp_old->flags)) {
+		if (hide_link_from_message(depp_old->flags.get_flags())) {
 			continue;
 		}
 
@@ -450,10 +444,10 @@ Proceed Executor::execute_children()
 		Proceed proceed_child= child->execute(dep_child);
 		TRACE("proceed_child= %s", show(proceed_child));
 		TRACE("child->finished(dep_child->flags)= %s",
-			frmt("%d", child->finished(dep_child->flags)));
+			frmt("%d", child->finished(dep_child->flags.get_flags())));
 		assert(is_valid(proceed_child));
 		assert((proceed_child == P_NOTHING) !=
-		       ((child->finished(dep_child->flags)) == 0));
+			((child->finished(dep_child->flags.get_flags())) == 0));
 
 		proceed_all |= proceed_child;
 		/* The finished flag of the child only applies to the
@@ -517,7 +511,7 @@ void Executor::push_normalized(shared_ptr <const Dep> dep)
 		TRACE("To buffer_B");
 		TRACE("untrivialized= %s", show_trace(untrivialized));
 		shared_ptr <Dep> dep_b= untrivialized->clone();
-		dep_b->flags |= F_PHASE_B;
+		dep_b->flags.add_unplaced_flags(F_PHASE_B);
 		buffer_B.push(dep_b);
 	} else {
 		TRACE("To buffer_A");
@@ -539,35 +533,36 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 	TRACE("dep_child= %s", show_trace(dep_child));
 	assert(child);
 	assert(child != this);
-	assert(child->finished(dep_child->flags));
+	assert(child->finished(dep_child->flags.get_flags()));
 	assert(option_k || child->error == 0);
 	dep_child->check();
 
-	bool child_was_phase_B= dep_child->flags & F_PHASE_B;
+	bool child_was_phase_B= dep_child->flags.get_flags() & F_PHASE_B;
 	TRACE("child_was_phase_B= %s", frmt("%d", child_was_phase_B));
-	bool child_finished_for_B= child->finished(dep_child->flags | F_PHASE_B);
+	bool child_finished_for_B= child->finished(
+		dep_child->flags.get_flags() | F_PHASE_B);
 	TRACE("child_finished_for_B= %s", frmt("%d", child_finished_for_B));
 
-	if (dep_child->flags & F_RESULT
+	if (dep_child->flags.get_flags() & F_RESULT
 		&& dynamic_cast <File_Executor *> (child)
 		&& (child_was_phase_B || child_finished_for_B)) {
 		shared_ptr <Dep> d= dep_child->clone();
-		d->flags &= ~F_RESULT;
-		notify_result(d, child, dep_child->flags & F_RESULT, dep_child);
+		d->flags.remove_unplaced_flags(F_RESULT);
+		notify_result(d, child,
+			dep_child->flags.get_flags() & F_RESULT, dep_child);
 	}
 
 	if (! child_was_phase_B && ! child_finished_for_B) {
 		TRACE("Moving child to phase B");
 		shared_ptr <Dep> d= dep_child->clone();
-		d->flags |= F_PHASE_B;
+		d->flags.add_unplaced_flags(F_PHASE_B);
 		TRACE("d= %s", show_trace(d));
 		buffer_B.push(d);
 	}
 
 	/* Propagate timestamp */
 	/* Don't propagate the timestamp of the dynamic dependency itself */
-	if (! (dep_child->flags & F_PERSISTENT) &&
-	    ! (dep_child->flags & F_RESULT_NOTIFY)) {
+	if ((dep_child->flags.get_flags() & (F_PERSISTENT | F_RESULT_NOTIFY)) == 0) {
 		if (child->timestamp.defined()) {
 			if (! timestamp.defined()) {
 				timestamp= child->timestamp;
@@ -578,7 +573,7 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 	}
 
 	/* Propagate variables */
-	if ((dep_child->flags & F_VARIABLE)) {
+	if ((dep_child->flags.get_flags() & F_VARIABLE)) {
 		assert(dynamic_cast <File_Executor *> (child));
 		dynamic_cast <File_Executor *> (child)->read_variable(dep_child);
 	}
@@ -597,7 +592,9 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 
 	/* Don't propagate the NEED_BUILD flag via F_RESULT_NOTIFY links: It just means the
 	 * list of depenencies have changed, not the dependencies themselves. */
-	if (child->state & State::NEED_BUILD && ! (dep_child->flags & F_RESULT_NOTIFY)) {
+	if (child->state & State::NEED_BUILD &&
+		! (dep_child->flags.get_flags() & F_RESULT_NOTIFY))
+	{
 		state |= State::NEED_BUILD;
 	}
 
@@ -623,7 +620,7 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	TRACE_FUNCTION(show_trace(dep_link));
 	assert(options_jobs > 0);
 	assert(dep_link);
-	if (finished(dep_link->flags)) {
+	if (finished(dep_link->flags.get_flags())) {
 		TRACE("Finished");
 		return P_NOTHING;
 	}
@@ -747,7 +744,7 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 	TRACE("dd= %s", show_trace(dd));
 
 	assert(! dynamic_cast <File_Executor *> (this));
-	assert(! (dd->flags & F_RESULT_NOTIFY));
+	assert(! (dd->flags.get_flags() & F_RESULT_NOTIFY));
 	dd->check();
 
 	/* Add to own */
@@ -755,7 +752,8 @@ void Executor::push_result(shared_ptr <const Dep> dd)
 
 	/* Notify parents */
 	for (auto &i: parents) {
-		Flags flags= i.second->flags & (F_RESULT_NOTIFY | F_RESULT_COPY);
+		Flags flags= i.second->flags.get_flags()
+			& (F_RESULT_NOTIFY | F_RESULT_COPY);
 		if (flags) {
 			i.first->notify_result(dd, this, flags, i.second);
 		}
@@ -768,6 +766,8 @@ Hash_Dep Executor::get_target_for_cache(Hash_Dep hash_dep)
 		/* For file targets, we don't use flags for hashing.
 		 * Zero is the word for file targets. */
 		hash_dep.get_front_word_nondynamic()= (word_t)0;
+	} else {
+		hash_dep.get_front_word_any() &= (word_t)F_CACHE;
 	}
 
 	return hash_dep;
@@ -802,13 +802,14 @@ Proceed Executor::connect(
 	assert(! to <Root_Dep> (dep_child));
 	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);
 
-	/* '-o' does not mix with '$[' */
-	if (dep_child->flags & F_VARIABLE && dep_child->flags & F_OPTIONAL) {
+	if ((dep_child->flags.get_flags() & (F_VARIABLE | F_OPTIONAL))
+		== (F_VARIABLE | F_OPTIONAL))
+	{
 		shared_ptr <const Plain_Dep> plain_dep_child= to <Plain_Dep> (dep_child);
 		assert(plain_dep_child);
-		assert(!(dep_child->flags & F_TARGET_PHONY));
+		assert(!(dep_child->flags.get_flags() & F_TARGET_PHONY));
 		const Place &place_variable= dep_child->get_place();
-		const Place &place_flag= dep_child->get_place_flag(I_OPTIONAL);
+		const Place &place_flag= dep_child->flags.place_by_index(I_OPTIONAL);
 		place_variable <<
 			fmt("variable dependency %s must not be declared as optional dependency",
 			    show_dynamic_variable
@@ -824,18 +825,22 @@ Proceed Executor::connect(
 		return P_NOTHING;
 	}
 	children.insert(child);
-	if (dep_child->flags & F_RESULT_NOTIFY) {
-		for (const auto &dependency: child->result[(dep_child->flags & F_PHASE_B) != 0])
+	if (dep_child->flags.get_flags() & F_RESULT_NOTIFY) {
+		for (const auto &dependency:
+			     child->result[(dep_child->flags.get_flags() & F_PHASE_B) != 0])
 			this->notify_result(dependency, this, F_RESULT_NOTIFY, dep_child);
 	}
 	dep_child= child->parents[this];
 	assert(dep_child);
 	dep_child->check();
 
-	/* '-p' and '-o' do not mix */
-	if (dep_child->flags & F_PERSISTENT && dep_child->flags & F_OPTIONAL) {
-		const Place &place_persistent= dep_child->get_place_flag(I_PERSISTENT);
-		const Place &place_optional= dep_child->get_place_flag(I_OPTIONAL);
+	if ((dep_child->flags.get_flags() & (F_PERSISTENT | F_OPTIONAL))
+		== (F_PERSISTENT | F_OPTIONAL))
+	{
+		const Place &place_persistent=
+			dep_child->flags.place_by_index(I_PERSISTENT);
+		const Place &place_optional=
+			dep_child->flags.place_by_index(I_OPTIONAL);
 		place_persistent <<
 			fmt("declaration of persistent dependency using %s",
 				show(Flag_View(flags_chars[I_PERSISTENT])));
@@ -859,7 +864,7 @@ Proceed Executor::connect(
 	assert(is_valid(proceed_child));
 	if (proceed_child & (P_WAIT | P_CALL_AGAIN))
 		return proceed_child;
-	bool child_finished= child->finished(dep_child->flags);
+	bool child_finished= child->finished(dep_child->flags.get_flags());
 	TRACE("child_finished= %s", frmt("%d", child_finished));
 	if (child_finished) {
 		disconnect(child, dep_child);

@@ -1,0 +1,3 @@
+# Error: -P cannot be used for content rules.
+
+-P A = {content}

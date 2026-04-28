@@ -34,7 +34,7 @@ Concat_Executor::Concat_Executor(
 			/* This is the only place where Dependency::index is set to
 			 * another value than -1. */
 			shared_ptr <Dep> dep_child= dynamic_d->dep->clone();
-			dep_child->flags |= F_RESULT_NOTIFY;
+			dep_child->flags.add_unplaced_index(I_RESULT_NOTIFY);
 			dep_child->index= i;
 			push_normalized(dep_child);
 		} else {
@@ -137,17 +137,14 @@ void Concat_Executor::launch_stage_normal()
 
 	for (auto f: deps) {
 		shared_ptr <Dep> f2= f->clone();
+
 		/* Add -% flag */
-		f2->flags |= F_RESULT_COPY;
+		f2->flags.add_unplaced_index(I_RESULT_COPY);
+
 		/* Add flags from self */
-		f2->flags |= dep->flags & (F_WORD & ~F_TARGET_DYNAMIC);
-		for (unsigned i= 0; i < C_PLACED; ++i) {
-			if (f2->get_place_flag(i).empty()
-				&& ! dep->get_place_flag(i).empty())
-			{
-				f2->set_place_flag(i, dep->get_place_flag(i));
-			}
-		}
+		f2->flags.add(dep->flags, F_WORD & ~F_TARGET_DYNAMIC);
+
+		f2->flags.add(f->flags);
 		push(f2);
 	}
 }

@@ -14,7 +14,7 @@ void print_error(string message)
 	assert(islower(message[0]) || message[0] == '\'');
 	assert(message[message.size() - 1] != '\n');
 	fprintf(stderr, "%s%s%s: %s\n",
-		Color::stderr_err_on, dollar_zero, Color::stderr_err_off, message.c_str());
+		Color::stderr_err_on, program_name, Color::stderr_err_off, message.c_str());
 }
 
 void print_error_reminder(string message)
@@ -23,7 +23,7 @@ void print_error_reminder(string message)
 	assert(islower(message[0]) || message[0] == '\'');
 	assert(message[message.size() - 1] != '\n');
 	fprintf(stderr, "%s%s%s: %s\n",
-		Color::stderr_warn_on, dollar_zero, Color::stderr_warn_off,
+		Color::stderr_warn_on, program_name, Color::stderr_warn_off,
 		message.c_str());
 }
 
@@ -57,7 +57,7 @@ void print_errno_bare(string text) /* uncovered */
 	TRACE("text= '%s'", text);
 	assert(text.size() > 0);
 	fprintf(stderr, "%s%s%s: %s: %s\n",
-		Color::stderr_err_on, dollar_zero, Color::stderr_err_off,
+		Color::stderr_err_on, program_name, Color::stderr_err_off,
 		text.c_str(), strerror(errno));
 }
 
@@ -101,6 +101,7 @@ void print_error_silenceable(const char *text)
 [[noreturn]]
 void error_exit()
 {
+	TRACE_FUNCTION();
 	Job_List::terminate_jobs(false);
 	exit(ERROR_FATAL);
 }

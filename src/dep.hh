@@ -34,6 +34,7 @@
 #include "hints.hh"
 #include "options.hh"
 #include "place.hh"
+#include "place_flags.hh"
 
 template <typename T, typename U>
 shared_ptr <const T> to(shared_ptr <const U> d)
@@ -66,61 +67,29 @@ class Dep
  */
 {
 public:
-	Flags flags;
-
-	Place places[C_PLACED];
-	/* For each transitive flag that is set, the place.  An empty place if a flag is
-	 * not set. */
+	Place_Flags flags;
 
 	shared_ptr <const Dep> top;
 	/* Additional place used for constructing traces.  Most of the properties (such as
 	 * extra flags) are ignored. */
 
-	ssize_t index;
+	ssize_t index= -1;
 	/* Used by concatenated executors; the index of the dependency within the array of
 	 * concatenation.  -1 when not used. */
 
-	Dep(): flags(0), index(-1) { }
-	Dep(Flags flags_): flags(flags_), index(-1) { }
-
-	Dep(Flags flags_, const Place places_[C_PLACED])
-		: flags(flags_), index(-1)
-	{
-		assert(places != places_);
-		for (unsigned i= 0;  i < C_PLACED;  ++i)
-			places[i]= places_[i];
-	}
+	Dep() { }
+	Dep(const Place_Flags &flags_)
+		: flags(flags_) { }
 
 	Dep(const Dep &that)
 		: std::enable_shared_from_this <Dep> (that),
-		  flags(that.flags), top(that.top), index(that.index)
+		  flags(that.flags),
+		  top(that.top), index(that.index)
 	{
 		assert(this != &that);
-		for (unsigned i= 0;  i < C_PLACED;  ++i)
-			places[i]= that.places[i];
 	}
 
 	virtual ~Dep()= default;
-
-	const Place &get_place_flag(unsigned i) const {
-		assert(i < C_PLACED);
-		return places[i];
-	}
-
-	Place &get_place_flag(unsigned i) {
-		assert(i < C_PLACED);
-		return places[i];
-	}
-
-	void set_place_flag(unsigned i, const Place &place) {
-		assert(i < C_PLACED);
-		places[i]= place;
-	}
-
-	void add_flags(shared_ptr <const Dep> dep,
-		       bool overwrite_places);
-	/* Add the flags from DEP.  Also copy over the corresponding places.  If a place
-	 * is already given in THIS, only copy a place over if OVERWRITE_PLACES is set. */
 
 	void normalize(
 		std::vector <shared_ptr <const Dep> > &deps,
@@ -193,27 +162,18 @@ public:
 	string variable_name;
 	/* With F_VARIABLE:  the name of the variable.  Otherwise:  empty. */
 
-	explicit Plain_Dep(const Place_Target &place_target_)
-		: Dep(place_target_.flags),
-		  place_target(place_target_),
+	explicit
+	Plain_Dep(const Place_Target &place_target_)
+		: place_target(place_target_),
 		  place(place_target_.place)
 	{
+		flags.add_unplaced_flags(place_target_.flags);
 		check();
 	}
 
-	Plain_Dep(Flags flags_, const Place_Target &place_target_)
+	Plain_Dep(const Place_Flags &place_flags_, const Place_Target &place_target_)
 		/* Take the dependency place from the target place */
-		: Dep(flags_), place_target(place_target_),
-		  place(place_target_.place)
-	{
-		check();
-	}
-
-	Plain_Dep(Flags flags_,
-		  const Place places_[C_PLACED],
-		  const Place_Target &place_target_)
-		/* Take the dependency place from the target place */
-		: Dep(flags_, places_),
+		: Dep(place_flags_),
 		  place_target(place_target_),
 		  place(place_target_.place)
 	{
@@ -221,12 +181,12 @@ public:
 	}
 
 	Plain_Dep(
-		Flags flags_,
+		const Place_Flags &place_flags_,
 		const Place_Target &place_target_,
 		const Place &place_,
 		std::string_view variable_name_)
 		/* Use an explicit dependency place */
-		: Dep(flags_),
+		: Dep(place_flags_),
 		  place_target(place_target_),
 		  place(place_),
 		  variable_name(variable_name_)
@@ -235,27 +195,11 @@ public:
 	}
 
 	Plain_Dep(
-		Flags flags_,
-		const Place places_[C_PLACED],
-		const Place_Target &place_target_,
-		const Place &place_,
-		std::string_view variable_name_)
-		/* Use an explicit dependency place */
-		: Dep(flags_, places_),
-		  place_target(place_target_),
-		  place(place_),
-		  variable_name(variable_name_)
-	{
-		check();
-	}
-
-	Plain_Dep(
-		Flags flags_,
-		const Place places_[C_PLACED],
+		const Place_Flags &place_flags_,
 		const Place_Target &place_target_,
 		std::string_view variable_name_)
 		/* Use an explicit dependency place */
-		: Dep(flags_, places_),
+		: Dep(place_flags_),
 		  place_target(place_target_),
 		  place(place_target_.place),
 		  variable_name(variable_name_)
@@ -295,8 +239,11 @@ public:
 
 	Dynamic_Dep(shared_ptr <const Dep> dep_)
 		/* Set the contained dependency.  Not a copy constructor. */
-		: Dep(F_TARGET_DYNAMIC), dep(dep_)
-	{ assert(dep_ != nullptr); }
+		: dep(dep_)
+	{
+		assert(dep_ != nullptr);
+		flags.add_unplaced_index(I_TARGET_DYNAMIC);
+	}
 
 	Dynamic_Dep(shared_ptr <const Dynamic_Dep> base_dep,
 		    shared_ptr <const Dep> inner)
@@ -304,18 +251,23 @@ public:
 
 	Dynamic_Dep(Flags flags_,
 		    shared_ptr <const Dep> dep_)
-		: Dep(flags_ | F_TARGET_DYNAMIC), dep(dep_)
+		: dep(dep_)
 	{
-		assert((flags & F_VARIABLE) == 0);
+		flags.add_unplaced_index(I_TARGET_DYNAMIC);
+		assert((flags_ & F_PLACED) == 0);
+		flags.add_unplaced_flags(flags_);
+		assert((flags.get_flags() & F_VARIABLE) == 0);
 		assert(dep_ != nullptr);
 	}
 
-	Dynamic_Dep(Flags flags_,
-		    const Place places_[C_PLACED],
-		    shared_ptr <const Dep> dep_)
-		: Dep(flags_ | F_TARGET_DYNAMIC, places_), dep(dep_)
+	Dynamic_Dep(
+		const Place_Flags &place_flags_,
+		shared_ptr <const Dep> dep_)
+		: Dep(place_flags_),
+		  dep(dep_)
 	{
-		assert((flags & F_VARIABLE) == 0); /* Variables cannot be dynamic */
+		flags.add_unplaced_index(I_TARGET_DYNAMIC);
+		assert(! flags.contains_index(I_VARIABLE));
 		assert(dep_ != nullptr);
 	}
 
@@ -366,9 +318,9 @@ public:
 	Concat_Dep() { }
 	/* An empty concatenation, i.e., a concatenation of zero dependencies */
 
-	Concat_Dep(Flags flags_, const Place places_[C_PLACED])
+	Concat_Dep(const Place_Flags &place_flags_)
 		/* The list of dependencies is empty */
-		: Dep(flags_, places_) { }
+		: Dep(place_flags_) { }
 
 	Concat_Dep(shared_ptr <const Dep> dep)
 		: Dep(*dep) { }
@@ -443,8 +395,11 @@ public:
 		/* Empty, with zero dependencies */
 		: place(place_) { }
 
-	Compound_Dep(Flags flags_, const Place places_[C_PLACED], const Place &place_)
-		: Dep(flags_, places_), place(place_)
+	Compound_Dep(
+		const Place_Flags &place_flags_,
+		const Place &place_)
+		: Dep(place_flags_),
+		  place(place_)
 	{ /* The list of dependencies is empty */ }
 
 	Compound_Dep(std::vector <shared_ptr <const Dep> > &&deps_,

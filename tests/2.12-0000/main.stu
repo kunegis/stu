@@ -1,0 +1,9 @@
+>A: B
+{
+	readlink B
+}
+
+-P B
+{
+	ln -s CORRECT B
+}

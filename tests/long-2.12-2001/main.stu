@@ -1,0 +1,5 @@
+-P A:
+{
+	ln -s dangling A
+	sleep 9
+}

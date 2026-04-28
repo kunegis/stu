@@ -1,0 +1,14 @@
+>A: X -o B
+{
+}
+
+>X
+{
+	touch Y
+	ln -s Y B
+}
+
+-P B
+{
+	exit 77
+}

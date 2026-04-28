@@ -35,10 +35,13 @@ void signal_handler_termination(int sig)
 /*
  * Terminate all jobs and quit.
  */
+/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
 {
-	/* [ASYNC-SIGNAL-SAFE] We use only async signal-safe functions here */
-
 	int errno_save= errno;
+
+	static volatile sig_atomic_t in_handler= 0;
+	if (in_handler) return;
+	in_handler= 1;
 
 	/* Reset the signal to its default action */
 	struct sigaction act;

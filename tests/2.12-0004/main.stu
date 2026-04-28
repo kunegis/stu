@@ -1,0 +1,11 @@
+>A: X B
+{
+	readlink B
+}
+
+>X
+{
+	ln -s CORRECT B
+}
+
+-P B;

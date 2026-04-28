@@ -1,0 +1,10 @@
+A: C
+{
+	readlink C >A
+}
+
+B -P C
+{
+	touch B
+	ln -s CORRECT C
+}

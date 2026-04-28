@@ -1,0 +1,3 @@
+# Error.  Can't output into a symlink.
+
+-P >A {} 

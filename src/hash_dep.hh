@@ -17,9 +17,10 @@
  * A dynamic is represented as a dynamic word (F_TARGET_DYNAMIC) followed by the string
  * representation of the contained dependency.
  *
- * Any of the front words may contain additional flag bits.  There may be '\0' bytes in
- * the front words, but the name does not contain nul, as that is invalid in names.  The
- * name proper (excluding front words) is non-empty, i.e., is at least one byte long.
+ * Any of the front words may contain additional flag bits, but only those in F_WORD.
+ * There may be '\0' bytes in the front words, but the name does not contain nul, as that
+ * is invalid in names.  The name proper (excluding front words) is non-empty, i.e., is at
+ * least one byte long.
  *
  * The empty string denotes a "null" value for the type Hash_Dep, or equivalently the
  * target of the root dependency, in which case most functions should not be used.
@@ -35,9 +36,9 @@ static_assert(sizeof(word_t) == sizeof(uint8_t) && C_WORD <= 8
 class Hash_Dep
 {
 public:
-	explicit Hash_Dep(std::string_view text_)
-		/* TEXT_ is the full text field of this Hash_Dep */
-		: text(text_) { }
+	explicit
+	Hash_Dep(std::string_view text_): text(text_) { }
+	/* TEXT_ is the full text field of this Hash_Dep */
 
 	Hash_Dep(Flags flags, string name)
 	/* A plain target */
@@ -117,6 +118,7 @@ public:
 	}
 
 	Flags get_front_word() const { return get_word(0); }
+	word_t &get_front_word_any() { return *(word_t *)&text[0]; }
 
 	word_t &get_front_word_nondynamic()
 	/* Get the front byte, given that the target is not dynamic */

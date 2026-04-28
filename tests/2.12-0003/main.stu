@@ -1,0 +1,1 @@
+A: X B {cp C A;} >X{ln -s C B;} B={CONTENT} # A must contain 'CONTENT'

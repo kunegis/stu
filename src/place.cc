@@ -21,9 +21,7 @@ void Place::print(string message,
 	case Type::EMPTY:
 		fprintf(stderr,
 			"%s%s%s: %s\n",
-			color_on,
-			dollar_zero,
-			color_off,
+			color_on, program_name, color_off,
 			message.c_str());
 		break;
 
@@ -44,9 +42,7 @@ void Place::print(string message,
 	case Type::ARGUMENT:
 		fprintf(stderr,
 			"%s%s%s: %s\n",
-			color_on,
-			dollar_zero,
-			color_off,
+			color_on, program_name, color_off,
 			message.c_str());
 		break;
 

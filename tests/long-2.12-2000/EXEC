@@ -1,0 +1,29 @@
+#!/bin/sh
+
+Error() # <message>
+{
+	message=$1
+	printf >&2 '%s\n' "$message"
+	printf >&2 '/----------- %s:\n' list.out
+	cat >&2 list.out
+	printf >&2 '\-----------\n'
+	printf >&2 '/----------- %s:\n' list.err
+	cat >&2 list.err
+	printf >&2 '\-----------\n'
+	exit 1
+}
+
+../../sh/rm_tmps || exit 2
+
+../../bin/stu.test >list.out 2>list.err &
+pid=$!
+
+sleep 1 || exit 2
+kill -s INT $pid || exit 2
+wait $pid
+exitstatus=$?
+
+[ -h A ] && Error "A must not exist"
+grep -q -F -e 'removing partially built files' list.err || Error "stderr"
+
+../../sh/rm_tmps || exit 2

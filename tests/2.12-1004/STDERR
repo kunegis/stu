@@ -1,0 +1,2 @@
+main.stu:1:2: flag -P cannot be used
+main.stu:1:4: before phony target @target

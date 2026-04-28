@@ -1,0 +1,2 @@
+main.stu:3:9: content rule using =
+main.stu:3:2: must not have target flag -P (no-follow)

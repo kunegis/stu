@@ -4,12 +4,12 @@
 #include <sys/stat.h>
 
 extern "C"
-int stat(const char *pathname, struct stat *statbuf)
+int fstatat(int dirfd, const char *pathname, struct stat *statbuf, int flags)
 {
 	if (!strcmp(pathname, "X")) {
 		errno= EACCES;
 		return -1;
 	}
-	return ((int (*)(const char *, struct stat *))dlsym(RTLD_NEXT, "stat"))
-		(pathname, statbuf);
+	return ((int (*)(int, const char *, struct stat *, int))dlsym(RTLD_NEXT, "fstatat"))
+		(dirfd, pathname, statbuf, flags);
 }

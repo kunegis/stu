@@ -1,2 +1,2 @@
-main.stu:3:13: character "Ã" must not appear
+main.stu:3:13: character "Ã" cannot appear
 main.stu:3:10: in parameter started by ${

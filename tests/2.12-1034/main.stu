@@ -1,0 +1,15 @@
+>A: X -o B
+{
+	cat B
+}
+
+>X
+{
+	echo CORRECT >Y
+	ln -s Y B
+}
+
+B
+{
+	exit 77
+}

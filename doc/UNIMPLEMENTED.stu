@@ -384,3 +384,23 @@ A: -k B {...}
 # Flag for phonies, to never remember that it was done.  I.e., do it everytime it is
 # mentioned.
 #
+
+#
+# Variant of dynamic dependency that imports a whole rule.
+#
+
+# In main.stu:
+dir/$name:  [ --rule dir/main.stu ];
+
+# In dir/rule.stu:  Rules for files in dir/.  Stu will only read dir/main.stu if a file in
+# dir/ needs to be built.
+
+#
+# Create a symlink automatically
+#
+-P A=B; # does ln -s B A
+
+#
+# Allow redirection operator before flags.  This is not allowed at the moment.
+#
+> -o A {}

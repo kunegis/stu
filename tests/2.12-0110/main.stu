@@ -1,0 +1,10 @@
+A: B
+{
+	cp B A
+}
+
+>B -P C
+{
+	echo CORRECT
+	ln -s dangling C
+}

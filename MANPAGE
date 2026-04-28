@@ -497,17 +497,20 @@ FLAGS
               ries,  as  the modification time of directories is updated when‐
               ever files are added or removed in the directory.
 
-       -t     Trivial dependency. The file is only  (re)built  is  the  parent
-              target  needs to be (re)built for other reasons.  This is mostly
+       -P     Do not dereference symlink target.  This flag can only  be  used
+              before targets of rules.
+
+       -t     Trivial  dependency.  The  file  is only (re)built if the parent
+              target needs to be (re)built for other reasons.  This is  mostly
               useful for configuration files that are generated automatically,
-              including  the case of files containing the flags used to invoke
-              compilers and other programs.  Trivial dependencies are not  al‐
+              including the case of files containing the flags used to  invoke
+              compilers  and other programs.  Trivial dependencies are not al‐
               lowed if the rule has no command.
 
-       A  dependency cannot be declared as persistent and optional at the same
+       A dependency cannot be declared as persistent and optional at the  same
        time, as that would imply that its command is never executed.
 
-       Targets of rules can have the flags -p (persistent dependency)  and  -o
+       Targets  of  rules can have the flags -p (persistent dependency) and -o
        (optional dependency).  In that case, the target will always be consid‐
        ered persistent or optional.
 
@@ -519,7 +522,7 @@ FLAGS
 
            -flag [ ... ]
 
-       in which case all the flag is applied to all resulting  dynamic  depen‐
+       in  which  case all the flag is applied to all resulting dynamic depen‐
        dencies.
 
        The flags -n/-0/-C can be used on files used as dynamic dependencies to
@@ -531,32 +534,35 @@ FLAGS
        fault)
 
 COPY RULES
-       Using  the  equal  sign with a file name creates a copy rule, i.e., the
+       Using the equal sign with a file name creates a copy  rule,  i.e.,  the
        given file is copied with the cp command:
 
            TARGET = [ -p | -o ] SOURCE;
 
-       By default, Stu will use /bin/cp to perform  the  copy.   This  can  be
-       changed  by  setting  the  variable $STU_CP.  If SOURCE ends in a slash
-       (outside of any parameter value), then Stu will look for  a  file  with
+       By  default,  Stu  will  use  /bin/cp to perform the copy.  This can be
+       changed by setting the variable $STU_CP.  If SOURCE  ends  in  a  slash
+       (outside  of  any  parameter value), then Stu will look for a file with
        the same basename as TARGET in the directory SOURCE.
 
-       If  the persistent flag -p is used, the timestamp of the source file is
-       not verified, only its existence.  If the optional flag -o is used,  it
-       is  not  an error if the target exists and not the source: in that case
-       the target is considered up to date.  Both flags must not be  used  si‐
+       If the persistent flag -p is used, the timestamp of the source file  is
+       not  verified, only its existence.  If the optional flag -o is used, it
+       is not an error if the target exists and not the source: in  that  case
+       the  target  is considered up to date.  Both flags must not be used si‐
        multaneously.
 
 CONTENT RULES
-       A  content  rule  allows  to  hardcode the content of a file in the Stu
-       source.  For a content rule, a single filename must be followed  by  an
+       A content rule allows to hardcode the content of  a  file  in  the  Stu
+       source.   For  a content rule, a single filename must be followed by an
        equal sign, and then braces containing the content:
 
            TARGET = { CONTENT ... }
 
-       The  content can span multiple lines.  The content is stripped of empty
+       The content can span multiple lines.  The content is stripped of  empty
        lines and common whitespace at the beginning of lines, and written into
        the file.
+
+       Note that changing the content in the Stu source file will NOT make Stu
+       recreate the file if the file already exists.
 
 REDIRECTION
        The  operators  < and > are used for input and output redirection, in a
@@ -781,7 +787,7 @@ TOKENIZATION
            @     Phony target marker
            >     Output redirection
            <     Input redirection
-           =     Assignment rule; copy rule; named variable
+           =     Content rule; copy rule; named variable
            ( )   List
            [ ]   Dynamic dependency; variable dependency
            { }   Command; parameter
@@ -842,16 +848,17 @@ SYNTAX
            target:           target-flag* (@ NAME | [>] NAME)+
            expression-list:  expression* {1}
            expression:       unit-expression* {2}
-                             flag expression
+                             dependency-flag expression
                              variable-dep
            unit-expression:  ( expression-list )
                              [ expression-list ]
                              redirect-dep
            redirect-dep:     [<] bare-dep
            bare-dep:         [@] NAME
-           variable-dep:     $[ flag* [<] NAME ]
-           flag:             target-flag | -t | -n | -0 | -C
-           target-flag:      -p | -o
+           variable-dep:     $[ dependency-flag* [<] NAME ]
+           dependency-flag:  common-flag | -t | -n | -0 | -C
+           target-flag:      common-flag | -P
+           common-flag:      -p | -o
 
        {1} with intervening whitespace {2} without intervening whitespace
 
@@ -1179,4 +1186,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.11.4                        April 2026                            STU(1)
+stu-2.12.1                         May 2026                             STU(1)

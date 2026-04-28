@@ -1,4 +1,4 @@
-# Hardcoded content with parametrized rule
+# Content rule with parametrized rule
 
 A:  list.xyz { cp list.xyz A }
 

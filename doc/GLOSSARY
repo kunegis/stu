@@ -4,18 +4,22 @@ Anchoring - Represents the position of a parameter in a matched filename.  Each 
 	the number of parameters.  For instance, when "/usr/bin" is matched to
 	"/$DIR/$NAME", the anchoring is given by the array [1 4 5 8].
 
-Command - A command that is run for a target.  Enclosed by braces ({}) in
-	Stu files, and executed with the shell.
+Command - A command that is run for a target.  Enclosed by braces ({}) in Stu files, and
+	executed with the shell.
+
+Content rule - A rule of the form "A = {xxx}".  Stu will write "xxx" into the file A,
+	effectively hardcoding the content of the file into the Stu file.
+
+Copy rule - A rule of the form "A = B;", which copies file B to file A.
 
 Depth - The depth of a dependency counts how many times over it includes a dynamic
 	dependency.  For instance, an ordinary file target "file" has depth zero, a
 	dynamic dependency "[file]" has depth one, a doubly dynamic dependency "[[file]]"
 	has depth two.
 
-Directive - A construct introduced with the '%' in Stu source code.
-	Directives are processed before the source code is otherwise
-	parsed.  They are comparable to C preprocessor directives, but
-	do not implement a macro system.
+Directive - A construct introduced with '%' in Stu source code.  Directives are processed
+	before the source code is otherwise parsed.  They are comparable to C preprocessor
+	directives, but do not implement a macro system.
 
 File - An object in the file system.  We use the term in the broad
 	sense, which includes directories and other special files.  The "normal"
@@ -27,27 +31,37 @@ Flag - A flag is a syntax and semantic element of Stu scripts.  They start with
 Job - A job is a child process started by Stu to build one or more files or phony targets.
 	Jobs are run in the background by default, but the -i option changes that.
 
-Name - The name of a file or of a phony target.  Names are strings of
-	bytes, must have length at least one, and cannot contain the NUL
-	(\0) character.
+Name - The name of a file or of a phony target.  Names are strings of bytes, must have
+	length at least one, and cannot contain the NUL (\0) character.
 
-Option - An option is passed on the Stu command line and starts with a
-	dash.  Some have arguments.
+Option - An option is passed on the Stu command line and starts with a dash.  Some have
+	arguments.
 
-Parameter - A parameter in the name of a file or a phony target; introduced
-	by the dollar sign ($).  In the command, the corresponding
-	environment variable is set.
+Parameter - A parameter in the name of a file or a phony target; written as $name or
+	${name}.  In the command, the corresponding environment variable is set by Stu.
 
-Phony target - One of the two basic datatypes ("targets") of Stu, the other
-	being files.  They are noted with the '@' symbol, e.g., '@all'.
-	A phony target can be built like a file, but will not result in a
-	built file.  A phony target can also be used only for its
-	dependency.
+Phony target - One of the two basic datatypes ("targets") of Stu, the other being files.
+	They are noted with the '@' symbol, e.g., '@all'.  A phony target can be built
+	like a file, but will not result in a built file.  A phony target can also be used
+	only for its dependency.
+
+Place - Filename + line number + column number.  Used to print error messages.
+
+Placed - A class name starts with 'Place_' when it includes a place, e.g., 'Name'
+	vs. 'Place_Name'.
 
 Plain - (Said of a dependency or target) Either a file or a phony target.
 
-Special rule - Special rules are used when matching parametrized targets
-	to names of files and phony targets.  They are described in the
-	manpage.
+Special rule - Special rules are used when matching parametrized targets to names of files
+	and phony targets.  They are described in the manpage.
 
 Target - A file or a phony target, possibly (multiply) dynamic.
+
+Trace - A line printed by the TRACE() macro.  Enabled by $STU_TRACE.  Only in the debug
+	variant.
+
+Transient - A transient target is a phony whose rule (a) contains no file targets, and (b)
+	has no command.  Transient targets pass some flags (-o -p) to their dependencies.
+
+Variant - Stu can be compiled in different variants, e.g. ndebug, debug.  See
+	doc/VARIANTS.

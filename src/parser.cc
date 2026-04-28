@@ -9,14 +9,10 @@ shared_ptr <Rule> Parser::parse_rule(
 {
 	TRACE_FUNCTION();
 	const auto iter_begin= iter;
-	/* Used to check that when this function fails (i.e., returns null), is has not
-	 * read any tokens. */
-
 	Place place_output;
-	/* An empty place when output is not redirected */
 	int redirect_index= -1;
-	/* Index of the target that has the output, or -1 */
 	std::vector <shared_ptr <const Plain_Dep> > targets;
+
 	while (iter != tokens.end()) {
 		bool r= parse_target(
 			place_output, targets, redirect_index, target_first);
@@ -48,8 +44,8 @@ shared_ptr <Rule> Parser::parse_rule(
 			targets[i]->place <<
 				fmt("parameters of target %s differ",
 					show(targets[i]));
-			targets[0]->place <<
-				fmt("from parameters of target %s in rule with multiple targets",
+			targets[0]->place << fmt(
+				"from parameters of target %s in rule with multiple targets",
 				    show(targets[0]));
 			throw ERROR_LOGICAL;
 		}
@@ -89,18 +85,12 @@ shared_ptr <Rule> Parser::parse_rule(
 	}
 
 	shared_ptr <Command> command;
-	/* Remains null when there is no command */
-
-	bool is_hardcode= false;
-	/* When command is not null, whether the command is a command or
-	 * hardcoded content */
-
-	Place place_nocommand; /* Place of ';' */
+	bool is_content= false;
+	Place place_nocommand_semicolon;
 	Place place_equal;
 
 	if ((command= is <Command> ())) {
 		++iter;
-		is_hardcode= false;
 	} else if (! had_colon && is_operator('=')) {
 		place_equal= (*iter)->get_place();
 		++iter;
@@ -114,35 +104,34 @@ shared_ptr <Rule> Parser::parse_rule(
 		}
 
 		if ((command= is <Command> ())) {
-			/* Hardcoded content */
 			++iter;
 			assert(targets.size() != 0);
 			if (targets.size() != 1) {
 				place_equal <<
-					fmt("there must not be assigned content using %s",
+					fmt("content rule using %s cannot be used",
 						show_operator('='));
 				targets[0]->place <<
-					fmt("in rule for %s... with multiple targets",
+					fmt("with multiple targets %s...",
 					    show(targets[0]));
 				throw ERROR_LOGICAL;
 			}
-			if ((targets[0]->flags & F_TARGET_PHONY)) {
+			if ((targets[0]->flags.get_flags() & F_TARGET_PHONY)) {
 				place_equal <<
-					fmt("there must not be assigned content using %s",
+					fmt("content rule using %s cannot be used",
 						show_operator('='));
 				targets[0]->place <<
-					fmt("for phony target %s",
+					fmt("with phony target %s",
 					    show(targets[0]));
 				throw ERROR_LOGICAL;
 			}
-			/* No redirected output is checked later */
-			is_hardcode= true;
+			/* "No redirected output" is checked later */
+			is_content= true;
 		} else {
 			return parse_remainder_copy_rule(
 				place_equal, place_output, targets);
 		}
 	} else if (is_operator(';')) {
-		place_nocommand= (*iter)->get_place();
+		place_nocommand_semicolon= (*iter)->get_place();
 		++iter;
 	} else {
 		(*iter)->get_place() <<
@@ -163,24 +152,25 @@ shared_ptr <Rule> Parser::parse_rule(
 	/* Cases where output redirection is not possible */
 	if (! place_output.empty()) {
 		/* Already checked before */
-		assert((targets[redirect_index]->flags & F_TARGET_PHONY) == 0);
+		assert((targets[redirect_index]->flags.get_flags() & F_TARGET_PHONY)
+			== 0);
 
 		if (command == nullptr) {
 			place_output <<
-				fmt("output redirection using %s must not be used",
+				fmt("output redirection using %s cannot be used",
 				    show_operator('>'));
-			place_nocommand <<
+			place_nocommand_semicolon <<
 				fmt("in rule for %s without a command",
 				    show(targets[0]));
 			throw ERROR_LOGICAL;
 		}
 
-		if (command != nullptr && is_hardcode) {
+		if (command != nullptr && is_content) {
 			place_output <<
-				fmt("output redirection using %s must not be used",
+				fmt("output redirection using %s cannot be used",
 					show_operator('>'));
 			place_equal <<
-				fmt("in rule for %s with assigned content using %s",
+				fmt("in content rule for %s using %s",
 				    show(targets[0]),
 				    show_operator('='));
 			throw ERROR_LOGICAL;
@@ -191,19 +181,27 @@ shared_ptr <Rule> Parser::parse_rule(
 	if (! filename_input.empty()) {
 		if (command == nullptr) {
 			place_input <<
-				fmt("input redirection using %s must not be used",
+				fmt("input redirection using %s cannot be used",
 					show_operator('<'));
-			place_nocommand <<
+			place_nocommand_semicolon <<
 				fmt("in rule for %s without a command",
 				    show(targets[0]));
 			throw ERROR_LOGICAL;
 		} else {
-			assert(! is_hardcode);
+			assert(! is_content);
 		}
 	}
 
+	if (is_content && targets[0]->flags.get_flags() & F_NO_FOLLOW) {
+		command->place << fmt("content rule using %s", show_operator('='));
+		targets[0]->flags.place_by_index(I_NO_FOLLOW) <<
+			fmt("must not have target flag %s (no-follow)",
+				show_operator(frmt("-%c", flags_chars[I_NO_FOLLOW])));
+		throw ERROR_LOGICAL;
+	}
+
 	return std::make_shared <Rule>
-		(move(targets), deps, command, is_hardcode,redirect_index, filename_input);
+		(move(targets), deps, command, is_content, redirect_index, filename_input);
 }
 
 shared_ptr <Rule> Parser::parse_remainder_copy_rule(
@@ -226,7 +224,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 			++iter;
 		} else {
 			flag_token->get_place()
-				<< fmt("flag %s must not be used",
+				<< fmt("flag %s cannot be used",
 					show(flag_token));
 			place_equal <<
 				fmt("in copy rule using %s for target %s",
@@ -267,7 +265,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 			name_copy_src->get_parameters()[jj];
 		if (parameters.count(parameter) == 0) {
 			name_copy_src->places[jj] <<
-				fmt("parameter %s must not appear in copied file %s",
+				fmt("parameter %s cannot appear in copied file %s",
 					show_prefix("$", parameter),
 					show(name_copy_src));
 			targets[0]->place <<
@@ -297,7 +295,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 
 	if (! place_output.empty()) {
 		place_output <<
-			fmt("output redirection using %s must not be used",
+			fmt("output redirection using %s cannot be used",
 				show_operator('>'));
 		place_equal <<
 			fmt("in copy rule using %s for target %s",
@@ -309,7 +307,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 	/* Check that there is just a single target */
 	if (targets.size() != 1) {
 		place_equal <<
-			fmt("there must not be a copy rule using %s",
+			fmt("there cannot be a copy rule using %s",
 				show_operator('='));
 		targets[0]->place <<
 			fmt("for multiple targets %s...",
@@ -317,14 +315,21 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 		throw ERROR_LOGICAL;
 	}
 
-	/* Check that target is not phony */
-	if (targets[0]->flags & F_TARGET_PHONY) {
-		assert(targets[0]->flags & F_TARGET_PHONY);
+	if (targets[0]->flags.get_flags() & F_TARGET_PHONY) {
 		place_equal << fmt("copy rule using %s cannot be used",
 			show_operator('='));
 		targets[0]->place
 			<< fmt("with phony target %s",
 				show(targets[0]));
+		throw ERROR_LOGICAL;
+	}
+
+	if (targets[0]->flags.get_flags() & F_NO_FOLLOW) {
+		place_equal << fmt("copy rule using %s cannot be used",
+			show_operator('='));
+		targets[0]->flags.place_by_index(I_NO_FOLLOW) <<
+			fmt("with target having flag %s (no-follow)",
+				show_operator(frmt("-%c", flags_chars[I_NO_FOLLOW])));
 		throw ERROR_LOGICAL;
 	}
 
@@ -345,33 +350,28 @@ bool Parser::parse_target(
 	shared_ptr <const Plain_Dep> &target_first)
 {
 	Place place_output_new;
-	/* Remains an empty place when '>' is not present */
-
-	Flags flags= 0;
-	Place places[C_PLACED];
+	Place_Flags place_flags;
 	shared_ptr <Flag_Token> flag_token;
+
 	while (is <Flag_Token> ()) {
 		flag_token= is <Flag_Token> ();
 		++iter;
-		const char *p= (const char *)memchr
-			(flags_chars, flag_token->flag, C_TARGET_PLACED);
-		if (!p) {
+		Index flag_index= flag_get_index(flag_token->flag);
+		if (((1 << flag_index) & F_PLACED_TARGET) == 0) {
 			string possible;
-			for (int i= 0; i < C_TARGET_PLACED; ++i) {
+			for (Flags f= F_PLACED_TARGET, i= 0; f; f >>= 1, ++i)
+			{
+				if (!(f & 1)) continue;
 				if (! possible.empty()) possible += "/";
 				possible += show(Flag_View(flags_chars[i]));
 			}
-			flag_token->place <<
-				fmt("flag %s is invalid before target (only %s are possible)",
-					show(flag_token),
-				    possible);
+			flag_token->place << fmt(
+				"flag %s is invalid before target (only %s are possible)",
+				show(flag_token), possible);
 			explain_target_flags();
 			throw ERROR_LOGICAL;
 		}
-		int index= p - flags_chars;
-		assert(index >= 0 && index < C_TARGET_PLACED);
-		flags |= 1 << index;
-		places[index]= flag_token->place;
+		place_flags.add_placed_index(flag_index, flag_token->place);
 	}
 
 	if (is_operator('>')) {
@@ -399,7 +399,7 @@ bool Parser::parse_target(
 			place_at << fmt("after %s", show_operator('@'));
 			throw ERROR_LOGICAL;
 		}
-		flags |= F_TARGET_PHONY;
+		place_flags.add_unplaced_flags(F_TARGET_PHONY);
 	}
 
 	if (! is <Name_Token> ()) {
@@ -456,24 +456,33 @@ bool Parser::parse_target(
 	}
 
 	shared_ptr <const Plain_Dep> target= std::make_shared <Plain_Dep>
-		(flags, places, Place_Target(
-			flags & F_TARGET_PHONY, *target_name, place_of_target));
+		(place_flags, Place_Target(place_flags.get_flags() & F_TARGET_PHONY,
+			*target_name, place_of_target));
 
-	if (flags & F_TARGET_PHONY && flag_token) {
+	if (place_flags.get_flags() & F_TARGET_PHONY && flag_token) {
 		flag_token->place << fmt("flag %s cannot be used", show(flag_token));
 		place_of_target << fmt("before phony target %s", show(target));
 		explain_target_flags();
 		throw ERROR_LOGICAL;
 	}
 
+	if (! place_output_new.empty() && place_flags.get_flags() & F_NO_FOLLOW) {
+		place_output_new << fmt("output redirection using %s cannot be used",
+			show_operator('>'));
+		place_flags.place_by_index(I_NO_FOLLOW) <<
+			fmt("before target with flag %s (no-follow)",
+				show_operator(frmt("-%c", flags_chars[I_NO_FOLLOW])));
+		throw ERROR_LOGICAL;
+	}
+
 	if (! place_output_new.empty()) {
 		if (! place_output.empty()) {
 			place_output_new <<
-				fmt("there must not be a second output redirection %s",
+				fmt("there cannot be a second output redirection %s",
 					show_prefix(">", target));
 			assert(place_targets[redirect_index]
 				->place_target.place_name.get_n() == 0);
-			assert((place_targets[redirect_index]->flags
+			assert((place_targets[redirect_index]->flags.get_flags()
 					& F_TARGET_PHONY) == 0);
 			place_output <<
 				fmt("shadowing previous output redirection %s",
@@ -487,7 +496,7 @@ bool Parser::parse_target(
 		redirect_index= place_targets.size();
 	}
 
-	if (flags & F_TARGET_PHONY && ! place_output_new.empty()) {
+	if (place_flags.get_flags() & F_TARGET_PHONY && ! place_output_new.empty()) {
 		target->place <<
 			fmt("phony target %s is invalid", show(target));
 		place_output_new <<
@@ -531,6 +540,7 @@ bool Parser::parse_expression(
 	Place &place_input,
 	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
+	TRACE_FUNCTION();
 	assert(ret == nullptr);
 
 	/* '(' expression* ')' */
@@ -545,7 +555,23 @@ bool Parser::parse_expression(
 	if (is <Flag_Token> ()) {
 		const Flag_Token &flag_token= *is <Flag_Token> ();
 		const Place place_flag= (*iter)->get_place();
-		const unsigned i_flag= flag_get_index(flag_token.flag);
+		const Index i_flag= flag_get_index(flag_token.flag);
+
+		assert((1 << i_flag) & F_PLACED);
+		if (! ((1 << i_flag) & F_PLACED_DEPENDENCY)) {
+			string possible;
+			for (Flags f= F_PLACED_DEPENDENCY, i= 0; f; f >>= 1, ++i)
+			{
+				if (!(f & 1)) continue;
+				if (! possible.empty()) possible += "/";
+				possible += show(Flag_View(flags_chars[i]));
+			}
+			place_flag << fmt(
+				"flag %s is invalid before dependency (only %s are possible)",
+				show(Flag_View(flags_chars[i_flag])), possible);
+			throw ERROR_LOGICAL;
+		}
+
 		++iter;
 
 		if (! parse_expression(ret, place_name_input, place_input, targets)) {
@@ -560,15 +586,14 @@ bool Parser::parse_expression(
 			throw ERROR_LOGICAL;
 		}
 
-		/* A dependency cannot be an input dependency and optional at
-		 * the same time.  Note: Input redirection must not appear in
-		 * dynamic dependencies, and therefore it is sufficient to check
-		 * this here. */
+		/* A dependency must not be an input dependency and optional at the same
+		 * time.  Note: Input redirection must not appear in dynamic dependencies,
+		 * and therefore it is sufficient to check this here. */
 		if (! place_name_input.place.empty() &&
 			flag_token.flag == flags_chars[I_OPTIONAL])
 		{
 			place_input <<
-				fmt("input redirection using %s must not be used",
+				fmt("input redirection using %s cannot be used",
 					show_operator('<'));
 			place_flag <<
 				fmt("in conjunction with optional dependency flag %s",
@@ -581,10 +606,8 @@ bool Parser::parse_expression(
 		       (i_flag == I_TRIVIAL  && option_a)))
 		{
 			shared_ptr <Dep> ret_new= ret->clone();
-			ret_new->flags |= (1 << i_flag);
-			assert(i_flag < C_WORD);
-			if (i_flag < C_PLACED)
-				ret_new->set_place_flag(i_flag, place_flag);
+			ret_new->flags.add_placed_index(i_flag,
+				place_flag);
 			ret= ret_new;
 		}
 
@@ -689,11 +712,9 @@ shared_ptr <const Dep> Parser::parse_dynamic_dep(
 	shared_ptr <Compound_Dep> ret_nondynamic=
 		std::make_shared <Compound_Dep> (place_bracket);
 	for (auto &j: content) {
-		/* Variable dependency cannot appear within
-		 * dynamic dependency */
-		if (j->flags & F_VARIABLE) {
+		if (j->flags.get_flags() & F_VARIABLE) {
 			j->get_place() <<
-				fmt("variable dependency %s must not appear",
+				fmt("variable dependency %s cannot appear",
 				    show(j));
 			place_bracket <<
 				fmt("within dynamic dependency started by %s",
@@ -745,10 +766,8 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 	++iter;
 
 	/* Flags */
-	Flags flags= F_VARIABLE;
-	Place places_flags[C_PLACED];
-	for (unsigned i= 0; i < C_PLACED; ++i)
-		places_flags[i].clear();
+	Place_Flags place_flags;
+	place_flags.add_unplaced_index(I_VARIABLE);
 	Place place_flag_last;
 	shared_ptr <Flag_Token> flag_token_last;
 	while (is_flag(flags_chars[I_PERSISTENT]) ||
@@ -758,21 +777,19 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 		flag_token_last= is <Flag_Token> ();
 		place_flag_last= (*iter)->get_place();
 		if (is_flag(flags_chars[I_PERSISTENT])) {
-			flags |= F_PERSISTENT;
-			places_flags[I_PERSISTENT]= place_flag_last;
+			place_flags.add_placed_index(I_PERSISTENT,
+				place_flag_last);
 		} else if (is_flag(flags_chars[I_OPTIONAL])) {
-			/* If the nonoptional (-g) option is set, ignore the -o flag */
 			if (! option_g) {
 				(*iter)->get_place() <<
-					fmt("optional dependency using %s must not appear",
+					fmt("optional dependency using %s cannot appear",
 						show(Flag_View('o')));
 				place_dollar << "within dynamic variable declaration";
 				throw ERROR_LOGICAL;
 			}
 		} else if (is_flag(flags_chars[I_TRIVIAL])) {
 			if (! option_a) {
-				flags |= F_TRIVIAL;
-				places_flags[I_TRIVIAL]= place_flag_last;
+				place_flags.add_placed_index(I_TRIVIAL, place_flag_last);
 			}
 		} else {
 			unreachable();
@@ -784,7 +801,7 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 	if (is_operator('<')) {
 		has_input= true;
 		place_input= (*iter)->get_place();
-		flags |= F_INPUT;
+		place_flags.add_unplaced_index(I_INPUT);
 		++iter;
 	}
 
@@ -869,12 +886,12 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 
 	/* The place of the variable dependency as a whole is set on the name contained in
 	 * it.  It would be conceivable to also set it on the dollar sign. */
-	ret= std::make_shared <Plain_Dep> (flags, places_flags,
+	ret= std::make_shared <Plain_Dep> (place_flags,
 		Place_Target(0, *place_name, place_name->place), variable_name);
 
 	if (has_input && ! place_name_input.empty()) {
 		place_name->place <<
-			fmt("there must not be a second input redirection %s",
+			fmt("there cannot be a second input redirection %s",
 			    show(ret, S_DEFAULT, R_SHOW_INPUT));
 		place_name_input.place <<
 			fmt("shadowing previous input redirection %s",
@@ -894,10 +911,10 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 }
 
 shared_ptr <const Dep> Parser::parse_redirect_dep(
-	Place_Name &place_name_input, Place &place_input,
+	Place_Name &place_name_input,
+	Place &place_input,
 	const std::vector <shared_ptr <const Plain_Dep> > &targets)
 {
-	(void) targets;
 	bool has_input= false;
 
 	if (is_operator('<')) {
@@ -959,23 +976,26 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 	shared_ptr <Name_Token> name_token= is <Name_Token> ();
 	++iter;
 
-	Flags flags= 0;
+	Place_Flags place_flags;
 	if (has_input) {
-		flags |= F_INPUT;
+		place_flags.add_unplaced_index(I_INPUT);
 	}
 
 	if (! place_name_input.empty())
 		assert(! place_input.empty());
 
+	if (has_phony) {
+		place_flags.add_unplaced_index(I_TARGET_PHONY);
+	}
 	Flags phony_bit= has_phony ? F_TARGET_PHONY : 0;
 	shared_ptr <const Dep> ret= std::make_shared <Plain_Dep>
-		(flags | phony_bit,
+		(place_flags,
 			Place_Target(phony_bit, *name_token,
 				has_phony ? place_at : name_token->place));
 
 	if (has_input && ! place_name_input.empty()) {
 		name_token->place <<
-			fmt("there must not be a second input redirection %s",
+			fmt("there cannot be a second input redirection %s",
 			    show(ret, S_DEFAULT, R_SHOW_INPUT));
 		place_name_input.place <<
 			fmt("shadowing previous input redirection %s",
@@ -1118,8 +1138,8 @@ void Parser::get_expression_list_delim(
 			free(lineptr);
 			fclose(file);
 			place << "filename must not be empty";
-			printer <<
-				fmt("in %s-separated dynamic dependency %s declared with flag %s",
+			printer << fmt(
+				"in %s-separated dynamic dependency %s declared with flag %s",
 					c == '\0' ? "zero" : "newline",
 					show(filename),
 					show(Flag_View(c_printed)));
@@ -1145,9 +1165,8 @@ void Parser::get_expression_list_delim(
 			assert(filename_dep.find('\0') == string::npos);
 		}
 
-		deps.push_back(std::make_shared <Plain_Dep>
-			       (0, Place_Target
-				(0, Place_Name(filename_dep, place))));
+		deps.push_back(std::make_shared <Plain_Dep> (
+			Place_Target(0, Place_Name(filename_dep, place))));
 	}
 	free(lineptr);
 	if (fclose(file)) {

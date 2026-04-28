@@ -26,7 +26,7 @@ test_one()
 		exit 1
 	}
 
-	grep -qF "character \"$output\" must not appear" list.err || {
+	grep -qF "character \"$output\" cannot appear" list.err || {
 		echo >&2 "*** [$output] Wrong error output"
 		exit 1
 	}

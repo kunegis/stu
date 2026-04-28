@@ -39,8 +39,7 @@ public:
 	}
 
 	Hash_Dep unparametrized() const
-	/* The corresponding unparametrized target.  This target must have zero
-	 * parameters. */
+	/* The corresponding unparametrized target.  Must have zero parameters. */
 	{
 		return Hash_Dep(flags, name.unparametrized());
 	}

@@ -1,14 +1,30 @@
 #include "flags.hh"
 
-const char *flags_phrases[C_PLACED]= {"persistent", "optional", "trivial"};
-static_assert(sizeof(flags_phrases) / sizeof(flags_phrases[0]) == C_PLACED,
-	      "Keep in sync with Flags");
+const char *flags_placed_phrases[C_ALL]= {
+	"persistent", "optional", "trivial",
+	nullptr, nullptr, nullptr,
+	"newline-separated", "nul-separated", "stu-syntax",
+	"no-dereference",
+	nullptr, nullptr, nullptr, nullptr,
+};
 
-unsigned flag_get_index(char c)
+static_assert(sizeof(flags_placed_phrases) / sizeof(flags_placed_phrases[0]) == C_ALL,
+	"Keep in sync with Flags");
+
+Index flag_get_index(char c)
 {
+	TRACE_FUNCTION();
+	TRACE("c= '%s'", frmt("%c", c));
 	char *r= strchr((char *)flags_chars, c);
 	assert(r);
 	return r - flags_chars;
+}
+
+bool is_placed_flag_char(char c)
+{
+	char *r= strchr((char *)flags_chars, c);
+	if (!r) return false;
+	return (1 << (r - flags_chars)) & F_PLACED;
 }
 
 void render(Flag_View fv, Parts &parts, Rendering rendering)
@@ -25,8 +41,8 @@ bool render_flags(Flags flags, Parts &parts, Rendering rendering)
 	if (!(rendering & R_SHOW_FLAGS))
 		return false;
 	string ret;
-	for (unsigned i= 0; i < C_ALL; ++i) {
-		unsigned test= flags & (1u << i);
+	for (Index i= 0; i < C_ALL; ++i) {
+		Flags test= flags & (1u << i);
 		if (test) {
 			ret += flags_chars[i];
 		}

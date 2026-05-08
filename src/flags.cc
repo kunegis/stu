@@ -26,39 +26,3 @@ bool is_placed_flag_char(char c)
 	if (!r) return false;
 	return (1 << (r - flags_chars)) & F_PLACED;
 }
-
-void render(Flag_View fv, Parts &parts, Rendering rendering)
-{
-	parts.append_marker("-");
-	render(string(1, fv.c), parts, rendering);
-}
-
-#ifndef NDEBUG
-
-bool render_flags(Flags flags, Parts &parts, Rendering rendering)
-{
-	TRACE_FUNCTION();
-	if (!(rendering & R_SHOW_FLAGS))
-		return false;
-	string ret;
-	for (Index i= 0; i < C_ALL; ++i) {
-		Flags test= flags & (1u << i);
-		if (test) {
-			ret += flags_chars[i];
-		}
-	}
-	if (ret.empty())
-		return false;
-	ret= '-' + ret;
-	parts.append_operator(ret);
-	return true;
-}
-
-string show_flags(Flags flags, Style style)
-{
-	Parts parts;
-	render_flags(flags, parts, R_SHOW_FLAGS);
-	return show(parts, style);
-}
-
-#endif /* ! NDEBUG */

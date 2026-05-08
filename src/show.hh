@@ -38,11 +38,13 @@
 #include "color.hh"
 
 typedef unsigned Style;
+
 constexpr Style S_CHANNEL=         (1 << CH_BITS) - 1;
 constexpr Style S_ALWAYS_QUOTE=    1 << (CH_BITS + 0);
 constexpr Style S_QUOTE_MINIMUM=   1 << (CH_BITS + 1);
 constexpr Style S_QUOTE_SOURCE=    1 << (CH_BITS + 2);
 constexpr Style S_NO_COLOR=        1 << (CH_BITS + 3);
+
 constexpr Style S_DEFAULT=         CH_ERR;
 constexpr Style S_DEBUG=           CH_OUT | S_ALWAYS_QUOTE;
 constexpr Style S_NORMAL=          CH_OUT | S_QUOTE_MINIMUM;
@@ -50,9 +52,11 @@ constexpr Style S_OPTION_I=        CH_OUT | S_NO_COLOR | S_QUOTE_SOURCE;
 constexpr Style S_OPTION_P=        CH_OUT | S_QUOTE_MINIMUM | S_NO_COLOR;
 
 typedef unsigned Rendering;
+
 constexpr Rendering R_GLOB=                     1 << 0;
 constexpr Rendering R_SHOW_INPUT=               1 << 1;
 constexpr Rendering R_NO_COMPOUND_PARENTHESES=  1 << 2;
+
 #ifndef NDEBUG
 constexpr Rendering R_SHOW_FLAGS=               1 << 3;
 constexpr Rendering R_SHOW_INDEX=               1 << 4;
@@ -121,17 +125,30 @@ private:
 
 string show(const Parts &, Style style);
 void render(string s, Parts &, Rendering= 0);
-string show_operator(char, Style= S_DEFAULT);
-string show_operator(string, Style= S_DEFAULT);
-string show_text(string, Style= S_DEFAULT);
-void render_dynamic_variable(string name, Parts &, Rendering= 0);
-string show_dynamic_variable(string name, Style= S_DEFAULT);
 
 template <typename T>
-void render_prefix(string prefix, const T &object, Parts &, Rendering= 0);
-template <typename T>
-string show_prefix(string prefix, const T &object, Style= S_DEFAULT);
-template <typename T>
 string show(const T &, Style= S_DEFAULT, Rendering= 0);
+
+template <typename T>
+class Prefix_View
+{
+public:
+	string prefix;
+	const T &object;
+	Prefix_View(string prefix_, const T &object_): prefix(prefix_), object(object_) {}
+};
+
+template <typename T>
+void render(Prefix_View <T>, Parts &, Rendering= 0);
+
+class Operator_View
+{
+public:
+	string op;
+	Operator_View(string op_): op(op_) {}
+	Operator_View(char c): op(1, c) {}
+};
+
+void render(Operator_View, Parts &, Rendering= 0);
 
 #endif /* ! SHOW_HH */

@@ -103,7 +103,7 @@ Proceed Dynamic_Executor::execute(shared_ptr <const Dep> dep_link)
 bool Dynamic_Executor::finished(Flags flags) const
 {
 	TRACE_FUNCTION();
-	TRACE("flags= %s; done= %s", show_flags(flags, S_DEBUG), done.show());
+	TRACE("flags= %s; done= %s", show(Flags_View(flags), S_DEBUG), done.show());
 	bool ret= done.is_done_from_flags(flags);
 	TRACE("ret= %s", frmt("%d", ret));
 	return ret;
@@ -136,7 +136,7 @@ void Dynamic_Executor::notify_result(
 {
 	TRACE_FUNCTION(show_trace(dep));
 	TRACE("dep_result= %s; flags= %s; dep_source= %s",
-		show_trace(dep_result), show_flags(flags), show_trace(dep_source));
+		show_trace(dep_result), show(Flags_View(flags)), show_trace(dep_source));
 	assert(!(flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY)));
 	assert((flags & ~(F_RESULT_NOTIFY | F_RESULT_COPY))
 	       != (F_RESULT_NOTIFY | F_RESULT_COPY));

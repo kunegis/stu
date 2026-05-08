@@ -6,27 +6,27 @@ void Place_Flags::add_unplaced_flags(Flags flags_new)
 {
 	TRACE_FUNCTION();
 	TRACE("this= %s", frmt("%p", (void *)this));
-	TRACE("flags_new= %s", show_flags(flags_new));
+	TRACE("flags_new= %s", show(Flags_View(flags_new)));
 	assert((flags_new & ~F_UNPLACED) == 0);
 	flags |= flags_new;
-	TRACE("flags= %s", show_flags(flags));
+	TRACE("flags= %s", show(Flags_View(flags)));
 }
 
 void Place_Flags::remove_unplaced_flags(Flags flags_remove)
 {
 	TRACE_FUNCTION();
 	TRACE("this= %s", frmt("%p", (void *)this));
-	TRACE("flags_remove= %s", show_flags(flags_remove));
+	TRACE("flags_remove= %s", show(Flags_View(flags_remove)));
 	assert((flags_remove & ~F_UNPLACED) == 0);
 	flags &= ~flags_remove;
-	TRACE("flags= %s", show_flags(flags));
+	TRACE("flags= %s", show(Flags_View(flags)));
 }
 
 void Place_Flags::add_unplaced_index(Index index)
 {
 	TRACE_FUNCTION();
 	TRACE("this= %s", frmt("%p", (void *)this));
-	TRACE("index= %s", show_flags(1 << index));
+	TRACE("index= %s", show(Flags_View(1 << index)));
 	assert(index < C_ALL);
 	assert((1 << index) & F_UNPLACED);
 	flags |= 1 << index;
@@ -36,8 +36,8 @@ void Place_Flags::add_placed_index(Index index, const Place &place)
 {
 	TRACE_FUNCTION();
 	TRACE("this= %s", frmt("%p", (void *)this));
-	TRACE("index= %s", show_flags(1 << index));
-	TRACE("flags= %s", show_flags(flags));
+	TRACE("index= %s", show(Flags_View(1 << index)));
+	TRACE("flags= %s", show(Flags_View(flags)));
 	assert(index < C_ALL);
 	assert((1 << index) & F_PLACED);
 	for (size_t i= 0; i < place_flags.size(); ++i) {
@@ -50,14 +50,14 @@ void Place_Flags::add_placed_index(Index index, const Place &place)
 	place_flags.emplace_back(index, place);
 	flags |= 1 << index;
 
-	TRACE("flags= %s", show_flags(flags));
+	TRACE("flags= %s", show(Flags_View(flags)));
 }
 
 const Place &Place_Flags::place_by_index(Index index) const
 {
 	TRACE_FUNCTION();
 	TRACE("this= %s", frmt("%p", (void *)this));
-	TRACE("index= %s", show_flags(1 << index));
+	TRACE("index= %s", show(Flags_View(1 << index)));
 	assert(index < C_ALL);
 	assert((1 << index) & F_PLACED);
 	for (size_t i= 0; i < place_flags.size(); ++i) {
@@ -73,9 +73,9 @@ void Place_Flags::add(const Place_Flags &that, Flags filter)
 	TRACE_FUNCTION();
 	TRACE("this= %s", frmt("%p", (void *)this));
 	TRACE("that= %s", frmt("%p", (void *)&that));
-	TRACE("filter= %s", show_flags(filter & F_ALL));
-	TRACE("this->flags= %s", show_flags(flags));
-	TRACE("that.flags= %s", show_flags(that.flags));
+	TRACE("filter= %s", show(Flags_View(filter & F_ALL)));
+	TRACE("this->flags= %s", show(Flags_View(flags)));
+	TRACE("that.flags= %s", show(Flags_View(that.flags)));
 	check();
 	that.check();
 	for (size_t i= 0; i < that.place_flags.size(); ++i) {
@@ -86,15 +86,15 @@ void Place_Flags::add(const Place_Flags &that, Flags filter)
 		place_flags.push_back(that.place_flags[i]);
 	}
 	flags |= that.flags & filter;
-	TRACE("this->flags= %s", show_flags(flags));
+	TRACE("this->flags= %s", show(Flags_View(flags)));
 }
 
 void Place_Flags::remove_index(Index index)
 {
 	TRACE_FUNCTION();
 	TRACE("this= %s", frmt("%p", (void *)this));
-	TRACE("flags= %s", show_flags(flags));
-	TRACE("index= %s", show_flags(1 << index));
+	TRACE("flags= %s", show(Flags_View(flags)));
+	TRACE("index= %s", show(Flags_View(1 << index)));
 	assert(index < C_ALL);
 
 	if (!(flags & (1 << index))) return;
@@ -125,7 +125,7 @@ void Place_Flags::remove_index(Index index)
 
 	flags &= ~(1 << index);
 
-	TRACE("flags= %s", show_flags(flags));
+	TRACE("flags= %s", show(Flags_View(flags)));
 	TRACE("place_flags.size()= %s", frmt("%zu", place_flags.size()));
 	check();
 }
@@ -136,7 +136,7 @@ void Place_Flags::check() const
 {
 	TRACE_FUNCTION();
 	TRACE("this= %s", frmt("%p", (void *)this));
-	TRACE("flags= %s", show_flags(flags));
+	TRACE("flags= %s", show(Flags_View(flags)));
 	assert((flags & ~F_ALL) == 0);
 	Flags f= 0;
 
@@ -144,7 +144,7 @@ void Place_Flags::check() const
 		Index index= place_flags[i].index;
 		TRACE("i= %s; index= %s",
 			frmt("%zu", i),
-			show_flags(1 << index));
+			show(Flags_View(1 << index)));
 		assert(flags & (1 << index));
 		assert((f & (1 << index)) == 0);
 		f |= 1 << index;

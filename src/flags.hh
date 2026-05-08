@@ -16,15 +16,12 @@
  * gives the bits for the tasks to do.  Other flags have the semantics of "more to do".
  */
 
-#include "show.hh"
-
 typedef unsigned Flags;
 typedef unsigned Index;
 
 enum
 {
-	/* The index of the flags (I_*), used for array indexing.  Variables
-	 * iterating over these values are usually called I. */
+	/* The index of the flags (I_*) */
 	I_PERSISTENT= 0,      /* -p \   common flags    \                    */
 	I_OPTIONAL,           /* -o /                    |                   */
 	I_TRIVIAL,            /* -t                      |                   */
@@ -116,21 +113,5 @@ extern const char *flags_placed_phrases[C_ALL];
 
 Index flag_get_index(char c); /* Must exist */
 bool is_placed_flag_char(char c);
-
-class Flag_View
-{
-public:
-	char c;
-	Flag_View(char c_): c(c_) {}
-};
-
-void render(Flag_View, Parts &, Rendering= 0);
-
-#ifndef NDEBUG
-
-bool render_flags(Flags flags, Parts &, Rendering= 0);
-string show_flags(Flags, Style= S_DEFAULT);
-
-#endif /* ! NDEBUG */
 
 #endif /* ! FLAGS_HH */

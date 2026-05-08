@@ -2,6 +2,7 @@
 
 #include "place.hh"
 #include "show_dep.hh"
+#include "show_flags.hh"
 #include "trace.hh"
 
 Concat_Executor::Concat_Executor(
@@ -163,7 +164,7 @@ void Concat_Executor::notify_result(
 	TRACE_FUNCTION(show_trace(dep));
 	TRACE("dep_result= %s", show_trace(dep_result));
 	TRACE("source= %s", show(*source));
-	TRACE("flags= %s", show_flags(flags));
+	TRACE("flags= %s", show(Flags_View(flags)));
 	TRACE("i= %s", frmt("%zd", dep_source->index));
 
 	if (flags & F_RESULT_NOTIFY) {

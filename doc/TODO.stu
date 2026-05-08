@@ -1,11 +1,10 @@
 #
-# Replace all show_*() render_*() functions by *_View classes.  Also, there should be no
-# specialized show() functions; only render().  Only exception is show_trace() [maybe].
+# Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
+# * Use --no-dereference for -P [like cp]
 #
 
 #
-# Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
-# * Use --no-dereference for -P [like cp]
+# sh/test_clean: find_source_files:  Do not exclude doc/.
 #
 
 #
@@ -438,8 +437,4 @@ B {}
 #
 # Place_Flags:  replace certain functions by operators (&, |=, etc.) that mimic how a
 # Flags variable would be used.
-#
-
-#
-# sh/test_clean: find_source_files:  Do not exclude doc/.
 #

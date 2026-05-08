@@ -48,7 +48,8 @@ File_Executor::File_Executor(
 			hd.get_front_word_nondynamic() |=
 				d->flags.get_flags() & F_WORD;
 			TRACE("hd= %s", show_trace(hd));
-			TRACE("hd_flags= %s", show_flags(hd.get_front_word_nondynamic()));
+			TRACE("hd_flags= %s",
+				show(Flags_View(hd.get_front_word_nondynamic())));
 			hash_deps.push_back(hd);
 		}
 		assert(hash_deps.size());
@@ -237,7 +238,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 		string reason;
 		if (WIFEXITED(status)) {
 			reason= fmt("failed with exit status %s",
-				show_operator(frmt("%d", WEXITSTATUS(status))));
+				show(Operator_View(frmt("%d", WEXITSTATUS(status)))));
 		} else if (WIFSIGNALED(status)) {
 			int sig= WTERMSIG(status);
 			reason= frmt("received signal %d (%s%s%s)",
@@ -683,10 +684,10 @@ bool File_Executor::check_file_target(
 		== target.get_name_c_str_nondynamic())
 	{
 		Flags dep_flags= dep_link->flags.get_flags();
-		TRACE("dep_flags= %s", show_flags(dep_flags));
+		TRACE("dep_flags= %s", show(Flags_View(dep_flags)));
 		flags |= dep_flags;
 	}
-	TRACE("flags= %s", show_flags(flags));
+	TRACE("flags= %s", show(Flags_View(flags)));
 
 	struct stat buf;
 	int ret_stat= stat_file(target.get_name_c_str_nondynamic(), &buf,
@@ -926,7 +927,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 			->place_target.place_name.unparametrized().c_str();
 		TRACE("name= '%s'", name);
 		TRACE("flags= %s",
-			show_flags(to <Plain_Dep> (dep_link)->flags.get_flags()));
+			show(Flags_View(to <Plain_Dep> (dep_link)->flags.get_flags())));
 
 		struct stat buf;
 		int ret_stat= stat_file(name, &buf,
@@ -964,7 +965,7 @@ void File_Executor::check_file_was_built(Hash_Dep hash_dep, const Place &place)
 	const char *filename= hash_dep.get_name_c_str_nondynamic();
 	Flags flags= hash_dep.get_front_word_nondynamic();
 	TRACE("filename=\"%s\"", filename);
-	TRACE("flags= %s", show_flags(flags));
+	TRACE("flags= %s", show(Flags_View(flags)));
 	struct stat buf;
 	if (stat_file(filename, &buf, flags)) {
 		if (errno == ENOENT) {

@@ -28,6 +28,8 @@
 
 #include <stdint.h>
 
+#include "show.hh"
+
 typedef uint16_t word_t;
 
 static_assert(sizeof(word_t) == sizeof(uint8_t) && C_WORD <= 8

@@ -10,7 +10,7 @@ void Hash_Dep::render(Parts &parts, Rendering rendering) const
 	assert(text.size() > sizeof(word_t) * (i + 1));
 #ifndef NDEBUG
 	if (rendering & R_SHOW_FLAGS) {
-		render_flags(get_word(i) & ~(F_TARGET_PHONY | F_VARIABLE),
+		::render(Flags_View(get_word(i) & ~(F_TARGET_PHONY | F_VARIABLE)),
 			parts, rendering);
 	}
 #endif /* ! NDEBUG */

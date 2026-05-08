@@ -89,8 +89,8 @@ void Executor::read_dynamic(
 				Hash_Dep hash_dep_dynamic(0, hash_dep);
 				place_input <<
 					fmt("dynamic dependency %s must not contain input redirection %s",
-					    show(hash_dep_dynamic),
-					    show_prefix("<", input));
+					show(hash_dep_dynamic),
+					show(Prefix_View("<", input)));
 				Hash_Dep hash_dep_file= hash_dep;
 				hash_dep_file.get_front_word_nondynamic()
 					&= ~F_TARGET_PHONY;
@@ -810,10 +810,10 @@ Proceed Executor::connect(
 		assert(!(dep_child->flags.get_flags() & F_TARGET_PHONY));
 		const Place &place_variable= dep_child->get_place();
 		const Place &place_flag= dep_child->flags.place_by_index(I_OPTIONAL);
-		place_variable <<
-			fmt("variable dependency %s must not be declared as optional dependency",
-			    show_dynamic_variable
-			    (plain_dep_child->place_target.place_name.unparametrized()));
+		place_variable << fmt(
+			"variable dependency %s must not be declared as optional dependency",
+			show(Dynamic_Variable_View(
+			plain_dep_child->place_target.place_name.unparametrized())));
 		place_flag << fmt("using %s", show(Flag_View(flags_chars[I_OPTIONAL])));
 		*this << "";
 		raise(ERROR_LOGICAL);
@@ -901,10 +901,10 @@ void Executor::check_unparametrized(
 	if (! j->find_parameter(parameter_name, parameter_place))
 		return;
 
-	parameter_place <<
-		fmt("dynamic dependency %s must not contain parameter %s",
-			show(Hash_Dep(0, hash_dep)),
-			show_prefix("$", parameter_name));
+	parameter_place << fmt(
+		"dynamic dependency %s must not contain parameter %s",
+		show(Hash_Dep(0, hash_dep)),
+		show(Prefix_View("$", parameter_name)));
 	Hash_Dep hash_dep_base= hash_dep;
 	hash_dep_base.get_front_word_nondynamic() &= ~F_TARGET_PHONY;
 	hash_dep_base.get_front_word_nondynamic()

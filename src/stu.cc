@@ -39,6 +39,7 @@ using std::shared_ptr;
 #include "rule.cc"
 #include "show.cc"
 #include "show_dep.cc"
+#include "show_flags.cc"
 #include "signal.cc"
 #include "state.cc"
 #include "target.cc"

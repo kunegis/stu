@@ -184,8 +184,8 @@ void Tokenizer::parse_tokens_file(
 				if (j == backtraces.begin()) {
 					j->place << format_errno_bare
 						(fmt("%s %s",
-						     show_operator("%include"),
-						     show(filename_diagnostic)));
+							show(Operator_View("%include")),
+							show(filename_diagnostic)));
 				} else {
 					j->print();
 				}
@@ -272,16 +272,17 @@ void Tokenizer::parse_tokens_arg(
 			++p;
 			if (*p == '\0') {
 				place << fmt("expected a flag character after %s",
-					show_operator('-'));
+					show(Operator_View('-')));
 				throw ERROR_LOGICAL;
 			}
 			if (! is_placed_flag_char(*p)) {
 				if (isalnum(*p)) {
 					place << fmt("invalid flag %s", show(Flag_View(*p)));
 				} else {
-					place << fmt("expected a flag character after dash %s, not %s",
-						show_operator('-'),
-						show_text(string(1, *p)));
+					place << fmt(
+						"expected a flag character after dash %s, not %s",
+						show(Operator_View('-')),
+						show(string(1, *p)));
 				}
 				throw ERROR_LOGICAL;
 			}
@@ -527,8 +528,8 @@ shared_ptr <Command> Tokenizer::parse_command()
 		}
 	}
 
-	current_place() << fmt("expected a closing %s", show_operator('}'));
-	place_open << fmt("for command started by %s", show_operator('{'));
+	current_place() << fmt("expected a closing %s", show(Operator_View('}')));
+	place_open << fmt("for command started by %s", show(Operator_View('{')));
 	throw ERROR_LOGICAL;
 }
 
@@ -545,9 +546,9 @@ void Tokenizer::parse_flag_or_name()
 
 	if ((*p == '-' || *p == '+' || *p == '~') && ! allow_special) {
 		if (*p == '+' || *p == '~') {
-			current_place() <<
-				fmt("an unquoted name must not begin with the character %s",
-					show_text(string(1, *p)));
+			current_place() << fmt(
+				"an unquoted name must not begin with the character %s",
+				show(string(1, *p)));
 			throw ERROR_LOGICAL;
 		}
 		Place place_dash= current_place();
@@ -556,16 +557,15 @@ void Tokenizer::parse_flag_or_name()
 		if (p == p_end) {
 			current_place() << "expected a flag character";
 			place_dash << fmt("after dash %s",
-				show_operator('-'));
+				show(Operator_View('-')));
 			throw ERROR_LOGICAL;
 		}
 		char flag_char= *p;
 		if (! isalnum(flag_char)) {
-			current_place() <<
-				fmt("expected a flag character, not %s",
-					show(string(1, flag_char)));
-			place_dash <<
-				fmt("after dash %s", show_operator('-'));
+			current_place() << fmt("expected a flag character, not %s",
+				show(string(1, flag_char)));
+			place_dash << fmt("after dash %s",
+				show(Operator_View('-')));
 			explain_flags();
 			throw ERROR_LOGICAL;
 		}
@@ -597,20 +597,20 @@ void Tokenizer::parse_flag_or_name()
 		shared_ptr <Place_Name> place_name= parse_name(allow_special);
 		if (place_name == nullptr) {
 			if (*p == '!') {
-				current_place() <<
-					fmt("character %s is invalid for persistent dependencies; use %s instead",
-						show_operator('!'),
-						show(Flag_View(flags_chars[I_PERSISTENT])));
+				current_place() << fmt(
+					"character %s is invalid for persistent dependencies; use %s instead",
+					show(Operator_View('!')),
+					show(Flag_View(flags_chars[I_PERSISTENT])));
 			} else if (*p == '?') {
-				current_place() <<
-					fmt("character %s is invalid for optional dependencies; use %s instead",
-						show_operator('?'),
-						show(Flag_View(flags_chars[I_OPTIONAL])));
+				current_place() << fmt(
+					"character %s is invalid for optional dependencies; use %s instead",
+					show(Operator_View('?')),
+					show(Flag_View(flags_chars[I_OPTIONAL])));
 			} else if (*p == '&') {
-				current_place() <<
-					fmt("character %s is invalid for trivial dependencies; use %s instead",
-						show_operator('&'),
-						show(Flag_View(flags_chars[I_TRIVIAL])));
+				current_place() << fmt(
+					"character %s is invalid for trivial dependencies; use %s instead",
+					show(Operator_View('&')),
+					show(Flag_View(flags_chars[I_TRIVIAL])));
 			} else {
 				current_place() << fmt("invalid character %s",
 					show(current_mbchar()));
@@ -702,20 +702,17 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 
 	if (braces) {
 		if (p == p_end) {
-			current_place() <<
-				fmt("expected a closing %s", show_operator('}'));
-			place_dollar <<
-				fmt("for parameter started by %s",
-				    show_operator("${"));
+			current_place() << fmt("expected a closing %s",
+				show(Operator_View('}')));
+			place_dollar << fmt("for parameter started by %s",
+				show(Operator_View("${")));
 			explain_parameter_character();
 			throw ERROR_LOGICAL;
 		} else if (*p != '}') {
-			current_place() <<
-				fmt("character %s cannot appear",
-				    show(current_mbchar()));
-			place_dollar <<
-				fmt("in parameter started by %s",
-				    show_operator("${"));
+			current_place() << fmt("character %s cannot appear",
+				show(current_mbchar()));
+			place_dollar << fmt("in parameter started by %s",
+				show(Operator_View("${")));
 			explain_parameter_character();
 			throw ERROR_LOGICAL;
 		}
@@ -723,13 +720,11 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 
 	if (p == p_parameter_name) {
 		if (p < p_end)
-			place_parameter_name <<
-				fmt("expected a parameter name, not %s",
-				    show(current_mbchar()));
+			place_parameter_name << fmt("expected a parameter name, not %s",
+				show(current_mbchar()));
 		else
-			place_parameter_name <<
-				"expected a parameter name";
-		place_dollar << fmt("after %s", show_operator('$'));
+			place_parameter_name << "expected a parameter name";
+		place_dollar << fmt("after %s", show(Operator_View('$')));
 		explain_parameter_syntax();
 		throw ERROR_LOGICAL;
 	}
@@ -737,9 +732,9 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 	parameter= string(p_parameter_name, p - p_parameter_name);
 
 	if (isdigit(parameter[0])) {
-		place_parameter_name <<
-			fmt("parameter name %s must not start with a digit",
-			    show_prefix("$", parameter));
+		place_parameter_name << fmt(
+			"parameter name %s must not start with a digit",
+			show(Prefix_View("$", parameter)));
 		throw ERROR_LOGICAL;
 	}
 	if (braces)
@@ -810,24 +805,20 @@ void Tokenizer::parse_version(
 	return;
 
  wrong_version: {
-		place_version <<
-			fmt("requested version %s using %s is incompatible with this Stu's version %s",
-			    show(version_req),
-			    show_operator("%version"),
-			    show(STU_VERSION)
-			    );
+		place_version << fmt(
+			"requested version %s using %s is incompatible with this Stu's version %s",
+			show(version_req),
+			show(Operator_View("%version")),
+			show(STU_VERSION));
 		explain_version();
 		throw ERROR_LOGICAL;
 	}
 
  error:
-	place_version <<
-		fmt("expected a version number of the form %s or %s, not %s",
-		    show("MAJOR.MINOR"),
-		    show("MAJOR.MINOR.PATCH"),
-		    show(version_req));
+	place_version << fmt("expected a version number of the form %s or %s, not %s",
+		show("MAJOR.MINOR"), show("MAJOR.MINOR.PATCH"), show(version_req));
 	place_percent << fmt("after %s",
-			     show_operator("%version"));
+		show(Operator_View("%version")));
 
 	throw ERROR_LOGICAL;
 }
@@ -934,9 +925,8 @@ bool Tokenizer::skip_space(bool &skipped_actual_space)
 					return ret;
 				}
 			} else {
-				current_place() <<
-					fmt("expected a character after %s",
-						show_operator('\\'));
+				current_place() << fmt("expected a character after %s",
+					show(Operator_View('\\')));
 				throw ERROR_LOGICAL;
 			}
 		}
@@ -1007,26 +997,22 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 
 			default:
 				if (*p >= 33 && *p <= 126)
-					place_backslash
-						<< fmt("invalid escape sequence %s",
-						       show_operator(frmt("\\%c", *p)));
+					place_backslash << fmt("invalid escape sequence %s",
+						show(Operator_View(frmt("\\%c", *p))));
 				else
-					place_backslash
-						<< fmt("invalid escape sequence %s",
-						       show_text(string(p-1, 2)));
-				place_begin_quote <<
-					fmt("in quote started by %s",
-					    show_operator('"'));
+					place_backslash << fmt("invalid escape sequence %s",
+						show(string(p-1, 2)));
+				place_begin_quote << fmt("in quote started by %s",
+					show(Operator_View('"')));
 				throw ERROR_LOGICAL;
 			}
 			ret.last_text() += c;
 			++p;
 		} else if (*p == '\0') {
 			current_place() <<
-				fmt("invalid character %s", show_text(string(1, '\0')));
-			place_begin_quote <<
-				fmt("in quote started by %s",
-				    show_operator('"'));
+				fmt("invalid character %s", show(string(1, '\0')));
+			place_begin_quote << fmt("in quote started by %s",
+				show(Operator_View('"')));
 			throw ERROR_LOGICAL;
 		} else {
 			if (*p == '\n') {
@@ -1037,8 +1023,8 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 		}
 	}
 	/* Reached end of file without closing the quote */
-	current_place() << fmt("expected a closing %s", show_operator('"'));
-	place_begin_quote << fmt("for quote started by %s", show_operator('"'));
+	current_place() << fmt("expected a closing %s", show(Operator_View('"')));
+	place_begin_quote << fmt("for quote started by %s", show(Operator_View('"')));
 	throw ERROR_LOGICAL;
  end_of_double_quote:;
 }
@@ -1054,8 +1040,8 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 			return;
 		} else if (*p == '\0') {
 			current_place() << fmt("invalid character %s", show(string(p, 1)));
-			place_begin_quote <<
-				fmt("in quote started by %s", show_operator('\''));
+			place_begin_quote << fmt("in quote started by %s",
+				show(Operator_View('\'')));
 			throw ERROR_LOGICAL;
 		} else {
 			if (*p == '\n') {
@@ -1066,8 +1052,8 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 		}
 	}
 	/* Reached end of file without closing the quote */
-	current_place() << fmt("expected a closing %s", show_operator('\''));
-	place_begin_quote << fmt("for quote started by %s", show_operator('\''));
+	current_place() << fmt("expected a closing %s", show(Operator_View('\'')));
+	place_begin_quote << fmt("for quote started by %s", show(Operator_View('\'')));
 	throw ERROR_LOGICAL;
 }
 
@@ -1078,7 +1064,8 @@ bool Tokenizer::parse_escape()
 	Place place_escape= current_place();
 	++p;
 	if (p == p_end) {
-		place_escape << fmt("expected a character after %s", show_operator('\\'));
+		place_escape << fmt("expected a character after %s",
+			show(Operator_View('\\')));
 		throw ERROR_LOGICAL;
 	}
 
@@ -1090,9 +1077,8 @@ bool Tokenizer::parse_escape()
 	}
 
 	if (*p == '\0') {
-		place_escape << fmt
-			("expected a non-nul character after %s",
-			 show_operator('\\'));
+		place_escape << fmt ("expected a non-nul character after %s",
+			show(Operator_View('\\')));
 		throw ERROR_LOGICAL;
 	}
 
@@ -1124,7 +1110,7 @@ void Tokenizer::parse_directive(
 		else
 			place_directive
 				<< "expected a directive name";
-		place_percent << fmt("after %s", show_operator('%'));
+		place_percent << fmt("after %s", show(Operator_View('%')));
 		throw ERROR_LOGICAL;
 	}
 
@@ -1138,9 +1124,7 @@ void Tokenizer::parse_directive(
 		parse_version_directive(place_percent);
 	} else {
 		/* Invalid directive */
-		place_percent <<
-			fmt("invalid directive %s",
-			    show_prefix("%", name));
+		place_percent << fmt("invalid directive %s", show(Prefix_View("%", name)));
 		throw ERROR_LOGICAL;
 	}
 }
@@ -1152,14 +1136,13 @@ void Tokenizer::parse_include_directive(
 {
 	TRACE_FUNCTION();
 	if (context == DYNAMIC) {
-		place_percent
-			<< fmt("%s cannot appear in dynamic dependencies",
-				show_operator("%include"));
+		place_percent << fmt("%s cannot appear in dynamic dependencies",
+			show(Operator_View("%include")));
 		throw ERROR_LOGICAL;
 	}
 	if (context == OPTION_C || context == OPTION_F) {
-		place_percent
-			<< fmt("%s cannot be used", show_operator("%include"));
+		place_percent << fmt("%s cannot be used",
+			show(Operator_View("%include")));
 		throw ERROR_LOGICAL;
 	}
 
@@ -1171,15 +1154,14 @@ void Tokenizer::parse_include_directive(
 				? "expected a filename"
 				: fmt("expected a filename, not %s",
 					show(current_mbchar())));
-		place_percent << fmt("after %s", show_operator("%include"));
+		place_percent << fmt("after %s", show(Operator_View("%include")));
 		throw ERROR_LOGICAL;
 	}
 	if (place_name->get_n() != 0) {
-		place_name->place <<
-			fmt("name %s must not be parametrized",
-				show(*place_name));
+		place_name->place << fmt("name %s must not be parametrized",
+			show(*place_name));
 		place_percent << fmt("after %s",
-			show_operator("%include"));
+			show(Operator_View("%include")));
 		throw ERROR_LOGICAL;
 	}
 
@@ -1200,10 +1182,10 @@ void Tokenizer::parse_include_directive(
 			for (auto j= backtraces.rbegin(); j != backtraces.rend(); ++j) {
 				Backtrace backtrace(*j);
 				if (j == backtraces.rbegin()) {
-					backtrace.message=
-						fmt("recursive inclusion of %s using %s",
-							show(filename_include),
-							show_operator("%include"));
+					backtrace.message= fmt(
+						"recursive inclusion of %s using %s",
+						show(filename_include),
+						show(Operator_View("%include")));
 				}
 				backtraces_backward.push_back(backtrace);
 			}

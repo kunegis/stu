@@ -220,6 +220,6 @@ void check_status()
 	if (!stu_status)
 		return;
 	print_error(fmt("refusing to run recursive Stu; unset %s to circumvent",
-			show_operator("$" ENV_STU_STATUS)));
+		show(Operator_View("$" ENV_STU_STATUS))));
 	exit(ERROR_FATAL);
 }

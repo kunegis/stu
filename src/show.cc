@@ -155,60 +155,9 @@ string show(const Parts &parts, Style style)
 	return ret;
 }
 
-string show_operator(char c, Style style)
-{
-	Parts parts;
-	parts.append_operator(string(1, c));
-	return show(parts, style);
-}
-
-string show_operator(string s, Style style)
-{
-	Parts parts;
-	parts.append_operator(s);
-	return show(parts, style);
-}
-
-string show_text(string text, Style style)
-{
-	Parts parts;
-	parts.append_text(text);
-	return show(parts, style);
-}
-
-void render_dynamic_variable(string name, Parts &parts, Rendering)
-{
-	parts.append_marker("$[");
-	parts.append_text(name);
-	parts.append_marker("]");
-}
-
-string show_dynamic_variable(string name, Style style)
-{
-	Parts parts;
-	render_dynamic_variable(name, parts);
-	return show(parts, style);
-}
-
 void render(string s, Parts &parts, Rendering)
 {
 	parts.append_text(s);
-}
-
-template <typename T>
-void render_prefix(string prefix, const T &object, Parts &parts, Rendering rendering)
-{
-	TRACE_FUNCTION();
-	parts.append_marker(prefix);
-	render(object, parts, rendering);
-}
-
-template <typename T>
-string show_prefix(string prefix, const T &object, Style style)
-{
-	Parts parts;
-	render_prefix(prefix, object, parts);
-	return show(parts, style);
 }
 
 template <typename T>
@@ -217,4 +166,16 @@ string show(const T &object, Style style, Rendering rendering)
 	Parts parts;
 	render(object, parts, rendering);
 	return show(parts, style);
+}
+
+template <typename T>
+void render(Prefix_View <T> prefix_view, Parts &parts, Rendering rendering)
+{
+	parts.append_marker(prefix_view.prefix);
+	render(prefix_view.object, parts, rendering);
+}
+
+void render(Operator_View operator_view, Parts &parts, Rendering)
+{
+	parts.append_operator(operator_view.op);
 }

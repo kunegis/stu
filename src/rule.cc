@@ -160,10 +160,10 @@ void Rule::check_unparametrized(
 			string parameter= plain_dep->place_target.place_name.get_parameters()[jj];
 			if (parameters.count(parameter) != 0) continue;
 
-			plain_dep->place_target.place_name.get_places()[jj] <<
-				fmt("parameter %s cannot appear in dependency %s",
-					show_prefix("$", parameter),
-					show(plain_dep->place_target));
+			plain_dep->place_target.place_name.get_places()[jj] << fmt(
+				"parameter %s cannot appear in dependency %s",
+				show(Prefix_View("$", parameter)),
+				show(plain_dep->place_target));
 			if (targets.size() == 1) {
 				targets[0]->place <<
 					fmt("because it does not appear in target %s",

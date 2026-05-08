@@ -197,9 +197,10 @@ shared_ptr <const Dep> Plain_Dep::instantiate(
 	string this_name= ret_target->place_name.unparametrized();
 	if ((flags.get_flags() & F_VARIABLE) && this_name.find('=') != string::npos) {
 		assert((ret_target->flags & F_TARGET_PHONY) == 0);
-		place << fmt("dynamic variable %s cannot be instantiated with parameter value that contains %s",
-			show_dynamic_variable(this_name),
-			show_operator('='));
+		place << fmt(
+			"dynamic variable %s cannot be instantiated with parameter value that contains %s",
+			show(Dynamic_Variable_View(this_name)),
+			show(Operator_View('=')));
 		throw ERROR_LOGICAL;
 	}
 
@@ -227,8 +228,9 @@ Hash_Dep Plain_Dep::get_target() const
 void Plain_Dep::render(Parts &parts, Rendering rendering) const
 {
 #ifndef NDEBUG
-	if (render_flags(flags.get_flags(), parts, rendering))
-		parts.append_space();
+	size_t s= parts.size();
+	::render(Flags_View(flags.get_flags()), parts, rendering);
+	if (s != parts.size()) parts.append_space();
 #endif /* ! NDEBUG */
 	if (flags.get_flags() & F_VARIABLE)
 		parts.append_marker("$[");
@@ -269,8 +271,9 @@ Hash_Dep Dynamic_Dep::get_target() const
 void Dynamic_Dep::render(Parts &parts, Rendering rendering) const
 {
 #ifndef NDEBUG
-	if (render_flags(flags.get_flags() & ~F_TARGET_DYNAMIC, parts, rendering))
-		parts.append_space();
+	size_t s= parts.size();
+	::render(Flags_View(flags.get_flags() & ~F_TARGET_DYNAMIC), parts, rendering);
+	if (s != parts.size()) parts.append_space();
 #endif /* ! NDEBUG */
 	parts.append_marker("[");
 	dep->render(parts, rendering | R_NO_COMPOUND_PARENTHESES);
@@ -333,8 +336,9 @@ const Place &Concat_Dep::get_place() const
 void Concat_Dep::render(Parts &parts, Rendering rendering) const
 {
 #ifndef NDEBUG
-	if (render_flags(flags.get_flags(), parts, rendering))
-		parts.append_space();
+	size_t s= parts.size();
+	::render(Flags_View(flags.get_flags()), parts, rendering);
+	if (s != parts.size()) parts.append_space();
 #endif /* ! NDEBUG */
 	for (const shared_ptr <const Dep> &d: deps)
 		d->render(parts, rendering);
@@ -469,7 +473,7 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		 * left component has an input redirection, but the current data
 		 * structures do not allow that, and therefore we make that invalid. */
 		a->get_place() << fmt("%s cannot have input redirection using %s",
-			show(a), show_operator('<'));
+			show(a), show(Operator_View('<')));
 		b->get_place() << fmt("because %s is concatenated to it",
 				      show(b));
 		error |= ERROR_LOGICAL;
@@ -480,7 +484,7 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		/* We don't save the place for the '<', so we cannot have "using '<'" on
 		 * an extra line. */
 		b->get_place() << fmt("%s cannot have input redirection using %s",
-			show(b), show_operator('<'));
+			show(b), show(Operator_View('<')));
 		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;
@@ -491,7 +495,7 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		b->get_place() << fmt("%s cannot be declared as %s",
 				      show(b), flags_placed_phrases[i_flag]);
 		b->flags.get()[0].place << fmt("using %s",
-			show_operator(frmt("-%c", flags_chars[i_flag])));
+			show(Operator_View(frmt("-%c", flags_chars[i_flag]))));
 		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERROR_LOGICAL;
 		return nullptr;

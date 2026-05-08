@@ -1,5 +1,12 @@
 #include "show_dep.hh"
 
+void render(Dynamic_Variable_View v, Parts &parts, Rendering)
+{
+	parts.append_marker("$[");
+	parts.append_text(v.name);
+	parts.append_marker("]");
+}
+
 #ifndef NDEBUG
 
 string show_trace(const shared_ptr <const Dep> &dep)

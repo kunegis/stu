@@ -792,16 +792,9 @@ shared_ptr <const Dep> Executor::append_top(
 	return ret;
 }
 
-Proceed Executor::connect(
-	shared_ptr <const Dep> dep_this,
+bool Executor::check_clash_without_target_flags(
 	shared_ptr <const Dep> dep_child)
 {
-	TRACE_FUNCTION(show_trace(dep_this));
-	TRACE("dep_child= %s", show_trace(dep_child));
-	assert(dep_child->is_normalized());
-	assert(! to <Root_Dep> (dep_child));
-	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);
-
 	if ((dep_child->flags.get_flags() & (F_VARIABLE | F_OPTIONAL))
 		== (F_VARIABLE | F_OPTIONAL))
 	{
@@ -817,8 +810,99 @@ Proceed Executor::connect(
 		place_flag << fmt("using %s", show(Flag_View(flags_chars[I_OPTIONAL])));
 		*this << "";
 		raise(ERROR_LOGICAL);
-		return P_NOTHING;
+		return true;
 	}
+
+	return false;
+}
+
+bool Executor::check_clash_with_target_flags(
+	shared_ptr <const Dep> dep_this,
+	shared_ptr <const Dep> dep_child)
+{
+	TRACE_FUNCTION();
+	TRACE("dep_this= %s; dep_child= %s", show(dep_this), show(dep_child));
+	Flags flags= dep_child->flags.get_flags();
+	TRACE("flags= %s", show(Flags_View(flags)));
+
+	if ((flags & (F_PERSISTENT | F_OPTIONAL)) == (F_PERSISTENT | F_OPTIONAL)) {
+		const Place &place_persistent=
+			dep_child->flags.place_by_index(I_PERSISTENT);
+		const Place &place_optional=
+			dep_child->flags.place_by_index(I_OPTIONAL);
+		place_persistent << fmt(
+			"declaration of persistent dependency using %s",
+			show(Flag_View(flags_chars[I_PERSISTENT])));
+		place_optional << fmt(
+			"clashes with declaration of optional dependency using %s",
+			show(Flag_View(flags_chars[I_OPTIONAL])));
+		if (to <Root_Dep> (dep_this)) {
+			dep_child->get_place() << fmt(
+				"for target %s",
+				show(dep_child));
+		} else {
+			dep_child->get_place() << fmt(
+				"for target %s, needed by %s",
+				show(dep_child), show(dep_this->get_target()));
+			*this << "";
+		}
+		explain_clash_op();
+		raise(ERROR_LOGICAL);
+		return true;
+	}
+
+	int n= std::bitset <sizeof(Flags) * CHAR_BIT> (flags & F_ATTRIBUTE).count();
+	TRACE("n= %s", frmt("%d", n));
+	if (n > 1) {
+		string possible= "";
+		for (Flags f= F_ATTRIBUTE, i= 0; f; f >>= 1, ++i) {
+			if (!(f & 1)) continue;
+			if (! possible.empty()) possible += "/";
+			possible += show(Flag_View(flags_chars[i]));
+		}
+		int count= 0;
+		for (Flags f= flags & F_ATTRIBUTE, i= 0; f; f >>= 1, ++i) {
+			if (!(f & 1)) continue;
+			const char *text;
+			if (count == 0) {
+				text= "declaration of dependency using %s";
+			} else if (count == 1) {
+				text= "clashes with %s";
+			} else {
+				text= "and %s";
+			}
+			dep_child->flags.place_by_index(i) << fmt(text,
+				show(Flag_View(flags_chars[i])));
+			++count;
+		}
+		if (to <Root_Dep> (dep_this)) {
+			dep_child->get_place() << fmt(
+				"for target %s",
+				show(dep_child));
+		} else {
+			dep_child->get_place() << fmt(
+				"for target %s, needed by %s",
+				show(dep_child), show(dep_this->get_target()));
+			*this << "";
+		}
+		explain_clash_n0C();
+		raise(ERROR_LOGICAL);
+		return true;
+	}
+
+	return false;
+}
+
+Proceed Executor::connect(
+	shared_ptr <const Dep> dep_this,
+	shared_ptr <const Dep> dep_child)
+{
+	TRACE_FUNCTION(show_trace(dep_this));
+	TRACE("dep_child= %s", show_trace(dep_child));
+	assert(dep_child->is_normalized());
+	assert(! to <Root_Dep> (dep_child));
+	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);
+	if (check_clash_without_target_flags(dep_child)) return P_NOTHING;
 
 	Executor *child= get_executor(dep_child);
 	if (!child) {
@@ -833,31 +917,7 @@ Proceed Executor::connect(
 	dep_child= child->parents[this];
 	assert(dep_child);
 	dep_child->check();
-
-	if ((dep_child->flags.get_flags() & (F_PERSISTENT | F_OPTIONAL))
-		== (F_PERSISTENT | F_OPTIONAL))
-	{
-		const Place &place_persistent=
-			dep_child->flags.place_by_index(I_PERSISTENT);
-		const Place &place_optional=
-			dep_child->flags.place_by_index(I_OPTIONAL);
-		place_persistent <<
-			fmt("declaration of persistent dependency using %s",
-				show(Flag_View(flags_chars[I_PERSISTENT])));
-		place_optional <<
-			fmt("clashes with declaration of optional dependency using %s",
-				show(Flag_View(flags_chars[I_OPTIONAL])));
-		if (to <Root_Dep> (dep_this)) {
-			dep_child->get_place() << fmt("for target %s", show(dep_child));
-		} else {
-			dep_child->get_place() << fmt("for target %s, needed by %s",
-				show(dep_child), show(dep_this->get_target()));
-			*this << "";
-		}
-		explain_clash();
-		raise(ERROR_LOGICAL);
-		return P_NOTHING;
-	}
+	if (check_clash_with_target_flags(dep_this, dep_child)) return P_NOTHING;
 
 	Proceed proceed_child= child->execute(dep_child);
 	TRACE("proceed_child= %s", show(proceed_child));

@@ -1,0 +1,3 @@
+../../bin/stu.test: declaration of dependency using -n
+../../bin/stu.test: clashes with -0
+../../bin/stu.test: for target "A"

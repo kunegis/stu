@@ -1,14 +1,4 @@
 #
-# Make it an error when -n/-0/-C are used together.
-#
-
-A: [-0n B]; # Error
-A: -n -0 B; # Error
-A: -n [B]; B={-0 C} # Error
-A: -n @x; @x: -0 C; # Error
-A: -n @x; @x: @y; @y: -0 C; # Error
-
-#
 # Allow access to environment variables via e.g. $(HOME).  Using this is
 # likely to be an antipattern -- the idiomatic thing to do is set a
 # symlink to the directory in question.  Other cases are even worse,
@@ -382,6 +372,8 @@ B {}
 
 -n >list.1 { find ... ; }
 -0 >list.2 { find ... -print0 ; }
+-n -0 A; # Error: clash
+-n -o A; # Allowed
 
 #
 # Simplify object classes if possible (targets, names, plain_dep, hash_dep, etc.).

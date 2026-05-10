@@ -1,0 +1,4 @@
+B:1:2: declaration of dependency using -n
+main.stu:1:5: clashes with -0
+B:1:4: for target "C", needed by [B]
+main.stu:1:8: [B] is needed by "A"

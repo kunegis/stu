@@ -337,8 +337,7 @@ bool Parser::parse_target(
 		Index flag_index= flag_get_index(flag_token->flag);
 		if (((1 << flag_index) & F_PLACED_TARGET) == 0) {
 			string possible;
-			for (Flags f= F_PLACED_TARGET, i= 0; f; f >>= 1, ++i)
-			{
+			for (Flags f= F_PLACED_TARGET, i= 0; f; f >>= 1, ++i) {
 				if (!(f & 1)) continue;
 				if (! possible.empty()) possible += "/";
 				possible += show(Flag_View(flags_chars[i]));

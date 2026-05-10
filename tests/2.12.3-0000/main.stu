@@ -1,0 +1,10 @@
+A: -n @x
+{
+	cp C A
+}
+
+@x: @y;
+
+@y: -0 C {}
+
+C={CORRECT}

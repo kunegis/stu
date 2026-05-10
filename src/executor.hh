@@ -207,7 +207,6 @@ protected:
 	/* Push a dependency to the default buffer, breaking down non-normalized
 	 * dependencies while doing so.  DEP does not have to be normalized. */
 	void push_normalized(shared_ptr <const Dep> dep);
-
 	void push_result(shared_ptr <const Dep> dd);
 	Proceed connect(shared_ptr <const Dep> dep_this,
 			shared_ptr <const Dep> dep_child);
@@ -215,6 +214,11 @@ protected:
 			shared_ptr <const Dep> dep_child);
 	shared_ptr <const Dep> append_top(shared_ptr <const Dep> dep,
 					  shared_ptr <const Dep> top);
+	bool check_clash_without_target_flags(
+		shared_ptr <const Dep> dep_child);
+	bool check_clash_with_target_flags(
+		shared_ptr <const Dep> dep_this,
+		shared_ptr <const Dep> dep_child);
 
 	virtual int get_depth() const {return 0; }
 	/* -1 when undefined as in concatenated executors and the root executor, in which

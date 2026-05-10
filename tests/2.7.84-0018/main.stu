@@ -1,6 +1,0 @@
-A: [-C -n B] {
-	cp C A
-}
-
-B = {C}
-C = {CORRECT}

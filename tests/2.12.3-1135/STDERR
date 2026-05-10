@@ -1,0 +1,5 @@
+main.stu:1:24: declaration of dependency using -0
+main.stu:1:5: clashes with -C
+main.stu:1:26: for target "C", needed by @y
+main.stu:1:15: @y is needed by @x
+main.stu:1:7: @x is needed by "A"

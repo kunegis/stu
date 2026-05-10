@@ -1,11 +1,20 @@
 #include "explain.hh"
 
-void explain_clash()
+void explain_clash_op()
 {
 	if (! option_E) return;
 	fputs("Explanation: A dependency must not be declared as persistent (with '-p')\n"
 		"and optional (with '-o') at the same time, as that would mean that its\n"
 		"command is never executed.\n",
+		stderr);
+}
+
+void explain_clash_n0C()
+{
+	if (! option_E) return;
+	fputs("Explanation: It is not possible to mix the options -n/-0/-C.  These\n"
+		"options determine the syntax used to parsed dynamic dependencies.  At\n"
+		"most a single of these options can be used for a given dependency.\n",
 		stderr);
 }
 

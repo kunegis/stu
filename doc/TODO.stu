@@ -1,15 +1,4 @@
 #
-# shared_ptr <const Dep>:  This can be replaced by "const Dep *" in certain function
-# arguments, when the argument is not cloned or saved somewhere else.
-#
-
-#
-# sh/test:  The check that tests have correct runtime depending on whether they are long
-# or non-long should only be executed in DEBUG mode.  (It should not occur with "make
-# check".)
-#
-
-#
 # Make it an error when -n/-0/-C are used together.
 #
 

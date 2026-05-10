@@ -1,16 +1,4 @@
 #
-# Break up File_Executor::execute() into manageable functions.
-#
-
-#
-# Verbose mode with:
-# * ls-like output after each built file
-# * Number of files/targets built / to be built / etc. after each built file
-# Use option '-v'.
-# Allow to output this into a file.
-#
-
-#
 # shared_ptr <const Dep>:  This can be replaced by "const Dep *" in certain function
 # arguments, when the argument is not cloned or saved somewhere else.
 #
@@ -65,6 +53,14 @@ $(aaa$(bbb)aaa) # Error
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
 # forbidden as the first character in unquoted names.  Needs a new type for
 # unparsed targets.  This is very similar to supporting environment variables.
+#
+
+#
+# Verbose mode with:
+# * ls-like output after each built file
+# * Number of files/targets built / to be built / etc. after each built file
+# Use option '-v'.
+# Allow to output this into a file.
 #
 
 #

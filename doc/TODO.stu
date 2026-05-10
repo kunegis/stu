@@ -1,13 +1,4 @@
 #
-# Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
-# * Use --no-dereference for -P [like cp]
-#
-
-#
-# sh/test_clean: find_source_files:  Do not exclude doc/.
-#
-
-#
 # Break up File_Executor::execute() into manageable functions.
 #
 
@@ -63,6 +54,11 @@ $(aaa$(bbb)aaa) # Error
 # the wanted content and don't update the file if identical.  Very useful when someone
 # changes the content in the stu file, and then re-builds.  At the moment, it is a common
 # complaint that Stu does _not_ re-build in that case.
+#
+
+#
+# Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
+# * Use --no-dereference for -P [like cp]
 #
 
 #

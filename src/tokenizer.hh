@@ -88,10 +88,9 @@ private:
 	 * including on empty names. ALLOW_SPECIAL:  whether the name is allowed to start
 	 * with one of '-+~'.  E_SLASH set in ENVIRONMENT as appropriate. */
 
-	bool parse_parameter(string &parameter, Place &place_dollar);
-	/* Parse a parameter starting with '$'.  Return whether a parameter was parsed
-	 * (always TRUE).  The current position must be on the '$' character, not after
-	 * it.  If a parameter is found, write it into the parameters. */
+	void parse_dollar(Place_Name &);
+	void parse_parameter(string &name);
+	void parse_environment_variable(string &name);
 
 	/* The following three functions parse the two types of quotes, and escapes.  The
 	 * pointer must be on a ", ', or \ character respectively.  The read string is
@@ -143,8 +142,10 @@ private:
 
 	static bool is_name_char(char);
 	static bool is_operator_char(char);
-	static void parse_version(string version_req,
-				  const Place &place_version, const Place &place_percent);
+	static void parse_version(
+		string version_req,
+		const Place &place_version,
+		const Place &place_percent);
 
 	/* Reads from FD.  MEM must be null when called, and must be free()'d when
 	 * non-null after (even in case of error).  If SIZE is nonzero, must read SIZE to

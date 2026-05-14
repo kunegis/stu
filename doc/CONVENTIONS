@@ -1,79 +1,63 @@
-Here are some conventions to use when writing Stu scripts.  These are
-used by the authors, and you may have very good reasons to not do things
-this way.  Still, these are useful, and they are also very good tips if you
-don't use Stu.
+Here are some conventions to use when writing Stu scripts.  These are used by the authors,
+and you may have very good reasons to not do things this way.  Still, these are useful,
+and they are also very good tips if you don't use Stu.
 
-As a note, Stu itself does not enforce any of those, and you can
-perfectly use Stu under wildly varying conventions.  That being said, we
-find these conventions very useful.
+As a note, Stu itself does not enforce any of those, and you can perfectly use Stu under
+wildly varying conventions.  That being said, we find these conventions very useful.
 
-* Prefer environment variables over parameters.  When a program has a
-  "logfile" option, make it read the "logfile" environment variable
-  rather than passing the logfile name on the command line.  It's
-  usually easier to read out an environment variable than parse a
-  command line, less likely to break when more options are added, easier
-  to pass from within Stu, and has the slight advantage of documenting
-  the meaning of the passed value at the call site.  A disadvantage is
-  that it may clash with existing environment variables -- see next
-  point.
-* Use lowercase for parameter names.  It's less likely to clash with
-  existing environment variables, and makes code read more like a
-  "normal programming language".
-* Directory names end in '/' when used as Stu target/dependency names.
-  Ending directory filenames in '/' is always a good idea, except in
-  path lists delimited by ':', where ending '/' should be omitted.
-* If there is a setting that will be changed occasionally by hand (such
-  as enabling/disabling assertions), it may be easier to compile two
-  versions of the programs, with the value of that setting encoded in
-  the filename.
-* Separate names of parameters in filenames by dots ('.'), and avoid
-  dots within individual parameter values.  That will avoid certain
-  filename matching errors.
-* Avoid "cd".  In a single project that uses Stu, have a base directory
-  in which 'main.stu' is located, and do everything from there.  Inside
-  each program that is run, assume the currently directory is that base
-  directory.
-* Prefer symlinks over configuration files.  Often, a project needs to
-  access files outside its own directory.  To do this, prefer to have a
-  symlink to the external directory and access the files through that,
-  rather than having the path stored in a configuration file or
-  environment variable.
-* Don't use system-wide configurations.  Some systems (e.g. databases)
-  rely on configuration files that are outside the current directory,
-  for instance by placing their configuration in /etc/.  Avoid this as
-  much as possible.  Configuration files should be part of the project
-  like any other file, and should be put where other files are.  (Of
-  course, for things like user options, system- and user-wide
-  configuration files are 100% OK.)  An advantage of this is that you
-  can use the configuration as a dependency, and even build it
-  automatically if necessary.
-* Don't use environment variables for configuration, as Stu will not
-  notice when they change.  Instead, put their content in a single file,
-  and use Stu's $[FILENAME] syntax to access it.
-* Avoid in-place changes.  If you generate a file and then change it in
-  place (e.g. using sed -i), consider converting the code to using a
-  pipe, or to using two separate commands and files in Stu.
-* As a general rule, the name of a file is not part of the file.  This
-  is old Unix wisdom, which is useful in many circumstances.  This means
-  for instance that program behavior should not change based on the
-  filename.  Also, programs that manipulate files should not add or
-  remove filename suffixes automatically.
-* By default, programs shouldn't output unnecessary stuff like memory
-  usage, "welcome" text, copyright info, debugging info, etc.  A program
-  should output nothing and stdout, except for what is the purpose of
-  the program.  Output of extra info can be enabled by
-  verbose/debug/help options if necessary.  Likewise, stderr should only
-  output error messages.  (Yes, we know that Stu violates this--the reason is
-  that Make violates it, and having a user interface similar to Make is more
-  important here.)
-* The exit status should be zero on success, and nonzero on error.  On
-  error, values in the range 1-126 should be used.  It is a common error
-  for badly-written programs to output an error message on error, but
-  then exiting with status 0.  This breaks Stu.  The exit status 127 should only
-  be used when a program fails between fork() and exec(); this is what /bin/sh
-  and Stu do.  Larger exit codes are used automatically when processes are
+* Prefer environment variables over parameters.  When a program has a "logfile" option,
+  make it read the "logfile" environment variable rather than passing the logfile name on
+  the command line.  It's usually easier to read out an environment variable than parse a
+  command line, less likely to break when more options are added, easier to pass from
+  within Stu, and has the slight advantage of documenting the meaning of the passed value
+  at the call site.  A disadvantage is that it may clash with existing environment
+  variables -- see next point.
+* Use lowercase for parameter names.  It's less likely to clash with existing environment
+  variables, and makes code read more like a "normal programming language".
+* Directory names end in '/' when used as Stu target/dependency names.  Ending directory
+  filenames in '/' is always a good idea, except in path lists delimited by ':', where
+  ending '/' should be omitted.
+* If there is a setting that will be changed occasionally by hand (such as
+  enabling/disabling assertions), it may be easier to compile two versions of the
+  programs, with the value of that setting encoded in the filename.
+* Separate names of parameters in filenames by dots ('.'), and avoid dots within
+  individual parameter values.  That will avoid certain filename matching errors.
+* Avoid "cd".  In a single project that uses Stu, have a base directory in which
+  'main.stu' is located, and do everything from there.  Inside each program that is run,
+  assume the currently directory is that base directory.
+* Prefer symlinks over configuration files.  Often, a project needs to access files
+  outside its own directory.  To do this, prefer to have a symlink to the external
+  directory and access the files through that, rather than having the path stored in a
+  configuration file or environment variable.
+* Don't use system-wide configurations.  Some systems (e.g. databases) rely on
+  configuration files that are outside the current directory, for instance by placing
+  their configuration in /etc/.  Avoid this as much as possible.  Configuration files
+  should be part of the project like any other file, and should be put where other files
+  are.  (Of course, for things like user options, system- and user-wide configuration
+  files are 100% OK.)  An advantage of this is that you can use the configuration as a
+  dependency, and even build it automatically if necessary.
+* Don't use environment variables for configuration, as Stu will not notice when they
+  change.  Instead, put their content in a single file, and use Stu's $[FILENAME] syntax
+  to access it.
+* Avoid in-place changes.  If you generate a file and then change it in place (e.g. using
+  sed -i), consider converting the code to using a pipe, or to using two separate commands
+  and files in Stu.
+* As a general rule, the name of a file is not part of the file.  This is old Unix wisdom,
+  which is useful in many circumstances.  This means for instance that program behavior
+  should not change based on the filename.  Also, programs that manipulate files should
+  not add or remove filename suffixes automatically.
+* By default, programs shouldn't output unnecessary stuff like memory usage, "welcome"
+  text, copyright info, debugging info, etc.  A program should output nothing and stdout,
+  except for what is the purpose of the program.  Output of extra info can be enabled by
+  verbose/debug/help options if necessary.  Likewise, stderr should only output error
+  messages.  (Yes, we know that Stu violates this--the reason is that Make violates it,
+  and having a user interface similar to Make is more important here.)
+* The exit status should be zero on success, and nonzero on error.  On error, values in
+  the range 1-126 should be used.  It is a common error for badly-written programs to
+  output an error message on error, but then exiting with status 0.  This breaks Stu.  The
+  exit status 127 should only be used when a program fails between fork() and exec(); this
+  is what /bin/sh and Stu do.  Larger exit codes are used automatically when processes are
   interupted by signals, etc.
-* Programs shouldn't generate logfiles when not asked to.  There are too many
-  programs that clutter the current directory or the home directory with
-  unasked-for logfiles.  Have a proper opt-in "log" option that lets the user
-  chose a logfile name.
+* Programs shouldn't generate logfiles when not asked to.  There are too many programs
+  that clutter the current directory or the home directory with unasked-for logfiles.
+  Have a proper opt-in "log" option that lets the user chose a logfile name.

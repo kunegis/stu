@@ -120,10 +120,10 @@ type names, e.g., we have 'Dynamic_Dep' and similar.
 
 == Shell scripts ==
 
-When writing shell scripts, make sure to follow POSIX.  Writing portable and safe shell
-scripts is hard, and the authors follow many more rules than those given here, mostly
-based on experience.  There are many more things to be said about portable shell
-scripting.
+All scripts use '#!/bin/sh.  When writing shell scripts, make sure to follow POSIX.
+Writing portable and safe shell scripts is hard, and the authors follow many more rules
+than those given here, mostly based on experience.  There are many more things to be said
+about portable shell scripting.
 
 * Only use POSIX features of the shell and of standard tools.  Read the manpage of a tool
   on the POSIX website (http://pubs.opengroup.org/onlinepubs/9699919799/), rather than
@@ -151,9 +151,9 @@ scripting.
   assign its result to a variable, and then use its result from that variable.  Using $()
   directly embedded in other commands will make the shell ignore failure of the inner
   shell.  There is no good solution to the "first part of pipeline fails silently"
-  problem.
+  problem yet.
 * "set -o pipefail" is not used.  Even though it is in POSIX since 2024, it is not
-  portable as some shells don't have it (e.g., Dash).  In the future, we may use it.
+  portable as some shells don't have it (e.g., Dash).  In the future, we will use it.
 * Use $(...) instead of `...`.  It avoids many quoting pitfalls.  In shell syntax,
   backticks are a form of quote which also executes its content.  Thus, characters such as
   other backticks and backslashes inside it must be quoted by a backslash, leading to ugly

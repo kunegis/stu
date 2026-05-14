@@ -1,9 +1,6 @@
 This file lists short option letters used and proposed by Stu, and gives a comparison to
 those prescribed by POSIX for Make, and those used in other implementations of Make.
 
-Legend
-======
-
 S   Implemented in Stu and considered stable with respect to version numbers:  The
     behavior will not be changed within the same major version number of Stu
 s   Implemented in Stu and considered unstable:  May be subject to change at any time

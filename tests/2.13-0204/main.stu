@@ -1,0 +1,6 @@
+A: $(NAME)(.123)
+{
+	cp list.123 A
+}
+
+list.123 = {CORRECT}

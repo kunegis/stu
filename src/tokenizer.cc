@@ -217,11 +217,12 @@ void Tokenizer::parse_tokens_file(
 	}
 }
 
-void Tokenizer::parse_tokens_string(std::vector <shared_ptr <Token> > &tokens,
-				    Context context,
-				    Place &place_end,
-				    string string_,
-				    const Place &place_string)
+void Tokenizer::parse_tokens_string(
+	std::vector <shared_ptr <Token> > &tokens,
+	Context context,
+	Place &place_end,
+	string string_,
+	const Place &place_string)
 {
 	std::vector <Backtrace> backtraces;
 	std::vector <string> filenames;
@@ -554,9 +555,8 @@ void Tokenizer::parse_flag_or_name()
 		Place place_dash= current_place();
 		++p;
 		assert(p <= p_end);
-		if (p == p_end) {
-			current_place() << "expected a flag character";
-			place_dash << fmt("after dash %s",
+		if (p == p_end || *p == '\n') {
+			place_dash << fmt("expected a flag character after dash %s",
 				show(Operator_View('-')));
 			throw ERROR_LOGICAL;
 		}
@@ -627,6 +627,7 @@ void Tokenizer::parse_flag_or_name()
 shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 {
 	TRACE_FUNCTION();
+	TRACE("allow_special= %s", frmt("%d", allow_special));
 	const char *const p_begin= p;
 	Place place_begin= current_place();
 
@@ -646,12 +647,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 		} else if (!has_escape && *p == '\'') {
 			parse_single_quote(*ret);
 		} else if (!has_escape && *p == '$') {
-			string parameter;
-			Place place_dollar;
-			if (parse_parameter(parameter, place_dollar))
-				ret->append_parameter(parameter, place_dollar);
-			else
-				unreachable();
+			parse_dollar(*ret);
 		} else if (!has_escape && *p == '\\') {
 			has_escape= parse_escape();
 		} else if (has_escape || is_name_char(*p)) {
@@ -670,6 +666,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 		}
 	}
 
+	TRACE("ret= %s", show(*ret));
 	if (ret->empty()) {
 		if (p == p_begin)
 			return nullptr;
@@ -680,28 +677,67 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 	return ret;
 }
 
-bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
+void Tokenizer::parse_dollar(Place_Name &place_name)
+{
+	TRACE_FUNCTION();
+	assert(p < p_end);
+	assert(*p == '$');
+	string name;
+
+	Place place_dollar= current_place();
+	if (p + 1 == p_end || p[1] == '\n') {
+		place_dollar << fmt(
+			"expected parameter or environment variable after %s",
+			show(Operator_View('$')));
+		throw ERROR_LOGICAL;
+	}
+	if (! (p[1] == '{' || p[1] == '(' || p[1] == '_' || isalnum(p[1]))) {
+		++p;
+		current_place() << fmt(
+			"expected parameter or environment variable, not %s",
+			show(current_mbchar()));
+		place_dollar << fmt("after %s",
+			show(Operator_View('$')));
+		throw ERROR_LOGICAL;
+	}
+
+	if (p[1] == '(') {
+		parse_environment_variable(name);
+		TRACE("name= %s", show(name));
+		assert(name.size() > 0);
+		const char *value= getenv(name.c_str());
+		TRACE("name= %s", value ? show(value) : "<null>");
+		if (!value) {
+			place_dollar << fmt("Expected environment variable %s to be set",
+				show(Environment_Variable_View(name)));
+			throw ERROR_LOGICAL;
+		}
+		place_name.append_text(value);
+	} else {
+		parse_parameter(name);
+		place_name.append_parameter(name, place_dollar);
+	}
+}
+
+void Tokenizer::parse_parameter(string &name)
 {
 	TRACE_FUNCTION();
 	assert(p < p_end && *p == '$');
 
-	place_dollar= current_place();
+	Place place_dollar= current_place();
 	++p;
 	bool braces= false;
 	if (p < p_end && *p == '{') {
 		++p;
 		braces= true;
 	}
-	Place place_parameter_name= current_place();
+	Place place_name= current_place();
 
-	const char *const p_parameter_name= p;
-
-	while (p < p_end && (isalnum(*p) || *p == '_')) {
-		++p;
-	}
+	const char *const p_name= p;
+	while (p < p_end && (isalnum(*p) || *p == '_')) ++p;
 
 	if (braces) {
-		if (p == p_end) {
+		if (p == p_end || *p == '\n') {
 			current_place() << fmt("expected a closing %s",
 				show(Operator_View('}')));
 			place_dollar << fmt("for parameter started by %s",
@@ -718,29 +754,72 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 		}
 	}
 
-	if (p == p_parameter_name) {
-		if (p < p_end)
-			place_parameter_name << fmt("expected a parameter name, not %s",
-				show(current_mbchar()));
-		else
-			place_parameter_name << "expected a parameter name";
-		place_dollar << fmt("after %s", show(Operator_View('$')));
+	if (p == p_name) {
+		assert(p < p_end && p[0] != '\n');
+		place_name << fmt("expected a parameter name, not %s",
+			show(current_mbchar()));
+		place_dollar << fmt("after %s",
+			show(Operator_View('$')));
 		explain_parameter_syntax();
 		throw ERROR_LOGICAL;
 	}
 
-	parameter= string(p_parameter_name, p - p_parameter_name);
+	name= string(p_name, p - p_name);
 
-	if (isdigit(parameter[0])) {
-		place_parameter_name << fmt(
+	if (isdigit(name[0])) {
+		place_name << fmt(
 			"parameter name %s must not start with a digit",
-			show(Prefix_View("$", parameter)));
+			show(Prefix_View("$", name)));
 		throw ERROR_LOGICAL;
 	}
-	if (braces)
-		++p;
+	if (braces) ++p;
+}
 
-	return true;
+void Tokenizer::parse_environment_variable(string &name)
+{
+	TRACE_FUNCTION();
+	assert(p+2 <= p_end && p[0] == '$' && p[1] == '(');
+	Place place_dollar= current_place();
+	p += 2;
+	Place place_name= current_place();
+	const char *const p_name= p;
+
+	if (p == p_end || *p == '\n') {
+		place_dollar << fmt("expected name of environment variable after %s",
+			show(Operator_View("$(")));
+		explain_environment_variable_name();
+		throw ERROR_LOGICAL;
+	}
+	if (! (isalpha(*p) || *p == '_')) {
+		place_name << fmt(
+			"expected name of environment variable to start with letter or underscore, not %s",
+			show(current_mbchar()));
+		explain_environment_variable_name();
+		throw ERROR_LOGICAL;
+	}
+	++p;
+
+	while (p < p_end && (isalnum(*p) || *p == '_')) ++p;
+
+	if (p == p_end || *p == '\n') {
+		current_place() << fmt("expected %s",
+			show(Operator_View(')')));
+		place_dollar << fmt("after name of environment variable started by %s",
+			show(Operator_View("$(")));
+		throw ERROR_LOGICAL;
+	}
+
+	if (*p != ')') {
+		current_place() << fmt("character %s cannot appear",
+			show(current_mbchar()));
+		place_dollar << fmt("in environment variable started by %s",
+				show(Operator_View("$(")));
+		explain_environment_variable_name();
+		throw ERROR_LOGICAL;
+	}
+
+	name = string(p_name, p - p_name);
+	++p;
 }
 
 bool Tokenizer::is_name_char(char c)
@@ -769,7 +848,15 @@ void Tokenizer::parse_version(
  * source files), so we don't keep track whether one has already been provided. */
 {
 	TRACE_FUNCTION();
-	if (option_U) return;
+
+	if (version_req.empty()) {
+		place_version << fmt("expected a version number of the form %s or %s",
+			show("MAJOR.MINOR"), show("MAJOR.MINOR.PATCH"));
+		place_percent << fmt("after %s",
+			show(Operator_View("%version")));
+		throw ERROR_LOGICAL;
+	}
+
 	unsigned major_req, minor_req, patch_req;
 	int chars= -1;
 	int n= sscanf(version_req.c_str(), "%u.%u.%u%n",
@@ -787,6 +874,9 @@ void Tokenizer::parse_version(
 
 	TRACE("n= %s", frmt("%d", n));
 	assert(n == 2 || n == 3);
+
+	/* Even if -U is set, we still check the syntax of the version number */
+	if (option_U) return;
 
 	if (n == 2) {
 		TRACE("major_req= %s; minor_req= %s",
@@ -972,13 +1062,7 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 			++p;
 			goto end_of_double_quote;
 		} else if (*p == '$') {
-			string parameter;
-			Place place_dollar;
-			if (parse_parameter(parameter, place_dollar)) {
-				ret.append_parameter(parameter, place_dollar);
-			} else {
-				unreachable();
-			}
+			parse_dollar(ret);
 		} else if (*p == '\\') {
 			Place place_backslash= current_place();
 			++p;
@@ -1211,9 +1295,9 @@ void Tokenizer::parse_version_directive(const Place &place_percent)
 	TRACE_FUNCTION();
 	TRACE("line= %s", frmt("%zu", line));
 	TRACE("*p= '%s'/%s", frmt("%c", *p), frmt("0x%02X", (unsigned char)*p));
-	const char *const p_version= p;
+	const char *p_version= p;
 	while (p < p_end && is_name_char(*p)) ++p;
-	const string version_required(p_version, p - p_version);
+	string version_required(p_version, p - p_version);
 	Place place_version(place_base.type, place_base.text, line, p_version - p_line);
 	parse_version(version_required, place_version, place_percent);
 }

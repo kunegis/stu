@@ -1,0 +1,6 @@
+A: $(NAME_1)$(NAME_2)
+{
+	cp list.abc A
+}
+
+list.abc = {CORRECT}

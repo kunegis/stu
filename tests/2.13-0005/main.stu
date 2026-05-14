@@ -1,0 +1,14 @@
+A: list.[B]
+{
+	cp list." aaa bbb " A
+}
+
+>B
+{
+	printf '$(NAME)\n'
+}
+
+>list.$x
+{
+	echo CORRECT
+}

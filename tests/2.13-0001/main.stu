@@ -1,0 +1,7 @@
+A = $(STU_TEST_CONFIG_DIR)/file;
+
+$(STU_TEST_CONFIG_DIR)/file
+{
+	mkdir -p -- "$STU_TEST_CONFIG_DIR"
+	echo CORRECT >"$STU_TEST_CONFIG_DIR"/file
+}

@@ -1,0 +1,2 @@
+main.stu:1:9: character "\$" cannot appear
+main.stu:1:4: in environment variable started by $(

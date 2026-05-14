@@ -1,0 +1,4 @@
+main.stu:1:7: character "*" cannot appear
+main.stu:1:4: in parameter started by ${
+Explanation: Parameter names can only include alphanumeric characters
+and underscores.

@@ -1,0 +1,9 @@
+A: list.$(STU_TEST_CHAR)
+{
+	cp list."$STU_TEST_CHAR" A
+}
+
+>list.$char
+{
+	printf '%s\n' "$char"
+}

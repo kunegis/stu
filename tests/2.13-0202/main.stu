@@ -1,0 +1,6 @@
+A: $(name).abc
+{
+	cp list.abc A
+}
+
+list.abc = {CORRECT}

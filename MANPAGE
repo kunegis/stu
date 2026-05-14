@@ -587,6 +587,21 @@ REDIRECTION
        fied, standard input for the command is redirected from /dev/null (when
        option -i is not used) and from Stu's stdin (when -i is used).
 
+ENVIRONMENT VARIABLES
+       Environment variables can be accessed using the syntax  $(name),  where
+       name  is  the name of the environment variables.  It is an error if the
+       environment variable is not defined.
+
+       Environment variables can appear anywhere where names  can  appear:  in
+       targets,  dependencies, and in arguments to %include.  They are not al‐
+       lowed in the version number specified by %version.
+
+       Environment variables can appear outside of quotes,  inside  of  double
+       quotes,  but  not  inside  of single quotes.  The result of environment
+       variable substitution is never word-split, i.e., spaces and other  spe‐
+       cial  characters  in  the value of environment variables are not inter‐
+       preted after substitution.
+
 CONCATENATION
        In certain circumstances, two dependencies that are  not  separated  by
        spaces  are  said to be concatenated.  Concatenation takes place in the
@@ -746,6 +761,7 @@ DIRECTIVES
            % include "b.stu"
            % include 'c.stu'
            % include data/
+           % include $(DIR)/file.stu
 
        To  declare which version of Stu a script is written for, use the %ver‐
        sion directive:
@@ -783,7 +799,7 @@ TOKENIZATION
            :     Separator for rule definition
            ;     In rules without command, end of dependency declaration
            -     Prefix character for flag, followed by a single character
-           $     Parameter; variable dependency
+           $     Parameter; variable dependency; environment variable
            @     Phony target marker
            >     Output redirection
            <     Input redirection
@@ -806,17 +822,19 @@ TOKENIZATION
        of a name.
 
        Single quotes may contain any character except single  quotes  and  the
-       NUL character \0.  Backslashes and newline characters always have their
-       literal meaning inside single quotes.
+       NUL  character  \0.  Backslashes, newline characters, and other special
+       characters such as $ always have their literal  meaning  inside  single
+       quotes.
 
-       Inside double quotes, backslashes, double quotes and  the  dollar  sign
+       Inside  double  quotes,  backslashes, double quotes and the dollar sign
        must be escaped by a backslash.  Other C-like escape sequences are sup‐
-       ported, too.  To be precise, the following escape sequences are  possi‐
+       ported,  too.  To be precise, the following escape sequences are possi‐
        ble: \" \\ \$ \a \b \f \n \r \t \v.  Dollars in double quotes introduce
-       parameter names in the same way as outside quotes.  Double  quotes  may
-       also contain unescaped newline characters.  The NUL character \0 is not
-       allowed inside double quotes.  There is no \0 escape sequence, as names
-       of files and phony targets cannot contain the NUL byte.
+       parameter  names  in the same way as outside quotes.  Double quotes may
+       contain unescaped newline characters, as well as environment  variables
+       using  the  $(name) syntax.  The NUL character \0 is not allowed inside
+       double quotes, as names of files and phony targets cannot  contain  the
+       NUL byte.
 
        Spacing  rules:  The  lack of whitespace between tokens represents con‐
        catenation under certain conditions.  Specifically: To separate  depen‐
@@ -828,9 +846,11 @@ TOKENIZATION
 
            )(  )[  ](  ][  )A  ]A  A(  A[
 
-       In  this  list,  A  stands  for  any name, including quoted names using
-       whitespace, except when this would create a new token,  which  is  only
-       the case for name tokens.
+       In this list, A stands for any name, including quoted names using ' and
+       ", as well as environment variables (quoted or not).  All other  tokens
+       pairs  can  be written after each other without intervening whitespace,
+       except when this would create a new token, which is only the  case  for
+       name tokens.
 
        The following characters are reserved for future extension:
 
@@ -1186,4 +1206,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.12.3                         May 2026                             STU(1)
+stu-2.13.1                         May 2026                             STU(1)

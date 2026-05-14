@@ -1,27 +1,16 @@
 #
-# Allow access to environment variables via e.g. $(HOME).  Using this is
-# likely to be an antipattern -- the idiomatic thing to do is set a
-# symlink to the directory in question.  Other cases are even worse,
-# e.g., having environment variables with lists of things in them.
-#
-# On the other hand, this will be useful after extended inclusion is
-# implemented, to pass paths to Stu libraries.
-#
-
-file = $(CONFIG_DIR)/file;
-$(DIR)/A: ... {} # Can be used in targets
-@check:  -p $(TOOL_HOME); # Check that dirctory exists.
-
-$() # Error
-$(1) # Error
-$(aaa$(bbb)aaa) # Error
-
-#
 # Have an option/flag for: For content rules, compare the content of the file with
 # the wanted content and don't update the file if identical.  Very useful when someone
 # changes the content in the stu file, and then re-builds.  At the moment, it is a common
 # complaint that Stu does _not_ re-build in that case.
 #
+# This should be a flag before the content rule.
+#
+# Check the date of the Stu file before looking at the content.  Maybe do that by default.
+#
+
+# When this is changed in the Stu file, everything that uses CFLAGS is rebuilt.
+CFLAGS = -X { -O2 }
 
 #
 # Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
@@ -32,6 +21,10 @@ $(aaa$(bbb)aaa) # Error
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
 # forbidden as the first character in unquoted names.  Needs a new type for
 # unparsed targets.  This is very similar to supporting environment variables.
+#
+
+#
+# * Add long options: for all randomization options; all non-stable options.
 #
 
 #
@@ -341,10 +334,6 @@ A: -e B
 #
 
 #
-# * Add long options: for all randomization options; all non-stable options.
-#
-
-#
 # For content rules, maybe have an own Executor subclass that checks whether the existing
 # has the same content as the to-be-written content, and if it has, does not touch the old
 # file.  This would make it possible that things are re-built when the content of {...} in
@@ -404,10 +393,20 @@ B {}
 #
 
 * Correct version numbers
+* Version numbers should not end in ".1" (just remove the ".1")
 * Test numbers should have four digits; first digit shows type (success, fail, EXEC)
 * First digit of test: 0 (success), 1 (fail), 2 (EXEC), 3 (preload).
 
 #
 # Place_Flags:  replace certain functions by operators (&, |=, etc.) that mimic how a
 # Flags variable would be used.
+#
+
+#
+# Rename ERROR_* constants to ERR_*.
+#
+
+#
+# Names of types of the form 'Place_*' are ambiguous because we often used variables of
+# type Place named 'place_*'.  Rename the 'Place_*' types e.g. to 'P*'.
 #

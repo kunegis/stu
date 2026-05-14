@@ -1,0 +1,6 @@
+A: $(NAME).data
+{
+	cp -- @file.data A
+}
+
+\@file.data = {CORRECT}

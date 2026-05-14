@@ -1,0 +1,6 @@
+A: list.$(NAME)
+{
+	cp -- list.aaa@bbb A
+}
+
+list.aaa\@bbb = {CORRECT}

@@ -1,0 +1,3 @@
+%version $(TEST_STU_VERSION)
+
+A = {CORRECT}

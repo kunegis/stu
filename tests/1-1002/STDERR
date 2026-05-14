@@ -1,0 +1,2 @@
+main.stu:4:5: expected parameter or environment variable, not " "
+main.stu:4:4: after $

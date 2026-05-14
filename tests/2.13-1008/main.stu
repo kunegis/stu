@@ -1,0 +1,5 @@
+# Error, because the two rules have the same target.
+
+filename;
+
+$(STU_TEST_FILENAME);

@@ -1,0 +1,2 @@
+main.stu:5:1: there cannot be a second rule for target "filename"
+main.stu:3:1: shadowing previous rule "filename"

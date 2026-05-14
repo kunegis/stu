@@ -1,0 +1,3 @@
+# Error because name would be empty
+
+$(EMPTY_VARIABLE): A; 

@@ -1,7 +1,7 @@
-Stu is compiled in mutiple variants, e.g. debug variant, non-debug variant, etc.
+Stu is compiled in mutiple variants.
 
 VARIANT   NDEBUG   MAKE CHECK TEST WARNINGS COMPILER
-
+============================================================================================
 debug     -        -    -     Y    Y        GCC      Main debug variant
 cdebug    -        -    Y     -    -        any      Debug variant, no compilation warnings
 ndebug    defined  Y    Y     Y    -        any      Release version

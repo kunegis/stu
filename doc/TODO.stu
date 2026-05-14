@@ -8,7 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-file = $(CONFIG_DIR)/file;
 $(DIR)/A: ... {} # Can be used in targets
 @check:  -p $(TOOL_HOME); # Check that directory exists.
 

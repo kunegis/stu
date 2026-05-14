@@ -8,20 +8,13 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-$(DIR)/A: ... {} # Can be used in targets
-@check:  -p $(TOOL_HOME); # Check that directory exists.
-
 $() # Error
-$(1) # Error
 $(aaa$(bbb)aaa) # Error
-
 "aaa$(name)bbb" # Works
 'aaa$(name)bbb' # Taken literally
-
 %include $(DIR)/ # Works (?)
 %include $(DIR)/abc.stu
 * Check other '%include' cases where the argument is a concatenation
-
 A: $(FILE); # When $FILE contains a space, no word splitting is performed.
 
 * Update doc/
@@ -34,24 +27,13 @@ A: $(FILE); # When $FILE contains a space, no word splitting is performed.
 * '$' as last character in file
 * File ending in: $(
 * File ending in: $(aaa
-$(.) # Error
-$(&) # Error
-$(() # Error
-$(:) # Error
-$(/) # Error
-$(\) # Error
-$(') # Error '
-$(") # Error "
-$(=) # Error
-$(-) # Error
-$(*) # Error
-$(?) # Error
-$(!) # Error
 
 * Concatenation lft and right with everything else
 $(A)$(A) # Concatenation works
 $(A)$(B) # Concatenation works
 * Environment variable containing spaces, quotes, dashes, etc. works and needs no quoting.
+@check:  -p $(TOOL_HOME); # Check that directory exists.
+$( ) # Error
 
 #
 # Have an option/flag for: For content rules, compare the content of the file with

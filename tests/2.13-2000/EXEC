@@ -1,0 +1,62 @@
+#!/bin/sh
+#
+# Test invalid first characters for environment variable names.
+#
+
+[ "$TEST_VERBOSE" ] && exec 3>&1 || exec 3>/dev/null
+
+names='
+1
+1a
+11
+1aaaa
+.
+&
+(
+:
+/
+\
+'\''
+"
+=
+-
+*
+?
+!
+'
+
+Error() # <message>
+{
+	message=$1
+	{
+		printf '*** Error: %s\n' "$message"
+		printf '/----------- stdout:\n'
+		cat list.out
+		printf '\\-----------\n'
+		printf '/----------- stderr:\n'
+		cat list.err
+		printf '\\-----------\n'
+	} >&2
+	exit 1
+}
+
+printf '%s' "$names" | while IFS= read -r name
+do
+	case "$name" in
+		?*) : ;;
+		*) continue ;;
+	esac
+	echo >&3 "name='$name'"
+	../../sh/rm_tmps || Error "rm_tmps"
+	cat <<EOF >list.stu || Error "cat"
+\$($name)
+EOF
+	../../bin/stu.test -f list.stu >list.out 2>list.err
+	exitstatus=$?
+	echo >&3 "exitstatus=$exitstatus"
+	[ "$exitstatus" = 2 ] || Error "exit status"
+	grep -q -E -e 'expected environment variable name to start with letter or underscore' list.err || Error "stderr"
+done || exit 1
+
+exit 0
+			     

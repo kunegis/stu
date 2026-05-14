@@ -11,10 +11,11 @@
  * The line lengths in the printed output are set by hand and are approximate.
  */
 
-void explain_clash_op();
 void explain_clash_n0C();
+void explain_clash_op();
 void explain_cycle();
 void explain_dynamic_no_param();
+void explain_environment_variable_name();
 void explain_file_without_command_with_dependencies();
 void explain_file_without_command_without_dependencies();
 void explain_flags();

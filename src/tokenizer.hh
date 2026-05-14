@@ -88,10 +88,9 @@ private:
 	 * including on empty names. ALLOW_SPECIAL:  whether the name is allowed to start
 	 * with one of '-+~'.  E_SLASH set in ENVIRONMENT as appropriate. */
 
-	bool parse_parameter(string &parameter, Place &place_dollar);
-	/* Parse a parameter starting with '$'.  Return whether a parameter was parsed
-	 * (always TRUE).  The current position must be on the '$' character, not after
-	 * it.  If a parameter is found, write it into the parameters. */
+	void parse_dollar(Place_Name &);
+	bool parse_parameter(string &name); // TODO remove return value (always true)
+	bool parse_environment_variable(string &name); // TODO remove return value (always true)
 
 	/* The following three functions parse the two types of quotes, and escapes.  The
 	 * pointer must be on a ", ', or \ character respectively.  The read string is

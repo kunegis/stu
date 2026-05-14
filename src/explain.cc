@@ -1,20 +1,20 @@
 #include "explain.hh"
 
-void explain_clash_op()
-{
-	if (! option_E) return;
-	fputs("Explanation: A dependency must not be declared as persistent (with '-p')\n"
-		"and optional (with '-o') at the same time, as that would mean that its\n"
-		"command is never executed.\n",
-		stderr);
-}
-
 void explain_clash_n0C()
 {
 	if (! option_E) return;
 	fputs("Explanation: It is not possible to mix the options -n/-0/-C.  These\n"
 		"options determine the syntax used to parsed dynamic dependencies.  At\n"
 		"most a single of these options can be used for a given dependency.\n",
+		stderr);
+}
+
+void explain_clash_op()
+{
+	if (! option_E) return;
+	fputs("Explanation: A dependency must not be declared as persistent (with '-p')\n"
+		"and optional (with '-o') at the same time, as that would mean that its\n"
+		"command is never executed.\n",
 		stderr);
 }
 
@@ -31,6 +31,14 @@ void explain_dynamic_no_param()
 	if (! option_E) return;
 	fputs("Explanation: Dynamic dependencies must not contain parameters introduced\n"
 		"using '$'.\n",
+		stderr);
+}
+
+void explain_environment_variable_name()
+{
+	if (! option_E) return;
+	fputs("Explanation: Environment variables accessed with $(...) can contain only\n"
+		"letters, numbers, and unerscores.  They must not begin with a number.\n",
 		stderr);
 }
 

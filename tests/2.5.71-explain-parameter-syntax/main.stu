@@ -1,4 +1,0 @@
-# '$(name)' is not a valid way to write parameters, and 'stu -E' outputs
-# an explanation for it. 
-
-A:  $(name) { touch A ; }

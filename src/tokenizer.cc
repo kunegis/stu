@@ -217,11 +217,12 @@ void Tokenizer::parse_tokens_file(
 	}
 }
 
-void Tokenizer::parse_tokens_string(std::vector <shared_ptr <Token> > &tokens,
-				    Context context,
-				    Place &place_end,
-				    string string_,
-				    const Place &place_string)
+void Tokenizer::parse_tokens_string(
+	std::vector <shared_ptr <Token> > &tokens,
+	Context context,
+	Place &place_end,
+	string string_,
+	const Place &place_string)
 {
 	std::vector <Backtrace> backtraces;
 	std::vector <string> filenames;
@@ -646,12 +647,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 		} else if (!has_escape && *p == '\'') {
 			parse_single_quote(*ret);
 		} else if (!has_escape && *p == '$') {
-			string parameter;
-			Place place_dollar;
-			if (parse_parameter(parameter, place_dollar))
-				ret->append_parameter(parameter, place_dollar);
-			else
-				unreachable();
+			parse_dollar(*ret);
 		} else if (!has_escape && *p == '\\') {
 			has_escape= parse_escape();
 		} else if (has_escape || is_name_char(*p)) {
@@ -680,25 +676,58 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 	return ret;
 }
 
-bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
+void Tokenizer::parse_dollar(Place_Name &place_name)
+{
+	assert(p < p_end);
+	assert(*p == '$');
+	string name;
+
+	Place place_dollar= current_place();
+	if (p + 1 == p_end) {
+		place_dollar << fmt(
+			"expected parameter or environment variable after %s",
+			show(Operator_View('$')));
+		throw ERROR_LOGICAL;
+	}		
+
+	if (p[1] == '(') {
+		if (parse_environment_variable(name)) {
+			assert(name.size() > 0);
+			const char *value= getenv(name.c_str());
+			if (value) {
+				place_name.append_text(value);
+			} else {
+				place_dollar << fmt("Expected environment variable %s to be set",
+					show(Environment_Variable_View(name)));
+				throw ERROR_LOGICAL;
+			}
+		} else {
+			unreachable();
+		}
+	} else {
+		if (parse_parameter(name))
+			place_name.append_parameter(name, place_dollar);
+		else
+			unreachable();
+	}
+}
+
+bool Tokenizer::parse_parameter(string &name)
 {
 	TRACE_FUNCTION();
 	assert(p < p_end && *p == '$');
 
-	place_dollar= current_place();
+	Place place_dollar= current_place();
 	++p;
 	bool braces= false;
 	if (p < p_end && *p == '{') {
 		++p;
 		braces= true;
 	}
-	Place place_parameter_name= current_place();
+	Place place_name= current_place();
 
-	const char *const p_parameter_name= p;
-
-	while (p < p_end && (isalnum(*p) || *p == '_')) {
-		++p;
-	}
+	const char *const p_name= p;
+	while (p < p_end && (isalnum(*p) || *p == '_')) ++p;
 
 	if (braces) {
 		if (p == p_end) {
@@ -718,28 +747,72 @@ bool Tokenizer::parse_parameter(string &parameter, Place &place_dollar)
 		}
 	}
 
-	if (p == p_parameter_name) {
+	if (p == p_name) {
 		if (p < p_end)
-			place_parameter_name << fmt("expected a parameter name, not %s",
+			place_name << fmt("expected a parameter name, not %s",
 				show(current_mbchar()));
 		else
-			place_parameter_name << "expected a parameter name";
+			place_name << "expected a parameter name";
 		place_dollar << fmt("after %s", show(Operator_View('$')));
 		explain_parameter_syntax();
 		throw ERROR_LOGICAL;
 	}
 
-	parameter= string(p_parameter_name, p - p_parameter_name);
+	name= string(p_name, p - p_name);
 
-	if (isdigit(parameter[0])) {
-		place_parameter_name << fmt(
+	if (isdigit(name[0])) {
+		place_name << fmt(
 			"parameter name %s must not start with a digit",
-			show(Prefix_View("$", parameter)));
+			show(Prefix_View("$", name)));
 		throw ERROR_LOGICAL;
 	}
-	if (braces)
-		++p;
+	if (braces) ++p;
 
+	return true;
+}
+
+bool Tokenizer::parse_environment_variable(string &name)
+{
+	TRACE_FUNCTION();
+	assert(p+2 <= p_end && p[0] == '$' && p[1] == '(');
+	Place place_dollar= current_place();
+	p += 2;
+	Place place_name= current_place();
+	const char *const p_name= p;
+
+	if (p == p_end) {
+		place_name << "expected environment variable name";
+		explain_environment_variable_name();
+		throw ERROR_LOGICAL;
+	}
+	if (! (isalpha(*p) || *p == '_')) {
+		place_name << fmt(
+			"expected environment variable name to start with letter or underscore, not %s",
+			show(current_mbchar()));
+		throw ERROR_LOGICAL;
+	}
+	++p;
+
+	while (p < p_end && (isalnum(*p) || *p == '_')) ++p;
+
+	if (p == p_end) {
+		current_place() << fmt("expected %s",
+			show(Operator_View(')')));
+		place_dollar << fmt("after name of environment variable started by %s",
+			show(Operator_View("$(")));
+		throw ERROR_LOGICAL;
+	}
+
+	if (*p != ')') {
+		current_place() << fmt("character %s cannot appear",
+			show(current_mbchar()));
+		place_dollar << fmt("in environment variable started by %s",
+				show(Operator_View("$(")));
+		throw ERROR_LOGICAL;
+	}
+
+	name = string(p_name, p - p_name);
+	++p;
 	return true;
 }
 
@@ -973,8 +1046,8 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 			goto end_of_double_quote;
 		} else if (*p == '$') {
 			string parameter;
-			Place place_dollar;
-			if (parse_parameter(parameter, place_dollar)) {
+			Place place_dollar= current_place();
+			if (parse_parameter(parameter)) {
 				ret.append_parameter(parameter, place_dollar);
 			} else {
 				unreachable();

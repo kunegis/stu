@@ -179,3 +179,11 @@ void render(Operator_View operator_view, Parts &parts, Rendering)
 {
 	parts.append_operator(operator_view.op);
 }
+
+void render(Environment_Variable_View v, Parts &parts, Rendering)
+{
+	parts.append_markup_quotable("$(");
+	parts.append_text(v.name);
+	parts.append_markup_quotable(")");
+}
+

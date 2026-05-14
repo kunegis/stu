@@ -403,4 +403,24 @@ dir/$name:  [ --rule dir/main.stu ];
 #
 # Allow redirection operator before flags.  This is not allowed at the moment.
 #
-> -o A {}
+
+> -o A {} # For target
+A: < -p B {} # For dependency
+
+#
+# For content rules, a flag in front of the content that indicates that environment
+# variables should be expanded.
+#
+
+# Puts the value $CFLAGS into the file 'CFLAGS'.  When Stu is re-run with a different
+# value of $CFLAGS, everything relying on CFLAGS is rebuilt.  (Useful on conjunction with
+# a flag that makes Stu check the content of targets of content rules.)
+CFLAGS = -Y {$(CFLAGS)}
+
+#
+# More environment variable features.
+#
+
+* Default value:
+$(name:-default_value)
+* Others...

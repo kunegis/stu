@@ -11,6 +11,11 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+XXXX-XX-XX  Version 2.13
+
+* Environment variables can be accessed with the syntax $(VARIABLE).  It is an error if an
+  environment variable is not set.
+
 2026-05-12  Version 2.12.3
 
 * It is an error when any two of -n/-0/-C are used simultaneous on the same target.

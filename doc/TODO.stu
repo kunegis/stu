@@ -10,11 +10,48 @@
 
 file = $(CONFIG_DIR)/file;
 $(DIR)/A: ... {} # Can be used in targets
-@check:  -p $(TOOL_HOME); # Check that dirctory exists.
+@check:  -p $(TOOL_HOME); # Check that directory exists.
 
 $() # Error
 $(1) # Error
 $(aaa$(bbb)aaa) # Error
+
+"aaa$(name)bbb" # Works
+'aaa$(name)bbb' # Taken literally
+
+%include $(DIR)/ # Works (?)
+%include $(DIR)/abc.stu
+* Check other '%include' cases where the argument is a concatenation
+
+A: $(FILE); # When $FILE contains a space, no word splitting is performed.
+
+* Update doc/
+* Write entry in manpage.
+
+* environment variable in a dynamic dependency.
+* Possible in double quotes
+* Not possible in single quotes
+* '$' as last character in file
+* File ending in: $(
+* File ending in: $(aaa
+$(.) # Error
+$(&) # Error
+$(() # Error
+$(:) # Error
+$(/) # Error
+$(\) # Error
+$(') # Error '
+$(") # Error "
+$(=) # Error
+$(-) # Error
+$(*) # Error
+$(?) # Error
+$(!) # Error
+
+* Concatenation lft and right with everything else
+$(A)$(A) # Concatenation works
+$(A)$(B) # Concatenation works
+* Environment variable containing spaces, quotes, dashes, etc. works and needs no quoting.
 
 #
 # Have an option/flag for: For content rules, compare the content of the file with
@@ -22,6 +59,11 @@ $(aaa$(bbb)aaa) # Error
 # changes the content in the stu file, and then re-builds.  At the moment, it is a common
 # complaint that Stu does _not_ re-build in that case.
 #
+# This should be a flag before the content rule.
+#
+
+# When this is changed in the Stu file, everything that uses CFLAGS is rebuilt.
+CFLAGS = -X { -O2 }
 
 #
 # Long flags:  --optional, --persistent, etc. (also for -n -0 -C)

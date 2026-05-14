@@ -151,4 +151,13 @@ public:
 
 void render(Operator_View, Parts &, Rendering= 0);
 
+class Environment_Variable_View
+{
+public:
+	string name;
+	Environment_Variable_View(string name_): name(name_) {}
+};
+
+void render(Environment_Variable_View, Parts &, Rendering= 0);
+
 #endif /* ! SHOW_HH */

@@ -1,0 +1,3 @@
+A = list.$(name);
+
+list.123 = {CORRECT}

@@ -26,7 +26,8 @@ $(aaa$(bbb)aaa) # Error
 A: $(FILE); # When $FILE contains a space, no word splitting is performed.
 
 * Update doc/
-* Write entry in manpage.
+* Write entry in manpage.  Mention that it is an antipattern, and how to achieve the same
+  using dynamic dependencies.
 
 * environment variable in a dynamic dependency.
 * Possible in double quotes

@@ -8,17 +8,18 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-$(aaa$(bbb)aaa) # Error
+* Update doc/
+* Write entry in manpage.
+** Mention that it is an antipattern, and how to achieve the same
+using dynamic dependencies.
+** Mention quotes
+** Mention target+dependency+include
+
 "aaa$(name)bbb" # Works
-'aaa$(name)bbb' # Taken literally
 %include $(DIR)/ # Works (?)
 %include $(DIR)/abc.stu
 * Check other '%include' cases where the argument is a concatenation
 A: $(FILE); # When $FILE contains a space, no word splitting is performed.
-
-* Update doc/
-* Write entry in manpage.  Mention that it is an antipattern, and how to achieve the same
-  using dynamic dependencies.
 
 * environment variable in a dynamic dependency.
 * Possible in double quotes

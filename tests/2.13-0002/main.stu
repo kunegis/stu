@@ -1,0 +1,8 @@
+# Environment variables are not expanded inside single quotes.
+
+A:  list.'aaa$(name)bbb'
+{
+	cp list.'aaa$(name)bbb' A
+}
+
+list.aaa\$\(name\)bbb = {CORRECT}

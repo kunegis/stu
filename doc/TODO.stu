@@ -8,7 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-$() # Error
 $(aaa$(bbb)aaa) # Error
 "aaa$(name)bbb" # Works
 'aaa$(name)bbb' # Taken literally

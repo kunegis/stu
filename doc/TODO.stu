@@ -8,7 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-* Update doc/
 * Write entry in manpage.
 ** Mention that it is an antipattern, and how to achieve the same
 using dynamic dependencies.
@@ -434,4 +433,13 @@ B {}
 #
 # Place_Flags:  replace certain functions by operators (&, |=, etc.) that mimic how a
 # Flags variable would be used.
+#
+
+#
+# Rename ERROR_* constants to ERR_*.
+#
+
+#
+# Names of types of the form 'Place_*' are ambiguous because we often used variables of
+# type Place named 'place_*'.  Rename the 'Place_*' types e.g. to 'P*'.
 #

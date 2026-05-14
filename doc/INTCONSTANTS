@@ -1,7 +1,7 @@
 Bitfields and enums used in stu:
 
 FILE                    TYPE                    NAME
-=======================================================
+================================================================
 canonicalize.hh         Canonicalize_Flags      A_*
 color.hh                Channel                 CH_*
 concat_executor.hh      Concat_Executor::Stage  ST_*

@@ -1,8 +1,8 @@
 This file catalogues the usage of individual characters in Stu scripts.
 
-Since Stu scripts consist primarily of filenames, many characters that
-are used as operators in most languages cannot be used in Stu as they
-are needed as part of filenames, such as '/', '.', etc.
+Since Stu scripts consist primarily of filenames, many characters that are used as
+operators in most languages cannot be used in Stu as they are needed as part of filenames,
+such as '/', '.', etc.
 
 == Allowed in unquoted names ==
 
@@ -12,18 +12,18 @@ These characters don't have to be quoted in names:
     ^ ` _ . /
     <all non-ASCII characters>
 
-The following characters don't have to be quoted in names, expect in
-first position of a name:
+The following characters don't have to be quoted in names, expect in first position of a
+name:
 
     - + ~
 
 == Recognized as whitespace ==
 
-Everything for which isspace() returns true in the C locale is
-recognized as whitespace by Stu.  I.e., " \f\n\r\t\v".
+Everything for which isspace() returns true in the C locale is recognized as whitespace by
+Stu.  I.e., " \f\n\r\t\v".
 
-Unicode whitespace characters are not recognized, except for those that
-correspond to ASCII.
+Unicode whitespace characters are not recognized, except for those that correspond to
+ASCII.
 
 == Not allowed outside quotes ==
 
@@ -32,16 +32,15 @@ ASCII control characters (except those that are whitespace).
 == Characters introducing longer sequences ==
 
     #   Comment (until the end of the line)
-    %   Directives (followed by the directive name, and optionally followed
-        by arguments depending on the directive); comparable to preprocessor
-        directives.  The directive name and arguments followed regular
-        Stu quoting rules.
+    %   Directives (followed by the directive name, and optionally followed by arguments
+        depending on the directive); comparable to preprocessor directives.  The directive
+        name and arguments followed regular Stu quoting rules.
     -   Flags (only as first character)
     \   Escape character
     '   Quote without escape sequences
     "   Quote with escape sequences
     {}  Command, content
-    $   Parameter prefix (when not followed by '[')
+    $   Parameter / environment variable / variable dependency
 
 == Operators ==
 
@@ -55,28 +54,26 @@ These characters are single-character tokens.
     >   Output redirection (target only)
     <   Input redirection (dependency only)
     =   Content rule, copy rule, named variable
-    $[  The sequence '$[' is analysed as a sequence of the two operators
-        '$' and '['.  In other environments, '$' introduces parameters.
+    $[  The sequence '$[' is analysed as a sequence of the two operators '$' and '['.  In
+        other environments, '$' introduces parameters or environment variables.
 
-These characters always stand for themselves when unquoted, and don't
-have to be separated from other characters by whitespace.  The
-exceptions are $[, which must be contiguous and not preceded by a name,
-and [](), for which concatenation rules apply.
+These characters always stand for themselves when unquoted, and don't have to be separated
+from other characters by whitespace.  The exceptions are $[, which must be contiguous and
+not preceded by a name, and [](), for which concatenation rules apply.
 
 == As-yet unused characters ==
 
-These characters are reserved for future extension.  They are not
-allowed outside quoted strings, except for '-', '+' and '~' which are
-only not allowed as the unquoted first character of a name.  The given
-uses are proposed and tentative.  (We don't add features lightly.)
+These characters are reserved for future extension.  They are not allowed outside quoted
+strings, except for '-', '+' and '~' which are only not allowed as the unquoted first
+character of a name.  The given uses are proposed and tentative.  (We don't add features
+lightly.)
 
-As a general rule, any new prefix operator can be defined as being a
-flag, so the only reasonable uses for these characters would be suffix,
-infix or ternary operators.  Suffix operators would be counter-intuitive
-because everything else is implemented as prefix at the moment, and
-would also require more complex (and harder to understand) precedence
-rules.  This leaves binary and ternary operators as possible uses, or as
-forms of non-operators, i.e., new tokens.
+As a general rule, any new prefix operator can be defined as being a flag, so the only
+reasonable uses for these characters would be suffix, infix or ternary operators.  Suffix
+operators would be counter-intuitive because everything else is implemented as prefix at
+the moment, and would also require more complex (and harder to understand) precedence
+rules.  This leaves binary and ternary operators as possible uses, or as forms of
+non-operators, i.e., new tokens.
 
     +   Inverted flag [as in the shell] (maybe)
     ~   Home directory [as in the shell] (maybe)

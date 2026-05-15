@@ -8,8 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-* Not possible in single quotes
-
 * '$' as last character in file
 * File ending in: $(
 * File ending in: $(aaa

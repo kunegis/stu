@@ -1,0 +1,7 @@
+A: list.'$(XXX)'
+{
+	cp list.'$(XXX)' A
+}
+
+list.\$\(XXX\) = {CORRECT}
+

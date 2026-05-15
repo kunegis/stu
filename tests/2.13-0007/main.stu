@@ -1,0 +1,9 @@
+>A: @check
+{
+	ls -l -- "$TOOL_HOME"
+}
+
+@check: -p $(TOOL_HOME)
+{
+	echo "Directory $TOOL_HOME is present"
+}

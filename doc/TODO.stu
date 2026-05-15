@@ -8,11 +8,14 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-@check:  -p $(TOOL_HOME); # Check that directory exists.
-
 $( ) # Error
-
 %version $(VERSION) # Should this work?  Yes.
+@$(NAME)
+@ $(NAME) # ?
+
+* Line ending in '$' (i.e., following by newline)
+* Line ending in '$(' (i.e., following by newline)
+* Line ending in '$(x' (i.e., following by newline)
 
 $(A)$(A)
 $(A)$(B)

@@ -8,21 +8,26 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-* '$' as last character in file
-* File ending in: $(
-* File ending in: $(aaa
-
-* Concatenation left and right with everything else
-$(A)$(A) # Concatenation works
-$(A)$(B) # Concatenation works
-
-* Environment variable containing spaces, quotes, dashes, etc. works and needs no quoting.
-
 @check:  -p $(TOOL_HOME); # Check that directory exists.
 
 $( ) # Error
 
 %version $(VERSION) # Should this work?  Yes.
+
+$(A)$(A)
+$(A)$(B)
+$(A)text
+$(A)[B]
+$(A)(B)
+$(A)$name
+$(A)${name}
+text$(A)
+[B]$(A)
+(B)$(A)
+$name$(A)
+${name}$(A)
+
+* Environment variable containing spaces, quotes, dashes, etc. works and needs no quoting.
 
 #
 # Have an option/flag for: For content rules, compare the content of the file with

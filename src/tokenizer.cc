@@ -784,7 +784,8 @@ bool Tokenizer::parse_environment_variable(string &name)
 	const char *const p_name= p;
 
 	if (p == p_end) {
-		place_name << "expected environment variable name";
+		place_dollar << fmt("expected name of environment variable after %s",
+			show(Operator_View("$(")));
 		explain_environment_variable_name();
 		throw ERROR_LOGICAL;
 	}

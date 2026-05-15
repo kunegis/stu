@@ -526,7 +526,8 @@ Environment variables can be accessed using the syntax \fB$(\fR\fIname\fR\fB)\fR
 variable is not defined.
 
 Environment variables can appear anywhere where names can appear: in targets,
-dependencies, and in arguments to \fI%include\fR, etc.
+dependencies, and in arguments to \fI%include\fR.  They are not allowed in the version
+number specified by \fI%version\fR.
 
 Environment variables can appear outside of quotes, inside of double quotes, but not
 inside of single quotes.  The result of environment variable substitution is never

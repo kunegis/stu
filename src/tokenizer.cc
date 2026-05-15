@@ -846,6 +846,15 @@ void Tokenizer::parse_version(
  * source files), so we don't keep track whether one has already been provided. */
 {
 	TRACE_FUNCTION();
+
+	if (version_req.empty()) {
+		place_version << fmt("expected a version number of the form %s or %s",
+			show("MAJOR.MINOR"), show("MAJOR.MINOR.PATCH"));
+		place_percent << fmt("after %s",
+			show(Operator_View("%version")));
+		throw ERROR_LOGICAL;
+	}
+
 	if (option_U) return;
 	unsigned major_req, minor_req, patch_req;
 	int chars= -1;
@@ -1289,9 +1298,9 @@ void Tokenizer::parse_version_directive(const Place &place_percent)
 	TRACE_FUNCTION();
 	TRACE("line= %s", frmt("%zu", line));
 	TRACE("*p= '%s'/%s", frmt("%c", *p), frmt("0x%02X", (unsigned char)*p));
-	const char *const p_version= p;
+	const char *p_version= p;
 	while (p < p_end && is_name_char(*p)) ++p;
-	const string version_required(p_version, p - p_version);
+	string version_required(p_version, p - p_version);
 	Place place_version(place_base.type, place_base.text, line, p_version - p_line);
 	parse_version(version_required, place_version, place_percent);
 }

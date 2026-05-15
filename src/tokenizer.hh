@@ -142,8 +142,10 @@ private:
 
 	static bool is_name_char(char);
 	static bool is_operator_char(char);
-	static void parse_version(string version_req,
-				  const Place &place_version, const Place &place_percent);
+	static void parse_version(
+		string version_req,
+		const Place &place_version,
+		const Place &place_percent);
 
 	/* Reads from FD.  MEM must be null when called, and must be free()'d when
 	 * non-null after (even in case of error).  If SIZE is nonzero, must read SIZE to

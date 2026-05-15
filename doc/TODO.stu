@@ -8,9 +8,12 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-%version $(VERSION) # Should this work?  Yes.
 @$(NAME)
 @ $(NAME) # ?
+%$(VAR) # Error
+A$(EMPTY_VARIABLE) = {CORRECT} # Works
+$(EMPTY_VARIABLE): A; # Error because name would be empty
+%version; # Error, even with -U option
 
 * Line ending in '$' (i.e., following by newline)
 * Line ending in '$(' (i.e., following by newline)

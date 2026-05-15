@@ -8,8 +8,7 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-A: $(FILE); # When $FILE contains a space, no word splitting is performed.
-* environment variable in a dynamic dependency.
+* environment variable in a dynamic dependency: works
 * Not possible in single quotes
 * '$' as last character in file
 * File ending in: $(

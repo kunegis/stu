@@ -628,6 +628,7 @@ void Tokenizer::parse_flag_or_name()
 shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 {
 	TRACE_FUNCTION();
+	TRACE("allow_special= %s", frmt("%d", allow_special));
 	const char *const p_begin= p;
 	Place place_begin= current_place();
 
@@ -666,6 +667,8 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 		}
 	}
 
+	TRACE("ret= %s", show(*ret));
+	
 	if (ret->empty()) {
 		if (p == p_begin)
 			return nullptr;

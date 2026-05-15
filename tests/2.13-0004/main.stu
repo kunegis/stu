@@ -1,0 +1,9 @@
+A: $(FILE)
+{
+	cp -- "$FILE" A
+}
+
+>list.' & " aaa '
+{
+	echo CORRECT
+}

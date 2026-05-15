@@ -520,6 +520,20 @@ If no input redirection is specified, standard input for the command is redirect
 \fI/dev/null\fR (when option \fB-i\fR is not used) and from Stu's stdin (when \fB-i\fR is
 used).
 
+.SH "ENVIRONMENT VARIABLES"
+
+Environment variables can be accessed using the syntax \fB$(\fR\fIname\fR\fB)\fR, where
+\fIname\fR is the name of the environment variables.  It is an error if the environment
+variable is not defined.
+
+Environment variables can appear anywhere where names can appear: in targets,
+dependencies, and in arguments to \fI%include\fR, etc.
+
+Environment variables can appear outside of quotes, inside of double quotes, but not
+inside of single quotes.  The result of environment variable substitution is never
+word-split, i.e., spaces and other special characters in the value of environment
+variables are not interpreted after substitution.
+
 .SH "CONCATENATION"
 
 In certain circumstances, two dependencies that are not separated by spaces are said to be
@@ -671,6 +685,7 @@ ending slash), the file \fImain.stu\fR within that directory is read.
     % include "b.stu"
     % include 'c.stu'
     % include data/
+    % include $(DIR)/file.stu
 
 To declare which version of Stu a script is written for, use
 the \fI%version\fR directive:
@@ -707,7 +722,7 @@ unquoted filenames:
     :     Separator for rule definition
     ;     In rules without command, end of dependency declaration
     -     Prefix character for flag, followed by a single character
-    $     Parameter; variable dependency
+    $     Parameter; variable dependency; environment variable
     @     Phony target marker
     >     Output redirection
     <     Input redirection
@@ -728,15 +743,17 @@ All other characters can be preceded by a backslash to retain their literal mean
 part of a name.
 
 Single quotes may contain any character except single quotes and the NUL character \\0.
-Backslashes and newline characters always have their literal meaning inside single quotes.
+Backslashes, newline characters, and other special characters such as $ always have their
+literal meaning inside single quotes.
 
 Inside double quotes, backslashes, double quotes and the dollar sign must be escaped by a
 backslash.  Other C-like escape sequences are supported, too.  To be precise, the
 following escape sequences are possible: \\" \\\\ \\$ \\a \\b \\f \\n \\r \\t \\v.
 Dollars in double quotes introduce parameter names in the same way as outside quotes.
-Double quotes may also contain unescaped newline characters.  The NUL character \\0 is not
-allowed inside double quotes.  There is no \\0 escape sequence, as names of files and
-phony targets cannot contain the NUL byte.
+Double quotes may contain unescaped newline characters, as well as environment variables
+using the \fB$(\fR\fIname\fR\fB)\fR syntax.  The NUL character \\0 is not
+allowed inside double quotes, as names of files and phony targets cannot contain the NUL
+byte.
 
 Spacing rules: The lack of whitespace between tokens represents concatenation under
 certain conditions.  Specifically: To separate dependencies, whitespace must appear before
@@ -747,10 +764,10 @@ concatenation:
 
     )(  )[  ](  ][  )A  ]A  A(  A[
 
-In this list, \fIA\fR stands for any name, including quoted names using
-' and ".  All other tokens pairs can be written after each other without intervening
-whitespace, except when this would create a new token, which is only the case for name
-tokens.
+In this list, \fIA\fR stands for any name, including quoted names using ' and ", as well
+as environment variables (quoted or not).  All other tokens pairs can be written after
+each other without intervening whitespace, except when this would create a new token,
+which is only the case for name tokens.
 
 The following characters are reserved for future extension:
 

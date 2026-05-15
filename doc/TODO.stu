@@ -8,12 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-* Write entry in manpage.
-** Mention that it is an antipattern, and how to achieve the same
-using dynamic dependencies.
-** Mention quotes
-** Mention target+dependency+include
-
 "aaa$(name)bbb" # Works
 %include $(DIR)/ # Works (?)
 %include $(DIR)/abc.stu
@@ -33,6 +27,7 @@ $(A)$(B) # Concatenation works
 * Environment variable containing spaces, quotes, dashes, etc. works and needs no quoting.
 @check:  -p $(TOOL_HOME); # Check that directory exists.
 $( ) # Error
+%version $(VERSION) # Should this work?  Probably yes.
 
 #
 # Have an option/flag for: For content rules, compare the content of the file with

@@ -32,3 +32,27 @@ control, and declare the following in Stu:
     CFLAGS;
 
 When the flags need to change, just edit 'CFLAGS' and Stu will do the right thing.
+
+==== Can I specify a default value for an environment variable if it is not set?
+
+Environment variables using the $(name) syntax have limited functionality:  They *must* be
+defined, and Stu cannot check whether they are defined, or give them a default value.
+
+Instead, one can use the pattern shown in the example below.  In that example, we define a
+file 'DIR' that contains the name of the directory to use.  This file has its own rule,
+which uses the value of the environment variable $DIR, or '/path/to/directory' if $DIR is
+not defined or empty.  Other rules then use [DIR] instead of using $DIR directly.  This
+pattern makes it possible to use the full power of the shell to define the definition
+logical, and avoids Stu having implement its own mini-language.
+
+Example:
+
+>DIR
+{
+	[ "$DIR" ] && printf '%s\n' "$DIR" || echo /path/to/directory
+}
+
+[DIR]/file: $[DIR]
+{
+	command --output "$DIR"/file
+}

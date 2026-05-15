@@ -1,0 +1,18 @@
+#!/bin/sh
+. ../../sh/utils.sh
+
+../../sh/rm_tmps || Error 'rm_tmps'
+mkdir list.dir || Error 'mkdir'
+printf '%s\n' "B = {CORRECT}" >list.dir/main.stu ||
+	Error 'printf'
+
+set +e
+DIR=list.dir ../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+[ -e B ] || Error 'B'
+grep -q -F -x -e CORRECT B || Error 'content'
+
+exit 0

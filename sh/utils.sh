@@ -1,5 +1,6 @@
 set -e
 SCRIPT=$(basename "$0")
+[ "$TEST_VERBOSE" ] && exec 3>&1 || exec 3>/dev/null
 
 Error() # <message>
 {

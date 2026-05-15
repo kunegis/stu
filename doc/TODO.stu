@@ -8,9 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-%include $(DIR)/abc.stu -- 2.13-0101
-* Check other '%include' cases where the argument is a concatenation
-
 A: $(FILE); # When $FILE contains a space, no word splitting is performed.
 * environment variable in a dynamic dependency.
 * Not possible in single quotes

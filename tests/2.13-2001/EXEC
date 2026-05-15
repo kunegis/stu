@@ -1,0 +1,35 @@
+#!/bin/sh
+. ../../sh/utils.sh
+
+include_args='
+$(DIR)/
+$(DIR)/main.stu
+"$(DIR)/main.stu"
+"$(DIR)"/main.stu
+$(DIR)/'\''main.stu'\''
+list.dir/main.stu
+'
+
+printf '%s\n' "$include_args" | while IFS= read -r arg
+do
+	[ "$arg" ] || continue
+	printf >&3 'arg='\''%s'\''\n' "$arg"
+
+	../../sh/rm_tmps || Error 'rm_tmps'
+	mkdir list.dir || Error 'mkdir'
+	printf 'A: B { cp B A ; }\n%%include %s\n' "$arg" >main.stu ||
+		Error 'printf main.stu'
+	printf '%s\n' "B = {CORRECT}" >list.dir/main.stu ||
+		Error 'printf list.dir/main.stu'
+
+	set +e
+	DIR=list.dir ../../bin/stu.test >list.out 2>list.err
+	exitstatus=$?
+	set -e
+
+	[ "$exitstatus" = 0 ] || Error 'exit status'
+	[ -e B ] || Error 'B'
+	grep -q -F -x -e CORRECT B || Error 'content'
+done || exit 2
+
+exit 0

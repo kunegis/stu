@@ -1,3 +1,0 @@
-A: B { cp B A ; }
-
-%include $(DIR)/

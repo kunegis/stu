@@ -1,0 +1,2 @@
+A: B { cp B A ; }
+%include list.dir/main.stu

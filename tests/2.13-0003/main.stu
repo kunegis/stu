@@ -1,0 +1,6 @@
+A: "list.$(name).bbb"
+{
+	cp list.aaa.bbb A
+}
+
+list.aaa.bbb = {CORRECT}

@@ -8,20 +8,17 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-"aaa$(name)bbb" # Works
 %include $(DIR)/ # Works (?)
 %include $(DIR)/abc.stu
 * Check other '%include' cases where the argument is a concatenation
 A: $(FILE); # When $FILE contains a space, no word splitting is performed.
-
 * environment variable in a dynamic dependency.
-* Possible in double quotes
 * Not possible in single quotes
 * '$' as last character in file
 * File ending in: $(
 * File ending in: $(aaa
 
-* Concatenation lft and right with everything else
+* Concatenation left and right with everything else
 $(A)$(A) # Concatenation works
 $(A)$(B) # Concatenation works
 * Environment variable containing spaces, quotes, dashes, etc. works and needs no quoting.

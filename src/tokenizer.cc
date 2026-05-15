@@ -1045,13 +1045,14 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 			++p;
 			goto end_of_double_quote;
 		} else if (*p == '$') {
-			string parameter;
-			Place place_dollar= current_place();
-			if (parse_parameter(parameter)) {
-				ret.append_parameter(parameter, place_dollar);
-			} else {
-				unreachable();
-			}
+			parse_dollar(ret);
+//			string parameter;
+//			Place place_dollar= current_place();
+//			if (parse_parameter(parameter)) {
+//				ret.append_parameter(parameter, place_dollar);
+//			} else {
+//				unreachable();
+//			}
 		} else if (*p == '\\') {
 			Place place_backslash= current_place();
 			++p;

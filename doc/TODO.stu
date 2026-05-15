@@ -8,8 +8,8 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-* environment variable in a dynamic dependency: works
 * Not possible in single quotes
+
 * '$' as last character in file
 * File ending in: $(
 * File ending in: $(aaa
@@ -17,10 +17,14 @@
 * Concatenation left and right with everything else
 $(A)$(A) # Concatenation works
 $(A)$(B) # Concatenation works
+
 * Environment variable containing spaces, quotes, dashes, etc. works and needs no quoting.
+
 @check:  -p $(TOOL_HOME); # Check that directory exists.
+
 $( ) # Error
-%version $(VERSION) # Should this work?  Probably yes.
+
+%version $(VERSION) # Should this work?  Yes.
 
 #
 # Have an option/flag for: For content rules, compare the content of the file with

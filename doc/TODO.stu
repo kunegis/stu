@@ -8,7 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-$( ) # Error
 %version $(VERSION) # Should this work?  Yes.
 @$(NAME)
 @ $(NAME) # ?

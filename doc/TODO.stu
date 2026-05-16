@@ -8,7 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-%"include" a.stu # Error
 filename; $(NAME); # With NAME=filename.  Error: two rules for one target.
 
 #

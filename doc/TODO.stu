@@ -9,8 +9,6 @@
 #
 
 # 2.13-02xx
-$(A)${name}
-${name}$(A) 
 list.($(NAME))
 
 * Environment variable containing spaces, quotes, dashes, newline, etc. works and needs no quoting.

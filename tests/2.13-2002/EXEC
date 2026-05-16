@@ -1,0 +1,19 @@
+#!/bin/sh
+. ../../sh/utils.sh
+
+../../sh/rm_tmps
+
+export STU_TEST_VARIABLE='
+'
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+[ -e A ] || Error 'A'
+
+{ echo aaa ; echo bbb ; } >list.content
+
+cmp -s A list.content

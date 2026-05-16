@@ -1,0 +1,9 @@
+A: list.aaa$(STU_TEST_VARIABLE)bbb
+{
+	cp -- list.aaa"${STU_TEST_VARIABLE}"bbb A
+}
+
+>list.$x
+{
+	printf '%s\n' "$x"
+}

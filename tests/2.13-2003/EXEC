@@ -1,0 +1,29 @@
+#!/bin/sh
+. ../../sh/utils.sh
+
+chars='
+"
+'\''
+-
+:
+&
+\
+= 
+'
+
+printf '%s\n' "$chars" | while IFS= read -r char
+do
+	[ "$char" ] || continue
+	echo >&3 "char='$char'"
+	../../sh/rm_tmps
+	export STU_TEST_CHAR="$char"
+	set +e
+	../../bin/stu.test >list.out 2>list.err
+	exitstatus=$?
+	set -e
+	[ "$exitstatus" = 0 ] || Error 'exit status'
+	[ -e A ] || Error 'A'
+	grep -q -F -x -e "$char" A || Error 'content'
+done || exit 1
+
+exit 0

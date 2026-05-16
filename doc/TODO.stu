@@ -8,10 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-* Line ending in '$' (i.e., following by newline)
-* Line ending in '$(' (i.e., following by newline)
-* Line ending in '$(x' (i.e., following by newline)
-
 $(A)$(A)
 $(A)$(B)
 $(A)text
@@ -424,6 +420,7 @@ B {}
 #
 
 * Correct version numbers
+* Version numbers should not end in ".1" (just remove the ".1")
 * Test numbers should have four digits; first digit shows type (success, fail, EXEC)
 * First digit of test: 0 (success), 1 (fail), 2 (EXEC), 3 (preload).
 

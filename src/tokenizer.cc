@@ -555,9 +555,8 @@ void Tokenizer::parse_flag_or_name()
 		Place place_dash= current_place();
 		++p;
 		assert(p <= p_end);
-		if (p == p_end) {
-			current_place() << "expected a flag character";
-			place_dash << fmt("after dash %s",
+		if (p == p_end || *p == '\n') {
+			place_dash << fmt("expected a flag character after dash %s",
 				show(Operator_View('-')));
 			throw ERROR_LOGICAL;
 		}
@@ -687,9 +686,18 @@ void Tokenizer::parse_dollar(Place_Name &place_name)
 	string name;
 
 	Place place_dollar= current_place();
-	if (p + 1 == p_end) {
+	if (p + 1 == p_end || p[1] == '\n') {
 		place_dollar << fmt(
 			"expected parameter or environment variable after %s",
+			show(Operator_View('$')));
+		throw ERROR_LOGICAL;
+	}
+	if (! (p[1] == '{' || p[1] == '(' || p[1] == '_' || isalnum(p[1]))) {
+		++p;
+		current_place() << fmt(
+			"expected parameter or environment variable, not %s",
+			show(current_mbchar()));
+		place_dollar << fmt("after %s",
 			show(Operator_View('$')));
 		throw ERROR_LOGICAL;
 	}		
@@ -736,7 +744,7 @@ bool Tokenizer::parse_parameter(string &name)
 	while (p < p_end && (isalnum(*p) || *p == '_')) ++p;
 
 	if (braces) {
-		if (p == p_end) {
+		if (p == p_end || *p == '\n') {
 			current_place() << fmt("expected a closing %s",
 				show(Operator_View('}')));
 			place_dollar << fmt("for parameter started by %s",
@@ -754,7 +762,7 @@ bool Tokenizer::parse_parameter(string &name)
 	}
 
 	if (p == p_name) {
-		if (p < p_end)
+		if (p < p_end && p[0] != '\n')
 			place_name << fmt("expected a parameter name, not %s",
 				show(current_mbchar()));
 		else
@@ -786,7 +794,7 @@ bool Tokenizer::parse_environment_variable(string &name)
 	Place place_name= current_place();
 	const char *const p_name= p;
 
-	if (p == p_end) {
+	if (p == p_end || *p == '\n') {
 		place_dollar << fmt("expected name of environment variable after %s",
 			show(Operator_View("$(")));
 		explain_environment_variable_name();
@@ -794,7 +802,7 @@ bool Tokenizer::parse_environment_variable(string &name)
 	}
 	if (! (isalpha(*p) || *p == '_')) {
 		place_name << fmt(
-			"expected environment variable name to start with letter or underscore, not %s",
+			"expected name of environment variable to start with letter or underscore, not %s",
 			show(current_mbchar()));
 		throw ERROR_LOGICAL;
 	}
@@ -802,7 +810,7 @@ bool Tokenizer::parse_environment_variable(string &name)
 
 	while (p < p_end && (isalnum(*p) || *p == '_')) ++p;
 
-	if (p == p_end) {
+	if (p == p_end || *p == '\n') {
 		current_place() << fmt("expected %s",
 			show(Operator_View(')')));
 		place_dollar << fmt("after name of environment variable started by %s",

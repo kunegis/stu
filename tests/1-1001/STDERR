@@ -1,0 +1,2 @@
+main.stu:3:5: expected parameter or environment variable, not ";"
+main.stu:3:4: after $

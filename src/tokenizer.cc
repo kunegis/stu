@@ -681,6 +681,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 
 void Tokenizer::parse_dollar(Place_Name &place_name)
 {
+	TRACE_FUNCTION();
 	assert(p < p_end);
 	assert(*p == '$');
 	string name;
@@ -695,8 +696,10 @@ void Tokenizer::parse_dollar(Place_Name &place_name)
 
 	if (p[1] == '(') {
 		if (parse_environment_variable(name)) {
+			TRACE("name= %s", show(name));
 			assert(name.size() > 0);
 			const char *value= getenv(name.c_str());
+			TRACE("name= %s", value ? show(value) : "<null>");
 			if (value) {
 				place_name.append_text(value);
 			} else {

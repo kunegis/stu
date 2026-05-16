@@ -8,12 +8,14 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-@$(NAME)
 @ $(NAME) # ?
 %$(VAR) # Error
 A$(EMPTY_VARIABLE) = {CORRECT} # Works
+$(EMPTY_VARIABLE)A = {CORRECT} # Works
 $(EMPTY_VARIABLE): A; # Error because name would be empty
 %version; # Error, even with -U option
+%version a # Error, even with -U option
+""A = {CORRECT
 
 * Line ending in '$' (i.e., following by newline)
 * Line ending in '$(' (i.e., following by newline)
@@ -32,7 +34,7 @@ text$(A)
 $name$(A)
 ${name}$(A)
 
-* Environment variable containing spaces, quotes, dashes, etc. works and needs no quoting.
+* Environment variable containing spaces, quotes, dashes, newline, etc. works and needs no quoting.
 
 #
 # Have an option/flag for: For content rules, compare the content of the file with
@@ -41,6 +43,8 @@ ${name}$(A)
 # complaint that Stu does _not_ re-build in that case.
 #
 # This should be a flag before the content rule.
+#
+# Check the date of the Stu file before looking at the content.  Maybe do that by default.
 #
 
 # When this is changed in the Stu file, everything that uses CFLAGS is rebuilt.

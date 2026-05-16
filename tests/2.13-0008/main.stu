@@ -1,0 +1,8 @@
+A: @name
+{
+	touch A
+}
+
+@$(NAME)
+{
+}

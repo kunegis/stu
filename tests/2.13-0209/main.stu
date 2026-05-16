@@ -1,0 +1,9 @@
+A: list.123
+{
+	cp list.123 A
+}
+
+>$name$(NAME)
+{
+	echo $name
+}

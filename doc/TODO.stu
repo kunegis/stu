@@ -8,7 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-%$(VAR) # Error
 A$(EMPTY_VARIABLE) = {CORRECT} # Works
 $(EMPTY_VARIABLE)A = {CORRECT} # Works
 $(EMPTY_VARIABLE): A; # Error because name would be empty
@@ -34,6 +33,8 @@ $name$(A)
 ${name}$(A)
 
 * Environment variable containing spaces, quotes, dashes, newline, etc. works and needs no quoting.
+
+%"include" a.stu # ?
 
 #
 # Have an option/flag for: For content rules, compare the content of the file with

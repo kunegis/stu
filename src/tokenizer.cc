@@ -858,7 +858,6 @@ void Tokenizer::parse_version(
 		throw ERROR_LOGICAL;
 	}
 
-	if (option_U) return;
 	unsigned major_req, minor_req, patch_req;
 	int chars= -1;
 	int n= sscanf(version_req.c_str(), "%u.%u.%u%n",
@@ -876,6 +875,9 @@ void Tokenizer::parse_version(
 
 	TRACE("n= %s", frmt("%d", n));
 	assert(n == 2 || n == 3);
+
+	/* Even if -U is set, we still check the syntax of the version number */
+	if (option_U) return;
 
 	if (n == 2) {
 		TRACE("major_req= %s; minor_req= %s",

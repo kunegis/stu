@@ -1,0 +1,2 @@
+main.stu:1:10: expected a version number of the form "MAJOR.MINOR" or "MAJOR.MINOR.PATCH", not "a"
+main.stu:1:1: after %version

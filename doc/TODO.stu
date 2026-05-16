@@ -8,9 +8,8 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-%version; # Error, even with -U option
 %version a # Error, even with -U option
-""A = {CORRECT
+""A = {CORRECT} # Works
 
 * Line ending in '$' (i.e., following by newline)
 * Line ending in '$(' (i.e., following by newline)
@@ -56,6 +55,10 @@ CFLAGS = -X { -O2 }
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
 # forbidden as the first character in unquoted names.  Needs a new type for
 # unparsed targets.  This is very similar to supporting environment variables.
+#
+
+#
+# * Add long options: for all randomization options; all non-stable options.
 #
 
 #
@@ -362,10 +365,6 @@ A: -e B
 # std::unordered_map does).  Instead, order alphabetically by target name.  Need to
 # determine how to handle files vs phonies.  Also need to think about whether to keep
 # parametrized and unparametrized rules separate as it is now, or whether to mix them.
-#
-
-#
-# * Add long options: for all randomization options; all non-stable options.
 #
 
 #

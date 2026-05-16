@@ -1,0 +1,10 @@
+A: list.dir$(STU_TEST_SLASH)file
+{
+	cp list.dir/file A
+}
+
+list.dir/file
+{
+	mkdir -p list.dir
+	echo CORRECT >list.dir/file
+}

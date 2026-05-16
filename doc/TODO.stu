@@ -8,8 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-* Environment variable containing slash etc. works and needs no quoting.
-
 %"include" a.stu # Error
 filename; $(NAME); # With NAME=filename.  Error: two rules for one target.
 

@@ -8,8 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-A$(EMPTY_VARIABLE) = {CORRECT} # Works
-$(EMPTY_VARIABLE)A = {CORRECT} # Works
 $(EMPTY_VARIABLE): A; # Error because name would be empty
 %version; # Error, even with -U option
 %version a # Error, even with -U option

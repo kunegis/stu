@@ -8,7 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-@ $(NAME) # ?
 %$(VAR) # Error
 A$(EMPTY_VARIABLE) = {CORRECT} # Works
 $(EMPTY_VARIABLE)A = {CORRECT} # Works

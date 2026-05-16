@@ -8,9 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-%version a # Error, even with -U option
-""A = {CORRECT} # Works
-
 * Line ending in '$' (i.e., following by newline)
 * Line ending in '$(' (i.e., following by newline)
 * Line ending in '$(x' (i.e., following by newline)

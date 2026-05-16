@@ -8,9 +8,6 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-# 2.13-02xx
-list.($(NAME))
-
 * Environment variable containing spaces, quotes, dashes, newline, etc. works and needs no quoting.
 
 %"include" a.stu # Error

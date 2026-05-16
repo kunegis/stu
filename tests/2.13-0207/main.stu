@@ -1,0 +1,7 @@
+A: [B]$(NAME)
+{
+	cp list.123 A
+}
+
+B = {list.}
+list.123 = {CORRECT}

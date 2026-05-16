@@ -8,22 +8,23 @@
 # implemented, to pass paths to Stu libraries.
 #
 
-$(A)$(A)
+# 2.13-02xx
 $(A)$(B)
 $(A)text
 $(A)[B]
 $(A)(B)
-$(A)$name
+$(A)$name  # 05
 $(A)${name}
 text$(A)
 [B]$(A)
 (B)$(A)
-$name$(A)
+$name$(A)  # 10
 ${name}$(A)
 
 * Environment variable containing spaces, quotes, dashes, newline, etc. works and needs no quoting.
 
-%"include" a.stu # ?
+%"include" a.stu # Error
+filename; $(NAME); # With NAME=filename.  Error: two rules for one target.
 
 #
 # Have an option/flag for: For content rules, compare the content of the file with

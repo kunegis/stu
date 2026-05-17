@@ -1,16 +1,11 @@
 #
-# Have an option/flag for: For content rules, compare the content of the file with
-# the wanted content and don't update the file if identical.  Very useful when someone
-# changes the content in the stu file, and then re-builds.  At the moment, it is a common
-# complaint that Stu does _not_ re-build in that case.
-#
-# This should be a flag before the content rule.
-#
-# Check the date of the Stu file before looking at the content.  Maybe do that by default.
+# Rename ERROR_* constants to ERR_*.
 #
 
-# When this is changed in the Stu file, everything that uses CFLAGS is rebuilt.
-CFLAGS = -X { -O2 }
+#
+# Names of types of the form 'Place_*' are ambiguous because we often used variables of
+# type Place named 'place_*'.  Rename the 'Place_*' types e.g. to 'P*'.
+#
 
 #
 # Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
@@ -21,18 +16,6 @@ CFLAGS = -X { -O2 }
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
 # forbidden as the first character in unquoted names.  Needs a new type for
 # unparsed targets.  This is very similar to supporting environment variables.
-#
-
-#
-# * Add long options: for all randomization options; all non-stable options.
-#
-
-#
-# Verbose mode with:
-# * ls-like output after each built file
-# * Number of files/targets built / to be built / etc. after each built file
-# Use option '-v'.
-# Allow to output this into a file.
 #
 
 #
@@ -95,6 +78,32 @@ $ stu -d dir/main.stu # Like first cd'ing to dir/
 
 % set PATH /usr/local/bin
 % unset PATH
+
+#
+# Have an option/flag for: For content rules, compare the content of the file with
+# the wanted content and don't update the file if identical.  Very useful when someone
+# changes the content in the stu file, and then re-builds.  At the moment, it is a common
+# complaint that Stu does _not_ re-build in that case.
+#
+# This should be a flag before the content rule.
+#
+# Check the date of the Stu file before looking at the content.  Maybe do that by default.
+#
+
+# When this is changed in the Stu file, everything that uses CFLAGS is rebuilt.
+CFLAGS = -X { -O2 }
+
+# Or:
+#
+# For content rules, maybe have an own Executor subclass that checks whether the existing
+# has the same content as the to-be-written content, and if it has, does not touch the old
+# file.  This would make it possible that things are re-built when the content of {...} in
+# the Stu file is changed.
+#
+# This behavior could also be implemented in File_Executor, by querying hashes of each
+# file's content and timestamp before execution, and if after execution the content has
+# not change, revert the timestamps to their old values.  That would be expensive though
+# due to scanning a whole file, and should be disabled by default.
 
 #
 # Test make install using Docker.
@@ -334,18 +343,6 @@ A: -e B
 #
 
 #
-# For content rules, maybe have an own Executor subclass that checks whether the existing
-# has the same content as the to-be-written content, and if it has, does not touch the old
-# file.  This would make it possible that things are re-built when the content of {...} in
-# the Stu file is changed.
-#
-# This behavior could also be implemented in File_Executor, by querying hashes of each
-# file's content and timestamp before execution, and if after execution the content has
-# not change, revert the timestamps to their old values.  That would be expensive though
-# due to scanning a whole file, and should be disabled by default.
-#
-
-#
 # New flag with meaning: Just because B is newer that A, doesn't mean A has to be
 # rebuilt.  ('X' is just and example name, chose something else.)
 #
@@ -365,17 +362,17 @@ B {}
 -n -o A; # Allowed
 
 #
-# Simplify object classes if possible (targets, names, plain_dep, hash_dep, etc.).
-#
-
-#
-# Support negation of flags using +o, +p, etc.
-#
-
-#
 # Compact output mode, in which each line is prefixed by a [....] block with colors for
 # success/fail/ongoing.  Can even accumulate all past progress in a progress bar (which
 # may become longer as new tasks are discovered).
+#
+# Or:
+#
+# Verbose mode with:
+# * ls-like output after each built file
+# * Number of files/targets built / to be built / etc. after each built file
+# Use option '-v'.
+# Allow to output this into a file.
 #
 
 #
@@ -403,10 +400,19 @@ B {}
 #
 
 #
-# Rename ERROR_* constants to ERR_*.
+# Have a --color option that always takes an arg, and can do the same as -y and -Y.
 #
 
 #
-# Names of types of the form 'Place_*' are ambiguous because we often used variables of
-# type Place named 'place_*'.  Rename the 'Place_*' types e.g. to 'P*'.
+# Option -m:  Accept a string starting with '@', with the same semantics as -M.  E.g., "-m
+# @abc" is the same as '-M abc'.
+#
+
+#
+# * Add long options where not present yet.
+#
+
+#
+# Almost all EXEC files should be converted to use sh/utils.sh.  sh/utils.sh should be
+# renamed to make clear it can only be used from EXEC files.
 #

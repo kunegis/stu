@@ -1,0 +1,13 @@
+#!/bin/sh
+. ../../sh/utils.sh
+
+../../sh/rm_tmps
+
+set +e
+../../bin/stu.test --no-delete >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error 'exit status'
+[ -e list.target_file ] || Error 'list.target_file'
+[ -e list.file_2 ] || Error 'list.file_2'

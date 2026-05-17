@@ -57,7 +57,7 @@ OPTIONS
        -a     Treat all trivial dependencies (declared with the -t flag or op‐
               tion) as non-trivial.
 
-       -c FILENAME
+       -c FILENAME, --target=FILENAME
               Pass  a  target  filename, without Stu syntax.  This option only
               allows file targets to be specified, not phony targets.
 
@@ -71,7 +71,8 @@ OPTIONS
               syntax, while arguments supports  only  a  reduced  syntax  (see
               above).
 
-       -E     Explain  error  messages.  For certain errors, an additional ex‐
+       -E, --explain
+              Explain  error  messages.  For certain errors, an additional ex‐
               planation is written on standard error output.  Only some  error
               messages have explanations.
 
@@ -79,10 +80,14 @@ OPTIONS
               Read  the  given  file  instead of the default main.stu.  If the
               name of a directory is passed, the file main.stu  in  the  given
               directory  is  read.  If - (a single dash) is passed, read stan‐
-              dard input.  The -f option can be used multiple times.
+              dard input.  The -f option can be used multiple times.  If  this
+              option is used, main.stu is not read.
 
        -F RULES
-              Pass rules in full Stu syntax.
+              Pass  rules in full Stu syntax.  The argument is parsed as would
+              be the content of a file specified by -f, or  the  default  file
+              main.stu.   This option can be used multiple times.  If this op‐
+              tion is used, main.stu is not read.
 
        -g     Treat all optional dependencies (declared with the -o  flag)  as
               non-optional.
@@ -107,7 +112,8 @@ OPTIONS
               or suspend Stu itself.  When -i is used, Stu must be  run  in  a
               terminal.
 
-       -I     Print a list of all buildable file targets and exit.  Prints one
+       -I, --print-targets
+              Print a list of all buildable file targets and exit.  Prints one
               file pattern per line.  The patterns are glob  pattern  suitable
               for  use in the shell.  Use quoting for all characters that need
               quoting in the shell.  Can be used to  populate  files  such  as
@@ -137,7 +143,8 @@ OPTIONS
               try to build as much as possible.  This option is equivalent  to
               that of Make.
 
-       -K     Don't  delete partially built files when a command fails or when
+       -K, --no-delete
+              Don't  delete partially built files when a command fails or when
               Stu is interrupted.  By default, Stu will delete the target of a
               command after the command fails or is interrupted, when the file
               is newer than it was before starting the  command.  This  option
@@ -145,14 +152,14 @@ OPTIONS
               quent invocation of Stu may lead to the partially built file be‐
               ing erroneously considered up to date.
 
-       -m ORDER
+       -m ORDER, --order=ORDER
               Specify  the  order  in which jobs are run.  When ORDER is 'dfs'
               (the default), Stu traverses the dependency graph  in  a  depth-
               first  fashion,  in  a way similar to most Make implementations.
               When ORDER is 'random', the order in which jobs are run is  ran‐
               domized within each target.
 
-       -M STRING
+       -M STRING, --order-seed=STRING
               Run jobs in pseudorandom order, seeded by the given string.
 
        -n FILENAME
@@ -186,12 +193,14 @@ OPTIONS
               cessful,  and a message when there is nothing to be done.  Error
               messages are not suppressed.
 
-       -U     Disable all version checks due to the %version directive.
+       -U, --ignore-version
+              Disable all version checks due to the %version directive.
 
        -V, --version
               Output the version number of Stu and exit.
 
-       -x     Call the shell using the -x option, i.e., each individual  shell
+       -x, --print-commands
+              Call the shell using the -x option, i.e., each individual  shell
               command is output to standard error output individually, instead
               of outputting a full command at once on standard output.  In the
               output, each command is prefixed by the value of $PS4.
@@ -203,7 +212,8 @@ OPTIONS
 
        -Y     Enable color output.
 
-       -z     Output runtime statistics about child processes on standard out‐
+       -z, --print-statistics
+              Output runtime statistics about child processes on standard out‐
               put  when  finished.   Does  not  include the runtime of the Stu
               process itself.  Includes the runtime of all  child  and  grand‐
               child  processes,  and  so  on.  Does not include the runtime of
@@ -1206,4 +1216,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.13.1                         May 2026                             STU(1)
+stu-2.13.2                         May 2026                             STU(1)

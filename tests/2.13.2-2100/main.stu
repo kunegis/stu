@@ -1,0 +1,4 @@
+@all: [A];
+N = {100}
+>A: $[N] { ../../sh/seq $N | sed -E -e 's,^,list.,' ; }
+>list.$i { echo $i ; }

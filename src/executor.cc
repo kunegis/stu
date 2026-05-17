@@ -446,14 +446,14 @@ Proceed Executor::execute_children()
 		TRACE("child->finished(dep_child->flags)= %s",
 			frmt("%d", child->finished(dep_child->flags.get_flags())));
 		assert(is_valid(proceed_child));
-		assert((proceed_child == P_NOTHING) !=
+		assert((proceed_child == 0) !=
 			((child->finished(dep_child->flags.get_flags())) == 0));
 
 		proceed_all |= proceed_child;
 		/* The finished flag of the child only applies to the
 		 * child, not to us. */
 
-		if (proceed_child == P_NOTHING) {
+		if (!proceed_child) {
 			disconnect(child, dep_child);
 		}
 		if (proceed_all & P_WAIT && options_jobs == 0)
@@ -471,7 +471,7 @@ Proceed Executor::execute_children()
 		if (error) {
 			assert(option_k);
 		}
-		proceed_all= P_NOTHING;
+		proceed_all= 0;
 	}
 
 	TRACE("proceed_all= %s", show(proceed_all));
@@ -622,12 +622,12 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	assert(dep_link);
 	if (finished(dep_link->flags.get_flags())) {
 		TRACE("Finished");
-		return P_NOTHING;
+		return 0;
 	}
 
 	if (optional_finished(dep_link)) {
 		TRACE("Optional finished");
-		return P_NOTHING;
+		return 0;
 	}
 
 	Proceed proceed= 0;
@@ -637,11 +637,13 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	 * random mode, start new children first and continue already-open
 	 * children second. */
 	if (order != Order::RANDOM) {
+		TRACE("Non-random: execute children");
 		Proceed proceed_children= execute_children();
 		assert(is_valid(proceed_children));
-		TRACE("proceed= %s, proceed_children= %s",
+		TRACE("proceed= %s; proceed_children= %s",
 			show(proceed), show(proceed_children));
 		proceed |= proceed_children;
+		assert(is_valid(proceed));
 		if (proceed & P_WAIT) {
 			if (options_jobs == 0) {
 				TRACE("Wait; no jobs left");
@@ -670,12 +672,16 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 	assert(buffer_A.empty());
 
 	if (order == Order::RANDOM) {
+		TRACE("Random: execute children");
 		Proceed proceed_children= execute_children();
 		assert(is_valid(proceed_children));
+		TRACE("proceed= %s; proceed_children= %s; options_jobs= %s",
+			show(proceed), show(proceed_children),
+			frmt("%ld", options_jobs));
 		proceed |= proceed_children;
 		assert(is_valid(proceed));
 		if (proceed & P_WAIT && options_jobs == 0) {
-			TRACE("Wait");
+			TRACE("Random: return %s", show(proceed));
 			return proceed;
 		}
 	}
@@ -687,10 +693,17 @@ Proceed Executor::execute_phase_A(shared_ptr <const Dep> dep_link)
 		return proceed;
 	}
 
+	if (! buffer_A.empty()) {
+		TRACE("buffer_A not empty [order RANDOM]");
+		assert(order == Order::RANDOM);
+		proceed |= P_CALL_AGAIN;
+		return proceed;
+	}
+
 	if (error) {
 		assert(option_k);
 		TRACE("Error");
-		return P_NOTHING;
+		return 0;
 	}
 
 	TRACE("proceed= %s", show(proceed));
@@ -712,7 +725,7 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 			if (proceed_A & P_WAIT && options_jobs == 0) {
 				return proceed | proceed_A;
 			}
-			if (proceed_A == P_NOTHING && error) {
+			if (!proceed_A && error) {
 				proceed |= proceed_A;
 				return proceed;
 			}
@@ -733,8 +746,7 @@ Proceed Executor::execute_phase_B(shared_ptr <const Dep> dep_link)
 	}
 	assert(buffer_A.empty());
 	assert(buffer_B.empty());
-	proceed= P_NOTHING;
-	TRACE("proceed= %s", show(proceed));
+	proceed= 0;
 	return proceed;
 }
 
@@ -902,12 +914,10 @@ Proceed Executor::connect(
 	assert(dep_child->is_normalized());
 	assert(! to <Root_Dep> (dep_child));
 	shared_ptr <const Plain_Dep> plain_dep_this= to <Plain_Dep> (dep_this);
-	if (check_clash_without_target_flags(dep_child)) return P_NOTHING;
+	if (check_clash_without_target_flags(dep_child)) return 0;
 
 	Executor *child= get_executor(dep_child);
-	if (!child) {
-		return P_NOTHING;
-	}
+	if (!child) return 0;
 	children.insert(child);
 	if (dep_child->flags.get_flags() & F_RESULT_NOTIFY) {
 		for (const auto &dependency:
@@ -917,19 +927,18 @@ Proceed Executor::connect(
 	dep_child= child->parents[this];
 	assert(dep_child);
 	dep_child->check();
-	if (check_clash_with_target_flags(dep_this, dep_child)) return P_NOTHING;
+	if (check_clash_with_target_flags(dep_this, dep_child)) return 0;
 
 	Proceed proceed_child= child->execute(dep_child);
 	TRACE("proceed_child= %s", show(proceed_child));
 	assert(is_valid(proceed_child));
-	if (proceed_child & (P_WAIT | P_CALL_AGAIN))
-		return proceed_child;
+	if (proceed_child) return proceed_child;
 	bool child_finished= child->finished(dep_child->flags.get_flags());
 	TRACE("child_finished= %s", frmt("%d", child_finished));
 	if (child_finished) {
 		disconnect(child, dep_child);
 	}
-	return P_NOTHING;
+	return 0;
 }
 
 bool Executor::same_dependency_for_print(

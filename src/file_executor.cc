@@ -477,11 +477,11 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		return proceed_A;
 	if (error) {
 		done |= Done::from_flags(dep_link->flags.get_flags());
-		return P_NOTHING;
+		return 0;
 	}
 
 	if (finished(dep_link->flags.get_flags()))
-		return P_NOTHING;
+		return 0;
 
 	if (job.started_or_waited())
 		return P_WAIT;
@@ -517,7 +517,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			if (check_file_target(hash_dep, i,
 					dep_link,
 					no_execution))
-				return P_NOTHING;
+				return 0;
 		}
 		/* We cannot update TIMESTAMP within the loop above because we need to
 		 * compare each TIMESTAMP_OLD with the previous value of TIMESTAMP. */
@@ -555,7 +555,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		TRACE("No need to build");
 		done |= Done::from_flags_trivial_and_nontrivial(
 			dep_link->flags.get_flags());
-		return P_NOTHING;
+		return 0;
 	}
 
 	/* We now know that the command must be run, or that there is no command. */
@@ -571,7 +571,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (no_execution) {
 		/* A target without a command:  Nothing to do anymore */
 		done |= Done::from_flags(dep_link->flags.get_flags());
-		return P_NOTHING;
+		return 0;
 	}
 
 	/* The command must be run (or the file created, etc.) now */
@@ -595,7 +595,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		write_content(hash_deps.front().get_name_c_str_nondynamic(),
 			*(rule->command));
 		done.set_all();
-		return P_NOTHING;
+		return 0;
 	}
 
 	/* We have to start a job now */
@@ -635,7 +635,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		Signal_Blocker sb;
 
 		if (start(dep_link, pid, mapping))
-			return P_NOTHING;
+			return 0;
 		TRACE("pid= %s", frmt("%jd", (intmax_t)pid));
 		assert(pid != 0 && pid != 1);
 
@@ -645,7 +645,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 				show(hash_deps.front()));
 			raise(ERROR_BUILD);
 			done |= Done::from_flags(dep_link->flags.get_flags());
-			return P_NOTHING;
+			return 0;
 		}
 
 		Job_List::add(pid, index, this);

@@ -1,0 +1,3 @@
+@all: [A];
+>A:  { echo list.1 ; }
+>list.$i { echo $i ; }

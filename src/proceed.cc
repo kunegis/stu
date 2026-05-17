@@ -8,7 +8,7 @@ bool is_valid(Proceed proceed)
 		proceed == (P_WAIT) ||
 		proceed == (P_CALL_AGAIN) ||
 		proceed == (P_WAIT | P_CALL_AGAIN) ||
-		proceed == P_NOTHING;
+		proceed == 0;
 }
 
 string show(Proceed proceed)

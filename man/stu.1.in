@@ -49,7 +49,7 @@ the name of a single file, since filenames do not contain the \\0 character.  Us
 option is equivalent to using the \fB[-0\fR \fIFILENAME\fR\fB]\fR syntax.
 .IP \fB-a\fR
 Treat all trivial dependencies (declared with the \fB-t\fR flag or option) as non-trivial.
-.IP "\fB-c\fR \fIFILENAME\fR"
+.IP "\fB-c\fR \fIFILENAME\fR, \fB--target\fR=\fIFILENAME\fR"
 Pass a target filename, without Stu syntax.  This option only allows
 file targets to be specified, not phony targets.
 .IP "\fB-C\fR \fIEXPRESSION\fR"
@@ -59,15 +59,18 @@ one or more dependencies in a Stu script.  As a result, flags \fB-p\f, \fB-o\fR 
 separate filenames.  This is not equivalent to passing a string as an argument to Stu
 outside of options, because \fB-C\fR supports full Stu syntax, while arguments supports
 only a reduced syntax (see above).
-.IP "\fB-E\fR"
+.IP "\fB-E\fR, \fB--explain\fR"
 Explain error messages.  For certain errors, an additional explanation is
 written on standard error output.  Only some error messages have explanations.
 .IP "\fB-f\fR \fIFILENAME\fR, \fB--file\fR=\fIFILENAME\fR"
 Read the given file instead of the default \fImain.stu\fR.  If the name of a directory is
-passed, the file \fImain.stu\fR in the given directory is read.  If \fB-\fR (a single
-dash) is passed, read standard input.  The \fB-f\fR option can be used multiple times.
+passed, the file \fImain.stu\fR in the given directory is read.  If \fI-\fR (a single
+dash) is passed, read standard input.  The \fB-f\fR option can be used multiple times.  If
+this option is used, \fImain.stu\fR is not read.
 .IP "\fB-F\fR \fIRULES\fI"
-Pass rules in full Stu syntax.
+Pass rules in full Stu syntax.  The argument is parsed as would be the content of a file
+specified by \fB-f\fR, or the default file \fImain.stu\fR.  This option can be used
+multiple times.  If this option is used, \fImain.stu\fR is not read.
 .IP "\fB-g\fR"
 Treat all optional dependencies (declared with the \fB-o\fR flag) as non-optional.
 .IP "\fB-h\fR, \fB--help\fR"
@@ -84,7 +87,7 @@ running job, and if the \fB-k\fR option is used, Stu will continue with the next
 When Ctrl-Z is pressed, Stu will interrupt the currently running job, and ask the user to
 press ENTER to continue, or press Ctrl-C/Ctrl-Z to interrupt or suspend Stu itself.  When
 \fB-i\fR is used, Stu must be run in a terminal.
-.IP "\fB-I\fR"
+.IP "\fB-I\fR, \fB--print-targets\fR"
 Print a list of all buildable file targets and exit.  Prints one file pattern per line.
 The patterns are glob pattern suitable for use in the shell.  Use quoting for all
 characters that need quoting in the shell.  Can be used to populate files such as
@@ -106,18 +109,18 @@ interpreted.
 .IP "\fB-k\fR, \fB--keep-going\fR"
 Keep going.  Do not stop running when an error occurs.  Instead, try to build as much
 as possible.  This option is equivalent to that of Make.
-.IP "\fB-K\fR"
+.IP "\fB-K\fR, \fB--no-delete\fR"
 Don't delete partially built files when a command fails or when Stu is interrupted.  By
 default, Stu will delete the target of a command after the command fails or is
 interrupted, when the file is newer than it was before starting the command. This option
 disables that behavior.  Note that with this option, a subsequent invocation of Stu may
 lead to the partially built file being erroneously considered up to date.
-.IP "\fB-m\fR \fIORDER\fR"
+.IP "\fB-m\fR \fIORDER\fR, \fB--order\fR=\fIORDER\fR"
 Specify the order in which jobs are run.  When \fIORDER\fR is 'dfs' (the default), Stu
 traverses the dependency graph in a depth-first fashion, in a way similar to most Make
 implementations. When \fIORDER\fR is 'random', the order in which jobs are run is
 randomized within each target.
-.IP "\fB-M\fR \fISTRING\fR"
+.IP "\fB-M\fR \fISTRING\fR, \fB--order-seed\fR=\fISTRING\fR"
 Run jobs in pseudorandom order, seeded by the given string.
 .IP "\fB-n\fR \fIFILENAME\fR"
 Read targets from \fIFILENAME\fR, which must contain newline-separated
@@ -142,11 +145,11 @@ fatal errors.  The options \fB-k\fR and \fB-j\fR are ignored.
 Silent mode.  Suppress messages on standard output: messages about which commands are run,
 a message when the build is successful, and a message when there is nothing to be done.
 Error messages are not suppressed.
-.IP "\fB-U\fR"
+.IP "\fB-U\fR, \fB--ignore-version\fR"
 Disable all version checks due to the \fI%version\fR directive.
 .IP "\fB-V\fR, \fB--version\fR"
 Output the version number of Stu and exit.
-.IP "\fB-x\fR"
+.IP "\fB-x\fR, \fB--print-commands\fR"
 Call the shell using the \fB-x\fR option, i.e., each individual shell command is output to
 standard error output individually, instead of outputting a full command at once on
 standard output.  In the output, each command is prefixed by the value of $PS4.
@@ -156,7 +159,7 @@ output are TTYs and whether $TERM is defined and not 'dumb' and if they are, use
 escape sequences to color code messages.
 .IP "\fB-Y\fR"
 Enable color output.
-.IP "\fB-z\fR"
+.IP "\fB-z\fR, \fB--print-statistics\fR"
 Output runtime statistics about child processes on standard output when finished.  Does
 not include the runtime of the Stu process itself.  Includes the runtime of all child and
 grandchild processes, and so on.  Does not include the runtime of children or

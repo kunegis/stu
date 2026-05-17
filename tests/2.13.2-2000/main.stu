@@ -1,0 +1,6 @@
+list.target_file:
+{
+	touch list.target_file
+	touch list.file_2
+	exit 77
+}

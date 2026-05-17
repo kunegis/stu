@@ -61,11 +61,10 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 		TRACE("phase A wait/call again");
 		return proceed_A;
 	}
-	assert(proceed_A == P_NOTHING);
 	if (error) {
 		TRACE("phase A aborted");
 		stage= ST_FINISHED;
-		return P_NOTHING;
+		return 0;
 	}
 
 	Proceed proceed_B= execute_phase_B(dep_link);
@@ -74,11 +73,10 @@ Proceed Concat_Executor::execute(shared_ptr <const Dep> dep_link)
 		TRACE("phase B wait/call again");
 		return proceed_B;
 	}
-	assert(proceed_B == P_NOTHING);
 	if (error) {
 		TRACE("phase B aborted");
 		stage= ST_FINISHED;
-		return P_NOTHING;
+		return 0;
 	}
 
 	assert(stage < ST_FINISHED);

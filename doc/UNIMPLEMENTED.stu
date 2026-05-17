@@ -6,6 +6,10 @@
 # always backward-incompatible.
 
 #
+# Support negation of flags using +o, +p, etc.
+#
+
+#
 # A flag which makes stu pass its arguments as arguments to the command.
 # Argument must be a file (not a phony).  This will allow commands to properly pass a list
 # of files to another command.

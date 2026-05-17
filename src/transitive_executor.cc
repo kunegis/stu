@@ -97,14 +97,14 @@ Proceed Transitive_Executor::execute(shared_ptr <const Dep> dep_link)
 	if (error) {
 		TRACE("Phase A abort");
 		done |= Done::from_flags(dep_link->flags.get_flags());
-		return P_NOTHING;
+		return 0;
 	}
 
 	done |= Done::from_flags(dep_link->flags.get_flags()
 		& (F_PERSISTENT | F_OPTIONAL));
 	if (finished(dep_link->flags.get_flags())) {
 		done |= Done::from_flags(dep_link->flags.get_flags());
-		return P_NOTHING;
+		return 0;
 	}
 
 	Proceed proceed_B= execute_phase_B(dep_link);
@@ -116,7 +116,7 @@ Proceed Transitive_Executor::execute(shared_ptr <const Dep> dep_link)
 	}
 
 	done |= Done::from_flags(dep_link->flags.get_flags());
-	return P_NOTHING;
+	return 0;
 }
 
 bool Transitive_Executor::finished(Flags flags) const

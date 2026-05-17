@@ -1,0 +1,7 @@
+A: B C
+{
+	cat B C >A
+}
+
+>B { echo bbb ; }
+>C { echo ccc ; }

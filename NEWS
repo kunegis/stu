@@ -11,6 +11,12 @@ made, which are documented in the file 'doc/MIGRATION', and summarized here.
 
 ------------------------------------------------------------------------
 
+2026-05-20  Version 2.13.2
+
+* New long forms for options: -c (--target), -E (--explain), -I (--print-targets),
+  -K (--no-delete), -m (--order), -M (--order-seed), -U (--ignore-version),
+  -x (--print-commands), -z (--print-statistics).
+
 2026-05-17  Version 2.13
 
 * Environment variables can be accessed with the syntax $(VARIABLE).  It is an error if an

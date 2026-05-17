@@ -14,16 +14,25 @@
 #include "version.hh"
 
 const struct option LONG_OPTIONS[]= {
-	{ "file",        required_argument, nullptr, 'f'},
-	{ "help",        no_argument,       nullptr, 'h'},
-	{ "interactive", no_argument,       nullptr, 'i'},
-	{ "jobs",        required_argument, nullptr, 'j'},
-	{ "keep-going",  no_argument,       nullptr, 'k'},
-	{ "print-rules", no_argument,       nullptr, 'P'},
-	{ "question",    no_argument,       nullptr, 'q'},
-	{ "quiet",       no_argument,       nullptr, 's'},
-	{ "silent",      no_argument,       nullptr, 's'},
-	{ "version",     no_argument,       nullptr, 'V'},
+	{ "explain",          no_argument,       nullptr, 'E'},
+	{ "file",             required_argument, nullptr, 'f'},
+	{ "help",             no_argument,       nullptr, 'h'},
+	{ "ignore-version",   no_argument,       nullptr, 'U'},
+	{ "interactive",      no_argument,       nullptr, 'i'},
+	{ "jobs",             required_argument, nullptr, 'j'},
+	{ "keep-going",       no_argument,       nullptr, 'k'},
+	{ "no-delete",        no_argument,       nullptr, 'K'},
+	{ "order",            required_argument, nullptr, 'm'},
+	{ "order-seed",       required_argument, nullptr, 'M'},
+	{ "print-commands",   no_argument,       nullptr, 'x'},
+	{ "print-rules",      no_argument,       nullptr, 'P'},
+	{ "print-statistics", no_argument,       nullptr, 'z'},
+	{ "print-targets",    no_argument,       nullptr, 'I'},
+	{ "question",         no_argument,       nullptr, 'q'},
+	{ "quiet",            no_argument,       nullptr, 's'},
+	{ "silent",           no_argument,       nullptr, 's'},
+	{ "target",           required_argument, nullptr, 'c'},
+	{ "version",          no_argument,       nullptr, 'V'},
 	{ nullptr, 0, nullptr, 0}
 };
 
@@ -35,9 +44,10 @@ const char HELP[]=
 	"Options:\n"
 	"  -0 FILENAME      Read \\0-separated file targets from the given file\n"
 	"  -a               Treat all trivial dependencies as non-trivial\n"
-	"  -c FILENAME      Pass a target filename without Stu syntax parsing\n"
+	"  -c FILENAME, --target=FILENAME\n"
+	"                   Pass a target filename without Stu syntax parsing\n"
 	"  -C EXPRESSION    Pass a target in full Stu syntax\n"
-	"  -E               Explain error messages\n"
+	"  -E, --explain    Explain error messages\n"
 	"  -f FILENAME, --file=FILENAME\n"
 	"                   The input file to use instead of 'main.stu'\n"
 	"  -F RULES         Pass rules in Stu syntax\n"
@@ -45,15 +55,17 @@ const char HELP[]=
 	"  -h, --help       Output help\n"
 	"  -i, --interactive\n"
 	"                   Interactive mode (run jobs in foreground)\n"
-	"  -I               Print all buildable file targets as glob patterns\n"
+	"  -I, --print-targets\n"
+	"                   Print all buildable file targets as glob patterns\n"
 	"  -j K, --jobs=K   Run K jobs in parallel\n"
 	"  -J               Disable Stu syntax in arguments\n"
 	"  -k, --keep-going Keep on running after errors\n"
-	"  -K               Don't delete target files on error or interruption\n"
-	"  -m ORDER         Order to run the targets:\n"
-	"     dfs           (default) Depth-first order, as in Make\n"
-	"     random        Random order\n"
-	"  -M STRING        Pseudorandom run order, seeded by given string\n"
+	"  -K, --no-delete  Don't delete target files on error or interruption\n"
+	"  -m ORDER, --order=ORDER\n"
+	"                   Order to run the targets. 'dfs' (default): depth-first order,\n"
+	"                   'random': random order\n"
+	"  -M STRING, --order-seed=STRING\n"
+        "                   Pseudorandom run order, seeded by given string\n"
 	"  -n FILENAME      Read \\n-separated file targets from the given file\n"
 	"  -o FILENAME      Build an optional dependency, i.e., build it only if it\n"
 	"                   exists and is out of date\n"
@@ -63,12 +75,15 @@ const char HELP[]=
 	"  -q, --question   Question mode: check whether targets are up to date\n"
 	"  -s, --quiet, --silent\n"
 	"                   Silent mode: don't use stdout\n"
-	"  -U               Ignore %version directives\n"
+	"  -U, --ignore-version\n"
+	"                   Ignore %version directives\n"
 	"  -V, --version    Output version\n"
-	"  -x               Output each line in a command individually\n"
+	"  -x, --print-commands\n"
+	"                   Output each line in a command individually\n"
 	"  -y               Disable color in output\n"
 	"  -Y               Enable color in output\n"
-	"  -z               Output run-time statistics on stdout\n"
+	"  -z, --print-statistics\n"
+	"                   Output run-time statistics on stdout\n"
 	"Report bugs to: " PACKAGE_EMAIL "\n"
 	"Stu home page: <" PACKAGE_URL ">\n";
 

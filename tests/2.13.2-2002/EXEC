@@ -1,0 +1,7 @@
+#!/bin/sh
+. ../../sh/utils.sh
+
+../../bin/stu.test --order=random >list.out 2>list.err || Error 'stu'
+head -1 list.out | grep -q -F -e 777 && Error '777'
+
+exit 0

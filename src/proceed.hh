@@ -18,7 +18,6 @@ enum {
 	 * order. */
 
 	P_COUNT      = 2,
-	P_NOTHING    = 0,
 };
 
 #ifndef NDEBUG

@@ -94,7 +94,7 @@ void init_signals()
 
 	if (0 != sigemptyset(&set_termination_productive))  {
 		print_errno("sigemptyset");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 
 	/*
@@ -105,12 +105,12 @@ void init_signals()
 	act_termination.sa_handler= signal_handler_termination;
 	if (0 != sigemptyset(&act_termination.sa_mask))  {
 		print_errno("sigemptyset");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	act_termination.sa_flags= 0;
 	if (0 != sigemptyset(&set_termination))  {
 		print_errno("sigemptyset");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	const static int signals_termination[]= {
 		SIGTERM, SIGINT, SIGQUIT, SIGABRT, SIGSEGV, SIGPIPE, SIGILL, SIGHUP,
@@ -120,15 +120,15 @@ void init_signals()
 	     i < sizeof(signals_termination) / sizeof(signals_termination[0]); ++i) {
 		if (0 != sigaction(signals_termination[i], &act_termination, nullptr)) {
 			print_errno("sigaction");
-			exit(ERROR_FATAL);
+			exit(ERR_FATAL);
 		}
 		if (0 != sigaddset(&set_termination, signals_termination[i])) {
 			print_errno("sigaddset");
-			exit(ERROR_FATAL);
+			exit(ERR_FATAL);
 		}
 		if (0 != sigaddset(&set_termination_productive, signals_termination[i])) {
 			print_errno("sigaddset");
-			exit(ERROR_FATAL);
+			exit(ERR_FATAL);
 		}
 	}
 
@@ -142,41 +142,41 @@ void init_signals()
 	act_productive.sa_sigaction= signal_handler_productive;
 	if (sigemptyset(& act_productive.sa_mask)) {
 		print_errno("sigemptyset");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	act_productive.sa_flags= SA_SIGINFO;
 	if (0 != sigaction(SIGCHLD, &act_productive, nullptr)) {
 		print_errno("sigaction");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	if (0 != sigaction(SIGUSR1, &act_productive, nullptr)) {
 		print_errno("sigaction");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 
 	if (0 != sigemptyset(&set_productive)) {
 		print_errno("sigemptyset");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	if (0 != sigaddset(&set_productive, SIGCHLD)) {
 		print_errno("sigaddset");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	if (0 != sigaddset(&set_productive, SIGUSR1)) {
 		print_errno("sigaddset");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	if (0 != sigaddset(&set_termination_productive, SIGCHLD)) {
 		print_errno("sigaddset");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	if (0 != sigaddset(&set_termination_productive, SIGUSR1)) {
 		print_errno("sigaddset");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	if (0 != sigprocmask(SIG_BLOCK, &set_productive, nullptr)) {
 		print_errno("sigprocmask");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 
 	/*

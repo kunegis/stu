@@ -74,7 +74,7 @@ int main(int argc, char **argv, char **envp)
 		Job::print_statistics();
 	if (fclose(stdout)) {
 		print_errno("fclose", "<stdout>");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	/* No need to flush stderr, because it is line buffered, and if we used it, it
 	 * means there was an error anyway, so we're not losing any information. */

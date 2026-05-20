@@ -198,7 +198,7 @@ void Tokenizer::parse_tokens_file(
 				place_diagnostic << format_errno_bare(filename_diagnostic);
 			}
 		}
-		throw ERROR_BUILD;
+		throw ERR_BUILD;
 	} catch (int error) {
 		if (in != nullptr) {
 			switch (technique) {
@@ -274,7 +274,7 @@ void Tokenizer::parse_tokens_arg(
 			if (*p == '\0') {
 				place << fmt("expected a flag character after %s",
 					show(Operator_View('-')));
-				throw ERROR_LOGICAL;
+				throw ERR_LOGICAL;
 			}
 			if (! is_placed_flag_char(*p)) {
 				if (isalnum(*p)) {
@@ -285,7 +285,7 @@ void Tokenizer::parse_tokens_arg(
 						show(Operator_View('-')),
 						show(string(1, *p)));
 				}
-				throw ERROR_LOGICAL;
+				throw ERR_LOGICAL;
 			}
 			tokens.push_back(std::make_shared <Flag_Token>
 				(*p, place, environment));
@@ -531,7 +531,7 @@ shared_ptr <Command> Tokenizer::parse_command()
 
 	current_place() << fmt("expected a closing %s", show(Operator_View('}')));
 	place_open << fmt("for command started by %s", show(Operator_View('{')));
-	throw ERROR_LOGICAL;
+	throw ERR_LOGICAL;
 }
 
 void Tokenizer::parse_flag_or_name()
@@ -550,7 +550,7 @@ void Tokenizer::parse_flag_or_name()
 			current_place() << fmt(
 				"an unquoted name must not begin with the character %s",
 				show(string(1, *p)));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		Place place_dash= current_place();
 		++p;
@@ -558,7 +558,7 @@ void Tokenizer::parse_flag_or_name()
 		if (p == p_end || *p == '\n') {
 			place_dash << fmt("expected a flag character after dash %s",
 				show(Operator_View('-')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		char flag_char= *p;
 		if (! isalnum(flag_char)) {
@@ -567,7 +567,7 @@ void Tokenizer::parse_flag_or_name()
 			place_dash << fmt("after dash %s",
 				show(Operator_View('-')));
 			explain_flags();
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		shared_ptr <Flag_Token> token;
 		do {
@@ -576,7 +576,7 @@ void Tokenizer::parse_flag_or_name()
 				current_place() <<
 					fmt("invalid flag %s", show(Flag_View(flag_char)));
 				explain_flags();
-				throw ERROR_LOGICAL;
+				throw ERR_LOGICAL;
 			}
 			token= std::make_shared <Flag_Token>
 				(flag_char, current_place(), environment);
@@ -591,7 +591,7 @@ void Tokenizer::parse_flag_or_name()
 					show(current_mbchar()));
 			token->get_place() <<
 				fmt("after flag %s", show(Flag_View(flag_char)));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 	} else {
 		shared_ptr <Place_Name> place_name= parse_name(allow_special);
@@ -617,7 +617,7 @@ void Tokenizer::parse_flag_or_name()
 				if (strchr("#%\'\":;-$@<>={}()[]*\\&|!?,", *p))
 					explain_quoted_characters();
 			}
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		assert(! place_name->empty());
 		tokens.push_back(std::make_shared <Name_Token> (*place_name, environment));
@@ -671,7 +671,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 		if (p == p_begin)
 			return nullptr;
 		place_begin << "name must not be empty";
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	return ret;
@@ -689,7 +689,7 @@ void Tokenizer::parse_dollar(Place_Name &place_name)
 		place_dollar << fmt(
 			"expected parameter or environment variable after %s",
 			show(Operator_View('$')));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	if (! (p[1] == '{' || p[1] == '(' || p[1] == '_' || isalnum(p[1]))) {
 		++p;
@@ -698,7 +698,7 @@ void Tokenizer::parse_dollar(Place_Name &place_name)
 			show(current_mbchar()));
 		place_dollar << fmt("after %s",
 			show(Operator_View('$')));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	if (p[1] == '(') {
@@ -710,7 +710,7 @@ void Tokenizer::parse_dollar(Place_Name &place_name)
 		if (!value) {
 			place_dollar << fmt("Expected environment variable %s to be set",
 				show(Environment_Variable_View(name)));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		place_name.append_text(value);
 	} else {
@@ -743,14 +743,14 @@ void Tokenizer::parse_parameter(string &name)
 			place_dollar << fmt("for parameter started by %s",
 				show(Operator_View("${")));
 			explain_parameter_character();
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		} else if (*p != '}') {
 			current_place() << fmt("character %s cannot appear",
 				show(current_mbchar()));
 			place_dollar << fmt("in parameter started by %s",
 				show(Operator_View("${")));
 			explain_parameter_character();
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 	}
 
@@ -761,7 +761,7 @@ void Tokenizer::parse_parameter(string &name)
 		place_dollar << fmt("after %s",
 			show(Operator_View('$')));
 		explain_parameter_syntax();
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	name= string(p_name, p - p_name);
@@ -770,7 +770,7 @@ void Tokenizer::parse_parameter(string &name)
 		place_name << fmt(
 			"parameter name %s must not start with a digit",
 			show(Prefix_View("$", name)));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	if (braces) ++p;
 }
@@ -788,14 +788,14 @@ void Tokenizer::parse_environment_variable(string &name)
 		place_dollar << fmt("expected name of environment variable after %s",
 			show(Operator_View("$(")));
 		explain_environment_variable_name();
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	if (! (isalpha(*p) || *p == '_')) {
 		place_name << fmt(
 			"expected name of environment variable to start with letter or underscore, not %s",
 			show(current_mbchar()));
 		explain_environment_variable_name();
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	++p;
 
@@ -806,7 +806,7 @@ void Tokenizer::parse_environment_variable(string &name)
 			show(Operator_View(')')));
 		place_dollar << fmt("after name of environment variable started by %s",
 			show(Operator_View("$(")));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	if (*p != ')') {
@@ -815,7 +815,7 @@ void Tokenizer::parse_environment_variable(string &name)
 		place_dollar << fmt("in environment variable started by %s",
 				show(Operator_View("$(")));
 		explain_environment_variable_name();
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	name = string(p_name, p - p_name);
@@ -854,7 +854,7 @@ void Tokenizer::parse_version(
 			show("MAJOR.MINOR"), show("MAJOR.MINOR.PATCH"));
 		place_percent << fmt("after %s",
 			show(Operator_View("%version")));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	unsigned major_req, minor_req, patch_req;
@@ -901,7 +901,7 @@ void Tokenizer::parse_version(
 			show(Operator_View("%version")),
 			show(STU_VERSION));
 		explain_version();
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
  error:
@@ -910,7 +910,7 @@ void Tokenizer::parse_version(
 	place_percent << fmt("after %s",
 		show(Operator_View("%version")));
 
-	throw ERROR_LOGICAL;
+	throw ERR_LOGICAL;
 }
 
 Tokenizer::Tokenizer(
@@ -1017,7 +1017,7 @@ bool Tokenizer::skip_space(bool &skipped_actual_space)
 			} else {
 				current_place() << fmt("expected a character after %s",
 					show(Operator_View('\\')));
-				throw ERROR_LOGICAL;
+				throw ERR_LOGICAL;
 			}
 		}
 		else if (*p == '\n') {
@@ -1088,7 +1088,7 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 						show(string(p-1, 2)));
 				place_begin_quote << fmt("in quote started by %s",
 					show(Operator_View('"')));
-				throw ERROR_LOGICAL;
+				throw ERR_LOGICAL;
 			}
 			ret.last_text() += c;
 			++p;
@@ -1097,7 +1097,7 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 				fmt("invalid character %s", show(string(1, '\0')));
 			place_begin_quote << fmt("in quote started by %s",
 				show(Operator_View('"')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		} else {
 			if (*p == '\n') {
 				++line;
@@ -1109,7 +1109,7 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
 	/* Reached end of file without closing the quote */
 	current_place() << fmt("expected a closing %s", show(Operator_View('"')));
 	place_begin_quote << fmt("for quote started by %s", show(Operator_View('"')));
-	throw ERROR_LOGICAL;
+	throw ERR_LOGICAL;
  end_of_double_quote:;
 }
 
@@ -1126,7 +1126,7 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 			current_place() << fmt("invalid character %s", show(string(p, 1)));
 			place_begin_quote << fmt("in quote started by %s",
 				show(Operator_View('\'')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		} else {
 			if (*p == '\n') {
 				++line;
@@ -1138,7 +1138,7 @@ void Tokenizer::parse_single_quote(Place_Name &ret)
 	/* Reached end of file without closing the quote */
 	current_place() << fmt("expected a closing %s", show(Operator_View('\'')));
 	place_begin_quote << fmt("for quote started by %s", show(Operator_View('\'')));
-	throw ERROR_LOGICAL;
+	throw ERR_LOGICAL;
 }
 
 bool Tokenizer::parse_escape()
@@ -1150,7 +1150,7 @@ bool Tokenizer::parse_escape()
 	if (p == p_end) {
 		place_escape << fmt("expected a character after %s",
 			show(Operator_View('\\')));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	/* \ followed by newline */
@@ -1163,7 +1163,7 @@ bool Tokenizer::parse_escape()
 	if (*p == '\0') {
 		place_escape << fmt ("expected a non-nul character after %s",
 			show(Operator_View('\\')));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	return true;
@@ -1195,7 +1195,7 @@ void Tokenizer::parse_directive(
 			place_directive
 				<< "expected a directive name";
 		place_percent << fmt("after %s", show(Operator_View('%')));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	const string name(p_name, p - p_name);
@@ -1209,7 +1209,7 @@ void Tokenizer::parse_directive(
 	} else {
 		/* Invalid directive */
 		place_percent << fmt("invalid directive %s", show(Prefix_View("%", name)));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 }
 
@@ -1222,12 +1222,12 @@ void Tokenizer::parse_include_directive(
 	if (context == DYNAMIC) {
 		place_percent << fmt("%s cannot appear in dynamic dependencies",
 			show(Operator_View("%include")));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	if (context == OPTION_C || context == OPTION_F) {
 		place_percent << fmt("%s cannot be used",
 			show(Operator_View("%include")));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	shared_ptr <Place_Name> place_name= parse_name(false);
@@ -1239,14 +1239,14 @@ void Tokenizer::parse_include_directive(
 				: fmt("expected a filename, not %s",
 					show(current_mbchar())));
 		place_percent << fmt("after %s", show(Operator_View("%include")));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	if (place_name->get_n() != 0) {
 		place_name->place << fmt("name %s must not be parametrized",
 			show(*place_name));
 		place_percent << fmt("after %s",
 			show(Operator_View("%include")));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	const string filename_include= place_name->unparametrized();
@@ -1276,7 +1276,7 @@ void Tokenizer::parse_include_directive(
 			for (auto &j: backtraces_backward) {
 				j.print();
 			}
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 	} else {
 		/* Ignore the end place; it is only used for the top-level file */

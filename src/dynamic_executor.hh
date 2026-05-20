@@ -16,9 +16,11 @@ class Dynamic_Executor
 	: public Executor
 {
 public:
-	Dynamic_Executor(shared_ptr <const Dynamic_Dep> dep_,
-		Executor *parent, int &error_additional);
-	/* ERROR_ADDITIONAL is only set:
+	Dynamic_Executor(
+		shared_ptr <const Dynamic_Dep> dep_,
+		Executor *parent,
+		int &error_additional);
+	/* ERR_ADDITIONAL is only set:
 	 * - When the dynamic contains a plain dependency for which there are multiple
 	 *   matching rules.
 	 * - When a cycle is found at rule-level. */
@@ -31,9 +33,8 @@ public:
 	virtual int get_depth() const override { return dep->get_depth(); }
 	virtual bool optional_finished(shared_ptr <const Dep> ) override { return false; }
 	virtual void notify_variable(const std::map <string, string> &) override;
-	virtual void notify_result(shared_ptr <const Dep> dep,
-		Executor *source, Flags flags,
-		shared_ptr <const Dep> dep_source) override;
+	virtual void notify_result(shared_ptr <const Dep> dep, Executor *source,
+		Flags flags, shared_ptr <const Dep> dep_source) override;
 #ifndef NDEBUG
 	virtual void render(Parts &, Rendering= 0) const override;
 #endif /* ! NDEBUG */

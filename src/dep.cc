@@ -201,7 +201,7 @@ shared_ptr <const Dep> Plain_Dep::instantiate(
 			"dynamic variable %s cannot be instantiated with parameter value that contains %s",
 			show(Dynamic_Variable_View(this_name)),
 			show(Operator_View('=')));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	return ret;
@@ -476,7 +476,7 @@ shared_ptr <const Dep> Concat_Dep::concat(
 			show(a), show(Operator_View('<')));
 		b->get_place() << fmt("because %s is concatenated to it",
 				      show(b));
-		error |= ERROR_LOGICAL;
+		error |= ERR_LOGICAL;
 		return nullptr;
 	}
 
@@ -486,7 +486,7 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		b->get_place() << fmt("%s cannot have input redirection using %s",
 			show(b), show(Operator_View('<')));
 		a->get_place() << fmt("in concatenation to %s", show(a));
-		error |= ERROR_LOGICAL;
+		error |= ERR_LOGICAL;
 		return nullptr;
 	}
 
@@ -497,14 +497,14 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		b->flags.get()[0].place << fmt("using %s",
 			show(Operator_View(frmt("-%c", flags_chars[i_flag]))));
 		a->get_place() << fmt("in concatenation to %s", show(a));
-		error |= ERROR_LOGICAL;
+		error |= ERR_LOGICAL;
 		return nullptr;
 	}
 
 	if (b->flags.get_flags() & F_TARGET_PHONY) {
 		b->get_place() << fmt("phony target %s is invalid", show(b));
 		a->get_place() << fmt("in concatenation to %s", show(a));
-		error |= ERROR_LOGICAL;
+		error |= ERR_LOGICAL;
 		return nullptr;
 	}
 
@@ -512,7 +512,7 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		a->get_place() <<
 			fmt("the variable dependency %s cannot be used", show(a));
 		b->get_place() << fmt("in concatenation with %s", show(b));
-		error |= ERROR_LOGICAL;
+		error |= ERR_LOGICAL;
 		return nullptr;
 	}
 
@@ -520,7 +520,7 @@ shared_ptr <const Dep> Concat_Dep::concat(
 		b->get_place() <<
 			fmt("the variable dependency %s cannot be used", show(b));
 		a->get_place() << fmt("in concatenation to %s", show(a));
-		error |= ERROR_LOGICAL;
+		error |= ERR_LOGICAL;
 		return nullptr;
 	}
 

@@ -169,11 +169,11 @@ void Rule::check_unparametrized(
 					fmt("because it does not appear in target %s",
 						show(targets[0]));
 			} else {
-				place <<
-					fmt("because it does not appear in any of the targets %s... of the rule",
+				place << fmt(
+					"because it does not appear in any of the targets %s... of the rule",
 					show(targets[0]));
 			}
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 	} else {
 		unreachable();
@@ -193,7 +193,7 @@ void Rule::check_duplicate_target() const
 			targets[j]->place <<
 				fmt("shadowing target %s of the same rule",
 					show(targets[j]));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 	}
 }
@@ -305,7 +305,7 @@ shared_ptr <const Rule> Rule_Set::get(
 			f.target->place << fmt("rule with target %s", show(f.target));
 		}
 		explain_minimal_matching_rule();
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	/* Instantiate the rule */
@@ -381,7 +381,7 @@ void Rule_Set::add_unparametrized_rule(shared_ptr <Rule> rule)
 					break;
 				}
 			}
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		rules_unparam[hash_dep]= {i, rule};
 	}

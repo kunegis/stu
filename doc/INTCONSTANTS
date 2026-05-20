@@ -6,7 +6,7 @@ canonicalize.hh         Canonicalize_Flags      A_*
 color.hh                Channel                 CH_*
 concat_executor.hh      Concat_Executor::Stage  ST_*
 done.hh                 Done                    D_*
-error.hh                int                     ERROR_*
+error.hh                int                     ERR_*
 flags.hh                Flags                   F_*, I_*, C_*
 proceed.hh              Proceed                 P_*
 show.hh                 Quote_Safeness          QS_*

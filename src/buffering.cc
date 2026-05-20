@@ -16,7 +16,7 @@ void init_buffering()
 	if (0 != setvbuf(stdout, nullptr, _IOLBF, 0)) {
 		/* Color has not been initializet yet, so we cannot use print_errno(). */
 		fprintf(stderr, "setvbuf: %s\n", errno ? strerror(errno) : "Error");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 
 	/* Set STDOUT to append mode; this is also done by GNU Make */

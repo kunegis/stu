@@ -44,8 +44,8 @@ Dynamic_Executor::Dynamic_Executor(
 	parents.erase(parent);
 	if (Cycle::find(parent, this, dep)) {
 		TRACE("Found rule-level but not file-level cycle");
-		parent->raise(ERROR_LOGICAL);
-		error_additional |= ERROR_LOGICAL;
+		parent->raise(ERR_LOGICAL);
+		error_additional |= ERR_LOGICAL;
 		return;
 	}
 	parents[parent]= dep;

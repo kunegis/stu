@@ -47,7 +47,7 @@ void Executor::read_dynamic(
 					::show(dep_target));
 			*this << fmt("within multiply-dynamic dependency %s",
 				::show(dep));
-			raise(ERROR_LOGICAL);
+			raise(ERR_LOGICAL);
 		}
 		if (place_target.flags & F_TARGET_PHONY)
 			return;
@@ -96,7 +96,7 @@ void Executor::read_dynamic(
 					&= ~F_TARGET_PHONY;
 				(*dynamic_executor) << fmt("%s is declared here",
 							   show(hash_dep_file));
-				raise(ERROR_LOGICAL);
+				raise(ERR_LOGICAL);
 			}
 		end_normal:;
 
@@ -217,7 +217,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			TRACE("Not yet connected; add connection");
 			if (Cycle::find(this, executor, dep)) {
 				TRACE("File-level cycle found");
-				raise(ERROR_LOGICAL);
+				raise(ERR_LOGICAL);
 				return nullptr;
 			}
 			executor->parents[this]= dep;
@@ -821,7 +821,7 @@ bool Executor::check_clash_without_target_flags(
 			plain_dep_child->place_target.place_name.unparametrized())));
 		place_flag << fmt("using %s", show(Flag_View(flags_chars[I_OPTIONAL])));
 		*this << "";
-		raise(ERROR_LOGICAL);
+		raise(ERR_LOGICAL);
 		return true;
 	}
 
@@ -859,7 +859,7 @@ bool Executor::check_clash_with_target_flags(
 			*this << "";
 		}
 		explain_clash_op();
-		raise(ERROR_LOGICAL);
+		raise(ERR_LOGICAL);
 		return true;
 	}
 
@@ -898,7 +898,7 @@ bool Executor::check_clash_with_target_flags(
 			*this << "";
 		}
 		explain_clash_n0C();
-		raise(ERROR_LOGICAL);
+		raise(ERR_LOGICAL);
 		return true;
 	}
 
@@ -980,7 +980,7 @@ void Executor::check_unparametrized(
 		|= (hash_dep.get_front_word_nondynamic() & F_TARGET_PHONY);
 	*this << fmt("%s is declared here", show(hash_dep_base));
 	explain_dynamic_no_param();
-	raise(ERROR_LOGICAL);
+	raise(ERR_LOGICAL);
 	j= nullptr;
 	found_error= true;
 }

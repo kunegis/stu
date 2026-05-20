@@ -53,7 +53,7 @@ public:
 	/* Methods for building the syntax tree:  Each has a name corresponding to the
 	 * symbol given by the Yacc syntax in the manpage.  The argument RET (if it is
 	 * used) is where the result is written.  If the return value is BOOL, it denotes
-	 * whether something was read or not.  On syntax errors, ERROR_LOGICAL is thrown. */
+	 * whether something was read or not.  On syntax errors, ERR_LOGICAL is thrown. */
 
 	/* In some of the following functions, write the input filename into
 	 * PLACE_NAME_INPUT.  If PLACE_NAME_INPUT is already non-empty, throw an error if

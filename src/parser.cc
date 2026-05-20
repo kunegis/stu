@@ -47,7 +47,7 @@ shared_ptr <Rule> Parser::parse_rule(
 			targets[0]->place << fmt(
 				"from parameters of target %s in rule with multiple targets",
 				    show(targets[0]));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 	}
 
@@ -55,9 +55,9 @@ shared_ptr <Rule> Parser::parse_rule(
 		place_end << fmt("expected a command, %s, %s, or %s",
 			show(Operator_View(':')), show(Operator_View(';')),
 			show(Operator_View('=')));
-		targets.back()->place <<
-			fmt("after target %s", show(targets.back()));
-		throw ERROR_LOGICAL;
+		targets.back()->place << fmt("after target %s",
+			show(targets.back()));
+		throw ERR_LOGICAL;
 	}
 
 	std::vector <shared_ptr <const Dep> > deps;
@@ -78,9 +78,9 @@ shared_ptr <Rule> Parser::parse_rule(
 		assert(had_colon);
 		place_end << fmt("expected a dependency, a command, or %s",
 			show(Operator_View(';')));
-		targets[0]->place
-			<< fmt("for target %s", show(targets[0]));
-		throw ERROR_LOGICAL;
+		targets[0]->place << fmt("for target %s",
+			show(targets[0]));
+		throw ERR_LOGICAL;
 	}
 
 	shared_ptr <Command> command;
@@ -98,26 +98,29 @@ shared_ptr <Rule> Parser::parse_rule(
 			place_end << fmt("expected a filename, a flag, or %s",
 				show(Operator_View('{')));
 			place_equal << fmt("after %s", show(Operator_View('=')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 
 		if ((command= is <Command> ())) {
 			++iter;
 			assert(targets.size() != 0);
 			if (targets.size() != 1) {
-				place_equal << fmt("content rule using %s cannot be used",
+				place_equal << fmt(
+					"content rule using %s cannot be used",
 					show(Operator_View('=')));
-				targets[0]->place <<
-					fmt("with multiple targets %s...",
-					    show(targets[0]));
-				throw ERROR_LOGICAL;
+				targets[0]->place << fmt(
+					"with multiple targets %s...",
+					show(targets[0]));
+				throw ERR_LOGICAL;
 			}
 			if ((targets[0]->flags.get_flags() & F_TARGET_PHONY)) {
-				place_equal << fmt("content rule using %s cannot be used",
+				place_equal << fmt(
+					"content rule using %s cannot be used",
 					show(Operator_View('=')));
-				targets[0]->place << fmt("with phony target %s",
+				targets[0]->place << fmt(
+					"with phony target %s",
 					show(targets[0]));
-				throw ERROR_LOGICAL;
+				throw ERR_LOGICAL;
 			}
 			/* "No redirected output" is checked later */
 			is_content= true;
@@ -139,9 +142,8 @@ shared_ptr <Rule> Parser::parse_rule(
 				 show(Operator_View(';')),
 				 show(Operator_View('=')),
 				 show(*iter)));
-		targets[0]->place <<
-			fmt("for target %s", show(targets[0]));
-		throw ERROR_LOGICAL;
+		targets[0]->place << fmt("for target %s", show(targets[0]));
+		throw ERR_LOGICAL;
 	}
 
 	/* Cases where output redirection is not possible */
@@ -155,7 +157,7 @@ shared_ptr <Rule> Parser::parse_rule(
 				show(Operator_View('>')));
 			place_nocommand_semicolon << fmt("in rule for %s without a command",
 				show(targets[0]));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 
 		if (command != nullptr && is_content) {
@@ -163,7 +165,7 @@ shared_ptr <Rule> Parser::parse_rule(
 				show(Operator_View('>')));
 			place_equal << fmt("in content rule for %s using %s",
 				show(targets[0]), show(Operator_View('=')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 	}
 
@@ -172,10 +174,10 @@ shared_ptr <Rule> Parser::parse_rule(
 		if (command == nullptr) {
 			place_input << fmt("input redirection using %s cannot be used",
 				show(Operator_View('<')));
-			place_nocommand_semicolon <<
-				fmt("in rule for %s without a command",
-				    show(targets[0]));
-			throw ERROR_LOGICAL;
+			place_nocommand_semicolon << fmt(
+				"in rule for %s without a command",
+				show(targets[0]));
+			throw ERR_LOGICAL;
 		} else {
 			assert(! is_content);
 		}
@@ -186,7 +188,7 @@ shared_ptr <Rule> Parser::parse_rule(
 		targets[0]->flags.place_by_index(I_NO_FOLLOW) << fmt(
 			"must not have target flag %s (no-follow)",
 			show(Operator_View(frmt("-%c", flags_chars[I_NO_FOLLOW]))));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	return std::make_shared <Rule>
@@ -216,7 +218,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 				show(flag_token));
 			place_equal << fmt("in copy rule using %s for target %s",
 				show(Operator_View('=')), show(targets[0]));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 	}
 
@@ -230,7 +232,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 				show(Operator_View('{')), show(*iter));
 		}
 		place_equal << fmt("after %s", show(Operator_View('=')));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	/* Copy rule */
@@ -255,24 +257,23 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 			targets[0]->place <<
 				fmt("because it does not appear in target %s",
 					show(targets[0]));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 	}
 
 	if (iter == tokens.end()) {
 		place_end << fmt("expected %s",
 			show(Operator_View(';')));
-		name_copy_src->get_place() <<
-			fmt("after copy dependency %s",
-				show(name_copy_src));
-		throw ERROR_LOGICAL;
+		name_copy_src->get_place() << fmt("after copy dependency %s",
+			show(name_copy_src));
+		throw ERR_LOGICAL;
 	}
 	if (! is_operator(';')) {
-		(*iter)->get_place() << fmt("expected %s", show(Operator_View(';')));
-		name_copy_src->place <<
-			fmt("after copy dependency %s",
-				show(name_copy_src));
-		throw ERROR_LOGICAL;
+		(*iter)->get_place() << fmt("expected %s",
+			show(Operator_View(';')));
+		name_copy_src->place << fmt("after copy dependency %s",
+			show(name_copy_src));
+		throw ERR_LOGICAL;
 	}
 	++iter;
 
@@ -281,17 +282,16 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 			show(Operator_View('>')));
 		place_equal << fmt("in copy rule using %s for target %s",
 			show(Operator_View('=')), show(targets[0]));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	/* Check that there is just a single target */
 	if (targets.size() != 1) {
 		place_equal << fmt("there cannot be a copy rule using %s",
 			show(Operator_View('=')));
-		targets[0]->place <<
-			fmt("for multiple targets %s...",
-				show(targets[0]));
-		throw ERROR_LOGICAL;
+		targets[0]->place << fmt("for multiple targets %s...",
+			show(targets[0]));
+		throw ERR_LOGICAL;
 	}
 
 	if (targets[0]->flags.get_flags() & F_TARGET_PHONY) {
@@ -299,7 +299,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 			show(Operator_View('=')));
 		targets[0]->place << fmt("with phony target %s",
 			show(targets[0]));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	if (targets[0]->flags.get_flags() & F_NO_FOLLOW) {
@@ -308,7 +308,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 		targets[0]->flags.place_by_index(I_NO_FOLLOW) << fmt(
 			"with target having flag %s (no-follow)",
 			show(Operator_View(frmt("-%c", flags_chars[I_NO_FOLLOW]))));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	assert(targets.size() == 1);
@@ -346,7 +346,7 @@ bool Parser::parse_target(
 				"flag %s is invalid before target (only %s are possible)",
 				show(flag_token), possible);
 			explain_target_flags();
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		place_flags.add_placed_index(flag_index, flag_token->place);
 	}
@@ -367,14 +367,14 @@ bool Parser::parse_target(
 		if (iter == tokens.end()) {
 			place_end << "expected the name of phony target";
 			place_at << fmt("after %s", show(Operator_View('@')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		if (! is <Name_Token> ()) {
 			(*iter)->get_place_start() << fmt(
 				"expected the name of phony target, not %s",
 				show(*iter));
 			place_at << fmt("after %s", show(Operator_View('@')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		place_flags.add_unplaced_flags(F_TARGET_PHONY);
 	}
@@ -388,7 +388,7 @@ bool Parser::parse_target(
 					fmt("expected a filename, not %s", show((*iter)));
 			place_output_new << fmt("after output redirection using %s",
 				show(Operator_View('>')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		if (flag_token) {
 			if (iter == tokens.end())
@@ -397,9 +397,9 @@ bool Parser::parse_target(
 				(*iter)->get_place_start() <<
 					fmt("expected a filename, not %s",
 						show((*iter)));
-			flag_token->place <<
-				fmt("after flag %s", show(flag_token));
-			throw ERROR_LOGICAL;
+			flag_token->place << fmt("after flag %s",
+				show(flag_token));
+			throw ERR_LOGICAL;
 		}
 		return false;
 	}
@@ -417,7 +417,7 @@ bool Parser::parse_target(
 			show(Prefix_View("$", param_2)),
 			show(target_name));
 		explain_separated_parameters();
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	string parameter_duplicate;
@@ -426,7 +426,7 @@ bool Parser::parse_target(
 			"target %s must not contain duplicate parameter %s",
 			show(target_name),
 			show(Prefix_View("$", parameter_duplicate)));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	shared_ptr <const Plain_Dep> target= std::make_shared <Plain_Dep>
@@ -437,7 +437,7 @@ bool Parser::parse_target(
 		flag_token->place << fmt("flag %s cannot be used", show(flag_token));
 		place_of_target << fmt("before phony target %s", show(target));
 		explain_target_flags();
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	if (! place_output_new.empty() && place_flags.get_flags() & F_NO_FOLLOW) {
@@ -446,7 +446,7 @@ bool Parser::parse_target(
 		place_flags.place_by_index(I_NO_FOLLOW) << fmt(
 			"before target with flag %s (no-follow)",
 			show(Operator_View(frmt("-%c", flags_chars[I_NO_FOLLOW]))));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	if (! place_output_new.empty()) {
@@ -463,7 +463,7 @@ bool Parser::parse_target(
 				show(Prefix_View(">", place_targets[redirect_index]
 					->place_target
 					.unparametrized().get_name_nondynamic())));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		place_output= place_output_new;
 		assert(! place_output.empty());
@@ -475,7 +475,7 @@ bool Parser::parse_target(
 			show(target));
 		place_output_new << fmt("after output redirection using %s",
 			show(Operator_View('>')));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	if (target_first == nullptr)
 		target_first= target;
@@ -542,7 +542,7 @@ bool Parser::parse_expression(
 			place_flag << fmt(
 				"flag %s is invalid before dependency (only %s are possible)",
 				show(Flag_View(flags_chars[i_flag])), possible);
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 
 		++iter;
@@ -556,7 +556,7 @@ bool Parser::parse_expression(
 					    show(*iter));
 			}
 			place_flag << fmt("after flag %s", show(flag_token));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 
 		/* A dependency must not be an input dependency and optional at the same
@@ -570,7 +570,7 @@ bool Parser::parse_expression(
 			place_flag <<
 				fmt("in conjunction with optional dependency flag %s",
 					show(Flag_View(flags_chars[I_OPTIONAL])));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 
 		/* Add the flag */
@@ -622,13 +622,13 @@ shared_ptr <const Dep> Parser::parse_compound_dep(
 	if (iter == tokens.end()) {
 		place_end << fmt("expected %s", show(Operator_View(')')));
 		place_paren << fmt("after opening %s", show(Operator_View('(')));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	if (! is_operator(')')) {
 		(*iter)->get_place_start() << fmt("expected %s, not %s",
 			show(Operator_View(')')), show(*iter));
 		place_paren << fmt("after opening %s", show(Operator_View('(')));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	++iter;
 
@@ -670,13 +670,13 @@ shared_ptr <const Dep> Parser::parse_dynamic_dep(
 	if (iter == tokens.end()) {
 		place_end << fmt("expected a dependency or %s", show(Operator_View(']')));
 		place_bracket << fmt("after opening %s", show(Operator_View('[')));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	if (! is_operator(']')) {
 		(*iter)->get_place_start() << fmt("expected a dependency or %s, not %s",
 			show(Operator_View(']')), show(*iter));
 		place_bracket << fmt("after opening %s", show(Operator_View('[')));
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	++iter;
 	shared_ptr <Compound_Dep> ret_nondynamic=
@@ -687,7 +687,7 @@ shared_ptr <const Dep> Parser::parse_dynamic_dep(
 				show(j));
 			place_bracket << fmt("within dynamic dependency started by %s",
 				show(Operator_View('[')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 
 		ret_nondynamic->push_back(j);
@@ -753,7 +753,7 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 					fmt("optional dependency using %s cannot appear",
 						show(Flag_View('o')));
 				place_dollar << "within dynamic variable declaration";
-				throw ERROR_LOGICAL;
+				throw ERR_LOGICAL;
 			}
 		} else if (is_flag(flags_chars[I_TRIVIAL])) {
 			if (! option_a) {
@@ -788,7 +788,7 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 		} else {
 			place_dollar << fmt("after %s", show(Operator_View("$[")));
 		}
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	shared_ptr <Place_Name> place_name= is <Name_Token> ();
 	++iter;
@@ -800,7 +800,7 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 				"name of variable dependency %s must not contain %s",
 				show(*place_name), show(Operator_View('=')));
 			explain_variable_equal();
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 	}
 
@@ -813,7 +813,7 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 			place_end << "expected a filename";
 			place_equal << fmt("after %s in variable dependency %s",
 				show(Operator_View('=')), show(*place_name));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		if (! is <Name_Token> ()) {
 			(*iter)->get_place_start() <<
@@ -821,14 +821,14 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 				    show(*iter));
 			place_equal << fmt("after %s in variable dependency %s",
 				show(Operator_View('=')), show(*place_name));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 
 		if (place_name->get_n() != 0) {
-			place_name->place <<
-				fmt("variable name %s must be unparametrized",
-				    show(*place_name));
-			throw ERROR_LOGICAL;
+			place_name->place << fmt(
+				"variable name %s must be unparametrized",
+				show(*place_name));
+			throw ERR_LOGICAL;
 		}
 
 		variable_name= place_name->unparametrized();
@@ -840,13 +840,15 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 	if (! is_operator(']')) {
 		if (iter == tokens.end()) {
 			place_end << fmt("expected %s", show(Operator_View(']')));
-			place_dollar << fmt("after opening %s", show(Operator_View("$[")));
+			place_dollar << fmt("after opening %s",
+				show(Operator_View("$[")));
 		} else {
 			(*iter)->get_place_start() << fmt("expected %s, not %s",
 				show(Operator_View(']')), show(*iter));
-			place_dollar << fmt("after opening %s", show(Operator_View("$[")));
+			place_dollar << fmt("after opening %s",
+				show(Operator_View("$[")));
 		}
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	++iter;
 
@@ -869,7 +871,7 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 			targets.front()->place <<
 				fmt("for targets %s...", show(targets.front()));
 		}
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 	if (has_input)
 		place_name_input= *place_name;
@@ -899,7 +901,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 				show(Operator_View('@')));
 			place_input << fmt("after input redirection using %s",
 				show(Operator_View('<')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		++iter;
 		has_phony= true;
@@ -910,11 +912,11 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 			place_end << "expected a filename";
 			place_input << fmt("after input redirection using %s",
 				show(Operator_View('<')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		} else if (has_phony) {
 			place_end << "expected the name of a phony target";
 			place_at << fmt("after %s", show(Operator_View('@')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		} else {
 			return nullptr;
 		}
@@ -927,14 +929,14 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 				    show(*iter));
 			place_input << fmt("after input redirection using %s",
 				show(Operator_View('<')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		} else if (has_phony) {
 			(*iter)->get_place_start() << fmt(
 				"expected the name of a phony target, not %s",
 				show(*iter));
 			place_at << fmt("after %s",
 				show(Operator_View('@')));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		} else {
 			return nullptr;
 		}
@@ -974,7 +976,7 @@ shared_ptr <const Dep> Parser::parse_redirect_dep(
 			targets.front()->place <<
 				fmt("for targets %s...", show(targets.front()));
 		}
-		throw ERROR_LOGICAL;
+		throw ERR_LOGICAL;
 	}
 
 	if (has_input)
@@ -1038,9 +1040,10 @@ void Parser::get_rule_list(
 	parser.parse_rule_list(rules, target_first);
 
 	if (iter != tokens.end()) {
-		(*iter)->get_place_start()
-			<< fmt("expected a rule, not %s", show(*iter));
-		throw ERROR_LOGICAL;
+		(*iter)->get_place_start() << fmt(
+			"expected a rule, not %s",
+			show(*iter));
+		throw ERR_LOGICAL;
 	}
 }
 
@@ -1056,9 +1059,10 @@ void Parser::get_expression_list(
 	std::vector <shared_ptr <const Plain_Dep>> targets;
 	parser.parse_expression_list(deps, input, place_input, targets);
 	if (iter != tokens.end()) {
-		(*iter)->get_place_start()
-			<< fmt("expected a dependency, not %s", show(*iter));
-		throw ERROR_LOGICAL;
+		(*iter)->get_place_start() << fmt(
+			"expected a dependency, not %s",
+			show(*iter));
+		throw ERR_LOGICAL;
 	}
 }
 
@@ -1078,7 +1082,7 @@ void Parser::get_expression_list_delim(
 		if (allow_enoent && errno == ENOENT)
 			return;
 		place_filename << format_errno("fopen", filename);
-		throw ERROR_BUILD;
+		throw ERR_BUILD;
 	}
 
 	Place place(Place::Type::INPUT_FILE, filename, 0, 0);
@@ -1107,10 +1111,10 @@ void Parser::get_expression_list_delim(
 			place << "filename must not be empty";
 			printer << fmt(
 				"in %s-separated dynamic dependency %s declared with flag %s",
-					c == '\0' ? "zero" : "newline",
-					show(filename),
-					show(Flag_View(c_printed)));
-			throw ERROR_LOGICAL;
+				c == '\0' ? "zero" : "newline",
+				show(filename),
+				show(Flag_View(c_printed)));
+			throw ERR_LOGICAL;
 		}
 
 		string filename_dep= string(lineptr, len);
@@ -1126,7 +1130,7 @@ void Parser::get_expression_list_delim(
 				c == '\0' ? "zero" : "newline",
 				show(filename),
 				show(Flag_View(c_printed)));
-			throw ERROR_LOGICAL;
+			throw ERR_LOGICAL;
 		}
 		if (c == '\0') {
 			assert(filename_dep.find('\0') == string::npos);
@@ -1138,7 +1142,7 @@ void Parser::get_expression_list_delim(
 	free(lineptr);
 	if (fclose(file)) {
 		place_filename << format_errno("fclose", filename);
-		throw ERROR_BUILD;
+		throw ERR_BUILD;
 	}
 }
 

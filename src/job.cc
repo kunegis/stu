@@ -53,15 +53,17 @@ pid_t Job::start(
 	if (pid == 0) {
 		in_child= 1;
 		/* Instead of throwing exceptions, use print_errno() and
-		 * _Exit(ERROR_FORK_CHILD). */
+		 * _Exit(ERR_FORK_CHILD). */
 
 		/* Unblock/reset all signals.  As a general rule, signals that are blocked
 		 * before exec() will remain blocked after exec().  Thus, unblock them
 		 * here. */
-		if (0 != sigprocmask(SIG_UNBLOCK, &set_termination_productive, nullptr)) {
+		if (0 != sigprocmask(SIG_UNBLOCK,
+			&set_termination_productive, nullptr))
+		{
 			print_errno("sigprocmask");
 			__gcov_dump();
-			_Exit(ERROR_FORK_CHILD);
+			_Exit(ERR_FORK_CHILD);
 		}
 		::signal(SIGTTIN, SIG_DFL);
 		::signal(SIGTTOU, SIG_DFL);
@@ -78,7 +80,7 @@ pid_t Job::start(
 		assert(r == -1);
 		print_errno("execve", shell);
 		__gcov_dump();
-		_Exit(ERROR_FORK_CHILD);
+		_Exit(ERR_FORK_CHILD);
 	}
 
 	/* We are the parent process */
@@ -141,7 +143,7 @@ pid_t Job::start_copy(
 		assert(r == -1);
 		fprintf(stderr, "execv: %s: %s\n", cp, strerror(errno));
 		__gcov_dump();
-		_Exit(ERROR_FORK_CHILD);
+		_Exit(ERR_FORK_CHILD);
 	}
 
 	/* Parent execution */
@@ -428,7 +430,7 @@ const char **Job::create_child_env(
 	if (!envp) {
 		print_errno("malloc");
 		__gcov_dump();
-		_Exit(ERROR_FORK_CHILD);
+		_Exit(ERR_FORK_CHILD);
 	}
 	memcpy(envp, envp_global, v_old * sizeof(char **));
 	size_t i= v_old;
@@ -444,14 +446,14 @@ const char **Job::create_child_env(
 		if (! combined) {
 			print_errno("malloc");
 			__gcov_dump();
-			_Exit(ERROR_FORK_CHILD);
+			_Exit(ERR_FORK_CHILD);
 		}
 		if ((ssize_t)(len_combined - 1) !=
 			snprintf(combined, len_combined, "%s=%s",
 				key.c_str(), value.c_str())) {
 			should_not_happen();
 			print_error("snprintf: Error");
-			_Exit(ERROR_FORK_CHILD);
+			_Exit(ERR_FORK_CHILD);
 		}
 		auto found_index= old.find(key);
 		if (found_index == old.end()) {
@@ -577,14 +579,14 @@ void Job::create_child_output_redirection(
 	if (fd_output < 0) {
 		place << format_errno("creat", filename_output.c_str());
 		__gcov_dump();
-		_Exit(ERROR_FORK_CHILD);
+		_Exit(ERR_FORK_CHILD);
 	}
 	assert(fd_output != 1);
 	int r= dup2(fd_output, 1);
 	if (r < 0) {
 		place << format_errno("dup2", filename_output.c_str());
 		__gcov_dump();
-		_Exit(ERROR_FORK_CHILD);
+		_Exit(ERR_FORK_CHILD);
 	}
 	assert(r == 1);
 }
@@ -603,7 +605,7 @@ void Job::create_child_input_redirection(
 	if (fd_input < 0) {
 		place << format_errno("open", name);
 		__gcov_dump();
-		_Exit(ERROR_FORK_CHILD);
+		_Exit(ERR_FORK_CHILD);
 	}
 	assert(fd_input >= 3);
 	constexpr int fd_stdin= 0;
@@ -611,7 +613,7 @@ void Job::create_child_input_redirection(
 	if (r < 0) {
 		place << format_errno("dup2", name);
 		__gcov_dump();
-		_Exit(ERROR_FORK_CHILD);
+		_Exit(ERR_FORK_CHILD);
 	}
 	assert(r == 0);
 }

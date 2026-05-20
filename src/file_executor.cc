@@ -79,8 +79,8 @@ File_Executor::File_Executor(
 			TRACE("Rule not found");
 			assert(rule == nullptr);
 			*this << fmt("no rule to build %s", show(hash_dep_));
-			error_additional |= error |= ERROR_BUILD;
-			raise(ERROR_BUILD);
+			error_additional |= error |= ERR_BUILD;
+			raise(ERR_BUILD);
 			return;
 		}
 	}
@@ -112,8 +112,8 @@ File_Executor::File_Executor(
 		dep->get_place() << fmt("when used as dynamic dependency of %s",
 			show(parent->get_parents().begin()->second));
 		*(parent->get_parents().begin()->first) << "";
-		parent->raise(ERROR_LOGICAL);
-		error_additional |= ERROR_LOGICAL;
+		parent->raise(ERR_LOGICAL);
+		error_additional |= ERR_LOGICAL;
 		return;
 	}
 
@@ -144,16 +144,16 @@ File_Executor::File_Executor(
 				fmt("because rule for phony target %s has file targets",
 				    show(hash_dep_));
 		*this << "";
-		parent->raise(ERROR_LOGICAL);
-		error_additional |= ERROR_LOGICAL;
+		parent->raise(ERR_LOGICAL);
+		error_additional |= ERR_LOGICAL;
 		return;
 	}
 
 	parents.erase(parent);
 	if (Cycle::find(parent, this, dep)) {
 		TRACE("Rule-level but not file-level cycle found");
-		parent->raise(ERROR_LOGICAL);
-		error_additional |= ERROR_LOGICAL;
+		parent->raise(ERR_LOGICAL);
+		error_additional |= ERR_LOGICAL;
 		return;
 	}
 	parents[parent]= dep;
@@ -268,7 +268,7 @@ void File_Executor::waited(pid_t pid, size_t index, int status)
 
 		*this << "";
 		remove_if_existing(true);
-		raise(ERROR_BUILD);
+		raise(ERR_BUILD);
 	}
 }
 
@@ -578,7 +578,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 
 	if (option_q) {
 		print_error_silenceable("Targets are not up to date");
-		exit(ERROR_BUILD);
+		exit(ERR_BUILD);
 	}
 
 	out_message_done= true;
@@ -643,7 +643,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 			/* Starting the job failed */
 			*this << fmt("error executing command for %s",
 				show(hash_deps.front()));
-			raise(ERROR_BUILD);
+			raise(ERR_BUILD);
 			done |= Done::from_flags(dep_link->flags.get_flags());
 			return 0;
 		}
@@ -741,7 +741,7 @@ bool File_Executor::check_file_target(
 	if (ret_stat != 0 && errno_stat != ENOENT) {
 		rule->targets[index]->place << format_errno("fstatat",
 			target.get_name_c_str_nondynamic());
-		raise(ERROR_BUILD);
+		raise(ERR_BUILD);
 		done |= Done::from_flags(flags);
 		return true;
 	}
@@ -764,7 +764,7 @@ bool File_Executor::check_file_target(
 			explain_file_without_command_without_dependencies();
 		}
 		done |= Done::from_flags(flags);
-		raise(ERROR_BUILD);
+		raise(ERR_BUILD);
 		return true;
 	}
 	return false;
@@ -814,7 +814,7 @@ void File_Executor::write_content(
 		rule->place << format_errno("remove", filename);
 	}
  error:
-	raise(ERROR_BUILD);
+	raise(ERR_BUILD);
 	state &= ~State::EXISTING;
 	state |= State::MISSING;
 }
@@ -902,7 +902,7 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
  error_close:
 	fclose(file);
  error:
-	raise(ERROR_BUILD);
+	raise(ERR_BUILD);
 }
 
 bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
@@ -941,7 +941,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 				TRACE("Stat failed with error other than ENOENT");
 				to <Plain_Dep> (dep_link)->place_target.place <<
 					format_errno("fstatat", name);
-				raise(ERROR_BUILD);
+				raise(ERR_BUILD);
 				done |= Done::from_flags(dep_link->flags.get_flags());
 				return true;
 			}
@@ -979,7 +979,7 @@ void File_Executor::check_file_was_built(Hash_Dep hash_dep, const Place &place)
 				show(hash_dep));
 		}
 		*this << "";
-		raise(ERROR_BUILD);
+		raise(ERR_BUILD);
 		return;
 	}
 
@@ -996,7 +996,7 @@ void File_Executor::check_file_was_built(Hash_Dep hash_dep, const Place &place)
 	if (! (flags & F_NO_FOLLOW)) {
 		if (0 > lstat(filename, &buf)) {
 			place << format_errno("lstat", filename);
-			raise(ERROR_BUILD);
+			raise(ERR_BUILD);
 		}
 		if (S_ISLNK(buf.st_mode))
 			return;
@@ -1009,7 +1009,7 @@ void File_Executor::check_file_was_built(Hash_Dep hash_dep, const Place &place)
 	      << fmt("startup timestamp is %s", Timestamp::startup.format());
 	*this << "";
 	explain_startup_time();
-	raise(ERROR_BUILD);
+	raise(ERR_BUILD);
 }
 
 void File_Executor::check_file_target_without_rule(
@@ -1026,7 +1026,7 @@ void File_Executor::check_file_target_without_rule(
 			string text= show(hash_dep);
 			dep->get_place() << format_errno(
 				"fstatat", hash_dep.get_name_c_str_nondynamic());
-			raise(ERROR_BUILD);
+			raise(ERR_BUILD);
 		}
 		/* File does not exist and there is no rule for it */
 		rule_not_found= true;
@@ -1071,7 +1071,7 @@ bool File_Executor::start(
 				*this << fmt("when target file %s does not exist",
 					show(hash_deps.at(0)));
 				explain_missing_optional_copy_source();
-				raise(ERROR_BUILD);
+				raise(ERR_BUILD);
 				done |= Done::from_flags(dep_link->flags.get_flags());
 				return true;
 			}

@@ -3,7 +3,7 @@
 
 /*
  * Errors codes in Stu are represented by integers between 0 and 4, as defined in the
- * ERROR_* constants below.  Zero represents no error.  These codes are used for both
+ * ERR_* constants below.  Zero represents no error.  These codes are used for both
  * Stu's exit status and as values that are stored in ints, as well as thrown and caught.
  * Variables containing error codes are ints and are named "error".
  */
@@ -80,13 +80,13 @@
 
 /* The error constants.  Not declared as an enum because they are thrown and thus need to
  * be integers. */
-constexpr int ERROR_BUILD=        1;
-constexpr int ERROR_LOGICAL=      2;
-constexpr int ERROR_FATAL=        4;
-constexpr int ERROR_FORK_CHILD= 127;
+constexpr int ERR_BUILD=        1;
+constexpr int ERR_LOGICAL=      2;
+constexpr int ERR_FATAL=        4;
+constexpr int ERR_FORK_CHILD= 127;
 
 #ifndef NDEBUG
-constexpr int ERROR_TRACE=        5;
+constexpr int ERR_TRACE=        5;
 #endif /* ! NDEBUG */
 
 /*
@@ -116,7 +116,7 @@ constexpr int ERROR_TRACE=        5;
  *    - Errors that happen just before Stu exits anyway.
  *    - Errors that should not happen, such as failure to set up a signal handler.
  *
- * We have to be careful with calling exit(ERROR_FATAL):  We cannot do it when child
+ * We have to be careful with calling exit(ERR_FATAL):  We cannot do it when child
  * processes could still be running.  For errors that happen in the middle of a Stu run,
  * it makes more sense to generate a build error.  In the very few cases that absolutely
  * need to be fatal (such as malloc() returning null), we call error_exit(), which takes

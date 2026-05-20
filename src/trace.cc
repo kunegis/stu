@@ -203,7 +203,7 @@ void Trace::error(string message)
 			program_name ? ": " : "",
 			message.c_str());
 	}
-	exit(ERROR_TRACE);
+	exit(ERR_TRACE);
 }
 
 #endif /* ! NDEBUG */

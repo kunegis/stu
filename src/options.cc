@@ -135,7 +135,7 @@ void set_option_i()
 	if (Job::get_fd_tty() < 0) {
 		Place place(Place::Type::OPTION, 'i');
 		place << "interactive mode cannot be used because no TTY is available";
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 }
 
@@ -148,15 +148,15 @@ void set_option_j(const char *value)
 	Place place(Place::Type::OPTION, 'j');
 	if (*endptr != '\0') {
 		place << fmt("invalid number of jobs %s", show(value));
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	if (errno != 0 || *endptr != '\0') {
 		place << fmt("invalid number of jobs %s: %s", show(value), strerror(errno));
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	if (options_jobs < 1) {
 		place << fmt("expected a positive number of jobs, not %s", show(value));
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 	option_parallel= options_jobs > 1;
 }
@@ -170,17 +170,17 @@ void set_option_m(const char *value)
 		struct timespec ts;
 		if (clock_gettime(CLOCK_REALTIME, &ts) < 0) {
 			print_errno("clock_gettime");
-			exit(ERROR_FATAL);
+			exit(ERR_FATAL);
 		}
 		buffer_generator.seed(ts.tv_sec + ts.tv_nsec);
 	} else if (!strcmp(value, "dfs")) {
 		/* Default */ ;
 	} else {
-		print_error(
-			fmt("invalid argument %s for option %s; valid values are %s and %s",
-				show(value), show(Flag_View('m')),
-				show("random"), show("dfs")));
-		exit(ERROR_FATAL);
+		print_error(fmt(
+			"invalid argument %s for option %s; valid values are %s and %s",
+			show(value), show(Flag_View('m')),
+			show("random"), show("dfs")));
+		exit(ERR_FATAL);
 	}
 }
 
@@ -223,7 +223,7 @@ void set_env_options()
 		if (! option_setting(c)) {
 			Place place(Place::Type::ENV_OPTIONS);
 			place << fmt("invalid option %s", show(Flag_View(c)));
-			exit(ERROR_FATAL);
+			exit(ERR_FATAL);
 		}
 	}
 }
@@ -236,5 +236,5 @@ void check_status()
 		return;
 	print_error(fmt("refusing to run recursive Stu; unset %s to circumvent",
 		show(Operator_View("$" ENV_STU_STATUS))));
-	exit(ERROR_FATAL);
+	exit(ERR_FATAL);
 }

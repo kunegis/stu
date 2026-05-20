@@ -15,7 +15,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			Place place(Place::Type::OPTION, 'c');
 			if (*optarg == '\0') {
 				place << "expected a non-empty argument";
-				exit(ERROR_FATAL);
+				exit(ERR_FATAL);
 			}
 			deps.push_back(std::make_shared <Plain_Dep> (
 				Place_Target(0, Place_Name(optarg, place))));
@@ -32,7 +32,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			if (*optarg == '\0') {
 				Place(Place::Type::OPTION, 'f') <<
 					"expected non-empty argument";
-				exit(ERROR_FATAL);
+				exit(ERR_FATAL);
 			}
 
 			for (string &filename: filenames) {
@@ -58,7 +58,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			Place place(Place::Type::OPTION, c);
 			if (*optarg == '\0') {
 				place << "expected a non-empty argument";
-				exit(ERROR_FATAL);
+				exit(ERR_FATAL);
 			}
 			Place_Flags place_flags;
 			place_flags.add_placed_index(flag_get_index(c), place);
@@ -75,7 +75,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			Place place(Place::Type::OPTION, c);
 			if (*optarg == '\0') {
 				place << "expected a non-empty argument";
-				exit(ERROR_FATAL);
+				exit(ERR_FATAL);
 			}
 			Index index= flag_get_index(c);
 			Place_Flags flags;
@@ -91,17 +91,17 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			string text= show(frmt("%s --help", program_name));
 			fprintf(stderr, "To get a list of all options, use %s\n",
 				text.c_str());
-			exit(ERROR_FATAL);
+			exit(ERR_FATAL);
 		}
 	}
 
 	order_vec= (order == Order::RANDOM);
 
 	if (option_i && option_parallel) {
-		Place(Place::Type::OPTION, 'i')
-			<< fmt("parallel mode using %s cannot be used in interactive mode",
-				show(Flag_View('j')));
-		exit(ERROR_FATAL);
+		Place(Place::Type::OPTION, 'i') << fmt(
+			"parallel mode using %s cannot be used in interactive mode",
+			show(Flag_View('j')));
+		exit(ERR_FATAL);
 	}
 
 	/* Targets passed on the command line, outside of options */
@@ -114,8 +114,8 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			place << fmt("%s: name must not be empty",
 				show(argv[i]));
 			if (! option_k)
-				throw ERROR_LOGICAL;
-			error |= ERROR_LOGICAL;
+				throw ERR_LOGICAL;
+			error |= ERR_LOGICAL;
 		} else if (option_J) {
 			deps.push_back(std::make_shared <Plain_Dep>
 				(Place_Target(0, Place_Name(argv[i], place))));
@@ -127,7 +127,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 
 	if (option_I + option_P + option_q >= 2) {
 		print_error("options -I/-P/-q cannot be used together");
-		exit(ERROR_FATAL);
+		exit(ERR_FATAL);
 	}
 
 	/* Use the default Stu script if -f/-F are not used */
@@ -139,20 +139,20 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				Executor::rule_set, target_first,
 				place_first);
 		} else if (errno == ENOENT) {
-			/* The default file does not exist -- fail if no target is given */
+			/* Default file does not exist -- fail if no target is given */
 			if (deps.empty() && !had_option_target
 				&& !option_P && !option_I) {
-				print_error(
-					fmt("expected a target or the default file %s",
-						show(FILENAME_INPUT_DEFAULT)));
+				print_error(fmt(
+					"expected a target or the default file %s",
+					show(FILENAME_INPUT_DEFAULT)));
 
 				explain_no_target();
-				throw ERROR_LOGICAL;
+				throw ERR_LOGICAL;
 			}
 		} else {
 			/* Other errors by open() are fatal */
 			print_errno("open", FILENAME_INPUT_DEFAULT);
-			exit(ERROR_FATAL);
+			exit(ERR_FATAL);
 		}
 	}
 
@@ -174,13 +174,13 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			} else {
 				print_error("no rules and no targets given");
 			}
-			exit(ERROR_FATAL);
+			exit(ERR_FATAL);
 		}
 		if (target_first->place_target.place_name.is_parametrized()) {
-			target_first->place <<
-				fmt("the first target %s must not be parametrized if no target is given",
-					show(target_first));
-			exit(ERROR_FATAL);
+			target_first->place << fmt(
+				"the first target %s must not be parametrized if no target is given",
+				show(target_first));
+			exit(ERR_FATAL);
 		}
 		deps.push_back(std::make_shared <Plain_Dep> (*target_first));
 	}
@@ -233,7 +233,7 @@ void Invocation::main_loop()
 		if (Job_List::get_size()) {
 			Job_List::terminate_jobs(false);
 		}
-		assert(e > 0 && e < ERROR_FATAL);
+		assert(e > 0 && e < ERR_FATAL);
 		error= e;
 	}
 

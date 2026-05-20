@@ -1,8 +1,4 @@
 #
-# Rename ERROR_* constants to ERR_*.
-#
-
-#
 # Names of types of the form 'Place_*' are ambiguous because we often used variables of
 # type Place named 'place_*'.  Rename the 'Place_*' types e.g. to 'P*'.
 #

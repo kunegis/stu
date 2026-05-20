@@ -103,5 +103,5 @@ void error_exit()
 {
 	TRACE_FUNCTION();
 	Job_List::terminate_jobs(false);
-	exit(ERROR_FATAL);
+	exit(ERR_FATAL);
 }

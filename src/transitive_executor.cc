@@ -36,8 +36,8 @@ Transitive_Executor::Transitive_Executor(
 		done.set_all();
 		*this << fmt("no rule to build %s", show(hash_dep));
 		parents.erase(parent);
-		error_additional |= ERROR_BUILD;
-		raise(ERROR_BUILD);
+		error_additional |= ERR_BUILD;
+		raise(ERR_BUILD);
 		return;
 	}
 
@@ -63,8 +63,8 @@ Transitive_Executor::Transitive_Executor(
 	parents.erase(parent);
 	if (Cycle::find(parent, this, dep_link)) {
 		TRACE("Rule-level but not file-level cycle found");
-		raise(ERROR_LOGICAL);
-		error_additional |= ERROR_LOGICAL;
+		raise(ERR_LOGICAL);
+		error_additional |= ERR_LOGICAL;
 		return;
 	}
 	parents[parent]= dep_link;

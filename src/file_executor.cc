@@ -44,7 +44,7 @@ File_Executor::File_Executor(
 	if (rule) {
 		hash_deps.clear();
 		for (auto &d: rule->targets) {
-			Hash_Dep hd= d->place_target.unparametrized();
+			Hash_Dep hd= d->placed_target.unparametrized();
 			hd.get_front_word_nondynamic() |=
 				d->flags.get_flags() & F_WORD;
 			TRACE("hd= %s", show_trace(hd));
@@ -92,7 +92,7 @@ File_Executor::File_Executor(
 	{
 		Place place_target;
 		for (auto &i: rule->targets) {
-			if (i->place_target.place_name.unparametrized() ==
+			if (i->placed_target.placed_name.unparametrized() ==
 				hash_dep_.get_name_nondynamic())
 			{
 				place_target= i->place;
@@ -122,7 +122,7 @@ File_Executor::File_Executor(
 	{
 		Place place_target;
 		for (auto &i: rule->targets) {
-			if (i->place_target.place_name.unparametrized() ==
+			if (i->placed_target.placed_name.unparametrized() ==
 				hash_dep_.get_name_nondynamic()) {
 				place_target= i->place;
 				break;
@@ -401,8 +401,8 @@ void File_Executor::print_command() const
 
 	if (rule->is_copy) {
 		assert(rule->targets.size() == 1);
-		string cp_target= show(rule->targets[0]->place_target.place_name, S_NORMAL);
-		string cp_source= show(rule->place_name_input.unparametrized(), S_NORMAL);
+		string cp_target= show(rule->targets[0]->placed_target.placed_name, S_NORMAL);
+		string cp_source= show(rule->placed_name_input.unparametrized(), S_NORMAL);
 		printf("cp %s %s\n", cp_source.c_str(), cp_target.c_str());
 		return;
 	}
@@ -425,9 +425,9 @@ void File_Executor::print_command() const
 	 * For multi-line commands, show them on a separate line. */
 
 	string filename_output= rule->output_redirect_index < 0 ? "" :
-		rule->targets[rule->output_redirect_index]->place_target
-		.place_name.unparametrized();
-	string filename_input= rule->place_name_input.unparametrized();
+		rule->targets[rule->output_redirect_index]->placed_target
+		.placed_name.unparametrized();
+	string filename_input= rule->placed_name_input.unparametrized();
 
 	/* Redirections */
 	if (! filename_output.empty()) {
@@ -609,7 +609,7 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		phonies[hash_dep.get_name_nondynamic()]= timestamp_now;
 	}
 	if (rule->output_redirect_index >= 0)
-		assert(! (rule->targets[rule->output_redirect_index]->place_target.flags
+		assert(! (rule->targets[rule->output_redirect_index]->placed_target.flags
 				& F_TARGET_PHONY));
 	assert(options_jobs > 0);
 
@@ -680,7 +680,7 @@ bool File_Executor::check_file_target(
 	TRACE("target= \"%s\"", target.get_name_c_str_nondynamic());
 	assert(target.is_file());
 	Flags flags= target.get_front_word_nondynamic();
-	if (to <Plain_Dep> (dep_link)->place_target.place_name.unparametrized()
+	if (to <Plain_Dep> (dep_link)->placed_target.placed_name.unparametrized()
 		== target.get_name_c_str_nondynamic())
 	{
 		Flags dep_flags= dep_link->flags.get_flags();
@@ -845,18 +845,18 @@ void File_Executor::read_variable(shared_ptr <const Dep> dep)
 	if (!file) {
 		if (errno == ENOENT) {
 			Hash_Dep hash_dep_variable=
-				to <Plain_Dep> (dep)->place_target.unparametrized();
+				to <Plain_Dep> (dep)->placed_target.unparametrized();
 			if (rule == nullptr) {
 				dep->get_place() <<
 					fmt("file %s was up to date but cannot be found now",
 						show(hash_dep_variable));
 			} else {
 				for (auto const &i: rule->targets) {
-					if (i->place_target.unparametrized()
+					if (i->placed_target.unparametrized()
 						== hash_dep_variable) {
-						i->place <<
-							fmt("generated file %s was built but cannot be found now",
-								show(i->place_target));
+						i->place << fmt(
+							"generated file %s was built but cannot be found now",
+							show(i->placed_target));
 						break;
 					}
 				}
@@ -912,7 +912,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 
 	if (dep_link->flags.get_flags() & F_OPTIONAL
 		&& to <Plain_Dep> (dep_link)
-		&& ! (to <Plain_Dep> (dep_link)->place_target.flags & F_TARGET_PHONY))
+		&& ! (to <Plain_Dep> (dep_link)->placed_target.flags & F_TARGET_PHONY))
 	{
 		TRACE("Is optional file target");
 
@@ -924,7 +924,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 		TRACE("File not known to be missing");
 
 		const char *name= to <Plain_Dep> (dep_link)
-			->place_target.place_name.unparametrized().c_str();
+			->placed_target.placed_name.unparametrized().c_str();
 		TRACE("name= '%s'", name);
 		TRACE("flags= %s",
 			show(Flags_View(to <Plain_Dep> (dep_link)->flags.get_flags())));
@@ -939,7 +939,7 @@ bool File_Executor::optional_finished(shared_ptr <const Dep> dep_link)
 			state &= ~State::EXISTING;
 			if (errno != ENOENT) {
 				TRACE("Stat failed with error other than ENOENT");
-				to <Plain_Dep> (dep_link)->place_target.place <<
+				to <Plain_Dep> (dep_link)->placed_target.place <<
 					format_errno("fstatat", name);
 				raise(ERR_BUILD);
 				done |= Done::from_flags(dep_link->flags.get_flags());
@@ -1050,8 +1050,8 @@ bool File_Executor::start(
 {
 	if (rule->is_copy) {
 		assert(rule->targets.size() == 1);
-		assert(! (rule->targets.front()->place_target.flags & F_TARGET_PHONY));
-		string source= rule->place_name_input.unparametrized();
+		assert(! (rule->targets.front()->placed_target.flags & F_TARGET_PHONY));
+		string source= rule->placed_name_input.unparametrized();
 
 		/* If optional copy, don't just call 'cp' and let it fail:  Look up
 		 * whether the source exists in the cache */
@@ -1078,7 +1078,7 @@ bool File_Executor::start(
 		}
 
 		pid= job.start_copy(
-			rule->targets[0]->place_target.place_name.unparametrized(),
+			rule->targets[0]->placed_target.placed_name.unparametrized(),
 			source,
 			rule->targets[0]->place);
 	} else {
@@ -1087,12 +1087,12 @@ bool File_Executor::start(
 			mapping,
 			rule->output_redirect_index < 0 ? "" :
 				rule->targets[rule->output_redirect_index]
-				->place_target.place_name.unparametrized(),
-			rule->place_name_input.unparametrized(),
+				->placed_target.placed_name.unparametrized(),
+			rule->placed_name_input.unparametrized(),
 			rule->command->place,
 			rule->output_redirect_index < 0 ? Place() :
 				rule->targets[rule->output_redirect_index]->place,
-			rule->place_name_input.place);
+			rule->placed_name_input.place);
 	}
 	return false;
 }

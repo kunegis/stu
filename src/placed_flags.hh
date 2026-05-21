@@ -1,30 +1,30 @@
-#ifndef PLACE_FLAGS_HH
-#define PLACE_FLAGS_HH
+#ifndef PLACED_FLAGS_HH
+#define PLACED_FLAGS_HH
 
 #include "place.hh"
 
-class Place_Flag
+class Placed_Flag
 {
 public:
 	Place place;
 	Index index;
 
-	Place_Flag() {} /* uncovered */
-	Place_Flag(Index i, const Place &p)
+	Placed_Flag() {} /* uncovered */
+	Placed_Flag(Index i, const Place &p)
 		: place(p), index(i) {}
 };
 
-class Place_Flags
+class Placed_Flags
 {
 public:
 	Flags get_flags() const { return flags; }
 	void add_unplaced_flags(Flags flags_new);
 	void remove_unplaced_flags(Flags flags_remove);
-	const std::vector <Place_Flag> get() const { return place_flags; }
+	const std::vector <Placed_Flag> get() const { return placed_flags; }
 	const Place &place_by_index(Index index) const;
 	void add_unplaced_index(Index index);
 	void add_placed_index(Index index, const Place &place);
-	void add(const Place_Flags &, Flags filter= ~(Flags)0);
+	void add(const Placed_Flags &, Flags filter= ~(Flags)0);
 	void remove_index(Index index); /* Flag need not be present */
 
 #ifdef NDEBUG
@@ -36,7 +36,7 @@ public:
 
 private:
 	Flags flags= 0;
-	std::vector <Place_Flag> place_flags;
+	std::vector <Placed_Flag> placed_flags;
 };
 
-#endif /* ! PLACE_FLAGS_HH */
+#endif /* ! PLACED_FLAGS_HH */

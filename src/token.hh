@@ -97,20 +97,19 @@ void render(const Flag_Token &, Parts &, Rendering= 0);
 class Name_Token
 /* This contains two types of places:  the places for the individual parameters in
  * Place_Param_Name, and the place of the complete token from Token. */
-	: public Token, public Place_Name
+	: public Token, public Placed_Name
 {
 public:
-	Name_Token(const Place_Name &place_name_,
-		   bool environment_)
+	Name_Token(const Placed_Name &placed_name_, bool environment_)
 		: Token(environment_),
-		  Place_Name(place_name_)
-	{  }
+		  Placed_Name(placed_name_)
+	{}
 
-	const Place &get_place() const override { return Place_Name::place; }
-	const Place &get_place_start() const override { return Place_Name::place; }
+	const Place &get_place() const override { return Placed_Name::place; }
+	const Place &get_place_start() const override { return Placed_Name::place; }
 
 	void render(Parts &parts, Rendering rendering= 0) const override {
-		Place_Name::render(parts, rendering);
+		Placed_Name::render(parts, rendering);
 	}
 };
 

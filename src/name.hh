@@ -1,10 +1,8 @@
 #ifndef NAME_HH
 #define NAME_HH
 
-#include "place.hh"
-
-class Name
-/* The possibly parametrized name of a file or phony.  A name has N >= 0
+/*
+ * The possibly parametrized name of a file or phony.  A name has N >= 0
  * parameters.  When N > 0, the name is parametrized, otherwise it is
  * unparametrized.  A name consists of N+1 static text elements (in the variable
  * TEXTS) and N parameters (in PARAMETERS), which are interleaved.  For instance
@@ -15,14 +13,16 @@ class Name
  * Names can be valid or invalid.  A name is valid when all internal texts
  * (between two parameters) are non-empty, and, if N = 0, the single text is
  * non-empty.  A name is empty if N = 0 and the single text is empty (empty
- * names are invalid). */
+ * names are invalid).
+ */
+
+#include "place.hh"
+
+class Name
 {
 public:
-	Name(string name_): texts({name_}) { }
-	/* A name with zero parameters */
-
-	Name(): texts({""}) { }
-	/* Empty name */
+	Name(string name_): texts({name_}) {} /* Zero parameters */
+	Name(): texts({""}) {} /* Empty name */
 
 	bool empty() const {
 		assert(texts.size() == 1 + parameters.size());
@@ -30,7 +30,6 @@ public:
 	}
 
 	size_t get_n() const
-	/* Number of parameters; zero when the name is unparametrized. */
 	{
 		assert(texts.size() == 1 + parameters.size());
 		return parameters.size();
@@ -41,13 +40,8 @@ public:
 		return !parameters.empty();
 	}
 
-	const std::vector <string> &get_texts() const {
-		return texts;
-	}
-
-	const std::vector <string> &get_parameters() const {
-		return parameters;
-	}
+	const std::vector <string> &get_texts() const { return texts; }
+	const std::vector <string> &get_parameters() const { return parameters; }
 
 	void append_parameter(string parameter)
 	/* Append a PARAMETER and an empty text.  Do not check that the result is valid. */
@@ -65,12 +59,8 @@ public:
 	void append(const Name &name);
 	/* Append another parametrized name.  Check that the result is valid. */
 
-	string &last_text() {
-		return texts[texts.size() - 1];
-	}
-	const string &last_text() const {
-		return texts[texts.size() - 1];
-	}
+	string &last_text() { return texts[texts.size() - 1]; }
+	const string &last_text() const { return texts[texts.size() - 1]; }
 
 	string instantiate(const std::map <string, string> &mapping) const;
 	/* Instantiate the name with the given mapping.  The name may be empty, resulting
@@ -84,17 +74,19 @@ public:
 		return texts[0];
 	}
 
-	bool match(string name, std::map <string, string> &mapping,
-		   std::vector <size_t> &anchoring, int &priority) const;
-	/* Check whether NAME matches this name.  If it does, return
-	 * TRUE and set MAPPING and ANCHORING accordingly.
-	 * MAPPING must be empty.  NAME must not be empty.  PRIORITY determines whether a
-	 * special rule was used:
+	bool match(
+		string name,
+		std::map <string, string> &mapping,
+		std::vector <size_t> &anchoring,
+		int &priority) const;
+	/* Check whether NAME matches this name.  If it does, return TRUE and set MAPPING
+	 * and ANCHORING accordingly.  MAPPING must be empty.  NAME must not be empty.
+	 * PRIORITY determines whether a special rule was used:
 	 *    0:   no special rule was used
 	 *    +1:  a special rule was used, having priority over matches without special
 	 *         rule
-	 *    -1:  a special rule was used, having less priority than matches
-	 *         without special rule
+	 *    -1:  a special rule was used, having less priority than matches without
+	 *         special rule
 	 * PRIORITY has an unspecified value after returing FALSE. */
 
 	void render(Parts &, Rendering= 0) const;
@@ -132,7 +124,7 @@ void render(const Name &name, Parts &parts, Rendering rendering= 0)
 	name.render(parts, rendering);
 }
 
-class Place_Name
+class Placed_Name
 /* A possibly parametrized name annotated with places */
 	: public Name
 {
@@ -143,17 +135,17 @@ public:
 	std::vector <Place> places;
 	/* Length = N (number of parameters).  The places of the individual parameters. */
 
-	Place_Name(): Name(), place() { }
+	Placed_Name(): Name(), place() { }
 	/* Empty parametrized name, and empty place */
 
-	Place_Name(string name)
+	Placed_Name(string name)
 		/* Unparametrized, with empty place */
 		: Name(name)
 	{
 		/* PLACES remains empty */
 	}
 
-	Place_Name(string name, const Place &_place)
+	Placed_Name(string name, const Place &_place)
 		/* Unparametrized, with explicit place */
 		: Name(name), place(_place) { }
 
@@ -168,11 +160,11 @@ public:
 		places.push_back(place_parameter);
 	}
 
-	shared_ptr <Place_Name> instantiate(const std::map <string, string> &mapping) const
+	shared_ptr <Placed_Name> instantiate(const std::map <string, string> &mapping) const
 	/* In the returned object, the PLACES vector is empty */
 	{
 		string name= Name::instantiate(mapping);
-		return std::make_shared <Place_Name> (name, place);
+		return std::make_shared <Placed_Name> (name, place);
 	}
 };
 

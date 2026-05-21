@@ -36,13 +36,13 @@ public:
 	 * the rule does not have a command, i.e., ends in a semicolon ';'.  For content
 	 * rules, the content of the file (not optional). */
 
-	const Place_Name place_name_input;
+	const Placed_Name placed_name_input;
 	/* Unparametrized. When !is_copy:  The name of the file from which input should be
 	 * read; must be one of the file dependencies.  Empty for no input redirection.
 	 * When is_copy: the file from which to copy; never empty. */
 
 	const int output_redirect_index;
-	/* Index within PLACE_TARGETS of the target to which output redirection is
+	/* Index within PLACED_TARGETS of the target to which output redirection is
 	 * applied.  -1 if no output redirection is used. The target with that index is a
 	 * file target. */
 
@@ -54,34 +54,34 @@ public:
 	/* Whether the rule is a copy rule, i.e., declared with '=' followed by a
 	 * filename. */
 
-	Rule(std::vector <shared_ptr <const Plain_Dep> > &&place_targets,
+	Rule(std::vector <shared_ptr <const Plain_Dep> > &&placed_targets,
 	     std::vector <shared_ptr <const Dep> > &&deps_,
 	     const Place &place_,
 	     const shared_ptr <const Command> &command_,
-	     const Place_Name &place_name_input_,
+	     const Placed_Name &placed_name_input_,
 	     bool is_content_,
 	     int output_redirect_index_,
 	     bool is_copy_);
 	/* Direct constructor that specifies everything; no checks, initialization or
 	 * canonicalization is performed. */
 
-	Rule(std::vector <shared_ptr <const Plain_Dep> > &&place_targets_,
+	Rule(std::vector <shared_ptr <const Plain_Dep> > &&placed_targets_,
 	     const std::vector <shared_ptr <const Dep> > &deps_,
 	     shared_ptr <const Command> command_,
 	     bool is_content_,
 	     int output_redirect_index_,
-	     const Place_Name &place_name_input_);
+	     const Placed_Name &placed_name_input_);
 	/* Regular rule:  all cases except copy rules */
 
-	Rule(shared_ptr <const Plain_Dep> place_target_,
-	     shared_ptr <const Place_Name> place_name_source_,
+	Rule(shared_ptr <const Plain_Dep> placed_target_,
+	     shared_ptr <const Placed_Name> placed_name_source_,
 	     const Place &place_persistent,
 	     const Place &place_optional);
 	/* A copy rule.  When the places are EMPTY, the corresponding flag is not used. */
 
 	/* Whether the rule is parametrized */
 	bool is_parametrized() const {
-		return targets.front()->place_target.place_name.get_n() != 0;
+		return targets.front()->placed_target.placed_name.get_n() != 0;
 	}
 
 	/* A rule in which the targets must exist */
@@ -102,7 +102,7 @@ public:
 	const std::vector <string> &get_parameters() const
 	{
 		assert(targets.size() != 0);
-		return targets.front()->place_target.place_name.get_parameters();
+		return targets.front()->placed_target.placed_name.get_parameters();
 	}
 
 	void canonicalize();

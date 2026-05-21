@@ -1,9 +1,4 @@
 #
-# Names of types of the form 'Place_*' are ambiguous because we often used variables of
-# type Place named 'place_*'.  Rename the 'Place_*' types e.g. to 'P*'.
-#
-
-#
 # Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
 # * Use --no-dereference for -P [like cp]
 #
@@ -391,7 +386,7 @@ B {}
 * First digit of test: 0 (success), 1 (fail), 2 (EXEC), 3 (preload).
 
 #
-# Place_Flags:  replace certain functions by operators (&, |=, etc.) that mimic how a
+# Placed_Flags:  replace certain functions by operators (&, |=, etc.) that mimic how a
 # Flags variable would be used.
 #
 

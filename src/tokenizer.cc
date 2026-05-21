@@ -302,9 +302,9 @@ void Tokenizer::parse_tokens_arg(
 				++p;
 			}
 			assert(p > q);
-			Place_Name place_name(string(q, p-q), place);
+			Placed_Name placed_name(string(q, p-q), place);
 			tokens.push_back(std::make_shared <Name_Token>
-				(place_name, environment));
+				(placed_name, environment));
 			allow_dash= false;
 			allow_at= false;
 			environment= 0;
@@ -594,8 +594,8 @@ void Tokenizer::parse_flag_or_name()
 			throw ERR_LOGICAL;
 		}
 	} else {
-		shared_ptr <Place_Name> place_name= parse_name(allow_special);
-		if (place_name == nullptr) {
+		shared_ptr <Placed_Name> placed_name= parse_name(allow_special);
+		if (placed_name == nullptr) {
 			if (*p == '!') {
 				current_place() << fmt(
 					"character %s is invalid for persistent dependencies; use %s instead",
@@ -619,19 +619,19 @@ void Tokenizer::parse_flag_or_name()
 			}
 			throw ERR_LOGICAL;
 		}
-		assert(! place_name->empty());
-		tokens.push_back(std::make_shared <Name_Token> (*place_name, environment));
+		assert(! placed_name->empty());
+		tokens.push_back(std::make_shared <Name_Token> (*placed_name, environment));
 	}
 }
 
-shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
+shared_ptr <Placed_Name> Tokenizer::parse_name(bool allow_special)
 {
 	TRACE_FUNCTION();
 	TRACE("allow_special= %s", frmt("%d", allow_special));
 	const char *const p_begin= p;
 	Place place_begin= current_place();
 
-	shared_ptr <Place_Name> ret= std::make_shared <Place_Name> ("", place_begin);
+	shared_ptr <Placed_Name> ret= std::make_shared <Placed_Name> ("", place_begin);
 
 	if (p < p_end && ! allow_special) {
 		if (*p == '-' || *p == '+' || *p == '~') {
@@ -677,7 +677,7 @@ shared_ptr <Place_Name> Tokenizer::parse_name(bool allow_special)
 	return ret;
 }
 
-void Tokenizer::parse_dollar(Place_Name &place_name)
+void Tokenizer::parse_dollar(Placed_Name &placed_name)
 {
 	TRACE_FUNCTION();
 	assert(p < p_end);
@@ -712,10 +712,10 @@ void Tokenizer::parse_dollar(Place_Name &place_name)
 				show(Environment_Variable_View(name)));
 			throw ERR_LOGICAL;
 		}
-		place_name.append_text(value);
+		placed_name.append_text(value);
 	} else {
 		parse_parameter(name);
-		place_name.append_parameter(name, place_dollar);
+		placed_name.append_parameter(name, place_dollar);
 	}
 }
 
@@ -1051,7 +1051,7 @@ string Tokenizer::current_mbchar() const
 	}
 }
 
-void Tokenizer::parse_double_quote(Place_Name &ret)
+void Tokenizer::parse_double_quote(Placed_Name &ret)
 {
 	TRACE_FUNCTION();
 	Place place_begin_quote= current_place();
@@ -1113,7 +1113,7 @@ void Tokenizer::parse_double_quote(Place_Name &ret)
  end_of_double_quote:;
 }
 
-void Tokenizer::parse_single_quote(Place_Name &ret)
+void Tokenizer::parse_single_quote(Placed_Name &ret)
 {
 	TRACE_FUNCTION();
 	Place place_begin_quote= current_place();
@@ -1230,9 +1230,9 @@ void Tokenizer::parse_include_directive(
 		throw ERR_LOGICAL;
 	}
 
-	shared_ptr <Place_Name> place_name= parse_name(false);
+	shared_ptr <Placed_Name> placed_name= parse_name(false);
 
-	if (place_name == nullptr) {
+	if (placed_name == nullptr) {
 		current_place() <<
 			(p == p_end
 				? "expected a filename"
@@ -1241,16 +1241,16 @@ void Tokenizer::parse_include_directive(
 		place_percent << fmt("after %s", show(Operator_View("%include")));
 		throw ERR_LOGICAL;
 	}
-	if (place_name->get_n() != 0) {
-		place_name->place << fmt("name %s must not be parametrized",
-			show(*place_name));
+	if (placed_name->get_n() != 0) {
+		placed_name->place << fmt("name %s must not be parametrized",
+			show(*placed_name));
 		place_percent << fmt("after %s",
 			show(Operator_View("%include")));
 		throw ERR_LOGICAL;
 	}
 
-	const string filename_include= place_name->unparametrized();
-	Backtrace backtrace_stack(place_name->place,
+	const string filename_include= placed_name->unparametrized();
+	Backtrace backtrace_stack(placed_name->place,
 		fmt("%s is included from here", show(filename_include)));
 	backtraces.push_back(backtrace_stack);
 	filenames.push_back(place_base.text);

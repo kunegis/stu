@@ -108,7 +108,9 @@ bool Name::match(
 				if ((size_t) (p_end - p) != texts.at(i+1).size() - 1) {
 					goto failed;
 				}
-				if (memcmp(p, texts.at(i+1).c_str() + 1, texts.at(i+1).size() - 1)) {
+				if (memcmp(p, texts.at(i+1).c_str() + 1,
+					texts.at(i+1).size() - 1))
+				{
 					goto failed;
 				}
 			} else {
@@ -117,7 +119,9 @@ bool Name::match(
 				if (p + (texts.at(i+1).size() - 1) > p_end) {
 					goto failed;
 				}
-				if (memcmp(p, texts.at(i+1).c_str() + 1, texts.at(i+1).size() - 1)) {
+				if (memcmp(p, texts.at(i+1).c_str() + 1,
+					texts.at(i+1).size() - 1))
+				{
 					goto failed;
 				}
 				p += texts.at(i+1).size() - 1;

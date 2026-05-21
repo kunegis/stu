@@ -45,63 +45,63 @@ public:
 	}
 };
 
-class Place_Target
+class Placed_Target
 /* A target that is parametrized and contains places.  Non-dynamic. */
 {
 public:
 	Flags flags;  /* Only F_TARGET_PHONY is used */
-	Place_Name place_name;
+	Placed_Name placed_name;
 
 	Place place;
-	/* The place of the target as a whole.  The PLACE_NAME variable additionally
+	/* The place of the target as a whole.  The PLACED_NAME variable additionally
 	 * contains a place for the name itself, as well as for individual parameters. */
 
-	Place_Target(Flags flags_,
-		     const Place_Name &place_name_)
-		: flags(flags_), place_name(place_name_), place(place_name_.place)
+	Placed_Target(Flags flags_,
+		const Placed_Name &placed_name_)
+		: flags(flags_), placed_name(placed_name_), place(placed_name_.place)
 	{
 		assert((flags_ & ~F_TARGET_PHONY) == 0);
 	}
 
-	Place_Target(Flags flags_,
-		     const Place_Name &place_name_,
-		     const Place &place_)
-		: flags(flags_), place_name(place_name_), place(place_)
+	Placed_Target(Flags flags_,
+		const Placed_Name &placed_name_,
+		const Place &place_)
+		: flags(flags_), placed_name(placed_name_), place(place_)
 	{
 		assert((flags_ & ~F_TARGET_PHONY) == 0);
 	}
 
-	Place_Target(const Place_Target &that)
+	Placed_Target(const Placed_Target &that)
 		: flags(that.flags),
-		  place_name(that.place_name),
+		  placed_name(that.placed_name),
 		  place(that.place) { }
 
-	bool equals_same_length(const Place_Target &that) const
+	bool equals_same_length(const Placed_Target &that) const
 	/* Compare, assuming same length */
 	{
 		return this->flags == that.flags &&
-			this->place_name.equals_same_length(that.place_name);
+			this->placed_name.equals_same_length(that.placed_name);
 	}
 
 	void render(Parts &, Rendering) const;
 
-	shared_ptr <Place_Target> instantiate(
+	shared_ptr <Placed_Target> instantiate(
 		const std::map <string, string> &mapping) const {
-		return std::make_shared <Place_Target>
-			(flags, *place_name.instantiate(mapping), place);
+		return std::make_shared <Placed_Target>
+			(flags, *placed_name.instantiate(mapping), place);
 	}
 
 	Hash_Dep unparametrized() const {
-		return Hash_Dep(flags, place_name.unparametrized());
+		return Hash_Dep(flags, placed_name.unparametrized());
 	}
 
 	Target get_target() const {
-		return Target(flags, place_name);
+		return Target(flags, placed_name);
 	}
 
 	void canonicalize();  /* In-place */
 };
 
-void render(const Place_Target &, Parts &, Rendering= 0);
+void render(const Placed_Target &, Parts &, Rendering= 0);
 
 #endif /* ! TARGET_HH */

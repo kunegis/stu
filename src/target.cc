@@ -1,21 +1,21 @@
 #include "target.hh"
 
-void Place_Target::render(Parts &parts, Rendering rendering) const
+void Placed_Target::render(Parts &parts, Rendering rendering) const
 {
 	if (flags & F_TARGET_PHONY)
 		parts.append_marker("@");
-	place_name.render(parts, rendering);
+	placed_name.render(parts, rendering);
 }
 
-void Place_Target::canonicalize()
+void Placed_Target::canonicalize()
 {
-	place_name.canonicalize();
+	placed_name.canonicalize();
 }
 
 void render(
-	const Place_Target &place_target,
+	const Placed_Target &placed_target,
 	Parts &parts,
 	Rendering rendering)
 {
-	return place_target.render(parts, rendering);
+	return placed_target.render(parts, rendering);
 }

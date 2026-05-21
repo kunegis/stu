@@ -83,12 +83,12 @@ private:
 	shared_ptr <Command> parse_command();
 	void parse_flag_or_name();
 
-	shared_ptr <Place_Name> parse_name(bool allow_special);
+	shared_ptr <Placed_Name> parse_name(bool allow_special);
 	/* Returns null when no name could be parsed.  Prints and throws on other errors,
 	 * including on empty names. ALLOW_SPECIAL:  whether the name is allowed to start
 	 * with one of '-+~'.  E_SLASH set in ENVIRONMENT as appropriate. */
 
-	void parse_dollar(Place_Name &);
+	void parse_dollar(Placed_Name &);
 	void parse_parameter(string &name);
 	void parse_environment_variable(string &name);
 
@@ -97,8 +97,8 @@ private:
 	 * appended to RET, or a logical error is thrown.  parse_escape() consumes only
 	 * the backslash, not what follows; it returns true if what follows must be
 	 * escaped. */
-	void parse_double_quote(Place_Name &ret);
-	void parse_single_quote(Place_Name &ret);
+	void parse_double_quote(Placed_Name &ret);
+	void parse_single_quote(Placed_Name &ret);
 	bool parse_escape();
 
 	void parse_directive(

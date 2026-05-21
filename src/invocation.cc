@@ -18,7 +18,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				exit(ERR_FATAL);
 			}
 			deps.push_back(std::make_shared <Plain_Dep> (
-				Place_Target(0, Place_Name(optarg, place))));
+				Placed_Target(0, Placed_Name(optarg, place))));
 			break;
 		}
 
@@ -60,12 +60,12 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				place << "expected a non-empty argument";
 				exit(ERR_FATAL);
 			}
-			Place_Flags place_flags;
-			place_flags.add_placed_index(flag_get_index(c), place);
+			Placed_Flags placed_flags;
+			placed_flags.add_placed_index(flag_get_index(c), place);
 			deps.push_back(std::make_shared <Dynamic_Dep> (
 				std::make_shared <Plain_Dep> (
-					place_flags,
-					Place_Target(0, Place_Name(optarg, place)))));
+					placed_flags,
+					Placed_Target(0, Placed_Name(optarg, place)))));
 			break;
 		}
 
@@ -78,10 +78,10 @@ Invocation::Invocation(int argc, char **argv, int &error)
 				exit(ERR_FATAL);
 			}
 			Index index= flag_get_index(c);
-			Place_Flags flags;
+			Placed_Flags flags;
 			flags.add_placed_index(index, place);
 			deps.push_back(std::make_shared <Plain_Dep>
-				(flags, Place_Target(0, Place_Name(optarg, place))));
+				(flags, Placed_Target(0, Placed_Name(optarg, place))));
 			break;
 		}
 
@@ -118,7 +118,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			error |= ERR_LOGICAL;
 		} else if (option_J) {
 			deps.push_back(std::make_shared <Plain_Dep>
-				(Place_Target(0, Place_Name(argv[i], place))));
+				(Placed_Target(0, Placed_Name(argv[i], place))));
 		}
 	}
 
@@ -176,7 +176,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 			}
 			exit(ERR_FATAL);
 		}
-		if (target_first->place_target.place_name.is_parametrized()) {
+		if (target_first->placed_target.placed_name.is_parametrized()) {
 			target_first->place << fmt(
 				"the first target %s must not be parametrized if no target is given",
 				show(target_first));

@@ -56,7 +56,7 @@ public:
 	 * whether something was read or not.  On syntax errors, ERR_LOGICAL is thrown. */
 
 	/* In some of the following functions, write the input filename into
-	 * PLACE_NAME_INPUT.  If PLACE_NAME_INPUT is already non-empty, throw an error if
+	 * PLACED_NAME_INPUT.  If PLACED_NAME_INPUT is already non-empty, throw an error if
 	 * a second input filename is specified. PLACE_INPUT is the place of the '<' input
 	 * redirection operator. */
 
@@ -70,7 +70,7 @@ public:
 		std::vector <shared_ptr <const Dep> > &deps,
 		std::vector <shared_ptr <Token> > &tokens,
 		const Place &place_end,
-		Place_Name &input,
+		Placed_Name &input,
 		Place &place_input);
 	/* DEPS gets filled.  DEPS is empty when called. */
 
@@ -137,7 +137,7 @@ private:
 
 	bool parse_expression_list(
 		std::vector <shared_ptr <const Dep> > &ret,
-		Place_Name &place_name_input,
+		Placed_Name &placed_name_input,
 		Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 	/* RET is filled.  RET is empty when called. */
@@ -153,35 +153,35 @@ private:
 
 	bool parse_target(
 		Place &place_output,
-		std::vector <shared_ptr <const Plain_Dep> > &place_targets,
+		std::vector <shared_ptr <const Plain_Dep> > &placed_targets,
 		int &redirect_index,
 		shared_ptr <const Plain_Dep> &target_first);
 
 	bool parse_expression(
 		shared_ptr <const Dep> &ret,
-		Place_Name &place_name_input, Place &place_input,
+		Placed_Name &placed_name_input, Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 	/* Write the parsed expression into RET. RET must be empty when called.  Return
 	 * whether an expression was parsed.  TARGETS is passed to construct error
 	 * messages. */
 
 	shared_ptr <const Dep> parse_compound_dep(
-		Place_Name &place_name_input,
+		Placed_Name &placed_name_input,
 		Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 
 	shared_ptr <const Dep> parse_dynamic_dep(
-		Place_Name &place_name_input,
+		Placed_Name &placed_name_input,
 		Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 
 	shared_ptr <const Dep> parse_variable_dep(
-		Place_Name &place_name_input, Place &place_input,
+		Placed_Name &placed_name_input, Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 	/* A variable dependency */
 
 	shared_ptr <const Dep> parse_redirect_dep(
-		Place_Name &place_name_input, Place &place_input,
+		Placed_Name &placed_name_input, Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
 
 	template <typename T> shared_ptr <T> is() const

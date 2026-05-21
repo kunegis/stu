@@ -32,7 +32,7 @@ using std::shared_ptr;
 #include "options.cc"
 #include "parser.cc"
 #include "place.cc"
-#include "place_flags.cc"
+#include "placed_flags.cc"
 #include "preset.cc"
 #include "proceed.cc"
 #include "root_executor.cc"

@@ -45,10 +45,11 @@ Phony target - One of the two basic datatypes ("targets") of Stu, the other bein
 	like a file, but will not result in a built file.  A phony target can also be used
 	only for its dependency.
 
-Place - Filename + line number + column number.  Used to print error messages.
+Place - The combination of filename, line number, and column number.  Used to print error
+	messages.
 
-Placed - A class name starts with 'Place_' when it includes a place, e.g., 'Name'
-	vs. 'Place_Name'.
+Placed - A class name starts with 'Placed_' when it includes a place, e.g., 'Name'
+	vs. 'Placed_Name'.
 
 Plain - (Said of a dependency or target) Either a file or a phony target.
 

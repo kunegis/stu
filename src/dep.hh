@@ -34,7 +34,7 @@
 #include "hints.hh"
 #include "options.hh"
 #include "place.hh"
-#include "place_flags.hh"
+#include "placed_flags.hh"
 
 template <typename T, typename U>
 shared_ptr <const T> to(shared_ptr <const U> d)
@@ -67,7 +67,7 @@ class Dep
  */
 {
 public:
-	Place_Flags flags;
+	Placed_Flags flags;
 
 	shared_ptr <const Dep> top;
 	/* Additional place used for constructing traces.  Most of the properties (such as
@@ -78,7 +78,7 @@ public:
 	 * concatenation.  -1 when not used. */
 
 	Dep() { }
-	Dep(const Place_Flags &flags_)
+	Dep(const Placed_Flags &flags_)
 		: flags(flags_) { }
 
 	Dep(const Dep &that)
@@ -153,7 +153,7 @@ class Plain_Dep
 	: public Dep
 {
 public:
-	Place_Target place_target;
+	Placed_Target placed_target;
 	/* The target of the dependency.  Has its own place, which may
 	 * differ from the dependency's place, e.g. in '@all'.  Non-dynamic. */
 
@@ -163,31 +163,31 @@ public:
 	/* With F_VARIABLE:  the name of the variable.  Otherwise:  empty. */
 
 	explicit
-	Plain_Dep(const Place_Target &place_target_)
-		: place_target(place_target_),
-		  place(place_target_.place)
+	Plain_Dep(const Placed_Target &placed_target_)
+		: placed_target(placed_target_),
+		  place(placed_target_.place)
 	{
-		flags.add_unplaced_flags(place_target_.flags);
+		flags.add_unplaced_flags(placed_target_.flags);
 		check();
 	}
 
-	Plain_Dep(const Place_Flags &place_flags_, const Place_Target &place_target_)
+	Plain_Dep(const Placed_Flags &placed_flags_, const Placed_Target &placed_target_)
 		/* Take the dependency place from the target place */
-		: Dep(place_flags_),
-		  place_target(place_target_),
-		  place(place_target_.place)
+		: Dep(placed_flags_),
+		  placed_target(placed_target_),
+		  place(placed_target_.place)
 	{
 		check();
 	}
 
 	Plain_Dep(
-		const Place_Flags &place_flags_,
-		const Place_Target &place_target_,
+		const Placed_Flags &placed_flags_,
+		const Placed_Target &placed_target_,
 		const Place &place_,
 		std::string_view variable_name_)
 		/* Use an explicit dependency place */
-		: Dep(place_flags_),
-		  place_target(place_target_),
+		: Dep(placed_flags_),
+		  placed_target(placed_target_),
 		  place(place_),
 		  variable_name(variable_name_)
 	{
@@ -195,13 +195,13 @@ public:
 	}
 
 	Plain_Dep(
-		const Place_Flags &place_flags_,
-		const Place_Target &place_target_,
+		const Placed_Flags &placed_flags_,
+		const Placed_Target &placed_target_,
 		std::string_view variable_name_)
 		/* Use an explicit dependency place */
-		: Dep(place_flags_),
-		  place_target(place_target_),
-		  place(place_target_.place),
+		: Dep(placed_flags_),
+		  placed_target(placed_target_),
+		  place(placed_target_.place),
 		  variable_name(variable_name_)
 	{
 		check();
@@ -209,7 +209,7 @@ public:
 
 	Plain_Dep(const Plain_Dep &plain_dep)
 		: Dep(plain_dep),
-		  place_target(plain_dep.place_target),
+		  placed_target(plain_dep.placed_target),
 		  place(plain_dep.place),
 		  variable_name(plain_dep.variable_name) { }
 
@@ -261,9 +261,9 @@ public:
 	}
 
 	Dynamic_Dep(
-		const Place_Flags &place_flags_,
+		const Placed_Flags &placed_flags_,
 		shared_ptr <const Dep> dep_)
-		: Dep(place_flags_),
+		: Dep(placed_flags_),
 		  dep(dep_)
 	{
 		flags.add_unplaced_index(I_TARGET_DYNAMIC);
@@ -318,9 +318,9 @@ public:
 	Concat_Dep() { }
 	/* An empty concatenation, i.e., a concatenation of zero dependencies */
 
-	Concat_Dep(const Place_Flags &place_flags_)
+	Concat_Dep(const Placed_Flags &placed_flags_)
 		/* The list of dependencies is empty */
-		: Dep(place_flags_) { }
+		: Dep(placed_flags_) { }
 
 	Concat_Dep(shared_ptr <const Dep> dep)
 		: Dep(*dep) { }
@@ -396,9 +396,9 @@ public:
 		: place(place_) { }
 
 	Compound_Dep(
-		const Place_Flags &place_flags_,
+		const Placed_Flags &placed_flags_,
 		const Place &place_)
-		: Dep(place_flags_),
+		: Dep(placed_flags_),
 		  place(place_)
 	{ /* The list of dependencies is empty */ }
 

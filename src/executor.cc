@@ -33,10 +33,10 @@ void Executor::read_dynamic(
 	Executor *dynamic_executor)
 {
 	try {
-		const Place_Target &place_target=
-			to <Plain_Dep> (dep_target)->place_target;
-		assert(place_target.place_name.get_n() == 0);
-		const Hash_Dep hash_dep= place_target.unparametrized();
+		const Placed_Target &placed_target=
+			to <Plain_Dep> (dep_target)->placed_target;
+		assert(placed_target.placed_name.get_n() == 0);
+		const Hash_Dep hash_dep= placed_target.unparametrized();
 		assert(deps.empty());
 
 		/* Check:  variable dependencies are not allowed in multiply dynamic
@@ -49,7 +49,7 @@ void Executor::read_dynamic(
 				::show(dep));
 			raise(ERR_LOGICAL);
 		}
-		if (place_target.flags & F_TARGET_PHONY)
+		if (placed_target.flags & F_TARGET_PHONY)
 			return;
 
 		assert(hash_dep.is_file());
@@ -70,9 +70,9 @@ void Executor::read_dynamic(
 			Tokenizer::parse_tokens_file(
 				tokens,
 				Tokenizer::DYNAMIC, place_end, filename,
-				place_target.place, -1, allow_enoent);
+				placed_target.place, -1, allow_enoent);
 
-			Place_Name input; /* remains empty */
+			Placed_Name input; /* remains empty */
 			Place place_input; /* remains empty */
 
 			try {
@@ -109,7 +109,7 @@ void Executor::read_dynamic(
 			try {
 				Parser::get_expression_list_delim(
 					deps, filename.c_str(),
-					place_target.place, c, c_printed,
+					placed_target.place, c, c_printed,
 					*dynamic_executor, allow_enoent);
 			} catch (int e) {
 				raise(e);
@@ -818,7 +818,7 @@ bool Executor::check_clash_without_target_flags(
 		place_variable << fmt(
 			"variable dependency %s must not be declared as optional dependency",
 			show(Dynamic_Variable_View(
-			plain_dep_child->place_target.place_name.unparametrized())));
+			plain_dep_child->placed_target.placed_name.unparametrized())));
 		place_flag << fmt("using %s", show(Flag_View(flags_chars[I_OPTIONAL])));
 		*this << "";
 		raise(ERR_LOGICAL);
@@ -953,8 +953,8 @@ bool Executor::same_dependency_for_print(
 		p2= to <Plain_Dep> (to <Dynamic_Dep> (d2)->strip_dynamic());
 	if (! (p1 && p2))
 		return false;
-	return p1->place_target.unparametrized()
-		== p2->place_target.unparametrized();
+	return p1->placed_target.unparametrized()
+		== p2->placed_target.unparametrized();
 }
 
 void Executor::check_unparametrized(

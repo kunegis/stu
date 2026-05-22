@@ -1,0 +1,14 @@
+>A: [--newline B]
+{
+	cat list."X Y Z"
+}
+
+>B
+{
+	echo "list.X Y Z"
+}
+
+>list."X Y Z"
+{
+	echo CORRECT
+}

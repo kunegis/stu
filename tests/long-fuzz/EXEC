@@ -5,9 +5,11 @@
 # 128+SIGABRT.
 #
 
-set -e
+. ../../sh/utils.sh
 
-../../sh/seq 1000 |
+N=2000
+
+../../sh/seq $N |
 while read line ; do
 	rm -f list.*
 	dd if=/dev/urandom bs=1 count=3  >list.stu 2>/dev/null
@@ -21,6 +23,6 @@ while read line ; do
 		hexdump >&2 -C list.stu
 		exit 1
 	fi
-done
+done || exit 1
 
 exit 0

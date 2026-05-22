@@ -16,6 +16,8 @@
  * gives the bits for the tasks to do.  Other flags have the semantics of "more to do".
  */
 
+#include <limits.h>
+
 typedef unsigned Flags;
 typedef unsigned Index;
 
@@ -28,8 +30,8 @@ enum
 	I_TARGET_DYNAMIC,     /* [ ] \  target flags     |                   */
 	I_TARGET_PHONY,       /* @   /                   | Hash_Dep          */
 	I_VARIABLE,           /* $                       |                   */
-	I_NEWLINE_SEPARATED,  /* -n  \                   |                   */
-	I_NUL_SEPARATED,      /* -0   | dynamic format   |                   */
+	I_NEWLINE,            /* -n  \                   |                   */
+	I_NULL,               /* -0   | dynamic format   |                   */
 	I_CODE,               /* -C  /                   |                   */
 	I_NO_FOLLOW,          /* -P                     /                    */
 	I_INPUT,              /* <                                           */
@@ -65,11 +67,11 @@ enum
 	F_VARIABLE              = 1 << I_VARIABLE,
 	/* ($[...]) Content of file is used as variable */
 
-	F_NEWLINE_SEPARATED     = 1 << I_NEWLINE_SEPARATED,
+	F_NEWLINE               = 1 << I_NEWLINE,
 	/* For dynamic dependencies, the file contains newline-separated
 	 * filenames, without any markup. */
 
-	F_NUL_SEPARATED         = 1 << I_NUL_SEPARATED,
+	F_NULL                  = 1 << I_NULL,
 	/* For dynamic dependencies, the file contains NUL-separated filenames,
 	 * without any markup. */
 
@@ -98,20 +100,32 @@ enum
 	F_COMMON_PLACED = (1 << C_COMMON_PLACED) - 1,
 	F_CACHE         = (1 << C_CACHE) - 1,
 	F_WORD          = (1 << C_WORD) - 1,
-	F_ATTRIBUTE     = F_NEWLINE_SEPARATED | F_NUL_SEPARATED | F_CODE,
+	F_ATTRIBUTE     = F_NEWLINE | F_NULL | F_CODE,
 	F_RESULT        = F_RESULT_NOTIFY | F_RESULT_COPY,
 	F_PLACED_TARGET= F_PERSISTENT | F_OPTIONAL | F_NO_FOLLOW,
 	F_PLACED_DEPENDENCY= F_PERSISTENT | F_OPTIONAL | F_TRIVIAL
-		| F_NEWLINE_SEPARATED | F_NUL_SEPARATED | F_CODE,
+		| F_NEWLINE | F_NULL | F_CODE,
 	F_PLACED= F_PLACED_TARGET | F_PLACED_DEPENDENCY,
 	F_UNPLACED= F_ALL & ~F_PLACED,
 };
 
-constexpr const char flags_chars[]= "pot[@$n0CP<*%&";
-static_assert(sizeof(flags_chars) == C_ALL + 1, "Keep in sync with Flags");
-extern const char *flags_placed_phrases[C_ALL];
+constexpr Index I_ERR= UINT_MAX;
+
+constexpr const char flag_chars[]= "pot[@$n0CP<*%&";
+static_assert(sizeof(flag_chars) == C_ALL + 1, "Keep in sync with Flags");
+
+class Flag_Info
+{
+public:
+	const char *name;
+	const char *description;
+};
+
+extern Flag_Info flag_info[C_ALL];
 
 Index flag_get_index(char c); /* Must exist */
+Index index_from_name(string name);
 bool is_placed_flag_char(char c);
+bool is_flag_name_char(char c);
 
 #endif /* ! FLAGS_HH */

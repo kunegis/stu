@@ -485,20 +485,25 @@ FLAGS
        apply  to  the  following  name, and more than one flag can precede any
        name.
 
-       -0     If the file is used as a dynamic dependency, interpret the  con‐
+       -0, --null
+              If the file is used as a dynamic dependency, interpret the  con‐
               tent as a \0-separated list of filenames.
 
-       -C     If  the file is used as a dynamic dependency, interpret the con‐
+       -C, --full-syntax
+              If  the file is used as a dynamic dependency, interpret the con‐
               tent in full Stu syntax. This is the default.
 
-       -n     If the file is used as a dynamic dependency, interpret the  con‐
+       -n, --newline
+              If the file is used as a dynamic dependency, interpret the  con‐
               tent as a newline-separated list of filenames.
 
-       -o     Optional dependency. The file is not built if it doesn't already
+       -o, --optional
+              Optional dependency. The file is not built if it doesn't already
               exist.  If the file exists, the modification date is taken  into
               account for determining whether the target has to be rebuilt.
 
-       -p     Persistent dependency. The file is not rebuilt if it already ex‐
+       -p, --persistent
+              Persistent dependency. The file is not rebuilt if it already ex‐
               ists.  Stu will only check whether the  dependency  exists,  but
               not its modification time for determining whether the target has
               to be rebuilt.  (If the file itself is the target of a rule, the
@@ -507,10 +512,12 @@ FLAGS
               ries,  as  the modification time of directories is updated when‐
               ever files are added or removed in the directory.
 
-       -P     Do not dereference symlink target.  This flag can only  be  used
+       -P, --no-dereference
+              Do not dereference symlink target.  This flag can only  be  used
               before targets of rules.
 
-       -t     Trivial  dependency.  The  file  is only (re)built if the parent
+       -t, --trivial
+              Trivial  dependency.  The  file  is only (re)built if the parent
               target needs to be (re)built for other reasons.  This is  mostly
               useful for configuration files that are generated automatically,
               including the case of files containing the flags used to  invoke
@@ -807,7 +814,7 @@ TOKENIZATION
            '     Quote, without escape sequences
            "     Quote, with escape sequences
            :     Separator for rule definition
-           ;     In rules without command, end of dependency declaration
+           ;     End of rule, in rule without command
            -     Prefix character for flag, followed by a single character
            $     Parameter; variable dependency; environment variable
            @     Phony target marker
@@ -971,8 +978,8 @@ EXIT STATUS
        4      Fatal  error.   An  error occurred that made Stu abort execution
               immediately, regardless of whether the -k option was used.  This
               includes  system  errors  from which Stu cannot recover (such as
-              out-of-memory conditions), as well as errors on the Stu  command
-              line that make Stu fail immediately.
+              out-of-memory conditions), as well as certain errors on the  Stu
+              command line.
 
 ENVIRONMENT
        STU_CP If set, Stu calls the cp program from the given location instead
@@ -1061,10 +1068,10 @@ EXAMPLES
        by  the  -p  flag.   This  is  useful for directories, whose timestamps
        change when files are created/removed in them.
 
-           data/file:  -p data {
-               echo Hello >data/file
+           >data/file: data {
+               echo Hello
            }
-           data: { mkdir data ; }
+           -p data: { mkdir data ; }
 
        Trivial dependencies are often combined with variable  dependencies  to
        implement  flags, for instance to a compiler, as in the following exam‐
@@ -1216,4 +1223,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.13.4                         May 2026                             STU(1)
+stu-2.14.1                         May 2026                             STU(1)

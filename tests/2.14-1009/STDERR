@@ -1,0 +1,4 @@
+main.stu:1:17: declaration of dependency using --newline
+main.stu:1:27: clashes with --null
+main.stu:1:32: for target "dependency", needed by [dependency]
+main.stu:1:32: [dependency] is needed by "dir/target"

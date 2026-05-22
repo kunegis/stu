@@ -40,6 +40,7 @@ using std::shared_ptr;
 #include "show.cc"
 #include "show_dep.cc"
 #include "show_flags.cc"
+#include "show_option.cc"
 #include "signal.cc"
 #include "state.cc"
 #include "target.cc"

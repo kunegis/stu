@@ -82,6 +82,7 @@ private:
 
 	shared_ptr <Command> parse_command();
 	void parse_flag_or_name();
+	void parse_flag();
 
 	shared_ptr <Placed_Name> parse_name(bool allow_special);
 	/* Returns null when no name could be parsed.  Prints and throws on other errors,
@@ -117,7 +118,8 @@ private:
 	 * anything other than backslash-newline was skipped. */
 
 	Place current_place() const {
-		return Place(place_base.type, place_base.text, line, p - p_line);
+		return Place(place_base.type, (Place::Bits)0,
+			place_base.text, line, p - p_line);
 	}
 
 	string current_mbchar() const;

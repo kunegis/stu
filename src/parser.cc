@@ -187,7 +187,7 @@ shared_ptr <Rule> Parser::parse_rule(
 		command->place << fmt("content rule using %s", show(Operator_View('=')));
 		targets[0]->flags.place_by_index(I_NO_FOLLOW) << fmt(
 			"must not have target flag %s (no-follow)",
-			show(Operator_View(frmt("-%c", flags_chars[I_NO_FOLLOW]))));
+			show(Operator_View(frmt("-%c", flag_chars[I_NO_FOLLOW]))));
 		throw ERR_LOGICAL;
 	}
 
@@ -206,10 +206,10 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 
 	while (is <Flag_Token> ()) {
 		shared_ptr <Flag_Token> flag_token= is <Flag_Token> ();
-		if (flag_token->flag == flags_chars[I_PERSISTENT]) {
+		if (flag_token->flag_char == flag_chars[I_PERSISTENT]) {
 			place_flag_persistent= flag_token->get_place();
 			++iter;
-		} else if (flag_token->flag == flags_chars[I_OPTIONAL]) {
+		} else if (flag_token->flag_char == flag_chars[I_OPTIONAL]) {
 			if (! option_g)
 				place_flag_optional= flag_token->get_place();
 			++iter;
@@ -307,7 +307,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 			show(Operator_View('=')));
 		targets[0]->flags.place_by_index(I_NO_FOLLOW) << fmt(
 			"with target having flag %s (no-follow)",
-			show(Operator_View(frmt("-%c", flags_chars[I_NO_FOLLOW]))));
+			show(Operator_View(frmt("-%c", flag_chars[I_NO_FOLLOW]))));
 		throw ERR_LOGICAL;
 	}
 
@@ -334,21 +334,23 @@ bool Parser::parse_target(
 	while (is <Flag_Token> ()) {
 		flag_token= is <Flag_Token> ();
 		++iter;
-		Index flag_index= flag_get_index(flag_token->flag);
+		Index flag_index= flag_get_index(flag_token->flag_char);
 		if (((1 << flag_index) & F_PLACED_TARGET) == 0) {
 			string possible;
 			for (Flags f= F_PLACED_TARGET, i= 0; f; f >>= 1, ++i) {
 				if (!(f & 1)) continue;
 				if (! possible.empty()) possible += "/";
-				possible += show(Flag_View(flags_chars[i]));
+				possible += show(Flag_View(i, false));
 			}
-			flag_token->place << fmt(
+			flag_token->get_place() << fmt(
 				"flag %s is invalid before target (only %s are possible)",
 				show(flag_token), possible);
 			explain_target_flags();
 			throw ERR_LOGICAL;
 		}
-		placed_flags.add_placed_index(flag_index, flag_token->place);
+		placed_flags.add_placed_index(
+			flag_index,
+			flag_token->get_place());
 	}
 
 	if (is_operator('>')) {
@@ -397,7 +399,7 @@ bool Parser::parse_target(
 				(*iter)->get_place_start() <<
 					fmt("expected a filename, not %s",
 						show((*iter)));
-			flag_token->place << fmt("after flag %s",
+			flag_token->get_place() << fmt("after flag %s",
 				show(flag_token));
 			throw ERR_LOGICAL;
 		}
@@ -434,7 +436,7 @@ bool Parser::parse_target(
 			*target_name, place_of_target));
 
 	if (placed_flags.get_flags() & F_TARGET_PHONY && flag_token) {
-		flag_token->place << fmt("flag %s cannot be used", show(flag_token));
+		flag_token->get_place() << fmt("flag %s cannot be used", show(flag_token));
 		place_of_target << fmt("before phony target %s", show(target));
 		explain_target_flags();
 		throw ERR_LOGICAL;
@@ -445,7 +447,7 @@ bool Parser::parse_target(
 			show(Operator_View('>')));
 		placed_flags.place_by_index(I_NO_FOLLOW) << fmt(
 			"before target with flag %s (no-follow)",
-			show(Operator_View(frmt("-%c", flags_chars[I_NO_FOLLOW]))));
+			show(Operator_View(frmt("-%c", flag_chars[I_NO_FOLLOW]))));
 		throw ERR_LOGICAL;
 	}
 
@@ -528,7 +530,7 @@ bool Parser::parse_expression(
 	if (is <Flag_Token> ()) {
 		const Flag_Token &flag_token= *is <Flag_Token> ();
 		const Place place_flag= (*iter)->get_place();
-		const Index i_flag= flag_get_index(flag_token.flag);
+		const Index i_flag= flag_get_index(flag_token.flag_char);
 
 		assert((1 << i_flag) & F_PLACED);
 		if (! ((1 << i_flag) & F_PLACED_DEPENDENCY)) {
@@ -537,11 +539,11 @@ bool Parser::parse_expression(
 			{
 				if (!(f & 1)) continue;
 				if (! possible.empty()) possible += "/";
-				possible += show(Flag_View(flags_chars[i]));
+				possible += show(Flag_View(i, false));
 			}
 			place_flag << fmt(
 				"flag %s is invalid before dependency (only %s are possible)",
-				show(Flag_View(flags_chars[i_flag])), possible);
+				show(Flag_View(place_flag, i_flag)), possible);
 			throw ERR_LOGICAL;
 		}
 
@@ -563,13 +565,13 @@ bool Parser::parse_expression(
 		 * time.  Note: Input redirection must not appear in dynamic dependencies,
 		 * and therefore it is sufficient to check this here. */
 		if (! placed_name_input.place.empty() &&
-			flag_token.flag == flags_chars[I_OPTIONAL])
+			flag_token.flag_char == flag_chars[I_OPTIONAL])
 		{
 			place_input << fmt("input redirection using %s cannot be used",
 				show(Operator_View('<')));
 			place_flag <<
 				fmt("in conjunction with optional dependency flag %s",
-					show(Flag_View(flags_chars[I_OPTIONAL])));
+					show(Flag_View(place_flag, I_OPTIONAL)));
 			throw ERR_LOGICAL;
 		}
 
@@ -738,26 +740,27 @@ shared_ptr <const Dep> Parser::parse_variable_dep(
 	placed_flags.add_unplaced_index(I_VARIABLE);
 	Place place_flag_last;
 	shared_ptr <Flag_Token> flag_token_last;
-	while (is_flag(flags_chars[I_PERSISTENT]) ||
-		is_flag(flags_chars[I_OPTIONAL]) ||
-		is_flag(flags_chars[I_TRIVIAL]))
+	while (is_flag(flag_chars[I_PERSISTENT]) ||
+		is_flag(flag_chars[I_OPTIONAL]) ||
+		is_flag(flag_chars[I_TRIVIAL]))
 	{
 		flag_token_last= is <Flag_Token> ();
 		place_flag_last= (*iter)->get_place();
-		if (is_flag(flags_chars[I_PERSISTENT])) {
+		if (is_flag(flag_chars[I_PERSISTENT])) {
 			placed_flags.add_placed_index(I_PERSISTENT,
 				place_flag_last);
-		} else if (is_flag(flags_chars[I_OPTIONAL])) {
+		} else if (is_flag(flag_chars[I_OPTIONAL])) {
 			if (! option_g) {
-				(*iter)->get_place() <<
-					fmt("optional dependency using %s cannot appear",
-						show(Flag_View('o')));
+				(*iter)->get_place() << fmt(
+					"optional dependency using %s cannot appear",
+					show(Flag_View(place_flag_last, I_OPTIONAL)));
 				place_dollar << "within dynamic variable declaration";
 				throw ERR_LOGICAL;
 			}
-		} else if (is_flag(flags_chars[I_TRIVIAL])) {
+		} else if (is_flag(flag_chars[I_TRIVIAL])) {
 			if (! option_a) {
-				placed_flags.add_placed_index(I_TRIVIAL, place_flag_last);
+				placed_flags.add_placed_index(
+					I_TRIVIAL, place_flag_last);
 			}
 		} else {
 			unreachable();
@@ -1070,7 +1073,8 @@ void Parser::get_expression_list_delim(
 	std::vector <shared_ptr <const Dep> > &deps,
 	const char *filename,
 	const Place &place_filename,
-	char c, char c_printed,
+	const Place &place_flag,
+	char c, Index index,
 	const Printer &printer,
 	bool allow_enoent)
 /* We use getdelim() for parsing.  A more optimized way would be via mmap()+strchr(). */
@@ -1085,7 +1089,7 @@ void Parser::get_expression_list_delim(
 		throw ERR_BUILD;
 	}
 
-	Place place(Place::Type::INPUT_FILE, filename, 0, 0);
+	Place place(Place::Type::INPUT_FILE, (Place::Bits)0, filename, 0, 0);
 
 	char *lineptr= nullptr;
 	size_t n= 0;
@@ -1113,7 +1117,7 @@ void Parser::get_expression_list_delim(
 				"in %s-separated dynamic dependency %s declared with flag %s",
 				c == '\0' ? "zero" : "newline",
 				show(filename),
-				show(Flag_View(c_printed)));
+				show(Flag_View(place_flag, index)));
 			throw ERR_LOGICAL;
 		}
 
@@ -1126,10 +1130,9 @@ void Parser::get_expression_list_delim(
 				show(filename_dep),
 				show(string(1, '\0')));
 			printer << fmt(
-				"in %s-separated dynamic dependency %s declared with flag %s",
-				c == '\0' ? "zero" : "newline",
+				"in newline-separated dynamic dependency %s declared with flag %s",
 				show(filename),
-				show(Flag_View(c_printed)));
+				show(Flag_View(place_flag, index)));
 			throw ERR_LOGICAL;
 		}
 		if (c == '\0') {

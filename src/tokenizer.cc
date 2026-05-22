@@ -2,6 +2,8 @@
 
 #include <sys/mman.h>
 
+#include "show_option.hh"
+
 void Tokenizer::parse_tokens_file(
 	std::vector <shared_ptr <Token> > &tokens,
 	Context context,
@@ -100,7 +102,8 @@ void Tokenizer::parse_tokens_file(
 		 * i.e., return an error and refuse to create a memory map of length
 		 * zero. */
 		if (S_ISREG(buf.st_mode) && buf.st_size == 0) {
-			place_end= Place(Place::Type::INPUT_FILE, filename, 1, 0);
+			place_end= Place(Place::Type::INPUT_FILE, (Place::Bits)0,
+				filename, 1, 0);
 			goto return_close;
 		}
 
@@ -138,7 +141,8 @@ void Tokenizer::parse_tokens_file(
 		{
 			Tokenizer tokenizer(
 				tokens, backtraces, filenames, includes,
-				Place(Place::Type::INPUT_FILE, filename, 1, 0),
+				Place(Place::Type::INPUT_FILE, (Place::Bits)0,
+					filename, 1, 0),
 				in, in_size);
 			tokenizer.parse_tokens(context, place_diagnostic);
 			place_end= tokenizer.current_place();
@@ -278,7 +282,8 @@ void Tokenizer::parse_tokens_arg(
 			}
 			if (! is_placed_flag_char(*p)) {
 				if (isalnum(*p)) {
-					place << fmt("invalid flag %s", show(Flag_View(*p)));
+					place << fmt("invalid flag %s",
+						show(Unplaced_Flag_View(*p)));
 				} else {
 					place << fmt(
 						"expected a flag character after dash %s, not %s",
@@ -287,8 +292,8 @@ void Tokenizer::parse_tokens_arg(
 				}
 				throw ERR_LOGICAL;
 			}
-			tokens.push_back(std::make_shared <Flag_Token>
-				(*p, place, environment));
+			tokens.push_back(std::make_shared <Flag_Token> (
+				environment, place, place, *p));
 			++p;
 			allow_dash= true;
 			allow_at= true;
@@ -414,11 +419,13 @@ shared_ptr <Command> Tokenizer::parse_command()
 				if (stack.empty()) {
 					const string command= string(p_beg, p - p_beg);
 					++p;
-					const Place place_command
-						(place_base.type, place_base.text,
-						 line_command, column_command);
-					return std::make_shared <Command>
-						(command, place_command, place_open, environment);
+					const Place place_command(
+						place_base.type, (Place::Bits)0,
+						place_base.text,
+						line_command, column_command);
+					return std::make_shared <Command> (
+						command, place_command, place_open,
+						environment);
 				} else {
 					++p;
 				}
@@ -545,82 +552,123 @@ void Tokenizer::parse_flag_or_name()
 		&& (to <Operator> (tokens.back())->op == ']' ||
 			to <Operator> (tokens.back())->op == ')');
 
-	if ((*p == '-' || *p == '+' || *p == '~') && ! allow_special) {
-		if (*p == '+' || *p == '~') {
+	if ((*p == '+' || *p == '~') && ! allow_special) {
+		current_place() << fmt(
+			"an unquoted name must not begin with the character %s",
+			show(string(1, *p)));
+		throw ERR_LOGICAL;
+	}
+
+	if (*p == '-' && ! allow_special) {
+		parse_flag();
+		return;
+	}
+
+	shared_ptr <Placed_Name> placed_name= parse_name(allow_special);
+	if (placed_name == nullptr) {
+		if (*p == '!') {
 			current_place() << fmt(
-				"an unquoted name must not begin with the character %s",
+				"character %s is invalid for persistent dependencies; use %s instead",
+				show(Operator_View('!')),
+				show(Unplaced_Flag_View(flag_chars[I_PERSISTENT])));
+		} else if (*p == '?') {
+			current_place() << fmt(
+				"character %s is invalid for optional dependencies; use %s instead",
+				show(Operator_View('?')),
+				show(Unplaced_Flag_View(flag_chars[I_OPTIONAL])));
+		} else if (*p == '&') {
+			current_place() << fmt(
+				"character %s is invalid for trivial dependencies; use %s instead",
+				show(Operator_View('&')),
+				show(Unplaced_Flag_View(flag_chars[I_TRIVIAL])));
+		} else {
+			current_place() << fmt("invalid character %s",
+				show(current_mbchar()));
+			if (strchr("#%\'\":;-$@<>={}()[]*\\&|!?,", *p))
+				explain_quoted_characters();
+		}
+		throw ERR_LOGICAL;
+	}
+	assert(! placed_name->empty());
+	tokens.push_back(std::make_shared <Name_Token> (*placed_name, environment));
+}
+
+void Tokenizer::parse_flag()
+{
+	assert(p < p_end && *p == '-');
+	Place place_dash= current_place();
+	++p;
+	assert(p <= p_end);
+	if (p == p_end || *p == '\n') {
+		place_dash << fmt("expected a flag character after dash %s",
+			show(Operator_View('-')));
+		throw ERR_LOGICAL;
+	}
+	if (*p == '-') {
+		++p;
+		if (p == p_end || *p == '\n') {
+			place_dash << fmt("expected a flag name after %s",
+				show(Operator_View("--")));
+			throw ERR_LOGICAL;
+		}
+		const char *q= p;
+		while (is_flag_name_char(*q)) ++q;
+		if (q == p) {
+			current_place() << fmt("expected a flag name after %s, not %s",
+				show(Operator_View("--")),
 				show(string(1, *p)));
 			throw ERR_LOGICAL;
 		}
-		Place place_dash= current_place();
-		++p;
-		assert(p <= p_end);
-		if (p == p_end || *p == '\n') {
-			place_dash << fmt("expected a flag character after dash %s",
-				show(Operator_View('-')));
+		string name= string(p, q-p);
+		Index index= index_from_name(name);
+		Place place_name= current_place();
+		place_name.bits= Place::Bits::LONG_FLAG;
+		if (index == I_ERR) {
+			place_name << fmt("Invalid flag %s",
+				show(Unplaced_Flag_View(name, true)));
 			throw ERR_LOGICAL;
 		}
-		char flag_char= *p;
-		if (! isalnum(flag_char)) {
-			current_place() << fmt("expected a flag character, not %s",
-				show(string(1, flag_char)));
-			place_dash << fmt("after dash %s",
-				show(Operator_View('-')));
+		p= q;
+		char flag_char= flag_chars[index];
+		shared_ptr <Flag_Token> token= std::make_shared <Flag_Token> (
+			environment, place_dash, place_name, flag_char, name);
+		tokens.push_back(token);
+		return;
+	}
+
+	char flag_char= *p;
+	if (! isalnum(flag_char)) {
+		current_place() << fmt("expected a flag character, not %s",
+			show(string(1, flag_char)));
+		place_dash << fmt("after dash %s",
+			show(Operator_View('-')));
+		explain_flags();
+		throw ERR_LOGICAL;
+	}
+	shared_ptr <Flag_Token> token;
+	do {
+		flag_char= *p;
+		Place place_name= current_place();
+		if (! is_placed_flag_char(flag_char)) {
+			place_name << fmt("invalid flag %s",
+				show(Unplaced_Flag_View(flag_char)));
 			explain_flags();
 			throw ERR_LOGICAL;
 		}
-		shared_ptr <Flag_Token> token;
-		do {
-			flag_char= *p;
-			if (! is_placed_flag_char(flag_char)) {
-				current_place() <<
-					fmt("invalid flag %s", show(Flag_View(flag_char)));
-				explain_flags();
-				throw ERR_LOGICAL;
-			}
-			token= std::make_shared <Flag_Token>
-				(flag_char, current_place(), environment);
-			tokens.push_back(token);
-			++p;
-		} while (p < p_end && isalnum(*p));
-		if (p < p_end &&
-			(is_name_char(*p) || *p == '"' || *p == '\'' || *p == '$'
-				|| *p == '@')) {
-			current_place() <<
-				fmt("expected whitespace before character %s",
-					show(current_mbchar()));
-			token->get_place() <<
-				fmt("after flag %s", show(Flag_View(flag_char)));
-			throw ERR_LOGICAL;
-		}
-	} else {
-		shared_ptr <Placed_Name> placed_name= parse_name(allow_special);
-		if (placed_name == nullptr) {
-			if (*p == '!') {
-				current_place() << fmt(
-					"character %s is invalid for persistent dependencies; use %s instead",
-					show(Operator_View('!')),
-					show(Flag_View(flags_chars[I_PERSISTENT])));
-			} else if (*p == '?') {
-				current_place() << fmt(
-					"character %s is invalid for optional dependencies; use %s instead",
-					show(Operator_View('?')),
-					show(Flag_View(flags_chars[I_OPTIONAL])));
-			} else if (*p == '&') {
-				current_place() << fmt(
-					"character %s is invalid for trivial dependencies; use %s instead",
-					show(Operator_View('&')),
-					show(Flag_View(flags_chars[I_TRIVIAL])));
-			} else {
-				current_place() << fmt("invalid character %s",
-					show(current_mbchar()));
-				if (strchr("#%\'\":;-$@<>={}()[]*\\&|!?,", *p))
-					explain_quoted_characters();
-			}
-			throw ERR_LOGICAL;
-		}
-		assert(! placed_name->empty());
-		tokens.push_back(std::make_shared <Name_Token> (*placed_name, environment));
+		token= std::make_shared <Flag_Token> (
+			environment, place_dash, place_name, flag_char);
+		tokens.push_back(token);
+		++p;
+	} while (p < p_end && isalnum(*p));
+	if (p < p_end &&
+		(is_name_char(*p) || *p == '"' || *p == '\'' || *p == '$'
+			|| *p == '@')) {
+		current_place() <<
+			fmt("expected whitespace before character %s",
+				show(current_mbchar()));
+		token->get_place() << fmt("after flag %s",
+			show(Unplaced_Flag_View(flag_char)));
+		throw ERR_LOGICAL;
 	}
 }
 
@@ -952,12 +1000,12 @@ void Tokenizer::parse_tokens(
 		/* Variable dependency */
 		else if (*p == '$' && p + 1 < p_end && p[1] == '[') {
 			Place place_dollar= current_place();
-			Place place_langle(place_base.type, place_base.text,
-					   line, p + 1 - p_line);
+			Place place_lbracket(place_base.type, (Place::Bits)0,
+				place_base.text, line, p + 1 - p_line);
 			tokens.push_back(std::make_shared <Operator>
 				('$', place_dollar, environment));
 			tokens.push_back(std::make_shared <Operator>
-				('[', place_langle, environment));
+				('[', place_lbracket, environment));
 			p += 2;
 		}
 
@@ -1298,7 +1346,8 @@ void Tokenizer::parse_version_directive(const Place &place_percent)
 	const char *p_version= p;
 	while (p < p_end && is_name_char(*p)) ++p;
 	string version_required(p_version, p - p_version);
-	Place place_version(place_base.type, place_base.text, line, p_version - p_line);
+	Place place_version(place_base.type, (Place::Bits)0,
+		place_base.text, line, p_version - p_line);
 	parse_version(version_required, place_version, place_percent);
 }
 

@@ -493,9 +493,9 @@ shared_ptr <const Dep> Concat_Dep::concat(
 	if (b->flags.get_flags() & F_PLACED) {
 		Index i_flag= b->flags.get()[0].index;
 		b->get_place() << fmt("%s cannot be declared as %s",
-				      show(b), flags_placed_phrases[i_flag]);
+			show(b), flag_info[i_flag].description);
 		b->flags.get()[0].place << fmt("using %s",
-			show(Operator_View(frmt("-%c", flags_chars[i_flag]))));
+			show(Operator_View(frmt("-%c", flag_chars[i_flag]))));
 		a->get_place() << fmt("in concatenation to %s", show(a));
 		error |= ERR_LOGICAL;
 		return nullptr;

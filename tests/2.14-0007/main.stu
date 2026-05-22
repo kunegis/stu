@@ -1,0 +1,11 @@
+>A: [--full-syntax B]
+{
+	cat X Y Z
+}
+
+B = {X Y Z}
+
+>$name
+{
+	echo $name$name$name
+}

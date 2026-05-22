@@ -1,0 +1,19 @@
+>A: @init B
+{
+	echo CORRECT
+}
+
+@init
+{
+	../../sh/touch_old B 1
+}
+
+B: --trivial C
+{
+	exit 77
+}
+
+C
+{
+	exit 77
+}

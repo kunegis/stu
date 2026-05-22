@@ -1,0 +1,9 @@
+>A: B
+{
+	echo CORRECT
+}
+
+--no-dereference B
+{
+	ln -s nonexisting B
+}

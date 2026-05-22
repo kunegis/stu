@@ -1,0 +1,2 @@
+main.stu:1:15: input redirection using < cannot be used
+main.stu:1:6: in conjunction with optional dependency flag --optional

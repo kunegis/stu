@@ -1,0 +1,2 @@
+main.stu:1:8: optional dependency using --optional cannot appear
+main.stu:1:4: within dynamic variable declaration

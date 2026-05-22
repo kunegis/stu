@@ -10,8 +10,7 @@ public:
 	Index index;
 
 	Placed_Flag() {} /* uncovered */
-	Placed_Flag(Index i, const Place &p)
-		: place(p), index(i) {}
+	Placed_Flag(Index i, const Place &p): place(p), index(i) {}
 };
 
 class Placed_Flags

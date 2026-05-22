@@ -78,21 +78,23 @@ void Operator::render(Parts &parts, Rendering) const
 }
 
 Flag_Token::Flag_Token(
-	char flag_,
-	const Place letter_place_,
-	Environment environment_)
+	Environment environment_,
+	const Place &place_dash_,
+	const Place &place_letter_,
+	char flag_char_,
+	string name_)
 	: Token(environment_),
-	  place(letter_place_),
-	  flag(flag_)
+	  place_dash(place_dash_),
+	  place_letter(place_letter_),
+	  flag_char(flag_char_),
+	  name(name_)
 {
-	assert(is_placed_flag_char(flag_));
-	if (place.type == Place::Type::INPUT_FILE)
-		assert(place.column > 0);
+	assert(is_placed_flag_char(flag_char_));
 }
 
 void Flag_Token::render(Parts &parts, Rendering) const
 {
-	parts.append_operator(frmt("-%c", flag));
+	parts.append_operator(frmt("-%c", flag_char));
 }
 
 void render(const Flag_Token &flag_token, Parts &parts, Rendering rendering)

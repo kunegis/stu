@@ -1,0 +1,9 @@
+>A: --optional[B C] { }
+
+B = {W X}
+C = {Y Z}
+
+$letter
+{
+	echo 77
+}

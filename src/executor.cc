@@ -56,7 +56,7 @@ void Executor::read_dynamic(
 		string filename= hash_dep.get_name_nondynamic();
 
 		bool delim= (dep_target->flags.get_flags()
-			& (F_NEWLINE_SEPARATED | F_NUL_SEPARATED));
+			& (F_NEWLINE | F_NULL));
 		/* Whether the dynamic dependency is delimiter-separated */
 
 		bool allow_enoent= dep_target->flags.get_flags()
@@ -103,13 +103,15 @@ void Executor::read_dynamic(
 		} else {
 			/* Delimiter-separated dynamic dependency (-n/-0) */
 			const char c= (dep_target->flags.get_flags()
-				& F_NEWLINE_SEPARATED) ? '\n' : '\0';
-			const char c_printed= (dep_target->flags.get_flags()
-				& F_NEWLINE_SEPARATED) ? 'n' : '0';
+				& F_NEWLINE) ? '\n' : '\0';
+			Index index= (dep_target->flags.get_flags()
+				& F_NEWLINE) ? I_NEWLINE : I_NULL;
 			try {
 				Parser::get_expression_list_delim(
 					deps, filename.c_str(),
-					placed_target.place, c, c_printed,
+					placed_target.place,
+					dep_target->flags.place_by_index(index),
+					c, index,
 					*dynamic_executor, allow_enoent);
 			} catch (int e) {
 				raise(e);
@@ -819,7 +821,8 @@ bool Executor::check_clash_without_target_flags(
 			"variable dependency %s must not be declared as optional dependency",
 			show(Dynamic_Variable_View(
 			plain_dep_child->placed_target.placed_name.unparametrized())));
-		place_flag << fmt("using %s", show(Flag_View(flags_chars[I_OPTIONAL])));
+		place_flag << fmt("using %s",
+			show(Flag_View(dep_child->flags, I_OPTIONAL)));
 		*this << "";
 		raise(ERR_LOGICAL);
 		return true;
@@ -844,10 +847,10 @@ bool Executor::check_clash_with_target_flags(
 			dep_child->flags.place_by_index(I_OPTIONAL);
 		place_persistent << fmt(
 			"declaration of persistent dependency using %s",
-			show(Flag_View(flags_chars[I_PERSISTENT])));
+			show(Flag_View(dep_child->flags, I_PERSISTENT)));
 		place_optional << fmt(
 			"clashes with declaration of optional dependency using %s",
-			show(Flag_View(flags_chars[I_OPTIONAL])));
+			show(Flag_View(dep_child->flags, I_OPTIONAL)));
 		if (to <Root_Dep> (dep_this)) {
 			dep_child->get_place() << fmt(
 				"for target %s",
@@ -870,7 +873,7 @@ bool Executor::check_clash_with_target_flags(
 		for (Flags f= F_ATTRIBUTE, i= 0; f; f >>= 1, ++i) {
 			if (!(f & 1)) continue;
 			if (! possible.empty()) possible += "/";
-			possible += show(Flag_View(flags_chars[i]));
+			possible += show(Flag_View(i, false));
 		}
 		int count= 0;
 		for (Flags f= flags & F_ATTRIBUTE, i= 0; f; f >>= 1, ++i) {
@@ -884,7 +887,7 @@ bool Executor::check_clash_with_target_flags(
 				text= "and %s";
 			}
 			dep_child->flags.place_by_index(i) << fmt(text,
-				show(Flag_View(flags_chars[i])));
+				show(Flag_View(dep_child->flags, i)));
 			++count;
 		}
 		if (to <Root_Dep> (dep_this)) {

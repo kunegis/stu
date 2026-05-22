@@ -416,29 +416,29 @@ dash immediately followed by one or more letters, each of which is interpreted a
 different flag. Flags apply to the following name, and more than one flag can precede any
 name.
 
-.IP "\fB-0\fR"
+.IP "\fB-0\fR, \fB--null\fR"
 If the file is used as a dynamic dependency, interpret the content as a \\0-separated
 list of filenames.
-.IP "\fB-C\fR"
+.IP "\fB-C\fR, \fB--full-syntax\fR"
 If the file is used as a dynamic dependency, interpret the content in full Stu
 syntax. This is the default.
-.IP "\fB-n\fR"
+.IP "\fB-n\fR, \fB--newline\fR"
 If the file is used as a dynamic dependency, interpret the content as a newline-separated
 list of filenames.
-.IP "\fB-o\fR"
+.IP "\fB-o\fR, \fB--optional\fR"
 Optional dependency. The file is not built if it doesn't already exist.  If the file
 exists, the modification date is taken into account for determining whether the target has
 to be rebuilt.
-.IP "\fB-p\fR"
+.IP "\fB-p\fR, \fB--persistent\fR"
 Persistent dependency. The file is not rebuilt if it already exists.  Stu will only check
 whether the dependency exists, but not its modification time for determining whether the
 target has to be rebuilt.  (If the file itself is the target of a rule, the modification
 time of the dependency will be taken into account while building the file.)  This is
 mostly useful for directories, as the modification time of directories is updated whenever
 files are added or removed in the directory.
-.IP "\fB-P\fR"
+.IP "\fB-P\fR, \fB--no-dereference\fR"
 Do not dereference symlink target.  This flag can only be used before targets of rules.
-.IP "\fB-t\fR"
+.IP "\fB-t\fR, \fB--trivial\fR"
 Trivial dependency. The file is only (re)built if the parent target needs to be (re)built
 for other reasons.  This is mostly useful for configuration files that are generated
 automatically, including the case of files containing the flags used to invoke compilers
@@ -723,7 +723,7 @@ unquoted filenames:
     '     Quote, without escape sequences
     "     Quote, with escape sequences
     :     Separator for rule definition
-    ;     In rules without command, end of dependency declaration
+    ;     End of rule, in rule without command
     -     Prefix character for flag, followed by a single character
     $     Parameter; variable dependency; environment variable
     @     Phony target marker
@@ -875,8 +875,8 @@ Both build and logical errors were encountered (when using the \fB-k\fR option).
 .IP 4
 Fatal error.  An error occurred that made Stu abort execution immediately, regardless of
 whether the \fB-k\fR option was used.  This includes system errors from which Stu cannot
-recover (such as out-of-memory conditions), as well as errors on the Stu command line that
-make Stu fail immediately.
+recover (such as out-of-memory conditions), as well as certain errors on the Stu command
+line.
 
 .SH "ENVIRONMENT"
 
@@ -956,10 +956,10 @@ persistent dependency, i.e. \fIdata\fR is only built when it does not exist, but
 never rebuilt.  A persistent dependency is indicated by the \fB-p\fR flag.  This is
 useful for directories, whose timestamps change when files are created/removed in them.
 
-    data/file:  -p data {
-        echo Hello >data/file
+    >data/file: data {
+        echo Hello
     }
-    data: { mkdir data ; }
+    -p data: { mkdir data ; }
 
 Trivial dependencies are often combined with variable dependencies to implement flags, for
 instance to a compiler, as in the following example. This will make sure that a change in

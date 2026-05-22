@@ -1,0 +1,4 @@
+main.stu:1:15: dependency @target must not be declared as optional
+main.stu:1:6: using flag --optional
+main.stu:1:24: because rule for phony target @target has file targets
+main.stu:1:15: @target is needed by "A"

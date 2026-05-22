@@ -35,7 +35,7 @@ CXXFLAGS_DEBUG= \
     -Wcast-align -Wrestrict -Wno-parentheses -Wlogical-op -Wredundant-decls \
     -Wno-pessimizing-move -Wsuggest-override -Wunused-function \
     -D_GLIBCXX_DEBUG
-CXXFLAGS_CDEBUG=   -O0 -D_GLIBCXX_DEBUG -w
+CXXFLAGS_CDEBUG=   -O0 -w -D_GLIBCXX_DEBUG
 CXXFLAGS_COV=      -DNDEBUG --coverage -lgcov -O0 -DSTU_COV
 CXXFLAGS_SANI= \
     -ggdb -O2 -Werror -Wno-unused-result -fsanitize=undefined \

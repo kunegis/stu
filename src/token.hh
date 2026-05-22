@@ -67,29 +67,22 @@ class Flag_Token
 	: public Token
 {
 public:
-	const Place place;
-	/* The place of the letter */
+	const Place place_dash;
+	const Place place_letter;
+	const char flag_char;
+	string name; /* empty if not a long flag */
 
-	mutable Place place_start;
-	/* The place of the '-' */
+	Flag_Token(
+		Environment environment_,
+		const Place &place_dash_,
+		const Place &place_letter_,
+		char flag_char_,
+		string name_= "");
 
-	const char flag;
-	/* The flag character */
-
-	Flag_Token(char flag_, const Place letter_place_, Environment environment_);
-
-	const Place &get_place() const override { return place; }
-
-	const Place &get_place_start() const override {
-		if (place_start.type == Place::Type::EMPTY) {
-			place_start= place;
-			if (place_start.type == Place::Type::INPUT_FILE)
-				-- place_start.column;
-		}
-		return place_start;
-	}
-
+	const Place &get_place() const override { return place_letter; }
+	const Place &get_place_start() const override { return place_dash; }
 	void render(Parts &, Rendering= 0) const override;
+	bool is_long_flag() const { return ! name.empty(); }
 };
 
 void render(const Flag_Token &, Parts &, Rendering= 0);

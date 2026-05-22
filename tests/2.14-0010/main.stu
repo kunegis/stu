@@ -1,0 +1,4 @@
+A: --optional(ABC DEF)
+{
+	touch A
+}

@@ -1,0 +1,12 @@
+>A:  [--null B]
+{
+	cat X Y
+}
+
+>B
+{
+	printf 'X\0Y'
+}
+
+X = {xxx}
+Y = {yyy}

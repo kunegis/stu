@@ -1,5 +1,7 @@
 #include "invocation.hh"
 
+#include "show_option.hh"
+
 Invocation::Invocation(int argc, char **argv, int &error)
 {
 	int option_index= 0;
@@ -100,7 +102,7 @@ Invocation::Invocation(int argc, char **argv, int &error)
 	if (option_i && option_parallel) {
 		Place(Place::Type::OPTION, 'i') << fmt(
 			"parallel mode using %s cannot be used in interactive mode",
-			show(Flag_View('j')));
+			show(Option_View('j')));
 		exit(ERR_FATAL);
 	}
 

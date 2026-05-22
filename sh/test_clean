@@ -198,7 +198,7 @@ check_assert_false()
 check_null()
 {
 	find . -name '*.cc' -o -name '*.hh' |
-		xargs grep -F -n -e 'NULL' |
+		xargs grep -E -n -e '(^|[^_])NULL' |
 		sed -E -e 's,^([^:]+:[^:]+:).*$,\1 NULL should not be used; use nullptr instead,' |
 		grep -E -e '.' >&2 && return 1
 	return 0

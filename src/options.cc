@@ -178,7 +178,7 @@ void set_option_m(const char *value)
 	} else {
 		print_error(fmt(
 			"invalid argument %s for option %s; valid values are %s and %s",
-			show(value), show(Flag_View('m')),
+			show(value), show(Option_View('m')),
 			show("random"), show("dfs")));
 		exit(ERR_FATAL);
 	}
@@ -222,7 +222,7 @@ void set_env_options()
 			continue;
 		if (! option_setting(c)) {
 			Place place(Place::Type::ENV_OPTIONS);
-			place << fmt("invalid option %s", show(Flag_View(c)));
+			place << fmt("invalid option %s", show(Option_View(c)));
 			exit(ERR_FATAL);
 		}
 	}

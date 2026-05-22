@@ -129,12 +129,12 @@ File_Executor::File_Executor(
 			}
 		}
 		assert(! place_target.empty());
-		Index ind= dep->flags.get_flags() & F_OPTIONAL ? I_OPTIONAL : I_PERSISTENT;
-		dep->get_place() << fmt((dep->flags.get_flags() & F_OPTIONAL)
-			? "dependency %s must not be declared as optional"
-			: "dependency %s must not be declared as persistent",
-			show(dep));
-		dep->flags.place_by_index(ind) << fmt("using flag %s", show(Flag_View(flags_chars[ind])));
+		Index index= dep->flags.get_flags() & F_OPTIONAL ? I_OPTIONAL : I_PERSISTENT;
+		dep->get_place() << fmt(
+			"dependency %s must not be declared as %s",
+			show(dep), flag_info[index].description);
+		dep->flags.place_by_index(index) << fmt("using flag %s",
+			show(Flag_View(dep->flags, index)));
 		if (rule->command)
 			place_target <<
 				fmt("because rule for phony target %s has a command",

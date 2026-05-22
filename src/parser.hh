@@ -78,7 +78,8 @@ public:
 		std::vector <shared_ptr <const Dep> > &deps,
 		const char *filename,
 		const Place &place_filename,
-		char c, char c_printed,
+		const Place &place_flag,
+		char c, Index index,
 		const Printer &printer,
 		bool allow_enoent);
 	/* Read delimiter-separated dynamic dependency from FILENAME,
@@ -200,8 +201,8 @@ private:
 	}
 
 	/* Whether the next token is the given flag token */
-	bool is_flag(char flag) const {
-		return is <Flag_Token> () && is <Flag_Token> ()->flag == flag;
+	bool is_flag(char flag_char) const {
+		return is <Flag_Token> () && is <Flag_Token> ()->flag_char == flag_char;
 	}
 
 	bool next_concatenates() const;

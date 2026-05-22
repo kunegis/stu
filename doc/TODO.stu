@@ -1,13 +1,34 @@
 #
-# Long flags:  --optional, --persistent, etc. (also for -n -0 -C)
-# * Use --no-dereference for -P [like cp]
+# Almost all EXEC files should be converted to use sh/utils.sh.  sh/utils.sh should be
+# renamed to make clear it can only be used from EXEC files.
 #
+
+#
+# Clean up test naming.
+#
+
+* Correct version numbers
+* Version numbers should not end in ".1" (just remove the ".1")
+* Test numbers should have four digits; first digit shows type (success, fail, EXEC)
+* First digit of test: 0 (success), 1 (fail), 2 (EXEC), 3 (preload).
+
+#
+# Allow -n/-0/-C on targets.
+#
+
+-n >list.1 { find ... ; }
+-0 >list.2 { find ... -print0 ; }
+-n -0 A; # Error: clash
+-n -o A; # Allowed
 
 #
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
 # forbidden as the first character in unquoted names.  Needs a new type for
 # unparsed targets.  This is very similar to supporting environment variables.
 #
+
+"~" # Not the home directory
+"~"name # ?
 
 #
 # File import.  '%import' should work at rule level, and allow both cd-ing and not
@@ -20,7 +41,7 @@
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of
 # all these are equivalent:
-%import --change-directory src/main.stu
+ %import --change-directory src/main.stu
 %import --cd src/
 %import -d src
 
@@ -344,15 +365,6 @@ B {}
 # *  Isn't this what -p does?
 
 #
-# Allow -n/-0/-C on targets.
-#
-
--n >list.1 { find ... ; }
--0 >list.2 { find ... -print0 ; }
--n -0 A; # Error: clash
--n -o A; # Allowed
-
-#
 # Compact output mode, in which each line is prefixed by a [....] block with colors for
 # success/fail/ongoing.  Can even accumulate all past progress in a progress bar (which
 # may become longer as new tasks are discovered).
@@ -367,23 +379,8 @@ B {}
 #
 
 #
-# Add spellchecking to make test.  (1) extract words from source files where relevant.
-# (2) use /usr/share/dict/words + own list as dictionary.  Fail 'mate test' when a word is
-# not in the dictionary.
-#
-
-#
 # argv place formatting: Instad of the name of the program, show "argv[$i]"
 #
-
-#
-# Clean up test naming.
-#
-
-* Correct version numbers
-* Version numbers should not end in ".1" (just remove the ".1")
-* Test numbers should have four digits; first digit shows type (success, fail, EXEC)
-* First digit of test: 0 (success), 1 (fail), 2 (EXEC), 3 (preload).
 
 #
 # Placed_Flags:  replace certain functions by operators (&, |=, etc.) that mimic how a
@@ -404,6 +401,16 @@ B {}
 #
 
 #
-# Almost all EXEC files should be converted to use sh/utils.sh.  sh/utils.sh should be
-# renamed to make clear it can only be used from EXEC files.
+# Also allow 'Main.stu' as the main Stu file in a directory, maybe.
+#
+
+#
+# Add spellchecking to make test.  (1) extract words from source files where relevant.
+# (2) use /usr/share/dict/words + own list as dictionary.  Fail 'mate test' when a word is
+# not in the dictionary.
+#
+
+#
+# Add long options corresponding to long flags --persistent, --optional, --trivial,
+# --newline, --null, --full-syntax.
 #

@@ -9,7 +9,7 @@
 class Place
 {
 public:
-	enum class Type {
+	enum Type: uint16_t {
 		EMPTY,
 		INPUT_FILE,   /* In a file, with line/column numbers */
 		ARGUMENT,     /* Command line argument (outside options) */
@@ -17,11 +17,14 @@ public:
 		ENV_OPTIONS   /* In $STU_OPTIONS */
 	} type;
 
+	enum Bits: uint16_t {
+		LONG_FLAG = 1 << 0,
+	} bits;
+
 	string text;
-	/* INPUT_FILE:  Name of the file in which the error occurred.  Empty string for
-	 *              standard input.
-	 * OPTION:  Name of the option (a single character)
-	 * Others:  Unused */
+	/* INPUT_FILE:  Name of the file.  Empty string for standard input.
+	 * OPTION:      Name of the option (a single character)
+	 * Others:      Unused */
 
 	size_t line;
 	/* INPUT_FILE:  Line number, one-based.
@@ -34,22 +37,19 @@ public:
 	 * one-based, but they are saved here as zero-based numbers as these are easier to
 	 * generate.  Others: Unused. */
 
-	Place(): type(Type::EMPTY) { }
+	Place(): type(Type::EMPTY), bits((Bits)0) {}
+	Place(Type type_, Bits bits_, std::string_view filename_,
+		size_t line_, size_t column_)
+		: type(type_), bits(bits_), text(filename_),
+		  line(line_), column(column_) {}
 
-	Place(Type type_, std::string_view filename_,
-	      size_t line_, size_t column_)
-	/* Generic constructor */
-		: type(type_), text(filename_),
-		  line(line_), column(column_)
-	{ }
-
-	Place(Type type_): type(type_) {
+	Place(Type type_): type(type_), bits((Bits)0) {
 		assert(type == Type::ARGUMENT || type == Type::ENV_OPTIONS);
 	}
 
 	Place(Type type_, char option)
 	/* In an option (OPTION) */
-		: type(type_), text(string(&option, 1))
+		: type(type_), bits((Bits)0), text(string(&option, 1))
 	{
 		assert(type == Type::OPTION);
 	}

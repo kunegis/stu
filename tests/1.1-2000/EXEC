@@ -1,0 +1,16 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f list.err
+
+set +e
+../../bin/stu.test 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error 'exit status'
+
+# Some shell with output $0, and some won't.  We can't do more here
+# than check for the filename.
+
+grep -q -E -e 'wefvunwoiefuvuviwwve' list.err || Error 'stderr'

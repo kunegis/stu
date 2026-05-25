@@ -1,0 +1,10 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+{
+	printf 'A = B;\n'
+	printf 'B: C { cp C B ; }\n'
+	printf 'C={CORRECT}'
+} | ../../bin/stu.test -f - >list.out 2>list.err
+
+grep -q -F -e 'CORRECT' A

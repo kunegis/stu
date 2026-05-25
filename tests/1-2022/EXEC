@@ -1,0 +1,23 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+now=$(LC_ALL=C date)
+year=$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')
+year_past=$(expr $year - 2)
+date="$year_past"01010701
+
+rm -f A B C
+touch -t "$date" B
+
+set +e
+../../bin/stu.test 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error 'exit status'
+
+if [ "$(grep -c -F "main.stu:11:1: timestamp of file \"B\" after execution of its command is older than ../../bin/stu.test startup" list.err)" != 1 ]; then
+	Error 'missing error message'
+fi
+
+rm -f A B C

@@ -1,0 +1,83 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+Olden()
+# Make all one-character files very old
+{
+	for file in ? ; do
+		year=$(date +%Y)
+		year_old=$(expr $year - 2)
+		touch -t "$year_old"01010700 "$file"
+	done
+}
+
+sed -e '/^[[:space:]]*$/d;/^[[:space:]]*#/d' LIST.stu |
+while read -r line ; do
+	rm -f ? list.*
+	echo "$line" >list.file.stu
+	printf >&3 'list.file.stu: '
+	cat >&3 list.file.stu
+
+	#
+	# Build
+	#
+
+	echo >&3 ../../bin/stu.test -f list.file.stu
+	set +e
+	../../bin/stu.test -f list.file.stu >list.out 2>list.err
+	exitstatus=$?
+	set -e
+	echo >&3 "exitstatus='$exitstatus'"
+
+	[ "$exitstatus" = 0 ]
+	[ \! -e C ]
+
+	#
+	# Touch B - A will not be rebuilt
+	#
+
+	Olden
+	touch B
+	echo >&3 ../../bin/stu.test -f list.file.stu
+	set +e
+	../../bin/stu.test -f list.file.stu >list.out 2>list.err
+	exitstatus=$?
+	set -e
+	echo >&3 "exitstatus='$exitstatus'"
+
+	[ "$exitstatus" = 0 ]
+	grep -q -F -x -e 'Targets are up to date' list.out
+
+	#
+	# Touch C - A will be rebuilt
+	#
+
+	Olden
+	echo X >C
+	echo >&3 ../../bin/stu.test -f list.file.stu
+	set +e
+	../../bin/stu.test -f list.file.stu >list.out 2>list.err
+	exitstatus=$?
+	set -e
+	echo >&3 "exitstatus=«$exitstatus»"
+
+	[ "$exitstatus" = 0 ]
+	Not grep -q -F -e 'Targets are up to date' list.out
+	[ -r D ] ; [ -r E ]
+
+	#
+	# Touch D - A will be rebuilt
+	#
+
+	Olden
+	echo X >D
+	echo >&3 ../../bin/stu.test -f list.file.stu
+	set +e
+	../../bin/stu.test -f list.file.stu >list.out 2>list.err
+	exitstatus=$?
+	set -e
+	echo >&3 "exitstatus=«$exitstatus»"
+
+	[ "$exitstatus" = 0 ]
+	Not grep -q -F -e 'Targets are up to date' list.out
+done || exit 1

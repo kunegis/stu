@@ -1,9 +1,0 @@
-#!/bin/sh
-
-../../bin/stu.test
-exitstatus=$?
-
-if [ "$exitstatus" != 0 ] ; then
-    echo >&2 "*** Error"
-    exit 1
-fi

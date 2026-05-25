@@ -1,0 +1,36 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+Do()
+{
+	echo >&6 "$@"
+	"$@"
+}
+
+touch C
+
+../../bin/stu.test -i >list.out 2>list.err <C & pid=$!
+echo >&3 "pid=$pid"
+
+Do sleep 1
+
+ls -l B >&3
+[ -r B ]
+pid_child=$(cat B)
+echo >&3 "pid_child=$pid_child"
+
+Do kill -s STOP $pid_child
+Do sleep 1
+Do kill -s CONT $pid_child
+
+echo >&3 "wait $pid"
+set +e
+wait $pid
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ]
+grep -q -F -x -e 'CORRECT' A
+grep -q -F -e 'getline' list.err && Error 'getline'
+
+exit 0

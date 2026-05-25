@@ -1,0 +1,10 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+set +e
+../../bin/stu.test '' A >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 2 ]
+[ \! -e A ]

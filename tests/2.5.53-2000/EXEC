@@ -1,0 +1,20 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../sh/rm_tmps
+
+set +e
+../../bin/stu.test -k -- '' A >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 2 ] ||
+	Error "Expected exit status 2, not $exitstatus"
+
+[ -e A ] ||
+	Error "Expected file 'A' to exist"
+
+grep -q -E -e '^correct$' A ||
+	Error "Expected file 'A' to contain 'correct'"
+
+exit 0

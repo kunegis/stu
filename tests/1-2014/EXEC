@@ -1,0 +1,24 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+now=$(LC_ALL=C date)
+year=$(echo $now | sed -e 's,^.* \([0-9][0-9]*\)$,\1,')
+year_a=$(expr $year - 3)
+year_b=$(expr $year - 2)
+date_a="$year_a"01010700
+date_b="$year_b"01010700
+
+rm -f A B
+touch -t "$date_a" A
+touch -t "$date_b" B
+
+set +e
+../../bin/stu.test 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+grep -q -F -e "warning: file target \"A\" which has no command is older than its dependency" list.err ||
+	Error 'warning is missing'
+
+rm -f A B

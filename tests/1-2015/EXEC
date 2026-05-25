@@ -1,0 +1,15 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f A
+
+echo >&3 ../../bin/stu.test
+../../bin/stu.test >list.out 2>list.err
+
+[ -r list.out ] || Error 'list.out'
+[ -r list.err ] || Error 'list.err'
+
+grep -q -F -e 'file exists' list.out && Error 'stdout'
+grep -q -F -e 'file exists' list.err && Error 'stderr'
+
+exit 0

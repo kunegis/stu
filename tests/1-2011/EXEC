@@ -1,0 +1,52 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+#
+# Step 1:  build A:  everything is built
+#
+
+set +e
+../../bin/stu.test
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status (1)'
+[ ! -r A -o ! -r B -o ! -r C ] && Error 'A/B/C were not built (1)'
+
+#
+# Step 2:  rm B; stu B:  B is re-built
+#
+
+rm B
+../../sh/touch_old A 1
+../../sh/touch_old C 1
+
+set +e
+../../bin/stu.test B
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status (2)'
+[ -r B ] || Error 'B (2)'
+
+#
+# Step 3:  stu A:  A is rebuilt.
+#
+
+../../sh/touch_old A 2
+../../sh/touch_old B 1
+../../sh/touch_old C 2
+
+set +e
+../../bin/stu.test A >list.out
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status (3)'
+[ A -ot B ] && Error 'A is older than B (3)'
+grep -q -F -i -e 'Nothing to be done' list.out &&
+	Error 'must not output "Nothing to be done"'
+
+exit 0

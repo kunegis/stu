@@ -1,0 +1,26 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f A
+
+# By calling stu
+
+../../bin/stu.test
+[ -r A ]
+
+../../bin/stu.test >list.out
+grep -q -F -e 'Targets are up to date' list.out || Error '(1) stdout'
+
+../../bin/stu.test @clean
+[ \! -r A ]
+
+# By calling stu A
+
+../../bin/stu.test A
+[ -r A ]
+
+../../bin/stu.test A >list.out
+grep -q -F -e 'Targets are up to date' list.out || Error '(2) stdout'
+
+../../bin/stu.test @clean
+[ \! -r A ]

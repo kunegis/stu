@@ -1,0 +1,10 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test || Error '(1) exit status'
+
+touch list.data-X-dir/unrelatedfile
+
+../../bin/stu.test >list.output || Error '(2) exit status'
+
+grep -q -F -x -e 'Targets are up to date' list.output || Error '(2) stdout'

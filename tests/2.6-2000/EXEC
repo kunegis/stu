@@ -1,0 +1,10 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+mkdir -p list.A
+touch list.A/list.B
+
+../../bin/stu.test -o list.A//list.B >list.out 2>list.err
+
+grep -q -F -x -e 'CORRECT' list.A/list.B
+[ \! -s list.err ]

@@ -1,0 +1,11 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test
+
+sleep 2
+touch list.Y
+
+../../bin/stu.test >list.out
+
+grep -q -F -e 'Targets are up to date' list.out

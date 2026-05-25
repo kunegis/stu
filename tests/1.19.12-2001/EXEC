@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# Empty argument to -c
+#
+
+. ../../sh/test.sh
+
+rm -f ?
+
+set +e
+../../bin/stu.test -c '' >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 4 ] || Error 'exit status'
+diff list.err stderr-correct || Error 'stderr'

@@ -1,0 +1,13 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+../../bin/stu.test A
+
+[ -e A ]
+grep -q -F -e 'CORRECT' A
+
+touch B
+
+FAIL=1 ../../bin/stu.test A | grep -q -F -x -e 'Targets are up to date'

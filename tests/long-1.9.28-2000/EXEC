@@ -1,0 +1,46 @@
+#!/bin/sh
+. ../../sh/test.sh
+logfile=${TMPDIR:-/tmp}/stu-$(basename $(pwd)).$$.log
+
+exec 6>"$logfile"
+
+echo >&6 Started
+date >&6
+echo >&3 "Logging into $logfile"
+
+# Use the silent option (-s) to avoid false positives, i.e., that the
+# greps find the string '@x' erroneously.
+../../bin/stu.test -s -j6 >list.out 2>list.err & pid=$!
+echo >&6 pid="$pid"
+
+echo >&3 sleep 1
+echo >&6 sleep 1
+sleep 1
+
+echo >&6 kill -s USR1 "$pid"
+kill -s USR1 "$pid"
+ps -fe | grep -F -e "$pid" >&6
+
+if uname | grep -q -F -i -e 'Linux' ; then
+	ps -e -o command,pid,ppid,pgid,blocked,caught,cls,f,ignored,wchan:30,pending,stat,sched | grep -F -e 'stu' >&6
+fi
+
+echo >&6 sleep 1
+sleep 1
+echo >&3 kill -s TERM "$pid"
+kill -s TERM "$pid"
+
+echo >&6 wait "$pid"
+set +e
+wait "$pid" 2>/dev/null
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 143 ]
+grep -q -E -e '^STATISTICS  ' list.out
+grep -q -F -e '(2 succeeded, 0 failed, 6 running)' list.out
+grep -q -F -e " list.M" list.out
+grep -q -F -e " \"list.File 123\"" list.out
+grep -q -F -e " @x" list.out
+
+rm -- "$logfile"

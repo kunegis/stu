@@ -1,0 +1,11 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+set +e
+../../bin/stu.test -P dskjfhksdjfhksjdfh >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+[ -r list.err ] && [ ! -s list.err ] || Error 'stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error 'stdout'

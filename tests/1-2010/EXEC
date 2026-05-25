@@ -1,0 +1,16 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f A
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error 'exit status'
+diff list.out stdout-correct || Error 'stdout'
+grep -q -E -e '^main\.stu:4:6: command for "A" received signal 9 \(.*ill.*\)$' list.err ||
+	Error 'stderr'
+
+rm -f A

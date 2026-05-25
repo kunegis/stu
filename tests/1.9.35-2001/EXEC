@@ -1,0 +1,81 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+#
+# (1) 'A' and 'B' are both up to date; nothing to be done
+#
+
+touch A
+../../sh/touch_old B 1
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error '(1) exit status'
+grep -q -F -x -e 'Targets are up to date' list.out || Error '(1) stdout'
+[ -r list.err ] && [ ! -s list.err ] || Error '(1) stderr'
+
+#
+# (2) Neither 'A' nor 'B' exist
+#
+
+rm -f A B
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus="$?"
+set -e
+
+[ "$exitstatus" = 1 ] || Error '(2) exit status'
+grep -q -F -x -e 'Targets are not up to date' list.err || Error '(2) stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error '(2) stdout'
+
+#
+# (3) 'A' exists, but 'B' is newer
+#
+
+../../sh/touch_old A 1
+touch B
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error '(3) exit status'
+grep -q -F -x -e 'Targets are not up to date' list.err || Error '(3) stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error '(3) stdout'
+
+#
+# (4) Only 'A' exists
+#
+
+touch A
+rm -f B
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error '(4) exit status'
+grep -q -F -x -e 'Targets are not up to date' list.err || Error '(4) stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error '(4) stdout'
+
+#
+# (5) Only 'B' exists
+#
+
+rm -f A
+touch B
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error '(5) exit status'
+grep -q -F -x -e 'Targets are not up to date' list.err || Error '(5) stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error '(5) stdout'

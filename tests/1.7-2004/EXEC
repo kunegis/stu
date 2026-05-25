@@ -1,0 +1,27 @@
+#!/bin/sh
+#
+# Trivial dependencies.
+#
+# * stu -a
+#	* B, C and A are built
+# * touch B C
+# * stu -a
+#	* A is built
+#
+
+. ../../sh/test.sh
+
+rm -f ?
+
+../../bin/stu.test -a >list.out 2>list.err
+
+diff list.out stdout-1 || Error '(1out)'
+[ -r list.err ] && [ ! -s list.err ] || Error '(1err) stderr must be empty'
+
+../../sh/touch_old A 2
+touch B C
+
+../../bin/stu.test -a >list.out 2>list.err
+
+diff list.out stdout-2 || Error '(2out)'
+[ -r list.err ] && [ ! -s list.err ] || Error '(2err)'

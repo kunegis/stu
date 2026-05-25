@@ -1,0 +1,13 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+export STU_STATUS=1
+export STU_OPTIONS=y
+
+set +e
+../../bin/stu.test 2>list.err >list.out
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 4 ] || Error 'exit status'
+grep -q -F -e '../../bin/stu.test: refusing to run recursive Stu; unset $STU_STATUS to circumvent' list.err || Error 'stderr'

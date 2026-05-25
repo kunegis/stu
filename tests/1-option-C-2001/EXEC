@@ -1,0 +1,22 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+set +e
+../../bin/stu.test -C '' >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status (1)'
+diff list.out stdout-correct || Error 'stdout (1)'
+
+rm -f ?
+
+set +e
+../../bin/stu.test -C '#' >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status (2)'
+diff list.out stdout-correct || Error 'stdout (2)'

@@ -1,0 +1,37 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+do_rm()
+{
+	rm -f aaa bbb ccc list.FILES
+	rm -f :::
+	rm -f '   '
+	rm -f "$(printf '\t\t\t')"
+	rm -f ')('
+	rm -f '"'"'"
+	rm -f --  '-'
+}
+
+do_rm
+
+{
+	echo aaa
+	echo bbb
+	echo :::
+	echo '   '
+	printf '\t\t\t\n'
+	printf ')(\n'
+	printf '"'"'"'\n'
+	echo ccc
+	printf -- '-\n'
+} >list.FILES
+
+../../bin/stu.test -n list.FILES -F '$name = {correct}' >list.out 2>list.err
+
+IFS=
+cat list.FILES | while read -r file ; do
+	[ -r "$file" ] || Error "file '$file' not created"
+	<"$file" grep -q -F -e correct || Error "file '$file' has invalid content"
+done
+
+do_rm

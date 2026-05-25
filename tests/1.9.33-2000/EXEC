@@ -1,0 +1,15 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f A
+
+set +e
+../../bin/stu.test -K >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error 'exit status'
+[ -s A ] || Error 'the file 'A' must exist and have size larger than zero'
+
+lines=$(echo $(cat A | wc -l))
+[ "$lines" = 2 ] || Error "file 'A' must contain exactly two lines"

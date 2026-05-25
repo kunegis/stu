@@ -1,4 +1,4 @@
 #!/bin/sh
-. ../../sh/utils.sh
+. ../../sh/test.sh
 
 ../../bin/stu.test --order=random >list.out 2>list.err || Error 'stu'

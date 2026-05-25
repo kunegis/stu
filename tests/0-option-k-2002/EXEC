@@ -1,0 +1,13 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ? list.*
+
+set +e
+../../bin/stu.test -k >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error 'exit status'
+[ -e C ] || Error 'C'
+grep -q -F -e "cp to \"/abcdef/ghi\" failed" list.err || Error 'stderr'

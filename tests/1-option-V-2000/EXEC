@@ -1,0 +1,11 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+set +e
+../../bin/stu.test -V >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+[ -r list.err ] && [ ! -s list.err ] || Error 'stderr'
+head -1 list.out | grep -q -E -e '^stu [0-9]' || Error 'stdout'

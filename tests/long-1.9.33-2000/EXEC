@@ -1,0 +1,19 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test -K >list.out 2>list.err & pid=$!
+
+sleep 1
+
+kill -TERM "$pid"
+
+set +e
+wait "$pid" 2>/dev/null
+exitstatus=$?
+set -e
+
+# 143 = 128 + 15.  15 is the POSIX-mandated value of SIGTERM.
+[ "$exitstatus" = 143 ]
+[ -s A ]
+lines=$(echo $(cat A | wc -l))
+[ "$lines" = 2 ]

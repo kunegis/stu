@@ -1,0 +1,24 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+#
+# Run A
+#
+
+rm -f ?
+
+../../bin/stu.test >list.out || Error 'exit status (A)'
+
+grep -q -F -e 'CORRECT' A || Error 'content (A)'
+grep -q -F -e 'ALL HEADERS BUILT' list.out || Error 'stdout (A)'
+
+#
+# Run B
+#
+
+../../bin/stu.test >list.out || Error 'exit status (B)'
+
+grep -q -F -e 'ALL HEADERS BUILT' list.out || Error 'stdout (B1)'
+grep -q -F -e 'Nothing to be done' list.out && Error 'stdout (B1)'
+
+exit 0

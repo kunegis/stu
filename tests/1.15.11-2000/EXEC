@@ -1,0 +1,11 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ? @*
+
+../../bin/stu.test -J -a '@[?!A]' >list.out 2>list.err
+
+[ -r '@[?!A]' ] || Error 'file @[?!A] not created'
+[ -r A ] || Error 'file A not created'
+
+rm -f ? @*

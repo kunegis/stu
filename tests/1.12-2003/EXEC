@@ -1,0 +1,18 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f -- A -r -s
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+[ -r list.err ] && ! [ -s list.err ] || Error 'stderr'
+grep -q -x -F -e "cp -s -r" list.out || Error 'stdout'
+[ -r A ] && grep -q -x -F -e 'correct' A || Error 'content of A'
+
+rm -f -- A -r -s
+
+exit 0

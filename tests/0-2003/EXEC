@@ -1,0 +1,20 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+FILE_SO=../../bin/preload.so
+dir=$(pwd)
+( cd ../.. && sh/ccpreload "$dir"/PRELOAD.cc "$dir"/"$FILE_SO" ; )
+
+for i in $(../../sh/seq 20)
+do
+	echo >&3 "i=$i"
+	../../sh/rm_tmps
+
+	set +e
+	LD_PRELOAD=$FILE_SO STU_I=$i ../../bin/stu.test -F '@all{}' >list.out 2>list.err
+	exitstatus=$?
+	set -e
+
+	[ "$exitstatus" = 4 ]
+	grep -q -F -e 'sigaddset' list.err
+done

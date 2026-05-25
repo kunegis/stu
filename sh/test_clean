@@ -3,8 +3,7 @@
 error_file=${TMPDIR:-/tmp}/test_clean.$$.error
 rm -f -- "$error_file"
 trap clean EXIT
-ret=0
-# Functions report errors by returning non-zero OR by touching $error_file
+ret=0 # Functions report errors by returning non-zero OR by touching $error_file
 
 find_source_files()
 {
@@ -27,6 +26,19 @@ check_test_own_name()
 		grep -E -e '.' >&2 && touch -- "$error_file"
 	done
 	return 0
+}
+
+check_test_exec()
+{
+	line='. ../../sh/test.sh'
+	( cd tests ; ls -1U ) | sh/sort_tests | while IFS= read -r name ; do
+		file=tests/"$name"/EXEC
+		[ -e "$file" ] || continue
+		if ! grep -q -F -x -e "$line" "$file" ; then
+			printf '%s:2: expected $line to be appear\n' "$file"
+			touch -- "$error_file"
+		fi
+	done
 }
 
 check_newline_eof()
@@ -227,6 +239,7 @@ check_seq()
 }
 
 check_test_own_name || ret=1
+check_test_exec || ret=1
 check_backtick || ret=1
 check_escape || ret=1
 check_control || ret=1

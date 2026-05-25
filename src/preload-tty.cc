@@ -1,8 +1,3 @@
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-
 /*
  * Act as if every file descriptor is a TTY.
  *
@@ -10,6 +5,11 @@
  *	$STU_PRELOAD_TTY May contain "e" and/or "o" to make isatty() return 0 for stderr
  *	and stdout.
  */
+
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 
 #define ENV_STU_PRELOAD_TTY "STU_PRELOAD_TTY"
 

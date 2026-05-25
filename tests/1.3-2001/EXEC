@@ -1,0 +1,12 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+touch B
+
+set +e
+../../bin/stu.test
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'

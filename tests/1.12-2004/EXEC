@@ -1,0 +1,13 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+set +e
+STU_CP=./mycp ../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+[ -r list.err ] && ! [ -s list.err ] || Error 'stdout'
+grep -q -x -F -e 'MYCP' list.out || Error 'MYCP'

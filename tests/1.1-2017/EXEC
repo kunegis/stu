@@ -1,0 +1,23 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+set +e
+../../bin/stu.test
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status (a)'
+
+rm -f B C
+
+set +e
+../../bin/stu.test >list.out
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status (b)'
+grep -q -F -e 'cat D E' list.out && Error 'stdout (b)'
+
+exit 0

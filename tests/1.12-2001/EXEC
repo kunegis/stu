@@ -1,0 +1,15 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+../../sh/touch_old A 1
+touch B
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+grep -q -x -F -e 'Targets are up to date' list.out || Error 'stdout'
+[ -r list.err ] && ! [ -s list.err ] || Error 'stderr'

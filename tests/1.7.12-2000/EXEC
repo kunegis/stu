@@ -1,0 +1,19 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ? out.data
+../../bin/stu.test >list.out.nonrandom
+rm -f ? out.data
+../../bin/stu.test -m random >list.out.1
+
+diff list.out.1 list.out.nonrandom && Error '(B1)'
+diff out.data output-correct || Error '(C1)'
+
+# Check that two invocations do not give the same order
+
+rm -f ? out.data
+../../bin/stu.test -m random >list.out.2
+
+# The two runs must *not* have identical order
+diff list.out.2 list.out.nonrandom && Error '(B2)'
+diff out.data output-correct || Error '(C2)'

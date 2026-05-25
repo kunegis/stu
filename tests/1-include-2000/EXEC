@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# A single dash as a filename should work with '%include', even if a
+# single dash with the '-f' options means to read standard input.
+#
+
+. ../../sh/test.sh
+
+rm -f A ./-
+
+echo '>A { echo xyz }' >./-
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+
+[ -r list.err ] && [ ! -s list.err ] || Error 'stderr'
+
+[ -r A ] || Error 'file A'
+
+grep -q -F -e 'xyz' A || Error 'content'
+
+rm -f A ./-

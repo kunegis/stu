@@ -1,0 +1,32 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ? list.*
+
+#
+# Run stu
+#
+
+../../bin/stu.test >list.out 2>list.err
+
+[ -r B ] || Error '(1) B'
+
+#
+# Change 'B'
+#
+
+../../sh/touch_old A 2
+touch B
+
+#
+# Run 'B' -- 'B' is rebuilt
+#
+
+../../bin/stu.test >list.out 2>list.err
+
+set +e
+grep -qF 'Nothing to be done' list.out
+[ "$?" = 1 ] || Error "'Nothing to be done' must not be found in output"
+set -e
+
+rm -f ? list.*

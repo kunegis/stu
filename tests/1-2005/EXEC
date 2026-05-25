@@ -1,0 +1,34 @@
+#!/bin/sh
+#
+# We must have an own EXEC file here because the default text mechanism
+# executes the test a second time, and checks that "Noting to be done"
+# is output.  This is not the case however, since because the file 'B'
+# has a modification time in the future, 'A' always has to be rebuilt
+# (except if we wait until B's timestamp has passed.)
+#
+
+. ../../sh/test.sh
+
+rm -f ?
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status (1)'
+diff list.err stderr-correct || Error 'stderr (1)'
+
+#
+# Execute again:  The warning must still be output.
+#
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status (2)'
+diff list.err stderr-correct.2 || Error 'stderr (2)'
+
+rm -f ?

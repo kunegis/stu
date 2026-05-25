@@ -1,0 +1,86 @@
+#!/bin/sh
+#
+# Trivial dependencies.
+#
+# * (1) stu
+#	* B, D, C and A are built
+# * (2) touch D
+# * stu
+#	* nothing is done
+# * (3) rm D
+# * stu
+#	* nothing is done
+# * (4) touch B
+# * stu
+#	* D, C and A are rebuilt
+# * (5) touch B
+# * stu
+#	* A is rebuilt
+#
+
+. ../../sh/test.sh
+
+rm -f ?
+
+#
+# (1)
+#
+
+../../bin/stu.test 2>list.err
+
+[ -r A ] && [ -r B ] && [ -r C ] && [ -r D ] || Error '(1)'
+
+#
+# (2)
+#
+
+../../sh/touch_old A 2
+../../sh/touch_old B 2
+../../sh/touch_old C 2
+touch D
+
+../../bin/stu.test >list.out 2>list.err
+
+diff list.out stdout-2 || Error '(2out)'
+[ -r list.err ] && [ ! -s list.err ] || Error '(2err)'
+
+#
+# (3)
+#
+
+../../sh/touch_old A 2
+../../sh/touch_old B 2
+../../sh/touch_old C 2
+rm D
+
+../../bin/stu.test >list.out 2>list.err
+
+diff list.out stdout-3 || Error '(3out)'
+[ -r list.err ] && [ ! -s list.err ] || Error '(3err)'
+
+#
+# (4)
+#
+
+../../sh/touch_old A 2
+../../sh/touch_old C 2
+touch B
+
+../../bin/stu.test >list.out 2>list.err
+
+diff list.out stdout-4 || Error '(4out)'
+[ -r list.err ] && [ ! -s list.err ] || Error '(4err)'
+
+#
+# (5)
+#
+
+../../sh/touch_old A 2
+../../sh/touch_old C 2
+../../sh/touch_old D 2
+touch B
+
+../../bin/stu.test >list.out 2>list.err
+
+diff list.out stdout-5 || Error '(5out)'
+[ -r list.err ] && [ ! -s list.err ] || Error '(5err)'

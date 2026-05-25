@@ -1,0 +1,11 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+set +e
+../../bin/stu.test -k >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 2 ]
+grep -q -F -e 'Creating C: "CORRECT"' list.out
+grep -q -F -e 'B:1:1: dynamic dependency [B] must not contain input redirection <X' list.err

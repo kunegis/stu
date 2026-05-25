@@ -1,0 +1,17 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+../../bin/stu.test >list.out 2>list.err
+
+[ -e B ] || Error "'B' must exist"
+grep -q -F -e 'bbb' A || Error "'A' must contain 'bbb'"
+
+../../sh/touch_old A 2
+echo ddd >B
+
+../../bin/stu.test >list.out 2>list.err
+
+grep -q -F -e 'cp B A' list.out || Error 'stdout'
+grep -q -F -e 'ddd' A || Error 'ddd'

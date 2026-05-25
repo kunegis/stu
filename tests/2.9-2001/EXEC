@@ -1,0 +1,7 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+echo CORRECT | ../../bin/stu.test --interactive >list.out 2>list.err
+
+grep -q -F -e 'CORRECT' A
+[ -f list.err -a \! -s list.err ]

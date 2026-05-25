@@ -1,0 +1,14 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f list.NOTEXECUTED nonexisting list.* || exit 1
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+[ ! -e list.NOTEXECUTED ]
+[ ! -e nonexisting ]
+grep -q -v -F -e 'list.NOTEXECUTED' list.*

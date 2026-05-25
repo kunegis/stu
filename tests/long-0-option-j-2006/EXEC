@@ -1,0 +1,80 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+#
+# (1) No options
+#
+
+echo >&3 RUN '(1)'
+rm -f ?
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+
+#
+# (2) With -k
+#
+
+echo >73 RUN '(2)'
+rm -f ?
+
+[ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" = 0 ] ||
+	Error "there are still processes running from previously (2b)"
+
+../../bin/stu.test -k >list.out 2>list.err & pid=$!
+
+sleep 2
+
+[ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" != 0 ] ||
+	Error "Stu is not running (2a)"
+ps -fA | grep -F -e "$pid"
+kill -TERM "$pid"
+
+sleep 1
+
+[ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" = 0 ] ||
+	Error "Stu is still running (2b)"
+
+set +e
+wait "$pid" 2>/dev/null
+exitstatus=$?
+set -e
+
+#
+# (3) With -j2
+#
+
+echo >&3 RUN '(3)'
+rm -f ?
+
+set +e
+../../bin/stu.test -j2 >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] ||
+	Error "variant without options failed (3)"
+
+#
+# (4) With -j2 -k
+#
+
+echo >&3 RUN '(4)'
+rm -f ?
+
+../../bin/stu.test -j2 -k >list.out 2>list.err & pid=$!
+
+sleep 2
+
+[ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" != 0 ]||
+	Error "Stu is not running (4a)"
+
+kill -TERM "$pid"
+sleep 1
+
+[ "$(echo $(ps -fA | grep 74634275 | grep -v grep | wc -l))" = 0 ] ||
+	Error "Stu is still running (4b)"

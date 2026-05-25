@@ -1,0 +1,11 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+set +e
+../../bin/stu.test -P -f a.stu -f b.stu >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+[ -r list.err ] && [ ! -s list.err ] || Error 'stderr'
+grep -q -F -e 'list.XYZPQR' list.out || Error 'stdout'

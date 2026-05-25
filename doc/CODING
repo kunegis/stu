@@ -4,7 +4,7 @@ These are the relevant coding conventions we use.
 
 * Follow the POSIX standard.  It is safe to assume a POSIX environment; there is no need
   to cater for "special" operating systems that lack core POSIX features.  E.g., we always
-  assume the directory separator is '/'.
+  assume the directory separator is '/', and char has eight bits.
 * Follow the GNU Coding Standards, except for coding style, but don't use GNU extensions.
   For coding style, see below.
 * Use the C++17 version of C++; don't use GCC extensions.  Or any other extensions for
@@ -21,17 +21,17 @@ These are the relevant coding conventions we use.
 
 == Style ==
 
-This is my preferred style.  --Jérôme Kunegis
-
-=== Layout ===
-
-* All of the following rules are broken when necessary.
 * Tabs for indentation.  Set your editor to show them at the width you prefer.  I use the
   default 8-char tabs.
 * Spaces for alignment in the middle of lines.
-* Line length vary between 72/80/90/100.  We allow more where reasonable, e.g., to avoid
+* Maximum line length is mostly 90.  We allow more where reasonable, e.g., to avoid
   breaking message string literals or to make table-like code evident.  Since tabs may be
   interpreted as different widths, this is an approximate rule; authors use 8-char tabs.
+* Wide functions are worse than long functions.  Avoid too many levels of indentation.
+* Prefer to indent error paths, and keep the happy path aligned on the left.
+
+== C++ ==
+
 * Use C-style comments (/* ... */) for regular comments.
 * Use C++-style comments on column zero (// ...) for quickly commenting out code and for
   writing TODO items; this allows us to search all source files for the string '//' to
@@ -40,14 +40,12 @@ This is my preferred style.  --Jérôme Kunegis
   whitespace, in order to not break the alignment of commented code with uncommented code.
   This is possible because we use tabs for indentation.
 * In comments, names of variables are in all uppercase.
-* K&R brace placement.
+* K&R brace placement, i.e., the opening brace at the end of the line.  But if the
+  condition itself has multple lines, put the opening brace on its own line.
 * No space before the assignment operator and around parentheses.  Also, no space between
   'operator' and the operator symbol.  Otherwise, spaces around most operators.
 * Pointer and reference characters (* and &) attach to the variable name in declarations.
   This is compatible to C usage, and in defiance of widespread C++ wisdom.
-
-=== Code ===
-
 * Use 'nullptr' as the null pointer constant instead of 'NULL', as per C++14.  It allows
   certain bugs to be caught by the compiler.  In documentation, call it "null" (in
   lowercase, like you would write "zero" or "five").
@@ -64,14 +62,14 @@ This is my preferred style.  --Jérôme Kunegis
   meaning of the code; this is just a style issue.
 * When overriding a virtual function, we do use the 'virtual' keyword, even if it is
   redundant.
-* For IO, we use C-style IO only; no C++ IO.
+* For IO, we use C-style IO only; not C++ IO.
 * Stu uses setlocale(LC_CTYPE, ""), and therefore can make use of isspace() detecting
   spaces as defined in the C locale.  The same is true for isalnum(), which is used to get
   ASCII results.
 
 == Dynamic variables ==
 
-(1) Variables derived from the following classes are managed dynamically using shared_ptr:
+(1) Variables derived from the following classes are managed using shared_ptr:
 
 * all parametrized names and targets (declared in target.hh)
 * Rule (even though it is not polymorphic)
@@ -125,26 +123,33 @@ Writing portable and safe shell scripts is hard, and the authors follow many mor
 than those given here, mostly based on experience.  There are many more things to be said
 about portable shell scripting.
 
+=== General ===
+
 * Only use POSIX features of the shell and of standard tools.  Read the manpage of a tool
   on the POSIX website (http://pubs.opengroup.org/onlinepubs/9699919799/), rather than
   your locally installed manpage, which is likely to describe extensions to the tool
   without documenting them as such.
+* Shell scripts don't have a filename suffix.  Use '#!/bin/sh' and set the executable bit.
+  Files intended to be dotted in have suffix '.sh'.
 * Use '##' for quickly commenting out lines, analogously to '//' in C++ code.  Code pushed
   to Git does not contain such lines.
-* "sed -E" (EREs) is allowed in POSIX 2024.  We use it in new code, but old code (using
-  BREs) is still common in the code base.
-* Grep does have the -E option for extended regular expressions.  Grep is always invoked
-  with the -E *or* the -F option.  (Using basic regular expressions with Grep is also
-  portable, but we don't do it.)  'date +%s' is not mandated by POSIX, even though it
-  works on all operating systems we tried it on.  It outputs the correct Unix time.  There
-  is a hackish but portable workaround using the random number generator of awk(1).
-* Shell scripts don't have a filename suffix.  Use '#!/bin/sh' and set the executable bit.
-* 'test' does not support the -a option.  Use && in the shell instead.  POSIX has
-  deprecated 'test -a'.
-* The "recursive" option to programs such as 'ls' and 'cp' is -R and not -r.  '-r' for
-  recursive behavior is available and prescribed by POSIX for *some* commands such as
-  'rm', but it's easier to always use '-R'.  Mnemonic:  Output will be *big*, hence a big
-  letter.  The idiomatic 'rm -rf' is thus not recommended, and 'rm -Rf' is used instead.
+* Double-quote all variables, except if they should expand to multiple words in a command
+  line, or when assigning to a variable.  Also, use -- when passing variables as
+  non-option arguments to programs.  E.g., write 'cp -- "$filename_from" "$filename_to"'.
+  All other invocation styles are unsafe under *some* values of the variables.  Some
+  programs such as printf don't have options and thus don't support or need '--'.
+* Shell function should have names starting with an uppercase letter, but there is still
+  lots of code not following this.
+* Use $(...) instead of `...`.  It avoids many quoting pitfalls.  In shell syntax,
+  backticks are a form of quote which also executes its content.  Thus, characters such as
+  other backticks and backslashes inside it must be quoted by a backslash, leading to ugly
+  code.  $(...) does not have this problem.  Also, in Unicode ` is a standalone grave
+  accent character, and thus a letter-like character.  This is also the reason why `
+  doesn't need to be quoted in Stu, like any other letter.  The same goes for ^ and the
+  non-ASCII ´.
+* The dollar-single-quote syntax is in 2024 POSIX but not portable yet.  Don't use it.
+  (E.g. $'\t')
+* Don't coalesce options.  E.g., write "grep -q -F" instead of "grep -qF".
 * We use 'set -e'.  We don't rely on it for "normal" code paths, but as an additional
   fail-safe.  It does not work with $() commands that are used within other commands, and
   it also does not work with pipelines, except for the last command.  When you use $(),
@@ -154,18 +159,20 @@ about portable shell scripting.
   problem yet.
 * "set -o pipefail" is not used.  Even though it is in POSIX since 2024, it is not
   portable as some shells don't have it (e.g., Dash).  In the future, we will use it.
-* Use $(...) instead of `...`.  It avoids many quoting pitfalls.  In shell syntax,
-  backticks are a form of quote which also executes its content.  Thus, characters such as
-  other backticks and backslashes inside it must be quoted by a backslash, leading to ugly
-  code.  $(...) does not have this problem.  Also, in Unicode ` is a standalone grave
-  accent character, and thus a letter-like character.  This is also the reason why `
-  doesn't need to be quoted in Stu, like any other letter.  The same goes for ^ and the
-  non-ASCII ´.
-* Double-quote all variables, except if they should expand to multiple words in a command
-  line, or when assigning to a variable.  Also, use -- when passing variables as
-  non-option arguments to programs.  E.g., write 'cp -- "$filename_from" "$filename_to"'.
-  All other invocation styles are unsafe under *some* values of the variables.  Some
-  programs such as printf don't have options and thus don't support or need '--'.
+* When using temporary files, use ${TMPDIR:-/tmp} as the directory.  Scripts delete all
+  temporary files they create, even when interrupted.  Some tests cannot use $TMPDIR and
+  must use /tmp directly, because they test Stu pattern matching.  That could be changed
+  at some point, but we keep things like that for now.  Temporary files include $$ (the
+  PID) to make sure multiple scripts/tests can be executed in parallel.
+
+=== Tools ===
+
+* The "recursive" option to programs such as 'ls' and 'cp' is -R and not -r.  '-r' for
+  recursive behavior is available and prescribed by POSIX for *some* commands such as
+  'rm', but it's easier to always use '-R'.  Mnemonic:  Output will be *big*, hence a big
+  letter.  The idiomatic 'rm -rf' is thus not recommended, and 'rm -Rf' is used instead.
+* 'test' does not support the -a option.  Use && in the shell instead.  POSIX has
+  deprecated 'test -a'.
 * Always use 'IFS= read -r' instead of 'read'.  It's the safe way to read anything that's
   \n-delimited.
 * To omit the trailing newline with 'echo', both '-n' and \c are non-portable.  Instead,
@@ -173,10 +180,13 @@ about portable shell scripting.
   judiciously instead of 'echo'.  Note that the format string of printf should not start
   with a dash.  In such cases, use %s and a subsequent string, which can start with a
   dash.
-* When using temporary files, use ${TMPDIR:-/tmp} as the directory.  Scripts delete all
-  temporary files they create, even when interrupted.  Some tests cannot use $TMPDIR and
-  must use /tmp directly, because they test Stu pattern matching.  That could be changed
-  at some point, but we keep things like that for now.  Temporary files include $$ (the
-  PID) to make sure multiple scripts/tests can be executed in parallel.
-* The dollor-single-quote syntax is in 2024 POSIX but not portable yet.  Don't use it.
-  (E.g. $'\t')
+
+=== sed and grep ===
+
+* "sed -E" (EREs) is allowed in POSIX 2024.  We use it in new code, but old code (using
+  BREs) is still common in the code base.
+* Grep does have the -E option for extended regular expressions.  Grep is always invoked
+  with the -E *or* the -F option.  (Using basic regular expressions with Grep is also
+  portable, but we don't do it.)  'date +%s' is not mandated by POSIX, even though it
+  works on all operating systems we tried it on.  It outputs the correct Unix time.  There
+  is a hackish but portable workaround using the random number generator of awk(1).

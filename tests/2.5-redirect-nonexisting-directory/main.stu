@@ -1,9 +1,0 @@
-#
-# An output redirection to a file in a directory that does not exist.
-#
-
->nonexisting/A { 
-	echo NOTEXECUTED
-	touch NOTEXECUTED
-	touch nonexisting/A
-}

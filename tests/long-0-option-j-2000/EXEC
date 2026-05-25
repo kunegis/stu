@@ -1,0 +1,18 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test -j1 -F '@main{sleep 10;}' >list.out 2>list.err & pid=$!
+
+sleep 1
+kill -s INT "$pid"
+
+set +e
+wait "$pid"
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 130 ]
+grep -q -F -i -e 'terminating all jobs' list.out && Error 'stdout'
+grep -q -F -i -e 'terminating all jobs' list.err && Error 'stderr'
+
+exit 0

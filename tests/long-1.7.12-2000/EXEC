@@ -1,0 +1,35 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test -m random -j 100 >list.out 2>list.err
+
+<list.out sed -e '
+s,^.*X=\(.\).*$,\1,
+t
+d
+' >list.exec
+
+# Now, make sure 'list.exec' does not contain the same letter twice in a
+# row.
+
+last=0
+
+# Number of contiguous letters
+count=0
+
+for line in $(cat list.exec) ; do
+	echo >&3 "LINE='$line'"
+	if [ "$last" = "$line" ] ; then
+		echo >&3 "Duplicate letter '$line'"
+		: $(( count = count + 1 ))
+	fi
+	last=$line
+done
+
+echo >73 "COUNT='$count'"
+
+if [ 26 -le "$count" ] ; then
+	Error 'non-random order'
+fi
+
+exit 0

@@ -1,0 +1,12 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+../../sh/touch_old A
+touch B
+
+../../bin/stu.test >list.out 2>list.err
+
+grep -q -F -x -e 'Targets are up to date' list.out ||
+	Error "missing 'Targets are up to date'"

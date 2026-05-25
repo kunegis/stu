@@ -1,0 +1,37 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+esc=$(printf '\033')
+export TERM=xterm
+
+#
+# (a)
+#
+
+../../sh/rm_tmps
+
+set +e
+LD_PRELOAD=../../bin/preload-tty.so STU_PRELOAD_TTY=o ../../bin/stu.test -F 'A: B {exit 1;} B={1}' >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+grep -q -F -e "$esc" list.out && Error '(a) stdout'
+grep -q -F -e "$esc" list.err
+
+#
+# (b)
+#
+
+../../sh/rm_tmps
+
+set +e
+LD_PRELOAD=../../bin/preload-tty.so STU_PRELOAD_TTY=e ../../bin/stu.test -F 'A: B {exit 1;} B={1}' >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+grep -q -F -e "$esc" list.out
+grep -q -F -e "$esc" list.err && Error '(b) stderr'
+
+exit 0

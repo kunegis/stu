@@ -1,4 +1,5 @@
 .POSIX:
+.SUFFIXES: # Disable built-in rules
 all: bin/stu
 check: \
     bin/stu.cdebug \

@@ -1,0 +1,12 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test --help >list.out 2>list.err
+
+[ -e list.err ]
+[ \! -s list.err ]
+
+../../bin/stu.test -h >list.out2 2>list.err2
+
+cmp -s list.out list.out2
+cmp -s list.err list.err2

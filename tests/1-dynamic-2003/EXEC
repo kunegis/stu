@@ -1,0 +1,27 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -Rf ?
+
+echo Hello >B
+
+set +e
+../../bin/stu.test
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status (2)'
+
+../../sh/touch_old A 2
+../../sh/touch_old list.A 2
+echo "Hello CORRECT World" >B
+
+set +e
+../../bin/stu.test
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status (2)'
+grep -q -F -e 'CORRECT' A || Error "'A' was not updated"
+
+rm -Rf ?

@@ -1,0 +1,8 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+for K in 20 30 50 90 99 100 101 1234 ; do
+	echo >&3 "K=$K"
+	../../sh/rm_tmps
+	../../bin/stu.test -j "$K"
+done

@@ -1,5 +1,5 @@
 #!/bin/sh
-. ../../sh/utils.sh
+. ../../sh/test.sh
 
 include_args='
 $(DIR)/

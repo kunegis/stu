@@ -1,0 +1,10 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+set +e
+../../bin/stu.test '@" do"' >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error 'exit status'
+grep -q -F -e "no rule to build @\"\\\" do\\\"\"" list.err || Error 'stderr'

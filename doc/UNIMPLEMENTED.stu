@@ -428,3 +428,9 @@ CFLAGS = -Y {$(CFLAGS)}
 * Default value:
 $(name:-default_value)
 * Others...
+
+#
+# Add spellchecking to make test.  (1) extract words from source files where relevant.
+# (2) use /usr/share/dict/words + own list as dictionary.  Fail 'mate test' when a word is
+# not in the dictionary.
+#

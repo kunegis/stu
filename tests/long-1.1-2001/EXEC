@@ -1,0 +1,17 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+touch A
+
+../../bin/stu.test >list.out 2>list.err & pid=$!
+
+sleep 1
+kill -TERM "$pid"
+
+set +e
+wait "$pid" 2>/dev/null
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 143 ]
+[ -e A ]

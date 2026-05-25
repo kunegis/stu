@@ -1,0 +1,21 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+Clean()
+{
+	rm -f ./@* ?
+}
+
+trap Clean EXIT
+
+Clean
+
+set +e
+../../bin/stu.test -c '@:[({' >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+[ -r '@:[({' ] || Error 'created file'
+grep -q -F -e 'correct' <'@:[({' || Error 'content'
+[ -r list.err ] && [ ! -s list.err ] || Error 'stderr'

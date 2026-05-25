@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# What happens when standard input is read twice from the command line.
+#
+# This is not an error.  Standard input will be read just once, because
+# we filter multiple input files.
+#
+
+. ../../sh/test.sh
+
+rm -f A
+
+set +e
+cat <<EOF | ../../bin/stu.test -f - -f -
+A = { correct }
+EOF
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+[ -r A ] || Error 'A'
+grep -q -F -e 'correct' A || Error 'content'

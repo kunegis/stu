@@ -1,0 +1,23 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -Rf data
+
+set +e
+../../bin/stu.test
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error '(1) exit status'
+
+touch data/X
+
+set +e
+../../bin/stu.test >list.out
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error '(2) exit status'
+grep -q -F -x -e 'Targets are up to date' list.out || Error '(2) stdout'
+
+rm -Rf data

@@ -1,0 +1,25 @@
+#!/bin/sh
+
+. ../../sh/test.sh
+
+#
+# (1) A must be built:  B is built and thus C is built
+#
+
+../../bin/stu.test >list.out 2>list.err
+
+[ -r B ]
+[ -r C ]
+grep -q -F -e 'CORRECT' A
+
+#
+# (2) A is already there.  Don't build B and C.
+#
+
+rm B C
+
+../../bin/stu.test >list.out 2>list.err
+
+[ \! -e B ]
+[ \! -e C ]
+grep -q -F -e 'CORRECT' A

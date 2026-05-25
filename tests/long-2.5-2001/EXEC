@@ -1,0 +1,14 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test -j4 >list.out 2>list.err
+
+if cmp -s list.out STDOUT.1 ; then
+	: # OK
+else
+	if cmp -s list.out STDOUT.2 ; then
+		: # OK
+	else
+		Error 'expected stdout to match one of the two possibilities'
+	fi
+fi

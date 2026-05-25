@@ -1,0 +1,11 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+../../bin/stu.test -j2 >list.out 2>list.err
+
+n=$(echo $(grep -F PRINTF list.out | wc -l))
+
+[ "$n" = 1 ] || Error "count must be one"
+[ -r list.err ] && [ ! -s list.err ] || Error 'stderr'

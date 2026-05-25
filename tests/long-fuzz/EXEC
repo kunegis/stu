@@ -5,7 +5,7 @@
 # 128+SIGABRT.
 #
 
-. ../../sh/utils.sh
+. ../../sh/test.sh
 
 N=2000
 

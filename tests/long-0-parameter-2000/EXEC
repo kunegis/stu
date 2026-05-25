@@ -1,0 +1,20 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+n=10000
+
+rm -f list.stu
+
+{
+	printf 'A: \n'
+	../../sh/seq "$n" | while IFS= read -r i ; do
+		printf 'list.%s ' "$i"
+	done
+	printf '\n'
+	printf '{ echo CORRECT >A ; }\n'
+	printf 'list.$i = {x}\n'
+} >list.stu
+
+../../bin/stu.test -f list.stu
+
+grep -q -F -e 'CORRECT' A

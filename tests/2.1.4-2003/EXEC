@@ -1,0 +1,12 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+unset TERM
+
+set +e
+../../bin/stu.test -Y >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 2 ] || Error 'exit status'
+cmp -s list.err stderr-correct || Error 'stderr'

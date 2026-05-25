@@ -1,0 +1,18 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+echo Hello >B
+
+../../bin/stu.test
+
+echo "Hello CORRECT World" >B
+../../sh/touch_old A
+ls -l A B
+
+../../bin/stu.test
+
+grep -q -F -e 'CORRECT' A || Error "'A' was not updated"
+
+rm -f ?

@@ -1,0 +1,13 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test -x >list.out 2>list.err & pid=$!
+
+sleep 1
+
+grep -q -F -e 'sleep 2' list.err
+Not grep -q -F -e 'echo bbb' list.err
+
+wait "$pid" 2>/dev/null
+
+grep -q -F -e 'echo bbb' list.err

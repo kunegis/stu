@@ -1,0 +1,24 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test -j2 >list.out 2>list.err & pid=$!
+
+echo >&3 sleep 2
+sleep 2
+
+if [ "$(echo $(ps -fA | grep -F -e '2837415' | grep -v grep | wc -l))" = 0 ]; then
+	Error "Stu is not running"
+fi
+
+kill -TERM "$pid"
+
+echo >&3 sleep 1
+sleep 1
+
+if [ "$(echo $(ps -fA | grep 2837415 | grep -v grep | wc -l))" != 0 ]; then
+	echo >&2 "$0:  *** Sleep is still running"
+	ps -fA | grep 2837415
+	exit 1
+fi
+
+exit 0

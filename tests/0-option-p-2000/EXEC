@@ -1,0 +1,65 @@
+#!/bin/sh
+#
+# Test the -p option.
+#
+
+. ../../sh/test.sh
+
+#
+# (1) When A does not exist, build it
+#
+
+echo >&3 "Case (1)"
+
+rm -f ? main.stu
+
+cat >main.stu <<EOF
+A = {correct}
+EOF
+
+../../bin/stu.test -p A >list.out 2>list.err
+
+[ -r A ] || Error '(1) A must be built'
+
+#
+# (2) When A exists and has old timestamp, don't build it
+#
+
+echo >&3 "Case (2)"
+
+rm -f ? main.stu
+
+cat >main.stu <<EOF
+A { exit 1 }
+EOF
+
+../../sh/touch_old A
+
+../../bin/stu.test -p A >list.out 2>list.err
+
+[ -e A ] || Error '(2) A must not be removed'
+
+#
+# (3) When A exists and has old timestamp and non-existing dependency, build it
+#
+
+echo >&3 "Case (3)"
+
+rm -f ? main.stu
+
+cat >main.stu <<EOF
+A : B { cp B A }
+B = {correct}
+EOF
+
+../../sh/touch_old A
+
+../../bin/stu.test -p A >list.out 2>list.err
+
+[ -r A ] || Error '(3) A must be built'
+
+#
+# End
+#
+
+rm -f main.stu

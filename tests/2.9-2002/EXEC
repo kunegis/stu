@@ -1,0 +1,15 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+for options in --jobs=2 "--jobs 2"
+do
+	../../sh/rm_tmps
+
+	../../bin/stu.test $options >list.out 2>list.err
+
+	[ -e list.err -a \! -s list.err ]
+	[ -e list.out ]
+	[ $(echo $(wc -l <list.out)) = 5 ]
+	<list.out sed -E -e '1!d' | grep -q -x -F -e 'Building A'
+	<list.out sed -E -e '2!d' | grep -q -x -F -e 'Building B'
+done

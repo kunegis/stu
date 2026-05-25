@@ -1,0 +1,18 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+touch A
+
+set +e
+../../bin/stu.test
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+
+for file in B D I ; do
+	[ -e "$file" ] || Error "expected file '$file' to exist"
+done
+
+exit 0

@@ -1,0 +1,13 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error 'exit status'
+grep -q -x -F -e 'INITIALIZE' list.out || Error 'stdout'
+[ -r C ] || Error 'C'

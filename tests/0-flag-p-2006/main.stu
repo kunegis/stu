@@ -1,0 +1,20 @@
+#
+# Existence-only dependency with parameters
+#
+
+A:  list.X
+{
+	cp list.X A
+}
+
+list.$N:  list.data-$N-dir/list
+{
+	cp list.data-$N-dir/list list.$N
+}
+
+list.data-$N-dir/list:  -p list.data-$N-dir
+{
+	echo Hello $N >list.data-$N-dir/list
+}
+
+list.data-$N-dir:  { mkdir list.data-$N-dir }

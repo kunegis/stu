@@ -1,0 +1,80 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+#
+# (A) On error:  File is not removed because it was not changed
+#
+
+echo >&3 '== (A) =='
+../../sh/rm_tmps
+../../sh/touch_old list.A
+
+set +e
+../../bin/stu.test data.A 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+[ -s list.err ]
+Not grep -q -F -i -e "removing file" list.err
+
+#
+# (B) On error:  File is removed because it was changed
+#
+
+echo >&3 '== (B) =='
+../../sh/rm_tmps
+../../sh/touch_old list.B
+
+set +e
+../../bin/stu.test data.B >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+grep -q -F -e "removing file \"list.B\" because command failed" list.err
+
+#
+# (C) On abort:  File is not removed because it was not changed
+#
+
+echo >&3 '== (C) =='
+../../sh/rm_tmps
+../../sh/touch_old list.C
+
+../../bin/stu.test 2>list.err data.C & pid=$!
+
+echo >&3 sleep 1
+sleep 1
+kill -TERM "$pid"
+
+set +e
+wait "$pid" 2>/dev/null
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 143 ]
+[ -r list.err ]
+Not grep -q -F -i -e "removing file" list.err
+
+#
+# (D) On abort:  File is removed because it was changed
+#
+
+echo >&3 '== (D) =='
+../../sh/rm_tmps
+../../sh/touch_old list.D
+
+../../bin/stu.test 2>list.err data.D & pid=$!
+
+echo >&3 sleep 1
+sleep 1
+kill -TERM "$pid"
+
+set +e
+wait "$pid" 2>/dev/null
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 143 ]
+grep -q -F -e "removing partially built files" list.err

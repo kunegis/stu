@@ -1,0 +1,32 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+#
+# (1) 'A' is up to date
+#
+
+touch A
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error '(1) exit status'
+grep -q -F -e 'Targets are up to date' list.out || Error '(1) stdout'
+[ -r list.err ] && [ ! -s list.err ] || Error '(1) stderr'
+
+#
+# (2) 'A' does not exist
+#
+
+rm -f A
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error '(2) exit status'
+grep -q -F -e 'Targets are not up to date' list.err || Error '(2) stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error '(2) stdout'

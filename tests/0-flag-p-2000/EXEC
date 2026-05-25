@@ -1,0 +1,31 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ? list.*
+
+#
+# (1) stu A:  B and A are built.
+#
+
+set +e
+../../bin/stu.test A
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error '(1) exit status'
+[ ! -r A -o ! -r B ] && Error '(1) did not build A and B'
+
+#
+# (2) stu A:  B is rebuilt, but not A
+#
+
+rm B
+
+set +e
+../../bin/stu.test A >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error '(2) exit status'
+[ -r B ] || Error '(2) expected B to be rebuilt'
+grep -q -E -e '^ls -l B >A$' list.out || Error '(2) expected A to be rebuilt'

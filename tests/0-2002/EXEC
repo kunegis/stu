@@ -1,0 +1,21 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+file_so=../../bin/preload.so
+
+dir=$(pwd)
+
+( cd ../.. && sh/ccpreload "$dir"/PRELOAD.cc bin/preload.so )
+
+for i in 0 1 2 3 4
+do
+	../../sh/rm_tmps
+
+	set +e
+	LD_PRELOAD=$file_so STU_N=$i ../../bin/stu.test -F 'A{touch A;}' >list.out 2>list.err
+	exitstatus=$?
+	set -e
+
+	[ "$exitstatus" = 4 ]
+	grep -q -F -e 'sigemptyset' list.err
+done

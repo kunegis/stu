@@ -1,0 +1,13 @@
+# Interrupt all while using -j20:  correct number of files removed
+
+@all: [A];
+
+A: {
+	../../sh/seq 30 | sed -E -e 's,^,list.,' >A
+}
+
+list.$n
+{
+	echo xxx >list."$n"
+	sleep 99
+}

@@ -1,0 +1,11 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+for j in 3 4 5 67 ; do
+	../../sh/rm_tmps || exit 1
+	set +e
+	../../bin/stu.test -j $j >list.out 2>list.err
+	exitstatus=$?
+	set -e
+	[ "$exitstatus" = 0 ] || Error 'exit status'
+done

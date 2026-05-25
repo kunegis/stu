@@ -1,0 +1,32 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+../../bin/stu.test >list.stdout-correct
+
+rm -f ?
+
+set +e
+../../bin/stu.test -M Hello >list.out
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error '(1) exit status'
+diff list.out list.stdout-correct && Error '(1) stdout'
+diff out.data output-correct || Error '(1) content'
+
+# Check that two invocations do not give the same order
+
+rm -f ?
+
+set +e
+../../bin/stu.test -M Hello >list.out2
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error '(2) exit status'
+
+# The two runs must have identical order
+diff list.out list.out2 || Error '(2) stdout'
+
+diff out.data output-correct || Error '(2) content'

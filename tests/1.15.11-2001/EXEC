@@ -1,0 +1,11 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f -- ? '[?!@A]' ']A@!?['
+
+../../bin/stu.test -J -a -- '[?!@A]' ']A@!?['
+
+[ -r '[?!@A]' ] || Error "first file"
+[ -r ']A@!?[' ] || Error "second file"
+
+rm -f -- ? '[?!@A]' ']A@!?['

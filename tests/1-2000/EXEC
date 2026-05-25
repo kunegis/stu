@@ -1,0 +1,12 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+echo >&3 ../../bin/stu.test
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+grep -q -F -e CORRECT list.out || Error 'stdout'

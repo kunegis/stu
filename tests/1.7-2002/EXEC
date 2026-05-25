@@ -1,0 +1,91 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+#
+# Each line in 'list' ultimately has C being a dependency of A, via a trivial dependency.
+#
+
+err()
+{
+	echo >&2 "line_number=$line_number stucode=⟨$stucode⟩ a_exists=$a_exists x=$x"
+	echo >&2 "*** $1"
+	echo >&2 stdout:
+	cat  >&2 list.out
+	echo >&2 _______
+	echo >&2 stderr:
+	cat  >&2 list.err
+	echo >&2 _______
+	stat=1
+}
+
+clean()
+{
+	rm -f -- "$error_file"
+}
+
+count_total=0
+count_error=0
+line_number=0
+error_file=${TMPDIR:-/tmp}/stu-longtrivial.$$
+echo 0 >"$error_file"
+trap clean EXIT INT QUIT TERM ABRT HUP
+clean
+
+cat list | while IFS= read -r line ; do
+	: $(( line_number += 1 ))
+	printf '%s\n' "$line" | grep -q -E -e '^[[:space:]]*($|#)' && continue
+	for a_exists in yes no ; do
+		for x in before after absent ; do
+			stucode=$line
+			../../sh/rm_tmps
+			[ "$x" = before ] && {
+				stucode=$(echo "$stucode" | sed -e 's,:,: X ,;s,$, X={x},')
+			}
+			[ "$x" = after ] && {
+				stucode=$(echo "$stucode" | sed -e 's,{, X {,;s,$, X={x},')
+			}
+			if [ "$a_exists" = yes ] ; then
+				echo aaa >A
+				[ "$x" != absent ] && echo xxx >X
+				../../sh/touch_old X 4
+				../../sh/touch_old A 2
+			else
+				stucode="$stucode C={CORRECT}"
+			fi
+			echo "CASE: line_number=$line_number a_exists=$a_exists x=$x ⟨$stucode⟩"
+			printf '%s\n' "$stucode" >list.stu
+
+			set +e
+			../../bin/stu.test -f list.stu >list.out 2>list.err
+			exitstatus=$?
+			set -e
+
+			printf "\texitstatus=$exitstatus\n"
+			stat=0
+			[ $exitstatus = 0 ] ||
+				err "Expected exit status 0, not $exitstatus"
+			if [ $a_exists = yes ] ; then
+				[ -e C ] &&
+					err "C must not exist"
+			else
+				[ -r C ] ||
+					err "C must be created"
+				grep -q -F -e CORRECT C ||
+					err "C must contain 'CORRECT'"
+			fi
+			echo "$stat" >>"$error_file"
+			printf "\tstat=$stat\n"
+		done
+	done
+done
+
+../../sh/rm_tmps
+count_total=$(echo $(wc -l <"$error_file"))
+count_error=$(echo $(grep -F -e 0 "$error_file" | wc -l))
+echo "$0: Success rate = $count_error/$count_total"
+
+if grep -q -F -e '1' -- "$error_file" ; then
+	exit 1
+else
+	exit 0
+fi

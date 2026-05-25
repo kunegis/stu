@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# 'main.stu' exists but cannot be read.
+#
+
+. ../../sh/test.sh
+
+mkdir list.dir
+cd list.dir
+
+echo 'A { touch A ; }' >main.stu
+chmod a-r main.stu
+
+set +e
+../../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 4 ]
+grep -q -F -e 'main.stu' list.err

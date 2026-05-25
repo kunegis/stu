@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# The output of 'stu -h' ends in a newline.
+#
+
+. ../../sh/test.sh
+
+../../bin/stu.test -h >list.out || Error 'stu'
+
+# The last byte of the file
+c=$(tail -c 1 list.out) || Error 'tail'
+
+[ "$c" = '' ] || Error 'stdout'

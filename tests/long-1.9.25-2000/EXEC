@@ -1,0 +1,8 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test -z >list.out 2>list.err
+
+grep -q -E -e '^STATISTICS  children user   execution time = [0-9.]+[1-9][0-9.]* s$' list.out
+grep -q -E -e '^STATISTICS  children system execution time = [0-9.]+[1-9][0-9.]* s$' list.out
+grep -q -F -x -e '999999' A

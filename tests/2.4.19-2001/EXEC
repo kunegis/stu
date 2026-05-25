@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# The -s option (silent) does suppress the 'File ... exists but has
+# no rule' message.
+#
+
+. ../../sh/test.sh
+
+rm -f ?
+touch A
+
+set +e
+../../bin/stu.test -s A >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+[ -r list.out ] && [ ! -s list.out ] || Error 'stdout empty'
+grep -q -F -x -e "No rule for building 'A', but the file exists" list.out && Error 'stdout content'
+[ -r list.err ] &&  [ \! -s list.err ] || Error 'stderr not empty'

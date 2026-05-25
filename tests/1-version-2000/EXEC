@@ -1,0 +1,77 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+STUFILE=tmp.stu
+error=0
+
+# Arguments:
+#   $1   Correct exit status
+#   $2   Version in %version statement
+do_test() {
+	exitstatus_correct=$1
+	version=$2
+	echo >&3 "$0:  TESTING $1 $2"
+	rm -f $STUFILE A list.err
+
+	cat >$STUFILE <<EOF
+%version $version
+A { echo CORRECT >A }
+EOF
+
+	set +e
+	../../bin/stu.test -f $STUFILE 2>list.err
+	exitstatus_actual=$?
+	set -e
+
+	echo >&3 "   exitstatus=$exitstatus_actual"
+	[ "$exitstatus_actual" = "$exitstatus_correct" ] || Error "exit status (case $1 $2)"
+
+	if [ "$exitstatus_correct" = 0 ] ; then
+		grep -q -F -e 'CORRECT' A ||
+			Error "incorrect content of file 'A'"
+	else
+		grep -q -F -e 'is incompatible with' list.err ||
+			Error "invalid error output"
+	fi
+}
+
+# This code is identical to what ./mkversion does
+VERSION=$(echo $(cat ../../VERSION))
+echo "$VERSION" | grep -q -E -e '[0-9]+\.[0-9]+\.[0-9]+' ||
+	Error "invalid version number '$VERSION'"
+
+VERSION_MAJOR=$(echo "$VERSION" |
+	sed -e 's/^\([0-9]\{1,\}\)\.[0-9]\{1,\}\.[0-9]\{1,\}$/\1/')
+VERSION_MINOR=$(echo "$VERSION" |
+	sed -e 's/^[0-9]\{1,\}\.\([0-9]\{1,\}\)\.[0-9]\{1,\}$/\1/')
+VERSION_PATCH=$(echo "$VERSION" |
+	sed -e 's/^[0-9]\{1,\}\.[0-9]\{1,\}\.\([0-9]\{1,\}\)$/\1/')
+
+VERSION_MAJOR_INC=$(($VERSION_MAJOR + 1))
+VERSION_MAJOR_DEC=$(($VERSION_MAJOR - 1))
+VERSION_MINOR_INC=$(($VERSION_MINOR + 1))
+VERSION_MINOR_DEC=$(($VERSION_MINOR - 1))
+VERSION_PATCH_INC=$(($VERSION_PATCH + 1))
+VERSION_PATCH_DEC=$(($VERSION_PATCH - 1))
+
+do_test 2 "$VERSION_MAJOR_INC.0"
+do_test 2 "$VERSION_MAJOR_INC.0.0"
+if [ $(( VERSION_MAJOR > 0 )) = 1 ] ; then
+	do_test 2 "$VERSION_MAJOR_DEC.0"
+	do_test 2 "$VERSION_MAJOR_DEC.0.0"
+fi
+do_test 2 "$VERSION_MAJOR.$VERSION_MINOR_INC"
+do_test 2 "$VERSION_MAJOR.$VERSION_MINOR_INC.0"
+if [ $(( VERSION_MINOR > 0 )) = 1 ] ; then
+	do_test 0 "$VERSION_MAJOR.$VERSION_MINOR_DEC"
+	do_test 0 "$VERSION_MAJOR.$VERSION_MINOR_DEC.9999"
+fi
+do_test 2 "$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH_INC"
+if [ $(( VERSION_PATCH > 0 )) = 1 ] ; then
+	do_test 0 "$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH_DEC"
+fi
+do_test 0 "$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH"
+
+rm -f $STUFILE A list.err
+
+exit $error

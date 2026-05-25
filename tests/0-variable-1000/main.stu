@@ -1,0 +1,7 @@
+A: X $[SCHTROUMPF] {}
+
+X
+{
+	touch X
+	echo content >SCHTROUMPF
+}

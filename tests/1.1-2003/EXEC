@@ -1,0 +1,30 @@
+#!/bin/sh
+#
+# Create a file with content
+#
+# >VERY_LONG_NAME... {}
+#
+# Either this works or there is an error, but there can't be an internal error.
+#
+
+. ../../sh/test.sh
+
+{
+	printf '>\n'
+	echo aaaaaaaaaaaaaaaa | sed -E -e '
+s,.,aaaaaaaaaaaaaaaa,g
+s,.,aaaaaaaaaaaaaaaa,g
+s,.,aaaaaaaaaaaaaaaa,g
+'
+	printf '{}\n'
+} >list.stu
+
+n=$(<list.stu wc -c)
+[ "$n" = $((65536 + 6)) ]
+
+set +e
+../../bin/stu.test -f list.stu >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 -o "$exitstatus" = 1 ]

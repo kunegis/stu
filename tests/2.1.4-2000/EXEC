@@ -1,0 +1,18 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+preload_tty_so=$(cd ../.. ; pwd)/bin/preload-tty.so
+CMDPREFIX_TTY="TERM=xterm"
+LD_PRELOAD_VALUE_TTY="$preload_tty_so"
+
+( cd ../.. ; sh/ccpreload src/preload-tty.cc bin/preload-tty.so ; )
+
+rm -f ?
+
+eval $CMDPREFIX_TTY LD_PRELOAD=$LD_PRELOAD_VALUE_TTY ../../bin/stu.test \
+	-F "'A=B;B={Hello}'" || Error '(1) exit status'
+
+eval $CMDPREFIX_TTY LD_PRELOAD=$LD_PRELOAD_VALUE_TTY ../../bin/stu.test \
+	-F "'A=B;B={Hello}'" \>list.all 2\>\&1 || Error '(2) exit status'
+
+cmp -s list.all stdall || Error 'output'

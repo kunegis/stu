@@ -1,0 +1,11 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+set +e
+../../bin/stu.test --keep-going >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+grep -F -e 'command for "Y" failed with exit status 1' list.err
+grep -F -e 'CORRECT' A

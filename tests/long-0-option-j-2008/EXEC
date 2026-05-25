@@ -1,0 +1,63 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+#
+# No options
+#
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+grep -q -F -e "main.stu:29:5: command for \"list.2\" failed" list.err
+[ \! -r list.3 ]
+
+#
+# -k
+#
+
+../../sh/rm_tmps
+
+set +e
+../../bin/stu.test -k >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+grep -q -F -e "main.stu:29:5: command for \"list.2\" failed" list.err
+grep -q -F -e "targets not up to date because of errors" list.err
+[ -r list.3 ]
+
+#
+# -j5
+#
+
+../../sh/rm_tmps
+
+set +e
+../../bin/stu.test -j5 >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+grep -q -F -e "main.stu:29:5: command for \"list.2\" failed" list.err
+Not grep -q -F -e "targets not up to date because of errors" list.err
+[ -r list.3 ]
+
+#
+# -j5 -k
+#
+
+../../sh/rm_tmps
+
+set +e
+../../bin/stu.test -j5 -k >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+grep -q -F -e "main.stu:29:5: command for \"list.2\" failed" list.err
+grep -q -F -e "targets not up to date because of errors" list.err
+[ -r list.3 ]

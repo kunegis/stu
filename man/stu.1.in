@@ -50,8 +50,8 @@ option is equivalent to using the \fB[-0\fR \fIFILENAME\fR\fB]\fR syntax.
 .IP \fB-a\fR
 Treat all trivial dependencies (declared with the \fB-t\fR flag or option) as non-trivial.
 .IP "\fB-c\fR \fIFILENAME\fR, \fB--target\fR=\fIFILENAME\fR"
-Pass a target filename, without Stu syntax.  This option only allows
-file targets to be specified, not phony targets.
+Pass a target filename, without Stu syntax.  This option only allows file targets to be
+specified, not phony targets.
 .IP "\fB-C\fR \fIEXPRESSION\fR"
 Pass a target using full Stu syntax.  The given expression is parsed as if it was given as
 one or more dependencies in a Stu script.  As a result, flags \fB-p\f, \fB-o\fR and
@@ -60,8 +60,8 @@ separate filenames.  This is not equivalent to passing a string as an argument t
 outside of options, because \fB-C\fR supports full Stu syntax, while arguments supports
 only a reduced syntax (see above).
 .IP "\fB-E\fR, \fB--explain\fR"
-Explain error messages.  For certain errors, an additional explanation is
-written on standard error output.  Only some error messages have explanations.
+Explain error messages.  For certain errors, an additional explanation is written on
+standard error output.  Only some error messages have explanations.
 .IP "\fB-f\fR \fIFILENAME\fR, \fB--file\fR=\fIFILENAME\fR"
 Read the given file instead of the default \fImain.stu\fR.  If the name of a directory is
 passed, the file \fImain.stu\fR in the given directory is read.  If \fI-\fR (a single
@@ -131,8 +131,8 @@ syntax inside Stu files.
 Pass the given file as an optional dependency, i.e., build it only if it already exists
 and is out of date.
 .IP "\fB-p\fR \fIFILENAME\fR"
-Pass the given file as a persistent dependency, i.e., build the file but
-ignore its timestamp.
+Pass the given file as a persistent dependency, i.e., build the file but ignore its
+timestamp.
 .IP "\fB-P\fR, \fB--print-rules\fR"
 Print the set of rules and exit.  The output format is not specified.  Note that Make has
 a \fB-p\fR option to print the rules, but continues with build after printing the rules.
@@ -706,16 +706,17 @@ that were not present in the specified version.
 
 .SH "TOKENIZATION"
 
-Unquoted filenames in Stu may contain the following ASCII characters:
+Unquoted names in Stu may contain the following ASCII characters:
 
-    [a-z] [A-Z] [0-9] _ ^ ` + - . ~ /
+    [a-z] [A-Z] [0-9] ^ ` / . _
 
-and all non-ASCII characters.  Filenames containing other characters must be quoted by
-either single or double quotes, or by using backslashes.  The characters \fB-\fR, \fB+\fR
-and \fB~\fR are not allowed as the first character of a name if they are not quoted.
+and all non-ASCII characters.  The characters \fB-\fR, \fB+\fR and \fB~\fR are allowed in
+unquoted names, as long as the they are not the first character of the name.  Names
+containing other characters must be quoted by either single or double quotes, or by
+backslashes.
 
-The following characters have special meaning in Stu and cannot be used in
-unquoted filenames:
+The following characters have special meaning in Stu and cannot be used in unquoted
+filenames:
 
     #     Comment (until the end of the line)
     %     Directive (followed by directive name and arguments)
@@ -724,7 +725,7 @@ unquoted filenames:
     "     Quote, with escape sequences
     :     Separator for rule definition
     ;     End of rule, in rule without command
-    -     Prefix character for flag, followed by a single character
+    -     Prefix character for flag
     $     Parameter; variable dependency; environment variable
     @     Phony target marker
     >     Output redirection

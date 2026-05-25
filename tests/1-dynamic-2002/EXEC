@@ -1,0 +1,42 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+#
+# (A) Without -k
+#
+
+rm -f ? ??
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 2 ] || Error 'exit status (A)'
+grep -q -F -e "B1:1:4: expected a dependency" list.err ||
+	Error "not containing 'invalid token' in error output"
+grep -q -F -e "Targets not up to date because of errors" list.err &&
+	Error "containing '*** Targets not up to date because of errors' in error output"
+
+#
+# (B) With -k
+#
+
+rm -f ? ??
+
+set +e
+../../bin/stu.test -k >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 2 ] || Error 'exit status (B)'
+grep -q -F -e "B1:1:4: expected a dependency" list.err ||
+	Error "not containing 'invalid token' in error output"
+grep -q -F -e "targets not up to date because of errors" list.err ||
+	Error "not containing '*** Targets not up to date because of errors' in error output"
+
+#
+# End
+#
+
+rm -f ? ??

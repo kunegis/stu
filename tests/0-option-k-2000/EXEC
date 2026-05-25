@@ -1,0 +1,15 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+set +e
+../../bin/stu.test -k >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error 'exit status'
+[ -e E ] || Error 'E'
+[ -e A ] && Error 'A'
+
+exit 0

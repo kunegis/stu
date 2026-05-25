@@ -1,0 +1,15 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+for CMD in "" "-j2" "-j 3" ; do
+	echo >&3 "CMD='$CMD'"
+	rm -f ?
+
+	set +e
+	../../bin/stu.test $CMD -k >list.out 2>list.err
+	exitstatus=$?
+	set -e
+
+	[ "$exitstatus" = 1 ]
+	Not [ ! -r C -o ! -r E ]
+done

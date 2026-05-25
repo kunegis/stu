@@ -1,0 +1,43 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+lines='
+-o B; B;
+B; -o B;
+-p B; B;
+B; -p B;
+-o B; B C;
+B; -o B C;
+-p B; B C;
+B; -p B C;
+-o B C; B;
+B C; -o B;
+-p B C; B;
+B C; -p B;
+-o B; C B;
+B; -o C B;
+-p B; C B;
+B; -p C B;
+C -o B; B;
+C B; -o B;
+C -p B; B;
+C B; -p B;
+'
+
+printf '%s\n' "$lines" |
+while IFS= read -r line ; do
+	printf >&3 'line="%s"\n' "$line"
+	printf '%s\n' "$line" | grep -q -E -e '^\s*$' && continue
+	../../sh/rm_tmps
+
+	set +e
+	../../bin/stu.test -F "$line" >list.out 2>list.err
+	exitstatus=$?
+	set -e
+
+	printf >&3 'exitstatus=%s\n' "$exitstatus"
+	[ "$exitstatus" = 2 ]
+	[ -f list.out -a \! -s list.out ]
+	[ -f list.err ]
+	cmp list.err stderr
+done || exit 1

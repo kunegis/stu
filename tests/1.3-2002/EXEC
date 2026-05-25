@@ -1,0 +1,24 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+set +e
+../../bin/stu.test
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error '(1) exit status'
+[ -e C ] && Error '(1) C built erroneously'
+
+../../sh/touch_old A 2
+echo X >C
+../../sh/touch_old C 1
+
+set +e
+../../bin/stu.test
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error '(2) exit status'
+[ -e X ] || Error '(2) X must be built'

@@ -1,0 +1,14 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test list.data/A
+
+[ -f list.data/A ]
+grep -q -F -e 'aaa' list.data/A
+
+echo bbb >list.data/B
+../../sh/touch_old list.data/B
+
+../../bin/stu.test list.data/B
+
+grep -q -F -e 'bbb' list.data/B

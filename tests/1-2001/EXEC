@@ -1,0 +1,27 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+echo >&3 ../../bin/stu.test
+set +e
+../../bin/stu.test -k >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error 'exit status (A)'
+grep -q -F -e 'not exist' list.err && Error 'stderr (A)'
+
+rm -f ?
+
+echo >&3 ../../bin/stu.test -k
+
+set +e
+../../bin/stu.test -k >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error 'exit status (B)'
+grep -q -F -e 'CORRECT' B || Error 'CORRECT (B)'
+grep -q -F -e "no rule to build \"nonexistingfile\"" list.err || Error 'stderr (B1)'
+grep -q -F -e 'targets not up to date because of errors' list.err || Error 'stderr (B2)'

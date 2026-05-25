@@ -1,16 +1,34 @@
 #
-# Almost all EXEC files should be converted to use sh/utils.sh.  sh/utils.sh should be
-# renamed to make clear it can only be used from EXEC files.
+# Tests with rm_tmps-incompatible names should not exist.
+# * Rename the files, or
+# * Execute the test in a subdirectory that has a rm_tmps-able name
 #
+
+tests/0-include-2000/xxx
+tests/0-phony-2000/BBB
+tests/2.3-2000/...
+
+find tests -name EXEC | xargs grep -E -e 'rm.*main.stu' --color=always
 
 #
 # Clean up test naming.
 #
 
 * Correct version numbers
-* Version numbers should not end in ".1" (just remove the ".1")
+* Version numbers should not end in ".1" (just remove the ".1") (except for 1.1, which for
+  historical reasons is distinct from "1".  "1-" and "2-" should not appear in test names.
 * Test numbers should have four digits; first digit shows type (success, fail, EXEC)
-* First digit of test: 0 (success), 1 (fail), 2 (EXEC), 3 (preload).
+* First digit of test: 0 (success), 1 (fail), 2 (EXEC).
+* All version numbers that appear must be mentioned in NEWS as non-migration versions.  1/2/2.1 should not appear.
+* Tests under 0- should always have a topic in the name (e.g. dynamic, remove, option-C,
+  etc.) (Or, alternatively, use 0.a, 0.b, etc., or just 0.1, 0.2, etc.)
+* For long tests, maybe use the 4000 block (probably not)
+
+find . -name EXEC | grep -v -E -e '^\./tests/.*-2.../' | sort -V -r
+
+#
+# EXEC: Use 'Not' where useful.
+#
 
 #
 # Allow -n/-0/-C on targets.
@@ -28,7 +46,8 @@
 #
 
 "~" # Not the home directory
-"~"name # ?
+"~"name # Not a user's home directory
+~"name" # ?
 
 #
 # File import.  '%import' should work at rule level, and allow both cd-ing and not
@@ -41,7 +60,7 @@
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of
 # all these are equivalent:
- %import --change-directory src/main.stu
+%import --change-directory src/main.stu
 %import --cd src/
 %import -d src
 
@@ -331,7 +350,7 @@ A: -e B
 #
 
 #
-# tests/long-sigusr1-1/EXEC hangs sometimes.
+# tests/long-1.9.28-2000/EXEC hangs sometimes.
 # * Happens only in the cov variant
 # * Last observed in October 2025
 # * Processes hang in the futex() system call, maybe because other cov test processes are
@@ -340,7 +359,7 @@ A: -e B
 # ** Maybe some cov Stu processes get killed in the middle of a cov operation, and leave
 #    the cov file in an inconsistent state.
 # * When done, remove the logfile and ps calls.
-# * 2026-10 Remove this entry
+# * 2026-10 Remove this entry and remove output to "$logfile" in EXEC
 #
 
 #
@@ -405,12 +424,37 @@ B {}
 #
 
 #
-# Add spellchecking to make test.  (1) extract words from source files where relevant.
-# (2) use /usr/share/dict/words + own list as dictionary.  Fail 'mate test' when a word is
-# not in the dictionary.
+# Add long options corresponding to long flags --persistent, --optional, --trivial,
+# --newline, --null, --full-syntax.
 #
 
 #
-# Add long options corresponding to long flags --persistent, --optional, --trivial,
-# --newline, --null, --full-syntax.
+# doc/OPTIONS:  For each option, add in which Stu version it was added.
+#
+
+#
+# Flag -X on targets, which declares the target as non-indexed.  Useful to implement
+# phonies that pull in dependencies and a command.  (-X is just a placeholder name.)
+#
+# In this example, building "a" will only match the first rule, which "chooses" the second
+# rule using the dependency "@build+a+a.c".
+#
+
+a:  @compile+a+a.c;
+
+@compile+$dst+$src -X $src:
+{
+	cc -c "$src" -o "$dst"
+}
+
+# Or, even better, have a special operator to pass environment variables to a target.
+
+a:  @compile,a,a.c;
+a:  @compile|a|a.c;
+a:  @compile | a | a.c;
+a:  @compile| a a.c |;
+a:  @compile| a, a.c |;
+
+#
+# Check that we are not using binary operators -a and -o in 'test'/'[' invocation.
 #

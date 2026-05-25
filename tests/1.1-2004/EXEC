@@ -1,0 +1,15 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ? list.*
+
+set +e
+../../bin/stu.test >list.out
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status (A)'
+[ ! -e A -o -s A ] && Error 'file not empty'
+diff list.out stdout-correct || Error 'stdout'
+
+rm -f ? list.*

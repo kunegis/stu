@@ -1,0 +1,14 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test --version >list.out 2>list.err
+
+[ -e list.err ]
+[ \! -s list.err ]
+
+sed -E -e '1!d' list.out | grep -q -F -e "stu $(cat ../../VERSION)"
+
+../../bin/stu.test -V >list.out2 2>list.err2
+
+cmp -s list.out list.out2
+cmp -s list.err list.err2

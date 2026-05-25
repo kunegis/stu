@@ -1,4 +1,4 @@
 #!/bin/sh
-. ../../sh/utils.sh
+. ../../sh/test.sh
 
 ../../bin/stu.test --order-seed=abcd >list.out 2>list.err || Error 'stu'

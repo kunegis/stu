@@ -1,0 +1,133 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+#
+# (1) All files exist
+#
+
+touch P
+touch Q
+touch R
+
+set +e
+../../bin/stu.test -q P Q R >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error '(1) exit status'
+grep -q -F -x -e 'Targets are up to date' list.out || Error '(1) stdout'
+[ -r list.err ] && [ ! -s list.err ] || Error '(1) stderr'
+
+#
+# (2) No file exists
+#
+
+rm -f P Q R
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error '(2) exit status'
+grep -q -F -x -e 'Targets are not up to date' list.err || Error '(2) stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error '(2) stdout'
+
+#
+# (3) Only P exists
+#
+
+rm -f Q R
+touch P
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error '(3) exit status'
+grep -q -F -x -e 'Targets are not up to date' list.err || Error '(3) stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error '(3) stdout'
+
+#
+# (4) Only Q exists
+#
+
+rm -f P R
+touch Q
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error '(4) exit status'
+grep -q -F -x -e 'Targets are not up to date' list.err || Error '(4) stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error '(4) stdout'
+
+#
+# (5) Only R exists
+#
+
+rm -f P Q
+touch R
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error '(5) exit status'
+grep -q -F -x -e 'Targets are not up to date' list.err || Error '(5) stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error '(5) stdout'
+
+#
+# (6) Only P and Q exist
+#
+
+rm -f R
+touch P
+touch Q
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error '(6) exit status'
+grep -q -F -x -e 'Targets are not up to date' list.err || Error '(6) stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error '(6) stdout'
+
+#
+# (7) Only P and R exist
+#
+
+rm -f Q
+touch P
+touch R
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error '(7) exit status'
+grep -q -F -x -e 'Targets are not up to date' list.err || Error '(7) stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error '(7) stdout'
+
+#
+# (8) Only Q and R exist
+#
+
+rm -f P
+touch Q
+touch R
+
+set +e
+../../bin/stu.test -q >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ] || Error '(8) exit status'
+grep -q -F -x -e 'Targets are not up to date' list.err || Error '(8) stderr'
+[ -r list.out ] && [ ! -s list.out ] || Error '(8) stdout'

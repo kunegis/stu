@@ -1,0 +1,17 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+echo >&3 ../../bin/stu.test -j50
+../../bin/stu.test -j50 >list.out 2>list.err & pid=$!
+
+echo >&3 sleep 3
+sleep 3
+kill -TERM "$pid"
+
+set +e
+wait "$!" 2>/dev/null
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 143 ]
+grep -q -F -e 'removing partially built files (30)' list.err

@@ -1,0 +1,15 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ? list.*
+
+../../bin/stu.test
+
+grep -q -F -e 'CORRECT' A || Error '(1) A'
+
+../../sh/touch_old A 2
+touch B
+
+../../bin/stu.test >list.out
+
+grep -q -F -x -e 'Targets are up to date' list.out || Error '(2) stdout'

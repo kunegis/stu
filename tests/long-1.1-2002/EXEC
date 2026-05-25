@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# This test is also used by "make prof".
+#
+
+. ../../sh/test.sh
+
+../../bin/stu.test -j 010 >list.out 2>list.err & pid=$!
+
+sleep 3
+[ -e A ]
+wait "$pid" 2>/dev/null

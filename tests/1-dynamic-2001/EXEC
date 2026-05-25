@@ -1,0 +1,27 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f ?
+
+#
+# Build for the first time
+#
+
+../../bin/stu.test
+
+[ -h W ] || Error 'W'
+
+#
+# Update 'D'
+#
+
+../../sh/touch_old A
+../../sh/touch_old B
+../../sh/touch_old C
+touch D
+
+#
+# Build for a second time
+#
+
+../../bin/stu.test

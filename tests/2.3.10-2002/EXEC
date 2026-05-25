@@ -1,0 +1,10 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+set +e
+STU_OPTIONS=X ../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 4 ]
+grep -q -F -e 'invalid option -X' list.err

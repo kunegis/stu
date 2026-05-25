@@ -1,0 +1,11 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+set +e
+../../bin/stu.test -i -j2 >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 4 ] || Error 'exit status'
+grep -q -F -e "Option -i: parallel mode using -j cannot be used in interactive mode" list.err ||
+	Error 'stderr'

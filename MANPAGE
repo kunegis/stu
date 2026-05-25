@@ -796,14 +796,14 @@ DIRECTIVES
        usage of Stu features that were not present in the specified version.
 
 TOKENIZATION
-       Unquoted filenames in Stu may contain the following ASCII characters:
+       Unquoted names in Stu may contain the following ASCII characters:
 
-           [a-z] [A-Z] [0-9] _ ^ ` + - . ~ /
+           [a-z] [A-Z] [0-9] ^ ` / . _
 
-       and  all  non-ASCII  characters.  Filenames containing other characters
-       must be quoted by either single or double quotes,  or  by  using  back‐
-       slashes.   The characters -, + and ~ are not allowed as the first char‐
-       acter of a name if they are not quoted.
+       and all non-ASCII characters.  The characters -, + and ~ are allowed in
+       unquoted names, as long as the they are not the first character of  the
+       name.   Names containing other characters must be quoted by either sin‐
+       gle or double quotes, or by backslashes.
 
        The following characters have special meaning in Stu and cannot be used
        in unquoted filenames:
@@ -815,7 +815,7 @@ TOKENIZATION
            "     Quote, with escape sequences
            :     Separator for rule definition
            ;     End of rule, in rule without command
-           -     Prefix character for flag, followed by a single character
+           -     Prefix character for flag
            $     Parameter; variable dependency; environment variable
            @     Phony target marker
            >     Output redirection
@@ -1223,4 +1223,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.14.1                         May 2026                             STU(1)
+stu-2.14.2                         June 2026                            STU(1)

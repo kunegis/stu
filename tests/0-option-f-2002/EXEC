@@ -1,0 +1,10 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+set +e
+../../bin/stu.test -f '' 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 4 ] || Error 'exit status'
+grep -q -F -e "Option -f: expected non-empty argument" list.err || Error 'stderr'

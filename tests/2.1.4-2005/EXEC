@@ -1,0 +1,8 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+../../bin/stu.test -y -P >list.out 2>list.err
+
+[ -f list.err ]
+[ \! -s list.err ]
+grep -q -F -e 'A B C' list.out

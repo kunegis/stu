@@ -88,25 +88,40 @@
 #              number of variants.  Each can be preceded by '!' to exclude it.
 # PRELOAD.cc   If present, the file is compiled as a shared object and Stu executed with
 #              LD_PRELOAD set to that file.
-# EXEC         An alternative test script; it can do anything and should return a sensible
-#              exit status (i.e., 0 on success, 1 on test failed, 2 on internal error).
-#              It also otherwise behaves like sh/test, e.g., output '***' only on error.
+# EXEC         An alternative test script; see below
 #
 # For the files beginning with 'IN', each line contains a string that must be present, in
 # any order.
 #
 # NAMES OF TESTS
 #
-# * tests/VERSION-ID
-#	These are tests for features introduced in Stu version VERSION.  This was
-#	introduced in Stu 2.5, and therefore the assignment of VERSION numbers for older
-#	versions is approximate.  The goal is to be able to run all tests in asciibetical
-#	order so as to test older features first.  Presumably, these are the features that
-#	should be fixed first when working on Stu.
-# * tests/long-NAME
-#	These are tests that take a long time to run.  I.e., at least one second, due to
-#	sleep being used.  We try to avoid this as much as possible, but sometimes
-#	sleeping is the only way to test something.
+# Subdirectories of tests/ have names of the form
+#
+#    [long-]<version>[-<name>]-<code>
+#
+# where:
+#
+# * "long-" is present for tests that take long, e.g. because they sleep or test many
+#   things in a loop.
+# * <version> is the Stu version in which the tested feature was introduced.  See 'NEWS'
+#   for a list of versions and features they have introduced.
+# * <name> is an optional textual name to disambiguate different features from the same
+#   version.  Mostly only used for version "0".
+# * <code> is a four-digit number identifying the test.  The first digit is 0 for tests
+#   that succeed (neither EXITSTATUS nor EXEC present), 1 for tests that fail (EXITSTATUS
+#   present), and 2 for tests having EXEC.  The other digits are assigned consecutively,
+#   or by blocks.  Typically:  x0yy: individual tests x1yy:  blocks of 10; x0[2-9]yy:
+#   blocks of 100.
+#
+# EXEC
+#
+# A executable file 'EXEC' may be placed in the directory, in which case that file will be
+# executed, and no other tests performed automatically.  The file should be a /bin/sh
+# script that includes ../../sh/test.sh.  It should return 0 on success, 1 on test error,
+# and 2 on other errors.
+#
+# 'EXEC' scripts don't need to execute sh/rm_tmps, neither at the beginning nor end of
+# their execution; that is taken care of by this script.
 #
 # NOTES
 #
@@ -226,25 +241,6 @@ filter_tests()
 	}
 }
 
-sort_tests()
-{
-	sed -e '
-s,^\(.*\)$,\1 \1,
-s,^\([a-z].*\)$,9999-\1,
-s,^\([0-9]\)\([-.]..*\)$,000\1\2,
-s,^\([0-9][0-9]\)\([-.]..*\)$,00\1\2,
-s,^\([0-9][0-9][0-9]\)\([-.]..*\)$,0\1\2,
-s,^\([0-9][0-9][0-9][0-9]\)\(-.*\)$,\1.0000\2,
-s,^\([0-9][0-9][0-9][0-9]\)\.\([0-9]\)\([-.]..*\)$,\1.000\2\3,
-s,^\([0-9][0-9][0-9][0-9]\)\.\([0-9][0-9]\)\([-.]..*\)$,\1.00\2\3,
-s,^\([0-9][0-9][0-9][0-9]\)\.\([0-9][0-9][0-9]\)\([-.]..*\)$,\1.0\2\3,
-s,^\([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9]\)\(-.*\)$,\1.0000\2,
-s,^\([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9]\)\.\([0-9]\)\([-.]..*\)$,\1.000\2\3,
-s,^\([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9]\)\.\([0-9][0-9]\)\([-.]..*\)$,\1.00\2\3,
-s,^\([0-9][0-9][0-9][0-9]\.[0-9][0-9][0-9][0-9]\)\.\([0-9][0-9][0-9]\)\([-.]..*\)$,\1.0\2\3,
-	' | sort | sed -e 's,^[^ ][^ ]* \(..*\)$,\1,'
-}
-
 preload_prefix()
 {
 	value=$(printf '%s\n' "$1" | sed -e 's,^:,,;s,:$,,')
@@ -300,7 +296,7 @@ else
 	# want to use ls -1 | { ... } because that would make it impossible
 	# to do "error=1", as setting the variable $error in a subshell
 	# would have no effect.
-	tests=$(ls -1U | filter_tests | sort_tests)
+	tests=$(ls -1U | filter_tests | ../sh/sort_tests)
 	subset=
 	[ "$nolong" ]    && subset=$subset' <nolong>'
 	[ "$nopreload" ] && subset=$subset' <nopreload>'

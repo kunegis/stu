@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# Test that '-f -' makes Stu read standard input as an input file.
+#
+
+. ../../sh/test.sh
+
+set +e
+../../bin/stu.test -f - >list.out 2>list.err <<EOF
+A: B { cp B A }
+>B { echo correct }
+EOF
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 0 ] || Error 'exit status'
+[ -r list.err ] && [ ! -s list.err ] || Error 'stderr'
+grep -q -F -x -e 'correct' A || Error 'content'

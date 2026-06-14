@@ -1,8 +1,8 @@
 #!/bin/sh
 . ../../sh/test.sh
 
-rm -Rf xxx
-mkdir xxx
+rm -Rf xxx.data
+mkdir xxx.data
 
 set +e
 ../../bin/stu.test >list.out 2>list.err
@@ -10,6 +10,6 @@ exitstatus=$?
 set -e
 
 [ "$exitstatus" = 2 ] || Error 'exit status'
-grep -q -F -e "xxx/../main.stu:5:10: recursive inclusion of \"xxx/../main.stu\"" list.err ||
+grep -q -F -e "xxx.data/../main.stu:5:10: recursive inclusion of \"xxx.data/../main.stu\"" list.err ||
 	Error 'stderr'
-rm -Rf xxx list.*
+rm -Rf xxx.data list.*

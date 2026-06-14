@@ -1,27 +1,22 @@
 #!/bin/sh
 . ../../sh/test.sh
 
-rm -Rf BBB A
+echo CORRECT >BBB.data
 
-echo CORRECT >BBB
+../../bin/stu.test
 
-../../bin/stu.test || Error '(A) exit status'
+grep -q -F -e 'CORRECT' BBB.data
 
-grep -q -F -e 'CORRECT' BBB || Error '(A) BBB'
-
-../../bin/stu.test >list.content || Error '(B) exit status'
-
-grep -q -F -x -e 'Targets are up to date' list.content || Error '(B) stdout'
+../../bin/stu.test >list.out
+grep -q -F -x -e 'Targets are up to date' list.out
 
 ../../sh/touch_old A 1
-touch BBB
+touch BBB.data
 
-../../bin/stu.test >list.content || Error '(C) exit status'
+../../bin/stu.test >list.out
 
-grep -q -F -e 'cat BBB' list.content || Error '(C) stdout'
+grep -q -F -e 'cat BBB.data' list.out
 
-../../bin/stu.test >list.content || Error '(D) exit status'
+../../bin/stu.test >list.out
 
-grep -q -F -x -e 'Targets are up to date' list.content || Error '(D) stdout'
-
-rm -f BBB
+grep -q -F -x -e 'Targets are up to date' list.out

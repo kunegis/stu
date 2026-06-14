@@ -1,0 +1,59 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+#
+# (1) When A does not exist, don't build it
+#
+
+echo >&3 "Case (1)"
+
+rm -f ? list.stu
+
+cat >list.stu <<EOF
+A = {correct}
+EOF
+
+../../bin/stu.test -f list.stu -o A >list.out 2>list.err
+
+[ ! -e A ]
+
+#
+# (2) When A exists and has no dependency, do nothing
+#
+
+echo >&3 "Case (2)"
+
+rm -f ? list.stu
+
+cat >list.stu <<EOF
+A { exit 1 }
+EOF
+
+../../sh/touch_old A
+
+../../bin/stu.test -f list.stu -o A >list.out 2>list.err
+
+[ -e A ]
+
+#
+# (3) When A exists and has a newer dependency, rebuild it
+#
+
+echo >&3 "Case (3)"
+
+rm -f ? list.stu
+
+cat >list.stu <<EOF
+A : B {
+   cp B A
+   touch X
+}
+B = {correct}
+EOF
+
+../../sh/touch_old A
+touch B
+
+../../bin/stu.test -f list.stu -o A >list.out 2>list.err
+
+[ -r X ]

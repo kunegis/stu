@@ -1,8 +1,6 @@
 A: @files
 {
-	cat BBB >A
+	cat BBB.data >A
 }
 
-@files:  BBB;
-
-
+@files:  BBB.data;

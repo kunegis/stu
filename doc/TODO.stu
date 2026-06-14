@@ -1,16 +1,4 @@
 #
-# Tests with rm_tmps-incompatible names should not exist.
-# * Rename the files, or
-# * Execute the test in a subdirectory that has a rm_tmps-able name
-#
-
-tests/0-include-2000/xxx
-tests/0-phony-2000/BBB
-tests/2.3-2000/...
-
-find tests -name EXEC | xargs grep -E -e 'rm.*main.stu' --color=always
-
-#
 # Clean up test naming.
 #
 

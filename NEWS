@@ -567,4 +567,4 @@ Also called "hard-coded rules".
 * Variable dependencies, as $[name]
 * Dynamic dependencies, as <file> [version 1: [file]]
 * Parameters as [name] [version 1: $name/${name}]
-* Phonies, using '@'
+* Phonies (phony targets), using '@'

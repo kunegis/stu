@@ -1,0 +1,6 @@
+
+A: -p $[X] { 
+	echo "$X" >A
+}
+
+X { echo >X correct }

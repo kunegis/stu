@@ -1,7 +1,0 @@
-# Error:  variable dependencies are not allowed within dynamic dependencies 
-
-A: [[B]] { touch A }
-
->B { echo '$[C]' }
-
-C { touch C }

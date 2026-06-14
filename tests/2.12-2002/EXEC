@@ -1,0 +1,15 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+rm -f A B
+ln -s nonexisting B
+
+set +e
+../../bin/stu.test >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+[ ! -s list.out ]
+grep -q -F -e "main.stu:2:5: no rule to build \"B\", needed by \"A\"" list.err
+[ ! -e A ]

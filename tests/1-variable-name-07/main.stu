@@ -1,8 +1,0 @@
-# An named variable in a phony target command.
-
-@x :  $[xyz = 'list.xxx=zzz'] 
-{
-	echo "$xyz" >A
-}
-
-list.$name { echo correct >"list.$name" }

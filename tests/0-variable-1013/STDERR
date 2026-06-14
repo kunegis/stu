@@ -1,0 +1,3 @@
+B:1:3: variable dependency $[C] cannot appear
+main.stu:5:1: within multiply-dynamic dependency [[B]]
+main.stu:3:6: [[B]] is needed by "A"

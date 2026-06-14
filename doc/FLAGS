@@ -6,6 +6,7 @@ The currently existing flags are listed in the manpage.
 
 Possible future flags:
 -d         Change directory
+-f         Force (for %set/%unset)
 -i         Interactive (following commands needs to be executed in the foreground)
 -a/-s      Additional dependencies
 <...and others...>

@@ -1,0 +1,8 @@
+# Error: There must be a space between a flag and the filename.
+
+A:  -p"B"
+{
+	touch A
+}
+
+B { touch B }

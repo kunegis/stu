@@ -1,9 +1,0 @@
-#
-# Dollar in double quotes can be escaped.
-#
-
-A:  "B\$C" {
-	cp 'B$C' A
-}
-
-'B$C' = {correct}

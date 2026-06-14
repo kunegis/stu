@@ -1,5 +1,0 @@
-# 'C' is not build because it is optional. 
-A : -o [@x] { touch A; } 
-@x: B; 
-B =         { C } 
-C           { exit 1 ; } 

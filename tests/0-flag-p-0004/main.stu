@@ -1,0 +1,13 @@
+# OK: Ultimately equivalent to '$[-p X]'. 
+
+A: -p [B] { 
+	echo >A "$X"
+}  
+
+B { 
+	echo >B '$[X]' 
+}  
+
+X { 
+	echo >X correct
+}

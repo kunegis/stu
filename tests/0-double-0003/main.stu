@@ -1,0 +1,9 @@
+#
+# Dollar in double quotes can be escaped.
+#
+
+A:  list."B\$C" {
+	cp list.'B$C' A
+}
+
+list.'B$C' = {correct}

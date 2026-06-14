@@ -434,3 +434,23 @@ $(name:-default_value)
 # (2) use /usr/share/dict/words + own list as dictionary.  Fail 'mate test' when a word is
 # not in the dictionary.
 #
+
+#
+# Conditionals.
+#
+
+A:  $(V) ? B; # B is only a dependency when V is set
+A:  $(V) ! C; # C is a dependency when V is not set
+A:  $(V) ? B ! C;
+A:  [F] ? B; # Based on the content of 'F' (not clear how)
+
+#
+# Environment variable for the target.
+#
+
+aaa:  @bbb;
+
+@bbb: $(TARGET).c   # $(TARGET) is 'aaa'
+{
+	...
+}

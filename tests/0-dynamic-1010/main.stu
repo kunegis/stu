@@ -1,0 +1,7 @@
+#
+# Syntax error:  target names cannot be dynamic.  (New syntax)
+#
+
+[filename] : B {
+	   echo >$>
+}

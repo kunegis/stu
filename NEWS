@@ -250,8 +250,8 @@ copy delivered with the project can always be used.
 
 2016-08-29  Version 2.3
 
-* A flag and an option '-0' is now available for \0-separated dynamic dependencies, that
-  work analogously to '-n' for newline-separated dependency.  Thus, this is now possible
+* A flag and an option -0 is now available for \0-separated dynamic dependencies, that
+  work analogously to -n for newline-separated dependency.  Thus, this is now possible
   (using the nonportable find -print0 as an example):
 
 @all [ -0 FILES ];
@@ -298,12 +298,13 @@ See 'doc/MIGRATION'.
 
 * "Timestamp-ignoring dependencies" are now called "persistent dependencies".
 * Quoting rules were changed.
-* Unquoted names cannot begin with -, + or ~ anymore.
+* [first-char] Unquoted names cannot begin with -, + or ~ anymore.
 * Whitespace is now mandatory in certain environments.
 * The "print database" option is now -P instead of -p.
 * The flags !, ? and & have been replaced by -p, -o and -t.
-* The options -o and -p now denote optional and persistent dependencies.
-* Command line argument are now parsed differently.
+* [option-o] [option-p] The options -o and -p now denote optional and persistent
+  dependencies.
+* [command-arg] Command line argument are now parsed differently.
 
 2016-06-24  Version 1.15.67:
 
@@ -330,7 +331,7 @@ See 'doc/MIGRATION'.
 
 2016-05-15  Version 1.14:
 
-* Rules with multiple targets are possible, as in
+* Rules with multiple targets ("multitarget rules") are possible, as in
 
 A B C: X Y { ...Build A B C... }
 
@@ -398,12 +399,12 @@ Also called "hard-coded rules".
 
 2016-04-16  Version 1.9.43:
 
-* Option -E: explain certain error messages.
-* Option -F: pass rules on the command line.
+* [option-E] Option -E: explain certain error messages.
+* [option-F] Option -F: pass rules on the command line.
 
 2016-04-15  Version 1.9.42:
 
-* Allow multiple appearances of option -f on the command line.
+* Allow multiple appearances of option -f on the command line. ("multifile")
 
 2016-04-14  Version 1.9.41:
 
@@ -449,12 +450,12 @@ Also called "hard-coded rules".
 
 2016-03-26  Version 1.9:
 
-* The algorithm for trivial dependencies (marked with '&') has been rewritten, fixing bugs
-  in the previous version, in particular in relation to trivial dependencies included
-  indirectly via phonies and dynamic dependencies.
 * Flags of variable dependencies can now also be specified outside the brackets.  For
   instance, '!$[X]' is now fully equivalent to '$[!X]'.  Previously, '!$[X]' was an error.
   This is true for all three flags, '!', '?', and '&'.
+* The algorithm for trivial dependencies (marked with '&') has been rewritten, fixing bugs
+  in the previous version, in particular in relation to trivial dependencies included
+  indirectly via phonies and dynamic dependencies.
 
 2016-01-24  Version 1.8:
 
@@ -556,15 +557,20 @@ Also called "hard-coded rules".
 
 ????-??-??  Version 0.x or unknown
 
-* Double quotes
-* Single quotes
-* Option -j, parallel
-* Option -k, keep going
-* Option -f
-* %include
-* %version
-* Persistent dependencies, using '!' [version 2: flag -p]
-* Variable dependencies, as $[name]
-* Dynamic dependencies, as <file> [version 1: [file]]
-* Parameters as [name] [version 1: $name/${name}]
-* Phonies (phony targets), using '@'
+* [cycle] Cycle detection
+* [backtrace] Backtraces TODO: maybe fold into other versions
+* [remove] Removal of partially built files
+* [option-V] Option -V, version
+* [option-h] Option -h, help
+* [double] Double quotes
+* [single] Single quotes
+* [option-j] Option -j, parallel
+* [option-k] Option -k, keep going
+* [option-f] Option -f
+* [version] %version
+* [include] %include
+* [flag-p] Persistent dependencies, using '!' [version 2: flag -p]
+* [variable] Variable dependencies, as $[name]
+* [dynamic] Dynamic dependencies, as <file> [version 1: [file]]
+* [parameter] Parameters as [name] [version 1: $name/${name}]
+* [phony] Phonies (phony targets), using '@'

@@ -1,0 +1,17 @@
+X=B: echo "$X$X$X" >$X
+X=C: echo "$X$X$X" >$X
+X=D: echo "$X$X$X" >$X
+X=E: echo "$X$X$X" >$X
+X=F: echo "$X$X$X" >$X
+X=G: echo "$X$X$X" >$X
+X=H: echo "$X$X$X" >$X
+X=I: echo "$X$X$X" >$X
+X=J: echo "$X$X$X" >$X
+X=K: echo "$X$X$X" >$X
+X=L: echo "$X$X$X" >$X
+X=M: echo "$X$X$X" >$X
+X=N: echo "$X$X$X" >$X
+X=O: echo "$X$X$X" >$X
+X=P: echo "$X$X$X" >$X
+cat  B C D E F G H I J K L M N O P  >A
+Build successful

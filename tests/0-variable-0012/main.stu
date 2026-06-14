@@ -1,0 +1,8 @@
+# Propagate variable through double dynamic dependency
+
+# 'A' must contain 'CORRECT'
+
+A: [[B]] { echo >A $V }
+B: { echo >B C }
+C: { echo >C '$[V]' }
+V: { echo >V CORRECT }

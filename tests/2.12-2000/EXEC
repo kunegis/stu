@@ -1,0 +1,26 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+# B is a symlink
+ln -s W B
+echo aaa >W
+
+../../bin/stu.test >list.out 2>list.err
+
+[ -r A ]
+grep -q -F -e 'aaa' A
+
+# * the file pointed to by 'B' is updated
+../../sh/touch_old A
+../../sh/touch_old B
+echo bbb >W
+
+# * stu is called: 'A' should be rebuilt
+../../bin/stu.test >list.out 2>list.err
+
+grep -q -F -e 'bbb' A
+set +e
+grep -qF 'Nothing to be done' list.out
+exitstatus=$?
+set -e
+[ "$exitstatus" = 1 ]

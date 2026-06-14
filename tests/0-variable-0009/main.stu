@@ -1,0 +1,18 @@
+# This works because 'V' is read before 'B' is built.  Stu does not notice that 'V' is
+# removed.
+
+A: $[V] B
+{
+	echo $V >A
+}
+
+V
+{
+	echo correct >V
+}
+
+B
+{
+	rm V
+	touch B
+}

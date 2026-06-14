@@ -2,20 +2,18 @@
 # Clean up test naming.
 #
 
-* Correct version numbers
-* Version numbers should not end in ".1" (just remove the ".1") (except for 1.1, which for
-  historical reasons is distinct from "1".  "1-" and "2-" should not appear in test names.
-* Test numbers should have four digits; first digit shows type (success, fail, EXEC)
+* Tests under 0-:  rename to 0.1, 0.2, etc. by bullet point under NEWS/0
+* Version numbers should not end in ".1" (just remove the ".1")
+** 1.1: for historical reasons is distinct from "1".
+** 2: It did introduce features, so can appear.
 * First digit of test: 0 (success), 1 (fail), 2 (EXEC).
-* All version numbers that appear must be mentioned in NEWS as non-migration versions.  1/2/2.1 should not appear.
-* Tests under 0- should always have a topic in the name (e.g. dynamic, remove, option-C,
-  etc.) (Or, alternatively, use 0.a, 0.b, etc., or just 0.1, 0.2, etc.)
-* For long tests, maybe use the 4000 block (probably not)
-
-find . -name EXEC | grep -v -E -e '^\./tests/.*-2.../' | sort -V -r
+* All version numbers that appear must be mentioned in NEWS as non-migration versions.  1/2/2.1 should not appear (some can appear).
+* Make sure the "description" part is shown as [NAME] in NEWS.
 
 #
-# EXEC: Use 'Not' where useful.
+# EXEC:
+# * Use 'Not' where useful.
+# * Use ! instead of \! (also outside of EXEC).
 #
 
 #
@@ -85,18 +83,21 @@ $ stu -d dir/main.stu # Like first cd'ing to dir/
 # And theoretically also braces for blocks
 
 #
-# When doing %include or %import, allow to pass environment variables.  (Discuss.)
-#
-
-#
-# Does it make sense to have a way to set environment variables for all
-# commands?  It would open us up to many additional questions, and
-# potentially some Make-like anti-patterns.  In general, Stu directives
-# are prone to implement anti-patterns, as what they do is global.
+# A way to set environment variables for all
+# commands.
 #
 
 % set PATH /usr/local/bin
 % unset PATH
+
+# By default, variable must not exist (set), or must exist (unset).  Can be overridden
+# with '-f'.
+% set -f HOME /home/bla
+% set -f unset $(NAME)
+
+#
+# When doing %include or %import, allow to pass environment variables.  (Discuss.)
+#
 
 #
 # Have an option/flag for: For content rules, compare the content of the file with
@@ -446,3 +447,37 @@ a:  @compile| a, a.c |;
 #
 # Check that we are not using binary operators -a and -o in 'test'/'[' invocation.
 #
+
+#
+# Phonies can have arguments. The arguments are made part of the name, and seprated by
+# '\0'.  In source code, the ',' operator is used.  May or may not be surrounded by
+# space.  Not allows for files.
+#
+
+calc:  @build-c, calc, calc.c;
+
+@build-c,${TARGET},${SRC}: ${SRC}
+{
+	cc ${SRC} -o ${TARGET}
+}
+
+# This can be emulated by choosing a symbol (e.g. ':'), but then that symbol cannot appear
+# in filenames, and spaces will also not be allowed:
+
+calc:  @build-c':'calc':'calc.c;
+
+@build-c':'${TARGET}':'${SRC}: ${SRC}
+{
+	cc ${SRC} -o ${TARGET}
+}
+
+# Alternative using only '|':
+
+calc:  @build-c | (calc calc.c);
+
+@build-c | (${TARGET} ${SRC}): ${SRC}
+{
+	cc ${SRC} -o ${TARGET}
+}
+
+aaa: @build-c filename; # Only a single argument is passed

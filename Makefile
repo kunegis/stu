@@ -107,7 +107,7 @@ sani: log/test_unit.sani
 
 cov:  log/cov
 log/cov:  sh/cov_eval cov/OVERVIEW
-	sh/cov_eval && touch log/cov
+	sh/cov_eval
 cov/OVERVIEW:  sh/cov_gcov log/test_unit.cov
 	sh/cov_gcov
 

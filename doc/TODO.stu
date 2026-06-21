@@ -2,13 +2,7 @@
 # Clean up test naming.
 #
 
-* Tests under 0-:  rename to 0.1, 0.2, etc. by bullet point under NEWS/0
-* Version numbers should not end in ".1" (just remove the ".1")
-** 1.1: for historical reasons is distinct from "1".
-** 2: It did introduce features, so can appear.
-* First digit of test: 0 (success), 1 (fail), 2 (EXEC).
-* All version numbers that appear must be mentioned in NEWS as non-migration versions.  1/2/2.1 should not appear (some can appear).
-* Make sure the "description" part is shown as [NAME] in NEWS.
+* All version numbers that appear must be mentioned in NEWS.
 
 #
 # EXEC:

@@ -21,9 +21,35 @@ Clean()
 Check_Test_Names()
 {
 	( cd tests ; ls -1A | ../sh/sort_tests ; ) |
-		grep -v -E -x -e '(|long-)[0-9]+(|\.[0-9]+(|\.[0-9]+))(|-[a-zA-Z-]+)-[0123][0-9][0-9][0-9]' |
-		sed -E -e 's,^,tests/,;s,$,: Invalid test name,' |
-		grep -E -e '.' >&2 && return 1
+	grep -v -E -x -e '(|long-)[0-9]+(|\.[0-9]+(|\.[0-9]+))-[012][0-9][0-9][0-9]' |
+	sed -E -e 's,^,tests/,;s,$,: Invalid test name: Must be of the form [long-]<version>-xxxx,' |
+	grep -E -e '.' >&2 && return 1
+
+	( cd tests ; ls -1A | ../sh/sort_tests ; ) |
+	sed -E -e 's,^long-,,
+s,-.*$,,
+/^[1-9][0-9]*$/!d' |
+	sed -E -e 's,^,tests/,;s,$,: Invalid test name: Major updates cannot have their own tests (create N.0.x versions instead),' |
+	grep -E -e '.' >&2 && return 1
+
+	( cd tests ; ls -1A | ../sh/sort_tests ; ) |
+	while IFS= read -r name ; do
+		first_digit=$(echo "$name" | sed -E -e 's,^.*(.)...$,\1,')
+		[ -e tests/"$name"/EXITSTATUS ] ; exist_EXITSTATUS=$?
+		[ -e tests/"$name"/EXEC ] ; exist_EXEC=$?
+		[ "$first_digit" = 1 ] ; is_1=$?
+		[ "$first_digit" = 2 ] ; is_2=$?
+
+		[ "$exist_EXITSTATUS" = "$is_1" ] || {
+			echo >&2 "tests/$name: EXITSTATUS must exist iff the test is *-1xxx"
+			touch -- "$error_file"
+		}
+		[ "$exist_EXEC" = "$is_2" ] || {
+			echo >&2 "tests/$name: EXEC must exist iff the test is *-2xxx"
+			touch -- "$error_file"
+		}
+	done
+
 	return 0
 }
 

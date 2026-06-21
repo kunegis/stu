@@ -113,4 +113,6 @@ if [ "$uncovered_line_count" != 0 ] ; then
 	exit 1
 fi
 
+touch log/cov
+
 exit 0

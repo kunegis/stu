@@ -1,13 +1,14 @@
-Stu versions are of the form X.Y.Z, where X is the major version, Y is
-the minor version and Z the patch level.  For each new patch level, no
-new syntax features are added.  When the minor version is incremented,
-features are added, which are documented in this file.  This file also
-documents important changes in patch level updates, which are mostly
-changes in terminology, changes in the installation procedure, or
-changes in invocation.
+Stu versions are of the form X.Y.Z, where X is the major version, Y is the minor version
+and Z the patch level.  For each new patch level, no new syntax features are added.  When
+the minor version is incremented, features are added, which are documented in this file.
+This file also documents important changes in patch level updates, which are mostly
+changes in terminology, changes in the installation procedure, or changes in invocation.
 
-When the major version is increased, backward-incompatible changes are
-made, which are documented in the file 'doc/MIGRATION', and summarized here.
+When the major version is increased, backward-incompatible changes are made, which are
+documented in the file 'doc/MIGRATION', and summarized here.
+
+Version numbers shown in brackets are fictitious -- they are only used to name
+subdirectories in tests/.
 
 ------------------------------------------------------------------------
 
@@ -298,13 +299,13 @@ See 'doc/MIGRATION'.
 
 * "Timestamp-ignoring dependencies" are now called "persistent dependencies".
 * Quoting rules were changed.
-* [first-char] Unquoted names cannot begin with -, + or ~ anymore.
 * Whitespace is now mandatory in certain environments.
 * The "print database" option is now -P instead of -p.
 * The flags !, ? and & have been replaced by -p, -o and -t.
-* [option-o] [option-p] The options -o and -p now denote optional and persistent
-  dependencies.
-* [command-arg] Command line argument are now parsed differently.
+* [2.0.4] [first-char] Unquoted names cannot begin with -, + or ~ anymore.
+* [2.0.2] [2.0.3] [option-o] [option-p] The options -o and -p now denote optional and
+  persistent dependencies.
+* [2.0.1] [command-arg] Command line argument are now parsed differently.
 
 2016-06-24  Version 1.15.67:
 
@@ -399,8 +400,8 @@ Also called "hard-coded rules".
 
 2016-04-16  Version 1.9.43:
 
-* [option-E] Option -E: explain certain error messages.
-* [option-F] Option -F: pass rules on the command line.
+* Option -E: explain certain error messages.
+* Option -F: pass rules on the command line.
 
 2016-04-15  Version 1.9.42:
 
@@ -557,20 +558,20 @@ Also called "hard-coded rules".
 
 ????-??-??  Version 0.x or unknown
 
-* [cycle] Cycle detection
-* [backtrace] Backtraces TODO: maybe fold into other versions
-* [remove] Removal of partially built files
-* [option-V] Option -V, version
-* [option-h] Option -h, help
-* [double] Double quotes
-* [single] Single quotes
-* [option-j] Option -j, parallel
-* [option-k] Option -k, keep going
-* [option-f] Option -f
-* [version] %version
-* [include] %include
-* [flag-p] Persistent dependencies, using '!' [version 2: flag -p]
-* [variable] Variable dependencies, as $[name]
-* [dynamic] Dynamic dependencies, as <file> [version 1: [file]]
-* [parameter] Parameters as [name] [version 1: $name/${name}]
-* [phony] Phonies (phony targets), using '@'
+* [0.17] [cycle] Cycle detection
+* [0.16] [backtrace] Backtraces
+* [0.15] [remove] Removal of partially built files
+* [0.14] [option-V] Option -V, version
+* [0.13] [option-h] Option -h, help
+* [0.12] [double] Double quotes
+* [0.11] [single] Single quotes
+* [0.10] [option-j] Option -j, parallel
+* [0.9] [option-k] Option -k, keep going
+* [0.8] [option-f] Option -f
+* [0.7] [version] %version
+* [0.6] [include] %include
+* [0.5] [flag-p] Persistent dependencies, using '!' [version 2: flag -p]
+* [0.4] [variable] Variable dependencies, as $[name]
+* [0.3] [dynamic] Dynamic dependencies, as <file> [version 1: [file]]
+* [0.2] [parameter] Parameters as [name] [version 1: $name/${name}]
+* [0.1] [phony] Phonies (phony targets), using '@'

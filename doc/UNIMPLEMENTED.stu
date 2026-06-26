@@ -454,3 +454,8 @@ aaa:  @bbb;
 {
 	...
 }
+
+#
+# Allow variable dependency to be optional. If the file is not present, no variable is
+# passed.
+#

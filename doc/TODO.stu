@@ -1,10 +1,4 @@
 #
-# Clean up test naming.
-#
-
-* All version numbers that appear must be mentioned in NEWS.
-
-#
 # EXEC:
 # * Use 'Not' where useful.
 # * Use ! instead of \! (also outside of EXEC).
@@ -475,3 +469,8 @@ calc:  @build-c | (calc calc.c);
 }
 
 aaa: @build-c filename; # Only a single argument is passed
+
+#
+# Write a check that all 'cov_hash' calls in tests/ have a corresponding declaration in
+# src/ and vice versa.
+#

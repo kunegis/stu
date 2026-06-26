@@ -1,9 +1,17 @@
 #!/bin/sh
-error_file=${TMPDIR:-/tmp}/test_clean.$$.error
-
-rm -f -- "$error_file"
-trap Clean EXIT
+set -e
+dir=${TMPDIR:-/tmp}/test_clean.$$
+error_file=$dir/error
 ret=0 # Functions report errors by returning non-zero OR by touching $error_file
+
+trap Clean EXIT
+rm -R -f -- "$dir"
+mkdir -- "$dir"
+
+Clean()
+{
+	rm -R -f -- "$dir"
+}
 
 Find_Source_Files()
 {
@@ -11,11 +19,6 @@ Find_Source_Files()
 		grep -v -E -e '~$' -e '^\./(bin|cov|tests|log|.git)/' -e '^\./man/stu\.1$'
 	find tests -name EXEC -o -name PRELOAD.cc -o -name EXITSTATUS -o -name CMD \
 	     -o -name VARIANT
-}
-
-Clean()
-{
-	rm -f -- "$error_file"
 }
 
 Check_Test_Names()
@@ -49,6 +52,23 @@ s,-.*$,,
 			touch -- "$error_file"
 		}
 	done
+
+	patterns=$dir/patterns
+	sed -E -e '
+s,^.*\[([0-9]+(|\.[0-9]+(|\.[0-9]+)))\].*$,\1,
+tend
+s,^.*Version ([0-9.]+):$,\1,
+tend
+d
+:end
+s,\.,\\.,g
+s,^,(|long-),
+s,$,-....,
+' NEWS >"$patterns"
+	( cd tests ; ls -1A | ../sh/sort_tests ; ) |
+	grep -v -E -x -f "$patterns" |
+	sed -E -e 's,$,: Version number of test does not appear in NEWS,' |
+	grep -E -e '.' >&2 && return 1
 
 	return 0
 }

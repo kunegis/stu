@@ -1,2 +1,2 @@
->A: $[SCHTROUMPF] { }
+ A: $[SCHTROUMPF] { touch A ; }
 SCHTROUMPF { echo SCHTROUMPF >SCHTROUMPF; }

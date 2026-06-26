@@ -6,8 +6,8 @@
 
 A = list.10; 
 
->list.$10
+ list.$10
 {
-	echo $1
-	echo ${10}
+	echo $1 >list.$10
+	echo ${10} >>list.$10
 }

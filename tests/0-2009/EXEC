@@ -46,7 +46,7 @@ set -e
 
 [ "$exitstatus" = 0 ] || Error 'exit status (3)'
 [ A -ot B ] && Error 'A is older than B (3)'
-grep -q -F -i -e 'Nothing to be done' list.out &&
+Not grep -q -F -i -e 'Nothing to be done' list.out ||
 	Error 'must not output "Nothing to be done"'
 
 exit 0

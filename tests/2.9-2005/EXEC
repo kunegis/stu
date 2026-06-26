@@ -8,4 +8,4 @@ set -e
 
 [ "$exitstatus" = 1 ]
 grep -q -E -e 'Targets are not up to date' list.err
-[ -e list.out -a \! -s list.out ]
+[ -e list.out ] ; [ ! -s list.out ]

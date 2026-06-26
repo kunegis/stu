@@ -42,15 +42,15 @@ EOF
 	fi
 
 	if [ "$exitstatus_correct" = 0 ] ; then
-		if ! grep -q -F -e 'CORRECT' A ; then
+		grep -q -F -e CORRECT A || {
 			echo >&2 "*** $0:  Incorrect content of file 'A'"
 			error=1
-		fi
+		}
 	else
-		if ! grep -q -F -e 'is incompatible with' list.err ; then
+		grep -q -F -e 'is incompatible with' list.err || {
 			echo >&2 "*** $0:  Invalid error output"
 			error=1
-		fi
+		}
 	fi
 }
 
@@ -58,7 +58,7 @@ EOF
 VERSION=$(echo $(cat ../../VERSION))
 echo "VERSION='$VERSION'"
 
-echo "$VERSION" | grep -q -v -E -e '[0-9]+\.[0-9]+\.[0-9]+' &&
+echo "$VERSION" | Not grep -q -v -E -e '[0-9]+\.[0-9]+\.[0-9]+' ||
 	Error "Invalid version number '$VERSION'"
 
 MAJOR=$(echo "$VERSION" | sed -e 's/^\([0-9]\{1,\}\)\.[0-9]\{1,\}\.[0-9]\{1,\}$/\1/')

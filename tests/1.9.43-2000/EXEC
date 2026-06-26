@@ -12,10 +12,10 @@ set +e
 exitstatus=$?
 set -e
 
-[ "$exitstatus" = 1 ] || Error '(1) exit status'
-grep -q -F -e "expected the file without command and without dependencies \"A\" to exist" list.err || Error '(1) stderr A'
-grep -q -F -e 'Option -F:' list.err || Error '(1) stderr B'
-[ -r list.out ] && [ ! -s list.out ] || Error '(1) stdout'
+[ "$exitstatus" = 1 ]
+grep -q -F -e "expected the file without command and without dependencies \"A\" to exist" list.err
+grep -q -F -e 'Option -F:' list.err
+[ -r list.out ] && [ ! -s list.out ]
 
 #
 # (2) File exists
@@ -28,6 +28,6 @@ set +e
 exitstatus=$?
 set -e
 
-[ "$exitstatus" = 0 ] || Error '(2) exit status'
-grep -q -F -x -e 'Targets are up to date' list.out || Error '(2) stdout'
-[ -r list.err ] && [ \! -s list.err ] || Error '(2) stderr'
+[ "$exitstatus" = 0 ]
+grep -q -F -x -e 'Targets are up to date' list.out
+[ -r list.err ] ; [ ! -s list.err ]

@@ -1,10 +1,4 @@
 #
-# EXEC:
-# * Use 'Not' where useful.
-# * Use ! instead of \! (also outside of EXEC).
-#
-
-#
 # Allow -n/-0/-C on targets.
 #
 
@@ -22,6 +16,18 @@
 "~" # Not the home directory
 "~"name # Not a user's home directory
 ~"name" # ?
+
+#
+# A way to set environment variables for all commands.
+#
+
+% set PATH /usr/local/bin
+% unset PATH
+
+# By default, variable must not exist (set), or must exist (unset).  Can be overridden
+# with '-f'.
+% set -f HOME /home/bla
+% set -f unset $(NAME)
 
 #
 # File import.  '%import' should work at rule level, and allow both cd-ing and not
@@ -69,19 +75,6 @@ $ stu -d dir/main.stu # Like first cd'ing to dir/
 %cd dir/
 
 # And theoretically also braces for blocks
-
-#
-# A way to set environment variables for all
-# commands.
-#
-
-% set PATH /usr/local/bin
-% unset PATH
-
-# By default, variable must not exist (set), or must exist (unset).  Can be overridden
-# with '-f'.
-% set -f HOME /home/bla
-% set -f unset $(NAME)
 
 #
 # When doing %include or %import, allow to pass environment variables.  (Discuss.)
@@ -397,7 +390,7 @@ B {}
 #
 
 #
-# Also allow 'Main.stu' as the main Stu file in a directory, maybe.
+# Also allow 'Main.stu' as the main Stu file in a directory, maybe. (probably not)
 #
 
 #
@@ -407,6 +400,11 @@ B {}
 
 #
 # doc/OPTIONS:  For each option, add in which Stu version it was added.
+#
+
+#
+# Write a check that all 'cov_hash' calls in tests/ have a corresponding declaration in
+# src/ and vice versa.
 #
 
 #
@@ -469,8 +467,3 @@ calc:  @build-c | (calc calc.c);
 }
 
 aaa: @build-c filename; # Only a single argument is passed
-
-#
-# Write a check that all 'cov_hash' calls in tests/ have a corresponding declaration in
-# src/ and vice versa.
-#

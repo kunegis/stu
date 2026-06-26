@@ -7,4 +7,4 @@ exitstatus=$?
 set -e
 
 [ "$exitstatus" = 2 ]
-[ \! -e A ]
+[ ! -e A ]

@@ -9,10 +9,10 @@ rm -f A
 [ -r A ]
 
 ../../bin/stu.test >list.out
-grep -q -F -e 'Targets are up to date' list.out || Error '(1) stdout'
+grep -q -F -e 'Targets are up to date' list.out
 
 ../../bin/stu.test @clean
-[ \! -r A ]
+[ ! -r A ]
 
 # By calling stu A
 
@@ -20,7 +20,7 @@ grep -q -F -e 'Targets are up to date' list.out || Error '(1) stdout'
 [ -r A ]
 
 ../../bin/stu.test A >list.out
-grep -q -F -e 'Targets are up to date' list.out || Error '(2) stdout'
+grep -q -F -e 'Targets are up to date' list.out
 
 ../../bin/stu.test @clean
-[ \! -r A ]
+[ ! -r A ]

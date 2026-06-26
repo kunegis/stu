@@ -6,7 +6,7 @@ echo >&3 '../../bin/stu.test -j1000 &'
 
 # Wait until a first line has been written
 begin=$(../../sh/now)
-while [ \! -s list.out ] ; do
+while [ ! -s list.out ] ; do
 	now=$(../../sh/now)
 	if [ "$now" -gt "$((begin + 2))" ] ; then
 		echo >&2 '*** No output written in first 2 seconds'
@@ -30,7 +30,7 @@ grep -q -E -e '^STATISTICS  ' list.out
 kill -INT "$pid"
 sleep 1
 
-if [ "$(echo $(ps -fA | grep -F -e '7463194' | grep -v grep | wc -l))" \!= 0 ]; then
+if [ "$(echo $(ps -fA | grep -F -e '7463194' | grep -v grep | wc -l))" != 0 ]; then
 	Error 'Stu is still running'
 fi
 

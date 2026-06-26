@@ -12,5 +12,5 @@ exitstatus=$?
 set -e
 
 [ "$exitstatus" = 130 ]
-[ \! -h A ]
+[ ! -h A ]
 grep -q -F -e 'removing partially built files' list.err

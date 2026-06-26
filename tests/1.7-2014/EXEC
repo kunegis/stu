@@ -20,6 +20,6 @@ rm B C
 
 ../../bin/stu.test >list.out 2>list.err
 
-[ \! -e B ]
-[ \! -e C ]
+[ ! -e B ]
+[ ! -e C ]
 grep -q -F -e 'CORRECT' A

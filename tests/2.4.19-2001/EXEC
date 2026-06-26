@@ -16,5 +16,6 @@ set -e
 
 [ "$exitstatus" = 0 ] || Error 'exit status'
 [ -r list.out ] && [ ! -s list.out ] || Error 'stdout empty'
-grep -q -F -x -e "No rule for building 'A', but the file exists" list.out && Error 'stdout content'
-[ -r list.err ] &&  [ \! -s list.err ] || Error 'stderr not empty'
+Not grep -q -F -x -e "No rule for building 'A', but the file exists" list.out ||
+	Error 'stdout content'
+[ -r list.err ] &&  [ ! -s list.err ] || Error 'stderr not empty'

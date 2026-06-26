@@ -11,5 +11,5 @@ wait $pid
 exitstatus=$?
 set -e
 
-[ \! -h A ]
+[ ! -h A ]
 grep -q -F -e 'removing partially built files' list.err

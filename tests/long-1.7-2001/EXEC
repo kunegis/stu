@@ -100,7 +100,7 @@ EOF
 
 	[ "$exitstatus" = 0 ] || Err 'exit status'
 	[ -r list.err ] || Err 'list.err must exist'
-	[ \! -s list.err ] || Err 'list.err must be empty'
+	[ ! -s list.err ] || Err 'list.err must be empty'
 	[ -r W ] || Err 'W must exist'
 	grep -q -F -x -e 'correct' A || Err 'content'
 done ;  done ;  done

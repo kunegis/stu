@@ -58,7 +58,7 @@ rm -f ?
 
 ../../bin/stu.test >list.out 2>list.err
 
-[ -r list.err ] && [ \! -s list.err ] || Error "expected empty error output"
+[ -r list.err ] ; [ ! -s list.err ]
 
 check_one A
 check_one B

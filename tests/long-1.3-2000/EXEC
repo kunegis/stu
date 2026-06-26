@@ -30,7 +30,7 @@ while read -r line ; do
 	echo >&3 "exitstatus='$exitstatus'"
 
 	[ "$exitstatus" = 0 ]
-	[ \! -e C ]
+	[ ! -e C ]
 
 	#
 	# Touch B - A will not be rebuilt

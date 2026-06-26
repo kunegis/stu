@@ -9,8 +9,8 @@ set +e
 exitstatus=$?
 set -e
 
-[ "$exitstatus" = 1 ] || Error 'exit status (A)'
-grep -q -F -e 'not exist' list.err && Error 'stderr (A)'
+[ "$exitstatus" = 1 ]
+Not grep -q -F -e 'not exist' list.err
 
 rm -f ?
 
@@ -21,7 +21,7 @@ set +e
 exitstatus=$?
 set -e
 
-[ "$exitstatus" = 1 ] || Error 'exit status (B)'
-grep -q -F -e 'CORRECT' B || Error 'CORRECT (B)'
-grep -q -F -e "no rule to build \"nonexistingfile\"" list.err || Error 'stderr (B1)'
-grep -q -F -e 'targets not up to date because of errors' list.err || Error 'stderr (B2)'
+[ "$exitstatus" = 1 ]
+grep -q -F -e 'CORRECT' B
+grep -q -F -e "no rule to build \"nonexistingfile\"" list.err
+grep -q -F -e 'targets not up to date because of errors' list.err

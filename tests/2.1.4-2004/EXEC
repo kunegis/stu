@@ -16,7 +16,7 @@ exitstatus=$?
 set -e
 
 [ "$exitstatus" = 1 ]
-grep -q -F -e "$esc" list.out && Error '(a) stdout'
+Not grep -q -F -e "$esc" list.out
 grep -q -F -e "$esc" list.err
 
 #
@@ -32,6 +32,6 @@ set -e
 
 [ "$exitstatus" = 1 ]
 grep -q -F -e "$esc" list.out
-grep -q -F -e "$esc" list.err && Error '(b) stderr'
+Not grep -q -F -e "$esc" list.err
 
 exit 0

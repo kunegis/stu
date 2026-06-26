@@ -12,7 +12,7 @@ exitstatus=$?
 set -e
 
 [ "$exitstatus" = 130 ]
-grep -q -F -i -e 'terminating all jobs' list.out && Error 'stdout'
-grep -q -F -i -e 'terminating all jobs' list.err && Error 'stderr'
+Not grep -q -F -i -e 'terminating all jobs' list.out
+Not grep -q -F -i -e 'terminating all jobs' list.err
 
 exit 0

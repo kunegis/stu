@@ -9,6 +9,6 @@ set +e
 exitstatus=$?
 set -e
 
-[ "$exitstatus" = 0 ] || Error 'exit status'
-grep -q -F -e 'Nothing to be done' list.out && Error 'stdout'
-[ -r list.err ] && [ ! -s list.err ] || Error 'stderr'
+[ "$exitstatus" = 0 ]
+Not grep -q -F -e 'Nothing to be done' list.out
+[ -r list.err ] ; [ ! -s list.err ]

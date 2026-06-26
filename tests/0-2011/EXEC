@@ -6,10 +6,10 @@ rm -f A
 echo >&3 ../../bin/stu.test
 ../../bin/stu.test >list.out 2>list.err
 
-[ -r list.out ] || Error 'list.out'
-[ -r list.err ] || Error 'list.err'
+[ -r list.out ]
+[ -r list.err ]
 
-grep -q -F -e 'file exists' list.out && Error 'stdout'
-grep -q -F -e 'file exists' list.err && Error 'stderr'
+Not grep -q -F -e 'file exists' list.out
+Not grep -q -F -e 'file exists' list.err
 
 exit 0

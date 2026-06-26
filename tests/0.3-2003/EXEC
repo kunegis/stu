@@ -15,7 +15,7 @@ set -e
 [ "$exitstatus" = 2 ] || Error 'exit status (A)'
 grep -q -F -e "B1:1:4: expected a dependency" list.err ||
 	Error "not containing 'invalid token' in error output"
-grep -q -F -e "Targets not up to date because of errors" list.err &&
+Not grep -q -F -e "Targets not up to date because of errors" list.err ||
 	Error "containing '*** Targets not up to date because of errors' in error output"
 
 #

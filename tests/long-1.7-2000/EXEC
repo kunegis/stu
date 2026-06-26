@@ -100,7 +100,7 @@ for type in a b c ; do
 		../../bin/stu.test -f list.stu >list.out 2>list.err
 
 		[ -r A ]
-		[ \! -s list.err ]
+		[ ! -s list.err ]
 
 		for file in A B C ; do
 			echo >&3 "($type $cas)"
@@ -111,7 +111,7 @@ for type in a b c ; do
 			exitstatus_expr=$?
 			set -e
 
-			if [ "$exitstatus_grep" \!= "$exitstatus_expr" ] ; then
+			if [ "$exitstatus_grep" != "$exitstatus_expr" ] ; then
 				echo >&2 "*** ($type $cas) building '$file'"
 				echo >&2 list_old=$list_old
 				echo >&2 list_new=$list_new
@@ -124,7 +124,7 @@ for type in a b c ; do
 				echo >&2 ------------
 				exit 1
 			fi
-			[ \! -s list.expr.err ]
+			[ ! -s list.expr.err ]
 		done
 	done
 done

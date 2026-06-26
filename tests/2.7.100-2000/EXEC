@@ -4,7 +4,7 @@
 ../../bin/stu.test --version >list.out 2>list.err
 
 [ -e list.err ]
-[ \! -s list.err ]
+[ ! -s list.err ]
 
 sed -E -e '1!d' list.out | grep -q -F -e "stu $(cat ../../VERSION)"
 

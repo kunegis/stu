@@ -12,7 +12,7 @@ set -e
 
 [ "$exitstatus" = 1 ]
 grep -q -F -e "main.stu:29:5: command for \"list.2\" failed" list.err
-[ \! -r list.3 ]
+[ ! -r list.3 ]
 
 #
 # -k

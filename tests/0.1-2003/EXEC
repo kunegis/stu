@@ -19,6 +19,6 @@ grep -q -F -e 'ALL HEADERS BUILT' list.out || Error 'stdout (A)'
 ../../bin/stu.test >list.out || Error 'exit status (B)'
 
 grep -q -F -e 'ALL HEADERS BUILT' list.out || Error 'stdout (B1)'
-grep -q -F -e 'Nothing to be done' list.out && Error 'stdout (B1)'
+Not grep -q -F -e 'Nothing to be done' list.out || Error 'stdout (B1)'
 
 exit 0

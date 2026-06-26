@@ -40,8 +40,7 @@ sleep 1
 
 # Make sure all files are created but still empty
 for file in B C D E F G H I J K L M N O P Q R S T U V W X Y Z ; do
-	[ -r "$file" ]
-	[ \! -s $file ]
+	[ -r "$file" ] ; [ ! -s "$file" ]
 done
 
 # Terminate Stu
@@ -61,7 +60,7 @@ fi
 
 # Make sure all files were deleted
 for file in A B C D E F G H I J K L M N O P Q R S T U V W X Y Z ; do
-	[ \! -r $file ]
+	[ ! -r $file ]
 done
 
 kill_sleeps

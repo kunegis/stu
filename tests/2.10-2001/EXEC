@@ -37,7 +37,7 @@ while IFS= read -r line ; do
 
 	printf >&3 'exitstatus=%s\n' "$exitstatus"
 	[ "$exitstatus" = 2 ]
-	[ -f list.out -a \! -s list.out ]
+	[ -f list.out ] ; [ ! -s list.out ]
 	[ -f list.err ]
 	cmp list.err stderr
 done || exit 1

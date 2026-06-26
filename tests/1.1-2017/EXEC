@@ -8,7 +8,7 @@ set +e
 exitstatus=$?
 set -e
 
-[ "$exitstatus" = 0 ] || Error 'exit status (a)'
+[ "$exitstatus" = 0 ]
 
 rm -f B C
 
@@ -17,7 +17,7 @@ set +e
 exitstatus=$?
 set -e
 
-[ "$exitstatus" = 0 ] || Error 'exit status (b)'
-grep -q -F -e 'cat D E' list.out && Error 'stdout (b)'
+[ "$exitstatus" = 0 ]
+Not grep -q -F -e 'cat D E' list.out
 
 exit 0

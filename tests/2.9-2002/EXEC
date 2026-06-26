@@ -7,7 +7,7 @@ do
 
 	../../bin/stu.test $options >list.out 2>list.err
 
-	[ -e list.err -a \! -s list.err ]
+	[ -e list.err -a ! -s list.err ]
 	[ -e list.out ]
 	[ $(echo $(wc -l <list.out)) = 5 ]
 	<list.out sed -E -e '1!d' | grep -q -x -F -e 'Building A'

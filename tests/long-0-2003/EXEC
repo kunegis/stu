@@ -31,6 +31,6 @@ set -e
 
 [ "$exitstatus" = 0 ]
 grep -q -F -x -e 'CORRECT' A
-grep -q -F -e 'getline' list.err && Error 'getline'
+Not grep -q -F -e 'getline' list.err || Error 'getline'
 
 exit 0

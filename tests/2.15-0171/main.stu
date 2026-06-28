@@ -1,0 +1,14 @@
+>A: [--newline B]
+{
+	cat -- 'list.$%^&*'
+}
+
+--persistent B
+{
+	printf '%s\n' 'list.$%^&*' >B
+}
+
+>'list.$%^&*'
+{
+	echo CORRECT
+}

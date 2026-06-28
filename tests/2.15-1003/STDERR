@@ -1,0 +1,6 @@
+main.stu:3:2: declaration of dependency using -n
+main.stu:1:5: clashes with -0
+main.stu:1:7: for target "B", needed by "A"
+Explanation: It is not possible to mix the options -n/-0/-C.  These
+options determine the syntax used to parsed dynamic dependencies.  At
+most a single of these options can be used for a given dependency.

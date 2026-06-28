@@ -12,6 +12,10 @@ subdirectories in tests/.
 
 ------------------------------------------------------------------------
 
+2026-06-28  Version 2.15:
+
+* The flags -n/-0/-C are allowed in front of targets.
+
 2026-05-25  Version 2.14:
 
 * Long flags are introduced:  --persistent (-p), --optional (-o), --trivial (-t),

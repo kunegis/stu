@@ -1,5 +1,5 @@
-# These features are backward-incompatible and can therefore only be
-# implemented in the next major version, i.e., in Stu 3.
+# These features are backward-incompatible and can therefore only be implemented in the
+# next major version, i.e., in Stu 3.
 
 #
 # Have the same brace syntax as in the shell.  In particular:
@@ -31,11 +31,10 @@ A {
 A: B { cp B A ; }
 @x: A;
 
-# The reason is that in these cases, we currently interpret -o @x as
-# equivalent to -o A, rather than -o B.  This is inconsistent with the
-# case where '@x' is not used as a target.  The way to rewrite this
-# shown above lets people use -o @x as intended, without the need for
-# the extra rules for mixed targets that we have at the moment.
+# The reason is that in these cases, we currently interpret -o @x as equivalent to -o A,
+# rather than -o B.  This is inconsistent with the case where '@x' is not used as a
+# target.  The way to rewrite this shown above lets people use -o @x as intended, without
+# the need for the extra rules for mixed targets that we have at the moment.
 
 #
 # The 'trivial' flag '-t' should "go up" when applied to the
@@ -102,8 +101,8 @@ V {
 }
 
 #
-# $STU_OPTIONS should be called $STUFLAGS (?), to be consistent with
-# $MAKEFLAGS, $CFLAGS, etc.
+# $STU_OPTIONS should be called $STUFLAGS (?), to be consistent with $MAKEFLAGS, $CFLAGS,
+# etc.
 #
 
 #
@@ -112,8 +111,7 @@ V {
 #
 
 #
-# For dynamic dependencies, the flag -n should be the default, rather than allowing any
-# Stu syntax.
+# For dynamic dependencies, the flag -n should be the default, rather than -C.
 #
 
 #
@@ -125,5 +123,5 @@ V {
 
 #
 # Write parameters with parentheses as $(param_name), and reserve $param_name and
-# ${param_name} for environment variables.
+# ${param_name} for environment variables.  (maybe)
 #

@@ -1,0 +1,12 @@
+A: [B]
+{
+	cat >A -- 'a[a'.data 'b]b'.data
+}
+
+--newline --newline B
+{
+	printf >B 'a[a.data\nb]b.data\n'
+}
+
+'a[a'.data = {aaa111}
+'b]b'.data = {bbb222}

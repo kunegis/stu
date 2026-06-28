@@ -1,11 +1,24 @@
 #
-# Allow -n/-0/-C on targets.
+# -n/-0/-C before transient phonies. (Both on targets and dependencies)
 #
 
--n >list.1 { find ... ; }
--0 >list.2 { find ... -print0 ; }
--n -0 A; # Error: clash
--n -o A; # Allowed
+>A: [@b]
+{
+	cat list.'1 1' list.'2 2'
+}
+
+-n @b: B;
+
+>B
+{
+	echo 'list.1 1'
+	echo 'list.2 2'
+}
+
+>list.$x
+{
+	printf '%s\n' "$x"
+}
 
 #
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
@@ -105,10 +118,6 @@ CFLAGS = -X { -O2 }
 # file's content and timestamp before execution, and if after execution the content has
 # not change, revert the timestamps to their old values.  That would be expensive though
 # due to scanning a whole file, and should be disabled by default.
-
-#
-# Test make install using Docker.
-#
 
 #
 # Add more dependencies to a target using a flag.
@@ -467,3 +476,8 @@ calc:  @build-c | (calc calc.c);
 }
 
 aaa: @build-c filename; # Only a single argument is passed
+
+#
+# Allow variable dependency to be optional. If the file is not present, no variable is
+# passed.
+#

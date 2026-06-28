@@ -1,0 +1,9 @@
+>A: B
+{
+	echo CORRECT
+}
+
+--newline -o B
+{
+	exit 77
+}

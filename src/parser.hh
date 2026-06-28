@@ -179,7 +179,6 @@ private:
 	shared_ptr <const Dep> parse_variable_dep(
 		Placed_Name &placed_name_input, Place &place_input,
 		const std::vector <shared_ptr <const Plain_Dep> > &targets);
-	/* A variable dependency */
 
 	shared_ptr <const Dep> parse_redirect_dep(
 		Placed_Name &placed_name_input, Place &place_input,

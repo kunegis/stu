@@ -1,0 +1,14 @@
+>A: [B]
+{
+	cat list.'1 1' list.'2 2'
+}
+
+--full-syntax >B
+{
+	printf '((list."1 1") (list."2 2"))\n'
+}
+
+>list.$x
+{
+	echo $x
+}

@@ -1,0 +1,1 @@
+-F '>A:[B]{cat C;}--newline>B{echo C;}C={CORRECT}'

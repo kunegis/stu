@@ -94,7 +94,11 @@ Flag_Token::Flag_Token(
 
 void Flag_Token::render(Parts &parts, Rendering) const
 {
-	parts.append_operator(frmt("-%c", flag_char));
+	if (name.empty()) {
+		parts.append_operator(frmt("-%c", flag_char));
+	} else {
+		parts.append_operator(fmt("--%s", name));
+	}
 }
 
 void render(const Flag_Token &flag_token, Parts &parts, Rendering rendering)

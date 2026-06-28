@@ -1,0 +1,8 @@
+>A: --newline B
+{
+}
+
+--optional B
+{
+	exit 77
+}

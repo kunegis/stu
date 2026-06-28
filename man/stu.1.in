@@ -411,20 +411,26 @@ compilation command using the \fB$[CFLAGS]\fR dependency.
 
 .SH "FLAGS"
 Targets and dependencies can be annotated with flags.  Flags have syntax similar to
-options on the command line, and change the way Stu handles files.  A flag is written as a
-dash immediately followed by one or more letters, each of which is interpreted as a
-different flag. Flags apply to the following name, and more than one flag can precede any
-name.
+options on the command line, and change the way Stu handles files.  A short flag is
+written as a dash immediately followed by one or more letters, each of which is
+interpreted as a different flag. Flags apply to the following name, and more than one flag
+can precede any name.
 
 .IP "\fB-0\fR, \fB--null\fR"
 If the file is used as a dynamic dependency, interpret the content as a \\0-separated
 list of filenames.
+This flag an be used before targets and dependencies, but not before
+phonies, even if they are transitive.
 .IP "\fB-C\fR, \fB--full-syntax\fR"
 If the file is used as a dynamic dependency, interpret the content in full Stu
 syntax. This is the default.
+This flag an be used before targets and dependencies, but not before
+phonies, even if they are transitive.
 .IP "\fB-n\fR, \fB--newline\fR"
 If the file is used as a dynamic dependency, interpret the content as a newline-separated
 list of filenames.
+This flag an be used before targets and dependencies, but not before
+phonies, even if they are transitive.
 .IP "\fB-o\fR, \fB--optional\fR"
 Optional dependency. The file is not built if it doesn't already exist.  If the file
 exists, the modification date is taken into account for determining whether the target has

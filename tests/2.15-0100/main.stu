@@ -1,0 +1,9 @@
+>A: B
+{
+	echo CORRECT
+}
+
+-n -o B
+{
+	exit 77
+}

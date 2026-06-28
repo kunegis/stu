@@ -480,22 +480,28 @@ VARIABLE DEPENDENCIES
 FLAGS
        Targets  and dependencies can be annotated with flags.  Flags have syn‐
        tax similar to options on the command line, and change the way Stu han‐
-       dles files.  A flag is written as a dash immediately followed by one or
-       more letters, each of which is interpreted as a different  flag.  Flags
-       apply  to  the  following  name, and more than one flag can precede any
-       name.
+       dles  files.  A short flag is written as a dash immediately followed by
+       one or more letters, each of which is interpreted as a different  flag.
+       Flags  apply  to the following name, and more than one flag can precede
+       any name.
 
        -0, --null
               If the file is used as a dynamic dependency, interpret the  con‐
-              tent as a \0-separated list of filenames.
+              tent  as a \0-separated list of filenames.  This flag an be used
+              before targets and dependencies, but not before phonies, even if
+              they are transitive.
 
        -C, --full-syntax
               If  the file is used as a dynamic dependency, interpret the con‐
-              tent in full Stu syntax. This is the default.
+              tent in full Stu syntax. This is the default.  This flag  an  be
+              used  before  targets  and dependencies, but not before phonies,
+              even if they are transitive.
 
        -n, --newline
               If the file is used as a dynamic dependency, interpret the  con‐
-              tent as a newline-separated list of filenames.
+              tent  as a newline-separated list of filenames.  This flag an be
+              used before targets and dependencies, but  not  before  phonies,
+              even if they are transitive.
 
        -o, --optional
               Optional dependency. The file is not built if it doesn't already
@@ -1223,4 +1229,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.14.7                         June 2026                            STU(1)
+stu-2.15.1                         June 2026                            STU(1)

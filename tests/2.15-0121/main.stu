@@ -1,0 +1,16 @@
+>A: [[B]]
+{
+	cat list.'1 1' list.'2 2'
+}
+
+B = { --newline C }
+
+>C
+{
+	printf 'list.1 1\nlist.2 2\n'
+}
+
+>list.$x
+{
+	printf '%s\n' "$x"
+}

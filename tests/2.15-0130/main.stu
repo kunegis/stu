@@ -1,0 +1,14 @@
+>A: [B]
+{
+	cat list.'1 1' list.'2 2'
+}
+
+-n >B
+{
+	printf 'list.1 1\nlist.2 2\n'
+}
+
+>list.$x
+{
+	echo $x
+}

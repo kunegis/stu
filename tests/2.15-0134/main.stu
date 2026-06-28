@@ -1,0 +1,14 @@
+>A: [B]
+{
+	cat list.'1 1' list.'2 2'
+}
+
+--null >B
+{
+	printf 'list.1 1%blist.2 2%b' '\0' '\0'
+}
+
+>list.$x
+{
+	echo $x
+}

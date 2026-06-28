@@ -1,0 +1,14 @@
+>A: [B]
+{
+	cat 'a a.data' 'b b.data'
+}
+
+-np >B
+{
+	printf 'a a.data\nb b.data'
+}
+
+>$x.data
+{
+	printf '%s\n' "$x"
+}

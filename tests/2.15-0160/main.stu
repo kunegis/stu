@@ -1,0 +1,15 @@
+>A: [B1] [B2]
+{
+	cat list.'1 1' list.'2 2' list.'3 3'
+}
+
+-n B1 B2
+{
+	printf 'list.1 1\nlist.2 2\n' >B1
+	printf '(list.(3(" ")3))\n' >B2
+}
+
+>list.$x
+{
+	echo "$x"
+}

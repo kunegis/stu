@@ -1,2 +1,0 @@
-main.stu:1:2: flag -o cannot be used
-main.stu:1:4: before phony target @A

@@ -458,3 +458,7 @@ aaa:  @bbb;
 #
 # Test make install using Docker.
 #
+
+#
+# Allow flag -t before target.
+#

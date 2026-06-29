@@ -1,0 +1,2 @@
+main.stu:8:2: flag -P cannot be used
+main.stu:8:4: before phony target @b (only -p/-o/-n/-0/-C are possible)

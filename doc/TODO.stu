@@ -1,26 +1,4 @@
 #
-# -n/-0/-C before transient phonies. (Both on targets and dependencies)
-#
-
->A: [@b]
-{
-	cat list.'1 1' list.'2 2'
-}
-
--n @b: B;
-
->B
-{
-	echo 'list.1 1'
-	echo 'list.2 2'
-}
-
->list.$x
-{
-	printf '%s\n' "$x"
-}
-
-#
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
 # forbidden as the first character in unquoted names.  Needs a new type for
 # unparsed targets.  This is very similar to supporting environment variables.

@@ -120,6 +120,15 @@ void explain_parameter_syntax()
 		stderr);
 }
 
+void explain_phony_target_flags()
+{
+	if (! option_E) return;
+	fputs("Explanation: Only the flags -p/-o/-n/-0/-C can be used before phony\n"
+		"targets of a rule.  If a rule has multiple targets, each flag only\n"
+		"applies to the target immediately following it.\n",
+		stderr);
+}
+
 void explain_quoted_characters()
 {
 	if (! option_E) return;
@@ -151,10 +160,10 @@ void explain_startup_time()
 void explain_target_flags()
 {
 	if (! option_E) return;
-	fputs("Explanation: Only the flags -p/-o/-P can be used before targets of a\n"
-		"rule.  In that case, the flags will always apply to that target.  Flags\n"
-		"cannot be used before phony targets.  If a rule has multiple targets,\n"
-		"each flag only applies to the target immediately following it.\n",
+	fputs("Explanation: Only the flags -p/-o/-n/-0/-C/-P can be used before targets\n"
+		"of a rule.  In that case, the flags will always apply to that target.\n"
+		"Flags cannot be used before phony targets.  If a rule has multiple\n"
+		"targets, each flag only applies to the target immediately following it.\n",
 		stderr);
 }
 

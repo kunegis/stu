@@ -1,0 +1,12 @@
+A: @b
+{
+	[ ! -e B ] || exit 78
+	touch A
+}
+
+-o @b: B;
+
+B
+{
+	exit 77
+}

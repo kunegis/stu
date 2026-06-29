@@ -1,0 +1,17 @@
+>A: [@b]
+{
+	cat list.'1 1' list.'2 2'
+}
+
+-n @b: B;
+
+>B
+{
+	echo 'list.1 1'
+	echo 'list.2 2'
+}
+
+>list.$x
+{
+	printf '%s\n' "$x"
+}

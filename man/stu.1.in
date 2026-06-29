@@ -413,42 +413,41 @@ compilation command using the \fB$[CFLAGS]\fR dependency.
 Targets and dependencies can be annotated with flags.  Flags have syntax similar to
 options on the command line, and change the way Stu handles files.  A short flag is
 written as a dash immediately followed by one or more letters, each of which is
-interpreted as a different flag. Flags apply to the following name, and more than one flag
-can precede any name.
+interpreted as a different flag.  A long flag is introduced by two dashes. Flags apply to
+the following name, and more than one flag can precede any name.
 
 .IP "\fB-0\fR, \fB--null\fR"
 If the file is used as a dynamic dependency, interpret the content as a \\0-separated
 list of filenames.
-This flag an be used before targets and dependencies, but not before
-phonies, even if they are transitive.
+This flag can be used before targets and dependencies.
 .IP "\fB-C\fR, \fB--full-syntax\fR"
 If the file is used as a dynamic dependency, interpret the content in full Stu
-syntax. This is the default.
-This flag an be used before targets and dependencies, but not before
-phonies, even if they are transitive.
+syntax. This is the default for dynamic dependencies.
+This flag can be used before targets and dependencies.
 .IP "\fB-n\fR, \fB--newline\fR"
 If the file is used as a dynamic dependency, interpret the content as a newline-separated
 list of filenames.
-This flag an be used before targets and dependencies, but not before
-phonies, even if they are transitive.
+This flag can be used before targets and dependencies.
 .IP "\fB-o\fR, \fB--optional\fR"
 Optional dependency. The file is not built if it doesn't already exist.  If the file
 exists, the modification date is taken into account for determining whether the target has
-to be rebuilt.
+to be rebuilt.  This flag can be used before targets and dependencies.
 .IP "\fB-p\fR, \fB--persistent\fR"
 Persistent dependency. The file is not rebuilt if it already exists.  Stu will only check
 whether the dependency exists, but not its modification time for determining whether the
 target has to be rebuilt.  (If the file itself is the target of a rule, the modification
 time of the dependency will be taken into account while building the file.)  This is
 mostly useful for directories, as the modification time of directories is updated whenever
-files are added or removed in the directory.
+files are added or removed in the directory.  Can be used before targets and dependencies.
 .IP "\fB-P\fR, \fB--no-dereference\fR"
-Do not dereference symlink target.  This flag can only be used before targets of rules.
+Do not dereference symlink target.  This flag can only be used before file targets of
+rules.  It cannot be used transitively, before phonies, or before dependencies.
 .IP "\fB-t\fR, \fB--trivial\fR"
 Trivial dependency. The file is only (re)built if the parent target needs to be (re)built
 for other reasons.  This is mostly useful for configuration files that are generated
 automatically, including the case of files containing the flags used to invoke compilers
 and other programs.  Trivial dependencies are not allowed if the rule has no command.
+This flag can only be placed before dependencies.
 .SH ""
 A dependency cannot be declared as persistent and optional at the same time, as that would
 imply that its command is never executed.

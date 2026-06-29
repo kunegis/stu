@@ -24,6 +24,7 @@ void explain_missing_optional_copy_source();
 void explain_no_target();
 void explain_parameter_character();
 void explain_parameter_syntax();
+void explain_phony_target_flags();
 void explain_quoted_characters();
 void explain_separated_parameters();
 void explain_startup_time();

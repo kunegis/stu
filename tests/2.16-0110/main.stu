@@ -1,0 +1,11 @@
+A: @b
+{
+	cp B A
+}
+
+-p @b: B;
+
+>B
+{
+	echo CORRECT
+}

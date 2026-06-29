@@ -435,11 +435,21 @@ bool Parser::parse_target(
 		(placed_flags, Placed_Target(placed_flags.get_flags() & F_TARGET_PHONY,
 			*target_name, place_of_target));
 
-	if (placed_flags.get_flags() & F_TARGET_PHONY && flag_token) {
-		flag_token->get_place() << fmt("flag %s cannot be used", show(flag_token));
-		place_of_target << fmt("before phony target %s", show(target));
-		explain_target_flags();
-		throw ERR_LOGICAL;
+	if (placed_flags.get_flags() & F_TARGET_PHONY) {
+		for (const Placed_Flag &flag: placed_flags.get()) {
+			if (! ((1 << flag.index) & F_PLACED_TARGET_PHONY)) {
+				string possible;
+				for (Flags f= F_PLACED_TARGET_PHONY, i= 0; f; f >>= 1, ++i) {
+					if (!(f & 1)) continue;
+					if (! possible.empty()) possible += "/";
+					possible += show(Flag_View(i, false));
+				}
+				flag_token->get_place() << fmt("flag %s cannot be used", show(Flag_View(flag.place, flag.index)));
+				place_of_target << fmt("before phony target %s (only %s are possible)", show(target), possible);
+				explain_phony_target_flags();
+				throw ERR_LOGICAL;
+			}
+		}
 	}
 
 	if (! place_output_new.empty() && placed_flags.get_flags() & F_NO_FOLLOW) {

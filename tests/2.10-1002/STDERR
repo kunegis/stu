@@ -1,0 +1,5 @@
+main.stu:2:2: flag -P cannot be used
+main.stu:2:4: before phony target @b (only -p/-o/-n/-0/-C are possible)
+Explanation: Only the flags -p/-o/-n/-0/-C can be used before phony
+targets of a rule.  If a rule has multiple targets, each flag only
+applies to the target immediately following it.

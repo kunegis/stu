@@ -12,6 +12,10 @@ subdirectories in tests/.
 
 ------------------------------------------------------------------------
 
+2026-06-29  Version 2.16:
+
+* The flags -p/-o/-n/-0/-C are allowed in front of target phonies.
+
 2026-06-28  Version 2.15:
 
 * The flags -n/-0/-C are allowed in front of targets.

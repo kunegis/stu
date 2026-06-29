@@ -1,0 +1,13 @@
+# Error: -P can only appar in front of file targets, not phony target.
+
+>A: @b
+{
+	readlink B
+}
+
+-P @b: B;
+
+B
+{
+	ln -s CORRECT B
+}

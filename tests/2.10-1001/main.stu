@@ -1,0 +1,2 @@
+@all: A;
+--trivial A;

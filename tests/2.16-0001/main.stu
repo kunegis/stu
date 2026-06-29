@@ -1,0 +1,10 @@
+>A: [@x]
+{
+	cat list.a' 'a
+}
+
+--newline @x: B;
+
+B={list.a a}
+
+list.'a a'={CORRECT}

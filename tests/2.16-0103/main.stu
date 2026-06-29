@@ -1,0 +1,17 @@
+>A: [-0 @b]
+{
+	cat list.'1 1' list.'2 2'
+}
+
+@b: B;
+
+>B
+{
+	printf 'list.1 1%b' '\0'
+	printf 'list.2 2%b' '\0'
+}
+
+>list.$x
+{
+	printf '%s\n' "$x"
+}

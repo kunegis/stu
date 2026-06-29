@@ -1,0 +1,18 @@
+>A: [@1]
+{
+	cat -- '(x).data'
+}
+
+-n @1: @2;
+
+@2: B;
+
+>B
+{
+	printf '(x).data\n'
+}
+
+>$x.data
+{
+	printf '%s\n' "$x"
+}

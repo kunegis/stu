@@ -6,6 +6,14 @@
 # always backward-incompatible.
 
 #
+# Add more dependencies to a target using a flag.
+#
+
+-a A : B;
+# There must already be a rule for A.  The dependency B is added.  There cannot be a
+# command.
+
+#
 # Support negation of flags using +o, +p, etc.
 #
 
@@ -405,6 +413,23 @@ dir/$name:  [ --rule dir/main.stu ];
 -P A=B; # does ln -s B A
 
 #
+# More environment variable features.
+#
+
+* Default value:
+$(name:-default_value)
+* Others...
+
+#
+# Conditionals.
+#
+
+A:  $(V) ? B; # B is only a dependency when V is set
+A:  $(V) ! C; # C is a dependency when V is not set
+A:  $(V) ? B ! C;
+A:  [F] ? B; # Based on the content of 'F' (not clear how)
+
+#
 # Allow redirection operator before flags.  This is not allowed at the moment.
 #
 
@@ -422,27 +447,10 @@ A: < -p B {} # For dependency
 CFLAGS = -Y {$(CFLAGS)}
 
 #
-# More environment variable features.
-#
-
-* Default value:
-$(name:-default_value)
-* Others...
-
-#
 # Add spellchecking to make test.  (1) extract words from source files where relevant.
 # (2) use /usr/share/dict/words + own list as dictionary.  Fail 'mate test' when a word is
 # not in the dictionary.
 #
-
-#
-# Conditionals.
-#
-
-A:  $(V) ? B; # B is only a dependency when V is set
-A:  $(V) ! C; # C is a dependency when V is not set
-A:  $(V) ? B ! C;
-A:  [F] ? B; # Based on the content of 'F' (not clear how)
 
 #
 # Environment variable for the target.
@@ -457,8 +465,4 @@ aaa:  @bbb;
 
 #
 # Test make install using Docker.
-#
-
-#
-# Allow flag -t before target.
 #

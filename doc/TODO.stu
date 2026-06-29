@@ -1,4 +1,8 @@
 #
+# Bug: 2.16.2-0000
+#
+
+#
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
 # forbidden as the first character in unquoted names.  Needs a new type for
 # unparsed targets.  This is very similar to supporting environment variables.
@@ -96,14 +100,6 @@ CFLAGS = -X { -O2 }
 # file's content and timestamp before execution, and if after execution the content has
 # not change, revert the timestamps to their old values.  That would be expensive though
 # due to scanning a whole file, and should be disabled by default.
-
-#
-# Add more dependencies to a target using a flag.
-#
-
--a A : B;
-# There must already be a rule for A.  The dependency B is added.  There cannot be a
-# command.
 
 #
 # Line number and file syntax:  A preprocessor-like construct that gives a new
@@ -458,4 +454,8 @@ aaa: @build-c filename; # Only a single argument is passed
 #
 # Allow variable dependency to be optional. If the file is not present, no variable is
 # passed.
+#
+
+#
+# Allow flag -t before target.
 #

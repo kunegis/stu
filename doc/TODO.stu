@@ -2,8 +2,6 @@
 # Bug: 2.16.2-0000
 #
 
-* Add 'SETUP' to test specification; rewrite test to use it
-
 * Check whether bug remains when not using symlinks
 
 * Fix bug

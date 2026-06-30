@@ -88,6 +88,7 @@
 #              number of variants.  Each can be preceded by '!' to exclude it.
 # PRELOAD.cc   If present, the file is compiled as a shared object and Stu executed with
 #              LD_PRELOAD set to that file.
+# SETUP        Script that is executed before the test.
 # EXEC         An alternative test script; see below
 #
 # For the files beginning with 'IN', each line contains a string that must be present, in
@@ -118,28 +119,23 @@
 # A executable file 'EXEC' may be placed in the directory, in which case that file will be
 # executed, and no other tests performed automatically.  The file should be a /bin/sh
 # script that includes ../../sh/test.sh.  It should return 0 on success, 1 on test error,
-# and 2 on other errors.
+# and 2 on other errors.  When EXEC is present, other specification files ar enot present.
 #
 # 'EXEC' scripts don't need to execute sh/rm_tmps, neither at the beginning nor end of
-# their execution; that is taken care of by this script.
-#
-# NOTES
-#
-# * Some tests that use EXEC need to sleep, in order to make sure that timestamps e.g. of
-#   a created file is older than Stu invocation.  Usually, these scripts use "sleep 2",
-#   i.e., sleep for two seconds to make sure that there is a difference in timestamps of
-#   at least one second on systems where file modification times have a precision of only
-#   one second.  An alternative is to use sh/touch_old.
-# * Tests output '***' only in case of error.  This is convenient for grepping while the
-#   tests are running.
-# * Tests can be disabled by prepending "." to their directory name.  Disabled tests count
-#   as failed.
-#
+# their execution; that is taken care of by this script.  NOTES * Some tests that use EXEC
+# need to sleep, in order to make sure that timestamps e.g. of a created file is older
+# than Stu invocation.  Usually, these scripts use "sleep 2", i.e., sleep for two seconds
+# to make sure that there is a difference in timestamps of at least one second on systems
+# where file modification times have a precision of only one second.  An alternative is to
+# use sh/touch_old.  * Tests output '***' only in case of error.  This is convenient for
+# grepping while the tests are running.  * Tests can be disabled by prepending "." to
+# their directory name.  Disabled tests count as failed.
 
-# Note:  we can't use "set -e" here (which is a good general practice in shell scripts),
+# Note: we can't use "set -e" here (which is a good general practice in shell scripts),
 # because otherwise we can't use $? to check the exit code of Stu.
 
-ALLOWED_FILES='EXITSTATUS INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC STDOUT NOSECOND NOTTY NOCOLOR COV_TAG VARIANT'
+ALLOWED_FILES='EXITSTATUS INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR
+CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC SETUP STDOUT NOSECOND NOTTY NOCOLOR COV_TAG VARIANT'
 error_file=${TMPDIR:-/tmp}/test.$$.error
 
 esc=$(printf '\033')
@@ -348,11 +344,16 @@ do
 
 	if [ -r EXEC ] ; then
 		echo >&7 ./EXEC
-		./EXEC 1>&7
+		./EXEC >&7
 		if [ "$?" != 0 ]; then
 			test_fail "EXEC failed"
 		fi
 	else
+		if [ -r SETUP ] ; then
+			echo >&7 ./SETUP
+			./SETUP >&7
+		fi
+		
 		CMD=
 		CMDPREFIX=
 		LD_PRELOAD_VALUE=

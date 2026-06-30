@@ -88,10 +88,18 @@ Check_Test_EXEC()
 	line='. ../../sh/test.sh'
 	( cd tests ; ls -1U ) | sh/sort_tests | while IFS= read -r name ; do
 		file=tests/"$name"/EXEC
-		[ -e "$file" ] || continue
-		if ! grep -q -F -x -e "$line" "$file" ; then
-			printf '%s:2: expected $line to be appear\n' "$file"
-			touch -- "$error_file"
+		if [ -e "$file" ] ; then
+			if ! grep -q -F -x -e "$line" "$file" ; then
+				printf '%s:2: expected $line to be appear\n' "$file"
+				touch -- "$error_file"
+			fi
+		fi
+		file=tests/"$name"/SETUP
+		if [ -e "$file" ] ; then
+			if ! grep -q -F -x -e "$line" "$file" ; then
+				printf '%s:2: expected $line to be appear\n' "$file"
+				touch -- "$error_file"
+			fi
 		fi
 	done
 }

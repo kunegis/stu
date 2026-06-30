@@ -1,0 +1,14 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+mkdir list.target
+touch list.target/A
+touch list.target/B
+ln -s list.target list.dir
+touch A
+touch B
+
+../../sh/touch_old list.target/A 1
+../../sh/touch_old list.target/B 1
+
+ls -ld A B list.dir list.target list.target/*

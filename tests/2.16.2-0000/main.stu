@@ -1,7 +1,4 @@
-@all: A B;
-
-A = list.dir/A;
-B = list.dir/B;
+@all: list.dir/A list.dir/B;
 
 list.dir/$name: list.dir;
 

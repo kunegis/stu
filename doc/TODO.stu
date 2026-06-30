@@ -2,8 +2,6 @@
 # Bug: 2.16.2-0000
 #
 
-* Check whether bug remains when not using symlinks
-
 * Fix bug
 ** make bin/stu.debug && STU_TRACE='all;tokenizer show placed_flags show_flags parser cycle job dep job_list rule name=0' TEST_VERBOSE=2 sh/test 2.16.2-0000
 ** list.dir/B -> list.dir link is missing -p flag

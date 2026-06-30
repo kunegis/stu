@@ -690,15 +690,13 @@ bool File_Executor::check_file_target(
 	TRACE("flags= %s", show(Flags_View(flags)));
 
 	struct stat buf;
-	int ret_stat= stat_file(target.get_name_c_str_nondynamic(), &buf,
-		flags);
+	int ret_stat= stat_file(target.get_name_c_str_nondynamic(), &buf, flags);
 	int errno_stat= errno;
 
 	/* Warn when file has timestamp in the future */
 	if (ret_stat == 0) {
 		/* File exists */
-		Timestamp timestamp_file= Timestamp(&buf);
-		timestamps_old[index]= timestamp_file;
+		timestamps_old[index]= Timestamp(&buf);
 		if (! (flags & F_PERSISTENT))
 			warn_future_file(&buf,
 				target.get_name_c_str_nondynamic(),
@@ -1160,6 +1158,6 @@ int File_Executor::stat_file(const char *filename, struct stat *buf, Flags flags
 	int r= fstatat(AT_FDCWD, filename, buf,
 		no_follow ? AT_SYMLINK_NOFOLLOW : 0);
 	TRACE("r= %s", frmt("%d", r));
-	TRACE("errno= %s", strerror(errno));
+	if (r) TRACE("errno= %s", strerror(errno));
 	return r;
 }

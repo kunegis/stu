@@ -565,6 +565,7 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 	/* Propagate timestamp */
 	/* Don't propagate the timestamp of the dynamic dependency itself */
 	if ((dep_child->flags.get_flags() & (F_PERSISTENT | F_RESULT_NOTIFY)) == 0) {
+		TRACE("Propagate timestamp");
 		if (child->timestamp.defined()) {
 			if (! timestamp.defined()) {
 				timestamp= child->timestamp;

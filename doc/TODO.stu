@@ -2,6 +2,17 @@
 # Bug: 2.16.2-0000
 #
 
+* Add 'SETUP' to test specification; rewrite test to use it
+
+* Check whether bug remains when not using symlinks
+
+* Fix bug
+** make bin/stu.debug && STU_TRACE='all;tokenizer show placed_flags show_flags parser cycle job dep job_list rule name=0' TEST_VERBOSE=2 sh/test 2.16.2-0000
+** list.dir/B -> list.dir link is missing -p flag
+
+* Also fix it in cv/
+* Check that stderr is empty if STDERR/etc. is not present
+
 #
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
 # forbidden as the first character in unquoted names.  Needs a new type for

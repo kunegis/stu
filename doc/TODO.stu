@@ -3,7 +3,7 @@
 #
 
 * Fix bug
-** make bin/stu.debug && STU_TRACE='all;tokenizer show placed_flags show_flags parser cycle job dep job_list rule name=0' TEST_VERBOSE=2 sh/test 2.16.2-0000
+** make bin/stu.debug && STU_TRACE='all;tokenizer show placed_flags show_flags parser cycle job dep job_list rule name flags options=0' TEST_VERBOSE=2 sh/test 2.16.2-0000
 ** list.dir/B -> list.dir link is missing -p flag
 
 * Also fix it in cv/
@@ -15,9 +15,17 @@
 # unparsed targets.  This is very similar to supporting environment variables.
 #
 
+~ # Home directory
+~user # Works
 "~" # Not the home directory
-"~"name # Not a user's home directory
-~"name" # ?
+"~user" # Not a home directory
+'~user' # Not a home directory
+"~"user # Not a user's home directory
+~"user" # Does not work in the shell
+~$(NAME) # Equivalent does not work in the shell
+~"$(NAME)" # Equivalent does not work in the shell
+$(NAME) # Containing '~user'
+${name} # Containing '~user'
 
 #
 # A way to set environment variables for all commands.

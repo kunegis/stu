@@ -237,6 +237,7 @@ protected:
 	static std::unordered_map <Hash_Dep, Executor *> executors_by_hash_dep;
 	/* All cached Executor objects by each of their Target.  Such Executor objects are
 	 * never deleted. */
+	// TODO needs to also store the index in the targets of the rule.
 
 	static int trivial_index(shared_ptr <const Dep> d) {
 		return d->flags.get_flags() & F_TRIVIAL ? 1 : 0;

@@ -233,7 +233,6 @@ class Dynamic_Dep
 	: public Dep
 {
 public:
-	/* TODO rename to "dep_inner". */
 	shared_ptr <const Dep> dep;
 	/* The contained dependency.  Non-null. */
 

@@ -223,6 +223,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 				return nullptr;
 			}
 			executor->parents[this]= dep;
+			// TODO add flags.  Get the index from executors_by_hash_dep, and then access the executor's rule to get the target flags.
 		}
 		return executor;
 	}
@@ -270,7 +271,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		}
 
 		if (target_plain_dep) {
-			TRACE("Adding target_plain_dep");
+			TRACE("Adding target_plain_dep"); // XXX target dep added for new
 			shared_ptr <Dep> dep_new= dep->clone();
 			dep_new->flags.add(dep->flags, F_COMMON_PLACED);
 			dep_new->flags.add(target_plain_dep->flags);

@@ -24,7 +24,8 @@ Timestamp Executor::timestamp_last;
 
 bool Executor::hide_out_message= false;
 bool Executor::out_message_done= false;
-std::unordered_map <Hash_Dep, Executor *> Executor::executors_by_hash_dep;
+std::unordered_map <Hash_Dep, std::pair <Target_Index, Executor *> >
+	Executor::executors_by_hash_dep;
 
 void Executor::read_dynamic(
 	shared_ptr <const Plain_Dep> dep_target,
@@ -198,7 +199,8 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 
 	if (it != executors_by_hash_dep.end()) {
 		TRACE("Executor already exists");
-		executor= it->second;
+		Target_Index target_index= it->second.first;
+		executor= it->second.second;
 		if (executor->parents.count(this)) {
 			TRACE("Already connected");
 			/* Add necessary flags */
@@ -222,7 +224,13 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 				raise(ERR_LOGICAL);
 				return nullptr;
 			}
-			executor->parents[this]= dep;
+			shared_ptr <Dep> dep2= dep->clone();
+			if (executor->rule) {
+				dep2->flags.add(
+					executor->rule->targets[target_index]->flags,
+					F_PLACED_TARGET);
+			}
+			executor->parents[this]= dep2;
 		}
 		return executor;
 	}
@@ -237,6 +245,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		std::map <string, string> mapping_parameter;
 		bool use_file_executor= false;
 		shared_ptr <const Plain_Dep> target_plain_dep;
+		Target_Index target_index;
 		try {
 			Hash_Dep hash_dep_without_flags= hash_dep;
 			hash_dep_without_flags.get_front_word_nondynamic()
@@ -244,7 +253,7 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 			rule_child= rule_set.get(
 				hash_dep_without_flags,
 				param_rule_child, mapping_parameter,
-				dep->get_place(), target_plain_dep);
+				dep->get_place(), target_plain_dep, target_index);
 		} catch (int e) {
 			assert(e);
 			error_additional= e;
@@ -278,15 +287,15 @@ Executor *Executor::get_executor(shared_ptr <const Dep> dep)
 		}
 
 		if (use_file_executor) {
-			executor= new File_Executor
-				(dep, this, rule_child,
-				 param_rule_child, mapping_parameter,
-				 error_additional);
+			executor= new File_Executor(dep, this,
+				rule_child, param_rule_child,
+				target_index,
+				mapping_parameter, error_additional);
 		} else if (hash_dep.is_phony()) {
-			executor= new Transitive_Executor
-				(dep, this,
-				 rule_child, param_rule_child, mapping_parameter,
-				 error_additional);
+			executor= new Transitive_Executor(dep, this,
+				rule_child, param_rule_child,
+				target_index,
+				mapping_parameter, error_additional);
 		}
 	} else {
 		executor= new Dynamic_Executor(
@@ -565,6 +574,7 @@ void Executor::disconnect(Executor *const child, shared_ptr <const Dep> dep_chil
 	/* Propagate timestamp */
 	/* Don't propagate the timestamp of the dynamic dependency itself */
 	if ((dep_child->flags.get_flags() & (F_PERSISTENT | F_RESULT_NOTIFY)) == 0) {
+		TRACE("Propagate timestamp");
 		if (child->timestamp.defined()) {
 			if (! timestamp.defined()) {
 				timestamp= child->timestamp;

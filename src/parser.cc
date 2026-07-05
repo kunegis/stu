@@ -10,12 +10,12 @@ shared_ptr <Rule> Parser::parse_rule(
 	TRACE_FUNCTION();
 	const auto iter_begin= iter;
 	Place place_output;
-	int redirect_index= -1;
+	Target_Index output_target_index= TARGET_INDEX_NONE;
 	std::vector <shared_ptr <const Plain_Dep> > targets;
 
 	while (iter != tokens.end()) {
 		bool r= parse_target(
-			place_output, targets, redirect_index, target_first);
+			place_output, targets, output_target_index, target_first);
 		if (!r) break;
 	}
 	if (targets.size() == 0) {
@@ -148,8 +148,9 @@ shared_ptr <Rule> Parser::parse_rule(
 
 	/* Cases where output redirection is not possible */
 	if (! place_output.empty()) {
+		assert(output_target_index != TARGET_INDEX_NONE);
 		/* Already checked before */
-		assert((targets[redirect_index]->flags.get_flags() & F_TARGET_PHONY)
+		assert((targets[output_target_index]->flags.get_flags() & F_TARGET_PHONY)
 			== 0);
 
 		if (command == nullptr) {
@@ -191,8 +192,9 @@ shared_ptr <Rule> Parser::parse_rule(
 		throw ERR_LOGICAL;
 	}
 
-	return std::make_shared <Rule>
-		(move(targets), deps, command, is_content, redirect_index, filename_input);
+	return std::make_shared <Rule> (
+		move(targets), deps, command, is_content, output_target_index,
+		filename_input);
 }
 
 shared_ptr <Rule> Parser::parse_remainder_copy_rule(
@@ -324,7 +326,7 @@ shared_ptr <Rule> Parser::parse_remainder_copy_rule(
 bool Parser::parse_target(
 	Place &place_output,
 	std::vector <shared_ptr <const Plain_Dep> > &placed_targets,
-	int &redirect_index,
+	Target_Index &output_target_index,
 	shared_ptr <const Plain_Dep> &target_first)
 {
 	Place place_output_new;
@@ -466,20 +468,21 @@ bool Parser::parse_target(
 			place_output_new << fmt(
 				"there cannot be a second output redirection %s",
 				show(Prefix_View(">", target)));
-			assert(placed_targets[redirect_index]
+			assert(output_target_index != TARGET_INDEX_NONE);
+			assert(placed_targets[output_target_index]
 				->placed_target.placed_name.get_n() == 0);
-			assert((placed_targets[redirect_index]->flags.get_flags()
+			assert((placed_targets[output_target_index]->flags.get_flags()
 					& F_TARGET_PHONY) == 0);
 			place_output << fmt(
 				"shadowing previous output redirection %s",
-				show(Prefix_View(">", placed_targets[redirect_index]
+				show(Prefix_View(">", placed_targets[output_target_index]
 					->placed_target
 					.unparametrized().get_name_nondynamic())));
 			throw ERR_LOGICAL;
 		}
 		place_output= place_output_new;
 		assert(! place_output.empty());
-		redirect_index= placed_targets.size();
+		output_target_index= placed_targets.size();
 	}
 
 	if (placed_flags.get_flags() & F_TARGET_PHONY && ! place_output_new.empty()) {

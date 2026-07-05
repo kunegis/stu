@@ -11,6 +11,9 @@
 #include "preset.hh"
 #include "token.hh"
 
+typedef unsigned Target_Index;
+inline constexpr Target_Index TARGET_INDEX_NONE= std::numeric_limits <Target_Index> ::max();
+
 class Rule
 /* The class Rule allows parameters; there is no "unparametrized rule" class. */
 {
@@ -41,10 +44,10 @@ public:
 	 * read; must be one of the file dependencies.  Empty for no input redirection.
 	 * When is_copy: the file from which to copy; never empty. */
 
-	const int output_redirect_index;
+	const Target_Index output_target_index;
 	/* Index within PLACED_TARGETS of the target to which output redirection is
-	 * applied.  -1 if no output redirection is used. The target with that index is a
-	 * file target. */
+	 * applied.  TARGET_INDEX_NONE if no output redirection is used. The target with
+	 * that index is a file target. */
 
 	const bool is_content;
 	/* The rule is content rule; i.e., the command represents the content, not an
@@ -60,7 +63,7 @@ public:
 	     const shared_ptr <const Command> &command_,
 	     const Placed_Name &placed_name_input_,
 	     bool is_content_,
-	     int output_redirect_index_,
+	     Target_Index output_target_index_,
 	     bool is_copy_);
 	/* Direct constructor that specifies everything; no checks, initialization or
 	 * canonicalization is performed. */
@@ -69,7 +72,7 @@ public:
 	     const std::vector <shared_ptr <const Dep> > &deps_,
 	     shared_ptr <const Command> command_,
 	     bool is_content_,
-	     int output_redirect_index_,
+	     Target_Index output_target_index_,
 	     const Placed_Name &placed_name_input_);
 	/* Regular rule:  all cases except copy rules */
 
@@ -133,7 +136,8 @@ public:
 		shared_ptr <const Rule> &param_rule,
 		std::map <string, string> &mapping_parameter,
 		const Place &place,
-		shared_ptr <const Plain_Dep> &target_plain_dep);
+		shared_ptr <const Plain_Dep> &target_plain_dep,
+		Target_Index &target_index);
 	/* Match HASH_DEP to a rule, and return the instantiated (non-parametrized)
 	 * corresponding rule.  TARGET must be non-dynamic and not have flags (except
 	 * F_TARGET_PHONY).  MAPPING_PARAMETER must be empty.  Return null when no
@@ -146,24 +150,24 @@ public:
 	void print_for_option_I() const;
 
 private:
-	std::unordered_map <Hash_Dep, std::pair<size_t, shared_ptr <const Rule> > >
+	std::unordered_map <Hash_Dep, std::pair <Target_Index, shared_ptr <const Rule> > >
 		rules_unparam;
-	/* All unparametrized rules by their targets; the size_t is the index of the target
-	 * in the rule.  Rules with multiple targets are included multiple times, for each
-	 * of their targets.  None of the targets has flags set (except
-	 * F_TARGET_TARNSIENT.)  The targets are canonicalized, both as keys in this map,
-	 * as well as in each Rule. */
+	/* All unparametrized rules by their targets.  Rules with multiple targets are
+	 * included multiple times, for each * of their targets.  None of the targets has
+	 * flags set (except * F_TARGET_TARNSIENT.)  The targets are canonicalized, both
+	 * as keys in this map, * as well as in each Rule. */
 
 	std::unordered_set <shared_ptr <const Rule> > rules_param;
 	/* All parametrized rules.  Each parametrized rule is here, and in one more of the
-	 * containers below. */
+	 * containers below.  This variable is only needed for printing the rule. */
 
-	Preset <shared_ptr <const Rule> > rules_param_prefix, rules_param_suffix;
+	Preset <std::pair <Target_Index, shared_ptr <const Rule> > >
+		rules_param_prefix, rules_param_suffix;
 	/* All parametrized rules that have a target with a prefix/suffix, stored by each
 	 * of their affixes.  In SUFFIX, everything is reversed, so access must use
 	 * reversed strings. */
 
-	std::vector <shared_ptr <const Rule> > rules_param_bare;
+	std::vector <std::pair <Target_Index, shared_ptr <const Rule> > > rules_param_bare;
 	/* All parametrized rules where at least one target is affixless, or in which
 	 * there is an affix which, due to special canonicalization rules (see manpage),
 	 * is not present in a matched string. */
@@ -180,6 +184,7 @@ public:
 	std::vector <size_t> anchoring;
 	int priority;
 	shared_ptr <const Plain_Dep> target;
+	Target_Index target_index;
 
 	bool operator<(const Found_Rule &) const;
 };
@@ -187,10 +192,8 @@ public:
 class Best_Rule_Finder
 {
 public:
-	void add(const Hash_Dep &, shared_ptr <const Rule> );
-	size_t count() const {
-		return found_rules.size();
-	}
+	void check(const Hash_Dep &, shared_ptr <const Rule> , Target_Index);
+	size_t count() const { return found_rules.size(); }
 
 	/* Access the best rule.  The best rule must be unique. */
 	const Found_Rule &best() {

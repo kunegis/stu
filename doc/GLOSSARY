@@ -21,6 +21,11 @@ Directive - A construct introduced with '%' in Stu source code.  Directives are 
 	before the source code is otherwise parsed.  They are comparable to C preprocessor
 	directives, but do not implement a macro system.
 
+Domination - A rule dominates another rule for a given target if it has priority.  For
+	instance, given the target "abc", a rule with target ab$x dominates a rule with
+	target a$x.  For each target, there must be single rule that dominates all
+	others, or no matching rule at all.  Domination is transitive.
+
 File - An object in the file system.  We use the term in the broad
 	sense, which includes directories and other special files.  The "normal"
 	files which store a sequence of bytes are called regular files.
@@ -61,8 +66,10 @@ Target - A file or a phony target, possibly (multiply) dynamic.
 Trace - A line printed by the TRACE() macro.  Enabled by $STU_TRACE.  Only in the debug
 	variant.
 
-Transient - A transient target is a phony whose rule (a) contains no file targets, and (b)
-	has no command.  Transient targets pass some flags (-o -p) to their dependencies.
+Transitive - A transitive target is a phony whose rule (a) contains no file targets, and
+	(b) has no command.  Transitive targets pass flags to their dependencies.  Phony
+	targets that have a command or whose rule also has file targets do not pass flags
+	through to their dependencies.
 
 Variant - Stu can be compiled in different variants, e.g. ndebug, debug.  See
 	doc/VARIANTS.

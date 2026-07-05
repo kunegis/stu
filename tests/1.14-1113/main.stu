@@ -1,0 +1,1 @@
+@all:  a.x.y.b;  $A.$P.y.b $A.x.$P.b; # Error: multiple matching targets

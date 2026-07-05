@@ -1,0 +1,4 @@
+main.stu:1:8: multiple minimal matching rules for target "a.x.y.b"
+main.stu:1:18: rule with target ${A}.${P}.y.b
+main.stu:1:28: rule with target ${A}.x.${P}.b
+main.stu:1:8: "a.x.y.b" is needed by @all

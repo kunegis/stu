@@ -24,13 +24,14 @@ Dynamic_Executor::Dynamic_Executor(
 		Hash_Dep hash_dep_base(inner_plain_dep->placed_target.flags,
 			inner_plain_dep->placed_target.placed_name.unparametrized());
 		Hash_Dep hash_dep= dep->get_target();
+		Target_Index target_index;
 		TRACE("hash_dep= %s", show(hash_dep));
 		try {
 			std::map <string, string> mapping_parameter;
 			shared_ptr <const Plain_Dep> target_plain_dep;
-			shared_ptr <const Rule> rule=
+			shared_ptr <const Rule> r=
 				rule_set.get(hash_dep_base, param_rule, mapping_parameter,
-					dep->get_place(), target_plain_dep);
+					dep->get_place(), target_plain_dep, target_index);
 		} catch (int e) {
 			assert(e);
 			*this << "";
@@ -38,7 +39,7 @@ Dynamic_Executor::Dynamic_Executor(
 			raise(e);
 			return;
 		}
-		executors_by_hash_dep[hash_dep]= this;
+		executors_by_hash_dep[hash_dep]= {target_index, this};
 	}
 
 	parents.erase(parent);

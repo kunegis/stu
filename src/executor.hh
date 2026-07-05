@@ -175,9 +175,13 @@ protected:
 	 * general rule is used.  Null by default, and set by individual implementations
 	 * in their constructor if necessary: dynamic, file, and transitive executors. */
 
-	explicit Executor(shared_ptr <const Rule> param_rule_= nullptr)
+	shared_ptr <const Rule > rule;
+
+	explicit Executor(
+		shared_ptr <const Rule> param_rule_= nullptr,
+		shared_ptr <const Rule> rule_= nullptr)
 		: error(0), timestamp(Timestamp::UNDEFINED),
-		  param_rule(param_rule_) { }
+		  param_rule(param_rule_), rule(rule_) { }
 	virtual ~Executor()= default;
 
 	Proceed execute_children();
@@ -234,7 +238,8 @@ protected:
 	/* The timepoint of the last time wait() returned.  No file in the file system
 	 * should be newer than this. */
 
-	static std::unordered_map <Hash_Dep, Executor *> executors_by_hash_dep;
+	static std::unordered_map <Hash_Dep, std::pair <Target_Index, Executor *> >
+		executors_by_hash_dep;
 	/* All cached Executor objects by each of their Target.  Such Executor objects are
 	 * never deleted. */
 

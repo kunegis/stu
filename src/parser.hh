@@ -155,7 +155,7 @@ private:
 	bool parse_target(
 		Place &place_output,
 		std::vector <shared_ptr <const Plain_Dep> > &placed_targets,
-		int &redirect_index,
+		Target_Index &output_target_index,
 		shared_ptr <const Plain_Dep> &target_first);
 
 	bool parse_expression(

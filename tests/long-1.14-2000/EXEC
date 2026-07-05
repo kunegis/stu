@@ -1,0 +1,23 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+alphabet='A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 0 1 2 3 4 5 6 7 8 9'
+
+{
+	printf '@all: JK;\n'
+	for i in $alphabet ; do for j in $alphabet ; do
+		printf '%s%s ' "$i" "$j"
+	done ; done
+	printf '\n{\n'
+	printf '    alphabet="%s"\n' "$alphabet"
+	printf '    for i in $alphabet ; do for j in $alphabet ; do\n'
+	printf '        touch -- "$i$j"\n'
+        printf '    done ; done ;\n'
+	printf '}\n'
+} >list.stu
+
+../../bin/stu.test -f list.stu >list.out 2>list.err
+
+count=$(echo "$alphabet" | tr ' ' '\n' | grep -c -E -e '.')
+
+ls -U1 | grep -c -E -x -e '..' | grep -q -F -x -e "$((count * count))"

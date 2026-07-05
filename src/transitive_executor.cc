@@ -5,9 +5,10 @@ Transitive_Executor::Transitive_Executor(
 	Executor *parent,
 	shared_ptr <const Rule> rule_,
 	shared_ptr <const Rule> param_rule_,
+	Target_Index target_index,
 	std::map <string, string> &mapping_parameter_,
 	int &error_additional)
-	: Executor(param_rule_), rule(rule_)
+	: Executor(param_rule_, rule_), rule(rule_)
 {
 	TRACE_FUNCTION();
 	swap(mapping_parameter, mapping_parameter_);
@@ -52,7 +53,7 @@ Transitive_Executor::Transitive_Executor(
 	for (Hash_Dep t: hash_deps) {
 		t.get_front_word_nondynamic() |= (word_t)
 			(dep_link->flags.get_flags() & (F_WORD & ~F_TARGET_DYNAMIC));
-		executors_by_hash_dep[t]= this;
+		executors_by_hash_dep[t]= {target_index, this};
 	}
 
 	for (auto &dep: rule->deps) {

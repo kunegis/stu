@@ -1,0 +1,2 @@
+main.stu:3:1: warning: file target "list.dir/A" which has no command is older than its dependency
+main.stu:3:1: warning: file target "list.dir/B" which has no command is older than its dependency

@@ -1,0 +1,6 @@
+#!/bin/sh
+. ../../sh/test.sh
+
+touch B C D
+../../sh/touch_old B
+../../sh/touch_old C

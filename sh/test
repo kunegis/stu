@@ -76,7 +76,8 @@
 # INCONTENT    Prescribe strings that must appear in the built file (one per line)
 # NONINCONTENT Prescribe strings that must not appear in the built file (one per line)
 # STDOUT       The exact output of Stu
-# STDERR       The exact error output of Stu
+# STDERR       The exact error output of Stu.  If this file is not present, stderr must be
+#              empty when EXITSTATUS is not present, and non-empty otherwise.
 # INSTDOUT     Prescribe strings that must appear in Stu's output (one per line)
 # INSTDERR     Prescribe strings that must appear in Stu's error output (one per line)
 # NOTINSTDERR  A text that must not be present in Stu's error output
@@ -88,6 +89,7 @@
 #              number of variants.  Each can be preceded by '!' to exclude it.
 # PRELOAD.cc   If present, the file is compiled as a shared object and Stu executed with
 #              LD_PRELOAD set to that file.
+# SETUP        Script that is executed before the test.
 # EXEC         An alternative test script; see below
 #
 # For the files beginning with 'IN', each line contains a string that must be present, in
@@ -118,28 +120,22 @@
 # A executable file 'EXEC' may be placed in the directory, in which case that file will be
 # executed, and no other tests performed automatically.  The file should be a /bin/sh
 # script that includes ../../sh/test.sh.  It should return 0 on success, 1 on test error,
-# and 2 on other errors.
+# and 2 on other errors.  When EXEC is present, other specification files ar enot present.
 #
 # 'EXEC' scripts don't need to execute sh/rm_tmps, neither at the beginning nor end of
-# their execution; that is taken care of by this script.
-#
-# NOTES
-#
-# * Some tests that use EXEC need to sleep, in order to make sure that timestamps e.g. of
-#   a created file is older than Stu invocation.  Usually, these scripts use "sleep 2",
-#   i.e., sleep for two seconds to make sure that there is a difference in timestamps of
-#   at least one second on systems where file modification times have a precision of only
-#   one second.  An alternative is to use sh/touch_old.
-# * Tests output '***' only in case of error.  This is convenient for grepping while the
-#   tests are running.
-# * Tests can be disabled by prepending "." to their directory name.  Disabled tests count
-#   as failed.
-#
+# their execution; that is taken care of by this script.  NOTES * Some tests that use EXEC
+# need to sleep, in order to make sure that timestamps e.g. of a created file is older
+# than Stu invocation.  Usually, these scripts use "sleep 2", i.e., sleep for two seconds
+# to make sure that there is a difference in timestamps of at least one second on systems
+# where file modification times have a precision of only one second.  An alternative is to
+# use sh/touch_old.  * Tests output '***' only in case of error.  This is convenient for
+# grepping while the tests are running.  * Tests can be disabled by prepending "." to
+# their directory name.  Disabled tests count as failed.
 
-# Note:  we can't use "set -e" here (which is a good general practice in shell scripts),
+# Note: we can't use "set -e" here (which is a good general practice in shell scripts),
 # because otherwise we can't use $? to check the exit code of Stu.
 
-ALLOWED_FILES='EXITSTATUS INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC STDOUT NOSECOND NOTTY NOCOLOR COV_TAG VARIANT'
+ALLOWED_FILES='EXITSTATUS INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC SETUP STDOUT NOSECOND NOTTY NOCOLOR COV_TAG VARIANT'
 error_file=${TMPDIR:-/tmp}/test.$$.error
 
 esc=$(printf '\033')
@@ -302,7 +298,7 @@ else
 	[ "$nopreload" ] && subset=$subset' <nopreload>'
 fi
 
-count_total=$(echo $(echo $tests | tr ' ' '\n' | grep -E -e . | wc -l))
+count_total=$(echo $tests | tr ' ' '\n' | grep -c .)
 
 # In the next line, '$tests' expands with glob replacement
 for file in $tests
@@ -328,13 +324,15 @@ do
 	}
 
 	../../sh/rm_tmps || exit 2
+
 	time_begin_test=$(../../sh/now)
 
 	# Check that all all-uppercase files are of one of the allowed files
-	has_exec= ; [ -r "EXEC" ] && has_exec=1
-	for otherfile in $(ls -1dU | grep -E -e '^[A-Z]*$')
+	has_exec= ; [ -e EXEC ] && has_exec=1
+	for otherfile in $(ls -1U | grep -E -x -e '[A-Z]*')
 	do
-		[ "$otherfile" = EXEC -o "$otherfile" = VARIANT ] && continue
+		[ "$otherfile" = EXEC ] && continue
+		[ "$otherfile" = VARIANT ] && continue
 		if [ "$has_exec" ] ; then
 			test_fail_fatal "EXEC doesn't allow other all-uppercase files except VARIANT (found '$otherfile')"
 			continue 2 # Continue outer loop
@@ -346,23 +344,28 @@ do
 
 	# The following will save:  list.def.out and list.def.err
 
-	if [ -r EXEC ] ; then
+	if [ -e EXEC ] ; then
 		echo >&7 ./EXEC
-		./EXEC 1>&7
+		./EXEC >&7
 		if [ "$?" != 0 ]; then
 			test_fail "EXEC failed"
 		fi
 	else
+		if [ -e SETUP ] ; then
+			echo >&7 ./SETUP
+			./SETUP >&7
+		fi
+
 		CMD=
 		CMDPREFIX=
 		LD_PRELOAD_VALUE=
-		if [ -r CMD ]; then
+		if [ -e CMD ]; then
 			CMD=$(sed -e '/^[[:space:]]*$/d' <CMD)
 		fi
-		if [ -r CMDPREFIX ]; then
+		if [ -e CMDPREFIX ]; then
 			CMDPREFIX=$(sed -e '/^[[:space:]]*$/d' <CMDPREFIX)
 		fi
-		if [ -z "$nopreload" ] && [ -r PRELOAD.cc ]; then
+		if [ -z "$nopreload" ] && [ -e PRELOAD.cc ]; then
 			echo >&7 "PRELOAD.cc found; so=$preload_so"
 			(cd ../.. && sh/ccpreload tests/"$file"/PRELOAD.cc $preload_so) || exit 2
 			LD_PRELOAD_VALUE="$LD_PRELOAD_VALUE:$preload_so"
@@ -386,7 +389,7 @@ do
 
 		# Exit status
 		exitstatus_correct=0
-		if [ -r EXITSTATUS ]; then
+		if [ -e EXITSTATUS ]; then
 			[ 1 = "$(echo $(<EXITSTATUS wc -l))" ] || {
 				test_fail_fatal "Expected EXITSTATUS to contain a single non-empty line"
 				continue
@@ -417,16 +420,16 @@ do
 
 		if [ "$exitstatus_correct" = 0 ]; then
 			target=A
-			if [ -r TARGET ]; then
+			if [ -e TARGET ]; then
 				# Remove empty lines but do not alter non-empty lines
 				target=$(sed -e '/^[[:space:]]*$/d' <TARGET)
 			fi
 			if [ -n "$target" ] ; then
-				if [ ! -r "$target" ]; then  # The main target must have been built
+				if [ ! -e "$target" ]; then  # The main target must have been built
 					test_fail "Target '$target' was not built"
 				else
 					# Check exact content of the target file
-					if [ -r CONTENT ] ; then
+					if [ -e CONTENT ] ; then
 						if cmp -s -- "$target" CONTENT ; then
 							echo >&7 "CONTENT...correct"
 						else
@@ -436,7 +439,7 @@ do
 					fi
 
 					# Check that INCONTENT is found in the built file
-					if [ -r INCONTENT ]; then
+					if [ -e INCONTENT ]; then
 						cat INCONTENT | while IFS= read -r line ; do
 							if ! grep -q -F -e "$line" "$target" ; then
 								test_fail "'$line' must appear in '$target' (INCONTENT)"
@@ -445,7 +448,7 @@ do
 					fi
 
 					# Check that NOTINCONTENT is not found in the error output
-					if [ -r NOTINCONTENT ]; then
+					if [ -e NOTINCONTENT ]; then
 						cat NOTINCONTENT | while IFS= read -r line ; do
 							if grep -q -F -e "$line" "$target" ; then
 								test_fail "'$line' was found in target, but should not be there (NOTINCONTENT)"
@@ -454,22 +457,22 @@ do
 					fi
 				fi
 			else
-				if [ -r INCONTENT ] || [ -r CONTENT ] ; then
+				if [ -e INCONTENT ] || [ -e CONTENT ] ; then
 					test_fail_fatal "CONTENT and INCONTENT must not appear in conjunction with an empty TARGET"
 					continue
 				fi
 			fi
 		else
 			# Make sure the file "A" was not generated
-			if ! [ -r TARGET ] ; then
-				if [ -r A ]; then
+			if ! [ -e TARGET ] ; then
+				if [ -e A ]; then
 					test_fail "File 'A' was generated although the script failed"
 				fi
 			fi
 		fi
 
 		# Check that standard output is correct
-		if [ -r STDOUT ] ; then
+		if [ -e STDOUT ] ; then
 			if cmp -s list.def.out STDOUT ; then
 				echo >&7 "STDOUT...correct"
 			else
@@ -479,7 +482,8 @@ do
 		fi
 
 		# Check that INSTDOUT is found in the output
-		if [ -r INSTDOUT ]; then
+		if [ -e INSTDOUT ]; then
+			# TODO should use grep -f
 			if  grep <list.def.out -qF -- "$(cat INSTDOUT)" ; then
 				echo >&7 "INSTDOUT...correct"
 			else
@@ -492,14 +496,14 @@ do
 		fi
 
 		# Check that at least one line of error message is generated
-		if [ "$exitstatus_correct" != 0 ] && [ \! -r STDERR ]; then
+		if [ "$exitstatus_correct" != 0 ] && [ ! -e STDERR ]; then
 			if ! [ -s list.def.err ] ; then
 				test_fail "Nothing written to stderr although exit status is >0"
 			fi
 		fi
 
 		# Check that STDERR matches the error output exactly
-		if [ -r STDERR ]; then
+		if [ -e STDERR ]; then
 			if cmp -s list.def.err STDERR ; then
 				echo >&7 "STDERR...correct"
 			else
@@ -507,9 +511,14 @@ do
 				diff >&2 list.def.err STDERR
 			fi
 		fi
+		if [ ! -e STDERR ] && [ ! -e INSTDERR ] && [ ! -e NOTINSTDERR ] && [ ! -e EXITSTATUS ] ; then
+			if [ -s list.def.err ] ; then
+				test_fail "stderr must be empty when STDERR/INSTDERR/NOTINSTDERR/EXITSTATUS is not present"
+			fi
+		fi
 
 		# Check that INSTDERR is found in the error output
-		if [ -r INSTDERR ]; then
+		if [ -e INSTDERR ]; then
 			cat INSTDERR | while IFS= read -r line ; do
 				if ! grep -q -F -e "$line" list.def.err ; then
 					test_fail "'$line' was not found in stderr (INSTDERR)"
@@ -518,7 +527,7 @@ do
 		fi
 
 		# Check that NOTINSTDERR is not found in the error output
-		if [ -r NOTINSTDERR ]; then
+		if [ -e NOTINSTDERR ]; then
 			cat NOTINSTDERR | while IFS= read -r line ; do
 				if grep -q -F -e "$line" list.def.err ; then
 					test_fail "'$line' was found in error output, but should not be there (NOTINSTDERR)"
@@ -527,7 +536,7 @@ do
 		fi
 
 		# TTYSTDOUTERR / INTTYSTDOUTERR
-		if [ -z "$nopreload" ] && { [ -r TTYSTDOUTERR ] || [ -r EXITSTATUS ]; } && ! [ -r NOTTY ]; then
+		if [ -z "$nopreload" ] && { [ -e TTYSTDOUTERR ] || [ -e EXITSTATUS ]; } && ! [ -e NOTTY ]; then
 			../../sh/rm_tmps || exit 1
 			LD_PRELOAD_VALUE_TTY="$LD_PRELOAD_VALUE:$preload_tty_so"
 			echo >&7 $CMDPREFIX_TTY $(preload_prefix $LD_PRELOAD_VALUE_TTY) $CMDPREFIX \
@@ -542,7 +551,7 @@ do
 				echo >&7 "EXITSTATUS:TTY...$exitstatus_correct correct"
 			fi
 
-			if [ -r TTYSTDOUTERR ]; then
+			if [ -e TTYSTDOUTERR ]; then
 				if cmp -s list.def.out TTYSTDOUTERR ; then
 					echo >&7 "TTYSTDOUTERR...correct"
 				else
@@ -551,7 +560,7 @@ do
 				fi
 			fi
 
-			if [ -r INTTYSTDOUTERR ]; then
+			if [ -e INTTYSTDOUTERR ]; then
 				cat INTTYSTDOUTERR | while IFS= read -r line ; do
 					if cat list.def.out list.def.out |
 							grep -q -F -e "$line" ; then
@@ -566,7 +575,7 @@ do
 				done
 			fi
 
-			if [ -r EXITSTATUS ] && ! grep -q -F -e 5 EXITSTATUS && ! [ -r NOCOLOR ] ; then
+			if [ -e EXITSTATUS ] && ! grep -q -F -e '5' EXITSTATUS && ! [ -e NOCOLOR ] ; then
 				if ! grep -q -E -e "$esc" list.def.out ; then
 					test_fail "Expected ESC in TTY output because EXITSTATUS exists"
 					>&2 echo output:
@@ -579,7 +588,7 @@ do
 				fi
 			fi
 
-			if grep -qE -e "$esc"'[[](32|1|35|31)m[^'"$esc"']*$' list.def.out ; then
+			if grep -q -E -e "$esc"'[[](32|1|35|31)m[^'"$esc"']*$' list.def.out ; then
 				test_fail "Expected closing escape sequence after opening escape sequence in stdout"
 				>&2 echo output:
 				>&2 printf '/---------\n'
@@ -594,7 +603,7 @@ do
 		if [ "$exitstatus_correct" = 0 ] && [ ! -e NOSECOND ]; then
 			echo >&7 $CMDPREFIX ../../bin/stu.test "$CMD"
 			eval $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err
-			grep -qF 'Targets are up to date' list.def.out
+			grep -q -F 'Targets are up to date' list.def.out
 			if [ "$?" = 0 ] ; then
 				echo >&7 "Second invocation...correct"
 			else
@@ -608,7 +617,7 @@ do
 	fi
 
 	[ -z "$normtmps" ] && { ../../sh/rm_tmps || exit 2 ; }
-	if [ "$error" != 0 ] || grep -q -F -e 1 -- "$error_file" ; then
+	if [ "$error" != 0 ] || grep -q -F -e '1' -- "$error_file" ; then
 		test_fail_fatal
 		continue
 	fi

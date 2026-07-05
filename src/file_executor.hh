@@ -21,6 +21,7 @@ public:
 		Executor *parent,
 		shared_ptr <const Rule> rule,
 		shared_ptr <const Rule> param_rule,
+		Target_Index target_index,
 		std::map <string, string> &mapping_parameter_,
 		int &error_additional);
 	/* ERR_ADDITIONAL indicates whether an error will be thrown after the
@@ -100,9 +101,8 @@ private:
 	~File_Executor();
 
 	void waited(pid_t pid, size_t index, int status);
-	/* Called after the job was waited for.  The PID is only passed
-	 * for checking that it is correct.  INDEX is the index within
-	 * EXECUTORS_BY_PID_*. */
+	/* Called after the job was waited for.  The PID is only passed for checking that
+	 * it is correct.  INDEX is the index within EXECUTORS_BY_PID_*. */
 
 	void warn_future_file(struct stat *buf, const char *filename,
 			      const Place &place,
@@ -114,7 +114,7 @@ private:
 
 	bool check_file_target(
 		const Hash_Dep &target,
-		size_t index,
+		Target_Index index,
 		shared_ptr <const Dep> dep_link,
 		bool no_execution);
 	/* Return whether we are done */

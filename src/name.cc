@@ -254,9 +254,8 @@ bool Name::anchoring_dominates(
 	const std::vector <size_t> &anchoring_a,
 	const std::vector <size_t> &anchoring_b,
 	int priority_a, int priority_b)
-/* (A) dominates (B) when every character in a parameter in (A) is also
- * in a parameter in (B) and at least one character is not parametrized
- * in (A) but in (B).
+/* (A) dominates (B) when every character in a parameter in (A) is also in a parameter in
+ * (B) and at least one character is not parametrized in (A) but in (B).
  *
  * If the anchorings are equal, priority decides. */
 {

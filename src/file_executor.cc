@@ -9,9 +9,10 @@ File_Executor::File_Executor(
 	Executor *parent,
 	shared_ptr <const Rule> rule_,
 	shared_ptr <const Rule> param_rule_,
+	Target_Index target_index,
 	std::map <string, string> &mapping_parameter_,
 	int &error_additional)
-	: Executor(param_rule_), timestamps_old(nullptr), filenames(nullptr),
+	: Executor(param_rule_, rule_), timestamps_old(nullptr), filenames(nullptr),
 	  target_flags(nullptr), rule(rule_)
 {
 	TRACE_FUNCTION();
@@ -29,7 +30,7 @@ File_Executor::File_Executor(
 	Hash_Dep hash_dep_no_flags= hash_dep_;
 	hash_dep_no_flags.get_front_word_nondynamic() &= F_TARGET_PHONY;
 	hash_deps.push_back(hash_dep_no_flags);
-	executors_by_hash_dep[hash_dep_no_flags]= this;
+	executors_by_hash_dep[hash_dep_no_flags]= {target_index, this};
 
 	parents[parent]= dep;
 	if (error_additional) {
@@ -57,9 +58,8 @@ File_Executor::File_Executor(
 
 	/* Fill EXECUTORS_BY_TARGET with all targets from the rule, not just the one given
 	 * in the dependency. */
-	for (const Hash_Dep &hash_dep: hash_deps) {
-		executors_by_hash_dep[hash_dep]= this;
-	}
+	for (size_t i= 0; i < hash_deps.size(); ++i)
+		executors_by_hash_dep[hash_deps[i]]= {i, this};
 
 	if (rule != nullptr) {
 		TRACE("There is a rule for this executor");
@@ -424,8 +424,8 @@ void File_Executor::print_command() const
 	/* For single-line commands, show the variables on the same line.
 	 * For multi-line commands, show them on a separate line. */
 
-	string filename_output= rule->output_redirect_index < 0 ? "" :
-		rule->targets[rule->output_redirect_index]->placed_target
+	string filename_output= rule->output_target_index == TARGET_INDEX_NONE ? "" :
+		rule->targets[rule->output_target_index]->placed_target
 		.placed_name.unparametrized();
 	string filename_input= rule->placed_name_input.unparametrized();
 
@@ -608,8 +608,8 @@ Proceed File_Executor::execute(shared_ptr <const Dep> dep_link)
 		assert(phonies.count(hash_dep.get_name_nondynamic()) == 0);
 		phonies[hash_dep.get_name_nondynamic()]= timestamp_now;
 	}
-	if (rule->output_redirect_index >= 0)
-		assert(! (rule->targets[rule->output_redirect_index]->placed_target.flags
+	if (rule->output_target_index != TARGET_INDEX_NONE)
+		assert(! (rule->targets[rule->output_target_index]->placed_target.flags
 				& F_TARGET_PHONY));
 	assert(options_jobs > 0);
 
@@ -672,7 +672,7 @@ void File_Executor::print_as_job() const
 
 bool File_Executor::check_file_target(
 	const Hash_Dep &target,
-	size_t index,
+	Target_Index index,
 	shared_ptr <const Dep> dep_link,
 	bool no_execution)
 {
@@ -690,15 +690,13 @@ bool File_Executor::check_file_target(
 	TRACE("flags= %s", show(Flags_View(flags)));
 
 	struct stat buf;
-	int ret_stat= stat_file(target.get_name_c_str_nondynamic(), &buf,
-		flags);
+	int ret_stat= stat_file(target.get_name_c_str_nondynamic(), &buf, flags);
 	int errno_stat= errno;
 
 	/* Warn when file has timestamp in the future */
 	if (ret_stat == 0) {
 		/* File exists */
-		Timestamp timestamp_file= Timestamp(&buf);
-		timestamps_old[index]= timestamp_file;
+		timestamps_old[index]= Timestamp(&buf);
 		if (! (flags & F_PERSISTENT))
 			warn_future_file(&buf,
 				target.get_name_c_str_nondynamic(),
@@ -1057,7 +1055,7 @@ bool File_Executor::start(
 		 * whether the source exists in the cache */
 		if (rule->deps.at(0)->flags.get_flags() & F_OPTIONAL) {
 			Executor *executor_source_base=
-				executors_by_hash_dep.at(Hash_Dep(0, source));
+				executors_by_hash_dep.at(Hash_Dep(0, source)).second;
 			assert(executor_source_base);
 			File_Executor *executor_source
 				= dynamic_cast <File_Executor *> (executor_source_base);
@@ -1085,13 +1083,13 @@ bool File_Executor::start(
 		pid= job.start(
 			rule->command->command,
 			mapping,
-			rule->output_redirect_index < 0 ? "" :
-				rule->targets[rule->output_redirect_index]
+			rule->output_target_index == TARGET_INDEX_NONE ? "" :
+				rule->targets[rule->output_target_index]
 				->placed_target.placed_name.unparametrized(),
 			rule->placed_name_input.unparametrized(),
 			rule->command->place,
-			rule->output_redirect_index < 0 ? Place() :
-				rule->targets[rule->output_redirect_index]->place,
+			rule->output_target_index == TARGET_INDEX_NONE ? Place() :
+				rule->targets[rule->output_target_index]->place,
 			rule->placed_name_input.place);
 	}
 	return false;
@@ -1160,6 +1158,6 @@ int File_Executor::stat_file(const char *filename, struct stat *buf, Flags flags
 	int r= fstatat(AT_FDCWD, filename, buf,
 		no_follow ? AT_SYMLINK_NOFOLLOW : 0);
 	TRACE("r= %s", frmt("%d", r));
-	TRACE("errno= %s", strerror(errno));
+	if (r) TRACE("errno= %s", strerror(errno));
 	return r;
 }

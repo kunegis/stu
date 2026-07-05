@@ -15,6 +15,7 @@ public:
 		Executor *parent,
 		shared_ptr <const Rule> rule,
 		shared_ptr <const Rule> param_rule,
+		Target_Index target_index,
 		std::map <string, string> &mapping_parameter,
 		int &error_additional);
 

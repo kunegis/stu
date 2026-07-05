@@ -7,14 +7,14 @@ Rule::Rule(
 	const shared_ptr <const Command> &command_,
 	const Placed_Name &placed_name_input_,
 	bool is_content_,
-	int output_redirect_index_,
+	Target_Index output_target_index_,
 	bool is_copy_)
 	: targets(targets_),
 	  deps(deps_),
 	  place(place_),
 	  command(command_),
 	  placed_name_input(placed_name_input_),
-	  output_redirect_index(output_redirect_index_),
+	  output_target_index(output_target_index_),
 	  is_content(is_content_),
 	  is_copy(is_copy_)
 { }
@@ -24,22 +24,22 @@ Rule::Rule(
 	const std::vector <shared_ptr <const Dep> > &deps_,
 	shared_ptr <const Command> command_,
 	bool is_content_,
-	int output_redirect_index_,
+	Target_Index output_target_index_,
 	const Placed_Name &placed_name_input_)
 	: targets(targets_),
 	  deps(deps_),
 	  place(targets_[0]->place),
 	  command(command_),
 	  placed_name_input(placed_name_input_),
-	  output_redirect_index(output_redirect_index_),
+	  output_target_index(output_target_index_),
 	  is_content(is_content_),
 	  is_copy(false)
 {
 	assert(targets.size() != 0);
-	assert(output_redirect_index >= -1);
-	assert(output_redirect_index < (ssize_t) targets.size());
-	if (output_redirect_index >= 0) {
-		assert((targets[output_redirect_index]->flags.get_flags()
+	assert(output_target_index == TARGET_INDEX_NONE ||
+		output_target_index < targets.size());
+	if (output_target_index != TARGET_INDEX_NONE) {
+		assert((targets[output_target_index]->flags.get_flags()
 			& F_TARGET_PHONY) == 0);
 	}
 
@@ -65,7 +65,7 @@ Rule::Rule(
 	: targets{target_},
 	  place(target_->place),
 	  placed_name_input(*placed_name_source_),
-	  output_redirect_index(-1),
+	  output_target_index(TARGET_INDEX_NONE),
 	  is_content(false),
 	  is_copy(true)
 {
@@ -108,7 +108,7 @@ shared_ptr <const Rule> Rule::instantiate(
 		move(placed_targets),
 		move(deps), rule->place, rule->command,
 		*placed_name_input,
-		rule->is_content, rule->output_redirect_index,
+		rule->is_content, rule->output_target_index,
 		rule->is_copy);
 }
 
@@ -233,7 +233,8 @@ shared_ptr <const Rule> Rule_Set::get(
 	shared_ptr <const Rule> &param_rule,
 	std::map <string, string> &mapping_parameter,
 	const Place &place,
-	shared_ptr <const Plain_Dep> &target_plain_dep)
+	shared_ptr <const Plain_Dep> &target_plain_dep,
+	Target_Index &target_index)
 {
 	TRACE_FUNCTION();
 	TRACE("hash_dep= %s", show(hash_dep));
@@ -250,7 +251,7 @@ shared_ptr <const Rule> Rule_Set::get(
 	 * caught earlier when the Rule_Set is built.) */
 	auto i= rules_unparam.find(hash_dep);
 	if (i != rules_unparam.end()) {
-		size_t index= i->second.first;
+		target_index= i->second.first;
 		shared_ptr <const Rule> rule= i->second.second;
 		assert(rule != nullptr);
 		assert(rule->targets.front()->placed_target.placed_name.get_n() == 0);
@@ -266,7 +267,7 @@ shared_ptr <const Rule> Rule_Set::get(
 		assert(found);
 #endif /* ! NDEBUG */
 		param_rule= rule;
-		target_plain_dep= rule->targets[index];
+		target_plain_dep= rule->targets[target_index];
 		TRACE("target_plain_dep= %s", show_trace(target_plain_dep));
 		return rule;
 	}
@@ -279,19 +280,18 @@ shared_ptr <const Rule> Rule_Set::get(
 	/* Search the best parametrized rule, if there is an affix in the rule */
 	for (auto it= rules_param_prefix.find(hash_dep.get_name_nondynamic());
 	     it != rules_param_prefix.end(); ++it) {
-		best_rule_finder.add(hash_dep, *it);
+		best_rule_finder.check(hash_dep, (*it).second, (*it).first);
 	}
 	string target_reversed= hash_dep.get_name_nondynamic();
 	std::reverse(target_reversed.begin(), target_reversed.end());
 	for (auto it= rules_param_suffix.find(target_reversed);
 	     it != rules_param_suffix.end(); ++it) {
-		best_rule_finder.add(hash_dep, *it);
+		best_rule_finder.check(hash_dep, (*it).second, (*it).first);
 	}
 
 	/* Search the best parametrized rule, if the rules are affixless */
-	for (auto &rule: rules_param_bare) {
-		best_rule_finder.add(hash_dep, rule);
-	}
+	for (auto &ii: rules_param_bare)
+		best_rule_finder.check(hash_dep, ii.second, ii.first);
 
 	/* No rule matches */
 	if (best_rule_finder.count() == 0)
@@ -315,6 +315,7 @@ shared_ptr <const Rule> Rule_Set::get(
 	shared_ptr <const Rule> ret(Rule::instantiate(rule_best, mapping_parameter));
 	param_rule= rule_best;
 	target_plain_dep= best_rule_finder.best().target;
+	target_index= best_rule_finder.best().target_index;
 	TRACE("target_plain_dep= %s", show_trace(target_plain_dep));
 	return ret;
 }
@@ -390,36 +391,35 @@ void Rule_Set::add_unparametrized_rule(shared_ptr <Rule> rule)
 
 void Rule_Set::add_parametrized_rule(shared_ptr <Rule> rule)
 {
+	TRACE_FUNCTION();
+	TRACE("rule= %s", show(rule));
 	rules_param.insert(rule);
-	bool found_bare= false;
 
-	for (auto target: rule->targets) {
+	for (Target_Index ti= 0; ti < rule->targets.size(); ++ti) {
+		auto target= rule->targets[ti];
 		const Name &name= target->placed_target.placed_name;
 		assert(name.is_parametrized());
 		const string prefix= name.get_texts()[0];
 		const string suffix= name.get_texts()[name.get_n()];
 		if (prefix.empty() && suffix.empty()) {
-			found_bare= true;
+			rules_param_bare.push_back({ti, rule});
 		}
 		if (!prefix.empty()) {
-			rules_param_prefix.insert(prefix, rule);
+			rules_param_prefix.insert(prefix, {ti, rule});
 		}
 		if (!suffix.empty()) {
 			string suffix_inv= suffix;
 			std::reverse(suffix_inv.begin(), suffix_inv.end());
-			rules_param_suffix.insert(suffix_inv, rule);
+			rules_param_suffix.insert(suffix_inv, {ti, rule});
 		}
 		/* Special rule (a):  Target starts with './' follwed by a parameter */
 		if (prefix == "./")
-			found_bare= true;
+			rules_param_bare.push_back({ti, rule});
 		/* Special rules (b) and (c):  Target starts with a parameter, followed by
 		 * a slash */
 		if (prefix.empty() && name.get_texts()[1][0] == '/')
-			found_bare= true;
+			rules_param_bare.push_back({ti, rule});
 	}
-
-	if (found_bare)
-		rules_param_bare.push_back(rule);
 }
 
 bool Found_Rule::operator<(const Found_Rule &that) const
@@ -433,53 +433,59 @@ bool Found_Rule::operator<(const Found_Rule &that) const
 	return ret;
 }
 
-void Best_Rule_Finder::add(const Hash_Dep &hash_dep, shared_ptr <const Rule> rule)
+void Best_Rule_Finder::check(
+	const Hash_Dep &hash_dep,
+	shared_ptr <const Rule> rule,
+	Target_Index target_index)
 {
-	for (auto &t: rule->targets) {
-		assert(t->placed_target.placed_name.get_n() > 0);
-		std::map <string, string> mapping;
-		std::vector <size_t> anchoring;
-		int priority;
+	TRACE_FUNCTION();
+	TRACE("hash_dep= %s", show(hash_dep));
+	TRACE("rule= %s", show(rule));
+	TRACE("target_index= %s", frmt("%u", target_index));
+	shared_ptr <const Plain_Dep> t= rule->targets[target_index];
 
-		/* The parametrized rule is of another type */
-		if (hash_dep.get_front_word() !=
-			(t->flags.get_flags() & F_TARGET_PHONY))
-			continue;
+	assert(t->placed_target.placed_name.get_n() > 0);
+	std::map <string, string> mapping;
+	std::vector <size_t> anchoring;
+	int priority;
 
-		/* The parametrized rule does not match */
-		if (! t->placed_target.placed_name.match(
+	/* The parametrized rule is of another type */
+	if (hash_dep.get_front_word() !=
+		(t->flags.get_flags() & F_TARGET_PHONY))
+		return;
+
+	/* The parametrized rule does not match */
+	if (! t->placed_target.placed_name.match(
 			hash_dep.get_name_nondynamic(),
 			mapping, anchoring, priority))
-			continue;
+		return;
 
-		assert(anchoring.size() == 2 * t->placed_target.placed_name.get_n());
+	assert(anchoring.size() == 2 * t->placed_target.placed_name.get_n());
 
-		/* Check whether the rule is dominated by at least one other rule; also,
-		 * avoid inserting the same rule twice (which happens if the rule was
-		 * found from both a prefix and a suffix.)  But note that there can be two
-		 * parametrized targets in one rule which both match the target, in which
-		 * case we do want to throw a "duplicate rule" error (because Stu wouldn't
-		 * know how to chose the parameter), and therefore we also need to compare
-		 * anchorings. */
-		for (const Found_Rule &f: found_rules) {
-			if (rule == f.rule && anchoring == f.anchoring)
-				return;
-			if (Name::anchoring_dominates(
-					f.anchoring, anchoring,
-					f.priority, priority))
-				return;
-		}
-
-		/* Check whether the rule dominates all other rules */
-		bool is_best= true;
-		for (const Found_Rule &f: found_rules) {
-			if (! Name::anchoring_dominates(
-					anchoring, f.anchoring,
-					priority, f.priority))
-				is_best= false;
-		}
-		if (is_best) found_rules.clear();
-
-		found_rules.insert({rule, mapping, anchoring, priority, t});
+	/* Check whether the rule is dominated by at least one other rule; also, avoid
+	 * inserting the same rule twice (which happens if the rule was found from both a
+	 * prefix and a suffix.)  But note that there can be two parametrized targets in
+	 * one rule which both match the target, in which case we do want to throw a
+	 * "duplicate rule" error (because Stu wouldn't know how to chose the parameter),
+	 * and therefore we also need to compare anchorings. */
+	for (const Found_Rule &f: found_rules) {
+		if (rule == f.rule && target_index == f.target_index)
+			return;
+		if (Name::anchoring_dominates(
+				f.anchoring, anchoring,
+				f.priority, priority))
+			return;
 	}
+
+	/* Check whether the rule dominates all other rules */
+	bool is_best= true;
+	for (const Found_Rule &f: found_rules) {
+		if (! Name::anchoring_dominates(
+				anchoring, f.anchoring,
+				priority, f.priority))
+			is_best= false;
+	}
+	if (is_best) found_rules.clear();
+
+	found_rules.insert({rule, mapping, anchoring, priority, t, target_index});
 }

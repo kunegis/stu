@@ -1,0 +1,7 @@
+@all: list.dir/A list.dir/B A;
+
+list.dir/$name: list.dir;
+
+list.dir;
+
+A={}

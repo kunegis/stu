@@ -13,7 +13,7 @@ File_Executor::File_Executor(
 	std::map <string, string> &mapping_parameter_,
 	int &error_additional)
 	: Executor(param_rule_, rule_), timestamps_old(nullptr), filenames(nullptr),
-	  target_flags(nullptr), rule(rule_)
+	  target_flags(nullptr)
 {
 	TRACE_FUNCTION();
 	TRACE("dep= %s", show_trace(dep));

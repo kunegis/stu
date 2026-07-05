@@ -137,7 +137,7 @@ public:
 
 protected:
 	State state;
-	int error; /* Propagated using '|' to the parent */
+	int error= 0; /* Propagated using '|' to the parent */
 
 	std::map <Executor *, shared_ptr <const Dep> > parents;
 	/* This is a map rather than an unsorted_map because typically, the number of
@@ -148,7 +148,7 @@ protected:
 
 	std::set <Executor *> children;
 
-	Timestamp timestamp;
+	Timestamp timestamp= Timestamp::UNDEFINED;
 	/* Latest timestamp of a (direct or indirect) dependency that was not rebuilt.
 	 * Files that were rebuilt are not considered, since they make the target be
 	 * rebuilt anyway.  Implementations also change this to consider the file itself,
@@ -177,11 +177,10 @@ protected:
 
 	shared_ptr <const Rule > rule;
 
-	explicit Executor(
+	Executor(
 		shared_ptr <const Rule> param_rule_= nullptr,
 		shared_ptr <const Rule> rule_= nullptr)
-		: error(0), timestamp(Timestamp::UNDEFINED),
-		  param_rule(param_rule_), rule(rule_) { }
+		: param_rule(param_rule_), rule(rule_) { }
 	virtual ~Executor()= default;
 
 	Proceed execute_children();

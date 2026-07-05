@@ -299,7 +299,7 @@ shared_ptr <const Rule> Rule_Set::get(
 
 	/* More than one rule matches:  error */
 	if (best_rule_finder.count() != 1 ) {
-		place << fmt("multiple minimal matching rules for target %s",
+		place << fmt("multiple best matching targets for dependency %s",
 			     show(hash_dep));
 		for (const Found_Rule &f: best_rule_finder.all_best()) {
 			TRACE("f.target= %s", show(f.target));

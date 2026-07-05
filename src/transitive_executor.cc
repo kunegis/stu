@@ -8,7 +8,7 @@ Transitive_Executor::Transitive_Executor(
 	Target_Index target_index,
 	std::map <string, string> &mapping_parameter_,
 	int &error_additional)
-	: Executor(param_rule_, rule_), rule(rule_)
+	: Executor(param_rule_, rule_)
 {
 	TRACE_FUNCTION();
 	swap(mapping_parameter, mapping_parameter_);

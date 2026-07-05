@@ -1,9 +1,4 @@
 #
-# "multiple minimal matching rules for target" -> "multiple best matching targets for
-# dependency".
-#
-
-#
 # Make '~' work as the home directory.  Also for ~user/.  '~' is already
 # forbidden as the first character in unquoted names.  Needs a new type for
 # unparsed targets.  This is very similar to supporting environment variables.

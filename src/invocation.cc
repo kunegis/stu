@@ -88,8 +88,8 @@ Invocation::Invocation(int argc, char **argv, int &error)
 		}
 
 		default:
-			/* Invalid option -- an error message was
-			 * already printed by getopt() */
+			/* Invalid option -- an error message was already printed by
+			 * getopt() */
 			string text= show(frmt("%s --help", program_name));
 			fprintf(stderr, "To get a list of all options, use %s\n",
 				text.c_str());
@@ -167,7 +167,8 @@ Invocation::Invocation(int argc, char **argv, int &error)
 		exit(0);
 	}
 
-	/* If no targets are given on the command line, use the first non-variable target */
+	/* If no targets are given on the command line, use the first non-variable
+	 * target */
 	if (deps.empty() && ! had_option_target) {
 		if (target_first == nullptr) {
 			if (! place_first.empty()) {

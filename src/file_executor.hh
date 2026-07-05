@@ -83,11 +83,6 @@ private:
 	Flags *target_flags;
 	/* Same length as HASH_DEPS */
 
-	shared_ptr <const Rule> rule;
-	/* The instantiated file rule.  Null when there is no rule for this file.
-	 * Individual dynamic dependencies do have rules, in order for cycles to be
-	 * detected.  Null if and only if PARAM_RULE is null. */
-
 	Job job;
 
 	std::map <string, string> mapping_parameter;

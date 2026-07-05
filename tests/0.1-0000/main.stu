@@ -1,8 +1,5 @@
-
 #
 # The command of a phony target is executed only once. 
-#
-# Test with both -j1 and -j2.
 #
 
 @A: @B @C;

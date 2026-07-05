@@ -6,10 +6,11 @@
 # Each of the two rules matches.  Either none dominates the other, or the first dominates
 # the second.  (The actual test also inverts the order in all cases.)
 #
+
 . ../../sh/test.sh
 date=$(date)
 
-do_test()
+Test()
 {
 	rm -f abcdefghijklmno
 
@@ -25,7 +26,7 @@ do_test()
 		[ "$exitstatus" = 2 ] || Error "Expected exit code 2, not $exitstatus"
 
 		# The actual output depends on whether the rules are parametrized
-		grep -q -E -e "(multiple minimal matching rules)|(there cannot be a second rule) for target \"abcdefghijklmno\"" list.err ||
+		grep -q -E -e "(multiple best matching targets)|(there cannot be a second rule) for target \"abcdefghijklmno\"" list.err ||
 			Error 'stderr'
 	else
 		Error "Expected result 'yes' or 'no', got '$result'"
@@ -53,7 +54,7 @@ while IFS= read -r line ; do
 $left  : { touch abcdefghijklmno ; }
 $right : { echo >&2 ERROR ; exit 1 ; }
 EOF
-	do_test
+	Test
 
 	# (A) declared after (B)
 	cat >list.stu <<EOF
@@ -61,7 +62,7 @@ EOF
 $right : { echo >&2 ERROR ; exit 1 ; }
 $left  : { touch abcdefghijklmno ; }
 EOF
-	do_test
+	Test
 done <list
 
 rm -f abcdefghijklmno

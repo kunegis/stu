@@ -41,9 +41,6 @@ private:
 	/* The targets to which this executor object corresponds.  All are phonies.
 	 * Contains at least one element. */
 
-	shared_ptr <const Rule> rule;
-	/* The instantiated file rule for this executor.  Not null. */
-
 	Timestamp timestamp_old;
 	Done done;
 

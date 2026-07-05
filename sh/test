@@ -514,6 +514,11 @@ do
 		if [ ! -e STDERR ] && [ ! -e INSTDERR ] && [ ! -e NOTINSTDERR ] && [ ! -e EXITSTATUS ] ; then
 			if [ -s list.def.err ] ; then
 				test_fail "stderr must be empty when STDERR/INSTDERR/NOTINSTDERR/EXITSTATUS is not present"
+				ls -l >&2
+				>&2 echo stderr:
+				>&2 printf '/---------\n'
+				>&2 cat list.def.err
+				>&2 printf '\\---------\n'
 			fi
 		fi
 

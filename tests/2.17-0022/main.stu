@@ -1,0 +1,14 @@
+# TOPIC: ~[a]
+
+A: ~[B]
+{
+	cp list.dir/abc A
+}
+
+B={/abc}
+
+list.dir/abc
+{
+	mkdir -p list.dir
+	echo CORRECT >list.dir/abc
+}

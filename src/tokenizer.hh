@@ -24,7 +24,8 @@ public:
 		string filename,
 		const Place &place_diagnostic,
 		int fd= -1,
-		bool allow_enoent= false);
+		bool allow_enoent= false,
+		bool try_defaut= true);
 	/* The given file descriptor FD may optionally be that file already opened.  If
 	 * the file was not yet opened, FD is -1.  If FILENAME is "", use standard input,
 	 * but FD must be -1.
@@ -47,6 +48,8 @@ public:
 		const Place &place);
 
 private:
+	inline static const char *ENV_HOME = "HOME";
+
 	std::vector <shared_ptr <Token> > &tokens;
 
 	/* Stacks of included files */
@@ -90,6 +93,7 @@ private:
 	 * with one of '-+~'.  E_SLASH set in ENVIRONMENT as appropriate. */
 
 	void parse_dollar(Placed_Name &);
+	void parse_home(Placed_Name &);
 	void parse_parameter(string &name);
 	void parse_environment_variable(string &name);
 
@@ -134,7 +138,8 @@ private:
 		std::set <string> &includes,
 		const Place &place_diagnostic,
 		int fd= -1,
-		bool allow_enoent= false);
+		bool allow_enoent= false,
+		bool try_defaut= true);
 	/* BACKTRACES can include traces that lead to this inclusion.  BACKTRACES must not
 	 * be modified when returning, but is declared as non-const because it is used as
 	 * a stack.
@@ -144,6 +149,10 @@ private:
 
 	static bool is_name_char(char);
 	static bool is_operator_char(char);
+
+	static bool is_tilde_char(char);
+	/* When appearing after '~[name]', the '~[name]' represents a home directory */
+
 	static void parse_version(
 		string version_req,
 		const Place &place_version,

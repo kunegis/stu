@@ -1,5 +1,5 @@
-
 # 'A' must contain 'CORRECT'
+# TOPIC: >a: <b
 
 >A: <B { tr a-z A-Z }
 >B { echo correct }

@@ -36,6 +36,7 @@ ASCII control characters (except those that are whitespace).
         depending on the directive); comparable to preprocessor directives.  The directive
         name and arguments followed regular Stu quoting rules.
     -   Flags (only as first character)
+    ~   Home directory [as in the shell]
     \   Escape character
     '   Quote without escape sequences
     "   Quote with escape sequences
@@ -75,21 +76,20 @@ the moment, and would also require more complex (and harder to understand) prece
 rules.  This leaves binary and ternary operators as possible uses, or as forms of
 non-operators, i.e., new tokens.
 
-    +   Inverted flag [as in the shell] (maybe)
-    ~   Home directory [as in the shell] (maybe)
-    &   Intersection (maybe)
+    +   Inverted flag [as in the shell]
+    &   Intersection
     |   Arguments for phonies
-    |   (Componentwise) concatenation (maybe)
+    |   (Componentwise) concatenation
     |   Union [redundant to juxtaposition]
     |   Barrier, i.e. in (@a | @b), first finish all of @a before starting @b
     !?  Conditionals
     !?  Some form of dual operators
-    !   Command interpreter (maybe)
+    !   Command interpreter
     *   Concatenation
     *?  For file globbing [We're against expensive operations not saved in a file]
     ,   Names are already whitespace-separated, and any other use than
         as a list constructor would be unintuitive
     ,   As higher-level file separator, allowing "lists of lists", for
-        whatever purpose [I can't think of one]
+        whatever purpose
     ,   For plugins, i.e., to introduce targets which are not files, either as part of
         files, or completely independent

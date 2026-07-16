@@ -1,0 +1,8 @@
+# TOPIC: ~a'b'
+
+A: ~abc'def'
+{
+	cp '~abcdef' A
+}
+
+>'~abcdef'{}

@@ -1,0 +1,11 @@
+# TOPIC: ~"a"
+
+A: ~"qwerty.data"
+{
+	cp -- '~qwerty.data' A
+}
+
+~"qwerty".data
+{
+	echo CORRECT >"~qwerty.data"
+}

@@ -1,0 +1,10 @@
+# TOPIC: [a] a=~
+
+A: [B]
+{
+	grep -q -F -e '~' B || exit 77
+	[ ! -e '~' ] || exit 78
+	touch A
+}
+
+B = {~}

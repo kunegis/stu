@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# Print list of all tests and their topic.  The topic is included in each test's main.stu
+# or EXEC file, or in a separate TOPIC file.
+#
+# This is a work in progress, and not yet integrated into 'make test'.
+#
+
+set -e
+
+cd tests
+
+ls -1U | ../sh/sort_tests | while IFS= read -r test ; do
+	if ! topic=$(cat "$test"/TOPIC 2>/dev/null) ; then
+		files=
+		[ -e "$test"/EXEC ] && files="$files $test/EXEC"
+		[ -e "$test"/main.stu ] && files="$files $test/main.stu"
+		topic=$(sed -E -e 's,^.*TOPIC:\s*(.*)$,\1,
+t
+d' $files /dev/null)
+	fi
+	[ "$topic" ] || topic='<missing>'
+	printf '%-15s %s\n' "$test" "$topic"
+done

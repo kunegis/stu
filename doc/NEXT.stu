@@ -125,3 +125,7 @@ V {
 # Write parameters with parentheses as $(param_name), and reserve $param_name and
 # ${param_name} for environment variables.  (maybe)
 #
+
+#
+# Option -F should be renamed to -e, in analogy with grep/sed.
+#

@@ -1,0 +1,8 @@
+# TOPIC: a~b~c
+
+A: list.a~b~c
+{
+	cp list.a~b~c A
+}
+
+list.a~b~c = {CORRECT}

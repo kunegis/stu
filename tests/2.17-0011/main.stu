@@ -1,0 +1,11 @@
+# TOPIC: $p p=a~b
+
+A: list.~v
+{
+	cp -- 'list.~v' A
+}
+
+$name:
+{
+	echo CORRECT >"$name"
+}

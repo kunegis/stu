@@ -1,0 +1,16 @@
+#!/bin/sh
+# TOPIC: [~a]
+. ../../sh/test.sh
+
+{
+	printf '>A: [~%s] {}\n' "$(id -un)"
+} >list.stu
+
+set +e
+../../bin/stu.test -f list.stu >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+[ ! -e A ]
+grep -q -F -e 'list.stu:1:6:' list.err

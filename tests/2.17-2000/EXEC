@@ -1,0 +1,14 @@
+#!/bin/sh
+# TOPIC: ~user
+. ../../sh/test.sh
+
+user=$(id -un)
+[ "$user" ]
+
+{
+	printf 'A: ~%s { touch A ; }\n' "$user"
+} >list.stu
+
+../../bin/stu.test -f list.stu >list.out 2>list.err
+
+[ -e A ]

@@ -1,5 +1,5 @@
-
 # The first rule should just copy 'B' to 'A'.
+# TOPIC: >a
 
 >A : <B { cat }
 

@@ -542,6 +542,23 @@ inside of single quotes.  The result of environment variable substitution is nev
 word-split, i.e., spaces and other special characters in the value of environment
 variables are not interpreted after substitution.
 
+.SH "HOME DIRECTORY"
+
+The home directory of the current user can be represented by \fI~\fR and the home
+directory of a user by
+\fI~<username>\fR.  A lone unquoted \fI~\fR is resolved to the value of $HOME.  If $HOME
+is not defined, Stu uses \fBgetpwuid\fR(2) to determine the home directory of the current
+user.  An unquoted \fI~<username>\fR stands for the given user's home directory.
+
+In command-line arguments, \fI~\fR always stands for itself, and home directories are not
+used.  If any part of a name is in double quotes, single quotes, escaped with
+backslash, or contains characters not allowed in usernames (only a-zA-Z0-9_-. are allowed
+and - not as
+first character), the name is not parsed as a home directory.  Preceding or following
+concatenated expressions with () or [] are not taken into account.  For instance,
+\fI~abc(def)\fR will look up the home directory of user \fIabc\fR and concatenate
+\fIdef\fR to it.
+
 .SH "CONCATENATION"
 
 In certain circumstances, two dependencies that are not separated by spaces are said to be
@@ -549,8 +566,8 @@ concatenated.  Concatenation takes place in the following cases:
 
     A( A[ )A )( )[ ]A ]( ][
 
-In this list, \fIA\fR stands for any literal name, including one containing
-parameters or quotes.
+In this list, \fIA\fR stands for any literal name, including one containing parameters,
+single or double quotes, environment variables, or home directories.
 
 If two dependencies are concatenated, their concatenation is taken as the dependency.
 Effectively this considers each side of the concatenation to be a list of names (after
@@ -732,6 +749,7 @@ filenames:
     ;     End of rule, in rule without command
     -     Prefix character for flag
     $     Parameter; variable dependency; environment variable
+    ~     Home directory
     @     Phony target marker
     >     Output redirection
     <     Input redirection
@@ -887,8 +905,8 @@ line.
 .SH "ENVIRONMENT"
 
 .IP STU_CP
-If set, Stu calls the \fIcp\fR program from the given location instead
-of \fI/bin/cp\fR.  The given version of \fIcp\fR must support the syntax \fBcp -- "$fileA" "$fileB"\fR.
+If set, Stu calls the \fIcp\fR program from the given location instead of \fI/bin/cp\fR.
+The given version of \fIcp\fR must support the syntax \fBcp -- "$fileA" "$fileB"\fR.
 .IP STU_OPTIONS
 Contains options to be set on every run of Stu.  Only the options \fBEQsUwxyYz\fR can be
 set this way.  The variable should contain only these characters, dashes, and whitespace;

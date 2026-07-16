@@ -1,0 +1,11 @@
+# TOPIC: ~"$(v)"
+
+A: ~"$(NAME)"
+{
+	cp -- '~mnbvcxz.data' A
+}
+
+>~"$(NAME)"
+{
+	echo CORRECT
+}

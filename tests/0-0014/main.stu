@@ -1,4 +1,4 @@
-
+# TOPIC: mutiply-conneted DAG
 
 A:  B C D {
     cat B C D >A

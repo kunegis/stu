@@ -1,0 +1,11 @@
+# TOPIC: [a] a=~u
+
+A: [B]
+{
+	touch A
+}
+
+>B
+{
+	printf '~%s\n' "$(id -un)"
+}

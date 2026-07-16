@@ -1,4 +1,4 @@
-
+# TOPIC: a: b {} b { touch b a ; }
 
 # When A and B are already present, there must not be an error message
 # stating that A is too old. 
@@ -10,4 +10,3 @@ B:
 	touch B
 	touch A
 }
-

@@ -1,0 +1,11 @@
+# TOPIC: "~a"
+
+A: "~user123.data"
+{
+	cp -- '~user123.data' A
+}
+
+>'~user123.data'
+{
+	echo CORRECT
+}

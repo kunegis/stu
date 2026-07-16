@@ -1,22 +1,4 @@
 #
-# Make '~' work as the home directory.  Also for ~user/.  '~' is already
-# forbidden as the first character in unquoted names.  Needs a new type for
-# unparsed targets.  This is very similar to supporting environment variables.
-#
-
-~ # Home directory
-~user # Works
-"~" # Not the home directory
-"~user" # Not a home directory
-'~user' # Not a home directory
-"~"user # Not a user's home directory
-~"user" # Does not work in the shell
-~$(NAME) # Equivalent does not work in the shell
-~"$(NAME)" # Equivalent does not work in the shell
-$(NAME) # Containing '~user'
-${name} # Containing '~user'
-
-#
 # A way to set environment variables for all commands.
 #
 
@@ -72,8 +54,11 @@ $ stu -d dir/main.stu # Like first cd'ing to dir/
 
 # There could also be a 'cd' command, e.g.
 %cd dir/
+%cd - # Pop from cd stack (?)
 
 # And theoretically also braces for blocks
+
+# * Check that $(PWD) is always the base dir of the rule
 
 #
 # When doing %include or %import, allow to pass environment variables.  (Discuss.)
@@ -185,6 +170,8 @@ program:  [-o -p dep.sources] { ... }
 
 #
 # Regular expressions in target names.
+#
+# * How to handle the case with multiple targets.
 #
 
 list.${X:.}${Y:.} {
@@ -427,6 +414,19 @@ a:  @compile| a, a.c |;
 # space.  Not allows for files.
 #
 
+# Alternative using '|':
+
+calc:  @build-c | calc | calc.c;
+
+@build-c | ${TARGET} | ${SRC}: ${SRC} $[CFLAGS]
+{
+	cc $CFLAGS -- "${SRC}" -o "${TARGET}"
+}
+
+aaa: @build-c | filename; # Only a single argument is passed
+
+# Alternative using ',':
+
 calc:  @build-c, calc, calc.c;
 
 @build-c,${TARGET},${SRC}: ${SRC}
@@ -444,17 +444,6 @@ calc:  @build-c':'calc':'calc.c;
 	cc ${SRC} -o ${TARGET}
 }
 
-# Alternative using only '|':
-
-calc:  @build-c | (calc calc.c);
-
-@build-c | (${TARGET} ${SRC}): ${SRC}
-{
-	cc ${SRC} -o ${TARGET}
-}
-
-aaa: @build-c filename; # Only a single argument is passed
-
 #
 # Allow variable dependency to be optional. If the file is not present, no variable is
 # passed.
@@ -468,3 +457,21 @@ aaa: @build-c filename; # Only a single argument is passed
 # Constructors of Executor child classes should not take a parent and dep.  They should
 # build an executor without parents, for which connect() is then called.
 #
+
+#
+# job_list.cc:  Job list doesn't have to be sorted.  Make it unsorted.
+#
+# * Remove the Feistel network test.
+#
+
+#
+# Have a 'tutorial' or 'examples' directory with examples that largely work like tests,
+# but readable, and illustrating features.
+#
+
+#
+# sh/topic: Check that all files have a topic, add to the Makefile, and save output in a
+# file in the repo.
+#
+
+# * Check that no two tests have the same topic.

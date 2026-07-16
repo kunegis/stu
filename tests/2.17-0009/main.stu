@@ -1,0 +1,11 @@
+# TOPIC: $(v) v=~a
+
+A: $(NAME)
+{
+	cp -- '~m' A
+}
+
+>$(NAME)
+{
+	echo CORRECT
+}

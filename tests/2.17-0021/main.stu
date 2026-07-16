@@ -1,0 +1,11 @@
+# TOPIC: ~: {}
+
+A: ~
+{
+	ls -ld list.abcdef >A
+}
+
+~:
+{
+	mkdir list.abcdef
+}

@@ -31,17 +31,6 @@ https://raw.githubusercontent.com/kunegis/stu/master/MANPAGE
 For more specific documentation of particular aspects of Stu, see the
 files in the doc/ directory.
 
-------
- News
-------
-
-- Version 2.6 is out:  canonicalization of filenames is implemented
-
-- Tip:  Set "export STU_OPTIONS=-E" in your .bashrc file to get
-  explanations of common error messages in Stu.
-
-See the file 'NEWS' for more news.
-
 --------------------
  Installation Guide
 --------------------
@@ -51,7 +40,7 @@ See the file INSTALL for compiling Stu yourself, which is easy: We use make and
 make install.  Stu is written in C++17 for POSIX platforms.  You should have no
 problem getting it to run on vanilla Linux and other POSIX-compliant platforms.
 
-* See the file 'INSTALL' for compiling Stu
+* See the file 'INSTALL' for compiling and installing Stu
 * Package for Arch Linux:  https://aur.archlinux.org/packages/stu-git/
 
 If you're interested in making Stu packages available for other

@@ -1,0 +1,11 @@
+# TOPIC: "~"a
+
+A: "~"abcdef.data
+{
+	cp -- '~abcdef.data' A
+}
+
+"~"abcdef.data
+{
+	echo CORRECT >"~abcdef.data"
+}

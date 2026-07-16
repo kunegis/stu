@@ -1,8 +1,0 @@
-# Error on a name beginning with '~'
-
-A:  ~B 
-{
-	touch A
-}
-
-~B = {correct}

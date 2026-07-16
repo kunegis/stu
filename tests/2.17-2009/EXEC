@@ -1,0 +1,41 @@
+#!/bin/sh
+# TOPIC: characters allowed in names
+. ../../sh/test.sh
+file_so=../../bin/preload.so
+dir=$(pwd)
+
+( cd ../.. && sh/ccpreload "$dir"/PRELOAD.cc bin/preload.so )
+
+names='
+abcdef
+abc.def
+.abcdef
+abcdef.
+.
+012345
+_
+aaa_bbb
+_aaabbb
+aaabbb_
+aaa-bbb
+aaa-
+w
+x-
+'
+
+i=0
+
+for name in $names ; do
+	: $(( i += 1 ))
+	echo "name='$name' i='$i'"
+	../../sh/rm_tmps
+	{
+		printf 'A: ~%s/x { cp list.%s/x A ; }\n' "$name" "$i"
+		printf 'list.%s/x { mkdir list.%s ; echo CORRECT >list.%s/x ; }\n' "$i" "$i" "$i"
+	} >list.stu
+
+	LD_PRELOAD=$file_so STU_PRELOAD_NAME=$name STU_PRELOAD_I=$i \
+		../../bin/stu.test -f list.stu >list.out 2>list.err
+
+	grep -q -F -x -e 'CORRECT' A
+done

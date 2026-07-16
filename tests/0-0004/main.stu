@@ -1,4 +1,4 @@
-
+# TOPIC: a: b {}
 
 A:  file {
     echo Catting file twice into A

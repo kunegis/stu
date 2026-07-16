@@ -626,15 +626,32 @@ ENVIRONMENT VARIABLES
        cial characters in the value of environment variables  are  not  inter‐
        preted after substitution.
 
+HOME DIRECTORY
+       The  home directory of the current user can be represented by ~ and the
+       home directory of a user by ~<username>.  A lone unquoted ~ is resolved
+       to  the  value of $HOME.  If $HOME is not defined, Stu uses getpwuid(2)
+       to determine the home directory  of  the  current  user.   An  unquoted
+       ~<username> stands for the given user's home directory.
+
+       In  command-line arguments, ~ always stands for itself, and home direc‐
+       tories are not used.  If any part of a name is in double quotes, single
+       quotes,  escaped  with backslash, or contains characters not allowed in
+       usernames (only a-zA-Z0-9_-. are allowed and - not as first character),
+       the  name  is  not  parsed as a home directory.  Preceding or following
+       concatenated expressions with () or [] are not taken into account.  For
+       instance,  ~abc(def)  will  look  up the home directory of user abc and
+       concatenate def to it.
+
 CONCATENATION
-       In  certain  circumstances,  two dependencies that are not separated by
-       spaces are said to be concatenated.  Concatenation takes place  in  the
+       In certain circumstances, two dependencies that are  not  separated  by
+       spaces  are  said to be concatenated.  Concatenation takes place in the
        following cases:
 
            A( A[ )A )( )[ ]A ]( ][
 
-       In  this  list, A stands for any literal name, including one containing
-       parameters or quotes.
+       In this list, A stands for any literal name, including  one  containing
+       parameters, single or double quotes, environment variables, or home di‐
+       rectories.
 
        If two dependencies are concatenated, their concatenation is  taken  as
        the dependency.  Effectively this considers each side of the concatena‐
@@ -824,6 +841,7 @@ TOKENIZATION
            ;     End of rule, in rule without command
            -     Prefix character for flag
            $     Parameter; variable dependency; environment variable
+           ~     Home directory
            @     Phony target marker
            >     Output redirection
            <     Input redirection
@@ -1230,4 +1248,4 @@ AUTHOR
 SEE ALSO
        cook(1), gpl(7), make(1), sh(1)
 
-stu-2.16.3                         July 2026                            STU(1)
+stu-2.17.1                         July 2026                            STU(1)

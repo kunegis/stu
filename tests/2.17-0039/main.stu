@@ -1,0 +1,10 @@
+# TOPIC: ~a$b
+
+A: list.data
+{
+	cp '~abc.data' A
+}
+
+>list$def: ~abc$def {}
+
+'~abc.data' = { CORRECT }

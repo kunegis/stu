@@ -1,3 +1,4 @@
+# TOPIC: a: b {} b: {}
 
 B:  A {
     echo Copying A to B...

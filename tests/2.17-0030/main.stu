@@ -1,0 +1,8 @@
+# TOPIC: a~
+
+A: a~
+{
+	cp a~ A
+}
+
+a~ = {CORRECT}

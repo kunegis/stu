@@ -1,8 +1,7 @@
 #!/bin/sh
+# TOPIC: sigemptyset
 . ../../sh/test.sh
-
 file_so=../../bin/preload.so
-
 dir=$(pwd)
 
 ( cd ../.. && sh/ccpreload "$dir"/PRELOAD.cc bin/preload.so )

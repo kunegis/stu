@@ -1,0 +1,8 @@
+# TOPIC: ~<
+
+>A: ~<b
+{
+	cat
+}
+
+b = {CORRECT}

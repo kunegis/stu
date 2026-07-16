@@ -1,5 +1,5 @@
-
 # 'A' must contain 'CORRECT'
+# TOPIC: >a: <b c
 
 >A:  <B C { sed -e 's,abc,CORR,' | tr -d '\n' ; cat C }
 >B { echo abc }

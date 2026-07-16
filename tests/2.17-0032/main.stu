@@ -1,0 +1,11 @@
+# TOPIC: ~a\b
+
+A: ~abcde\f
+{
+	cp -- '~abcdef' A
+}
+
+>'~abcdef'
+{
+	echo CORRECT
+}

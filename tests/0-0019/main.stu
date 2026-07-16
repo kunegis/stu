@@ -1,4 +1,5 @@
-# 'B' should be created only once, and not twice. 
+# 'B' should be created only once, and not twice.
+# TOPIC: executed once
 
 A:  B 
 {

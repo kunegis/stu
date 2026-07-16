@@ -9,7 +9,7 @@
 # particular, all one-letter and two-letter files are deleted except 'sh'.
 #
 
-rm -Rf -- ? list.* A.* ./*.data x.* *SCHTROUMPF* .+-~_ || exit 1
+rm -Rf -- ? list.* A.* ./*.data x.* *SCHTROUMPF* .+-~_ *abcdef || exit 1
 
 for file in ?? ; do
 	if [ "$file" = sh ] ; then continue ; fi

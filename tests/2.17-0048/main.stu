@@ -1,0 +1,9 @@
+# TOPIC: ~-
+# In the shell, ~- stands for $OLDPWD.  In Stu, it is an allowed filename.
+
+A: ~-
+{
+	cp ~- A
+}
+
+~- = {CORRECT}

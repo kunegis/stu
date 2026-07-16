@@ -1,0 +1,15 @@
+# TOPIC: ~a[b]
+
+A: ~abc[B] ~abc[C]
+{
+	cp list.dir/def A
+}
+
+-n B = { }
+-n C = { /def }
+
+list.dir/def
+{
+	mkdir -p list.dir
+	echo CORRECT >list.dir/def
+}

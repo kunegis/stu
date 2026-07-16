@@ -1,0 +1,13 @@
+# TOPIC: ~${p}
+
+A: list.name.data
+{
+	cp list.name.data A
+}
+
+list.$param:  ~${param}
+{
+	cp -- '~name.data' list.name.data
+}
+
+'~name.data' = {CORRECT}

@@ -1,0 +1,11 @@
+#!/bin/sh
+# TOPIC: (~a)
+. ../../sh/test.sh
+
+{
+	printf '>A: (~%s) {}\n' "$(id -un)"
+} >list.stu
+
+../../bin/stu.debug -f list.stu >list.out 2>list.err
+
+[ -e A ]

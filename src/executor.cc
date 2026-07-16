@@ -71,11 +71,10 @@ void Executor::read_dynamic(
 			Tokenizer::parse_tokens_file(
 				tokens,
 				Tokenizer::DYNAMIC, place_end, filename,
-				placed_target.place, -1, allow_enoent);
-
-			Placed_Name input; /* remains empty */
-			Place place_input; /* remains empty */
-
+				placed_target.place, -1,
+				allow_enoent, false);
+			Placed_Name input;
+			Place place_input;
 			try {
 				Parser::get_expression_list(
 					deps, tokens,
@@ -88,15 +87,15 @@ void Executor::read_dynamic(
 			/* Check that there are no input dependencies */
 			if (! input.empty()) {
 				Hash_Dep hash_dep_dynamic(0, hash_dep);
-				place_input <<
-					fmt("dynamic dependency %s must not contain input redirection %s",
+				place_input << fmt(
+					"dynamic dependency %s must not contain input redirection %s",
 					show(hash_dep_dynamic),
 					show(Prefix_View("<", input)));
 				Hash_Dep hash_dep_file= hash_dep;
 				hash_dep_file.get_front_word_nondynamic()
 					&= ~F_TARGET_PHONY;
 				(*dynamic_executor) << fmt("%s is declared here",
-							   show(hash_dep_file));
+					show(hash_dep_file));
 				raise(ERR_LOGICAL);
 			}
 		end_normal:;

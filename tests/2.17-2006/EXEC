@@ -1,0 +1,13 @@
+#!/bin/sh
+# TOPIC: ~a() ~a[] ()~a []~a
+. ../../sh/test.sh
+
+user=$(id -un)
+
+{
+	printf '>A: ~%s() ~%s[] ()~%s []~%s {}\n' "$user" "$user" "$user" "$user"
+} >list.stu
+
+../../bin/stu.test -f list.stu >list.out 2>list.err
+
+[ -e A ]

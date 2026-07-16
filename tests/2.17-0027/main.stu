@@ -1,0 +1,8 @@
+# TOPIC: ~>
+
+~>A
+{
+	echo CORRECT
+	mkdir -p list.dir
+	touch list.dir/X
+}

@@ -1,0 +1,11 @@
+# TOPIC: a(~b)
+
+A: abc(~def)
+{
+	cp abcDEF.data A
+}
+
+abcDEF.data
+{
+	touch abcDEF.data
+}

@@ -1,0 +1,9 @@
+# TOPIC: ~nonexistinguser[a] a={}
+# This is an error even though B is empty, and the concatenation would result in zero
+# objects: The error is produced before the concatenation is computed.
+
+A: ~nonexistinguser[B]
+{
+}
+
+B={}

@@ -1,0 +1,16 @@
+#!/bin/sh
+# TOPIC: @~a
+. ../../sh/test.sh
+
+user=$(id -un)
+
+{
+	printf 'A: @~%s { cp B A ; }\n' "$user"
+	printf '@'\''%s'\'' { echo CORRECT >B ; }\n' "$HOME"
+} >list.stu
+
+../../bin/stu.test -f list.stu >list.out 2>list.err
+
+grep -q -F -x -e 'CORRECT' A
+
+[ -e list.err ] ; [ ! -s list.err ]

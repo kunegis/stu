@@ -1,0 +1,14 @@
+#!/bin/sh
+# TOPIC: ~<newline>
+. ../../sh/test.sh
+
+{
+	printf 'A: ~\n'
+	printf '{ touch A ; }\n'
+	printf '~\n'
+	printf ';\n'
+} >list.stu
+
+../../bin/stu.test -f list.stu >list.out 2>list.err
+
+[ -e A ]

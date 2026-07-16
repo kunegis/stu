@@ -1,0 +1,8 @@
+# TOPIC: ~$(v)
+
+A: ~$(STU_TEST_VAR)
+{
+	cp '~abc.data' A
+}
+
+'~abc.data' = {CORRECT}

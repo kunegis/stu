@@ -1,0 +1,9 @@
+# TOPIC: ~/a
+
+A = ~/B;
+
+list.dir/B
+{
+	mkdir -p list.dir
+	echo CORRECT >list.dir/B
+}

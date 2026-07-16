@@ -1,0 +1,11 @@
+#!/bin/sh
+# TOPIC: ~ not present
+. ../../sh/test.sh
+
+HOME_value=$HOME
+
+unset HOME
+
+../../bin/stu.test >list.out 2>list.err
+
+[ -e A ]

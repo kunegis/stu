@@ -143,6 +143,7 @@ void print_errno_based(string text);
 
 string format_errno(const char *call);
 string format_errno(const char *call, string filename);
+
 string format_errno_bare(string text);
 /* Includes the given message, and the ERRNO-based text.  Cf. perror().  Color is not
  * added.  The output of this function is used as input to one of the print_*()

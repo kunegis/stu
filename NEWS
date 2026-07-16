@@ -12,6 +12,10 @@ subdirectories in tests/.
 
 ------------------------------------------------------------------------
 
+2026-07-16  Version 2.17:
+
+* Home directories using ~ and ~<username>.
+
 2026-06-29  Version 2.16:
 
 * The flags -p/-o/-n/-0/-C are allowed in front of target phonies.
@@ -539,11 +543,11 @@ Also called "hard-coded rules".
 
 2015-09-29  Version 1.2:
 
-* Input redirection is possible using the '<' operator, which must be put in front of a
-  file dependency which is then used as standard input for the command.  This cannot be
-  used for phony dependencies, for variable dependencies or for dynamic dependencies
-  (neither before them or within them).  When combined with '!', the redirection operator
-  comes second, i.e., '!<A'.  This can be combined with the output operator '>' to write
+* Input redirection using the '<' operator, which must be put in front of a file
+  dependency which is then used as standard input for the command.  This cannot be used
+  for phony dependencies, for variable dependencies or for dynamic dependencies (neither
+  before them or within them).  When combined with '!', the redirection operator comes
+  second, i.e., '!<A'.  This can be combined with the output operator '>' to write
   commands that consist only of a single call to a filter such as sed, tr or awk.
 
 2015-05-29  Version 1.1:

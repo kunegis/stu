@@ -1,5 +1,6 @@
 #include "tokenizer.hh"
 
+#include <pwd.h>
 #include <sys/mman.h>
 
 #include "show_option.hh"
@@ -11,14 +12,15 @@ void Tokenizer::parse_tokens_file(
 	string filename,
 	const Place &place_diagnostic,
 	int fd,
-	bool allow_enoent)
+	bool allow_enoent,
+	bool try_default)
 {
 	std::vector <Backtrace> backtraces;
 	std::vector <string> filenames;
 	std::set <string> includes;
 	parse_tokens_file(
 		tokens, context, place_end, filename, backtraces, filenames, includes,
-		place_diagnostic, fd, allow_enoent);
+		place_diagnostic, fd, allow_enoent, try_default);
 }
 
 void Tokenizer::parse_tokens_file(
@@ -31,11 +33,13 @@ void Tokenizer::parse_tokens_file(
 	std::set <string> &includes,
 	const Place &place_diagnostic,
 	int fd,
-	bool allow_enoent)
+	bool allow_enoent,
+	bool try_default)
 {
 	TRACE_FUNCTION();
 	TRACE("filename= '%s'", filename);
 	TRACE("fd= %s", frmt("%d", fd));
+	TRACE("try_default=%s", frmt("%d", try_default));
 	char *in= nullptr;
 	size_t in_size;
 	struct stat buf;
@@ -81,6 +85,10 @@ void Tokenizer::parse_tokens_file(
 		/* If the file is a directory, open the file "main.stu" within it */
 		if (S_ISDIR(buf.st_mode)) {
 			TRACE("Is directory");
+			if (! try_default) {
+				errno= EISDIR;
+				goto error_close;
+			}
 			if (filename[filename.size() - 1] != '/')
 				filename += '/';
 			filename += FILENAME_INPUT_DEFAULT;
@@ -552,7 +560,7 @@ void Tokenizer::parse_flag_or_name()
 		&& (to <Operator> (tokens.back())->op == ']' ||
 			to <Operator> (tokens.back())->op == ')');
 
-	if ((*p == '+' || *p == '~') && ! allow_special) {
+	if (*p == '+' && ! allow_special) {
 		current_place() << fmt(
 			"an unquoted name must not begin with the character %s",
 			show(string(1, *p)));
@@ -678,15 +686,17 @@ shared_ptr <Placed_Name> Tokenizer::parse_name(bool allow_special)
 	TRACE("allow_special= %s", frmt("%d", allow_special));
 	const char *const p_begin= p;
 	Place place_begin= current_place();
-
 	shared_ptr <Placed_Name> ret= std::make_shared <Placed_Name> ("", place_begin);
 
 	if (p < p_end && ! allow_special) {
-		if (*p == '-' || *p == '+' || *p == '~') {
+		if (*p == '-' || *p == '+') {
 			TRACE("Don't allow '-', '+' and '~' at beginning of a name");
 			return nullptr;
 		}
 	}
+
+	if (! allow_special && p < p_end && *p == '~')
+		parse_home(*ret);
 
 	bool has_escape= false;
 	while (p < p_end) {
@@ -728,11 +738,10 @@ shared_ptr <Placed_Name> Tokenizer::parse_name(bool allow_special)
 void Tokenizer::parse_dollar(Placed_Name &placed_name)
 {
 	TRACE_FUNCTION();
-	assert(p < p_end);
-	assert(*p == '$');
+	assert(p < p_end && *p == '$');
 	string name;
-
 	Place place_dollar= current_place();
+
 	if (p + 1 == p_end || p[1] == '\n') {
 		place_dollar << fmt(
 			"expected parameter or environment variable after %s",
@@ -764,6 +773,55 @@ void Tokenizer::parse_dollar(Placed_Name &placed_name)
 	} else {
 		parse_parameter(name);
 		placed_name.append_parameter(name, place_dollar);
+	}
+}
+
+void Tokenizer::parse_home(Placed_Name &placed_name)
+{
+	TRACE_FUNCTION();
+	assert(p < p_end && *p == '~');
+	const char *tilde= p;
+	Place place_tilde= current_place();
+	++p;
+	const char *begin= p;
+
+	while (p < p_end && (isalnum(*p) || *p == '.' || *p == '_' || (*p == '-' && p > begin))) ++p;
+
+	if (p == begin) {
+		TRACE("Standalone ~");
+		if (! (p == p_end || is_tilde_char(*p))) {
+			placed_name.append_text("~");
+			return;
+		}
+		const char *home= getenv(ENV_HOME);
+		if (!home || !home[0]) {
+			print_warning(place_tilde, fmt("variable %s is not set",
+				show(Operator_View(fmt("$%s", ENV_HOME)))));
+			struct passwd *info= getpwuid(getuid());
+			if (! info || ! info->pw_dir) {
+				place_tilde <<
+					"cannot determine home directory of user by UID";
+				throw ERR_BUILD;
+			}
+			placed_name.append_text(info->pw_dir);
+		} else {
+			placed_name.append_text(home);
+		}
+	} else {
+		TRACE("Specific user's home directory");
+		if (! (p == p_end || is_tilde_char(*p))) {
+			placed_name.append_text(string(tilde, p - tilde));
+			return;
+		}
+		string username= string(begin, p - begin);
+		assert(username.size() > 0);
+		struct passwd *info= getpwnam(username.c_str());
+		if (! info || ! info->pw_dir) {
+			place_tilde << fmt("cannot determine home directory of user %s",
+				show(username));
+			throw ERR_BUILD;
+		}
+		placed_name.append_text(info->pw_dir);
 	}
 }
 
@@ -886,6 +944,11 @@ bool Tokenizer::is_name_char(char c)
 bool Tokenizer::is_operator_char(char c)
 {
 	return c != '\0' && nullptr != strchr(":<>=@;()[],|", c);
+}
+
+bool Tokenizer::is_tilde_char(char c)
+{
+	return ! (is_name_char(c) || strchr("\"\'$\\", c)) || c == '/';
 }
 
 void Tokenizer::parse_version(

@@ -1,0 +1,6 @@
+# TOPIC: ~
+
+A = B;
+>B: ~ {}
+~: C { mkdir list.dir ; }
+C = {ccc}

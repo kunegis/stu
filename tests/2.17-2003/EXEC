@@ -1,0 +1,17 @@
+#!/bin/sh
+# TOPIC: ~/nonexistingfile
+. ../../sh/test.sh
+
+[ "$HOME" ]
+
+{
+	printf 'A: ~/nonexistingfile_stu {}\n'
+} >list.stu
+
+set +e
+../../bin/stu.test -f list.stu >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+grep -q -F -e "$HOME/nonexistingfile_stu" list.err

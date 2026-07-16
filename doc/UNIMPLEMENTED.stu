@@ -481,3 +481,19 @@ aaa:  @bbb;
 # Flag before phony rule with command, denoting that the command should be executed
 # mutiple times if it appears as dependency multiple times.
 #
+
+#
+# Flag to specify that a dependency is actually a target.  Stu will not try to build the
+# dependency, but will check that it was built.  Only useful with dynamic dependencies.
+#
+
+A: --target [B] { touch A C ; }
+
+B = { C }
+
+#
+# For content rules and copy rules, first create the target directory if necessary.
+#
+
+A/B = C; # Does 'mkdir -p A' first
+A/B = {c} # Does 'mkdir -p A' first

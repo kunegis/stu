@@ -79,5 +79,6 @@ public:
 };
 
 void print_warning(const Place &place, string message);
+/* This is not in error.hh because it takes a Place */
 
 #endif /* ! PLACE_HH */

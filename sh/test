@@ -87,6 +87,7 @@
 #              the test from the 'ndebug' variant.
 # VARIANT      The variant(s) in which the test should be executed.  Can contain any
 #              number of variants.  Each can be preceded by '!' to exclude it.
+# TOPIC        The topic of the test; see sh/topic
 # PRELOAD.cc   If present, the file is compiled as a shared object and Stu executed with
 #              LD_PRELOAD set to that file.
 # SETUP        Script that is executed before the test.
@@ -135,7 +136,7 @@
 # Note: we can't use "set -e" here (which is a good general practice in shell scripts),
 # because otherwise we can't use $? to check the exit code of Stu.
 
-ALLOWED_FILES='EXITSTATUS INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC SETUP STDOUT NOSECOND NOTTY NOCOLOR COV_TAG VARIANT'
+ALLOWED_FILES='EXITSTATUS INSTDOUT INSTDERR NOTINSTDERR STDERR TTYSTDOUTERR INTTYSTDOUTERR CMD CMDPREFIX TARGET INCONTENT NOTINCONTENT CONTENT EXEC SETUP STDOUT NOSECOND NOTTY NOCOLOR COV_TAG TOPIC VARIANT'
 error_file=${TMPDIR:-/tmp}/test.$$.error
 
 esc=$(printf '\033')
@@ -606,10 +607,12 @@ do
 
 		# Second invocation does nothing
 		if [ "$exitstatus_correct" = 0 ] && [ ! -e NOSECOND ]; then
-			echo >&7 $CMDPREFIX ../../bin/stu.test "$CMD"
-			eval $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err
-			grep -q -F 'Targets are up to date' list.def.out
-			if [ "$?" = 0 ] ; then
+			echo >&7 $(preload_prefix $LD_PRELOAD_VALUE) $CMDPREFIX ../../bin/stu.test "$CMD"
+			eval $(preload_prefix $LD_PRELOAD_VALUE) $CMDPREFIX ../../bin/stu.test $CMD \>list.def.out 2\>list.def.err
+			exitstatus_actual=$?
+			if [ "$exitstatus_actual" = 0 ] &&
+				   grep -q -F 'Targets are up to date' list.def.out
+			then
 				echo >&7 "Second invocation...correct"
 			else
 				test_fail "Second invocation did no result in 'Targets are up to date'"

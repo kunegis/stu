@@ -1,3 +1,5 @@
+# TOPIC: a: b {} b: c {} c: d {} d: {}
+
 D:  C {
     echo Copying C to D...
     cp C D
@@ -21,4 +23,3 @@ A:  {
     echo Blablabla >A
     echo "   done"
 }
-

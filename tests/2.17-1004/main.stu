@@ -1,0 +1,6 @@
+# TOPIC: ~nonexistinguser
+
+# Make sure Stu determines the name of user 'nonexistinguser', and not
+# 'nonexistinguser/list'.
+
+A: ~nonexistinguser/list {}

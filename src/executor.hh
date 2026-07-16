@@ -60,9 +60,11 @@ public:
 
 	int get_error() const { return error; }
 
-	void read_dynamic(shared_ptr <const Plain_Dep> dep_target,
-			  std::vector <shared_ptr <const Dep> > &deps,
-			  shared_ptr <const Dep> dep, Executor *dynamic_executor);
+	void read_dynamic(
+		shared_ptr <const Plain_Dep> dep_target,
+		std::vector <shared_ptr <const Dep> > &deps,
+		shared_ptr <const Dep> dep,
+		Executor *dynamic_executor);
 	/* Read dynamic dependencies.  The only reason this is not static is
 	 * that errors can be raised and printed correctly.  Dependencies that
 	 * are read are written into DEPS, which is empty on calling. */

@@ -1,0 +1,8 @@
+#!/bin/sh
+# TOPIC: ~ in command line arg
+. ../../sh/test.sh
+
+../../bin/stu.test '~v' -F '$name={correct}' >list.out 2>list.err
+
+[ ! -s list.err ]
+grep -q -F -x -e 'correct' -- '~v'

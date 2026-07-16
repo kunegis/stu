@@ -1,14 +1,13 @@
-# These are changes that will need newer versions of the C++ standard and/or
-# compilers than what we use now.
+# These are changes that will need newer versions of C++/POSIX standards and/or compilers
+# than what we use now.
 
 #
 # preset.h:  Use to_address(v.end()) instead of v.data() + v.size()  (C++20).
 #
 
 #
-# Use standard formatting functions instead of our own.  (C++20)  We can also
-# use custom formatters for the colors, etc.  POSIX 2024 also has asprintf(), but that
-# doesn't help.
+# Use standard formatting functions instead of our own.  (C++20) We can also use custom
+# formatters for the colors, etc.  POSIX 2024 also has asprintf(), but that doesn't help.
 #
 
 #
@@ -17,17 +16,11 @@
 #
 
 #
-# (C++20) Executor::execute() and subclasses:  Use coroutines.  (Probably not a good
-# idea.)
+# (C++20) Executor::execute() and subclasses: Use coroutines.  (Probably not a good idea.)
 #
 
 #
 # (C++20) use contains() with certain containers instead of find().
-#
-
-#
-# Execute "make analyzer".  Not executed yet because it needs too much memory.  The GCC
-# analyzer is not yet ready for C++, but should be in the future.
 #
 
 #
@@ -53,4 +46,9 @@
 
 #
 # In the shell, dollar-single-quote (e.g., $'\t') is available in (POSIX 2024).
+#
+
+#
+# Execute "make analyzer".  Not executed yet because it needs too much memory.  The GCC
+# analyzer is not yet ready for C++, but should be in the future.
 #

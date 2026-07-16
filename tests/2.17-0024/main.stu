@@ -1,0 +1,6 @@
+# TOPIC: ~#
+
+A: ~# COMMENT
+{
+	touch A
+}

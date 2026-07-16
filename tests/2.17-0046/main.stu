@@ -1,0 +1,8 @@
+# TOPIC: 'a'~b
+
+A: 'list.'~abc
+{
+	cp list.~abc A
+}
+
+'list.~abc' = {CORRECT}

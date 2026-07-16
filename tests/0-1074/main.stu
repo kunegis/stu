@@ -1,0 +1,7 @@
+# TOPIC: set -x is default in commands
+
+A
+{
+	[ 1 = 2 ]
+	echo ERROR >A
+}

@@ -1,0 +1,8 @@
+# TOPIC: ~\a
+
+A: ~\name.data
+{
+	cp -- '~name.data' A
+}
+
+'~name.data' = {CORRECT}

@@ -1,7 +1,7 @@
 /*
  * Test that Stu can handle PIDs being returned in any order by successive fork() calls.
  * Since many operating systems will return growing PID numbers, this test is needed to
- * achieve coverage in code in file_executor.cc that handles the pid_t container.
+ * make sure the code in job_list.cc can handle PIDs generated in any order.
  *
  * Use a (K/2-1)+(K/2) bit unbalanced Feistel network to map PIDs to mock PIDs (MIDs),
  * where K is the number of bits in pid_t.

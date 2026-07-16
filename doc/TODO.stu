@@ -459,12 +459,6 @@ calc:  @build-c':'calc':'calc.c;
 #
 
 #
-# job_list.cc:  Job list doesn't have to be sorted.  Make it unsorted.
-#
-# * Remove the Feistel network test.
-#
-
-#
 # Have a 'tutorial' or 'examples' directory with examples that largely work like tests,
 # but readable, and illustrating features.
 #
@@ -475,3 +469,11 @@ calc:  @build-c':'calc':'calc.c;
 #
 
 # * Check that no two tests have the same topic.
+
+#
+# Makefile: changing NEWS, man/, doc/TODO.stu should not restart tests.
+#
+
+#
+# NEWS: Maybe remove dates.
+#

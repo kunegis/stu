@@ -10,40 +10,21 @@ File_Executor *Job_List::find(pid_t pid, size_t &index)
 	assert(pids);
 	assert(executors);
 
-	size_t mi= 0, ma= size - 1;
-	/* Both are inclusive */
-
-	assert(mi <= ma);
-	while (mi < ma) {
-		size_t ne= mi + (ma - mi + 1) / 2;
-		assert(ne <= ma);
-		if (pids[ne] == pid) {
-			mi= ma= ne;
-			break;
-		}
-		if (pids[ne] < pid) {
-			mi= ne + 1;
-		} else {
-			ma= ne - 1;
+	for (size_t i= 0; i < size; ++i) {
+		if (pids[i] == pid) {
+			index= i;
+			return executors[i];
 		}
 	}
-	if (mi > ma || mi == SIZE_MAX) {
-		/* No File_Executor is registered for the PID that just finished.  Should
-		 * not happen, but since the PID value came from outside this process, we
-		 * better handle this case gracefully, i.e., do nothing. */
-		should_not_happen();
-		print_warning(Place(),
-			frmt("the function waitpid(2) returned the invalid process ID %jd",
-				(intmax_t)pid));
-		return nullptr;
-	}
 
-	assert(mi == ma);
-	index= mi;
-	assert(index < size);
-	assert(pids[index] == pid);
-	assert(executors[index]);
-	return executors[index];
+	/* No File_Executor is registered for the PID that just finished.  Should not
+	 * happen, but since the PID value came from outside this process, we better
+	 * handle this case gracefully, i.e., do nothing. */
+	should_not_happen();
+	print_warning(Place(),
+		frmt("the function waitpid(2) returned the invalid process ID %jd",
+			(intmax_t)pid));
+	return nullptr;
 }
 
 void Job_List::add(pid_t pid, size_t &index, File_Executor *executor)
@@ -81,15 +62,16 @@ void Job_List::add(pid_t pid, size_t &index, File_Executor *executor)
 		}
 	}
 
-	size_t index_new= size++;
-	while (index_new && pids[index_new - 1] > pid) {
-		pids[index_new]= pids[index_new - 1];
-		executors[index_new]= executors[index_new - 1];
-		--index_new;
+#ifndef NDEBUG
+	for (size_t i= 0; i < size; ++i) {
+		assert(pids[i] != pid);
+		assert(executors[i] != executor);
 	}
-	pids[index_new]= pid;
-	executors[index_new]= executor;
-	index= index_new;
+#endif /* NDEBUG */
+
+	index= size++;
+	pids[index]= pid;
+	executors[index]= executor;
 }
 
 void Job_List::remove(size_t index)

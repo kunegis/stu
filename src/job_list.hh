@@ -22,14 +22,14 @@ private:
 	static pid_t *pids;
 	static File_Executor **executors;
 	/* The currently running executors by process IDs.  Write access to this is
-	 * enclosed in a Signal_Blocker.  Both arrays are malloc'ed, have the same length,
-	 * and are both sorted by PID.  malloc() is only called once for each array,
-	 * giving the allocated memory a length that will be enough for all jobs we will
-	 * ever run, based on the value passed via the -j option, so we avoid excessive
-	 * calling of realloc(), and race conditions while accessing this.  For all file
-	 * executors stored here, the following variables are never changed as long as the
-	 * File_Executor objects are stored there, such that they can be accessed from
-	 * async-signal safe functions:  FILENAMES, TIMESTAMPS_OLD. */
+	 * enclosed in a Signal_Blocker.  Both arrays are malloc'ed and have the same
+	 * length.  malloc() is only called once for each array, giving the allocated
+	 * memory a length that will be enough for all jobs we will ever run, based on the
+	 * value passed via the -j option, so we avoid excessive calling of realloc(), and
+	 * race conditions while accessing this.  For all file executors stored here, the
+	 * following variables are never changed as long as the File_Executor objects are
+	 * stored there, such that they can be accessed from async-signal safe functions:
+	 * FILENAMES, TIMESTAMPS_OLD. */
 };
 
 #endif /* ! JOB_LIST_HH */

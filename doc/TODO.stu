@@ -1,5 +1,4 @@
-* set: Use variable in command
-% unset VARNAME
+% unset VARNAME that exists
 * unset: When variable does not exist (not an error)
 * Both set and unset cannot appear in dynamic dependencies
 * Value is allowed to start with unquoted -/+/~ (?)
@@ -18,6 +17,11 @@
 %unset :
 % set PATH $(PATH):/usr/local/bin # Use variable in own redefinition
 * Have flag that makes %unset fail when variable does not exist
+* %set after a use of $(...):  The set value is not used
+* %set and then %unset
+* %set and then %set the same variable
+* %unset and then %unset
+%set VALUE $(VALUE)
 
 * Manpage
 

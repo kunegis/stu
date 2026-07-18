@@ -1,0 +1,8 @@
+# TOPIC: $(v)a when $(v) is empty
+
+A: list.$(STU_TEST_VAR)
+{
+	cp list. A
+}
+
+list. = {CORRECT}

@@ -1,0 +1,9 @@
+# TOPIC: %set v ''
+
+%set STU_TEST_VAR ''
+
+>A
+{
+	set | grep -q -E -e '^STU_TEST_VAR='
+	[ "$STU_TEST_VAR" = '' ]
+}

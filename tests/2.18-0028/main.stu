@@ -1,0 +1,8 @@
+# TOPIC: %set \a b
+
+%set STU_\TEST_ABC DEF
+
+>A
+{
+	[ "$STU_TEST_ABC" = DEF ]
+}

@@ -1,0 +1,18 @@
+# TOPIC: %set ; %unset
+
+%set STU_TEST_VAR aaa
+
+A: list.$(STU_TEST_VAR)
+{
+	set +e
+	set | grep -q -E -e '^STU_TEST_VAR='
+	exitstatus=$?
+	set -e
+	[ "$exitstatus" = 1 ]
+	
+	cp list.aaa A
+}
+
+%unset STU_TEST_VAR
+
+list.aaa = {CORRECT}

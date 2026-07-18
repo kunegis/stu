@@ -1,0 +1,5 @@
+# TOPIC: Set a variable, then use it in included file
+
+%set STU_TEST_ABC 1234
+
+%include b.stu

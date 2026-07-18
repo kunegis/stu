@@ -55,8 +55,6 @@ static long options_jobs= 1;
  * long.  Set before calling main() from the -j option, and then changed
  * internally by Executor.  Always nonnegative. */
 
-static const char **envp_global= nullptr;
-
 static const char *program_name= nullptr;
 /* Does the same as program_invocation_name (which is a GNU extension,
  * so we don't use it); the value of argv[0], set in main() */

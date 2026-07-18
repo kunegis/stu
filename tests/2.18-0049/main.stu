@@ -1,0 +1,13 @@
+# TOPIC: Set a variable, then use it as $(VAR) multiple times
+
+%set STU_TEST_VAR 123
+
+A = list.a.$(STU_TEST_VAR);
+
+list.a.$(STU_TEST_VAR) = list.b.$(STU_TEST_VAR);
+list.b.$(STU_TEST_VAR) = list.c.$(STU_TEST_VAR);
+list.c.$(STU_TEST_VAR) = list.d.$(STU_TEST_VAR);
+list.d.$(STU_TEST_VAR) = list.e.$(STU_TEST_VAR);
+list.e.$(STU_TEST_VAR) = list.f.$(STU_TEST_VAR);
+
+list.f.$(STU_TEST_VAR) = {CORRECT}

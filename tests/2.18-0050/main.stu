@@ -1,0 +1,8 @@
+# TOPIC: $(PWD)
+
+>A: @build.$(PWD) {}
+
+@build.$dir
+{
+	[ "$dir" = "$(pwd)" ]
+}

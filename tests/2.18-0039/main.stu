@@ -1,0 +1,18 @@
+# TOPIC: %set V a ; $(V)/
+
+%set STU_TEST_DIR list.dir
+
+A: $(STU_TEST_DIR)/file
+{
+	cp -- "$STU_TEST_DIR"/file A
+}
+
+$(STU_TEST_DIR)/file:  $(STU_TEST_DIR)
+{
+	echo CORRECT >"$STU_TEST_DIR"/file
+}
+
+-p $(STU_TEST_DIR)
+{
+	mkdir -- "$STU_TEST_DIR"
+}

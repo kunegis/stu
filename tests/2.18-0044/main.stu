@@ -1,0 +1,9 @@
+# TOPIC: %set v a %set w b
+
+%set STU_TEST_1 111 %set STU_TEST_2 222
+
+>A
+{
+	[ "$STU_TEST_1" = 111 ]
+	[ "$STU_TEST_2" = 222 ]
+}

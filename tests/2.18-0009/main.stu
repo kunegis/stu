@@ -1,0 +1,8 @@
+# TOPIC: %set a ~
+
+%set STU_VALUE ~
+
+>A
+{
+	[ "$STU_VALUE" = "$HOME" ]
+}

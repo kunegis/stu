@@ -1,0 +1,7 @@
+# TOPIC: %set STU_CP
+
+%set STU_CP copy
+
+A = B;
+
+B = {ERROR}

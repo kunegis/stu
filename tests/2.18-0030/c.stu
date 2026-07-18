@@ -1,0 +1,6 @@
+A: list.$(STU_TEST_VARIABLE)
+{
+	cp list."$STU_TEST_VARIABLE" A
+}
+
+list.aaa = {CORRECT}

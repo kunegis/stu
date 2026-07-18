@@ -1,0 +1,5 @@
+# TOPIC: %set STU_SHELL
+
+%set STU_SHELL shell
+
+A { }

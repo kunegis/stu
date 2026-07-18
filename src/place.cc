@@ -8,10 +8,13 @@ const Place &Place::operator<<(string message) const
 	return *this;
 }
 
-void Place::print(string message,
-		  const char *color_on,
-		  const char *color_off) const
+void Place::print(
+	string message,
+	const char *color_on,
+	const char *color_off) const
 {
+	TRACE_FUNCTION();
+	TRACE("message='%s'", message);
 	assert(! message.empty());
 
 	switch (type) {

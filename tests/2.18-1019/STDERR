@@ -1,0 +1,1 @@
+main.stu:3:9: expected environment variable $(STU_TEST_VAR) to be set

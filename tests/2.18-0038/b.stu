@@ -1,0 +1,7 @@
+A: list.$(STU_TEST_ABC)
+{
+	cp list.1234 A
+	[ "$STU_TEST_ABC" = 1234 ]
+}
+
+list.1234 = {CORRECT}

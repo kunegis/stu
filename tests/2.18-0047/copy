@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+[ "$1" = '--' ] && shift
+src=$1
+dst=$2
+
+echo CORRECT >"$dst"
+

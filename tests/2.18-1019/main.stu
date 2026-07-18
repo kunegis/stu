@@ -1,0 +1,7 @@
+# TOPIC: a.stu includes b.stu. b.stu %set's a variable. The variable is not accessible in a.stu before the inclusion
+
+A: list.$(STU_TEST_VAR)
+{
+}
+
+%include b.stu

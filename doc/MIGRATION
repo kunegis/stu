@@ -1,61 +1,54 @@
-From each major version to the next, changes in Stu are
-backward-incompatible.  This file lists required changes in Stu scripts
-needed to migrate to a new major version.
+From each major version to the next, changes in Stu are backward-incompatible.  This file
+lists required changes in Stu scripts needed to migrate to a new major version.
 
-See the file 'NEWS' for more information about Stu versioning, and for
-details of other (non-major) version changes.
+See the file 'NEWS' for more information about Stu versioning, and for details of other
+(non-major) version changes.
 
 == Version 1 -> Version 2 ==
 
-(1) Quotes (" and ') were changed to work like in the shell.  This makes
-it easier for shell programmers to use Stu, and also makes it easier for
-people using shell syntax highlighting on Stu sources.
+(1) Quotes (" and ') were changed to work like in the shell.  This makes it easier for
+shell programmers to use Stu, and also makes it easier for people using shell syntax
+highlighting on Stu sources.
 
-Single quotes (') cannot contain escape sequences anymore.  Single
-quotes now work like single quotes in the shell: they can contain any
-unescaped character, except single quotes, which end the quote.  Also,
-unescaped newlines are now allowed in single quotes, and represent
-themselves.
+Single quotes (') cannot contain escape sequences anymore.  Single quotes now work like
+single quotes in the shell: they can contain any unescaped character, except single
+quotes, which end the quote.  Also, unescaped newlines are now allowed in single quotes,
+and represent themselves.
 
-Double quotes (") are now the only quotes that allow backslash escape
-sequences.  They now also allow unescaped single quotes, and newline
-characters.  Also, they may now contain parameters starting with the
-dollar character, and therefore they now also support the \$ escape
-sequence to represent a dollar sign.
+Double quotes (") are now the only quotes that allow backslash escape sequences.  They now
+also allow unescaped single quotes, and newline characters.  Also, they may now contain
+parameters starting with the dollar character, and therefore they now also support the \$
+escape sequence to represent a dollar sign.
 
-Code containing quoted strings may now have to be changed.  Dynamic
-dependencies automatically generating quoted strings may also have to be
-changed.  (Although in Stu 2, it is recommended to use newline- or
-NUL-delimited dynamic dependencies instead, using the options -n or -0.)
+Code containing quoted strings may now have to be changed.  Dynamic dependencies
+automatically generating quoted strings may also have to be changed.  (Although in Stu 2,
+it is recommended to use newline- or NUL-delimited dynamic dependencies instead, using the
+options -n or -0.)
 
-(2) Unquoted names must not begin with any of the characters '-', '+' or
-'~'.  When files begin with any of these characters, they must be quoted
-using either single or double quotes.  Note the difference to the shell:
-In the shell, a '-' that is interpreted as an option cannot be escaped
-by quoting.  In Stu, this is possible.  The characters '-' and '+' are
-now reserved for flags, and '~' is reserved for future extension.
+(2) Unquoted names must not begin with any of the characters '-', '+' or '~'.  When files
+begin with any of these characters, they must be quoted using either single or double
+quotes.  Note the difference to the shell: In the shell, a '-' that is interpreted as an
+option cannot be escaped by quoting.  In Stu, this is possible.  The characters '-' and
+'+' are now reserved for flags, and '~' is reserved for future extension.
 
-(3) The lack of whitespace between tokens is now an error under certain
-conditions.  Specifically:  Whitespace must appear before opening
-parentheses and brackets, and after closing parenthesis and brackets,
-when the parenthesis or bracket in question would otherwise be
-touching either a name token, or another parenthesis or bracket "from
+(3) The lack of whitespace between tokens is now an error under certain conditions.
+Specifically: Whitespace must appear before opening parentheses and brackets, and after
+closing parenthesis and brackets, when the parenthesis or bracket in question would
+otherwise be touching either a name token, or another parenthesis or bracket "from
 outside".  I.e., the following combinations are now errors:
 
     )(  )[  ](  ][  )A  ]A  A(  A[
 
-In these examples, 'A' stands for any name, including quoted names using
-' and ".
+In these examples, 'A' stands for any name, including quoted names using ' and ".
 
 To migrate existing code, insert whitespace where appropriate.
 
-This change was made to prepare for the concatenation feature that will
-be implemented in Stu 2.
+This change was made to prepare for the concatenation feature that will be implemented in
+Stu 2.
 
-(4) The -p option (print the rule database) is now written with the
-uppercase -P.  This is now different from Make's -p option, with which
-Stu's -p was not compatible anyway, because Stu exited after printing
-the database.
+(4) The -p option (print the rule database) is now written with the uppercase -P.  This is
+now different from Make's -p option, with which Stu's -p was not compatible anyway,
+because Stu exited after printing the database.
 
 (5) The syntax for flags was changed.
 
@@ -63,29 +56,26 @@ the database.
 ?  is now written as  -o   (optional dependencies)
 &  is now written as  -t   (trivial dependencies)
 
-'p', 'o' and 't' must be followed by whitespace if the next token is a
-name or '@'.
+'p', 'o' and 't' must be followed by whitespace if the next token is a name or '@'.
 
 Code must be changed accordingly.
 
-(6) Command line options passed outside of arguments as well as
-arguments to the -C option don't support persistent or optional
-dependencies anymore.  They could previously be specified using '!' and
-'?', but these characters are not supported anymore.  Instead, the
+(6) Command line options passed outside of arguments as well as arguments to the -C option
+don't support persistent or optional dependencies anymore.  They could previously be
+specified using '!' and '?', but these characters are not supported anymore.  Instead, the
 command line options -p and -o now exist for the same purpose.
 
 (7) Changes in terminology:
 
-- "Timestamp-ignoring" dependencies are now called "persistent"
-  dependencies.  This is now consistent with the flag -p used for them.
+- "Timestamp-ignoring" dependencies are now called "persistent" dependencies.  This is now
+  consistent with the flag -p used for them.
 
 == Version 0 -> Version 1 ==
 
-(1) Timestamp-ignoring dependencies are noted by '!' instead of '*'.  The
-goal of this change is to allow '*' to be used to target list
-multiplication later on, and to make the syntax of timestamp-ignoring
-dependencies be analogous to the notation for optional dependencies
-which will be noted with '?'.
+(1) Timestamp-ignoring dependencies are noted by '!' instead of '*'.  The goal of this
+change is to allow '*' to be used to target list multiplication later on, and to make the
+syntax of timestamp-ignoring dependencies be analogous to the notation for optional
+dependencies which will be noted with '?'.
 
 Migration:  Change all '*'s to '!'s.
 
@@ -97,15 +87,14 @@ to
 
 A: !B {...}
 
-(2) Variables no longer exist.  The reason of this change is that
-variables were almost never used, and their functionality could be
-easily created by using files.  Since the variable syntax was different
-and unflexible, actual Stu scripts ended up using files anyway, so it
-was decided to free the '$' symbol for parameters, which is the reason
-for the chain shift of symbols following this one.
+(2) Variables no longer exist.  The reason of this change is that variables were almost
+never used, and their functionality could be easily created by using files.  Since the
+variable syntax was different and unflexible, actual Stu scripts ended up using files
+anyway, so it was decided to free the '$' symbol for parameters, which is the reason for
+the chain shift of symbols following this one.
 
-Migration:  Instead, declare files that contain the required content,
-and include them using $[...] syntax.
+Migration: Instead, declare files that contain the required content, and include them
+using $[...] syntax.
 
 Example:  Change
 
@@ -117,26 +106,22 @@ to
 CFLAGS { echo -g -Wall >CFLAGS }
 a:  a.c $[CFLAGS] { gcc ... $CFLAGS ... }
 
-(3) Parameters are given in dollar syntax instead of bracket syntax, and
-parameter values are now passed as variables to the command shell
-instead of using text substitution.  This is the logical thing to do as
-now the variables are given to the shell as parameters instead of text
-substitution, which avoids quoting problems.  Also, the dollar syntax is
-nearer to that of the shell itself, making Stu easier to learn and Stu
-files are now easier to edit using shell syntax highlighting.  Also, in
-most cases the syntax is shorter now, both because one can replace
-'[NAME]' by '$NAME', and because unnecessary cases of 'NAME=[NAME]' in
-the command can be omitted.
+(3) Parameters are given in dollar syntax instead of bracket syntax, and parameter values
+are now passed as variables to the command shell instead of using text substitution.  This
+is the logical thing to do as now the variables are given to the shell as parameters
+instead of text substitution, which avoids quoting problems.  Also, the dollar syntax is
+nearer to that of the shell itself, making Stu easier to learn and Stu files are now
+easier to edit using shell syntax highlighting.  Also, in most cases the syntax is shorter
+now, both because one can replace '[NAME]' by '$NAME', and because unnecessary cases of
+'NAME=[NAME]' in the command can be omitted.
 
-Migration:  Change [FILENAME] to $FILENAME everywhere.  Note that with
-dollar syntax, only alphanumeric characters and '_' are allowed; others
-will have to be renamed.  Note that in shell syntax, the safe thing to
-do is to enclose the passed parameters in double quotes, while the
-safest thing to do in Version 0 was to use single quotes (but that
-didn't work when the parameter values contained single quotes.)  In many
-cases, expressions such as NAME='[NAME]' can simply be omitted.
-Analogously, dynamic variables are now denoted by $[VARIABLE] instead
-of $<VARIABLE>.
+Migration: Change [FILENAME] to $FILENAME everywhere.  Note that with dollar syntax, only
+alphanumeric characters and '_' are allowed; others will have to be renamed.  Note that in
+shell syntax, the safe thing to do is to enclose the passed parameters in double quotes,
+while the safest thing to do in Version 0 was to use single quotes (but that didn't work
+when the parameter values contained single quotes.)  In many cases, expressions such as
+NAME='[NAME]' can simply be omitted.  Analogously, dynamic variables are now denoted by
+$[VARIABLE] instead of $<VARIABLE>.
 
 Example:  Change
 
@@ -156,11 +141,10 @@ $NAME.eps:  $NAME.data mkplot {
 	./mkplot --name "$NAME"
 }
 
-(4) Dynamic dependencies are now denoted with brackets instead of
-braces.  The brackets syntax is similar to Cook's syntax for file
-inclusion, and the pair '[]' is actually a pair of brackets in Unicode,
-as opposed to '<>' which are the greater-than and less-than operators.
-Also, the operators '<' and '>' are now free and will be used for file
+(4) Dynamic dependencies are now denoted with brackets instead of braces.  The brackets
+syntax is similar to Cook's syntax for file inclusion, and the pair '[]' is actually a
+pair of brackets in Unicode, as opposed to '<>' which are the greater-than and less-than
+operators.  Also, the operators '<' and '>' are now free and will be used for file
 redirection in the future.
 
 Migration:  Change <FILENAME> to [FILENAME].

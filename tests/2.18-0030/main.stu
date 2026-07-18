@@ -1,0 +1,5 @@
+# TOPIC: a.stu includes b.stu and c.stu.  b.stu defines a variable.  The variable is available in c.stu
+
+%include b.stu
+%include c.stu
+

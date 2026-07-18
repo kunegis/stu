@@ -1,0 +1,10 @@
+# TOPIC: %set
+
+%set ABC value
+
+A: list.$(ABC)
+{
+	cp list.value A
+}
+
+list.value = {CORRECT}

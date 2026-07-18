@@ -1,0 +1,9 @@
+# TOPIC: %unset in dynamic dependency with -k
+
+A: [B] C
+{
+}
+
+B = {%unset VAR}
+
+C { exit 99 ; }

@@ -1,0 +1,3 @@
+main.stu:3:6: string cannot be name of environment variable: "1ab"
+Explanation: Environment variables accessed with $(...) can contain only
+letters, numbers, and underscores.  They must not begin with a number.

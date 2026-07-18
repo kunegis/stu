@@ -617,8 +617,8 @@ ENVIRONMENT VARIABLES
        environment variable is not defined.
 
        Environment  variables  can  appear anywhere where names can appear: in
-       targets, dependencies, and in arguments to %include.  They are not  al‐
-       lowed in the version number specified by %version.
+       targets, dependencies, and in arguments to %include/%set/%unset.   They
+       are not allowed in the version number specified by %version.
 
        Environment  variables  can  appear outside of quotes, inside of double
        quotes, but not inside of single quotes.   The  result  of  environment
@@ -626,44 +626,68 @@ ENVIRONMENT VARIABLES
        cial characters in the value of environment variables  are  not  inter‐
        preted after substitution.
 
+       Environment variables can be set and unset:
+
+           %set VARIABLE value
+           %unset VARIABLE
+
+       Both  the variable name and the value can use single and double quotes,
+       backslash escapes and use environment variables using the $(name)  syn‐
+       tax,  but  not  the home directory ~.  Comments are not allowed between
+       %set/%unset and its arguments.
+
+       %set and %unset are executed sequentially at parse time, and are global
+       to  the Stu process.  When a command is executed, environment variables
+       as defined at the end of parsing are passed.  Environment variables ac‐
+       cessed using $(VARIABLE) are replaced at parse time, and cannot be used
+       before they are set.
+
+       %set and %unset can be used to set/unset the variables  $STU_SHELL  and
+       $STU_CP  to  specify how Stu executes commands and copy rules, see Sec‐
+       tion "ENVIRONMENT".
+
+       To pass an environment variable to only a single command, or to compute
+       the  value  of an environment variable, see Section "VARIABLE DEPENDEN‐
+       CIES".
+
 HOME DIRECTORY
-       The  home directory of the current user can be represented by ~ and the
+       The home directory of the current user can be represented by ~ and  the
        home directory of a user by ~<username>.  A lone unquoted ~ is resolved
-       to  the  value of $HOME.  If $HOME is not defined, Stu uses getpwuid(2)
-       to determine the home directory  of  the  current  user.   An  unquoted
+       to the value of $HOME.  If $HOME is not defined, Stu  uses  getpwuid(2)
+       to  determine  the  home  directory  of  the current user.  An unquoted
        ~<username> stands for the given user's home directory.
 
-       In  command-line arguments, ~ always stands for itself, and home direc‐
+       In command-line arguments, ~ always stands for itself, and home  direc‐
        tories are not used.  If any part of a name is in double quotes, single
-       quotes,  escaped  with backslash, or contains characters not allowed in
+       quotes, escaped with backslash, or contains characters not  allowed  in
        usernames (only a-zA-Z0-9_-. are allowed and - not as first character),
-       the  name  is  not  parsed as a home directory.  Preceding or following
+       the name is not parsed as a home  directory.   Preceding  or  following
        concatenated expressions with () or [] are not taken into account.  For
-       instance,  ~abc(def)  will  look  up the home directory of user abc and
+       instance, ~abc(def) will look up the home directory  of  user  abc  and
        concatenate def to it.
 
 CONCATENATION
-       In certain circumstances, two dependencies that are  not  separated  by
-       spaces  are  said to be concatenated.  Concatenation takes place in the
+       In  certain  circumstances,  two dependencies that are not separated by
+       spaces are said to be concatenated.  Concatenation takes place  in  the
        following cases:
 
            A( A[ )A )( )[ ]A ]( ][
 
-       In this list, A stands for any literal name, including  one  containing
+       In  this  list, A stands for any literal name, including one containing
        parameters, single or double quotes, environment variables, or home di‐
        rectories.
 
-       If two dependencies are concatenated, their concatenation is  taken  as
+       If  two  dependencies are concatenated, their concatenation is taken as
        the dependency.  Effectively this considers each side of the concatena‐
-       tion to be a list of names (after processing of dynamic  dependencies),
-       and  replaces  the concatenation by the combination of all names in the
+       tion  to be a list of names (after processing of dynamic dependencies),
+       and replaces the concatenation by the combination of all names  in  the
        left groups concatenated textually with items in the right group.
 
 PARAMETERS
-       Any file or phony target may include parameters.  Parameters are  noted
-       using  the $ character and are given a name.  The syntax for parameters
-       is similar to that for variables in the shell.  If the sign $  is  fol‐
-       lowed  by {, then everything up to the corresponding } is the parameter
+       Any  file or phony target may include parameters.  Parameters are noted
+       using the $ character and are given a name.  The syntax for  parameters
+       is  similar  to that for variables in the shell.  If the sign $ is fol‐
+       lowed by {, then everything up to the corresponding } is the  parameter
        name.  Otherwise, all alphanumeric characters and underscores _ follow‐
        ing will be taken as the parameter name:
 
@@ -672,7 +696,7 @@ PARAMETERS
 
        Parameters cannot be contiguous.  I.e., there must always be at least a
        single character between two parameters.  (The reason is that otherwise
-       it  would  be ambiguous how to match the two parameters.)  Names of pa‐
+       it would be ambiguous how to match the two parameters.)  Names  of  pa‐
        rameters cannot be empty.  Thus,
 
            data/${part1}${part2}.png
@@ -681,10 +705,10 @@ PARAMETERS
 
        are errors.
 
-       Stu will match the pattern to any file or  phony  target  it  needs  to
-       build.   Parameters can appear in dependencies and in commands any num‐
+       Stu  will  match  the  pattern  to any file or phony target it needs to
+       build.  Parameters can appear in dependencies and in commands any  num‐
        ber of times (included not appearing in them).  In a target name, a pa‐
-       rameter  can  only appear once.  The following rule uses the single pa‐
+       rameter can only appear once.  The following rule uses the  single  pa‐
        rameter $name:
 
            list.$name:    data.$name ${name}.in
@@ -692,16 +716,16 @@ PARAMETERS
                ./compute-list -n "$name"
            }
 
-       A target name may match more than one rule.  If that is the  case,  Stu
-       will  use the rule that dominates all other matching rules.  A rule (x)
+       A  target  name may match more than one rule.  If that is the case, Stu
+       will use the rule that dominates all other matching rules.  A rule  (x)
        is defined to dominate another rule (y) for a given name if every char‐
-       acter  in  the  name that is part of a matched parameter in rule (x) is
+       acter in the name that is part of a matched parameter in  rule  (x)  is
        also inside a matched parameter in rule (y), and at least one character
-       of  the name is part of a matched parameter in rule (y) but not in rule
-       (x).  It is an error when there is no single matching rule  that  domi‐
+       of the name is part of a matched parameter in rule (y) but not in  rule
+       (x).   It  is an error when there is no single matching rule that domi‐
        nates all other matching rules.
 
-       In  the following example, the first rule dominates the other rules for
+       In the following example, the first rule dominates the other rules  for
        the file named a.b.c:
 
            a.$x.c: ... { ... }
@@ -717,49 +741,49 @@ PARAMETERS
 
 CANONICALIZATION
        Stu canonicalizes names of files and phony targets.  As an example, the
-       filenames aaa//bbb and aaa/bbb are considered to be the  same  by  Stu,
-       and  can be used interchangeably.  Canonicalization concerns the use of
-       / (slash, the directory separator) and . (dot, the current  directory).
+       filenames  aaa//bbb  and  aaa/bbb are considered to be the same by Stu,
+       and can be used interchangeably.  Canonicalization concerns the use  of
+       /  (slash, the directory separator) and . (dot, the current directory).
        The following rules are applied in order:
 
-       (1)  All  instances  of  multiple slashes (/) are collapsed to a single
-       one, except when the name begins with exactly two slashes.   Then,  any
+       (1) All instances of multiple slashes (/) are  collapsed  to  a  single
+       one,  except  when the name begins with exactly two slashes.  Then, any
        ending slash is removed, except if the name is / or //.
 
-       (2)  If  the  name is /., it is changed to /.  If the name is ./, it is
-       changed to ..  If the name begins with ./ followed by a character  that
-       is  not part of a parameter, the ./ is removed (the rule is applied re‐
+       (2) If the name is /., it is changed to /.  If the name is  ./,  it  is
+       changed  to ..  If the name begins with ./ followed by a character that
+       is not part of a parameter, the ./ is removed (the rule is applied  re‐
        peatedly).  Any number of ending /. components are removed.  Any number
        of /./ is simplified to / (a single slash).
 
-       Canonicalization  does  not  involve any procedure that requires system
+       Canonicalization does not involve any procedure  that  requires  system
        calls to be performed.  Thus, symlinks are not resolved, and names such
-       as  aaa/..  is not simplified.  Likewise, /.. is not simplified to / (a
+       as aaa/.. is not simplified.  Likewise, /.. is not simplified to  /  (a
        single slash).
 
-       The canonicalization rules apply not only to file targets, but also  to
-       phony  targets.  Thus, @aaa//bbb and @aaa/bbb refer to the same target.
+       The  canonicalization rules apply not only to file targets, but also to
+       phony targets.  Thus, @aaa//bbb and @aaa/bbb refer to the same  target.
        It is thus strongly suggested to use phony targets in a fashion that is
        consistent with the file system semantics of / and . (slash and dot).
 
        Canonicalization is applied in the following fashion:
 
-       Phase  1:   When  rules  are parsed, canonicalization is applied to all
-       target names.  At this stage, parameters are not yet replaced by  their
-       values,  and  thus  the  / and . components in parameter values are not
+       Phase 1:  When rules are parsed, canonicalization  is  applied  to  all
+       target  names.  At this stage, parameters are not yet replaced by their
+       values, and thus the / and . components in  parameter  values  are  not
        canonicalized in targets.
 
-       Phase 2: Second, When a dependency is matched to a rule,  canonicaliza‐
-       tion  is  applied  to the dependency name.  At this stage, names do not
-       contain parameters and canonicalization is performed on the final  file
+       Phase  2: Second, When a dependency is matched to a rule, canonicaliza‐
+       tion is applied to the dependency name.  At this stage,  names  do  not
+       contain  parameters and canonicalization is performed on the final file
        or phony target name.
 
        Additionally, there are three special rules for canonicalization:
 
        (a) There is a special rule concerning ./:  When a target to be canoni‐
-       calized in Phase 1 as described above starts with ./  followed  immedi‐
-       ately  by a parameter, then this parameter will only match strings that
-       do not start with a slash.  The ./ is still  removed.   This  makes  it
+       calized  in  Phase 1 as described above starts with ./ followed immedi‐
+       ately by a parameter, then this parameter will only match strings  that
+       do  not  start  with  a slash.  The ./ is still removed.  This makes it
        possible to distinguish files with relative paths from files with abso‐
        lute paths.  For instance, consider the following example:
 
@@ -767,29 +791,32 @@ CANONICALIZATION
            $path.B      { ... }
            ./$file      { ... }
 
-       Here, the dependency ./list.B will match the third rule only.   Without
-       the  special rule, the dependency would match both the second and third
-       rule, and produce an error, because  none  of  the  two  dominates  the
+       Here,  the dependency ./list.B will match the third rule only.  Without
+       the special rule, the dependency would match both the second and  third
+       rule,  and  produce  an  error,  because  none of the two dominates the
        other.
 
-       (b)  Another  special rule concerns the root directory /:  A pattern of
-       the form $A/xxx where $A is a parameter and xxx any string  (which  may
+       (b) Another special rule concerns the root directory /:  A  pattern  of
+       the  form  $A/xxx where $A is a parameter and xxx any string (which may
        contain more parameters) will match the name /xxx by setting the param‐
        eter $A to the value /.  This special rule corresponds to the fact that
-       while  the  root directory is called /, a file within it is called /xxx
+       while the root directory is called /, a file within it is  called  /xxx
        rather than //xxx.
 
        (c) If the target for a rule is $x/AAA, where AAA may contain other pa‐
-       rameters,  then a dependency of AAA will match that rule with $x set to
+       rameters, then a dependency of AAA will match that rule with $x set  to
        ., as long as AAA does not start with a slash.
 
 DIRECTIVES
-       Directives in Stu are introduced by % and serve a  similar  purpose  to
-       the  C  preprocessor,  i.e.,  they  are processed before the actual Stu
-       script is parsed and interpreted.  (However, they are not used  to  im‐
+       Directives  in  Stu  are introduced by % and serve a similar purpose to
+       the C preprocessor, i.e., they are  processed  before  the  actual  Stu
+       script  is  parsed and interpreted.  (However, they are not used to im‐
        plement a macro system.)  The token % must be followed by the directive
-       name. There may be any amount of whitespace (including none) between  %
-       and the name of the directive.
+       name.  There may be any amount of whitespace (including none) between %
+       and the name of the directive.  Directives don't have to be on  a  line
+       of  their  own  -- they can be split into multiple lines and other code
+       can appear on the same line.  There cannot be comments between a direc‐
+       tive and its arguments.
 
        File  inclusion  is done using the %include directive.  This can be put
        at any place in the input file, and will temporarily continue tokeniza‐
@@ -798,17 +825,17 @@ DIRECTIVES
        If  a  directory  is  given  after  include  (with or without an ending
        slash), the file main.stu within that directory is read.
 
-           % include a.stu
-           % include "b.stu"
-           % include 'c.stu'
-           % include data/
-           % include $(DIR)/file.stu
+           %include a.stu
+           %include "b.stu"
+           %include 'c.stu'
+           %include data/
+           %include $(DIR)/file.stu
 
        To declare which version of Stu a script is written for, use the  %ver‐
        sion directive:
 
-           % version 2.3
-           % version 2.3.4
+           %version 2.3
+           %version 2.3.4
 
        Both  variants will allow the script to be executed only with a version
        of Stu of the correct major version number (2  in  this  example),  and
@@ -819,14 +846,20 @@ DIRECTIVES
        tic  versioning  (semver.org).   The version directive will not prevent
        usage of Stu features that were not present in the specified version.
 
+       Environment variables can be set and unset  (see  Section  "ENVIRONMENT
+       VARIABLES" for details):
+
+           %set VARIABLE value
+           %unset VARIABLE
+
 TOKENIZATION
        Unquoted names in Stu may contain the following ASCII characters:
 
            [a-z] [A-Z] [0-9] ^ ` / . _
 
        and all non-ASCII characters.  The characters -, + and ~ are allowed in
-       unquoted  names, as long as the they are not the first character of the
-       name.  Names containing other characters must be quoted by either  sin‐
+       unquoted names, as long as the they are not the first character of  the
+       name.   Names containing other characters must be quoted by either sin‐
        gle or double quotes, or by backslashes.
 
        The following characters have special meaning in Stu and cannot be used
@@ -851,47 +884,47 @@ TOKENIZATION
            { }   Command; parameter
 
        Comments introduced by # go until the end of the line.  Commands start‐
-       ing  with  { go until the matching }, taking into account shell syntax,
+       ing with { go until the matching }, taking into account  shell  syntax,
        i.e., the command itself may contain more braces.  All other characters
        are individual tokens and may or may not be separated from other tokens
        by whitespace.
 
-       Quoting in Stu is similar to quoting in the shell.  Quoted or  unquoted
+       Quoting  in Stu is similar to quoting in the shell.  Quoted or unquoted
        names which are not separated by whitespace are interpreted as a single
        name.  Outside of quotes, the backslash can be used to escape any char‐
-       acter.   Backslash-newline sequences are ignored.  All other characters
-       can be preceded by a backslash to retain their literal meaning as  part
+       acter.  Backslash-newline sequences are ignored.  All other  characters
+       can  be preceded by a backslash to retain their literal meaning as part
        of a name.
 
-       Single  quotes  may  contain any character except single quotes and the
-       NUL character \0.  Backslashes, newline characters, and  other  special
-       characters  such  as  $ always have their literal meaning inside single
+       Single quotes may contain any character except single  quotes  and  the
+       NUL  character  \0.  Backslashes, newline characters, and other special
+       characters such as $ always have their literal  meaning  inside  single
        quotes.
 
-       Inside double quotes, backslashes, double quotes and  the  dollar  sign
+       Inside  double  quotes,  backslashes, double quotes and the dollar sign
        must be escaped by a backslash.  Other C-like escape sequences are sup‐
-       ported, too.  To be precise, the following escape sequences are  possi‐
+       ported,  too.  To be precise, the following escape sequences are possi‐
        ble: \" \\ \$ \a \b \f \n \r \t \v.  Dollars in double quotes introduce
-       parameter names in the same way as outside quotes.  Double  quotes  may
-       contain  unescaped newline characters, as well as environment variables
-       using the $(name) syntax.  The NUL character \0 is not  allowed  inside
-       double  quotes,  as names of files and phony targets cannot contain the
+       parameter  names  in the same way as outside quotes.  Double quotes may
+       contain unescaped newline characters, as well as environment  variables
+       using  the  $(name) syntax.  The NUL character \0 is not allowed inside
+       double quotes, as names of files and phony targets cannot  contain  the
        NUL byte.
 
-       Spacing rules: The lack of whitespace between  tokens  represents  con‐
-       catenation  under certain conditions.  Specifically: To separate depen‐
-       dencies, whitespace must appear before opening parentheses  and  brack‐
-       ets,  and  after closing parenthesis and brackets, when the parenthesis
+       Spacing  rules:  The  lack of whitespace between tokens represents con‐
+       catenation under certain conditions.  Specifically: To separate  depen‐
+       dencies,  whitespace  must appear before opening parentheses and brack‐
+       ets, and after closing parenthesis and brackets, when  the  parenthesis
        or bracket in question would otherwise be touching either a name token,
-       or  another parenthesis or bracket "from outside".  I.e., the following
+       or another parenthesis or bracket "from outside".  I.e., the  following
        combinations represent concatenation:
 
            )(  )[  ](  ][  )A  ]A  A(  A[
 
        In this list, A stands for any name, including quoted names using ' and
-       ",  as well as environment variables (quoted or not).  All other tokens
-       pairs can be written after each other without  intervening  whitespace,
-       except  when  this would create a new token, which is only the case for
+       ", as well as environment variables (quoted or not).  All other  tokens
+       pairs  can  be written after each other without intervening whitespace,
+       except when this would create a new token, which is only the  case  for
        name tokens.
 
        The following characters are reserved for future extension:
@@ -899,7 +932,7 @@ TOKENIZATION
            * & | ! ? ,
 
 SYNTAX
-       The syntax of a Stu script is given in the  following  Yacc-like  nota‐
+       The  syntax  of  a Stu script is given in the following Yacc-like nota‐
        tion.  This is the syntax after processing of directives, which are in‐
        troduced with %.
 
@@ -924,14 +957,14 @@ SYNTAX
 
        {1} with intervening whitespace {2} without intervening whitespace
 
-       Stu scripts read via the  -f  option  or  as  the  default  Stu  script
-       (main.stu),  as  well  as  the argument to the -F option must contain a
-       rule-list.  A file included by brackets (a dynamic dependency) and  ar‐
-       guments  to  the  -C option must contain an expression-list.  Arguments
-       passed outside of options on the command line must contain  an  expres‐
+       Stu  scripts  read  via  the  -f  option  or  as the default Stu script
+       (main.stu), as well as the argument to the -F  option  must  contain  a
+       rule-list.   A file included by brackets (a dynamic dependency) and ar‐
+       guments to the -C option must contain  an  expression-list.   Arguments
+       passed  outside  of options on the command line must contain an expres‐
        sion-list, but a simplified syntax is used in which only the characters
-       []-@ have special meaning, and that only in positions where  they  make
-       sense;  in all other cases, characters are interpreted as part of file‐
+       []-@  have  special meaning, and that only in positions where they make
+       sense; in all other cases, characters are interpreted as part of  file‐
        names -- this is also valid for whitespace.
 
 SEMANTICS
@@ -941,11 +974,11 @@ SEMANTICS
            A:  B { ... }
            B:  A { ... }
 
-       Cycles  are considered at the rule level, i.e., cycles such as the fol‐
-       lowing are also flagged as an error, even though there is no  cycle  on
-       the  filename  level.   In the following example, it is not possible to
+       Cycles are considered at the rule level, i.e., cycles such as the  fol‐
+       lowing  are  also flagged as an error, even though there is no cycle on
+       the filename level.  In the following example, it is  not  possible  to
        build the file a.gz.gz from the file a, even though it would not result
-       in  a  cycle,  but  since  both  files  a.gz  and  a.gz.gz use the same
+       in a cycle, but  since  both  files  a.gz  and  a.gz.gz  use  the  same
        parametrized rule, this is not allowed:
 
            $name.gz:  $name { gzip -k -- "$name" ; }
@@ -958,84 +991,87 @@ SEMANTICS
            B:  { echo [C] >B ; }
            C:  { echo [B] >C ; }
 
-       Symlinks are treated transparently by Stu.  In other  words,  Stu  will
-       always  consider  the  timestamp of the linked-to file.  A symlink to a
+       Symlinks  are  treated  transparently by Stu.  In other words, Stu will
+       always consider the timestamp of the linked-to file.  A  symlink  to  a
        non-existing file will be treated as a non-existing file.
 
-       Stu uses job control: Each job is put into its own process group.   All
-       jobs  are  put  into the background, except when the option -i is used.
-       When -i is not used, the standard input of all jobs is redirected  from
+       Stu  uses job control: Each job is put into its own process group.  All
+       jobs are put into the background, except when the option  -i  is  used.
+       When  -i is not used, the standard input of all jobs is redirected from
        /dev/null.
 
-       If  a  command  fails, Stu will remove any of its target files, if they
-       have been already touched by the command.  If the failing  command  did
-       not  touch  a  target  file,  that existing target file is not removed.
-       This behavior is necessary to avoid the case that a commands  partially
-       creates  a target file, then fails, and then a subsequent invocation of
-       Stu sees the new file and considers it as up to date,  even  though  it
-       was  only partially created.  Thus, commands in Stu do not need to make
-       sure they delete any output files when they  fail.   This  behavior  is
+       If a command fails, Stu will remove any of its target  files,  if  they
+       have  been  already touched by the command.  If the failing command did
+       not touch a target file, that existing  target  file  is  not  removed.
+       This  behavior is necessary to avoid the case that a commands partially
+       creates a target file, then fails, and then a subsequent invocation  of
+       Stu  sees  the  new file and considers it as up to date, even though it
+       was only partially created.  Thus, commands in Stu do not need to  make
+       sure  they  delete  any  output files when they fail.  This behavior is
        equivalent to that in Make.
 
 JOB CONTROL
        Stu starts each job in its own process group, whose process group ID is
        equal to its process ID.  This allows Stu to kill all (direct and indi‐
-       rect)  child  processes of jobs, by using kill(2) to terminate all pro‐
+       rect) child processes of jobs, by using kill(2) to terminate  all  pro‐
        cesses in the corresponding process group.
 
 EXIT STATUS
-       0      Success.  Everything was built successfully, or was  already  up
+       0      Success.   Everything  was built successfully, or was already up
               to date.
 
-       1      Build  error.  This indicates errors in the commands invoked and
-              files read by Stu.  Example: a child process produced an  error,
-              or  a  dependency  was  not  found and no rule was given for it.
-              When using the -q option, the exit status is 1  when  the  given
+       1      Build error.  This indicates errors in the commands invoked  and
+              files  read by Stu.  Example: a child process produced an error,
+              or a dependency was not found and no  rule  was  given  for  it.
+              When  using  the  -q option, the exit status is 1 when the given
               targets are not up to date.
 
-       2      Logical  error.  This indicates errors in the usage of Stu.  Ex‐
-              amples are syntax errors in Stu scripts, cycles  in  the  depen‐
+       2      Logical error.  This indicates errors in the usage of Stu.   Ex‐
+              amples  are  syntax  errors in Stu scripts, cycles in the depen‐
               dency graph and certain erroneous options on the command line.
 
-       3      Both  build  and logical errors were encountered (when using the
+       3      Both build and logical errors were encountered (when  using  the
               -k option).
 
-       4      Fatal error.  An error occurred that made  Stu  abort  execution
+       4      Fatal  error.   An  error occurred that made Stu abort execution
               immediately, regardless of whether the -k option was used.  This
-              includes system errors from which Stu cannot  recover  (such  as
-              out-of-memory  conditions), as well as certain errors on the Stu
+              includes  system  errors  from which Stu cannot recover (such as
+              out-of-memory conditions), as well as certain errors on the  Stu
               command line.
 
 ENVIRONMENT
        STU_CP If set, Stu calls the cp program from the given location instead
-              of  /bin/cp.  The given version of cp must support the syntax cp
+              of /bin/cp.  The given version of cp must support the syntax  cp
               -- "$fileA" "$fileB".
 
        STU_OPTIONS
-              Contains options to be set on every run of Stu.   Only  the  op‐
-              tions  EQsUwxyYz  can be set this way.  The variable should con‐
-              tain only these characters, dashes, and whitespace; other  char‐
+              Contains  options  to  be set on every run of Stu.  Only the op‐
+              tions EQsUwxyYz can be set this way.  The variable  should  con‐
+              tain  only these characters, dashes, and whitespace; other char‐
               acters produce an error.  Options passed on the command line ap‐
               ply after those passed using this variable.
 
        STU_SHELL
-              If set, Stu calls the shell from the given location  instead  of
-              /bin/sh.   The  given  shell must support the -e and -c options.
-              This is mainly useful on systems where /bin/sh is  not  a  POSIX
+              If  set,  Stu calls the shell from the given location instead of
+              /bin/sh.  The given shell must support the -e  and  -c  options.
+              This  is  mainly  useful on systems where /bin/sh is not a POSIX
               shell.  Stu ignores the $SHELL variable, like Make does, as that
               variable is only intended to set the user's interactive shell.
 
        STU_STATUS
-              Stu sets this variable to '1' in all child processes.  In  order
+              Stu  sets  this variable to '1' in all child processes. In order
               to avoid recursive invocation of Stu, Stu will fail with a fatal
-              error (exit status 4) on startup when the variable  is  set.  To
-              circumvent  this, unset the variable.  Recursive Stu is as harm‐
+              error  (exit  status  4) on startup when the variable is set. To
+              circumvent this, unset the variable.  Recursive Stu is as  harm‐
               ful as recursive Make.
 
-       TERM   Used to determine whether to use color  output.   This  variable
+       TERM   Used  to  determine  whether to use color output.  This variable
               must be set to a value different from 'dumb', and isatty(3) must
-              return 1 for color to be enabled.  (Alternatively, color can  be
+              return  1 for color to be enabled.  (Alternatively, color can be
               controlled by the -y and -Y options.)
+
+       The variables $STU_CP and $STU_SHELL can be set inside a Stu file using
+       %set; see Section "ENVIRONMENT VARIABLES".
 
 SIGNALS
        SIGUSR1

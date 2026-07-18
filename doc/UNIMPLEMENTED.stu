@@ -497,3 +497,13 @@ B = { C }
 
 A/B = C; # Does 'mkdir -p A' first
 A/B = {c} # Does 'mkdir -p A' first
+
+#
+# Allow comment between directive and parameters
+#
+
+%set
+# comment (not allowed at the moment)
+VARIABLE
+# comment (not allowed at the moment)
+VALUE

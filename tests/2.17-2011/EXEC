@@ -1,0 +1,15 @@
+#!/bin/sh
+# TOPIC: %includ ~/a.stu
+. ../../sh/test.sh
+
+{
+	printf '%%include ~/nonexistingfile.stu\n'
+} >list.stu
+
+set +e
+../../bin/stu.test -f list.stu >list.out 2>list.err
+exitstatus=$?
+set -e
+
+[ "$exitstatus" = 1 ]
+grep -q -F -e "$HOME/nonexistingfile.stu" list.err

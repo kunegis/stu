@@ -1,0 +1,11 @@
+%unset STU_NONEXISTINGVARIABLE
+
+>A
+{
+	[ ! "$STU_NONEXISTINGVARIABLE" ]
+	set +e
+	set | grep -q -E -e '^STU_NONEXISTINGVARIABLE='
+	exitstatus=$?
+	set -e
+	[ "$exitstatus" = 1 ]
+}

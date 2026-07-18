@@ -12,6 +12,10 @@ subdirectories in tests/.
 
 ------------------------------------------------------------------------
 
+XXXX-XX-XX  Version 2.18:
+
+* Setting and unsetting environment variable at the global level using %set and %unset.
+
 2026-07-16  Version 2.17:
 
 * Home directories using ~ and ~<username>.

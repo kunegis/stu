@@ -1,7 +1,4 @@
-#
-# A way to set environment variables for all commands.
-#
-
+* NEWS: Remove all dates
 % set PATH /usr/local/bin
 % unset PATH
 
@@ -472,8 +469,4 @@ calc:  @build-c':'calc':'calc.c;
 
 #
 # Makefile: changing NEWS, man/, doc/TODO.stu should not restart tests.
-#
-
-#
-# NEWS: Maybe remove dates.
 #

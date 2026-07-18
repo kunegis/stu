@@ -1,4 +1,3 @@
-% unset VARNAME that exists
 * unset: When variable does not exist (not an error)
 * Both set and unset cannot appear in dynamic dependencies
 * Value is allowed to start with unquoted -/+/~ (?)

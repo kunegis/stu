@@ -1,0 +1,11 @@
+%unset STU_ABC
+
+>A
+{
+	[ ! "$STU_ABC" ]
+	set +e
+	set | grep -q -E -e '^STU_ABC='
+	exitstatus=$?
+	set -e
+	[ "$exitstatus" = 1 ]
+}

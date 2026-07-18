@@ -1,4 +1,3 @@
-* %unset cannot appear in dynamic dependencies
 * Value is allowed to start with unquoted -/+/~ (?)
 * Value can contain double quotes, single quotes, environment variable, home directory,
   backslash escape.
@@ -20,6 +19,8 @@
 * %set and then %set the same variable
 * %unset and then %unset
 %set VALUE $(VALUE)
+* %set in dynamic dependency, using -k
+* %unset in dynamic dependency, using -k
 
 * Manpage
 

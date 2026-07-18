@@ -1,5 +1,8 @@
-* Value can contain double quotes, single quotes, environment variable, home directory,
-  backslash escape.
+* value contains '
+* value contains $(var)
+* value contains ~
+* value contains \a
+* value contains ~/"a"'b'$(var)\c
 * Error when variable name contains invalid characters (e.g., dot)
 * Variable name can be single-quoted, double-quoted, backslash-escaped
 * Variable name can contain environment variable
@@ -25,6 +28,11 @@
 * Value is allowed to start with unquoted +
 * Value is allowed to start with unquoted ~
 * Command before %set.  The variable is set in the command.
+* Name in "
+* Name in '
+* Name has $(var)
+* Name has ~
+* Name has \
 
 * Manpage
 

@@ -1,0 +1,6 @@
+%set STU_ABC "abc"
+
+>A
+{
+	[ "$STU_ABC" = abc ]
+}

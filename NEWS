@@ -1,69 +1,55 @@
-Stu versions are of the form X.Y.Z, where X is the major version, Y is the minor version
-and Z the patch level.  For each new patch level, no new syntax features are added.  When
-the minor version is incremented, features are added, which are documented in this file.
-This file also documents important changes in patch level updates, which are mostly
-changes in terminology, changes in the installation procedure, or changes in invocation.
-
-When the major version is increased, backward-incompatible changes are made, which are
-documented in the file 'doc/MIGRATION', and summarized here.
-
-Version numbers shown in brackets are fictitious -- they are only used to name
-subdirectories in tests/.
-
-------------------------------------------------------------------------
-
-XXXX-XX-XX  Version 2.18:
+Version 2.18:
 
 * Setting and unsetting environment variable at the global level using %set and %unset.
 
-2026-07-16  Version 2.17:
+Version 2.17:
 
 * Home directories using ~ and ~<username>.
 
-2026-06-29  Version 2.16:
+Version 2.16:
 
 * The flags -p/-o/-n/-0/-C are allowed in front of target phonies.
 
-2026-06-28  Version 2.15:
+Version 2.15:
 
 * The flags -n/-0/-C are allowed in front of targets.
 
-2026-05-25  Version 2.14:
+Version 2.14:
 
 * Long flags are introduced:  --persistent (-p), --optional (-o), --trivial (-t),
   --newline (-n), --null (-0), --full-syntax (-C), --no-dereference (-P).
 
-2026-05-20  Version 2.13.2:
+Version 2.13.2:
 
 * New long forms for options: -c (--target), -E (--explain), -I (--print-targets),
   -K (--no-delete), -m (--order), -M (--order-seed), -U (--ignore-version),
   -x (--print-commands), -z (--print-statistics).
 
-2026-05-17  Version 2.13:
+Version 2.13:
 
 * Environment variables can be accessed with the syntax $(VARIABLE).  It is an error if an
   environment variable is not set.  Environment variables can only be used as part of
   names, i.e. targets, dependencies, and names of files included by %include.
 
-2026-05-12  Version 2.12.3:
+Version 2.12.3:
 
 * It is an error when any two of -n/-0/-C are used simultaneous on the same target.
 
-2026-05-07  Version 2.12:
+Version 2.12:
 
 * Flag -P (no-follow):  Can be placed before targets, to not dereference them if they
   are symlinks.  The name of the flag is taken from similar options in find(1) and cp(1).
 
-2026-04-09  Version 2.11:
+Version 2.11:
 
 * Flags can be coalesced.  For instance '-on' is equivalent to '-o -n'.
 
-2026-03-04  Version 2.10.4:
+Version 2.10.4:
 
 * In the debug variant of Stu (bin/stu.debug), traces have been enhanced.  All traces are
   configured via a single $STU_TRACE environment variable.  See src/trace.hh for details.
 
-2026-02-24  Version 2.10:
+Version 2.10:
 
 * Flags are supported before the targets of a rule.  Only flags -p and -o can be used, and
   not before phonies.
@@ -73,65 +59,65 @@ XXXX-XX-XX  Version 2.18:
 -o C D: ... { ... } # Only C is an optional dependency
 -p >E: ... { ... } # Flag must come before output redirection operator
 
-2026-01-20  Version 2.9.3:
+Version 2.9.3:
 
 * Using -i/--interactive when no TTY is present is now an immediate error (exit status 4)
   rather than a warning.
 
-2026-01-18  Version 2.9:
+Version 2.9:
 
 * Long options.
 
-2025-12-02  Version 2.8.2:
+Version 2.8.2:
 
 * Transient dependencies have been renamed to phony dependencies, as in make(1).  Phony
   targets that appear in rules that have no file targets and no command are called
   transitive phony targets.
 
-2025-11-30  Version 2.8:
+Version 2.8:
 
 * Remove the -d option, which enabled a 'debug' mode.  Was rarely used, and was a mix
   between what a 'verbose' mode should be, and traces.  The '-d' will be needed to
   implement the "change directory" logic, both as an option and as a flag.  A '-v'
   (verbose) will be added at a later point, which will be more useful.
 
-2025-11-18  Version 2.7.267:
+Version 2.7.267:
 
 * 100% coverage.
 
-2025-09-27  Version 2.7.187:
+Version 2.7.187:
 
 * Change in error message:  When multiple rules match a target and none dominates the
   others, the ordering in which the matching rules are output is now based on the
   parametrized targets (from shorted to longest initial matching sequence), and not on the
   location in the source file as before.
 
-2025-03-30  Version 2.7.121:
+Version 2.7.121:
 
 * There is now an option '-U' that suppresses the version checking done by the '%version'
   directive.
 
-2024-09-25  Version 2.7.100:
+Version 2.7.100:
 
 * 'stu --help' and 'stu --version' now do the same as 'stu -h' and 'stu -V'.
 
-2024-09-06  Version 2.7.89:
+Version 2.7.89:
 
 * Switched to C++17 (from C++14).
 
-2024-09-01  Version 2.7.87:
+Version 2.7.87:
 
 * Introduced "make check".  Works like "make test", but omits strict warnings and
   code-cleanliness tests.  This makes "make check" work with non-GCC compilers such as
   clang++.
 
-2024-08-05  Version 2.7.84:
+Version 2.7.84:
 
 * Flag -C: Can be used inside dynamic dependencies (like [-C filename]) to denote that
   "filename" will be parsed in full Stu syntax.  This is the default behavior and thus -C
   and can always be omitted.
 
-2023-06-30  Version 2.7.70:
+Version 2.7.70:
 
 * The option -I outputs all targets that can be rebuilt.  Useful for ".gitignore" and
   similar.
@@ -139,15 +125,15 @@ XXXX-XX-XX  Version 2.18:
 * Stu can now output traces.  This is only possible in debug mode (NDEBUG not set).  See
   src/trace.hh.
 
-2023-04-02  Version 2.7.16:
+Version 2.7.16:
 
 * We switched from Autotools to a custom Makefile.
 
-2022-07-12  Version 2.7.2:
+Version 2.7.2:
 
 * Implemented the Preset class.
 
-2020-10-30  Version 2.7:
+Version 2.7:
 
 * Backslashes are now allowed outside of quotes and act as the escape character:
   * In front of newline, the newline is ignored
@@ -155,18 +141,18 @@ XXXX-XX-XX  Version 2.18:
   * Before any other character:  Represents the character as part of a unquoted
     filename.
 
-2020-04-13  Version 2.6.4:
+Version 2.6.4:
 
 * Switched to C++14 (from C++11).
 
-2020-03-18  Version 2.6:
+Version 2.6:
 
 * Canonicalization.  This means that Stu will now canonicalize all names of files and
   transients before further processing.  For instance, 'data' and './data' will refer to
   the same file.  This takes into account uses of '/' and '.'.  Symlinks and '..'  are not
   resolved by canonicalization.  The exact semantics are described in the manpage.
 
-2018-02-28  Version 2.5.59:
+Version 2.5.59:
 
 * We clarified what happens when multiple environment variables that Stu sets have
   identical names:
@@ -177,14 +163,14 @@ XXXX-XX-XX  Version 2.18:
   (3) If a variable dependency and a parameter have the same name, the variable overrides
   the parameter.
 
-2018-02-15  Version 2.5.53:
+Version 2.5.53:
 
 * The parsing of arguments on the command line was made consistent with the new features
   introduced in Version 2.5.  As before, the characters @[] are recognized, and now also
   the '-' character for flags.  Empty arguments now result in logical error (exit status
   2) rather than fatal errors (exit status 4).
 
-2017-08-11  Version 2.5:
+Version 2.5:
 
 * Concatenation.
 * The handling of dynamic dependencies was rewritten to allow concatenation.  The
@@ -201,27 +187,27 @@ XXXX-XX-XX  Version 2.18:
   Stu now returns an exit code of 1 (build error), rather than 2 (logical error) as done
   previously.
 
-2016-09-13  Version 2.4.19:
+Version 2.4.19:
 
 * The rules governing what is written on stdout where reworked: There is now only the -s
   option (silent).  The options -Q and -w were removed.
 
-2016-09-11  Version 2.4.17:
+Version 2.4.17:
 
 * "Verbose mode" is now called "debug mode", and the option was changed from -v to -d.
 
-2016-09-03  Version 2.4.7:
+Version 2.4.7:
 
 * The -B option is renamed to -i, because it is mainly an interactive mode, even if only
   very rudimentary.
 
-2016-08-31  Version 2.4.2:
+Version 2.4.2:
 
 * Job control: Jobs are now always put into the background, except when the -B option is
   used.  The -B option must now be used when Stu command should read from their standard
   input.
 
-2016-08-31  Version 2.4:
+Version 2.4:
 
 * Copy rules can now use the -o flag to denote optional copy rules:
 
@@ -239,7 +225,7 @@ an optional copy rule can be used such that for developers who have the source f
 will be updated when necessary, and for developers who don't have the source file, the
 copy delivered with the project can always be used.
 
-2016-08-31  Version 2.3.10:
+Version 2.3.10:
 
 * The environment variable $STU_OPTIONS can now be used to pass options to Stu.  All
   non-option charaters are ignored, i.e., you can include spaces an preceded all options
@@ -247,7 +233,7 @@ copy delivered with the project can always be used.
   sense to set them globally: "EQswxyYz".  Options passed on the command line take
   precedence over options passed in $STU_OPTIONS.
 
-2016-08-30  Version 2.3.6:
+Version 2.3.6:
 
 * Stu now starts all commands with their standard input redirected from /dev/null, except
   for command whose rule has an input redirection.  This behavior, along with the usage of
@@ -259,7 +245,7 @@ copy delivered with the project can always be used.
   grandchild processes) may not be terminated correctly by Stu when -B is used.  [version
   2.4.7: option -i]
 
-2016-08-29  Version 2.3:
+Version 2.3:
 
 * A flag -0 and a corresponding option -0 for \0-separated dynamic dependencies, that work
   analogously to -n for newline-separated dependency.  Thus, this is now possible (using
@@ -270,7 +256,7 @@ copy delivered with the project can always be used.
 
 A corresponding command-line option '-0' also exists now.
 
-2016-08-27  Version 2.2.2:
+Version 2.2.2:
 
 * Option -n: pass the name of a file that contains newline-separated names of files to be
   built.  This is in analogy with flag -n.
@@ -287,7 +273,7 @@ $ stu -C '[ -n FILES]'
 but the -n option avoids quoting and escaping problems in case the filename contains
 brackets, spaces, etc.
 
-2016-08-26  Version 2.2:
+Version 2.2:
 
 * Flag -n: Dynamic dependencies can now be declared to be newline-separated list of
   filenames by using the '-n' flag.  For instance:
@@ -298,12 +284,12 @@ A: [ -n B ] { ... }
 In this example, the file 'B' is generate by a 'find' command that outputs on filename per
 line.  Stu will then interpret each file contained in 'B' as a dependency of 'A'.
 
-2016-08-26  Version 2.1.4:
+Version 2.1.4:
 
 * Option -Y to turn on color output, and option -y to turn it off.  By default, color is
   enabled when stdout/stderr is a TTY and $TERM is not 'dumb'.
 
-2016-08-25  Version 2:
+Version 2:
 
 See 'doc/MIGRATION'.
 
@@ -317,30 +303,30 @@ See 'doc/MIGRATION'.
 * [2.0.2] [option-o] Option -o: optional dependency
 * [2.0.1] [command-arg] Command line argument are now parsed differently.
 
-2016-06-24  Version 1.15.67:
+Version 1.15.67:
 
 * Option -Q (quiet): suppress certain output messages. [version 2.4.19: merged into -s]
 
-2016-07-29  Version 1.15.80:
+Version 1.15.80:
 
 * "Existence-only" dependencies are renamed to "timestamp-ignoring" dependencies.  The
   syntax is not changed.
 
-2016-05-22  Version 1.15.23:
+Version 1.15.23:
 
 * Migrate to autoconf.
 
-2016-05-20  Version 1.15.11:
+Version 1.15.11:
 
 * Option -J:  interpret all non-option arguments as literal filenames.
 
-2016-05-18  Version 1.15:
+Version 1.15:
 
 * Arguments to Stu outside of options are now parsed in a simplified syntax in which only
   the characters '!?&@[]' retain their special meaning.  To pass dependencies in full Stu
   syntax, the option -C can be used, as in previous versions.
 
-2016-05-15  Version 1.14:
+Version 1.14:
 
 * Rules with multiple targets ("multitarget rules") are possible, as in
 
@@ -364,7 +350,7 @@ these has been removed.
 
 The old form is still valid.
 
-2016-05-01  Version 1.13:
+Version 1.13:
 
 * Dynamic phonies are now allowed.  The following is an example:
 
@@ -375,7 +361,7 @@ C = {correct}
 
 This will create a file 'A' containing the text 'correct'.
 
-2016-04-26  Version 1.12:
+Version 1.12:
 
 * Copy rules:
 
@@ -390,7 +376,7 @@ A = directory/;
 If the source ends in a slash, then it is interpreted as a directory and it is searched
 for a file with the same name as the basename of the target.
 
-2016-04-17  Version 1.11:
+Version 1.11:
 
 * Variable dependencies can use explicit names:
 
@@ -399,7 +385,7 @@ A : $[X = B] { ... use $X here ... }
 This will use the content of the file 'B' and make it available as the content of the
 variable $X within the command for target 'A'.
 
-2016-04-17  Version 1.10:
+Version 1.10:
 
 * Content rules using the following syntax:
 
@@ -408,58 +394,58 @@ A = { CONTENT ... }
 This works only with file targets without dependencies, and without output redirection.
 Also called "hard-coded rules".
 
-2016-04-16  Version 1.9.43:
+Version 1.9.43:
 
 * Option -E: explain certain error messages.
 * Option -F: pass rules on the command line.
 
-2016-04-15  Version 1.9.42:
+Version 1.9.42:
 
 * Allow multiple appearances of option -f on the command line. ("multifile")
 
-2016-04-14  Version 1.9.41:
+Version 1.9.41:
 
 * Option -p: print rule database. [version 2: option -P]
 
-2016-04-14  Version 1.9.40:
+Version 1.9.40:
 
 * Option -x: Enable 'set -x' in all jobs, to print each command.
 
-2016-04-10  Version 1.9.35:
+Version 1.9.35:
 
 * Option -q: question/query mode.
 
-2016-04-09  Version 1.9.33:
+Version 1.9.33:
 
 * Option -K:  Don't delete targets created by a job if the job fails.
 
-2016-04-05  Version 1.9.28:
+Version 1.9.28:
 
 * When SIGUSR1 is sent to a Stu process, statistics are printed.  (In similar format to
   option -z.)
 
-2016-04-03  Version 1.9.25:
+Version 1.9.25:
 
 * Option -z: Output runtime statistics about child processes on standard output when
   finished.
 
-2016-03-29  Version 1.9.17:
+Version 1.9.17:
 
 * Remove option -d; make option -v be old option -d.
 
-2016-03-29  Version 1.9.12:
+Version 1.9.12:
 
 * Option -c: Pass target without Stu syntax.
 
-2016-03-28  Version 1.9.7:
+Version 1.9.7:
 
 * Option -C:  Pass target in full Stu syntax.
 
-2016-03-26  Version 1.9.4:
+Version 1.9.4:
 
 * $STU_SHELL
 
-2016-03-26  Version 1.9:
+Version 1.9:
 
 * Flags of variable dependencies can now also be specified outside the brackets.  For
   instance, '!$[X]' is now fully equivalent to '$[!X]'.  Previously, '!$[X]' was an error.
@@ -468,48 +454,48 @@ Also called "hard-coded rules".
   in the previous version, in particular in relation to trivial dependencies included
   indirectly via phonies and dynamic dependencies.
 
-2016-01-24  Version 1.8:
+Version 1.8:
 
 * Variable dependencies can now be enclosed in parentheses, as in '($[A])'.
 
-2016-01-14  Version 1.7.26:
+Version 1.7.26:
 
 * $STU_STATUS: Set by Stu in all started jobs.  Stu will refuse to start when set, to
   avoid recursive invocation of Stu.  ("Recursive Stu is harmful.")
 
-2015-11-28  Version 1.7.12:
+Version 1.7.12:
 
 * Options -m and -M: random execution.
 
-2015-11-23  Version 1.7.3:
+Version 1.7.3:
 
 * Option -g: treat all optional dependencies as non-optional.
 
-2015-11-23  Version 1.7.2:
+Version 1.7.2:
 
 * Option -a: treat all trivial dependencies as non-trivial.
 
-2015-11-22  Version 1.7:
+Version 1.7:
 
 * A new flag '&', marks trivial dependencies.  '&' is used as a prefix, like '!' and '?'.
   Trivial dependencies will never cause a target to be rebuilt, but if the target is
   rebuilt anyway, then they act like normal dependencies. They are intended for
   configuration files containing e.g. flags and paths.  [version 2: flag -t]
 
-2015-11-15  Version 1.6.12:
+Version 1.6.12:
 
 * Option -w for short output.  [version 2.4.19: merged into -s]
 
-2015-11-07  Version 1.6.6:
+Version 1.6.6:
 
 * Migrated from SVN to git.
 
-2015-10-22  Version 1.6:
+Version 1.6:
 
 * Both the -f option and the %include directive now allow directories as parameters, and
   will read the file 'main.stu' within them.
 
-2015-10-19  Version 1.5:
+Version 1.5:
 
 * The syntax now allows parentheses (only for grouping, no other semantics).  The can
   contain any number of other dependencies.
@@ -533,19 +519,19 @@ Also called "hard-coded rules".
   options '?' and '!' as well as multiply dynamic dependencies.  As a result, many bugs
   related to these features were fixed.
 
-2015-06-10  Version 1.4:
+Version 1.4:
 
 * Parentheses are supported and may contain multiple filenames.  Brackets may contain
   multiple filenames.  Existence-only dependencies are transitive through phonies and
   parentheses.
 
-2015-06-05  Version 1.3:
+Version 1.3:
 
 * Optional dependencies are supported, and use the prefix '?'.  Their semantics is: If the
   dependency does not exist, it is never created.  If it already exists, it is processed
   normally (i.e., regenerated when it has to.) [version 2: flag -o]
 
-2015-09-29  Version 1.2:
+Version 1.2:
 
 * Input redirection using the '<' operator, which must be put in front of a file
   dependency which is then used as standard input for the command.  This cannot be used
@@ -554,19 +540,19 @@ Also called "hard-coded rules".
   second, i.e., '!<A'.  This can be combined with the output operator '>' to write
   commands that consist only of a single call to a filter such as sed, tr or awk.
 
-2015-05-29  Version 1.1:
+Version 1.1:
 
 * Output commands directly into the target file using the '>' operator, to be used in
   front of the target filename.  Only for file rules, not for phonies.
 
-????-??-??  Version 1:
+Version 1:
 
 * Parameters are changed from [name] to ${name}/$name.
 * In commands, parameters are changed from being textually replaced using the [name]
   syntax, to being passed as environment variables.
 * Dynamic dependencies are changed from <file> to [file].
 
-????-??-??  Version 0:
+Version 0:
 
 * [0.17] [cycle] Cycle detection
 * [0.16] [backtrace] Backtraces

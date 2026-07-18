@@ -51,7 +51,7 @@ using std::shared_ptr;
 #include "trace_executor.cc"
 #include "transitive_executor.cc"
 
-int main(int argc, char **argv, char **envp)
+int main(int argc, char **argv)
 {
 	TRACE_FUNCTION();
 	program_name= argv[0] ? argv[0] : "stu";

@@ -1420,20 +1420,55 @@ void Tokenizer::parse_set_directive(
 	string directive)
 {
 	TRACE_FUNCTION();
-	TRACE("directive='%s'", directive);
+	TRACE("directive= '%s'", directive);
+	assert(directive == "set" || directive == "unset");
+	bool set= (directive[0] == 's');
+	TRACE("set= %d", frmt("%d", set));
 	if (context == DYNAMIC) {
 		place_percent << fmt("%s cannot appear in dynamic dependencies",
 			show(Operator_View("%include")));
 		throw ERR_LOGICAL;
 	}
+	bool skipped_space;
+	skip_space(skipped_space);
 	shared_ptr <Placed_Name> name= parse_name(false);
-	shared_ptr <Placed_Name> value= parse_name(true);
+	if (!name) {
+		current_place() <<
+			(p == p_end
+				? "expected a variable name"
+				: fmt("expected a variable name, not %s",
+					show(current_mbchar())));
+		place_percent << fmt("after %s",
+			show(Operator_View(string("%") + directive)));
+		throw ERR_LOGICAL;
+	}
+	shared_ptr <Placed_Name> value;
+	if (set) {
+		skip_space(skipped_space);
+		value= parse_name(true);
+		if (!value) {
+			current_place() <<
+				(p == p_end
+					? "expected a value"
+					: fmt("expected a value, not %s",
+						show(current_mbchar())));
+			place_percent << fmt("after %s",
+				show(Operator_View("%set")));
+			throw ERR_LOGICAL;
+		}
+	}
 
-	// TODO check that name is valid for environment variable
-	...;
+	// TODO check that name and value is not parametrized
 	
-	// TODO set/unset
-	...;
+	// TODO check that name is valid for environment variable
+	
+	string name_string= name->unparametrized();
+	if (set) {
+		string value_string= value->unparametrized();
+		setenv(name_string.c_str(), value_string.c_str(), 1);
+	} else {
+		unsetenv(name_string.c_str());
+	}
 }
 
 int Tokenizer::read_fd(int fd, const size_t size, char **mem, size_t *mem_size)

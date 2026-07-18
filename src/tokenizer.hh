@@ -116,6 +116,7 @@ private:
 	void parse_version_directive(
 		const Place &place_percent);
 	void parse_set_directive(
+		Context context,
 		const Place &place_percent,
 		string directive);
 

@@ -1315,7 +1315,7 @@ void Tokenizer::parse_directive(
 	} else if (name == "version") {
 		parse_version_directive(place_percent);
 	} else if (name == "set" || name == "unset") {
-		parse_set_directive(place_percent, name);
+		parse_set_directive(context, place_percent, name);
 	} else {
 		/* Invalid directive */
 		place_percent << fmt("invalid directive %s",
@@ -1415,6 +1415,7 @@ void Tokenizer::parse_version_directive(const Place &place_percent)
 }
 
 void Tokenizer::parse_set_directive(
+	Context context,
 	const Place &place_percent,
 	string directive)
 {

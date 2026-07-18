@@ -316,12 +316,29 @@ Check_seq()
 	return 0
 }
 
+Check_todo()
+{
+	Check_TODO_stu || ret=1
+}
+
+Check_Cpp()
+{
+	Check_TODO || ret=1
+	Check_assert_false || ret=1
+	Check_NULL || ret=1
+	Check_Preload || ret=1
+}
+
+Check_Shell_Script()
+{
+	Check_seq || ret=1
+}
+
 Check_Test()
 {
 	Check_Test_Names || ret=1
 	Check_Test_Own_Name || ret=1
 	Check_Test_EXEC || ret=1
-	Check_TODO_stu || ret=1
 }
 
 Check_Characters()
@@ -344,19 +361,7 @@ Check_Spaces()
 	Check_Manpage_Tab || ret=1
 }
 
-Check_Cpp()
-{
-	Check_TODO || ret=1
-	Check_assert_false || ret=1
-	Check_NULL || ret=1
-	Check_Preload || ret=1
-}
-
-Check_Shell_Script()
-{
-	Check_seq || ret=1
-}
-
+Check_Todo
 Check_Cpp
 Check_Shell_Script
 Check_Test

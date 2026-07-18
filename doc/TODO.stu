@@ -1,5 +1,19 @@
 % set PATH /usr/local/bin
+* When variable already exists
+* Use variable in command
+
 % unset PATH
+* When variable does not exist
+
+* Both set and unset cannot appear in dynamic dependencies
+* Value is allowed to start with unquoted -/+/~ (?)
+* Value can contain double quotes, single quotes, environment variable, home directory,
+  backslash escape.
+* Error when variable name contains invalid characters (e.g., dot)
+* Variable name can be single-quoted, double-quoted, backslash-escaped
+* Variable name can contain environment variable
+  
+* Manpage
 
 # By default, variable must not exist (set), or must exist (unset).  Can be overridden
 # with '-f'.

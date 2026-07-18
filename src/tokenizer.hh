@@ -115,6 +115,9 @@ private:
 		const Place &place_percent);
 	void parse_version_directive(
 		const Place &place_percent);
+	void parse_set_directive(
+		const Place &place_percent,
+		string directive);
 
 	bool skip_space(bool &skipped_actual_space);
 	/* Skip any whitespace (including backslash-newline combinations).  The return

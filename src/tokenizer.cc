@@ -1292,10 +1292,7 @@ void Tokenizer::parse_directive(
 	skip_space(skipped_actual_space);
 	const char *const p_name= p;
 	Place place_directive= current_place();
-
-	while (p < p_end && isalnum(*p)) {
-		++p;
-	}
+	while (p < p_end && isalnum(*p)) ++p;
 
 	if (p == p_name) {
 		if (p < p_end)
@@ -1317,9 +1314,12 @@ void Tokenizer::parse_directive(
 		parse_include_directive(context, place_diagnostic, place_percent);
 	} else if (name == "version") {
 		parse_version_directive(place_percent);
+	} else if (name == "set" || name == "unset") {
+		parse_set_directive(place_percent, name);
 	} else {
 		/* Invalid directive */
-		place_percent << fmt("invalid directive %s", show(Prefix_View("%", name)));
+		place_percent << fmt("invalid directive %s",
+			show(Prefix_View("%", name)));
 		throw ERR_LOGICAL;
 	}
 }
@@ -1412,6 +1412,27 @@ void Tokenizer::parse_version_directive(const Place &place_percent)
 	Place place_version(place_base.type, (Place::Bits)0,
 		place_base.text, line, p_version - p_line);
 	parse_version(version_required, place_version, place_percent);
+}
+
+void Tokenizer::parse_set_directive(
+	const Place &place_percent,
+	string directive)
+{
+	TRACE_FUNCTION();
+	TRACE("directive='%s'", directive);
+	if (context == DYNAMIC) {
+		place_percent << fmt("%s cannot appear in dynamic dependencies",
+			show(Operator_View("%include")));
+		throw ERR_LOGICAL;
+	}
+	shared_ptr <Placed_Name> name= parse_name(false);
+	shared_ptr <Placed_Name> value= parse_name(true);
+
+	// TODO check that name is valid for environment variable
+	...;
+	
+	// TODO set/unset
+	...;
 }
 
 int Tokenizer::read_fd(int fd, const size_t size, char **mem, size_t *mem_size)

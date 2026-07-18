@@ -1426,7 +1426,7 @@ void Tokenizer::parse_set_directive(
 	TRACE("set= %d", frmt("%d", set));
 	if (context == DYNAMIC) {
 		place_percent << fmt("%s cannot appear in dynamic dependencies",
-			show(Operator_View("%include")));
+			show(Operator_View("%" + directive)));
 		throw ERR_LOGICAL;
 	}
 	bool skipped_space;

@@ -1,4 +1,4 @@
-* Both set and unset cannot appear in dynamic dependencies
+* %unset cannot appear in dynamic dependencies
 * Value is allowed to start with unquoted -/+/~ (?)
 * Value can contain double quotes, single quotes, environment variable, home directory,
   backslash escape.

@@ -1,0 +1,9 @@
+# TOPIC: %set ; %set
+
+%set STU_TEST_VAR aaa
+%set STU_TEST_VAR bbb
+
+>A
+{
+	[ "$STU_TEST_VAR" = bbb ]
+}

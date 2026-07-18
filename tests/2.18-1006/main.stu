@@ -1,0 +1,4 @@
+# TOPIC: %set a <eof>
+
+%set ABCDEF
+# comment

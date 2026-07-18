@@ -1,0 +1,8 @@
+# TOPIC: %set v "$(v)a"
+
+%set PATH "$(PATH):/path/aaa/bbb"
+
+>A
+{
+	[ "$PATH" = "$STU_PATH_SAVE":/path/aaa/bbb ]
+}

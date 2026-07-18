@@ -29,8 +29,7 @@ public:
 		return parameters.empty() && texts[0].empty();
 	}
 
-	size_t get_n() const
-	{
+	size_t get_n() const {
 		assert(texts.size() == 1 + parameters.size());
 		return parameters.size();
 	}

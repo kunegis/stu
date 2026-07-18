@@ -632,7 +632,7 @@ void Tokenizer::parse_flag()
 		Place place_name= current_place();
 		place_name.bits= Place::Bits::LONG_FLAG;
 		if (index == I_ERR) {
-			place_name << fmt("Invalid flag %s",
+			place_name << fmt("invalid flag %s",
 				show(Unplaced_Flag_View(name, true)));
 			throw ERR_LOGICAL;
 		}
@@ -680,7 +680,9 @@ void Tokenizer::parse_flag()
 	}
 }
 
-shared_ptr <Placed_Name> Tokenizer::parse_name(bool allow_special)
+shared_ptr <Placed_Name> Tokenizer::parse_name(
+	bool allow_special,
+	bool allow_empty)
 {
 	TRACE_FUNCTION();
 	TRACE("allow_special= %s", frmt("%d", allow_special));
@@ -725,9 +727,9 @@ shared_ptr <Placed_Name> Tokenizer::parse_name(bool allow_special)
 	}
 
 	TRACE("ret= %s", show(*ret));
-	if (ret->empty()) {
-		if (p == p_begin)
-			return nullptr;
+	if (p == p_begin)
+		return nullptr;
+	if (!allow_empty && ret->empty()) {
 		place_begin << "name must not be empty";
 		throw ERR_LOGICAL;
 	}
@@ -765,7 +767,7 @@ void Tokenizer::parse_dollar(Placed_Name &placed_name)
 		const char *value= getenv(name.c_str());
 		TRACE("name= %s", value ? show(value) : "<null>");
 		if (!value) {
-			place_dollar << fmt("Expected environment variable %s to be set",
+			place_dollar << fmt("expected environment variable %s to be set",
 				show(Environment_Variable_View(name)));
 			throw ERR_LOGICAL;
 		}
@@ -949,6 +951,27 @@ bool Tokenizer::is_operator_char(char c)
 bool Tokenizer::is_tilde_char(char c)
 {
 	return ! (is_name_char(c) || strchr("\"\'$\\", c)) || c == '/';
+}
+
+bool Tokenizer::is_environment_variable_name(const char *name)
+{
+	assert(name);
+	if (!*name || ! (*name >= 'a' && *name <= 'z' ||
+		*name >= 'A' && *name <= 'Z' ||
+		*name == '_'))
+	{
+		return false;
+	}
+	for (const char *p= name+1; *p; ++p) {
+		if (! (*p >= 'a' && *p <= 'z' ||
+			*p >= 'A' && *p <= 'Z' ||
+			*p >= '0' && *p <= '9' ||
+			*p == '_'))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 void Tokenizer::parse_version(
@@ -1292,10 +1315,7 @@ void Tokenizer::parse_directive(
 	skip_space(skipped_actual_space);
 	const char *const p_name= p;
 	Place place_directive= current_place();
-
-	while (p < p_end && isalnum(*p)) {
-		++p;
-	}
+	while (p < p_end && isalnum(*p)) ++p;
 
 	if (p == p_name) {
 		if (p < p_end)
@@ -1317,9 +1337,12 @@ void Tokenizer::parse_directive(
 		parse_include_directive(context, place_diagnostic, place_percent);
 	} else if (name == "version") {
 		parse_version_directive(place_percent);
+	} else if (name == "set" || name == "unset") {
+		parse_set_directive(context, place_percent, name);
 	} else {
 		/* Invalid directive */
-		place_percent << fmt("invalid directive %s", show(Prefix_View("%", name)));
+		place_percent << fmt("invalid directive %s",
+			show(Prefix_View("%", name)));
 		throw ERR_LOGICAL;
 	}
 }
@@ -1412,6 +1435,83 @@ void Tokenizer::parse_version_directive(const Place &place_percent)
 	Place place_version(place_base.type, (Place::Bits)0,
 		place_base.text, line, p_version - p_line);
 	parse_version(version_required, place_version, place_percent);
+}
+
+void Tokenizer::parse_set_directive(
+	Context context,
+	const Place &place_percent,
+	string directive)
+{
+	TRACE_FUNCTION();
+	TRACE("directive= '%s'", directive);
+	assert(directive == "set" || directive == "unset");
+	bool set= (directive[0] == 's');
+	TRACE("set= %s", frmt("%d", set));
+	if (context == DYNAMIC) {
+		place_percent << fmt("%s cannot appear in dynamic dependencies",
+			show(Operator_View("%" + directive)));
+		throw ERR_LOGICAL;
+	}
+
+	bool skipped_space;
+	skip_space(skipped_space);
+	Place place_name= current_place();
+	shared_ptr <Placed_Name> name= parse_name(true);
+	if (!name) {
+		current_place() <<
+			(p == p_end
+				? "expected a variable name"
+				: fmt("expected a variable name, not %s",
+					show(current_mbchar())));
+		place_percent << fmt("after %s",
+			show(Operator_View(string("%") + directive)));
+		throw ERR_LOGICAL;
+	}
+	if (name->is_parametrized()) {
+		place_name << fmt("variable name %s cannot be parametrized",
+			show(*name));
+		place_percent << fmt("after %s",
+			show(Operator_View(string("%") + directive)));
+		throw ERR_LOGICAL;
+	}
+	string name_string= name->unparametrized();
+	if (! is_environment_variable_name(name_string.c_str())) {
+		place_name << fmt("string cannot be name of environment variable: %s",
+			show(*name));
+		explain_environment_variable_name();
+		throw ERR_LOGICAL;
+	}
+
+	shared_ptr <Placed_Name> value;
+	if (set) {
+		skip_space(skipped_space);
+		Place place_value= current_place();
+		value= parse_name(false, true);
+		if (!value) {
+			current_place() <<
+				(p == p_end
+					? "expected a value"
+					: fmt("expected a value, not %s",
+						show(current_mbchar())));
+			place_percent << fmt("after %s",
+				show(Operator_View("%set")));
+			throw ERR_LOGICAL;
+		}
+		if (value->is_parametrized()) {
+			place_value << fmt("variable value %s cannot be parametrized",
+				show(*value));
+			place_percent << fmt("after %s",
+				show(Operator_View(string("%") + directive)));
+			throw ERR_LOGICAL;
+		}
+	}
+
+	if (set) {
+		string value_string= value->unparametrized();
+		setenv(name_string.c_str(), value_string.c_str(), 1);
+	} else {
+		unsetenv(name_string.c_str());
+	}
 }
 
 int Tokenizer::read_fd(int fd, const size_t size, char **mem, size_t *mem_size)

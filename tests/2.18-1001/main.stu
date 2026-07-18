@@ -1,0 +1,7 @@
+# TOPIC: %set in dynamic dependency
+
+A: [B]
+{
+}
+
+B = { %unset A }

@@ -1,6 +1,7 @@
 #
 # Single quotes. 
 #
+# TOPIC: 'a' 'a''b'
 
 'A':  'B\B.data' {
       cp 'B\B.data' A

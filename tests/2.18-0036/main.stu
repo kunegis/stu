@@ -1,0 +1,19 @@
+# TOPIC: Use variable multiple times in single command
+
+%set STU_TEST_VARIABLE 999888
+
+>A: list.[<list.numbers]
+{
+	sed -E -e 's,^,list.,' | xargs cat
+}
+
+-n >list.numbers
+{
+	../../sh/seq 20
+}
+
+>list.$x
+{
+	[ "$STU_TEST_VARIABLE" = 999888 ]
+	echo $x
+}

@@ -1,0 +1,8 @@
+# TOPIC: %set a "b$(v)c"
+
+%set A "XXX $(STU_AAA_BBB_CCC) YYY"
+
+>A
+{
+	[ "$A" = 'XXX aaabbbccc YYY' ]
+}

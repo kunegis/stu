@@ -1,0 +1,8 @@
+# TOPIC: % set
+
+% set STU_TEST_ABC 123
+
+>A
+{
+	[ "$STU_TEST_ABC" = 123 ]
+}

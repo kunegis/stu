@@ -1,0 +1,10 @@
+# TOPIC: %set when value already exists
+
+%set STU_ABC newvalue
+
+A: list.$(STU_ABC)
+{
+	cp list.newvalue A
+}
+
+list.newvalue = {CORRECT}

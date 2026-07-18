@@ -1,29 +1,26 @@
 #
-# A way to set environment variables for all commands.
+# All shell scripts should use >&3 for verbose output.  (e.g., sh/configure uses >&6).
 #
 
-% set PATH /usr/local/bin
-% unset PATH
-
-# By default, variable must not exist (set), or must exist (unset).  Can be overridden
-# with '-f'.
-% set -f HOME /home/bla
-% set -f unset $(NAME)
+#
+# Environment variables in child processes:  set them using putenv()/setenv().  No need to
+# construct a custom environ array to pass to execve().
+#
 
 #
-# File import.  '%import' should work at rule level, and allow both cd-ing and not
-# cd-ing.
-# * Need to decide if there is a default, or whether to give two different names.
-# * '%include' should remain as the token level inclusion mechanism.
+# Makefile: changing NEWS, man/, doc/TODO.stu should not restart tests.
+#
+
+#
+# %include -d
 #
 
 # Import all rules from subdirectory; will prepend the directory name to
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of
 # all these are equivalent:
-%import --change-directory src/main.stu
-%import --cd src/
 %import -d src
+%import --directory src/main.stu
 
 # Without cd-ing, i.e. "library mode".  Allows paths with slashes, but also
 # $STU_{,LIB_}PATH.
@@ -125,20 +122,6 @@ A: [-d data/B];
 # This is included from the "Stu path", and could be installed in
 # e.g. /usr/share/stu/lib/ or ~/share/stu/lib/, etc.
 % include c++.stu
-
-#
-# Have a way to set $STU_SHELL and $STU_CP from within a Stu script.
-# E.g., using directives.
-#
-
-# Some Stu scripts may want to use Bash throughout
-% STU_SHELL /bin/bash
-
-# Should it be valid for the whole Stu invocation, or only for the
-# source file in which it appears?
-
-# Could also be done as
-% set STU_SHELL /bin/bash
 
 #
 # A flag with the meaning "never rebuild that dependency", but only use
@@ -471,9 +454,13 @@ calc:  @build-c':'calc':'calc.c;
 # * Check that no two tests have the same topic.
 
 #
-# Makefile: changing NEWS, man/, doc/TODO.stu should not restart tests.
+# When an error happens in the tokenizer for a dynamic dependency, check that the
+# backtraces are fully shown.
 #
 
 #
-# NEWS: Maybe remove dates.
+# Flags after %set/%unset
 #
+
+%set -<X> VARIABLE VALUE # Fails when variable already exists
+%unset -<X> VARIABLE # Fail when variable does not exist

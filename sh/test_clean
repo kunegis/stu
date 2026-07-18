@@ -57,7 +57,7 @@ s,-.*$,,
 	sed -E -e '
 s,^.*\[([0-9]+(|\.[0-9]+(|\.[0-9]+)))\].*$,\1,
 tend
-s,^.*Version ([0-9.]+):$,\1,
+s,^Version ([0-9.]+):$,\1,
 tend
 d
 :end
@@ -102,6 +102,15 @@ Check_Test_EXEC()
 			fi
 		fi
 	done
+}
+
+Check_Test_bin_name()
+{
+	find tests -name EXEC |
+		xargs grep -n -E -e 'bin/stu\.([a-su-z])' |
+		sed -E -e 's,(:[0-9]+:),\1 Only bin/stu.test must be used in tests: ,' |
+		grep -E -e '.' >&2 && return 1
+	return 0
 }
 
 Check_Newline_EOF()
@@ -306,11 +315,25 @@ Check_seq()
 	return 0
 }
 
+Check_Cpp()
+{
+	Check_TODO || ret=1
+	Check_assert_false || ret=1
+	Check_NULL || ret=1
+	Check_Preload || ret=1
+}
+
+Check_Shell_Script()
+{
+	Check_seq || ret=1
+}
+
 Check_Test()
 {
 	Check_Test_Names || ret=1
 	Check_Test_Own_Name || ret=1
 	Check_Test_EXEC || ret=1
+	Check_Test_bin_name || ret=1
 }
 
 Check_Characters()
@@ -331,19 +354,6 @@ Check_Spaces()
 	Check_Double_Empty_Line || ret=1
 	Check_Midline_Tab || ret=1
 	Check_Manpage_Tab || ret=1
-}
-
-Check_Cpp()
-{
-	Check_TODO || ret=1
-	Check_assert_false || ret=1
-	Check_NULL || ret=1
-	Check_Preload || ret=1
-}
-
-Check_Shell_Script()
-{
-	Check_seq || ret=1
 }
 
 Check_Cpp

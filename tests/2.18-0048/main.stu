@@ -1,0 +1,23 @@
+# TOPIC: Set a variable, then use it in multiple distinct commands
+
+%set STU_TEST_NAME abcd
+
+>A: B C D
+{
+	cat B C D
+}
+
+>B
+{
+	[ "$STU_TEST_NAME" = abcd ]
+}
+
+>C
+{
+	[ "$STU_TEST_NAME" = abcd ]
+}
+
+>D
+{
+	[ "$STU_TEST_NAME" = abcd ]
+}

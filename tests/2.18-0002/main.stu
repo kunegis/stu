@@ -1,0 +1,8 @@
+# TOPIC: %set use variable in command
+
+%set STU_XYZ "CORRECT"
+
+>A
+{
+	echo $STU_XYZ
+}

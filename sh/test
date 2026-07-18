@@ -17,7 +17,7 @@
 #	log/runtime.$VARIANT    Runtimes of all tests
 #
 # PARAMETERS
-#	$VARIANT      Other variant of the compiled file; the default is 'debug'
+#	$VARIANT      Variant of the compiled file; the default is 'debug'
 #	$TEST_VERBOSE Set to {0,1,2} for verbose levels; default is 0. (This variable is
 #	              used by EXEC scripts in the same way.)
 #	$nolong       Skip the long-* tests
@@ -654,8 +654,7 @@ if [ "$ret" != 0 ] ; then
 	fi
 	echo >&2 Failed tests:
 	cat  >&2 log/error.log
-	success_rate=$(awk 'BEGIN{printf "%.2f\n", 100*('"$count_total"'-'"$count_failed"')/'"$count_total"'}')
-	echo >&2 "$red$0: *** ${success_rate}% success rate.  $count_failed test(s) failed (out of $count_total).$off"
+	echo >&2 "$red$0: *** $count_failed test(s) failed (out of $count_total).$off"
 fi
 
 if [ -z "$1" ] ; then

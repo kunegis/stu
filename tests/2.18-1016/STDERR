@@ -1,0 +1,1 @@
+main.stu:3:8: string cannot be name of environment variable: "~user"

@@ -1,0 +1,11 @@
+# TOPIC: a.stu includes b.stu. b.stu %set's a variable. The variable is accessible in a.stu after the inclusion
+
+%include b.stu
+
+A: list.$(STU_TEST_VARIABLE)
+{
+	[ "$STU_TEST_VARIABLE" = ABC ]
+	cp list.ABC A
+}
+
+list.ABC = {CORRECT}

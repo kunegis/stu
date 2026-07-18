@@ -1,0 +1,29 @@
+Stu versions are of the form X.Y.Z, where X is the major version, Y is the minor version
+and Z the patch level.
+
+We followed Semantic Versioning rules:
+* The major version X is increased when we make backward-incompatible changes.  This is
+  rare.
+* The major version Y is increased when a new feature is implemented.
+* The patch version Z is increased for all other changes, including bugfixes, but also
+  changes that are completely invisible in the released version (e.g., update text in
+  doc/)
+
+New features and major changes are documented in the file NEWS.  This includes only
+changes which have their own tests under tests/[long-]<version>-<nnnn>.
+
+The number zero (0) has special meaning for X/Y/Z in the version number:
+* X=0:  Stu 0 was not subject to Semantic Versioning.
+* Y=0:  These are pre-release versions.  They don't appear in the master branch.
+* Z=0:  Not used.
+
+Thus, the first release of a new major version is X.1.1, and the first release of a minor
+version is X.Y.1.
+
+When Z=1, we often omit the final ".1" in the version number.  E.g., version 2.17.1 can be
+just called 2.17.  This convention is used in the names of testing directories under
+tests/.
+
+The versions given in NEWS for X=0 (stu 0.1, 0.2, etc.) do not reflect the history of
+Stu.  These numbers have been created after the fact to allow tests under tests/ to have
+names corresponding to features introduced at the time of Stu 0.

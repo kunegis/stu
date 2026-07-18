@@ -413,8 +413,8 @@ const char **Job::create_child_env(
 	std::map <string, size_t> old;
 	/* Index of old variables */
 
-	while (envp_global[v_old]) {
-		const char *p= envp_global[v_old];
+	while (environ[v_old]) {
+		const char *p= environ[v_old];
 		const char *q= p;
 		while (*q && *q != '=')  ++q;
 		string key_old(p, q-p);
@@ -432,7 +432,7 @@ const char **Job::create_child_env(
 		__gcov_dump();
 		_Exit(ERR_FORK_CHILD);
 	}
-	memcpy(envp, envp_global, v_old * sizeof(char **));
+	memcpy(envp, environ, v_old * sizeof(char **));
 	size_t i= v_old;
 
 	for (auto j= mapping.begin(); j != mapping.end(); ++j) {

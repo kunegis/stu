@@ -1,0 +1,7 @@
+# TOPIC: $(VAR) before %set
+
+A: list.$(VAR)
+{
+}
+
+%set VAR value

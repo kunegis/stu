@@ -87,7 +87,7 @@ private:
 	void parse_flag_or_name();
 	void parse_flag();
 
-	shared_ptr <Placed_Name> parse_name(bool allow_special);
+	shared_ptr <Placed_Name> parse_name(bool allow_special, bool allow_empty= false);
 	/* Returns null when no name could be parsed.  Prints and throws on other errors,
 	 * including on empty names. ALLOW_SPECIAL:  whether the name is allowed to start
 	 * with one of '-+~'.  E_SLASH set in ENVIRONMENT as appropriate. */
@@ -115,6 +115,10 @@ private:
 		const Place &place_percent);
 	void parse_version_directive(
 		const Place &place_percent);
+	void parse_set_directive(
+		Context context,
+		const Place &place_percent,
+		string directive);
 
 	bool skip_space(bool &skipped_actual_space);
 	/* Skip any whitespace (including backslash-newline combinations).  The return
@@ -152,6 +156,8 @@ private:
 
 	static bool is_tilde_char(char);
 	/* When appearing after '~[name]', the '~[name]' represents a home directory */
+
+	static bool is_environment_variable_name(const char *);
 
 	static void parse_version(
 		string version_req,

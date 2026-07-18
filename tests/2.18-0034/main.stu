@@ -1,0 +1,13 @@
+# TOPIC: %unset \v
+
+%set STU_TEST_VARIABLE 1234
+%unset \S\TU\_\TES\T_\VAR\I\ABLE
+
+>A
+{
+	set +e
+	env | grep -q -E -e '^STU_TEST_VARIABLE='
+	exitstatus=$?
+	set -e
+	[ "$exitstatus" = 1 ]
+}

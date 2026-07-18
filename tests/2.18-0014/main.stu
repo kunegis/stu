@@ -1,0 +1,8 @@
+# TOPIC: %set \a b
+
+%set \a b
+
+>A
+{
+	[ "$a" = b ]
+}

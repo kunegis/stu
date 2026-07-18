@@ -1,0 +1,5 @@
+# TOPIC: $(VAR) when $VAR is empty: error because name would be empty
+
+A: $(STU_TEST_VAR)
+{
+}

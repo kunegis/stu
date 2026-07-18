@@ -1,0 +1,8 @@
+# TOPIC: %set v1 a
+
+%set STU_TEST_VARIABLE_7 "value"
+
+>A
+{
+	[ "$STU_TEST_VARIABLE_7" = value ]
+}

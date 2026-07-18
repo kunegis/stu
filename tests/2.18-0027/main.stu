@@ -1,0 +1,10 @@
+# TOPIC: %set a$(v)b c
+
+%set STU_TEST_$(STU_TEST_XXX)_77 list.abcd
+
+A: $(STU_TEST_ABC_77)
+{
+	cp list.abcd A
+}
+
+list.abcd = {CORRECT}

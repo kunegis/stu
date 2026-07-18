@@ -1,0 +1,8 @@
+# Topic: %set a -b
+
+%set STU_VAR -a
+
+>A
+{
+	[ "$STU_VAR" = '-a' ]
+}

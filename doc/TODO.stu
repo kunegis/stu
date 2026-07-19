@@ -1,4 +1,3 @@
-* value contains '
 * value contains $(var)
 * value contains ~
 * value contains \a
@@ -33,6 +32,11 @@
 * Name has $(var)
 * Name has ~
 * Name has \
+* $(VAR) used before %set VAR ...:  $(VAR) is not set
+%set AAA BBB(CCC) # Error?
+# * a.stu includes b.stu. b.stu %set's a variable. The variable is accessible in a.stu
+# after the inclusion, but not before
+# a.stu includes b.stu and c.stu.  b.stu defines a variable.  The variable is available in c.stu.
 
 * Manpage
 
@@ -42,19 +46,15 @@
 % set -f unset $(NAME)
 
 #
-# File import.  '%import' should work at rule level, and allow both cd-ing and not
-# cd-ing.
-# * Need to decide if there is a default, or whether to give two different names.
-# * '%include' should remain as the token level inclusion mechanism.
+# %include -d
 #
 
 # Import all rules from subdirectory; will prepend the directory name to
 # all targets.  Rules from there will be executed from within the
 # directory as current directory.  If using 'import', the meaning of
 # all these are equivalent:
-%import --change-directory src/main.stu
-%import --cd src/
 %import -d src
+%import --directory src/main.stu
 
 # Without cd-ing, i.e. "library mode".  Allows paths with slashes, but also
 # $STU_{,LIB_}PATH.

@@ -1431,7 +1431,7 @@ void Tokenizer::parse_set_directive(
 	}
 	bool skipped_space;
 	skip_space(skipped_space);
-	shared_ptr <Placed_Name> name= parse_name(false);
+	shared_ptr <Placed_Name> name= parse_name(true);
 	if (!name) {
 		current_place() <<
 			(p == p_end
@@ -1445,7 +1445,7 @@ void Tokenizer::parse_set_directive(
 	shared_ptr <Placed_Name> value;
 	if (set) {
 		skip_space(skipped_space);
-		value= parse_name(true);
+		value= parse_name(false);
 		if (!value) {
 			current_place() <<
 				(p == p_end

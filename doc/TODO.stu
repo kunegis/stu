@@ -1,4 +1,3 @@
-* value contains ~
 * value contains \a
 * value contains ~/"a"'b'$(var)\c
 * Error when variable name contains invalid characters (e.g., dot)
@@ -6,7 +5,7 @@
 * Variable name can contain environment variable
 * Variable name and value must not be parametrized
 * Add flag to %set that does not change the value if the environment variable already exists
-* %set not following by name
+* %set not followed by name
 * %set followed by name but no value
 * %unset not followed by name
 %set :
@@ -29,13 +28,15 @@
 * Name in "
 * Name in '
 * Name has $(var)
-* Name has ~
+* %set: Name starts with ~
+* %unset: Name starts with ~
 * Name has \
 * $(VAR) used before %set VAR ...:  $(VAR) is not set
 %set AAA BBB(CCC) # Error?
 # * a.stu includes b.stu. b.stu %set's a variable. The variable is accessible in a.stu
 # after the inclusion, but not before
 # a.stu includes b.stu and c.stu.  b.stu defines a variable.  The variable is available in c.stu.
+%include ~/... # Works # Under a version <2.18
 
 * Manpage
 

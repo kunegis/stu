@@ -1,4 +1,3 @@
-* value contains ~/"a"'b'$(var)\c
 * Error when variable name contains invalid characters (e.g., dot)
 * Variable name can be single-quoted, double-quoted, backslash-escaped
 * Variable name can contain environment variable

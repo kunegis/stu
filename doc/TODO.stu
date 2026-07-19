@@ -1,4 +1,3 @@
-* %set: Variable name can be double-quoted
 * %set: Variable name can be backslash-escaped
 * %set: Variable name can contain environment variable
 * %set: Variable name and value must not be parametrized

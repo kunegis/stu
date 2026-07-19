@@ -1423,7 +1423,7 @@ void Tokenizer::parse_set_directive(
 	TRACE("directive= '%s'", directive);
 	assert(directive == "set" || directive == "unset");
 	bool set= (directive[0] == 's');
-	TRACE("set= %d", frmt("%d", set));
+	TRACE("set= %s", frmt("%d", set));
 	if (context == DYNAMIC) {
 		place_percent << fmt("%s cannot appear in dynamic dependencies",
 			show(Operator_View("%" + directive)));

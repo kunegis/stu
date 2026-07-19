@@ -1,0 +1,1 @@
+main.stu:3:6: String cannot be name of environment variable: "AAA.BBB"

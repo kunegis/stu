@@ -157,6 +157,8 @@ private:
 	static bool is_tilde_char(char);
 	/* When appearing after '~[name]', the '~[name]' represents a home directory */
 
+	static bool is_environment_variable_name(const char *);
+	
 	static void parse_version(
 		string version_req,
 		const Place &place_version,

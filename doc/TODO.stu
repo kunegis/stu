@@ -1,4 +1,3 @@
-* Error when variable name contains invalid characters (e.g., dot)
 * Variable name can be single-quoted, double-quoted, backslash-escaped
 * Variable name can contain environment variable
 * Variable name and value must not be parametrized
@@ -38,6 +37,7 @@
 %set: variable name contains a digit
 %set 0 xxx # Error
 %set 1 xxx # Error
+* Explain output for:  name of environment variable can only contain...
 
 * Manpage
 

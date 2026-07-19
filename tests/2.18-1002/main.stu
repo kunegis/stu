@@ -1,0 +1,5 @@
+# TOPIC: %set a.b
+
+%set AAA.BBB "value"
+
+A = {ERROR}

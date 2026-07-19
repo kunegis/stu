@@ -951,6 +951,27 @@ bool Tokenizer::is_tilde_char(char c)
 	return ! (is_name_char(c) || strchr("\"\'$\\", c)) || c == '/';
 }
 
+bool Tokenizer::is_environment_variable_name(const char *name)
+{
+	assert(name);
+	if (!*name || ! (*name >= 'a' && *name <= 'z' ||
+			*name >= 'A' && *name <= 'Z' ||
+			*name == '_'))
+	{
+		return false;
+	}
+	for (const char *p= name+1; *p; ++p) {
+		if (! (*p >= 'a' && *p <= 'z' ||
+				*p >= 'A' && *p <= 'Z' ||
+				*p >= '0' && *p <= '9' ||
+				*p == '_'))
+		{
+			return false;
+		}			
+	}
+	return true;
+}
+
 void Tokenizer::parse_version(
 	string version_req,
 	const Place &place_version,
@@ -1429,8 +1450,10 @@ void Tokenizer::parse_set_directive(
 			show(Operator_View("%" + directive)));
 		throw ERR_LOGICAL;
 	}
+
 	bool skipped_space;
 	skip_space(skipped_space);
+	Place place_name= current_place();
 	shared_ptr <Placed_Name> name= parse_name(true);
 	if (!name) {
 		current_place() <<
@@ -1442,6 +1465,16 @@ void Tokenizer::parse_set_directive(
 			show(Operator_View(string("%") + directive)));
 		throw ERR_LOGICAL;
 	}
+	if (name->is_parametrized()) {
+		// TODO
+	}
+	string name_string= name->unparametrized();
+	if (! is_environment_variable_name(name_string.c_str())) {
+		place_name << fmt("String cannot be name of environment variable: %s",
+			show(*name));
+		throw ERR_LOGICAL;
+	}
+	
 	shared_ptr <Placed_Name> value;
 	if (set) {
 		skip_space(skipped_space);
@@ -1456,13 +1489,11 @@ void Tokenizer::parse_set_directive(
 				show(Operator_View("%set")));
 			throw ERR_LOGICAL;
 		}
+		if (value->is_parametrized()) {
+			// TODO
+		}
 	}
 
-	// TODO check that name and value is not parametrized
-	
-	// TODO check that name is valid for environment variable
-	
-	string name_string= name->unparametrized();
 	if (set) {
 		string value_string= value->unparametrized();
 		setenv(name_string.c_str(), value_string.c_str(), 1);

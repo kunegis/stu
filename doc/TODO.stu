@@ -1,4 +1,3 @@
-* value contains $(var)
 * value contains ~
 * value contains \a
 * value contains ~/"a"'b'$(var)\c

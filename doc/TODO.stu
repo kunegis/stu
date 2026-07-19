@@ -1,6 +1,7 @@
-* Variable name can be single-quoted, double-quoted, backslash-escaped
-* Variable name can contain environment variable
-* Variable name and value must not be parametrized
+* %set: Variable name can be double-quoted
+* %set: Variable name can be backslash-escaped
+* %set: Variable name can contain environment variable
+* %set: Variable name and value must not be parametrized
 * Add flag to %set that does not change the value if the environment variable already exists
 * %set not followed by name
 * %set followed by name but no value
@@ -38,6 +39,11 @@
 %set 0 xxx # Error
 %set 1 xxx # Error
 * Explain output for:  name of environment variable can only contain...
+* %unset: Variable name can be single-quoted
+* %unset: Variable name can be double-quoted
+* %unset: Variable name can be backslash-escaped
+* %unset: Variable name can contain environment variable
+* %unset: Variable name and value must not be parametrized
 
 * Manpage
 

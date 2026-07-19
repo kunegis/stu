@@ -1,0 +1,8 @@
+# TOPIC: %set $(v) a
+
+%set $(STU_TEST_VARIABLE_A) def
+
+>A
+{
+	[ "$abc" = def ]
+}

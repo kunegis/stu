@@ -1466,7 +1466,11 @@ void Tokenizer::parse_set_directive(
 		throw ERR_LOGICAL;
 	}
 	if (name->is_parametrized()) {
-		// TODO
+		place_name << fmt("Variable name %s cannot be parametrized",
+			show(*name));
+		place_percent << fmt("after %s",
+			show(Operator_View(string("%") + directive)));
+		throw ERR_LOGICAL;
 	}
 	string name_string= name->unparametrized();
 	if (! is_environment_variable_name(name_string.c_str())) {

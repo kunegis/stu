@@ -1,5 +1,4 @@
-* %set: Variable name can contain environment variable
-* %set: Variable name and value must not be parametrized
+* %set: value must not be parametrized
 * Add flag to %set that does not change the value if the environment variable already exists
 * %set not followed by name
 * %set followed by name but no value

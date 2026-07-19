@@ -1,0 +1,2 @@
+main.stu:3:10: Variable value abc${p}def cannot be parametrized
+main.stu:3:1: after %set

@@ -1482,6 +1482,7 @@ void Tokenizer::parse_set_directive(
 	shared_ptr <Placed_Name> value;
 	if (set) {
 		skip_space(skipped_space);
+		Place place_value= current_place();
 		value= parse_name(false);
 		if (!value) {
 			current_place() <<
@@ -1494,7 +1495,11 @@ void Tokenizer::parse_set_directive(
 			throw ERR_LOGICAL;
 		}
 		if (value->is_parametrized()) {
-			// TODO
+			place_value << fmt("Variable value %s cannot be parametrized",
+				show(*value));
+			place_percent << fmt("after %s",
+				show(Operator_View(string("%") + directive)));
+			throw ERR_LOGICAL;
 		}
 	}
 

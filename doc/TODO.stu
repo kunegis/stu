@@ -1,4 +1,3 @@
-* %unset not followed by name
 %set :
 %set aaa :
 %unset :

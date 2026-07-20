@@ -1,4 +1,3 @@
-* %set followed by name but no value
 * %unset not followed by name
 %set :
 %set aaa :
@@ -46,7 +45,8 @@
 * Set a variable, then use it in included file
 * Set a variable, and use it as directory name, e.g. $(DIR)/file: ...
 
-* Manpage
+* Manpage: set
+* Manpage: add that comments are not allowed between directive and parameters
 
 # By default, variable must not exist (set), or must exist (unset).  Can be overridden
 # with '-f'.

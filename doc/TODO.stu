@@ -43,6 +43,7 @@
 * Unset the same variable multiple times
 * Set a variable, then use it in included file
 * Set a variable, and use it as directory name, e.g. $(DIR)/file: ...
+* Environment variable name can start with underscore
 
 * Manpage: set
 * Manpage: add that comments are not allowed between directive and parameters

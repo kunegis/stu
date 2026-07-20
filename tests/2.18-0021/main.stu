@@ -1,0 +1,8 @@
+# TOPIC: %set a $(a)
+
+%set STU_TEST_V $(STU_TEST_V)
+
+>A
+{
+	[ "$STU_TEST_V" = abc ]
+}

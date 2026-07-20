@@ -1,4 +1,3 @@
-%set VALUE $(VALUE)
 * %set in dynamic dependency, using -k
 * %unset in dynamic dependency, using -k
 * %set to an empty value

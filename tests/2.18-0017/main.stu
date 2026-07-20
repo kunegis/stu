@@ -1,0 +1,8 @@
+A: list.$(STU_TEST_VAR)
+{
+	cp list.aaa A
+}
+
+%set STU_TEST_VAR bbb
+
+list.aaa = {CORRECT}

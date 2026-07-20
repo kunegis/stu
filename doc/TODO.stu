@@ -1,4 +1,3 @@
-* %set not followed by name
 * %set followed by name but no value
 * %unset not followed by name
 %set :
@@ -40,6 +39,12 @@
 * %unset: Variable name and value must not be parametrized
 %set -x a # Error: -x not parsed as name
 %unset -x # Error: -x not parsed as name
+* Set a variable and use it multiple times
+* Set, then unset a variable
+* Set, then unset, then set a variable
+* Unset the same variable multiple times
+* Set a variable, then use it in included file
+* Set a variable, and use it as directory name, e.g. $(DIR)/file: ...
 
 * Manpage
 

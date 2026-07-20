@@ -1,0 +1,13 @@
+# TOPIC: %unset ; %unset
+
+%unset STU_TEST_VAR
+%unset STU_TEST_VAR
+
+>A
+{
+	set +e
+	set | grep -q -E -e '^STU_TEST_VAR='
+	exitstatus=$?
+	set -e
+	[ "$exitstatus" = 1 ]
+}

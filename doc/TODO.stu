@@ -36,12 +36,8 @@
 * Manpage: set
 * Manpage: add that comments are not allowed between directive and parameters
 
-# By default, variable must not exist (set), or must exist (unset).  Can be overridden
-# with '-f'.
-% set -f HOME /home/bla
-% set -f unset $(NAME)
 % set # with space
-% unset % with space
+% unset # with space
 
 #
 # %include -d

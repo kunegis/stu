@@ -1,5 +1,3 @@
-%set aaa :
-%unset :
 % set PATH $(PATH):/usr/local/bin # Use variable in own redefinition
 * %set after a use of $(...):  The set value is not used
 * %set and then %unset

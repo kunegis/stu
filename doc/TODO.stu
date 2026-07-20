@@ -1,4 +1,3 @@
-* %set and then %set the same variable
 * %unset and then %unset
 %set VALUE $(VALUE)
 * %set in dynamic dependency, using -k

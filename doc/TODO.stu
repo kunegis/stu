@@ -2,8 +2,8 @@
 * %unset in dynamic dependency, using -k
 * %set to an empty value
 * unset an empty value
-* Value is allowed to start with unquoted +
-* Value is allowed to start with unquoted ~
+* Value is allowed to start with unquoted + # No
+* Value is allowed to start with unquoted ~ # No
 * Command before %set.  The variable is set in the command.
 * Name in "
 * Name in '

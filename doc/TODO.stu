@@ -1,4 +1,3 @@
-%set :
 %set aaa :
 %unset :
 % set PATH $(PATH):/usr/local/bin # Use variable in own redefinition
@@ -52,6 +51,8 @@
 # with '-f'.
 % set -f HOME /home/bla
 % set -f unset $(NAME)
+% set # with space
+% unset % with space
 
 #
 # %include -d

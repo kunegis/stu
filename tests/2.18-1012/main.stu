@@ -1,0 +1,9 @@
+# TOPIC: %set in dynamic dependency, using -k
+
+A: [B] C
+{
+}
+
+B = { %set V val }
+
+C { exit 77 ; }

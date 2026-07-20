@@ -1,0 +1,4 @@
+B:1:1: %set cannot appear in dynamic dependencies
+main.stu:9:5: command for "C" failed with exit status 77
+main.stu:3:8: "C" is needed by "A"
+../../bin/stu.test: targets not up to date because of errors

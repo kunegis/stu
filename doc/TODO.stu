@@ -1,4 +1,3 @@
-%set to an empty value [0022]
 %unset an empty value
 * Value is allowed to start with unquoted + # No
 * Value is allowed to start with unquoted ~ # No

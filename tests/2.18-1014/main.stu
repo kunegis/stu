@@ -1,0 +1,3 @@
+# TOPIC: %set v +a
+
+%set STU_TEST_VARIABLE +abc

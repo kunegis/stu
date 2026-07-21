@@ -1,3 +1,5 @@
+# TOPIC: $(v) ; %set v
+
 A: list.$(STU_TEST_VAR)
 {
 	cp list.aaa A

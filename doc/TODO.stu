@@ -1,4 +1,3 @@
-* Value is allowed to start with unquoted ~ # No
 * Command before %set.  The variable is set in the command.
 * Name in "
 * Name in '

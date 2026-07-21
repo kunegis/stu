@@ -1,3 +1,5 @@
+# TOPIC: %set v "$(v)a"
+
 %set PATH "$(PATH):/path/aaa/bbb"
 
 >A

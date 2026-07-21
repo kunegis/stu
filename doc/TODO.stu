@@ -1,4 +1,3 @@
-* %unset in dynamic dependency, using -k
 * %set to an empty value
 * unset an empty value
 * Value is allowed to start with unquoted + # No

@@ -1,4 +1,3 @@
-%unset an empty value
 * Value is allowed to start with unquoted + # No
 * Value is allowed to start with unquoted ~ # No
 * Command before %set.  The variable is set in the command.

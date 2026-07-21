@@ -2,7 +2,7 @@
 set -e
 
 line=$(head -1 doc/TODO.stu)
-printf '%s\n' "$line" | grep -q -E -e '^#' || {
+printf '%s\n' "$line" | grep -q -F -x -e '#' || {
 	echo "doc/TODO.stu:1: $line"
 	exit 1
 }

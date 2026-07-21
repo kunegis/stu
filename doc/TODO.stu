@@ -1,6 +1,6 @@
-* Command before %set.  The variable is set in the command.
-* Name in "
-* Name in '
+# * Command before %set.  The variable is set in the command.
+# * Name in "
+# * Name in '
 * Name has $(var)
 * %set: Name starts with ~
 * %unset: Name starts with ~

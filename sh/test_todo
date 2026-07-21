@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+line=$(head -1 doc/TODO.stu)
+printf '%s\n' "$line" | grep -q -E -e '^#' || {
+	echo "doc/TODO.stu:1: File must start with '#'"
+	exit 1
+}
+exit 0

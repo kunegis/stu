@@ -13,6 +13,7 @@ test: \
     bin/stu \
     log/test_options \
     log/test_unit.debug \
+    log/test_todo \
     cov \
     log/test_clean \
     log/test_unit.ndebug \
@@ -76,6 +77,9 @@ bin/stu.analyzer: conf/CXX src/*.cc src/*.hh src/version.hh
 log/test_options:   sh/test_options src/options.hh man/stu.1.in
 	@echo sh/test_options
 	@mkdir -p log && sh/test_options && touch $@
+log/test_todo:  src/*.cc src/*.hh sh/test_todo sh sh/* tests tests/*/*
+	@echo sh/test_todo
+	@     sh/test_todo && mkdir -p log && touch $@
 log/test_clean:  src/*.cc src/*.hh sh/test_clean sh sh/* tests tests/*/*
 	@echo sh/test_clean
 	@     sh/test_clean && mkdir -p log && touch $@

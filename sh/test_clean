@@ -104,16 +104,6 @@ Check_Test_EXEC()
 	done
 }
 
-Check_TODO_stu()
-{
-	line=$(head -1 doc/TODO.stu)
-	printf '%s\n' "$line" | grep -q -E -e '^#' || {
-		echo "doc/TODO.stu:1: File must start with '#'"
-		return 1
-	}
-	return 0
-}
-
 Check_Newline_EOF()
 {
 	Find_Source_Files | {
@@ -316,11 +306,6 @@ Check_seq()
 	return 0
 }
 
-Check_todo()
-{
-	Check_TODO_stu || ret=1
-}
-
 Check_Cpp()
 {
 	Check_TODO || ret=1
@@ -361,7 +346,6 @@ Check_Spaces()
 	Check_Manpage_Tab || ret=1
 }
 
-Check_Todo
 Check_Cpp
 Check_Shell_Script
 Check_Test

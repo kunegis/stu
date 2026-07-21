@@ -5,6 +5,11 @@
 #
 # This is a work in progress, and not yet integrated into 'make test'.
 #
+# LETTERS
+#	a - File/phony
+#       p - Parameter
+#       v - Environment variable
+#
 
 set -e
 

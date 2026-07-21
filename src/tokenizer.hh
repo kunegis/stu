@@ -87,7 +87,7 @@ private:
 	void parse_flag_or_name();
 	void parse_flag();
 
-	shared_ptr <Placed_Name> parse_name(bool allow_special);
+	shared_ptr <Placed_Name> parse_name(bool allow_special, bool allow_empty= false);
 	/* Returns null when no name could be parsed.  Prints and throws on other errors,
 	 * including on empty names. ALLOW_SPECIAL:  whether the name is allowed to start
 	 * with one of '-+~'.  E_SLASH set in ENVIRONMENT as appropriate. */

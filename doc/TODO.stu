@@ -1,5 +1,5 @@
-* %set to an empty value
-* unset an empty value
+%set to an empty value [0022]
+%unset an empty value
 * Value is allowed to start with unquoted + # No
 * Value is allowed to start with unquoted ~ # No
 * Command before %set.  The variable is set in the command.
@@ -37,6 +37,8 @@
 
 % set # with space
 % unset # with space
+* Test for environment variables:  $(VAR) when $VAR is empty: error because name would be empty
+* Test for environment variables:  $(VAR)a when $VAR is empty: works
 
 #
 # %include -d

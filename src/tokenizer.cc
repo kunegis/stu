@@ -680,7 +680,9 @@ void Tokenizer::parse_flag()
 	}
 }
 
-shared_ptr <Placed_Name> Tokenizer::parse_name(bool allow_special)
+shared_ptr <Placed_Name> Tokenizer::parse_name(
+	bool allow_special,
+	bool allow_empty)
 {
 	TRACE_FUNCTION();
 	TRACE("allow_special= %s", frmt("%d", allow_special));
@@ -725,9 +727,9 @@ shared_ptr <Placed_Name> Tokenizer::parse_name(bool allow_special)
 	}
 
 	TRACE("ret= %s", show(*ret));
-	if (ret->empty()) {
-		if (p == p_begin)
-			return nullptr;
+	if (p == p_begin)
+		return nullptr;
+	if (!allow_empty && ret->empty()) {
 		place_begin << "name must not be empty";
 		throw ERR_LOGICAL;
 	}
@@ -1483,7 +1485,7 @@ void Tokenizer::parse_set_directive(
 	if (set) {
 		skip_space(skipped_space);
 		Place place_value= current_place();
-		value= parse_name(false);
+		value= parse_name(false, true);
 		if (!value) {
 			current_place() <<
 				(p == p_end

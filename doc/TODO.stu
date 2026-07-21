@@ -1,3 +1,4 @@
+* Separate sh/test_clean into pre-cov and post-cov parts
 %unset an empty value
 * Value is allowed to start with unquoted + # No
 * Value is allowed to start with unquoted ~ # No

@@ -1,0 +1,8 @@
+# TOPIC: %set "v" b
+
+%set "STU_TEST_QWERTY" "12345"
+
+>A
+{
+	[ "$STU_TEST_QWERTY" = 12345 ]
+}

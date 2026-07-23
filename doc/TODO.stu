@@ -1,4 +1,3 @@
-# * Name in '
 * Name has $(var)
 * %set: Name starts with ~
 * %unset: Name starts with ~

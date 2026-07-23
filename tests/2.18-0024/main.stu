@@ -1,0 +1,8 @@
+# TOPIC: environment variable used in command before %set
+
+>A
+{
+	[ "$STU_TEST_ABC" = def ]
+}
+
+%set STU_TEST_ABC def
